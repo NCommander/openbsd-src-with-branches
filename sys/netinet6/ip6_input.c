@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.29 2001/03/30 11:09:01 itojun Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.30 2001/05/11 17:20:12 aaron Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -107,8 +107,6 @@
 #include "faith.h"
 #include "gif.h"
 #include "bpfilter.h"
-
-#include <net/net_osdep.h>
 
 extern struct domain inet6domain;
 extern struct ip6protosw inet6sw[];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_gif.c,v 1.14 2001/05/30 12:31:09 angelos Exp $	*/
+/*	$OpenBSD: in6_gif.c,v 1.15 2001/06/08 10:39:37 art Exp $	*/
 /*	$KAME: in6_gif.c,v 1.43 2001/01/22 07:27:17 itojun Exp $	*/
 
 /*
@@ -65,8 +65,6 @@
 #include <netinet/ip_ecn.h>
 
 #include <net/if_gif.h>
-
-#include <net/net_osdep.h>
 
 #include "bridge.h"
 
