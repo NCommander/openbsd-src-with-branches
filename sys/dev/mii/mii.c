@@ -1,4 +1,4 @@
-/*	$OpenBSD: mii.c,v 1.2 1998/11/11 19:34:47 jason Exp $	*/
+/*	$OpenBSD: mii.c,v 1.3 1999/01/04 03:57:55 jason Exp $	*/
 /*	$NetBSD: mii.c,v 1.9 1998/11/05 04:08:02 thorpej Exp $	*/
 
 /*-
@@ -209,7 +209,7 @@ mii_media_from_bmcr(bmcr)
 		rv |= IFM_100_TX;
 	else
 		rv |= IFM_10_T;
-	if (bmcr & IFM_FDX)
+	if (bmcr & BMCR_FDX)
 		rv |= IFM_FDX;
 
 	return (rv);
