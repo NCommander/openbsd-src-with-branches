@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.10 1996/09/01 13:06:51 deraadt Exp $	*/
+/*	$OpenBSD: edit.c,v 1.11 1996/09/23 09:41:02 deraadt Exp $	*/
 /*	$NetBSD: edit.c,v 1.6 1996/05/15 21:50:45 jtc Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)edit.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: edit.c,v 1.10 1996/09/01 13:06:51 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: edit.c,v 1.11 1996/09/23 09:41:02 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -225,5 +225,5 @@ bad:					(void)fclose(fp);
 	}
 	free(p);
 
-	return (pw_scan(buf, pw, (int *)NULL));
+	return (pw_scan(buf, pw, NULL));
 }
