@@ -177,7 +177,7 @@
 #ifndef MAX_KMAP
 #define MAX_KMAP	10
 #endif
-#ifdef MAX_KMAPENT
+#ifndef MAX_KMAPENT
 #define MAX_KMAPENT	500
 #endif
 
