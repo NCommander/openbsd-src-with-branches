@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.3 2000/08/03 03:02:50 rahnds Exp $	*/
+/*	$OpenBSD: dma.c,v 1.4 2001/06/08 08:09:21 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -60,6 +60,9 @@
 #endif
 
 #include <machine/bus.h>
+int _dmamem_alloc_range( bus_dma_tag_t t, bus_size_t size,
+	bus_size_t alignment, bus_size_t boundary, bus_dma_segment_t *segs,
+	int nsegs, int *rsegs, int flags, vm_offset_t low, vm_offset_t high);
 
 /*
  * Common function for DMA map creation.  May be called by bus-specific
@@ -308,8 +311,6 @@ _dmamem_alloc(t, size, alignment, boundary, segs, nsegs, rsegs, flags)
 	int *rsegs;
 	int flags;
 {
-	extern int avail_end;
-
 	return (_dmamem_alloc_range(t, size, alignment, boundary,
 	    segs, nsegs, rsegs, flags, 0, 0xf0000000));
 }
