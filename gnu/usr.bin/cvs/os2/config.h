@@ -8,49 +8,48 @@
  */
 
 
+/* We need some system header files here since we evaluate values from
+ * these files below.
+ */
+#include <stdio.h>
+#include <errno.h>
+
+
+
+#ifndef __STDC__
 /* You bet! */
 #define __STDC__ 1
+#endif
+
+/* The IBM compiler uses the (non-standard) error code EACCESS instead of
+   EACCES (note: one 'S'). Define EACCESS to be EACCES and use the standard
+   name in the code. */
+#ifndef EACCES
+#define EACCES EACCESS
+#endif
+
+/* Handle some other name differences between the IBM and the Watcom
+ * compiler.
+ */
+#ifdef __WATCOMC__
+#define _setmode        setmode
+#define _cwait          cwait
+#endif
 
 /* Define if on AIX 3.
    System headers sometimes define this.
    We just want to avoid a redefinition error message.  */
 #undef _ALL_SOURCE
 
-/* Define if using alloca.c.  */
-#undef C_ALLOCA
-
-/* Define if type char is unsigned and you are not using gcc.  */
-/* We wrote a little test program whose output suggests that char is
-   signed on this system.  Go back and check the verdict when CVS
-   is configured on floss...  */
-#undef __CHAR_UNSIGNED__
-
 /* Define to empty if the keyword does not work.  */
 /* Const is working.  */
 #undef const
-
-/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
-   This function is required for alloca.c support on those systems.  */
-/* This shouldn't matter, but pro forma:  */
-#undef CRAY_STACKSEG_END
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 /* OS/2 doesn't have gid_t.  It doesn't even really have group
    numbers, I think.  This will take more thought to get right, but
    let's get it running first.  */
 #define gid_t int
-
-/* Define if you have alloca, as a function or macro.  */
-#define HAVE_ALLOCA 1
-/* OS/2 has alloca() in <stdlib.h>! */
-#define ALLOCA_IN_STDLIB 1
-
-/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
-/* but calls it _alloca and says it returns void *.  We provide our
-   own header file.  */
-/* OS/2 declares alloca in `stdlib.h'. */
-/* #define HAVE_ALLOCA_H 1 */
-#undef HAVE_ALLOCA_H
 
 /* Define if you support file names longer than 14 characters.  */
 /* We support long file names, but not long corporate acronyms. */
@@ -67,10 +66,6 @@
 /* Define if utime(file, NULL) sets file's timestamp to the present.  */
 /* Documentation says yup; haven't verified experimentally. */
 #define HAVE_UTIME_NULL 1
-
-/* We don't appear to have inline functions, so just expand "inline"
-   to "". */
-#define inline 
 
 /* Define if on MINIX.  */
 /* Hah.  */
@@ -100,16 +95,6 @@
 /* sys/types.h doesn't define it, but stdio.h does, which cvs.h
    #includes, so things should be okay.  */
 /* #undef size_t */
-
-/* If using the C implementation of alloca, define if you know the
-   direction of stack growth for your system; otherwise it will be
-   automatically deduced at run-time.
-	STACK_DIRECTION > 0 => grows toward higher addresses
-	STACK_DIRECTION < 0 => grows toward lower addresses
-	STACK_DIRECTION = 0 => direction of growth unknown
- */
-/* This shouldn't matter, but pro forma:  */
-#undef STACK_DIRECTION
 
 /* Define if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 /* sys/stat.h apparently doesn't even have them; setting this will let
@@ -214,6 +199,9 @@
    this function in the code anyway, hmm.  */
 #undef HAVE_TIMEZONE
 
+/* Define if you have the tzset function.  */
+#define HAVE_TZSET 1
+
 /* Define if you have the vfork function.  */
 #undef HAVE_VFORK
 
@@ -225,7 +213,11 @@
 
 /* Define if you have the <dirent.h> header file.  */
 /* We have our own dirent.h and dirent.c. */
+#ifdef __WATCOMC__
+#undef HAVE_DIRENT_H
+#else
 #define HAVE_DIRENT_H 1
+#endif
 
 /* Define if you have the <errno.h> header file.  */
 #define HAVE_ERRNO_H 1
@@ -301,7 +293,9 @@ extern int os2_mkdir (const char *PATH, int MODE);
 extern int readlink (char *path, char *buf, int buf_size);
 
 /* This is just a call to GetCurrentProcessID.  */
+#ifndef __WATCOMC__
 extern pid_t getpid (void);
+#endif
 
 /* We definitely have prototypes.  */
 #define USE_PROTOTYPES 1
@@ -340,15 +334,6 @@ extern void convert_file (char *INFILE,  int INFLAGS,
 /* This is where old bits go to die under OS/2 as well as WinNT.  */
 #define DEVNULL "nul"
 
-/* Comment markers for some OS/2-specific file types.  */
-/* Actually, these come from WinNT, but what the heck. */
-#define SYSTEM_COMMENT_TABLE \
-    "mak", "# ",    			/* makefile */                    \
-    "rc",  " * ",   			/* MS Windows resource file */    \
-    "dlg", " * ",   			/* MS Windows dialog file */      \
-    "frm", "' ",    			/* Visual Basic form */           \
-    "bas", "' ",    			/* Visual Basic code */
-
 /* Make sure that we don't try to perform operations on RCS files on the
    local machine.  I think I neglected to apply some changes from
    MHI's port in that area of code, or found some issues I didn't want
@@ -361,22 +346,29 @@ extern void convert_file (char *INFILE,  int INFLAGS,
 #define RSH_NEEDS_BINARY_FLAG 1
 
 /* OS/2 doesn't really have user/group permissions, at least not
-   according to the C library manual pages.  So we'll make decoys. */
+   according to the C library manual pages.  So we'll make decoys.
+   (This was partly introduced for an obsolete reason, now taken care
+   of by CHMOD_BROKEN, but I haven't carefully looked at every case
+   (in particular mode_to_string), so it might still be needed).
+   We do not need that for the watcom compiler since watcom already
+   all those permission bits defined. It would probably be better to
+   include the necessary system header files in system.h, and then make
+   each permission define only if it is not already defined.
+*/
+#ifndef __WATCOMC__
 #define NEED_DECOY_PERMISSIONS 1     /* see system.h */
-
-/* See client.c.  Setting execute bits with chmod seems to lose under
-   OS/2, although in some places the documentation grudgingly admits
-   to the existence of execute bits. */
-#define EXECUTE_PERMISSION_LOSES 1
+#endif
 
 
 
-/* For the access() function, for which OS/2 has no pre-defined
+/* For the access() function, for which IBM OS/2 compiler has no pre-defined
    mnemonic masks. */
+#ifndef __WATCOMC__
 #define R_OK 04
 #define W_OK 02
 #define F_OK 00
 #define X_OK R_OK  /* I think this is right for OS/2. */
+#endif
 
 /* For getpid() */
 #include <process.h>
@@ -384,7 +376,7 @@ extern void convert_file (char *INFILE,  int INFLAGS,
 /* So "tcpip.h" gets included in lib/system.h: */
 #define USE_OWN_TCPIP_H 1
 /* The IBM TCP/IP library gets initialized in main(): */
-#define INITIALIZE_SOCKET_SUBSYSTEM init_sockets
+#define SYSTEM_INITIALIZE(pargc,pargv) init_sockets()
 extern void init_sockets();
 
 /* Under OS/2, we have our own popen() and pclose()... */
@@ -395,7 +387,7 @@ extern void init_sockets();
 /*
  * This tells the client that it must use send()/recv() to talk to the
  * server if it is connected to the server via a socket.  Sigh.
- * Windows 95 also cannot convert sockets to file descriptors,
+ * Windows 95 and VMS cannot convert sockets to file descriptors either,
  * apparently.
  */
 #define NO_SOCKET_TO_FD 1
@@ -408,8 +400,10 @@ extern void init_sockets();
 #define CHMOD_BROKEN 1
 
 /* Rule Number 1 of OS/2 Programming: If the function you're looking
-   for doesn't exist, try putting "Dos" in front of it. */
+   for doesn't exist, try putting "Dos" in front of it.
+   Do not forget to include the os2 header file if we use DosSleep. */
 #ifndef sleep
+#include "os2inc.h"
 #define sleep(x) DosSleep(((long)(x))*1000L)
 #endif /* sleep */
 

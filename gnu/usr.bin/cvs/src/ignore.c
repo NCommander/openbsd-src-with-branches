@@ -24,7 +24,7 @@ static int ign_hold = -1;		/* Index where first "temporary" item
 
 const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state\
  .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.olb *.o *.obj\
- *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$ *.depend";
+ *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$";
 
 #define IGN_GROW 16			/* grow the list by 16 elements at a
 					 * time */
@@ -43,7 +43,6 @@ void
 ign_setup ()
 {
     char *home_dir;
-    char file[PATH_MAX];
     char *tmp;
 
     ign_inhibit_server = 0;
@@ -61,18 +60,23 @@ ign_setup ()
     if (!client_active)
 #endif
     {
+	char *file = xmalloc (strlen (CVSroot_directory) + sizeof (CVSROOTADM)
+			      + sizeof (CVSROOTADM_IGNORE) + 10);
 	/* Then add entries found in repository, if it exists */
 	(void) sprintf (file, "%s/%s/%s", CVSroot_directory,
 			CVSROOTADM, CVSROOTADM_IGNORE);
 	ign_add_file (file, 0);
+	free (file);
     }
 
     /* Then add entries found in home dir, (if user has one) and file exists */
     home_dir = get_homedir ();
     if (home_dir)
     {
+	char *file = xmalloc (strlen (home_dir) + sizeof (CVSDOTIGNORE) + 10);
 	(void) sprintf (file, "%s/%s", home_dir, CVSDOTIGNORE);
 	ign_add_file (file, 0);
+	free (file);
     }
 
     /* Then add entries found in CVSIGNORE environment variable. */
@@ -92,6 +96,7 @@ ign_add_file (file, hold)
     int hold;
 {
     FILE *fp;
+    /* FIXME: arbitrary limit.  */
     char line[1024];
 
     /* restore the saved list (if any) */
@@ -424,11 +429,16 @@ ignore_files (ilist, entries, update_dir, proc)
 	    {
 		if (! subdirs)
 		{
-		    char temp[PATH_MAX];
+		    char *temp;
 
+		    temp = xmalloc (strlen (file) + sizeof (CVSADM) + 10);
 		    (void) sprintf (temp, "%s/%s", file, CVSADM);
 		    if (isdir (temp))
+		    {
+			free (temp);
 			continue;
+		    }
+		    free (temp);
 		}
 	    }
 #ifdef S_ISLNK

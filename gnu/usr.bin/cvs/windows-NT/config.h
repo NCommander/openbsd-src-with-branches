@@ -6,29 +6,14 @@
    and use ../cvsnt.mak for your project.  Thus, this is the right place to
    put configuration information for Windows NT.  */
 
-/* All code which #includes this file is part of CVS, so it should provide
-   any CVS-specific features it can.  */
-#define CVS_SUPPORT
+/* Define if on AIX 3.
+   System headers sometimes define this.
+   We just want to avoid a redefinition error message.  */
+#undef _ALL_SOURCE
 
-/* We just want the client stuff.  No server support yet.  
-   Note that you don't have to define CLIENT_SUPPORT or SERVER_SUPPORT
-   to enable the non-remote code; that's always there.  */
-#define CLIENT_SUPPORT
-
-/* Define if type char is unsigned and you are not using gcc.  */
-/* We wrote a little test program whose output suggests that char is
-   signed on this system.  Go back and check the verdict when CVS
-   is configured on floss...  */
-#undef __CHAR_UNSIGNED__
-
-/* Windows NT has alloca, but calls it _alloca and says it returns
-   void *.  We provide our own header file.  */
-#define HAVE_ALLOCA 1
-#define HAVE_ALLOCA_H 1
-#undef C_ALLOCA
-/* These shouldn't matter, but pro forma:  */
-#undef CRAY_STACKSEG_END
-#undef STACK_DIRECTION
+/* Define to empty if the keyword does not work.  */
+/* Const is working.  */
+#undef const
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 /* Windows NT doesn't have gid_t.  It doesn't even really have group
@@ -48,11 +33,6 @@
 /* Experimentation says yes.  Wish I had the full documentation, but
    I have neither the CD-ROM nor a CD-ROM drive to put it in.  */
 #define HAVE_UTIME_NULL 1
-
-/* Define as __inline if that's what the C compiler calls it.  */
-/* We apparently do have inline functions.  The 'inline' keyword is only
-   available from C++, though.  You have to use '__inline' in C code.  */
-#define inline __inline
 
 /* Define if on MINIX.  */
 /* Hah.  */
@@ -99,7 +79,6 @@
 /* We don't have <sys/time.h> at all.  Why isn't there a definition
    for HAVE_SYS_TIME_H anywhere in config.h.in?  */
 #undef TIME_WITH_SYS_TIME
-#undef HAVE_SYS_TIME_H
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #define uid_t int
@@ -110,11 +89,34 @@
    well.  */
 #undef HAVE_KERBEROS
 
+/* Define if you want CVS to be able to be a remote repository client.  */
+/* We just want the client stuff.  */
+#define CLIENT_SUPPORT
+
+/* Define if you want CVS to be able to serve repositories to remote
+   clients.  */
+/* No server support yet.  Note that you don't have to define
+   CLIENT_SUPPORT or SERVER_SUPPORT to enable the non-remote code;
+   that's always there.  */
+#undef SERVER_SUPPORT
+
+/* the path to the gnu diff program on your system  */
+/* We don't need this for CLIENT side.  */
+#undef DIFF
+
+/* the path to the gnu grep program on your system  */
+/* We don't need this for CLIENT side.  */
+#undef GREP
+
 /* The number of bytes in a int.  */
 #define SIZEOF_INT 4
 
 /* The number of bytes in a long.  */
 #define SIZEOF_LONG 4
+
+/* Define if you have the connect function.  */
+/* Not used?  */
+#define HAVE_CONNECT
 
 /* Define if you have the fchdir function.  */
 #undef HAVE_FCHDIR
@@ -146,6 +148,21 @@
 /* Define if you have the setvbuf function.  */
 #define HAVE_SETVBUF 1
 
+/* Define if you have the sigaction function.  */
+#undef HAVE_SIGACTION
+
+/* Define if you have the sigblock function.  */
+#undef HAVE_SIGBLOCK
+
+/* Define if you have the sigprocmask function.  */
+#undef HAVE_SIGPROCMASK
+
+/* Define if you have the sigsetmask function.  */
+#undef HAVE_SIGSETMASK
+
+/* Define if you have the sigvec function.  */
+#undef HAVE_SIGVEC
+
 /* Define if you have the timezone function.  */
 /* Hmm, I actually rather think it's an extern long
    variable; that message was mechanically generated
@@ -159,6 +176,10 @@
 /* Define if you have the vprintf function.  */
 #define HAVE_VPRINTF 1
 
+/* Define if you have the <direct.h> header file.  */
+/* Windows NT wants this for mkdir and friends.  */
+#define HAVE_DIRECT_H 1
+
 /* Define if you have the <dirent.h> header file.  */
 /* No, but we have the <direct.h> header file...  */
 #undef HAVE_DIRENT_H
@@ -168,6 +189,11 @@
 
 /* Define if you have the <fcntl.h> header file.  */
 #define HAVE_FCNTL_H 1
+
+/* Define if you have the <io.h> header file.  */
+/* Apparently this is where Windows NT declares all the low-level
+   Unix I/O routines like open and creat and stuff.  */
+#define HAVE_IO_H 1
 
 /* Define if you have the <memory.h> header file.  */
 #define HAVE_MEMORY_H 1
@@ -181,6 +207,9 @@
 /* Define if you have the <string.h> header file.  */
 #define HAVE_STRING_H 1
 
+/* Define if you have the <sys/bsdtypes.h> header file.  */
+#undef HAVE_SYS_BSDTYPES_H
+
 /* Define if you have the <sys/dir.h> header file.  */
 #undef HAVE_SYS_DIR_H
 
@@ -193,6 +222,9 @@
 /* Define if you have the <sys/select.h> header file.  */
 #undef HAVE_SYS_SELECT_H
 
+/* Define if you have the <sys/time.h> header file.  */
+#undef HAVE_SYS_TIME_H
+
 /* Define if you have the <sys/timeb.h> header file.  */
 #define HAVE_SYS_TIMEB_H 1
 
@@ -202,18 +234,15 @@
 /* Define if you have the <utime.h> header file.  */
 #undef HAVE_UTIME_H
 
-/* Define if you have the <io.h> header file.  */
-/* Apparently this is where Windows NT declares all the low-level
-   Unix I/O routines like open and creat and stuff.  */
-#define HAVE_IO_H 1
-
-/* Define if you have the <direct.h> header file.  */
-/* Windows NT wants this for mkdir and friends.  */
-#define HAVE_DIRECT_H 1
+/* Define if you have the inet library (-linet).  */
+#undef HAVE_LIBINET
 
 /* Define if you have the nsl library (-lnsl).  */
 /* This is not used anywhere in the source code.  */
 #undef HAVE_LIBNSL
+
+/* Define if you have the nsl_s library (-lnsl_s).  */
+#undef HAVE_LIBNSL_S
 
 /* Define if you have the socket library (-lsocket).  */
 /* This isn't ever used either.  */
@@ -234,10 +263,7 @@ extern pid_t getpid (void);
 #define USE_PROTOTYPES 1
 
 /* This is just a call to the Win32 Sleep function.  */
-unsigned sleep (unsigned);
-
-/* This is in the winsock library.  */
-int __stdcall gethostname(char *name, int namelen);
+unsigned int sleep (unsigned int);
 
 /* Don't worry, Microsoft, it's okay for these functions to
    be in our namespace.  */
@@ -248,6 +274,7 @@ int __stdcall gethostname(char *name, int namelen);
    are path component separators.  */
 #define FOLD_FN_CHAR(c) (WNT_filename_classes[(unsigned char) (c)])
 extern unsigned char WNT_filename_classes[];
+#define FILENAMES_CASE_INSENSITIVE 1
 
 /* Is the character C a path name separator?  Under
    Windows NT, you can use either / or \.  */
@@ -278,20 +305,6 @@ extern void convert_file (char *INFILE,  int INFLAGS,
 /* This is where old bits go to die under Windows NT.  */
 #define DEVNULL "nul"
 
-/* Comment markers for some Windows NT-specific file types.  */
-#define SYSTEM_COMMENT_TABLE \
-    "mak", "# ",    			/* makefile */                    \
-    "rc",  " * ",   			/* MS Windows resource file */    \
-    "dlg", " * ",   			/* MS Windows dialog file */      \
-    "frm", "' ",    			/* Visual Basic form */           \
-    "bas", "' ",    			/* Visual Basic code */
-
-/* Make sure that we don't try to perform operations on RCS files on the
-   local machine.  I think I neglected to apply some changes from
-   MHI's port in that area of code, or found some issues I didn't want
-   to deal with.  */
-#define CLIENT_ONLY
-
 /* Don't use an rsh subprocess to connect to the server, because
    the rsh does inappropriate translations on the data (CR-LF/LF).  */
 #define RSH_NOT_TRANSPARENT 1
@@ -303,3 +316,25 @@ extern void wnt_start_server (int *tofd, int *fromfd,
 extern void wnt_shutdown_server (int fd);
 #define START_SERVER wnt_start_server
 #define SHUTDOWN_SERVER wnt_shutdown_server
+
+#define SYSTEM_INITIALIZE(pargc,pargv) init_winsock()
+extern void init_winsock();
+
+#define HAVE_WINSOCK_H
+
+/* This tells the client that it must use send()/recv() to talk to the
+   server if it is connected to the server via a socket; Win95 needs
+   it because _open_osfhandle doesn't work.  */
+#define NO_SOCKET_TO_FD 1
+
+/* The internal rsh client uses sockets not file descriptors.  Note
+   that as the code stands now, it often takes values from a SOCKET and
+   puts them in an int.  This is ugly but it seems like sizeof
+   (SOCKET) <= sizeof (int) on win32, even the 64-bit variants.  */
+#define START_SERVER_RETURNS_SOCKET 1
+
+/* Is this true on NT?  Seems like I remember reports that NT 3.51 has
+   problems with 200K writes (of course, the issue of large writes is
+   moot since the use of buffer.c ensures that writes will only be as big
+   as the buffers).  */
+#define SEND_NEVER_PARTIAL 1

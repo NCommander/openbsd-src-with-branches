@@ -11,12 +11,7 @@ version 2 of the License, or (at your option) any later version.
 Libiberty is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
-
-You should have received a copy of the GNU Library General Public
-License along with libiberty; see the file COPYING.LIB.  If
-not, write to the Free Software Foundation, Inc., 675 Mass Ave,
-Cambridge, MA 02139, USA.  */
+Library General Public License for more details.  */
 
 #include <stdio.h>
 #include <string.h>
@@ -31,14 +26,17 @@ Cambridge, MA 02139, USA.  */
 #include <varargs.h>
 #endif
 
-extern int abs ();
-
 #ifdef TEST
 int global_total_width;
 #endif
 
-unsigned long strtoul ();
-char *malloc ();
+#ifdef STDC_HEADERS
+#include <stdlib.h>
+#else
+extern int abs ();
+extern unsigned long strtoul ();
+extern char *malloc ();
+#endif
 
 static int
 int_vasprintf (result, format, args)
@@ -66,7 +64,7 @@ int_vasprintf (result, format, args)
 	      total_width += abs (va_arg (ap, int));
 	    }
 	  else
-	    total_width += strtoul (p, &p, 10);
+	    total_width += strtoul (p, (char **)&p, 10);
 	  if (*p == '.')
 	    {
 	      ++p;
@@ -76,7 +74,7 @@ int_vasprintf (result, format, args)
 		  total_width += abs (va_arg (ap, int));
 		}
 	      else
-	      total_width += strtoul (p, &p, 10);
+	      total_width += strtoul (p, (char **)&p, 10);
 	    }
 	  while (strchr ("hlL", *p))
 	    ++p;

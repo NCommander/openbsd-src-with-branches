@@ -28,20 +28,6 @@
 #endif
 
 /*
- * If, before installing this version of CVS, you were running RCS V4 AND you
- * are installing this CVS and RCS V5 and GNU diff 1.15 all at the same time,
- * you should turn on the following define.  It only exists to try to do
- * reasonable things with your existing checked out files when you upgrade to
- * RCS V5, since the keyword expansion formats have changed with RCS V5.
- * 
- * If you already have been running with RCS5, or haven't been running with CVS
- * yet at all, or are sticking with RCS V4 for now, leave the commented out.
- */
-#ifndef HAD_RCS4
-/* #define	HAD_RCS4 */
-#endif
-
-/*
  * For portability and heterogeneity reasons, CVS is shipped by default using
  * my own text-file version of the ndbm database library in the src/myndbm.c
  * file.  If you want better performance and are not concerned about
@@ -80,23 +66,6 @@
 #endif
 
 /*
- * The "rm" program to execute when pruning directories that are not part of
- * a release.  This "rm" must support the "-fr" options.  Specify a full
- * pathname if your site wants to use a particular rm.
- */
-#ifndef RM
-#define	RM	"rm"
-#endif
-
-/*
- * The "sort" program to execute when displaying the module database. Specify
- * a full pathname if your site wants to use a particular sort.
- */
-#ifndef SORT
-#define	SORT	"sort"
-#endif
-
-/*
  * The "patch" program to run when using the CVS server and accepting
  * patches across the network.  Specify a full pathname if your site
  * wants to use a particular patch.
@@ -119,6 +88,16 @@
  */
 #ifndef RCSBIN_DFLT
 #define	RCSBIN_DFLT	""
+#endif
+
+/* Directory used for storing temporary files, if not overridden by
+   environment variables or the -T global option.  There should be little
+   need to change this (-T is a better mechanism if you need to use a
+   different directory for temporary files).
+
+   I have no idea what the right default for this is on the Mac.  */
+#ifndef TMPDIR_DFLT
+#define	TMPDIR_DFLT	"/tmp"
 #endif
 
 /*
