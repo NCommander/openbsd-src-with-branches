@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.18 2003/07/02 00:21:16 avsm Exp $	*/
+/*	$OpenBSD: exf.c,v 1.19 2003/08/01 16:47:25 pvalchev Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -150,7 +150,8 @@ file_init(sp, frp, rcv_name, flags)
 	 */
 	if (F_ISSET(frp, FR_RECOVER)) {
 		F_CLR(frp, FR_RECOVER);
-		return (rcv_read(sp, frp));
+		if (rcv_read(sp, frp) == 0)
+			return (0);		/* successful recovery */
 	}
 
 	/*
