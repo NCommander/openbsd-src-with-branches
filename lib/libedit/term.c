@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +37,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)term.c	8.1 (Berkeley) 6/4/93";
+#else
+static char rcsid[] = "$OpenBSD: $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -50,6 +56,7 @@ static char sccsid[] = "@(#)term.c	8.1 (Berkeley) 6/4/93";
 #include <stdlib.h>
 #include <unistd.h>
 #include "termcap.h"	/* XXX: should be <termcap.h> */
+#include <sys/ioctl.h>
 #include <sys/types.h>
 
 #include "el.h"

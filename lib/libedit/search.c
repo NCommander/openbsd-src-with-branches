@@ -1,3 +1,5 @@
+/*	$OpenBSD: $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +37,11 @@
  */
 
 #if !defined(lint) && !defined(SCCSID)
+#if 0
 static char sccsid[] = "@(#)search.c	8.1 (Berkeley) 6/4/93";
+#else
+static char rcsid[] = "$OpenBSD: $";
+#endif
 #endif /* not lint && not SCCSID */
 
 /*
@@ -464,7 +470,8 @@ cv_search(el, dir)
 	    (void) strcpy(tmpbuf, el->el_search.patbuf);
 	    el->el_search.patbuf[0] = '.';
 	    el->el_search.patbuf[1] = '*';
-	    (void) strcpy(&el->el_search.patbuf[2], tmpbuf);
+	    (void) strncpy(&el->el_search.patbuf[2], tmpbuf, EL_BUFSIZ - 3);
+	    el->el_search.patbuf[EL_BUFSIZ - 1] = '\0';
 	    el->el_search.patlen++;
 	    el->el_search.patbuf[el->el_search.patlen++] = '.';
 	    el->el_search.patbuf[el->el_search.patlen++] = '*';
