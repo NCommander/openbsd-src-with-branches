@@ -1,4 +1,4 @@
-/*	$OpenBSD: newfs.c,v 1.5 1996/12/04 08:39:31 deraadt Exp $	*/
+/*	$OpenBSD: newfs.c,v 1.6 1997/01/15 23:41:33 millert Exp $	*/
 /*	$NetBSD: newfs.c,v 1.5 1996/05/16 07:17:50 thorpej Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)newfs.c	8.5 (Berkeley) 5/24/95";
 #else
-static char rcsid[] = "$OpenBSD: newfs.c,v 1.5 1996/12/04 08:39:31 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: newfs.c,v 1.6 1997/01/15 23:41:33 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -422,7 +422,7 @@ rewritelabel(s, fd, lp)
 		alt = lp->d_ncylinders * lp->d_secpercyl - lp->d_nsectors;
 		for (i = 1; i < 11 && i < lp->d_nsectors; i += 2) {
 			if (lseek(cfd, (off_t)(alt + i) * lp->d_secsize,
-			    L_SET) == -1)
+			    SEEK_SET) == -1)
 				fatal("lseek to badsector area: %s",
 				    strerror(errno));
 			if (write(cfd, blk, lp->d_secsize) < lp->d_secsize)
