@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.51 2002/03/14 01:27:09 millert Exp $	*/
+/*	$OpenBSD: if.c,v 1.52 2002/04/24 00:51:51 dhartmei Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -248,6 +248,10 @@ if_attachhead(ifp)
 	if (if_index == 0)
 		TAILQ_INIT(&ifnet);
 	TAILQ_INIT(&ifp->if_addrlist);
+	ifp->if_addrhooks = malloc(sizeof(*ifp->if_addrhooks), M_TEMP, M_NOWAIT);
+	if (ifp->if_addrhooks == NULL)
+		panic("if_attachhead: malloc");
+	TAILQ_INIT(ifp->if_addrhooks);
 	TAILQ_INSERT_HEAD(&ifnet, ifp, if_list);
 	if_attachsetup(ifp);
 }
