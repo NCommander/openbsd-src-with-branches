@@ -1,5 +1,5 @@
 /*	$OpenBSD$ */
-/*	$NetBSD: ums.c,v 1.57 2002/07/11 21:14:33 augustss Exp $ */
+/*	$NetBSD: ums.c,v 1.59 2002/09/23 05:59:01 simonb Exp $	*/
 
 /*
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -253,7 +253,6 @@ ums_activate(device_ptr_t self, enum devact act)
 	switch (act) {
 	case DVACT_ACTIVATE:
 		return (EOPNOTSUPP);
-		break;
 
 	case DVACT_DEACTIVATE:
 		if (sc->sc_wsmousedev != NULL)
@@ -344,7 +343,7 @@ ums_disable(void *v)
 #endif
 
 	sc->sc_enabled = 0;
-	return (uhidev_close(&sc->sc_hdev));
+	uhidev_close(&sc->sc_hdev);
 }
 
 Static int

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_pcb.c,v 1.26.4.2 2002/06/11 03:31:37 art Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -651,7 +651,7 @@ in6_pcbnotify(head, dst, fport_arg, src, lport_arg, cmd, cmdarg, notify)
 
 		/*
 		 * Detect if we should notify the error. If no source and
-		 * destination ports are specifed, but non-zero flowinfo and
+		 * destination ports are specified, but non-zero flowinfo and
 		 * local address match, notify the error. This is the case
 		 * when the error is delivered with an encrypted buffer
 		 * by ESP. Otherwise, just compare addresses and ports

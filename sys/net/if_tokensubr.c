@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tokensubr.c,v 1.5.2.1 2002/06/11 03:30:45 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_tokensubr.c,v 1.7 1999/05/30 00:39:07 bad Exp $	*/
 
 /*
@@ -152,7 +152,6 @@ token_output(ifp, m0, dst, rt0)
 	struct token_rif *rif = (struct  token_rif *)0;
 	struct token_rif bcastrif;
 	size_t riflen = 0;
-	ALTQ_DECL(struct altq_pktattr pktattr;)
 	short mflags;
 
 	if ((ifp->if_flags & (IFF_UP|IFF_RUNNING)) != (IFF_UP|IFF_RUNNING))
@@ -180,12 +179,6 @@ token_output(ifp, m0, dst, rt0)
 				senderr(rt == rt0 ? EHOSTDOWN : EHOSTUNREACH);
 	}
 
-	/*
-	 * If the queueing discipline needs packet classification,
-	 * do it before prepending link headers.
-	 */
-	IFQ_CLASSIFY(&ifp->if_snd, m, dst->sa_family, &pktattr);
-
 	switch (dst->sa_family) {
 
 #ifdef INET
@@ -199,7 +192,7 @@ token_output(ifp, m0, dst, rt0)
 				rif = &bcastrif;
 				riflen = sizeof(rif->tr_rcf);
 			}
-			bcopy((caddr_t)etherbroadcastaddr, (caddr_t)edst,
+			bcopy((caddr_t)tokenbroadcastaddr, (caddr_t)edst,
 			    sizeof(edst));
 		}
 /*
@@ -245,7 +238,7 @@ token_output(ifp, m0, dst, rt0)
 				rif = &bcastrif;
 				riflen = sizeof(rif->tr_rcf);
 			}
-			bcopy((caddr_t)etherbroadcastaddr, (caddr_t)edst,
+			bcopy((caddr_t)tokenbroadcastaddr, (caddr_t)edst,
 			    sizeof(edst));
 		}
 		else {
@@ -455,7 +448,7 @@ send:
 	 * Queue message on interface, and start output if interface
 	 * not yet active.
 	 */
-	IFQ_ENQUEUE(&ifp->if_snd, m, &pktattr, error);
+	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
 	if (error) {
 		/* mbuf is already freed */
 		splx(s);

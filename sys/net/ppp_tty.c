@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp_tty.c,v 1.12.4.1 2002/06/11 03:30:46 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ppp_tty.c,v 1.12 1997/03/24 21:23:10 christos Exp $	*/
 
 /*
@@ -367,7 +367,12 @@ pppwrite(tp, uio, flag)
 	uio->uio_resid < PPP_HDRLEN)
 	return (EMSGSIZE);
     for (mp = &m0; uio->uio_resid; mp = &m->m_next) {
-	MGET(m, M_WAIT, MT_DATA);
+	if (mp == &m0) {
+	    MGETHDR(m, M_WAIT, MT_DATA);
+	    m->m_pkthdr.len = uio->uio_resid - PPP_HDRLEN;
+	    m->m_pkthdr.rcvif = NULL;
+	} else
+	    MGET(m, M_WAIT, MT_DATA);
 	*mp = m;
 	m->m_len = 0;
 	if (uio->uio_resid >= MCLBYTES / 2)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.36.4.1 2002/06/11 03:30:45 art Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -101,7 +101,7 @@ encattach(int nenc)
     for (i = 0; i < NENC; i++)
     {
 	ifp = &encif[i].sc_if;
-	sprintf(ifp->if_xname, "enc%d", i);
+	snprintf(ifp->if_xname, sizeof ifp->if_xname, "enc%d", i);
 	ifp->if_softc = &encif[i];
 	ifp->if_mtu = ENCMTU;
 	ifp->if_ioctl = encioctl;

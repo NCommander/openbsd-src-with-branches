@@ -87,7 +87,7 @@ USB_ATTACH(uyap)
 	usbd_status err;
 	char devinfo[1024];
 
-	usbd_devinfo(dev, 0, devinfo);
+	usbd_devinfo(dev, 0, devinfo, sizeof devinfo);
 	USB_ATTACH_SETUP;
 	printf("%s: %s\n", USBDEVNAME(sc->sc_dev), devinfo);
 	printf("%s: downloading firmware\n", USBDEVNAME(sc->sc_dev));

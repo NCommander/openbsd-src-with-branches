@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppvar.h,v 1.9.4.1 2002/06/11 03:30:45 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_pppvar.h,v 1.5 1997/01/03 07:23:29 mikel Exp $	*/
 /*
  * if_pppvar.h - private structures and declarations for PPP.
@@ -133,7 +133,7 @@ struct ppp_softc {
 };
 
 #ifdef _KERNEL
-struct	ppp_softc ppp_softc[NPPP];
+extern	struct ppp_softc ppp_softc[];
 
 struct	ppp_softc *pppalloc(pid_t pid);
 void	pppdealloc(struct ppp_softc *sc);

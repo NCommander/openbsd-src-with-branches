@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.40.2.1 2002/06/11 03:29:40 art Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -725,8 +725,7 @@ mi_switch()
 
 	/*
 	 * Check if the process exceeds its cpu resource allocation.
-	 * If over max, kill it.  In any case, if it has run for more
-	 * than 10 minutes, reduce priority to give others a chance.
+	 * If over max, kill it.
 	 */
 	rlim = &p->p_rlimit[RLIMIT_CPU];
 	if (s >= rlim->rlim_cur) {
@@ -738,11 +737,6 @@ mi_switch()
 				rlim->rlim_cur += 5;
 		}
 	}
-	if (s > 10 * 60 && p->p_ucred->cr_uid && p->p_nice == NZERO) {
-		p->p_nice = NZERO + 4;
-		resetpriority(p);
-	}
-
 
 	/*
 	 * Process is about to yield the CPU; clear the appropriate

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss.c,v 1.43 2001/06/22 14:35:43 deraadt Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: ss.c,v 1.10 1996/05/05 19:52:55 christos Exp $	*/
 
 /*
@@ -436,7 +436,7 @@ ssopen(dev, flag, mode, p)
 	 * consider paper to be a changeable media
 	 *
 	 */
-	error = scsi_test_unit_ready(sc_link,
+	error = scsi_test_unit_ready(sc_link, TEST_READY_RETRIES_DEFAULT,
 	    SCSI_IGNORE_MEDIA_CHANGE | SCSI_IGNORE_ILLEGAL_REQUEST |
 	    (ssmode == MODE_CONTROL ? SCSI_IGNORE_NOT_READY : 0));
 	if (error)

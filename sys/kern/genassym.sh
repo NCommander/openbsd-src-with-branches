@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.sh,v 1.7 2001/11/14 20:00:06 ho Exp $
+#	$OpenBSD$
 #	$NetBSD: genassym.sh,v 1.9 1998/04/25 19:48:27 matthias Exp $
 
 #
@@ -44,7 +44,10 @@ else
 fi
 
 TMPC=`mktemp /tmp/genassym_c.XXXXXX` || exit 1
-TMP=`mktemp /tmp/genassym.XXXXXX` || exit 1
+TMP=`mktemp /tmp/genassym.XXXXXX` || {
+	rm -f ${TMPC}
+	exit 1
+}
 trap "rm -f $TMPC $TMP" 0 1 2 3 15
 
 $awk '
