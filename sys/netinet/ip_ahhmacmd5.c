@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ip_ahhmacmd5.c,v 1.4 1997/02/24 14:06:37 niklas Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -330,7 +330,7 @@ ahhmacmd5_output(struct mbuf *m, struct sockaddr_encap *gw, struct tdb *tdb, str
 	MD5_CTX ctx;
 	int ilen, ohlen;
 	
-	
+	ahstat.ahs_output++;
 	m = m_pullup(m, sizeof (struct ip));
 	if (m == NULL)
 	  return ENOBUFS;
