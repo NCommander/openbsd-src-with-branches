@@ -1,4 +1,5 @@
-/*	$OpenBSD: arctype.h,v 1.3 1996/09/02 11:33:22 pefo Exp $	*/
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 1997 Per Fogelstrom
  * 
@@ -30,12 +31,18 @@
  * SUCH DAMAGE.
  *
  */
-/*
- * Mother board type byte of "systype" environment variable.
- */
-#define	ACER_PICA_61		0x1	/* Acer Labs Pica 61 */
-#define	MAGNUM			0x2	/* Mips MAGNUM R4000 */
-#define	DESKSTATION_RPC44	0x3	/* Deskstation xxx */
-#define	DESKSTATION_TYNE	0x4	/* Deskstation xxx */
-#define	NKK_AQUARIUS		0x5	/* NKK R4{67}00 PC */
-#define	ALGOR_P4032		0x6	/* ALGORITHMICS P-4032 VR4300 */
+
+struct pcibr_config {
+	bus_space_tag_t lc_iot;
+	bus_space_tag_t lc_memt;
+	struct arc_pci_chipset lc_pc;
+	int	pci_init_done;
+};
+
+struct pcibr_softc {
+	struct device	sc_dev;
+	struct pcibr_config *sc_pcibr;
+	struct arc_bus_space sc_bus_space;
+};
+
+
