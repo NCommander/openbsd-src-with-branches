@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.16 1997/07/24 01:45:29 deraadt Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.17 1997/07/27 23:30:36 niklas Exp $	*/
 
 /*
  * The author of this code is John Ioannidis, ji@tla.org,
@@ -307,7 +307,7 @@ put_expiration(struct expiration *exp)
     {
 #ifdef ENCDEBUG
 	if (encdebug)
-	  log(LOG_WARN, "put_expiration(): NULL argument");
+	  log(LOG_WARNING, "put_expiration(): NULL argument");
 #endif /* ENCDEBUG */	
 	return;
     }
