@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread.h,v 1.17 2003/02/27 07:03:21 cloder Exp $	*/
+/*	$OpenBSD: pthread.h,v 1.18 2003/12/23 22:37:03 brad Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 by Chris Provenzano, proven@mit.edu
@@ -337,8 +337,6 @@ int		pthread_attr_setcleanup(pthread_attr_t *,
 #define PTHREAD_PRIO_PROTECT
 int		pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
 int		pthread_attr_setguardsize(const pthread_attr_t *, size_t);
-int		pthread_getconcurrency(void);
-int		pthread_setconcurrency(int);
 #endif	/* susv2 */
 
 __END_DECLS
