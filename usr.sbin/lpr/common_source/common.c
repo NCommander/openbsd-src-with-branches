@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.7 1997/07/25 20:12:11 mickey Exp $	*/
+/*	$OpenBSD: common.c,v 1.8 1998/02/15 15:51:48 niklas Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)common.c	8.5 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: common.c,v 1.7 1997/07/25 20:12:11 mickey Exp $";
+static char rcsid[] = "$OpenBSD: common.c,v 1.8 1998/02/15 15:51:48 niklas Exp $";
 #endif
 #endif /* not lint */
 
@@ -316,6 +316,7 @@ checkremote()
 	char name[MAXHOSTNAMELEN];
 	register struct hostent *hp;
 	static char errbuf[128];
+	char *rp, *rp_b;
 
 	remote = 0;	/* assume printer is local */
 	if (RM != NULL) {
@@ -345,6 +346,20 @@ checkremote()
 		 */
 		if (strcasecmp(name, hp->h_name) != 0)
 			remote = 1;
+		else if (cgetstr(bp, "rp", &rp) > 0) {
+			if (cgetent(&rp_b, printcapdb, rp) == 0) {
+				if (cgetmatch(rp_b, printer) != 0)
+					remote = 1;
+				free(rp_b);
+			} else {
+				(void) snprintf(errbuf, sizeof(errbuf),
+					"can't find (local) remote printer %s",
+					rp);
+					free(rp);
+					return errbuf;
+			}
+			free(rp);
+		}
 	}
 	return NULL;
 }
