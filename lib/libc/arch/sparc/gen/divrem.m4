@@ -1,4 +1,4 @@
-/*	$OpenBSD: divrem.m4,v 1.1.1.1 1995/10/18 08:41:40 deraadt Exp $	*/
+/*	$OpenBSD: divrem.m4,v 1.2 2000/03/01 17:31:23 todd Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -131,6 +131,11 @@ L.$1.eval(TWOSUPN+$2):
 #include "DEFS.h"
 #include <machine/trap.h>
 
+#ifndef STRONG_SPARC
+.weak NAME
+#else
+FUNC(patsubst(NAME,\.,__))
+#endif
 FUNC(NAME)
 ifelse(S, `true',
 `	! compute sign of result; if neither is negative, no problem
