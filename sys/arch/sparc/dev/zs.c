@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.20 1998/03/04 14:21:29 jason Exp $	*/
+/*	$OpenBSD: zs.c,v 1.21 1998/07/21 22:33:42 marc Exp $	*/
 /*	$NetBSD: zs.c,v 1.49 1997/08/31 21:26:37 pk Exp $ */
 
 /*
@@ -499,7 +499,7 @@ zscnputc(c)
 		return;
 	}
 	zc->zc_data = c;
-	ZS_DELAY();
+	delay(2);
 	splx(s);
 }
 
