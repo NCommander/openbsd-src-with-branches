@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.30 2001/01/16 15:49:00 art Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.33 2001/07/30 11:58:36 art Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -189,6 +189,10 @@ elf_check_header(ehdr, type)
 	if (ehdr->e_type != type)
 		return (ENOEXEC);
 
+	/* Don't allow an insane amount of sections. */
+	if (ehdr->e_phnum > 128)
+		return (ENOEXEC);
+
 	return (0);
 }
 
@@ -230,6 +234,10 @@ os_ok:
 
         /* Check the type */
 	if (ehdr->e_type != type)
+		return (ENOEXEC);
+
+	/* Don't allow an insane amount of sections. */
+	if (ehdr->e_phnum > 128)
 		return (ENOEXEC);
 
 	*os = ehdr->e_ident[OI_OS];
