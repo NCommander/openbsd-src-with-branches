@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.5 2001/11/19 19:02:14 mpech Exp $	*/
+/*	$OpenBSD: parse.c,v 1.6 2003/06/12 01:07:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -34,14 +34,14 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)parse.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: parse.c,v 1.5 2001/11/19 19:02:14 mpech Exp $";
+static char rcsid[] = "$OpenBSD: parse.c,v 1.6 2003/06/12 01:07:27 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
 #include "indent_globs.h"
 #include "indent_codes.h"
 
-void reduce();
+void reduce(void);
 
 void
 parse(tk)
@@ -246,7 +246,7 @@ parse(tk)
 |   REDUCTION PHASE				    |
 \*----------------------------------------------*/
 void
-reduce()
+reduce(void)
 {
 
     int i;
