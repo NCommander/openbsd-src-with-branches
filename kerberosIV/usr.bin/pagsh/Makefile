@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2000/02/25 16:35:32 hin Exp $
 
 PROG	= pagsh
 
@@ -8,7 +8,7 @@ KRBDEPTH=../..
 .PATH:	${KRBSRC}/appl/afsutil
 
 CFLAGS	+= -I.
-LDADD	+= ${LIBROKEN} -lkrb -lkafs
+LDADD	+= ${LIBROKEN} -lkrb -lkafs -lcrypto
 
 SRCS	= pagsh.c
 
