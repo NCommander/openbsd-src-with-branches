@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.36 2003/08/06 21:08:06 millert Exp $	*/
+/*	$OpenBSD: auich.c,v 1.37 2003/10/10 04:38:56 jason Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -403,8 +403,10 @@ auich_attach(parent, self, aux)
 		    PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_INTEL_82801DB_ACA) {
 			/* MSI 845G Max never return AUICH_PCR */
 			sc->sc_ignore_codecready = 1;
-		} else
+		} else {
+			printf("%s: reset failed!\n", sc->sc_dev.dv_xname);
 			return;
+		}
 	}
 
 	sc->host_if.arg = sc;
