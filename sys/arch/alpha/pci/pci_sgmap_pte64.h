@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: pci_sgmap_pte64.h,v 1.2 1997/06/06 23:59:29 thorpej Exp $ */
 
 /*-

@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: ciareg.h,v 1.22 1998/06/06 20:40:14 thorpej Exp $ */
 
 /*

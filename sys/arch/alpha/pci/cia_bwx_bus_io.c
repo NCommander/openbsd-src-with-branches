@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: cia_bwx_bus_io.c,v 1.3 2000/06/29 08:58:46 mrg Exp $ */
 
 /*

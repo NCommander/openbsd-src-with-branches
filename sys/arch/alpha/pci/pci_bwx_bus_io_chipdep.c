@@ -1,5 +1,5 @@
-/*	$OpenBSD: pcs_bus_io_common.c,v 1.9 2000/06/16 21:47:09 provos Exp $	*/
-/*	$NetBSD: pcs_bus_io_common.c,v 1.14 1996/12/02 22:19:35 cgd Exp $	*/
+/* $OpenBSD: pci_bwx_bus_io_chipdep.c,v 1.1 2000/11/08 16:01:21 art Exp $ */
+/* $NetBSD: pcs_bus_io_common.c,v 1.14 1996/12/02 22:19:35 cgd Exp $ */
 
 /*
  * Copyright (c) 1995, 1996 Carnegie-Mellon University.

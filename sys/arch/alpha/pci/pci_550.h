@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: pci_550.h,v 1.4 2000/06/05 21:47:23 thorpej Exp $ */
 
 /*

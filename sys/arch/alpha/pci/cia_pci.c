@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: cia_pci.c,v 1.25 2000/06/29 08:58:46 mrg Exp $ */
 
 /*

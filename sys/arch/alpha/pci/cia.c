@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: cia.c,v 1.56 2000/06/29 08:58:45 mrg Exp $ */
 
 /*-

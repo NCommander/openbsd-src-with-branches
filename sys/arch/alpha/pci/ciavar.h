@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: ciavar.h,v 1.17 2000/03/19 01:43:25 thorpej Exp $ */
 
 /*
