@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.1 2001/02/24 10:55:03 hugh Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 2002/02/15 01:06:21 deraadt Exp $
 
-IMAGESIZE=		4352
+IMAGESIZE=		3072
 GZIP?=			gzip
 GZIPFLAGS?=		-9v
 GZIPEXT?=		.gz
