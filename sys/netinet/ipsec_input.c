@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.60 2002/06/25 00:38:54 angelos Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.61 2002/06/28 19:07:03 angelos Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -503,9 +503,10 @@ ipsec_common_input_cb(struct mbuf *m, struct tdb *tdbp, int skip, int protoff,
 		tdbi->spi = tdbp->tdb_spi;
 
 		m_tag_prepend(m, mtag);
+	} else {
+		if (mt != NULL)
+			mt->m_tag_id = PACKET_TAG_IPSEC_IN_DONE;
 	}
-	else
-		mt->m_tag_id = PACKET_TAG_IPSEC_IN_DONE;
 
 	if (sproto == IPPROTO_ESP) {
 		/* Packet is confidential ? */
