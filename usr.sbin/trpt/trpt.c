@@ -1,4 +1,4 @@
-/*	$OpenBSD: trpt.c,v 1.17 2003/05/26 05:33:43 itojun Exp $	*/
+/*	$OpenBSD: trpt.c,v 1.18 2003/06/02 23:36:55 millert Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -182,7 +182,6 @@ main(int argc, char *argv[])
 		case 'M':
 			core = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 			/* NOTREACHED */
