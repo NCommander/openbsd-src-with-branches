@@ -1,4 +1,4 @@
-/*	$OpenBSD: rm.c,v 1.12 2002/02/16 21:27:07 millert Exp $	*/
+/*	$OpenBSD: rm.c,v 1.13 2002/07/04 04:26:40 deraadt Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rm.c	8.8 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$OpenBSD: rm.c,v 1.12 2002/02/16 21:27:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: rm.c,v 1.13 2002/07/04 04:26:40 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -320,6 +320,11 @@ rm_overwrite(char *file, struct stat *sbp)
 	}
 	if (!S_ISREG(sbp->st_mode))
 		return;
+	if (sbp->st_nlink > 1) {
+		warnx("%s (inode %u): not overwritten due to multiple links",
+		    file, sbp->st_ino);
+		return;
+	}
 	if ((fd = open(file, O_WRONLY, 0)) == -1)
 		goto err;
 	if (fstatfs(fd, &fsb) == -1)
