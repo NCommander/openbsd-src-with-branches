@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpc106reg.h,v 1.6 2000/03/20 07:10:50 rahnds Exp $ */
+/*	$OpenBSD: ravenvar.h,v 1.1 2001/06/26 21:57:42 smurph Exp $ */
 
 /*
  * Copyright (c) 2001 Steve Murphree, Jr.
@@ -31,11 +31,11 @@
  * SUCH DAMAGE.
  *
  *
- * ravenreg.h: Motorola 'Raven' PowerPC to PCI bridge controller
+ * Motorola 'Raven' PowerPC to PCI bridge controller
  */
 
 #ifndef _DEV_RAVENVAR_H_
-#define _DEV_RAVENREG_H_
+#define _DEV_RAVENVAR_H_
 
 #define MPCIC_REG	0xFC000000
 #define MPCIC_FEATURE	(MPCIC_REG | 0x01000)
@@ -382,6 +382,5 @@ struct raven_softc {
 	struct device	sc_dev;
 	struct raven_reg *sc_reg;
 };
-
 
 #endif /* _DEV_RAVENVAR_H_ */
