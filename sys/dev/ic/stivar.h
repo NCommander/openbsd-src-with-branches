@@ -1,4 +1,4 @@
-/*	$OpenBSD: stivar.h,v 1.1 2000/05/30 19:39:38 mickey Exp $	*/
+/*	$OpenBSD: stivar.h,v 1.2 2001/01/11 21:30:30 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -53,9 +53,6 @@ struct sti_softc {
 	struct sti_cfg sc_cfg;
 	struct sti_ecfg sc_ecfg;
 	struct sti_fontcfg sc_fontcfg;
-
-	struct wsscreen_descr *sc_screens;
-	struct wsscreen_list sti_screenlist;
 
 	vaddr_t sc_code;
 
