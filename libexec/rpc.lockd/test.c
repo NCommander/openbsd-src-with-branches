@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <rpc/rpc.h>
 #include <rpcsvc/nlm_prot.h>
 #ifndef lint
