@@ -37,7 +37,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sigreturn.S,v 1.3 1999/01/06 23:14:17 d Exp $"
+	.asciz "$OpenBSD: sigreturn.S,v 1.4 2001/08/12 12:03:01 heko Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
@@ -56,4 +56,4 @@
 
 SYSENTRY(sigreturn)
 	trap	#1		/* signals sigreturn() */
-	jra	cerror
+	jra	__cerror

@@ -37,7 +37,7 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: sigsuspend.S,v 1.2 1996/08/19 08:15:45 tholo Exp $"
+	.asciz "$OpenBSD: sigsuspend.S,v 1.3 1999/01/06 23:14:18 d Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
@@ -51,4 +51,4 @@ SYSENTRY(sigsuspend)
 	clrl	d0			/* shouldn't happen */
 	rts
 err:
-	jra	cerror
+	jra	__cerror

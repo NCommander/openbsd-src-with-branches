@@ -37,14 +37,14 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD: brk.S,v 1.1.1.1 1995/10/18 08:41:32 deraadt Exp $"
+	.asciz "$OpenBSD: brk.S,v 1.2 1996/08/19 08:15:33 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
 	.globl	_end
 	.globl	minbrk
-	.globl	curbrk
+	.globl	__curbrk
 
 	.data
 minbrk:	.long	_end
@@ -67,12 +67,12 @@ ok:
 	trap	#0
 	jcs	err
 #ifdef	PIC
-	movl	a1@(curbrk:w),a0
+	movl	a1@(__curbrk:w),a0
 	movl	sp@(4),a0@
 #else
-	movl	sp@(4),curbrk
+	movl	sp@(4),__curbrk
 #endif
 	clrl	d0
 	rts
 err:
-	jra	cerror
+	jra	__cerror
