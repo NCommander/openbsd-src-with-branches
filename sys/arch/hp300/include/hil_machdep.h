@@ -1,8 +1,7 @@
-/*	$OpenBSD: grfreg.h,v 1.3 2003/06/02 23:27:44 millert Exp $	*/
-/*	$NetBSD: grfreg.h,v 1.2 1994/10/26 07:24:09 cgd Exp $	*/
+/*	$OpenBSD: hil_machdep.h,v 1.1 2003/02/11 19:43:33 miod Exp $	*/
 
 /*
- * Copyright (c) 1991 University of Utah.
+ * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -18,7 +17,11 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,58 +37,21 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * from: Utah $Hdr: grfreg.h 1.6 92/01/31$
+ * from: Utah $Hdr: hilreg.h 1.10 92/01/21$
  *
- *	@(#)grfreg.h	8.1 (Berkeley) 6/10/93
+ *	@(#)hilreg.h	8.1 (Berkeley) 6/10/93
  */
 
-/* 300 bitmapped display hardware primary id */
-#define GRFHWID		0x39
+/*
+ * HP 9000/300-series specific HIL definitions
+ */
 
-/* 300 internal bitmapped display address */
-#define GRFIADDR	0x560000
+#define	HILP_DATA	1	/* (R/W) data port */
+#define	HILP_CMD	3	/* (R/W) status and control port */
+#define	HILP_STAT	HILP_CMD
 
-/* 300 hardware secondary ids */
-#define GID_GATORBOX	1
-#define	GID_TOPCAT	2
-#define GID_RENAISSANCE	4
-#define GID_LRCATSEYE	5
-#define GID_HRCCATSEYE	6
-#define GID_HRMCATSEYE	7
-#define GID_DAVINCI	8
-#define GID_XXXCATSEYE	9
-#define GID_XGENESIS   11
-#define GID_TIGER      12
-#define GID_YGENESIS   13
-#define GID_HYPERION   14
+#define	HILBUFSIZE	40	/* size of interrupt poll buffer */
 
-#ifndef	_LOCORE
-typedef unsigned char	grftype;
+#define	HILADDR		0x428000
 
-struct	grfreg {
-	grftype	gr_pad0,
-		gr_id,		/* +0x01 */
-		gr_pad1[0x3],
-		gr_fbwidth_h,	/* +0x05 */
-		gr_pad2,
-		gr_fbwidth_l,	/* +0x07 */
-		gr_pad3,
-		gr_fbheight_h,	/* +0x09 */
-		gr_pad4,
-		gr_fbheight_l,	/* +0x0B */
-		gr_pad5,
-		gr_dwidth_h,	/* +0x0D */
-		gr_pad6,
-		gr_dwidth_l,	/* +0x0F */
-		gr_pad7,
-		gr_dheight_h,	/* +0x11 */
-		gr_pad8,
-		gr_dheight_l,	/* +0x13 */
-		gr_pad9,
-		gr_id2,		/* +0x15 */
-		gr_pad10[0x47],
-		gr_fbomsb,	/* +0x5d */
-		gr_pad11,
-		gr_fbolsb;	/* +0x5f */
-};
-#endif
+#define	HILMAPSIZE	4

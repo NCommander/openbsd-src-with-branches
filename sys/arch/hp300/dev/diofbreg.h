@@ -1,15 +1,13 @@
-/*	$OpenBSD: grf_hyreg.h,v 1.2 1997/01/12 15:12:35 downsj Exp $	*/
-/*	$NetBSD: grf_hyreg.h,v 1.2 1994/10/26 07:23:57 cgd Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
- * Copyright (c) 1991 University of Utah.
+ * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * the Systems Programming Group of the University of Utah Computer
- * Science Department and Mark Davies of the Department of Computer
- * Science, Victoria University of Wellington, New Zealand.
+ * Science Department.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,45 +33,68 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * from: Utah $Hdr: grf_hyreg.h 1.1 92/01/22$
+ * from: Utah $Hdr: grfreg.h 1.6 92/01/31$
  *
- *	@(#)grf_hyreg.h	8.1 (Berkeley) 6/10/93
+ *	@(#)grfreg.h	8.1 (Berkeley) 6/10/93
  */
 
-#include <hp300/dev/iotypes.h>	/* XXX */
+/* 300 bitmapped display hardware primary id */
+#define GRFHWID		0x39
 
-struct hyboxfb {
-  u_char 	:8;
-  vu_char 	reset;			/* reset register		0x01 */
-  vu_char	fb_address;		/* frame buffer address 	0x02 */
-  vu_char	interrupt;		/* interrupt register		0x03 */
-  u_char	:8;
-  vu_char	fbwmsb;			/* frame buffer width MSB	0x05 */
-  u_char	:8;
-  vu_char	fbwlsb;			/* frame buffer width MSB	0x07 */
-  u_char	:8;
-  vu_char	fbhmsb;			/* frame buffer height MSB	0x09 */
-  u_char	:8;
-  vu_char	fbhlsb;			/* frame buffer height MSB	0x0b */
-  u_char	:8;
-  vu_char	dwmsb;			/* display width MSB		0x0d */
-  u_char	:8;
-  vu_char	dwlsb;			/* display width MSB		0x0f */
-  u_char	:8;
-  vu_char	dhmsb;			/* display height MSB		0x11 */
-  u_char	:8;
-  vu_char	dhlsb;			/* display height MSB		0x13 */
-  u_char	:8;
-  vu_char	fbid;			/* Scondary frame buffer id	0x15 */
-  u_char	:8;
-  vu_char	bits;			/* square(0)/double-high(1) 	0x17 */
-  u_char	f1[0x5b-0x17-1];
-  vu_char	num_planes;		/* number of color planes       0x5b */
-  u_char	:8;
-  vu_char	fbomsb;			/* frame buffer offset MSB	0x5d */
-  u_char	:8;
-  vu_char	fbolsb;			/* frame buffer offset LSB	0x5f */
-  u_char	f2[0x4000-0x5f-1];
-  vu_char	nblank;			/* display enable planes      0x4000 */
+/* 300 internal bitmapped display address */
+#define GRFIADDR	0x560000
+
+/* 300 hardware secondary ids */
+#define GID_GATORBOX	1
+#define	GID_TOPCAT	2
+#define GID_RENAISSANCE	4
+#define GID_LRCATSEYE	5
+#define GID_HRCCATSEYE	6
+#define GID_HRMCATSEYE	7
+#define GID_DAVINCI	8
+#define GID_XXXCATSEYE	9
+#define GID_XGENESIS   11
+#define GID_TIGER      12
+#define GID_YGENESIS   13
+#define GID_HYPERION   14
+
+#ifndef	_LOCORE
+struct	diofbreg {
+	u_int8_t	:8;
+	u_int8_t	id;		/* +0x01 */
+	u_int8_t	pad1[0x3];
+	u_int8_t	fbwmsb;		/* +0x05 */
+	u_int8_t	:8;
+	u_int8_t	fbwlsb;		/* +0x07 */
+	u_int8_t	:8;
+	u_int8_t	fbhmsb;		/* +0x09 */
+	u_int8_t	:8;
+	u_int8_t	fbhlsb;		/* +0x0B */
+	u_int8_t	:8;
+	u_int8_t	dwmsb;		/* +0x0D */
+	u_int8_t	:8;
+	u_int8_t	dwlsb;		/* +0x0F */
+	u_int8_t	:8;
+	u_int8_t	dhmsb;		/* +0x11 */
+	u_int8_t	:8;
+	u_int8_t	dhlsb;		/* +0x13 */
+	u_int8_t	:8;
+	u_int8_t	id2;		/* +0x15 */
+	u_int8_t	pad2[0x47];
+	u_int8_t	fbomsb;		/* +0x5d */
+	u_int8_t	:8;
+	u_int8_t	fbolsb;		/* +0x5f */
 };
+#endif
 
+/*
+ * Offsets into the display ROM that is part of the first 4K of each
+ * DIO display device.
+ */
+#define FONTROM		0x3b	/* Offset of font information structure. */
+#define FONTADDR	0x4	/* Offset from FONTROM to font address. */
+#define FONTHEIGHT	0x0	/* Offset from font address to font height. */
+#define FONTWIDTH	0x2	/* Offset from font address to font width. */
+#define FONTDATA	0xA	/* Offset from font address to font glyphs. */
+
+#define FBBASE(fb)	((volatile char *)(fb)->fbkva)
