@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.15 2005/01/09 23:49:35 miod Exp $	*/
+/*	$OpenBSD: hil.c,v 1.16 2005/01/11 00:11:05 miod Exp $	*/
 /*
  * Copyright (c) 2003, 2004, Miodrag Vallat.
  * All rights reserved.
@@ -237,7 +237,9 @@ hil_attach_deferred(void *v)
 
 	if (tries == 0 || (db & LPS_CONFFAIL)) {
 		printf("%s: no devices\n", sc->sc_dev.dv_xname);
-		return;
+		sc->sc_pending = 0;
+		if (tries == 0)
+			return;
 	}
 
 	/*
