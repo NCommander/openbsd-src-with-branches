@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_physio.c,v 1.14 2001/11/06 19:53:20 miod Exp $	*/
+/*	$OpenBSD: kern_physio.c,v 1.15 2001/11/09 15:33:02 art Exp $	*/
 /*	$NetBSD: kern_physio.c,v 1.28 1997/05/19 10:43:28 pk Exp $	*/
 
 /*-
@@ -283,7 +283,6 @@ getphysbuf()
 	bzero(bp, sizeof(*bp));
 
 	/* XXXCDC: are the following two lines necessary? */
-	bp->b_rcred = bp->b_wcred = NOCRED;
 	bp->b_vnbufs.le_next = NOLIST;
 
 	return (bp);
