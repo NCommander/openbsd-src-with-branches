@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_lebuffer.c,v 1.1 2002/05/13 15:12:12 jason Exp $	*/
+/*	$OpenBSD: if_le_lebuffer.c,v 1.2 2002/05/13 18:16:38 jason Exp $	*/
 /*	$NetBSD: if_le_lebuffer.c,v 1.10 2002/03/11 16:00:56 pk Exp $	*/
 
 /*-
@@ -197,5 +197,5 @@ leattach_lebuffer(parent, self, aux)
 	/* Establish interrupt handler */
 	if (sa->sa_nintr != 0)
 		(void)bus_intr_establish(lesc->sc_bustag, sa->sa_pri,
-		    IPL_NET, 0, am7990_intr, sc);
+		    IPL_NET, 0, am7990_intr, sc, self->dv_xname);
 }
