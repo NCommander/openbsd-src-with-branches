@@ -1,4 +1,4 @@
-/*	$OpenBSD: qv.c,v 1.9 2004/01/01 01:11:12 miod Exp $	*/
+/*	$OpenBSD: qv.c,v 1.10 2004/01/29 21:34:17 deraadt Exp $	*/
 /*	$NetBSD: qv.c,v 1.2 1996/09/02 06:44:28 mycroft Exp $	*/
 
 /*-
@@ -137,7 +137,6 @@
 #include "sys/map.h"
 #include "sys/buf.h"
 #include "sys/vm.h"
-#include "sys/clist.h"
 #include "sys/file.h"
 #include "sys/uio.h"
 #include "sys/kernel.h"
