@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.64 2003/07/08 01:28:11 avsm Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.65 2003/07/31 18:20:07 avsm Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -39,7 +39,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
 #else
-static const char rcsid[] = "$OpenBSD: syslogd.c,v 1.64 2003/07/08 01:28:11 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: syslogd.c,v 1.65 2003/07/31 18:20:07 avsm Exp $";
 #endif
 #endif /* not lint */
 
@@ -364,6 +364,8 @@ main(int argc, char *argv[])
 	dprintf("off & running....\n");
 
 	chdir("/");
+
+	tzset();
 
 	if (!Debug) {
 		char c;
