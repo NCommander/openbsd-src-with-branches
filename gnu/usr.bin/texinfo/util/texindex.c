@@ -1,7 +1,8 @@
 /* Process TeX index dribble output into an actual index.
-   $Id: texindex.c,v 1.34 1999/08/06 17:03:14 karl Exp $
+   $Id: texindex.c,v 1.41 2002/03/11 19:55:46 karl Exp $
 
-   Copyright (C) 1987, 91, 92, 96, 97, 98, 99 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 92, 96, 97, 98, 99, 2000, 01, 02
+   Free Software Foundation, Inc. 
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -180,9 +181,6 @@ main (argc, argv)
 
   decode_command (argc, argv);
 
-  /* XXX mkstemp not appropriate, as we need to have somewhat predictable
-   * names. But race condition was fixed, see maketempname. 
-   */
   tempbase = mktemp (concat ("txiXXXXXX", "", ""));
 
   /* Process input files completely, one by one.  */
@@ -288,7 +286,8 @@ _("Usually FILE... is specified as `foo.%c%c\' for a document `foo.texi'.\n"),
   fputs (_("\n\
 Email bug reports to bug-texinfo@gnu.org,\n\
 general questions and discussion to help-texinfo@gnu.org.\n\
-"), f);
+Texinfo home page: http://www.gnu.org/software/texinfo/"), f);
+  fputs ("\n", f);
 
   xexit (result_value);
 }
@@ -340,7 +339,7 @@ decode_command (argc, argv)
 There is NO warranty.  You may redistribute this software\n\
 under the terms of the GNU General Public License.\n\
 For more information about these matters, see the files named COPYING.\n"),
-                  "1999");
+                  "2002");
               xexit (0);
             }
           else if ((strcmp (arg, "--keep") == 0) ||
@@ -389,20 +388,8 @@ maketempname (count)
      int count;
 {
   char tempsuffix[10];
-  char *name;
-  int fd;
-
   sprintf (tempsuffix, ".%d", count);
-  name = concat (tempdir, tempbase, tempsuffix);
-  
-  fd = open (name, O_CREAT|O_EXCL|O_WRONLY, 0666);
-  if (fd == -1)
-    return NULL;
-  else
-    {
-      close(fd);
-      return name;
-    }
+  return concat (tempdir, tempbase, tempsuffix);
 }
 
 /* Delete all temporary files up to TO_COUNT. */
@@ -907,13 +894,10 @@ sort_offline (infile, nfiles, total, outfile)
   for (i = 0; i < ntemps; i++)
     {
       char *outname = maketempname (++tempcount);
-      FILE *ostream;
+      FILE *ostream = fopen (outname, "w");
       long tempsize = 0;
 
-      if (!outname)
-        pfatal_with_name("temporary file");
-      ostream = fopen (outname, "w");
-      if (!outname || !ostream)
+      if (!ostream)
         pfatal_with_name (outname);
       tempfiles[i] = outname;
 
@@ -958,8 +942,6 @@ fail:
   for (i = 0; i < ntemps; i++)
     {
       char *newtemp = maketempname (++tempcount);
-      if (!newtemp)
-        pfatal_with_name("temp file");
       sort_in_core (&tempfiles[i], MAX_IN_CORE_SORT, newtemp);
       if (!keep_tempfiles)
         unlink (tempfiles[i]);
@@ -1428,8 +1410,6 @@ merge_files (infiles, nfiles, outfile)
       if (i + 1 == ntemps)
         nf = nfiles - i * MAX_DIRECT_MERGE;
       tempfiles[i] = maketempname (++tempcount);
-      if (!tempfiles[i])
-        pfatal_with_name("temp file");
       value |= merge_direct (&infiles[i * MAX_DIRECT_MERGE], nf, tempfiles[i]);
     }
 

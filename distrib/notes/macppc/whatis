@@ -1,3 +1,0 @@
-dnl	$OpenBSD$
-For MACHINE, OpenBSD OSREV adds support for the newest Apple machines, as
-well as improved stability, and better X11 support.
