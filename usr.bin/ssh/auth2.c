@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2.c,v 1.104 2003/11/04 08:54:09 djm Exp $");
+RCSID("$OpenBSD: auth2.c,v 1.105 2004/05/23 23:59:53 dtucker Exp $");
 
 #include "ssh2.h"
 #include "xmalloc.h"
@@ -157,7 +157,7 @@ input_userauth_request(int type, u_int32_t seq, void *ctxt)
 			logit("input_userauth_request: illegal user %s", user);
 			authctxt->pw = fakepw();
 		}
-		setproctitle("%s%s", authctxt->pw ? user : "unknown",
+		setproctitle("%s%s", authctxt->valid ? user : "unknown",
 		    use_privsep ? " [net]" : "");
 		authctxt->user = xstrdup(user);
 		authctxt->service = xstrdup(service);
