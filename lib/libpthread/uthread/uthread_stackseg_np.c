@@ -1,4 +1,4 @@
-/* $OpenBSD: uthread_stackseg_np.c,v 1.1 2004/01/15 22:22:12 marc Exp $ */
+/* $OpenBSD: uthread_stackseg_np.c,v 1.2 2004/01/16 20:46:20 otto Exp $ */
 
 /* PUBLIC DOMAIN: No Rights Reserved. Marco S Hyman <marc@snafu.org> */
 
@@ -21,9 +21,8 @@
  */
 
 int
-pthread_stackseg_np(stack_t *sinfo)
+pthread_stackseg_np(pthread_t thread, stack_t *sinfo)
 {
-	struct pthread *thread = pthread_self();
 	char *base;
 	size_t pgsz;
 	int ret;
