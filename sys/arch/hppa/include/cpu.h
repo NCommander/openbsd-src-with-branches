@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.27 2002/02/16 02:41:15 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.28 2002/03/14 01:26:32 millert Exp $	*/
 
 /*
  * Copyright (c) 2000-2001 Michael Shalayeff
@@ -62,7 +62,7 @@
 /*
  * CPU types and features
  */
-#define	HPPA_FTRS_BTLBS		0x00000001
+#define	HPPA_FTRS_TLBU		0x00000001
 #define	HPPA_FTRS_BTLBU		0x00000002
 #define	HPPA_FTRS_HVT		0x00000004
 #define	HPPA_FTRS_W32B		0x00000008

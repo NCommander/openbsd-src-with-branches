@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.20 2001/12/05 16:25:44 art Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.21 2002/02/17 22:59:52 maja Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -106,7 +106,7 @@
 #ifndef _LOCORE
 #define __HAVE_PMAP_PHYSSEG
 struct pmap_physseg {
-	struct pv_entry *pvent;
+	struct pv_head *pvhead;
 };
 #endif
 
