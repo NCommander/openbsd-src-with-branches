@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.6 2001/01/29 02:07:46 niklas Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.7 2001/03/09 14:20:52 art Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.23 1999/06/16 17:25:39 minoura Exp $	*/
 
 /*
@@ -942,7 +942,6 @@ sys_munlock(p, v, retval)
 	return (error == KERN_SUCCESS ? 0 : ENOMEM);
 }
 
-#ifdef notyet
 /*
  * sys_mlockall: lock all pages mapped into an address space.
  */
@@ -1009,7 +1008,6 @@ sys_munlockall(p, v, retval)
 	(void) uvm_map_pageable_all(&p->p_vmspace->vm_map, 0, 0);
 	return (0);
 }
-#endif
 
 /*
  * uvm_mmap: internal version of mmap
