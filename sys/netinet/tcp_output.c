@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.64 2004/02/10 10:30:24 markus Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.65 2004/02/16 21:51:03 markus Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -1190,7 +1190,7 @@ out:
 			 * initiate retransmission, so it is important to
 			 * not do so here.
 			 */
-			tcp_mtudisc(tp->t_inpcb, 0);
+			tcp_mtudisc(tp->t_inpcb, -1);
 			return (0);
 		}
 		if ((error == EHOSTUNREACH || error == ENETDOWN) &&
