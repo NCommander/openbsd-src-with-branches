@@ -306,6 +306,7 @@ int	leavepgrp __P((struct proc *p));
 void	mi_switch __P((void));
 void	pgdelete __P((struct pgrp *pgrp));
 void	procinit __P((void));
+void	remrunqueue __P((struct proc *));
 void	resetpriority __P((struct proc *));
 void	setrunnable __P((struct proc *));
 void	setrunqueue __P((struct proc *));
