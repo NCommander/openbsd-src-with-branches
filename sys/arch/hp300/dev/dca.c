@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.22 2005/01/14 22:39:25 miod Exp $	*/
+/*	$OpenBSD: dca.c,v 1.23 2005/01/15 21:08:36 miod Exp $	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -119,10 +119,7 @@ int	dcamctl(struct dca_softc *, int, int);
 void	dcainit(struct dcadevice *, int);
 
 int	dca_console_scan(int, caddr_t, void *);
-void	dcacnprobe(struct consdev *);
-void	dcacninit(struct consdev *);
-int	dcacngetc(dev_t);
-void	dcacnputc(dev_t, int);
+cons_decl(dca);
 
 /*
  * Stuff for DCA console support.
