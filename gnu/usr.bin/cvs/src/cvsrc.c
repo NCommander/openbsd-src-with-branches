@@ -1,20 +1,16 @@
 /*
- *    Copyright (c) 1993 david d zuhn
- *
- *    written by david d `zoo' zuhn while at Cygnus Support
- *
- *    You may distribute under the terms of the GNU General Public License
- *    as specified in the README file that comes with the CVS 1.4 kit.
+ * Copyright (c) 1993 david d zuhn
+ * 
+ * Written by david d `zoo' zuhn while at Cygnus Support
+ * 
+ * You may distribute under the terms of the GNU General Public License as
+ * specified in the README file that comes with the CVS source distribution.
  *
  */
 
 
 #include "cvs.h"
-
-#ifndef lint
-static const char rcsid[] = "$CVSid: @(#)cvsrc.c 1.9 94/09/30 $";
-USE(rcsid);
-#endif /* lint */
+#include "getline.h"
 
 /* this file is to be found in the user's home directory */
 
@@ -27,19 +23,26 @@ char cvsrc[] = CVSRC_FILENAME;
 
 extern char *strtok ();
 
+/* Read cvsrc, processing options matching CMDNAME ("cvs" for global
+   options, and update *ARGC and *ARGV accordingly.  */
+
 void
-read_cvsrc (argc, argv)
-     int *argc;
-     char ***argv;
+read_cvsrc (argc, argv, cmdname)
+    int *argc;
+    char ***argv;
+    char *cmdname;
 {
     char *homedir;
     char *homeinit;
     FILE *cvsrcfile;
 
-    char linebuf [MAXLINELEN];
-  
+    char *line;
+    int line_length;
+    size_t line_chars_allocated;
+
     char *optstart;
 
+    int command_len;
     int found = 0;
 
     int i;
@@ -48,20 +51,25 @@ read_cvsrc (argc, argv)
     int max_new_argv;
     char **new_argv;
 
+    /* old_argc and old_argv hold the values returned from the
+       previous invocation of read_cvsrc and are used to free the
+       allocated memory.  The first invocation of read_cvsrc gets argv
+       from the system, this memory must not be free'd.  */
+    static int old_argc = 0;
+    static char **old_argv = NULL;
+
     /* don't do anything if argc is -1, since that implies "help" mode */
     if (*argc == -1)
 	return;
 
-    /* setup the new options list */
-
-    new_argc = 1;
-    max_new_argv = (*argc) + GROW;
-    new_argv = (char **) xmalloc (max_new_argv * sizeof (char*));
-    new_argv[0] = xstrdup ((*argv)[0]);
-
     /* determine filename for ~/.cvsrc */
 
-    homedir = getenv ("HOME");
+    homedir = get_homedir ();
+    /* If we can't find a home directory, ignore ~/.cvsrc.  This may
+       make tracking down problems a bit of a pain, but on the other
+       hand it might be obnoxious to complain when CVS will function
+       just fine without .cvsrc (and many users won't even know what
+       .cvsrc is).  */
     if (!homedir)
 	return;
 
@@ -72,7 +80,7 @@ read_cvsrc (argc, argv)
 
     /* if it can't be read, there's no point to continuing */
 
-    if (access (homeinit, R_OK) != 0)
+    if (!isreadable (homeinit))
     {
 	free (homeinit);
 	return;
@@ -80,59 +88,79 @@ read_cvsrc (argc, argv)
 
     /* now scan the file until we find the line for the command in question */
 
+    line = NULL;
+    line_chars_allocated = 0;
+    command_len = strlen (cmdname);
     cvsrcfile = open_file (homeinit, "r");
-    while (fgets (linebuf, MAXLINELEN, cvsrcfile))
+    while ((line_length = getline (&line, &line_chars_allocated, cvsrcfile))
+	   >= 0)
     {
 	/* skip over comment lines */
-	if (linebuf[0] == '#')
+	if (line[0] == '#')
 	    continue;
 
 	/* stop if we match the current command */
-	if (!strncmp (linebuf, (*argv)[0], strlen ((*argv)[0])))
+	if (!strncmp (line, cmdname, command_len)
+	    && isspace ((unsigned char) *(line + command_len)))
 	{
 	    found = 1;
 	    break;
 	}
     }
 
+    if (line_length < 0 && !feof (cvsrcfile))
+	error (0, errno, "cannot read %s", homeinit);
+
     fclose (cvsrcfile);
+
+    /* setup the new options list */
+
+    new_argc = 1;
+    max_new_argv = (*argc) + GROW;
+    new_argv = (char **) xmalloc (max_new_argv * sizeof (char*));
+    new_argv[0] = xstrdup ((*argv)[0]);
 
     if (found)
     {
 	/* skip over command in the options line */
-	optstart = strtok(linebuf+strlen((*argv)[0]), "\t \n");
-      
-	do
+	for (optstart = strtok (line + command_len, "\t \n");
+	     optstart;
+	     optstart = strtok (NULL, "\t \n"))
 	{
-	    new_argv [new_argc] = xstrdup (optstart);
-	    new_argv [new_argc+1] = NULL;
-	    new_argc += 1;
+	    new_argv [new_argc++] = xstrdup (optstart);
 	  
 	    if (new_argc >= max_new_argv)
 	    {
-		char **tmp_argv;
 		max_new_argv += GROW;
-		tmp_argv = (char **) xmalloc (max_new_argv * sizeof (char*));
-		for (i = 0; i <= new_argc; i++)
-		    tmp_argv[i] = new_argv[i];
-		free(new_argv);
-		new_argv = tmp_argv;
+		new_argv = (char **) xrealloc (new_argv, max_new_argv * sizeof (char*));
 	    }
-	  
 	}
-	while ((optstart = strtok (NULL, "\t \n")) != NULL);
     }
+
+    if (line != NULL)
+	free (line);
 
     /* now copy the remaining arguments */
   
+    if (new_argc + *argc > max_new_argv)
+    {
+	max_new_argv = new_argc + *argc;
+	new_argv = (char **) xrealloc (new_argv, max_new_argv * sizeof (char*));
+    }
     for (i=1; i < *argc; i++)
     {
-	new_argv [new_argc] = (*argv)[i];
-	new_argc += 1;
+	new_argv [new_argc++] = xstrdup ((*argv)[i]);
     }
 
-    *argc = new_argc;
-    *argv = new_argv;
+    if (old_argv != NULL)
+    {
+	/* Free the memory which was allocated in the previous
+           read_cvsrc call.  */
+	free_names (&old_argc, old_argv);
+    }
+
+    old_argc = *argc = new_argc;
+    old_argv = *argv = new_argv;
 
     free (homeinit);
     return;

@@ -3,12 +3,13 @@
 #
 # XXX: FIXME: handle multiple '-f logfile' arguments
 #
-# XXX -- I HATE Perl!  This will be re-written in shell/awk/sed soon!
+# XXX -- I HATE Perl!  This *will* be re-written in shell/awk/sed soon!
 #
 
-# Usage:  log.pl [[-m user] ...] [-s] -f logfile 'dirname file ...'
+# Usage:  log.pl [-u user] [[-m mailto] ...] [-s] -f logfile 'dirname file ...'
 #
-#	-m user		- for each user to receive cvs log reports
+#	-u user		- $USER passed from loginfo
+#	-m mailto	- for each user to receive cvs log reports
 #			(multiple -m's permitted)
 #	-s		- to prevent "cvs status -v" messages
 #	-f logfile	- for the logfile to append to (mandatory,
@@ -66,6 +67,8 @@ while (@ARGV) {
 
 	if ($arg eq '-m') {
                 $users = "$users " . shift @ARGV;
+	} elsif ($arg eq '-u') {
+		$login = shift @ARGV;
 	} elsif ($arg eq '-f') {
 		($logfile) && die "Too many '-f' args";
 		$logfile = shift @ARGV;
@@ -91,10 +94,13 @@ $mailcmd = "| Mail -s 'CVS update: $modulepath'";
 @days = (Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday);
 
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
+$year += 1900;
 
 # get a login name for the guy doing the commit....
 #
-$login = getlogin || (getpwuid($<))[0] || "nobody";
+if ($login eq '') {
+	$login = getlogin || (getpwuid($<))[0] || "nobody";
+}
 
 # open log file for appending
 #
@@ -111,12 +117,12 @@ if ($users) {
 # 
 print OUT "\n";
 print OUT "****************************************\n";
-print OUT "Date:\t$days[$wday] $mos[$mon] $mday, 19$year @ $hour:" . sprintf("%02d", $min) . "\n";
+print OUT "Date:\t$days[$wday] $mos[$mon] $mday, $year @ $hour:" . sprintf("%02d", $min) . "\n";
 print OUT "Author:\t$login\n\n";
 
 if (MAIL) {
 	print MAIL "\n";
-	print MAIL "Date:\t$days[$wday] $mos[$mon] $mday, 19$year @ $hour:" . sprintf("%02d", $min) . "\n";
+	print MAIL "Date:\t$days[$wday] $mos[$mon] $mday, $year @ $hour:" . sprintf("%02d", $min) . "\n";
 	print MAIL "Author:\t$login\n\n";
 }
 
@@ -133,7 +139,7 @@ close(IN);
 
 print OUT "\n";
 
-# after log information, do an 'cvs -Qqv status' on each file in the arguments.
+# after log information, do an 'cvs -Qq status -v' on each file in the arguments.
 #
 if ($dostatus != 0) {
 	while (@files) {
@@ -145,7 +151,16 @@ if ($dostatus != 0) {
 			}
 			last;
 		}
-		open(RCS, "-|") || exec 'cvs', '-nQq', 'status', '-v', $file;
+		$pid = open(RCS, "-|");
+		if ( !defined $pid )
+		{
+			die "fork failed: $!";
+		}
+		if ($pid == 0)
+		{
+			exec 'cvs', '-nQq', 'status', '-v', $file;
+			die "cvs exec failed: $!";
+		}
 		while (<RCS>) {
 			print OUT;
 			if (MAIL) {
