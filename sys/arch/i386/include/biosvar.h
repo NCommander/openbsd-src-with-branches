@@ -37,7 +37,7 @@
 
 #define	BOOT_APIVER	0x00000002
 #define	BOOTARG_LEN	(NBPG*1)
-#define	BOOTARG_OFF	(NBPG)
+#define	BOOTARG_OFF	(NBPG*2)
 
 /* BIOS media ID */
 #define BIOSM_F320K	0xff	/* floppy ds/sd  8 spt */
