@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_extern.h,v 1.37 2001/11/30 17:24:19 art Exp $	*/
+/*	$OpenBSD: uvm_extern.h,v 1.38 2001/12/04 23:22:42 art Exp $	*/
 /*	$NetBSD: uvm_extern.h,v 1.66 2001/08/16 01:37:50 chs Exp $	*/
 
 /*
@@ -328,8 +328,7 @@ struct uvmexp {
 				   was available */
 	int pga_zeromiss;	/* pagealloc where zero wanted and zero
 				   not available */
-	int zeroaborts;		/* number of times page zeroing was
-				   aborted */
+	int zeroaborts;		/* number of times page zeroing was aborted */
 	int colorhit;		/* pagealloc where we got optimal color */
 	int colormiss;		/* pagealloc where we didn't */
 
