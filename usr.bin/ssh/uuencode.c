@@ -1,4 +1,4 @@
-/*	$OpenBSD: uuencode.c,v 1.12 2001/03/01 02:27:18 deraadt Exp $	*/
+/*	$OpenBSD: uuencode.c,v 1.13 2002/02/24 18:31:09 markus Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -30,7 +30,7 @@
 
 #include <resolv.h>
 
-RCSID("$OpenBSD: uuencode.c,v 1.12 2001/03/01 02:27:18 deraadt Exp $");
+RCSID("$OpenBSD: uuencode.c,v 1.13 2002/02/24 18:31:09 markus Exp $");
 
 int
 uuencode(u_char *src, u_int srclength,
@@ -60,7 +60,7 @@ uudecode(const char *src, u_char *target, size_t targsize)
 }
 
 void
-dump_base64(FILE *fp, u_char *data, int len)
+dump_base64(FILE *fp, u_char *data, u_int len)
 {
 	u_char *buf = xmalloc(2*len);
 	int i, n;
