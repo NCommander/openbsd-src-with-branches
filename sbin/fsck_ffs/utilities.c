@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.10 2001/01/19 17:57:36 deraadt Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.11 2001/03/02 08:33:55 art Exp $	*/
 /*	$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: utilities.c,v 1.10 2001/01/19 17:57:36 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: utilities.c,v 1.11 2001/03/02 08:33:55 art Exp $";
 #endif
 #endif /* not lint */
 
@@ -233,7 +233,7 @@ flush(fd, bp)
 	if (bp != &sblk)
 		return;
 	for (i = 0, j = 0; i < sblock.fs_cssize; i += sblock.fs_bsize, j++) {
-		bwrite(fswritefd, (char *)sblock.fs_csp[j],
+		bwrite(fswritefd, (char *)sblock.fs_csp + i,
 		    fsbtodb(&sblock, sblock.fs_csaddr + j * sblock.fs_frag),
 		    sblock.fs_cssize - i < sblock.fs_bsize ?
 		    sblock.fs_cssize - i : sblock.fs_bsize);
