@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.21 2001/11/27 05:27:12 art Exp $  */
+/*       $OpenBSD$  */
 
 /*
  *  Portions of this code are:
@@ -52,8 +52,9 @@
 #include <sys/vnode.h>
 #include <sys/buf.h>
 #include <sys/malloc.h>
-
 #include <sys/kernel.h>
+
+#include <miscfs/genfs/genfs.h>
 
 #ifdef FFS_SOFTUPDATES
 int   softdep_process_worklist(struct mount *);
@@ -257,10 +258,10 @@ speedup_syncer()
 int   sync_fsync(void *);
 int   sync_inactive(void *);
 #define sync_reclaim nullop
-#define sync_lock vop_generic_lock
-#define sync_unlock vop_generic_unlock
+#define sync_lock	genfs_nolock
+#define sync_unlock	genfs_nounlock
 int   sync_print(void *);
-#define sync_islocked vop_generic_islocked
+#define sync_islocked	genfs_noislocked
 
 int (**sync_vnodeop_p)(void *);
 struct vnodeopv_entry_desc sync_vnodeop_entries[] = {
