@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypdb.c,v 1.9 2002/07/19 20:59:40 deraadt Exp $ */
+/*	$OpenBSD: ypdb.c,v 1.10 2003/06/04 16:08:08 deraadt Exp $ */
 
 /*
  * Copyright (c) 1990, 1993
@@ -195,26 +195,6 @@ ypdb_setkey(DBM *db, datum key)
 		key.dsize = 0;
 	}
 	return (key);
-}
-
-/*
- * Returns:
- *	 0 on success
- *	<0 failure
- */
-int
-ypdb_delete(DBM *db, datum key)
-{
-	int status;
-	DBT nk;
-
-	nk.data = key.dptr;
-	nk.size = key.dsize;
-	status = (db->del)(db, &nk, 0);
-	if (status)
-		return (-1);
-	else
-		return (0);
 }
 
 /*

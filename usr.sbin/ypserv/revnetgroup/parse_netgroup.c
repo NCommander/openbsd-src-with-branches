@@ -1,4 +1,4 @@
-/* $OpenBSD: parse_netgroup.c,v 1.7 2003/03/13 09:09:51 deraadt Exp $ */
+/* $OpenBSD: parse_netgroup.c,v 1.8 2003/06/02 23:36:55 millert Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -47,7 +47,7 @@
 #include "hash.h"
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: parse_netgroup.c,v 1.7 2003/03/13 09:09:51 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: parse_netgroup.c,v 1.8 2003/06/02 23:36:55 millert Exp $";
 #endif
 
 /*
@@ -82,10 +82,11 @@ static struct {
 	(struct netgrp *)0,
 	(char *)0,
 };
-static int parse_netgrp();
-static struct linelist *read_for_group();
-void __setnetgrent(), __endnetgrent();
-int __getnetgrent();
+
+static int parse_netgrp(char *);
+static struct linelist *read_for_group(char *);
+void __setnetgrent(char *), __endnetgrent(void);
+int __getnetgrent(char **, char **, char **);
 extern struct group_entry *gtable[];
 
 /*

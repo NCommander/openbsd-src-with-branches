@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush_err.c,v 1.5 2003/05/05 08:37:05 avsm Exp $ */
+/*	$OpenBSD: yppush_err.c,v 1.6 2003/06/02 21:58:27 maja Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -27,10 +27,11 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: yppush_err.c,v 1.5 2003/05/05 08:37:05 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: yppush_err.c,v 1.6 2003/06/02 21:58:27 maja Exp $";
 #endif /* not lint */
 
 #include <rpcsvc/yp.h>
+#include "yppush.h"
 
 char *
 yppush_err_string(enum yppush_status y)

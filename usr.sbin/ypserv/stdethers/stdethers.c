@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdethers.c,v 1.8 2003/05/05 08:37:05 avsm Exp $ */
+/*	$OpenBSD: stdethers.c,v 1.9 2003/06/02 21:58:26 maja Exp $ */
 
 /*
  * Copyright (c) 1995 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef LINT
-static const char rcsid[] = "$OpenBSD: stdethers.c,v 1.8 2003/05/05 08:37:05 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: stdethers.c,v 1.9 2003/06/02 21:58:26 maja Exp $";
 #endif
 
 #include <sys/types.h>
@@ -52,7 +52,7 @@ extern char *ether_ntoa(struct ether_addr *);
    when asking YP but not when returning string from ether_ntoa.
  */
 
-char *
+static char *
 working_ntoa(u_char *e)
 {
 	static char a[] = "xx:xx:xx:xx:xx:xx";
@@ -96,7 +96,7 @@ read_line(FILE *fp, char *buf, int size)
 	return (done);
 }
 
-void
+static void
 usage(void)
 {
 	fprintf(stderr, "usage: stdethers [file]\n");

@@ -1,15 +1,8 @@
-/*	$OpenBSD: ypdb.h,v 1.8 2003/06/04 16:08:08 deraadt Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.30 2003/06/22 23:57:07 maja Exp $ */
 
 /*
- * Copyright (c) 1990, 1993
- *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
  * All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Margo Seltzer.
- *
- * This code is derived from ndbm module of BSD4.4 db (hash) by
- * Mats O Jansson
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -19,9 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -36,39 +26,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _YPDB_H_
-#define _YPDB_H_
-
-#ifndef _DB_H_
-#include <db.h>
-#endif
-
-#define YPDB_SUFFIX	".db"
-
-/* Flags to ypdb_store(). */
-#define YPDB_INSERT	0
-#define YPDB_REPLACE	1
-
-#ifndef DATUM
-typedef struct {
-	char	*dptr;
-	int	dsize;
-} datum;
-#define DATUM
-#endif
-
-typedef DB DBM;
-
-__BEGIN_DECLS
-void	 ypdb_close(DBM *);
-datum	 ypdb_fetch(DBM *, datum);
-datum	 ypdb_firstkey(DBM *);
-datum	 ypdb_nextkey(DBM *);
-datum	 ypdb_setkey(DBM *, datum);
-DBM	*ypdb_open(const char *, int, int);
-DBM	*ypdb_open_suf(const char *, int, int);
-int	ypdb_store(DBM *, datum, datum, int);
-
-__END_DECLS
-
-#endif /* !_YPDB_H_ */
+void		ypdb_init(void);
+void		ypdb_close_all(void);
+struct opt_map;
+DBM		*ypdb_open_db(domainname, mapname, ypstat *, struct opt_map **);
+ypresp_val	ypdb_get_record(domainname, mapname, keydat, int);
+ypresp_key_val	ypdb_get_first(domainname, mapname, int);
+ypresp_key_val	ypdb_get_next(domainname, mapname, keydat, int);
+ypresp_order	ypdb_get_order(domainname, mapname);
+ypresp_master	ypdb_get_master(domainname, mapname);
+bool_t		ypdb_xdr_get_all(XDR *, ypreq_nokey *);
+int		ypdb_secure(domainname, mapname);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: yppush_proc.c,v 1.6 2003/05/05 08:37:05 avsm Exp $ */
+/*	$OpenBSD: yppush_proc.c,v 1.7 2003/06/02 21:58:27 maja Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -27,9 +27,11 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: yppush_proc.c,v 1.6 2003/05/05 08:37:05 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: yppush_proc.c,v 1.7 2003/06/02 21:58:27 maja Exp $";
 #endif /* not lint */
 
+#include <sys/types.h>
+#include <rpcsvc/yp.h>
 #include <stdio.h>
 #include "yppush.h"
 
@@ -46,9 +48,10 @@ yppushproc_null_1_svc(void *argp, struct svc_req *rqstp)
 	return((void *) &result);
 }
 
-void *
-yppushproc_xfrresp_1_svc(yppushresp_xfr *argp, struct svc_req *rqstp)
+yppushresp_xfr *
+yppushproc_xfrresp_1_svc(void *v, struct svc_req *rqstp)
 {
+	yppushresp_xfr *argp = (yppushresp_xfr *)v;
 	static char *result;
 
 	/*
@@ -57,5 +60,5 @@ yppushproc_xfrresp_1_svc(yppushresp_xfr *argp, struct svc_req *rqstp)
 	if ((argp->status < YPPUSH_SUCC) || Verbose)
 		fprintf(stderr, "yppush: %s\n",
 		    yppush_err_string(argp->status));
-	return((void *) &result);
+	return((yppushresp_xfr *) &result);
 }
