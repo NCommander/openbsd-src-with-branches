@@ -1,3 +1,4 @@
+/*	$OpenBSD$ 	*/
 /*	$NetBSD: uftdi.c,v 1.5 2001/01/23 14:04:13 augustss Exp $	*/
 
 /*

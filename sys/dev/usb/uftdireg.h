@@ -1,3 +1,4 @@
+/*	$OpenBSD$ 	*/
 /*
  * Definitions for the FTDI USB Single Port Serial Converter - 
  * known as FTDI_SIO (Serial Input/Output application of the chipset) 
