@@ -375,7 +375,9 @@ free(addr, type)
 void
 kmeminit()
 {
+#ifdef KMEMSTATS
 	register long indx;
+#endif
 	int npg;
 
 #if	((MAXALLOCSAVE & (MAXALLOCSAVE - 1)) != 0)
