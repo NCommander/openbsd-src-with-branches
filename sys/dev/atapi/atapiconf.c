@@ -1,4 +1,4 @@
-/*	$OpenBSD: atapiconf.c,v 1.9 1996/09/06 12:19:10 mickey Exp $	*/
+/*	$OpenBSD: atapiconf.c,v 1.10 1996/09/11 07:22:04 downsj Exp $	*/
 
 /*
  * Copyright (c) 1996 Manuel Bouyer.  All rights reserved.
@@ -592,22 +592,22 @@ atapi_error(acp)
 	at_print_addr(ad_link, acp->flags & 0xff);
 
 	if (error & ATAPI_MCR) {
-		SILENT_PRINTF(flags,("media change requested"));
+		SILENT_PRINTF(flags,("media change requested "));
 		acp->status = MEDIA_CHANGE;
 	}
 
 	if (error & ATAPI_ABRT) {      
-		SILENT_PRINTF(flags,("command aborted"));
+		SILENT_PRINTF(flags,("command aborted "));
 		acp->status = ERROR; 
 	}
 
 	if (error & ATAPI_EOM) {
-		SILENT_PRINTF(flags,("end of media"));
+		SILENT_PRINTF(flags,("end of media "));
 		acp->status = END_OF_MEDIA;
 	}
 
 	if (error & ATAPI_ILI) {
-		SILENT_PRINTF(flags,("illegal length indication"));
+		SILENT_PRINTF(flags,("illegal length indication "));
 		acp->status = ERROR;
 	}
 
