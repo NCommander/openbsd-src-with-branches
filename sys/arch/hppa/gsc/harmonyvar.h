@@ -1,4 +1,4 @@
-/*	$OpenBSD: harmonyvar.h,v 1.2 2003/01/30 01:23:24 jason Exp $	*/
+/*	$OpenBSD: harmonyvar.h,v 1.3 2003/01/30 03:23:19 mickey Exp $	*/
 
 /*
  * Copyright (c) 2003 Jason L. Wright (jason@thought.net)
@@ -50,7 +50,6 @@
 
 #define	PLAYBACK_EMPTYS			3	/* playback empty buffers */
 #define	CAPTURE_EMPTYS			3	/* capture empty buffers */
-#define	HARMONY_BUFSIZE			4096
 
 struct harmony_volume {
 	u_char left, right;
@@ -77,6 +76,7 @@ struct harmony_channel {
 	bus_addr_t c_lastaddr;
 	void (*c_intr)(void *);
 	void *c_intrarg;
+	bus_addr_t c_theaddr;
 };
 
 struct harmony_softc {
