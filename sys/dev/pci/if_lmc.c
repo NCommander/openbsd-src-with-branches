@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc.c,v 1.13 2001/11/06 19:53:19 miod Exp $ */
+/*	$OpenBSD: if_lmc.c,v 1.14 2002/06/02 22:50:00 deraadt Exp $ */
 /*	$NetBSD: if_lmc.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -1447,6 +1447,7 @@ lmc_attach(lmc_softc_t * const sc)
 #endif
   
 	if_attach(ifp);
+	if_alloc_sadl(ifp);
 
 #if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	sppp_attach((struct ifnet *)&sc->lmc_sppp);
