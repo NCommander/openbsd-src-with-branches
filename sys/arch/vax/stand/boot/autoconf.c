@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.2 2000/05/01 00:12:00 bjc Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.3 2000/10/04 04:09:00 bjc Exp $ */
 /*	$NetBSD: autoconf.c,v 1.5 1999/08/23 19:09:27 ragge Exp $ */
 /*
  * Copyright (c) 1994, 1998 Ludd, University of Lule}, Sweden.
@@ -158,6 +158,7 @@ autoconf()
 	case VAX_BTYP_420:
 	case VAX_BTYP_43:
 	case VAX_BTYP_49:
+	case VAX_BTYP_1303:
 		break;
 	}
 }
