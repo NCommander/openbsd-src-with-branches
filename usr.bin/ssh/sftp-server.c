@@ -22,7 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: sftp-server.c,v 1.37 2002/06/24 17:57:20 deraadt Exp $");
+RCSID("$OpenBSD: sftp-server.c,v 1.38 2002/09/11 22:41:50 djm Exp $");
 
 #include "buffer.h"
 #include "bufaux.h"
@@ -812,19 +812,22 @@ static void
 process_rename(void)
 {
 	u_int32_t id;
-	struct stat st;
 	char *oldpath, *newpath;
-	int ret, status = SSH2_FX_FAILURE;
+	int status;
 
 	id = get_int();
 	oldpath = get_string(NULL);
 	newpath = get_string(NULL);
 	TRACE("rename id %u old %s new %s", id, oldpath, newpath);
 	/* fail if 'newpath' exists */
-	if (stat(newpath, &st) == -1) {
-		ret = rename(oldpath, newpath);
-		status = (ret == -1) ? errno_to_portable(errno) : SSH2_FX_OK;
-	}
+	if (link(oldpath, newpath) == -1)
+		status = errno_to_portable(errno);
+	else if (unlink(oldpath) == -1) {
+		status = errno_to_portable(errno);
+		/* clean spare link */
+		unlink(newpath);
+	} else
+		status = SSH2_FX_OK;
 	send_status(id, status);
 	xfree(oldpath);
 	xfree(newpath);
@@ -858,19 +861,16 @@ static void
 process_symlink(void)
 {
 	u_int32_t id;
-	struct stat st;
 	char *oldpath, *newpath;
-	int ret, status = SSH2_FX_FAILURE;
+	int ret, status;
 
 	id = get_int();
 	oldpath = get_string(NULL);
 	newpath = get_string(NULL);
 	TRACE("symlink id %u old %s new %s", id, oldpath, newpath);
-	/* fail if 'newpath' exists */
-	if (stat(newpath, &st) == -1) {
-		ret = symlink(oldpath, newpath);
-		status = (ret == -1) ? errno_to_portable(errno) : SSH2_FX_OK;
-	}
+	/* this will fail if 'newpath' exists */
+	ret = symlink(oldpath, newpath);
+	status = (ret == -1) ? errno_to_portable(errno) : SSH2_FX_OK;
 	send_status(id, status);
 	xfree(oldpath);
 	xfree(newpath);
