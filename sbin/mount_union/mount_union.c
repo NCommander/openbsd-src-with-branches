@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_union.c,v 1.8 2003/06/02 20:06:16 millert Exp $	*/
+/*	$OpenBSD: mount_union.c,v 1.9 2003/06/11 06:22:14 deraadt Exp $	*/
 /*	$NetBSD: mount_union.c,v 1.3 1996/04/13 01:32:11 jtc Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_union.c	8.5 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$OpenBSD: mount_union.c,v 1.8 2003/06/02 20:06:16 millert Exp $";
+static char rcsid[] = "$OpenBSD: mount_union.c,v 1.9 2003/06/11 06:22:14 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -103,7 +103,7 @@ main(int argc, char *argv[])
 		usage();
 
 	if (realpath(argv[0], target) == 0)
-		err(1, "%s", target);
+		err(1, "realpath %s", target);
 
 	if (subdir(target, argv[1]) || subdir(argv[1], target))
 		errx(1, "%s (%s) and %s are not distinct paths",
