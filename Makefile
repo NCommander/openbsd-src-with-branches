@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.107 2004/10/26 05:01:02 mickey Exp $
+#	$OpenBSD: Makefile,v 1.108 2004/11/30 15:46:01 mickey Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -237,15 +237,6 @@ ${CROSSBINUTILS}:	${CROSSINCLUDES}
 	ln -sf ${CROSSDIR}/usr/bin/strip \
 	    ${CROSSDIR}/usr/`cat ${CROSSDIR}/TARGET_CANON`/bin/strip
 .endif
-	(cd ${.CURDIR}/usr.bin/nm; \
-	    MAKEOBJDIR=obj.${MACHINE}.${TARGET} \
-	    ${MAKE} NOMAN= depend all; \
-	    DESTDIR=${CROSSDIR} MAKEOBJDIR=obj.${MACHINE}.${TARGET} \
-	    ${MAKE} NOMAN= install)
-	ln -sf ${CROSSDIR}/usr/bin/nm \
-	    ${CROSSDIR}/usr/`cat ${CROSSDIR}/TARGET_CANON`/bin/nm
-	ln -sf ${CROSSDIR}/usr/bin/size \
-	    ${CROSSDIR}/usr/`cat ${CROSSDIR}/TARGET_CANON`/bin/size
 	@for cmd in ${BINUTILS}; do \
 	 if [ ! -e ${CROSSDIR}/usr/bin/$$cmd -a \
 	 -e ${CROSSDIR}/usr/bin/`cat ${CROSSDIR}/TARGET_CANON`-$$cmd ]; then \
