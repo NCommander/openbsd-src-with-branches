@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.180 2003/03/10 21:08:44 millert Exp $
+#	$OpenBSD: Makefile,v 1.181 2003/03/24 18:15:27 drahn Exp $
 
 TZDIR=		/usr/share/zoneinfo
-LOCALTIME=	US/Pacific
+LOCALTIME=	Canada/Mountain
 
 NOOBJ=	oobj
 
