@@ -1,8 +1,11 @@
 .\"	$OpenBSD$
-.\"	$NetBSD: listen.2,v 1.7 1996/02/16 20:38:45 phil Exp $
 .\"
-.\" Copyright (c) 1983, 1991, 1993
+.\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" This code is derived from software developed by the Computer Systems
+.\" Engineering group at Lawrence Berkeley Laboratory under DARPA contract
+.\" BG 91-66 and contributed to Berkeley.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -32,73 +35,56 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)listen.2	8.2 (Berkeley) 12/11/93
+.\"     @(#)kvm_nlist.3	8.1 (Berkeley) 6/4/93
 .\"
-.Dd December 11, 1993
-.Dt LISTEN 2
-.Os BSD 4.2
+.Dd June 4, 1993
+.Dt KVM_NLIST 3
+.Os
 .Sh NAME
-.Nm listen
-.Nd listen for connections on a socket
+.Nm kvm_nlist
+.Nd retrieve symbol table names from a kernel image
 .Sh SYNOPSIS
-.Fd #include <sys/socket.h>
+.Fd #include <kvm.h>
+.Fd #include <nlist.h>
 .Ft int
-.Fn listen "int s" "int backlog"
+.Fn kvm_nlist "kvm_t *kd" "struct nlist *nl"
 .Sh DESCRIPTION
-To accept connections, a socket
-is first created with
-.Xr socket 2 ,
-a willingness to accept incoming connections and
-a queue limit for incoming connections are specified with
-.Fn listen ,
-and then the connections are
-accepted with
-.Xr accept 2 .
-The
-.Fn listen
-call applies only to sockets of type
-.Dv SOCK_STREAM
-or
-.Dv SOCK_SEQPACKET.
+.Fn kvm_nlist
+retrieves the symbol table entries indicated by the name list argument
+.Fa \&nl .
+This argument points to an array of nlist structures, terminated by
+an entry whose n_name field is
+.Dv NULL
+(see
+.Xr nlist 3 ) .
+Each symbol is looked up using the n_name field, and if found, the
+corresponding n_type and n_value fields are filled in.  These fields are set
+to 0 if the symbol is not found.
 .Pp
-The
-.Fa backlog
-parameter defines the maximum length the queue of
-pending connections may grow to.
-If a connection
-request arrives with the queue full the client may
-receive an error with an indication of
-.Er ECONNREFUSED ,
-or, if the underlying protocol supports retransmission,
-the request may be ignored so that retries may succeed.
+The program
+.Xr kvm_mkdb 8
+builds a database from the running kernel's namelist.
+If the database matches the opened kernel,
+.Fn kvm_nlist
+uses it to speed lookups.
 .Sh RETURN VALUES
-A 0 return value indicates success; -1 indicates an error.
-.Sh ERRORS
-.Fn Listen
-will fail if:
-.Bl -tag -width Er
-.It Bq Er EBADF
-The argument
-.Fa s
-is not a valid descriptor.
-.It Bq Er ENOTSOCK
-The argument
-.Fa s
-is not a socket.
-.It Bq Er EOPNOTSUPP
-The socket is not of a type that supports the operation
-.Fn listen .
+The
+.Fn kvm_nlist
+function returns the number of invalid entries found.
+If the kernel symbol table was unreadable, -1 is returned.
+.Sh FILES
+.Bl -tag -width /var/db/kvm_netbsd.db -compact
+.It Pa /var/db/kvm_netbsd.db
 .El
 .Sh SEE ALSO
-.Xr accept 2 ,
-.Xr connect 2 ,
-.Xr socket 2
-.Sh BUGS
-The
-.Fa backlog
-is currently limited (silently) to 128.
-.Sh HISTORY
-The
-.Fn listen
-function call appeared in
-.Bx 4.2 .
+.Xr kvm 3 ,
+.Xr kvm_close 3 ,
+.Xr kvm_getargv 3 ,
+.Xr kvm_getenvv 3 ,
+.Xr kvm_geterr 3 ,
+.Xr kvm_getprocs 3 ,
+.Xr kvm_open 3 ,
+.Xr kvm_openfiles 3 ,
+.Xr kvm_read 3 ,
+.Xr kvm_write 3 ,
+.Xr kvm_mkdb 8
