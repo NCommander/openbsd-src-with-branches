@@ -1,10 +1,8 @@
-/* ==== test_netdb.c =========================================================
+/*	$OpenBSD$	*/
+/*
  * Copyright (c) 1995 by Greg Hudson, ghudson@.mit.edu
  *
- * Description : Test netdb calls.
- *
- *  1.00 95/01/05 ghudson
- *      -Started coding this file.
+ * Test netdb calls.
  */
 
 #include <pthread.h>
