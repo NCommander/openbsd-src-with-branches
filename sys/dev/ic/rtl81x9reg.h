@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rlreg.h,v 1.12 2001/02/20 19:10:14 jason Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.1 2001/04/10 22:52:00 aaron Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -430,6 +430,12 @@ struct rl_softc {
  * Addtron device IDs.
  */
 #define ADDTRON_DEVICEID_8139			0x1360
+
+/* D-Link Vendor ID */
+#define DLINK_VENDORID				0x1186
+
+/* D-Link device IDs */
+#define DLINK_DEVICEID_8139			0x1300
 
 /*
  * PCI low memory base and low I/O base register, and
