@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.c,v 1.3 2000/01/07 21:57:02 angelos Exp $ */
+/*      $OpenBSD: ip_gre.c,v 1.4 2000/01/08 00:07:18 angelos Exp $ */
 /*	$NetBSD: ip_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -143,7 +143,7 @@ gre_input2(struct mbuf *m ,int hlen,u_char proto)
 			break;
 #endif
 #ifdef NETATALK
-		case ETHERTYPE_ATALK:
+		case ETHERTYPE_AT:
 			ifq = &atintrq1;
 			schednetisr(NETISR_ATALK);
 			break;
