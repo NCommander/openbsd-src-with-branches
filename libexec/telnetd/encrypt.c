@@ -1,4 +1,4 @@
-/*     $OpenBSD: encrypt.c,v 1.6 2001/09/18 00:48:58 jcs Exp $     */
+/*     $OpenBSD: encrypt.c,v 1.7 2002/03/22 13:49:28 hin Exp $     */
 
 /*-
  * Copyright (c) 1991, 1993

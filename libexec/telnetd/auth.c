@@ -1,4 +1,4 @@
-/*     $OpenBSD: auth.c,v 1.4 2001/05/25 10:23:05 hin Exp $    */
+/*     $OpenBSD: auth.c,v 1.5 2002/03/22 13:49:27 hin Exp $    */
 
 /*-
  * Copyright (c) 1991, 1993

@@ -1,4 +1,4 @@
-/*	$OpenBSD: telnet_locl.h,v 1.1 1998/03/12 04:57:44 art Exp $	*/
+/*	$OpenBSD: telnet_locl.h,v 1.2 1999/12/11 09:08:09 itojun Exp $	*/
 /* $KTH: telnet_locl.h,v 1.13 1997/11/03 21:37:55 assar Exp $ */
 
 /*
@@ -73,11 +73,11 @@
 #include <arpa/telnet.h>
 
 #if	defined(AUTHENTICATION) || defined(ENCRYPTION)
-#include <libtelnet/auth.h>
-#include <libtelnet/encrypt.h>
+#include <auth.h>
+#include <encrypt.h>
 #endif
-#include <libtelnet/misc.h>
-#include <libtelnet/misc-proto.h>
+#include <misc.h>
+#include <misc-proto.h>
 
 #define LINEMODE
 

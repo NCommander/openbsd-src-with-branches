@@ -1,3 +1,5 @@
+/*     $OpenBSD: genget.c,v 1.5 2001/05/25 10:23:06 hin Exp $  */
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,46 +34,75 @@
  */
 
 #ifndef lint
-/* from: static char sccsid[] = "@(#)getent.c	8.2 (Berkeley) 12/15/93"; */
-/* from: static char *rcsid = "$NetBSD: getent.c,v 1.5 1996/02/24 01:15:22 jtk Exp $"; */
-static char *rcsid = "$OpenBSD: getent.c,v 1.3 1998/07/28 20:11:15 marc Exp $";
+/* from: static char sccsid[] = "@(#)genget.c  8.2 (Berkeley) 5/30/95"; */
+/* from: static char *rcsid = "$NetBSD: genget.c,v 1.5 1996/02/24 01:15:21 jtk Exp $"; */
+static char *rcsid = "$OpenBSD: genget.c,v 1.5 2001/05/25 10:23:06 hin Exp $";
 #endif /* not lint */
 
-#include <stdlib.h>
+/* $KTH: genget.c,v 1.6 1997/05/04 09:01:34 assar Exp $ */
+
+#include <ctype.h>
 #include "misc-proto.h"
 
-static char *area;
-
-int gtgetent(char *, char *);
-char *gtgetstr(char *, char **);
-
-/*ARGSUSED*/
+#define	LOWER(x) (isupper((int)x) ? tolower((int)x) : (x))
+/*
+ * The prefix function returns 0 if *s1 is not a prefix
+ * of *s2.  If *s1 exactly matches *s2, the negative of
+ * the length is returned.  If *s1 is a prefix of *s2,
+ * the length of *s1 is returned.
+ */
 int
-gtgetent(cp, name)
-char *cp, *name;
+isprefix(char *s1, char *s2)
 {
-#ifdef	HAS_CGETENT
-	char *dba[2];
+    char *os1;
+    char c1, c2;
 
-	dba[0] = "/etc/gettytab";
-	dba[1] = 0;
-	return((cgetent(&area, dba, name) == 0) ? 1 : 0);
-#else
-	return(0);
-#endif
+    if (*s1 == '\0')
+	return(-1);
+    os1 = s1;
+    c1 = *s1;
+    c2 = *s2;
+    while (LOWER(c1) == LOWER(c2)) {
+	if (c1 == '\0')
+	    break;
+	c1 = *++s1;
+	c2 = *++s2;
+    }
+    return(*s1 ? 0 : (*s2 ? (s1 - os1) : (os1 - s1)));
 }
 
-#ifndef	SOLARIS
-/*ARGSUSED*/
-char *
-gtgetstr(id, cpp)
-char *id, **cpp;
+static char *ambiguous;		/* special return value for command routines */
+
+char **
+genget(char *name, char **table, int stlen)
+     /* name to match */
+     /* name entry in table */
+	   	      
 {
-# ifdef	HAS_CGETENT
-	char *answer;
-	return((cgetstr(area, id, &answer) > 0) ? answer : 0);
-# else
-	return(0);
-# endif
+    char **c, **found;
+    int n;
+
+    if (name == 0)
+	return 0;
+
+    found = 0;
+    for (c = table; *c != 0; c = (char **)((char *)c + stlen)) {
+	if ((n = isprefix(name, *c)) == 0)
+	    continue;
+	if (n < 0)		/* exact match */
+	    return(c);
+	if (found)
+	    return(&ambiguous);
+	found = c;
+    }
+    return(found);
 }
-#endif
+
+/*
+ * Function call version of Ambiguous()
+ */
+int
+Ambiguous(void *s)
+{
+    return((char **)s == &ambiguous);
+}

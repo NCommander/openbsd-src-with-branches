@@ -1,4 +1,4 @@
-/*     $OpenBSD: kerberos.c,v 1.9 2001/11/03 00:07:52 hin Exp $    */
+/*     $OpenBSD: kerberos.c,v 1.10 2002/06/09 00:43:00 hin Exp $    */
 
 /*-
  * Copyright (c) 1991, 1993
