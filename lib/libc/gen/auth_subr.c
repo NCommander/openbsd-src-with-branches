@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_subr.c,v 1.9 2002/03/13 21:39:41 millert Exp $	*/
+/*	$OpenBSD: auth_subr.c,v 1.10 2002/05/24 21:22:37 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995,1996,1997 Berkeley Software Design, Inc.
@@ -960,7 +960,7 @@ _auth_spool(auth_session_t *as, int fd)
 		 * Go ahead and convert newlines into NULs to allow
 		 * easy scanning of the file.
 		 */
-		while(r-- > 0)
+		while (r-- > 0)
 			if (*b++ == '\n')
 				b[-1] = '\0';
 	}
