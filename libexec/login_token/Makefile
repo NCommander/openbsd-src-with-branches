@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2000/12/20 01:41:52 millert Exp $
 
 PROG=	login_token
 SRCS=	login_token.c init.c token.c tokendb.c
@@ -14,7 +14,7 @@ MLINKS+=login_token.8 login_snk.8
 
 afterinstall:
 	for i in ${TOKENS} ; do \
-	    cd ${DESTDIR}/${BINDIR} && \
+	    cd ${DESTDIR}${BINDIR} && \
 	    rm -f login_$$i && \
 	    ln ${PROG} login_$$i ; \
 	done
