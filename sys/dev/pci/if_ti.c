@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.15 2001/02/20 19:39:43 mickey Exp $	*/
+/*	$OpenBSD: if_ti.c,v 1.16 2001/03/14 20:11:39 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1127,6 +1127,7 @@ void ti_setmulti(sc)
 		bcopy(enm->enm_addrlo, (char *)&mc->mc_addr, ETHER_ADDR_LEN);
 		LIST_INSERT_HEAD(&sc->ti_mc_listhead, mc, mc_entries);
 		ti_add_mcast(sc, &mc->mc_addr);
+		ETHER_NEXT_MULTI(step, enm);
 	}
 
 	/* Re-enable interrupts. */
