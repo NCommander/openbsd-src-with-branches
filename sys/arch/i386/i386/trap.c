@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.21 1997/04/04 16:14:09 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.22 1997/04/05 21:24:48 flipk Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 #undef DEBUG
@@ -211,7 +211,8 @@ trap(frame)
 		type |= T_USER;
 		sticks = p->p_sticks;
 		p->p_md.md_regs = &frame;
-	}
+	} else
+		sticks = 0;
 
 	switch (type) {
 
@@ -376,9 +377,8 @@ trap(frame)
 		int rv;
 		extern vm_map_t kernel_map;
 		unsigned nss, v;
-		caddr_t vv = (caddr_t)rcr2();
 
-		va = trunc_page((vm_offset_t)vv);
+		va = trunc_page((vm_offset_t)rcr2());
 		/*
 		 * It is only a kernel address space fault iff:
 		 *	1. (type & T_USER) == 0  and
