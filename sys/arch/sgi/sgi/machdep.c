@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.20 2004/12/13 15:34:46 grange Exp $ */
+/*	$OpenBSD: machdep.c,v 1.21 2004/12/14 09:07:49 grange Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -75,7 +75,7 @@
 #include <machine/mnode.h>
 #endif
 
-#include <machine/rm7000.h>
+#include <mips64/rm7000.h>
 
 #include <dev/cons.h>
 

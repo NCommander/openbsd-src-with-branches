@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.19 2004/12/06 20:12:24 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.20 2004/12/24 22:50:30 miod Exp $	*/
 /* tracked to 1.23 */
 
 /*
@@ -75,7 +75,7 @@
 #include <machine/frame.h>
 #include <machine/regnum.h>
 
-#include <machine/rm7000.h>
+#include <mips64/rm7000.h>
 
 #include <mips64/archtype.h>
 
