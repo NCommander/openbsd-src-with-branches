@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_prot.c,v 1.3 1996/08/01 05:26:02 tholo Exp $	*/
+/*	$OpenBSD: kern_prot.c,v 1.4 1996/08/25 09:51:37 deraadt Exp $	*/
 /*	$NetBSD: kern_prot.c,v 1.33 1996/02/09 18:59:42 christos Exp $	*/
 
 /*
@@ -578,7 +578,7 @@ sys_setlogin(p, v, retval)
 		return (error);
 	error = copyinstr((caddr_t) SCARG(uap, namebuf),
 	    (caddr_t) p->p_pgrp->pg_session->s_login,
-	    sizeof (p->p_pgrp->pg_session->s_login) - 1, (size_t *)0);
+	    sizeof (p->p_pgrp->pg_session->s_login), (size_t *)0);
 	if (error == ENAMETOOLONG)
 		error = EINVAL;
 	return (error);
