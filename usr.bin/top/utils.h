@@ -1,4 +1,4 @@
-/*	$OpenBSD: utils.h,v 1.5 2002/07/15 17:20:36 deraadt Exp $	*/
+/*	$OpenBSD: utils.h,v 1.6 2003/06/19 22:40:45 millert Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -39,3 +39,4 @@ char **argparse(char *, int *);
 int percentages(int, int *, long *, long *, long *);
 char *format_time(time_t);
 char *format_k(int);
+int find_pid(pid_t);
