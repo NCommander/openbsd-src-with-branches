@@ -1,6 +1,6 @@
-/*	$OpenBSD: plist.c,v 1.14 2003/04/04 08:56:01 avsm Exp $	*/
+/*	$OpenBSD: plist.c,v 1.15 2003/07/04 17:31:19 avsm Exp $	*/
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: plist.c,v 1.14 2003/04/04 08:56:01 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: plist.c,v 1.15 2003/07/04 17:31:19 avsm Exp $";
 #endif
 
 /*
@@ -290,7 +290,8 @@ write_plist(package_t *pkg, FILE *fp)
  * run it too in cases of failure.
  */
 int
-delete_package(Boolean ign_err, Boolean nukedirs, package_t *pkg)
+delete_package(Boolean ign_err, Boolean nukedirs,
+    Boolean check_md5, package_t *pkg)
 {
     plist_t *p;
     char *Where = ".", *last_file = "";
@@ -335,7 +336,7 @@ delete_package(Boolean ign_err, Boolean nukedirs, package_t *pkg)
 	   "this packing list is incorrect - ignoring delete request", tmp);
 	    }
 	    else {
-		if (p->next && p->next->type == PLIST_COMMENT && !strncmp(p->next->name, "MD5:", 4)) {
+		if (check_md5 && p->next && p->next->type == PLIST_COMMENT && !strncmp(p->next->name, "MD5:", 4)) {
 		    char *cp, buf[LegibleChecksumLen];
 
 		    if ((cp = MD5File(tmp, buf)) != NULL) {

@@ -1,7 +1,7 @@
-/*	$OpenBSD: perform.c,v 1.27 2003/07/04 17:31:19 avsm Exp $	*/
+/*	$OpenBSD: perform.c,v 1.28 2003/07/09 20:01:43 otto Exp $	*/
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: perform.c,v 1.27 2003/07/04 17:31:19 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: perform.c,v 1.28 2003/07/09 20:01:43 otto Exp $";
 #endif
 
 /*
@@ -556,7 +556,7 @@ pkg_do(char *pkg)
  fail:
     /* Nuke the whole (installed) show, XXX but don't clean directories */
     if (!Fake)
-	delete_package(FALSE, FALSE, &Plist);
+	delete_package(FALSE, FALSE, FALSE, &Plist);
 
  success:
     /* delete the packing list contents */
