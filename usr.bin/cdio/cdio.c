@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdio.c,v 1.10 1998/07/09 19:09:59 csapuntz Exp $	*/
+/*	$OpenBSD: cdio.c,v 1.11 1998/07/09 20:10:26 csapuntz Exp $	*/
 /*
  * Compact Disc Control Utility by Serge V. Vakulenko <vak@cronyx.ru>.
  * Based on the non-X based CD player by Jean-Marc Zucconi and
@@ -1164,19 +1164,30 @@ int open_cd (dev)
 	char *dev;
 {
 	char *realdev;
+	int tries;
 
 	if (fd > -1)
 		return (1);
 
-	fd = opendev(dev, O_RDONLY, OPENDEV_PART, &realdev);
-	if (fd < 0) {
-		if ((errno == ENXIO) || (errno == EIO)) {
-			/*  ENXIO has an overloaded meaning here.
-			 *  The original "Device not configured" should
-			 *  be interpreted as "No disc in drive %s". */
-			warnx ("No disc in drive %s.", realdev);
-			return (0);
+	for (tries = 0; fd < 0 && tries < 10; tries++) {
+		fd = opendev(dev, O_RDONLY, OPENDEV_PART, &realdev);
+		if (fd < 0) {
+			if (errno == ENXIO) {
+				/*  ENXIO has an overloaded meaning here.
+				 *  The original "Device not configured" should
+				 *  be interpreted as "No disc in drive %s". */
+				warnx ("No disc in drive %s.", realdev);
+				return (0);
+			} else if (errno != EIO) {
+				/*  EIO may simply mean the device is not ready
+				 *  yet which is common with CD changers. */
+				warn ("Can't open %s", realdev);
+				return (0);
+			}
 		}
+		sleep (1);
+	}
+	if (fd < 0) {
 		warn ("Can't open %s", realdev);
 		return (0);
 	}
