@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 1997/02/06 02:56:44 downsj Exp $
+#	$OpenBSD: Makefile,v 1.11 1997/02/06 06:46:57 mickey Exp $
 #	$NetBSD: Makefile,v 1.13 1996/10/02 16:19:51 ws Exp $
 
 LIB=	sa
@@ -44,7 +44,7 @@ SRCS+=	ufs.c cd9660.c fat.c
 SRCS+=	cread.c
 SRCS+=	zlib.c
 .PATH:	${DIR}/../../net
-CFLAGS+=-DNO_DEFALTE
+CFLAGS+=-DNO_DEFALTE -I${DIR}/../../net
 .endif
 
 .if !defined(NO_NET)
