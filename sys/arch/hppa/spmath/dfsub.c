@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dfsub.c,v 1.5 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -497,4 +497,4 @@ dbl_fsub(leftptr, rightptr, dstptr, status)
 		Set_inexactflag();
     }
     return(NOEXCEPTION);
-    }
+}

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cnv_float.h,v 1.7 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -310,4 +310,3 @@ int sgl_to_sgl_fcnvxf(int *, sgl_floating_point *, unsigned int *);
 int sgl_to_dbl_fcnvxf(int *, dbl_floating_point *, unsigned int *);
 int dbl_to_sgl_fcnvxf(dbl_integer *, sgl_floating_point *, unsigned int *);
 int dbl_to_dbl_fcnvxf(dbl_integer *, dbl_floating_point *, unsigned int *);
-
