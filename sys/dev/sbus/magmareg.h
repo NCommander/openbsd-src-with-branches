@@ -1,4 +1,4 @@
-/*	$OpenBSD: magmareg.h,v 1.1 2002/01/12 20:19:40 jason Exp $	*/
+/*	$OpenBSD: magmareg.h,v 1.2 2002/01/12 21:30:56 jason Exp $	*/
 
 /* magmareg.h
  *
@@ -237,3 +237,4 @@ int mbpp_hztoms __P((int));
 int mbpp_mstohz __P((int));
 
 #define	CD1400_REGMAPSIZE	0x80
+#define	CD1190_REGMAPSIZE	0x20
