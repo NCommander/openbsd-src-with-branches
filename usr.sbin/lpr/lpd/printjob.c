@@ -541,6 +541,7 @@ print(format, file)
 		if ((prchild = dofork(DORETURN)) == 0) {	/* child */
 			dup2(fi, 0);		/* file is stdin */
 			dup2(p[1], 1);		/* pipe is stdout */
+			closelog();
 			for (n = 3; n < NOFILE; n++)
 				(void) close(n);
 			execl(_PATH_PR, "pr", width, length,
@@ -654,6 +655,7 @@ start:
 		n = open(tempfile, O_WRONLY|O_CREAT|O_TRUNC, 0664);
 		if (n >= 0)
 			dup2(n, 2);
+		closelog();
 		for (n = 3; n < NOFILE; n++)
 			(void) close(n);
 		execv(prog, av);
@@ -1011,6 +1013,7 @@ sendmail(user, bombed)
 	pipe(p);
 	if ((s = dofork(DORETURN)) == 0) {		/* child */
 		dup2(p[0], 0);
+		closelog();
 		for (i = 3; i < NOFILE; i++)
 			(void) close(i);
 		if ((cp = rindex(_PATH_SENDMAIL, '/')) != NULL)
@@ -1266,6 +1269,7 @@ openpr()
 		if ((ofilter = dofork(DOABORT)) == 0) {	/* child */
 			dup2(p[0], 0);		/* pipe is std in */
 			dup2(pfd, 1);		/* printer is std out */
+			closelog();
 			for (i = 3; i < NOFILE; i++)
 				(void) close(i);
 			if ((cp = rindex(OF, '/')) == NULL)
