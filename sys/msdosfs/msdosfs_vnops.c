@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.7 1996/10/24 17:56:18 tholo Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.8 1997/03/02 18:02:01 millert Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.48 1996/03/20 00:45:43 thorpej Exp $	*/
 
 /*-
@@ -836,7 +836,10 @@ msdosfs_remove(v)
 	struct denode *ddep = VTODE(ap->a_dvp);
 	int error;
 
-	error = removede(ddep, dep);
+	if (ap->a_vp->v_type == VDIR)
+		error = EPERM;
+	else
+		error = removede(ddep, dep);
 #ifdef MSDOSFS_DEBUG
 	printf("msdosfs_remove(), dep %08x, v_usecount %d\n", dep, ap->a_vp->v_usecount);
 #endif
@@ -996,7 +999,9 @@ abortit:
 		 * Avoid ".", "..", and aliases of "." for obvious reasons.
 		 */
 		if ((fcnp->cn_namelen == 1 && fcnp->cn_nameptr[0] == '.') ||
-		    dp == ip || (fcnp->cn_flags & ISDOTDOT) ||
+		    dp == ip ||
+		    (fcnp->cn_flags & ISDOTDOT) ||
+		    (tcnp->cn_flags & ISDOTDOT) ||
 		    (ip->de_flag & DE_RENAME)) {
 			VOP_UNLOCK(fvp);
 			error = EINVAL;
