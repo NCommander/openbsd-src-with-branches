@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdboot.c,v 1.5 2003/08/11 06:51:45 mickey Exp $	*/
+/*	$OpenBSD: cdboot.c,v 1.6 2004/04/07 18:24:20 mickey Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -59,7 +59,7 @@ struct consdev	constab[] = {
 };
 struct consdev *cn_tab;
 
-typedef void (*startfuncp) __P((int, int, int, int, int, int, caddr_t))
+typedef void (*startfuncp)(int, int, int, int, int, int, caddr_t)
     __attribute__ ((noreturn));
 
 void
