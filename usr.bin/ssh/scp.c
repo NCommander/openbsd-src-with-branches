@@ -47,7 +47,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.34 2000/08/19 02:26:08 deraadt Exp $");
+RCSID("$OpenBSD: scp.c,v 1.35 2000/08/19 02:50:07 deraadt Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -672,7 +672,8 @@ sink(argc, argv)
 	BUF *bp;
 	off_t i, j;
 	int amt, count, exists, first, mask, mode, ofd, omode;
-	int setimes, size, targisdir, wrerrno = 0;
+	off_t size;
+	int setimes, targisdir, wrerrno = 0;
 	char ch, *cp, *np, *targ, *why, *vect[1], buf[2048];
 	struct utimbuf ut;
 	int dummy_usec;
