@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_getch.c,v 1.3 1997/12/03 05:21:18 millert Exp $	*/
+/*	$OpenBSD: lib_getch.c,v 1.4 1997/12/06 19:11:04 millert Exp $	*/
 
 
 /***************************************************************************
@@ -30,7 +30,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("Id: lib_getch.c,v 1.37 1997/11/30 00:37:38 tom Exp $")
+MODULE_ID("Id: lib_getch.c,v 1.38 1997/12/20 22:22:57 tom Exp $")
 
 #include <fifo_defs.h>
 
@@ -241,11 +241,10 @@ int	ch;
 
 	if (ch == ERR)
 	{
+#if USE_SIZECHANGE
 	    if(SP->_sig_winch)
 	    {
-#ifndef EXTERN_TERMINFO
 		_nc_update_screensize();
-#endif
 		/* resizeterm can push KEY_RESIZE */
 		if(cooked_key_in_fifo())
 		{
@@ -254,6 +253,7 @@ int	ch;
 		    returnCode(ch);
 		}
 	    }
+#endif
 	    T(("wgetch returning ERR"));
 	    returnCode(ERR);
 	}
