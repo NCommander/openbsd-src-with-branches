@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.4 2002/05/24 04:17:01 deraadt Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.5 2002/07/07 08:54:50 jufi Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -129,8 +129,7 @@ ENTRY(_dl_start)
 	mr	3, 21		# argv
 	mr	4, 22		# envp
 	mr	5, 17		# loff
-	mr	6, 18		# dynamicp
-	addi	7, 1, 8		# dl_data
+	addi	6, 1, 8		# dl_data
 
 	bl	_dl_boot@local
 
