@@ -228,6 +228,8 @@ extern char *cvs_editor;
 
 extern int   cvs_cmdop;
 
+extern CVSFILE *cvs_files;
+
 #endif
 
 

@@ -64,6 +64,11 @@ char *cvs_rsh = CVS_RSH_DEFAULT;
 char *cvs_editor = CVS_EDITOR_DEFAULT;
 
 
+/* hierarchy of all the files affected by the command */
+CVSFILE *cvs_files;
+
+
+
 /*
  * Command dispatch table
  * ----------------------
