@@ -1,4 +1,4 @@
-/*	$OpenBSD	*/
+/*	$OpenBSD$	*/
 
 /*
  *  added for EXT2FS support in Lites 1.1
