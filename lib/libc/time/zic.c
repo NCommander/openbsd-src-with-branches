@@ -1,5 +1,5 @@
 #if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
-static char elsieid[] = "@(#)zic.c	7.93";
+static char elsieid[] = "@(#)zic.c	7.96";
 static char rcsid[] = "$OpenBSD: zic.c,v 1.7 1998/01/18 23:25:04 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
@@ -380,7 +380,7 @@ int	errnum;
 	extern int	sys_nerr;
 
 	return (errnum > 0 && errnum <= sys_nerr) ?
-		sys_errlist[errnum] : "Unknown system error";
+		sys_errlist[errnum] : _("Unknown system error");
 }
 #endif /* !(HAVE_STRERROR - 0) */
 
@@ -429,7 +429,7 @@ const char * const	string;
 {
 	char *	cp;
 
-	cp = ecpyalloc("warning: ");
+	cp = ecpyalloc(_("warning: "));
 	cp = ecatalloc(cp, string);
 	error(cp);
 	ifree(cp);
@@ -600,9 +600,19 @@ const char * const	tofile;
 	if (!itsdir(toname))
 		(void) remove(toname);
 	if (link(fromname, toname) != 0) {
+		int	result;
+
 		if (mkdirs(toname) != 0)
 			(void) exit(EXIT_FAILURE);
-		if (link(fromname, toname) != 0) {
+		result = link(fromname, toname);
+#if (HAVE_SYMLINK - 0) 
+		if (result != 0) {
+			result = symlink(fromname, toname);
+			if (result == 0)
+warning(_("hard link failed, symbolic link used"));
+		}
+#endif
+		if (result != 0) {
 			const char *e = strerror(errno);
 
 			(void) fprintf(stderr,
@@ -890,9 +900,10 @@ const int		signable;
 			error(errstring);
 			return 0;
 	}
-	if (hh < 0 || hh >= HOURSPERDAY ||
+	if ((hh < 0 || hh >= HOURSPERDAY ||
 		mm < 0 || mm >= MINSPERHOUR ||
-		ss < 0 || ss > SECSPERMIN) {
+		ss < 0 || ss > SECSPERMIN) &&
+		!(hh == HOURSPERDAY && mm == 0 && ss == 0)) {
 			error(errstring);
 			return 0;
 	}
