@@ -38,10 +38,10 @@
 
 #if defined(SYSLIBC_SCCS)
 	.text
-	.asciz "$OpenBSD$"
+	.asciz "$OpenBSD: syscall.S,v 1.2 1996/08/19 08:13:46 tholo Exp $"
 #endif /* SYSLIBC_SCCS */
 
-ENTRY(syscall)
+SYSENTRY(syscall)
 	pop	%ecx	/* rta */
 	pop	%eax	/* syscall number */
 	push	%ecx

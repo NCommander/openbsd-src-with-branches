@@ -35,7 +35,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: clrerr.c,v 1.4 1995/02/02 02:09:03 jtc Exp $";
+static char rcsid[] = "$OpenBSD: clrerr.c,v 1.2 1996/08/19 08:32:17 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -45,5 +45,7 @@ void
 clearerr(fp)
 	FILE *fp;
 {
+	flockfile(fp);
 	__sclearerr(fp);
+	funlockfile(fp);
 }

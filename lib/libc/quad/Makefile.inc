@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 1995/02/27 17:29:31 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 1996/08/19 08:30:12 tholo Exp $
 
 # Quad support
 SRCS+=	adddi3.c anddi3.c ashldi3.c ashrdi3.c cmpdi2.c divdi3.c fixdfdi.c \
@@ -7,4 +7,4 @@ SRCS+=	adddi3.c anddi3.c ashldi3.c ashrdi3.c cmpdi2.c divdi3.c fixdfdi.c \
 	negdi2.c notdi2.c qdivrem.c subdi3.c ucmpdi2.c udivdi3.c umoddi3.c \
 	xordi3.c
 
-.PATH: ${.CURDIR}/arch/${MACHINE_ARCH}/quad ${.CURDIR}/quad
+.PATH: ${LIBCSRCDIR}/arch/${MACHINE_ARCH}/quad ${LIBCSRCDIR}/quad
