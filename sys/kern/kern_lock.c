@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kern_lock.c,v 1.5 1997/11/07 10:27:43 niklas Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -205,7 +205,7 @@ lockmgr(lkp, flags, interlkp, p)
 		if ((flags & LK_REENABLE) == 0)
 			lkp->lk_flags |= LK_DRAINED;
 	}
-#endif DIAGNOSTIC
+#endif /* DIAGNOSTIC */
 
 	switch (flags & LK_TYPE_MASK) {
 
