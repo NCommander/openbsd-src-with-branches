@@ -1,4 +1,4 @@
-/*	$OpenBSD: doalloc.c,v 1.4 1999/05/08 20:29:01 millert Exp $	*/
+/*	$OpenBSD: doalloc.c,v 1.5 2001/01/22 18:01:51 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -64,10 +64,12 @@ NCURSES_EXPORT(char *)
 _nc_strdup(const char *src)
 {
     char *dst;
+    size_t dsize;
     if (src != 0) {
-	dst = typeMalloc(char, strlen(src) + 1);
+	dsize = strlen(src) + 1;
+	dst = typeMalloc(char, dsize);
 	if (dst != 0) {
-	    (void) strcpy(dst, src);
+	    (void) strlcpy(dst, src, dsize);
 	}
     } else {
 	dst = 0;
