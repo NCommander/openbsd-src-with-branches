@@ -162,7 +162,7 @@ cvsd_sock_accept(int fd)
 		return (-1);
 	}
 
-	return (0);
+	return (cfd);
 }
 #endif
 
