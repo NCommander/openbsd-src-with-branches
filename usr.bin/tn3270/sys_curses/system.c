@@ -1,4 +1,4 @@
-/*	$OpenBSD: system.c,v 1.2 1996/06/26 05:41:31 deraadt Exp $	*/
+/*	$OpenBSD: system.c,v 1.3 1996/12/06 02:09:04 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)system.c	4.5 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: system.c,v 1.2 1996/06/26 05:41:31 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: system.c,v 1.3 1996/12/06 02:09:04 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -643,7 +643,7 @@ char	*argv[];
 
     /* First, create verification file. */
     do {
-	keyname = mktemp(strdup("/tmp/apiXXXXXX"));
+	keyname = mktemp(strdup("/tmp/apiXXXXXXXXXX"));
 	fd = open(keyname, O_RDWR|O_CREAT|O_EXCL, IREAD|IWRITE);
     } while ((fd == -1) && (errno == EEXIST));
 
