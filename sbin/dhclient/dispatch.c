@@ -47,7 +47,7 @@
 #include <ifaddrs.h>
 #include <poll.h>
 
-struct interface_info *interfaces, *dummy_interfaces, *fallback_interface;
+struct interface_info *interfaces;
 struct protocol *protocols;
 struct timeout *timeouts;
 static struct timeout *free_timeouts;
