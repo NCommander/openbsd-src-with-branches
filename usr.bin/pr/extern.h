@@ -45,7 +45,7 @@ void	 addnum __P((char *, int, int));
 int	 egetopt __P((int, char * const *, const char *));
 void	 flsh_errs __P((void));
 int	 horzcol __P((int, char **));
-int	 inln __P((FILE *, char *, int, int *, int, int *));
+int	 inln __P((FILE *, char *, int, int *, int *, int, int *));
 int	 inskip __P((FILE *, int, int));
 void	 mfail __P((void));
 int	 mulfile __P((int, char **));
