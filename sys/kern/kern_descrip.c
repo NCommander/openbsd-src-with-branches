@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.23 2000/11/16 20:02:16 provos Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.24 2001/05/14 10:51:26 art Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -520,7 +520,7 @@ sys_fstat(p, v, retval)
 		break;
 
 	case DTYPE_SOCKET:
-		error = soo_stat((struct socket *)fp->f_data, &ub);
+		error = soo_stat(fp, &ub, p);
 		break;
 
 #ifndef OLD_PIPE

@@ -1,4 +1,4 @@
-/*	$OpenBSD: netbsd_stat.c,v 1.5 1999/09/22 01:35:01 kstailey Exp $	*/
+/*	$OpenBSD: netbsd_stat.c,v 1.6 2001/05/14 10:51:27 art Exp $	*/
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -202,7 +202,7 @@ netbsd_sys___fstat13(p, v, retval)
 		break;
 
 	case DTYPE_SOCKET:
-		error = soo_stat((struct socket *)fp->f_data, &sb);
+		error = soo_stat(fp, &sb, p);
 		break;
 
 #ifndef OLD_PIPE
