@@ -251,7 +251,8 @@ cvsroot_get(const char *dir)
 		(void)fclose(fp);
 		return (NULL);
 	}
-	strlcpy(rootstr, line, len);
+	memcpy(rootstr, line, len);
+	rootstr[len] = '\0';
 	rp = cvsroot_parse(rootstr);
 
 	(void)fclose(fp);
