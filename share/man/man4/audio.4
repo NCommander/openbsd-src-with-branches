@@ -43,12 +43,8 @@
 .Nd
 device-independent audio driver layer
 .Sh SYNOPSIS
+.Fd #include <sys/types.h>
 .Fd #include <sys/audioio.h>
-.Pa /dev/audio
-.br
-.Pa /dev/sound
-.br
-.Pa /dev/mixer
 .Sh DESCRIPTION
 The
 .Nm audio
@@ -406,6 +402,10 @@ By convention, all the mixer device indices for generic
 class grouping are at the end of the index number space for a particular
 hardware device, and can be distinguished from other mixer controls
 because they use a name from one of the AudioC* string values.
+.Sh FILES
+.Pa /dev/audio
+.Pa /dev/mixer
+.Pa /dev/sound
 .Sh SEE ALSO
 .Xr ioctl 2 .
 .br
