@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_info_43.c,v 1.6 1996/05/22 12:01:45 deraadt Exp $	*/
+/*	$OpenBSD: kern_info_43.c,v 1.7 1996/05/23 08:32:22 deraadt Exp $	*/
 /*	$NetBSD: kern_info_43.c,v 1.5 1996/02/04 02:02:22 christos Exp $	*/
 
 /*
@@ -205,7 +205,7 @@ compat_43_sys_getkerninfo(p, v, retval)
 	int error, name[5];
 	size_t size;
 
-	extern char ostype[], osrelease[], version[], machine[];
+	extern char ostype[], osrelease[], machine[];
 
 	if (SCARG(uap, size) && (error = copyin((caddr_t)SCARG(uap, size),
 	    (caddr_t)&size, sizeof(size))))
