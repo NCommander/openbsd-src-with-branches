@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.72 2004/01/17 21:06:55 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.73 2004/01/18 19:15:00 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -249,6 +249,7 @@ struct kif {
 	u_int8_t		 media_type;
 	u_int8_t		 link_state;
 	u_long			 baudrate;
+	u_int8_t		 nh_reachable;	/* for nexthop verification */
 };
 
 struct session_up {
