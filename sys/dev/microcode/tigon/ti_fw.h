@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ti_fw.h,v 1.5 2000/11/21 03:50:49 jason Exp $	*/
 
 /*
  * Firmware for Alteon Tigon 1 chip.
