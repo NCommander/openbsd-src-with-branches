@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.17 2002/06/09 02:15:54 deraadt Exp $	*/
+/*	$OpenBSD: config.c,v 1.18 2002/06/10 19:57:35 espie Exp $	*/
 /*	$KAME: config.c,v 1.62 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -186,7 +186,7 @@ getconfig(intface)
 		syslog(LOG_ERR,
 		       "<%s> router lifetime (%ld) on %s is invalid "
 		       "(must be 0 or between %d and %d)",
-		       __func__, val, intface, tmp->maxinterval,
+		       __func__, val, intface,
 		       tmp->maxinterval, MAXROUTERLIFETIME);
 		exit(1);
 	}
