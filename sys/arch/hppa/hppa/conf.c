@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.22 2002/10/01 21:03:30 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.23 2002/12/05 02:49:55 kjc Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -145,7 +145,8 @@ struct cdevsw   cdevsw[] =
 	cdev_mouse_init(NWSKBD,wskbd),	/* 28: keyboards */
 	cdev_mouse_init(NWSMOUSE,wsmouse), /* 29: mice */
 	cdev_mouse_init(NWSMUX,wsmux),	/* 30: mux */
-					/* 31 */
+	cdev_notdef(),			/* 31 */
+
 #ifdef XFS
 	cdev_xfs_init(NXFS,xfs_dev),	/* 32: xfs communication device */
 #else
