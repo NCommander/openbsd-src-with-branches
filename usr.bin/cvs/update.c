@@ -127,8 +127,6 @@ cvs_update_file(CVSFILE *cf, void *arg)
 	struct cvsroot *root;
 	struct cvs_ent *entp;
 
-	cvs_log(LP_DEBUG, "%s: updating %s", __func__, cf->cf_path);
-
 	if (cf->cf_type == DT_DIR) {
 		root = cf->cf_ddat->cd_root;
 		if ((cf->cf_parent == NULL) ||

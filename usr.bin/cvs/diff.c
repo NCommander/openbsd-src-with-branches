@@ -421,8 +421,10 @@ cvs_diff(int argc, char **argv)
 	cvs_file_examine(files, cvs_diff_file, &darg);
 
 	root = files->cf_ddat->cd_root;
-	if (root->cr_method != CVS_METHOD_LOCAL)
+	if (root->cr_method != CVS_METHOD_LOCAL) {
+		cvs_senddir(root, files);
 		cvs_sendreq(root, CVS_REQ_DIFF, NULL);
+	}
 
 	return (0);
 }
@@ -481,8 +483,6 @@ cvs_diff_file(struct cvs_file *cfp, void *arg)
 	struct cvsroot *root;
 
 	dap = (struct diff_arg *)arg;
-
-	cvs_log(LP_DEBUG, "%s: diffing %s", __func__, cfp->cf_path);
 
 	if (cfp->cf_type == DT_DIR) {
 		root = cfp->cf_ddat->cd_root;
