@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkheaders.c,v 1.6 1997/07/06 04:07:10 downsj Exp $	*/
+/*	$OpenBSD: mkheaders.c,v 1.8 1997/08/07 10:36:58 deraadt Exp $	*/
 /*	$NetBSD: mkheaders.c,v 1.12 1997/02/02 21:12:34 thorpej Exp $	*/
 
 /*
@@ -100,7 +100,7 @@ emitcnt(head)
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if (nv == NULL)
 			goto writeit;
-		if (sscanf(buf, "#define %s %d", nam, &cnt) != 2 ||
+		if (sscanf(buf, "#define %100s %d", nam, &cnt) != 2 ||
 		    strcmp(nam, cntname(nv->nv_name)) != 0 ||
 		    cnt != nv->nv_int)
 			goto writeit;
