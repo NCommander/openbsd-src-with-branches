@@ -1,4 +1,4 @@
-/*	$OpenBSD: prword.c,v 1.2 1998/08/19 07:40:43 pjanzen Exp $	*/
+/*	$OpenBSD: prword.c,v 1.3 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: prword.c,v 1.3 1995/03/23 08:32:58 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)prword.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: prword.c,v 1.2 1998/08/19 07:40:43 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: prword.c,v 1.3 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -45,7 +45,7 @@ static char rcsid[] = "$OpenBSD: prword.c,v 1.2 1998/08/19 07:40:43 pjanzen Exp 
  *	Print out the current state of the word
  */
 void
-prword()
+prword(void)
 {
 	move(KNOWNY, KNOWNX + sizeof "Word: ");
 	addstr(Known);

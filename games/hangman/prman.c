@@ -1,4 +1,4 @@
-/*	$OpenBSD: prman.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp $	*/
+/*	$OpenBSD: prman.c,v 1.4 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: prman.c,v 1.3 1995/03/23 08:32:56 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)prman.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: prman.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: prman.c,v 1.4 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -46,7 +46,7 @@ static char rcsid[] = "$OpenBSD: prman.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp $
  *	of incorrect guesses.
  */
 void
-prman()
+prman(void)
 {
 	int	i;
 

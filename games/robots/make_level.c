@@ -1,4 +1,4 @@
-/*	$OpenBSD: make_level.c,v 1.4 2002/05/31 04:21:30 pjanzen Exp $	*/
+/*	$OpenBSD: make_level.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: make_level.c,v 1.3 1995/04/22 10:08:56 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)make_level.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: make_level.c,v 1.4 2002/05/31 04:21:30 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: make_level.c,v 1.5 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -45,7 +45,7 @@ static char rcsid[] = "$OpenBSD: make_level.c,v 1.4 2002/05/31 04:21:30 pjanzen 
  *	Make the current level
  */
 void
-make_level()
+make_level(void)
 {
 	int	i;
 	COORD	*cp;

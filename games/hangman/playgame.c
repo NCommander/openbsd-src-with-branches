@@ -1,4 +1,4 @@
-/*	$OpenBSD: playgame.c,v 1.4 1999/09/25 20:51:53 pjanzen Exp $	*/
+/*	$OpenBSD: playgame.c,v 1.5 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: playgame.c,v 1.3 1995/03/23 08:32:53 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)playgame.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: playgame.c,v 1.4 1999/09/25 20:51:53 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: playgame.c,v 1.5 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -45,7 +45,7 @@ static char rcsid[] = "$OpenBSD: playgame.c,v 1.4 1999/09/25 20:51:53 pjanzen Ex
  *	play a game
  */
 void
-playgame()
+playgame(void)
 {
 	bool	*bp;
 

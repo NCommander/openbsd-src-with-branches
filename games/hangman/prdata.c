@@ -1,4 +1,4 @@
-/*	$OpenBSD: prdata.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp $	*/
+/*	$OpenBSD: prdata.c,v 1.4 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: prdata.c,v 1.3 1995/03/23 08:32:54 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)prdata.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: prdata.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: prdata.c,v 1.4 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -45,7 +45,7 @@ static char rcsid[] = "$OpenBSD: prdata.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp 
  *	Print out the current guesses
  */
 void
-prdata()
+prdata(void)
 {
 	bool	*bp;
 
