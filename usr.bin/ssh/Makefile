@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2001/06/28 21:55:27 markus Exp $
+#	$OpenBSD: Makefile,v 1.10 2002/02/09 17:37:34 deraadt Exp $
 
 .include <bsd.own.mk>
 
@@ -10,5 +10,8 @@ distribution:
 	    ${DESTDIR}/etc/ssh/ssh_config
 	install -C -o root -g wheel -m 0644 ${.CURDIR}/sshd_config \
 	    ${DESTDIR}/etc/ssh/sshd_config
+
+beforeinstall:
+	install -d -m 0755 -o root -g wheel ${DESTDIR}/var/empty
 
 .include <bsd.subdir.mk>
