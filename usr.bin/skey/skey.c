@@ -1,4 +1,4 @@
-/* * $OpenBSD: skey.c,v 1.4 1996/09/29 04:33:58 millert Exp $*/
+/* * $OpenBSD: skey.c,v 1.5 1996/09/29 21:28:38 millert Exp $*/
 /*
  * S/KEY v1.1b (skey.c)
  *
@@ -103,8 +103,9 @@ main(argc, argv)
 		(void)fputs("Reminder - Do not use this program while logged in via telnet or rlogin.\n", stderr);
 		(void)fputs("Enter secret password: ", stderr);
 		readpass(passwd, sizeof(passwd));
+		if (passwd[0] == '\0') 
+			exit(1);
 	}
-	rip(passwd);
 
 	/* Crunch seed and password into starting key */
 	if (keycrunch(key, seed, passwd) != 0)
