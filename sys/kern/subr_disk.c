@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.13 1997/05/12 22:43:55 deraadt Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.14 1997/05/22 05:34:56 deraadt Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -180,11 +180,11 @@ u_int
 dkcksum(lp)
 	register struct disklabel *lp;
 {
-	register u_short *start, *end;
-	register u_short sum = 0;
+	register u_int16_t *start, *end;
+	register u_int16_t sum = 0;
 
-	start = (u_short *)lp;
-	end = (u_short *)&lp->d_partitions[lp->d_npartitions];
+	start = (u_int16_t *)lp;
+	end = (u_int16_t *)&lp->d_partitions[lp->d_npartitions];
 	while (start < end)
 		sum ^= *start++;
 	return (sum);
