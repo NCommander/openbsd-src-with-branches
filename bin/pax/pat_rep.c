@@ -1,4 +1,4 @@
-/*	$OpenBSD: pat_rep.c,v 1.4 1996/08/27 03:53:16 tholo Exp $	*/
+/*	$OpenBSD: pat_rep.c,v 1.6 1997/02/27 23:32:59 michaels Exp $	*/
 /*	$NetBSD: pat_rep.c,v 1.4 1995/03/21 09:07:33 cgd Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)pat_rep.c	8.2 (Berkeley) 4/18/94";
 #else
-static char rcsid[] = "$OpenBSD: pat_rep.c,v 1.4 1996/08/27 03:53:16 tholo Exp $";
+static char rcsid[] = "$OpenBSD: pat_rep.c,v 1.6 1997/02/27 23:32:59 michaels Exp $";
 #endif
 #endif /* not lint */
 
@@ -1011,7 +1011,7 @@ rep_name(name, nlen, prnt)
 #			ifdef NET2_REGEX
 			inpt = pt->rcmp->endp[0];
 #			else
-			inpt += pm[0].rm_eo;
+			inpt += pm[0].rm_eo - pm[0].rm_so;
 #			endif
 
 			if ((outpt == endpt) || (*inpt == '\0'))
