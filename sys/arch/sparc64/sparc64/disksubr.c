@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.5 2001/10/12 20:32:11 jason Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.6 2001/10/15 04:03:45 jason Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.13 2000/12/17 22:39:18 pk Exp $ */
 
 /*
@@ -73,7 +73,7 @@ extern void cdstrategy __P((struct buf *));
 
 /*
  * Attempt to read a disk label from a device
- * using the indicated stategy routine.
+ * using the indicated strategy routine.
  * The label must be partly set up before this:
  * secpercyl, secsize and anything required for a block i/o read
  * operation in the driver's strategy/start routines
