@@ -1,4 +1,4 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.2 1998/12/18 05:59:17 d Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.3 1998/12/21 07:36:59 d Exp $	*/
 /*
  * Atomic lock for m68k
  */
@@ -28,7 +28,7 @@ _atomic_lock(volatile _spinlock_lock_t *lock)
 }
 
 int
-_atomic_lock(volatile _spinlock_lock_t *lock)
+_atomic_is_locked(volatile _spinlock_lock_t *lock)
 {
 
 	return (*lock != _SPINLOCK_UNLOCKED);
