@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmeter.h,v 1.5 1997/11/09 22:12:22 millert Exp $	*/
+/*	$OpenBSD: vmmeter.h,v 1.6 1999/02/26 02:47:02 art Exp $	*/
 /*	$NetBSD: vmmeter.h,v 1.9 1995/03/26 20:25:04 jtc Exp $	*/
 
 /*-
@@ -113,9 +113,6 @@ struct vmtotal
 	u_int32_t t_armshr;	/* active shared real memory */
 	u_int32_t t_free;	/* free memory pages */
 };
-#ifdef _KERNEL
-struct	vmtotal total;
-#endif
 
 /*
  * Fork/vfork/rfork accounting.
