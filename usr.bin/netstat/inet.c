@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.37 1999/12/06 11:17:26 niklas Exp $	*/
+/*	$OpenBSD: inet.c,v 1.38 1999/12/08 12:30:17 itojun Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "from: @(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-static char *rcsid = "$OpenBSD: inet.c,v 1.37 1999/12/06 11:17:26 niklas Exp $";
+static char *rcsid = "$OpenBSD: inet.c,v 1.38 1999/12/08 12:30:17 itojun Exp $";
 #endif
 #endif /* not lint */
 
@@ -779,7 +779,6 @@ ip4_stats(off, name)
         p(ip4s_hdrops, "\t%u packet%s shorter than header shows\n");
         p(ip4s_pdrops, "\t%u packet%s dropped due to policy\n");
         p(ip4s_spoof, "\t%u packet%s with possibly spoofed local addresses\n");
-        p(ip4s_notip4, "\t%u packet%s with internal header not IPv4 received\n");
         p(ip4s_qfull, "\t%u packet%s were dropped due to full output queue\n");
 	p(ip4s_ibytes, "\t%qu input byte%s\n");
 	p(ip4s_obytes, "\t%qu output byte%s\n");
