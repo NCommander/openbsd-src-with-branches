@@ -7,10 +7,15 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
+#include "stand.h"
+#include "libbug.h"
+
 /* BUG - return to bug routine */
-void
-mvmeprom_return()
+__dead void
+_rtt()
 {
 	MVMEPROM_CALL(MVMEPROM_EXIT);
+	printf("_rtt: exit failed.  spinning...");
+	while (1) ;
 	/*NOTREACHED*/
 }

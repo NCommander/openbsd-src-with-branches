@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
+#include "libbug.h"
+
 /* BUG - timing routine */
 void
 mvmeprom_delay(msec)

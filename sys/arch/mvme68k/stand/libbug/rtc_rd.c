@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
+#include "libbug.h"
+
 void
 mvmeprom_rtc_rd(ptime)
 	struct mvmeprom_time *ptime;

@@ -7,15 +7,16 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
+#include "stand.h"
 #include "libbug.h"
 
-/* BUG - query board routines */
-struct mvmeprom_brdid *
-mvmeprom_getbrdid()
+/* returns 0 if no characters ready to read */
+int
+getchar()
 {
-	struct mvmeprom_brdid *id;
+	int ret;
 
 	MVMEPROM_NOARG();
-	MVMEPROM_CALL(MVMEPROM_GETBRDID);
-	MVMEPROM_RETURN(id);
+	MVMEPROM_CALL(MVMEPROM_INCHR);
+	MVMEPROM_RETURN_BYTE(ret);
 }

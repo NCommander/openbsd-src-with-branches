@@ -7,12 +7,15 @@
 #include <sys/types.h>
 #include <machine/prom.h>
 
+#include "libbug.h"
+
 /* returns 0 if no characters ready to read */
 int
-mvmeprom_instat()
+peekchar()
 {
 	int ret;
 
+	MVMEPROM_NOARG();
 	MVMEPROM_CALL(MVMEPROM_INSTAT);
 	MVMEPROM_STATRET(ret);
 }
