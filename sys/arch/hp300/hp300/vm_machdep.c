@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.20 2001/05/06 21:39:00 millert Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.21 2001/05/11 23:24:57 millert Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.47 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -152,7 +152,7 @@ cpu_exit(p)
 	struct proc *p;
 {
 
-	(void) splimp();
+	(void) splhigh();
 #if defined(UVM)
 	uvmexp.swtch++;
 #else
