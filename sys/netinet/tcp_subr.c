@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.38 2000/12/21 00:54:10 itojun Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.39 2001/02/16 16:00:54 itojun Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -141,6 +141,7 @@ tcp_init()
 	tcp_iss = 1;		/* wrong */
 #endif /* TCP_COMPAT_42 */
 	in_pcbinit(&tcbtable, tcbhashsize);
+	tcp_now = arc4random() / 2;
 
 #ifdef INET6
 	/*
