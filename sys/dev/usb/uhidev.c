@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidev.c,v 1.6 2002/11/11 02:32:32 nate Exp $	*/
+/*	$OpenBSD: uhidev.c,v 1.7 2003/05/07 04:33:33 deraadt Exp $	*/
 /*	$NetBSD: uhidev.c,v 1.10 2002/10/09 06:27:09 fair Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
  */
 
 /*
- * HID spec: http://www.usb.org/developers/data/devclass/hid1_1.pdf
+ * HID spec: http://www.usb.org/developers/devclass_docs/HID1_11.pdf
  */
 
 #include <sys/param.h>
