@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.c,v 1.43 2005/03/13 19:56:14 joris Exp $	*/
+/*	$OpenBSD: proto.c,v 1.44 2005/03/26 08:09:54 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -961,7 +961,7 @@ cvs_senddir(struct cvsroot *root, CVSFILE *dir)
 	char lbuf[MAXPATHLEN], rbuf[MAXPATHLEN];
 
 	cvs_file_getpath(dir, lbuf, sizeof(lbuf));
-	if (strcmp(lbuf, cvs_lastdir) == 0)
+	if (strcmp(lbuf, cvs_lastdir) == 0 && cvs_cmdop != CVS_OP_CHECKOUT)
 		return (0);
 
 	if (dir->cf_ddat->cd_repo == NULL)
