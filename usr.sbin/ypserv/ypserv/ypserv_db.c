@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_db.c,v 1.13 1997/08/09 23:10:12 maja Exp $ */
+/*	$OpenBSD: ypserv_db.c,v 1.14 1998/01/08 22:36:47 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -34,7 +34,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.13 1997/08/09 23:10:12 maja Exp $";
+static char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.14 1998/01/08 22:36:47 maja Exp $";
 #endif
 
 /*
@@ -420,8 +420,8 @@ lookup_host(nametable, host_lookup, db, keystr, result)
 		v = val;
 		for (; host->h_addr_list[0] != NULL; host->h_addr_list++) {
 			addr_name = (struct in_addr *)host->h_addr_list[0];
-			snprintf(tmpbuf,sizeof(tmpbuf), "%s %s\n",
-				inet_ntoa(*addr_name), host->h_name);
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s %s\n",
+			    inet_ntoa(*addr_name), host->h_name);
 			if (v - val + strlen(tmpbuf) + 1 > sizeof(val))
 				break;
 			strcpy(v, tmpbuf);
