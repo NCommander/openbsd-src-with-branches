@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.34 1997/04/07 22:48:08 rees Exp $	*/
+/*	$OpenBSD: fd.c,v 1.35 1997/10/18 10:37:09 deraadt Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -995,7 +995,6 @@ fdioctl(dev, cmd, addr, flag, p)
 		errstring = readdisklabel(dev, fdstrategy, lp, &cdl);
 		if (errstring) {
 			/*printf("%s: %s\n", fd->sc_dev.dv_xname, errstring); */
-			return 0;
 		}
 
 		*(struct disklabel *)addr = *lp;
