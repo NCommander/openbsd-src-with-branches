@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.35 2001/07/27 15:48:38 itojun Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.36 2001/11/29 08:20:50 itojun Exp $  */
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
  *
@@ -74,13 +74,7 @@ struct etheripstat etheripstat;
  */
 
 void
-#if __STDC__
 etherip_input(struct mbuf *m, ...)
-#else
-etherip_input(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	union sockaddr_union ssrc, sdst;
 	struct ether_header eh;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.7 2001/12/07 09:16:07 itojun Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.8 2002/03/14 01:27:12 millert Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -355,13 +355,7 @@ rip6_ctlinput(cmd, sa, d)
  * Tack on options user may have setup with control call.
  */
 int
-#if __STDC__
 rip6_output(struct mbuf *m, ...)
-#else
-rip6_output(m, va_alist)
-	struct mbuf *m;
-	va_dcl
-#endif
 {
 	struct socket *so;
 	struct sockaddr_in6 *dstsock;

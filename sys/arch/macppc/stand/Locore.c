@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.3 2001/10/01 22:44:26 drahn Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.4 2002/03/14 01:26:37 millert Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 1997/04/16 20:29:11 thorpej Exp $	*/
 
 /*
@@ -507,16 +507,7 @@ OF_chain(virt, size, entry, arg, len)
 #endif
 
 int
-#ifdef	__STDC__
 OF_call_method(char *method, int ihandle, int nargs, int nreturns, ...)
-#else
-OF_call_method(method, ihandle, nargs, nreturns, va_alist)
-	char *method;
-	int ihandle;
-	int nargs;
-	int nreturns;
-	va_dcl
-#endif
 {
 	va_list ap;
 	static struct {
