@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: strnsubst.c,v 1.1 2003/06/12 01:09:23 millert Exp $	*/
 /*	$FreeBSD: strnsubst.c,v 1.6 2002/06/22 12:58:42 jmallett Exp $	*/
 
 /*
@@ -10,7 +10,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD$";
+static const char rcsid[] = "$OpenBSD: strnsubst.c,v 1.1 2003/06/12 01:09:23 millert Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -59,7 +59,7 @@ strnsubst(char **str, const char *match, const char *replstr, size_t maxsize)
 			break;
 		n = snprintf(s2 + s2len, maxsize - s2len, "%.*s%s",
 		    (int)(this - s1), s1, replstr);
-		if (n + s2len + strlen(this + matchlen) >= maxsize)
+		if (n == -1 || n + s2len + strlen(this + matchlen) >= maxsize)
 			break;			/* out of room */
 		s2len += n;
 		s1 = this + matchlen;
