@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sm_pcmcia.c,v 1.1 1998/09/11 10:47:14 fgsch Exp $	*/
+/*	$OpenBSD: if_sm_pcmcia.c,v 1.2 1998/09/12 07:48:07 fgsch Exp $	*/
 /*	$NetBSD: if_sm_pcmcia.c,v 1.11 1998/08/15 20:47:32 thorpej Exp $  */
 
 /*-
@@ -315,10 +315,10 @@ sm_pcmcia_lannid_ciscallback(tuple, arg)
 		if (tuple->length < 2)
 			return (0);
 
-	if ((pcmcia_tuple_read_1(tuple, 0) !=
-		PCMCIA_TPLFE_TYPE_LAN_NID) ||
-	    (pcmcia_tuple_read_1(tuple, 1) != ETHER_ADDR_LEN))
-		return (0);
+		if ((pcmcia_tuple_read_1(tuple, 0) !=
+		     PCMCIA_TPLFE_TYPE_LAN_NID) ||
+		    (pcmcia_tuple_read_1(tuple, 1) != ETHER_ADDR_LEN))
+			return (0);
 
 		for (i = 0; i < ETHER_ADDR_LEN; i++)
 			myla[i] = pcmcia_tuple_read_1(tuple, i + 2);
