@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: ukbdmap.c,v 1.5 2000/04/27 15:26:49 augustss Exp $	*/
 
 /*

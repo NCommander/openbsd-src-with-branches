@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: ukbdvar.h,v 1.2 2000/06/01 14:29:00 augustss Exp $	*/
 
 /*-
