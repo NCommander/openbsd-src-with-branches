@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp_var.h,v 1.14 1997/09/04 04:37:16 millert Exp $	*/
+/*	$OpenBSD: ftp_var.h,v 1.15 1997/09/22 05:14:11 millert Exp $	*/
 /*	$NetBSD: ftp_var.h,v 1.18 1997/08/18 10:20:25 lukem Exp $	*/
 
 /*
@@ -49,6 +49,7 @@
 
 #ifdef SOCKS
 #include <socks.h>
+int fclose(FILE *);
 #endif
 
 #include "stringlist.h"
