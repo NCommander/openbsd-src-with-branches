@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_output.c,v 1.4 2004/12/28 23:07:32 jsg Exp $	*/
+/*	$OpenBSD: ieee80211_output.c,v 1.5 2005/02/17 18:28:05 reyk Exp $	*/
 /*	$NetBSD: ieee80211_output.c,v 1.13 2004/05/31 11:02:55 dyoung Exp $	*/
 
 /*-
@@ -253,7 +253,8 @@ ieee80211_encap(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node **pni)
 bad:
 	if (m != NULL)
 		m_freem(m);
-	ieee80211_release_node(ic, ni);
+	if (ni != NULL)
+		ieee80211_release_node(ic, ni);
 	*pni = NULL;
 	return NULL;
 }
