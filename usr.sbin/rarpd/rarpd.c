@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.20 1998/07/07 17:29:49 art Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.21 1998/07/13 06:58:48 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -28,7 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rarpd.c,v 1.20 1998/07/07 17:29:49 art Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.21 1998/07/13 06:58:48 deraadt Exp $";
 #endif
 
 
@@ -293,8 +293,8 @@ init_all()
 void
 usage()
 {
-	(void) fprintf(stderr, "usage: rarpd -a [ -d -f ]\n");
-	(void) fprintf(stderr, "       rarpd [ -d -f ] interface\n");
+	(void) fprintf(stderr, "usage: rarpd -a [-dfl]\n");
+	(void) fprintf(stderr, "       rarpd [-dfl] interface\n");
 	exit(1);
 }
 
