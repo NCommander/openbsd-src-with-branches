@@ -1,4 +1,4 @@
-/*	$OpenBSD: fs.h,v 1.13 2003/06/02 23:28:23 millert Exp $	*/
+/*	$OpenBSD: fs.h,v 1.14 2003/08/25 23:26:55 tedu Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -530,5 +530,5 @@ struct ocg {
  */
 #define	NINDIR(fs)	((fs)->fs_nindir)
 
-extern int inside[], around[];
-extern u_char *fragtbl[];
+extern const int inside[], around[];
+extern const u_char *fragtbl[];
