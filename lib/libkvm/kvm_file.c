@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_file.c,v 1.5 2001/11/05 23:04:35 art Exp $ */
+/*	$OpenBSD: kvm_file.c,v 1.6 2001/11/06 19:17:36 art Exp $ */
 /*	$NetBSD: kvm_file.c,v 1.5 1996/03/18 22:33:18 thorpej Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #else
-static char *rcsid = "$OpenBSD: kvm_file.c,v 1.5 2001/11/05 23:04:35 art Exp $";
+static char *rcsid = "$OpenBSD: kvm_file.c,v 1.6 2001/11/06 19:17:36 art Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -116,7 +116,7 @@ kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
 		}
 	}
 	if (n != nfiles) {
-		_kvm_err(kd, kd->program, "inconsistant nfiles");
+		_kvm_err(kd, kd->program, "inconsistent nfiles");
 		return (0);
 	}
 	return (nfiles);
