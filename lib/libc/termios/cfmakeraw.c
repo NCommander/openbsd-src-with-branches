@@ -32,7 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: cfmakeraw.c,v 1.2 1995/06/26 23:04:45 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cfmakeraw.c,v 1.2 1996/08/19 08:34:35 tholo Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <termios.h>
@@ -45,7 +45,7 @@ void
 cfmakeraw(t)
 	struct termios *t;
 {
-	t->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+	t->c_iflag &= ~(IMAXBEL|IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
 	t->c_oflag &= ~OPOST;
 	t->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
 	t->c_cflag &= ~(CSIZE|PARENB);
