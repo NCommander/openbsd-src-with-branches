@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.3 2005/02/02 19:15:07 henning Exp $ */
+/*	$OpenBSD: interface.c,v 1.4 2005/02/07 05:51:00 david Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -361,7 +361,8 @@ if_act_start(struct iface *iface)
 	}
 
 	/* init the dummy local neighbor */
-	iface->self = nbr_new(ospfe_router_id(), iface, 1);
+	if (iface->self == NULL)
+		iface->self = nbr_new(ospfe_router_id(), iface, 1);
 
 	/* up interface */
 		/* ... */
