@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa.c,v 1.34 1998/06/29 05:51:13 downsj Exp $	*/
+/*	$OpenBSD: isa.c,v 1.35 1998/07/28 13:26:48 csapuntz Exp $	*/
 /*	$NetBSD: isa.c,v 1.85 1996/05/14 00:31:04 thorpej Exp $	*/
 
 /*
@@ -221,7 +221,7 @@ isascan(parent, match)
 				    cf->cf_driver->cd_name, cf->cf_unit,
 				    ia2.ia_irq);
 				ia2 = ia;
-				continue;
+				break;
 			}
 #endif
 
