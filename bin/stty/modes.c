@@ -1,4 +1,4 @@
-/*	$OpenBSD: modes.c,v 1.3 1996/06/23 14:21:51 deraadt Exp $	*/
+/*	$OpenBSD: modes.c,v 1.4 1996/12/16 20:04:41 tholo Exp $	*/
 /*	$NetBSD: modes.c,v 1.9 1996/05/07 18:20:09 jtc Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)modes.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: modes.c,v 1.3 1996/06/23 14:21:51 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: modes.c,v 1.4 1996/12/16 20:04:41 tholo Exp $";
 #endif
 #endif /* not lint */
 
@@ -202,6 +202,8 @@ const struct modes omodes[] = {
 	{ "-tabs",	OXTABS, 0 },
 	{ "oxtabs",	OXTABS, 0 },
 	{ "-oxtabs",	0, OXTABS },
+	{ "onoeot",	ONOEOT, 0 },
+	{ "-onoeot",	0, ONOEOT },
 	{ NULL },
 };
 
