@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.106 2003/05/15 03:10:52 djm Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.107 2003/07/28 09:49:56 djm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -1000,6 +1000,7 @@ main(int ac, char **av)
 		}
 		if (prime_test(in, out, trials, generator_wanted) != 0)
 			fatal("modulus screening failed\n");
+		return (0);
 	}
 
 	arc4random_stir();
