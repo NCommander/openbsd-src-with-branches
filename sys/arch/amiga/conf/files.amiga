@@ -267,6 +267,7 @@ file	arch/amiga/isa/cross.c		cross needs-flag
 
 # XXX Dummy busses needed for some multi-homed devices specified in files.isa
 define	pci { }
+define	pcmcia {}
 
 include	"../../../dev/isa/files.isa"
 
