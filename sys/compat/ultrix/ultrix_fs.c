@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_fs.c,v 1.8 2002/04/23 18:54:12 espie Exp $	*/
+/*	$OpenBSD: ultrix_fs.c,v 1.9 2002/06/03 12:04:08 deraadt Exp $	*/
 /*	$NetBSD: ultrix_fs.c,v 1.4 1996/04/07 17:23:06 jonathan Exp $	*/
 
 /*
@@ -244,7 +244,7 @@ ultrix_sys_getmnt(p, v, retval)
 	for (count = 0, mp = mountlist.cqh_first;
 	    mp != (void *)&mountlist && count < maxcount; mp = nmp) {
 		nmp = mp->mnt_list.cqe_next;
-		if (sfsp != NULL && (mp->mnt_flag & MNT_MLOCK) == 0) {
+		if (sfsp != NULL) {
 			struct ultrix_fs_data tem;
 			sp = &mp->mnt_stat;
 

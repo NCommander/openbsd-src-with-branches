@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.38 2002/06/08 04:44:01 art Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.39 2002/06/08 04:51:05 art Exp $	*/
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
  *
@@ -921,8 +921,6 @@ softdep_flushfiles(oldmnt, flags, p)
 	 * activity can keep us busy forever, so we just fail with EBUSY.
 	 */
 	if (loopcnt == 0) {
-		if (oldmnt->mnt_flag & MNT_UNMOUNT)
-			panic("softdep_flushfiles: looping");
 		error = EBUSY;
 	}
 	return (error);
