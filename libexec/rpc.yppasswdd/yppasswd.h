@@ -1,3 +1,5 @@
+/*	$OpenBSD: yppasswd.h,v 1.3 1997/07/25 19:41:19 mickey Exp $*/
+
 /*
  * Copyright (c) 1995 Mats O Jansson <moj@stacken.kth.se>
  * All rights reserved.
@@ -28,7 +30,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: yppasswd.h,v 1.2 1996/06/26 22:11:26 maja Exp $
  */
 
 #ifndef _YPPASSWD_H_RPCGEN
