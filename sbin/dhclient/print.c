@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.2 2004/02/04 12:16:56 henning Exp $	*/
+/*	$OpenBSD: print.c,v 1.3 2004/02/06 11:33:22 henning Exp $	*/
 
 /* Turn data structures into printable text. */
 
@@ -62,7 +62,7 @@ print_hw_addr(int htype, int hlen, unsigned char *data)
 
 			s += strlen(s);
 			slen -= strlen(s) + 1;
- 			*s++ = ':';
+			*s++ = ':';
 		}
 		*--s = 0;
 	}
