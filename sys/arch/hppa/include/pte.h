@@ -1,4 +1,4 @@
-/*	$OpenBSD: pte.h,v 1.1 1998/07/07 21:32:44 mickey Exp $	*/
+/*	$OpenBSD: pte.h,v 1.2 1998/08/29 01:27:35 mickey Exp $	*/
 
 /*
  * Copyright 1996 1995 by Open Software Foundation, Inc.   
@@ -24,8 +24,8 @@
  * pmk1.1
  */
 
-#ifndef	_HPPA_PTE_H_
-#define	_HPPA_PTE_H_
+#ifndef	_MACHINE_PTE_H_
+#define	_MACHINE_PTE_H_
 
 
 /* TLB access/protection values */
@@ -106,4 +106,4 @@ extern struct tlbd_stats dtlb_stats;
 
 #endif	/* TLB_STATS && !_LOCORE */
 
-#endif /* _HPPA_PTE_H_ */
+#endif /* _MACHINE_PTE_H_ */
