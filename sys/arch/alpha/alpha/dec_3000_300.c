@@ -1,4 +1,4 @@
-/* $OpenBSD: dec_3000_300.c,v 1.9 2002/03/14 01:26:26 millert Exp $ */
+/* $OpenBSD: dec_3000_300.c,v 1.10 2002/05/02 22:56:06 miod Exp $ */
 /* $NetBSD: dec_3000_300.c,v 1.30 2000/05/22 20:13:32 thorpej Exp $ */
 
 /*
@@ -159,7 +159,7 @@ badconsole:
 	printf("ctb->ctb_term_type = 0x%lx\n", ctb->ctb_term_type);
 	printf("ctb->ctb_turboslot = 0x%lx\n", ctb->ctb_turboslot);
 
-	panic("consinit: unknown console type %lu\n",
+	panic("consinit: unknown console type %lu",
 	    ctb->ctb_term_type);
 }
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: cpuconf.c,v 1.6 2002/01/24 19:45:03 miod Exp $ */
+/* $OpenBSD: cpuconf.c,v 1.7 2002/03/14 01:26:26 millert Exp $ */
 /* $NetBSD: cpuconf.c,v 1.27 2000/06/26 02:42:04 enami Exp $ */
 
 /*-
@@ -197,7 +197,7 @@ platform_not_configured()
 	printf("Please build a kernel with \"options %s\" and reboot.\n",
 	    c->option);
 	printf("\n");   
-	panic("platform not configured\n");
+	panic("platform not configured");
 }
 
 void

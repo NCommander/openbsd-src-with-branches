@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.c,v 1.32 2001/12/19 08:58:05 art Exp $ */
+/* $OpenBSD: pmap.c,v 1.33 2002/01/23 00:39:46 art Exp $ */
 /* $NetBSD: pmap.c,v 1.154 2000/12/07 22:18:55 thorpej Exp $ */
 
 /*-
@@ -570,7 +570,7 @@ int	pmap_physpage_delref(void *);
 	if (curproc != NULL && curproc->p_vmspace != NULL &&		\
 	    (pm) != pmap_kernel() &&					\
 	    (isactive_ ^ ((pm) == curproc->p_vmspace->vm_map.pmap)))	\
-		panic("PMAP_ISACTIVE, isa: %d pm: %p curpm:%p\n",	\
+		panic("PMAP_ISACTIVE, isa: %d pm: %p curpm:%p",		\
 		    isactive_, (pm), curproc->p_vmspace->vm_map.pmap);	\
 	(isactive_);							\
 })
