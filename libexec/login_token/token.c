@@ -1,4 +1,4 @@
-/*	$OpenBSD: token.c,v 1.4 2000/12/20 20:08:23 markus Exp $	*/
+/*	$OpenBSD: token.c,v 1.5 2001/06/28 21:18:45 millert Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -285,7 +285,7 @@ tokenuserinit(int flags, char *username, unsigned char *usecret, unsigned mode)
 		return (1);
 
 	memset(&tokenrec, 0, sizeof(tokenrec));
-	strncpy(tokenrec.uname, username, sizeof(tokenrec.uname));
+	strlcpy(tokenrec.uname, username, sizeof(tokenrec.uname));
 	cb2h(secret, tokenrec.secret);
 	tokenrec.mode = 0;
 	tokenrec.flags = TOKEN_ENABLED | TOKEN_USEMODES;
