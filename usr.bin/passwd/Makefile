@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 1996/10/03 19:31:27 tholo Exp $
+#	$OpenBSD: Makefile,v 1.10 1996/12/23 19:21:07 deraadt Exp $
 
 .include <bsd.own.mk>
 
@@ -6,7 +6,7 @@ PROG=	passwd
 SRCS=	local_passwd.c yp_passwd.c passwd.c getpwent.c
 .PATH:  ${.CURDIR}/../../lib/libc/gen
 DPADD+= ${LIBRPCSVC} ${LIBCRYPT} ${LIBUTIL}
-LDADD+= -lrpcsvc -lcrypt -lutil
+LDADD+= -lrpcsvc -lutil
 CFLAGS+=-I${.CURDIR}
 
 .if defined(YP)
