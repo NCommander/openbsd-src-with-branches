@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.sh,v 1.2 1997/07/25 05:20:52 mickey Exp $
+#	$OpenBSD: genassym.sh,v 1.3 1997/07/25 05:39:16 mickey Exp $
 #	$NetBSD: genassym.sh,v 1.7 1997/06/25 03:09:06 thorpej Exp $
 
 #
@@ -62,7 +62,10 @@ $0 ~ /^[ \t]*#.*/ || $0 ~ /^[ \t]*$/ {
 		defining = 0;
 		printf("}\n");
 	}
-	printf("#%s\n", $0);
+	if (includes[$0] == 0) {
+		printf("#%s\n", $0);
+		includes[$0] = 1;
+	}
 	next;
 }
 
