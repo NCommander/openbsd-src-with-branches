@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: vm_param.h,v 1.12 1995/03/26 20:39:16 jtc Exp $	*/
 
 /* 
@@ -72,6 +73,13 @@
 #define	_VM_PARAM_
 
 #include <machine/vmparam.h>
+
+/*
+ * This belongs in types.h, but breaks too many existing programs.
+ */
+typedef	int	boolean_t;
+#define	TRUE	1
+#define	FALSE	0
 
 /*
  *	The machine independent pages are refered to as PAGES.  A page
