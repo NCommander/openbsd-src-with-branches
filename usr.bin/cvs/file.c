@@ -365,6 +365,8 @@ cvs_file_getdir(struct cvs_file *cf, int flags)
 	struct cvs_file *cfp;
 	struct cvs_dir *cdp;
 
+	cdp = cf->cf_ddat;
+
 	if (cvs_readrepo(cf->cf_path, pbuf, sizeof(pbuf)) == 0) {
 		cdp->cd_repo = strdup(pbuf);
 		if (cdp->cd_repo == NULL) {
