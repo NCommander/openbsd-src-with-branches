@@ -525,6 +525,7 @@ hw_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	int err;
 	int cpuspeed;
 	static int perflevel = 100;
+	int operflevel;
 
 	/* all sysctl names at this level except sensors are terminal */
 	if (name[0] != HW_SENSORS && namelen != 1)
@@ -576,17 +577,17 @@ hw_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 	case HW_SETPERF:
 		if (!cpu_setperf)
 			return (EOPNOTSUPP);
+		operflevel = perflevel;
 		err = sysctl_int(oldp, oldlenp, newp, newlen, &perflevel);
 		if (err)
 			return err;
+		if (perflevel == operflevel)
+			return (0);
 		if (perflevel > 100)
 			perflevel = 100;
 		if (perflevel < 0)
 			perflevel = 0;
-		if (newp)
-			return (cpu_setperf(perflevel));
-		else
-			return (0);
+		return (cpu_setperf(perflevel));
 	default:
 		return (EOPNOTSUPP);
 	}

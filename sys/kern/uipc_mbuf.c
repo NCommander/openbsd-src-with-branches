@@ -92,9 +92,6 @@ struct	mbstat mbstat;		/* mbuf stats */
 struct	pool mbpool;		/* mbuf pool */
 struct	pool mclpool;		/* mbuf cluster pool */
 
-struct pool_cache mbpool_cache;
-struct pool_cache mclpool_cache;
-
 struct vm_map *mb_map;
 
 int max_linkhdr;		/* largest link-level header */
@@ -126,9 +123,6 @@ mbinit()
 
 	pool_set_drain_hook(&mbpool, m_reclaim, NULL);
 	pool_set_drain_hook(&mclpool, m_reclaim, NULL);
-
-	pool_cache_init(&mbpool_cache, &mbpool, NULL, NULL, NULL);
-	pool_cache_init(&mclpool_cache, &mclpool, NULL, NULL, NULL);
 
 	nmbclust_update();
 

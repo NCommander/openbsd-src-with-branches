@@ -40,7 +40,6 @@
 #include <sys/sysctl.h>
 
 #include <uvm/uvm_extern.h>
-#include <ddb/db_output.h>
 
 static struct vm_map_intrsafe kmem_map_store;
 struct vm_map *kmem_map = NULL;
