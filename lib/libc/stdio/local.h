@@ -1,4 +1,4 @@
-/*	$OpenBSD: local.h,v 1.6 2003/06/02 20:18:37 millert Exp $	*/
+/*	$OpenBSD: local.h,v 1.7 2005/03/08 15:43:31 moritz Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -52,7 +52,7 @@ int	_fwalk(int (*)(FILE *));
 int	__swsetup(FILE *);
 int	__sflags(const char *, int *);
 
-extern void __atexit_register_cleanup(void (*)());
+extern void __atexit_register_cleanup(void (*)(void));
 extern int __sdidinit;
 
 /*
