@@ -47,14 +47,6 @@
 #define CVS_EVENT_TAG        10
 
 
-struct cvs_file {
-	char                 *cf_path;  /* path relative to the module */
-	LIST_ENTRY(cvs_file)  cf_list;
-};
-
-
-
-
 struct cvs_event {
 	u_int          ev_type;
 	uid_t          ev_user;
