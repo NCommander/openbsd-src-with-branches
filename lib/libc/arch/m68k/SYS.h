@@ -34,7 +34,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: SYS.h,v 1.12 2002/11/05 00:02:17 miod Exp $
+ *	$OpenBSD: SYS.h,v 1.14 2002/11/06 20:47:45 millert Exp $
  */
 
 #include <sys/syscall.h>
@@ -101,7 +101,7 @@
 # define RSYSCALL(x)    	__PSEUDO(_thread_sys_,x,x)
 # define PSEUDO(x,y)    	__PSEUDO(_thread_sys_,x,y)
 # define PSEUDO_NOERROR(x,y)	__PSEUDO_NOERROR(_thread_sys_,x,y)
-# define SYSENTRY(x)    	__ENTRY(_thread_sys_,x)			\
+# define SYSENTRY(x)    	__ENTRY(_thread_sys_,x);	\
 				__ALIAS(_thread_sys_,x)
 
 #define	ASMSTR		.asciz
