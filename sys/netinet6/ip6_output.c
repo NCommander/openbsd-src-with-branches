@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.1 1999/12/08 06:50:21 itojun Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.2 1999/12/10 10:04:28 angelos Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -1363,6 +1363,7 @@ ip6_ctloutput(op, so, level, optname, mp)
 			case IPV6_RTHDR:
 			case IPV6_CHECKSUM:
 			case IPV6_FAITH:
+			case IPV6_PORTRANGE:
 				switch (optname) {
 
 				case IPV6_UNICAST_HOPS:
