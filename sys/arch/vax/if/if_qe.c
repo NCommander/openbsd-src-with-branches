@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_qe.c,v 1.10 1999/05/13 15:44:50 jason Exp $ */
+/*	$OpenBSD: if_qe.c,v 1.11 2000/04/27 03:14:43 bjc Exp $ */
 /*      $NetBSD: if_qe.c,v 1.39 2000/01/24 02:40:29 matt Exp $ */
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
@@ -358,10 +358,6 @@ qeattach(parent, self, aux)
 	 */
 	if_attach(ifp);
 	ether_ifattach(ifp);
-
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
 	return;
 
 	/*

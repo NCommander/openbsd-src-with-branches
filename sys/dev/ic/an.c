@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.9 2000/06/20 20:35:14 todd Exp $	*/
+/*	$OpenBSD: an.c,v 1.10 2001/01/10 17:50:15 angelos Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -132,7 +132,7 @@
 #define TIMEOUT(handle,func,sc,time) timeout_add(&(handle), (time))
 #define UNTIMEOUT(func,sc,handle) timeout_del(&(handle))
 #define BPF_MTAP(if,mbuf) bpf_mtap((if)->if_bpf, (mbuf))
-#define BPFATTACH(if_bpf,if,dlt,sz) bpfattach((if_bpf), (if), (dlt), (sz))
+#define BPFATTACH(if_bpf,if,dlt,sz)
 
 struct cfdriver an_cd = {
 	NULL, "an", DV_IFNET

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.11 1999/05/13 15:44:49 jason Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.12 2000/08/28 21:59:34 miod Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.15 1996/10/30 00:24:33 gwr Exp $ */
 
 /*-
@@ -325,9 +325,6 @@ ie_attach(sc)
 	/* Attach the interface. */
 	if_attach(ifp);
 	ether_ifattach(ifp);
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
 }
 
 /*

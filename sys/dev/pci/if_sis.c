@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sis.c,v 1.8 2000/12/06 15:48:28 mickey Exp $ */
+/*	$OpenBSD: if_sis.c,v 1.9 2001/02/20 19:15:19 jason Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -787,10 +787,6 @@ void sis_attach(parent, self, aux)
 	if_attach(ifp);
 	ether_ifattach(ifp);
 
-#if NBPFILTER > 0
-	bpfattach(&sc->arpcom.ac_if.if_bpf, ifp, DLT_EN10MB,
-		  sizeof(struct ether_header));
-#endif
 	shutdownhook_establish(sis_shutdown, sc);
 
 fail:

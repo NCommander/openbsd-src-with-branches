@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.6 2000/10/16 17:08:08 aaron Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.7 2001/02/03 05:37:18 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -930,10 +930,6 @@ wb_attach(parent, self, aux)
 	if_attach(ifp);
 	ether_ifattach(ifp);
 
-#if NBPFILTER > 0
-	bpfattach(&sc->arpcom.ac_if.if_bpf, ifp,
-	    DLT_EN10MB, sizeof(struct ether_header));
-#endif
 	shutdownhook_establish(wb_shutdown, sc);
 
 fail:

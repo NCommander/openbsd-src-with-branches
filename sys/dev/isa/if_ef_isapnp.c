@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ef_isapnp.c,v 1.8 2000/10/16 17:08:07 aaron Exp $	*/
+/*	$OpenBSD: if_ef_isapnp.c,v 1.9 2000/11/11 23:49:20 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -234,11 +234,6 @@ ef_isapnp_attach(parent, self, aux)
 
 	if_attach(ifp);
 	ether_ifattach(ifp);
-
-#if NBPFILTER > 0
-	bpfattach(&sc->sc_arpcom.ac_if.if_bpf, ifp, DLT_EN10MB,
-	   sizeof(struct ether_header));
-#endif
 
 	sc->sc_tx_start_thresh = 20;
 

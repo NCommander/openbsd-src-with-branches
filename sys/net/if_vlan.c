@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.6 2000/10/18 15:55:48 chris Exp $ */
+/*	$OpenBSD: if_vlan.c,v 1.7 2000/12/02 14:46:34 jason Exp $ */
 /*
  * Copyright 1998 Massachusetts Institute of Technology
  *
@@ -169,9 +169,7 @@ vlanattach(void *dummy)
 		ifp->if_snd.ifq_maxlen = ifqmaxlen;
 		if_attach(ifp);
 		ether_ifattach(ifp);
-#if NBPFILTER > 0
-		bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
+
 		/* Now undo some of the damage... */
 		ifp->if_data.ifi_type = IFT_8021_VLAN;
 		ifp->if_data.ifi_hdrlen = EVL_ENCAPLEN;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tx.c,v 1.10 2000/02/21 20:54:04 jason Exp $	*/
+/*	$OpenBSD: if_tx.c,v 1.11 2000/10/17 15:47:12 jason Exp $	*/
 /* $FreeBSD: src/sys/pci/if_tx.c,v 1.40 2000/07/13 22:54:34 archie Exp $ */
 
 /*-
@@ -338,10 +338,6 @@ epic_openbsd_attach(
 	/* Attach os interface and bpf */
 	if_attach(ifp);
 	ether_ifattach(ifp);
-#if NBPFILTER > 0
-	bpfattach(&sc->sc_if.if_bpf, ifp, DLT_EN10MB,
-	    sizeof(struct ether_header));
-#endif
 
 	/* Set shutdown routine to stop DMA process */ 
 	shutdownhook_establish(epic_openbsd_shutdown, sc);

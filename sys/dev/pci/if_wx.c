@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wx.c,v 1.8 2000/12/07 02:35:55 mjacob Exp $	*/
+/*	$OpenBSD: if_wx.c,v 1.9 2001/01/29 04:33:59 deraadt Exp $	*/
 /*
  * Copyright (c) 1999, Traakan Software
  * All rights reserved.
@@ -294,11 +294,11 @@ wx_attach(parent, self, aux)
 	ether_ifattach(ifp);
 #else
 	ether_ifattach(ifp, sc->wx_enaddr);
-#endif
 
 #if	NBPFILTER > 0
 	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB,
 	    sizeof (struct ether_header));
+#endif
 #endif
 	/*
 	 * Add shutdown hook so that DMA is disabled prior to reboot. Not

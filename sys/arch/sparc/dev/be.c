@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.23 2000/06/18 17:37:02 jason Exp $	*/
+/*	$OpenBSD: be.c,v 1.24 2001/01/30 07:17:07 jason Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -225,11 +225,6 @@ beattach(parent, self, aux)
 
 	printf(" pri %d: rev %x address %s\n", pri, sc->sc_rev,
 	    ether_sprintf(sc->sc_arpcom.ac_enaddr));
-
-#if NBPFILTER > 0
-	bpfattach(&sc->sc_arpcom.ac_if.if_bpf, ifp, DLT_EN10MB,
-	    sizeof(struct ether_header));
-#endif
 
 	bp = ca->ca_ra.ra_bp;
 	if (bp != NULL && strcmp(bp->name, "be") == 0 &&

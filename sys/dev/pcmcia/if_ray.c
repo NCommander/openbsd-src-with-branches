@@ -673,9 +673,6 @@ ray_attach(parent, self, aux)
 	else
 		ifmedia_set(&sc->sc_media, IFM_INFRA);
 
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
 	/* disable the card */
 	pcmcia_function_disable(sc->sc_pf);
 

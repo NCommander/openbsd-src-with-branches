@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bm.c,v 1.3 2000/03/20 07:26:49 rahnds Exp $	*/
+/*	$OpenBSD: if_bm.c,v 1.5 2000/03/31 05:33:36 rahnds Exp $	*/
 /*	$NetBSD: if_bm.c,v 1.1 1999/01/01 01:27:52 tsubai Exp $	*/
 
 /*-
@@ -250,10 +250,6 @@ bmac_attach(parent, self, aux)
 
 	if_attach(ifp);
 	ether_ifattach(ifp);
-
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
 }
 
 /*

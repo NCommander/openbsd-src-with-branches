@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_eg.c,v 1.15 1999/11/30 23:48:07 aaron Exp $	*/
+/*	$OpenBSD: if_eg.c,v 1.16 2000/06/05 20:56:20 niklas Exp $	*/
 /*	$NetBSD: if_eg.c,v 1.26 1996/05/12 23:52:27 mycroft Exp $	*/
 
 /*
@@ -451,10 +451,6 @@ egattach(parent, self, aux)
 	if_attach(ifp);
 	ether_ifattach(ifp);
 	
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
-
 	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
 	    IPL_NET, egintr, sc, sc->sc_dev.dv_xname);
 }
