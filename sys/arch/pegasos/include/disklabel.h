@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.1.2.1 2003/10/10 17:04:14 drahn Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -32,6 +32,8 @@
 
 #ifndef _MACHINE_DISKLABEL_H_
 #define _MACHINE_DISKLABEL_H_
+
+#include <machine/rdb.h>
 
 #define	LABELSECTOR	1		/* sector containing label */
 #define	LABELOFFSET	0		/* offset of label in sector */
@@ -159,6 +161,10 @@ struct cpu_disklabel {
 	/* only store first entry and openbsd partition */
 	struct part_map_entry macparts[2];
 	struct dkbad bad;
+	int rdblock;
+	int rd_bsdlbl;
+	int pbindex[MAXPARTITIONS];
+	int pblist[MAXPARTITIONS];
 };
 
 #define DKBAD(x) ((x)->bad)
