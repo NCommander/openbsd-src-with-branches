@@ -66,7 +66,7 @@ _dl_strdup(const char *orig)
  */
 
 void *
-_dl_malloc(size_t size)
+_dl_malloc(int size)
 {
 	long *p, *t, *n;
 
