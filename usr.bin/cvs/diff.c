@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.14 2004/12/28 19:51:07 jfb Exp $	*/
+/*	$OpenBSD: diff.c,v 1.15 2004/12/28 20:39:15 jfb Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -749,7 +749,7 @@ prepare(int i, FILE *fd, off_t filesize)
 
 	rewind(fd);
 
-	sz = (filesize <= SIZE_MAX ? filesize : SIZE_MAX) / 25;
+	sz = ((size_t)filesize <= SIZE_MAX ? (size_t)filesize : SIZE_MAX) / 25;
 	if (sz < 100)
 		sz = 100;
 
