@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.94 2003/03/10 00:59:54 millert Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.95 2003/04/26 08:01:42 jmc Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -124,7 +124,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.94 2003/03/10 00:59:54 millert Exp $";
+	"$OpenBSD: if_wi.c,v 1.95 2003/04/26 08:01:42 jmc Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -2474,7 +2474,7 @@ wi_get_id(sc)
 	}
 
 	if (sc->sc_firmware_type == WI_LUCENT) {
-		printf("\n%s: Firmware %d.%d variant %d, ", WI_PRT_ARG(sc),
+		printf("\n%s: Firmware %d.%02d variant %d, ", WI_PRT_ARG(sc),
 		    ver.wi_ver[2], ver.wi_ver[3], ver.wi_ver[1]);
 	} else {
 		printf("\n%s: %s%s, Firmware %d.%d.%d (primary), %d.%d.%d (station), ",
