@@ -1,8 +1,7 @@
-/*	$OpenBSD: rquotad.c,v 1.11 2002/02/16 21:27:31 millert Exp $	*/
+/*	$OpenBSD: rquotad.c,v 1.12 2002/06/09 04:18:55 deraadt Exp $	*/
+
 /*
- * by Manuel Bouyer (bouyer@ensta.fr)
- * 
- * There is no copyright, you can use it as you want.
+ * by Manuel Bouyer (bouyer@ensta.fr). Public domain.
  */
 
 #include <sys/param.h>
