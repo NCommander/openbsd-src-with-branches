@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vfsops.c,v 1.22 2001/06/23 02:14:22 csapuntz Exp $	*/
+/*	$OpenBSD: cd9660_vfsops.c,v 1.23 2001/11/03 23:27:43 miod Exp $	*/
 /*	$NetBSD: cd9660_vfsops.c,v 1.26 1997/06/13 15:38:58 pk Exp $	*/
 
 /*-
@@ -925,7 +925,9 @@ retry:
 	case VSOCK:
 	case VDIR:
 	case VBAD:
+		break;
 	case VREG:
+		uvm_vnp_setsize(vp, ip->i_size);
 		break;
 	}
 	
