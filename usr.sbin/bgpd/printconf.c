@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.36 2005/03/11 12:54:19 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.37 2005/03/14 17:32:04 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -488,6 +488,7 @@ print_config(struct bgpd_config *conf, struct network_head *net_l,
 	struct network		*n;
 
 	xmrt_l = mrt_l;
+	printf("\n");
 	print_mainconf(conf);
 	printf("\n");
 	print_mrt(0, 0, "", "");
