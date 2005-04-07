@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.macppc,v 1.18 2004/01/20 03:32:44 brad Exp $
+#	$OpenBSD: Makefile.macppc,v 1.19 2004/11/19 06:41:14 miod Exp $
 #
 # Makefile for OpenBSD PowerPC
 #
@@ -35,7 +35,7 @@ S!=	cd ../../../..; pwd
 .endif
 MACPPC=	$S/arch/macppc
 
-INCLUDES=	-I. -I$S/arch -I$S -nostdinc -L${DESTDIR}/usr/include
+INCLUDES=	-I. -I$S/arch -I$S -nostdinc
 CPPFLAGS=	${INCLUDES} ${IDENT} -D_KERNEL \
 		-D__macppc__
 CWARNFLAGS=	-Werror -Wall -Wstrict-prototypes -Wmissing-prototypes \
