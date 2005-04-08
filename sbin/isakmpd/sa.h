@@ -1,4 +1,4 @@
-/* $OpenBSD: sa.h,v 1.43 2005/03/04 16:20:07 hshoexer Exp $	 */
+/* $OpenBSD: sa.h,v 1.44 2005/04/04 19:31:11 deraadt Exp $	 */
 /* $EOM: sa.h,v 1.58 2000/10/10 12:39:01 provos Exp $	 */
 
 /*
@@ -201,9 +201,7 @@ struct sa {
 	struct event   *soft_death;
 	struct event   *death;
 
-#if defined (USE_NAT_TRAVERSAL)
 	struct event   *nat_t_keepalive;
-#endif
 
 #if defined (USE_DPD)
 	/* IKE DPD (RFC3706) message sequence number.  */
