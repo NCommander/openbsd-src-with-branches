@@ -1,4 +1,4 @@
-/* $OpenBSD: sysdep.c,v 1.27 2004/06/26 06:07:03 hshoexer Exp $	 */
+/* $OpenBSD: sysdep.c,v 1.28 2004/08/10 15:59:11 ho Exp $	 */
 /* $EOM: sysdep.c,v 1.9 2000/12/04 04:46:35 angelos Exp $	 */
 
 /*
@@ -68,13 +68,6 @@ sysdep_random()
 		return arc4random();
 	else
 		return random();
-}
-
-/* Return the basename of the command used to invoke us.  */
-char *
-sysdep_progname()
-{
-	return __progname;
 }
 
 /* Return the length of the sockaddr struct.  */
