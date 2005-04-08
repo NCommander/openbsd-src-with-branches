@@ -1,4 +1,4 @@
-/* $OpenBSD: exchange.c,v 1.115 2005/04/08 16:52:41 deraadt Exp $	 */
+/* $OpenBSD: exchange.c,v 1.116 2005/04/08 18:41:58 hshoexer Exp $	 */
 /* $EOM: exchange.c,v 1.143 2000/12/04 00:02:25 angelos Exp $	 */
 
 /*
@@ -37,6 +37,8 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
+#include <keynote.h>
 
 #include "sysdep.h"
 
