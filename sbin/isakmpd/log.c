@@ -1,4 +1,4 @@
-/* $OpenBSD: log.c,v 1.51 2005/02/27 13:12:12 hshoexer Exp $	 */
+/* $OpenBSD: log.c,v 1.52 2005/04/04 19:31:11 deraadt Exp $	 */
 /* $EOM: log.c,v 1.30 2000/09/29 08:19:23 niklas Exp $	 */
 
 /*
@@ -44,11 +44,7 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 
-#ifdef HAVE_PCAP
 #include <pcap.h>
-#else
-#include "sysdep/common/pcap.h"
-#endif
 
 #endif				/* USE_DEBUG */
 
