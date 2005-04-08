@@ -1,4 +1,4 @@
-/* $OpenBSD: ike_aggressive.c,v 1.8 2004/07/29 08:54:08 ho Exp $	 */
+/* $OpenBSD: ike_aggressive.c,v 1.9 2005/04/08 16:37:14 deraadt Exp $	 */
 /* $EOM: ike_aggressive.c,v 1.4 2000/01/31 22:33:45 niklas Exp $	 */
 
 /*
@@ -34,8 +34,6 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "sysdep.h"
 
 #include "attribute.h"
 #include "conf.h"

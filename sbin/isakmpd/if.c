@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.23 2005/04/04 19:31:11 deraadt Exp $	*/
+/*	$OpenBSD: if.c,v 1.24 2005/04/08 16:11:11 deraadt Exp $	*/
 /*	$EOM: if.c,v 1.12 1999/10/01 13:45:20 niklas Exp $	*/
 
 /*
@@ -36,8 +36,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ifaddrs.h>
-
-#include "sysdep.h"
 
 #include "log.h"
 #include "monitor.h"

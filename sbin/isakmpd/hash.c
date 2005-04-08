@@ -1,4 +1,4 @@
-/* $OpenBSD: hash.c,v 1.18 2005/02/27 13:12:12 hshoexer Exp $	 */
+/* $OpenBSD: hash.c,v 1.19 2005/04/08 18:39:12 deraadt Exp $	 */
 /* $EOM: hash.c,v 1.10 1999/04/17 23:20:34 niklas Exp $	 */
 
 /*
@@ -34,8 +34,6 @@
 #include <string.h>
 #include <md5.h>
 #include <sha1.h>
-
-#include "sysdep.h"
 
 #include "hash.h"
 #include "log.h"

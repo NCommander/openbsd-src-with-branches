@@ -1,4 +1,4 @@
-/* $OpenBSD: math_ec2n.c,v 1.11 2004/05/23 18:17:56 hshoexer Exp $	 */
+/* $OpenBSD: math_ec2n.c,v 1.12 2005/04/06 16:00:20 deraadt Exp $	 */
 /* $EOM: math_ec2n.c,v 1.9 1999/04/20 09:23:31 niklas Exp $	 */
 
 /*
@@ -32,8 +32,6 @@
 
 #include <sys/param.h>
 #include <stdio.h>
-
-#include "sysdep.h"
 
 #include "math_2n.h"
 #include "math_ec2n.h"

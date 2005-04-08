@@ -1,4 +1,4 @@
-/* $OpenBSD: dnssec.c,v 1.21 2005/02/27 13:12:12 hshoexer Exp $	 */
+/* $OpenBSD: dnssec.c,v 1.22 2005/04/04 19:31:11 deraadt Exp $	 */
 
 /*
  * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
@@ -38,8 +38,6 @@
 #else
 #include <netdb.h>
 #endif
-
-#include "sysdep.h"
 
 #include "dnssec.h"
 #include "exchange.h"

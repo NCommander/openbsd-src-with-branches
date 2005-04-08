@@ -1,4 +1,4 @@
-/* $OpenBSD: cert.c,v 1.29 2005/04/05 20:46:20 cloder Exp $	 */
+/* $OpenBSD: cert.c,v 1.30 2005/04/08 17:15:01 deraadt Exp $	 */
 /* $EOM: cert.c,v 1.18 2000/09/28 12:53:27 niklas Exp $	 */
 
 /*
@@ -34,8 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "sysdep.h"
 
 #include "isakmp_num.h"
 #include "log.h"

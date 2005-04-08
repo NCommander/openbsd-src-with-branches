@@ -1,4 +1,4 @@
-/* $OpenBSD: libcrypto.c,v 1.17 2005/04/05 20:46:20 cloder Exp $	 */
+/* $OpenBSD: libcrypto.c,v 1.18 2005/04/08 17:15:01 deraadt Exp $	 */
 /* $EOM: libcrypto.c,v 1.14 2000/09/28 12:53:27 niklas Exp $	 */
 
 /*
@@ -30,7 +30,6 @@
  * This code was written under funding by Ericsson Radio Systems.
  */
 
-#include "sysdep.h"
 #include "libcrypto.h"
 
 void

@@ -1,4 +1,4 @@
-/* $OpenBSD: timer.c,v 1.13 2004/05/23 18:17:56 hshoexer Exp $	 */
+/* $OpenBSD: timer.c,v 1.14 2004/06/14 09:55:42 ho Exp $	 */
 /* $EOM: timer.c,v 1.13 2000/02/20 19:58:42 niklas Exp $	 */
 
 /*
@@ -32,8 +32,6 @@
 #include <sys/queue.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "sysdep.h"
 
 #include "log.h"
 #include "timer.h"

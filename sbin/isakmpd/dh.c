@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.c,v 1.8 2003/06/03 14:28:16 ho Exp $	 */
+/* $OpenBSD: dh.c,v 1.9 2004/04/15 18:39:25 deraadt Exp $	 */
 /* $EOM: dh.c,v 1.5 1999/04/17 23:20:22 niklas Exp $	 */
 
 /*
@@ -31,8 +31,6 @@
  */
 
 #include <sys/param.h>
-
-#include "sysdep.h"
 
 #include "math_group.h"
 #include "dh.h"
