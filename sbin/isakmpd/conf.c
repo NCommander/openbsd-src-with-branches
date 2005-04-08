@@ -1,4 +1,4 @@
-/* $OpenBSD: conf.c,v 1.78 2005/04/05 20:46:20 cloder Exp $	 */
+/* $OpenBSD: conf.c,v 1.79 2005/04/06 16:00:20 deraadt Exp $	 */
 /* $EOM: conf.c,v 1.48 2000/12/04 02:04:29 angelos Exp $	 */
 
 /*
@@ -318,7 +318,7 @@ conf_parse(int trans, char *buf, size_t sz)
  *
  * DH group defaults to MODP_1024.
  *
- * XXX We may want to support USE_BLOWFISH, USE_TRIPLEDES, etc...
+ * XXX We may want to support USE_TRIPLEDES, etc...
  * XXX No EC2N DH support here yet.
  */
 
