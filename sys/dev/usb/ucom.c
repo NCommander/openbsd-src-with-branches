@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.24 2005/01/28 22:36:46 djm Exp $ */
+/*	$OpenBSD: ucom.c,v 1.25 2005/01/28 22:38:39 djm Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -170,8 +170,6 @@ USB_ATTACH(ucom)
 	struct ucom_attach_args *uca = aux;
 	struct tty *tp;
 
-	if (uca->portno != UCOM_UNK_PORTNO)
-		printf(": portno %d", uca->portno);
 	if (uca->info != NULL)
 		printf(", %s", uca->info);
 	printf("\n");
