@@ -1,4 +1,4 @@
-/* $OpenBSD: udp.c,v 1.84 2005/03/05 12:21:34 ho Exp $	 */
+/* $OpenBSD: udp.c,v 1.85 2005/04/04 19:31:11 deraadt Exp $	 */
 /* $EOM: udp.c,v 1.57 2001/01/26 10:09:57 niklas Exp $	 */
 
 /*
@@ -34,9 +34,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#ifndef linux
 #include <sys/sockio.h>
-#endif
 #include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
