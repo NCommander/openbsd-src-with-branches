@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_nfs.c,v 1.41 2004/08/20 07:12:00 otto Exp $	*/
+/*	$OpenBSD: mount_nfs.c,v 1.42 2004/09/15 07:10:32 miod Exp $	*/
 /*	$NetBSD: mount_nfs.c,v 1.12.4.1 1996/05/25 22:48:05 fvdl Exp $	*/
 
 /*
@@ -389,7 +389,7 @@ main(int argc, char *argv[])
 
 	spec = *argv++;
 	if (realpath(*argv, name) == NULL)
-		err(1, "realpath %s", name);
+		err(1, "realpath %s", *argv);
 
 	if (!getnfsargs(spec, nfsargsp))
 		exit(1);

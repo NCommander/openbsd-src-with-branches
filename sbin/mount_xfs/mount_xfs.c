@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_xfs.c,v 1.6 2000/01/22 20:25:02 deraadt Exp $	*/
+/*	$OpenBSD: mount_xfs.c,v 1.7 2003/07/03 22:41:40 tedu Exp $	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -92,7 +92,7 @@ main(int argc, char **argv)
 		usage();
 
 	if (realpath(argv[1], path) == NULL)
-		err(1, "realpath %s", path);
+		err(1, "realpath %s", argv[1]);
 
 	if (mount(MOUNT_XFS, path, mntflags, argv[0])) {
 		if (errno == EOPNOTSUPP)

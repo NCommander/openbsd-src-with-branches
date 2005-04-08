@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_cd9660.c,v 1.15 2003/06/11 06:22:13 deraadt Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.16 2003/07/03 22:41:40 tedu Exp $	*/
 /*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.15 2003/06/11 06:22:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.16 2003/07/03 22:41:40 tedu Exp $";
 #endif
 #endif /* not lint */
 
@@ -107,7 +107,7 @@ main(int argc, char *argv[])
 
 	dev = argv[0];
 	if (realpath(argv[1], dir) == NULL)
-		err(1, "realpath %s", dir);
+		err(1, "realpath %s", argv[1]);
 
 #define DEFAULT_ROOTUID	-2
 	args.fspec = dev;

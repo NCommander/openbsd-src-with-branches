@@ -1,4 +1,4 @@
-/* $OpenBSD: mount_ntfs.c,v 1.7 2003/07/02 22:38:54 avsm Exp $ */
+/* $OpenBSD: mount_ntfs.c,v 1.8 2003/07/03 22:41:40 tedu Exp $ */
 /* $NetBSD: mount_ntfs.c,v 1.9 2003/05/03 15:37:08 christos Exp $ */
 
 /*
@@ -113,7 +113,7 @@ main(int argc, char *argv[])
 
 	dev = argv[optind];
 	if (realpath(argv[optind + 1], dir) == NULL)
-		err(1, "realpath %s", dir);
+		err(1, "realpath %s", argv[optind + 1]);
 
 	args.fspec = dev;
 	args.export_info.ex_root = 65534;	/* unchecked anyway on DOS fs */

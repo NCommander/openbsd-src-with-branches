@@ -1,4 +1,4 @@
-/*	$OpenBSD: mv.c,v 1.29 2003/07/29 00:24:15 deraadt Exp $	*/
+/*	$OpenBSD: mv.c,v 1.30 2004/12/13 20:22:52 otto Exp $	*/
 /*	$NetBSD: mv.c,v 1.9 1995/03/21 09:06:52 cgd Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mv.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: mv.c,v 1.29 2003/07/29 00:24:15 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mv.c,v 1.30 2004/12/13 20:22:52 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -235,7 +235,7 @@ do_move(char *from, char *to)
 		char path[MAXPATHLEN];
 
 		if (realpath(from, path) == NULL) {
-			warnx("cannot resolve %s: %s", from, path);
+			warnx("cannot resolve %s", from);
 			return (1);
 		}
 		if (!statfs(path, &sfs) && !strcmp(path, sfs.f_mntonname)) {

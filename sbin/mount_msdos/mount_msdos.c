@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_msdos.c,v 1.17 2003/07/02 22:38:53 avsm Exp $	*/
+/*	$OpenBSD: mount_msdos.c,v 1.18 2003/07/03 22:41:40 tedu Exp $	*/
 /*	$NetBSD: mount_msdos.c,v 1.16 1996/10/24 00:12:50 cgd Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.17 2003/07/02 22:38:53 avsm Exp $";
+static char rcsid[] = "$OpenBSD: mount_msdos.c,v 1.18 2003/07/03 22:41:40 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -118,7 +118,7 @@ main(int argc, char **argv)
 
 	dev = argv[optind];
 	if (realpath(argv[optind + 1], dir) == NULL)
-		err(1, "realpath %s", dir);
+		err(1, "realpath %s", argv[optind + 1]);
 
 	args.fspec = dev;
 	args.export_info.ex_root = -2;	/* unchecked anyway on DOS fs */
