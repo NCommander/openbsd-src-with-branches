@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5210var.h,v 1.7 2005/02/17 23:52:05 reyk Exp $	*/
+/*	$OpenBSD: ar5210var.h,v 1.8 2005/04/08 22:02:49 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -35,9 +35,7 @@
 
 #if BYTE_ORDER == BIG_ENDIAN
 #define AR5K_AR5210_INIT_CFG	(					\
-	AR5K_AR5210_CFG_SWTD | AR5K_AR5210_CFG_SWTB |			\
-	AR5K_AR5210_CFG_SWRD | AR5K_AR5210_CFG_SWRB |			\
-	AR5K_AR5210_CFG_SWRG						\
+	AR5K_AR5210_CFG_SWTD | AR5K_AR5210_CFG_SWRD			\
 )
 #else
 #define AR5K_AR5210_INIT_CFG	0x00000000
