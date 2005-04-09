@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.14 2003/07/23 23:10:23 deraadt Exp $	*/
+/*	$OpenBSD: scsi.c,v 1.15 2004/01/14 19:39:59 otto Exp $	*/
 /*	$FreeBSD: scsi.c,v 1.11 1996/04/06 11:00:28 joerg Exp $	*/
 
 /*
@@ -615,7 +615,7 @@ volatile int edit_opened;
 static FILE *edit_file;
 static char edit_name[L_tmpnam];
 
-static inline void
+static void
 edit_rewind(void)
 {
 	editind = 0;
