@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.262 2005/03/22 22:24:38 henning Exp $
+#	$OpenBSD: rc,v 1.263 2005/04/01 05:37:35 deraadt Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -184,6 +184,10 @@ fi
 
 # set hostname, turn on network
 echo 'starting network'
+if [ -f /etc/resolv.conf.save ]; then
+	mv /etc/resolv.conf.save /etc/resolv.conf
+	touch /etc/resolv.conf
+fi
 . /etc/netstart
 
 if [ "X${pf}" != X"NO" ]; then
