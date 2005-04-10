@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.13 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.14 2004/11/29 08:52:28 jsg Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.13 2003/06/03 03:01:40 millert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.14 2004/11/29 08:52:28 jsg Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,7 +49,7 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.13 2003/06/03 03:01:40 millert Exp $
 void
 usage(void)
 {
-	fprintf(stderr, "usage: robots [-sjtar] [scorefile]\n");
+	fprintf(stderr, "usage: robots [-ajrst] [scorefile]\n");
 	exit(1);
 }
 
