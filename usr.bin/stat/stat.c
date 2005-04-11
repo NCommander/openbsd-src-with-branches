@@ -1,4 +1,4 @@
-/*	$OpenBSD: stat.c,v 1.7 2005/04/07 12:18:35 otto Exp $ */
+/*	$OpenBSD: stat.c,v 1.8 2005/04/11 08:14:26 deraadt Exp $ */
 /*	$NetBSD: stat.c,v 1.19 2004/06/20 22:20:16 jmc Exp $ */
 
 /*
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static const char rccs_id[] =
-    "$OpenBSD: stat.c,v 1.7 2005/04/07 12:18:35 otto Exp $";
+    "$OpenBSD: stat.c,v 1.8 2005/04/11 08:14:26 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -888,7 +888,7 @@ format1(const struct stat *st,
 		if (l >= blen)
 			return (l);
 		for (; prec > 9 && l < blen; prec--, l++)
-			(void)strlcat(buf, "0", sizeof(lfmt));
+			(void)strlcat(buf, "0", blen);
 		return (l);
 	}
 
