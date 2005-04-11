@@ -186,7 +186,9 @@ do_percentm(char *obuf, size_t size, char *ibuf)
 			++s;
 			prlen = snprintf(t, fmt_left, "%s",
 			    strerror(saved_errno));
-			if (prlen >= fmt_left)
+			if (prlen == -1)
+				prlen = 0;
+			else if (prlen >= fmt_left)
 				prlen = fmt_left - 1;
 			t += prlen;
 			fmt_left -= prlen;
