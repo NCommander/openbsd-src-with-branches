@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.7 2005/03/30 17:43:04 joris Exp $	*/
+/*	$OpenBSD: tag.c,v 1.8 2005/04/03 17:32:50 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
@@ -84,7 +84,7 @@ cvs_tag_options(char *opt, int argc, char **argv, int *arg)
 			old_tag = optarg;
 			break;
 		default:
-			return (EX_USAGE);
+			return (1);
 		}
 	}
 
@@ -93,7 +93,7 @@ cvs_tag_options(char *opt, int argc, char **argv, int *arg)
 	argv += optind;
 
 	if (argc == 0) {
-		return (EX_USAGE);
+		return (1);
 	} else {
 		tag = argv[0];
 		argc--;

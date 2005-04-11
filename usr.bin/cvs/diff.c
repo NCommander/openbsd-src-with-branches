@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.24 2005/03/31 14:57:32 joris Exp $	*/
+/*	$OpenBSD: diff.c,v 1.25 2005/04/03 17:32:50 xsa Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -407,7 +407,7 @@ cvs_diff_options(char *opt, int argc, char **argv, int *arg)
 				cvs_log(LP_ERR,
 				    "no more than two revisions/dates can "
 				    "be specified");
-				return (EX_USAGE);
+				return (1);
 			}
 			break;
 		case 'u':
@@ -415,7 +415,7 @@ cvs_diff_options(char *opt, int argc, char **argv, int *arg)
 			format = D_UNIFIED;
 			break;
 		default:
-			return (EX_USAGE);
+			return (1);
 		}
 	}
 

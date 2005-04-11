@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.19 2005/03/31 15:10:51 joris Exp $	*/
+/*	$OpenBSD: commit.c,v 1.20 2005/04/03 17:32:50 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -88,13 +88,13 @@ cvs_commit_options(char *opt, int argc, char **argv, int *arg)
 			cvs_commit.file_flags |= CF_RECURSE;
 			break;
 		default:
-			return (EX_USAGE);
+			return (1);
 		}
 	}
 
 	if ((cvs_msg != NULL) && (mfile != NULL)) {
 		cvs_log(LP_ERR, "the -F and -m flags are mutually exclusive");
-		return (EX_USAGE);
+		return (1);
 	}
 
 	if ((mfile != NULL) && (cvs_msg = cvs_logmsg_open(mfile)) == NULL)
