@@ -1,4 +1,4 @@
-/*	$OpenBSD: annotate.c,v 1.6 2005/04/03 17:32:50 xsa Exp $	*/
+/*	$OpenBSD: annotate.c,v 1.7 2005/04/11 17:56:27 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <sysexits.h>
 
 #include "cvs.h"
 #include "rcs.h"

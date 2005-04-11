@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.21 2005/01/27 18:34:26 jfb Exp $	*/
+/*	$OpenBSD: resp.c,v 1.22 2005/03/29 17:37:37 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -37,7 +37,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <libgen.h>
-#include <sysexits.h>
 
 #include "buf.h"
 #include "cvs.h"

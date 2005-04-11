@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.2 2005/03/05 23:22:10 jmc Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.3 2005/04/06 18:51:29 joris Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
-#include <sysexits.h>
 
 #include "log.h"
 #include "rcs.h"

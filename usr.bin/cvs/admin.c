@@ -1,4 +1,4 @@
-/*	$OpenBSD: admin.c,v 1.8 2005/04/03 17:32:50 xsa Exp $	*/
+/*	$OpenBSD: admin.c,v 1.9 2005/04/11 17:56:27 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <sysexits.h>
 
 #include "cvs.h"
 #include "log.h"

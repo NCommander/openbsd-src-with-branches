@@ -1,4 +1,4 @@
-/*	$OpenBSD: remove.c,v 1.4 2005/03/30 17:43:04 joris Exp $	*/
+/*	$OpenBSD: remove.c,v 1.5 2005/04/11 17:56:27 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2004 Xavier Santolaria <xsa@openbsd.org>
@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 #include "cvs.h"
