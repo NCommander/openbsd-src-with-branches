@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.18 2005/04/07 20:50:22 jfb Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.19 2005/04/07 22:08:57 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -142,7 +142,7 @@ struct rcs_delta {
 	char      *rd_author;
 	char      *rd_state;
 	char      *rd_log;
-	char      *rd_text;
+	u_char    *rd_text;
 	size_t     rd_tlen;
 
 	struct rcs_dlist         rd_snodes;
