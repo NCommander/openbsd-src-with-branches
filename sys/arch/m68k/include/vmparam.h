@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.2 2003/06/02 23:27:48 millert Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.3 2004/11/28 01:36:38 mickey Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -75,6 +75,8 @@
 #ifndef	MAXSSIZ
 #define	MAXSSIZ		MAXDSIZ			/* max stack size */
 #endif
+
+#define STACKGAP_RANDOM	256*1024
 
 /*
  * Sizes of the system and user portions of the system page table.

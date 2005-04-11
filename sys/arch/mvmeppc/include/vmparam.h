@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.12 2004/06/24 22:35:56 drahn Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.13 2004/11/28 01:36:39 mickey Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.1 1996/09/30 16:34:38 ws Exp $	*/
 
 /*-
@@ -57,6 +57,8 @@
 #ifndef	MAXSSIZ
 #define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
+
+#define STACKGAP_RANDOM	256*1024
 
 /*
  * Size of shared memory map

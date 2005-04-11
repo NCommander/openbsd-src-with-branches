@@ -1,4 +1,4 @@
-/* $OpenBSD: vmparam.h,v 1.12 2004/01/23 21:20:54 millert Exp $ */
+/* $OpenBSD: vmparam.h,v 1.13 2004/11/28 01:36:38 mickey Exp $ */
 /* $NetBSD: vmparam.h,v 1.18 2000/05/22 17:13:54 thorpej Exp $ */
 
 /*
@@ -78,6 +78,8 @@
 #ifndef	MAXSSIZ
 #define	MAXSSIZ		(1<<25)			/* max stack size (32M) */
 #endif
+
+#define STACKGAP_RANDOM	256*1024
 
 /*
  * PTEs for mapping user space into the kernel for phyio operations.
