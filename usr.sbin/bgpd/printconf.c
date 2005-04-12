@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.37 2005/03/14 17:32:04 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.38 2005/04/07 23:45:21 henning Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -94,6 +94,12 @@ print_set(struct filter_set_head *set)
 			break;
 		case ACTION_SET_RELATIVE_MED:
 			printf("metric %+d ", s->action.relative);
+			break;
+		case ACTION_SET_WEIGHT:
+			printf("weight %u ", s->action.metric);
+			break;
+		case ACTION_SET_RELATIVE_WEIGHT:
+			printf("weight %+d ", s->action.relative);
 			break;
 		case ACTION_SET_NEXTHOP:
 			printf("nexthop %s ", log_addr(&s->action.nexthop));
