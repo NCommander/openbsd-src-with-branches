@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.7 2005/03/12 11:03:05 norby Exp $ */
+/*	$OpenBSD: rde.h,v 1.8 2005/03/22 22:13:48 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -53,6 +53,12 @@ struct rde_nbr {
 	u_int32_t		 peerid;	/* unique ID in DB */
 	int			 state;
 	int			 self;
+};
+
+struct rde_asext {
+	LIST_ENTRY(rde_asext)	 entry;
+	struct kroute		 kr;
+	int			 used;
 };
 
 struct rt_node {
