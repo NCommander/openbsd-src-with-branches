@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.16 2004/09/08 16:18:12 henning Exp $	*/
+/*	$OpenBSD: table.c,v 1.17 2005/03/22 12:34:13 henning Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -713,7 +713,7 @@ again:
 		       addrname(dst, mask, 0), naddr_ntoa(gate),
 		       strerror(errno));
 	} else {
-		msglog("write(rt_sock) wrote %d instead of %d",
+		msglog("write(rt_sock) wrote %ld instead of %d",
 		       cc, w.w_rtm.rtm_msglen);
 	}
 #endif
