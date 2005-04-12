@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD$
+# $OpenBSD: basename.sh,v 1.1 2005/04/07 07:24:27 otto Exp $
 # $NetBSD: basename.sh,v 1.1 2005/04/04 16:48:45 peter Exp $
 
 test_basename()
@@ -24,7 +24,7 @@ test_basename_suffix()
 }
 
 # Tests without suffix
-test_basename "" "."
+test_basename "" ""
 test_basename "/usr/bin" "bin"
 test_basename "/usr" "usr"
 test_basename "/" "/"
