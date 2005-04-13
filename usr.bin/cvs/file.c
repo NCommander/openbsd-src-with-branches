@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.58 2005/03/26 08:09:54 tedu Exp $	*/
+/*	$OpenBSD: file.c,v 1.59 2005/03/29 17:37:37 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -714,7 +714,7 @@ cvs_file_examine(CVSFILE *cf, int (*exam)(CVSFILE *, void *), void *arg)
 		ret = (*exam)(cf, arg);
 		TAILQ_FOREACH(fp, &(cf->cf_ddat->cd_files), cf_list) {
 			ret = cvs_file_examine(fp, exam, arg);
-			if (ret == -1)
+			if (ret != 0)
 				break;
 		}
 	} else
