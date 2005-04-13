@@ -1535,6 +1535,7 @@
 
 /* Ralink Technology products */
 #define	USB_PRODUCT_RALINK_RT2570	0x1706		/* RT2570 */
+#define	USB_PRODUCT_RALINK_RT2570_2	0x2570		/* RT2570 */
 
 /* RATOC Systems products */
 #define	USB_PRODUCT_RATOC_REXUSB60	0xb000		/* USB serial REX-USB60 */

@@ -4229,6 +4229,12 @@ const struct usb_knowndev usb_knowndevs[] = {
 	    "RT2570",
 	},
 	{
+	    USB_VENDOR_RALINK, USB_PRODUCT_RALINK_RT2570_2,
+	    0,
+	    "Ralink Technology",
+	    "RT2570",
+	},
+	{
 	    USB_VENDOR_RATOC, USB_PRODUCT_RATOC_REXUSB60,
 	    0,
 	    "RATOC Systems",
