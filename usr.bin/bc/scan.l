@@ -1,5 +1,5 @@
 %{
-/*      $OpenBSD: scan.l,v 1.16 2004/12/02 19:30:05 otto Exp $	*/
+/*      $OpenBSD: scan.l,v 1.17 2005/03/28 17:43:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -18,13 +18,14 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: scan.l,v 1.16 2004/12/02 19:30:05 otto Exp $";
+static const char rcsid[] = "$OpenBSD: scan.l,v 1.17 2005/03/28 17:43:28 deraadt Exp $";
 #endif /* not lint */
 
 #include <err.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "extern.h"
 #include "pathnames.h"
@@ -41,6 +42,8 @@ static void	init_strbuf(void);
 static void	add_str(const char *);
 
 %}
+
+%option always-interactive
 
 DIGIT		[0-9A-F]
 ALPHA		[a-z_]
