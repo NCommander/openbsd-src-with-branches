@@ -1,4 +1,4 @@
-/*	$OpenBSD: eso.c,v 1.19 2003/04/27 11:22:53 ho Exp $	*/
+/*	$OpenBSD: eso.c,v 1.20 2003/05/01 22:44:21 jason Exp $	*/
 /*	$NetBSD: eso.c,v 1.3 1999/08/02 17:37:43 augustss Exp $	*/
 
 /*
@@ -824,7 +824,7 @@ eso_round_blocksize(hdl, blk)
 	int blk;
 {
 
-	return (blk & -32);	/* keep good alignment; at least 16 req'd */
+	return ((blk + 31) & -32); /* keep good alignment; at least 16 req'd */
 }
 
 HIDE int

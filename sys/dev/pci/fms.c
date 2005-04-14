@@ -1,4 +1,4 @@
-/*	$OpenBSD: fms.c,v 1.14 2002/11/19 18:40:17 jason Exp $ */
+/*	$OpenBSD: fms.c,v 1.15 2003/04/27 11:22:53 ho Exp $ */
 /*	$NetBSD: fms.c,v 1.5.4.1 2000/06/30 16:27:50 simonb Exp $	*/
 
 /*-
@@ -641,7 +641,7 @@ fms_round_blocksize(addr, blk)
 	void *addr;
 	int blk;
 {
-	return blk & ~0xf;
+	return (blk + 0xf) & ~0xf;
 }
 
 int

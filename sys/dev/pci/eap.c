@@ -1,4 +1,4 @@
-/*      $OpenBSD: eap.c,v 1.22 2004/12/07 03:17:42 jsg Exp $ */
+/*      $OpenBSD: eap.c,v 1.23 2004/12/17 08:04:45 jsg Exp $ */
 /*	$NetBSD: eap.c,v 1.46 2001/09/03 15:07:37 reinoud Exp $ */
 
 /*
@@ -1051,7 +1051,7 @@ eap_set_params(void *addr, int setmode, int usemode,
 int
 eap_round_blocksize(void *addr, int blk)
 {
-	return (blk & -32);	/* keep good alignment */
+	return ((blk + 31) & -32);	/* keep good alignment */
 }
 
 int

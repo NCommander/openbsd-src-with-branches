@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.50 2005/04/05 17:30:57 mickey Exp $	*/
+/*	$OpenBSD: auich.c,v 1.51 2005/04/05 21:08:47 marc Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -906,7 +906,7 @@ auich_round_blocksize(v, blk)
 	void *v;
 	int blk;
 {
-	return blk & ~0x3f;
+	return (blk + 0x3f) & ~0x3f;
 }
 
 int

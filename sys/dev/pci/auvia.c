@@ -1,4 +1,4 @@
-/*	$OpenBSD: auvia.c,v 1.29 2004/12/07 03:17:42 jsg Exp $ */
+/*	$OpenBSD: auvia.c,v 1.30 2005/04/11 19:31:43 matthieu Exp $ */
 /*	$NetBSD: auvia.c,v 1.7 2000/11/15 21:06:33 jdolecek Exp $	*/
 
 /*-
@@ -626,7 +626,7 @@ auvia_set_params(void *addr, int setmode, int usemode,
 int
 auvia_round_blocksize(void *addr, int blk)
 {
-	return (blk & -32);
+	return ((blk + 31) & -32);
 }
 
 

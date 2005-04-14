@@ -1,4 +1,4 @@
-/*      $OpenBSD: sv.c,v 1.15 2003/02/11 19:20:28 mickey Exp $ */
+/*      $OpenBSD: sv.c,v 1.16 2003/04/27 11:22:54 ho Exp $ */
 
 /*
  * Copyright (c) 1998 Constantine Paul Sapuntzakis
@@ -813,7 +813,7 @@ sv_round_blocksize(addr, blk)
 	void *addr;
 	int blk;
 {
-	return (blk & -32);	/* keep good alignment */
+	return ((blk + 31) & -32);	/* keep good alignment */
 }
 
 int

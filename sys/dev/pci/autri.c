@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.12 2003/03/09 01:52:14 tedu Exp $	*/
+/*	$OpenBSD: autri.c,v 1.13 2003/04/27 11:22:53 ho Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -1048,7 +1048,7 @@ autri_round_blocksize(addr, block)
 	void *addr;
 	int block;
 {
-	return (block & -4);
+	return ((block + 3) & -4);
 }
 
 int
