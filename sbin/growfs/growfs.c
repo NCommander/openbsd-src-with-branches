@@ -1,4 +1,4 @@
-/*	$OpenBSD: growfs.c,v 1.10 2003/11/08 19:17:28 jmc Exp $	*/
+/*	$OpenBSD: growfs.c,v 1.11 2004/03/15 08:52:01 deraadt Exp $	*/
 /*
  * Copyright (c) 2000 Christoph Herrmann, Thomas-Henning von Kamptz
  * Copyright (c) 1980, 1989, 1993 The Regents of the University of California.
@@ -46,7 +46,7 @@ static const char copyright[] =
 Copyright (c) 1980, 1989, 1993 The Regents of the University of California.\n\
 All rights reserved.\n";
 
-static const char rcsid[] = "$OpenBSD: growfs.c,v 1.10 2003/11/08 19:17:28 jmc Exp $";
+static const char rcsid[] = "$OpenBSD: growfs.c,v 1.11 2004/03/15 08:52:01 deraadt Exp $";
 #endif /* not lint */
 
 /* ********************************************************** INCLUDES ***** */
@@ -236,7 +236,9 @@ growfs(int fsi, int fso, unsigned int Nflag)
 		j = snprintf(tmpbuf, sizeof tmpbuf, " %d%s",
 		    (int)fsbtodb(&sblock, cgsblock(&sblock, cylno)),
 		    cylno < (sblock.fs_ncg - 1) ? "," : "");
-		if (i + j >= width) {
+		if (j >= sizeof tmpbuf)
+			j = sizeof tmpbuf - 1;
+		if (j == -1 || i + j >= width) {
 			printf("\n");
 			i = 0;
 		}
