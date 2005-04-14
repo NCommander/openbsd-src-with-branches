@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.23 2005/04/11 18:02:58 joris Exp $	*/
+/*	$OpenBSD: resp.c,v 1.24 2005/04/13 15:08:36 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -597,6 +597,7 @@ cvs_resp_updated(struct cvsroot *root, int type, char *line)
 		cvs_log(LP_ERR, "Entries path overflow in response");
 		return (-1);
 	}
+	ret = 0;
 
 	entfile = cvs_ent_open(line, O_WRONLY);
 	if (entfile == NULL) {
