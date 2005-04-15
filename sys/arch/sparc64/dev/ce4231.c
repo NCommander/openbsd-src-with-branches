@@ -1,4 +1,4 @@
-/*	$OpenBSD: ce4231.c,v 1.16 2004/09/29 19:17:43 miod Exp $	*/
+/*	$OpenBSD: ce4231.c,v 1.17 2004/11/09 14:30:34 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -668,7 +668,7 @@ ce4231_round_blocksize(addr, blk)
 	void *addr;
 	int blk;
 {
-	return (blk & (-4));
+	return ((blk + 3) & (-4));
 }
 
 int
