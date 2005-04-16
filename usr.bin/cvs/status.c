@@ -1,4 +1,4 @@
-/*	$OpenBSD: status.c,v 1.15 2005/04/12 16:13:59 jfb Exp $	*/
+/*	$OpenBSD: status.c,v 1.16 2005/04/12 16:56:07 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -150,6 +150,7 @@ cvs_status_file(CVSFILE *cfp, void *arg)
 		ret = cvs_sendreq(root, CVS_REQ_UNCHANGED,
 		    CVS_FILE_NAME(cfp));
 		break;
+	case CVS_FST_ADDED:
 	case CVS_FST_MODIFIED:
 		ret = cvs_sendreq(root, CVS_REQ_MODIFIED,
 		    CVS_FILE_NAME(cfp));
