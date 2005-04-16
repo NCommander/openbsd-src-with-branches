@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.tty.c,v 1.8 2003/05/19 09:00:54 pjanzen Exp $	*/
+/*	$OpenBSD: hack.tty.c,v 1.9 2003/06/03 03:01:40 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)hack.tty.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: hack.tty.c,v 1.8 2003/05/19 09:00:54 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: hack.tty.c,v 1.9 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -201,7 +201,7 @@ error(char *s, ...)
 	if(settty_needed)
 		settty((char *) 0);
 	va_start(ap, s);
-	printf(s, ap);
+	vprintf(s, ap);
 	va_end(ap);
 	putchar('\n');
 	exit(1);
