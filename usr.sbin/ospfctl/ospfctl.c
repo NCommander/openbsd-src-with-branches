@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.10 2005/03/26 13:37:16 claudio Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.11 2005/03/29 17:26:35 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -809,7 +809,7 @@ show_fib_msg(struct imsg *imsg)
 			printf("O");
 		else if (k->flags & F_CONNECTED)
 			printf("C");
-		else if (k->flags & F_KERNEL)
+		else if (k->flags & F_STATIC)
 			printf("S");
 		else
 			printf(" ");
