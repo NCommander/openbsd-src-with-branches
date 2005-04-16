@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.23 2005/04/12 14:58:40 joris Exp $	*/
+/*	$OpenBSD: commit.c,v 1.24 2005/04/15 14:34:15 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -217,6 +217,8 @@ cvs_commit_file(CVSFILE *cf, void *arg)
 	if (l == -1 || l >= (int)sizeof(rcspath)) {
 		errno = ENAMETOOLONG;
 		cvs_log(LP_ERRNO, "%s", rcspath);
+
+		cvs_ent_free(entp);
 		return (-1);
 	}
 
