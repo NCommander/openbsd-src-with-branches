@@ -1,4 +1,4 @@
-/*	$OpenBSD: exit.c,v 1.9 2004/01/03 14:08:53 espie Exp $	*/
+/*	$OpenBSD: exit.c,v 1.1 2005/01/10 00:25:03 deraadt Exp $	*/
 /*	$NetBSD: exit.c,v 1.11 1996/12/01 20:22:19 pk Exp $	*/
 
 /*-
@@ -61,5 +61,5 @@ panic(const char *fmt, ...)
 void
 exit(void)
 {
-	panic("exit");
+	uexit(0);
 }
