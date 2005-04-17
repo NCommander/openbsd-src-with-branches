@@ -71,10 +71,8 @@ interface.
 To see all outgoing packets before they have been processed via
 .Xr ipsec 4 ,
 or all incoming packets after they have been similarly processed:
-.Bd -literal -offset indent
-# ifconfig enc0 up
-# tcpdump -i enc0
-.Ed
+.Pp
+.Dl # tcpdump -i enc0
 .Sh SEE ALSO
 .Xr bpf 4 ,
 .Xr inet 4 ,
