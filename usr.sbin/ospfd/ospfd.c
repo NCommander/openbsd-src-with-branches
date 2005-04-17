@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.14 2005/03/26 13:39:50 claudio Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.15 2005/03/26 13:53:51 henning Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -228,7 +228,7 @@ main(int argc, char *argv[])
 	event_add(&ibuf_rde->ev, NULL);
 
 	if (kr_init(!(conf->flags & OSPFD_FLAG_NO_FIB_UPDATE)) == -1)
-		ospfd_shutdown();
+		fatalx("kr_init failed");
 
 	show_config(conf);
 
