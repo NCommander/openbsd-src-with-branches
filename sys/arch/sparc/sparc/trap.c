@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.41 2004/08/06 22:39:14 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.42 2004/12/06 20:12:25 miod Exp $	*/
 /*	$NetBSD: trap.c,v 1.58 1997/09/12 08:55:01 pk Exp $ */
 
 /*
@@ -704,7 +704,7 @@ mem_access_fault(type, ser, v, pc, psr, tf)
 		 */
 		if (cold)
 			goto kfault;
-		if (va >= KERNBASE) {
+		if (va >= VM_MIN_KERNEL_ADDRESS) {
 			if (uvm_fault(kernel_map, va, 0, ftype) == 0)
 				return;
 			goto kfault;
@@ -950,7 +950,7 @@ mem_access_fault4m(type, sfsr, sfva, tf)
 		 */
 		if (cold)
 			goto kfault;
-		if (va >= KERNBASE) {
+		if (va >= VM_MIN_KERNEL_ADDRESS) {
 			if (uvm_fault(kernel_map, va, 0, ftype) == 0)
 				return;
 			goto kfault;
