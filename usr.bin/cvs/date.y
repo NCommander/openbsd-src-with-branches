@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: date.y,v 1.4 2005/03/28 22:40:58 jfb Exp $	*/
+/*	$OpenBSD: date.y,v 1.5 2005/03/30 16:41:07 joris Exp $	*/
 
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
@@ -82,6 +82,7 @@ static int   yyerror   (const char *, ...);
 static int   yylex     (void);
 static int   yyparse   (void);
 
+time_t		get_date(char *, struct timeb *);
 
 %}
 
