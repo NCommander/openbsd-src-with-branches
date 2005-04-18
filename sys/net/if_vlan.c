@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.49 2005/04/17 23:02:02 brad Exp $ */
+/*	$OpenBSD: if_vlan.c,v 1.50 2005/04/18 03:29:18 brad Exp $ */
 /*
  * Copyright 1998 Massachusetts Institute of Technology
  *
@@ -255,7 +255,7 @@ vlan_start(struct ifnet *ifp)
 		}
 
 		ifp->if_opackets++;
-		if ((p->if_flags & IFF_OACTIVE) == 0)
+		if ((p->if_flags & (IFF_RUNNING|IFF_OACTIVE)) == IFF_RUNNING)
 			p->if_start(p);
 	}
 	ifp->if_flags &= ~IFF_OACTIVE;
