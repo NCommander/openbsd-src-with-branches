@@ -1,4 +1,4 @@
-/*	$OpenBSD: errwarn.c,v 1.2 2004/05/04 21:23:10 deraadt Exp $	*/
+/*	$OpenBSD: errwarn.c,v 1.3 2005/04/11 19:59:07 deraadt Exp $	*/
 
 /* Errors and warnings... */
 
@@ -181,6 +181,8 @@ do_percentm(char *obuf, size_t size, char *ibuf)
 			++s;
 			prlen = snprintf(t, fmt_left, "%s",
 			    strerror(saved_errno));
+			if (prlen == -1)
+				prlen = 0;
 			if (prlen >= fmt_left)
 				prlen = fmt_left - 1;
 			t += prlen;
