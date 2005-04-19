@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.13 2005/01/06 20:34:07 mickey Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.14 2005/01/06 21:08:44 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -31,7 +31,6 @@
 
 #include <uvm/uvm_extern.h>
 
-#define	DB_AOUT_SYMBOLS
 #define	DB_ELF_SYMBOLS
 #define	DB_ELFSIZE	32
 
