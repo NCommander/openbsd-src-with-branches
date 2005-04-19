@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.h,v 1.18 2004/06/28 02:28:42 aaron Exp $ */
+/* $OpenBSD: intr.h,v 1.19 2004/08/16 16:43:52 art Exp $ */
 /* $NetBSD: intr.h,v 1.26 2000/06/03 20:47:41 thorpej Exp $ */
 
 /*-
@@ -115,7 +115,6 @@
 /* IPL-lowering/restoring macros */
 #define splx(s)								\
     ((s) == ALPHA_PSL_IPL_0 ? spl0() : alpha_pal_swpipl(s))
-#define	spllowersoftclock()	alpha_pal_swpipl(ALPHA_PSL_IPL_SOFT)
 
 /* IPL-raising functions/macros */
 int _splraise(int);

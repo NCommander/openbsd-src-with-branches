@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.9 2003/01/05 01:51:27 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.10 2004/01/11 23:51:49 miod Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -101,7 +101,6 @@ u_long	allocate_sir(void (*proc)(void *), void *arg);
 #define IPL_STATCLOCK	5
 #define IPL_HIGH	7
 
-#define	spllowersoftclock()	spl1()
 #define	splsoftclock()		spl1()
 #define	splsoftnet()		spl1()
 #define	splbio()		_splraise(PSL_S|PSL_IPL2)

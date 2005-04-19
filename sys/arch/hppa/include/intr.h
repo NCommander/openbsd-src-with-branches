@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.17 2004/04/07 18:24:19 mickey Exp $	*/
+/*	$OpenBSD: intr.h,v 1.18 2004/09/15 21:28:34 mickey Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -103,7 +103,6 @@ splx(int ncpl)
 	(void)spllower(ncpl);
 }
 
-#define	spllowersoftclock() spllower(IPL_SOFTCLOCK)
 #define	splsoftclock()	splraise(IPL_SOFTCLOCK)
 #define	splsoftnet()	splraise(IPL_SOFTNET)
 #define	splbio()	splraise(IPL_BIO)
