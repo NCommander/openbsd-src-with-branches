@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.53 2005/01/05 06:38:15 tedu Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.54 2005/04/12 13:25:37 joris Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -67,6 +67,7 @@
 #include <sys/errno.h>
 #include <sys/buf.h>
 #include <sys/malloc.h>
+#include <sys/pool.h>
 #include <sys/ioctl.h>
 #include <sys/disklabel.h>
 #include <sys/device.h>
@@ -111,10 +112,13 @@ struct vndbuf {
 	struct buf	*vb_obp;
 };
 
-#define	getvndbuf()	\
-	((struct vndbuf *)malloc(sizeof(struct vndbuf), M_DEVBUF, M_WAITOK))
-#define	putvndbuf(vbp)	\
-	free((caddr_t)(vbp), M_DEVBUF)
+/*
+ * struct vndbuf allocator
+ */
+struct pool     vndbufpl;
+
+#define	getvndbuf()	pool_get(&vndbufpl, PR_WAITOK)
+#define	putvndbuf(vbp)	pool_put(&vndbufpl, vbp);
 
 struct vnd_softc {
 	struct device	 sc_dev;
@@ -205,6 +209,10 @@ vndattach(num)
 	bzero(mem, size);
 	vnd_softc = (struct vnd_softc *)mem;
 	numvnd = num;
+
+	pool_init(&vndbufpl, sizeof(struct vndbuf), 0, 0, 0, "vndbufpl", NULL);
+	pool_setlowat(&vndbufpl, 16);
+	pool_sethiwat(&vndbufpl, 1024);
 }
 
 int
