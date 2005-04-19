@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.6 2005/01/04 21:14:35 espie Exp $ */
+/*	$OpenBSD: db_machdep.h,v 1.7 2005/01/31 21:35:49 grange Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -35,7 +35,6 @@
 
 #define DB_MACHINE_COMMANDS	/* We have machine specific commands */
 #define	DB_ELF_SYMBOLS		/* Elf style symbol table support */
-#define	DB_NO_AOUT		/* For crying out loud! */
 
 typedef struct trap_frame db_regs_t;
 extern db_regs_t	ddb_regs;
