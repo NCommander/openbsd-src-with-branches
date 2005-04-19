@@ -1,5 +1,7 @@
-#MAN=	zboot.8
-NOMAN=
+#	$OpenBSD$
+
+MAN=	boot.8
+MLINKS=	boot.8 boot.conf.8
 
 .if ${MACHINE} == "zaurus"
 PROG=	zboot
