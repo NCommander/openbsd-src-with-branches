@@ -1,4 +1,4 @@
-/*   $OpenBSD: eh_common.S,v 1.5 2004/08/05 21:34:11 miod Exp $	*/
+/*   $OpenBSD: eh_common.S,v 1.6 2004/09/15 05:56:33 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -141,7 +141,7 @@
  *    and the SSBR must be cleared explicitly.
  *
  * 5) The FPU must be enabled (as it is disabled by the exception processing
- *    hardware) and allowed to complete actions in progress. This is so
+ *    hardware) and allowed to complete actions in progress. This is
  *    so that it may be used in the servicing of any instruction.
  *    When the FPU is being restarted, operations attempting to complete
  *    may themselves fault (raising another exception).
