@@ -82,6 +82,7 @@ struct ueagle_cmv {
 #define UEAGLE_CR		0x10
 #define UEAGLE_CW		0x11		
 #define UEAGLE_CR_ACK		0x12
+#define UEAGLE_CW_ACK		0x13
 #define UEAGLE_MODEMREADY	0x71
 
 	uWord	wIndex;
