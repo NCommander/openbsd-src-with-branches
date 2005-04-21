@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_screen.c,v 1.13 2002/02/16 21:27:56 millert Exp $	*/
+/*	$OpenBSD: cl_screen.c,v 1.14 2003/07/18 23:11:43 david Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -371,6 +371,8 @@ cl_vi_init(sp)
 
 fast:	/* Set the terminal modes. */
 	if (tcsetattr(STDIN_FILENO, TCSASOFT | TCSADRAIN, &clp->vi_enter)) {
+		if (errno == EINTR)
+			goto fast;
 		msgq(sp, M_SYSERR, "tcsetattr");
 err:		(void)cl_vi_end(sp->gp);
 		return (1);
@@ -489,6 +491,8 @@ cl_ex_init(sp)
 #endif
 
 fast:	if (tcsetattr(STDIN_FILENO, TCSADRAIN | TCSASOFT, &clp->ex_enter)) {
+		if (errno == EINTR)
+			goto fast;
 		msgq(sp, M_SYSERR, "tcsetattr");
 		return (1);
 	}
