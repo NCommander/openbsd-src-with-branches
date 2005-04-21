@@ -1,5 +1,5 @@
 /*	$NetBSD: vmstat.c,v 1.29.4.1 1996/06/05 00:21:05 cgd Exp $	*/
-/*	$OpenBSD: vmstat.c,v 1.93 2004/11/28 14:05:24 miod Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.94 2004/12/24 22:38:22 miod Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1991, 1993
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: vmstat.c,v 1.93 2004/11/28 14:05:24 miod Exp $";
+static const char rcsid[] = "$OpenBSD: vmstat.c,v 1.94 2004/12/24 22:38:22 miod Exp $";
 #endif
 #endif /* not lint */
 
@@ -565,6 +565,7 @@ dosum(void)
 	(void)printf("%11u traps\n", uvmexp.traps);
 	(void)printf("%11u interrupts\n", uvmexp.intrs);
 	(void)printf("%11u cpu context switches\n", uvmexp.swtch);
+	(void)printf("%11u fpu context switches\n", uvmexp.fpswtch);
 	(void)printf("%11u software interrupts\n", uvmexp.softs);
 	(void)printf("%11u syscalls\n", uvmexp.syscalls);
 	(void)printf("%11u pagein operations\n", uvmexp.pageins);
