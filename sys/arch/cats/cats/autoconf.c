@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.3 2004/02/12 02:32:34 drahn Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.4 2004/12/25 23:02:23 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.2 2001/09/05 16:17:36 matt Exp $	*/
 
 /*
@@ -326,7 +326,7 @@ rootconf()
 
 		len = snprintf(buf, sizeof buf, "%s%d", findblkname(majdev),
 			unit);
-		if (len >= sizeof(buf))
+		if (len == -1 || len >= sizeof(buf))
 			panic("rootconf: device name too long");
 
 		bootdv = getdisk(buf, len, part, &rootdev);
