@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.159 2004/06/21 23:50:37 tholo Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.160 2004/11/19 10:11:52 hshoexer Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -1175,6 +1175,8 @@ ipsp_kern(int off, char **bufp, int len)
 		l = snprintf(buffer, sizeof buffer,
 		    "Hashmask: %d, policy entries: %d\n",
 		    tdb_hashmask, ipsec_in_use);
+		if (l < 0 || l >= sizeof buffer)
+			return 0;
 		return l;
 	}
 
