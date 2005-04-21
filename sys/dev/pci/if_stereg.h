@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_stereg.h,v 1.7 2004/08/09 16:33:55 canacar Exp $ */
+/*	$OpenBSD: if_stereg.h,v 1.8 2004/11/21 18:04:09 brad Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -517,6 +517,7 @@ struct ste_softc {
 	struct ste_list_data	*ste_ldata;
 	caddr_t			ste_ldata_ptr;
 	struct ste_chain_data	ste_cdata;
+	u_int8_t		ste_one_phy;
 };
 
 struct ste_mii_frame {
