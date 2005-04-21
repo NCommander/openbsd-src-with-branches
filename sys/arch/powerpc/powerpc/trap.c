@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.65 2004/12/06 20:12:25 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.66 2005/04/17 21:34:26 kettenis Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -525,6 +525,7 @@ syscall_bad:
 		if (fpuproc)
 			save_fpu(fpuproc);
 		fpuproc = p;
+		uvmexp.fpswtch++;
 		enable_fpu(p);
 		break;
 
