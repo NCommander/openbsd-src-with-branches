@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.37 2005/03/12 10:36:13 jmc Exp $	*/
+/*	$OpenBSD: main.c,v 1.38 2005/04/03 02:09:28 db Exp $	*/
 
 /*
  *	Mainline.
@@ -110,7 +110,10 @@ notnum:
 				if (nfiles == 1)
 					splitwind(0, 1);
 
-				curbp = findbuffer(cp);
+				if ((curbp = findbuffer(cp)) == NULL) {
+					vttidy();
+					errx(1, "Can't find current buffer!");
+				}
 				(void)showbuffer(curbp, curwp, 0);
 				if ((status = readin(cp)) != TRUE)
 					killbuffer(curbp);
