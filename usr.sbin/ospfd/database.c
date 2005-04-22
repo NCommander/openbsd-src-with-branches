@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.7 2005/04/05 13:01:21 claudio Exp $ */
+/*	$OpenBSD: database.c,v 1.8 2005/04/12 09:47:30 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -193,7 +193,7 @@ recv_db_description(struct nbr *nbr, char *buf, u_int16_t len)
 
 
 	/* db description packet sanity checks */
-	if (ntohs(dd_hdr.iface_mtu) != nbr->iface->mtu) {
+	if (ntohs(dd_hdr.iface_mtu) > nbr->iface->mtu) {
 		log_warnx("recv_dd_description: invalid MTU, neighbor ID %s",
 		    inet_ntoa(nbr->id));
 		return;
