@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.485 2005/04/14 08:21:01 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.486 2005/04/15 12:59:40 joel Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -4077,9 +4077,9 @@ pf_test_state_tcp(struct pf_state **state, int direction, struct pfi_kif *kif,
 			(*state)->dst.seqdiff = (*state)->src.seqhi -
 			    (*state)->dst.seqlo;
 			(*state)->src.seqhi = (*state)->src.seqlo +
-			    (*state)->src.max_win;
-			(*state)->dst.seqhi = (*state)->dst.seqlo +
 			    (*state)->dst.max_win;
+			(*state)->dst.seqhi = (*state)->dst.seqlo +
+			    (*state)->src.max_win;
 			(*state)->src.wscale = (*state)->dst.wscale = 0;
 			(*state)->src.state = (*state)->dst.state =
 			    TCPS_ESTABLISHED;
