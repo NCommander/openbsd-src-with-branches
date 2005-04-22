@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.3 1998/05/10 11:31:19 downsj Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.4 2003/06/02 23:27:46 millert Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1997/06/28 07:20:25 thorpej Exp $	*/
 
 /*
@@ -111,6 +111,7 @@ struct trapframe {
 	short frame;
 };
 
+int
 trap(fp)
 	struct trapframe *fp;
 {
