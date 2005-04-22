@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dnkbd.c,v 1.1 2005/04/22 11:59:11 miod Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -62,7 +62,7 @@
  * Keyboard key codes
  */
 
-#define	DNKEY_REPEAT	0x7e
+#define	DNKEY_REPEAT	0x7f
 #define	DNKEY_RELEASE	0x80
 #define	DNKEY_CHANNEL	0xff
 
