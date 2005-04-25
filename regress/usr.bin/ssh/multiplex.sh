@@ -1,4 +1,4 @@
-#	$OpenBSD: multiplex.sh,v 1.9 2004/11/07 00:32:41 djm Exp $
+#	$OpenBSD: multiplex.sh,v 1.10 2005/02/27 11:33:30 dtucker Exp $
 #	Placed in the Public Domain.
 
 CTL=$OBJ/ctl-sock
@@ -84,5 +84,3 @@ ${SSH} -S $CTL -Oexit otherhost || fail "send exit command failed"
 sleep 2
 
 ps -p $MASTER_PID >/dev/null && fail "exit command failed" 
-
-cleanup
