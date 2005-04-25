@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.62 2005/01/15 05:24:11 brad Exp $	*/
+/*	$OpenBSD: xl.c,v 1.63 2005/04/23 22:51:28 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1327,7 +1327,7 @@ again:
 			else if (rxstat & XL_RXSTAT_UDPCKOK)
 				sumflags |= M_UDP_CSUM_IN_OK;
 
-			m->m_pkthdr.csum = sumflags;
+			m->m_pkthdr.csum_flags = sumflags;
 		}
 		ether_input_mbuf(ifp, m);
 	}

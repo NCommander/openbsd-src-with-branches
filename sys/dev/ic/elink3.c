@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.62 2004/05/12 06:35:10 tedu Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.63 2005/01/15 05:24:11 brad Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -1393,7 +1393,7 @@ epget(sc, totlen)
 		m->m_data = m->m_pktdat;
 		m->m_flags = M_PKTHDR;
 		m_tag_init(m);
-		m->m_pkthdr.csum = 0;
+		m->m_pkthdr.csum_flags = 0;
 	}
 	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = totlen;

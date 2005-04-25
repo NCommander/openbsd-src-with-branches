@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.101 2004/06/14 05:24:04 mcbride Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.102 2004/08/10 20:11:04 markus Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -289,8 +289,8 @@ udp_input(struct mbuf *m, ...)
 	} else
 #endif /* INET6 */
 	if (uh->uh_sum) {
-		if ((m->m_pkthdr.csum & M_UDP_CSUM_IN_OK) == 0) {
-			if (m->m_pkthdr.csum & M_UDP_CSUM_IN_BAD) {
+		if ((m->m_pkthdr.csum_flags & M_UDP_CSUM_IN_OK) == 0) {
+			if (m->m_pkthdr.csum_flags & M_UDP_CSUM_IN_BAD) {
 				udpstat.udps_badsum++;
 				udpstat.udps_inhwcsum++;
 				m_freem(m);
@@ -304,7 +304,7 @@ udp_input(struct mbuf *m, ...)
 				return;
 			}
 		} else {
-			m->m_pkthdr.csum &= ~M_UDP_CSUM_IN_OK;
+			m->m_pkthdr.csum_flags &= ~M_UDP_CSUM_IN_OK;
 			udpstat.udps_inhwcsum++;
 		}
 	} else
@@ -990,7 +990,7 @@ udp_output(struct mbuf *m, ...)
 	 * until ip_output() or hardware (if it exists).
 	 */
 	if (udpcksum) {
-		m->m_pkthdr.csum |= M_UDPV4_CSUM_OUT;
+		m->m_pkthdr.csum_flags |= M_UDPV4_CSUM_OUT;
 		ui->ui_sum = in_cksum_phdr(ui->ui_src.s_addr,
 		    ui->ui_dst.s_addr, htons((u_int16_t)len +
 		    sizeof (struct udphdr) + IPPROTO_UDP));
