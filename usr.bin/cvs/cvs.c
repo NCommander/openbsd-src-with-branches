@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.58 2005/04/22 03:38:56 joris Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -123,8 +123,8 @@ struct cvs_cmd cvs_cdt[] = {
 	},
 	{
 		CVS_OP_DIFF, "diff",     { "di",  "dif" }, &cvs_diff,
-		"[-cilNpu] [-D date] [-r rev] ...",
-		"cD:ilNpr:Ru",
+		"[-cilNpRu] [-D date] [-r rev] ...",
+		"cD:ilNpRr:u",
 		"Show differences between revisions",
 		NULL
 	},
@@ -434,6 +434,12 @@ main(int argc, char **argv)
 		break;
 	case CVS_EX_FILE:
 		cvs_log(LP_ABORT, "an operation on a file or directory failed");
+		break;
+	case CVS_EX_BADROOT:
+		cvs_log(LP_ABORT,
+		    "No CVSROOT specified! Please use the `-d' option");
+		cvs_log(LP_ABORT,
+		    "or set the CVSROOT enviroment variable.");
 		break;
 	default:
 		break;
