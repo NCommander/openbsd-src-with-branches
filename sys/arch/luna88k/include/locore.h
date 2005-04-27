@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.h,v 1.3 2004/08/01 17:18:02 miod Exp $	*/
+/*	$OpenBSD: locore.h,v 1.4 2004/10/03 19:47:25 miod Exp $	*/
 
 #ifndef _MACHINE_LOCORE_H_
 #define _MACHINE_LOCORE_H_
@@ -26,5 +26,6 @@ void sigtrap(void);
 void stepbpt(void);
 void userbpt(void);
 void syscall_handler(void);
+void cache_flush_handler(void);
 
 #endif /* _MACHINE_LOCORE_H_ */
