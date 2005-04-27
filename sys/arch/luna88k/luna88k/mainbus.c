@@ -1,4 +1,4 @@
-/* $OpenBSD: mainbus.c,v 1.3 2004/08/10 17:07:20 aoyama Exp $ */
+/* $OpenBSD: mainbus.c,v 1.4 2004/08/18 13:29:46 aoyama Exp $ */
 /* $NetBSD: mainbus.c,v 1.2 2000/01/07 05:13:08 nisimura Exp $ */
 
 /*-
@@ -40,6 +40,8 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
 #include <machine/board.h>

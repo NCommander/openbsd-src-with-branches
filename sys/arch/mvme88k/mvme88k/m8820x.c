@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.c,v 1.39 2004/08/06 13:23:49 miod Exp $	*/
+/*	$OpenBSD: m8820x.c,v 1.40 2004/09/30 21:46:38 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -26,6 +26,8 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/asm_macro.h>
 #include <machine/cpu_number.h>
