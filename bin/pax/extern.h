@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.29 2004/11/29 16:23:22 otto Exp $	*/
+/*	$OpenBSD: extern.h,v 1.30 2005/04/25 19:39:52 otto Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
@@ -177,6 +177,7 @@ int ul_asc(u_long, char *, int, int);
 u_quad_t asc_uqd(char *, int, int);
 int uqd_asc(u_quad_t, char *, int, int);
 #endif
+size_t fieldcpy(char *, size_t, const char *, size_t);
 
 /*
  * getoldopt.c
