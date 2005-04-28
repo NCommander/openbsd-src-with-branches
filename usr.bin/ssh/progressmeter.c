@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: progressmeter.c,v 1.21 2004/06/21 17:36:31 avsm Exp $");
+RCSID("$OpenBSD: progressmeter.c,v 1.22 2004/07/11 17:48:47 deraadt Exp $");
 
 #include "progressmeter.h"
 #include "atomicio.h"
@@ -146,6 +146,8 @@ refresh_progress_meter(void)
 		len = snprintf(buf, file_len + 1, "\r%s", file);
 		if (len < 0)
 			len = 0;
+		if (len >= file_len + 1)
+			len = file_len;
 		for (i = len;  i < file_len; i++ )
 			buf[i] = ' ';
 		buf[file_len] = '\0';
