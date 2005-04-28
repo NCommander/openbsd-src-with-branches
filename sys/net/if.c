@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.106 2005/04/05 12:19:37 claudio Exp $	*/
+/*	$OpenBSD: if.c,v 1.107 2005/04/20 23:00:41 mpf Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -504,10 +504,6 @@ if_detach(ifp)
 	ifp->if_init = if_detached_init;
 	ifp->if_watchdog = if_detached_watchdog;
 
-#if NPF > 0
-	pfi_detach_ifnet(ifp);
-#endif
-
 #if NBRIDGE > 0
 	/* Remove the interface from any bridge it is part of.  */
 	if (ifp->if_bridge)
@@ -555,6 +551,10 @@ if_detach(ifp)
 #endif
 #ifdef INET6
 	in6_ifdetach(ifp);
+#endif
+
+#if NPF > 0
+	pfi_detach_ifnet(ifp);
 #endif
 
 	/*
