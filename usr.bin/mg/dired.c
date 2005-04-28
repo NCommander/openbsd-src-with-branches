@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.14 2004/07/22 01:25:24 vincent Exp $	*/
+/*	$OpenBSD: dired.c,v 1.15 2005/04/03 02:09:28 db Exp $	*/
 
 /* dired module for mg 2a	 */
 /* by Robert A. Larson		 */
@@ -311,7 +311,7 @@ d_copy(int f, int n)
 	    EFNEW | EFCR, basename(frname))) == NULL)
 		return (ABORT);
 	else if (bufp[0] == '\0')
-		return (NULL);
+		return (0);
 	stat = (copy(frname, toname) >= 0) ? TRUE : FALSE;
 	if (stat != TRUE)
 		return (stat);
