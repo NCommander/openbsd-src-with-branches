@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: aicasm_gram.y,v 1.11 2003/12/24 23:27:55 krw Exp $	*/
+/*	$OpenBSD: aicasm_gram.y,v 1.12 2004/09/18 19:51:53 mickey Exp $	*/
 /*	$NetBSD: aicasm_gram.y,v 1.3 2003/04/19 19:26:11 fvdl Exp $	*/
 
 /*
@@ -1554,7 +1554,7 @@ add_macro_arg(const char *argtext, int argnum)
 	retval = snprintf(regex_pattern, sizeof(regex_pattern),
 			  "[^-/A-Za-z0-9_](%s)([^-/A-Za-z0-9_]|$)",
 			  argtext);
-	if (retval >= sizeof(regex_pattern)) {
+	if (retval == -1 || retval >= sizeof(regex_pattern)) {
 		stop("Regex text buffer too small for arg",
 		     EX_SOFTWARE);
 		/* NOTREACHED */
