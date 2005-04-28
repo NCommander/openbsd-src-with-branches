@@ -1,4 +1,4 @@
-/*	$OpenBSD: help.c,v 1.21 2004/07/22 01:25:25 vincent Exp $	*/
+/*	$OpenBSD: help.c,v 1.22 2005/04/03 02:09:28 db Exp $	*/
 
 /*
  * Help functions for Mg 2
@@ -186,7 +186,7 @@ apropos_command(int f, int n)
 	if (bclear(bp) == FALSE)
 		return (FALSE);
 
-	fnames = complete_function_list("", NULL);
+	fnames = complete_function_list("");
 	for (el = fnames; el != NULL; el = el->l_next) {
 		char buf[32];
 
