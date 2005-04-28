@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.156 2005/03/28 15:16:46 henning Exp $ */
+/*	$OpenBSD: rde.c,v 1.157 2005/04/16 19:10:59 cloder Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -485,6 +485,16 @@ rde_dispatch_imsg_parent(struct imsgbuf *ibuf)
 		case IMSG_NETWORK_DONE:
 			parent_set = NULL;
 			network_add(&netconf_p, 1);
+			break;
+		case IMSG_NETWORK_REMOVE:
+			if (imsg.hdr.len - IMSG_HEADER_SIZE !=
+			    sizeof(struct network_config)) {
+				log_warnx("rde_dispatch: wrong imsg len");
+				break;
+			}
+			memcpy(&netconf_p, imsg.data, sizeof(netconf_p));
+			SIMPLEQ_INIT(&netconf_p.attrset);
+			network_delete(&netconf_p, 1);
 			break;
 		case IMSG_RECONF_FILTER:
 			if (imsg.hdr.len - IMSG_HEADER_SIZE !=
