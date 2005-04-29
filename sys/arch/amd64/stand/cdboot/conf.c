@@ -42,7 +42,7 @@
 #include <biosdev.h>
 #include <dev/cons.h>
 
-const char version[] = "1.00";
+const char version[] = "1.01";
 int	debug = 1;
 
 
