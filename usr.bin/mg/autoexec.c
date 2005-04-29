@@ -1,11 +1,9 @@
-/* $OpenBSD: autoexec.c,v 1.5 2005/03/10 16:58:57 deraadt Exp $ */
+/* $OpenBSD: autoexec.c,v 1.6 2005/04/03 02:09:28 db Exp $ */
 /* this file is in the public domain */
 /* Author: Vincent Labrecque <vincent@openbsd.org>	April 2002 */
 
 #include "def.h"
 #include "funmap.h"
-
-#include <sys/queue.h>
 
 #include <fnmatch.h>
 
