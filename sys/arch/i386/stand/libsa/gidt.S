@@ -1,4 +1,4 @@
-/*	$OpenBSD: gidt.S,v 1.28 2004/03/19 13:48:18 tom Exp $	*/
+/*	$OpenBSD: gidt.S,v 1.29 2005/04/25 23:09:04 tom Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -354,7 +354,7 @@ intno	= . - 1
 
 	pop	%ds
 
-	addr32 movw %bx, (_C_LABEL(BIOS_regs)+(BIOSR_BX) - LINKADDR)
+	addr32 movl %ebx, (_C_LABEL(BIOS_regs)+(BIOSR_BX) - LINKADDR)
 	movw	%es, %bx
 	addr32 movw %bx, (_C_LABEL(BIOS_regs)+(BIOSR_ES) - LINKADDR)
 	movb	%ah, %bh
