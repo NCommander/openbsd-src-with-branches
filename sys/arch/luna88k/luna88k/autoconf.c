@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.3 2004/07/23 15:31:35 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.4 2004/12/25 23:02:24 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -84,7 +84,7 @@ cpu_configure()
 	 * XXX We have a race here. If we enable interrupts after setroot(),
 	 * the kernel dies.
 	 */
-	enable_interrupt();
+	set_psr(get_psr() & ~PSR_IND);
 	spl0();
 	setroot();
 	swapconf();
