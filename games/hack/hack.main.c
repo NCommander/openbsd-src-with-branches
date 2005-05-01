@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.main.c,v 1.12 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.main.c,v 1.13 2003/07/06 02:07:45 avsm Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -62,7 +62,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: hack.main.c,v 1.12 2003/05/19 06:30:56 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: hack.main.c,v 1.13 2003/07/06 02:07:45 avsm Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -519,6 +519,7 @@ impossible(char *s, ...)
 static void
 chdirx(char *dir, boolean wr)
 {
+	gid_t gid;
 
 #ifdef SECURE
 	if(dir					/* User specified directory? */
@@ -526,9 +527,9 @@ chdirx(char *dir, boolean wr)
 	       && strcmp(dir, HACKDIR)		/* and not the default? */
 #endif
 		) {
-		/* revoke */
-		setegid(getgid());
-		setgid(getgid());
+		/* revoke privs */
+		gid = getgid();
+		setresgid(gid, gid, gid);
 	}
 #endif
 
