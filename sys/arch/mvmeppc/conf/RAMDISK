@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.8 2004/09/16 09:14:03 mickey Exp $
+#	$OpenBSD: RAMDISK,v 1.9 2004/09/16 09:35:36 deraadt Exp $
 #
 # MVMEPPC GENERIC config file
 #
@@ -86,7 +86,7 @@ sd0		at scsibus? target 0 lun 0
 #ss*		at scsibus?
 #uk*		at scsibus?
 
-pseudo-device	rd		 1	# ram disk
+pseudo-device	rd		1	# ram disk
 
 # RAMDISK stuff
 option		MINIROOTSIZE=8192
