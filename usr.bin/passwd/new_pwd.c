@@ -1,4 +1,4 @@
-/* $OpenBSD: new_pwd.c,v 1.4 2001/01/29 01:58:14 niklas Exp $ */
+/* $OpenBSD: new_pwd.c,v 1.5 2002/06/28 22:28:17 deraadt Exp $ */
 /* $KTH: new_pwd.c,v 1.11 1997/05/02 14:28:54 assar Exp $ */
 
 /*
@@ -59,7 +59,7 @@
 #endif
 
 static char *
-check_pw (char *pword)
+check_pw(char *pword)
 {
 	char *t;
 
