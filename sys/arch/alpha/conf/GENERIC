@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.144 2005/04/30 00:36:03 deraadt Exp $
+#	$OpenBSD: GENERIC,v 1.145 2005/04/30 00:49:35 deraadt Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -333,7 +333,7 @@ cmpci*	at pci?				# C-Media CMI8338/8738
 fms*	at pci?				# Forte Media FM801
 auvia*	at pci?				# VIA VT82C686A
 
-# OPL[23] FM syntheziers
+# OPL[23] FM synthesizers
 opl*	at eso?
 
 # MIDI support
