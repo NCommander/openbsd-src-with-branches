@@ -1,4 +1,4 @@
-/*	$OpenBSD: theo.c,v 1.81 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: theo.c,v 1.82 2005/04/28 23:46:57 djm Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved.
@@ -171,7 +171,8 @@ static const char *talk[] = {
 	"openbsd development is slow because lots of developers have shrunken balls",
 	"penguins are not much more than chickens that swim.",
 	"i am a packet sniffing fool, let me wipe my face with my own poo",
-	"they are manual pages, not tea time chit-chats"
+	"they are manual pages, not tea time chit-chats",
+	"Whiners.  They scale really well."
 };
 
 static const int ntalk = sizeof(talk)/sizeof(talk[0]);
