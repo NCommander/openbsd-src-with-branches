@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sgi,v 1.8 2005/03/05 23:58:43 tdeval Exp $
+#	$OpenBSD: files.sgi,v 1.9 2005/03/08 20:00:24 tdeval Exp $
 #
 # maxpartitions must be first item in files.${ARCH}
 #
@@ -129,5 +129,3 @@ major	{rd = 8}
 #
 
 file	dev/cninit.c
-file	netinet/in_cksum.c
-file	netns/ns_cksum.c			ns
