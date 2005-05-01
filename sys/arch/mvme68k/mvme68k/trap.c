@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.56 2004/12/06 20:12:25 miod Exp $ */
+/*	$OpenBSD: trap.c,v 1.57 2004/12/24 22:50:30 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -498,7 +498,7 @@ copyfault:
 		 * check.  Note that we ensure that we are at least at SIR
 		 * IPL while processing the SIR.
 		 */
-		spl1();
+		splsoft();
 		/* FALLTHROUGH */
 
 	case T_SSIR:		/* software interrupt */
