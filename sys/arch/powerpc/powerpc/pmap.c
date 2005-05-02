@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.87 2004/05/20 09:20:42 kettenis Exp $ */
+/*	$OpenBSD: pmap.c,v 1.88 2004/06/24 22:35:56 drahn Exp $ */
 
 /*
  * Copyright (c) 2001, 2002 Dale Rahn.
@@ -1955,7 +1955,8 @@ pmap_proc_iflush(struct proc *p, vaddr_t addr, vsize_t len)
 	vsize_t clen;
 
 	while (len > 0) {
-		clen = round_page(addr) - addr;
+		/* add one to always round up to the next page */
+		clen = round_page(addr + 1) - addr;
 		if (clen > len)
 			clen = len;
 
