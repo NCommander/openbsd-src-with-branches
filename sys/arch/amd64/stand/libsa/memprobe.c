@@ -1,4 +1,4 @@
-/*	$OpenBSD: memprobe.c,v 1.41 2004/01/09 21:15:00 deraadt Exp $	*/
+/*	$OpenBSD: memprobe.c,v 1.1 2004/02/03 12:09:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -328,7 +328,8 @@ memprobe(void)
 		/* Count only "good" memory chunks 12K and up in size */
 		if ((im->type == BIOS_MAP_FREE) && (im->size >= 12*1024)) {
 			if (im->size > 1024 * 1024)
-				printf("%uM ", (u_int)im->size / (1024 * 1024));
+				printf("%uM ", (u_int)(im->size /
+				    (1024 * 1024)));
 			else
 				printf("%uK ", (u_int)im->size / 1024);
 
