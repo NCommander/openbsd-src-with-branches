@@ -1,4 +1,4 @@
-/*	$OpenBSD: sasyncd.c,v 1.3 2005/04/03 12:03:43 ho Exp $	*/
+/*	$OpenBSD: sasyncd.c,v 1.4 2005/04/03 12:24:59 ho Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -59,8 +59,9 @@ privdrop(void)
 		exit(1);
 	}
 
-	if (setgroups(1, &pw->pw_gid) || setegid(pw->pw_gid) ||
-	    setgid(pw->pw_gid) || seteuid(pw->pw_uid) || setuid(pw->pw_uid)) {
+	if (setgroups(1, &pw->pw_gid) || 
+	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||
+	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid)) {
 		log_err("%s: failed to drop privileges", __progname);
 		exit(1);
 	}
