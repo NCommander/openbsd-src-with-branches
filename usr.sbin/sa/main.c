@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.8 2002/05/30 18:43:40 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.9 2002/05/30 18:47:44 deraadt Exp $	*/
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -34,7 +34,7 @@ static char copright[] =
 "@(#) Copyright (c) 1994 Christopher G. Demetriou\n\
  All rights reserved.\n";
 
-static char rcsid[] = "$Id: main.c,v 1.8 2002/05/30 18:43:40 deraadt Exp $";
+static char rcsid[] = "$Id: main.c,v 1.9 2002/05/30 18:47:44 deraadt Exp $";
 #endif
 
 /*
@@ -169,7 +169,7 @@ main(int argc, char **argv)
 		case '?':
 		default:
 			(void)fprintf(stderr,
-			    "usage: %s [-abcdDfijkKlmnqrstu] [-v cutoff]"
+			    "usage: %s [-abcDdfijKklmnqrstu] [-v cutoff]"
 			    " [file ...]\n", __progname);
 			exit(1);
 		}
