@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue.c,v 1.13 2005/04/19 02:03:12 brad Exp $	*/
+/*	$OpenBSD: kqueue.c,v 1.15 2005/04/22 00:56:25 brad Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -225,6 +225,7 @@ kq_dispatch(struct event_base *base, void *arg, struct timeval *tv)
 			if (events[i].data == EBADF ||
 			    events[i].data == ENOENT)
 				continue;
+			errno = events[i].data;
 			return (-1);
 		}
 
