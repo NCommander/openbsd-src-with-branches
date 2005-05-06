@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2002/07/15 21:29:16 mickey Exp $
+#	$OpenBSD: Makefile,v 1.1 2005/04/27 19:39:44 deraadt Exp $
 #	$NetBSD: Makefile,v 1.4 1996/03/25 22:48:09 mrg Exp $
 
 #
@@ -26,7 +26,7 @@ ASOLBOURNE=	$S/arch/solbourne/solbourne/*.[sS] $S/lib/libkern/arch/solbourne/*.[
 tags:
 	-ctags -wdtf ${TSOLBOURNE} ${COMM} ${SOLBOURNE}
 	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${ASOLBOURNE} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
+	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3	\1	/^\2(\3\4$$/;" \
 		>> ${TSOLBOURNE}
 	sort -o ${TSOLBOURNE} ${TSOLBOURNE}
 

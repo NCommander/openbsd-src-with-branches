@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2004/08/06 21:32:56 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2005/05/06 02:35:55 marco Exp $
 
 S=${.CURDIR}/../..
 .include "$S/kern/Make.tags.inc"
@@ -20,7 +20,7 @@ DSGI=	conf sgi include pci
 tags:
 	-ctags -wdtf ${TSGI} ${COMM} ${SSGI}
 	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${ASGI} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
+	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3	\1	/^\2(\3\4$$/;" \
 		>> ${TSGI}
 	sort -o ${TSGI} ${TSGI}
 

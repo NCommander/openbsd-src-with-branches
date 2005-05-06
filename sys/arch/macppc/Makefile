@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2001/09/01 15:28:42 drahn Exp $
+#	$OpenBSD: Makefile,v 1.2 2005/05/06 02:03:15 marco Exp $
 
 S=${.CURDIR}/../..
 .include "$S/kern/Make.tags.inc"
@@ -22,7 +22,7 @@ DMACPPC=	conf macppc include pci
 tags:
 	-ctags -wdtf ${TMACPPC} ${COMM} ${SMACPPC}
 	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${AMACPPC} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
+	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3	\1	/^\2(\3\4$$/;" \
 		>> ${TMACPPC}
 	sort -o ${TMACPPC} ${TMACPPC}
 

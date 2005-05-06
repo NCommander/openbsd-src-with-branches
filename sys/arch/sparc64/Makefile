@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2001/08/31 10:55:43 art Exp $
+#	$OpenBSD: Makefile,v 1.2 2002/07/15 21:29:16 mickey Exp $
 
 
 S=${.CURDIR}/../..
@@ -20,7 +20,7 @@ DSPARC64=	sparc64 dev fpu include
 tags:
 	-ctags -wdtf ${TSPARC64} ${COMM} ${SSPARC64}
 	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${ASPARC64} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
+	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3	\1	/^\2(\3\4$$/;" \
 		>> ${TSPARC64}
 	sort -o ${TSPARC64} ${TSPARC64}
 
