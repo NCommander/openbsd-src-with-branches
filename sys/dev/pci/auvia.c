@@ -1,4 +1,4 @@
-/*	$OpenBSD: auvia.c,v 1.31 2005/04/14 12:42:16 mickey Exp $ */
+/*	$OpenBSD: auvia.c,v 1.32 2005/04/16 21:57:23 mickey Exp $ */
 /*	$NetBSD: auvia.c,v 1.7 2000/11/15 21:06:33 jdolecek Exp $	*/
 
 /*-
@@ -843,7 +843,6 @@ auvia_build_dma_ops(struct auvia_softc *sc, struct auvia_softc_chan *ch,
 	dp = ch->sc_dma_ops_dma;
 	op = ch->sc_dma_ops;
 
-	printf("auvia: op = %p\n", op);
 	while (l) {
 		op->ptr = htole32(s);
 		l = l - min(l, blksize);
