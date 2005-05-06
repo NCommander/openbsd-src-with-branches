@@ -1,4 +1,4 @@
-/*	$OpenBSD: select.c,v 1.7 2005/04/19 02:03:12 brad Exp $	*/
+/*	$OpenBSD: select.c,v 1.9 2005/04/22 00:56:25 brad Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -84,7 +84,7 @@ select_init(void)
 {
 	struct selectop *sop;
 
-	/* Disable kqueue when this environment variable is set */
+	/* Disable select when this environment variable is set */
 	if (!issetugid() && getenv("EVENT_NOSELECT"))
 		return (NULL);
 
