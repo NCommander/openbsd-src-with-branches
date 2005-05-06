@@ -1,4 +1,4 @@
-/*	$OpenBSD: udiv.s,v 1.2 1997/05/29 00:05:26 niklas Exp $	*/
+/*	$OpenBSD: udiv.s,v 1.3 2003/06/02 23:27:59 millert Exp $	*/
 /*	$NetBSD: udiv.s,v 1.2 1994/10/26 08:03:34 cgd Exp $	*/
 
 /*-
@@ -35,6 +35,8 @@
  *	@(#)udiv.s      5.6 (Berkeley) 4/15/91
  */
 
+#include <machine/asm.h>
+
 /*
  * Unsigned division, PCC flavor.
  * udiv() takes an ordinary dividend/divisor pair;
@@ -45,9 +47,7 @@
 #define	DIVIDEND	4(ap)
 #define	DIVISOR		8(ap)
 
-	.globl 	udiv
-	.align	2
-udiv:	.word	0x0
+ASENTRY(udiv, 0)
 	movl	DIVISOR,r2
 	jlss	Leasy		# big divisor: settle by comparison
 	movl	DIVIDEND,r0
