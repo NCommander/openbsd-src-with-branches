@@ -55,4 +55,5 @@ const struct hildevice hildevs[] = {
 	{ 0xa0, 0xbf, HIL_DEVICE_KEYBOARD, "93-key keyboard" },
 	{ 0xc0, 0xdf, HIL_DEVICE_KEYBOARD, "109-key keyboard" },
 	{ 0xe0, 0xff, HIL_DEVICE_KEYBOARD, "87-key keyboard" },
-	{ -1, -1, -1, NULL }};
+	{ -1, -1, -1, NULL }
+};
