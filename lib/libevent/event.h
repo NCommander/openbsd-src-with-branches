@@ -1,4 +1,4 @@
-/*	$OpenBSD: event.h,v 1.9 2005/04/22 00:56:25 brad Exp $	*/
+/*	$OpenBSD: event.h,v 1.10 2005/05/04 03:17:48 brad Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Niels Provos <provos@citi.umich.edu>
@@ -40,7 +40,7 @@ extern "C" {
 typedef unsigned char u_char;
 #endif
 
-#define LIBEVENT_VERSION	"1.0d"
+#define LIBEVENT_VERSION	"1.0e"
 
 #define EVLIST_TIMEOUT	0x01
 #define EVLIST_INSERTED	0x02
