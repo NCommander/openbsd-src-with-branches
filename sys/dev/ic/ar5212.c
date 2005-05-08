@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5212.c,v 1.14 2005/04/08 22:12:21 reyk Exp $	*/
+/*	$OpenBSD: ar5212.c,v 1.15 2005/04/18 18:42:55 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -194,9 +194,9 @@ ar5k_ar5212_attach(device, sc, st, sh, status)
 		return (NULL);
 
 	/* Get MAC, PHY and RADIO revisions */
-	srev = AR5K_REG_READ(AR5K_AR5212_SREV) & AR5K_AR5212_SREV_M;
-	hal->ah_mac_version = srev & AR5K_AR5212_SREV_VERSION;
-	hal->ah_mac_revision = srev & AR5K_AR5212_SREV_REVISION;
+	srev = AR5K_REG_READ(AR5K_AR5212_SREV);
+	hal->ah_mac_version = AR5K_REG_MS(srev, AR5K_AR5212_SREV_VER);
+	hal->ah_mac_revision = AR5K_REG_MS(srev, AR5K_AR5212_SREV_REV);
 	hal->ah_phy_revision = AR5K_REG_READ(AR5K_AR5212_PHY_CHIP_ID) &
 	    0x00ffffffff;
 
