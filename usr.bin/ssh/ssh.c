@@ -40,7 +40,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh.c,v 1.237 2005/04/26 13:08:37 jakob Exp $");
+RCSID("$OpenBSD: ssh.c,v 1.238 2005/05/10 10:28:11 djm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/err.h>
@@ -1291,7 +1291,12 @@ control_client(const char *path)
 		fatal("%s socket(): %s", __func__, strerror(errno));
 
 	if (connect(sock, (struct sockaddr*)&addr, addr.sun_len) == -1) {
- 		debug("Couldn't connect to %s: %s", path, strerror(errno));
+		if (errno == ENOENT)
+	 		debug("Control socket \"%.100s\" does not exist", path);
+		else {
+	 		error("Control socket connect(%.100s): %s", path,
+			    strerror(errno));
+		}
  		close(sock);
  		return;
  	}
