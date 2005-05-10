@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.136 2005/01/06 21:37:53 deraadt Exp $
+#	$OpenBSD: RAMDISK,v 1.137 2005/03/18 19:24:27 deraadt Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 
@@ -224,7 +224,7 @@ ep*	at pcmcia?			# PCMCIA based 3c5xx cards
 #fpa*	at pci?				# DEC DEFPA FDDI cards
 xl*	at pci?				# 3C9xx ethernet cards
 rl*	at pci?				# RealTek 81[23]9 ethernet
-tx*	at pci?				# SMC 83C170 EPIC ethernet cards
+epic*	at pci?				# SMC EPIC/100 ethernet
 tl*	at pci?				# Compaq Thunderlan ethernet cards
 vr*	at pci?				# VIA Rhine ethernet
 #wb*	at pci?				# Winbond W89C840F ethernet
