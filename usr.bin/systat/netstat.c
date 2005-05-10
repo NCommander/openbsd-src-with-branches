@@ -1,4 +1,4 @@
-/*	$OpenBSD: netstat.c,v 1.25 2004/04/26 19:22:30 itojun Exp $	*/
+/*	$OpenBSD: netstat.c,v 1.26 2004/09/29 21:59:28 deraadt Exp $	*/
 /*	$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)netstat.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: netstat.c,v 1.25 2004/04/26 19:22:30 itojun Exp $";
+static char rcsid[] = "$OpenBSD: netstat.c,v 1.26 2004/09/29 21:59:28 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -209,9 +209,6 @@ again:
 		}
 		prev = next;
 		next = inpcb.inp_queue.cqe_next;
-
-		if (inpcb.inp_flags & INP_IPV6)
-			continue;
 
 		if (!aflag) {
 			if (!(inpcb.inp_flags & INP_IPV6) &&
