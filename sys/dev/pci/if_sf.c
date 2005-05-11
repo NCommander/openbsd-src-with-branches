@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sf.c,v 1.27 2004/11/29 07:22:44 jsg Exp $ */
+/*	$OpenBSD: if_sf.c,v 1.28 2005/01/15 05:24:11 brad Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -1364,11 +1364,9 @@ void sf_stats_update(xsc)
 	    stats.sf_tx_multi_colls + stats.sf_tx_excess_colls;
 
 	mii_tick(mii);
-	if (!sc->sf_link) {
-		mii_pollstat(mii);
-		if (mii->mii_media_status & IFM_ACTIVE &&
-		    IFM_SUBTYPE(mii->mii_media_active) != IFM_NONE)
-			sc->sf_link++;
+	if (!sc->sf_link && mii->mii_media_status & IFM_ACTIVE &&
+	    IFM_SUBTYPE(mii->mii_media_active) != IFM_NONE) {
+		sc->sf_link++;
 		if (IFQ_IS_EMPTY(&ifp->if_snd) == 0)
 			sf_start(ifp);
 	}
