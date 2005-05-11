@@ -1,4 +1,4 @@
-/*	$OpenBSD: devopen.c,v 1.1 2005/01/10 00:25:03 deraadt Exp $	*/
+/*	$OpenBSD: devopen.c,v 1.2 2005/04/16 17:27:58 uwe Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -118,15 +118,18 @@ getbootdev(dev_t bootdev, char *p)
 	 */
 	if ((fd = uopen(s, O_RDONLY)) == -1 && errno == ENXIO) {
 		int t;
+
 		while (fd == -1 && timeout > 0) {
 			timeout--;
 			t = getsecs() + 1;
-			while (getsecs() < t);
+			while (getsecs() < t)
+				;
 			fd = uopen(s, O_RDONLY);
 		}
 		if (fd != -1) {
 			t = getsecs() + 2;
-			while (getsecs() < t);
+			while (getsecs() < t)
+				;
 		}
 	}
 	if (fd == -1)

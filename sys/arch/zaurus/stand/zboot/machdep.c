@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.35 2004/03/19 13:48:18 tom Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.1 2005/01/10 00:25:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Tom Cosgrove
@@ -47,10 +47,8 @@ machdep(void)
 		if (pr != NULL) {
 			printf("%s: ", pr->name);
 
-			for (j = 0; j < pr->count; j++) {
+			for (j = 0; j < pr->count; j++)
 				(*(pr->probes)[j])();
-			}
-
 			printf("\n");
 		}
 	}
