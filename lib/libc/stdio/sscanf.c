@@ -63,7 +63,7 @@ sscanf(const char *str, const char *fmt, ...)
 	_UB(&f)._base = NULL;
 	f._lb._base = NULL;
 	va_start(ap, fmt);
-	ret = __svfscanf(&f, fmt, ap);
+	ret = vfscanf(&f, fmt, ap);
 	va_end(ap);
 	return (ret);
 }

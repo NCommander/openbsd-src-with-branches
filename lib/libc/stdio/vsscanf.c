@@ -59,5 +59,5 @@ vsscanf(const char *str, const char *fmt, _BSD_VA_LIST_ ap)
 	f._read = eofread;
 	_UB(&f)._base = NULL;
 	f._lb._base = NULL;
-	return (__svfscanf(&f, fmt, ap));
+	return (vfscanf(&f, fmt, ap));
 }
