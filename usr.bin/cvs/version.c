@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.8 2005/03/30 17:43:04 joris Exp $	*/
+/*	$OpenBSD: version.c,v 1.9 2005/04/03 17:32:50 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -40,7 +40,7 @@ int cvs_version_sendflags(struct cvsroot *);
 struct cvs_cmd_info cvs_version = {
 	NULL,
 	cvs_version_sendflags,
-	NULL, NULL, NULL, 0, 0, 0
+	NULL, NULL, NULL, CF_NOFILES, 0, 0
 };
 
 int
