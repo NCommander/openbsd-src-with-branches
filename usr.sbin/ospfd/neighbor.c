@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.15 2005/04/12 09:54:59 claudio Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.16 2005/05/01 17:35:27 david Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -209,6 +209,7 @@ nbr_fsm(struct nbr *nbr, enum nbr_event event)
 	/* neighbor changed from/to FULL originate new rtr and net LSA */
 	if (old_state != nbr->state && (old_state & NBR_STA_FULL ||
 	    nbr->state & NBR_STA_FULL)) {
+		area_track(nbr->iface->area, nbr->state);
 		orig_rtr_lsa(nbr->iface->area);
 		if (nbr->iface->state & IF_STA_DR)
 			orig_net_lsa(nbr->iface);
