@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.31 2005/05/03 08:55:16 joris Exp $	*/
+/*	$OpenBSD: resp.c,v 1.32 2005/05/11 00:07:57 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -307,6 +307,8 @@ cvs_resp_ok(struct cvsroot *root, int type, char *line)
 static int
 cvs_resp_error(struct cvsroot *root, int type, char *line)
 {
+	if (line == NULL)
+		return (1);
 
 	/* XXX - GNU cvs sends an empty error message
 	 * at the end of the diff command, even for successfull
