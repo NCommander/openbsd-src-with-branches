@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fxp_pci.c,v 1.32 2005/01/14 18:14:14 deraadt Exp $	*/
+/*	$OpenBSD: if_fxp_pci.c,v 1.33 2005/03/27 10:45:49 brad Exp $	*/
 
 /*
  * Copyright (c) 1995, David Greenman
@@ -184,6 +184,8 @@ fxp_pci_attach(parent, self, aux)
 			chipname = "i82559S";
 		if (rev >= FXP_REV_82550)
 			chipname = "i82550";
+		if (rev >= FXP_REV_82551_E)
+			chipname = "i82551";
 
 		if (chipname != NULL)
 			printf(", %s", chipname);
