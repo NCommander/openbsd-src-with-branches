@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.124 2005/04/28 13:49:12 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.125 2005/04/28 13:54:45 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1378,11 +1378,11 @@ fetchifs(int ifindex)
 	lim = buf + len;
 	for (next = buf; next < lim; next += ifm.ifm_msglen) {
 		memcpy(&ifm, next, sizeof(ifm));
-		sa = (struct sockaddr *)(next + sizeof(ifm));
-		get_rtaddrs(ifm.ifm_addrs, sa, rti_info);
-
 		if (ifm.ifm_type != RTM_IFINFO)
 			continue;
+
+		sa = (struct sockaddr *)(next + sizeof(ifm));
+		get_rtaddrs(ifm.ifm_addrs, sa, rti_info);
 
 		if ((kif = calloc(1, sizeof(struct kif_node))) == NULL) {
 			log_warn("fetchifs");
