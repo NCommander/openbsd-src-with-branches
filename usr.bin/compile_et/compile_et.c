@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile_et.c,v 1.10 2003/06/25 21:19:34 deraadt Exp $	*/
+/*	$OpenBSD: compile_et.c,v 1.11 2003/07/14 16:14:43 mho Exp $	*/
 /*
  * Copyright (c) 1998, 1999 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
@@ -207,8 +207,7 @@ main(int argc, char **argv)
 	else
 		p = filename;
 
-	strncpy(Basename, p, sizeof(Basename));
-	Basename[sizeof(Basename) - 1] = '\0';
+	strlcpy(Basename, p, sizeof(Basename));
 	Basename[strcspn(Basename, ".")] = '\0';
 
 	snprintf(hfn, sizeof(hfn), "%s.h", Basename);
