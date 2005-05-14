@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypxfr.c,v 1.31 2003/07/15 06:10:46 deraadt Exp $ */
+/*	$OpenBSD: ypxfr.c,v 1.32 2004/07/08 06:20:46 matthieu Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef LINT
-static const char rcsid[] = "$OpenBSD: ypxfr.c,v 1.31 2003/07/15 06:10:46 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ypxfr.c,v 1.32 2004/07/08 06:20:46 matthieu Exp $";
 #endif
 
 #include <sys/types.h>
@@ -213,14 +213,11 @@ add_order(DBM *db, u_int32_t ordernum)
 static int
 add_master(CLIENT *client, char *domain, char *map, DBM *db)
 {
-	char	keystr[] = YP_MASTER_KEY, *master;
+	char	keystr[] = YP_MASTER_KEY, *master = NULL;
 	datum	key, val;
 	int	status;
 
-	master = NULL;
-
 	/* Get MASTER */
-
 	status = yp_master_host(client, domain, map, &master);
 
 	if (master != NULL) {
