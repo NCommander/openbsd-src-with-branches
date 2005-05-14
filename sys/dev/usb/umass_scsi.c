@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass_scsi.c,v 1.10 2005/04/01 06:41:13 pascoe Exp $ */
+/*	$OpenBSD: umass_scsi.c,v 1.11 2005/04/27 23:54:44 krw Exp $ */
 /*	$NetBSD: umass_scsipi.c,v 1.9 2003/02/16 23:14:08 augustss Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -364,8 +364,6 @@ umass_scsi_cb(struct umass_softc *sc, void *priv, int residue, int status)
 		scbus->sc_sense_cmd.length = sizeof(xs->sense);
 
 		cmdlen = sizeof(scbus->sc_sense_cmd);
-		if (sc->sc_cmd == UMASS_CPROTO_UFI) /* XXX */
-			cmdlen = UFI_COMMAND_LENGTH;
 		sc->sc_methods->wire_xfer(sc, link->lun,
 					  &scbus->sc_sense_cmd, cmdlen,
 					  &xs->sense, sizeof(xs->sense),
