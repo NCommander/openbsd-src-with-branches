@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.h,v 1.2 2004/08/04 09:08:19 miod Exp $ */
+/*	$OpenBSD: m8820x.h,v 1.3 2004/08/06 13:23:49 miod Exp $ */
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -84,7 +84,7 @@
 #define CMMU_CTP2	(0x848 / 4)	/* cache tag port 2 */
 #define CMMU_CTP3	(0x84c / 4)	/* cache tag port 3 */
 #define CMMU_CSSP0	(0x880 / 4)	/* cache set status register */
-#define CMMU_CSSP(n)	(CMMU_CSSP0 + (n))
+#define CMMU_CSSP(n)	((0x880 + (n * 0x10)) / 4)
 /* the following only exist on 88204 */
 #define CMMU_CSSP1	(0x890 / 4)	/* cache set status register */
 #define CMMU_CSSP2	(0x8a0 / 4)	/* cache set status register */
