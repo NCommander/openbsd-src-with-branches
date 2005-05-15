@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass.c,v 1.39 2005/04/01 06:41:13 pascoe Exp $ */
+/*	$OpenBSD: umass.c,v 1.40 2005/05/14 23:36:26 krw Exp $ */
 /*	$NetBSD: umass.c,v 1.116 2004/06/30 05:53:46 mycroft Exp $	*/
 
 /*
@@ -130,6 +130,8 @@
  * in use. When the transfer has finished, these routines call
  * umass_cam_cb again to complete the CAM command.
  */
+
+#include "atapiscsi.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
