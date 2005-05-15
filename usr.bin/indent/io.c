@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.8 2003/09/26 22:23:28 tedu Exp $	*/
+/*	$OpenBSD: io.c,v 1.9 2004/07/20 03:50:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
@@ -33,7 +33,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)io.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: io.c,v 1.8 2003/09/26 22:23:28 tedu Exp $";
+static char rcsid[] = "$OpenBSD: io.c,v 1.9 2004/07/20 03:50:26 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -372,7 +372,7 @@ fill_buffer(void)
     }
     buf_ptr = in_buffer;
     buf_end = p;
-    if (p[-2] == '/' && p[-3] == '*') {
+    if (p - 3 >= in_buffer && p[-2] == '/' && p[-3] == '*') {
 	if (in_buffer[3] == 'I' && strncmp(in_buffer, "/**INDENT**", 11) == 0)
 	    fill_buffer();	/* flush indent error message */
 	else {
