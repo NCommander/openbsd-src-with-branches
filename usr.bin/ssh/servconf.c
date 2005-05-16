@@ -10,7 +10,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: servconf.c,v 1.139 2005/03/01 10:09:52 djm Exp $");
+RCSID("$OpenBSD: servconf.c,v 1.140 2005/03/10 22:01:05 deraadt Exp $");
 
 #include "ssh.h"
 #include "log.h"
@@ -491,6 +491,9 @@ parse_time:
 
 	case sAddressFamily:
 		arg = strdelim(&cp);
+		if (!arg || *arg == '\0')
+			fatal("%s line %d: missing address family.",
+			    filename, linenum);
 		intptr = &options->address_family;
 		if (options->listen_addrs != NULL)
 			fatal("%s line %d: address family must be specified before "
