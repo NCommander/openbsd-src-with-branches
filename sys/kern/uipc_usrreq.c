@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.27 2004/06/24 19:35:24 tholo Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.28 2004/07/22 06:13:08 tedu Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -973,6 +973,8 @@ void
 unp_mark(fp)
 	struct file *fp;
 {
+	if (fp == NULL)
+		return;
 
 	if (fp->f_flag & FMARK)
 		return;
