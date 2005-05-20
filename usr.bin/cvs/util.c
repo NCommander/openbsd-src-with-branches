@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.24 2005/05/18 20:24:19 joris Exp $	*/
+/*	$OpenBSD: util.c,v 1.25 2005/05/19 04:17:24 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -39,12 +39,6 @@
 #include "cvs.h"
 #include "log.h"
 #include "file.h"
-
-static const char *cvs_months[] = {
-	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-};
-
 
 /* letter -> mode type map */
 static const int cvs_modetypes[26] = {
