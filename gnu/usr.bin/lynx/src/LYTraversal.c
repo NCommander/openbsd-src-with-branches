@@ -1,52 +1,64 @@
-#include "HTUtils.h"
-#include "tcp.h"
-#include "LYGlobalDefs.h"
-#include "LYUtils.h"
-#include "LYSignal.h"
-#include "LYTraversal.h"
+#include <HTUtils.h>
+#include <LYGlobalDefs.h>
+#include <LYUtils.h>
+#include <LYClean.h>
+#include <LYCurses.h>
+#include <LYStrings.h>
+#include <LYTraversal.h>
 
-#include "LYexit.h"
-#include "LYLeaks.h"
+#include <LYexit.h>
+#include <LYLeaks.h>
 
 /* routines to handle special traversal feature */
+
+PRIVATE void final_perror ARGS2(CONST char *,msg, BOOLEAN, clean_flag)
+{
+    int saved_errno = errno;
+    if (LYCursesON) {
+	if (clean_flag)
+	    cleanup();
+	else
+	    stop_curses();
+    }
+    set_errno(saved_errno);
+    perror(msg);
+}
+
+PRIVATE void exit_with_perror ARGS1(CONST char *,msg)
+{
+    final_perror(msg, TRUE);
+    exit_immediately(EXIT_FAILURE);
+}
 
 PUBLIC BOOLEAN lookup ARGS1(char *,target)
 {
     FILE *ifp;
-    char buffer[200], line[200];
+    char *buffer = NULL;
+    char *line = NULL;
+    int result = FALSE;
 
-    if ((ifp = fopen(TRAVERSE_FILE,"r")) == NULL) {
-        if ((ifp = LYNewTxtFile(TRAVERSE_FILE)) == NULL) {
-            perror("unable to open or create a traversal file");
-#ifndef NOSIGHUP
-	    (void) signal(SIGHUP, SIG_DFL);
-#endif /* NOSIGHUP */
-	    (void) signal(SIGTERM, SIG_DFL);
-#ifndef VMS
-	    (void) signal(SIGINT, SIG_DFL);
-#endif /* !VMS */
-#ifdef SIGTSTP
-	    if (no_suspend)
-	        (void) signal(SIGTSTP,SIG_DFL);
-#endif /* SIGTSTP */
-            exit(-1);
+    if ((ifp = fopen(TRAVERSE_FILE, TXT_R)) == NULL) {
+	if ((ifp = LYNewTxtFile(TRAVERSE_FILE)) == NULL) {
+	    exit_with_perror(CANNOT_OPEN_TRAV_FILE);
 	} else {
-            fclose(ifp);
-            return(FALSE);
-        }
+	    LYCloseOutput(ifp);
+	    return(FALSE);
+	}
     }
 
-    sprintf(line,"%s\n",target);
+    HTSprintf0(&line, "%s\n", target);
 
-    while(fgets(buffer, 200, ifp) != NULL) {
+    while (LYSafeGets(&buffer, ifp) != NULL) {
 	if (STREQ(line,buffer)) {
-	    fclose(ifp);
-	    return(TRUE);
+	    result = TRUE;
+	    break;
 	}
     } /* end while */
+    FREE(line);
+    FREE(buffer);
 
-    fclose(ifp);
-    return(FALSE);
+    LYCloseInput(ifp);
+    return (BOOL) (result);
 }
 
 PUBLIC void add_to_table ARGS1(char *,target)
@@ -55,24 +67,12 @@ PUBLIC void add_to_table ARGS1(char *,target)
     FILE *ifp;
 
     if ((ifp = LYAppendToTxtFile(TRAVERSE_FILE)) == NULL) {
-	perror("unable to open traversal file");
-#ifndef NOSIGHUP
-	(void) signal(SIGHUP, SIG_DFL);
-#endif /* NOSIGHUP */
-	(void) signal(SIGTERM, SIG_DFL);
-#ifndef VMS
-	(void) signal(SIGINT, SIG_DFL);
-#endif /* !VMS */
-#ifdef SIGTSTP
-	if (no_suspend)
-	    (void) signal(SIGTSTP,SIG_DFL);
-#endif /* SIGTSTP */
-	exit(-1);
+	exit_with_perror(CANNOT_OPEN_TRAV_FILE);
     }
 
     fprintf(ifp,"%s\n",target);
 
-    fclose(ifp);
+    LYCloseOutput(ifp);
 }
 
 PUBLIC void add_to_traverse_list ARGS2(char *,fname, char *,prev_link_name)
@@ -81,24 +81,12 @@ PUBLIC void add_to_traverse_list ARGS2(char *,fname, char *,prev_link_name)
     FILE *ifp;
 
     if ((ifp = LYAppendToTxtFile(TRAVERSE_FOUND_FILE)) == NULL) {
-	perror("unable to open traversal found file");
-#ifndef NOSIGHUP
-	(void) signal(SIGHUP, SIG_DFL);
-#endif /* NOSIGHUP */
-	(void) signal(SIGTERM, SIG_DFL);
-#ifndef VMS
-	(void) signal(SIGINT, SIG_DFL);
-#endif /* !VMS */
-#ifdef SIGTSTP
-	if (no_suspend)
-	    (void) signal(SIGTSTP,SIG_DFL);
-#endif /* SIGTSTP */
-	exit(-1);
+	exit_with_perror(CANNOT_OPEN_TRAF_FILE);
     }
 
     fprintf(ifp,"%s\t%s\n",fname, prev_link_name);
 
-    fclose(ifp);
+    LYCloseOutput(ifp);
 }
 
 PUBLIC void dump_traversal_history NOARGS
@@ -107,21 +95,22 @@ PUBLIC void dump_traversal_history NOARGS
     FILE *ifp;
 
     if (nhist <= 0)
-        return;
+	return;
 
     if ((ifp = LYAppendToTxtFile(TRAVERSE_FILE)) == NULL) {
-        perror("unable to open traversal file");
+	final_perror(CANNOT_OPEN_TRAV_FILE, FALSE);
 	return;
     }
 
-    fprintf(ifp, "\n\nTRAVERSAL WAS INTERUPTED\n\n\
-\t    here is a list of the history stack so that you may rebuild\n\n");
+    fprintf(ifp, "\n\n%s\n\n\t    %s\n\n",
+	    TRAV_WAS_INTERRUPTED,
+	    gettext("here is a list of the history stack so that you may rebuild"));
 
     for (x = nhist-1; x >= 0; x--) {
-	fprintf(ifp,"%s\t%s\n", history[x].title, history[x].address);
+	fprintf(ifp, "%s\t%s\n", HDOC(x).title, HDOC(x).address);
     }
 
-    fclose(ifp);
+    LYCloseOutput(ifp);
 }
 
 PUBLIC void add_to_reject_list ARGS1(char *,target)
@@ -130,24 +119,12 @@ PUBLIC void add_to_reject_list ARGS1(char *,target)
     FILE *ifp;
 
     if ((ifp = LYAppendToTxtFile(TRAVERSE_REJECT_FILE)) == NULL) {
-	perror("unable to open reject file");
-#ifndef NOSIGHUP
-	(void) signal(SIGHUP, SIG_DFL);
-#endif /* NOSIGHUP */
-	(void) signal(SIGTERM, SIG_DFL);
-#ifndef VMS
-	(void) signal(SIGINT, SIG_DFL);
-#endif /* !VMS */
-#ifdef SIGTSTP
-	if (no_suspend)
-	    (void) signal(SIGTSTP,SIG_DFL);
-#endif /* SIGTSTP */
-	exit(-1);
+	exit_with_perror(CANNOT_OPEN_REJ_FILE);
     }
 
     fprintf(ifp,"%s\n",target);
 
-    fclose(ifp);
+    LYCloseOutput(ifp);
 }
 
 /* there need not be a reject file, so if it doesn't open, just return
@@ -162,33 +139,36 @@ PUBLIC void add_to_reject_list ARGS1(char *,target)
 PUBLIC BOOLEAN lookup_reject ARGS1(char *,target)
 {
     FILE *ifp;
-    char buffer[200], line[200], ch;
-    int  frag;
+    char *buffer = NULL;
+    char *line = NULL;
+    int len;
+    int result = FALSE;
 
-    if ((ifp = fopen(TRAVERSE_REJECT_FILE,"r")) == NULL){
-        return(FALSE);
+    if ((ifp = fopen(TRAVERSE_REJECT_FILE, TXT_R)) == NULL){
+	return(FALSE);
     }
 
-    sprintf(line,"%s\n",target);
+    HTSprintf0(&line, "%s\n", target);
 
-    while (fgets(buffer, 200, ifp) != NULL) {
-	frag = strlen(buffer) - 1; /* real length, minus trailing null */
-	ch   = buffer[frag - 1];   /* last character in buffer */
-	if (frag > 0) {            /* if not an empty line */
-	    if (ch == '*') {
-	        if (frag == 1 || ((strncmp(line,buffer,frag - 1)) == 0)) {
-	           fclose(ifp);
-	           return(TRUE);
-	        }
-	    } else { /* last character = "*" test */
-	        if (STREQ(line,buffer)) {
-	            fclose(ifp);
-	            return(TRUE);
-	        }
-	    } /* last character = "*" test */
-	} /* frag >= 0 */
-    } /* end while */
+    while (LYSafeGets(&buffer, ifp) != NULL && !result) {
+	LYTrimTrailing(buffer);
+	len = strlen(buffer);
+	if (len > 0) { 	   /* if not an empty line */
+	    if (buffer[len-1] == '*') {
+		/* if last char is * and the rest of the chars match */
+		if ((len == 1) || (strncmp(line,buffer,len - 1) == 0)) {
+		    result = TRUE;
+		}
+	    } else {
+		if (STREQ(line,buffer)) {
+		    result = TRUE;
+		}
+	    }
+	}
+    } /* end while loop over the file */
+    FREE(buffer);
+    FREE(line);
 
-    fclose(ifp);
-    return(FALSE);
+    LYCloseInput(ifp);
+    return (BOOL) (result);
 }

@@ -1,5 +1,4 @@
-#	$NetBSD: Makefile,v 1.5 1995/03/18 14:55:18 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/18/93
+#	$OpenBSD: Makefile,v 1.2 1996/06/23 14:30:17 deraadt Exp $
 
 PROG=	dumplfs
 SRCS=	dumplfs.c lfs_cksum.c misc.c

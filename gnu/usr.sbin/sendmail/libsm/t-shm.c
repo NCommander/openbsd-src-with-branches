@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002, 2004 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: t-shm.c,v 1.15 2001/08/27 23:00:05 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: t-shm.c,v 1.20 2004/08/03 20:51:36 ca Exp $")
 
 #include <stdio.h>
 
@@ -45,7 +45,7 @@ shminter(owner)
 	bool owner;
 {
 	int *shm, shmid;
-	int i, j, t;
+	int i, t;
 
 	shm = (int *) sm_shmstart(T_SHMKEY, SHMSIZE, 0, &shmid, owner);
 	if (shm == (int *) 0)
@@ -74,7 +74,6 @@ shminter(owner)
 			t = *shm;
 			for (i = 0; i < SHM_MAX; i++)
 			{
-				j += i;
 				++*shm;
 			}
 			if (*shm != SHM_MAX + t)
@@ -145,6 +144,8 @@ shmbig(owner, size)
 */
 
 # define MAX_CNT	10
+
+int shmtest __P((int));
 
 int
 shmtest(owner)
@@ -230,6 +231,7 @@ main(argc, argv)
 	else
 	{
 		pid_t pid;
+		extern int SmTestNumErrors;
 
 		if ((pid = fork()) < 0)
 		{
@@ -250,6 +252,8 @@ main(argc, argv)
 			(void) wait(&status);
 		}
 		SM_TEST(r == 0);
+		if (SmTestNumErrors > 0)
+			printf("add -DSM_CONF_SHM=0 to confENVDEF in devtools/Site/site.config.m4\nand start over.\n");
 		return sm_test_end();
 	}
 	return r;

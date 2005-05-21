@@ -195,7 +195,7 @@ shell_quote(s)
 	newstr = p = (char *) ecalloc(len, sizeof(char));
 	if (use_quotes)
 	{
-		sprintf(newstr, "%c%s%c", openquote, s, closequote);
+		snprintf(newstr, len, "%c%s%c", openquote, s, closequote);
 	} else
 	{
 		while (*s != '\0')
@@ -205,7 +205,7 @@ shell_quote(s)
 				/*
 				 * Add the escape char.
 				 */
-				strcpy(p, esc);
+				strlcpy(p, esc, newstr + len - p);
 				p += esclen;
 			}
 			*p++ = *s++;
@@ -227,17 +227,18 @@ dirfile(dirname, filename)
 	char *pathname;
 	char *qpathname;
 	int f;
+	size_t len;
 
 	if (dirname == NULL || *dirname == '\0')
 		return (NULL);
 	/*
 	 * Construct the full pathname.
 	 */
-	pathname = (char *) calloc(strlen(dirname) + strlen(filename) + 2, 
-					sizeof(char));
+	len = strlen(dirname) + strlen(filename) + 2;
+	pathname = (char *) calloc(len, sizeof(char));
 	if (pathname == NULL)
 		return (NULL);
-	sprintf(pathname, "%s%s%s", dirname, PATHNAME_SEP, filename);
+	snprintf(pathname, len, "%s%s%s", dirname, PATHNAME_SEP, filename);
 	/*
 	 * Make sure the file exists.
 	 */
@@ -289,7 +290,7 @@ homefile(filename)
 		if (res == 0)
 			*pathname = '\0';
 		else
-			strcpy(pathname, res);
+			strlcpy(pathname, res, _MAX_PATH);
 	}
 #else
 	_searchenv(filename, "PATH", pathname);
@@ -300,6 +301,25 @@ homefile(filename)
 #endif
 	return (NULL);
 }
+
+#ifdef HELPFILE
+/*
+ * Find out where the help file is.
+ */
+	public char *
+find_helpfile()
+{
+	char *helpfile;
+	
+	if ((helpfile = getenv("LESSHELP")) != NULL && *helpfile != '\0')
+		return (save(helpfile));
+#if MSDOS_COMPILER || OS2
+	return (homefile(HELPFILE));
+#else
+	return (save(HELPFILE));
+#endif
+}
+#endif
 
 /*
  * Expand a string, substituting any "%" with the current filename,
@@ -383,7 +403,8 @@ fexpand(s)
 					*to++ = *fr;
 				else
 				{
-					strcpy(to, get_filename(ifile));
+					strlcpy(to, get_filename(ifile),
+					    e + n + 1 - to);
 					to += strlen(to);
 				}
 			}
@@ -409,6 +430,7 @@ fcomplete(s)
 {
 	char *fpat;
 	char *qs;
+	size_t len;
 
 	if (secure)
 		return (NULL);
@@ -428,15 +450,17 @@ fcomplete(s)
 		for (slash = s+strlen(s)-1;  slash > s;  slash--)
 			if (*slash == *PATHNAME_SEP || *slash == '/')
 				break;
-		fpat = (char *) ecalloc(strlen(s)+4, sizeof(char));
+		len = strlen(s) + 4;
+		fpat = (char *) ecalloc(len, sizeof(char));
 		if (strchr(slash, '.') == NULL)
-			sprintf(fpat, "%s*.*", s);
+			snprintf(fpat, len, "%s*.*", s);
 		else
-			sprintf(fpat, "%s*", s);
+			snprintf(fpat, len, "%s*", s);
 	}
 #else
-	fpat = (char *) ecalloc(strlen(s)+2, sizeof(char));
-	sprintf(fpat, "%s*", s);
+	len = strlen(s) + 2;
+	fpat = (char *) ecalloc(len, sizeof(char));
+	snprintf(fpat, len, "%s*", s);
 #endif
 	qs = lglob(fpat);
 	s = shell_unquote(qs);
@@ -524,7 +548,7 @@ readfd(fd)
 			len *= 2;
 			*p = '\0';
 			p = (char *) ecalloc(len, sizeof(char));
-			strcpy(p, buf);
+			strlcpy(p, buf, len);
 			free(buf);
 			buf = p;
 			p = buf + strlen(buf);
@@ -550,6 +574,7 @@ shellcmd(cmd)
 	char *cmd;
 {
 	FILE *fd;
+	size_t len;
 
 #if HAVE_SHELL
 	char *shell;
@@ -570,9 +595,10 @@ shellcmd(cmd)
 			fd = popen(cmd, "r");
 		} else
 		{
-			scmd = (char *) ecalloc(strlen(shell) + strlen(esccmd) + 5,
-						sizeof(char));
-			sprintf(scmd, "%s %s %s", shell, shell_coption(), esccmd);
+			len = strlen(shell) + strlen(esccmd) + 5;
+			scmd = (char *) ecalloc(len, sizeof(char));
+			snprintf(scmd, len, "%s %s %s", shell, shell_coption(),
+			    esccmd);
 			free(esccmd);
 			fd = popen(scmd, "r");
 			free(scmd);
@@ -642,7 +668,8 @@ lglob(filename)
 		qfilename = shell_quote(p);
 		if (qfilename != NULL)
 		{
-			sprintf(gfilename + strlen(gfilename), "%s ", qfilename);
+			snprintf(gfilename + strlen(gfilename),
+			    length - strlen(gfilename), "%s ", qfilename);
 			free(qfilename);
 		}
 	}
@@ -680,7 +707,7 @@ lglob(filename)
 	do {
 		n = strlen(drive) + strlen(dir) + strlen(fnd.GLOB_NAME) + 1;
 		pathname = (char *) ecalloc(n, sizeof(char));
-		sprintf(pathname, "%s%s%s", drive, dir, fnd.GLOB_NAME);
+		snprintf(pathname, n, "%s%s%s", drive, dir, fnd.GLOB_NAME);
 		qpathname = shell_quote(pathname);
 		free(pathname);
 		if (qpathname != NULL)
@@ -695,12 +722,12 @@ lglob(filename)
 				len *= 2;
 				*p = '\0';
 				p = (char *) ecalloc(len, sizeof(char));
-				strcpy(p, gfilename);
+				strlcpy(p, gfilename, len);
 				free(gfilename);
 				gfilename = p;
 				p = gfilename + strlen(gfilename);
 			}
-			strcpy(p, qpathname);
+			strlcpy(p, qpathname, gfilename + len - p);
 			free(qpathname);
 			p += n;
 			*p++ = ' ';
@@ -725,6 +752,7 @@ lglob(filename)
 	char *lessecho;
 	char *cmd;
 	char *esc;
+	size_t len;
 
 	esc = get_meta_escape();
 	if (strlen(esc) == 0)
@@ -741,12 +769,14 @@ lglob(filename)
 	/*
 	 * Invoke lessecho, and read its output (a globbed list of filenames).
 	 */
-	cmd = (char *) ecalloc(strlen(lessecho) + strlen(ofilename) + (7*strlen(metachars())) + 24, sizeof(char));
-	sprintf(cmd, "%s -p0x%x -d0x%x -e%s ", lessecho, openquote, closequote, esc);
+	len = strlen(lessecho) + strlen(ofilename) + (7*strlen(metachars())) + 24;
+	cmd = (char *) ecalloc(len, sizeof(char));
+	snprintf(cmd, len, "%s -p0x%x -d0x%x -e%s ", lessecho, openquote,
+	    closequote, esc);
 	free(esc);
 	for (s = metachars();  *s != '\0';  s++)
-		sprintf(cmd + strlen(cmd), "-n0x%x ", *s);
-	sprintf(cmd + strlen(cmd), "-- %s", ofilename);
+		snprintf(cmd + strlen(cmd), len - strlen(cmd), "-n0x%x ", *s);
+	snprintf(cmd + strlen(cmd), len - strlen(cmd), "-- %s", ofilename);
 	fd = shellcmd(cmd);
 	free(cmd);
 	if (fd == NULL)
@@ -794,8 +824,10 @@ open_altfile(filename, pf, pfd)
 	return (NULL);
 #else
 	char *lessopen;
-	char *cmd;
+	char *cmd, *cp;
 	FILE *fd;
+	size_t i, len;
+	int found;
 #if HAVE_FILENO
 	int returnfd = 0;
 #endif
@@ -822,9 +854,18 @@ open_altfile(filename, pf, pfd)
 #endif
 	}
 
-	cmd = (char *) ecalloc(strlen(lessopen) + strlen(filename) + 2, 
-			sizeof(char));
-	sprintf(cmd, lessopen, filename);
+	/* strlen(filename) is guaranteed to be > 0 */
+	len = strlen(lessopen) + strlen(filename);
+	cmd = (char *) ecalloc(len, sizeof(char));
+	for (cp = cmd, i = 0, found = 0; i < strlen(lessopen); i++) {
+		if (!found && lessopen[i] == '%' && lessopen[i + 1] == 's') {
+			found = 1;
+			strlcat(cmd, filename, len);
+			cp += strlen(filename);
+			i++;
+		} else
+			*cp++ = lessopen[i];
+	}
 	fd = shellcmd(cmd);
 	free(cmd);
 	if (fd == NULL)
@@ -883,7 +924,9 @@ close_altfile(altfilename, filename, pipefd)
 #if HAVE_POPEN
 	char *lessclose;
 	FILE *fd;
-	char *cmd;
+	char *cmd, *cp;
+	size_t i, len;
+	int found;
 	
 	if (secure)
 		return;
@@ -900,9 +943,22 @@ close_altfile(altfilename, filename, pipefd)
 	}
 	if ((lessclose = lgetenv("LESSCLOSE")) == NULL)
 	     	return;
-	cmd = (char *) ecalloc(strlen(lessclose) + strlen(filename) + 
-			strlen(altfilename) + 2, sizeof(char));
-	sprintf(cmd, lessclose, filename, altfilename);
+	/* strlen(filename) is guaranteed to be > 0 */
+	len = strlen(lessclose) + strlen(filename) + strlen(altfilename);
+	cmd = (char *) ecalloc(len, sizeof(char));
+	for (cp = cmd, i = 0, found = 0; i < strlen(lessclose); i++) {
+		if (found < 2 && lessclose[i] == '%' && lessclose[i + 1] == 's') {
+			if (++found == 1) {
+				strlcat(cmd, filename, len);
+				cp += strlen(filename);
+			} else {
+				strlcat(cmd, altfilename, len);
+				cp += strlen(altfilename);
+			}
+			i++;
+		} else
+			*cp++ = lessclose[i];
+	}
 	fd = shellcmd(cmd);
 	free(cmd);
 	if (fd != NULL)
@@ -954,16 +1010,17 @@ bad_file(filename)
 	char *filename;
 {
 	register char *m = NULL;
+	size_t len;
 
 	filename = shell_unquote(filename);
 	if (is_dir(filename))
 	{
 		static char is_a_dir[] = " is a directory";
 
-		m = (char *) ecalloc(strlen(filename) + sizeof(is_a_dir), 
-			sizeof(char));
-		strcpy(m, filename);
-		strcat(m, is_a_dir);
+		len = strlen(filename) + sizeof(is_a_dir);
+		m = (char *) ecalloc(len, sizeof(char));
+		strlcpy(m, filename, len);
+		strlcat(m, is_a_dir, len);
 	} else
 	{
 #if HAVE_STAT
@@ -980,10 +1037,10 @@ bad_file(filename)
 		} else if (!S_ISREG(statbuf.st_mode))
 		{
 			static char not_reg[] = " is not a regular file (use -f to see it)";
-			m = (char *) ecalloc(strlen(filename) + sizeof(not_reg),
-				sizeof(char));
-			strcpy(m, filename);
-			strcat(m, not_reg);
+			len = strlen(filename) + sizeof(not_reg);
+			m = (char *) ecalloc(len, sizeof(char));
+			strlcpy(m, filename, len);
+			strlcat(m, not_reg, len);
 		}
 #endif
 	}

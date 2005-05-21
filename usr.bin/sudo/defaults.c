@@ -1,59 +1,58 @@
 /*
- * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
- * All rights reserved.
+ * Copyright (c) 1999-2001, 2003-2004 Todd C. Miller <Todd.Miller@courtesan.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * 4. Products derived from this software may not be called "Sudo" nor
- *    may "Sudo" appear in their names without specific prior written
- *    permission from the author.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
 #include "config.h"
 
-#include <stdio.h>
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
 #include <sys/types.h>
 #include <sys/param.h>
+#include <stdio.h>
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+#endif /* STDC_HEADERS */
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif /* HAVE_STRING_H */
+# ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif /* HAVE_UNISTD_H */
+#include <pwd.h>
+#ifdef HAVE_ERR_H
+# include <err.h>
+#else
+# include "emul/err.h"
+#endif /* HAVE_ERR_H */
+#include <ctype.h>
 
 #include "sudo.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: defaults.c,v 1.12 1999/11/05 22:11:55 millert Exp $";
+static const char rcsid[] = "$Sudo: defaults.c,v 1.48 2004/06/06 23:58:10 millert Exp $";
 #endif /* lint */
 
 /*
@@ -102,139 +101,21 @@ extern int sudolineno;
  * Local prototypes.
  */
 static int store_int __P((char *, struct sudo_defs_types *, int));
+static int store_list __P((char *, struct sudo_defs_types *, int));
+static int store_mode __P((char *, struct sudo_defs_types *, int));
 static int store_str __P((char *, struct sudo_defs_types *, int));
 static int store_syslogfac __P((char *, struct sudo_defs_types *, int));
 static int store_syslogpri __P((char *, struct sudo_defs_types *, int));
-static int store_mode __P((char *, struct sudo_defs_types *, int));
+static int store_tuple __P((char *, struct sudo_defs_types *, int));
+static int store_uint __P((char *, struct sudo_defs_types *, int));
+static void list_op __P((char *, size_t, struct sudo_defs_types *, enum list_ops));
+static const char *logfac2str __P((int));
+static const char *logpri2str __P((int));
 
 /*
  * Table describing compile-time and run-time options.
  */
-struct sudo_defs_types sudo_defs_table[] = {
-    {
-	"syslog_ifac", T_INT, { 0 },
-	NULL
-    }, {
-	"syslog_igoodpri", T_INT, { 0 },
-	NULL
-    }, {
-	"syslog_ibadpri", T_INT, { 0 },
-	NULL
-    }, {
-	"syslog", T_LOGFAC|T_BOOL, { 0 },
-	"Syslog facility if syslog is being used for logging: %s"
-    }, {
-	"syslog_goodpri", T_LOGPRI, { 0 },
-	"Syslog priority to use when user authenticates successfully: %s"
-    }, {
-	"syslog_badpri", T_LOGPRI, { 0 },
-	"Syslog priority to use when user authenticates unsuccessfully: %s"
-    }, {
-	"long_otp_prompt", T_FLAG, { 0 },
-	"Put OTP prompt on its own line"
-    }, {
-	"ignore_dot", T_FLAG, { 0 },
-	"Ignore '.' in $PATH"
-    }, {
-	"mail_always", T_FLAG, { 0 },
-	"Always send mail when sudo is run"
-    }, {
-	"mail_no_user", T_FLAG, { 0 },
-	"Send mail if the user is not in sudoers"
-    }, {
-	"mail_no_host", T_FLAG, { 0 },
-	"Send mail if the user is not in sudoers for this host"
-    }, {
-	"mail_no_perms", T_FLAG, { 0 },
-	"Send mail if the user is not allowed to run a command"
-    }, {
-	"tty_tickets", T_FLAG, { 0 },
-	"Use a separate timestamp for each user/tty combo"
-    }, {
-	"lecture", T_FLAG, { 0 },
-	"Lecture user the first time they run sudo"
-    }, {
-	"authenticate", T_FLAG, { 0 },
-	"Require users to authenticate by default"
-    }, {
-	"root_sudo", T_FLAG, { 0 },
-	"Root may run sudo"
-    }, {
-	"log_host", T_FLAG, { 0 },
-	"Log the hostname in the (non-syslog) log file"
-    }, {
-	"log_year", T_FLAG, { 0 },
-	"Log the year in the (non-syslog) log file"
-    }, {
-	"shell_noargs", T_FLAG, { 0 },
-	"If sudo is invoked with no arguments, start a shell"
-    }, {
-	"set_home", T_FLAG, { 0 },
-	"Set $HOME to the target user when starting a shell with -s"
-    }, {
-	"path_info", T_FLAG, { 0 },
-	"Allow some information gathering to give useful error messages"
-    }, {
-	"fqdn", T_FLAG, { 0 },
-	"Require fully-qualified hsotnames in the sudoers file"
-    }, {
-	"insults", T_FLAG, { 0 },
-	"Insult the user when they enter an incorrect password"
-    }, {
-	"requiretty", T_FLAG, { 0 },
-	"Only allow the user to run sudo if they have a tty"
-    }, {
-	"loglinelen", T_INT|T_BOOL, { 0 },
-	"Length at which to wrap log file lines (0 for no wrap): %d"
-    }, {
-	"timestamp_timeout", T_INT|T_BOOL, { 0 },
-	"Authentication timestamp timeout: %d minutes"
-    }, {
-	"passwd_timeout", T_INT|T_BOOL, { 0 },
-	"Password prompt timeout: %d minutes"
-    }, {
-	"passwd_tries", T_INT, { 0 },
-	"Number of tries to enter a password: %d"
-    }, {
-	"umask", T_MODE|T_BOOL, { 0 },
-	"Umask to use or 0777 to use user's: 0%o"
-    }, {
-	"logfile", T_STR|T_BOOL|T_PATH, { 0 },
-	"Path to log file: %s"
-    }, {
-	"mailerpath", T_STR|T_BOOL|T_PATH, { 0 },
-	"Path to mail program: %s"
-    }, {
-	"mailerflags", T_STR|T_BOOL, { 0 },
-	"Flags for mail program: %s"
-    }, {
-	"mailto", T_STR|T_BOOL, { 0 },
-	"Address to send mail to: %s"
-    }, {
-	"mailsub", T_STR, { 0 },
-	"Subject line for mail messages: %s"
-    }, {
-	"badpass_message", T_STR, { 0 },
-	"Incorrect password message: %s"
-    }, {
-	"timestampdir", T_STR|T_PATH, { 0 },
-	"Path to authentication timestamp dir: %s"
-    }, {
-	"exempt_group", T_STR|T_BOOL, { 0 },
-	"Users in this group are exempt from password and PATH requirements: %s"
-    }, {
-	"passprompt", T_STR, { 0 },
-	"Default password prompt: %s"
-    }, {
-	"runas_default", T_STR, { 0 },
-	"Default user to run commands as: %s"
-    }, {
-	"secure_path", T_STR|T_BOOL, { 0 },
-	"Value to override user's $PATH with: %s"
-    }, {
-	NULL, 0, { 0 }, NULL
-    }
-};
+#include <def_data.c>
 
 /*
  * Print version and configure info.
@@ -243,6 +124,8 @@ void
 dump_defaults()
 {
     struct sudo_defs_types *cur;
+    struct list_member *item;
+    struct def_values *def;
 
     for (cur = sudo_defs_table; cur->name; cur++) {
 	if (cur->desc) {
@@ -252,13 +135,24 @@ dump_defaults()
 			puts(cur->desc);
 		    break;
 		case T_STR:
-		case T_LOGFAC:
-		case T_LOGPRI:
 		    if (cur->sd_un.str) {
 			(void) printf(cur->desc, cur->sd_un.str);
 			putchar('\n');
 		    }
 		    break;
+		case T_LOGFAC:
+		    if (cur->sd_un.ival) {
+			(void) printf(cur->desc, logfac2str(cur->sd_un.ival));
+			putchar('\n');
+		    }
+		    break;
+		case T_LOGPRI:
+		    if (cur->sd_un.ival) {
+			(void) printf(cur->desc, logpri2str(cur->sd_un.ival));
+			putchar('\n');
+		    }
+		    break;
+		case T_UINT:
 		case T_INT:
 		    (void) printf(cur->desc, cur->sd_un.ival);
 		    putchar('\n');
@@ -267,15 +161,25 @@ dump_defaults()
 		    (void) printf(cur->desc, cur->sd_un.mode);
 		    putchar('\n');
 		    break;
+		case T_LIST:
+		    if (cur->sd_un.list) {
+			puts(cur->desc);
+			for (item = cur->sd_un.list; item; item = item->next)
+			    printf("\t%s\n", item->value);
+		    }
+		    break;
+		case T_TUPLE:
+		    for (def = cur->values; def->sval; def++) {
+			if (cur->sd_un.ival == def->ival) {
+			    (void) printf(cur->desc, def->sval);
+			    break;
+			}
+		    }
+		    putchar('\n');
+		    break;
 	    }
 	}
     }
-
-#ifdef ENV_EDITOR
-    (void) printf("Default editor for visudo: %s\n", EDITOR);
-#else
-    (void) printf("Editor for visudo: %s\n", EDITOR);
-#endif
 }
 
 /*
@@ -297,8 +201,8 @@ list_options()
 		default:
 		    p = strrchr(cur->desc, ':');
 		    if (p)
-			(void) printf("%s: %.*s\n", cur->name, p - cur->desc,
-			    cur->desc);
+			(void) printf("%s: %.*s\n", cur->name,
+			    (int) (p - cur->desc), cur->desc);
 		    else
 			(void) printf("%s: %s\n", cur->name, cur->desc);
 		    break;
@@ -321,14 +225,14 @@ set_default(var, val, op)
     int op;     /* TRUE or FALSE */
 {
     struct sudo_defs_types *cur;
+    int num;
 
-    for (cur = sudo_defs_table; cur->name; cur++) {
+    for (cur = sudo_defs_table, num = 0; cur->name; cur++, num++) {
 	if (strcmp(var, cur->name) == 0)
 	    break;
     }
     if (!cur->name) {
-	(void) fprintf(stderr,
-	    "%s: unknown defaults entry `%s' referenced near line %d\n", Argv[0],
+	warnx("unknown defaults entry `%s' referenced near line %d",
 	    var, sudolineno);
 	return(FALSE);
     }
@@ -337,12 +241,9 @@ set_default(var, val, op)
 	case T_LOGFAC:
 	    if (!store_syslogfac(val, cur, op)) {
 		if (val)
-		    (void) fprintf(stderr,
-			"%s: value '%s' is invalid for option '%s'\n", Argv[0],
-			val, var);
+		    warnx("value `%s' is invalid for option `%s'", val, var);
 		else
-		    (void) fprintf(stderr,
-			"%s: no value specified for `%s' on line %d\n", Argv[0],
+		    warnx("no value specified for `%s' on line %d",
 			var, sudolineno);
 		return(FALSE);
 	    }
@@ -350,12 +251,9 @@ set_default(var, val, op)
 	case T_LOGPRI:
 	    if (!store_syslogpri(val, cur, op)) {
 		if (val)
-		    (void) fprintf(stderr,
-			"%s: value '%s' is invalid for option '%s'\n", Argv[0],
-			val, var);
+		    warnx("value `%s' is invalid for option `%s'", val, var);
 		else
-		    (void) fprintf(stderr,
-			"%s: no value specified for `%s' on line %d\n", Argv[0],
+		    warnx("no value specified for `%s' on line %d",
 			var, sudolineno);
 		return(FALSE);
 	    }
@@ -363,68 +261,99 @@ set_default(var, val, op)
 	case T_STR:
 	    if (!val) {
 		/* Check for bogus boolean usage or lack of a value. */
-		if (!(cur->type & T_BOOL) || op != FALSE) {
-		    (void) fprintf(stderr,
-			"%s: no value specified for `%s' on line %d\n", Argv[0],
+		if (!ISSET(cur->type, T_BOOL) || op != FALSE) {
+		    warnx("no value specified for `%s' on line %d",
 			var, sudolineno);
 		    return(FALSE);
 		}
 	    }
-	    if ((cur->type & T_PATH) && *val != '/') {
-		(void) fprintf(stderr,
-		    "%s: values for `%s' must start with a '/'\n", Argv[0],
-		    var);
+	    if (ISSET(cur->type, T_PATH) && val && *val != '/') {
+		warnx("values for `%s' must start with a '/'", var);
 		return(FALSE);
 	    }
 	    if (!store_str(val, cur, op)) {
-		(void) fprintf(stderr,
-		    "%s: value '%s' is invalid for option '%s'\n", Argv[0],
-		    val, var);
+		warnx("value `%s' is invalid for option `%s'", val, var);
 		return(FALSE);
 	    }
 	    break;
 	case T_INT:
 	    if (!val) {
 		/* Check for bogus boolean usage or lack of a value. */
-		if (!(cur->type & T_BOOL) || op != FALSE) {
-		    (void) fprintf(stderr,
-			"%s: no value specified for `%s' on line %d\n", Argv[0],
+		if (!ISSET(cur->type, T_BOOL) || op != FALSE) {
+		    warnx("no value specified for `%s' on line %d",
 			var, sudolineno);
 		    return(FALSE);
 		}
 	    }
 	    if (!store_int(val, cur, op)) {
-		(void) fprintf(stderr,
-		    "%s: value '%s' is invalid for option '%s'\n", Argv[0],
-		    val, var);
+		warnx("value `%s' is invalid for option `%s'", val, var);
+		return(FALSE);
+	    }
+	    break;
+	case T_UINT:
+	    if (!val) {
+		/* Check for bogus boolean usage or lack of a value. */
+		if (!ISSET(cur->type, T_BOOL) || op != FALSE) {
+		    warnx("no value specified for `%s' on line %d",
+			var, sudolineno);
+		    return(FALSE);
+		}
+	    }
+	    if (!store_uint(val, cur, op)) {
+		warnx("value `%s' is invalid for option `%s'", val, var);
 		return(FALSE);
 	    }
 	    break;
 	case T_MODE:
 	    if (!val) {
 		/* Check for bogus boolean usage or lack of a value. */
-		if (!(cur->type & T_BOOL) || op != FALSE) {
-		    (void) fprintf(stderr,
-			"%s: no value specified for `%s' on line %d\n", Argv[0],
+		if (!ISSET(cur->type, T_BOOL) || op != FALSE) {
+		    warnx("no value specified for `%s' on line %d",
 			var, sudolineno);
 		    return(FALSE);
 		}
 	    }
 	    if (!store_mode(val, cur, op)) {
-		(void) fprintf(stderr,
-		    "%s: value '%s' is invalid for option '%s'\n", Argv[0],
-		    val, var);
+		warnx("value `%s' is invalid for option `%s'", val, var);
 		return(FALSE);
 	    }
 	    break;
 	case T_FLAG:
 	    if (val) {
-		(void) fprintf(stderr,
-		    "%s: option `%s' does not take a value on line %d\n",
-		    Argv[0], var, sudolineno);
+		warnx("option `%s' does not take a value on line %d",
+		    var, sudolineno);
 		return(FALSE);
 	    }
 	    cur->sd_un.flag = op;
+
+	    /* Special action for I_FQDN.  Move to own switch if we get more */
+	    if (num == I_FQDN && op)
+		set_fqdn();
+	    break;
+	case T_LIST:
+	    if (!val) {
+		/* Check for bogus boolean usage or lack of a value. */
+		if (!ISSET(cur->type, T_BOOL) || op != FALSE) {
+		    warnx("no value specified for `%s' on line %d",
+			var, sudolineno);
+		    return(FALSE);
+		}
+	    }
+	    if (!store_list(val, cur, op)) {
+		warnx("value `%s' is invalid for option `%s'", val, var);
+		return(FALSE);
+	    }
+	    break;
+	case T_TUPLE:
+	    if (!val && !ISSET(cur->type, T_BOOL)) {
+		warnx("no value specified for `%s' on line %d",
+		    var, sudolineno);
+		return(FALSE);
+	    }
+	    if (!store_tuple(val, cur, op)) {
+		warnx("value `%s' is invalid for option `%s'", val, var);
+		return(FALSE);
+	    }
 	    break;
     }
 
@@ -446,104 +375,119 @@ init_defaults()
 	for (def = sudo_defs_table; def->name; def++)
 	    switch (def->type & T_MASK) {
 		case T_STR:
-		case T_LOGFAC:
-		case T_LOGPRI:
 		    if (def->sd_un.str) {
 			free(def->sd_un.str);
 			def->sd_un.str = NULL;
 		    }
+		    break;
+		case T_LIST:
+		    list_op(NULL, 0, def, freeall);
 		    break;
 	    }
     }
 
     /* First initialize the flags. */
 #ifdef LONG_OTP_PROMPT
-    def_flag(I_LONG_OTP_PROMPT) = TRUE;
+    def_long_otp_prompt = TRUE;
 #endif
 #ifdef IGNORE_DOT_PATH
-    def_flag(I_IGNORE_DOT) = TRUE;
+    def_ignore_dot = TRUE;
 #endif
 #ifdef ALWAYS_SEND_MAIL
-    def_flag(I_MAIL_ALWAYS) = TRUE;
+    def_mail_always = TRUE;
 #endif
 #ifdef SEND_MAIL_WHEN_NO_USER
-    def_flag(I_MAIL_NOUSER) = TRUE;
+    def_mail_no_user = TRUE;
 #endif
 #ifdef SEND_MAIL_WHEN_NO_HOST
-    def_flag(I_MAIL_NOHOST) = TRUE;
+    def_mail_no_host = TRUE;
 #endif
 #ifdef SEND_MAIL_WHEN_NOT_OK
-    def_flag(I_MAIL_NOPERMS) = TRUE;
+    def_mail_no_perms = TRUE;
 #endif
 #ifdef USE_TTY_TICKETS
-    def_flag(I_TTY_TICKETS) = TRUE;
+    def_tty_tickets = TRUE;
 #endif
 #ifndef NO_LECTURE
-    def_flag(I_LECTURE) = TRUE;
+    def_lecture = once;
 #endif
 #ifndef NO_AUTHENTICATION
-    def_flag(I_AUTHENTICATE) = TRUE;
+    def_authenticate = TRUE;
 #endif
 #ifndef NO_ROOT_SUDO
-    def_flag(I_ROOT_SUDO) = TRUE;
+    def_root_sudo = TRUE;
 #endif
 #ifdef HOST_IN_LOG
-    def_flag(I_LOG_HOST) = TRUE;
+    def_log_host = TRUE;
 #endif
 #ifdef SHELL_IF_NO_ARGS
-    def_flag(I_SHELL_NOARGS) = TRUE;
+    def_shell_noargs = TRUE;
 #endif
 #ifdef SHELL_SETS_HOME
-    def_flag(I_SET_HOME) = TRUE;
+    def_set_home = TRUE;
 #endif
 #ifndef DONT_LEAK_PATH_INFO
-    def_flag(I_PATH_INFO) = TRUE;
+    def_path_info = TRUE;
 #endif
 #ifdef FQDN
-    def_flag(I_FQDN) = TRUE;
+    def_fqdn = TRUE;
 #endif
 #ifdef USE_INSULTS
-    def_flag(I_INSULTS) = TRUE;
+    def_insults = TRUE;
 #endif
+#ifdef ENV_EDITOR
+    def_env_editor = TRUE;
+#endif
+    def_set_logname = TRUE;
 
     /* Syslog options need special care since they both strings and ints */
 #if (LOGGING & SLOG_SYSLOG)
-    (void) store_syslogfac(LOGFAC, &sudo_defs_table[I_LOGFACSTR], TRUE);
-    (void) store_syslogpri(PRI_SUCCESS, &sudo_defs_table[I_GOODPRISTR], TRUE);
-    (void) store_syslogpri(PRI_FAILURE, &sudo_defs_table[I_BADPRISTR], TRUE);
+    (void) store_syslogfac(LOGFAC, &sudo_defs_table[I_SYSLOG], TRUE);
+    (void) store_syslogpri(PRI_SUCCESS, &sudo_defs_table[I_SYSLOG_GOODPRI],
+	TRUE);
+    (void) store_syslogpri(PRI_FAILURE, &sudo_defs_table[I_SYSLOG_BADPRI],
+	TRUE);
 #endif
+
+    /* Password flags also have a string and integer component. */
+    (void) store_tuple("any", &sudo_defs_table[I_LISTPW], TRUE);
+    (void) store_tuple("all", &sudo_defs_table[I_VERIFYPW], TRUE);
 
     /* Then initialize the int-like things. */
 #ifdef SUDO_UMASK
-    def_mode(I_UMASK) = SUDO_UMASK;
+    def_umask = SUDO_UMASK;
 #else
-    def_mode(I_UMASK) = 0777;
+    def_umask = 0777;
 #endif
-    def_ival(I_LOGLEN) = MAXLOGFILELEN;
-    def_ival(I_TS_TIMEOUT) = TIMEOUT;
-    def_ival(I_PW_TIMEOUT) = PASSWORD_TIMEOUT;
-    def_ival(I_PW_TRIES) = TRIES_FOR_PASSWORD;
+    def_loglinelen = MAXLOGFILELEN;
+    def_timestamp_timeout = TIMEOUT;
+    def_passwd_timeout = PASSWORD_TIMEOUT;
+    def_passwd_tries = TRIES_FOR_PASSWORD;
 
-    /* Finally do the strings */
-    def_str(I_MAILTO) = estrdup(MAILTO);
-    def_str(I_MAILSUB) = estrdup(MAILSUBJECT);
-    def_str(I_BADPASS_MSG) = estrdup(INCORRECT_PASSWORD);
-    def_str(I_TIMESTAMPDIR) = estrdup(_PATH_SUDO_TIMEDIR);
-    def_str(I_PASSPROMPT) = estrdup(PASSPROMPT);
-    def_str(I_RUNAS_DEF) = estrdup(RUNAS_DEFAULT);
-#ifdef _PATH_SENDMAIL
-    def_str(I_MAILERPATH) = estrdup(_PATH_SENDMAIL);
-    def_str(I_MAILERFLAGS) = estrdup("-t");
+    /* Now do the strings */
+    def_mailto = estrdup(MAILTO);
+    def_mailsub = estrdup(MAILSUBJECT);
+    def_badpass_message = estrdup(INCORRECT_PASSWORD);
+    def_timestampdir = estrdup(_PATH_SUDO_TIMEDIR);
+    def_passprompt = estrdup(PASSPROMPT);
+    def_runas_default = estrdup(RUNAS_DEFAULT);
+#ifdef _PATH_SUDO_SENDMAIL
+    def_mailerpath = estrdup(_PATH_SUDO_SENDMAIL);
+    def_mailerflags = estrdup("-t");
 #endif
 #if (LOGGING & SLOG_FILE)
-    def_str(I_LOGFILE) = estrdup(_PATH_SUDO_LOGFILE);
+    def_logfile = estrdup(_PATH_SUDO_LOGFILE);
 #endif
 #ifdef EXEMPTGROUP
-    def_str(I_EXEMPT_GRP) = estrdup(EXEMPTGROUP);
+    def_exempt_group = estrdup(EXEMPTGROUP);
 #endif
-#ifdef SECURE_PATH
-    def_str(I_SECURE_PATH) = estrdup(SECURE_PATH);
+    def_editor = estrdup(EDITOR);
+#ifdef _PATH_SUDO_NOEXEC
+    def_noexec_file = estrdup(_PATH_SUDO_NOEXEC);
 #endif
+
+    /* Finally do the lists (currently just environment tables). */
+    init_envtables();
 
     /*
      * The following depend on the above values.
@@ -551,7 +495,7 @@ init_defaults()
      * value changes we get the change.
      */
     if (user_runas == NULL)
-	user_runas = &def_str(I_RUNAS_DEF);
+	user_runas = &def_runas_default;
 
     firsttime = 0;
 }
@@ -569,11 +513,68 @@ store_int(val, def, op)
 	def->sd_un.ival = 0;
     } else {
 	l = strtol(val, &endp, 10);
+	if (*endp != '\0')
+	    return(FALSE);
+	/* XXX - should check against INT_MAX */
+	def->sd_un.ival = (unsigned int)l;
+    }
+    if (def->callback)
+	return(def->callback(val));
+    return(TRUE);
+}
+
+static int
+store_uint(val, def, op)
+    char *val;
+    struct sudo_defs_types *def;
+    int op;
+{
+    char *endp;
+    long l;
+
+    if (op == FALSE) {
+	def->sd_un.ival = 0;
+    } else {
+	l = strtol(val, &endp, 10);
 	if (*endp != '\0' || l < 0)
 	    return(FALSE);
 	/* XXX - should check against INT_MAX */
 	def->sd_un.ival = (unsigned int)l;
     }
+    if (def->callback)
+	return(def->callback(val));
+    return(TRUE);
+}
+
+static int
+store_tuple(val, def, op)
+    char *val;
+    struct sudo_defs_types *def;
+    int op;
+{
+    struct def_values *v;
+
+    /*
+     * Since enums are really just ints we store the value as an ival.
+     * In the future, there may be multiple enums for different tuple
+     * types we want to avoid and special knowledge of the tuple type.
+     * This does assume that the first entry in the tuple enum will
+     * be the equivalent to a boolean "false".
+     */
+    if (!val) {
+	def->sd_un.ival = (op == FALSE) ? 0 : 1;
+    } else {
+	for (v = def->values; v->sval != NULL; v++) {
+	    if (strcmp(v->sval, val) == 0) {
+		def->sd_un.ival = v->ival;
+		break;
+	    }
+	}
+	if (v->sval == NULL)
+	    return(FALSE);
+    }
+    if (def->callback)
+	return(def->callback(val));
     return(TRUE);
 }
 
@@ -590,6 +591,39 @@ store_str(val, def, op)
 	def->sd_un.str = NULL;
     else
 	def->sd_un.str = estrdup(val);
+    if (def->callback)
+	return(def->callback(val));
+    return(TRUE);
+}
+
+static int
+store_list(str, def, op)
+    char *str;
+    struct sudo_defs_types *def;
+    int op;
+{
+    char *start, *end;
+
+    /* Remove all old members. */
+    if (op == FALSE || op == TRUE)
+	list_op(NULL, 0, def, freeall);
+
+    /* Split str into multiple space-separated words and act on each one. */
+    if (op != FALSE) {
+	end = str;
+	do {
+	    /* Remove leading blanks, if nothing but blanks we are done. */
+	    for (start = end; isblank(*start); start++)
+		;
+	    if (*start == '\0')
+		break;
+
+	    /* Find end position and perform operation. */
+	    for (end = start; *end && !isblank(*end); end++)
+		;
+	    list_op(start, end - start, def, op == '-' ? delete : add);
+	} while (*end++ != '\0');
+    }
     return(TRUE);
 }
 
@@ -602,8 +636,7 @@ store_syslogfac(val, def, op)
     struct strmap *fac;
 
     if (op == FALSE) {
-	free(def->sd_un.str);
-	def->sd_un.str = NULL;
+	def->sd_un.ival = FALSE;
 	return(TRUE);
     }
 #ifdef LOG_NFACILITIES
@@ -614,17 +647,26 @@ store_syslogfac(val, def, op)
     if (fac->name == NULL)
 	return(FALSE);				/* not found */
 
-    /* Store both name and number. */
-    if (def->sd_un.str)
-	free(def->sd_un.str);
-    def->sd_un.str = estrdup(fac->name);
-    sudo_defs_table[I_LOGFAC].sd_un.ival = fac->num;
+    def->sd_un.ival = fac->num;
 #else
-    if (def->sd_un.str)
-	free(def->sd_un.str);
-    def->sd_un.str = estrdup("default");
+    def->sd_un.ival = -1;
 #endif /* LOG_NFACILITIES */
     return(TRUE);
+}
+
+static const char *
+logfac2str(n)
+    int n;
+{
+#ifdef LOG_NFACILITIES
+    struct strmap *fac;
+
+    for (fac = facilities; fac->name && fac->num != n; fac++)
+	;
+    return (fac->name);
+#else
+    return ("default");
+#endif /* LOG_NFACILITIES */
 }
 
 static int
@@ -634,15 +676,8 @@ store_syslogpri(val, def, op)
     int op;
 {
     struct strmap *pri;
-    struct sudo_defs_types *idef;
 
     if (op == FALSE || !val)
-	return(FALSE);
-    if (def == &sudo_defs_table[I_GOODPRISTR])
-	idef = &sudo_defs_table[I_GOODPRI];
-    else if (def == &sudo_defs_table[I_BADPRISTR])
-	idef = &sudo_defs_table[I_BADPRI];
-    else
 	return(FALSE);
 
     for (pri = priorities; pri->name && strcmp(val, pri->name); pri++)
@@ -650,12 +685,19 @@ store_syslogpri(val, def, op)
     if (pri->name == NULL)
 	return(FALSE);				/* not found */
 
-    /* Store both name and number. */
-    if (def->sd_un.str)
-	free(def->sd_un.str);
-    def->sd_un.str = estrdup(pri->name);
-    idef->sd_un.ival = pri->num;
+    def->sd_un.ival = pri->num;
     return(TRUE);
+}
+
+static const char *
+logpri2str(n)
+    int n;
+{
+    struct strmap *pri;
+
+    for (pri = priorities; pri->name && pri->num != n; pri++)
+	;
+    return (pri->name);
 }
 
 static int
@@ -671,9 +713,59 @@ store_mode(val, def, op)
 	def->sd_un.mode = (mode_t)0777;
     } else {
 	l = strtol(val, &endp, 8);
-	if (*endp != '\0' || l < 0 || l >= 0777)
+	if (*endp != '\0' || l < 0 || l > 0777)
 	    return(FALSE);
 	def->sd_un.mode = (mode_t)l;
     }
+    if (def->callback)
+	return(def->callback(val));
     return(TRUE);
+}
+
+static void
+list_op(val, len, def, op)
+    char *val;
+    size_t len;
+    struct sudo_defs_types *def;
+    enum list_ops op;
+{
+    struct list_member *cur, *prev, *tmp;
+
+    if (op == freeall) {
+	for (cur = def->sd_un.list; cur; ) {
+	    tmp = cur;
+	    cur = tmp->next;
+	    free(tmp->value);
+	    free(tmp);
+	}
+	def->sd_un.list = NULL;
+	return;
+    }
+
+    for (cur = def->sd_un.list, prev = NULL; cur; prev = cur, cur = cur->next) {
+	if ((strncmp(cur->value, val, len) == 0 && cur->value[len] == '\0')) {
+
+	    if (op == add)
+		return;			/* already exists */
+
+	    /* Delete node */
+	    if (prev != NULL)
+		prev->next = cur->next;
+	    else
+		def->sd_un.list = cur->next;
+	    free(cur->value);
+	    free(cur);
+	    break;
+	}
+    }
+
+    /* Add new node to the head of the list. */
+    if (op == add) {
+	cur = emalloc(sizeof(struct list_member));
+	cur->value = emalloc(len + 1);
+	(void) memcpy(cur->value, val, len);
+	cur->value[len] = '\0';
+	cur->next = def->sd_un.list;
+	def->sd_un.list = cur;
+    }
 }

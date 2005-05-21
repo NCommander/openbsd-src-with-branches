@@ -1,4 +1,4 @@
-/*	$NetBSD: update.c,v 1.4 1995/04/27 21:22:26 mycroft Exp $	*/
+/*	$OpenBSD: update.c,v 1.8 2003/06/03 03:01:38 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,16 +45,17 @@
 #if 0
 static char sccsid[] = "@(#)update.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: update.c,v 1.4 1995/04/27 21:22:26 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: update.c,v 1.8 2003/06/03 03:01:38 millert Exp $";
 #endif
-#endif not lint
+#endif /* not lint */
 
 #include "include.h"
 
-update()
+void
+update(int dummy)
 {
-	int	i, dir_diff, mask, unclean;
-	PLANE	*pp, *p1, *p2, *p;
+	int	i, dir_diff, unclean;
+	PLANE	*pp, *p1, *p2;
 
 #ifdef SYSV
 	alarm(0);
@@ -154,7 +151,7 @@ update()
 		}
 		if (pp->altitude > 9)
 			/* "this is impossible" */
-			loser(pp, "exceded flight ceiling.");
+			loser(pp, "exceeded flight ceiling.");
 		if (pp->altitude <= 0) {
 			for (i = 0; i < sp->num_airports; i++)
 				if (pp->xpos == sp->airport[i].x &&
@@ -202,8 +199,9 @@ update()
 			if (too_close(p1, p2, 1)) {
 				static char	buf[80];
 
-				(void)sprintf(buf, "collided with plane '%c'.",
-					name(p2));
+				(void)snprintf(buf, sizeof buf,
+				    "collided with plane '%c'.",
+				    name(p2));
 				loser(p1, buf);
 			}
 	/*
@@ -211,7 +209,7 @@ update()
 	 * Otherwise, prop jobs show up *on* entrance.  Remember that
 	 * we don't update props on odd updates.
 	 */
-	if ((rand() % sp->newplane_time) == 0)
+	if ((random() % sp->newplane_time) == 0)
 		addplane();
 
 #ifdef SYSV
@@ -219,41 +217,42 @@ update()
 #endif
 }
 
-char *
-command(pp)
-	PLANE	*pp;
+const char *
+command(PLANE *pp)
 {
 	static char	buf[50], *bp, *comm_start;
-	char	*index();
 
 	buf[0] = '\0';
 	bp = buf;
-	(void)sprintf(bp, "%c%d%c%c%d: ", name(pp), pp->altitude, 
+	(void)snprintf(bp, buf + sizeof buf - bp,
+		"%c%d%c%c%d: ", name(pp), pp->altitude, 
 		(pp->fuel < LOWFUEL) ? '*' : ' ',
 		(pp->dest_type == T_AIRPORT) ? 'A' : 'E', pp->dest_no);
 
-	comm_start = bp = index(buf, '\0');
+	comm_start = bp = strchr(buf, '\0');
 	if (pp->altitude == 0)
-		(void)sprintf(bp, "Holding @ A%d", pp->orig_no);
+		(void)snprintf(bp, buf + sizeof buf - bp,
+			"Holding @ A%d", pp->orig_no);
 	else if (pp->new_dir >= MAXDIR || pp->new_dir < 0)
-		strcpy(bp, "Circle");
+		strlcpy(bp, "Circle", buf + sizeof buf - bp);
 	else if (pp->new_dir != pp->dir)
-		(void)sprintf(bp, "%d", dir_deg(pp->new_dir));
+		(void)snprintf(bp, buf + sizeof buf - bp,
+			"%d", dir_deg(pp->new_dir));
 
-	bp = index(buf, '\0');
+	bp = strchr(buf, '\0');
 	if (pp->delayd)
-		(void)sprintf(bp, " @ B%d", pp->delayd_no);
+		(void)snprintf(bp, buf + sizeof buf - bp,
+			" @ B%d", pp->delayd_no);
 
-	bp = index(buf, '\0');
+	bp = strchr(buf, '\0');
 	if (*comm_start == '\0' && 
 	    (pp->status == S_UNMARKED || pp->status == S_IGNORED))
-		strcpy(bp, "---------");
+		strlcpy(bp, "---------", buf + sizeof buf - bp);
 	return (buf);
 }
 
-/* char */
-name(p)
-	PLANE	*p;
+char
+name(const PLANE *p)
 {
 	if (p->plane_type == 0)
 		return ('A' + p->plane_no);
@@ -261,7 +260,8 @@ name(p)
 		return ('a' + p->plane_no);
 }
 
-number(l)
+int
+number(char l)
 {
 	if (l < 'a' && l > 'z' && l < 'A' && l > 'Z')
 		return (-1);
@@ -271,7 +271,8 @@ number(l)
 		return (l - 'A');
 }
 
-next_plane()
+int
+next_plane(void)
 {
 	static int	last_plane = -1;
 	PLANE		*pp;
@@ -299,12 +300,13 @@ next_plane()
 	return (last_plane);
 }
 
-addplane()
+int
+addplane(void)
 {
 	PLANE	p, *pp, *p1;
 	int	i, num_starts, close, rnd, rnd2, pnum;
 
-	bzero(&p, sizeof (p));
+	memset(&p, 0, sizeof (p));
 
 	p.status = S_MARKED;
 	p.plane_type = random() % 2;
@@ -359,7 +361,7 @@ addplane()
 	p.plane_no = pnum;
 
 	pp = newplane();
-	bcopy(&p, pp, sizeof (p));
+	memcpy(pp, &p, sizeof (p));
 
 	if (pp->orig_type == T_AIRPORT)
 		append(&ground, pp);
@@ -370,7 +372,7 @@ addplane()
 }
 
 PLANE	*
-findplane(n)
+findplane(int n)
 {
 	PLANE	*pp;
 
@@ -383,8 +385,8 @@ findplane(n)
 	return (NULL);
 }
 
-too_close(p1, p2, dist)
-	PLANE	*p1, *p2;
+int
+too_close(const PLANE *p1, const PLANE *p2, int dist)
 {
 	if (ABS(p1->altitude - p2->altitude) <= dist &&
 	    ABS(p1->xpos - p2->xpos) <= dist && ABS(p1->ypos - p2->ypos) <= dist)
@@ -393,7 +395,8 @@ too_close(p1, p2, dist)
 		return (0);
 }
 
-dir_deg(d)
+int
+dir_deg(int d)
 {
 	switch (d) {
 	case 0: return (0);

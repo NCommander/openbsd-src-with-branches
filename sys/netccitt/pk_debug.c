@@ -1,4 +1,5 @@
-/*	$NetBSD: pk_debug.c,v 1.5 1994/06/29 06:37:31 cgd Exp $	*/
+/*	$OpenBSD: pk_debug.c,v 1.3 2003/06/02 23:28:13 millert Exp $	*/
+/*	$NetBSD: pk_debug.c,v 1.6 1996/02/13 22:05:14 christos Exp $	*/
 
 /*
  * Copyright (c) University of British Columbia, 1984
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,6 +50,7 @@
 #include <netccitt/x25.h>
 #include <netccitt/pk.h>
 #include <netccitt/pk_var.h>
+#include <netccitt/pk_extern.h>
 
 char	*pk_state[] = {
 	"Listen",	"Ready",	"Received-Call",
@@ -68,14 +66,15 @@ char   *pk_name[] = {
 	"Invalid"
 };
 
+void
 pk_trace (xcp, m, dir)
-struct x25config *xcp;
-register struct mbuf *m;
-char *dir;
+	struct x25config *xcp;
+	struct mbuf *m;
+	char *dir;
 {
-	register char *s;
+	char *s;
 	struct x25_packet *xp = mtod(m, struct x25_packet *);
-	register int i, len = 0, cnt = 0;
+	int i, len = 0, cnt = 0;
 
 	if (xcp -> xc_ptrace == 0)
 		return;
@@ -92,11 +91,12 @@ char *dir;
 	printf ("\n");
 }
 
+void
 mbuf_cache(c, m)
-register struct mbuf_cache *c;
-struct mbuf *m;
+	struct mbuf_cache *c;
+	struct mbuf *m;
 {
-	register struct mbuf **mp;
+	struct mbuf **mp;
 
 	if (c->mbc_size != c->mbc_oldsize) {
 		unsigned zero_size, copy_size;
@@ -114,7 +114,7 @@ struct mbuf *m;
 		} else
 			c->mbc_cache = 0;
 		if (c->mbc_size < c->mbc_oldsize) {
-			register struct mbuf **mplim;
+			struct mbuf **mplim;
 			mp = c->mbc_size + (struct mbuf **)cache;
 			mplim = c->mbc_oldsize + (struct mbuf **)cache;
 			while (mp < mplim)
@@ -137,6 +137,6 @@ struct mbuf *m;
 	c->mbc_num = (1 + c->mbc_num) % c->mbc_size;
 	if (*mp)
 		m_freem(*mp);
-	if (*mp = m_copym(m, 0, M_COPYALL, M_DONTWAIT))
+	if ((*mp = m_copym(m, 0, M_COPYALL, M_DONTWAIT)) != NULL)
 		(*mp)->m_flags |= m->m_flags & 0x08;
 }

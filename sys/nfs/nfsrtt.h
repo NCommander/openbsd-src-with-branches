@@ -1,4 +1,5 @@
-/*	$NetBSD: nfsrtt.h,v 1.2 1994/06/29 06:42:37 cgd Exp $	*/
+/*	$OpenBSD: nfsrtt.h,v 1.5 2001/06/25 03:28:15 csapuntz Exp $	*/
+/*	$NetBSD: nfsrtt.h,v 1.4 1996/02/18 11:54:07 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,8 +32,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)nfsrtt.h	8.1 (Berkeley) 6/10/93
+ *	@(#)nfsrtt.h	8.2 (Berkeley) 3/30/95
  */
+
+
+#ifndef _NFS_NFSRTT_H_
+#define _NFS_NFSRTT_H_
 
 /*
  * Definitions for performance monitor.
@@ -76,10 +77,10 @@ struct nfsrtt {
 /*
  * Bits for the flags field.
  */
-#define	DRT_NQNFS	0x01	/* Rpc used Nqnfs protocol */
 #define	DRT_TCP		0x02	/* Client used TCP transport */
 #define	DRT_CACHEREPLY	0x04	/* Reply was from recent request cache */
 #define	DRT_CACHEDROP	0x08	/* Rpc request dropped, due to recent reply */
+#define DRT_NFSV3	0x10	/* Rpc used NFS Version 3 */
 
 /*
  * Server log structure
@@ -89,10 +90,12 @@ struct nfsrtt {
 struct nfsdrt {
 	int pos;			/* Position of next log entry */
 	struct drt {
-		int	flag;		/* Bits as defined above */
-		int	proc;		/* NFS procedure number */
-		u_long	ipadr;		/* IP address of client */
-		int	resptime;	/* Response time (usec) */
+		int       flag;		/* Bits as defined above */
+		int       proc;		/* NFS procedure number */
+		u_int32_t ipadr;		/* IP address of client */
+		int       resptime;	/* Response time (usec) */
 		struct timeval tstamp;	/* Timestamp of log entry */
 	} drt[NFSRTTLOGSIZ];
 };
+
+#endif

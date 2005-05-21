@@ -1,3 +1,4 @@
+/*	$OpenBSD: bog.c,v 1.13 2003/06/03 03:01:39 millert Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)bog.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $";
+static char rcsid[] = "$OpenBSD: bog.c,v 1.13 2003/06/03 03:01:39 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,11 +53,12 @@ static char rcsid[] = "$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "bog.h"
 #include "extern.h"
 
-static int	compar __P((const void *, const void *));
+static int	compar(const void *, const void *);
 
 struct dictindex dictindex[26];
 
@@ -73,7 +71,7 @@ struct dictindex dictindex[26];
  *	C D E F
  */
 static int adjacency[16][16] = {
-/*        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+/*	  0  1	2  3  4	 5  6  7  8  9	A  B  C	 D  E  F */
 	{ 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 0 */
 	{ 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 1 */
 	{ 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 },		/* 2 */
@@ -119,23 +117,21 @@ int batch;
 int debug;
 int minlength;
 int reuse;
+int selfuse;
 int tlimit;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	long seed;
-	int ch, done, i, selfuse, sflag;
-	char *bspec, *p;
+	int ch, done, i;
+	char *bspec, *p, *seed;
 
-	batch = debug = reuse = selfuse = sflag = 0;
-	bspec = NULL;
+	batch = debug = reuse = selfuse;
+	bspec = seed = NULL;
 	minlength = 3;
 	tlimit = 180;		/* 3 minutes is standard */
 
-	while ((ch = getopt(argc, argv, "bds:t:w:")) != EOF)
+	while ((ch = getopt(argc, argv, "bds:t:w:")) != -1)
 		switch(ch) {
 		case 'b':
 			batch = 1;
@@ -144,8 +140,7 @@ main(argc, argv)
 			debug = 1;
 			break;
 		case 's':
-			sflag = 1;
-			seed = atol(optarg);
+			seed = optarg;
 			break;
 		case 't':
 			if ((tlimit = atoi(optarg)) < 1)
@@ -163,18 +158,19 @@ main(argc, argv)
 	argv += optind;
 
 	/* process final arguments */
-	if (argc > 0)
+	if (argc > 0) {
 		if (strcmp(argv[0], "+") == 0)
 			reuse = 1;
 		else if (strcmp(argv[0], "++") == 0)
 			selfuse = 1;
+	}
 
 	if (reuse || selfuse) {
 		argc -= 1;
 		argv += 1;
 	}
 
-	if (argc > 0)
+	if (argc > 0) {
 		if (islower(argv[0][0])) {
 			if (strlen(argv[0]) != 16) {
 				usage();
@@ -185,6 +181,7 @@ main(argc, argv)
 		} else {
 		  	usage();
 		}
+	}
 
 	if (batch && bspec == NULL)
 		errx(1, "must give both -b and a board setup");
@@ -199,7 +196,7 @@ main(argc, argv)
 			(void) printf("%s\n", p);
 		exit (0);
 	}
-	setup(sflag, seed);
+	setup(seed);
 	prompt("Loading the dictionary...");
 	if ((dictfp = opendict(DICT)) == NULL) {
 		warn("%s", DICT);
@@ -256,11 +253,10 @@ main(argc, argv)
  * Return a pointer to a legal word or a null pointer when EOF is reached
  */
 char *
-batchword(fp)
-	FILE *fp;
+batchword(FILE *fp)
 {
-	register int *p, *q;
-	register char *w;
+	int *p, *q;
+	char *w;
 
 	q = &wordpath[MAXWORDLEN + 1];
 	p = wordpath;
@@ -285,9 +281,8 @@ batchword(fp)
  * Keep track of the running stats
  */
 void
-playgame()
+playgame(void)
 {
-	/* Can't use register variables if setjmp() is used! */
 	int i, *p, *q;
 	time_t t;
 	char buf[MAXWORDLEN + 1];
@@ -331,7 +326,7 @@ playgame()
 			showstr(buf, 1);
 			continue;
 		}
-		if (strlen(buf) < minlength) {
+		if (strlen(buf) < (size_t)minlength) {
 			badword();
 			continue;
 		}
@@ -371,7 +366,8 @@ playgame()
 					exit(1);
 				}
 				pword[npwords++] = pwordsp;
-				(void) strcpy(pwordsp, buf);
+				strlcpy(pwordsp, buf,
+				    pwords + sizeof pwords - pwordsp);
 				pwordsp += len;
 				addword(buf);
 			}
@@ -407,12 +403,10 @@ timesup: ;
  * Return 1 on success, -1 on failure
  */
 int
-checkword(word, prev, path)
-	char *word;
-	int prev, *path;
+checkword(char *word, int prev, int *path)
 {
-	register char *p, *q;
-	register int i, *lm;
+	char *p, *q;
+	int i, *lm;
 
 	if (debug) {
 		(void) printf("checkword(%s, %d, [", word, prev);
@@ -471,7 +465,7 @@ checkword(word, prev, path)
 			 * If necessary, check if the square has already
 			 * been used.
 			 */
-			if (!reuse && (usedbits & used))
+			if (!reuse && !selfuse && (usedbits & used))
 					continue;
 			*path = lm[i];
 			usedbits |= used;
@@ -490,14 +484,13 @@ checkword(word, prev, path)
  * the current board
  */
 int
-validword(word)
-	char *word;
+validword(char *word)
 {
-	register int j;
-	register char *q, *w;
+	int j;
+	char *q, *w;
 
 	j = word[0] - 'a';
-	if (dictseek(dictfp, dictindex[j].start, 0) < 0) {
+	if (dictseek(dictfp, dictindex[j].start, SEEK_SET) < 0) {
 		(void) fprintf(stderr, "Seek error\n");
 		cleanup();
 		exit(1);
@@ -525,10 +518,10 @@ validword(word)
  * Assume both the dictionary and the player's words are already sorted
  */
 void
-checkdict()
+checkdict(void)
 {
-	register char *p, **pw, *w;
-	register int i;
+	char *p, **pw, *w;
+	int i;
 	int prevch, previndex, *pi, *qi, st;
 
 	mwordsp = mwords;
@@ -537,7 +530,7 @@ checkdict()
 	prevch ='a';
 	qi = &wordpath[MAXWORDLEN + 1];
 
-	(void) dictseek(dictfp, 0L, 0);
+	(void) dictseek(dictfp, 0L, SEEK_SET);
 	while ((w = nextword(dictfp)) != NULL) {
 		if (wordlen < minlength)
 			continue;
@@ -564,7 +557,7 @@ checkdict()
 			 */
 			if (i != previndex + 1) {
 				if (dictseek(dictfp,
-				    dictindex[i].start, 0) < 0) {
+				    dictindex[i].start, SEEK_SET) < 0) {
 					warnx("seek error in checkdict()");
 					cleanup();
 					exit(1);
@@ -593,7 +586,7 @@ checkdict()
 		}
 		mword[nmwords++] = mwordsp;
 		p = w;
-		while (*mwordsp++ = *p++);
+		while ((*mwordsp++ = *p++));
 	}
 }
 
@@ -603,10 +596,9 @@ checkdict()
  * in ascending cube order, oth. make a random board
  */
 void
-newgame(b)
-	char *b;
+newgame(char *b)
 {
-	register int i, p, q;
+	int i, p, q;
 	char *tmp;
 	int *lm[26];
 	static char *cubes[16] = {
@@ -652,7 +644,7 @@ newgame(b)
 	}
 
 	for (i = 0; i < 16; i++) {
-		register int j;
+		int j;
 
 		j = (int) (board[i] - 'a');
 		*lm[j] = i;
@@ -673,14 +665,13 @@ newgame(b)
 }
 
 int
-compar(p, q)
-	const void *p, *q;
+compar(const void *p, const void *q)
 {
 	return (strcmp(*(char **)p, *(char **)q));
 }
 
 void
-usage()
+usage(void)
 {
 	(void) fprintf(stderr,
 	    "usage: bog [-bd] [-s#] [-t#] [-w#] [+[+]] [boardspec]\n");

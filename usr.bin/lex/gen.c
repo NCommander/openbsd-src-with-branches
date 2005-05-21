@@ -1,3 +1,5 @@
+/*	$OpenBSD: gen.c,v 1.10 2003/06/04 17:34:44 millert Exp $	*/
+
 /* gen - actual generation (writing) of flex scanners */
 
 /*-
@@ -11,22 +13,27 @@
  * to contract no. DE-AC03-76SF00098 between the United States
  * Department of Energy and the University of California.
  *
- * Redistribution and use in source and binary forms are permitted provided
- * that: (1) source distributions retain this entire copyright notice and
- * comment, and (2) distributions including binaries display the following
- * acknowledgement:  ``This product includes software developed by the
- * University of California, Berkeley and its contributors'' in the
- * documentation or other materials provided with the distribution and in
- * all advertising materials mentioning features or use of this software.
- * Neither the name of the University nor the names of its contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/gen.c,v 1.10 1995/05/05 05:35:25 jtc Exp $ */
+/* $Header: /spare/open/cvs/src/usr.bin/lex/gen.c,v 1.10 2003/06/04 17:34:44 millert Exp $ */
 
 #include "flexdef.h"
 
@@ -61,7 +68,7 @@ static char C_state_decl[] =
 
 void do_indent()
 	{
-	register int i = indent_level * 8;
+	int i = indent_level * 8;
 
 	while ( i >= 8 )
 		{
@@ -131,7 +138,7 @@ void gen_bu_action()
 
 void genctbl()
 	{
-	register int i;
+	int i;
 	int end_of_buffer_action = num_rules + 1;
 
 	/* Table of verify for transition and offset to next state. */
@@ -227,7 +234,7 @@ void genctbl()
 
 void genecs()
 	{
-	register int i, j;
+	int i, j;
 	int numrows;
 
 	out_str_dec( C_int_decl, "yy_ec", csize );
@@ -408,7 +415,7 @@ void gen_find_action()
 
 void genftbl()
 	{
-	register int i;
+	int i;
 	int end_of_buffer_action = num_rules + 1;
 
 	out_str_dec( long_align ? C_long_decl : C_short_decl,
@@ -418,7 +425,7 @@ void genftbl()
 
 	for ( i = 1; i <= lastdfa; ++i )
 		{
-		register int anum = dfaacc[i].dfaacc_state;
+		int anum = dfaacc[i].dfaacc_state;
 
 		mkdata( anum );
 
@@ -603,17 +610,18 @@ int worry_about_NULs;
 	if ( worry_about_NULs && ! nultrans )
 		{
 		if ( useecs )
-			(void) sprintf( char_map,
+			(void) snprintf( char_map, sizeof char_map,
 				"(*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : %d)",
 					NUL_ec );
 		else
-			(void) sprintf( char_map,
+			(void) snprintf( char_map, sizeof char_map,
 				"(*yy_cp ? YY_SC_TO_UI(*yy_cp) : %d)", NUL_ec );
 		}
 
 	else
-		strcpy( char_map, useecs ?
-			"yy_ec[YY_SC_TO_UI(*yy_cp)]" : "YY_SC_TO_UI(*yy_cp)" );
+		strlcpy( char_map, useecs ?
+			"yy_ec[YY_SC_TO_UI(*yy_cp)]" : "YY_SC_TO_UI(*yy_cp)",
+			sizeof char_map );
 
 	if ( worry_about_NULs && nultrans )
 		{
@@ -710,15 +718,23 @@ void gen_NUL_trans()
 		{
 		char NUL_ec_str[20];
 
-		(void) sprintf( NUL_ec_str, "%d", NUL_ec );
+		(void) snprintf( NUL_ec_str, sizeof NUL_ec_str, "%d", NUL_ec );
 		gen_next_compressed_state( NUL_ec_str );
 
-		if ( reject )
-			indent_puts( "*yy_state_ptr++ = yy_current_state;" );
-
 		do_indent();
-
 		out_dec( "yy_is_jam = (yy_current_state == %d);\n", jamstate );
+
+		if ( reject )
+			{
+			/* Only stack this state if it's a transition we
+			 * actually make.  If we stack it on a jam, then
+			 * the state stack and yy_c_buf_p get out of sync.
+			 */
+			indent_puts( "if ( ! yy_is_jam )" );
+			indent_up();
+			indent_puts( "*yy_state_ptr++ = yy_current_state;" );
+			indent_down();
+			}
 		}
 
 	/* If we've entered an accepting state, back up; note that
@@ -947,7 +963,7 @@ void gentabs()
 
 	for ( i = 1; i <= lastdfa; ++i )
 		{
-		register int d = def[i];
+		int d = def[i];
 
 		if ( base[i] == JAMSTATE )
 			base[i] = jambase;
@@ -1015,6 +1031,7 @@ void gentabs()
 		}
 
 	dataend();
+	free(acc_array);
 	}
 
 
@@ -1048,7 +1065,7 @@ char str[];
 
 void make_tables()
 	{
-	register int i;
+	int i;
 	int did_eof_rule = false;
 
 	skelout();
@@ -1058,7 +1075,7 @@ void make_tables()
 	 */
 	set_indent( 1 );
 
-	if ( yymore_used )
+	if ( yymore_used && ! yytext_is_array )
 		{
 		indent_puts( "yytext_ptr -= yy_more_len; \\" );
 		indent_puts( "yyleng = (int) (yy_cp - yytext_ptr); \\" );
@@ -1071,13 +1088,31 @@ void make_tables()
 	skelout();
 	if ( yytext_is_array )
 		{
-		indent_puts( "if ( yyleng >= YYLMAX ) \\" );
+		if ( yymore_used )
+			indent_puts(
+				"if ( yyleng + yy_more_offset >= YYLMAX ) \\" );
+		else
+			indent_puts( "if ( yyleng >= YYLMAX ) \\" );
+
 		indent_up();
 		indent_puts(
 		"YY_FATAL_ERROR( \"token too large, exceeds YYLMAX\" ); \\" );
 		indent_down();
-		indent_puts(
+
+		if ( yymore_used )
+			{
+			indent_puts(
+"yy_flex_strncpy( &yytext[yy_more_offset], yytext_ptr, yyleng + 1 ); \\" );
+			indent_puts( "yyleng += yy_more_offset; \\" );
+			indent_puts(
+				"yy_prev_more_offset = yy_more_offset; \\" );
+			indent_puts( "yy_more_offset = 0; \\" );
+			}
+		else
+			{
+			indent_puts(
 		"yy_flex_strncpy( yytext, yytext_ptr, yyleng + 1 ); \\" );
+			}
 		}
 
 	set_indent( 0 );
@@ -1236,18 +1271,46 @@ void make_tables()
 		{
 		if ( ! C_plus_plus )
 			{
-			indent_puts( "static int yy_more_flag = 0;" );
-			indent_puts( "static int yy_more_len = 0;" );
+			if ( yytext_is_array )
+				{
+				indent_puts( "static int yy_more_offset = 0;" );
+				indent_puts(
+					"static int yy_prev_more_offset = 0;" );
+				}
+			else
+				{
+				indent_puts( "static int yy_more_flag = 0;" );
+				indent_puts( "static int yy_more_len = 0;" );
+				}
 			}
 
-		indent_puts( "#define yymore() (yy_more_flag = 1)" );
-		indent_puts( "#define YY_MORE_ADJ yy_more_len" );
+		if ( yytext_is_array )
+			{
+			indent_puts(
+	"#define yymore() (yy_more_offset = yy_flex_strlen( yytext ))" );
+			indent_puts( "#define YY_NEED_STRLEN" );
+			indent_puts( "#define YY_MORE_ADJ 0" );
+			indent_puts( "#define YY_RESTORE_YY_MORE_OFFSET \\" );
+			indent_up();
+			indent_puts( "{ \\" );
+			indent_puts( "yy_more_offset = yy_prev_more_offset; \\" );
+			indent_puts( "yyleng -= yy_more_offset; \\" );
+			indent_puts( "}" );
+			indent_down();
+			}
+		else
+			{
+			indent_puts( "#define yymore() (yy_more_flag = 1)" );
+			indent_puts( "#define YY_MORE_ADJ yy_more_len" );
+			indent_puts( "#define YY_RESTORE_YY_MORE_OFFSET" );
+			}
 		}
 
 	else
 		{
 		indent_puts( "#define yymore() yymore_used_but_not_detected" );
 		indent_puts( "#define YY_MORE_ADJ 0" );
+		indent_puts( "#define YY_RESTORE_YY_MORE_OFFSET" );
 		}
 
 	if ( ! C_plus_plus )
@@ -1331,13 +1394,13 @@ void make_tables()
 
 	set_indent( 2 );
 
-	if ( yymore_used )
+	if ( yymore_used && ! yytext_is_array )
 		{
 		indent_puts( "yy_more_len = 0;" );
 		indent_puts( "if ( yy_more_flag )" );
 		indent_up();
 		indent_puts( "{" );
-		indent_puts( "yy_more_len = yyleng;" );
+		indent_puts( "yy_more_len = yy_c_buf_p - yytext_ptr;" );
 		indent_puts( "yy_more_flag = 0;" );
 		indent_puts( "}" );
 		indent_down();
@@ -1383,7 +1446,7 @@ void make_tables()
 		indent_puts( "if ( yy_act == 0 )" );
 		indent_up();
 		indent_puts( C_plus_plus ?
-			"cerr << \"--scanner backing up\\n\";" :
+			"std::cerr << \"--scanner backing up\\n\";" :
 			"fprintf( stderr, \"--scanner backing up\\n\" );" );
 		indent_down();
 
@@ -1394,7 +1457,7 @@ void make_tables()
 		if ( C_plus_plus )
 			{
 			indent_puts(
-	"cerr << \"--accepting rule at line \" << yy_rule_linenum[yy_act] <<" );
+	"std::cerr << \"--accepting rule at line \" << yy_rule_linenum[yy_act] <<" );
 			indent_puts(
 			"         \"(\\\"\" << yytext << \"\\\")\\n\";" );
 			}
@@ -1416,7 +1479,7 @@ void make_tables()
 		if ( C_plus_plus )
 			{
 			indent_puts(
-"cerr << \"--accepting default rule (\\\"\" << yytext << \"\\\")\\n\";" );
+"std::cerr << \"--accepting default rule (\\\"\" << yytext << \"\\\")\\n\";" );
 			}
 		else
 			{
@@ -1432,7 +1495,7 @@ void make_tables()
 		indent_up();
 
 		indent_puts( C_plus_plus ?
-			"cerr << \"--(end of buffer or a NUL)\\n\";" :
+			"std::cerr << \"--(end of buffer or a NUL)\\n\";" :
 		"fprintf( stderr, \"--(end of buffer or a NUL)\\n\" );" );
 
 		indent_down();
@@ -1444,7 +1507,7 @@ void make_tables()
 		if ( C_plus_plus )
 			{
 			indent_puts(
-	"cerr << \"--EOF (start condition \" << YY_START << \")\\n\";" );
+	"std::cerr << \"--EOF (start condition \" << YY_START << \")\\n\";" );
 			}
 		else
 			{

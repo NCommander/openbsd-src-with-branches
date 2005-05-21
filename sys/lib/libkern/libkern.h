@@ -1,4 +1,5 @@
-/*	$NetBSD: libkern.h,v 1.5 1995/09/23 20:35:47 leo Exp $	*/
+/*	$OpenBSD: libkern.h,v 1.21 2004/06/21 22:55:04 itojun Exp $	*/
+/*	$NetBSD: libkern.h,v 1.7 1996/03/14 18:52:08 christos Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,83 +32,150 @@
  *	@(#)libkern.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef __LIBKERN_H__
+#define __LIBKERN_H__
+
 #include <sys/types.h>
 
-static __inline int imax __P((int, int));
-static __inline int imin __P((int, int));
-static __inline u_int max __P((u_int, u_int));
-static __inline u_int min __P((u_int, u_int));
-static __inline long lmax __P((long, long));
-static __inline long lmin __P((long, long));
-static __inline u_long ulmax __P((u_long, u_long));
-static __inline u_long ulmin __P((u_long, u_long));
-static __inline int abs __P((int));
+#ifndef LIBKERN_INLINE
+#define LIBKERN_INLINE	static __inline
+#define LIBKERN_BODY
+#endif
 
-static __inline int
+
+LIBKERN_INLINE int imax(int, int);
+LIBKERN_INLINE int imin(int, int);
+LIBKERN_INLINE u_int max(u_int, u_int);
+LIBKERN_INLINE u_int min(u_int, u_int);
+LIBKERN_INLINE long lmax(long, long);
+LIBKERN_INLINE long lmin(long, long);
+LIBKERN_INLINE u_long ulmax(u_long, u_long);
+LIBKERN_INLINE u_long ulmin(u_long, u_long);
+LIBKERN_INLINE int abs(int);
+
+#ifdef LIBKERN_BODY
+LIBKERN_INLINE int
 imax(a, b)
 	int a, b;
 {
 	return (a > b ? a : b);
 }
-static __inline int
+LIBKERN_INLINE int
 imin(a, b)
 	int a, b;
 {
 	return (a < b ? a : b);
 }
-static __inline long
+LIBKERN_INLINE long
 lmax(a, b)
 	long a, b;
 {
 	return (a > b ? a : b);
 }
-static __inline long
+LIBKERN_INLINE long
 lmin(a, b)
 	long a, b;
 {
 	return (a < b ? a : b);
 }
-static __inline u_int
+LIBKERN_INLINE u_int
 max(a, b)
 	u_int a, b;
 {
 	return (a > b ? a : b);
 }
-static __inline u_int
+LIBKERN_INLINE u_int
 min(a, b)
 	u_int a, b;
 {
 	return (a < b ? a : b);
 }
-static __inline u_long
+LIBKERN_INLINE u_long
 ulmax(a, b)
 	u_long a, b;
 {
 	return (a > b ? a : b);
 }
-static __inline u_long
+LIBKERN_INLINE u_long
 ulmin(a, b)
 	u_long a, b;
 {
 	return (a < b ? a : b);
 }
 
-static __inline int
+LIBKERN_INLINE int
 abs(j)
 	int j;
 {
 	return(j < 0 ? -j : j);
 }
+#endif
+
+#ifdef NDEBUG						/* tradition! */
+#define	assert(e)	((void)0)
+#else
+#ifdef __STDC__
+#define	assert(e)	((e) ? (void)0 :				    \
+			    __assert("", __FILE__, __LINE__, #e))
+#else
+#define	assert(e)	((e) ? (void)0 :				    \
+			    __assert("", __FILE__, __LINE__, "e"))
+#endif
+#endif
+
+#ifndef DIAGNOSTIC
+#define	KASSERT(e)	((void)0)
+#else
+#ifdef __STDC__
+#define	KASSERT(e)	((e) ? (void)0 :				    \
+			    __assert("diagnostic ", __FILE__, __LINE__, #e))
+#else
+#define	KASSERT(e)	((e) ? (void)0 :				    \
+			    __assert("diagnostic ", __FILE__, __LINE__, "e"))
+#endif
+#endif
+
+#ifndef DEBUG
+#define	KDASSERT(e)	((void)0)
+#else
+#ifdef __STDC__
+#define	KDASSERT(e)	((e) ? (void)0 :				    \
+			    __assert("debugging ", __FILE__, __LINE__, #e))
+#else
+#define	KDASSERT(e)	((e) ? (void)0 :				    \
+			    __assert("debugging ", __FILE__, __LINE__, "e"))
+#endif
+#endif
 
 /* Prototypes for non-quad routines. */
-int	 bcmp __P((const void *, const void *, size_t));
-int	 ffs __P((int));
-int	 locc __P((int, char *, u_int));
-u_long	 random __P((void));
-char	*rindex __P((const char *, int));
-int	 scanc __P((u_int, u_char *, u_char *, int));
-int	 skpc __P((int, int, char *));
-char	*strcat __P((char *, const char *));
-char	*strcpy __P((char *, const char *));
-size_t	 strlen __P((const char *));
-char	*strncpy __P((char *, const char *, size_t));
+void	 __assert(const char *, const char *, int, const char *)
+	    __attribute__ ((__noreturn__));
+int	 bcmp(const void *, const void *, size_t);
+void	 bzero(void *, size_t);
+int	 ffs(int);
+int	 locc(int, char *, u_int);
+void	*memchr(const void *, int, size_t);
+int	 memcmp(const void *, const void *, size_t);
+u_long	 random(void);
+void	 srandom(u_long);
+int	 scanc(u_int, const u_char *, const u_char [], int);
+int	 skpc(int, size_t, u_char *);
+size_t	 strlen(const char *);
+char	*strncpy(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+size_t	 strlcpy(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+size_t	 strlcat(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+int	 strcmp(const char *, const char *);
+int	 strncmp(const char *, const char *, size_t);
+int	 strncasecmp(const char *, const char *, size_t);
+int	 getsn(char *, int);
+char	*strchr(const char *, int);
+char	*strrchr(const char *, int);
+
+extern u_int8_t const __bcd2bin[], __bin2bcd[];
+#define	bcd2bin(b)	(__bcd2bin[(b)&0xff])
+#define	bin2bcd(b)	(__bin2bcd[(b)&0xff])
+
+#endif /* __LIBKERN_H__ */

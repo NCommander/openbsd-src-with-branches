@@ -1,4 +1,5 @@
 %{
+/*	$OpenBSD: cgram.y,v 1.4 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: cgram.y,v 1.8 1995/10/02 17:31:35 jpo Exp $	*/
 
 /*
@@ -33,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: cgram.y,v 1.8 1995/10/02 17:31:35 jpo Exp $";
+static char rcsid[] = "$OpenBSD: cgram.y,v 1.4 2002/02/16 21:27:59 millert Exp $";
 #endif
 
 #include <stdlib.h>
@@ -55,9 +56,9 @@ int	blklev;
  */
 int	mblklev;
 
-static	int	toicon __P((tnode_t *));
-static	void	idecl __P((sym_t *, int));
-static	void	ignuptorp __P((void));
+static	int	toicon(tnode_t *);
+static	void	idecl(sym_t *, int);
+static	void	ignuptorp(void);
 
 %}
 
@@ -1441,7 +1442,7 @@ expr:
 
 term:
 	  T_NAME {
-		/* XXX realy neccessary? */
+		/* XXX really necessary? */
 		if (yychar < 0)
 			yychar = yylex();
 		$$ = getnnode(getsym($1), yychar);
@@ -1607,15 +1608,26 @@ toicon(tn)
 	} else {
 		i = (int)v->v_quad;
 		if (isutyp(t)) {
-			if ((u_quad_t)v->v_quad > INT_MAX) {
+			if ((u_quad_t)v->v_quad > UINT_MAX) {
 				/* integral constant too large */
 				warning(56);
 			}
 		} else {
+#ifdef XXX_BROKEN_GCC
+			if (v->v_quad > INT_MAX) {
+				/* integral constant too large */
+				warning(56);
+			}
+			if (v->v_quad < INT_MIN) {
+				/* integral constant too large */
+				warning(56);
+			}
+#else
 			if (v->v_quad > INT_MAX || v->v_quad < INT_MIN) {
 				/* integral constant too large */
 				warning(56);
 			}
+#endif
 		}
 	}
 	free(v);

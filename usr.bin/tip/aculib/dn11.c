@@ -1,4 +1,5 @@
-/*	$NetBSD: dn11.c,v 1.3 1994/12/08 09:31:40 jtc Exp $	*/
+/*	$OpenBSD: dn11.c,v 1.7 2002/06/12 06:07:16 mpech Exp $	*/
+/*	$NetBSD: dn11.c,v 1.4 1995/10/29 00:49:53 pk Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)dn11.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: dn11.c,v 1.3 1994/12/08 09:31:40 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: dn11.c,v 1.7 2002/06/12 06:07:16 mpech Exp $";
 #endif /* not lint */
 
 /*
@@ -45,18 +42,18 @@ static char rcsid[] = "$NetBSD: dn11.c,v 1.3 1994/12/08 09:31:40 jtc Exp $";
  */
 #include "tip.h"
 
-int dn_abort();
+void dn_abort();
 void alarmtr();
 static jmp_buf jmpbuf;
-static int child = -1, dn;
+static pid_t child = -1, dn;
 
+int
 dn_dialer(num, acu)
 	char *num, *acu;
 {
-	extern errno;
-	char *p, *q, phone[40];
-	int lt, nw, connected = 1;
-	register int timelim;
+	int lt, nw;
+	int timelim;
+	struct termios cntrl;
 
 	if (boolean(value(VERBOSE)))
 		printf("\nstarting call...");
@@ -100,7 +97,9 @@ dn_dialer(num, acu)
 		return (0);
 	}
 	alarm(0);
-	ioctl(dn, TIOCHPCL, 0);
+	tcgetattr(dn, &cntrl);
+	cntrl.c_cflag |= HUPCL;
+	tcsetattr(dn, TCSANOW, &cntrl);
 	signal(SIGALRM, SIG_DFL);
 	while ((nw = wait(&lt)) != child && nw != -1)
 		;
@@ -124,6 +123,7 @@ alarmtr()
  * Insurance, for some reason we don't seem to be
  *  hanging up...
  */
+void
 dn_disconnect()
 {
 
@@ -133,6 +133,7 @@ dn_disconnect()
 	close(FD);
 }
 
+void
 dn_abort()
 {
 

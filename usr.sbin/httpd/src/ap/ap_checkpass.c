@@ -67,9 +67,6 @@
 #include "ap_md5.h"
 #include "ap_sha1.h"
 #include "ap.h"
-#if HAVE_CRYPT_H
-#include <crypt.h>
-#endif
 
 /*
  * Validate a plaintext password against a smashed one.  Use either
@@ -101,15 +98,7 @@ API_EXPORT(char *) ap_validate_password(const char *passwd, const char *hash)
 	/*
 	 * It's not our algorithm, so feed it to crypt() if possible.
 	 */
-#if defined(WIN32) || defined(NETWARE)
-	/*
-	 * On Windows, the only alternative to our MD5 algorithm is plain
-	 * text.
-	 */
-	ap_cpystrn(sample, passwd, sizeof(sample) - 1);
-#else
 	ap_cpystrn(sample, (char *)crypt(passwd, hash), sizeof(sample) - 1);
-#endif
     }
     return (strcmp(sample, hash) == 0) ? NULL : "password mismatch";
 }

@@ -829,8 +829,8 @@ Interaction, perlfaq9 - Networking
 
 =back
 
-=head2 perlfaq1 - General Questions About Perl ($Revision: 1.14 $, $Date:
-2003/11/23 08:02:29 $)
+=head2 perlfaq1 - General Questions About Perl ($Revision: 1.9 $, $Date:
+2003/07/09 15:47:28 $)
 
 =over 4
 
@@ -878,8 +878,8 @@ Scheme, or Tcl?
 
 =back
 
-=head2 perlfaq2 - Obtaining and Learning about Perl ($Revision: 1.25 $,
-$Date: 2003/10/16 04:57:38 $)
+=head2 perlfaq2 - Obtaining and Learning about Perl ($Revision: 1.9 $,
+$Date: 2004/08/09 18:10:16 $)
 
 =over 4
 
@@ -934,8 +934,8 @@ References, Tutorials, Task-Oriented, Special Topics
 
 =back
 
-=head2 perlfaq3 - Programming Tools ($Revision: 1.37 $, $Date: 2003/11/24
-19:55:50 $)
+=head2 perlfaq3 - Programming Tools ($Revision: 1.9 $, $Date: 2003/08/24
+05:26:59 $)
 
 =over 4
 
@@ -1021,8 +1021,8 @@ my C program; what am I doing wrong?
 
 =back
 
-=head2 perlfaq4 - Data Manipulation ($Revision: 1.54 $, $Date: 2003/11/30
-00:50:08 $)
+=head2 perlfaq4 - Data Manipulation ($Revision: 1.9 $, $Date: 2003/10/02
+04:44:33 $)
 
 =over 4
 
@@ -1240,8 +1240,8 @@ array of hashes or arrays?
 
 =back
 
-=head2 perlfaq5 - Files and Formats ($Revision: 1.30 $, $Date: 2003/11/23
-08:07:46 $)
+=head2 perlfaq5 - Files and Formats ($Revision: 1.9 $, $Date: 2003/01/26
+17:45:46 $)
 
 =over 4
 
@@ -1336,7 +1336,7 @@ protected files?  Isn't this a bug in Perl?
 
 =back
 
-=head2 perlfaq6 - Regular Expressions ($Revision: 1.20 $, $Date: 2003/01/03
+=head2 perlfaq6 - Regular Expressions ($Revision: 1.9 $, $Date: 2003/01/03
 20:05:28 $)
 
 =over 4
@@ -1403,7 +1403,7 @@ file?
 
 =back
 
-=head2 perlfaq7 - General Perl Language Issues ($Revision: 1.15 $, $Date:
+=head2 perlfaq7 - General Perl Language Issues ($Revision: 1.9 $, $Date:
 2003/07/24 02:17:21 $)
 
 =over 4
@@ -1485,7 +1485,7 @@ methods?
 
 =back
 
-=head2 perlfaq8 - System Interaction ($Revision: 1.17 $, $Date: 2003/01/26
+=head2 perlfaq8 - System Interaction ($Revision: 1.9 $, $Date: 2003/01/26
 17:44:04 $)
 
 =over 4
@@ -1613,7 +1613,7 @@ search path?
 
 =back
 
-=head2 perlfaq9 - Networking ($Revision: 1.15 $, $Date: 2003/01/31 17:36:57
+=head2 perlfaq9 - Networking ($Revision: 1.9 $, $Date: 2003/01/31 17:36:57
 $)
 
 =over 4

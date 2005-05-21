@@ -44,7 +44,7 @@ int client_port = 0;
 static char *pid_filename;
 
 #define _PATH_VAR_RUN "/var/run"
-#define _PATH_DEV_NNPFS0 "/dev/nnpfs0"
+#define _PATH_DEV_NNPFS0 "/dev/xfs0"
 #define _PATH_DEV_STDERR "/dev/stderr"
 
 /*
@@ -174,6 +174,14 @@ arla_start (char *device_file, const char *cache_dir)
     if (fork_flag)
 	kill(getppid(), SIGUSR1);
     
+    if (pw) {
+	setgroups(1, &pw->pw_gid);
+	setegid(pw->pw_gid);
+	setgid(pw->pw_gid);	
+	seteuid(pw->pw_uid);
+	setuid(pw->pw_uid);
+    }
+
     LWP_WaitProcess ((char *)arla_start);
     abort ();
 }
@@ -243,7 +251,6 @@ main (int argc, char **argv)
     int optind = 0;
     int ret;
 
-    set_progname (argv[0]);
     tzset();
     srand(time(NULL));
 

@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 #include "output.h"
-#include "splay-tree.h"
+#include "hashtab.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -290,14 +290,12 @@ static int *reg_next_eqv;
 static int *reg_prev_eqv;
 
 struct cse_reg_info {
-  union {
-    /* The number of times the register has been altered in the current
-       basic block.  */
-    int reg_tick;
-    
-    /* The next cse_reg_info structure in the free list.  */
-    struct cse_reg_info* next;
-  } variant;
+  /* The number of times the register has been altered in the current
+     basic block.  */
+  int reg_tick;
+
+  /* The next cse_reg_info structure in the free or used list.  */
+  struct cse_reg_info* next;
 
   /* The REG_TICK value at which rtx's containing this register are
      valid in the hash table.  If this does not equal the current
@@ -307,13 +305,20 @@ struct cse_reg_info {
 
   /* The quantity number of the register's current contents.  */
   int reg_qty;
+
+  /* Search key */
+  int regno;
 };
 
 /* A free list of cse_reg_info entries.  */
 static struct cse_reg_info *cse_reg_info_free_list;
 
+/* A used list of cse_reg_info entries.  */
+static struct cse_reg_info *cse_reg_info_used_list;
+static struct cse_reg_info *cse_reg_info_used_list_end;
+
 /* A mapping from registers to cse_reg_info data structures.  */
-static splay_tree cse_reg_info_tree;
+static hash_table_t cse_reg_info_tree;
 
 /* The last lookup we did into the cse_reg_info_tree.  This allows us
    to cache repeated lookups.  */
@@ -509,7 +514,7 @@ struct table_elt
 /* Get the number of times this register has been updated in this
    basic block.  */
 
-#define REG_TICK(N) ((GET_CSE_REG_INFO (N))->variant.reg_tick)
+#define REG_TICK(N) ((GET_CSE_REG_INFO (N))->reg_tick)
 
 /* Get the point at which REG was recorded in the table.  */
 
@@ -693,7 +698,10 @@ static void count_reg_usage	PROTO((rtx, int *, rtx, int));
 extern void dump_class          PROTO((struct table_elt*));
 static void check_fold_consts	PROTO((PTR));
 static struct cse_reg_info* get_cse_reg_info PROTO((int));
-static void free_cse_reg_info   PROTO((splay_tree_value));
+static unsigned int hash_cse_reg_info PROTO((hash_table_entry_t));
+static int cse_reg_info_equal_p	PROTO((hash_table_entry_t,
+				       hash_table_entry_t));
+
 static void flush_hash_table	PROTO((void));
 
 extern int rtx_equal_function_value_matters;
@@ -843,32 +851,38 @@ get_cse_reg_info (regno)
      int regno;
 {
   struct cse_reg_info *cri;
-  splay_tree_node n;
+  struct cse_reg_info **entry;
+  struct cse_reg_info temp;
 
   /* See if we already have this entry.  */
-  n = splay_tree_lookup (cse_reg_info_tree, 
-			(splay_tree_key) regno);
-  if (n)
-    cri = (struct cse_reg_info *) (n->value);
+  temp.regno = regno;
+  entry = (struct cse_reg_info **) find_hash_table_entry (cse_reg_info_tree,
+							  &temp, TRUE);
+
+  if (*entry)
+    cri = *entry;
   else 
     {
       /* Get a new cse_reg_info structure.  */
       if (cse_reg_info_free_list) 
 	{
 	  cri = cse_reg_info_free_list;
-	  cse_reg_info_free_list = cri->variant.next;
+	  cse_reg_info_free_list = cri->next;
 	}
       else
 	cri = (struct cse_reg_info *) xmalloc (sizeof (struct cse_reg_info));
 
       /* Initialize it.  */
-      cri->variant.reg_tick = 0;
+      cri->reg_tick = 0;
       cri->reg_in_table = -1;
       cri->reg_qty = regno;
-
-      splay_tree_insert (cse_reg_info_tree, 
-			 (splay_tree_key) regno, 
-			 (splay_tree_value) cri);
+      cri->regno = regno;
+      cri->next = cse_reg_info_used_list;
+      cse_reg_info_used_list = cri;
+      if (!cse_reg_info_used_list_end)
+	cse_reg_info_used_list_end = cri;
+      
+      *entry = cri;
     }
 
   /* Cache this lookup; we tend to be looking up information about the
@@ -879,14 +893,20 @@ get_cse_reg_info (regno)
   return cri;
 }
 
-static void
-free_cse_reg_info (v)
-     splay_tree_value v;
+static unsigned int
+hash_cse_reg_info (el_ptr)
+     hash_table_entry_t el_ptr;
 {
-  struct cse_reg_info *cri = (struct cse_reg_info *) v;
-  
-  cri->variant.next = cse_reg_info_free_list;
-  cse_reg_info_free_list = cri;
+  return ((struct cse_reg_info *) el_ptr)->regno;
+}
+
+static int
+cse_reg_info_equal_p (el_ptr1, el_ptr2)
+     hash_table_entry_t el_ptr1;
+     hash_table_entry_t el_ptr2;
+{
+  return (((struct cse_reg_info *) el_ptr1)->regno
+	  == ((struct cse_reg_info *) el_ptr2)->regno);
 }
 
 /* Clear the hash table and initialize each register with its own quantity,
@@ -901,12 +921,20 @@ new_basic_block ()
 
   if (cse_reg_info_tree) 
     {
-      splay_tree_delete (cse_reg_info_tree);
+      empty_hash_table (cse_reg_info_tree);
+      if (cse_reg_info_used_list)
+	{
+	  cse_reg_info_used_list_end->next = cse_reg_info_free_list;
+	  cse_reg_info_free_list = cse_reg_info_used_list;
+	  cse_reg_info_used_list = cse_reg_info_used_list_end = 0;
+	}
       cached_cse_reg_info = 0;
     }
-
-  cse_reg_info_tree = splay_tree_new (splay_tree_compare_ints, 0, 
-				      free_cse_reg_info);
+  else
+    {
+      cse_reg_info_tree = create_hash_table (0, hash_cse_reg_info,
+					     cse_reg_info_equal_p);
+    }
 
   CLEAR_HARD_REG_SET (hard_regs_in_table);
 
@@ -4504,6 +4532,7 @@ simplify_plus_minus (code, mode, op0, op1)
   int n_ops = 2, input_ops = 2, input_consts = 0, n_consts = 0;
   int first = 1, negate = 0, changed;
   int i, j;
+  HOST_WIDE_INT fp_offset = 0;
 
   bzero ((char *) ops, sizeof ops);
   
@@ -4522,6 +4551,10 @@ simplify_plus_minus (code, mode, op0, op1)
 	switch (GET_CODE (ops[i]))
 	  {
 	  case PLUS:
+	    if (flag_propolice_protection
+		&& XEXP (ops[i], 0) == virtual_stack_vars_rtx
+		&& GET_CODE (XEXP (ops[i], 1)) == CONST_INT)
+	      fp_offset = INTVAL (XEXP (ops[i], 1));
 	  case MINUS:
 	    if (n_ops == 7)
 	      return 0;
@@ -4637,7 +4670,54 @@ simplify_plus_minus (code, mode, op0, op1)
 	j = negs[n_ops - 1], negs[n_ops - 1] = negs[i], negs[i] = j;
       }
 
-  /* Put a non-negated operand first.  If there aren't any, make all
+  if (flag_propolice_protection)
+    {
+      /* keep the addressing style of local variables
+	 as (plus (virtual_stack_vars_rtx) (CONST_int x))
+	 (1) inline function is expanded, (+ (+VFP c1) -c2)=>(+ VFP c1-c2)
+	 (2) the case ary[r-1], (+ (+VFP c1) (+r -1))=>(+ R (+r -1))
+      */
+      for (i = 0; i < n_ops; i++)
+#ifdef FRAME_GROWS_DOWNWARD
+	if (ops[i] == virtual_stack_vars_rtx)
+#else
+	if (ops[i] == virtual_stack_vars_rtx
+	    || ops[i] == frame_pointer_rtx)
+#endif
+	  {
+	    if (GET_CODE (ops[n_ops - 1]) == CONST_INT)
+	      {
+		HOST_WIDE_INT value = INTVAL (ops[n_ops - 1]);
+		if (n_ops < 3 || value >= fp_offset)
+		  {
+		    ops[i] = plus_constant (ops[i], value);
+		    n_ops--;
+		  }
+		else
+		  {
+		    if (n_ops+1 + n_consts > input_ops
+			|| (n_ops+1 + n_consts == input_ops && n_consts <= input_consts))
+		      return 0;
+		    ops[n_ops - 1] = GEN_INT (value-fp_offset);
+		    ops[i] = plus_constant (ops[i], fp_offset);
+		  }
+	      }
+            /* buf[BUFSIZE]: buf is the first local variable (+ (+ fp -S) S)
+	       or (+ (fp 0) r) ==> ((+ (+fp 1) r) -1) */
+            else if (fp_offset != 0)
+              return 0;
+#ifndef FRAME_GROWS_DOWNWARD
+	    /*
+	     * For the case of buf[i], i: REG, buf: (plus fp 0),
+	     */
+	    else if (fp_offset == 0)
+	      return 0;
+#endif
+	    break;
+	  }
+    }
+
+/* Put a non-negated operand first.  If there aren't any, make all
      operands positive and negate the whole thing later.  */
   for (i = 0; i < n_ops && negs[i]; i++)
     ;
@@ -5964,7 +6044,14 @@ fold_rtx (x, insn)
 
 	      if (new_const == 0)
 		break;
-
+#ifndef FRAME_GROWS_DOWNWARD
+	      if (flag_propolice_protection
+		  && GET_CODE (y) == PLUS
+		  && XEXP (y, 0) == frame_pointer_rtx
+		  && INTVAL (inner_const) > 0
+		  && INTVAL (new_const) <= 0)
+		break;
+#endif
 	      /* If we are associating shift operations, don't let this
 		 produce a shift of the size of the object or larger.
 		 This could occur when we follow a sign-extend by a right
@@ -6483,6 +6570,13 @@ cse_insn (insn, libcall_insn)
       if (SET_DEST (x) == pc_rtx
 	  && GET_CODE (SET_SRC (x)) == LABEL_REF)
 	;
+      else if (x->volatil) {
+	rtx x1 = SET_DEST (x);
+	if (GET_CODE (x1) == SUBREG && GET_CODE (SUBREG_REG (x1)) == REG)
+	  x1 = SUBREG_REG (x1);
+	make_new_qty (REGNO (x1));
+	qty_mode[REG_QTY (REGNO (x1))] = GET_MODE (x1);
+      }
 
       /* Don't count call-insns, (set (reg 0) (call ...)), as a set.
 	 The hard function value register is used only once, to copy to

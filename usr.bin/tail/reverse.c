@@ -1,3 +1,4 @@
+/*	$OpenBSD: reverse.c,v 1.14 2003/07/01 11:12:59 henning Exp $	*/
 /*	$NetBSD: reverse.c,v 1.6 1994/11/23 07:42:10 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,23 +37,37 @@
 #if 0
 static char sccsid[] = "@(#)reverse.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: reverse.c,v 1.6 1994/11/23 07:42:10 jtc Exp $";
+static char rcsid[] = "$OpenBSD: reverse.c,v 1.14 2003/07/01 11:12:59 henning Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 
-#include <limits.h>
+#include <err.h>
 #include <errno.h>
-#include <unistd.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "extern.h"
 
-static void r_buf __P((FILE *));
-static void r_reg __P((FILE *, enum STYLE, long, struct stat *));
+static void r_buf(FILE *);
+static int r_reg(FILE *, enum STYLE, off_t, struct stat *);
+
+#define COPYCHAR(fp, ch)				\
+	do {						\
+		if ((ch = getc(fp)) == EOF) {		\
+			ierr();				\
+			return (0);			\
+		}					\
+		if (putchar(ch) == EOF) {		\
+			oerr();				\
+			return (0);			\
+		}					\
+	} while (0)
 
 /*
  * reverse -- display input in reverse order by line.
@@ -65,38 +76,36 @@ static void r_reg __P((FILE *, enum STYLE, long, struct stat *));
  * files by bytes, lines or the whole file.
  *
  * BYTES	display N bytes
- *	REG	mmap the file and display the lines
+ *	REG	reverse scan and display the lines
  *	NOREG	cyclically read characters into a wrap-around buffer
  *
  * LINES	display N lines
- *	REG	mmap the file and display the lines
+ *	REG	reverse scan and display the lines
  *	NOREG	cyclically read lines into a wrap-around array of buffers
  *
  * FILE		display the entire file
- *	REG	mmap the file and display the lines
+ *	REG	reverse scan and display the lines
  *	NOREG	cyclically read input into a linked list of buffers
  */
 void
 reverse(fp, style, off, sbp)
 	FILE *fp;
 	enum STYLE style;
-	long off;
+	off_t off;
 	struct stat *sbp;
 {
 	if (style != REVERSE && off == 0)
 		return;
 
-	if (S_ISREG(sbp->st_mode))
-		r_reg(fp, style, off, sbp);
-	else
+	if (!S_ISREG(sbp->st_mode) || r_reg(fp, style, off, sbp) != 0)
 		switch(style) {
 		case FBYTES:
 		case RBYTES:
-			bytes(fp, off);
+			(void)bytes(fp, off);
 			break;
 		case FLINES:
 		case RLINES:
-			lines(fp, off);
+			(void)lines(fp, off);
 			break;
 		case REVERSE:
 			r_buf(fp);
@@ -107,50 +116,51 @@ reverse(fp, style, off, sbp)
 /*
  * r_reg -- display a regular file in reverse order by line.
  */
-static void
-r_reg(fp, style, off, sbp)
-	FILE *fp;
-	register enum STYLE style;
-	long off;
-	struct stat *sbp;
+static int
+r_reg(FILE *fp, enum STYLE style, off_t off, struct stat *sbp)
 {
-	register off_t size;
-	register int llen;
-	register char *p;
-	char *start;
+	off_t start, pos, end;
+	int ch;
 
-	if (!(size = sbp->st_size))
-		return;
+	end = sbp->st_size;
+	if (end == 0)
+		return (0);
 
-	if (size > SIZE_T_MAX) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
-		return;
-	}
+	/* Position before char, ignore last char whether newline or not */
+	pos = end-2;
+	ch = EOF;
+	start = 0;
 
-	if ((start = mmap(NULL, (size_t)size,
-	    PROT_READ, 0, fileno(fp), (off_t)0)) == (caddr_t)-1) {
-		err(0, "%s: %s", fname, strerror(EFBIG));
-		return;
-	}
-	p = start + size - 1;
+	if (style == RBYTES && off < end)
+		start = end - off;
 
-	if (style == RBYTES && off < size)
-		size = off;
-
-	/* Last char is special, ignore whether newline or not. */
-	for (llen = 1; --size; ++llen)
-		if (*--p == '\n') {
-			WR(p + 1, llen);
-			llen = 0;
-			if (style == RLINES && !--off) {
-				++p;
-				break;
-			}
+	for (; pos >= start; pos--) {
+		/* A seek per char isn't a problem with a smart stdio */
+		if (fseeko(fp, pos, SEEK_SET) != 0) {
+			ierr();
+			return (0);
 		}
-	if (llen)
-		WR(p, llen);
-	if (munmap(start, (size_t)sbp->st_size))
-		err(0, "%s: %s", fname, strerror(errno));
+		if ((ch = getc(fp)) == '\n') {
+			while (--end > pos) 
+				COPYCHAR(fp, ch);
+			end++;
+			if (style == RLINES && --off == 0)
+				break;
+		}
+		else if (ch == EOF) {
+			ierr();
+			return (0);
+		}
+	}
+	if (pos < start) {
+		if (ch != EOF && ungetc(ch, fp) == EOF) {
+			ierr();
+			return (0);
+		}
+		while (--end >= start)
+			COPYCHAR(fp, ch);
+	}
+	return (0);
 }
 
 typedef struct bf {
@@ -174,9 +184,9 @@ static void
 r_buf(fp)
 	FILE *fp;
 {
-	register BF *mark, *tl, *tr;
-	register int ch, len, llen;
-	register char *p;
+	BF *mark, *tr, *tl = NULL;
+	int ch, len, llen;
+	char *p;
 	off_t enomem;
 
 #define	BSZ	(128 * 1024)
@@ -189,7 +199,7 @@ r_buf(fp)
 		if (enomem || (tl = malloc(sizeof(BF))) == NULL ||
 		    (tl->l = malloc(BSZ)) == NULL) {
 			if (!mark)
-				err(1, "%s", strerror(errno));
+				err(1, NULL);
 			tl = enomem ? tl->next : mark;
 			enomem += tl->len;
 		} else if (mark) {
@@ -197,8 +207,13 @@ r_buf(fp)
 			tl->prev = mark->prev;
 			mark->prev->next = tl;
 			mark->prev = tl;
-		} else
-			mark->next = mark->prev = (mark = tl);
+		} else {
+			mark = tl;
+			mark->next = mark->prev = mark;
+		}
+
+		if (!enomem)
+			tl->len = 0;
 
 		/* Fill the block with input data. */
 		for (p = tl->l, len = 0;
@@ -223,7 +238,7 @@ r_buf(fp)
 
 	if (enomem) {
 		(void)fprintf(stderr,
-		    "tail: warning: %ld bytes discarded\n", enomem);
+		    "tail: warning: %lld bytes discarded\n", (long long)enomem);
 		rval = 1;
 	}
 

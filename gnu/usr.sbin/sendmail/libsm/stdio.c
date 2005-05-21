@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2004 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,7 +13,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: stdio.c,v 1.49 2001/08/28 16:06:59 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: stdio.c,v 1.69 2004/08/03 20:46:34 ca Exp $")
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -24,10 +24,13 @@ SM_RCSID("@(#)$Sendmail: stdio.c,v 1.49 2001/08/28 16:06:59 gshapiro Exp $")
 #include <sm/assert.h>
 #include <sm/varargs.h>
 #include <sm/io.h>
-#include <sm/fdset.h>
 #include <sm/setjmp.h>
 #include <sm/conf.h>
+#include <sm/fdset.h>
 #include "local.h"
+
+static int	sm_stdsetmode __P((SM_FILE_T *, const int *));
+static int	sm_stdgetmode __P((SM_FILE_T *, int *));
 
 /*
 **  Overall:
@@ -63,7 +66,7 @@ sm_stdopen(fp, info, flags, rpool)
 	char *path = (char *) info;
 	int oflags;
 
-	switch (flags)
+	switch (SM_IO_MODE(flags))
 	{
 	  case SM_IO_RDWR:
 		oflags = O_RDWR;
@@ -87,6 +90,10 @@ sm_stdopen(fp, info, flags, rpool)
 		errno = EINVAL;
 		return -1;
 	}
+#ifdef O_BINARY
+	if (SM_IS_BINARY(flags))
+		oflags |= O_BINARY;
+#endif /* O_BINARY */
 	fp->f_file = open(path, oflags,
 			  S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
 	if (fp->f_file < 0)
@@ -221,7 +228,7 @@ sm_stdsetmode(fp, mode)
 {
 	int flags = 0;
 
-	switch (*mode)
+	switch (SM_IO_MODE(*mode))
 	{
 	  case SM_IO_RDWR:
 		flags |= SMRW;
@@ -256,7 +263,7 @@ sm_stdsetmode(fp, mode)
 **		Success: external mode value
 */
 
-int
+static int
 sm_stdgetmode(fp, mode)
 	SM_FILE_T *fp;
 	int *mode;
@@ -338,24 +345,36 @@ sm_stdgetinfo(fp, what, valp)
 	  case SM_IO_WHAT_FD:
 		return fp->f_file;
 
-	  case SM_IO_IS_READABLE:
-		{
-			fd_set readfds;
-			struct timeval timeout;
+	  case SM_IO_WHAT_SIZE:
+	  {
+		  struct stat st;
 
-			FD_ZERO(&readfds);
-			SM_FD_SET(fp->f_file, &readfds);
-			timeout.tv_sec = 0;
-			timeout.tv_usec = 0;
-			if (select(fp->f_file + 1,
-				   FDSET_CAST &readfds,
-				   NULL,
-				   NULL,
-				   &timeout) > 0 &&
-			    SM_FD_ISSET(fp->f_file, &readfds))
-				return 1;
-			return 0;
-		}
+		  if (fstat(fp->f_file, &st) == 0)
+			  return st.st_size;
+		  else
+			  return -1;
+	  }
+
+	  case SM_IO_IS_READABLE:
+	  {
+		  fd_set readfds;
+		  struct timeval timeout;
+
+		  if (SM_FD_SETSIZE > 0 && fp->f_file >= SM_FD_SETSIZE)
+		  {
+			  errno = EINVAL;
+			  return -1;
+		  }
+		  FD_ZERO(&readfds);
+		  SM_FD_SET(fp->f_file, &readfds);
+		  timeout.tv_sec = 0;
+		  timeout.tv_usec = 0;
+		  if (select(fp->f_file + 1, FDSET_CAST &readfds,
+			     NULL, NULL, &timeout) > 0 &&
+		      SM_FD_ISSET(fp->f_file, &readfds))
+			  return 1;
+		  return 0;
+	  }
 
 	  default:
 		errno = EINVAL;
@@ -364,19 +383,19 @@ sm_stdgetinfo(fp, what, valp)
 }
 
 /*
-**  SM_STDFDOPEN -- open file by primative 'fd' rather than pathname
+**  SM_STDFDOPEN -- open file by primitive 'fd' rather than pathname
 **
 **	I/O function to handle fdopen() stdio equivalence. The rest of
 **	the functions are the same as the sm_stdopen() above.
 **
 **	Parameters:
 **		fp -- the file pointer to be associated with the open
-**		name -- the primative file descriptor for association
+**		name -- the primitive file descriptor for association
 **		flags -- indicates type of access methods
 **		rpool -- ignored
 **
 **	Results:
-**		Success: primative file descriptor value
+**		Success: primitive file descriptor value
 **		Failure: -1 and sets errno
 */
 
@@ -388,9 +407,9 @@ sm_stdfdopen(fp, info, flags, rpool)
 	int flags;
 	const void *rpool;
 {
-	int oflags, tmp, fdflags, fd = (int) info;
+	int oflags, tmp, fdflags, fd = *((int *) info);
 
-	switch (flags)
+	switch (SM_IO_MODE(flags))
 	{
 	  case SM_IO_RDWR:
 		oflags = O_RDWR | O_CREAT;
@@ -411,11 +430,14 @@ sm_stdfdopen(fp, info, flags, rpool)
 		errno = EINVAL;
 		return -1;
 	}
+#ifdef O_BINARY
+	if (SM_IS_BINARY(flags))
+		oflags |= O_BINARY;
+#endif /* O_BINARY */
 
 	/* Make sure the mode the user wants is a subset of the actual mode. */
 	if ((fdflags = fcntl(fd, F_GETFL, 0)) < 0)
 		return -1;
-
 	tmp = fdflags & O_ACCMODE;
 	if (tmp != O_RDWR && (tmp != (oflags & O_ACCMODE)))
 	{

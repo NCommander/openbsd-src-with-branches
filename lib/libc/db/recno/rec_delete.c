@@ -1,4 +1,4 @@
-/*	$NetBSD: rec_delete.c,v 1.7 1995/02/27 13:24:48 cgd Exp $	*/
+/*	$OpenBSD: rec_delete.c,v 1.7 2003/06/02 20:18:34 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,9 +34,9 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 #if 0
-static char sccsid[] = "@(#)rec_delete.c	8.6 (Berkeley) 6/4/94";
+static char sccsid[] = "@(#)rec_delete.c	8.7 (Berkeley) 7/14/94";
 #else
-static char rcsid[] = "$NetBSD: rec_delete.c,v 1.7 1995/02/27 13:24:48 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: rec_delete.c,v 1.7 2003/06/02 20:18:34 millert Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -53,7 +49,7 @@ static char rcsid[] = "$NetBSD: rec_delete.c,v 1.7 1995/02/27 13:24:48 cgd Exp $
 #include <db.h>
 #include "recno.h"
 
-static int rec_rdelete __P((BTREE *, recno_t));
+static int rec_rdelete(BTREE *, recno_t);
 
 /*
  * __REC_DELETE -- Delete the item(s) referenced by a key.
@@ -94,13 +90,13 @@ __rec_delete(dbp, key, flags)
 		status = rec_rdelete(t, nrec);
 		break;
 	case R_CURSOR:
-		if (!ISSET(t, B_SEQINIT))
+		if (!F_ISSET(&t->bt_cursor, CURS_INIT))
 			goto einval;
 		if (t->bt_nrecs == 0)
 			return (RET_SPECIAL);
-		status = rec_rdelete(t, t->bt_rcursor - 1);
+		status = rec_rdelete(t, t->bt_cursor.rcursor - 1);
 		if (status == RET_SUCCESS)
-			--t->bt_rcursor;
+			--t->bt_cursor.rcursor;
 		break;
 	default:
 einval:		errno = EINVAL;
@@ -108,7 +104,7 @@ einval:		errno = EINVAL;
 	}
 
 	if (status == RET_SUCCESS)
-		SET(t, B_MODIFIED | R_MODIFIED);
+		F_SET(t, B_MODIFIED | R_MODIFIED);
 	return (status);
 }
 
@@ -151,16 +147,16 @@ rec_rdelete(t, nrec)
  *
  * Parameters:
  *	t:	tree
- *	index:	index on current page to delete
+ *	idx:	index on current page to delete
  *
  * Returns:
  *	RET_SUCCESS, RET_ERROR.
  */
 int
-__rec_dleaf(t, h, index)
+__rec_dleaf(t, h, idx)
 	BTREE *t;
 	PAGE *h;
-	u_int32_t index;
+	u_int32_t idx;
 {
 	RLEAF *rl;
 	indx_t *ip, cnt, offset;
@@ -178,7 +174,7 @@ __rec_dleaf(t, h, index)
 	 * down, overwriting the deleted record and its index.  If the record
 	 * uses overflow pages, make them available for reuse.
 	 */
-	to = rl = GETRLEAF(h, index);
+	to = rl = GETRLEAF(h, idx);
 	if (rl->flags & P_BIGDATA && __ovfl_delete(t, rl->bytes) == RET_ERROR)
 		return (RET_ERROR);
 	nbytes = NRLEAF(rl);
@@ -191,8 +187,8 @@ __rec_dleaf(t, h, index)
 	memmove(from + nbytes, from, (char *)to - from);
 	h->upper += nbytes;
 
-	offset = h->linp[index];
-	for (cnt = &h->linp[index] - (ip = &h->linp[0]); cnt--; ++ip)
+	offset = h->linp[idx];
+	for (cnt = &h->linp[idx] - (ip = &h->linp[0]); cnt--; ++ip)
 		if (ip[0] < offset)
 			ip[0] += nbytes;
 	for (cnt = &h->linp[NEXTINDEX(h)] - ip; --cnt; ++ip)

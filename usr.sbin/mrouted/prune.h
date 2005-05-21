@@ -1,4 +1,4 @@
-/*	$NetBSD: prune.h,v 1.2 1995/10/09 03:51:52 thorpej Exp $	*/
+/*	$NetBSD: prune.h,v 1.3 1995/12/10 10:07:11 mycroft Exp $	*/
 
 /*
  * The mrouted program is covered by the license in the accompanying file
@@ -30,12 +30,15 @@ struct gtable {
     u_char	    gt_ttls[MAXVIFS];	/* ttl vector for forwarding        */
     vifbitmap_t	    gt_grpmems;		/* forw. vifs for src, grp          */
     int		    gt_prsent_timer;	/* prune timer for this group	    */
-    int  	    gt_timer;		/* timer for this group entry	    */
-    time_t 	    gt_ctime;		/* time of entry creation         */
+    int		    gt_timer;		/* timer for this group entry	    */
+    time_t	    gt_ctime;		/* time of entry creation         */
     u_char	    gt_grftsnt;		/* graft sent/retransmit timer	    */
     struct stable  *gt_srctbl;		/* source table			    */
     struct ptable  *gt_pruntbl;		/* prune table			    */
     struct rtentry *gt_route;		/* parent route			    */
+#ifdef RSRR
+    struct rsrr_cache *gt_rsrr_cache;	/* RSRR cache                       */
+#endif /* RSRR */
 };
 
 /*
@@ -43,9 +46,9 @@ struct gtable {
  *
  * When source-based prunes exist, there will be a struct ptable here as well.
  */
-struct stable 
+struct stable
 {
-    struct stable  *st_next;       	/* pointer to the next entry        */
+    struct stable  *st_next;		/* pointer to the next entry        */
     u_int32_t	    st_origin;		/* host origin of multicasts        */
     u_long	    st_pktcnt;		/* packet count for src-grp entry   */
 };
@@ -53,7 +56,7 @@ struct stable
 /*
  * structure to store incoming prunes.  Can hang off of either group or source.
  */
-struct ptable 
+struct ptable
 {
     struct ptable  *pt_next;		/* pointer to the next entry	    */
     u_int32_t	    pt_router;		/* router that sent this prune	    */
@@ -127,8 +130,8 @@ struct tr_resp {
 
 #define MASK_TO_VAL(x, i) { \
 			u_int32_t _x = ntohl(x); \
-			(i) = 0; \
-			while ((_x) << (i)) \
+			(i) = 1; \
+			while ((_x) <<= 1) \
 				(i)++; \
 			};
 

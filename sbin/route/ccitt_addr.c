@@ -1,3 +1,4 @@
+/*	$OpenBSD: ccitt_addr.c,v 1.8 2003/06/26 16:35:21 deraadt Exp $	*/
 /*	$NetBSD: ccitt_addr.c,v 1.8 1995/04/23 10:33:41 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -54,18 +51,21 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include <netccitt/x25.h>
 
-static char *copychar ();
+#include <stdlib.h>
+#include <string.h>
 
-ccitt_addr (addr, xp)
-char *addr;
-register struct sockaddr_x25 *xp;
+static char *copychar(char *, char *);
+
+int
+ccitt_addr(char *addr, struct sockaddr_x25 *xp)
 {
-	register char *p, *ap, *limit;
+	char *p, *ap, *limit;
 	int havenet = 0;
 
-	memset(xp, 0, sizeof (*xp));
+	memset(xp, 0, sizeof(*xp));
 	xp->x25_family = AF_CCITT;
 	xp->x25_len = sizeof(*xp);
 	p = addr;
@@ -94,7 +94,7 @@ register struct sockaddr_x25 *xp;
 	 */
 
 	ap = xp->x25_addr;
-	limit = ap + sizeof (xp->x25_addr) - 1;
+	limit = ap + sizeof(xp->x25_addr) - 1;
 	while (*p) {
 		if (*p == ',')
 			break;
@@ -102,7 +102,7 @@ register struct sockaddr_x25 *xp;
 			if (havenet)
 				return (0);
 			havenet++;
-			xp->x25_net = atoi (xp->x25_addr);
+			xp->x25_net = atoi(xp->x25_addr);
 			p++;
 			ap = xp->x25_addr;
 			*ap = '\0';
@@ -122,14 +122,14 @@ register struct sockaddr_x25 *xp;
 
 	p++;
 	ap = xp->x25_udata + 4;		/* first four bytes are protocol id */
-	limit = ap + sizeof (xp->x25_udata) - 4;
+	limit = ap + sizeof(xp->x25_udata) - 4;
 	xp->x25_udlen = 4;
 	while (*p) {
 		if (*p == ',')
 			break;
 		if (ap >= limit)
 			return (0);
-		p = copychar (p, ap++);
+		p = copychar(p, ap++);
 		xp->x25_udlen++;
 	}
 	if (xp->x25_udlen == 4)
@@ -145,7 +145,7 @@ register struct sockaddr_x25 *xp;
 			return (0);
 		if (ap >= limit)
 			return (0);
-		p = copychar (p, ap++);
+		p = copychar(p, ap++);
 	}
 	if (xp->x25_udlen == 0)
 		xp->x25_udlen = ap - xp->x25_udata;
@@ -153,10 +153,9 @@ register struct sockaddr_x25 *xp;
 }
 
 static char *
-copychar (from, to)
-register char *from, *to;
+copychar(char *from, char *to)
 {
-	register int n;
+	int n;
 
 	if (*from != '\\' || from[1] < '0' || from[1] > '7') {
 		*to = *from++;
@@ -165,7 +164,7 @@ register char *from, *to;
 	n = *++from - '0';
 	from++;
 	if (*from >= '0' && *from <= '7') {
-		register int n1;
+		int n1;
 
 		n = n*8 + *from++ - '0';
 		if (*from >= '0' && *from <= '7' && (n1 = n*8 + *from-'0') < 256) {

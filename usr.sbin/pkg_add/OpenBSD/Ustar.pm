@@ -1,88 +1,58 @@
-# $OpenBSD: Ustar.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: Ustar.pm,v 1.14 2004/12/13 18:50:23 espie Exp $
 #
-# Copyright (c) 2002 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2002-2004 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # Handle utar archives
-
-# Prototype of new pkg* implementation, tar module.
-# Interface is likely to change A LOT in the near future...
 
 use strict;
 use warnings;
 package OpenBSD::Ustar;
-# helps autoloader
-sub DESTROY
-{
-}
 
-use constant FILE => "\0";
-use constant FILE1 => '0';
-use constant HARDLINK => '1';
-use constant SOFTLINK => '2';
-use constant CHARDEVICE => '3';
-use constant BLOCKDEVICE => '4';
-use constant DIR => '5';
-use constant FIFO => '6';
-use constant CONTFILE => '7';
+use constant {
+	FILE => "\0",
+	FILE1 => '0',
+	HARDLINK => '1',
+	SOFTLINK => '2',
+	CHARDEVICE => '3',
+	BLOCKDEVICE => '4',
+	DIR => '5',
+	FIFO => '6',
+	CONTFILE => '7',
+	USTAR_HEADER => 'a100a8a8a8a12a12a8aa100a6a2a32a32a8a8a155',
+};
+
 use File::Path ();
 use File::Basename ();
+use OpenBSD::IdCache;
 
-my $uidcache = {};
-my $gidcache = {};
+my $uidcache = new OpenBSD::UidCache;
+my $gidcache = new OpenBSD::GidCache;
+
+# This is a multiple of st_blksize everywhere....
 my $buffsize = 2 * 1024 * 1024;
 
 sub new
 {
-    my ($class, $fh) = @_;
+    my ($class, $fh, $destdir) = @_;
 
-    return bless { fh => $fh, swallow => 0, unput => 0} , $class;
+    $destdir = '' unless defined $destdir;
+
+    return bless { fh => $fh, swallow => 0, destdir => $destdir} , $class;
 }
 
-
-sub name2uid
-{
-	my $name = shift;
-	return $uidcache->{$name} if defined $uidcache->{$name};
-	my @entry = getpwnam($name);
-	if (@entry == 0) {
-		return $uidcache->{$name} = shift;
-	} else {
-		return $uidcache->{$name} = $entry[2];
-	}
-}
-
-sub name2gid
-{
-	my $name = shift;
-	return $gidcache->{$name} if defined $gidcache->{$name};
-	my @entry = getgrnam($name);
-	if (@entry == 0) {
-		return $gidcache->{$name} = shift;
-	} else {
-		return $gidcache->{$name} = $entry[2];
-	}
-}
 
 sub skip
 {
@@ -98,19 +68,9 @@ sub skip
     $self->{swallow} = 0;
 }
 
-sub unput
-{
-    my $self = shift;
-    $self->{unput} = 1;
-}
-
 sub next
 {
     my $self = shift;
-    if ($self->{unput}) {
-    	$self->{unput} = 0;
-	return $self->{current};
-    }
     # get rid of the current object
     $self->skip();
     my $header;
@@ -124,7 +84,7 @@ sub next
     # decode header
     my ($name, $mode, $uid, $gid, $size, $mtime, $chksum, $type,
     $linkname, $magic, $version, $uname, $gname, $major, $minor,
-    $prefix) = unpack('a100a8a8a8a12a12a8aa100a6a2a32a32a8a8a155', $header);
+    $prefix) = unpack(USTAR_HEADER, $header);
     if ($magic ne "ustar\0" || $version ne '00') {
 	die "Not an ustar archive header";
     }
@@ -139,10 +99,11 @@ sub next
     $mode = oct($mode) & 0xfff;
     $uname =~ s/\0*$//;
     $gname =~ s/\0*$//;
+    $linkname =~ s/\0*$//;
     $uid = oct($uid);
     $gid = oct($gid);
-    $uid = name2uid($uname, $uid);
-    $gid = name2gid($uname, $gid);
+    $uid = $uidcache->lookup($uname, $uid);
+    $gid = $gidcache->lookup($gname, $gid);
     $mtime = oct($mtime);
     unless ($prefix =~ m/^\0/) {
 	$prefix =~ s/\0*$//;
@@ -160,7 +121,8 @@ sub next
 	gname => $gname,
 	gid => $gid,
 	size => $size,
-	archive => $self
+	archive => $self,
+	destdir => $self->{destdir}
 	};
     # adjust swallow
     $self->{swallow} = $size;
@@ -178,22 +140,60 @@ sub next
     } else {
     	die "Unsupported type";
     }
-    $self->{current} = $result;
     return $result;
 }
+
+sub mkheader
+{
+	my ($entry, $type) = @_;
+	my ($name, $prefix);
+	if (length($name) < 100) {
+		$prefix = '';
+	} elsif (length($name) > 255) {
+		die "Can't fit such a name $name\n";
+	} elsif ($name =~ m|^(.*)/(.{,100})$|) {
+		$prefix = $1;
+		$name = $2;
+	} else {
+		die "Can't fit such a name $name\n";
+	}
+	my $header;
+	my $cksum = ' 'x8;
+	for (1 .. 2) {
+		$header = pack(USTAR_HEADER, 
+		    $name,
+		    sprintf("%o", $entry->{mode}),
+		    sprintf("%o", $entry->{uid}),
+		    sprintf("%o", $entry->{gid}),
+		    sprintf("%o", $entry->{size}),
+		    sprintf("%o", $entry->{mtime}),
+		    $cksum,
+		    $type,
+		    $entry->{linkname},
+		    'ustar', '00',
+		    $entry->{uname},
+		    $entry->{gname},
+		    '0', '0',
+		    $prefix);
+		$cksum = unpack("%C*", $header);
+	}
+	return $header;
+}
+
 
 package OpenBSD::Ustar::Object;
 sub set_modes
 {
 	my $self = shift;
-	chmod $self->{mode}, $self->{name};
-	chown $self->{uid}, $self->{gid}, $self->{name};
+	chown $self->{uid}, $self->{gid}, $self->{destdir}.$self->{name};
+	chmod $self->{mode}, $self->{destdir}.$self->{name};
+	utime $self->{mtime}, $self->{mtime}, $self->{destdir}.$self->{name};
 }
 
 sub make_basedir
 {
 	my $self = shift;
-	my $dir = File::Basename::dirname($self->{name});
+	my $dir = $self->{destdir}.File::Basename::dirname($self->{name});
 	File::Path::mkpath($dir) unless -d $dir;
 }
 
@@ -209,7 +209,7 @@ our @ISA=qw(OpenBSD::Ustar::Object);
 sub create
 {
 	my $self = shift;
-	File::Path::mkpath($self->{name});
+	File::Path::mkpath($self->{destdir}.$self->{name});
 	$self->SUPER::set_modes();
 }
 
@@ -222,11 +222,12 @@ sub create
 {
 	my $self = shift;
 	$self->make_basedir($self->{name});
+	my $linkname = $self->{linkname};
 	if (defined $self->{cwd}) {
-		link $self->{cwd}."/".$self->{linkname}, $self->{name};
-	} else {
-		link $self->{linkname}, $self->{name};
+		$linkname=$self->{cwd}.'/'.$linkname;
 	}
+	link $self->{destdir}.$linkname, $self->{destdir}.$self->{name} or
+	    die "Can't link $self->{destdir}$linkname to $self->{destdir}$self->{name}: $!";
 }
 
 sub isLink() { 1 }
@@ -239,38 +240,106 @@ sub create
 {
 	my $self = shift;
 	$self->make_basedir($self->{name});
-	symlink $self->{linkname}, $self->{name};
+	symlink $self->{linkname}, $self->{destdir}.$self->{name} or 
+	    die "Can't symlink $self->{linkname} to $self->{destdir}$self->{name}: $!";
 }
 
 sub isLink() { 1 }
-sub isHardLink() { 1 }
+sub isSymLink() { 1 }
+
+package OpenBSD::CompactWriter;
+
+use constant {
+	FH => 0,
+	BS => 1,
+	ZEROES => 2,
+	UNFINISHED => 3,
+};
+
+sub new
+{
+	my ($class, $fname) = @_;
+	open (my $out, '>', $fname);
+	if (!defined $out) {
+		return undef;
+	}
+	my $bs = (stat $out)[11];
+	my $zeroes;
+	if (defined $bs) {
+		$zeroes = "\x00"x$bs;
+	}
+	bless [ $out, $bs, $zeroes, 0 ], $class;
+}
+
+sub write
+{
+	my ($self, $buffer) = @_;
+	my ($fh, $bs, $zeroes, $e) = @$self;
+START:
+	if (defined $bs) {
+		for (my $i = 0; $i + $bs <= length($buffer); $i+= $bs) {
+			if (substr($buffer, $i, $bs) eq $zeroes) {
+				defined(syswrite($fh, $buffer, $i)) or return 0;
+				$i+=$bs;
+				my $seek_forward = $bs;
+				while (substr($buffer, $i, $bs) eq $zeroes) {
+					$i += $bs;
+					$seek_forward += $bs;
+				}
+				defined(sysseek($fh, $seek_forward, 1)) 
+				    or return 0;
+				$buffer = substr($buffer, $i);
+				if (length $buffer == 0) {
+					$self->[UNFINISHED] = 1;
+					return 1;
+				}
+				goto START;
+			}
+		}
+	}
+	$self->[UNFINISHED] = 0;
+	defined(syswrite($fh, $buffer)) or return 0;
+	return 1;
+}
+
+sub close
+{
+	my ($self) = @_;
+	if ($self->[UNFINISHED]) {
+		defined(sysseek($self->[FH], -1, 1)) or return 0;
+		defined(syswrite($self->[FH], "\0")) or return 0;
+	}
+	return 1;
+}
 
 package OpenBSD::Ustar::File;
 our @ISA=qw(OpenBSD::Ustar::Object);
-
-use IO::File;
 
 sub create
 {
 	my $self = shift;
 	$self->make_basedir($self->{name});
-	my $out = new IO::File $self->{name}, "w";
-	if (!defined $out) {
-		print "Can't write to ", $self->{name}, "\n";
-		return;
-	}
-	$self->SUPER::set_modes();
 	my $buffer;
+	my $out = OpenBSD::CompactWriter->new($self->{destdir}.$self->{name});
+	if (!defined $out) {
+		die "Can't write to $self->{destdir}$self->{name}: $!";
+	}
 	my $toread = $self->{size};
 	while ($toread > 0) {
 		my $maxread = $buffsize;
 		$maxread = $toread if $maxread > $toread;
-		read($self->{archive}->{fh}, $buffer, $maxread);
+		if (!defined read($self->{archive}->{fh}, $buffer, $maxread)) {
+			die "Error reading from archive: $!";
+		}
 		$self->{archive}->{swallow} -= $maxread;
-		print $out $buffer;
+		unless ($out->write($buffer)) {
+			die "Error writing to $self->{destdir}$self->{name}: $!";
+		}
+			
 		$toread -= $maxread;
 	}
-	$out->close();
+	$out->close() or die "Error closing $self->{destdir}$self->{name}: $!";
+	$self->SUPER::set_modes();
 }
 
 sub isFile() { 1 }

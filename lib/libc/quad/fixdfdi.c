@@ -1,5 +1,3 @@
-/*	$NetBSD: fixdfdi.c,v 1.2 1995/02/27 17:29:54 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -16,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fixdfdi.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: fixdfdi.c,v 1.2 1995/02/27 17:29:54 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: fixdfdi.c,v 1.3 2003/06/02 20:18:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include "quad.h"
@@ -52,8 +42,7 @@ static char rcsid[] = "$NetBSD: fixdfdi.c,v 1.2 1995/02/27 17:29:54 cgd Exp $";
  * We clamp anything that is out of range.
  */
 quad_t
-__fixdfdi(x)
-	double x;
+__fixdfdi(double x)
 {
 	if (x < 0)
 		if (x <= QUAD_MIN)

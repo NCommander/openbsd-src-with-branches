@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: memc.c,v 1.10 2004/04/24 19:51:48 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -31,11 +26,9 @@
  */
 
 /*
- * MEMC chip
- * XXX:
- * the databooks say that you should only ever access the higher-numbered
- * MEMC chip's control & status registers. this is strange. I disobey the
- * rules, hopefully there won't be any spanking.
+ * MEMC/MCECC chips
+ * these chips are rather similar in appearance except that the MEMC
+ * does parity while the MCECC does ECC.
  */
 #include <sys/param.h>
 #include <sys/conf.h>
@@ -44,45 +37,53 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
 #include <sys/fcntl.h>
 #include <sys/device.h>
-#include <machine/cpu.h>
+
 #include <machine/autoconf.h>
+#include <machine/cpu.h>
+
 #include <dev/cons.h>
 
 #include <mvme88k/dev/memcreg.h>
 
 struct memcsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
 	struct memcreg *sc_memc;
 	struct intrhand	sc_ih;
 };
 
-void memcattach __P((struct device *, struct device *, void *));
-int  memcmatch __P((struct device *, void *, void *));
+void memcattach(struct device *, struct device *, void *);
+int  memcmatch(struct device *, void *, void *);
 
-struct cfdriver memccd = {
-	NULL, "memc", memcmatch, memcattach,
-	DV_DULL, sizeof(struct memcsoftc), 0
+struct cfattach memc_ca = {
+	sizeof(struct memcsoftc), memcmatch, memcattach
 };
+
+struct cfdriver memc_cd = {
+	NULL, "memc", DV_DULL
+};
+
+#if 0
+int memcintr(struct frame *frame);
+#endif
 
 int
 memcmatch(parent, vcf, args)
 	struct device *parent;
 	void *vcf, *args;
 {
-	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
-	struct memcreg *memc = (struct memcreg *)ca->ca_vaddr;
+	struct memcreg *memc = (struct memcreg *)ca->ca_paddr;
 
-	if (badvaddr(memc, 4) || memc->memc_chipid != MEMC_CHIPID)
+	if (badvaddr((vaddr_t)memc, 4))
 		return (0);
-	return (1);
+	if (memc->memc_chipid==MEMC_CHIPID || memc->memc_chipid==MCECC_CHIPID)
+		return (1);
+	return (0);
 }
 
 void
@@ -93,19 +94,35 @@ memcattach(parent, self, args)
 	struct confargs *ca = args;
 	struct memcsoftc *sc = (struct memcsoftc *)self;
 
-	/*
-	 * since we know ourself to land in intiobase land,
-	 * we must adjust our address
-	 */
-	sc->sc_memc = (struct memcreg *)sc->sc_vaddr;
+	sc->sc_memc = (struct memcreg *)ca->ca_paddr;
 
-	printf(": rev %d, unsupported\n", sc->sc_memc->memc_chiprev);
+	printf(": %s rev %d",
+	    (sc->sc_memc->memc_chipid == MEMC_CHIPID) ? "MEMC040" : "MCECC",
+	    sc->sc_memc->memc_chiprev);
 
 #if 0
-	sc->sc_nmiih.ih_fn = memcabort;
-	sc->sc_nmiih.ih_arg = 0;
-	sc->sc_nmiih.ih_ipl = 7;
-	sc->sc_nmiih.ih_wantframe = 1;
-	mcintr_establish(xxx, &sc->sc_nmiih);
+	sc->sc_ih.ih_fn = memcintr;
+	sc->sc_ih.ih_arg = 0;
+	sc->sc_ih.ih_wantframe = 1;
+	sc->sc_ih.ih_ipl = 7;
+	mcintr_establish(xxx, &sc->sc_ih, self->dv_xname);
 #endif
+
+	switch (sc->sc_memc->memc_chipid) {
+	case MEMC_CHIPID:
+		break;
+	case MCECC_CHIPID:
+		break;
+	}
+
+	printf("\n");
 }
+
+#if 0
+int
+memcintr(eframe)
+	void *eframe;
+{
+	return (0);
+}
+#endif

@@ -1,42 +1,62 @@
+#	$OpenBSD: Makefile,v 1.7 2003/05/30 19:03:24 drahn Exp $
 #	from: @(#)Makefile	5.5 (Berkeley) 5/21/91
-#	$Id: Makefile,v 1.8 1995/09/29 11:23:21 pk Exp $
 
-CFLAGS+=	-DLIBC_SCCS -I${.CURDIR}/..
-OBJS=		crt0.o gcrt0.o scrt0.o
-SRCS=		crt0.c
+CFLAGS+=	-DLIBC_SCCS
+OBJS=		crt0.o gcrt0.o crtbegin.o crtend.o crtbeginS.o crtendS.o
+SRCS=		crt0.c crtbegin.c crtbeginS.c crtend.c crtendS.c
+
+ELFDIR=		${.CURDIR}/../common_elf
+.PATH:		${ELFDIR}
+CFLAGS+=	-I${ELFDIR} -I${.CURDIR}
+
+PICFLAG?=-fPIC
 
 all: ${OBJS}
 
-crt0.o: ${SRCS}
-	@echo "${COMPILE.c} -DCRT0 -DDYNAMIC ${.CURDIR}/${SRCS} -o ${.TARGET}"
-	@${COMPILE.c} -DCRT0 -DDYNAMIC ${.CURDIR}/${SRCS} -o ${.TARGET}.o
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
+crt0.o: crt0.c
+	@echo ${COMPILE.c} -DCRT0 ${.CURDIR}/crt0.c -o ${.TARGET}
+	@${COMPILE.c} -DCRT0 ${.CURDIR}/crt0.c -o ${.TARGET}.o
+	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 
-gcrt0.o: ${SRCS}
-	@echo "${COMPILE.c} -DMCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}"
-	@${COMPILE.c} -DMCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}.o
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
+gcrt0.o: crt0.c
+	@echo ${COMPILE.c} -DMCRT0 ${.CURDIR}/crt0.c -o ${.TARGET}
+	@${COMPILE.c} -DMCRT0 ${.CURDIR}/crt0.c -o ${.TARGET}.o
+	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 
-scrt0.o: ${SRCS}
-	@echo "${COMPILE.c} -DSCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}"
-	@${COMPILE.c} -DSCRT0 ${.CURDIR}/${SRCS} -o ${.TARGET}.o
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
+crtbegin.o: crtbegin.c
+	@echo ${COMPILE.c} ${ELFDIR}/crtbegin.c -o ${.TARGET}
+	@${COMPILE.c} ${ELFDIR}/crtbegin.c -o ${.TARGET}.o
+	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 
-install:
-	install ${COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
+crtbeginS.o: crtbeginS.c
+	@echo ${COMPILE.c} ${PICFLAG} ${ELFDIR}/crtbeginS.c -o ${.TARGET}
+	@${COMPILE.c} ${PICFLAG} ${ELFDIR}/crtbeginS.c -o ${.TARGET}.o
+	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
+	@rm -f ${.TARGET}.o
+
+crtend.o: crtend.c
+	@echo ${COMPILE.c} ${ELFDIR}/crtend.c -o ${.TARGET}
+	@${COMPILE.c} ${ELFDIR}/crtend.c -o ${.TARGET}.o
+	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
+	@rm -f ${.TARGET}.o
+
+crtendS.o: crtendS.c
+	@echo ${COMPILE.c} ${PICFLAG} ${ELFDIR}/crtendS.c -o ${.TARGET}
+	@${COMPILE.c} ${PICFLAG} ${ELFDIR}/crtendS.c -o ${.TARGET}.o
+	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
+	@rm -f ${.TARGET}.o
+
+realinstall:
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 
-.if make(depend)
-CPPFLAGS+= -DDYNAMIC
-.endif
-
-afterdepend: .depend
+afterdepend:: .depend
 	@(TMP=/tmp/_depend$$$$; \
-		sed -e 's/^\([^\.]*\).o[ ]*:/\1.o g\1.o s\1.o:/' \
-		< .depend > $$TMP; \
+	    sed -e 's/^\([^\.]*\).o[ ]*:/\1.o g\1.o:/' \
+	    < .depend > $$TMP; \
 	mv $$TMP .depend)
 
 .include <bsd.prog.mk>

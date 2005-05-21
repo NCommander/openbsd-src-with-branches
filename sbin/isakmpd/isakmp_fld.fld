@@ -1,7 +1,8 @@
-#	$Id: isakmp_fld.fld,v 1.3 1998/08/03 23:26:45 niklas Exp $
+#	$OpenBSD: isakmp_fld.fld,v 1.7 2003/06/03 14:28:16 ho Exp $
+#	$EOM: isakmp_fld.fld,v 1.5 1999/04/25 13:38:22 niklas Exp $
 
 #
-# Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+# Copyright (c) 1998, 2001 Niklas Hallqvist.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -11,11 +12,6 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by Ericsson Radio Systems.
-# 4. The name of the author may not be used to endorse or promote products
-#    derived from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 # IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -57,7 +53,7 @@ ISAKMP_GEN
 
 # ISAKMP data attributes
 ISAKMP_ATTR
-  TYPE			num 2
+  TYPE			num 2		ike_attr_cst,ipsec_attr_cst
   LENGTH_VALUE		num 2
   VALUE			raw
 .
@@ -129,7 +125,7 @@ ISAKMP_NOTIFY : ISAKMP_GEN
   DOI			cst 4		isakmp_doi_cst,ipsec_doi_cst
   PROTO			cst 1		isakmp_proto_cst
   SPI_SZ		num 1
-  MSG_TYPE		cst 2		isakmp_notify_cst
+  MSG_TYPE		cst 2		isakmp_notify_cst,ipsec_notify_cst
   SPI			raw
 .
 
@@ -145,4 +141,24 @@ ISAKMP_DELETE : ISAKMP_GEN
 # Vendor ID payload.
 ISAKMP_VENDOR : ISAKMP_GEN
   ID			raw
+.
+
+# Attribute payload.
+ISAKMP_ATTRIBUTE : ISAKMP_GEN
+  TYPE			num 1		isakmp_cfg_cst
+  RESERVED		ign 1
+  ID			num 2
+  ATTRS			raw
+.
+
+# NAT Discovery payload.
+ISAKMP_NAT_D : ISAKMP_GEN
+  DATA			raw
+.
+
+# NAT Original Address payload.
+ISAKMP_NAT_OA : ISAKMP_GEN
+  TYPE			num 1
+  RESERVED		ign 3
+  DATA			raw
 .

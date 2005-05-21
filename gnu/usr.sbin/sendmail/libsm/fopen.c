@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002, 2004 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,7 +13,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: fopen.c,v 1.55 2001/08/27 18:38:17 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: fopen.c,v 1.61 2004/08/03 20:17:38 ca Exp $")
 #include <errno.h>
 #include <setjmp.h>
 #include <sys/time.h>
@@ -24,6 +24,8 @@ SM_RCSID("@(#)$Sendmail: fopen.c,v 1.55 2001/08/27 18:38:17 gshapiro Exp $")
 #include <sm/clock.h>
 #include "local.h"
 
+static void	openalrm __P((int));
+static void	reopenalrm __P((int));
 extern int      sm_io_fclose __P((SM_FILE_T *));
 
 static jmp_buf OpenTimeOut, ReopenTimeOut;
@@ -54,7 +56,7 @@ openalrm(sig)
 {
 	longjmp(OpenTimeOut, 1);
 }
-/*
+/*
 **  REOPENALRM -- handler when timeout activated for sm_io_reopen()
 **
 **  Returns flow of control to where setjmp(ReopenTimeOut) was set.
@@ -117,8 +119,9 @@ sm_io_open(type, timeout, info, flags, rpool)
 
 	if (ioflags == 0)
 	{
+		/* must give some indication/intent */
 		errno = EINVAL;
-		return NULL; /* must give some indication/intent */
+		return NULL;
 	}
 
 	if (timeout == SM_TIME_DEFAULT)
@@ -160,7 +163,7 @@ sm_io_open(type, timeout, info, flags, rpool)
 
 	return fp;
 }
-/*
+/*
 **  SM_IO_DUP -- duplicate a file pointer
 **
 **	Parameters:
@@ -196,7 +199,7 @@ sm_io_dup(fp)
 	fp->f_dup_cnt++;
 	return fp;
 }
-/*
+/*
 **  SM_IO_REOPEN -- open a new file using the old file pointer
 **
 **	Parameters:
@@ -312,7 +315,7 @@ sm_io_reopen(type, timeout, info, flags, rpool, fp)
 
 	return fp2;
 }
-/*
+/*
 **  SM_IO_AUTOFLUSH -- link another file to this for auto-flushing
 **
 **	When a read occurs on fp, fp2 will be flushed iff there is no
@@ -341,7 +344,7 @@ sm_io_autoflush(fp, fp2)
 	fp->f_flushfp = fp2;
 	return savefp;
 }
-/*
+/*
 **  SM_IO_AUTOMODE -- link another file to this for auto-moding
 **
 **	When the mode (blocking or non-blocking) changes for fp1 then

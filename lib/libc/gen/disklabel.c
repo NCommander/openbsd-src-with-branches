@@ -1,5 +1,3 @@
-/*	$NetBSD: disklabel.c,v 1.11 1995/06/07 13:14:09 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)disklabel.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: disklabel.c,v 1.11 1995/06/07 13:14:09 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: disklabel.c,v 1.8 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -54,12 +44,10 @@ static char rcsid[] = "$NetBSD: disklabel.c,v 1.11 1995/06/07 13:14:09 cgd Exp $
 #include <string.h>
 #include <unistd.h>
 
-static void	error __P((int));
-static int	gettype __P((char *, char **));
+static int	gettype(char *, char **);
 
 struct disklabel *
-getdiskbyname(name)
-	const char *name;
+getdiskbyname(const char *name)
 {
 	static struct	disklabel disk;
 	register struct	disklabel *dp = &disk;
@@ -98,7 +86,7 @@ getdiskbyname(name)
 		dp->d_flags |= D_BADSECT;
 
 #define getnumdflt(field, dname, dflt) \
-        { long f; (field) = (cgetnum(buf, dname, &f) == -1) ? (dflt) : f; }
+	{ long f; (field) = (cgetnum(buf, dname, &f) == -1) ? (dflt) : f; }
 #define	getnum(field, dname) \
 	{ long f; cgetnum(buf, dname, &f); field = f; }
 
@@ -121,11 +109,11 @@ getdiskbyname(name)
 	getnumdflt(dp->d_trkseek, "ts", 0);
 	getnumdflt(dp->d_bbsize, "bs", BBSIZE);
 	getnumdflt(dp->d_sbsize, "sb", SBSIZE);
-	strcpy(psize, "px");
-	strcpy(pbsize, "bx");
-	strcpy(pfsize, "fx");
-	strcpy(poffset, "ox");
-	strcpy(ptype, "tx");
+	strlcpy(psize, "px", sizeof psize);
+	strlcpy(pbsize, "bx", sizeof pbsize);
+	strlcpy(pfsize, "fx", sizeof pfsize);
+	strlcpy(poffset, "ox", sizeof poffset);
+	strlcpy(ptype, "tx", sizeof ptype);
 	max = 'a' - 1;
 	pp = &dp->d_partitions[0];
 	for (p = 'a'; p < 'a' + MAXPARTITIONS; p++, pp++) {
@@ -153,7 +141,7 @@ getdiskbyname(name)
 		}
 	}
 	dp->d_npartitions = max + 1 - 'a';
-	(void)strcpy(psize, "dx");
+	(void)strlcpy(psize, "dx", sizeof psize);
 	dx = dp->d_drivedata;
 	for (p = '0'; p < '0' + NDDATA; p++, dx++) {
 		psize[1] = p;
@@ -166,30 +154,14 @@ getdiskbyname(name)
 }
 
 static int
-gettype(t, names)
-	char *t;
-	char **names;
+gettype(char *t, char **names)
 {
 	register char **nm;
 
 	for (nm = names; *nm; nm++)
 		if (strcasecmp(t, *nm) == 0)
 			return (nm - names);
-	if (isdigit(*t))
+	if (isdigit((u_char)*t))
 		return (atoi(t));
 	return (0);
-}
-
-static void
-error(err)
-	int err;
-{
-	char *p;
-
-	(void)write(STDERR_FILENO, "disktab: ", 9);
-	(void)write(STDERR_FILENO, _PATH_DISKTAB, sizeof(_PATH_DISKTAB) - 1);
-	(void)write(STDERR_FILENO, ": ", 2);
-	p = strerror(err);
-	(void)write(STDERR_FILENO, p, strlen(p));
-	(void)write(STDERR_FILENO, "\n", 1);
 }

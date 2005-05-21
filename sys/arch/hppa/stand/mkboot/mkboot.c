@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mkboot.c,v 1.14 2003/08/11 06:51:45 mickey Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +39,7 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD$";
+static char rcsid[] = "$OpenBSD: mkboot.c,v 1.14 2003/08/11 06:51:45 mickey Exp $";
 #endif /* not lint */
 #endif
 
@@ -61,27 +57,21 @@ static char rcsid[] = "$OpenBSD$";
 #include <sys/exec_aout.h>
 #include <sys/exec_elf.h>
 
-#include "volhdr.h"
+#ifndef hppa
+/* hack for cross compile XXX */
+#include "../../include/disklabel.h"
+#else
+#include <sys/disklabel.h>
+#endif
 
 #include <stdio.h>
 #include <ctype.h>
 
-int putfile __P((char *, int));
-void __dead usage __P((void));
-void bcddate __P((char *, char *));
-char *lifname __P((char *));
-int cksum __P((int, int *, int));
-
-#define LIF_NUMDIR	8
-
-#define LIF_VOLSTART	0
-#define LIF_VOLSIZE	sizeof(struct lifvol)
-#define LIF_DIRSTART	2048
-#define LIF_DIRSIZE	(LIF_NUMDIR * sizeof(struct lifdir))
-#define LIF_FILESTART	4096
-
-#define btolifs(b)	(((b) + (SECTSIZE - 1)) / SECTSIZE)
-#define lifstob(s)	((s) * SECTSIZE)
+int putfile(char *, int);
+void __dead usage(void);
+void bcddate(char *, char *);
+char *lifname(char *);
+int cksum(int, int *, int);
 
 char *to_file;
 int loadpoint, verbose;
@@ -107,8 +97,7 @@ char *__progname = "mkboot";
  *	sector 32-:	LIF file 0, LIF file 1, etc.
  */
 int
-main(argc, argv)
-	char **argv;
+main(int argc, char **argv)
 {
 	int to;
 	register int n, pos, c;
@@ -116,7 +105,7 @@ main(argc, argv)
 	struct lifvol *lifv = (struct lifvol *)buf;
 	struct lifdir *lifd = (struct lifdir *)(buf + LIF_DIRSTART);
 
-	while ((c = getopt(argc, argv, "vl:")) != EOF) {
+	while ((c = getopt(argc, argv, "vl:")) != -1) {
 		switch (c) {
 		case 'v':
 			verbose++;
@@ -139,7 +128,7 @@ main(argc, argv)
 
 	bzero(buf, sizeof(buf));
 	/* clear possibly unused directory entries */
-	strncpy(lifd[1].dir_name, "	     ", 10);
+	memset(lifd[1].dir_name, ' ', sizeof lifd[1].dir_name);
 	lifd[1].dir_type = -1;
 	lifd[1].dir_addr = 0;
 	lifd[1].dir_length = 0;
@@ -148,10 +137,10 @@ main(argc, argv)
 	lifd[7] = lifd[6] = lifd[5] = lifd[4] = lifd[3] = lifd[2] = lifd[1];
 
 	/* record volume info */
-	lifv->vol_id = htobe16(VOL_ID);
+	lifv->vol_id = htobe16(LIF_VOL_ID);
 	strncpy(lifv->vol_label, "BOOT44", 6);
 	lifv->vol_addr = htobe32(btolifs(LIF_DIRSTART));
-	lifv->vol_oct = htobe16(VOL_OCT);
+	lifv->vol_oct = htobe16(LIF_VOL_OCT);
 	lifv->vol_dirsize = htobe32(btolifs(LIF_DIRSIZE));
 	lifv->vol_version = htobe16(1);
 	lifv->vol_lastvol = lifv->vol_number =  htobe16(1);
@@ -164,26 +153,27 @@ main(argc, argv)
 	argv += optind;
 	argc -= optind;
 	optind = 0;
-	for (pos = btolifs(LIF_FILESTART); optind < argc; optind++) {
+	for (pos = LIF_FILESTART; optind < argc; optind++) {
 
 		/* output bootfile */
-		lseek(to, lifstob(pos), 0);
-		lifd[optind].dir_addr = htobe32(pos);
+		lseek(to, pos, 0);
+		lifd[optind].dir_addr = htobe32(btolifs(pos));
 		n = btolifs(putfile(argv[optind], to));
 		if (lifv->ipl_entry == 0) {
 			lifv->ipl_entry = htobe32(loadpoint + entry);
 			lifv->ipl_size = htobe32(lifstob(n));
-			lifd[optind].dir_type = htobe16(DIR_ISL);
+			lifd[optind].dir_type = htobe16(LIF_DIR_ISL);
 			lifd[optind].dir_implement = 0;
 		} else {
-			lifd[optind].dir_type = htobe16(DIR_TYPE);
+			lifd[optind].dir_type = htobe16(LIF_DIR_TYPE);
 			lifd[1].dir_implement = htobe32(loadpoint + entry);
 		}
 
-		strcpy(lifd[optind].dir_name, lifname(argv[optind]));
+		strlcpy(lifd[optind].dir_name, lifname(argv[optind]),
+		    sizeof lifd[optind].dir_name);
 		lifd[optind].dir_length = htobe32(n);
 		bcddate(argv[optind], lifd[optind].dir_toc);
-		lifd[optind].dir_flag = htobe16(DIR_FLAG);
+		lifd[optind].dir_flag = htobe16(LIF_DIR_FLAG);
 
 		lifv->vol_length += n;
 		pos += lifstob(n);
@@ -198,7 +188,7 @@ main(argc, argv)
 	lseek(to, 0, SEEK_END);
 
 	if (close(to) < 0)
-		err(1, to_file);
+		err(1, "%s", to_file);
 
 	return(0);
 }
@@ -212,10 +202,10 @@ putfile(from_file, to)
 	register int n, total;
 	char buf[2048];
 	int from, check_sum = 0;
-	struct load load;
+	struct lif_load load;
 
 	if ((from = open(from_file, O_RDONLY)) < 0)
-		err(1, from_file);
+		err(1, "%s", from_file);
 
 	n = read(from, &ex, sizeof(ex));
 	if (n != sizeof(ex))
@@ -224,22 +214,21 @@ putfile(from_file, to)
 	entry = ex.a_entry;
 	if (N_GETMAGIC(ex) == OMAGIC || N_GETMAGIC(ex) == NMAGIC)
 		entry += sizeof(ex);
-
 	else if (IS_ELF(*(Elf32_Ehdr *)&ex)) {
 		Elf32_Ehdr elf_header;
 		Elf32_Phdr *elf_segments;
 		int i,header_count, memory_needed, elf_load_image_segment;
 
-		(void) lseek(from, 0, L_SET);
+		(void) lseek(from, 0, SEEK_SET);
 		n = read(from, &elf_header, sizeof (elf_header));
 		if (n != sizeof (elf_header))
 			err(1, "%s: reading ELF header", from_file);
 		header_count = ntohs(elf_header.e_phnum);
-		memory_needed = header_count * sizeof (Elf32_Phdr);
-		elf_segments = (Elf32_Phdr *)malloc(memory_needed);
+		memory_needed = header_count * sizeof (*elf_segments);
+		elf_segments = malloc(memory_needed);
 		if (elf_segments == NULL)
 			err(1, "malloc");
-		(void) lseek(from, ntohl(elf_header.e_phoff), L_SET);
+		(void) lseek(from, ntohl(elf_header.e_phoff), SEEK_SET);
 		n = read(from, elf_segments, memory_needed);
 		if (n != memory_needed)
 			err(1, "%s: reading ELF segments", from_file);
@@ -257,8 +246,10 @@ putfile(from_file, to)
 		entry = ntohl(elf_header.e_entry) +
 			ntohl(elf_segments[elf_load_image_segment].p_offset) -
 			ntohl(elf_segments[elf_load_image_segment].p_vaddr);
+	} else if (*(u_char *)&ex == 0x1f && ((u_char *)&ex)[1] == 0x8b) {
+		entry = 0;
 	} else
-		errx(1, "%s: bad magic number\n", from_file);
+		errx(1, "%s: bad magic number", from_file);
 
 	entry += sizeof(load);
 	lseek(to, sizeof(load), SEEK_CUR);
@@ -268,12 +259,12 @@ putfile(from_file, to)
 	for (lseek(from, 0, 0); ; n = sizeof(buf)) {
 		bzero(buf, sizeof(buf));
 		if ((n = read(from, buf, n)) < 0)
-			err(1, from_file);
+			err(1, "%s", from_file);
 		else if (n == 0)
 			break;
 
 		if (write(to, buf, n) != n)
-			err(1, to_file);
+			err(1, "%s", to_file);
 
 		total += n;
 		check_sum = cksum(check_sum, (int *)buf, n);
@@ -287,19 +278,19 @@ putfile(from_file, to)
 	if (verbose)
 		warnx("wrote %d bytes of file \'%s\'", total, from_file);
 
-	bzero(buf, sizeof(buf));
 	total += sizeof(load);
 	/* insert the header */
 	lseek(to, -total, SEEK_CUR);
 	if (write(to, &load, sizeof(load)) != sizeof(load))
-		err(1, to_file);
+		err(1, "%s", to_file);
 	lseek(to, total - sizeof(load), SEEK_CUR);
 
+	bzero(buf, sizeof(buf));
 	/* pad to int */
 	n = sizeof(int) - total % sizeof(int);
 	if (total % sizeof(int)) {
 		if (write(to, buf, n) != n)
-			err(1, to_file);
+			err(1, "%s", to_file);
 		else
 			total += n;
 	}
@@ -313,20 +304,22 @@ putfile(from_file, to)
 	} else
 		total += n;
 
+	/* TODO should pad here to the 65k boundary for tape boot */
+
 	if (verbose)
 		warnx("checksum is 0x%08x", -check_sum);
 
 	check_sum = htobe32(-check_sum);
 	if (write(to, &check_sum, sizeof(int)) != sizeof(int))
-		err(1, to_file);
+		err(1, "%s", to_file);
 
 	n -= sizeof(int);
 
 	if (write(to, buf, n) != n)
-		err(1, to_file);
+		err(1, "%s", to_file);
 
 	if (close(from) < 0 )
-		err(1, from_file);
+		err(1, "%s", from_file);
 
 	return total;
 }
@@ -358,10 +351,10 @@ char *
 lifname(str)
 	char *str;
 {
-	static char lname[10] = "SYS_XXXXXX";
+	static char lname[10] = "XXXXXXXXXX";
 	register int i;
 
-	for (i = 4; i < 9; i++) {
+	for (i = 0; i < 9; i++) {
 		if (islower(*str))
 			lname[i] = toupper(*str);
 		else if (isalnum(*str) || *str == '_')
@@ -392,7 +385,7 @@ bcddate(file, toc)
 		int tm_year;   /* years since 1900 */
 		int tm_wday;   /* day of the week (0-6) */
 		int tm_yday;   /* day of the year (0-365) */
-		int tm_isdst;  /* non-0 if daylight savings time is in effect */
+		int tm_isdst;  /* non-0 if daylight saving time is in effect */
 	} *tm;
 #else
 	struct tm *tm;

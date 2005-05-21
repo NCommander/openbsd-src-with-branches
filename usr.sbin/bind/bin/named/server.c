@@ -2341,7 +2341,7 @@ load_configuration(const char *filename, ns_server_t *server,
 			 * Not specified, use default.
 			 */
 			CHECK(ns_listenlist_default(ns_g_mctx, listen_port,
-						    ISC_FALSE, &listenon));
+						    ISC_TRUE, &listenon));
 		}
 		if (listenon != NULL) {
 			ns_interfacemgr_setlistenon6(server->interfacemgr,
@@ -2536,10 +2536,12 @@ load_configuration(const char *filename, ns_server_t *server,
 	}
 
 	/*
-	 * Relinquish root privileges.
+	 * Relinquish root privileges. Not used due to privsep
 	 */
+#if 0
 	if (first_time)
 		ns_os_changeuser();
+#endif
 
 	/*
 	 * Configure the logging system.
@@ -2624,16 +2626,17 @@ load_configuration(const char *filename, ns_server_t *server,
 		}
 	}
 
-	obj = NULL;
-	if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
-		if (cfg_obj_isvoid(obj))
-			ns_os_writepidfile(NULL, first_time);
-		else
+	if (ns_g_pidfile != NULL) {
+		ns_os_writepidfile(ns_g_pidfile, first_time);
+	} else {
+		obj = NULL;
+		if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
 			ns_os_writepidfile(cfg_obj_asstring(obj), first_time);
-	else if (ns_g_lwresdonly)
-		ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
-	else
-		ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+		else if (ns_g_lwresdonly)
+			ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
+		else
+			ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+	}
 	
 	obj = NULL;
 	if (options != NULL &&

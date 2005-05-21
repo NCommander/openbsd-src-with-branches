@@ -1,3 +1,5 @@
+.\" $OpenBSD: 4.t,v 1.4 2002/06/08 01:53:43 millert Exp $
+.\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -34,10 +32,10 @@
 .NH 1
 Setting up
 .PP
-The 4.3BSD release comes with the necessary programs 
+OpenBSD comes with the necessary programs 
 installed and with the default line printer queue
 created.  If the system must be modified, the
-makefile in the directory /usr/src/usr.lib/lpr
+Makefile in the directory /usr/src/usr.sbin/lpr
 should be used in recompiling and reinstalling
 the necessary programs.
 .PP
@@ -63,12 +61,12 @@ Printers on serial lines
 When a printer is connected via a serial communication line
 it must have the proper baud rate and terminal modes set.
 The following example is for a DecWriter III printer connected
-locally via a 1200 baud serial line.
+locally via a 9600 baud serial line.
 .DS
 .DT
 lp|LA-180 DecWriter III:\e
-	:lp=/dev/lp:br#1200:fs#06320:\e
-	:tr=\ef:of=/usr/lib/lpf:lf=/usr/adm/lpd-errs:
+	:lp=/dev/lp:br#9600:ms=onlcr,oxtabs,-parity:\e
+	:tr=\ef:of=/usr/libexec/lpr/lpf:lf=/var/log/lpd-errs:
 .DE
 The
 .B lp
@@ -77,8 +75,9 @@ be left out since ``/dev/lp'' is the default.
 The
 .B br
 entry sets the baud rate for the tty line and the
-.B fs
-entry sets CRMOD, no parity, and XTABS (see \fItty\fP\|(4)).
+.B ms
+entry sets NL to CR-NL mapping, expansion of tabs to spaces,
+and disables parity (see \fIstty\fP\|(1)).
 The
 .B tr
 entry indicates that a form-feed should be printed when the queue
@@ -91,7 +90,7 @@ entry specifies the filter program
 should be used for printing the files;
 more will be said about filters later.
 The last entry causes errors
-to be written to the file ``/usr/adm/lpd-errs''
+to be written to the file ``/var/log/lpd-errs''
 instead of the console.  Most errors from \fIlpd\fP are logged using
 \fIsyslogd\fP\|(8) and will not be logged in the specified file.  The
 filters should use \fIsyslogd\fP to report errors; only those that
@@ -109,7 +108,7 @@ named ``lp'' on the machine ``ucbvax''.
 .DS
 .DT
 lp|default line printer:\e
-	:lp=:rm=ucbvax:rp=lp:sd=/usr/spool/vaxlpd:
+	:lp=:rm=ucbvax:rp=lp:sd=/var/spool/output/vaxlpd:
 .DE
 The
 .B rm
@@ -122,9 +121,9 @@ the name of the printer on the remote machine is ``lp'';
 here it could be left out since this is the default value.
 The
 .B sd
-entry specifies ``/usr/spool/vaxlpd''
+entry specifies ``/var/spool/output/vaxlpd''
 as the spooling directory instead of the
-default value of ``/usr/spool/lpd''.
+default value of ``/var/spool/lpd''.
 .NH 2
 Output filters
 .PP
@@ -150,17 +149,17 @@ is the Benson-Varian.
 .DS
 .DT
 va|varian|Benson-Varian:\e
-	:lp=/dev/va0:sd=/usr/spool/vad:of=/usr/lib/vpf:\e
-	:tf=/usr/lib/rvcat:mx#2000:pl#58:px=2112:py=1700:tr=\ef:
+	:lp=/dev/va0:sd=/var/spool/output/vad:of=/usr/libexec/lpr/vpf:\e
+	:tf=/usr/libexec/lpr/rvcat:mx#2000:pl#58:px=2112:py=1700:tr=\ef:
 .DE
 The
 .B tf
-entry specifies ``/usr/lib/rvcat'' as the filter to be
+entry specifies ``/usr/libexec/lpr/rvcat'' as the filter to be
 used in printing \fItroff\fP\|(1) output.
 This filter is needed to set the device into print mode
 for text, and plot mode for printing
 .I troff
-files and raster images (see \fIva\fP\|(4V)).
+files and raster images (see \fIva\fP\|(4)).
 Note that the page length is set to 58 lines by the
 .B pl
 entry for 8.5" by 11" fan-fold paper.
@@ -171,9 +170,9 @@ filter as shown below.
 .DS
 .DT
 va|varian|Benson-Varian:\e
-	:lp=/dev/va0:sd=/usr/spool/vad:of=/usr/lib/vpf:\e
-	:if=/usr/lib/vpf:tf=/usr/lib/rvcat:af=/usr/adm/vaacct:\e
-	:mx#2000:pl#58:px=2112:py=1700:tr=\ef:
+	:lp=/dev/va0:sd=/var/spool/output/vad:of=/usr/libexec/lpr/vpf:\e
+	:if=/usr/libexec/lpr/vpf:tf=/usr/libexec/lpr/rvcat:\e
+	:af=/var/log/vaacct:mx#2000:pl#58:px=2112:py=1700:tr=\ef:
 .DE
 .NH 2
 Access Control

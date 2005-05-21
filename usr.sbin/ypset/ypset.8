@@ -1,6 +1,11 @@
+.\"	$OpenBSD: ypset.8,v 1.5 2000/11/09 17:53:34 aaron Exp $
+.\"	$NetBSD: ypset.8,v 1.2 1996/02/28 01:25:08 thorpej Exp $
 .\"
-.\" Copyright (c) 1994 Jason R. Thorpe
+.\" Copyright (c) 1996 The NetBSD Foundation, Inc.
 .\" All rights reserved.
+.\"
+.\" This code is derived from software contributed to The NetBSD Foundation
+.\" by Jason R. Thorpe.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -12,24 +17,23 @@
 .\"    documentation and/or other materials provided with the distribution.
 .\" 3. All advertising materials mentioning features or use of this software
 .\"    must display the following acknowledgement:
-.\"	This product includes software developed by Jason Thorpe.
-.\" 4. Neither the name of the author nor the names of its contributors
-.\"    may be used to endorse or promote products derived from this software
-.\"    without specific prior written permission.
+.\"        This product includes software developed by the NetBSD
+.\"        Foundation, Inc. and its contributors.
+.\" 4. Neither the name of The NetBSD Foundation nor the names of its
+.\"    contributors may be used to endorse or promote products derived
+.\"    from this software without specific prior written permission.
 .\"
-.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
-.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE
-.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-.\" SUCH DAMAGE.
-.\"
-.\"     $Id: ypset.8,v 1.1 1994/10/28 16:49:56 deraadt Exp $
+.\" THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+.\" TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
 .\"
 .Dd October 25, 1994
 .Dt YPSET 8
@@ -45,7 +49,7 @@ which YP server process to use
 .Op Fl d Ar domain
 .Ar server
 .Sh DESCRIPTION
-.Nm Ypset
+.Nm
 tells the
 .Xr ypbind 8
 process on the current machine which YP server process to communicate with.
@@ -56,7 +60,7 @@ a YP client process attempts to access a YP map, at which time
 .Xr ypbind 8
 tests the binding and takes appropriate action.
 .Pp
-.Nm Ypset
+.Nm
 is most useful for binding a YP client that is not on the same broadcast
 network as the closest YP server, but can also be used for debugging
 a local network's YP configuration, testing specific YP client
@@ -64,7 +68,7 @@ programs, or binding to a specific server when there are many servers on
 the local network supplying YP maps.
 .Pp
 The options are as follows:
-.Bl -tag -width indent
+.Bl -tag -width Ds
 .It Fl h Ar host
 Set the YP binding on
 .Ar host
@@ -77,11 +81,11 @@ instead of the default domain as returned by
 .El
 .Sh SEE ALSO
 .Xr domainname 1 ,
-.Xr ypbind 8 ,
 .Xr ypcat 1 ,
 .Xr ypmatch 1 ,
-.Xr yppoll 8 ,
 .Xr ypwhich 1 ,
-.Xr yp 8
-.Sh AUTHOR
-Theo De Raadt
+.Xr yp 8 ,
+.Xr ypbind 8 ,
+.Xr yppoll 8
+.Sh AUTHORS
+Theo de Raadt

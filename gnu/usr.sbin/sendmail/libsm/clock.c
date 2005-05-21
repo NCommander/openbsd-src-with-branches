@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -12,7 +12,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: clock.c,v 1.30 2001/08/31 20:44:28 ca Exp $")
+SM_RCSID("@(#)$Sendmail: clock.c,v 1.46 2004/08/03 19:57:22 ca Exp $")
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
@@ -24,12 +24,16 @@ SM_RCSID("@(#)$Sendmail: clock.c,v 1.30 2001/08/31 20:44:28 ca Exp $")
 #include <sm/bitops.h>
 #include <sm/clock.h>
 #include "local.h"
+#if _FFR_SLEEP_USE_SELECT > 0
+# include <sys/types.h>
+#endif /* _FFR_SLEEP_USE_SELECT > 0 */
+#if defined(_FFR_MAX_SLEEP_TIME) && _FFR_MAX_SLEEP_TIME > 2
+# include <syslog.h>
+#endif /* defined(_FFR_MAX_SLEEP_TIME) && _FFR_MAX_SLEEP_TIME > 2 */
 
 #ifndef sigmask
 # define sigmask(s)	(1 << ((s) - 1))
 #endif /* ! sigmask */
-
-static void	sm_endsleep __P((void));
 
 
 /*
@@ -59,7 +63,7 @@ static SM_EVENT	*volatile SmFreeEventList;	/* list of free events */
 SM_EVENT *
 sm_seteventm(intvl, func, arg)
 	int intvl;
-	void (*func)();
+	void (*func)__P((int));
 	int arg;
 {
 	ENTER_CRITICAL();
@@ -82,7 +86,7 @@ sm_seteventm(intvl, func, arg)
 SM_EVENT *
 sm_sigsafe_seteventm(intvl, func, arg)
 	int intvl;
-	void (*func)();
+	void (*func)__P((int));
 	int arg;
 {
 	register SM_EVENT **evp;
@@ -117,7 +121,7 @@ sm_sigsafe_seteventm(intvl, func, arg)
 	     evp = &ev->ev_link)
 	{
 #if SM_CONF_SETITIMER
-		if (timercmp(&(ev->ev_time), &nowi, >))
+		if (timercmp(&(ev->ev_time), &nowi, >=))
 #else /* SM_CONF_SETITIMER */
 		if (ev->ev_time >= nowi)
 #endif /* SM_CONF_SETITIMER */
@@ -136,6 +140,8 @@ sm_sigsafe_seteventm(intvl, func, arg)
 		*/
 
 		LEAVE_CRITICAL();
+		if (wasblocked == 0)
+			(void) sm_releasesignal(SIGALRM);
 		return NULL;
 	}
 	else
@@ -160,16 +166,20 @@ sm_sigsafe_seteventm(intvl, func, arg)
 	timersub(&SmEventQueue->ev_time, &now, &itime.it_value);
 	itime.it_interval.tv_sec = 0;
 	itime.it_interval.tv_usec = 0;
+	if (itime.it_value.tv_sec < 0)
+		itime.it_value.tv_sec = 0;
+	if (itime.it_value.tv_sec == 0 && itime.it_value.tv_usec == 0)
+		itime.it_value.tv_usec = 1000;
 	(void) setitimer(ITIMER_REAL, &itime, NULL);
 # else /* SM_CONF_SETITIMER */
 	intvl = SmEventQueue->ev_time - now;
-	(void) alarm((unsigned) intvl < 1 ? 1 : intvl);
+	(void) alarm((unsigned) (intvl < 1 ? 1 : intvl));
 # endif /* SM_CONF_SETITIMER */
 	if (wasblocked == 0)
 		(void) sm_releasesignal(SIGALRM);
 	return ev;
 }
-/*
+/*
 **  SM_CLREVENT -- remove an event from the event queue.
 **
 **	Parameters:
@@ -234,7 +244,7 @@ sm_clrevent(ev)
 # endif /* SM_CONF_SETITIMER */
 	}
 }
-/*
+/*
 **  SM_CLEAR_EVENTS -- remove all events from the event queue.
 **
 **	Parameters:
@@ -253,9 +263,6 @@ sm_clear_events()
 #endif /* SM_CONF_SETITIMER */
 	int wasblocked;
 
-	if (SmEventQueue == NULL)
-		return;
-
 	/* nothing will be left in event queue, no need for an alarm */
 #if SM_CONF_SETITIMER
 	clr.it_interval.tv_sec = 0;
@@ -266,6 +273,10 @@ sm_clear_events()
 #else /* SM_CONF_SETITIMER */
 	(void) alarm(0);
 #endif /* SM_CONF_SETITIMER */
+
+	if (SmEventQueue == NULL)
+		return;
+
 	wasblocked = sm_blocksignal(SIGALRM);
 
 	/* find the end of the EventQueue */
@@ -282,7 +293,7 @@ sm_clear_events()
 	if (wasblocked == 0)
 		(void) sm_releasesignal(SIGALRM);
 }
-/*
+/*
 **  SM_TICK -- take a clock tick
 **
 **	Called by the alarm clock.  This routine runs events as needed.
@@ -377,13 +388,13 @@ sm_tick(sig)
 	while ((ev = SmEventQueue) != NULL &&
 	       (ev->ev_pid != mypid ||
 #if SM_CONF_SETITIMER
-		timercmp(&ev->ev_time, &now, <)
+		timercmp(&ev->ev_time, &now, <=)
 #else /* SM_CONF_SETITIMER */
 		ev->ev_time <= now
 #endif /* SM_CONF_SETITIMER */
 		))
 	{
-		void (*f)();
+		void (*f)__P((int));
 		int arg;
 		pid_t pid;
 
@@ -410,6 +421,11 @@ sm_tick(sig)
 					 &clr.it_value);
 				clr.it_interval.tv_sec = 0;
 				clr.it_interval.tv_usec = 0;
+				if (clr.it_value.tv_sec < 0)
+					clr.it_value.tv_sec = 0;
+				if (clr.it_value.tv_sec == 0 &&
+				    clr.it_value.tv_usec == 0)
+					clr.it_value.tv_usec = 1000;
 				(void) setitimer(ITIMER_REAL, &clr, NULL);
 			}
 			else
@@ -450,6 +466,10 @@ sm_tick(sig)
 		timersub(&SmEventQueue->ev_time, &now, &clr.it_value);
 		clr.it_interval.tv_sec = 0;
 		clr.it_interval.tv_usec = 0;
+		if (clr.it_value.tv_sec < 0)
+			clr.it_value.tv_sec = 0;
+		if (clr.it_value.tv_sec == 0 && clr.it_value.tv_usec == 0)
+			clr.it_value.tv_usec = 1000;
 		(void) setitimer(ITIMER_REAL, &clr, NULL);
 #else /* SM_CONF_SETITIMER */
 		(void) alarm((unsigned) (SmEventQueue->ev_time - now));
@@ -458,7 +478,7 @@ sm_tick(sig)
 	errno = save_errno;
 	return SIGFUNC_RETURN;
 }
-/*
+/*
 **  SLEEP -- a version of sleep that works with this stuff
 **
 **	Because Unix sleep uses the alarm facility, I must reimplement
@@ -476,7 +496,10 @@ sm_tick(sig)
 */
 
 
+# if !HAVE_NANOSLEEP
+static void	sm_endsleep __P((int));
 static bool	volatile SmSleepDone;
+# endif /* !HAVE_NANOSLEEP */
 
 #ifndef SLEEP_T
 # define SLEEP_T	unsigned int
@@ -486,22 +509,124 @@ SLEEP_T
 sleep(intvl)
 	unsigned int intvl;
 {
-	int was_held;
+#if HAVE_NANOSLEEP
+	struct timespec rqtp;
 
 	if (intvl == 0)
 		return (SLEEP_T) 0;
+	rqtp.tv_sec = intvl;
+	rqtp.tv_nsec = 0;
+	nanosleep(&rqtp, NULL);
+	return (SLEEP_T) 0;
+#else /* HAVE_NANOSLEEP */
+	int was_held;
+	SM_EVENT *ev;
+#if _FFR_SLEEP_USE_SELECT > 0
+	int r;
+# if _FFR_SLEEP_USE_SELECT > 0
+	struct timeval sm_io_to;
+# endif /* _FFR_SLEEP_USE_SELECT > 0 */
+#endif /* _FFR_SLEEP_USE_SELECT > 0 */
+#if SM_CONF_SETITIMER
+	struct timeval now, begin, diff;
+# if _FFR_SLEEP_USE_SELECT > 0
+	struct timeval slpv;
+# endif /* _FFR_SLEEP_USE_SELECT > 0 */
+#else /*  SM_CONF_SETITIMER */
+	time_t begin, now;
+#endif /*  SM_CONF_SETITIMER */
+
+	if (intvl == 0)
+		return (SLEEP_T) 0;
+#if defined(_FFR_MAX_SLEEP_TIME) && _FFR_MAX_SLEEP_TIME > 2
+	if (intvl > _FFR_MAX_SLEEP_TIME)
+	{
+		syslog(LOG_ERR, "sleep: interval=%u exceeds max value %d",
+			intvl, _FFR_MAX_SLEEP_TIME);
+# if 0
+		SM_ASSERT(intvl < (unsigned int) INT_MAX);
+# endif /* 0 */
+		intvl = _FFR_MAX_SLEEP_TIME;
+	}
+#endif /* defined(_FFR_MAX_SLEEP_TIME) && _FFR_MAX_SLEEP_TIME > 2 */
 	SmSleepDone = false;
-	(void) sm_setevent((time_t) intvl, sm_endsleep, 0);
+
+#if SM_CONF_SETITIMER
+# if _FFR_SLEEP_USE_SELECT > 0
+	slpv.tv_sec = intvl;
+	slpv.tv_usec = 0;
+# endif /* _FFR_SLEEP_USE_SELECT > 0 */
+	(void) gettimeofday(&now, NULL);
+	begin = now;
+#else /*  SM_CONF_SETITIMER */
+	now = begin = time(NULL);
+#endif /*  SM_CONF_SETITIMER */
+
+	ev = sm_setevent((time_t) intvl, sm_endsleep, 0);
+	if (ev == NULL)
+	{
+		/* COMPLAIN */
+#if 0
+		syslog(LOG_ERR, "sleep: sm_setevent(%u) failed", intvl);
+#endif /* 0 */
+		SmSleepDone = true;
+	}
 	was_held = sm_releasesignal(SIGALRM);
+
 	while (!SmSleepDone)
+	{
+#if SM_CONF_SETITIMER
+		(void) gettimeofday(&now, NULL);
+		timersub(&now, &begin, &diff);
+		if (diff.tv_sec < 0 ||
+		    (diff.tv_sec == 0 && diff.tv_usec == 0))
+			break;
+# if _FFR_SLEEP_USE_SELECT > 0
+		timersub(&slpv, &diff, &sm_io_to);
+# endif /* _FFR_SLEEP_USE_SELECT > 0 */
+#else /* SM_CONF_SETITIMER */
+		now = time(NULL);
+
+		/*
+		**  Check whether time expired before signal is released.
+		**  Due to the granularity of time() add 1 to be on the
+		**  safe side.
+		*/
+
+		if (!(begin + (time_t) intvl + 1 > now))
+			break;
+# if _FFR_SLEEP_USE_SELECT > 0
+		sm_io_to.tv_sec = intvl - (now - begin);
+		if (sm_io_to.tv_sec <= 0)
+			sm_io_to.tv_sec = 1;
+		sm_io_to.tv_usec = 0;
+# endif /* _FFR_SLEEP_USE_SELECT > 0 */
+#endif /* SM_CONF_SETITIMER */
+#if _FFR_SLEEP_USE_SELECT > 0
+		if (intvl <= _FFR_SLEEP_USE_SELECT)
+		{
+			r = select(0, NULL, NULL, NULL, &sm_io_to);
+			if (r == 0)
+				break;
+		}
+		else
+#endif /* _FFR_SLEEP_USE_SELECT > 0 */
 		(void) pause();
+	}
+
+	/* if out of the loop without the event being triggered remove it */
+	if (!SmSleepDone)
+		sm_clrevent(ev);
 	if (was_held > 0)
 		(void) sm_blocksignal(SIGALRM);
 	return (SLEEP_T) 0;
+#endif /* HAVE_NANOSLEEP */
 }
 
+#if !HAVE_NANOSLEEP
 static void
-sm_endsleep()
+sm_endsleep(ignore)
+	int ignore;
 {
 	/*
 	**  NOTE: THIS CAN BE CALLED FROM A SIGNAL HANDLER.  DO NOT ADD
@@ -511,4 +636,5 @@ sm_endsleep()
 
 	SmSleepDone = true;
 }
+#endif /* !HAVE_NANOSLEEP */
 

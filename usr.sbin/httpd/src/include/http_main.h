@@ -127,6 +127,9 @@ API_EXPORT(int) ap_update_child_status(int child_num, int status, request_rec *r
 void ap_time_process_request(int child_num, int status);
 API_EXPORT(unsigned int) ap_set_callback_and_alarm(void (*fn) (int), int x);
 API_EXPORT(int) ap_check_alarm(void);
+API_EXPORT(void) ap_server_strip_chroot(char *, int);
+API_EXPORT(int) ap_server_is_chrooted(void);
+API_EXPORT(int) ap_server_chroot_desired(void);
 
 void setup_signal_names(char *prefix);
 
@@ -134,7 +137,6 @@ void setup_signal_names(char *prefix);
 char *ap_default_mutex_method(void);
 char *ap_init_mutex_method(char *t);
 
-#ifndef NO_OTHER_CHILD
 /*
  * register an other_child -- a child which the main loop keeps track of
  * and knows it is different than the rest of the scoreboard.
@@ -171,8 +173,6 @@ API_EXPORT(void) ap_register_other_child(int pid,
  * write_fd are possibly killed off separately.
  */
 API_EXPORT(void) ap_unregister_other_child(void *data);
-
-#endif
 
 #ifdef __cplusplus
 }

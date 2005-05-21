@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +39,7 @@ static char sccsid[] = "@(#)log1p.c	8.1 (Berkeley) 6/4/93";
  * REVISED BY K.C. NG on 2/6/85, 3/7/85, 3/24/85, 4/16/85.
  * 
  * Required system supported functions:
- *	scalb(x,n) 
+ *	scalbn(x,n) 
  *	copysign(x,y)
  *	logb(x)	
  *	finite(x)
@@ -120,16 +116,16 @@ double x;
 	double z,s,t,c;
 	int k;
 
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)&&!defined(tahoe)
 	if(x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+#endif	/* !defined(__vax__)&&!defined(tahoe) */
 
 	if(finite(x)) {
 	   if( x > negone ) {
 
 	   /* argument reduction */
 	      if(copysign(x,one)<small) return(x);
-	      k=logb(one+x); z=scalb(x,-k); t=scalb(one,-k);
+	      k=logb(one+x); z=scalbn(x,-k); t=scalbn(one,-k);
 	      if(z+t >= sqrt2 ) 
 		  { k += 1 ; z *= half; t *= half; }
 	      t += negone; x = z + t;
@@ -146,18 +142,18 @@ double x;
 	/* end of if (x > negone) */
 
 	    else {
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 		if ( x == negone )
 		    return (infnan(-ERANGE));	/* -INF */
 		else
 		    return (infnan(EDOM));	/* NaN */
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
 		/* x = -1, return -INF with signal */
 		if ( x == negone ) return( negone/zero );
 
 		/* negative argument for log, return NaN with signal */
 	        else return ( zero / zero );
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 	    }
 	}
     /* end of if (finite(x)) */

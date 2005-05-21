@@ -1,6 +1,29 @@
-/*	$NetBSD: le_poll.c,v 1.3 1994/10/26 09:11:48 cgd Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.9 2003/06/04 16:36:14 deraadt Exp $ */
 
 /*
+ * Copyright (c) 1995 Theo de Raadt
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1993 Adam Glass
  * All rights reserved.
  *
@@ -37,7 +60,10 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "netif.h"
 #include "config.h"
 
@@ -45,15 +71,15 @@
 
 int     le_debug = 0;
 
-void le_end __P((struct netif *));
-void le_error __P((struct netif *, char *, volatile struct lereg1 *));
-int le_get __P((struct iodesc *, void *, int, time_t));
-void le_init __P((struct iodesc *, void *));
-int le_match __P((struct netif *, void *));
-int le_poll __P((struct iodesc *, void *, int));
-int le_probe __P((struct netif *, void *));
-int le_put __P((struct iodesc *, void *, int));
-void le_reset __P((struct netif *, u_char *));
+void le_end(struct netif *);
+void le_error(struct netif *, char *, volatile struct lereg1 *);
+int le_get(struct iodesc *, void *, size_t, time_t);
+void le_init(struct iodesc *, void *);
+int le_match(struct netif *, void *);
+int le_poll(struct iodesc *, void *, int);
+int le_probe(struct netif *, void *);
+int le_put(struct iodesc *, void *, size_t);
+void le_reset(struct netif *, u_char *);
 
 struct netif_stats le_stats;
 
@@ -100,9 +126,8 @@ le_match(nif, machdep_hint)
 {
 	char   *name;
 	int     i, val = 0;
-	extern int cputyp;
 
-	if (cputyp != CPU_147)
+	if (bugargs.cputyp != CPU_147)
 		return (0);
 	name = machdep_hint;
 	if (name && !bcmp(le_driver.netif_bname, name, 2))
@@ -125,13 +150,12 @@ le_probe(nif, machdep_hint)
 	struct netif *nif;
 	void   *machdep_hint;
 {
-	extern int cputyp;
 
 	/* the set unit is the current unit */
 	if (le_debug)
 		printf("le%d: le_probe called\n", nif->nif_unit);
 
-	if (cputyp == CPU_147)
+	if (bugargs.cputyp == CPU_147)
 		return 0;
 	return 1;
 }
@@ -144,7 +168,7 @@ le_error(nif, str, ler1)
 {
 	/* ler1->ler1_rap = LE_CSRO done in caller */
 	if (ler1->ler1_rdp & LE_C0_BABL)
-		panic("le%d: been babbling, found by '%s'\n", nif->nif_unit, str);
+		panic("le%d: been babbling, found by '%s'", nif->nif_unit, str);
 	if (ler1->ler1_rdp & LE_C0_CERR) {
 		le_stats.collision_error++;
 		ler1->ler1_rdp = LE_C0_CERR;
@@ -269,12 +293,12 @@ le_poll(desc, pkt, len)
 		goto cleanup;
 	}
 	if ((rmd->rmd1_bits & (LE_R1_STP | LE_R1_ENP)) != (LE_R1_STP | LE_R1_ENP))
-		panic("le_poll: chained packet\n");
+		panic("le_poll: chained packet");
 
 	length = rmd->rmd3;
 	if (length >= LEMTU) {
 		length = 0;
-		panic("csr0 when bad things happen: %x\n", ler1->ler1_rdp);
+		panic("csr0 when bad things happen: %x", ler1->ler1_rdp);
 		goto cleanup;
 	}
 	if (!length)
@@ -289,7 +313,7 @@ le_poll(desc, pkt, len)
 		if (length > len)
 			length = len;
 
-		bcopy(&ler2->ler2_rbuf[le_softc.next_rmd], pkt, length);
+		bcopy((void *)&ler2->ler2_rbuf[le_softc.next_rmd], pkt, length);
 	}
 cleanup:
 	a = (u_int) & ler2->ler2_rbuf[le_softc.next_rmd];
@@ -304,9 +328,9 @@ cleanup:
 
 int
 le_put(desc, pkt, len)
-	struct iodesc *desc;
-	void   *pkt;
-	int     len;
+	struct	iodesc *desc;
+	void	*pkt;
+	size_t	len;
 {
 	volatile struct lereg1 *ler1 = le_softc.sc_r1;
 	volatile struct lereg2 *ler2 = le_softc.sc_r2;
@@ -321,7 +345,7 @@ le_put(desc, pkt, len)
 	while (tmd->tmd1_bits & LE_T1_OWN) {
 		printf("le%d: output buffer busy\n", desc->io_netif->nif_unit);
 	}
-	bcopy(pkt, ler2->ler2_tbuf[le_softc.next_tmd], len);
+	bcopy(pkt, (void *)ler2->ler2_tbuf[le_softc.next_tmd], len);
 	if (len < 64)
 		tmd->tmd2 = -64;
 	else
@@ -380,10 +404,10 @@ le_put(desc, pkt, len)
 
 int
 le_get(desc, pkt, len, timeout)
-	struct iodesc *desc;
-	void   *pkt;
-	int     len;
-	time_t  timeout;
+	struct	iodesc *desc;
+	void	*pkt;
+	size_t	len;
+	time_t	timeout;
 {
 	time_t  t;
 	int     cc;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: htonl.S,v 1.2 1997/11/07 15:57:35 niklas Exp $	*/
 /*	$NetBSD: htonl.S,v 1.2 1994/10/26 06:39:58 cgd Exp $	*/
 
 /*
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@
 #ifdef notdef
 	.asciz "@(#)htonl.s	8.1 (Berkeley) 6/4/93"
 #endif
-	.asciz "$NetBSD: htonl.S,v 1.2 1994/10/26 06:39:58 cgd Exp $"
+	.asciz "$OpenBSD: htonl.S,v 1.2 1997/11/07 15:57:35 niklas Exp $"
 #endif /* LIBC_SCCS and not lint */
 
 /* netorder = htonl(hostorder) */

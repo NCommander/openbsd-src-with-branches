@@ -1,3 +1,4 @@
+/*	$OpenBSD: tftpsubs.c,v 1.8 2003/06/26 07:59:49 deraadt Exp $	*/
 /*	$NetBSD: tftpsubs.c,v 1.3 1994/12/08 09:51:31 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)tftpsubs.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: tftpsubs.c,v 1.3 1994/12/08 09:51:31 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: tftpsubs.c,v 1.8 2003/06/26 07:59:49 deraadt Exp $";
 #endif /* not lint */
 
 /* Simple minded read-ahead/write-behind subroutines for tftp user and
@@ -81,14 +78,24 @@ static int current;		/* index of buffer in use */
 int newline = 0;		/* fillbuf: in middle of newline expansion */
 int prevchar = -1;		/* putbuf: previous char (cr check) */
 
-static struct tftphdr *rw_init();
+static struct tftphdr *rw_init(int);
 
-struct tftphdr *w_init() { return rw_init(0); }         /* write-behind */
-struct tftphdr *r_init() { return rw_init(1); }         /* read-ahead */
+struct tftphdr *
+w_init(void)
+{
+	return rw_init(0);	/* write-behind */
+}
 
+struct tftphdr *
+r_init(void)
+{
+	return rw_init(1);	/* read-ahead */
+}
+
+/* init for either read-ahead or write-behind */
+/* zero for write-behind, one for read-head */
 static struct tftphdr *
-rw_init(x)			/* init for either read-ahead or write-behind */
-	int x;			/* zero for write-behind, one for read-head */
+rw_init(int x)
 {
 	newline = 0;		/* init crlf flag */
 	prevchar = -1;
@@ -104,10 +111,7 @@ rw_init(x)			/* init for either read-ahead or write-behind */
    Free it and return next buffer filled with data.
  */
 int
-readit(file, dpp, convert)
-	FILE *file;                     /* file opened for read */
-	struct tftphdr **dpp;
-	int convert;                    /* if true, convert to ascii */
+readit(FILE *file, struct tftphdr **dpp, int convert)
 {
 	struct bf *b;
 
@@ -127,13 +131,11 @@ readit(file, dpp, convert)
  * conversions are  lf -> cr,lf  and cr -> cr, nul
  */
 void
-read_ahead(file, convert)
-	FILE *file;                     /* file opened for read */
-	int convert;                    /* if true, convert to ascii */
+read_ahead(FILE *file, int convert)
 {
-	register int i;
-	register char *p;
-	register int c;
+	int i;
+	char *p;
+	int c;
 	struct bf *b;
 	struct tftphdr *dp;
 
@@ -154,10 +156,10 @@ read_ahead(file, convert)
 		if (newline) {
 			if (prevchar == '\n')
 				c = '\n';       /* lf to cr,lf */
-			else    c = '\0';       /* cr to cr,nul */
+			else
+				c = '\0';       /* cr to cr,nul */
 			newline = 0;
-		}
-		else {
+		} else {
 			c = getc(file);
 			if (c == EOF) break;
 			if (c == '\n' || c == '\r') {
@@ -176,10 +178,7 @@ read_ahead(file, convert)
    available.
  */
 int
-writeit(file, dpp, ct, convert)
-	FILE *file;
-	struct tftphdr **dpp;
-	int ct, convert;
+writeit(FILE *file, struct tftphdr **dpp, int ct, int convert)
 {
 	bfs[current].counter = ct;      /* set size of data to write */
 	current = !current;             /* switch to other buffer */
@@ -195,17 +194,15 @@ writeit(file, dpp, ct, convert)
  * CR,NUL -> CR  and CR,LF => LF.
  * Note spec is undefined if we get CR as last byte of file or a
  * CR followed by anything else.  In this case we leave it alone.
- */
+n */
 int
-write_behind(file, convert)
-	FILE *file;
-	int convert;
+write_behind(FILE *file, int convert)
 {
 	char *buf;
 	int count;
-	register int ct;
-	register char *p;
-	register int c;                 /* current character */
+	int ct;
+	char *p;
+	int c;                          /* current character */
 	struct bf *b;
 	struct tftphdr *dp;
 
@@ -227,18 +224,17 @@ write_behind(file, convert)
 	p = buf;
 	ct = count;
 	while (ct--) {                  /* loop over the buffer */
-	    c = *p++;                   /* pick up a character */
-	    if (prevchar == '\r') {     /* if prev char was cr */
-		if (c == '\n')          /* if have cr,lf then just */
-		   fseek(file, -1, 1);  /* smash lf on top of the cr */
-		else
-		   if (c == '\0')       /* if have cr,nul then */
-			goto skipit;    /* just skip over the putc */
-		/* else just fall through and allow it */
-	    }
-	    putc(c, file);
+		c = *p++;                   /* pick up a character */
+		if (prevchar == '\r') {     /* if prev char was cr */
+			if (c == '\n')          /* if have cr,lf then just */
+				fseek(file, -1, 1);  /* smash lf on top of the cr */
+			else if (c == '\0')       /* if have cr,nul then */
+				goto skipit;    /* just skip over the putc */
+			/* else just fall through and allow it */
+		}
+		putc(c, file);
 skipit:
-	    prevchar = c;
+		prevchar = c;
 	}
 	return count;
 }
@@ -256,13 +252,12 @@ skipit:
  */
 
 int
-synchnet(f)
-	int	f;		/* socket to flush */
+synchnet(int f)
 {
 	int i, j = 0;
 	char rbuf[PKTSIZE];
 	struct sockaddr_in from;
-	int fromlen;
+	socklen_t fromlen;
 
 	while (1) {
 		(void) ioctl(f, FIONREAD, &i);
@@ -270,7 +265,7 @@ synchnet(f)
 			j++;
 			fromlen = sizeof from;
 			(void) recvfrom(f, rbuf, sizeof (rbuf), 0,
-				(struct sockaddr *)&from, &fromlen);
+			    (struct sockaddr *)&from, &fromlen);
 		} else {
 			return(j);
 		}

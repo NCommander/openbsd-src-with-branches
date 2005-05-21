@@ -1,7 +1,8 @@
-/*	$NetBSD: pci_2100_a50.c,v 1.2 1995/08/03 01:17:10 cgd Exp $	*/
+/*	$OpenBSD: pci_2100_a50.c,v 1.18 2002/03/14 01:26:27 millert Exp $	*/
+/*	$NetBSD: pci_2100_a50.c,v 1.12 1996/11/13 21:13:29 cgd Exp $	*/
 
 /*
- * Copyright (c) 1995 Carnegie-Mellon University.
+ * Copyright (c) 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -33,68 +34,93 @@
 #include <sys/systm.h>
 #include <sys/errno.h>
 #include <sys/device.h>
+#include <uvm/uvm_extern.h>
 
-#include <vm/vm.h>
+#include <machine/autoconf.h>
+#include <machine/bus.h>
+#include <machine/intr.h>
 
 #include <dev/isa/isavar.h>
-#include <alpha/isa/isa_intr.h>
-
-#include <dev/pci/pcivar.h>
 #include <dev/pci/pcireg.h>
-#include <alpha/pci/pci_chipset.h>
+#include <dev/pci/pcivar.h>
 
-void	pci_2100_a50_attach __P((struct device *, struct device *, void *));
-void	*pci_2100_a50_map_int __P((pcitag_t, pci_intrlevel, int (*) (void *),
-	    void *, int));
+#include <alpha/pci/apecsvar.h>
 
-struct pci_cfg_fcns pci_2100_a50_sio1_cfg_fcns = {	/* XXX diff? */
-	pci_2100_a50_attach, pci_2100_a50_map_int,
-};
+#include <alpha/pci/pci_2100_a50.h>
+#include <alpha/pci/siovar.h>
+#include <alpha/pci/sioreg.h>
 
-struct pci_cfg_fcns pci_2100_a50_sio2_cfg_fcns = {
-	pci_2100_a50_attach, pci_2100_a50_map_int,
-};
+#include "sio.h"
+
+int	dec_2100_a50_intr_map(void *, pcitag_t, int, int,
+	    pci_intr_handle_t *);
+const char *dec_2100_a50_intr_string(void *, pci_intr_handle_t);
+int	 dec_2100_a50_intr_line(void *, pci_intr_handle_t);
+void    *dec_2100_a50_intr_establish(void *, pci_intr_handle_t,
+	    int, int (*func)(void *), void *, char *);
+void    dec_2100_a50_intr_disestablish(void *, void *);
+
+#define	APECS_SIO_DEVICE	7	/* XXX */
 
 void
-pci_2100_a50_attach(parent, self, aux)
-        struct device *parent, *self;
-        void *aux;
+pci_2100_a50_pickintr(acp)
+	struct apecs_config *acp;
 {
-	int bus, device;
+	bus_space_tag_t iot = &acp->ac_iot;
+	pci_chipset_tag_t pc = &acp->ac_pc;
+	pcireg_t sioclass;
+	int sioII;
 
-#if 0
-	for (bus = 0; bus <= 255; bus++)
+	/* XXX MAGIC NUMBER */
+	sioclass = pci_conf_read(pc, pci_make_tag(pc, 0, 7, 0), PCI_CLASS_REG);
+        sioII = (sioclass & 0xff) >= 3;
+
+	if (!sioII)
+		printf("WARNING: SIO NOT SIO II... NO BETS...\n");
+
+	pc->pc_intr_v = acp;
+	pc->pc_intr_map = dec_2100_a50_intr_map;
+	pc->pc_intr_string = dec_2100_a50_intr_string;
+	pc->pc_intr_line = dec_2100_a50_intr_line;
+	pc->pc_intr_establish = dec_2100_a50_intr_establish;
+	pc->pc_intr_disestablish = dec_2100_a50_intr_disestablish;
+
+	/* Not supported on 2100 A50. */
+	pc->pc_pciide_compat_intr_establish = NULL;
+	pc->pc_pciide_compat_intr_disestablish = NULL;
+
+#if NSIO
+        sio_intr_setup(pc, iot);
+	set_iointr(&sio_iointr);
 #else
-	/*
-	 * XXX
-	 * Some current chipsets do wacky things with bus numbers > 0.
-	 * This seems like a violation of protocol, but the PCI BIOS does
-	 * allow one to query the maximum bus number, and eventually we
-	 * should do so.
-	 */
-	for (bus = 0; bus <= 0; bus++)
+	panic("pci_2100_a50_pickintr: no I/O interrupt handler (no sio)");
 #endif
-		for (device = 0; device <= 31; device++)
-			pci_attach_subdev(self, bus, device);
 }
 
-void *
-pci_2100_a50_map_int(tag, level, func, arg, pin)
-        pcitag_t tag;
-        pci_intrlevel level;
-        int (*func) __P((void *));
-        void *arg;
-	int pin;
+int
+dec_2100_a50_intr_map(acv, bustag, buspin, line, ihp)
+	void *acv;
+        pcitag_t bustag;
+	int buspin, line;
+	pci_intr_handle_t *ihp;
 {
-	int bus, device, pirq;
+	struct apecs_config *acp = acv;
+	pci_chipset_tag_t pc = &acp->ac_pc;
+	int device, pirq;
 	pcireg_t pirqreg;
-	u_int8_t line;
+	u_int8_t pirqline;
 
-	bus = (tag >> 21) & 0xff;		/* XXX */
-	device = (tag >> 16) & 0x1f;
+        if (buspin == 0) {
+                /* No IRQ used. */
+                return 1;
+        }
+        if (buspin > 4) {
+                printf("dec_2100_a50_intr_map: bad interrupt pin %d\n",
+		    buspin);
+                return 1;
+        }
 
-	if (bus != 0)				/* XXX */
-		return NULL;
+	pci_decompose_tag(pc, bustag, NULL, &device, NULL);
 
 	switch (device) {
 	case 6:					/* NCR SCSI */
@@ -102,7 +128,8 @@ pci_2100_a50_map_int(tag, level, func, arg, pin)
 		break;
 
 	case 11:				/* slot 1 */
-		switch (pin) {
+	case 14:				/* slot 3 */
+		switch (buspin) {
 		case PCI_INTERRUPT_PIN_A:
 		case PCI_INTERRUPT_PIN_D:
 			pirq = 0;
@@ -113,11 +140,16 @@ pci_2100_a50_map_int(tag, level, func, arg, pin)
 		case PCI_INTERRUPT_PIN_C:
 			pirq = 1;
 			break;
+#ifdef DIAGNOSTIC
+		default:			/* XXX gcc -Wuninitialized */
+			panic("dec_2100_a50_intr_map bogus PCI pin %d",
+			    buspin);
+#endif
 		};
 		break;
 
 	case 12:				/* slot 2 */
-		switch (pin) {
+		switch (buspin) {
 		case PCI_INTERRUPT_PIN_A:
 		case PCI_INTERRUPT_PIN_D:
 			pirq = 1;
@@ -128,11 +160,16 @@ pci_2100_a50_map_int(tag, level, func, arg, pin)
 		case PCI_INTERRUPT_PIN_C:
 			pirq = 2;
 			break;
+#ifdef DIAGNOSTIC
+		default:			/* XXX gcc -Wuninitialized */
+			panic("dec_2100_a50_intr_map bogus PCI pin %d",
+			    buspin);
+#endif
 		};
 		break;
 
 	case 13:				/* slot 3 */
-		switch (pin) {
+		switch (buspin) {
 		case PCI_INTERRUPT_PIN_A:
 		case PCI_INTERRUPT_PIN_D:
 			pirq = 2;
@@ -143,47 +180,71 @@ pci_2100_a50_map_int(tag, level, func, arg, pin)
 		case PCI_INTERRUPT_PIN_C:
 			pirq = 0;
 			break;
+#ifdef DIAGNOSTIC
+		default:			/* XXX gcc -Wuninitialized */
+			panic("dec_2100_a50_intr_map bogus PCI pin %d",
+			    buspin);
+#endif
 		};
 		break;
+
+	default:
+                printf("dec_2100_a50_intr_map: weird device number %d\n",
+		    device);
+                return 1;
 	}
 
-	pirqreg = pci_conf_read(pci_make_tag(0, 7, 0), 0x60);	/* XXX */
+	pirqreg = pci_conf_read(pc, pci_make_tag(pc, 0, APECS_SIO_DEVICE, 0),
+	    SIO_PCIREG_PIRQ_RTCTRL);
 #if 0
 	printf("pci_2100_a50_map_int: device %d pin %c: pirq %d, reg = %x\n",
-		device, '@' + pin, pirq, pirqreg);
+		device, '@' + buspin, pirq, pirqreg);
 #endif
-	line = (pirqreg >> (pirq * 8)) & 0xff;
-	if ((line & 0x80) != 0)
-		return 0;			/* not routed? */
-	line &= 0xf;
+	pirqline = (pirqreg >> (pirq * 8)) & 0xff;
+	if ((pirqline & 0x80) != 0)
+		return 1;
+	pirqline &= 0xf;
 
 #if 0
 	printf("pci_2100_a50_map_int: device %d pin %c: mapped to line %d\n",
-	    device, '@' + pin, line);
+	    device, '@' + buspin, pirqline);
 #endif
 
-	return isa_intr_establish(line, ISA_IST_LEVEL, pcilevel_to_isa(level),
-	    func, arg);
+	*ihp = pirqline;
+	return (0);
+}
+
+const char *
+dec_2100_a50_intr_string(acv, ih)
+	void *acv;
+	pci_intr_handle_t ih;
+{
+	return sio_intr_string(NULL /*XXX*/, ih);
+}
+
+int
+dec_2100_a50_intr_line(acv, ih)
+	void *acv;
+	pci_intr_handle_t ih;
+{
+	return sio_intr_line(NULL /*XXX*/, ih);
+}
+
+void *
+dec_2100_a50_intr_establish(acv, ih, level, func, arg, name)
+	void *acv, *arg;
+	pci_intr_handle_t ih;
+	int level;
+	int (*func)(void *);
+	char *name;
+{
+	return sio_intr_establish(NULL /*XXX*/, ih, IST_LEVEL, level, func,
+	    arg, name);
 }
 
 void
-pci_2100_a50_pickintr()
+dec_2100_a50_intr_disestablish(acv, cookie)
+	void *acv, *cookie;
 {
-	pcireg_t sioclass;
-	int sioII;
-
-	/* XXX MAGIC NUMBER */
-	sioclass = pci_conf_read(pci_make_tag(0, 7, 0), PCI_CLASS_REG);
-        sioII = (sioclass & 0xff) >= 3;
-	if (!sioII)
-		printf("WARNING: SIO NOT SIO II... NO BETS...\n");
-
-	if (!sioII)
-		pci_cfg_fcns = &pci_2100_a50_sio1_cfg_fcns;
-	else
-		pci_cfg_fcns = &pci_2100_a50_sio2_cfg_fcns;
-
-	isa_intr_fcns = &sio_intr_fcns;
-	(*isa_intr_fcns->isa_intr_setup)();
-	set_iointr(isa_intr_fcns->isa_iointr);
+	sio_intr_disestablish(NULL /*XXX*/, cookie);
 }

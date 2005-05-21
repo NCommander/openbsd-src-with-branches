@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -29,7 +31,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: gtty.c,v 1.1 1994/05/21 05:20:34 cgd Exp $";
+static char rcsid[] = "$OpenBSD: gtty.c,v 1.1.1.1 1995/10/18 08:42:34 deraadt Exp $";
 #endif /* not lint */
 
 #include <sgtty.h>

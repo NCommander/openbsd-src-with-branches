@@ -1,3 +1,5 @@
+/*	$OpenBSD: gettytab.h,v 1.5 2002/02/16 21:27:30 millert Exp $*/
+
 /*
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,7 +29,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)gettytab.h	8.2 (Berkeley) 3/30/94
- *	$Id: gettytab.h,v 1.7 1994/08/17 20:10:34 pk Exp $
  */
 
 /*
@@ -85,6 +82,7 @@ struct gettyflags {
 #define FL	gettystrs[21].value
 #define WE	gettystrs[22].value
 #define LN	gettystrs[23].value
+#define PP	gettystrs[24].value
 
 /*
  * Numeric definitions.
@@ -160,10 +158,10 @@ struct gettyflags {
 #define	NP	gettyflags[21].value
 #define	MB	gettyflags[22].value
 
-int	getent __P((char *, char *));
-long	getnum __P((char *));
-int	getflag __P((char *));
-char	*getstr __P((char *, char **));
+int	getent(char *, char *);
+long	getnum(char *);
+int	getflag(char *);
+char	*getstr(char *, char **);
 
 extern	struct gettyflags gettyflags[];
 extern	struct gettynums gettynums[];

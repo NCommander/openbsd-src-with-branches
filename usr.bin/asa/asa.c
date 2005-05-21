@@ -1,3 +1,4 @@
+/*	$OpenBSD: asa.c,v 1.4 2003/06/10 22:20:44 deraadt Exp $	*/
 /*	$NetBSD: asa.c,v 1.10 1995/04/21 03:01:41 cgd Exp $	*/
 
 /*
@@ -31,44 +32,42 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: asa.c,v 1.10 1995/04/21 03:01:41 cgd Exp $";
+static char rcsid[] = "$OpenBSD: asa.c,v 1.4 2003/06/10 22:20:44 deraadt Exp $";
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
 
-static void asa();
+static void asa(FILE *);
 
 int
-main (argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	FILE *fp;
 
 	/* skip progname */
 	argv++;
 
-        fp = stdin;
-        do {
-                if (*argv) {
-                        if (!(fp = fopen(*argv, "r"))) {
+	fp = stdin;
+	do {
+		if (*argv) {
+			if (!(fp = fopen(*argv, "r"))) {
 				warn ("%s", *argv);
 				continue;
-                        }
-                }
-                asa (fp);
-                if (fp != stdin)
-                        (void)fclose(fp);
-        } while (*argv++);
+			}
+		}
+		if (fp)
+			asa (fp);
+		if (fp && fp != stdin)
+			(void)fclose(fp);
+	} while (*argv++);
 
 	exit (0);
 }
 
 static void
-asa(f)
-	FILE *f;
+asa(FILE *f)
 {
 	char *buf;
 	size_t len;

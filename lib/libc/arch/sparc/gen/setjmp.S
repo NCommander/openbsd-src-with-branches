@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +29,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * from: Header: setjmp.s,v 1.2 92/06/25 03:18:43 torek Exp
- * $Id: setjmp.S,v 1.3 1994/05/17 23:56:24 deraadt Exp $
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.asciz "@(#)setjmp.s	8.1 (Berkeley) 6/4/93"
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_SCCS) 
+	.text
+	.asciz "$OpenBSD: setjmp.S,v 1.3 2002/08/05 15:29:28 art Exp $"
+#endif /* LIBC_SCCS */
 
 /*
  * C library -- setjmp, longjmp
@@ -109,6 +103,6 @@ ENTRY(longjmp)
 
 Lbotch:
 	/* oops, caller botched it */
-	call	_longjmperror
+	call	_C_LABEL(longjmperror)
 	 nop
 	unimp	0

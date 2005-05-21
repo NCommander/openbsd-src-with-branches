@@ -1,3 +1,4 @@
+/*	$OpenBSD: rm.c,v 1.16 2004/05/31 17:18:59 tedu Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,12 +40,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rm.c	8.8 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rm.c,v 1.16 2004/05/31 17:18:59 tedu Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
+#include <sys/mount.h>
 
 #include <locale.h>
 #include <err.h>
@@ -59,15 +58,20 @@ static char rcsid[] = "$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
+
+extern char *__progname;
 
 int dflag, eval, fflag, iflag, Pflag, Wflag, stdin_ok;
 
-int	check __P((char *, char *, struct stat *));
-void	checkdot __P((char **));
-void	rm_file __P((char **));
-void	rm_overwrite __P((char *, struct stat *));
-void	rm_tree __P((char **));
-void	usage __P((void));
+int	check(char *, char *, struct stat *);
+void	checkdot(char **);
+void	rm_file(char **);
+int	rm_overwrite(char *, struct stat *);
+int	pass(int, int, off_t, char *, size_t);
+void	rm_tree(char **);
+void	usage(void);
 
 /*
  * rm --
@@ -77,9 +81,7 @@ void	usage __P((void));
  * 	file removal.
  */
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch, rflag;
 
@@ -109,14 +111,13 @@ main(argc, argv)
 		case 'W':
 			Wflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 1)
+	if (argc < 1 && fflag == 0)
 		usage();
 
 	checkdot(argv);
@@ -134,8 +135,7 @@ main(argc, argv)
 }
 
 void
-rm_tree(argv)
-	char **argv;
+rm_tree(char **argv)
 {
 	FTS *fts;
 	FTSENT *p;
@@ -159,7 +159,7 @@ rm_tree(argv)
 		flags |= FTS_NOSTAT;
 	if (Wflag)
 		flags |= FTS_WHITEOUT;
-	if (!(fts = fts_open(argv, flags, (int (*)())NULL)))
+	if (!(fts = fts_open(argv, flags, NULL)))
 		err(1, NULL);
 	while ((p = fts_read(fts)) != NULL) {
 		switch (p->fts_info) {
@@ -212,20 +212,23 @@ rm_tree(argv)
 		switch (p->fts_info) {
 		case FTS_DP:
 		case FTS_DNR:
-			if (!rmdir(p->fts_accpath) || fflag && errno == ENOENT)
+			if (!rmdir(p->fts_accpath) ||
+			    (fflag && errno == ENOENT))
 				continue;
 			break;
 
 		case FTS_W:
 			if (!undelete(p->fts_accpath) ||
-			    fflag && errno == ENOENT)
+			    (fflag && errno == ENOENT))
 				continue;
 			break;
 
 		default:
 			if (Pflag)
-				rm_overwrite(p->fts_accpath, NULL);
-			if (!unlink(p->fts_accpath) || fflag && errno == ENOENT)
+				if (!rm_overwrite(p->fts_accpath, NULL))
+					continue;
+			if (!unlink(p->fts_accpath) ||
+			    (fflag && errno == ENOENT))
 				continue;
 		}
 		warn("%s", p->fts_path);
@@ -236,8 +239,7 @@ rm_tree(argv)
 }
 
 void
-rm_file(argv)
-	char **argv;
+rm_file(char **argv)
 {
 	struct stat sb;
 	int rval;
@@ -278,7 +280,8 @@ rm_file(argv)
 			rval = rmdir(f);
 		else {
 			if (Pflag)
-				rm_overwrite(f, &sb);
+				if (!rm_overwrite(f, &sb))
+					continue;
 			rval = unlink(f);
 		}
 		if (rval && (!fflag || errno != ENOENT)) {
@@ -298,16 +301,16 @@ rm_file(argv)
  * Also, this assumes a fixed-block file system (like FFS, or a V7 or a
  * System V file system).  In a logging file system, you'll have to have
  * kernel support.
+ * Returns 1 for success.
  */
-void
-rm_overwrite(file, sbp)
-	char *file;
-	struct stat *sbp;
+int
+rm_overwrite(char *file, struct stat *sbp)
 {
 	struct stat sb;
-	off_t len;
-	int fd, wlen;
-	char buf[8 * 1024];
+	struct statfs fsb;
+	size_t bsize;
+	int fd;
+	char *buf = NULL;
 
 	fd = -1;
 	if (sbp == NULL) {
@@ -316,37 +319,56 @@ rm_overwrite(file, sbp)
 		sbp = &sb;
 	}
 	if (!S_ISREG(sbp->st_mode))
-		return;
+		return (1);
+	if (sbp->st_nlink > 1) {
+		warnx("%s (inode %u): not overwritten due to multiple links",
+		    file, sbp->st_ino);
+		return (0);
+	}
 	if ((fd = open(file, O_WRONLY, 0)) == -1)
 		goto err;
-
-#define	PASS(byte) {							\
-	memset(buf, byte, sizeof(buf));					\
-	for (len = sbp->st_size; len > 0; len -= wlen) {		\
-		wlen = len < sizeof(buf) ? len : sizeof(buf);		\
-		if (write(fd, buf, wlen) != wlen)			\
-			goto err;					\
-	}								\
-}
-	PASS(0xff);
-	if (fsync(fd) || lseek(fd, (off_t)0, SEEK_SET))
+	if (fstatfs(fd, &fsb) == -1)
 		goto err;
-	PASS(0x00);
-	if (fsync(fd) || lseek(fd, (off_t)0, SEEK_SET))
-		goto err;
-	PASS(0xff);
-	if (!fsync(fd) && !close(fd))
-		return;
+	bsize = MAX(fsb.f_iosize, 1024U);
+	if ((buf = malloc(bsize)) == NULL)
+		err(1, "%s: malloc", file);
 
-err:	eval = 1;
+	if (!pass(0xff, fd, sbp->st_size, buf, bsize) || fsync(fd) ||
+	    lseek(fd, (off_t)0, SEEK_SET))
+		goto err;
+	if (!pass(0x00, fd, sbp->st_size, buf, bsize) || fsync(fd) ||
+	    lseek(fd, (off_t)0, SEEK_SET))
+		goto err;
+	if (!pass(0xff, fd, sbp->st_size, buf, bsize) || fsync(fd))
+		goto err;
+	close(fd);
+	free(buf);
+	return (1);
+
+err:
 	warn("%s", file);
+	close(fd);
+	eval = 1;
+	free(buf);
+	return (0);
 }
-
 
 int
-check(path, name, sp)
-	char *path, *name;
-	struct stat *sp;
+pass(int val, int fd, off_t len, char *buf, size_t bsize)
+{
+	size_t wlen;
+
+	memset(buf, val, bsize);
+	for (; len > 0; len -= wlen) {
+		wlen = len < bsize ? len : bsize;
+		if (write(fd, buf, wlen) != wlen)
+			return (0);
+	}
+	return (1);
+}
+
+int
+check(char *path, char *name, struct stat *sp)
 {
 	int ch, first;
 	char modep[15];
@@ -385,10 +407,9 @@ check(path, name, sp)
  * Since POSIX.2 defines basename as the final portion of a path after
  * trailing slashes have been removed, we'll remove them here.
  */
-#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || (a)[1] == '.' && !(a)[2]))
+#define ISDOT(a)	((a)[0] == '.' && (!(a)[1] || ((a)[1] == '.' && !(a)[2])))
 void
-checkdot(argv)
-	char **argv;
+checkdot(char **argv)
 {
 	char *p, **save, **t;
 	int complained;
@@ -419,9 +440,8 @@ checkdot(argv)
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: rm [-dfiPRrW] file ...\n");
+	(void)fprintf(stderr, "usage: %s [-dfiPRrW] file ...\n", __progname);
 	exit(1);
 }

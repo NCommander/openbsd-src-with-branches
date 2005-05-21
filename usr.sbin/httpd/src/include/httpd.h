@@ -70,19 +70,15 @@ extern "C" {
 /* Headers in which EVERYONE has an interest... */
 
 #include "ap_config.h"
-#ifdef EAPI
 #include "ap_mm.h"
-#endif
 #include "ap_alloc.h"
 /*
  * Include the Extended API headers.
  * Don't move the position. It has to be after ap_alloc.h because it uses the
  * pool stuff but before buff.h because the buffer stuff uses the EAPI, too. 
  */
-#ifdef EAPI
 #include "ap_hook.h"
 #include "ap_ctx.h"
-#endif /* EAPI */
 #include "buff.h"
 #include "ap.h"
 
@@ -92,31 +88,14 @@ extern "C" {
  * file with a relative pathname will have this added.
  */
 #ifndef HTTPD_ROOT
-#ifdef OS2
-/* Set default for OS/2 file system */
-#define HTTPD_ROOT "/os2httpd"
-#elif defined(WIN32)
-/* Set default for Windows file system */
-#define HTTPD_ROOT "/apache"
-#elif defined(BEOS) || defined(BONE)
-#define HTTPD_ROOT "/boot/home/apache"
-#elif defined(NETWARE)
-#define HTTPD_ROOT "sys:/apache"
-#else
 #define HTTPD_ROOT "/usr/local/apache"
-#endif
 #endif /* HTTPD_ROOT */
 
 /* Default location of documents.  Can be overridden by the DocumentRoot
  * directive.
  */
 #ifndef DOCUMENT_LOCATION
-#ifdef OS2
-/* Set default for OS/2 file system */
-#define DOCUMENT_LOCATION  HTTPD_ROOT "/docs"
-#else
 #define DOCUMENT_LOCATION  HTTPD_ROOT "/htdocs"
-#endif
 #endif /* DOCUMENT_LOCATION */
 
 /* Max. number of dynamically loaded modules */
@@ -153,18 +132,8 @@ extern "C" {
 #define DEFAULT_HTTP_PORT	80
 #define DEFAULT_HTTPS_PORT	443
 #define ap_is_default_port(port,r)	((port) == ap_default_port(r))
-#ifdef NETWARE
-#define ap_http_method(r) ap_os_http_method((void*)r)
-#define ap_default_port(r) ap_os_default_port((void*)r)
-#else
-#ifdef EAPI
 #define ap_http_method(r)   (((r)->ctx != NULL && ap_ctx_get((r)->ctx, "ap::http::method") != NULL) ? ((char *)ap_ctx_get((r)->ctx, "ap::http::method")) : "http")
 #define ap_default_port(r)  (((r)->ctx != NULL && ap_ctx_get((r)->ctx, "ap::default::port") != NULL) ? atoi((char *)ap_ctx_get((r)->ctx, "ap::default::port")) : DEFAULT_HTTP_PORT)
-#else /* EAPI */
-#define ap_http_method(r)	"http"
-#define ap_default_port(r)	DEFAULT_HTTP_PORT
-#endif /* EAPI */
-#endif
 
 /* --------- Default user name and group name running standalone ---------- */
 /* --- These may be specified as numbers by placing a # before a number --- */
@@ -177,11 +146,7 @@ extern "C" {
 #endif
 
 #ifndef DEFAULT_ERRORLOG
-#if defined(OS2) || defined(WIN32)
-#define DEFAULT_ERRORLOG "logs/error.log"
-#else
 #define DEFAULT_ERRORLOG "logs/error_log"
-#endif
 #endif /* DEFAULT_ERRORLOG */
 
 #ifndef DEFAULT_PIDLOG
@@ -212,12 +177,7 @@ extern "C" {
 
 /* Define this to be what your per-directory security files are called */
 #ifndef DEFAULT_ACCESS_FNAME
-#ifdef OS2
-/* Set default for OS/2 file system */
-#define DEFAULT_ACCESS_FNAME "htaccess"
-#else
 #define DEFAULT_ACCESS_FNAME ".htaccess"
-#endif
 #endif /* DEFAULT_ACCESS_FNAME */
 
 /* The name of the server config file */
@@ -256,12 +216,7 @@ extern "C" {
 
 /* The path to the shell interpreter, for parsed docs */
 #ifndef SHELL_PATH
-#if defined(OS2) || defined(WIN32)
-/* Set default for OS/2 and Windows file system */
-#define SHELL_PATH "CMD.EXE"
-#else
 #define SHELL_PATH "/bin/sh"
-#endif
 #endif /* SHELL_PATH */
 
 /* The path to the suExec wrapper, can be overridden in Configuration */
@@ -327,13 +282,7 @@ extern "C" {
  * the overhead.
  */
 #ifndef HARD_SERVER_LIMIT
-#ifdef WIN32
-#define HARD_SERVER_LIMIT 1024
-#elif defined(NETWARE)
-#define HARD_SERVER_LIMIT 2048
-#else
 #define HARD_SERVER_LIMIT 256
-#endif
 #endif
 
 /*
@@ -376,13 +325,11 @@ extern "C" {
  * Unix only:
  * Path to Shared Memory Files 
  */
-#ifdef EAPI
 #ifndef EAPI_MM_CORE_PATH
 #define EAPI_MM_CORE_PATH "logs/mm"
 #endif
 #ifndef EAPI_MM_CORE_MAXSIZE
 #define EAPI_MM_CORE_MAXSIZE 1024*1024*1 /* max. 1MB */
-#endif
 #endif
 
 /* Number of requests to try to handle in a single process.  If <= 0,
@@ -477,9 +424,7 @@ enum server_token_type {
 API_EXPORT(const char *) ap_get_server_version(void);
 API_EXPORT(void) ap_add_version_component(const char *component);
 API_EXPORT(const char *) ap_get_server_built(void);
-#ifdef EAPI
 API_EXPORT(void) ap_add_config_define(const char *define);
-#endif /* EAPI */
 
 /* Numeric release version identifier: MMNNFFRBB: major minor fix final beta
  * Always increases along the same track as the source branch.
@@ -618,9 +563,6 @@ API_EXPORT(void) ap_add_config_define(const char *define);
 #define CGI_MAGIC_TYPE "application/x-httpd-cgi"
 #define INCLUDES_MAGIC_TYPE "text/x-server-parsed-html"
 #define INCLUDES_MAGIC_TYPE3 "text/x-server-parsed-html3"
-#ifdef CHARSET_EBCDIC
-#define ASCIITEXT_MAGIC_TYPE_PREFIX "text/x-ascii-" /* Text files whose content-type starts with this are passed thru unconverted */
-#endif /*CHARSET_EBCDIC*/
 #define MAP_FILE_MAGIC_TYPE "application/x-type-map"
 #define ASIS_MAGIC_TYPE "httpd/send-as-is"
 #define DIR_MAGIC_TYPE "httpd/unix-directory"
@@ -644,25 +586,10 @@ API_EXPORT(void) ap_add_config_define(const char *define);
                           "\"http://www.w3.org/TR/REC-html40/frameset.dtd\">\n"
 
 /* Just in case your linefeed isn't the one the other end is expecting. */
-#ifndef CHARSET_EBCDIC
 #define LF 10
 #define CR 13
 #define CRLF "\015\012"
 #define OS_ASC(c) (c)
-#else /* CHARSET_EBCDIC */
-#include "ap_ebcdic.h"
-/* OSD_POSIX uses the EBCDIC charset. The transition ASCII->EBCDIC is done in
- * the buff package (bread/bputs/bwrite), so everywhere else, we use
- * "native EBCDIC" CR and NL characters. These are therefore defined as
- * '\r' and '\n'.
- * NB: this is not the whole truth - sometimes \015 and \012 are contained
- * in literal (EBCDIC!) strings, so these are not converted but passed.
- */
-#define CR '\r'
-#define LF '\n'
-#define CRLF "\r\n"
-#define OS_ASC(c) (os_toascii[c])
-#endif /* CHARSET_EBCDIC */
 
 /* Possible values for request_rec.read_body (set by handling module):
  *    REQUEST_NO_BODY          Send 413 error if message has any body
@@ -867,26 +794,13 @@ struct request_rec {
      */
     char *case_preserved_filename;
 
-#ifdef CHARSET_EBCDIC
-    /* We don't want subrequests to modify our current conversion flags.
-     * These flags save the state of the conversion flags when subrequests
-     * are run.
-     */
-    struct {
-        unsigned conv_in:1;    /* convert ASCII->EBCDIC when read()ing? */
-        unsigned conv_out:1;   /* convert EBCDIC->ASCII when write()ing? */
-    } ebcdic;
-#endif
-
 /* Things placed at the end of the record to avoid breaking binary
  * compatibility.  It would be nice to remember to reorder the entire
  * record to improve 64bit alignment the next time we need to break
  * binary compatibility for some other reason.
  */
 
-#ifdef EAPI
     ap_ctx *ctx;
-#endif /* EAPI */
 };
 
 
@@ -935,9 +849,7 @@ struct conn_rec {
     char *local_host;		/* used for ap_get_server_name when
 				 * UseCanonicalName is set to DNS
 				 * (ignores setting of HostnameLookups) */
-#ifdef EAPI
     ap_ctx *ctx;
-#endif /* EAPI */
 };
 
 /* Per-vhost config... */
@@ -1011,9 +923,7 @@ struct server_rec {
     int limit_req_fieldsize; /* limit on size of any request header field */
     int limit_req_fields;    /* limit on number of request header fields  */
 
-#ifdef EAPI
     ap_ctx *ctx;
-#endif /* EAPI */
 };
 
 /* These are more like real hosts than virtual hosts */
@@ -1072,6 +982,8 @@ API_EXPORT(char *) ap_escape_html(pool *p, const char *s);
 API_EXPORT(char *) ap_construct_server(pool *p, const char *hostname,
 				    unsigned port, const request_rec *r);
 API_EXPORT(char *) ap_escape_logitem(pool *p, const char *str);
+API_EXPORT(size_t) ap_escape_errorlog_item(char *dest, const char *source,
+                                           size_t buflen);
 API_EXPORT(char *) ap_escape_shell_cmd(pool *p, const char *s);
 
 API_EXPORT(int) ap_count_dirs(const char *path);
@@ -1090,15 +1002,6 @@ API_EXPORT(char *) ap_pbase64decode(pool *p, const char *bufcoded);
 API_EXPORT(char *) ap_pbase64encode(pool *p, char *string); 
 API_EXPORT(char *) ap_uudecode(pool *p, const char *bufcoded);
 API_EXPORT(char *) ap_uuencode(pool *p, char *string); 
-
-#if defined(OS2) || defined(WIN32)
-API_EXPORT(char *) ap_double_quotes(pool *p, const char *str);
-API_EXPORT(char *) ap_caret_escape_args(pool *p, const char *str);
-#endif
-
-#ifdef OS2
-void os2pathname(char *path);
-#endif
 
 API_EXPORT(int)    ap_regexec(const regex_t *preg, const char *string,
                               size_t nmatch, regmatch_t pmatch[], int eflags);
@@ -1144,10 +1047,6 @@ API_EXPORT(int) ap_cfg_getc(configfile_t *cfp);
 /* Detach from open configfile_t, calling the close handler */
 API_EXPORT(int) ap_cfg_closefile(configfile_t *cfp);
 
-#ifdef NEED_STRERROR
-char *strerror(int err);
-#endif
-
 /* Misc system hackery */
 
 API_EXPORT(uid_t) ap_uname2id(const char *name);
@@ -1166,25 +1065,10 @@ API_EXPORT(void) ap_chdir_file(const char *file);
 #define ap_os_systemcase_filename(p,f)  (f)
 #else
 API_EXPORT(char *) ap_os_canonical_filename(pool *p, const char *file);
-#ifdef WIN32
-API_EXPORT(char *) ap_os_case_canonical_filename(pool *pPool, const char *szFile);
-API_EXPORT(char *) ap_os_systemcase_filename(pool *pPool, const char *szFile);
-#elif defined(OS2)
-API_EXPORT(char *) ap_os_case_canonical_filename(pool *pPool, const char *szFile);
-API_EXPORT(char *) ap_os_systemcase_filename(pool *pPool, const char *szFile);
-#elif defined(NETWARE)
-API_EXPORT(char *) ap_os_case_canonical_filename(pool *pPool, const char *szFile);
-#define ap_os_systemcase_filename(p,f) ap_os_case_canonical_filename(p,f)
-#else
 #define ap_os_case_canonical_filename(p,f) ap_os_canonical_filename(p,f)
 #define ap_os_systemcase_filename(p,f) ap_os_canonical_filename(p,f)
 #endif
-#endif
 
-#ifdef CHARSET_EBCDIC
-API_EXPORT(int)    ap_checkconv(struct request_rec *r);    /* for downloads */
-API_EXPORT(int)    ap_checkconv_in(struct request_rec *r); /* for uploads */
-#endif /*#ifdef CHARSET_EBCDIC*/
 
 API_EXPORT(char *) ap_get_local_host(pool *);
 API_EXPORT(unsigned long) ap_get_virthost_addr(char *hostname, unsigned short *port);
@@ -1199,15 +1083,11 @@ extern API_VAR_EXPORT time_t ap_restart_time;
  * can't be allocated above this number then it will remain in the "slack"
  * area.
  *
- * Only the low slack line is used by default.  If HIGH_SLACK_LINE is defined
- * then an attempt is also made to keep all non-FILE * files above the high
- * slack line.  This is to work around a Solaris C library limitation, where it
- * uses an unsigned char to store the file descriptor.
+ * Only the low slack line is used by default.
  */
 #ifndef LOW_SLACK_LINE
 #define LOW_SLACK_LINE	15
 #endif
-/* #define HIGH_SLACK_LINE      255 */
 
 /*
  * The ap_slack() function takes a fd, and tries to move it above the indicated
@@ -1215,13 +1095,9 @@ extern API_VAR_EXPORT time_t ap_restart_time;
  * never fails.  If the high line was requested and it fails it will also try
  * the low line.
  */
-#ifdef NO_SLACK
-#define ap_slack(fd,line)   (fd)
-#else
 int ap_slack(int fd, int line);
 #define AP_SLACK_LOW	1
 #define AP_SLACK_HIGH	2
-#endif
 
 API_EXPORT(char *) ap_escape_quotes(pool *p, const char *instr);
 
@@ -1232,13 +1108,7 @@ API_EXPORT(void) ap_log_assert(const char *szExp, const char *szFile, int nLine)
 			    __attribute__((noreturn));
 #define ap_assert(exp) ((exp) ? (void)0 : ap_log_assert(#exp,__FILE__,__LINE__))
 
-/* The optimized timeout code only works if we're not MULTITHREAD and we're
- * also not using a scoreboard file
- */
-#if !defined (MULTITHREAD) && \
-    (defined (USE_MMAP_SCOREBOARD) || defined (USE_SHMGET_SCOREBOARD))
 #define OPTIMIZE_TIMEOUTS
-#endif
 
 /* A set of flags which indicate places where the server should raise(SIGSTOP).
  * This is useful for debugging, because you can then attach to that process

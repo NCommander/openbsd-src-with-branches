@@ -36,7 +36,8 @@ UNIXOBJS =	@ISC_ISCIPV6_O@ \
 		unix/errno2result.@O@ unix/file.@O@ unix/fsaccess.@O@ \
 		unix/interfaceiter.@O@ unix/keyboard.@O@ unix/net.@O@ \
 		unix/os.@O@ unix/resource.@O@ unix/socket.@O@ unix/stdio.@O@ \
-		unix/stdtime.@O@ unix/strerror.@O@ unix/syslog.@O@ unix/time.@O@
+		unix/stdtime.@O@ unix/strerror.@O@ unix/syslog.@O@ unix/time.@O@ \
+		unix/privsep.@O@ unix/privsep_fdpass.@O@
 
 
 NLSOBJS =	nls/msgcat.@O@
@@ -53,7 +54,7 @@ OBJS =		@ISC_EXTRA_OBJS@ \
 		assertions.@O@ base64.@O@ bitstring.@O@ buffer.@O@ \
 		bufferlist.@O@ commandline.@O@ error.@O@ event.@O@ \
 		hash.@O@ heap.@O@ hex.@O@ hmacmd5.@O@ \
-		lex.@O@ lfsr.@O@ lib.@O@ log.@O@ md5.@O@ \
+		lcg.@O@ lex.@O@ lfsr.@O@ lib.@O@ log.@O@ md5.@O@ \
 		mem.@O@ mutexblock.@O@ netaddr.@O@ netscope.@O@ ondestroy.@O@ \
 		parseint.@O@ quota.@O@ random.@O@ \
 		ratelimiter.@O@ region.@O@ result.@O@ rwlock.@O@ \
@@ -66,7 +67,7 @@ SRCS =		@ISC_EXTRA_SRCS@ \
 		assertions.c base64.c bitstring.c buffer.c \
 		bufferlist.c commandline.c error.c event.c \
 		heap.c hex.c hmacmd5.c \
-		lex.c lfsr.c lib.c log.c \
+		lcg.c lex.c lfsr.c lib.c log.c \
 		md5.c mem.c mutexblock.c netaddr.c netscope.c ondestroy.c \
 		parseint.c quota.c random.c \
 		ratelimiter.c result.c rwlock.c \

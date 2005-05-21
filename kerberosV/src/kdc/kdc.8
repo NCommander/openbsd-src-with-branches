@@ -38,7 +38,8 @@
 .Nm kdc
 .Nd Kerberos 5 server
 .Sh SYNOPSIS
-.Nm
+.Nm kdc
+.Bk -words
 .Oo Fl c Ar file \*(Ba Xo
 .Fl -config-file= Ns Ar file
 .Xc
@@ -60,6 +61,7 @@
 .Oc
 .Op Fl -detach
 .Op Fl -addresses= Ns Ar list of addresses
+.Ek
 .Sh DESCRIPTION
 .Nm
 serves requests for tickets.
@@ -98,7 +100,13 @@ handling this.
 Gives an upper limit on the size of the requests that the kdc is
 willing to handle.
 .It Xo
-.Fl H ,
+.Fl -kerberos4-cross-realm
+.Xc
+respond to kerberos 4 requests from foreign realms.
+This is a known security hole and should not be enabled unless you
+understand the consequences and are willing to live with them.
+.It Xo
+.Fl H Ns ,
 .Fl -enable-http
 .Xc
 Makes the kdc listen on port 80 and handle requests encapsulated in HTTP.
@@ -159,7 +167,7 @@ The entity used for logging is
 The configuration file has the same syntax as 
 .Xr krb5.conf 5 ,
 but will be read before 
-.Pa /etc/krb5.conf ,
+.Pa /etc/kerberosV/krb5.conf ,
 so it may override settings found there.
 Options specific to the KDC only are found in the
 .Dq [kdc] 
@@ -185,10 +193,27 @@ Permit tickets with no addresses.
 This option is only relevant when check-ticket-addresses is TRUE.
 .It Li allow-anonymous = Va boolean
 Permit anonymous tickets with no addresses.
-.It Li enforce-transited-policy = Va boolean
-Always verify the transited policy, ignoring the
-.Va disable-transited-check 
-flag if set in the KDC client request.
+.It Li transited-policy = Xo
+.Li always-check \*(Ba
+.Li allow-per-principal |
+.Li always-honour-request
+.Xc
+This controls how KDC requests with the
+.Li disable-transited-check
+flag are handled. It can be one of:
+.Bl -tag -width "xxx" -offset indent
+.It Li always-check
+Always check transited encoding, this is the default.
+.It Li allow-per-principal
+Currently this is identical to
+.Li always-check .
+In a future release, it will be possible to mark a principal as able
+to handle unchecked requests.
+.It Li always-honour-request
+Always do what the client asked.
+In a future release, it will be possible to force a check per
+principal.
+.El
 .It encode_as_rep_as_tgs_rep = Va boolean
 Encode AS-Rep as TGS-Rep to be bug-compatible with old DCE code.
 The Heimdal clients allow both.

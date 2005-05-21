@@ -81,32 +81,15 @@
  */
 
 #include "ap_config.h"
-#ifndef NETWARE
 #include <sys/types.h>
-#endif
 #include <signal.h>
 #include <errno.h>
 #include "ap.h"
 #include "ap_md5.h"
 #include "ap_sha1.h"
 
-#ifdef HAVE_CRYPT_H
-#include <crypt.h>
-#endif
-
-#ifdef WIN32
-#include <conio.h>
-#include "../os/win32/getopt.h"
-#define unlink _unlink
-#endif
-
-#ifndef CHARSET_EBCDIC
 #define LF 10
 #define CR 13
-#else /*CHARSET_EBCDIC*/
-#define LF '\n'
-#define CR '\r'
-#endif /*CHARSET_EBCDIC*/
 
 #define MAX_STRING_LEN 256
 #define ALG_PLAIN 0
@@ -125,7 +108,7 @@
  * This needs to be declared statically so the signal handler can
  * access it.
  */
-static char *tempfilename;
+static char tempfilename[MAX_STRING_LEN];
 /*
  * If our platform knows about the tmpnam() external buffer size, create
  * a buffer to pass in.  This is needed in a threaded environment, or
@@ -188,10 +171,6 @@ static int mkrecord(char *user, char *record, size_t rlen, char *passwd,
 	pw = passwd;
     }
     else {
-#ifdef TPF
-        fprintf(stderr, "Invalid entry. The -b option is required on TPF.\n");
-        return usage();
-#else
 	if (ap_getpass("New password: ", pwin, sizeof(pwin)) != 0) {
 	    ap_snprintf(record, (rlen - 1), "password too long (>%lu)",
 			(unsigned long) (sizeof(pwin) - 1));
@@ -204,7 +183,6 @@ static int mkrecord(char *user, char *record, size_t rlen, char *passwd,
 	}
 	pw = pwin;
         memset(pwv, '\0', sizeof(pwin));
-#endif /* TPF */
     }
     switch (alg) {
 
@@ -214,8 +192,7 @@ static int mkrecord(char *user, char *record, size_t rlen, char *passwd,
 	break;
 
     case ALG_APMD5: 
-        (void) srand((int) time((time_t *) NULL));
-        ap_to64(&salt[0], rand(), 8);
+        ap_to64(&salt[0], arc4random(), 8);
         salt[8] = '\0';
 
 	ap_MD5Encode((const unsigned char *)pw, (const unsigned char *)salt,
@@ -229,8 +206,7 @@ static int mkrecord(char *user, char *record, size_t rlen, char *passwd,
 
     case ALG_CRYPT:
     default:
-        (void) srand((int) time((time_t *) NULL));
-        ap_to64(&salt[0], rand(), 8);
+        ap_to64(&salt[0], arc4random(), 8);
         salt[8] = '\0';
 
 	ap_cpystrn(cpw, (char *)crypt(pw, salt), sizeof(cpw) - 1);
@@ -246,46 +222,30 @@ static int mkrecord(char *user, char *record, size_t rlen, char *passwd,
 	ap_cpystrn(record, "resultant record too long", (rlen - 1));
 	return ERR_OVERFLOW;
     }
-    strcpy(record, user);
-    strcat(record, ":");
-    strcat(record, cpw);
+    snprintf(record, rlen, "%s:%s", user, cpw);
     return 0;
 }
 
 static int usage(void)
 {
-    fprintf(stderr, "Usage:\n");
-    fprintf(stderr, "\thtpasswd [-cmdps] passwordfile username\n");
-    fprintf(stderr, "\thtpasswd -b[cmdps] passwordfile username password\n\n");
-    fprintf(stderr, "\thtpasswd -n[mdps] username\n");
-    fprintf(stderr, "\thtpasswd -nb[mdps] username password\n");
+    fprintf(stderr, "Usage:\thtpasswd [-c] [-d | -m | -p | -s] passwordfile username\n");
+    fprintf(stderr, "\thtpasswd -b [-c] [-d | -m | -p | -s] passwordfile username password\n");
+    fprintf(stderr, "\thtpasswd -n [-d | -m | -p | -s] username\n");
+    fprintf(stderr, "\thtpasswd -bn [-d | -m | -p | -s] username password\n");
+    fprintf(stderr, " -b  Use the password from the command line rather than prompting for it.\n");
     fprintf(stderr, " -c  Create a new file.\n");
+    fprintf(stderr, " -d  Force CRYPT encryption of the password (default).\n");
+    fprintf(stderr, " -m  Force MD5 encryption of the password.\n");
     fprintf(stderr, " -n  Don't update file; display results on stdout.\n");
-    fprintf(stderr, " -m  Force MD5 encryption of the password"
-#if defined(WIN32) || defined(TPF) || defined(NETWARE)
-	" (default)"
-#endif
-	".\n");
-    fprintf(stderr, " -d  Force CRYPT encryption of the password"
-#if (!(defined(WIN32) || defined(TPF) || defined(NETWARE)))
-	    " (default)"
-#endif
-	    ".\n");
     fprintf(stderr, " -p  Do not encrypt the password (plaintext).\n");
     fprintf(stderr, " -s  Force SHA encryption of the password.\n");
-    fprintf(stderr, " -b  Use the password from the command line rather "
-	    "than prompting for it.\n");
-    fprintf(stderr,
-	    "On Windows, TPF and NetWare systems the '-m' flag is used by default.\n");
-    fprintf(stderr,
-	    "On all other systems, the '-p' flag will probably not work.\n");
     return ERR_SYNTAX;
 }
 
 static void interrupted(void)
 {
     fprintf(stderr, "Interrupted.\n");
-    if (tempfilename != NULL) {
+    if (tempfilename[0] != '\0') {
 	unlink(tempfilename);
     }
     exit(ERR_INTERRUPTED);
@@ -328,18 +288,10 @@ static int writable(char *fname)
  */
 static int exists(char *fname)
 {
-#ifdef WIN32
-    struct _stat sbuf;
-#else
     struct stat sbuf;
-#endif
     int check;
 
-#ifdef WIN32
-    check = _stat(fname, &sbuf);
-#else
     check = stat(fname, &sbuf);
-#endif
     return ((check == -1) && (errno == ENOENT)) ? 0 : 1;
 }
 
@@ -377,8 +329,8 @@ int main(int argc, char *argv[])
     int noninteractive = 0;
     int i;
     int args_left = 2;
+    int tfd;
 
-    tempfilename = NULL;
     signal(SIGINT, (void (*)(int)) interrupted);
 
     /*
@@ -437,11 +389,6 @@ int main(int argc, char *argv[])
     if ((argc - i) != args_left) {
 	return usage();
     }
-#ifdef NETWARE
-    UnAugmentAsterisk(TRUE);
-    SetCurrentNameSpace(NW_NS_LONG);
-    SetTargetNameSpace(NW_NS_LONG);
-#endif
     if (newfile && nofile) {
 	fprintf(stderr, "%s: -c and -n options conflict\n", argv[0]);
 	return ERR_SYNTAX;
@@ -454,14 +401,14 @@ int main(int argc, char *argv[])
 	    fprintf(stderr, "%s: filename too long\n", argv[0]);
 	    return ERR_OVERFLOW;
 	}
-	strcpy(pwfilename, argv[i]);
+	strlcpy(pwfilename, argv[i], sizeof(pwfilename));
 	if (strlen(argv[i + 1]) > (sizeof(user) - 1)) {
 	    fprintf(stderr, "%s: username too long (>%lu)\n", argv[0],
 		    (unsigned long)(sizeof(user) - 1));
 	    return ERR_OVERFLOW;
 	}
     }
-    strcpy(user, argv[i + 1]);
+    strlcpy(user, argv[i + 1], sizeof(user));
     if ((arg = strchr(user, ':')) != NULL) {
 	fprintf(stderr, "%s: username contains illegal character '%c'\n",
 		argv[0], *arg);
@@ -473,27 +420,13 @@ int main(int argc, char *argv[])
 		    (unsigned long)(sizeof(password) - 1));
 	    return ERR_OVERFLOW;
 	}
-	strcpy(password, argv[i + 2]);
+	strlcpy(password, argv[i + 2], sizeof(password));
     }
 
-#ifdef WIN32
-    if (alg == ALG_CRYPT) {
-	alg = ALG_APMD5;
-	fprintf(stderr, "Automatically using MD5 format on Windows.\n");
-    }
-#elif defined(TPF) || defined(NETWARE)
-    if (alg == ALG_CRYPT) {
-        alg = ALG_APMD5;
-        fprintf(stderr, "Automatically using MD5 format.\n");
-     }
-#endif
-
-#if (!(defined(WIN32) || defined(TPF) || defined(NETWARE)))
     if (alg == ALG_PLAIN) {
 	fprintf(stderr,"Warning: storing passwords as plain text might "
 		"just not work on this platform.\n");
     }
-#endif
     if (! nofile) {
 	/*
 	 * Only do the file checks if we're supposed to frob it.
@@ -565,21 +498,12 @@ int main(int argc, char *argv[])
      * to add or update.  Let's do it..
      */
     errno = 0;
-    tempfilename = tmpnam(tname_buf);
-    if ((tempfilename == NULL) || (*tempfilename == '\0')) {
-	fprintf(stderr, "%s: unable to generate temporary filename\n",
-		argv[0]);
-	if (errno == 0) {
-	    errno = ENOENT;
-	}
-	perror("tmpnam");
-	exit(ERR_FILEPERM);
-    }
-    ftemp = fopen(tempfilename, "w+");
-    if (ftemp == NULL) {
+    strlcpy(tempfilename, "/tmp/htpasswd-XXXXXXXXXX", sizeof(tempfilename));
+    tfd = mkstemp(tempfilename);
+    if (tfd == -1 || (ftemp = fdopen(tfd, "w+")) == NULL) {
 	fprintf(stderr, "%s: unable to create temporary file '%s'\n", argv[0],
 		tempfilename);
-	perror("fopen");
+	perror("open");
 	exit(ERR_FILEPERM);
     }
     /*
@@ -597,7 +521,7 @@ int main(int argc, char *argv[])
 		putline(ftemp, line);
 		continue;
 	    }
-	    strcpy(scratch, line);
+	    strlcpy(scratch, line, sizeof(scratch));
 	    /*
 	     * See if this is our user.
 	     */

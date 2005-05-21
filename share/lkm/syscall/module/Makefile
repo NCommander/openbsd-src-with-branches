@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.2 1997/03/03 05:10:54 flipk Exp $
 #
 # Makefile for newsyscall
 #
@@ -33,7 +34,6 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
-#	$Id: Makefile,v 1.4 1995/04/27 19:15:17 jtc Exp $
 #
 
 SRCS=newsyscall.c
@@ -45,7 +45,7 @@ KOBJS=mycall.o
 MODOBJ=combined.o
 
 KMOD=newsyscall
-CFLAGS= -D_KERNEL -I/sys
+CFLAGS+= -D_KERNEL -I/sys
 
 all:	$(MODOBJ)
 

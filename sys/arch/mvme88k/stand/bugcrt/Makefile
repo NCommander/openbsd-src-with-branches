@@ -1,19 +1,30 @@
-#    $Id: Makefile,v 1.1 1996/02/04 03:36:28 build Exp build $
+#	$OpenBSD: Makefile,v 1.9 2003/10/01 20:39:41 miod Exp $
 
-CFLAGS+=-I${.CURDIR}/../../include 
+S=${.CURDIR}/../../../..
 
-.include "${MACHINE_ARCH}/Makefile.inc"
+CFLAGS+=-I${.CURDIR}/../../include -I${.CURDIR}/../libbug -I${S}/lib/libsa
+STAGE1_CFLAGS=-DSTACK_ASM_OP="\".long ${STAGE1_RELOC}\"" -DSTAGE1
+STAGE2_CFLAGS=-DSTACK_ASM_OP="\".long ${STAGE2_RELOC}\""
+SINGLE_CFLAGS=-DSTACK_ASM_OP="\".long ${STAGE2_RELOC}\"" -DSTAGE1
+SRCS=crt.c
+OBJS=stage1crt.o stage2crt.o singlecrt.o
 
-.PATH:  ${.CURDIR}/${MACHINE_ARCH}
-
-OBJS=bugcrt.o
-
-CLEANFILES+=a.out
+CLEANFILES+=a.out ${OBJS}
 
 all:	${OBJS}
 
-bugcrt.o: bugcrt.c
-	${CC} ${CFLAGS} -c ${.ALLSRC}
+stage1crt.o: crt.c
+	${CC} ${CFLAGS} ${STAGE1_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
+	${LD} -x -r ${.TARGET}
+	mv a.out ${.TARGET}
+
+stage2crt.o: crt.c
+	${CC} ${CFLAGS} ${STAGE2_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
+	${LD} -x -r ${.TARGET}
+	mv a.out ${.TARGET}
+
+singlecrt.o: crt.c
+	${CC} ${CFLAGS} ${SINGLE_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
 	${LD} -x -r ${.TARGET}
 	mv a.out ${.TARGET}
 

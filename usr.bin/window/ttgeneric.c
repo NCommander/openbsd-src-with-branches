@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttgeneric.c,v 1.5 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: ttgeneric.c,v 1.3 1995/09/28 10:34:45 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,12 +37,15 @@
 #if 0
 static char sccsid[] = "@(#)ttgeneric.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: ttgeneric.c,v 1.3 1995/09/28 10:34:45 tls Exp $";
+static char rcsid[] = "$OpenBSD: ttgeneric.c,v 1.5 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include "ww.h"
 #include "tt.h"
+#include <curses.h>
+#include <stdlib.h>
+#include <term.h>
 
 char PC, *BC, *UP;
 short ospeed;
@@ -138,9 +138,9 @@ char new;
 }
 
 gen_setmodes(new)
-register new;
+int new;
 {
-	register diff;
+	int diff;
 
 	diff = new ^ tt.tt_modes;
 	if (diff & WWM_REV) {
@@ -201,7 +201,7 @@ gen_delline(n)
 }
 
 gen_putc(c)
-register char c;
+char c;
 {
 	if (tt.tt_insert)
 		gen_setinsert(0);
@@ -218,8 +218,8 @@ register char c;
 }
 
 gen_write(p, n)
-	register char *p;
-	register n;
+	char *p;
+	int n;
 {
 	if (tt.tt_insert)
 		gen_setinsert(0);
@@ -237,7 +237,7 @@ gen_write(p, n)
 }
 
 gen_move(row, col)
-register int row, col;
+int row, col;
 {
 	if (tt.tt_row == row && tt.tt_col == col)
 		return;
@@ -329,7 +329,7 @@ gen_clear()
 }
 
 gen_inschar(c)
-register char c;
+char c;
 {
 	if (!tt.tt_insert)
 		gen_setinsert(1);

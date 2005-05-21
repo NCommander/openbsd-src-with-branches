@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mmap.2,v 1.33 2004/04/15 19:52:18 jmc Exp $
 .\"	$NetBSD: mmap.2,v 1.5 1995/06/24 10:48:59 cgd Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,17 +30,17 @@
 .\"
 .\"	@(#)mmap.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd "June 4, 1993"
+.Dd June 4, 1993
 .Dt MMAP 2
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm mmap
 .Nd map files or devices into memory
 .Sh SYNOPSIS
 .Fd #include <sys/types.h>
 .Fd #include <sys/mman.h>
-.Ft caddr_t
-.Fn mmap "caddr_t addr" "size_t len" "int prot" "int flags" "int fd" "off_t offset"
+.Ft void *
+.Fn mmap "void *addr" "size_t len" "int prot" "int flags" "int fd" "off_t offset"
 .Sh DESCRIPTION
 The
 .Nm mmap
@@ -77,48 +74,46 @@ deletes any previous mapping in the allocated address range.
 .Pp
 The protections (region accessibility) are specified in the
 .Fa prot
-argument by
-.Em or Ns 'ing
-the following values:
+argument by OR'ing the following values:
 .Pp
-.Bl -tag -width MAP_FIXEDX
+.Bl -tag -width "PROT_WRITE  " -offset indent -compact
 .It Dv PROT_EXEC
 Pages may be executed.
 .It Dv PROT_READ
 Pages may be read.
 .It Dv PROT_WRITE
 Pages may be written.
+.It Dv PROT_NONE
+No permissions.
 .El
 .Pp
 The
 .Fa flags
-parameter specifies the type of the mapped object, mapping options and
+parameter specifies the type of the mapped object, mapping options, and
 whether modifications made to the mapped copy of the page are private
 to the process or are to be shared with other references.
-Sharing, mapping type and options are specified in the
+Sharing, mapping type, and options are specified in the
 .Fa flags
-argument by
-.Em or Ns 'ing
-the following values:
-.Pp
+argument by OR'ing the following values:
 .Bl -tag -width MAP_FIXEDX
 .It Dv MAP_ANON
 Map anonymous memory not associated with any specific file.
 The file descriptor used for creating
 .Dv MAP_ANON
-regions is used only for
-naming, and may be specified as \-1 if no name is associated with the
+must currently be \-1 indicating no name is associated with the
 region.
 .It Dv MAP_FILE
-Mapped from a regular file or character-special device memory.  (This is
-the default mapping type, and need not be specified.)
+Mapped from a regular file or character-special device memory.
+(This is the default mapping type, and need not be specified.)
 .It Dv MAP_FIXED
 Do not permit the system to select a different address than the one
 specified.
 If the specified address cannot be used,
 .Nm mmap
 will fail.
-If MAP_FIXED is specified,
+If
+.Dv MAP_FIXED
+is specified,
 .Fa addr
 must be a multiple of the pagesize.
 Use of this option is discouraged.
@@ -127,17 +122,24 @@ Notify the kernel that the region may contain semaphores and that special
 handling may be necessary.
 .It Dv MAP_INHERIT
 Permit regions to be inherited across
-.Xr exec 2
+.Xr exec 3
 system calls.
 .It Dv MAP_PRIVATE
 Modifications are private.
 .It Dv MAP_SHARED
 Modifications are shared.
+.It Dv MAP_COPY
+Modifications are private and, unlike
+.Dv MAP_PRIVATE ,
+modifications made by others are not visible.
+This option is deprecated, shouldn't be used and behaves just like
+.Dv MAP_PRIVATE
+in the current implementation.
 .El
 .Pp
-The 
+The
 .Xr close 2
-function does not unmap pages, see
+function does not unmap pages; see
 .Xr munmap 2
 for further information.
 .Pp
@@ -152,11 +154,21 @@ should be done.
 Upon successful completion,
 .Nm mmap
 returns a pointer to the mapped region.
-Otherwise, a value of -1 is returned and
+Otherwise, a value of
+.Dv MAP_FAILED
+is returned and
 .Va errno
 is set to indicate the error.
+The symbol
+.Dv MAP_FAILED
+is defined in the header
+.Ao Pa sys/mman.h Ac .
+No successful return from
+.Fn mmap
+will return the value
+.Dv MAP_FAILED .
 .Sh ERRORS
-.Fn Mmap
+.Fn mmap
 will fail if:
 .Bl -tag -width Er
 .It Bq Er EACCES
@@ -168,10 +180,9 @@ parameter and
 .Fa fd
 was not open for reading.
 The flags
-.Dv PROT_WRITE ,
 .Dv MAP_SHARED
 and
-.Dv MAP_WRITE
+.Dv PROT_WRITE
 were specified as part
 of the
 .Fa flags
@@ -181,14 +192,14 @@ parameters and
 .Fa fd
 was not open for writing.
 .It Bq Er EBADF
-.Fa Fd
+.Fa fd
 is not a valid open file descriptor.
 .It Bq Er EINVAL
 .Dv MAP_FIXED
 was specified and the
-.I addr
+.Fa addr
 parameter was not page aligned.
-.Fa Fd
+.Fa fd
 did not reference a regular or character special file.
 .It Bq Er ENOMEM
 .Dv MAP_FIXED
@@ -197,11 +208,25 @@ was specified and the
 parameter wasn't available.
 .Dv MAP_ANON
 was specified and insufficient memory was available.
-.Sh "SEE ALSO"
-.Xr getpagesize 2 ,
-.Xr msync 2 ,
-.Xr munmap 2 ,
-.Xr mprotect 2 ,
+.El
+.Sh SEE ALSO
 .Xr madvise 2 ,
 .Xr mincore 2 ,
-.Xr mlock 2
+.Xr mlock 2 ,
+.Xr mprotect 2 ,
+.Xr msync 2 ,
+.Xr munmap 2 ,
+.Xr getpagesize 3
+.Sh BUGS
+Due to a limitation of the current vm system (see
+.Xr uvm 9 ) ,
+mapping descriptors
+.Dv PROT_WRITE
+without also specifying
+.Dv PROT_READ
+is useless
+(results in a segmentation fault when first accessing the mapping).
+This means that such descriptors must be opened with
+.Dv O_RDWR ,
+which requires both read and write permissions on the underlying
+object.

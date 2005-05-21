@@ -1,3 +1,4 @@
+/*	$OpenBSD: dumprestore.h,v 1.6 2003/08/25 23:28:34 tedu Exp $	*/
 /*	$NetBSD: dumprestore.h,v 1.6 1994/10/26 00:56:49 cgd Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -69,25 +66,27 @@
 union u_spcl {
 	char dummy[TP_BSIZE];
 	struct	s_spcl {
-		long	c_type;		    /* record type (see below) */
+		int32_t	c_type;		    /* record type (see below) */
 		time_t	c_date;		    /* date of this dump */
 		time_t	c_ddate;	    /* date of previous dump */
-		long	c_volume;	    /* dump volume number */
+		int32_t	c_volume;	    /* dump volume number */
 		daddr_t	c_tapea;	    /* logical block of this record */
 		ino_t	c_inumber;	    /* number of inode */
-		long	c_magic;	    /* magic number (see above) */
-		long	c_checksum;	    /* record checksum */
-		struct	dinode	c_dinode;   /* ownership and mode of inode */
-		long	c_count;	    /* number of valid c_addr entries */
+		int32_t	c_magic;	    /* magic number (see above) */
+		int32_t	c_checksum;	    /* record checksum */
+		struct	ufs1_dinode	c_dinode;   /* ownership and mode of inode */
+		int32_t	c_count;	    /* number of valid c_addr entries,
+					       unless c_type is TS_BITS or
+					       TS_CLRI. */
 		char	c_addr[TP_NINDIR];  /* 1 => data; 0 => hole in inode */
 		char	c_label[LBLSIZE];   /* dump label */
-		long	c_level;	    /* level of this dump */
-		char	c_filesys[NAMELEN]; /* name of dumpped file system */
-		char	c_dev[NAMELEN];	    /* name of dumpped device */
-		char	c_host[NAMELEN];    /* name of dumpped host */
-		long	c_flags;	    /* additional information */
-		long	c_firstrec;	    /* first record on volume */
-		long	c_spare[32];	    /* reserved for future uses */
+		int32_t	c_level;	    /* level of this dump */
+		char	c_filesys[NAMELEN]; /* name of dumped file system */
+		char	c_dev[NAMELEN];	    /* name of dumped device */
+		char	c_host[NAMELEN];    /* name of dumped host */
+		int32_t	c_flags;	    /* additional information */
+		int32_t	c_firstrec;	    /* first record on volume */
+		int32_t	c_spare[32];	    /* reserved for future uses */
 	} s_spcl;
 } u_spcl;
 #define spcl u_spcl.s_spcl

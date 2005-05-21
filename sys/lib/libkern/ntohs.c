@@ -1,26 +1,23 @@
-/*	$NetBSD: ntohs.c,v 1.5 1995/10/07 09:26:39 mycroft Exp $	*/
-
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$NetBSD: ntohs.c,v 1.5 1995/10/07 09:26:39 mycroft Exp $";
-#endif
+static char *rcsid = "$OpenBSD: ntohs.c,v 1.7 2002/02/19 19:39:36 millert Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <machine/endian.h>
 
 #undef ntohs
 
-unsigned short
-ntohs(x)
-	unsigned short x;
+u_int16_t
+ntohs(u_int16_t x)
 {
 #if BYTE_ORDER == LITTLE_ENDIAN
 	u_char *s = (u_char *) &x;
-	return s[0] << 8 | s[1];
+	return (u_int16_t)(s[0] << 8 | s[1]);
 #else
 	return x;
 #endif

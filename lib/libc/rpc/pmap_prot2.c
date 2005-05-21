@@ -1,5 +1,3 @@
-/*	$NetBSD: pmap_prot2.c,v 1.2 1995/02/25 03:01:50 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,10 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)pmap_prot2.c 1.3 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)pmap_prot2.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: pmap_prot2.c,v 1.2 1995/02/25 03:01:50 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: pmap_prot2.c,v 1.3 1996/08/19 08:31:41 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 /*
  * pmap_prot2.c
@@ -87,8 +83,8 @@ static char *rcsid = "$NetBSD: pmap_prot2.c,v 1.2 1995/02/25 03:01:50 cgd Exp $"
  */
 bool_t
 xdr_pmaplist(xdrs, rp)
-	register XDR *xdrs;
-	register struct pmaplist **rp;
+	XDR *xdrs;
+	struct pmaplist **rp;
 {
 	/*
 	 * more_elements is pre-computed in case the direction is
@@ -96,8 +92,8 @@ xdr_pmaplist(xdrs, rp)
 	 * xdr_bool when the direction is XDR_DECODE.
 	 */
 	bool_t more_elements;
-	register int freeing = (xdrs->x_op == XDR_FREE);
-	register struct pmaplist **next;
+	int freeing = (xdrs->x_op == XDR_FREE);
+	struct pmaplist **next;
 
 	while (TRUE) {
 		more_elements = (bool_t)(*rp != NULL);

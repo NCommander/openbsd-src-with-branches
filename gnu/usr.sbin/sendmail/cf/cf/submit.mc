@@ -1,6 +1,6 @@
 divert(-1)
 #
-# Copyright (c) 2001 Sendmail, Inc. and its suppliers.
+# Copyright (c) 2001-2003 Sendmail, Inc. and its suppliers.
 #	All rights reserved.
 #
 # By using this file, you agree to the terms and conditions set
@@ -15,8 +15,12 @@ divert(-1)
 #
 
 divert(0)dnl
-VERSIONID(`$Sendmail: submit.mc,v 8.5 2001/09/08 01:20:53 gshapiro Exp $')
+VERSIONID(`$Sendmail: submit.mc,v 8.13 2003/09/10 22:12:48 ca Exp $')
 define(`confCF_VERSION', `Submit')dnl
 define(`__OSTYPE__',`')dnl dirty hack to keep proto.m4 from complaining
 define(`_USE_DECNET_SYNTAX_', `1')dnl support DECnet
-FEATURE(`msp')dnl
+define(`confTIME_ZONE', `USE_TZ')dnl
+define(`confBIND_OPTS', `WorkAroundBrokenAAAA')dnl
+define(`confDONT_INIT_GROUPS', `True')dnl
+FEATURE(`accept_unresolvable_domains')dnl
+FEATURE(`msp', `[127.0.0.1]')dnl

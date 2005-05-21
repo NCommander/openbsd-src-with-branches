@@ -1,10 +1,10 @@
+/* *	$OpenBSD: symseg.h,v 1.2 1998/03/26 19:46:28 niklas Exp $*/
 /*-
  *
  * This code is derived from software copyrighted by the Free Software
  * Foundation.
  *
  *	from: @(#)symseg.h	5.4 (Berkeley) 4/30/91
- *	$Id: symseg.h,v 1.3 1993/12/08 10:14:07 pk Exp $
  */
 
 /* GDB symbol table format definitions.
@@ -251,7 +251,7 @@ struct block
      this pointer may be zero when the correct value should be
      the second special block (for symbols whose scope is one compilation).
      This is because the compiler ouptuts the special blocks at the
-     very end, after the other blocks.   */
+     very end, after the other blocks.	 */
   struct block *superblock;
   /* Number of local symbols.  */
   int nsyms;
@@ -307,7 +307,7 @@ enum address_class
 			   and for extern symbols within functions.
 			   Inside GDB, this is changed to LOC_STATIC once the
 			   real address is obtained from a loader symbol.  */
-  LOC_CONST_BYTES	/* Value is a constant byte-sequence.   */
+  LOC_CONST_BYTES	/* Value is a constant byte-sequence.	*/
 };
 
 struct symbol
@@ -325,7 +325,7 @@ struct symbol
   union
     {
       long value;
-      struct block *block;      /* for LOC_BLOCK */
+      struct block *block;	/* for LOC_BLOCK */
       char *bytes;		/* for LOC_CONST_BYTES */
     }
   value;

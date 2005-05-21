@@ -1,3 +1,5 @@
+/*	$OpenBSD: tc-i386.h,v 1.2 1998/02/15 18:49:35 niklas Exp $	*/
+
 /* tc-i386.h -- Header file for tc-i386.c
    Copyright (C) 1989, 1992 Free Software Foundation.
    
@@ -16,10 +18,6 @@
    You should have received a copy of the GNU General Public License
    along with GAS; see the file COPYING.  If not, write to
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-/*
- * $Id: tc-i386.h,v 1.3 1994/08/24 20:04:35 pk Exp $
- */
 
 #ifndef TC_I386
 #define TC_I386 1
@@ -134,6 +132,7 @@
 #define Abs16 0x10000000
 #define Abs32 0x20000000
 #define Abs (Abs8|Abs16|Abs32)
+#define RegMMX 0x40000000		/* MMX register */
 
 #define Byte (Reg8|Imm8|Imm8S)
 #define Word (Reg16|Imm16)

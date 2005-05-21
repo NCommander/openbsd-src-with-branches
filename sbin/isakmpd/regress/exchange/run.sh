@@ -1,8 +1,9 @@
 #!/bin/sh
-#	$Id: run.sh,v 1.3 1998/08/03 21:06:00 niklas Exp $
+#	$OpenBSD: run.sh,v 1.7 2003/06/03 14:39:50 ho Exp $
+#	$EOM: run.sh,v 1.6 1999/08/05 15:02:33 niklas Exp $
 
 #
-# Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+# Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -12,11 +13,6 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by Niklas Hallqvist.
-# 4. The name of the author may not be used to endorse or promote products
-#    derived from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 # IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -31,7 +27,7 @@
 #
 
 #
-# This code was written under funding by Ericsson.
+# This code was written under funding by Ericsson Radio Systems.
 #
 
 # Defaults
@@ -41,7 +37,7 @@ FIFO=test.fifo
 TIMEOUT=2
 
 NC=${NC:-/usr/bin/nc}
-ISAKMPD=${ISAKMPD:-/usr/sbin/isakmpd}
+ISAKMPD=${ISAKMPD:-/sbin/isakmpd}
 
 progname=`basename $0`
 indent=`echo -n $progname |sed 's/./ /g'`
@@ -102,8 +98,8 @@ done
 
 # Start the exchange
 if [ $initiator = yes ]; then
-  ${NC} -nul -w${TIMEOUT} -p${DSTPORT} 127.0.0.1 </dev/null >packet &
-#  ${NC} -nu -w${TIMEOUT} -p${DSTPORT} 127.0.0.1 ${SRCPORT} </dev/null >packet
+  ${NC} -nul -w${TIMEOUT} 127.0.0.1 ${DSTPORT} </dev/null >packet &
+#  ${NC} -nu -w${TIMEOUT} -p${SRCPORT} 127.0.0.1 ${DSTPORT} </dev/null >packet
   sleep 1
   echo "c udp 127.0.0.1:${DSTPORT} 2 1" >${FIFO}
   in_packets=`ls ${suite}-i.* 2>/dev/null`
@@ -120,7 +116,7 @@ while [ \( $his_turn = yes -a X"$in_packets" != X \) \
     packet=$1
     shift
     out_packets=$*
-    cat $packet |${NC} -nu -w${TIMEOUT} -p${DSTPORT} 127.0.0.1 ${SRCPORT} \
+    cat $packet |${NC} -nu -w${TIMEOUT} -p${SRCPORT} 127.0.0.1 ${DSTPORT} \
       >packet
     my_turn=no
   else

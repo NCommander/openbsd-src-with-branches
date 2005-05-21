@@ -1,13 +1,29 @@
-#	$NetBSD: Makefile,v 1.14 1995/04/19 07:24:08 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/29/93
+#	$OpenBSD: Makefile,v 1.13 2002/05/08 16:46:35 art Exp $
+
+.include <bsd.own.mk>
+
+TARGET_MACHINE_ARCH?=	${MACHINE_ARCH}
 
 PROG=	gprof
-SRCS=	gprof.c arcs.c dfn.c lookup.c ${MACHINE_ARCH}.c hertz.c \
+SRCS=	gprof.c arcs.c dfn.c lookup.c machine.c hertz.c \
 	printgprof.c printlist.c
-CFLAGS+= -D${MACHINE_ARCH}
+CFLAGS+= -I${.CURDIR} -I.
+
+# XXX - need support for multiple archs.
+.if (${ELF_TOOLCHAIN:L} == "yes")
+SRCS+=elf.c
+.else
+SRCS+=aout.c
+.endif
+
+.if defined(PROG)
+beforedepend:
+	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.h machine.h
+	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.c machine.c
+.endif # defined (PROG)
 
 beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
 	    ${.CURDIR}/gprof.flat ${.CURDIR}/gprof.callg \
 	    ${DESTDIR}/usr/share/misc
 

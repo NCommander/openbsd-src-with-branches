@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.3 1995/01/10 19:01:46 jtc Exp $ */
+/*	$OpenBSD: signal.h,v 1.3 1997/08/08 08:26:48 downsj Exp $	*/
+/*	$NetBSD: signal.h,v 1.4 1996/02/01 22:32:35 mycroft Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,12 +44,12 @@
 #ifndef	_SPARC_SIGNAL_H_
 #define _SPARC_SIGNAL_H_
 
-#ifndef LOCORE
+#ifndef _LOCORE
 typedef int sig_atomic_t;
 #endif
 
 #ifndef _ANSI_SOURCE
-#ifndef LOCORE
+#ifndef _LOCORE
 
 /*
  * Information pushed on stack when a signal is delivered.
@@ -74,14 +71,14 @@ struct sigcontext {
 	int	sc_g1;			/* %g1 to restore */
 	int	sc_o0;			/* %o0 to restore */
 };
-#else /* LOCORE */
+#else /* _LOCORE */
 #define	SC_SP_OFFSET	8
 #define	SC_PC_OFFSET	12
 #define	SC_NPC_OFFSET	16
 #define	SC_PSR_OFFSET	20
 #define	SC_G1_OFFSET	24
 #define	SC_O0_OFFSET	28
-#endif /* LOCORE */
+#endif /* _LOCORE */
 
 /*
  * `Code' arguments to signal handlers.  The names, and the funny numbering.

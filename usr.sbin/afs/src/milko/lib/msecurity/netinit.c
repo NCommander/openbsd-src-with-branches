@@ -107,7 +107,7 @@ server_get_key(void *appl, int kvno, des_cblock *key)
 	     * Try also afs.realm@REALM
 	     */
 
-	    strlcpy(cell_name, realm_name, sizeof(realm_name));
+	    strlcpy(cell_name, realm_name, sizeof(cell_name));
 	    strlwr (cell_name);
 	    ret = read_service_key("afs", cell_name, realm_name, 
 				   0, srvtab_filename,
@@ -178,7 +178,7 @@ network_init (int serviceport,
 	return errno;
 
     if (rx_Init(0) != 0) 
-	errx(1, "Cant open serverport port\n") ;
+	errx(1, "Cant open serverport port") ;
     
     secObjs[0] = rxnull_NewServerSecurityObject();   /* XXX 0 */
     if (secObjs[0] == NULL ) 

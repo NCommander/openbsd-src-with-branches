@@ -1,4 +1,5 @@
-/*	$Id: dhtest.c,v 1.1 1998/07/18 21:14:20 provos Exp $	*/
+/*	$OpenBSD: dhtest.c,v 1.4 2002/06/09 08:13:07 todd Exp $	*/
+/*	$EOM: dhtest.c,v 1.1 1998/07/18 21:14:20 provos Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -99,7 +95,7 @@ main (void)
     printf ("FAILED ");
   else
     printf ("OKAY ");
-  
+
 
   printf ("\n");
   return 1;

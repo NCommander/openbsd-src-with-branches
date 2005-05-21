@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2001, 2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: stab.c,v 8.80 2001/09/04 22:43:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: stab.c,v 8.88 2003/05/21 15:36:30 ca Exp $")
 
 /*
 **  STAB -- manage the symbol table
@@ -68,13 +68,13 @@ stab(name, type, op)
 	if (type == ST_MACRO || type == ST_RULESET)
 	{
 		while ((s = *ps) != NULL &&
-		       (s->s_type != type || strcmp(name, s->s_name)))
+		       (s->s_symtype != type || strcmp(name, s->s_name)))
 			ps = &s->s_next;
 	}
 	else
 	{
 		while ((s = *ps) != NULL &&
-		       (s->s_type != type || sm_strcasecmp(name, s->s_name)))
+		       (s->s_symtype != type || sm_strcasecmp(name, s->s_name)))
 			ps = &s->s_next;
 	}
 
@@ -93,7 +93,7 @@ stab(name, type, op)
 				long *lp = (long *) s->s_class;
 
 				sm_dprintf("type %d val %lx %lx %lx %lx\n",
-					s->s_type, lp[0], lp[1], lp[2], lp[3]);
+					s->s_symtype, lp[0], lp[1], lp[2], lp[3]);
 			}
 		}
 		return s;
@@ -173,6 +173,12 @@ stab(name, type, op)
 		len = sizeof s->s_quegrp;
 		break;
 
+#if SOCKETMAP
+	  case ST_SOCKETMAP:
+		len = sizeof s->s_socketmap;
+		break;
+#endif /* SOCKETMAP */
+
 	  default:
 		/*
 		**  Each mailer has its own MCI stab entry:
@@ -200,8 +206,7 @@ stab(name, type, op)
 	s = (STAB *) sm_pmalloc_x(len);
 	memset((char *) s, '\0', len);
 	s->s_name = sm_pstrdup_x(name);
-	s->s_type = type;
-	s->s_len = len;
+	s->s_symtype = type;
 
 	/* link it in */
 	*ps = s;
@@ -212,7 +217,7 @@ stab(name, type, op)
 
 	return s;
 }
-/*
+/*
 **  STABAPPLY -- apply function to all stab entries
 **
 **	Parameters:
@@ -238,12 +243,12 @@ stabapply(func, arg)
 		{
 			if (tTd(36, 90))
 				sm_dprintf("stabapply: trying %d/%s\n",
-					s->s_type, s->s_name);
+					s->s_symtype, s->s_name);
 			func(s, arg);
 		}
 	}
 }
-/*
+/*
 **  QUEUEUP_MACROS -- queueup the macros in a class
 **
 **	Write the macros listed in the specified class into the
@@ -251,7 +256,7 @@ stabapply(func, arg)
 **
 **	Parameters:
 **		class -- class ID.
-**		qfp -- file pointer to the qf file.
+**		qfp -- file pointer to the queue file.
 **		e -- the envelope.
 **
 **	Returns:
@@ -278,9 +283,9 @@ queueup_macros(class, qfp, e)
 			int m;
 			char *p;
 
-			if (s->s_type == ST_CLASS &&
+			if (s->s_symtype == ST_CLASS &&
 			    bitnset(bitidx(class), s->s_class) &&
-			    (m = macid(s->s_name)) != '\0' &&
+			    (m = macid(s->s_name)) != 0 &&
 			    (p = macvalue(m, e)) != NULL)
 			{
 				(void) sm_io_fprintf(qfp, SM_TIME_DEFAULT,
@@ -292,7 +297,7 @@ queueup_macros(class, qfp, e)
 		}
 	}
 }
-/*
+/*
 **  COPY_CLASS -- copy class members from one class to another
 **
 **	Parameters:
@@ -317,14 +322,14 @@ copy_class(src, dst)
 	{
 		for (s = *shead; s != NULL; s = s->s_next)
 		{
-			if (s->s_type == ST_CLASS &&
+			if (s->s_symtype == ST_CLASS &&
 			    bitnset(src, s->s_class))
 				setbitn(dst, s->s_class);
 		}
 	}
 }
 
-/*
+/*
 **  RMEXPSTAB -- remove expired entries from SymTab.
 **
 **	These entries need to be removed in long-running processes,
@@ -366,7 +371,7 @@ rmexpstab()
 		s = SymTab[i];
 		while (s != NULL)
 		{
-			switch (s->s_type)
+			switch (s->s_symtype)
 			{
 			  case ST_HOSTSIG:
 				if (s->s_hostsig.hs_exp >= now)
@@ -381,7 +386,7 @@ rmexpstab()
 				break;
 
 			  default:
-				if (s->s_type >= ST_MCI)
+				if (s->s_symtype >= ST_MCI)
 				{
 					/* call mci_uncache? */
 					SM_STAB_FREE(s->s_mci.mci_status);
@@ -448,7 +453,7 @@ dumpstab()
 		while (s != NULL)
 		{
 			++total;
-			t = s->s_type;
+			t = s->s_symtype;
 			if (t > MAXSTTYPES - 1)
 				t = MAXSTTYPES - 1;
 			types[t]++;

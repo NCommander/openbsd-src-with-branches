@@ -1,4 +1,4 @@
-/*	$Id: SRT1.c,v 1.2 1996/02/03 03:57:09 build Exp build $ */
+/*	$OpenBSD: SRT1.c,v 1.3 2001/01/13 05:19:01 smurph Exp $ */
 
 /*
  * Copyright (c) 1996 Nivas Madhur
@@ -12,12 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed under OpenBSD by
- *	Theo de Raadt for Willowglen Singapore.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -88,6 +82,7 @@ exit()
 
 	asm volatile ("or r9, r0, 0x63; tb0 0, r0, 496");
 	/* NOTREACHED */
+	for(;;); /* keep compiler happy */
 }
 
 struct brdid brdid;

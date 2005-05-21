@@ -1,4 +1,5 @@
-/*	$NetBSD: fdesc.h,v 1.8 1995/03/29 22:08:11 briggs Exp $	*/
+/*	$OpenBSD: fdesc.h,v 1.8 2003/06/02 23:28:10 millert Exp $	*/
+/*	$NetBSD: fdesc.h,v 1.9 1996/02/09 22:40:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,10 +38,6 @@
  */
 
 #ifdef _KERNEL
-struct fdescmount {
-	struct vnode	*f_root;	/* Root node */
-};
-
 #define FD_ROOT		2
 #define FD_DEVFD	3
 #define FD_STDIN	4
@@ -71,13 +64,12 @@ struct fdescnode {
 	int		fd_ix;		/* filesystem index */
 };
 
-#define VFSTOFDESC(mp)	((struct fdescmount *)((mp)->mnt_data))
 #define	VTOFDESC(vp) ((struct fdescnode *)(vp)->v_data)
 
 extern dev_t devctty;
-extern int fdesc_init __P((void));
-extern int fdesc_root __P((struct mount *, struct vnode **));
-extern int fdesc_allocvp __P((fdntype, int, struct mount *, struct vnode **));
-extern int (**fdesc_vnodeop_p)();
-extern struct vfsops fdesc_vfsops;
+extern int fdesc_init(struct vfsconf *);
+extern int fdesc_root(struct mount *, struct vnode **);
+extern int fdesc_allocvp(fdntype, int, struct mount *, struct vnode **);
+extern int (**fdesc_vnodeop_p)(void *);
+extern const struct vfsops fdesc_vfsops;
 #endif /* _KERNEL */

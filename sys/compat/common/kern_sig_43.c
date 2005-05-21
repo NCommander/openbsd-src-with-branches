@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_sig_43.c,v 1.5 1995/10/07 06:26:29 mycroft Exp $	*/
+/*	$OpenBSD: kern_sig_43.c,v 1.6 2001/11/06 19:53:17 miod Exp $	*/
+/*	$NetBSD: kern_sig_43.c,v 1.7 1996/03/14 19:31:47 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -64,7 +61,7 @@
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/user.h>		/* for coredump */
 
 int
@@ -76,11 +73,12 @@ compat_43_sys_sigblock(p, v, retval)
 	struct compat_43_sys_sigblock_args /* {
 		syscallarg(int) mask;
 	} */ *uap = v;
+	int s;
 
-	(void) splhigh();
+	s = splhigh();
 	*retval = p->p_sigmask;
 	p->p_sigmask |= SCARG(uap, mask) &~ sigcantmask;
-	(void) spl0();
+	splx(s);
 	return (0);
 }
 
@@ -94,11 +92,12 @@ compat_43_sys_sigsetmask(p, v, retval)
 	struct compat_43_sys_sigsetmask_args /* {
 		syscallarg(int) mask;
 	} */ *uap = v;
+	int s;
 
-	(void) splhigh();
+	s = splhigh();
 	*retval = p->p_sigmask;
 	p->p_sigmask = SCARG(uap, mask) &~ sigcantmask;
-	(void) spl0();
+	splx(s);
 	return (0);
 }
 
@@ -119,18 +118,19 @@ compat_43_sys_sigstack(p, v, retval)
 	int error = 0;
 
 	psp = p->p_sigacts;
-	ss.ss_sp = psp->ps_sigstk.ss_base;
+	ss.ss_sp = psp->ps_sigstk.ss_sp;
 	ss.ss_onstack = psp->ps_sigstk.ss_flags & SS_ONSTACK;
 	if (SCARG(uap, oss) && (error = copyout((caddr_t)&ss,
 	    (caddr_t)SCARG(uap, oss), sizeof (struct sigstack))))
 		return (error);
 	if (SCARG(uap, nss) == 0)
 		return (0);
-	if (error = copyin((caddr_t)SCARG(uap, nss), (caddr_t)&ss,
-	    sizeof (ss)))
+	error = copyin((caddr_t)SCARG(uap, nss), (caddr_t)&ss,
+	    sizeof (ss));
+	if (error)
 		return (error);
 	psp->ps_flags |= SAS_ALTSTACK;
-	psp->ps_sigstk.ss_base = ss.ss_sp;
+	psp->ps_sigstk.ss_sp = ss.ss_sp;
 	psp->ps_sigstk.ss_size = 0;
 	psp->ps_sigstk.ss_flags |= ss.ss_onstack & SS_ONSTACK;
 	return (0);
@@ -176,13 +176,15 @@ compat_43_sys_sigvec(p, v, retval)
 		if (p->p_flag & P_NOCLDSTOP)
 			sv->sv_flags |= SA_NOCLDSTOP;
 		sv->sv_mask &= ~bit;
-		if (error = copyout((caddr_t)sv, (caddr_t)SCARG(uap, osv),
-		    sizeof (vec)))
+		error = copyout((caddr_t)sv, (caddr_t)SCARG(uap, osv),
+		    sizeof (vec));
+		if (error)
 			return (error);
 	}
 	if (SCARG(uap, nsv)) {
-		if (error = copyin((caddr_t)SCARG(uap, nsv), (caddr_t)sv,
-		    sizeof (vec)))
+		error = copyin((caddr_t)SCARG(uap, nsv), (caddr_t)sv,
+		    sizeof (vec));
+		if (error)
 			return (error);
 		sv->sv_flags ^= SA_RESTART;	/* opposite of SV_INTERRUPT */
 		setsigvec(p, signum, (struct sigaction *)sv);
@@ -202,10 +204,6 @@ compat_43_sys_killpg(p, v, retval)
 		syscallarg(int) pgid;
 		syscallarg(int) signum;
 	} */ *uap = v;
-
-#ifdef COMPAT_09
-	SCARG(uap, pgid) = (short) SCARG(uap, pgid);
-#endif
 
 	if ((u_int)SCARG(uap, signum) >= NSIG)
 		return (EINVAL);

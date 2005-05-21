@@ -48,6 +48,9 @@
 #include <named/os.h>
 
 static char *pidfile = NULL;
+static int pidfilefd = -1;
+static isc_boolean_t preopenpidfile = ISC_FALSE;
+
 static int devnullfd = -1;
 
 #ifndef ISC_FACILITY
@@ -495,11 +498,51 @@ cleanup_pidfile(void) {
 	pidfile = NULL;
 }
 
+static int
+open_pidfile(const char *filename, isc_boolean_t first_time) {
+	int fd;
+	size_t len;
+	char strbuf[ISC_STRERRORSIZE];
+	void (*report)(const char *, ...);
+
+	report = first_time ? ns_main_earlyfatal : ns_main_earlywarning;
+
+	cleanup_pidfile();
+
+	if (filename == NULL)
+		return -1;
+
+	len = strlen(filename);
+	pidfile = malloc(len + 1);
+	if (pidfile == NULL) {
+		isc__strerror(errno, strbuf, sizeof(strbuf));
+		(*report)("couldn't malloc '%s': %s", filename, strbuf);
+		return -1;
+	}
+	strlcpy(pidfile, filename, len);
+
+	fd = safe_open(filename, ISC_FALSE);
+	if (fd < 0) {
+		isc__strerror(errno, strbuf, sizeof(strbuf));
+		(*report)("couldn't open pid file '%s': %s", filename, strbuf);
+		free(pidfile);
+		pidfile = NULL;
+		return -1;
+	}
+
+	return fd;
+}
+
+void
+ns_os_preopenpidfile(const char *filename) {
+	pidfilefd = open_pidfile(filename, ISC_TRUE);
+	preopenpidfile = ISC_TRUE;
+}
+
 void
 ns_os_writepidfile(const char *filename, isc_boolean_t first_time) {
 	int fd;
 	FILE *lockfile;
-	size_t len;
 	pid_t pid;
 	char strbuf[ISC_STRERRORSIZE];
 	void (*report)(const char *, ...);
@@ -510,36 +553,20 @@ ns_os_writepidfile(const char *filename, isc_boolean_t first_time) {
 
 	report = first_time ? ns_main_earlyfatal : ns_main_earlywarning;
 
-	cleanup_pidfile();
+	if (preopenpidfile == ISC_TRUE)
+		fd = pidfilefd;
+	else
+		fd = open_pidfile(filename, first_time);
 
-	if (filename == NULL)
-		return;
+	if (fd < 0) return;
 
-	len = strlen(filename);
-	pidfile = malloc(len + 1);
-	if (pidfile == NULL) {
-		isc__strerror(errno, strbuf, sizeof(strbuf));
-		(*report)("couldn't malloc '%s': %s", filename, strbuf);
-		return;
-	}
-	/* This is safe. */
-	strcpy(pidfile, filename);
-
-	fd = safe_open(filename, ISC_FALSE);
-	if (fd < 0) {
-		isc__strerror(errno, strbuf, sizeof(strbuf));
-		(*report)("couldn't open pid file '%s': %s", filename, strbuf);
-		free(pidfile);
-		pidfile = NULL;
-		return;
-	}
 	lockfile = fdopen(fd, "w");
 	if (lockfile == NULL) {
 		isc__strerror(errno, strbuf, sizeof(strbuf));
 		(*report)("could not fdopen() pid file '%s': %s",
 			  filename, strbuf);
 		(void)close(fd);
-		cleanup_pidfile();
+		if (preopenpidfile == ISC_FALSE) cleanup_pidfile();
 		return;
 	}
 #ifdef HAVE_LINUXTHREADS
@@ -550,22 +577,23 @@ ns_os_writepidfile(const char *filename, isc_boolean_t first_time) {
 	if (fprintf(lockfile, "%ld\n", (long)pid) < 0) {
 		(*report)("fprintf() to pid file '%s' failed", filename);
 		(void)fclose(lockfile);
-		cleanup_pidfile();
+		if (preopenpidfile == ISC_FALSE) cleanup_pidfile();
 		return;
 	}
 	if (fflush(lockfile) == EOF) {
 		(*report)("fflush() to pid file '%s' failed", filename);
 		(void)fclose(lockfile);
-		cleanup_pidfile();
+		if (preopenpidfile == ISC_FALSE) cleanup_pidfile();
 		return;
 	}
 	(void)fclose(lockfile);
+	if (preopenpidfile == ISC_TRUE) pidfilefd = -1;
 }
 
 void
 ns_os_shutdown(void) {
 	closelog();
-	cleanup_pidfile();
+	if (preopenpidfile == ISC_FALSE) cleanup_pidfile();
 }
 
 isc_result_t

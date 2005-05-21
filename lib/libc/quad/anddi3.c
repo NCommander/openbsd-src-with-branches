@@ -1,5 +1,3 @@
-/*	$NetBSD: anddi3.c,v 1.2 1995/02/27 17:29:39 cgd Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -16,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,11 +32,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)anddi3.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: anddi3.c,v 1.2 1995/02/27 17:29:39 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: anddi3.c,v 1.3 2003/06/02 20:18:36 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include "quad.h"
@@ -51,8 +41,7 @@ static char rcsid[] = "$NetBSD: anddi3.c,v 1.2 1995/02/27 17:29:39 cgd Exp $";
  * Return a & b, in quad.
  */
 quad_t
-__anddi3(a, b)
-	quad_t a, b;
+__anddi3(quad_t a, quad_t b)
 {
 	union uu aa, bb;
 

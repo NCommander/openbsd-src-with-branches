@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,15 +31,14 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
+#if defined(SYSLIBC_SCCS)
 	.text
-	/*.asciz "from: @(#)sigprocmask.s	5.2 (Berkeley) 6/6/90"*/
-	.asciz "$Id: sigprocmask.S,v 1.3 1994/08/04 05:02:47 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
+	.asciz "$OpenBSD: sigprocmask.S,v 1.4 2002/11/05 00:02:20 miod Exp $"
+#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 
-ENTRY(sigprocmask)
+SYSENTRY(sigprocmask)
 	tstl	sp@(8)			/* check new sigset pointer */
 	jne	gotptr			/* if not null, indirect */
 /*	movl	#0,sp@(8)		/* null mask pointer: block empty set */
@@ -64,4 +59,4 @@ out:
 	clrl	d0
 	rts
 err:
-	jra	cerror
+	jra	__cerror

@@ -1,3 +1,5 @@
+/*	$OpenBSD: globals.h,v 1.7 2003/06/02 23:36:55 millert Exp $	*/
+
 /*-
  * Copyright (c) 1985 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,10 +31,6 @@
  *	@(#)globals.h	5.1 (Berkeley) 5/11/93
  */
 
-#ifdef sgi
-#ident "$Revision: 1.3 $"
-#endif
-
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -52,21 +46,14 @@
 #include <string.h>
 #include <syslog.h>
 #include <syslog.h>
+#include <poll.h>
 #include <unistd.h>
 
 #include <protocols/timed.h>
-#ifdef sgi
-#include <bstring.h>
-#include <sys/clock.h>
-/* use the constant HZ instead of the function CLK_TCK */
-#undef CLK_TCK
-#define CLK_TCK HZ
-#else
+
 #define	SECHR	(60*60)
 #define	SECDAY	(24*SECHR)
-#endif /* sgi */
 
-extern int errno;
 extern int sock;
 
 /* Best expected round trip for a measurement.
@@ -90,9 +77,6 @@ extern int sock;
 #define UNREACHABLE	2
 #define NONSTDTIME	3
 #define HOSTDOWN	0x7fffffff
-
-#define OFF		0
-#define ON		1
 
 #define MAX_HOPCNT	10		/* max value for tsp_hpcnt */
 
@@ -137,6 +121,7 @@ extern struct hosttbl hosttbl[NHOSTS+1];
 #define self hosttbl[0]
 #define hostname (self.name)
 
+volatile sig_atomic_t gotintr;
 
 struct netinfo {
 	struct	netinfo *next;
@@ -162,7 +147,7 @@ extern struct timeval from_when;	/* when the last msg arrived */
 extern u_short sequence;		/* TSP message sequence number */
 extern struct netinfo *fromnet, *slavenet;
 extern FILE *fd;
-extern long delay1, delay2;
+extern long delay2;
 extern int nslavenets;			/* nets were I could be a slave */
 extern int nmasternets;			/* nets were I could be a master */
 extern int nignorednets;		/* ignored nets */
@@ -180,7 +165,6 @@ extern int nnets;			/* nets I am connected to */
 			inet_ntoa(addr), st_errno);			\
 }
 
-
-# define max(a,b) 	(a<b ? b : a)
-# define min(a,b) 	(a>b ? b : a)
-# define abs(x)		(x>=0 ? x : -(x))
+#define	max(a, b)	((a) < (b) ? (b) : (a))
+#define	min(a, b)	((a) > (b) ? (b) : (a))
+#define	abs(x)		((x) >= 0 ? (x) : -(x))

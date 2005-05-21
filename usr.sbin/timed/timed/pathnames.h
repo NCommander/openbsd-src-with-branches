@@ -1,3 +1,5 @@
+/*	$OpenBSD: pathnames.h,v 1.3 2002/06/18 00:40:31 ericj Exp $	*/
+
 /*-
  * Copyright (c) 1985 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,10 +33,5 @@
 
 #include <paths.h>
 
-#ifdef sgi
-#define	_PATH_MASTERLOG	"/var/adm/timed.masterlog"
-#define	_PATH_TIMEDLOG	"/var/adm/timed.log"
-#else
 #define	_PATH_MASTERLOG	"/var/log/timed.masterlog"
 #define	_PATH_TIMEDLOG	"/var/log/timed.log"
-#endif

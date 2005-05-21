@@ -1,2 +1,4 @@
-This is the first public release of NetBSD for the HP 9000/300 series of
-computers.
+dnl	$OpenBSD: whatis,v 1.6 2002/03/18 22:40:04 miod Exp $
+
+OpenBSD OSREV runs on the HP 9000/300 and 400 series of workstations,
+based on Motorola 680x0 processors.

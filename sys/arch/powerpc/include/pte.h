@@ -1,3 +1,4 @@
+/*	$OpenBSD: pte.h,v 1.6 2002/07/12 20:28:55 drahn Exp $	*/
 /*	$NetBSD: pte.h,v 1.1 1996/09/30 16:34:32 ws Exp $	*/
 
 /*-
@@ -31,8 +32,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_MACHINE_PTE_H_
-#define	_MACHINE_PTE_H_
+#ifndef	_POWERPC_PTE_H_
+#define	_POWERPC_PTE_H_
 
 #include <sys/queue.h>
 
@@ -47,7 +48,7 @@ struct pte {
 #endif	/* _LOCORE */
 /* High word: */
 #define	PTE_VALID	0x80000000
-#define	PTE_VSID_SHFT	7
+#define	PTE_VSID_SHIFT	7
 #define	PTE_HID		0x00000040
 #define	PTE_API		0x0000003f
 /* Low word: */
@@ -56,6 +57,7 @@ struct pte {
 #define	PTE_CHG		0x00000080
 #define	PTE_WIMG	0x00000078
 #define	PTE_W		0x00000040
+#define	PTE_EXE		0x00000040 /* only used in pmap_attr, same as PTE_W */
 #define	PTE_I		0x00000020
 #define	PTE_M		0x00000010
 #define	PTE_G		0x00000008
@@ -70,15 +72,15 @@ typedef	struct pte pte_t;
 /*
  * Extract bits from address
  */
-#define	ADDR_SR_SHFT	28
+#define	ADDR_SR_SHIFT	28
 #define	ADDR_PIDX	0x0ffff000
-#define	ADDR_PIDX_SHFT	12
-#define	ADDR_API_SHFT	22
+#define	ADDR_PIDX_SHIFT	12
+#define	ADDR_API_SHIFT	22
 #define	ADDR_POFF	0x00000fff
 
 #ifndef	_LOCORE
 #ifdef	_KERNEL
-extern pte_t *ptable;
+extern struct pte *ptable;
 extern int ptab_cnt;
 #endif	/* _KERNEL */
 #endif	/* _LOCORE */
@@ -105,8 +107,8 @@ extern int ptab_cnt;
 
 #ifdef	_KERNEL
 #ifndef	_LOCORE
-extern u_int dsisr __P((void));
-extern vm_offset_t dar __P((void));
+extern u_int dsisr(void);
+extern vm_offset_t dar(void);
 #endif	/* _KERNEL */
 #endif	/* _LOCORE */
-#endif	/* _MACHINE_PTE_H_ */
+#endif	/* _POWERPC_PTE_H_ */

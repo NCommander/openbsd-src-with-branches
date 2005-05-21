@@ -1,8 +1,9 @@
-/*	$NetBSD: db_write_cmd.c,v 1.5 1994/10/09 08:56:30 mycroft Exp $	*/
+/*	$OpenBSD: db_write_cmd.c,v 1.6 2001/11/06 19:53:18 miod Exp $	*/
+/*	$NetBSD: db_write_cmd.c,v 1.6 1996/02/05 01:57:25 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub,  Carnegie Mellon University
  *	Date:	7/90
@@ -32,12 +33,16 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/db_machdep.h>
 
 #include <ddb/db_lex.h>
 #include <ddb/db_access.h>
 #include <ddb/db_command.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_output.h>
 
 /*
  * Write to file.
@@ -72,13 +77,14 @@ db_write_cmd(address, have_addr, count, modif)
 		size = 4;
 		break;
 	    default:
+		size = -1;
 		db_error("Unknown size\n");
 		/*NOTREACHED*/
 	}
 
 	while (db_expression(&new_value)) {
 	    old_value = db_get_value(addr, size, FALSE);
-	    db_printsym(addr, DB_STGY_ANY);
+	    db_printsym(addr, DB_STGY_ANY, db_printf);
 	    db_printf("\t\t%#8n\t=\t%#8n\n", old_value, new_value);
 	    db_put_value(addr, size, new_value);
 	    addr += size;

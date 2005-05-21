@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2001-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,13 +8,13 @@
  *
  */
 
+#include <sm/gen.h>
+SM_RCSID("@(#)$Sendmail: sasl.c,v 8.21 2004/11/22 23:09:00 gshapiro Exp $")
+
 #if SASL
-# include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: sasl.c,v 8.8 2001/09/04 22:43:05 ca Exp $")
 # include <stdlib.h>
 # include <sendmail.h>
 # include <errno.h>
-# include <sasl.h>
 
 /*
 **  In order to ensure that storage leaks are tracked, and to prevent
@@ -30,12 +30,12 @@ static void *sm_sasl_realloc __P((void *, unsigned long));
 void sm_sasl_free __P((void *));
 
 /*
+**  SASLv1:
 **  We can't use an rpool for Cyrus-SASL memory management routines,
 **	since the encryption/decryption routines in Cyrus-SASL
 **	allocate/deallocate a buffer each time. Since rpool
 **	don't release memory until the very end, memory consumption is
 **	proportional to the size of an e-mail, which is unacceptable.
-**
 */
 
 /*
@@ -140,7 +140,7 @@ sm_sasl_init()
 	sasl_set_alloc(sm_sasl_malloc, sm_sasl_calloc,
 		       sm_sasl_realloc, sm_sasl_free);
 }
-/*
+/*
 **  INTERSECT -- create the intersection between two lists
 **
 **	Parameters:
@@ -205,4 +205,83 @@ intersect(s1, s2, rpool)
 	}
 	return res;
 }
+# if SASL >= 20000
+/*
+**  IPTOSTRING -- create string for SASL_IP*PORT property
+**		(borrowed from lib/iptostring.c in Cyrus-IMAP)
+**
+**	Parameters:
+**		addr -- (pointer to) socket address
+**		addrlen -- length of socket address
+**		out -- output string (result)
+**		outlen -- maximum length of output string
+**
+**	Returns:
+**		true iff successful.
+**
+**	Side Effects:
+**		creates output string if successful.
+**		sets errno if unsuccessful.
+*/
+
+#  include <arpa/inet.h>
+
+#  ifndef NI_MAXHOST
+#   define NI_MAXHOST	1025
+#  endif
+#  ifndef NI_MAXSERV
+#   define NI_MAXSERV	32
+#  endif
+
+bool
+iptostring(addr, addrlen, out, outlen)
+	SOCKADDR *addr;
+	SOCKADDR_LEN_T addrlen;
+	char *out;
+	unsigned outlen;
+{
+	char hbuf[NI_MAXHOST], pbuf[NI_MAXSERV];
+#  if NETINET6
+	int niflags;
+#  endif /* NETINET6 */
+
+	if (addr == NULL || out == NULL)
+	{
+		errno = EINVAL;
+		return false;
+	}
+
+#  if NETINET6
+	niflags = (NI_NUMERICHOST | NI_NUMERICSERV);
+#   ifdef NI_WITHSCOPEID
+	if (addr->sa.sa_family == AF_INET6)
+		niflags |= NI_WITHSCOPEID;
+#   endif /* NI_WITHSCOPEID */
+	if (getnameinfo((struct sockaddr *) addr, addrlen,
+			hbuf, sizeof hbuf, pbuf, sizeof pbuf, niflags) != 0)
+		return false;
+#  else /* NETINET6 */
+	if (addr->sa.sa_family != AF_INET)
+	{
+		errno = EINVAL;
+		return false;
+	}
+	if (sm_strlcpy(hbuf, inet_ntoa(addr->sin.sin_addr), sizeof(hbuf))
+	    >= sizeof(hbuf))
+	{
+		errno = ENOMEM;
+		return false;
+	}
+	sm_snprintf(pbuf, sizeof pbuf, "%d", ntohs(addr->sin.sin_port));
+#  endif /* NETINET6 */
+
+	if (outlen < strlen(hbuf) + strlen(pbuf) + 2)
+	{
+		errno = ENOMEM;
+		return false;
+	}
+	sm_snprintf(out, outlen, "%s;%s", hbuf, pbuf);
+	return true;
+}
+# endif /* SASL >= 20000 */
 #endif /* SASL */

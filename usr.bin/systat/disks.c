@@ -1,4 +1,5 @@
-/*	$NetBSD: disks.c,v 1.2 1995/01/20 08:51:53 jtc Exp $	*/
+/*	$OpenBSD: disks.c,v 1.13 2002/06/18 00:46:47 deraadt Exp $	*/
+/*	$NetBSD: disks.c,v 1.4 1996/05/10 23:16:33 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,114 +34,19 @@
 #if 0
 static char sccsid[] = "@(#)disks.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: disks.c,v 1.2 1995/01/20 08:51:53 jtc Exp $";
+static char rcsid[] = "$OpenBSD: disks.c,v 1.13 2002/06/18 00:46:47 deraadt Exp $";
 #endif /* not lint */
 
-#include <sys/types.h>
-#include <sys/buf.h>
-
-#include <nlist.h>
-#include <ctype.h>
-#include <paths.h>
 #include <string.h>
-#include <stdlib.h>
+#include <ctype.h>
+#include <signal.h>
 #include "systat.h"
 #include "extern.h"
+static void dkselect(char *args, int truefalse, int selections[]);
 
-static void dkselect __P((char *, int, int []));
-static int read_names __P((void));
-
-static struct nlist namelist[] = {
-#define	X_DK_NDRIVE	0
-	{ "_dk_ndrive" },
-#define	X_DK_WPMS	1
-	{ "_dk_wpms" },
-#ifdef vax
-#define	X_MBDINIT	(X_DK_WPMS+1)
-	{ "_mbdinit" },
-#define	X_UBDINIT	(X_DK_WPMS+2)
-	{ "_ubdinit" },
-#endif
-#ifdef sun
-#define	X_MBDINIT	(X_DK_WPMS+1)
-	{ "_mbdinit" },
-#endif
-#ifdef tahoe
-#define	X_VBDINIT	(X_DK_WPMS+1)
-	{ "_vbdinit" },
-#endif
-#if defined(hp300) || defined(luna68k)
-#define X_HPDINIT       (X_DK_WPMS+1)
-        { "_hp_dinit" }, 
-#endif
-#ifdef mips
-#define X_SCSI_DINIT	(X_DK_WPMS+1)
-	{ "_scsi_dinit" },
-#endif
-	{ "" },
-};
-
-float *dk_mspw;
-int dk_ndrive, *dk_select;
-char **dr_name;
-
-#include "names.c"					/* XXX */
 
 int
-dkinit()
-{
-	register int i;
-	register char *cp;
-	static int once = 0;
-	static char buf[1024];
-
-	if (once)
-		return(1);
-
-	if (kvm_nlist(kd, namelist)) {
-		nlisterr(namelist);
-		return(0);
-	}
-	if (namelist[X_DK_NDRIVE].n_value == 0) {
-		error("dk_ndrive undefined in kernel");
-		return(0);
-	}
-	NREAD(X_DK_NDRIVE, &dk_ndrive, LONG);
-	if (dk_ndrive <= 0) {
-		error("dk_ndrive=%d according to %s", dk_ndrive, _PATH_UNIX);
-		return(0);
-	}
-	dk_mspw = (float *)calloc(dk_ndrive, sizeof (float));
-	{
-		long *wpms = (long *)calloc(dk_ndrive, sizeof(long));
-		KREAD(NPTR(X_DK_WPMS), wpms, dk_ndrive * sizeof (long));
-		for (i = 0; i < dk_ndrive; i++)
-			*(dk_mspw + i) = (*(wpms + i) == 0)? 0.0:
-			                 (float) 1.0 / *(wpms + i);
-		free(wpms);
-	}
-	dr_name = (char **)calloc(dk_ndrive, sizeof (char *));
-	dk_select = (int *)calloc(dk_ndrive, sizeof (int));
-	for (cp = buf, i = 0; i < dk_ndrive; i++) {
-		dr_name[i] = cp;
-		sprintf(dr_name[i], "dk%d", i);
-		cp += strlen(dr_name[i]) + 1;
-		if (dk_mspw[i] != 0.0)
-			dk_select[i] = 1;
-	}
-	if (!read_names()) {
-		free(dr_name);
-		free(dk_select);
-		free(dk_mspw);
-		return(0);
-	}
-	once = 1;
-	return(1);
-}
-
-int
-dkcmd(cmd, args)
-	char *cmd, *args;
+dkcmd(char *cmd, char *args)
 {
 	if (prefix(cmd, "display") || prefix(cmd, "add")) {
 		dkselect(args, 1, dk_select);
@@ -155,27 +57,23 @@ dkcmd(cmd, args)
 		return (1);
 	}
 	if (prefix(cmd, "drives")) {
-		register int i;
+		int i;
 
 		move(CMDLINE, 0); clrtoeol();
 		for (i = 0; i < dk_ndrive; i++)
-			if (dk_mspw[i] != 0.0)
-				printw("%s ", dr_name[i]);
+			printw("%s ", dr_name[i]);
 		return (1);
 	}
 	return (0);
 }
 
 static void
-dkselect(args, truefalse, selections)
-	char *args;
-	int truefalse, selections[];
+dkselect(char *args, int truefalse, int selections[])
 {
-	register char *cp;
-	register int i;
-	char *index();
+	char *cp;
+	int i;
 
-	cp = index(args, '\n');
+	cp = strchr(args, '\n');
 	if (cp)
 		*cp = '\0';
 	for (;;) {
@@ -190,11 +88,7 @@ dkselect(args, truefalse, selections)
 			break;
 		for (i = 0; i < dk_ndrive; i++)
 			if (strcmp(args, dr_name[i]) == 0) {
-				if (dk_mspw[i] != 0.0)
-					selections[i] = truefalse;
-				else
-					error("%s: drive not configured",
-					    dr_name[i]);
+				selections[i] = truefalse;
 				break;
 			}
 		if (i >= dk_ndrive)

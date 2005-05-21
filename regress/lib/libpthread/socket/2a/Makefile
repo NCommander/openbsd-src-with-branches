@@ -1,15 +1,19 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.4 2002/09/02 20:01:43 avsm Exp $
 
 PROG=	socket2a
-SRCS=	socket2a.c
 CFLAGS+= -I${.CURDIR}/../../include
 
-regress:
+REGRESS_TARGETS=dummy
+
+# build prog and link into test 2 directory.  Code is used by test 2
+#
+dummy: ${PROG}
 	@cd ${.CURDIR}/../2; \
 	if test -d ${__objdir} ; then \
 		cd ${__objdir} ; \
 	fi; \
 	ln -sf ${.OBJDIR}/${PROG}
-	# Nothing here so far...
+	@echo ${PROG} ready
 
-.include <bsd.prog.mk>
+.include <bsd.regress.mk>
+

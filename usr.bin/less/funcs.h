@@ -100,6 +100,7 @@
 	public char * get_meta_escape ();
 	public char * shell_quote ();
 	public char * homefile ();
+	public char * find_helpfile ();
 	public char * fexpand ();
 	public char * fcomplete ();
 	public int bin_file ();
@@ -115,6 +116,7 @@
 	public void forward ();
 	public void backward ();
 	public int get_back_scroll ();
+	public void help ();
 	public void del_ifile ();
 	public IFILE next_ifile ();
 	public IFILE prev_ifile ();
@@ -193,7 +195,6 @@
 	public struct loption * findopt ();
 	public struct loption * findopt_name ();
 	public int iread ();
-	public void intread ();
 	public long get_time ();
 	public char * errno_message ();
 	public int percentage ();
@@ -247,3 +248,4 @@
 	public void open_getchr ();
 	public void close_getchr ();
 	public int getchr ();
+	public void (*lsignal()) ();

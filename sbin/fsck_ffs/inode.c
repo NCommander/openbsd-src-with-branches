@@ -1,4 +1,5 @@
-/*	$NetBSD: inode.c,v 1.15 1995/06/07 17:16:10 cgd Exp $	*/
+/*	$OpenBSD: inode.c,v 1.25 2003/09/25 04:23:26 deraadt Exp $	*/
+/*	$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)inode.c	8.5 (Berkeley) 2/8/95";
 #else
-static char rcsid[] = "$NetBSD: inode.c,v 1.15 1995/06/07 17:16:10 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: inode.c,v 1.25 2003/09/25 04:23:26 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,22 +51,22 @@ static char rcsid[] = "$NetBSD: inode.c,v 1.15 1995/06/07 17:16:10 cgd Exp $";
 #include <string.h>
 
 #include "fsck.h"
+#include "fsutil.h"
 #include "extern.h"
 
 static ino_t startinum;
 
-int iblock __P((struct inodesc *, long, quad_t));
+static int iblock(struct inodesc *, long, u_int64_t);
 
 int
-ckinode(dp, idesc)
-	struct dinode *dp;
-	register struct inodesc *idesc;
+ckinode(struct ufs1_dinode *dp, struct inodesc *idesc)
 {
-	register daddr_t *ap;
+	ufs_daddr_t *ap;
 	long ret, n, ndb, offset;
-	struct dinode dino;
-	quad_t remsize, sizepb;
+	struct ufs1_dinode dino;
+	u_int64_t remsize, sizepb;
 	mode_t mode;
+	char pathbuf[MAXPATHLEN + 1];
 
 	if (idesc->id_fix != IGNORE)
 		idesc->id_fix = DONTKNOW;
@@ -88,8 +85,25 @@ ckinode(dp, idesc)
 				numfrags(&sblock, fragroundup(&sblock, offset));
 		else
 			idesc->id_numfrags = sblock.fs_frag;
-		if (*ap == 0)
+		if (*ap == 0) {
+			if (idesc->id_type == DATA && ndb >= 0) {
+				/* An empty block in a directory XXX */
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
+				pfatal("DIRECTORY %s: CONTAINS EMPTY BLOCKS",
+				    pathbuf);
+				if (reply("ADJUST LENGTH") == 1) {
+					dp = ginode(idesc->id_number);
+					dp->di_size = (ap - &dino.di_db[0]) *
+					    sblock.fs_bsize;
+					printf(
+					    "YOU MUST RERUN FSCK AFTERWARDS\n");
+					rerun = 1;
+					inodirty();
+				}
+			}
 			continue;
+		}
 		idesc->id_blkno = *ap;
 		if (idesc->id_type == ADDR)
 			ret = (*idesc->id_func)(idesc);
@@ -107,6 +121,24 @@ ckinode(dp, idesc)
 			ret = iblock(idesc, n, remsize);
 			if (ret & STOP)
 				return (ret);
+		} else {
+			if (idesc->id_type == DATA && remsize > 0) {
+				/* An empty block in a directory XXX */
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
+				pfatal("DIRECTORY %s: CONTAINS EMPTY BLOCKS",
+				    pathbuf);
+				if (reply("ADJUST LENGTH") == 1) {
+					dp = ginode(idesc->id_number);
+					dp->di_size -= remsize;
+					remsize = 0;
+					printf(
+					    "YOU MUST RERUN FSCK AFTERWARDS\n");
+					rerun = 1;
+					inodirty();
+					break;
+				}
+			}
 		}
 		sizepb *= NINDIR(&sblock);
 		remsize -= sizepb;
@@ -114,19 +146,17 @@ ckinode(dp, idesc)
 	return (KEEPON);
 }
 
-int
-iblock(idesc, ilevel, isize)
-	struct inodesc *idesc;
-	long ilevel;
-	quad_t isize;
+static int
+iblock(struct inodesc *idesc, long ilevel, u_int64_t isize)
 {
-	register daddr_t *ap;
-	register daddr_t *aplim;
-	register struct bufarea *bp;
-	int i, n, (*func)(), nif;
-	quad_t sizepb;
+	daddr_t *ap;
+	daddr_t *aplim;
+	struct bufarea *bp;
+	int i, n, (*func)(struct inodesc *), nif;
+	u_int64_t sizepb;
 	char buf[BUFSIZ];
-	extern int pass1check();
+	char pathbuf[MAXPATHLEN + 1];
+	struct ufs1_dinode *dp;
 
 	if (idesc->id_type == ADDR) {
 		func = idesc->id_func;
@@ -140,16 +170,18 @@ iblock(idesc, ilevel, isize)
 	ilevel--;
 	for (sizepb = sblock.fs_bsize, i = 0; i < ilevel; i++)
 		sizepb *= NINDIR(&sblock);
-	nif = howmany(isize , sizepb);
-	if (nif > NINDIR(&sblock))
+	if (isize > sizepb * NINDIR(&sblock))
 		nif = NINDIR(&sblock);
+	else
+		nif = howmany(isize, sizepb);
 	if (idesc->id_func == pass1check && nif < NINDIR(&sblock)) {
 		aplim = &bp->b_un.b_indir[NINDIR(&sblock)];
 		for (ap = &bp->b_un.b_indir[nif]; ap < aplim; ap++) {
 			if (*ap == 0)
 				continue;
-			(void)sprintf(buf, "PARTIALLY TRUNCATED INODE I=%lu",
-				idesc->id_number);
+			(void)snprintf(buf, sizeof buf,
+			    "PARTIALLY TRUNCATED INODE I=%u",
+			    idesc->id_number);
 			if (dofix(idesc, buf)) {
 				*ap = 0;
 				dirty(bp);
@@ -169,6 +201,25 @@ iblock(idesc, ilevel, isize)
 				bp->b_flags &= ~B_INUSE;
 				return (n);
 			}
+		} else {
+			if (idesc->id_type == DATA && isize > 0) {
+				/* An empty block in a directory XXX */
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
+				pfatal("DIRECTORY %s: CONTAINS EMPTY BLOCKS",
+				    pathbuf);
+				if (reply("ADJUST LENGTH") == 1) {
+					dp = ginode(idesc->id_number);
+					dp->di_size -= isize;
+					isize = 0;
+					printf(
+					    "YOU MUST RERUN FSCK AFTERWARDS\n");
+					rerun = 1;
+					inodirty();
+					bp->b_flags &= ~B_INUSE;
+					return(STOP);
+				}
+			}
 		}
 		isize -= sizepb;
 	}
@@ -181,21 +232,19 @@ iblock(idesc, ilevel, isize)
  * Return 0 if in range, 1 if out of range.
  */
 int
-chkrange(blk, cnt)
-	daddr_t blk;
-	int cnt;
+chkrange(daddr_t blk, int cnt)
 {
-	register int c;
+	int c;
 
-	if ((unsigned)(blk + cnt) > maxfsblock)
+	if ((unsigned)blk > maxfsblock || (unsigned)(blk + cnt) > maxfsblock)
 		return (1);
 	c = dtog(&sblock, blk);
 	if (blk < cgdmin(&sblock, c)) {
 		if ((blk + cnt) > cgsblock(&sblock, c)) {
 			if (debug) {
-				printf("blk %ld < cgdmin %ld;",
+				printf("blk %d < cgdmin %d;",
 				    blk, cgdmin(&sblock, c));
-				printf(" blk + cnt %ld > cgsbase %ld\n",
+				printf(" blk + cnt %d > cgsbase %d\n",
 				    blk + cnt, cgsblock(&sblock, c));
 			}
 			return (1);
@@ -203,9 +252,9 @@ chkrange(blk, cnt)
 	} else {
 		if ((blk + cnt) > cgbase(&sblock, c+1)) {
 			if (debug)  {
-				printf("blk %ld >= cgdmin %ld;",
+				printf("blk %d >= cgdmin %d;",
 				    blk, cgdmin(&sblock, c));
-				printf(" blk + cnt %ld > sblock.fs_fpg %ld\n",
+				printf(" blk + cnt %d > sblock.fs_fpg %d\n",
 				    blk+cnt, sblock.fs_fpg);
 			}
 			return (1);
@@ -217,9 +266,8 @@ chkrange(blk, cnt)
 /*
  * General purpose interface for reading inodes.
  */
-struct dinode *
-ginode(inumber)
-	ino_t inumber;
+struct ufs1_dinode *
+ginode(ino_t inumber)
 {
 	daddr_t iblk;
 
@@ -242,15 +290,14 @@ ginode(inumber)
  */
 ino_t nextino, lastinum;
 long readcnt, readpercg, fullcnt, inobufsize, partialcnt, partialsize;
-struct dinode *inodebuf;
+struct ufs1_dinode *inodebuf;
 
-struct dinode *
-getnextinode(inumber)
-	ino_t inumber;
+struct ufs1_dinode *
+getnextinode(ino_t inumber)
 {
 	long size;
 	daddr_t dblk;
-	static struct dinode *dp;
+	static struct ufs1_dinode *dp;
 
 	if (inumber != nextino++ || inumber > maxino)
 		errexit("bad inode number %d to nextinode\n", inumber);
@@ -271,7 +318,7 @@ getnextinode(inumber)
 }
 
 void
-resetinodebuf()
+resetinodebuf(void)
 {
 
 	startinum = 0;
@@ -279,10 +326,10 @@ resetinodebuf()
 	lastinum = 0;
 	readcnt = 0;
 	inobufsize = blkroundup(&sblock, INOBUFSIZE);
-	fullcnt = inobufsize / sizeof(struct dinode);
+	fullcnt = inobufsize / sizeof(struct ufs1_dinode);
 	readpercg = sblock.fs_ipg / fullcnt;
 	partialcnt = sblock.fs_ipg % fullcnt;
-	partialsize = partialcnt * sizeof(struct dinode);
+	partialsize = partialcnt * sizeof(struct ufs1_dinode);
 	if (partialcnt != 0) {
 		readpercg++;
 	} else {
@@ -290,18 +337,18 @@ resetinodebuf()
 		partialsize = inobufsize;
 	}
 	if (inodebuf == NULL &&
-	    (inodebuf = (struct dinode *)malloc((unsigned)inobufsize)) == NULL)
+	    (inodebuf = malloc((unsigned)inobufsize)) == NULL)
 		errexit("Cannot allocate space for inode buffer\n");
 	while (nextino < ROOTINO)
 		(void)getnextinode(nextino);
 }
 
 void
-freeinodebuf()
+freeinodebuf(void)
 {
 
 	if (inodebuf != NULL)
-		free((char *)inodebuf);
+		free(inodebuf);
 	inodebuf = NULL;
 }
 
@@ -313,39 +360,40 @@ freeinodebuf()
  * Enter inodes into the cache.
  */
 void
-cacheino(dp, inumber)
-	register struct dinode *dp;
-	ino_t inumber;
+cacheino(struct ufs1_dinode *dp, ino_t inumber)
 {
-	register struct inoinfo *inp;
-	struct inoinfo **inpp;
+	struct inoinfo *inp;
+	struct inoinfo **inpp, **newinpsort;
 	unsigned int blks;
+	long newlistmax;
 
 	blks = howmany(dp->di_size, sblock.fs_bsize);
 	if (blks > NDADDR)
 		blks = NDADDR + NIADDR;
-	inp = (struct inoinfo *)
-		malloc(sizeof(*inp) + (blks - 1) * sizeof(daddr_t));
+	inp = malloc(sizeof(*inp) + (blks ? blks - 1 : 0) * sizeof(daddr_t));
 	if (inp == NULL)
-		return;
+		errexit("cannot allocate memory for inode cache\n");
 	inpp = &inphead[inumber % numdirs];
 	inp->i_nexthash = *inpp;
 	*inpp = inp;
+	inp->i_child = inp->i_sibling = inp->i_parentp = 0;
 	if (inumber == ROOTINO)
 		inp->i_parent = ROOTINO;
 	else
-		inp->i_parent = (ino_t)0;
-	inp->i_dotdot = (ino_t)0;
+		inp->i_parent = 0;
+	inp->i_dotdot = 0;
 	inp->i_number = inumber;
 	inp->i_isize = dp->di_size;
 	inp->i_numblks = blks * sizeof(daddr_t);
 	memcpy(&inp->i_blks[0], &dp->di_db[0], (size_t)inp->i_numblks);
 	if (inplast == listmax) {
-		listmax += 100;
-		inpsort = (struct inoinfo **)realloc((char *)inpsort,
-		    (unsigned)listmax * sizeof(struct inoinfo *));
-		if (inpsort == NULL)
+		newlistmax = listmax + 100;
+		newinpsort = realloc(inpsort,
+		    (unsigned)newlistmax * sizeof(struct inoinfo *));
+		if (newinpsort == NULL)
 			errexit("cannot increase directory list");
+		inpsort = newinpsort;
+		listmax = newlistmax;
 	}
 	inpsort[inplast++] = inp;
 }
@@ -354,10 +402,9 @@ cacheino(dp, inumber)
  * Look up an inode cache structure.
  */
 struct inoinfo *
-getinoinfo(inumber)
-	ino_t inumber;
+getinoinfo(ino_t inumber)
 {
-	register struct inoinfo *inp;
+	struct inoinfo *inp;
 
 	for (inp = inphead[inumber % numdirs]; inp; inp = inp->i_nexthash) {
 		if (inp->i_number != inumber)
@@ -365,40 +412,36 @@ getinoinfo(inumber)
 		return (inp);
 	}
 	errexit("cannot find inode %d\n", inumber);
-	return ((struct inoinfo *)0);
+	return (NULL);
 }
 
 /*
  * Clean up all the inode cache structure.
  */
 void
-inocleanup()
+inocleanup(void)
 {
-	register struct inoinfo **inpp;
+	struct inoinfo **inpp;
 
 	if (inphead == NULL)
 		return;
 	for (inpp = &inpsort[inplast - 1]; inpp >= inpsort; inpp--)
-		free((char *)(*inpp));
-	free((char *)inphead);
-	free((char *)inpsort);
+		free(*inpp);
+	free(inphead);
+	free(inpsort);
 	inphead = inpsort = NULL;
 }
-	
+
 void
-inodirty()
+inodirty(void)
 {
-	
 	dirty(pbp);
 }
 
 void
-clri(idesc, type, flag)
-	register struct inodesc *idesc;
-	char *type;
-	int flag;
+clri(struct inodesc *idesc, char *type, int flag)
 {
-	register struct dinode *dp;
+	struct ufs1_dinode *dp;
 
 	dp = ginode(idesc->id_number);
 	if (flag == 1) {
@@ -418,10 +461,9 @@ clri(idesc, type, flag)
 }
 
 int
-findname(idesc)
-	struct inodesc *idesc;
+findname(struct inodesc *idesc)
 {
-	register struct direct *dirp = idesc->id_dirp;
+	struct direct *dirp = idesc->id_dirp;
 
 	if (dirp->d_ino != idesc->id_parent)
 		return (KEEPON);
@@ -430,10 +472,9 @@ findname(idesc)
 }
 
 int
-findino(idesc)
-	struct inodesc *idesc;
+findino(struct inodesc *idesc)
 {
-	register struct direct *dirp = idesc->id_dirp;
+	struct direct *dirp = idesc->id_dirp;
 
 	if (dirp->d_ino == 0)
 		return (KEEPON);
@@ -446,41 +487,38 @@ findino(idesc)
 }
 
 void
-pinode(ino)
-	ino_t ino;
+pinode(ino_t ino)
 {
-	register struct dinode *dp;
-	register char *p;
+	struct ufs1_dinode *dp;
+	char *p;
 	struct passwd *pw;
-	char *ctime();
+	time_t t;
 
-	printf(" I=%lu ", ino);
+	printf(" I=%u ", ino);
 	if (ino < ROOTINO || ino > maxino)
 		return;
 	dp = ginode(ino);
 	printf(" OWNER=");
 #ifndef SMALL
-	if ((pw = getpwuid((int)dp->di_uid)) != 0)
+	if ((pw = getpwuid(dp->di_uid)) != 0)
 		printf("%s ", pw->pw_name);
 	else
 #endif
 		printf("%u ", (unsigned)dp->di_uid);
 	printf("MODE=%o\n", dp->di_mode);
 	if (preen)
-		printf("%s: ", cdevname);
-	printf("SIZE=%qu ", dp->di_size);
-	p = ctime(&dp->di_mtime);
+		printf("%s: ", cdevname());
+	printf("SIZE=%llu ", (unsigned long long)dp->di_size);
+	t = dp->di_mtime;
+	p = ctime(&t);
 	printf("MTIME=%12.12s %4.4s ", &p[4], &p[20]);
 }
 
 void
-blkerror(ino, type, blk)
-	ino_t ino;
-	char *type;
-	daddr_t blk;
+blkerror(ino_t ino, char *type, daddr_t blk)
 {
 
-	pfatal("%ld %s I=%lu", blk, type, ino);
+	pfatal("%d %s I=%u", blk, type, ino);
 	printf("\n");
 	switch (statemap[ino]) {
 
@@ -497,7 +535,7 @@ blkerror(ino, type, blk)
 		return;
 
 	default:
-		errexit("BAD STATE %d TO BLKERR", statemap[ino]);
+		errexit("BAD STATE %d TO BLKERR\n", statemap[ino]);
 		/* NOTREACHED */
 	}
 }
@@ -506,12 +544,13 @@ blkerror(ino, type, blk)
  * allocate an unused inode
  */
 ino_t
-allocino(request, type)
-	ino_t request;
-	int type;
+allocino(ino_t request, int type)
 {
-	register ino_t ino;
-	register struct dinode *dp;
+	ino_t ino;
+	struct ufs1_dinode *dp;
+	struct cg *cgp = &cgrp;
+	int cg;
+	time_t t;
 
 	if (request == 0)
 		request = ROOTINO;
@@ -522,9 +561,17 @@ allocino(request, type)
 			break;
 	if (ino == maxino)
 		return (0);
+	cg = ino_to_cg(&sblock, ino);
+	getblk(&cgblk, cgtod(&sblock, cg), sblock.fs_cgsize);
+	if (!cg_chkmagic(cgp))
+		pfatal("CG %d: BAD MAGIC NUMBER\n", cg);
+	setbit(cg_inosused(cgp), ino % sblock.fs_ipg);
+	cgp->cg_cs.cs_nifree--;
+
 	switch (type & IFMT) {
 	case IFDIR:
 		statemap[ino] = DSTATE;
+		cgp->cg_cs.cs_ndir++;
 		break;
 	case IFREG:
 	case IFLNK:
@@ -533,14 +580,17 @@ allocino(request, type)
 	default:
 		return (0);
 	}
+	cgdirty();
 	dp = ginode(ino);
-	dp->di_db[0] = allocblk((long)1);
+	dp->di_db[0] = allocblk(1);
 	if (dp->di_db[0] == 0) {
 		statemap[ino] = USTATE;
 		return (0);
 	}
 	dp->di_mode = type;
-	(void)time(&dp->di_atime);
+	dp->di_flags = 0;
+	(void)time(&t);
+	dp->di_atime = t;
 	dp->di_mtime = dp->di_ctime = dp->di_atime;
 	dp->di_size = sblock.fs_fsize;
 	dp->di_blocks = btodb(sblock.fs_fsize);
@@ -555,11 +605,10 @@ allocino(request, type)
  * deallocate an inode
  */
 void
-freeino(ino)
-	ino_t ino;
+freeino(ino_t ino)
 {
 	struct inodesc idesc;
-	struct dinode *dp;
+	struct ufs1_dinode *dp;
 
 	memset(&idesc, 0, sizeof(struct inodesc));
 	idesc.id_type = ADDR;

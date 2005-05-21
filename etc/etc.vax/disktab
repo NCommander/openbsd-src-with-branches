@@ -1,11 +1,12 @@
-#	$NetBSD: disktab,v 1.1 1995/08/25 21:25:11 ragge Exp $
+#	$OpenBSD: disktab,v 1.10 2004/04/09 21:50:08 jmc Exp $
+#	$NetBSD: disktab,v 1.2 1996/03/05 12:01:53 ragge Exp $
 #
 #	@(#)disktab	8.1 (Berkeley) 6/9/93
 #
-# Disk geometry and partition layout tables. 
+# Disk geometry and partition layout tables.
 # Key:
 #	dt	controller type
-#	ty	type of disk (fixed, removeable, simulated)
+#	ty	type of disk (fixed, removable, simulated)
 #	d[0-4]	drive-type-dependent parameters
 #	ns	#sectors/track
 #	nt	#tracks/cylinder
@@ -22,11 +23,11 @@
 #	il	sector interleave (n:1), 1 default
 #	bs	boot block size, default BBSIZE
 #	sb	superblock size, default SBSIZE
-#	o[a-h]	partition offsets in sectors
-#	p[a-h]	partition sizes in sectors
-#	b[a-h]	partition block sizes in bytes
-#	f[a-h]	partition fragment sizes in bytes
-#	t[a-h]	partition types (filesystem, swap, etc)
+#	o[a-p]	partition offsets in sectors
+#	p[a-p]	partition sizes in sectors
+#	b[a-p]	partition block sizes in bytes
+#	f[a-p]	partition fragment sizes in bytes
+#	t[a-p]	partition types (filesystem, swap, etc)
 #	b[0-1]	primary and secondary bootstraps, optional
 #
 # WARNING:
@@ -353,7 +354,7 @@ ucbra81|UCBRA81|DEC UCBRA81 Winchester:\
 	:ph#193282:oh#49324:bh#4096:fh#512:
 #
 # RA82: standard, use a-b-h-g or a-b-h-d-e-f
-ra82|RA81|DEC RA82 Winchester:\
+ra82|RA82|DEC RA82 Winchester:\
 	:ty=winchester:ns#57:nt#15:nc#1423:\
 	:dt=MSCP:\
 	:pa#15884:oa#0:ba#8192:fa#1024:\
@@ -480,7 +481,7 @@ ncc2|nec2363|1Gb NEC:\
 	:ty=winchester:ns#64:nt#27:nc#1024:rm#3600:se#512:\
 	:dt=SMD:\
 	:d0#0:\
-        :pa#15884:oa#0:ba#8192:fa#1024:\
+	:pa#15884:oa#0:ba#8192:fa#1024:\
 	:pb#66880:ob#17280:bb#8192:fb#1024:tb=swap:\
 	:pc#1769472:oc#0:bc#8192:fc#1024:\
 	:pd#15884:od#376704:bd#4096:fd#512:\
@@ -488,4 +489,29 @@ ncc2|nec2363|1Gb NEC:\
 	:pf#1067904:of#701568:bf#8192:ff#1024:\
 	:pg#1392768:og#376704:bg#8192:fg#1024:\
 	:ph#291346:oh#84672:bh#8192:fh#1024:
+#
+# Special disktab entries used when creating distributions.
+#
+bootroot|fake-type used in install boot:\
+	:ty=fake:se#512:nt#1:rm#10:ns#512:nc#1:\
+	:pa#512:oa#0:ba#4096:fa#512:\
+	:pb#512:ob#0:bb#4096:fb#512:\
+	:pc#512:oc#0:bc#4096:fc#512:
+
+miniroot|fake-type used when installation:\
+	:ty=fake:se#512:nt#1:rm#3600:ns#2048:nc#1:\
+	:pa#4096:oa#0:ba#4096:fa#512:ta=4.2BSD:ba#4096: \
+	:pb#4096:ob#0:bb#4096:fb#512:\
+	:pc#4096:oc#0:bc#4096:fc#512:
+
+rdroot:\
+	:ty=ramdisk:se#512:nt#2:rm#300:ns#8:nc#192:\
+	:pa#3072:oa#0:ta=4.2BSD:ba#4096:fa#1024:\
+	:pc#3072:oc#0:
+
+floppy|floppy3|3in|3.5in High Density Floppy:\
+	:ty=floppy:se#512:nt#2:rm#300:ns#18:nc#80:\
+	:pa#2880:oa#0:ba#4096:fa#512:ta=4.2BSD:\
+	:pb#2880:ob#0:\
+	:pc#2880:oc#0:
 

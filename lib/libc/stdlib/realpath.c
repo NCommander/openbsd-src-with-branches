@@ -13,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,8 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)realpath.c	8.1 (Berkeley) 2/16/94";*/
-static char *rcsid = "$Id: realpath.c,v 1.1.1.1 1994/05/17 12:42:31 mycroft Exp $";
+static char *rcsid = "$OpenBSD: realpath.c,v 1.10 2003/08/01 21:04:59 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -61,14 +56,20 @@ realpath(path, resolved)
 	char *resolved;
 {
 	struct stat sb;
-	int fd, n, rootd, serrno;
+	int fd, n, needslash, serrno;
 	char *p, *q, wbuf[MAXPATHLEN];
+	int symlinks = 0;
 
 	/* Save the starting point. */
 	if ((fd = open(".", O_RDONLY)) < 0) {
-		(void)strcpy(resolved, ".");
+		resolved[0] = '.';
+		resolved[1] = '\0';
 		return (NULL);
 	}
+
+	/* Convert "." -> "" to optimize away a needless lstat() and chdir() */
+	if (path[0] == '.' && path[1] == '\0')
+		path = "";
 
 	/*
 	 * Find the dirname and basename from the path to be resolved.
@@ -78,8 +79,10 @@ realpath(path, resolved)
 	 *     if it is a directory, then change to that directory.
 	 * get the current directory name and append the basename.
 	 */
-	(void)strncpy(resolved, path, MAXPATHLEN - 1);
-	resolved[MAXPATHLEN - 1] = '\0';
+	if (strlcpy(resolved, path, MAXPATHLEN) >= MAXPATHLEN) {
+		serrno = ENAMETOOLONG;
+		goto err2;
+	}
 loop:
 	q = strrchr(resolved, '/');
 	if (q != NULL) {
@@ -99,10 +102,13 @@ loop:
 		p = resolved;
 
 	/* Deal with the last component. */
-	if (lstat(p, &sb) == 0) {
+	if (*p != '\0' && lstat(p, &sb) == 0) {
 		if (S_ISLNK(sb.st_mode)) {
-			n = readlink(p, resolved, MAXPATHLEN);
-			if (n < 0)
+			if (++symlinks > MAXSYMLINKS) {
+				errno = ELOOP;
+				goto err1;
+			}
+			if ((n = readlink(p, resolved, MAXPATHLEN-1)) < 0)
 				goto err1;
 			resolved[n] = '\0';
 			goto loop;
@@ -118,8 +124,11 @@ loop:
 	 * Save the last component name and get the full pathname of
 	 * the current directory.
 	 */
-	(void)strcpy(wbuf, p);
-	if (getcwd(resolved, MAXPATHLEN) == 0)
+	if (strlcpy(wbuf, p, sizeof(wbuf)) >= sizeof(wbuf)) {
+		errno = ENAMETOOLONG;
+		goto err1;
+	}
+	if (getcwd(resolved, MAXPATHLEN) == NULL)
 		goto err1;
 
 	/*
@@ -127,18 +136,25 @@ loop:
 	 * happens if the last component is empty, or the dirname is root.
 	 */
 	if (resolved[0] == '/' && resolved[1] == '\0')
-		rootd = 1;
+		needslash = 0;
 	else
-		rootd = 0;
+		needslash = 1;
 
 	if (*wbuf) {
-		if (strlen(resolved) + strlen(wbuf) + rootd + 1 > MAXPATHLEN) {
+		if (strlen(resolved) + strlen(wbuf) + needslash >= MAXPATHLEN) {
 			errno = ENAMETOOLONG;
 			goto err1;
 		}
-		if (rootd == 0)
-			(void)strcat(resolved, "/");
-		(void)strcat(resolved, wbuf);
+		if (needslash) {
+			if (strlcat(resolved, "/", MAXPATHLEN) >= MAXPATHLEN) {
+				errno = ENAMETOOLONG;
+				goto err1;
+			}
+		}
+		if (strlcat(resolved, wbuf, MAXPATHLEN) >= MAXPATHLEN) {
+			errno = ENAMETOOLONG;
+			goto err1;
+		}
 	}
 
 	/* Go back to where we came from. */

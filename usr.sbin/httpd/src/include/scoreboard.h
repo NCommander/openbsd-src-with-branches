@@ -63,14 +63,7 @@
 extern "C" {
 #endif
 
-#ifndef WIN32
-#if defined(TPF) || defined(NETWARE)
-#include <time.h>
-#else
 #include <sys/times.h>
-#endif /* TPF */
-#endif
-
 
 /* Scoreboard info on a process is, for now, kept very brief --- 
  * just status value and pid (the latter so that the caretaker process
@@ -133,10 +126,8 @@ typedef int ap_generation_t;
 
 /* stuff which the children generally write, and the parent mainly reads */
 typedef struct {
-#ifdef OPTIMIZE_TIMEOUTS
     vtime_t cur_vtime;		/* the child's current vtime */
     unsigned short timeout_len;	/* length of the timeout */
-#endif
     unsigned char status;
     unsigned long access_count;
     unsigned long bytes_served;
@@ -144,19 +135,9 @@ typedef struct {
     unsigned long my_bytes_served;
     unsigned long conn_bytes;
     unsigned short conn_count;
-#if defined(NO_GETTIMEOFDAY)
-    clock_t start_time;
-    clock_t stop_time;
-#else
     struct timeval start_time;
     struct timeval stop_time;
-#endif
-#ifndef NO_TIMES
     struct tms times;
-#endif
-#ifndef OPTIMIZE_TIMEOUTS
-    time_t last_used;
-#endif
     char client[32];		/* Keep 'em small... */
     char request[64];		/* We just want an idea... */
     server_rec *vhostrec;	/* What virtual host is being accessed? */
@@ -171,10 +152,8 @@ typedef struct {
 /* stuff which the parent generally writes and the children rarely read */
 typedef struct {
     pid_t pid;
-#ifdef OPTIMIZE_TIMEOUTS
     time_t last_rtime;		/* time(0) of the last change */
     vtime_t last_vtime;		/* the last vtime the parent has seen */
-#endif
     ap_generation_t generation;	/* generation of this child */
 } parent_score;
 

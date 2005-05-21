@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,7 +35,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)sliplogin.c	5.6 (Berkeley) 3/2/91";*/
-static char rcsid[] = "$Id: sliplogin.c,v 1.11 1995/06/19 22:52:25 jtc Exp $";
+static char rcsid[] = "$Id: sliplogin.c,v 1.24 2004/01/23 03:48:43 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -71,20 +67,16 @@ static char rcsid[] = "$Id: sliplogin.c,v 1.11 1995/06/19 22:52:25 jtc Exp $";
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/file.h>
+#include <sys/stat.h>
 #include <sys/syslog.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <signal.h>
 
-#if BSD >= 199006
-#define POSIX
-#endif
-#ifdef POSIX
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <ttyent.h>
-#else
-#include <sgtty.h>
-#endif
 #include <net/slip.h>
 
 #include <ctype.h>
@@ -95,38 +87,46 @@ static char rcsid[] = "$Id: sliplogin.c,v 1.11 1995/06/19 22:52:25 jtc Exp $";
 #include <unistd.h>
 #include "pathnames.h"
 
+extern char **environ;
+
+static char *restricted_environ[] = {
+	"PATH=" _PATH_STDPATH,
+	NULL
+};
+
 int	unit;
 int	speed;
-int	uid;
+uid_t	uid;
 char	loginargs[BUFSIZ];
 char	loginfile[MAXPATHLEN];
 char	loginname[BUFSIZ];
 
 void
-findid(name)
-	char *name;
+findid(char *name)
 {
 	FILE *fp;
 	static char slopt[5][16];
 	static char laddr[16];
 	static char raddr[16];
 	static char mask[16];
-	char user[16];
-	int i, j, n;
+	char user[MAXLOGNAME], *p;
+	int n;
 
-	(void)strcpy(loginname, name);
+	strlcpy(loginname, name, sizeof loginname);
 	if ((fp = fopen(_PATH_ACCESS, "r")) == NULL) {
-		syslog(LOG_ERR, "%s: %m\n", _PATH_ACCESS);
+		syslog(LOG_ERR, "%s: %m", _PATH_ACCESS);
 		err(1, "%s", _PATH_ACCESS);
 	}
 	while (fgets(loginargs, sizeof(loginargs) - 1, fp)) {
 		if (ferror(fp))
 			break;
+		if ((p = strchr(loginargs, '#')))
+			*p = '\0';
+		if ((p = strchr(loginargs, '\n')))
+			*p = '\0';
 		n = sscanf(loginargs, "%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s%*[ \t]%15s\n",
-                        user, laddr, raddr, mask, slopt[0], slopt[1], 
-			slopt[2], slopt[3], slopt[4]);
-		if (user[0] == '#' || isspace(user[0]))
-			continue;
+		    user, laddr, raddr, mask, slopt[0], slopt[1],
+		    slopt[2], slopt[3], slopt[4]);
 		if (strcmp(user, name) != 0)
 			continue;
 
@@ -136,15 +136,16 @@ findid(name)
 		 * one specific to this host.  If none found, try for
 		 * a generic one.
 		 */
-		(void)sprintf(loginfile, "%s.%s", _PATH_LOGIN, name);
+		(void)snprintf(loginfile, sizeof loginfile, "%s.%s",
+		    _PATH_LOGIN, name);
 		if (access(loginfile, R_OK|X_OK) != 0) {
-			(void)strcpy(loginfile, _PATH_LOGIN);
+			(void)strlcpy(loginfile, _PATH_LOGIN, sizeof(loginfile));
 			if (access(loginfile, R_OK|X_OK)) {
 				fputs("access denied - no login file\n",
-				      stderr);
+				    stderr);
 				syslog(LOG_ERR,
-				       "access denied for %s - no %s\n",
-				       name, _PATH_LOGIN);
+				    "access denied for %s - no %s",
+				    name, _PATH_LOGIN);
 				exit(5);
 			}
 		}
@@ -152,66 +153,50 @@ findid(name)
 		(void) fclose(fp);
 		return;
 	}
-	syslog(LOG_ERR, "SLIP access denied for %s\n", name);
+	syslog(LOG_ERR, "SLIP access denied for %s", name);
 	errx(1, "SLIP access denied for %s", name);
 	/* NOTREACHED */
 }
 
 const char *
-sigstr(s)
-	int s;
+sigstr(int s)
 {
 	if (s > 0 && s < NSIG)
 		return(sys_signame[s]);
 	else {
 		static char buf[32];
-		(void)sprintf(buf, "sig %d", s);
+		(void)snprintf(buf, sizeof buf, "sig %d", s);
 		return(buf);
 	}
 }
 
+volatile sig_atomic_t die;
+
+/* ARGSUSED */
 void
-hup_handler(s)
-	int s;
+hup_handler(int signo)
 {
-	char logoutfile[MAXPATHLEN];
-
-	(void)sprintf(logoutfile, "%s.%s", _PATH_LOGOUT, loginname);
-	if (access(logoutfile, R_OK|X_OK) != 0)
-		(void)strcpy(logoutfile, _PATH_LOGOUT);
-	if (access(logoutfile, R_OK|X_OK) == 0) {
-		char logincmd[2*MAXPATHLEN+32];
-
-		(void) sprintf(logincmd, "%s %d %d %s", logoutfile, unit, speed,
-			      loginargs);
-		(void) system(logincmd);
-	}
-	(void) close(0);
-	syslog(LOG_INFO, "closed %s slip unit %d (%s)\n", loginname, unit,
-	       sigstr(s));
-	exit(1);
-	/* NOTREACHED */
+	die = 1;
 }
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+int
+main(int argc, char *argv[])
 {
 	int fd, s, ldisc, odisc;
 	char *name;
-#ifdef POSIX
 	struct termios tios, otios;
-#else
-	struct sgttyb tty, otty;
-#endif
-	char logincmd[2*BUFSIZ+32];
-	extern uid_t getuid();
+	char logoutfile[MAXPATHLEN], logincmd[2*BUFSIZ+32];
+	sigset_t emptyset;
+
+	environ = restricted_environ; /* minimal protection for system() */
 
 	if ((name = strrchr(argv[0], '/')) == NULL)
 		name = argv[0];
-	s = getdtablesize();
-	for (fd = 3 ; fd < s ; fd++)
-		(void) close(fd);
+	else
+		name++;
+	closefrom(3);
+	if (argc > 1 && strlen(argv[1]) > MAXLOGNAME)
+		errx(1, "login %s too long", argv[1]);
 	openlog(name, LOG_PID, LOG_DAEMON);
 	uid = getuid();
 	if (argc > 1) {
@@ -221,24 +206,17 @@ main(argc, argv)
 		 * Disassociate from current controlling terminal, if any,
 		 * and ensure that the slip line is our controlling terminal.
 		 */
-#ifdef POSIX
-		if (fork() > 0)
+		switch (fork()) {
+		case -1:
+			perror("fork");
+			exit(1);
+		case 0:
+			break;
+		default:
 			exit(0);
-		if (setsid() < 0)
-			perror("setsid");
-#else
-		if ((fd = open("/dev/tty", O_RDONLY, 0)) >= 0) {
-			extern char *ttyname();
-
-			(void) ioctl(fd, TIOCNOTTY, (caddr_t)0);
-			(void) close(fd);
-			/* open slip tty again to acquire as controlling tty? */
-			fd = open(ttyname(0), O_RDWR, 0);
-			if (fd >= 0)
-				(void) close(fd);
 		}
-		(void) setpgrp(0, getpid());
-#endif
+		if (setsid() == -1)
+			perror("setsid");
 		if (argc > 2) {
 			if ((fd = open(argv[2], O_RDWR)) == -1) {
 				perror(argv[2]);
@@ -253,11 +231,9 @@ main(argc, argv)
 			perror("ioctl (TIOCSCTTY)");
 #endif
 	} else {
-		extern char *getlogin();
-
 		if ((name = getlogin()) == NULL) {
 			syslog(LOG_ERR,
-			    "access denied - getlogin returned 0\n");
+			    "access denied - getlogin returned 0");
 			errx(1, "access denied - no username");
 		}
 		findid(name);
@@ -268,7 +244,6 @@ main(argc, argv)
 	}
 	(void) fchmod(STDIN_FILENO, 0600);
 	warnx("starting slip login for %s", loginname);
-#ifdef POSIX
 	/* set up the line parameters */
 	if (tcgetattr(STDIN_FILENO, &tios) < 0) {
 		syslog(LOG_ERR, "tcgetattr: %m");
@@ -282,20 +257,6 @@ main(argc, argv)
 		exit(1);
 	}
 	speed = cfgetispeed(&tios);
-#else
-	/* set up the line parameters */
-	if (ioctl(STDIN_FILENO, TIOCGETP, (caddr_t)&tty) < 0) {
-		syslog(LOG_ERR, "ioctl (TIOCGETP): %m");
-		exit(1);
-	}
-	otty = tty;
-	speed = tty.sg_ispeed;
-	tty.sg_flags = RAW | ANYP;
-	if (ioctl(STDIN_FILENO, TIOCSETP, (caddr_t)&tty) < 0) {
-		syslog(LOG_ERR, "ioctl (TIOCSETP): %m");
-		exit(1);
-	}
-#endif
 	/* find out what ldisc we started with */
 	if (ioctl(STDIN_FILENO, TIOCGETD, (caddr_t)&odisc) < 0) {
 		syslog(LOG_ERR, "ioctl(TIOCGETD) (1): %m");
@@ -314,9 +275,10 @@ main(argc, argv)
 	(void) signal(SIGHUP, hup_handler);
 	(void) signal(SIGTERM, hup_handler);
 
-	syslog(LOG_INFO, "attaching slip unit %d for %s\n", unit, loginname);
-	(void)sprintf(logincmd, "%s %d %d %s", loginfile, unit, speed,
-		      loginargs);
+	syslog(LOG_INFO, "attaching slip unit %d for %s", unit, loginname);
+	(void)snprintf(logincmd, sizeof(loginargs), "%s %d %d %s", loginfile,
+	    unit, speed, loginargs);
+
 	/*
 	 * aim stdout and errout at /dev/null so logincmd output won't
 	 * babble into the slip tty line.
@@ -338,21 +300,36 @@ main(argc, argv)
 	 * to see whether changes are allowed (or just "route get").
 	 */
 	(void) setuid(0);
-	if (s = system(logincmd)) {
+	if ((s = system(logincmd))) {
 		syslog(LOG_ERR, "%s login failed: exit status %d from %s",
-		       loginname, s, loginfile);
+		    loginname, s, loginfile);
 		(void) ioctl(STDIN_FILENO, TIOCSETD, (caddr_t)&odisc);
-#ifdef POSIX
 		(void) tcsetattr(STDIN_FILENO, TCSAFLUSH, &otios);
-#else
-		(void) ioctl(STDIN_FILENO, TIOCSETP, (caddr_t)&otty);
-#endif
 		exit(6);
 	}
 
-	/* twiddle thumbs until we get a signal */
-	while (1)
-		sigpause(0);
+	/* twiddle thumbs until we get a signal; allow user to kill */
+	seteuid(uid);
+	sigemptyset(&emptyset);
+	while (die == 0)
+		sigsuspend(&emptyset);
 
-	/* NOTREACHED */
+	seteuid(0);
+	(void)snprintf(logoutfile, sizeof logoutfile, "%s.%s",
+	    _PATH_LOGOUT, loginname);
+	if (access(logoutfile, R_OK|X_OK) != 0)
+		(void)strlcpy(logoutfile, _PATH_LOGOUT,
+		    sizeof(logoutfile));
+	if (access(logoutfile, R_OK|X_OK) == 0) {
+		char logincmd[2*MAXPATHLEN+32];
+
+		(void) snprintf(logincmd, sizeof logincmd, "%s %d %d %s",
+		    logoutfile, unit, speed, loginargs);
+		(void) system(logincmd);
+	}
+
+	close(0);
+	syslog(LOG_INFO, "closed %s slip unit %d (%s)",
+	    loginname, unit, sigstr(s));
+	exit(1);
 }

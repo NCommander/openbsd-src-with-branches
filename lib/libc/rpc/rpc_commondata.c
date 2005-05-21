@@ -1,5 +1,3 @@
-/*	$NetBSD: rpc_commondata.c,v 1.4 1995/02/25 03:01:54 cgd Exp $	*/
-
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -30,9 +28,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)rpc_commondata.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: rpc_commondata.c,v 1.4 1995/02/25 03:01:54 cgd Exp $";
-#endif
+static char *rcsid = "$OpenBSD: rpc_commondata.c,v 1.3 1996/08/19 08:31:47 tholo Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <rpc/rpc.h>
 /*
@@ -42,4 +39,6 @@ static char *rcsid = "$NetBSD: rpc_commondata.c,v 1.4 1995/02/25 03:01:54 cgd Ex
 struct opaque_auth _null_auth;
 fd_set svc_fdset;
 int svc_maxfd = -1;
+int svc_max_pollfd;
+struct pollfd *svc_pollfd;
 struct rpc_createerr rpc_createerr;

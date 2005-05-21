@@ -1,4 +1,5 @@
-/*	$Id: prftest.c,v 1.2 1998/10/07 16:40:50 niklas Exp $	*/
+/*	$OpenBSD: prftest.c,v 1.6 2002/06/09 08:13:07 todd Exp $	*/
+/*	$EOM: prftest.c,v 1.2 1998/10/07 16:40:50 niklas Exp $	*/
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -41,7 +37,7 @@
 #include "hash.h"
 #include "prf.h"
 
-int test_prf(char *, enum hashes, char *, int, char *, int, char *);
+int test_prf (char *, enum hashes, char *, int, char *, int, char *);
 
 #define nibble2c(x) ((x) >= 10 ? ('a'-10+(x)) : ('0' + (x)))
 
@@ -55,26 +51,31 @@ int
 main (void)
 {
   char key[100];
-    
-  memset(key, 11, 20);
+
+  memset (key, 11, 20);
   test_prf ("PRF MD5 Test Case 1", HASH_MD5,
-	     key, 16, "Hi There", 8, "9294727a3638bb1c13f48ef8158bfc9d");
+	    key, 16, "Hi There", 8, "9294727a3638bb1c13f48ef8158bfc9d");
   test_prf ("PRF MD5 Test Case 2", HASH_MD5,
-	     "Jefe", 4,
-	     "what do ya want for nothing?", 28,
-	     "750c783e6ab0b503eaa86e310a5db738");
+	    "Jefe", 4,
+	    "what do ya want for nothing?", 28,
+	    "750c783e6ab0b503eaa86e310a5db738");
   test_prf ("PRF SHA1 Test Case 1", HASH_SHA1,
-	     key, 20, "Hi There", 8, 
-	     "b617318655057264e28bc0b6fb378c8ef146be00");
+	    key, 20, "Hi There", 8,
+	    "b617318655057264e28bc0b6fb378c8ef146be00");
   test_prf ("PRF SHA1 Test Case 2",  HASH_SHA1,
-	     "Jefe", 4, "what do ya want for nothing?", 28, 
-	     "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79");
-  
-  return 1;
+	    "Jefe", 4, "what do ya want for nothing?", 28,
+	    "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79");
+  test_prf ("PRF SHA1 Test Case 3",  HASH_SHA1,
+	    "Bloody long key, this one, eben longer than the blocksize "
+	    "of ordinary keyed HMAC functions", 90,
+	    "what do ya want for nothing?", 28,
+	    "52ca5fbcd7d4821bc6bf8b6e95e131109dff901b");
+
+  return 0;
 }
 
 int
-test_prf(char *test, enum hashes hash, char *key, int klen,
+test_prf (char *test, enum hashes hash, char *key, int klen,
 	  char *data, int dlen, char *cmp)
 {
   char output[2*HASH_MAX+1];
@@ -82,34 +83,34 @@ test_prf(char *test, enum hashes hash, char *key, int klen,
   struct prf *prf;
   int i;
 
-  printf("Testing %s: ", test);
+  printf ("Testing %s: ", test);
 
-  prf = prf_alloc(PRF_HMAC, hash, key, klen);
-  if (prf == NULL) 
+  prf = prf_alloc (PRF_HMAC, hash, key, klen);
+  if (!prf)
     {
-      printf("prf_alloc() returned NULL\n");
+      printf("prf_alloc () failed\n");
       return 0;
     }
 
-  prf->Init(prf->prfctx);
-  prf->Update(prf->prfctx, data, dlen);
-  prf->Final(digest, prf->prfctx);
+  prf->Init (prf->prfctx);
+  prf->Update (prf->prfctx, data, dlen);
+  prf->Final (digest, prf->prfctx);
 
-  prf_free(prf);
+  prf_free (prf);
 
-  for (i=0; i<prf->blocksize; i++)
+  for (i = 0; i < prf->blocksize; i++)
     {
-      output[2*i] = nibble2c((digest[i] >> 4) & 0xf);
-      output[2*i+1] = nibble2c(digest[i] & 0xf);
+      output[2 * i] = nibble2c ((digest[i] >> 4) & 0xf);
+      output[2 * i + 1] = nibble2c (digest[i] & 0xf);
     }
-  output[2*i] = 0;
+  output[2 * i] = 0;
 
-  if (!strcmp(output, cmp)) 
+  if (strcmp (output, cmp) == 0)
     {
-      printf("OKAY\n");
+      printf ("OKAY\n");
       return 1;
     }
 
-  printf("%s <-> %s\n", output, cmp);
+  printf ("%s <-> %s\n", output, cmp);
   return 0;
 }

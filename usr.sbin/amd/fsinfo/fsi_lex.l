@@ -16,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +33,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)fsi_lex.l	8.2 (Berkeley) 2/17/94
- *	$Id: fsi_lex.l,v 1.4 1995/03/16 00:15:27 jtc Exp $
+ *	$Id: fsi_lex.l,v 1.4 2003/04/05 21:36:31 pvalchev Exp $
  */
 
 /*
@@ -239,21 +235,21 @@ int yywrap()
 static int first = 1;
 	if (first) {
 		char prog[16*1024];
-		strcpy(prog, "for file in ");
+		strlcpy(prog, "for file in ", sizeof(prog));
 		while (*++g_argv) {
 			if (access(*g_argv, 4) < 0) {
 				error("\"%s\": Cannot open for reading", *g_argv);
 				file_io_errors++;
 			} else {
-				strcat(prog, *g_argv);
-				strcat(prog, " ");
+				strlcat(prog, *g_argv, sizeof(prog));
+				strlcat(prog, " ", sizeof(prog));
 			}
 		}
-		strcat(prog, "; do /usr/bin/cpp ");
-		strcat(prog, idvbuf);
-		strcat(prog, " -DHOSTNAME=\'");
-		strcat(prog, hostname);
-		strcat(prog, "\' \"$file\"; done");
+		strlcat(prog, "; do /usr/bin/cpp ", sizeof(prog));
+		strlcat(prog, idvbuf, sizeof(prog));
+		strlcat(prog, " -DHOSTNAME=\'", sizeof(prog));
+		strlcat(prog, hostname, sizeof(prog));
+		strlcat(prog, "\' \"$file\"; done", sizeof(prog));
 		yyin = popen(prog, "r");
 		if (yyin) {
 			/*if (filename) free(filename);*/
@@ -262,7 +258,7 @@ static int first = 1;
 			first = 0;
 			return 0;
 		} else {
-			perror(prog);
+			warn(prog);
 		}
 	}
 

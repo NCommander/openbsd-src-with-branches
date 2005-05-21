@@ -79,9 +79,9 @@ init_line()
  	static int
 expand_linebuf()
 {
-	int new_size = size_linebuf + LINEBUF_SIZE;
-	char *new_buf = (char *) calloc(new_size, sizeof(char));
-	char *new_attr = (char *) calloc(new_size, sizeof(char));
+	int new_size = size_linebuf * 2;
+	char *new_buf = (char *) realloc(linebuf, new_size);
+	char *new_attr = (char *) realloc(attr, new_size);
 	if (new_buf == NULL || new_attr == NULL)
 	{
 		if (new_attr != NULL)
@@ -90,10 +90,8 @@ expand_linebuf()
 			free(new_buf);
 		return 1;
 	}
-	memcpy(new_buf, linebuf, size_linebuf * sizeof(char));
-	memcpy(new_attr, attr, size_linebuf * sizeof(char));
-	free(attr);
-	free(linebuf);
+	memset(new_buf + size_linebuf, 0, new_size - size_linebuf);
+	memset(new_attr + size_linebuf, 0, new_size - size_linebuf);
 	linebuf = new_buf;
 	attr = new_attr;
 	size_linebuf = new_size;
@@ -165,11 +163,11 @@ plinenum(pos)
 		char buf[INT_STRLEN_BOUND(pos) + 2];
 		int n;
 
-		linenumtoa(linenum, buf);
+		linenumtoa(linenum, buf, sizeof(buf));
 		n = strlen(buf);
 		if (n < MIN_LINENUM_WIDTH)
 			n = MIN_LINENUM_WIDTH;
-		sprintf(linebuf+curr, "%*s ", n, buf);
+		snprintf(linebuf+curr, size_linebuf-curr, "%*s ", n, buf);
 		n++;  /* One space after the line number. */
 		for (i = 0; i < n; i++)
 			attr[curr+i] = AT_NORMAL;

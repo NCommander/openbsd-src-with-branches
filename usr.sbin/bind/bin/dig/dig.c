@@ -608,7 +608,6 @@ cleanup:
 static void
 printgreeting(int argc, char **argv, dig_lookup_t *lookup) {
 	int i;
-	int remaining;
 	static isc_boolean_t first = ISC_TRUE;
 	char append[MXNAME];
 
@@ -620,22 +619,16 @@ printgreeting(int argc, char **argv, dig_lookup_t *lookup) {
 		i = 1;
 		while (i < argc) {
 			snprintf(append, sizeof(append), " %s", argv[i++]);
-			remaining = sizeof(lookup->cmdline) -
-				    strlen(lookup->cmdline) - 1;
-			strncat(lookup->cmdline, append, remaining);
+			strlcat(lookup->cmdline, append, sizeof(lookup->cmdline));
 		}
-		remaining = sizeof(lookup->cmdline) -
-			    strlen(lookup->cmdline) - 1;
-		strncat(lookup->cmdline, "\n", remaining);
+		strlcat(lookup->cmdline, "\n", sizeof(lookup->cmdline));
 		if (first) {
 			snprintf(append, sizeof(append), 
 				 ";; global options: %s %s\n",
 			       short_form ? "short_form" : "",
 			       printcmd ? "printcmd" : "");
 			first = ISC_FALSE;
-			remaining = sizeof(lookup->cmdline) -
-				    strlen(lookup->cmdline) - 1;
-			strncat(lookup->cmdline, append, remaining);
+			strlcat(lookup->cmdline, append, sizeof(lookup->cmdline));
 		}
 	}
 }
@@ -707,8 +700,7 @@ plus_option(char *option, isc_boolean_t is_batchfile,
 	size_t n;
 #endif
 
-	strncpy(option_store, option, sizeof(option_store));
-	option_store[sizeof(option_store)-1]=0;
+	strlcpy(option_store, option, sizeof(option_store));
 	ptr = option_store;
 	cmd = next_token(&ptr,"=");
 	if (cmd == NULL) {
@@ -837,8 +829,7 @@ plus_option(char *option, isc_boolean_t is_batchfile,
 				goto need_value;
 			if (!state)
 				goto invalid_option;
-			strncpy(domainopt, value, sizeof(domainopt));
-			domainopt[sizeof(domainopt)-1] = '\0';
+			strlcpy(domainopt, value, sizeof(domainopt));
 			break;
 		default:
 			goto invalid_option;
@@ -1198,8 +1189,7 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 		batchname = value;
 		return (value_from_next);
 	case 'k':
-		strncpy(keyfile, value, sizeof(keyfile));
-		keyfile[sizeof(keyfile)-1]=0;
+		strlcpy(keyfile, value, sizeof(keyfile));
 		return (value_from_next);
 	case 'p':
 		port = (in_port_t) parse_uint(value, "port number", MAXPORT);
@@ -1251,19 +1241,17 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 		if (ptr == NULL) {
 			usage();
 		}
-		strncpy(keynametext, ptr, sizeof(keynametext));
-		keynametext[sizeof(keynametext)-1]=0;
+		strlcpy(keynametext, ptr, sizeof(keynametext));
 		ptr = next_token(&value, "");
 		if (ptr == NULL)
 			usage();
-		strncpy(keysecret, ptr, sizeof(keysecret));
-		keysecret[sizeof(keysecret)-1]=0;
+		strlcpy(keysecret, ptr, sizeof(keysecret));
 		return (value_from_next);
 	case 'x':
 		*lookup = clone_lookup(default_lookup, ISC_TRUE);
 		if (get_reverse(textname, sizeof(textname), value,
 				ip6_int, ISC_FALSE) == ISC_R_SUCCESS) {
-			strncpy((*lookup)->textname, textname,
+			strlcpy((*lookup)->textname, textname,
 				sizeof((*lookup)->textname));
 			debug("looking up %s", (*lookup)->textname);
 			(*lookup)->trace_root = ISC_TF((*lookup)->trace  ||
@@ -1502,9 +1490,8 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 					printgreeting(argc, argv, lookup);
 					firstarg = ISC_FALSE;
 				}
-				strncpy(lookup->textname, rv[0], 
+				strlcpy(lookup->textname, rv[0], 
 					sizeof(lookup->textname));
-				lookup->textname[sizeof(lookup->textname)-1]=0;
 				lookup->trace_root = ISC_TF(lookup->trace  ||
 						     lookup->ns_search_only);
 				lookup->new_search = ISC_TRUE;
@@ -1560,7 +1547,7 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 		lookup->trace_root = ISC_TF(lookup->trace ||
 					    lookup->ns_search_only);
 		lookup->new_search = ISC_TRUE;
-		strcpy(lookup->textname, ".");
+		strlcpy(lookup->textname, ".", sizeof(lookup->textname));
 		lookup->rdtype = dns_rdatatype_ns;
 		lookup->rdtypeset = ISC_TRUE;
 		if (firstarg) {

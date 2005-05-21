@@ -58,7 +58,6 @@
 
 #include "httpd.h"
 
-#ifndef NO_USE_SIGACTION
 /*
  * Replace standard signal() with the more reliable sigaction equivalent
  * from W. Richard Stevens' "Advanced Programming in the UNIX Environment"
@@ -71,14 +70,7 @@ Sigfunc *signal(int signo, Sigfunc * func)
     act.sa_handler = func;
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
-#ifdef  SA_INTERRUPT		/* SunOS */
-    act.sa_flags |= SA_INTERRUPT;
-#endif
     if (sigaction(signo, &act, &oact) < 0)
 	return SIG_ERR;
     return oact.sa_handler;
 }
-#else
-/* need some function in this file, otherwise the linker on NeXT bitches */
-void ap_signal_is_not_here(void) {}
-#endif

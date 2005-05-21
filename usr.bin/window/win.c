@@ -1,4 +1,5 @@
-/*	$NetBSD: win.c,v 1.5 1995/09/29 00:44:08 cgd Exp $	*/
+/*	$OpenBSD: win.c,v 1.6 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$NetBSD: win.c,v 1.8 1996/02/08 21:07:57 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)win.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: win.c,v 1.5 1995/09/29 00:44:08 cgd Exp $";
+static char rcsid[] = "$OpenBSD: win.c,v 1.6 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,12 +65,11 @@ static char rcsid[] = "$NetBSD: win.c,v 1.5 1995/09/29 00:44:08 cgd Exp $";
  * Open a user window.
  */
 struct ww *
-openwin(id, row, col, nrow, ncol, nline, label, haspty, hasframe, shf, sh)
+openwin(id, row, col, nrow, ncol, nline, label, type, uflags, shf, sh)
 char *label;
-char haspty, hasframe;
 char *shf, **sh;
 {
-	register struct ww *w;
+	struct ww *w;
 
 	if (id < 0 && (id = findid()) < 0)
 		return 0;
@@ -82,14 +78,15 @@ char *shf, **sh;
 		error("Illegal window position.");
 		return 0;
 	}
-	w = wwopen(haspty ? WWO_PTY : WWO_SOCKET, nrow, ncol, row, col, nline);
+	w = wwopen(type, 0, nrow, ncol, row, col, nline);
 	if (w == 0) {
 		error("Can't open window: %s.", wwerror());
 		return 0;
 	}
 	w->ww_id = id;
 	window[id] = w;
-	w->ww_hasframe = hasframe;
+	CLR(w->ww_uflags, WWU_ALLFLAGS);
+	SET(w->ww_uflags, uflags);
 	w->ww_alt = w->ww_w;
 	if (label != 0 && setlabel(w, label) < 0)
 		error("No memory for label.");
@@ -112,7 +109,7 @@ char *shf, **sh;
 
 findid()
 {
-	register i;
+	int i;
 
 	for (i = 0; i < NWINDOW && window[i] != 0; i++)
 		;
@@ -126,8 +123,8 @@ findid()
 struct ww *
 findselwin()
 {
-	register struct ww *w, *s = 0;
-	register i;
+	struct ww *w, *s = 0;
+	int i;
 
 	for (i = 0; i < NWINDOW; i++)
 		if ((w = window[i]) != 0 && w != selwin &&
@@ -141,10 +138,10 @@ findselwin()
  * Close a user window.  Close all if w == 0.
  */
 closewin(w)
-register struct ww *w;
+struct ww *w;
 {
 	char didit = 0;
-	register i;
+	int i;
 
 	if (w != 0) {
 		closewin1(w);
@@ -177,17 +174,13 @@ struct ww *
 openiwin(nrow, label)
 char *label;
 {
-	register struct ww *w;
+	struct ww *w;
 
-	if ((w = wwopen(0, nrow, wwncol, 2, 0, 0)) == 0)
+	if ((w = wwopen(WWT_INTERNAL, 0, nrow, wwncol, 2, 0, 0)) == 0)
 		return 0;
-	w->ww_mapnl = 1;
-	w->ww_hasframe = 1;
-	w->ww_nointr = 1;
-	w->ww_noupdate = 1;
-	w->ww_unctrl = 1;
+	SET(w->ww_wflags, WWW_MAPNL | WWW_NOINTR | WWW_NOUPDATE | WWW_UNCTRL);
+	SET(w->ww_uflags, WWU_HASFRAME | WWU_CENTER);
 	w->ww_id = -1;
-	w->ww_center = 1;
 	(void) setlabel(w, label);
 	addwin(w, 1);
 	reframe();
@@ -205,7 +198,7 @@ struct ww *w;
 }
 
 closewin1(w)
-register struct ww *w;
+struct ww *w;
 {
 	if (w == selwin)
 		selwin = 0;
@@ -227,7 +220,7 @@ register struct ww *w;
  * Always reframe() if doreframe is true.
  */
 front(w, doreframe)
-register struct ww *w;
+struct ww *w;
 char doreframe;
 {
 	if (w->ww_back != (isfg(w) ? framewin : fgwin) && !wwvisible(w)) {
@@ -244,7 +237,7 @@ char doreframe;
  * For normal windows, we put it behind the current window.
  */
 addwin(w, fg)
-register struct ww *w;
+struct ww *w;
 char fg;
 {
 	if (fg) {
@@ -260,7 +253,7 @@ char fg;
  * Delete a window.
  */
 deletewin(w)
-register struct ww *w;
+struct ww *w;
 {
 	if (fgwin == w)
 		fgwin = w->ww_back;
@@ -269,22 +262,22 @@ register struct ww *w;
 
 reframe()
 {
-	register struct ww *w;
+	struct ww *w;
 
 	wwunframe(framewin);
 	for (w = wwhead.ww_back; w != &wwhead; w = w->ww_back)
-		if (w->ww_hasframe) {
+		if (ISSET(w->ww_uflags, WWU_HASFRAME)) {
 			wwframe(w, framewin);
 			labelwin(w);
 		}
 }
 
 labelwin(w)
-register struct ww *w;
+struct ww *w;
 {
 	int mode = w == selwin ? WWM_REV : 0;
 
-	if (!w->ww_hasframe)
+	if (!ISSET(w->ww_uflags, WWU_HASFRAME))
 		return;
 	if (w->ww_id >= 0) {
 		char buf[2];
@@ -296,7 +289,7 @@ register struct ww *w;
 	if (w->ww_label) {
 		int col;
 
-		if (w->ww_center) {
+		if (ISSET(w->ww_uflags, WWU_CENTER)) {
 			col = (w->ww_w.nc - strlen(w->ww_label)) / 2;
 			col = MAX(3, col);
 		} else
@@ -306,25 +299,25 @@ register struct ww *w;
 }
 
 stopwin(w)
-	register struct ww *w;
+	struct ww *w;
 {
-	if (w->ww_pty >= 0 && w->ww_ispty && wwstoptty(w->ww_pty) < 0)
+	if (w->ww_pty >= 0 && w->ww_type == WWT_PTY && wwstoptty(w->ww_pty) < 0)
 		error("Can't stop output: %s.", wwerror());
 	else
-		w->ww_stopped = 1;
+		SET(w->ww_pflags, WWP_STOPPED);
 }
 
 startwin(w)
-	register struct ww *w;
+	struct ww *w;
 {
-	if (w->ww_pty >= 0 && w->ww_ispty && wwstarttty(w->ww_pty) < 0)
+	if (w->ww_pty >= 0 && w->ww_type == WWT_PTY && wwstarttty(w->ww_pty) < 0)
 		error("Can't start output: %s.", wwerror());
 	else
-		w->ww_stopped = 0;
+		CLR(w->ww_pflags, WWP_STOPPED);
 }
 
 sizewin(w, nrow, ncol)
-register struct ww *w;
+struct ww *w;
 {
 	struct ww *back = w->ww_back;
 
@@ -344,34 +337,34 @@ struct ww *w;
 }
 
 more(w, always)
-register struct ww *w;
+struct ww *w;
 char always;
 {
 	int c;
-	char uc = w->ww_unctrl;
+	int uc = ISSET(w->ww_wflags, WWW_UNCTRL);
 
 	if (!always && w->ww_cur.r < w->ww_w.b - 2)
 		return 0;
 	c = waitnl1(w, "[Type escape to abort, any other key to continue]");
-	w->ww_unctrl = 0;
+	CLR(w->ww_wflags, WWW_UNCTRL);
 	wwputs("\033E", w);
-	w->ww_unctrl = uc;
+	SET(w->ww_wflags, uc);
 	return c == ctrl('[') ? 2 : 1;
 }
 
 waitnl1(w, prompt)
-register struct ww *w;
+struct ww *w;
 char *prompt;
 {
-	char uc = w->ww_unctrl;
+	int uc = ISSET(w->ww_wflags, WWW_UNCTRL);
 
-	w->ww_unctrl = 0;
+	CLR(w->ww_wflags, WWW_UNCTRL);
 	front(w, 0);
 	wwprintf(w, "\033Y%c%c\033sA%s\033rA ",
 		w->ww_w.nr - 1 + ' ', ' ', prompt);	/* print on last line */
 	wwcurtowin(w);
 	while (wwpeekc() < 0)
 		wwiomux();
-	w->ww_unctrl = uc;
+	SET(w->ww_wflags, uc);
 	return wwgetc();
 }

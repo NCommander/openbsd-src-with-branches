@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -7,7 +7,7 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: milter.h,v 8.35 2001/06/27 21:46:44 gshapiro Exp $
+ *	$Sendmail: milter.h,v 8.39 2003/12/02 00:21:42 msk Exp $
  */
 
 /*
@@ -25,7 +25,7 @@
 typedef pthread_t	sthread_t;
 typedef int		socket_t;
 
-# define MAX_MACROS_ENTRIES	4	/* max size of macro pointer array */
+# define MAX_MACROS_ENTRIES	5	/* max size of macro pointer array */
 
 /*
 **  context for milter
@@ -52,4 +52,4 @@ struct smfi_str
 	void		*ctx_privdata;	/* private data */
 };
 
-#endif /* !_LIBMILTER_MILTER_H */
+#endif /* ! _LIBMILTER_MILTER_H */

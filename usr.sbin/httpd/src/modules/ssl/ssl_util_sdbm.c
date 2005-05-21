@@ -74,12 +74,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef WIN32
-#include <io.h>
-#include <errno.h>
-#else
 #include <unistd.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -91,13 +86,6 @@
 
 #ifndef NULL
 #define NULL (void *)0
-#endif
-
-/*
- * externals
- */
-#ifdef sun
-extern int errno;
 #endif
 
 /*
@@ -190,9 +178,6 @@ int mode;
                 flags = (flags & ~O_WRONLY) | O_RDWR;
         else if ((flags & 03) == O_RDONLY)
                 db->flags = DBM_RDONLY;
-#if defined(OS2) || defined(MSDOS) || defined(WIN32)
-        flags |= O_BINARY;
-#endif
 
 /*
  * open the files in sequence, and stat the dirfile.
@@ -543,13 +528,8 @@ register long dbit;
 
         db->dirbuf[c % DBLKSIZ] |= (1 << dbit % BYTESIZ);
 
-#if 0
-        if (dbit >= db->maxbno)
-                db->maxbno += DBLKSIZ * BYTESIZ;
-#else
         if (OFF_DIR((dirb+1))*BYTESIZ > db->maxbno) 
                 db->maxbno = OFF_DIR((dirb+1)) * BYTESIZ;
-#endif
 
         if (lseek(db->dirf, OFF_DIR(dirb), SEEK_SET) < 0
             || write(db->dirf, db->dirbuf, DBLKSIZ) < 0)

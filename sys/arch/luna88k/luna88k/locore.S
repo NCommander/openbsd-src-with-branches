@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.35 2004/01/01 01:11:10 miod Exp $	*/
+/*	$OpenBSD: locore.S,v 1.6 2004/08/24 12:59:51 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -70,7 +70,7 @@
 /*
  * The memory looks like:
  *   0x00000 - 0x01000	trap vectors
- *   0x10000 - 0x20000	ROM monitor work area
+ *   0x01000 - 0x20000	ROM monitor work area
  *   0x20000 == start	Boot loader jumps here.
  */
 	text
@@ -292,6 +292,11 @@ ASLOCAL(master_start)
 	st	r10, r11, lo16(_sysconsole)
 
 1:
+	/* read frame buffer depth from ROM work area */
+	ld	r10, r0,  lo16(0x00001114)	/* frame buffer depth */
+	or.u	r11, r0,  hi16(_hwplanebits)
+	st	r10, r11, lo16(_hwplanebits)
+
 	or	r10,  r0, 0x84			/* initialize pio1 */
 	or.u	r11,  r0, hi16(0x4d00000c)
 	st.b	r10, r11, lo16(0x4d00000c)
@@ -307,9 +312,7 @@ ASLOCAL(master_start)
 	st	r0,  r2,  lo16(0x41000000)
 
 	/* still on int stack */
-	bsr.n	_C_LABEL(luna88k_bootstrap)
-	 subu	r31, r31, 40
-	addu	r31, r31, 40
+	bsr	_C_LABEL(luna88k_bootstrap)
 
 	/*
 	 * we now know our cpu number, so we
@@ -333,10 +336,8 @@ ASLOCAL(master_start)
 	/* make the call: main() */
 	or.u	r2, r0, hi16(UADDR)
 	or	r2, r2,lo16(UADDR)
-	addu	r2, r2, USIZE - 8
-	subu	r31, r31, 40
-	bsr	_C_LABEL(main)
-	addu	r31, r31, 40
+	bsr.n	_C_LABEL(main)
+	 addu	r2, r2, USIZE - 8
 	bsr	_C_LABEL(panic)
 
 /*
@@ -353,10 +354,9 @@ ASLOCAL(slave_start)
 	/* r31 <-- slavestack */
 	or.u	r31, r0,  hi16(_ASM_LABEL(slavestack_end))
 	or	r31, r31, lo16(_ASM_LABEL(slavestack_end))
-	clr	r31, r31, 3<0>	/* round down to 8-byte boundary */
 
 	bsr.n	_C_LABEL(slave_pre_main)	/* set cpu number */
-	 subu	r31, r31, 48    		/* allocate frame */
+	 clr	r31, r31, 3<0>	/* round down to 8-byte boundary */
 
 	bsr	_C_LABEL(get_slave_stack)
 	addu	r31, r2, INTSTACK_SIZE
@@ -370,8 +370,7 @@ ASLOCAL(slave_start)
 	or.u	r10, r0, hi16(_ASM_LABEL(inter_processor_lock))
 	st	r0, r10, lo16(_ASM_LABEL(inter_processor_lock))
 
-	br.n	_C_LABEL(slave_main)	/* does not return */
-	 subu	r31, r31, 40		/* allocate frame */
+	br	_C_LABEL(slave_main)	/* does not return */
 
 GLOBAL(spin_cpu)
 	or.u	r3,   r0,  hi16(_C_LABEL(start_text))
@@ -389,55 +388,37 @@ GLOBAL(spin_cpu)
  *
  * REGISTER USAGE:
  *  IN  r1   - return address
- *  IN  r2   - (signed int) number of microseconds
- *      r3   - (float) number of microseconds
- *      r4/5 - (double) number of cycles per microsecond
- *      r6   - (float) number of cycles to delay
- *      r7   - (signed) number of cycles to delay
+ *  IN  r2   - number of microseconds
+ *      r3   - cpu speed in MHz
+ *      r4   - number of cycles to delay
  */
 
 GLOBAL(delay)
-	flt.ss   r3, r2     /* convert microseconds from signed int to float */
-	or.u     r4, r0, hi16(_cycles_per_microsecond)
-	ld.d     r4, r4, lo16(_cycles_per_microsecond)
-	fmul.ssd r6, r3, r4 /* convert microseconds to cycles */
-	int.ss   r7, r6     /* convert cycles from float to signed int */
-	subu     r7, r7, 25 /* subtract for overhead of above instruction */
+	or.u	r3, r0, hi16(_cpuspeed)
+	ld	r3, r3, lo16(_cpuspeed)
+	mul	r4, r2, r3
+	subu	r4, r4, 4	/* overhead of these instructions */
 
 	/* now loop for the given number of cycles */
 1:
-	bcnd.n  gt0, r7, 1b
-	subu    r7, r7, 2       /* two cycles per iteration */
+	bcnd.n	gt0, r4, 1b
+	 subu	r4, r4, 2	/* two cycles per iteration */
 
-	jmp     r1 /* return */
+	jmp	r1
 
 /*****************************************************************************/
 
 	data
-	.align 4096		/* SDT (segment descriptor table */
-GLOBAL(kernel_sdt)
-	space	(0x2000)	/* 8K - 4K phys, 4K virt*/
-GLOBAL(ret_addr)
-	word 0
-ASLOCAL(initialized_cpu_lock)
-	/* XMEM spin lock -- to count CPUs */
-	word 0
-ASLOCAL(initialized_cpus)
-	/* CPU counter to initialize */
-	word 0
-ASLOCAL(master_processor_chosen)
-	/* The first processor that XMEMs this becomes the master */
-	word 0
-ASLOCAL(inter_processor_lock)
-	/* XMEM spin lock -- controls access to master_processor_chosen */
-	word 0
+	.align NBPG
+GLOBAL(kernel_sdt)		/* SDT (segment descriptor table */
+	space	0x2000		/* 8K - 4K phys, 4K virt*/
 
-	.align 4096
+	.align NBPG
 GLOBAL(intstack)
-	space (INTSTACK_SIZE)	/* 16K, just to be safe */
+	space	INTSTACK_SIZE	/* 16K, just to be safe */
 ASGLOBAL(intstack_end)
 ASGLOBAL(slavestack)
-	space (NBPG)		/* 4K, small, interim stack */
+	space	NBPG		/* 4K, small, interim stack */
 ASGLOBAL(slavestack_end)
 
 /*
@@ -449,7 +430,7 @@ ASGLOBAL(slavestack_end)
  * we feel like doing that).
  * Should be page aligned.
  */
-	.align 4096
+	.align NBPG
 GLOBAL(idle_u)
 	space	UPAGES * NBPG
 
@@ -458,27 +439,31 @@ GLOBAL(idle_u)
  *
  * This must be page aligned
  */
-	.align	4096
+	.align	NBPG
 ASLOCAL(u0)
 	space	UPAGES * NBPG
 
-/*
- * UPAGES get mapped to kstack
- */
-
+/* UPAGES get mapped to kstack */
 ASGLOBAL(kstack)
 	word	UADDR
-
+GLOBAL(ret_addr)
+	word 0
+/* XMEM spin lock -- to count CPUs */
+ASLOCAL(initialized_cpu_lock)
+	word 0
+/* CPU counter to initialize */
+ASLOCAL(initialized_cpus)
+	word 0
+/* The first processor that XMEMs this becomes the master */
+ASLOCAL(master_processor_chosen)
+	word 0
+/* XMEM spin lock -- controls access to master_processor_chosen */
+ASLOCAL(inter_processor_lock)
+	word 0
 #if defined(DDB) || NKSYMS > 0
 GLOBAL(esym)
 	word 	0
 #endif /* DDB || NKSYMS > 0 */
-
-GLOBAL(intiobase)
-	word	0		| KVA of base of internal IO space
-GLOBAL(intiolimit)
-	word	0		| KVA of end of internal IO space
-
 GLOBAL(proc0paddr)
 	word	_ASM_LABEL(u0)	/*  KVA of proc0 uarea */
 
@@ -499,14 +484,12 @@ GLOBAL(curpcb)
  * user stack in exec.
  */
 GLOBAL(sigcode)			/* r31 points to sigframe */
-	ld	r2, r31, 0	/* signo */
 	ld	r3, r31, 4	/* siginfo_t* */
 	ld	r4, r31, 8	/* sigcontext* */
 	ld	r5, r31, 12	/* handler */
 	jsr.n	r5
-	 subu	r31, r31, 40	/* give some stack space */
-	addu	r31, r31, 40	/* restore old sp value  */
-	ld	r2,  r31, 8	/* sigcontext* */
+	 ld	r2, r31, 0	/* signo */
+	ld	r2, r31, 8	/* sigcontext* */
 	or	r13,  r0, SYS_sigreturn
 	tb0	0, r0, 128	/* syscall trap, calling sigreturn */
 	NOP			| failure return
@@ -523,23 +506,3 @@ GLOBAL(sigcode)			/* r31 points to sigframe */
 	NOP
 	NOP
 GLOBAL(esigcode)
-
-/* interrupt counters */
-GLOBAL(intrnames)
-	string	"spur\0"
-	string	"lev1\0"
-	string	"lev2\0"
-	string	"lev3\0"
-	string	"lev4\0"
-	string	"lev5\0"
-	string	"lev6\0"
-	string	"lev7\0"
-	string	"clk\0"
-	string	"sclk\0"
-	string	"pclk\0"
-	string	"nmi\0"
-GLOBAL(eintrnames)
-	.align	8
-GLOBAL(intrcnt)
-	word	0,0,0,0,0,0,0,0,0,0,0,0
-GLOBAL(eintrcnt)

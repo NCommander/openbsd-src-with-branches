@@ -10,8 +10,11 @@
 #ifndef HTNEWS_H
 #define HTNEWS_H
 
-#include "HTAccess.h"
-#include "HTAnchor.h"
+#include <HTAccess.h>
+#include <HTAnchor.h>
+
+extern int HTNewsChunkSize;
+extern int HTNewsMaxChunk;
 
 #ifdef GLOBALREF_IS_MACRO
 extern GLOBALREF(HTProtocol, HTNews);
@@ -38,9 +41,13 @@ extern char * HTNewsHost;
 
 extern void HTClearNNTPAuthInfo NOPARAMS;
 
+#ifdef USE_SSL
+extern int HTNewsProxyConnect PARAMS ((
+	int		sock,
+	CONST char *	url,
+	HTParentAnchor *anAnchor,
+	HTFormat	format_out,
+	HTStream *	sink));
+#endif
+
 #endif /* HTNEWS_H */
-
-
-/*
-
-   tbl */

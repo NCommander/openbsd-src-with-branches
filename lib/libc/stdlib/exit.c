@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,15 +28,24 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)exit.c	5.4 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: exit.c,v 1.3 1993/08/26 00:47:56 jtc Exp $";
+static char *rcsid = "$OpenBSD: exit.c,v 1.8 2002/09/14 22:03:14 dhartmei Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#include <sys/types.h>
+#include <sys/mman.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "atexit.h"
+#include "thread_private.h"
 
-void (*__cleanup)();
+/*
+ * This variable is zero until a process has created a thread.
+ * It is used to avoid calling locking functions in libc when they
+ * are not required. By default, libc is intended to be(come)
+ * thread-safe, but without a (significant) penalty to non-threaded
+ * processes.
+ */
+int     __isthreaded    = 0;
 
 /*
  * Exit, flushing stdio buffers if necessary.
@@ -49,13 +54,20 @@ void
 exit(status)
 	int status;
 {
-	register struct atexit *p;
-	register int n;
+	register struct atexit *p, *q;
+	register int n, pgsize = getpagesize();
 
-	for (p = __atexit; p; p = p->next)
-		for (n = p->ind; --n >= 0;)
-			(*p->fns[n])();
-	if (__cleanup)
-		(*__cleanup)();
+	if (!__atexit_invalid) {
+		p = __atexit;
+		while (p != NULL) {
+			for (n = p->ind; --n >= 0;)
+				if (p->fns[n] != NULL)
+					(*p->fns[n])();
+			q = p;
+			p = p->next;
+			munmap(q, pgsize);
+		}
+	}
+	/* cleanup, if registered, was called through fns[0] in the last page */
 	_exit(status);
 }

@@ -9,11 +9,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,7 +29,7 @@
 .\"
 .Dd June 4, 1993
 .Dt FTIME 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm ftime
 .Nd get date and time
@@ -44,7 +40,7 @@
 .Fn ftime "struct timeb *tp"
 .Sh DESCRIPTION
 .Bf -symbolic
-This interface is obsoleted by 
+This interface is obsoleted by
 .Xr gettimeofday 2 .
 It is available from the compatibility library, libcompat.
 .Ef
@@ -75,10 +71,10 @@ Daylight Saving time applies locally during the appropriate part of the year.
 .Sh SEE ALSO
 .Xr gettimeofday 2 ,
 .Xr settimeofday 2 ,
-.Xr time 2 ,
-.Xr ctime 3
+.Xr ctime 3 ,
+.Xr time 3
 .Sh HISTORY
 The
 .Nm
-function appeared in 
+function appeared in
 .Bx 4.2 .

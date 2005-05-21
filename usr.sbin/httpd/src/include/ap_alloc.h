@@ -84,18 +84,12 @@ extern "C" {
  * alloc.c.  
  */
 
- /* Need declaration of DIR on Win32 */
-#ifdef WIN32
-#include "readdir.h"
-#endif
-
 typedef struct pool pool;
 typedef struct pool ap_pool;
 
 API_EXPORT(pool *) ap_init_alloc(void);		/* Set up everything */
 void ap_cleanup_alloc(void);
 API_EXPORT(pool *) ap_make_sub_pool(pool *);	/* All pools are subpools of permanent_pool */
-#if defined(EAPI)
 typedef enum { AP_POOL_RD, AP_POOL_RW } ap_pool_lock_mode;
 int ap_shared_pool_possible(void);
 void ap_init_alloc_shared(int);
@@ -103,7 +97,6 @@ void ap_kill_alloc_shared(void);
 API_EXPORT(pool *) ap_make_shared_sub_pool(pool *);
 API_EXPORT(int) ap_acquire_pool(pool *, ap_pool_lock_mode);
 API_EXPORT(int) ap_release_pool(pool *);
-#endif
 API_EXPORT(void) ap_destroy_pool(pool *);
 
 /* pools have nested lifetimes -- sub_pools are destroyed when the
@@ -331,13 +324,8 @@ API_EXPORT_NONSTD(void) ap_null_cleanup(void *data);
  * up with timeout handling in general...
  */
 
-#ifdef TPF
-#define ap_block_alarms() (0)
-#define ap_unblock_alarms() (0)
-#else
 API_EXPORT(void) ap_block_alarms(void);
 API_EXPORT(void) ap_unblock_alarms(void);
-#endif /* TPF */
 
 /* Common cases which want utility support..
  * the note_cleanups_for_foo routines are for 
@@ -353,9 +341,6 @@ API_EXPORT(void) ap_note_cleanups_for_file(pool *, FILE *);
 API_EXPORT(void) ap_note_cleanups_for_file_ex(pool *, FILE *, int);
 API_EXPORT(void) ap_note_cleanups_for_fd(pool *, int);
 API_EXPORT(void) ap_note_cleanups_for_fd_ex(pool *, int, int);
-#ifdef WIN32
-API_EXPORT(void) ap_note_cleanups_for_h(pool *, HANDLE);
-#endif
 API_EXPORT(void) ap_kill_cleanups_for_fd(pool *p, int fd);
 
 API_EXPORT(void) ap_note_cleanups_for_socket(pool *, int);
@@ -374,9 +359,6 @@ API_EXPORT(void) ap_pregfree(pool *p, regex_t * reg);
 
 API_EXPORT(int) ap_pfclose(struct pool *, FILE *);
 API_EXPORT(int) ap_pclosef(struct pool *, int fd);
-#ifdef WIN32
-API_EXPORT(int) ap_pcloseh(struct pool *, HANDLE hDevice);
-#endif
 
 /* routines to deal with directories */
 API_EXPORT(DIR *) ap_popendir(pool *p, const char *name);

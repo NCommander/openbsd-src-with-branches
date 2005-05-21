@@ -1,5 +1,5 @@
 # Pod::PlainText -- Convert POD data to formatted ASCII text.
-# $Id: Text.pm,v 2.1 1999/09/20 11:53:33 eagle Exp $
+# $Id: PlainText.pm,v 1.2 2003/12/03 03:02:40 millert Exp $
 #
 # Copyright 1999-2000 by Russ Allbery <rra@stanford.edu>
 #

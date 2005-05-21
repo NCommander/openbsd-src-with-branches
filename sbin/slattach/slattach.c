@@ -1,4 +1,5 @@
-/*	$NetBSD: slattach.c,v 1.16 1995/03/21 18:48:59 mycroft Exp $	*/
+/*	$OpenBSD: slattach.c,v 1.14 2002/07/03 22:32:33 deraadt Exp $	*/
+/*	$NetBSD: slattach.c,v 1.17 1996/05/19 21:57:39 jonathan Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)slattach.c	8.2 (Berkeley) 1/7/94";
 #else
-static char rcsid[] = "$NetBSD: slattach.c,v 1.16 1995/03/21 18:48:59 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: slattach.c,v 1.14 2002/07/03 22:32:33 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,6 +56,7 @@ static char rcsid[] = "$NetBSD: slattach.c,v 1.16 1995/03/21 18:48:59 mycroft Ex
 #include <netinet/in.h>
 
 #include <err.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <paths.h>
@@ -66,6 +64,7 @@ static char rcsid[] = "$NetBSD: slattach.c,v 1.16 1995/03/21 18:48:59 mycroft Ex
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -74,21 +73,28 @@ int	slipdisc = SLIPDISC;
 
 char	devicename[32];
 
-void	usage __P((void));
+static char pidfilename[MAXPATHLEN];	/* name of pid file */
+static pid_t pid;			/* Our pid */
+static FILE *pidfile;
+
+void	usage(void);
+int ttydisc(char *);
+void handler(int);
+
+volatile sig_atomic_t dying;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register int fd;
-	register char *dev = argv[1];
+	int fd;
+	char *dev;
 	struct termios tty;
 	tcflag_t cflag = HUPCL;
 	int ch;
 	sigset_t sigset;
+	int i;
 
-	while ((ch = getopt(argc, argv, "hms:")) != -1) {
+	while ((ch = getopt(argc, argv, "hms:r:t:")) != -1) {
 		switch (ch) {
 		case 'h':
 			cflag |= CRTSCTS;
@@ -98,6 +104,9 @@ main(argc, argv)
 			break;
 		case 's':
 			speed = atoi(optarg);
+			break;
+		case 'r': case 't':
+			slipdisc = ttydisc(optarg);
 			break;
 		case '?':
 		default:
@@ -116,10 +125,9 @@ main(argc, argv)
 		    "%s%s", _PATH_DEV, dev);
 		dev = devicename;
 	}
-	if ((fd = open(dev, O_RDWR | O_NDELAY)) < 0) {
-		perror(dev);
-		exit(1);
-	}
+	if ((fd = open(dev, O_RDWR | O_NDELAY)) < 0)
+		err(1, "open: %s", dev);
+
 	tty.c_cflag = CREAD | CS8 | cflag;
 	tty.c_iflag = 0;
 	tty.c_lflag = 0;
@@ -135,16 +143,71 @@ main(argc, argv)
 		err(1, "TIOCSETD");
 
 	if (fork() > 0)
-		exit(0);
+		return (0);
+
+	/* set up a signal handler to delete the PID file. */
+	signal(SIGHUP, handler);
+	signal(SIGTERM, handler);
+
+	/* write PID to a file */
+	pid = getpid();
+
+	for(i = strlen(dev); (dev[i] != '/') && i > 0; i--)
+		;
+	if(dev[i] == '/')
+		i++;
+	(void) snprintf(pidfilename, sizeof pidfilename,
+	    "%sslip.%s.pid", _PATH_VARRUN, dev + i);
+	truncate(pidfilename, 0); /* If this fails, so will the next one... */
+	if ((pidfile = fopen(pidfilename, "w")) != NULL) {
+		fprintf(pidfile, "%ld\n", (long)pid);
+		(void) fclose(pidfile);
+	} else {
+		syslog(LOG_ERR, "Failed to create pid file %s: %m", pidfilename);
+		pidfilename[0] = 0;
+	}
+
 	sigemptyset(&sigset);
-	for (;;)
+	for (;;) {
 		sigsuspend(&sigset);
+		if (dying) {
+			/*  delete the pid file.  */
+			if (pidfilename[0] != 0) {
+				if (unlink(pidfilename) < 0 && errno != ENOENT)
+					syslog(LOG_WARNING,
+					    "unable to delete pid file: %m");
+			}
+
+			/* terminate gracefully */
+			return (0);
+		}
+	}
 }
 
 void
-usage()
+handler(int useless)
+{
+	dying = 1;
+}
+
+int
+ttydisc(char *name)
+{
+	if (strcmp(name, "slip") == 0)
+		return(SLIPDISC);
+#ifdef STRIPDISC
+	else if (strcmp(name, "strip") == 0)
+		return(STRIPDISC);
+#endif
+	else
+		usage();
+}
+
+void
+usage(void)
 {
 
-	(void)fprintf(stderr, "usage: slattach [-hm] [-s baudrate] ttyname\n");
+	fprintf(stderr,
+	    "usage: slattach [-t ldisc] [-hm] [-s baudrate] ttyname\n");
 	exit(1);
 }

@@ -1,5 +1,3 @@
-/*	$NetBSD: telldir.c,v 1.4 1995/02/25 08:51:51 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)telldir.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: telldir.c,v 1.4 1995/02/25 08:51:51 cgd Exp $";
-#endif
+static char rcsid[] = "$OpenBSD: telldir.c,v 1.4 2003/06/25 21:16:47 deraadt Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -72,12 +62,13 @@ struct ddloc {
 static long	dd_loccnt;	/* Index of entry for sequential readdir's */
 static struct	ddloc *dd_hash[NDIRHASH];   /* Hash list heads for ddlocs */
 
+void __seekdir(DIR *, long);
+
 /*
  * return a pointer into a directory
  */
 long
-telldir(dirp)
-	const DIR *dirp;
+telldir(const DIR *dirp)
 {
 	register int index;
 	register struct ddloc *lp;
@@ -98,9 +89,7 @@ telldir(dirp)
  * Only values returned by "telldir" should be passed to seekdir.
  */
 void
-__seekdir(dirp, loc)
-	register DIR *dirp;
-	long loc;
+__seekdir(DIR *dirp, long loc)
 {
 	register struct ddloc *lp;
 	register struct ddloc **prevlp;

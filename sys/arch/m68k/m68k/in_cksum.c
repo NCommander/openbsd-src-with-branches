@@ -1,4 +1,5 @@
-/*	$NetBSD: in_cksum.c,v 1.5 1994/10/26 07:51:11 cgd Exp $	*/
+/*	$OpenBSD: in_cksum.c,v 1.3 2002/03/14 01:26:35 millert Exp $	*/
+/*	$NetBSD: in_cksum.c,v 1.6 1996/04/30 11:57:05 briggs Exp $	*/
 
 /*
  * Copyright (c) 1988, 1990 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 
-extern int oc_cksum();
+extern int oc_cksum(char *buffer, int length, int startingval);
 
 /*
  * Checksum routine for the Internet Protocol family.
@@ -59,6 +56,7 @@ extern int oc_cksum();
  * inside the "if".  If fact, if m_copydata & sb_compact are doing
  * their job, we should never do the hairy code inside the "if".
  */
+int
 in_cksum(m, len)
 	register struct mbuf *m;
 	register int len;

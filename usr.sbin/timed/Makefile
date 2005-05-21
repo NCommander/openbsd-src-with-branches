@@ -1,6 +1,9 @@
-#	from: @(#)Makefile	5.1 (Berkeley) 5/11/90
-#	$Id: Makefile,v 1.2 1993/07/30 20:50:41 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:44:31 deraadt Exp $
 
 SUBDIR=	timed timedc
+
+.if make(install)
+SUBDIR+= SMM.doc/timedop SMM.doc/timed
+.endif
 
 .include <bsd.subdir.mk>

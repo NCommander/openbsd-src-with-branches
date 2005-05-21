@@ -1,10 +1,13 @@
-/*	$NetBSD: zdump.c,v 1.2 1995/03/10 18:12:43 jtc Exp $	*/
+/*
+** This file is in the public domain, so clarified as of
+** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
 
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)zdump.c	7.20";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
+static char elsieid[] = "@(#)zdump.c	7.31";
+static char rcsid[] = "$OpenBSD: zdump.c,v 1.14 2004/10/18 22:33:43 millert Exp $";
+static char	elsieid[] = "@(#)zdump.c	7.40";
+#endif /* LIBC_SCCS and not lint */
 
 /*
 ** This code has been made independent of the rest of the time
@@ -13,7 +16,7 @@ static char	elsieid[] = "@(#)zdump.c	7.20";
 */
 
 #include "stdio.h"	/* for stdout, stderr, perror */
-#include "string.h"	/* for strcpy */
+#include "string.h"	/* for strlcpy */
 #include "sys/types.h"	/* for time_t */
 #include "time.h"	/* for struct tm */
 #include "stdlib.h"	/* for exit, malloc, atoi */
@@ -70,11 +73,15 @@ static char	elsieid[] = "@(#)zdump.c	7.20";
 #define isleap(y) ((((y) % 4) == 0 && ((y) % 100) != 0) || ((y) % 400) == 0)
 #endif /* !defined isleap */
 
+#if HAVE_GETTEXT
+#include "locale.h"	/* for setlocale */
+#include "libintl.h"
+#endif /* HAVE_GETTEXT */
+
 #ifndef GNUC_or_lint
 #ifdef lint
 #define GNUC_or_lint
-#endif /* defined lint */
-#ifndef lint
+#else /* !defined lint */
 #ifdef __GNUC__
 #define GNUC_or_lint
 #endif /* defined __GNUC__ */
@@ -84,25 +91,51 @@ static char	elsieid[] = "@(#)zdump.c	7.20";
 #ifndef INITIALIZE
 #ifdef GNUC_or_lint
 #define INITIALIZE(x)	((x) = 0)
-#endif /* defined GNUC_or_lint */
-#ifndef GNUC_or_lint
+#else /* !defined GNUC_or_lint */
 #define INITIALIZE(x)
 #endif /* !defined GNUC_or_lint */
 #endif /* !defined INITIALIZE */
 
+/*
+** For the benefit of GNU folk...
+** `_(MSGID)' uses the current locale's message library string for MSGID.
+** The default is to use gettext if available, and use MSGID otherwise.
+*/
+
+#ifndef _
+#if HAVE_GETTEXT
+#define _(msgid) gettext(msgid)
+#else /* !HAVE_GETTEXT */
+#define _(msgid) msgid
+#endif /* !HAVE_GETTEXT */
+#endif /* !defined _ */
+
+#ifndef TZ_DOMAIN
+#define TZ_DOMAIN "tz"
+#endif /* !defined TZ_DOMAIN */
+
+#ifndef P
+#ifdef __STDC__
+#define P(x)	x
+#else /* !defined __STDC__ */
+#define P(x)	()
+#endif /* !defined __STDC__ */
+#endif /* !defined P */
+
 extern char **	environ;
-extern int	getopt();
+extern int	getopt P((int argc, char * const argv[],
+			  const char * options));
 extern char *	optarg;
 extern int	optind;
-extern time_t	time();
 extern char *	tzname[2];
 
-static char *	abbr();
-static long	delta();
-static time_t	hunt();
-static int	longest;
+static char *	abbr P((struct tm * tmp));
+static long	delta P((struct tm * newp, struct tm * oldp));
+static time_t	hunt P((char * name, time_t lot, time_t	hit));
+static size_t	longest;
 static char *	progname;
-static void	show();
+static void	show P((char * zone, time_t t, int v));
+static void	dumptime P((const struct tm * tmp));
 
 int
 main(argc, argv)
@@ -124,6 +157,13 @@ char *	argv[];
 	struct tm		newtm;
 
 	INITIALIZE(cuttime);
+#if HAVE_GETTEXT
+	(void) setlocale(LC_MESSAGES, "");
+#ifdef TZ_DOMAINDIR
+	(void) bindtextdomain(TZ_DOMAIN, TZ_DOMAINDIR);
+#endif /* defined TEXTDOMAINDIR */
+	(void) textdomain(TZ_DOMAIN);
+#endif /* HAVE_GETTEXT */
 	progname = argv[0];
 	vflag = 0;
 	cutoff = NULL;
@@ -131,10 +171,10 @@ char *	argv[];
 		if (c == 'v')
 			vflag = 1;
 		else	cutoff = optarg;
-	if (c != EOF ||
+	if ((c != EOF && c != -1) ||
 		(optind == argc - 1 && strcmp(argv[optind], "=") == 0)) {
 			(void) fprintf(stderr,
-"%s: usage is %s [ -v ] [ -c cutoff ] zonename ...\n",
+_("%s: usage is %s [-v] [-c cutoffyear] zonename ...\n"),
 				argv[0], argv[0]);
 			(void) exit(EXIT_FAILURE);
 	}
@@ -163,13 +203,12 @@ char *	argv[];
 		fakeenv = (char **) malloc((size_t) ((i + 2) *
 			sizeof *fakeenv));
 		if (fakeenv == NULL ||
-			(fakeenv[0] = (char *) malloc((size_t) (longest +
-				4))) == NULL) {
+			(fakeenv[0] = (char *) malloc(longest + 4)) == NULL) {
 					(void) perror(progname);
 					(void) exit(EXIT_FAILURE);
 		}
 		to = 0;
-		(void) strcpy(fakeenv[to++], "TZ=");
+		strlcpy(fakeenv[to++], "TZ=", longest + 4);
 		for (from = 0; environ[from] != NULL; ++from)
 			if (strncmp(environ[from], "TZ=", 3) != 0)
 				fakeenv[to++] = environ[from];
@@ -179,10 +218,11 @@ char *	argv[];
 	for (i = optind; i < argc; ++i) {
 		static char	buf[MAX_STRING_LENGTH];
 
-		(void) strcpy(&fakeenv[0][3], argv[i]);
-		show(argv[i], now, FALSE);
-		if (!vflag)
+		strlcpy(&fakeenv[0][3], argv[i], longest + 1);
+		if (!vflag) {
+			show(argv[i], now, FALSE);
 			continue;
+		}
 		/*
 		** Get lowest value of t.
 		*/
@@ -193,7 +233,7 @@ char *	argv[];
 		t += SECSPERHOUR * HOURSPERDAY;
 		show(argv[i], t, TRUE);
 		tm = *localtime(&t);
-		(void) strncpy(buf, abbr(&tm), (sizeof buf) - 1);
+		strlcpy(buf, abbr(&tm), (sizeof buf));
 		for ( ; ; ) {
 			if (cutoff != NULL && t >= cuttime)
 				break;
@@ -208,8 +248,8 @@ char *	argv[];
 				strcmp(abbr(&newtm), buf) != 0) {
 					newt = hunt(argv[i], t, newt);
 					newtm = *localtime(&newt);
-					(void) strncpy(buf, abbr(&newtm),
-						(sizeof buf) - 1);
+					strlcpy(buf, abbr(&newtm),
+						(sizeof buf));
 			}
 			t = newt;
 			tm = newtm;
@@ -226,9 +266,8 @@ char *	argv[];
 		show(argv[i], t, TRUE);
 	}
 	if (fflush(stdout) || ferror(stdout)) {
-		(void) fprintf(stderr, "%s: Error writing standard output ",
-			argv[0]);
-		(void) perror("standard output");
+		(void) fprintf(stderr, "%s: ", argv[0]);
+		(void) perror(_("Error writing standard output"));
 		(void) exit(EXIT_FAILURE);
 	}
 	exit(EXIT_SUCCESS);
@@ -250,7 +289,7 @@ time_t	hit;
 	static char	loab[MAX_STRING_LENGTH];
 
 	lotm = *localtime(&lot);
-	(void) strncpy(loab, abbr(&lotm), (sizeof loab) - 1);
+	strlcpy(loab, abbr(&lotm), (sizeof loab));
 	while ((hit - lot) >= 2) {
 		t = lot / 2 + hit / 2;
 		if (t <= lot)
@@ -286,7 +325,7 @@ struct tm *	oldp;
 		return -delta(oldp, newp);
 	result = 0;
 	for (tmy = oldp->tm_year; tmy < newp->tm_year; ++tmy)
-		result += DAYSPERNYEAR + isleap(tmy + TM_YEAR_BASE);
+		result += DAYSPERNYEAR + isleap(tmy + (long) TM_YEAR_BASE);
 	result += newp->tm_yday - oldp->tm_yday;
 	result *= HOURSPERDAY;
 	result += newp->tm_hour - oldp->tm_hour;
@@ -297,8 +336,6 @@ struct tm *	oldp;
 	return result;
 }
 
-extern struct tm *	localtime();
-
 static void
 show(zone, t, v)
 char *	zone;
@@ -307,11 +344,13 @@ int	v;
 {
 	struct tm *	tmp;
 
-	(void) printf("%-*s  ", longest, zone);
-	if (v)
-		(void) printf("%.24s GMT = ", asctime(gmtime(&t)));
+	(void) printf("%-*s  ", (int) longest, zone);
+	if (v) {
+		dumptime(gmtime(&t));
+		(void) printf(" UTC = ");
+	}
 	tmp = localtime(&t);
-	(void) printf("%.24s", asctime(tmp));
+	dumptime(tmp);
 	if (*abbr(tmp) != '\0')
 		(void) printf(" %s", abbr(tmp));
 	if (v) {
@@ -334,4 +373,38 @@ struct tm *	tmp;
 		return &nada;
 	result = tzname[tmp->tm_isdst];
 	return (result == NULL) ? &nada : result;
+}
+
+static void
+dumptime(timeptr)
+register const struct tm *	timeptr;
+{
+	static const char	wday_name[][3] = {
+		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+	};
+	static const char	mon_name[][3] = {
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+	};
+	register const char *	wn;
+	register const char *	mn;
+
+	/*
+	** The packaged versions of localtime and gmtime never put out-of-range
+	** values in tm_wday or tm_mon, but since this code might be compiled
+	** with other (perhaps experimental) versions, paranoia is in order.
+	*/
+	if (timeptr->tm_wday < 0 || timeptr->tm_wday >=
+		(int) (sizeof wday_name / sizeof wday_name[0]))
+			wn = "???";
+	else		wn = wday_name[timeptr->tm_wday];
+	if (timeptr->tm_mon < 0 || timeptr->tm_mon >=
+		(int) (sizeof mon_name / sizeof mon_name[0]))
+			mn = "???";
+	else		mn = mon_name[timeptr->tm_mon];
+	(void) printf("%.3s %.3s%3d %.2d:%.2d:%.2d %ld",
+		wn, mn,
+		timeptr->tm_mday, timeptr->tm_hour,
+		timeptr->tm_min, timeptr->tm_sec,
+		timeptr->tm_year + (long) TM_YEAR_BASE);
 }
