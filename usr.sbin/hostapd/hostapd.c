@@ -1,4 +1,4 @@
-/*	$OpenBSD: hostapd.c,v 1.8 2005/04/13 21:15:36 reyk Exp $	*/
+/*	$OpenBSD: hostapd.c,v 1.9 2005/04/14 10:59:56 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -366,6 +366,9 @@ main(int argc, char *argv[])
 		openlog(__progname, LOG_PID | LOG_NDELAY, LOG_DAEMON);
 		daemon(0, 0);
 	}
+
+	if (geteuid())
+		hostapd_fatal("need root privileges\n");
 
 	/* Parse the configuration file */
 	hostapd_parse_file(cfg);
