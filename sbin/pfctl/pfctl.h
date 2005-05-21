@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.h,v 1.36 2004/06/14 20:44:22 cedric Exp $ */
+/*	$OpenBSD: pfctl.h,v 1.37 2005/01/05 18:23:10 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -73,7 +73,7 @@ int	 pfr_buf_grow(struct pfr_buffer *, int);
 int	 pfr_buf_load(struct pfr_buffer *, char *, int,
 	    int (*)(struct pfr_buffer *, char *, int));
 char	*pfr_strerror(int);
-int	 pfi_get_ifaces(const char *, struct pfi_if *, int *, int);
+int	 pfi_get_ifaces(const char *, struct pfi_kif *, int *);
 int	 pfi_clr_istats(const char *, int *, int);
 
 void	 pfctl_print_title(char *);
