@@ -1686,6 +1686,12 @@ iwi_config(struct iwi_softc *sc)
 	if (error != 0)
 		return error;
 
+	data = htole32(ic->ic_fragthreshold);
+	DPRINTF(("Setting fragmentation threshold to %u\n", letoh32(data)));
+	error = iwi_cmd(sc, IWI_CMD_SET_FRAG_THRESHOLD, &data, sizeof data, 0);
+	if (error != 0)
+		return error;
+
 	if (ic->ic_opmode == IEEE80211_M_IBSS) {
 		power.mode = IWI_MODE_11B;
 		power.nchan = 11;

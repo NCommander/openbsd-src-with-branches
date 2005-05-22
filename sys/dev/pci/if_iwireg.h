@@ -244,6 +244,7 @@ struct iwi_cmd_desc {
 #define IWI_CMD_SET_ESSID			8
 #define IWI_CMD_SET_MAC_ADDRESS			11
 #define IWI_CMD_SET_RTS_THRESHOLD		15
+#define IWI_CMD_SET_FRAG_THRESHOLD		16
 #define IWI_CMD_SET_POWER_MODE			17
 #define IWI_CMD_SET_WEP_KEY			18
 #define IWI_CMD_SCAN				20
