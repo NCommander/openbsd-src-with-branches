@@ -1,4 +1,4 @@
-/*	$OpenBSD: snapper.c,v 1.6 2004/12/25 19:01:01 miod Exp $	*/
+/*	$OpenBSD: snapper.c,v 1.7 2004/12/25 23:02:24 miod Exp $	*/
 /*	$NetBSD: snapper.c,v 1.1 2003/12/27 02:19:34 grant Exp $	*/
 
 /*-
@@ -515,7 +515,7 @@ snapper_query_encoding(h, ae)
 		ae->precision = 8;
 		return 0;
 	case 6:
-		strlcpy(ae->name, AudioEmulaw, sizeof(ae->name));
+		strlcpy(ae->name, AudioEalaw, sizeof(ae->name));
 		ae->encoding = AUDIO_ENCODING_ALAW;
 		ae->precision = 8;
 		return 0;
