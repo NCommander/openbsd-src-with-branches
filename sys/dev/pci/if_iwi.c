@@ -1157,10 +1157,8 @@ iwi_tx_start(struct ifnet *ifp, struct mbuf *m0, struct ieee80211_node *ni)
 	desc->cmd = IWI_DATA_CMD_TX;
 	desc->len = htole16(m0->m_pkthdr.len);
 	desc->flags = 0;
-	if (ic->ic_opmode == IEEE80211_M_IBSS) {
-		if (!IEEE80211_IS_MULTICAST(wh->i_addr1))
-			desc->flags |= IWI_DATA_FLAG_NEED_ACK;
-	} else if (!IEEE80211_IS_MULTICAST(wh->i_addr3))
+
+	if (!IEEE80211_IS_MULTICAST(wh->i_addr1))
 		desc->flags |= IWI_DATA_FLAG_NEED_ACK;
 
 	if (ic->ic_flags & IEEE80211_F_WEPON) {
