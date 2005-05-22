@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.67 2004/07/14 18:48:43 pedro Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.68 2004/08/12 07:48:53 otto Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -1160,7 +1160,7 @@ retry:
 		*vpp = NULL;
 		return (error);
 	}
-#ifdef LOCKDEBUG
+#ifdef VFSDEBUG
 	vp->v_flag |= VLOCKSWORK;
 #endif
 	/* XXX - we use the same pool for ffs and mfs */
