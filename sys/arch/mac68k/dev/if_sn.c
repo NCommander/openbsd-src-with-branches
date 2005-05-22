@@ -1,4 +1,4 @@
-/*    $OpenBSD: if_sn.c,v 1.34 2004/11/26 21:21:24 miod Exp $        */
+/*    $OpenBSD: if_sn.c,v 1.35 2005/01/04 19:53:37 brad Exp $        */
 /*    $NetBSD: if_sn.c,v 1.13 1997/04/25 03:40:10 briggs Exp $        */
 
 /*
@@ -1094,7 +1094,7 @@ sonic_read(sc, pkt, len)
 
 #ifdef SNDEBUG
 	{
-		printf("%s: rcvd 0x%p len=%d type=0x%x from %s",
+		printf("%s: rcvd %p len=%d type=0x%x from %s",
 		    sc->sc_dev.dv_xname, et, len, htons(et->ether_type),
 		    ether_sprintf(et->ether_shost));
 		printf(" (to %s)\n", ether_sprintf(et->ether_dhost));
