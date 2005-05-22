@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mainbus.c,v 1.1 2005/04/01 10:40:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -627,7 +627,8 @@ mbattach(parent, self, aux)
 	bzero (&nca, sizeof(nca));
 	nca.ca_iot = &hppa_bustag;
 	nca.ca_dmatag = &hppa_dmatag;
-	pdc_patscan(self, &nca, -1);
+	nca.ca_mod = -1;
+	pdc_scan(self, &nca);
 }
 
 /*
