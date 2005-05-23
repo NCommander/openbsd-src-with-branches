@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_spf.c,v 1.14 2005/05/22 18:05:42 norby Exp $ */
+/*	$OpenBSD: rde_spf.c,v 1.15 2005/05/23 22:26:45 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -530,11 +530,13 @@ spf_timer(int fd, short event, void *arg)
 	case SPF_DELAY:
 		rt_invalidate();
 
-		LIST_FOREACH(area, &conf->area_list, entry) {
+		LIST_FOREACH(area, &conf->area_list, entry)
 			spf_calc(area);
-		}
 
 		RB_FOREACH(r, rt_tree, &rt) {
+			LIST_FOREACH(area, &conf->area_list, entry)
+				rde_summary_update(r, area);
+
 			if (r->d_type != DT_NET)
 				continue;
 
