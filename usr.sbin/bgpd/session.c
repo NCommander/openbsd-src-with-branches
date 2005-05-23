@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.216 2005/03/30 11:23:15 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.217 2005/05/03 07:01:23 djm Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -214,8 +214,6 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||
 	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 		fatal("can't drop privileges");
-
-	endpwent();
 
 	listener_cnt = 0;
 	setup_listeners(&listener_cnt);
