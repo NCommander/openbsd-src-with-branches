@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.6 2004/07/08 04:23:04 david Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.7 2004/07/19 15:09:05 art Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -544,7 +544,6 @@ cpu_hatch(void *v)
 	lcr8(0);
 	enable_intr();
 
-	printf("%s: CPU %u running\n",ci->ci_dev->dv_xname, ci->ci_cpuid);
 	microuptime(&ci->ci_schedstate.spc_runtime);
 	splx(s);
 }
