@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.6 2003/07/02 22:44:11 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2004/02/26 07:28:55 beck Exp $
 
 PROG=	spamd
 SRCS=	spamd.c sdl.c grey.c
 MAN=	spamd.8
 
-CFLAGS+= -Wall -Wstrict-prototypes -ansi
+CFLAGS+= -Wall -Wstrict-prototypes
 
 .include <bsd.prog.mk>
