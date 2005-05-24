@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.101 2005/04/04 22:18:47 hshoexer Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.102 2005/05/10 13:42:11 markus Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -2178,9 +2178,8 @@ pfkeyv2_sysctl_walker(struct tdb *sa, void *arg, int last)
 			goto done;
 		}
 		/* prepend header */
+		bzero(&msg, sizeof(msg));
 		msg.sadb_msg_version = PF_KEY_V2;
-		msg.sadb_msg_pid = 0;
-		msg.sadb_msg_seq = 0;
 		msg.sadb_msg_satype = sa->tdb_satype;
 		msg.sadb_msg_type = SADB_DUMP;
 		msg.sadb_msg_len = (sizeof(msg) + buflen) / sizeof(uint64_t);
