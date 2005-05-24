@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.21 2004/08/10 16:17:05 ho Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.22 2005/05/10 13:42:11 markus Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -163,6 +163,8 @@ export_sa(void **p, struct tdb *tdb)
 
 	if (tdb->tdb_flags & TDBF_INVALID)
 		sadb_sa->sadb_sa_state = SADB_SASTATE_LARVAL;
+	else
+		sadb_sa->sadb_sa_state = SADB_SASTATE_MATURE;
 
 	if (tdb->tdb_sproto == IPPROTO_IPCOMP &&
 	    tdb->tdb_compalgxform != NULL) {
