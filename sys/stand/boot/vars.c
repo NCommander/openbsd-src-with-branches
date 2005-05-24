@@ -1,4 +1,4 @@
-/*	$OpenBSD: vars.c,v 1.11 2004/01/29 00:54:08 tom Exp $	*/
+/*	$OpenBSD: vars.c,v 1.12 2004/06/24 22:41:39 tom Exp $	*/
 
 /*
  * Copyright (c) 1998-2000 Michael Shalayeff
@@ -235,7 +235,7 @@ Xenv(void)
 {
 	if (cmd.argc == 1) {
 		if (environ)
-			printf(environ);
+			printf("%s", environ);
 		else
 			printf("empty\n");
 	} else {
