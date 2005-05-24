@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_spf.c,v 1.15 2005/05/23 22:26:45 norby Exp $ */
+/*	$OpenBSD: rde_spf.c,v 1.16 2005/05/23 23:03:07 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -545,6 +545,9 @@ spf_timer(int fd, short event, void *arg)
 			else
 				rde_send_change_kroute(r);
 		}
+
+		LIST_FOREACH(area, &conf->area_list, entry)
+			lsa_remove_invalid_sums(area);
 
 		start_spf_holdtimer(rdeconf);
 		break;
