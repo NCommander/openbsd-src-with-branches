@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.2 2005/04/04 22:22:55 hshoexer Exp $	*/
+/*	$OpenBSD: parse.y,v 1.3 2005/05/25 16:29:21 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -726,10 +726,10 @@ reverse_rule(struct ipsec_rule *rule)
 	reverse->peer = copyhost(rule->peer);
 	reverse->proto = (u_int8_t)rule->proto;
 
-	if (rule->auth.dstid && (reverse->auth.srcid =
+	if (rule->auth.dstid && (reverse->auth.dstid =
 	    strdup(rule->auth.dstid)) == NULL)
 		err(1, "strdup");
-	if (rule->auth.srcid && (reverse->auth.dstid =
+	if (rule->auth.srcid && (reverse->auth.srcid =
 	    strdup(rule->auth.srcid)) == NULL)
 		err(1, "strdup");
 	reverse->auth.idtype = rule->auth.idtype;
