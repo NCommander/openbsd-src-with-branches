@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsecctl.c,v 1.5 2005/05/23 20:25:54 kjell Exp $	*/
+/*	$OpenBSD: ipsecctl.c,v 1.6 2005/05/23 22:48:17 kjell Exp $	*/
 /*
  * Copyright (c) 2004, 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
@@ -36,6 +36,7 @@
 #include <unistd.h>
 
 #include "ipsecctl.h"
+#include "pfkey.h"
 
 int		 ipsecctl_rules(char *, int);
 FILE		*ipsecctl_fopen(const char *, const char *);
