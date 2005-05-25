@@ -1,4 +1,4 @@
-/*	$OpenBSD: rijndael.c,v 1.16 2004/12/14 17:01:08 hshoexer Exp $ */
+/*	$OpenBSD: rijndael.c,v 1.17 2004/12/20 20:31:18 hshoexer Exp $ */
 
 /**
  * rijndael-alg-fst.c
@@ -851,7 +851,7 @@ rijndaelKeySetupDec(u32 rk[/*4*(Nr + 1)*/], const u8 cipherKey[], int keyBits)
 	return Nr;
 }
 
-static void
+void
 rijndaelEncrypt(const u32 rk[/*4*(Nr + 1)*/], int Nr, const u8 pt[16],
     u8 ct[16])
 {
