@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_disk.h,v 1.13 2002/12/15 20:53:33 krw Exp $	*/
+/*	$OpenBSD: scsi_disk.h,v 1.14 2003/06/24 22:42:07 mickey Exp $	*/
 /*	$NetBSD: scsi_disk.h,v 1.10 1996/07/05 16:19:05 christos Exp $	*/
 
 /*
@@ -234,12 +234,6 @@ struct scsi_reassign_blocks_data {
 	struct {
 		u_int8_t dlbaddr[4];
 	} defect_descriptor[1];
-};
-
-struct scsi_disk_blk_desc {
-	u_int8_t nblocks[4];
-	u_int8_t density;
-	u_int8_t blklen[3];
 };
 
 union scsi_disk_pages {
