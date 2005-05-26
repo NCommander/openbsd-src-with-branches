@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.18 2005/05/26 20:21:09 norby Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.19 2005/05/26 20:42:10 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -85,7 +85,6 @@ struct {
 const char * const nbr_event_names[] = {
 	"NOTHING",
 	"HELLO_RECEIVED",
-	"START",
 	"2_WAY_RECEIVED",
 	"NEGOTIATION_DONE",
 	"SNAPSHOT_DONE",
@@ -103,7 +102,6 @@ const char * const nbr_event_names[] = {
 
 const char * const nbr_action_names[] = {
 	"NOTHING",
-	"START",
 	"RESET_INACTIVITY_TIMER",
 	"START_INACTIVITY_TIMER",
 	"EVAL",
