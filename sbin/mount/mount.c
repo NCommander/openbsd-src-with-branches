@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.38 2005/04/08 20:09:36 jaredy Exp $	*/
+/*	$OpenBSD: mount.c,v 1.39 2005/05/26 01:37:49 pedro Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount.c	8.19 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$OpenBSD: mount.c,v 1.38 2005/04/08 20:09:36 jaredy Exp $";
+static char rcsid[] = "$OpenBSD: mount.c,v 1.39 2005/05/26 01:37:49 pedro Exp $";
 #endif
 #endif /* not lint */
 
@@ -374,7 +374,7 @@ mountfs(const char *vfstype, const char *spec, const char *name,
 	} else if (skipmounted) {
 		if (statfs(name, &sf) < 0)
 			err(1, "statfs %s", name);
-		/* XXX can't check f_mntfromname, thanks to mfs, union, etc. */
+		/* XXX can't check f_mntfromname, thanks to mfs, etc. */
 		if (strncmp(name, sf.f_mntonname, MNAMELEN) == 0 &&
 		    strncmp(vfstype, sf.f_fstypename, MFSNAMELEN) == 0) {
 			if (verbose)
