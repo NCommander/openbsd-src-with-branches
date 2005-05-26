@@ -1,4 +1,4 @@
-/*	$OpenBSD: todclock.c,v 1.3 2004/05/19 03:17:07 drahn Exp $	*/
+/*	$OpenBSD: todclock.c,v 1.4 2004/12/30 23:13:31 miod Exp $	*/
 /*	$NetBSD: todclock.c,v 1.4 2002/10/02 05:02:30 thorpej Exp $	*/
 
 /*
@@ -176,7 +176,7 @@ static int timeset = 0;
 #define EPOCHYEAR	1970
 
 /*
- * Globally visable functions
+ * Globally visible functions
  *
  * These functions are used from other parts of the kernel.
  * These functions use the functions defined in the tod_sc
