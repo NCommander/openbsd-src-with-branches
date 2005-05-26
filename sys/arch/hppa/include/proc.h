@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.1 1998/07/07 21:32:44 mickey Exp $	*/
+/*	$OpenBSD: proc.h,v 1.2 2003/06/02 23:27:46 millert Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -37,6 +37,9 @@
 struct mdproc {
 	struct	trapframe *md_regs;	/* registers on current frame */
 	int	md_flags;		/* machine-dependent flags */
+
+	vaddr_t md_bpva;
+	u_int	md_bpsave[2];
 };
 
 /* md_flags */
