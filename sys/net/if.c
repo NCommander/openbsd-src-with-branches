@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.120 2005/05/26 03:11:59 henning Exp $	*/
+/*	$OpenBSD: if.c,v 1.121 2005/05/26 03:13:41 henning Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -176,7 +176,6 @@ void
 if_attachsetup(struct ifnet *ifp)
 {
 	struct ifaddr *ifa;
-	int n;
 	int wrapped = 0;
 
 	if (ifindex2ifnet == 0)
