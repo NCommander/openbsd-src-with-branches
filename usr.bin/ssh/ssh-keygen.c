@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keygen.c,v 1.124 2005/05/23 22:44:01 avsm Exp $");
+RCSID("$OpenBSD: ssh-keygen.c,v 1.125 2005/05/24 02:05:09 avsm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -1008,7 +1008,7 @@ main(int ac, char **av)
 	struct passwd *pw;
 	struct stat st;
 	int opt, type, fd, download = 0;
-	uint32_t memory = 0, generator_wanted = 0, trials = 100;
+	u_int32_t memory = 0, generator_wanted = 0, trials = 100;
 	int do_gen_candidates = 0, do_screen_candidates = 0;
 	int log_level = SYSLOG_LEVEL_INFO;
 	BIGNUM *start = NULL;
