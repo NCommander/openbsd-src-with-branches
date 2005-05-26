@@ -1583,6 +1583,10 @@ if_addgroup(struct ifnet *ifp, char *groupname)
 	struct ifg_group	*ifg = NULL;
 	struct ifg_member	*ifgm;
 
+	if (groupname[0] && groupname[strlen(groupname) - 1] >= '0' &&
+	    groupname[strlen(groupname) - 1] <= '9')
+		return (EINVAL);
+
 	TAILQ_FOREACH(ifgl, &ifp->if_groups, ifgl_next)
 		if (!strcmp(ifgl->ifgl_group->ifg_group, groupname))
 			return (EEXIST);
