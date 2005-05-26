@@ -256,8 +256,20 @@ zaudio_detach(struct device *self, int flags)
 void
 zaudio_power(int why, void *arg)
 {
-	/* XXX */
-	return;
+	struct zaudio_softc *sc = arg;
+
+	switch (why) {
+	case PWR_STANDBY:
+	case PWR_SUSPEND:
+		zaudio_standby(sc);
+		break;
+
+	case PWR_RESUME:
+		pxa2x0_i2s_init(&sc->sc_i2s);
+		pxa2x0_i2c_init(&sc->sc_i2c);
+		zaudio_init(sc);
+		break;
+	}
 }
 
 void
