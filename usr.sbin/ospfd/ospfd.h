@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.30 2005/05/22 18:05:42 norby Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.31 2005/05/24 21:36:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -349,7 +349,6 @@ struct ospfd_conf {
 	u_int32_t		spf_delay;
 	u_int32_t		spf_hold_time;
 	int			spf_state;
-	int			maxdepth;
 	int			ospf_socket;
 	int			flags;
 	int			redistribute_flags;
