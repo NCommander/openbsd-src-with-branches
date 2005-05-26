@@ -1,4 +1,4 @@
-/* $OpenBSD: ike_phase_1.c,v 1.61 2005/04/08 16:52:41 deraadt Exp $	 */
+/* $OpenBSD: ike_phase_1.c,v 1.62 2005/04/08 22:32:10 cloder Exp $	 */
 /* $EOM: ike_phase_1.c,v 1.31 2000/12/11 23:47:56 niklas Exp $	 */
 
 /*
@@ -351,7 +351,7 @@ ike_phase_1_initiator_send_SA(struct message *msg)
 	memcpy(ie->sa_i_b + sa_len - ISAKMP_GEN_SZ,
 	    payload_first(msg, ISAKMP_PAYLOAD_PROPOSAL)->p, proposal_len);
 	transforms_len = 0;
-	for (i = 0, p = payload_first(msg, ISAKMP_PAYLOAD_TRANSFORM);
+	for (i = 0, p = TAILQ_FIRST(&msg->payload[ISAKMP_PAYLOAD_TRANSFORM]);
 	    i < conf->cnt; i++, p = TAILQ_NEXT(p, link)) {
 		memcpy(ie->sa_i_b + sa_len + proposal_len + transforms_len -
 		    ISAKMP_GEN_SZ, p->p, transform_len[i]);
