@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.20 2005/04/25 11:31:50 claudio Exp $ */
+/*	$OpenBSD: interface.c,v 1.21 2005/05/12 10:14:39 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -81,9 +81,9 @@ const char * const if_type_names[] = {
 };
 
 const char * const if_auth_names[] = {
-	"NONE",
-	"SIMPLE",
-	"CRYPT"
+	"none",
+	"simple",
+	"crypt"
 };
 
 int

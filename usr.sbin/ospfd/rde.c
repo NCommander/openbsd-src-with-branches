@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.24 2005/05/25 08:06:57 david Exp $ */
+/*	$OpenBSD: rde.c,v 1.25 2005/05/25 23:20:36 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -609,7 +609,7 @@ rde_dispatch_parent(int fd, short event, void *bula)
 				break;
 			}
 			memcpy(&kif, imsg.data, sizeof(kif));
-			
+
 			log_debug("IMSG_IFINFO: ifindex %i reachable %d",
 			    kif.ifindex, kif.nh_reachable);
 			kif_update(&kif);

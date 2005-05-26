@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.20 2005/05/12 19:10:12 norby Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.21 2005/05/23 22:54:05 henning Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -747,7 +747,7 @@ orig_rtr_lsa(struct area *area)
 	 */
 	if (oeconf->redistribute_flags && (oeconf->options & OSPF_OPTION_E))
 		lsa_rtr.flags |= OSPF_RTR_E;
-	
+
 	border = area_border_router(oeconf);
 
 	if (border != oeconf->border) {
