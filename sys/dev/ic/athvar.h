@@ -1,4 +1,4 @@
-/*      $OpenBSD: athvar.h,v 1.7 2005/04/18 18:42:56 reyk Exp $  */
+/*      $OpenBSD: athvar.h,v 1.8 2005/05/24 21:46:18 reyk Exp $  */
 /*	$NetBSD: athvar.h,v 1.10 2004/08/10 01:03:53 dyoung Exp $	*/
 
 /*-
@@ -48,7 +48,9 @@
 #include <net80211/ieee80211_radiotap.h>
 #include <dev/ic/ar5xxx.h>
 
+#ifdef notyet
 #include "gpio.h"
+#endif
 
 #define	ATH_TIMEOUT		1000
 
