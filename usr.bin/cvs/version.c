@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.12 2005/05/25 06:02:00 joris Exp $	*/
+/*	$OpenBSD: version.c,v 1.13 2005/05/25 06:22:08 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -35,7 +35,6 @@
 #include "cvs.h"
 #include "log.h"
 #include "proto.h"
-#include "log.h"
 
 static int cvs_version_init     (struct cvs_cmd *, int, char **, int *);
 static int cvs_version_pre_exec (struct cvsroot *);
