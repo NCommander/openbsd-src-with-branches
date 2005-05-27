@@ -1,4 +1,4 @@
-/*	$OpenBSD: logutmp.c,v 1.8 2003/12/10 22:57:12 deraadt Exp $	*/
+/*	$OpenBSD: logutmp.c,v 1.9 2004/11/28 20:24:51 deraadt Exp $	*/
 /*
  * Portions Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,6 +30,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
