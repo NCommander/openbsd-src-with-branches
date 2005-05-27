@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.h,v 1.2 2005/05/22 20:35:48 ho Exp $	*/
+/*	$OpenBSD: net.h,v 1.3 2005/05/23 19:53:27 ho Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -35,6 +35,7 @@ struct syncpeer {
 	LIST_ENTRY(syncpeer)	link;
 
 	char		*name;		/* FQDN or an IP, from conf */
+	struct sockaddr	*sa;
 	int		 socket;
 	enum RUNSTATE	 runstate;
 
