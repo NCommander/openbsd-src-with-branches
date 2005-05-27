@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.32 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: file.c,v 1.33 2005/04/21 19:16:21 beck Exp $	*/
 
 /*
  *	File commands.
@@ -39,9 +39,18 @@ int
 filevisit(int f, int n)
 {
 	BUFFER	*bp;
-	char	 fname[NFILEN], *bufp, *adjf;
+	char	 fname[NFILEN], *bufp, *adjf, *slash;
 
-	bufp = eread("Find file: ", fname, NFILEN, EFNEW | EFCR | EFFILE);
+	if (curbp->b_fname && curbp->b_fname[0] != '\0') {
+		strlcpy(fname, curbp->b_fname, sizeof(fname));
+		if ((slash = strrchr(fname, '/')) != NULL) {
+			*(slash + 1) = '\0';
+		}
+	}
+	else
+		fname[0] = '\0';
+
+	bufp = eread("Find file: ", fname, NFILEN, EFNEW | EFCR | EFFILE | EFDEF);
 	if (bufp == NULL)
 		return (ABORT);
 	else if (bufp[0] == '\0')
