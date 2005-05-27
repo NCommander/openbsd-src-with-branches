@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.1 2005/04/01 10:40:47 mickey Exp $
+#	$OpenBSD: RAMDISK,v 1.2 2005/05/10 12:03:32 mickey Exp $
 #
 # Diskless kernel config
 #
@@ -92,6 +92,7 @@ pcmcia*		at cardslot?
 #ulpt*	at uhub?		# USB Printers
 #umass*	at uhub?		# USB Mass Storage devices
 #scsibus* at umass?
+#atapiscsi* at umass?
 #uhidev*	at uhub?	# Human Interface Devices
 #ums*	at uhidev?		# USB mouse
 #wsmouse* at ums? mux 0
