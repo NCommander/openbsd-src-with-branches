@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.26 2005/05/26 22:55:56 norby Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.27 2005/05/27 02:37:39 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -202,8 +202,8 @@ ospfe_shutdown(void)
 					    iface->name);
 				}
 			}
-			area_del(area);
 		}
+		area_del(area);
 	}
 
 	/* clean up */
