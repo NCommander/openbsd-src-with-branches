@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.122 2005/05/27 17:31:47 pedro Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.123 2005/05/27 20:20:23 pedro Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -2500,8 +2500,6 @@ sys_getdirentries(p, v, retval)
 	error = VOP_READDIR(vp, &auio, fp->f_cred, &eofflag, 0, 0);
 	fp->f_offset = auio.uio_offset;
 	VOP_UNLOCK(vp, 0, p);
-	if (error)
-		goto bad;
 	if (error)
 		goto bad;
 	error = copyout(&loff, SCARG(uap, basep),
