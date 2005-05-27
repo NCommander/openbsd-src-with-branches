@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0var.h,v 1.3 2005/01/12 17:14:37 uwe Exp $ */
+/*	$OpenBSD: pxa2x0var.h,v 1.4 2005/04/06 01:31:06 pascoe Exp $ */
 /* $NetBSD: pxa2x0var.h,v 1.2 2003/06/05 13:48:28 scw Exp $ */
 
 /*
@@ -88,8 +88,10 @@ extern void pxa2x0_probe_sdram(vaddr_t, paddr_t *, psize_t *);
 extern void pxa2x0_clkman_config(u_int, int);
 
 /*
- * Force a watchdog reset to occur.
+ * Get/set the Real Time Clock's counter and alarm registers.
  */
-extern void pxa2x0_watchdog_boot(void);
+extern void pxa2x0_rtc_setalarm(u_int32_t);
+extern u_int32_t pxa2x0_rtc_getalarm(void);
+extern u_int32_t pxa2x0_rtc_getsecs(void);
 
 #endif /* _ARM_XSCALE_PXA2X0VAR_H_ */
