@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.52 2005/05/27 06:33:11 moritz Exp $	 */
+/* $OpenBSD: monitor.c,v 1.53 2005/05/27 07:08:21 moritz Exp $	 */
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -653,6 +653,9 @@ m_priv_getfd(void)
 
 	must_read(path, len);
 	path[len] = '\0';
+	if (strlen(path) != len)
+		log_fatal("m_priv_getfd: invalid pathname");
+
 	must_read(&flags, sizeof flags);
 	must_read(&mode, sizeof mode);
 
