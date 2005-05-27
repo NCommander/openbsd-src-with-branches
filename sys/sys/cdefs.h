@@ -246,9 +246,6 @@
  * The POSIX spec implies a specific value for __ISO_C_VISIBLE, though
  * this may be overridden by the _ISOC99_SOURCE macro later.
  */
-#if defined(_POSIX_SOURCE) && !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE		198808
-#endif
 #ifdef _POSIX_C_SOURCE
 # if (_POSIX_C_SOURCE - 0 >= 200112)
 #  define __POSIX_VISIBLE	200112
@@ -266,10 +263,10 @@
 #  define __POSIX_VISIBLE	199009
 #  define __ISO_C_VISIBLE	1990
 # endif
-#else
+#elif defined(_POSIX_SOURCE)
 # define __POSIX_VISIBLE	198808
-# define __ISO_C_VISIBLE	0
-#endif /* _POSIX_C_SOURCE */
+#  define __ISO_C_VISIBLE	0
+#endif
 
 /*
  * _ANSI_SOURCE means to expose ANSI C89 interfaces only.
