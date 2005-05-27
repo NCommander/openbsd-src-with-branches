@@ -1,4 +1,4 @@
-/*	$OpenBSD: urlphy.c,v 1.9 2005/02/05 04:56:27 brad Exp $ */
+/*	$OpenBSD: urlphy.c,v 1.10 2005/03/26 04:40:09 krw Exp $ */
 /*	$NetBSD: urlphy.c,v 1.1 2002/03/28 21:07:53 ichiro Exp $	*/
 /*
  * Copyright (c) 2001, 2002
@@ -93,7 +93,7 @@ urlphy_match(struct device *parent, void *match, void *aux)
 	 * Make sure the parent is an 'url' device.
 	 */
 	if (strcmp(parent->dv_cfdata->cf_driver->cd_name, "url") != 0)
-		return(0);
+		return (0);
 
 	return (10);
 }
