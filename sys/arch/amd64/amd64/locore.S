@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.16 2005/01/06 20:15:47 martin Exp $	*/
+/*	$OpenBSD: locore.S,v 1.17 2005/05/25 23:17:47 niklas Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -1273,3 +1273,18 @@ iret_return:
 	jmp	2b
 4:	.asciz	"WARNING: SPL NOT LOWERED ON SYSCALL EXIT\n"
 #endif /* DIAGNOSTIC */
+
+
+ENTRY(pagezero)
+	movq    $-PAGE_SIZE,%rdx
+	subq    %rdx,%rdi
+	xorq    %rax,%rax
+1:
+	movnti  %rax,(%rdi,%rdx)
+	movnti  %rax,8(%rdi,%rdx)
+	movnti  %rax,16(%rdi,%rdx)
+	movnti  %rax,24(%rdi,%rdx)
+	addq    $32,%rdx
+	jne     1b
+	sfence
+	ret
