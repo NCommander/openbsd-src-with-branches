@@ -1,5 +1,5 @@
 #!/bin/sh
-# $OpenBSD: keywords.sh,v 1.15 2005/03/30 07:59:52 henning Exp $
+# $OpenBSD: keywords.sh,v 1.16 2005/03/30 08:02:34 deraadt Exp $
 # $NetBSD: keywords.sh,v 1.2 1996/11/15 18:57:21 gwr Exp $
 # @(#)keywords	8.2 (Berkeley) 3/19/94
 #
@@ -29,6 +29,7 @@ ifp
 inet
 inet6
 ipx
+jumbo
 label
 link
 llinfo
@@ -39,6 +40,7 @@ mpath
 mtu
 net
 netmask
+nojumbo
 nostatic
 prefixlen
 proto1

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.h,v 1.64 2005/01/14 14:51:27 mcbride Exp $	*/
+/*	$OpenBSD: in.h,v 1.65 2005/05/24 04:20:25 markus Exp $	*/
 /*	$NetBSD: in.h,v 1.20 1996/02/13 23:41:47 christos Exp $	*/
 
 /*
@@ -318,6 +318,11 @@ struct ip_mreq {
  * Buffer lengths for strings containing printable IP addresses
  */
 #define INET_ADDRSTRLEN		16
+
+/*
+ * JUMBO MTU
+ */
+#define IP_JUMBO_MTU	9000
 
 /*
  * Definitions for inet sysctl operations.
