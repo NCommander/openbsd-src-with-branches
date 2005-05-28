@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.2 2005/05/26 07:27:01 xsa Exp $	*/
+/*	$OpenBSD: edit.c,v 1.3 2005/05/26 14:46:22 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 #include "cvs.h"
