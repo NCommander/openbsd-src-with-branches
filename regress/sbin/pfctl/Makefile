@@ -32,6 +32,8 @@ PFOPT=1 2 3 4 5
 PFIF2IP=1 2 3
 PFCHKSUM=1 2 3
 
+SHELL=/bin/sh
+
 .MAIN: all
 
 .ifmake !obj && !clean && !cleandir && !depend && !regress
@@ -48,6 +50,7 @@ PFCHKSUM=1 2 3
 
 .INTERRUPT:
 	-${SUDO} ifconfig lo1000000 destroy
+	-${SUDO} ifconfig lo1000010 destroy
 	-${SUDO} ifconfig tun1000000 destroy
 	-${SUDO} ifconfig tun1000001 destroy
 .endif
