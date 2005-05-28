@@ -31,7 +31,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: fgetln.c,v 1.4 2003/06/02 20:18:37 millert Exp $";
+static char *rcsid = "$OpenBSD: fgetln.c,v 1.5 2004/09/28 18:12:44 otto Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <stdio.h>
@@ -143,7 +143,7 @@ fgetln(FILE *fp, size_t *lenp)
 	}
 	*lenp = len;
 #ifdef notdef
-	fp->_lb._base[len] = 0;
+	fp->_lb._base[len] = '\0';
 #endif
 	return ((char *)fp->_lb._base);
 
