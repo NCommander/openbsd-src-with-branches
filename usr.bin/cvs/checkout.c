@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.23 2005/05/24 20:04:43 joris Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.24 2005/05/26 03:07:20 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -119,6 +119,7 @@ cvs_checkout_init(struct cvs_cmd *cmd, int argc, char **argv, int *arg)
 			break;
 		case 'r':
 			rev = optarg;
+			cmd->cmd_flags |= CVS_CMD_PRUNEDIRS;
 			break;
 		case 's':
 			statmod = CVS_STATMOD;
