@@ -1,4 +1,4 @@
-/* $OpenBSD: gzsig.c,v 1.1.1.1 2005/05/28 01:57:30 marius Exp $ */
+/* $OpenBSD: gzsig.c,v 1.2 2005/05/28 08:07:45 marius Exp $ */
 
 /*
  * gzsig.c
@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "extern.h"
 
