@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rtw_pci.c,v 1.3 2005/02/09 10:51:25 mcbride Exp $	*/
+/*	$OpenBSD: if_rtw_pci.c,v 1.4 2005/04/15 03:42:57 jsg Exp $	*/
 /*	$NetBSD: if_rtw_pci.c,v 1.1 2004/09/26 02:33:36 dyoung Exp $	*/
 
 /*-
@@ -109,9 +109,10 @@ struct cfattach rtw_pci_ca = {
 };
 
 const struct pci_matchid rtw_pci_products[] = {
-	{ PCI_VENDOR_REALTEK,		PCI_PRODUCT_REALTEK_RT8180 },
-	{ PCI_VENDOR_BELKIN2,		PCI_PRODUCT_BELKIN2_F5D6001 },
-	{ PCI_VENDOR_DLINK,		PCI_PRODUCT_DLINK_DWL610 },
+	{ PCI_VENDOR_REALTEK,	PCI_PRODUCT_REALTEK_RT8185 },
+	{ PCI_VENDOR_REALTEK,	PCI_PRODUCT_REALTEK_RT8180 },
+	{ PCI_VENDOR_BELKIN2,	PCI_PRODUCT_BELKIN2_F5D6001 },
+	{ PCI_VENDOR_DLINK,	PCI_PRODUCT_DLINK_DWL610 },
 };
 
 int
