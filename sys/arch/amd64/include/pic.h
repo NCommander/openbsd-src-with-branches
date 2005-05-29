@@ -20,7 +20,7 @@ struct pic {
 	struct device pic_dev;
         int pic_type;
 #ifdef MULTIPROCESSOR
-	struct mutex pic_mutex;
+	struct SIMPLE_LOCK pic_lock;
 #endif
         void (*pic_hwmask)(struct pic *, int);
         void (*pic_hwunmask)(struct pic *, int);

@@ -199,7 +199,7 @@ donice(curp, chgp, n)
 		return (EACCES);
 	chgp->p_nice = n;
 	SCHED_LOCK(s);
-	resetpriority(chgp);
+	(void)resetpriority(chgp);
 	SCHED_UNLOCK(s);
 	return (0);
 }

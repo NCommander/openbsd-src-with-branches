@@ -66,8 +66,8 @@
 #define IPL_IMP		IPL_VM		/* XXX - should not be here. */
 #define	IPL_AUDIO	MAKEIPL(7)	/* audio */
 #define	IPL_CLOCK	MAKEIPL(8)	/* clock */
+#define	IPL_SCHED	IPL_CLOCK
 #define	IPL_STATCLOCK	MAKEIPL(9)	/* statclock */
-#define	IPL_SCHED	IPL_STATCLOCK
 #define	IPL_HIGH	MAKEIPL(9)	/* everything */
 #define	IPL_IPI		MAKEIPL(10)	/* interprocessor interrupt */
 

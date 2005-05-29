@@ -50,7 +50,6 @@
 #include <sys/malloc.h>
 
 #include <sys/kernel.h>
-#include <sys/sched.h>
 
 #ifdef FFS_SOFTUPDATES
 int   softdep_process_worklist(struct mount *);
@@ -245,10 +244,10 @@ speedup_syncer()
 {
 	int s;
 
-	SCHED_LOCK(s);
+	s = splhigh();
 	if (syncerproc && syncerproc->p_wchan == &lbolt)
 		setrunnable(syncerproc);
-	SCHED_UNLOCK(s);
+	splx(s);
 	if (rushjob < syncdelay / 2) {
 		rushjob += 1;
 		stat_rush_requests += 1;

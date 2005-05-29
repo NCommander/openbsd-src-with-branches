@@ -341,9 +341,9 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	/*
 	 * Make child runnable, set start time, and add to run queue.
 	 */
+	SCHED_LOCK(s);
  	getmicrotime(&p2->p_stats->p_start);
 	p2->p_acflag = AFORK;
-	SCHED_LOCK(s);
 	p2->p_stat = SRUN;
 	setrunqueue(p2);
 	SCHED_UNLOCK(s);

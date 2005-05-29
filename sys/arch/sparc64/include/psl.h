@@ -90,7 +90,7 @@
 #define PIL_SER		12
 #define PIL_STATCLOCK	14
 #define PIL_HIGH	15
-#define PIL_SCHED	PIL_STATCLOCK
+#define PIL_SCHED	PIL_CLOCK
 #define PIL_LOCK	PIL_HIGH
 
 /* 

@@ -560,12 +560,8 @@ sys_setitimer(p, v, retval)
 		}
 		p->p_realtimer = aitv;
 	} else {
-		int s;
-
 		itimerround(&aitv.it_interval);
-		s = splclock();
 		p->p_stats->p_timer[SCARG(uap, which)] = aitv;
-		splx(s);
 	}
 
 	return (0);

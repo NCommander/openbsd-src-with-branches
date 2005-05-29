@@ -386,6 +386,10 @@ copyfault:
 	case T_PAGEFLT:			/* allow page faults in kernel mode */
 		if (p == NULL)
 			goto we_re_toast;
+#ifdef LOCKDEBUG
+		if (simple_lock_held(&sched_lock))
+			goto we_re_toast;
+#endif
 #ifdef MULTIPROCESSOR
 		if ((p->p_flag & P_BIGLOCK) == 0)
 			goto we_re_toast;
