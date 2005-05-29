@@ -1,4 +1,4 @@
-/*	$OpenBSD: nat_traversal.c,v 1.9 2005/02/27 13:12:12 hshoexer Exp $	*/
+/*	$OpenBSD: nat_traversal.c,v 1.10 2005/03/05 12:22:40 ho Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -58,8 +58,7 @@
  */
 static const char *isakmp_nat_t_cap_text[] = {
 	"draft-ietf-ipsec-nat-t-ike-02\n",	/* draft, V2 */
-	"draft-ietf-ipsec-nat-t-ike-03",	/* draft, V3 */
-	"RFC 3947"
+	"draft-ietf-ipsec-nat-t-ike-03"		/* draft, V3 */
 };
 
 /* In seconds. Recommended in draft-ietf-ipsec-udp-encaps-09.  */
