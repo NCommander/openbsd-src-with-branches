@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.66 2005/04/02 20:26:10 deraadt Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.67 2005/04/08 14:21:36 henning Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -949,12 +949,11 @@ packet_to_lease(struct packet *packet)
 		}
 		memcpy(lease->server_name, packet->raw->sname, DHCP_SNAME_LEN);
 		lease->server_name[DHCP_SNAME_LEN]='\0';
-		if (!res_hnok(lease->server_name) ) {
-			warning("Bogus server name %s",  lease->server_name );
-			free_client_lease(lease);
-			return (NULL);
+		if (!res_hnok(lease->server_name)) {
+			warning("Bogus server name %s", lease->server_name);
+			free(lease->server_name);
+			lease->server_name = NULL;
 		}
-
 	}
 
 	/* Ditto for the filename. */
