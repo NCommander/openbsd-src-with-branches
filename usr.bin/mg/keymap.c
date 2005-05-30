@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.27 2005/03/09 16:20:48 jfb Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.28 2005/04/03 02:09:28 db Exp $	*/
 
 /*
  * Keyboard maps.  This is character set dependent.  The terminal specific
@@ -84,7 +84,7 @@ static PF cXcL[] = {
 	filesave,		/* ^S */
 	rescan,			/* ^T */
 	upperregion,		/* ^U */
-	rescan,			/* ^V */
+	filevisitalt,		/* ^V */
 	filewrite,		/* ^W */
 	swapmark		/* ^X */
 };
