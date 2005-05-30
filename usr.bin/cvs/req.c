@@ -1,4 +1,4 @@
-/*	$OpenBSD: req.c,v 1.16 2005/05/25 03:58:12 jfb Exp $	*/
+/*	$OpenBSD: req.c,v 1.17 2005/05/27 22:33:56 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -269,7 +269,6 @@ cvs_req_directory(int reqid, char *line)
 {
 	int l;
 	char rdir[MAXPATHLEN];
-	CVSFILE *dirp;
 
 	if (cvs_getln(NULL, rdir, sizeof(rdir)) < 0)
 		return (-1);
