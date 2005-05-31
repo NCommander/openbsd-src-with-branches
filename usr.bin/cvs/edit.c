@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.4 2005/05/28 20:39:08 xsa Exp $	*/
+/*	$OpenBSD: edit.c,v 1.5 2005/05/31 08:58:47 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -111,6 +111,10 @@ cvs_edit_init(struct cvs_cmd *cmd, int argc, char **argv, int *arg)
 	while ((ch = getopt(argc, argv, cmd->cmd_opts)) != -1) {
 		switch (ch) {
 		case 'a':
+			/*
+			 * The `editors' and `unedit' commands do not have
+			 * the -a option. Check which command has been issued.
+			 */
 			if (cvs_cmdop != CVS_OP_EDIT)
 				return (CVS_EX_USAGE);
 			break;
