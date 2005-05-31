@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.13 2005/05/25 06:22:08 jfb Exp $	*/
+/*	$OpenBSD: version.c,v 1.14 2005/05/27 18:54:48 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -26,11 +26,11 @@
 
 #include <sys/types.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
 #include "log.h"

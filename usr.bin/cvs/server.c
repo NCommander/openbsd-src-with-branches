@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.16 2005/05/20 20:00:53 joris Exp $	*/
+/*	$OpenBSD: server.c,v 1.17 2005/05/24 04:12:25 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -27,12 +27,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <errno.h>
-#include <string.h>
 #include <paths.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
 #include "log.h"

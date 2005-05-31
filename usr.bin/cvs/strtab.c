@@ -1,4 +1,4 @@
-/*	$OpenBSD: strtab.c,v 1.3 2005/03/29 15:04:45 joris Exp $	*/
+/*	$OpenBSD: strtab.c,v 1.4 2005/04/06 03:27:54 joris Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -35,8 +35,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
 #include "log.h"

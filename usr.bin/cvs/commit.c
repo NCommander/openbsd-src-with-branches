@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.35 2005/05/30 07:37:01 xsa Exp $	*/
+/*	$OpenBSD: commit.c,v 1.36 2005/05/30 09:52:55 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -29,15 +29,15 @@
 #include <sys/stat.h>
 
 #include <errno.h>
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
+#include "buf.h"
 #include "cvs.h"
 #include "log.h"
-#include "buf.h"
 #include "proto.h"
 
 
