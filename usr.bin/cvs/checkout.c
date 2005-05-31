@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.25 2005/05/29 17:48:44 xsa Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.26 2005/05/30 07:39:21 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -170,7 +170,7 @@ cvs_checkout_pre_exec(struct cvsroot *root)
 		}
 
 		if (cvs_mkadmin(co_mods[i], root->cr_str, co_mods[i]) < 0) {
-			cvs_log(LP_ERROR, "can't create base directory '%s'",
+			cvs_log(LP_ERR, "can't create base directory '%s'",
 			    co_mods[i]);
 			return (CVS_EX_DATA);
 		}
