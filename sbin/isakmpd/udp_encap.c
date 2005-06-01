@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_encap.c,v 1.14 2005/04/08 16:07:22 cloder Exp $	*/
+/*	$OpenBSD: udp_encap.c,v 1.15 2005/04/08 23:15:26 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999, 2001 Niklas Hallqvist.  All rights reserved.
@@ -197,6 +197,7 @@ err:
 		/* Already closed.  */
 		t->s = -1;
 		udp_remove(&t->transport);
+		free(t);
 	}
 	return 0;
 }
