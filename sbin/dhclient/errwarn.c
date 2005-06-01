@@ -1,4 +1,4 @@
-/*	$OpenBSD: errwarn.c,v 1.9 2005/04/11 15:16:29 deraadt Exp $	*/
+/*	$OpenBSD: errwarn.c,v 1.10 2005/04/11 20:04:43 deraadt Exp $	*/
 
 /* Errors and warnings... */
 
@@ -173,7 +173,7 @@ do_percentm(char *obuf, size_t size, char *ibuf)
 	char ch;
 	char *s = ibuf;
 	char *t = obuf;
-	size_t prlen;
+	int prlen;
 	size_t fmt_left;
 	int saved_errno = errno;
 
