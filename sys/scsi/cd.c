@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.81 2005/05/27 23:51:53 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.82 2005/06/03 15:50:10 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -75,8 +75,6 @@
 
 
 #include <ufs/ffs/fs.h>			/* for BBSIZE and SBSIZE */
-
-#include "cdvar.h"
 
 #define	CDOUTSTANDING	4
 
