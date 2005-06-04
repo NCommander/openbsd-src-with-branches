@@ -1367,6 +1367,9 @@ session_notification(struct peer *peer, u_int8_t errcode, u_int8_t subcode,
 	ssize_t			 len;
 	int			 errs = 0;
 
+	if (peer->stats.last_sent_errcode)	/* some notifctn already sent */
+		return;
+
 	len = MSGSIZE_NOTIFICATION_MIN + datalen;
 
 	memset(&msg.marker, 0xff, sizeof(msg.marker));
