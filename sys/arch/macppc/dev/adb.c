@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb.c,v 1.8 2003/10/16 03:31:25 drahn Exp $	*/
+/*	$OpenBSD: adb.c,v 1.9 2003/10/16 03:54:48 deraadt Exp $	*/
 /*	$NetBSD: adb.c,v 1.6 1999/08/16 06:28:09 tsubai Exp $	*/
 
 /*-
@@ -154,7 +154,7 @@ adbattach(struct device *parent, struct device *self, void *aux)
 			break;
 	}
 
-	printf("%d targets\n", totaladbs);
+	printf(", %d targets\n", totaladbs);
 
 #if NAED > 0
 	/* ADB event device for compatibility */
