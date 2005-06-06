@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.70 2005/05/24 04:20:25 markus Exp $	*/
+/*	$OpenBSD: if.h,v 1.71 2005/06/05 20:49:25 henning Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -424,6 +424,9 @@ struct if_announcemsghdr {
 /*
  * interface groups
  */
+
+#define	IFG_ALL	"all"	/* group containing all interfaces */
+
 struct ifg_group {
 	char				 ifg_group[IFNAMSIZ];
 	u_int				 ifg_refcnt;
