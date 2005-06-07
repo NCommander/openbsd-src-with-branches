@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.50 2004/09/16 22:31:30 henning Exp $	*/
+/*	$OpenBSD: route.c,v 1.51 2005/05/15 16:40:09 henning Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -804,6 +804,8 @@ rtrequest1(int req, struct rt_addrinfo *info, struct rtentry **ret_nrt)
 			/* clean up any cloned children */
 			rtflushclone(rnh, rt);
 		}
+
+		if_group_routechange(dst, netmask);
 		break;
 	}
 bad:
