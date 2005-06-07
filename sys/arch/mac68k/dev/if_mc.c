@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mc.c,v 1.10 2005/01/04 03:47:53 brad Exp $	*/
+/*	$OpenBSD: if_mc.c,v 1.11 2005/01/04 18:42:04 martin Exp $	*/
 /*	$NetBSD: if_mc.c,v 1.24 2004/10/30 18:08:34 thorpej Exp $	*/
 
 /*-
@@ -60,14 +60,6 @@
 #ifdef NS
 #include <netns/ns.h>
 #include <netns/ns_if.h>
-#endif
-
-#if defined(CCITT) && defined(LLC)
-#include <sys/socketvar.h>
-#include <netccitt/x25.h>
-#include <netccitt/pk.h>
-#include <netccitt/pk_var.h>
-#include <netccitt/pk_extern.h>
 #endif
 
 #include <uvm/uvm_extern.h>
