@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=	ftp-proxy
 SRCS=	ftp-proxy.c filter.c
 MAN=	ftp-proxy.8
