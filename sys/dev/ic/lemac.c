@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.5 2003/10/30 02:30:48 itojun Exp $ */
+/* $OpenBSD: lemac.c,v 1.6 2005/01/15 05:24:11 brad Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -56,11 +56,6 @@
 #include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
-
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
 #endif
 
 #include <machine/bus.h>
@@ -807,24 +802,6 @@ lemac_ifioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
 #endif /* INET */
-
-#ifdef NS
-		/* This magic copied from if_is.c; I don't use XNS,
-		 * so I have no way of telling if this actually
-		 * works or not.
-		 */
-		case AF_NS: {
-			struct ns_addr *ina = &(IA_SNS(ifa)->sns_addr);
-			if (ns_nullhost(*ina)) {
-				ina->x_host =
-				    *(union ns_host *)sc->sc_arpcom.ac_enaddr;
-			} else {
-				bcopy((caddr_t)ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr, ifp->if_addrlen);
-			}
-			break;
-		}
-#endif /* NS */
 
 		default:
 			break;
