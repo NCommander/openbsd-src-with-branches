@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.52 2005/06/07 18:21:44 henning Exp $	*/
+/*	$OpenBSD: route.c,v 1.53 2005/06/08 03:13:49 henning Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -120,10 +120,6 @@
 
 #include <netinet/in.h>
 #include <netinet/in_var.h>
-
-#ifdef NS
-#include <netns/ns.h>
-#endif
 
 #ifdef IPSEC
 #include <netinet/ip_ipsp.h>
