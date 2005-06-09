@@ -1,4 +1,4 @@
-/*	$OpenBSD: asp.c,v 1.12 2003/04/08 20:48:39 mickey Exp $	*/
+/*	$OpenBSD: asp.c,v 1.13 2004/04/07 18:24:19 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -119,7 +119,7 @@ struct asp_softc {
 	volatile struct asp_trs *sc_trs;
 };
 
-#define	ASP_IOMASK	0xfff00000
+#define	ASP_IOMASK	0xfe000000
 /* ASP "Primary Controller" HPA */
 #define	ASP_CHPA	0xF0800000
 
