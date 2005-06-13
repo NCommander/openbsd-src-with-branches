@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_optimize.c,v 1.7 2005/05/25 23:58:11 frantzen Exp $ */
+/*	$OpenBSD: pfctl_optimize.c,v 1.8 2005/05/26 02:21:29 frantzen Exp $ */
 
 /*
  * Copyright (c) 2004 Mike Frantzen <frantzen@openbsd.org>
@@ -794,14 +794,16 @@ block_feedback(struct pfctl *pf, struct superblock *block)
 	 */
 	TAILQ_FOREACH(por1, &block->sb_profiled_block->sb_rules, por_entry) {
 		comparable_rule(&a, &por1->por_rule, DC);
-		total_count += por1->por_rule.packets;
+		total_count += por1->por_rule.packets[0] +
+		    por1->por_rule.packets[1];
 		TAILQ_FOREACH(por2, &block->sb_rules, por_entry) {
 			if (por2->por_profile_count)
 				continue;
 			comparable_rule(&b, &por2->por_rule, DC);
 			if (memcmp(&a, &b, sizeof(a)) == 0) {
 				por2->por_profile_count =
-				    por1->por_rule.packets;
+				    por1->por_rule.packets[0] +
+				    por1->por_rule.packets[1];
 				break;
 			}
 		}
