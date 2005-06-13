@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.29 2005/05/27 07:58:46 norby Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.30 2005/05/27 08:41:25 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -633,11 +633,6 @@ orig_rtr_lsa(struct area *area)
 	LIST_FOREACH(iface, &area->iface_list, entry) {
 		if (self == NULL && iface->self != NULL)
 			self = iface->self;
-
-		if (iface->state & IF_STA_DOWN)
-			continue;
-
-		log_debug("orig_rtr_lsa: interface %s", iface->name);
 
 		bzero(&rtr_link, sizeof(rtr_link));
 
