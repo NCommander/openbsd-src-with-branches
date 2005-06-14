@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.29 2004/07/17 02:14:33 deraadt Exp $	*/
+/*	$OpenBSD: tape.c,v 1.30 2004/12/30 01:51:32 millert Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 #if 0
 static char sccsid[] = "@(#)tape.c	8.6 (Berkeley) 9/13/94";
 #else
-static const char rcsid[] = "$OpenBSD: tape.c,v 1.29 2004/07/17 02:14:33 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: tape.c,v 1.30 2004/12/30 01:51:32 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -245,13 +245,6 @@ setup(void)
 	dumpmap = map;
 	curfile.action = USING;
 	getfile(xtrmap, xtrmapskip);
-	/*
-	 * If there may be whiteout entries on the tape, pretend that the
-	 * whiteout inode exists, so that the whiteout entries can be
-	 * extracted.
-	 */
-	if (oldinofmt == 0)
-		SETINO(WINO, dumpmap);
 }
 
 /*
