@@ -1,4 +1,4 @@
-/*	$OpenBSD: re_search.c,v 1.14 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: re_search.c,v 1.15 2005/06/05 05:15:56 kjell Exp $	*/
 
 /*
  *	regular expression search commands for Mg
@@ -138,8 +138,8 @@ re_queryrepl(int f, int n)
 
 	if ((s = re_readpattern("RE Query replace")) != TRUE)
 		return (s);
-	if ((rep =
-	    ereply("Query replace %s with: ", news, NPAT, re_pat)) == NULL)
+	if ((rep = eread("Query replace %s with: ", news, NPAT,
+	    EFNUL | EFNEW | EFCR, re_pat)) == NULL)
 		return (ABORT);
 	ewprintf("Query replacing %s with %s:", re_pat, news);
 
