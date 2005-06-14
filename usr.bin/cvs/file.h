@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.19 2005/05/20 05:13:44 joris Exp $	*/
+/*	$OpenBSD: file.h,v 1.20 2005/05/24 04:12:25 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -144,6 +144,6 @@ CVSFILE* cvs_file_load    (const char *, int);
 CVSFILE* cvs_file_find    (CVSFILE *, const char *);
 char*    cvs_file_getpath (CVSFILE *, char *, size_t);
 void     cvs_file_free    (CVSFILE *);
-
+int      cvs_file_prune   (char *);
 
 #endif /* FILE_H */
