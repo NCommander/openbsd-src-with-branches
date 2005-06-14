@@ -1,4 +1,4 @@
-/* $OpenBSD: policy.c,v 1.84 2005/04/08 18:39:04 deraadt Exp $	 */
+/* $OpenBSD: policy.c,v 1.85 2005/04/08 22:32:10 cloder Exp $	 */
 /* $EOM: policy.c,v 1.49 2000/10/24 13:33:39 niklas Exp $ */
 
 /*
@@ -513,7 +513,9 @@ policy_callback(char *name)
 							break;
 						}
 					else if (decode_16(value) ==
-					    IPSEC_ENCAP_UDP_ENCAP_TUNNEL)
+					    IPSEC_ENCAP_UDP_ENCAP_TUNNEL ||
+					    decode_16(value) ==
+					    IPSEC_ENCAP_UDP_ENCAP_TUNNEL_DRAFT)
 						switch (proto->proto) {
 						case IPSEC_PROTO_IPSEC_AH:
 							ah_encapsulation = "udp-encap-tunnel";
