@@ -1,4 +1,4 @@
-dnl	$OpenBSD: mirrors,v 1.60 2005/03/18 13:30:08 miod Exp $
+dnl	$OpenBSD: mirrors,v 1.61 2005/06/06 05:48:09 kevlo Exp $
 This is a list of currently known FTP servers at the time of the OSREV release.
 For a more recent list, please refer to
 
@@ -43,7 +43,7 @@ Czech Republic:
     ftp://ftp.openbsd.cz/pub/OpenBSD (Prague)
 
 Denmark:
-    ftp://sunsite.dk/mirrors/openbsd (Aalborg)
+    ftp://mirrors.dotsrc.org/openbsd (Aalborg)
 
 Finland:
     ftp://ftp.fi.debian.org/pub/OpenBSD
