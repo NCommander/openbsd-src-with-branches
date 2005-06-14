@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-bgp.c,v 1.4 2002/09/03 12:21:12 ho Exp $	*/
+/*	$OpenBSD: print-bgp.c,v 1.5 2005/04/27 23:03:01 cloder Exp $	*/
 
 /*
  * Copyright (C) 1999 WIDE Project.
@@ -609,6 +609,7 @@ bgp_update_print(const u_char *dat, int length)
 		printf(" (Withdrawn routes: %d bytes)", len);
 #else	
 		char buf[MAXHOSTNAMELEN + 100];
+		int wpfx;
 
 		TCHECK2(p[2], len);
  		i = 2;
@@ -616,7 +617,12 @@ bgp_update_print(const u_char *dat, int length)
 		printf(" (Withdrawn routes:");
 			
 		while(i < 2 + len) {
-			i += decode_prefix4(&p[i], buf, sizeof(buf));
+			wpfx = decode_prefix4(&p[i], buf, sizeof(buf));
+			if (wpfx < 0) {
+				printf(" (illegal prefix length)");
+				break;
+			}
+			i += wpfx;
 			printf(" %s", buf);
 		}
 		printf(")\n");
