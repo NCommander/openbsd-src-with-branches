@@ -1,4 +1,6 @@
-/*	$OpenBSD: dir.c,v 1.11 2004/07/22 01:25:24 vincent Exp $	*/
+/*	$OpenBSD: dir.c,v 1.12 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * Name:	MG 2a

@@ -1,4 +1,6 @@
-/*	$OpenBSD: display.c,v 1.20 2003/08/15 23:23:18 vincent Exp $	*/
+/*	$OpenBSD: display.c,v 1.21 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * The functions in this file handle redisplay. The

@@ -1,4 +1,6 @@
-/*	$OpenBSD: paragraph.c,v 1.9 2003/10/24 20:32:06 avsm Exp $	*/
+/*	$OpenBSD: paragraph.c,v 1.10 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * Code for dealing with paragraphs and filling. Adapted from MicroEMACS 3.6

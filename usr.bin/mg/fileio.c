@@ -1,4 +1,6 @@
-/*	$OpenBSD: fileio.c,v 1.48 2005/03/10 16:58:57 deraadt Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.49 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *	POSIX fileio.c

@@ -1,4 +1,6 @@
-/*	$OpenBSD: match.c,v 1.9 2003/05/20 03:08:55 cloder Exp $	*/
+/*	$OpenBSD: match.c,v 1.10 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *	Limited parenthesis matching routines

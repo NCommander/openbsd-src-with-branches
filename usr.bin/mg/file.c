@@ -1,4 +1,6 @@
-/*	$OpenBSD: file.c,v 1.35 2005/05/30 13:13:50 jason Exp $	*/
+/*	$OpenBSD: file.c,v 1.36 2005/06/03 08:23:12 kjell Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *	File commands.

@@ -1,4 +1,6 @@
-/*	$OpenBSD: help.c,v 1.22 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: help.c,v 1.23 2005/04/28 07:23:56 otto Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * Help functions for Mg 2

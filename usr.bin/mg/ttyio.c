@@ -1,4 +1,6 @@
-/*	$OpenBSD: ttyio.c,v 1.26 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.27 2005/04/13 02:33:08 deraadt Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * POSIX terminal I/O.

@@ -1,4 +1,6 @@
-/*	$OpenBSD: basic.c,v 1.17 2005/03/10 16:58:57 deraadt Exp $	*/
+/*	$OpenBSD: basic.c,v 1.18 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain */
 
 /*
  *		Basic cursor motion commands.

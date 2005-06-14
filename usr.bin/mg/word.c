@@ -1,4 +1,6 @@
-/*	$OpenBSD: word.c,v 1.8 2003/05/20 03:08:55 cloder Exp $	*/
+/*	$OpenBSD: word.c,v 1.9 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *		Word mode commands.

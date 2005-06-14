@@ -1,7 +1,10 @@
-/*	$OpenBSD: dired.c,v 1.18 2005/05/15 21:19:08 cloder Exp $	*/
+/*	$OpenBSD: dired.c,v 1.19 2005/05/28 01:53:37 cloder Exp $	*/
 
-/* dired module for mg 2a	 */
-/* by Robert A. Larson		 */
+/* This file is in the public domain. */
+
+/* dired module for mg 2a
+ * by Robert A. Larson
+ */
 
 #include "def.h"
 #include "kbd.h"

@@ -1,4 +1,6 @@
-/*	$OpenBSD: sysdef.h,v 1.11 2002/02/21 04:16:23 deraadt Exp $	*/
+/*	$OpenBSD: sysdef.h,v 1.12 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *		POSIX system header file

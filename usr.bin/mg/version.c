@@ -1,4 +1,6 @@
-/*	$OpenBSD: version.c,v 1.7 2003/06/01 23:58:04 art Exp $	*/
+/*	$OpenBSD: version.c,v 1.8 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * This file contains the string that gets written

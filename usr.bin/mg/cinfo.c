@@ -1,4 +1,6 @@
-/*	$OpenBSD: cinfo.c,v 1.10 2002/07/01 14:33:44 vincent Exp $	*/
+/*	$OpenBSD: cinfo.c,v 1.11 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *		Character class tables.

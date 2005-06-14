@@ -1,4 +1,6 @@
-/*	$OpenBSD: main.c,v 1.38 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: main.c,v 1.39 2005/04/21 19:16:21 beck Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *	Mainline.

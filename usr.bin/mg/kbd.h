@@ -1,4 +1,6 @@
-/*	$OpenBSD: kbd.h,v 1.14 2002/03/11 13:02:56 vincent Exp $	*/
+/*	$OpenBSD: kbd.h,v 1.15 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * kbd.h: type definitions for symbol.c and kbd.c for mg experimental

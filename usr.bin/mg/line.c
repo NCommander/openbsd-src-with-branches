@@ -1,4 +1,6 @@
-/*	$OpenBSD: line.c,v 1.21 2004/07/09 13:50:40 vincent Exp $	*/
+/*	$OpenBSD: line.c,v 1.22 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *		Text line handling.

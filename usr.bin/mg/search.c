@@ -1,4 +1,6 @@
-/*	$OpenBSD: search.c,v 1.19 2005/06/05 05:15:56 kjell Exp $	*/
+/*	$OpenBSD: search.c,v 1.20 2005/06/14 00:55:45 kjell Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *		Search commands.

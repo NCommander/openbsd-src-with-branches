@@ -1,4 +1,6 @@
-/*	$OpenBSD: kbd.c,v 1.15 2004/02/01 22:26:40 vincent Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.16 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *	Terminal independent keyboard handling.

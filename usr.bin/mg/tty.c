@@ -1,4 +1,6 @@
-/*	$OpenBSD: tty.c,v 1.20 2003/06/10 22:20:48 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.21 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  * Terminfo display driver

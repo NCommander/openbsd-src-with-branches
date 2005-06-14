@@ -1,4 +1,6 @@
-/*	$OpenBSD: macro.c,v 1.7 2004/02/01 22:26:41 vincent Exp $	*/
+/*	$OpenBSD: macro.c,v 1.8 2005/04/03 02:09:28 db Exp $	*/
+
+/* This file is in the public domain. */
 
 /*
  *	Keyboard macros.
