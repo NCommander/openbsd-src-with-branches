@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: http_log.h,v 1.10 2005/03/28 23:26:51 niallo Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -84,7 +84,7 @@ extern "C" {
 #define DEFAULT_LOGLEVEL	APLOG_WARNING
 #endif
 
-#define APLOG_MARK	__FILE__,__LINE__
+#define APLOG_MARK	__FILE__,0
 
 API_EXPORT(void) ap_open_logs (server_rec *, pool *p);
 
