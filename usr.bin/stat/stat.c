@@ -1,4 +1,4 @@
-/*	$OpenBSD: stat.c,v 1.9 2005/04/11 08:19:07 otto Exp $ */
+/*	$OpenBSD: stat.c,v 1.10 2005/04/22 09:58:43 otto Exp $ */
 /*	$NetBSD: stat.c,v 1.19 2004/06/20 22:20:16 jmc Exp $ */
 
 /*
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static const char rccs_id[] =
-    "$OpenBSD: stat.c,v 1.9 2005/04/11 08:19:07 otto Exp $";
+    "$OpenBSD: stat.c,v 1.10 2005/04/22 09:58:43 otto Exp $";
 #endif
 
 #include <sys/types.h>
@@ -739,9 +739,6 @@ format1(const struct stat *st,
 			case S_IFSOCK:
 				(void)strlcat(sdata, "=", sizeof(smode));
 				break;
-			case S_IFWHT:
-				(void)strlcat(sdata, "%", sizeof(smode));
-				break;
 			}
 			hilo = 0;
 		} else if (hilo == HIGH_PIECE) {
@@ -753,7 +750,6 @@ format1(const struct stat *st,
 			case S_IFREG:	sdata = "Regular File";		break;
 			case S_IFLNK:	sdata = "Symbolic Link";	break;
 			case S_IFSOCK:	sdata = "Socket";		break;
-			case S_IFWHT:	sdata = "Whiteout File";	break;
 			default:	sdata = "???";			break;
 			}
 			hilo = 0;
