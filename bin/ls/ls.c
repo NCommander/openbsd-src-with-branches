@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.22 2004/04/02 07:31:06 otto Exp $	*/
+/*	$OpenBSD: ls.c,v 1.23 2005/03/10 00:22:08 jaredy Exp $	*/
 /*	$NetBSD: ls.c,v 1.18 1996/07/09 09:16:29 mycroft Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ls.c	8.7 (Berkeley) 8/5/94";
 #else
-static char rcsid[] = "$OpenBSD: ls.c,v 1.22 2004/04/02 07:31:06 otto Exp $";
+static char rcsid[] = "$OpenBSD: ls.c,v 1.23 2005/03/10 00:22:08 jaredy Exp $";
 #endif
 #endif /* not lint */
 
@@ -105,7 +105,6 @@ int f_stream;			/* stream format */
 int f_dirname;			/* if precede with directory name */
 int f_type;			/* add type character for non-regular files */
 int f_typedir;			/* add type character for directories */
-int f_whiteout;			/* show whiteout entries */
 
 int rval;
 
@@ -134,7 +133,7 @@ ls_main(int argc, char *argv[])
 		f_listdot = 1;
 
 	fts_options = FTS_PHYSICAL;
-	while ((ch = getopt(argc, argv, "1ACFLRSTWacdfghiklmnopqrstux")) != -1) {
+	while ((ch = getopt(argc, argv, "1ACFLRSTacdfghiklmnopqrstux")) != -1) {
 		switch (ch) {
 		/*
 		 * The -1, -C and -l, -m and -x options all override each
@@ -236,9 +235,6 @@ ls_main(int argc, char *argv[])
 		case 't':
 			sortkey = BY_TIME;
 			break;
-		case 'W':
-			f_whiteout = 1;
-			break;
 		default:
 			usage();
 		}
@@ -260,14 +256,6 @@ ls_main(int argc, char *argv[])
 	 */
 	if (!f_longform && !f_listdir && !f_type)
 		fts_options |= FTS_COMFOLLOW;
-
-	/*
-	 * If -W, show whiteout entries
-	 */
-#ifdef FTS_WHITEOUT
-	if (f_whiteout)
-		fts_options |= FTS_WHITEOUT;
-#endif
 
 	/* If -l or -s, figure out block size. */
 	if (f_longform || f_size) {
