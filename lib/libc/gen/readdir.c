@@ -28,7 +28,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: readdir.c,v 1.7 2004/05/18 02:05:52 jfb Exp $";
+static char rcsid[] = "$OpenBSD: readdir.c,v 1.8 2005/03/25 15:38:47 otto Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
@@ -65,8 +65,6 @@ readdir(DIR *dirp)
 			return (NULL);
 		dirp->dd_loc += dp->d_reclen;
 		if (dp->d_ino == 0)
-			continue;
-		if (dp->d_type == DT_WHT && (dirp->dd_flags & DTF_HIDEW))
 			continue;
 		return (dp);
 	}
