@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2004/12/22 12:08:23 deraadt Exp $
+# $OpenBSD: Makefile,v 1.3 2005/04/24 20:41:34 brad Exp $
 
 NOPROG=
 NOMAN=
@@ -12,10 +12,16 @@ NOMAN=
 
 FIRM=  fxp-d101a fxp-d101b0 fxp-d101ma fxp-d101s fxp-d102 fxp-d102c fxp-d102e
 
-CLEANFILES+= ${FIRM} build
+PROG=	build
 
-all:	build
+CLEANFILES+= ${FIRM} ${PROG}
+
+all: ${FIRM}
+
+${FIRM}: build
 	${.OBJDIR}/build
+
+realinstall:
 
 afterinstall:
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 644 \
