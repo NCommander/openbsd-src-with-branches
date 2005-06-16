@@ -1,4 +1,4 @@
-/*	$OpenBSD: clientloop.h,v 1.11 2004/07/11 17:48:47 deraadt Exp $	*/
+/*	$OpenBSD: clientloop.h,v 1.12 2004/11/07 00:01:46 djm Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -37,6 +37,8 @@
 
 /* Client side main loop for the interactive session. */
 int	 client_loop(int, int, int);
+void	 client_x11_get_proto(const char *, const char *, u_int,
+	    char **, char **);
 void	 client_global_request_reply_fwd(int, u_int32_t, void *);
 void	 client_session2_setup(int, int, int, const char *, struct termios *,
 	    int, Buffer *, char **, dispatch_fn *);
