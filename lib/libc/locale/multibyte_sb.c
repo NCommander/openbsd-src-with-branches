@@ -224,3 +224,20 @@ wctob(wint_t c)
 		return EOF;
 	return (int)c;
 }
+
+int
+wcscoll(const wchar_t *s1, const wchar_t *s2)
+{
+	while (*s1 == *s2++)
+		if (*s1++ == 0)
+			return (0);
+	return ((unsigned char)(*s1) - (unsigned char)(*--s2));
+}
+
+size_t 
+wcsxfrm(wchar_t *dest, const wchar_t *src, size_t n)
+{
+	if (n == 0)
+		return wcslen(src);
+	return wcslcpy(dest, src, n);
+}

@@ -292,6 +292,7 @@ vfprintf(FILE *fp, const char *fmt0, _BSD_VA_LIST_ ap)
 	(((argtable != NULL) ? (void)(ap = argtable[nextarg]) : (void)0), \
 	 nextarg++, va_arg(ap, type))
 
+	_SET_ORIENTATION(fp, -1);
 	/* sorry, fprintf(read_only_file, "") returns EOF, not 0 */
 	if (cantwrite(fp)) {
 		errno = EBADF;

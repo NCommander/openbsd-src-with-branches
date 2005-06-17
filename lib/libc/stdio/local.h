@@ -1,4 +1,4 @@
-/*	$OpenBSD: local.h,v 1.9 2005/03/31 18:36:29 pat Exp $	*/
+/*	$OpenBSD: local.h,v 1.10 2005/04/30 09:25:17 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -37,6 +37,8 @@
  * in particular, macros and private variables.
  */
 
+#include <wchar.h> 
+#include "wcio.h"
 #include "fileext.h"
 
 int	__sflush(FILE *);
