@@ -32,7 +32,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: key.c,v 1.56 2004/07/28 09:40:29 markus Exp $");
+RCSID("$OpenBSD: key.c,v 1.57 2004/10/29 23:57:05 djm Exp $");
 
 #include <openssl/evp.h>
 
@@ -231,7 +231,7 @@ static char *
 key_fingerprint_hex(u_char *dgst_raw, u_int dgst_raw_len)
 {
 	char *retval;
-	int i;
+	u_int i;
 
 	retval = xmalloc(dgst_raw_len * 3 + 1);
 	retval[0] = '\0';
