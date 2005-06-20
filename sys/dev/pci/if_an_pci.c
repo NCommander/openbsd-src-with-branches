@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_an_pci.c,v 1.8 2002/05/22 15:30:36 mickey Exp $	*/
+/*	$OpenBSD: if_an_pci.c,v 1.9 2002/11/19 18:40:17 jason Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -66,6 +66,8 @@
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
+
+#include <net80211/ieee80211_var.h>
 
 #include <machine/bus.h>
 #include <machine/intr.h>

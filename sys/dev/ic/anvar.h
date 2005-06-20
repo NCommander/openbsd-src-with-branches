@@ -1,4 +1,4 @@
-/*	$OpenBSD: anvar.h,v 1.16 2004/08/05 07:58:55 mickey Exp $	*/
+/*	$OpenBSD: anvar.h,v 1.17 2004/09/28 04:37:32 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -638,7 +638,7 @@ struct an_tx_ring_data {
 struct an_softc	{
 	struct device	sc_dev;
 	int	noise;		/* noise value */
-	struct arpcom	sc_arpcom;
+	struct ieee80211com sc_ic;
 	struct ifmedia	an_ifmedia;
 	void		*sc_ih;
 	struct timeout	an_stat_ch;
