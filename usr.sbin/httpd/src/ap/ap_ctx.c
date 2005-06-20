@@ -1,4 +1,4 @@
-/* $OpenBSD */
+/* $OpenBSD$ */
 
 /* ====================================================================
  * Copyright (c) 1998-2000 The Apache Group.  All rights reserved.
