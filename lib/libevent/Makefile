@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2005/04/19 02:03:12 brad Exp $
+#	$OpenBSD: Makefile,v 1.12 2005/04/22 01:01:17 brad Exp $
 
 LIB=	event
 SRCS=	buffer.c evbuffer.c event.c kqueue.c log.c poll.c select.c signal.c
@@ -32,6 +32,18 @@ CFLAGS+= -I${.CURDIR} \
 	-DHAVE_UNISTD_H \
 	-DHAVE_VASPRINTF \
 	-DHAVE_WORKING_KQUEUE
+
+CDIAGFLAGS=	-Wall
+#CDIAGFLAGS+=	-Werror
+CDIAGFLAGS+=	-Wstrict-prototypes
+CDIAGFLAGS+=	-Wmissing-prototypes
+CDIAGFLAGS+=	-Wmissing-declarations
+CDIAGFLAGS+=	-Wshadow
+CDIAGFLAGS+=	-Wpointer-arith
+CDIAGFLAGS+=	-Wcast-qual
+CDIAGFLAGS+=	-Wsign-compare
+CDIAGFLAGS+=	-Wcast-align
+CDIAGFLAGS+=	-Wbad-function-cast
 
 NOPIC=
 
