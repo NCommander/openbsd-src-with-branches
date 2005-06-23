@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.144 2005/06/08 19:03:55 henning Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.145 2005/06/12 00:42:55 henning Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -2120,7 +2120,7 @@ status(int link, struct sockaddr_dl *sdl)
 	struct ifmediareq ifmr;
 	struct ifreq ifrdesc;
 	int *media_list, i;
-	char *ifdescr[IFDESCRSIZE];
+	char ifdescr[IFDESCRSIZE];
 
 	printf("%s: ", name);
 	printb("flags", flags, IFFBITS);
