@@ -1,5 +1,6 @@
-#	$OpenBSD: Makefile,v 1.4 1999/11/26 22:59:21 millert Exp $
+#	$OpenBSD: Makefile,v 1.5 2005/06/25 14:27:36 henning Exp $
 
 PROG=	whois
+CFLAGS+= -Wall
 
 .include <bsd.prog.mk>
