@@ -1,4 +1,4 @@
-/* $OpenBSD: isakmpd.c,v 1.87 2005/05/03 14:03:11 moritz Exp $	 */
+/* $OpenBSD: isakmpd.c,v 1.88 2005/05/26 20:40:50 hshoexer Exp $	 */
 /* $EOM: isakmpd.c,v 1.54 2000/10/05 09:28:22 niklas Exp $	 */
 
 /*
@@ -188,7 +188,7 @@ parse_args(int argc, char *argv[])
 
 		case 'l':
 			pcap_file = optarg;
-			/* Fallthrough intended.  */
+			/* FALLTHROUGH */
 
 		case 'L':
 			do_packetlog++;

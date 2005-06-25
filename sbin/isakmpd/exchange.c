@@ -1,4 +1,4 @@
-/* $OpenBSD: exchange.c,v 1.120 2005/05/26 05:14:17 hshoexer Exp $	 */
+/* $OpenBSD: exchange.c,v 1.121 2005/05/26 06:11:09 hshoexer Exp $	 */
 /* $EOM: exchange.c,v 1.143 2000/12/04 00:02:25 angelos Exp $	 */
 
 /*
@@ -325,7 +325,7 @@ exchange_run(struct message *msg)
 				message_register_post_send(msg,
 				    exchange_finalize);
 
-				/* Fallthrough.  */
+				/* FALLTHROUGH */
 
 			case 0:
 				/* XXX error handling.  */
