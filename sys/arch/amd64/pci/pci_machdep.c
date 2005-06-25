@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.4 2005/05/14 00:13:15 brad Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.5 2005/05/27 07:46:38 jason Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.3 2003/05/07 21:33:58 fvdl Exp $	*/
 
 /*-
@@ -155,7 +155,6 @@ struct {
 	{0, 0xffffffff} /* patchable */
 };
 #undef _m1tag
-#undef _id
 #undef _qe
 
 /*
