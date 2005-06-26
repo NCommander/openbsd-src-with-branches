@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.16 2000/04/15 20:35:57 mickey Exp $
+#	$OpenBSD: Makefile,v 1.17 2001/06/29 17:08:14 miod Exp $
 
 PROG=	savecore
 
 SRCS=	savecore.c zopen.c
+CFLAGS=-DSAVECORE
 LDADD=	-lkvm
 DPADD=	${LIBKVM}
 MAN=	savecore.8
