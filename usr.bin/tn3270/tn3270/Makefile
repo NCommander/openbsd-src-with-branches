@@ -1,12 +1,9 @@
-#	$OpenBSD: Makefile,v 1.13 2000/10/11 19:28:02 millert Exp $
+#	$OpenBSD: Makefile,v 1.14 2003/05/14 01:46:51 hin Exp $
 
 .include "../../Makefile.inc"
 
-.PATH:	${.CURDIR}/../../../libexec/telnetd
-
 CFLAGS += -I${.CURDIR} -I.
-CFLAGS +=-I${.CURDIR}/../../../libexec/telnetd
-CFLAGS +=-I${.CURDIR}/../../telnet
+CFLAGS += -I${.CURDIR}/../../telnet
 LDADD += -lcurses
 DPADD += ${LIBCURSES}
 
