@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.70 2004/12/30 08:28:39 niklas Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.71 2005/05/24 21:11:47 tedu Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /* 
@@ -1119,6 +1119,9 @@ uvm_map_hint(struct proc *p, vm_prot_t prot)
 	addr = (vaddr_t)p->p_vmspace->vm_daddr + MAXDSIZ;
 #if !defined(__vax__)
 	addr += arc4random() & (MIN((256 * 1024 * 1024), MAXDSIZ) - 1);
+#else
+	/* start malloc/mmap after the brk */
+	addr = (vaddr_t)p->p_vmspace->vm_daddr + BRKSIZ;
 #endif
 	return (round_page(addr));
 }
