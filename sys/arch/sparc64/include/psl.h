@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.16 2005/05/31 09:31:16 art Exp $	*/
+/*	$OpenBSD: psl.h,v 1.17 2005/06/29 06:30:18 deraadt Exp $	*/
 /*	$NetBSD: psl.h,v 1.20 2001/04/13 23:30:05 thorpej Exp $ */
 
 /*
@@ -142,6 +142,8 @@
 #define TSTATE_CCR		0xff00000000LL
 #define TSTATE_CCR_SHIFT	32
 
+/* Leftover SPARC V8 PSTATE stuff */
+#define PSR_ICC 0x00f00000
 #define PSRCC_TO_TSTATE(x)	(((int64_t)(x)&PSR_ICC)<<(TSTATE_CCR_SHIFT-19))
 #define TSTATECCR_TO_PSR(x)	(((x)&TSTATE_CCR)>>(TSTATE_CCR_SHIFT-19))
 
