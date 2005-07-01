@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.86 2005/06/10 08:30:38 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.87 2005/06/13 08:16:30 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -986,10 +986,10 @@ send_filterset(struct imsgbuf *i, struct filter_set_head *set)
 {
 	struct filter_set	*s;
 
-	while ((s = SIMPLEQ_FIRST(set)) != NULL) {
+	while ((s = TAILQ_FIRST(set)) != NULL) {
 		imsg_compose(i, IMSG_FILTER_SET, 0, 0, -1, s,
 		    sizeof(struct filter_set));
-		SIMPLEQ_REMOVE_HEAD(set, entry);
+		TAILQ_REMOVE(set, s, entry);
 		free(s);
 	}
 }
