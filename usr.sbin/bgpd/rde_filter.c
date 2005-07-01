@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.28 2005/06/29 09:43:26 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.29 2005/07/01 09:19:24 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -56,17 +56,6 @@ rde_filter(struct rde_peer *peer, struct rde_aspath *asp,
 		}
 	}
 	return (action);
-}
-
-void
-rde_free_set(struct filter_set_head *sh)
-{
-	struct filter_set	*set;
-
-	while ((set = SIMPLEQ_FIRST(sh)) != NULL) {
-		SIMPLEQ_REMOVE_HEAD(sh, entry);
-		free(set);
-	}
 }
 
 void
