@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.32 2005/07/01 14:29:13 xsa Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.33 2005/07/01 14:55:30 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -273,7 +273,7 @@ cvs_getlog_local(CVSFILE *cf, void *arg)
 
 	cvs_printf("total revisions: %u;", rf->rf_ndelta);
 
-	if (!log_honly || !log_lhonly)
+	if (!log_honly && !log_lhonly)
 		cvs_printf("\tselected revisions: %u", nrev);
 	
 	cvs_printf("\n");
