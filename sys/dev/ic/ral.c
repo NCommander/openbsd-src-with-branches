@@ -1,4 +1,4 @@
-/*	$OpenBSD: ral.c,v 1.54 2005/06/08 23:49:56 naddy Exp $  */
+/*	$OpenBSD: ral.c,v 1.55 2005/06/20 18:25:10 damien Exp $  */
 
 /*-
  * Copyright (c) 2005
@@ -2715,6 +2715,10 @@ ral_stop(struct ifnet *ifp, int disable)
 
 	ieee80211_new_state(ic, IEEE80211_S_INIT, -1);
 
+	sc->sc_tx_timer = 0;
+	ifp->if_timer = 0;
+	ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);
+
 	/* abort Tx */
 	RAL_WRITE(sc, RAL_TXCSR0, RAL_ABORT_TX);
 
@@ -2738,10 +2742,6 @@ ral_stop(struct ifnet *ifp, int disable)
 	/* for CardBus, power down the socket */
 	if (disable && sc->sc_disable != NULL)
 		(*sc->sc_disable)(sc);
-
-	sc->sc_tx_timer = 0;
-	ifp->if_timer = 0;
-	ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);
 }
 
 struct cfdriver ral_cd = {
