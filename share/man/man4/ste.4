@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ste.4,v 1.15 2004/03/22 20:31:36 miod Exp $
+.\"	$OpenBSD: ste.4,v 1.16 2004/09/30 19:59:25 mickey Exp $
 .\"
 .\" Copyright (c) 1997, 1998, 1999
 .\"	Bill Paul <wpaul@ctr.columbia.edu>. All rights reserved.
@@ -44,9 +44,16 @@
 The
 .Nm
 driver provides support for PCI Ethernet adapters and embedded
-controllers based on the Sundance Technologies ST201 PCI fast
+controllers based on the Sundance Technologies ST201 PCI Fast
 Ethernet controller chip.
-This includes the D-Link DFE-550TX.
+This includes:
+.Pp
+.Bl -bullet -compact
+.It
+D-Link DFE-550TX
+.It
+D-Link DFE-580TX
+.El
 .Pp
 The Sundance ST201 uses bus master DMA and is designed to be a
 3Com EtherLink XL work-alike.
