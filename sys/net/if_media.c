@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_media.c,v 1.11 2005/02/15 23:18:55 brad Exp $	*/
+/*	$OpenBSD: if_media.c,v 1.12 2005/02/20 01:19:17 brad Exp $	*/
 /*	$NetBSD: if_media.c,v 1.10 2000/03/13 23:52:39 soren Exp $	*/
 
 /*-
@@ -269,7 +269,7 @@ ifmedia_ioctl(ifp, ifr, ifm, cmd)
 				    newmedia);
 			}
 #endif
-			return (ENXIO);
+			return (EINVAL);
 		}
 
 		/*
