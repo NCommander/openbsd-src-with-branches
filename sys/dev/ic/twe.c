@@ -1,4 +1,4 @@
-/*	$OpenBSD: twe.c,v 1.21 2003/06/02 19:24:22 mickey Exp $	*/
+/*	$OpenBSD: twe.c,v 1.22 2003/08/06 21:08:06 millert Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff.  All rights reserved.
@@ -860,8 +860,9 @@ twe_scsi_cmd(xs)
 		case 4:
 			/* scsi_disk.h says this should be 0x16 */
 			mpd.dp.rigid_geometry.pg_length = 0x16;
-			mpd.hd.data_length = sizeof mpd.hd + sizeof mpd.bd +
-			    mpd.dp.rigid_geometry.pg_length;
+			mpd.hd.data_length = sizeof mpd.hd -
+			    sizeof mpd.hd.data_length + sizeof mpd.bd +
+			    sizeof mpd.dp.rigid_geometry;
 			mpd.hd.blk_desc_len = sizeof mpd.bd;
 
 			/* XXX */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.19 2004/03/20 03:58:09 aaron Exp $	*/
+/*	$OpenBSD: aac.c,v 1.20 2005/05/26 23:53:14 martin Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -868,8 +868,9 @@ aac_internal_cache_cmd(xs)
 		case 4:
 			/* scsi_disk.h says this should be 0x16 */
 			mpd.dp.rigid_geometry.pg_length = 0x16;
-			mpd.hd.data_length = sizeof mpd.hd + sizeof mpd.bd +
-			    mpd.dp.rigid_geometry.pg_length;
+			mpd.hd.data_length = sizeof mpd.hd -
+			    sizeof mpd.hd.data_length + sizeof mpd.bd +
+			    sizeof mpd.dp.rigid_geometry;
 			mpd.hd.blk_desc_len = sizeof mpd.bd;
 
 			/* XXX */
