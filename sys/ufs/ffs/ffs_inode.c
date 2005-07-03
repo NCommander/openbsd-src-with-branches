@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_inode.c,v 1.36 2003/11/19 03:29:31 mickey Exp $	*/
+/*	$OpenBSD: ffs_inode.c,v 1.37 2004/06/24 19:35:26 tholo Exp $	*/
 /*	$NetBSD: ffs_inode.c,v 1.10 1996/05/11 18:27:19 mycroft Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 
 #include <uvm/uvm_extern.h>
 
-#include <ufs/ufs/extattr.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/ufsmount.h>

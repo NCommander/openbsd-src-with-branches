@@ -1,4 +1,4 @@
-/*	$OpenBSD: lfs_vfsops.c,v 1.18 2003/08/14 07:46:40 mickey Exp $	*/
+/*	$OpenBSD: lfs_vfsops.c,v 1.19 2004/06/04 08:06:05 tedu Exp $	*/
 /*	$NetBSD: lfs_vfsops.c,v 1.11 1996/03/25 12:53:35 pk Exp $	*/
 
 /*
@@ -73,8 +73,7 @@ const struct vfsops lfs_vfsops = {
 	lfs_vptofh,
 	lfs_init,
 	lfs_sysctl,
-	ufs_check_export,
-	vfs_stdextattrctl
+	ufs_check_export
 };
 
 int
