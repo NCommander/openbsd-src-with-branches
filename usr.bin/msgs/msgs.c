@@ -1,4 +1,4 @@
-/*	$OpenBSD: msgs.c,v 1.28 2003/10/04 21:55:12 jmc Exp $	*/
+/*	$OpenBSD: msgs.c,v 1.29 2004/10/02 04:14:39 deraadt Exp $	*/
 /*	$NetBSD: msgs.c,v 1.7 1995/09/28 06:57:40 tls Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)msgs.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: msgs.c,v 1.28 2003/10/04 21:55:12 jmc Exp $";
+static char rcsid[] = "$OpenBSD: msgs.c,v 1.29 2004/10/02 04:14:39 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -173,8 +173,11 @@ main(int argc, char *argv[])
 #endif
 
 	time(&t);
-	seteuid(uid = getuid());
-	setuid(uid);
+	uid = getuid();
+	if (setresuid(uid, uid, uid) == -1) {
+		perror("setresuid");
+		exit(1);
+	}
 	ruptible = (signal(SIGINT, SIG_IGN) == SIG_DFL);
 	if (ruptible)
 		signal(SIGINT, SIG_DFL);
