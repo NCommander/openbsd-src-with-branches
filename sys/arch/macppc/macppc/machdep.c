@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.69 2005/06/08 19:08:23 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.70 2005/06/27 14:32:20 mickey Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -1128,7 +1128,7 @@ bus_mem_add_mapping(bus_addr_t bpa, bus_size_t size, int cacheable,
 	for (; len > 0; len -= PAGE_SIZE) {
 		pmap_kenter_cache(vaddr, spa,
 			VM_PROT_READ | VM_PROT_WRITE,
-			cacheable ? PMAP_CACHE_WT : PMAP_CACHE_DEFAULT);
+			cacheable ? PMAP_CACHE_WT : PMAP_CACHE_CI);
 		spa += PAGE_SIZE;
 		vaddr += PAGE_SIZE;
 	}
