@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: radius.c,v 1.23 2002/07/04 23:35:08 brian Exp $
+ *	$OpenBSD: radius.c,v 1.24 2003/08/06 21:08:08 millert Exp $
  *
  */
 
@@ -210,8 +210,11 @@ demangle(struct radius *r, const void *mangled, size_t mlen,
     return;
   }
 
-  *buf = malloc(*len);
-  memcpy(*buf, P + 1, *len);
+  if ((*buf = malloc(*len)) == NULL) {
+    log_Printf(LogWARN, "demangle: Out of memory (%lu bytes)\n", (u_long)*len);
+    *len = 0;
+  } else
+    memcpy(*buf, P + 1, *len);
 }
 #endif
 
