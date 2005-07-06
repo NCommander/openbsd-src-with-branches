@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyinit.c,v 1.49 2004/09/14 22:58:57 deraadt Exp $	*/
+/*	$OpenBSD: skeyinit.c,v 1.50 2004/12/27 23:37:49 deraadt Exp $	*/
 
 /* OpenBSD S/Key (skeyinit.c)
  *
@@ -556,8 +556,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	(void)fprintf(stderr, "usage: %s [-r] [-s] [-x] [-C] [-D] [-E] "
-	    "[-a auth_type] [-n count]\n                "
-	    "[-md4|-md5|-sha1|-rmd160] [user]\n", __progname);
+	(void)fprintf(stderr, "usage: %s [-CDErsx] [-a auth-type] [-n count]"
+	    "\n\t[-md4 | -md5 | -rmd160 | -sha1] [user]\n", __progname);
 	exit(1);
 }
