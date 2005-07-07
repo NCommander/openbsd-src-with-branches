@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwivar.h,v 1.9 2005/03/12 13:31:26 damien Exp $	*/
+/*	$OpenBSD: if_iwivar.h,v 1.10 2005/04/04 16:37:07 damien Exp $	*/
 
 /*-
  * Copyright (c) 2004, 2005
@@ -93,8 +93,6 @@ struct iwi_softc {
 
 	int			rx_cur;
 
-	struct resource		*irq;
-	struct resource		*mem;
 	bus_space_tag_t		sc_st;
 	bus_space_handle_t	sc_sh;
 	void 			*sc_ih;
