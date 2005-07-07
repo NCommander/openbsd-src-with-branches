@@ -1,4 +1,4 @@
-/*	$OpenBSD: remove.c,v 1.15 2005/05/20 20:00:53 joris Exp $	*/
+/*	$OpenBSD: remove.c,v 1.16 2005/05/24 04:12:25 jfb Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2004 Xavier Santolaria <xsa@openbsd.org>
@@ -132,7 +132,7 @@ cvs_remove_file(CVSFILE *cf, void *arg)
 
 		if (cvs_sendentry(root, cf) < 0)
 			return (CVS_EX_PROTO);
-		
+
 		if (cf->cf_cvstat != CVS_FST_LOST && force_remove != 1) {
 			if (cvs_sendreq(root, CVS_REQ_MODIFIED,
 			    CVS_FILE_NAME(cf)) < 0) {

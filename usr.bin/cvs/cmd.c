@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.26 2005/06/14 15:27:31 joris Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.27 2005/07/04 07:11:10 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -228,7 +228,7 @@ cvs_startcmd(struct cvs_cmd *cmd, int argc, char **argv)
 
 	if (cmd->cmd_flags & CVS_CMD_PRUNEDIRS)
 		cvs_file_prune(fpath);
-		
+
 	if (root->cr_method != CVS_METHOD_LOCAL)
 		cvs_disconnect(root);
 

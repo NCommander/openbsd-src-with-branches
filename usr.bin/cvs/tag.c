@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.20 2005/05/31 08:26:40 xsa Exp $	*/
+/*	$OpenBSD: tag.c,v 1.21 2005/06/28 13:20:53 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
@@ -229,7 +229,7 @@ cvs_tag_remote(CVSFILE *cfp, void *arg)
 		ret = cvs_sendreq(root, CVS_REQ_UNCHANGED, cfp->cf_name);
 		break;
 	case CVS_FST_MODIFIED:
-		ret = cvs_sendreq(root, CVS_REQ_ISMODIFIED, cfp->cf_name); 
+		ret = cvs_sendreq(root, CVS_REQ_ISMODIFIED, cfp->cf_name);
 	default:
 		break;
 	}

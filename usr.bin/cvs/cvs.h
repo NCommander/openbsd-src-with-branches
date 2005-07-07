@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.66 2005/06/17 08:09:13 xsa Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.67 2005/06/17 15:09:55 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -67,7 +67,7 @@
 #define CVS_OP_EDIT         7
 #define CVS_OP_EDITORS      8
 #define CVS_OP_EXPORT       9
-#define CVS_OP_HISTORY     10 
+#define CVS_OP_HISTORY     10
 #define CVS_OP_IMPORT      11
 #define CVS_OP_INIT        12
 #define CVS_OP_LOG         13
