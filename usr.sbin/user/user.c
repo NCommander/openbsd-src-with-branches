@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.62 2005/04/13 03:46:28 deraadt Exp $ */
+/* $OpenBSD: user.c,v 1.63 2005/04/15 16:27:31 moritz Exp $ */
 /* $NetBSD: user.c,v 1.69 2003/04/14 17:40:07 agc Exp $ */
 
 /*
@@ -540,7 +540,9 @@ append_group(char *user, int ngroups, const char **groups)
 			continue;
 		}
 		for (i = 0 ; i < ngroups ; i++) {
-			if (strncmp(groups[i], buf, colon - buf) == 0) {
+			j = (int)(colon - buf);
+			if (strncmp(groups[i], buf, j) == 0 &&
+			    groups[i][j] == '\0') {
 				while (isspace(buf[cc - 1]))
 					cc--;
 				buf[(j = cc)] = '\0';
