@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.38 2004/08/06 19:28:41 miod Exp $
+#	$OpenBSD: install.md,v 1.39 2005/03/27 15:13:49 krw Exp $
 #	$NetBSD: install.md,v 1.1.2.4 1996/08/26 15:45:14 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -39,7 +39,7 @@
 # machine dependent section of installation/upgrade script
 #
 
-MDTERM=hp300h
+MDTERM=vt220
 ARCH=ARCH
 
 md_installboot() {
