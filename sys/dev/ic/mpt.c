@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpt.c,v 1.14 2004/11/21 04:49:25 marco Exp $	*/
+/*	$OpenBSD: mpt.c,v 1.15 2004/12/29 06:57:11 deraadt Exp $	*/
 /*	$NetBSD: mpt.c,v 1.4 2003/11/02 11:07:45 wiz Exp $	*/
 
 /*
@@ -1690,11 +1690,9 @@ mpt_init(mpt_softc_t *mpt, u_int32_t who)
 		 * not support all of them.
 		 */
 		if (mpt->vmware) {
-			mpt->verbose = 2;
 			if (mpt->verbose > 1)
 				mpt_prt(mpt, "running in vmware, skipping page"
 				    "retrieval");
-			mpt->verbose = 1;
 		}
 		else {
 			/*
