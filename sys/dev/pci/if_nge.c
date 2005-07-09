@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nge.c,v 1.35 2005/07/02 23:10:11 brad Exp $	*/
+/*	$OpenBSD: if_nge.c,v 1.36 2005/07/09 20:53:08 brad Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -2078,7 +2078,7 @@ nge_ioctl(ifp, command, data)
 
 	switch(command) {
 	case SIOCSIFMTU:
-		if (ifr->ifr_mtu < ETHERMIN || ifr->ifr_mtu < ETHERMTU_JUMBO)
+		if (ifr->ifr_mtu < ETHERMIN || ifr->ifr_mtu > ETHERMTU_JUMBO)
 			error = EINVAL;
 		else
 			ifp->if_mtu = ifr->ifr_mtu;
