@@ -1,4 +1,4 @@
-/*	$OpenBSD: errwarn.c,v 1.10 2005/04/11 20:04:43 deraadt Exp $	*/
+/*	$OpenBSD: errwarn.c,v 1.11 2005/06/01 02:05:55 cloder Exp $	*/
 
 /* Errors and warnings... */
 
@@ -69,7 +69,7 @@ error(char *fmt, ...)
 	va_end(list);
 
 #ifndef DEBUG
-	syslog(log_priority | LOG_ERR, "%s", mbuf);
+	syslog(LOG_ERR, "%s", mbuf);
 #endif
 
 	/* Also log it to stderr? */
@@ -101,7 +101,7 @@ warning(char *fmt, ...)
 	va_end(list);
 
 #ifndef DEBUG
-	syslog(log_priority | LOG_ERR, "%s", mbuf);
+	syslog(LOG_ERR, "%s", mbuf);
 #endif
 
 	if (log_perror) {
@@ -127,7 +127,7 @@ note(char *fmt, ...)
 	va_end(list);
 
 #ifndef DEBUG
-	syslog(log_priority | LOG_INFO, "%s", mbuf);
+	syslog(LOG_INFO, "%s", mbuf);
 #endif
 
 	if (log_perror) {
@@ -153,7 +153,7 @@ debug(char *fmt, ...)
 	va_end(list);
 
 #ifndef DEBUG
-	syslog(log_priority | LOG_DEBUG, "%s", mbuf);
+	syslog(LOG_DEBUG, "%s", mbuf);
 #endif
 
 	if (log_perror) {
@@ -218,10 +218,10 @@ parse_warn(char *fmt, ...)
 	va_end(list);
 
 #ifndef DEBUG
-	syslog(log_priority | LOG_ERR, "%s", mbuf);
-	syslog(log_priority | LOG_ERR, "%s", token_line);
+	syslog(LOG_ERR, "%s", mbuf);
+	syslog(LOG_ERR, "%s", token_line);
 	if (lexline < 81)
-		syslog(log_priority | LOG_ERR,
+		syslog(LOG_ERR,
 		    "%s^", &spaces[sizeof(spaces) - lexchar]);
 #endif
 

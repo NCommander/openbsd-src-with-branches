@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.h,v 1.7 2005/07/07 16:24:24 krw Exp $	*/
+/*	$OpenBSD: tree.h,v 1.8 2005/07/09 01:06:00 krw Exp $	*/
 
 /* Definitions for address trees... */
 
@@ -46,7 +46,6 @@ typedef struct _pair {
 } *pair;
 
 struct universe {
-	char *name;
 	struct hash_table *hash;
 	struct option *options[256];
 };
