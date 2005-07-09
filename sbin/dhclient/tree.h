@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.h,v 1.6 2005/07/07 13:34:48 krw Exp $	*/
+/*	$OpenBSD: tree.h,v 1.7 2005/07/07 16:24:24 krw Exp $	*/
 
 /* Definitions for address trees... */
 
@@ -54,6 +54,5 @@ struct universe {
 struct option {
 	char *name;
 	char *format;
-	struct universe *universe;
 	unsigned char code;
 };
