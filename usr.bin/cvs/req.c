@@ -1,4 +1,4 @@
-/*	$OpenBSD: req.c,v 1.21 2005/06/10 21:14:47 joris Exp $	*/
+/*	$OpenBSD: req.c,v 1.22 2005/06/17 15:09:55 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -43,7 +43,6 @@
 
 
 extern char *cvs_rootstr;
-extern int   verbosity;
 extern int   cvs_compress;
 extern char *cvs_rsh;
 extern int   cvs_trace;
