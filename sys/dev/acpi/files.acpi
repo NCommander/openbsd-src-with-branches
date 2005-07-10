@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: files.acpi,v 1.1 2005/06/02 20:09:39 tholo Exp $
 #
 # Config file and device description for machine-independent ACPI code.
 # Included by ports that need it.
