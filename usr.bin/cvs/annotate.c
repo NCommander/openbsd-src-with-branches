@@ -1,4 +1,4 @@
-/*	$OpenBSD: annotate.c,v 1.18 2005/07/04 10:21:03 xsa Exp $	*/
+/*	$OpenBSD: annotate.c,v 1.19 2005/07/07 14:27:57 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -185,7 +185,6 @@ cvs_annotate_local(CVSFILE *cf, void *arg)
 	char *repo, fpath[MAXPATHLEN], rcspath[MAXPATHLEN];
 	RCSFILE *rf;
 	struct cvsroot *root;
-	struct rcs_delta *rdp;
 
 	if (cf->cf_type == DT_DIR)
 		return (0);
