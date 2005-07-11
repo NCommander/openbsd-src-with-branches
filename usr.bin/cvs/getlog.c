@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.35 2005/07/07 14:27:57 joris Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.36 2005/07/11 08:36:58 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -213,7 +213,8 @@ cvs_getlog_local(CVSFILE *cf, void *arg)
 	struct cvsroot *root;
 
 	if (cf->cf_cvstat == CVS_FST_UNKNOWN) {
-		cvs_log(LP_WARN, "nothing known about %s", cf->cf_name);
+		if (verbosity > 0)
+			cvs_log(LP_WARN, "nothing known about %s", cf->cf_name);
 		return (0);
 	}
 
