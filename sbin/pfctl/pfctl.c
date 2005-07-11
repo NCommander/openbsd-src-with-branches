@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.241 2005/06/13 19:26:06 jaredy Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.242 2005/06/13 20:17:25 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -271,6 +271,7 @@ pfctl_clear_interface_flags(int dev, int opts)
 
 	if ((opts & PF_OPT_NOACTION) == 0) {
 		bzero(&pi, sizeof(pi));
+		pi.pfiio_flags = PFI_IFLAG_SKIP;
 
 		if (ioctl(dev, DIOCCLRIFFLAG, &pi))
 			err(1, "DIOCCLRIFFLAG");
