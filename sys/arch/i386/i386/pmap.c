@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.80 2004/12/25 23:02:24 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.81 2005/05/24 21:11:46 tedu Exp $	*/
 /*	$NetBSD: pmap.c,v 1.91 2000/06/02 17:46:37 thorpej Exp $	*/
 
 /*
@@ -650,7 +650,7 @@ pmap_map_ptes(pmap)
 	if (!pmap_valid_entry(opde) || (opde & PG_FRAME) != pmap->pm_pdirpa) {
 		*APDP_PDE = (pd_entry_t) (pmap->pm_pdirpa | PG_RW | PG_V);
 		if (pmap_valid_entry(opde))
-			pmap_apte_flush(pmap);
+			pmap_apte_flush(curpcb->pcb_pmap);
 	}
 	return(APTE_BASE);
 }
