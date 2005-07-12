@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.45 2005/06/20 18:25:14 damien Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.46 2005/07/02 23:10:11 brad Exp $	*/
 
 /*-
  * Copyright (c) 2004, 2005
@@ -760,7 +760,8 @@ iwi_frame_intr(struct iwi_softc *sc, struct iwi_rx_buf *buf, int i,
 	m_adj(m, sizeof (struct iwi_hdr) + sizeof (struct iwi_frame));
 
 	wh = mtod(m, struct ieee80211_frame *);
-	if (wh->i_fc[1] & IEEE80211_FC1_WEP) {
+	if ((wh->i_fc[1] & IEEE80211_FC1_WEP) &&
+	    ic->ic_opmode != IEEE80211_M_MONITOR) {
 		/*
 		 * Hardware decrypts the frame itself but leaves the WEP bit
 		 * set in the 802.11 header and don't remove the iv and crc
