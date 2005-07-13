@@ -1,5 +1,5 @@
 /* $NetBSD: loadfile.c,v 1.10 2000/12/03 02:53:04 tsutsui Exp $ */
-/* $OpenBSD: loadfile.c,v 1.8 2003/08/11 06:37:39 mickey Exp $ */
+/* $OpenBSD: loadfile.c,v 1.9 2004/02/10 01:01:13 tom Exp $ */
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -357,6 +357,7 @@ elf_exec(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 
 		if (read(fd, shp, sz) != sz) {
 			WARN(("read section headers"));
+			FREE(shp, sz);
 			return 1;
 		}
 
