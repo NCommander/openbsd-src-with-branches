@@ -33,7 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: ctype_.c,v 1.5 2001/01/06 20:34:48 naddy Exp $";
+static char rcsid[] = "$OpenBSD: ctype_.c,v 1.6 2003/06/02 20:18:34 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 #include <ctype.h>
@@ -65,10 +65,10 @@ const char _C_ctype_[1 + 256] = {
 	_L,	_L,	_L,	_P,	_P,	_P,	_P,	_C,
 
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 80 */
-	_C,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C,	_C, /* 88 */
+	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 88 */
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 90 */
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, /* 98 */
-   _S|(char)_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* A0 */
+	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* A0 */
 	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* A8 */
 	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* B0 */
 	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, /* B8 */
