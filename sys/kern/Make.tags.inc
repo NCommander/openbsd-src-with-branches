@@ -1,4 +1,4 @@
-#	$OpenBSD: Make.tags.inc,v 1.7 2002/07/15 21:29:16 mickey Exp $
+#	$OpenBSD: Make.tags.inc,v 1.8 2004/11/22 17:08:38 pat Exp $
 
 # Common files for "make tags".
 # Included by the Makefile for each architecture.
@@ -21,12 +21,10 @@ COMM=	$S/adosfs/*.[ch] \
 	$S/msdosfs/*.[ch] \
 	$S/net/*.[ch] \
 	$S/netatalk/*.[ch] \
-	$S/netccitt/*.[ch] \
 	$S/netinet/*.[ch] \
 	$S/netinet6/*.[ch] \
 	$S/netipx/*.[ch] \
 	$S/netnatm/*.[ch] \
-	$S/netns/*.[ch] \
 	$S/nfs/*.[ch] \
 	$S/scsi/*.[ch] \
 	$S/ufs/*/*.[ch] \
