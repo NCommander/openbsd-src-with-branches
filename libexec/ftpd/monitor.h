@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.h,v 1.2 2004/12/11 08:38:26 moritz Exp $	*/
+/*	$OpenBSD: monitor.h,v 1.3 2004/12/20 14:58:57 moritz Exp $	*/
 
 /*
  * Copyright (c) 2004 Moritz Jodeit <moritz@openbsd.org>
@@ -31,6 +31,7 @@ int	monitor_init(void);
 int	monitor_post_auth(void);
 void	monitor_user(char *);
 int	monitor_pass(char *);
+int	monitor_socket(int);
 int	monitor_bind(int, struct sockaddr *, socklen_t);
 
 void	kill_slave(void);
