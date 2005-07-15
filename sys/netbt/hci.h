@@ -1,4 +1,4 @@
-/*	$OpenBSD: hci.h,v 1.1 2005/01/14 12:04:02 grange Exp $	*/
+/*	$OpenBSD: hci.h,v 1.2 2005/01/17 18:12:49 mickey Exp $	*/
 
 /*
  * ng_hci.h
@@ -1445,7 +1445,7 @@ typedef struct {
 	u_int8_t	page_scan_rep_mode;       /* page scan rep. mode */
 	u_int8_t	page_scan_period_mode;    /* page scan period mode */
 	u_int8_t	page_scan_mode;           /* page scan mode */
-	u_int8_t	class[NG_HCI_CLASS_SIZE]; /* unit class */
+	u_int8_t	uclass[NG_HCI_CLASS_SIZE]; /* unit class */
 	u_int16_t	clock_offset;             /* clock offset */
 } __attribute__ ((packed)) ng_hci_inquiry_response;
 
