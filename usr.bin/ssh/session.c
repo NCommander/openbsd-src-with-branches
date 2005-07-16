@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.181 2004/12/23 17:35:48 markus Exp $");
+RCSID("$OpenBSD: session.c,v 1.182 2005/06/17 02:44:33 djm Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -193,11 +193,11 @@ auth_input_request_forwarding(struct passwd * pw)
 static void
 display_loginmsg(void)
 {
-        if (buffer_len(&loginmsg) > 0) {
-                buffer_append(&loginmsg, "\0", 1);
-                printf("%s", (char *)buffer_ptr(&loginmsg));
-                buffer_clear(&loginmsg);
-        }
+	if (buffer_len(&loginmsg) > 0) {
+		buffer_append(&loginmsg, "\0", 1);
+		printf("%s", (char *)buffer_ptr(&loginmsg));
+		buffer_clear(&loginmsg);
+	}
 }
 
 void
