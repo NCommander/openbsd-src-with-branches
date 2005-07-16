@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_devar.h,v 1.16 2005/03/29 00:37:50 martin Exp $	*/
+/*	$OpenBSD: if_devar.h,v 1.17 2005/04/16 16:08:07 deraadt Exp $	*/
 /*	$NetBSD: if_devar.h,v 1.13 1997/06/08 18:46:36 thorpej Exp $	*/
 
 /*-
@@ -29,10 +29,6 @@
 
 #if !defined(_DEVAR_H)
 #define _DEVAR_H
-
-#if defined(__OpenBSD__)
-#define __BROKEN_INDIRECT_CONFIG
-#endif
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 
