@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: filter.c,v 1.20 2001/08/19 23:22:17 brian Exp $
+ * $OpenBSD: filter.c,v 1.21 2002/05/16 01:13:39 brian Exp $
  */
 
 #include <sys/param.h>
@@ -36,6 +36,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

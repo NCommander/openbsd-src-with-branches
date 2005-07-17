@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: main.c,v 1.33 2002/06/15 01:33:23 brian Exp $
+ * $OpenBSD: main.c,v 1.34 2002/06/28 09:34:24 brian Exp $
  */
 
 #include <sys/param.h>
@@ -40,6 +40,7 @@
 #include <fcntl.h>
 #include <paths.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

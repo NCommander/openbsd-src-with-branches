@@ -36,7 +36,7 @@
  * Van Jacobson (van@helios.ee.lbl.gov), Dec 31, 1989:
  *	- Initial distribution.
  *
- * $OpenBSD: slcompress.c,v 1.17 2003/06/04 16:08:08 deraadt Exp $
+ * $OpenBSD: slcompress.c,v 1.18 2005/03/06 17:36:31 cloder Exp $
  */
 
 #include <sys/param.h>
@@ -47,6 +47,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <termios.h>
