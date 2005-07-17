@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.140 2005/05/16 15:30:51 markus Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.141 2005/06/08 11:25:09 djm Exp $");
 
 #include "ssh.h"
 #include "xmalloc.h"
@@ -837,7 +837,7 @@ parse_int:
 	/* Check that there is no garbage at end of line. */
 	if ((arg = strdelim(&s)) != NULL && *arg != '\0') {
 		fatal("%.200s line %d: garbage at end of line; \"%.200s\".",
-		     filename, linenum, arg);
+		    filename, linenum, arg);
 	}
 	return 0;
 }

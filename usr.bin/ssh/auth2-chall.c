@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: auth2-chall.c,v 1.22 2005/01/19 13:11:47 dtucker Exp $");
+RCSID("$OpenBSD: auth2-chall.c,v 1.23 2005/06/17 02:44:32 djm Exp $");
 
 #include "ssh2.h"
 #include "auth.h"
@@ -137,7 +137,7 @@ kbdint_next_device(KbdintAuthctxt *kbdintctxt)
 		kbdintctxt->devices = t[len] ? xstrdup(t+len+1) : NULL;
 		xfree(t);
 		debug2("kbdint_next_device: devices %s", kbdintctxt->devices ?
-		   kbdintctxt->devices : "<empty>");
+		    kbdintctxt->devices : "<empty>");
 	} while (kbdintctxt->devices && !kbdintctxt->device);
 
 	return kbdintctxt->device ? 1 : 0;

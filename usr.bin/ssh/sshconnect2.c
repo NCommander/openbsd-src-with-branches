@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshconnect2.c,v 1.138 2004/06/13 12:53:24 djm Exp $");
+RCSID("$OpenBSD: sshconnect2.c,v 1.139 2005/06/17 02:44:33 djm Exp $");
 
 #include "ssh.h"
 #include "ssh2.h"
@@ -350,7 +350,7 @@ void
 input_userauth_error(int type, u_int32_t seq, void *ctxt)
 {
 	fatal("input_userauth_error: bad message during authentication: "
-	   "type %d", type);
+	    "type %d", type);
 }
 
 void
@@ -677,7 +677,7 @@ input_gssapi_errtok(int type, u_int32_t plen, void *ctxt)
 
 	/* Stick it into GSSAPI and see what it says */
 	status = ssh_gssapi_init_ctx(gssctxt, options.gss_deleg_creds,
-				     &recv_tok, &send_tok, NULL);
+	    &recv_tok, &send_tok, NULL);
 
 	xfree(recv_tok.value);
 	gss_release_buffer(&ms, &send_tok);
