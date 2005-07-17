@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: fsm.c,v 1.22 2002/06/15 01:33:23 brian Exp $
+ * $OpenBSD: fsm.c,v 1.23 2002/06/15 08:02:41 brian Exp $
  */
 
 #include <sys/param.h>
@@ -556,7 +556,7 @@ FsmRecvConfigReq(struct fsm *fp, struct fsmheader *lhp, struct mbuf *bp)
        */
     (*fp->fn->LayerStart)(fp);
     (*fp->parent->LayerStart)(fp->parent->object, fp);
-    /* Fall through */
+    /* FALLTHROUGH */
 
   case ST_OPENED:
     if (ackaction)
