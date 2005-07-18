@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.20 2004/07/08 22:18:44 deraadt Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.21 2004/11/30 21:11:41 matthieu Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -107,7 +107,7 @@ struct ukbd_data {
  * Translate USB keycodes to US keyboard XT scancodes.
  * Scancodes >= 0x80 represent EXTENDED keycodes.
  *
- * See http://www.microsoft.com/HWDEV/TECH/input/Scancode.asp
+ * See http://www.microsoft.com/whdc/device/input/Scancode.mspx
  */
 Static const u_int8_t ukbd_trtab[256] = {
       NN,   NN,   NN,   NN, 0x1e, 0x30, 0x2e, 0x20, /* 00 - 07 */
