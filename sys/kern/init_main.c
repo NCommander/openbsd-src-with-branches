@@ -228,7 +228,7 @@ main(framep)
 	 */
 	mbinit();
 
-	/* Initalize sockets. */
+	/* Initialize sockets. */
 	soinit();
 
 	/* Initialize sysctls (must be done before any processes run) */
