@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.7 2004/07/19 15:09:05 art Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.8 2005/05/24 09:30:32 deraadt Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -361,7 +361,7 @@ cpu_attach(parent, self, aux)
 		break;
 
 	default:
-		panic("unknown processor type??\n");
+		panic("unknown processor type??");
 	}
 	cpu_vm_init(ci);
 

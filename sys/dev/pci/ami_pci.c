@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami_pci.c,v 1.25 2005/05/27 20:39:30 marco Exp $	*/
+/*	$OpenBSD: ami_pci.c,v 1.26 2005/06/05 23:34:00 marco Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -287,7 +287,7 @@ ami_pci_attach(parent, self, aux)
 	}
 	else {
 		/* this device existed at _match() should never happen */
-		panic("ami device dissapeared between match() and attach()\n");
+		panic("ami device dissapeared between match() and attach()");
 	}
 
 	printf(" %s/%s\n%s", model, lhc, sc->sc_dev.dv_xname);

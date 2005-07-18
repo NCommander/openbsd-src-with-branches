@@ -1,4 +1,4 @@
-/*	$OpenBSD: esp.c,v 1.19 2004/12/08 06:59:43 miod Exp $	*/
+/*	$OpenBSD: esp.c,v 1.20 2004/12/10 18:23:23 martin Exp $	*/
 /*	$NetBSD: esp.c,v 1.17 1998/09/05 15:15:35 pk Exp $	*/
 
 /*
@@ -509,7 +509,7 @@ esp_quick_dma_intr(sc)
 	int trans=0, resid=0;
 
 	if (esc->sc_active == 0)
-		panic("dma_intr--inactive DMA\n");
+		panic("dma_intr--inactive DMA");
 
 	esc->sc_active = 0;
 

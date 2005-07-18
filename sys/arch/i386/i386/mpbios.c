@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbios.c,v 1.2 2004/06/13 21:49:15 niklas Exp $	*/
+/*	$OpenBSD: mpbios.c,v 1.3 2004/06/23 17:14:31 niklas Exp $	*/
 /*	$NetBSD: mpbios.c,v 1.2 2002/10/01 12:56:57 fvdl Exp $	*/
 
 /*-
@@ -934,7 +934,7 @@ mpbios_bus(ent, self)
 	 * from underneath us
 	 */
 	if (bus_id >= mp_nbus) {
-		panic("%s: bus number %d out of range?? (type %6.6s)\n",
+		panic("%s: bus number %d out of range?? (type %6.6s)",
 		    self->dv_xname, bus_id, entry->bus_type);
 	}
 #endif

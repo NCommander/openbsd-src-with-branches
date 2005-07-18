@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.1 2005/04/19 21:30:18 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.2 2005/04/21 04:39:35 mickey Exp $	*/
 /*	OpenBSD: trap.c,v 1.42 2004/12/06 20:12:25 miod Exp 	*/
 
 /*
@@ -702,7 +702,7 @@ mem_access_fault(type, ser, v, pc, psr, tf)
 			 * or a bus timeout.
 			 * XXX should restart the operation if retry timeout.
 			 */
-			panic("data fault: fcr %b isr %b pc %08x addr %08x fpar %08x fpsr %08x\n",
+			panic("data fault: fcr %b isr %b pc %08x addr %08x fpar %08x fpsr %08x",
 			    ser, FCR_BITS, isr, ISR_BITS,
 			    pc, v, lda(0, ASI_FPAR), lda(0, ASI_FPSR));
 		}

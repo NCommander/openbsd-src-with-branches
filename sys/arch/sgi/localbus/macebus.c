@@ -1,4 +1,4 @@
-/*	$OpenBSD: macebus.c,v 1.10 2004/09/27 19:20:49 pefo Exp $ */
+/*	$OpenBSD: macebus.c,v 1.11 2005/01/31 21:35:50 grange Exp $ */
 
 /*
  * Copyright (c) 2000-2004 Opsycon AB  (www.opsycon.se)
@@ -463,7 +463,7 @@ macebus_intr_establish(void *icp, u_long irq, int type, int level,
 	}
 
 	if (irq > 62 || irq < 1) {
-		panic("intr_establish: illegal irq %d\n", irq);
+		panic("intr_establish: illegal irq %d", irq);
 	}
 	irq -= 1;	/* Adjust for 1 being first (0 is no int) */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx_inline.h,v 1.9 2004/10/24 04:28:33 krw Exp $	*/
+/*	$OpenBSD: aic7xxx_inline.h,v 1.10 2005/06/01 21:49:54 miod Exp $	*/
 /*	$NetBSD: aic7xxx_inline.h,v 1.4 2003/11/02 11:07:44 wiz Exp $	*/
 
 /*
@@ -471,7 +471,7 @@ ahc_queue_scb(struct ahc_softc *ahc, struct scb *scb)
 
 	if (scb->hscb->tag == SCB_LIST_NULL
 	 || scb->hscb->next == SCB_LIST_NULL)
-		panic("Attempt to queue invalid SCB tag %x:%x\n",
+		panic("Attempt to queue invalid SCB tag %x:%x",
 		      scb->hscb->tag, scb->hscb->next);
 
 	/*

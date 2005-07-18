@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: pxa2x0_space.c,v 1.2 2005/01/02 19:52:36 drahn Exp $ */
 /*	$NetBSD: pxa2x0_space.c,v 1.5 2004/06/07 19:45:22 nathanw Exp $ */
 
 /*
@@ -256,13 +256,13 @@ pxa2x0_bs_alloc(void *t, bus_addr_t rstart, bus_addr_t rend,
     bus_addr_t *bpap, bus_space_handle_t *bshp)
 {
 
-	panic("pxa2x0_io_bs_alloc(): not implemented\n");
+	panic("pxa2x0_io_bs_alloc(): not implemented");
 }
 
 void    
 pxa2x0_bs_free(void *t, bus_space_handle_t bsh, bus_size_t size)
 {
 
-	panic("pxa2x0_io_bs_free(): not implemented\n");
+	panic("pxa2x0_io_bs_free(): not implemented");
 }
 

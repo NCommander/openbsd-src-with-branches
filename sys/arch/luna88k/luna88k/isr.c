@@ -1,4 +1,4 @@
-/*	$OpenBSD: isr.c,v 1.3 2004/12/24 22:50:30 miod Exp $	*/
+/*	$OpenBSD: isr.c,v 1.4 2004/12/25 23:02:24 miod Exp $	*/
 /*	$NetBSD: isr.c,v 1.5 2000/07/09 08:08:20 nisimura Exp $	*/
 
 /*-
@@ -158,7 +158,7 @@ isrdispatch_autovec(int ipl)
 
 #ifdef DIAGNOSTIC
 	if (ipl < 0 || ipl >= NISRAUTOVEC)
-		panic("isrdispatch_autovec: bad ipl 0x%d\n", ipl);
+		panic("isrdispatch_autovec: bad ipl 0x%d", ipl);
 #endif
 
 #if 0	/* XXX: already counted in machdep.c */
