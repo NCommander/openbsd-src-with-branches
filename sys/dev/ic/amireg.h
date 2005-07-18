@@ -223,8 +223,6 @@
 #define	AMI_HSPDIAG	0xb1
 #define	AMI_GESENSEINFO	0xb2	/* get extended sense info */
 #define	AMI_SYSFLUSH	0xfe	/* flush system */
-#define AMI_GETINQ	0xcf	/* get proc & drive inquiry data */
-/* this needs to be removed when the new bioctl goes in */
 #define AMI_ALARM	0x51	/* alarm functions */
 #define 	AMI_ALARM_OFF   0x00
 #define 	AMI_ALARM_ON    0x01

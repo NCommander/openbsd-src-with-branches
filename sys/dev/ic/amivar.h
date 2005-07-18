@@ -92,7 +92,6 @@ struct ami_softc {
 	struct timeout	sc_requeue_tmo;
 	struct timeout	sc_poll_tmo;
 	int		sc_dis_poll;
-	int		sc_state_ch;
 
 	char	sc_fwver[16];
 	char	sc_biosver[16];
