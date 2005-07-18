@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.103 2005/07/17 12:20:50 miod Exp $	*/
+/*	$OpenBSD: com.c,v 1.104 2005/07/18 14:36:34 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -85,7 +85,7 @@
 #include <machine/intr.h>
 #endif
 
-#if !defined(__sparc__) && !defined(__sparc64__)
+#if !defined(__sparc__) || defined(__sparc64__)
 #define	COM_CONSOLE
 #include <dev/cons.h>
 #endif
