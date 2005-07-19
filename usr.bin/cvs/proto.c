@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.c,v 1.60 2005/07/18 06:58:48 xsa Exp $	*/
+/*	$OpenBSD: proto.c,v 1.61 2005/07/19 00:51:01 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -306,9 +306,8 @@ cvs_connect(struct cvsroot *root)
 		return (-1);
 	}
 
-	/* send the CVSROOT to the server unless it's an init */
-	if ((cvs_cmdop != CVS_OP_INIT) &&
-	    (cvs_sendreq(root, CVS_REQ_ROOT, root->cr_dir) < 0))
+	/* send the CVSROOT to the server */
+	if (cvs_sendreq(root, CVS_REQ_ROOT, root->cr_dir) < 0)
 		return (-1);
 
 	/* don't fail if this request doesn't work */
