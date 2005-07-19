@@ -25,7 +25,7 @@ changecom(,)dnl
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ppp.8.m4,v 1.24 2005/07/17 07:33:22 brad Exp $
+.\" $OpenBSD: ppp.8.m4,v 1.25 2005/07/18 22:51:03 brad Exp $
 .\"
 .Dd September 20, 1995
 .Dt PPP 8
@@ -2985,9 +2985,9 @@ invocation with the udp link.
 .It force-scripts
 Default: Disabled.
 Forces execution of the configured chat scripts in
-.Dv direct 
+.Dv direct
 and
-.Dv dedicated 
+.Dv dedicated
 modes.
 .It idcheck
 Default: Enabled.
