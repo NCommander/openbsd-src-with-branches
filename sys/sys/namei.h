@@ -1,4 +1,4 @@
-/*	$OpenBSD: namei.h,v 1.14 2005/05/26 22:40:52 marius Exp $	*/
+/*	$OpenBSD: namei.h,v 1.15 2005/06/18 18:09:43 millert Exp $	*/
 /*	$NetBSD: namei.h,v 1.11 1996/02/09 18:25:20 christos Exp $	*/
 
 /*
@@ -227,6 +227,6 @@ struct	nchstats {
 	{ "pass2", CTLTYPE_INT },		\
 	{ "2passes", CTLTYPE_INT },		\
 	{ "ncs_revhits", CTLTYPE_INT },		\
-	{ "nfs_revmiss", CTLTYPE_INT },		\
+	{ "ncs_revmiss", CTLTYPE_INT },		\
 }
 #endif /* !_SYS_NAMEI_H_ */
