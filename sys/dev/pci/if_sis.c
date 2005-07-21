@@ -2036,9 +2036,6 @@ void sis_stop(sc)
 	ifp->if_timer = 0;
 
 	timeout_del(&sc->sis_timeout);
-
-	ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);
-
 	CSR_WRITE_4(sc, SIS_IER, 0);
 	CSR_WRITE_4(sc, SIS_IMR, 0);
 	CSR_READ_4(sc, SIS_ISR); /* clear any interrupts already pending */
@@ -2087,6 +2084,7 @@ void sis_stop(sc)
 		    sizeof(struct sis_desc) - sizeof(bus_dmamap_t));
 	}
 
+	ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);
 	sc->sis_stopped = 1;
 
 	return;
