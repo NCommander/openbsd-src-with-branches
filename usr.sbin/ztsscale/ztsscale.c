@@ -1,4 +1,4 @@
-/*	$OpenBSD: ztsscale.c,v 1.9 2005/04/28 16:44:28 uwe Exp $	*/
+/*	$OpenBSD: ztsscale.c,v 1.10 2005/04/28 17:01:40 uwe Exp $	*/
 
 /*
  * Copyright (c) 2005 Matthieu Herrb
@@ -133,7 +133,7 @@ save_screen(void)
 	int mode = WSDISPLAYIO_MODE_DUMBFB;
 
 	if (ioctl(fd, WSDISPLAYIO_SMODE, &mode) == -1)
-		warn("ioctl SMODE\n");
+		warn("ioctl SMODE");
 	mapaddr = (void *)mmap(0, WIDTH*HEIGHT*sizeof(short),
 	    PROT_READ|PROT_WRITE, MAP_SHARED, fd, (off_t)0);
 	if (mapaddr == (void *)-1)
