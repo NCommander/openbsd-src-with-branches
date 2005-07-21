@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.20 2005/06/30 16:37:29 joris Exp $	*/
+/*	$OpenBSD: history.c,v 1.21 2005/07/11 18:13:01 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,7 +24,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <errno.h>

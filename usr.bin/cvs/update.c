@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.38 2005/07/07 14:27:57 joris Exp $	*/
+/*	$OpenBSD: update.c,v 1.39 2005/07/14 06:50:50 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,7 +24,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <errno.h>
