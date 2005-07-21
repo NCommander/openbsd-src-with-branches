@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2004/09/16 18:54:48 pefo Exp $
+#	$OpenBSD: Makefile,v 1.4 2005/04/27 03:06:22 deraadt Exp $
 
 
 PROG=		boot
@@ -26,7 +26,7 @@ CLEANFILES+= machine mips64
 
 ${PROG}: $(OBJS) $(LDADD)
 	$(LD) $(LDFLAGS) -o boot $(OBJS) -L${LIBSADIR} ${LIBSA} \
-	-L${LIBKERNDIR} ${LIBKERN}  -L${LIBZDIR} ${LIBZ}
+	-L${LIBZDIR} ${LIBZ} -L${LIBKERNDIR} ${LIBKERN}
 
 
 install:
