@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.68 2005/07/07 14:27:57 joris Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.69 2005/07/13 16:20:44 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -110,6 +110,8 @@
 #define CVS_RSH_DEFAULT     "ssh"
 #define CVS_EDITOR_DEFAULT  "vi"
 
+/* extensions */
+#define CVS_DESCR_FILE_EXT	",t"
 
 /* server-side paths */
 #define CVS_PATH_ROOT         "CVSROOT"
