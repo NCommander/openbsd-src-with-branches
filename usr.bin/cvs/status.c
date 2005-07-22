@@ -1,4 +1,4 @@
-/*	$OpenBSD: status.c,v 1.40 2005/07/14 06:54:59 xsa Exp $	*/
+/*	$OpenBSD: status.c,v 1.41 2005/07/19 15:48:52 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005 Xavier Santolaria <xsa@openbsd.org>
@@ -137,7 +137,7 @@ cvs_status_remote(CVSFILE *cfp, void *arg)
 	if (cfp->cf_type == DT_DIR) {
 		if (cfp->cf_cvstat == CVS_FST_UNKNOWN)
 			ret = cvs_sendreq(root, CVS_REQ_QUESTIONABLE,
-			    CVS_FILE_NAME(cfp));
+			    cfp->cf_name);
 		else
 			ret = cvs_senddir(root, cfp);
 

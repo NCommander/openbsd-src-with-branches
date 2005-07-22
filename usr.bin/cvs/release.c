@@ -1,4 +1,4 @@
-/*	$OpenBSD: release.c,v 1.14 2005/07/14 15:17:42 xsa Exp $	*/
+/*	$OpenBSD: release.c,v 1.15 2005/07/22 15:34:05 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -156,7 +156,7 @@ cvs_release_dir(CVSFILE *cf, void *arg)
 		return (CVS_EX_DATA);
 
 	if (cf->cf_type == DT_DIR) {
-		if (!strcmp(CVS_FILE_NAME(cf), "."))
+		if (!strcmp(cf->cf_name, "."))
 			return (0);
 		else {
 			/* test if dir has CVS/ directory */
