@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.c,v 1.61 2005/07/19 00:51:01 joris Exp $	*/
+/*	$OpenBSD: proto.c,v 1.62 2005/07/19 15:30:37 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -130,6 +130,7 @@ struct cvs_resp cvs_responses[] = {
 	{ CVS_RESP_UPDEXIST,   "Update-existing"        },
 	{ CVS_RESP_MERGED,     "Merged"                 },
 	{ CVS_RESP_REMOVED,    "Removed"                },
+	{ CVS_RESP_RMENTRY,    "Remove-entry"           },
 	{ CVS_RESP_CKSUM,      "Checksum"               },
 	{ CVS_RESP_CLRSTATDIR, "Clear-static-directory" },
 	{ CVS_RESP_SETSTATDIR, "Set-static-directory"   },
