@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.72 2005/07/07 14:27:57 joris Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.73 2005/07/23 11:19:46 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -131,7 +131,7 @@ main(int argc, char **argv)
 	}
 	cvs_command = argv[0];
 
-	if (cvs_readrc) {
+	if (cvs_readrc == 1) {
 		cvs_read_rcfile();
 
 		if (cvs_defargs != NULL) {
