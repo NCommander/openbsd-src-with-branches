@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.75 2005/07/22 03:49:19 brad Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.76 2005/07/24 20:18:17 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -928,11 +928,8 @@ sk_jalloc(struct sk_if_softc *sc_if)
 
 	entry = LIST_FIRST(&sc_if->sk_jfree_listhead);
 
-	if (entry == NULL) {
-		DPRINTF(("%s: no free jumbo buffers\n",
-		    sc_if->sk_dev.dv_xname));
+	if (entry == NULL)
 		return (NULL);
-	}
 
 	LIST_REMOVE(entry, jpool_entries);
 	LIST_INSERT_HEAD(&sc_if->sk_jinuse_listhead, entry, jpool_entries);
