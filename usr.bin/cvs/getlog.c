@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.41 2005/07/21 11:42:24 xsa Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.42 2005/07/22 16:27:29 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -36,18 +36,18 @@
 #include "proto.h"
 
 
-#define CVS_GLOG_RFONLY    0x01
-#define CVS_GLOG_HDONLY    0x02
+#define CVS_GLOG_RFONLY		0x01
+#define CVS_GLOG_HDONLY		0x02
 
 
-#define CVS_GETLOG_REVSEP   "----------------------------"
+#define CVS_GETLOG_REVSEP	"----------------------------"
 #define CVS_GETLOG_REVEND \
  "============================================================================="
 
-static int cvs_getlog_init     (struct cvs_cmd *, int, char **, int *);
-static int cvs_getlog_remote   (CVSFILE *, void *);
-static int cvs_getlog_local    (CVSFILE *, void *);
-static int cvs_getlog_pre_exec (struct cvsroot *);
+static int	cvs_getlog_init(struct cvs_cmd *, int, char **, int *);
+static int	cvs_getlog_remote(CVSFILE *, void *);
+static int	cvs_getlog_local(CVSFILE *, void *);
+static int	cvs_getlog_pre_exec(struct cvsroot *);
 
 struct cvs_cmd cvs_cmd_log = {
 	CVS_OP_LOG, CVS_REQ_LOG, "log",
