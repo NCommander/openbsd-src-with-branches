@@ -1,4 +1,4 @@
-/*	$OpenBSD: myproposal.h,v 1.16 2004/06/13 12:53:24 djm Exp $	*/
+/*	$OpenBSD: myproposal.h,v 1.17 2005/05/23 23:32:46 djm Exp $	*/
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -36,7 +36,7 @@
 	"hmac-md5,hmac-sha1,hmac-ripemd160," \
 	"hmac-ripemd160@openssh.com," \
 	"hmac-sha1-96,hmac-md5-96"
-#define	KEX_DEFAULT_COMP	"none,zlib"
+#define	KEX_DEFAULT_COMP	"none,zlib@openssh.com,zlib"
 #define	KEX_DEFAULT_LANG	""
 
 

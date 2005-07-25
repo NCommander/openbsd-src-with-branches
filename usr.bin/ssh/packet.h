@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.h,v 1.41 2004/05/11 19:01:43 deraadt Exp $	*/
+/*	$OpenBSD: packet.h,v 1.42 2005/06/17 02:44:33 djm Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -30,6 +30,8 @@ u_int	 packet_get_protocol_flags(void);
 void     packet_start_compression(int);
 void     packet_set_interactive(int);
 int      packet_is_interactive(void);
+void     packet_set_server(void);
+void     packet_set_authenticated(void);
 
 void     packet_start(u_char);
 void     packet_put_char(int ch);
