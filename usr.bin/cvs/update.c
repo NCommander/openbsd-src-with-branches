@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.40 2005/07/21 11:42:24 xsa Exp $	*/
+/*	$OpenBSD: update.c,v 1.41 2005/07/23 11:19:46 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -38,10 +38,10 @@
 #include "proto.h"
 
 
-static int cvs_update_init     (struct cvs_cmd *, int, char **, int *);
-static int cvs_update_pre_exec (struct cvsroot *);
-static int cvs_update_remote    (CVSFILE *, void *);
-static int cvs_update_local     (CVSFILE *, void *);
+static int	cvs_update_init(struct cvs_cmd *, int, char **, int *);
+static int	cvs_update_pre_exec(struct cvsroot *);
+static int	cvs_update_remote(CVSFILE *, void *);
+static int	cvs_update_local(CVSFILE *, void *);
 
 
 struct cvs_cmd cvs_cmd_update = {
