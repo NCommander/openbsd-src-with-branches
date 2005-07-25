@@ -25,7 +25,7 @@ changecom(,)dnl
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ppp.8.m4,v 1.25 2005/07/18 22:51:03 brad Exp $
+.\" $OpenBSD: ppp.8.m4,v 1.26 2005/07/19 07:33:40 jmc Exp $
 .\"
 .Dd September 20, 1995
 .Dt PPP 8
@@ -4999,6 +4999,11 @@ is 30.
 .It Xo
 .Ic set ipcpretry No \&|
 .Ic ipcpretries Oo Ar timeout
+.Op Ar reqtries Op Ar trmtries Oc
+.Xc
+.It Xo
+.Ic set ipv6cpretry No \&|
+.Ic ipv6cpretries Oo Ar timeout
 .Op Ar reqtries Op Ar trmtries Oc
 .Xc
 .It Xo
