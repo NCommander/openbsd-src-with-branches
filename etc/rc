@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.252 2004/09/17 21:50:30 mcbride Exp $
+#	$OpenBSD: rc,v 1.270 2005/06/19 16:55:10 deraadt Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -127,7 +127,7 @@ if [ X"$1" = X"shutdown" ]; then
 			test "$if" = "carp[0-9]*" && continue
 
 			ifconfig $if > /dev/null 2>&1
-			if [ $? -ne 0 ]; then
+			if [ $? -eq 0 ]; then
 				ifconfig $if down
 			fi
 		done
