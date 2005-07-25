@@ -1,4 +1,4 @@
-/* $OpenBSD: util.h,v 1.24 2005/03/10 21:39:21 hshoexer Exp $	 */
+/* $OpenBSD: util.h,v 1.25 2005/04/08 22:32:10 cloder Exp $	 */
 /* $EOM: util.h,v 1.10 2000/10/24 13:33:39 niklas Exp $	 */
 
 /*
@@ -34,6 +34,7 @@
 #define _UTIL_H_
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 extern int      allow_name_lookups;
 extern int      regrand;
@@ -63,5 +64,6 @@ extern int      text2sockaddr(char *, char *, struct sockaddr **,
 		    sa_family_t, int);
 extern void     util_ntoa(char **, int, u_int8_t *);
 extern int      zero_test(const u_int8_t *, size_t);
+extern long	get_timeout(struct timeval *);
 
 #endif				/* _UTIL_H_ */
