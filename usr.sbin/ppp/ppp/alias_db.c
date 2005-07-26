@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: alias_db.c,v 1.21 2002/06/15 08:01:59 brian Exp $
+ * $OpenBSD: alias_db.c,v 1.22 2003/08/06 21:08:08 millert Exp $
  */
 
 /*
@@ -397,6 +397,8 @@ static int fireWallFD = -1;          /* File descriptor to be able to   */
                                      /* flag.                           */
 #endif
 
+unsigned int skinnyPort = 0;         /* TCP port used by the Skinny     */
+                                     /* protocol.                       */
 
 
 
@@ -2808,4 +2810,9 @@ PacketAliasSetFWBase(unsigned int base, unsigned int num) {
     fireWallBaseNum = base;
     fireWallNumNums = num;
 #endif
+}
+
+void
+PacketAliasSetSkinnyPort(unsigned int port) {
+    skinnyPort = port;
 }
