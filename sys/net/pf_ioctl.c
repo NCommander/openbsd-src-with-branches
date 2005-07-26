@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.145 2005/06/30 20:52:20 sturm Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.146 2005/07/11 14:14:14 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -537,7 +537,7 @@ pf_anchor_remove(struct pf_rule *r)
 	if (r->anchor == NULL)
 		return;
 	if (r->anchor->refcnt <= 0) {
-		printf("pf_anchor_remove: broken refcount");
+		printf("pf_anchor_remove: broken refcount\n");
 		r->anchor = NULL;
 		return;
 	}
