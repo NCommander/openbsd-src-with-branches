@@ -1,4 +1,4 @@
-.\"	$OpenBSD: fgets.3,v 1.19 2003/06/02 20:18:37 millert Exp $
+.\"	$OpenBSD: fgets.3,v 1.20 2005/02/25 03:12:44 cloder Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -85,8 +85,9 @@ they return
 .Dv NULL .
 The
 .Fn fgets
-and functions
+and
 .Fn gets
+functions
 do not distinguish between end-of-file and error, and callers must use
 .Xr feof 3
 and
