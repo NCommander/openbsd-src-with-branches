@@ -25,7 +25,7 @@ changecom(,)dnl
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ppp.8.m4,v 1.27 2005/07/25 19:55:32 brad Exp $
+.\" $OpenBSD: ppp.8.m4,v 1.28 2005/07/26 01:32:25 brad Exp $
 .\"
 .Dd September 20, 1995
 .Dt PPP 8
@@ -3905,7 +3905,7 @@ The range will be cleared when the
 command is run.
 .Pp
 If no arguments are given, firewall punching is disabled.
-.It nat skinny_port Op Ar port
+.It Ic nat skinny_port Op Ar port
 This command tells
 .Nm
 which TCP port is used by the Skinny Station protocol.  Skinny is used by
