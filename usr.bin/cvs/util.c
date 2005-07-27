@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.45 2005/07/27 10:36:14 xsa Exp $	*/
+/*	$OpenBSD: util.c,v 1.46 2005/07/27 10:38:01 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -445,7 +445,7 @@ cvs_mkadmin(const char *dpath, const char *rootpath, const char *repopath)
 	if (l >= sizeof(path))
 		return (-1);
 
-	if ((stat(path, &st) != 0) && (errno == ENOENT)) {
+	if ((stat(path, &st) == -1) && (errno == ENOENT)) {
 		fp = fopen(path, "w");
 		if (fp == NULL) {
 			cvs_log(LP_ERRNO, "failed to open %s", path);
@@ -460,7 +460,7 @@ cvs_mkadmin(const char *dpath, const char *rootpath, const char *repopath)
 	if (l >= sizeof(path))
 		return (-1);
 
-	if ((stat(path, &st) != 0) && (errno == ENOENT)) {
+	if ((stat(path, &st) == -1) && (errno == ENOENT)) {
 		fp = fopen(path, "w");
 		if (fp == NULL) {
 			cvs_log(LP_ERRNO, "failed to open %s", path);
