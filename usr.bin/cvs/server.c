@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.18 2005/05/31 08:58:48 xsa Exp $	*/
+/*	$OpenBSD: server.c,v 1.19 2005/07/23 10:59:47 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -126,7 +126,7 @@ cvs_server(int argc, char **argv)
 	}
 
 	/* cleanup the temporary tree */
-	ret = cvs_remove_dir(cvs_server_tmpdir);
+	ret = cvs_rmdir(cvs_server_tmpdir);
 
 	return (ret);
 }
