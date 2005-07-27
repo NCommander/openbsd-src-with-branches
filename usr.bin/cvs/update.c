@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.41 2005/07/23 11:19:46 joris Exp $	*/
+/*	$OpenBSD: update.c,v 1.42 2005/07/25 12:13:08 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -236,7 +236,7 @@ cvs_update_local(CVSFILE *cf, void *arg)
 	}
 
 	if (cf->cf_type == DT_DIR) {
-		cvs_log(LP_INFO, "Updating %s", fpath);
+		cvs_log(LP_NOTICE, "Updating %s", fpath);
 		return (CVS_EX_OK);
 	}
 

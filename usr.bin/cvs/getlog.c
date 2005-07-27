@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.42 2005/07/22 16:27:29 joris Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.43 2005/07/25 12:05:43 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -225,7 +225,7 @@ cvs_getlog_local(CVSFILE *cf, void *arg)
 
 	if (cf->cf_type == DT_DIR) {
 		if (verbosity > 1)
-			cvs_log(LP_INFO, "Logging %s", cf->cf_name);
+			cvs_log(LP_NOTICE, "Logging %s", cf->cf_name);
 		return (0);
 	}
 
