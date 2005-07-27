@@ -71,7 +71,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: scp.c,v 1.123 2005/05/26 02:08:05 avsm Exp $");
+RCSID("$OpenBSD: scp.c,v 1.124 2005/06/17 02:44:33 djm Exp $");
 
 #include "xmalloc.h"
 #include "atomicio.h"
@@ -501,7 +501,7 @@ source(int argc, char **argv)
 	BUF *bp;
 	off_t i, amt, statbytes;
 	size_t result;
-	int fd, haderr, indx;
+	int fd = -1, haderr, indx;
 	char *last, *name, buf[2048];
 	int len;
 
