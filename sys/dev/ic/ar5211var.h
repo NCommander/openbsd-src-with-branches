@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5211var.h,v 1.4 2005/04/18 18:42:55 reyk Exp $	*/
+/*	$OpenBSD: ar5211var.h,v 1.5 2005/04/20 01:46:02 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -362,7 +362,7 @@ struct ar5k_ar5211_ini_mode {
 };
 
 #define AR5K_AR5211_INI_MODE {						\
-	{ 0x0030, { 0x00000015, 0x00000015, 0x0000001d, 0x00000015 } },	\
+	{ 0x0030, { 0x00000017, 0x00000017, 0x00000017, 0x00000017 } },	\
 	{ 0x1040, { 0x002ffc0f, 0x002ffc0f, 0x002ffc1f, 0x002ffc0f } },	\
 	{ 0x1044, { 0x002ffc0f, 0x002ffc0f, 0x002ffc1f, 0x002ffc0f } },	\
 	{ 0x1048, { 0x002ffc0f, 0x002ffc0f, 0x002ffc1f, 0x002ffc0f } },	\
