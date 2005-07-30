@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.31 2003/04/17 12:06:05 mickey Exp $
+#	$OpenBSD: Makefile,v 1.1 2004/03/19 13:48:19 tom Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -19,8 +19,8 @@ SRCS+=	boot.c cmd.c vars.c bootarg.c conf.c devopen.c net.c open.c
 S	=${.CURDIR}/../../../..
 SADIR=	${.CURDIR}/..
 
-LDADD=	${LIBSA} ${LIBZ}
-DPADD=	${LIBSA} ${LIBZ}
+LDADD=	${LIBSA} ${LIBZ} ${LIBKERN}
+DPADD=	${LIBSA} ${LIBZ} ${LIBKERN}
 
 .PATH:	${S}/stand/boot
 
