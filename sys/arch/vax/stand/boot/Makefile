@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2002/06/11 09:36:23 hugh Exp $
+#	$OpenBSD: Makefile,v 1.5 2003/08/10 15:51:18 deraadt Exp $
 #	$NetBSD: Makefile,v 1.27 2002/04/07 07:00:25 matt Exp $
 
 S!=	cd ${.CURDIR}/../../../../; pwd
@@ -35,6 +35,10 @@ LIBZ=	${ZLIB}
 #KERN_AS=library
 #.include "${S}/lib/libkern/Makefile.inc"
 #LIBKERN=${KERNLIB}
+
+# Only need these from libkern
+.PATH:	${S}/lib/libkern
+SRCS+= moddi3.c negdi2.c
 
 .if ${MACHINE} == "vax"
 .PHONY: machine-links
