@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wivar.h,v 1.24 2004/03/18 16:16:10 millert Exp $	*/
+/*	$OpenBSD: if_wivar.h,v 1.25 2005/02/15 19:44:15 reyk Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -69,6 +69,7 @@ struct wi_softc	{
 	u_int16_t		wi_supprates;
 	u_int16_t		wi_diversity;
 
+	u_int8_t		wi_rxbuf[1596];
 	u_int8_t		wi_txbuf[1596];
 	u_int8_t		wi_scanbuf[1596];
 
