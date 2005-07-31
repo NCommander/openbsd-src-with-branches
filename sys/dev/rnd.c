@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.77 2005/05/27 16:33:27 ho Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.78 2005/07/07 00:11:24 djm Exp $	*/
 
 /*
  * rnd.c -- A strong random number generator
@@ -738,7 +738,7 @@ enqueue_randomness(state, val)
 	val += state << 13;
 
 	microtime(&tv);
-	time = tv.tv_usec ^ tv.tv_sec;
+	time = tv.tv_usec + (tv.tv_sec << 20);
 	nbits = 0;
 
 	/*
