@@ -84,8 +84,7 @@ rlphymatch(struct device *parent, void *match, void *aux)
 	    MII_MODEL(ma->mii_id2) != 0)
 		return (0);
 
-	if (strcmp(parent->dv_cfdata->cf_driver->cd_name, "rl") != 0 &&
-	    strcmp(parent->dv_cfdata->cf_driver->cd_name, "re") != 0)
+	if (strcmp(parent->dv_cfdata->cf_driver->cd_name, "rl") != 0)
 		return (0);
 
 	/*
