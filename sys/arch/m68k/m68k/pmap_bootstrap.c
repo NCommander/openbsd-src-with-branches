@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_bootstrap.c,v 1.10 2005/01/04 18:38:33 miod Exp $	*/
+/*	$OpenBSD: pmap_bootstrap.c,v 1.11 2005/01/14 19:57:48 miod Exp $	*/
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -391,7 +391,7 @@ pmap_bootstrap(nextpa, firstpa)
 	 */
 	if (RELOC(mmutype, int) == MMU_68040)
 		protopte |= PG_CCB;
-#ifdef CPU_68060
+#ifdef M68060
 	else if (RELOC(mmutype, int) == MMU_68060)
 		protopte |= PG_CWT;
 #endif
