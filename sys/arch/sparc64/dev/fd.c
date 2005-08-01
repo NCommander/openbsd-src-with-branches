@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.2 2005/03/12 00:09:04 miod Exp $	*/
+/*	$OpenBSD: fd.c,v 1.3 2005/03/17 22:26:22 miod Exp $	*/
 /*	$NetBSD: fd.c,v 1.112 2003/08/07 16:29:35 agc Exp $	*/
 
 /*-
@@ -394,7 +394,7 @@ fdcattach_ebus(parent, self, aux)
 	}
 
 	if (ea->ea_nregs < 3) {
-		printf(": expected 3 register, got only %d\n",
+		printf(": expected 3 registers, only got %d\n",
 		    ea->ea_nregs);
 		return;
 	}

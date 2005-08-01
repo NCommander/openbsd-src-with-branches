@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_bootstrap.c,v 1.28 2004/12/30 21:22:20 miod Exp $	*/
+/*	$OpenBSD: pmap_bootstrap.c,v 1.29 2005/04/26 21:12:27 martin Exp $	*/
 /*	$NetBSD: pmap_bootstrap.c,v 1.50 1999/04/07 06:14:33 scottr Exp $	*/
 
 /* 
@@ -262,7 +262,7 @@ bootstrap_mac68k(tc)
 	 *
 	 * WARNING!!! No printfs() (etc) BETWEEN zs_init() and the end
 	 * of this function (where we start using the MMU, so the new
-	 * address is correct.
+	 * address is correct).
 	 */
 	if (zsinited != 0)
 		zs_init();
