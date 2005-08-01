@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.31 2005/06/02 20:09:38 tholo Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.32 2005/07/26 08:38:29 art Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -373,11 +373,8 @@ allocsys(vaddr_t v)
 	 * i/o buffers.
 	 */
 	if (bufpages == 0) {
-		if (physmem < btoc(2 * 1024 * 1024))
-			bufpages = physmem / 10;
-		else
-			bufpages = (btoc(2 * 1024 * 1024) + physmem) *
-			    bufcachepercent / 100;
+		bufpages = (btoc(2 * 1024 * 1024) + physmem) *
+		    bufcachepercent / 100;
 	}
 	if (nbuf == 0) {
 		nbuf = bufpages;
