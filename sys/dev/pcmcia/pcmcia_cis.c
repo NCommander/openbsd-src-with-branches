@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia_cis.c,v 1.11 2003/10/22 09:58:46 jmc Exp $	*/
+/*	$OpenBSD: pcmcia_cis.c,v 1.12 2004/09/16 07:19:49 brad Exp $	*/
 /*	$NetBSD: pcmcia_cis.c,v 1.9 1998/08/22 23:41:48 msaitoh Exp $	*/
 
 /*
@@ -862,7 +862,7 @@ pcmcia_parse_cis_tuple(tuple, arg)
 		break;
 
 	case PCMCIA_CISTPL_CONFIG:
-		if (tuple->length < 5) {
+		if (tuple->length < 3) {
 			DPRINTF(("CISTPL_CONFIG too short %d\n",
 			    tuple->length));
 			break;
