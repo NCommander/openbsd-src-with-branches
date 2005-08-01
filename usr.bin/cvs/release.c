@@ -1,4 +1,4 @@
-/*	$OpenBSD: release.c,v 1.18 2005/07/25 12:13:08 xsa Exp $	*/
+/*	$OpenBSD: release.c,v 1.19 2005/07/27 10:36:14 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -49,7 +49,7 @@ static int	cvs_release_dir(CVSFILE *, void *);
 
 struct cvs_cmd cvs_cmd_release = {
 	CVS_OP_RELEASE, CVS_REQ_RELEASE, "release",
-	{ },
+	{ "re", "rel" },
 	"Release",
 	"[-d]",
 	"d",
