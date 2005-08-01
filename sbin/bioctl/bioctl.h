@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.h,v 1.7 2005/07/18 01:29:19 marco Exp $       */
+/* $OpenBSD: bioctl.h,v 1.9 2005/07/29 16:01:18 marco Exp $       */
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
  * All rights reserved.
@@ -41,5 +41,6 @@ void usage(void);
 void cleanup(void);
 
 void bio_inq(void);
+void bio_alarm(char *);
 
 #endif /* _BIOCTL_H_ */
