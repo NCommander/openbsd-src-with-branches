@@ -1,4 +1,4 @@
-/*	$OpenBSD: umidi.c,v 1.10 2004/06/27 19:44:48 deraadt Exp $	*/
+/*	$OpenBSD: umidi.c,v 1.11 2004/11/20 01:29:37 jsg Exp $	*/
 /*	$NetBSD: umidi.c,v 1.16 2002/07/11 21:14:32 augustss Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -162,13 +162,14 @@ USB_ATTACH(umidi)
 {
 	usbd_status err;
 	USB_ATTACH_START(umidi, sc, uaa);
-	char devinfo[1024];
+	char *devinfop;
 	int i;
 
 	DPRINTFN(1,("umidi_attach\n"));
 
-	usbd_devinfo(uaa->device, 0, devinfo, sizeof devinfo);
-	printf("\n%s: %s\n", USBDEVNAME(sc->sc_dev), devinfo);
+	devinfop = usbd_devinfo_alloc(uaa->device, 0);
+	printf("\n%s: %s\n", USBDEVNAME(sc->sc_dev), devinfop);
+	usbd_devinfo_free(devinfop);
 
 	sc->sc_iface = uaa->iface;
 	sc->sc_udev = uaa->device;
