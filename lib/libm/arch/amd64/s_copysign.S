@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -8,8 +9,6 @@
  */
 
 #include <machine/asm.h>
-
-RCSID("$NetBSD: s_copysign.S,v 1.6 2003/07/26 19:25:01 salo Exp $")
 
 #ifdef __x86_64__
 .Lpos:

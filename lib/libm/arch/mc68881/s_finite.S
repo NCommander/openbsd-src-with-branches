@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -32,11 +33,6 @@
  */
 
 #include <machine/asm.h>
-
-;_sccsid:
-;.asciz	"from: @(#)support.s	5.2 (Berkeley) 5/17/90"
-
-RCSID("$NetBSD: s_finite.S,v 1.3 1995/05/09 02:03:31 jtc Exp $")
 
 | finite(x)
 | returns the value TRUE if -INF < x < +INF and returns FALSE otherwise.

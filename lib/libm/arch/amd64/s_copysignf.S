@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -8,8 +9,6 @@
 /*
  * XXXfvdl split this file.
  */
-
-RCSID("$NetBSD: s_copysignf.S,v 1.5 2003/07/26 19:25:01 salo Exp $")
 
 #ifdef __x86_64__
 .Lneg:

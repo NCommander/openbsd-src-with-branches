@@ -1,11 +1,10 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-RCSID("$NetBSD: s_floorf.S,v 1.3 1995/05/09 00:04:32 jtc Exp $")
 
 ENTRY(floorf)
 	subl	$8,%esp

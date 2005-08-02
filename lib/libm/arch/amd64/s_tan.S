@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -6,8 +7,6 @@
 #include <machine/asm.h>
 
 #include "abi.h"
-
-RCSID("$NetBSD: s_tan.S,v 1.7 2003/07/26 19:25:04 salo Exp $")
 
 ENTRY(tan)
 	XMM_ONE_ARG_DOUBLE_PROLOGUE

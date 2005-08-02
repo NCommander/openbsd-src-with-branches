@@ -1,11 +1,10 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-RCSID("$NetBSD: s_ilogb.S,v 1.7 2003/07/26 19:25:02 salo Exp $")
 
 ENTRY(ilogb)
 #ifdef __i386__
