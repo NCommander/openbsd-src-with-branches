@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.4 1997/10/13 10:53:44 pefo Exp $	*/
+/*	$OpenBSD: frame.h,v 1.5 2001/09/01 15:49:05 drahn Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -72,5 +72,10 @@ struct sigframe {
 	siginfo_t *sf_sip;
 	struct sigcontext sf_sc;
 	siginfo_t sf_si;
+};
+
+struct fpsig {
+	double f[14]; /* f0 - f13 are volatile */
+	double fpscr;
 };
 #endif	/* _POWERPC_FRAME_H_ */
