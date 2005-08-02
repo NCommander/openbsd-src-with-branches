@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.35 2005/06/12 06:23:43 henning Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.36 2005/07/31 03:52:18 pascoe Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -251,7 +251,7 @@ looutput(ifp, m, dst, rt)
 	 * packets for local use. But don't dup them to bpf.
 	 */
 	if (ifp->if_bpf && (ifp->if_flags & IFF_LOOPBACK))
-		bpf_mtap_af(ifp->if_bpf, dst->sa_family, m);
+		bpf_mtap_af(ifp->if_bpf, htonl(dst->sa_family), m);
 #endif
 	m->m_pkthdr.rcvif = ifp;
 
