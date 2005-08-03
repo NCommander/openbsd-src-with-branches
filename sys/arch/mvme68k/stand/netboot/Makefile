@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2002/04/16 15:37:04 miod Exp $
+#	$OpenBSD: Makefile,v 1.12 2005/02/20 15:34:08 miod Exp $
 
 RELOC=0x6F0000
 SIZE?=	size
@@ -25,7 +25,7 @@ all:	netboot.bin
 
 netboot: ${OBJS} ${BUGCRT} ${LIBS}
 	${LD} ${LDFLAGS} -o $@ \
-		${SRTOBJ} ${BUGCRT} ${OBJS} ${LIBS}
+		${SRTOBJ} ${BUGCRT} ${OBJS} ${LIBS} `cc -print-libgcc-file-name`
 	@${SIZE} $@
 
 netboot.bin: netboot

@@ -1,5 +1,5 @@
 #	from: @(#)Makefile	8.1 (Berkeley) 6/10/93
-#	$OpenBSD: Makefile,v 1.5 1999/09/27 03:04:07 smurph Exp $
+#	$OpenBSD: Makefile,v 1.6 2001/08/05 20:37:37 miod Exp $
 
 RELOC=0x10000 
 
@@ -27,7 +27,8 @@ ALL=	${BOOTS}
 all: ${ALL}
 
 bootxx: ${OBJS} ${BUGCRT} ${LIBS}
-	${LD} -N -T ${RELOC} ${BUGCRT} ${OBJS} ${LIBS} -o $@
+	${LD} -N -T ${RELOC} ${BUGCRT} ${OBJS} ${LIBS} \
+	    `cc -print-libgcc-file-name` -o $@
 
 install:
 	install -c -m 555 -g bin -o bin ${BOOTS} ${DESTDIR}${MDEC_DIR}
