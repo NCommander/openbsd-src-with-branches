@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensorsd.c,v 1.15 2005/04/21 00:22:28 deraadt Exp $ */
+/*	$OpenBSD: sensorsd.c,v 1.16 2005/06/03 12:31:28 henning Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -44,7 +44,7 @@ int		 parse_config(char *);
 int64_t		 get_val(char *, int, enum sensor_type);
 void		 reparse_cfg(int);
 
-enum sensor_status {
+enum sensorsd_status {
 	STATUS_OK,
 	STATUS_FAIL
 };
