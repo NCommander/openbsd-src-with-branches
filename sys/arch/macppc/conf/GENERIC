@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.87 2005/06/02 23:21:03 drahn Exp $g
+#	$OpenBSD: GENERIC,v 1.88 2005/06/17 23:50:38 deraadt Exp $g
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -266,6 +266,8 @@ st*		at scsibus?
 cd*		at scsibus?
 ch*		at scsibus?
 ss*		at scsibus?
+safte*		at scsibus?
+ses*		at scsibus?
 uk*		at scsibus?
 
 pseudo-device	hotplug	1	# devices hot plugging
