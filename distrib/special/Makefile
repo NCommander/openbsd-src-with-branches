@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.12 2004/12/25 11:22:18 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.13 2005/08/02 11:16:44 espie Exp $
 
 SUBDIR=	dd ftp pppd rsh dhclient init dmesg grep kbd less more \
-	gzip ccdconfig ifconfig
+	gzip ccdconfig ifconfig libstubs
 
 .include <bsd.subdir.mk>
