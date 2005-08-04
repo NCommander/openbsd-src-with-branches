@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.7 2004/01/04 20:05:38 pvalchev Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.8 2004/07/24 19:12:33 miod Exp $	*/
 
 /*   
  *   Mach Operating System
@@ -26,10 +26,6 @@
  *   any improvements or extensions that they make and grant Carnegie Mellon 
  *   the rights to redistribute these changes.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: crt0.c,v 1.7 2004/01/04 20:05:38 pvalchev Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * When a program begins, r31 points to a structure passed by the kernel.
