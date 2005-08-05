@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_safte.c,v 1.6 2005/07/28 10:11:30 dlg Exp $ */
+/*	$OpenBSD: safte.c,v 1.1 2005/08/05 00:08:58 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -143,8 +143,6 @@ safte_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_link = sa->sa_sc_link;
 	sc->sc_state = SAFTE_ST_NONE;
 
-	printf("\n");
-
 	memset(&cmd, 0, sizeof(cmd));
 	cmd.opcode = INQUIRY;
 	cmd.length = SAFTE_INQ_LEN;
@@ -153,15 +151,14 @@ safte_attach(struct device *parent, struct device *self, void *aux)
 	if (scsi_scsi_cmd(sc->sc_link, (struct scsi_generic *)&cmd,
 	    sizeof(cmd), (u_char *)&inq, cmd.length, 2, 10000, NULL,
 	    SCSI_DATA_IN) != 0) {
-		printf("%s: unable to get inquiry information\n", DEVNAME(sc));
+		printf(": unable to get inquiry information\n");
 		return;
 	}
 
 	memset(rev, 0, sizeof(rev));
 	memcpy(rev, si->revision, sizeof(si->revision));
 
-	printf("%s: SCSI Accessed Fault-Tolerant Enclosure rev %s\n",
-	    DEVNAME(sc), rev);
+	printf(": rev %s\n", rev);
 
 	if (safte_read_config(sc) != 0) {
 		printf("%s: unable to read enclosure configuration\n",
