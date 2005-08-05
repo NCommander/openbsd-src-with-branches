@@ -28,11 +28,11 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: xdr_float.c,v 1.12 2004/02/01 07:11:24 drahn Exp $";
+static char *rcsid = "$OpenBSD: xdr_float.c,v 1.13 2005/04/01 07:44:04 otto Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
- * xdr_float.c, Generic XDR routines impelmentation.
+ * xdr_float.c, Generic XDR routines implementation.
  *
  * Copyright (C) 1984, Sun Microsystems, Inc.
  *
