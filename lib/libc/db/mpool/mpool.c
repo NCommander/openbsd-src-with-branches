@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpool.c,v 1.12 2003/06/02 20:18:34 millert Exp $	*/
+/*	$OpenBSD: mpool.c,v 1.13 2005/03/23 19:34:59 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)mpool.c	8.7 (Berkeley) 11/2/95";
-#else
-static const char rcsid[] = "$OpenBSD: mpool.c,v 1.12 2003/06/02 20:18:34 millert Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <sys/queue.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_put.c,v 1.11 2005/01/03 22:30:28 millert Exp $	*/
+/*	$OpenBSD: bt_put.c,v 1.12 2005/03/23 19:34:58 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -31,14 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)bt_put.c   8.8 (Berkeley) 7/26/94";
-#else
-static const char rcsid[] = "$OpenBSD: bt_put.c,v 1.11 2005/01/03 22:30:28 millert Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 

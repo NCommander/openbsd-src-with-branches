@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
  * Copyright (c) 1992, 1993, 1994
@@ -32,14 +33,6 @@
  *
  *	@(#)regfree.c	8.3 (Berkeley) 3/20/94
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)regfree.c	8.3 (Berkeley) 3/20/94";
-#else
-static char rcsid[] = "$OpenBSD: regfree.c,v 1.5 2004/10/17 17:58:54 otto Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <stdio.h>

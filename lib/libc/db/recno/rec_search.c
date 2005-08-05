@@ -1,4 +1,4 @@
-/*	$OpenBSD: rec_search.c,v 1.9 2005/01/03 22:46:43 millert Exp $	*/
+/*	$OpenBSD: rec_search.c,v 1.10 2005/03/23 19:34:59 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rec_search.c	8.4 (Berkeley) 7/14/94";
-#else
-static const char rcsid[] = "$OpenBSD: rec_search.c,v 1.9 2005/01/03 22:46:43 millert Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 
