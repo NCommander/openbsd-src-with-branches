@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbc.c,v 1.8 2004/04/02 04:39:50 deraadt Exp $ */
+/* $OpenBSD: pckbc.c,v 1.9 2004/11/02 21:21:00 miod Exp $ */
 /* $NetBSD: pckbc.c,v 1.5 2000/06/09 04:58:35 soda Exp $ */
 
 /*
@@ -355,6 +355,18 @@ pckbc_attach(sc)
 	}
 	bus_space_write_1(iot, ioh_d, 0, 0x5a);	/* a random value */
 	res = pckbc_poll_data1(iot, ioh_d, ioh_c, PCKBC_AUX_SLOT, 1);
+	if (res == -1) {
+		/* Read of aux echo timed out, try again */
+		if (!pckbc_send_cmd(iot, ioh_c, KBC_AUXWRITE))
+			goto nomouse;
+		if (!pckbc_wait_output(iot, ioh_c))
+			goto nomouse;
+		bus_space_write_1(iot, ioh_d, 0, 0x5a);
+		res = pckbc_poll_data1(iot, ioh_d, ioh_c, PCKBC_AUX_SLOT, 1);
+#ifdef PCKBCDEBUG
+		printf("kbc: aux echo: %x\n", res);
+#endif
+	}
 	if (res != -1) {
 		/*
 		 * In most cases, the 0x5a gets echoed.
