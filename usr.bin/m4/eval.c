@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.55 2005/03/02 10:12:15 espie Exp $	*/
+/*	$OpenBSD: eval.c,v 1.56 2005/05/29 18:44:36 espie Exp $	*/
 /*	$NetBSD: eval.c,v 1.7 1996/11/10 21:21:29 pk Exp $	*/
 
 /*
@@ -32,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)eval.c	8.2 (Berkeley) 4/27/95";
-#else
-static char rcsid[] = "$OpenBSD: eval.c,v 1.55 2005/03/02 10:12:15 espie Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * eval.c
