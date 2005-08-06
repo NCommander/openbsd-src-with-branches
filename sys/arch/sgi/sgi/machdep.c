@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.22 2005/01/18 15:03:38 grange Exp $ */
+/*	$OpenBSD: machdep.c,v 1.23 2005/02/20 15:39:04 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -97,7 +97,6 @@ void dump_tlb(void);
 
 /* the following is used externally (sysctl_hw) */
 char	machine[] = MACHINE;		/* machine "architecture" */
-char	machine_arch[] = MACHINE_ARCH;	/* cpu "architecture" */
 char	cpu_model[30];
 #ifdef APERTURE
 #if defined(INSECURE) || defined(DEBUG)

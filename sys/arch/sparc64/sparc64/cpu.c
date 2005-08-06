@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.12 2003/05/07 22:33:25 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.13 2003/05/11 22:09:31 jason Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -77,7 +77,6 @@ struct cpu_info *cpus = NULL;
 
 /* The following are used externally (sysctl_hw). */
 char	machine[] = MACHINE;		/* from <machine/param.h> */
-char	machine_arch[] = MACHINE_ARCH;	/* from <machine/param.h> */
 char	cpu_model[100];
 
 struct	proc *fpproc;

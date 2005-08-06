@@ -1,4 +1,4 @@
-/*	$OpenBSD: m68k_machdep.c,v 1.4 2001/11/25 21:31:06 miod Exp $	*/
+/*	$OpenBSD: m68k_machdep.c,v 1.5 2003/01/05 01:51:27 miod Exp $	*/
 /*	$NetBSD: m68k_machdep.c,v 1.3 1997/06/12 09:57:04 veego Exp $	*/
 
 /*-
@@ -45,9 +45,6 @@
 #include <machine/cpu.h>
 #include <machine/frame.h>
 #include <machine/reg.h>
-
-/* the following is used externally (sysctl_hw) */
-char	machine_arch[] = MACHINE_ARCH;	/* from <machine/param.h> */
 
 /*
  * Process the tail end of a fork() for the child
