@@ -1,14 +1,10 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD$"
-#endif
 
 /*
  * On the i486, this code is negligibly faster than the code generated

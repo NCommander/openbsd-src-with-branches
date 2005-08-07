@@ -1,7 +1,3 @@
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD$"
-#endif
-
+/*	$OpenBSD$ */
 #define MEMMOVE
 #include "bcopy.S"

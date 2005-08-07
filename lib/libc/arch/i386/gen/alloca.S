@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: alloca.S,v 1.4 2003/04/17 03:47:42 drahn Exp $"
-#endif
 
 /* like alloc, but automatic automatic free in return */
 

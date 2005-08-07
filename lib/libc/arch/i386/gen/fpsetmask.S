@@ -1,14 +1,10 @@
+/* $OpenBSD$ */
 /*
  * Written by Charles M. Hannum, Apr 9, 1995
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD$"
-#endif
 
 ENTRY(fpsetmask)
 	subl $4,%esp

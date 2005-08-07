@@ -30,10 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: ldexp.c,v 1.4 2003/06/02 20:18:30 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <math.h>
 
 /*

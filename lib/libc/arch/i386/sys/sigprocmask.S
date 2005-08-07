@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sigprocmask.S,v 1.6 2003/04/17 03:47:42 drahn Exp $"
-#endif /* SYSLIBC_SCCS */
 
 SYSENTRY(sigprocmask)
 	movl	8(%esp),%ecx		# fetch new sigset pointer

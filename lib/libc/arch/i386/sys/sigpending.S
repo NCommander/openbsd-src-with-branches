@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sigpending.S,v 1.2 1996/08/19 08:13:40 tholo Exp $"
-#endif /* SYSLIBC_SCCS */
 
 SYSCALL(sigpending)
 	movl	4(%esp),%ecx		# fetch pointer to...

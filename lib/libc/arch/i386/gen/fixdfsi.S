@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
  * All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: fixdfsi.S,v 1.3 1996/08/19 08:12:18 tholo Exp $"
-#endif
 
 ENTRY(__fixdfsi)
 	fldl	4(%esp)

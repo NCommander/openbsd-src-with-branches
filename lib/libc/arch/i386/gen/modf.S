@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: modf.S,v 1.3 1996/08/19 08:12:33 tholo Exp $"
-#endif
 
 /*
  * modf(value, iptr): return fractional part of value, and stores the

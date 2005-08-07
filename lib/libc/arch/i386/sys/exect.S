@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -32,11 +33,6 @@
 
 #include "SYS.h"
 #include <machine/psl.h>
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: exect.S,v 1.4 2003/04/17 03:47:42 drahn Exp $"
-#endif /* SYSLIB_SCCS */
 
 ENTRY(exect)
 	movl	$(SYS_execve),%eax
