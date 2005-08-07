@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.6 2003/06/02 20:18:31 millert Exp $	*/
+/*	$OpenBSD: brk.S,v 1.7 2003/12/25 18:49:06 miod Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -32,11 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.data
-	.string "$OpenBSD: brk.S,v 1.6 2003/06/02 20:18:31 millert Exp $"
-#endif /* LIBC_SCCS */
 
 #include "SYS.h"
 

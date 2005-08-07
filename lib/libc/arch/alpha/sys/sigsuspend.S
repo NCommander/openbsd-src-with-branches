@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigsuspend.S,v 1.4 1999/01/06 06:10:13 d Exp $	*/
+/*	$OpenBSD: sigsuspend.S,v 1.5 2001/06/13 11:55:00 art Exp $	*/
 /*	$NetBSD: sigsuspend.S,v 1.2 1996/10/17 03:08:22 cgd Exp $	*/
 
 /*
@@ -29,11 +29,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sigsuspend.S,v 1.4 1999/01/06 06:10:13 d Exp $"
-#endif /* SYSLIBC_SCCS */
 
 SYSLEAF(sigsuspend, 1)
 	ldl	a0, 0(a0)		/* pass *mask instead of mask */

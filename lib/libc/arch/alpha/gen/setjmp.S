@@ -1,4 +1,4 @@
-/*	$OpenBSD: setjmp.S,v 1.5 2004/01/15 13:39:38 deraadt Exp $	*/
+/*	$OpenBSD: setjmp.S,v 1.6 2004/01/29 18:56:14 tedu Exp $	*/
 /*	$NetBSD: setjmp.S,v 1.2 1996/10/17 03:08:06 cgd Exp $	*/
 
 /*
@@ -29,11 +29,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: setjmp.S,v 1.5 2004/01/15 13:39:38 deraadt Exp $"
-#endif
 
 /*
  * C library -- setjmp, longjmp

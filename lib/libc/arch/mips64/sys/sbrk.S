@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sbrk.S,v 1.2 2004/09/07 13:48:27 pefo Exp $"
-#endif /* SYSLIBC_SCCS */
 
 	.globl	curbrk
 

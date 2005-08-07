@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -39,11 +40,6 @@
 	.stabs "_strcat",1,0,0,0
 #NO_APP
 #endif
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: strcat.S,v 1.5 2003/06/11 21:06:33 deraadt Exp $"
-#endif /* LIBC_SCCS */
 
 ENTRY(strcat)
 	movl	sp@(8),a0		| a0 = fromaddr

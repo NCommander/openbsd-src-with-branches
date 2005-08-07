@@ -1,12 +1,8 @@
+/* $OpenBSD$ */
 /*
  * Written by J.T. Conklin, Apr 6, 1995
  * Public Domain.
  */
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD$"
-#endif /* LIBC_SCCS */
 
 #include <machine/asm.h>
 

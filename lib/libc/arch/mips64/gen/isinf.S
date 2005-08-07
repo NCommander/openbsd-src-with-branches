@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS) 
-	.text
-	.asciz "$OpenBSD: isinf.S,v 1.2 2004/09/09 16:14:02 pefo Exp $"
-#endif /* LIBC_SCCS */
 
 #define DEXP_INF	0x7ff
 

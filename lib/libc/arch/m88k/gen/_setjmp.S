@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 2002 Steve Murphree, Jr.
  * All rights reserved.
@@ -27,11 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.data
-	.string "$OpenBSD: _setjmp.S,v 1.6 2003/08/01 07:41:35 miod Exp $"
-#endif /* LIBC_SCCS */
 
 #include "SYS.h"
 

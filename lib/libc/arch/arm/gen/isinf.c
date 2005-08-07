@@ -1,4 +1,4 @@
-/*	$OpenBSD: isinf.c,v 1.1 2004/01/20 03:06:03 drahn Exp $	*/
+/*	$OpenBSD: isinf.c,v 1.1 2004/02/01 05:30:40 drahn Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -32,10 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: isinf.c,v 1.1 2004/01/20 03:06:03 drahn Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <machine/ieee.h>

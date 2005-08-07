@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -30,11 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sigprocmask.S,v 1.4 2002/11/05 00:02:20 miod Exp $"
-#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 

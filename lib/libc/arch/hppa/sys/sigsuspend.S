@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigsuspend.S,v 1.7 2002/10/31 23:07:37 mickey Exp $	*/
+/*	$OpenBSD: sigsuspend.S,v 1.8 2003/06/02 20:28:04 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -27,12 +27,6 @@
  */
 
 #include "SYS.h"
-
-#ifdef SYSLIBC_SCCS
-	.text
-	.asciz "$OpenBSD: sigsuspend.S,v 1.7 2002/10/31 23:07:37 mickey Exp $"
-	.align	4
-#endif
 
 SYSENTRY(sigsuspend,0)
 	ldw	0(arg0), arg0

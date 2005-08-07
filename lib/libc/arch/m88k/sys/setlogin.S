@@ -1,4 +1,4 @@
-/*	$OpenBSD: setlogin.S,v 1.3 2003/01/07 22:01:35 miod Exp $	*/
+/*	$OpenBSD: setlogin.S,v 1.4 2003/06/02 20:18:31 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -28,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.data
-	.string "$OpenBSD: setlogin.S,v 1.3 2003/01/07 22:01:35 miod Exp $"
-#endif /* LIBC_SCCS */
 
 #include "SYS.h"
 

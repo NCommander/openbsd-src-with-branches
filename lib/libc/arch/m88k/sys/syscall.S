@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.S,v 1.7 2003/12/08 19:36:29 millert Exp $	*/
+/*	$OpenBSD: syscall.S,v 1.8 2004/07/28 08:48:17 miod Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -32,11 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.data
-	.string "$OpenBSD: syscall.S,v 1.7 2003/12/08 19:36:29 millert Exp $"
-#endif /* LIBC_SCCS */
 
 #include "SYS.h"
 

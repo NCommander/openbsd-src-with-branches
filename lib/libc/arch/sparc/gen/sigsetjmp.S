@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 1995 Paul Kranenburg
  * All rights reserved.
@@ -28,11 +29,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#if defined(LIBC_SCCS) 
-	.text
-	.asciz "$OpenBSD: sigsetjmp.S,v 1.3 2002/08/05 15:29:28 art Exp $"
-#endif /* LIBC_SCCS */
 
 #include "SYS.h"
 

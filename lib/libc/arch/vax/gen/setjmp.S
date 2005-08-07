@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -26,11 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: setjmp.S,v 1.5 2002/11/06 07:13:58 millert Exp $"
-#endif /* LIBC_SCCS */
 
 /*
  * C library -- setjmp, longjmp

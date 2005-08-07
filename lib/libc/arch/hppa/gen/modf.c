@@ -1,4 +1,4 @@
-/*	$OpenBSD: modf.c,v 1.7 2002/02/19 22:12:36 millert Exp $	*/
+/*	$OpenBSD: modf.c,v 1.1 2002/03/11 02:59:01 miod Exp $	*/
 /* @(#)s_modf.c 5.1 93/09/24 */
 /*
  * ====================================================
@@ -10,10 +10,6 @@
  * is preserved.
  * ====================================================
  */
-
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: modf.c,v 1.7 2002/02/19 22:12:36 millert Exp $";
-#endif
 
 /*
  * modf(double x, double *iptr) 

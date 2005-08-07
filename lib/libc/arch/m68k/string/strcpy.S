@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -40,11 +41,6 @@
 	.stabs "_strcpy",1,0,0,0
 #NO_APP
 #endif
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: strcpy.S,v 1.6 2003/06/11 21:06:33 deraadt Exp $"
-#endif /* LIBC_SCCS */
 
 ENTRY(strcpy)
 	movl	sp@(8),a0		| a0 = fromaddr

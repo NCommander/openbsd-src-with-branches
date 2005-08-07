@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
  *
@@ -15,11 +16,6 @@
  */
 
 #include "DEFS.h"
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: strlcpy.S,v 1.5 2003/06/03 01:52:39 millert Exp $"
-#endif /* LIBC_SCCS */
 
 /*
  * It is faster to implement strlcpy() as two distinct operations,

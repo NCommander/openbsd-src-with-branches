@@ -1,8 +1,4 @@
-/*	$OpenBSD: infinity.c,v 1.2 2000/03/01 17:31:20 todd Exp $	*/
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
-#endif /* LIBC_SCCS and not lint */
+/*	$OpenBSD: infinity.c,v 1.3 2003/01/07 22:00:50 miod Exp $	*/
 
 /* infinity.c */
 

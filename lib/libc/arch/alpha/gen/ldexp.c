@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldexp.c,v 1.1 1995/02/10 17:50:24 cgd Exp $	*/
+/*	$OpenBSD: ldexp.c,v 1.3 1996/11/13 21:20:20 niklas Exp $	*/
 /*	$NetBSD: ldexp.c,v 1.1 1995/02/10 17:50:24 cgd Exp $	*/
 
 /*
@@ -27,10 +27,6 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: ldexp.c,v 1.2 1996/08/19 08:10:42 tholo Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <machine/ieee.h>

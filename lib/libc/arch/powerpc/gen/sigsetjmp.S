@@ -1,5 +1,4 @@
-/*	$OpenBSD: sigsetjmp.S,v 1.3 2002/10/24 02:26:53 drahn Exp $	*/
-/*	$NetBSD$	*/
+/*	$OpenBSD: sigsetjmp.S,v 1.4 2003/06/02 20:18:32 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -37,11 +36,6 @@
 
 #include "SYS.h"
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$NetBSD$"
-#endif
 
 ENTRY(sigsetjmp)
 	mr	6,3

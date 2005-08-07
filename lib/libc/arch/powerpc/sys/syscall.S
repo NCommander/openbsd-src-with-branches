@@ -1,4 +1,4 @@
-/* $OpenBSD:$ */
+/* $OpenBSD: syscall.S,v 1.3 2002/10/07 04:47:12 drahn Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -24,11 +24,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: syscall.S,v 1.2 1997/07/23 20:55:29 kstailey Exp $"
-#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 

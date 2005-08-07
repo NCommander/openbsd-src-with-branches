@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: flt_rounds.c,v 1.2 2003/01/07 21:59:49 miod Exp $	*/
 
 /*
  * Written by J.T. Conklin, Apr 10, 1995
@@ -7,10 +7,6 @@
 
 #include <sys/types.h>
 #include <machine/float.h>
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Ported to 88k (Nivas Madhur)

@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
  * All rights reserved.
@@ -26,11 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: setlogin.S,v 1.2 1996/08/19 08:15:41 tholo Exp $"
-#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 

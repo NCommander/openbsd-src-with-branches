@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -26,11 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sbrk.S,v 1.5 2002/11/05 00:37:09 miod Exp $"
-#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 

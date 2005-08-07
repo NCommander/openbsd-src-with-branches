@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -26,11 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: index.S,v 1.3 2003/03/10 04:02:49 david Exp $"
-#endif /* LIBC_SCCS */
 
 /*
  * Find the first occurrence of c in the string cp.

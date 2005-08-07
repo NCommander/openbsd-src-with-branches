@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -26,11 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: ffs.S,v 1.2 1996/08/19 08:18:48 tholo Exp $"
-#endif /* LIBC_SCCS */
 
 /* bit = ffs(value) */
 

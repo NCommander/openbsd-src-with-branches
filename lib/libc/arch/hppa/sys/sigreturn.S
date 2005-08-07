@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigreturn.S,v 1.4 2001/03/29 01:43:53 mickey Exp $	*/
+/*	$OpenBSD: sigreturn.S,v 1.5 2003/06/02 20:28:04 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -27,12 +27,6 @@
  */
 
 #include "SYS.h"
-
-#ifdef SYSLIBC_SCCS
-	.text
-	.asciz "$OpenBSD: sigreturn.S,v 1.4 2001/03/29 01:43:53 mickey Exp $"
-	.align	4
-#endif
 
 RSYSCALL(sigreturn)
 

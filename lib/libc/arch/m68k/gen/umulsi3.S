@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -30,11 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: umulsi3.S,v 1.2 1996/08/19 08:14:48 tholo Exp $"
-#endif /* LIBC_SCCS */
 
 #include "DEFS.h"
 

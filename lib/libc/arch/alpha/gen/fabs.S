@@ -1,4 +1,4 @@
-/*	$OpenBSD: fabs.S,v 1.2 1996/10/17 03:08:05 cgd Exp $	*/
+/*	$OpenBSD: fabs.S,v 1.3 1996/11/13 21:20:10 niklas Exp $	*/
 /*	$NetBSD: fabs.S,v 1.2 1996/10/17 03:08:05 cgd Exp $	*/
 
 /*
@@ -29,11 +29,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: fabs.S,v 1.2 1996/08/19 08:10:23 tholo Exp $"
-#endif
 
 LEAF(fabs, 1)
 	cpys	fzero, fa0, fv0

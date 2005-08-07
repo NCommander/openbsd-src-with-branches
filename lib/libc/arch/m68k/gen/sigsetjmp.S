@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -30,11 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sigsetjmp.S,v 1.3 1997/07/23 20:55:24 kstailey Exp $"
-#endif /* LIBC_SCCS */
 
 /*
  * C library -- sigsetjmp, siglongjmp

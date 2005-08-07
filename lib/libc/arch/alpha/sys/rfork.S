@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfork.S,v 1.4 1999/01/06 06:10:13 d Exp $	*/
+/*	$OpenBSD: rfork.S,v 1.1 2002/02/17 23:40:57 deraadt Exp $	*/
 /*	$NetBSD: rfork.S,v 1.1 1995/02/10 17:50:34 cgd Exp $	*/
 
 /*
@@ -29,11 +29,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: rfork.S,v 1.4 1999/01/06 06:10:13 d Exp $"
-#endif /* SYSLIBC_SCCS */
 
 SYSCALL(rfork)
 	cmovne	a4, zero, v0		/* a4 (rv[1]) != 0, child */

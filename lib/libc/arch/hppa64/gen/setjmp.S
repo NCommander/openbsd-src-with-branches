@@ -1,4 +1,4 @@
-/*	$OpenBSD: setjmp.S,v 1.6 2003/06/02 20:18:30 millert Exp $	*/
+/*	$OpenBSD: setjmp.S,v 1.1 2005/04/01 10:54:27 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -37,12 +37,6 @@
 #define _LOCORE
 #include <machine/frame.h>
 #undef _LOCORE
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	.asciz	"$OpenBSD: setjmp.S,v 1.6 2003/06/02 20:18:30 millert Exp $"
-	.align	4
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * C library -- setjmp, longjmp

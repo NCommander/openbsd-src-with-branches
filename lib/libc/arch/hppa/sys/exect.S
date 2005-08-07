@@ -1,4 +1,4 @@
-/*	$OpenBSD: exect.S,v 1.5 2001/03/29 01:43:52 mickey Exp $	*/
+/*	$OpenBSD: exect.S,v 1.6 2003/06/02 20:28:04 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -27,12 +27,6 @@
  */
 
 #include "SYS.h"
-
-#ifdef SYSLIBC_SCCS
-	.text
-	.asciz "$OpenBSD: exect.S,v 1.5 2001/03/29 01:43:52 mickey Exp $"
-	.align	4
-#endif
 
 /* we do no tracing yet */
 PSEUDO(exect,execve)

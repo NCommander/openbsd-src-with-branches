@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -26,11 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: Ovfork.S,v 1.4 2001/08/23 21:58:41 miod Exp $"
-#endif /* SYSLIBC_SCCS */
 
 /*
  * @(#)vfork.s	4.1 (Berkeley) 12/21/80

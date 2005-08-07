@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,11 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) 
-	.text
-	.asciz "$OpenBSD: modf.S,v 1.3 2003/04/22 19:57:57 jason Exp $"
-#endif /* LIBC_SCCS */
 
 #include "DEFS.h"
 #include <machine/fsr.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: Ovfork.S,v 1.11 2004/05/25 20:44:50 mickey Exp $	*/
+/*	$OpenBSD: Ovfork.S,v 1.1 2005/04/01 10:54:27 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999,2002 Michael Shalayeff
@@ -27,12 +27,6 @@
  */
 
 #include "SYS.h"
-
-#ifdef SYSLIBC_SCCS
-	.text
-	.asciz "$OpenBSD: Ovfork.S,v 1.11 2004/05/25 20:44:50 mickey Exp $"
-	.align	4
-#endif
 
 SYSENTRY(vfork,0)
 	.import errno, data

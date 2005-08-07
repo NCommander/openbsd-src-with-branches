@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.4 1996/11/13 22:05:10 niklas Exp $	*/
+/*	$OpenBSD: brk.S,v 1.5 2002/10/06 23:31:21 art Exp $	*/
 /*	$NetBSD: brk.S,v 1.4 1996/10/17 03:08:15 cgd Exp $	*/
 
 /*
@@ -29,11 +29,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: brk.S,v 1.4 1996/11/13 22:05:10 niklas Exp $"
-#endif /* SYSLIBC_SCCS */
 
 	.globl	_end
 IMPORT(__curbrk, 8)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: isinf.c,v 1.4 2001/09/10 22:38:11 millert Exp $	*/
+/*	$OpenBSD: isinf.c,v 1.5 2003/06/02 20:18:33 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -28,10 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: isinf.c,v 1.4 2001/09/10 22:38:11 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /* ARGSUSED */
 int

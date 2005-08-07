@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.S,v 1.1 1995/02/10 17:50:44 cgd Exp $	*/
+/*	$OpenBSD: syscall.S,v 1.3 1996/11/13 22:05:16 niklas Exp $	*/
 /*	$NetBSD: syscall.S,v 1.1 1995/02/10 17:50:44 cgd Exp $	*/
 
 /*
@@ -29,10 +29,5 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: syscall.S,v 1.2 1996/08/19 08:11:21 tholo Exp $"
-#endif /* SYSLIBC_SCCS */
 
 RSYSCALL(syscall)

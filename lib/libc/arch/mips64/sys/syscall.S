@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: syscall.S,v 1.5 2003/06/02 20:18:32 millert Exp $"
-#endif /* SYSLIBC_SCCS */
 
 #define SYS_syscall	0
 

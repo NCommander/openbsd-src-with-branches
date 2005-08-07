@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigprocmask.S,v 1.3 1996/11/13 22:05:15 niklas Exp $	*/
+/*	$OpenBSD: sigprocmask.S,v 1.4 1999/01/06 06:10:13 d Exp $	*/
 /*	$NetBSD: sigprocmask.S,v 1.2 1996/10/17 03:08:21 cgd Exp $	*/
 
 /*
@@ -29,11 +29,6 @@
  */
 
 #include "SYS.h"
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: sigprocmask.S,v 1.3 1996/11/13 22:05:15 niklas Exp $"
-#endif /* SYSLIBC_SCCS */
 
 SYSLEAF(sigprocmask, 3)
 	mov	a2, a5			/* safe */

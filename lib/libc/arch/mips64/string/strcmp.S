@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: strcmp.S,v 1.1 2004/08/11 17:30:59 pefo Exp $"
-#endif /* LIBC_SCCS */
 
 /*
  * NOTE: this version assumes unsigned chars in order to be "8 bit clean".

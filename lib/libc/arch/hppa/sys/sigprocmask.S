@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigprocmask.S,v 1.10 2002/10/31 23:07:37 mickey Exp $	*/
+/*	$OpenBSD: sigprocmask.S,v 1.11 2003/06/02 20:28:04 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -27,12 +27,6 @@
  */
 
 #include "SYS.h"
-
-#ifdef SYSLIBC_SCCS
-	.text
-	.asciz "$OpenBSD: sigprocmask.S,v 1.10 2002/10/31 23:07:37 mickey Exp $"
-	.align	4
-#endif
 
 SYSENTRY(sigprocmask,0)
 	/* just in case compiler forgot about this */

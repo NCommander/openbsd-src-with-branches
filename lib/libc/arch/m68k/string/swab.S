@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: swab.S,v 1.4 2002/06/18 08:34:46 espie Exp $	*/
 /*
  * Copyright (c) 2002 Marc Espie.
  *
@@ -25,11 +25,6 @@
  */
 
 #include "DEFS.h"
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: swab.S$"
-#endif /* LIBC_SCCS */
 
 ENTRY(swab)
 	movl	sp@(12),d1	| #bytes

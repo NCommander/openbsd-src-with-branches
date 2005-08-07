@@ -1,4 +1,4 @@
-/* $OpenBSD:$ */
+/* $OpenBSD: exect.S,v 1.6 2002/10/07 04:47:12 drahn Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -24,11 +24,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(SYSLIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: exect.S,v 1.5 2002/10/07 04:22:46 drahn Exp $"
-#endif /* SYSLIBC_SCCS */
 
 #include "SYS.h"
 

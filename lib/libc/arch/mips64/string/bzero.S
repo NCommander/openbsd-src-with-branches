@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,11 +32,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: bzero.S,v 1.2 2004/08/15 13:53:43 pefo Exp $"
-#endif /* LIBC_SCCS */
 
 /* bzero(s1, n) */
 
