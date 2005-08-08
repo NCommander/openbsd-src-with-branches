@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.c,v 1.3 2005/08/05 00:31:04 dlg Exp $ */
+/*	$OpenBSD: safte.c,v 1.5 2005/08/05 01:06:15 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -139,6 +139,7 @@ safte_attach(struct device *parent, struct device *self, void *aux)
 	int				i;
 
 	sc->sc_link = sa->sa_sc_link;
+	sa->sa_sc_link->device_softc = sc;
 
 	printf("\n");
 

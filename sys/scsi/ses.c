@@ -1,4 +1,4 @@
-/*	$OpenBSD: ses.c,v 1.16 2005/08/05 00:34:51 dlg Exp $ */
+/*	$OpenBSD: ses.c,v 1.17 2005/08/05 03:20:26 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -133,6 +133,7 @@ ses_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_link = sa->sa_sc_link;
 	sc->sc_thread = NULL;
+	sa->sa_sc_link->device_softc = sc;
 
 	printf("\n");
 
