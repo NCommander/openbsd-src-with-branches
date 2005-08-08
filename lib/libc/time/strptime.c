@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*	$NetBSD: strptime.c,v 1.12 1998/01/20 21:39:40 mycroft Exp $	*/
 
 /*-
@@ -34,10 +35,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: strptime.c,v 1.9 2004/01/20 16:50:18 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/localedef.h>
 #include <ctype.h>

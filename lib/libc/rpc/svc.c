@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -26,10 +27,6 @@
  * 2550 Garcia Avenue
  * Mountain View, California  94043
  */
-
-#if defined(LIBC_SCCS) && !defined(lint) 
-static char *rcsid = "$OpenBSD: svc.c,v 1.18 2005/02/17 02:37:21 jolan Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * svc.c, Server-side remote procedure call interface.

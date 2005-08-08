@@ -1,4 +1,4 @@
-/*	$OpenBSD: fnmatch.c,v 1.10 2003/06/02 20:18:34 millert Exp $	*/
+/*	$OpenBSD: fnmatch.c,v 1.11 2004/05/18 02:05:52 jfb Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -31,14 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fnmatch.c	8.2 (Berkeley) 4/16/94";
-#else
-static char rcsid[] = "$OpenBSD: fnmatch.c,v 1.10 2003/06/02 20:18:34 millert Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Function fnmatch() as specified in POSIX 1003.2-1992, section B.6.

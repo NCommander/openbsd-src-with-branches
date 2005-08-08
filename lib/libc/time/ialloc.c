@@ -1,12 +1,8 @@
+/*	$OpenBSD$ */
 /*
 ** This file is in the public domain, so clarified as of
 ** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
 */
-
-#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
-static char elsieid[] = "@(#)ialloc.c	8.29";
-static char rcsid[] = "$OpenBSD: ialloc.c,v 1.8 2003/03/13 15:47:34 deraadt Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 

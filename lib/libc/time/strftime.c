@@ -1,8 +1,4 @@
-#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
-static char elsieid[] = "@(#)strftime.c	7.75";
-static char *rcsid = "$OpenBSD: strftime.c,v 1.14 2004/10/18 22:33:43 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
-
+/*	$OpenBSD$ */
 #include "private.h"
 
 /*

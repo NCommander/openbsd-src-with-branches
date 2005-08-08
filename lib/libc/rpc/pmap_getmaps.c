@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -26,10 +27,6 @@
  * 2550 Garcia Avenue
  * Mountain View, California  94043
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: pmap_getmaps.c,v 1.8 2005/01/08 19:17:39 krw Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * pmap_getmap.c

@@ -1,12 +1,8 @@
+/*	$OpenBSD$ */
 /*
 ** This file is in the public domain, so clarified as of
 ** 1996-06-05 by Arthur David Olson (arthur_david_olson@nih.gov).
 */
-
-#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
-static char elsieid[] = "@(#)localtime.c	7.95";
-static char rcsid[] = "$OpenBSD: localtime.c,v 1.25 2004/10/18 22:33:43 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*
 ** Leap second handling from Bradley White (bww@k.gp.cs.cmu.edu).

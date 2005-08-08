@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -26,10 +27,6 @@
  * 2550 Garcia Avenue
  * Mountain View, California  94043
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: rpc_dtablesize.c,v 1.5 1997/09/22 05:11:09 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 #include <unistd.h>
 #include <sys/types.h>

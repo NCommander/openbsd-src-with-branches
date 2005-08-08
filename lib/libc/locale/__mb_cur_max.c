@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: __mb_cur_max.c,v 1.1 2005/05/11 18:44:12 espie Exp $	*/
 /*	$NetBSD: __mb_cur_max.c,v 1.2 2001/01/25 01:25:06 itojun Exp $	*/
 
 /*-
@@ -26,10 +26,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD$";
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <limits.h>

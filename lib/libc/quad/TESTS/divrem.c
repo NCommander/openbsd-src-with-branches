@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,18 +32,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: divrem.c,v 1.3 2003/06/02 20:18:36 millert Exp $";
-#endif /* not lint */
 
 #include <stdio.h>
 
+int
 main()
 {
 	union { long long q; unsigned int v[2]; } a, b, q, r;

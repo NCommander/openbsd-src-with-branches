@@ -1,4 +1,4 @@
-/*	$OpenBSD: stack_protector.c,v 1.6 2003/10/01 18:19:08 miod Exp $	*/
+/*	$OpenBSD: stack_protector.c,v 1.7 2004/09/14 22:19:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Hiroaki Etoh, Federico G. Schwindt, and Miodrag Vallat.
@@ -26,10 +26,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#if defined(LIBC_SCCS) && !defined(list)
-static char rcsid[] = "$OpenBSD: stack_protector.c,v 1.6 2003/10/01 18:19:08 miod Exp $";
-#endif
 
 #include <sys/param.h>
 #include <sys/sysctl.h>

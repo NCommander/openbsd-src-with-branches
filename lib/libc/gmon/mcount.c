@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -26,10 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if !defined(lint) && !defined(_KERNEL) && defined(LIBC_SCCS)
-static char rcsid[] = "$OpenBSD: mcount.c,v 1.8 2003/06/02 20:18:35 millert Exp $";
-#endif
 
 #include <sys/param.h>
 #include <sys/gmon.h>

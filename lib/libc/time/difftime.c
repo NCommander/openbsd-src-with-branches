@@ -1,12 +1,8 @@
+/*	$OpenBSD$ */
 /*
 ** This file is in the public domain, so clarified as of
 ** 1996-06-05 by Arthur David Olson.
 */
-
-#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
-static char elsieid[] = "@(#)difftime.c	7.19";
-static char rcsid[] = "$OpenBSD: difftime.c,v 1.7 2005/07/05 13:40:51 millert Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*LINTLIBRARY*/
 

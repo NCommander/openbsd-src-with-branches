@@ -1,12 +1,8 @@
+/*	$OpenBSD$ */
 /*
 ** This file is in the public domain, so clarified as of
 ** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
 */
-
-#if defined(LIBC_SCCS) && !defined(lint) && !defined(NOID)
-static char elsieid[] = "@(#)zdump.c	7.65";
-static char rcsid[] = "$OpenBSD: zdump.c,v 1.15 2004/10/19 05:01:01 deraadt Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*
 ** This code has been made independent of the rest of the time
