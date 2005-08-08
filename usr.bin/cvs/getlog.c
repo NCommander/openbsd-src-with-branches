@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.44 2005/07/27 16:42:19 xsa Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.45 2005/08/05 10:17:14 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -155,12 +155,11 @@ static int
 cvs_getlog_remote(CVSFILE *cf, void *arg)
 {
 	int ret;
-	char *repo, fpath[MAXPATHLEN];
+	char fpath[MAXPATHLEN];
 	struct cvsroot *root;
 
 	ret = 0;
 	root = CVS_DIR_ROOT(cf);
-	repo = CVS_DIR_REPO(cf);
 
 	if (cf->cf_type == DT_DIR) {
 		if (cf->cf_cvstat == CVS_FST_UNKNOWN)
