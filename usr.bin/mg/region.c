@@ -1,4 +1,4 @@
-/*	$OpenBSD: region.c,v 1.16 2005/06/05 05:15:56 kjell Exp $	*/
+/*	$OpenBSD: region.c,v 1.17 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -305,14 +305,17 @@ setprefix(int f, int n)
 	int	retval;
 
 	if (prefix_string[0] == '\0')
-		rep = ereply("Prefix string: ", buf, sizeof(buf));
+		rep = eread("Prefix string: ", buf, sizeof(buf),
+		    EFNEW | EFCR);
 	else
-		rep = eread("Prefix string (default %s): ",
-		    buf, sizeof(buf), EFNUL | EFNEW | EFCR, prefix_string);
-	if (rep != NULL && *rep != '\0') {
+		rep = eread("Prefix string (default %s): ", buf, sizeof(buf),
+		    EFNUL | EFNEW | EFCR, prefix_string);
+	if (rep == NULL)
+		return (ABORT);
+	if (rep[0] != '\0') {
 		(void)strlcpy(prefix_string, rep, sizeof(prefix_string));
 		retval = TRUE;
-	} else if (*rep == '\0' && prefix_string[0] != '\0') {
+	} else if (rep[0] == '\0' && prefix_string[0] != '\0') {
 		/* CR -- use old one */
 		retval = TRUE;
 	} else
