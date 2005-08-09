@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.45 2005/07/01 13:38:14 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.46 2005/07/28 20:14:29 henning Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -164,6 +164,9 @@ print_mainconf(struct bgpd_config *conf)
 
 	if (conf->flags & BGPD_FLAG_DECISION_ROUTEAGE)
 		printf("rde route-age evaluate\n");
+
+	if (conf->flags & BGPD_FLAG_DECISION_MED_ALWAYS)
+		printf("rde med compare always\n");
 
 	if (conf->flags & BGPD_FLAG_DECISION_TRANS_AS)
 		printf("transparent-as yes\n");

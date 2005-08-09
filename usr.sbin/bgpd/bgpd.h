@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.174 2005/07/01 13:38:14 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.175 2005/07/04 09:37:24 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -60,6 +60,7 @@
 #define	BGPD_FLAG_DECISION_MASK		0x0f00
 #define	BGPD_FLAG_DECISION_ROUTEAGE	0x0100
 #define	BGPD_FLAG_DECISION_TRANS_AS	0x0200
+#define	BGPD_FLAG_DECISION_MED_ALWAYS	0x0400
 
 #define	BGPD_LOG_UPDATES		0x0001
 
