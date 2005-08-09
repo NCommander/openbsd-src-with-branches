@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.53 2005/05/31 19:17:03 jason Exp $	*/
+/*	$OpenBSD: auich.c,v 1.54 2005/08/04 13:22:49 jsg Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -428,11 +428,6 @@ auich_attach(parent, self, aux)
 		bus_dmamem_free(sc->dmat, sc->dmalist_seg, segs);
 		return;
 	}
-
-	/* enable bus mastering (should it not be mi?) */
-	csr = pci_conf_read(pa->pa_pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
-	pci_conf_write(pa->pa_pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,
-	    csr | PCI_COMMAND_MASTER_ENABLE);
 
 	if (pci_intr_map(pa, &ih)) {
 		bus_space_unmap(sc->iot, sc->aud_ioh, aud_size);

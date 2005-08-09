@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.18 2004/04/14 21:36:41 mickey Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.19 2004/09/02 02:09:09 marco Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -430,9 +430,6 @@ emuxki_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_pc   = pa->pa_pc;
 	sc->sc_dmat = pa->pa_dmat;
-	pci_conf_write(pa->pa_pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,
-		pci_conf_read(pa->pa_pc, pa->pa_tag,
-		(PCI_COMMAND_STATUS_REG) | PCI_COMMAND_MASTER_ENABLE));
 
 	if (pci_intr_map(pa, &ih)) {
 		printf(": couldn't map interrupt\n");

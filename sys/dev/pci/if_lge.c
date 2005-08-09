@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.20 2005/06/18 04:23:09 brad Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.21 2005/07/02 23:10:11 brad Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -477,10 +477,6 @@ void lge_attach(parent, self, aux)
 	 * Map control/status registers.
 	 */
 	DPRINTFN(5, ("Map control/status regs\n"));
-	command = pci_conf_read(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
-	command |= PCI_COMMAND_IO_ENABLE | PCI_COMMAND_MEM_ENABLE |
-	  PCI_COMMAND_MASTER_ENABLE;
-	pci_conf_write(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG, command);
 	command = pci_conf_read(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
 
 #ifdef LGE_USEIOSPACE

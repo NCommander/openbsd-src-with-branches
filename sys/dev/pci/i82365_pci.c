@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365_pci.c,v 1.7 2002/11/19 18:40:17 jason Exp $ */
+/*	$OpenBSD: i82365_pci.c,v 1.8 2005/01/27 17:03:23 millert Exp $ */
 /*	$NetBSD: i82365_pci.c,v 1.11 2000/02/24 03:42:44 itohy Exp $	*/
 
 /*
@@ -152,11 +152,6 @@ pcic_pci_attach(parent, self, aux)
 
 	sc->memt = memt;
 	sc->memh = memh;
-
-	/* Enable the card. */
-	pci_conf_write(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,
-	    pci_conf_read(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG) |
-	    PCI_COMMAND_MASTER_ENABLE);
 
 	printf("\n");
 	pcic_attach(sc);

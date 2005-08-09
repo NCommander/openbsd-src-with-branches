@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac_pci.c,v 1.8 2001/12/31 21:11:01 mickey Exp $	*/
+/*	$OpenBSD: cac_pci.c,v 1.9 2003/03/06 22:31:23 mickey Exp $	*/
 /*	$NetBSD: cac_pci.c,v 1.10 2001/01/10 16:48:04 ad Exp $	*/
 
 /*-
@@ -214,11 +214,6 @@ cac_pci_attach(parent, self, aux)
 	}
 
 	sc->sc_dmat = pa->pa_dmat;
-
-	/* Enable the device. */
-	reg = pci_conf_read(pa->pa_pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
-	pci_conf_write(pa->pa_pc, pa->pa_tag, PCI_COMMAND_STATUS_REG,
-		       reg | PCI_COMMAND_MASTER_ENABLE);
 
 	/* Map and establish the interrupt. */
 	if (pci_intr_map(pa, &ih)) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha_pci.c,v 1.7 2002/03/14 01:26:59 millert Exp $ */
+/*	$OpenBSD: iha_pci.c,v 1.8 2002/11/14 02:31:46 krw Exp $ */
 /*-------------------------------------------------------------------------
  *
  * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
@@ -87,14 +87,8 @@ iha_pci_attach(parent, self, aux)
 	struct iha_softc *sc = (void *)self;
 	bus_space_tag_t iot;
 	const char *intrstr;
-	pcireg_t command;
 	int ioh_valid;
 				
-	command  = pci_conf_read(pa->pa_pc,pa->pa_tag,PCI_COMMAND_STATUS_REG);
-	command |= PCI_COMMAND_MASTER_ENABLE | PCI_COMMAND_PARITY_ENABLE;
-
-	pci_conf_write(pa->pa_pc, pa->pa_tag, PCI_COMMAND_STATUS_REG, command);
-
 	/*
 	 * XXX - Tried memory mapping (using code from adw and ahc)
 	 *	 rather that IO mapping, but it didn't work at all..
