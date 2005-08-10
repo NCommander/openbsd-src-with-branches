@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.c,v 1.71 2005/07/27 14:15:24 xsa Exp $	*/
+/*	$OpenBSD: proto.c,v 1.72 2005/07/28 15:52:09 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -269,7 +269,7 @@ cvs_connect(struct cvsroot *root)
 
 		execvp(argv[0], argv);
 		cvs_log(LP_ERRNO, "failed to exec");
-		exit(1);
+		exit(CVS_EX_PROTO);
 	}
 
 	/* we are the parent */
