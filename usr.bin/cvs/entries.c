@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.41 2005/07/24 16:46:39 xsa Exp $	*/
+/*	$OpenBSD: entries.c,v 1.42 2005/07/25 12:05:43 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -125,7 +125,7 @@ cvs_ent_open(const char *dir, int flags)
 	ep->cef_cur = NULL;
 	TAILQ_INIT(&(ep->cef_ent));
 
-	while (fgets(ebuf, sizeof(ebuf), fp) != NULL) {
+	while (fgets(ebuf, (int)sizeof(ebuf), fp) != NULL) {
 		len = strlen(ebuf);
 		if ((len > 0) && (ebuf[len - 1] == '\n'))
 			ebuf[--len] = '\0';
