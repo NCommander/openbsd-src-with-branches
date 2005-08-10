@@ -1,4 +1,4 @@
-/*	$OpenBSD: root.c,v 1.22 2005/08/09 10:33:46 joris Exp $	*/
+/*	$OpenBSD: root.c,v 1.23 2005/08/10 14:49:20 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -162,6 +162,7 @@ cvsroot_parse(const char *str)
 		if (root->cr_method == CVS_METHOD_NONE)
 			root->cr_method = CVS_METHOD_LOCAL;
 		/* stop here, it's just a path */
+		TAILQ_INSERT_HEAD(&cvs_rcache, root, root_cache);
 		return (root);
 	}
 
