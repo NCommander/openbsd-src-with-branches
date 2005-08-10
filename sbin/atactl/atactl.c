@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.33 2004/02/19 21:22:07 grange Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.34 2004/09/16 04:39:35 deraadt Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -218,6 +218,7 @@ struct bitinfo ata_cmd_set2[] = {
 };
 
 struct bitinfo ata_cmd_ext[] = {
+	{ ATAPI_CMDE_IIUF, "IDLE IMMEDIATE with UNLOAD FEATURE" },
 	{ ATAPI_CMDE_MSER, "Media serial number" },
 	{ ATAPI_CMDE_TEST, "SMART self-test" },
 	{ ATAPI_CMDE_SLOG, "SMART error logging" },
