@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.60 2004/10/18 03:59:34 itojun Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.61 2005/03/06 16:27:01 dhartmei Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -379,7 +379,8 @@ ip6_input(m)
 			ours = 1;
 		else if (!ip6_mrouter) {
 			ip6stat.ip6s_notmember++;
-			ip6stat.ip6s_cantforward++;
+			if (!IN6_IS_ADDR_MC_LINKLOCAL(&ip6->ip6_dst))
+				ip6stat.ip6s_cantforward++;
 			in6_ifstat_inc(m->m_pkthdr.rcvif, ifs6_in_discard);
 			goto bad;
 		}
