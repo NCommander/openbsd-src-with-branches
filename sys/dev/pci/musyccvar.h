@@ -1,5 +1,4 @@
-/*	$OpenBSD$ */
-/*	$Id: musyccvar.h,v 1.41 2005/08/13 14:47:25 cjeker Exp $ */
+/*	$OpenBSD: musyccvar.h,v 1.1 2005/08/13 22:49:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland

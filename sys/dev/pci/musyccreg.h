@@ -1,5 +1,4 @@
-/*	$OpenBSD$ */
-/*	$Id: musyccreg.h,v 1.12 2005/08/12 17:34:10 cjeker Exp $ */
+/*	$OpenBSD: musyccreg.h,v 1.1 2005/08/13 22:49:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland

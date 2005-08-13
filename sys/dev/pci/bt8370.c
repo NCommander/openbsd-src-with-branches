@@ -1,5 +1,4 @@
-/*	$OpenBSD$ */
-/*	$Id: bt8370.c,v 1.111 2005/08/12 17:34:33 cjeker Exp $ */
+/*	$OpenBSD: bt8370.c,v 1.1 2005/08/13 22:49:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
