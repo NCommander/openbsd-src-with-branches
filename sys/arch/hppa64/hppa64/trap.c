@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.1 2005/04/01 10:40:47 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.2 2005/07/18 02:43:25 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -652,6 +652,7 @@ syscall(struct trapframe *frame)
 			case SYS_pwritev:
 			case SYS_pread:
 			case SYS_pwrite:	i = 4;	break;
+			case SYS_mquery:
 			case SYS_mmap:		i = 6;	break;
 			}
 
