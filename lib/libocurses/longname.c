@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1981, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -26,10 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "@(#)longname.c	8.1 (Berkeley) 6/4/93";
-#endif	/* not lint */
 
 /*
  * longname --
