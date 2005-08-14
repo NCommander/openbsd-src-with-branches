@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.111 2005/08/03 14:43:08 xsa Exp $	*/
+/*	$OpenBSD: file.c,v 1.112 2005/08/11 11:54:42 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1071,7 +1071,7 @@ cvs_file_sort(struct cvs_flist *flp, u_int nfiles)
 	size_t nb;
 	CVSFILE *cf, **cfvec;
 
-	cfvec = (CVSFILE **)calloc(nfiles, sizeof(CVSFILE *));
+	cfvec = (CVSFILE **)calloc((size_t)nfiles, sizeof(CVSFILE *));
 	if (cfvec == NULL) {
 		cvs_log(LP_ERRNO, "failed to allocate sorting vector");
 		return (-1);
