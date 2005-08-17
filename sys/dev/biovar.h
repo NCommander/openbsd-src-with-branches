@@ -138,7 +138,23 @@ struct bioc_alarm {
 #define BIOC_SATEST		0x04	/* test alarm */
 };
 
+#define BIOCBLINK _IOWR('B', 36, struct bioc_blink)
+struct bioc_blink {
+	void		*bb_cookie;
+
+	int		bb_volid;	/* volume, -1 unused */
+	int		bb_diskid;	/* virtual disk id, -1 all */
+	int		bb_status;	/* current status */
+	int		bb_resv;	/* for binary compatibility */
+
+	int		bb_opcode;
+#define BIOC_SBUNBLINK		0x00	/* disable blinking */
+#define BIOC_SBBLINK		0x01	/* enable blink */
+#define BIOC_SBALARM		0x02	/* enable alarm blink */
+};
+
 #define BIOC_INQ		0x01
 #define BIOC_DISK		0x02
 #define BIOC_VOL		0x04
 #define BIOC_ALARM		0x08
+#define BIOC_BLINK		0x10
