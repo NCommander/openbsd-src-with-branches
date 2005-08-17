@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.54 2005/08/14 23:24:55 joris Exp $	*/
+/*	$OpenBSD: resp.c,v 1.55 2005/08/16 16:34:19 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -423,7 +423,7 @@ cvs_resp_createdir(char *line)
 	CVSENTRIES *entf;
 	struct stat st;
 	struct cvs_ent *ent;
-	char *file, subdir[MAXPATHLEN], buf[MAXPATHLEN];
+	char *file, subdir[MAXPATHLEN], buf[CVS_ENT_MAXLINELEN];
 
 	entf = NULL;
 	cf = NULL;
@@ -808,7 +808,8 @@ static int
 cvs_resp_rcsdiff(struct cvsroot *root, int type, char *line)
 {
 	int len;
-	char file[MAXPATHLEN], buf[MAXPATHLEN], cksum_buf[CVS_CKSUM_LEN];
+	char file[MAXPATHLEN];
+	char buf[CVS_ENT_MAXLINELEN], cksum_buf[CVS_CKSUM_LEN];
 	char *fname, *orig, *patch;
 	mode_t fmode;
 	BUF *res, *fcont, *patchbuf;
