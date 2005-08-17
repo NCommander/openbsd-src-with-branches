@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.48 2005/07/30 21:16:17 moritz Exp $	*/
+/*	$OpenBSD: util.c,v 1.49 2005/08/12 14:41:54 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -506,7 +506,7 @@ cvs_exec(int argc, char **argv, int fds[3])
  * Change to directory.
  * chdir() wrapper with an error message.
  * Returns 0 on success, or -1 on failure.
- */ 
+ */
 int
 cvs_chdir(const char *path)
 {
