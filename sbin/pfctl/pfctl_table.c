@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_table.c,v 1.62 2004/12/22 17:17:55 dhartmei Exp $ */
+/*	$OpenBSD: pfctl_table.c,v 1.63 2005/05/21 21:03:58 henning Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -568,6 +568,10 @@ print_iface(struct pfi_kif *p, int opts)
 	int	i, af, dir, act;
 
 	printf("%s", p->pfik_name);
+	if (opts & PF_OPT_VERBOSE) {
+		if (p->pfik_flags & PFI_IFLAG_SKIP)
+			printf(" (skip)");
+	}
 	printf("\n");
 
 	if (!(opts & PF_OPT_VERBOSE2))
