@@ -1,4 +1,4 @@
-/*	$OpenBSD: getline.c,v 1.15 2003/06/28 01:04:57 deraadt Exp $ */
+/*	$OpenBSD: getline.c,v 1.16 2004/09/16 04:50:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 1985, 1988 Regents of the University of California.
@@ -186,6 +186,7 @@ telnet_getline(struct csiob *iobp, struct csiob *telnet_passthrough)
 		case WONT:
 		case DO:
 		case DONT:
+		case IP:
 			tbuf[0] = IAC;
 			tbuf[1] = ch;
 			tbuf[2] = iobp->io_buffer[iobp->next_byte++];
