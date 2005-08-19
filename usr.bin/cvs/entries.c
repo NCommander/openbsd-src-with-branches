@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.44 2005/08/12 18:46:53 xsa Exp $	*/
+/*	$OpenBSD: entries.c,v 1.45 2005/08/16 16:34:19 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -151,7 +151,7 @@ cvs_ent_open(const char *dir, int flags)
 
 	(void)fclose(fp);
 
-	if (exists)
+	if (exists == 1)
 		ep->cef_flags |= CVS_ENTF_SYNC;
 
 	return (ep);
