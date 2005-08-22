@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.499 2005/08/11 05:09:29 joel Exp $ */
+/*	$OpenBSD: pf.c,v 1.500 2005/08/18 10:28:13 pascoe Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2427,6 +2427,11 @@ pf_get_translation(struct pf_pdesc *pd, struct mbuf *m, int off, int direction,
 		case PF_RDR: {
 			if (pf_map_addr(pd->af, r, saddr, naddr, NULL, sn))
 				return (NULL);
+			if ((r->rpool.opts & PF_POOL_TYPEMASK) ==
+			    PF_POOL_BITMASK)
+				PF_POOLMASK(naddr, naddr,
+				    &r->rpool.cur->addr.v.a.mask, daddr,
+				    pd->af);
 
 			if (r->rpool.proxy_port[1]) {
 				u_int32_t	tmp_nport;
