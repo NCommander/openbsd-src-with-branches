@@ -1,4 +1,4 @@
-/*	$OpenBSD: cal.c,v 1.13 2005/07/06 05:31:08 tedu Exp $	*/
+/*	$OpenBSD: cal.c,v 1.14 2005/07/06 06:45:58 deraadt Exp $	*/
 /*	$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cal.c	8.4 (Berkeley) 4/2/94";
 #else
-static const char rcsid[] = "$OpenBSD: cal.c,v 1.13 2005/07/06 05:31:08 tedu Exp $";
+static const char rcsid[] = "$OpenBSD: cal.c,v 1.14 2005/07/06 06:45:58 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -429,16 +429,18 @@ usage(void)
 int
 parsemonth(const char *s)
 {
-	int v;
-	char *cp;
 	struct tm tm;
+	char *cp;
+	int v;
 
 	v = (int)strtol(s, &cp, 10);
 	if (cp != s)
-		return (v);
-	if (strptime(s, "%B", &tm) != NULL)
-		return (tm.tm_mon + 1);
-	if (strptime(s, "%b", &tm) != NULL)
-		return (tm.tm_mon + 1);
-	return (0);
+		;
+	else if (strptime(s, "%B", &tm) != NULL)
+		v = tm.tm_mon + 1;
+	else if (strptime(s, "%b", &tm) != NULL)
+		v = tm.tm_mon + 1;
+	if (v <= 0 || v > 12)
+		errx(1, "illegal month value: use 1-12");
+	return (v);
 }
