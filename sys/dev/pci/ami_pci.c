@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami_pci.c,v 1.28 2005/08/09 04:10:10 mickey Exp $	*/
+/*	$OpenBSD: ami_pci.c,v 1.29 2005/08/15 23:22:46 marco Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -87,6 +87,7 @@ struct	ami_pci_device {
 	    AMI_CHECK_SIGN | AMI_BROKEN },
 	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_MEGARAID,		0 },
 	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_MEGARAID_320,	0 },
+	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_MEGARAID_3202E,	0 },
 	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_SATA8,		0 },
 	{ 0 }
 };
