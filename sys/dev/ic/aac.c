@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.21 2005/07/03 22:31:27 krw Exp $	*/
+/*	$OpenBSD: aac.c,v 1.22 2005/08/21 02:31:13 krw Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -1080,6 +1080,9 @@ aac_bio_complete(struct aac_ccb *ccb)
 	struct aac_blockwrite_response *bwr;
 	AAC_FSAStatus status;
 
+	if (bp == NULL)
+		goto done;
+
 	/* fetch relevant status and then release the command */
 	if (bp->b_flags & B_READ) {
 		brr = (struct aac_blockread_response *)&ccb->ac_fib->data[0];
@@ -1101,6 +1104,8 @@ aac_bio_complete(struct aac_ccb *ccb)
 		printf("%s: I/O error %d (%s)\n", sc->sc_dev.dv_xname,
 		    status, AAC_COMMAND_STATUS(status));
 	}
+
+done:
 	scsi_done(xs);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioprbs.c,v 1.6 2005/05/23 23:26:55 tedu Exp $	*/
+/*	$OpenBSD: ioprbs.c,v 1.7 2005/07/03 22:31:27 krw Exp $	*/
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist
@@ -608,12 +608,14 @@ ioprbs_intr(struct device *dv, struct iop_msg *im, void *reply)
 		err = 1;
 	}
 
-	if (err) {
-		bp->b_flags |= B_ERROR;
-		bp->b_error = EIO;
-		bp->b_resid = bp->b_bcount;
-	} else
-		bp->b_resid = bp->b_bcount - letoh32(rb->transfercount);
+	if (bp) {
+		if (err) {
+			bp->b_flags |= B_ERROR;
+			bp->b_error = EIO;
+			bp->b_resid = bp->b_bcount;
+		} else
+			bp->b_resid = bp->b_bcount - letoh32(rb->transfercount);
+	}
 
 	iop_msg_unmap(iop, im);
 	iop_msg_free(iop, im);
