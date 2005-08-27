@@ -22,7 +22,7 @@ INSTALLBOOT?=	/usr/mdec/installboot -v
 XNAME?=		floppy
 FLOPPY?=	${XNAME}${REV}.fs
 FLOPPYBLKS?=	2880
-FLOPPYTYPE?=	floppy3
+FLOPPYTYPE?=	floppyx
 BOOT?=		/usr/mdec/boot
 BOOTXX?=	/usr/mdec/bootxx
 
