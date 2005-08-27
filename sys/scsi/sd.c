@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.88 2005/08/23 23:38:00 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.89 2005/08/24 01:19:47 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -382,12 +382,12 @@ sdopen(dev, flag, fmt, p)
 		/* Check that it is still responding and ok. */
 		error = scsi_test_unit_ready(sc_link,
 		    TEST_READY_RETRIES_DEFAULT,
-		    (part == RAW_PART && fmt == S_IFCHR) ? SCSI_SILENT : 0 |
+		    ((part == RAW_PART && fmt == S_IFCHR) ? SCSI_SILENT : 0) |
 		    SCSI_IGNORE_ILLEGAL_REQUEST | SCSI_IGNORE_MEDIA_CHANGE);
 
 		/* Spin up the unit, ready or not. */
 		error = scsi_start(sc_link, SSS_START,
-		    (part == RAW_PART && fmt == S_IFCHR) ? SCSI_SILENT : 0 |
+		    ((part == RAW_PART && fmt == S_IFCHR) ? SCSI_SILENT : 0) |
 		    SCSI_IGNORE_ILLEGAL_REQUEST | SCSI_IGNORE_MEDIA_CHANGE);
 
 		if (error) {
