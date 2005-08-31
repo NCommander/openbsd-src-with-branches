@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2005/08/15 18:53:42 kettenis Exp $
 
-SUBDIR+= bltone
+SUBDIR+= blt bltone
 
 install:
 
