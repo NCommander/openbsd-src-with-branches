@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: canohost.c,v 1.41 2004/07/21 11:51:29 djm Exp $");
+RCSID("$OpenBSD: canohost.c,v 1.44 2005/06/17 02:44:32 djm Exp $");
 
 #include "packet.h"
 #include "xmalloc.h"
@@ -137,7 +137,8 @@ check_ip_options(int sock, char *ipaddr)
 	u_char options[200];
 	char text[sizeof(options) * 3 + 1];
 	socklen_t option_size;
-	int i, ipproto;
+	u_int i;
+	int ipproto;
 	struct protoent *ip;
 
 	if ((ip = getprotobyname("ip")) != NULL)
@@ -307,7 +308,7 @@ get_sock_port(int sock, int local)
 	} else {
 		if (getpeername(sock, (struct sockaddr *)&from, &fromlen) < 0) {
 			debug("getpeername failed: %.100s", strerror(errno));
-			cleanup_exit(255);
+			return -1;
 		}
 	}
 	/* Return port number. */

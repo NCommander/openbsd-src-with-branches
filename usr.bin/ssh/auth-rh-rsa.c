@@ -13,7 +13,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-rh-rsa.c,v 1.36 2003/06/02 09:17:34 markus Exp $");
+RCSID("$OpenBSD: auth-rh-rsa.c,v 1.38 2005/07/17 07:17:54 djm Exp $");
 
 #include "packet.h"
 #include "uidswap.h"
@@ -86,7 +86,7 @@ auth_rhosts_rsa(Authctxt *authctxt, char *cuser, Key *client_host_key)
 	 */
 
 	verbose("Rhosts with RSA host authentication accepted for %.100s, %.100s on %.700s.",
-	   pw->pw_name, cuser, chost);
+	    pw->pw_name, cuser, chost);
 	packet_send_debug("Rhosts with RSA host authentication accepted.");
 	return 1;
 }
