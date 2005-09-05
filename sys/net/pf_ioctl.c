@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.156 2005/08/18 10:28:14 pascoe Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.157 2005/08/18 10:32:56 pascoe Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1600,6 +1600,9 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 				error = EINVAL;
 			if (pf_anchor_setup(newrule, ruleset, pcr->anchor_call))
 				error = EINVAL;
+			TAILQ_FOREACH(pa, &pf_pabuf, entries)
+				if (pf_tbladdr_setup(ruleset, &pa->addr))
+					error = EINVAL;
 
 			if (newrule->overload_tblname[0]) {
 				if ((newrule->overload_tbl = pfr_attach_table(
