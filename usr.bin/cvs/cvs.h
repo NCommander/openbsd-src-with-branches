@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.80 2005/08/16 16:34:19 xsa Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.81 2005/09/05 19:29:42 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -260,6 +260,13 @@ struct cvs_ent {
 	time_t			 ce_mtime;
 	char			*ce_opts;
 	char			*ce_tag;
+
+	/*
+	 * This variable is set to 1 if we have already processed this entry
+	 * in the cvs_file_getdir() function. This is to avoid files being
+	 * passed twice to the callbacks.
+	 */
+	int			processed;
 	TAILQ_ENTRY(cvs_ent)	 ce_list;
 };
 

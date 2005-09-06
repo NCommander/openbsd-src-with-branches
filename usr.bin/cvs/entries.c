@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.46 2005/08/19 08:48:30 xsa Exp $	*/
+/*	$OpenBSD: entries.c,v 1.47 2005/08/22 08:53:12 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -371,6 +371,7 @@ cvs_ent_parse(const char *entry)
 
 	ent->ce_status = CVS_ENT_REG;
 	ent->ce_name = fields[1];
+	ent->processed = 0;
 
 	if (ent->ce_type == CVS_ENT_FILE) {
 		if (*fields[2] == '-') {
