@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88110.c,v 1.20 2005/04/27 14:09:45 miod Exp $	*/
+/*	$OpenBSD: m88110.c,v 1.21 2005/04/30 16:42:37 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * All rights reserved.
@@ -189,6 +189,7 @@ void
 m88110_setup_board_config(void)
 {
 	/* we could print something here... */
+	max_cpus = 1;
 	cpu_sets[0] = 1;   /* This cpu installed... */
 }
 
