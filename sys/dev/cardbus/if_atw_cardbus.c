@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_atw_cardbus.c,v 1.9 2005/05/27 18:57:19 robert Exp $	*/
+/*	$OpenBSD: if_atw_cardbus.c,v 1.10 2005/06/08 05:36:33 henning Exp $	*/
 /*	$NetBSD: if_atw_cardbus.c,v 1.9 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -66,7 +66,6 @@
 #include <netinet/if_ether.h>
 #endif
 
-#include <net80211/ieee80211_compat.h>
 #include <net80211/ieee80211_radiotap.h>
 #include <net80211/ieee80211_var.h>
 

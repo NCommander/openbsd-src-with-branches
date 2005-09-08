@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5xxx.h,v 1.24 2005/08/02 12:55:11 reyk Exp $	*/
+/*	$OpenBSD: ar5xxx.h,v 1.25 2005/08/17 13:14:17 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -57,7 +57,6 @@
 #endif
 
 #include <net80211/ieee80211_var.h>
-#include <net80211/ieee80211_compat.h>
 #include <net80211/ieee80211_radiotap.h>
 #include <net80211/ieee80211_regdomain.h>
 
