@@ -1,4 +1,4 @@
-/*	$OpenBSD: ce4231.c,v 1.19 2005/04/16 21:57:23 mickey Exp $	*/
+/*	$OpenBSD: ce4231.c,v 1.20 2005/07/09 22:23:15 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -27,7 +27,7 @@
  */
 
 /*
- * Driver for CS4231 based audio found in some sun4m systems (cs4231)
+ * Driver for CS4231 based audio found in some sun4u systems (cs4231)
  * based on ideas from the S/Linux project and the NetBSD project.
  *
  * Effort sponsored in part by the Defense Advanced Research Projects
