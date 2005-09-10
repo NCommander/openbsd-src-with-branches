@@ -269,34 +269,34 @@ do {						\
 /* Emulator uses target format internally
    but host stores it in host endian-ness.  */
 
-#define GET_REAL(r,e)						\
-do {								\
-     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)	\
-       e53toe ((unsigned EMUSHORT *) (r), (e));			\
-     else							\
-       {							\
-	 unsigned EMUSHORT w[4];				\
-	 w[3] = ((EMUSHORT *) r)[0];				\
-	 w[2] = ((EMUSHORT *) r)[1];				\
-	 w[1] = ((EMUSHORT *) r)[2];				\
-	 w[0] = ((EMUSHORT *) r)[3];				\
-	 e53toe (w, (e));					\
-       }							\
+#define GET_REAL(r,e)							\
+do {									\
+     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)		\
+       e53toe ((unsigned EMUSHORT *) (r), (e));				\
+     else								\
+       {								\
+	 unsigned EMUSHORT w[4];					\
+         bcopy (((EMUSHORT *) r), &w[3], sizeof (EMUSHORT));		\
+         bcopy (((EMUSHORT *) r) + 1, &w[2], sizeof (EMUSHORT));	\
+	 bcopy (((EMUSHORT *) r) + 2, &w[1], sizeof (EMUSHORT));	\
+	 bcopy (((EMUSHORT *) r) + 3, &w[0], sizeof (EMUSHORT));	\
+	 e53toe (w, (e));						\
+       }								\
    } while (0)
 
-#define PUT_REAL(e,r)						\
-do {								\
-     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)	\
-       etoe53 ((e), (unsigned EMUSHORT *) (r));			\
-     else							\
-       {							\
-	 unsigned EMUSHORT w[4];				\
-	 etoe53 ((e), w);					\
-	 *((EMUSHORT *) r) = w[3];				\
-	 *((EMUSHORT *) r + 1) = w[2];				\
-	 *((EMUSHORT *) r + 2) = w[1];				\
-	 *((EMUSHORT *) r + 3) = w[0];				\
-       }							\
+#define PUT_REAL(e,r)							\
+do {									\
+     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)		\
+       etoe53 ((e), (unsigned EMUSHORT *) (r));				\
+     else								\
+       {								\
+	 unsigned EMUSHORT w[4];					\
+	 etoe53 ((e), w);						\
+         bcopy (&w[3], ((EMUSHORT *) r), sizeof (EMUSHORT));		\
+         bcopy (&w[2], ((EMUSHORT *) r) + 1, sizeof (EMUSHORT));	\
+         bcopy (&w[1], ((EMUSHORT *) r) + 2, sizeof (EMUSHORT));	\
+         bcopy (&w[0], ((EMUSHORT *) r) + 3, sizeof (EMUSHORT));	\
+       }								\
    } while (0)
 
 #else /* not REAL_ARITHMETIC */
@@ -6400,17 +6400,19 @@ ereal_from_double (d)
   /* Convert array of HOST_WIDE_INT to equivalent array of 16-bit pieces.  */
   if (REAL_WORDS_BIG_ENDIAN)
     {
+#if HOST_BITS_PER_WIDE_INT == 32
       s[0] = (unsigned EMUSHORT) (d[0] >> 16);
       s[1] = (unsigned EMUSHORT) d[0];
-#if HOST_BITS_PER_WIDE_INT == 32
       s[2] = (unsigned EMUSHORT) (d[1] >> 16);
       s[3] = (unsigned EMUSHORT) d[1];
 #else
       /* In this case the entire target double is contained in the
 	 first array element.  The second element of the input is
 	 ignored.  */
-      s[2] = (unsigned EMUSHORT) (d[0] >> 48);
-      s[3] = (unsigned EMUSHORT) (d[0] >> 32);
+      s[0] = (unsigned EMUSHORT) (d[0] >> 48);
+      s[1] = (unsigned EMUSHORT) (d[0] >> 32);
+      s[2] = (unsigned EMUSHORT) (d[0] >> 16);
+      s[3] = (unsigned EMUSHORT) d[0];
 #endif
     }
   else

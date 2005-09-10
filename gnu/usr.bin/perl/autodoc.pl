@@ -3,7 +3,10 @@
 require 5.003;	# keep this compatible, an old perl is all we may have before
                 # we build the new one
 
-BEGIN {  push @INC, 'lib' }	# glob() below requires File::Glob
+BEGIN {
+  push @INC, 'lib';
+  require 'regen_lib.pl';
+}
 
 
 #
@@ -28,7 +31,9 @@ sub walk_table (&@) {
 	$F = $filename;
     }
     else {
+	safer_unlink $filename;
 	open F, ">$filename" or die "Can't open $filename: $!";
+	binmode F;
 	$F = \*F;
     }
     print $F $leader if $leader;
@@ -36,7 +41,7 @@ sub walk_table (&@) {
     while (<IN>) {
 	chomp;
 	next if /^:/;
-	while (s|\\$||) {
+	while (s|\\\s*$||) {
 	    $_ .= <IN>;
 	    chomp;
 	}
@@ -50,7 +55,9 @@ sub walk_table (&@) {
 	print $F $function->(@args);
     }
     print $F $trailer if $trailer;
-    close $F unless ref $filename;
+    unless (ref $filename) {
+	close $F or die "Error closing $filename: $!";
+    }
 }
 
 my %apidocs;
@@ -69,17 +76,13 @@ FUNC:
             next FUNC;
         }
 	$line++;
-	if ($in =~ /^=for\s+apidoc\s+(.*)\n/) {
+	if ($in =~ /^=for\s+apidoc\s+(.*?)\s*\n/) {
 	    my $proto = $1;
 	    $proto = "||$proto" unless $proto =~ /\|/;
 	    my($flags, $ret, $name, @args) = split /\|/, $proto;
 	    my $docs = "";
 DOC:
 	    while (defined($doc = <$fh>)) {
-                if ($doc =~ /^=head1 (.*)/) {
-                    $curheader = $1;
-                    next DOC;
-                }
 		$line++;
 		last DOC if $doc =~ /^=\w+/;
 		if ($doc =~ m:^\*/$:) {
@@ -101,7 +104,7 @@ DOC:
 		$docfuncs{$name} = [$flags, $docs, $ret, $file, $curheader, @args];
 	    }
 	    if (defined $doc) {
-		if ($doc =~ /^=for/) {
+		if ($doc =~ /^=(?:for|head)/) {
 		    $in = $doc;
 		    redo FUNC;
 		}
@@ -138,16 +141,25 @@ removed without notice.\n\n" if $flags =~ /x/;
 }
 
 my $file;
-for $file (glob('*.c'), glob('*.h')) {
+# glob() picks up docs from extra .c or .h files that may be in unclean
+# development trees.
+my $MANIFEST = do {
+  local ($/, *FH);
+  open FH, "MANIFEST" or die "Can't open MANIFEST: $!";
+  <FH>;
+};
+
+for $file (($MANIFEST =~ /^(\S+\.c)\t/gm), ($MANIFEST =~ /^(\S+\.h)\t/gm)) {
     open F, "< $file" or die "Cannot open $file for docs: $!\n";
     $curheader = "Functions in file $file\n";
     autodoc(\*F,$file);
     close F or die "Error closing $file: $!\n";
 }
 
-unlink "pod/perlapi.pod";
+safer_unlink "pod/perlapi.pod";
 open (DOC, ">pod/perlapi.pod") or
 	die "Can't create pod/perlapi.pod: $!\n";
+binmode DOC;
 
 walk_table {	# load documented functions into approriate hash
     if (@_ > 1) {
@@ -155,16 +167,20 @@ walk_table {	# load documented functions into approriate hash
 	return "" unless $flags =~ /d/;
 	$func =~ s/\t//g; $flags =~ s/p//; # clean up fields from embed.pl
 	$retval =~ s/\t//;
-	if ($flags =~ /A/) {
-	    my $docref = delete $docfuncs{$func};
+	my $docref = delete $docfuncs{$func};
+	if ($docref and @$docref) {
+	    if ($flags =~ /A/) {
+		$docref->[0].="x" if $flags =~ /M/;
+		$apidocs{$docref->[4]}{$func} = 
+		    [$docref->[0] . 'A', $docref->[1], $retval,
+		    				$docref->[3], @args];
+	    } else {
+		$gutsdocs{$docref->[4]}{$func} = 
+		    [$docref->[0], $docref->[1], $retval, $docref->[3], @args];
+	    }
+	}
+	else {
 	    warn "no docs for $func\n" unless $docref and @$docref;
-            $docref->[0].="x" if $flags =~ /M/;
-	    $apidocs{$docref->[4]}{$func} = 
-                [$docref->[0] . 'A', $docref->[1], $retval, $docref->[3], @args];
-	} else {
-	    my $docref = delete $docfuncs{$func};
-	    $gutsdocs{$docref->[4]}{$func} = 
-                [$docref->[0], $docref->[1], $retval, $docref->[3], @args];
 	}
     }
     return "";
@@ -199,7 +215,8 @@ The listing is alphabetical, case insensitive.
 _EOB_
 
 my $key;
-for $key (sort { uc($a) cmp uc($b); } keys %apidocs) { # case insensitive sort
+# case insensitive sort, with fallback for determinacy
+for $key (sort { uc($a) cmp uc($b) || $a cmp $b } keys %apidocs) {
     my $section = $apidocs{$key}; 
     print DOC "\n=head1 $key\n\n=over 8\n\n";
     for my $key (sort { uc($a) cmp uc($b); } keys %$section) {
@@ -231,10 +248,12 @@ perlguts(1), perlxs(1), perlxstut(1), perlintern(1)
 _EOE_
 
 
-close(DOC);
+close(DOC) or die "Error closing pod/perlapi.pod: $!";
 
+safer_unlink "pod/perlintern.pod";
 open(GUTS, ">pod/perlintern.pod") or
 		die "Unable to create pod/perlintern.pod: $!\n";
+binmode GUTS;
 print GUTS <<'END';
 =head1 NAME
 
@@ -273,5 +292,4 @@ perlguts(1), perlapi(1)
 
 END
 
-close GUTS;
-
+close GUTS or die "Error closing pod/perlintern.pod: $!";

@@ -1,3 +1,4 @@
+#!perl -w
 BEGIN {
     if (ord("A") == 193) {
 	print "1..0 # Skip: EBCDIC\n";
@@ -6,13 +7,18 @@ BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib';
     @INC = "::lib" if $^O eq 'MacOS'; # module parses @INC itself
+    require Config; import Config;
+    if ($Config{'extensions'} !~ /\bStorable\b/) {
+        print "1..0 # Skip: Storable was not built; Unicode::UCD uses Storable\n";
+        exit 0;
+    }
 }
 
 use strict;
 use Unicode::UCD;
 use Test::More;
 
-BEGIN { plan tests => 162 };
+BEGIN { plan tests => 179 };
 
 use Unicode::UCD 'charinfo';
 
@@ -164,7 +170,7 @@ is($charinfo->{upper},          '');
 is($charinfo->{lower},          '');
 is($charinfo->{title},          '');
 is($charinfo->{block},          'Mathematical Alphanumeric Symbols');
-is($charinfo->{script},         undef);
+is($charinfo->{script},         'Common');
 
 use Unicode::UCD qw(charblock charscript);
 
@@ -191,7 +197,7 @@ is($charinfo->{upper},          '');
 is($charinfo->{lower},          '');
 is($charinfo->{title},          '');
 is($charinfo->{block},          'Latin-1 Supplement');
-is($charinfo->{script},         undef);
+is($charinfo->{script},         'Common');
 
 use Unicode::UCD qw(charblocks charscripts);
 
@@ -221,8 +227,8 @@ is($charscript, 'Ethiopic');
 my $ranges;
 
 $ranges = charscript('Ogham');
-is($ranges->[0]->[0], hex('1681'), 'Ogham charscript');
-is($ranges->[0]->[1], hex('169a'));
+is($ranges->[1]->[0], hex('1681'), 'Ogham charscript');
+is($ranges->[1]->[1], hex('169a'));
 
 use Unicode::UCD qw(charinrange);
 
@@ -232,7 +238,7 @@ ok( charinrange($ranges, "13a0"));
 ok( charinrange($ranges, "13f4"));
 ok(!charinrange($ranges, "13f5"));
 
-is(Unicode::UCD::UnicodeVersion, '3.2.0', 'UnicodeVersion');
+is(Unicode::UCD::UnicodeVersion, '4.0.1', 'UnicodeVersion');
 
 use Unicode::UCD qw(compexcl);
 
@@ -269,13 +275,46 @@ ok($casespec->{code} eq '00DF' &&
    $casespec->{lower} eq '00DF'  &&
    $casespec->{title} eq '0053 0073'  &&
    $casespec->{upper} eq '0053 0053' &&
-   $casespec->{condition} eq undef, 'casespec 0xDF');
+   !defined $casespec->{condition}, 'casespec 0xDF');
 
 $casespec = casespec(0x307);
 
 ok($casespec->{az}->{code} eq '0307' &&
-   $casespec->{az}->{lower} eq ''  &&
+   !defined $casespec->{az}->{lower} &&
    $casespec->{az}->{title} eq '0307'  &&
    $casespec->{az}->{upper} eq '0307' &&
-   $casespec->{az}->{condition} eq 'az After_Soft_Dotted',
+   $casespec->{az}->{condition} eq 'az After_I',
    'casespec 0x307');
+
+# perl #7305 UnicodeCD::compexcl is weird
+
+for (1) {my $a=compexcl $_}
+ok(1, 'compexcl read-only $_: perl #7305');
+grep {compexcl $_} %{{1=>2}};
+ok(1, 'compexcl read-only hash: perl #7305');
+
+is(Unicode::UCD::_getcode('123'),     123, "_getcode(123)");
+is(Unicode::UCD::_getcode('0123'),  0x123, "_getcode(0123)");
+is(Unicode::UCD::_getcode('0x123'), 0x123, "_getcode(0x123)");
+is(Unicode::UCD::_getcode('0X123'), 0x123, "_getcode(0X123)");
+is(Unicode::UCD::_getcode('U+123'), 0x123, "_getcode(U+123)");
+is(Unicode::UCD::_getcode('u+123'), 0x123, "_getcode(u+123)");
+is(Unicode::UCD::_getcode('U+1234'),   0x1234, "_getcode(U+1234)");
+is(Unicode::UCD::_getcode('U+12345'), 0x12345, "_getcode(U+12345)");
+is(Unicode::UCD::_getcode('123x'),    undef, "_getcode(123x)");
+is(Unicode::UCD::_getcode('x123'),    undef, "_getcode(x123)");
+is(Unicode::UCD::_getcode('0x123x'),  undef, "_getcode(x123)");
+is(Unicode::UCD::_getcode('U+123x'),  undef, "_getcode(x123)");
+
+{
+    my $r1 = charscript('Latin');
+    my $n1 = @$r1;
+    is($n1, 26, "26 ranges in Latin script (Unicode 4.0.0)");
+    shift @$r1 while @$r1;
+    my $r2 = charscript('Latin');
+    is(@$r2, $n1, "modifying results should not mess up internal caches");
+}
+
+{
+	is(charinfo(0xdeadbeef), undef, "[perl #23273] warnings in Unicode::UCD");
+}

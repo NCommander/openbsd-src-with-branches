@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.33 2005/09/06 15:33:21 espie Exp $	*/
+/*	$OpenBSD: misc.c,v 1.31 2005/05/29 18:44:36 espie Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $	*/
 
 /*
@@ -76,10 +76,10 @@ indx(const char *s1, const char *s2)
 		return (t - s1);
 }
 /*
- *  pushback - push character back onto input
+ *  putback - push character back onto input
  */
 void
-pushback(int c)
+putback(int c)
 {
 	if (c == EOF)
 		return;
@@ -90,7 +90,7 @@ pushback(int c)
 
 /*
  *  pbstr - push string back onto input
- *          pushback is replicated to improve
+ *          putback is replicated to improve
  *          performance.
  */
 void
@@ -129,7 +129,7 @@ pbnumbase(int n, int base, int d)
 
 	num = (n < 0) ? -n : n;
 	do {
-		pushback(digits[num % base]);
+		putback(digits[num % base]);
 		printed++;
 	}
 	while ((num /= base) > 0);
@@ -137,10 +137,10 @@ pbnumbase(int n, int base, int d)
 	if (n < 0)
 		printed++;
 	while (printed++ < d)
-		pushback('0');
+		putback('0');
 
 	if (n < 0)
-		pushback('-');
+		putback('-');
 }
 
 /*
@@ -150,7 +150,7 @@ void
 pbunsigned(unsigned long n)
 {
 	do {
-		pushback(n % 10 + '0');
+		putback(n % 10 + '0');
 	}
 	while ((n /= 10) > 0);
 }
@@ -323,7 +323,7 @@ xstrdup(const char *s)
 void
 usage()
 {
-	fprintf(stderr, "usage: m4 [-gs] [-Dname[=value]] [-d flags] [-I dirname] [-o filename] [-t macro] [-Uname]\n");
+	fprintf(stderr, "usage: m4 [-gs] [-d flags] [-t macro] [-o file] [-Dname[=val]] [-Uname] [-I dirname...]\n");
 	exit(1);
 }
 
@@ -332,11 +332,10 @@ obtain_char(struct input_file *f)
 {
 	if (f->c == EOF)
 		return EOF;
-
-	f->c = fgetc(f->file);
-	if (f->c == '\n')
+	else if (f->c == '\n')
 		f->lineno++;
 
+	f->c = fgetc(f->file);
 	return f->c;
 }
 

@@ -1,4 +1,4 @@
-.\"	@(#) $OpenBSD: m4.1,v 1.41 2005/09/07 13:22:24 jmc Exp $
+.\"	@(#) $OpenBSD: m4.1,v 1.37 2004/05/25 20:24:24 jmc Exp $
 .\"
 .\" Copyright (c) 1989, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -38,19 +38,16 @@
 .Nd macro language processor
 .Sh SYNOPSIS
 .Nm m4
-.Op Fl gs
-.Oo
-.Sm off
-.Fl D Ar name Op No = Ar value
-.Sm on
-.Oc
 .Op Fl d Ar flags
-.Op Fl I Ar dirname
+.Op Fl t Ar name
 .Op Fl o Ar filename
-.Bk -words
-.Op Fl t Ar macro
+.Op Fl g
+.Op Fl s
+.Oo
+.Fl D Ns Ar name Ns Op Ar =value
+.Oc
 .Op Fl U Ns Ar name
-.Ek
+.Op Fl I Ar dirname
 .Sh DESCRIPTION
 The
 .Nm m4
@@ -90,12 +87,19 @@ recognized as special when not followed by an open parenthesis.
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl D Ns Ar name Ns Oo
-.Pf = Ns Ar value
+.Ar =value
 .Oc
 Define the symbol
 .Ar name
 to have some value (or
 .Dv NULL ) .
+.It Fl "U" Ns Ar "name"
+Undefine the symbol
+.Ar name .
+.It Fl I Ar "dirname"
+Add directory
+.Ar dirname
+to the include path.
 .It Fl d Ar "flags"
 Set trace flags.
 .Ar flags
@@ -123,28 +127,22 @@ turn on all options.
 .Pp
 By default, trace is set to
 .Qq eq .
-.It Fl g
-Activate GNU-m4 compatibility mode.
-In this mode, translit handles simple character
-ranges (e.g., a-z), regular expressions mimic emacs behavior,
-multiple m4wrap calls are handled as a stack,
-and the number of diversions is unlimited.
-.It Fl I Ar "dirname"
-Add directory
-.Ar dirname
-to the include path.
 .It Fl o Ar filename
 Send trace output to
 .Ar filename .
-.It Fl s
-Output line synchronization directives, suitable for
-.Xr cpp 1 .
 .It Fl t Ar macro
 Turn tracing on for
 .Ar macro .
-.It Fl "U" Ns Ar "name"
-Undefine the symbol
-.Ar name .
+.It Fl g
+Activate GNU-m4 compatibility mode.
+In this mode, changequote with
+two empty parameters deactivates quotes, translit handles simple character
+ranges (e.g., a-z), regular expressions mimic emacs behavior,
+multiple m4wrap calls are handled as a stack,
+and the number of diversions is unlimited.
+.It Fl s
+Output line synchronization directives, suitable for
+.Xr cpp 1 .
 .El
 .Sh SYNTAX
 .Nm m4
@@ -157,29 +155,17 @@ Calls a built-in by its
 .Fa name ,
 overriding possible redefinitions.
 .It Fn changecom startcomment endcomment
-Changes the start comment and end comment sequences.
-Comment sequences may be up to five characters long.
-The default values are the hash sign
+Change the start and end comment sequences.
+The default is the pound sign
+.Pq Sq #
 and the newline character.
-.Bd -literal -offset indent
-# This is a comment
-.Ed
-.Pp
-With no arguments, comments are turned off.
-With one single argument, the end comment sequence is set
-to the newline character.
+With no arguments comments are turned off.
+The maximum length for a comment marker is five characters.
 .It Fn changequote beginquote endquote
-Defines the open quote and close quote sequences.
-Quote sequences may be up to five characters long.
-The default values are the backquote character and the quote
-character.
-.Bd -literal -offset indent
-`Here is a quoted string'
-.Ed
-.Pp
-With no arguments, the default quotes are restored.
-With one single argument, the close quote sequence is set
-to the newline character.
+Defines the quote symbols to be the first and second arguments.
+The symbols may be up to five characters long.
+If no arguments are
+given it restores the default open and close single quotes.
 .It Fn decr arg
 Decrements the argument
 .Fa arg
@@ -400,12 +386,18 @@ Returns the current file's name.
 .El
 .Sh STANDARDS
 .Nm
-is expected to be
-.St -p1003.1-2004
-compliant,
-along with a few extensions taken from
+follows the Single Unix 2 specification, along with a few extensions taken
+from
 .Nm gnu-m4 .
 .Pp
+The
+.Fl s
+option
+.Po
+.Xr cpp 1 's
+#line directives
+.Pc
+is currently not supported.
 Flags
 .Fl I ,
 .Fl d ,

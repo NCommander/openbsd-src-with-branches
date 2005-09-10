@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2004 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,11 +33,12 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: mcache.c,v 1.12 2000/11/15 02:12:51 assar Exp $");
+RCSID("$KTH: mcache.c,v 1.15.6.1 2004/03/06 16:57:16 lha Exp $");
 
 typedef struct krb5_mcache {
     char *name;
     unsigned int refcnt;
+    int dead;
     krb5_principal primary_principal;
     struct link {
 	krb5_creds cred;
@@ -50,11 +51,11 @@ static struct krb5_mcache *mcc_head;
 
 #define	MCACHE(X)	((krb5_mcache *)(X)->data.data)
 
-#define MISDEAD(X)	((X)->primary_principal == NULL)
+#define MISDEAD(X)	((X)->dead)
 
 #define MCC_CURSOR(C) ((struct link*)(C))
 
-static char*
+static const char*
 mcc_get_name(krb5_context context,
 	     krb5_ccache id)
 {
@@ -65,6 +66,7 @@ static krb5_mcache *
 mcc_alloc(const char *name)
 {
     krb5_mcache *m;
+
     ALLOC(m, 1);
     if(m == NULL)
 	return NULL;
@@ -76,6 +78,7 @@ mcc_alloc(const char *name)
 	free(m);
 	return NULL;
     }
+    m->dead = 0;
     m->refcnt = 1;
     m->primary_principal = NULL;
     m->creds = NULL;
@@ -101,8 +104,10 @@ mcc_resolve(krb5_context context, krb5_ccache *id, const char *res)
     }
 
     m = mcc_alloc(res);
-    if (m == NULL)
+    if (m == NULL) {
+	krb5_set_error_string (context, "malloc: out of memory");
 	return KRB5_CC_NOMEM;
+    }
     
     (*id)->data.data = m;
     (*id)->data.length = sizeof(*m);
@@ -118,8 +123,10 @@ mcc_gen_new(krb5_context context, krb5_ccache *id)
 
     m = mcc_alloc(NULL);
 
-    if (m == NULL)
+    if (m == NULL) {
+	krb5_set_error_string (context, "malloc: out of memory");
 	return KRB5_CC_NOMEM;
+    }
 
     (*id)->data.data = m;
     (*id)->data.length = sizeof(*m);
@@ -132,9 +139,11 @@ mcc_initialize(krb5_context context,
 	       krb5_ccache id,
 	       krb5_principal primary_principal)
 {
+    krb5_mcache *m = MCACHE(id);
+    m->dead = 0;
     return krb5_copy_principal (context,
 				primary_principal,
-				&MCACHE(id)->primary_principal);
+				&m->primary_principal);
 }
 
 static krb5_error_code
@@ -173,9 +182,12 @@ mcc_destroy(krb5_context context,
 		break;
 	    }
 	}
-	krb5_free_principal (context, m->primary_principal);
-	m->primary_principal = NULL;
-	
+	if (m->primary_principal != NULL) {
+	    krb5_free_principal (context, m->primary_principal);
+	    m->primary_principal = NULL;
+	}
+	m->dead = 1;
+
 	l = m->creds;
 	while (l != NULL) {
 	    struct link *old;
@@ -203,8 +215,10 @@ mcc_store_cred(krb5_context context,
 	return ENOENT;
 
     l = malloc (sizeof(*l));
-    if (l == NULL)
+    if (l == NULL) {
+	krb5_set_error_string (context, "malloc: out of memory");
 	return KRB5_CC_NOMEM;
+    }
     l->next = m->creds;
     m->creds = l;
     memset (&l->cred, 0, sizeof(l->cred));
@@ -224,9 +238,8 @@ mcc_get_principal(krb5_context context,
 {
     krb5_mcache *m = MCACHE(id);
 
-    if (MISDEAD(m))
+    if (MISDEAD(m) || m->primary_principal == NULL)
 	return ENOENT;
-
     return krb5_copy_principal (context,
 				m->primary_principal,
 				principal);
@@ -287,7 +300,7 @@ mcc_remove_cred(krb5_context context,
     for(q = &m->creds, p = *q; p; p = *q) {
 	if(krb5_compare_creds(context, which, mcreds, &p->cred)) {
 	    *q = p->next;
-	    krb5_free_cred_contents(context, &p->cred);
+	    krb5_free_creds_contents(context, &p->cred);
 	    free(p);
 	} else
 	    q = &p->next;

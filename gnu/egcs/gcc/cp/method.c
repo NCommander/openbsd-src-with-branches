@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "toplev.h"
+#include "decl.h"
 
 /* TREE_LIST of the current inline functions that need to be
    processed.  */
@@ -88,6 +89,8 @@ static int is_back_referenceable_type PROTO((tree));
 static int check_btype PROTO((tree));
 static void build_mangled_name_for_type PROTO((tree));
 static void build_mangled_name_for_type_with_Gcode PROTO((tree, int));
+static tree build_base_path PROTO((tree, int));
+
 
 # define OB_INIT() (scratch_firstobj ? (obstack_free (&scratch_obstack, scratch_firstobj), 0) : 0)
 # define OB_PUTC(C) (obstack_1grow (&scratch_obstack, (C)))
@@ -372,10 +375,16 @@ is_back_referenceable_type (type)
 
   switch (TREE_CODE (type)) 
     {
+    case BOOLEAN_TYPE:
+      if (!flag_do_squangling)
+	/* Even though the mangling of this is just `b', we did
+	   historically generate back-references for it.  */
+	return 1;
+      /* Fall through.  */
+      
     case INTEGER_TYPE:
     case REAL_TYPE:
     case VOID_TYPE:
-    case BOOLEAN_TYPE:
       /* These types have single-character manglings, so there's no
 	 point in generating back-references.  */
       return 0;         
@@ -1343,6 +1352,15 @@ process_overload_item (parmtype, extra_Gcode)
 #endif
 
     case POINTER_TYPE:
+      /* Even though the vlist_type_node is PPPFe (i.e. `int
+	 (***)(...)'), it is different from the any other occurence of
+	 the pointer type, because the underlying function type is
+	 different.  */
+      if (parmtype == vlist_type_node)
+	{
+	  OB_PUTS (VLIST_TYPE_NAME);
+	  return;
+	}
       OB_PUTC ('P');
     more:
       build_mangled_name_for_type (TREE_TYPE (parmtype));
@@ -1803,14 +1821,64 @@ get_id_2 (name, name2)
   return get_identifier (obstack_base (&scratch_obstack));
 }
 
-/* Returns a DECL_ASSEMBLER_NAME for the destructor of type TYPE.  */
+/* Print a binfo path T, starting with the most derived class. If
+   OMIT_LAST is set, drop and return the most derived class.  */
+
+static tree
+build_base_path (t, omit_last)
+     tree t;
+     int omit_last;
+{
+  tree ret = NULL_TREE;
+  if (BINFO_INHERITANCE_CHAIN (t))
+    ret = build_base_path (BINFO_INHERITANCE_CHAIN (t), omit_last);
+  else if (omit_last)
+    return t;
+  process_overload_item (BINFO_TYPE (t), 0);
+  return ret;
+}
+
+/* Return a mangled name for a vlist vtable, using the path of both
+   BASE and VBASE.  */
 
 tree
-build_destructor_name (type)
-     tree type;
+get_vlist_vtable_id (base, vbase)
+     tree base, vbase;
 {
-  return build_overload_with_type (get_identifier (DESTRUCTOR_DECL_PREFIX),
-				   type);
+  tree last;
+  OB_INIT ();
+  OB_PUTS (VCTABLE_NAME);
+  build_base_path (base, 0);
+  OB_PUTC ('_');
+  /* Since the base path should end where the vbase path starts, we
+     can omit the most-derived class in the vbase path. Check below
+     that this really happens.  */
+  last = build_base_path (vbase, 1);
+  my_friendly_assert (BINFO_TYPE (last) == BINFO_TYPE (base), 990402);
+  OB_FINISH ();
+  return get_identifier (obstack_base (&scratch_obstack));
+} 
+
+/* Returns a DECL_ASSEMBLER_NAME for the destructor of type TYPE. If
+   HAS_VLIST is set, also add the vlist argument.  */
+
+tree
+build_destructor_name (type, has_vlist)
+     tree type;
+     int has_vlist;
+{
+  OB_INIT ();
+  OB_PUTS (DESTRUCTOR_DECL_PREFIX);
+  start_squangling ();
+  build_mangled_name_for_type (type);
+  /* If we need backwards compatibility, we can get aways by
+     not linking type-safely, as the dtor will check whether
+     the argument was provided.  */
+  if (has_vlist && !flag_vtable_thunks_compat)
+    OB_PUTS (VLIST_TYPE_NAME);
+  OB_FINISH ();
+  end_squangling ();
+  return get_identifier (obstack_base (&scratch_obstack));
 }
 
 /* Given a tree_code CODE, and some arguments (at least one),
@@ -2172,6 +2240,149 @@ emit_thunk (thunk_fndecl)
   TREE_SET_CODE (thunk_fndecl, THUNK_DECL);
 }
 
+void
+maybe_vlist_ctor_wrapper (fn, definep)
+  tree fn;
+  int definep;
+{
+  tree fntype, decl;
+  tree arg_types, parms, parm, basetype, pbasetype;
+  tree t, ctors;
+
+  if (!flag_vtable_thunks_compat
+      || !DECL_CONSTRUCTOR_FOR_PVBASE_P (fn))
+    return;
+
+  arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  pbasetype = TREE_VALUE (arg_types);
+  basetype = TREE_TYPE (pbasetype);
+  parms = DECL_ARGUMENTS (fn);
+
+  /* Skip this, __in_chrg, and _vlist */
+  arg_types = TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arg_types)));
+
+
+  /* Add __in_charge.  */
+  arg_types = hash_tree_chain (integer_type_node, arg_types);
+
+  /* Don't add this to arg_types, as build_cplus_method_type does so. */
+
+  fntype = build_cplus_method_type (basetype, TREE_TYPE (TREE_TYPE (fn)),
+				    arg_types);
+  
+  decl = build_lang_decl (FUNCTION_DECL, DECL_NAME (fn), fntype);
+  DECL_LANG_SPECIFIC (decl)->decl_flags = DECL_LANG_SPECIFIC (fn)->decl_flags;
+  DECL_EXTERNAL (decl) = 0;
+  TREE_PUBLIC (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_CONSTRUCTOR_P (decl) = 1;
+  DECL_CONSTRUCTOR_FOR_VBASE (decl) = CONSTRUCTOR_FOR_VBASE;
+  /* Claim that this is never a template instantiation.  */
+  DECL_USE_TEMPLATE (decl) = 0;
+  DECL_TEMPLATE_INFO (decl) = NULL_TREE;
+
+  /* Set up clone argument trees for the thunk.  */
+  parms = TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (parms)));
+  /* Add this */
+  t = build_decl (PARM_DECL, this_identifier, pbasetype);
+  SET_DECL_ARTIFICIAL (t);
+  DECL_ARG_TYPE (t) = pbasetype;
+  DECL_REGISTER (t) = 1;
+  /* Add __in_charge.  */
+  parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
+  SET_DECL_ARTIFICIAL (parm);
+  DECL_ARG_TYPE (parm) = integer_type_node;
+  TREE_CHAIN (parm) = t;
+  t = parm;
+
+  while (parms)
+    {
+      tree x = copy_node (parms);
+      TREE_CHAIN (x) = t;
+      DECL_CONTEXT (x) = decl;
+      t = x;
+      parms = TREE_CHAIN (parms);
+    }
+  parms = nreverse (t);
+  DECL_ARGUMENTS (decl) = parms;
+
+  DECL_ASSEMBLER_NAME (decl)
+    = build_decl_overload (DECL_NAME (decl),
+                           TYPE_ARG_TYPES (TREE_TYPE (decl)), 2);
+
+  ctors = CLASSTYPE_METHOD_VEC (basetype);
+  if (ctors)
+    ctors = TREE_VEC_ELT (ctors, 0);
+  for ( ; ctors; ctors = OVL_NEXT (ctors))
+    if (DECL_ASSEMBLER_NAME (OVL_CURRENT (ctors)) 
+	== DECL_ASSEMBLER_NAME (decl))
+      break;
+
+  if (!ctors)
+    {
+      add_method (basetype, 0, decl);
+      cp_finish_decl (decl, NULL_TREE, NULL_TREE, 0, 0);
+    }
+  else
+    decl = OVL_CURRENT (ctors);
+
+  /* Remember the original function.  */
+  DECL_VLIST_CTOR_WRAPPED (decl) = fn;
+
+  /* If this is called from start_method, definep is -1. Then we
+     are inside the class, and fn is inline by default.  */
+  if (definep)
+    {
+      /* Record that the ctor is being defined, so we also emit the
+	 wrapper later. */
+      if (DECL_THIS_INLINE (fn)  || (definep == -1))
+	{
+	  DECL_THIS_INLINE (decl) = 1;
+	  DECL_INLINE (decl) = 1;
+	  pushdecl_top_level (decl);
+	}
+      else
+	{
+	  TREE_USED (decl) = 1;
+	  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) = 1;
+	}
+      mark_inline_for_output (decl);
+    }
+}
+
+static void
+emit_vlist_ctor_wrapper (decl)
+     tree decl;
+{
+  tree t, parms, fn;
+
+  current_function_is_thunk = 1;
+
+  parms = DECL_ARGUMENTS (decl);
+  fn = DECL_VLIST_CTOR_WRAPPED (decl);
+  mark_used (fn);
+      
+  /* Build up the call to the real function.  */
+  t = NULL_TREE;
+  /* Push this, __in_charge.  */
+  t = expr_tree_cons (NULL_TREE, parms, t);
+  parms = TREE_CHAIN (parms);
+  t = expr_tree_cons (NULL_TREE, parms, t);
+  parms = TREE_CHAIN (parms);
+  /* Push 0 as __vlist.  */
+  t = expr_tree_cons (NULL_TREE, vlist_zero_node, t);
+  /* Push rest of arguments.  */
+  while (parms)
+    {
+      t = expr_tree_cons (NULL_TREE, parms, t);
+      parms = TREE_CHAIN (parms);
+    }
+  t = nreverse (t);
+  t = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), t);
+  expand_expr_stmt (t);
+}
+
+
 /* Code for synthesizing methods which have default semantics defined.  */
 
 /* For the anonymous union in TYPE, return the member that is at least as
@@ -2206,6 +2417,8 @@ do_build_copy_constructor (fndecl)
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
     parm = TREE_CHAIN (parm);
+  if (TYPE_USES_PVBASES (current_class_type))
+    parm = TREE_CHAIN (parm);
   parm = convert_from_reference (parm);
 
   if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type)
@@ -2225,42 +2438,21 @@ do_build_copy_constructor (fndecl)
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
       int i;
 
+      /* Initialize all the base-classes.  */
       for (t = CLASSTYPE_VBASECLASSES (current_class_type); t;
 	   t = TREE_CHAIN (t))
-	{
-	  tree basetype = BINFO_TYPE (t);
-	  tree p = convert_to_reference
-	    (build_reference_type (basetype), parm,
-	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
-	  p = convert_from_reference (p);
-
-	  if (p == error_mark_node)
-	    cp_error ("in default copy constructor");
-	  else 
-	    current_base_init_list = tree_cons (basetype,
-						p, current_base_init_list);
-	}
-	
+	current_base_init_list 
+	  = tree_cons (BINFO_TYPE (t), parm, current_base_init_list);
       for (i = 0; i < n_bases; ++i)
 	{
-	  tree p, basetype = TREE_VEC_ELT (binfos, i);
-	  if (TREE_VIA_VIRTUAL (basetype))
+	  t = TREE_VEC_ELT (binfos, i);
+	  if (TREE_VIA_VIRTUAL (t))
 	    continue; 
 
-	  basetype = BINFO_TYPE (basetype);
-	  p = convert_to_reference
-	    (build_reference_type (basetype), parm,
-	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
-
-	  if (p == error_mark_node) 
-	    cp_error ("in default copy constructor");
-	  else 
-	    {
-	      p = convert_from_reference (p);
-	      current_base_init_list = tree_cons (basetype,
-						  p, current_base_init_list);
-	    }
+	  current_base_init_list 
+	    = tree_cons (BINFO_TYPE (t), parm, current_base_init_list);
 	}
+
       for (; fields; fields = TREE_CHAIN (fields))
 	{
 	  tree init, t;
@@ -2423,6 +2615,16 @@ synthesize_method (fndecl)
   int nested = (current_function_decl != NULL_TREE);
   tree context = hack_decl_function_context (fndecl);
 
+  /* If this is a wrapper around a undefined vlist ctor, don't emit it
+     even if it is used.  */
+  if (DECL_VLIST_CTOR_WRAPPER_P (fndecl))
+    {
+      tree orig_fn = DECL_VLIST_CTOR_WRAPPED (fndecl);
+      mark_used (orig_fn);
+      if (DECL_INITIAL (orig_fn) == NULL_TREE)
+	return;
+    }
+
   if (at_eof)
     import_export_decl (fndecl);
 
@@ -2444,7 +2646,11 @@ synthesize_method (fndecl)
       tree arg_chain = FUNCTION_ARG_CHAIN (fndecl);
       if (DECL_CONSTRUCTOR_FOR_VBASE_P (fndecl))
 	arg_chain = TREE_CHAIN (arg_chain);
-      if (arg_chain != void_list_node)
+      else if (DECL_CONSTRUCTOR_FOR_PVBASE_P (fndecl))
+	arg_chain = TREE_CHAIN (TREE_CHAIN (arg_chain));
+      if (DECL_VLIST_CTOR_WRAPPER_P (fndecl))
+	emit_vlist_ctor_wrapper (fndecl);
+      else if (arg_chain != void_list_node)
 	do_build_copy_constructor (fndecl);
       else if (TYPE_NEEDS_CONSTRUCTING (current_class_type))
 	setup_vtbl_ptr ();

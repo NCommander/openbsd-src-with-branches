@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.9 2005/09/08 12:44:55 jsg Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.4 2005/04/21 22:47:15 reyk Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -34,6 +34,15 @@
  */
 
 #include <sys/cdefs.h>
+#if defined(__FreeBSD__)
+__FBSDID("$FreeBSD: src/sys/net80211/ieee80211_node.c,v 1.22 2004/04/05 04:15:55 sam Exp $");
+#elif defined(__NetBSD__)
+__KERNEL_RCSID(0, "$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $");
+#endif
+
+#if defined(__NetBSD__)
+#include "opt_inet.h"
+#endif
 
 #include "bpfilter.h"
 
@@ -46,13 +55,25 @@
 #include <sys/sockio.h>
 #include <sys/endian.h>
 #include <sys/errno.h>
+#ifdef __FreeBSD__
+#include <sys/bus.h>
+#endif
 #include <sys/proc.h>
 #include <sys/sysctl.h>
+
+#ifdef __FreeBSD__
+#include <machine/atomic.h>
+#endif
 
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_arp.h>
+#if defined(__FreeBSD__)
+#include <net/ethernet.h>
+#elif defined(__NetBSD__)
+#include <net/if_ether.h>
+#endif
 #include <net/if_llc.h>
 
 #if NBPFILTER > 0
@@ -61,29 +82,40 @@
 
 #ifdef INET
 #include <netinet/in.h>
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <netinet/if_ether.h>
+#else
+#include <net/if_ether.h>
+#endif
 #endif
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_compat.h>
 
+#ifdef __OpenBSD__
 #include <dev/rndvar.h>
+#endif
 
 static struct ieee80211_node *ieee80211_node_alloc(struct ieee80211com *);
 static void ieee80211_node_free(struct ieee80211com *, struct ieee80211_node *);
 static void ieee80211_node_copy(struct ieee80211com *,
-    struct ieee80211_node *, const struct ieee80211_node *);
+		struct ieee80211_node *, const struct ieee80211_node *);
 static u_int8_t ieee80211_node_getrssi(struct ieee80211com *,
-    struct ieee80211_node *);
-static void ieee80211_setup_node(struct ieee80211com *ic,
-    struct ieee80211_node *ni, u_int8_t *macaddr);
-static void ieee80211_free_node(struct ieee80211com *,
-    struct ieee80211_node *);
-static struct ieee80211_node *
-    ieee80211_alloc_node_helper(struct ieee80211com *);
-static void ieee80211_node_cleanup(struct ieee80211com *,
-    struct ieee80211_node *);
+		struct ieee80211_node *);
 
+static void ieee80211_setup_node(struct ieee80211com *ic,
+		struct ieee80211_node *ni, u_int8_t *macaddr);
+static void ieee80211_free_node(struct ieee80211com *,
+		struct ieee80211_node *);
+static struct ieee80211_node *ieee80211_alloc_node_helper(struct ieee80211com *);
+static void ieee80211_node_cleanup(struct ieee80211com *,
+                struct ieee80211_node *);
+
+#ifdef __NetBSD__
+MALLOC_DEFINE(M_80211_NODE, "80211node", "802.11 node state");
+#else
 #define M_80211_NODE	M_DEVBUF
+#endif
 
 void
 ieee80211_node_attach(struct ifnet *ifp)
@@ -135,8 +167,7 @@ ieee80211_node_lateattach(struct ifnet *ifp)
 	struct ieee80211_node *ni;
 
 	ni = ieee80211_alloc_node_helper(ic);
-	if (ni == NULL)
-		panic("unable to setup inital BSS node");
+	IASSERT(ni != NULL, ("unable to setup inital BSS node"));
 	ni->ni_chan = IEEE80211_CHAN_ANYC;
 	ic->ic_bss = ieee80211_ref_node(ni);
 	ic->ic_txpower = IEEE80211_TXPOWER_MAX;
@@ -153,8 +184,8 @@ ieee80211_node_detach(struct ifnet *ifp)
 	}
 	ieee80211_free_allnodes(ic);
 	IEEE80211_NODE_LOCK_DESTROY(ic);
-	if (ic->ic_aid_bitmap != NULL)
-		FREE(ic->ic_aid_bitmap, M_DEVBUF);
+        if (ic->ic_aid_bitmap != NULL)
+                FREE(ic->ic_aid_bitmap, M_DEVBUF);
 }
 
 /*
@@ -165,7 +196,7 @@ ieee80211_node_detach(struct ifnet *ifp)
  * Initialize the active channel set based on the set
  * of available channels and the current PHY mode.
  */
-void
+static void
 ieee80211_reset_scan(struct ifnet *ifp)
 {
 	struct ieee80211com *ic = (void *)ifp;
@@ -173,7 +204,7 @@ ieee80211_reset_scan(struct ifnet *ifp)
 	memcpy(ic->ic_chan_scan, ic->ic_chan_active,
 		sizeof(ic->ic_chan_active));
 	/* NB: hack, setup so next_scan starts with the first channel */
-	if (ic->ic_bss != NULL && ic->ic_bss->ni_chan == IEEE80211_CHAN_ANYC)
+	if (ic->ic_bss->ni_chan == IEEE80211_CHAN_ANYC)
 		ic->ic_bss->ni_chan = &ic->ic_channels[IEEE80211_CHAN_MAX];
 }
 
@@ -199,25 +230,24 @@ ieee80211_begin_scan(struct ifnet *ifp)
 	} else
 		ic->ic_stats.is_scan_passive++;
 	if (ifp->if_flags & IFF_DEBUG)
-		printf("%s: begin %s scan\n", ifp->if_xname,
+		if_printf(ifp, "begin %s scan\n",
 			(ic->ic_flags & IEEE80211_F_ASCAN) ?
 				"active" : "passive");
-
 	/*
-	 * Flush any previously seen AP's. Note that the latter 
-	 * assumes we don't act as both an AP and a station,
-	 * otherwise we'll potentially flush state of stations
-	 * associated with us.
+	 * Clear scan state and flush any previously seen
+	 * AP's.  Note that the latter assumes we don't act
+	 * as both an AP and a station, otherwise we'll
+	 * potentially flush state of stations associated
+	 * with us.
 	 */
+	ieee80211_reset_scan(ifp);
 	ieee80211_free_allnodes(ic);
 
-	/*
-	 * Reset the current mode. Setting the current mode will also
-	 * reset scan state.
-	 */
-	if (IFM_MODE(ic->ic_media.ifm_cur->ifm_media) == IFM_AUTO)
+	/* Reset the current mode. */
+	if (IFM_MODE(ic->ic_media.ifm_cur->ifm_media) == IFM_AUTO) {
 		ic->ic_curmode = IEEE80211_MODE_AUTO;
-	ieee80211_setmode(ic, ic->ic_curmode);
+		ieee80211_setmode(ic, ic->ic_curmode);
+	}
 
 	ic->ic_scan_count = 0;
 
@@ -268,7 +298,7 @@ ieee80211_create_ibss(struct ieee80211com* ic, struct ieee80211_channel *chan)
 
 	ni = ic->ic_bss;
 	if (ifp->if_flags & IFF_DEBUG)
-		printf("%s: creating ibss\n", ifp->if_xname);
+		if_printf(ifp, "creating ibss\n");
 	ic->ic_flags |= IEEE80211_F_SIBSS;
 	ni->ni_chan = chan;
 	ni->ni_rates = ic->ic_sup_rates[ieee80211_chan2mode(ic, ni->ni_chan)];
@@ -299,8 +329,8 @@ ieee80211_create_ibss(struct ieee80211com* ic, struct ieee80211_channel *chan)
 int
 ieee80211_match_bss(struct ieee80211com *ic, struct ieee80211_node *ni)
 {
-	u_int8_t rate;
-	int fail;
+        u_int8_t rate;
+        int fail;
 
 	fail = 0;
 	if (isclr(ic->ic_chan_active, ieee80211_chan2ieee(ic, ni->ni_chan)))
@@ -371,7 +401,7 @@ ieee80211_end_scan(struct ifnet *ifp)
 	int i, fail;
 
 	if (ifp->if_flags & IFF_DEBUG)
-		printf("%s: end %s scan\n", ifp->if_xname,
+		if_printf(ifp, "end %s scan\n",
 			(ic->ic_flags & IEEE80211_F_ASCAN) ?
 				"active" : "passive");
 
@@ -408,7 +438,7 @@ ieee80211_end_scan(struct ifnet *ifp)
 	}
 	if (ni == NULL) {
 		IEEE80211_DPRINTF(("%s: no scan candidate\n", __func__));
- notfound:
+  notfound:
 		if (ic->ic_opmode == IEEE80211_M_IBSS &&
 		    (ic->ic_flags & IEEE80211_F_IBSSON) &&
 		    ic->ic_des_esslen != 0) {
@@ -437,6 +467,7 @@ ieee80211_end_scan(struct ifnet *ifp)
 		/*
 		 * Reset the list of channels to scan and start again.
 		 */
+		ieee80211_reset_scan(ifp);
 		ieee80211_next_scan(ifp);
 		return;
 	}
@@ -516,10 +547,10 @@ ieee80211_node_alloc(struct ieee80211com *ic)
 static void
 ieee80211_node_cleanup(struct ieee80211com *ic, struct ieee80211_node *ni)
 {
-	if (ni->ni_challenge != NULL) {
-		FREE(ni->ni_challenge, M_DEVBUF);
-		ni->ni_challenge = NULL;
-	}
+        if (ni->ni_challenge != NULL) {
+                FREE(ni->ni_challenge, M_DEVBUF);
+                ni->ni_challenge = NULL;
+        }
 }
 
 static void
@@ -772,7 +803,7 @@ ieee80211_find_rxnode(struct ieee80211com *ic, struct ieee80211_frame *wh)
 	u_int8_t *bssid;
 
 	if (!ieee80211_needs_rxnode(ic, wh, &bssid))
-		return ieee80211_ref_node(ic->ic_bss);
+	        return ieee80211_ref_node(ic->ic_bss);
 
 	IEEE80211_NODE_LOCK(ic);
 	ni = _ieee80211_find_node(ic, wh->i_addr2);
@@ -851,8 +882,7 @@ ieee80211_lookup_node(struct ieee80211com *ic,
 static void
 ieee80211_free_node(struct ieee80211com *ic, struct ieee80211_node *ni)
 {
-	if (ni == ic->ic_bss)
-		panic("freeing bss node");
+	IASSERT(ni != ic->ic_bss, ("freeing bss node"));
 
 	IEEE80211_DPRINTF(("%s %s\n", __func__, ether_sprintf(ni->ni_macaddr)));
 	IEEE80211_AID_CLR(ni->ni_associd, ic->ic_aid_bitmap);
@@ -943,8 +973,7 @@ ieee80211_clean_nodes(struct ieee80211com *ic)
 }
 
 void
-ieee80211_iterate_nodes(struct ieee80211com *ic, ieee80211_iter_func *f,
-    void *arg)
+ieee80211_iterate_nodes(struct ieee80211com *ic, ieee80211_iter_func *f, void *arg)
 {
 	struct ieee80211_node *ni;
 
@@ -1005,8 +1034,9 @@ ieee80211_node_join(struct ieee80211com *ic, struct ieee80211_node *ni,
 void
 ieee80211_node_leave(struct ieee80211com *ic, struct ieee80211_node *ni)
 {
-	if (ic->ic_opmode != IEEE80211_M_HOSTAP)
-		panic("not in ap mode, mode %u", ic->ic_opmode);
+
+	IASSERT(ic->ic_opmode == IEEE80211_M_HOSTAP,
+	    ("not in ap mode, mode %u", ic->ic_opmode));
 	/*
 	 * If node wasn't previously associated all
 	 * we need to do is reclaim the reference.

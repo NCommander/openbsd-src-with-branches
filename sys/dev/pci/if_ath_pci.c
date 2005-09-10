@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_ath_pci.c,v 1.9 2005/09/08 17:43:26 reyk Exp $   */
+/*      $OpenBSD: if_ath_pci.c,v 1.5 2005/08/09 04:10:11 mickey Exp $   */
 /*	$NetBSD: if_ath_pci.c,v 1.7 2004/06/30 05:58:17 mycroft Exp $	*/
 
 /*-
@@ -65,6 +65,7 @@
 #include <netinet/if_ether.h>
 #endif
 
+#include <net80211/ieee80211_compat.h>
 #include <net80211/ieee80211_var.h>
 
 #include <dev/gpio/gpiovar.h>
@@ -81,11 +82,11 @@
 
 struct ath_pci_softc {
 	struct ath_softc	sc_sc;
-
 	pci_chipset_tag_t	sc_pc;
-	pcitag_t		sc_pcitag;
-
-	void			*sc_ih;		/* interrupt handler */
+	void			*sc_ih;		/* intererupt handler */
+	u_int8_t		sc_saved_intline;
+	u_int8_t		sc_saved_cachelinesz;
+	u_int8_t		sc_saved_lattimer;
 };
 
 /* Base Address Register */
@@ -97,7 +98,7 @@ void	 ath_pci_shutdown(void *);
 int	 ath_pci_detach(struct device *, int);
 
 struct cfattach ath_pci_ca = {
-	sizeof(struct ath_pci_softc),
+	sizeof(struct ath_softc),
 	ath_pci_match,
 	ath_pci_attach,
 	ath_pci_detach
@@ -128,7 +129,6 @@ ath_pci_attach(struct device *parent, struct device *self, void *aux)
 	pcireg_t res;
 	struct pci_attach_args *pa = aux;
 	pci_chipset_tag_t pc = pa->pa_pc;
-	pcitag_t pt = pa->pa_tag;
 	bus_space_tag_t iot;
 	bus_space_handle_t ioh;
 	pci_intr_handle_t ih;
@@ -136,9 +136,8 @@ ath_pci_attach(struct device *parent, struct device *self, void *aux)
 	const char *intrstr = NULL;
 
 	psc->sc_pc = pc;
-	psc->sc_pcitag = pt;
 
-	res = pci_conf_read(pc, pt, PCI_COMMAND_STATUS_REG);
+	res = pci_conf_read(pc, pa->pa_tag, PCI_COMMAND_STATUS_REG);
 	if ((res & PCI_COMMAND_MEM_ENABLE) == 0) {
 		printf(": couldn't enable memory mapping\n");
 		goto bad;

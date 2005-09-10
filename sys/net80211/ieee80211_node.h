@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.6 2005/09/08 08:36:12 reyk Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.3 2005/02/17 18:28:05 reyk Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -37,8 +37,8 @@
 #ifndef _NET80211_IEEE80211_NODE_H_
 #define _NET80211_IEEE80211_NODE_H_
 
-#define	IEEE80211_PSCAN_WAIT	5		/* passive scan wait */
-#define	IEEE80211_TRANS_WAIT	5		/* transition wait */
+#define	IEEE80211_PSCAN_WAIT 	5		/* passive scan wait */
+#define	IEEE80211_TRANS_WAIT 	5		/* transition wait */
 #define	IEEE80211_INACT_WAIT	5		/* inactivity timer interval */
 #define	IEEE80211_INACT_MAX	(300/IEEE80211_INACT_WAIT)
 #define	IEEE80211_CACHE_SIZE	100
@@ -129,6 +129,7 @@ struct ieee80211_node {
 	u_int32_t		*ni_challenge;	/* shared-key challenge */
 };
 
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define ieee80211_node_incref(ni)			\
 	do {						\
 		int _s = splnet();			\
@@ -146,6 +147,19 @@ ieee80211_node_decref(struct ieee80211_node *ni)
 	return refcnt;
 }
 
+#else
+#define ieee80211_node_incref(ni) atomic_add_int(&(ni)->ni_refcnt, 1)
+static __inline int
+ieee80211_node_decref(struct ieee80211_node *ni)
+{
+	int orefcnt;
+	do {
+		orefcnt = ni->ni_refcnt;
+	} while (atomic_cmpset_int(&ni->ni_refcnt, orefcnt, orefcnt - 1) == 0);
+	return orefcnt - 1;
+}
+#endif
+
 static __inline struct ieee80211_node *
 ieee80211_ref_node(struct ieee80211_node *ni)
 {
@@ -160,12 +174,23 @@ ieee80211_unref_node(struct ieee80211_node **ni)
 	*ni = NULL;			/* guard against use */
 }
 
+#ifdef __FreeBSD__
+typedef struct mtx ieee80211_node_lock_t;
+#define	IEEE80211_NODE_LOCK_INIT(_ic, _name) \
+	mtx_init(&(_ic)->ic_nodelock, _name, "802.11 node table", MTX_DEF)
+#define	IEEE80211_NODE_LOCK_DESTROY(_ic)	mtx_destroy(&(_ic)->ic_nodelock)
+#define	IEEE80211_NODE_LOCK(_ic)		mtx_lock(&(_ic)->ic_nodelock)
+#define	IEEE80211_NODE_UNLOCK(_ic)		mtx_unlock(&(_ic)->ic_nodelock)
+#define	IEEE80211_NODE_LOCK_ASSERT(_ic) \
+	mtx_assert(&(_ic)->ic_nodelock, MA_OWNED)
+#else
 typedef int ieee80211_node_lock_t;
 #define	IEEE80211_NODE_LOCK_INIT(_ic, _name)
 #define	IEEE80211_NODE_LOCK_DESTROY(_ic)
 #define	IEEE80211_NODE_LOCK(_ic)		(_ic)->ic_nodelock = splnet()
 #define	IEEE80211_NODE_UNLOCK(_ic)		splx((_ic)->ic_nodelock)
 #define	IEEE80211_NODE_LOCK_ASSERT(_ic)
+#endif
 #define	IEEE80211_NODE_LOCK_BH		IEEE80211_NODE_LOCK
 #define	IEEE80211_NODE_UNLOCK_BH	IEEE80211_NODE_UNLOCK
 
@@ -182,7 +207,6 @@ extern	void ieee80211_node_detach(struct ifnet *);
 extern	void ieee80211_begin_scan(struct ifnet *);
 extern	void ieee80211_next_scan(struct ifnet *);
 extern	void ieee80211_end_scan(struct ifnet *);
-extern	void ieee80211_reset_scan(struct ifnet *);
 extern	struct ieee80211_node *ieee80211_alloc_node(struct ieee80211com *,
 		u_int8_t *);
 extern	struct ieee80211_node *ieee80211_dup_bss(struct ieee80211com *,
@@ -193,11 +217,11 @@ extern	struct ieee80211_node *ieee80211_find_rxnode(struct ieee80211com *,
 		struct ieee80211_frame *);
 extern	struct ieee80211_node *ieee80211_find_txnode(struct ieee80211com *,
 		u_int8_t *);
-extern	struct ieee80211_node *
-		ieee80211_find_node_for_beacon(struct ieee80211com *,
-		u_int8_t *, struct ieee80211_channel *, char *);
+extern	struct ieee80211_node *ieee80211_find_node_for_beacon(
+	        struct ieee80211com *, u_int8_t *macaddr,
+		struct ieee80211_channel *, char *ssid);
 extern	struct ieee80211_node * ieee80211_lookup_node(struct ieee80211com *,
-		u_int8_t *, struct ieee80211_channel *);
+		u_int8_t *macaddr, struct ieee80211_channel *);
 extern	void ieee80211_release_node(struct ieee80211com *,
 		struct ieee80211_node *);
 extern	void ieee80211_free_allnodes(struct ieee80211com *);

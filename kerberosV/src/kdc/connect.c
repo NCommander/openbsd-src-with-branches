@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2004 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "kdc_locl.h"
 
-RCSID("$KTH: connect.c,v 1.80 2000/10/08 21:36:29 assar Exp $");
+RCSID("$KTH: connect.c,v 1.90.2.2 2004/04/02 20:50:53 lha Exp $");
 
 /*
  * a tuple describing on what to listen
@@ -131,17 +131,15 @@ add_standard_ports (int family)
     add_port_service(family, "kerberos-sec", 88, "tcp");
     if(enable_http)
 	add_port_service(family, "http", 80, "tcp");
+    if(enable_524) {
+	add_port_service(family, "krb524", 4444, "udp");
+	add_port_service(family, "krb524", 4444, "tcp");
+    }
 #ifdef KRB4
     if(enable_v4) {
 	add_port_service(family, "kerberos-iv", 750, "udp");
 	add_port_service(family, "kerberos-iv", 750, "tcp");
     }
-    if(enable_524) {
-	add_port_service(family, "krb524", 4444, "udp");
-	add_port_service(family, "krb524", 4444, "tcp");
-    }
-#endif
-#ifdef KASERVER
     if (enable_kaserver)
 	add_port_service(family, "afs3-kaserver", 7004, "udp");
 #endif
@@ -216,7 +214,7 @@ init_descr(struct descr *d)
 }
 
 /*
- * re-intialize all `n' ->sa in `d'.
+ * re-initialize all `n' ->sa in `d'.
  */
 
 static void
@@ -238,11 +236,11 @@ init_socket(struct descr *d, krb5_address *a, int family, int type, int port)
     krb5_error_code ret;
     struct sockaddr_storage __ss;
     struct sockaddr *sa = (struct sockaddr *)&__ss;
-    int sa_size;
+    int sa_size = sizeof(__ss);
 
     init_descr (d);
 
-    ret = krb5_addr2sockaddr (a, sa, &sa_size, port);
+    ret = krb5_addr2sockaddr (context, a, sa, &sa_size, port);
     if (ret) {
 	krb5_warn(context, ret, "krb5_addr2sockaddr");
 	close(d->s);
@@ -360,9 +358,7 @@ process_request(unsigned char *buf,
 		struct sockaddr *addr)
 {
     KDC_REQ req;
-#ifdef KRB4
     Ticket ticket;
-#endif
     krb5_error_code ret;
     size_t i;
 
@@ -375,24 +371,20 @@ process_request(unsigned char *buf,
 	ret = tgs_rep(&req, reply, from, addr);
 	free_TGS_REQ(&req);
 	return ret;
-    }
-#ifdef KRB4
-    else if(maybe_version4(buf, len)){
-	*sendlength = 0; /* elbitapmoc sdrawkcab XXX */
-	do_version4(buf, len, reply, from, (struct sockaddr_in*)addr);
-	return 0;
     }else if(decode_Ticket(buf, len, &ticket, &i) == 0){
 	ret = do_524(&ticket, reply, from, addr);
 	free_Ticket(&ticket);
 	return ret;
-    }
-#endif
-#ifdef KASERVER
-    else if (enable_kaserver) {
+#ifdef KRB4
+    } else if(maybe_version4(buf, len)){
+	*sendlength = 0; /* elbitapmoc sdrawkcab XXX */
+	do_version4(buf, len, reply, from, (struct sockaddr_in*)addr);
+	return 0;
+    } else if (enable_kaserver) {
 	ret = do_kaserver (buf, len, reply, from, (struct sockaddr_in*)addr);
 	return ret;
-    }
 #endif
+    }
 			  
     return -1;
 }
@@ -401,12 +393,13 @@ static void
 addr_to_string(struct sockaddr *addr, size_t addr_len, char *str, size_t len)
 {
     krb5_address a;
-    krb5_sockaddr2address(addr, &a);
-    if(krb5_print_address(&a, str, len, &len) == 0) {
+    if(krb5_sockaddr2address(context, addr, &a) == 0) {
+	if(krb5_print_address(&a, str, len, &len) == 0) {
+	    krb5_free_address(context, &a);
+	    return;
+	}
 	krb5_free_address(context, &a);
-	return;
     }
-    krb5_free_address(context, &a);
     snprintf(str, len, "<family=%d>", addr->sa_family);
 }
 
@@ -425,7 +418,8 @@ do_request(void *buf, size_t len, int sendlength,
     ret = process_request(buf, len, &reply, &sendlength,
 			  d->addr_string, d->sa);
     if(reply.length){
-	kdc_log(5, "sending %d bytes to %s", reply.length, d->addr_string);
+	kdc_log(5, "sending %lu bytes to %s", (unsigned long)reply.length,
+		d->addr_string);
 	if(sendlength){
 	    unsigned char len[4];
 	    len[0] = (reply.length >> 24) & 0xff;
@@ -462,7 +456,7 @@ handle_udp(struct descr *d)
 
     buf = malloc(max_request);
     if(buf == NULL){
-	kdc_log(0, "Failed to allocate %u bytes", max_request);
+	kdc_log(0, "Failed to allocate %lu bytes", (unsigned long)max_request);
 	return;
     }
 
@@ -496,7 +490,7 @@ de_http(char *buf)
 {
     char *p, *q;
     for(p = q = buf; *p; p++, q++) {
-	if(*p == '%') {
+	if(*p == '%' && isxdigit(p[1]) && isxdigit(p[2])) {
 	    unsigned int x;
 	    if(sscanf(p + 1, "%2x", &x) != 1)
 		return -1;
@@ -553,20 +547,23 @@ grow_descr (struct descr *d, size_t n)
 {
     if (d->size - d->len < n) {
 	unsigned char *tmp;
+	size_t grow; 
 
-	d->size += max(1024, d->len + n);
-	if (d->size >= max_request) {
-	    kdc_log(0, "Request exceeds max request size (%u bytes).",
-		    d->size);
+	grow = max(1024, d->len + n);
+	if (d->size + grow > max_request) {
+	    kdc_log(0, "Request exceeds max request size (%lu bytes).",
+		    (unsigned long)d->size + grow);
 	    clear_descr(d);
 	    return -1;
 	}
-	tmp = realloc (d->buf, d->size);
+	tmp = realloc (d->buf, d->size + grow);
 	if (tmp == NULL) {
-	    kdc_log(0, "Failed to re-allocate %u bytes.", d->size);
+	    kdc_log(0, "Failed to re-allocate %lu bytes.",
+		    (unsigned long)d->size + grow);
 	    clear_descr(d);
 	    return -1;
 	}
+	d->size += grow;
 	d->buf = tmp;
     }
     return 0;
@@ -632,7 +629,8 @@ handle_http_tcp (struct descr *d)
     }
     data = malloc(strlen(t));
     if (data == NULL) {
-	kdc_log(0, "Failed to allocate %u bytes", strlen(t));
+	kdc_log(0, "Failed to allocate %lu bytes",
+		(unsigned long)strlen(t));
 	return -1;
     }
     if(*t == '/')
@@ -654,12 +652,14 @@ handle_http_tcp (struct descr *d)
 	const char *msg = 
 	    " 404 Not found\r\n"
 	    "Server: Heimdal/" VERSION "\r\n"
+	    "Cache-Control: no-cache\r\n"
+	    "Pragma: no-cache\r\n"
 	    "Content-type: text/html\r\n"
 	    "Content-transfer-encoding: 8bit\r\n\r\n"
 	    "<TITLE>404 Not found</TITLE>\r\n"
 	    "<H1>404 Not found</H1>\r\n"
 	    "That page doesn't exist, maybe you are looking for "
-	    "<A HREF=\"http://www.pdc.kth.se/heimdal\">Heimdal</A>?\r\n";
+	    "<A HREF=\"http://www.pdc.kth.se/heimdal/\">Heimdal</A>?\r\n";
 	write(d->s, proto, strlen(proto));
 	write(d->s, msg, strlen(msg));
 	kdc_log(0, "HTTP request from %s is non KDC request", d->addr_string);
@@ -671,6 +671,8 @@ handle_http_tcp (struct descr *d)
 	const char *msg = 
 	    " 200 OK\r\n"
 	    "Server: Heimdal/" VERSION "\r\n"
+	    "Cache-Control: no-cache\r\n"
+	    "Pragma: no-cache\r\n"
 	    "Content-type: application/octet-stream\r\n"
 	    "Content-transfer-encoding: binary\r\n\r\n";
 	write(d->s, proto, strlen(proto));
@@ -701,6 +703,12 @@ handle_tcp(struct descr *d, int index, int min_free)
     n = recvfrom(d[index].s, buf, sizeof(buf), 0, NULL, NULL);
     if(n < 0){
 	krb5_warn(context, errno, "recvfrom");
+	return;
+    } else if (n == 0) {
+	krb5_warnx(context, "connection closed before end of data after %lu "
+		   "bytes from %s",
+		   (unsigned long)d[index].len, d[index].addr_string);
+	clear_descr (d + index);
 	return;
     }
     if (grow_descr (&d[index], n))
@@ -750,8 +758,8 @@ loop(void)
 	    if(d[i].s >= 0){
 		if(d[i].type == SOCK_STREAM && 
 		   d[i].timeout && d[i].timeout < time(NULL)) {
-		    kdc_log(1, "TCP-connection from %s expired after %u bytes",
-			    d[i].addr_string, d[i].len);
+		    kdc_log(1, "TCP-connection from %s expired after %lu bytes",
+			    d[i].addr_string, (unsigned long)d[i].len);
 		    clear_descr(&d[i]);
 		    continue;
 		}

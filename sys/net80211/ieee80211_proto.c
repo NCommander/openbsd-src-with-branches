@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_proto.c,v 1.7 2005/09/08 12:44:55 jsg Exp $	*/
+/*	$OpenBSD: ieee80211_proto.c,v 1.3 2005/02/17 18:28:05 reyk Exp $	*/
 /*	$NetBSD: ieee80211_proto.c,v 1.8 2004/04/30 23:58:20 dyoung Exp $	*/
 
 /*-
@@ -34,10 +34,19 @@
  */
 
 #include <sys/cdefs.h>
+#if defined(__FreeBSD__)
+__FBSDID("$FreeBSD: src/sys/net80211/ieee80211_proto.c,v 1.8 2004/04/02 20:22:25 sam Exp $");
+#elif defined(__NetBSD__)
+__KERNEL_RCSID(0, "$NetBSD: ieee80211_proto.c,v 1.8 2004/04/30 23:58:20 dyoung Exp $");
+#endif
 
 /*
  * IEEE 802.11 protocol support.
  */
+
+#if defined(__NetBSD__)
+#include "opt_inet.h"
+#endif
 
 #include "bpfilter.h"
 
@@ -49,13 +58,25 @@
 #include <sys/sockio.h>
 #include <sys/endian.h>
 #include <sys/errno.h>
+#ifdef __FreeBSD__
+#include <sys/bus.h>
+#endif
 #include <sys/proc.h>
 #include <sys/sysctl.h>
+
+#ifdef __FreeBSD__
+#include <machine/atomic.h>
+#endif
 
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_arp.h>
+#if defined(__FreeBSD__)
+#include <net/ethernet.h>
+#elif defined(__NetBSD__)
+#include <net/if_ether.h>
+#endif
 #include <net/if_llc.h>
 
 #if NBPFILTER > 0
@@ -64,10 +85,15 @@
 
 #ifdef INET
 #include <netinet/in.h>
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <netinet/if_ether.h>
+#else
+#include <net/if_ether.h>
+#endif
 #endif
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_compat.h>
 
 #define	IEEE80211_RATE2MBS(r)	(((r) & IEEE80211_RATE_VAL) / 2)
 
@@ -103,6 +129,10 @@ ieee80211_proto_attach(struct ifnet *ifp)
 	ic->ic_fixed_rate = -1;			/* no fixed rate */
 	ic->ic_protmode = IEEE80211_PROT_CTSONLY;
 
+#ifdef __FreeBSD__
+	mtx_init(&ic->ic_mgtq.ifq_mtx, ifp->if_xname, "mgmt send q", MTX_DEF);
+#endif
+
 	/* protocol state change handler */
 	ic->ic_newstate = ieee80211_newstate;
 
@@ -116,8 +146,13 @@ ieee80211_proto_detach(struct ifnet *ifp)
 {
 	struct ieee80211com *ic = (void *)ifp;
 
+#ifdef __FreeBSD__
+	IF_DRAIN(&ic->ic_mgtq);
+	mtx_destroy(&ic->ic_mgtq.ifq_mtx);
+#else
 	IF_PURGE(&ic->ic_mgtq);
 	IF_PURGE(&ic->ic_pwrsaveq);
+#endif
 }
 
 void
@@ -206,8 +241,7 @@ ieee80211_dump_pkt(u_int8_t *buf, int len, int rate, int rssi)
 }
 
 int
-ieee80211_fix_rate(struct ieee80211com *ic, struct ieee80211_node *ni,
-    int flags)
+ieee80211_fix_rate(struct ieee80211com *ic, struct ieee80211_node *ni, int flags)
 {
 #define	RV(v)	((v) & IEEE80211_RATE_VAL)
 	int i, j, ignore, error;
@@ -226,8 +260,7 @@ ieee80211_fix_rate(struct ieee80211com *ic, struct ieee80211_node *ni,
 			 * Sort rates.
 			 */
 			for (j = i + 1; j < nrs->rs_nrates; j++) {
-				if (RV(nrs->rs_rates[i]) >
-				    RV(nrs->rs_rates[j])) {
+				if (RV(nrs->rs_rates[i]) > RV(nrs->rs_rates[j])) {
 					r = nrs->rs_rates[i];
 					nrs->rs_rates[i] = nrs->rs_rates[j];
 					nrs->rs_rates[j] = r;
@@ -306,21 +339,18 @@ ieee80211_fix_rate(struct ieee80211com *ic, struct ieee80211_node *ni,
 }
 
 static int
-ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
-    int mgt)
+ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate, int mgt)
 {
 	struct ifnet *ifp = &ic->ic_if;
 	struct ieee80211_node *ni;
 	enum ieee80211_state ostate;
-	u_int mbps;
-	int s;
+	ieee80211_node_critsec_decl(s);
 
 	ostate = ic->ic_state;
 	IEEE80211_DPRINTF(("%s: %s -> %s\n", __func__,
-	    ieee80211_state_name[ostate], ieee80211_state_name[nstate]));
+		ieee80211_state_name[ostate], ieee80211_state_name[nstate]));
 	ic->ic_state = nstate;			/* state transition */
 	ni = ic->ic_bss;			/* NB: no reference held */
-	mbps = IEEE80211_RATE2MBS(ni->ni_rates.rs_rates[ni->ni_txrate]);
 	switch (nstate) {
 	case IEEE80211_S_INIT:
 		switch (ostate) {
@@ -334,7 +364,7 @@ ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
 				    IEEE80211_REASON_ASSOC_LEAVE);
 				break;
 			case IEEE80211_M_HOSTAP:
-				s = splnet();
+				ieee80211_node_critsec_begin(ic, s);
 				TAILQ_FOREACH(ni, &ic->ic_node, ni_list) {
 					if (ni->ni_associd == 0)
 						continue;
@@ -342,7 +372,7 @@ ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
 					    IEEE80211_FC0_SUBTYPE_DISASSOC,
 					    IEEE80211_REASON_ASSOC_LEAVE);
 				}
-				splx(s);
+				ieee80211_node_critsec_end(ic, s);
 				break;
 			default:
 				break;
@@ -356,13 +386,13 @@ ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
 				    IEEE80211_REASON_AUTH_LEAVE);
 				break;
 			case IEEE80211_M_HOSTAP:
-				s = splnet();
+				ieee80211_node_critsec_begin(ic, s);
 				TAILQ_FOREACH(ni, &ic->ic_node, ni_list) {
 					IEEE80211_SEND_MGMT(ic, ni,
 					    IEEE80211_FC0_SUBTYPE_DEAUTH,
 					    IEEE80211_REASON_AUTH_LEAVE);
 				}
-				splx(s);
+				ieee80211_node_critsec_end(ic, s);
 				break;
 			default:
 				break;
@@ -371,8 +401,12 @@ ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
 		case IEEE80211_S_AUTH:
 		case IEEE80211_S_SCAN:
 			ic->ic_mgt_timer = 0;
+#ifdef __FreeBSD__
+			IF_DRAIN(&ic->ic_mgtq);
+#else
 			IF_PURGE(&ic->ic_mgtq);
 			IF_PURGE(&ic->ic_pwrsaveq);
+#endif
 			if (ic->ic_wep_ctx != NULL) {
 				free(ic->ic_wep_ctx, M_DEVBUF);
 				ic->ic_wep_ctx = NULL;
@@ -384,8 +418,13 @@ ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
 	case IEEE80211_S_SCAN:
 		ic->ic_flags &= ~IEEE80211_F_SIBSS;
 		/* initialize bss for probe request */
+#if defined(__OpenBSD__)
 		IEEE80211_ADDR_COPY(ni->ni_macaddr, etherbroadcastaddr);
 		IEEE80211_ADDR_COPY(ni->ni_bssid, etherbroadcastaddr);
+#else
+		IEEE80211_ADDR_COPY(ni->ni_macaddr, ifp->if_broadcastaddr);
+		IEEE80211_ADDR_COPY(ni->ni_bssid, ifp->if_broadcastaddr);
+#endif
 		ni->ni_rates = ic->ic_sup_rates[
 			ieee80211_chan2mode(ic, ni->ni_chan)];
 		ni->ni_associd = 0;
@@ -414,8 +453,8 @@ ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
 			/* beacon miss */
 			if (ifp->if_flags & IFF_DEBUG) {
 				/* XXX bssid clobbered above */
-				printf("%s: no recent beacons from %s;"
-				    " rescanning\n", ifp->if_xname,
+				if_printf(ifp, "no recent beacons from %s;"
+				    " rescanning\n",
 				    ether_sprintf(ic->ic_bss->ni_bssid));
 			}
 			ieee80211_free_allnodes(ic);
@@ -497,19 +536,19 @@ ieee80211_newstate(struct ieee80211com *ic, enum ieee80211_state nstate,
 			break;
 		case IEEE80211_S_SCAN:		/* adhoc/hostap mode */
 		case IEEE80211_S_ASSOC:		/* infra mode */
-			if (ni->ni_txrate >= ni->ni_rates.rs_nrates)
-				panic("%s: bogus xmit rate %u setup\n",
-				    __func__, ni->ni_txrate);
+			IASSERT(ni->ni_txrate < ni->ni_rates.rs_nrates,
+				("%s: bogus xmit rate %u setup\n", __func__,
+				ni->ni_txrate));
 			if (ifp->if_flags & IFF_DEBUG) {
-				printf("%s: %s with %s ssid ",
-				    ifp->if_xname,
+				if_printf(ifp, "%s with %s ssid ",
 				    ic->ic_opmode == IEEE80211_M_STA ?
 				    "associated" : "synchronized",
 				    ether_sprintf(ni->ni_bssid));
 				ieee80211_print_essid(ic->ic_bss->ni_essid,
 				    ni->ni_esslen);
 				printf(" channel %d start %uMb\n",
-				    ieee80211_chan2ieee(ic, ni->ni_chan), mbps);
+				    ieee80211_chan2ieee(ic, ni->ni_chan),
+				    IEEE80211_RATE2MBS(ni->ni_rates.rs_rates[ni->ni_txrate]));
 			}
 			ic->ic_mgt_timer = 0;
 			(*ifp->if_start)(ifp);

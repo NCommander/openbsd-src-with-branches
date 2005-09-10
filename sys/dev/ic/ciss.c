@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.6 2005/08/20 18:01:35 mickey Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.5 2005/08/03 00:09:38 mickey Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -131,7 +131,6 @@ ciss_attach(struct ciss_softc *sc)
 	struct ciss_inquiry *inq;
 	bus_dma_segment_t seg[1];
 	int error, i, total, rseg, maxfer;
-	ciss_lock_t lock;
 	paddr_t pa;
 
 	bus_space_read_region_4(sc->iot, sc->cfg_ioh, sc->cfgoff,
@@ -298,11 +297,9 @@ ciss_attach(struct ciss_softc *sc)
 	}
 	bzero(sc->scratch, PAGE_SIZE);
 
-	lock = CISS_LOCK_SCRATCH(sc);
 	inq = sc->scratch;
 	if (ciss_inq(sc, inq)) {
 		printf(": adapter inquiry failed\n");
-		CISS_UNLOCK_SCRATCH(sc, lock);
 		bus_dmamem_free(sc->dmat, sc->cmdseg, 1);
 		bus_dmamap_destroy(sc->dmat, sc->cmdmap);
 		return -1;
@@ -311,7 +308,6 @@ ciss_attach(struct ciss_softc *sc)
 	if (!(inq->flags & CISS_INQ_BIGMAP)) {
 		printf(": big map is not supported, flags=%b\n",
 		    inq->flags, CISS_INQ_BITS);
-		CISS_UNLOCK_SCRATCH(sc, lock);
 		bus_dmamem_free(sc->dmat, sc->cmdseg, 1);
 		bus_dmamap_destroy(sc->dmat, sc->cmdmap);
 		return -1;
@@ -324,11 +320,6 @@ ciss_attach(struct ciss_softc *sc)
 	    inq->numld, inq->numld == 1? "" : "s",
 	    inq->hw_rev, inq->fw_running, inq->fw_stored);
 
-	CISS_UNLOCK_SCRATCH(sc, lock);
-
-	timeout_set(&sc->sc_hb, ciss_heartbeat, sc);
-	timeout_add(&sc->sc_hb, hz * 3);
-
 	/* map LDs */
 	if (ciss_ldmap(sc)) {
 		printf("%s: adapter LD map failed\n", sc->sc_dev.dv_xname);
@@ -340,7 +331,7 @@ ciss_attach(struct ciss_softc *sc)
 /* TODO scan all physdev */
 /* TODO scan all logdev */
 
-	sc->sc_flush = CISS_FLUSH_ENABLE;
+#if 0
 	if (!(sc->sc_sh = shutdownhook_establish(ciss_shutdown, sc))) {
 		printf(": unable to establish shutdown hook\n");
 		bus_dmamem_free(sc->dmat, sc->cmdseg, 1);
@@ -348,7 +339,6 @@ ciss_attach(struct ciss_softc *sc)
 		return -1;
 	}
 
-#if 0
 	if (kthread_create(ciss_kthread, sc, NULL, "%s", sc->sc_dev.dv_xname)) {
 		printf(": unable to create kernel thread\n");
 		shutdownhook_disestablish(sc->sc_sh);
@@ -357,6 +347,9 @@ ciss_attach(struct ciss_softc *sc)
 		return -1;
 	}
 #endif
+
+	timeout_set(&sc->sc_hb, ciss_heartbeat, sc);
+	timeout_add(&sc->sc_hb, hz * 3);
 
 	sc->sc_link.device = &ciss_dev;
 	sc->sc_link.adapter_softc = sc;
@@ -389,9 +382,8 @@ ciss_shutdown(void *v)
 {
 	struct ciss_softc *sc = v;
 
-	sc->sc_flush = CISS_FLUSH_DISABLE;
-	timeout_del(&sc->sc_hb);
 	ciss_sync(sc);
+	timeout_del(&sc->sc_hb);
 }
 
 void
@@ -547,7 +539,7 @@ ciss_cmd(struct ciss_ccb *ccb, int flags, int wait)
 }
 
 int
-ciss_done(struct ciss_ccb *ccb)
+ciss_done(struct ciss_ccb *ccb)		/* TODO */
 {
 	struct ciss_softc *sc = ccb->ccb_sc;
 	struct scsi_xfer *xs = ccb->ccb_xs;
@@ -677,14 +669,11 @@ ciss_ldmap(struct ciss_softc *sc)
 	struct ciss_ccb *ccb;
 	struct ciss_cmd *cmd;
 	struct ciss_ldmap *lmap;
-	ciss_lock_t lock;
-	int total, rv;
+	int total, error;
 
-	lock = CISS_LOCK_SCRATCH(sc);
 	lmap = sc->scratch;
 	lmap->size = htobe32(sc->maxunits * sizeof(lmap->map));
 	total = sizeof(*lmap) + (sc->maxunits - 1) * sizeof(lmap->map);
-
 	ccb = ciss_get_ccb(sc);
 	ccb->ccb_len = total;
 	ccb->ccb_data = lmap;
@@ -699,49 +688,41 @@ ciss_ldmap(struct ciss_softc *sc)
 	cmd->cdb[8] = total >> 8;	/* biiiig endian */
 	cmd->cdb[9] = total & 0xff;
 
-	rv = ciss_cmd(ccb, BUS_DMA_NOWAIT, SCSI_POLL|SCSI_NOSLEEP);
-	CISS_UNLOCK_SCRATCH(sc, lock);
+	if ((error = ciss_cmd(ccb, BUS_DMA_NOWAIT, SCSI_POLL|SCSI_NOSLEEP)))
+		return error;
 
-	if (rv)
-		return rv;
 printf("lmap %x:%x ", lmap->map[0].tgt, lmap->map[0].tgt2);
 
 	return 0;
 }
 
 int
-ciss_sync(struct ciss_softc *sc)
+ciss_sync(struct ciss_softc *sc)	/* TODO */
 {
+#if 0
 	struct ciss_ccb *ccb;
 	struct ciss_cmd *cmd;
-	struct ciss_flush *flush;
-	ciss_lock_t lock;
-	int rv;
 
-	lock = CISS_LOCK_SCRATCH(sc);
-	flush = sc->scratch;
-	bzero(flush, sizeof(*flush));
-	flush->flush = sc->sc_flush;
-
+	inq = sc->scratch;
 	ccb = ciss_get_ccb(sc);
-	ccb->ccb_len = sizeof(*flush);
-	ccb->ccb_data = flush;
+	ccb->ccb_len = sizeof(*inq);
+	ccb->ccb_data = inq;
 	cmd = &ccb->ccb_cmd;
 	cmd->tgt = CISS_CMD_MODE_PERIPH;
 	cmd->tgt2 = 0;
 	cmd->cdblen = 10;
-	cmd->flags = CISS_CDB_CMD | CISS_CDB_SIMPL | CISS_CDB_OUT;
+	cmd->flags = CISS_CDB_CMD | CISS_CDB_SIMPL | CISS_CDB_IN;
 	cmd->tmo = 0;
 	bzero(&cmd->cdb[0], sizeof(cmd->cdb));
-	cmd->cdb[0] = CISS_CMD_CTRL_SET;
-	cmd->cdb[6] = CISS_CMS_CTRL_FLUSH;
-	cmd->cdb[7] = sizeof(*flush) >> 8;	/* biiiig endian */
-	cmd->cdb[8] = sizeof(*flush) & 0xff;
+	cmd->cdb[0] = CISS_CMD_CTRL_GET;
+	cmd->cdb[6] = CISS_CMS_CTRL_CTRL;
+	cmd->cdb[7] = sizeof(*inq) >> 8;	/* biiiig endian */
+	cmd->cdb[8] = sizeof(*inq) & 0xff;
 
-	rv = ciss_cmd(ccb, BUS_DMA_NOWAIT, SCSI_POLL|SCSI_NOSLEEP);
-	CISS_UNLOCK_SCRATCH(sc, lock);
-
-	return rv;
+	return ciss_cmd(ccb, BUS_DMA_NOWAIT, SCSI_POLL|SCSI_NOSLEEP);
+#else
+	return 0;
+#endif
 }
 
 int
@@ -779,7 +760,6 @@ ciss_scsi_raw_cmd(struct scsi_xfer *xs)	/* TODO */
 	ccb->ccb_len = xs->datalen;
 	ccb->ccb_data = xs->data;
 	ccb->ccb_xs = xs;
-
 
 
 	cmd->cdblen = xs->cmdlen;
@@ -831,8 +811,6 @@ ciss_scsi_cmd(struct scsi_xfer *xs)
 	lock = CISS_LOCK(sc);
 	error = 0;
 	xs->error = XS_NOERROR;
-
-	/* XXX emulate SYNCHRONIZE_CACHE ??? */
 
 	ccb = ciss_get_ccb(sc);
 	cmd = &ccb->ccb_cmd;
@@ -955,8 +933,6 @@ ciss_ioctl(struct device *dev, u_long cmd, caddr_t addr)	/* TODO */
 	case BIOCVOL:
 	case BIOCDISK:
 	case BIOCALARM:
-	case BIOCBLINK:
-	case BIOCSETSTATE:
 	default:
 		CISS_DPRINTF(CISS_D_IOCTL, ("%s: invalid ioctl\n",
 		    sc->sc_dev.dv_xname));

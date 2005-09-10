@@ -20,11 +20,11 @@ my $SAMPLE_TESTS = $ENV{PERL_CORE}
                     : File::Spec->catdir($Curdir, 't',   'sample-tests');
 
 
-my $IsMacOS   = $^O eq 'MacOS';
+my $IsMacPerl = $^O eq 'MacOS';
 my $IsVMS     = $^O eq 'VMS';
 
 # VMS uses native, not POSIX, exit codes.
-my $die_exit = $IsVMS ? 44 : $IsMacOS ? 0 : 1;
+my $die_exit = $IsVMS ? 44 : 1;
 
 # We can only predict that the wait status should be zero or not.
 my $wait_non_zero = 1;
@@ -174,6 +174,23 @@ my %samples = (
                                        ],
                           },
 
+   no_output        => {
+                        passing     => 0,
+
+                        'exit'      => 0,
+                        'wait'      => 0,
+
+                        max         => 0,
+                        seen        => 0,
+
+                        'ok'        => 0,
+                        'todo'      => 0,
+                        'skip'      => 0,
+                        bonus       => 0,
+
+                        details     => [],
+                       },
+
    simple           => {
                         passing     => 1,
 
@@ -284,6 +301,7 @@ my %samples = (
 
                           max       => 0,
                           seen      => 0,
+                          skip_all  => '',
 
                           'ok'      => 0,
                           'todo'    => 0,
@@ -442,15 +460,18 @@ my %samples = (
                        },
 );
 
-plan tests => (keys(%samples) * 4) + 3;
+plan tests => (keys(%samples) * 5) + 3;
 
-use_ok('Test::Harness::Straps');
+use Test::Harness::Straps;
 
 $SIG{__WARN__} = sub { 
     warn @_ unless $_[0] =~ /^Enormous test number/ ||
                    $_[0] =~ /^Can't detailize/
 };
-while( my($test, $expect) = each %samples ) {
+
+for my $test ( sort keys %samples ) {
+    my $expect = $samples{$test};
+
     for (0..$#{$expect->{details}}) {
         $expect->{details}[$_]{type} = ''
             unless exists $expect->{details}[$_]{type};
@@ -462,6 +483,7 @@ while( my($test, $expect) = each %samples ) {
 
     my $test_path = File::Spec->catfile($SAMPLE_TESTS, $test);
     my $strap = Test::Harness::Straps->new;
+    isa_ok( $strap, 'Test::Harness::Straps' );
     my %results = $strap->analyze_file($test_path);
 
     is_deeply($results{details}, $expect->{details}, "$test details" );
@@ -470,7 +492,7 @@ while( my($test, $expect) = each %samples ) {
     delete $results{details};
 
     SKIP: {
-        skip '$? unreliable in MacPerl', 2 if $IsMacOS;
+        skip '$? unreliable in MacPerl', 2 if $IsMacPerl;
 
         # We can only check if it's zero or non-zero.
         is( !!$results{'wait'}, !!$expect->{'wait'}, 'wait status' );
@@ -485,9 +507,11 @@ while( my($test, $expect) = each %samples ) {
     }
 
     is_deeply(\%results, $expect, "  the rest $test" );
+} # for %samples
+
+NON_EXISTENT_FILE: {
+    my $strap = Test::Harness::Straps->new;
+    isa_ok( $strap, 'Test::Harness::Straps' );
+    ok( !$strap->analyze_file('I_dont_exist') );
+    is( $strap->{error}, "I_dont_exist does not exist" );
 }
-
-
-my $strap = Test::Harness::Straps->new;
-ok( !$strap->analyze_file('I_dont_exist') );
-is( $strap->{error}, "I_dont_exist does not exist" );

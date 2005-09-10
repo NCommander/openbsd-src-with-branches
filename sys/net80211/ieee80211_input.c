@@ -1,5 +1,5 @@
 /*	$NetBSD: ieee80211_input.c,v 1.24 2004/05/31 11:12:24 dyoung Exp $	*/
-/*	$OpenBSD: ieee80211_input.c,v 1.9 2005/09/08 12:44:55 jsg Exp $	*/
+/*	$OpenBSD: ieee80211_input.c,v 1.5 2005/03/08 18:09:20 mickey Exp $	*/
 
 /*-
  * Copyright (c) 2001 Atsushi Onoe
@@ -34,6 +34,15 @@
  */
 
 #include <sys/cdefs.h>
+#if defined(__FreeBSD__)
+__FBSDID("$FreeBSD: src/sys/net80211/ieee80211_input.c,v 1.20 2004/04/02 23:35:24 sam Exp $");
+#elif defined(__NetBSD__)
+__KERNEL_RCSID(0, "$NetBSD: ieee80211_input.c,v 1.24 2004/05/31 11:12:24 dyoung Exp $");
+#endif
+
+#if defined(__NetBSD__)
+#include "opt_inet.h"
+#endif
 
 #include "bpfilter.h"
 
@@ -46,14 +55,26 @@
 #include <sys/sockio.h>
 #include <sys/endian.h>
 #include <sys/errno.h>
+#ifdef __FreeBSD__
+#include <sys/bus.h>
+#endif
 #include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/endian.h>
+
+#ifdef __FreeBSD__
+#include <machine/atomic.h>
+#endif
 
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_arp.h>
+#if defined(__FreeBSD__)
+#include <net/ethernet.h>
+#elif defined(__NetBSD__)
+#include <net/if_ether.h>
+#endif
 #include <net/if_llc.h>
 
 #if NBPFILTER > 0
@@ -62,16 +83,23 @@
 
 #ifdef INET
 #include <netinet/in.h>
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <netinet/if_ether.h>
+#else
+#include <net/if_ether.h>
+#endif
 #endif
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_compat.h>
 
+#ifdef __OpenBSD__
 #include <dev/rndvar.h>
+#endif
 
 const struct timeval ieee80211_merge_print_intvl = {
-	.tv_sec = 1,
-	.tv_usec = 0
+    .tv_sec = 1, 
+    .tv_usec = 0
 };
 
 static void ieee80211_recv_pspoll(struct ieee80211com *,
@@ -99,9 +127,11 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 	int error, len;
 	u_int8_t dir, type, subtype;
 	u_int16_t rxseq;
+#if !defined(__OpenBSD__)
+	ALTQ_DECL(struct altq_pktattr pktattr;)
+#endif
 
-	if (ni == NULL)
-		panic("null mode");
+	IASSERT(ni != NULL, ("null node"));
 
 	/* trim CRC here so WEP can find its own CRC at the end of packet. */
 	if (m->m_flags & M_HASFCS) {
@@ -230,8 +260,13 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 			if (ic->ic_state != IEEE80211_S_SCAN &&
 			    !IEEE80211_ADDR_EQ(wh->i_addr3,
 				ic->ic_bss->ni_bssid) &&
+#ifdef __OpenBSD__
 			    !IEEE80211_ADDR_EQ(wh->i_addr3,
 				etherbroadcastaddr)) {
+#else
+			    !IEEE80211_ADDR_EQ(wh->i_addr3,
+ 			        ifp->if_broadcastaddr)) {
+#endif
 				/* Destination is not our BSS or broadcast. */
 				IEEE80211_DPRINTF2(
 				    ("%s: discard data frame to DA %s\n",
@@ -248,8 +283,13 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 			if (ic->ic_state != IEEE80211_S_SCAN &&
 			    !IEEE80211_ADDR_EQ(wh->i_addr1,
 				ic->ic_bss->ni_bssid) &&
+#ifdef __OpenBSD__
 			    !IEEE80211_ADDR_EQ(wh->i_addr1,
 				etherbroadcastaddr)) {
+#else
+			    !IEEE80211_ADDR_EQ(wh->i_addr1,
+ 			        ifp->if_broadcastaddr)) {
+#endif
 				/* BSS is not us or broadcast. */
 				IEEE80211_DPRINTF2(
 				    ("%s: discard data frame to BSS %s\n",
@@ -302,7 +342,7 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 #if NBPFILTER > 0
 		/* copy to listener after decrypt */
 		if (ic->ic_rawbpf)
-			bpf_mtap(ic->ic_rawbpf, m);
+			BPF_MTAP(ic->ic_rawbpf, m);
 #endif
 		m = ieee80211_decap(ifp, m);
 		if (m == NULL) {
@@ -334,6 +374,13 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 				}
 			}
 			if (m1 != NULL) {
+#if !defined(__OpenBSD__)
+#ifdef ALTQ
+				if (ALTQ_IS_ENABLED(&ifp->if_snd))
+					altq_etherclassify(&ifp->if_snd, m1,
+					    &pktattr);
+#endif
+#endif
 				len = m1->m_pkthdr.len;
 				IFQ_ENQUEUE(&ifp->if_snd, m1, NULL, error);
 				if (error)
@@ -352,9 +399,13 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 			 * we don't need to duplicate for DLT_EN10MB.
 			 */
 			if (ifp->if_bpf && m1 == NULL)
-				bpf_mtap(ifp->if_bpf, m);
+				BPF_MTAP(ifp->if_bpf, m);
 #endif
-			ether_input_mbuf(ifp, m);
+#if defined(__OpenBSD__)
+ 			ether_input_mbuf(ifp, m);
+#else
+			(*ifp->if_input)(ifp, m);
+#endif
 		}
 		return;
 
@@ -399,15 +450,14 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 			doprint += ieee80211_debug;
 #endif
 			if (doprint)
-				printf("%s: received %s from %s rssi %d\n",
-				    ifp->if_xname,
+				if_printf(ifp, "received %s from %s rssi %d\n",
 				    ieee80211_mgt_subtype_name[subtype
 				    >> IEEE80211_FC0_SUBTYPE_SHIFT],
 				    ether_sprintf(wh->i_addr2), rssi);
 		}
 #if NBPFILTER > 0
 		if (ic->ic_rawbpf)
-			bpf_mtap(ic->ic_rawbpf, m);
+			BPF_MTAP(ic->ic_rawbpf, m);
 #endif
 		(*ic->ic_recv_mgmt)(ic, m, ni, subtype, rssi, rstamp);
 		m_freem(m);
@@ -434,13 +484,13 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 		/* should not come here */
 		break;
 	}
- err:
+  err:
 	ifp->if_ierrors++;
- out:
+  out:
 	if (m != NULL) {
 #if NBPFILTER > 0
 		if (ic->ic_rawbpf)
-			bpf_mtap(ic->ic_rawbpf, m);
+			BPF_MTAP(ic->ic_rawbpf, m);
 #endif
 		m_freem(m);
 	}
@@ -505,7 +555,13 @@ ieee80211_decap(struct ifnet *ifp, struct mbuf *m)
 					m_freem(m);
 					return NULL;
 				}
+#if defined(__FreeBSD__)
+				M_MOVE_PKTHDR(n, m);
+#elif defined(__OpenBSD__)
 				M_DUP_PKTHDR(n, m);
+#else
+				M_COPY_PKTHDR(n, m);
+#endif
 				n->m_len = MHLEN;
 			} else {
 				MGET(n, M_DONTWAIT, MT_DATA);
@@ -690,8 +746,8 @@ ieee80211_auth_open(struct ieee80211com *ic, struct ieee80211_frame *wh,
 		IEEE80211_SEND_MGMT(ic, ni,
 			IEEE80211_FC0_SUBTYPE_AUTH, seq + 1);
 		if (ifp->if_flags & IFF_DEBUG)
-			printf("%s: station %s %s authenticated (open)\n",
-			    ifp->if_xname, ether_sprintf(ni->ni_macaddr),
+			if_printf(ifp, "station %s %s authenticated (open)\n",
+			    ether_sprintf(ni->ni_macaddr),
 			    ni->ni_state != IEEE80211_STA_CACHE ?
 			    "newly" : "already");
 		ieee80211_node_newstate(ni, IEEE80211_STA_AUTH);
@@ -709,9 +765,10 @@ ieee80211_auth_open(struct ieee80211com *ic, struct ieee80211_frame *wh,
 		}
 		if (status != 0) {
 			if (ifp->if_flags & IFF_DEBUG)
-				printf("%s: open authentication failed "
-				    "(reason %d) for %s\n", ifp->if_xname,
-				    status, ether_sprintf(wh->i_addr3));
+				if_printf(&ic->ic_if,
+				    "open authentication failed (reason %d) "
+				    "for %s\n", status,
+				    ether_sprintf(wh->i_addr3));
 			if (ni != ic->ic_bss)
 				ni->ni_fails++;
 			ic->ic_stats.is_rx_auth_fail++;
@@ -809,11 +866,11 @@ ieee80211_auth_shared(struct ieee80211com *ic, struct ieee80211_frame *wh,
 			     --i >= 0; )
 				ni->ni_challenge[i] = arc4random();
 			if (ifp->if_flags & IFF_DEBUG)
-				printf("%s: station %s shared key "
-				    "%sauthentication\n", ifp->if_xname,
-				    ether_sprintf(ni->ni_macaddr),
-				    ni->ni_state != IEEE80211_STA_CACHE ?
-				    "" : "re");
+				if_printf(ifp, "station %s shared key "
+					"%sauthentication\n",
+					ether_sprintf(ni->ni_macaddr),
+					ni->ni_state != IEEE80211_STA_CACHE ?
+				        "" : "re");
 			break;
 		case IEEE80211_AUTH_SHARED_RESPONSE:
 			if (ni == ic->ic_bss) {
@@ -828,15 +885,15 @@ ieee80211_auth_shared(struct ieee80211com *ic, struct ieee80211_frame *wh,
 				return;
 			}
 			if (memcmp(ni->ni_challenge, &challenge[2],
-			    challenge[1]) != 0) {
+			           challenge[1]) != 0) {
 				IEEE80211_DPRINTF(("%s: challenge mismatch\n",
 				    __func__));
 				ic->ic_stats.is_rx_auth_fail++;
 				return;
 			}
 			if (ifp->if_flags & IFF_DEBUG)
-				printf("%s: station %s authenticated "
-					"(shared key)\n", ifp->if_xname,
+				if_printf(ifp, "station %s authenticated "
+					"(shared key)\n",
 					ether_sprintf(ni->ni_macaddr));
 			ieee80211_node_newstate(ni, IEEE80211_STA_AUTH);
 			break;
@@ -860,8 +917,9 @@ ieee80211_auth_shared(struct ieee80211com *ic, struct ieee80211_frame *wh,
 				ni->ni_challenge = NULL;
 			}
 			if (status != 0) {
-				printf("%s: %s: shared authentication failed "
-				    "(reason %d) for %s\n", ifp->if_xname,
+				if_printf(&ic->ic_if,
+				    "%s: shared authentication failed "
+				    "(reason %d) for %s\n",
 				    __func__, status,
 				    ether_sprintf(wh->i_addr3));
 				if (ni != ic->ic_bss)
@@ -976,8 +1034,7 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 			case IEEE80211_ELEMID_FHPARMS:
 				if (ic->ic_phytype == IEEE80211_T_FH) {
 					fhdwell = (frm[3] << 8) | frm[2];
-					chan = IEEE80211_FH_CHAN(frm[4],
-					    frm[5]);
+					chan = IEEE80211_FH_CHAN(frm[4], frm[5]);
 					fhindex = frm[6];
 				}
 				break;
@@ -1022,12 +1079,12 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 #endif
 		    isclr(ic->ic_chan_active, chan)) {
 			IEEE80211_DPRINTF(("%s: ignore %s with invalid channel "
-			    "%u\n", __func__, ISPROBE(subtype) ?
-			    "probe response" : "beacon", chan));
+			    "%u\n", __func__,
+			    ISPROBE(subtype) ? "probe response" : "beacon", chan));
 			ic->ic_stats.is_rx_badchan++;
 			return;
 		}
-		if (!(ic->ic_caps & IEEE80211_C_SCANALL) &&
+		if (!(ic->ic_caps & IEEE80211_C_SCANALL) && 
 		    (chan != bchan && ic->ic_phytype != IEEE80211_T_FH)) {
 			/*
 			 * Frame was received on a channel different from the
@@ -1040,8 +1097,8 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 			 *     different hop pattern in FH.
 			 */
 			IEEE80211_DPRINTF(("%s: ignore %s on channel %u marked "
-			    "for channel %u\n", __func__, ISPROBE(subtype) ?
-			    "probe response" : "beacon", bchan, chan));
+			    "for channel %u\n", __func__,
+			    ISPROBE(subtype) ? "probe response" : "beacon", bchan, chan));
 			ic->ic_stats.is_rx_chanmismatch++;
 			return;
 		}
@@ -1108,8 +1165,7 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 		ni->ni_fhindex = fhindex;
 		ni->ni_erp = erp;
 		/* NB: must be after ni_chan is setup */
-		ieee80211_setup_rates(ic, ni, rates, xrates,
-		    IEEE80211_F_DOSORT);
+		ieee80211_setup_rates(ic, ni, rates, xrates, IEEE80211_F_DOSORT);
 		/*
 		 * When scanning we record results (nodes) with a zero
 		 * refcnt.  Otherwise we want to hold the reference for
@@ -1360,8 +1416,8 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 		frm += 2;
 		if (status != 0) {
 			if (ifp->if_flags & IFF_DEBUG)
-				printf("%s: %sassociation failed (reason %d)"
-				    " for %s\n", ifp->if_xname,
+				if_printf(ifp,
+				    "%sassociation failed (reason %d) for %s\n",
 				    ISREASSOC(subtype) ?  "re" : "",
 				    status, ether_sprintf(wh->i_addr3));
 			if (ni != ic->ic_bss)
@@ -1412,9 +1468,9 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 		case IEEE80211_M_HOSTAP:
 			if (ni != ic->ic_bss) {
 				if (ifp->if_flags & IFF_DEBUG)
-					printf("%s: station %s deauthenticated "
+					if_printf(ifp,
+					    "station %s deauthenticated "
 					    "by peer (reason %d)\n",
-					    ifp->if_xname,
 					    ether_sprintf(ni->ni_macaddr),
 					    reason);
 				ieee80211_node_leave(ic, ni);
@@ -1443,9 +1499,9 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 		case IEEE80211_M_HOSTAP:
 			if (ni != ic->ic_bss) {
 				if (ifp->if_flags & IFF_DEBUG)
-					printf("%s: station %s disassociated "
+					if_printf(ifp,
+					    "station %s disassociated "
 					    "by peer (reason %d)\n",
-					    ifp->if_xname,
 					    ether_sprintf(ni->ni_macaddr),
 					    reason);
 				ieee80211_node_leave(ic, ni);
@@ -1466,7 +1522,7 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 
 static void
 ieee80211_recv_pspoll(struct ieee80211com *ic, struct mbuf *m0, int rssi,
-    u_int32_t rstamp)
+		      u_int32_t rstamp)
 {
 	struct ifnet *ifp = &ic->ic_if;
 	struct ieee80211_frame *wh;
@@ -1482,7 +1538,7 @@ ieee80211_recv_pspoll(struct ieee80211com *ic, struct mbuf *m0, int rssi,
 	if ((ni = ieee80211_find_node(ic, wh->i_addr2)) == NULL) {
 		if (ifp->if_flags & IFF_DEBUG)
 			printf("%s: station %s sent bogus power save poll\n",
-			    ifp->if_xname, ether_sprintf(wh->i_addr2));
+			       ifp->if_xname, ether_sprintf(wh->i_addr2));
 		return;
 	}
 
@@ -1490,15 +1546,16 @@ ieee80211_recv_pspoll(struct ieee80211com *ic, struct mbuf *m0, int rssi,
 	if ((aid & 0xc000) != 0xc000) {
 		if (ifp->if_flags & IFF_DEBUG)
 			printf("%s: station %s sent bogus aid %x\n",
-			    ifp->if_xname, ether_sprintf(wh->i_addr2), aid);
+			       ifp->if_xname, ether_sprintf(wh->i_addr2), aid);
 		return;
 	}
 
 	if (aid != ni->ni_associd) {
 		if (ifp->if_flags & IFF_DEBUG)
 			printf("%s: station %s aid %x doesn't match pspoll "
-			    "aid %x\n", ifp->if_xname,
-			    ether_sprintf(wh->i_addr2), ni->ni_associd, aid);
+			       "aid %x\n",
+			       ifp->if_xname, ether_sprintf(wh->i_addr2),
+			       ni->ni_associd, aid);
 		return;
 	}
 
@@ -1508,8 +1565,8 @@ ieee80211_recv_pspoll(struct ieee80211com *ic, struct mbuf *m0, int rssi,
 	if (m == NULL) {
 		if (ifp->if_flags & IFF_DEBUG)
 			printf("%s: station %s sent pspoll, "
-			    "but no packets are saved\n",
-			    ifp->if_xname, ether_sprintf(wh->i_addr2));
+			       "but no packets are saved\n",
+			       ifp->if_xname, ether_sprintf(wh->i_addr2));
 		return;
 	}
 	wh = mtod(m, struct ieee80211_frame *);
@@ -1528,7 +1585,7 @@ ieee80211_recv_pspoll(struct ieee80211com *ic, struct mbuf *m0, int rssi,
 
 	if (ifp->if_flags & IFF_DEBUG)
 		printf("%s: enqueued power saving packet for station %s\n",
-		    ifp->if_xname, ether_sprintf(ni->ni_macaddr));
+		       ifp->if_xname, ether_sprintf(ni->ni_macaddr));
 
 	IF_ENQUEUE(&ic->ic_pwrsaveq, m);
 	(*ifp->if_start)(ifp);

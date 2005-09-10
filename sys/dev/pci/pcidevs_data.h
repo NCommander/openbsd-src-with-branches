@@ -2,7 +2,7 @@
  * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.
  *
  * generated from:
- *	OpenBSD: pcidevs,v 1.914 2005/09/10 01:04:45 brad Exp 
+ *	OpenBSD: pcidevs,v 1.910 2005/08/29 03:00:23 brad Exp 
  */
 /*	$NetBSD: pcidevs,v 1.30 1997/06/24 06:20:24 thorpej Exp $ 	*/
 
@@ -747,10 +747,6 @@ static const struct pci_known_product pci_known_products[] = {
 	    "AIC-7899 U160",
 	},
 	{
-	    PCI_VENDOR_ADP2, PCI_PRODUCT_ADP2_SERVERAID,
-	    "ServeRAID",
-	},
-	{
 	    PCI_VENDOR_ADP2, PCI_PRODUCT_ADP2_AAC2622,
 	    "AAC-2622",
 	},
@@ -1155,10 +1151,6 @@ static const struct pci_known_product pci_known_products[] = {
 	    "Uni-N",
 	},
 	{
-	    PCI_VENDOR_APPLE, PCI_PRODUCT_APPLE_UNINORTHETH_FW,
-	    "Uni-N Eth Firewire",
-	},
-	{
 	    PCI_VENDOR_APPLE, PCI_PRODUCT_APPLE_USB,
 	    "USB",
 	},
@@ -1295,8 +1287,8 @@ static const struct pci_known_product pci_known_products[] = {
 	    "Radeon 9600 Pro",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_9600LE,
-	    "Radeon 9600 LE",
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_9600,
+	    "Radeon 9600",
 	},
 	{
 	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_9600XT,
@@ -1311,12 +1303,8 @@ static const struct pci_known_product pci_known_products[] = {
 	    "Radeon 9600 Pro Sec",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_9600LE_S,
-	    "Radeon 9600 LE Sec",
-	},
-	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_9600XT_S,
-	    "Radeon 9600 XT Sec",
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_9600XT_2,
+	    "Radeon 9600 XT 2nd",
 	},
 	{
 	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_R200_BB,
@@ -1595,7 +1583,7 @@ static const struct pci_known_product pci_known_products[] = {
 	    "Radeon 9500/9700 Sec",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_R350_S,
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_R350_2,
 	    "Radeon 9800 Pro Sec",
 	},
 	{
@@ -1739,12 +1727,12 @@ static const struct pci_known_product pci_known_products[] = {
 	    "Radeon IGP 9100 AGP",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RV280_PRO_S,
-	    "Radeon 9200 PRO Sec",
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RV280_PRO_2,
+	    "Radeon 9200 PRO 2nd",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RV280_S,
-	    "Radeon 9200 Sec",
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RV280_2,
+	    "Radeon 9200 2nd",
 	},
 	{
 	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RS480_HB,
@@ -1771,8 +1759,8 @@ static const struct pci_known_product pci_known_products[] = {
 	    "Radeon 9200",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RV280_SE_S,
-	    "Radeon 9200 SE Sec",
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RV280_SE_2,
+	    "Radeon 9200 SE 2nd",
 	},
 	{
 	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_RS482,
@@ -1815,15 +1803,15 @@ static const struct pci_known_product pci_known_products[] = {
 	    "FireGL V3100",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_X300_S,
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_X300_2,
 	    "Radeon X300 Sec",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_X600_S,
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_X600_2,
 	    "Radeon X600 Sec",
 	},
 	{
-	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_FIREGL_RV370_S,
+	    PCI_VENDOR_ATI, PCI_PRODUCT_ATI_FIREGL_RV370_2,
 	    "FireGL V3100 Sec",
 	},
 	{
@@ -2249,10 +2237,6 @@ static const struct pci_known_product pci_known_products[] = {
 	{
 	    PCI_VENDOR_CCUBE, PCI_PRODUCT_CCUBE_CINEMASTER,
 	    "Cinemaster",
-	},
-	{
-	    PCI_VENDOR_CHELSIO, PCI_PRODUCT_CHELSIO_Nx10,
-	    "Nx10 10GbE",
 	},
 	{
 	    PCI_VENDOR_CHIPS, PCI_PRODUCT_CHIPS_64310,
@@ -3397,10 +3381,6 @@ static const struct pci_known_product pci_known_products[] = {
 	{
 	    PCI_VENDOR_IBM, PCI_PRODUCT_IBM_PCIX,
 	    "PCIX-PCIX",
-	},
-	{
-	    PCI_VENDOR_IBM, PCI_PRODUCT_IBM_SERVERAID2,
-	    "ServeRAID",
 	},
 	{
 	    PCI_VENDOR_IDT, PCI_PRODUCT_IDT_77201,
@@ -5637,10 +5617,6 @@ static const struct pci_known_product pci_known_products[] = {
 	{
 	    PCI_VENDOR_NEOMAGIC, PCI_PRODUCT_NEOMAGIC_NM256ZX,
 	    "MagicMedia 256ZX",
-	},
-	{
-	    PCI_VENDOR_NETERION, PCI_PRODUCT_NETERION_XFRAME,
-	    "Xframe 10GbE",
 	},
 	{
 	    PCI_VENDOR_NETGEAR, PCI_PRODUCT_NETGEAR_MA301,
@@ -8651,10 +8627,6 @@ static const struct pci_known_product pci_known_products[] = {
 	    "VT8377 PCI",
 	},
 	{
-	    PCI_VENDOR_VIATECH, PCI_PRODUCT_VIATECH_K8M400,
-	    "K8M400 Host",
-	},
-	{
 	    PCI_VENDOR_VIATECH, PCI_PRODUCT_VIATECH_VT8378,
 	    "VT8378 PCI",
 	},
@@ -9923,10 +9895,6 @@ static const struct pci_known_vendor pci_known_vendors[] = {
 	    "Oxford",
 	},
 	{
-	    PCI_VENDOR_CHELSIO,
-	    "Chelsio",
-	},
-	{
 	    PCI_VENDOR_TAMARACK,
 	    "Tamarack",
 	},
@@ -10073,10 +10041,6 @@ static const struct pci_known_vendor pci_known_vendors[] = {
 	{
 	    PCI_VENDOR_HAWKING,
 	    "Hawking Technology",
-	},
-	{
-	    PCI_VENDOR_NETERION,
-	    "Neterion",
 	},
 	{
 	    PCI_VENDOR_INPROCOMM,

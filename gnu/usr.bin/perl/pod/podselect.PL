@@ -15,9 +15,8 @@ use Cwd;
 # This is so that make depend always knows where to find PL derivatives.
 $origdir = cwd;
 chdir(dirname($0));
-($file = basename($0)) =~ s/\.PL$//;
-$file =~ s/\.pl$// if ($^O eq 'os2' or $^O eq 'dos');  # "case-forgiving"
-$file =~ s/\.pl$/.com/ if ($^O eq 'VMS');              # "case-forgiving"
+$file = basename($0, '.PL');
+$file .= '.com' if $^O eq 'VMS';
 
 open OUT,">$file" or die "Can't create $file: $!";
 
@@ -39,7 +38,7 @@ print OUT <<'!NO!SUBS!';
 #############################################################################
 # podselect -- command to invoke the podselect function in Pod::Select
 #
-# Copyright (c) 1996-1999 by Bradford Appleton. All rights reserved.
+# Copyright (c) 1996-2000 by Bradford Appleton. All rights reserved.
 # This file is part of "PodParser". PodParser is free software;
 # you can redistribute it and/or modify it under the same terms
 # as Perl itself.
@@ -98,6 +97,8 @@ Please see L<Pod::Select/podselect()> for more details.
 L<Pod::Parser> and L<Pod::Select>
 
 =head1 AUTHOR
+
+Please report bugs using L<http://rt.cpan.org>.
 
 Brad Appleton E<lt>bradapp@enteract.comE<gt>
 

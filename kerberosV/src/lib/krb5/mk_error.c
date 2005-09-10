@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: mk_error.c,v 1.14 1999/12/02 17:05:11 joda Exp $");
+RCSID("$KTH: mk_error.c,v 1.18 2002/09/04 16:26:04 joda Exp $");
 
 krb5_error_code
 krb5_mk_error(krb5_context context,
@@ -42,12 +42,11 @@ krb5_mk_error(krb5_context context,
 	      const krb5_data *e_data,
 	      const krb5_principal client,
 	      const krb5_principal server,
-	      time_t ctime,
+	      time_t *client_time,
+	      int *client_usec,
 	      krb5_data *reply)
 {
     KRB_ERROR msg;
-    u_char *buf;
-    size_t buf_size;
     int32_t sec, usec;
     size_t len;
     krb5_error_code ret = 0;
@@ -59,9 +58,8 @@ krb5_mk_error(krb5_context context,
     msg.msg_type = krb_error;
     msg.stime    = sec;
     msg.susec    = usec;
-    if(ctime) {
-	msg.ctime = &ctime;
-    }
+    msg.ctime    = client_time;
+    msg.cusec    = client_usec;
     /* Make sure we only send `protocol' error codes */
     if(error_code < KRB5KDC_ERR_NONE || error_code >= KRB5_ERR_RCSID) {
 	if(e_text == NULL)
@@ -84,41 +82,10 @@ krb5_mk_error(krb5_context context,
 	msg.cname = &client->name;
     }
 
-    buf_size = 1024;
-    buf = malloc (buf_size);
-    if (buf == NULL)
-	return ENOMEM;
-
-    do {
-	ret = encode_KRB_ERROR(buf + buf_size - 1,
-			       buf_size,
-			       &msg,
-			       &len);
-	if (ret) {
-	    if (ret == ASN1_OVERFLOW) {
-		u_char *tmp;
-
-		buf_size *= 2;
-		tmp = realloc (buf, buf_size);
-		if (tmp == NULL) {
-		    ret = ENOMEM;
-		    goto out;
-		}
-		buf = tmp;
-	    } else {
-		goto out;
-	    }
-	}
-    } while (ret == ASN1_OVERFLOW);
-
-    reply->length = len;
-    reply->data = malloc(len);
-    if (reply->data == NULL) {
-	ret = ENOMEM;
-	goto out;
-    }
-    memcpy (reply->data, buf + buf_size - len, len);
-out:
-    free (buf);
-    return ret;
+    ASN1_MALLOC_ENCODE(KRB_ERROR, reply->data, reply->length, &msg, &len, ret);
+    if (ret)
+	return ret;
+    if(reply->length != len)
+	krb5_abortx(context, "internal error in ASN.1 encoder");
+    return 0;
 }

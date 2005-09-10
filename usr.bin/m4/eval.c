@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.57 2005/08/06 16:22:26 espie Exp $	*/
+/*	$OpenBSD: eval.c,v 1.56 2005/05/29 18:44:36 espie Exp $	*/
 /*	$NetBSD: eval.c,v 1.7 1996/11/10 21:21:29 pk Exp $	*/
 
 /*
@@ -61,7 +61,9 @@ static void	dotrace(const char *[], int, int);
 static void	doifelse(const char *[], int);
 static int	doincl(const char *);
 static int	dopaste(const char *);
+static void	gnu_dochq(const char *[], int);
 static void	dochq(const char *[], int);
+static void	gnu_dochc(const char *[], int);
 static void	dochc(const char *[], int);
 static void	dom4wrap(const char *);
 static void	dodiv(int);
@@ -134,9 +136,6 @@ expand_builtin(const char *argv[], int argc, int td)
   * if argc == 3 and argv[2] is null, then we
   * have macro-or-builtin() type call. We adjust
   * argc to avoid further checking..
-  */
- /* we keep the initial value for those built-ins that differentiate
-  * between builtin() and builtin.
   */
   	ac = argc;
 
@@ -287,11 +286,17 @@ expand_builtin(const char *argv[], int argc, int td)
 		break;
 #endif
 	case CHNQTYPE:
-		dochq(argv, ac);
+		if (mimic_gnu)
+			gnu_dochq(argv, ac);
+		else
+			dochq(argv, argc);
 		break;
 
 	case CHNCTYPE:
-		dochc(argv, argc);
+		if (mimic_gnu)
+			gnu_dochc(argv, ac);
+		else
+			dochc(argv, argc);
 		break;
 
 	case SUBSTYPE:
@@ -314,7 +319,7 @@ expand_builtin(const char *argv[], int argc, int td)
 				pbstr(rquote);
 				pbstr(argv[n]);
 				pbstr(lquote);
-				pushback(COMMA);
+				putback(COMMA);
 			}
 			pbstr(rquote);
 			pbstr(argv[3]);
@@ -513,7 +518,7 @@ expand_macro(const char *argv[], int argc)
 	p--;			       /* last character of defn */
 	while (p > t) {
 		if (*(p - 1) != ARGFLAG)
-			PUSHBACK(*p);
+			PUTBACK(*p);
 		else {
 			switch (*p) {
 
@@ -537,7 +542,7 @@ expand_macro(const char *argv[], int argc)
 				if (argc > 2) {
 					for (n = argc - 1; n > 2; n--) {
 						pbstr(argv[n]);
-						pushback(COMMA);
+						putback(COMMA);
 					}
 					pbstr(argv[2]);
 			    	}
@@ -548,7 +553,7 @@ expand_macro(const char *argv[], int argc)
 						pbstr(rquote);
 						pbstr(argv[n]);
 						pbstr(lquote);
-						pushback(COMMA);
+						putback(COMMA);
 					}
 					pbstr(rquote);
 					pbstr(argv[2]);
@@ -556,8 +561,8 @@ expand_macro(const char *argv[], int argc)
 				}
                                 break;
 			default:
-				PUSHBACK(*p);
-				PUSHBACK('$');
+				PUTBACK(*p);
+				PUTBACK('$');
 				break;
 			}
 			p--;
@@ -565,7 +570,7 @@ expand_macro(const char *argv[], int argc)
 		p--;
 	}
 	if (p == t)		       /* do last character */
-		PUSHBACK(*p);
+		PUTBACK(*p);
 }
 
 
@@ -731,44 +736,85 @@ dopaste(const char *pfile)
 }
 #endif
 
+static void
+gnu_dochq(const char *argv[], int ac)
+{
+	/* In gnu-m4 mode, the only way to restore quotes is to have no
+	 * arguments at all. */
+	if (ac == 2) {
+		lquote[0] = LQUOTE, lquote[1] = EOS;
+		rquote[0] = RQUOTE, rquote[1] = EOS;
+	} else {
+		strlcpy(lquote, argv[2], sizeof(lquote));
+		if(ac > 3)
+			strlcpy(rquote, argv[3], sizeof(rquote));
+		else
+			rquote[0] = EOS;
+	}
+}
+
 /*
  * dochq - change quote characters
  */
 static void
-dochq(const char *argv[], int ac)
+dochq(const char *argv[], int argc)
 {
-	if (ac == 2) {
-		lquote[0] = LQUOTE; lquote[1] = EOS;
-		rquote[0] = RQUOTE; rquote[1] = EOS;
-	} else {
-		strlcpy(lquote, argv[2], sizeof(lquote));
-		if (ac > 3) {
-			strlcpy(rquote, argv[3], sizeof(rquote));
-		} else {
-			rquote[0] = ECOMMT; rquote[1] = EOS;
+	if (argc > 2) {
+		if (*argv[2])
+			strlcpy(lquote, argv[2], sizeof(lquote));
+		else {
+			lquote[0] = LQUOTE;
+			lquote[1] = EOS;
 		}
+		if (argc > 3) {
+			if (*argv[3])
+				strlcpy(rquote, argv[3], sizeof(rquote));
+		} else
+			strlcpy(rquote, lquote, sizeof(rquote));
+	} else {
+		lquote[0] = LQUOTE, lquote[1] = EOS;
+		rquote[0] = RQUOTE, rquote[1] = EOS;
 	}
 }
 
+static void
+gnu_dochc(const char *argv[], int ac)
+{
+	/* In gnu-m4 mode, no arguments mean no comment
+	 * arguments at all. */
+	if (ac == 2) {
+		scommt[0] = EOS;
+		ecommt[0] = EOS;
+	} else {
+		if (*argv[2])
+			strlcpy(scommt, argv[2], sizeof(scommt));
+		else
+			scommt[0] = SCOMMT, scommt[1] = EOS;
+		if(ac > 3 && *argv[3])
+			strlcpy(ecommt, argv[3], sizeof(ecommt));
+		else
+			ecommt[0] = ECOMMT, ecommt[1] = EOS;
+	}
+}
 /*
  * dochc - change comment characters
  */
 static void
 dochc(const char *argv[], int argc)
 {
-/* XXX Note that there is no difference between no argument and a single
- * empty argument.
- */
-	if (argc == 2) {
-		scommt[0] = EOS;
-		ecommt[0] = EOS;
-	} else {
-		strlcpy(scommt, argv[2], sizeof(scommt));
-		if (argc == 3) {
-			ecommt[0] = ECOMMT; ecommt[1] = EOS;
-		} else {
-			strlcpy(ecommt, argv[3], sizeof(ecommt));
+	if (argc > 2) {
+		if (*argv[2])
+			strlcpy(scommt, argv[2], sizeof(scommt));
+		if (argc > 3) {
+			if (*argv[3])
+				strlcpy(ecommt, argv[3], sizeof(ecommt));
 		}
+		else
+			ecommt[0] = ECOMMT, ecommt[1] = EOS;
+	}
+	else {
+		scommt[0] = SCOMMT, scommt[1] = EOS;
+		ecommt[0] = ECOMMT, ecommt[1] = EOS;
 	}
 }
 
@@ -872,7 +918,7 @@ dosub(const char *argv[], int argc)
 #endif
 	if (fc >= ap && fc < ap + strlen(ap))
 		for (k = fc + nc - 1; k >= fc; k--)
-			pushback(*k);
+			putback(*k);
 }
 
 /*

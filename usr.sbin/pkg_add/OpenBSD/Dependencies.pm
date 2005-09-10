@@ -25,7 +25,6 @@ use OpenBSD::PkgSpec;
 use OpenBSD::PackageInfo;
 use OpenBSD::SharedLibs;
 use OpenBSD::Error;
-use OpenBSD::Interactive;
 
 sub solve
 {
@@ -38,7 +37,6 @@ sub solve
 		$to_install->{OpenBSD::PackageName::url2pkgname($fullname)} = 
 		    $fullname;
 	}
-	my @avail;
 
 	# do simple old style pkgdep first
 	my @deps = ();
@@ -75,14 +73,8 @@ sub solve
 		    next;
 		}
 	    }
-	    if (!@avail) {
-	    	@avail = OpenBSD::PackageLocator::available();
-		if (!$state->{forced}->{allversions}) {
-		    @avail = OpenBSD::PackageName::keep_most_recent(@avail);
-		}
-	    }
 	    # try with list of available packages
-	    @candidates = OpenBSD::PkgSpec::match($dep->{pattern}, @avail);
+	    @candidates = OpenBSD::PkgSpec::match($dep->{pattern}, OpenBSD::PackageLocator::available());
 	    # one single choice
 	    if (@candidates == 1) {
 		push(@deps, $candidates[0]);
@@ -90,14 +82,14 @@ sub solve
 		next;
 	    }
 	    if (@candidates > 1) {
-		# put default first if available
-		@candidates = ((grep {$_ eq $dep->{def}} @candidates),
-				(sort (grep {$_ ne $dep->{def}} @candidates)));
-		my $choice = 
-		    OpenBSD::Interactive::ask_list('Choose dependency for '.$plist->pkgname().': ',
-			$state->{interactive}, @candidates);
-		push(@deps, $choice);
-		$to_register->{$choice} = 1;
+		# grab default if available
+		if (grep {$_ eq $dep->{def}} @candidates) {
+		    push(@deps, $dep->{def});
+		    $to_register->{$dep->{def}} = 1;
+		    next;
+		}
+		push(@deps, $candidates[0]);
+		$to_register->{$candidates[0]} = 1;
 		next;
 	    }
 	    # can't get a list of packages, assume default

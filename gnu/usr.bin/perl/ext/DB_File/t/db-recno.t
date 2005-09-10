@@ -89,13 +89,22 @@ sub docat_del
     return $result;
 }   
 
+sub safeUntie
+{
+    my $hashref = shift ;
+    my $no_inner = 1;
+    local $SIG{__WARN__} = sub {-- $no_inner } ;
+    untie @$hashref;
+    return $no_inner;
+}
+
 sub bad_one
 {
     unless ($bad_ones++) {
 	print STDERR <<EOM ;
 #
 # Some older versions of Berkeley DB version 1 will fail db-recno
-# tests 61, 63 and 65.
+# tests 61, 63, 64 and 65.
 EOM
         if ($^O eq 'darwin'
 	    && $Config{db_version_major} == 1
@@ -103,7 +112,7 @@ EOM
 	    && $Config{db_version_patch} == 0) {
 	    print STDERR <<EOM ;
 #
-# For example Mac OS X 10.1.5 (or earlier) has such an old
+# For example Mac OS X 10.2 (or earlier) has such an old
 # version of Berkeley DB.
 EOM
 	}
@@ -141,8 +150,8 @@ BEGIN
     }          
 }
 
-my $splice_tests = 10 + 11 + 1; # ten regressions, 11 warnings, plus the randoms
-my $total_tests = 138 ;
+my $splice_tests = 10 + 12 + 1; # ten regressions, plus the randoms
+my $total_tests = 181 ;
 $total_tests += $splice_tests if $FA ;
 print "1..$total_tests\n";   
 
@@ -313,7 +322,7 @@ ok(57, $@ =~ '^Modification of non-creatable array value attempted' );
 # IMPORTANT - $X must be undefined before the untie otherwise the
 #             underlying DB close routine will not get called.
 undef $X ;
-untie(@h);
+ok(58, safeUntie \@h);
 
 unlink $Dfile;
 
@@ -323,14 +332,14 @@ unlink $Dfile;
 
     my @h = () ;
     my $dbh = new DB_File::RECNOINFO ;
-    ok(58, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
+    ok(59, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
     $h[0] = "abc" ;
     $h[1] = "def" ;
     $h[3] = "ghi" ;
-    untie @h ;
+    ok(60, safeUntie \@h);
     my $x = docat($Dfile) ;
     unlink $Dfile;
-    ok(59, $x eq "abc\ndef\n\nghi\n") ;
+    ok(61, $x eq "abc\ndef\n\nghi\n") ;
 }
 
 {
@@ -339,16 +348,16 @@ unlink $Dfile;
     my @h = () ;
     my $dbh = new DB_File::RECNOINFO ;
     $dbh->{bval} = "-" ;
-    ok(60, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
+    ok(62, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
     $h[0] = "abc" ;
     $h[1] = "def" ;
     $h[3] = "ghi" ;
-    untie @h ;
+    ok(63, safeUntie \@h);
     my $x = docat($Dfile) ;
     unlink $Dfile;
     my $ok = ($x eq "abc-def--ghi-") ;
     bad_one() unless $ok ;
-    ok(61, $ok) ;
+    ok(64, $ok) ;
 }
 
 {
@@ -358,16 +367,16 @@ unlink $Dfile;
     my $dbh = new DB_File::RECNOINFO ;
     $dbh->{flags} = R_FIXEDLEN ;
     $dbh->{reclen} = 5 ;
-    ok(62, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
+    ok(65, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
     $h[0] = "abc" ;
     $h[1] = "def" ;
     $h[3] = "ghi" ;
-    untie @h ;
+    ok(66, safeUntie \@h);
     my $x = docat($Dfile) ;
     unlink $Dfile;
     my $ok = ($x eq "abc  def       ghi  ") ;
     bad_one() unless $ok ;
-    ok(63, $ok) ;
+    ok(67, $ok) ;
 }
 
 {
@@ -378,16 +387,16 @@ unlink $Dfile;
     $dbh->{flags} = R_FIXEDLEN ;
     $dbh->{bval} = "-" ;
     $dbh->{reclen} = 5 ;
-    ok(64, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
+    ok(68, tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $dbh ) ;
     $h[0] = "abc" ;
     $h[1] = "def" ;
     $h[3] = "ghi" ;
-    untie @h ;
+    ok(69, safeUntie \@h);
     my $x = docat($Dfile) ;
     unlink $Dfile;
     my $ok = ($x eq "abc--def-------ghi--") ;
     bad_one() unless $ok ;
-    ok(65, $ok) ;
+    ok(70, $ok) ;
 }
 
 {
@@ -396,7 +405,7 @@ unlink $Dfile;
     my $filename = "xyz" ;
     my %x ;
     eval { tie %x, 'DB_File', $filename, O_RDWR|O_CREAT, 0640, $DB_RECNO ; } ;
-    ok(66, $@ =~ /^DB_File can only tie an array to a DB_RECNO database/) ;
+    ok(71, $@ =~ /^DB_File can only tie an array to a DB_RECNO database/) ;
     unlink $filename ;
 }
 
@@ -463,7 +472,7 @@ EOM
 
     BEGIN { push @INC, '.'; } 
     eval 'use SubDB ; ';
-    main::ok(67, $@ eq "") ;
+    main::ok(72, $@ eq "") ;
     my @h ;
     my $X ;
     eval '
@@ -471,27 +480,27 @@ EOM
 	' ;
     die "Could not tie: $!" unless $X;
 
-    main::ok(68, $@ eq "") ;
+    main::ok(73, $@ eq "") ;
 
     my $ret = eval '$h[3] = 3 ; return $h[3] ' ;
-    main::ok(69, $@ eq "") ;
-    main::ok(70, $ret == 5) ;
+    main::ok(74, $@ eq "") ;
+    main::ok(75, $ret == 5) ;
 
     my $value = 0;
     $ret = eval '$X->put(1, 4) ; $X->get(1, $value) ; return $value' ;
-    main::ok(71, $@ eq "") ;
-    main::ok(72, $ret == 10) ;
+    main::ok(76, $@ eq "") ;
+    main::ok(77, $ret == 10) ;
 
     $ret = eval ' R_NEXT eq main::R_NEXT ' ;
-    main::ok(73, $@ eq "" ) ;
-    main::ok(74, $ret == 1) ;
+    main::ok(78, $@ eq "" ) ;
+    main::ok(79, $ret == 1) ;
 
     $ret = eval '$X->A_new_method(1) ' ;
-    main::ok(75, $@ eq "") ;
-    main::ok(76, $ret eq "[[11]]") ;
+    main::ok(80, $@ eq "") ;
+    main::ok(81, $ret eq "[[11]]") ;
 
     undef $X;
-    untie(@h);
+    main::ok(82, main::safeUntie \@h);
     unlink "SubDB.pm", "recno.tmp" ;
 
 }
@@ -501,52 +510,52 @@ EOM
     # test $#
     my $self ;
     unlink $Dfile;
-    ok(77, $self = tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) ;
+    ok(83, $self = tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) ;
     $h[0] = "abc" ;
     $h[1] = "def" ;
     $h[2] = "ghi" ;
     $h[3] = "jkl" ;
-    ok(78, $FA ? $#h == 3 : $self->length() == 4) ;
+    ok(84, $FA ? $#h == 3 : $self->length() == 4) ;
     undef $self ;
-    untie @h ;
+    ok(85, safeUntie \@h);
     my $x = docat($Dfile) ;
-    ok(79, $x eq "abc\ndef\nghi\njkl\n") ;
+    ok(86, $x eq "abc\ndef\nghi\njkl\n") ;
 
     # $# sets array to same length
-    ok(80, $self = tie @h, 'DB_File', $Dfile, O_RDWR, 0640, $DB_RECNO ) ;
+    ok(87, $self = tie @h, 'DB_File', $Dfile, O_RDWR, 0640, $DB_RECNO ) ;
     if ($FA)
       { $#h = 3 }
     else 
       { $self->STORESIZE(4) }
-    ok(81, $FA ? $#h == 3 : $self->length() == 4) ;
+    ok(88, $FA ? $#h == 3 : $self->length() == 4) ;
     undef $self ;
-    untie @h ;
+    ok(89, safeUntie \@h);
     $x = docat($Dfile) ;
-    ok(82, $x eq "abc\ndef\nghi\njkl\n") ;
+    ok(90, $x eq "abc\ndef\nghi\njkl\n") ;
 
     # $# sets array to bigger
-    ok(83, $self = tie @h, 'DB_File', $Dfile, O_RDWR, 0640, $DB_RECNO ) ;
+    ok(91, $self = tie @h, 'DB_File', $Dfile, O_RDWR, 0640, $DB_RECNO ) ;
     if ($FA)
       { $#h = 6 }
     else 
       { $self->STORESIZE(7) }
-    ok(84, $FA ? $#h == 6 : $self->length() == 7) ;
+    ok(92, $FA ? $#h == 6 : $self->length() == 7) ;
     undef $self ;
-    untie @h ;
+    ok(93, safeUntie \@h);
     $x = docat($Dfile) ;
-    ok(85, $x eq "abc\ndef\nghi\njkl\n\n\n\n") ;
+    ok(94, $x eq "abc\ndef\nghi\njkl\n\n\n\n") ;
 
     # $# sets array smaller
-    ok(86, $self = tie @h, 'DB_File', $Dfile, O_RDWR, 0640, $DB_RECNO ) ;
+    ok(95, $self = tie @h, 'DB_File', $Dfile, O_RDWR, 0640, $DB_RECNO ) ;
     if ($FA)
       { $#h = 2 }
     else 
       { $self->STORESIZE(3) }
-    ok(87, $FA ? $#h == 2 : $self->length() == 3) ;
+    ok(96, $FA ? $#h == 2 : $self->length() == 3) ;
     undef $self ;
-    untie @h ;
+    ok(97, safeUntie \@h);
     $x = docat($Dfile) ;
-    ok(88, $x eq "abc\ndef\nghi\n") ;
+    ok(98, $x eq "abc\ndef\nghi\n") ;
 
     unlink $Dfile;
 
@@ -564,13 +573,25 @@ EOM
    sub checkOutput
    {
        my($fk, $sk, $fv, $sv) = @_ ;
+
+       print "# Fetch Key   : expected '$fk' got '$fetch_key'\n" 
+           if $fetch_key ne $fk ;
+       print "# Fetch Value : expected '$fv' got '$fetch_value'\n" 
+           if $fetch_value ne $fv ;
+       print "# Store Key   : expected '$sk' got '$store_key'\n" 
+           if $store_key ne $sk ;
+       print "# Store Value : expected '$sv' got '$store_value'\n" 
+           if $store_value ne $sv ;
+       print "# \$_          : expected 'original' got '$_'\n" 
+           if $_ ne 'original' ;
+
        return
-           $fetch_key eq $fk && $store_key eq $sk && 
+           $fetch_key   eq $fk && $store_key   eq $sk && 
 	   $fetch_value eq $fv && $store_value eq $sv &&
 	   $_ eq 'original' ;
    }
    
-   ok(89, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
+   ok(99, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
 
    $db->filter_fetch_key   (sub { $fetch_key = $_ }) ;
    $db->filter_store_key   (sub { $store_key = $_ }) ;
@@ -581,17 +602,17 @@ EOM
 
    $h[0] = "joe" ;
    #                   fk   sk     fv   sv
-   ok(90, checkOutput( "", 0, "", "joe")) ;
+   ok(100, checkOutput( "", 0, "", "joe")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(91, $h[0] eq "joe");
+   ok(101, $h[0] eq "joe");
    #                   fk  sk  fv    sv
-   ok(92, checkOutput( "", 0, "joe", "")) ;
+   ok(102, checkOutput( "", 0, "joe", "")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(93, $db->FIRSTKEY() == 0) ;
+   ok(103, $db->FIRSTKEY() == 0) ;
    #                    fk     sk  fv  sv
-   ok(94, checkOutput( 0, "", "", "")) ;
+   ok(104, checkOutput( 0, "", "", "")) ;
 
    # replace the filters, but remember the previous set
    my ($old_fk) = $db->filter_fetch_key   
@@ -606,17 +627,17 @@ EOM
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
    $h[1] = "Joe" ;
    #                   fk   sk     fv    sv
-   ok(95, checkOutput( "", 2, "", "Jxe")) ;
+   ok(105, checkOutput( "", 2, "", "Jxe")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(96, $h[1] eq "[Jxe]");
+   ok(106, $h[1] eq "[Jxe]");
    #                   fk   sk     fv    sv
-   ok(97, checkOutput( "", 2, "[Jxe]", "")) ;
+   ok(107, checkOutput( "", 2, "[Jxe]", "")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(98, $db->FIRSTKEY() == 1) ;
+   ok(108, $db->FIRSTKEY() == 1) ;
    #                   fk   sk     fv    sv
-   ok(99, checkOutput( 1, "", "", "")) ;
+   ok(109, checkOutput( 1, "", "", "")) ;
    
    # put the original filters back
    $db->filter_fetch_key   ($old_fk);
@@ -626,15 +647,15 @@ EOM
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
    $h[0] = "joe" ;
-   ok(100, checkOutput( "", 0, "", "joe")) ;
+   ok(110, checkOutput( "", 0, "", "joe")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(101, $h[0] eq "joe");
-   ok(102, checkOutput( "", 0, "joe", "")) ;
+   ok(111, $h[0] eq "joe");
+   ok(112, checkOutput( "", 0, "joe", "")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(103, $db->FIRSTKEY() == 0) ;
-   ok(104, checkOutput( 0, "", "", "")) ;
+   ok(113, $db->FIRSTKEY() == 0) ;
+   ok(114, checkOutput( 0, "", "", "")) ;
 
    # delete the filters
    $db->filter_fetch_key   (undef);
@@ -644,18 +665,18 @@ EOM
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
    $h[0] = "joe" ;
-   ok(105, checkOutput( "", "", "", "")) ;
+   ok(115, checkOutput( "", "", "", "")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(106, $h[0] eq "joe");
-   ok(107, checkOutput( "", "", "", "")) ;
+   ok(116, $h[0] eq "joe");
+   ok(117, checkOutput( "", "", "", "")) ;
 
    ($fetch_key, $store_key, $fetch_value, $store_value) = ("") x 4 ;
-   ok(108, $db->FIRSTKEY() == 0) ;
-   ok(109, checkOutput( "", "", "", "")) ;
+   ok(118, $db->FIRSTKEY() == 0) ;
+   ok(119, checkOutput( "", "", "", "")) ;
 
    undef $db ;
-   untie @h;
+   ok(120, safeUntie \@h);
    unlink $Dfile;
 }
 
@@ -667,7 +688,7 @@ EOM
     my (@h, $db) ;
 
     unlink $Dfile;
-    ok(110, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
+    ok(121, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
 
     my %result = () ;
 
@@ -691,35 +712,35 @@ EOM
     $_ = "original" ;
 
     $h[0] = "joe" ;
-    ok(111, $result{"store key"} eq "store key - 1: [0]");
-    ok(112, $result{"store value"} eq "store value - 1: [joe]");
-    ok(113, ! defined $result{"fetch key"} );
-    ok(114, ! defined $result{"fetch value"} );
-    ok(115, $_ eq "original") ;
-
-    ok(116, $db->FIRSTKEY() == 0 ) ;
-    ok(117, $result{"store key"} eq "store key - 1: [0]");
-    ok(118, $result{"store value"} eq "store value - 1: [joe]");
-    ok(119, $result{"fetch key"} eq "fetch key - 1: [0]");
-    ok(120, ! defined $result{"fetch value"} );
-    ok(121, $_ eq "original") ;
-
-    $h[7]  = "john" ;
-    ok(122, $result{"store key"} eq "store key - 2: [0 7]");
-    ok(123, $result{"store value"} eq "store value - 2: [joe john]");
-    ok(124, $result{"fetch key"} eq "fetch key - 1: [0]");
+    ok(122, $result{"store key"} eq "store key - 1: [0]");
+    ok(123, $result{"store value"} eq "store value - 1: [joe]");
+    ok(124, ! defined $result{"fetch key"} );
     ok(125, ! defined $result{"fetch value"} );
     ok(126, $_ eq "original") ;
 
-    ok(127, $h[0] eq "joe");
-    ok(128, $result{"store key"} eq "store key - 3: [0 7 0]");
-    ok(129, $result{"store value"} eq "store value - 2: [joe john]");
+    ok(127, $db->FIRSTKEY() == 0 ) ;
+    ok(128, $result{"store key"} eq "store key - 1: [0]");
+    ok(129, $result{"store value"} eq "store value - 1: [joe]");
     ok(130, $result{"fetch key"} eq "fetch key - 1: [0]");
-    ok(131, $result{"fetch value"} eq "fetch value - 1: [joe]");
+    ok(131, ! defined $result{"fetch value"} );
     ok(132, $_ eq "original") ;
 
+    $h[7]  = "john" ;
+    ok(133, $result{"store key"} eq "store key - 2: [0 7]");
+    ok(134, $result{"store value"} eq "store value - 2: [joe john]");
+    ok(135, $result{"fetch key"} eq "fetch key - 1: [0]");
+    ok(136, ! defined $result{"fetch value"} );
+    ok(137, $_ eq "original") ;
+
+    ok(138, $h[0] eq "joe");
+    ok(139, $result{"store key"} eq "store key - 3: [0 7 0]");
+    ok(140, $result{"store value"} eq "store value - 2: [joe john]");
+    ok(141, $result{"fetch key"} eq "fetch key - 1: [0]");
+    ok(142, $result{"fetch value"} eq "fetch value - 1: [joe]");
+    ok(143, $_ eq "original") ;
+
     undef $db ;
-    untie @h;
+    ok(144, safeUntie \@h);
     unlink $Dfile;
 }		
 
@@ -730,15 +751,15 @@ EOM
    my (@h, $db) ;
    unlink $Dfile;
 
-   ok(133, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
+   ok(145, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
 
    $db->filter_store_key (sub { $_ = $h[0] }) ;
 
    eval '$h[1] = 1234' ;
-   ok(134, $@ =~ /^recursion detected in filter_store_key at/ );
+   ok(146, $@ =~ /^recursion detected in filter_store_key at/ );
    
    undef $db ;
-   untie @h;
+   ok(147, safeUntie \@h);
    unlink $Dfile;
 }
 
@@ -793,7 +814,7 @@ EOM
     unlink $filename ;
   }  
 
-  ok(135, docat_del($file) eq <<'EOM') ;
+  ok(148, docat_del($file) eq <<'EOM') ;
 The array contains 5 entries
 popped black
 shifted white
@@ -878,7 +899,7 @@ EOM
     unlink $file ;
   }  
 
-  ok(136, docat_del($save_output) eq <<'EOM') ;
+  ok(149, docat_del($save_output) eq <<'EOM') ;
 
 ORIGINAL
 0: zero
@@ -926,8 +947,8 @@ EOM
     tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0664, $DB_RECNO 
 	or die "Can't open file: $!\n" ;
     $h[0] = undef;
-    ok(137, $a eq "") ;
-    untie @h ;
+    ok(150, $a eq "") ;
+    ok(151, safeUntie \@h);
     unlink $Dfile;
 }
 
@@ -946,8 +967,219 @@ EOM
     tie @h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0664, $DB_RECNO 
 	or die "Can't open file: $!\n" ;
     @h = (); ;
-    ok(138, $a eq "") ;
-    untie @h ;
+    ok(152, $a eq "") ;
+    ok(153, safeUntie \@h);
+    unlink $Dfile;
+}
+
+{
+   # Check that DBM Filter can cope with read-only $_
+
+   use warnings ;
+   use strict ;
+   my (@h, $db) ;
+   unlink $Dfile;
+
+   ok(154, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
+
+   $db->filter_fetch_key   (sub { }) ;
+   $db->filter_store_key   (sub { }) ;
+   $db->filter_fetch_value (sub { }) ;
+   $db->filter_store_value (sub { }) ;
+
+   $_ = "original" ;
+
+   $h[0] = "joe" ;
+   ok(155, $h[0] eq "joe");
+
+   eval { grep { $h[$_] } (1, 2, 3) };
+   ok (156, ! $@);
+
+
+   # delete the filters
+   $db->filter_fetch_key   (undef);
+   $db->filter_store_key   (undef);
+   $db->filter_fetch_value (undef);
+   $db->filter_store_value (undef);
+
+   $h[1] = "joe" ;
+
+   ok(157, $h[1] eq "joe");
+
+   eval { grep { $h[$_] } (1, 2, 3) };
+   ok (158, ! $@);
+
+   undef $db ;
+   untie @h;
+   unlink $Dfile;
+}
+
+{
+   # Check low-level API works with filter
+
+   use warnings ;
+   use strict ;
+   my (@h, $db) ;
+   my $Dfile = "xxy.db";
+   unlink $Dfile;
+
+   ok(159, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO ) );
+
+
+   $db->filter_fetch_key   (sub { ++ $_ } );
+   $db->filter_store_key   (sub { -- $_ } );
+   $db->filter_fetch_value (sub { $_ = unpack("i", $_) } );
+   $db->filter_store_value (sub { $_ = pack("i", $_) } );
+
+   $_ = 'fred';
+
+   my $key = 22 ;
+   my $value = 34 ;
+
+   $db->put($key, $value) ;
+   ok 160, $key == 22;
+   ok 161, $value == 34 ;
+   ok 162, $_ eq 'fred';
+   #print "k [$key][$value]\n" ;
+
+   my $val ;
+   $db->get($key, $val) ;
+   ok 163, $key == 22;
+   ok 164, $val == 34 ;
+   ok 165, $_ eq 'fred';
+
+   $key = 51 ;
+   $value = 454;
+   $h[$key] = $value ;
+   ok 166, $key == 51;
+   ok 167, $value == 454 ;
+   ok 168, $_ eq 'fred';
+
+   undef $db ;
+   untie @h;
+   unlink $Dfile;
+}
+
+
+{
+    # Regression Test for bug 30237
+    # Check that substr can be used in the key to db_put
+    # and that db_put does not trigger the warning
+    # 
+    #     Use of uninitialized value in subroutine entry
+
+
+    use warnings ;
+    use strict ;
+    my (@h, $db) ;
+    my $status ;
+    my $Dfile = "xxy.db";
+    unlink $Dfile;
+
+    ok(169, $db = tie(@h, 'DB_File', $Dfile, O_RDWR|O_CREAT, 0640, $DB_RECNO) );
+
+    my $warned = '';
+    local $SIG{__WARN__} = sub {$warned = $_[0]} ;
+
+    # db-put with substr of key
+    my %remember = () ;
+    for my $ix ( 0 .. 2 )
+    {
+        my $key = $ix . "data" ;
+        my $value = "value$ix" ;
+        $remember{substr($key,0, 1)} = $value ;
+        $db->put(substr($key,0, 1), $value) ;
+    }
+
+    ok 170, $warned eq '' 
+      or print "# Caught warning [$warned]\n" ;
+
+    # db-put with substr of value
+    $warned = '';
+    for my $ix ( 3 .. 5 )
+    {
+        my $key = $ix . "data" ;
+        my $value = "value$ix" ;
+        $remember{$ix} = $value ;
+        $db->put($ix, substr($value,0)) ;
+    }
+
+    ok 171, $warned eq '' 
+      or print "# Caught warning [$warned]\n" ;
+
+    # via the tied array is not a problem, but check anyway
+    # substr of key
+    $warned = '';
+    for my $ix ( 6 .. 8 )
+    {
+        my $key = $ix . "data" ;
+        my $value = "value$ix" ;
+        $remember{substr($key,0,1)} = $value ;
+        $h[substr($key,0,1)] = $value ;
+    }
+
+    ok 172, $warned eq '' 
+      or print "# Caught warning [$warned]\n" ;
+
+    # via the tied array is not a problem, but check anyway
+    # substr of value
+    $warned = '';
+    for my $ix ( 9 .. 10 )
+    {
+        my $key = $ix . "data" ;
+        my $value = "value$ix" ;
+        $remember{$ix} = $value ;
+        $h[$ix] = substr($value,0) ;
+    }
+
+    ok 173, $warned eq '' 
+      or print "# Caught warning [$warned]\n" ;
+
+    my %bad = () ;
+    my $key = '';
+    for (my $status = $db->seq($key, $value, R_FIRST ) ;
+         $status == 0 ;
+         $status = $db->seq($key, $value, R_NEXT ) ) {
+
+        #print "# key [$key] value [$value]\n" ;
+        if (defined $remember{$key} && defined $value && 
+             $remember{$key} eq $value) {
+            delete $remember{$key} ;
+        }
+        else {
+            $bad{$key} = $value ;
+        }
+    }
+    
+    ok 174, keys %bad == 0 ;
+    ok 175, keys %remember == 0 ;
+
+    print "# missing -- $key $value\n" while ($key, $value) = each %remember;
+    print "# bad     -- $key $value\n" while ($key, $value) = each %bad;
+
+    # Make sure this fix does not break code to handle an undef key
+    my $value = 'fred';
+    $warned = '';
+    $status = $db->put(undef, $value) ;
+    ok 176, $status == 0
+      or print "# put failed - status $status\n";
+    ok 177, $warned eq '' 
+      or print "# Caught warning [$warned]\n" ;
+    $warned = '';
+
+    print "# db_ver $DB_File::db_ver\n";
+    $value = '' ;
+    $status = $db->get(undef, $value) ;
+    ok 178, $status == 0
+	or print "# get failed - status $status\n" ;
+    ok(179, $db->get(undef, $value) == 0) or print "# get failed\n" ;
+    ok 180, $value eq 'fred' or print "# got [$value]\n" ;
+    ok 181, $warned eq '' 
+      or print "# Caught warning [$warned]\n" ;
+    $warned = '';
+
+    undef $db ;
+    untie @h;
     unlink $Dfile;
 }
 
@@ -978,36 +1210,36 @@ exit unless $FA ;
     my $offset ;
     $a = '';
     splice(@a, $offset);
-    ok(139, $a =~ /^Use of uninitialized value /);
+    ok(182, $a =~ /^Use of uninitialized value /);
     $a = '';
     splice(@tied, $offset);
-    ok(140, $a =~ /^Use of uninitialized value in splice/);
+    ok(183, $a =~ /^Use of uninitialized value in splice/);
 
     no warnings 'uninitialized';
     $a = '';
     splice(@a, $offset);
-    ok(141, $a eq '');
+    ok(184, $a eq '');
     $a = '';
     splice(@tied, $offset);
-    ok(142, $a eq '');
+    ok(185, $a eq '');
 
     # uninitialized length
     use warnings;
     my $length ;
     $a = '';
     splice(@a, 0, $length);
-    ok(143, $a =~ /^Use of uninitialized value /);
+    ok(186, $a =~ /^Use of uninitialized value /);
     $a = '';
     splice(@tied, 0, $length);
-    ok(144, $a =~ /^Use of uninitialized value in splice/);
+    ok(187, $a =~ /^Use of uninitialized value in splice/);
 
     no warnings 'uninitialized';
     $a = '';
     splice(@a, 0, $length);
-    ok(145, $a eq '');
+    ok(188, $a eq '');
     $a = '';
     splice(@tied, 0, $length);
-    ok(146, $a eq '');
+    ok(189, $a eq '');
 
     # offset past end of array
     use warnings;
@@ -1016,17 +1248,17 @@ exit unless $FA ;
     my $splice_end_array = ($a =~ /^splice\(\) offset past end of array/);
     $a = '';
     splice(@tied, 3);
-    ok(147, !$splice_end_array || $a =~ /^splice\(\) offset past end of array/);
+    ok(190, !$splice_end_array || $a =~ /^splice\(\) offset past end of array/);
 
     no warnings 'misc';
     $a = '';
     splice(@a, 3);
-    ok(148, $a eq '');
+    ok(191, $a eq '');
     $a = '';
     splice(@tied, 3);
-    ok(149, $a eq '');
+    ok(192, $a eq '');
 
-    untie @tied;
+    ok(193, safeUntie \@tied);
     unlink $Dfile;
 }
 
@@ -1087,9 +1319,9 @@ my @tests = ([ [ 'falsely', 'dinosaur', 'remedy', 'commotion',
 	       'void' ],
 	    );
 
-my $testnum = 150;
+my $testnum = 194;
 my $failed = 0;
-require POSIX; my $tmp = POSIX::tmpnam();
+my $tmp = "dbr$$";
 foreach my $test (@tests) {
     my $err = test_splice(@$test);
     if (defined $err) {
@@ -1124,7 +1356,8 @@ else {
     ok($testnum++, not $failed);
 }
 
-die if $testnum != $total_tests + 1;
+die "testnum ($testnum) != total_tests ($total_tests) + 1" 
+    if $testnum != $total_tests + 1;
 
 exit ;
 
@@ -1203,6 +1436,8 @@ sub test_splice {
     foreach ($s_error, @s_warnings) {
 	chomp;
 	s/ at \S+ line \d+\.$//;
+	# only built-in splice identifies name of uninit value
+	s/(uninitialized value) \$\w+/$1/;
     }
 
     # Now do the same for DB_File's version of splice
@@ -1283,6 +1518,8 @@ sub test_splice {
 	   . Dumper(\@array) . ' vs ' . Dumper(\@h))
       if list_diff(\@array, \@h);
 
+    unlink $tmp;
+
     return undef; # success
 }
 
@@ -1360,3 +1597,5 @@ sub rand_word {
     }
     return $r;
 }
+
+

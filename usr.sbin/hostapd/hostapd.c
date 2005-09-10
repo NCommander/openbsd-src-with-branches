@@ -1,4 +1,4 @@
-/*	$OpenBSD: hostapd.c,v 1.17 2005/08/17 13:18:33 reyk Exp $	*/
+/*	$OpenBSD: hostapd.c,v 1.16 2005/07/30 17:16:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -304,6 +304,7 @@ hostapd_sig_handler(int sig)
 void
 hostapd_cleanup(struct hostapd_config *cfg)
 {
+	int i;
 	struct ip_mreq mreq;
 	struct hostapd_table *table;
 	struct hostapd_entry *entry;
@@ -338,9 +339,13 @@ hostapd_cleanup(struct hostapd_config *cfg)
 
 	/* Cleanup tables */
 	while ((table = TAILQ_FIRST(&cfg->c_tables)) != NULL) {
-		while((entry = RB_MIN(hostapd_tree, &table->t_tree)) != NULL) {
-			RB_REMOVE(hostapd_tree, &table->t_tree, entry);
-			free(entry);
+		for (i = 0; i < HOSTAPD_TABLE_HASHSIZE; i++) {
+			while ((entry =
+			    TAILQ_FIRST(&table->t_head[i])) != NULL) {
+				TAILQ_REMOVE(&table->t_head[i], entry,
+				    e_entries);
+				free(entry);
+			}
 		}
 		while ((entry = TAILQ_FIRST(&table->t_mask_head)) != NULL) {
 			TAILQ_REMOVE(&table->t_mask_head, entry, e_entries);
@@ -506,6 +511,7 @@ hostapd_randval(u_int8_t *buf, const u_int len)
 struct hostapd_table *
 hostapd_table_add(struct hostapd_config *cfg, const char *name)
 {
+	int i;
 	struct hostapd_table *table;
 
 	if (hostapd_table_lookup(cfg, name) != NULL)
@@ -515,7 +521,8 @@ hostapd_table_add(struct hostapd_config *cfg, const char *name)
 		return (NULL);
 
 	strlcpy(table->t_name, name, sizeof(table->t_name));
-	RB_INIT(&table->t_tree);
+	for (i = 0; i < HOSTAPD_TABLE_HASHSIZE; i++)
+		TAILQ_INIT(&table->t_head[i]);
 	TAILQ_INIT(&table->t_mask_head);
 	TAILQ_INSERT_TAIL(&cfg->c_tables, table, t_entries);
 
@@ -538,6 +545,7 @@ hostapd_table_lookup(struct hostapd_config *cfg, const char *name)
 struct hostapd_entry *
 hostapd_entry_add(struct hostapd_table *table, u_int8_t *lladdr)
 {
+	u_int hash;
 	struct hostapd_entry *entry;
 
 	if (hostapd_entry_lookup(table, lladdr) != NULL)
@@ -548,7 +556,8 @@ hostapd_entry_add(struct hostapd_table *table, u_int8_t *lladdr)
 		return (NULL);
 
 	bcopy(lladdr, entry->e_lladdr, IEEE80211_ADDR_LEN);
-	RB_INSERT(hostapd_tree, &table->t_tree, entry);
+	hash = HOSTAPD_TABLE_HASH(lladdr);
+	TAILQ_INSERT_TAIL(&table->t_head[hash], entry, e_entries);
 
 	return (entry);
 }
@@ -556,13 +565,16 @@ hostapd_entry_add(struct hostapd_table *table, u_int8_t *lladdr)
 struct hostapd_entry *
 hostapd_entry_lookup(struct hostapd_table *table, u_int8_t *lladdr)
 {
-	struct hostapd_entry *entry, key;
+	u_int hash;
+	struct hostapd_entry *entry;
 
-	bcopy(lladdr, key.e_lladdr, IEEE80211_ADDR_LEN);
-	if ((entry = RB_FIND(hostapd_tree, &table->t_tree, &key)) != NULL)
-		return (entry);
+	hash = HOSTAPD_TABLE_HASH(lladdr);
+	TAILQ_FOREACH(entry, &table->t_head[hash], e_entries) {
+		if (bcmp(lladdr, entry->e_lladdr, IEEE80211_ADDR_LEN) == 0)
+			return (entry);
+	}
 
-	/* Masked entries can't be handled by the red-black tree */
+	/* Masked entries can't be handled by the hash table */
 	TAILQ_FOREACH(entry, &table->t_mask_head, e_entries) {
 		if (HOSTAPD_ENTRY_MASK_MATCH(entry, lladdr))
 			return (entry);
@@ -574,22 +586,17 @@ hostapd_entry_lookup(struct hostapd_table *table, u_int8_t *lladdr)
 void
 hostapd_entry_update(struct hostapd_table *table, struct hostapd_entry *entry)
 {
-	RB_REMOVE(hostapd_tree, &table->t_tree, entry);
+	u_int hash;
+
+	hash = HOSTAPD_TABLE_HASH(entry->e_lladdr);
+	TAILQ_REMOVE(&table->t_head[hash], entry, e_entries);
 
 	/* Apply mask to entry */
 	if (entry->e_flags & HOSTAPD_ENTRY_F_MASK) {
 		HOSTAPD_ENTRY_MASK_ADD(entry->e_lladdr, entry->e_mask);
 		TAILQ_INSERT_TAIL(&table->t_mask_head, entry, e_entries);
 	} else {
-		RB_INSERT(hostapd_tree, &table->t_tree, entry);
+		hash = HOSTAPD_TABLE_HASH(entry->e_lladdr);
+		TAILQ_INSERT_TAIL(&table->t_head[hash], entry, e_entries);
 	}
 }
-
-int
-hostapd_entry_cmp(struct hostapd_entry *a, struct hostapd_entry *b)
-{
-	return (bcmp(a->e_lladdr, b->e_lladdr, IEEE80211_ADDR_LEN));
-}
-
-RB_GENERATE(hostapd_tree, hostapd_entry, e_nodes, hostapd_entry_cmp);
-

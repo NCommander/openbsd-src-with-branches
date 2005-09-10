@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.16 2005/07/31 15:31:17 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.15 2005/07/09 22:51:13 robert Exp $	*/
 /*	$NetBSD: param.h,v 1.25 2001/05/30 12:28:51 mrg Exp $ */
 
 /*
@@ -247,10 +247,13 @@ extern void	delay(unsigned int);
 #define CPU_SUN4U	3
 
 /*
- * Shorthand CPU-type macros. Enumerate all seven cases.
+ * Shorthand CPU-type macros. Enumerate all eight cases.
  * Let compiler optimize away code conditional on constants.
  *
- * On a sun4u machine, the page size is 8192.
+ * On a sun4 machine, the page size is 8192, while on a sun4c and sun4m
+ * it is 4096. Therefore, in the (SUN4 && (SUN4C || SUN4M)) cases below,
+ * NBPG, PGOFSET and PGSHIFT are defined as variables which are initialized
+ * early in locore.s after the machine type has been detected.
  *
  * Note that whenever the macros defined below evaluate to expressions
  * involving variables, the kernel will perform slighly worse due to the

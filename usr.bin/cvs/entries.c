@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.48 2005/09/06 15:29:33 joris Exp $	*/
+/*	$OpenBSD: entries.c,v 1.46 2005/08/19 08:48:30 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -371,7 +371,6 @@ cvs_ent_parse(const char *entry)
 
 	ent->ce_status = CVS_ENT_REG;
 	ent->ce_name = fields[1];
-	ent->processed = 0;
 
 	if (ent->ce_type == CVS_ENT_FILE) {
 		if (*fields[2] == '-') {
@@ -448,8 +447,9 @@ cvs_ent_write(CVSENTRIES *ef)
 			revbuf[0] = '\0';
 		} else {
 			rcsnum_tostr(ent->ce_rev, revbuf, sizeof(revbuf));
-			if ((ent->ce_mtime == CVS_DATE_DMSEC) &&
-			    (ent->ce_status != CVS_ENT_ADDED))
+			if ((ent->ce_mtime == CVS_DATE_DMSEC &&
+			    (ent->ce_status != CVS_ENT_ADDED)) ||
+			    ent->ce_status == CVS_ENT_REMOVED)
 				strlcpy(timebuf, CVS_DATE_DUMMY,
 				    sizeof(timebuf));
 			else if (ent->ce_status == CVS_ENT_ADDED) {
@@ -472,8 +472,7 @@ cvs_ent_write(CVSENTRIES *ef)
 
 		fprintf(fp, "/%s/%s%s/%s/%s/%s\n", ent->ce_name,
 		    (ent->ce_status == CVS_ENT_REMOVED) ? "-" : "", revbuf,
-		    timebuf, (ent->ce_opts != NULL) ? ent->ce_opts : "",
-		    (ent->ce_tag != NULL) ? ent->ce_tag : "");
+		    timebuf, "", "");
 	}
 
 	/* terminating line */

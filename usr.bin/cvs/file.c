@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.117 2005/09/06 15:29:33 joris Exp $	*/
+/*	$OpenBSD: file.c,v 1.115 2005/08/17 16:23:19 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -837,6 +837,24 @@ cvs_file_getdir(CVSFILE *cf, int flags, int (*cb)(CVSFILE *, void *),
 		    !strcmp(de->d_name, ".."))
 			continue;
 
+		/*
+		 * Do some filtering on the current directory item.
+		 */
+		if ((flags & CF_IGNORE) && cvs_file_chkign(de->d_name))
+			continue;
+
+		if (!(flags & CF_RECURSE) && (de->d_type == DT_DIR)) {
+			if (entf != NULL)
+				(void)cvs_ent_remove(entf, de->d_name);
+			continue;
+		}
+
+		if ((de->d_type != DT_DIR) && (flags & CF_NOFILES))
+			continue;
+
+		/*
+		 * Obtain info about the item.
+		 */
 		len = cvs_path_cat(fpath, de->d_name, pbuf, sizeof(pbuf));
 		if (len >= sizeof(pbuf))
 			goto done;
@@ -845,21 +863,6 @@ cvs_file_getdir(CVSFILE *cf, int flags, int (*cb)(CVSFILE *, void *),
 			ent = cvs_ent_get(entf, de->d_name);
 		else
 			ent = NULL;
-
-		/*
-		 * Do some filtering on the current directory item.
-		 */
-		if ((flags & CF_IGNORE) && cvs_file_chkign(de->d_name))
-			continue;
-
-		if (!(flags & CF_RECURSE) && (de->d_type == DT_DIR)) {
-			if (ent != NULL)
-				ent->processed = 1;
-			continue;
-		}
-
-		if ((de->d_type != DT_DIR) && (flags & CF_NOFILES))
-			continue;
 
 		cfp = cvs_file_lget(pbuf, flags, cf, entf, ent);
 		if (cfp == NULL) {
@@ -889,10 +892,11 @@ cvs_file_getdir(CVSFILE *cf, int flags, int (*cb)(CVSFILE *, void *),
 		}
 
 		/*
-		 * Mark the entry as processed.
+		 * Remove it from the Entries list to make sure it won't
+		 * be picked up again when we look at the Entries.
 		 */
-		if (ent != NULL)
-			ent->processed = 1;
+		if (entf != NULL)
+			(void)cvs_ent_remove(entf, de->d_name);
 
 		/*
 		 * If we don't want to keep it, free it
@@ -911,8 +915,6 @@ cvs_file_getdir(CVSFILE *cf, int flags, int (*cb)(CVSFILE *, void *),
 	 * (Follows the same procedure as above ... can we merge them?)
 	 */
 	while ((entf != NULL) && ((ent = cvs_ent_next(entf)) != NULL)) {
-		if (ent->processed == 1)
-			continue;
 		if (!(flags & CF_RECURSE) && (ent->ce_type == CVS_ENT_DIR))
 			continue;
 		if ((flags & CF_NOFILES) && (ent->ce_type != CVS_ENT_DIR))
@@ -1256,6 +1258,7 @@ cvs_file_lget(const char *path, int flags, CVSFILE *parent, CVSENTRIES *pent,
 	if (ent != NULL) {
 		/* steal the RCSNUM */
 		cfp->cf_lrev = ent->ce_rev;
+		ent->ce_rev = NULL;
 
 		if (ent->ce_type == CVS_ENT_FILE) {
 			if (ent->ce_tag[0] != '\0') {

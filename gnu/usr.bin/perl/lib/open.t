@@ -43,16 +43,10 @@ eval q{ use warnings 'layer'; use open IN => ':macguffin' ; };
 like( $warn, qr/Unknown PerlIO layer/,
 	'should warn about unknown layer with bad layer provided' );
 
-SKIP: {
-    skip("no perlio, no :utf8", 1) unless (find PerlIO::Layer 'perlio');
-    # now load a real-looking locale
-    $ENV{LC_ALL} = ' .utf8';
-    import( 'IN', 'locale' );
-    like( ${^OPEN}, qr/^(:utf8)?:utf8\0/,
-        'should set a valid locale layer' );
-}
+# open :locale logic changed since open 1.04, new logic
+# difficult to test portably.
 
-# and see if it sets the magic variables appropriately
+# see if it sets the magic variables appropriately
 import( 'IN', ':crlf' );
 ok( $^H & $open::hint_bits,
 	'hint bits should be set in $^H after open import' );
@@ -169,6 +163,16 @@ EOE
     close G;
     ok($ok == @a,
        "checking syswrite() output on :utf8 streams by reading it back in");
+}
+
+SKIP: {
+    skip("no perlio", 1) unless (find PerlIO::Layer 'perlio');
+    use open IN => ':non-existent';
+    eval {
+	require Symbol; # Anything that exists but we havn't loaded
+    };
+    like($@, qr/Can't locate Symbol|Recursive call/i,
+	 "test for an endless loop in PerlIO_find_layer");
 }
 
 END {
