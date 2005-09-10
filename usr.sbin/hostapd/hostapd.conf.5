@@ -1,4 +1,4 @@
-.\" $OpenBSD: hostapd.conf.5,v 1.7 2005/07/04 18:25:32 reyk Exp $
+.\" $OpenBSD: hostapd.conf.5,v 1.8 2005/07/04 22:49:02 jmc Exp $
 .\"
 .\" Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
 .\"
@@ -526,7 +526,7 @@ tabledef	= "table" table tableopts
 
 table		= "<" tablename ">"
 
-tableopts	= "const" | "{" [ "\n" ] "}" |
+tableopts	= "const" | "{" [ "\\n" ] "}" |
 		  "{" [ "\\n" ] tableaddrlist [ "\\n" ] "}"
 
 tableaddrlist	= lladdr [ "->" ipv4-dotted-quad | "&" lladdr-mask |
