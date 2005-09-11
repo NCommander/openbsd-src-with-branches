@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: if_em_hw.c,v 1.8 2005/03/27 16:38:13 brad Exp $ */
+/* $OpenBSD: if_em_hw.c,v 1.9 2005/07/02 06:15:44 deraadt Exp $ */
 /* if_em_hw.c
  * Shared functions for accessing and configuring the MAC
  */
@@ -6344,7 +6344,7 @@ em_polarity_reversal_workaround(struct em_hw *hw)
     /* Recommended delay time after link has been lost */
     msec_delay_irq(1000);
 
-    /* Now we will re-enable th transmitter on the PHY */
+    /* Now we will re-enable the transmitter on the PHY */
 
     ret_val = em_write_phy_reg(hw, M88E1000_PHY_PAGE_SELECT, 0x0019);
     if(ret_val)
