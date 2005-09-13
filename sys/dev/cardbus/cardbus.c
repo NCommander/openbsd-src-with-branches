@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardbus.c,v 1.26 2005/09/12 17:16:48 fgsch Exp $	*/
+/*	$OpenBSD: cardbus.c,v 1.27 2005/09/12 18:47:50 miod Exp $	*/
 /*	$NetBSD: cardbus.c,v 1.24 2000/04/02 19:11:37 mycroft Exp $	*/
 
 /*
@@ -923,7 +923,7 @@ tuple_name(int type)
 }
 
 static void
-print_tuple(u_int8_t *tuple, int len, void data)
+print_tuple(u_int8_t *tuple, int len, void *data)
 {
 	int i;
 
