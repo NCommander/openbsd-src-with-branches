@@ -1,4 +1,4 @@
-/*	$OpenBSD: hostapd.c,v 1.17 2005/08/17 13:18:33 reyk Exp $	*/
+/*	$OpenBSD: hostapd.c,v 1.18 2005/09/09 13:21:13 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -588,7 +588,7 @@ hostapd_entry_update(struct hostapd_table *table, struct hostapd_entry *entry)
 int
 hostapd_entry_cmp(struct hostapd_entry *a, struct hostapd_entry *b)
 {
-	return (bcmp(a->e_lladdr, b->e_lladdr, IEEE80211_ADDR_LEN));
+	return (memcmp(a->e_lladdr, b->e_lladdr, IEEE80211_ADDR_LEN));
 }
 
 RB_GENERATE(hostapd_tree, hostapd_entry, e_nodes, hostapd_entry_cmp);
