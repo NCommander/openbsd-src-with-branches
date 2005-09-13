@@ -563,7 +563,7 @@ sub add
 	}
 }
 
-sub find
+sub openPackage
 {
 	my ($self, $pkgname, $arch) = @_;
 
@@ -574,7 +574,7 @@ sub find
 	return undef;
 }
 
-sub available
+sub list
 {
 	my $self = shift;
 
@@ -637,7 +637,7 @@ sub find
 			$pkgpath->add($repository);
 		}
 	} else {
-		$package = $pkgpath->find($_, $arch);
+		$package = $pkgpath->openPackage($_, $arch);
 	}
 	$packages{$_} = $package if defined($package);
 	return $package;
@@ -645,7 +645,7 @@ sub find
 
 sub available
 {
-	return $pkgpath->available();
+	return $pkgpath->list();
 }
 
 1;
