@@ -35,7 +35,7 @@
 
 #include "includes.h"
 #include <sys/queue.h>
-RCSID("$OpenBSD: ssh-agent.c,v 1.121 2004/10/07 10:12:36 djm Exp $");
+RCSID("$OpenBSD: ssh-agent.c,v 1.122 2004/10/29 22:53:56 djm Exp $");
 
 #include <openssl/evp.h>
 #include <openssl/md5.h>
@@ -1000,6 +1000,9 @@ main(int ac, char **av)
 	extern char *optarg;
 	pid_t pid;
 	char pidstrbuf[1 + 3 * sizeof pid];
+
+	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
+	sanitise_stdfd();
 
 	/* drop */
 	setegid(getgid());

@@ -42,7 +42,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.311 2005/06/17 02:44:33 djm Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.312 2005/07/25 11:59:40 markus Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -885,6 +885,9 @@ main(int ac, char **av)
 	/* Save argv. */
 	saved_argv = av;
 	rexec_argc = ac;
+
+	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
+	sanitise_stdfd();
 
 	/* Initialize configuration options to their default values. */
 	initialize_server_options(&options);
