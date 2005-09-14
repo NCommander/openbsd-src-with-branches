@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: pkg_add,v 1.200 2005/09/07 09:11:22 jmc Exp $
+# $OpenBSD: pkg_add,v 1.201 2005/09/13 20:57:14 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -686,7 +686,7 @@ sub find_updates
 			push(@l2, $candidate);
 		    } elsif ($p2->has('pkgpath')) {
 		    	for my $p (@{$p2->{pkgpath}}) {
-				if ($p2->{name} eq $plist->{extrainfo}->{subdir}) {
+				if ($p->{name} eq $plist->{extrainfo}->{subdir}) {
 					push(@l2, $candidate);
 					last;
 				}
