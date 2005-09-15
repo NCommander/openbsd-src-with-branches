@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.15 2005/05/26 18:46:16 norby Exp $ */
+/*	$OpenBSD: parse.y,v 1.16 2005/06/28 22:35:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -958,6 +958,7 @@ conf_get_if(struct kif *kif)
 	i->rxmt_interval = area->rxmt_interval;
 	i->metric = area->metric;
 	i->priority = area->priority;
+	i->auth_keyid = 1;
 
 	return (i);
 }
