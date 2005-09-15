@@ -1,4 +1,4 @@
-/*	$OpenBSD: twevar.h,v 1.5 2002/09/17 13:45:38 mickey Exp $	*/
+/*	$OpenBSD: twevar.h,v 1.6 2003/06/02 19:24:22 mickey Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -75,8 +75,6 @@ struct twe_softc {
 		int	hd_present;
 		int	hd_devtype;
 		int	hd_lock;
-		int	hd_secs;
-		int	hd_heads;
 		int	hd_size;
 	} sc_hdr[TWE_MAX_UNITS];
 };
