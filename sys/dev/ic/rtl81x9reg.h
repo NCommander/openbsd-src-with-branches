@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9reg.h,v 1.19 2005/04/15 03:13:03 brad Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.20 2005/08/03 16:27:39 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -704,7 +704,10 @@ struct rl_softc {
  * RealTek chip device IDs.
  */
 #define	RT_DEVICEID_8129			0x8129
+#define	RT_DEVICEID_8138			0x8138
 #define	RT_DEVICEID_8139			0x8139
+#define	RT_DEVICEID_8169			0x8169
+#define	RT_DEVICEID_8100			0x8100
 
 /*
  * Accton PCI vendor ID
