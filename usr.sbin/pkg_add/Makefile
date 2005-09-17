@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.29 2005/08/17 09:45:45 espie Exp $
+# $OpenBSD: Makefile,v 1.30 2005/09/04 22:47:56 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -35,6 +35,7 @@ PACKAGES= \
     OpenBSD/Vstat.pm \
     OpenBSD/md5.pm \
 
+PACKAGEDIRS=OpenBSD
 
 SCRIPTS= \
     pkg_add \
@@ -99,9 +100,11 @@ stamp-mansrc.build:
 	@touch $@
 
 install: 
-.for i in ${PACKAGES}
+.for i in ${PACKAGEDIRS}
 	${INSTALL} -d -o ${LIBOWN} -g ${LIBGRP} -m ${DIRMODE} \
-		${DESTDIR}${LIBBASE}/${i:H}
+		${DESTDIR}${LIBBASE}/$i
+.endfor
+.for i in ${PACKAGES}
 	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 		${.CURDIR}/$i ${DESTDIR}${LIBBASE}/$i
 .endfor
