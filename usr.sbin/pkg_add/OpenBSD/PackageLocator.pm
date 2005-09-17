@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageLocator.pm,v 1.34 2005/09/16 20:03:50 espie Exp $
+# $OpenBSD: PackageLocator.pm,v 1.35 2005/09/16 23:17:39 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -198,8 +198,8 @@ sub open_pipe
 		    "-c", 
 		    "-q", 
 		    "-f", 
-		    $self->{baseurl}.$object->{name};
-		exit(1);
+		    $self->{baseurl}.$object->{name}
+		or die "Can't run gzip";
 	}
 }
 
