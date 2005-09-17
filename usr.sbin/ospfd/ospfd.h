@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.34 2005/05/27 02:07:13 norby Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.35 2005/06/26 19:22:12 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -302,7 +302,6 @@ struct iface {
 	struct in_addr		 addr;
 	struct in_addr		 dst;
 	struct in_addr		 mask;
-	struct in_addr		 rtr_id;
 	struct in_addr		 abr_id;
 	char			*auth_key;
 	struct nbr		*dr;	/* designated router */
