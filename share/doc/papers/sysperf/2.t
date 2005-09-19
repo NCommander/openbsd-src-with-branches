@@ -1,4 +1,4 @@
-.\"	$OpenBSD: 2.t,v 1.2 2001/02/03 08:15:01 niklas Exp $
+.\"	$OpenBSD: 2.t,v 1.3 2003/06/02 23:30:10 millert Exp $
 .\"
 .\" Copyright (c) 1985 The Regents of the University of California.
 .\" All rights reserved.
@@ -60,8 +60,8 @@ be high (above 50%).
 .PP
 If the system is busy, then the count of active jobs may be large,
 and several of these jobs may often be blocked (b).  If the virtual
-memory is active, then the paging demon will be running (sr will
-be non-zero).  It is healthy for the paging demon to free pages when
+memory is active, then the paging daemon will be running (sr will
+be non-zero).  It is healthy for the paging daemon to free pages when
 the virtual memory gets active; it is triggered by the amount of free
 memory dropping below a threshold and increases its pace as free memory
 goes to zero.
