@@ -1,6 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2005/09/18 12:17:29 kurt Exp $
-
-.include <../Makefile.inc>
+# $OpenBSD: Makefile,v 1.3 2005/09/18 22:29:46 kurt Exp $
 
 LIB=bb
 SRCS= bb.c
