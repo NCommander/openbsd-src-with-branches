@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.130 2005/07/31 03:30:55 pascoe Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.131 2005/08/11 12:55:31 mpf Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -226,7 +226,7 @@ ip_init()
 	for (i = 0; defbaddynamicports_tcp[i] != 0; i++)
 		DP_SET(baddynamicports.tcp, defbaddynamicports_tcp[i]);
 	for (i = 0; defbaddynamicports_udp[i] != 0; i++)
-		DP_SET(baddynamicports.udp, defbaddynamicports_tcp[i]);
+		DP_SET(baddynamicports.udp, defbaddynamicports_udp[i]);
 
 	strlcpy(ipsec_def_enc, IPSEC_DEFAULT_DEF_ENC, sizeof(ipsec_def_enc));
 	strlcpy(ipsec_def_auth, IPSEC_DEFAULT_DEF_AUTH, sizeof(ipsec_def_auth));
