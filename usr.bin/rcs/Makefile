@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2005/04/15 15:46:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2005/04/15 16:15:34 deraadt Exp $
 
 .PATH:	${.CURDIR}/../cvs
 
@@ -16,5 +16,6 @@ CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+= -Wmissing-declarations
 CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+= -Wsign-compare
+CFLAGS+= -DRCSPROG
 
 .include <bsd.prog.mk>
