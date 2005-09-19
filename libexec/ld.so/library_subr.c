@@ -1,4 +1,4 @@
-/*	$OpenBSD: library_subr.c,v 1.7 2005/09/17 02:52:43 drahn Exp $ */
+/*	$OpenBSD: library_subr.c,v 1.8 2005/09/17 04:15:23 drahn Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -383,6 +383,10 @@ _dl_unload_dlopen(void)
 	struct dep_node *node;
 
 	TAILQ_FOREACH_REVERSE(node, &_dlopened_child_list, dlochld, next_sib) {
+		/* dont dlclose the main program */
+		if (node->data == _dl_objects)
+			continue;
+
 		_dl_notify_unload_shlib(node->data);
 		_dl_run_all_dtors();
 		if (_dl_exiting == 0)
