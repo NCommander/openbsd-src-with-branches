@@ -1,6 +1,0 @@
-
-# Test SCRUB frag options
-scrub in all
-scrub in all fragment reassemble
-scrub in all fragment drop-ovl
-scrub in all fragment crop
