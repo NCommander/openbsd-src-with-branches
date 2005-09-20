@@ -142,7 +142,7 @@ struct cpu_info *curcpu(void);
 #define	CPU_IS_PRIMARY(ci)	((ci)->ci_number == 0)
 #define	CPU_INFO_ITERATOR	int
 #define	CPU_INFO_FOREACH(cii,ci) \
-	for (cii = 0, ci = curcpu(); ci != NULL; ci = ci->ci_next)
+	cii = 0, ci = curcpu(); ci != NULL; ci = ci->ci_next
 #define	CPU_INFO_UNIT(ci)	((ci)->ci_number)
 
 #ifdef DIAGNOSTIC   

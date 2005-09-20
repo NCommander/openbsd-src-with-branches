@@ -460,7 +460,7 @@ kern_sysctl(name, namelen, oldp, oldlenp, newp, newlen, p)
 
 		bzero(cp_time, sizeof(cp_time));
 
-		CPU_INFO_FOREACH(cii, ci) {
+		for (CPU_INFO_FOREACH(cii, ci)) {
 			for (i = 0; i < CPUSTATES; i++)
 				cp_time[i] += ci->ci_schedstate.spc_cp_time[i];
 		}
@@ -1902,7 +1902,7 @@ sysctl_cptime2(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 
 	i = name[0];
 
-	CPU_INFO_FOREACH(cii, ci) {
+	for (CPU_INFO_FOREACH(cii, ci)) {
 		if (i-- == 0)
 			break;
 	}

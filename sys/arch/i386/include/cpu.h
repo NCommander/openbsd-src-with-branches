@@ -167,8 +167,8 @@ extern struct cpu_info cpu_info_primary;
 extern struct cpu_info *cpu_info_list;
 
 #define	CPU_INFO_ITERATOR		int
-#define	CPU_INFO_FOREACH(cii, ci)	for (cii = 0, ci = cpu_info_list; \
-					    ci != NULL; ci = ci->ci_next)
+#define	CPU_INFO_FOREACH(cii, ci)	cii = 0, ci = cpu_info_list; \
+					ci != NULL; ci = ci->ci_next
 
 #define CPU_INFO_UNIT(ci)	((ci)->ci_dev.dv_unit)
 
