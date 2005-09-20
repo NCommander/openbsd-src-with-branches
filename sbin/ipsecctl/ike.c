@@ -56,6 +56,7 @@ int		ike_ipsec_establish(int, struct ipsec_rule *);
 static void
 ike_section_peer(struct ipsec_addr *peer, FILE *fd)
 {
+	fprintf(fd, SET "[Phase 1]:%s=peer-%s\n", peer->name, peer->name);
 	fprintf(fd, SET "[peer-%s]:Phase=1 force\n", peer->name);
 	fprintf(fd, SET "[peer-%s]:Address=%s force\n", peer->name, peer->name);
 }
