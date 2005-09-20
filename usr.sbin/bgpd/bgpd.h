@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.175 2005/07/04 09:37:24 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.176 2005/08/09 20:27:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -313,6 +313,7 @@ enum imsg_type {
 	IMSG_CTL_SHOW_RIB_AS,
 	IMSG_CTL_SHOW_RIB_PREFIX,
 	IMSG_CTL_SHOW_NETWORK,
+	IMSG_CTL_SHOW_NETWORK6,
 	IMSG_REFRESH,
 	IMSG_IFINFO
 };
