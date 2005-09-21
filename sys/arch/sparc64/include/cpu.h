@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.30 2004/10/01 18:18:49 jason Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.31 2005/04/26 18:54:38 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -186,9 +186,6 @@ extern	int want_resched;	/* resched() was called */
 extern	struct proc *fpproc;	/* FPU owner */
 extern	int foundfpu;		/* true => we have an FPU */
 
-/* disksubr.c */
-struct dkbad;
-int isbad(struct dkbad *bt, int, int, int);
 /* machdep.c */
 int	ldcontrolb(caddr_t);
 void	dumpconf(void);
