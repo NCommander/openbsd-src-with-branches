@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: radius.h,v 1.14 2005/09/21 02:07:25 brad Exp $
+ *	$OpenBSD: radius.h,v 1.15 2005/09/21 16:28:47 brad Exp $
  */
 
 #define	MPPE_POLICY_ALLOWED	1
@@ -97,6 +97,7 @@ struct radacct {
 
 struct bundle;
 
+extern void radius_Flush(struct radius *);
 extern void radius_Init(struct radius *);
 extern void radius_Destroy(struct radius *);
 
