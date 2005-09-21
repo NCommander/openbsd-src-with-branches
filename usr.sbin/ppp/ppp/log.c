@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: log.c,v 1.16 2002/06/15 08:02:00 brian Exp $
+ *	$OpenBSD: log.c,v 1.17 2003/04/07 23:58:53 deraadt Exp $
  */
 
 #include <sys/types.h>
@@ -60,6 +60,7 @@ static const char *const LogNames[] = {
   "LQM",
   "Phase",
   "Physical",
+  "Radius",
   "Sync",
   "TCP/IP",
   "Timer",
