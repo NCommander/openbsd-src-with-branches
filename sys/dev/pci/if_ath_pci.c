@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_ath_pci.c,v 1.9 2005/09/08 17:43:26 reyk Exp $   */
+/*      $OpenBSD: if_ath_pci.c,v 1.10 2005/09/08 18:45:28 reyk Exp $   */
 /*	$NetBSD: if_ath_pci.c,v 1.7 2004/06/30 05:58:17 mycroft Exp $	*/
 
 /*-
@@ -66,6 +66,7 @@
 #endif
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_rssadapt.h>
 
 #include <dev/gpio/gpiovar.h>
 
