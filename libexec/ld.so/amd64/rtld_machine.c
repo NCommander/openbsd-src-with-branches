@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.8 2005/09/16 23:19:41 drahn Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.9 2005/09/21 23:12:09 drahn Exp $ */
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -241,11 +241,9 @@ _dl_md_reloc(elf_object_t *object, int rel, int relsz)
 				    sym, NULL);
 				if (this == NULL) {
 resolve_failed:
-					_dl_printf("%s: %s: can't resolve "
-					    "reference '%s'\n",
-					    _dl_progname, object->load_name,
-					    symn);
-					fails++;
+					if (ELF_ST_BIND(sym->st_info) !=
+					    STB_WEAK)
+						fails++;
 					continue;
 				}
 				value += (Elf_Addr)(ooff + this->st_value);
