@@ -1,4 +1,4 @@
-/*	$OpenBSD: library_subr.c,v 1.8 2005/09/17 04:15:23 drahn Exp $ */
+/*	$OpenBSD: library_subr.c,v 1.9 2005/09/19 02:31:04 drahn Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -231,8 +231,7 @@ nohints:
 
 /*
  * attempt to locate and load a library based on libpath, sod info and
- * if it needs to respect hints,
- * passing type and flags to perform open 
+ * if it needs to respect hints, passing type and flags to perform open
  */
 elf_object_t *
 _dl_load_shlib_hint(struct sod *sod, struct sod *req_sod, int type,
