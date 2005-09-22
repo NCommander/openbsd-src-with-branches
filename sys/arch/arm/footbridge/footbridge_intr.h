@@ -68,8 +68,6 @@
 #define	IST_EDGE	2	/* edge-triggered */
 #define	IST_LEVEL	3	/* level-triggered */
 
-#define	__NEWINTR	/* enables new hooks in cpu_fork()/cpu_switch() */
-
 #define	ARM_IRQ_HANDLER	_C_LABEL(footbridge_intr_dispatch)
 
 #ifndef _LOCORE
