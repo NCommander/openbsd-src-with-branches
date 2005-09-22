@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.37 2005/09/21 23:12:11 drahn Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.38 2005/09/22 01:33:08 drahn Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -194,7 +194,7 @@ _dl_printf("object relocation size %x, numrela %x\n",
 		    ELF32_ST_TYPE (sym->st_info) == STT_NOTYPE)) {
 			ooff = _dl_find_symbol_bysym(object,
 			    ELF32_R_SYM(relas->r_info), &this,
-			    SYM_SEARCH_ALL|SYM_NOWARNNOTFOUND|
+			    SYM_SEARCH_ALL|SYM_WARNNOTFOUND|
 			    ((type == RELOC_JMP_SLOT) ? SYM_PLT:SYM_NOTPLT),
 			    sym, NULL);
 
