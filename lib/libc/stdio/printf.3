@@ -1,4 +1,4 @@
-.\"	$OpenBSD: printf.3,v 1.48 2005/07/26 03:23:14 jaredy Exp $
+.\"	$OpenBSD: printf.3,v 1.49 2005/07/26 03:30:25 jaredy Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -303,6 +303,21 @@ string for
 .Cm s
 conversions.
 .It
+The optional character
+.Cm j ,
+specifying that a following
+.Cm d ,
+.Cm i ,
+.Cm o ,
+.Cm u ,
+.Cm x ,
+or
+.Cm X
+conversion corresponds to an
+.Li intmax_t
+or
+.Li uintmax_t
+argument.
 The optional character
 .Cm h ,
 specifying that a following
