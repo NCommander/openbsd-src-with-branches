@@ -1,2 +1,0 @@
-dnl	$OpenBSD: upgrade,v 1.4 2003/09/06 22:22:43 miod Exp $
-OpenBSDUpgrade({:-the LIF image ``lif{:--:}OSrev.fs'', or a RAMDISK kernel ``bsd.rd''-:})
