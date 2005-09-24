@@ -1,4 +1,4 @@
-/*	$OpenBSD: watchdogd.c,v 1.3 2005/08/08 13:08:09 mbalmer Exp $ */
+/*	$OpenBSD: watchdogd.c,v 1.4 2005/08/09 15:09:06 mickey Exp $ */
 
 /*
  * Copyright (c) 2005 Marc Balmer <marc@msys.ch>
@@ -134,13 +134,14 @@ main(int argc, char *argv[])
 	}
 
 	(void)mlockall(MCL_CURRENT | MCL_FUTURE);
+	setpriority(PRIO_PROCESS, getpid(), -5);
 
 	signal(SIGTERM, sighdlr);
 
 	retval = 0;
 	while (!quit) {
 		if (sysctl(mib, 3, NULL, 0, &period, sizeof(period)) == -1)
-			quit = 1;
+			quit = retval = 1;
 		sleep(interval);
 	}
 
