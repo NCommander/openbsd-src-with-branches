@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.5 2005/05/31 09:31:16 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.7 2005/09/20 23:00:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -142,7 +142,7 @@ struct cpu_info *curcpu(void);
 #define	CPU_IS_PRIMARY(ci)	((ci)->ci_number == 0)
 #define	CPU_INFO_ITERATOR	int
 #define	CPU_INFO_FOREACH(cii,ci) \
-	cii = 0, ci = curcpu(); ci != NULL; ci = ci->ci_next
+	for (cii = 0, ci = curcpu(); ci != NULL; ci = ci->ci_next)
 #define	CPU_INFO_UNIT(ci)	((ci)->ci_number)
 
 #ifdef DIAGNOSTIC   
