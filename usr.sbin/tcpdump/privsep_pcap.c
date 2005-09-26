@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep_pcap.c,v 1.8 2005/03/30 22:18:16 moritz Exp $ */
+/*	$OpenBSD: privsep_pcap.c,v 1.9 2005/05/22 19:53:33 moritz Exp $ */
 
 /*
  * Copyright (c) 2004 Can Erkin Acar
@@ -78,19 +78,23 @@ setfilter(int bpfd, int sock, char *filter)
 	if (pcap_compile(&hpcap, &fcode, filter, oflag, netmask))
 		goto err;
 
+	/* if bpf descriptor is open, set the filter XXX check oflag? */
+	if (bpfd >= 0 && ioctl(bpfd, BIOCSETF, &fcode)) {
+		snprintf(hpcap.errbuf, PCAP_ERRBUF_SIZE,
+		    "ioctl: BIOCSETF: %s", strerror(errno));
+		pcap_freecode(&fcode);
+		goto err;
+	}
 	/* write the filter */
 	must_write(sock, &fcode.bf_len, sizeof(fcode.bf_len));
 	if (fcode.bf_len > 0)
 		must_write(sock, fcode.bf_insns,
 		    fcode.bf_len * sizeof(struct bpf_insn));
 	else {
-		write_string(sock, "Invalid filter size");
-		return (1);
+		snprintf(hpcap.errbuf, PCAP_ERRBUF_SIZE, "Invalid filter size");
+		goto err;
 	}
 
-	/* if bpf descriptor is open, set the filter XXX check oflag? */
-	if (bpfd >= 0 && ioctl(bpfd, BIOCSETF, &fcode))
-		return 1;
 
 	pcap_freecode(&fcode);
 	return (0);
