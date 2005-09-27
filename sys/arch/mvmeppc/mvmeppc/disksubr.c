@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.6 2004/03/17 14:16:04 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.7 2005/03/30 07:52:32 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -122,6 +122,11 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 			wander = 0;
 			if (part_blkno < extoff)
 				part_blkno = extoff;
+
+			if (spoofonly) {
+				bzero(dp, NDOSPART * sizeof(*dp));
+				goto donot;
+			}
 
 			/* read boot record */
 			bp->b_blkno = part_blkno;
