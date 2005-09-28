@@ -1,4 +1,4 @@
-/* $OpenBSD: syslogc.c,v 1.9 2005/04/03 03:42:47 djm Exp $ */
+/* $OpenBSD: syslogc.c,v 1.10 2005/09/19 23:34:52 djm Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller
@@ -146,10 +146,10 @@ main(int argc, char **argv)
 		err(1, "fread header");
 
 	if (ntohl(rr.version) != CTL_VERSION)
-		err(1, "unsupported syslogd version");
+		errx(1, "unsupported syslogd version");
 
 	/* Write out reply */
-	while((fgets(buf, sizeof(buf), ctlf)) != NULL)
+	while ((fgets(buf, sizeof(buf), ctlf)) != NULL)
 		fputs(buf, stdout);
 
 	if (oflag && (ntohl(rr.flags) & CTL_HDR_FLAG_OVERFLOW)) {
