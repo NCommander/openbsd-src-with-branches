@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.33 2005/09/22 01:33:07 drahn Exp $ */
+/*	$OpenBSD: resolve.c,v 1.34 2005/09/22 04:07:11 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -155,6 +155,7 @@ _dl_finalize_object(const char *objname, Elf_Dyn *dynp, const long *dl_data,
 	    _dl_loading_object->load_name ));
 	object->refcount = 1;
 	TAILQ_INIT(&object->child_list);
+	object->opencount = 0;	/* # dlopen() */
 	/* default dev, inode for dlopen-able objects. */
 	object->dev = 0;
 	object->inode = 0;
