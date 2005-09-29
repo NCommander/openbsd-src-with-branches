@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2004/01/28 17:58:12 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.23 2005/06/29 14:05:08 mickey Exp $
 #
 # All library objects contain sccsid strings by default; they may be
 # excluded as a space-saving measure.  To produce a library that does
@@ -54,7 +54,7 @@ tags: ${SRCS}
 	ctags -w ${.ALLSRC:M*.c}
 	egrep "^SYSENTRY(.*)|^ENTRY(.*)|^FUNC(.*)|^SYSCALL(.*)" \
 	    /dev/null ${.ALLSRC:M*.S} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
+	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3	\1	/^\2(\3\4$$/;" \
 	    >> tags; sort -o tags tags
 
 beforeinstall:
