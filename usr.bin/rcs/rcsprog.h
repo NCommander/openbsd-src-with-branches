@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rcsprog.h,v 1.1 2005/09/29 15:13:19 joris Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -29,6 +29,7 @@
 
 extern char *__progname;
 extern const char rcs_version[];
+extern int verbose;
 
 void rcs_usage(void);
 void checkout_usage(void);
