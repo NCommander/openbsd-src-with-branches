@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep_pcap.c,v 1.10 2005/09/26 19:30:48 otto Exp $ */
+/*	$OpenBSD: privsep_pcap.c,v 1.11 2005/09/27 18:31:17 otto Exp $ */
 
 /*
  * Copyright (c) 2004 Can Erkin Acar
@@ -201,12 +201,12 @@ pcap_live(const char *device, int snaplen, int promisc, u_int dlt)
 	if (ioctl(fd, BIOCSETIF, &ifr) < 0)
 		goto error;
 
+	if (dlt != (u_int) -1 && ioctl(fd, BIOCSDLT, &dlt))
+		goto error;
+
 	if (promisc)
 		/* this is allowed to fail */
 		ioctl(fd, BIOCPROMISC, NULL);
-
-	if (dlt != (u_int) -1 && ioctl(fd, BIOCSDLT, &dlt))
-		goto error;
 
 	/* lock the descriptor */
 	if (ioctl(fd, BIOCLOCK, NULL) < 0)
