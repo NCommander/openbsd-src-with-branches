@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.7 2005/07/04 16:48:55 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.8 2005/07/04 17:51:44 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -906,8 +906,8 @@ lookup(char *token)
 		{ "mode",		MODE },
 		{ "multicast",		MULTICAST },
 		{ "no",			NO },
-		{ "not",		NOT },
 		{ "node",		NODE },
+		{ "not",		NOT },
 		{ "nwid",		NWID },
 		{ "open",		OPEN },
 		{ "passive",		PASSIVE },
