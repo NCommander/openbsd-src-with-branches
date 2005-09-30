@@ -1,4 +1,4 @@
-/*	$OpenBSD: ht.c,v 1.2 2005/09/29 21:44:33 kettenis Exp $	*/
+/*	$OpenBSD: ht.c,v 1.3 2005/09/30 00:30:14 drahn Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -155,9 +155,9 @@ ht_attach(struct device *parent, struct device *self, void *aux)
 
 	len = OF_getprop(ca->ca_node, "compatible", compat, sizeof(compat));
 	if (len <= 0)
-		printf(": unknown");
+		printf(": unknown\n");
 	else
-		printf(": %s", compat);
+		printf(": %s\n", compat);
 
 	sc->sc_pc.pc_conf_v = sc;
 	sc->sc_pc.pc_attach_hook = ht_attach_hook;
