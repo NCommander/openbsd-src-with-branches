@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.2 2005/04/15 15:59:11 deraadt Exp $	*/
+/*	$OpenBSD: ci.c,v 1.1 2005/09/30 16:37:27 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -89,8 +89,6 @@ checkin_main(int argc, char **argv)
 	file = NULL;
 	rev = rcs_msg = NULL;
 	fmode = dflag = 0;
-
-	cvs_log_init(LD_STD, 0);
 
 	while ((ch = getopt(argc, argv, "j:l:M:N:qu:d:r::m:k:")) != -1) {
 		switch (ch) {
