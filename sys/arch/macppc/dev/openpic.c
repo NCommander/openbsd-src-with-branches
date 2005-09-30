@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.28 2004/07/14 11:36:16 miod Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.29 2005/09/26 19:52:08 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -407,7 +407,7 @@ mapirq(int irq)
 		return o_virq[irq];
 
 	if (irq < 0 || irq >= ICU_LEN)
-		panic("invalid irq");
+		panic("invalid irq %d", irq);
 
 	o_virq_max++;
 	v = o_virq_max;

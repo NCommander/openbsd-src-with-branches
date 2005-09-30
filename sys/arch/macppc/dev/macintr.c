@@ -1,4 +1,4 @@
-/*	$OpenBSD: macintr.c,v 1.26 2005/02/16 14:37:06 aaron Exp $	*/
+/*	$OpenBSD: macintr.c,v 1.27 2005/03/11 13:35:47 miod Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -462,7 +462,7 @@ mapirq(int irq)
 		return m_virq[irq];
 
 	if (irq < 0 || irq >= 64)
-		panic("invalid irq");
+		panic("invalid irq %d", irq);
 	m_virq_max++;
 	v = m_virq_max;
 	if (v > HWIRQ_MAX)
