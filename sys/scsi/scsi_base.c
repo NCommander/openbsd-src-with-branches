@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.87 2005/08/29 00:41:44 krw Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.88 2005/09/11 17:34:27 krw Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -766,7 +766,7 @@ retry:
 #endif
 		s = splbio();
 		while ((xs->flags & ITSDONE) == 0)
-			tsleep(xs, PRIBIO + 1, "scsi_scsi_cmd", 0);
+			tsleep(xs, PRIBIO + 1, "scsicmd", 0);
 		splx(s);
 		/* FALLTHROUGH */
 	case COMPLETE:		/* Polling command completed ok */
