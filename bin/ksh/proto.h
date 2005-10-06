@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.h,v 1.25 2005/02/02 07:53:01 otto Exp $	*/
+/*	$OpenBSD: proto.h,v 1.26 2005/03/28 21:28:22 deraadt Exp $	*/
 
 /*
  * prototypes for PD-KSH
@@ -195,6 +195,9 @@ int	strip_nuls(char *, int);
 int	blocking_read(int, char *, int);
 int	reset_nonblock(int);
 char	*ksh_get_wd(char *, int);
+/* mknod.c */
+int domknod(int, char **, mode_t);
+int domkfifo(int, char **, mode_t);
 /* path.c */
 int	make_path(const char *, const char *, char **, XString *, int *);
 void	simplify_path(char *);
