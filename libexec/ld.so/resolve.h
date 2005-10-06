@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.43 2005/09/28 20:35:23 drahn Exp $ */
+/*	$OpenBSD: resolve.h,v 1.44 2005/10/06 21:53:10 kurt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -97,8 +97,6 @@ struct elf_object {
 		} u;
 	} Dyn;
 #define dyn Dyn.u
-
-	struct elf_object *dep_next;	/* Shadow objects for resolve search */
 
 	int		status;
 #define	STAT_RELOC_DONE	0x01
