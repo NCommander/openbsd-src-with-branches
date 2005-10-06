@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.17 2005/09/30 17:34:58 joris Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.18 2005/10/06 01:24:25 joris Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -87,7 +87,7 @@ rcs_statfile(char *fname, char *out, size_t len)
 	strlcpy(out, fpath, len);
 	if (verbose == 1) {
 		if (!strcmp(__progname, "co")) {
-			printf("%s --> ", filev);
+			printf("%s --> ", fpath);
 			if ((s = strrchr(filev, ',')) != NULL) {
 				*s = '\0';
 				printf("%s\n", fname);
