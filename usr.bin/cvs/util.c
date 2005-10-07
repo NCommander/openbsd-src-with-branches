@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.51 2005/09/05 19:29:42 xsa Exp $	*/
+/*	$OpenBSD: util.c,v 1.52 2005/09/15 17:01:10 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -890,7 +890,7 @@ cvs_parse_tagfile(char **tagp, char **datep, int *nbp)
 		}
 		linebuf[--len] = '\0';
 
-		switch(*linebuf) {
+		switch (*linebuf) {
 		case 'T':
 			if (tagp != NULL)
 				*tagp = strdup(linebuf);
