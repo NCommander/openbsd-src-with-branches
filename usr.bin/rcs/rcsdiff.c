@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.7 2005/10/05 12:06:23 joris Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.1 2005/10/06 01:24:25 joris Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -32,9 +32,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "diff.h"
 #include "log.h"
 #include "rcs.h"
+#include "diff.h"
 #include "rcsprog.h"
 
 extern char *__progname;
@@ -144,7 +144,7 @@ rcsdiff_file(RCSFILE *rfp, RCSNUM *rev, const char *filename)
 	}
 	cvs_buf_free(b2);
 
-	cvs_diffreg(path1, path2);
+	cvs_diffreg(path1, path2, NULL);
 	(void)unlink(path1);
 	(void)unlink(path2);
 

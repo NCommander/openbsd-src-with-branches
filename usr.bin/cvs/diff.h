@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.55 2005/08/14 19:49:18 xsa Exp $	*/
+/*	$OpenBSD: diff.h,v 1.1 2005/10/05 23:11:07 niallo Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -94,5 +94,6 @@
 
 
 
-int		cvs_diffreg(const char *, const char *);
+int		cvs_diffreg(const char *, const char *, BUF *out);
+extern int      diff_format;
 #endif
