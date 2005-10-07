@@ -1,4 +1,4 @@
-/*     $OpenBSD: ar5210.c,v 1.30 2005/09/19 10:27:08 reyk Exp $        */
+/*     $OpenBSD: ar5210.c,v 1.31 2005/10/04 13:50:00 reyk Exp $        */
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
@@ -1907,7 +1907,7 @@ ar5k_ar5210_set_power(struct ath_hal *hal, HAL_POWER_MODE mode,
 		/* Fail if the AR5210 didn't wake up */
 		if (i <= 0)
 			return (AH_FALSE);
-		
+
 		staid &= ~AR5K_AR5210_STA_ID1_PWR_SV;
 		break;
 
