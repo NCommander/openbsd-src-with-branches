@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.11 2005/10/08 16:27:41 niallo Exp $	*/
+/*	$OpenBSD: ci.c,v 1.12 2005/10/09 14:48:13 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -165,14 +165,12 @@ checkin_main(int argc, char **argv)
 		 * assume HEAD.
 		 */
 		frev = file->rf_head;
+
 		/*
 		 * If no log message specified, get it interactively.
 		 */
-		if (rcs_msg == NULL && newrev == NULL)
-			rcs_msg = checkin_getlogmsg(fpath, argv[i], frev, NULL);
-		else if (rcs_msg == NULL && newrev != NULL)
+		if (rcs_msg != NULL)
 			rcs_msg = checkin_getlogmsg(fpath, argv[i], frev, newrev);
-
 
 		/*
 		 * Remove the lock
