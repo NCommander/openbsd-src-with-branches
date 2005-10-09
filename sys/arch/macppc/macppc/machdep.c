@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.75 2005/10/09 14:01:11 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.76 2005/10/09 14:17:32 drahn Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -93,7 +93,6 @@
  */
 struct pcb *curpcb;
 struct pmap *curpm;
-struct proc *fpuproc;
 
 extern struct user *proc0paddr;
 struct pool ppc_vecpl;
