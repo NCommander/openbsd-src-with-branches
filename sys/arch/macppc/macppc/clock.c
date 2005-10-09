@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.13 2004/01/04 21:07:43 drahn Exp $	*/
+/*	$OpenBSD: clock.c,v 1.14 2004/06/28 02:49:10 aaron Exp $	*/
 /*	$NetBSD: clock.c,v 1.1 1996/09/30 16:34:40 ws Exp $	*/
 
 /*
@@ -40,6 +40,7 @@
 #include <machine/autoconf.h>
 #include <machine/pio.h>
 #include <machine/intr.h>
+#include <machine/vmparam.h>
 #include <machine/powerpc.h>
 #include <dev/ofw/openfirm.h>
 
