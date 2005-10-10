@@ -59,7 +59,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: clientloop.c,v 1.141 2005/07/16 01:35:24 djm Exp $");
+RCSID("$OpenBSD: clientloop.c,v 1.142 2005/09/09 19:18:05 markus Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1379,7 +1379,7 @@ client_loop(int have_pty, int escape_char_arg, int ssh2_chan_id)
 			    simple_escape_filter);
 		if (session_ident != -1)
 			channel_register_cleanup(session_ident,
-			    client_channel_closed);
+			    client_channel_closed, 0);
 	} else {
 		/* Check if we should immediately send eof on stdin. */
 		client_check_initial_eof_on_stdin();
