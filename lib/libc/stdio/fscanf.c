@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: fscanf.c,v 1.8 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -41,7 +41,7 @@ fscanf(FILE *fp, const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	ret = __svfscanf(fp, fmt, ap);
+	ret = vfscanf(fp, fmt, ap);
 	va_end(ap);
 	return (ret);
 }
