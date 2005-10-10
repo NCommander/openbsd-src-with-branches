@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.21 2005/10/06 12:56:49 joris Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.22 2005/10/06 15:39:11 joris Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -121,7 +121,7 @@ main(int argc, char **argv)
 
 	cvs_strtab_cleanup();
 
-	return (ret);
+	exit(ret);
 }
 
 
