@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.18 2003/10/12 13:18:37 krw Exp $
+#       $OpenBSD: install.md,v 1.19 2005/03/27 15:13:49 krw Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -39,6 +39,7 @@
 #
 
 MDXAPERTURE=1
+MDSERIAL="com com tty0"
 ARCH=ARCH
 
 md_installboot() {
