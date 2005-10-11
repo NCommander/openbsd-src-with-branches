@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.6 2005/10/08 20:30:39 niallo Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.7 2005/10/09 20:55:27 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -112,6 +112,8 @@ rcsdiff_main(int argc, char **argv)
 			frev = file->rf_head;
 		else
 			frev = rev;
+
+		diff_file = argv[i];
 
 		if (rev2 == NULL) {
 			if (rcsdiff_file(file, frev, argv[i]) < 0) {
