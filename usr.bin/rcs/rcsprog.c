@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.23 2005/10/10 14:37:59 niallo Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.24 2005/10/10 23:38:21 joris Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -250,6 +250,7 @@ rcs_main(int argc, char **argv)
 				    "failed to set logmsg for '%s' to '%s'",
 				    logstr, logmsg);
 				rcs_close(file);
+				rcsnum_free(logrev);
 				continue;
 			}
 
