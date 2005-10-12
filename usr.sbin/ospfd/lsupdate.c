@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsupdate.c,v 1.11 2005/05/26 20:10:24 norby Exp $ */
+/*	$OpenBSD: lsupdate.c,v 1.12 2005/10/03 15:05:49 msf Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -373,7 +373,7 @@ ls_retrans_timer(int fd, short event, void *bula)
 		tv.tv_sec = nbr->iface->rxmt_interval;
 
 		if (evtimer_add(&nbr->ls_retrans_timer, &tv) == -1)
-			log_warn("ls_retrans_list_add: evtimer_add failed");
+			log_warn("ls_retrans_timer: evtimer_add failed");
 	}
 }
 
