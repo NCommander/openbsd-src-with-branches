@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.26 2003/08/11 21:23:58 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.27 2004/09/16 04:39:16 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.17 1997/08/18 10:20:19 lukem Exp $	*/
 
 /*
@@ -93,6 +93,7 @@ char   *domap(char *);
 void	doproxy(int, char **);
 char   *dotrans(char *);
 int	foregroundproc(void);
+int	fileindir(const char *, const char *);
 void	get(int, char **);
 struct cmd *getcmd(const char *);
 int	getit(int, char **, int, const char *);
