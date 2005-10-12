@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsclean.c,v 1.4 2005/10/07 23:59:56 niallo Exp $	*/
+/*	$OpenBSD: rcsclean.c,v 1.5 2005/10/12 17:13:30 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -174,7 +174,7 @@ rcsclean_file(char *fname, RCSNUM *rev)
 	free(c2);
 
 	if (match) {
-		if (verbose)
+		if (verbose == 1)
 			printf("rm -f %s\n", fname);
 		if (nflag == 0)
 			(void)unlink(fname);
