@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlog.c,v 1.2 2005/10/06 13:36:53 niallo Exp $	*/
+/*	$OpenBSD: rlog.c,v 1.3 2005/10/07 23:59:56 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -38,7 +38,6 @@
 #include "diff.h"
 #include "rcsprog.h"
 
-extern char *__progname;
 static int rlog_file(const char *, const char *, RCSFILE *);
 
 #define REVSEP		"----------------------------"
@@ -110,7 +109,8 @@ rlog_main(int argc, char **argv)
 void
 rlog_usage(void)
 {
-	fprintf(stderr, "usage %s [-hNqRtV] file ...\n", __progname);
+	fprintf(stderr,
+	    "usage: rlog [-hNqRtV] file ...\n");
 }
 
 static int
