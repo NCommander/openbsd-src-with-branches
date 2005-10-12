@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.1 2004/04/26 12:34:05 miod Exp $ */
+/*	$OpenBSD: proc.h,v 1.2 2005/05/18 16:44:37 miod Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -51,7 +51,6 @@ struct trapframe;
  */
 struct mdproc {
 	struct trapframe *md_tf;	/* trap/syscall registers */
-	int	md_upte[UPAGES];	/* ptes for mapping u page */
 
         /*
          * Single stepping is done by moving two breakpoints in the
