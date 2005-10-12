@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.21 2005/10/11 15:52:13 niallo Exp $	*/
+/*	$OpenBSD: ci.c,v 1.22 2005/10/12 17:13:30 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -186,7 +186,7 @@ checkin_main(int argc, char **argv)
 		if (cvs_buf_putc(bp, '\0') < 0)
 			exit(1);
 
-		filec = cvs_buf_release(bp);
+		filec = (char *)cvs_buf_release(bp);
 
 		/*
 		 * Check for a lock belonging to this user. If none,
