@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.68 2005/10/13 05:24:52 kjell Exp $	*/
+/*	$OpenBSD: def.h,v 1.69 2005/10/13 19:46:45 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -429,6 +429,7 @@ int	 copy(char *, char *);
 BUFFER  *dired_(char *);
 int	 d_makename(LINE  *, char *, int);
 LIST	*make_file_list(char *);
+int	 fisdir(const char *);
 
 /* kbd.c X */
 int	 do_meta(int, int);
