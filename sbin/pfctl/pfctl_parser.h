@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.h,v 1.79 2005/01/05 18:23:10 mcbride Exp $ */
+/*	$OpenBSD: pfctl_parser.h,v 1.80 2005/02/07 18:18:14 david Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -117,10 +117,6 @@ struct node_host {
 	struct node_host	*next;
 	struct node_host	*tail;
 };
-/* special flags used by ifa_exists */
-#define PF_IFA_FLAG_GROUP	0x10000
-#define PF_IFA_FLAG_DYNAMIC	0x20000
-#define PF_IFA_FLAG_CLONABLE	0x40000
 
 struct node_os {
 	char			*os;
