@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.33 2005/10/13 05:47:45 kjell Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.34 2005/10/13 06:20:25 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -446,7 +446,7 @@ static struct KEYMAPE (1 + IMAPEXT) overwmap = {
 
 /*
  * The basic (root) keyboard map
- */  
+ */
 MAPS	fundamental_mode = { (KEYMAP *)&fundmap, "fundamental" };
 
 /*
