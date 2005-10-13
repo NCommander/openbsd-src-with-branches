@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.66 2005/10/11 00:50:00 kjell Exp $	*/
+/*	$OpenBSD: def.h,v 1.67 2005/10/11 01:08:53 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -37,6 +37,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 #define NSRCH	128		/* Undoable search commands.	 */
 #define NXNAME	64		/* Length, extended command.	 */
 #define NKNAME	20		/* Length, key names.		 */
+#define NTIME	50		/* Length, timestamp string.	 */
 /*
  * Universal.
  */
