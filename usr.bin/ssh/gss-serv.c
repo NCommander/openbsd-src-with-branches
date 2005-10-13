@@ -1,4 +1,4 @@
-/*	$OpenBSD: gss-serv.c,v 1.8 2005/08/30 22:08:05 djm Exp $	*/
+/*	$OpenBSD: gss-serv.c,v 1.9 2005/09/19 11:48:10 djm Exp $	*/
 
 /*
  * Copyright (c) 2001-2003 Simon Wilkinson. All rights reserved.
@@ -29,13 +29,11 @@
 #ifdef GSSAPI
 
 #include "bufaux.h"
-#include "compat.h"
 #include "auth.h"
 #include "log.h"
 #include "channels.h"
 #include "session.h"
 #include "servconf.h"
-#include "monitor_wrap.h"
 #include "xmalloc.h"
 #include "getput.h"
 
