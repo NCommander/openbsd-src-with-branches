@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.13 2005/05/27 08:08:18 cloder Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.14 2005/05/30 13:13:50 jason Exp $	*/
 /*
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>.  All rights reserved.
  *
@@ -176,8 +176,8 @@ static struct funmap functnames[] = {
 	{showcwdir, "pwd",},
 #endif /* !NO_DIR */
 	{queryrepl, "query-replace",},
-	{replstr, "replace-string",},
 #ifdef REGEX
+	{replstr, "replace-string",},
 	{re_queryrepl, "query-replace-regexp",},
 #endif /* REGEX */
 	{quote, "quoted-insert",},
