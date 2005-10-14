@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.23 2005/10/13 05:47:44 kjell Exp $	*/
+/*	$OpenBSD: dired.c,v 1.24 2005/10/14 06:41:47 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -10,6 +10,8 @@
 #include "kbd.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <sys/wait.h>
 
 #include <ctype.h>
@@ -393,9 +395,8 @@ void
 reaper(int signo __attribute__((unused)))
 {
 	int	save_errno = errno, status;
-	pid_t	ret;
 
-	while ((ret = waitpid(-1, &status, WNOHANG)) >= 0)
+	while (waitpid(-1, &status, WNOHANG) >= 0)
 		;
 	errno = save_errno;
 }
