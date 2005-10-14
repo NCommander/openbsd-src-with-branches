@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.48 2005/10/13 20:28:49 deraadt Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.49 2005/10/14 06:44:49 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -12,6 +12,7 @@
 
 static BUFFER  *makelist(void);
 
+/* ARGSUSED */
 int
 togglereadonly(int f, int n)
 {

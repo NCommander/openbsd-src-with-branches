@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.41 2005/10/13 20:23:01 kjell Exp $	*/
+/*	$OpenBSD: file.c,v 1.42 2005/10/13 20:28:49 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -82,6 +82,7 @@ filevisit(int f, int n)
  * buffer is killed before the switch. If the kill fails, or is aborted,
  * revert to the original file.
  */
+/* ARGSUSED */
 int
 filevisitalt(int f, int n)
 {

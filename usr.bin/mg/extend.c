@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.35 2005/08/09 00:53:48 kjell Exp $	*/
+/*	$OpenBSD: extend.c,v 1.36 2005/10/14 15:42:17 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -508,12 +508,14 @@ define_key(int f, int n)
 	return (dobind(mp, buf, FALSE));
 }
 
+/* ARGSUSED */
 int
 unbindtokey(int f, int n)
 {
 	return (dobind(fundamental_map, "Global unset key: ", TRUE));
 }
 
+/* ARGSUSED */
 int
 localunbind(int f, int n)
 {

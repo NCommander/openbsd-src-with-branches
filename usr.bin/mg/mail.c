@@ -1,4 +1,4 @@
-/* $OpenBSD: mail.c,v 1.6 2005/08/09 00:53:48 kjell Exp $ */
+/* $OpenBSD: mail.c,v 1.7 2005/10/13 05:47:45 kjell Exp $ */
 /*
  * This file is in the public domain.
  *
@@ -79,6 +79,7 @@ mail_init(void)
 	maps_add((KEYMAP *)&mailmap, "mail-mode");
 }
 
+/* ARGSUSED */
 static int
 mail(int f, int n)
 {
