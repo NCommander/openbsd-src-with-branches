@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.47 2005/10/13 05:34:11 kjell Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.48 2005/10/13 20:28:49 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -138,7 +138,7 @@ killbuffer(BUFFER *bp)
 		if (bp1 == NULL) {
 			/* only one buffer. see if it's *scratch* */
 			if (bp == bfind("*scratch*", FALSE))
-				return (FALSE);
+				return (TRUE);
 			/* create *scratch* for alternate buffer */
 			if ((bp1 = bfind("*scratch*", TRUE)) == NULL)
 				return (FALSE);
