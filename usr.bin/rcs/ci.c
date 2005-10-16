@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.33 2005/10/16 11:29:28 niallo Exp $	*/
+/*	$OpenBSD: ci.c,v 1.34 2005/10/16 11:35:11 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -70,7 +70,7 @@ checkin_usage(void)
 int
 checkin_main(int argc, char **argv)
 {
-	int i, ch, flags, force, lkmode, interactive, rflag, status;
+	int i, ch, force, lkmode, interactive, rflag, status;
 	mode_t fmode;
 	time_t date;
 	RCSFILE *file;
@@ -81,7 +81,6 @@ checkin_main(int argc, char **argv)
 	BUF *bp;
 
 	date = DATE_NOW;
-	flags = RCS_RDWR;
 	file = NULL;
 	rcs_msg = username = NULL;
 	newrev =  NULL;
