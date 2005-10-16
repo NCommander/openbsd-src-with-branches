@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.17 2005/05/27 00:51:52 norby Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.18 2005/09/24 21:10:32 msf Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -349,11 +349,13 @@ show_interface_msg(struct imsg *imsg)
 			case AUTH_SIMPLE:
 				printf("  Simple password authentication "
 				    "enabled\n");
+				break;
 			case AUTH_CRYPT:
 				printf("  Message digest authentication "
 				    "enabled\n");
 				printf("    Primary key id is %d\n", 
 				    iface->auth_keyid);
+				break;
 			default:
 				break;
 			}
