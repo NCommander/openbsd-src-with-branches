@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.23 2005/08/22 17:26:46 hshoexer Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.24 2005/10/16 19:52:19 hshoexer Exp $	*/
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  * Copyright (c) 2003, 2004 Markus Friedl <markus@openbsd.org>
@@ -563,6 +563,8 @@ pfkey_parse(struct sadb_msg *msg, struct ipsec_rule *rule)
 		rule->proto = IPSEC_AH;
 		break;
 	case SADB_X_SATYPE_IPCOMP:
+		rule->proto = IPSEC_COMP;
+		break;
 	default:
 		return (1);
 	}
