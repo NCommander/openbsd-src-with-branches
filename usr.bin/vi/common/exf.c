@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.19 2003/08/01 16:47:25 pvalchev Exp $	*/
+/*	$OpenBSD: exf.c,v 1.20 2003/12/31 18:18:22 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -79,10 +79,9 @@ file_add(sp, name)
 	 */
 	gp = sp->gp;
 	if (name != NULL)
-		for (frp = gp->frefq.cqh_first;
-		    frp != (FREF *)&gp->frefq; frp = frp->q.cqe_next) {
+		CIRCLEQ_FOREACH(frp, &gp->frefq, q) {
 			if (frp->name == NULL) {
-				tfrp = frp->q.cqe_next;
+				tfrp = CIRCLEQ_NEXT(frp, q);
 				CIRCLEQ_REMOVE(&gp->frefq, frp, q);
 				if (frp->name != NULL)
 					free(frp->name);

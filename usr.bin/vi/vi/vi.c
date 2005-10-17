@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.9 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: vi.c,v 1.10 2005/01/08 05:22:25 pvalchev Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -1012,7 +1012,7 @@ v_dtoh(sp)
 
 	/* Move all screens to the hidden queue, tossing screen maps. */
 	for (hidden = 0, gp = sp->gp;
-	    (tsp = gp->dq.cqh_first) != (void *)&gp->dq; ++hidden) {
+	    (tsp = CIRCLEQ_FIRST(&gp->dq)) != CIRCLEQ_END(&gp->dq); ++hidden) {
 		if (_HMAP(tsp) != NULL) {
 			free(_HMAP(tsp));
 			_HMAP(tsp) = NULL;
