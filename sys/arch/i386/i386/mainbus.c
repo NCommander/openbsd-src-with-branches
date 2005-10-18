@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.17 2005/06/02 20:09:39 tholo Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.18 2005/10/04 22:04:23 marco Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -162,7 +162,8 @@ mainbus_attach(parent, self, aux)
 		mba.mba_iaa.iaa_name = "ipmi";
 		mba.mba_iaa.iaa_iot  = I386_BUS_SPACE_IO;
 		mba.mba_iaa.iaa_memt = I386_BUS_SPACE_MEM;
-		config_found(self, &mba.mba_iaa, mainbus_print);
+		if (ipmi_probe(&mba.mba_iaa))
+			config_found(self, &mba.mba_iaa, mainbus_print);
 	}
 #endif
 
