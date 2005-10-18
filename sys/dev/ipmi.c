@@ -1,4 +1,4 @@
-/* $OpenBSD: ipmi.c,v 1.4 2005/10/17 23:54:21 deraadt Exp $ */
+/* $OpenBSD: ipmi.c,v 1.5 2005/10/18 23:08:23 marco Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -1480,6 +1480,7 @@ ipmi_probe(void *aux)
 	if (scan_smbios(SMBIOS_TYPE_IPMI, smbios_ipmi_probe, ia) == 0) {
 		dmd_ipmi_t *pipmi;
 
+		/* XXX hack to find Dell PowerEdge 8450 */
 		pipmi = (dmd_ipmi_t *)scan_sig(0xC0000L, 0xFFFFFL, 16, 4,
 		    "IPMI");
 		if (pipmi == NULL) {
