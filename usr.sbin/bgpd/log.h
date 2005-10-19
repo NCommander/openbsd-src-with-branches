@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.3 2004/05/21 16:01:14 claudio Exp $ */
+/*	$OpenBSD: log.h,v 1.4 2005/06/05 19:50:09 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -102,4 +102,9 @@ static const char * const procnames[] = {
 	"parent",
 	"SE",
 	"RDE"
+};
+
+static const char * const ctl_res_strerror[] = {
+	"no error",
+	"no such neighbor"
 };
