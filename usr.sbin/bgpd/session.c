@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.235 2005/09/20 13:31:53 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.236 2005/10/19 09:36:51 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -541,7 +541,10 @@ init_peer(struct peer *p)
 	peer_cnt++;
 
 	change_state(p, STATE_IDLE, EVNT_NONE);
-	p->IdleHoldTimer = time(NULL);	/* start ASAP */
+	if (p->conf.down)
+		p->IdleHoldTimer = 0;		/* no autostart */
+	else
+		p->IdleHoldTimer = time(NULL);	/* start ASAP */
 }
 
 void
