@@ -1,5 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:46:51 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1996/06/26 05:42:49 deraadt Exp $
 
 PROG=	wc
+DPADD= ${LIBUTIL}
+LDADD= -lutil
 
 .include <bsd.prog.mk>
