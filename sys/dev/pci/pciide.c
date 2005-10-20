@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.211 2005/10/17 11:35:05 jsg Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.212 2005/10/18 13:07:34 brad Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -2722,9 +2722,7 @@ apollo_chip_map(struct pciide_softc *sc, struct pci_attach_args *pa)
 		break;
 	case PCI_PRODUCT_VIATECH_VT8233_ISA:
 	case PCI_PRODUCT_VIATECH_VT8235_ISA:
-	case PCI_PRODUCT_VIATECH_VT6420_SATA:
-	case PCI_PRODUCT_VIATECH_VT6421_SATA:
-	case PCI_PRODUCT_VIATECH_VT8251_SATA:
+	case PCI_PRODUCT_VIATECH_VT8237_ISA:
 		printf(": ATA133");
 		sc->sc_wdcdev.UDMA_cap = 6;
 		break;
