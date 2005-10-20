@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sisreg.h,v 1.22 2005/10/14 22:59:38 brad Exp $ */
+/*	$OpenBSD: if_sisreg.h,v 1.23 2005/10/18 01:01:27 brad Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ee.columbia.edu>.  All rights reserved.
@@ -368,7 +368,7 @@ struct sis_list_data {
 };
 
 struct sis_ring_data {
-	int			sis_rx_prod;
+	struct sis_desc		*sis_rx_pdsc;
 	int			sis_tx_prod;
 	int			sis_tx_cons;
 	int			sis_tx_cnt;
