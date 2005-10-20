@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: setrunelocale.c,v 1.1 2005/08/07 10:16:24 espie Exp $ */
 /*	$NetBSD: setrunelocale.c,v 1.14 2003/08/07 16:43:07 agc Exp $	*/
 
 /*-
@@ -137,10 +137,8 @@ _newrunelocale(const char *path)
 	FILE *fp;
 	_RuneLocale *rl;
 
-	/* path may be NULL (actually, it's checked below) */
-
-	if (!path || strlen(path) + 1 > sizeof(lt->path))
-		return EFAULT;
+	if (strlen(path) + 1 > sizeof(lt->path))
+		return EINVAL;
 
 	rl = _findrunelocale(path);
 	if (rl)
