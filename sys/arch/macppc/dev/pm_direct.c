@@ -1,4 +1,4 @@
-/*	$OpenBSD: pm_direct.c,v 1.12 2003/10/16 03:31:25 drahn Exp $	*/
+/*	$OpenBSD: pm_direct.c,v 1.13 2003/10/16 03:54:48 deraadt Exp $	*/
 /*	$NetBSD: pm_direct.c,v 1.9 2000/06/08 22:10:46 tsubai Exp $	*/
 
 /*
@@ -734,7 +734,7 @@ pm_adb_poweroff()
 }
 
 void
-pm_read_date_time(u_long *time)
+pm_read_date_time(time_t *time)
 {
 	PMData p;
 
@@ -748,7 +748,7 @@ pm_read_date_time(u_long *time)
 }
 
 void
-pm_set_date_time(u_long time)
+pm_set_date_time(time_t time)
 {
 	PMData p;
 
