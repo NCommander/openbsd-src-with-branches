@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsupdate.c,v 1.18 2005/10/19 22:00:37 stevesk Exp $ */
+/*	$OpenBSD: lsupdate.c,v 1.19 2005/10/21 08:29:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -177,7 +177,7 @@ send_ls_update(struct iface *iface, struct in_addr addr, void *data, int len)
 	age = ntohs(age);
 	if ((age += iface->transmit_delay) >= MAX_AGE)
 		age = MAX_AGE;
-	age = ntohs(age);
+	age = htons(age);
 	memcpy(buf_seek(buf, pos, sizeof(age)), &age, sizeof(age));
 
 	/* update authentication and calculate checksum */
