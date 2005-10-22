@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_pcmcia.c,v 1.80 2005/09/19 19:03:57 deraadt Exp $	*/
+/*	$OpenBSD: if_ne_pcmcia.c,v 1.81 2005/09/19 20:19:02 fgsch Exp $	*/
 /*	$NetBSD: if_ne_pcmcia.c,v 1.17 1998/08/15 19:00:04 thorpej Exp $	*/
 
 /*
@@ -779,8 +779,6 @@ again:
 	intrstr = pcmcia_intr_string(psc->sc_pf, psc->sc_ih);
 	if (*intrstr)
 		printf(", %s", intrstr);
-
-	printf("\n");
 
 	if (ne2000_attach(nsc, enaddr))
 		goto fail_5;
