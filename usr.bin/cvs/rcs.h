@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.34 2005/10/10 23:37:15 joris Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.35 2005/10/15 22:56:03 niallo Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -220,8 +220,6 @@ const char	*rcs_errstr(int);
 int	rcs_kflag_get(const char *);
 void	rcs_kflag_usage(void);
 int	rcs_kw_expand(RCSFILE *, u_char *, size_t, size_t *);
-
-BUF	*rcs_patch(const char *, const char *);
 
 RCSNUM	*rcsnum_alloc(void);
 RCSNUM	*rcsnum_parse(const char *);
