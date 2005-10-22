@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.78 2005/10/15 15:01:23 martin Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.79 2005/10/15 21:45:00 kettenis Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -396,7 +396,7 @@ initppc(startkernel, endkernel, args)
 	}
 	bootpath= &bootpathbuf[0];
 
-#ifdef notyet_DDB
+#ifdef DDB
 	ddb_init();
 #endif
 
