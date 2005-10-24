@@ -1,4 +1,4 @@
-/*	$OpenBSD: libscsi.c,v 1.2 2003/07/24 00:20:52 deraadt Exp $	*/
+/*	$OpenBSD: libscsi.c,v 1.3 2005/04/09 02:10:01 cloder Exp $	*/
 
 /* Copyright (c) 1994 HD Associates
  * (contact: dufault@hda.com)
@@ -1127,9 +1127,6 @@ int
 scsireq_enter(int fid, scsireq_t *scsireq)
 {
 	int ret;
-
-	if (scsireq == 0)
-		return EFAULT;
 
 	ret = ioctl(fid, SCIOCCOMMAND, (void *)scsireq);
 
