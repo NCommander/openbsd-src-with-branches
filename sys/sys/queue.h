@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue.h,v 1.27 2005/02/25 13:29:30 deraadt Exp $	*/
+/*	$OpenBSD: queue.h,v 1.28 2005/10/17 20:19:42 otto Exp $	*/
 /*	$NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $	*/
 
 /*
@@ -219,8 +219,6 @@ struct {								\
 		(elm)->field.le_next->field.le_prev =			\
 		    (elm)->field.le_prev;				\
 	*(elm)->field.le_prev = (elm)->field.le_next;			\
-	(elm)->field.le_prev = NULL; 					\
-	(elm)->field.le_next = NULL;					\
 } while (0)
 
 #define LIST_REPLACE(elm, elm2, field) do {				\
