@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtwvar.h,v 1.16 2005/10/23 08:47:14 reyk Exp $	*/
+/*	$OpenBSD: rtwvar.h,v 1.17 2005/10/23 12:57:43 jsg Exp $	*/
 /*	$NetBSD: rtwvar.h,v 1.10 2004/12/26 22:37:57 mycroft Exp $	*/
 
 /*-
@@ -401,7 +401,7 @@ struct rtw_softc {
 
 	u_int8_t		sc_rev;		/* PCI/Cardbus revision */
 
-	u_int32_t		sc_anaparm;	/* register RTW_ANAPARM */
+	u_int32_t		sc_anaparm[2];	/* RTW_ANAPARM_? registers */
 
 	union {
 		struct rtw_rx_radiotap_header	tap;
