@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.16 2005/10/20 02:02:20 deraadt Exp $	*/
+/*	$OpenBSD: ipmi.c,v 1.17 2005/10/21 16:44:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -1561,8 +1561,11 @@ ipmi_create_thread(void *arg)
 	struct ipmi_softc *sc = arg;
 
 	if (kthread_create(ipmi_poll_thread, sc->sc_thread, NULL,
-	    DEVNAME(sc)) != 0)
-		panic("ipmi thread");
+	    DEVNAME(sc)) != 0) {
+		printf("%s: unable to create polling thread, ipmi disabled\n",
+		    DEVNAME(sc));
+		return;
+	}
 }
 
 int
