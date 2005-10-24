@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9.c,v 1.44 2005/07/20 23:02:41 brad Exp $ */
+/*	$OpenBSD: rtl81x9.c,v 1.45 2005/08/03 16:27:39 brad Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -1236,7 +1236,7 @@ rl_attach(sc)
 	rl_read_eeprom(sc, (caddr_t)sc->sc_arpcom.ac_enaddr, RL_EE_EADDR,
 	    addr_len, 3, 1);
 
-	printf(" address %s\n", ether_sprintf(sc->sc_arpcom.ac_enaddr));
+	printf(", address %s\n", ether_sprintf(sc->sc_arpcom.ac_enaddr));
 
 	rl_read_eeprom(sc, (caddr_t)&rl_did, RL_EE_PCI_DID, addr_len, 1, 0);
 
