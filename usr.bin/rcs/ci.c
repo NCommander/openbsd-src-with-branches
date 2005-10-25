@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.46 2005/10/18 01:39:47 joris Exp $	*/
+/*	$OpenBSD: ci.c,v 1.47 2005/10/19 11:37:11 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -227,7 +227,7 @@ checkin_main(int argc, char **argv)
 		 */
 		if ((!force) && (strlen(deltatext) < 1)) {
 			rcsnum_tostr(frev, rbuf, sizeof(rbuf));
-			cvs_log(LP_WARN, 
+			cvs_log(LP_WARN,
 			    "file is unchanged; reverting to previous revision %s",
 			    rbuf);
 			(void)unlink(argv[i]);
