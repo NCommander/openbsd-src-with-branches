@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.52 2004/11/10 11:00:00 grange Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.53 2005/10/03 01:19:44 aaron Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -127,7 +127,7 @@ void
 generic_softclock(void *ignore)
 {
 	/*
-	 * XXX - dont' commit, just a dummy wrapper until we learn everyone
+	 * XXX - don't commit, just a dummy wrapper until we learn everyone
 	 *       deal with a changed proto for softclock().
 	 */
 	softclock();
