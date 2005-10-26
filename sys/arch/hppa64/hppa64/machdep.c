@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.1 2005/04/01 10:40:47 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.2 2005/08/06 14:26:52 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -275,14 +275,14 @@ TODO hpmc/toc/pfr
 {
 	vaddr_t v;
 
-	v = hppa_round_page(start);
+	v = round_page(start);
 #define valloc(name, type, num) (name) = (type *)v; v = (vaddr_t)((name)+(num))
 	valloc(msgpool, char, msginfo.msgmax);
 	valloc(msgmaps, struct msgmap, msginfo.msgseg);
 	valloc(msghdrs, struct msg, msginfo.msgtql);
 	valloc(msqids, struct msqid_ds, msginfo.msgmni);
 #undef valloc
-	v = hppa_round_page(v);
+	v = round_page(v);
 	bzero ((void *)start, (v - start));
 	start = v;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.1 2005/04/01 10:40:47 mickey Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.2 2005/05/22 01:38:09 mickey Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -102,8 +102,8 @@ mbus_unmap(void *v, bus_space_handle_t bsh, bus_size_t size)
 {
 	u_long sva, eva;
 
-	sva = hppa_trunc_page(bsh);
-	eva = hppa_round_page(bsh + size);
+	sva = trunc_page(bsh);
+	eva = round_page(bsh + size);
 
 #ifdef DIAGNOSTIC
 	if (eva <= sva)

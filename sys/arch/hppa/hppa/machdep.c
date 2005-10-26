@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.147 2005/07/11 04:04:30 mickey Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.148 2005/08/06 14:26:52 miod Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -396,7 +396,7 @@ hppa_init(start)
 	if (bufpages > nbuf * MAXBSIZE / PAGE_SIZE)
 		bufpages = nbuf * MAXBSIZE / PAGE_SIZE;
 
-	v1 = v = hppa_round_page(start);
+	v1 = v = round_page(start);
 #define valloc(name, type, num) (name) = (type *)v; v = (vaddr_t)((name)+(num))
 
 	valloc(buf, struct buf, nbuf);
@@ -408,7 +408,7 @@ hppa_init(start)
 	valloc(msqids, struct msqid_ds, msginfo.msgmni);
 #endif
 #undef valloc
-	v = hppa_round_page(v);
+	v = round_page(v);
 	bzero ((void *)v1, (v - v1));
 
 	/* sets resvphysmem */
