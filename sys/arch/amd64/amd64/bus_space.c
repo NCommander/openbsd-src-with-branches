@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_space.c,v 1.1 2004/01/28 01:39:38 mickey Exp $	*/
+/*	$OpenBSD: bus_space.c,v 1.2 2005/10/21 18:55:00 martin Exp $	*/
 /*	$NetBSD: bus_space.c,v 1.2 2003/03/14 18:47:53 christos Exp $	*/
 
 /*-
@@ -469,5 +469,5 @@ x86_memio_mmap(t, addr, off, prot, flags)
 	 * Note we are called for each "page" in the device that
 	 * the upper layers want to map.
 	 */
-	return (x86_btop(addr + off));
+	return (atop(addr + off));
 }
