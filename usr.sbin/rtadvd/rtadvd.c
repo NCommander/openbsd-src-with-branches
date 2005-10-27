@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.24 2003/03/14 18:33:58 itojun Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.25 2003/03/14 18:46:45 itojun Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -188,8 +188,8 @@ main(argc, argv)
 	argv += optind;
 	if (argc == 0) {
 		fprintf(stderr,
-			"usage: rtadvd [-dDfMRs] [-c conffile] "
-			"interfaces...\n");
+			"usage: rtadvd [-DdfMRs] [-c configfile] "
+			"interface ...\n");
 		exit(1);
 	}
 
