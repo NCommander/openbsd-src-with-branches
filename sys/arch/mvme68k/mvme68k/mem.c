@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.20 2003/06/02 05:09:14 deraadt Exp $ */
+/*	$OpenBSD: mem.c,v 1.21 2003/06/02 23:27:51 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -249,7 +249,7 @@ mmmmap(dev, off, prot)
 	if ((unsigned)off < lowram || (unsigned)off >= 0xFFFFFFFC ||
 	    (unsigned)off < NBPG)
 		return (-1);
-	return (m68k_btop(off));
+	return (atop(off));
 }
 
 /*ARGSUSED*/
