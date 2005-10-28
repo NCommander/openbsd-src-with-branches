@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: pmap.c,v 1.42 2004/06/13 21:49:11 niklas Exp $ */
 /* $NetBSD: pmap.c,v 1.154 2000/12/07 22:18:55 thorpej Exp $ */
 
 /*-
@@ -2546,7 +2546,7 @@ paddr_t
 pmap_phys_address(int ppn)
 {
 
-	return (alpha_ptob(ppn));
+	return (ptoa(ppn));
 }
 
 /*
