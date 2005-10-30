@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-keyscan.c,v 1.55 2005/06/17 02:44:33 djm Exp $");
+RCSID("$OpenBSD: ssh-keyscan.c,v 1.56 2005/09/13 23:40:07 djm Exp $");
 
 #include <sys/queue.h>
 #include <errno.h>
@@ -490,12 +490,18 @@ congreet(int s)
 	size_t bufsiz;
 	con *c = &fdcon[s];
 
-	bufsiz = sizeof(buf);
-	cp = buf;
-	while (bufsiz-- && (n = atomicio(read, s, cp, 1)) == 1 && *cp != '\n') {
-		if (*cp == '\r')
-			*cp = '\n';
-		cp++;
+	for (;;) {
+		memset(buf, '\0', sizeof(buf));
+		bufsiz = sizeof(buf);
+		cp = buf;
+		while (bufsiz-- &&
+		    (n = atomicio(read, s, cp, 1)) == 1 && *cp != '\n') {
+			if (*cp == '\r')
+				*cp = '\n';
+			cp++;
+		}
+		if (n != 1 || strncmp(buf, "SSH-", 4) == 0)
+			break;
 	}
 	if (n == 0) {
 		switch (errno) {
