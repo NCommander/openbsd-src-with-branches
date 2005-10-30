@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.19 2004/05/01 22:15:10 marc Exp $
+# $OpenBSD: Makefile.inc,v 1.20 2005/10/12 16:00:35 jmc Exp $
 # $FreeBSD: Makefile.inc,v 1.6 1999/08/28 00:03:02 peter Exp $
 
 # POSIX thread man files
@@ -6,6 +6,7 @@
 .PATH: ${SRCDIR}/man
 
 MAN+=	\
+	pthread_atfork.3 \
 	pthread_attr_init.3 \
 	pthread_attr_setstackaddr.3 \
 	pthread_attr_setstacksize.3 \
