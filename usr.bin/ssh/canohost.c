@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: canohost.c,v 1.44 2005/06/17 02:44:32 djm Exp $");
+RCSID("$OpenBSD: canohost.c,v 1.45 2005/10/03 07:44:42 dtucker Exp $");
 
 #include "packet.h"
 #include "xmalloc.h"
@@ -152,9 +152,7 @@ check_ip_options(int sock, char *ipaddr)
 		for (i = 0; i < option_size; i++)
 			snprintf(text + i*3, sizeof(text) - i*3,
 			    " %2.2x", options[i]);
-		logit("Connection from %.100s with IP options:%.800s",
-		    ipaddr, text);
-		packet_disconnect("Connection from %.100s with IP options:%.800s",
+		fatal("Connection from %.100s with IP options:%.800s",
 		    ipaddr, text);
 	}
 }
