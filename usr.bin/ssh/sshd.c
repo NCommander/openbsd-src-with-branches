@@ -42,7 +42,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshd.c,v 1.315 2005/09/21 23:37:11 djm Exp $");
+RCSID("$OpenBSD: sshd.c,v 1.316 2005/10/30 08:29:29 dtucker Exp $");
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>
@@ -1599,10 +1599,10 @@ main(int ac, char **av)
 	verbose("Connection from %.500s port %d", remote_ip, remote_port);
 
 	/*
-	 * We don\'t want to listen forever unless the other side
+	 * We don't want to listen forever unless the other side
 	 * successfully authenticates itself.  So we set up an alarm which is
 	 * cleared after successful authentication.  A limit of zero
-	 * indicates no limit. Note that we don\'t set the alarm in debugging
+	 * indicates no limit. Note that we don't set the alarm in debugging
 	 * mode; it is just annoying to have the server exit just when you
 	 * are about to discover the bug.
 	 */

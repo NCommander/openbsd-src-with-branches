@@ -37,7 +37,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: packet.c,v 1.118 2005/07/25 11:59:39 markus Exp $");
+RCSID("$OpenBSD: packet.c,v 1.119 2005/07/28 17:36:22 markus Exp $");
 
 #include <sys/queue.h>
 
@@ -567,7 +567,7 @@ packet_send1(void)
 	buffer_clear(&outgoing_packet);
 
 	/*
-	 * Note that the packet is now only buffered in output.  It won\'t be
+	 * Note that the packet is now only buffered in output.  It won't be
 	 * actually sent until packet_write_wait or packet_write_poll is
 	 * called.
 	 */
