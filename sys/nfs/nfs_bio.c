@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.39 2004/07/21 17:30:55 marius Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.40 2004/08/03 17:11:48 marius Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -80,6 +80,7 @@ nfs_bioread(vp, uio, ioflag, cred)
 	daddr_t lbn, bn, rabn;
 	caddr_t baddr;
 	int got_buf = 0, nra, error = 0, n = 0, on = 0, not_readin;
+	off_t offdiff;
 
 #ifdef DIAGNOSTIC
 	if (uio->uio_rw != UIO_READ)
@@ -198,9 +199,9 @@ again:
 			}
 		}
 		n = min((unsigned)(biosize - on), uio->uio_resid);
-		diff = np->n_size - uio->uio_offset;
-		if (diff < n)
-			n = diff;
+		offdiff = np->n_size - uio->uio_offset;
+		if (offdiff < (off_t)n)
+			n = (int)offdiff;
 		if (not_readin && n > 0) {
 			if (on < bp->b_validoff || (on + n) > bp->b_validend) {
 				if (!got_buf) {
