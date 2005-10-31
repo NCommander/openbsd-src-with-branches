@@ -148,6 +148,7 @@ void	zapm_power_info(struct pxa2x0_apm_softc *, struct apm_power_info *);
 void	zapm_suspend(struct pxa2x0_apm_softc *);
 int	zapm_resume(struct pxa2x0_apm_softc *);
 int	pxa2x0_setperf(int);
+int	pxa2x0_cpuspeed(int *);
 
 
 int
@@ -195,6 +196,7 @@ apm_attach(struct device *parent, struct device *self, void *aux)
 #endif
 
 	cpu_setperf = pxa2x0_setperf;
+	cpu_cpuspeed = pxa2x0_cpuspeed;
 }
 
 #if 0
