@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ray.c,v 1.27 2005/04/03 01:35:06 uwe Exp $	*/
+/*	$OpenBSD: if_ray.c,v 1.28 2005/10/06 20:14:55 brad Exp $	*/
 /*	$NetBSD: if_ray.c,v 1.21 2000/07/05 02:35:54 onoe Exp $	*/
 
 /*
@@ -123,7 +123,7 @@
 #define	RAY_CHECK_CCS_TIMEOUT	(hz / 2)
 #endif
 
-/* ammount of time to consider start/join failed */
+/* amount of time to consider start/join failed */
 #ifndef	RAY_START_TIMEOUT
 #define	RAY_START_TIMEOUT	(10 * hz)
 #endif
