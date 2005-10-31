@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.12 2005/10/03 19:35:46 drahn Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.13 2005/10/19 14:46:00 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -73,8 +73,15 @@ mbattach(struct device *parent, struct device *self, void *aux)
 {
 	struct mainbus_softc *sc = (struct mainbus_softc *)self;
 	struct confargs nca;
-	char name[32];
-	int node;
+	char name[64];
+	int node, len;
+
+	node = OF_peer(0);
+	len = OF_getprop(node, "model", name, sizeof(name));
+	if (len > 1) {
+		name[len] = '\0';
+		printf(": model %s", name);
+	}
 
 	printf("\n");
 
