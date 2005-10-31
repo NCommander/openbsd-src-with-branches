@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pthread_atfork.c,v 1.1 2005/10/31 01:01:29 fgsch Exp $	*/
 
 /*
  * Federico Schwindt <fgsch@openbsd.org>, 2005. Public Domain.
@@ -63,6 +63,7 @@ forker1(void *arg)
 	cnt = 1;
 	switch (fork()) {
 	case -1:
+		PANIC("fork");
 		break;
 
 	case 0:
@@ -87,6 +88,7 @@ forker2(void *arg)
 	cnt = 2;
 	switch (fork()) {
 	case -1:
+		PANIC("fork");
 		break;
 
 	case 0:
