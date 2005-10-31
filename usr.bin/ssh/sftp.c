@@ -16,7 +16,7 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.66 2005/08/08 13:22:48 jaredy Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.67 2005/09/13 23:40:07 djm Exp $");
 
 #include <glob.h>
 #include <histedit.h>
@@ -692,6 +692,8 @@ do_ls_dir(struct sftp_conn *conn, char *path, char *strip_path, int lflag)
 	}
 
 	if (lflag & SORT_FLAGS) {
+		for (n = 0; d[n] != NULL; n++)
+			;	/* count entries */
 		sort_flag = lflag & (SORT_FLAGS|LS_REVERSE_SORT);
 		qsort(d, n, sizeof(*d), sdirent_comp);
 	}
