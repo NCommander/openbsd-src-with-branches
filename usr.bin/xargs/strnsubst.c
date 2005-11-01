@@ -1,4 +1,4 @@
-/*	$OpenBSD: strnsubst.c,v 1.1 2003/06/12 01:09:23 millert Exp $	*/
+/*	$OpenBSD: strnsubst.c,v 1.2 2003/06/12 03:23:22 millert Exp $	*/
 /*	$FreeBSD: strnsubst.c,v 1.6 2002/06/22 12:58:42 jmallett Exp $	*/
 
 /*
@@ -10,7 +10,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: strnsubst.c,v 1.1 2003/06/12 01:09:23 millert Exp $";
+static const char rcsid[] = "$OpenBSD: strnsubst.c,v 1.2 2003/06/12 03:23:22 millert Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -73,7 +73,7 @@ done:
 #ifdef TEST
 #include <stdio.h>
 
-int 
+int
 main(void)
 {
 	char *x, *y, *z, *za;
