@@ -1,4 +1,5 @@
-/*	$NetBSD: nexus.h,v 1.4 1995/02/23 17:51:42 ragge Exp $	*/
+/*	$OpenBSD: nexus.h,v 1.9 2001/08/25 13:33:36 hugh Exp $	*/
+/*	$NetBSD: nexus.h,v 1.17 2000/06/04 17:58:19 ragge Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,25 @@
  *	@(#)nexus.h	7.3 (Berkeley) 5/9/91
  */
 
+#ifndef _VAX_NEXUS_H_
+#define _VAX_NEXUS_H_
+
+#include <machine/bus.h>
+
+/*
+ * Different definitions for nicer autoconf probing.
+ */
+enum bustypes {
+	VAX_SBIBUS,		/* SBI parent (780) */
+	VAX_CMIBUS,		/* CMI backplane (750) */
+	VAX_UNIBUS,		/* Direct backplane (730) */
+	VAX_ABUS,		/* SBI placeholder (8600) */
+	VAX_BIBUS,		/* BI bus (8200) */
+	VAX_NBIBUS,		/* NBI backplane (8800) */
+	VAX_VSBUS,		/* Virtual vaxstation bus */
+	VAX_IBUS,		/* Internal Microvax bus */
+	VAX_XMIBUS,		/* XMI master bus (6000) */
+};
 /*
  * Information about nexus's.
  *
@@ -57,21 +73,9 @@
 #define	NNEX780	NNEXSBI
 #define	NEX780	((struct nexus *)0x20000000)
 #endif
-#if VAX750
-#define	NNEX750	NNEXSBI
-#ifndef ASSEMBLER
-#define NEX750           ((struct nexus*)0xf20000)
-#else
-#define NEX750           (0xF20000)
-#endif
-#endif
 #if VAX730
 #define	NNEX730	NNEXSBI
 #define	NEX730	((struct nexus *)0xf20000)
-#endif
-#if VAX630
-#define NNEX630 1
-#define NEX630  ((struct nexus *)0x20088000)
 #endif
 #define	NEXSIZE	0x2000
 
@@ -81,9 +85,7 @@
 #define	MAXNNEXUS NNEXSBI
 #endif
 
-#ifndef ASSEMBLER
-
-#include "sys/types.h"
+#ifdef _KERNEL
 
 struct	nexus {
 	union nexcsr {
@@ -94,29 +96,26 @@ struct	nexus {
 };
 
 struct sbi_attach_args {
-	u_int	nexnum;
-	u_int	type;
-	void	*nexaddr;
+	int sa_nexnum;		/* This nexus TR number */
+	int sa_type;		/* This nexus type */
+	bus_space_tag_t sa_iot;
+	bus_space_handle_t sa_ioh;
 };
 
-struct iobus {
-        int io_type;
-        int io_addr;
-        int io_size;
-        int io_details;
+/* Memory device struct. This should be somewhere else */
+struct mem_softc {
+	struct	device sc_dev;
+	caddr_t	sc_memaddr;
+	int	sc_memtype;
+	int	sc_memnr;
 };
 
-struct nexusconnect {
-        int psb_nnexus;
-        struct nexus *psb_nexbase;
-	int psb_ubatype;
-	int psb_nubabdp;
-	caddr_t *psb_umaddr;
-        int *psb_nextype;
+struct bp_conf {
+	char *type;
+	int num;
+	int partyp;
+	int bp_addr;
 };
-
-extern caddr_t *nex_vec;
-#define nex_vec_num(ipl, nexnum) nex_vec[(ipl-14)*16+nexnum]
 
 #endif
 
@@ -132,8 +131,8 @@ extern caddr_t *nex_vec;
 
 #define	NEX_CFGFLT	(0xfc000000)
 
-#ifndef LOCORE
-#if defined(VAX780) || defined(VAX8600)
+#ifndef _LOCORE
+#if VAX780 || VAX8600
 #define	NEXFLT_BITS \
 "\20\40PARFLT\37WSQFLT\36URDFLT\35ISQFLT\34MXTFLT\33XMTFLT"
 #endif
@@ -177,3 +176,15 @@ extern caddr_t *nex_vec;
 #define	NEX_MEM256U	0x72		/* 256K chips, non-interleaved, upper */
 #define	NEX_MEM256UI	0x73		/* 256K chips, ext-interleaved, upper */
 #define	NEX_MEM256I	0x74		/* 256K chips, interleaved */
+
+/* Memory classes */
+#define	M_NONE		0
+#define	M780C		1
+#define	M780EL		2
+#define	M780EU		3
+
+/* Memory recover defines */
+#define	MCHK_PANIC	-1
+#define	MCHK_RECOVERED	0
+
+#endif /* _VAX_NEXUS_H_ */

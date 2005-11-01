@@ -1,3 +1,4 @@
+/*	$OpenBSD: emit1.c,v 1.3 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: emit1.c,v 1.4 1995/10/02 17:21:28 jpo Exp $	*/
 
 /*
@@ -32,15 +33,15 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: emit1.c,v 1.4 1995/10/02 17:21:28 jpo Exp $";
+static char rcsid[] = "$OpenBSD: emit1.c,v 1.3 2002/02/16 21:27:59 millert Exp $";
 #endif
 
 #include <ctype.h>
 
 #include "lint1.h"
 
-static	void	outtt __P((sym_t *, sym_t *));
-static	void	outfstrg __P((strg_t *));
+static	void	outtt(sym_t *, sym_t *);
+static	void	outfstrg(strg_t *);
 
 /*
  * Write type into the output buffer.
@@ -430,13 +431,17 @@ outcall(tn, rvused, rvdisc)
 				}
 				outint(n);
 			}
-		} else if (arg->tn_op == AMPER &&
-			   arg->tn_left->tn_op == STRING &&
-			   arg->tn_left->tn_strg->st_tspec == CHAR) {
-			/* constant string, write all format specifiers */
-			outchar('s');
-			outint(n);
-			outfstrg(arg->tn_left->tn_strg);
+		} else {
+			if (arg->tn_op == CVT && !arg->tn_cast)
+				arg = arg->tn_left;
+			if (arg->tn_op == AMPER &&
+			    arg->tn_left->tn_op == STRING &&
+			    arg->tn_left->tn_strg->st_tspec == CHAR) {
+				/* constant string, write format specifiers */
+				outchar('s');
+				outint(n);
+				outfstrg(arg->tn_left->tn_strg);
+			}
 		}
 
 	}

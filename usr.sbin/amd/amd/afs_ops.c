@@ -1,3 +1,5 @@
+/*	$OpenBSD: afs_ops.c,v 1.11 2003/06/02 23:36:51 millert Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,13 +34,14 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)afs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: afs_ops.c,v 1.3 1994/06/13 20:46:51 mycroft Exp $
  */
 
 #include "am.h"
 
 #define NFS
 #define NFSCLIENT
+
+#include <unistd.h>
 
 #include <sys/stat.h>
 #ifdef NFS_3
@@ -51,7 +50,6 @@ typedef nfs_fh fhandle_t;
 #ifdef NFS_HDR
 #include NFS_HDR
 #endif /* NFS_HDR */
-#include <sys/mount.h>
 #include "mount.h"
 
 /*
@@ -69,11 +67,11 @@ typedef nfs_fh fhandle_t;
 /*
  * AFS needs nothing in particular.
  */
-static char *afs_match P((am_opts *fo));
-static char *afs_match(fo)
-am_opts *fo;
+static char *
+afs_match(am_opts *fo)
 {
 	char *p = fo->opt_rfs;
+
 	if (!fo->opt_rfs) {
 		plog(XLOG_USER, "auto: no mount point named (rfs:=)");
 		return 0;
@@ -101,10 +99,8 @@ am_opts *fo;
  * the necessary NFS parameters to be given to the
  * kernel so that it will talk back to us.
  */
-static int mount_toplvl P((char *dir, char *opts));
-static int mount_toplvl(dir, opts)
-char *dir;
-char *opts;
+static int
+mount_toplvl(char *dir, char *opts)
 {
 	struct nfs_args nfs_args;
 	struct mntent mnt;
@@ -118,7 +114,7 @@ char *opts;
 
 	MTYPE_TYPE type = MOUNT_TYPE_NFS;
 
-	bzero((voidp) &nfs_args, sizeof(nfs_args));	/* Paranoid */
+	bzero((void *)&nfs_args, sizeof(nfs_args));	/* Paranoid */
 
 	mnt.mnt_dir = dir;
 	mnt.mnt_fsname = pid_fsname;
@@ -134,13 +130,16 @@ char *opts;
 	/*
 	 * get fhandle of remote path for automount point
 	 */
-	
 	fhp = root_fh(dir);
 	if (!fhp) {
 		plog(XLOG_FATAL, "Can't find root file handle for %s", dir);
 		return EINVAL;
 	}
 
+#if NFS_PROTOCOL_VERSION >= 3
+	nfs_args.fhsize = NFSX_V2FH;
+	nfs_args.version = NFS_ARGSVERSION;
+#endif
 	NFS_FH_DREF(nfs_args.fh, (NFS_FH_TYPE) fhp);
 
 	/*
@@ -148,10 +147,10 @@ char *opts;
 	 * is not used since that will not work in HP-UX clusters and
 	 * this is no more expensive.
 	 */
-	bzero((voidp) &sin, sizeof(sin));
+	bzero((void *)&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_addr = myipaddr;
-	if (port = hasmntval(&mnt, "port")) {
+	if ((port = hasmntval(&mnt, "port"))) {
 		sin.sin_port = htons(port);
 	} else {
 		plog(XLOG_ERROR, "no port number specified for %s", dir);
@@ -170,9 +169,11 @@ char *opts;
 #define	SHORT_MOUNT_NAME
 #endif /* HOSTNAMESZ */
 #ifdef SHORT_MOUNT_NAME
-	sprintf(fs_hostname, "amd:%d", foreground ? mypid : getppid());
+	snprintf(fs_hostname, sizeof(fs_hostname), "amd:%ld",
+	    foreground ? (long)mypid : (long)getppid());
 #else
-	sprintf(fs_hostname, "pid%d@%s:%s", foreground ? mypid : getppid(), hostname, dir);
+	snprintf(fs_hostname, sizeof(fs_hostname), "pid%ld@%s:%s",
+	    foreground ? (long)mypid : (long)getppid(), hostname, dir);
 #endif /* SHORT_MOUNT_NAME */
 	nfs_args.hostname = fs_hostname;
 	nfs_args.flags |= NFSMNT_HOSTNAME;
@@ -181,7 +182,7 @@ char *opts;
 	 * Most kernels have a name length restriction.
 	 */
 	if (strlen(fs_hostname) >= HOSTNAMESZ)
-		strcpy(fs_hostname + HOSTNAMESZ - 3, "..");
+		strlcpy(fs_hostname + HOSTNAMESZ - 3, "..", 3);
 #endif /* HOSTNAMESZ */
 
 #ifdef NFSMNT_DUMBTIMR
@@ -193,10 +194,10 @@ char *opts;
 	 * Parse a subset of the standard nfs options.  The
 	 * others are probably irrelevant for this application
 	 */
-	if (nfs_args.timeo = hasmntval(&mnt, "timeo"))
+	if ((nfs_args.timeo = hasmntval(&mnt, "timeo")))
 		nfs_args.flags |= NFSMNT_TIMEO;
 
-	if (nfs_args.retrans = hasmntval(&mnt, "retrans"))
+	if ((nfs_args.retrans = hasmntval(&mnt, "retrans")))
 		nfs_args.flags |= NFSMNT_RETRANS;
 
 #ifdef NFSMNT_BIODS
@@ -234,9 +235,8 @@ char *opts;
 	return mount_fs(&mnt, flags, (caddr_t) &nfs_args, retry, type);
 }
 
-static void afs_mkcacheref P((mntfs *mf));
-static void afs_mkcacheref(mf)
-mntfs *mf;
+static void
+afs_mkcacheref(mntfs *mf)
 {
 	/*
 	 * Build a new map cache for this node, or re-use
@@ -244,24 +244,23 @@ mntfs *mf;
 	 */
 	char *cache;
 	if (mf->mf_fo && mf->mf_fo->opt_cache)
-	  	cache = mf->mf_fo->opt_cache;
+		cache = mf->mf_fo->opt_cache;
 	else
-	  	cache = "none";
-	mf->mf_private = (voidp) mapc_find(mf->mf_info, cache);
+		cache = "none";
+	mf->mf_private = (void *)mapc_find(mf->mf_info, cache);
 	mf->mf_prfree = mapc_free;
 }
 
 /*
  * Mount the root...
  */
-static int root_mount P((am_node *mp));
-static int root_mount(mp)
-am_node *mp;
+static int
+root_mount(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 
 	mf->mf_mount = strealloc(mf->mf_mount, pid_fsname);
-	mf->mf_private = (voidp) mapc_find(mf->mf_info, "");
+	mf->mf_private = (void *)mapc_find(mf->mf_info, "");
 	mf->mf_prfree = mapc_free;
 
 	return 0;
@@ -270,9 +269,8 @@ am_node *mp;
 /*
  * Mount a sub-mount
  */
-static int afs_mount P((am_node *mp));
-static int afs_mount(mp)
-am_node *mp;
+static int
+afs_mount(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 
@@ -329,9 +327,8 @@ am_node *mp;
 /*
  * Mount the top-level
  */
-static int toplvl_mount P((am_node *mp));
-static int toplvl_mount(mp)
-am_node *mp;
+static int
+toplvl_mount(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 	struct stat stb;
@@ -362,7 +359,7 @@ am_node *mp;
 	/*
 	 * Construct some mount options
 	 */
-	sprintf(opts,
+	snprintf(opts, sizeof(opts),
 #ifdef MNTOPT_INTR
 		"%s,%s,%s=%d,%s=%d,%s=%d,%s",
 		MNTOPT_INTR,
@@ -385,9 +382,8 @@ am_node *mp;
 	return 0;
 }
 
-static void toplvl_mounted P((mntfs *mf));
-static void toplvl_mounted(mf)
-mntfs *mf;
+static void
+toplvl_mounted(mntfs *mf)
 {
 	afs_mkcacheref(mf);
 }
@@ -396,10 +392,8 @@ mntfs *mf;
 /*
  * Create a reference to a union'ed entry
  */
-static int create_union_node P((char *dir, voidp arg));
-static int create_union_node(dir, arg)
-char *dir;
-voidp arg;
+static int
+create_union_node(char *dir, void *arg)
 {
 	if (strcmp(dir, "/defaults") != 0) {
 		int error = 0;
@@ -413,12 +407,11 @@ voidp arg;
 	return 0;
 }
 
-static void union_mounted P((mntfs *mf));
-static void union_mounted(mf)
-mntfs *mf;
+static void
+union_mounted(mntfs *mf)
 {
 	int i;
-	
+
 	afs_mkcacheref(mf);
 
 	/*
@@ -430,7 +423,7 @@ mntfs *mf;
 		if (mp && mp->am_mnt == mf) {
 			/* return value from create_union_node is ignored by mapc_keyiter */
 			(void) mapc_keyiter((mnt_map *) mp->am_mnt->mf_private,
-				(void (*)P((char*,void*))) create_union_node, mp);
+				(void (*)(char *, void *)) create_union_node, mp);
 			break;
 		}
 	}
@@ -441,7 +434,7 @@ mntfs *mf;
 	 * keep the wildcard and /defaults entries...
 	 */
 	mapc_free(mf->mf_private);
-	mf->mf_private = (voidp) mapc_find(mf->mf_info, "inc");
+	mf->mf_private = (void *)mapc_find(mf->mf_info, "inc");
 /*	mapc_add_kv(mf->mf_private, strdup("/defaults"),
 		strdup("type:=link;opts:=nounmount;sublink:=${key}")); */
 #endif
@@ -451,9 +444,8 @@ mntfs *mf;
 /*
  * Unmount an automount sub-node
  */
-static int afs_umount P((am_node *mp));
-static int afs_umount(mp)
-am_node *mp;
+static int
+afs_umount(am_node *mp)
 {
 	return 0;
 }
@@ -461,9 +453,8 @@ am_node *mp;
 /*
  * Unmount a top-level automount node
  */
-static int toplvl_umount P((am_node *mp));
-static int toplvl_umount(mp)
-am_node *mp;
+static int
+toplvl_umount(am_node *mp)
 {
 	int error;
 
@@ -498,9 +489,8 @@ again:
 /*
  * Unmount an automount node
  */
-static void afs_umounted P((am_node *mp));
-static void afs_umounted(mp)
-am_node *mp;
+static void
+afs_umounted(am_node *mp)
 {
 	/*
 	 * If this is a pseudo-directory then just adjust the link count
@@ -521,7 +511,7 @@ am_node *mp;
  * and can then determine whether the mount was successful or not.  If
  * not, it updates the data structure and tries again until there are no
  * more ways to try the mount, or some other permanent error occurs.
- * In the mean time no RPC reply is sent, even after the mount is succesful.
+ * In the mean time no RPC reply is sent, even after the mount is successful.
  * We rely on the RPC retry mechanism to resend the lookup request which
  * can then be handled.
  */
@@ -547,30 +537,28 @@ struct continuation {
 /*
  * Discard an old continuation
  */
-static void free_continuation P((struct continuation *cp));
-static void free_continuation(cp)
-struct continuation *cp;
+static void
+free_continuation(struct continuation *cp)
 {
 	if (cp->callout)
 		untimeout(cp->callout);
-	free((voidp) cp->key);
-	free((voidp) cp->xivec);
-	free((voidp) cp->info);
-	free((voidp) cp->auto_opts);
-	free((voidp) cp->def_opts);
+	free((void *)cp->key);
+	free((void *)cp->xivec);
+	free((void *)cp->info);
+	free((void *)cp->auto_opts);
+	free((void *)cp->def_opts);
 	free_opts(&cp->fs_opts);
-	free((voidp) cp);
+	free((void *)cp);
 }
 
-static int afs_bgmount P((struct continuation*, int));
+static int afs_bgmount(struct continuation *, int);
 
 /*
  * Discard the underlying mount point and replace
  * with a reference to an error filesystem.
  */
-static void assign_error_mntfs P((am_node *mp));
-static void assign_error_mntfs(mp)
-am_node *mp;
+static void
+assign_error_mntfs(am_node *mp)
 {
 	if (mp->am_error > 0) {
 		/*
@@ -604,11 +592,8 @@ am_node *mp;
  * the task notifier when a background mount attempt
  * completes.
  */
-static void afs_cont P((int rc, int term, voidp closure));
-static void afs_cont(rc, term, closure)
-int rc;
-int term;
-voidp closure;
+static void
+afs_cont(int rc, int term, void *closure)
 {
 	struct continuation *cp = (struct continuation *) closure;
 	mntfs *mf = cp->mp->am_mnt;
@@ -625,7 +610,7 @@ voidp closure;
 	/*
 	 * Wakeup anything waiting for this mount
 	 */
-	wakeup((voidp) mf);
+	wakeup((void *)mf);
 
 	/*
 	 * Check for termination signal or exit status...
@@ -675,11 +660,8 @@ voidp closure;
  * Retry a mount
  */
 /*ARGSUSED*/
-static void afs_retry P((int rc, int term, voidp closure));
-static void afs_retry(rc, term, closure)
-int rc;
-int term;
-voidp closure;
+static void
+afs_retry(int rc, int term, void *closure)
 {
 	struct continuation *cp = (struct continuation *) closure;
 	int error = 0;
@@ -715,9 +697,8 @@ voidp closure;
  * Try to mount a file system.  Can be called
  * directly or in a sub-process by run_task
  */
-static int try_mount P((voidp mvp));
-static int try_mount(mvp)
-voidp mvp;
+static int
+try_mount(void *mvp)
 {
 	/*
 	 * Mount it!
@@ -810,10 +791,8 @@ For each location:
 endfor
  */
 
-static int afs_bgmount P((struct continuation *cp, int mpe));
-static int afs_bgmount(cp, mpe)
-struct continuation *cp;
-int mpe;
+static int
+afs_bgmount(struct continuation *cp, int mpe)
 {
 	mntfs *mf = cp->mp->am_mnt;	/* Current mntfs */
 	mntfs *mf_retry = 0;		/* First mntfs which needed retrying */
@@ -1025,29 +1004,30 @@ int mpe;
 			cp->retry = TRUE;
 		}
 
-		if (!this_error)
-		if (p->fs_flags & FS_MBACKGROUND) {
-			mf->mf_flags |= MFF_MOUNTING;	/*XXX*/
+		if (!this_error) {
+			if ((p->fs_flags & FS_MBACKGROUND)) {
+				mf->mf_flags |= MFF_MOUNTING;	/*XXX*/
 #ifdef DEBUG
-			dlog("backgrounding mount of \"%s\"", mf->mf_mount);
+				dlog("backgrounding mount of \"%s\"", mf->mf_mount);
 #endif /* DEBUG */
-			if (cp->callout) {
-				untimeout(cp->callout);
-				cp->callout = 0;
-			}
-			run_task(try_mount, (voidp) mp, afs_cont, (voidp) cp);
-			mf->mf_flags |= MFF_MKMNT;	/* XXX */
-			if (mf_retry) free_mntfs(mf_retry);
-			return -1;
-		} else {
+				if (cp->callout) {
+					untimeout(cp->callout);
+					cp->callout = 0;
+				}
+				run_task(try_mount, (void *)mp, afs_cont, (void *)cp);
+				mf->mf_flags |= MFF_MKMNT;	/* XXX */
+				if (mf_retry) free_mntfs(mf_retry);
+				return -1;
+			} else {
 #ifdef DEBUG
-			dlog("foreground mount of \"%s\" ...", mf->mf_info);
+				dlog("foreground mount of \"%s\" ...", mf->mf_info);
 #endif /* DEBUG */
-			this_error = try_mount((voidp) mp);
-			if (this_error < 0) {
-				if (!mf_retry)
-					mf_retry = dup_mntfs(mf);
-				cp->retry = TRUE;
+				this_error = try_mount((void *)mp);
+				if (this_error < 0) {
+					if (!mf_retry)
+						mf_retry = dup_mntfs(mf);
+					cp->retry = TRUE;
+				}
 			}
 		}
 
@@ -1062,7 +1042,7 @@ int mpe;
 			/*
 			 * Wakeup anything waiting for this mount
 			 */
-			wakeup((voidp) mf);
+			wakeup((void *)mf);
 		}
 	}
 
@@ -1088,10 +1068,10 @@ int mpe;
 #ifdef DEBUG
 		dlog("Arranging to retry mount of %s", cp->mp->am_path);
 #endif /* DEBUG */
-		sched_task(afs_retry, (voidp) cp, (voidp) mf);
+		sched_task(afs_retry, (void *)cp, (void *)mf);
 		if (cp->callout)
 			untimeout(cp->callout);
-		cp->callout = timeout(RETRY_INTERVAL, wakeup, (voidp) mf);
+		cp->callout = timeout(RETRY_INTERVAL, wakeup, (void *)mf);
 
 		cp->mp->am_ttl = clocktime() + RETRY_INTERVAL;
 
@@ -1159,12 +1139,8 @@ int mpe;
 /*
  * Automount interface to RPC lookup routine
  */
-static am_node *afs_lookuppn P((am_node *mp, char *fname, int *error_return, int op));
-static am_node *afs_lookuppn(mp, fname, error_return, op)
-am_node *mp;
-char *fname;
-int *error_return;
-int op;
+static am_node *
+afs_lookuppn(am_node *mp, char *fname, int *error_return, int op)
 {
 #define ereturn(x) { *error_return = x; return 0; }
 
@@ -1357,7 +1333,7 @@ in_progrss:
 	 * map for it.
 	 */
 	if (mp->am_pref) {
-		sprintf(path_name, "%s%s", mp->am_pref, fname);
+		snprintf(path_name, sizeof(path_name), "%s%s", mp->am_pref, fname);
 		pfname = path_name;
 	} else {
 		pfname = fname;
@@ -1410,9 +1386,9 @@ in_progrss:
 	 */
 	new_mp = exported_ap_alloc();
 	if (new_mp == 0) {
-		free((voidp) xivec);
-		free((voidp) info);
-		free((voidp) fname);
+		free((void *)xivec);
+		free((void *)info);
+		free((void *)fname);
 		ereturn(ENOSPC);
 	}
 
@@ -1427,7 +1403,7 @@ in_progrss:
 	dlog("searching for /defaults entry");
 #endif /* DEBUG */
 	if (mapc_search((mnt_map*) mf->mf_private, "/defaults", &dflts) == 0) {
-	  	char *dfl;
+		char *dfl;
 		char **rvec;
 #ifdef DEBUG
 		dlog("/defaults gave %s", dflts);
@@ -1466,7 +1442,9 @@ in_progrss:
 			 */
 			if (*auto_opts && *dfl) {
 				char *nopts = (char *) xmalloc(strlen(auto_opts)+strlen(dfl)+2);
-				sprintf(nopts, "%s;%s", dfl, auto_opts);
+				snprintf(nopts,
+				    strlen(auto_opts) + strlen(dfl) + 2,
+				    "%s;%s", dfl, auto_opts);
 				free(auto_opts);
 				auto_opts = nopts;
 			} else if (*dfl) {
@@ -1477,7 +1455,7 @@ in_progrss:
 		/*
 		 * Don't need info vector any more
 		 */
-		free((voidp) rvec);
+		free((void *)rvec);
 	}
 
 	/*
@@ -1524,7 +1502,7 @@ in_progrss:
 	cp->tried = FALSE;
 	cp->start = clocktime();
 	cp->def_opts = strdup(auto_opts);
-	bzero((voidp) &cp->fs_opts, sizeof(cp->fs_opts));
+	bzero((void *)&cp->fs_opts, sizeof(cp->fs_opts));
 
 	/*
 	 * Try and mount the file system
@@ -1540,8 +1518,8 @@ in_progrss:
 		return new_mp;
 	}
 
-	if (error && (cp->mp->am_mnt->mf_ops == &efs_ops))
-		cp->mp->am_error = error;
+	if (error && (new_mp->am_mnt->mf_ops == &efs_ops))
+		new_mp->am_error = error;
 
 	assign_error_mntfs(new_mp);
 
@@ -1555,9 +1533,8 @@ in_progrss:
  * Locate next node in sibling list which is mounted
  * and is not an error node.
  */
-static am_node *next_nonerror_node P((am_node *xp));
-static am_node *next_nonerror_node(xp)
-am_node *xp;
+static am_node *
+next_nonerror_node(am_node *xp)
 {
 	mntfs *mf;
 
@@ -1579,13 +1556,9 @@ am_node *xp;
 	return xp;
 }
 
-static int afs_readdir P((am_node *mp, nfscookie cookie, struct dirlist *dp, struct entry *ep, int count));
-static int afs_readdir(mp, cookie, dp, ep, count)
-am_node *mp;
-nfscookie cookie;
-struct dirlist *dp;
-struct entry *ep;
-int count;
+static int
+afs_readdir(am_node *mp, nfscookie cookie, struct dirlist *dp,
+    struct entry *ep, int count)
 {
 	unsigned int gen = *(unsigned int*) cookie;
 	am_node *xp;
@@ -1609,10 +1582,10 @@ int count;
 		 * Check for enough room.  This is extremely
 		 * approximate but is more than enough space.
 		 * Really need 2 times:
-		 * 	4byte fileid
-		 * 	4byte cookie
-		 * 	4byte name length
-		 * 	4byte name
+		 *	4byte fileid
+		 *	4byte cookie
+		 *	4byte name length
+		 *	4byte name
 		 * plus the dirlist structure
 		 */
 		if (count <
@@ -1698,10 +1671,8 @@ int count;
 
 }
 
-static am_node *dfs_readlink P((am_node *mp, int *error_return));
-static am_node *dfs_readlink(mp, error_return)
-am_node *mp;
-int *error_return;
+static am_node *
+dfs_readlink(am_node *mp, int *error_return)
 {
 	am_node *xp;
 	int rc = 0;

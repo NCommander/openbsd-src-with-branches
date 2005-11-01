@@ -1,4 +1,4 @@
-#	@(#)Make.tags.inc	8.1 (Berkeley) 6/11/93
+#	$OpenBSD: Make.tags.inc,v 1.8 2004/11/22 17:08:38 pat Exp $
 
 # Common files for "make tags".
 # Included by the Makefile for each architecture.
@@ -7,12 +7,26 @@
 # there is a struct tag with the same name (eg., vmmeter).  The real
 # solution would probably be for ctags to generate "struct vmmeter" tags.
 
-COMM=	/sys/conf/*.[ch] \
-	/sys/dev/*.[ch] /sys/dev/scsi/*.[ch] \
-	/sys/kern/*.[ch] /sys/libkern/*.[ch] \
-	/sys/miscfs/*/*.[ch] \
-	/sys/net/*.[ch] /sys/netccitt/*.[ch] /sys/netinet/*.[ch] \
-	/sys/netiso/*.[ch] /sys/netns/*.[ch] \
-	/sys/nfs/*.[ch] /sys/sys/*.[ch] \
-	/sys/ufs/*/*.[ch] \
-	/sys/vm/*.[ch]
+COMM=	$S/adosfs/*.[ch] \
+	$S/altq/*.[ch] \
+	$S/compat/*/*.[ch] \
+	$S/conf/*.[ch] \
+	$S/crypto/*.[ch] \
+	$S/ddb/*.[ch] \
+	$S/dev/*.[ch] $S/dev/*/*.[ch] $S/dev/*/*/*.[ch] \
+	$S/isofs/*/*.[ch] \
+	$S/kern/*.[ch] \
+	$S/lib/libkern/*.[ch] \
+	$S/miscfs/*/*.[ch] \
+	$S/msdosfs/*.[ch] \
+	$S/net/*.[ch] \
+	$S/netatalk/*.[ch] \
+	$S/netinet/*.[ch] \
+	$S/netinet6/*.[ch] \
+	$S/netipx/*.[ch] \
+	$S/netnatm/*.[ch] \
+	$S/nfs/*.[ch] \
+	$S/scsi/*.[ch] \
+	$S/ufs/*/*.[ch] \
+	$S/uvm/*.[ch] \
+	$S/sys/*.[ch]

@@ -38,7 +38,7 @@ Version 3.26
 	Thanks to Jens Kupferschmidt <bt1cu@hpboot.rz.uni-leipzig.de>. */
 
 	SIGWINCH case put in des_read_passwd() so the function does not
-	'exit' if this function is recieved.
+	'exit' if this function is received.
 
 Version 3.25 17/07/96
 	Modified read_pwd.c so that stdin can be read if not a tty.
@@ -55,7 +55,9 @@ Version 3.24 20/04/96
 
 Version 3.23 11/04/96
 	Added DES_LONG.  If defined to 'unsigned int' on the DEC Alpha,
-	it gives a %20 speedup :-)
+	it gives a %20 speedup :-)  [Theo adds: Yeah, real clever, and
+	if you do NOT add it on 64 bit architectures, the code crashes.
+	Very very clever.]
 	Fixed the problem with des.pl under perl5.  The patches were
 	sent by Ed Kubaitis (ejk@uiuc.edu).
 	if fcrypt.c, changed values to handle illegal salt values the way

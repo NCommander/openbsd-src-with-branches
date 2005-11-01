@@ -1,17 +1,12 @@
-/*	$NetBSD: scheck.c,v 1.2 1995/03/10 18:12:42 jtc Exp $	*/
-
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)scheck.c	8.12";
-#endif /* !defined lint */
-#endif /* !defined NOID */
+/*	$OpenBSD$ */
+/*
+** This file is in the public domain, so clarified as of
+** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
 
 /*LINTLIBRARY*/
 
 #include "private.h"
-
-extern char *	imalloc P((int n));
-extern void	ifree P((char * p));
 
 char *
 scheck(string, format)
@@ -44,7 +39,7 @@ char * const		format;
 		*tp++ = '*';
 		if (*fp == '*')
 			++fp;
-		while (isascii(*fp) && isdigit(*fp))
+		while (is_digit(*fp))
 			*tp++ = *fp++;
 		if (*fp == 'l' || *fp == 'h')
 			*tp++ = *fp++;

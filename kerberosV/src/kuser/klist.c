@@ -40,7 +40,7 @@ static char*
 printable_time(time_t t)
 {
     static char s[128];
-    strcpy(s, ctime(&t)+ 4);
+    strlcpy(s, ctime(&t)+ 4, sizeof s);
     s[15] = 0;
     return s;
 }
@@ -49,7 +49,7 @@ static char*
 printable_time_long(time_t t)
 {
     static char s[128];
-    strcpy(s, ctime(&t)+ 4);
+    strlcpy(s, ctime(&t)+ 4, sizeof s);
     s[20] = 0;
     return s;
 }
@@ -644,8 +644,6 @@ main (int argc, char **argv)
 {
     int optind = 0;
     int exit_status = 0;
-
-    setprogname (argv[0]);
 
     if(getarg(args, sizeof(args) / sizeof(args[0]), argc, argv, &optind))
 	usage(1);

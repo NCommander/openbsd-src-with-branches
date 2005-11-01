@@ -7,7 +7,8 @@
 .Nm kpasswdd
 .Nd Kerberos 5 password changing server
 .Sh SYNOPSIS
-.Nm
+.Nm kpasswdd
+.Bk -words
 .Op Fl -check-library= Ns Ar library
 .Op Fl -check-function= Ns Ar function
 .Oo Fl k Ar kspec \*(Ba Xo
@@ -24,6 +25,7 @@
 .Oc
 .Op Fl -version
 .Op Fl -help
+.Ek
 .Sh DESCRIPTION
 .Nm
 serves request for password changes. It listens on UDP port 464
@@ -59,12 +61,12 @@ is not zero terminated.
 .Fl k Ar kspec ,
 .Fl -keytab= Ns Ar kspec
 .Xc
-Keytab to get authentication key from
+Keytab to get authentication key from.
 .It Xo
 .Fl r Ar realm ,
 .Fl -realm= Ns Ar realm
 .Xc
-Default realm
+Default realm.
 .It Xo
 .Fl p Ar string ,
 .Fl -port= Ns Ar string
@@ -77,12 +79,5 @@ logged to syslog.
 .Sh BUGS
 The default password quality checks are too basic.
 .Sh SEE ALSO
-.Xr kpasswd 1 ,
+.Xr passwd 1 ,
 .Xr kdc 8
-.\".Sh ENVIRONMENT
-.\".Sh FILES
-.\".Sh EXAMPLES
-.\".Sh SEE ALSO
-.\".Sh STANDARDS
-.\".Sh HISTORY
-.\".Sh AUTHORS

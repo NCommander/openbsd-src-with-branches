@@ -1,3 +1,4 @@
+/*	$OpenBSD: ctags.c,v 1.9 2003/06/03 02:56:07 millert Exp $	*/
 /*	$NetBSD: ctags.c,v 1.4 1995/09/02 05:57:23 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ctags.c	8.4 (Berkeley) 2/7/95";
 #endif
-static char rcsid[] = "$NetBSD: ctags.c,v 1.4 1995/09/02 05:57:23 jtc Exp $";
+static char rcsid[] = "$OpenBSD: ctags.c,v 1.9 2003/06/03 02:56:07 millert Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -80,13 +77,11 @@ char	*curfile;		/* current input file name */
 char	searchar = '/';		/* use /.../ searches by default */
 char	lbuf[LINE_MAX];
 
-void	init __P((void));
-void	find_entries __P((char *));
+void	init(void);
+void	find_entries(char *);
 
 int
-main(argc, argv)
-	int	argc;
-	char	**argv;
+main(int argc, char *argv[])
 {
 	static char	*outfile = "tags";	/* output file */
 	int	aflag;				/* -a: append to tags */
@@ -94,10 +89,10 @@ main(argc, argv)
 	int	exit_val;			/* exit value */
 	int	step;				/* step through args */
 	int	ch;				/* getopts char */
-	char	cmd[100];			/* too ugly to explain */
+	char	*cmd;
 
 	aflag = uflag = NO;
-	while ((ch = getopt(argc, argv, "BFadf:tuwvx")) != EOF)
+	while ((ch = getopt(argc, argv, "BFadf:tuwvx")) != -1)
 		switch(ch) {
 		case 'B':
 			searchar = '?';
@@ -153,17 +148,19 @@ usage:		(void)fprintf(stderr,
 			(void)fclose(inf);
 		}
 
-	if (head)
+	if (head) {
 		if (xflag)
 			put_entries(head);
 		else {
 			if (uflag) {
 				for (step = 0; step < argc; step++) {
-					(void)sprintf(cmd,
-						"mv %s OTAGS; fgrep -v '\t%s\t' OTAGS >%s; rm OTAGS",
-							outfile, argv[step],
-							outfile);
+					if (asprintf(&cmd,
+					    "mv %s OTAGS; fgrep -v '\t%s\t' OTAGS >%s; rm OTAGS",
+					    outfile, argv[step], outfile) == -1)
+						err(1, "out of space");
 					system(cmd);
+					free(cmd);
+					cmd = NULL;
 				}
 				++aflag;
 			}
@@ -172,11 +169,15 @@ usage:		(void)fprintf(stderr,
 			put_entries(head);
 			(void)fclose(outf);
 			if (uflag) {
-				(void)sprintf(cmd, "sort -o %s %s",
-						outfile, outfile);
+				if (asprintf(&cmd, "sort -o %s %s",
+				    outfile, outfile) == -1)
+						err(1, "out of space");
 				system(cmd);
+				free(cmd);
+				cmd = NULL;
 			}
 		}
+	}
 	exit(exit_val);
 }
 
@@ -191,7 +192,7 @@ usage:		(void)fprintf(stderr,
  *	the string CWHITE, else NO.
  */
 void
-init()
+init(void)
 {
 	int		i;
 	unsigned char	*sp;
@@ -223,13 +224,12 @@ init()
  *	which searches the file.
  */
 void
-find_entries(file)
-	char	*file;
+find_entries(char *file)
 {
 	char	*cp;
 
 	lineno = 0;				/* should be 1 ?? KB */
-	if (cp = strrchr(file, '.')) {
+	if ((cp = strrchr(file, '.'))) {
 		if (cp[1] == 'l' && !cp[2]) {
 			int	c;
 
@@ -252,7 +252,7 @@ find_entries(file)
 				 * for C references.  This may be wrong.
 				 */
 				toss_yysec();
-				(void)strcpy(lbuf, "%%$");
+				(void)strlcpy(lbuf, "%%$", sizeof lbuf);
 				pfnote("yylex", lineno);
 				rewind(inf);
 			}
@@ -263,7 +263,7 @@ find_entries(file)
 			 * for C references.  This may be wrong.
 			 */
 			toss_yysec();
-			(void)strcpy(lbuf, "%%$");
+			(void)strlcpy(lbuf, "%%$", sizeof lbuf);
 			pfnote("yyparse", lineno);
 			y_entries();
 		}

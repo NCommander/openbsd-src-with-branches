@@ -46,7 +46,7 @@
 # define _POSIX_SOURCE
 #endif
 #include "libioP.h"
-#ifdef _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef __STDC__
@@ -92,7 +92,7 @@ _IO_wfile_doallocate (fp)
   else
     {
       couldbetty = S_ISCHR (st.st_mode);
-#if _IO_HAVE_ST_BLKSIZE
+#if defined(_IO_HAVE_ST_BLKSIZE)
       size = st.st_blksize <= 0 ? _IO_BUFSIZ : st.st_blksize;
 #else
       size = _IO_BUFSIZ;

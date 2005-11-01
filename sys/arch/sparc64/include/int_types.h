@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: int_types.h,v 1.3 2002/04/19 11:04:24 espie Exp $	*/
 /*	$NetBSD: int_types.h,v 1.7 2001/04/28 15:41:33 kleink Exp $	*/
 
 /*
@@ -22,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -69,19 +65,10 @@ typedef	__COMPILER_INT64__	int64_t;
 typedef	__COMPILER_UINT64__    uint64_t;
 typedef	__COMPILER_UINT64__   u_int64_t;
 #else
-#ifdef __arch64__
 /* 64-bit compiler */
-typedef	long int		int64_t;
-typedef	unsigned long int      uint64_t;
-typedef	unsigned long int     u_int64_t;
-#else
-/* 32-bit compiler */
-/* LONGLONG */
 typedef	long long int		int64_t;
-/* LONGLONG */
-typedef	unsigned long long int uint64_t;
-typedef	unsigned long long int u_int64_t;
-#endif
+typedef	unsigned long long int	uint64_t;
+typedef	unsigned long long int	u_int64_t;
 #endif /* !__COMPILER_INT64__ */
 
 #define	__BIT_TYPES_DEFINED__

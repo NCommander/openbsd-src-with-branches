@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: scsi_defs.h,v 1.3 1994/10/26 08:46:18 cgd Exp $	*/
 
 /*-

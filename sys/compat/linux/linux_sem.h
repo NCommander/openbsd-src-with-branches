@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: linux_sem.h,v 1.1 1995/08/15 21:14:35 fvdl Exp $	*/
 
 /*

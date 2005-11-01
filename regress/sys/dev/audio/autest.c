@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: autest.c,v 1.9 2003/06/04 02:41:57 jason Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Jason L. Wright
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -41,36 +36,61 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
+#include <errno.h>
+
+/* XXX ADPCM is currently pretty broken... diagnosis and fix welcome */
+#undef	USE_ADPCM
 
 #include "adpcm.h"
 #include "law.h"
 
-int main(void);
+int main(int, char **);
 void check_encoding(int, audio_encoding_t *);
 void check_encoding_mono(int, audio_encoding_t *);
 void check_encoding_stereo(int, audio_encoding_t *);
 void enc_ulaw_8(int, audio_encoding_t *, int);
 void enc_alaw_8(int, audio_encoding_t *, int);
 void enc_ulinear_8(int, audio_encoding_t *, int);
-void enc_ulinear_be_16(int, audio_encoding_t *, int);
-void enc_ulinear_le_16(int, audio_encoding_t *, int);
+void enc_ulinear_16(int, audio_encoding_t *, int, int);
 void enc_slinear_8(int, audio_encoding_t *, int);
-void enc_slinear_be_16(int, audio_encoding_t *, int);
-void enc_slinear_le_16(int, audio_encoding_t *, int);
+void enc_slinear_16(int, audio_encoding_t *, int, int);
 void enc_adpcm_8(int, audio_encoding_t *, int);
 void audio_wait(int);
 
+#define	PLAYFREQ	440.0
 #define	PLAYSECS	2
 
-int
-main()
-{
-	int fd, i;
+#define	DEFAULT_DEV	"/dev/sound"
 
-	fd = open("/dev/sound", O_RDWR, 0);
+int
+main(int argc, char **argv)
+{
+	audio_info_t ainfo;
+	char *fname = NULL;
+	int fd, i, c;
+
+	while ((c = getopt(argc, argv, "f:")) != -1) {
+		switch (c) {
+		case 'f':
+			fname = optarg;
+			break;
+		case '?':
+		default:
+			fprintf(stderr, "%s [-f device]\n", argv[0]);
+			return (1);
+		}
+	}
+
+	if (fname == NULL)
+		fname = DEFAULT_DEV;
+
+	fd = open(fname, O_RDWR, 0);
 	if (fd == -1)
 		err(1, "open");
 
+
+	if (ioctl(fd, AUDIO_GETINFO, &ainfo) == -1)
+		err(1, "%s: audio_getinfo", fname);
 
 	for (i = 0; ; i++) {
 		audio_encoding_t enc;
@@ -99,119 +119,117 @@ check_encoding(int fd, audio_encoding_t *enc)
 }
 
 void
-check_encoding_stereo(int fd, audio_encoding_t *enc)
+check_encoding_mono(int fd, audio_encoding_t *enc)
 {
-	printf("...stereo");
+	int skipped = 0;
+
+	printf("...mono");
 	fflush(stdout);
-	switch (enc->encoding) {
-	case AUDIO_ENCODING_ULAW:
-		if (enc->precision == 8) {
-			enc_ulaw_8(fd, enc, 2);
+
+	if (enc->precision == 8) {
+		switch (enc->encoding) {
+		case AUDIO_ENCODING_ULAW:
+			enc_ulaw_8(fd, enc, 1);
+			break;
+		case AUDIO_ENCODING_ALAW:
+			enc_alaw_8(fd, enc, 1);
+			break;
+		case AUDIO_ENCODING_ULINEAR:
+		case AUDIO_ENCODING_ULINEAR_LE:
+		case AUDIO_ENCODING_ULINEAR_BE:
+			enc_ulinear_8(fd, enc, 1);
+			break;
+		case AUDIO_ENCODING_SLINEAR:
+		case AUDIO_ENCODING_SLINEAR_LE:
+		case AUDIO_ENCODING_SLINEAR_BE:
+			enc_slinear_8(fd, enc, 1);
+			break;
+		case AUDIO_ENCODING_ADPCM:
+			enc_adpcm_8(fd, enc, 1);
+			break;
+		default:
+			skipped = 1;
 		}
-		break;
-	case AUDIO_ENCODING_ALAW:
-		if (enc->precision == 8) {
-			enc_alaw_8(fd, enc, 2);
-		}
-		break;
-	case AUDIO_ENCODING_ULINEAR:
-		if (enc->precision == 8) {
-			enc_ulinear_8(fd, enc, 2);
-		}
-		break;
-	case AUDIO_ENCODING_ULINEAR_LE:
-		if (enc->precision == 8)
-			enc_ulinear_8(fd, enc, 2);
-		else if (enc->precision == 16)
-			enc_ulinear_le_16(fd, enc, 2);
-		break;
-	case AUDIO_ENCODING_ULINEAR_BE:
-		if (enc->precision == 8)
-			enc_ulinear_8(fd, enc, 2);
-		else if (enc->precision == 16)
-			enc_ulinear_be_16(fd, enc, 2);
-		break;
-	case AUDIO_ENCODING_SLINEAR:
-		if (enc->precision == 8) {
-			enc_slinear_8(fd, enc, 2);
-		}
-		break;
-	case AUDIO_ENCODING_SLINEAR_LE:
-		if (enc->precision == 8)
-			enc_slinear_8(fd, enc, 2);
-		else if (enc->precision == 16)
-			enc_slinear_le_16(fd, enc, 2);
-		break;
-	case AUDIO_ENCODING_SLINEAR_BE:
-		if (enc->precision == 8)
-			enc_slinear_8(fd, enc, 2);
-		else if (enc->precision == 16)
-			enc_slinear_be_16(fd, enc, 2);
-		break;
-	default:
-		printf("[skip]");
 	}
+
+	if (enc->precision == 16) {
+		switch (enc->encoding) {
+		case AUDIO_ENCODING_ULINEAR_LE:
+			enc_ulinear_16(fd, enc, 1, LITTLE_ENDIAN);
+			break;
+		case AUDIO_ENCODING_ULINEAR_BE:
+			enc_ulinear_16(fd, enc, 1, BIG_ENDIAN);
+			break;
+		case AUDIO_ENCODING_SLINEAR_LE:
+			enc_slinear_16(fd, enc, 1, LITTLE_ENDIAN);
+			break;
+		case AUDIO_ENCODING_SLINEAR_BE:
+			enc_slinear_16(fd, enc, 1, BIG_ENDIAN);
+			break;
+		default:
+			skipped = 1;
+		}
+	}
+
+	if (skipped)
+		printf("[skip]");
 }
 
 void
-check_encoding_mono(int fd, audio_encoding_t *enc)
+check_encoding_stereo(int fd, audio_encoding_t *enc)
 {
-	printf("...mono");
+	int skipped = 0;
+
+	printf("...stereo");
 	fflush(stdout);
-	switch (enc->encoding) {
-	case AUDIO_ENCODING_ULAW:
-		if (enc->precision == 8) {
-			enc_ulaw_8(fd, enc, 1);
+
+	if (enc->precision == 8) {
+		switch (enc->encoding) {
+		case AUDIO_ENCODING_ULAW:
+			enc_ulaw_8(fd, enc, 2);
+			break;
+		case AUDIO_ENCODING_ALAW:
+			enc_alaw_8(fd, enc, 2);
+			break;
+		case AUDIO_ENCODING_ULINEAR:
+		case AUDIO_ENCODING_ULINEAR_LE:
+		case AUDIO_ENCODING_ULINEAR_BE:
+			enc_ulinear_8(fd, enc, 2);
+			break;
+		case AUDIO_ENCODING_SLINEAR:
+		case AUDIO_ENCODING_SLINEAR_LE:
+		case AUDIO_ENCODING_SLINEAR_BE:
+			enc_slinear_8(fd, enc, 2);
+			break;
+		case AUDIO_ENCODING_ADPCM:
+			enc_adpcm_8(fd, enc, 2);
+			break;
+		default:
+			skipped = 1;
 		}
-		break;
-	case AUDIO_ENCODING_ALAW:
-		if (enc->precision == 8) {
-			enc_alaw_8(fd, enc, 1);
-		}
-		break;
-	case AUDIO_ENCODING_ULINEAR:
-		if (enc->precision == 8) {
-			enc_ulinear_8(fd, enc, 1);
-		}
-		break;
-	case AUDIO_ENCODING_ULINEAR_LE:
-		if (enc->precision == 8)
-			enc_ulinear_8(fd, enc, 1);
-		else if (enc->precision == 16)
-			enc_ulinear_le_16(fd, enc, 1);
-		break;
-	case AUDIO_ENCODING_ULINEAR_BE:
-		if (enc->precision == 8)
-			enc_ulinear_8(fd, enc, 1);
-		else if (enc->precision == 16)
-			enc_ulinear_be_16(fd, enc, 1);
-		break;
-	case AUDIO_ENCODING_SLINEAR:
-		if (enc->precision == 8) {
-			enc_slinear_8(fd, enc, 1);
-		}
-		break;
-	case AUDIO_ENCODING_SLINEAR_LE:
-		if (enc->precision == 8)
-			enc_slinear_8(fd, enc, 1);
-		else if (enc->precision == 16)
-			enc_slinear_le_16(fd, enc, 1);
-		break;
-	case AUDIO_ENCODING_SLINEAR_BE:
-		if (enc->precision == 8)
-			enc_slinear_8(fd, enc, 1);
-		else if (enc->precision == 16)
-			enc_slinear_be_16(fd, enc, 1);
-		break;
-#if 0
-	case AUDIO_ENCODING_ADPCM:
-		if (enc->precision == 8)
-			enc_adpcm_8(fd, enc, 1);
-		break;
-#endif
-	default:
-		printf("[skip]");
 	}
+
+	if (enc->precision == 16) {
+		switch (enc->encoding) {
+		case AUDIO_ENCODING_ULINEAR_LE:
+			enc_ulinear_16(fd, enc, 2, LITTLE_ENDIAN);
+			break;
+		case AUDIO_ENCODING_ULINEAR_BE:
+			enc_ulinear_16(fd, enc, 2, BIG_ENDIAN);
+			break;
+		case AUDIO_ENCODING_SLINEAR_LE:
+			enc_slinear_16(fd, enc, 2, LITTLE_ENDIAN);
+			break;
+		case AUDIO_ENCODING_SLINEAR_BE:
+			enc_slinear_16(fd, enc, 2, BIG_ENDIAN);
+			break;
+		default:
+			skipped = 1;
+		}
+	}
+
+	if (skipped)
+		printf("[skip]");
 }
 
 void
@@ -227,12 +245,12 @@ enc_ulinear_8(int fd, audio_encoding_t *enc, int chans)
 	inf.play.channels = chans;
 
 	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
+		printf("[%s]", strerror(errno));
 		goto out;
 	}
 
 	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
+		printf("[getinfo: %s]", strerror(errno));
 		goto out;
 	}
 
@@ -243,12 +261,12 @@ enc_ulinear_8(int fd, audio_encoding_t *enc, int chans)
 	}
 
 	for (i = 0, p = samples; i < inf.play.sample_rate; i++) {
-		double d;
+		float d;
 		u_int8_t v;
 
-		d = 127.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
-		d = rint(d + 127.0);
+		d = 127.0 * sinf(((float)i / (float)inf.play.sample_rate) *
+		    (2 * M_PI * PLAYFREQ));
+		d = rintf(d + 127.0);
 		v = d;
 
 		for (j = 0; j < chans; j++) {
@@ -279,12 +297,12 @@ enc_slinear_8(int fd, audio_encoding_t *enc, int chans)
 	inf.play.channels = chans;
 
 	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
+		printf("[%s]", strerror(errno));
 		goto out;
 	}
 
 	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
+		printf("[getinfo: %s]", strerror(errno));
 		goto out;
 	}
 
@@ -295,12 +313,12 @@ enc_slinear_8(int fd, audio_encoding_t *enc, int chans)
 	}
 
 	for (i = 0, p = samples; i < inf.play.sample_rate; i++) {
-		double d;
+		float d;
 		int8_t v;
 
-		d = 127.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
-		d = rint(d);
+		d = 127.0 * sinf(((float)i / (float)inf.play.sample_rate) *
+		    (2 * M_PI * PLAYFREQ));
+		d = rintf(d);
 		v = d;
 
 		for (j = 0; j < chans; j++) {
@@ -319,7 +337,7 @@ out:
 }
 
 void
-enc_slinear_be_16(int fd, audio_encoding_t *enc, int chans)
+enc_slinear_16(int fd, audio_encoding_t *enc, int chans, int order)
 {
 	audio_info_t inf;
 	u_int8_t *samples = NULL, *p;
@@ -331,12 +349,12 @@ enc_slinear_be_16(int fd, audio_encoding_t *enc, int chans)
 	inf.play.channels = chans;
 
 	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
+		printf("[%s]", strerror(errno));
 		goto out;
 	}
 
 	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
+		printf("[getinfo: %s]", strerror(errno));
 		goto out;
 	}
 
@@ -347,19 +365,26 @@ enc_slinear_be_16(int fd, audio_encoding_t *enc, int chans)
 	}
 
 	for (i = 0, p = samples; i < inf.play.sample_rate; i++) {
-		double d;
+		float d;
 		int16_t v;
 
-		d = 32767.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
-		d = rint(d);
+		d = 32767.0 * sinf(((float)i / (float)inf.play.sample_rate) *
+		    (2 * M_PI * PLAYFREQ));
+		d = rintf(d);
 		v = d;
 
 		for (j = 0; j < chans; j++) {
-			*p = (v & 0xff00) >> 8;
-			p++;
-			*p = (v & 0x00ff) >> 0;
-			p++;
+			if (order == LITTLE_ENDIAN) {
+				*p = (v & 0x00ff) >> 0;
+				p++;
+				*p = (v & 0xff00) >> 8;
+				p++;
+			} else {
+				*p = (v & 0xff00) >> 8;
+				p++;
+				*p = (v & 0x00ff) >> 0;
+				p++;
+			}
 		}
 	}
 
@@ -373,7 +398,7 @@ out:
 }
 
 void
-enc_slinear_le_16(int fd, audio_encoding_t *enc, int chans)
+enc_ulinear_16(int fd, audio_encoding_t *enc, int chans, int order)
 {
 	audio_info_t inf;
 	u_int8_t *samples = NULL, *p;
@@ -385,66 +410,12 @@ enc_slinear_le_16(int fd, audio_encoding_t *enc, int chans)
 	inf.play.channels = chans;
 
 	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
+		printf("[%s]", strerror(errno));
 		goto out;
 	}
 
 	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
-		goto out;
-	}
-
-	samples = (int8_t *)malloc(inf.play.sample_rate * chans * 2);
-	if (samples == NULL) {
-		warn("malloc");
-		goto out;
-	}
-
-	for (i = 0, p = samples; i < inf.play.sample_rate; i++) {
-		double d;
-		int16_t v;
-
-		d = 32767.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
-		d = rint(d);
-		v = d;
-
-		for (j = 0; j < chans; j++) {
-			*p = (v & 0x00ff) >> 0;
-			p++;
-			*p = (v & 0xff00) >> 8;
-			p++;
-		}
-	}
-
-	for (i = 0; i < PLAYSECS; i++)
-		write(fd, samples, inf.play.sample_rate * chans * 2);
-	audio_wait(fd);
-
-out:
-	if (samples != NULL)
-		free(samples);
-}
-
-void
-enc_ulinear_le_16(int fd, audio_encoding_t *enc, int chans)
-{
-	audio_info_t inf;
-	u_int8_t *samples = NULL, *p;
-	int i, j;
-
-	AUDIO_INITINFO(&inf);
-	inf.play.precision = enc->precision;
-	inf.play.encoding = enc->encoding;
-	inf.play.channels = chans;
-
-	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
-		goto out;
-	}
-
-	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
+		printf("[getinfo: %s]", strerror(errno));
 		goto out;
 	}
 
@@ -455,73 +426,26 @@ enc_ulinear_le_16(int fd, audio_encoding_t *enc, int chans)
 	}
 
 	for (i = 0, p = samples; i < inf.play.sample_rate; i++) {
-		double d;
+		float d;
 		u_int16_t v;
 
-		d = 32767.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
-		d = rint(d + 32767.0);
+		d = 32767.0 * sinf(((float)i / (float)inf.play.sample_rate) *
+		    (2 * M_PI * PLAYFREQ));
+		d = rintf(d + 32767.0);
 		v = d;
 
 		for (j = 0; j < chans; j++) {
-			*p = (v >> 0) & 0xff;
-			p++;
-			*p = (v >> 8) & 0xff;
-			p++;
-		}
-	}
-
-	for (i = 0; i < PLAYSECS; i++)
-		write(fd, samples, inf.play.sample_rate * chans * 2);
-	audio_wait(fd);
-
-out:
-	if (samples != NULL)
-		free(samples);
-}
-
-void
-enc_ulinear_be_16(int fd, audio_encoding_t *enc, int chans)
-{
-	audio_info_t inf;
-	u_int8_t *samples = NULL, *p;
-	int i, j;
-
-	AUDIO_INITINFO(&inf);
-	inf.play.precision = enc->precision;
-	inf.play.encoding = enc->encoding;
-	inf.play.channels = chans;
-
-	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
-		goto out;
-	}
-
-	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
-		goto out;
-	}
-
-	samples = (u_int8_t *)malloc(inf.play.sample_rate * chans * 2);
-	if (samples == NULL) {
-		warn("malloc");
-		goto out;
-	}
-
-	for (i = 0, p = samples; i < inf.play.sample_rate; i++) {
-		double d;
-		u_int16_t v;
-
-		d = 32767.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
-		d = rint(d + 32767.0);
-		v = d;
-
-		for (j = 0; j < chans; j++) {
-			*p = (v >> 8) & 0xff;
-			p++;
-			*p = (v >> 0) & 0xff;
-			p++;
+			if (order == LITTLE_ENDIAN) {
+				*p = (v >> 0) & 0xff;
+				p++;
+				*p = (v >> 8) & 0xff;
+				p++;
+			} else {
+				*p = (v >> 8) & 0xff;
+				p++;
+				*p = (v >> 0) & 0xff;
+				p++;
+			}
 		}
 	}
 
@@ -540,8 +464,8 @@ enc_adpcm_8(int fd, audio_encoding_t *enc, int chans)
 	audio_info_t inf;
 	struct adpcm_state adsts;
 	int16_t *samples = NULL;
-	int i;
-	char *outbuf = NULL;
+	int i, j;
+	char *outbuf = NULL, *sbuf = NULL, *p;
 
 	AUDIO_INITINFO(&inf);
 	inf.play.precision = enc->precision;
@@ -549,12 +473,12 @@ enc_adpcm_8(int fd, audio_encoding_t *enc, int chans)
 	inf.play.channels = chans;
 
 	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
+		printf("[%s]", strerror(errno));
 		goto out;
 	}
 
 	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
+		printf("[getinfo: %s]", strerror(errno));
 		goto out;
 	}
 
@@ -566,31 +490,46 @@ enc_adpcm_8(int fd, audio_encoding_t *enc, int chans)
 		goto out;
 	}
 
-	outbuf = (char *)malloc(inf.play.sample_rate / 2);
-	if (outbuf == NULL) {
+	sbuf = (char *)malloc(inf.play.sample_rate / 2);
+	if (sbuf == NULL) {
 		warn("malloc");
 		goto out;
 	}
 
 	for (i = 0; i < inf.play.sample_rate; i++) {
-		double d;
+		float d;
 
-		d = 32767.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
-		samples[i] = rint(d);
+		d = 32767.0 * sinf(((float)i / (float)inf.play.sample_rate) *
+		    (2 * M_PI * PLAYFREQ));
+		samples[i] = rintf(d);
+	}
+
+	outbuf = (char *)malloc((inf.play.sample_rate / 2) * chans);
+	if (outbuf == NULL) {
+		warn("malloc");
+		goto out;
 	}
 
 	for (i = 0; i < PLAYSECS; i++) {
-		adpcm_coder(samples, outbuf, inf.play.sample_rate, &adsts);
-		write(fd, outbuf, inf.play.sample_rate / 2);
+		adpcm_coder(samples, sbuf, inf.play.sample_rate, &adsts);
+
+		for (i = 0, p = outbuf; i < inf.play.sample_rate / 2; i++) {
+			for (j = 0; j < chans; j++, p++) {
+				*p = sbuf[i];
+			}
+		}
+
+		write(fd, outbuf, (inf.play.sample_rate / 2) * chans);
 	}
 	audio_wait(fd);
 
 out:
-	if (samples == NULL)
+	if (samples != NULL)
 		free(samples);
-	if (outbuf == NULL)
+	if (outbuf != NULL)
 		free(outbuf);
+	if (sbuf != NULL)
+		free(sbuf);
 }
 
 void
@@ -607,12 +546,12 @@ enc_ulaw_8(int fd, audio_encoding_t *enc, int chans)
 	inf.play.channels = chans;
 
 	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
+		printf("[%s]", strerror(errno));
 		goto out;
 	}
 
 	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
+		printf("[getinfo: %s]", strerror(errno));
 		goto out;
 	}
 
@@ -631,8 +570,8 @@ enc_ulaw_8(int fd, audio_encoding_t *enc, int chans)
 	for (i = 0; i < inf.play.sample_rate; i++) {
 		float x;
 
-		x = 32765.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
+		x = 32765.0 * sinf(((float)i / (float)inf.play.sample_rate) *
+		    (2 * M_PI * PLAYFREQ));
 		samples[i] = x;
 	}
 
@@ -649,9 +588,9 @@ enc_ulaw_8(int fd, audio_encoding_t *enc, int chans)
 	audio_wait(fd);
 
 out:
-	if (samples == NULL)
+	if (samples != NULL)
 		free(samples);
-	if (outbuf == NULL)
+	if (outbuf != NULL)
 		free(outbuf);
 }
 
@@ -669,12 +608,12 @@ enc_alaw_8(int fd, audio_encoding_t *enc, int chans)
 	inf.play.channels = chans;
 
 	if (ioctl(fd, AUDIO_SETINFO, &inf) == -1) {
-		warn("setinfo");
+		printf("[%s]", strerror(errno));
 		goto out;
 	}
 
 	if (ioctl(fd, AUDIO_GETINFO, &inf) == -1) {
-		warn("getinfo");
+		printf("[getinfo: %s]", strerror(errno));
 		goto out;
 	}
 
@@ -693,8 +632,8 @@ enc_alaw_8(int fd, audio_encoding_t *enc, int chans)
 	for (i = 0; i < inf.play.sample_rate; i++) {
 		float x;
 
-		x = 32767.0 * sin(((double)i / (double)inf.play.sample_rate) *
-		    (2 * M_PI * 440.0));
+		x = 32767.0 * sinf(((float)i / (float)inf.play.sample_rate) *
+		    (2 * M_PI * PLAYFREQ));
 		samples[i] = x;
 	}
 
@@ -711,9 +650,9 @@ enc_alaw_8(int fd, audio_encoding_t *enc, int chans)
 	audio_wait(fd);
 
 out:
-	if (samples == NULL)
+	if (samples != NULL)
 		free(samples);
-	if (outbuf == NULL)
+	if (outbuf != NULL)
 		free(outbuf);
 }
 

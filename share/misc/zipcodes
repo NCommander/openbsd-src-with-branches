@@ -1,3 +1,5 @@
+#	$OpenBSD: zipcodes,v 1.11 2003/02/24 19:26:50 deraadt Exp $
+
 # Zip Code : Location
 #	@(#)zipcodes	5.1 (Berkeley) 2/8/91
 00401:Pleasantville, NY
@@ -3713,32 +3715,32 @@
 10312:Staten Island, NY
 10313:Staten Island, NY
 10314:Staten Island, NY
-10400:Bronx, NY
-10451:Bronx, NY
-10452:Bronx, NY
-10453:Bronx, NY
-10454:Bronx, NY
-10455:Bronx, NY
-10456:Bronx, NY
-10457:Bronx, NY
-10458:Bronx, NY
-10459:Bronx, NY
-10460:Bronx, NY
-10461:Bronx, NY
-10462:Bronx, NY
-10463:Bronx, NY
-10464:Bronx, NY
-10465:Bronx, NY
-10466:Bronx, NY
-10467:Bronx, NY
-10468:Bronx, NY
-10469:Bronx, NY
-10470:Bronx, NY
-10471:Bronx, NY
-10472:Bronx, NY
-10473:Bronx, NY
-10474:Bronx, NY
-10475:Bronx, NY
+10400:The Bronx, NY
+10451:The Bronx, NY
+10452:The Bronx, NY
+10453:The Bronx, NY
+10454:The Bronx, NY
+10455:The Bronx, NY
+10456:The Bronx, NY
+10457:The Bronx, NY
+10458:The Bronx, NY
+10459:The Bronx, NY
+10460:The Bronx, NY
+10461:The Bronx, NY
+10462:The Bronx, NY
+10463:The Bronx, NY
+10464:The Bronx, NY
+10465:The Bronx, NY
+10466:The Bronx, NY
+10467:The Bronx, NY
+10468:The Bronx, NY
+10469:The Bronx, NY
+10470:The Bronx, NY
+10471:The Bronx, NY
+10472:The Bronx, NY
+10473:The Bronx, NY
+10474:The Bronx, NY
+10475:The Bronx, NY
 10501:Amawalk, NY
 10502:Ardsley, NY
 10503:Ardsley-On-Hudson, NY
@@ -7073,7 +7075,6 @@
 17370:York Haven, PA
 17371:York New Salem, PA
 17372:York Springs, PA
-17400:York, PA
 17401:York, PA
 17402:York, PA
 17403:York, PA
@@ -7081,6 +7082,7 @@
 17405:York, PA
 17406:York, PA
 17407:York, PA
+17415:York, PA
 17501:Akron, PA
 17502:Bainbridge, PA
 17503:Bart, PA
@@ -7322,6 +7324,8 @@
 18016:Bethlehem, PA
 18017:Bethlehem, PA
 18018:Bethlehem, PA
+18020:Bethlehem, PA
+18025:Bethlehem, PA
 18030:Bowmanstown, PA
 18031:Breinigsville, PA
 18032:Catasauqua, PA
@@ -7376,13 +7380,13 @@
 18092:Zionsville, PA
 18098:Emmaus, PA
 18099:Emmaus, PA
-18100:Allentown, PA
 18101:Allentown, PA
 18102:Allentown, PA
 18103:Allentown, PA
 18104:Allentown, PA
 18105:Allentown, PA
 18106:Allentown, PA
+18109:Allentown, PA
 18175:Allentown, PA
 18195:Allentown, PA
 18201:Hazleton, PA
@@ -7581,29 +7585,28 @@
 18660:Wapwallopen, PA
 18661:White Haven, PA
 18690:Dallas, PA
-18700:Wilkes-Barre, PA
-18701:Wilkes-Barre, PA
-18702:Wilkes-Barre, PA
-18703:Wilkes-Barre, PA
-18704:Wilkes-Barre, PA
-18705:Wilkes-Barre, PA
-18706:Wilkes-Barre, PA
-18707:Wilkes-Barre, PA
-18708:Wilkes-Barre, PA
-18709:Wilkes-Barre, PA
-18710:Wilkes-Barre, PA
-18711:Wilkes-Barre, PA
-18761:Wilkes-Barre, PA
-18762:Wilkes-Barre, PA
-18763:Wilkes-Barre, PA
-18764:Wilkes-Barre, PA
-18765:Wilkes-Barre, PA
-18766:Wilkes-Barre, PA
-18767:Wilkes-Barre, PA
-18768:Wilkes-Barre, PA
-18769:Wilkes-Barre, PA
-18773:Wilkes-Barre, PA
-18774:Wilkes-Barre, PA
+18701:Wilkes Barre, PA
+18702:Wilkes Barre, PA
+18703:Wilkes Barre, PA
+18704:Kingston, PA
+18705:Wilkes Barre, PA
+18706:Wilkes Barre, PA
+18707:Mountain Top, PA
+18708:Shavertown, PA
+18709:Luzerne, PA
+18710:Wilkes Barre, PA
+18711:Wilkes Barre, PA
+18761:Wilkes Barre, PA
+18762:Wilkes Barre, PA
+18763:Wilkes Barre, PA
+18764:Wilkes Barre, PA
+18765:Wilkes Barre, PA
+18766:Wilkes Barre, PA
+18767:Wilkes Barre, PA
+18768:Wilkes Barre, PA
+18769:Wilkes Barre, PA
+18773:Wilkes Barre, PA
+18774:Wilkes Barre, PA
 18801:Montrose, PA
 18810:Athens, PA
 18812:Brackney, PA
@@ -7718,6 +7721,7 @@
 19016:Chester, PA
 19017:Chester Heights, PA
 19018:Clifton Heights, PA
+19019:Philadelphia, PA
 19020:Bensalem, PA
 19022:Woodlyn, PA
 19023:Darby, PA
@@ -7784,7 +7788,6 @@
 19096:Wynnewood, PA
 19098:Holmes, PA
 19099:Philadelphia, PA
-19100:Philadelphia, PA
 19101:Philadelphia, PA
 19102:Philadelphia, PA
 19103:Philadelphia, PA
@@ -7859,6 +7862,9 @@
 19187:Philadelphia, PA
 19188:Philadelphia, PA
 19191:Philadelphia, PA
+19192:Philadelphia, PA
+19193:Philadelphia, PA
+19194:Philadelphia, PA
 19196:Philadelphia, PA
 19197:Philadelphia, PA
 19244:Philadelphia, PA
@@ -7914,9 +7920,9 @@
 19383:West Chester, PA
 19390:West Grove, PA
 19395:Westtown, PA
-19397:Southeastern, Pa., PA
-19398:Southeastern, Pa., PA
-19399:Southeastern, Pa., PA
+19397:Southeastern, PA
+19398:Southeastern, PA
+19399:Southeastern, PA
 19401:Norristown, PA
 19403:Norristown, PA
 19404:Norristown, PA
@@ -8028,7 +8034,6 @@
 19564:Virginville, PA
 19565:Wernersville, PA
 19567:Womelsdorf, PA
-19600:Reading, PA
 19601:Reading, PA
 19602:Reading, PA
 19603:Reading, PA
@@ -8069,7 +8074,6 @@
 19734:Townsend, DE
 19735:Winterthur, DE
 19736:Yorklyn, DE
-19800:Wilmington, DE
 19801:Wilmington, DE
 19802:Wilmington, DE
 19803:Wilmington, DE
@@ -8140,7 +8144,6 @@
 19977:Smyrna, DE
 19979:Viola, DE
 19980:Woodside, DE
-20000:Washington, DC
 20001:Washington, DC
 20002:Washington, DC
 20003:Washington, DC
@@ -8205,14 +8208,17 @@
 20074:Washington, DC
 20075:Washington, DC
 20076:Washington, DC
+20077:Washington, DC
+20078:Washington, DC
 20080:Washington, DC
 20081:Washington, DC
 20082:Washington, DC
-20084:Washington, DC
 20088:Washington, DC
 20090:Washington, DC
+20091:Washington, DC
 20097:Washington, DC
 20098:Washington, DC
+20099:Washington, DC
 20201:Washington, DC
 20202:Washington, DC
 20203:Washington, DC
@@ -8288,12 +8294,12 @@
 20370:Washington, DC
 20371:Washington, DC
 20372:Washington, DC
-20373:Washington, DC
-20374:Washington, DC
+20373:Anacostia Annex, DC
+20374:Washington Navy Yard, DC
 20375:Washington, DC
-20376:Washington, DC
+20376:Washington Navy Yard, DC
 20380:Washington, DC
-20388:Washington, DC
+20388:Washington Navy Yard, DC
 20389:Washington, DC
 20390:Washington, DC
 20391:Washington, DC
@@ -8301,9 +8307,7 @@
 20393:Washington, DC
 20394:Washington, DC
 20395:Washington, DC
-20396:Washington, DC
-20397:Washington, DC
-20398:Washington, DC
+20398:Washington Navy Yard, DC
 20401:Washington, DC
 20402:Washington, DC
 20403:Washington, DC
@@ -8414,7 +8418,6 @@
 20591:Washington, DC
 20593:Washington, DC
 20594:Washington, DC
-20595:Washington, DC
 20597:Washington, DC
 20599:Washington, DC
 20601:Waldorf, MD
@@ -8582,7 +8585,6 @@
 20897:Suburb Maryland Fac, MD
 20898:Gaithersburg, MD
 20899:Gaithersburg, MD
-20900:Silver Spring, MD
 20901:Silver Spring, MD
 20902:Silver Spring, MD
 20903:Silver Spring, MD
@@ -8592,7 +8594,7 @@
 20908:Silver Spring, MD
 20910:Silver Spring, MD
 20911:Silver Spring, MD
-20912:Silver Spring, MD
+20912:Takoma Park, MD
 20997:Suburb Maryland Fac, MD
 21001:Aberdeen, MD
 21005:Aberdeen Proving Ground, MD
@@ -8637,6 +8639,7 @@
 21062:Glen Burnie, MD
 21071:Glyndon, MD
 21074:Hampstead, MD
+21075:Elkridge, MD
 21076:Hanover, MD
 21077:Harmans, MD
 21078:Havre De Grace, MD
@@ -8684,15 +8687,14 @@
 21161:White Hall, MD
 21162:White Marsh, MD
 21163:Woodstock, MD
-21200:Baltimore, MD
 21201:Baltimore, MD
 21202:Baltimore, MD
 21203:Baltimore, MD
-21204:Baltimore, MD
+21204:, MD
 21205:Baltimore, MD
 21206:Baltimore, MD
-21207:Baltimore, MD
-21208:Baltimore, MD
+21207:, MD
+21208:, MD
 21209:Baltimore, MD
 21210:Baltimore, MD
 21211:Baltimore, MD
@@ -8703,35 +8705,36 @@
 21216:Baltimore, MD
 21217:Baltimore, MD
 21218:Baltimore, MD
-21219:Baltimore, MD
-21220:Baltimore, MD
-21221:Baltimore, MD
-21222:Baltimore, MD
+21219:Sparrows Point, MD
+21220:Middle River, MD
+21221:Essex, MD
+21222:Dundalk, MD
 21223:Baltimore, MD
 21224:Baltimore, MD
-21225:Baltimore, MD
-21226:Baltimore, MD
-21227:Baltimore, MD
-21228:Baltimore, MD
+21225:Brooklyn, MD
+21226:Curtis Bay, MD
+21227:Halethorpe, MD
+21228:Catonsville, MD
 21229:Baltimore, MD
 21230:Baltimore, MD
 21231:Baltimore, MD
 21233:Baltimore, MD
-21234:Baltimore, MD
+21234:Parkville, MD
 21235:Baltimore, MD
-21236:Baltimore, MD
-21237:Baltimore, MD
+21236:Nottingham, MD
+21237:Rosedale, MD
 21239:Baltimore, MD
 21240:Baltimore, MD
 21241:Baltimore, MD
+21244:Windsor Mill, MD
+21250:Baltimore, MD
+21251:Baltimore, MD
+21252:Baltimore, MD
 21263:Baltimore, MD
 21264:Baltimore, MD
 21265:Baltimore, MD
-21267:Baltimore, MD
 21268:Baltimore, MD
 21270:Baltimore, MD
-21271:Baltimore, MD
-21272:Baltimore, MD
 21273:Baltimore, MD
 21274:Baltimore, MD
 21275:Baltimore, MD
@@ -8748,7 +8751,6 @@
 21297:Baltimore, MD
 21298:Baltimore, MD
 21299:Baltimore, MD
-21400:Annapolis, MD
 21401:Annapolis, MD
 21402:Annapolis, MD
 21403:Annapolis, MD
@@ -9093,7 +9095,6 @@
 22192:Woodbridge, VA
 22193:Woodbridge, VA
 22194:Woodbridge, VA
-22200:Arlington, VA
 22201:Arlington, VA
 22202:Arlington, VA
 22203:Arlington, VA
@@ -9103,7 +9104,7 @@
 22207:Arlington, VA
 22209:Arlington, VA
 22210:Arlington, VA
-22211:Arlington, VA
+22211:Ft. Myer, VA
 22212:Arlington, VA
 22213:Arlington, VA
 22214:Arlington, VA
@@ -9114,7 +9115,17 @@
 22223:Arlington, VA
 22225:Arlington, VA
 22226:Arlington, VA
-22300:Alexandria, VA
+22227:Arlington, VA
+22229:Arlington, VA
+22230:Arlington, VA
+22234:Arlington, VA
+22240:Arlington, VA
+22241:Arlington, VA
+22242:Arlington, VA
+22243:Arlington, VA
+22244:Arlington, VA
+22245:Arlington, VA
+22246:Arlington, VA
 22301:Alexandria, VA
 22302:Alexandria, VA
 22303:Alexandria, VA
@@ -12862,6 +12873,7 @@
 30021:Clarkston, GA
 30026:Atlanta, GA
 30027:Conley, GA
+30028:Cumming, GA
 30029:Atlanta, GA
 30030:Decatur, GA
 30031:Decatur, GA
@@ -12871,6 +12883,8 @@
 30035:Decatur, GA
 30037:Decatur, GA
 30038:Lithonia, GA
+30040:Cumming, GA
+30041:Cumming, GA
 30042:Atlanta, GA
 30043:Atlanta, GA
 30045:Atlanta, GA
@@ -12932,7 +12946,6 @@
 30124:Cave Spring, GA
 30125:Cedartown, GA
 30129:Coosa, GA
-30130:Cumming, GA
 30132:Dallas, GA
 30133:Douglasville, GA
 30134:Douglasville, GA
@@ -20889,63 +20902,45 @@
 48005:Armada, MI
 48006:Avoca, MI
 48007:Troy, MI
-48008:Birmingham, MI
 48009:Birmingham, MI
-48010:Birmingham, MI
-48011:Birmingham, MI
 48012:Birmingham, MI
-48013:Bloomfield Hills, MI
 48014:Capac, MI
 48015:Center Line, MI
-48016:Clarkston, MI
 48017:Clawson, MI
-48018:Farmington, MI
-48019:Davisburg, MI
-48020:Drayton Plains, MI
-48021:East Detroit, MI
+48021:Eastpointe, MI
 48022:Emmett, MI
 48023:Fair Haven, MI
-48024:Farmington, MI
 48025:Franklin, MI
 48026:Fraser, MI
 48027:Goodells, MI
 48028:Harsens Island, MI
-48029:Hartland, MI
 48030:Hazel Park, MI
-48031:Highland, MI
 48032:Jeddo, MI
-48033:Pontiac, MI
 48034:Southfield, MI
-48035:Lake Orion, MI
-48036:Lakeville, MI
+48035:Clinton Township, MI
+48036:Clinton Township, MI
 48037:Southfield, MI
-48038:Leonard, MI
+48038:Clinton Township, MI
 48039:Marine City, MI
 48040:Marysville, MI
 48041:Memphis, MI
-48042:Milford, MI
+48042:Macomb, MI
 48043:Mount Clemens, MI
-48044:Mount Clemens, MI
-48045:Mount Clemens, MI
+48044:Macomb, MI
+48045:Harrison Township, MI
 48046:Mount Clemens, MI
 48047:New Baltimore, MI
 48048:New Haven, MI
 48049:North Street, MI
-48050:Novi, MI
-48051:Oxford, MI
-48052:Algonac, MI
-48053:Pontiac, MI
-48054:Pontiac, MI
-48055:Pontiac, MI
-48056:Pontiac, MI
-48057:Pontiac, MI
-48058:Pontiac, MI
-48059:Pontiac, MI
+48050:New Haven, MI
+48051:New Baltimore, MI
+48054:East China, MI
+48059:Fort Gratiot, MI
 48060:Port Huron, MI
 48061:Port Huron, MI
 48062:Richmond, MI
-48063:Rochester, MI
-48064:Rochester, MI
+48063:Columbus, MI
+48064:Casco, MI
 48065:Romeo, MI
 48066:Roseville, MI
 48067:Royal Oak, MI
@@ -20958,26 +20953,23 @@
 48074:Smiths Creek, MI
 48075:Southfield, MI
 48076:Southfield, MI
-48077:Utica, MI
-48078:Sterling Heights, MI
 48079:Saint Clair, MI
 48080:Saint Clair Shores, MI
 48081:Saint Clair Shores, MI
 48082:Saint Clair Shores, MI
 48083:Troy, MI
 48084:Troy, MI
-48085:Union Lake, MI
+48085:Troy, MI
 48086:Southfield, MI
-48087:Utica, MI
-48088:Walled Lake, MI
+48088:Warren, MI
 48089:Warren, MI
 48090:Warren, MI
 48091:Warren, MI
 48092:Warren, MI
 48093:Warren, MI
 48094:Washington, MI
-48095:Waterford, MI
-48096:Wixom, MI
+48095:Washington, MI
+48096:Ray, MI
 48097:Yale, MI
 48098:Troy, MI
 48099:Troy, MI
@@ -20991,6 +20983,9 @@
 48109:Ann Arbor, MI
 48110:Azalia, MI
 48111:Belleville, MI
+48112:Belleville, MI
+48113:Ann Arbor, MI
+48114:Brighton, MI
 48115:Bridgewater, MI
 48116:Brighton, MI
 48117:Carleton, MI
@@ -21000,7 +20995,7 @@
 48122:Melvindale, MI
 48123:Dearborn, MI
 48124:Dearborn, MI
-48125:Dearborn, MI
+48125:Dearborn Heights, MI
 48126:Dearborn, MI
 48127:Dearborn Heights, MI
 48128:Dearborn, MI
@@ -21009,6 +21004,7 @@
 48133:Erie, MI
 48134:Flat Rock, MI
 48135:Garden City, MI
+48136:Garden City, MI
 48137:Gregory, MI
 48138:Grosse Ile, MI
 48139:Hamburg, MI
@@ -21028,6 +21024,7 @@
 48159:Maybee, MI
 48160:Milan, MI
 48161:Monroe, MI
+48162:Monroe, MI
 48164:New Boston, MI
 48165:New Hudson, MI
 48166:Newport, MI
@@ -21046,6 +21043,7 @@
 48183:Trenton, MI
 48184:Wayne, MI
 48185:Westland, MI
+48186:Westland, MI
 48187:Canton, MI
 48188:Canton, MI
 48189:Whitmore Lake, MI
@@ -21080,7 +21078,7 @@
 48222:Detroit, MI
 48223:Detroit, MI
 48224:Detroit, MI
-48225:Detroit, MI
+48225:Harper Woods, MI
 48226:Detroit, MI
 48227:Detroit, MI
 48228:Detroit, MI
@@ -21114,25 +21112,78 @@
 48275:Detroit, MI
 48277:Detroit, MI
 48278:Detroit, MI
+48279:Detroit, MI
 48288:Detroit, MI
 48295:Detroit, MI
 48297:Detroit, MI
 48299:Detroit, MI
-48301:Port Huron, MI
-48302:Bloomfield Hills North, MI
+48301:Bloomfield Hills, MI
+48302:Bloomfield Hills, MI
 48303:Bloomfield Hills, MI
-48304:Pontiac, MI
-48305:Roseville, MI
+48304:Bloomfield Hills, MI
+48306:Rochester, MI
+48307:Rochester, MI
 48308:Rochester, MI
 48309:Rochester, MI
-48310:Utica, MI
-48311:Utica, MI
+48310:Sterling Heights, MI
+48311:Sterling Heights, MI
+48312:Sterling Heights, MI
+48313:Sterling Heights, MI
+48314:Sterling Heights, MI
+48315:Utica, MI
+48316:Utica, MI
+48317:Utica, MI
+48318:Utica, MI
 48320:Keego Harbor, MI
-48321:Pontiac, MI
-48322:Pontiac, MI
+48321:Auburn Hills, MI
+48322:West Bloomfield, MI
+48323:West Bloomfield, MI
+48324:West Bloomfield, MI
+48325:West Bloomfield, MI
+48326:Auburn Hills, MI
+48327:Waterford, MI
+48328:Waterford, MI
+48329:Waterford, MI
+48330:Drayton Plains, MI
 48331:Farmington, MI
 48332:Farmington, MI
 48333:Farmington, MI
+48334:Farmington, MI
+48335:Farmington, MI
+48336:Farmington, MI
+48340:Pontiac, MI
+48341:Pontiac, MI
+48342:Pontiac, MI
+48343:Pontiac, MI
+48346:Clarkston, MI
+48347:Clarkston, MI
+48348:Clarkston, MI
+48350:Davisburg, MI
+48353:Hartland, MI
+48356:Highland, MI
+48357:Highland, MI
+48359:Lake Orion, MI
+48360:Lake Orion, MI
+48361:Lake Orion, MI
+48362:Lake Orion, MI
+48363:Oakland, MI
+48366:Lakeville, MI
+48367:Leonard, MI
+48370:Oxford, MI
+48371:Oxford, MI
+48374:Novi, MI
+48375:Novi, MI
+48376:Novi, MI
+48377:Novi, MI
+48380:Milford, MI
+48381:Milford, MI
+48382:Commerce Township, MI
+48383:White Lake, MI
+48386:White Lake, MI
+48387:Union Lake, MI
+48390:Walled Lake, MI
+48391:Walled Lake, MI
+48393:Wixom, MI
 48397:Warren, MI
 48398:Clawson, MI
 48401:Applegate, MI
@@ -21172,7 +21223,6 @@
 48449:Lennon, MI
 48450:Lexington, MI
 48451:Linden, MI
-48452:Attica, MI
 48453:Marlette, MI
 48454:Melvin, MI
 48455:Metamora, MI
@@ -21184,7 +21234,7 @@
 48462:Ortonville, MI
 48463:Otisville, MI
 48464:Otter Lake, MI
-48465:Minden City, MI
+48465:Palms, MI
 48466:Peck, MI
 48467:Port Austin, MI
 48468:Port Hope, MI
@@ -21203,11 +21253,10 @@
 48505:Flint, MI
 48506:Flint, MI
 48507:Flint, MI
-48508:Flint, MI
-48509:Flint, MI
-48519:Flint, MI
-48529:Flint, MI
-48531:Northwest, MI
+48509:Burton, MI 
+48519:Burton, MI
+48529:Burton, MI
+48531:Flint, MI
 48532:Flint, MI
 48550:Flint, MI
 48551:Flint, MI
@@ -21226,10 +21275,11 @@
 48606:Saginaw, MI
 48607:Saginaw, MI
 48608:Saginaw, MI
+48609:Saginaw, MI
 48610:Alger, MI
 48611:Auburn, MI
 48612:Beaverton, MI
-48613:Rhodes, MI
+48613:Bentley, MI
 48614:Brant, MI
 48615:Breckenridge, MI
 48616:Chesaning, MI
@@ -21256,6 +21306,7 @@
 48637:Merrill, MI
 48640:Midland, MI
 48641:Midland, MI
+48642:Midland, MI
 48647:Mio, MI
 48649:Oakley, MI
 48650:Pinconning, MI
@@ -21281,7 +21332,7 @@
 48706:Bay City, MI
 48707:Bay City, MI
 48708:Bay City, MI
-48710:Bay City, MI
+48710:University Center, MI
 48720:Bay Port, MI
 48721:Black River, MI
 48722:Bridgeport, MI
@@ -21323,13 +21374,13 @@
 48760:Silverwood, MI
 48761:South Branch, MI
 48762:Spruce, MI
-48763:East Tawas, MI
+48763:Tawas City, MI
 48764:Tawas City, MI
 48765:Turner, MI
 48766:Twining, MI
 48767:Unionville, MI
 48768:Vassar, MI
-48769:Vassar, MI
+48769:Tuscola, MI
 48770:Whittemore, MI
 48787:Frankenmuth, MI
 48801:Alma, MI
@@ -21340,7 +21391,6 @@
 48807:Bannister, MI
 48808:Bath, MI
 48809:Belding, MI
-48810:Carland, MI
 48811:Carson City, MI
 48812:Cedar Lake, MI
 48813:Charlotte, MI
@@ -21349,7 +21399,7 @@
 48817:Corunna, MI
 48818:Crystal, MI
 48819:Dansville, MI
-48820:De Witt, MI
+48820:Dewitt, MI
 48821:Dimondale, MI
 48822:Eagle, MI
 48823:East Lansing, MI
@@ -21379,9 +21429,10 @@
 48849:Lake Odessa, MI
 48850:Lakeview, MI
 48851:Lyons, MI
-48852:Mc Brides, MI
+48852:Mcbrides, MI
 48853:Maple Rapids, MI
 48854:Mason, MI
+48855:Howell, MI
 48856:Middleton, MI
 48857:Morrice, MI
 48858:Mount Pleasant, MI
@@ -21445,13 +21496,15 @@
 48933:Lansing, MI
 48937:Lansing, MI
 48950:Lansing, MI
+48951:Lansing, MI
 48956:Lansing, MI
 48980:Lansing, MI
 49001:Kalamazoo, MI
-49002:Kalamazoo, MI
+49002:Portage, MI
 49003:Kalamazoo, MI
 49004:Kalamazoo, MI
 49005:Kalamazoo, MI
+49006:Kalamazoo, MI
 49007:Kalamazoo, MI
 49008:Kalamazoo, MI
 49009:Kalamazoo, MI
@@ -21459,12 +21512,17 @@
 49011:Athens, MI
 49012:Augusta, MI
 49013:Bangor, MI
+49014:Battle Creek, MI
 49015:Battle Creek, MI
 49016:Battle Creek, MI
 49017:Battle Creek, MI
+49018:Battle Creek, MI
+49019:Kalamazoo, MI
 49020:Bedford, MI
 49021:Bellevue, MI
 49022:Benton Harbor, MI
+49023:Benton Harbor, MI
+49024:Portage, MI
 49026:Bloomingdale, MI
 49027:Breedsville, MI
 49028:Bronson, MI
@@ -21485,6 +21543,7 @@
 49045:Decatur, MI
 49046:Delton, MI
 49047:Dowagiac, MI
+49048:Kalamazoo, MI
 49050:Dowling, MI
 49051:East Leroy, MI
 49052:Fulton, MI
@@ -21682,6 +21741,7 @@
 49410:Fountain, MI
 49411:Free Soil, MI
 49412:Fremont, MI
+49413:Fremont, MI
 49415:Fruitport, MI
 49416:Glenn, MI
 49417:Grand Haven, MI
@@ -22038,6 +22098,7 @@
 50011:Ames, IA
 50012:Ames, IA
 50013:Ames, IA
+50014:Ames, IA
 50015:Ankeny, IA
 50020:Anita, IA
 50021:Ankeny, IA
@@ -24170,6 +24231,7 @@
 55302:Annandale, MN
 55303:Anoka, MN
 55304:Anoka, MN
+55306:Burnsville, MN
 55307:Arlington, MN
 55308:Becker, MN
 55309:Big Lake, MN
@@ -24326,6 +24388,8 @@
 55486:Minneapolis, MN
 55487:Minneapolis, MN
 55488:Minneapolis, MN
+55550:Young America, MN
+55555:Young America, MN
 55601:Beaver Bay, MN
 55602:Brimson, MN
 55603:Finland, MN
@@ -35608,6 +35672,7 @@
 80498:Dillon, CO
 80501:Longmont, CO
 80502:Longmont, CO
+80503:Longmont, CO
 80510:Allenspark, CO
 80511:Estes Park, CO
 80512:Bellvue, CO
@@ -37900,7 +37965,6 @@
 89047:Silverpeak, NV
 89049:Tonopah, NV
 89070:Indian Springs, NV
-89100:Las Vegas, NV
 89101:Las Vegas, NV
 89102:Las Vegas, NV
 89103:Las Vegas, NV
@@ -37932,22 +37996,41 @@
 89130:Las Vegas, NV
 89131:Las Vegas, NV
 89132:Las Vegas, NV
+89133:Las Vegas, NV
+89134:Las Vegas, NV
+89135:Las Vegas, NV
+89137:Las Vegas, NV
+89138:Las Vegas, NV
+89139:Las Vegas, NV
+89141:Las Vegas, NV
+89142:Las Vegas, NV
+89143:Las Vegas, NV
+89144:Las Vegas, NV
+89145:Las Vegas, NV
+89146:Las Vegas, NV
+89147:Las Vegas, NV
+89148:Las Vegas, NV
+89149:Las Vegas, NV
 89150:Las Vegas, NV
 89151:Las Vegas, NV
 89152:Las Vegas, NV
 89153:Las Vegas, NV
 89154:Las Vegas, NV
 89155:Las Vegas, NV
-89158:Las Vegas, NV
+89156:Las Vegas, NV
+89159:Las Vegas, NV
 89160:Las Vegas, NV
-89163:Las Vegas, NV
+89162:Las Vegas, NV
+89163:The Lakes, NV
 89164:Las Vegas, NV
 89170:Las Vegas, NV
+89173:Las Vegas, NV
 89177:Las Vegas, NV
 89180:Las Vegas, NV
 89185:Las Vegas, NV
-89191:Las Vegas, NV
+89191:Nellis AFB, NV
 89193:Las Vegas, NV
+89195:Las Vegas, NV
 89199:Las Vegas, NV
 89301:Ely, NV
 89310:Austin, NV
@@ -38002,7 +38085,6 @@
 89449:Zephyr Cove, NV
 89450:Crystal Bay, NV
 89451:Incline Village, NV
-89500:Reno, NV
 89501:Reno, NV
 89502:Reno, NV
 89503:Reno, NV
@@ -38018,9 +38100,9 @@
 89515:Reno, NV
 89520:Reno, NV
 89523:Reno, NV
-89550:Reno, NV
+89533:Reno, NV
+89555:Reno, NV
 89557:Reno, NV
-89564:Reno, NV
 89570:Reno, NV
 89595:Reno, NV
 89599:Reno, NV
@@ -38052,7 +38134,6 @@
 89834:Tuscarora, NV
 89835:Wells, NV
 89883:Wendover, NV
-90000:Los Angeles, CA
 90001:Los Angeles, CA
 90002:Los Angeles, CA
 90003:Los Angeles, CA
@@ -38121,7 +38202,7 @@
 90066:Los Angeles, CA
 90067:Los Angeles, CA
 90068:Los Angeles, CA
-90069:Los Angeles, CA
+90069:West Hollywood, CA
 90070:Los Angeles, CA
 90071:Los Angeles, CA
 90072:Los Angeles, CA
@@ -38147,6 +38228,11 @@
 90097:Los Angeles, CA
 90099:Los Angeles, CA
 90101:Los Angeles, CA
+90102:Los Angeles, CA
+90103:Los Angeles, CA
+90174:Los Angeles, CA
+90185:Los Angeles, CA
+90189:Los Angeles, CA
 90201:Bell, CA
 90209:Beverly Hills, CA
 90210:Beverly Hills, CA
@@ -38289,7 +38375,6 @@
 90747:Carson, CA
 90748:Wilmington, CA
 90749:Carson, CA
-90800:Long Beach, CA
 90801:Long Beach, CA
 90802:Long Beach, CA
 90803:Long Beach, CA
@@ -38304,6 +38389,11 @@
 90814:Long Beach, CA
 90815:Long Beach, CA
 90822:Long Beach, CA
+90831:Long Beach, CA
+90832:Long Beach, CA
+90833:Long Beach, CA
+90834:Long Beach, CA
+90835:Long Beach, CA
 90840:Long Beach, CA
 90842:Long Beach, CA
 90844:Long Beach, CA
@@ -38314,6 +38404,7 @@
 90853:Long Beach, CA
 90884:Long Beach, CA
 90888:Long Beach, CA
+90899:Long Beach, CA
 91001:Altadena, CA
 91002:Altadena, CA
 91006:Arcadia, CA
@@ -38329,7 +38420,6 @@
 91046:Verdugo City, CA
 91050:Pasadena, CA
 91051:Pasadena, CA
-91100:Pasadena, CA
 91101:Pasadena, CA
 91102:Pasadena, CA
 91103:Pasadena, CA
@@ -38337,26 +38427,30 @@
 91105:Pasadena, CA
 91106:Pasadena, CA
 91107:Pasadena, CA
-91108:Pasadena, CA
+91108:San Marino, CA
 91109:Pasadena, CA
+91110:Pasadena, CA
+91114:Pasadena, CA
+91115:Pasadena, CA
+91116:Pasadena, CA
+91117:Pasadena, CA
+91118:Pasadena, CA
 91121:Pasadena, CA
-91122:Pasadena, CA
 91123:Pasadena, CA
 91124:Pasadena, CA
 91125:Pasadena, CA
 91126:Pasadena, CA
-91127:Pasadena, CA
-91128:Pasadena, CA
 91129:Pasadena, CA
 91131:Pasadena, CA
+91175:Pasadena, CA
 91182:Pasadena, CA
-91183:Pasadena, CA
 91184:Pasadena, CA
 91185:Pasadena, CA
 91186:Pasadena, CA
+91187:Pasadena, CA
 91188:Pasadena, CA
 91189:Pasadena, CA
-91200:Glendale, CA
+91191:Pasadena, CA
 91201:Glendale, CA
 91202:Glendale, CA
 91203:Glendale, CA
@@ -38367,15 +38461,20 @@
 91208:Glendale, CA
 91209:Glendale, CA
 91210:Glendale, CA
-91214:Glendale, CA
+91214:La Crescenta, CA
+91221:Glendale, CA
+91222:Glendale, CA
+91224:La Crescenta, CA
+91225:Glendale, CA
+91226:Glendale, CA
 91301:Agoura Hills, CA
 91302:Calabasas, CA
 91303:Canoga Park, CA
 91304:Canoga Park, CA
 91305:Canoga Park, CA
-91306:Canoga Park, CA
-91307:Canoga Park, CA
-91308:Canoga Park, CA
+91306:Winnetka, CA
+91307:West Hills, CA
+91308:West Hills, CA
 91309:Canoga Park, CA
 91310:Santa Clarita, CA
 91311:Chatsworth, CA
@@ -38385,7 +38484,6 @@
 91320:Thousand Oaks, CA
 91321:Santa Clarita, CA
 91322:Santa Clarita, CA
-91323:Northridge, CA
 91324:Northridge, CA
 91325:Northridge, CA
 91326:Northridge, CA
@@ -38399,7 +38497,7 @@
 91340:San Fernando, CA
 91341:San Fernando, CA
 91342:Sylmar, CA
-91343:Sepulveda, CA
+91343:North Hills, CA
 91344:Granada Hills, CA
 91345:Mission Hills, CA
 91346:San Fernando, CA
@@ -38430,7 +38528,12 @@
 91385:Santa Clarita, CA
 91386:Santa Clarita, CA
 91388:Van Nuys, CA
+91390:Santa Clarita, CA
 91392:Sylmar, CA
+91393:North Hills, CA
+91394:Granda Hills, CA
+91395:Mission Hills, CA
+91396:Winnetka, CA
 91399:Woodland Hills, CA
 91400:Van Nuys, CA
 91401:Van Nuys, CA
@@ -39405,7 +39508,11 @@
 94023:Los Altos, CA
 94025:Menlo Park, CA
 94026:Menlo Park, CA
+94027:Atherton, CA
+94028:Portola Valley, CA
+94029:Menlo Park, CA
 94030:Millbrae, CA
+94031:Millbrae, CA
 94035:Mountain View, CA
 94037:Montara, CA
 94038:Moss Beach, CA
@@ -39433,7 +39540,6 @@
 94096:San Bruno, CA
 94098:San Bruno, CA
 94099:San Bruno, CA
-94100:San Francisco, CA
 94101:San Francisco, CA
 94102:San Francisco, CA
 94103:San Francisco, CA
@@ -39479,6 +39585,7 @@
 94144:San Francisco, CA
 94145:San Francisco, CA
 94146:San Francisco, CA
+94147:San Francisco, CA
 94150:San Francisco, CA
 94151:San Francisco, CA
 94152:San Francisco, CA
@@ -39486,14 +39593,22 @@
 94154:San Francisco, CA
 94155:San Francisco, CA
 94156:San Francisco, CA
+94157:San Francisco, CA
 94159:San Francisco, CA
 94160:San Francisco, CA
 94161:San Francisco, CA
 94162:San Francisco, CA
 94163:San Francisco, CA
 94164:San Francisco, CA
+94165:San Francisco, CA
+94166:San Francisco, CA
+94167:San Francisco, CA
+94168:San Francisco, CA
+94169:San Francisco, CA
+94170:San Francisco, CA
 94171:San Francisco, CA
 94175:San Francisco, CA
+94177:San Francisco, CA
 94188:San Francisco, CA
 94203:Sacramento, CA
 94204:Sacramento, CA
@@ -39557,14 +39672,16 @@
 94297:Sacramento, CA
 94298:Sacramento, CA
 94299:Sacramento, CA
-94300:Palo Alto, CA
 94301:Palo Alto, CA
 94302:Palo Alto, CA
 94303:Palo Alto, CA
 94304:Palo Alto, CA
-94305:Palo Alto, CA
+94305:Stanford, CA
 94306:Palo Alto, CA
+94307:Palo Alto, CA
+94308:Palo Alto, CA
 94309:Palo Alto, CA
+94310:Palo Alto, CA
 94400:San Mateo, CA
 94401:San Mateo, CA
 94402:San Mateo, CA
@@ -39589,7 +39706,7 @@
 94520:Concord, CA
 94521:Concord, CA
 94522:Concord, CA
-94523:Concord, CA
+94523:Pleasant Hill, CA
 94524:Concord, CA
 94525:Crockett, CA
 94526:Danville, CA
@@ -39668,7 +39785,7 @@
 94605:Oakland, CA
 94606:Oakland, CA
 94607:Oakland, CA
-94608:Oakland, CA
+94608:Emeryville, CA
 94609:Oakland, CA
 94610:Oakland, CA
 94611:Oakland, CA
@@ -39680,8 +39797,9 @@
 94617:Oakland, CA
 94618:Oakland, CA
 94619:Oakland, CA
-94620:Oakland, CA
+94620:Piedmont, CA
 94621:Oakland, CA
+94622:Oakland, CA
 94623:Oakland, CA
 94624:Oakland, CA
 94625:Oakland, CA
@@ -39692,7 +39810,7 @@
 94659:Oakland, CA
 94660:Oakland, CA
 94661:Oakland, CA
-94662:Oakland, CA
+94662:Emeryville, CA
 94666:Oakland, CA
 94701:Berkeley, CA
 94702:Berkeley, CA
@@ -39962,6 +40080,7 @@
 95334:Livingston, CA
 95335:Long Barn, CA
 95336:Manteca, CA
+95337:Manteca, CA
 95338:Mariposa, CA
 95339:Merced, CA
 95340:Merced, CA
@@ -40265,18 +40384,6 @@
 95758:Elk Grove, CA
 95759:Elk Grove, CA
 95761:South Lake Tahoe, CA
-95800:Sacramento, CA
-95801:Sacramento, CA
-95802:Sacramento, CA
-95803:Sacramento, CA
-95804:Sacramento, CA
-95805:Sacramento, CA
-95806:Sacramento, CA
-95807:Sacramento, CA
-95808:Sacramento, CA
-95809:Sacramento, CA
-95810:Sacramento, CA
-95811:Sacramento, CA
 95812:Sacramento, CA
 95813:Sacramento, CA
 95814:Sacramento, CA
@@ -40307,6 +40414,7 @@
 95840:Sacramento, CA
 95841:Sacramento, CA
 95842:Sacramento, CA
+95843:Antelope, CA
 95851:Sacramento, CA
 95852:Sacramento, CA
 95853:Sacramento, CA
@@ -40319,7 +40427,7 @@
 95873:Sacramento, CA
 95887:Sacramento, CA
 95894:Sacramento, CA
-95895:Sacramento, CA
+95899:Sacramento, CA
 95901:Marysville, CA
 95903:Marysville, CA
 95910:Alleghany, CA

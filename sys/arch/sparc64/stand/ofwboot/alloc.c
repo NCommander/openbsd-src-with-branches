@@ -1,3 +1,4 @@
+/*	$OpenBSD: alloc.c,v 1.2 2001/08/20 19:55:33 jason Exp $	*/
 /*	$NetBSD: alloc.c,v 1.1 2000/08/20 14:58:37 mrg Exp $	*/
 
 /*
@@ -177,7 +178,7 @@ free(ptr, size)
 	void *ptr;
 	unsigned size;	/* only for consistenct check */
 {
-	register struct ml *a = (struct ml *)((char*)ptr - OVERHEAD);
+	register struct ml *a = (struct ml *)((char *)ptr - OVERHEAD);
 
 #ifdef ALLOC_TRACE
 	printf("free(%lx, %u) (origsize %u)\n", (u_long)ptr, size, a->size);

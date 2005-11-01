@@ -375,6 +375,7 @@ getfh_compat (d_thread_t *p,
  * implement xfs fhget by combining (dev, ino, generation)
  */
 
+#ifndef __OpenBSD__
 static int
 trad_fhget (d_thread_t *p,
 	    struct ViceIoctl *vice_ioctl,
@@ -414,6 +415,7 @@ trad_fhget (d_thread_t *p,
     }
     return error;
 }
+#endif  /* ! __OpenBSD__ */
 
 /*
  * return file handle of `vp' in vice_ioctl->out
@@ -490,9 +492,16 @@ remote_pioctl (d_thread_t *p,
 	       struct ViceIoctl *vice_ioctl,
 	       struct vnode *vp)
 {
-    int error;
-    struct xfs_message_pioctl msg;
+    int error = 0;
+    struct xfs_message_pioctl *msg = NULL;
     struct xfs_message_wakeup_data *msg2;
+
+    msg = malloc(sizeof(struct xfs_message_symlink), M_TEMP, M_WAITOK);
+    if (msg == NULL) {
+        error = ENOMEM;
+	goto done;
+    }
+    memset(msg, 0, sizeof(*msg));
 
     if (vp != NULL) {
 	struct xfs_node *xn;
@@ -500,48 +509,51 @@ remote_pioctl (d_thread_t *p,
 	if (vp->v_tag != VT_AFS) {
 	    NNPFSDEB(XDEBSYS, ("xfs_syscall: file is not in afs\n"));
 	    vrele(vp);
-	    return EINVAL;
+	    error = EINVAL;
+	    goto done;
 	}
 
 	xn = VNODE_TO_XNODE(vp);
 
-	msg.handle = xn->handle;
+	msg->handle = xn->handle;
 	vrele(vp);
     }
 
     if (vice_ioctl->in_size < 0) {
 	printf("xfs: remote pioctl: got a negative data size: opcode: %d",
 	       SCARG(arg, a_opcode));
-	return EINVAL;
+	error = EINVAL;
+	goto done;
     }
 
     if (vice_ioctl->in_size > NNPFS_MSG_MAX_DATASIZE) {
 	printf("xfs_pioctl_call: got a humongous in packet: opcode: %d",
 	       SCARG(arg, a_opcode));
-	return EINVAL;
+	error = EINVAL;
+	goto done;
     }
     if (vice_ioctl->in_size != 0) {
-	error = copyin(vice_ioctl->in, msg.msg, vice_ioctl->in_size);
+	error = copyin(vice_ioctl->in, msg->msg, vice_ioctl->in_size);
 	if (error)
-	    return error;
+	  goto done;
     }
 
-    msg.header.opcode = NNPFS_MSG_PIOCTL;
-    msg.header.size = sizeof(msg);
-    msg.opcode = SCARG(arg, a_opcode);
+    msg->header.opcode = NNPFS_MSG_PIOCTL;
+    msg->header.size = sizeof(*msg);
+    msg->opcode = SCARG(arg, a_opcode);
 
-    msg.insize = vice_ioctl->in_size;
-    msg.outsize = vice_ioctl->out_size;
+    msg->insize = vice_ioctl->in_size;
+    msg->outsize = vice_ioctl->out_size;
 #ifdef HAVE_FREEBSD_THREAD
-    msg.cred.uid = xfs_thread_to_euid(p);
-    msg.cred.pag = xfs_get_pag(xfs_thread_to_cred(p));
+    msg->cred.uid = xfs_thread_to_euid(p);
+    msg->cred.pag = xfs_get_pag(xfs_thread_to_cred(p));
 #else
-    msg.cred.uid = xfs_proc_to_euid(p);
-    msg.cred.pag = xfs_get_pag(xfs_proc_to_cred(p));
+    msg->cred.uid = xfs_proc_to_euid(p);
+    msg->cred.pag = xfs_get_pag(xfs_proc_to_cred(p));
 #endif
 
-    error = xfs_message_rpc(0, &msg.header, sizeof(msg), p); /* XXX */
-    msg2 = (struct xfs_message_wakeup_data *) &msg;
+    error = xfs_message_rpc(0, &(msg->header), sizeof(*msg), p); /* XXX */
+    msg2 = (struct xfs_message_wakeup_data *) msg;
 
     if (error == 0)
 	error = msg2->error;
@@ -561,6 +573,8 @@ remote_pioctl (d_thread_t *p,
 
 	error = copyout(msg2->msg, vice_ioctl->out, len);
     }
+ done:
+    free(msg, M_TEMP);
     return error;
 }
 
@@ -648,7 +662,7 @@ xfs_pioctl_call(d_thread_t *proc,
     case VIOC_FHOPEN :
 	return fhopen_call (proc, &vice_ioctl, vp,
 			    SCARG(arg, a_followSymlinks), return_value);
-    case VIOC_NNPFSDEBUG :
+    case VIOC_XFSDEBUG :
 	if (vp != NULL)
 	    vrele (vp);
 	return xfs_debug (proc, &vice_ioctl);

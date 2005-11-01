@@ -275,7 +275,7 @@ strtotime(const char *str, isc_int64_t now, isc_int64_t base) {
 		val = now + offset;
 	} else if (strlen(str) == 8U) {
 		char timestr[15];
-		sprintf(timestr, "%s000000", str);
+		snprintf(timestr, sizeof(timestr), "%s000000", str);
 		result = dns_time64_fromtext(timestr, &val);
 		if (result != ISC_R_SUCCESS)
 			fatal("time value %s is invalid", str);

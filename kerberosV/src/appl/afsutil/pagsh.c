@@ -99,7 +99,6 @@ main(int argc, char **argv)
   int i;
   int optind = 0;
 
-  set_progname(argv[0]);
   if(getarg(getargs, num_args, argc, argv, &optind))
       usage(1);
   if(help_flag)
@@ -113,7 +112,7 @@ main(int argc, char **argv)
   argv += optind;
 
 #ifdef KRB5
-  snprintf (tf, sizeof(tf), "%sXXXXXX", KRB5_DEFAULT_CCROOT);
+  snprintf (tf, sizeof(tf), "%sXXXXXXXXXX", KRB5_DEFAULT_CCROOT);
   f = mkstemp (tf + 5);
   close (f);
   unlink (tf + 5);
@@ -121,7 +120,7 @@ main(int argc, char **argv)
 #endif
 
 #ifdef KRB4
-  snprintf (tf, sizeof(tf), "%s_XXXXXX", TKT_ROOT);
+  snprintf (tf, sizeof(tf), "%s_XXXXXXXXXX", TKT_ROOT);
   f = mkstemp (tf);
   close (f);
   unlink (tf);

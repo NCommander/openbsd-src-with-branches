@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopchk.c,v 1.9 2003/06/02 21:38:39 maja Exp $	*/
+
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -28,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: mopchk.c,v 1.5 1996/08/16 22:46:55 moj Exp $";
+static const char rcsid[] = "$OpenBSD: mopchk.c,v 1.9 2003/06/02 21:38:39 maja Exp $";
 #endif
 
 /*
@@ -50,21 +47,16 @@ static char rcsid[] = "$Id: mopchk.c,v 1.5 1996/08/16 22:46:55 moj Exp $";
  */
 struct if_info *iflist;
 
-#ifdef NO__P
-void   Usage         (/* void */);
-void   mopProcess    (/* struct if_info *, u_char * */);
-#else
-void   Usage         __P((void));
-void   mopProcess    __P((struct if_info *, u_char *));
-#endif
+void   Usage(void);
+void   mopProcess(struct if_info *, u_char *);
 
 int     AllFlag = 0;		/* listen on "all" interfaces  */
 int	VersionFlag = 0;	/* Show version */
 int	promisc = 0;		/* promisc mode not needed */
 char	*Program;
-char	version[];
+extern char version[];
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -87,7 +79,7 @@ main(argc, argv)
 	openlog(Program, LOG_PID | LOG_CONS, LOG_DAEMON);
 
 	opterr = 0;
-	while ((op = getopt(argc, argv, "av")) != EOF) {
+	while ((op = getopt(argc, argv, "av")) != -1) {
 		switch (op) {
 		case 'a':
 			AllFlag++;
@@ -155,13 +147,13 @@ main(argc, argv)
 			};
 		}
 	}
-
+	return 0;
 }
 
 void
 Usage()
 {
-	(void) fprintf(stderr, "usage: %d [-a] [-v] [filename...]\n",Program);
+	(void) fprintf(stderr, "usage: %s [-a] [-v] [filename...]\n",Program);
 	exit(1);
 }
 

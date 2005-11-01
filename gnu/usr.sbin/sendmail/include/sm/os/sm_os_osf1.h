@@ -6,7 +6,7 @@
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: sm_os_osf1.h,v 1.1 2001/02/22 22:07:14 gshapiro Exp $
+ *	$Sendmail: sm_os_osf1.h,v 1.3 2001/10/09 23:12:13 ca Exp $
  */
 
 /*

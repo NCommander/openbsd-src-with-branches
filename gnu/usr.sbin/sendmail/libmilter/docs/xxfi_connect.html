@@ -1,6 +1,9 @@
 <html>
 <head><title>xxfi_connect</title></head>
 <body>
+<!--
+$Sendmail: xxfi_connect.html,v 1.13 2003/10/29 22:54:16 msk Exp $
+-->
 <h1>xxfi_connect</h1>
 
 <table border="0" cellspacing=4 cellpadding=4>
@@ -49,7 +52,10 @@ is passed to smfi_register().
 	    address enclosed in square brackets (e.g. `[a.b.c.d]').
 	</td></tr>
     <tr><td>hostaddr</td>
-	<td>the host address, as determined by a getpeername() call on the SMTP socket.  NULL if the type is not supported in the current version.</td></tr>
+	<td>the host address, as determined by a getpeername() call on the SMTP socket.
+	 NULL if the type is not supported in the current version or if
+	the SMTP connection is made via stdin.
+	</td></tr>
     </table>
 </td></tr>
 <!----------- Return values ---------->
@@ -59,10 +65,30 @@ is passed to smfi_register().
 <td><table border="1" cellspacing=0>
   <tr bgcolor="#dddddd"><th>Return value</th><th>Description</th></tr>
   <tr valign="top">
-     <td>SMFIS_DISCARD</td>
-     <td>Not meaningful, as
-        this is only meaningful from message-oriented routines.
+     <td>SMFIS_ACCEPT</td>
+     <td>Accept all commands and messages from this client without any
+         further contact with the filter. </td>
      </td>
+  </tr>
+  <tr valign="top">
+     <td>SMFIS_CONTINUE</td>
+     <td>Continue normal processing. </td>
+  </tr>
+  <tr valign="top">
+     <td>SMFIS_DISCARD</td>
+     <td>Undefined behaviour; do not use. </td>
+  </tr>
+  <tr valign="top">
+     <td>SMFIS_TEMPFAIL</td>
+     <td>Reject all commands and messages from this client with a
+         temporary failure reply code.  If also used in conjunction
+         with <tt>smfi_setreply()</tt> to set a reply whose SMTP
+         code is 421, the MTA will drop the connection immediately. </td>
+  </tr>
+  <tr valign="top">
+     <td>SMFIS_REJECT</td>
+     <td>Reject all commands and messages from this client with a
+         permanent failure reply code. </td>
   </tr>
 </table>
 </tr>
@@ -77,11 +103,11 @@ routine, this filter's xxfi_connect() will not be called.</td>
 
 <hr size="1">
 <font size="-1">
-Copyright (c) 2000 Sendmail, Inc. and its suppliers.
+Copyright (c) 2000-2001, 2003 Sendmail, Inc. and its suppliers.
 All rights reserved.
 <br>
 By using this file, you agree to the terms and conditions set
-forth in the <a href="LICENSE.txt">LICENSE</a>.
+forth in the LICENSE.
 </font>
 </body>
 </html>

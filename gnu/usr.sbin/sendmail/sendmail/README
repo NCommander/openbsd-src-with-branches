@@ -1,4 +1,4 @@
-# Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+# Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.
 #	All rights reserved.
 # Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
 # Copyright (c) 1988
@@ -9,7 +9,7 @@
 # the sendmail distribution.
 #
 #
-#	$Sendmail: README,v 8.333 2001/09/08 01:21:08 gshapiro Exp $
+#	$Sendmail: README,v 8.386 2005/03/04 23:24:08 ca Exp $
 #
 
 This directory contains the source files for sendmail(TM).
@@ -73,7 +73,8 @@ file.
 
 You can recompile from scratch using the -c flag with the Build
 command.  This removes the existing compilation directory for the
-current platform and builds a new one.
+current platform and builds a new one.  The -c flag must also
+be used if any site.*.m4 file in devtools/Site/ is changed.
 
 Porting to a new Unix-based system should be a matter of creating
 an appropriate configuration file in the devtools/OS/ directory.
@@ -101,6 +102,8 @@ NEWDB		The new Berkeley DB package.  Some systems (e.g., BSD/OS and
 		Berkeley DB library to a current version.  NEWDB is included
 		automatically if the Build script can find a library named
 		libdb.a or libdb.so.
+		See also OPERATING SYSTEM AND COMPILE QUIRKS about Berkeley
+		DB versions, e.g., DB 4.1.x.
 NDBM		The older NDBM implementation -- the very old V7 DBM
 		implementation is no longer supported.
 NIS		Network Information Services.  To use this you must have
@@ -122,8 +125,10 @@ MAP_REGEX	Regular Expression support.  You will need to use an
 		the Free Software Foundation.
 DNSMAP		DNS map support.  Requires NAMED_BIND.
 PH_MAP		PH map support.  You will need the libphclient library from
-		the nph package (http://www-dev.cso.uiuc.edu/ph/nph/).
+		the nph package (http://www-dev.cites.uiuc.edu/ph/nph/).
 MAP_NSD		nsd map support (IRIX 6.5 and later).
+SOCKETMAP	Support for a trivial query protocol over UNIX domain or TCP
+		sockets. 
 
 >>>  NOTE WELL for NEWDB support: If you want to get ndbm support, for
 >>>  Berkeley DB versions under 2.0, it is CRITICAL that you remove
@@ -158,8 +163,8 @@ and the filename includes the string "/yp/", sendmail adds the special
 tokens "YP_LAST_MODIFIED" and "YP_MASTER_NAME", both of which are
 required if the NDBM file is to be used as an NIS map.
 
-All of these flags are normally defined in the DBMDEF line in the
-Makefile.
+All of these flags are normally defined in a confMAPDEF setting in your
+site.config.m4.
 
 If you define NEWDB or HESIOD you get the User Database (USERDB)
 automatically.  Generally you do want to have NEWDB for it to do
@@ -177,6 +182,15 @@ addresses, so "^[0-9]+$" would match this.  By using such a map in a
 check_* rule-set, you can block a certain range of addresses that would
 otherwise be considered valid.
 
+The socket map uses a simple request/reply protocol over TCP or
+UNIX domain sockets to query an external server. Both requests and
+replies are text based and encoded as netstrings.  The socket map
+uses the same syntax as milters the specify the remote endpoint,
+e.g.:
+
+Ksocket mySocketMap inet:12345@127.0.0.1
+
+See doc/op/op.me for details.
 
 +---------------+
 | COMPILE FLAGS |
@@ -201,6 +215,8 @@ SYS5SIGNALS	Use System V signal semantics -- the signal handler
 		signal handler stays in force until an exec or an
 		explicit delete.  Implied by SYSTEM5.
 SYS5SETPGRP	Use System V setpgrp() semantics.  Implied by SYSTEM5.
+HASNICE		Define this to zero if you lack the nice(2) system call.
+HASRRESVPORT	Define this to zero if you lack the rresvport(3) system call.
 HASFCHMOD	Define this to one if you have the fchmod(2) system call.
 		This improves security.
 HASFCHOWN	Define this to one if you have the fchown(2) system call.
@@ -251,6 +267,15 @@ USESETEUID	Define this to 1 if you have a seteuid(2) system call that
 		Posix.1.  The test program ../test/t_seteuid.c will try
 		this out on your system.  If you define both HASSETREUID
 		and USESETEUID, the former is ignored.
+HASSETEGID	Define this if you have setegid(2) and it can be
+		used to set the saved gid.  Please run t_dropgid in
+		test/ if you are not sure whether the call works.
+HASSETREGID	Define this if you have setregid(2) and it can be
+		used to set the saved gid.  Please run t_dropgid in
+		test/ if you are not sure whether the call works.
+HASSETRESGID	Define this if you have setresgid(2) and it can be
+		used to set the saved gid.  Please run t_dropgid in
+		test/ if you are not sure whether the call works.
 HASLSTAT	Define this if you have symbolic links (and thus the
 		lstat(2) system call).  This improves security.  Unlike
 		most other options, this one is on by default, so you
@@ -273,11 +298,14 @@ HASURANDOMDEV	Define this if your system has /dev/urandom(4).
 HASSTRERROR	Define this if you have the libc strerror(3) function (which
 		should be declared in <errno.h>), and it should be used
 		instead of sys_errlist.
+HASCLOSEFROM	Define this if your system has closefrom(3).
+HASFDWALK	Define this if your system has fdwalk(3).
 SM_CONF_GETOPT	Define this as 0 if you need a reimplementation of getopt(3).
 		On some systems, getopt does very odd things if called
 		to scan the arguments twice.  This flag will ask sendmail
 		to compile in a local version of getopt that works
-		properly.
+		properly.  You may also need this if you build with
+		another library that introduces a non-standard getopt(3).
 NEEDSTRTOL	Define this if your standard C library does not define
 		strtol(3).  This will compile in a local version.
 NEEDFSYNC	Define this if your standard C library does not define
@@ -347,6 +375,9 @@ LA_TYPE		The type of load average your kernel supports.  These
 		 LA_DEVSHORT (13) reads a short from a system file (default:
 			/dev/table/avenrun) and scales it in the same manner
 			as LA_SHORT.
+		 LA_LONGLONG (17) to read /dev/kmem for the symbol avenrun and
+			interpret as a long long integer (e.g., for 64 bit
+			systems).
 		LA_INT, LA_SHORT, LA_FLOAT, and LA_READKSYM have several
 		other parameters that they try to divine: the name of your
 		kernel, the name of the variable in the kernel to examine,
@@ -452,13 +483,25 @@ SO_REUSEADDR_IS_BROKEN
 NEEDSGETIPNODE	Set this if your system supports IPv6 but doesn't include
 		the getipnodeby{name,addr}() functions.  Set automatically
 		for Linux's glibc.
-SM_CONF_STRL
-		By default this is on (1).  This uses the sendmail versions
-		of strlcpy and strlcat (called sm_strlcpy and sm_strlcat
-		respectively).  The program ../libsm/b-strl.c can be used
-		to determine performance of these functions if your OS
-		has these functions natively.
 PIPELINING	Support SMTP PIPELINING	(set by default).
+USING_NETSCAPE_LDAP
+		Deprecated in favor of SM_CONF_LDAP_MEMFREE.  See
+		libsm/README.
+NEEDLINK	Set this if your system doesn't have a link() call.  It
+		will create a copy of the file instead of a hardlink.
+USE_ENVIRON	Set this to 1 to access process environment variables from
+		the external variable environ instead of the third
+		parameter of main().
+USE_DOUBLE_FORK By default this is on (1).  Set it to 0 to suppress the
+		extra fork() used to avoid intermediate zombies.
+ALLOW_255	Do not convert (char)0xff to (char)0x7f in headers etc.
+		This can also be done at runtime with the command line
+		option -d82.101.
+NEEDINTERRNO	Set this if <errno.h> does not declare errno, i.e., if an
+		application needs to use
+		extern int errno;
+USE_TTYPATH	Set this to 1 to enable ErrorMode=write.
+USESYSCTL	Use sysctl(3) to determine the number of CPUs in a system.
 
 
 +-----------------------+
@@ -539,6 +582,11 @@ MATCHGECOS	Permit fuzzy matching of user names against the full
 MIME8TO7	If non-zero, include 8 to 7 bit MIME conversions.  This
 		also controls advertisement of 8BITMIME in the ESMTP
 		startup dialogue.
+MIME7TO8_OLD	If 0 then use an algorithm for MIME 7-bit quoted-printable
+		or base64 encoding to 8-bit text that has been introduced
+		in 8.12.3.  There are some examples where that code fails,
+		but the old code works.  If you have an example of improper
+		7 to 8 bit conversion please send it to sendmail-bugs.
 MIME7TO8	If non-zero, include 7 to 8 bit MIME conversions.
 HES_GETMAILHOST	Define this to 1 if you are using Hesiod with the
 		hes_getmailhost() routine.  This is included with the MIT
@@ -569,7 +617,7 @@ SASL		Enables SMTP AUTH (RFC 2554).  This requires the Cyrus SASL
 		compared with the actual version found and if there is a
 		mismatch, compilation will fail.
 EGD		Define this if your system has EGD installed, see
-		http://www.lothar.com/tech/crypto/ .  It should be used to
+		http://egd.sourceforge.net/ .  It should be used to
 		seed the PRNG for STARTTLS if HASURANDOMDEV is not defined.
 STARTTLS	Enables SMTP STARTTLS (RFC 2487).  This requires OpenSSL
 		(http://www.OpenSSL.org/); use OpenSSL 0.9.5a or later
@@ -577,14 +625,24 @@ STARTTLS	Enables SMTP STARTTLS (RFC 2487).  This requires OpenSSL
 		See STARTTLS COMPILATION AND CONFIGURATION for further
 		information.
 TLS_NO_RSA	Turn off support for RSA algorithms in STARTTLS.
-MILTER		Turn on support for external filters using the Milter API.
-		See libmilter/README for more information.
+MILTER		Turn on support for external filters using the Milter API;
+		this option is set by default, to turn it off use
+			APPENDDEF(`conf_sendmail_ENVDEF', `-DMILTER=0')
+		in devtools/Site/site.config.m4 (see devtools/README).
+		See libmilter/README for more information about milter.
 REQUIRES_DIR_FSYNC	Turn on support for file systems that require to
 		call fsync() for a directory if the meta-data in it has
-		been changed.  This should be turned on at least for
-		ReiserFS; it is enabled by default for Linux.  An alternative
-		to this compile time flag is to mount the queue directory
-		without the -async option, or using chattr +S on Linux.
+		been changed.  This should be turned on at least for older
+		versions of ReiserFS; it is enabled by default for Linux.
+		According to some information this flag is not needed
+		anymore for kernel 2.4.16 and newer.  We would appreciate
+		feedback about the semantics of the various file systems
+		available for Linux.
+		An alternative to this compile time flag is to mount the
+		queue directory without the -async option, or using
+		chattr +S on Linux.
+DBMMODE		The default file permissions to use when creating new
+		database files for maps and aliases.  Defaults to 0640.
 
 Generic notice: If you enable a compile time option that needs
 libraries or include files that don't come with sendmail or are
@@ -661,6 +719,20 @@ and try again.  Then take a look at the logfile and see whether
 there are any problems listed about permissions (unsafe files)
 or the validity of X.509 certificates.
 
+From: Garrett Wollman <wollman@lcs.mit.edu>
+
+    If your certificate authority is hierarchical, and you only include
+    the top-level CA certificate in the CACertFile file, some mail clients
+    may be unable to infer the proper certificate chain when selecting a
+    client certificate.  Including the bottom-level CA certificate(s) in
+    the CACertFile file will allow these clients to work properly.  This
+    is not necessary if you are not using client certificates for
+    authentication, or if all your clients are running Sendmail or other
+    programs using the OpenSSL library (which get it right automatically).
+    In addition, some mail clients are totally incapable of using
+    certificate authentication -- even some of those which already support
+    SSL/TLS for confidentiality.
+
 Further information can be found via:
 http://www.sendmail.org/tips/
 
@@ -672,7 +744,7 @@ http://www.sendmail.org/tips/
 Please read the documentation accompanying the Cyrus SASL library
 (INSTALL and README).  If you use Berkeley DB for Cyrus SASL then
 you must compile sendmail with the same version of Berkeley DB.
-See devtools/README how to set the correct compile time parameters;
+See devtools/README for how to set the correct compile time parameters;
 you should at least set the following variables:
 
 APPENDDEF(`conf_sendmail_ENVDEF', `-DSASL')
@@ -685,7 +757,7 @@ BUILDING SENDMAIL.
 
 You have to select and install authentication mechanisms and tell
 sendmail where to find the sasl library and the include files (see
-devtools/README for the parameters to set).  Setup the required
+devtools/README for the parameters to set).  Set up the required
 users and passwords as explained in the SASL documentation.  See
 also cf/README for authentication related options (especially
 DefaultAuthInfo if you want authentication between MTAs).
@@ -734,7 +806,11 @@ GCC problems
 	We have been told there are problems with gcc 2.8.0.  If you are
 	using this version, you should upgrade to 2.8.1 or later.
 
-GDBM	GDBM does not work with sendmail 8.8 because the additional
+Berkeley DB
+	Berkeley DB 4.1.x with x <= 24 does not work with sendmail.
+	You need at least 4.1.25.
+
+GDBM	GDBM does not work with sendmail because the additional
 	security checks and file locking cause problems.  Unfortunately,
 	gdbm does not provide a compile flag in its version of ndbm.h so
 	the code can adapt.  Until the GDBM authors can fix these problems,
@@ -767,6 +843,23 @@ ControlSocket permissions
 	override the default path and put such control sockets into root-
 	owned directories which do not permit non-root to r/w/x through them.
 	The long term fix is for all kernels to upgrade to 4.4BSD semantics.
+
+HP MPE/iX
+	The MPE-specific code within sendmail emulates a set-user-id root
+	environment for the sendmail binary.  But there is no root uid 0 on
+	MPE, nor is there any support for set-user-id programs.  Even when
+	sendmail thinks it is running as uid 0, it will still have the file
+	access rights of the underlying non-zero uid, but because sendmail is
+	an MPE priv-mode program it will still be able to call setuid() to
+	successfully switch to a new uid.
+
+	MPE setgid() semantics don't quite work the way sendmail expects, so
+	special emulation is done here also.
+
+	This uid/gid emulation is enabled via the setuid/setgid file mode bits
+	which are not currently used by MPE.  Code in libsm/mpeix.c examines
+	these bits and enables emulation if they have been set, i.e.,
+	chmod u+s,g+s /SENDMAIL/CURRENT/SENDMAIL.
 
 SunOS 4.x (Solaris 1.x)
 	You may have to use -lresolv on SunOS.  However, beware that
@@ -844,10 +937,10 @@ Solaris 2.x (SunOS 5.x)
 	make sure /opt/SUNWspro/bin/cc is used instead of /usr/ucb/cc
 	(or it might complain about tm_zone).
 
-	The Solaris "syslog" function is apparently limited to something
-	about 90 characters because of a kernel limitation.  If you have
-	source code, you can probably up this number.  You can get patches
-	that fix this problem: the patch ids are:
+	The Solaris 2.x (x <= 3) "syslog" function is apparently limited
+	to something about 90 characters because of a kernel limitation.
+	If you have source code, you can probably up this number.  You
+	can get patches that fix this problem:  the patch ids are:
 
 		Solaris 2.1	100834
 		Solaris 2.2	100999
@@ -930,11 +1023,20 @@ Solaris 7 (SunOS 5.7)
 
 Solaris 8 and later (SunOS 5.8 and later)
 	Solaris 8 and later can optionally install LDAP support.  If you
-	have installed the Entire Distribution meta-cluster cluster, you
-	can use the following in devtools/Site/site.SunOS.5.8.m4 (or other
+	have installed the Entire Distribution meta-cluster, you can use
+	the following in devtools/Site/site.SunOS.5.8.m4 (or other
 	appropriately versioned file) to enable LDAP:
 
 	APPENDDEF(`confMAPDEF', `-DLDAPMAP')
+	APPENDDEF(`confLIBS', `-lldap')
+
+Solaris 9 and later (SunOS 5.9 and later)
+	Solaris 9 and later have a revised LDAP library, libldap.so.5,
+	which is derived from a Netscape implementation, thus requiring
+	that SM_CONF_LDAP_MEMFREE be defined in conjunction with LDAPMAP:
+
+	APPENDDEF(`confMAPDEF', `-DLDAPMAP')
+	APPENDDEF(`confENVDEF', `-DSM_CONF_LDAP_MEMFREE')
 	APPENDDEF(`confLIBS', `-lldap')
 
 Solaris
@@ -946,7 +1048,7 @@ Solaris
 
 	Do not use:
 
-		host:  nisplus dns [NOTFOUND=return] files
+		hosts:  nisplus dns [NOTFOUND=return] files
 
 	Note that 'nisplus' above is an illustration.  The same comment
 	applies no matter what naming services you are using.  If you have
@@ -1222,9 +1324,15 @@ HP-UX 8.00
 	README file for the future...
 
 Linux
-	Something broke between versions 0.99.13 and 0.99.14 of Linux:
-	the flock() system call gives errors.  If you are running .14,
-	you must not use flock.  You can do this with -DHASFLOCK=0.
+	Something broke between versions 0.99.13 and 0.99.14 of Linux: the
+	flock() system call gives errors.  If you are running .14, you must
+	not use flock.  You can do this with -DHASFLOCK=0.  We have also
+	been getting complaints since version 2.4.X was released.
+	sendmail 8.13 has changed the default locking method to fcntl()
+	for Linux kernel version 2.4 and later.  Be sure to update other
+	sendmail related programs to match locking techniques (some
+	examples, besides makemap and mail.local, include procmail, mailx,
+	mutt, elm, etc).
 
 	Around the inclusion of bind-4.9.3 & Linux libc-4.6.20, the
 	initialization of the _res structure changed.  If /etc/hosts.conf
@@ -1279,7 +1387,7 @@ AIX 4.X
 	/usr/lib and /lib.  If you need to allow more directories, such as
 	/usr/local/lib, modify your devtools/Site/site.AIX.4.2.m4,
 	site.AIX.4.3.m4, and/or site.AIX.4.x.m4 file(s) and set confLDOPTS
-	approriately.  For example:
+	appropriately.  For example:
 
 	define(`confLDOPTS', `-blibpath:/usr/lib:/lib:/usr/local/lib')
 
@@ -1290,6 +1398,19 @@ AIX 4.X
 	For example:
 
 	gcc -Wl,-rpath /usr/lib -Wl,-rpath /lib -Wl,-rpath /usr/local/lib
+
+AIX 4.X	If the test program t-event (and most others) in libsm fails,
+	check your compiler settings.  It seems that the flags -qnoro or
+	-qnoroconst on some AIX versions trigger a compiler bug.  Check
+	your compiler settings or use cc instead of xlc.
+
+AIX 4.0-4.2, maybe some AIX 4.3 versions
+	The AIX m4 implements a different mechanism for ifdef which is
+	inconsistent with other versions of m4.  Therefore, it will not
+	work properly with the sendmail Build architecture or m4
+	configuration method.  To work around this problem, please use
+	GNU m4 from ftp://ftp.gnu.org/pub/gnu/.
+	The problem seems to be solved in AIX 4.3.3 at least.
 
 AIX 4.3.3
 	From: Valdis.Kletnieks@vt.edu
@@ -1304,13 +1425,6 @@ AIX 4.3.3
 	1) Compile without -DNETINET6
 	2) Build against a real BIND 8.2.2 include/lib tree
 	3) Wait for IBM to fix it
-
-AIX 4.X
-	The AIX m4 implements a different mechanism for ifdef which is
-	inconsistent with other versions of m4.  Therefore, it will not
-	work properly with the sendmail Build architecture or m4
-	configuration method.  To work around this problem, please use
-	GNU m4 from ftp://ftp.gnu.org/pub/gnu/.
 
 AIX 3.x
 	This version of sendmail does not support MB, MG, and MR resource
@@ -1424,8 +1538,12 @@ UNICOS 8.0.3.4
 	problems.  You may want to turn this off if you have problems
 	running sendmail.  Reported by Jerry G. DeLapp <jgd@acl.lanl.gov>.
 
-Mac OS X (10.0.X)
-	From: Mike Zimmerman <zimmy@torrentnet.com>
+Darwin/Mac OS X (10.X.X)
+	The linker errors produced regarding getopt() and its associated
+	variables can safely be ignored.
+
+	From Mike Zimmerman <zimmy@torrentnet.com>:
+
 	From scratch here is what Darwin users need to do to the standard
 	10.0.0, 10.0.1 install to get sendmail working.
 	From http://www.macosx.com/forums/showthread.php?s=6dac0e9e1f3fd118a4870a8a9b559491&threadid=2242:
@@ -1438,6 +1556,50 @@ Mac OS X (10.0.X)
 	4. Edit /System/Library/StartupItems/Sendmail/Sendmail:
 	   Remove the "&" after the sendmail command:
 	   /usr/sbin/sendmail -bd -q1h
+
+	From Carsten Klapp <carsten.klapp@home.com>:
+
+	The easiest workaround is to remove the group-writable permission
+	for the root directory and the symbolic /etc inherits this
+	change. While this does fix sendmail, the unfortunate side-effect
+	is the OS X admin will no longer be able to manipulate icons in the
+	top level of the Startup disk unless logged into the GUI as the
+	superuser.
+
+	In applying the alternate workaround, care must be taken while
+	swapping the symlink /etc with the directory /private/etc. In all
+	likelihood any admin who is concerned with this sendmail error has
+	enough experience to not accidentally harm anything in the process.
+
+	a. Swap the /etc symlink with /private/etc (as superuser):
+	   rm /etc
+	   mv /private/etc /etc
+	   ln -s /etc /private/etc
+
+	b. Set / to group unwritable (as superuser):
+	   chmod g-w /
+
+Darwin/Mac OS X (10.1.5)
+	Apple's upgrade to sendmail 8.12 is incorrectly configured.  You
+	will need to manually fix it up by doing the following:
+
+	1. chown smmsp:smmsp /var/spool/clientmqueue
+	2. chmod 2770 /var/spool/clientmqueue
+	3. chgrp smmsp /usr/sbin/sendmail
+	4. chmod g+s /usr/sbin/sendmail
+
+	From Daniel J. Luke <dluke@geeklair.net>:
+
+	It appears that setting the sendmail.cf property in
+	/locations/sendmail in NetInfo on Mac OS X 10.1.5 with sendmail
+	8.12.4 causes 'bad things' to happen.
+
+	Specifically sendmail instances that should be getting their config
+	from /etc/mail/submit.cf don't (so mail/mutt/perl scripts which
+	open pipes to sendmail stop working as sendmail tries to write to
+	/var/spool/mqueue and cannot as sendmail is no longer suid root).
+
+	Removing the entry from NetInfo fixes this problem.
 
 GNU getopt
 	I'm told that GNU getopt has a problem in that it gets confused
@@ -1492,7 +1654,7 @@ Listproc 6.0c
 
 	Just upgraded to sendmail 8.7, and discovered that listproc 6.0c
 	breaks, because it, by default, sends a blank "HELO" rather than
-	a "HELO hostname" when using the 'system' or 'telnet' mailmethod.
+	a "HELO hostname" when using the 'system' or 'telnet' mail method.
 
 	The fix is to include -DZMAILER in the compilation, which will
 	cause it to use "HELO hostname" (which Z-mail apparently requires
@@ -1507,7 +1669,7 @@ OpenSSL
 
 PH
 	PH support is provided by Mark Roth <roth@uiuc.edu>.  The map is
-	described at http://www-dev.cso.uiuc.edu/sendmail/ .
+	described at http://www-dev.cites.uiuc.edu/sendmail/ .
 
 	NOTE: The "spacedname" pseudo-field which was used by earlier
 	versions of the PH map code is no longer supported!  See the URL
@@ -1664,4 +1826,4 @@ util.c		Some general purpose routines used by sendmail.
 version.c	The version number and information about this
 		version of sendmail.
 
-(Version $Revision: 8.333 $, last update $Date: 2001/09/08 01:21:08 $ )
+(Version $Revision: 8.386 $, last update $Date: 2005/03/04 23:24:08 $ )

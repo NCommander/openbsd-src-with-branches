@@ -1,4 +1,5 @@
-#	@(#)Makefile	1.8 (Berkeley) 6/8/93
+#	$OpenBSD: Makefile,v 1.2 2001/02/03 08:14:58 niklas Exp $
+
 
 DIR=	papers/memfs
 SRCS=	0.t 1.t
@@ -9,6 +10,8 @@ CLEANFILES=ref.bib.i A.gt paper.t
 
 paper.ps: paper.t
 	${ROFF} tmac.srefs paper.t > ${.TARGET}
+paper.txt: paper.t
+	${ROFF} -Tascii tmac.srefs paper.t > ${.TARGET}
 
 paper.t: ${SRCS} ref.bib.i A.gt
 	${REFER} ${SRCS} A.gt > ${.TARGET}

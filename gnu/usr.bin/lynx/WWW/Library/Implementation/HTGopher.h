@@ -11,8 +11,8 @@
 #ifndef HTGOPHER_H
 #define HTGOPHER_H
 
-#include "HTAccess.h"
-#include "HTAnchor.h"
+#include <HTAccess.h>
+#include <HTAnchor.h>
 
 #ifdef GLOBALREF_IS_MACRO
 extern GLOBALREF (HTProtocol, HTGopher);
@@ -21,7 +21,3 @@ GLOBALREF HTProtocol HTGopher;
 #endif /* GLOBALREF_IS_MACRO */
 
 #endif /* HTGOPHER_H */
-
-/*
-
-   end of gopher module */

@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,23 +28,23 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)calloc.c	5.6 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: calloc.c,v 1.5 1993/11/30 21:55:35 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include <errno.h>
 
 void *
-calloc(num, size)
-	size_t num;
-	register size_t size;
+calloc(size_t num, size_t size)
 {
-	register void *p;
+	void *p;
 
+	if (num && size && SIZE_T_MAX / num < size) {
+		errno = ENOMEM;
+		return NULL;
+	}
 	size *= num;
-	if (p = malloc(size))
-		memset(p, '\0', size);
+	p = malloc(size);
+	if (p)
+		memset(p, 0, size);
 	return(p);
 }

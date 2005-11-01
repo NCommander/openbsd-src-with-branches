@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.6 1995/05/06 06:25:07 jtc Exp $	*/
+/*	$OpenBSD: main.c,v 1.30 2004/04/26 19:22:30 itojun Exp $	*/
+/*	$NetBSD: main.c,v 1.8 1996/05/10 23:16:36 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,84 +40,107 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/05/06 06:25:07 jtc Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.30 2004/04/26 19:22:30 itojun Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
+#include <sys/sysctl.h>
 
 #include <err.h>
 #include <nlist.h>
 #include <signal.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <stdarg.h>
 
 #include "systat.h"
 #include "extern.h"
 
-static struct nlist namelist[] = {
-#define X_FIRST		0
-#define	X_HZ		0
-	{ "_hz" },
-#define	X_STATHZ		1
-	{ "_stathz" },
-	{ "" }
-};
-static int     dellave;
+double	dellave;
 
-kvm_t *kd;
+kvm_t	*kd;
+char	*nlistf = NULL;
+char	*memf = NULL;
 sig_t	sigtstpdfl;
-double avenrun[3];
-int     col;
+double	avenrun[3];
+int	col;
 int	naptime = 5;
-int     verbose = 1;                    /* to report kvm read errs */
-int     hz, stathz;
+int	verbose = 1;		/* to report kvm read errs */
+int	nflag = 0;
+int	hz, stathz;
 char    c;
 char    *namp;
 char    hostname[MAXHOSTNAMELEN];
 WINDOW  *wnd;
-int     CMDLINE;
+long	CMDLINE;
 
-static	WINDOW *wload;			/* one line window for load average */
+WINDOW *wload;			/* one line window for load average */
 
-void
-main(argc, argv)
-	int argc;
-	char **argv;
+static void usage(void);
+
+int
+main(int argc, char *argv[])
 {
-	char errbuf[80];
+	int ch;
+	char errbuf[_POSIX2_LINE_MAX];
+	gid_t gid;
 
-	argc--, argv++;
-	while (argc > 0) {
-		if (argv[0][0] == '-') {
-			struct cmdtab *p;
-
-			p = lookup(&argv[0][1]);
-			if (p == (struct cmdtab *)-1)
-				errx(1, "ambiguous request: %s", &argv[0][1]);
-			if (p == 0)
-				errx(1, "unknown request: %s", &argv[0][1]);
-			curcmd = p;
-		} else {
-			naptime = atoi(argv[0]);
-			if (naptime <= 0)
-				naptime = 5;
-		}
-		argc--, argv++;
-	}
 	kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
 	if (kd == NULL) {
 		error("%s", errbuf);
 		exit(1);
 	}
-	if (kvm_nlist(kd, namelist)) {
-		nlisterr(namelist);
-		exit(1);
+
+	gid = getgid();
+	if (setresgid(gid, gid, gid) == -1)
+		err(1, "setresgid");
+
+	while ((ch = getopt(argc, argv, "nw:")) != -1)
+		switch (ch) {
+		case 'n':
+			nflag = 1;
+			break;
+		case 'w':
+			if ((naptime = atoi(optarg)) <= 0)
+				errx(1, "interval <= 0.");
+			break;
+		default:
+			usage();
+		}
+	argc -= optind;
+	argv += optind;
+
+	while (argc > 0) {
+		if (isdigit(argv[0][0])) {
+			naptime = atoi(argv[0]);
+			if (naptime <= 0)
+				naptime = 5;
+		} else {
+			struct cmdtab *p;
+
+			p = lookup(&argv[0][0]);
+			if (p == (struct cmdtab *)-1)
+				errx(1, "ambiguous request: %s", &argv[0][0]);
+			if (p == 0)
+				errx(1, "unknown request: %s", &argv[0][0]);
+			curcmd = p;
+		}
+		argc--;
+		argv++;
 	}
-	if (namelist[X_FIRST].n_type == 0)
-		errx(1, "couldn't read namelist");
-	signal(SIGINT, die);
-	signal(SIGQUIT, die);
-	signal(SIGTERM, die);
+
+	signal(SIGINT, sigdie);
+	siginterrupt(SIGINT, 1);
+	signal(SIGQUIT, sigdie);
+	siginterrupt(SIGQUIT, 1);
+	signal(SIGTERM, sigdie);
+	siginterrupt(SIGTERM, 1);
+	signal(SIGTSTP, sigtstp);
+	siginterrupt(SIGTSTP, 1);
 
 	/*
 	 * Initialize display.  Load average appears in a one line
@@ -128,8 +148,7 @@ main(argc, argv)
 	 * an overlapping sub-window of stdscr configured by the display
 	 * routines to minimize update work by curses.
 	 */
-	if (initscr() == NULL)
-	{
+	if (initscr() == NULL) {
 		warnx("couldn't initialize screen");
 		exit(0);
 	}
@@ -138,24 +157,26 @@ main(argc, argv)
 	wnd = (*curcmd->c_open)();
 	if (wnd == NULL) {
 		warnx("couldn't initialize display");
-		die(0);
+		die();
 	}
 	wload = newwin(1, 0, 3, 20);
 	if (wload == NULL) {
 		warnx("couldn't set up load average window");
-		die(0);
+		die();
 	}
 	gethostname(hostname, sizeof (hostname));
-	NREAD(X_HZ, &hz, LONG);
-	NREAD(X_STATHZ, &stathz, LONG);
+	gethz();
 	(*curcmd->c_init)();
 	curcmd->c_flags |= CF_INIT;
 	labels();
 
 	dellave = 0.0;
 
-	signal(SIGALRM, display);
-	display(0);
+	signal(SIGALRM, sigdisplay);
+	siginterrupt(SIGALRM, 1);
+	signal(SIGWINCH, sigwinch);
+	siginterrupt(SIGWINCH, 1);
+	gotdisplay = 1;
 	noecho();
 	crmode();
 	keyboard();
@@ -163,7 +184,30 @@ main(argc, argv)
 }
 
 void
-labels()
+gethz(void)
+{
+	struct clockinfo cinf;
+	size_t  size = sizeof(cinf);
+	int	mib[2];
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_CLOCKRATE;
+	if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1)
+		return;
+	stathz = cinf.stathz;
+	hz = cinf.hz;
+}
+
+static void
+usage(void)
+{
+	fprintf(stderr, "usage: systat [-n] [-w wait] [display] [refresh-interval]\n");
+	exit(1);
+}
+
+
+void
+labels(void)
 {
 	if (curcmd->c_flags & CF_LOADAV) {
 		mvaddstr(2, 20,
@@ -178,10 +222,16 @@ labels()
 }
 
 void
-display(signo)
+sigdisplay(signo)
 	int signo;
 {
-	register int i, j;
+	gotdisplay = 1;
+}
+
+void
+display(void)
+{
+	int i, j;
 
 	/* Get the load average over the last minute. */
 	(void) getloadavg(avenrun, sizeof(avenrun) / sizeof(avenrun[0]));
@@ -195,10 +245,11 @@ display(signo)
 			c = '>';
 			dellave = -dellave;
 		}
-		if (dellave < 0.1)
+		if (dellave < 0.05)
 			c = '|';
 		dellave = avenrun[0];
-		wmove(wload, 0, 0); wclrtoeol(wload);
+		wmove(wload, 0, 0);
+		wclrtoeol(wload);
 		for (i = (j > 50) ? 50 : j; i > 0; i--)
 			waddch(wload, c);
 		if (j > 50)
@@ -214,7 +265,7 @@ display(signo)
 }
 
 void
-load()
+load(void)
 {
 
 	(void) getloadavg(avenrun, sizeof(avenrun)/sizeof(avenrun[0]));
@@ -223,45 +274,52 @@ load()
 	clrtoeol();
 }
 
+volatile sig_atomic_t gotdie;
+volatile sig_atomic_t gotdisplay;
+volatile sig_atomic_t gotwinch;
+volatile sig_atomic_t gottstp;
+
 void
-die(signo)
-	int signo;
+sigdie(int signo)
 {
-	move(CMDLINE, 0);
-	clrtoeol();
-	refresh();
-	endwin();
+	gotdie = 1;
+}
+
+void
+sigtstp(int signo)
+{
+	gottstp = 1;
+}
+
+void
+die(void)
+{
+	if (wnd) {
+		move(CMDLINE, 0);
+		clrtoeol();
+		refresh();
+		endwin();
+	}
 	exit(0);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+void
+sigwinch(int signo)
+{
+	gotwinch = 1;
+}
 
-#if __STDC__
 void
 error(const char *fmt, ...)
-#else
-void
-error(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
 	char buf[255];
 	int oy, ox;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 
+	va_start(ap, fmt);
 	if (wnd) {
 		getyx(stdscr, oy, ox);
-		(void) vsprintf(buf, fmt, ap);
+		(void) vsnprintf(buf, sizeof buf, fmt, ap);
 		clrtoeol();
 		standout();
 		mvaddstr(CMDLINE, 0, buf);
@@ -276,8 +334,7 @@ error(fmt, va_alist)
 }
 
 void
-nlisterr(namelist)
-	struct nlist namelist[];
+nlisterr(struct nlist namelist[])
 {
 	int i, n;
 

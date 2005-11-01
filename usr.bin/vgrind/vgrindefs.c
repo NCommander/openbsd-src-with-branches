@@ -1,3 +1,4 @@
+/*	$OpenBSD: vgrindefs.c,v 1.8 2003/06/03 02:56:21 millert Exp $	*/
 /*	$NetBSD: vgrindefs.c,v 1.5 1994/12/20 12:05:29 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)vgrindefs.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: vgrindefs.c,v 1.5 1994/12/20 12:05:29 cgd Exp $";
+static char rcsid[] = "$OpenBSD: vgrindefs.c,v 1.8 2003/06/03 02:56:21 millert Exp $";
 #endif /* not lint */
 
 #define	BUFSIZ	1024
@@ -73,14 +70,10 @@ char	*tgetstr();
  * from the termcap file.  Parse is very rudimentary;
  * we just notice escaped newlines.
  */
-tgetent(bp, name, file)
-	char *bp, *name, *file;
+tgetent(char *bp, char *name, char *file)
 {
-	register char *cp;
-	register int c;
-	register int i = 0, cnt = 0;
-	char ibuf[BUFSIZ];
-	char *cp2;
+	char ibuf[BUFSIZ], *cp, *cp2;
+	int i = 0, cnt = 0, c;
 	int tf;
 
 	tbuf = bp;
@@ -109,7 +102,7 @@ tgetent(bp, name, file)
 				break;
 			}
 			if (cp >= bp+BUFSIZ) {
-				write(2,"Vgrind entry too long\n", 23);
+				write(STDERR_FILENO, "Vgrind entry too long\n", 23);
 				break;
 			} else
 				*cp++ = c;
@@ -133,9 +126,9 @@ tgetent(bp, name, file)
  * entries to say "like an HP2621 but doesn't turn on the labels".
  * Note that this works because of the left to right scan.
  */
-tnchktc()
+tnchktc(void)
 {
-	register char *p, *q;
+	char *p, *q;
 	char tcname[16];	/* name of similar terminal */
 	char tcbuf[BUFSIZ];
 	char *holdtbuf = tbuf;
@@ -144,20 +137,20 @@ tnchktc()
 	p = tbuf + strlen(tbuf) - 2;	/* before the last colon */
 	while (*--p != ':')
 		if (p<tbuf) {
-			write(2, "Bad vgrind entry\n", 18);
+			write(STDERR_FILENO, "Bad vgrind entry\n", 18);
 			return (0);
 		}
 	p++;
 	/* p now points to beginning of last field */
 	if (p[0] != 't' || p[1] != 'c')
 		return(1);
-	strcpy(tcname,p+3);
+	strlcpy(tcname, p+3, sizeof tcname);
 	q = tcname;
 	while (q && *q != ':')
 		q++;
 	*q = 0;
 	if (++hopcount > MAXHOP) {
-		write(2, "Infinite tc= loop\n", 18);
+		write(STDERR_FILENO, "Infinite tc= loop\n", 18);
 		return (0);
 	}
 	if (tgetent(tcbuf, tcname, filename) != 1)
@@ -166,10 +159,10 @@ tnchktc()
 		;
 	l = p - holdtbuf + strlen(q);
 	if (l > BUFSIZ) {
-		write(2, "Vgrind entry too long\n", 23);
+		write(STDERR_FILENO, "Vgrind entry too long\n", 23);
 		q[BUFSIZ - (p-tbuf)] = 0;
 	}
-	strcpy(p, q+1);
+	strlcpy(p, q+1, l);
 	tbuf = holdtbuf;
 	return(1);
 }
@@ -180,10 +173,9 @@ tnchktc()
  * against each such name.  The normal : terminator after the last
  * name (before the first field) stops us.
  */
-tnamatch(np)
-	char *np;
+tnamatch(char *np)
 {
-	register char *Np, *Bp;
+	char *Np, *Bp;
 
 	Bp = tbuf;
 	if (*Bp == '#')
@@ -207,8 +199,7 @@ tnamatch(np)
  * into the termcap file in octal.
  */
 static char *
-tskip(bp)
-	register char *bp;
+tskip(char *bp)
 {
 
 	while (*bp && *bp != ':')
@@ -226,11 +217,10 @@ tskip(bp)
  * a # character.  If the option is not found we return -1.
  * Note that we handle octal numbers beginning with 0.
  */
-tgetnum(id)
-	char *id;
+tgetnum(char *id)
 {
-	register int i, base;
-	register char *bp = tbuf;
+	int i, base;
+	char *bp = tbuf;
 
 	for (;;) {
 		bp = tskip(bp);
@@ -259,10 +249,9 @@ tgetnum(id)
  * of the buffer.  Return 1 if we find the option, or 0 if it is
  * not given.
  */
-tgetflag(id)
-	char *id;
+tgetflag(char *id)
 {
-	register char *bp = tbuf;
+	char *bp = tbuf;
 
 	for (;;) {
 		bp = tskip(bp);
@@ -286,10 +275,9 @@ tgetflag(id)
  * No checking on area overflow.
  */
 char *
-tgetstr(id, area)
-	char *id, **area;
+tgetstr(char *id, char **area)
 {
-	register char *bp = tbuf;
+	char *bp = tbuf;
 
 	for (;;) {
 		bp = tskip(bp);
@@ -307,16 +295,14 @@ tgetstr(id, area)
 }
 
 /*
- * Tdecode does the grung work to decode the
+ * Tdecode does the grunt work to decode the
  * string capability escapes.
  */
 static char *
-tdecode(str, area)
-	register char *str;
-	char **area;
+tdecode(char *str, char **area)
 {
-	register char *cp;
-	register int c;
+	char *cp;
+	int c;
 	int i;
 
 	cp = *area;

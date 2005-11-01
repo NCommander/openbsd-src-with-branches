@@ -1,7 +1,7 @@
-/*	$NetBSD: savefile.c,v 1.2 1995/03/06 11:39:10 mycroft Exp $	*/
+/*	$OpenBSD: savefile.c,v 1.7 1999/07/20 04:49:56 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1993, 1994
+ * Copyright (c) 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -19,13 +19,7 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-#ifndef lint
-static char rcsid[] =
-    "@(#)Header: savefile.c,v 1.16 94/06/20 19:07:56 leres Exp (LBL)";
-#endif
-
-/*
+ *
  * savefile.c - supports offline use of tcpdump
  *	Extraction/creation by Jeffrey Mogul, DECWRL
  *	Modified by Steve McCanne, LBL.
@@ -39,13 +33,15 @@ static char rcsid[] =
 #include <sys/types.h>
 #include <sys/time.h>
 
-#include <net/bpf.h>
-
 #include <errno.h>
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
 
 #include "pcap-int.h"
 
@@ -64,7 +60,7 @@ static char rcsid[] =
 #define	SWAPLONG(y) \
 ((((y)&0xff)<<24) | (((y)&0xff00)<<8) | (((y)&0xff0000)>>8) | (((y)>>24)&0xff))
 #define	SWAPSHORT(y) \
-	( (((y)&0xff)<<8) | (((y)&0xff00)>>8) )
+	( (((y)&0xff)<<8) | ((u_short)((y)&0xff00)>>8) )
 
 #define SFERR_TRUNC		1
 #define SFERR_BADVERSION	2
@@ -103,7 +99,7 @@ swap_hdr(struct pcap_file_header *hp)
 }
 
 pcap_t *
-pcap_open_offline(char *fname, char *errbuf)
+pcap_open_offline(const char *fname, char *errbuf)
 {
 	register pcap_t *p;
 	register FILE *fp;
@@ -112,15 +108,11 @@ pcap_open_offline(char *fname, char *errbuf)
 
 	p = (pcap_t *)malloc(sizeof(*p));
 	if (p == NULL) {
-		strcpy(errbuf, "out of swap");
+		strlcpy(errbuf, "out of swap", PCAP_ERRBUF_SIZE);
 		return (NULL);
 	}
 
-#ifdef notdef
-	bzero(p, sizeof(*p));
-#else
-	memset(p, 0, sizeof(*p));
-#endif
+	memset((char *)p, 0, sizeof(*p));
 	/*
 	 * Set this field so we don't close stdin in pcap_close!
 	 */
@@ -131,24 +123,27 @@ pcap_open_offline(char *fname, char *errbuf)
 	else {
 		fp = fopen(fname, "r");
 		if (fp == NULL) {
-			sprintf(errbuf, "%s: %s", fname, pcap_strerror(errno));
+			snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s", fname,
+			    pcap_strerror(errno));
 			goto bad;
 		}
 	}
 	if (fread((char *)&hdr, sizeof(hdr), 1, fp) != 1) {
-		sprintf(errbuf, "fread: %s", pcap_strerror(errno));
+		snprintf(errbuf, PCAP_ERRBUF_SIZE, "fread: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
 	if (hdr.magic != TCPDUMP_MAGIC) {
 		if (SWAPLONG(hdr.magic) != TCPDUMP_MAGIC) {
-			sprintf(errbuf, "bad dump file format");
+			snprintf(errbuf, PCAP_ERRBUF_SIZE,
+			    "bad dump file format");
 			goto bad;
 		}
 		p->sf.swapped = 1;
 		swap_hdr(&hdr);
 	}
 	if (hdr.version_major < PCAP_VERSION_MAJOR) {
-		sprintf(errbuf, "archaic file format");
+		snprintf(errbuf, PCAP_ERRBUF_SIZE, "archaic file format");
 		goto bad;
 	}
 	p->tzoff = hdr.thiszone;
@@ -156,12 +151,39 @@ pcap_open_offline(char *fname, char *errbuf)
 	p->linktype = hdr.linktype;
 	p->sf.rfile = fp;
 	p->bufsize = hdr.snaplen;
+
 	/* Align link header as required for proper data alignment */
-	linklen = 14;					/* XXX */
+	/* XXX should handle all types */
+	switch (p->linktype) {
+
+	case DLT_EN10MB:
+		linklen = 14;
+		break;
+
+	case DLT_FDDI:
+		linklen = 13 + 8;	/* fddi_header + llc */
+		break;
+
+	case DLT_NULL:
+	default:
+		linklen = 0;
+		break;
+	}
+
+	if (p->bufsize < 0)
+		p->bufsize = BPF_MAXBUFSIZE;
 	p->sf.base = (u_char *)malloc(p->bufsize + BPF_ALIGNMENT);
+	if (p->sf.base == NULL) {
+		strlcpy(errbuf, "out of swap", PCAP_ERRBUF_SIZE);
+		goto bad;
+	}
 	p->buffer = p->sf.base + BPF_ALIGNMENT - (linklen % BPF_ALIGNMENT);
 	p->sf.version_major = hdr.version_major;
 	p->sf.version_minor = hdr.version_minor;
+#ifdef PCAP_FDDIPAD
+	/* XXX padding only needed for kernel fcode */
+	pcap_fddipad = 0;
+#endif
 
 	return (p);
  bad:
@@ -206,15 +228,56 @@ sf_next_packet(pcap_t *p, struct pcap_pkthdr *hdr, u_char *buf, int buflen)
 	}
 
 	if (hdr->caplen > buflen) {
-		sprintf(p->errbuf, "bad dump file format");
-		return (-1);
-	}
+		/*
+		 * This can happen due to Solaris 2.3 systems tripping
+		 * over the BUFMOD problem and not setting the snapshot
+		 * correctly in the savefile header.  If the caplen isn't
+		 * grossly wrong, try to salvage.
+		 */
+		static u_char *tp = NULL;
+		static int tsize = 0;
 
-	/* read the packet itself */
+		if (hdr->caplen > 65535) {
+			snprintf(p->errbuf, PCAP_ERRBUF_SIZE,
+			    "bogus savefile header");
+			return (-1);
+		}
 
-	if (fread((char *)buf, hdr->caplen, 1, fp) != 1) {
-		sprintf(p->errbuf, "truncated dump file");
-		return (-1);
+		if (tsize < hdr->caplen) {
+			tsize = ((hdr->caplen + 1023) / 1024) * 1024;
+			if (tp != NULL)
+				free((u_char *)tp);
+			tp = (u_char *)malloc(tsize);
+			if (tp == NULL) {
+				tsize = 0;
+				snprintf(p->errbuf, PCAP_ERRBUF_SIZE,
+				    "BUFMOD hack malloc");
+				return (-1);
+			}
+		}
+		if (fread((char *)tp, hdr->caplen, 1, fp) != 1) {
+			snprintf(p->errbuf, PCAP_ERRBUF_SIZE,
+			    "truncated dump file");
+			return (-1);
+		}
+		/*
+		 * We can only keep up to buflen bytes.  Since caplen > buflen
+		 * is exactly how we got here, we know we can only keep the
+		 * first buflen bytes and must drop the remainder.  Adjust
+		 * caplen accordingly, so we don't get confused later as
+		 * to how many bytes we have to play with.
+		 */
+		hdr->caplen = buflen;
+		memcpy((char *)buf, (char *)tp, buflen);
+
+	} else {
+		/* read the packet itself */
+
+		if (fread((char *)buf, hdr->caplen, 1, fp) != 1) {
+			snprintf(p->errbuf, PCAP_ERRBUF_SIZE,
+			    "truncated dump file");
+			return (-1);
+		}
 	}
 	return (0);
 }
@@ -234,8 +297,11 @@ pcap_offline_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 		struct pcap_pkthdr h;
 
 		status = sf_next_packet(p, &h, p->buffer, p->bufsize);
-		if (status)
-			return (-1);
+		if (status) {
+			if (status == 1)
+				return (0);
+			return (status);
+		}
 
 		if (fcode == NULL ||
 		    bpf_filter(fcode, p->buffer, h.len, h.caplen)) {
@@ -254,7 +320,10 @@ pcap_offline_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 void
 pcap_dump(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 {
-	FILE * f = (FILE *)user;
+	register FILE *f;
+
+	f = (FILE *)user;
+	/* XXX we should check the return status */
 	(void)fwrite((char *)h, sizeof(*h), 1, f);
 	(void)fwrite((char *)sp, h->caplen, 1, f);
 }
@@ -263,7 +332,7 @@ pcap_dump(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
  * Initialize so that sf_write() will output to the file named 'fname'.
  */
 pcap_dumper_t *
-pcap_dump_open(pcap_t *p, char *fname)
+pcap_dump_open(pcap_t *p, const char *fname)
 {
 	FILE *f;
 	if (fname[0] == '-' && fname[1] == '\0')
@@ -271,7 +340,7 @@ pcap_dump_open(pcap_t *p, char *fname)
 	else {
 		f = fopen(fname, "w");
 		if (f == NULL) {
-			sprintf(p->errbuf, "%s: %s",
+			snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "%s: %s",
 			    fname, pcap_strerror(errno));
 			return (NULL);
 		}
@@ -283,5 +352,11 @@ pcap_dump_open(pcap_t *p, char *fname)
 void
 pcap_dump_close(pcap_dumper_t *p)
 {
-	fclose((FILE *)p);
+
+#ifdef notyet
+	if (ferror((FILE *)p))
+		return-an-error;
+	/* XXX should check return from fclose() too */
+#endif
+	(void)fclose((FILE *)p);
 }

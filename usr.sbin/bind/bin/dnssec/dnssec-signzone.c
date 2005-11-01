@@ -1499,11 +1499,11 @@ writeset(const char *prefix, dns_rdatatype_t type) {
 	if (filename == NULL)
 		fatal("out of memory");
 	if (directory != NULL)
-		sprintf(filename, "%s/", directory);
+		snprintf(filename, filenamelen + 1, "%s/", directory);
 	else
 		filename[0] = 0;
-	strcat(filename, prefix);
-	strcat(filename, namestr);
+	strlcat(filename, prefix, filenamelen + 1);
+	strlcat(filename, namestr, filenamelen + 1);
 
 	dns_diff_init(mctx, &diff);
 
@@ -1872,12 +1872,13 @@ main(int argc, char *argv[]) {
 		origin = file;
 
 	if (output == NULL) {
+		size_t len;
 		free_output = ISC_TRUE;
-		output = isc_mem_allocate(mctx,
-					  strlen(file) + strlen(".signed") + 1);
+		len = strlen(file) + strlen(".signed");
+		output = isc_mem_allocate(mctx, len + 1);
 		if (output == NULL)
 			fatal("out of memory");
-		sprintf(output, "%s.signed", file);
+		snprintf(output, len + 1, "%s.signed", file);
 	}
 
 	result = dns_master_stylecreate(&dsstyle,  DNS_STYLEFLAG_NO_TTL,

@@ -1,5 +1,44 @@
+/*	$OpenBSD: reader.c,v 1.17 2004/08/08 20:13:13 deraadt Exp $	*/
+/*	$NetBSD: reader.c,v 1.5 1996/03/19 03:21:43 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: reader.c,v 1.3 1993/08/02 17:56:49 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)reader.c	5.7 (Berkeley) 1/20/91";
+#else
+static char rcsid[] = "$NetBSD: reader.c,v 1.5 1996/03/19 03:21:43 jtc Exp $";
+#endif
 #endif /* not lint */
 
 #include "defs.h"
@@ -7,7 +46,7 @@ static char rcsid[] = "$Id: reader.c,v 1.3 1993/08/02 17:56:49 mycroft Exp $";
 /*  The line size must be a positive integer.  One hundred was chosen	*/
 /*  because few lines in Yacc input grammars exceed 100 characters.	*/
 /*  Note that if a line exceeds LINESIZE characters, the line buffer	*/
-/*  will be expanded to accomodate it.					*/
+/*  will be expanded to accommodate it.					*/
 
 #define LINESIZE 100
 
@@ -35,11 +74,48 @@ bucket **plhs;
 int name_pool_size;
 char *name_pool;
 
+void cachec(int);
+void get_line(void);
+char * dup_line(void);
+void skip_comment(void);
+int nextc(void);
+int keyword(void);
+void copy_ident(void);
+void copy_text(void);
+void copy_union(void);
+int hexval(int);
+bucket * get_literal(void);
+int is_reserved(char *);
+bucket * get_name(void);
+int get_number(void);
+char * get_tag(void);
+void declare_tokens(int);
+void declare_types(void);
+void declare_start(void);
+void handle_expect(void);
+void read_declarations(void);
+void initialize_grammar(void);
+void expand_items(void);
+void expand_rules(void);
+void advance_to_start(void);
+void start_rule(bucket *, int);
+void end_rule(void);
+void insert_empty_rule(void);
+void add_symbol(void);
+void copy_action(void);
+int mark_symbol(void);
+void read_grammar(void);
+void free_tags(void);
+void pack_names(void);
+void check_symbols(void);
+void pack_symbols(void);
+void pack_grammar(void);
+void print_grammar(void);
+
 char line_format[] = "#line %d \"%s\"\n";
 
-
-cachec(c)
-int c;
+void
+cachec(int c)
 {
     assert(cinc >= 0);
     if (cinc >= cache_size)
@@ -53,11 +129,12 @@ int c;
 }
 
 
-get_line()
+void
+get_line(void)
 {
-    register FILE *f = input_file;
-    register int c;
-    register int i;
+    FILE *f = input_file;
+    int c;
+    int i;
 
     if (saw_eof || (c = getc(f)) == EOF)
     {
@@ -100,9 +177,9 @@ get_line()
 
 
 char *
-dup_line()
+dup_line(void)
 {
-    register char *p, *s, *t;
+    char *p, *s, *t;
 
     if (line == 0) return (0);
     s = line;
@@ -117,9 +194,10 @@ dup_line()
 }
 
 
-skip_comment()
+void
+skip_comment(void)
 {
-    register char *s;
+    char *s;
 
     int st_lineno = lineno;
     char *st_line = dup_line();
@@ -148,9 +226,9 @@ skip_comment()
 
 
 int
-nextc()
+nextc(void)
 {
-    register char *s;
+    char *s;
 
     if (line == 0)
     {
@@ -210,9 +288,9 @@ nextc()
 
 
 int
-keyword()
+keyword(void)
 {
-    register int c;
+    int c;
     char *t_cptr = cptr;
 
     c = *++cptr;
@@ -250,6 +328,8 @@ keyword()
 	    return (UNION);
 	if (strcmp(cache, "ident") == 0)
 	    return (IDENT);
+	if (strcmp(cache, "expect") == 0)
+	    return (EXPECT);
     }
     else
     {
@@ -269,13 +349,15 @@ keyword()
     }
     syntax_error(lineno, line, t_cptr);
     /*NOTREACHED*/
+    return (0);
 }
 
 
-copy_ident()
+void
+copy_ident(void)
 {
-    register int c;
-    register FILE *f = output_file;
+    int c;
+    FILE *f = output_file;
 
     c = nextc();
     if (c == EOF) unexpected_EOF();
@@ -301,11 +383,12 @@ copy_ident()
 }
 
 
-copy_text()
+void
+copy_text(void)
 {
-    register int c;
+    int c;
     int quote;
-    register FILE *f = text_file;
+    FILE *f = text_file;
     int need_newline = 0;
     int t_lineno = lineno;
     char *t_line = dup_line();
@@ -432,9 +515,10 @@ loop:
 }
 
 
-copy_union()
+void
+copy_union(void)
 {
-    register int c;
+    int c;
     int quote;
     int depth;
     int u_lineno = lineno;
@@ -447,7 +531,11 @@ copy_union()
     if (!lflag)
 	fprintf(text_file, line_format, lineno, input_file_name);
 
+    fprintf(text_file, "#ifndef YYSTYPE_DEFINED\n");
+    fprintf(text_file, "#define YYSTYPE_DEFINED\n");
     fprintf(text_file, "typedef union");
+    if (dflag) fprintf(union_file, "#ifndef YYSTYPE_DEFINED\n");
+    if (dflag) fprintf(union_file, "#define YYSTYPE_DEFINED\n");
     if (dflag) fprintf(union_file, "typedef union");
 
     depth = 0;
@@ -471,6 +559,7 @@ loop:
 	if (--depth == 0)
 	{
 	    fprintf(text_file, " YYSTYPE;\n");
+	    fprintf(text_file, "#endif /* YYSTYPE_DEFINED */\n");
 	    FREE(u_line);
 	    return;
 	}
@@ -573,8 +662,7 @@ loop:
 
 
 int
-hexval(c)
-int c;
+hexval(int c)
 {
     if (c >= '0' && c <= '9')
 	return (c - '0');
@@ -587,13 +675,13 @@ int c;
 
 
 bucket *
-get_literal()
+get_literal(void)
 {
-    register int c, quote;
-    register int i;
-    register int n;
-    register char *s;
-    register bucket *bp;
+    int c, quote;
+    int i;
+    int n;
+    char *s;
+    bucket *bp;
     int s_lineno = lineno;
     char *s_line = dup_line();
     char *s_cptr = s_line + (cptr - line);
@@ -668,7 +756,7 @@ get_literal()
     n = cinc;
     s = MALLOC(n);
     if (s == 0) no_space();
-    
+
     for (i = 0; i < n; ++i)
 	s[i] = cache[i];
 
@@ -726,8 +814,7 @@ get_literal()
 
 
 int
-is_reserved(name)
-char *name;
+is_reserved(char *name)
 {
     char *s;
 
@@ -748,9 +835,9 @@ char *name;
 
 
 bucket *
-get_name()
+get_name(void)
 {
-    register int c;
+    int c;
 
     cinc = 0;
     for (c = *cptr; IS_IDENT(c); c = *++cptr)
@@ -764,10 +851,10 @@ get_name()
 
 
 int
-get_number()
+get_number(void)
 {
-    register int c;
-    register int n;
+    int c;
+    int n;
 
     n = 0;
     for (c = *cptr; isdigit(c); c = *++cptr)
@@ -778,11 +865,11 @@ get_number()
 
 
 char *
-get_tag()
+get_tag(void)
 {
-    register int c;
-    register int i;
-    register char *s;
+    int c;
+    int i;
+    char *s;
     int t_lineno = lineno;
     char *t_line = dup_line();
     char *t_cptr = t_line + (cptr - line);
@@ -801,6 +888,7 @@ get_tag()
     if (c == EOF) unexpected_EOF();
     if (c != '>')
 	illegal_tag(t_lineno, t_line, t_cptr);
+    FREE(t_line);
     ++cptr;
 
     for (i = 0; i < ntags; ++i)
@@ -820,19 +908,18 @@ get_tag()
 
     s = MALLOC(cinc);
     if  (s == 0) no_space();
-    strcpy(s, cache);
+    strlcpy(s, cache, cinc);
     tag_table[ntags] = s;
     ++ntags;
-    FREE(t_line);
     return (s);
 }
 
 
-declare_tokens(assoc)
-int assoc;
+void
+declare_tokens(int assoc)
 {
-    register int c;
-    register bucket *bp;
+    int c;
+    bucket *bp;
     int value;
     char *tag = 0;
 
@@ -890,10 +977,55 @@ int assoc;
 }
 
 
-declare_types()
+/*
+ * %expect requires special handling
+ * as it really isn't part of the yacc
+ * grammar only a flag for yacc proper.
+ */
+void
+declare_expect(int assoc)
 {
-    register int c;
-    register bucket *bp;
+    int c;
+
+    if (assoc != EXPECT) ++prec;
+
+    /*
+     * Stay away from nextc - doesn't
+     * detect EOL and will read to EOF.
+     */
+    c = *++cptr;
+    if (c == EOF) unexpected_EOF();
+
+    for(;;)
+    {
+        if (isdigit(c))
+        {
+	    SRexpect = get_number();
+            break;
+        }
+        /*
+         * Looking for number before EOL.
+         * Spaces, tabs, and numbers are ok,
+         * words, punc., etc. are syntax errors.
+         */
+        else if (c == '\n' || isalpha(c) || !isspace(c))
+        {
+            syntax_error(lineno, line, cptr);
+        }
+        else
+        {
+            c = *++cptr;
+            if (c == EOF) unexpected_EOF();
+        }
+    }
+}
+
+
+void
+declare_types(void)
+{
+    int c;
+    bucket *bp;
     char *tag;
 
     c = nextc();
@@ -918,10 +1050,11 @@ declare_types()
 }
 
 
-declare_start()
+void
+declare_start(void)
 {
-    register int c;
-    register bucket *bp;
+    int c;
+    bucket *bp;
 
     c = nextc();
     if (c == EOF) unexpected_EOF();
@@ -936,9 +1069,10 @@ declare_start()
 }
 
 
-read_declarations()
+void
+read_declarations(void)
 {
-    register int c, k;
+    int c, k;
 
     cache_size = 256;
     cache = MALLOC(cache_size);
@@ -973,6 +1107,10 @@ read_declarations()
 	    declare_tokens(k);
 	    break;
 
+	case EXPECT:
+	    declare_expect(k);
+            break;
+
 	case TYPE:
 	    declare_types();
 	    break;
@@ -985,7 +1123,8 @@ read_declarations()
 }
 
 
-initialize_grammar()
+void
+initialize_grammar(void)
 {
     nitems = 4;
     maxitems = 300;
@@ -1016,7 +1155,8 @@ initialize_grammar()
 }
 
 
-expand_items()
+void
+expand_items(void)
 {
     maxitems += 300;
     pitem = (bucket **) REALLOC(pitem, maxitems*sizeof(bucket *));
@@ -1024,7 +1164,8 @@ expand_items()
 }
 
 
-expand_rules()
+void
+expand_rules(void)
 {
     maxrules += 100;
     plhs = (bucket **) REALLOC(plhs, maxrules*sizeof(bucket *));
@@ -1036,10 +1177,11 @@ expand_rules()
 }
 
 
-advance_to_start()
+void
+advance_to_start(void)
 {
-    register int c;
-    register bucket *bp;
+    int c;
+    bucket *bp;
     char *s_cptr;
     int s_lineno;
 
@@ -1086,9 +1228,8 @@ advance_to_start()
 }
 
 
-start_rule(bp, s_lineno)
-register bucket *bp;
-int s_lineno;
+void
+start_rule(bucket *bp, int s_lineno)
 {
     if (bp->class == TERM)
 	terminal_lhs(s_lineno);
@@ -1101,9 +1242,10 @@ int s_lineno;
 }
 
 
-end_rule()
+void
+end_rule(void)
 {
-    register int i;
+    int i;
 
     if (!last_was_action && plhs[nrules]->tag)
     {
@@ -1120,12 +1262,13 @@ end_rule()
 }
 
 
-insert_empty_rule()
+void
+insert_empty_rule(void)
 {
-    register bucket *bp, **bpp;
+    bucket *bp, **bpp;
 
     assert(cache);
-    sprintf(cache, "$$%d", ++gensym);
+    snprintf(cache, cache_size, "$$%d", ++gensym);
     bp = make_bucket(cache);
     last_symbol->next = bp;
     last_symbol = bp;
@@ -1136,7 +1279,7 @@ insert_empty_rule()
 	expand_items();
     bpp = pitem + nitems - 1;
     *bpp-- = bp;
-    while (bpp[0] = bpp[-1]) --bpp;
+    while ((bpp[0] = bpp[-1])) --bpp;
 
     if (++nrules >= maxrules)
 	expand_rules();
@@ -1149,10 +1292,11 @@ insert_empty_rule()
 }
 
 
-add_symbol()
+void
+add_symbol(void)
 {
-    register int c;
-    register bucket *bp;
+    int c;
+    bucket *bp;
     int s_lineno = lineno;
 
     c = *cptr;
@@ -1180,14 +1324,15 @@ add_symbol()
 }
 
 
-copy_action()
+void
+copy_action(void)
 {
-    register int c;
-    register int i, n;
+    int c;
+    int i, n;
     int depth;
     int quote;
     char *tag;
-    register FILE *f = action_file;
+    FILE *f = action_file;
     int a_lineno = lineno;
     char *a_line = dup_line();
     char *a_cptr = a_line + (cptr - line);
@@ -1309,6 +1454,7 @@ loop:
     case ';':
 	if (depth > 0) goto loop;
 	fprintf(f, "\nbreak;\n");
+	FREE(a_line);
 	return;
 
     case '{':
@@ -1318,6 +1464,7 @@ loop:
     case '}':
 	if (--depth > 0) goto loop;
 	fprintf(f, "\nbreak;\n");
+	FREE(a_line);
 	return;
 
     case '\'':
@@ -1404,10 +1551,10 @@ loop:
 
 
 int
-mark_symbol()
+mark_symbol(void)
 {
-    register int c;
-    register bucket *bp;
+    int c;
+    bucket *bp = NULL;
 
     c = cptr[1];
     if (c == '%' || c == '\\')
@@ -1447,9 +1594,10 @@ mark_symbol()
 }
 
 
-read_grammar()
+void
+read_grammar(void)
 {
-    register int c;
+    int c;
 
     initialize_grammar();
     advance_to_start();
@@ -1480,9 +1628,10 @@ read_grammar()
 }
 
 
-free_tags()
+void
+free_tags(void)
 {
-    register int i;
+    int i;
 
     if (tag_table == 0) return;
 
@@ -1495,10 +1644,11 @@ free_tags()
 }
 
 
-pack_names()
+void
+pack_names(void)
 {
-    register bucket *bp;
-    register char *p, *s, *t;
+    bucket *bp;
+    char *p, *s, *t;
 
     name_pool_size = 13;  /* 13 == sizeof("$end") + sizeof("$accept") */
     for (bp = first_symbol; bp; bp = bp->next)
@@ -1506,23 +1656,24 @@ pack_names()
     name_pool = MALLOC(name_pool_size);
     if (name_pool == 0) no_space();
 
-    strcpy(name_pool, "$accept");
-    strcpy(name_pool+8, "$end");
+    strlcpy(name_pool, "$accept", name_pool_size);
+    strlcpy(name_pool+8, "$end", name_pool_size - 8);
     t = name_pool + 13;
     for (bp = first_symbol; bp; bp = bp->next)
     {
 	p = t;
 	s = bp->name;
-	while (*t++ = *s++) continue;
+	while ((*t++ = *s++)) continue;
 	FREE(bp->name);
 	bp->name = p;
     }
 }
 
 
-check_symbols()
+void
+check_symbols(void)
 {
-    register bucket *bp;
+    bucket *bp;
 
     if (goal->class == UNKNOWN)
 	undefined_goal(goal->name);
@@ -1538,11 +1689,12 @@ check_symbols()
 }
 
 
-pack_symbols()
+void
+pack_symbols(void)
 {
-    register bucket *bp;
-    register bucket **v;
-    register int i, j, k, n;
+    bucket *bp;
+    bucket **v;
+    int i, j, k, n;
 
     nsyms = 2;
     ntokens = 1;
@@ -1662,9 +1814,10 @@ pack_symbols()
 }
 
 
-pack_grammar()
+void
+pack_grammar(void)
 {
-    register int i, j;
+    int i, j;
     int assoc, prec;
 
     ritem = (short *) MALLOC(nitems*sizeof(short));
@@ -1721,11 +1874,12 @@ pack_grammar()
 }
 
 
-print_grammar()
+void
+print_grammar(void)
 {
-    register int i, j, k;
-    int spacing;
-    register FILE *f = verbose_file;
+    int i, j, k;
+    int spacing = 0;
+    FILE *f = verbose_file;
 
     if (!vflag) return;
 
@@ -1757,7 +1911,8 @@ print_grammar()
 }
 
 
-reader()
+void
+reader(void)
 {
     write_section(banner);
     create_symbol_table();

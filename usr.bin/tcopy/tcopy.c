@@ -1,4 +1,5 @@
-/*	$NetBSD: tcopy.c,v 1.4 1995/08/31 22:17:24 jtc Exp $	*/
+/*	$OpenBSD: tcopy.c,v 1.8 2003/06/03 02:56:17 millert Exp $	*/
+/*	$NetBSD: tcopy.c,v 1.5 1997/04/15 07:23:08 lukem Exp $	*/
 
 /*
  * Copyright (c) 1985, 1987, 1993, 1995
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tcopy.c	8.3 (Berkeley) 1/23/95";
 #endif
-static char rcsid[] = "$NetBSD: tcopy.c,v 1.4 1995/08/31 22:17:24 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tcopy.c,v 1.8 2003/06/03 02:56:17 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -54,13 +51,12 @@ static char rcsid[] = "$NetBSD: tcopy.c,v 1.4 1995/08/31 22:17:24 jtc Exp $";
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <paths.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "pathnames.h"
 
 #define	MAXREC	(64 * 1024)
 #define	NOCOUNT	(-2)
@@ -70,16 +66,14 @@ long	lastrec, record;
 off_t	size, tsize;
 FILE	*msg = stdout;
 
-void	*getspace __P((int));
-void	 intr __P((int));
-void	 usage __P((void));
-void	 verify __P((int, int, char *));
-void	 writeop __P((int, int));
+void	*getspace(int);
+void	 intr(int);
+void	 usage(void);
+void	 verify(int, int, char *);
+void	 writeop(int, int);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch, needeof, nw, inp, outp;
 	ssize_t lastnread, nread;
@@ -88,7 +82,7 @@ main(argc, argv)
 	char *buff, *inf;
 
 	guesslen = 1;
-	while ((ch = getopt(argc, argv, "cs:vx")) != EOF)
+	while ((ch = getopt(argc, argv, "cs:vx")) != -1)
 		switch((char)ch) {
 		case 'c':
 			op = COPYVERIFY;
@@ -131,7 +125,7 @@ main(argc, argv)
 		inf = argv[0];
 		if ((outp = open(argv[1], op == VERIFY ? O_RDONLY :
 		    op == COPY ? O_WRONLY : O_RDWR, DEFFILEMODE)) < 0) {
-			err(3, argv[1]);
+			err(3, "%s", argv[1]);
 		}
 		break;
 	default:
@@ -139,7 +133,7 @@ main(argc, argv)
 	}
 
 	if ((inp = open(inf, O_RDONLY, 0)) < 0)
-		err(1, inf);
+		err(1, "%s", inf);
 
 	buff = getspace(maxblk);
 
@@ -172,8 +166,8 @@ main(argc, argv)
 					fprintf(msg, "record %ld\n", lastrec);
 			}
 			if (nread != 0)
-				fprintf(msg, "file %d: block size %d: ",
-				    filen, nread);
+				fprintf(msg, "file %d: block size %ld: ",
+				    filen, (long)nread);
 			(void) fflush(stdout);
 			lastrec = record;
 		}
@@ -195,8 +189,8 @@ r1:		guesslen = 0;
 						": %s", strerror(error));
 				    else
 					fprintf(stderr,
-					    "write (%d) != read (%d)\n",
-					    nw, nread);
+					    "write (%d) != read (%ld)\n",
+					    nw, (long)nread);
 				    fprintf(stderr, "copy aborted\n");
 				    exit(5);
 				}
@@ -209,8 +203,8 @@ r1:		guesslen = 0;
 				break;
 			}
 			fprintf(msg,
-			    "file %d: eof after %ld records: %qd bytes\n",
-			    filen, record, size);
+			    "file %d: eof after %ld records: %lld bytes\n",
+			    filen, record, (long long)size);
 			needeof = 1;
 			filen++;
 			tsize += size;
@@ -219,7 +213,7 @@ r1:		guesslen = 0;
 		}
 		lastnread = nread;
 	}
-	fprintf(msg, "total length: %qd bytes\n", tsize);
+	fprintf(msg, "total length: %lld bytes\n", (long long)tsize);
 	(void)signal(SIGINT, oldsig);
 	if (op == COPY || op == COPYVERIFY) {
 		writeop(outp, MTWEOF);
@@ -234,9 +228,7 @@ r1:		guesslen = 0;
 }
 
 void
-verify(inp, outp, outb)
-	int inp, outp;
-	char *outb;
+verify(int inp, int outp, char *outb)
 {
 	int eot, inmaxblk, inn, outmaxblk, outn;
 	char *inb;
@@ -290,22 +282,21 @@ r2:		if (inn != outn) {
 }
 
 void
-intr(signo)
-	int signo;
+intr(int signo)
 {
-	if (record)
+	if (record) {
 		if (record - lastrec > 1)
 			fprintf(msg, "records %ld to %ld\n", lastrec, record);
 		else
 			fprintf(msg, "record %ld\n", lastrec);
+	}
 	fprintf(msg, "interrupt at file %d: record %ld\n", filen, record);
-	fprintf(msg, "total length: %qd bytes\n", tsize + size);
+	fprintf(msg, "total length: %lld bytes\n", (long long)(tsize + size));
 	exit(1);
 }
 
 void *
-getspace(blk)
-	int blk;
+getspace(int blk)
 {
 	void *bp;
 
@@ -316,8 +307,7 @@ getspace(blk)
 }
 
 void
-writeop(fd, type)
-	int fd, type;
+writeop(int fd, int type)
 {
 	struct mtop op;
 
@@ -328,7 +318,7 @@ writeop(fd, type)
 }
 
 void
-usage()
+usage(void)
 {
 
 	fprintf(stderr, "usage: tcopy [-cvx] [-s maxblk] src [dest]\n");

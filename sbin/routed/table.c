@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: table.c,v 1.17 2005/03/22 12:34:13 henning Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -602,7 +598,7 @@ rtm_type_name(u_char type)
 
 	if (type > sizeof(rtm_types)/sizeof(rtm_types[0])
 	    || type == 0) {
-		sprintf(name0, "RTM type %#x", type);
+		snprintf(name0, sizeof name0, "RTM type %#x", type);
 		return name0;
 	} else {
 		return rtm_types[type-1];
@@ -621,7 +617,7 @@ masktrim(struct sockaddr_in *ap)
 masktrim(struct sockaddr_in_new *ap)
 #endif
 {
-	register char *cp;
+	char *cp;
 
 	if (ap->sin_addr.s_addr == 0) {
 		ap->sin_len = 0;
@@ -717,7 +713,7 @@ again:
 		       addrname(dst, mask, 0), naddr_ntoa(gate),
 		       strerror(errno));
 	} else {
-		msglog("write(rt_sock) wrote %d instead of %d",
+		msglog("write(rt_sock) wrote %ld instead of %d",
 		       cc, w.w_rtm.rtm_msglen);
 	}
 #endif
@@ -1058,6 +1054,10 @@ read_rt(void)
 			continue;
 		}
 
+		/* ignore routes from bgpd and ospfd */
+		if (m.r.rtm.rtm_flags & (RTF_PROTO1|RTF_PROTO2))
+			continue;
+
 		if (m.r.rtm.rtm_type == RTM_IFINFO
 		    || m.r.rtm.rtm_type == RTM_NEWADDR
 		    || m.r.rtm.rtm_type == RTM_DELADDR) {
@@ -1088,10 +1088,14 @@ read_rt(void)
 			continue;
 		}
 
-		strcpy(str, rtm_type_name(m.r.rtm.rtm_type));
+		strlcpy(str, rtm_type_name(m.r.rtm.rtm_type),
+		    sizeof str);
 		strp = &str[strlen(str)];
-		if (m.r.rtm.rtm_type <= RTM_CHANGE)
-			strp += sprintf(strp," from pid %d",m.r.rtm.rtm_pid);
+		if (m.r.rtm.rtm_type <= RTM_CHANGE) {
+			snprintf(strp, str + sizeof str - strp,
+			    " from pid %ld", (long)m.r.rtm.rtm_pid);
+			strp+= strlen(strp);
+		}
 
 		rt_xaddrs(&info, m.r.addrs, &m.r.addrs[RTAX_MAX],
 			  m.r.rtm.rtm_addrs);
@@ -1113,8 +1117,9 @@ read_rt(void)
 			? HOST_MASK
 			: std_mask(S_ADDR(INFO_DST(&info))));
 
-		strp += sprintf(strp, ": %s",
-				addrname(S_ADDR(INFO_DST(&info)), mask, 0));
+		snprintf(strp, str + sizeof str - strp, ": %s",
+			addrname(S_ADDR(INFO_DST(&info)), mask, 0));
+		strp+= strlen(strp);
 
 		if (IN_MULTICAST(ntohl(S_ADDR(INFO_DST(&info))))) {
 			trace_act("ignore multicast %s\n", str);
@@ -1122,13 +1127,18 @@ read_rt(void)
 		}
 
 		if (INFO_GATE(&info) != 0
-		    && INFO_GATE(&info)->sa_family == AF_INET)
-			strp += sprintf(strp, " --> %s",
-					saddr_ntoa(INFO_GATE(&info)));
+		    && INFO_GATE(&info)->sa_family == AF_INET) {
+			snprintf(strp, str + sizeof str - strp,
+				" --> %s", saddr_ntoa(INFO_GATE(&info)));
+			strp+= strlen(strp);
+		}
 
-		if (INFO_AUTHOR(&info) != 0)
-			strp += sprintf(strp, " by authority of %s",
-					saddr_ntoa(INFO_AUTHOR(&info)));
+		if (INFO_AUTHOR(&info) != 0) {
+			snprintf(strp, str + sizeof str - strp,
+				" by authority of %s",
+				saddr_ntoa(INFO_AUTHOR(&info)));
+			strp+= strlen(strp);
+		}
 
 		switch (m.r.rtm.rtm_type) {
 		case RTM_ADD:
@@ -1656,16 +1666,12 @@ rtswitch(struct rt_entry *rt,
 	 struct rt_spare *rts)
 {
 	struct rt_spare swap;
-	char label[10];
+	char *label;
 
 
 	/* Do not change permanent routes */
-	if (0 != (rt->rt_state & RS_PERMANENT))
-		return;
-
-	/* Do not discard synthetic routes until they go bad */
-	if ((rt->rt_state & RS_NET_SYN)
-	    && rt->rt_metric < HOPCNT_INFINITY)
+	if (0 != (rt->rt_state & (RS_MHOME | RS_STATIC | RS_RDISC
+				  | RS_NET_SYN | RS_IF)))
 		return;
 
 	/* find the best alternative among the spares */
@@ -1678,10 +1684,14 @@ rtswitch(struct rt_entry *rt,
 		return;
 
 	swap = rt->rt_spares[0];
-	(void)sprintf(label, "Use #%d", rts - rt->rt_spares);
-	rtchange(rt, rt->rt_state & ~(RS_NET_SYN | RS_RDISC),
-		 rts->rts_gate, rts->rts_router, rts->rts_metric,
-		 rts->rts_tag, rts->rts_ifp, rts->rts_time, label);
+	if (asprintf(&label, "Use #%d", (int)(rts - rt->rt_spares)) == -1)
+		msglog("asprintf: cannot allocate memory");
+	else {
+		rtchange(rt, rt->rt_state & ~(RS_NET_SYN | RS_RDISC),
+		    rts->rts_gate, rts->rts_router, rts->rts_metric,
+		    rts->rts_tag, rts->rts_ifp, rts->rts_time, label);
+		free(label);
+	}
 	*rts = swap;
 }
 
@@ -1705,7 +1715,7 @@ rtdelete(struct rt_entry *rt)
 	mask_sock.sin_addr.s_addr = rt->rt_mask;
 	masktrim(&mask_sock);
 	if (rt != (struct rt_entry *)rhead->rnh_deladdr(&dst_sock, &mask_sock,
-							rhead)) {
+							rhead, NULL)) {
 		msglog("rnh_deladdr() failed");
 	} else {
 		free(rt);

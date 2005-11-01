@@ -1,4 +1,5 @@
-.\"	$NetBSD: 4.t,v 1.2 1995/03/18 14:56:12 cgd Exp $
+.\"	$OpenBSD: 4.t,v 1.5 2003/06/02 20:06:15 millert Exp $
+.\"	$NetBSD: 4.t,v 1.3 1996/04/05 01:45:48 cgd Exp $
 .\"
 .\" Copyright (c) 1982, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,20 +30,20 @@
 .\"
 .\"	@(#)4.t	8.1 (Berkeley) 6/5/93
 .\"
-.ds RH Appendix A \- Fsck Error Conditions
+.ds RH Appendix A \- Fsck_ffs Error Conditions
 .NH
-Appendix A \- Fsck Error Conditions
-.NH 2 
+Appendix A \- Fsck_ffs Error Conditions
+.NH 2
 Conventions
 .PP
-.I Fsck
+.I Fsck_ffs
 is
 a multi-pass file system check program.
 Each file system pass invokes a different Phase of the
-.I fsck
+.I fsck_ffs
 program.
 After the initial setup,
-.I fsck
+.I fsck_ffs
 performs successive Phases over each file system,
 checking blocks and sizes,
 path-names,
@@ -57,23 +54,23 @@ and the map of free blocks,
 and performs some cleanup.
 .LP
 Normally
-.I fsck
+.I fsck_ffs
 is run non-interactively to
 .I preen
 the file systems after an unclean halt.
 While preen'ing a file system,
 it will only fix corruptions that are expected
 to occur from an unclean halt.
-These actions are a proper subset of the actions that 
-.I fsck
+These actions are a proper subset of the actions that
+.I fsck_ffs
 will take when it is running interactively.
 Throughout this appendix many errors have several options
 that the operator can take.
 When an inconsistency is detected,
-.I fsck
+.I fsck_ffs
 reports the error condition to the operator.
 If a response is required,
-.I fsck
+.I fsck_ffs
 prints a prompt message and
 waits for a response.
 When preen'ing most errors are fatal.
@@ -85,12 +82,12 @@ the possible responses, and the related error conditions.
 The error conditions are organized by the
 .I Phase
 of the
-.I fsck
+.I fsck_ffs
 program in which they can occur.
 The error conditions that may occur
 in more than one Phase
 will be discussed in initialization.
-.NH 2 
+.NH 2
 Initialization
 .PP
 Before a file system check can be performed, certain
@@ -111,12 +108,12 @@ when the file system is being preen'ed.
 .B "\fIC\fP option?"
 .br
 \fIC\fP is not a legal option to
-.I fsck ;
+.I fsck_ffs ;
 legal options are \-b, \-c, \-y, \-n, and \-p.
-.I Fsck
+.I Fsck_ffs
 terminates on this error condition.
 See the
-.I fsck (8)
+.I fsck_ffs (8)
 manual entry for further detail.
 .sp
 .LP
@@ -128,11 +125,11 @@ manual entry for further detail.
 .br
 .B "cannot alloc NNN bytes for lncntp"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 request for memory for its virtual
 memory tables failed.
 This should never happen.
-.I Fsck
+.I Fsck_ffs
 terminates on this error condition.
 See a guru.
 .sp
@@ -143,17 +140,17 @@ The file system checklist file
 \fIF\fP (usually
 .I /etc/fstab )
 can not be opened for reading.
-.I Fsck
+.I Fsck_ffs
 terminates on this error condition.
 Check access modes of \fIF\fP.
 .sp
 .LP
 .B "Can't stat root"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 request for statistics about the root directory ``/'' failed.
 This should never happen.
-.I Fsck
+.I Fsck_ffs
 terminates on this error condition.
 See a guru.
 .sp
@@ -162,7 +159,7 @@ See a guru.
 .br
 .B "Can't make sense out of name \fIF\fP"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 request for statistics about the file system \fIF\fP failed.
 When running manually,
 it ignores this file system
@@ -172,7 +169,7 @@ Check access modes of \fIF\fP.
 .LP
 .B "Can't open \fIF\fP"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 request attempt to open the file system \fIF\fP failed.
 When running manually, it ignores this file system
 and continues checking the next file system given.
@@ -182,7 +179,7 @@ Check access modes of \fIF\fP.
 .B "\fIF\fP: (NO WRITE)"
 .br
 Either the \-n flag was specified or
-.I fsck 's
+.I fsck_ffs 's
 attempt to open the file system \fIF\fP for writing failed.
 When running manually,
 all the diagnostics are printed out,
@@ -192,7 +189,7 @@ but no modifications are attempted to fix them.
 .B "file is not a block or character device; OK"
 .br
 You have given
-.I fsck
+.I fsck_ffs
 a regular file name by mistake.
 Check the type of the file specified.
 .LP
@@ -222,7 +219,7 @@ ignore this error condition.
 .B "IMPOSSIBLE MINFREE=\fID\fP IN SUPERBLOCK (SET TO DEFAULT)"
 .br
 The superblock minimum space percentage is greater than 99%
-or less then 0%.
+or less than 0%.
 .LP
 Possible responses to the SET TO DEFAULT prompt are:
 .IP YES
@@ -274,11 +271,11 @@ and will be followed by the message:
 .br
 .B "\fIF\fP: BAD SUPER BLOCK: \fIB\fP"
 .br
-.B "USE -b OPTION TO FSCK TO SPECIFY LOCATION OF AN ALTERNATE"
+.B "USE -b OPTION TO FSCK_FFS TO SPECIFY LOCATION OF AN ALTERNATE"
 .br
-.B "SUPER-BLOCK TO SUPPLY NEEDED INFORMATION; SEE fsck(8)."
+.B "SUPER-BLOCK TO SUPPLY NEEDED INFORMATION; SEE fsck_ffs(8)."
 .br
-The super block has been corrupted. 
+The super block has been corrupted.
 An alternative super block must be selected from among those
 listed by
 .I newfs
@@ -289,7 +286,7 @@ specifying \-b 32 is a good first choice.
 .LP
 .B "INTERNAL INCONSISTENCY: \fIM\fP"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 has had an internal panic, whose message is specified as \fIM\fP.
 This should never happen.
 See a guru.
@@ -297,7 +294,7 @@ See a guru.
 .LP
 .B "CAN NOT SEEK: BLK \fIB\fP (CONTINUE)"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 request for moving to a specified block number \fIB\fP in
 the file system failed.
 This should never happen.
@@ -310,11 +307,11 @@ Often,
 however the problem will persist.
 This error condition will not allow a complete check of the file system.
 A second run of
-.I fsck
+.I fsck_ffs
 should be made to re-check this file system.
 If the block was part of the virtual memory buffer
 cache,
-.I fsck
+.I fsck_ffs
 will terminate with the message ``Fatal I/O error''.
 .IP NO
 terminate the program.
@@ -322,7 +319,7 @@ terminate the program.
 .LP
 .B "CAN NOT READ: BLK \fIB\fP (CONTINUE)"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 request for reading a specified block number \fIB\fP in
 the file system failed.
 This should never happen.
@@ -336,8 +333,8 @@ It will retry the read and print out the message:
 .B "THE FOLLOWING SECTORS COULD NOT BE READ: \fIN\fP"
 .br
 where \fIN\fP indicates the sectors that could not be read.
-If 
-.I fsck
+If
+.I fsck_ffs
 ever tries to write back one of the blocks on which the read failed
 it will print the message:
 .br
@@ -347,11 +344,11 @@ where \fIN\fP indicates the sector that was written with zero's.
 If the disk is experiencing hardware problems, the problem will persist.
 This error condition will not allow a complete check of the file system.
 A second run of
-.I fsck
+.I fsck_ffs
 should be made to re-check this file system.
 If the block was part of the virtual memory buffer
 cache,
-.I fsck
+.I fsck_ffs
 will terminate with the message ``Fatal I/O error''.
 .IP NO
 terminate the program.
@@ -359,7 +356,7 @@ terminate the program.
 .LP
 .B "CAN NOT WRITE: BLK \fIB\fP (CONTINUE)"
 .br
-.I Fsck 's
+.I Fsck_ffs 's
 request for writing a specified block number \fIB\fP
 in the file system failed.
 The disk is write-protected;
@@ -378,11 +375,11 @@ where \fIN\fP indicates the sectors that could not be written.
 If the disk is experiencing hardware problems, the problem will persist.
 This error condition will not allow a complete check of the file system.
 A second run of
-.I fsck
+.I fsck_ffs
 should be made to re-check this file system.
 If the block was part of the virtual memory buffer
 cache,
-.I fsck
+.I fsck_ffs
 will terminate with the message ``Fatal I/O error''.
 .IP NO
 terminate the program.
@@ -391,11 +388,11 @@ terminate the program.
 .B "bad inode number DDD to ginode"
 .br
 An internal error has attempted to read non-existent inode \fIDDD\fP.
-This error causes 
-.I fsck
+This error causes
+.I fsck_ffs
 to exit.
 See a guru.
-.NH 2 
+.NH 2
 Phase 1 \- Check Blocks and Sizes
 .PP
 This phase concerns itself with
@@ -430,13 +427,13 @@ ignore this error condition.
 .LP
 .B "PARTIALLY TRUNCATED INODE I=\fII\fP (SALVAGE)"
 .br
-.I Fsck
+.I Fsck_ffs
 has found inode \fII\fP whose size is shorter than the number of
 blocks allocated to it.
 This condition should only occur if the system crashes while in the
 midst of truncating a file.
-When preen'ing the file system, 
-.I fsck
+When preen'ing the file system,
+.I fsck_ffs
 completes the truncation to the specified size.
 .LP
 Possible responses to SALVAGE are:
@@ -449,18 +446,18 @@ ignore this error condition.
 .B "LINK COUNT TABLE OVERFLOW (CONTINUE)"
 .br
 An internal table for
-.I fsck
+.I fsck_ffs
 containing allocated inodes with a link count of
 zero cannot allocate more memory.
 Increase the virtual memory for
-.I fsck .
+.I fsck_ffs .
 .LP
 Possible responses to the CONTINUE prompt are:
 .IP YES
 continue with the program.
 This error condition will not allow a complete check of the file system.
 A second run of
-.I fsck
+.I fsck_ffs
 should be made to re-check this file system.
 If another allocated inode with a zero link count is found,
 this error condition is repeated.
@@ -495,7 +492,7 @@ ignore the rest of the blocks in this inode
 and continue checking with the next inode in the file system.
 This error condition will not allow a complete check of the file system.
 A second run of
-.I fsck
+.I fsck_ffs
 should be made to re-check this file system.
 .IP NO
 terminate the program.
@@ -503,11 +500,11 @@ terminate the program.
 .LP
 .B "BAD STATE DDD TO BLKERR"
 .br
-An internal error has scrambled 
-.I fsck 's
+An internal error has scrambled
+.I fsck_ffs 's
 state map to have the impossible value \fIDDD\fP.
-.I Fsck
-exits immediately. 
+.I Fsck_ffs
+exits immediately.
 See a guru.
 .sp
 .LP
@@ -535,7 +532,7 @@ ignore the rest of the blocks in this inode
 and continue checking with the next inode in the file system.
 This error condition will not allow a complete check of the file system.
 A second run of
-.I fsck
+.I fsck_ffs
 should be made to re-check this file system.
 .IP NO
 terminate the program.
@@ -544,17 +541,17 @@ terminate the program.
 .B "DUP TABLE OVERFLOW (CONTINUE)"
 .br
 An internal table in
-.I fsck
+.I fsck_ffs
 containing duplicate block numbers cannot allocate any more space.
 Increase the amount of virtual memory available to
-.I fsck .
+.I fsck_ffs .
 .LP
 Possible responses to the CONTINUE prompt are:
 .IP YES
 continue with the program.
 This error condition will not allow a complete check of the file system.
 A second run of
-.I fsck
+.I fsck_ffs
 should be made to re-check this file system.
 If another duplicate block is found, this error condition will repeat.
 .IP NO
@@ -583,7 +580,7 @@ Possible responses to the CORRECT prompt are:
 replace the block count of inode \fII\fP with \fIY\fP.
 .IP NO
 ignore this error condition.
-.NH 2 
+.NH 2
 Phase 1B: Rescan for More Dups
 .PP
 When a duplicate block is found in the file system, the file system is
@@ -600,7 +597,7 @@ This error condition will always invoke the
 error condition in Phase 2.
 You can determine which inodes have overlapping blocks by examining
 this error condition and the DUP error condition in Phase 1.
-.NH 2 
+.NH 2
 Phase 2 \- Check Pathnames
 .PP
 This phase concerns itself with removing directory entries
@@ -629,12 +626,12 @@ The files and directories usually found in the root will be recovered
 in Phase 3 and put into
 .I lost+found .
 If the attempt to allocate the root fails,
-.I fsck
+.I fsck_ffs
 will exit with the message:
 .br
 .B "CANNOT ALLOCATE ROOT INODE" .
 .IP NO
-.I fsck
+.I fsck_ffs
 will exit.
 .sp
 .LP
@@ -651,12 +648,12 @@ The files and directories usually found in the root will be recovered
 in Phase 3 and put into
 .I lost+found .
 If the attempt to allocate the root fails,
-.I fsck
+.I fsck_ffs
 will exit with the message:
 .br
 .B "CANNOT ALLOCATE ROOT INODE" .
 .IP NO
-.I fsck
+.I fsck_ffs
 will then prompt with
 .B "FIX"
 .LP
@@ -682,12 +679,12 @@ The files and directories usually found in the root will be recovered
 in Phase 3 and put into
 .I lost+found .
 If the attempt to allocate the root fails,
-.I fsck
+.I fsck_ffs
 will exit with the message:
 .br
 .B "CANNOT ALLOCATE ROOT INODE" .
 .IP NO
-.I fsck
+.I fsck_ffs
 will then prompt with
 .B "CONTINUE" .
 .LP
@@ -836,12 +833,12 @@ leave the directory unchanged.
 .B "CANNOT FIX, FIRST ENTRY IN DIRECTORY CONTAINS \fIF\fP"
 .br
 A directory \fII\fP has been found whose first entry is \fIF\fP.
-.I Fsck
-cannot resolve this problem. 
+.I Fsck_ffs
+cannot resolve this problem.
 The file system should be mounted and the offending entry \fIF\fP
 moved elsewhere.
 The file system should then be unmounted and
-.I fsck
+.I fsck_ffs
 should be run again.
 .sp
 .LP
@@ -850,7 +847,7 @@ should be run again.
 .B "CANNOT FIX, INSUFFICIENT SPACE TO ADD `.'"
 .br
 A directory \fII\fP has been found whose first entry is not `.'.
-.I Fsck
+.I Fsck_ffs
 cannot resolve this problem as it should never happen.
 See a guru.
 .sp
@@ -896,12 +893,12 @@ leave the directory unchanged.
 .B "CANNOT FIX, SECOND ENTRY IN DIRECTORY CONTAINS \fIF\fP"
 .br
 A directory \fII\fP has been found whose second entry is \fIF\fP.
-.I Fsck
-cannot resolve this problem. 
+.I Fsck_ffs
+cannot resolve this problem.
 The file system should be mounted and the offending entry \fIF\fP
 moved elsewhere.
 The file system should then be unmounted and
-.I fsck
+.I fsck_ffs
 should be run again.
 .sp
 .LP
@@ -910,12 +907,12 @@ should be run again.
 .B "CANNOT FIX, INSUFFICIENT SPACE TO ADD `..'"
 .br
 A directory \fII\fP has been found whose second entry is not `..'.
-.I Fsck
+.I Fsck_ffs
 cannot resolve this problem.
 The file system should be mounted and the second entry in the directory
 moved elsewhere.
 The file system should then be unmounted and
-.I fsck
+.I fsck_ffs
 should be run again.
 .sp
 .LP
@@ -932,7 +929,7 @@ leave the directory unchanged.
 .LP
 .B "\fIN\fP IS AN EXTRANEOUS HARD LINK TO A DIRECTORY \fID\fP (REMOVE)
 .br
-.I Fsck
+.I Fsck_ffs
 has found a hard link, \fIN\fP, to a directory, \fID\fP.
 When preen'ing the extraneous links are ignored.
 .LP
@@ -947,7 +944,7 @@ ignore the error condition.
 .br
 An internal error has caused an impossible state \fIS\fP to be passed to the
 routine that descends the file system directory structure.
-.I Fsck
+.I Fsck_ffs
 exits.
 See a guru.
 .sp
@@ -956,7 +953,7 @@ See a guru.
 .br
 An internal error has caused an impossible state \fIS\fP to be returned
 from the routine that descends the file system directory structure.
-.I Fsck
+.I Fsck_ffs
 exits.
 See a guru.
 .sp
@@ -965,10 +962,10 @@ See a guru.
 .br
 An internal error has caused an impossible state \fIS\fP to be assigned
 to the root inode.
-.I Fsck
+.I Fsck_ffs
 exits.
 See a guru.
-.NH 2 
+.NH 2
 Phase 3 \- Check Connectivity
 .PP
 This phase concerns itself with the directory connectivity seen in
@@ -1010,7 +1007,7 @@ There is no
 .I lost+found
 directory in the root directory of the file system;
 When preen'ing
-.I fsck
+.I fsck_ffs
 tries to create a \fIlost+found\fP directory.
 .LP
 Possible responses to the CREATE prompt are:
@@ -1061,17 +1058,17 @@ There is no space to add another entry to the
 .I lost+found
 directory in the root directory
 of the file system.
-When preen'ing the 
+When preen'ing the
 .I lost+found
 directory is expanded.
 .LP
 Possible responses to the EXPAND prompt are:
 .IP YES
-the 
+the
 .I lost+found
 directory is expanded to make room for the new entry.
 If the attempted expansion fails
-.I fsck
+.I fsck_ffs
 prints the message:
 .br
 .B "SORRY. NO SPACE IN lost+found DIRECTORY"
@@ -1118,10 +1115,10 @@ ignore the error condition.
 .br
 An internal error has caused an impossible state \fIS\fP to be passed to the
 routine that descends the file system directory structure.
-.I Fsck
+.I Fsck_ffs
 exits.
 See a guru.
-.NH 2 
+.NH 2
 Phase 4 \- Check Reference Counts
 .PP
 This phase concerns itself with the link count information
@@ -1182,7 +1179,7 @@ There is no
 .I lost+found
 directory in the root directory of the file system;
 When preen'ing
-.I fsck
+.I fsck_ffs
 tries to create a \fIlost+found\fP directory.
 .LP
 Possible responses to the CREATE prompt are:
@@ -1233,17 +1230,17 @@ There is no space to add another entry to the
 .I lost+found
 directory in the root directory
 of the file system.
-When preen'ing the 
+When preen'ing the
 .I lost+found
 directory is expanded.
 .LP
 Possible responses to the EXPAND prompt are:
 .IP YES
-the 
+the
 .I lost+found
 directory is expanded to make room for the new entry.
 If the attempted expansion fails
-.I fsck
+.I fsck_ffs
 prints the message:
 .br
 .B "SORRY. NO SPACE IN lost+found DIRECTORY"
@@ -1268,7 +1265,7 @@ When preen'ing the link count is adjusted unless the number of references
 is increasing, a condition that should never occur unless precipitated
 by a hardware failure.
 When the number of references is increasing under preen mode,
-.I fsck
+.I fsck_ffs
 exits with the message:
 .br
 .B "LINK COUNT INCREASING"
@@ -1314,7 +1311,7 @@ Possible responses to the CLEAR prompt are:
 de-allocate inode \fII\fP by zeroing its contents.
 .IP NO
 ignore this error condition.
-.NH 2 
+.NH 2
 Phase 5 - Check Cyl groups
 .PP
 This phase concerns itself with the free-block and used-inode maps.
@@ -1373,7 +1370,7 @@ Possible responses to the SALVAGE prompt are:
 reconstruct the superblock free block information.
 .IP NO
 ignore this error condition.
-.NH 2 
+.NH 2
 Cleanup
 .PP
 Once a file system has been checked, a few cleanup functions are performed.
@@ -1398,16 +1395,16 @@ The numbers in parenthesis breaks the free count down into
 .br
 This is an advisory message indicating that
 the root file system has been modified by
-.I fsck.
+.I fsck_ffs.
 If UNIX is not rebooted immediately,
 the work done by
-.I fsck
+.I fsck_ffs
 may be undone by the in-core copies of tables
 UNIX keeps.
 When preen'ing,
-.I fsck
+.I fsck_ffs
 will exit with a code of 4.
-The standard auto-reboot script distributed with 4.3BSD 
+The standard auto-reboot script distributed with 4.3BSD
 interprets an exit code of 4 by issuing a reboot system call.
 .sp
 .LP
@@ -1415,12 +1412,12 @@ interprets an exit code of 4 by issuing a reboot system call.
 .br
 This is an advisory message indicating that
 the current file system was modified by
-.I fsck.
+.I fsck_ffs.
 If this file system is mounted or is the current root file system,
-.I fsck
+.I fsck_ffs
 should be halted and UNIX rebooted.
 If UNIX is not rebooted immediately,
 the work done by
-.I fsck
+.I fsck_ffs
 may be undone by the in-core copies of tables
 UNIX keeps.

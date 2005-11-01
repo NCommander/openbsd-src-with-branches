@@ -97,7 +97,7 @@ isc_dir_read(isc_dir_t *dir) {
 	if (sizeof(dir->entry.name) <= strlen(entry->d_name))
 	    return (ISC_R_UNEXPECTED);
 
-	strcpy(dir->entry.name, entry->d_name);
+	strlcpy(dir->entry.name, entry->d_name, sizeof(dir->entry.name));
 
 	/*
 	 * Some dirents have d_namlen, but it is not portable.

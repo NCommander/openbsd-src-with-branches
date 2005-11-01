@@ -1,4 +1,5 @@
-/*	$NetBSD: tip.h,v 1.3 1994/12/08 09:31:10 jtc Exp $	*/
+/*	$OpenBSD: tip.h,v 1.17 2003/10/15 22:33:18 deraadt Exp $	*/
+/*	$NetBSD: tip.h,v 1.7 1997/04/20 00:02:46 mellon Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,11 +38,12 @@
  */
 
 #include <sys/types.h>
-#include <machine/endian.h>
 #include <sys/file.h>
 #include <sys/time.h>
+#include <sys/wait.h>
+#include <sys/ioctl.h>
 
-#include <sgtty.h>
+#include <termios.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,6 +53,7 @@
 #include <setjmp.h>
 #include <unistd.h>
 #include <errno.h>
+#include <limits.h>
 
 /*
  * Remote host attributes
@@ -77,8 +76,8 @@ char	*HO;			/* host name */
 long	BR;			/* line speed for conversation */
 long	FS;			/* frame size for transfers */
 
-char	DU;			/* this host is dialed up */
-char	HW;			/* this device is hardwired, see hunt.c */
+short	DU;			/* this host is dialed up */
+short	HW;			/* this device is hardwired, see hunt.c */
 char	*ES;			/* escape character */
 char	*EX;			/* exceptions */
 char	*FO;			/* force (literal next) char*/
@@ -88,7 +87,8 @@ char	*PR;			/* remote prompt */
 long	DL;			/* line delay for file transfers to remote */
 long	CL;			/* char delay for file transfers to remote */
 long	ET;			/* echocheck timeout */
-char	HD;			/* this host is half duplex - do local echo */
+short	HD;			/* this host is half duplex - do local echo */
+short	DC;			/* this host is directly connected. */
 
 /*
  * String value table
@@ -144,30 +144,18 @@ typedef
  *   initialize it in vars.c, so we cast it as needed to keep lint
  *   happy.
  */
-typedef
-	union {
-		int	zz_number;
-		short	zz_boolean[2];
-		char	zz_character[4];
-		int	*zz_address;
-	}
-	zzhack;
 
 #define value(v)	vtable[v].v_value
 
-#define number(v)	((((zzhack *)(&(v))))->zz_number)
+#define	number(v)	((long)(v))
+#define	boolean(v)      ((short)(long)(v))
+#define	character(v)    ((char)(long)(v))
+#define	address(v)      ((long *)(v))
 
-#if BYTE_ORDER == LITTLE_ENDIAN
-#define boolean(v)	((((zzhack *)(&(v))))->zz_boolean[0])
-#define character(v)	((((zzhack *)(&(v))))->zz_character[0])
-#endif
-
-#if BYTE_ORDER == BIG_ENDIAN
-#define boolean(v)	((((zzhack *)(&(v))))->zz_boolean[1])
-#define character(v)	((((zzhack *)(&(v))))->zz_character[3])
-#endif
-
-#define address(v)	((((zzhack *)(&(v))))->zz_address)
+#define	setnumber(v,n)		do { (v) = (char *)(long)(n); } while (0)
+#define	setboolean(v,n)		do { (v) = (char *)(long)(n); } while (0)
+#define	setcharacter(v,n)	do { (v) = (char *)(long)(n); } while (0)
+#define	setaddress(v,n)		do { (v) = (char *)(n); } while (0)
 
 /*
  * Escape command table definitions --
@@ -178,7 +166,7 @@ typedef
 typedef
 	struct {
 		char	e_char;		/* char to match on */
-		char	e_flags;	/* experimental, priviledged */
+		char	e_flags;	/* experimental, privileged */
 		char	*e_help;	/* help string */
 		int 	(*e_func)();	/* command */
 	}
@@ -186,9 +174,10 @@ typedef
 
 #define NORM	00		/* normal protection, execute anyone */
 #define EXP	01		/* experimental, mark it with a `*' on help */
-#define PRIV	02		/* priviledged, root execute only */
+#define PRIV	02		/* privileged, root execute only */
 
 extern int	vflag;		/* verbose during reading of .tiprc file */
+extern int	noesc;		/* no escape `~' char */
 extern value_t	vtable[];	/* variable table */
 
 #ifndef ACULOG
@@ -234,6 +223,7 @@ extern value_t	vtable[];	/* variable table */
 #define HALFDUPLEX	30
 #define	LECHO		31
 #define	PARITY		32
+#define	HARDWAREFLOW	33
 
 #define NOVAL	((value_t *)NULL)
 #define NOACU	((acu_t *)NULL)
@@ -241,12 +231,10 @@ extern value_t	vtable[];	/* variable table */
 #define NOFILE	((FILE *)NULL)
 #define NOPWD	((struct passwd *)0)
 
-struct sgttyb	arg;		/* current mode of local terminal */
-struct sgttyb	defarg;		/* initial mode of local terminal */
-struct tchars	tchars;		/* current state of terminal */
-struct tchars	defchars;	/* initial state of terminal */
-struct ltchars	ltchars;	/* current local characters of terminal */
-struct ltchars	deflchars;	/* initial local characters of terminal */
+struct termios	term;		/* current mode of terminal */
+struct termios	defterm;	/* initial mode of terminal */
+struct termios	defchars;	/* current mode with initial chars */
+int	gotdefterm;
 
 FILE	*fscript;		/* FILE for scripting */
 
@@ -255,8 +243,10 @@ int	repdes[2];		/* read process sychronization channel */
 int	FD;			/* open file descriptor to remote host */
 int	AC;			/* open file descriptor to dialer (v831 only) */
 int	vflag;			/* print .tiprc initialization sequence */
+int	noesc;			/* no `~' escape char */
 int	sfd;			/* for ~< operation */
-int	pid;			/* pid of tipout */
+pid_t	tipin_pid;		/* pid of tipin */
+pid_t	tipout_pid;		/* pid of tipout */
 uid_t	uid, euid;		/* real and effective user id's */
 gid_t	gid, egid;		/* real and effective group id's */
 int	stop;			/* stop transfer session flag */
@@ -265,16 +255,57 @@ int	intflag;		/* recognized interrupt */
 int	stoprompt;		/* for interrupting a prompt session */
 int	timedout;		/* ~> transfer timedout */
 int	cumode;			/* simulating the "cu" program */
+int	bits8;			/* terminal is is 8-bit mode */
+#define STRIP_PAR	(bits8 ? 0377 : 0177)
 
-char	fname[80];		/* file name buffer for ~< */
-char	copyname[80];		/* file name buffer for ~> */
+char	fname[PATH_MAX];	/* file name buffer for ~< */
+char	copyname[PATH_MAX];	/* file name buffer for ~> */
 char	ccc;			/* synchronization character */
 char	ch;			/* for tipout */
 char	*uucplock;		/* name of lock file for uucp's */
 
-int	odisc;				/* initial tty line discipline */
-extern	int disc;			/* current tty discpline */
+int	odisc;			/* initial tty line discipline */
+extern	int disc;		/* current tty discpline */
+
+extern	char *__progname;	/* program name */
 
 extern	char *ctrl();
 extern	char *vinterp();
 extern	char *connect();
+
+char	*sname(char *s);
+int	any(int cc, char *p);
+int	anyof(char *s1, char *s2);
+int	args(char *buf, char *a[], int num);
+int	escape(void);
+int	prompt(char *s, char *p, size_t sz);
+int	size(char *s);
+int	ttysetup(int speed);
+int	uu_lock(char *ttyname);
+int	uu_unlock(char *ttyname);
+int	vstring(char *s, char *v);
+long	hunt(char *name);
+void	cumain(int argc, char *argv[]);
+void	daemon_uid(void);
+void	disconnect(char *reason);
+void	execute(char *s);
+void	hardwareflow(char *option);
+void	logent(char *group, char *num, char *acu, char *message);
+void	loginit(void);
+void	prtime(char *s, time_t a);
+void	parwrite(int fd, char *buf, int n);
+void	raw(void);
+void	send(int c);
+void	setparity(char *defparity);
+void	setscript(void);
+void	shell_uid(void);
+void	tandem(char *option);
+void	tipabort(char *msg);
+void	tipin(void);
+void	tipout(void);
+void	transfer(char *buf, int fd, char *eofchars);
+void	transmit(FILE *fd, char *eofchars, char *command);
+void	unraw(void);
+void	user_uid(void);
+void	vinit(void);
+void	vlex(char *s);

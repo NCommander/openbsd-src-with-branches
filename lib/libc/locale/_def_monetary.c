@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -7,7 +8,7 @@
 #include <limits.h>
 #include <locale.h>
 
-const _MonetaryLocale _DefaultMonetaryLocale = 
+const _MonetaryLocale _DefaultMonetaryLocale =
 {
 	"",
 	"",

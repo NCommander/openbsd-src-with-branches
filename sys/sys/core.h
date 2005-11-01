@@ -1,3 +1,4 @@
+/*	$OpenBSD: core.h,v 1.2 1996/03/03 12:11:28 niklas Exp $	*/
 /*	$NetBSD: core.h,v 1.4 1994/10/29 08:20:14 cgd Exp $	*/
 
 /*
@@ -57,7 +58,7 @@
 
 /*
  * A core file consists of a header followed by a number of segments.
- * Each segment is preceeded by a `coreseg' structure giving the
+ * Each segment is preceded by a `coreseg' structure giving the
  * segment's type, the virtual address where the bits resided in
  * process address space and the size of the segment.
  *

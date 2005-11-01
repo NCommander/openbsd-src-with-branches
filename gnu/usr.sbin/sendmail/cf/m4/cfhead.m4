@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+# Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.
 #	All rights reserved.
 # Copyright (c) 1983, 1995 Eric P. Allman.  All rights reserved.
 # Copyright (c) 1988, 1993
@@ -16,11 +16,11 @@
 #####
 #####		SENDMAIL CONFIGURATION FILE
 #####
-ifdef(`unix', `dnl
+ifdef(`__win32__', `dnl', `dnl
 ifdef(`TEMPFILE', `dnl', `define(`TEMPFILE', maketemp(/tmp/cfXXXXXX))dnl
 syscmd(sh _CF_DIR_`'sh/makeinfo.sh _CF_DIR_ > TEMPFILE)dnl
 include(TEMPFILE)dnl
-syscmd(rm -f TEMPFILE)dnl')', `dnl')
+syscmd(rm -f TEMPFILE)dnl')')
 #####
 ######################################################################
 #####
@@ -119,8 +119,10 @@ define(`_CPO_',`')
 define(`CLIENT_OPTIONS', `define(`_CPO_', defn(`_CPO_')
 O ClientPortOptions=`$1')')
 define(`_MAIL_FILTERS_', `')
+define(`_MAIL_FILTERS_DEF', `')
 define(`MAIL_FILTER', `define(`_MAIL_FILTERS_', defn(`_MAIL_FILTERS_')
-X`'$1`, '`$2')')
+X`'$1`, '`$2')
+define(`_MAIL_FILTERS_DEF', defn(`_MAIL_FILTERS_DEF')`X')')
 define(`INPUT_MAIL_FILTER', `MAIL_FILTER(`$1', `$2')
 ifelse(defn(`confINPUT_MAIL_FILTERS')X, `X',
 `define(`confINPUT_MAIL_FILTERS', $1)',
@@ -131,6 +133,8 @@ Q`'$1`, '`$2')')
 define(`CF_LEVEL', `10')dnl
 define(`VERSIONID', ``#####  $1  #####'')
 define(`LOCAL_RULE_0', `divert(3)')
+dnl for UUCP...
+define(`LOCAL_UUCP', `divert(4)')
 define(`LOCAL_RULE_1',
 `divert(9)dnl
 #######################################
@@ -298,7 +302,8 @@ define(`confMILTER_MACROS_CONNECT', ``j, _, {daemon_name}, {if_name}, {if_addr}'
 define(`confMILTER_MACROS_HELO', ``{tls_version}, {cipher}, {cipher_bits}, {cert_subject}, {cert_issuer}'')
 define(`confMILTER_MACROS_ENVFROM', ``i, {auth_type}, {auth_authen}, {auth_ssf}, {auth_author}, {mail_mailer}, {mail_host}, {mail_addr}'')
 define(`confMILTER_MACROS_ENVRCPT', ``{rcpt_mailer}, {rcpt_host}, {rcpt_addr}'')
+define(`confMILTER_MACROS_EOM', `{msg_id}')
 
 
 divert(0)dnl
-VERSIONID(`$Sendmail: cfhead.m4,v 8.107 2001/07/22 03:25:37 ca Exp $')
+VERSIONID(`$Sendmail: cfhead.m4,v 8.116 2004/01/28 22:02:22 ca Exp $')

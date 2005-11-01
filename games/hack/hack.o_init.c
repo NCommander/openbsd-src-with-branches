@@ -1,28 +1,96 @@
+/*	$OpenBSD: hack.o_init.c,v 1.3 2003/03/16 21:22:36 camield Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.o_init.c,v 1.4 1995/04/24 12:23:27 cgd Exp $";
+static const char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
-#include	"config.h"		/* for typedefs */
-#include	"def.objects.h"
-#include	"hack.onames.h"		/* for LAST_GEM */
+#include	<stdio.h>
 #include	<string.h>
+#include	"config.h"		/* for typedefs */
+#include	"hack.h"
+#include	"def.objects.h"
+
+static void setgemprobs(void);
+static int  interesting_to_discover(int);
 
 int
-letindex(let) register char let; {
-register int i = 0;
-register char ch;
+letindex(char let)
+{
+	int i = 0;
+	char ch;
+
 	while((ch = obj_symbols[i++]) != 0)
 		if(ch == let) return(i);
 	return(0);
 }
 
-init_objects(){
-register int i, j, first, last, sum, end;
-register char let, *tmp;
+void
+init_objects()
+{
+	int i, j, first, last, sum, end;
+	char let, *tmp;
+
 	/* init base; if probs given check that they add up to 100, 
 	   otherwise compute probs; shuffle descriptions */
 	end = SIZE(objects);
@@ -67,18 +135,22 @@ register char let, *tmp;
 	}
 }
 
-probtype(let) register char let; {
-register int i = bases[letindex(let)];
-register int prob = rn2(100);
+int
+probtype(char let)
+{
+	int i = bases[letindex(let)];
+	int prob = rn2(100);
+
 	while((prob -= objects[i].oc_prob) >= 0) i++;
 	if(objects[i].oc_olet != let || !objects[i].oc_name)
 		panic("probtype(%c) error, i=%d", let, i);
 	return(i);
 }
 
+static void
 setgemprobs()
 {
-	register int j,first;
+	int j,first;
 	extern xchar dlevel;
 
 	first = bases[letindex(GEM_SYM)];
@@ -95,16 +167,18 @@ setgemprobs()
 		objects[j].oc_prob = (20+j-first)/(LAST_GEM-first);
 }
 
+void
 oinit()			/* level dependent initialization */
 {
 	setgemprobs();
 }
 
-extern long *alloc();
+void
+savenames(int fd) 
+{
+	int i;
+	unsigned len;
 
-savenames(fd) register fd; {
-register int i;
-unsigned len;
 	bwrite(fd, (char *) bases, sizeof bases);
 	bwrite(fd, (char *) objects, sizeof objects);
 	/* as long as we use only one version of Hack/Quest we
@@ -119,9 +193,12 @@ unsigned len;
 	}
 }
 
-restnames(fd) register fd; {
-register int i;
-unsigned len;
+void
+restnames(int fd)
+{
+	int i;
+	unsigned len;
+
 	mread(fd, (char *) bases, sizeof bases);
 	mread(fd, (char *) objects, sizeof objects);
 	for(i=0; i < SIZE(objects); i++) if(objects[i].oc_uname) {
@@ -131,10 +208,10 @@ unsigned len;
 	}
 }
 
+int
 dodiscovered()				/* free after Robert Viduya */
 {
-    extern char *typename();
-    register int i, end;
+    int i, end;
     int	ct = 0;
 
     cornline(0, "Discoveries");
@@ -155,8 +232,8 @@ dodiscovered()				/* free after Robert Viduya */
     return(0);
 }
 
-interesting_to_discover(i)
-register int i;
+static int
+interesting_to_discover(int i)
 {
     return(
 	objects[i].oc_uname != NULL ||

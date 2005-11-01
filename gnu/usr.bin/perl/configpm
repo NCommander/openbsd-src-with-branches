@@ -13,6 +13,11 @@ my %Common = map {($_,$_)}
 my %Extensions = map {($_,$_)}
                  qw(dynamic_ext static_ext extensions known_extensions);
 
+# libpaths that should be truncated after the first path element
+my %Libpathtrunc = map {($_,$_)}
+                 qw(archlib archlibexp privlib privlibexp sitearch sitearchexp
+		    sitelib sitelibexp);
+
 # allowed opts as well as specifies default and initial values
 my %Allowed_Opts = (
     'cross'    => '', # --cross=PALTFORM - crosscompiling for PLATFORM
@@ -194,6 +199,9 @@ while (<CONFIG_SH>) {
     }
     $in_v = $val !~ /$quote\n/;
     next if $in_v;
+
+    # XXX - should use PERLLIB_SEP, not hard-code ':'
+    $val =~ s/^([^:]+).*${quote}\w*$/$1${quote}/ if $Libpathtrunc{$name};
 
     s,/,::,g if $Extensions{$name};
 

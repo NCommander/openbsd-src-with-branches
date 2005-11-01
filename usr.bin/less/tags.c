@@ -120,17 +120,13 @@ maketagent(name, file, linenum, pattern, endline)
 	register struct tag *tp;
 
 	tp = (struct tag *) ecalloc(sizeof(struct tag), 1);
-	tp->tag_file = (char *) ecalloc(strlen(file) + 1, sizeof(char));
-	strcpy(tp->tag_file, file);
+	tp->tag_file = save(file);
 	tp->tag_linenum = linenum;
 	tp->tag_endline = endline;
 	if (pattern == NULL)
 		tp->tag_pattern = NULL;
 	else
-	{
-		tp->tag_pattern = (char *) ecalloc(strlen(pattern) + 1, sizeof(char));
-		strcpy(tp->tag_pattern, pattern);
-	}
+		tp->tag_pattern = save(pattern);
 	return (tp);
 }
 
@@ -528,7 +524,8 @@ findgtag(tag, type)
 		qtag = shell_quote(tag);
 		if (qtag == NULL)
 			qtag = tag;
-		sprintf(command, "%s -x%s %s", cmd, flag, qtag);
+		snprintf(command, sizeof(command), "%s -x%s %s", cmd,
+		    flag, qtag);
 		if (qtag != tag)
 			free(qtag);
 		fp = popen(command, "r");
@@ -657,7 +654,7 @@ prevgtag()
 /*
  * Position the current file at at what is hopefully the tag that was chosen
  * using either findtag() or one of nextgtag() and prevgtag().  Returns -1
- * if it was unable to position at the tag, 0 if succesful.
+ * if it was unable to position at the tag, 0 if successful.
  */
 	static POSITION
 gtagsearch()

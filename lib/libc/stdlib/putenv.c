@@ -1,6 +1,7 @@
+/*	$OpenBSD$ */
 /*-
- * Copyright (c) 1988 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1993
+ *     The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,29 +28,23 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)putenv.c	5.4 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: putenv.c,v 1.4 1993/11/24 19:44:13 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdlib.h>
 #include <string.h>
 
 int
-putenv(str)
-	const char *str;
+putenv(const char *str)
 {
-	register char *p, *equal;
+	char *p, *equal;
 	int rval;
 
-	if (!(p = strdup(str)))
-		return(1);
-	if (!(equal = strchr(p, '='))) {
+	if ((p = strdup(str)) == NULL)
+		return (-1);
+	if ((equal = strchr(p, '=')) == NULL) {
 		(void)free(p);
-		return(1);
+		return (-1);
 	}
 	*equal = '\0';
 	rval = setenv(p, equal + 1, 1);
 	(void)free(p);
-	return(rval);
+	return (rval);
 }

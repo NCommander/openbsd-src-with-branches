@@ -119,6 +119,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <inttypes.h>
 #include <ctype.h>
 
 #define USE_SOCKETS

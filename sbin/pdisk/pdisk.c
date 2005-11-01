@@ -8,23 +8,23 @@
 
 /*
  * Copyright 1996,1997,1998 by Apple Computer, Inc.
- *              All Rights Reserved 
- *  
- * Permission to use, copy, modify, and distribute this software and 
- * its documentation for any purpose and without fee is hereby granted, 
- * provided that the above copyright notice appears in all copies and 
- * that both the copyright notice and this permission notice appear in 
- * supporting documentation. 
- *  
- * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- * FOR A PARTICULAR PURPOSE. 
- *  
- * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
- * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *              All Rights Reserved
+ *
+ * Permission to use, copy, modify, and distribute this software and
+ * its documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appears in all copies and
+ * that both the copyright notice and this permission notice appear in
+ * supporting documentation.
+ *
+ * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT,
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 // for printf()
@@ -33,6 +33,8 @@
 #ifdef __linux__
 #include <getopt.h>
 #include <malloc.h>
+#elif defined(__OpenBSD__)
+#include <stdlib.h>
 #else
 // for malloc() & free()
 #include <stdlib.h>
@@ -120,6 +122,7 @@ void do_display_entry(partition_map_header *map);
 void do_examine_patch_partition(partition_map_header *map);
 int do_expert(partition_map_header *map, char *name);
 void do_rename_partition(partition_map_header *map);
+void do_change_type(partition_map_header *map);
 void do_reorder(partition_map_header *map);
 void do_write_partition_map(partition_map_header *map);
 void edit(char *name, int ask_logical_size);
@@ -139,16 +142,17 @@ void print_top_notes();
 int
 main(int argc, char **argv)
 {
-#ifdef __linux__
+#if defined(__linux__) || defined (__OpenBSD__)
     int name_index;
 #else
     printf("This app uses the SIOUX console library\n");
     printf("Choose 'Quit' from the file menu to quit.\n\n");
     printf("Use fake disk names (/dev/scsi<bus>.<id>; i.e. /dev/scsi0.1, /dev/scsi1.3, etc.).\n\n");
- 
+
     SIOUXSettings.autocloseonquit = 0;	/* Do we close the SIOUX window on program termination ... */
     SIOUXSettings.asktosaveonclose = 0;	/* Do we offer to save on a close ... */
 #endif
+    char *versionstr;
 
     init_program_name(argv);
 
@@ -162,12 +166,16 @@ main(int argc, char **argv)
 		"is not equal to block size (%d)\n",
 		sizeof(Block0), PBLOCK_SIZE);
     }
-    if (strcmp(VERSION, get_version_string()) != 0) {
-	fatal(-1, "Version string static form (%s) does not match dynamic form (%s)\n",
-		VERSION, get_version_string());
+    versionstr = (char *)get_version_string();
+    if (versionstr) {
+    	if (strcmp(VERSION, versionstr) != 0) {
+		fatal(-1, "Version string static form (%s) does not match dynamic form (%s)\n",
+		    VERSION, versionstr);
+    	}
+	free(versionstr);
     }
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__OpenBSD__)
     name_index = get_options(argc, argv);
 
     if (vflag) {
@@ -203,7 +211,7 @@ main(int argc, char **argv)
 
     SIOUXSettings.autocloseonquit = 1;
     //printf("Processing stopped: Choose 'Quit' from the file menu to quit.\n\n");
-    exit(0);
+    return (0);
 #endif
 }
 
@@ -444,6 +452,68 @@ get_options(int argc, char **argv)
 }
 #endif
 
+#ifdef __OpenBSD__
+int
+get_options(int argc, char **argv)
+{
+    int c;
+    extern int optind;
+    extern char *optarg;
+    int flag = 0;
+
+    lflag = LFLAG_DEFAULT;
+    lfile = NULL;
+    vflag = VFLAG_DEFAULT;
+    hflag = HFLAG_DEFAULT;
+    dflag = DFLAG_DEFAULT;
+    rflag = RFLAG_DEFAULT;
+    aflag = AFLAG_DEFAULT;
+    pflag = PFLAG_DEFAULT;
+    interactive = INTERACT_DEFAULT;
+    cflag = CFLAG_DEFAULT;
+
+    optind = 1;	// reset option scanner logic
+    while ((c = getopt(argc, argv, "hlvdric")) != -1) {
+	switch (c) {
+	case 'h':
+	    hflag = (HFLAG_DEFAULT)?0:1;
+	    break;
+	case 'l':
+	    lflag = (LFLAG_DEFAULT)?0:1;
+	    break;
+	case 'v':
+	    vflag = (VFLAG_DEFAULT)?0:1;
+	    break;
+	case 'd':
+	    dflag = (DFLAG_DEFAULT)?0:1;
+	    break;
+	case 'c':
+	    cflag = (CFLAG_DEFAULT)?0:1;
+	    break;
+	case 'r':
+	    rflag = (RFLAG_DEFAULT)?0:1;
+	    break;
+	case 'i':
+	    interactive = (INTERACT_DEFAULT)?0:1;
+	    break;
+	case 'a':
+	    aflag = (AFLAG_DEFAULT)?0:1;
+	    break;
+	case kLogicalOption:
+	    pflag = (PFLAG_DEFAULT)?0:1;
+	    break;
+	default:
+	    flag = 1;
+	    break;
+	}
+    }
+    if (flag) {
+	usage("bad arguments");
+    }
+    return optind;
+}
+#endif
+
 
 void
 print_edit_notes()
@@ -495,11 +565,12 @@ edit(char *name, int ask_logical_size)
 	    printf("  P    (print ordered by base address)\n");
 	    printf("  i    initialize partition map\n");
 	    printf("  s    change size of partition map\n");
-	    printf("  c    create new partition (standard MkLinux type)\n");
+	    printf("  c    create new partition (standard OpenBSD type)\n");
 	    printf("  C    (create with type also specified)\n");
 	    printf("  n    (re)name a partition\n");
 	    printf("  d    delete a partition\n");
 	    printf("  r    reorder partition entry in map\n");
+	    printf("  t    change a partition's type\n");
 	    if (!rflag) {
 		printf("  w    write the partition table\n");
 	    }
@@ -545,6 +616,10 @@ edit(char *name, int ask_logical_size)
 	case 's':
 	    do_change_map_size(map);
 	    break;
+	case 'T':
+	case 't':
+	    do_change_type(map);
+	    break;
 	case 'X':
 	case 'x':
 	    if (!dflag) {
@@ -587,7 +662,7 @@ do_create_partition(partition_map_header *map, int get_type)
 	return;
     }
     if (!rflag && map->writeable == 0) {
-	printf("The map is not writeable.\n");
+	printf("The map is not writable.\n");
     }
 // XXX add help feature (i.e. '?' in any argument routine prints help string)
     if (get_base_argument(&base, map) == 0) {
@@ -695,7 +770,7 @@ do_rename_partition(partition_map_header *map)
 	return;
     }
     if (!rflag && map->writeable == 0) {
-	printf("The map is not writeable.\n");
+	printf("The map is not writable.\n");
     }
     if (get_number_argument("Partition number: ", &index, kDefault) == 0) {
 	bad_input("Bad partition number");
@@ -719,6 +794,49 @@ do_rename_partition(partition_map_header *map)
     return;
 }
 
+void
+do_change_type(partition_map_header *map)
+{
+    partition_map * entry;
+    long index;
+    char *type = NULL;
+
+    if (map == NULL) {
+	bad_input("No partition map exists");
+	return;
+    }
+
+    if (!rflag && map->writeable == 0) {
+	printf("The map is not writable.\n");
+    }
+
+    if (get_number_argument("Partition number: ", &index, kDefault) == 0) {
+	bad_input("Bad partition number");
+	return;
+    }
+
+    entry = find_entry_by_disk_address(index, map);
+
+    if (entry == NULL ) {
+        printf("No such partition\n");
+	goto out;
+    }
+
+    printf("Existing partition type ``%s''.\n", entry->data->dpme_type);
+    if (get_string_argument("New type of partition: ", &type, 1) == 0) {
+	bad_input("Bad type");
+	goto out;
+    }
+
+    strncpy(entry->data->dpme_type, type, DPISTRLEN);
+    map->changed = 1;
+
+out:
+    if (type)
+        free(type);
+    return;
+}
+
 
 void
 do_delete_partition(partition_map_header *map)
@@ -731,7 +849,7 @@ do_delete_partition(partition_map_header *map)
 	return;
     }
     if (!rflag && map->writeable == 0) {
-	printf("The map is not writeable.\n");
+	printf("The map is not writable.\n");
     }
     if (get_number_argument("Partition number: ", &index, kDefault) == 0) {
 	bad_input("Bad partition number");
@@ -759,7 +877,7 @@ do_reorder(partition_map_header *map)
 	return;
     }
     if (!rflag && map->writeable == 0) {
-	printf("The map is not writeable.\n");
+	printf("The map is not writable.\n");
     }
     if (get_number_argument("Partition number: ", &old_index, kDefault) == 0) {
 	bad_input("Bad partition number");
@@ -786,7 +904,7 @@ do_write_partition_map(partition_map_header *map)
 	return;
     }
     if (map->writeable == 0) {
-	bad_input("The map is not writeable.");
+	bad_input("The map is not writable.");
 	return;
     }
     printf("Writing the map destroys what was there before. ");
@@ -872,7 +990,9 @@ do_expert(partition_map_header *map, char *name)
 	    do_examine_patch_partition(map);
 	    break;
 	default:
+#ifndef __OpenBSD__
 	do_error:
+#endif
 	    bad_input("No such command (%c)", command);
 	    break;
 	}
@@ -891,7 +1011,7 @@ do_change_map_size(partition_map_header *map)
 	return;
     }
     if (!rflag && map->writeable == 0) {
-	printf("The map is not writeable.\n");
+	printf("The map is not writable.\n");
     }
     if (get_number_argument("New size: ", &size, kDefault) == 0) {
 	bad_input("Bad size");
@@ -922,8 +1042,10 @@ do_display_block(partition_map_header *map, char *alt_name)
 		return;
 	    }
 	} else {
-	    name = malloc(strlen(alt_name)+1);
-	    strcpy(name, alt_name);
+	    if ((name = strdup(alt_name)) == NULL) {
+		error(errno, "strdup failed");
+		return;
+	    }
 	}
 	m = open_pathname_as_media(name, O_RDONLY);
 	if (m == 0) {

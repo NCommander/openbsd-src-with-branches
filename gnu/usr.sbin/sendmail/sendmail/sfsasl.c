@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,12 +9,17 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: sfsasl.c,v 8.84 2001/09/03 22:35:38 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: sfsasl.c,v 8.101 2004/12/15 22:45:55 ca Exp $")
 #include <stdlib.h>
 #include <sendmail.h>
 #include <errno.h>
+
+/* allow to disable error handling code just in case... */
+#ifndef DEAL_WITH_ERROR_SSL
+# define DEAL_WITH_ERROR_SSL	1
+#endif /* ! DEAL_WITH_ERROR_SSL */
+
 #if SASL
-# include <sasl.h>
 # include "sfsasl.h"
 
 /* Structure used by the "sasl" file type */
@@ -102,6 +107,11 @@ sasl_open(fp, info, flags, rpool)
 	struct sasl_info *si = (struct sasl_info *) info;
 
 	so = (struct sasl_obj *) sm_malloc(sizeof(struct sasl_obj));
+	if (so == NULL)
+	{
+		errno = ENOMEM;
+		return -1;
+	}
 	so->fp = si->fp;
 	so->conn = si->conn;
 
@@ -140,6 +150,8 @@ sasl_close(fp)
 	struct sasl_obj *so;
 
 	so = (struct sasl_obj *) fp->f_cookie;
+	if (so == NULL)
+		return 0;
 	if (so->fp != NULL)
 	{
 		sm_io_close(so->fp, SM_TIME_DEFAULT);
@@ -152,7 +164,7 @@ sasl_close(fp)
 
 /* how to deallocate a buffer allocated by SASL */
 extern void	sm_sasl_free __P((void *));
-# define SASL_DEALLOC(b)	sm_sasl_free(b)
+#  define SASL_DEALLOC(b)	sm_sasl_free(b)
 
 /*
 **  SASL_READ -- read encrypted information and decrypt it for the caller
@@ -177,7 +189,11 @@ sasl_read(fp, buf, size)
 {
 	int result;
 	ssize_t len;
+# if SASL >= 20000
+	static const char *outbuf = NULL;
+# else /* SASL >= 20000 */
 	static char *outbuf = NULL;
+# endif /* SASL >= 20000 */
 	static unsigned int outlen = 0;
 	static unsigned int offset = 0;
 	struct sasl_obj *so = (struct sasl_obj *) fp->f_cookie;
@@ -189,9 +205,16 @@ sasl_read(fp, buf, size)
 	**  data since it might be larger than the allowed size.
 	**  Therefore we use a static pointer and return portions of it
 	**  if necessary.
+	**  XXX Note: This function is not thread-safe nor can it be used
+	**  on more than one file. A correct implementation would store
+	**  this data in fp->f_cookie.
 	*/
 
+# if SASL >= 20000
+	while (outlen == 0)
+# else /* SASL >= 20000 */
 	while (outbuf == NULL && outlen == 0)
+# endif /* SASL >= 20000 */
 	{
 		len = sm_io_read(so->fp, SM_TIME_DEFAULT, buf, size);
 		if (len <= 0)
@@ -225,7 +248,9 @@ sasl_read(fp, buf, size)
 		/* return the rest of the buffer */
 		len = outlen - offset;
 		(void) memcpy(buf, outbuf + offset, (size_t) len);
+# if SASL < 20000
 		SASL_DEALLOC(outbuf);
+# endif /* SASL < 20000 */
 		outbuf = NULL;
 		offset = 0;
 		outlen = 0;
@@ -255,10 +280,33 @@ sasl_write(fp, buf, size)
 	size_t size;
 {
 	int result;
+# if SASL >= 20000
+	const char *outbuf;
+# else /* SASL >= 20000 */
 	char *outbuf;
-	unsigned int outlen;
+# endif /* SASL >= 20000 */
+	unsigned int outlen, *maxencode;
 	size_t ret = 0, total = 0;
 	struct sasl_obj *so = (struct sasl_obj *) fp->f_cookie;
+
+	/*
+	**  Fetch the maximum input buffer size for sasl_encode().
+	**  This can be less than the size set in attemptauth()
+	**  due to a negotation with the other side, e.g.,
+	**  Cyrus IMAP lmtp program sets maxbuf=4096,
+	**  digestmd5 substracts 25 and hence we'll get 4071
+	**  instead of 8192 (MAXOUTLEN).
+	**  Hack (for now): simply reduce the size, callers are (must be)
+	**  able to deal with that and invoke sasl_write() again with
+	**  the rest of the data.
+	**  Note: it would be better to store this value in the context
+	**  after the negotiation.
+	*/
+
+	result = sasl_getprop(so->conn, SASL_MAXOUTBUF,
+                             (const void **) &maxencode);
+	if (result == SASL_OK && size > *maxencode && *maxencode > 0)
+		size = *maxencode;
 
 	result = sasl_encode(so->conn, buf,
 			     (unsigned int) size, &outbuf, &outlen);
@@ -270,12 +318,17 @@ sasl_write(fp, buf, size)
 	{
 		while (outlen > 0)
 		{
+			/* XXX result == 0? */
 			ret = sm_io_write(so->fp, SM_TIME_DEFAULT,
 					  &outbuf[total], outlen);
+			if (ret <= 0)
+				return ret;
 			outlen -= ret;
 			total += ret;
 		}
+# if SASL < 20000
 		SASL_DEALLOC(outbuf);
+# endif /* SASL < 20000 */
 	}
 	return size;
 }
@@ -321,16 +374,16 @@ sfdcsasl(fin, fout, conn)
 		SM_TIME_FOREVER);
 	info.fp = *fin;
 	info.conn = conn;
-	newin = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info, SM_IO_RDONLY,
-			   NULL);
+	newin = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info,
+			SM_IO_RDONLY_B, NULL);
 
 	if (newin == NULL)
 		return -1;
 
 	info.fp = *fout;
 	info.conn = conn;
-	newout = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info, SM_IO_WRONLY,
-			    NULL);
+	newout = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info,
+			SM_IO_WRONLY_B, NULL);
 
 	if (newout == NULL)
 	{
@@ -431,6 +484,11 @@ tls_open(fp, info, flags, rpool)
 	struct tls_info *ti = (struct tls_info *) info;
 
 	so = (struct tls_obj *) sm_malloc(sizeof(struct tls_obj));
+	if (so == NULL)
+	{
+		errno = ENOMEM;
+		return -1;
+	}
 	so->fp = ti->fp;
 	so->con = ti->con;
 
@@ -467,6 +525,8 @@ tls_close(fp)
 	struct tls_obj *so;
 
 	so = (struct tls_obj *) fp->f_cookie;
+	if (so == NULL)
+		return 0;
 	if (so->fp != NULL)
 	{
 		sm_io_close(so->fp, SM_TIME_DEFAULT);
@@ -545,19 +605,36 @@ tls_read(fp, buf, size)
 */
 		break;
 	  case SSL_ERROR_SSL:
+#if DEAL_WITH_ERROR_SSL
+		if (r == 0 && errno == 0) /* out of protocol EOF found */
+			break;
+#endif /* DEAL_WITH_ERROR_SSL */
 		err = "generic SSL error";
 		if (LogLevel > 9)
 			tlslogerr("read");
+
+#if DEAL_WITH_ERROR_SSL
+		/* avoid repeated calls? */
+		if (r == 0)
+			r = -1;
+#endif /* DEAL_WITH_ERROR_SSL */
 		break;
 	}
 	if (err != NULL)
 	{
+		int save_errno;
+
+		save_errno = (errno == 0) ? EIO : errno;
 		again = MAX_TLS_IOS;
-		if (errno == 0)
-			errno = EIO;
-		if (LogLevel > 7)
+		if (LogLevel > 9)
+			sm_syslog(LOG_WARNING, NOQID,
+				  "STARTTLS: read error=%s (%d), errno=%d, get_error=%s",
+				  err, r, errno,
+				  ERR_error_string(ERR_get_error(), NULL));
+		else if (LogLevel > 7)
 			sm_syslog(LOG_WARNING, NOQID,
 				  "STARTTLS: read error=%s (%d)", err, r);
+		errno = save_errno;
 	}
 	return r;
 }
@@ -632,16 +709,29 @@ tls_write(fp, buf, size)
 */
 		if (LogLevel > 9)
 			tlslogerr("write");
+
+#if DEAL_WITH_ERROR_SSL
+		/* avoid repeated calls? */
+		if (r == 0)
+			r = -1;
+#endif /* DEAL_WITH_ERROR_SSL */
 		break;
 	}
 	if (err != NULL)
 	{
+		int save_errno;
+
+		save_errno = (errno == 0) ? EIO : errno;
 		again = MAX_TLS_IOS;
-		if (errno == 0)
-			errno = EIO;
-		if (LogLevel > 7)
+		if (LogLevel > 9)
+			sm_syslog(LOG_WARNING, NOQID,
+				  "STARTTLS: write error=%s (%d), errno=%d, get_error=%s",
+				  err, r, errno,
+				  ERR_error_string(ERR_get_error(), NULL));
+		else if (LogLevel > 7)
 			sm_syslog(LOG_WARNING, NOQID,
 				  "STARTTLS: write error=%s (%d)", err, r);
+		errno = save_errno;
 	}
 	return r;
 }
@@ -653,7 +743,7 @@ tls_write(fp, buf, size)
 **	Parameters:
 **		fin -- data input source being replaced
 **		fout -- data output source being replaced
-**		conn -- the tls connection pointer
+**		con -- the tls connection pointer
 **
 **	Returns:
 **		-1 on error
@@ -685,13 +775,13 @@ sfdctls(fin, fout, con)
 		SM_TIME_FOREVER);
 	info.fp = *fin;
 	info.con = con;
-	tlsin = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_RDONLY,
+	tlsin = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_RDONLY_B,
 			   NULL);
 	if (tlsin == NULL)
 		return -1;
 
 	info.fp = *fout;
-	tlsout = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_WRONLY,
+	tlsout = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_WRONLY_B,
 			    NULL);
 	if (tlsout == NULL)
 	{

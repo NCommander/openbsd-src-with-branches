@@ -1,7 +1,8 @@
-/*	$NetBSD: dec_2100_a50.c,v 1.2 1995/08/03 01:12:15 cgd Exp $	*/
+/* $OpenBSD: dec_2100_a50.c,v 1.16 2002/06/25 21:33:19 miod Exp $ */
+/* $NetBSD: dec_2100_a50.c,v 1.43 2000/05/22 20:13:31 thorpej Exp $ */
 
 /*
- * Copyright (c) 1995 Carnegie-Mellon University.
+ * Copyright (c) 1995, 1996, 1997 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -26,102 +27,233 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
+/*
+ * Additional Copyright (c) 1997 by Matthew Jacob for NASA/Ames Research Center
+ */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
+#include <sys/termios.h>
 #include <dev/cons.h>
+#include <sys/conf.h>
 
 #include <machine/rpb.h>
-#include <machine/pio.h>
+#include <machine/autoconf.h>
+#include <machine/bus.h>
+#include <machine/cpuconf.h>
 
+#include <dev/ic/comreg.h>
+#include <dev/ic/comvar.h>
+
+#include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
+#include <dev/ic/i8042reg.h>
+#include <dev/ic/pckbcvar.h>
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
-#include <alpha/pci/pci_chipset.h>
 
-char *
-dec_2100_a50_modelname()
-{
+#include <alpha/pci/apecsreg.h>
+#include <alpha/pci/apecsvar.h>
 
-	switch (hwrpb->rpb_variation & SV_ST_MASK) {
-	case SV_ST_AVANTI:
-	case SV_ST_AVANTI_XXX:		/* XXX apparently the same? */
-		return "AlphaStation 400 4/233 (\"Avanti\")";
-		break;
+#include <scsi/scsi_all.h>
+#include <scsi/scsiconf.h>
 
-	case SV_ST_MUSTANG2_4_166:
-		return "AlphaStation 200 4/166 (\"Mustang II\")";
-		break;
+#include "pckbd.h"
 
-	case SV_ST_MUSTANG2_4_233:
-		return "AlphaStation 200 4/233 (\"Mustang II\")";
-		break;
+#ifndef CONSPEED
+#define CONSPEED TTYDEF_SPEED
+#endif
+static int comcnrate = CONSPEED;
 
-	case SV_ST_MUSTANG2_4_100:
-		return "AlphaStation 200 4/100 (\"Mustang II\")";
-		break;
+void dec_2100_a50_init(void);
+static void dec_2100_a50_cons_init(void);
+static void dec_2100_a50_device_register(struct device *, void *);
 
-	default:
-		printf("unknown system variation %lx\n",
-		    hwrpb->rpb_variation & SV_ST_MASK);
-		return NULL;
-	}
-}
+const struct alpha_variation_table dec_2100_a50_variations[] = {
+	{ SV_ST_AVANTI,	"AlphaStation 400 4/233 (\"Avanti\")" },
+	{ SV_ST_MUSTANG2_4_166, "AlphaStation 200 4/166 (\"Mustang II\")" },
+	{ SV_ST_MUSTANG2_4_233, "AlphaStation 200 4/233 (\"Mustang II\")" },
+	{ SV_ST_AVANTI_4_266, "AlphaStation 250 4/266" },
+	{ SV_ST_MUSTANG2_4_100, "AlphaStation 200 4/100 (\"Mustang II\")" },
+	{ SV_ST_AVANTI_4_233, "AlphaStation 255/233" },
+	{ 0, NULL },
+};
 
 void
-dec_2100_a50_consinit(constype)
-	char *constype;
+dec_2100_a50_init()
+{
+	u_int64_t variation;
+
+	platform.family = "AlphaStation 200/400 (\"Avanti\")";
+
+	if ((platform.model = alpha_dsr_sysname()) == NULL) {
+		variation = hwrpb->rpb_variation & SV_ST_MASK;
+		if (variation == SV_ST_AVANTI_XXX) {
+			/* XXX apparently the same? */
+			variation = SV_ST_AVANTI;
+		}
+		if ((platform.model = alpha_variation_name(variation,
+		    dec_2100_a50_variations)) == NULL)
+			platform.model = alpha_unknown_sysname();
+	}
+
+	platform.iobus = "apecs";
+	platform.cons_init = dec_2100_a50_cons_init;
+	platform.device_register = dec_2100_a50_device_register;
+}
+
+static void
+dec_2100_a50_cons_init()
 {
 	struct ctb *ctb;
+	struct apecs_config *acp;
+	extern struct apecs_config apecs_configuration;
 
-	apecs_init();
+	acp = &apecs_configuration;
+	apecs_init(acp, 0);
 
 	ctb = (struct ctb *)(((caddr_t)hwrpb) + hwrpb->rpb_ctb_off);
 
-	printf("constype = %s\n", constype);
-	printf("ctb->ctb_term_type = 0x%lx\n", ctb->ctb_term_type);
-	printf("ctb->ctb_turboslot = 0x%lx\n", ctb->ctb_turboslot);
-
 	switch (ctb->ctb_term_type) {
-	case 2: 
+	case CTB_PRINTERPORT: 
 		/* serial console ... */
 		/* XXX */
 		{
-			extern int comdefaultrate, comconsole;
-			extern int comconsaddr, comconsinit;
-			extern int comcngetc __P((dev_t));
-			extern void comcnputc __P((dev_t, int));
-			extern void comcnpollc __P((dev_t, int));
-			static struct consdev comcons = { NULL, NULL,
-			    comcngetc, comcnputc, comcnpollc, NODEV, 1 };
+			/*
+			 * Delay to allow PROM putchars to complete.
+			 * FIFO depth * character time,
+			 * character time = (1000000 / (defaultrate / 10))
+			 */
+			DELAY(160000000 / comcnrate);
 
+			if(comcnattach(&acp->ac_iot, 0x3f8, comcnrate,
+			    COM_FREQ,
+			    (TTYDEF_CFLAG & ~(CSIZE | PARENB)) | CS8))
+				panic("can't init serial console");
 
-			cominit(0, comdefaultrate);
-			comconsole = 0;				/* XXX */
-			comconsaddr = 0x3f8;			/* XXX */
-			comconsinit = 0;
-
-			cn_tab = &comcons;
-			comcons.cn_dev = makedev(26, 0);	/* XXX */
 			break;
 		}
 
-	case 3:
+	case CTB_GRAPHICS:
+#if NPCKBD > 0
 		/* display console ... */
 		/* XXX */
-		pci_display_console(0, ctb->ctb_turboslot & 0xffff, 0);
+		(void) pckbc_cnattach(&acp->ac_iot, IO_KBD, KBCMDP,
+		    PCKBC_KBD_SLOT);
+
+		if (CTB_TURBOSLOT_TYPE(ctb->ctb_turboslot) ==
+		    CTB_TURBOSLOT_TYPE_ISA)
+			isa_display_console(&acp->ac_iot, &acp->ac_memt);
+		else
+			pci_display_console(&acp->ac_iot, &acp->ac_memt,
+			    &acp->ac_pc, CTB_TURBOSLOT_BUS(ctb->ctb_turboslot),
+			    CTB_TURBOSLOT_SLOT(ctb->ctb_turboslot), 0);
+#else
+		panic("not configured to use display && keyboard console");
+#endif
 		break;
 
 	default:
-		panic("consinit: unknown console type %d\n",
+		printf("ctb->ctb_term_type = 0x%lx\n", ctb->ctb_term_type);
+		printf("ctb->ctb_turboslot = 0x%lx\n", ctb->ctb_turboslot);
+
+		panic("consinit: unknown console type %ld",
 		    ctb->ctb_term_type);
 	}
 }
 
-dev_t
-dec_2100_a50_bootdev(booted_dev)
-	char *booted_dev;
+static void
+dec_2100_a50_device_register(dev, aux)
+	struct device *dev;
+	void *aux;
 {
+	static int found, initted, diskboot, netboot;
+	static struct device *pcidev, *ctrlrdev;
+	struct bootdev_data *b = bootdev_data;
+	struct device *parent = dev->dv_parent;
+	struct cfdata *cf = dev->dv_cfdata;
+	struct cfdriver *cd = cf->cf_driver;
 
-	panic("gack.");
+	if (found)
+		return;
+
+	if (!initted) {
+		diskboot = (strncasecmp(b->protocol, "SCSI", 4) == 0);
+		netboot = (strncasecmp(b->protocol, "BOOTP", 5) == 0) ||
+		    (strncasecmp(b->protocol, "MOP", 3) == 0);
+#if 0
+		printf("diskboot = %d, netboot = %d\n", diskboot, netboot);
+#endif
+		initted =1;
+	}
+
+	if (pcidev == NULL) {
+		if (strcmp(cd->cd_name, "pci"))
+			return;
+		else {
+			struct pcibus_attach_args *pba = aux;
+
+			if ((b->slot / 1000) != pba->pba_bus)
+				return;
+	
+			pcidev = dev;
+#if 0
+			printf("\npcidev = %s\n", dev->dv_xname);
+#endif
+			return;
+		}
+	}
+
+	if (ctrlrdev == NULL) {
+		if (parent != pcidev)
+			return;
+		else {
+			struct pci_attach_args *pa = aux;
+			int slot;
+
+			slot = pa->pa_bus * 1000 + pa->pa_function * 100 +
+			    pa->pa_device;
+			if (b->slot != slot)
+				return;
+	
+			if (netboot) {
+				booted_device = dev;
+#if 0
+				printf("\nbooted_device = %s\n", dev->dv_xname);
+#endif
+				found = 1;
+			} else {
+				ctrlrdev = dev;
+#if 0
+				printf("\nctrlrdev = %s\n", dev->dv_xname);
+#endif
+			}
+			return;
+		}
+	}
+
+	if (!diskboot)
+		return;
+
+	if (!strcmp(cd->cd_name, "sd") || !strcmp(cd->cd_name, "st") ||
+	    !strcmp(cd->cd_name, "cd")) {
+		struct scsibus_attach_args *sa = aux;
+		struct scsi_link *periph = sa->sa_sc_link;
+		int unit;
+
+		if (parent->dv_parent != ctrlrdev)
+			return;
+
+		unit = periph->target * 100 + periph->lun;
+		if (b->unit != unit)
+			return;
+
+		/* we've found it! */
+		booted_device = dev;
+#if 0
+		printf("\nbooted_device = %s\n", dev->dv_xname);
+#endif
+		found = 1;
+	}
 }

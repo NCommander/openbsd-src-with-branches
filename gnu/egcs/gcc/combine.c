@@ -3483,6 +3483,16 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  rtx inner_op1 = XEXP (x, 1);
 	  rtx inner;
 	  
+#ifndef FRAME_GROWS_DOWNWARD
+	  if (flag_propolice_protection
+	      && code == PLUS
+	      && other == frame_pointer_rtx
+	      && GET_CODE (inner_op0) == CONST_INT
+	      && GET_CODE (inner_op1) == CONST_INT
+	      && INTVAL (inner_op0) > 0
+	      && INTVAL (inner_op0) + INTVAL (inner_op1) <= 0)
+	    return x;
+#endif
 	  /* Make sure we pass the constant operand if any as the second
 	     one if this is a commutative operation.  */
 	  if (CONSTANT_P (inner_op0) && GET_RTX_CLASS (code) == 'c')
@@ -3953,6 +3963,11 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	 they are now checked elsewhere.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
 	  && CONSTANT_ADDRESS_P (XEXP (XEXP (x, 0), 1)))
+#ifndef FRAME_GROWS_DOWNWARD
+	if (! (flag_propolice_protection
+	       && XEXP (XEXP (x, 0), 0) == frame_pointer_rtx
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
+#endif
 	return gen_binary (PLUS, mode,
 			   gen_binary (PLUS, mode, XEXP (XEXP (x, 0), 0),
 				       XEXP (x, 1)),
@@ -4012,6 +4027,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 				 GET_MODE_BITSIZE (mode) - 1),
 	   GET_MODE_BITSIZE (mode) - 1);
 
+#ifndef OPENBSD_NATIVE
       /* If we are adding two things that have no bits in common, convert
 	 the addition into an IOR.  This will often be further simplified,
 	 for example in cases like ((a & 1) + (a & 2)), which can
@@ -4021,6 +4037,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  && (nonzero_bits (XEXP (x, 0), mode)
 	      & nonzero_bits (XEXP (x, 1), mode)) == 0)
 	return gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
+#endif
       break;
 
     case MINUS:
@@ -4045,7 +4062,10 @@ simplify_rtx (x, op0_mode, last, in_dest)
 
       /* Canonicalize (minus A (plus B C)) to (minus (minus A B) C) for
 	 integers.  */
-      if (GET_CODE (XEXP (x, 1)) == PLUS && INTEGRAL_MODE_P (mode))
+      if (GET_CODE (XEXP (x, 1)) == PLUS && INTEGRAL_MODE_P (mode)
+	  && (! (flag_propolice_protection
+		 && XEXP (XEXP (x, 1), 0) == frame_pointer_rtx
+		 && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)))
 	return gen_binary (MINUS, mode,
 			   gen_binary (MINUS, mode, XEXP (x, 0),
 				       XEXP (XEXP (x, 1), 0)),

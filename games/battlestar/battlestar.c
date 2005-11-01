@@ -1,3 +1,4 @@
+/*	$OpenBSD: battlestar.c,v 1.14 2004/07/10 07:26:22 deraadt Exp $	*/
 /*	$NetBSD: battlestar.c,v 1.3 1995/03/21 15:06:47 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,9 +38,9 @@ static char copyright[] =
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)battlestar.c	8.1 (Berkeley) 5/31/93";
+static char sccsid[] = "@(#)battlestar.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: battlestar.c,v 1.3 1995/03/21 15:06:47 cgd Exp $";
+static char rcsid[] = "$OpenBSD: battlestar.c,v 1.14 2004/07/10 07:26:22 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,44 +51,40 @@ static char rcsid[] = "$NetBSD: battlestar.c,v 1.3 1995/03/21 15:06:47 cgd Exp $
  * on the Cory PDP-11/70, University of California, Berkeley.
  */
 
-#include "externs.h"
+#include "extern.h"
+#include "pathnames.h"
 
-main(argc,argv)
-int  argc;
-char **argv;
+int main(int, char *[]);
+
+int
+main(int argc, char *argv[])
 {
-	char mainbuf[LINELENGTH];
-	char *next;
+	char    mainbuf[LINELENGTH];
+	char   *next;
+	gid_t	gid;
 
-	initialize(argc < 2 || strcmp(argv[1], "-r"));
-start:
-	news();
-	beenthere[position]++;
-	if (notes[LAUNCHED])
-		crash();		/* decrements fuel & crash */
-	if (matchlight) {
-		puts("Your match splutters out.");
-		matchlight = 0;
-	}
-	if (!notes[CANTSEE] || testbit(inven,LAMPON) ||
-	    testbit(location[position].objects, LAMPON)) {
-		writedes();
-		printobjs();
-	} else
-		puts("It's too dark to see anything in here!");
-	whichway(location[position]);
-run:
-	next = getcom(mainbuf, sizeof mainbuf, ">-: ",
-		"Please type in something.");
-	for (wordcount = 0; next && wordcount < 20; wordcount++)
-		next = getword(next, words[wordcount], -1);
-	parse();
-	switch (cypher()) {
-		case -1:
-			goto run;
-		case 0:
-			goto start;
-		default:
-			exit();
+	open_score_file();
+
+	/* revoke privs */
+	gid = getgid();
+	setresgid(gid, gid, gid);
+
+	if (argc < 2)
+		initialize(NULL);
+	else if (strcmp(argv[1], "-r") == 0)
+		initialize((argc > 2) ? argv[2] : DEFAULT_SAVE_FILE);
+	else
+		initialize(argv[1]);
+
+	newlocation();
+	for (;;) {
+		stop_cypher = 0;
+		next = getcom(mainbuf, sizeof mainbuf, ">-: ",
+		    "Please type in something.");
+		for (wordcount = 0; next && wordcount < NWORD - 1; wordcount++)
+			next = getword(next, words[wordcount], -1);
+		parse();
+		while (cypher())
+			;
 	}
 }

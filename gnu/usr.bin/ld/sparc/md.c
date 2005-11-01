@@ -1,3 +1,4 @@
+/* *	$OpenBSD: md.c,v 1.9 2002/07/15 21:05:57 marc Exp $*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -12,7 +13,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Paul Kranenburg.
+ *	This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -27,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: md.c,v 1.10 1994/06/10 15:17:34 pk Exp $
  */
 
 #include <sys/param.h>
@@ -88,50 +88,41 @@ static int reloc_target_bitsize[] = {
 	32, 0, 22	/* _GLOB_DAT, JMP_SLOT, _RELATIVE */
 };
 
+static __inline void
+iflush(jmpslot_t *sp)
+{
+/* for a CROSS_LINKER, no rtld, so iflush is a nop, which is fortunate */
+#ifndef CROSS_LINKER
+	__asm __volatile("iflush %0+0" : : "r" (sp));
+	__asm __volatile("iflush %0+4" : : "r" (sp));
+	__asm __volatile("iflush %0+8" : : "r" (sp));
+#endif
+}
 
 /*
  * Get relocation addend corresponding to relocation record RP
  * ADDR unused by SPARC impl.
  */
 long
-md_get_addend(r, addr)
-struct relocation_info	*r;
-unsigned char		*addr;
+md_get_addend(struct relocation_info *r, unsigned char *addr)
 {
 	return r->r_addend;
 }
 
 void
-md_relocate(r, relocation, addr, relocatable_output)
-struct relocation_info	*r;
-long			relocation;
-unsigned char		*addr;
-int			relocatable_output;
+md_relocate(struct relocation_info *r, long relocation, unsigned char *addr,
+	    int relocatable_output)
 {
-	register unsigned long	mask;
+	unsigned long	mask;
 
-#ifndef RTLD
 	if (relocatable_output) {
 		/*
-		 * Non-PC relative relocations which are absolute or
-		 * which have become non-external now have fixed
-		 * relocations.  Set the ADD_EXTRA of this relocation
-		 * to be the relocation we have now determined.
+		 * Store relocation where the next link-edit run
+		 * will look for it.
 		 */
-		if (!RELOC_PCREL_P(r)) {
-			if ((int) r->r_type <= RELOC_32
-					    || RELOC_EXTERN_P(r) == 0)
-				RELOC_ADD_EXTRA(r) = relocation;
-		} else if (RELOC_EXTERN_P(r))
-			/*
-			 * External PC-relative relocations continue
-			 * to move around; update their relocations
-			 * by the amount they have moved so far.
-			 */
-			RELOC_ADD_EXTRA(r) -= pc_relocation;
+		r->r_addend = relocation;
 		return;
 	}
-#endif
 
 	relocation >>= RELOC_VALUE_RIGHTSHIFT(r);
 
@@ -144,26 +135,28 @@ int			relocatable_output;
 	relocation <<= RELOC_TARGET_BITPOS(r);
 	mask <<= RELOC_TARGET_BITPOS(r);
 
+#define RELOCATE(type)					\
+	{						\
+		type ad;				\
+		(void)memcpy(&ad, addr, sizeof(ad));	\
+		if (RELOC_MEMORY_ADD_P(r))		\
+			relocation += (mask & ad);	\
+		ad &= ~mask;				\
+		ad |= relocation;			\
+		(void)memcpy(addr, &ad, sizeof(ad));	\
+	}
+
 	switch (RELOC_TARGET_SIZE(r)) {
 	case 0:
-		if (RELOC_MEMORY_ADD_P(r))
-			relocation += (mask & *(u_char *) (addr));
-		*(u_char *) (addr) &= ~mask;
-		*(u_char *) (addr) |= relocation;
+		RELOCATE(u_char)
 		break;
 
 	case 1:
-		if (RELOC_MEMORY_ADD_P(r))
-			relocation += (mask & *(u_short *) (addr));
-		*(u_short *) (addr) &= ~mask;
-		*(u_short *) (addr) |= relocation;
+		RELOCATE(u_short)
 		break;
 
 	case 2:
-		if (RELOC_MEMORY_ADD_P(r))
-			relocation += (mask & *(u_long *) (addr));
-		*(u_long *) (addr) &= ~mask;
-		*(u_long *) (addr) |= relocation;
+		RELOCATE(u_long)
 		break;
 	default:
 		errx(1, "Unimplemented relocation field length: %d",
@@ -177,9 +170,7 @@ int			relocatable_output;
  * On the Sparc the relocation offsets are stored in the r_addend member.
  */
 int
-md_make_reloc(rp, r, type)
-struct relocation_info	*rp, *r;
-int			type;
+md_make_reloc(struct relocation_info *rp, struct relocation_info *r, int type)
 {
 	r->r_type = rp->r_type;
 	r->r_addend = rp->r_addend;
@@ -209,16 +200,14 @@ int			type;
  * to the binder slot (which is at offset 0 of the PLT).
  */
 void
-md_make_jmpslot(sp, offset, index)
-jmpslot_t		*sp;
-long			offset;
-long			index;
+md_make_jmpslot(jmpslot_t *sp, long offset, long index)
 {
 	u_long	fudge = (u_long) -(sizeof(sp->opcode1) + offset);
 	sp->opcode1 = SAVE;
 	/* The following is a RELOC_WDISP30 relocation */
 	sp->opcode2 = CALL | ((fudge >> 2) & 0x3fffffff);
 	sp->reloc_index = NOP | index;
+	iflush(sp);
 }
 
 /*
@@ -231,10 +220,7 @@ long			index;
  * OFFSET unused on Sparc.
  */
 void
-md_fix_jmpslot(sp, offset, addr)
-jmpslot_t	*sp;
-long		offset;
-u_long		addr;
+md_fix_jmpslot(jmpslot_t *sp, long offset, u_long addr)
 {
 	/*
 	 * Here comes a RELOC_{LO10,HI22} relocation pair
@@ -246,15 +232,15 @@ u_long		addr;
 	sp->opcode1 = SETHI | ((addr >> 10) & 0x003fffff);
 	sp->opcode2 = JMP | (addr & 0x000003ff);
 	sp->reloc_index = NOP;
+	iflush(sp);
 }
 
 /*
  * Update the relocation record for a jmpslot.
  */
 void
-md_make_jmpreloc(rp, r, type)
-struct relocation_info	*rp, *r;
-int			type;
+md_make_jmpreloc(struct relocation_info *rp, struct relocation_info *r,
+		 int type)
 {
 	if (type & RELTYPE_RELATIVE)
 		r->r_type = RELOC_RELATIVE;
@@ -268,9 +254,8 @@ int			type;
  * Set relocation type for a GOT RRS relocation.
  */
 void
-md_make_gotreloc(rp, r, type)
-struct relocation_info	*rp, *r;
-int			type;
+md_make_gotreloc(struct relocation_info *rp, struct relocation_info *r,
+		 int type)
 {
 	/*
 	 * GOT value resolved (symbolic or entry point): R_32
@@ -290,17 +275,14 @@ int			type;
  * Set relocation type for a RRS copy operation.
  */
 void
-md_make_cpyreloc(rp, r)
-struct relocation_info	*rp, *r;
+md_make_cpyreloc(struct relocation_info *rp, struct relocation_info *r)
 {
 	r->r_type = RELOC_COPY_DAT;
 	r->r_addend = 0;
 }
 
 void
-md_set_breakpoint(where, savep)
-long	where;
-long	*savep;
+md_set_breakpoint(long where, long *savep)
 {
 	*savep = *(long *)where;
 	*(long *)where = TRAP;
@@ -312,11 +294,9 @@ long	*savep;
  * obtained from subsequent N_*() macro evaluations.
  */
 void
-md_init_header(hp, magic, flags)
-struct exec	*hp;
-int		magic, flags;
+md_init_header(struct exec *hp, int magic, int flags)
 {
-#ifdef NetBSD
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 	N_SETMAGIC((*hp), magic, MID_MACHINE, flags);
 
 	/* TEXT_START depends on the value of outheader.a_entry.  */
@@ -338,10 +318,9 @@ int		magic, flags;
  * Check for acceptable foreign machine Ids
  */
 int
-md_midcompat(hp)
-struct exec *hp;
+md_midcompat(struct exec *hp)
 {
-#ifdef NetBSD
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #define SUN_M_SPARC	3
 	return (((md_swap_long(hp->a_midmag)&0x00ff0000) >> 16) == SUN_M_SPARC);
 #else
@@ -349,3 +328,75 @@ struct exec *hp;
 #endif
 }
 #endif /* RTLD */
+
+#ifdef NEED_SWAP
+/*
+ * Byte swap routines for cross-linking.
+ */
+
+void
+md_swapin_exec_hdr(struct exec *h)
+{
+	int skip = 0;
+
+	if (!N_BADMAG(*h))
+		skip = 1;
+
+	swap_longs((long *)h + skip, sizeof(*h)/sizeof(long) - skip);
+}
+
+void
+md_swapout_exec_hdr(struct exec *h)
+{
+	/* NetBSD/OpenBSD: Always leave magic alone */
+	int skip = 1;
+#if 0
+	if (N_GETMAGIC(*h) == OMAGIC)
+		skip = 0;
+#endif
+
+	swap_longs((long *)h + skip, sizeof(*h)/sizeof(long) - skip);
+}
+
+void 
+md_swapin_reloc(struct relocation_info *r, int n)
+{
+	int bits;
+
+	for (; n; n--, r++) {
+		r->r_address = md_swap_long(r->r_address);
+		bits = md_swap_long(((int *)r)[1]);
+		r->r_symbolnum = (bits>>8) & 0x00ffffff ;
+		r->r_extern = (bits>> 7) & 1;
+		r->r_type = bits & 31;
+		r->r_addend = md_swap_long(r->r_addend);
+	}
+}
+
+void 
+md_swapout_reloc(struct relocation_info *r, int n)
+{
+	int bits;
+
+	for (; n; n--, r++) {
+		r->r_address = md_swap_long(r->r_address);
+		bits = (r->r_symbolnum & 0x00ffffff) << 8;
+		bits |= (r->r_extern & 1)<< 7;
+		bits |= (r->r_type & 31);
+		((int *)r)[1] = md_swap_long(bits);
+		r->r_addend = md_swap_long(r->r_addend);
+	}
+}
+
+void
+md_swapout_jmpslot(jmpslot_t *j, int n)
+{
+	for (; n; n--, j++) {
+		j->opcode1 = md_swap_long(j->opcode1);
+		j->opcode2 = md_swap_long(j->opcode2);
+		j->reloc_index = md_swap_long(j->reloc_index);
+	}
+}
+
+#endif
+

@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_procfs.c,v 1.6 1995/03/18 14:58:11 cgd Exp $	*/
+/*	$OpenBSD: mount_procfs.c,v 1.14 2004/06/22 21:12:00 otto Exp $	*/
+/*	$NetBSD: mount_procfs.c,v 1.7 1996/04/13 01:31:59 jtc Exp $	*/
 
 /*
  * Copyright (c) 1990, 1992, 1993 Jan-Simon Pendry
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,7 +44,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_procfs.c	8.3 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_procfs.c,v 1.6 1995/03/18 14:58:11 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_procfs.c,v 1.14 2004/06/22 21:12:00 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,32 +52,36 @@ static char rcsid[] = "$NetBSD: mount_procfs.c,v 1.6 1995/03/18 14:58:11 cgd Exp
 #include <sys/mount.h>
 
 #include <err.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <miscfs/procfs/procfs.h>
+
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
+	{ "linux", PROCFSMNT_LINUXCOMPAT, 0 },
 	{ NULL }
 };
 
-void	usage __P((void));
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	int ch, mntflags;
+	int ch, mntflags, altflags;
+	struct procfs_args args;
+	char path[MAXPATHLEN];
 
-	mntflags = 0;
-	while ((ch = getopt(argc, argv, "o:")) != EOF)
+	mntflags = altflags = 0;
+	while ((ch = getopt(argc, argv, "o:")) != -1)
 		switch (ch) {
 		case 'o':
-			getmntopts(optarg, mopts, &mntflags);
+			altflags |= getmntopts(optarg, mopts, &mntflags);
 			break;
 		case '?':
 		default:
@@ -92,13 +93,24 @@ main(argc, argv)
 	if (argc != 2)
 		usage();
 
-	if (mount(MOUNT_PROCFS, argv[1], mntflags, NULL))
-		err(1, NULL);
+	if (realpath(argv[1], path) == NULL)
+		err(1, "realpath %s", argv[1]);
+
+	args.version = PROCFS_ARGSVERSION;
+	args.flags = altflags;
+
+	if (mount(MOUNT_PROCFS, path, mntflags, &args)) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel",
+			    argv[1]);
+		else
+			err(1, "%s", argv[1]);
+	}
 	exit(0);
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
 		"usage: mount_procfs [-o options] /proc mount_point\n");

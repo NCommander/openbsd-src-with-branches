@@ -1,4 +1,5 @@
 #!/bin/sh -
+#	$OpenBSD: wargames.sh,v 1.3 1999/11/25 11:35:24 pjanzen Exp $
 #	$NetBSD: wargames.sh,v 1.2 1995/04/22 07:53:44 cgd Exp $
 #
 # Copyright (c) 1985, 1993
@@ -12,11 +13,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -35,12 +32,14 @@
 #	@(#)wargames.sh	8.1 (Berkeley) 5/31/93
 #
 echo -n "Would you like to play a game? "
-read x
+read x a
+x=`/usr/bin/basename $x`
 
 if [ -f /usr/games/$x ] ; then
 	tput cl
-	exec /usr/games/$x
+	exec /usr/games/$x $a
 else
-	echo "Funny, the only way to win is not to play at all."
+	echo "A strange game."
+	echo "The only winning move is not to play."
 fi
 exit 0

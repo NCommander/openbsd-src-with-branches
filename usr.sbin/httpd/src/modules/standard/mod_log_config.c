@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_log_config.c,v 1.16 2004/12/02 19:42:48 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -183,17 +185,14 @@
 #include "http_config.h"
 #include "http_core.h"          /* For REMOTE_NAME */
 #include "http_log.h"
+#include "http_main.h"
+#include "fdcache.h"
 #include <limits.h>
 
 module MODULE_VAR_EXPORT config_log_module;
 
 static int xfer_flags = (O_WRONLY | O_APPEND | O_CREAT);
-#if defined(OS2) || defined(WIN32) || defined(NETWARE)
-/* OS/2 dosen't support users and groups */
-static mode_t xfer_mode = (S_IREAD | S_IWRITE);
-#else
 static mode_t xfer_mode = (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
 
 /* POSIX.1 defines PIPE_BUF as the maximum number of bytes that is
  * guaranteed to be atomic when writing a pipe.  And PIPE_BUF >= 512
@@ -262,9 +261,7 @@ typedef struct {
 typedef const char *(*item_key_func) (request_rec *, char *);
 
 typedef struct {
-#ifdef EAPI
     char ch;
-#endif
     item_key_func func;
     char *arg;
     int condition_sense;
@@ -449,7 +446,7 @@ static const char *log_request_time(request_rec *r, char *a)
 
 static const char *log_request_duration(request_rec *r, char *a)
 {
-    return ap_psprintf(r->pool, "%ld", time(NULL) - r->request_time);
+    return ap_psprintf(r->pool, "%ld", (long)(time(NULL) - r->request_time));
 }
 
 /* These next two routines use the canonical name:port so that log
@@ -583,23 +580,16 @@ static struct log_item_list {
     }
 };
 
-#ifdef EAPI
 static struct log_item_list *find_log_func(pool *p, char k)
-#else /* EAPI */
-static struct log_item_list *find_log_func(char k)
-#endif /* EAPI */
 {
     int i;
-#ifdef EAPI
     struct log_item_list *lil;
-#endif /* EAPI */
 
     for (i = 0; log_item_keys[i].ch; ++i)
         if (k == log_item_keys[i].ch) {
             return &log_item_keys[i];
         }
 
-#ifdef EAPI
     if (ap_hook_status(ap_psprintf(p, "ap::mod_log_config::log_%c", k)) 
         != AP_HOOK_STATE_NOTEXISTANT) {
         lil = (struct log_item_list *)
@@ -611,7 +601,6 @@ static struct log_item_list *find_log_func(char k)
         lil->want_orig_default = 0;
         return lil;
     }
-#endif /* EAPI */
 
     return NULL;
 }
@@ -738,11 +727,7 @@ static char *parse_log_item(pool *p, log_format_item *it, const char **sa)
             break;
 
         default:
-#ifdef EAPI
             l = find_log_func(p, *s++);
-#else /* EAPI */
-            l = find_log_func(*s++);
-#endif /* EAPI */
             if (!l) {
                 char dummy[2];
 
@@ -751,9 +736,7 @@ static char *parse_log_item(pool *p, log_format_item *it, const char **sa)
                 return ap_pstrcat(p, "Unrecognized LogFormat directive %",
                                dummy, NULL);
             }
-#ifdef EAPI
             it->ch = s[-1];
-#endif
             it->func = l->func;
             if (it->want_orig == -1) {
                 it->want_orig = l->want_orig_default;
@@ -815,7 +798,6 @@ static const char *process_item(request_rec *r, request_rec *orig,
 
     /* We do.  Do it... */
 
-#ifdef EAPI
     if (item->func == NULL) {
         cp = NULL;
         ap_hook_use(ap_psprintf(r->pool, "ap::mod_log_config::log_%c", item->ch),
@@ -823,7 +805,6 @@ static const char *process_item(request_rec *r, request_rec *orig,
                     &cp, r, item->arg);
     }
     else
-#endif
     cp = (*item->func) (item->want_orig ? orig : r, item->arg);
     return cp ? cp : "-";
 }
@@ -1109,8 +1090,12 @@ static config_log_state *open_config_log(server_rec *s, pool *p,
     }
     else {
         char *fname = ap_server_root_relative(p, cls->fname);
-        if ((cls->log_fd = ap_popenf_ex(p, fname, xfer_flags, xfer_mode, 1))
-             < 0) {
+	if (ap_server_chroot_desired())
+	    cls->log_fd = fdcache_open(fname, xfer_flags, xfer_mode);
+	else
+	    cls->log_fd = ap_popenf_ex(p, fname, xfer_flags, xfer_mode, 1);
+
+        if (cls->log_fd < 0) {
             ap_log_error(APLOG_MARK, APLOG_ERR, s,
                          "could not open transfer log file %s.", fname);
             exit(1);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: misccall.c,v 1.1.1.1 1995/10/18 08:44:20 deraadt Exp $	*/
 /*
  * misccall.c
  *
@@ -33,7 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: misccall.c,v 1.1 1993/06/08 03:53:27 cgd Exp $
  */
 #include <sys/param.h>
 #include <sys/ioctl.h>

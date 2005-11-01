@@ -1,5 +1,5 @@
+/* * $OpenBSD: symbol.c,v 1.7 2002/09/07 01:25:34 marc Exp $	- symbol table routines*/
 /*
- * $Id: symbol.c,v 1.8 1994/06/29 11:18:55 pk Exp $	- symbol table routines
  */
 
 /* Create the symbol table entries for `etext', `edata' and `end'.  */
@@ -25,8 +25,7 @@ symbol	*got_symbol;		/* the symbol __GLOBAL_OFFSET_TABLE_ */
 symbol	*dynamic_symbol;	/* the symbol __DYNAMIC */
 
 void
-symtab_init(relocatable_output)
-	int	relocatable_output;
+symtab_init(int relocatable_output)
 {
 	/*
 	 * Put linker reserved symbols into symbol table.
@@ -37,12 +36,14 @@ symtab_init(relocatable_output)
 #define END_SYM		"_end"
 #define DYN_SYM		"__DYNAMIC"
 #define GOT_SYM		"__GLOBAL_OFFSET_TABLE_"
+#define OTHER_SYM	"_GLOBAL_OFFSET_TABLE_"
 #else
 #define ETEXT_SYM	"etext"
 #define EDATA_SYM	"edata"
 #define END_SYM		"end"
 #define DYN_SYM		"_DYNAMIC"
 #define GOT_SYM		"_GLOBAL_OFFSET_TABLE_"
+#define OTHER_SYM	"__GLOBAL_OFFSET_TABLE_"
 #endif
 
 	dynamic_symbol = getsym(DYN_SYM);
@@ -71,12 +72,11 @@ symtab_init(relocatable_output)
  * Compute the hash code for symbol name KEY.
  */
 
-int
-hash_string (key)
-     char *key;
+static int
+hash_string(char *key)
 {
-	register char *cp;
-	register int k;
+	char *cp;
+	int k;
 
 	cp = key;
 	k = 0;
@@ -92,12 +92,13 @@ hash_string (key)
  */
 
 symbol *
-getsym(key)
-	char *key;
+getsym(char *key)
 {
-	register int hashval;
-	register symbol *bp;
+	int hashval;
+	symbol *bp;
 
+	if (strcmp(key, OTHER_SYM) == 0)
+		key = GOT_SYM;
 	/* Determine the proper bucket.  */
 	hashval = hash_string(key) % SYMTABSIZE;
 
@@ -108,8 +109,7 @@ getsym(key)
 
 	/* Nothing was found; create a new symbol table entry.  */
 	bp = (symbol *)xmalloc(sizeof(symbol));
-	bp->name = (char *)xmalloc(strlen(key) + 1);
-	strcpy (bp->name, key);
+	bp->name = (char *)xstrdup(key);
 	bp->refs = 0;
 	bp->defined = 0;
 	bp->value = 0;
@@ -143,11 +143,13 @@ getsym(key)
 /* Like `getsym' but return 0 if the symbol is not already known.  */
 
 symbol *
-getsym_soft (key)
-	char *key;
+getsym_soft(char *key)
 {
-	register int hashval;
-	register symbol *bp;
+	int hashval;
+	symbol *bp;
+
+	if (strcmp(key, OTHER_SYM) == 0)
+		key = GOT_SYM;
 
 	/* Determine which bucket. */
 	hashval = hash_string(key) % SYMTABSIZE;

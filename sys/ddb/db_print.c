@@ -1,8 +1,9 @@
-/*	$NetBSD: db_print.c,v 1.4 1994/06/29 06:31:15 cgd Exp $	*/
+/*	$OpenBSD: db_print.c,v 1.8 2002/07/01 21:56:55 miod Exp $	*/
+/*	$NetBSD: db_print.c,v 1.5 1996/02/05 01:57:11 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -35,33 +36,38 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/db_machdep.h>
 
 #include <ddb/db_lex.h>
 #include <ddb/db_variables.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_output.h>
+#include <ddb/db_extern.h>
 
-extern unsigned int	db_maxoff;
-
+/*ARGSUSED*/
 void
-db_show_regs()
+db_show_regs(addr, have_addr, count, modif)
+	db_expr_t	addr;
+	int		have_addr;
+	db_expr_t	count;
+	char *		modif;
 {
-	int	(*func)();
 	register struct db_variable *regp;
 	db_expr_t	value, offset;
 	char *		name;
 
 	for (regp = db_regs; regp < db_eregs; regp++) {
 	    db_read_variable(regp, &value);
-	    db_printf("%-12s%#10n", regp->name, value);
+	    db_printf("%-12s%#*ln", regp->name, sizeof(long) * 3, (long)value);
 	    db_find_xtrn_sym_and_offset((db_addr_t)value, &name, &offset);
 	    if (name != 0 && offset <= db_maxoff && offset != value) {
 		db_printf("\t%s", name);
 		if (offset != 0)
-		    db_printf("+%#r", offset);
+		    db_printf("+%#lr", (long)offset);
 	    }
 	    db_printf("\n");
 	}
 	db_print_loc_and_inst(PC_REGS(DDB_REGS));
 }
-

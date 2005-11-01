@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_sysconfig.h,v 1.1 1995/07/02 06:16:10 christos Exp $	 */
 /*	$NetBSD: svr4_sysconfig.h,v 1.1 1995/07/02 06:16:10 christos Exp $	 */
 
 /*

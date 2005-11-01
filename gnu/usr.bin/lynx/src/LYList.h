@@ -1,11 +1,9 @@
-
 #ifndef LYLIST_H
 #define LYLIST_H
 
-extern char * LYlist_temp_url NOPARAMS;
-extern int showlist PARAMS((document *newdoc, BOOLEAN titles));
-extern void printlist PARAMS((FILE *fp, BOOLEAN titles));
+#include <LYStructs.h>
 
-#define LIST_PAGE_TITLE  "Lynx List Page"
+extern int showlist PARAMS((DocInfo *newdoc, BOOLEAN titles));
+extern void printlist PARAMS((FILE *fp, BOOLEAN titles));
 
 #endif /* LYLIST_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1993 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1993
@@ -14,13 +14,13 @@
 #include <sm/gen.h>
 
 SM_IDSTR(copyright,
-"@(#) Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.\n\
+"@(#) Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.\n\
 	All rights reserved.\n\
      Copyright (c) 1993 Eric P. Allman.  All rights reserved.\n\
      Copyright (c) 1993\n\
 	The Regents of the University of California.  All rights reserved.\n")
 
-SM_IDSTR(id, "@(#)$Sendmail: smrsh.c,v 8.53 2001/08/31 18:36:04 gshapiro Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: smrsh.c,v 8.65 2004/08/06 18:54:22 ca Exp $")
 
 /*
 **  SMRSH -- sendmail restricted shell
@@ -54,8 +54,11 @@ SM_IDSTR(id, "@(#)$Sendmail: smrsh.c,v 8.53 2001/08/31 18:36:04 gshapiro Exp $")
 
 #include <unistd.h>
 #include <sm/io.h>
+#include <sm/limits.h>
 #include <sm/string.h>
 #include <sys/file.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
@@ -93,6 +96,8 @@ SM_IDSTR(id, "@(#)$Sendmail: smrsh.c,v 8.53 2001/08/31 18:36:04 gshapiro Exp $")
 char newcmdbuf[1000];
 char *prg, *par;
 
+static void	addcmd __P((char *, bool, size_t));
+
 /*
 **  ADDCMD -- add a string to newcmdbuf, check for overflow
 **
@@ -106,7 +111,7 @@ char *prg, *par;
 **
 */
 
-void
+static void
 addcmd(s, cmd, len)
 	char *s;
 	bool cmd;
@@ -115,8 +120,9 @@ addcmd(s, cmd, len)
 	if (s == NULL || *s == '\0')
 		return;
 
+	/* enough space for s (len) and CMDDIR + "/" and '\0'? */
 	if (sizeof newcmdbuf - strlen(newcmdbuf) <=
-	    len + (cmd ? (strlen(CMDDIR) + 1) : 0))
+	    len + 1 + (cmd ? (strlen(CMDDIR) + 1) : 0))
 	{
 		(void)sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
 				    "%s: command too long: %s\n", prg, par);
@@ -126,11 +132,8 @@ addcmd(s, cmd, len)
 		exit(EX_UNAVAILABLE);
 	}
 	if (cmd)
-	{
-		(void) sm_strlcat(newcmdbuf, CMDDIR, sizeof newcmdbuf);
-		(void) sm_strlcat(newcmdbuf, "/", sizeof newcmdbuf);
-	}
-	(void) sm_strlcat(newcmdbuf, s, sizeof newcmdbuf);
+		(void) sm_strlcat2(newcmdbuf, CMDDIR, "/", sizeof newcmdbuf);
+	(void) strncat(newcmdbuf, s, len);
 }
 
 int
@@ -145,9 +148,9 @@ main(argc, argv)
 	int isexec;
 	int save_errno;
 	char *newenv[2];
-	char cmdbuf[1000];
 	char pathbuf[1000];
 	char specialbuf[32];
+	struct stat st;
 
 #ifndef DEBUG
 # ifndef LOG_MAIL
@@ -157,8 +160,7 @@ main(argc, argv)
 # endif /* ! LOG_MAIL */
 #endif /* ! DEBUG */
 
-	(void) sm_strlcpy(pathbuf, "PATH=", sizeof pathbuf);
-	(void) sm_strlcat(pathbuf, PATH, sizeof pathbuf);
+	(void) sm_strlcpyn(pathbuf, sizeof pathbuf, 2, "PATH=", PATH);
 	newenv[0] = pathbuf;
 	newenv[1] = NULL;
 
@@ -217,7 +219,7 @@ main(argc, argv)
 	newcmdbuf[0] = '\0';
 	isexec = false;
 
-	while (*q)
+	while (*q != '\0')
 	{
 		/*
 		**  Strip off a leading pathname on the command name.  For
@@ -266,6 +268,7 @@ main(argc, argv)
 		if (strcmp(q, "exec") == 0 && p != NULL)
 		{
 			addcmd("exec ", false, strlen("exec "));
+
 			/* test _next_ arg */
 			q = ++p;
 			isexec = true;
@@ -274,30 +277,79 @@ main(argc, argv)
 		else if (strcmp(q, "exit") == 0 || strcmp(q, "echo") == 0)
 		{
 			addcmd(cmd, false, strlen(cmd));
+
 			/* test following chars */
 		}
 		else
 		{
+			char cmdbuf[MAXPATHLEN];
+
 			/*
 			**  Check to see if the command name is legal.
 			*/
-			(void) sm_strlcpy(cmdbuf, CMDDIR, sizeof cmdbuf);
-			(void) sm_strlcat(cmdbuf, "/", sizeof cmdbuf);
-			(void) sm_strlcat(cmdbuf, cmd, sizeof cmdbuf);
-#ifdef DEBUG
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
-					     "Trying %s\n", cmdbuf);
-#endif /* DEBUG */
-			if (access(cmdbuf, X_OK) < 0)
+
+			if (sm_strlcpyn(cmdbuf, sizeof cmdbuf, 3, CMDDIR,
+					"/", cmd) >= sizeof cmdbuf)
 			{
-				/* oops....  crack attack possiblity */
+				/* too long */
 				(void) sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
-						     "%s: %s not available for sendmail programs\n",
+						     "%s: \"%s\" not available for sendmail programs (filename too long)\n",
 						      prg, cmd);
 				if (p != NULL)
 					*p = ' ';
 #ifndef DEBUG
-				syslog(LOG_CRIT, "uid %d: attempt to use %s",
+				syslog(LOG_CRIT, "uid %d: attempt to use \"%s\" (filename too long)",
+				       (int) getuid(), cmd);
+#endif /* ! DEBUG */
+				exit(EX_UNAVAILABLE);
+			}
+
+#ifdef DEBUG
+			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+					     "Trying %s\n", cmdbuf);
+#endif /* DEBUG */
+			if (stat(cmdbuf, &st) < 0)
+			{
+				/* can't stat it */
+				(void) sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
+						     "%s: \"%s\" not available for sendmail programs (stat failed)\n",
+						      prg, cmd);
+				if (p != NULL)
+					*p = ' ';
+#ifndef DEBUG
+				syslog(LOG_CRIT, "uid %d: attempt to use \"%s\" (stat failed)",
+				       (int) getuid(), cmd);
+#endif /* ! DEBUG */
+				exit(EX_UNAVAILABLE);
+			}
+			if (!S_ISREG(st.st_mode)
+#ifdef S_ISLNK
+			    && !S_ISLNK(st.st_mode)
+#endif /* S_ISLNK */
+			   )
+			{
+				/* can't stat it */
+				(void) sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
+						     "%s: \"%s\" not available for sendmail programs (not a file)\n",
+						      prg, cmd);
+				if (p != NULL)
+					*p = ' ';
+#ifndef DEBUG
+				syslog(LOG_CRIT, "uid %d: attempt to use \"%s\" (not a file)",
+				       (int) getuid(), cmd);
+#endif /* ! DEBUG */
+				exit(EX_UNAVAILABLE);
+			}
+			if (access(cmdbuf, X_OK) < 0)
+			{
+				/* oops....  crack attack possiblity */
+				(void) sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
+						     "%s: \"%s\" not available for sendmail programs\n",
+						      prg, cmd);
+				if (p != NULL)
+					*p = ' ';
+#ifndef DEBUG
+				syslog(LOG_CRIT, "uid %d: attempt to use \"%s\"",
 				       (int) getuid(), cmd);
 #endif /* ! DEBUG */
 				exit(EX_UNAVAILABLE);
@@ -345,7 +397,7 @@ main(argc, argv)
 		       (int) getuid(), *r, par);
 #endif /* ! DEBUG */
 		exit(EX_UNAVAILABLE);
-	}		/* end of while *q */
+	}
 	if (isexec)
 	{
 		(void) sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
@@ -374,7 +426,8 @@ main(argc, argv)
 #ifdef DEBUG
 	(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s\n", newcmdbuf);
 #endif /* DEBUG */
-	(void) execle("/bin/sh", "/bin/sh", "-c", newcmdbuf, NULL, newenv);
+	(void) execle("/bin/sh", "/bin/sh", "-c", newcmdbuf,
+		      (char *)NULL, newenv);
 	save_errno = errno;
 #ifndef DEBUG
 	syslog(LOG_CRIT, "Cannot exec /bin/sh: %s", sm_errstring(errno));

@@ -1,37 +1,19 @@
 /*
- * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
- * All rights reserved.
+ * Copyright (c) 1999-2001 Todd C. Miller <Todd.Miller@courtesan.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * 4. Products derived from this software may not be called "Sudo" nor
- *    may "Sudo" appear in their names without specific prior written
- *    permission from the author.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * $Sudo: sudo_auth.h,v 1.15 1999/10/13 02:34:55 millert Exp $
+ * $Sudo: sudo_auth.h,v 1.20 2004/02/13 21:36:47 millert Exp $
  */
 
 #ifndef SUDO_AUTH_H
@@ -55,7 +37,7 @@ typedef struct sudo_auth {
 
 /* Values for sudo_auth.flags.  */
 /* XXX - these names are too long for my liking */
-#define FLAG_USER	0x01	/* functions must run as root */
+#define FLAG_USER	0x01	/* functions must run as the user, not root */
 #define FLAG_CONFIGURED	0x02	/* method configured ok */
 #define FLAG_ONEANDONLY	0x04	/* one and only auth method */
 
@@ -75,8 +57,12 @@ int sia_setup __P((struct passwd *pw, char **prompt, sudo_auth *auth));
 int sia_verify __P((struct passwd *pw, char *prompt, sudo_auth *auth));
 int sia_cleanup __P((struct passwd *pw, sudo_auth *auth));
 int aixauth_verify __P((struct passwd *pw, char *pass, sudo_auth *auth));
+int bsdauth_init __P((struct passwd *pw, char **prompt, sudo_auth *auth));
+int bsdauth_verify __P((struct passwd *pw, char *prompt, sudo_auth *auth));
+int bsdauth_cleanup __P((struct passwd *pw, sudo_auth *auth));
 
 /* Prototypes for normal methods */
+int passwd_init __P((struct passwd *pw, char **prompt, sudo_auth *auth));
 int passwd_verify __P((struct passwd *pw, char *pass, sudo_auth *auth));
 int secureware_init __P((struct passwd *pw, char **prompt, sudo_auth *auth));
 int secureware_verify __P((struct passwd *pw, char *pass, sudo_auth *auth));
@@ -116,8 +102,12 @@ int securid_verify __P((struct passwd *pw, char *pass, sudo_auth *auth));
 	    NULL, NULL, aixauth_verify, NULL)
 #elif defined(HAVE_FWTK)
 #  define AUTH_STANDALONE \
-	AUTH_ENTRY(0, "fwtk", fwtk_init, \
-	    NULL, fwtk_verify, fwtk_cleanup)
+	AUTH_ENTRY(0, "fwtk", \
+	    fwtk_init, NULL, fwtk_verify, fwtk_cleanup)
+#elif defined(HAVE_BSD_AUTH_H)
+#  define AUTH_STANDALONE \
+	AUTH_ENTRY(0, "bsdauth", \
+	    bsdauth_init, NULL, bsdauth_verify, bsdauth_cleanup)
 #endif
 
 #endif /* SUDO_AUTH_H */

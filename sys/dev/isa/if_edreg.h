@@ -1,4 +1,5 @@
-/*	$NetBSD: if_edreg.h,v 1.14 1995/04/11 04:46:22 mycroft Exp $	*/
+/*    $OpenBSD: if_edreg.h,v 1.5 2001/01/25 03:50:50 todd Exp $      */
+/*    $NetBSD: if_edreg.h,v 1.15 1996/01/10 16:49:22 chuck Exp $      */
 
 /*
  * National Semiconductor DS8390 NIC register definitions.
@@ -21,9 +22,9 @@
  * Compile-time config flags
  */
 /*
- * This sets the default for enabling/disablng the tranceiver.
+ * This sets the default for enabling/disablng the transceiver.
  */
-#define ED_FLAGS_DISABLE_TRANCEIVER	0x0001
+#define ED_FLAGS_DISABLE_TRANSCEIVER	0x0001
 
 /*
  * This forces the board to be used in 8/16-bit mode even if it autoconfigs
@@ -153,6 +154,31 @@
 #define	ED_WD790_ICR_EIL	0x01	/* enable interrupts */
 
 /*
+ * REV/IOPA Revision / I/O Pipe register for the 83C79X
+ */
+#define ED_WD790_REV	7
+
+#define ED_WD790	0x20		/* and 0x21... */
+#define ED_WD795	0x40		/* and 0x41... */
+
+/*
+ * PIO mode register for the 83C795
+ */
+#define ED_WD795_PIO	8
+
+/*
+ * 79X RAM Address Register (RAR)
+ *      Enabled with SWH bit=1 in HWR register
+ */
+
+#define ED_WD790_RAR	0x0b
+
+#define ED_WD790_RAR_SZ8	0x00	/* 8k memory buffer */
+#define ED_WD790_RAR_SZ16	0x10	/* 16k memory buffer */
+#define ED_WD790_RAR_SZ32	0x20	/* 32k memory buffer */
+#define ED_WD790_RAR_SZ64	0x30	/* 64k memory buffer */
+
+/*
  * General Control Register (GCR)
  * Eanbled with SWH bit == 1 in HWR register
  */
@@ -251,7 +277,7 @@
 #define ED_3COM_PSPR		1
 
 /*
- * DrQ Timer Register.  Determines number of bytes to be transfered during a
+ * DrQ Timer Register.  Determines number of bytes to be transferred during a
  * DMA burst.
  */
 #define ED_3COM_DQTR		2

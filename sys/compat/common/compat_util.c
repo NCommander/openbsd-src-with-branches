@@ -1,4 +1,5 @@
-/* 	$NetBSD: compat_util.c,v 1.2 1995/06/26 19:27:17 christos Exp $	*/
+/* 	$OpenBSD: compat_util.c,v 1.9 2002/07/20 19:24:57 art Exp $	*/
+/* 	$NetBSD: compat_util.c,v 1.4 1996/03/14 19:31:45 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -85,14 +86,12 @@ emul_find(p, sgp, prefix, path, pbuf, cflag)
 	else
 		error = copyinstr(path, ptr, sz, &len);
 
-	if (error) {
-		free(buf, M_TEMP);
-		return error;
-	}
+	if (error)
+		goto bad;
 
 	if (*ptr != '/') {
-		free(buf, M_TEMP);
-		return EINVAL;
+		error = EINVAL;
+		goto bad;
 	}
 
 	/*
@@ -104,25 +103,22 @@ emul_find(p, sgp, prefix, path, pbuf, cflag)
 	 */
 
 	if (cflag) {
-		for (cp = &ptr[len] - 1; *cp != '/'; cp--);
+		for (cp = &ptr[len] - 1; *cp != '/'; cp--)
+			;
 		*cp = '\0';
 
 		NDINIT(&nd, LOOKUP, FOLLOW, UIO_SYSSPACE, buf, p);
 
-		if ((error = namei(&nd)) != 0) {
-			free(buf, M_TEMP);
-			return error;
-		}
+		if ((error = namei(&nd)) != 0)
+			goto bad;
 
 		*cp = '/';
 	}
 	else {
 		NDINIT(&nd, LOOKUP, FOLLOW, UIO_SYSSPACE, buf, p);
 
-		if ((error = namei(&nd)) != 0) {
-			free(buf, M_TEMP);
-			return error;
-		}
+		if ((error = namei(&nd)) != 0)
+			goto bad;
 
 		/*
 		 * We now compare the vnode of the emulation root to the one
@@ -133,45 +129,102 @@ emul_find(p, sgp, prefix, path, pbuf, cflag)
 		 * to the emulation root directory. This is expensive :-(
 		 */
 		/* XXX: prototype should have const here for NDINIT */
-		NDINIT(&ndroot, LOOKUP, FOLLOW, UIO_SYSSPACE, 
-		       (char *) prefix, p);
+		NDINIT(&ndroot, LOOKUP, FOLLOW, UIO_SYSSPACE, prefix, p);
 
-		if ((error = namei(&ndroot)) != 0) {
-			/* Cannot happen! */
-			free(buf, M_TEMP);
-			vrele(nd.ni_vp);
-			return error;
-		}
+		if ((error = namei(&ndroot)) != 0)
+			goto bad2;
 
-		if ((error = VOP_GETATTR(nd.ni_vp, &vat, p->p_ucred, p)) != 0) {
-			goto done;
-		}
+		if ((error = VOP_GETATTR(nd.ni_vp, &vat, p->p_ucred, p)) != 0)
+			goto bad3;
 
 		if ((error = VOP_GETATTR(ndroot.ni_vp, &vatroot, p->p_ucred, p))
-		    != 0) {
-			goto done;
-		}
+		    != 0)
+			goto bad3;
 
 		if (vat.va_fsid == vatroot.va_fsid &&
 		    vat.va_fileid == vatroot.va_fileid) {
 			error = ENOENT;
-			goto done;
+			goto bad3;
 		}
-
 	}
 	if (sgp == NULL)
 		*pbuf = buf;
 	else {
 		sz = &ptr[len] - buf;
 		*pbuf = stackgap_alloc(sgp, sz + 1);
-		error = copyout(buf, *pbuf, sz);
+		if (*pbuf == NULL) {
+			error = ENAMETOOLONG;
+			goto bad;
+		}
+		if ((error = copyout(buf, *pbuf, sz)) != 0) {
+			*pbuf = path;
+			goto bad;
+		}
 		free(buf, M_TEMP);
 	}
 
-
-done:
 	vrele(nd.ni_vp);
 	if (!cflag)
 		vrele(ndroot.ni_vp);
 	return error;
+
+bad3:
+	vrele(ndroot.ni_vp);
+bad2:
+	vrele(nd.ni_vp);
+bad:
+	free(buf, M_TEMP);
+	return error;
+}
+
+/*
+ * Translate one set of flags to another, based on the entries in
+ * the given table.  If 'leftover' is specified, it is filled in
+ * with any flags which could not be translated.
+ */
+unsigned long
+emul_flags_translate(tab, in, leftover)
+	const struct emul_flags_xtab *tab;
+	unsigned long in;
+	unsigned long *leftover;
+{
+        unsigned long out;
+                 
+        for (out = 0; tab->omask != 0; tab++) {
+                if ((in & tab->omask) == tab->oval) {
+                        in &= ~tab->omask;
+                        out |= tab->nval;
+                }
+        }               
+        if (leftover != NULL)
+                *leftover = in;
+        return (out);
+}
+
+caddr_t  
+stackgap_init(e) 
+        struct emul *e;
+{
+        return STACKGAPBASE;
+}
+ 
+void *          
+stackgap_alloc(sgp, sz)
+        caddr_t *sgp;
+        size_t sz;
+{
+	void *n = (void *) *sgp;
+	caddr_t nsgp;
+	
+	sz = ALIGN(sz);
+	nsgp = *sgp + sz;
+#ifdef MACHINE_STACK_GROWS_UP
+	if (nsgp > ((caddr_t)PS_STRINGS) + STACKGAPLEN)
+		return NULL;
+#else
+	if (nsgp > ((caddr_t)PS_STRINGS))
+		return NULL;
+#endif
+	*sgp = nsgp;
+	return n;
 }

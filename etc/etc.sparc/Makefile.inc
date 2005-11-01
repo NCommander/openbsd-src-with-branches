@@ -1,27 +1,25 @@
-#
+#	$OpenBSD: Makefile.inc,v 1.12 2004/11/29 22:09:15 miod Exp $
 #	etc.sparc/Makefile.inc -- sparc-specific etc Makefile targets
-#
-#	$Id: Makefile.inc,v 1.7 1995/05/12 08:51:55 pk Exp $
 
 .ifdef DESTDIR
-snap_md: netbsd netbsd.scsi3 inst
-	cp ${.CURDIR}/../sys/arch/sparc/compile/GENERIC/netbsd \
-	    ${DESTDIR}/snapshot/netbsd
-	cp ${.CURDIR}/../sys/arch/sparc/compile/GENERIC_SCSI3/netbsd \
-	    ${DESTDIR}/snapshot/netbsd.scsi3
+snap_md: bsd bootblocks distrib
+	cp ${.CURDIR}/../sys/arch/sparc/compile/GENERIC/bsd \
+	    ${DESTDIR}/snapshot/bsd
+	s=`printf "find sd\nexit" | config -e ${DESTDIR}/snapshot/bsd | \
+	    grep scsibus | awk '{print $$1}'`; \
+	    printf "add sd0\n%s\n%s\nchange %s\ny\n3\n\n\nquit\n" $$s $$s $$s | \
+	    config -e -o ${DESTDIR}/snapshot/bsd.scsi3 ${DESTDIR}/snapshot/bsd
 
-netbsd:
+bsd:
 	cd ${.CURDIR}/../sys/arch/sparc/conf && config GENERIC
 	cd ${.CURDIR}/../sys/arch/sparc/compile/GENERIC && \
-	    make clean && make depend && make
+	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
 
-netbsd.scsi3:
-	cd ${.CURDIR}/../sys/arch/sparc/conf && config GENERIC_SCSI3
-	cd ${.CURDIR}/../sys/arch/sparc/compile/GENERIC_SCSI3 && \
-	    make clean && make depend && make
+bootblocks:
+	cp ${DESTDIR}/usr/mdec/*boot* ${DESTDIR}/snapshot
+	${DESTDIR}/usr/mdec/binstall net /tmp && \
+	  mv /tmp/boot.sparc.openbsd ${DESTDIR}/snapshot/boot.net
 
-inst:
-	cp ${.CURDIR}/etc.sparc/README ${DESTDIR}/snapshot/README
-	cp ${.CURDIR}/etc.sparc/install.sh ${DESTDIR}/snapshot/install.sh
+.PHONY: bsd bootblocks
 
 .endif	# DESTDIR check

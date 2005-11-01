@@ -1,5 +1,32 @@
-/*	$NetBSD: grf_iv.c,v 1.10 1995/08/11 17:48:19 briggs Exp $	*/
+/*	$OpenBSD: grf_iv.c,v 1.25 2005/08/01 19:09:19 martin Exp $	*/
+/*	$NetBSD: grf_iv.c,v 1.17 1997/02/20 00:23:27 scottr Exp $	*/
 
+/*
+ * Copyright (C) 1998 Scott Reynolds
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 /*
  * Copyright (c) 1995 Allen Briggs.  All rights reserved.
  *
@@ -34,65 +61,240 @@
  */
 
 #include <sys/param.h>
-
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/file.h>
 #include <sys/malloc.h>
 #include <sys/mman.h>
 #include <sys/proc.h>
+#include <sys/systm.h>
 
-#include <machine/grfioctl.h>
+#include <machine/autoconf.h>
+#include <machine/bus.h>
 #include <machine/cpu.h>
+#include <machine/grfioctl.h>
+#include <machine/viareg.h>
 
-#include "nubus.h"
-#include "grfvar.h"
+#include <mac68k/dev/nubus.h>
+#include <mac68k/dev/obiovar.h>
+#include <mac68k/dev/grfvar.h>
 
-extern int	grfiv_probe __P((struct grf_softc *sc, nubus_slot *ignore));
-extern int	grfiv_init __P((struct grf_softc *sc));
-extern int	grfiv_mode __P((struct grf_softc *sc, int cmd, void *arg));
-
-extern u_int32_t	mac68k_vidlog;
 extern u_int32_t	mac68k_vidphys;
+extern u_int32_t	mac68k_vidlen;
+extern long		videoaddr;
 extern long		videorowbytes;
 extern long		videobitdepth;
-extern unsigned long	videosize;
+extern u_long		videosize;
 
-extern int
-grfiv_probe(sc, slotinfo)
-	struct grf_softc *sc;
-	nubus_slot *slotinfo;
+static int	grfiv_mode(struct grf_softc *gp, int cmd, void *arg);
+static int	grfiv_match(struct device *, void *, void *);
+static void	grfiv_attach(struct device *, struct device *, void *);
+
+struct cfdriver intvid_cd = {
+	NULL, "intvid", DV_DULL
+};
+
+struct cfattach intvid_ca = {
+	sizeof(struct grfbus_softc), grfiv_match, grfiv_attach
+};
+
+#define DAFB_BASE		0xf9000000
+#define DAFB_CONTROL_BASE	0xf9800000
+#define CIVIC_BASE		0x50100000
+#define CIVIC_CONTROL_BASE	0x50036000
+#define VALKYRIE_BASE		0xf9000000
+#define VALKYRIE_CONTROL_BASE	0x50f2a000
+
+static int
+grfiv_match(parent, vcf, aux)
+	struct device *parent;
+	void *vcf;
+	void *aux;
 {
-	static int	internal_video_found = 0;
+	struct obio_attach_args *oa = (struct obio_attach_args *)aux;
+	bus_space_handle_t bsh;
+	int found;
+	u_int base;
 
-	if (internal_video_found || (mac68k_vidlog == 0)) {
-		return 0;
+	found = 1;
+
+        switch (current_mac_model->class) {
+	case MACH_CLASSQ2:
+		if (current_mac_model->machineid != MACH_MACLC575) {
+			base = VALKYRIE_CONTROL_BASE;
+
+			if (bus_space_map(oa->oa_tag, base, 0x40, 0, &bsh))
+				return 0;
+
+			/* Disable interrupts */
+			bus_space_write_1(oa->oa_tag, bsh, 0x18, 0x1);
+			break;
+		}
+		/*
+		 * Note:  the only system in this class that does not have
+		 * the Valkyrie chip -- at least, that we know of -- is
+		 * the Performa/LC 57x series.  This system has a version
+		 * of the DAFB controller, instead.
+		 *
+		 * If this assumption proves false, we'll have to be more
+		 * intelligent here.
+		 */
+		/*FALLTHROUGH*/
+	case MACH_CLASSQ:
+		/*
+		 * Assume DAFB for all of these, unless we can't
+		 * access the memory.
+		 */
+		base = DAFB_CONTROL_BASE;
+
+		if (bus_space_map(oa->oa_tag, base, 0x1000, 0, &bsh))
+			return 0;
+
+		if (mac68k_bus_space_probe(oa->oa_tag, bsh, 0x1c, 4) == 0) {
+			bus_space_unmap(oa->oa_tag, bsh, PAGE_SIZE);
+			return 0;
+		}
+
+		/* Set "Turbo SCSI" configuration to default */
+		bus_space_write_4(oa->oa_tag, bsh, 0x24, 0x1d1); /* ch0 */
+		bus_space_write_4(oa->oa_tag, bsh, 0x28, 0x1d1); /* ch1 */
+
+		/* Disable interrupts */
+		bus_space_write_4(oa->oa_tag, bsh, 0x104, 0);
+
+		/* Clear any interrupts */
+		bus_space_write_4(oa->oa_tag, bsh, 0x10C, 0);
+		bus_space_write_4(oa->oa_tag, bsh, 0x110, 0);
+		bus_space_write_4(oa->oa_tag, bsh, 0x114, 0);
+
+		bus_space_unmap(oa->oa_tag, bsh, PAGE_SIZE);
+		break;
+	case MACH_CLASSAV:
+		base = CIVIC_CONTROL_BASE;
+
+		if (bus_space_map(oa->oa_tag, base, 0x1000, 0, &bsh))
+			return 0;
+
+		/* Disable interrupts */
+		bus_space_write_1(oa->oa_tag, bsh, 0x120, 0);
+
+		bus_space_unmap(oa->oa_tag, bsh, 0x1000);
+		break;
+	default:
+		if (mac68k_vidlen == 0)
+			found = 0;
+		break;
 	}
 
-	if (   (NUBUS_SLOT_TO_BASE(slotinfo->slot) <= mac68k_vidlog)
-	    && (mac68k_vidlog < NUBUS_SLOT_TO_BASE(slotinfo->slot + 1))) {
-		internal_video_found++;
-		return 1;
-	}
-
-	if (slotinfo->slot == NUBUS_INT_VIDEO_PSUEDO_SLOT) {
-		internal_video_found++;
-		return 1;
-	}
-
-	return 0;
+	return found;
 }
 
-extern int
-grfiv_init(sc)
-	struct	grf_softc *sc;
+static void
+grfiv_attach(parent, self, aux)
+	struct device *parent, *self;
+	void   *aux;
 {
+	struct obio_attach_args *oa = (struct obio_attach_args *) aux;
+	struct grfbus_softc *sc;
 	struct grfmode *gm;
-	int i, j;
+	u_long base, length;
+	u_int32_t vbase1, vbase2;
+
+	sc = (struct grfbus_softc *)self;
 
 	sc->card_id = 0;
 
-	strcpy(sc->card_name, "Internal video");
+        switch (current_mac_model->class) {
+	case MACH_CLASSQ2:
+		if (current_mac_model->machineid != MACH_MACLC575) {
+			sc->sc_basepa = VALKYRIE_BASE;
+			length = 0x00100000;		/* 1MB */
+
+			if (sc->sc_basepa <= mac68k_vidphys &&
+			    mac68k_vidphys < (sc->sc_basepa + length))
+				sc->sc_fbofs = mac68k_vidphys - sc->sc_basepa;
+			else
+				sc->sc_fbofs = 0;
+
+#ifdef DEBUG
+			printf(" @ %lx", sc->sc_basepa + sc->sc_fbofs);
+#endif
+			printf(": Valkyrie\n");
+			break;
+		}
+		/* See note in grfiv_match() */
+		/*FALLTHROUGH*/
+        case MACH_CLASSQ:
+		base = DAFB_CONTROL_BASE;
+		sc->sc_tag = oa->oa_tag;
+		if (bus_space_map(sc->sc_tag, base, 0x1000, 0, &sc->sc_regh)) {
+			printf(": failed to map DAFB register space\n");
+			return;
+		}
+
+		sc->sc_basepa = DAFB_BASE;
+		length = 0x00100000;		/* 1MB */
+
+		/* Compute the current frame buffer offset */
+		vbase1 = bus_space_read_4(sc->sc_tag, sc->sc_regh, 0x0) & 0xfff;
+		vbase2 = bus_space_read_4(sc->sc_tag, sc->sc_regh, 0x4) & 0xf;
+		sc->sc_fbofs = (vbase1 << 9) | (vbase2 << 5);
+#if 1
+		/*
+		 * XXX The following hack exists because the DAFB v7 in these
+		 * systems doesn't compute fbofs correctly. (sar 19980813)
+		 */
+		switch (current_mac_model->machineid) {
+		case MACH_MACLC475:
+		case MACH_MACLC475_33:
+		case MACH_MACLC575:
+			sc->sc_fbofs = 0x1000;
+			break;
+		}
+#endif
+
+#ifdef DEBUG
+		printf(" @ %lx", sc->sc_basepa + sc->sc_fbofs);
+#endif
+		printf(": DAFB: monitor sense %x\n",
+		    (bus_space_read_4(sc->sc_tag, sc->sc_regh, 0x1c) & 0x7));
+
+		bus_space_unmap(sc->sc_tag, sc->sc_regh, 0x1000);
+		break;
+	case MACH_CLASSAV:
+		sc->sc_basepa = CIVIC_BASE;
+		length = 0x00200000;		/* 2MB */
+
+		if (sc->sc_basepa <= mac68k_vidphys &&
+		    mac68k_vidphys < (sc->sc_basepa + length))
+			sc->sc_fbofs = mac68k_vidphys - sc->sc_basepa;
+		else
+			sc->sc_fbofs = 0;
+
+#ifdef DEBUG
+		printf(" @ %lx", sc->sc_basepa + sc->sc_fbofs);
+#endif
+		printf(": Civic\n");
+		break;
+	default:
+		sc->sc_basepa = m68k_trunc_page(mac68k_vidphys);
+		sc->sc_fbofs = mac68k_vidphys & PGOFSET;
+		length = mac68k_vidlen + sc->sc_fbofs;
+
+		printf(" @ %lx: On-board video\n",
+		    sc->sc_basepa + sc->sc_fbofs);
+		break;
+	}
+
+	if (bus_space_map(sc->sc_tag, sc->sc_basepa, length, 0,
+	    &sc->sc_handle)) {
+		printf("%s: failed to map video RAM\n", sc->sc_dev.dv_xname);
+		return;
+	}
+
+	if (sc->sc_basepa <= mac68k_vidphys &&
+	    mac68k_vidphys < (sc->sc_basepa + length))
+		videoaddr = sc->sc_handle + sc->sc_fbofs; /* XXX big ol' hack */
 
 	gm = &(sc->curr_mode);
 	gm->mode_id = 0;
@@ -101,16 +303,17 @@ grfiv_init(sc)
 	gm->width = videosize & 0xffff;
 	gm->height = (videosize >> 16) & 0xffff;
 	gm->rowbytes = videorowbytes;
-	gm->hres = 80;		/* XXX Hack */
-	gm->vres = 80;		/* XXX Hack */
-	gm->fbsize = gm->rowbytes * gm->height;
-	gm->fbbase = (caddr_t) mac68k_vidlog;
-	gm->fboff = 0;
+	gm->hres = 80;				/* XXX Hack */
+	gm->vres = 80;				/* XXX Hack */
+	gm->fbsize = gm->height * gm->rowbytes;
+	gm->fbbase = (caddr_t)sc->sc_handle;	/* XXX yet another hack */
+	gm->fboff = sc->sc_fbofs;
 
-	return 1;
+	/* Perform common video attachment. */
+	grf_establish(sc, NULL, grfiv_mode);
 }
 
-extern int
+static int
 grfiv_mode(sc, cmd, arg)
 	struct grf_softc *sc;
 	int cmd;
@@ -128,16 +331,4 @@ grfiv_mode(sc, cmd, arg)
 		break;
 	}
 	return EINVAL;
-}
-
-extern caddr_t
-grfiv_phys(gp, addr)
-	struct grf_softc *gp;
-	vm_offset_t addr;
-{
-	/*
-	 * If we're using IIsi or similar, this will be 0.
-	 * If we're using IIvx or similar, this will be correct.
-	 */
-	return (caddr_t) mac68k_vidphys;
 }

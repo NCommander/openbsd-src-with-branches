@@ -1,1 +1,3 @@
+#	$OpenBSD$
+
 SRCS+=sparc.c

@@ -1,22 +1,19 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$Id: localeconv.c,v 1.6 1995/04/28 23:19:32 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/localedef.h>
 #include <locale.h>
 
-/* 
+/*
  * The localeconv() function constructs a struct lconv from the current
  * monetary and numeric locales.
  *
  * Because localeconv() may be called many times (especially by library
- * routines like printf() & strtod()), the approprate members of the 
- * lconv structure are computed only when the monetary or numeric 
+ * routines like printf() & strtod()), the approprate members of the
+ * lconv structure are computed only when the monetary or numeric
  * locale has been changed.
  */
 int __mlocale_changed = 1;
@@ -26,7 +23,7 @@ int __nlocale_changed = 1;
  * Return the current locale conversion.
  */
 struct lconv *
-localeconv()
+localeconv(void)
 {
     static struct lconv ret;
 

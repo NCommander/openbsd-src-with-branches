@@ -1,18 +1,17 @@
+/*	$OpenBSD: split.c,v 1.3 2003/07/31 21:48:03 deraadt Exp $	*/
 /*	$NetBSD: split.c,v 1.2 1995/04/20 22:39:57 cgd Exp $	*/
 
 #include <stdio.h>
 #include <string.h>
+
+int split(char *string, char *fields[], int nfields, char *sep);
 
 /*
  - split - divide a string into fields, like awk split()
  = int split(char *string, char *fields[], int nfields, char *sep);
  */
 int				/* number of fields, including overflow */
-split(string, fields, nfields, sep)
-char *string;
-char *fields[];			/* list is not NULL-terminated */
-int nfields;			/* number of entries available in fields[] */
-char *sep;			/* "" white, "c" single char, "ab" [ab]+ */
+split(char *string, char *fields[], int nfields, char *sep)
 {
 	register char *p = string;
 	register char c;			/* latest character */
@@ -161,11 +160,11 @@ char *argv[];
 
 	if (argc > 4)
 		for (n = atoi(argv[3]); n > 0; n--) {
-			(void) strcpy(buf, argv[1]);
+			(void) strlcpy(buf, argv[1], sizeof buf);
 		}
 	else if (argc > 3)
 		for (n = atoi(argv[3]); n > 0; n--) {
-			(void) strcpy(buf, argv[1]);
+			(void) strlcpy(buf, argv[1], sizeof buf);
 			(void) split(buf, fields, MNF, argv[2]);
 		}
 	else if (argc > 2)
@@ -287,7 +286,7 @@ regress()
 	register char *f;
 
 	for (n = 0; tests[n].str != NULL; n++) {
-		(void) strcpy(buf, tests[n].str);
+		(void) strlcpy(buf, tests[n].str, sizeof buf);
 		fields[RNF] = NULL;
 		nf = split(buf, fields, RNF, tests[n].seps);
 		printit = 0;

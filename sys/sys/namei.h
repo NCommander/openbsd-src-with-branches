@@ -1,4 +1,5 @@
-/*	$NetBSD: namei.h,v 1.10 1995/04/15 08:12:35 cgd Exp $	*/
+/*	$OpenBSD: namei.h,v 1.15 2005/06/18 18:09:43 millert Exp $	*/
+/*	$NetBSD: namei.h,v 1.11 1996/02/09 18:25:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1985, 1989, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,7 +44,7 @@ struct nameidata {
 	/*
 	 * Arguments to namei/lookup.
 	 */
-	caddr_t	ni_dirp;		/* pathname pointer */
+	const char *ni_dirp;		/* pathname pointer */
 	enum	uio_seg ni_segflg;	/* location of pathname */
      /* u_long	ni_nameiop;		   namei operation */
      /* u_long	ni_flags;		   flags to namei */
@@ -126,18 +123,19 @@ struct nameidata {
  * name being sought. The caller is responsible for releasing the
  * buffer and for vrele'ing ni_startdir.
  */
-#define	NOCROSSMOUNT	0x00100	/* do not cross mount points */
-#define	RDONLY		0x00200	/* lookup with read-only semantics */
-#define	HASBUF		0x00400	/* has allocated pathname buffer */
-#define	SAVENAME	0x00800	/* save pathanme buffer */
-#define	SAVESTART	0x01000	/* save starting directory */
-#define ISDOTDOT	0x02000	/* current component name is .. */
-#define MAKEENTRY	0x04000	/* entry is to be added to name cache */
-#define ISLASTCN	0x08000	/* this is last component of pathname */
-#define ISSYMLINK	0x10000	/* symlink needs interpretation */
-#define	ISWHITEOUT	0x20000	/* found whiteout */
-#define	DOWHITEOUT	0x40000	/* do whiteouts */
-#define PARAMASK	0xfff00	/* mask of parameter descriptors */
+#define	NOCROSSMOUNT	0x000100      /* do not cross mount points */
+#define	RDONLY		0x000200      /* lookup with read-only semantics */
+#define	HASBUF		0x000400      /* has allocated pathname buffer */
+#define	SAVENAME	0x000800      /* save pathanme buffer */
+#define	SAVESTART	0x001000      /* save starting directory */
+#define ISDOTDOT	0x002000      /* current component name is .. */
+#define MAKEENTRY	0x004000      /* entry is to be added to name cache */
+#define ISLASTCN	0x008000      /* this is last component of pathname */
+#define ISSYMLINK	0x010000      /* symlink needs interpretation */
+#define	REQUIREDIR	0x080000      /* must be a directory */
+#define STRIPSLASHES    0x100000      /* strip trailing slashes */
+#define PDIRUNLOCK	0x200000      /* vfs_lookup() unlocked parent dir */
+
 /*
  * Initialization of an nameidata structure.
  */
@@ -161,6 +159,7 @@ struct nameidata {
 
 struct	namecache {
 	LIST_ENTRY(namecache) nc_hash;	/* hash chain */
+	LIST_ENTRY(namecache) nc_vhash;	/* (reverse) directory hash chain */
 	TAILQ_ENTRY(namecache) nc_lru;	/* LRU chain */
 	struct	vnode *nc_dvp;		/* vnode of parent of name */
 	u_long	nc_dvpid;		/* capability number of nc_dvp */
@@ -171,11 +170,21 @@ struct	namecache {
 };
 
 #ifdef _KERNEL
-u_long	nextvnodeid;
-int	namei __P((struct nameidata *ndp));
-int	lookup __P((struct nameidata *ndp));
-int	relookup __P((struct vnode *dvp, struct vnode **vpp,
-	    struct componentname *cnp));
+extern u_long nextvnodeid;
+int	namei(struct nameidata *ndp);
+int	lookup(struct nameidata *ndp);
+int	relookup(struct vnode *dvp, struct vnode **vpp,
+		      struct componentname *cnp);
+void cache_purge(struct vnode *);
+int cache_lookup(struct vnode *, struct vnode **, struct componentname *);
+void cache_enter(struct vnode *, struct vnode *, struct componentname *);
+int cache_revlookup(struct vnode *, struct vnode **, char **, char *);
+void nchinit(void);
+struct mount;
+void cache_purgevfs(struct mount *);
+
+extern struct pool namei_pool;
+
 #endif
 
 /*
@@ -190,5 +199,34 @@ struct	nchstats {
 	long	ncs_long;		/* long names that ignore cache */
 	long	ncs_pass2;		/* names found with passes == 2 */
 	long	ncs_2passes;		/* number of times we attempt it */
+	long    ncs_revhits;		/* reverse-cache hits */
+	long    ncs_revmiss;		/* reverse-cache misses */
 };
+
+/* These sysctl names are only really used by sysctl(8) */
+#define KERN_NCHSTATS_GOODHITS		1
+#define KERN_NCHSTATS_NEGHITS		2
+#define KERN_NCHSTATS_BADHITS		3
+#define KERN_NCHSTATS_FALSEHITS		4
+#define KERN_NCHSTATS_MISS		5
+#define KERN_NCHSTATS_LONG		6
+#define KERN_NCHSTATS_PASS2		7
+#define KERN_NCHSTATS_2PASSES		8
+#define KERN_NCHSTATS_REVHITS           9
+#define KERN_NCHSTATS_REVMISS           10
+#define KERN_NCHSTATS_MAXID		11
+
+#define CTL_KERN_NCHSTATS_NAMES {		\
+	{ 0, 0 },				\
+	{ "good_hits", CTLTYPE_INT },		\
+	{ "negative_hits", CTLTYPE_INT },	\
+	{ "bad_hits", CTLTYPE_INT },		\
+	{ "false_hits", CTLTYPE_INT },		\
+	{ "misses", CTLTYPE_INT },		\
+	{ "long_names", CTLTYPE_INT },		\
+	{ "pass2", CTLTYPE_INT },		\
+	{ "2passes", CTLTYPE_INT },		\
+	{ "ncs_revhits", CTLTYPE_INT },		\
+	{ "ncs_revmiss", CTLTYPE_INT },		\
+}
 #endif /* !_SYS_NAMEI_H_ */

@@ -74,48 +74,6 @@
 #ifndef OPENSSL_NO_BIO
 #include <openssl/bio.h>
 #endif
-#ifndef OPENSSL_NO_MD2
-#include <openssl/md2.h>
-#endif
-#ifndef OPENSSL_NO_MD4
-#include <openssl/md4.h>
-#endif
-#ifndef OPENSSL_NO_MD5
-#include <openssl/md5.h>
-#endif
-#ifndef OPENSSL_NO_SHA
-#include <openssl/sha.h>
-#endif
-#ifndef OPENSSL_NO_RIPEMD
-#include <openssl/ripemd.h>
-#endif
-#ifndef OPENSSL_NO_DES
-#include <openssl/des.h>
-#endif
-#ifndef OPENSSL_NO_RC4
-#include <openssl/rc4.h>
-#endif
-#ifndef OPENSSL_NO_RC2
-#include <openssl/rc2.h>
-#endif
-#ifndef OPENSSL_NO_RC5
-#include <openssl/rc5.h>
-#endif
-#ifndef OPENSSL_NO_BF
-#include <openssl/blowfish.h>
-#endif
-#ifndef OPENSSL_NO_CAST
-#include <openssl/cast.h>
-#endif
-#ifndef OPENSSL_NO_IDEA
-#include <openssl/idea.h>
-#endif
-#ifndef OPENSSL_NO_MDC2
-#include <openssl/mdc2.h>
-#endif
-#ifndef OPENSSL_NO_AES
-#include <openssl/aes.h>
-#endif
 
 #ifdef OPENSSL_FIPS
 #include <openssl/fips.h>
@@ -128,7 +86,7 @@
 #define EVP_CAST5_KEY_SIZE		16
 #define EVP_RC5_32_12_16_KEY_SIZE	16
 */
-#define EVP_MAX_MD_SIZE			(16+20) /* The SSLv3 md5+sha1 type */
+#define EVP_MAX_MD_SIZE			64 /* to fit SHA512 */
 #define EVP_MAX_KEY_LENGTH		32
 #define EVP_MAX_IV_LENGTH		16
 #define EVP_MAX_BLOCK_LENGTH		32
@@ -136,18 +94,6 @@
 #define PKCS5_SALT_LEN			8
 /* Default PKCS#5 iteration count */
 #define PKCS5_DEFAULT_ITER		2048
-
-#ifndef OPENSSL_NO_RSA
-#include <openssl/rsa.h>
-#endif
-
-#ifndef OPENSSL_NO_DSA
-#include <openssl/dsa.h>
-#endif
-
-#ifndef OPENSSL_NO_DH
-#include <openssl/dh.h>
-#endif
 
 #include <openssl/objects.h>
 
@@ -394,6 +340,7 @@ struct evp_cipher_st
 #define 	EVP_CTRL_SET_RC2_KEY_BITS	0x3
 #define 	EVP_CTRL_GET_RC5_ROUNDS		0x4
 #define 	EVP_CTRL_SET_RC5_ROUNDS		0x5
+#define		EVP_CTRL_SET_ACSS_MODE		0x6
 
 typedef struct evp_cipher_info_st
 	{
@@ -759,6 +706,9 @@ const EVP_CIPHER *EVP_aes_256_ofb(void);
 #if 0
 const EVP_CIPHER *EVP_aes_256_ctr(void);
 #endif
+#endif
+#ifndef OPENSSL_NO_ACSS
+const EVP_CIPHER *EVP_acss(void);
 #endif
 
 void OPENSSL_add_all_algorithms_noconf(void);

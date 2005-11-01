@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ *  Copyright (c) 1999-2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,7 +9,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: signal.c,v 8.24 2001/01/24 00:27:35 ca Exp $")
+SM_RCSID("@(#)$Sendmail: signal.c,v 8.42 2004/08/20 21:10:30 ca Exp $")
 
 #include "libmilter.h"
 
@@ -21,7 +21,10 @@ static smutex_t M_Mutex;
 
 static int MilterStop = MILTER_CONT;
 
-/*
+static void	*mi_signal_thread __P((void *));
+static int	 mi_spawn_signal_thread __P((char *));
+
+/*
 **  MI_STOP -- return value of MilterStop
 **
 **	Parameters:
@@ -36,7 +39,7 @@ mi_stop()
 {
 	return MilterStop;
 }
-/*
+/*
 **  MI_STOP_MILTERS -- set value of MilterStop
 **
 **	Parameters:
@@ -58,7 +61,7 @@ mi_stop_milters(v)
 	mi_closener();
 	(void) smutex_unlock(&M_Mutex);
 }
-/*
+/*
 **  MI_CLEAN_SIGNALS -- clean up signal handler thread
 **
 **	Parameters:
@@ -73,7 +76,7 @@ mi_clean_signals()
 {
 	(void) smutex_destroy(&M_Mutex);
 }
-/*
+/*
 **  MI_SIGNAL_THREAD -- thread to deal with signals
 **
 **	Parameters:
@@ -90,26 +93,29 @@ mi_signal_thread(name)
 	int sig, errs;
 	sigset_t set;
 
-	sigemptyset(&set);
-	sigaddset(&set, SIGHUP);
-	sigaddset(&set, SIGTERM);
+	(void) sigemptyset(&set);
+	(void) sigaddset(&set, SIGHUP);
+	(void) sigaddset(&set, SIGTERM);
 
 	/* Handle Ctrl-C gracefully for debugging */
-	sigaddset(&set, SIGINT);
+	(void) sigaddset(&set, SIGINT);
 	errs = 0;
 
-	while (true)
+	for (;;)
 	{
 		sig = 0;
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(__svr5__)
 		if ((sig = sigwait(&set)) < 0)
-#else /* SOLARIS */
+#else /* defined(SOLARIS) || defined(__svr5__) */
 		if (sigwait(&set, &sig) != 0)
-#endif /* SOLARIS */
+#endif /* defined(SOLARIS) || defined(__svr5__) */
 		{
+			/* this can happen on OSF/1 (at least) */
+			if (errno == EINTR)
+				continue;
 			smi_log(SMI_LOG_ERR,
-				"%s: sigwait returned error: %s",
-				(char *)name, strerror(errno));
+				"%s: sigwait returned error: %d",
+				(char *)name, errno);
 			if (++errs > MAX_FAILS_T)
 			{
 				mi_stop_milters(MILTER_ABRT);
@@ -135,8 +141,9 @@ mi_signal_thread(name)
 			break;
 		}
 	}
+	/* NOTREACHED */
 }
-/*
+/*
 **  MI_SPAWN_SIGNAL_THREAD -- spawn thread to handle signals
 **
 **	Parameters:
@@ -151,13 +158,14 @@ mi_spawn_signal_thread(name)
 	char *name;
 {
 	sthread_t tid;
+	int r;
 	sigset_t set;
 
 	/* Mask HUP and KILL signals */
-	sigemptyset(&set);
-	sigaddset(&set, SIGHUP);
-	sigaddset(&set, SIGTERM);
-	sigaddset(&set, SIGINT);
+	(void) sigemptyset(&set);
+	(void) sigaddset(&set, SIGHUP);
+	(void) sigaddset(&set, SIGTERM);
+	(void) sigaddset(&set, SIGINT);
 
 	if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0)
 	{
@@ -165,16 +173,17 @@ mi_spawn_signal_thread(name)
 			"%s: Couldn't mask HUP and KILL signals", name);
 		return MI_FAILURE;
 	}
-	if (thread_create(&tid, mi_signal_thread,
-			  (void *)name) != MI_SUCCESS)
+	r = thread_create(&tid, mi_signal_thread, (void *)name);
+	if (r != 0)
 	{
 		smi_log(SMI_LOG_ERR,
-			"%s: Couldn't start signal thread", name);
+			"%s: Couldn't start signal thread: %d",
+			name, r);
 		return MI_FAILURE;
 	}
 	return MI_SUCCESS;
 }
-/*
+/*
 **  MI_CONTROL_STARTUP -- startup for thread to handle signals
 **
 **	Parameters:

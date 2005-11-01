@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -6,9 +7,9 @@
 #include <sys/localedef.h>
 #include <locale.h>
 
-const _MessagesLocale _DefaultMessagesLocale = 
+const _MessagesLocale _DefaultMessagesLocale =
 {
-	"^[Yn]",
+	"^[Yy]",
 	"^[Nn]",
 	"yes",
 	"no"

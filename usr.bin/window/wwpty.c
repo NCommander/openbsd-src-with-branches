@@ -1,3 +1,4 @@
+/*	$OpenBSD: wwpty.c,v 1.7 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: wwpty.c,v 1.3 1995/09/28 10:35:45 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,20 +37,22 @@
 #if 0
 static char sccsid[] = "@(#)wwpty.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwpty.c,v 1.3 1995/09/28 10:35:45 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwpty.c,v 1.7 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include "ww.h"
+#include <string.h>
+#include <unistd.h>
 #include <fcntl.h>
-#if !defined(OLD_TTY) && !defined(TIOCPKT)
+#if !defined(OLD_TTY)
 #include <sys/ioctl.h>
 #endif
 
 wwgetpty(w)
-register struct ww *w;
+struct ww *w;
 {
-	register char c, *p;
+	char c, *p;
 	int tty;
 	int on = 1;
 #define PTY "/dev/XtyXX"
@@ -61,7 +60,7 @@ register struct ww *w;
 #define _PQRS	8
 #define _0_9	9
 
-	(void) strcpy(w->ww_ttyname, PTY);
+	(void) strlcpy(w->ww_ttyname, PTY, sizeof(w->ww_ttyname));
 	for (c = 'p'; c <= 'u'; c++) {
 		w->ww_ttyname[_PT] = 'p';
 		w->ww_ttyname[_PQRS] = c;

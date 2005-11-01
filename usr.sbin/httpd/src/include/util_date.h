@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -67,10 +69,6 @@ extern "C" {
  * util_date.h: prototypes for date parsing utility routines
  */
 
-#ifdef NEWSOS
-#include <stdlib.h>
-#include <sys/types.h>
-#endif
 #include <time.h>
 
 #define BAD_DATE (time_t)0

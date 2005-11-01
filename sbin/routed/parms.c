@@ -1,4 +1,4 @@
-/*	$OpenBSD	*/
+/*	$OpenBSD: parms.c,v 1.12 2004/03/14 22:21:31 tedu Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -143,11 +139,9 @@ gwkludge(void)
 	int metric, n;
 	u_int state;
 	char *type;
-	struct parm *parmp;
-
 
 	fp = fopen(_PATH_GATEWAYS, "r");
-	if (fp == 0)
+	if (fp == NULL)
 		return;
 
 	for (;;) {
@@ -206,9 +200,10 @@ gwkludge(void)
 				       " entry \"%s\"", dname, lptr);
 				continue;
 			}
+			HTONL(dst);	/* make network # into IP address */
 		} else {
 			msglog("bad \"%s\" in "_PATH_GATEWAYS
-			       " entry \"%s\"", lptr);
+			       " entry \"%s\"", net_host, lptr);
 			continue;
 		}
 
@@ -275,15 +270,6 @@ gwkludge(void)
 		    == (IS_NO_RIP|IS_NO_RDISC))
 			state |= IS_PASSIVE;
 
-		parmp = (struct parm*)malloc(sizeof(*parmp));
-		bzero(parmp, sizeof(*parmp));
-		parmp->parm_next = parms;
-		parms = parmp;
-		parmp->parm_addr_h = ntohl(dst);
-		parmp->parm_mask = -1;
-		parmp->parm_d_metric = 0;
-		parmp->parm_int_state = state;
-
 		/* See if this new interface duplicates an existing
 		 * interface.
 		 */
@@ -326,13 +312,15 @@ gwkludge(void)
 		ifp->int_dstaddr = dst;
 		ifp->int_addr = gate;
 		ifp->int_metric = metric;
-		(void)sprintf(ifp->int_name, "%s-%s", type, naddr_ntoa(dst));
+		(void)snprintf(ifp->int_name, sizeof(ifp->int_name),
+		    "%s-%s", type, naddr_ntoa(dst));
 		ifp->int_index = -1;
 
 		get_parms(ifp);
 
 		trace_if("Add", ifp);
 	}
+	fclose(fp);
 }
 
 
@@ -354,14 +342,18 @@ parse_parms(char *line)
 	/* "subnet=x.y.z.u/mask" must be alone on the line */
 	if (!strncasecmp("subnet=",line,7)) {
 		intnetp = (struct intnet*)malloc(sizeof(*intnetp));
+		if (intnetp == NULL)
+			return "out of memory";
 		intnetp->intnet_metric = 1;
 		if ((p = strrchr(line,','))) {
 			*p++ = '\0';
 			intnetp->intnet_metric = (int)strtol(p,&p,0);
 			if (*p != '\0'
 			    || intnetp->intnet_metric <= 0
-			    || intnetp->intnet_metric >= HOPCNT_INFINITY)
+			    || intnetp->intnet_metric >= HOPCNT_INFINITY) {
+				free(intnetp);
 				return line;
+			}
 		}
 		if (!getnet(&line[7], &intnetp->intnet_addr,
 			    &intnetp->intnet_mask)
@@ -370,9 +362,10 @@ parse_parms(char *line)
 			free(intnetp);
 			return line;
 		}
+		HTONL(intnetp->intnet_addr);
 		intnetp->intnet_next = intnets;
 		intnets = intnetp;
-		return 0;
+		return NULL;
 	}
 
 	bzero(&parm, sizeof(parm));
@@ -386,13 +379,14 @@ parse_parms(char *line)
 			    || tok[3] == '\0'
 			    || strlen(tok) > IFNAMSIZ+3)
 				break;
-			strcpy(parm.parm_name, tok+3);
+			strlcpy(parm.parm_name, tok+3, sizeof parm.parm_name);
 
 		} else if (PARSE("passwd")) {
 			if (tok[7] == '\0'
 			    || strlen(tok) > RIP_AUTH_PW_LEN+7)
 				break;
-			strcpy(parm.parm_passwd, tok+7);
+			strlcpy(parm.parm_passwd, tok+7,
+			    sizeof parm.parm_passwd);
 
 		} else if (PARS("no_ag")) {
 			parm.parm_int_state |= (IS_NO_AG | IS_NO_SUPER_AG);
@@ -473,13 +467,6 @@ parse_parms(char *line)
 	if (tgt != 0)
 		return tgt;
 
-	if (parm.parm_int_state & IS_NO_ADV_IN)
-		parm.parm_int_state |= IS_NO_SOL_OUT;
-
-	if ((parm.parm_int_state & (IS_NO_RIP | IS_NO_RDISC))
-	    == (IS_NO_RIP | IS_NO_RDISC))
-		parm.parm_int_state |= IS_PASSIVE;
-
 	return check_parms(&parm);
 #undef DELIMS
 #undef PARS
@@ -494,6 +481,21 @@ check_parms(struct parm *new)
 	struct parm *parmp;
 
 
+	/* set implicit values
+	 */
+	if (!supplier && supplier_set)
+		new->parm_int_state |= (IS_NO_RIPV1_OUT
+					| IS_NO_RIPV2_OUT
+					| IS_NO_ADV_OUT);
+	if (new->parm_int_state & IS_NO_ADV_IN)
+		new->parm_int_state |= IS_NO_SOL_OUT;
+
+	if ((new->parm_int_state & (IS_NO_RIP | IS_NO_RDISC))
+	    == (IS_NO_RIP | IS_NO_RDISC))
+		new->parm_int_state |= IS_PASSIVE;
+
+	/* compare with existing sets of parameters
+	 */
 	for (parmp = parms; parmp != 0; parmp = parmp->parm_next) {
 		if (strcmp(new->parm_name, parmp->parm_name))
 			continue;
@@ -507,11 +509,11 @@ check_parms(struct parm *new)
 		    || (0 != (new->parm_int_state & GROUP_IS_SOL)
 			&& 0 != (parmp->parm_int_state & GROUP_IS_SOL)
 			&& 0 != ((new->parm_int_state ^ parmp->parm_int_state)
-				 && GROUP_IS_SOL))
+				 & GROUP_IS_SOL))
 		    || (0 != (new->parm_int_state & GROUP_IS_ADV)
 			&& 0 != (parmp->parm_int_state & GROUP_IS_ADV)
 			&& 0 != ((new->parm_int_state ^ parmp->parm_int_state)
-				 && GROUP_IS_ADV))
+				 & GROUP_IS_ADV))
 		    || (new->parm_rdisc_pref != 0
 			&& parmp->parm_rdisc_pref != 0
 			&& new->parm_rdisc_pref != parmp->parm_rdisc_pref)
@@ -538,20 +540,20 @@ check_parms(struct parm *new)
  */
 int					/* 0=bad */
 getnet(char *name,
-       naddr *addrp,			/* host byte order */
-       naddr *maskp)
+       naddr *addrp,			/* network in host byte order */
+       naddr *maskp)			/* masks are always in host order */
 {
 	int i;
 	struct netent *np;
-	naddr mask;
-	struct in_addr in;
+	naddr mask;			/* in host byte order */
+	struct in_addr in;		/* a network and so host byte order */
 	char hname[MAXHOSTNAMELEN+1];
 	char *mname, *p;
 
 
 	/* Detect and separate "1.2.3.4/24"
 	 */
-	if (0 != (mname = rindex(name,'/'))) {
+	if (0 != (mname = strrchr(name,'/'))) {
 		i = (int)(mname - name);
 		if (i > sizeof(hname)-1)	/* name too long */
 			return 0;
@@ -565,7 +567,7 @@ getnet(char *name,
 	if (np != 0) {
 		in.s_addr = (naddr)np->n_net;
 	} else if (inet_aton(name, &in) == 1) {
-		HTONL(in.s_addr);
+		NTOHL(in.s_addr);
 	} else {
 		return 0;
 	}
@@ -574,8 +576,8 @@ getnet(char *name,
 		/* we cannot use the interfaces here because we have not
 		 * looked at them yet.
 		 */
-		mask = std_mask(in.s_addr);
-		if ((~mask & ntohl(in.s_addr)) != 0)
+		mask = std_mask(htonl(in.s_addr));
+		if ((~mask & in.s_addr) != 0)
 			mask = HOST_MASK;
 	} else {
 		mask = (naddr)strtoul(mname, &p, 0);
@@ -585,7 +587,7 @@ getnet(char *name,
 	}
 	if (mask != 0 && in.s_addr == RIP_DEFAULT)
 		return 0;
-	if ((~mask & ntohl(in.s_addr)) != 0)
+	if ((~mask & in.s_addr) != 0)
 		return 0;
 
 	*addrp = in.s_addr;

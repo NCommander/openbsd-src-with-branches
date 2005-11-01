@@ -1,4 +1,5 @@
-/*	$NetBSD: errno.h,v 1.9 1995/03/26 20:24:04 jtc Exp $	*/
+/*	$OpenBSD: errno.h,v 1.13 2005/05/24 03:55:11 millert Exp $	*/
+/*	$NetBSD: errno.h,v 1.10 1996/01/20 01:33:53 jtc Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,7 +39,24 @@
 
 #ifndef _KERNEL
 extern int errno;			/* global error number */
+
+#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE) && !defined(__SYS_ERRLIST)
+#define __SYS_ERRLIST
+
+extern int sys_nerr;
+extern char *sys_errlist[];
 #endif
+
+#if !defined(errno) && !defined(_STANDALONE)
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+int *__errno(void);
+int *___errno(void);
+__END_DECLS
+#define errno (*__errno())
+#endif /* errno */
+
+#endif /* _KERNEL */
 
 #define	EPERM		1		/* Operation not permitted */
 #define	ENOENT		2		/* No such file or directory */
@@ -72,9 +86,7 @@ extern int errno;			/* global error number */
 #define	ENFILE		23		/* Too many open files in system */
 #define	EMFILE		24		/* Too many open files */
 #define	ENOTTY		25		/* Inappropriate ioctl for device */
-#ifndef _POSIX_SOURCE
 #define	ETXTBSY		26		/* Text file busy */
-#endif
 #define	EFBIG		27		/* File too large */
 #define	ENOSPC		28		/* No space left on device */
 #define	ESPIPE		29		/* Illegal seek */
@@ -88,7 +100,6 @@ extern int errno;			/* global error number */
 
 /* non-blocking and interrupt i/o */
 #define	EAGAIN		35		/* Resource temporarily unavailable */
-#ifndef _POSIX_SOURCE
 #define	EWOULDBLOCK	EAGAIN		/* Operation would block */
 #define	EINPROGRESS	36		/* Operation now in progress */
 #define	EALREADY	37		/* Operation already in progress */
@@ -100,9 +111,13 @@ extern int errno;			/* global error number */
 #define	EPROTOTYPE	41		/* Protocol wrong type for socket */
 #define	ENOPROTOOPT	42		/* Protocol not available */
 #define	EPROTONOSUPPORT	43		/* Protocol not supported */
+#ifndef _POSIX_SOURCE
 #define	ESOCKTNOSUPPORT	44		/* Socket type not supported */
+#endif /* _POSIX_SOURCE */
 #define	EOPNOTSUPP	45		/* Operation not supported */
+#ifndef _POSIX_SOURCE
 #define	EPFNOSUPPORT	46		/* Protocol family not supported */
+#endif /* _POSIX_SOURCE */
 #define	EAFNOSUPPORT	47		/* Address family not supported by protocol family */
 #define	EADDRINUSE	48		/* Address already in use */
 #define	EADDRNOTAVAIL	49		/* Can't assign requested address */
@@ -116,13 +131,14 @@ extern int errno;			/* global error number */
 #define	ENOBUFS		55		/* No buffer space available */
 #define	EISCONN		56		/* Socket is already connected */
 #define	ENOTCONN	57		/* Socket is not connected */
+#ifndef _POSIX_SOURCE
 #define	ESHUTDOWN	58		/* Can't send after socket shutdown */
 #define	ETOOMANYREFS	59		/* Too many references: can't splice */
+#endif /* _POSIX_SOURCE */
 #define	ETIMEDOUT	60		/* Operation timed out */
 #define	ECONNREFUSED	61		/* Connection refused */
 
 #define	ELOOP		62		/* Too many levels of symbolic links */
-#endif /* _POSIX_SOURCE */
 #define	ENAMETOOLONG	63		/* File name too long */
 
 /* should be rearranged */
@@ -136,10 +152,12 @@ extern int errno;			/* global error number */
 #ifndef _POSIX_SOURCE
 #define	EPROCLIM	67		/* Too many processes */
 #define	EUSERS		68		/* Too many users */
-#define	EDQUOT		69		/* Disc quota exceeded */
+#endif /* _POSIX_SOURCE */
+#define	EDQUOT		69		/* Disk quota exceeded */
 
 /* Network File System */
 #define	ESTALE		70		/* Stale NFS file handle */
+#ifndef _POSIX_SOURCE
 #define	EREMOTE		71		/* Too many levels of remote in path */
 #define	EBADRPC		72		/* RPC struct is bad */
 #define	ERPCMISMATCH	73		/* RPC version wrong */
@@ -155,7 +173,10 @@ extern int errno;			/* global error number */
 #define	EFTYPE		79		/* Inappropriate file type or format */
 #define	EAUTH		80		/* Authentication error */
 #define	ENEEDAUTH	81		/* Need authenticator */
-#define	ELAST		81		/* Must be equal largest errno */
+#define	EIPSEC		82		/* IPsec processing failure */
+#define	ENOATTR		83		/* Attribute not found */
+#define	EILSEQ		84		/* Illegal byte sequence */
+#define	ELAST		84		/* Must be equal largest errno */
 #endif /* _POSIX_SOURCE */
 
 #ifdef _KERNEL

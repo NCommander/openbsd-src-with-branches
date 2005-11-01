@@ -181,6 +181,9 @@ main (argc, argv)
 
   decode_command (argc, argv);
 
+  /* XXX mkstemp not appropriate, as we need to have somewhat predictable
+   * names. But race condition was fixed, see maketempname. 
+   */
   tempbase = mktemp (concat ("txiXXXXXX", "", ""));
 
   /* Process input files completely, one by one.  */
@@ -388,8 +391,20 @@ maketempname (count)
      int count;
 {
   char tempsuffix[10];
+  char *name;
+  int fd;
+
   sprintf (tempsuffix, ".%d", count);
-  return concat (tempdir, tempbase, tempsuffix);
+  name =  concat (tempdir, tempbase, tempsuffix);
+
+  fd = open (name, O_CREAT|O_EXCL|O_WRONLY, 0666);
+  if (fd == -1)
+    return NULL;
+  else
+    {
+      close(fd);
+      return name;
+    }
 }
 
 /* Delete all temporary files up to TO_COUNT. */
@@ -894,10 +909,13 @@ sort_offline (infile, nfiles, total, outfile)
   for (i = 0; i < ntemps; i++)
     {
       char *outname = maketempname (++tempcount);
-      FILE *ostream = fopen (outname, "w");
+      FILE *ostream;
       long tempsize = 0;
 
-      if (!ostream)
+      if (!outname)
+        pfatal_with_name("temporary file");
+      ostream = fopen (outname, "w");
+      if (!outname || !ostream)
         pfatal_with_name (outname);
       tempfiles[i] = outname;
 
@@ -1410,6 +1428,8 @@ merge_files (infiles, nfiles, outfile)
       if (i + 1 == ntemps)
         nf = nfiles - i * MAX_DIRECT_MERGE;
       tempfiles[i] = maketempname (++tempcount);
+      if (!tempfiles[i])
+        pfatal_with_name("temp file");
       value |= merge_direct (&infiles[i * MAX_DIRECT_MERGE], nf, tempfiles[i]);
     }
 

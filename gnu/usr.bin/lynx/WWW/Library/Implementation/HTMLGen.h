@@ -8,8 +8,8 @@
 #ifndef HTMLGEN_H
 #define HTMLGEN_H
 
-#include "HTML.h"
-#include "HTStream.h"
+#include <HTML.h>
+#include <HTStream.h>
 
 /* Subclass:
 */
@@ -24,9 +24,4 @@ extern HTStream * HTPlainToHTML PARAMS((
         HTParentAnchor *        anchor,
         HTStream *              sink));
 
-
-#endif
-
-/*
-
-    */
+#endif /* HTMLGEN_H */

@@ -1,4 +1,4 @@
-.\"	$NetBSD: ferror.3,v 1.5 1995/02/02 01:15:35 jtc Exp $
+.\"	$OpenBSD: ferror.3,v 1.5 2000/04/20 01:39:31 aaron Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -34,8 +30,6 @@
 .\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.\"
-.\"     @(#)ferror.3	8.2 (Berkeley) 4/19/94
 .\"
 .Dd April 19, 1994
 .Dt FERROR 3
@@ -59,8 +53,7 @@
 .Sh DESCRIPTION
 The function
 .Fn clearerr
-clears the end-of-file and error indicators for the stream pointed
-to by
+clears the end-of-file and error indicators for the stream pointed to by
 .Fa stream .
 .Pp
 The function
@@ -84,7 +77,7 @@ The function
 .Fn fileno
 examines the argument
 .Fa stream
-and returns its integer descriptor.
+and returns its integer file descriptor.
 .Sh ERRORS
 These functions should not fail and do not set the external
 variable
@@ -102,5 +95,5 @@ conform to
 .St -ansiC .
 The function
 .Fn fileno
-conforms to 
+conforms to
 .St -p1003.1-90 .

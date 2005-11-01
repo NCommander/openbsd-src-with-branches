@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.c,v 1.10 1995/08/04 07:37:03 thorpej Exp $	*/
+/*	$OpenBSD: exec.c,v 1.25 2003/08/04 16:30:35 millert Exp $	*/
+/*	$NetBSD: exec.c,v 1.15 1996/10/13 02:29:01 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,13 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#include <string.h>
 #include <sys/param.h>
+#include <sys/exec.h>
 #include <sys/reboot.h>
 #ifndef INSECURE
 #include <sys/stat.h>
 #endif
-#include <a.out.h>
 
 #include "stand.h"
 
@@ -48,111 +44,129 @@ static char *ssym, *esym;
 extern u_int opendev;
 
 void
-exec(path, loadaddr, howto)
-	char *path;
-	char *loadaddr;
-	int howto;
+exec(char *path, void *loadaddr, int howto)
 {
-	register int io;
+	int io;
 #ifndef INSECURE
 	struct stat sb;
 #endif
 	struct exec x;
-	int i;
-	register char *addr;
+	u_int i;
+	ssize_t sz;
+	char *addr;
+#ifdef EXEC_DEBUG
+	char *daddr, *etxt;
+#endif
 
 	io = open(path, 0);
 	if (io < 0)
 		return;
 
-#ifndef INSECURE
 	(void) fstat(io, &sb);
-	if (sb.st_uid || (sb.st_mode & 2)) {
-		printf("non-secure file, will not load\n");
-		close(io);
-		errno = EPERM;
-		return;
-	}
-#endif
+	if (sb.st_mode & 2)
+		printf("non-secure file, check permissions!\n");
 
-	i = read(io, (char *)&x, sizeof(x));
-	if (i != sizeof(x) ||
-	    N_BADMAG(x)) {
+	sz = read(io, (char *)&x, sizeof(x));
+	if (sz != sizeof(x) || N_BADMAG(x)) {
+		close(io);
 		errno = EFTYPE;
 		return;
 	}
 
-        /* Text */
-	printf("%d", x.a_text);
-	addr = loadaddr;
-#ifdef NO_LSEEK
-	if (N_GETMAGIC(x) == ZMAGIC && read(io, (char *)addr, 0x400) == -1)
-#else
-	if (N_GETMAGIC(x) == ZMAGIC && lseek(io, 0x400, SEEK_SET) == -1)
+#ifdef EXEC_DEBUG
+	printf("\nstruct exec {%x, %x, %x, %x, %x, %x, %x, %x}\n",
+		x.a_midmag, x.a_text, x.a_data, x.a_bss, x.a_syms,
+		x.a_entry, x.a_trsize, x.a_drsize);
 #endif
+
+	/* Text */
+	printf("%u", x.a_text);
+	addr = loadaddr;
+	sz = x.a_text;
+	if (N_GETMAGIC(x) == ZMAGIC) {
+		bcopy((char *)&x, addr, sizeof x);
+		addr += sizeof x;
+		sz -= sizeof x;
+	}
+	if (read(io, (char *)addr, sz) != sz)
 		goto shread;
-	if (read(io, (char *)addr, x.a_text) != x.a_text)
-		goto shread;
-	addr += x.a_text;
-	if (N_GETMAGIC(x) == ZMAGIC || N_GETMAGIC(x) == NMAGIC)
-		while ((int)addr & (N_PAGSIZ(x) - 1))
+	addr += sz;
+#ifdef EXEC_DEBUG
+	printf("\ntext {%x, %x, %x, %x}\n",
+	    addr[0], addr[1], addr[2], addr[3]);
+	etxt = addr;
+#endif
+	if (N_GETMAGIC(x) == NMAGIC)
+		while ((long)addr & (N_PAGSIZ(x) - 1))
 			*addr++ = 0;
 
-        /* Data */
-	printf("+%d", x.a_data);
-	if (read(io, addr, x.a_data) != x.a_data)
+	/* Data */
+#ifdef EXEC_DEBUG
+	daddr = addr;
+#endif
+	printf("+%u", x.a_data);
+	if (read(io, addr, x.a_data) != (ssize_t)x.a_data)
 		goto shread;
 	addr += x.a_data;
 
-        /* Bss */
-	printf("+%d", x.a_bss);
+	/* Bss */
+	printf("+%u", x.a_bss);
 	for (i = 0; i < x.a_bss; i++)
 		*addr++ = 0;
 
-        /* Symbols */
-	ssym = addr;
-	bcopy(&x.a_syms, addr, sizeof(x.a_syms));
-	addr += sizeof(x.a_syms);
-	printf("+[%d", x.a_syms);
-	if (read(io, addr, x.a_syms) != x.a_syms)
-		goto shread;
-	addr += x.a_syms;
+	/* Symbols */
+	if (x.a_syms) {
+		ssym = addr;
+		bcopy(&x.a_syms, addr, sizeof(x.a_syms));
+		addr += sizeof(x.a_syms);
+		printf("+[%u", x.a_syms);
+		if (read(io, addr, x.a_syms) != (ssize_t)x.a_syms)
+			goto shread;
+		addr += x.a_syms;
 
-	if (read(io, &i, sizeof(int)) != sizeof(int))
-		goto shread;
+		if (read(io, &i, sizeof(u_int)) != sizeof(u_int))
+			goto shread;
 
-	bcopy(&i, addr, sizeof(int));
-	if (i) {
-		i -= sizeof(int);
-		addr += sizeof(int);
-		if (read(io, addr, i) != i)
-                	goto shread;
-		addr += i;
+		bcopy(&i, addr, sizeof(u_int));
+		if (i) {
+			sz = i - sizeof(int);
+			addr += sizeof(int);
+			if (read(io, addr, sz) != sz)
+				goto shread;
+			addr += sz;
+		}
+
+		/* and that many bytes of string table */
+		printf("+%d]", sz);
+		esym = addr;
+	} else {
+		ssym = 0;
+		esym = 0;
 	}
 
-	/* and that many bytes of (debug symbols?) */
-	printf("+%d]", i);
-
 	close(io);
-
-#define	round_to_size(x) \
-	(((int)(x) + sizeof(int) - 1) & ~(sizeof(int) - 1))
-        esym = (char *)round_to_size(addr - loadaddr);
-#undef round_to_size
 
 	/* and note the end address of all this	*/
 	printf(" total=0x%lx", (u_long)addr);
 
+/* XXX - Hack alert!
+   This is no good, loadaddr is passed into
+   machdep_start(), and it should do whatever
+   is needed.
+
 	x.a_entry += (long)loadaddr;
-	printf(" start=0x%lx\n", x.a_entry);
+*/
+	printf(" start=0x%x\n", x.a_entry);
 
 #ifdef EXEC_DEBUG
-        printf("ssym=0x%x esym=0x%x\n", ssym, esym);
-        printf("\n\nReturn to boot...\n");
-        getchar();
+	printf("loadaddr=%p etxt=%p daddr=%p ssym=%p esym=%p\n",
+	    loadaddr, etxt, daddr, ssym, esym);
+	printf("\n\nReturn to boot...\n");
+	getchar();
 #endif
 
-	machdep_start((char *)x.a_entry, howto, loadaddr, ssym, esym);
+	machdep_start((char *)((register_t)x.a_entry), howto, loadaddr, ssym,
+	    esym);
 
 	/* exec failed */
 	errno = ENOEXEC;

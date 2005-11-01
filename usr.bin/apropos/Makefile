@@ -1,5 +1,4 @@
-#       $NetBSD: Makefile,v 1.4 1995/09/04 20:46:14 tls Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#       $OpenBSD: Makefile,v 1.2 1996/06/26 05:31:13 deraadt Exp $
 
 PROG=	apropos
 SRCS=	apropos.c config.c

@@ -1,6 +1,6 @@
 /*
+ * Copyright (c) 2002-2004 Theo de Raadt
  * Copyright (c) 2002 Bob Beck <beck@openbsd.org>
- * Copyright (c) 2002 Theo de Raadt
  * Copyright (c) 2002 Markus Friedl
  * All rights reserved.
  *
@@ -49,11 +49,12 @@ ENGINE_load_cryptodev(void)
 	return;
 }
 
-#else 
+#else
 
 #include <sys/types.h>
 #include <crypto/cryptodev.h>
 #include <sys/ioctl.h>
+
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -63,9 +64,26 @@ ENGINE_load_cryptodev(void)
 #include <errno.h>
 #include <string.h>
 
+#ifdef __i386__
+#include <sys/sysctl.h>
+#include <machine/cpu.h>
+#include <machine/specialreg.h>
+
+#include <ssl/aes.h>
+
+static int check_viac3aes(void);
+#endif
+
 struct dev_crypto_state {
 	struct session_op d_sess;
 	int d_fd;
+};
+
+struct dev_crypto_cipher {
+	int	c_id;
+	int	c_nid;
+	int	c_ivmax;
+	int	c_keylen;
 };
 
 static u_int32_t cryptodev_asymfeat = 0;
@@ -73,9 +91,7 @@ static u_int32_t cryptodev_asymfeat = 0;
 static int get_asym_dev_crypto(void);
 static int open_dev_crypto(void);
 static int get_dev_crypto(void);
-static int cryptodev_max_iv(int cipher);
-static int cryptodev_key_length_valid(int cipher, int len);
-static int cipher_nid_to_cryptodev(int nid);
+static struct dev_crypto_cipher *cipher_nid_to_cryptodev(int nid);
 static int get_cryptodev_ciphers(const int **cnids);
 /*static int get_cryptodev_digests(const int **cnids);*/
 static int cryptodev_usable_ciphers(const int **nids);
@@ -122,15 +138,12 @@ static const ENGINE_CMD_DEFN cryptodev_defns[] = {
 	{ 0, NULL, NULL, 0 }
 };
 
-static struct {
-	int	id;
-	int	nid;
-	int	ivmax;
-	int	keylen;
-} ciphers[] = {
+static struct dev_crypto_cipher ciphers[] = {
 	{ CRYPTO_DES_CBC,		NID_des_cbc,		8,	 8, },
 	{ CRYPTO_3DES_CBC,		NID_des_ede3_cbc,	8,	24, },
 	{ CRYPTO_AES_CBC,		NID_aes_128_cbc,	16,	16, },
+	{ CRYPTO_AES_CBC,		NID_aes_192_cbc,	16,	24, },
+	{ CRYPTO_AES_CBC,		NID_aes_256_cbc,	16,	32, },
 	{ CRYPTO_BLF_CBC,		NID_bf_cbc,		8,	16, },
 	{ CRYPTO_CAST_CBC,		NID_cast5_cbc,		8,	16, },
 	{ CRYPTO_SKIPJACK_CBC,		NID_undef,		0,	 0, },
@@ -153,7 +166,7 @@ static struct {
 #endif
 
 /*
- * Return a fd if /dev/crypto seems usable, 0 otherwise.
+ * Return a fd if /dev/crypto seems usable, -1 otherwise.
  */
 static int
 open_dev_crypto(void)
@@ -202,48 +215,16 @@ get_asym_dev_crypto(void)
 	return fd;
 }
 
-/*
- * XXXX this needs to be set for each alg - and determined from
- * a running card.
- */
-static int
-cryptodev_max_iv(int cipher)
-{
-	int i;
-
-	for (i = 0; ciphers[i].id; i++)
-		if (ciphers[i].id == cipher)
-			return (ciphers[i].ivmax);
-	return (0);
-}
-
-/*
- * XXXX this needs to be set for each alg - and determined from
- * a running card. For now, fake it out - but most of these
- * for real devices should return 1 for the supported key
- * sizes the device can handle.
- */
-static int
-cryptodev_key_length_valid(int cipher, int len)
-{
-	int i;
-
-	for (i = 0; ciphers[i].id; i++)
-		if (ciphers[i].id == cipher)
-			return (ciphers[i].keylen == len);
-	return (0);
-}
-
 /* convert libcrypto nids to cryptodev */
-static int
+static struct dev_crypto_cipher *
 cipher_nid_to_cryptodev(int nid)
 {
 	int i;
 
-	for (i = 0; ciphers[i].id; i++)
-		if (ciphers[i].nid == nid)
-			return (ciphers[i].id);
-	return (0);
+	for (i = 0; ciphers[i].c_id; i++)
+		if (ciphers[i].c_nid == nid)
+			return (&ciphers[i]);
+	return (NULL);
 }
 
 /*
@@ -266,17 +247,44 @@ get_cryptodev_ciphers(const int **cnids)
 	memset(&sess, 0, sizeof(sess));
 	sess.key = (caddr_t)"123456781234567812345678";
 
-	for (i = 0; ciphers[i].id && count < CRYPTO_ALGORITHM_MAX; i++) {
-		if (ciphers[i].nid == NID_undef)
+	for (i = 0; ciphers[i].c_id && count < CRYPTO_ALGORITHM_MAX; i++) {
+		if (ciphers[i].c_nid == NID_undef)
 			continue;
-		sess.cipher = ciphers[i].id;
-		sess.keylen = ciphers[i].keylen;
+		sess.cipher = ciphers[i].c_id;
+		sess.keylen = ciphers[i].c_keylen;
 		sess.mac = 0;
 		if (ioctl(fd, CIOCGSESSION, &sess) != -1 &&
 		    ioctl(fd, CIOCFSESSION, &sess.ses) != -1)
-			nids[count++] = ciphers[i].nid;
+			nids[count++] = ciphers[i].c_nid;
 	}
 	close(fd);
+
+#if defined(__i386__)
+	/*
+	 * On i386, always check for the VIA C3 AES instructions;
+	 * even if /dev/crypto is disabled.
+	 */
+	if (check_viac3aes() >= 1) {
+		int have_NID_aes_128_cbc = 0;
+		int have_NID_aes_192_cbc = 0;
+		int have_NID_aes_256_cbc = 0;
+
+		for (i = 0; i < count; i++) {
+			if (nids[i] == NID_aes_128_cbc)
+				have_NID_aes_128_cbc = 1;
+			if (nids[i] == NID_aes_192_cbc)
+				have_NID_aes_192_cbc = 1;
+			if (nids[i] == NID_aes_256_cbc)
+				have_NID_aes_256_cbc = 1;
+		}
+		if (!have_NID_aes_128_cbc)
+			nids[count++] = NID_aes_128_cbc;
+		if (!have_NID_aes_192_cbc)
+			nids[count++] = NID_aes_192_cbc;
+		if (!have_NID_aes_256_cbc)
+			nids[count++] = NID_aes_256_cbc;
+	}
+#endif
 
 	if (count > 0)
 		*cnids = nids;
@@ -429,15 +437,15 @@ cryptodev_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,
 {
 	struct dev_crypto_state *state = ctx->cipher_data;
 	struct session_op *sess = &state->d_sess;
-	int cipher;
+	struct dev_crypto_cipher *cipher;
 
-	if ((cipher = cipher_nid_to_cryptodev(ctx->cipher->nid)) == NID_undef)
+	if ((cipher = cipher_nid_to_cryptodev(ctx->cipher->nid)) == NULL)
 		return (0);
 
-	if (ctx->cipher->iv_len > cryptodev_max_iv(cipher))
+	if (ctx->cipher->iv_len > cipher->c_ivmax)
 		return (0);
 
-	if (!cryptodev_key_length_valid(cipher, ctx->key_len))
+	if (ctx->key_len != cipher->c_keylen)
 		return (0);
 
 	memset(sess, 0, sizeof(struct session_op));
@@ -447,7 +455,7 @@ cryptodev_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,
 
 	sess->key = (unsigned char *)key;
 	sess->keylen = ctx->key_len;
-	sess->cipher = cipher;
+	sess->cipher = cipher->c_id;
 
 	if (ioctl(state->d_fd, CIOCGSESSION, sess) == -1) {
 		close(state->d_fd);
@@ -552,7 +560,7 @@ const EVP_CIPHER cryptodev_cast_cbc = {
 	NULL
 };
 
-const EVP_CIPHER cryptodev_aes_cbc = {
+EVP_CIPHER cryptodev_aes_128_cbc = {
 	NID_aes_128_cbc,
 	16, 16, 16,
 	EVP_CIPH_CBC_MODE,
@@ -564,6 +572,209 @@ const EVP_CIPHER cryptodev_aes_cbc = {
 	EVP_CIPHER_get_asn1_iv,
 	NULL
 };
+
+EVP_CIPHER cryptodev_aes_192_cbc = {
+	NID_aes_192_cbc,
+	16, 24, 16,
+	EVP_CIPH_CBC_MODE,
+	cryptodev_init_key,
+	cryptodev_cipher,
+	cryptodev_cleanup,
+	sizeof(struct dev_crypto_state),
+	EVP_CIPHER_set_asn1_iv,
+	EVP_CIPHER_get_asn1_iv,
+	NULL
+};
+
+EVP_CIPHER cryptodev_aes_256_cbc = {
+	NID_aes_256_cbc,
+	16, 32, 16,
+	EVP_CIPH_CBC_MODE,
+	cryptodev_init_key,
+	cryptodev_cipher,
+	cryptodev_cleanup,
+	sizeof(struct dev_crypto_state),
+	EVP_CIPHER_set_asn1_iv,
+	EVP_CIPHER_get_asn1_iv,
+	NULL
+};
+
+#if defined(__i386__)
+
+static inline void
+viac3_xcrypt_cbc(int *cw, const void *src, void *dst, void *key, int rep,
+    void *iv)
+{
+#ifdef notdef
+	printf("cw %x[%x %x %x %x] src %x dst %x key %x rep %x iv %x\n",
+	    cw, cw[0], cw[1], cw[2], cw[3],
+	    src, dst, key, rep, iv);
+#endif
+	/*
+	 * Clear bit 30 of EFLAGS.
+	 */
+	__asm __volatile("pushfl; popfl");
+
+	/*
+	 * Cannot simply place key into "b" register, since the compiler
+	 * -pic mode uses that register; so instead we must dance a little.
+	 */
+	__asm __volatile("pushl %%ebx; movl %0, %%ebx; rep xcrypt-cbc; popl %%ebx" :
+	    : "mr" (key), "a" (iv), "c" (rep), "d" (cw), "S" (src), "D" (dst)
+	    : "memory", "cc");
+}
+
+#define ISUNALIGNED(x)	((long)(x)) & 15
+#define DOALIGN(v)	((void *)(((long)(v) + 15) & ~15))
+
+static int
+xcrypt_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
+    const unsigned char *in, unsigned int inl)
+{
+	unsigned char *save_iv_store[EVP_MAX_IV_LENGTH + 15];
+	unsigned char *save_iv = DOALIGN(save_iv_store);
+	unsigned char *ivs_store[EVP_MAX_IV_LENGTH + 15];
+	unsigned char *ivs = DOALIGN(ivs_store);
+	void *iiv, *iv = NULL, *ivp = NULL;
+	const void *usein = in;
+	void *useout = out, *spare;
+	int cws[4 + 3], *cw = DOALIGN(cws);
+
+	if (!inl)
+		return (1);
+	if ((inl % ctx->cipher->block_size) != 0)
+		return (0);
+
+	if (ISUNALIGNED(in) || ISUNALIGNED(out)) {
+		spare = malloc(inl);
+		if (spare == NULL)
+			return (0);
+
+		if (ISUNALIGNED(in)) {
+			bcopy(in, spare, inl);
+			usein = spare;
+		}
+		if (ISUNALIGNED(out))
+			useout = spare;
+	}
+
+	cw[0] = C3_CRYPT_CWLO_ALG_AES | C3_CRYPT_CWLO_KEYGEN_SW |
+	    C3_CRYPT_CWLO_NORMAL;
+	cw[0] |= ctx->encrypt ? C3_CRYPT_CWLO_ENCRYPT : C3_CRYPT_CWLO_DECRYPT;
+	cw[1] = cw[2] = cw[3] = 0;
+
+	switch (ctx->key_len * 8) {
+	case 128:
+		cw[0] |= C3_CRYPT_CWLO_KEY128;
+		break;
+	case 192:
+		cw[0] |= C3_CRYPT_CWLO_KEY192;
+		break;
+	case 256:
+		cw[0] |= C3_CRYPT_CWLO_KEY256;
+		break;
+	}
+
+	if (ctx->cipher->iv_len) {
+		iv = (caddr_t) ctx->iv;
+		if (!ctx->encrypt) {
+			iiv = (void *) in + inl - ctx->cipher->iv_len;
+			memcpy(save_iv, iiv, ctx->cipher->iv_len);
+		}
+	}
+
+	ivp = iv;
+	if (ISUNALIGNED(iv)) {
+		bcopy(iv, ivs, ctx->cipher->iv_len);
+		ivp = ivs;
+	}
+
+	viac3_xcrypt_cbc(cw, usein, useout, ctx->cipher_data,  inl / 16, ivp);
+
+	if (ISUNALIGNED(out)) {
+		bcopy(spare, out, inl);
+		free(spare);
+	}
+
+	if (ivp == ivs)
+		bcopy(ivp, iv, ctx->cipher->iv_len);
+
+	if (ctx->cipher->iv_len) {
+		if (ctx->encrypt)
+			iiv = (void *) out + inl - ctx->cipher->iv_len;
+		else
+			iiv = save_iv;
+		memcpy(ctx->iv, iiv, ctx->cipher->iv_len);
+	}
+	return (1);
+}
+
+static int
+xcrypt_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,
+    const unsigned char *iv, int enc)
+{
+	AES_KEY *k = ctx->cipher_data;
+#ifndef AES_ASM
+	int i;
+#endif
+
+	bzero(k, sizeof *k);
+	if (enc)
+		AES_set_encrypt_key(key, ctx->key_len * 8, k);
+	else
+		AES_set_decrypt_key(key, ctx->key_len * 8, k);
+
+#ifndef AES_ASM
+	/*
+	 * XXX Damn OpenSSL byte swaps the expanded key!!
+	 *
+	 * XXX But only if we're using the C implementation of AES
+	 */
+	for (i = 0; i < 4 * (AES_MAXNR + 1); i++)
+		k->rd_key[i] = htonl(k->rd_key[i]);
+#endif
+
+	return (1);
+}
+
+static int
+xcrypt_cleanup(EVP_CIPHER_CTX *ctx)
+{
+	bzero(ctx->cipher_data, ctx->cipher->ctx_size);
+	return (1);
+}
+
+static int
+check_viac3aes(void)
+{
+	int mib[2] = { CTL_MACHDEP, CPU_XCRYPT }, value;
+	size_t size = sizeof(value);
+
+	if (sysctl(mib, sizeof(mib)/sizeof(mib[0]), &value, &size,
+	    NULL, 0) < 0)
+		return (0);
+	if (value == 0)
+		return (0);
+
+	if (value & C3_HAS_AES) {
+		cryptodev_aes_128_cbc.init = xcrypt_init_key;
+		cryptodev_aes_128_cbc.do_cipher = xcrypt_cipher;
+		cryptodev_aes_128_cbc.cleanup = xcrypt_cleanup;
+		cryptodev_aes_128_cbc.ctx_size = sizeof(AES_KEY);
+
+		cryptodev_aes_192_cbc.init = xcrypt_init_key;
+		cryptodev_aes_192_cbc.do_cipher = xcrypt_cipher;
+		cryptodev_aes_192_cbc.cleanup = xcrypt_cleanup;
+		cryptodev_aes_192_cbc.ctx_size = sizeof(AES_KEY);
+
+		cryptodev_aes_256_cbc.init = xcrypt_init_key;
+		cryptodev_aes_256_cbc.do_cipher = xcrypt_cipher;
+		cryptodev_aes_256_cbc.cleanup = xcrypt_cleanup;
+		cryptodev_aes_256_cbc.ctx_size = sizeof(AES_KEY);
+	}
+	return (value);
+}
+#endif /* __i386__ */
 
 /*
  * Registered by the ENGINE when used to find out how to deal with
@@ -591,7 +802,13 @@ cryptodev_engine_ciphers(ENGINE *e, const EVP_CIPHER **cipher,
 		*cipher = &cryptodev_cast_cbc;
 		break;
 	case NID_aes_128_cbc:
-		*cipher = &cryptodev_aes_cbc;
+		*cipher = &cryptodev_aes_128_cbc;
+		break;
+	case NID_aes_192_cbc:
+		*cipher = &cryptodev_aes_192_cbc;
+		break;
+	case NID_aes_256_cbc:
+		*cipher = &cryptodev_aes_256_cbc;
 		break;
 	default:
 		*cipher = NULL;

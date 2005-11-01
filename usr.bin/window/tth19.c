@@ -1,3 +1,4 @@
+/*	$OpenBSD: tth19.c,v 1.4 2001/11/19 19:02:18 mpech Exp $	*/
 /*	$NetBSD: tth19.c,v 1.3 1995/09/28 10:34:47 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)tth19.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: tth19.c,v 1.3 1995/09/28 10:34:47 tls Exp $";
+static char rcsid[] = "$OpenBSD: tth19.c,v 1.4 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -77,7 +74,7 @@ extern struct tt_str *gen_VE;
 int h19_msp10c;
 
 #define PAD(ms10) { \
-	register i; \
+	int i; \
 	for (i = ((ms10) + 5) / h19_msp10c; --i >= 0;) \
 		ttputc('\0'); \
 }
@@ -87,9 +84,9 @@ int h19_msp10c;
 #define H19_SETINSERT(m) ttesc((tt.tt_insert = (m)) ? '@' : 'O')
 
 h19_setmodes(new)
-register new;
+int new;
 {
-	register diff;
+	int diff;
 
 	diff = new ^ tt.tt_modes;
 	if (diff & WWM_REV)
@@ -116,7 +113,7 @@ h19_delline(n)
 }
 
 h19_putc(c)
-register char c;
+char c;
 {
 	if (tt.tt_nmodes != tt.tt_modes)
 		(*tt.tt_setmodes)(tt.tt_nmodes);
@@ -128,8 +125,8 @@ register char c;
 }
 
 h19_write(p, n)
-register char *p;
-register n;
+char *p;
+int n;
 {
 	if (tt.tt_nmodes != tt.tt_modes)
 		(*tt.tt_setmodes)(tt.tt_nmodes);
@@ -142,7 +139,7 @@ register n;
 }
 
 h19_move(row, col)
-register char row, col;
+char row, col;
 {
 	if (tt.tt_row == row) {
 		if (tt.tt_col == col)
@@ -218,7 +215,7 @@ h19_clear()
 }
 
 h19_inschar(c)
-register char c;
+char c;
 {
 	if (tt.tt_nmodes != tt.tt_modes)
 		(*tt.tt_setmodes)(tt.tt_nmodes);

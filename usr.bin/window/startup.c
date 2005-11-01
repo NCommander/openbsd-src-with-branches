@@ -1,4 +1,5 @@
-/*	$NetBSD: startup.c,v 1.3 1995/09/28 10:34:38 tls Exp $	*/
+/*	$OpenBSD: startup.c,v 1.7 2003/04/05 01:39:50 pvalchev Exp $	*/
+/*	$NetBSD: startup.c,v 1.4 1996/02/08 20:45:04 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,11 +37,12 @@
 #if 0
 static char sccsid[] = "@(#)startup.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: startup.c,v 1.3 1995/09/28 10:34:38 tls Exp $";
+static char rcsid[] = "$OpenBSD: startup.c,v 1.7 2003/04/05 01:39:50 pvalchev Exp $";
 #endif
 #endif /* not lint */
 
 #include "defs.h"
+#include <stdlib.h>
 #include "value.h"
 #include "var.h"
 #include "char.h"
@@ -56,9 +54,9 @@ doconfig()
 	char *home;
 	static char runcom[] = RUNCOM;
 
-	if ((home = getenv("HOME")) == 0)
-		home = ".";
-	(void) sprintf(buf, "%.*s/%s",
+	if ((home = getenv("HOME")) == NULL || *home == '\0')
+		return -1;
+	(void) snprintf(buf, sizeof(buf), "%.*s/%s",
 		(sizeof buf - sizeof runcom) / sizeof (char) - 1,
 		home, runcom);
 	return dosource(buf);
@@ -70,13 +68,15 @@ doconfig()
 dodefault()
 {
 	struct ww *w;
-	register r = wwnrow / 2 - 1;
+	int r = wwnrow / 2 - 1;
 
 	if (openwin(1, r + 2, 0, wwnrow - r - 2, wwncol, default_nline,
-		(char *) 0, 1, 1, default_shellfile, default_shell) == 0)
+	    (char *) 0, WWT_PTY, WWU_HASFRAME, default_shellfile,
+	    default_shell) == 0)
 		return;
 	if ((w = openwin(0, 1, 0, r, wwncol, default_nline,
-		(char *) 0, 1, 1, default_shellfile, default_shell)) == 0)
+	    (char *) 0, WWT_PTY, WWU_HASFRAME, default_shellfile,
+	    default_shell)) == 0)
 		return;
 	wwprintf(w, "Escape character is %s.\r\n", unctrl(escapec));
 }

@@ -133,9 +133,10 @@ lsystem(cmd, donemsg)
 			char *esccmd = shell_quote(cmd);
 			if (esccmd != NULL)
 			{
-				p = (char *) ecalloc(strlen(shell) +
-					strlen(esccmd) + 5, sizeof(char));
-				sprintf(p, "%s %s %s", shell, shell_coption(), esccmd);
+				size_t len = strlen(shell) + strlen(esccmd) + 5;
+				p = (char *) ecalloc(len, sizeof(char));
+				snprintf(p, len, "%s %s %s", shell,
+				    shell_coption(), esccmd);
 				free(esccmd);
 			}
 		}
@@ -429,15 +430,15 @@ FILE *popen(name, mode)
     cp = name;
     while (*cp == ' ')
         cp++;
-    strcpy(cmd_path, cp);
-    if (cp = index(cmd_path, ' '))
+    strlcpy(cmd_path, cp, sizeof(cmd_path));
+    if (cp = strchr(cmd_path, ' '))
         *cp++ = '\0';
-    strcpy(cmd, "ex ");
-    strcat(cmd, cmd_path);
+    strlcpy(cmd, "ex ", sizeof(cmd));
+    strlcat(cmd, cmd_path, sizeof(cmd));
     if (cp)
     {
-        strcat(cmd, " ");
-        strcat(cmd, cp);
+        strlcat(cmd, " ", sizeof(cmd));
+        strlcat(cmd, cp, sizeof(cmd));
     }
     argv[0] = shell;
     argv[1] = cmd;

@@ -1,5 +1,4 @@
-/*	$NetBSD: svc_run.c,v 1.6 1995/02/25 03:02:00 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,38 +28,47 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_run.c 1.1 87/10/13 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_run.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_run.c,v 1.6 1995/02/25 03:02:00 cgd Exp $";
-#endif
-
 /*
  * This is the rpc server side idle loop
  * Wait for input, call server program.
  */
 #include <rpc/rpc.h>
 #include <sys/errno.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void
-svc_run()
+svc_run(void)
 {
-	fd_set readfds;
+	struct pollfd *pfd = NULL;
+	int nready, saved_max_pollfd = 0;
 
 	for (;;) {
-		readfds = svc_fdset;
-		switch (select(svc_maxfd+1, &readfds, (int *)0, (int *)0,
-			       (struct timeval *)0)) {
-		case -1:
-			if (errno == EINTR) {
-				continue;
+		if (svc_max_pollfd > saved_max_pollfd) {
+			free(pfd);
+			pfd = malloc(sizeof(*pfd) * svc_max_pollfd);
+			if (pfd == NULL) {
+				perror("svc_run");	/* XXX */
+				return;			/* XXX */
 			}
-			perror("svc_run: - select failed");
-			return;
+			saved_max_pollfd = svc_max_pollfd;
+		}
+		memcpy(pfd, svc_pollfd, sizeof(*pfd) * svc_max_pollfd);
+
+		nready = poll(pfd, svc_max_pollfd, INFTIM);
+		switch (nready) {
+		case -1:
+			if (errno == EINTR)
+				continue;
+			perror("svc_run: - poll failed");	/* XXX */
+			free(pfd);
+			return;					/* XXX */
 		case 0:
 			continue;
 		default:
-			svc_getreqset(&readfds);
+			svc_getreq_poll(pfd, nready);
 		}
 	}
 }

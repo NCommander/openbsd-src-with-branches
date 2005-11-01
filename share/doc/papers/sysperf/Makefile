@@ -1,4 +1,5 @@
-#	@(#)Makefile	1.6 (Berkeley) 6/8/93
+#	$OpenBSD: Makefile,v 1.2 2001/02/03 08:15:02 niklas Exp $
+
 
 DIR=	papers/sysperf
 MACROS= -ms
@@ -9,6 +10,8 @@ CLEANFILES+=${OBJS}
 
 paper.ps: ${OBJS}
 	${ROFF} ${OBJS} > ${.TARGET}
+paper.txt: ${OBJS}
+	${ROFF} -Tascii ${OBJS} > ${.TARGET}
 
 paper.tmp: ${SRCS}
 	${TBL} ${SRCS} | ${EQN} > paper.tmp

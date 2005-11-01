@@ -1,3 +1,5 @@
+/*	$OpenBSD: read.c,v 1.11 2004/08/05 19:12:32 miod Exp $	*/
+
 /* read.c - read a source file -
 
    Copyright (C) 1986, 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
@@ -19,7 +21,7 @@
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #ifndef lint
-static char rcsid[] = "$Id: read.c,v 1.14 1995/03/25 17:27:27 glass Exp $";
+static char rcsid[] = "$OpenBSD: read.c,v 1.11 2004/08/05 19:12:32 miod Exp $";
 #endif
 
 #define MASK_CHAR (0xFF)	/* If your chars aren't 8 bits, you will
@@ -53,7 +55,9 @@ The following table is indexed by [ (char) ] and will break if
 #endif
     
 #ifdef ALLOW_ATSIGN
+#ifndef AT
 #define AT 2
+#endif
 #else
 #define AT 0
 #endif
@@ -190,10 +194,13 @@ struct hash_control *
 static const pseudo_typeS
     potable[] =
 {
+	{ "2byte",	cons,		2	},
+	{ "4byte",	cons,		4	},
 	{ "abort",	s_abort,	0	},
 	{ "align",	s_align_ptwo,	0	},
 	{ "ascii",	stringer,	0	},
 	{ "asciz",	stringer,	1	},
+	{ "balign",	s_align_bytes,	0	},
 	/* block */
 	{ "byte",	cons,		1	},
 	{ "comm",	s_comm,		0	},
@@ -247,6 +254,7 @@ static const pseudo_typeS
 #endif /* NO_LISTING */
 	{ "octa",	big_cons,	16	},
 	{ "org",	s_org,		0	},
+	{ "p2align",	s_align_ptwo,	0	},
 #ifdef NO_LISTING
 	{ "psize",	s_ignore,	0       },   /* set paper size */
 #else
@@ -368,7 +376,8 @@ char *name;
 			 * If input_line_pointer[-1] == '\n' then we just
 			 * scanned another line: so bump line counters.
 			 */
-			if (input_line_pointer[-1] == '\n') {
+			if (input_line_pointer > buffer &&
+			    input_line_pointer[-1] == '\n') {
 				bump_line_counters();
 			} /* just passed a newline */
 			
@@ -416,7 +425,9 @@ char *name;
 					SKIP_WHITESPACE();
 					
 					
-				} else if (c == '=' || input_line_pointer[1] == '=') { /* JF deal with FOO=BAR */
+				} else if (c == '=' ||
+				    ((input_line_pointer + 1) < buffer_limit &&
+				      input_line_pointer[1] == '=')) { /* JF deal with FOO=BAR */
 					equals(s);
 					demand_empty_rest_of_line();
 				} else {		/* expect pseudo-op or machine instruction */
@@ -631,7 +642,7 @@ int arg;
 	if (temp > max_alignment) {
 		as_bad("Alignment too large: %d. assumed.", temp = max_alignment);
 	}
-	
+
 	/*
 	 * For the sparc, `.align (1<<n)' actually means `.align n'
 	 * so we have to convert it.
@@ -644,6 +655,7 @@ int arg;
 	    as_bad("Alignment not a power of 2");
 	
 	temp = i;
+
 	if (*input_line_pointer == ',') {
 		input_line_pointer ++;
 		temp_fill = get_absolute_expression();
@@ -936,8 +948,20 @@ int needs_align;	/* 1 if this was a ".bss" directive, which may require
 			as_warn("Alignment negative. 0 assumed.");
 		}
 		record_alignment(SEG_BSS, align);
-	} /* if needs align */
-	
+	} else { /* if needs align */
+		/* FIXME. This needs to be machine independent. */
+		if (temp >= 8)
+			align = 3;
+		else if (temp >= 4)
+			align = 2;
+		else if (temp >= 2)
+			align = 1;
+		else
+			align = 0;
+		needs_align = 1;
+	} /* if !needs align */
+	record_alignment(SEG_BSS, align);
+
 	*p = 0;
 	symbolP = symbol_find_or_make(name);
 	*p = c;
@@ -1270,6 +1294,7 @@ void s_weak() {
 		* input_line_pointer = c;
 		SKIP_WHITESPACE();
 		symbolP->sy_bind = BIND_WEAK;
+		S_SET_EXTERNAL(symbolP);
 		if (c == ',') {
 			input_line_pointer++;
 			SKIP_WHITESPACE();
@@ -1412,9 +1437,8 @@ symbolS *	symbolP;
 			&& (S_GET_SEGMENT(exp.X_add_symbol) == 
 			    S_GET_SEGMENT(exp.X_subtract_symbol))) {
 			    if (exp.X_add_symbol->sy_frag != exp.X_subtract_symbol->sy_frag) {
-				    as_bad("Unknown expression: symbols %s and %s are in different frags.",
-					   S_GET_NAME(exp.X_add_symbol), S_GET_NAME(exp.X_subtract_symbol));
-				    need_pass_2++;
+				    symbolP->sy_value = exp;
+				    break;
 			    }
 			    exp.X_add_number+=S_GET_VALUE(exp.X_add_symbol) -
 				S_GET_VALUE(exp.X_subtract_symbol);
@@ -1443,16 +1467,23 @@ symbolS *	symbolP;
 		    
 		    S_SET_VALUE(symbolP, exp.X_add_number + S_GET_VALUE(exp.X_add_symbol));
 		    symbolP->sy_frag = exp.X_add_symbol->sy_frag;
+		    symbolP->sy_aux = exp.X_add_symbol->sy_aux;
 		    break;
 		    
 	    case SEG_PASS1:		/* Not an error. Just try another pass. */
-		    symbolP->sy_forward=exp.X_add_symbol;
+		    symbolP->sy_value.X_add_symbol = exp.X_add_symbol;
+		    symbolP->sy_value.X_subtract_symbol = NULL;
+		    symbolP->sy_value.X_add_number = 0;
+		    symbolP->sy_value.X_seg = SEG_UNKNOWN;
 		    as_bad("Unknown expression");
 		    know(need_pass_2 == 1);
 		    break;
 		    
 	    case SEG_UNKNOWN:
-		    symbolP->sy_forward=exp.X_add_symbol;
+		    symbolP->sy_value.X_add_symbol = exp.X_add_symbol;
+		    symbolP->sy_value.X_subtract_symbol = NULL;
+		    symbolP->sy_value.X_add_number = 0;
+		    symbolP->sy_value.X_seg = SEG_UNKNOWN;
 		    /* as_warn("unknown symbol"); */
 		    /* need_pass_2 = 1; */
 		    break;
@@ -2082,8 +2113,11 @@ unsigned int next_char_of_string() {
 		case '8':
 		case '9': {
 			long number;
-			
-			for (number = 0; isdigit(c); c = *input_line_pointer++) {
+			int nchar;
+
+			for (nchar = 0, number = 0;
+				nchar < 3 && isdigit(c);
+				c = *input_line_pointer++, nchar++) {
 				number = number * 8 + c - '0';
 			}
 			c = number & 0xff;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: util.c,v 1.14 2003/09/26 00:48:44 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.14 2003/09/26 00:48:44 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,12 +55,8 @@ static char rcsid[] = "$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $";
 #include "extern.h"
 
 char *
-colon(cp)
-	char *cp;
+colon(char *cp)
 {
-	if (*cp == ':')		/* Leading colon is part of file name. */
-		return (0);
-
 	for (; *cp; ++cp) {
 		if (*cp == ':')
 			return (cp);
@@ -74,8 +67,7 @@ colon(cp)
 }
 
 void
-verifydir(cp)
-	char *cp;
+verifydir(char *cp)
 {
 	struct stat stb;
 
@@ -89,8 +81,7 @@ verifydir(cp)
 }
 
 int
-okname(cp0)
-	char *cp0;
+okname(char *cp0)
 {
 	int c;
 	char *cp;
@@ -110,22 +101,21 @@ bad:	warnx("%s: invalid user name", cp0);
 }
 
 int
-susystem(s, userid)
-	int userid;
-	char *s;
+susystem(char *s, int userid)
 {
 	sig_t istat, qstat;
-	int status, w;
+	int status;
 	pid_t pid;
 
 	pid = vfork();
 	switch (pid) {
 	case -1:
 		return (127);
-	
+
 	case 0:
+		(void)seteuid(userid);
 		(void)setuid(userid);
-		execl(_PATH_BSHELL, "sh", "-c", s, NULL);
+		execl(_PATH_BSHELL, "sh", "-c", s, (char *)NULL);
 		_exit(127);
 	}
 	istat = signal(SIGINT, SIG_IGN);
@@ -138,12 +128,11 @@ susystem(s, userid)
 }
 
 BUF *
-allocbuf(bp, fd, blksize)
-	BUF *bp;
-	int fd, blksize;
+allocbuf(BUF *bp, int fd, int blksize)
 {
 	struct stat stb;
 	size_t size;
+	char *p;
 
 	if (fstat(fd, &stb) < 0) {
 		run_err("fstat: %s", strerror(errno));
@@ -154,20 +143,30 @@ allocbuf(bp, fd, blksize)
 		size = blksize;
 	if (bp->cnt >= size)
 		return (bp);
-	if ((bp->buf = realloc(bp->buf, size)) == NULL) {
+	if ((p = realloc(bp->buf, size)) == NULL) {
+		free(bp->buf);
+		bp->buf = NULL;
 		bp->cnt = 0;
 		run_err("%s", strerror(errno));
 		return (0);
 	}
+	memset(p, 0, size);
+	bp->buf = p;
 	bp->cnt = size;
 	return (bp);
 }
 
+/* ARGSUSED */
 void
-lostconn(signo)
-	int signo;
+lostconn(int signo)
 {
-	if (!iamremote)
-		warnx("lost connection");
-	exit(1);
+	extern char *__progname;
+	char buf[1024];
+
+	if (!iamremote) {
+		strlcpy(buf, __progname, sizeof buf);
+		strlcat(buf, ": lost connection\n", sizeof buf);
+		write(STDERR_FILENO, buf, strlen(buf));
+	}
+	_exit(1);
 }

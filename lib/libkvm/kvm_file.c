@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_file.c,v 1.11 2004/06/15 03:52:59 deraadt Exp $ */
+/*	$NetBSD: kvm_file.c,v 1.5 1996/03/18 22:33:18 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,11 +31,15 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: kvm_file.c,v 1.11 2004/06/15 03:52:59 deraadt Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
 /*
- * File list interface for kvm.  pstat, fstat and netstat are 
+ * File list interface for kvm.  pstat, fstat and netstat are
  * users of this code, so we've factored it out into a separate module.
  * Thus, we keep this grunge out of the other kvm applications (i.e.,
  * most other applications are interested only in open/close/read/nlist).
@@ -55,14 +58,10 @@ static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #include <nlist.h>
 #include <kvm.h>
 
-#include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/swap_pager.h>
-
 #include <sys/sysctl.h>
 
 #include <limits.h>
-#include <ndbm.h>
+#include <db.h>
 #include <paths.h>
 
 #include "kvm_private.h"
@@ -70,20 +69,19 @@ static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #define KREAD(kd, addr, obj) \
 	(kvm_read(kd, addr, obj, sizeof(*obj)) != sizeof(*obj))
 
+static int kvm_deadfiles(kvm_t *kd, int op, int arg, long filehead_o,
+    int nfiles);
+
 /*
  * Get file structures.
  */
-static
-kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
-	kvm_t *kd;
-	int op, arg, nfiles;
-	long filehead_o;
+static int
+kvm_deadfiles(kvm_t *kd, int op, int arg, long filehead_o, int nfiles)
 {
-	int buflen = kd->arglen, needed = buflen, error, n = 0;
-	struct file *fp, file;
+	int buflen = kd->arglen, n = 0;
+	char *where = kd->argspc;
+	struct file *fp;
 	struct filelist filehead;
-	register char *where = kd->argspc;
-	char *start = where;
 
 	/*
 	 * first copyout filehead
@@ -113,22 +111,19 @@ kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
 		}
 	}
 	if (n != nfiles) {
-		_kvm_err(kd, kd->program, "inconsistant nfiles");
+		_kvm_err(kd, kd->program, "inconsistent nfiles");
 		return (0);
 	}
 	return (nfiles);
 }
 
 char *
-kvm_getfiles(kd, op, arg, cnt)
-	kvm_t *kd;
-	int op, arg;
-	int *cnt;
+kvm_getfiles(kvm_t *kd, int op, int arg, int *cnt)
 {
-	size_t size;
-	int mib[2], st, nfiles;
-	struct file *fp, *fplim;
 	struct filelist filehead;
+	struct file *fp, *fplim;
+	int mib[2], st, nfiles;
+	size_t size;
 
 	if (ISALIVE(kd)) {
 		size = 0;
@@ -136,7 +131,7 @@ kvm_getfiles(kd, op, arg, cnt)
 		mib[1] = KERN_FILE;
 		st = sysctl(mib, 2, NULL, &size, NULL, 0);
 		if (st == -1) {
-			_kvm_syserr(kd, kd->program, "kvm_getprocs");
+			_kvm_syserr(kd, kd->program, "kvm_getfiles");
 			return (0);
 		}
 		if (kd->argspc == 0)

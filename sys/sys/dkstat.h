@@ -1,4 +1,5 @@
-/*	$NetBSD: dkstat.h,v 1.7 1995/03/26 20:24:01 jtc Exp $	*/
+/*	$OpenBSD: dkstat.h,v 1.6 2002/07/03 21:19:08 miod Exp $	*/
+/*	$NetBSD: dkstat.h,v 1.8 1995/12/28 19:16:31 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,18 +46,7 @@
 
 #define	DK_NDRIVE	8
 #ifdef _KERNEL
-long cp_time[CPUSTATES];
-long dk_seek[DK_NDRIVE];
-long dk_time[DK_NDRIVE];
-long dk_wds[DK_NDRIVE];
-long dk_wpms[DK_NDRIVE];
-long dk_xfer[DK_NDRIVE];
+extern long cp_time[CPUSTATES];
 
-int dk_busy;
-int dk_ndrive;
-
-long tk_cancc;
-long tk_nin;
-long tk_nout;
-long tk_rawcc;
+extern int64_t tk_cancc, tk_nin, tk_nout, tk_rawcc;
 #endif

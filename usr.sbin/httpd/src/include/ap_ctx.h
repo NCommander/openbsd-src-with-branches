@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* ====================================================================
  * Copyright (c) 1998-2000 The Apache Group.  All rights reserved.
  *
@@ -60,8 +62,6 @@
 **  Written by Ralf S. Engelschall <rse@engelschall.com> 
 */
 
-#ifdef EAPI
-
 #ifndef AP_CTX_H
 #define AP_CTX_H
 
@@ -77,13 +77,13 @@
 #define AP_CTX_MAX_ENTRIES 1024
 
 typedef struct {
-    char *ce_key;
-    void *ce_val;
+	char *ce_key;
+	void *ce_val;
 } ap_ctx_entry;
 
 typedef struct {
-    pool          *cr_pool;
-    ap_ctx_entry **cr_entry;
+	pool          *cr_pool;
+	ap_ctx_entry **cr_entry;
 } ap_ctx_rec;
 
 typedef ap_ctx_rec ap_ctx;
@@ -106,5 +106,3 @@ API_EXPORT(void *)  ap_ctx_get(ap_ctx *ctx, char *key);
 API_EXPORT(ap_ctx *)ap_ctx_overlay(pool *p, ap_ctx *over, ap_ctx *base);
 
 #endif /* AP_CTX_H */
-
-#endif /* EAPI */

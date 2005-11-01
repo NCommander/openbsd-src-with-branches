@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* vax-inst.h - GNU - Part of vax.c
    Copyright (C) 1987, 1992 Free Software Foundation, Inc.
    

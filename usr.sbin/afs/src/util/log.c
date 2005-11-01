@@ -62,6 +62,8 @@ RCSID("$arla: log.c,v 1.38 2003/03/13 14:50:58 lha Exp $");
 #include <err.h>
 #include "log.h"
 
+extern char *__progname;
+
 /*
  * The structure for each logging method.
  */
@@ -88,6 +90,7 @@ struct log_method {
     } data;
     log_flags flags;
     int num_units;
+    int alloc_units;
     struct log_unit **units;
 };
 
@@ -447,6 +450,7 @@ log_open (const char *progname, char *fname)
      extra = name;
      strsep(&extra, ":");
      logm->num_units = 0;
+     logm->alloc_units = 0;
      logm->units = NULL;
      (*logm->open)(logm, progname, name, extra);
      free (name);
@@ -575,11 +579,14 @@ log_unit_init (Log_method *method, const char *name, struct units *unit,
     u = malloc (sizeof(Log_unit));
     if (u == NULL)
 	return NULL;
-    list = realloc (method->units,
-		    (method->num_units + 1) * sizeof(Log_unit *));
-    if (list == NULL) {
-	free (u);
-	return NULL;
+    if (method->alloc_units == method->num_units) {
+	    list = realloc (method->units,
+			    (method->alloc_units + 1) * sizeof(Log_unit *));
+	    if (list == NULL) {
+		    free (u);
+		    return NULL;
+	    }
+	    method->alloc_units += 1;
     }
     method->units = list;
     method->units[method->num_units] = u;
@@ -607,10 +614,9 @@ log_unit_free (Log_method *method, Log_unit *logu)
 
     method->num_units -= 1;
     list = realloc (method->units, method->num_units * sizeof(Log_unit *));
-    if (list == NULL)
-	abort();
+    if (list != NULL)
+	method->alloc_units = method->num_units;
     method->units = list;
-
     free (logu->name);
     assert (logu->method == method);
     logu->name = NULL;
@@ -726,7 +732,13 @@ static size_t
 _print_unit (Log_unit *unit, char *buf, size_t sz)
 {
     size_t ret, orig_sz = sz;
+    if (sz <= 0)
+    	return(0);
     ret = snprintf (buf, sz, "%s:", unit->name);
+    if (ret == -1)
+      ret = 0;
+    if (ret >= sz)
+      ret = sz - 1;
     UPDATESZ(buf,sz,ret);
     ret = unparse_flags (log_get_mask (unit), unit->unit, buf, sz);
     UPDATESZ(buf,sz,ret);
@@ -746,8 +758,12 @@ log_mask2str (Log_method *method, Log_unit *unit, char *buf, size_t sz)
     
     for (i = 0; i < method->num_units; i++) {
 	if (log_get_mask (method->units[i])) {
-	    if (printed) {
+	    if (printed && sz > 0) {
 		ret = snprintf (buf, sz, ";");
+		if (ret == -1)
+	 	    ret = 0;
+		if (ret >= sz)
+		    ret = sz - 1;
 		UPDATESZ(buf,sz,ret);
 	    }
 	    ret = _print_unit (method->units[i], buf, sz);

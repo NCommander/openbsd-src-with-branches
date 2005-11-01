@@ -1,3 +1,4 @@
+/*	$OpenBSD: subr.c,v 1.4 2001/08/18 00:48:57 espie Exp $	*/
 /*	$NetBSD: subr.c,v 1.6 1995/08/31 23:01:45 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)subr.c	8.2 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$NetBSD: subr.c,v 1.6 1995/08/31 23:01:45 jtc Exp $";
+static char *rcsid = "$OpenBSD: subr.c,v 1.4 2001/08/18 00:48:57 espie Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -50,9 +47,11 @@ static char *rcsid = "$NetBSD: subr.c,v 1.6 1995/08/31 23:01:45 jtc Exp $";
 #include <stdio.h>
 
 #include "ktrace.h"
+#include "extern.h"
 
+int
 getpoints(s)
-	char *s;
+	const char *s;
 {
 	int facs = 0;
 

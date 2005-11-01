@@ -29,19 +29,19 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     $OpenBSD: ThisCell.5,v 1.1 2000/04/27 22:49:05 hin Exp $
+.\"     $OpenBSD: ThisCell.5,v 1.6 2004/01/28 08:09:30 jmc Exp $
 .\"     $arla: ThisCell.5,v 1.10 2003/06/06 12:53:54 hin Exp $
 .\"
 .Dd March 31, 2003
-.Dt ThisCell 5
+.Dt THISCELL 5
 .Os "The Arla Project"
 .Sh NAME
 .Nm ThisCell
-.Nd specify a hosts home AFS cell
+.Nd specify a host's home AFS cell
 .Sh DESCRIPTION
 The file
 .Nm
-specifies which cell the AFS cache manager belongs to. This affects the
+specifies which cell the AFS client belongs to. This affects the
 default cell to use for commands such as
 .Xr pts 1 ,
 .Xr fs 1 ,
@@ -52,11 +52,15 @@ default cell to use for commands such as
 but other cells can still be used (mostly by giving a -cell argument).
 .Pp
 Unless dynroot is used, it also affects where
-the cache manager reads the root of afs, so
+.Nm afsd
+reads the root of afs, so 
 having good connectivity to the default cell is very important.
+.Pp
+The cell specified must be listed in
+.Pa CellServDB Ns .
 .Pp
 .Sh SEE ALSO
 .Xr CellServDB 5 ,
 .Xr DynRootDB 5 ,
 .Xr SuidCells 5 ,
-.Xr arlad 8
+.Xr afsd 8

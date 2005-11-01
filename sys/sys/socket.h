@@ -1,4 +1,5 @@
-/*	$NetBSD: socket.h,v 1.12 1995/03/29 22:10:11 briggs Exp $	*/
+/*	$OpenBSD: socket.h,v 1.51 2005/04/04 22:18:47 hshoexer Exp $	*/
+/*	$NetBSD: socket.h,v 1.14 1996/02/09 18:25:36 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1985, 1986, 1988, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,6 +34,11 @@
 
 #ifndef _SYS_SOCKET_H_
 #define	_SYS_SOCKET_H_
+
+/*
+ * needed for ALIGNBYTES
+ */
+#include <machine/param.h>
 
 /*
  * Definitions related to sockets: types, address families, options.
@@ -64,18 +66,20 @@
 #define	SO_LINGER	0x0080		/* linger on close if data present */
 #define	SO_OOBINLINE	0x0100		/* leave received OOB data in line */
 #define	SO_REUSEPORT	0x0200		/* allow local address & port reuse */
+#define SO_JUMBO	0x0400		/* try to use jumbograms */
 
 /*
  * Additional options, not kept in so_options.
  */
-#define SO_SNDBUF	0x1001		/* send buffer size */
-#define SO_RCVBUF	0x1002		/* receive buffer size */
-#define SO_SNDLOWAT	0x1003		/* send low-water mark */
-#define SO_RCVLOWAT	0x1004		/* receive low-water mark */
-#define SO_SNDTIMEO	0x1005		/* send timeout */
-#define SO_RCVTIMEO	0x1006		/* receive timeout */
+#define	SO_SNDBUF	0x1001		/* send buffer size */
+#define	SO_RCVBUF	0x1002		/* receive buffer size */
+#define	SO_SNDLOWAT	0x1003		/* send low-water mark */
+#define	SO_RCVLOWAT	0x1004		/* receive low-water mark */
+#define	SO_SNDTIMEO	0x1005		/* send timeout */
+#define	SO_RCVTIMEO	0x1006		/* receive timeout */
 #define	SO_ERROR	0x1007		/* get error status and clear */
 #define	SO_TYPE		0x1008		/* get socket type */
+#define	SO_NETPROC	0x1020		/* multiplex; network processing */
 
 /*
  * Structure used for manipulating linger option.
@@ -119,19 +123,48 @@ struct	linger {
 #define	AF_CNT		21		/* Computer Network Technology */
 #define pseudo_AF_RTIP	22		/* Help Identify RTIP packets */
 #define	AF_IPX		23		/* Novell Internet Protocol */
-#define	AF_SIP		24		/* Simple Internet Protocol */
+#define	AF_INET6	24		/* IPv6 */
 #define pseudo_AF_PIP	25		/* Help Identify PIP packets */
+#define AF_ISDN		26		/* Integrated Services Digital Network*/
+#define AF_E164		AF_ISDN		/* CCITT E.164 recommendation */
+#define AF_NATM		27		/* native ATM access */
+#define	AF_ENCAP	28
+#define	AF_SIP		29		/* Simple Internet Protocol */
+#define AF_KEY		30
+#define pseudo_AF_HDRCMPLT 31		/* Used by BPF to not rewrite headers
+					   in interface output routine */
+#define	AF_BLUETOOTH	32		/* Bluetooth */
 
-#define	AF_MAX		26
+#define	AF_MAX		33
 
 /*
  * Structure used by kernel to store most
  * addresses.
  */
 struct sockaddr {
-	u_char	sa_len;			/* total length */
-	u_char	sa_family;		/* address family */
-	char	sa_data[14];		/* actually longer; address value */
+	u_int8_t    sa_len;		/* total length */
+	sa_family_t sa_family;		/* address family */
+	char	    sa_data[14];	/* actually longer; address value */
+};
+
+/*
+ * Sockaddr type which can hold any sockaddr type available
+ * in the system.
+ *
+ * Note: __ss_{len,family} is defined in RFC2553.  During RFC2553 discussion
+ * the field name went back and forth between ss_len and __ss_len,
+ * and RFC2553 specifies it to be __ss_len.  openbsd picked ss_len.
+ * For maximum portability, userland programmer would need to
+ * (1) make the code never touch ss_len portion (cast it into sockaddr and
+ * touch sa_len), or (2) add "-Dss_len=__ss_len" into CFLAGS to unify all
+ * occurences (including header file) to __ss_len.
+ */
+struct sockaddr_storage {
+	u_int8_t	ss_len;		/* total length */
+	sa_family_t	ss_family;	/* address family */
+	unsigned char	__ss_pad1[6];	/* align to quad */
+	u_int64_t	__ss_pad2;	/* force alignment for stupid compilers */
+	unsigned char	__ss_pad3[240];	/* pad to a total of 256 bytes */
 };
 
 /*
@@ -139,8 +172,8 @@ struct sockaddr {
  * information in raw sockets.
  */
 struct sockproto {
-	u_short	sp_family;		/* address family */
-	u_short	sp_protocol;		/* protocol */
+	unsigned short	sp_family;	/* address family */
+	unsigned short	sp_protocol;	/* protocol */
 };
 
 /*
@@ -170,12 +203,43 @@ struct sockproto {
 #define	PF_XTP		pseudo_AF_XTP	/* really just proto family, no AF */
 #define	PF_COIP		AF_COIP
 #define	PF_CNT		AF_CNT
-#define	PF_SIP		AF_SIP
 #define	PF_IPX		AF_IPX		/* same format as AF_NS */
-#define PF_RTIP		pseudo_AF_FTIP	/* same format as AF_INET */
+#define PF_INET6	AF_INET6
+#define PF_RTIP		pseudo_AF_RTIP	/* same format as AF_INET */
 #define PF_PIP		pseudo_AF_PIP
-
+#define PF_ISDN		AF_ISDN
+#define PF_NATM		AF_NATM
+#define PF_ENCAP	AF_ENCAP
+#define	PF_SIP		AF_SIP
+#define PF_KEY		AF_KEY
+#define PF_BPF		pseudo_AF_HDRCMPLT
+#define	PF_BLUETOOTH	AF_BLUETOOTH
 #define	PF_MAX		AF_MAX
+
+/*
+ * These are the valid values for the "how" field used by shutdown(2).
+ */
+#define	SHUT_RD		0
+#define	SHUT_WR		1
+#define	SHUT_RDWR	2
+
+/*
+ * Socket credentials.
+ */
+struct sockcred {
+	uid_t	sc_uid;			/* real user id */
+	uid_t	sc_euid;		/* effective user id */
+	gid_t	sc_gid;			/* real group id */
+	gid_t	sc_egid;		/* effective group id */
+	int	sc_ngroups;		/* number of supplemental groups */
+	gid_t	sc_groups[1];		/* variable length */
+};
+
+/*
+ * Compute size of a sockcred structure with groups.
+ */
+#define SOCKCREDSIZE(ngrps) \
+	(sizeof(struct sockcred) + (sizeof(gid_t) * ((ngrps) - 1)))
 
 /*
  * Definitions for network related sysctl, CTL_NET.
@@ -212,8 +276,14 @@ struct sockproto {
 	{ "cnt", CTLTYPE_NODE }, \
 	{ "rtip", CTLTYPE_NODE }, \
 	{ "ipx", CTLTYPE_NODE }, \
-	{ "sip", CTLTYPE_NODE }, \
+	{ "inet6", CTLTYPE_NODE }, \
 	{ "pip", CTLTYPE_NODE }, \
+	{ "isdn", CTLTYPE_NODE }, \
+	{ "natm", CTLTYPE_NODE }, \
+	{ "encap", CTLTYPE_NODE }, \
+	{ "sip", CTLTYPE_NODE }, \
+	{ "key", CTLTYPE_NODE }, \
+	{ "bpf", CTLTYPE_NODE }, \
 }
 
 /*
@@ -237,22 +307,48 @@ struct sockproto {
 }
 
 /*
- * Maximum queue length specifiable by listen.
+ * PF_KEY - Key Management
  */
-#define	SOMAXCONN	5
+#define NET_KEY_SADB_DUMP	1	/* return SADB */
+#define NET_KEY_SPD_DUMP	2	/* return SPD */
+#define NET_KEY_MAXID		3
+
+#define CTL_NET_KEY_NAMES { \
+	{ 0, 0 }, \
+	{ "sadb_dump", CTLTYPE_STRUCT }, \
+	{ "spd_dump", CTLTYPE_STRUCT }, \
+}
+
+/*
+ * PF_BPF  not really a family, but connected under CTL_NET
+ */
+#define NET_BPF_BUFSIZE		1		/* default buffer size */
+#define NET_BPF_MAXBUFSIZE	2		/* maximum buffer size */
+#define NET_BPF_MAXID		3
+
+#define CTL_NET_BPF_NAMES { \
+	{ 0, 0 }, \
+	{ "bufsize", CTLTYPE_INT }, \
+	{ "maxbufsize", CTLTYPE_INT }, \
+}
+
+/*
+ * Maximum queue length specifiable by listen(2).
+ */
+#define	SOMAXCONN	128
 
 /*
  * Message header for recvmsg and sendmsg calls.
  * Used value-result for recvmsg, value only for sendmsg.
  */
 struct msghdr {
-	caddr_t	msg_name;		/* optional address */
-	u_int	msg_namelen;		/* size of address */
-	struct	iovec *msg_iov;		/* scatter/gather array */
-	u_int	msg_iovlen;		/* # elements in msg_iov */
-	caddr_t	msg_control;		/* ancillary data, see below */
-	u_int	msg_controllen;		/* ancillary data buffer len */
-	int	msg_flags;		/* flags on received message */
+	void		*msg_name;	/* optional address */
+	socklen_t	msg_namelen;	/* size of address */
+	struct		iovec *msg_iov;	/* scatter/gather array */
+	unsigned int	msg_iovlen;	/* # elements in msg_iov */
+	void		*msg_control;	/* ancillary data, see below */
+	socklen_t	msg_controllen;	/* ancillary data buffer len */
+	int		msg_flags;	/* flags on received message */
 };
 
 #define	MSG_OOB		0x1		/* process out-of-band data */
@@ -263,6 +359,8 @@ struct msghdr {
 #define	MSG_CTRUNC	0x20		/* control data lost before delivery */
 #define	MSG_WAITALL	0x40		/* wait for full request or error */
 #define	MSG_DONTWAIT	0x80		/* this message should be nonblocking */
+#define	MSG_BCAST	0x100		/* this message rec'd as broadcast */
+#define	MSG_MCAST	0x200		/* this message rec'd as multicast */
 
 /*
  * Header for ancillary data objects in msg_control buffer.
@@ -271,33 +369,55 @@ struct msghdr {
  * of message elements headed by cmsghdr structures.
  */
 struct cmsghdr {
-	u_int	cmsg_len;		/* data byte count, including hdr */
-	int	cmsg_level;		/* originating protocol */
-	int	cmsg_type;		/* protocol-specific type */
+	socklen_t	cmsg_len;	/* data byte count, including hdr */
+	int		cmsg_level;	/* originating protocol */
+	int		cmsg_type;	/* protocol-specific type */
 /* followed by	u_char  cmsg_data[]; */
 };
 
 /* given pointer to struct cmsghdr, return pointer to data */
-#define	CMSG_DATA(cmsg)		((u_char *)((cmsg) + 1))
+#define	CMSG_DATA(cmsg) \
+	((u_char *)(cmsg) + __CMSG_ALIGN(sizeof(struct cmsghdr)))
 
 /* given pointer to struct cmsghdr, return pointer to next cmsghdr */
 #define	CMSG_NXTHDR(mhdr, cmsg)	\
-	(((caddr_t)(cmsg) + (cmsg)->cmsg_len + sizeof(struct cmsghdr) > \
-	    (mhdr)->msg_control + (mhdr)->msg_controllen) ? \
+	(((caddr_t)(cmsg) + __CMSG_ALIGN((cmsg)->cmsg_len) + \
+			    __CMSG_ALIGN(sizeof(struct cmsghdr)) > \
+	    ((caddr_t)(mhdr)->msg_control) + (mhdr)->msg_controllen) ? \
 	    (struct cmsghdr *)NULL : \
-	    (struct cmsghdr *)((caddr_t)(cmsg) + ALIGN((cmsg)->cmsg_len)))
+	    (struct cmsghdr *)((caddr_t)(cmsg) + __CMSG_ALIGN((cmsg)->cmsg_len)))
 
-#define	CMSG_FIRSTHDR(mhdr)	((struct cmsghdr *)(mhdr)->msg_control)
+/*
+ * RFC 2292 requires to check msg_controllen, in case that the kernel returns
+ * an empty list for some reasons.
+ */
+#define	CMSG_FIRSTHDR(mhdr) \
+	((mhdr)->msg_controllen >= sizeof(struct cmsghdr) ? \
+	 (struct cmsghdr *)(mhdr)->msg_control : \
+	 (struct cmsghdr *)NULL)
+
+/* Round len up to next alignment boundary */
+#define	__CMSG_ALIGN(len)	ALIGN(len)
+#ifdef _KERNEL
+#define CMSG_ALIGN(n)		__CMSG_ALIGN(n)
+#endif
+
+/* Length of the contents of a control message of length len */
+#define	CMSG_LEN(len)	(__CMSG_ALIGN(sizeof(struct cmsghdr)) + (len))
+
+/* Length of the space taken up by a padded control message of length len */
+#define	CMSG_SPACE(len)	(__CMSG_ALIGN(sizeof(struct cmsghdr)) + __CMSG_ALIGN(len))
 
 /* "Socket"-level control message types: */
 #define	SCM_RIGHTS	0x01		/* access rights (array of int) */
+#define SCM_CREDS	0x02		/* credentials (struct sockcred) */
 
 /*
  * 4.3 compat sockaddr, move to compat file later
  */
 struct osockaddr {
-	u_short	sa_family;		/* address family */
-	char	sa_data[14];		/* up to 14 bytes of direct address */
+	unsigned short	sa_family;	/* address family */
+	char		sa_data[14];	/* up to 14 bytes of direct address */
 };
 
 /*
@@ -312,30 +432,42 @@ struct omsghdr {
 	int	msg_accrightslen;
 };
 
+#define SA_LEN(x) ((x)->sa_len)
+
 #ifndef	_KERNEL
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	accept __P((int, struct sockaddr *, int *));
-int	bind __P((int, const struct sockaddr *, int));
-int	connect __P((int, const struct sockaddr *, int));
-int	getpeername __P((int, struct sockaddr *, int *));
-int	getsockname __P((int, struct sockaddr *, int *));
-int	getsockopt __P((int, int, int, void *, int *));
-int	listen __P((int, int));
-ssize_t	recv __P((int, void *, size_t, int));
-ssize_t	recvfrom __P((int, void *, size_t, int, struct sockaddr *, int *));
-ssize_t	recvmsg __P((int, struct msghdr *, int));
-ssize_t	send __P((int, const void *, size_t, int));
-ssize_t	sendto __P((int, const void *,
-	    size_t, int, const struct sockaddr *, int));
-ssize_t	sendmsg __P((int, const struct msghdr *, int));
-int	setsockopt __P((int, int, int, const void *, int));
-int	shutdown __P((int, int));
-int	socket __P((int, int, int));
-int	socketpair __P((int, int, int, int *));
+int	accept(int, struct sockaddr *, socklen_t *);
+int	bind(int, const struct sockaddr *, socklen_t);
+int	connect(int, const struct sockaddr *, socklen_t);
+int	getpeereid(int, uid_t *, gid_t *);
+int	getpeername(int, struct sockaddr *, socklen_t *);
+int	getsockname(int, struct sockaddr *, socklen_t *);
+int	getsockopt(int, int, int, void *, socklen_t *);
+int	listen(int, int);
+ssize_t	recv(int, void *, size_t, int);
+ssize_t	recvfrom(int, void *, size_t, int, struct sockaddr *, socklen_t *);
+ssize_t	recvmsg(int, struct msghdr *, int);
+ssize_t	send(int, const void *, size_t, int);
+ssize_t	sendto(int, const void *,
+	    size_t, int, const struct sockaddr *, socklen_t);
+ssize_t	sendmsg(int, const struct msghdr *, int);
+int	setsockopt(int, int, int, const void *, socklen_t);
+int	shutdown(int, int);
+int	socket(int, int, int);
+int	socketpair(int, int, int, int *);
 __END_DECLS
+#else
+# if defined(COMPAT_43) || defined(COMPAT_SUNOS) || defined(COMPAT_LINUX) || \
+     defined(COMPAT_HPUX) || defined(COMPAT_FREEBSD) || defined(COMPAT_BSDOS) \
+     || defined(COMPAT_OSF1)
+#  define COMPAT_OLDSOCK
+#  define MSG_COMPAT	0x8000
+# endif
 
+void	pfctlinput(int, struct sockaddr *);
 #endif /* !_KERNEL */
+
 #endif /* !_SYS_SOCKET_H_ */

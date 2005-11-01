@@ -1,3 +1,4 @@
+.\"	$OpenBSD: map3270.5,v 1.8 2003/03/31 19:40:44 jmc Exp $
 .\" Copyright (c) 1986 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +10,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,18 +27,17 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	from: @(#)map3270.5	4.5 (Berkeley) 7/31/91
-.\"	$Id: map3270.5,v 1.4 1994/04/01 04:09:41 cgd Exp $
 .\"
 .TH MAP3270 5  "July 31, 1991"
 .UC 6
 .SH NAME
-map3270 \- database for mapping ascii keystrokes into IBM 3270 keys
+map3270 \- database for mapping ASCII keystrokes into IBM 3270 keys
 .SH SYNOPSIS
 .B map3270
 .SH DESCRIPTION
 When emulating IBM-style 3270 terminals under \s-1UNIX\s0 (see \fItn3270\fR(1)),
 a mapping must be performed between sequences of keys hit on
-a user's (ascii) keyboard, and the keys that are
+a user's (ASCII) keyboard, and the keys that are
 available on a 3270.  For example, a 3270 has a key labeled
 .B EEOF
 which erases the contents of the current field from the
@@ -58,7 +54,7 @@ The requirements for these sequences are:
 .ta 4n 9n
 .sp
 	1)	that the first character of the sequence be outside of the
-		standard ascii printable characters;
+		standard ASCII printable characters;
 .sp
 	2)	that no sequence \fIbe\fR an initial part of another (although
 		sequences may \fIshare\fR initial parts).
@@ -68,7 +64,7 @@ The requirements for these sequences are:
 The file consists of entries for various keyboards.  The first part
 of an entry lists the names of the keyboards which use that entry.
 These names will often be the same as in
-.I /etc/termcap
+.I /usr/share/misc/termcap
 (see
 .IR termcap (5));
 however, note that often the terminals from various termcap entries will all
@@ -93,7 +89,7 @@ by an equal sign (`='), followed by the various ways to generate
 this particular function, followed by a semi-colon (`;').
 Each way is a sequence of strings of
 .I printable
-ascii characters enclosed inside single quotes (`\(aa');
+ASCII characters enclosed inside single quotes (`\(aa');
 various ways (alternatives) are separated by vertical bars (`|').
 .PP
 Inside the single quotes, a few characters are special.
@@ -102,7 +98,7 @@ A caret
 the ``control'' character of whatever the character is.
 So, `^a'
 represents control-a, ie: hexadecimal 1
-(note that `^A' would generate the same code). 
+(note that `^A' would generate the same code).
 To generate
 .B rubout
 (DEL),
@@ -114,7 +110,7 @@ Note: the ctrl-caret sequence
 (to generate a hexadecimal 1E)
 is represented as `^^' (not `^\e^').
 .PP
-In addition to the caret, a letter may be preceeded by a backslash (`\e').
+In addition to the caret, a letter may be preceded by a backslash (`\e').
 Since this has little effect for most characters,
 its use is usually not recommended.
 For the case of a single quote (`\(aa'), the backslash
@@ -188,15 +184,15 @@ to send a (possibly visual) bell sequence to the user's terminal.
         RIGHT           right cursor
         LEFT            left cursor
         SETTAB          set a column tab
-        DELTAB          delete a columntab
+        DELTAB          delete a column tab
         SETMRG          set left margin
         SETHOM          set home position
         CLRTAB          clear all column tabs
      (*)APLON           apl on
      (*)APLOFF          apl off
-     (*)APLEND          treat input as ascii
-     (*)PCON            xon/xoff on
-     (*)PCOFF           xon/xoff off
+     (*)APLEND          treat input as ASCII
+     (*)PCON            Xon/Xoff on
+     (*)PCOFF           Xon/Xoff off
         DISC            disconnect (suspend)
      (*)INIT            new terminal type
      (*)ALTK            alternate keyboard dvorak
@@ -332,7 +328,7 @@ Greg Minshall
 doesn't yet understand how to process all the functions
 available in
 .I map3270;
-when such a function is requested 
+when such a function is requested
 .I tn3270
 will beep at you.
 .PP

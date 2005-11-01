@@ -1,3 +1,4 @@
+/*	$OpenBSD: ps.c,v 1.39 2004/09/14 23:45:35 deraadt Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ps.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: ps.c,v 1.39 2004/09/14 23:45:35 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -55,6 +52,7 @@ static char rcsid[] = "$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $";
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
 
 #include <ctype.h>
 #include <err.h>
@@ -63,19 +61,18 @@ static char rcsid[] = "$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $";
 #include <kvm.h>
 #include <nlist.h>
 #include <paths.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "ps.h"
 
-#ifdef P_PPWAIT
-#define NEWVM
-#endif
+extern char *__progname;
 
-KINFO *kinfo;
-struct varent *vhead, *vtail;
+struct varent *vhead;
 
 int	eval;			/* exit value */
 int	rawcpu;			/* -C */
@@ -83,15 +80,16 @@ int	sumrusage;		/* -S */
 int	termwidth;		/* width of screen (0 == infinity) */
 int	totwidth;		/* calculated width of requested variables */
 
-int	needuser, needcomm, needenv, commandonly;
+int	ncpu = 1;
+
+int	needcomm, needenv, commandonly;
 
 enum sort { DEFAULT, SORTMEM, SORTCPU } sortby = DEFAULT;
 
-static char	*kludge_oldps_options __P((char *));
-static int	 pscomp __P((const void *, const void *));
-static void	 saveuser __P((KINFO *));
-static void	 scanvars __P((void));
-static void	 usage __P((void));
+static char	*kludge_oldps_options(char *);
+static int	 pscomp(const void *, const void *);
+static void	 scanvars(void);
+static void	 usage(void);
 
 char dfmt[] = "pid tt state time command";
 char jfmt[] = "user pid ppid pgid sess jobc state tt time command";
@@ -102,26 +100,27 @@ char ufmt[] = "user pid %cpu %mem vsz rss tt state start time command";
 char vfmt[] = "pid state time sl re pagein vsz rss lim tsiz %cpu %mem command";
 
 kvm_t *kd;
+int kvm_sysctl_only;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	struct kinfo_proc *kp;
+	struct kinfo_proc2 *kp, **kinfo;
 	struct varent *vent;
 	struct winsize ws;
+	struct passwd *pwd;
 	dev_t ttydev;
 	pid_t pid;
 	uid_t uid;
-	int all, ch, flag, i, fmt, lineno, nentries;
-	int prtheader, wflag, what, xflg;
-	char *nlistf, *memf, *swapf, errbuf[256];
+	int all, ch, flag, i, fmt, lineno, nentries, mib[6];
+	int prtheader, wflag, kflag, what, Uflag, xflg;
+	char *nlistf, *memf, *swapf, errbuf[_POSIX2_LINE_MAX];
+	size_t size;
 
 	if ((ioctl(STDOUT_FILENO, TIOCGWINSZ, (char *)&ws) == -1 &&
-	     ioctl(STDERR_FILENO, TIOCGWINSZ, (char *)&ws) == -1 &&
-	     ioctl(STDIN_FILENO,  TIOCGWINSZ, (char *)&ws) == -1) ||
-	     ws.ws_col == 0)
+	    ioctl(STDERR_FILENO, TIOCGWINSZ, (char *)&ws) == -1 &&
+	    ioctl(STDIN_FILENO,  TIOCGWINSZ, (char *)&ws) == -1) ||
+	    ws.ws_col == 0)
 		termwidth = 79;
 	else
 		termwidth = ws.ws_col - 1;
@@ -129,13 +128,13 @@ main(argc, argv)
 	if (argc > 1)
 		argv[1] = kludge_oldps_options(argv[1]);
 
-	all = fmt = prtheader = wflag = xflg = 0;
+	all = fmt = prtheader = wflag = kflag = Uflag = xflg = 0;
 	pid = -1;
-	uid = (uid_t) -1;
+	uid = 0;
 	ttydev = NODEV;
 	memf = nlistf = swapf = NULL;
 	while ((ch = getopt(argc, argv,
-	    "acCeghjLlM:mN:O:o:p:rSTt:uvW:wx")) != EOF)
+	    "acCeghjkLlM:mN:O:o:p:rSTt:U:uvW:wx")) != -1)
 		switch((char)ch) {
 		case 'a':
 			all = 1;
@@ -158,6 +157,9 @@ main(argc, argv)
 			parsefmt(jfmt);
 			fmt = 1;
 			jfmt[0] = '\0';
+			break;
+		case 'k':
+			kflag++;
 			break;
 		case 'L':
 			showkey();
@@ -219,6 +221,14 @@ main(argc, argv)
 			ttydev = sb.st_rdev;
 			break;
 		}
+		case 'U':
+			pwd = getpwnam(optarg);
+			if (pwd == NULL)
+				errx(1, "%s: no such user", optarg);
+			uid = pwd->pw_uid;
+			endpwent();
+			Uflag = xflg = 1;
+			break;
 		case 'u':
 			parsefmt(ufmt);
 			sortby = SORTCPU;
@@ -244,7 +254,6 @@ main(argc, argv)
 		case 'x':
 			xflg = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -262,32 +271,34 @@ main(argc, argv)
 		}
 	}
 #endif
-	/*
-	 * Discard setgid privileges if not the running kernel so that bad
-	 * guys can't print interesting stuff from kernel memory.
-	 */
-	if (nlistf != NULL || memf != NULL || swapf != NULL)
-		setgid(getgid());
 
-	kd = kvm_openfiles(nlistf, memf, swapf, O_RDONLY, errbuf);
-	if (kd == 0)
+	if (nlistf == NULL && memf == NULL && swapf == NULL) {
+		kd = kvm_openfiles(NULL, NULL, NULL, KVM_NO_FILES, errbuf);
+		kvm_sysctl_only = 1;
+	} else {
+		kd = kvm_openfiles(nlistf, memf, swapf, O_RDONLY, errbuf);
+	}
+	if (kd == NULL && (nlistf != NULL || memf != NULL || swapf != NULL))
 		errx(1, "%s", errbuf);
 
 	if (!fmt)
 		parsefmt(dfmt);
 
-	if (!all && ttydev == NODEV && pid == -1)  /* XXX - should be cleaner */
+	/* XXX - should be cleaner */
+	if (!all && ttydev == NODEV && pid == -1 && !Uflag) {
 		uid = getuid();
+		Uflag = 1;
+	}
 
 	/*
 	 * scan requested variables, noting what structures are needed,
-	 * and adjusting header widths as appropiate.
+	 * and adjusting header widths as appropriate.
 	 */
 	scanvars();
 	/*
 	 * get proc list
 	 */
-	if (uid != (uid_t) -1) {
+	if (Uflag) {
 		what = KERN_PROC_UID;
 		flag = uid;
 	} else if (ttydev != NODEV) {
@@ -296,43 +307,74 @@ main(argc, argv)
 	} else if (pid != -1) {
 		what = KERN_PROC_PID;
 		flag = pid;
+	} else if (kflag) {
+		what = KERN_PROC_KTHREAD;
+		flag = 0;
 	} else {
 		what = KERN_PROC_ALL;
 		flag = 0;
 	}
+
+	mib[0] = CTL_HW;
+	mib[1] = HW_NCPU;
+	size = sizeof(ncpu);
+	(void) sysctl(mib, 2, &ncpu, &size, NULL, 0);
+
 	/*
 	 * select procs
 	 */
-	if ((kp = kvm_getprocs(kd, what, flag, &nentries)) == 0)
-		errx(1, "%s", kvm_geterr(kd));
-	if ((kinfo = malloc(nentries * sizeof(*kinfo))) == NULL)
-		err(1, NULL);
-	for (i = nentries; --i >= 0; ++kp) {
-		kinfo[i].ki_p = kp;
-		if (needuser)
-			saveuser(&kinfo[i]);
+	if (kd != NULL) {
+		kp = kvm_getproc2(kd, what, flag, sizeof(*kp), &nentries);
+		if (kp == NULL)
+			errx(1, "%s", kvm_geterr(kd));
+	} else {
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_PROC2;
+		mib[2] = what;
+		mib[3] = flag;
+		mib[4] = sizeof(struct kinfo_proc2);
+		mib[5] = 0;
+	    retry:
+		if (sysctl(mib, 6, NULL, &size, NULL, 0) < 0)
+			err(1, "could not get kern.proc2 size");
+		size = 5 * size / 4;		/* extra slop */
+		if ((kp = malloc(size)) == NULL)
+			err(1,
+			    "failed to allocate memory for proc structures");
+		mib[5] = (int)(size / sizeof(struct kinfo_proc2));
+		if (sysctl(mib, 6, kp, &size, NULL, 0) < 0) {
+			if (errno == ENOMEM) {
+				free(kp);
+				goto retry;
+			}
+			err(1, "could not read kern.proc2");
+		}
+		nentries = (int)(size / sizeof(struct kinfo_proc2));
 	}
 	/*
 	 * print header
 	 */
 	printheader();
 	if (nentries == 0)
-		exit(0);
+		exit(1);
 	/*
-	 * sort proc list
+	 * sort proc list, we convert from an array of structs to an array
+	 * of pointers to make the sort cheaper.
 	 */
-	qsort(kinfo, nentries, sizeof(KINFO), pscomp);
+	if ((kinfo = malloc(sizeof(*kinfo) * nentries)) == NULL)
+		err(1, "failed to allocate memory for proc pointers");
+	for (i = 0; i < nentries; i++)
+		kinfo[i] = &kp[i];
+	qsort(kinfo, nentries, sizeof(*kinfo), pscomp);
 	/*
 	 * for each proc, call each variable output function.
 	 */
 	for (i = lineno = 0; i < nentries; i++) {
-		KINFO *ki = &kinfo[i];
-
-		if (xflg == 0 && (KI_EPROC(ki)->e_tdev == NODEV ||
-		    (KI_PROC(ki)->p_flag & P_CONTROLT ) == 0))
+		if (xflg == 0 && ((int)kinfo[i]->p_tdev == NODEV ||
+		    (kinfo[i]->p_flag & P_CONTROLT ) == 0))
 			continue;
 		for (vent = vhead; vent; vent = vent->next) {
-			(vent->var->oproc)(ki, vent);
+			(vent->var->oproc)(kinfo[i], vent);
 			if (vent->next != NULL)
 				(void)putchar(' ');
 		}
@@ -347,7 +389,7 @@ main(argc, argv)
 }
 
 static void
-scanvars()
+scanvars(void)
 {
 	struct varent *vent;
 	VAR *v;
@@ -359,57 +401,27 @@ scanvars()
 		if (v->width < i)
 			v->width = i;
 		totwidth += v->width + 1;	/* +1 for space */
-		if (v->flag & USER)
-			needuser = 1;
 		if (v->flag & COMM)
 			needcomm = 1;
 	}
 	totwidth--;
 }
 
-static void
-saveuser(ki)
-	KINFO *ki;
-{
-	struct pstats pstats;
-	struct usave *usp;
-
-	usp = &ki->ki_u;
-	if (kvm_read(kd, (u_long)&KI_PROC(ki)->p_addr->u_stats,
-	    (char *)&pstats, sizeof(pstats)) == sizeof(pstats)) {
-		/*
-		 * The u-area might be swapped out, and we can't get
-		 * at it because we have a crashdump and no swap.
-		 * If it's here fill in these fields, otherwise, just
-		 * leave them 0.
-		 */
-		usp->u_start = pstats.p_start;
-		usp->u_ru = pstats.p_ru;
-		usp->u_cru = pstats.p_cru;
-		usp->u_valid = 1;
-	} else
-		usp->u_valid = 0;
-}
-
 static int
-pscomp(a, b)
-	const void *a, *b;
+pscomp(const void *v1, const void *v2)
 {
+	const struct kinfo_proc2 *kp1 = *(const struct kinfo_proc2 **)v1;
+	const struct kinfo_proc2 *kp2 = *(const struct kinfo_proc2 **)v2;
 	int i;
-#ifdef NEWVM
-#define VSIZE(k) (KI_EPROC(k)->e_vm.vm_dsize + KI_EPROC(k)->e_vm.vm_ssize + \
-		  KI_EPROC(k)->e_vm.vm_tsize)
-#else
-#define VSIZE(k) ((k)->ki_p->p_dsize + (k)->ki_p->p_ssize + (k)->ki_e->e_xsize)
-#endif
+#define VSIZE(k) ((k)->p_vm_dsize + (k)->p_vm_ssize + (k)->p_vm_tsize)
 
-	if (sortby == SORTCPU)
-		return (getpcpu((KINFO *)b) - getpcpu((KINFO *)a));
-	if (sortby == SORTMEM)
-		return (VSIZE((KINFO *)b) - VSIZE((KINFO *)a));
-	i =  KI_EPROC((KINFO *)a)->e_tdev - KI_EPROC((KINFO *)b)->e_tdev;
-	if (i == 0)
-		i = KI_PROC((KINFO *)a)->p_pid - KI_PROC((KINFO *)b)->p_pid;
+	if (sortby == SORTCPU && (i = getpcpu(kp2) - getpcpu(kp1)) != 0)
+		return (i);
+	if (sortby == SORTMEM && (i = VSIZE(kp2) - VSIZE(kp1)) != 0)
+		return (i);
+	if ((i = kp1->p_tdev - kp2->p_tdev) == 0 &&
+	    (i = kp1->p_ustart_sec - kp2->p_ustart_sec) == 0)
+		i = kp1->p_ustart_usec - kp2->p_ustart_usec;
 	return (i);
 }
 
@@ -425,20 +437,20 @@ pscomp(a, b)
  * feature is available with the option 'T', which takes no argument.
  */
 static char *
-kludge_oldps_options(s)
-	char *s;
+kludge_oldps_options(char *s)
 {
 	size_t len;
 	char *newopts, *ns, *cp;
 
 	len = strlen(s);
-	if ((newopts = ns = malloc(len + 2)) == NULL)
+	if ((newopts = ns = malloc(2 + len + 1)) == NULL)
 		err(1, NULL);
 	/*
 	 * options begin with '-'
 	 */
 	if (*s != '-')
 		*ns++ = '-';	/* add option flag */
+
 	/*
 	 * gaze to end of argv[1]
 	 */
@@ -465,22 +477,23 @@ kludge_oldps_options(s)
 	 * if there's a trailing number, and not a preceding 'p' (pid) or
 	 * 't' (tty) flag, then assume it's a pid and insert a 'p' flag.
 	 */
-	if (isdigit(*cp) && (cp == s || cp[-1] != 't' && cp[-1] != 'p' &&
-	    (cp - 1 == s || cp[-2] != 't')))
+	if (isdigit(*cp) && (cp == s || (cp[-1] != 't' && cp[-1] != 'p' &&
+	    (cp - 1 == s || cp[-2] != 't'))))
 		*ns++ = 'p';
-	(void)strcpy(ns, cp);		/* and append the number */
+	/* and append the number */
+	(void)strlcpy(ns, cp, newopts + len + 3 - ns);
 
 	return (newopts);
 }
 
 static void
-usage()
+usage(void)
 {
-
 	(void)fprintf(stderr,
-	    "usage:\t%s\n\t   %s\n\t%s\n",
-	    "ps [-aChjlmrSTuvwx] [-O|o fmt] [-p pid] [-t tty]",
-	    "[-M core] [-N system] [-W swap]",
-	    "ps [-L]");
+	    "usage: %s [-][aCcehjklmrSTuvwx] [-M core] [-N system] [-O fmt] [-o fmt] [-p pid]\n",
+	    __progname);	
+	(void)fprintf(stderr,
+	    "%-*s[-t tty] [-U username] [-W swap]\n", strlen(__progname) + 8, "");
+	(void)fprintf(stderr, "       %s [-L]\n", __progname);
 	exit(1);
 }

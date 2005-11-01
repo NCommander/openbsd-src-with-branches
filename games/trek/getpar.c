@@ -1,3 +1,4 @@
+/*	$OpenBSD: getpar.c,v 1.11 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: getpar.c,v 1.4 1995/04/24 12:25:57 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,22 +34,27 @@
 #if 0
 static char sccsid[] = "@(#)getpar.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: getpar.c,v 1.4 1995/04/24 12:25:57 cgd Exp $";
+static char rcsid[] = "$OpenBSD: getpar.c,v 1.11 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
-# include	<stdio.h>
-# include	"getpar.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "getpar.h"
+#include "trek.h"
+
+static int testterm(void);
 
 /**
  **	get integer parameter
  **/
 
+int
 getintpar(s)
-char	*s;
+	const char	*s;
 {
-	register int	i;
-	int		n;
+	int	i, n;
 
 	while (1)
 	{
@@ -72,11 +74,12 @@ char	*s;
  **	get floating parameter
  **/
 
-double getfltpar(s)
-char	*s;
+double
+getfltpar(s)
+	const char	*s;
 {
-	register int		i;
-	double			d;
+	int		i;
+	double		d;
 
 	while (1)
 	{
@@ -96,20 +99,21 @@ char	*s;
  **	get yes/no parameter
  **/
 
-struct cvntab	Yntab[] =
+const struct cvntab	Yntab[] =
 {
-	"y",	"es",	(int (*)())1,	0,
-	"n",	"o",	(int (*)())0,	0,
-	0
+	{ "y",	"es",	(cmdfun)1,	1 },
+	{ "n",	"o",	(cmdfun)0,	0 },
+	{ NULL,	NULL,	NULL,		0 }
 };
 
+int
 getynpar(s)
-char	*s;
+	const char	*s;
 {
-	struct cvntab		*r;
+	const struct cvntab	*r;
 
 	r = getcodpar(s, Yntab);
-	return ((long) r->value);
+	return (r->value2);
 }
 
 
@@ -117,14 +121,15 @@ char	*s;
  **	get coded parameter
  **/
 
-struct cvntab *getcodpar(s, tab)
-char		*s;
-struct cvntab	tab[];
+const struct cvntab *
+getcodpar(s, tab)
+	const char		*s;
+	const struct cvntab	tab[];
 {
 	char				input[100];
-	register struct cvntab		*r;
+	const struct cvntab		*r;
 	int				flag;
-	register char			*p, *q;
+	const char			*p, *q;
 	int				c;
 	int				f;
 
@@ -135,9 +140,9 @@ struct cvntab	tab[];
 		if (flag)
 			printf("%s: ", s);
 		if (f)
-			cgetc(0);		/* throw out the newline */
+			getchar();		/* throw out the newline */
 		scanf("%*[ \t;]");
-		if ((c = scanf("%[^ \t;\n]", input)) < 0)
+		if ((c = scanf("%99[^ \t;\n]", input)) < 0)
 			exit(1);
 		if (c == 0)
 			continue;
@@ -149,7 +154,8 @@ struct cvntab	tab[];
 			c = 4;
 			for (r = tab; r->abrev; r++)
 			{
-				concat(r->abrev, r->full, input);
+				strlcpy(input, r->abrev, sizeof input);
+				strlcat(input, r->full, sizeof input);
 				printf("%14.14s", input);
 				if (--c > 0)
 					continue;
@@ -194,25 +200,25 @@ struct cvntab	tab[];
  **	get string parameter
  **/
 
+void
 getstrpar(s, r, l, t)
-char	*s;
-char	*r;
-int	l;
-char	*t;
+	const char	*s;
+	char		*r;
+	int		l;
+	const char	*t;
 {
-	register int	i;
-	char		format[20];
-	register int	f;
+	int	i, f;
+	char	format[20];
 
 	if (t == 0)
 		t = " \t\n;";
-	(void)sprintf(format, "%%%d[^%s]", l, t);
+	(void)snprintf(format, sizeof format, "%%%d[^%s]", l, t);
 	while (1)
 	{
 		if ((f = testnl()) && s)
 			printf("%s: ", s);
 		if (f)
-			cgetc(0);
+			getchar();
 		scanf("%*[\t ;]");
 		i = scanf(format, r);
 		if (i < 0)
@@ -227,14 +233,15 @@ char	*t;
  **	test if newline is next valid character
  **/
 
+int
 testnl()
 {
-	register char		c;
+	int	c;
 
-	while ((c = cgetc(0)) != '\n')
+	while ((c = getchar()) != '\n')
 		if ((c >= '0' && c <= '9') || c == '.' || c == '!' ||
 				(c >= 'A' && c <= 'Z') ||
-				(c >= 'a' && c <= 'z') || c == '-')
+				(c >= 'a' && c <= 'z') || c == '-' || c == EOF)
 		{
 			ungetc(c, stdin);
 			return(0);
@@ -248,11 +255,12 @@ testnl()
  **	scan for newline
  **/
 
+void
 skiptonl(c)
-char	c;
+	int	c;
 {
 	while (c != '\n')
-		if (!(c = cgetc(0)))
+		if (!(c = getchar()))
 			return;
 	ungetc('\n', stdin);
 	return;
@@ -263,11 +271,12 @@ char	c;
  **	test for valid terminator
  **/
 
+static int
 testterm()
 {
-	register char		c;
+	int	c;
 
-	if (!(c = cgetc(0)))
+	if (!(c = getchar()))
 		return (1);
 	if (c == '.')
 		return (0);
@@ -285,12 +294,13 @@ testterm()
 **	zero is returned.
 */
 
+int
 readdelim(d)
-char	d;
+	int	d;
 {
-	register char	c;
+	int	c;
 
-	while (c = cgetc(0))
+	while ((c = getchar()))
 	{
 		if (c == d)
 			return (1);

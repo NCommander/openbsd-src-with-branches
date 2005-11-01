@@ -1,8 +1,8 @@
-/*	$NetBSD: ffs_balloc.c,v 1.3 1996/02/09 22:22:21 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_balloc.c,v 1.12 2003/05/26 18:33:16 tedu Exp $	*/
+/*	$NetBSD: ext2fs_balloc.c,v 1.10 2001/07/04 21:16:01 chs Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +31,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)ffs_balloc.c	8.4 (Berkeley) 9/23/93
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/param.h>
@@ -44,7 +41,7 @@
 #include <sys/file.h>
 #include <sys/vnode.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
@@ -59,21 +56,19 @@
  * the inode and the logical block number in a file.
  */
 int
-ext2fs_balloc(ip, bn, size, cred, bpp, flags)
-	register struct inode *ip;
-	register daddr_t bn;
-	int size;
-	struct ucred *cred;
-	struct buf **bpp;
-	int flags;
+ext2fs_buf_alloc(struct inode *ip, daddr_t bn, int size, struct ucred *cred, 
+    struct buf **bpp, int flags)
 {
-	register struct m_ext2fs *fs;
-	register daddr_t nb;
+	struct m_ext2fs *fs;
+	ufs1_daddr_t nb;
 	struct buf *bp, *nbp;
 	struct vnode *vp = ITOV(ip);
 	struct indir indirs[NIADDR + 2];
-	daddr_t newb, lbn, *bap, pref;
+	ufs1_daddr_t newb, lbn, *bap, pref;
 	int num, i, error;
+	u_int deallocated;
+	ufs1_daddr_t *allocib, *blkp, *allocblk, allociblk[NIADDR + 1];
+	int unwindidx = -1;
 
 	*bpp = NULL;
 	if (bn < 0)
@@ -85,7 +80,7 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 	 * The first NDADDR blocks are direct blocks
 	 */
 	if (bn < NDADDR) {
-		nb = ip->i_e2fs_blocks[bn];
+		nb = fs2h32(ip->i_e2fs_blocks[bn]);
 		if (nb != 0) {
 			error = bread(vp, bn, fs->e2fs_bsize, NOCRED, &bp);
 			if (error) {
@@ -94,21 +89,24 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 			}
 			*bpp = bp;
 			return (0);
-		} else {
-			error = ext2fs_alloc(ip, bn,
-			    ext2fs_blkpref(ip, bn, (int)bn, &ip->i_e2fs_blocks[0]),
-			    cred, &newb);
-			if (error)
-				return (error);
-			ip->i_e2fs_last_lblk = lbn;
-			ip->i_e2fs_last_blk = newb;
-			bp = getblk(vp, bn, fs->e2fs_bsize, 0, 0);
-			bp->b_blkno = fsbtodb(fs, newb);
-			if (flags & B_CLRBUF)
-				clrbuf(bp);
 		}
-		ip->i_e2fs_blocks[bn] = dbtofsb(fs, bp->b_blkno);
+
+		/*
+		 * allocate a new direct block.
+		 */
+		error = ext2fs_alloc(ip, bn,
+		    ext2fs_blkpref(ip, bn, (int)bn, &ip->i_e2fs_blocks[0]),
+		    cred, &newb);
+		if (error)
+			return (error);
+		ip->i_e2fs_last_lblk = lbn;
+		ip->i_e2fs_last_blk = newb;
+		ip->i_e2fs_blocks[bn] = h2fs32(newb);
 		ip->i_flag |= IN_CHANGE | IN_UPDATE;
+		bp = getblk(vp, bn, fs->e2fs_bsize, 0, 0);
+		bp->b_blkno = fsbtodb(fs, newb);
+		if (flags & B_CLRBUF)
+			clrbuf(bp);
 		*bpp = bp;
 		return (0);
 	}
@@ -120,20 +118,22 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 		return(error);
 #ifdef DIAGNOSTIC
 	if (num < 1)
-		panic ("ext2fs_balloc: ufs_getlbns returned indirect block\n");
+		panic ("ext2fs_balloc: ufs_getlbns returned indirect block");
 #endif
 	/*
 	 * Fetch the first indirect block allocating if necessary.
 	 */
 	--num;
-	nb = ip->i_e2fs_blocks[NDADDR + indirs[0].in_off];
+	nb = fs2h32(ip->i_e2fs_blocks[NDADDR + indirs[0].in_off]);
+	allocib = NULL;
+	allocblk = allociblk;
 	if (nb == 0) {
-		pref = ext2fs_blkpref(ip, lbn, 0, (daddr_t *)0);
-	        error = ext2fs_alloc(ip, lbn, pref,
-				  cred, &newb);
+		pref = ext2fs_blkpref(ip, lbn, 0, (ufs1_daddr_t *)0);
+		error = ext2fs_alloc(ip, lbn, pref, cred, &newb);
 		if (error)
 			return (error);
 		nb = newb;
+		*allocblk++ = nb;
 		ip->i_e2fs_last_blk = newb;
 		bp = getblk(vp, indirs[1].in_lbn, fs->e2fs_bsize, 0, 0);
 		bp->b_blkno = fsbtodb(fs, newb);
@@ -142,11 +142,11 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 		 * Write synchronously so that indirect blocks
 		 * never point at garbage.
 		 */
-		if ((error = bwrite(bp)) != 0) {
-			ext2fs_blkfree(ip, nb);
-			return (error);
-		}
-		ip->i_e2fs_blocks[NDADDR + indirs[0].in_off] = newb;
+		if ((error = bwrite(bp)) != 0)
+			goto fail;
+		unwindidx = 0;
+		allocib = &ip->i_e2fs_blocks[NDADDR + indirs[0].in_off];
+		*allocib = h2fs32(newb);
 		ip->i_flag |= IN_CHANGE | IN_UPDATE;
 	}
 	/*
@@ -157,25 +157,25 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 		    indirs[i].in_lbn, (int)fs->e2fs_bsize, NOCRED, &bp);
 		if (error) {
 			brelse(bp);
-			return (error);
+			goto fail;
 		}
-		bap = (daddr_t *)bp->b_data;
-		nb = bap[indirs[i].in_off];
+		bap = (ufs1_daddr_t *)bp->b_data;
+		nb = fs2h32(bap[indirs[i].in_off]);
 		if (i == num)
 			break;
-		i += 1;
+		i++;
 		if (nb != 0) {
 			brelse(bp);
 			continue;
 		}
-		pref = ext2fs_blkpref(ip, lbn, 0, (daddr_t *)0);
-		error = ext2fs_alloc(ip, lbn, pref, cred,
-				  &newb);
+		pref = ext2fs_blkpref(ip, lbn, 0, (ufs1_daddr_t *)0);
+		error = ext2fs_alloc(ip, lbn, pref, cred, &newb);
 		if (error) {
 			brelse(bp);
-			return (error);
+			goto fail;
 		}
 		nb = newb;
+		*allocblk++ = nb;
 		ip->i_e2fs_last_blk = newb;
 		nbp = getblk(vp, indirs[i].in_lbn, fs->e2fs_bsize, 0, 0);
 		nbp->b_blkno = fsbtodb(fs, nb);
@@ -185,11 +185,12 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 		 * never point at garbage.
 		 */
 		if ((error = bwrite(nbp)) != 0) {
-			ext2fs_blkfree(ip, nb);
 			brelse(bp);
-			return (error);
+			goto fail;
 		}
-		bap[indirs[i - 1].in_off] = nb;
+		if (unwindidx < 0)
+			unwindidx = i - 1;
+		bap[indirs[i - 1].in_off] = h2fs32(nb);
 		/*
 		 * If required, write synchronously, otherwise use
 		 * delayed write.
@@ -204,21 +205,17 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 	 * Get the data block, allocating if necessary.
 	 */
 	if (nb == 0) {
-		pref = ext2fs_blkpref(ip, lbn, indirs[i].in_off, &bap[0]);
-		error = ext2fs_alloc(ip, lbn, pref, cred,
-				  &newb);
+		pref = ext2fs_blkpref(ip, lbn, indirs[num].in_off, &bap[0]);
+		error = ext2fs_alloc(ip, lbn, pref, cred, &newb);
 		if (error) {
 			brelse(bp);
-			return (error);
+			goto fail;
 		}
 		nb = newb;
+		*allocblk++ = nb;
 		ip->i_e2fs_last_lblk = lbn;
 		ip->i_e2fs_last_blk = newb;
-		nbp = getblk(vp, lbn, fs->e2fs_bsize, 0, 0);
-		nbp->b_blkno = fsbtodb(fs, nb);
-		if (flags & B_CLRBUF)
-			clrbuf(nbp);
-		bap[indirs[i].in_off] = nb;
+		bap[indirs[num].in_off] = h2fs32(nb);
 		/*
 		 * If required, write synchronously, otherwise use
 		 * delayed write.
@@ -228,6 +225,10 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 		} else {
 			bdwrite(bp);
 		}
+		nbp = getblk(vp, lbn, fs->e2fs_bsize, 0, 0);
+		nbp->b_blkno = fsbtodb(fs, nb);
+		if (flags & B_CLRBUF)
+			clrbuf(nbp);
 		*bpp = nbp;
 		return (0);
 	}
@@ -236,12 +237,54 @@ ext2fs_balloc(ip, bn, size, cred, bpp, flags)
 		error = bread(vp, lbn, (int)fs->e2fs_bsize, NOCRED, &nbp);
 		if (error) {
 			brelse(nbp);
-			return (error);
+			goto fail;
 		}
 	} else {
 		nbp = getblk(vp, lbn, fs->e2fs_bsize, 0, 0);
 		nbp->b_blkno = fsbtodb(fs, nb);
 	}
+
 	*bpp = nbp;
 	return (0);
+fail:
+	/*
+	 * If we have failed part way through block allocation, we
+	 * have to deallocate any indirect blocks that we have allocated.
+	 */
+	for (deallocated = 0, blkp = allociblk; blkp < allocblk; blkp++) {
+		ext2fs_blkfree(ip, *blkp);
+		deallocated += fs->e2fs_bsize;
+	}
+	if (unwindidx >= 0) {
+		if (unwindidx == 0) {
+			*allocib = 0;
+		} else {
+			int r;
+	
+			r = bread(vp, indirs[unwindidx].in_lbn, 
+			    (int)fs->e2fs_bsize, NOCRED, &bp);
+			if (r) {
+				panic("Could not unwind indirect block, error %d", r);
+				brelse(bp);
+			} else {
+				bap = (ufs1_daddr_t *)bp->b_data;
+				bap[indirs[unwindidx].in_off] = 0;
+				if (flags & B_SYNC)
+					bwrite(bp);
+				else
+					bdwrite(bp);
+			}
+		}
+		for (i = unwindidx + 1; i <= num; i++) {
+			bp = getblk(vp, indirs[i].in_lbn, (int)fs->e2fs_bsize,
+			    0, 0);
+			bp->b_flags |= B_INVAL;
+			brelse(bp);
+		}
+	}
+	if (deallocated) {
+		ip->i_e2fs_nblock -= btodb(deallocated);
+		ip->i_e2fs_flags |= IN_CHANGE | IN_UPDATE;
+	}
+	return error;
 }

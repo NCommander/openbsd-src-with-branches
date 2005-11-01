@@ -1,3 +1,5 @@
+/*	$OpenBSD: find.c,v 1.10 2003/06/26 07:27:29 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +34,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)find.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: find.c,v 1.6 1994/07/18 09:55:36 cgd Exp $";
+static char rcsid[] = "$OpenBSD: find.c,v 1.10 2003/06/26 07:27:29 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -45,6 +43,7 @@ static char rcsid[] = "$Id: find.c,v 1.6 1994/07/18 09:55:36 cgd Exp $";
 #include <err.h>
 #include <errno.h>
 #include <fts.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -57,8 +56,7 @@ static char rcsid[] = "$Id: find.c,v 1.6 1994/07/18 09:55:36 cgd Exp $";
  *	command arguments.
  */
 PLAN *
-find_formplan(argv)
-	char **argv;
+find_formplan(char **argv)
 {
 	PLAN *plan, *tail, *new;
 
@@ -96,16 +94,16 @@ find_formplan(argv)
 	 */
 	if (!isoutput) {
 		if (plan == NULL) {
-			new = c_print();
+			new = c_print(NULL, NULL, 0);
 			tail = plan = new;
 		} else {
-			new = c_openparen();
+			new = c_openparen(NULL, NULL, 0);
 			new->next = plan;
 			plan = new;
-			new = c_closeparen();
+			new = c_closeparen(NULL, NULL, 0);
 			tail->next = new;
 			tail = new;
-			new = c_print();
+			new = c_print(NULL, NULL, 0);
 			tail->next = new;
 			tail = new;
 		}
@@ -147,19 +145,28 @@ FTS *tree;			/* pointer to top of FTS hierarchy */
  *	take a search plan and an array of search paths and executes the plan
  *	over all FTSENT's returned for the given search paths.
  */
+
+FTSENT *entry;			/* shared with SIGINFO handler */
+
 void
-find_execute(plan, paths)
-	PLAN *plan;		/* search plan */
-	char **paths;		/* array of pathnames to traverse */
+find_execute(PLAN *plan,	/* search plan */
+    char **paths)		/* array of pathnames to traverse */
 {
-	register FTSENT *entry;
+	sigset_t fullset, oset;
 	PLAN *p;
     
-	if (!(tree = fts_open(paths, ftsoptions, (int (*)())NULL)))
+	if (!(tree = fts_open(paths, ftsoptions, NULL)))
 		err(1, "ftsopen");
 
-	while (entry = fts_read(tree)) {
-		switch(entry->fts_info) {
+	sigfillset(&fullset);
+	for (;;) {
+		(void)sigprocmask(SIG_BLOCK, &fullset, &oset);
+		entry = fts_read(tree);
+		(void)sigprocmask(SIG_SETMASK, &oset, NULL);
+		if (entry == NULL)
+			break;
+
+		switch (entry->fts_info) {
 		case FTS_D:
 			if (isdepth)
 				continue;
@@ -181,13 +188,14 @@ find_execute(plan, paths)
 			warnx("%s: illegal path", entry->fts_path);
 			continue;
 		}
-		 
+
 		/*
-		 * call all the functions in the execution plan until one is
+		 * Call all the functions in the execution plan until one is
 		 * false or all have been executed.  This is where we do all
 		 * the work specified by the user on the command line.
 		 */
-		for (p = plan; p && (p->eval)(p, entry); p = p->next);
+		for (p = plan; p && (p->eval)(p, entry); p = p->next)
+		    ;
 	}
 	(void)fts_close(tree);
 }

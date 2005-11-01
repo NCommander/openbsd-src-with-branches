@@ -1,3 +1,4 @@
+/*	$OpenBSD: syslimits.h,v 1.7 2004/05/31 18:31:52 millert Exp $	*/
 /*	$NetBSD: syslimits.h,v 1.12 1995/10/05 05:26:19 thorpej Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,6 +43,8 @@
 #define	OPEN_MAX		   64	/* max open files per process */
 #define	PATH_MAX		 1024	/* max bytes in pathname */
 #define	PIPE_BUF		  512	/* max bytes for atomic pipe writes */
+#define	SYMLINK_MAX	     PATH_MAX	/* max bytes in a symbolic link */
+#define	SYMLOOP_MAX		   32	/* max symlinks per path (for loops) */
 
 #define	BC_BASE_MAX	      INT_MAX	/* max ibase/obase values in bc(1) */
 #define	BC_DIM_MAX		65535	/* max array elements in bc(1) */
@@ -54,5 +53,14 @@
 #define	COLL_WEIGHTS_MAX	    2	/* max weights for order keyword */
 #define	EXPR_NEST_MAX		   32	/* max expressions nested in expr(1) */
 #define	LINE_MAX		 2048	/* max bytes in an input line */
+#ifndef RE_DUP_MAX
 #define	RE_DUP_MAX		  255	/* max RE's in interval notation */
 #endif
+
+#if !defined(_POSIX_C_SOURCE) || defined(_XOPEN_SOURCE)
+#define	IOV_MAX			 1024	/* max # of iov's (readv,sendmsg,etc) */
+#define	NZERO			   20	/* default "nice" */
+#endif /* !_POSIX_C_SOURCE || _XOPEN_SOURCE */
+
+#endif
+

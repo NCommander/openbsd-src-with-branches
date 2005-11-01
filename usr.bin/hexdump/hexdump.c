@@ -1,6 +1,9 @@
+/*	$OpenBSD: hexdump.c,v 1.10 2003/06/10 22:20:47 deraadt Exp $	*/
+/*	$NetBSD: hexdump.c,v 1.7 1997/10/19 02:34:06 lukem Exp $	*/
+
 /*
- * Copyright (c) 1989 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1989, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,11 +38,13 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)hexdump.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: hexdump.c,v 1.2 1993/08/01 18:14:48 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: hexdump.c,v 1.10 2003/06/10 22:20:47 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "hexdump.h"
 
 FS *fshead;				/* head of format strings */
@@ -51,15 +52,15 @@ int blocksize;				/* data block size */
 int exitval;				/* final exit value */
 int length = -1;			/* max bytes to read */
 
-main(argc, argv)
-	int argc;
-	char **argv;
-{
-	extern int errno;
-	register FS *tfs;
-	char *p, *rindex();
+int	main(int, char **);
 
-	if (!(p = rindex(argv[0], 'o')) || strcmp(p, "od"))
+int
+main(int argc, char *argv[])
+{
+	FS *tfs;
+	char *p;
+
+	if (!(p = strrchr(argv[0], 'o')) || strcmp(p, "od"))
 		newsyntax(argc, &argv);
 	else
 		oldsyntax(argc, &argv);

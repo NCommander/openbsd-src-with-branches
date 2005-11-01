@@ -1,3 +1,4 @@
+/*	$OpenBSD: sunos_util.h,v 1.2 1995/06/24 20:22:58 christos Exp $	*/
 /*	$NetBSD: sunos_util.h,v 1.2 1995/06/24 20:22:58 christos Exp $	*/
 
 /*

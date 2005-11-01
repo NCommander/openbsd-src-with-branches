@@ -1,3 +1,4 @@
+/*	$OpenBSD: vis.h,v 1.10 2004/10/17 20:25:31 otto Exp $	*/
 /*	$NetBSD: vis.h,v 1.4 1994/10/26 00:56:41 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,7 +39,7 @@
  * to select alternate encoding format
  */
 #define	VIS_OCTAL	0x01	/* use octal \ddd format */
-#define	VIS_CSTYLE	0x02	/* use \[nrft0..] where appropiate */
+#define	VIS_CSTYLE	0x02	/* use \[nrft0..] where appropriate */
 
 /*
  * to alter set of characters encoded (default is to encode all
@@ -58,6 +55,7 @@
  * other
  */
 #define	VIS_NOSLASH	0x40	/* inhibit printing '\' */
+#define	VIS_GLOB	0x100	/* encode glob(3) magics and '#' */
 
 /*
  * unvis return codes
@@ -76,11 +74,17 @@
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-char	*vis __P((char *, int, int, int));
-int	strvis __P((char *, const char *, int));
-int	strvisx __P((char *, const char *, size_t, int));
-int	strunvis __P((char *, const char *));
-int	unvis __P((char *, char, int *, int));
+char	*vis(char *, int, int, int);
+int	strvis(char *, const char *, int);
+int	strnvis(char *, const char *, size_t, int)
+		__attribute__ ((__bounded__(__string__,1,3)));
+int	strvisx(char *, const char *, size_t, int)
+		__attribute__ ((__bounded__(__string__,1,3)));
+int	strunvis(char *, const char *);
+int	unvis(char *, char, int *, int);
+ssize_t strnunvis(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+
 __END_DECLS
 
 #endif /* !_VIS_H_ */

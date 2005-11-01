@@ -282,7 +282,7 @@ CHANGES from sudo 1.3.1pl4
 95) Worked around a bug in AIX's lex in parse.c.  AIX lex doesn't seem
     to handle {x,y} range notation correctly.  Bleah.
 
-96) Sudo would not report a failed attempt if the user entered <return>
+96) Sudo would not report a failed attempt if the user entered return
     at the 2nd password: prompt so someone trying to guess a password
     could just invoked sudo multiple times and try one passwd at a time.
     Reported by Jonathan Adams <jonathan@smada.com>.
@@ -552,7 +552,7 @@ CHANGES from sudo 1.3.6 BETA
 
 172) interfaces.c should work on ISC UN*X again.
 
-173) All source files are <= 14 characters for old SYSV filesystems.
+173) All source files are <= 14 characters for old SYSV file systems.
 
 CHANGES from sudo 1.3.7 GAMMA
 
@@ -1184,3 +1184,612 @@ Sudo 1.5.9 released.
      to be character at a time.
 
 372) sudo now turns off core dumps via setrlimit (probably paranoia).
+
+Sudo 1.6 released.
+
+373) Better diagnostics on PAM failure.
+
+374) Killed shell_noargs option, it cannot work since the command needs to
+     be set before sudoers is parsed.
+
+375) Fixed the following Defaults options: set_home, fqdn, syslog, tty_tickets,
+     ticket_dir, insults.
+
+376) When using select() in tgetpass(), do a separate select before
+     each read to be sure we can timeout correctly.
+
+377) SecurID support compiles and works again.
+
+378) Fixed a bug parsing runas modifiers.  If a user spec contained multiple
+     runas specs, the latter ones may not be applied.
+
+379) #uid now works in a RunasAlias
+
+380) Don't ask the user for a password if the user is not allowed to run
+     the command and the authenticate flag (in sudoers) is false.
+
+381) Added configure check for initgroups(3).
+
+382) Use our own fnmatch() if there is no fnmatch.h, even if there is an
+     fnmatch() in libc.
+
+Sudo 1.6.1 released.
+
+383) Better behavior for -l and -v flags in conjunction with NOPASSWD and
+     added "verifypw" and "listpw" options.
+
+384) For HP-UX with cc, add the -Aa flag along with -D_HPUX_SOURCE.
+
+385) Fix compilation with K&R compilers.
+
+386) For netgroup host matching, match against the short version of the
+     hostname as well as the long one if they are different.
+
+387) Terminate passwd reading on '\r' in addition to '\n'
+
+388) Visudo used to loop endlessly if a user entered ^D at the whatnow
+     prompt.  EOF is now treaded as 'x' (exit w/o saving changes).
+
+389) The 'shell_noargs' runtime option is back based on a patch from
+     bguillory@email.com.
+
+390) Systems that return RLIM_INFINITY for RLIMIT_NOFILE (like AIX)
+     would loop for a very loing time during sudo startup.  A value of
+     RLIM_INFINITY is now ignored (getdtablesize/sysconf is used instead).
+
+391) Locking in visudo was broken.  We now lock the sudoers file, not the
+     sudoers temp file, which should be safe.
+
+392) PAM fixups: custom prompts now work correctly and errors are
+     dealt with more sanely.  Patches from Cloyce D. Spradling.
+
+Sudo 1.6.2 released.
+
+393) Users in the 'exempt' group shouldn't get their $PATH overridden
+     by 'secure-path'.  Patch from jmknoble@pobox.com.
+
+394) Pam now works on HP-UX 11.0, thanks to Jeff A. Earickson.
+
+395) Fixed a bug that caused an infinite loop when the password
+     timeout was disabled.
+
+396) It is now possible to set the path to the editor for visudo as well
+     as the flag that determines whether or not visudo will look at
+     $EDITOR in the sudoers file.
+
+397) configure now pulls in the values of LIBS, LDFLAGS, CPPFLAGS, etc
+     as the documentation says it ought to.
+
+398) Added rootpw, runaspw, and targetpw to prompt for the root, runas_default
+     and target user's passwords respectively (instead of the invoking user's
+     password).
+
+399) Added -S flag to force password read from stdin.
+
+400) Restore coredumpsize resource limit before exec'ing the child
+     process (sudo sets it to 0 internally).
+
+401) Truncate unencrypted password to 8 chars if encrypted password is exactly
+     13 characters (indicateing standard a DES password).  Many versions
+     of crypt() do this for you, but not all (like HP-UX's).
+
+402) Fixed a typo/thinko that broke secureware support for long passwords.
+
+403) Added a new command line switch '-c' to support BSD login classes.
+     The '-c' option can be used to sudo a command with specific resource
+     limits in the login.conf database.  This feature is optionally enabled
+     via the --with-logincap configure switch.  Based on a patch from
+     Michael D. Marchionna.
+
+404) Fixed a bug where sudo would hang around and consume CPU if we spawn
+     a long-running process.
+
+405) Deal with HP-UX password aging info tacked on to the end of the
+     encrypted password.
+
+406) Added set_logname run-time option.  When unset, sudo will not set
+     the USER and LOGNAME environment variables.
+
+407) Wildcards are now allowed in the hostnames specified in sudoers.
+     The 'fqdn' option is often required for this to be useful.
+
+408) Fixed a bug where host and user qualifiers in a Defaults entry were
+     not being used correctly and the entry was being applied globally.
+
+Sudo 1.6.3 released.
+
+409) Fixed targetpw, rootpw, and runaspw options when used with non-passwd
+     authentication (pam, etc).
+
+Sudo 1.6.3p1 released.
+
+410) When the targetpw flag is set, use the target username as part
+     of the timestamp path.
+
+Sudo 1.6.3p2 released.
+
+411) Fixed a bug that prevented the -H option from being useful.
+
+Sudo 1.6.3p3 released.
+
+412) Fixed a case where a string was used after it had been freed.
+
+Sudo 1.6.3p4 released.
+
+413) Fixed listpw and verifypw sudoers options.
+
+414) Do not write NUL when writing passwd prompt; hag@linnaean.org.
+
+Sudo 1.6.3p5 released.
+
+415) Fix word splitting bug that caused a segv for very long command line args.
+
+Sudo 1.6.3p6 released.
+
+416) Fix negation of path-type Defaults entries in a boolean context.
+
+Sudo 1.6.3p7 released.
+
+417) Visudo now checks for the existence of an editor and gives a sensible
+     error if it does not exist.
+
+418) The path to the editor for visudo is now a colon-separated list of
+     allowable editors.  If the user has $EDITOR set and it matches
+     one of the allowed editors that editor will be used.  If not,
+     the first editor that actually exists is used.
+
+419) Visudo now does its own fork/exec instead of calling system(3).
+
+420) Allow special characters (including '#') to be embedded in pathnames
+     if quoted by a '\\'.  The quoted chars will be dealt with by fnmatch().
+     Unfortunately, 'sudo -l' still prints the '\\'.
+
+421) Added the always_set_home option.
+
+422) Strip NLSPATH and PATH_LOCALE out from the environment to prevent
+     reading of protected files by a less privileged user.
+
+423) Added support for BSD authentication and associated -a flag.
+
+424) Added check for _innetgr(3) since NCR systems have this instead
+     of innetgr(3).
+
+425) Added stay_setuid option for systems that have libraries that perform
+     extra paranoia checks in system libraries for setuid programs.
+
+426) Environment munging is now done by hand.  The environment is zeroed
+     upon sudo startup and a new environment is built before the command
+     is executed.  This means we don't rely on getenv(3), putenv(3),
+     or setenv(3).
+
+427) Added a class of environment variables that are only cleared if they
+     contain '/' or '%' characters.
+
+428) Use stashed user_gid when checking against exempt gid since sudo
+     sets its gid to SUDOERS_GID, making getgid() return that, not the
+     real gid.  Fixes problem with setting exempt group == SUDOERS_GID.
+     Fix from Paul Kranenburg.
+
+429) Fixed file locking in visudo on NeXT which has a broken lockf().
+     Patch from twetzel@gwdg.de.
+
+430) Regenerated configure script with autoconf-2.52 (required some
+     tweaking of configure.in and friends).
+
+431) Added mail_badpass option to send mail when the user does not
+     authenticate successfully.
+
+432) Added env_reset Defaults option to reset the environment to
+     a clean slate.  Also implemented env_keep Defaults option
+     to specify variables to be preserved when resetting the
+     environment.
+
+433) Added env_check and env_delete Defaults options to allow the admin
+     to modify the built-in list of environment variables to remove.
+
+434) If timestamp_timeout < 0 then the timestamp never expires.  This
+     allows users to manage their own timestamps and create or delete
+     them via 'sudo -v' and 'sudo -k' respectively.
+
+435) Authentication routines that use sudo's tgetpass() now accept
+     ^C or ^Z at the password prompt and sudo will act appropriately.
+
+436) Added a check-only mode to visudo to check an existing sudoers
+     file for sanity.
+
+437) Visudo can now edit an alternate sudoers file.
+
+438) If sudo is configured with S/Key support and the system has
+     skeyaccess(3) use that to determine whether or not to allow
+     a normal Unix password or just S/Key.
+
+439) Fixed CIDR handling in sudoers.
+
+440) Fixed a segv if the local hostname is not resolvable and
+     the 'fqdn' option is set.
+
+441) "listpw=never" was not having an effect for users who did not
+     appear in sudoers--now it does.
+
+442) The --without-sendmail option now works on systems with
+     a /usr/include/paths.h file that defines _PATH_SENDMAIL.
+
+443) Removed the "secure_path" Defaults option as it does not work and
+     cannot work until the parser is overhauled.
+
+444) Added new -P flag and "preserve_groups" sudoers option to cause
+     sudo to preserve the group vector instead of setting it to that
+     of the target user.  Previously, if the target user was root
+     the group vector was not changed.  Now it is always changed unless
+     the -P flag or "preserve_groups" option was given.
+
+445) If find_path() fails as root, try again as the invoking user (useful
+     for NFS).  Idea from Chip Capelik.
+
+446) Use setpwent()/endpwent() and its shadow equivalents to be sure
+     the passwd/shadow file gets closed.
+
+447) Use getifaddrs(3) to get the list of network interfaces if it is
+     available.
+
+448) Dump list of local IP addresses and environment variables to clear
+     when 'sudo -V' is run as root.
+
+449) Reorganized the lexer a bit and added more states.  Sudo now does a
+     better job of parsing command arguments in the sudoers file.
+
+450) Wrap each call to syslog() with openlog()/closelog() since some
+     things (such as PAM) may call closelog(3) behind sudo's back.
+
+451) The LOGNAME and USER environment variables are now set if the user
+     specified a target uid and that uid exists in the password database.
+
+452) configure will no longer add the -g flag to CFLAGS by default.
+
+453) Now call pam_setcreds() to setup creds for the target user when
+     PAM is in use.  On Linux this often sets resource limits.
+
+454) If "make install" is run by non-root and the destination dir
+     is writable, install things normally but don't set owner and mode.
+
+455) The Makefile now supports installing in a shadow hierarchy
+     specified via the DESTDIR variable.
+
+456) config.h.in is now generated by autoheader.
+
+Sudo 1.6.4 released.
+
+457) Move the call to rebuild_env() until after MODE_RESET_HOME is set.
+     Otherwise, the set_home option has no effect.
+
+458) Fix use of freed memory when the "fqdn" flag is set.  This was
+     introduced by the fix for the "segv when gethostbynam() fails" bug.
+
+459) Add 'continue' statements to optimize the switch statement.
+     From Solar Designer.
+
+Sudo 1.6.4p1 released.
+
+460) Some special characters were not being escaped properly (e.g. '\,')
+     in command line arguments and would cause a syntax error instead.
+
+461) "sudo -l" would not work if the always_set_home option was set.
+
+462) Added a configure option to disable use of POSIX saved IDs for
+     operating systems where these are broken.
+
+463) The SHELL environment variable was preserved from the user's environment
+     instead of being reset based on the passwd database even when the
+     "env_reset" option was set.
+
+Sudo 1.6.4p2 released.
+
+464) Added a configure option to cause mail sent by sudo to be run as
+     the invoking user instead of root.  Some people consider this to
+     be safer.
+
+465) If the mailer is being run as root, use a hard-coded environment
+     that is not influenced in any way by the invoking user's environment.
+
+466) Fixed the call to skeyaccess().  Patch from Phillip E. Lobbes.
+
+Sudo 1.6.5 released.
+
+467) Visudo could access memory that was already freed.
+
+468) If the skey.access file denied use of plaintext passwords sudo
+     would exit instead of allowing the user to enter an S/Key.
+
+Sudo 1.6.5p1 released.
+
+469) Older versions of BSDi have getifaddrs() but no freeifaddrs().
+
+470) BSDi has a fake setreuid() as do certain versions of FreeBSD and NetBSD.
+
+471) Ignore the return value of pam_setcred().  In Linux-PAM 0.75,
+     pam_setcred() will return PAM_PERM_DENIED even if the setcred function
+     of the module succeeds when pam_authenticate() has not been called.
+
+472) Avoid giving PAM a NULL password response, use the empty string instead.
+     This avoids a log warning when the user hits ^C at the password prompt
+     when Linux-PAM is in use.  This also prevents older versions of
+     Linux-PAM from dereferencing the NULL pointer.
+
+473) The user's password was not zeroed after use when AIX authentication,
+     BSD authentication, FWTK or PAM was in use.
+
+Sudo 1.6.5p2 released.
+
+474) Fixed compilation problem on HP-UX 9.x.
+
+475) Moved call to endpwent() and added a call to endgrent().
+
+476) Fixed a warning conflicting declaration of VOID with AFS.
+
+477) Fixed a security hole in prompt rewriting found by Global InterSec.
+
+Sudo 1.6.6 released.
+
+478) Wildcards now work correctly in the env_keep Defaults directive.
+
+479) Added support for non-root timestamp dirs.  This allows the timestamp
+     dir to be shared via NFS (though this is not recommended).
+
+480) Removed double printing of bad environment variable table in -V mode.
+
+481) configure script has been regenerated with autoconf 2.5.7.
+     This required some changes to configure.in.
+
+482) Fixed a compilation problem on SunOS; thanks to Alek O. Komarnitsky.
+
+483) SecurID 5.0 API support from Michael Stroucken.
+
+484) Restore state of signal handlers to what we had upon startup.
+     Fixes a problem when using sudo with nohup; thanks to Paul Markham.
+
+485) Revamp set_perms() to use setresuid() or setreuid() when available
+     in preference to POSIX stuff since they allow us to properly
+     implement "stay_setuid" whereas POSIX does not really.
+
+486) In strict mode sudo did not throw an error for undefined User_Aliases.
+
+487) Fixed a Makefile bug on IRIX.
+
+488) Write the prompt *after* turning off echo to avoid some password
+     characters being echoed on heavily-loaded machines with fast typists.
+
+489) Added %U and %H escapes in the prompt and fixed treatment of %%.
+
+490) Visudo will now add a final newline to sudoers if the user's editor
+     not add one before EOF.
+
+491) The lexer state is now reset to its initial value on EOF. 
+     Previously, the state was not reset between parser invocations
+     which could cause problems for visudo in rare cases.
+
+492) Added support for Defaults that apply based on the RunasUser.
+
+493) Sudo now includes copies of strlc{at,py} and uses them throughout.
+
+494) Sudo is now careful to avoid interger overflow when allocating
+     memory.  This is one of those "should not happen" situations.
+
+495) Added a configure option (--with-stow) to make sudo compatible
+     with GNU stow.
+
+496) auth/kerb5.c now compiles under Heimdal.
+
+497) The volatile prefix is used in the hopes of preventing compilers
+     from optimizing away memory zeroing.  Unfortunately, this results
+     in some warnings from gcc.
+
+498) Better Kerberos IV/V support in the configure script.
+
+499) Fixed a logic thinko in the SIGCHLD handler that caused problems
+     with rlogin on HP-UX.
+
+500) configure now adds -R to LDFLAGS when it adds -L for Solaris and
+     SVR4.  There is a configure option, --with-rpath, to control this.
+
+501) On AIX, configure will pass extra directory paths to the linker
+     via the -blibpath ld option.  This is only active when additional
+     library paths are used.  It may be disabled via the
+     --without-blibpath configure option.
+
+502) The --with-skey and --with-opie configure options now take
+     an optional directory argument that should have an include and
+     lib dir for the skey/opie include file and library respectively.
+
+Sudo 1.6.7 released.
+
+503) Fixed false positives in the overflow detection of expand_prompt().
+
+Sudo 1.6.7p1 released.
+
+504) An unterminated comment broke Kerberos V authentication.
+
+505) The krb5-config script is used to determine Kerberos V CPPFLAGS
+     and LDFLAGS/LIBS if it exists.
+
+506) Backed out changes to mkinstalldirs from autoconf 2.57 that
+     caused problems on Tru64 Unix.
+
+Sudo 1.6.7p2 released.
+
+507) Kerberos V support should work on latest MIT Kerberos V and Heimdal.
+
+Sudo 1.6.7p3 released.
+
+508) Fixed remaining Kerberos V issues with MIT Kerberos V and old Heimdal.
+
+Sudo 1.6.7p4 released.
+
+509) Fixed a typo that caused a compilation error on Heimdal.
+
+510) Darwin (MacOS X) doesn't have a real setreuid() system call.
+
+511) Fixed a problem with large numbers of environment variables.
+
+Sudo 1.6.7p5 released.
+
+512) Fixed a problem on FreeBSD when the user is only listed in NIS (not
+     master.passwd) and netgroups are used in the master.passwd file.
+
+513) BSD-style warn/err functions are now used throughout.
+
+514) Fixed the --with-stow configure option
+
+515) Added a "sudo_lecture" option that points to a file containing a custom
+     lecture.
+
+516) The username in a log entry is no longer truncated at 8 characters.
+
+517) A new tag, NOEXEC, will prevent a dynamically-linked program being run
+     by sudo from executing another program (think shell escapes).
+     Because this uses LD_PRELOAD it has no effect on static binaries.
+     Idea from Reznic Valery.
+
+518) TIS fwtk authentication now supports fwtk 2.0 and higher.
+
+519) Sudo will now try to stat the command to be run as the user
+     specified by the -u flag if the stat fails as root.  Fixes
+     an NFS issue.
+
+520) Added Stan Lee / Uncle Ben quote to the lecture (from RedHat).
+
+521) Added a -i option to simulate an initial login similar to "su -".
+     Originally based on a patch from David J. MacKenzie.
+
+522) Added a -e option to edit files the with uid of the invoking user.
+     This prevents the user from editing other files or running commands
+     as the target user.  If sudo is run as "sudoedit" the -e flag is implied.
+
+523) If sudo is used to run as root shell, further sudo commands will
+     be logged as run by the user specified by the SUDO_USER environment
+     variable.  In -e mode (sudoedit), SUDO_USER is used to determine
+     what user to run the editor when the real uid is 0.
+
+524) Merged in LDAP support from Aaron Spangler.
+
+525) Added the --with-pc-insults configure to replace politically
+     incorrect insults with ones from Alek O. Komarnitsky.
+
+526) Added start_tls support from Gudleik Rasch <gudleik@rastamatra.org>.
+
+527) A uid specified in sudoers now matches the user specified by the
+     -u flag even if the -u flag specified a name, not a uid.
+
+528) /tmp/.odus is no longer used for timestamps by default.  One of
+     /var/run/sudo, /var/adm/sudo or /usr/adm/sudo is used depending
+     on what directories exist.
+
+529) Quoting globbing characters with a backslash now works as documented.
+
+530) A negated user/uid in a runas list was not treated the same as a
+     negated command (it did not override a previously allowed entry).
+     Now it does.
+
+531) Added support for Tandem NSK and other systems w/o seteuid().
+
+532) The timeout on password reading is now done via alarm(), not select().
+
+533) Fixed several issues when closing all open descriptors.  Sudo now uses
+     closefrom() if it exists, using /proc/$$/fd if possible.
+
+534) Use PATH_MAX, not MAXPATHLEN since the former is standardized.
+
+535) Added a check in visudo for runas_default being used before it
+     was set.
+
+536) If the target user == invoking user a password is no longer required.
+
+537) PAM support now uses Use pam_acct_mgmt() to check for disabled accounts
+    (from Brian Farrell).
+
+538) The sudoers file is now parsed as the runas user in all cases instead
+     of root.  This fixes some issues with running NFS-mounted commands.
+
+539) Sudo now produces a sensible error message when the targetpw
+     Defaults option is set and a non-existent uid is specified via -u.
+
+Sudo 1.6.8 released.
+
+540) Now find the command base and fill in struct stat earlier.
+
+541) sudoedit now re-opens the temp file as the invoking user.
+
+542) struct timespec is used throughout the code base.
+
+543) Added --with-ldap-conf-file option to override /etc/ldap.conf
+
+544) Added SSL tls_* certificate checking options when using LDAP.
+
+545) Sudoedit will now only attempt to edit regular files or links.
+
+546) Sudo now uses futime() or futimes() where possible.
+
+547) Updated sample.pam to a current version.
+
+548) Better detection of unchanged files in sudoedit.
+
+Sudo 1.6.8p1 released.
+
+549) Bash exported functions are now stripped from the environment passed
+     to the program to be executed.
+
+Sudo 1.6.8p2 released.
+
+550) The CDPATH variable is now stripped from the environment passed
+     to the program to be executed.
+
+551) Fix temp file generation on systems where the _PATH_VARTMP macro
+     lacks a trailing slash.
+
+Sudo 1.6.8p3 released.
+
+552) The KRB5CCNAME environment variable is preserved during sudo
+     execution for password lookups that use GSSAPI.
+
+Sudo 1.6.8p4 released.
+
+553) Added a configure check for systems with a 2-argument version of
+     timespecsub (like BSD/OS).
+
+554) Added stub struct defintions to sudo.h to quiet compiler warnings
+     on some systems.
+
+555) In sudoers Defaults lines, tuples like "lecture" may now be used
+     without a value, restoring their old boolean-like nature.
+
+556) Invalid values for a tuple are now handled correctly.
+
+Sudo 1.6.8p5 released.
+
+557) Added a set of missing braces needed for MacOS X / Darwin.
+
+558) Define LDAP_OPT_SUCCESS for those without it.
+
+Sudo 1.6.8p6 released.
+
+559) Warn if the user tries to use the -u option when not running a command.
+
+560) Better PAM error handling and messages.
+
+561) Fixed setting of $USER when env_reset is enabled.
+
+Sudo 1.6.8p7 released.
+
+562) Fixed noexec functionality on Linux.
+
+563) Fixed minor format string mismatches in some error cases.
+
+564) Fixed a bug that prevented Heimdal authentication from working.
+
+Sudo 1.6.8p8 released.
+
+565) Updated config.guess and config.sub entries for OpenBSD.
+
+566) A sudoers entry with sudo ALL no longer overwrites the value of
+     safe_cmnd.
+
+Sudo 1.6.8p9 released.

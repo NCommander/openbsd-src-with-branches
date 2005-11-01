@@ -1,4 +1,4 @@
-.\"	$NetBSD: isinf.3,v 1.3 1995/02/27 04:34:56 cgd Exp $
+.\"	$OpenBSD: isinf.3,v 1.10 2003/02/27 23:04:02 jason Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,34 +27,47 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)isinf.3	8.2 (Berkeley) 1/29/94
-.\"
 .Dd January 29, 1994
 .Dt ISINF 3
 .Os
 .Sh NAME
 .Nm isinf ,
-.Nm isnan
+.Nm isinff ,
+.Nm isnan ,
+.Nm isnanf
 .Nd test for infinity or not-a-number
 .Sh SYNOPSIS
-.Ft int 
-.Fn isinf double
-.Ft int 
-.Fn isnan double
+.Fd #include <math.h>
+.Ft int
+.Fn isinf "double n"
+.Ft int
+.Fn isinff "float n"
+.Ft int
+.Fn isnan "double n"
+.Ft int
+.Fn isnanf "float n"
 .Sh DESCRIPTION
 The
-.Fn isninf
-function
-returns 1 if the number is
-.Dq \\*(If ,
-otherwise 0.
+.Fn isinf
+function returns 1 if the number
+.Fa n
+is \*(If, otherwise 0.
+The
+.Fn isinff
+function is a single precision version of
+.Fn isinf .
 .Pp
 The
 .Fn isnan
-function
-returns 1 if the number is
+function returns 1 if the number
+.Fa n
+is
 .Dq not-a-number ,
 otherwise 0.
+The
+.Fn isnanf
+function is a single precision version of
+.Fn isnan .
 .Sh SEE ALSO
 .Xr math 3
 .Rs
@@ -67,8 +76,7 @@ otherwise 0.
 .%R Std 754-1985
 .Re
 .Sh BUGS
-Neither the
 .Tn VAX
-nor the Tahoe floating point have distinguished values
+floating point does not have distinguished values
 for either infinity or not-a-number.
-These routines always return 0 on those architectures.
+These routines always return 0 on that architecture.

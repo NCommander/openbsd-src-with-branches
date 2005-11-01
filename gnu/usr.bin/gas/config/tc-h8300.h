@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* This file is tc-h8300.h
 
    Copyright (C) 1987-1992 Free Software Foundation, Inc.

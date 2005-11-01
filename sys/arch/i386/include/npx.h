@@ -1,3 +1,4 @@
+/*	$OpenBSD: npx.h,v 1.7 2004/06/13 21:49:16 niklas Exp $	*/
 /*	$NetBSD: npx.h,v 1.11 1994/10/27 04:16:11 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -58,6 +55,13 @@ struct	env87 {
 	long	en_fos;		/* floating operand segment selector */
 };
 
+#define EN_SW_IE	0x0001	/* invalid operation */
+#define EN_SW_DE	0x0002	/* denormal */
+#define EN_SW_ZE	0x0004	/* divide by zero */
+#define EN_SW_OE	0x0008	/* overflow */
+#define EN_SW_UE	0x0010	/* underflow */
+#define EN_SW_PE	0x0020	/* loss of precision */
+
 /* Contents of each floating point accumulator */
 struct	fpacc87 {
 #ifdef dontdef	/* too unportable */
@@ -70,14 +74,64 @@ struct	fpacc87 {
 #endif
 };
 
-/* Floating point context */
+#ifdef GPL_MATH_EMULATE
+#include <gnu/arch/i386/fpemul/math_emu.h>
+#endif
+
+/* Floating point and emulator context */
 struct	save87 {
 	struct	env87 sv_env;		/* floating point control/status */
-	struct	fpacc87	sv_ac[8];	/* accumulator contents, 0-7 */
-#ifndef dontdef
-	u_long	sv_ex_sw;	/* status word for last exception (was pad) */
-	u_long	sv_ex_tw;	/* tag word for last exception (was pad) */
-	u_char	sv_pad[8 * 2 - 2 * 4];	/* bogus historical padding */
+	struct	fpacc87 sv_ac[8];	/* accumulator contents, 0-7 */
+	u_long	sv_ex_sw;		/* status word for last exception */
+	u_long	sv_ex_tw;		/* tag word for last exception */
+};
+
+/* Environment of FPU/MMX/SSE/SSE2. */
+struct envxmm {
+/*0*/	uint16_t en_cw;		/* FPU Control Word */
+	uint16_t en_sw;		/* FPU Status Word */
+	uint8_t  en_tw;		/* FPU Tag Word (abridged) */
+	uint8_t  en_rsvd0;
+	uint16_t en_opcode;	/* FPU Opcode */
+	uint32_t en_fip;	/* FPU Instruction Pointer */
+	uint16_t en_fcs;	/* FPU IP selector */
+	uint16_t en_rsvd1;
+/*16*/	uint32_t en_foo;	/* FPU Data pointer */
+	uint16_t en_fos;	/* FPU Data pointer selector */
+	uint16_t en_rsvd2;
+	uint32_t en_mxcsr;	/* MXCSR Register State */
+	uint32_t en_rsvd3;
+};
+
+/* FPU regsters in the extended save format. */
+struct fpaccxmm {
+	uint8_t	fp_bytes[10];
+	uint8_t	fp_rsvd[6];
+};
+
+/* SSE/SSE2 registers. */
+struct xmmreg {
+	uint8_t sse_bytes[16];
+};
+
+/* FPU/MMX/SSE/SSE2 context */
+struct savexmm {
+	struct envxmm sv_env;		/* control/status context */
+	struct fpaccxmm sv_ac[8];	/* ST/MM regs */
+	struct xmmreg sv_xmmregs[8];	/* XMM regs */
+	uint8_t sv_rsvd[16 * 14];
+	/* 512-bytes --- end of hardware portion of save area */
+	uint32_t sv_ex_sw;		/* saved SW from last exception */
+	uint32_t sv_ex_tw;		/* saved TW from last exception */
+};
+
+union savefpu {
+	struct save87 sv_87;
+	struct savexmm sv_xmm;
+#ifdef GPL_MATH_EMULATE
+	union i387_union gplemu;
+#else
+	u_char emupad[176];		/* sizeof(i387_union) */
 #endif
 };
 
@@ -90,7 +144,14 @@ struct	emcsts {
 
 /* Intel prefers long real (53 bit) precision */
 #define	__iBCS_NPXCW__		0x262
-#define	__NetBSD_NPXCW__	0x127f
+#define __BDE_NPXCW__		0x1272		/* FreeBSD */
+#define	__OpenBSD_NPXCW__	0x127f
+
+/*
+ * The default MXCSR value at reset is 0x1f80, IA-32 Instruction
+ * Set Reference, pg. 3-369.
+ */
+#define __INITIAL_MXCSR__       0x1f80
 
 /*
  * The standard control word from finit is 0x37F, giving:
@@ -115,6 +176,12 @@ struct	emcsts {
  * trapping denormals.
  */
 
-#define	__INITIAL_NPXCW__	__NetBSD_NPXCW__
+#define	__INITIAL_NPXCW__	__OpenBSD_NPXCW__
+
+void    process_xmm_to_s87(const struct savexmm *, struct save87 *);
+void    process_s87_to_xmm(const struct save87 *, struct savexmm *);
+struct cpu_info;
+
+void	npxinit(struct cpu_info *);
 
 #endif /* !_I386_NPX_H_ */

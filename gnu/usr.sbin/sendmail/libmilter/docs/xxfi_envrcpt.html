@@ -1,6 +1,9 @@
 <html>
 <head><title>xxfi_envrcpt</title></head>
 <body>
+<!--
+$Sendmail: xxfi_envrcpt.html,v 1.11 2003/12/30 00:19:42 gshapiro Exp $
+-->
 <h1>xxfi_envrcpt</h1>
 
 <table border="0" cellspacing=4 cellpadding=4>
@@ -52,12 +55,12 @@ Handle the envelope RCPT command.
   <tr valign="top">
      <td>SMFIS_TEMPFAIL</td>
      <td>Temporarily fail for this particular recipient; further recipients 
-     maystill be sent.  <a href="xxfi_abort.html">xxfi_abort</a> is not called.
+     may still be sent.  <a href="xxfi_abort.html">xxfi_abort</a> is not called.
      </td>
   </tr>
   <tr valign="top">
      <td>SMFIS_REJECT</td>
-     <td>Reject this particular recipient; further recipients maystill be sent.
+     <td>Reject this particular recipient; further recipients may still be sent.
      <a href="xxfi_abort.html">xxfi_abort</a> is not called.
      </td>
   </tr>
@@ -78,17 +81,17 @@ Handle the envelope RCPT command.
 <tr>
 <th valign="top" align=left>NOTES</th> 
 <td>For more details on ESTMP responses, please see RFC
-<a href="http://www.cis.ohio-state.edu/rfc/rfc1869.txt">1869</a>.</td>
+<a href="http://www.rfc-editor.org/rfc/rfc1869.txt">1869</a>.</td>
 </tr>
 </table>
 
 <hr size="1">
 <font size="-1">
-Copyright (c) 2000 Sendmail, Inc. and its suppliers.
+Copyright (c) 2000, 2003 Sendmail, Inc. and its suppliers.
 All rights reserved.
 <br>
 By using this file, you agree to the terms and conditions set
-forth in the <a href="LICENSE.txt">LICENSE</a>.
+forth in the LICENSE.
 </font>
 </body>
 </html>

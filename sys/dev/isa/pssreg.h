@@ -1,3 +1,4 @@
+/*	$OpenBSD: pssreg.h,v 1.2 1995/05/08 22:02:09 brezak Exp $	*/
 /*	$NetBSD: pssreg.h,v 1.2 1995/05/08 22:02:09 brezak Exp $	*/
 
 /*

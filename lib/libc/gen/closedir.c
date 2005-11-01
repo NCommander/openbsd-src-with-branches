@@ -1,5 +1,4 @@
-/*	$NetBSD: closedir.c,v 1.4 1995/06/16 07:05:27 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1983, 1993
  *	Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,33 +28,30 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)closedir.c	8.1 (Berkeley) 6/10/93";
-#else
-static char rcsid[] = "$NetBSD: closedir.c,v 1.4 1995/06/16 07:05:27 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "thread_private.h"
 
 /*
  * close a directory.
  */
 int
-closedir(dirp)
-	register DIR *dirp;
+closedir(DIR *dirp)
 {
 	int fd;
+	int ret;
 
+	if ((ret = _FD_LOCK(dirp->dd_fd, FD_READ, NULL)) != 0)
+		return (ret);
 	seekdir(dirp, dirp->dd_rewind);	/* free seekdir storage */
 	fd = dirp->dd_fd;
 	dirp->dd_fd = -1;
 	dirp->dd_loc = 0;
 	free((void *)dirp->dd_buf);
 	free((void *)dirp);
-	return(close(fd));
+	ret = close(fd);
+	_FD_UNLOCK(fd, FD_READ);
+	return (ret);
 }

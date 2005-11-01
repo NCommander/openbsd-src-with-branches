@@ -1,13 +1,10 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: swab.S,v 1.9 1995/04/28 22:58:16 jtc Exp $")
-#endif
 
 /*
  * On the i486, this code is negligibly faster than the code generated

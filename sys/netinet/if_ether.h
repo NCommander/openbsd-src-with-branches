@@ -1,4 +1,5 @@
-/*	$NetBSD: if_ether.h,v 1.20 1995/06/12 00:47:27 mycroft Exp $	*/
+/*	$OpenBSD: if_ether.h,v 1.34 2004/09/23 18:21:41 brad Exp $	*/
+/*	$NetBSD: if_ether.h,v 1.22 1996/05/11 13:00:00 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,42 +32,68 @@
  *	@(#)if_ether.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NETINET_IF_ETHER_H_
+#define _NETINET_IF_ETHER_H_
+
+/*
+ * Some basic Ethernet constants.
+ */
+#define	ETHER_ADDR_LEN	6	/* Ethernet address length		*/
+#define ETHER_TYPE_LEN	2	/* Ethernet type field length		*/
+#define ETHER_CRC_LEN	4	/* Ethernet CRC length			*/
+#define ETHER_HDR_LEN	((ETHER_ADDR_LEN * 2) + ETHER_TYPE_LEN)
+#define ETHER_MIN_LEN	64	/* Minimum frame length, CRC included	*/
+#define ETHER_MAX_LEN	1518	/* Maximum frame length, CRC included	*/
+#define ETHER_MAX_DIX_LEN	1536	/* Maximum DIX frame length	*/
+#define ETHER_MAX_LEN_JUMBO	9018	/* max jumbo frame len, including CRC */
+
+/*
+ * Some Ethernet extensions.
+ */
+#define ETHER_VLAN_ENCAP_LEN	4	/* len of 802.1Q VLAN encapsulation */
+
+/*
+ * Mbuf adjust factor to force 32-bit alignment of IP header.
+ * Drivers should do m_adj(m, ETHER_ALIGN) when setting up a
+ * receive so the upper layers get the IP header properly aligned
+ * past the 14-byte Ethernet header.
+ */
+#define ETHER_ALIGN	2	/* driver adjust for IP hdr alignment */
+
 /*
  * Ethernet address - 6 octets
- * this is only used by the ethers(3) functions.
  */
 struct ether_addr {
-	u_int8_t ether_addr_octet[6];
+	u_int8_t ether_addr_octet[ETHER_ADDR_LEN];
 };
 
 /*
- * Structure of a 10Mb/s Ethernet header.
+ * The length of the combined header.
  */
-#define	ETHER_ADDR_LEN	6
-
 struct	ether_header {
 	u_int8_t  ether_dhost[ETHER_ADDR_LEN];
 	u_int8_t  ether_shost[ETHER_ADDR_LEN];
 	u_int16_t ether_type;
 };
 
-#define	ETHERTYPE_PUP		0x0200	/* PUP protocol */
-#define	ETHERTYPE_IP		0x0800	/* IP protocol */
-#define	ETHERTYPE_ARP		0x0806	/* address resolution protocol */
-#define	ETHERTYPE_REVARP	0x8035	/* reverse addr resolution protocol */
-
-/*
- * The ETHERTYPE_NTRAILER packet types starting at ETHERTYPE_TRAIL have
- * (type-ETHERTYPE_TRAIL)*512 bytes of data followed
- * by an ETHER type (as given above) and then the (variable-length) header.
- */
-#define	ETHERTYPE_TRAIL		0x1000		/* Trailer packet */
-#define	ETHERTYPE_NTRAILER	16
+#include <net/ethertypes.h>
 
 #define	ETHER_IS_MULTICAST(addr) (*(addr) & 0x01) /* is address mcast/bcast? */
 
-#define	ETHERMTU	1500
-#define	ETHERMIN	(60-14)
+#define	ETHERMTU	(ETHER_MAX_LEN - ETHER_HDR_LEN - ETHER_CRC_LEN)
+#define	ETHERMIN	(ETHER_MIN_LEN - ETHER_HDR_LEN - ETHER_CRC_LEN)
+#define	ETHERMTU_JUMBO	(ETHER_MAX_LEN_JUMBO - ETHER_HDR_LEN - ETHER_CRC_LEN)
+
+/*
+ * Ethernet CRC32 polynomials (big- and little-endian verions).
+ */
+#define	ETHER_CRC_POLY_LE	0xedb88320
+#define	ETHER_CRC_POLY_BE	0x04c11db6
+
+/*
+ * Ethernet-specific mbuf flags.
+ */
+#define M_HASFCS	M_LINK0	/* FCS included at end of frame */
 
 #ifdef _KERNEL
 /*
@@ -89,13 +112,30 @@ struct	ether_header {
 	(enaddr)[4] = ((u_int8_t *)ipaddr)[2];				\
 	(enaddr)[5] = ((u_int8_t *)ipaddr)[3];				\
 }
+
+/*
+ * Macro to map an IPv6 multicast address to an Ethernet multicast address.
+ * The high-order 16 bits of the Ethernet address are statically assigned,
+ * and the low-order 32 bits are taken from the low end of the IPv6 address.
+ */
+#define ETHER_MAP_IPV6_MULTICAST(ip6addr, enaddr)			\
+	/* struct in6_addr *ip6addr; */					\
+	/* u_int8_t enaddr[ETHER_ADDR_LEN]; */				\
+{									\
+	(enaddr)[0] = 0x33;						\
+	(enaddr)[1] = 0x33;						\
+	(enaddr)[2] = ((u_int8_t *)ip6addr)[12];			\
+	(enaddr)[3] = ((u_int8_t *)ip6addr)[13];			\
+	(enaddr)[4] = ((u_int8_t *)ip6addr)[14];			\
+	(enaddr)[5] = ((u_int8_t *)ip6addr)[15];			\
+}
 #endif
 
 /*
  * Ethernet Address Resolution Protocol.
  *
  * See RFC 826 for protocol description.  Structure below is adapted
- * to resolving internet addresses.  Field names used correspond to 
+ * to resolving internet addresses.  Field names used correspond to
  * RFC 826.
  */
 struct	ether_arp {
@@ -119,7 +159,7 @@ struct	ether_arp {
 struct	arpcom {
 	struct	 ifnet ac_if;			/* network-visible interface */
 	u_int8_t ac_enaddr[ETHER_ADDR_LEN];	/* ethernet hardware address */
-	struct	 in_addr ac_ipaddr;		/* copy of ip address- XXX */
+	char	 ac__pad[2];			/* pad for some machines */
 	LIST_HEAD(, ether_multi) ac_multiaddrs;	/* list of ether multicast addrs */
 	int	 ac_multicnt;			/* length of ac_multiaddrs list */
 };
@@ -146,24 +186,26 @@ struct sockaddr_inarp {
 /*
  * IP and ethernet specific routing flags
  */
-#define	RTF_USETRAILERS	RTF_PROTO1	/* use trailers */
-#define	RTF_ANNOUNCE	RTF_PROTO2	/* announce new arp entry */
+#define	RTF_USETRAILERS	  RTF_PROTO1	/* use trailers */
+#define	RTF_ANNOUNCE	  RTF_PROTO2	/* announce new arp entry */
+#define	RTF_PERMANENT_ARP RTF_PROTO3    /* only manual overwrite of entry */
 
 #ifdef	_KERNEL
-u_int8_t etherbroadcastaddr[ETHER_ADDR_LEN];
-u_int8_t ether_ipmulticast_min[ETHER_ADDR_LEN];
-u_int8_t ether_ipmulticast_max[ETHER_ADDR_LEN];
-struct	ifqueue arpintrq;
+extern u_int8_t etherbroadcastaddr[ETHER_ADDR_LEN];
+extern u_int8_t ether_ipmulticast_min[ETHER_ADDR_LEN];
+extern u_int8_t ether_ipmulticast_max[ETHER_ADDR_LEN];
+extern struct ifqueue arpintrq;
 
-void	arpwhohas __P((struct arpcom *, struct in_addr *));
-void	arpintr __P((void));
-int	arpresolve __P((struct arpcom *,
-	    struct rtentry *, struct mbuf *, struct sockaddr *, u_char *));
-void	arp_ifinit __P((struct arpcom *, struct ifaddr *));
-void	arp_rtrequest __P((int, struct rtentry *, struct sockaddr *));
+void	arpwhohas(struct arpcom *, struct in_addr *);
+void	arpintr(void);
+int	arpresolve(struct arpcom *,
+	    struct rtentry *, struct mbuf *, struct sockaddr *, u_char *);
+void	arp_ifinit(struct arpcom *, struct ifaddr *);
+void	arp_rtrequest(int, struct rtentry *, struct rt_addrinfo *);
 
-int	ether_addmulti __P((struct ifreq *, struct arpcom *));
-int	ether_delmulti __P((struct ifreq *, struct arpcom *));
+int	ether_addmulti(struct ifreq *, struct arpcom *);
+int	ether_delmulti(struct ifreq *, struct arpcom *);
+int	ether_multiaddr(struct sockaddr *, u_int8_t[], u_int8_t[]);
 #endif /* _KERNEL */
 
 /*
@@ -231,3 +273,37 @@ struct ether_multistep {
 	(step).e_enm = (ac)->ac_multiaddrs.lh_first; \
 	ETHER_NEXT_MULTI((step), (enm)); \
 }
+
+#ifdef _KERNEL
+
+extern struct ifnet *myip_ifp;
+
+void arp_rtrequest(int, struct rtentry *, struct rt_addrinfo *);
+int arpresolve(struct arpcom *, struct rtentry *, struct mbuf *,
+		    struct sockaddr *, u_char *);
+void arpintr(void);
+int arpioctl(u_long, caddr_t);
+void arp_ifinit(struct arpcom *, struct ifaddr *);
+void arprequest(struct ifnet *, u_int32_t *, u_int32_t *, u_int8_t *);
+void revarpinput(struct mbuf *);
+void in_revarpinput(struct mbuf *);
+void revarprequest(struct ifnet *);
+int revarpwhoarewe(struct ifnet *, struct in_addr *, struct in_addr *);
+int revarpwhoami(struct in_addr *, struct ifnet *);
+int db_show_arptab(void);
+
+u_int32_t ether_crc32_le(const u_int8_t *, size_t);
+u_int32_t ether_crc32_be(const u_int8_t *, size_t);
+
+#else
+
+__BEGIN_DECLS
+char *ether_ntoa(struct ether_addr *);
+struct ether_addr *ether_aton(const char *);
+int ether_ntohost(char *, struct ether_addr *);
+int ether_hostton(const char *, struct ether_addr *);
+int ether_line(const char *, struct ether_addr *, char *);
+__END_DECLS
+
+#endif /* _KERNEL */
+#endif /* _NETINET_IF_ETHER_H_ */

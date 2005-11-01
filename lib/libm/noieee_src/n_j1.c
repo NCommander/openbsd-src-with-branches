@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -115,7 +111,7 @@ static char sccsid[] = "@(#)j1.c	8.2 (Berkeley) 11/30/93";
 #include <float.h>
 #include <errno.h>
 
-#if defined(vax) || defined(tahoe)
+#if defined(__vax__) || defined(tahoe)
 #define _IEEE	0
 #else
 #define _IEEE	1
@@ -170,11 +166,11 @@ double j1(x)
 	 * j1(x) = 1/sqrt(pi) * (P(1,x)*cc - Q(1,x)*ss) / sqrt(x)
 	 * y1(x) = 1/sqrt(pi) * (P(1,x)*ss + Q(1,x)*cc) / sqrt(x)
 	 */
-#if !defined(vax) && !defined(tahoe)
+#if !defined(__vax__) && !defined(tahoe)
 		if (y > two_129)	 /* x > 2^129 */
 			z = (invsqrtpi*cc)/sqrt(y);
 		else
-#endif /* defined(vax) || defined(tahoe) */
+#endif /* defined(__vax__) || defined(tahoe) */
 		{
 		    u = pone(y); v = qone(y);
 		    z = invsqrtpi*(u*cc-v*ss)/sqrt(y);

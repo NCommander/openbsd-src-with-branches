@@ -1,3 +1,4 @@
+/*	$OpenBSD: grfioctl.h,v 1.5 2003/06/02 23:27:49 millert Exp $	*/
 /*	$NetBSD: grfioctl.h,v 1.5 1995/07/02 05:26:45 briggs Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,6 +38,9 @@
  *
  *	@(#)grfioctl.h	7.2 (Berkeley) 11/4/90
  */
+
+#ifndef _MAC68K_GRFIOCTL_H_
+#define _MAC68K_GRFIOCTL_H_
 
 struct grfmode {
 	u_int8_t	mode_id;	/* Identifier for mode              */
@@ -63,37 +63,14 @@ struct grfmodes {
 };
 
 /*
- * BSD ioctls (first few match HP/UX ioctl()s.  In case we want
+ * BSD ioctls (first few match HP-UX ioctl()s.  In case we want
  * compatibility later, start our own at 16).
  */
-#define	GRFIOCGINFO	_IOR('G', 0, struct grfinfo) /* get info on device */
 #define	GRFIOCON	_IO('G', 1)		/* turn graphics on */
 #define	GRFIOCOFF	_IO('G', 2)		/* turn graphics off */
-#define GRFIOCMAP	_IOWR('G', 5, int)	/* map in regs+framebuffer */
-#define GRFIOCUNMAP	_IOW('G', 6, int)	/* unmap regs+framebuffer */
-
 #define GRFIOCLISTMODES	_IOWR('G', 16, struct grfmodes) /* Get list of modes */
 #define GRFIOCGETMODE	_IOR('G', 17, int)	/* Get list of modes */
 #define GRFIOCSETMODE	_IOW('G', 18, int)	/* Set to mode_id mode */
 #define GRFIOCGMODE	_IOR('G', 19, struct grfmode)	/* Get list of modes */
 
-/*
- * Obsolete structure.
- * Only used to return information to older programs that still
- * depend on GRFIOCGINFO.
- */
-struct	grfinfo {
-	int	gd_id;			/* HPUX identifier */
-	caddr_t	gd_regaddr;		/* control registers physaddr */
-	int	gd_regsize;		/* control registers size */
-	caddr_t	gd_fbaddr;		/* frame buffer physaddr */
-	int	gd_fbsize;		/* frame buffer size */
-	short	gd_colors;		/* number of colors */
-	short	gd_planes;		/* number of planes */
-	int	gd_fbwidth;		/* frame buffer width */
-	int	gd_fbheight;		/* frame buffer height */
-	int	gd_fbrowbytes;		/* frame buffer rowbytes */
-	int	gd_dwidth;		/* displayed part width */
-	int	gd_dheight;		/* displayed part height */
-	int	gd_pad[6];		/* for future expansion */
-};
+#endif	/* _MAC68K_GRFIOCTL_H_ */

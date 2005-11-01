@@ -466,7 +466,7 @@ tree null_pointer_node;
 
 /* The value for __null (NULL), namely, a zero of an integer type with
    the same number of bits as a pointer.  */
-tree null_node;
+extern tree null_node;
 
 /* A node for the integer constants 1, 2, and 3.  */
 
@@ -9434,7 +9434,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    break;
 
 	  case CALL_EXPR:
-	    if (parmlist_is_exprlist (TREE_OPERAND (decl, 1)))
+	    if (parmlist_is_exprlist (CALL_DECLARATOR_PARMS (decl)))
 	      {
 		/* This is actually a variable declaration using
 		   constructor syntax.  We need to call start_decl and
@@ -9444,7 +9444,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		tree attributes, prefix_attributes;
 
 		*next = TREE_OPERAND (decl, 0);
-		init = TREE_OPERAND (decl, 1);
+		init = CALL_DECLARATOR_PARMS (decl);
 
 		if (attrlist)
 		  {
@@ -10500,7 +10500,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  {
 	    tree arg_types;
 	    int funcdecl_p;
-	    tree inner_parms = TREE_OPERAND (declarator, 1);
+	    tree inner_parms = CALL_DECLARATOR_PARMS (declarator);
 	    tree inner_decl = TREE_OPERAND (declarator, 0);
 
 	    /* Declaring a function type.
@@ -10530,10 +10530,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      inner_decl = dname;
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
-	    quals = TREE_OPERAND (declarator, 2);
+	    quals = CALL_DECLARATOR_QUALS (declarator);
 
 	    /* Pick up the exception specifications.  */
-	    raises = TREE_TYPE (declarator);
+	    raises = CALL_DECLARATOR_EXCEPTION_SPEC (declarator);
 
 	    /* Say it's a definition only for the CALL_EXPR
 	       closest to the identifier.  */

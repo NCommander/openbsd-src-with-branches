@@ -1,3 +1,4 @@
+/*	$OpenBSD: sys_socket.c,v 1.8 2003/06/02 23:28:06 millert Exp $	*/
 /*	$NetBSD: sys_socket.c,v 1.13 1995/08/12 23:59:09 mycroft Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,23 +35,28 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/file.h>
+#include <sys/proc.h>
 #include <sys/mbuf.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <sys/stat.h>
 
 #include <net/if.h>
 #include <net/route.h>
 
-struct	fileops socketops =
-    { soo_read, soo_write, soo_ioctl, soo_select, soo_close };
+struct	fileops socketops = {
+	soo_read, soo_write, soo_ioctl, soo_poll, soo_kqfilter,
+	soo_stat, soo_close
+};
 
 /* ARGSUSED */
 int
-soo_read(fp, uio, cred)
+soo_read(fp, poff, uio, cred)
 	struct file *fp;
+	off_t *poff;
 	struct uio *uio;
 	struct ucred *cred;
 {
@@ -65,8 +67,9 @@ soo_read(fp, uio, cred)
 
 /* ARGSUSED */
 int
-soo_write(fp, uio, cred)
+soo_write(fp, poff, uio, cred)
 	struct file *fp;
+	off_t *poff;
 	struct uio *uio;
 	struct ucred *cred;
 {
@@ -111,6 +114,8 @@ soo_ioctl(fp, cmd, data, p)
 
 	case SIOCSPGRP:
 		so->so_pgid = *(int *)data;
+		so->so_siguid = p->p_cred->p_ruid;
+		so->so_sigeuid = p->p_ucred->cr_uid;
 		return (0);
 
 	case SIOCGPGRP:
@@ -135,52 +140,48 @@ soo_ioctl(fp, cmd, data, p)
 }
 
 int
-soo_select(fp, which, p)
+soo_poll(fp, events, p)
 	struct file *fp;
-	int which;
+	int events;
 	struct proc *p;
 {
-	register struct socket *so = (struct socket *)fp->f_data;
-	register int s = splsoftnet();
+	struct socket *so = (struct socket *)fp->f_data;
+	int revents = 0;
+	int s = splsoftnet();
 
-	switch (which) {
-
-	case FREAD:
-		if (soreadable(so)) {
-			splx(s);
-			return (1);
+	if (events & (POLLIN | POLLRDNORM)) {
+		if (soreadable(so))
+			revents |= events & (POLLIN | POLLRDNORM);
+	}
+	if (events & (POLLOUT | POLLWRNORM)) {
+		if (sowriteable(so))
+			revents |= events & (POLLOUT | POLLWRNORM);
+	}
+	if (events & (POLLPRI | POLLRDBAND)) {
+		if (so->so_oobmark || (so->so_state & SS_RCVATMARK))
+			revents |= events & (POLLPRI | POLLRDBAND);
+	}
+	if (revents == 0) {
+		if (events & (POLLIN | POLLPRI | POLLRDNORM | POLLRDBAND)) {
+			selrecord(p, &so->so_rcv.sb_sel);
+			so->so_rcv.sb_flags |= SB_SEL;
 		}
-		selrecord(p, &so->so_rcv.sb_sel);
-		so->so_rcv.sb_flags |= SB_SEL;
-		break;
-
-	case FWRITE:
-		if (sowriteable(so)) {
-			splx(s);
-			return (1);
+		if (events & (POLLOUT | POLLWRNORM)) {
+			selrecord(p, &so->so_snd.sb_sel);
+			so->so_snd.sb_flags |= SB_SEL;
 		}
-		selrecord(p, &so->so_snd.sb_sel);
-		so->so_snd.sb_flags |= SB_SEL;
-		break;
-
-	case 0:
-		if (so->so_oobmark || (so->so_state & SS_RCVATMARK)) {
-			splx(s);
-			return (1);
-		}
-		selrecord(p, &so->so_rcv.sb_sel);
-		so->so_rcv.sb_flags |= SB_SEL;
-		break;
 	}
 	splx(s);
-	return (0);
+	return (revents);
 }
 
 int
-soo_stat(so, ub)
-	register struct socket *so;
-	register struct stat *ub;
+soo_stat(fp, ub, p)
+	struct file *fp;
+	struct stat *ub;
+	struct proc *p;
 {
+	struct socket *so = (struct socket *)fp->f_data;
 
 	bzero((caddr_t)ub, sizeof (*ub));
 	ub->st_mode = S_IFSOCK;

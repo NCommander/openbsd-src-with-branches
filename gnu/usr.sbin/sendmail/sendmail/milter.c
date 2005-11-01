@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2005 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -10,7 +10,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: milter.c,v 8.173 2001/09/04 22:43:04 ca Exp $")
+SM_RCSID("@(#)$Sendmail: milter.c,v 8.229 2005/03/02 02:32:34 ca Exp $")
 
 #if MILTER
 # include <libmilter/mfapi.h>
@@ -18,14 +18,18 @@ SM_RCSID("@(#)$Sendmail: milter.c,v 8.173 2001/09/04 22:43:04 ca Exp $")
 
 # include <errno.h>
 # include <sys/time.h>
+# include <sys/uio.h>
 
 # if NETINET || NETINET6
 #  include <arpa/inet.h>
+#  if _FFR_MILTER_NAGLE
+#   include <netinet/tcp.h>
+#  endif /* _FFR_MILTER_NAGLE */
 # endif /* NETINET || NETINET6 */
 
 # include <sm/fdset.h>
 
-static void	milter_connect_timeout __P((void));
+static void	milter_connect_timeout __P((int));
 static void	milter_error __P((struct milter *, ENVELOPE *));
 static int	milter_open __P((struct milter *, bool, ENVELOPE *));
 static void	milter_parse_timeouts __P((char *, struct milter *));
@@ -34,6 +38,9 @@ static char *MilterConnectMacros[MAXFILTERMACROS + 1];
 static char *MilterHeloMacros[MAXFILTERMACROS + 1];
 static char *MilterEnvFromMacros[MAXFILTERMACROS + 1];
 static char *MilterEnvRcptMacros[MAXFILTERMACROS + 1];
+static char *MilterDataMacros[MAXFILTERMACROS + 1];
+static char *MilterEOMMacros[MAXFILTERMACROS + 1];
+static size_t MilterMaxDataSize = MILTER_MAX_DATA_SIZE;
 
 # define MILTER_CHECK_DONE_MSG() \
 	if (*state == SMFIR_REPLYCODE || \
@@ -45,9 +52,31 @@ static char *MilterEnvRcptMacros[MAXFILTERMACROS + 1];
 		milter_abort(e); \
 	}
 
-# define MILTER_CHECK_ERROR(action) \
-	if (bitnset(SMF_TEMPFAIL, m->mf_flags)) \
+# define MILTER_CHECK_ERROR(initial, action) \
+	if (!initial && tTd(71, 100)) \
+	{ \
+		if (e->e_quarmsg == NULL) \
+		{ \
+			e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool, \
+							 "filter failure"); \
+			macdefine(&e->e_macro, A_PERM, macid("{quarantine}"), \
+				  e->e_quarmsg); \
+		} \
+	} \
+	else if (tTd(71, 101)) \
+	{ \
+		if (e->e_quarmsg == NULL) \
+		{ \
+			e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool, \
+							 "filter failure"); \
+			macdefine(&e->e_macro, A_PERM, macid("{quarantine}"), \
+				  e->e_quarmsg); \
+		} \
+	} \
+	else if (bitnset(SMF_TEMPFAIL, m->mf_flags)) \
 		*state = SMFIR_TEMPFAIL; \
+	else if (bitnset(SMF_TEMPDROP, m->mf_flags)) \
+		*state = SMFIR_SHUTDOWN; \
 	else if (bitnset(SMF_REJECT, m->mf_flags)) \
 		*state = SMFIR_REJECT; \
 	else \
@@ -139,14 +168,17 @@ static char *MilterEnvRcptMacros[MAXFILTERMACROS + 1];
 		return NULL; \
 	} \
  \
-	FD_ZERO(&fds); \
-	SM_FD_SET(m->mf_sock, &fds); \
-	tv.tv_sec = (secs); \
-	tv.tv_usec = 0; \
-	ret = select(m->mf_sock + 1, \
-		     (write) ? NULL : &fds, \
-		     (write) ? &fds : NULL, \
-		     NULL, &tv); \
+	do \
+	{ \
+		FD_ZERO(&fds); \
+		SM_FD_SET(m->mf_sock, &fds); \
+		tv.tv_sec = (secs); \
+		tv.tv_usec = 0; \
+		ret = select(m->mf_sock + 1, \
+			     (write) ? NULL : &fds, \
+			     (write) ? &fds : NULL, \
+			     NULL, &tv); \
+	} while (ret < 0 && errno == EINTR); \
  \
 	switch (ret) \
 	{ \
@@ -199,7 +231,7 @@ static char *MilterEnvRcptMacros[MAXFILTERMACROS + 1];
 **  Low level functions
 */
 
-/*
+/*
 **  MILTER_READ -- read from a remote milter filter
 **
 **	Parameters:
@@ -310,8 +342,23 @@ milter_read(m, cmd, rlen, to, e)
 	time_t readstart = 0;
 	ssize_t expl;
 	mi_int32 i;
+# if _FFR_MILTER_NAGLE
+#  ifdef TCP_CORK
+	int cork = 0;
+#  endif
+# endif /* _FFR_MILTER_NAGLE */
 	char *buf;
 	char data[MILTER_LEN_BYTES + 1];
+
+	if (m->mf_sock < 0)
+	{
+		if (MilterLogLevel > 0)
+			sm_syslog(LOG_ERR, e->e_id,
+				  "milter_read(%s): socket closed",
+				  m->mf_name);
+		milter_error(m, e);
+		return NULL;
+	}
 
 	*rlen = 0;
 	*cmd = '\0';
@@ -319,8 +366,23 @@ milter_read(m, cmd, rlen, to, e)
 	if (to > 0)
 		readstart = curtime();
 
+# if _FFR_MILTER_NAGLE
+#  ifdef TCP_CORK
+	setsockopt(m->mf_sock, IPPROTO_TCP, TCP_CORK, (char *)&cork,
+		   sizeof(cork));
+#  endif
+# endif /* _FFR_MILTER_NAGLE */
+
 	if (milter_sysread(m, data, sizeof data, to, e) == NULL)
 		return NULL;
+
+# if _FFR_MILTER_NAGLE
+#  ifdef TCP_CORK
+	cork = 1;
+	setsockopt(m->mf_sock, IPPROTO_TCP, TCP_CORK, (char *)&cork,
+		   sizeof(cork));
+#  endif
+# endif /* _FFR_MILTER_NAGLE */
 
 	/* reset timeout */
 	if (to > 0)
@@ -382,7 +444,8 @@ milter_read(m, cmd, rlen, to, e)
 	*rlen = expl;
 	return buf;
 }
-/*
+
+/*
 **  MILTER_WRITE -- write to a remote milter filter
 **
 **	Parameters:
@@ -410,11 +473,19 @@ milter_write(m, cmd, buf, len, to, e)
 {
 	time_t writestart = (time_t) 0;
 	ssize_t sl, i;
+	int num_vectors;
 	mi_int32 nl;
 	char data[MILTER_LEN_BYTES + 1];
 	bool started = false;
+	struct iovec vector[2];
 
-	if (len < 0 || len > MILTER_CHUNK_SIZE)
+	/*
+	**  At most two buffers will be written, though
+	**  only one may actually be used (see num_vectors).
+	**  The first is the size/command and the second is the command data.
+	*/
+
+	if (len < 0 || len > MilterMaxDataSize)
 	{
 		if (tTd(64, 5))
 			sm_dprintf("milter_write(%s): length %ld out of range\n",
@@ -423,6 +494,15 @@ milter_write(m, cmd, buf, len, to, e)
 			sm_syslog(LOG_ERR, e->e_id,
 				  "milter_write(%s): length %ld out of range",
 				  m->mf_name, (long) len);
+		milter_error(m, e);
+		return NULL;
+	}
+	if (m->mf_sock < 0)
+	{
+		if (MilterLogLevel > 0)
+			sm_syslog(LOG_ERR, e->e_id,
+				  "milter_write(%s): socket closed",
+				  m->mf_name);
 		milter_error(m, e);
 		return NULL;
 	}
@@ -436,65 +516,48 @@ milter_write(m, cmd, buf, len, to, e)
 	data[MILTER_LEN_BYTES] = cmd;
 	sl = MILTER_LEN_BYTES + 1;
 
+	/* set up the vector for the size / command */
+	vector[0].iov_base = (void *) data;
+	vector[0].iov_len  = sl;
+
+	/*
+	**  Determine if there is command data.  If so, there will be two
+	**  vectors.  If not, there will be only one.  The vectors are set
+	**  up here and 'num_vectors' and 'sl' are set appropriately.
+	*/
+
+	/* NOTE:  len<0 has already been checked for.  Pedantic */
+	if (len <= 0 || buf == NULL)
+	{
+		/* There is no command data -- only a size / command data */
+		num_vectors = 1;
+	}
+	else
+	{
+		/*
+		**  There is both size / command and command data.
+		**  Set up the vector for the command data.
+		*/
+
+		num_vectors = 2;
+		sl += len;
+		vector[1].iov_base = (void *) buf;
+		vector[1].iov_len  = len;
+
+		if (tTd(64, 50))
+			sm_dprintf("milter_write(%s): Sending %*s\n",
+				   m->mf_name, (int) len, buf);
+	}
+
 	if (to > 0)
 	{
 		writestart = curtime();
 		MILTER_TIMEOUT("write", to, true, started);
 	}
 
-	/* use writev() instead to send the whole stuff at once? */
-	i = write(m->mf_sock, (void *) data, sl);
+	/* write the vector(s) */
+	i = writev(m->mf_sock, vector, num_vectors);
 	if (i != sl)
-	{
-		int save_errno = errno;
-
-		if (tTd(64, 5))
-			sm_dprintf("milter_write (%s): write(%c) returned %ld, expected %ld: %s\n",
-				   m->mf_name, cmd, (long) i, (long) sl,
-				   sm_errstring(save_errno));
-		if (MilterLogLevel > 0)
-			sm_syslog(LOG_ERR, e->e_id,
-				  "Milter (%s): write(%c) returned %ld, expected %ld: %s",
-				  m->mf_name, cmd, (long) i, (long) sl,
-				  sm_errstring(save_errno));
-		milter_error(m, e);
-		return buf;
-	}
-
-	if (len <= 0 || buf == NULL)
-		return buf;
-
-	if (tTd(64, 50))
-		sm_dprintf("milter_write(%s): Sending %*s\n",
-			   m->mf_name, (int) len, buf);
-	started = true;
-
-	if (to > 0)
-	{
-		time_t now;
-
-		now = curtime();
-		if (now - writestart >= to)
-		{
-			if (tTd(64, 5))
-				sm_dprintf("milter_write(%s): timeout before data write\n",
-					   m->mf_name);
-			if (MilterLogLevel > 0)
-				sm_syslog(LOG_ERR, e->e_id,
-					  "Milter (%s): timeout before data write",
-					  m->mf_name);
-			milter_error(m, e);
-			return NULL;
-		}
-		else
-		{
-			to -= now - writestart;
-			MILTER_TIMEOUT("write", to, true, started);
-		}
-	}
-
-	i = write(m->mf_sock, (void *) buf, len);
-	if (i != len)
 	{
 		int save_errno = errno;
 
@@ -505,7 +568,7 @@ milter_write(m, cmd, buf, len, to, e)
 		if (MilterLogLevel > 0)
 			sm_syslog(LOG_ERR, e->e_id,
 				  "Milter (%s): write(%c) returned %ld, expected %ld: %s",
-				  m->mf_name, cmd, (long) i, (long) len,
+				  m->mf_name, cmd, (long) i, (long) sl,
 				  sm_errstring(save_errno));
 		milter_error(m, e);
 		return NULL;
@@ -517,7 +580,7 @@ milter_write(m, cmd, buf, len, to, e)
 **  Utility functions
 */
 
-/*
+/*
 **  MILTER_OPEN -- connect to remote milter filter
 **
 **	Parameters:
@@ -526,7 +589,7 @@ milter_write(m, cmd, buf, len, to, e)
 **		e -- current envelope.
 **
 **	Returns:
-**		connected socket if sucessful && !parseonly,
+**		connected socket if successful && !parseonly,
 **		0 upon parse success if parseonly,
 **		-1 otherwise.
 */
@@ -557,7 +620,7 @@ milter_open(m, parseonly, e)
 		if (parseonly)
 			syserr("X%s: empty or missing socket information",
 			       m->mf_name);
-		else if (MilterLogLevel > 10)
+		else if (MilterLogLevel > 0)
 			sm_syslog(LOG_ERR, e->e_id,
 				  "Milter (%s): empty or missing socket information",
 				  m->mf_name);
@@ -566,6 +629,7 @@ milter_open(m, parseonly, e)
 	}
 
 	/* protocol:filename or protocol:port@host */
+	memset(&addr, '\0', sizeof addr);
 	p = m->mf_conn;
 	colon = strchr(p, ':');
 	if (colon != NULL)
@@ -587,9 +651,10 @@ milter_open(m, parseonly, e)
 			addr.sa.sa_family = AF_INET6;
 #   else /* NETINET6 */
 			/* no protocols available */
-			sm_syslog(LOG_ERR, e->e_id,
-				  "Milter (%s): no valid socket protocols available",
-				  m->mf_name);
+			if (MilterLogLevel > 0)
+				sm_syslog(LOG_ERR, e->e_id,
+					  "Milter (%s): no valid socket protocols available",
+					  m->mf_name);
 			milter_error(m, e);
 			return -1;
 #   endif /* NETINET6 */
@@ -622,7 +687,7 @@ milter_open(m, parseonly, e)
 			if (parseonly)
 				syserr("X%s: unknown socket type %s",
 				       m->mf_name, p);
-			else if (MilterLogLevel > 10)
+			else if (MilterLogLevel > 0)
 				sm_syslog(LOG_ERR, e->e_id,
 					  "Milter (%s): unknown socket type %s",
 					  m->mf_name, p);
@@ -653,7 +718,7 @@ milter_open(m, parseonly, e)
 			if (parseonly)
 				syserr("X%s: local socket name %s too long",
 				       m->mf_name, colon);
-			else if (MilterLogLevel > 10)
+			else if (MilterLogLevel > 0)
 				sm_syslog(LOG_ERR, e->e_id,
 					  "Milter (%s): local socket name %s too long",
 					  m->mf_name, colon);
@@ -688,7 +753,7 @@ milter_open(m, parseonly, e)
 					syserr("X%s: local socket name %s unsafe",
 					       m->mf_name, colon);
 			}
-			else if (MilterLogLevel > 10)
+			else if (MilterLogLevel > 0)
 				sm_syslog(LOG_ERR, e->e_id,
 					  "Milter (%s): local socket name %s unsafe",
 					  m->mf_name, colon);
@@ -724,7 +789,7 @@ milter_open(m, parseonly, e)
 			if (parseonly)
 				syserr("X%s: bad address %s (expected port@host)",
 				       m->mf_name, colon);
-			else if (MilterLogLevel > 10)
+			else if (MilterLogLevel > 0)
 				sm_syslog(LOG_ERR, e->e_id,
 					  "Milter (%s): bad address %s (expected port@host)",
 					  m->mf_name, colon);
@@ -743,7 +808,7 @@ milter_open(m, parseonly, e)
 			if (parseonly)
 				syserr("X%s: invalid port number %s",
 				       m->mf_name, colon);
-			else if (MilterLogLevel > 10)
+			else if (MilterLogLevel > 0)
 				sm_syslog(LOG_ERR, e->e_id,
 					  "Milter (%s): invalid port number %s",
 					  m->mf_name, colon);
@@ -763,7 +828,7 @@ milter_open(m, parseonly, e)
 				if (parseonly)
 					syserr("X%s: unknown port name %s",
 					       m->mf_name, colon);
-				else if (MilterLogLevel > 10)
+				else if (MilterLogLevel > 0)
 					sm_syslog(LOG_ERR, e->e_id,
 						  "Milter (%s): unknown port name %s",
 						  m->mf_name, colon);
@@ -819,7 +884,7 @@ milter_open(m, parseonly, e)
 					if (parseonly)
 						syserr("X%s: Invalid numeric domain spec \"%s\"",
 						       m->mf_name, at);
-					else if (MilterLogLevel > 10)
+					else if (MilterLogLevel > 0)
 						sm_syslog(LOG_ERR, e->e_id,
 							  "Milter (%s): Invalid numeric domain spec \"%s\"",
 							  m->mf_name, at);
@@ -835,7 +900,7 @@ milter_open(m, parseonly, e)
 				if (parseonly)
 					syserr("X%s: Invalid numeric domain spec \"%s\"",
 					       m->mf_name, at);
-				else if (MilterLogLevel > 10)
+				else if (MilterLogLevel > 0)
 					sm_syslog(LOG_ERR, e->e_id,
 						  "Milter (%s): Invalid numeric domain spec \"%s\"",
 						  m->mf_name, at);
@@ -856,7 +921,7 @@ milter_open(m, parseonly, e)
 				if (parseonly)
 					syserr("X%s: Unknown host name %s",
 					       m->mf_name, at);
-				else if (MilterLogLevel > 10)
+				else if (MilterLogLevel > 0)
 					sm_syslog(LOG_ERR, e->e_id,
 						  "Milter (%s): Unknown host name %s",
 						  m->mf_name, at);
@@ -894,7 +959,7 @@ milter_open(m, parseonly, e)
 				if (parseonly)
 					syserr("X%s: Unknown protocol for %s (%d)",
 					       m->mf_name, at, hp->h_addrtype);
-				else if (MilterLogLevel > 10)
+				else if (MilterLogLevel > 0)
 					sm_syslog(LOG_ERR, e->e_id,
 						  "Milter (%s): Unknown protocol for %s (%d)",
 						  m->mf_name, at,
@@ -915,7 +980,7 @@ milter_open(m, parseonly, e)
 				   m->mf_name);
 		if (parseonly)
 			syserr("X%s: unknown socket protocol", m->mf_name);
-		else if (MilterLogLevel > 10)
+		else if (MilterLogLevel > 0)
 			sm_syslog(LOG_ERR, e->e_id,
 				  "Milter (%s): unknown socket protocol",
 				  m->mf_name);
@@ -1069,11 +1134,22 @@ milter_open(m, parseonly, e)
 		hp = NULL;
 	}
 # endif /* NETINET6 */
+# if _FFR_MILTER_NAGLE
+#  ifndef TCP_CORK
+	{
+		int nodelay = 1;
+
+		setsockopt(m->mf_sock, IPPROTO_TCP, TCP_NODELAY,
+			   (char *)&nodelay, sizeof(nodelay));
+	}
+#  endif /* TCP_CORK */
+# endif /* _FFR_MILTER_NAGLE */
 	return sock;
 }
 
 static void
-milter_connect_timeout()
+milter_connect_timeout(ignore)
+	int ignore;
 {
 	/*
 	**  NOTE: THIS CAN BE CALLED FROM A SIGNAL HANDLER.  DO NOT ADD
@@ -1084,7 +1160,7 @@ milter_connect_timeout()
 	errno = ETIMEDOUT;
 	longjmp(MilterConnectTimeout, 1);
 }
-/*
+/*
 **  MILTER_SETUP -- setup structure for a mail filter
 **
 **	Parameters:
@@ -1189,7 +1265,7 @@ milter_setup(line)
 	else
 		s->s_milter = m;
 }
-/*
+/*
 **  MILTER_CONFIG -- parse option list into an array and check config
 **
 **	Called when reading configuration file.
@@ -1232,11 +1308,7 @@ milter_config(spec, list, max)
 				list[0] = NULL;
 			return;
 		}
-#if _FFR_MILTER_PERDAEMON
 		p = strpbrk(p, ";,");
-#else /* _FFR_MILTER_PERDAEMON */
-		p = strpbrk(p, ",");
-#endif /* _FFR_MILTER_PERDAEMON */
 		if (p != NULL)
 			*p++ = '\0';
 
@@ -1255,7 +1327,7 @@ milter_config(spec, list, max)
 	if (MilterLogLevel == -1)
 		MilterLogLevel = LogLevel;
 }
-/*
+/*
 **  MILTER_PARSE_TIMEOUTS -- parse timeout list
 **
 **	Called when reading configuration file.
@@ -1274,6 +1346,7 @@ milter_parse_timeouts(spec, m)
 	struct milter *m;
 {
 	char fcode;
+	int tcode;
 	register char *p;
 
 	p = spec;
@@ -1301,40 +1374,25 @@ milter_parse_timeouts(spec, m)
 
 		/* p now points to the field body */
 		p = munchstring(p, &delimptr, ';');
+		tcode = -1;
 
 		/* install the field into the filter struct */
 		switch (fcode)
 		{
 		  case 'C':
-			m->mf_timeout[SMFTO_CONNECT] = convtime(p, 's');
-			if (tTd(64, 5))
-				sm_dprintf("X%s: %c=%lu\n",
-					   m->mf_name, fcode,
-					   (unsigned long) m->mf_timeout[SMFTO_CONNECT]);
+			tcode = SMFTO_CONNECT;
 			break;
 
 		  case 'S':
-			m->mf_timeout[SMFTO_WRITE] = convtime(p, 's');
-			if (tTd(64, 5))
-				sm_dprintf("X%s: %c=%lu\n",
-					   m->mf_name, fcode,
-					   (unsigned long) m->mf_timeout[SMFTO_WRITE]);
+			tcode = SMFTO_WRITE;
 			break;
 
 		  case 'R':
-			m->mf_timeout[SMFTO_READ] = convtime(p, 's');
-			if (tTd(64, 5))
-				sm_dprintf("X%s: %c=%lu\n",
-					   m->mf_name, fcode,
-					   (unsigned long) m->mf_timeout[SMFTO_READ]);
+			tcode = SMFTO_READ;
 			break;
 
 		  case 'E':
-			m->mf_timeout[SMFTO_EOM] = convtime(p, 's');
-			if (tTd(64, 5))
-				sm_dprintf("X%s: %c=%lu\n",
-					   m->mf_name, fcode,
-					   (unsigned long) m->mf_timeout[SMFTO_EOM]);
+			tcode = SMFTO_EOM;
 			break;
 
 		  default:
@@ -1345,10 +1403,18 @@ milter_parse_timeouts(spec, m)
 			       m->mf_name, fcode);
 			break;
 		}
+		if (tcode >= 0)
+		{
+			m->mf_timeout[tcode] = convtime(p, 's');
+			if (tTd(64, 5))
+				sm_dprintf("X%s: %c=%ld\n",
+					   m->mf_name, fcode,
+					   (u_long) m->mf_timeout[tcode]);
+		}
 		p = delimptr;
 	}
 }
-/*
+/*
 **  MILTER_SET_OPTION -- set an individual milter option
 **
 **	Parameters:
@@ -1378,8 +1444,16 @@ static struct milteropt
 	{ "macros.envfrom",		MO_MACROS_ENVFROM		},
 # define MO_MACROS_ENVRCPT		0x04
 	{ "macros.envrcpt",		MO_MACROS_ENVRCPT		},
-# define MO_LOGLEVEL			0x05
+# define MO_MACROS_DATA			0x05
+	{ "macros.data",		MO_MACROS_DATA			},
+# define MO_MACROS_EOM			0x06
+	{ "macros.eom",			MO_MACROS_EOM			},
+# define MO_LOGLEVEL			0x07
 	{ "loglevel",			MO_LOGLEVEL			},
+# if _FFR_MAXDATASIZE
+#  define MO_MAXDATASIZE			0x08
+	{ "maxdatasize",		MO_MAXDATASIZE			},
+# endif /* _FFR_MAXDATASIZE */
 	{ NULL,				0				},
 };
 
@@ -1396,6 +1470,12 @@ milter_set_option(name, val, sticky)
 
 	if (tTd(37, 2) || tTd(64, 5))
 		sm_dprintf("milter_set_option(%s = %s)", name, val);
+
+	if (name == NULL)
+	{
+		syserr("milter_set_option: invalid Milter option, must specify suboption");
+		return;
+	}
 
 	for (mo = MilterOptTab; mo->mo_name != NULL; mo++)
 	{
@@ -1429,6 +1509,12 @@ milter_set_option(name, val, sticky)
 		MilterLogLevel = atoi(val);
 		break;
 
+#if _FFR_MAXDATASIZE
+	  case MO_MAXDATASIZE:
+		MilterMaxDataSize = (size_t)atol(val);
+		break;
+#endif /* _FFR_MAXDATASIZE */
+
 	  case MO_MACROS_CONNECT:
 		if (macros == NULL)
 			macros = MilterConnectMacros;
@@ -1447,6 +1533,16 @@ milter_set_option(name, val, sticky)
 	  case MO_MACROS_ENVRCPT:
 		if (macros == NULL)
 			macros = MilterEnvRcptMacros;
+		/* FALLTHROUGH */
+
+	  case MO_MACROS_EOM:
+		if (macros == NULL)
+			macros = MilterEOMMacros;
+		/* FALLTHROUGH */
+
+	  case MO_MACROS_DATA:
+		if (macros == NULL)
+			macros = MilterDataMacros;
 
 		p = newstr(val);
 		while (*p != '\0')
@@ -1488,8 +1584,8 @@ milter_set_option(name, val, sticky)
 	if (sticky)
 		setbitn(mo->mo_code, StickyMilterOpt);
 }
-/*
-**  MILTER_REOPEN_DF -- open & truncate the df file (for replbody)
+/*
+**  MILTER_REOPEN_DF -- open & truncate the data file (for replbody)
 **
 **	Parameters:
 **		e -- current envelope.
@@ -1504,7 +1600,7 @@ milter_reopen_df(e)
 {
 	char dfname[MAXPATHLEN];
 
-	(void) sm_strlcpy(dfname, queuename(e, 'd'), sizeof dfname);
+	(void) sm_strlcpy(dfname, queuename(e, DATAFL_LETTER), sizeof dfname);
 
 	/*
 	**  In SuperSafe == SAFE_REALLY mode, e->e_dfp is a read-only FP so
@@ -1512,14 +1608,13 @@ milter_reopen_df(e)
 	**  read only again).
 	**
 	**  In SuperSafe != SAFE_REALLY mode, e->e_dfp still points at the
-	**  buffered file I/O descriptor, still open for writing
-	**  so there isn't as much work to do, just truncate it
-	**  and go.
+	**  buffered file I/O descriptor, still open for writing so there
+	**  isn't any work to do here (except checking for consistency).
 	*/
 
 	if (SuperSafe == SAFE_REALLY)
 	{
-		/* close read-only df */
+		/* close read-only data file */
 		if (bitset(EF_HAS_DF, e->e_flags) && e->e_dfp != NULL)
 		{
 			(void) sm_io_close(e->e_dfp, SM_TIME_DEFAULT);
@@ -1528,7 +1623,7 @@ milter_reopen_df(e)
 
 		/* open writable */
 		if ((e->e_dfp = sm_io_open(SmFtStdio, SM_TIME_DEFAULT, dfname,
-					   SM_IO_RDWR, NULL)) == NULL)
+					   SM_IO_RDWR_B, NULL)) == NULL)
 		{
 			MILTER_DF_ERROR("milter_reopen_df: sm_io_open %s: %s");
 			return -1;
@@ -1543,8 +1638,8 @@ milter_reopen_df(e)
 	}
 	return 0;
 }
-/*
-**  MILTER_RESET_DF -- re-open read-only the df file (for replbody)
+/*
+**  MILTER_RESET_DF -- re-open read-only the data file (for replbody)
 **
 **	Parameters:
 **		e -- current envelope.
@@ -1560,7 +1655,7 @@ milter_reset_df(e)
 	int afd;
 	char dfname[MAXPATHLEN];
 
-	(void) sm_strlcpy(dfname, queuename(e, 'd'), sizeof dfname);
+	(void) sm_strlcpy(dfname, queuename(e, DATAFL_LETTER), sizeof dfname);
 
 	if (sm_io_flush(e->e_dfp, SM_TIME_DEFAULT) != 0 ||
 	    sm_io_error(e->e_dfp))
@@ -1585,7 +1680,7 @@ milter_reset_df(e)
 		return -1;
 	}
 	else if ((e->e_dfp = sm_io_open(SmFtStdio, SM_TIME_DEFAULT, dfname,
-					SM_IO_RDONLY, NULL)) == NULL)
+					SM_IO_RDONLY_B, NULL)) == NULL)
 	{
 		MILTER_DF_ERROR("milter_reset_df: error reopening %s: %s");
 		return -1;
@@ -1594,7 +1689,7 @@ milter_reset_df(e)
 		e->e_flags |= EF_HAS_DF;
 	return 0;
 }
-/*
+/*
 **  MILTER_CAN_DELRCPTS -- can any milter filters delete recipients?
 **
 **	Parameters:
@@ -1628,7 +1723,7 @@ milter_can_delrcpts()
 
 	return can;
 }
-/*
+/*
 **  MILTER_QUIT_FILTER -- close down a single filter
 **
 **	Parameters:
@@ -1673,7 +1768,7 @@ milter_quit_filter(m, e)
 	if (m->mf_state != SMFS_ERROR)
 		m->mf_state = SMFS_CLOSED;
 }
-/*
+/*
 **  MILTER_ABORT_FILTER -- tell filter to abort current message
 **
 **	Parameters:
@@ -1704,7 +1799,7 @@ milter_abort_filter(m, e)
 	if (m->mf_state != SMFS_ERROR)
 		m->mf_state = SMFS_DONE;
 }
-/*
+/*
 **  MILTER_SEND_MACROS -- provide macros to the filters
 **
 **	Parameters:
@@ -1728,6 +1823,7 @@ milter_send_macros(m, macros, cmd, e)
 	int mid;
 	char *v;
 	char *buf, *bp;
+	char exp[MAXLINE];
 	ssize_t s;
 
 	/* sanity check */
@@ -1744,7 +1840,8 @@ milter_send_macros(m, macros, cmd, e)
 		v = macvalue(mid, e);
 		if (v == NULL)
 			continue;
-		s += strlen(macros[i]) + 1 + strlen(v) + 1;
+		expand(v, exp, sizeof(exp), e);
+		s += strlen(macros[i]) + 1 + strlen(exp) + 1;
 	}
 
 	if (s < 0)
@@ -1761,22 +1858,23 @@ milter_send_macros(m, macros, cmd, e)
 		v = macvalue(mid, e);
 		if (v == NULL)
 			continue;
+		expand(v, exp, sizeof(exp), e);
 
 		if (tTd(64, 10))
 			sm_dprintf("milter_send_macros(%s, %c): %s=%s\n",
-				m->mf_name, cmd, macros[i], v);
+				m->mf_name, cmd, macros[i], exp);
 
 		(void) sm_strlcpy(bp, macros[i], s - (bp - buf));
 		bp += strlen(bp) + 1;
-		(void) sm_strlcpy(bp, v, s - (bp - buf));
+		(void) sm_strlcpy(bp, exp, s - (bp - buf));
 		bp += strlen(bp) + 1;
 	}
 	(void) milter_write(m, SMFIC_MACRO, buf, s,
 			    m->mf_timeout[SMFTO_WRITE], e);
-	sm_free(buf); /* XXX */
+	sm_free(buf);
 }
 
-/*
+/*
 **  MILTER_SEND_COMMAND -- send a command and return the response for a filter
 **
 **	Parameters:
@@ -1803,6 +1901,10 @@ milter_send_command(m, command, data, sz, e, state)
 	char rcmd;
 	ssize_t rlen;
 	unsigned long skipflag;
+#if _FFR_MILTER_NOHDR_RESP
+	unsigned long norespflag = 0;
+#endif /* _FFR_MILTER_NOHDR_RESP */
+	char *action;
 	char *defresponse;
 	char *response;
 
@@ -1815,38 +1917,55 @@ milter_send_command(m, command, data, sz, e, state)
 	{
 	  case SMFIC_CONNECT:
 		skipflag = SMFIP_NOCONNECT;
+		action = "connect";
 		defresponse = "554 Command rejected";
 		break;
 
 	  case SMFIC_HELO:
 		skipflag = SMFIP_NOHELO;
+		action = "helo";
 		defresponse = "550 Command rejected";
 		break;
 
 	  case SMFIC_MAIL:
 		skipflag = SMFIP_NOMAIL;
+		action = "mail";
 		defresponse = "550 5.7.1 Command rejected";
 		break;
 
 	  case SMFIC_RCPT:
 		skipflag = SMFIP_NORCPT;
+		action = "rcpt";
 		defresponse = "550 5.7.1 Command rejected";
 		break;
 
 	  case SMFIC_HEADER:
 		skipflag = SMFIP_NOHDRS;
+#if _FFR_MILTER_NOHDR_RESP
+		norespflag = SMFIP_NOHREPL;
+#endif /* _FFR_MILTER_NOHDR_RESP */
+		action = "header";
 		defresponse = "550 5.7.1 Command rejected";
 		break;
 
 	  case SMFIC_BODY:
 		skipflag = SMFIP_NOBODY;
+		action = "body";
 		defresponse = "554 5.7.1 Command rejected";
 		break;
 
 	  case SMFIC_EOH:
 		skipflag = SMFIP_NOEOH;
+		action = "eoh";
 		defresponse = "550 5.7.1 Command rejected";
 		break;
+
+#if SMFI_VERSION > 2
+	  case SMFIC_UNKNOWN:
+		action = "unknown";
+		defresponse = "550 5.7.1 Command rejected";
+		break;
+#endif /* SMFI_VERSION > 2 */
 
 	  case SMFIC_BODYEOB:
 	  case SMFIC_OPTNEG:
@@ -1858,6 +1977,7 @@ milter_send_command(m, command, data, sz, e, state)
 
 	  default:
 		skipflag = 0;
+		action = "default";
 		defresponse = "550 5.7.1 Command rejected";
 		break;
 	}
@@ -1872,16 +1992,22 @@ milter_send_command(m, command, data, sz, e, state)
 			    m->mf_timeout[SMFTO_WRITE], e);
 	if (m->mf_state == SMFS_ERROR)
 	{
-		MILTER_CHECK_ERROR(/* EMPTY */;);
+		MILTER_CHECK_ERROR(false, return NULL);
 		return NULL;
 	}
+
+#if _FFR_MILTER_NOHDR_RESP
+	/* check if filter sends response to this command */
+	if (norespflag != 0 && bitset(norespflag, m->mf_pflags))
+		return NULL;
+#endif /* _FFR_MILTER_NOHDR_RESP */
 
 	/* get the response from the filter */
 	response = milter_read(m, &rcmd, &rlen,
 			       m->mf_timeout[SMFTO_READ], e);
 	if (m->mf_state == SMFS_ERROR)
 	{
-		MILTER_CHECK_ERROR(/* EMPTY */;);
+		MILTER_CHECK_ERROR(false, return NULL);
 		return NULL;
 	}
 
@@ -1893,14 +2019,30 @@ milter_send_command(m, command, data, sz, e, state)
 	{
 	  case SMFIR_REPLYCODE:
 		MILTER_CHECK_REPLYCODE(defresponse);
-		if (MilterLogLevel > 8)
-			sm_syslog(LOG_INFO, e->e_id, "milter=%s, reject=%s",
-				  m->mf_name, response);
-		/* FALLTHROUGH */
+		if (MilterLogLevel > 10)
+			sm_syslog(LOG_INFO, e->e_id, "milter=%s, action=%s, reject=%s",
+				  m->mf_name, action, response);
+		*state = rcmd;
+		break;
 
 	  case SMFIR_REJECT:
+		if (MilterLogLevel > 10)
+			sm_syslog(LOG_INFO, e->e_id, "milter=%s, action=%s, reject",
+				  m->mf_name, action);
+		*state = rcmd;
+		break;
+
 	  case SMFIR_DISCARD:
+		if (MilterLogLevel > 10)
+			sm_syslog(LOG_INFO, e->e_id, "milter=%s, action=%s, discard",
+				  m->mf_name, action);
+		*state = rcmd;
+		break;
+
 	  case SMFIR_TEMPFAIL:
+		if (MilterLogLevel > 10)
+			sm_syslog(LOG_INFO, e->e_id, "milter=%s, action=%s, tempfail",
+				  m->mf_name, action);
 		*state = rcmd;
 		break;
 
@@ -1911,23 +2053,26 @@ milter_send_command(m, command, data, sz, e, state)
 			m->mf_state = SMFS_CLOSABLE;
 		else
 			m->mf_state = SMFS_DONE;
-		if (MilterLogLevel > 8)
-			sm_syslog(LOG_INFO, e->e_id, "Milter (%s): accepted",
-				  m->mf_name);
+		if (MilterLogLevel > 10)
+			sm_syslog(LOG_INFO, e->e_id, "milter=%s, action=%s, accepted",
+				  m->mf_name, action);
 		break;
 
 	  case SMFIR_CONTINUE:
 		/* if MAIL command is ok, filter is in message state */
 		if (command == SMFIC_MAIL)
 			m->mf_state = SMFS_INMSG;
+		if (MilterLogLevel > 12)
+			sm_syslog(LOG_INFO, e->e_id, "milter=%s, action=%s, continue",
+				  m->mf_name, action);
 		break;
 
 	  default:
 		/* Invalid response to command */
 		if (MilterLogLevel > 0)
 			sm_syslog(LOG_ERR, e->e_id,
-				  "milter_send_command(%s): returned bogus response %c",
-				  m->mf_name, rcmd);
+				  "milter_send_command(%s): action=%s returned bogus response %c",
+				  m->mf_name, action, rcmd);
 		milter_error(m, e);
 		break;
 	}
@@ -1941,7 +2086,7 @@ milter_send_command(m, command, data, sz, e, state)
 	return response;
 }
 
-/*
+/*
 **  MILTER_COMMAND -- send a command and return the response for each filter
 **
 **	Parameters:
@@ -1981,7 +2126,7 @@ milter_command(command, data, sz, macros, e, state)
 		/* previous problem? */
 		if (m->mf_state == SMFS_ERROR)
 		{
-			MILTER_CHECK_ERROR(continue);
+			MILTER_CHECK_ERROR(false, continue);
 			break;
 		}
 
@@ -1996,7 +2141,7 @@ milter_command(command, data, sz, macros, e, state)
 			milter_send_macros(m, macros, command, e);
 			if (m->mf_state == SMFS_ERROR)
 			{
-				MILTER_CHECK_ERROR(continue);
+				MILTER_CHECK_ERROR(false, continue);
 				break;
 			}
 		}
@@ -2019,7 +2164,7 @@ milter_command(command, data, sz, macros, e, state)
 	}
 	return response;
 }
-/*
+/*
 **  MILTER_NEGOTIATE -- get version and flags from filter
 **
 **	Parameters:
@@ -2138,11 +2283,11 @@ milter_negotiate(m, e)
 	    m->mf_fvers > SMFI_VERSION)
 	{
 		if (tTd(64, 5))
-			sm_dprintf("milter_negotiate(%s): version %lu != MTA milter version %d\n",
+			sm_dprintf("milter_negotiate(%s): version %d != MTA milter version %d\n",
 				m->mf_name, m->mf_fvers, SMFI_VERSION);
 		if (MilterLogLevel > 0)
 			sm_syslog(LOG_ERR, e->e_id,
-				  "Milter (%s): negotiate: version %ld != MTA milter version %d",
+				  "Milter (%s): negotiate: version %d != MTA milter version %d",
 				  m->mf_name, m->mf_fvers, SMFI_VERSION);
 		milter_error(m, e);
 		return -1;
@@ -2152,12 +2297,12 @@ milter_negotiate(m, e)
 	if ((m->mf_fflags & SMFI_CURR_ACTS) != m->mf_fflags)
 	{
 		if (tTd(64, 5))
-			sm_dprintf("milter_negotiate(%s): filter abilities 0x%lx != MTA milter abilities 0x%lx\n",
+			sm_dprintf("milter_negotiate(%s): filter abilities 0x%x != MTA milter abilities 0x%lx\n",
 				m->mf_name, m->mf_fflags,
-				(unsigned long) SMFI_CURR_ACTS);
+				SMFI_CURR_ACTS);
 		if (MilterLogLevel > 0)
 			sm_syslog(LOG_ERR, e->e_id,
-				  "Milter (%s): negotiate: filter abilities 0x%lx != MTA milter abilities 0x%lx",
+				  "Milter (%s): negotiate: filter abilities 0x%x != MTA milter abilities 0x%lx",
 				  m->mf_name, m->mf_fflags,
 				  (unsigned long) SMFI_CURR_ACTS);
 		milter_error(m, e);
@@ -2168,12 +2313,12 @@ milter_negotiate(m, e)
 	if ((m->mf_pflags & SMFI_CURR_PROT) != m->mf_pflags)
 	{
 		if (tTd(64, 5))
-			sm_dprintf("milter_negotiate(%s): protocol abilities 0x%lx != MTA milter abilities 0x%lx\n",
+			sm_dprintf("milter_negotiate(%s): protocol abilities 0x%x != MTA milter abilities 0x%lx\n",
 				m->mf_name, m->mf_pflags,
 				(unsigned long) SMFI_CURR_PROT);
 		if (MilterLogLevel > 0)
 			sm_syslog(LOG_ERR, e->e_id,
-				  "Milter (%s): negotiate: protocol abilities 0x%lx != MTA milter abilities 0x%lx",
+				  "Milter (%s): negotiate: protocol abilities 0x%x != MTA milter abilities 0x%lx",
 				  m->mf_name, m->mf_pflags,
 				  (unsigned long) SMFI_CURR_PROT);
 		milter_error(m, e);
@@ -2181,11 +2326,11 @@ milter_negotiate(m, e)
 	}
 
 	if (tTd(64, 5))
-		sm_dprintf("milter_negotiate(%s): version %lu, fflags 0x%lx, pflags 0x%lx\n",
+		sm_dprintf("milter_negotiate(%s): version %u, fflags 0x%x, pflags 0x%x\n",
 			m->mf_name, m->mf_fvers, m->mf_fflags, m->mf_pflags);
 	return 0;
 }
-/*
+/*
 **  MILTER_PER_CONNECTION_CHECK -- checks on per-connection commands
 **
 **	Reduce code duplication by putting these checks in one place
@@ -2212,11 +2357,12 @@ milter_per_connection_check(e)
 			milter_quit_filter(m, e);
 	}
 }
-/*
+/*
 **  MILTER_ERROR -- Put a milter filter into error state
 **
 **	Parameters:
 **		m -- the broken filter.
+**		e -- current envelope.
 **
 **	Returns:
 **		none
@@ -2228,10 +2374,8 @@ milter_error(m, e)
 	ENVELOPE *e;
 {
 	/*
-	**  We could send a quit here but
-	**  we may have gotten here due to
-	**  an I/O error so we don't want
-	**  to try to make things worse.
+	**  We could send a quit here but we may have gotten here due to
+	**  an I/O error so we don't want to try to make things worse.
 	*/
 
 	if (m->mf_sock >= 0)
@@ -2245,7 +2389,7 @@ milter_error(m, e)
 		sm_syslog(LOG_INFO, e->e_id, "Milter (%s): to error state",
 			  m->mf_name);
 }
-/*
+/*
 **  MILTER_HEADERS -- send headers to a single milter filter
 **
 **	Parameters:
@@ -2278,7 +2422,7 @@ milter_headers(m, e, state)
 		/* don't send over deleted headers */
 		if (h->h_value == NULL)
 		{
-			/* strip H_USER so not counted in milter_chgheader() */
+			/* strip H_USER so not counted in milter_changeheader() */
 			h->h_flags &= ~H_USER;
 			continue;
 		}
@@ -2315,7 +2459,7 @@ milter_headers(m, e, state)
 			  m->mf_name);
 	return response;
 }
-/*
+/*
 **  MILTER_BODY -- send the body to a filter
 **
 **	Parameters:
@@ -2347,8 +2491,9 @@ milter_body(m, e, state)
 	{
 		ExitStat = EX_IOERR;
 		*state = SMFIR_TEMPFAIL;
-		syserr("milter_body: %s/df%s: rewind error",
-		       qid_printqueue(e->e_qgrp, e->e_qdir), e->e_id);
+		syserr("milter_body: %s/%cf%s: rewind error",
+		       qid_printqueue(e->e_qgrp, e->e_qdir),
+		       DATAFL_LETTER, e->e_id);
 		return NULL;
 	}
 
@@ -2416,8 +2561,9 @@ milter_body(m, e, state)
 				response = NULL;
 			}
 		}
-		syserr("milter_body: %s/df%s: read error",
-		       qid_printqueue(e->e_qgrp, e->e_qdir), e->e_id);
+		syserr("milter_body: %s/%cf%s: read error",
+		       qid_printqueue(e->e_qgrp, e->e_qdir),
+		       DATAFL_LETTER, e->e_id);
 		return response;
 	}
 
@@ -2442,7 +2588,7 @@ milter_body(m, e, state)
 **  Actions
 */
 
-/*
+/*
 **  MILTER_ADDHEADER -- Add the supplied header to the message
 **
 **	Parameters:
@@ -2532,7 +2678,85 @@ milter_addheader(response, rlen, e)
 		addheader(newstr(response), val, H_USER, e);
 	}
 }
-/*
+/*
+**  MILTER_INSHEADER -- Insert the supplied header
+**
+**	Parameters:
+**		response -- encoded form of header/value.
+**		rlen -- length of response.
+**		e -- current envelope.
+**
+**	Returns:
+**		none
+**
+**  	Notes:
+**  		Unlike milter_addheader(), this does not attempt to determine
+**  		if the header already exists in the envelope, even a
+**  		deleted version.  It just blindly inserts.
+*/
+
+static void
+milter_insheader(response, rlen, e)
+	char *response;
+	ssize_t rlen;
+	ENVELOPE *e;
+{
+	mi_int32 idx, i;
+	char *field;
+	char *val;
+
+	if (tTd(64, 10))
+		sm_dprintf("milter_insheader: ");
+
+	/* sanity checks */
+	if (response == NULL)
+	{
+		if (tTd(64, 10))
+			sm_dprintf("NULL response\n");
+		return;
+	}
+
+	if (rlen < 2 || strlen(response) + 1 >= (size_t) rlen)
+	{
+		if (tTd(64, 10))
+			sm_dprintf("didn't follow protocol (total len)\n");
+		return;
+	}
+
+	/* decode */
+	(void) memcpy((char *) &i, response, MILTER_LEN_BYTES);
+	idx = ntohl(i);
+	field = response + MILTER_LEN_BYTES;
+	val = field + strlen(field) + 1;
+
+	/* another sanity check */
+	if (MILTER_LEN_BYTES + strlen(field) + 1 +
+	    strlen(val) + 1 != (size_t) rlen)
+	{
+		if (tTd(64, 10))
+			sm_dprintf("didn't follow protocol (part len)\n");
+		return;
+	}
+
+	if (*field == '\0')
+	{
+		if (tTd(64, 10))
+			sm_dprintf("empty field name\n");
+		return;
+	}
+
+	/* add to e_msgsize */
+	e->e_msgsize += strlen(response) + 2 + strlen(val);
+
+	if (tTd(64, 10))
+		sm_dprintf("Insert (%d) %s: %s\n", idx, response, val);
+	if (MilterLogLevel > 8)
+		sm_syslog(LOG_INFO, e->e_id,
+		          "Milter insert (%d): header: %s: %s",
+			  idx, field, val);
+	insheader(idx, newstr(field), val, H_USER, e);
+}
+/*
 **  MILTER_CHANGEHEADER -- Change the supplied header in the message
 **
 **	Parameters:
@@ -2629,13 +2853,21 @@ milter_changeheader(response, rlen, e)
 		if (*val == '\0')
 		{
 			if (tTd(64, 10))
-				sm_dprintf("Delete (noop) %s:\n", field);
+				sm_dprintf("Delete (noop) %s\n", field);
+			if (MilterLogLevel > 8)
+				sm_syslog(LOG_INFO, e->e_id,
+					"Milter delete (noop): header: %s"
+					, field);
 		}
 		else
 		{
 			/* treat modify value with no existing header as add */
 			if (tTd(64, 10))
 				sm_dprintf("Add %s: %s\n", field, val);
+			if (MilterLogLevel > 8)
+				sm_syslog(LOG_INFO, e->e_id,
+					"Milter change (add): header: %s: %s"
+					, field, val);
 			addheader(newstr(field), val, H_USER, e);
 		}
 		return;
@@ -2665,7 +2897,7 @@ milter_changeheader(response, rlen, e)
 		if (*val == '\0')
 		{
 			sm_syslog(LOG_INFO, e->e_id,
-				  "Milter delete: header %s %s: %s",
+				  "Milter delete: header%s %s: %s",
 				  h == sysheader ? " (default header)" : "",
 				  field,
 				  h->h_value == NULL ? "<NULL>" : h->h_value);
@@ -2673,7 +2905,7 @@ milter_changeheader(response, rlen, e)
 		else
 		{
 			sm_syslog(LOG_INFO, e->e_id,
-				  "Milter change: header %s %s: from %s to %s",
+				  "Milter change: header%s %s: from %s to %s",
 				  h == sysheader ? " (default header)" : "",
 				  field,
 				  h->h_value == NULL ? "<NULL>" : h->h_value,
@@ -2683,7 +2915,13 @@ milter_changeheader(response, rlen, e)
 
 	if (h != sysheader && h->h_value != NULL)
 	{
-		e->e_msgsize -= strlen(h->h_value);
+		size_t l;
+
+		l = strlen(h->h_value);
+		if (l > e->e_msgsize)
+			e->e_msgsize = 0;
+		else
+			e->e_msgsize -= l;
 		/* rpool, don't free: sm_free(h->h_value); XXX */
 	}
 
@@ -2691,7 +2929,15 @@ milter_changeheader(response, rlen, e)
 	{
 		/* Remove "Field: " from message size */
 		if (h != sysheader)
-			e->e_msgsize -= strlen(h->h_field) + 2;
+		{
+			size_t l;
+
+			l = strlen(h->h_field) + 2;
+			if (l > e->e_msgsize)
+				e->e_msgsize = 0;
+			else
+				e->e_msgsize -= l;
+		}
 		h->h_value = NULL;
 	}
 	else
@@ -2701,7 +2947,7 @@ milter_changeheader(response, rlen, e)
 		e->e_msgsize += strlen(h->h_value);
 	}
 }
-/*
+/*
 **  MILTER_ADDRCPT -- Add the supplied recipient to the message
 **
 **	Parameters:
@@ -2719,6 +2965,8 @@ milter_addrcpt(response, rlen, e)
 	ssize_t rlen;
 	ENVELOPE *e;
 {
+	int olderrors;
+
 	if (tTd(64, 10))
 		sm_dprintf("milter_addrcpt: ");
 
@@ -2743,10 +2991,12 @@ milter_addrcpt(response, rlen, e)
 		sm_dprintf("%s\n", response);
 	if (MilterLogLevel > 8)
 		sm_syslog(LOG_INFO, e->e_id, "Milter add: rcpt: %s", response);
+	olderrors = Errors;
 	(void) sendtolist(response, NULLADDR, &e->e_sendqueue, 0, e);
+	Errors = olderrors;
 	return;
 }
-/*
+/*
 **  MILTER_DELRCPT -- Delete the supplied recipient from the message
 **
 **	Parameters:
@@ -2791,8 +3041,8 @@ milter_delrcpt(response, rlen, e)
 	(void) removefromlist(response, &e->e_sendqueue, e);
 	return;
 }
-/*
-**  MILTER_REPLBODY -- Replace the current df file with new body
+/*
+**  MILTER_REPLBODY -- Replace the current data file with new body
 **
 **	Parameters:
 **		response -- encoded form of new body.
@@ -2817,29 +3067,24 @@ milter_replbody(response, rlen, newfilter, e)
 	if (tTd(64, 10))
 		sm_dprintf("milter_replbody\n");
 
-	/* If a new filter, reset previous character and truncate df */
+	/* If a new filter, reset previous character and truncate data file */
 	if (newfilter)
 	{
-		off_t prevsize = 0;
+		off_t prevsize;
 		char dfname[MAXPATHLEN];
 
-		(void) sm_strlcpy(dfname, queuename(e, 'd'), sizeof dfname);
+		(void) sm_strlcpy(dfname, queuename(e, DATAFL_LETTER),
+				  sizeof dfname);
 
 		/* Reset prevchar */
 		prevchar = '\0';
 
-		/* Get the current df information */
-		if (bitset(EF_HAS_DF, e->e_flags) && e->e_dfp != NULL)
-		{
-			int afd;
-			struct stat st;
+		/* Get the current data file information */
+		prevsize = sm_io_getinfo(e->e_dfp, SM_IO_WHAT_SIZE, NULL);
+		if (prevsize < 0)
+			prevsize = 0;
 
-			afd = sm_io_getinfo(e->e_dfp, SM_IO_WHAT_FD, NULL);
-			if (afd > 0 && fstat(afd, &st) == 0)
-				prevsize = st.st_size;
-		}
-
-		/* truncate current df file */
+		/* truncate current data file */
 		if (sm_io_getinfo(e->e_dfp, SM_IO_WHAT_ISTYPE, BF_FILE_TYPE))
 		{
 			if (sm_io_setinfo(e->e_dfp, SM_BF_TRUNCATE, NULL) < 0)
@@ -2852,8 +3097,6 @@ milter_replbody(response, rlen, newfilter, e)
 		{
 			int err;
 
-# if NOFTRUNCATE
-			/* XXX: Not much we can do except rewind it */
 			err = sm_io_error(e->e_dfp);
 			(void) sm_io_flush(e->e_dfp, SM_TIME_DEFAULT);
 
@@ -2869,16 +3112,26 @@ milter_replbody(response, rlen, newfilter, e)
 			/* errno is set implicitly by fseek() before return */
 			err = sm_io_seek(e->e_dfp, SM_TIME_DEFAULT,
 					 0, SEEK_SET);
+			if (err < 0)
+			{
+				MILTER_DF_ERROR("milter_replbody: sm_io_seek %s: %s");
+				return -1;
+			}
+# if NOFTRUNCATE
+			/* XXX: Not much we can do except rewind it */
+			errno = EINVAL;
+			MILTER_DF_ERROR("milter_replbody: ftruncate not available on this platform (%s:%s)");
+			return -1;
 # else /* NOFTRUNCATE */
 			err = ftruncate(sm_io_getinfo(e->e_dfp,
 						      SM_IO_WHAT_FD, NULL),
 					0);
-# endif /* NOFTRUNCATE */
 			if (err < 0)
 			{
 				MILTER_DF_ERROR("milter_replbody: sm_io ftruncate %s: %s");
 				return -1;
 			}
+# endif /* NOFTRUNCATE */
 		}
 
 		if (prevsize > e->e_msgsize)
@@ -2887,7 +3140,7 @@ milter_replbody(response, rlen, newfilter, e)
 			e->e_msgsize -= prevsize;
 	}
 
-	if (MilterLogLevel > 8)
+	if (newfilter && MilterLogLevel > 8)
 		sm_syslog(LOG_INFO, e->e_id, "Milter message: body replaced");
 
 	if (response == NULL)
@@ -2943,7 +3196,7 @@ milter_replbody(response, rlen, newfilter, e)
 **  MTA callouts
 */
 
-/*
+/*
 **  MILTER_INIT -- open and negotiate with all of the filters
 **
 **	Parameters:
@@ -2981,7 +3234,7 @@ milter_init(e, state)
 		m->mf_sock = milter_open(m, false, e);
 		if (m->mf_state == SMFS_ERROR)
 		{
-			MILTER_CHECK_ERROR(continue);
+			MILTER_CHECK_ERROR(true, continue);
 			break;
 		}
 
@@ -2995,7 +3248,7 @@ milter_init(e, state)
 					   m->mf_sock < 0 ? "open" :
 							    "negotiate");
 			if (MilterLogLevel > 0)
-				sm_syslog(LOG_INFO, e->e_id,
+				sm_syslog(LOG_ERR, e->e_id,
 					  "Milter (%s): init failed to %s",
 					  m->mf_name,
 					  m->mf_sock < 0 ? "open" :
@@ -3003,7 +3256,8 @@ milter_init(e, state)
 
 			/* if negotation failure, close socket */
 			milter_error(m, e);
-			MILTER_CHECK_ERROR(continue);
+			MILTER_CHECK_ERROR(true, continue);
+			continue;
 		}
 		if (MilterLogLevel > 9)
 			sm_syslog(LOG_INFO, e->e_id,
@@ -3023,7 +3277,7 @@ milter_init(e, state)
 
 	return true;
 }
-/*
+/*
 **  MILTER_CONNECT -- send connection info to milter filters
 **
 **	Parameters:
@@ -3072,7 +3326,7 @@ milter_connect(hostname, addr, e, state)
 # if NETINET
 	  case AF_INET:
 		family = SMFIA_INET;
-		port = htons(addr.sin.sin_port);
+		port = addr.sin.sin_port;
 		sockinfo = (char *) inet_ntoa(addr.sin.sin_addr);
 		break;
 # endif /* NETINET */
@@ -3083,7 +3337,7 @@ milter_connect(hostname, addr, e, state)
 			family = SMFIA_INET;
 		else
 			family = SMFIA_INET6;
-		port = htons(addr.sin6.sin6_port);
+		port = addr.sin6.sin6_port;
 		sockinfo = anynet_ntop(&addr.sin6.sin6_addr, buf6,
 				       sizeof buf6);
 		if (sockinfo == NULL)
@@ -3129,7 +3383,7 @@ milter_connect(hostname, addr, e, state)
 
 	if (*state != SMFIR_CONTINUE)
 	{
-		if (MilterLogLevel > 7)
+		if (MilterLogLevel > 9)
 			sm_syslog(LOG_INFO, e->e_id, "Milter: connect, ending");
 		milter_quit(e);
 	}
@@ -3146,7 +3400,12 @@ milter_connect(hostname, addr, e, state)
 	{
 		if (response != NULL &&
 		    *response == '4')
-			*state = SMFIR_TEMPFAIL;
+		{
+			if (strncmp(response, "421 ", 4) == 0)
+				*state = SMFIR_SHUTDOWN;
+			else
+				*state = SMFIR_TEMPFAIL;
+		}
 		else
 			*state = SMFIR_REJECT;
 		if (response != NULL)
@@ -3157,7 +3416,7 @@ milter_connect(hostname, addr, e, state)
 	}
 	return response;
 }
-/*
+/*
 **  MILTER_HELO -- send SMTP HELO/EHLO command info to milter filters
 **
 **	Parameters:
@@ -3205,7 +3464,7 @@ milter_helo(helo, e, state)
 	milter_per_connection_check(e);
 	return response;
 }
-/*
+/*
 **  MILTER_ENVFROM -- send SMTP MAIL command info to milter filters
 **
 **	Parameters:
@@ -3303,7 +3562,8 @@ milter_envfrom(args, e, state)
 		sm_syslog(LOG_INFO, e->e_id, "Milter: reject, senders");
 	return response;
 }
-/*
+
+/*
 **  MILTER_ENVRCPT -- send SMTP RCPT command info to milter filters
 **
 **	Parameters:
@@ -3371,7 +3631,33 @@ milter_envrcpt(args, e, state)
 	sm_free(buf); /* XXX */
 	return response;
 }
-/*
+
+#if SMFI_VERSION > 3
+/*
+**  MILTER_DATA_CMD -- send SMTP DATA command info to milter filters
+**
+**	Parameters:
+**		e -- current envelope.
+**		state -- return state from response.
+**
+**	Returns:
+**		response string (may be NULL)
+*/
+
+char *
+milter_data_cmd(e, state)
+	ENVELOPE *e;
+	char *state;
+{
+	if (tTd(64, 10))
+		sm_dprintf("milter_data_cmd\n");
+
+	/* send it over */
+	return milter_command(SMFIC_DATA, NULL, 0, MilterDataMacros, e, state);
+}
+#endif /* SMFI_VERSION > 3 */
+
+/*
 **  MILTER_DATA -- send message headers/body and gather final message results
 **
 **	Parameters:
@@ -3409,8 +3695,8 @@ milter_data(e, state)
 {
 	bool replbody = false;		/* milter_replbody() called? */
 	bool replfailed = false;	/* milter_replbody() failed? */
-	bool rewind = false;		/* rewind df file? */
-	bool dfopen = false;		/* df open for writing? */
+	bool rewind = false;		/* rewind data file? */
+	bool dfopen = false;		/* data file open for writing? */
 	bool newfilter;			/* reset on each new filter */
 	char rcmd;
 	int i;
@@ -3453,7 +3739,7 @@ milter_data(e, state)
 		/* previous problem? */
 		if (m->mf_state == SMFS_ERROR)
 		{
-			MILTER_CHECK_ERROR(continue);
+			MILTER_CHECK_ERROR(false, continue);
 			break;
 		}
 
@@ -3492,6 +3778,13 @@ milter_data(e, state)
 			MILTER_CHECK_RESULTS();
 		}
 
+		if (MilterEOMMacros[0] != NULL)
+		{
+			milter_send_macros(m, MilterEOMMacros,
+					   SMFIC_BODYEOB, e);
+			MILTER_CHECK_RESULTS();
+		}
+
 		/* send the final body chunk */
 		(void) milter_write(m, SMFIC_BODYEOB, NULL, 0,
 				    m->mf_timeout[SMFTO_WRITE], e);
@@ -3514,7 +3807,7 @@ milter_data(e, state)
 						  "milter_data(%s): EOM ACK/NAK timeout",
 						  m->mf_name);
 				milter_error(m, e);
-				MILTER_CHECK_ERROR(continue);
+				MILTER_CHECK_ERROR(false, break);
 				break;
 			}
 
@@ -3531,7 +3824,7 @@ milter_data(e, state)
 			{
 			  case SMFIR_REPLYCODE:
 				MILTER_CHECK_REPLYCODE("554 5.7.1 Command rejected");
-				if (MilterLogLevel > 8)
+				if (MilterLogLevel > 12)
 					sm_syslog(LOG_INFO, e->e_id, "milter=%s, reject=%s",
 						  m->mf_name, response);
 				*state = rcmd;
@@ -3539,8 +3832,25 @@ milter_data(e, state)
 				break;
 
 			  case SMFIR_REJECT: /* log msg at end of function */
+				if (MilterLogLevel > 12)
+					sm_syslog(LOG_INFO, e->e_id, "milter=%s, reject",
+						  m->mf_name);
+				*state = rcmd;
+				m->mf_state = SMFS_DONE;
+				break;
+
 			  case SMFIR_DISCARD:
+				if (MilterLogLevel > 12)
+					sm_syslog(LOG_INFO, e->e_id, "milter=%s, discard",
+						  m->mf_name);
+				*state = rcmd;
+				m->mf_state = SMFS_DONE;
+				break;
+
 			  case SMFIR_TEMPFAIL:
+				if (MilterLogLevel > 12)
+					sm_syslog(LOG_INFO, e->e_id, "milter=%s, tempfail",
+						  m->mf_name);
 				*state = rcmd;
 				m->mf_state = SMFS_DONE;
 				break;
@@ -3558,6 +3868,26 @@ milter_data(e, state)
 			  case SMFIR_PROGRESS:
 				break;
 
+			  case SMFIR_QUARANTINE:
+				if (!bitset(SMFIF_QUARANTINE, m->mf_fflags))
+				{
+					if (MilterLogLevel > 9)
+						sm_syslog(LOG_WARNING, e->e_id,
+							  "milter_data(%s): lied about quarantining, honoring request anyway",
+							  m->mf_name);
+				}
+				if (response == NULL)
+					response = newstr("");
+				if (MilterLogLevel > 3)
+					sm_syslog(LOG_INFO, e->e_id,
+						  "milter=%s, quarantine=%s",
+						  m->mf_name, response);
+				e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool,
+								 response);
+				macdefine(&e->e_macro, A_PERM,
+					  macid("{quarantine}"), e->e_quarmsg);
+				break;
+
 			  case SMFIR_ADDHEADER:
 				if (!bitset(SMFIF_ADDHDRS, m->mf_fflags))
 				{
@@ -3567,6 +3897,17 @@ milter_data(e, state)
 							  m->mf_name);
 				}
 				milter_addheader(response, rlen, e);
+				break;
+
+			  case SMFIR_INSHEADER:
+				if (!bitset(SMFIF_ADDHDRS, m->mf_fflags))
+				{
+					if (MilterLogLevel > 9)
+						sm_syslog(LOG_WARNING, e->e_id,
+							  "milter_data(%s): lied about adding headers, honoring request anyway",
+							  m->mf_name);
+				}
+				milter_insheader(response, rlen, e);
 				break;
 
 			  case SMFIR_CHGHEADER:
@@ -3663,7 +4004,7 @@ milter_data(e, state)
 
 		if (m->mf_state == SMFS_ERROR)
 		{
-			MILTER_CHECK_ERROR(continue);
+			MILTER_CHECK_ERROR(false, continue);
 			goto finishup;
 		}
 	}
@@ -3708,8 +4049,9 @@ finishup:
 		}
 
 		errno = save_errno;
-		syserr("milter_data: %s/df%s: read error",
-		       qid_printqueue(e->e_qgrp, e->e_qdir), e->e_id);
+		syserr("milter_data: %s/%cf%s: read error",
+		       qid_printqueue(e->e_qgrp, e->e_qdir),
+		       DATAFL_LETTER, e->e_id);
 	}
 
 	MILTER_CHECK_DONE_MSG();
@@ -3717,7 +4059,37 @@ finishup:
 		sm_syslog(LOG_INFO, e->e_id, "Milter: reject, data");
 	return response;
 }
-/*
+
+#if SMFI_VERSION > 2
+/*
+**  MILTER_UNKNOWN -- send any unrecognized or unimplemented command
+**			string to milter filters
+**
+**	Parameters:
+**		cmd -- the string itself.
+**		e -- current envelope.
+**		state -- return state from response.
+**
+**
+**	Returns:
+**		response string (may be NULL)
+*/
+
+char *
+milter_unknown(cmd, e, state)
+	char *cmd;
+	ENVELOPE *e;
+	char *state;
+{
+	if (tTd(64, 10))
+		sm_dprintf("milter_unknown(%s)\n", cmd);
+
+	return milter_command(SMFIC_UNKNOWN, cmd, strlen(cmd) + 1,
+				NULL, e, state);
+}
+#endif /* SMFI_VERSION > 2 */
+
+/*
 **  MILTER_QUIT -- informs the filter(s) we are done and closes connection(s)
 **
 **	Parameters:
@@ -3739,7 +4111,7 @@ milter_quit(e)
 	for (i = 0; InputFilters[i] != NULL; i++)
 		milter_quit_filter(InputFilters[i], e);
 }
-/*
+/*
 **  MILTER_ABORT -- informs the filter(s) that we are aborting current message
 **
 **	Parameters:

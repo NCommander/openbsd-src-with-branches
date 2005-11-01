@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: key.c,v 1.2 2005/05/28 08:07:45 marius Exp $ */
 
 /*
  * key.c
@@ -30,7 +30,7 @@
  *   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  *   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: key.c,v 1.2 2005/04/01 16:47:31 dugsong Exp $
+ * $Vendor: key.c,v 1.2 2005/04/01 16:47:31 dugsong Exp $
  */
 
 #include <sys/types.h>
@@ -46,6 +46,7 @@
 #include <unistd.h>
 
 #include "key.h"
+#include "ssh.h"
 #include "ssh2.h"
 #include "util.h"
 #include "x509.h"
@@ -53,12 +54,14 @@
 typedef int (*key_loader)(struct key *, struct iovec *);
 
 static key_loader pubkey_loaders[] = {
+	ssh_load_public,
 	ssh2_load_public,
 	x509_load_public,
 	NULL
 };
 
 static key_loader privkey_loaders[] = {
+	ssh_load_private,
 	x509_load_private,
 	NULL
 };

@@ -1,3 +1,4 @@
+/*	$OpenBSD: morg.c,v 1.4 2002/07/28 08:44:14 pjanzen Exp $	*/
 /*	$NetBSD: morg.c,v 1.4 1995/03/23 08:35:02 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)morg.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: morg.c,v 1.4 1995/03/23 08:35:02 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: morg.c,v 1.4 2002/07/28 08:44:14 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,16 +66,22 @@ static char	*names[MAX_PRP+2],
 
 static shrt	square[MAX_PRP+2];
 
-static int	num_good,got_houses;
+static int	num_good, got_houses;
+
+static int	set_mlist(void);
+static void	m(int);
+static int	set_umlist(void);
+static void	unm(int);
 
 /*
  *	This routine is the command level response the mortgage command.
  * it gets the list of mortgageable property and asks which are to
  * be mortgaged.
  */
-mortgage() {
-
-	reg int	prop;
+void
+mortgage()
+{
+	int	prop;
 
 	for (;;) {
 		if (set_mlist() == 0) {
@@ -89,34 +92,36 @@ mortgage() {
 			return;
 		}
 		if (num_good == 1) {
-			printf("Your only mortageable property is %s\n",names[0]);
+			printf("Your only mortageable property is %s\n", names[0]);
 			if (getyn("Do you want to mortgage it? ") == 0)
 				m(square[0]);
 			return;
 		}
-		prop = getinp("Which property do you want to mortgage? ",names);
+		prop = getinp("Which property do you want to mortgage? ", names);
 		if (prop == num_good)
 			return;
 		m(square[prop]);
-		notify(cur_p);
+		notify();
 	}
 }
 /*
  *	This routine sets up the list of mortgageable property
  */
-set_mlist() {
-
-	reg OWN	*op;
+static int
+set_mlist()
+{
+	OWN	*op;
 
 	num_good = 0;
 	for (op = cur_p->own_list; op; op = op->next)
-		if (!op->sqr->desc->morg)
+		if (!op->sqr->desc->morg) {
 			if (op->sqr->type == PRPTY && op->sqr->desc->houses)
 				got_houses++;
 			else {
 				names[num_good] = op->sqr->name;
 				square[num_good++] = sqnum(op->sqr);
 			}
+		}
 	names[num_good++] = "done";
 	names[num_good--] = 0;
 	return num_good;
@@ -124,10 +129,11 @@ set_mlist() {
 /*
  *	This routine actually mortgages the property.
  */
+static void
 m(prop)
-reg int	prop; {
-
-	reg int	price;
+	int	prop;
+{
+	int	price;
 
 	price = board[prop].cost/2;
 	board[prop].desc->morg = TRUE;
@@ -139,9 +145,10 @@ reg int	prop; {
  * command.  It gets the list of mortgaged property and asks which are
  * to be unmortgaged.
  */
-unmortgage() {
-
-	reg int	prop;
+void
+unmortgage()
+{
+	int	prop;
 
 	for (;;) {
 		if (set_umlist() == 0) {
@@ -149,12 +156,12 @@ unmortgage() {
 			return;
 		}
 		if (num_good == 1) {
-			printf("Your only mortaged property is %s\n",names[0]);
+			printf("Your only mortaged property is %s\n", names[0]);
 			if (getyn("Do you want to unmortgage it? ") == 0)
 				unm(square[0]);
 			return;
 		}
-		prop = getinp("Which property do you want to unmortgage? ",names);
+		prop = getinp("Which property do you want to unmortgage? ", names);
 		if (prop == num_good)
 			return;
 		unm(square[prop]);
@@ -163,9 +170,10 @@ unmortgage() {
 /*
  *	This routine sets up the list of mortgaged property
  */
-set_umlist() {
-
-	reg OWN	*op;
+static int
+set_umlist()
+{
+	OWN	*op;
 
 	num_good = 0;
 	for (op = cur_p->own_list; op; op = op->next)
@@ -180,10 +188,11 @@ set_umlist() {
 /*
  *	This routine actually unmortgages the property
  */
+static void
 unm(prop)
-reg int	prop; {
-
-	reg int	price;
+	int	prop;
+{
+	int	price;
 
 	price = board[prop].cost/2;
 	board[prop].desc->morg = FALSE;
@@ -194,22 +203,16 @@ reg int	prop; {
 }
 /*
  *	This routine forces the indebted player to fix his
- * financial woes.
+ * financial woes.  It is fine to have $0 but not to be in debt.
  */
-force_morg() {
-
+void
+force_morg()
+{
 	told_em = fixing = TRUE;
-	while (cur_p->money <= 0)
-		fix_ex(getinp("How are you going to fix it up? ",morg_coms));
+	while (cur_p->money < 0) {
+		told_em = FALSE;
+		(*func[(getinp("How are you going to fix it up? ", morg_coms))])();
+		notify();
+	}
 	fixing = FALSE;
-}
-/*
- *	This routine is a special execute for the force_morg routine
- */
-fix_ex(com_num)
-reg int	com_num; {
-
-	told_em = FALSE;
-	(*func[com_num])();
-	notify();
 }

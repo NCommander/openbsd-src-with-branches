@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttoutput.c,v 1.7 2004/03/16 01:11:09 tedu Exp $	*/
 /*	$NetBSD: ttoutput.c,v 1.3 1995/09/28 10:34:51 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,13 +37,16 @@
 #if 0
 static char sccsid[] = "@(#)ttoutput.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: ttoutput.c,v 1.3 1995/09/28 10:34:51 tls Exp $";
+static char rcsid[] = "$OpenBSD: ttoutput.c,v 1.7 2004/03/16 01:11:09 tedu Exp $";
 #endif
 #endif /* not lint */
 
 #include "ww.h"
 #include "tt.h"
-#include <sys/errno.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <string.h>
+#include <unistd.h>
 
 /*
  * Buffered output package.
@@ -55,9 +55,8 @@ static char rcsid[] = "$NetBSD: ttoutput.c,v 1.3 1995/09/28 10:34:51 tls Exp $";
 
 ttflush()
 {
-	register char *p;
-	register n = tt_obp - tt_ob;
-	extern errno;
+	char *p;
+	int n = tt_obp - tt_ob;
 
 	if (n == 0)
 		return;
@@ -70,7 +69,7 @@ ttflush()
 	wwnflush++;
 	for (p = tt_ob; p < tt_obp;) {
 		wwnwr++;
-		n = write(1, p, tt_obp - p);
+		n = write(STDOUT_FILENO, p, tt_obp - p);
 		if (n < 0) {
 			wwnwre++;
 			if (errno != EWOULDBLOCK) {
@@ -89,15 +88,15 @@ ttflush()
 }
 
 ttputs(s)
-register char *s;
+char *s;
 {
 	while (*s)
 		ttputc(*s++);
 }
 
 ttwrite(s, n)
-	register char *s;
-	register n;
+	char *s;
+	int n;
 {
 	switch (n) {
 	case 0:
@@ -137,7 +136,7 @@ ttwrite(s, n)
 		break;
 	default:
 		while (n > 0) {
-			register m;
+			int m;
 
 			while ((m = tt_obe - tt_obp) == 0)
 				ttflush();

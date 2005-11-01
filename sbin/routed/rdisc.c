@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rdisc.c,v 1.5 2003/06/02 20:06:17 millert Exp $	*/
 
 /*
  * Copyright (c) 1995
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -927,7 +923,8 @@ read_d(void)
 {
 	static naddr bad_asize, bad_len;
 	struct sockaddr_in from;
-	int n, fromlen, cc, hlen;
+	socklen_t fromlen;
+	int n, cc, hlen;
 	union {
 		struct ip ip;
 		u_short s[512/2];
@@ -949,7 +946,7 @@ read_d(void)
 			break;
 		}
 		if (fromlen != sizeof(struct sockaddr_in))
-			logbad(1,"impossible recvfrom(rdisc_sock) fromlen=%d",
+			logbad(1,"impossible recvfrom(rdisc_sock) fromlen=%u",
 			       fromlen);
 
 		hlen = pkt.ip.ip_hl << 2;

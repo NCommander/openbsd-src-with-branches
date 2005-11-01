@@ -1,3 +1,5 @@
+/*	$OpenBSD: symbols.h,v 1.2 1998/02/15 18:49:02 niklas Exp $	*/
+
 /* symbols.h -
 
    Copyright (C) 1987, 1990, 1992 Free Software Foundation, Inc.
@@ -17,10 +19,6 @@
    You should have received a copy of the GNU General Public License
    along with GAS; see the file COPYING.  If not, write to
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-/*
- * $Id: symbols.h,v 1.3 1993/10/02 20:57:57 pk Exp $
- */
-
 
 extern struct obstack	notes; /* eg FixS live here. */
 
@@ -53,6 +51,11 @@ void local_colon(int n);
 void symbol_begin(void);
 void symbol_table_insert(symbolS *symbolP);
 void verify_symbol_chain(symbolS *rootP, symbolS *lastP);
+void resolve_symbol_value(symbolS *);
+
+/* Get and set the values of symbols.  These used to be macros.  */
+extern valueT S_GET_VALUE(symbolS *);
+extern void S_SET_VALUE(symbolS *, valueT);
 
 #else /* not __STDC__ */
 
@@ -68,6 +71,11 @@ void local_colon();
 void symbol_begin();
 void symbol_table_insert();
 void verify_symbol_chain();
+void resolve_symbol_value();
+
+/* Get and set the values of symbols.  These used to be macros.  */
+extern valueT S_GET_VALUE();
+extern void S_SET_VALUE();
 
 #endif /* not __STDC__ */
 

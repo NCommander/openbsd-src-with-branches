@@ -1,11 +1,17 @@
-/*	$NetBSD: md.h,v 1.2 1994/11/30 06:20:43 phil Exp $  */
+/*	$OpenBSD: md.h,v 1.5 2002/07/15 21:05:57 marc Exp $  */
+/*	$NetBSD: md.h,v 1.3 1996/02/22 00:20:06 pk Exp $  */
 
 /*
  *	- ns32k dependent definitions
  */
 
-#if defined(CROSS_LINKER) && defined(XHOST) && (XHOST==m68k || XHOST==sparc)
+#if defined(CROSS_LINKER) 
+#include <sys/endian.h>
+
+#if BYTE_ORDER != LITTLE_ENDIAN
 #define NEED_SWAP
+#endif
+
 #endif
 
 #define	MAX_ALIGNMENT		(sizeof (long))
@@ -29,6 +35,7 @@
 
 #define RELOC_STATICS_THROUGH_GOT_P(r)	(1)
 #define JMPSLOT_NEEDS_RELOC		(0)
+#define RELOC_INIT_SEGMENT_RELOC(r)	((r)->r_disp = 2)
 
 #define md_got_reloc(r)			(0)
 
@@ -93,11 +100,11 @@ typedef struct jmpslot {
 
 /* Define IO byte swapping routines */
 
-void	md_swapin_exec_hdr __P((struct exec *));
-void	md_swapout_exec_hdr __P((struct exec *));
-void	md_swapin_reloc __P((struct relocation_info *, int));
-void	md_swapout_reloc __P((struct relocation_info *, int));
-void	md_swapout_jmpslot __P((jmpslot_t *, int));
+void	md_swapin_exec_hdr(struct exec *);
+void	md_swapout_exec_hdr(struct exec *);
+void	md_swapin_reloc(struct relocation_info *, int);
+void	md_swapout_reloc(struct relocation_info *, int);
+void	md_swapout_jmpslot(jmpslot_t *, int);
 
 #  define md_swapin_symbols(s,n)		swap_symbols(s,n)
 #  define md_swapout_symbols(s,n)		swap_symbols(s,n)
@@ -119,7 +126,7 @@ void	md_swapout_jmpslot __P((jmpslot_t *, int));
 
 #  define md_swap_short(x) ( (((x) >> 8) & 0xff) | (((x) & 0xff) << 8) )
 
-#  define md_swap_long(x) ( (((x) >> 24) & 0xff    ) | (((x) >> 8 ) & 0xff00    ) | \
+#  define md_swap_long(x) ( (((x) >> 24) & 0xff	   ) | (((x) >> 8 ) & 0xff00	) | \
 			    (((x) << 8 ) & 0xff0000) | (((x) << 24) & 0xff000000) )
 
 # else	/* We need not swap, but must pay attention to alignment: */

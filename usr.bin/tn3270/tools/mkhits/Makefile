@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.4 1993/08/02 17:56:16 mycroft Exp $
+#	$OpenBSD$
 
 CFLAGS += -I${.CURDIR}/.. -I.
 

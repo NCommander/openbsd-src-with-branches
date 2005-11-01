@@ -1,3 +1,4 @@
+/*	$OpenBSD: exec_subr.c,v 1.25 2003/05/09 00:48:42 art Exp $	*/
 /*	$NetBSD: exec_subr.c,v 1.9 1994/12/04 03:10:42 mycroft Exp $	*/
 
 /*
@@ -38,8 +39,9 @@
 #include <sys/filedesc.h>
 #include <sys/exec.h>
 #include <sys/mman.h>
+#include <sys/resourcevar.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm.h>
 
 #ifdef DEBUG
 /*
@@ -52,14 +54,15 @@
  */
 
 void
-new_vmcmd(evsp, proc, len, addr, vp, offset, prot)
+new_vmcmd(evsp, proc, len, addr, vp, offset, prot, flags)
 	struct	exec_vmcmd_set *evsp;
-	int	(*proc) __P((struct proc * p, struct exec_vmcmd *));
+	int	(*proc)(struct proc * p, struct exec_vmcmd *);
 	u_long	len;
 	u_long	addr;
 	struct	vnode *vp;
 	u_long	offset;
 	u_int	prot;
+	int	flags;
 {
 	struct exec_vmcmd    *vcp;
 
@@ -73,6 +76,7 @@ new_vmcmd(evsp, proc, len, addr, vp, offset, prot)
 		vref(vp);
 	vcp->ev_offset = offset;
 	vcp->ev_prot = prot;
+	vcp->ev_flags = flags;
 }
 #endif /* DEBUG */
 
@@ -88,39 +92,70 @@ vmcmdset_extend(evsp)
 		panic("vmcmdset_extend: not necessary");
 #endif
 
-	/* figure out number of entries in new set */
 	ocnt = evsp->evs_cnt;
-	evsp->evs_cnt += ocnt ? ocnt : EXEC_DEFAULT_VMCMD_SETSIZE;
+	KASSERT(ocnt > 0);
+	/* figure out number of entries in new set */
+	evsp->evs_cnt += ocnt;
 
-	/* allocate it */
-	MALLOC(nvcp, struct exec_vmcmd *, 
-	    (evsp->evs_cnt * sizeof(struct exec_vmcmd)), M_EXEC, M_WAITOK);
-
-	/* free the old struct, if there was one, and record the new one */
-	if (ocnt) {
-		bcopy(evsp->evs_cmds, nvcp, (ocnt * sizeof(struct exec_vmcmd)));
-		FREE(evsp->evs_cmds, M_EXEC);
-	}
+	/* reallocate the command set */
+	nvcp = malloc(evsp->evs_cnt * sizeof(struct exec_vmcmd), M_EXEC,
+	    M_WAITOK);
+	bcopy(evsp->evs_cmds, nvcp, (ocnt * sizeof(struct exec_vmcmd)));
+	if (evsp->evs_cmds != evsp->evs_start)
+		free(evsp->evs_cmds, M_EXEC);
 	evsp->evs_cmds = nvcp;
 }
 
 void
-kill_vmcmds(evsp)
-	struct	exec_vmcmd_set *evsp;
+kill_vmcmds(struct exec_vmcmd_set *evsp)
 {
 	struct exec_vmcmd *vcp;
 	int i;
-
-	if (evsp->evs_cnt == 0)
-		return;
 
 	for (i = 0; i < evsp->evs_used; i++) {
 		vcp = &evsp->evs_cmds[i];
 		if (vcp->ev_vp != NULLVP)
 			vrele(vcp->ev_vp);
 	}
-	evsp->evs_used = evsp->evs_cnt = 0;
-	FREE(evsp->evs_cmds, M_EXEC);
+
+	/*
+	 * Free old vmcmds and reset the array.
+	 */
+	evsp->evs_used = 0;
+	if (evsp->evs_cmds != evsp->evs_start)
+		free(evsp->evs_cmds, M_EXEC);
+	evsp->evs_cmds = evsp->evs_start;
+	evsp->evs_cnt = EXEC_DEFAULT_VMCMD_SETSIZE;
+}
+
+int
+exec_process_vmcmds(struct proc *p, struct exec_package *epp)
+{
+	struct exec_vmcmd *base_vc = NULL;
+	int error = 0;
+	int i;
+
+	for (i = 0; i < epp->ep_vmcmds.evs_used && !error; i++) {
+		struct exec_vmcmd *vcp;
+
+		vcp = &epp->ep_vmcmds.evs_cmds[i];
+
+		if (vcp->ev_flags & VMCMD_RELATIVE) {
+#ifdef DIAGNOSTIC
+			if (base_vc == NULL)
+				panic("exec_process_vmcmds: RELATIVE no base");
+#endif
+			vcp->ev_addr += base_vc->ev_addr;
+		}
+		error = (*vcp->ev_proc)(p, vcp);
+		if (vcp->ev_flags & VMCMD_BASE) {
+			base_vc = vcp;
+		}
+	}
+
+	kill_vmcmds(&epp->ep_vmcmds);
+
+	return (error);
 }
 
 /*
@@ -140,9 +175,51 @@ vmcmd_map_pagedvn(p, cmd)
 	 * VTEXT.  that's handled in the routine which sets up the vmcmd to
 	 * call this routine.
 	 */
-	return vm_mmap(&p->p_vmspace->vm_map, &cmd->ev_addr, cmd->ev_len,
-	    cmd->ev_prot, VM_PROT_ALL, MAP_FIXED|MAP_COPY, (caddr_t)cmd->ev_vp,
-	    cmd->ev_offset);
+	struct uvm_object *uobj;
+	int error;
+
+	/*
+	 * map the vnode in using uvm_map.
+	 */
+
+	if (cmd->ev_len == 0)
+		return(0);
+	if (cmd->ev_offset & PAGE_MASK)
+		return(EINVAL);
+	if (cmd->ev_addr & PAGE_MASK)
+		return(EINVAL);
+	if (cmd->ev_len & PAGE_MASK)
+		return(EINVAL);
+
+	/*
+	 * first, attach to the object
+	 */
+
+	uobj = uvn_attach((void *) cmd->ev_vp, VM_PROT_READ|VM_PROT_EXECUTE);
+	if (uobj == NULL)
+		return(ENOMEM);
+
+	/*
+	 * do the map
+	 */
+
+	error = uvm_map(&p->p_vmspace->vm_map, &cmd->ev_addr, cmd->ev_len,
+	    uobj, cmd->ev_offset, 0,
+	    UVM_MAPFLAG(cmd->ev_prot, VM_PROT_ALL, UVM_INH_COPY,
+	    UVM_ADV_NORMAL, UVM_FLAG_COPYONW|UVM_FLAG_FIXED));
+
+	/*
+	 * check for error
+	 */
+
+	if (error) {
+		/*
+		 * error: detach from object
+		 */
+		uobj->pgops->pgo_detach(uobj);
+	}
+
+	return (error);
 }
 
 /*
@@ -151,26 +228,47 @@ vmcmd_map_pagedvn(p, cmd)
  *	appropriate for non-demand-paged text/data segments, i.e. impure
  *	objects (a la OMAGIC and NMAGIC).
  */
+
 int
-vmcmd_map_readvn(p, cmd)
-	struct proc *p;
-	struct exec_vmcmd *cmd;
+vmcmd_map_readvn(struct proc *p, struct exec_vmcmd *cmd)
 {
 	int error;
+	vm_prot_t prot;
 
-	error = vm_allocate(&p->p_vmspace->vm_map, &cmd->ev_addr,
-	    cmd->ev_len, 0);
+	if (cmd->ev_len == 0)
+		return (0);
+
+	prot = cmd->ev_prot;
+
+	cmd->ev_addr = trunc_page(cmd->ev_addr); /* required by uvm_map */
+	error = uvm_map(&p->p_vmspace->vm_map, &cmd->ev_addr,
+	    round_page(cmd->ev_len), NULL, UVM_UNKNOWN_OFFSET, 0,
+	    UVM_MAPFLAG(prot | UVM_PROT_WRITE, UVM_PROT_ALL, UVM_INH_COPY,
+	    UVM_ADV_NORMAL,
+	    UVM_FLAG_FIXED|UVM_FLAG_OVERLAY|UVM_FLAG_COPYONW));
+
 	if (error)
-		return error;
+		return (error);
 
 	error = vn_rdwr(UIO_READ, cmd->ev_vp, (caddr_t)cmd->ev_addr,
 	    cmd->ev_len, cmd->ev_offset, UIO_USERSPACE, IO_UNIT|IO_NODELOCKED,
-	    p->p_ucred, (int *)0, p);
+	    p->p_ucred, NULL, p);
 	if (error)
-		return error;
+		return (error);
 
-	return vm_map_protect(&p->p_vmspace->vm_map, trunc_page(cmd->ev_addr),
-	    round_page(cmd->ev_addr + cmd->ev_len), cmd->ev_prot, FALSE);
+	if (cmd->ev_prot != (VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE)) {
+		/*
+		 * we had to map in the area at PROT_ALL so that vn_rdwr()
+		 * could write to it.   however, the caller seems to want
+		 * it mapped read-only, so now we are going to have to call
+		 * uvm_map_protect() to fix up the protection.  ICK.
+		 */
+		return (uvm_map_protect(&p->p_vmspace->vm_map,
+		    trunc_page(cmd->ev_addr),
+		    round_page(cmd->ev_addr + cmd->ev_len),
+		    prot, FALSE));
+	}
+	return (0);
 }
 
 /*
@@ -186,11 +284,75 @@ vmcmd_map_zero(p, cmd)
 {
 	int error;
 
-	error = vm_allocate(&p->p_vmspace->vm_map, &cmd->ev_addr,
-	    cmd->ev_len, 0);
+	if (cmd->ev_len == 0)
+		return (0);
+	
+	cmd->ev_addr = trunc_page(cmd->ev_addr); /* required by uvm_map */
+	error = uvm_map(&p->p_vmspace->vm_map, &cmd->ev_addr,
+	    round_page(cmd->ev_len), NULL, UVM_UNKNOWN_OFFSET, 0,
+	    UVM_MAPFLAG(cmd->ev_prot, UVM_PROT_ALL, UVM_INH_COPY,
+	    UVM_ADV_NORMAL, UVM_FLAG_FIXED|UVM_FLAG_COPYONW));
+
 	if (error)
 		return error;
 
-	return vm_map_protect(&p->p_vmspace->vm_map, trunc_page(cmd->ev_addr),
-	    round_page(cmd->ev_addr + cmd->ev_len), cmd->ev_prot, FALSE);
+	return (0);
+}
+
+/*
+ * exec_setup_stack(): Set up the stack segment for an a.out
+ * executable.
+ *
+ * Note that the ep_ssize parameter must be set to be the current stack
+ * limit; this is adjusted in the body of execve() to yield the
+ * appropriate stack segment usage once the argument length is
+ * calculated.
+ *
+ * This function returns an int for uniformity with other (future) formats'
+ * stack setup functions.  They might have errors to return.
+ */
+
+int
+exec_setup_stack(p, epp)
+	struct proc *p;
+	struct exec_package *epp;
+{
+
+#ifdef MACHINE_STACK_GROWS_UP
+	epp->ep_maxsaddr = USRSTACK;
+	epp->ep_minsaddr = USRSTACK + MAXSSIZ;
+#else
+	epp->ep_maxsaddr = USRSTACK - MAXSSIZ;
+	epp->ep_minsaddr = USRSTACK;
+#endif
+	epp->ep_ssize = round_page(p->p_rlimit[RLIMIT_STACK].rlim_cur);
+
+	/*
+	 * set up commands for stack.  note that this takes *two*, one to
+	 * map the part of the stack which we can access, and one to map
+	 * the part which we can't.
+	 *
+	 * arguably, it could be made into one, but that would require the
+	 * addition of another mapping proc, which is unnecessary
+	 *
+	 * note that in memory, things assumed to be: 0 ....... ep_maxsaddr
+	 * <stack> ep_minsaddr
+	 */
+#ifdef MACHINE_STACK_GROWS_UP
+	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero,
+	    ((epp->ep_minsaddr - epp->ep_ssize) - epp->ep_maxsaddr),
+	    epp->ep_maxsaddr + epp->ep_ssize, NULLVP, 0, VM_PROT_NONE);
+	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, epp->ep_ssize,
+	    epp->ep_maxsaddr, NULLVP, 0,
+	    VM_PROT_READ|VM_PROT_WRITE);
+#else
+	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero,
+	    ((epp->ep_minsaddr - epp->ep_ssize) - epp->ep_maxsaddr),
+	    epp->ep_maxsaddr, NULLVP, 0, VM_PROT_NONE);
+	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, epp->ep_ssize,
+	    (epp->ep_minsaddr - epp->ep_ssize), NULLVP, 0,
+	    VM_PROT_READ|VM_PROT_WRITE);
+#endif
+
+	return 0;
 }

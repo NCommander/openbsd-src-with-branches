@@ -1,4 +1,5 @@
-/*	$NetBSD: args.c,v 1.5 1995/10/08 23:01:22 gwr Exp $	*/
+/*	$OpenBSD: args.c,v 1.14 2003/06/11 23:42:12 deraadt Exp $	*/
+/*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,11 +38,12 @@
 #if 0
 static char sccsid[] = "@(#)args.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: args.c,v 1.5 1995/10/08 23:01:22 gwr Exp $";
+static char rcsid[] = "$OpenBSD: args.c,v 1.14 2003/06/11 23:42:12 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 #include <err.h>
 #include <errno.h>
@@ -57,24 +55,25 @@ static char rcsid[] = "$NetBSD: args.c,v 1.5 1995/10/08 23:01:22 gwr Exp $";
 #include "dd.h"
 #include "extern.h"
 
-static int	c_arg __P((const void *, const void *));
-static int	c_conv __P((const void *, const void *));
-static void	f_bs __P((char *));
-static void	f_cbs __P((char *));
-static void	f_conv __P((char *));
-static void	f_count __P((char *));
-static void	f_files __P((char *));
-static void	f_ibs __P((char *));
-static void	f_if __P((char *));
-static void	f_obs __P((char *));
-static void	f_of __P((char *));
-static void	f_seek __P((char *));
-static void	f_skip __P((char *));
-static u_long	get_bsz __P((char *));
+static int	c_arg(const void *, const void *);
+static int	c_conv(const void *, const void *);
+static void	f_bs(char *);
+static void	f_cbs(char *);
+static void	f_conv(char *);
+static void	f_count(char *);
+static void	f_files(char *);
+static void	f_ibs(char *);
+static void	f_if(char *);
+static void	f_obs(char *);
+static void	f_of(char *);
+static void	f_seek(char *);
+static void	f_skip(char *);
+static size_t	get_bsz(char *);
+static off_t	get_off(char *);
 
-static struct arg {
+static const struct arg {
 	char *name;
-	void (*f) __P((char *));
+	void (*f)(char *);
 	u_int set, noset;
 } args[] = {
 	{ "bs",		f_bs,		C_BS,	 C_BS|C_IBS|C_OBS|C_OSYNC },
@@ -96,15 +95,16 @@ static char *oper;
  * args -- parse JCL syntax of dd.
  */
 void
-jcl(argv)
-	char **argv;
+jcl(char **argv)
 {
 	struct arg *ap, tmp;
 	char *arg;
 
 	in.dbsz = out.dbsz = 512;
 
-	while (oper = *++argv) {
+	while ((oper = *++argv) != NULL) {
+		if ((oper = strdup(oper)) == NULL)
+			errx(1, "out of memory");
 		if ((arg = strchr(oper, '=')) == NULL)
 			errx(1, "unknown operand %s", oper);
 		*arg++ = '\0';
@@ -168,122 +168,108 @@ jcl(argv)
 		errx(1, "buffer sizes cannot be zero");
 
 	/*
-	 * Read, write and seek calls take ints as arguments.  Seek sizes
-	 * could be larger if we wanted to do it in stages or check only
-	 * regular files, but it's probably not worth it.
+	 * Read and write take size_t's as arguments.  Lseek, however,
+	 * takes an off_t (quad).
 	 */
-	if (in.dbsz > INT_MAX || out.dbsz > INT_MAX)
-		errx(1, "buffer sizes cannot be greater than %d", INT_MAX);
-	if (in.offset > INT_MAX / in.dbsz || out.offset > INT_MAX / out.dbsz)
-		errx(1, "seek offsets cannot be larger than %d", INT_MAX);
+	if (in.dbsz > SIZE_T_MAX || out.dbsz > SIZE_T_MAX)
+		errx(1, "buffer sizes cannot be greater than %u", SIZE_T_MAX);
+	if (in.offset > QUAD_MAX / in.dbsz || out.offset > QUAD_MAX / out.dbsz)
+		errx(1, "seek offsets cannot be larger than %qd", QUAD_MAX);
 }
 
 static int
-c_arg(a, b)
-	const void *a, *b;
+c_arg(const void *a, const void *b)
 {
 
 	return (strcmp(((struct arg *)a)->name, ((struct arg *)b)->name));
 }
 
 static void
-f_bs(arg)
-	char *arg;
+f_bs(char *arg)
 {
 
-	in.dbsz = out.dbsz = (int)get_bsz(arg);
+	in.dbsz = out.dbsz = get_bsz(arg);
 }
 
 static void
-f_cbs(arg)
-	char *arg;
+f_cbs(char *arg)
 {
 
-	cbsz = (int)get_bsz(arg);
+	cbsz = get_bsz(arg);
 }
 
 static void
-f_count(arg)
-	char *arg;
+f_count(char *arg)
 {
 
-	cpy_cnt = (u_int)get_bsz(arg);
-	if (!cpy_cnt)
-		terminate(0);
+	if ((cpy_cnt = get_bsz(arg)) == 0)
+		cpy_cnt = (size_t)-1;
 }
 
 static void
-f_files(arg)
-	char *arg;
+f_files(char *arg)
 {
 
-	files_cnt = (int)get_bsz(arg);
+	files_cnt = get_bsz(arg);
 }
 
 static void
-f_ibs(arg)
-	char *arg;
+f_ibs(char *arg)
 {
 
 	if (!(ddflags & C_BS))
-		in.dbsz = (int)get_bsz(arg);
+		in.dbsz = get_bsz(arg);
 }
 
 static void
-f_if(arg)
-	char *arg;
+f_if(char *arg)
 {
 
 	in.name = arg;
 }
 
 static void
-f_obs(arg)
-	char *arg;
+f_obs(char *arg)
 {
 
 	if (!(ddflags & C_BS))
-		out.dbsz = (int)get_bsz(arg);
+		out.dbsz = get_bsz(arg);
 }
 
 static void
-f_of(arg)
-	char *arg;
+f_of(char *arg)
 {
 
 	out.name = arg;
 }
 
 static void
-f_seek(arg)
-	char *arg;
+f_seek(char *arg)
 {
 
-	out.offset = (u_int)get_bsz(arg);
+	out.offset = get_off(arg);
 }
 
 static void
-f_skip(arg)
-	char *arg;
+f_skip(char *arg)
 {
 
-	in.offset = (u_int)get_bsz(arg);
+	in.offset = get_off(arg);
 }
 
 #ifdef	NO_CONV
 /* Build a small version (i.e. for a ramdisk root) */
 static void
-f_conv(arg)
-	char *arg;
+f_conv(char *arg)
 {
 	errx(1, "conv option disabled");
 }
 #else	/* NO_CONV */
 
-static struct conv {
+static const struct conv {
 	char *name;
 	u_int set, noset;
-	u_char *ctab;
+	const u_char *ctab;
 } clist[] = {
 	{ "ascii",	C_ASCII,	C_EBCDIC,	e2a_POSIX },
 	{ "block",	C_BLOCK,	C_UNBLOCK,	NULL },
@@ -303,8 +289,7 @@ static struct conv {
 };
 
 static void
-f_conv(arg)
-	char *arg;
+f_conv(char *arg)
 {
 	struct conv *cp, tmp;
 
@@ -323,8 +308,7 @@ f_conv(arg)
 }
 
 static int
-c_conv(a, b)
-	const void *a, *b;
+c_conv(const void *a, const void *b)
 {
 
 	return (strcmp(((struct conv *)a)->name, ((struct conv *)b)->name));
@@ -333,25 +317,24 @@ c_conv(a, b)
 #endif	/* NO_CONV */
 
 /*
- * Convert an expression of the following forms to an unsigned long.
+ * Convert an expression of the following forms to a size_t
  * 	1) A positive decimal number.
  *	2) A positive decimal number followed by a b (mult by 512).
  *	3) A positive decimal number followed by a k (mult by 1024).
- *	4) A positive decimal number followed by a m (mult by 512).
+ *	4) A positive decimal number followed by a m (mult by 1048576).
  *	5) A positive decimal number followed by a w (mult by sizeof int)
  *	6) Two or more positive decimal numbers (with/without k,b or w).
- *	   seperated by x (also * for backwards compatibility), specifying
+ *	   separated by x (also * for backwards compatibility), specifying
  *	   the product of the indicated values.
  */
-static u_long
-get_bsz(val)
-	char *val;
+static size_t
+get_bsz(char *val)
 {
-	u_long num, t;
+	size_t num, t;
 	char *expr;
 
 	num = strtoul(val, &expr, 0);
-	if (num == ULONG_MAX)			/* Overflow. */
+	if (num == SIZE_T_MAX)			/* Overflow. */
 		err(1, "%s", oper);
 	if (expr == val)			/* No digits. */
 		errx(1, "%s: illegal numeric value", oper);
@@ -394,6 +377,76 @@ get_bsz(val)
 		case 'x':
 			t = num;
 			num *= get_bsz(expr + 1);
+			if (t > num)
+erange:				errx(1, "%s: %s", oper, strerror(ERANGE));
+			break;
+		default:
+			errx(1, "%s: illegal numeric value", oper);
+	}
+	return (num);
+}
+
+/*
+ * Convert an expression of the following forms to an off_t
+ * 	1) A positive decimal number.
+ *	2) A positive decimal number followed by a b (mult by 512).
+ *	3) A positive decimal number followed by a k (mult by 1024).
+ *	4) A positive decimal number followed by a m (mult by 1048576).
+ *	5) A positive decimal number followed by a w (mult by sizeof int)
+ *	6) Two or more positive decimal numbers (with/without k,b or w).
+ *	   separated by x (also * for backwards compatibility), specifying
+ *	   the product of the indicated values.
+ */
+static off_t
+get_off(char *val)
+{
+	off_t num, t;
+	char *expr;
+
+	num = strtoq(val, &expr, 0);
+	if (num == QUAD_MAX)			/* Overflow. */
+		err(1, "%s", oper);
+	if (expr == val)			/* No digits. */
+		errx(1, "%s: illegal numeric value", oper);
+
+	switch(*expr) {
+	case 'b':
+		t = num;
+		num *= 512;
+		if (t > num)
+			goto erange;
+		++expr;
+		break;
+	case 'k':
+		t = num;
+		num *= 1024;
+		if (t > num)
+			goto erange;
+		++expr;
+		break;
+	case 'm':
+		t = num;
+		num *= 1048576;
+		if (t > num)
+			goto erange;
+		++expr;
+		break;
+	case 'w':
+		t = num;
+		num *= sizeof(int);
+		if (t > num)
+			goto erange;
+		++expr;
+		break;
+	}
+
+	switch(*expr) {
+		case '\0':
+			break;
+		case '*':			/* Backward compatible. */
+		case 'x':
+			t = num;
+			num *= get_off(expr + 1);
 			if (t > num)
 erange:				errx(1, "%s: %s", oper, strerror(ERANGE));
 			break;

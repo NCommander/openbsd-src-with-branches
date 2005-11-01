@@ -1,3 +1,4 @@
+.\"	$OpenBSD: getpgrp.2,v 1.11 2003/06/01 20:02:40 jmc Exp $
 .\"	$NetBSD: getpgrp.2,v 1.8 1995/02/27 12:33:09 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,7 +32,7 @@
 .\"
 .Dd June 4, 1993
 .Dt GETPGRP 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm getpgrp
 .Nd get process group
@@ -43,9 +40,15 @@
 .Fd #include <unistd.h>
 .Ft pid_t
 .Fn getpgrp "void"
+.Ft pid_t
+.Fn getpgid "pid_t pid"
 .Sh DESCRIPTION
 The process group of the current process is returned by
 .Fn getpgrp .
+The process group of the
+.Fa pid
+process is returned by
+.Fn getpgid .
 .Pp
 Process groups are used for distribution of signals, and
 by terminals to arbitrate requests for their input: processes
@@ -64,20 +67,24 @@ and
 .Fn tcsetpgrp
 calls
 are used to get/set the process group of the control terminal.
+.Sh ERRORS
+.Fn getpgrp
+always succeeds, however
+.Fn getpgid
+will succeed unless:
+.Bl -tag -width Er
+.It Bq Er EPERM
+The current process and the process
+.Fa pid
+are not in the same session.
+.It Bq Er ESRCH
+There is no process with a process ID equal to
+.Fa pid .
+.El
 .Sh SEE ALSO
 .Xr setpgid 2 ,
 .Xr termios 4
-.Sh HISTORY
-The
-.Fn getpgrp
-function call appeared in
-.Bx 4.0 .
 .Sh STANDARDS
-The
-.Fn getpgrp
-function conforms to
-.St -p1003.1-88 .
-.Sh COMPATIBILITY
 This version of
 .Fn getpgrp
 differs from past Berkeley versions by not taking a
@@ -89,8 +96,9 @@ This incompatibility is required by
 From the
 .St -p1003.1-88
 Rationale:
-.sp
-4.3BSD provides a
+.Pp
+.Bx 4.3
+provides a
 .Fn getpgrp
 function that returns the process group ID for a specified process.
 Although this function is used to support job control, all known
@@ -98,6 +106,22 @@ job-control shells always specify the calling process with this
 function.
 Thus, the simpler System V
 .Fn getpgrp
-suffices, and the added complexity of the 4.3BSD
+suffices, and the added complexity of the
+.Bx 4.3
 .Fn getpgrp
 has been omitted from POSIX.1.
+.Pp
+The
+.Fn getpgrp
+function conforms to
+.St -p1003.1-88 .
+The
+.Fn getpgid
+function call is derived from its usage in System V Release 4, and
+first appeared in
+.Nx 1.2a .
+.Sh HISTORY
+The
+.Fn getpgrp
+function call appeared in
+.Bx 4.0 .

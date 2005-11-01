@@ -1,7 +1,8 @@
+#	$OpenBSD: Makefile,v 1.20 2004/06/24 03:59:24 millert Exp $
 #
 #  Makefile for configuration files.
 #
-#	$Sendmail: Makefile,v 8.54 2001/08/20 15:16:48 gshapiro Exp $
+#	$Sendmail: Makefile,v 8.59 2004/08/06 03:54:05 gshapiro Exp $
 #
 
 #
@@ -11,77 +12,56 @@
 #  /usr/5bin/m4.
 #
 
-# name of source for sendmail.cf (without extension)
-CF=	sendmail
-# name of source for submit.cf (without extension)
-SUBMIT=	submit
-# directory for .cf files
-MAILDIR=/etc/mail
-M4=	m4
-CFDIR=	..
+M4=	/usr/bin/m4
+CFDIR=	${.CURDIR}/..
+SED=	sed
+ECHO=	echo
 CHMOD=	chmod
 ROMODE=	444
 RM=	rm -f
-# use our own install program; should be really confINSTALL
-INSTALL=../../devtools/bin/install.sh
-# CF file ownership/permissions
-CFOWN=root
-CFGRP=bin
-CFMODE=0444
-
 
 .SUFFIXES:  .mc .cf
 
 .mc.cf:
 	$(RM) $@
-	$(M4) ${CFDIR}/m4/cf.m4 $*.mc > $@ || ( $(RM) $@ && exit 1 )
+	( cd ${.CURDIR} && $(M4) ${CFDIR}/m4/cf.m4 ${@:R}.mc > ${.OBJDIR}/$@ )
+	$(ECHO) "### $*.mc ###" >>$@
+	$(SED) -e 's/^/# /' ${.CURDIR}/$*.mc >>$@
 	$(CHMOD) $(ROMODE) $@
 
-GENERIC=generic-bsd4.4.cf generic-hpux9.cf generic-hpux10.cf \
-		generic-linux.cf generic-nextstep3.3.cf \
-		generic-osf1.cf generic-solaris.cf \
-		generic-sunos4.1.cf generic-ultrix4.cf
-BERKELEY=cs-hpux9.cf cs-hpux10.cf cs-osf1.cf cs-solaris.cf \
-	cs-sunos4.1.cf cs-ultrix4.cf \
-	s2k-osf1.cf s2k-ultrix4.cf \
-	chez.cs.cf huginn.cs.cf mail.cs.cf mail.eecs.cf mailspool.cs.cf \
-	python.cs.cf ucbarpa.cf ucbvax.cf vangogh.cs.cf
-OTHER=	knecht.cf
-ALL=	submit.cf $(GENERIC) $(OTHER)
+ALL=	submit.cf clientproto.cf tcpproto.cf openbsd-localhost.cf \
+	openbsd-proto.cf courtesan.cf courtesan-nonet.cf openbsd-lists.cf \
+	openbsd-bulk.cf lucifier.cf corpse.cf knecht.cf
 
 all: $(ALL)
 
-berkeley: $(BERKELEY)
-generic: $(GENERIC)
-other: $(OTHER)
-
 clean cleandir:
-	$(RM) $(ALL) core
-
-install:
-	@echo "Before installing the .cf files please make sure you have read the"
-	@echo "instructions in the file ../../INSTALL.  You should have prepared the"
-	@echo "files \"submit.mc\" (supplied) and \"sendmail.mc\". Then you can use"
-	@echo ""
-	@echo "	make install-cf"
-	@echo ""
-	@echo "If you use a different name than \"sendmail\" for your main .mc file"
-
-	@echo "then you should use"
-	@echo ""
-	@echo "	make install-cf CF=config"
-	@echo ""
-	@echo "where \"config\" is the name of your main .mc file."
-
-install-cf:  install-sendmail-cf install-submit-cf
-
-install-sendmail-cf: $(CF).cf
-	$(INSTALL) -c -o $(CFOWN) -g $(CFGRP) -m $(CFMODE) $(CF).cf ${DESTDIR}$(MAILDIR)/sendmail.cf
-
-install-submit-cf: $(SUBMIT).cf
-	$(INSTALL) -c -o $(CFOWN) -g $(CFGRP) -m $(CFMODE) $(SUBMIT).cf ${DESTDIR}$(MAILDIR)/submit.cf
+	$(RM) $(ALL) *.core
 
 depend:
+
+install:
+	@if test -e ${DESTDIR}/etc/mail/sendmail.cf; then \
+		if test ! -e ${DESTDIR}/etc/mail/submit.cf; then \
+			echo "WARNING: installed missing ${DESTDIR}/etc/mail/submit.cf"; \
+			echo "You should probably rebuild ${DESTDIR}/etc/mail/sendmail.cf"; \
+			${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 \
+			    submit.cf ${DESTDIR}/etc/mail/submit.cf; \
+		fi; \
+		if test ! -e ${DESTDIR}/etc/mail/localhost.cf; then \
+			echo "WARNING: installed missing ${DESTDIR}/etc/mail/localhost.cf"; \
+			${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 \
+			    openbsd-localhost.cf ${DESTDIR}/etc/mail/localhost.cf; \
+		fi; \
+	fi
+
+distribution: openbsd-proto.cf openbsd-localhost.cf submit.cf
+	${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 openbsd-proto.cf \
+	    ${DESTDIR}/etc/mail/sendmail.cf
+	${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 openbsd-localhost.cf \
+	    ${DESTDIR}/etc/mail/localhost.cf
+	${INSTALL} ${INSTALL_COPY} -o root -g wheel -m 644 submit.cf \
+	    ${DESTDIR}/etc/mail/submit.cf
 
 # this is overkill, but....
 M4FILES=\
@@ -96,28 +76,39 @@ M4FILES=\
 	${CFDIR}/feature/access_db.m4 \
 	${CFDIR}/feature/allmasquerade.m4 \
 	${CFDIR}/feature/always_add_domain.m4 \
+	${CFDIR}/feature/authinfo.m4 \
 	${CFDIR}/feature/bestmx_is_local.m4 \
 	${CFDIR}/feature/bitdomain.m4 \
 	${CFDIR}/feature/blacklist_recipients.m4 \
+	${CFDIR}/feature/conncontrol.m4 \
+	${CFDIR}/feature/compat_check.m4 \
+	${CFDIR}/feature/delay_checks.m4 \
 	${CFDIR}/feature/dnsbl.m4 \
 	${CFDIR}/feature/domaintable.m4 \
+	${CFDIR}/feature/enhdnsbl.m4 \
 	${CFDIR}/feature/generics_entire_domain.m4 \
 	${CFDIR}/feature/genericstable.m4 \
 	${CFDIR}/feature/ldap_routing.m4 \
+	${CFDIR}/feature/msp.m4 \
 	${CFDIR}/feature/limited_masquerade.m4 \
 	${CFDIR}/feature/local_lmtp.m4 \
+	${CFDIR}/feature/local_no_masquerade.m4 \
 	${CFDIR}/feature/local_procmail.m4 \
+	${CFDIR}/feature/lookupdotdomain.m4 \
 	${CFDIR}/feature/loose_relay_check.m4 \
 	${CFDIR}/feature/mailertable.m4 \
 	${CFDIR}/feature/masquerade_entire_domain.m4 \
 	${CFDIR}/feature/masquerade_envelope.m4 \
 	${CFDIR}/feature/no_default_msa.m4 \
 	${CFDIR}/feature/nocanonify.m4 \
-	${CFDIR}/feature/nodns.m4 \
 	${CFDIR}/feature/notsticky.m4 \
 	${CFDIR}/feature/nouucp.m4 \
 	${CFDIR}/feature/nullclient.m4 \
+	${CFDIR}/feature/preserve_local_plus_detail.m4 \
+	${CFDIR}/feature/preserve_luser_host.m4 \
 	${CFDIR}/feature/promiscuous_relay.m4 \
+	${CFDIR}/feature/queuegroup.m4 \
+	${CFDIR}/feature/ratecontrol.m4 \
 	${CFDIR}/feature/redirect.m4 \
 	${CFDIR}/feature/relay_based_on_MX.m4 \
 	${CFDIR}/feature/relay_entire_domain.m4 \
@@ -149,6 +140,7 @@ M4FILES=\
 	${CFDIR}/mailer/uucp.m4 \
 	${CFDIR}/ostype/aix3.m4 \
 	${CFDIR}/ostype/aix4.m4 \
+	${CFDIR}/ostype/aix5.m4 \
 	${CFDIR}/ostype/altos.m4 \
 	${CFDIR}/ostype/amdahl-uts.m4 \
 	${CFDIR}/ostype/a-ux.m4 \
@@ -157,9 +149,13 @@ M4FILES=\
 	${CFDIR}/ostype/bsdi.m4 \
 	${CFDIR}/ostype/bsdi1.0.m4 \
 	${CFDIR}/ostype/bsdi2.0.m4 \
+	${CFDIR}/ostype/darwin.m4 \
 	${CFDIR}/ostype/dgux.m4 \
 	${CFDIR}/ostype/domainos.m4 \
+	${CFDIR}/ostype/dragonfly.m4 \
 	${CFDIR}/ostype/dynix3.2.m4 \
+	${CFDIR}/ostype/freebsd4.m4 \
+	${CFDIR}/ostype/freebsd5.m4 \
 	${CFDIR}/ostype/gnu.m4 \
 	${CFDIR}/ostype/hpux10.m4 \
 	${CFDIR}/ostype/hpux11.m4 \
@@ -171,6 +167,7 @@ M4FILES=\
 	${CFDIR}/ostype/linux.m4 \
 	${CFDIR}/ostype/maxion.m4 \
 	${CFDIR}/ostype/mklinux.m4 \
+	${CFDIR}/ostype/mpeix.m4 \
 	${CFDIR}/ostype/nextstep.m4 \
 	${CFDIR}/ostype/openbsd.m4 \
 	${CFDIR}/ostype/osf1.m4 \
@@ -194,6 +191,5 @@ M4FILES=\
 	${CFDIR}/ostype/uxpds.m4
 
 $(ALL): $(M4FILES)
-$(BERKELEY): $(M4FILES)
-$(GENERIC): $(M4FILES)
-$(OTHER): $(M4FILES)
+
+.include <bsd.prog.mk>

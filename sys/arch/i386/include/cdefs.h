@@ -1,3 +1,4 @@
+/*	$OpenBSD: cdefs.h,v 1.7 2001/08/18 02:35:06 brad Exp $	*/
 /*	$NetBSD: cdefs.h,v 1.2 1995/03/23 20:10:26 jtc Exp $	*/
 
 /*
@@ -8,28 +9,15 @@
 #ifndef	_MACHINE_CDEFS_H_
 #define	_MACHINE_CDEFS_H_
 
-#ifdef __STDC__
-#define _C_LABEL(x)	_STRING(_ ## x)
+#if defined(__GNUC__) && defined(__STDC__)
+#define __weak_alias(alias,sym)						\
+	__asm__(".weak " __STRING(alias) " ; " __STRING(alias) " = " __STRING(sym))
+#define __warn_references(sym,msg)					\
+	__asm__(".section .gnu.warning." __STRING(sym) " ; .ascii \"" msg "\" ; .text")
 #else
-#define _C_LABEL(x)	_STRING(_/**/x)
-#endif
-
-#ifdef __GNUC__
-#ifdef __STDC__
-#define __indr_reference(sym,alias)	\
-	__asm__(".stabs \"_" #alias "\",11,0,0,0");	\
-	__asm__(".stabs \"_" #sym "\",1,0,0,0")
-#define __warn_references(sym,msg)	\
-	__asm__(".stabs \"" msg "\",30,0,0,0");		\
-	__asm__(".stabs \"_" #sym "\",1,0,0,0")
-#else
-#define __indr_reference(sym,alias)	\
-	__asm__(".stabs \"_/**/alias\",11,0,0,0");	\
-	__asm__(".stabs \"_/**/sym\",1,0,0,0")
-#define __warn_references(sym,msg)	\
-	__asm__(".stabs msg,30,0,0,0");			\
-	__asm__(".stabs \"_/**/sym\",1,0,0,0")
-#endif
+#define __indr_reference(sym,alias)
+#define __warn_references(sym,msg)
+#define __weak_alias(alias,sym)
 #endif
 
 #endif /* !_MACHINE_CDEFS_H_ */

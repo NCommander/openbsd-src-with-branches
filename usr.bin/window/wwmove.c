@@ -1,4 +1,5 @@
-/*	$NetBSD: wwmove.c,v 1.3 1995/09/28 10:35:41 tls Exp $	*/
+/*	$OpenBSD: wwmove.c,v 1.5 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$NetBSD: wwmove.c,v 1.4 1996/02/08 21:49:14 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)wwmove.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwmove.c,v 1.3 1995/09/28 10:35:41 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwmove.c,v 1.5 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,10 +47,10 @@ static char rcsid[] = "$NetBSD: wwmove.c,v 1.3 1995/09/28 10:35:41 tls Exp $";
  * Move a window.  Should be unattached.
  */
 wwmove(w, row, col)
-register struct ww *w;
+struct ww *w;
 {
-	register dr, dc;
-	register i;
+	int dr, dc;
+	int i;
 
 	dr = row - w->ww_w.t;
 	dc = col - w->ww_w.l;
@@ -88,9 +85,9 @@ register struct ww *w;
 	}
 	w->ww_nvis -= dr;
 	for (i = w->ww_i.t; i < w->ww_i.b; i++) {
-		register j = w->ww_i.l;
-		register char *win = &w->ww_win[i][j];
-		register char *smap = &wwsmap[i][j];
+		int j = w->ww_i.l;
+		char *win = &w->ww_win[i][j];
+		unsigned char *smap = &wwsmap[i][j];
 		int nvis = 0;
 
 		for (; j < w->ww_i.r; j++, win++, smap++)

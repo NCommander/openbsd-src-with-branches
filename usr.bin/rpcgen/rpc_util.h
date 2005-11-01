@@ -1,3 +1,4 @@
+/*	$OpenBSD: rpc_util.h,v 1.12 2003/06/25 21:09:26 deraadt Exp $	*/
 /*	$NetBSD: rpc_util.h,v 1.3 1995/06/11 21:50:10 pk Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -38,9 +39,6 @@
 #define alloc(size)		(void *)malloc((unsigned)(size))
 #define ALLOC(object)   (object *) malloc(sizeof(object))
 
-#define s_print	(void) sprintf
-#define f_print (void) fprintf
-
 struct list {
 	definition *val;
 	struct list *next;
@@ -72,13 +70,13 @@ extern bas_type *typ_list_t;
  * All the option flags
  */
 extern int inetdflag;
-extern int pmflag;   
+extern int pmflag;
 extern int tblflag;
 extern int logflag;
 extern int newstyle;
 extern int Cflag;     /* C++ flag */
 extern int tirpcflag; /* flag for generating tirpc code */
-extern int inline; /* if this is 0, then do not generate inline code */
+extern int doinline; /* if this is 0, then do not generate inline code */
 extern int callerflag;
 
 /*
@@ -93,65 +91,71 @@ extern int nonfatalerrors;
 /*
  * rpc_util routines 
  */
-void storeval();
+void storeval(list **, definition *);
 
 #define STOREVAL(list,item)	\
 	storeval(list,item)
 
-definition *findval();
+definition *findval(list *, char *, int (*)(definition *, char *));
 
 #define FINDVAL(list,item,finder) \
 	findval(list, item, finder)
 
-char *fixtype __P((char *));
-char *stringfix __P((char *));
-char *locase __P((char *));
-void pvname_svc __P((char *, char *));
-void pvname __P((char *, char *));
-void ptype __P((char *, char *, int));
-int isvectordef __P((char *, relation));
-int streq __P((char *, char *));
-void error __P((char *));
-void tabify __P((FILE *, int));
-void record_open __P((char *));
-bas_type *find_type __P((char *));
-char *make_argname __P((char *, char *));
+void crash(void);
+char *fixtype(char *);
+char *stringfix(char *);
+char *locase(char *);
+void pvname_svc(char *, char *);
+void pvname(char *, char *);
+void ptype(char *, char *, int);
+int isvectordef(char *, relation);
+int streq(char *, char *);
+void error(char *);
+void tabify(FILE *, int);
+void record_open(char *);
+bas_type *find_type(char *);
+char *make_argname(char *, char *);
 /*
  * rpc_cout routines 
  */
-void emit __P((definition *));
+void emit(definition *);
 
 /*
  * rpc_hout routines 
  */
-void print_datadef __P((definition *));
-void print_funcdef __P((definition *));
+void print_datadef(definition *);
+void print_funcdef(definition *);
 
 /*
  * rpc_svcout routines 
  */
-void write_most __P((char *, int, int));
-void write_rest __P((void));
-void write_programs __P((char *));
-void write_svc_aux __P((int));
-void write_inetd_register __P((char *));
-void write_netid_register __P((char *));
-void write_nettype_register __P((char *));
+void write_most(char *, int, int);
+void write_rest(void);
+void write_programs(char *);
+void write_svc_aux(int);
+void write_inetd_register(char *);
+void write_netid_register(char *);
+void write_nettype_register(char *);
 /*
  * rpc_clntout routines
  */
-void write_stubs __P((void));
-void printarglist __P((proc_list *, char *, char *));
+void write_stubs(void);
+void printarglist(proc_list *, char *, char *);
 
 
 /*
  * rpc_tblout routines
  */
-void write_tables __P((void));
+void write_tables(void);
 
 /*
  * rpc_sample routines
  */
-void write_sample_svc __P((definition *));
-int write_sample_clnt __P((definition *));
-void write_sample_clnt_main __P((void));
+void write_sample_svc(definition *);
+int write_sample_clnt(definition *);
+void write_sample_clnt_main(void);
+
+void add_type(int len, char *type);
+
+void pdeclaration(char *, declaration *, int, char *);
+void add_sample_msg(void);

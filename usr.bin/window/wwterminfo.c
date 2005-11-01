@@ -1,3 +1,5 @@
+/*	$OpenBSD: wwterminfo.c,v 1.9 2001/07/09 07:04:58 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1982, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +33,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)wwterminfo.c	8.1 (Berkeley) 6/6/93";
+#else
+static char rcsid[] = "$OpenBSD: wwterminfo.c,v 1.9 2001/07/09 07:04:58 deraadt Exp $";
+#endif
 #endif /* not lint */
 
 #ifdef TERMINFO
@@ -62,16 +64,15 @@ wwterminfoinit()
 	char buf[2048];
 
 		/* make the directory */
-	(void) sprintf(wwterminfopath, "%swwinXXXXXX", _PATH_TMP);
-	mktemp(wwterminfopath);
-	if (mkdir(wwterminfopath, 0755) < 0 ||
-	    chmod(wwterminfopath, 00755) < 0) {
+	(void) snprintf(wwterminfopath, sizeof wwterminfopath,
+	    "%swwinXXXXXXXXXX", _PATH_TMP);
+	if (mkdtemp(wwterminfopath) == NULL) {
 		wwerrno = WWE_SYS;
 		return -1;
 	}
 	(void) setenv("TERMINFO", wwterminfopath, 1);
 		/* make a termcap entry and turn it into terminfo */
-	(void) sprintf(buf, "%s/cap", wwterminfopath);
+	(void) snprintf(buf, sizeof buf, "%s/cap", wwterminfopath);
 	if ((fp = fopen(buf, "w")) == NULL) {
 		wwerrno = WWE_SYS;
 		return -1;
@@ -79,10 +80,10 @@ wwterminfoinit()
 	(void) fprintf(fp, "%sco#%d:li#%d:%s\n",
 		WWT_TERMCAP, wwncol, wwnrow, wwwintermcap);
 	(void) fclose(fp);
-	(void) sprintf(buf,
-		"cd %s; %s cap >info 2>/dev/null; %s info >/dev/null 2>&1",
-		wwterminfopath, _PATH_CAPTOINFO, _PATH_TIC);
-	(void) system(buf);
+	(void) snprintf(buf, sizeof buf,
+	    "cd %s; %s cap >info 2>/dev/null; %s info >/dev/null 2>&1",
+	    wwterminfopath, _PATH_CAPTOINFO, _PATH_TIC);
+	(void) system(buf);		/* XXX */
 	return 0;
 }
 
@@ -97,9 +98,10 @@ wwterminfoend()
 		/* can't really do (or say) anything about errors */
 		return -1;
 	case 0:
-		execl(_PATH_RM, _PATH_RM, "-rf", wwterminfopath, 0);
-		return -1;
+		execl(_PATH_RM, _PATH_RM, "-rf", wwterminfopath, (char *)NULL);
+		_exit(0);
 	default:
+		wait(NULL);
 		return 0;
 	}
 }

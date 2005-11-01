@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.c,v 1.12 2004/11/29 08:52:28 jsg Exp $	*/
 /*	$NetBSD: main.c,v 1.4 1995/04/27 21:22:25 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -55,35 +52,41 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.4 1995/04/27 21:22:25 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.12 2004/11/29 08:52:28 jsg Exp $";
 #endif
 #endif /* not lint */
 
 #include "include.h"
 #include "pathnames.h"
 
-main(ac, av)
-	char	*av[];
+int
+main(int ac, char *av[])
 {
-	int			seed;
 	int			f_usage = 0, f_list = 0, f_showscore = 0;
 	int			f_printpath = 0;
-	char			*file = NULL;
-	char			*name, *ptr;
+	const char		*file = NULL;
+	char			*name, *ptr, *seed;
 	struct sigaction	sa;
+	gid_t			gid;
 #ifdef BSD
 	struct itimerval	itv;
 #endif
-	extern char		*default_game(), *okay_game();
-	extern void		log_score(), quit(), update();
 
-	start_time = seed = time(0);
+	open_score_file();
+
+	/* revoke privs */
+	gid = getgid();
+	setresgid(gid, gid, gid);
+
+	start_time = time(0);
+	makenoise = 1;
+	seed = NULL;
 
 	name = *av++;
 	while (*av) {
 #ifndef SAVEDASH
 		if (**av == '-') 
-			*++*av;
+			++*av;
 		else
 			break;
 #endif
@@ -104,8 +107,11 @@ main(ac, av)
 			case 'p':
 				f_printpath++;
 				break;
+			case 'q':
+				makenoise = 0;
+				break;
 			case 'r':
-				seed = atoi(*av);
+				seed = *av;
 				av++;
 				break;
 			case 'f':
@@ -114,28 +120,30 @@ main(ac, av)
 				av++;
 				break;
 			default: 
-				fprintf(stderr, "Unknown option '%c'\n", *ptr,
-					name);
+				warnx("unknown option '%c'", *ptr);
 				f_usage++;
 				break;
 			}
 			ptr++;
 		}
 	}
-	srandom(seed);
+	if (seed != NULL)
+		srandom(atol(seed));
+	else
+		srandomdev();
 
 	if (f_usage)
 		fprintf(stderr, 
-		    "Usage: %s -[u?lstp] [-[gf] game_name] [-r random seed]\n",
+		    "Usage: %s -[u?lstpq] [-[gf] game_name] [-r random seed]\n",
 			name);
 	if (f_showscore)
 		log_score(1);
 	if (f_list)
 		list_games();
 	if (f_printpath) {
-		char	buf[100];
+		char	buf[256];
 
-		strcpy(buf, _PATH_GAMES);
+		strlcpy(buf, _PATH_GAMES, sizeof buf);
 		buf[strlen(buf) - 1] = '\0';
 		puts(buf);
 	}
@@ -151,7 +159,6 @@ main(ac, av)
 	if (file == NULL || read_file(file) < 0)
 		exit(1);
 
-	init_gr();
 	setup_screen(sp);
 
 	addplane();
@@ -162,16 +169,18 @@ main(ac, av)
 	signal(SIGTSTP, SIG_IGN);
 	signal(SIGSTOP, SIG_IGN);
 #endif
-	signal(SIGHUP, log_score);
-	signal(SIGTERM, log_score);
+	signal(SIGHUP, log_score_quit);
+	signal(SIGTERM, log_score_quit);
 
 	tcgetattr(fileno(stdin), &tty_start);
 	tty_new = tty_start;
 	tty_new.c_lflag &= ~(ICANON|ECHO);
+	tty_new.c_iflag |= ICRNL;
 	tty_new.c_cc[VMIN] = 1;
 	tty_new.c_cc[VTIME] = 0;
 	tcsetattr(fileno(stdin), TCSADRAIN, &tty_new);
 
+	memset(&sa, 0, sizeof sa);
 	sa.sa_handler = update;
 	sigemptyset(&sa.sa_mask);
 	sigaddset(&sa.sa_mask, SIGALRM);
@@ -203,7 +212,7 @@ main(ac, av)
 			alarm(0);
 #endif
 
-			update();
+			update(0);
 
 #ifdef BSD
 			itv.it_value.tv_sec = sp->update_secs;
@@ -219,8 +228,8 @@ main(ac, av)
 	}
 }
 
-read_file(s)
-	char	*s;
+int
+read_file(const char *s)
 {
 	extern FILE	*yyin;
 	int		retval;
@@ -228,7 +237,7 @@ read_file(s)
 	file = s;
 	yyin = fopen(s, "r");
 	if (yyin == NULL) {
-		perror(s);
+		warn("fopen %s", s);
 		return (-1);
 	}
 	retval = yyparse();
@@ -240,51 +249,59 @@ read_file(s)
 		return (0);
 }
 
-char	*
-default_game()
+const char	*
+default_game(void)
 {
 	FILE		*fp;
 	static char	file[256];
 	char		line[256], games[256];
 
-	strcpy(games, _PATH_GAMES);
-	strcat(games, GAMES);
+	strlcpy(games, _PATH_GAMES, sizeof games);
+	strlcat(games, GAMES, sizeof games);
 
 	if ((fp = fopen(games, "r")) == NULL) {
-		perror(games);
+		warn("fopen %s", games);
 		return (NULL);
 	}
 	if (fgets(line, sizeof(line), fp) == NULL) {
-		fprintf(stderr, "%s: no default game available\n", games);
+		warnx("%s: no default game available", games);
 		return (NULL);
 	}
 	fclose(fp);
 	line[strlen(line) - 1] = '\0';
-	strcpy(file, _PATH_GAMES);
-	strcat(file, line);
+	if (strlen(line) + strlen(_PATH_GAMES) >= sizeof(file)) {
+		warnx("default game name too long");
+		return (NULL);
+	}
+	strlcpy(file, _PATH_GAMES, sizeof file);
+	strlcat(file, line, sizeof file);
 	return (file);
 }
 
-char	*
-okay_game(s)
-	char	*s;
+const char	*
+okay_game(const char *s)
 {
 	FILE		*fp;
 	static char	file[256];
-	char		*ret = NULL, line[256], games[256];
+	const char	*ret = NULL;
+	char		line[256], games[256];
 
-	strcpy(games, _PATH_GAMES);
-	strcat(games, GAMES);
+	strlcpy(games, _PATH_GAMES, sizeof games);
+	strlcat(games, GAMES, sizeof games);
 
 	if ((fp = fopen(games, "r")) == NULL) {
-		perror(games);
+		warn("fopen %s", games);
 		return (NULL);
 	}
 	while (fgets(line, sizeof(line), fp) != NULL) {
 		line[strlen(line) - 1] = '\0';
 		if (strcmp(s, line) == 0) {
-			strcpy(file, _PATH_GAMES);
-			strcat(file, line);
+			if (strlen(line) + strlen(_PATH_GAMES) >= sizeof(file)) {
+				warnx("game name too long");
+				return (NULL);
+			}
+			strlcpy(file, _PATH_GAMES, sizeof file);
+			strlcat(file, line, sizeof file);
 			ret = file;
 			break;
 		}
@@ -300,17 +317,18 @@ okay_game(s)
 	return (ret);
 }
 
-list_games()
+int
+list_games(void)
 {
 	FILE		*fp;
 	char		line[256], games[256];
 	int		num_games = 0;
 
-	strcpy(games, _PATH_GAMES);
-	strcat(games, GAMES);
+	strlcpy(games, _PATH_GAMES, sizeof games);
+	strlcat(games, GAMES, sizeof games);
 
 	if ((fp = fopen(games, "r")) == NULL) {
-		perror(games);
+		warn("fopen %s", games);
 		return (-1);
 	}
 	puts("available games:");

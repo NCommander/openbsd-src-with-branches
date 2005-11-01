@@ -1,3 +1,4 @@
+/*	$OpenBSD: fcntl.h,v 1.8 2003/01/06 11:33:28 miod Exp $	*/
 /*	$NetBSD: fcntl.h,v 1.8 1995/03/26 20:24:12 jtc Exp $	*/
 
 /*-
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -84,8 +81,10 @@
 #define	O_SHLOCK	0x0010		/* open with shared file lock */
 #define	O_EXLOCK	0x0020		/* open with exclusive file lock */
 #define	O_ASYNC		0x0040		/* signal pgrp when data ready */
-#define	O_FSYNC		0x0080		/* synchronous writes */
+#define	O_FSYNC		O_SYNC		/* backwards compatibility */
+#define	O_NOFOLLOW	0x0100		/* if path is a symlink, don't follow */
 #endif
+#define	O_SYNC		0x0080		/* synchronous writes */
 #define	O_CREAT		0x0200		/* create if nonexistant */
 #define	O_TRUNC		0x0400		/* truncate to zero length */
 #define	O_EXCL		0x0800		/* error if already exists */
@@ -95,13 +94,24 @@
 #define	FHASLOCK	0x4000		/* descriptor holds advisory lock */
 #endif
 
-/* defined by POSIX 1003.1; BSD default, so no bit required */
-#define	O_NOCTTY	0		/* don't assign controlling terminal */
+/*
+ * POSIX 1003.1 specifies a higher granularity for synchronous operations
+ * than we support.  Since synchronicity is all or nothing in OpenBSD
+ * we just define these to be the same as O_SYNC.
+ */
+#define	O_DSYNC		O_SYNC		/* synchronous data writes */
+#define	O_RSYNC		O_SYNC		/* synchronous reads */
+
+/* defined by POSIX 1003.1; BSD default, this bit is not required */
+#define	O_NOCTTY	0x8000		/* don't assign controlling terminal */
 
 #ifdef _KERNEL
-/* convert from open() flags to/from fflags; convert O_RD/WR to FREAD/FWRITE */
-#define	FFLAGS(oflags)	((oflags) + 1)
-#define	OFLAGS(fflags)	((fflags) - 1)
+/*
+ * convert from open() flags to/from fflags; convert O_RD/WR to FREAD/FWRITE.
+ * For out-of-range values for the flags, be slightly careful (but lossy).
+ */
+#define	FFLAGS(oflags)	(((oflags) & ~O_ACCMODE) | (((oflags) + 1) & O_ACCMODE))
+#define	OFLAGS(fflags)	(((fflags) & ~O_ACCMODE) | (((fflags) - 1) & O_ACCMODE))
 
 /* bits to save after open */
 #define	FMASK		(FREAD|FWRITE|FAPPEND|FASYNC|FFSYNC|FNONBLOCK)
@@ -117,7 +127,7 @@
 #ifndef _POSIX_SOURCE
 #define	FAPPEND		O_APPEND	/* kernel/compat */
 #define	FASYNC		O_ASYNC		/* kernel/compat */
-#define	FFSYNC		O_FSYNC		/* kernel */
+#define	FFSYNC		O_SYNC		/* kernel */
 #define	FNONBLOCK	O_NONBLOCK	/* kernel */
 #define	FNDELAY		O_NONBLOCK	/* compat */
 #define	O_NDELAY	O_NONBLOCK	/* compat */
@@ -180,11 +190,11 @@ struct flock {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	open __P((const char *, int, ...));
-int	creat __P((const char *, mode_t));
-int	fcntl __P((int, int, ...));
+int	open(const char *, int, ...);
+int	creat(const char *, mode_t);
+int	fcntl(int, int, ...);
 #ifndef _POSIX_SOURCE
-int	flock __P((int, int));
+int	flock(int, int);
 #endif /* !_POSIX_SOURCE */
 __END_DECLS
 #endif

@@ -1,3 +1,6 @@
+/*	$OpenBSD: ibcs2_socksys.h,v 1.3 1996/08/02 20:35:10 niklas Exp $	*/
+/*	$NetBSD: ibcs2_socksys.h,v 1.2 1996/05/03 17:05:30 christos Exp $	*/
+
 /*
  * Copyright (c) 1994, 1995 Scott Bartram
  * Copyright (c) 1994 Arne H Juul
@@ -114,5 +117,7 @@ struct socknewproto {
 	ibcs2_dev_t dev;
 	int flags;
 };
+
+int ibcs2_socksys(struct proc *, void *, register_t *);
 
 #endif /* _IBCS2_SOCKSYS_H */

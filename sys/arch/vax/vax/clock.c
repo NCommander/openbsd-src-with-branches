@@ -1,4 +1,5 @@
-/*	$NetBSD: clock.c,v 1.7.2.1 1995/10/15 14:17:17 ragge Exp $	*/
+/*	$OpenBSD: clock.c,v 1.17 2004/04/21 18:39:57 mickey Exp $	 */
+/*	$NetBSD: clock.c,v 1.35 2000/06/04 06:16:58 matt Exp $	 */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.
  * All rights reserved.
@@ -32,16 +33,21 @@
 
 #include <sys/param.h>
 #include <sys/kernel.h>
+#include <sys/systm.h>
+#include <sys/device.h>
 
-#include "machine/mtpr.h"
-#include "machine/sid.h"
+#include <dev/clock_subr.h>
 
-#define SEC_PER_DAY (60*60*24)
+#include <machine/mtpr.h>
+#include <machine/sid.h>
+#include <machine/clock.h>
+#include <machine/cpu.h>
+#include <machine/uvax.h>
 
-extern int todrstopped;
+int	yeartonum(int);
+int	numtoyear(int);
 
-static unsigned long year;     /*  start of current year in seconds */
-static unsigned long year_len; /* length of current year in 100th of seconds */
+struct evcount clock_intrcnt;
 
 /*
  * microtime() should return number of usecs in struct timeval.
@@ -52,38 +58,49 @@ void
 microtime(tvp)
 	struct timeval *tvp;
 {
-	u_int int_time, tmp_year;
 	int s, i;
 	static struct timeval lasttime;
 
 	s = splhigh();
-	int_time = mfpr(PR_TODR);
+	bcopy((caddr_t)&time, tvp, sizeof(struct timeval));
 
-        asm ("movc3 %0,(%1),(%2)" 
-                :
-                : "r" (sizeof(struct timeval)),"r" (&time),"r"(tvp)
-                :"r0","r1","r2","r3","r4","r5"); 
-
-	i = mfpr(PR_ICR) + tick; /* Get current interval count */
+	switch (vax_boardtype) {
+#ifdef VAX46
+	case VAX_BTYP_46: {
+		extern struct vs_cpu *ka46_cpu;
+		i = *(volatile int *)(&ka46_cpu->vc_diagtimu);
+		i = (i >> 16) * 1024 + (i & 0x3ff);
+		break;
+		}
+#endif
+#ifdef VAX48
+	case VAX_BTYP_48: {
+		/*
+		 * PR_ICR doesn't exist.  We could use the vc_diagtimu
+		 * counter, saving the value on the timer interrupt and
+		 * subtracting that from the current value.
+		 */
+		i = 0;
+		break;
+		}
+#endif
+	default:
+		i = mfpr(PR_ICR);
+		break;
+	}
+	i += tick; /* Get current interval count */
 	tvp->tv_usec += i;
-	while (tvp->tv_usec > 1000000) {
+	while (tvp->tv_usec >= 1000000) {
 		tvp->tv_sec++;
 		tvp->tv_usec -= 1000000;
 	}
 	if (tvp->tv_sec == lasttime.tv_sec &&
 	    tvp->tv_usec <= lasttime.tv_usec &&
-	    (tvp->tv_usec = lasttime.tv_usec + 1) > 1000000) {
+	    (tvp->tv_usec = lasttime.tv_usec + 1) >= 1000000) {
 		tvp->tv_sec++;
 		tvp->tv_usec -= 1000000;
 	}
 	bcopy(tvp, &lasttime, sizeof(struct timeval));
-	if (int_time > year_len) {
-		mtpr(mfpr(PR_TODR) - year_len, PR_TODR);
-		year += year_len / 100;
-		tmp_year = year / SEC_PER_DAY / 365 + 2;
-		year_len = 100 * SEC_PER_DAY *
-		    ((tmp_year % 4 && tmp_year != 32) ? 365 : 366);
-	}
 	splx(s);
 }
 
@@ -100,60 +117,35 @@ void
 inittodr(fs_time) 
 	time_t fs_time;
 {
+	int rv, deltat;
 
-	unsigned long tmp_year, sluttid, year_ticks;
-	int clock_stopped;
+	rv = (*dep_call->cpu_clkread) (fs_time);
+	switch (rv) {
 
-	sluttid = fs_time;
-	year = (fs_time / SEC_PER_DAY / 365) * 365 * SEC_PER_DAY;
-	tmp_year = year / SEC_PER_DAY / 365 + 2;
-	year_len = 100 * SEC_PER_DAY *
-	    ((tmp_year % 4 && tmp_year != 32) ? 365 : 366);
-
-	switch (cpunumber) {
-#if VAX750
-	case VAX_750:
-		year_ticks = mfpr(PR_TODR);
-		clock_stopped = todrstopped;
+	case CLKREAD_BAD: /* No useable information from system clock */
+		time.tv_sec = fs_time;
+		resettodr();
 		break;
-#endif
-#if VAX630 || VAX410
-	case VAX_78032:
-		year_ticks = uvaxII_gettodr(&clock_stopped);
-		break;
-#endif
-	default:
-		year_ticks = 0;
-		clock_stopped = 1;
-	};
 
-	if (clock_stopped){
-		printf(
-	"Internal clock not started. Using time from file system.\n");
-		switch (cpunumber) {
-#if VAX750
-		case VAX_750:
-			/*+1 so the clock won't be stopped */
-			mtpr((fs_time - year) * 100 + 1, PR_TODR);
-			break;
-#endif
-#if VAX630 || VAX410
-		case VAX_78032:
-			uvaxII_settodr((fs_time - year) * 100 + 1);
-			break;
-#endif
-		};
-		todrstopped = 0;
-	} else if (year_ticks / 100 > fs_time - year + SEC_PER_DAY * 3) {
-		printf(
-	"WARNING: Clock has gained %d days - CHECK AND RESET THE DATE.\n",
-		    (year_ticks / 100 - (fs_time - year)) / SEC_PER_DAY);
-		sluttid = year + (year_ticks / 100);
-	} else if (year_ticks / 100 < fs_time - year) {
-		printf(
-		"WARNING: Clock has lost time - CHECK AND RESET THE DATE.\n");
-	} else sluttid = year + (year_ticks / 100);
-	time.tv_sec = sluttid;
+	case CLKREAD_WARN: /* Just give the warning */
+		break;
+
+	default: /* System clock OK, no warning if we don't want to. */
+		deltat = time.tv_sec - fs_time;
+
+		if (deltat < 0)
+			deltat = -deltat;
+		if (deltat >= 2 * SEC_PER_DAY) {
+			printf("Clock has %s %d days",
+			    time.tv_sec < fs_time ? "lost" : "gained",
+			    deltat / SEC_PER_DAY);
+			rv = CLKREAD_WARN;
+		}
+		break;
+	}
+
+	if (rv < CLKREAD_OK)
+		printf(" -- CHECK AND RESET THE DATE!\n");
 }
 
 /*   
@@ -163,48 +155,176 @@ inittodr(fs_time)
 void
 resettodr()
 {
-
-	unsigned long tmp_year;
-
-	year = (time.tv_sec / SEC_PER_DAY / 365) * 365 * SEC_PER_DAY;
-	tmp_year = year / SEC_PER_DAY / 365 + 2;
-	year_len = 100 * SEC_PER_DAY *
-	    ((tmp_year % 4 && tmp_year != 32) ? 365 : 366);
-	switch (cpunumber) {
-#if VAX750
-	case VAX_750:
-		mtpr((time.tv_sec - year) * 100 + 1, PR_TODR);
-		break;
-#endif
-#if VAX630 || VAX410
-	case VAX_78032:
-		uvaxII_settodr((time.tv_sec - year) * 100 + 1);
-		break;
-#endif
-	};
-	todrstopped = 0;
+	(*dep_call->cpu_clkwrite)();
+}
+/*
+ * A delayloop that delays about the number of milliseconds that is
+ * given as argument.
+ */
+void
+delay(i)
+	int i;
+{
+	asm ("1: sobgtr %0, 1b" : : "r" (dep_call->cpu_vups * i));
 }
 
 /*
- * Unfortunately the 78032 cpu chip (MicroVAXII cpu) does not have a functional
- * todr register, so this function is necessary.
- * (the x and y variables are used to confuse the optimizer enough to ensure
- *  that the code actually loops:-)
+ * On all VAXen there are a microsecond clock that should
+ * be used for interval interrupts. Some CPUs don't use the ICR interval
+ * register but it doesn't hurt to load it anyway.
+ */
+void
+cpu_initclocks()
+{
+	mtpr(-10000, PR_NICR); /* Load in count register */
+	mtpr(0x800000d1, PR_ICCS); /* Start clock and enable interrupt */
+	evcount_attach(&clock_intrcnt, "clock", NULL, &evcount_intr);
+}
+
+/*
+ * There are two types of real-time battery-backed up clocks on
+ * VAX computers, one with a register that counts up every 1/100 second,
+ * one with a clock chip that delivers time. For the register clock
+ * we have a generic version, and for the chip clock there are 
+ * support routines for time conversion.
+ */
+/*
+ * Converts a year to corresponding number of ticks.
  */
 int
-todr()
+yeartonum(y)
+	int y;
 {
-      int delaycnt, x = 4, y = 4;
-      static int todr_val;
+	int n;
 
-      if (cpunumber != VAX_78032)
-	      return (mfpr(PR_TODR));
-
-      /*
-       * Loop for approximately 10msec and then return todr_val + 1.
-       */
-      delaycnt = 5000;
-      while (delaycnt > 0)
-	      delaycnt = delaycnt - x + 3 + y - 4;
-      return (++todr_val);
+	for (n = 0, y -= 1; y > 69; y--)
+		n += SECPERYEAR(y);
+	return n;
 }
+
+/* 
+ * Converts tick number to a year 70 ->
+ */
+int
+numtoyear(num)
+	int num;
+{
+	int y = 70, j;
+	while(num >= (j = SECPERYEAR(y))) {
+		y++;
+		num -= j;
+	}
+	return y;
+}
+
+#if VAX750 || VAX780 || VAX8600 || VAX650 || \
+    VAX660 || VAX670 || VAX680 || VAX53
+/*
+ * Reads the TODR register; returns a (probably) true tick value,
+ * or CLKREAD_BAD if failed. The year is based on the argument
+ * year; the TODR doesn't hold years.
+ */
+int
+generic_clkread(base)
+	time_t base;
+{
+	unsigned klocka = mfpr(PR_TODR);
+
+	/*
+	 * Sanity check.
+	 */
+	if (klocka < TODRBASE) {
+		if (klocka == 0)
+			printf("TODR stopped");
+		else
+			printf("TODR too small");
+		return CLKREAD_BAD;
+	}
+
+	time.tv_sec = yeartonum(numtoyear(base)) + (klocka - TODRBASE) / 100;
+	return CLKREAD_OK;
+}
+
+/*
+ * Takes the current system time and writes it to the TODR.
+ */
+void
+generic_clkwrite()
+{
+	unsigned tid = time.tv_sec, bastid;
+
+	bastid = tid - yeartonum(numtoyear(tid));
+	mtpr((bastid * 100) + TODRBASE, PR_TODR);
+}
+#endif
+
+#if VAX630 || VAX410 || VAX43 || VAX8200 || VAX46 || VAX48 || VAX49
+
+volatile short *clk_page;	/* where the chip is mapped in virtual memory */
+int	clk_adrshift;	/* how much to multiply the in-page address with */
+int	clk_tweak;	/* Offset of time into word. */
+
+#define	REGPEEK(off)	(clk_page[off << clk_adrshift] >> clk_tweak)
+#define	REGPOKE(off, v)	(clk_page[off << clk_adrshift] = ((v) << clk_tweak))
+
+int
+chip_clkread(base)
+	time_t base;
+{
+	struct clock_ymdhms c;
+	int timeout = 1<<15, s;
+
+#ifdef DIAGNOSTIC
+	if (clk_page == 0)
+		panic("trying to use unset chip clock page");
+#endif
+
+	if ((REGPEEK(CSRD_OFF) & CSRD_VRT) == 0) {
+		printf("WARNING: TOY clock not marked valid");
+		return CLKREAD_BAD;
+	}
+	while (REGPEEK(CSRA_OFF) & CSRA_UIP)
+		if (--timeout == 0) {
+			printf ("TOY clock timed out");
+			return CLKREAD_BAD;
+		}
+
+	s = splhigh();
+	c.dt_year = ((u_char)REGPEEK(YR_OFF)) + 1970;
+	c.dt_mon = REGPEEK(MON_OFF);
+	c.dt_day = REGPEEK(DAY_OFF);
+	c.dt_wday = REGPEEK(WDAY_OFF);
+	c.dt_hour = REGPEEK(HR_OFF);
+	c.dt_min = REGPEEK(MIN_OFF);
+	c.dt_sec = REGPEEK(SEC_OFF);
+	splx(s);
+
+	time.tv_sec = clock_ymdhms_to_secs(&c);
+	return CLKREAD_OK;
+}
+
+void
+chip_clkwrite()
+{
+	struct clock_ymdhms c;
+
+#ifdef DIAGNOSTIC
+	if (clk_page == 0)
+		panic("trying to use unset chip clock page");
+#endif
+
+	REGPOKE(CSRB_OFF, CSRB_SET);
+
+	clock_secs_to_ymdhms(time.tv_sec, &c);
+
+	REGPOKE(YR_OFF, ((u_char)(c.dt_year - 1970)));
+	REGPOKE(MON_OFF, c.dt_mon);
+	REGPOKE(DAY_OFF, c.dt_day);
+	REGPOKE(WDAY_OFF, c.dt_wday);
+	REGPOKE(HR_OFF, c.dt_hour);
+	REGPOKE(MIN_OFF, c.dt_min);
+	REGPOKE(SEC_OFF, c.dt_sec);
+
+	REGPOKE(CSRB_OFF, CSRB_DM|CSRB_24);
+};
+#endif

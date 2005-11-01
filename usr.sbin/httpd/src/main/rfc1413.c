@@ -99,37 +99,6 @@
 
 int ap_rfc1413_timeout = RFC1413_TIMEOUT;	/* Global so it can be changed */
 
-#if (defined (NETWARE) || defined (WIN32))
-#define write(a,b,c) send(a,b,c,0)
-#define read(a,b,c) recv(a,b,c,0)
-#endif
-
-#ifdef MULTITHREAD
-#define RFC_USER_STATIC 
-
-static int setsocktimeout (int sock, int timeout)
-{
-#if (defined (NETWARE) || defined (WIN32))
-    u_long msec = 0;
-
-    /* Make sure that we are in blocking mode */
-    if (ioctlsocket(sock, FIONBIO, &msec) == SOCKET_ERROR) {
-        return h_errno;
-    }
-
-    /* Win32 timeouts are in msec, represented as int */
-    msec = timeout * 1000;
-    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, 
-               (char *) &msec, sizeof(msec));
-    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, 
-               (char *) &msec, sizeof(msec));
-#else
-    /* XXX Needs to be implemented for non-winsock platforms */
-#endif
-    return 0;
-}
-#else /* MULTITHREAD */
-
 #define RFC_USER_STATIC static
 static JMP_BUF timebuf;
 
@@ -138,7 +107,6 @@ static void ident_timeout(int sig)
 {
     ap_longjmp(timebuf, sig);
 }
-#endif
 
 /* bind_connect - bind both ends of a socket */
 /* Ambarish fix this. Very broken */
@@ -164,9 +132,6 @@ static int get_rfc1413(int sock, const struct sockaddr_in *our_sin,
 
     our_query_sin = *our_sin;
     our_query_sin.sin_port = htons(ANY_PORT);
-#ifdef MPE 
-    our_query_sin.sin_addr.s_addr = INADDR_ANY;
-#endif
     rmt_query_sin = *rmt_sin;
     rmt_query_sin.sin_port = htons(RFC1413_PORT);
 
@@ -190,9 +155,6 @@ static int get_rfc1413(int sock, const struct sockaddr_in *our_sin,
 		ntohs(our_sin->sin_port));
 
     /* send query to server. Handle short write. */
-#ifdef CHARSET_EBCDIC
-    ebcdic2ascii(buffer, buffer, buflen);
-#endif
     i = 0;
     while(i < (int)strlen(buffer)) {
         int j;
@@ -222,20 +184,6 @@ static int get_rfc1413(int sock, const struct sockaddr_in *our_sin,
     while((cp = strchr(buffer, '\012')) == NULL && i < sizeof(buffer) - 1) {
         int j;
   
-#ifdef TPF
-        /*
-         * socket read on TPF doesn't get interrupted by
-         * signals so additional processing is needed
-         */
-        j = ap_set_callback_and_alarm(NULL, 0);
-        ap_set_callback_and_alarm(ident_timeout, j);
-        j = select(&sock, 1, 0, 0, j * 1000);
-        if (j < 1) {
-            ap_set_callback_and_alarm(NULL, 0);
-            ap_check_signals();
-            return -1;
-        }
-#endif /* TPF */
 	j = read(sock, buffer+i, (sizeof(buffer) - 1) - i);
 	if (j < 0 && errno != EINTR) {
 	   ap_log_error(APLOG_MARK, APLOG_CRIT, srv,
@@ -248,9 +196,6 @@ static int get_rfc1413(int sock, const struct sockaddr_in *our_sin,
     }
 
 /* RFC1413_USERLEN = 512 */
-#ifdef CHARSET_EBCDIC
-    ascii2ebcdic(buffer, buffer, (size_t)i);
-#endif
     if (sscanf(buffer, "%u , %u : USERID :%*[^:]:%512s", &rmt_port, &our_port,
 	       user) != 3 || ntohs(rmt_sin->sin_port) != rmt_port
 	|| ntohs(our_sin->sin_port) != our_port)
@@ -286,12 +231,6 @@ API_EXPORT(char *) ap_rfc1413(conn_rec *conn, server_rec *srv)
     /*
      * Set up a timer so we won't get stuck while waiting for the server.
      */
-#ifdef MULTITHREAD
-    if (setsocktimeout(sock, ap_rfc1413_timeout) == 0) {
-        if (get_rfc1413(sock, &conn->local_addr, &conn->remote_addr, user, srv) >= 0)
-            result = ap_pstrdup (conn->pool, user);
-    }
-#else
     if (ap_setjmp(timebuf) == 0) {
 	ap_set_callback_and_alarm(ident_timeout, ap_rfc1413_timeout);
 
@@ -299,7 +238,6 @@ API_EXPORT(char *) ap_rfc1413(conn_rec *conn, server_rec *srv)
 	    result = user;
     }
     ap_set_callback_and_alarm(NULL, 0);
-#endif
     ap_pclosesocket(conn->pool, sock);
     conn->remote_logname = result;
 

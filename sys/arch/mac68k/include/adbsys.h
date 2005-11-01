@@ -1,4 +1,5 @@
-/*	$NetBSD: adbsys.h,v 1.3 1994/12/03 23:34:28 briggs Exp $	*/
+/*	$OpenBSD: adbsys.h,v 1.7 2002/03/14 01:26:35 millert Exp $	*/
+/*	$NetBSD: adbsys.h,v 1.5 1996/05/05 14:34:07 briggs Exp $	*/
 
 /*-
  * Copyright (C) 1993, 1994	Allen K. Briggs, Chris P. Caputo,
@@ -33,15 +34,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _MAC68K_ADBSYS_H_
+#define _MAC68K_ADBSYS_H_
 
-#include <sys/time.h>	/* timeval stuff */
-#include <sys/ioctl.h>	/* ioctls */
-
+#include <sys/time.h>
+#include <sys/ioctl.h>
 
 /* Handy visual constants */
 #define ADB_MAX_HANDLERS	256
-#define ADB_MAX_DEVS	16
-
+#define ADB_MAX_DEVS		16
 
 /* Different ADB system types */
 enum adb_system_e {
@@ -60,10 +61,10 @@ typedef struct adb_event_s {
 	unsigned char bytes[8];		/* bytes from register 0 */
 	struct timeval timestamp;	/* time event was acquired */
 	union {
-		struct adb_keydata_s{
+		struct adb_keydata_s {
 			int key;	/* ADB key code */
 		} k;
-		struct adb_mousedata_s{
+		struct adb_mousedata_s {
 			int dx;		/* mouse delta x */
 			int dy;		/* mouse delta y */
 			int buttons;	/* buttons (down << (buttonnum)) */
@@ -71,41 +72,71 @@ typedef struct adb_event_s {
 	} u;				/* courtesy interpretation */
 } adb_event_t;
 
-
-/* a device on the ADB */
-typedef struct adb_dev_s{
+/* Descriptor of a device on the ADB bus */
+typedef struct adb_dev_s {
 	int		addr;		/* current address */
 	int		default_addr;	/* startup address */
 	int		handler_id;	/* handler ID */
 } adb_dev_t;
 
-
-	/* Interesting default addresses */
-#define ADBADDR_MAP	2
-#define ADBADDR_REL	3
-#define ADBADDR_ABS	4
+/* Interesting default addresses */
+#define ADBADDR_SECURE	1		/* Security dongles */
+#define ADBADDR_MAP	2		/* Mapped devices (keyboards/pads) */
+#define ADBADDR_REL	3		/* Relative positioning devices */
+#define ADBADDR_ABS	4		/* Absolute positioning devices */
+#define ADBADDR_DATATX	5
+#define ADBADDR_RSRVD	6		/* Reserved by Apple */
+#define ADBADDR_MISC	7		/* Miscellaneous appliances */
+#define ADBADDR_DONGLE	ADBADDR_SECURE
 #define ADBADDR_KBD	ADBADDR_MAP
 #define ADBADDR_MS	ADBADDR_REL
 #define ADBADDR_TABLET	ADBADDR_ABS
+#define ADBADDR_MODEM	ADBADDR_DATATX
 
-
-	/* Interesting handler IDs */
+/* Interesting keyboard handler IDs */
 #define ADB_STDKBD	1
 #define ADB_EXTKBD	2
+#define ADB_ISOKBD	4
+#define ADB_EXTISOKBD	5
+#define ADB_KBDII	8
+#define ADB_ISOKBDII	9
+#define ADB_PBKBD	12
+#define ADB_PBISOKBD	13
+#define ADB_ADJKPD	14
+#define ADB_ADJKBD	16
+#define ADB_ADJISOKBD	17
+#define ADB_ADJJAPKBD	18
+#define ADB_PBEXTISOKBD	20
+#define ADB_PBEXTJAPKBD	21
+#define ADB_JPKBDII	22
+#define ADB_PBEXTKBD	24
+#define ADB_DESIGNKBD	27	/* XXX Needs to be verified XXX */
+#define ADB_PBJPKBD	30
+
+/* Interesting mouse handler IDs */
 #define ADBMS_100DPI	1
 #define ADBMS_200DPI	2
+#define ADBMS_MSA3	3	/* Mouse Systems A3 Mouse */
+#define ADBMS_EXTENDED	4	/* Extended mouse protocol */
+#define ADBMS_USPEED	47	/* MicroSpeed mouse */
+#define ADBMS_UCONTOUR	102	/* Contour mouse */
 
+/* Interesting tablet handler ID */
+#define ADB_ARTPAD	58	/* WACOM ArtPad II tablet */
 
-	/* Get device info from ADB system */
-typedef struct adb_devinfo_s{
+/* Interesting miscellaneous handler ID */
+#define ADB_POWERKEY	34	/* Sophisticated Circuits PowerKey */
+
+/* Get device info from ADB system */
+typedef struct adb_devinfo_s {
 	adb_dev_t	dev[ADB_MAX_DEVS];
-		/* [addr].addr == -1 if none */ 
+	/* [addr].addr == -1 if none */ 
 } adb_devinfo_t;
 #define ADBIOC_DEVSINFO	_IOR('A', 128, adb_devinfo_t)
 
 
-	/* Event auto-repeat */
-typedef struct adb_rptinfo_s{
+/* Event auto-repeat */
+typedef struct adb_rptinfo_s {
 	int delay_ticks;	/* ticks before repeat */
 	int interval_ticks;	/* ticks between repeats */
 } adb_rptinfo_t;
@@ -113,14 +144,17 @@ typedef struct adb_rptinfo_s{
 #define ADBIOC_SETREPEAT	_IOW('A', 131, adb_rptinfo_t)
 
 
-	/* Reset and reinitialize */
+/* Reset and reinitialize */
 #define ADBIOC_RESET		_IO('A', 132)
 
-
-typedef struct adb_listencmd_s{
+typedef struct adb_listencmd_s {
 	int address;		/* device address */
 	int reg;		/* register to which to send bytes */
 	int bytecnt;		/* number of bytes */
 	u_char bytes[8];	/* bytes */
 } adb_listencmd_t;
 #define ADBIOC_LISTENCMD	_IOW('A', 133, adb_listencmd_t)
+
+void	adb_init(void);
+
+#endif /* _MAC68K_ADBSYS_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: v831.c,v 1.3 1994/12/08 09:31:50 jtc Exp $	*/
+/*	$OpenBSD: v831.c,v 1.9 2003/06/03 02:56:18 millert Exp $	*/
+/*	$NetBSD: v831.c,v 1.5 1996/12/29 10:42:01 cgd Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,27 +34,30 @@
 #if 0
 static char sccsid[] = "@(#)v831.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: v831.c,v 1.3 1994/12/08 09:31:50 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: v831.c,v 1.9 2003/06/03 02:56:18 millert Exp $";
 #endif /* not lint */
 
 /*
  * Routines for dialing up on Vadic 831
  */
 #include "tip.h"
+#include <termios.h>
 
-int	v831_abort();
+void	v831_abort();
 static	void alarmtr();
-extern	int errno;
+static	int dialit();
+static	char *sanitize();
 
 static jmp_buf jmpbuf;
-static int child = -1;
+static pid_t child = -1;
 
+int
 v831_dialer(num, acu)
         char *num, *acu;
 {
-        int status, pid, connected = 1;
-        register int timelim;
-	static int dialit();
+        int status;
+        int timelim;
+	pid_t pid;
 
         if (boolean(value(VERBOSE)))
                 printf("\nstarting call...");
@@ -106,9 +106,6 @@ v831_dialer(num, acu)
                 return (0);
         }
         alarm(0);
-#ifdef notdef
-        ioctl(AC, TIOCHPCL, 0);
-#endif
         signal(SIGALRM, SIG_DFL);
         while ((pid = wait(&status)) != child && pid != -1)
                 ;
@@ -130,9 +127,10 @@ alarmtr()
  * Insurance, for some reason we don't seem to be
  *  hanging up...
  */
+void
 v831_disconnect()
 {
-        struct sgttyb cntrl;
+	struct termios	cntrl;
 
         sleep(2);
 #ifdef DEBUG
@@ -140,14 +138,16 @@ v831_disconnect()
 #endif
         if (FD > 0) {
                 ioctl(FD, TIOCCDTR, 0);
-                ioctl(FD, TIOCGETP, &cntrl);
-                cntrl.sg_ispeed = cntrl.sg_ospeed = 0;
-                ioctl(FD, TIOCSETP, &cntrl);
-                ioctl(FD, TIOCNXCL, (struct sgttyb *)NULL);
+		tcgetattr(FD, &cntrl);
+		cfsetospeed(&cntrl, 0);
+		cfsetispeed(&cntrl, 0);
+		tcsetattr(FD, TCSAFLUSH, &cntrl);
+                ioctl(FD, TIOCNXCL, NULL);
         }
         close(FD);
 }
 
+void
 v831_abort()
 {
 
@@ -157,9 +157,9 @@ v831_abort()
         sleep(2);
         if (child > 0)
                 kill(child, SIGKILL);
-        if (AC > 0)
-                ioctl(FD, TIOCNXCL, (struct sgttyb *)NULL);
-                close(AC);
+        if (FD > 0)
+                ioctl(FD, TIOCNXCL, NULL);
+        close(AC);
         if (FD > 0)
                 ioctl(FD, TIOCCDTR, 0);
         close(FD);
@@ -186,14 +186,13 @@ struct vaconfig {
 
 static int
 dialit(phonenum, acu)
-	register char *phonenum;
+	char *phonenum;
 	char *acu;
 {
-        register struct vaconfig *vp;
-	struct sgttyb cntrl;
+        struct vaconfig *vp;
+	struct termios cntrl;
         char c;
-        int i, two = 2;
-	static char *sanitize();
+        int i;
 
         phonenum = sanitize(phonenum);
 #ifdef DEBUG
@@ -208,11 +207,13 @@ dialit(phonenum, acu)
 		printf("Unable to locate dialer (%s)\n", acu);
 		return ('K');
 	}
-        ioctl(AC, TIOCGETP, &cntrl);
-        cntrl.sg_ispeed = cntrl.sg_ospeed = B2400;
-        cntrl.sg_flags = RAW | EVENP | ODDP;
-        ioctl(AC, TIOCSETP, &cntrl);
-	ioctl(AC, TIOCFLUSH, &two);
+	tcgetattr(AC, &cntrl);
+	cfsetospeed(&cntrl, B2400);
+	cfsetispeed(&cntrl, B2400);
+	cntrl.c_cflag |= PARODD | PARENB;
+	cntrl.c_lflag &= ~(ISIG | ICANON);
+	tcsetattr(AC, TCSANOW, &cntrl);
+	tcflush(AC, TCIOFLUSH);
         pc(STX);
 	pc(vp->vc_rack);
 	pc(vp->vc_modem);
@@ -247,10 +248,10 @@ dialit(phonenum, acu)
 
 static char *
 sanitize(s)
-	register char *s;
+	char *s;
 {
         static char buf[128];
-        register char *cp;
+        char *cp;
 
         for (cp = buf; *s; s++) {
 		if (!isdigit(*s) && *s == '<' && *s != '_')

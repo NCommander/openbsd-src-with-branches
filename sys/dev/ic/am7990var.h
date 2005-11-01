@@ -1,4 +1,5 @@
-/*	$NetBSD: am7990var.h,v 1.1 1995/06/28 02:24:56 cgd Exp $	*/
+/*	$OpenBSD: am7990var.h,v 1.8 1998/09/16 22:41:20 jason Exp $	*/
+/*	$NetBSD: am7990var.h,v 1.8 1996/07/05 23:57:01 abrown Exp $	*/
 
 /*
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -31,33 +32,114 @@
 
 #ifdef DDB
 #define	integrate
+#define hide
 #else
-#define	integrate	static inline
+#define	integrate	static __inline
+#define hide		static
 #endif
 
-void leconfig __P((struct le_softc *));
-void leinit __P((struct le_softc *));
-int leioctl __P((struct ifnet *, u_long, caddr_t));
-void lememinit __P((struct le_softc *));
-void lereset __P((struct le_softc *));
-void lesetladrf __P((struct arpcom *, u_int16_t *));
-void lestart __P((struct ifnet *));
-void lestop __P((struct le_softc *));
-void lewatchdog __P((/* short */));
+/*
+ * Ethernet software status per device.
+ *
+ * Each interface is referenced by a network interface structure,
+ * arpcom.ac_if, which the routing code uses to locate the interface. 
+ * This structure contains the output queue for the interface, its address, ...
+ *
+ * NOTE: this structure MUST be the first element in machine-dependent
+ * le_softc structures!  This is designed SPECIFICALLY to make it possible
+ * to simply cast a "void *" to "struct le_softc *" or to
+ * "struct am7990_softc *".  Among other things, this saves a lot of hair
+ * in the interrupt handlers.
+ */
+struct am7990_softc {
+	struct	device sc_dev;		/* base device glue */
+	struct	arpcom sc_arpcom;	/* Ethernet common part */
 
-integrate u_int16_t lerdcsr __P((/* struct le_softc *, u_int16_t */));
-integrate void lewrcsr __P((/* struct le_softc *, u_int16_t, u_int16_t */));
+	/*
+	 * Memory functions:
+	 *
+	 *	copy to/from descriptor
+	 *	copy to/from buffer
+	 *	zero bytes in buffer
+	 */
+	void	(*sc_copytodesc)(struct am7990_softc *, void *, int, int);
+	void	(*sc_copyfromdesc)(struct am7990_softc *, void *, int, int);
+	void	(*sc_copytobuf)(struct am7990_softc *, void *, int, int);
+	void	(*sc_copyfrombuf)(struct am7990_softc *, void *, int, int);
+	void	(*sc_zerobuf)(struct am7990_softc *, int, int);
 
-integrate void lerint __P((struct le_softc *));
-integrate void letint __P((struct le_softc *));
+	/*
+	 * Machine-dependent functions:
+	 *
+	 *	read/write CSR
+	 *	hardware reset hook - may be NULL
+	 *	hardware init hook - may be NULL
+	 *	no carrier hook - may be NULL
+	 */
+	u_int16_t (*sc_rdcsr)(struct am7990_softc *, u_int16_t);
+	void	(*sc_wrcsr)(struct am7990_softc *, u_int16_t, u_int16_t);
+	void	(*sc_hwreset)(struct am7990_softc *);
+	void	(*sc_hwinit)(struct am7990_softc *);
+	void	(*sc_nocarrier)(struct am7990_softc *);
 
-integrate int leput __P((struct le_softc *, int, struct mbuf *));
-integrate struct mbuf *leget __P((struct le_softc *, int, int));
-integrate void leread __P((struct le_softc *, int, int));
+	int	sc_hasifmedia;
+	struct	ifmedia sc_ifmedia;
 
-void copytodesc_contig(), copyfromdesc_contig();
-void copytobuf_contig(), copyfrombuf_contig(), zerobuf_contig();
-#ifdef 0
-void copytobuf_gap2(), copyfrombuf_gap2(), zerobuf_gap2();
-void copytobuf_gap16(), copyfrombuf_gap16(), zerobuf_gap16();
+	void	*sc_sh;		/* shutdownhook cookie */
+
+	u_int16_t sc_conf3;	/* CSR3 value */
+
+	void	*sc_mem;	/* base address of RAM -- CPU's view */
+	u_long	sc_addr;	/* base address of RAM -- LANCE's view */
+
+	u_long	sc_memsize;	/* size of RAM */
+
+	int	sc_nrbuf;	/* number of receive buffers */
+	int	sc_ntbuf;	/* number of transmit buffers */
+	int	sc_last_rd;
+	int	sc_first_td, sc_last_td, sc_no_td;
+
+	int	sc_initaddr;
+	int	sc_rmdaddr;
+	int	sc_tmdaddr;
+	int	sc_rbufaddr;
+	int	sc_tbufaddr;
+
+#ifdef LEDEBUG
+	int	sc_debug;
 #endif
+};
+
+/* Export this to machine-dependent drivers. */
+extern struct cfdriver le_cd;
+
+void am7990_config(struct am7990_softc *);
+void am7990_init(struct am7990_softc *);
+int am7990_ioctl(struct ifnet *, u_long, caddr_t);
+void am7990_meminit(struct am7990_softc *);
+void am7990_reset(struct am7990_softc *);
+void am7990_setladrf(struct arpcom *, u_int16_t *);
+void am7990_start(struct ifnet *);
+void am7990_stop(struct am7990_softc *);
+void am7990_watchdog(struct ifnet *);
+int am7990_intr(void *);
+
+/*
+ * The following functions are only useful on certain cpu/bus
+ * combinations.  They should be written in assembly language for
+ * maximum efficiency, but machine-independent versions are provided
+ * for drivers that have not yet been optimized.
+ */
+void am7990_copytobuf_contig(struct am7990_softc *, void *, int, int);
+void am7990_copyfrombuf_contig(struct am7990_softc *, void *, int, int);
+void am7990_zerobuf_contig(struct am7990_softc *, int, int);
+
+#if 0	/* Example only - see am7990.c */
+void am7990_copytobuf_gap2(struct am7990_softc *, void *, int, int);
+void am7990_copyfrombuf_gap2(struct am7990_softc *, void *, int, int);
+void am7990_zerobuf_gap2(struct am7990_softc *, int, int);
+
+void am7990_copytobuf_gap16(struct am7990_softc *, void *, int, int);
+void am7990_copyfrombuf_gap16(struct am7990_softc *, void *, int, int);
+void am7990_zerobuf_gap16(struct am7990_softc *, int, int);
+#endif /* Example only */

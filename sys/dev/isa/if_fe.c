@@ -1,3 +1,5 @@
+/*	$OpenBSD: if_fe.c,v 1.23 2005/04/03 10:20:47 brad Exp $	*/
+
 /*
  * All Rights Reserved, Copyright (C) Fujitsu Limited 1995
  *
@@ -68,17 +70,12 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 
 #include <dev/isa/isareg.h>
@@ -180,8 +177,8 @@ struct fe_softc {
 	u_char	proto_bmpr13;	/* BMPR13 prototype. */
 
 	/* Vendor specific hooks. */
-	void	(*init) __P((struct fe_softc *)); /* Just before fe_init(). */
-	void	(*stop) __P((struct fe_softc *)); /* Just after fe_stop(). */
+	void	(*init)(struct fe_softc *); /* Just before fe_init(). */
+	void	(*stop)(struct fe_softc *); /* Just after fe_stop(). */
 
 	/* Transmission buffer management. */
 	u_short	txb_size;	/* total bytes in TX buffer */
@@ -199,43 +196,45 @@ struct fe_softc {
 #define sc_enaddr	sc_arpcom.ac_enaddr
 
 /* Standard driver entry points.  These can be static. */
-int	feprobe		__P((struct device *, void *, void *));
-void	feattach	__P((struct device *, struct device *, void *));
-int	feintr		__P((void *));
-void	fe_init		__P((struct fe_softc *));
-int	fe_ioctl	__P((struct ifnet *, u_long, caddr_t));
-void	fe_start	__P((struct ifnet *));
-void	fe_reset	__P((struct fe_softc *));
-void	fe_watchdog	__P((int));
+int	feprobe(struct device *, void *, void *);
+void	feattach(struct device *, struct device *, void *);
+int	feintr(void *);
+void	fe_init(struct fe_softc *);
+int	fe_ioctl(struct ifnet *, u_long, caddr_t);
+void	fe_start(struct ifnet *);
+void	fe_reset(struct fe_softc *);
+void	fe_watchdog(struct ifnet *);
 
 /* Local functions.  Order of declaration is confused.  FIXME. */
-int	fe_probe_fmv	__P((struct fe_softc *, struct isa_attach_args *));
-int	fe_probe_ati	__P((struct fe_softc *, struct isa_attach_args *));
-int	fe_probe_mbh	__P((struct fe_softc *, struct isa_attach_args *));
-void	fe_init_mbh	__P((struct fe_softc *));
-int	fe_get_packet	__P((struct fe_softc *, int));
-void	fe_stop		__P((struct fe_softc *));
-void	fe_tint		__P((/*struct fe_softc *, u_char*/));
-void	fe_rint		__P((/*struct fe_softc *, u_char*/));
+int	fe_probe_fmv(struct fe_softc *, struct isa_attach_args *);
+int	fe_probe_ati(struct fe_softc *, struct isa_attach_args *);
+int	fe_probe_mbh(struct fe_softc *, struct isa_attach_args *);
+void	fe_init_mbh(struct fe_softc *);
+int	fe_get_packet(struct fe_softc *, int);
+void	fe_stop(struct fe_softc *);
+void	fe_tint(/*struct fe_softc *, u_char*/);
+void	fe_rint(/*struct fe_softc *, u_char*/);
 static inline
-void	fe_xmit		__P((struct fe_softc *));
-void	fe_write_mbufs	__P((struct fe_softc *, struct mbuf *));
-void	fe_getmcaf	__P((struct arpcom *, u_char *));
-void	fe_setmode	__P((struct fe_softc *));
-void	fe_loadmar	__P((struct fe_softc *));
+void	fe_xmit(struct fe_softc *);
+void	fe_write_mbufs(struct fe_softc *, struct mbuf *);
+void	fe_getmcaf(struct arpcom *, u_char *);
+void	fe_setmode(struct fe_softc *);
+void	fe_loadmar(struct fe_softc *);
 #if FE_DEBUG >= 1
-void	fe_dump		__P((int, struct fe_softc *));
+void	fe_dump(int, struct fe_softc *);
 #endif
 
-struct cfdriver fecd = {
-	NULL, "fe", feprobe, feattach, DV_IFNET, sizeof(struct fe_softc)
+struct cfattach fe_ca = {
+	sizeof(struct fe_softc), feprobe, feattach
+};
+
+struct cfdriver fe_cd = {
+	NULL, "fe", DV_IFNET
 };
 
 /* Ethernet constants.  To be defined in if_ehter.h?  FIXME. */
 #define ETHER_MIN_LEN	60	/* with header, without CRC. */
 #define ETHER_MAX_LEN	1514	/* with header, without CRC. */
-#define ETHER_ADDR_LEN	6	/* number of bytes in an address. */
-#define ETHER_HDR_SIZE	14	/* src addr, dst addr, and data type. */
 
 /*
  * Fe driver specific constants which relate to 86960/86965.
@@ -459,7 +458,7 @@ fe_probe_fmv(sc, ia)
 		{ FE_FMV6, 0xFF, 0x0E },
 #else
 	/*
-	 * We can always verify the *first* 2 bits (in Ehternet
+	 * We can always verify the *first* 2 bits (in Ethernet
 	 * bit order) are "no multicast" and "no local" even for
 	 * unknown vendors.
 	 */
@@ -840,7 +839,7 @@ fe_probe_mbh(sc, ia)
 		{ FE_MBH12, 0xFF, 0x0E },
 #else
 	/*
-	 * We can always verify the *first* 2 bits (in Ehternet
+	 * We can always verify the *first* 2 bits (in Ethernet
 	 * bit order) are "global" and "unicast" even for
 	 * unknown vendors.
 	 */
@@ -992,28 +991,14 @@ feattach(parent, self, aux)
 	fe_stop(sc);
 
 	/* Initialize ifnet structure. */
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = fecd.cd_name;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
 	ifp->if_start = fe_start;
 	ifp->if_ioctl = fe_ioctl;
 	ifp->if_watchdog = fe_watchdog;
 	ifp->if_flags =
 	    IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS | IFF_MULTICAST;
-
-	/*
-	 * Set maximum size of output queue, if it has not been set.
-	 * It is done here as this driver may be started after the
-	 * system intialization (i.e., the interface is PCMCIA.)
-	 *
-	 * I'm not sure this is really necessary, but, even if it is,
-	 * it should be done somewhere else, e.g., in if_attach(),
-	 * since it must be a common workaround for all network drivers.
-	 * FIXME.
-	 */
-	if (ifp->if_snd.ifq_maxlen == 0) {
-		extern int ifqmaxlen;		/* Don't be so shocked... */
-		ifp->if_snd.ifq_maxlen = ifqmaxlen;
-	}
+	IFQ_SET_READY(&ifp->if_snd);
 
 #if FE_DEBUG >= 3
 	log(LOG_INFO, "%s: feattach()\n", sc->sc_dev.dv_xname);
@@ -1119,13 +1104,8 @@ feattach(parent, self, aux)
 	}
 #endif
 
-#if NBPFILTER > 0
-	/* If BPF is in the kernel, call the attach for it. */
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
-
-	sc->sc_ih = isa_intr_establish(ia->ia_irq, ISA_IST_EDGE, ISA_IPL_NET,
-	    feintr, sc);
+	sc->sc_ih = isa_intr_establish(ia->ia_ic, ia->ia_irq, IST_EDGE,
+	    IPL_NET, feintr, sc, sc->sc_dev.dv_xname);
 }
 
 /*
@@ -1137,7 +1117,7 @@ fe_reset(sc)
 {
 	int s;
 
-	s = splimp();
+	s = splnet();
 	fe_stop(sc);
 	fe_init(sc);
 	splx(s);
@@ -1195,10 +1175,10 @@ fe_stop(sc)
  * generate an interrupt after a transmit has been started on it.
  */
 void
-fe_watchdog(unit)
-	int unit;
+fe_watchdog(ifp)
+	struct ifnet *ifp;
 {
-	struct fe_softc *sc = fecd.cd_devs[unit];
+	struct fe_softc *sc = ifp->if_softc;
 
 	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
 #if FE_DEBUG >= 3
@@ -1410,7 +1390,7 @@ fe_xmit(sc)
 /*
  * Start output on interface.
  * We make two assumptions here:
- *  1) that the current priority is set to splimp _before_ this code
+ *  1) that the current priority is set to splnet _before_ this code
  *     is called *and* is returned to the appropriate priority after
  *     return
  *  2) that the IFF_OACTIVE flag is checked before this code is called
@@ -1420,7 +1400,7 @@ void
 fe_start(ifp)
 	struct ifnet *ifp;
 {
-	struct fe_softc *sc = fecd.cd_devs[ifp->if_unit];
+	struct fe_softc *sc = ifp->if_softc;
 	struct mbuf *m;
 
 #if FE_DEBUG >= 1
@@ -1446,9 +1426,9 @@ fe_start(ifp)
 		 * reset the entire interface.  I don't want to do it.)
 		 *
 		 * If txb_count is incorrect, leaving it as is will cause
-		 * sending of gabages after next interrupt.  We have to
+		 * sending of garbage after next interrupt.  We have to
 		 * avoid it.  Hence, we reset the txb_count here.  If
-		 * txb_free was incorrect, resetting txb_count just loose
+		 * txb_free was incorrect, resetting txb_count just loses
 		 * some packets.  We can live with it.
 		 */
 		sc->txb_count = 0;
@@ -1513,7 +1493,7 @@ fe_start(ifp)
 		/*
 		 * Get the next mbuf chain for a packet to send.
 		 */
-		IF_DEQUEUE(&ifp->if_snd, m);
+		IFQ_DEQUEUE(&ifp->if_snd, m);
 		if (m == 0) {
 			/* No more packets to send. */
 			goto indicate_inactive;
@@ -1635,7 +1615,7 @@ fe_tint(sc, tstat)
 		 * packet transmission.  When we send two or more packets
 		 * with one start command (that's what we do when the
 		 * transmission queue is clauded), 86960 informs us number
-		 * of collisions occured on the last packet on the
+		 * of collisions occurred on the last packet on the
 		 * transmission only.  Number of collisions on previous
 		 * packets are lost.  I have told that the fact is clearly
 		 * stated in the Fujitsu document.
@@ -1679,7 +1659,9 @@ fe_tint(sc, tstat)
 		 */
 		ifp->if_opackets += sc->txb_sched;
 		sc->txb_sched = 0;
+	}
 
+	if (sc->txb_sched == 0) {
 		/*
 		 * The transmitter is no more active.
 		 * Reset output active flag and watchdog timer. 
@@ -1919,7 +1901,7 @@ fe_ioctl(ifp, command, data)
 	u_long command;
 	caddr_t data;
 {
-	struct fe_softc *sc = fecd.cd_devs[ifp->if_unit];
+	struct fe_softc *sc = ifp->if_softc;
 	register struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
@@ -1928,7 +1910,12 @@ fe_ioctl(ifp, command, data)
 	log(LOG_INFO, "%s: ioctl(%x)\n", sc->sc_dev.dv_xname, command);
 #endif
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, command, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (command) {
 
@@ -1941,23 +1928,6 @@ fe_ioctl(ifp, command, data)
 			fe_init(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
-#endif
-#ifdef NS
-		case AF_NS:
-		    {
-			register struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			fe_init(sc);
-			break;
-		    }
 #endif
 		default:
 			fe_init(sc);
@@ -2009,7 +1979,8 @@ fe_ioctl(ifp, command, data)
 			 * Multicast list has changed; set the hardware filter
 			 * accordingly.
 			 */
-			fe_setmode(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				fe_setmode(sc);
 			error = 0;
 		}
 		break;
@@ -2024,7 +1995,7 @@ fe_ioctl(ifp, command, data)
 
 /*
  * Retreive packet from receive buffer and send to the next level up via
- * ether_input(). If there is a BPF listener, give a copy to BPF, too.
+ * ether_input_mbuf(). If there is a BPF listener, give a copy to BPF, too.
  * Returns 0 if success, -1 if error (i.e., mbuf allocation failure).
  */
 int
@@ -2032,7 +2003,6 @@ fe_get_packet(sc, len)
 	struct fe_softc *sc;
 	int len;
 {
-	struct ether_header *eh;
 	struct mbuf *m;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
@@ -2072,7 +2042,6 @@ fe_get_packet(sc, len)
 	 * header mbuf.
 	 */
 	m->m_data += EOFF;
-	eh = mtod(m, struct ether_header *);
 
 	/* Set the length of this packet. */
 	m->m_len = len;
@@ -2085,27 +2054,11 @@ fe_get_packet(sc, len)
 	 * Check if there's a BPF listener on this interface.  If so, hand off
 	 * the raw packet to bpf.
 	 */
-	if (ifp->if_bpf) {
+	if (ifp->if_bpf)
 		bpf_mtap(ifp->if_bpf, m);
-
-		/*
-		 * Note that the interface cannot be in promiscuous mode if
-		 * there are no BPF listeners.  And if we are in promiscuous
-		 * mode, we have to check if this packet is really ours.
-		 */
-		if ((ifp->if_flags & IFF_PROMISC) != 0 &&
-		    (eh->ether_dhost[0] & 1) == 0 && /* !mcast and !bcast */
-	  	    bcmp(eh->ether_dhost, sc->sc_arpcom.ac_enaddr,
-			    sizeof(eh->ether_dhost)) != 0) {
-			m_freem(m);
-			return (1);
-		}
-	}
 #endif
 
-	/* Fix up data start offset in mbuf to point past ether header. */
-	m_adj(m, sizeof(struct ether_header));
-	ether_input(ifp, eh, m);
+	ether_input_mbuf(ifp, m);
 	return (1);
 }
 
@@ -2120,7 +2073,7 @@ fe_get_packet(sc, len)
  *
  * I wrote a code for an experimental "delayed padding" technique.
  * When employed, it postpones the padding process for short packets.
- * If xmit() occured at the moment, the padding process is omitted, and
+ * If xmit() occurred at the moment, the padding process is omitted, and
  * garbages are sent as pad data.  If next packet is stored in the
  * transmission buffer before xmit(), write_mbuf() pads the previous
  * packet before transmitting new packet.  This *may* gain the
@@ -2427,7 +2380,7 @@ fe_setmode(sc)
 /*
  * Load a new multicast address filter into MARs.
  *
- * The caller must have splimp'ed befor fe_loadmar.
+ * The caller must have splnet'ed befor fe_loadmar.
  * This function starts the DLC upon return.  So it can be called only
  * when the chip is working, i.e., from the driver's point of view, when
  * a device is RUNNING.  (I mistook the point in previous versions.)
