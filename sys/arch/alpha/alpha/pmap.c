@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.c,v 1.42 2004/06/13 21:49:11 niklas Exp $ */
+/* $OpenBSD: pmap.c,v 1.43 2005/10/28 19:10:26 martin Exp $ */
 /* $NetBSD: pmap.c,v 1.154 2000/12/07 22:18:55 thorpej Exp $ */
 
 /*-
@@ -436,7 +436,7 @@ struct pmap_tlb_shootdown_q {
 
 #define	PSJQ_LOCK(pq, s)						\
 do {									\
-	s = splimp();							\
+	s = splvm();							\
 	simple_lock(&(pq)->pq_slock);					\
 } while (0)
 
