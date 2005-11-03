@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.3 2003/11/08 19:17:28 jmc Exp $
+/*	$OpenBSD: trm.c,v 1.4 2004/01/14 20:50:49 miod Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -294,7 +294,7 @@ trm_RewaitSRB(struct trm_softc *sc, struct trm_scsi_req_q *pSRB)
 void
 trm_StartWaitingSRB(struct trm_softc *sc)
 {
-	struct trm_scsi_req_q *pSRB;
+	struct trm_scsi_req_q *pSRB, *next;
 	int intflag;
 
 	intflag = splbio();
@@ -304,7 +304,8 @@ trm_StartWaitingSRB(struct trm_softc *sc)
 	    (sc->sc_Flag & (RESET_DETECT | RESET_DONE | RESET_DEV)) != 0)
 		return;
 
- 	TAILQ_FOREACH(pSRB, &sc->waitingSRB, link) {
+	for (pSRB = TAILQ_FIRST(&sc->waitingSRB); pSRB != NULL; pSRB = next) {
+		next = TAILQ_NEXT(pSRB, link);
 		if (trm_StartSRB(sc, pSRB) == 0) {
 			pSRB->SRBFlag &= ~TRM_ON_WAITING_SRB;
 			TAILQ_REMOVE(&sc->waitingSRB, pSRB, link);
