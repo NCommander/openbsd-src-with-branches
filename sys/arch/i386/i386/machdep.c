@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.326 2005/10/26 20:32:59 marco Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.327 2005/10/28 07:03:41 tedu Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1372,7 +1372,7 @@ amd_family5_setup(struct cpu_info *ci)
 		break;
 	case 12:
 	case 13:
-#ifndef SMALL_KERNEL
+#if !defined(SMALL_KERNEL) && defined(I586_CPU)
 		k6_powernow_init();
 #endif
 		break;
