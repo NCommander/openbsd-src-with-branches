@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 SUBDIR= zboot
 

@@ -1,1 +1,3 @@
+#	$OpenBSD$
+
 BINDIR=	/usr/mdec

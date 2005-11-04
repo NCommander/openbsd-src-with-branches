@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 OBJS= zbsdmod.o
 SRCS= zbsdmod.c
 NOMAN=
