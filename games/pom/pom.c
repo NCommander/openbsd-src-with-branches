@@ -1,4 +1,4 @@
-/*	$OpenBSD: pom.c,v 1.10 2003/07/10 00:03:01 david Exp $	*/
+/*	$OpenBSD: pom.c,v 1.11 2004/07/10 07:26:23 deraadt Exp $	*/
 /*    $NetBSD: pom.c,v 1.6 1996/02/06 22:47:29 jtc Exp $      */
 
 /*
@@ -42,7 +42,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)pom.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: pom.c,v 1.10 2003/07/10 00:03:01 david Exp $";
+static char rcsid[] = "$OpenBSD: pom.c,v 1.11 2004/07/10 07:26:23 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -273,6 +273,6 @@ void
 badformat(void)
 {
 	warnx("illegal time format");
-	(void)fprintf(stderr, "usage: pom [[[[[cc]yy]mm]dd]HH]\n");
+	(void)fprintf(stderr, "usage: pom [[[[[[cc]yy]mm]dd]HH]]\n");
 	exit(1);
 }
