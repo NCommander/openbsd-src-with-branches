@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.63 2005/08/20 17:09:45 matthieu Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.64 2005/09/27 21:45:20 miod Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -919,6 +919,9 @@ wsdisplayioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 
 	if (ISWSDISPLAYCTL(dev))
 		return (wsdisplay_cfg_ioctl(sc, cmd, data, flag, p));
+
+	if (WSDISPLAYSCREEN(dev) >= WSDISPLAY_MAXSCREEN)
+		return (ENODEV);
 
 	if ((scr = sc->sc_scr[WSDISPLAYSCREEN(dev)]) == NULL)
 		return (ENXIO);
