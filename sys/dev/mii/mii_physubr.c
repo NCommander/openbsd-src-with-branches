@@ -1,4 +1,4 @@
-/*	$OpenBSD: mii_physubr.c,v 1.25 2005/02/07 15:01:24 mcbride Exp $	*/
+/*	$OpenBSD: mii_physubr.c,v 1.26 2005/03/26 04:40:09 krw Exp $	*/
 /*	$NetBSD: mii_physubr.c,v 1.20 2001/04/13 23:30:09 thorpej Exp $	*/
 
 /*-
@@ -254,7 +254,7 @@ mii_phy_tick(struct mii_softc *sc)
 	if (!sc->mii_anegticks)
 		sc->mii_anegticks = MII_ANEGTICKS;
 
-	if (++sc->mii_ticks != sc->mii_anegticks)
+	if (++sc->mii_ticks <= sc->mii_anegticks)
 		return (EJUSTRETURN);
 
 	sc->mii_ticks = 0;
