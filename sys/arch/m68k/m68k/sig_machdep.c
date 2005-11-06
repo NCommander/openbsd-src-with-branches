@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.14 2003/08/01 18:37:28 miod Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.15 2004/02/19 15:33:51 miod Exp $	*/
 /*	$NetBSD: sig_machdep.c,v 1.3 1997/04/30 23:28:03 gwr Exp $	*/
 
 /*
@@ -310,7 +310,8 @@ sys_sigreturn(p, v, retval)
 	if (copyin((caddr_t)scp, (caddr_t)&tsigc, sizeof tsigc))
 		return (EINVAL);
 	scp = &tsigc;
-	if ((scp->sc_ps & (PSL_MBZ|PSL_IPL|PSL_S)) != 0)
+	if ((scp->sc_ps & PSL_USERCLR) != 0 ||
+	    (scp->sc_ps & PSL_USERSET) != PSL_USERSET)
 		return (EINVAL);
 	/*
 	 * Restore the user supplied information
