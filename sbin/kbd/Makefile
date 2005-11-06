@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2005/01/13 19:17:25 drahn Exp $
+#	$OpenBSD: Makefile,v 1.26 2005/05/02 23:14:34 martin Exp $
 
 #
 # Be sure to change src/distrib/special/kbd/Makefile as well if you add or
@@ -18,8 +18,7 @@ NOPROG=	Yes
 .endif
 
 MAN=		kbd.8
-MANSUBDIR=	alpha hppa i386 macppc sgi sparc sparc64 vax amd64 cats zaurus
-MANSUBDIR=	alpha amd64 cats hp300 hppa i386 macppc sgi sparc sparc64 vax \
-		zaurus
+MANSUBDIR=	alpha amd64 cats hp300 hppa i386 luna88k macppc sgi sparc \
+		sparc64 vax zaurus
 
 .include <bsd.prog.mk>
