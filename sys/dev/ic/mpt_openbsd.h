@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpt_openbsd.h,v 1.14 2004/11/21 04:49:26 marco Exp $	*/
+/*	$OpenBSD: mpt_openbsd.h,v 1.15 2004/12/29 06:57:11 deraadt Exp $	*/
 /*	$NetBSD: mpt_netbsd.h,v 1.2 2003/04/16 23:02:14 thorpej Exp $	*/
 
 /*
@@ -121,11 +121,7 @@
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 
-#include <dev/biovar.h>
-#include <dev/ic/mpt_ioctl.h>
 #include <dev/ic/mpt_mpilib.h>
-
-#include "bio.h"
 
 /*
  * macro to convert from milliseconds to hz without integer overflow
