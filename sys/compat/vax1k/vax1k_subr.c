@@ -1,4 +1,4 @@
-/*	$OpenBSD: vax1k_subr.c,v 1.1 2001/11/14 14:37:22 hugh Exp $	*/
+/*	$OpenBSD: vax1k_subr.c,v 1.2 2001/11/28 13:47:39 art Exp $	*/
 /*	$NetBSD: vax1k_subr.c,v 1.2 1999/03/24 05:51:20 mrg Exp $	*/
 
 /*
@@ -55,7 +55,7 @@ vax1k_map_readvn(p, cmd)
 	struct proc *p;
 	struct exec_vmcmd *cmd;
 {
-	vm_offset_t oaddr;
+	vaddr_t oaddr;
 	int error;
 
 	if (cmd->ev_len == 0)

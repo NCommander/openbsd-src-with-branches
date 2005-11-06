@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.11 2002/03/14 01:26:48 millert Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.12 2002/05/18 09:49:17 art Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.17 1999/06/20 00:58:23 ragge Exp $	*/
 
 /* 
@@ -178,7 +178,7 @@ kdbprinttrap(type, code)
  */
 void
 db_read_bytes(addr, size, data)
-	vm_offset_t	addr;
+	db_addr_t addr;
 	size_t	size;
 	char	*data;
 {
@@ -190,7 +190,7 @@ db_read_bytes(addr, size, data)
  */
 void
 db_write_bytes(addr, size, data)
-	vm_offset_t	addr;
+	db_addr_t addr;
 	size_t	size;
 	char	*data;
 {
