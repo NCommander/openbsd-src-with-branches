@@ -1,4 +1,4 @@
-/*	$OpenBSD: busdma.c,v 1.6 2004/09/27 17:40:24 pefo Exp $ */
+/*	$OpenBSD: busdma.c,v 1.7 2004/12/25 23:02:24 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -558,7 +558,7 @@ _dmamem_mmap(t, segs, nsegs, off, prot, flags)
 			continue;
 		}
 
-		return (mips_btop((caddr_t)segs[i].ds_addr + off - t->dma_offs));
+		return (atop(segs[i].ds_addr + off - t->dma_offs));
 	}
 
 	/* Page not found. */
