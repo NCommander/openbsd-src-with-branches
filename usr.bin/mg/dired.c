@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.26 2005/10/14 19:46:46 kjell Exp $	*/
+/*	$OpenBSD: dired.c,v 1.27 2005/11/07 23:32:20 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -7,8 +7,8 @@
  */
 
 #include "def.h"
-#include "kbd.h"
 #include "funmap.h"
+#include "kbd.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
