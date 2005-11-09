@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.36 2005/01/15 05:24:10 brad Exp $	*/
+/*	$OpenBSD: be.c,v 1.37 2005/06/08 17:03:02 henning Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -655,7 +655,7 @@ beinit(sc)
 	struct be_cregs *cr = sc->sc_cr;
 	struct qec_softc *qec = sc->sc_qec;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
-	int s = splimp();
+	int s = splnet();
 	int i;
 
 	/*
