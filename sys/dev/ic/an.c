@@ -1,4 +1,4 @@
-/*	$OpenBSD: an.c,v 1.42 2005/06/20 22:42:29 jsg Exp $	*/
+/*	$OpenBSD: an.c,v 1.43 2005/10/25 15:49:37 jmc Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -429,7 +429,7 @@ an_stats_update(xsc)
 	struct ifnet		*ifp = &ic->ic_if;
 	int			s;
 
-	s = splimp();
+	s = splnet();
 
 	sc->an_status.an_type = AN_RID_STATUS;
 	sc->an_status.an_len = sizeof(struct an_ltv_status);
@@ -987,7 +987,7 @@ an_ioctl(ifp, command, data)
 	struct proc		*p = curproc;
 	struct ifaddr		*ifa = (struct ifaddr *)data;
 
-	s = splimp();
+	s = splnet();
 
 	sc = ifp->if_softc;
 	ifr = (struct ifreq *)data;
@@ -1131,7 +1131,7 @@ an_init(sc)
 	if (sc->an_gone)
 		return;
 
-	s = splimp();
+	s = splnet();
 
 	if (ifp->if_flags & IFF_RUNNING)
 		an_stop(sc);
