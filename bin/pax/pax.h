@@ -1,4 +1,4 @@
-/*	$OpenBSD: pax.h,v 1.15 2003/06/26 00:10:17 deraadt Exp $	*/
+/*	$OpenBSD: pax.h,v 1.16 2003/10/20 06:22:27 jmc Exp $	*/
 /*	$NetBSD: pax.h,v 1.3 1995/03/21 09:07:41 cgd Exp $	*/
 
 /*-
@@ -111,7 +111,7 @@ typedef struct {
 					/* IMPORTANT. The st_size field does */
 					/* not always indicate the amount of */
 					/* data following the header. */
-	u_long crc;			/* file crc */
+	u_int32_t crc;			/* file crc */
 	int type;			/* type of file node */
 #define PAX_DIR		1		/* directory */
 #define PAX_CHR		2		/* character device */
