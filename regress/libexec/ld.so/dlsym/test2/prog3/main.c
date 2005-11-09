@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.1.1.1 2005/09/15 22:16:27 kurt Exp $	*/
+/*	$OpenBSD: main.c,v 1.2 2005/09/16 23:30:26 kurt Exp $	*/
 
 /*
  * Copyright (c) 2005 Kurt Miller <kurt@openbsd.org>
@@ -62,9 +62,9 @@ main()
 		ret = 1;
 	}
 
-	/* exe handle should *not* see bbSymbol (different load group) */
-	if (dlsym(exe_handle, "bbSymbol") != NULL) {
-		printf("dlsym(exe_handle, \"bbSymbol\") != NULL\n");
+	/* exe handle should see bbSymbol (Same as RTLD_DEFAULT) */
+	if (dlsym(exe_handle, "bbSymbol") == NULL) {
+		printf("dlsym(exe_handle, \"bbSymbol\") == NULL\n");
 		ret = 1;
 	}
 
