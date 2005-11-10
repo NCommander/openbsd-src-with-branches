@@ -1,4 +1,4 @@
-/* $OpenBSD: longrun.c,v 1.8 2004/02/14 15:09:22 grange Exp $ */
+/* $OpenBSD: longrun.c,v 1.9 2004/06/06 17:34:37 grange Exp $ */
 /*
  * Copyright (c) 2003 Ted Unangst
  * Copyright (c) 2001 Tamotsu Hattori
@@ -33,8 +33,6 @@
 #include <sys/kernel.h>
 #include <sys/sysctl.h>
 #include <sys/timeout.h>
-#include <sys/sensors.h>
-
 
 #include <machine/cpufunc.h>
 
