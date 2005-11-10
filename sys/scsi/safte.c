@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.c,v 1.16 2005/08/24 03:39:52 dlg Exp $ */
+/*	$OpenBSD: safte.c,v 1.17 2005/11/10 08:36:37 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -171,7 +171,9 @@ safte_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_encbuf = NULL;
 	sc->sc_nsensors = 0;
+#if NBIO > 0
 	sc->sc_nslots = 0;
+#endif
 
 	if (safte_read_config(sc) != 0) {
 		printf("%s: unable to read enclosure configuration\n",
