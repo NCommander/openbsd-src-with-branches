@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_machdep.c,v 1.17 2005/05/27 18:42:15 uwe Exp $	*/
+/*	$OpenBSD: zaurus_machdep.c,v 1.18 2005/07/01 23:56:47 uwe Exp $	*/
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -282,11 +282,6 @@ int comcnmode = CONMODE;
 void
 boot(int howto)
 {
-#ifdef DIAGNOSTIC
-	/* info */
-	printf("boot: howto=%08x curproc=%p\n", howto, curproc);
-#endif
-
 	/*
 	 * If we are still cold then hit the air brakes
 	 * and crash to earth fast
