@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.31 2005/04/26 18:54:38 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.32 2005/09/21 21:08:35 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -47,7 +47,6 @@
 /*
  * CTL_MACHDEP definitions.
  */
-#define	CPU_BOOTED_KERNEL	1	/* string: booted kernel name */
 #define	CPU_LED_BLINK		2	/* int: blink leds? */
 #define	CPU_ALLOWAPERTURE	3	/* allow xf86 operations */
 #define	CPU_CPUTYPE		4	/* cpu type */
@@ -57,7 +56,7 @@
 
 #define	CTL_MACHDEP_NAMES {			\
 	{ 0, 0 },				\
-	{ "booted_kernel", CTLTYPE_STRING },	\
+	{ 0, 0 },				\
 	{ "led_blink", CTLTYPE_INT },		\
 	{ "allowaperture", CTLTYPE_INT },	\
 	{ "cputype", CTLTYPE_INT },		\
