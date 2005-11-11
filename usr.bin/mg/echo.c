@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.37 2005/10/11 00:46:46 kjell Exp $	*/
+/*	$OpenBSD: echo.c,v 1.38 2005/11/11 18:40:01 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -229,7 +229,7 @@ veread(const char *fp, char *buf, size_t nbuf, int flag, va_list ap)
 				continue;
 			}
 		}
-	 	switch (c) {
+		switch (c) {
 		case CCHR('A'): /* start of line */
 			while (cpos > 0) {
 				if (ISCTRL(buf[--cpos]) != FALSE) {
