@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.105 2005/07/18 16:18:28 deraadt Exp $	*/
+/*	$OpenBSD: com.c,v 1.106 2005/09/26 22:32:06 miod Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -1488,9 +1488,11 @@ com_kgdb_attach(iot, iobase, rate, frequency, cflag)
 	int rate, frequency;
 	tcflag_t cflag;
 {
+#ifdef COM_CONSOLE
 	if (iot == comconsiot && iobase == comconsaddr) {
 		return (EBUSY); /* cannot share with console */
 	}
+#endif
 
 	com_kgdb_iot = iot;
 	com_kgdb_addr = iobase;
