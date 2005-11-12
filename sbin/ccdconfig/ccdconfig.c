@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccdconfig.c,v 1.23 2005/03/29 22:23:42 mickey Exp $	*/
+/*	$OpenBSD: ccdconfig.c,v 1.24 2005/11/12 15:26:23 deraadt Exp $	*/
 /*	$NetBSD: ccdconfig.c,v 1.6 1996/05/16 07:11:18 thorpej Exp $	*/
 
 /*-
@@ -434,10 +434,8 @@ resolve_ccdname(char *name)
 	c = name[len - 1];
 
 	if (isdigit(c)) {
-		if ((rawpart = getrawpartition()) < 0) {
-			free(path);
+		if ((rawpart = getrawpartition()) < 0)
 			return (NULL);
-		}
 		if (asprintf(&path, "/dev/%s%c", name, 'a' + rawpart) == -1)
 			return (NULL);
 	} else {
