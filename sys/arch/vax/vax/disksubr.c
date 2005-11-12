@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.22 2004/03/17 14:16:04 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.23 2005/03/30 07:52:32 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1999/06/30 18:48:06 ragge Exp $	*/
 
 /*
@@ -319,8 +319,7 @@ disk_reallymapin(bp, map, reg, flag)
 	 */
 	if ((bp->b_flags & B_PHYS) == 0) {
 		pte = kvtopte(addr);
-		if (p == 0)
-			p = &proc0;
+		p = &proc0;
 	} else {
 		pcb = &p->p_addr->u_pcb;
 		pte = uvtopte(addr, pcb);
