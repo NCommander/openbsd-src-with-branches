@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: weekly,v 1.13 2003/04/08 20:42:42 millert Exp $
+#	$OpenBSD: weekly,v 1.14 2003/06/30 22:04:57 avsm Exp $
 #
 
 PATH=/bin:/sbin:/usr/sbin:/usr/bin:/usr/libexec
@@ -38,3 +38,9 @@ fi
 echo ""
 echo "Rebuilding whatis databases:"
 makewhatis
+
+# echo ""
+# echo "Doing login accounting:"
+# ac -p | sort -nr +1
+
+#echo "."
