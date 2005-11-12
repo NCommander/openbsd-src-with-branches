@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.5 2005/04/05 13:01:21 claudio Exp $ */
+/*	$OpenBSD: auth.c,v 1.6 2005/10/19 22:00:37 stevesk Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -228,8 +228,6 @@ md_list_add(struct iface *iface, u_int8_t keyid, char *key)
 		}
 	}
 	TAILQ_INSERT_TAIL(&iface->auth_md_list, md, entry);
-
-	return;
 }
 
 void

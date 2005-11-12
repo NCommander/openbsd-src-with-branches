@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsack.c,v 1.13 2005/05/27 02:24:42 norby Exp $ */
+/*	$OpenBSD: lsack.c,v 1.14 2005/10/19 13:07:58 stevesk Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -113,8 +113,6 @@ recv_ls_ack(struct nbr *nbr, char *buf, u_int16_t len)
 	default:
 		fatalx("recv_ls_ack: unknown neighbor state");
 	}
-
-	return;
 }
 
 int
