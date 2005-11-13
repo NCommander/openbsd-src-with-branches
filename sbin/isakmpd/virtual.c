@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtual.c,v 1.23 2005/10/25 13:35:47 hshoexer Exp $	*/
+/*	$OpenBSD: virtual.c,v 1.24 2005/10/27 08:19:59 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -570,7 +570,7 @@ virtual_create(char *name)
 static void
 virtual_remove(struct transport *t)
 {
-	struct virtual_transport *p, *next, *v = (struct virtual_transport *)t;
+	struct virtual_transport *p, *v = (struct virtual_transport *)t;
 
 	if (v->encap)
 		v->encap->vtbl->remove(v->encap);
