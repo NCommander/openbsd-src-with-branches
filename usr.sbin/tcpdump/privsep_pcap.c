@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep_pcap.c,v 1.12 2005/09/29 18:45:32 canacar Exp $ */
+/*	$OpenBSD: privsep_pcap.c,v 1.13 2005/10/16 18:23:45 otto Exp $ */
 
 /*
  * Copyright (c) 2004 Can Erkin Acar
@@ -382,10 +382,10 @@ priv_pcap_offline(const char *fname, char *errbuf)
 
 		fp = fdopen(p->fd, "r");
 		if (fp == NULL) {
-			close(p->fd);
-			p->fd = -1;
 			snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s", fname,
 			    pcap_strerror(errno));
+			close(p->fd);
+			p->fd = -1;
 			goto bad;
 		}
 	}
@@ -503,9 +503,9 @@ priv_pcap_dump_open(pcap_t *p, char *fname)
 		}
 		f = fdopen(fd, "w");
 		if (f == NULL) {
-			close(fd);
 			snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "%s: %s",
 			    fname, pcap_strerror(errno));
+			close(fd);
 			return (NULL);
 		}
 	}
