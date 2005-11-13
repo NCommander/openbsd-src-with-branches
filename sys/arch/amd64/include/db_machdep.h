@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.3 2004/07/22 11:15:00 art Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.4 2005/01/10 21:20:52 espie Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.2 2003/04/29 17:06:04 scw Exp $	*/
 
 /* 
@@ -106,8 +106,10 @@ boolean_t	db_phys_eq(task_t, vaddr_t, task_t, vaddr_t);
  * Constants for KGDB.
  */
 typedef	long		kgdb_reg_t;
-#define	KGDB_NUMREGS	16
+#define	KGDB_NUMREGS	20
 #define	KGDB_BUFLEN	512
+
+#define KGDB_ENTER	breakpoint()
 
 #if 0
 void		db_task_name(/* task_t */);
