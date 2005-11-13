@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.28 2005/11/07 23:46:18 kjell Exp $	*/
+/*	$OpenBSD: dired.c,v 1.29 2005/11/12 20:13:47 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -590,7 +590,7 @@ dired_(char *dirname)
 	BUFFER	*bp;
 	FILE	*dirpipe;
 	char	 line[256];
-	int	 len;
+	int	 len, ret;
 
 	if ((dirname = adjustname(dirname)) == NULL) {
 		ewprintf("Bad directory name");
@@ -609,8 +609,8 @@ dired_(char *dirname)
 	if (bclear(bp) != TRUE)
 		return (NULL);
 	bp->b_flag |= BFREADONLY;
-	if (snprintf(line, sizeof(line), "ls -al %s", dirname)
-	    >= sizeof(line)) {
+	ret = snprintf(line, sizeof(line), "ls -al %s", dirname);
+	if (ret < 0 || ret  >= sizeof(line)) {
 		ewprintf("Path too long");
 		return (NULL);
 	}
