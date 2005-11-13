@@ -1,4 +1,4 @@
-/*	$OpenBSD: ses.c,v 1.28 2005/11/12 08:06:45 dlg Exp $ */
+/*	$OpenBSD: ses.c,v 1.29 2005/11/12 08:09:47 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -189,6 +189,14 @@ ses_attach(struct device *parent, struct device *self, void *aux)
 	}
 #endif
 
+	if (TAILQ_EMPTY(&sc->sc_sensors)
+#if NBIO > 0
+	    && TAILQ_EMPTY(&sc->sc_slots)
+#endif
+	    ) {
+		free(sc->sc_buf, M_DEVBUF);
+		sc->sc_buf = NULL;
+	}
 }
 
 int
