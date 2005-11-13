@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbios.c,v 1.3 2004/06/23 17:14:31 niklas Exp $	*/
+/*	$OpenBSD: mpbios.c,v 1.4 2005/07/18 02:43:25 fgsch Exp $	*/
 /*	$NetBSD: mpbios.c,v 1.2 2002/10/01 12:56:57 fvdl Exp $	*/
 
 /*-
@@ -230,8 +230,8 @@ mpbios_map(pa, len, handle)
 	int len;
 	struct mp_map *handle;
 {
-	paddr_t pgpa = i386_trunc_page(pa);
-	paddr_t endpa = i386_round_page(pa + len);
+	paddr_t pgpa = trunc_page(pa);
+	paddr_t endpa = round_page(pa + len);
 	vaddr_t va = uvm_km_valloc(kernel_map, endpa - pgpa);
 	vaddr_t retva = va + (pa & PGOFSET);
 
