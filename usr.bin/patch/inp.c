@@ -1,4 +1,4 @@
-/*	$OpenBSD: inp.c,v 1.31 2003/12/08 22:44:18 mickey Exp $	*/
+/*	$OpenBSD: inp.c,v 1.32 2004/08/05 21:47:24 deraadt Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: inp.c,v 1.31 2003/12/08 22:44:18 mickey Exp $";
+static const char rcsid[] = "$OpenBSD: inp.c,v 1.32 2004/08/05 21:47:24 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -95,7 +95,7 @@ re_input(void)
 	}
 }
 
-/* Constuct the line index, somehow or other. */
+/* Construct the line index, somehow or other. */
 
 void
 scan_input(const char *filename)
