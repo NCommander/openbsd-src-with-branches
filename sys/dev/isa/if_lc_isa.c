@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lc_isa.c,v 1.4 2004/05/12 06:35:11 tedu Exp $ */
+/*	$OpenBSD: if_lc_isa.c,v 1.5 2005/06/08 17:03:00 henning Exp $ */
 /*	$NetBSD: if_lc_isa.c,v 1.10 2001/06/13 10:46:03 wiz Exp $ */
 
 /*-
@@ -89,7 +89,7 @@ lemac_isa_find(sc, ia, attach)
 	int attach;
 {
 	bus_addr_t maddr;
-	bus_addr_t msize;
+	bus_size_t msize;
 	int rv = 0, irq;
 
 	/*
