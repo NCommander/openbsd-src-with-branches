@@ -23,3 +23,8 @@ file	dev/i2c/lm75.c				lmtemp
 device	lmenv
 attach	lmenv at i2c
 file	dev/i2c/lm87.c				lmenv
+
+# Maxim Remote/Local Temperature sensor
+device	maxtmp
+attach	maxtmp at i2c
+file	dev/i2c/maxim6690.c			maxtmp
