@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: i2cvar.h,v 1.1 2004/05/23 17:33:43 grange Exp $	*/
 /*	$NetBSD: i2cvar.h,v 1.1 2003/09/30 00:35:31 thorpej Exp $	*/
 
 /*
@@ -101,6 +101,8 @@ struct i2c_attach_args {
 	i2c_tag_t	ia_tag;		/* our controller */
 	i2c_addr_t	ia_addr;	/* address of device */
 	int		ia_size;	/* size (for EEPROMs) */
+	char		*ia_name;	
+	char		*ia_compat;	
 };
 
 /*
