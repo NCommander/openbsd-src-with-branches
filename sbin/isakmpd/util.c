@@ -1,4 +1,4 @@
-/* $OpenBSD: util.c,v 1.57 2005/04/08 23:15:26 hshoexer Exp $	 */
+/* $OpenBSD: util.c,v 1.58 2005/07/25 14:56:42 hshoexer Exp $	 */
 /* $EOM: util.c,v 1.23 2000/11/23 12:22:08 niklas Exp $	 */
 
 /*
@@ -222,6 +222,29 @@ hex2raw(char *s, u_int8_t *buf, size_t sz)
 		}
 	}
 	return 0;
+}
+
+/*
+ * Convert raw binary buffer to a newly allocated hexadecimal string.  Returns
+ * NULL if an error occured.  It is the caller's responsibility to free the
+ * returned string.
+ */
+char *
+raw2hex(u_int8_t *buf, size_t sz)
+{
+	char *s;
+	size_t i;
+
+	if ((s = (char *)malloc(sz * 2 + 1)) == NULL) {
+		log_error("raw2hex: malloc (%lu) failed", (unsigned long)sz * 2 + 1);
+		return NULL;
+	}
+
+	for (i = 0; i < sz; i++)
+		snprintf(s + (2 * i), 2 * (sz - i) + 1, "%02x", buf[i]);
+
+	s[sz * 2] = '\0';
+	return s;
 }
 
 in_port_t
