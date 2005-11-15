@@ -1,4 +1,4 @@
-/*	$OpenBSD: symtab.c,v 1.14 2004/07/17 02:14:33 deraadt Exp $	*/
+/*	$OpenBSD: symtab.c,v 1.15 2005/06/14 19:46:05 millert Exp $	*/
 /*	$NetBSD: symtab.c,v 1.10 1997/03/19 08:42:54 lukem Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)symtab.c	8.2 (Berkeley) 9/13/94";
 #else
-static const char rcsid[] = "$OpenBSD: symtab.c,v 1.14 2004/07/17 02:14:33 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: symtab.c,v 1.15 2005/06/14 19:46:05 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -455,7 +455,7 @@ dumpsymtable(char *filename, long checkpt)
 	}
 	clearerr(fd);
 	/*
-	 * Assign indicies to each entry
+	 * Assign indices to each entry
 	 * Write out the string entries
 	 */
 	for (i = ROOTINO; i <= maxino; i++) {

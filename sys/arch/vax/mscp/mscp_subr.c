@@ -1,4 +1,4 @@
-/*	$OpenBSD: mscp_subr.c,v 1.6 2002/11/29 20:15:43 deraadt Exp $	*/
+/*	$OpenBSD: mscp_subr.c,v 1.7 2003/06/02 23:27:57 millert Exp $	*/
 /*	$NetBSD: mscp_subr.c,v 1.18 2001/11/13 07:38:28 lukem Exp $	*/
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -306,7 +306,7 @@ mscp_init(mi)
 
 	/*
 	 * While we are thinking about it, reset the next command
-	 * and response indicies.
+	 * and response indices.
 	 */
 	mi->mi_cmd.mri_next = 0;
 	mi->mi_rsp.mri_next = 0;

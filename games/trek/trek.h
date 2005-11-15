@@ -1,4 +1,4 @@
-/*	$OpenBSD: trek.h,v 1.7 2003/06/03 03:01:42 millert Exp $	*/
+/*	$OpenBSD: trek.h,v 1.8 2004/05/23 01:33:34 deraadt Exp $	*/
 /*	$NetBSD: trek.h,v 1.3 1995/04/22 10:59:36 cgd Exp $	*/
 
 /*
@@ -343,7 +343,7 @@ struct
  *	scheduled event of each type.  Zero if no such event scheduled.
  */
 
-/* Klingon move indicies */
+/* Klingon move indices */
 #define	KM_OB		0	/* Old quadrant, Before attack */
 #define	KM_OA		1	/* Old quadrant, After attack */
 #define	KM_EB		2	/* Enter quadrant, Before attack */
