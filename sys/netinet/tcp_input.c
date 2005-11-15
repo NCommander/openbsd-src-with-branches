@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.191 2005/10/17 08:43:34 henning Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.192 2005/11/02 22:17:20 markus Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -1588,7 +1588,7 @@ trimthenstep6:
 				 * duplicate ack (ie, window info didn't
 				 * change), the ack is the biggest we've
 				 * seen and we've seen exactly our rexmt
-				 * threshhold of them, assume a packet
+				 * threshold of them, assume a packet
 				 * has been dropped and retransmit it.
 				 * Kludge snd_nxt & the congestion
 				 * window so we send only this one

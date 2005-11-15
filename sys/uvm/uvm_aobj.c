@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.27 2004/12/26 21:22:14 miod Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.28 2005/10/27 18:05:16 otto Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.39 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -94,7 +94,7 @@
 			    & (AOBJ)->u_swhashmask)])
 
 /*
- * the swhash threshhold determines if we will use an array or a
+ * the swhash threshold determines if we will use an array or a
  * hash table to store the list of allocated swap blocks.
  */
 
