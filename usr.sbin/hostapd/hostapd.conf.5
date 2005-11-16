@@ -1,4 +1,4 @@
-.\" $OpenBSD: hostapd.conf.5,v 1.16 2005/10/05 16:09:55 reyk Exp $
+.\" $OpenBSD: hostapd.conf.5,v 1.17 2005/10/15 08:18:32 jmc Exp $
 .\"
 .\" Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
 .\"
@@ -134,13 +134,15 @@ The supported modes are:
 .Pp
 .Bl -tag -width broadcast -offset indent -compact
 .It Ic multicast
+.Op Ic address Ar ipv4addr
+.Op Ic port Ar number
 Use multicast frames.
 .It Ic broadcast
+.Op Ic port Ar number
 Use broadcast frames.
 .El
 .Pp
-The default is multicast.
-The multicast group used is 224.0.1.178.
+The default is multicast using the multicast address 224.0.1.178.
 .El
 .Sh EVENT RULES
 Event rules provide a powerful way to trigger a certain action when
