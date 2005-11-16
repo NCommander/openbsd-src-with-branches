@@ -1,6 +1,6 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2004/06/03 19:13:24 grange Exp $
 
-.if ${MACHINE} == "i386"
+.if ${MACHINE} == "i386" || ${MACHINE} == "macppc"
 
 PROG=	gpioctl
 SRCS=	gpioctl.c
