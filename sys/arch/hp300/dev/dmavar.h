@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmavar.h,v 1.5 2002/03/14 01:26:30 millert Exp $	*/
+/*	$OpenBSD: dmavar.h,v 1.6 2003/06/02 23:27:44 millert Exp $	*/
 /*	$NetBSD: dmavar.h,v 1.9 1997/04/01 03:10:59 scottr Exp $	*/
 
 /*
@@ -67,7 +67,7 @@ struct dmaqueue {
 
 #ifdef _KERNEL
 void	dmainit(void);
-void	dmago(int, char *, int, int);
+void	dmago(int, char *, u_int, int);
 void	dmastop(int);
 void	dmafree(struct dmaqueue *);
 int	dmareq(struct dmaqueue *);
