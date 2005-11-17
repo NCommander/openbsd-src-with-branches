@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.97 2005/11/13 02:39:45 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.98 2005/11/13 16:10:05 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -1020,8 +1020,7 @@ sdgetdisklabel(dev, sd, lp, clp, spoofonly)
 	lp->d_sbsize = SBSIZE;
 
 	lp->d_partitions[RAW_PART].p_offset = 0;
-	lp->d_partitions[RAW_PART].p_size =
-	    lp->d_secperunit * (lp->d_secsize / DEV_BSIZE);
+	lp->d_partitions[RAW_PART].p_size = lp->d_secperunit;
 	lp->d_partitions[RAW_PART].p_fstype = FS_UNUSED;
 	lp->d_npartitions = RAW_PART + 1;
 
