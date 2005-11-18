@@ -1,4 +1,4 @@
-/*	$OpenBSD: theo.c,v 1.95 2005/11/17 05:24:06 cloder Exp $	*/
+/*	$OpenBSD: theo.c,v 1.96 2005/11/18 01:41:08 kjell Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved.
@@ -56,8 +56,8 @@ theo_init(void)
 static int
 theo(int f, int n)
 {
-	BUFFER	*bp;
-	MGWIN	*wp;
+	struct buffer	*bp;
+	struct mgwin	*wp;
 
 	bp = bfind("theo", TRUE);
 	if (bclear(bp) != TRUE)

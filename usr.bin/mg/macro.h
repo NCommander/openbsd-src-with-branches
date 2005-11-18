@@ -1,4 +1,4 @@
-/*	$OpenBSD: macro.h,v 1.5 2004/02/01 22:26:41 vincent Exp $	*/
+/*	$OpenBSD: macro.h,v 1.6 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -17,5 +17,5 @@ union macrodef {
 
 extern union macrodef macro[MAXMACRO];
 
-extern LINE	*maclhead;
-extern LINE	*maclcur;
+extern struct line	*maclhead;
+extern struct line	*maclcur;
