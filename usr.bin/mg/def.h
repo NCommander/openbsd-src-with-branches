@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.71 2005/10/14 06:41:47 kjell Exp $	*/
+/*	$OpenBSD: def.h,v 1.72 2005/11/07 23:32:20 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -353,7 +353,7 @@ int	 lnewline_at(LINE *, int);
 int	 lnewline(void);
 int	 ldelete(RSIZE, int);
 int	 ldelnewline(void);
-int	 lreplace(RSIZE, char *, int);
+int	 lreplace(RSIZE, char *);
 void	 kdelete(void);
 int	 kinsert(int, int);
 int	 kremove(int);
