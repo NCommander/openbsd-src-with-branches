@@ -1,5 +1,5 @@
-/*	$OpenBSD: i2svar.h,v 1.1 2005/10/26 17:57:20 joris Exp $	*/
-/*	$Id: i2svar.h,v 1.1 2005/10/26 17:57:20 joris Exp $	*/
+/*	$OpenBSD: i2svar.h,v 1.2 2005/10/31 00:26:07 joris Exp $	*/
+/*	$Id: i2svar.h,v 1.2 2005/10/31 00:26:07 joris Exp $	*/
 
 /*-
  * Copyright (c) 2001,2003 Tsubai Masanari.  All rights reserved.
@@ -46,6 +46,7 @@ struct i2s_softc {
 	struct device sc_dev;
 	int sc_flags;
 	int sc_node;
+	u_int sc_baseaddr;
 
 	void (*sc_ointr)(void *);	/* dma completion intr handler */
 	void *sc_oarg;			/* arg for sc_ointr() */
