@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_apm.c,v 1.15 2005/08/12 03:23:02 uwe Exp $	*/
+/*	$OpenBSD: pxa2x0_apm.c,v 1.17 2005/10/31 05:23:32 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -296,7 +296,7 @@ apm_power_info(struct pxa2x0_apm_softc *sc,
 {
 
 	power->ac_state = APM_AC_UNKNOWN;
-	power->battery_state = APM_BATT_UNKNOWN;;
+	power->battery_state = APM_BATT_UNKNOWN;
 	power->battery_life = 0 /* APM_BATT_LIFE_UNKNOWN */;
 	power->minutes_left = 0;
 
