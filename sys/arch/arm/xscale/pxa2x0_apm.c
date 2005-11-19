@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_apm.c,v 1.17 2005/10/31 05:23:32 deraadt Exp $	*/
+/*	$OpenBSD: pxa2x0_apm.c,v 1.18 2005/11/19 01:59:36 aaron Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -62,8 +62,8 @@
 #define	DPRINTF(x)	/**/
 #endif
 
-#define APM_LOCK(sc)    lockmgr(&(sc)->sc_lock, LK_EXCLUSIVE, NULL, curproc)
-#define APM_UNLOCK(sc)  lockmgr(&(sc)->sc_lock, LK_RELEASE, NULL, curproc)
+#define APM_LOCK(sc)    lockmgr(&(sc)->sc_lock, LK_EXCLUSIVE, NULL)
+#define APM_UNLOCK(sc)  lockmgr(&(sc)->sc_lock, LK_RELEASE, NULL)
 
 struct cfdriver apm_cd = {
 	NULL, "apm", DV_DULL

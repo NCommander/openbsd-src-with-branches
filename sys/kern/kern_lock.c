@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.17 2004/11/01 06:39:39 marius Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.19 2005/05/29 03:20:41 deraadt Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -354,17 +354,17 @@ lockstatus(lkp)
  * accepted shared locks and shared-to-exclusive upgrades to go away.
  */
 int
-lockmgr(lkp, flags, interlkp, p)
+lockmgr(lkp, flags, interlkp)
 	__volatile struct lock *lkp;
 	u_int flags;
 	struct simplelock *interlkp;
-	struct proc *p;
 {
 	int error;
 	pid_t pid;
 	int extflags;
 	cpuid_t cpu_id;
 	int s = 0;
+	struct proc *p = curproc;
 
 	error = 0;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_vnode.c,v 1.38 2004/06/06 13:44:07 grange Exp $	*/
+/*	$OpenBSD: uvm_vnode.c,v 1.39 2004/12/26 21:22:14 miod Exp $	*/
 /*	$NetBSD: uvm_vnode.c,v 1.36 2000/11/24 20:34:01 chs Exp $	*/
 
 /*
@@ -1930,7 +1930,7 @@ uvm_vnp_sync(mp)
 	 * step 1: ensure we are only ones using the uvn_sync_q by locking
 	 * our lock...
 	 */
-	lockmgr(&uvn_sync_lock, LK_EXCLUSIVE, NULL, curproc);
+	lockmgr(&uvn_sync_lock, LK_EXCLUSIVE, NULL);
 
 	/*
 	 * step 2: build up a simpleq of uvns of interest based on the
@@ -2025,5 +2025,5 @@ uvm_vnp_sync(mp)
 	/*
 	 * done!  release sync lock
 	 */
-	lockmgr(&uvn_sync_lock, LK_RELEASE, (void *)0, curproc);
+	lockmgr(&uvn_sync_lock, LK_RELEASE, NULL);
 }

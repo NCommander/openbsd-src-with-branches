@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_subr.c,v 1.21 2004/05/05 23:52:10 tedu Exp $	*/
+/*	$OpenBSD: procfs_subr.c,v 1.22 2005/04/16 22:19:28 kettenis Exp $	*/
 /*	$NetBSD: procfs_subr.c,v 1.15 1996/02/12 15:01:42 christos Exp $	*/
 
 /*
@@ -102,7 +102,7 @@ procfs_allocvp(mp, vpp, pid, pfs_type)
 	/*
 	 * Lock the vp list, getnewvnode can sleep.
 	 */
-	error = lockmgr(&pfs_vlock, LK_EXCLUSIVE, NULL, p);
+	error = lockmgr(&pfs_vlock, LK_EXCLUSIVE, NULL);
 	if (error)
 		return (error);
 loop:
@@ -180,7 +180,7 @@ loop:
 	TAILQ_INSERT_TAIL(&pfshead, pfs, list);
 	uvm_vnp_setsize(vp, 0);
 out:
-	lockmgr(&pfs_vlock, LK_RELEASE, NULL, p);
+	lockmgr(&pfs_vlock, LK_RELEASE, NULL);
 
 	return (error);
 }

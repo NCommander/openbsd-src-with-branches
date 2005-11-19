@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscsio.c,v 1.2 2004/06/05 18:34:04 grange Exp $	*/
+/*	$OpenBSD: gscsio.c,v 1.3 2004/11/17 16:53:05 mickey Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -320,7 +320,7 @@ gscsio_acb_acquire_bus(void *cookie, int flags)
 	if (flags & I2C_F_POLL)
 		return (0);
 
-	return (lockmgr(&acb->buslock, LK_EXCLUSIVE, NULL, curproc));
+	return (lockmgr(&acb->buslock, LK_EXCLUSIVE, NULL));
 }
 
 void
@@ -331,7 +331,7 @@ gscsio_acb_release_bus(void *cookie, int flags)
 	if (flags & I2C_F_POLL)
 		return;
 
-	lockmgr(&acb->buslock, LK_RELEASE, NULL, curproc);
+	lockmgr(&acb->buslock, LK_RELEASE, NULL);
 }
 
 int
