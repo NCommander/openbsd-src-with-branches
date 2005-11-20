@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.28 2005/11/18 20:56:53 deraadt Exp $	*/
+/*	$OpenBSD: line.c,v 1.29 2005/11/18 23:37:31 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -454,7 +454,7 @@ ldelete(RSIZE n, int kflag)
 		/* Scrunch text */
 		cp1 = &dotp->l_text[doto];
 		if (kchunk(cp1, chunk, kflag) == FALSE)
-			return(FALSE); 
+			return(FALSE);
 		for (cp2 = cp1 + chunk; cp2 < &dotp->l_text[dotp->l_used];
 		    cp2++)
 			*cp1++ = *cp2;
