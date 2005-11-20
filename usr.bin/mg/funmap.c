@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.18 2005/11/19 20:14:38 kjell Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.19 2005/11/20 04:16:34 kjell Exp $	*/
 /*
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>.  All rights reserved.
  *
@@ -115,7 +115,6 @@ static struct funmap functnames[] = {
 	{unbindtokey, "global-unset-key",},
 	{gotoline, "goto-line",},
 #ifndef NO_HELP
-	{NULL, "help",},
 	{help_help, "help-help",},
 #endif /* !NO_HELP */
 	{insert, "insert",},
