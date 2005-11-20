@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.77 2005/08/02 11:05:44 markus Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.78 2005/11/15 21:09:46 miod Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -311,7 +311,8 @@ tcp_reass_lock_try(struct tcpcb *tp)
 {
 	int s;
 
-	s = splimp();
+	/* Use splvm() due to mbuf allocation. */
+	s = splvm();
 	if (tp->t_flags & TF_REASSLOCK) {
 		splx(s);
 		return (0);
@@ -326,7 +327,7 @@ tcp_reass_unlock(struct tcpcb *tp)
 {
 	int s;
 
-	s = splimp();
+	s = splvm();
 	tp->t_flags &= ~TF_REASSLOCK;
 	splx(s);
 }
