@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.42 2005/11/20 08:50:20 xsa Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.43 2005/11/21 11:17:19 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -253,7 +253,8 @@ rcs_statfile(char *fname, char *out, size_t len)
 	}
 
 	if (found != 1) {
-		if (strcmp(__progname, "rcsclean"))
+		if ((strcmp(__progname, "rcsclean") != 0)
+		    && (strcmp(__progname, "ci") != 0))
 			cvs_log(LP_ERRNO, "%s", fpath);
 		return (-1);
 	}
