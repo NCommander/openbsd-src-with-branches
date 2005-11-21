@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsecctl.c,v 1.33 2005/11/12 16:41:39 deraadt Exp $	*/
+/*	$OpenBSD: ipsecctl.c,v 1.34 2005/11/13 18:28:03 hshoexer Exp $	*/
 /*
  * Copyright (c) 2004, 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
@@ -366,6 +366,8 @@ ipsecctl_get_rules(struct ipsecctl *ipsec)
 
 		ipsecctl_add_rule(ipsec, rule);
 	}
+
+	free(buf);
 }
 
 void
@@ -457,6 +459,8 @@ ipsecctl_show_sas(int opts)
 			break;
 		pfkey_print_sa(msg, opts);
 	}
+
+	free(buf);
 }
 
 __dead void
