@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.113 2005/05/24 05:34:54 pedro Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.114 2005/05/26 00:33:45 pedro Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -800,7 +800,7 @@ vput(vp)
 
 	simple_lock(&vp->v_interlock);
 
-	if (vp->v_usecount == 0)
+	if (vp->v_usecount == 0 && !(vp->v_bioflag & VBIOONFREELIST))
 		vputonfreelist(vp);
 
 	simple_unlock(&vp->v_interlock);
@@ -848,7 +848,7 @@ vrele(vp)
 
 	simple_lock(&vp->v_interlock);
 
-	if (vp->v_usecount == 0)
+	if (vp->v_usecount == 0 && !(vp->v_bioflag & VBIOONFREELIST))
 		vputonfreelist(vp);
 
 	simple_unlock(&vp->v_interlock);
