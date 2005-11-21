@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.43 2005/11/21 11:17:19 xsa Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.44 2005/11/21 15:16:41 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -392,6 +392,9 @@ rcs_main(int argc, char **argv)
 		case 'V':
 			printf("%s\n", rcs_version);
 			exit(0);
+		case 'x':
+			rcs_suffixes = rcs_optarg;
+			break;
 		default:
 			(usage)();
 			exit(1);
