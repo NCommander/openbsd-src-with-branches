@@ -1,4 +1,4 @@
-/*	$OpenBSD: esa.c,v 1.8 2003/10/07 14:11:04 fgsch Exp $	*/
+/*	$OpenBSD: esa.c,v 1.9 2005/08/09 04:10:11 mickey Exp $	*/
 /* $NetBSD: esa.c,v 1.12 2002/03/24 14:17:35 jmcneill Exp $ */
 
 /*
@@ -51,7 +51,7 @@
 #include <sys/device.h>
 #include <sys/conf.h>
 #include <sys/exec.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/audioio.h>
 
 #include <machine/bus.h>

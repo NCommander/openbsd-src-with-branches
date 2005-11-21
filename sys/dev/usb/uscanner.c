@@ -1,4 +1,4 @@
-/*	$OpenBSD: uscanner.c,v 1.17 2004/07/08 22:18:45 deraadt Exp $ */
+/*	$OpenBSD: uscanner.c,v 1.18 2005/08/01 05:36:49 brad Exp $ */
 /*	$NetBSD: uscanner.c,v 1.40 2003/01/27 00:32:44 wiz Exp $	*/
 
 /*
@@ -55,11 +55,7 @@
 #endif
 #include <sys/tty.h>
 #include <sys/file.h>
-#if defined(__FreeBSD__) && __FreeBSD_version >= 500014
 #include <sys/selinfo.h>
-#else
-#include <sys/select.h>
-#endif
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/poll.h>

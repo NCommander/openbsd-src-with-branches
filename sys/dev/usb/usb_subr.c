@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_subr.c,v 1.15 2001/01/27 04:02:10 deraadt Exp $ */
+/*	$OpenBSD: usb_subr.c,v 1.40 2005/10/17 18:00:43 drahn Exp $ */
 /*	$NetBSD: usb_subr.c,v 1.103 2003/01/10 11:19:13 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_subr.c,v 1.18 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -45,7 +45,7 @@
 #include <sys/malloc.h>
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/device.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #elif defined(__FreeBSD__)
 #include <sys/module.h>
 #include <sys/bus.h>

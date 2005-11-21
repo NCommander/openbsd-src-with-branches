@@ -1,4 +1,4 @@
-/*	$OpenBSD: lk201.c,v 1.4 2002/03/14 01:26:49 millert Exp $	*/
+/*	$OpenBSD: lk201.c,v 1.5 2002/03/14 03:16:02 millert Exp $	*/
 
 /*
  * The LK201 keycode mapping routine is here, along with initialization
@@ -8,7 +8,7 @@
 
 #include <sys/param.h>
 #include <sys/syslog.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <dev/cons.h>
 
 #include <pmax/include/pmioctl.h>

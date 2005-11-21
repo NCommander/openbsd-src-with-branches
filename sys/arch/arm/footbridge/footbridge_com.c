@@ -1,4 +1,4 @@
-/*	$OpenBSD: footbridge_com.c,v 1.4 2004/08/17 19:40:45 drahn Exp $	*/
+/*	$OpenBSD: footbridge_com.c,v 1.5 2005/05/25 07:43:46 miod Exp $	*/
 /*	$NetBSD: footbridge_com.c,v 1.13 2003/03/23 14:12:25 chris Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/ioctl.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
 #include <sys/conf.h>

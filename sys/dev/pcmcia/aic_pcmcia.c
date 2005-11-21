@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic_pcmcia.c,v 1.10 2002/03/14 01:27:00 millert Exp $	*/
+/*	$OpenBSD: aic_pcmcia.c,v 1.11 2005/01/27 17:04:55 millert Exp $	*/
 /*	$NetBSD: aic_pcmcia.c,v 1.6 1998/07/19 17:28:15 christos Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/device.h>
 
 #include <machine/cpu.h>

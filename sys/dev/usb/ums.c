@@ -1,4 +1,4 @@
-/*	$OpenBSD: ums.c,v 1.14 2004/07/08 22:18:44 deraadt Exp $ */
+/*	$OpenBSD: ums.c,v 1.15 2004/12/06 11:08:23 dlg Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -50,7 +50,7 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/file.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/poll.h>

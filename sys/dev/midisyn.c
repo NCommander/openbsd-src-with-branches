@@ -1,4 +1,4 @@
-/*	$OpenBSD: midisyn.c,v 1.3 2002/03/14 03:16:03 millert Exp $	*/
+/*	$OpenBSD: midisyn.c,v 1.4 2003/02/24 23:57:11 tedu Exp $	*/
 /*	$NetBSD: midisyn.c,v 1.5 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -41,7 +41,7 @@
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <sys/vnode.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>

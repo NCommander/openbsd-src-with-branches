@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb.c,v 1.13 2005/10/21 22:07:45 kettenis Exp $	*/
+/*	$OpenBSD: adb.c,v 1.14 2005/11/16 12:28:54 kettenis Exp $	*/
 /*	$NetBSD: adb.c,v 1.6 1999/08/16 06:28:09 tsubai Exp $	*/
 
 /*-
@@ -35,7 +35,7 @@
 #include <sys/device.h>
 #include <sys/fcntl.h>
 #include <sys/poll.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/systm.h>

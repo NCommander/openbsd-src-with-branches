@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.69 2005/11/16 10:45:33 henning Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.70 2005/11/17 11:08:52 henning Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/file.h>
 #include <sys/time.h>
 #include <sys/device.h>

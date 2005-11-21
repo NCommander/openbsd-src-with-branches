@@ -1,4 +1,4 @@
-/*	$OpenBSD: opl_yds.c,v 1.3 2002/03/14 01:26:59 millert Exp $	*/
+/*	$OpenBSD: opl_yds.c,v 1.4 2003/04/27 11:22:53 ho Exp $	*/
 /*	$NetBSD$	*/
 
 /*
@@ -45,7 +45,7 @@
 #include <sys/malloc.h>
 #include <sys/proc.h>
 #include <sys/conf.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/audioio.h>
 #include <sys/midiio.h>
 

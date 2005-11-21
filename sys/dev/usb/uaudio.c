@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.21 2004/10/18 11:26:52 deraadt Exp $ */
+/*	$OpenBSD: uaudio.c,v 1.22 2005/08/01 05:36:48 brad Exp $ */
 /*	$NetBSD: uaudio.c,v 1.67 2003/05/03 18:11:41 wiz Exp $	*/
 
 /*
@@ -53,7 +53,7 @@
 #include <sys/tty.h>
 #include <sys/file.h>
 #include <sys/reboot.h>			/* for bootverbose */
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/device.h>

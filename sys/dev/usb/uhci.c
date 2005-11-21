@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhci.c,v 1.39 2005/10/04 22:55:30 brad Exp $	*/
+/*	$OpenBSD: uhci.c,v 1.40 2005/11/15 07:02:37 miod Exp $	*/
 /*	$NetBSD: uhci.c,v 1.172 2003/02/23 04:19:26 simonb Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhci.c,v 1.33 1999/11/17 22:33:41 n_hibma Exp $	*/
 
@@ -55,7 +55,7 @@
 #include <sys/malloc.h>
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/device.h>
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #elif defined(__FreeBSD__)
 #include <sys/module.h>
 #include <sys/bus.h>
