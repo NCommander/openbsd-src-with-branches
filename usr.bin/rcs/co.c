@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.29 2005/11/08 09:22:47 xsa Exp $	*/
+/*	$OpenBSD: co.c,v 1.30 2005/11/21 16:20:29 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -222,7 +222,7 @@ checkout_rev(RCSFILE *file, RCSNUM *frev, const char *dst, int flags,
 	if (verbose == 1)
 		printf("\n");
 
-	if ((stat(dst, &st) != -1) && !(flags & FORCE)) {
+	if ((pipeout == 0) && (stat(dst, &st) != -1) && !(flags & FORCE)) {
 		if (st.st_mode & S_IWUSR) {
 			yn = 0;
 			if (verbose == 0) {
