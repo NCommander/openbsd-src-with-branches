@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.16 2005/11/19 22:05:45 kjell Exp $
+# $OpenBSD: Makefile,v 1.17 2005/11/20 04:16:34 kjell Exp $
 
 PROG=	mg
 
@@ -20,7 +20,8 @@ SRCS=	cinfo.c fileio.c spawn.c ttyio.c tty.c ttykbd.c \
 	basic.c dir.c dired.c file.c line.c match.c paragraph.c \
 	random.c region.c search.c version.c window.c word.c \
 	buffer.c display.c echo.c extend.c help.c kbd.c keymap.c \
-	macro.c main.c modes.c re_search.c funmap.c undo.c autoexec.c
+	macro.c main.c modes.c re_search.c funmap.c undo.c autoexec.c \
+	yank.c
 
 #
 # More or less standalone extensions.
