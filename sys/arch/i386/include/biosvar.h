@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.43 2004/06/13 21:49:16 niklas Exp $	*/
+/*	$OpenBSD: biosvar.h,v 1.44 2004/06/23 00:21:49 tom Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -88,15 +88,15 @@ struct bios32_header {
 
 typedef
 struct bios32_entry_info {
-	paddr_t	bei_base;
-	psize_t	bei_size;
-	paddr_t	bei_entry;
+	u_int32_t	bei_base;
+	u_int32_t	bei_size;
+	u_int32_t	bei_entry;
 } *bios32_entry_info_t;
 
 typedef
 struct bios32_entry {
-	u_int32_t offset;
-	u_int16_t segment;
+	u_int32_t	offset;
+	u_int16_t	segment;
 } *bios32_entry_t;
 
 #define	BIOS32_START	0xe0000
