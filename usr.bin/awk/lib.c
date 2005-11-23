@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib.c,v 1.14 2003/12/01 15:34:26 grange Exp $	*/
+/*	$OpenBSD: lib.c,v 1.15 2004/12/30 01:52:48 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -176,7 +176,7 @@ int getrec(char **pbuf, int *pbufsize, int isrecord)	/* get next input record */
 
 void nextfile(void)
 {
-	if (infile != stdin)
+	if (infile != stdin && infile != NULL)
 		fclose(infile);
 	infile = NULL;
 	argno++;
