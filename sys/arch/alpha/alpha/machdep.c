@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.93 2005/10/17 18:34:22 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.94 2005/11/12 18:39:19 martin Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -1673,6 +1673,9 @@ sys_sigreturn(p, v, retval)
 		syscallarg(struct sigcontext *) sigcntxp;
 	} */ *uap = v;
 	struct sigcontext ksc;
+#ifdef DEBUG
+	struct sigcontext *scp;
+#endif
 	int error;
 
 #ifdef DEBUG
