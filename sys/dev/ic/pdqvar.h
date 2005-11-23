@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdqvar.h,v 1.15 2002/06/02 22:50:00 deraadt Exp $	*/
+/*	$OpenBSD: pdqvar.h,v 1.16 2002/06/09 03:14:18 todd Exp $	*/
 /*	$NetBSD: pdqvar.h,v 1.11 1996/10/25 21:33:37 cgd Exp $	*/
 
 /*-
@@ -84,9 +84,9 @@ enum _pdq_type_t {
 #define	PDQ_OS_USEC_DELAY(n)		DELAY(n)
 #define	PDQ_OS_MEMZERO(p, n)		bzero((caddr_t)(p), (n))
 #if (defined(__NetBSD__) || defined(__OpenBSD__)) && defined(__alpha__)
-#define	PDQ_OS_VA_TO_PA(pdq, p)		(alpha_XXX_dmamap((vm_offset_t)p))
+#define	PDQ_OS_VA_TO_PA(pdq, p)		(alpha_XXX_dmamap((vaddr_t)p))
 #else
-#define	PDQ_OS_VA_TO_PA(pdq, p)		vtophys(p)
+#define	PDQ_OS_VA_TO_PA(pdq, p)		vtophys((vaddr_t)p)
 #endif
 #define	PDQ_OS_MEMALLOC(n)		malloc(n, M_DEVBUF, M_NOWAIT)
 #define	PDQ_OS_MEMFREE(p, n)		free((void *) p, M_DEVBUF)
