@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365.c,v 1.23 2004/05/04 16:59:31 grange Exp $	*/
+/*	$OpenBSD: i82365.c,v 1.24 2005/09/10 20:32:40 grange Exp $	*/
 /*	$NetBSD: i82365.c,v 1.10 1998/06/09 07:36:55 thorpej Exp $	*/
 
 /*
@@ -1032,7 +1032,7 @@ pcic_chip_mem_map(pch, kind, card_addr, size, pcmhp, offsetp, windowp)
 	bus_addr_t card_addr;
 	bus_size_t size;
 	struct pcmcia_mem_handle *pcmhp;
-	bus_addr_t *offsetp;
+	bus_size_t *offsetp;
 	int *windowp;
 {
 	struct pcic_handle *h = (struct pcic_handle *) pch;
