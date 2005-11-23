@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.38 2005/11/14 23:50:26 martin Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.39 2005/11/22 12:52:12 mickey Exp $	*/
 /*	$NetBSD: pmap.h,v 1.44 2000/04/24 17:18:18 thorpej Exp $	*/
 
 /*
@@ -164,13 +164,6 @@
 #define APDP_BASE ((pd_entry_t *)(((char *)APTE_BASE) + (PDSLOT_APTE * NBPG)))
 #define PDP_PDE		(PDP_BASE + PDSLOT_PTE)
 #define APDP_PDE	(PDP_BASE + PDSLOT_APTE)
-
-/*
- * XXXCDC: tmp xlate from old names:
- * PTDPTDI -> PDSLOT_PTE
- * KPTDI -> PDSLOT_KERN
- * APTDPTDI -> PDSLOT_APTE
- */
 
 /*
  * The following define determines how many PTPs should be set up for the
