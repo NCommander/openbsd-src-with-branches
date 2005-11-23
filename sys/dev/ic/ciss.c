@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.7 2005/09/07 04:00:16 mickey Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.8 2005/11/18 14:08:04 mickey Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -142,7 +142,8 @@ ciss_attach(struct ciss_softc *sc)
 		return -1;
 	}
 
-	if (sc->cfg.version != CISS_VERSION) {
+	if (sc->cfg.version != CISS_VERSION &&
+	    sc->cfg.version != CISS_VERSION3) {
 		printf(": unsupported version 0x%08x\n", sc->cfg.version);
 		return -1;
 	}
