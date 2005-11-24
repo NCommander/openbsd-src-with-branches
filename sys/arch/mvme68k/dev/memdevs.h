@@ -1,4 +1,4 @@
-/*	$OpenBSD: memdevs.h,v 1.1 2002/04/27 23:21:05 miod Exp $	*/
+/*	$OpenBSD: memdevs.h,v 1.2 2003/04/16 17:34:46 miod Exp $	*/
 /*
  * Copyright (c) 2002, Miodrag Vallat.
  * All rights reserved.
@@ -27,4 +27,4 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern int memdevrw(caddr_t, int, struct uio *, int);
+extern int memdevrw(vaddr_t, int, struct uio *, int);

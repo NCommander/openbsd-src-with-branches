@@ -1,4 +1,4 @@
-/*	$OpenBSD: memdevs.c,v 1.4 2002/04/27 23:21:05 miod Exp $ */
+/*	$OpenBSD: memdevs.c,v 1.5 2003/06/02 05:09:14 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -41,7 +41,7 @@
 /*ARGSUSED*/
 int
 memdevrw(base, len, uio, flags)
-	caddr_t base;
+	vaddr_t base;
 	int len;
 	struct uio *uio;
 	int flags;
@@ -67,7 +67,7 @@ memdevrw(base, len, uio, flags)
 			c = len - v;	/* till end of dev */
 		if (c == 0)
 			return (0);
-		error = uiomove(base + v, c, uio);
+		error = uiomove((caddr_t)base + v, c, uio);
 	}
 	return (error);
 }

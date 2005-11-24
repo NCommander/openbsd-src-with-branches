@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsdma.c,v 1.8 2004/07/30 09:50:15 miod Exp $ */
+/*	$OpenBSD: vsdma.c,v 1.9 2004/07/30 22:29:45 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * All rights reserved.
@@ -101,7 +101,7 @@ vsattach(parent, self, auxp)
 	struct vsreg * rp;
 	int tmp;
 
-	sc->sc_vsreg = rp = ca->ca_vaddr;
+	sc->sc_vsreg = rp = (void *)ca->ca_vaddr;
 
 	sc->sc_ipl = ca->ca_ipl;
 	sc->sc_nvec = ca->ca_vec + 0;
