@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.2 2000/03/02 14:46:35 todd Exp $
+#	$OpenBSD: Makefile,v 1.3 2005/09/27 16:27:23 deraadt Exp $
 #
 #
 
-FILES=	README syscall vfs misc
+FILES=	README syscall misc
 NOOBJ=	noobj
 
 all clean cleandir depend lint tags:
