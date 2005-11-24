@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.176 2005/06/03 22:25:50 deraadt Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.177 2005/08/07 10:11:15 espie Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -1067,11 +1067,6 @@ misc		gname=bin uname=root
 # ./usr/share/lkm/syscall
 syscall		gname=bin uname=root
 # ./usr/share/lkm/syscall
-..
-
-# ./usr/share/lkm/vfs
-vfs		gname=bin uname=root
-# ./usr/share/lkm/vfs
 ..
 
 # ./usr/share/lkm
