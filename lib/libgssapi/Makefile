@@ -1,9 +1,10 @@
-# $OpenBSD: Makefile,v 1.6 2004/10/29 16:25:17 biorn Exp $
+# $OpenBSD: Makefile,v 1.7 2004/11/26 12:02:10 biorn Exp $
 
 KRB5DIR	= ${.CURDIR}/../../kerberosV
 .include <${.CURDIR}/../libkrb5/Makefile.common.inc>
 
 LIB=	gssapi
+WANTLINT=
 
 DIR_GSSAPI=	${KRB5SRC}/lib/gssapi
 HDR_GSSAPI=	gssapi.h

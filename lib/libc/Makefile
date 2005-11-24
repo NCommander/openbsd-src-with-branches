@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2005/06/29 14:05:08 mickey Exp $
+#	$OpenBSD: Makefile,v 1.24 2005/09/29 12:37:35 uwe Exp $
 #
 # All library objects contain sccsid strings by default; they may be
 # excluded as a space-saving measure.  To produce a library that does
@@ -16,6 +16,7 @@
 .include <bsd.own.mk>
 
 LIB=c
+WANTLINT=
 LINTFLAGS=-z
 CLEANFILES+=tags
 #CFLAGS+=-Werror

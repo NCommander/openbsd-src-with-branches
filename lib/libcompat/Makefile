@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.7 2002/02/16 01:56:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.11 2003/05/10 04:34:19 millert Exp $
 #	$NetBSD: Makefile,v 1.15 1995/09/07 07:17:53 jtc Exp $
 
 LIB=	compat
+WANTLINT=
 CFLAGS+=-DLIBC_SCCS -DSYSLIBC_SCCS
 AINC=	-I${.CURDIR}/../libc/arch/${MACHINE_ARCH}
 .if defined(DESTDIR)

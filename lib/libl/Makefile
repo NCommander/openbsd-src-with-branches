@@ -1,7 +1,8 @@
 #	$NetBSD: Makefile,v 1.5 1995/02/25 09:02:37 cgd Exp $
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.3 2001/07/21 20:05:43 millert Exp $
 
 LIB=	l
+WANTLINT=
 SRCS=	libmain.c libyywrap.c
 NOPIC=
 

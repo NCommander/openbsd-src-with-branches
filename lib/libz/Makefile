@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.12 2003/12/17 14:06:45 jmc Exp $
+#	$OpenBSD: Makefile,v 1.13 2005/07/20 21:29:00 jmc Exp $
 
 LIB=	z
+WANTLINT=
 HDRS=	zconf.h zlib.h
 SRCS=	adler32.c compress.c crc32.c deflate.c gzio.c infback.c \
 	inffast.c inflate.c inftrees.c trees.c uncompr.c zutil.c
