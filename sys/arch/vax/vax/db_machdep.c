@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.12 2002/05/18 09:49:17 art Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.13 2005/11/06 22:21:33 miod Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.17 1999/06/20 00:58:23 ragge Exp $	*/
 
 /* 
@@ -140,7 +140,7 @@ kdb_trap(frame)
 
 	/* XXX Should switch to interrupt stack here, if needed. */
 
-	s = splimp();
+	s = splhigh();
 	db_active++;
 	cnpollc(TRUE);
 	db_trap(frame->trap, frame->code);
