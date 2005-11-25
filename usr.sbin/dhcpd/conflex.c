@@ -1,4 +1,4 @@
-/*	$OpenBSD: conflex.c,v 1.4 2004/09/16 18:35:42 deraadt Exp $	*/
+/*	$OpenBSD: conflex.c,v 1.5 2005/07/26 19:14:57 krw Exp $	*/
 
 /* Lexical scanner for dhcpd config file... */
 
@@ -339,6 +339,7 @@ intern(char *atom, int dfv)
 			return (BOOTING);
 		if (!strcasecmp(atom + 1, "oot-unknown-clients"))
 			return (BOOT_UNKNOWN_CLIENTS);
+		break;
 	case 'c':
 		if (!strcasecmp(atom + 1, "lass"))
 			return (CLASS);
