@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop_common.c,v 1.26 2005/11/03 11:00:36 martin Exp $ */
+/*	$OpenBSD: siop_common.c,v 1.27 2005/11/20 22:32:48 krw Exp $ */
 /*	$NetBSD: siop_common.c,v 1.37 2005/02/27 00:27:02 perry Exp $	*/
 
 /*
@@ -350,7 +350,7 @@ siop_wdtr_neg(siop_cmd)
 				sc->targets[target]->id |= (SCNTL3_EWS << 24);
 				break;
 			}
-		/* FALLTHROUH */
+		/* FALLTHROUGH */
 		default:
 			/*
  			 * hum, we got more than what we can handle, shouldn't
