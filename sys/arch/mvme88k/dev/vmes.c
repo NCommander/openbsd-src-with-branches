@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmes.c,v 1.17 2004/01/14 20:50:48 miod Exp $ */
+/*	$OpenBSD: vmes.c,v 1.18 2004/04/24 19:51:48 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -162,7 +162,7 @@ vmesmmap(dev, off, prot)
 {
 	int unit = minor(dev);
 	struct device *sc = (struct device *)vmes_cd.cd_devs[unit];
-	void * pa;
+	paddr_t pa;
 
 	pa = vmepmap(sc->dv_parent, off, BUS_VMES);
 #ifdef DEBUG
