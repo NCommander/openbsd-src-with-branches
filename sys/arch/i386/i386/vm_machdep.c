@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.40 2004/06/13 21:49:15 niklas Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.41 2005/08/01 17:04:47 deraadt Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.61 1996/05/03 19:42:35 christos Exp $	*/
 
 /*-
@@ -252,8 +252,8 @@ pagemove(from, to, size)
 	if ((size & PAGE_MASK) != 0)
 		panic("pagemove");
 #endif
-	fpte = kvtopte(from);
-	tpte = kvtopte(to);
+	fpte = kvtopte((vaddr_t)from);
+	tpte = kvtopte((vaddr_t)to);
 	while (size > 0) {
 		ofpte = *fpte;
 		otpte = *tpte;
