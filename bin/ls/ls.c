@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.23 2005/03/10 00:22:08 jaredy Exp $	*/
+/*	$OpenBSD: ls.c,v 1.24 2005/06/15 17:47:17 millert Exp $	*/
 /*	$NetBSD: ls.c,v 1.18 1996/07/09 09:16:29 mycroft Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ls.c	8.7 (Berkeley) 8/5/94";
 #else
-static char rcsid[] = "$OpenBSD: ls.c,v 1.23 2005/03/10 00:22:08 jaredy Exp $";
+static char rcsid[] = "$OpenBSD: ls.c,v 1.24 2005/06/15 17:47:17 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -317,7 +317,7 @@ ls_main(int argc, char *argv[])
 		traverse(argc, argv, fts_options);
 	else
 		traverse(1, dotav, fts_options);
-	exit(rval);
+	return (rval);
 }
 
 static int output;			/* If anything output. */
