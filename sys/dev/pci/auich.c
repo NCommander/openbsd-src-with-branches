@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.55 2005/08/09 04:10:10 mickey Exp $	*/
+/*	$OpenBSD: auich.c,v 1.56 2005/08/10 15:28:35 jsg Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -802,9 +802,11 @@ auich_set_params(v, setmode, usemode, play, rec)
 			case 1:
 				play->factor = 4;
 				play->sw_code = alaw_to_slinear16_mts;
+				break;
 			case 2:
 				play->factor = 2;
 				play->sw_code = alaw_to_slinear16;
+				break;
 			default:
 				return (EINVAL);
 			}
