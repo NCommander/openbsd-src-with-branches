@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.13 2004/05/05 14:28:58 deraadt Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.14 2005/07/29 17:26:28 krw Exp $	*/
 
 /* BPF socket interface code, originally contributed by Archie Cobbs. */
 
@@ -194,6 +194,9 @@ if_register_receive(struct interface_info *info)
 	 */
 	if (ioctl(info->rfdesc, BIOCIMMEDIATE, &flag) < 0)
 		error("Can't set immediate mode on bpf device: %m");
+
+	if (ioctl(info->rfdesc, BIOCSFILDROP, &flag) < 0)
+		error("Can't set filter-drop mode on bpf device: %m");
 
 	/* Get the required BPF buffer length from the kernel. */
 	if (ioctl(info->rfdesc, BIOCGBLEN, &sz) < 0)
