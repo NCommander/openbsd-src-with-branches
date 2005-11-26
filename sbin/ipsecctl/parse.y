@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.40 2005/11/12 21:57:34 hshoexer Exp $	*/
+/*	$OpenBSD: parse.y,v 1.41 2005/11/24 11:52:07 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -463,6 +463,16 @@ transforms	: /* empty */			{
 		}
 		| AUTHXF STRING ENCXF STRING	{
 			if (($$ = transforms($2, $4, NULL)) == NULL) {
+				free($2);
+				free($4);
+				yyerror("could not parse transforms");
+				YYERROR;
+			}
+			free($2);
+			free($4);
+		}
+		| ENCXF STRING AUTHXF STRING	{
+			if (($$ = transforms($4, $2, NULL)) == NULL) {
 				free($2);
 				free($4);
 				yyerror("could not parse transforms");
