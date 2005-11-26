@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu_subr.c,v 1.1 2005/11/08 20:30:47 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -19,6 +19,26 @@
 #include <sys/param.h>
 
 #include <machine/cpu.h>
+
+void
+ppc_mtscomc(u_int32_t val)
+{
+	int s;
+
+	s = ppc_intr_disable();
+	__asm __volatile ("mtspr 276,%0; isync" :: "r" (val));
+	ppc_intr_enable(s);
+}
+
+void
+ppc_mtscomd(u_int32_t val)
+{
+	int s;
+
+	s = ppc_intr_disable();
+	__asm __volatile ("mtspr 277,%0; isync" :: "r" (val));
+	ppc_intr_enable(s);
+}
 
 u_int64_t
 ppc64_mfscomc(void)
