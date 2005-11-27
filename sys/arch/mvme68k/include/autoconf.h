@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.10 2005/08/01 15:45:28 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.11 2005/11/24 22:43:19 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -48,12 +48,12 @@ struct confargs {
 #define BUS_IP		7	/* VME162 IP module bus */
 
 /* the following are from the prom/bootblocks */
-paddr_t	bootaddr;	/* PA of boot device */
-int	bootctrllun;	/* ctrl_lun of boot device */
-int	bootdevlun;	/* dev_lun of boot device */
-int	bootpart;	/* boot partition (disk) */
+extern paddr_t	bootaddr;	/* PA of boot device */
+extern int	bootctrllun;	/* ctrl_lun of boot device */
+extern int	bootdevlun;	/* dev_lun of boot device */
+extern int	bootpart;	/* boot partition (disk) */
 
-struct	device *bootdv; /* boot device */
+extern struct	device *bootdv; /* boot device */
 
 vaddr_t	mapiodev(paddr_t, int);
 void	unmapiodev(vaddr_t, int);
