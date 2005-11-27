@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.11 2005/11/24 22:43:19 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.12 2005/11/27 14:17:39 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -33,7 +33,6 @@ struct confargs {
 	vaddr_t	ca_vaddr;
 	paddr_t	ca_paddr;
 	int	ca_offset;
-	int	ca_len;
 	int	ca_ipl;
 	int	ca_vec;
 	char	*ca_name;
