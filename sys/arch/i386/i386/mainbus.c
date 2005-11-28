@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.19 2005/10/18 23:08:24 marco Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.20 2005/11/21 17:24:26 jordan Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -215,7 +215,8 @@ mainbus_attach(parent, self, aux)
 		mba.mba_eaa.eaa_name = "esm";
 		mba.mba_eaa.eaa_iot  = I386_BUS_SPACE_IO;
 		mba.mba_eaa.eaa_memt = I386_BUS_SPACE_MEM;
-		config_found(self, &mba.mba_eaa, mainbus_print);
+		if (esm_probe(&mba.mba_eaa))
+			config_found(self, &mba.mba_eaa, mainbus_print);
 	}
 #endif
 
