@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.26 2005/07/31 15:31:12 miod Exp $	*/
+/*	$OpenBSD: param.h,v 1.27 2005/10/26 18:35:44 martin Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -108,12 +108,6 @@
  * For now though just use DEV_BSIZE.
  */
 #define	bdbtofsb(bn)	((bn) / (BLKDEV_IOSIZE/DEV_BSIZE))
-
-/*
- * Mach derived conversion macros
- */
-#define btop(x)		((unsigned long)(x) >> PGSHIFT)
-#define ptob(x)		((unsigned long)(x) << PGSHIFT)
 
 #ifdef _KERNEL
 #ifdef COMPAT_HPUX
