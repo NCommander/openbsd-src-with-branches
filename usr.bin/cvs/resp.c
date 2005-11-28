@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.60 2005/10/07 21:47:32 reyk Exp $	*/
+/*	$OpenBSD: resp.c,v 1.61 2005/10/22 17:32:57 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -436,7 +436,7 @@ cvs_resp_createdir(char *line)
 	 */
 	if (stat(line, &st) == -1) {
 		if (errno != ENOENT) {
-			cvs_log(LP_ERRNO, "failed to stat '%s'", line);
+			cvs_log(LP_ERRNO, "failed to stat `%s'", line);
 			return (-1);
 		}
 
