@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.3 2005/11/23 20:38:57 cloder Exp $
+# $OpenBSD: Makefile,v 1.4 2005/11/26 20:45:30 cloder Exp $
 
-TEST_MODULES=	1 2 3 4
+TEST_MODULES=	1 2 3 4 5
 LINT=		lint
 LINTFLAGS?=	-chapbx
 
