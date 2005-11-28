@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.20 2005/11/25 15:56:10 xsa Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.21 2005/11/28 10:17:20 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -168,7 +168,8 @@ void
 rcsdiff_usage(void)
 {
 	fprintf(stderr,
-	    "usage: rcsdiff [-cnquV] [-kmode] [-rrev1 [-rrev2]] file ...\n");
+	    "usage: rcsdiff [-cnqTuV] [-kmode] [-rrev1 [-rrev2]] "
+	    "[-xsuffixes] file ...\n");
 }
 
 static int

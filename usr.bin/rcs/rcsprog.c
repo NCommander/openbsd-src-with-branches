@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.48 2005/11/25 14:16:44 xsa Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.49 2005/11/27 16:49:15 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -355,8 +355,8 @@ void
 rcs_usage(void)
 {
 	fprintf(stderr,
-	    "usage: rcs [-hiLMUV] [-Aoldfile] [-ausers] [-b[rev]] [-cstring]\n"
-	    "           [-eusers] [-kmode] [-mrev:log] file ...\n");
+	    "usage: rcs [-hiLMTUV] [-Aoldfile] [-ausers] [-b[rev]] [-cstring]\n"
+	    "           [-eusers] [-kmode] [-mrev:log] [-xsuffixes] file ...\n");
 }
 
 /*
