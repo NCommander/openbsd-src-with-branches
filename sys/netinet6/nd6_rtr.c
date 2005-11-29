@@ -1789,7 +1789,7 @@ rt6_flush(gateway, ifp)
     struct in6_addr *gateway;
     struct ifnet *ifp;
 {
-	struct radix_node_head *rnh = rt_gettable(AF_INET6, 0);
+	struct radix_node_head *rnh = rt_tables[AF_INET6];
 	int s = splsoftnet();
 
 	/* We'll care only link-local addresses */

@@ -1077,7 +1077,7 @@ int
 db_show_arptab()
 {
 	struct radix_node_head *rnh;
-	rnh = rt_gettable(AF_INET, 0);
+	rnh = rt_tables[AF_INET];
 	db_printf("Route tree for AF_INET\n");
 	if (rnh == NULL) {
 		db_printf(" (not initialized)\n");
