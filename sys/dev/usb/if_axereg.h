@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axereg.h,v 1.9 2005/08/28 02:51:05 jsg Exp $	*/
+/*	$OpenBSD: if_axereg.h,v 1.10 2005/08/28 03:34:33 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003
@@ -159,6 +159,7 @@ struct axe_type {
 	struct usb_devno	axe_dev;
 	u_int16_t		axe_flags;
 #define AX178	0x0001		/* AX88178 */
+#define AX772	0x0002		/* AX88772 */
 };
 
 struct axe_softc;
