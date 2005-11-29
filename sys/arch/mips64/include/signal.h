@@ -37,6 +37,7 @@
 #ifndef _MIPS_SIGNAL_H_
 #define _MIPS_SIGNAL_H_
 
+#if !defined(__LANGUAGE_ASSEMBLY)
 #include <sys/types.h>
 
 /*
@@ -66,5 +67,17 @@ struct	sigcontext {
 	long	xxx[8];		/* XXX reserved */
 };
 #endif	/* !_ANSI_SOURCE */
+
+#else /* __LANGUAGE_ASSEMBLY */
+#define SC_ONSTACK	(0 * REGSZ)
+#define	SC_MASK		(1 * REGSZ)
+#define	SC_PC		(2 * REGSZ)
+#define	SC_REGS		(3 * REGSZ)
+#define	SC_MULLO	(35 * REGSZ)
+#define	SC_MULHI	(36 * REGSZ)
+#define	SC_FPREGS	(37 * REGSZ)
+#define	SC_FPUSED	(70 * REGSZ)
+#define	SC_FPC_EIR	(71 * REGSZ)
+#endif /* __LANGUAGE_ASSEMBLY */
 
 #endif	/* !_MIPS_SIGNAL_H_ */
