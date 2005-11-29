@@ -1,4 +1,7 @@
-#	$OpenBSD: Makefile.inc,v 1.3 1996/08/19 08:18:20 tholo Exp $
+#	$OpenBSD: Makefile.inc,v 1.4 2005/02/01 15:12:30 millert Exp $
 
 SRCS+=	_setjmp.S fabs.S infinity.c isinf.c ldexp.S \
-	modf.S setjmp.S udiv.S urem.S alloca.S sigsetjmp.S
+	modf.S setjmp.S udiv.S urem.S sigsetjmp.S
+
+SRCS+= alloca.S
+LSRCS+= alloca.c
