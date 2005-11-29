@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.46 2004/11/11 13:06:44 claudio Exp $ */
+/*	$OpenBSD: mrt.c,v 1.47 2004/12/23 16:09:26 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -508,9 +508,11 @@ mrt_dump_upcall(struct pt_entry *pt, void *ptr)
 	 */
 	LIST_FOREACH(p, &pt->prefix_h, prefix_l)
 		if (mrtbuf->type == MRT_TABLE_DUMP)
-			mrt_dump_entry(mrtbuf, p, sequencenum++, p->peer);
+			mrt_dump_entry(mrtbuf, p, sequencenum++,
+			    p->aspath->peer);
 		else
-			mrt_dump_entry_mp(mrtbuf, p, sequencenum++, p->peer);
+			mrt_dump_entry_mp(mrtbuf, p, sequencenum++,
+			    p->aspath->peer);
 }
 
 static int
