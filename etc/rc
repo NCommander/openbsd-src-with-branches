@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.274 2005/10/31 10:32:47 henning Exp $
+#	$OpenBSD: rc,v 1.275 2005/11/16 09:19:36 camield Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -328,7 +328,7 @@ if [ X"${isakmpd_flags}" != X"NO" ]; then
 	echo 'starting isakmpd';	isakmpd ${isakmpd_flags}
 fi
 
-echo -n 'starting rpc daemons:'
+echo -n 'starting initial daemons:'
 
 # $portmap is imported from /etc/rc.conf;
 # if $portmap == YES, the portmapper is started.
