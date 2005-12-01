@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.2 2004/11/28 01:36:38 mickey Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.3 2005/04/11 15:13:01 deraadt Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -114,7 +114,7 @@ struct vm_page_md {
 
 #define	VM_MDPAGE_INIT(pg) do {			\
 	(pg)->mdpage.pvent.pv_next = NULL;	\
-	(pg)->mdpage.pvent.pv_pmap = PMAP_NULL;	\
+	(pg)->mdpage.pvent.pv_pmap = NULL;	\
 	(pg)->mdpage.pvent.pv_va = 0;		\
 	(pg)->mdpage.pvent.pv_flags = 0;	\
 } while (0)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.4 2004/08/06 22:39:13 deraadt Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.5 2005/03/28 12:42:44 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -30,8 +30,6 @@ struct pmap {
 	struct simplelock	pm_lock;
 	struct pmap_statistics	pm_stats;	/* pmap statistics */
 };
-
-#define PMAP_NULL ((pmap_t) 0)
 
 /* 	The PV (Physical to virtual) List.
  *
