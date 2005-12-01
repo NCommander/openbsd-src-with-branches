@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpt_openbsd.h,v 1.16 2005/11/06 01:42:23 dlg Exp $	*/
+/*	$OpenBSD: mpt_openbsd.h,v 1.17 2005/11/16 04:31:32 marco Exp $	*/
 /*	$NetBSD: mpt_netbsd.h,v 1.2 2003/04/16 23:02:14 thorpej Exp $	*/
 
 /*
@@ -321,7 +321,6 @@ typedef struct mpt_softc {
 	uint8_t                 upload_fw;      /* If set, do a fw upload */
 	/* Firmware memory */
 	bus_dmamap_t            fw_dmap;
-	int                     fw_rseg;
 	bus_dma_segment_t       fw_seg;
 	char                    *fw;
 
