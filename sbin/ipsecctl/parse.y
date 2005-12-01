@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.43 2005/11/27 03:50:58 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.44 2005/11/27 09:47:56 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -453,7 +453,7 @@ spispec		: SPI STRING			{
 		}
 		;
 
-transforms	: 					{
+transforms	:					{
 			if ((ipsec_transforms = calloc(1,
 			    sizeof(struct ipsec_transforms))) == NULL)
 				err(1, "transforms: calloc");
