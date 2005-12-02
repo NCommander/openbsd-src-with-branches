@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.38 2005/09/22 01:33:08 drahn Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.39 2005/09/22 13:59:47 drahn Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -393,8 +393,7 @@ _dl_printf(" found other symbol at %x size %d\n",
     src_loff + cpysrc->st_value,  cpysrc->st_size);
 #endif
 				_dl_bcopy((void *)(src_loff + cpysrc->st_value),
-				    (void *)(ooff + this->st_value+ relas->r_addend),
-					size);
+				    r_addr, size);
 			} else
 				fails++;
 		}
