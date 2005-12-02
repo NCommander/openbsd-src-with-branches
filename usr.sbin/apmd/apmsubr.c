@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmsubr.c,v 1.3 2001/07/07 01:10:42 mickey Exp $	*/
+/*	$OpenBSD: apmsubr.c,v 1.4 2005/11/23 08:02:58 sturm Exp $	*/
 
 /*
  *  Copyright (c) 1995,1996 John T. Kohl
@@ -81,6 +81,8 @@ perf_state(int state)
 		return "manual";
 	case PERF_AUTO:
 		return "auto";
+	case PERF_COOL:
+		return "cool running";
 	default:
 		return "invalid performance status";
 	}
