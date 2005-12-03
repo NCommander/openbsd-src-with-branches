@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic6360.c,v 1.7 2004/07/26 16:36:30 miod Exp $	*/
+/*	$OpenBSD: aic6360.c,v 1.8 2004/12/26 21:22:13 miod Exp $	*/
 /*	$NetBSD: aic6360.c,v 1.52 1996/12/10 21:27:51 thorpej Exp $	*/
 
 #ifdef DDB
@@ -509,7 +509,6 @@ aic_scsi_cmd(xs)
 
 	flags = xs->flags;
 	if ((acb = aic_get_acb(sc, flags)) == NULL) {
-		xs->error = XS_DRIVER_STUFFUP;
 		return TRY_AGAIN_LATER;
 	}
 

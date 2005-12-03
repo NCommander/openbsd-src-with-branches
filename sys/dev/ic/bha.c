@@ -1,4 +1,4 @@
-/*	$OpenBSD: bha.c,v 1.6 2003/10/21 18:58:49 jmc Exp $	*/
+/*	$OpenBSD: bha.c,v 1.7 2004/12/26 21:22:13 miod Exp $	*/
 /*	$NetBSD: bha.c,v 1.27 1998/11/19 21:53:00 thorpej Exp $	*/
 
 #undef BHADEBUG
@@ -1374,7 +1374,6 @@ bha_scsi_cmd(xs)
 		 */
 		if (dontqueue) {
 			splx(s);
-			xs->error = XS_DRIVER_STUFFUP;
 			return (TRY_AGAIN_LATER);
 		}
 
@@ -1399,7 +1398,6 @@ bha_scsi_cmd(xs)
 		 */
 		if (dontqueue) {
 			splx(s);
-			xs->error = XS_DRIVER_STUFFUP;
 			return (TRY_AGAIN_LATER);
 		}
 

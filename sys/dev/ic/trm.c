@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.5 2005/11/03 04:05:57 krw Exp $
+/*	$OpenBSD: trm.c,v 1.6 2005/11/05 02:27:40 krw Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -396,7 +396,6 @@ trm_scsi_cmd(struct scsi_xfer *xs)
 	pSRB = trm_GetFreeSRB(sc);
 
 	if (pSRB == NULL) {
-		xs->error = XS_DRIVER_STUFFUP;
 		splx(intflag);
 		return TRY_AGAIN_LATER;
 	}
