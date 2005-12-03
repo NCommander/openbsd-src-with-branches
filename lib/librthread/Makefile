@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 LIB=rthread
 CFLAGS+=-Wall -g -Werror
 
