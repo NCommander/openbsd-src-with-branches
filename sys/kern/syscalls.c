@@ -407,4 +407,18 @@ char *syscallnames[] = {
 #else
 	"#297 (unimplemented)",		/* 297 = unimplemented */
 #endif
+	"sched_yield",			/* 298 = sched_yield */
+#ifdef RTHREADS
+	"getthrid",			/* 299 = getthrid */
+	"thrsleep",			/* 300 = thrsleep */
+	"thrwakeup",			/* 301 = thrwakeup */
+	"threxit",			/* 302 = threxit */
+	"thrsigdivert",			/* 303 = thrsigdivert */
+#else
+	"#299 (unimplemented)",		/* 299 = unimplemented */
+	"#300 (unimplemented)",		/* 300 = unimplemented */
+	"#301 (unimplemented)",		/* 301 = unimplemented */
+	"#302 (unimplemented)",		/* 302 = unimplemented */
+	"#303 (unimplemented)",		/* 303 = unimplemented */
+#endif
 };

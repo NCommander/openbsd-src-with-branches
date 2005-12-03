@@ -670,4 +670,22 @@
 /* syscall: "msgctl" ret: "int" args: "int" "int" "struct msqid_ds *" */
 #define	SYS_msgctl	297
 
-#define	SYS_MAXSYSCALL	298
+/* syscall: "sched_yield" ret: "int" args: */
+#define	SYS_sched_yield	298
+
+/* syscall: "getthrid" ret: "pid_t" args: */
+#define	SYS_getthrid	299
+
+/* syscall: "thrsleep" ret: "int" args: "long" "int" "void *" */
+#define	SYS_thrsleep	300
+
+/* syscall: "thrwakeup" ret: "int" args: "long" */
+#define	SYS_thrwakeup	301
+
+/* syscall: "threxit" ret: "int" args: "int" */
+#define	SYS_threxit	302
+
+/* syscall: "thrsigdivert" ret: "int" args: "sigset_t" */
+#define	SYS_thrsigdivert	303
+
+#define	SYS_MAXSYSCALL	304

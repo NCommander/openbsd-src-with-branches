@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.62 2005/06/07 16:36:21 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.63 2005/08/09 00:46:12 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
@@ -241,3 +241,4 @@
 #define RFCNAMEG	(1<<10) /* UNIMPL zero plan9 `name space' */
 #define RFCENVG		(1<<11) /* UNIMPL zero plan9 `env space' */
 #define RFCFDG		(1<<12)	/* zero fd table */
+#define RFTHREAD	(1<<13)	/* create a thread, not a process */
