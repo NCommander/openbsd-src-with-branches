@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh.c,v 1.12 2004/12/25 23:02:25 miod Exp $ */
+/*	$OpenBSD: ssh.c,v 1.13 2005/08/14 12:48:12 miod Exp $ */
 
 /*
  * Copyright (c) 1994 Michael L. Hitch
@@ -173,7 +173,6 @@ struct scsi_xfer *xs;
 	splx(s);
 
 	if (acb == NULL) {
-		xs->error = XS_DRIVER_STUFFUP;
 		return (TRY_AGAIN_LATER);
 	}
 
