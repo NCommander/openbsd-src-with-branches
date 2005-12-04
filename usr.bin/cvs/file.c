@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.129 2005/12/03 02:19:17 joris Exp $	*/
+/*	$OpenBSD: file.c,v 1.130 2005/12/03 15:07:21 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -815,9 +815,6 @@ cvs_load_dirinfo(CVSFILE *cf, int flags)
 		} else
 			cf->cf_repo = NULL;
 	}
-
-	if (flags & CF_MKADMIN)
-		cvs_mkadmin(fpath, cf->cf_root->cr_str, NULL, NULL, NULL, 0);
 
 	return (0);
 }
