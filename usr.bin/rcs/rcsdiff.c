@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.23 2005/11/29 11:11:39 xsa Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.24 2005/12/01 23:02:27 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -45,12 +45,11 @@ static int kflag = RCS_KWEXP_ERR;
 int
 rcsdiff_main(int argc, char **argv)
 {
-	int i, ch, flags, status;
+	int i, ch, status;
 	RCSNUM *rev, *rev2, *frev;
 	RCSFILE *file;
 	char fpath[MAXPATHLEN];
 
-	flags = 0;
 	rev = RCS_HEAD_REV;
 	rev2 = NULL;
 	status = 0;
