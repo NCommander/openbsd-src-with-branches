@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppb.c,v 1.10 2000/01/15 08:16:24 deraadt Exp $	*/
+/*	$OpenBSD: ppb.c,v 1.11 2002/03/14 01:26:59 millert Exp $	*/
 /*	$NetBSD: ppb.c,v 1.16 1997/06/06 23:48:05 thorpej Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
  * XXX PROPER OPERATION OF DEVICES BEHIND PPB'S WHICH USE INTERRUPTS
  * XXX ON SYSTEMS OTHER THAN THE i386 IS NOT POSSIBLE AT THIS TIME.
  * XXX There needs to be some support for 'swizzling' the interrupt
- * XXX pin.  In general, pci_map_int() has to have a different
+ * XXX pin.  In general, pci_intr_map() has to have a different
  * XXX interface.
  */
 
