@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi.c,v 1.1 2005/06/02 20:09:39 tholo Exp $	*/
+/*	$OpenBSD: acpi.c,v 1.2 2005/07/10 19:39:01 grange Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -316,8 +316,7 @@ acpi_loadtables(struct acpi_softc *sc, struct acpi_rsdp *rsdp)
 			acpi_unmap(&handle);
 		}
 		acpi_unmap(&hrsdt);
-	}
-	else {
+	} else {
 		struct acpi_rsdt *rsdt;
 
 		if (acpi_map(rsdp->rsdp_rsdt, sizeof(*hdr), &handle)) {
@@ -531,8 +530,7 @@ acpiioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 					if (table->table == NULL) {
 						table->size = hdr->length;
 						error = 0;
-					}
-					else if (hdr->length > table->size)
+					} else if (hdr->length > table->size)
 						error = ENOSPC;
 					else
 						error = copyout(hdr, table->table, hdr->length);
