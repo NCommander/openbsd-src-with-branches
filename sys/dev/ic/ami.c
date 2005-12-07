@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.72 2005/08/31 17:59:09 marco Exp $	*/
+/*	$OpenBSD: ami.c,v 1.73 2005/08/31 18:27:31 marco Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -601,6 +601,10 @@ ami_attach(sc)
 #endif /* NBIO > 0 */
 
 	config_found(&sc->sc_dev, &sc->sc_link, scsiprint);
+
+	/* can't do pass-through on broken device for now */
+	if (sc->sc_flags & AMI_BROKEN)
+		return (0);
 
 	rsc = malloc(sizeof(struct ami_rawsoftc) * sc->sc_channels,
 	    M_DEVBUF, M_NOWAIT);
