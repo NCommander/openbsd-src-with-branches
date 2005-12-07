@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardbus.c,v 1.30 2005/09/13 18:53:01 fgsch Exp $	*/
+/*	$OpenBSD: cardbus.c,v 1.31 2005/09/26 22:43:18 deraadt Exp $	*/
 /*	$NetBSD: cardbus.c,v 1.24 2000/04/02 19:11:37 mycroft Exp $	*/
 
 /*
@@ -235,10 +235,10 @@ cardbus_read_tuples(struct cardbus_attach_args *ca, cardbusreg_t cis_ptr,
 				    CARDBUS_CIS_ASI_ROM_IMAGE(cis_ptr)) {
 					bus_space_read_region_1(p->romt,
 					    p->romh, CARDBUS_CIS_ADDR(cis_ptr),
-					    tuples, 256);
+					    tuples, MIN(p->image_size, len));
 					found++;
+					break;
 				}
-				break;
 			}
 
 		out:
