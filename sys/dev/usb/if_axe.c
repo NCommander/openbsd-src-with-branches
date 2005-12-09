@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.40 2005/09/27 21:14:40 jolan Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.41 2005/11/29 23:16:58 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003
@@ -633,10 +633,14 @@ USB_ATTACH(axe)
 
 	s = splnet();
 
-	if (sc->axe_flags & AX178)
+	if (sc->axe_flags & AX178) {
 		axe_ax88178_init(sc);
-	else if (sc->axe_flags & AX772)
+		printf(", AX88178");
+	} else if (sc->axe_flags & AX772) {
 		axe_ax88772_init(sc);
+		printf(", AX88772");
+	} else
+		printf(", AX88172");
 
 	/*
 	 * Get station address.
