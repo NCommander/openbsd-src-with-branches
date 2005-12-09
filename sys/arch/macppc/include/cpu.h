@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.7 2002/09/15 09:01:58 deraadt Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.8 2005/10/09 14:17:32 drahn Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -50,5 +50,7 @@
 }
 
 extern int ppc_altivec;
+
+extern void (*ppc64_slew_voltage)(u_int);
 
 #endif	/* _MACHINE_CPU_H_ */
