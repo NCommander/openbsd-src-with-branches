@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scan.l,v 1.18 2005/12/02 18:03:09 cloder Exp $	*/
+/*	$OpenBSD: scan.l,v 1.23 2005/12/10 17:41:03 cloder Exp $	*/
 /*	$NetBSD: scan.l,v 1.8 1995/10/23 13:38:51 jpo Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: scan.l,v 1.18 2005/12/02 18:03:09 cloder Exp $";
+static char rcsid[] = "$OpenBSD: scan.l,v 1.23 2005/12/10 17:41:03 cloder Exp $";
 #endif
 
 #include <stdlib.h>
@@ -254,7 +254,7 @@ u_quad_t qumasks[sizeof(u_quad_t) * CHAR_BIT + 1];
 /* free list for sbuf structures */
 static	sbuf_t	 *sbfrlst;
 
-/* Typ of next expected symbol */
+/* type of next expected symbol */
 symt_t	symtyp;
 
 
