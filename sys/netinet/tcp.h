@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp.h,v 1.14 2004/01/31 21:09:15 henning Exp $	*/
+/*	$OpenBSD: tcp.h,v 1.15 2004/02/10 10:30:24 markus Exp $	*/
 /*	$NetBSD: tcp.h,v 1.8 1995/04/17 05:32:58 cgd Exp $	*/
 
 /*
@@ -47,11 +47,11 @@ struct tcphdr {
 	tcp_seq	  th_seq;		/* sequence number */
 	tcp_seq	  th_ack;		/* acknowledgement number */
 #if BYTE_ORDER == LITTLE_ENDIAN
-	u_int8_t  th_x2:4,		/* (unused) */
+	u_int     th_x2:4,		/* (unused) */
 		  th_off:4;		/* data offset */
 #endif
 #if BYTE_ORDER == BIG_ENDIAN
-	u_int8_t  th_off:4,		/* data offset */
+	u_int     th_off:4,		/* data offset */
 		  th_x2:4;		/* (unused) */
 #endif
 	u_int8_t  th_flags;

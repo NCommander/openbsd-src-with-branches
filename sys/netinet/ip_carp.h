@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.h,v 1.17 2005/03/01 19:04:56 mcbride Exp $	*/
+/*	$OpenBSD: ip_carp.h,v 1.18 2005/04/20 23:00:41 mpf Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -58,11 +58,11 @@
 
 struct carp_header {
 #if BYTE_ORDER == LITTLE_ENDIAN
-	u_int8_t	carp_type:4,
+	u_int		carp_type:4,
 			carp_version:4;
 #endif
 #if BYTE_ORDER == BIG_ENDIAN
-	u_int8_t	carp_version:4,
+	u_int		carp_version:4,
 			carp_type:4;
 #endif
 	u_int8_t	carp_vhid;	/* virtual host id */
