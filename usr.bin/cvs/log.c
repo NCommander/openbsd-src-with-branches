@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.26 2005/09/19 15:45:16 niallo Exp $	*/
+/*	$OpenBSD: log.c,v 1.27 2005/10/09 23:59:17 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -339,7 +339,7 @@ cvs_printf(const char *fmt, ...)
 				send_m = 1;
 				dp = sp + 1;
 			}
-			free(nstr);
+			xfree(nstr);
 		}
 	} else
 #endif
