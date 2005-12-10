@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.16 2004/12/25 23:02:25 miod Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.17 2005/06/08 17:03:02 henning Exp $	*/
 /*	$NetBSD: if_de.c,v 1.27 1997/04/19 15:02:29 ragge Exp $	*/
 
 /*
@@ -106,8 +106,8 @@ struct	de_softc {
 	struct	ifxmt ds_ifw[NXMT];	/* unibus xmt maps */
 	/* the following structures are always mapped in */
 	struct	de_pcbb ds_pcbb;	/* port control block */
-	struct	de_ring ds_xrent[NXMT];	/* transmit ring entrys */
-	struct	de_ring ds_rrent[NRCV];	/* receive ring entrys */
+	struct	de_ring ds_xrent[NXMT];	/* transmit ring entries */
+	struct	de_ring ds_rrent[NRCV];	/* receive ring entries */
 	struct	de_udbbuf ds_udbbuf;	/* UNIBUS data buffer */
 	/* end mapped area */
 #define	INCORE_BASE(p)	((char *)&(p)->ds_pcbb)

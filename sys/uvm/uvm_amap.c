@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_amap.c,v 1.27 2002/05/09 14:14:18 provos Exp $	*/
+/*	$OpenBSD: uvm_amap.c,v 1.28 2004/12/30 08:28:39 niklas Exp $	*/
 /*	$NetBSD: uvm_amap.c,v 1.27 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -738,7 +738,7 @@ amap_copy(map, entry, waitf, canchunk, startva, endva)
  * => if we run out of memory we will unlock the amap and sleep _with_ the
  *	parent and child vm_map's locked(!).    we have to do this since
  *	we are in the middle of a fork(2) and we can't let the parent
- *	map change until we are done copying all the map entrys.
+ *	map change until we are done copying all the map entries.
  * => XXXCDC: out of memory should cause fork to fail, but there is
  *	currently no easy way to do this (needs fix)
  * => page queues must be unlocked (we may lock them)
