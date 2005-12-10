@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.9 2002/08/11 23:06:03 art Exp $	*/
+/*	$OpenBSD: exec.h,v 1.10 2004/07/06 21:05:36 deraadt Exp $	*/
 /*	$NetBSD: exec.h,v 1.7 1994/11/20 20:53:02 deraadt Exp $ */
 
 /*
@@ -45,7 +45,7 @@ enum reloc_type {
 	RELOC_PC10,	RELOC_PC22,
 	RELOC_JMP_TBL,
 	RELOC_UNUSED3,
-	RELOC_GLOB_DAT,	RELOC_JMP_SLOT,	RELOC_RELATIVE,
+	RELOC_GLOB_DAT,	RELOC_JMP_SLOT,	RELOC_RELATIVE
 };
 
 /* Relocation format. */
