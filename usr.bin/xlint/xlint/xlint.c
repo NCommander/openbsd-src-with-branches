@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlint.c,v 1.21 2005/11/23 18:21:44 deraadt Exp $	*/
+/*	$OpenBSD: xlint.c,v 1.24 2005/12/06 01:15:31 deraadt Exp $	*/
 /*	$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: xlint.c,v 1.23 2005/12/02 18:05:52 cloder Exp $";
+static char rcsid[] = "$OpenBSD: xlint.c,v 1.24 2005/12/06 01:15:31 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
@@ -346,7 +346,7 @@ main(int argc, char *argv[])
 	(void)signal(SIGTERM, terminate);
 
 	while (argc > optind) {
-		c = getopt(argc, argv, "abceghil:no:prstuvxyzC:D:FHI:L:U:V");
+		c = getopt(argc, argv, "abcefghil:no:prstuvxyzC:D:FHI:L:U:V");
 
 		switch (c) {
 
@@ -354,6 +354,7 @@ main(int argc, char *argv[])
 		case 'b':
 		case 'c':
 		case 'e':
+		case 'f':
 		case 'g':
 		case 'r':
 		case 'v':
