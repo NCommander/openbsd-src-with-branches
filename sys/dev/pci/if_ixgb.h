@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD$ */
+/* $OpenBSD: if_ixgb.h,v 1.1 2005/11/14 23:25:43 brad Exp $ */
 
 #ifndef _IXGB_H_DEFINED_
 #define _IXGB_H_DEFINED_
@@ -260,6 +260,7 @@ struct ixgb_softc {
 	struct timeout	ixgb_intr_enable;
 	struct timeout	timer_handle;
 	void		*sc_powerhook;
+	void		*sc_shutdownhook;
 
 	/* Info about the board itself */
 	u_int32_t       part_num;
