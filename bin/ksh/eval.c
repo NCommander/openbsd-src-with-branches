@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.26 2005/02/25 11:21:16 deraadt Exp $	*/
+/*	$OpenBSD: eval.c,v 1.27 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -1232,7 +1232,7 @@ homedir(char *name)
 {
 	struct tbl *ap;
 
-	ap = tenter(&homedirs, name, hash(name));
+	ap = ktenter(&homedirs, name, hash(name));
 	if (!(ap->flag & ISSET)) {
 		struct passwd *pw;
 

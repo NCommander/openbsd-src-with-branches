@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.29 2005/04/13 02:33:08 deraadt Exp $	*/
+/*	$OpenBSD: edit.c,v 1.30 2005/09/11 18:08:47 otto Exp $	*/
 
 /*
  * Command line editing - common code
@@ -757,7 +757,7 @@ glob_table(const char *pat, XPtrV *wp, struct table *tp)
 	struct tstate ts;
 	struct tbl *te;
 
-	for (twalk(&ts, tp); (te = tnext(&ts)); ) {
+	for (ktwalk(&ts, tp); (te = ktnext(&ts)); ) {
 		if (gmatch(te->name, pat, false))
 			XPput(*wp, str_save(te->name, ATEMP));
 	}
