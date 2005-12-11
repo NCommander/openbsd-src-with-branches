@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.37 2005/03/28 21:33:01 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.38 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -744,12 +744,4 @@ is_restricted(char *name)
 		name = p;
 	/* accepts rsh, rksh, rpdksh, pdrksh, etc. */
 	return (p = strchr(name, 'r')) && strstr(p, "sh");
-}
-
-void
-aerror(Area *ap, const char *msg)
-{
-	internal_errorf(1, "alloc: %s", msg);
-	errorf(null); /* this is never executed - keeps gcc quiet */
-	/*NOTREACHED*/
 }
