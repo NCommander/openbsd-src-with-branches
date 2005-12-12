@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.59 2004/09/14 22:12:27 deraadt Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.60 2005/12/02 01:05:50 deraadt Exp $	*/
 /*	$KAME: ping6.c,v 1.163 2002/10/25 02:19:06 itojun Exp $	*/
 
 /*
@@ -1046,7 +1046,7 @@ main(int argc, char *argv[])
 		itimer.it_interval = interval;
 		itimer.it_value = interval;
 		(void)setitimer(ITIMER_REAL, &itimer, NULL);
-		if (ntransmitted)
+		if (ntransmitted == 0)
 			retransmit();
 	}
 
