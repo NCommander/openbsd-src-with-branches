@@ -33,7 +33,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.187 2005/10/10 10:23:08 djm Exp $");
+RCSID("$OpenBSD: session.c,v 1.188 2005/10/30 08:52:17 djm Exp $");
 
 #include "ssh.h"
 #include "ssh1.h"
@@ -1737,7 +1737,7 @@ session_close_x11(int id)
 {
 	Channel *c;
 
-	if ((c = channel_lookup(id)) == NULL) {
+	if ((c = channel_by_id(id)) == NULL) {
 		debug("session_close_x11: x11 channel %d missing", id);
 	} else {
 		/* Detach X11 listener */
