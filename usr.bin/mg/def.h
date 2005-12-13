@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.77 2005/11/20 03:24:17 deraadt Exp $	*/
+/*	$OpenBSD: def.h,v 1.78 2005/11/22 05:02:44 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -524,7 +524,7 @@ int		 upperregion(int, int);
 int		 prefixregion(int, int);
 int		 setprefix(int, int);
 int		 region_get_data(struct region *, char *, int);
-int		 region_put_data(const char *, int);
+void		 region_put_data(const char *, int);
 
 /* search.c X */
 int		 forwsearch(int, int);
