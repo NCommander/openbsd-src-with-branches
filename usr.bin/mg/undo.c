@@ -1,4 +1,4 @@
-/* $OpenBSD: undo.c,v 1.34 2005/11/18 17:11:21 kjell Exp $ */
+/* $OpenBSD: undo.c,v 1.35 2005/11/18 20:56:53 deraadt Exp $ */
 /*
  * Copyright (c) 2002 Vincent Labrecque <vincent@openbsd.org>
  * All rights reserved.
@@ -435,7 +435,7 @@ undo(int f, int n)
 {
 	struct undo_rec	*ptr, *nptr;
 	int		 done, rval;
-	struct line		*lp;
+	struct line	*lp;
 	int		 offset, save, dot;
 	static int	 nulled = FALSE;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.23 2005/11/18 20:56:52 deraadt Exp $	*/
+/*	$OpenBSD: display.c,v 1.24 2005/11/20 03:53:45 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -748,9 +748,8 @@ uline(int row, struct video *vvp, struct video *pvp)
 void
 modeline(struct mgwin *wp)
 {
-	int	n;
+	int	n, md;
 	struct buffer *bp;
-	int	mode;
 
 	n = wp->w_toprow + wp->w_ntrows;	/* Location.		 */
 	vscreen[n]->v_color = CMODE;		/* Mode line color.	 */
@@ -783,9 +782,9 @@ modeline(struct mgwin *wp)
 	}
 	vtputc('(');
 	++n;
-	for (mode = 0; ; ) {
-		n += vtputs(bp->b_modes[mode]->p_name);
-		if (++mode > bp->b_nmodes)
+	for (md = 0; ; ) {
+		n += vtputs(bp->b_modes[md]->p_name);
+		if (++md > bp->b_nmodes)
 			break;
 		vtputc('-');
 		++n;
