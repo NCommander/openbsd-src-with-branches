@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_pcic.c,v 1.14 2005/07/01 23:51:55 uwe Exp $	*/
+/*	$OpenBSD: pxa2x0_pcic.c,v 1.15 2005/11/23 11:39:37 mickey Exp $	*/
 
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
@@ -273,6 +273,8 @@ pxapcic_socket_enable(pcmcia_chipset_handle_t pch)
 	/* Hold RESET at least 10us. */
 	so->pcictag->write(so, PXAPCIC_CARD_RESET, 1);
 	delay(10);
+	/* XXX wrong, but lets TE-CF100 cards work for some reason. */
+	delay(3000);
 	so->pcictag->write(so, PXAPCIC_CARD_RESET, 0);
 
 	/* Wait 20ms as per PC Card standard (r2.01) section 4.3.6. */
