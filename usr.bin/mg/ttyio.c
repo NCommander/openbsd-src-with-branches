@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyio.c,v 1.27 2005/04/13 02:33:08 deraadt Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.28 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -167,7 +167,7 @@ ttgetc(void)
 		ret = read(STDIN_FILENO, &c, 1);
 		if (ret == -1 && errno == EINTR) {
 			if (winch_flag) {
-				refresh(0, 0);
+				redraw(0, 0);
 				winch_flag = 0;
 			}
 		} else if (ret == 1)
@@ -180,7 +180,7 @@ ttgetc(void)
  * Returns TRUE if there are characters waiting to be read.
  */
 int
-typeahead(void)
+charswaiting(void)
 {
 	int	x;
 

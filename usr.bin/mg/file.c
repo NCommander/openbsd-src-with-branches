@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.46 2005/11/20 03:24:17 deraadt Exp $	*/
+/*	$OpenBSD: file.c,v 1.47 2005/11/20 04:16:34 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -355,7 +355,7 @@ doneread:
 		switch (s) {
 		case FIOSUC:
 			++nline;
-			/* and continue */
+			/* FALLTHRU */
 		case FIOEOF:
 			/* the last line of the file */
 			if ((lp1 = lalloc(nbytes)) == NULL) {

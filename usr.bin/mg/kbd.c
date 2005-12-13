@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.18 2005/11/18 20:56:53 deraadt Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.19 2005/11/19 20:14:38 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -109,7 +109,7 @@ getkey(int flag)
 	}
 #ifndef NO_DPROMPT
 	if (flag && promptp < &prompt[PROMPTL - 5]) {
-		promptp = keyname(promptp,
+		promptp = getkeyname(promptp,
 		    sizeof(prompt) - (promptp - prompt) - 1, c);
 		*promptp++ = '-';
 		*promptp = '\0';

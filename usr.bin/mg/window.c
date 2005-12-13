@@ -1,4 +1,4 @@
-/*	$OpenBSD: window.c,v 1.18 2005/10/11 01:08:53 kjell Exp $	*/
+/*	$OpenBSD: window.c,v 1.19 2005/11/18 20:56:53 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -65,7 +65,7 @@ reposition(int f, int n)
  */
 /* ARGSUSED */
 int
-refresh(int f, int n)
+redraw(int f, int n)
 {
 	struct mgwin	*wp;
 	int		 oldnrow, oldncol;
