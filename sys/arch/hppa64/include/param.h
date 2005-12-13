@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.4 2005/10/26 18:35:45 martin Exp $	*/
+/*	$OpenBSD: param.h,v 1.5 2005/11/28 20:13:08 martin Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -53,7 +53,6 @@
 #define	PGSHIFT		12		/* LOG2(NBPG) */
 
 #define	KERNBASE	0x00000000	/* start of kernel virtual */
-#define	BTOPKERNBASE	((u_long)KERNBASE >> PAGE_SHIFT)
 
 #define	DEV_BSIZE	512
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
