@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_xilinx.c,v 1.15 2005/11/08 20:23:42 canacar Exp $	*/
+/*	$OpenBSD: if_san_xilinx.c,v 1.16 2005/11/08 20:51:00 canacar Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -2043,10 +2043,8 @@ xilinx_tx_post_complete(sdla_t *card, xilinx_softc_t *sc, struct mbuf *m)
 
 tx_post_ok:
 
-	if (ifp) {
+	if (ifp)
 		ifp->if_opackets++;
-		ifp->if_obytes += m->m_len;
-	}
 
 	/* Indicate that the first tx frame went
 	 * out on the transparent link */
