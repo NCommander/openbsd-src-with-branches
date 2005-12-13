@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_pcmcia.c,v 1.42 2005/09/26 22:32:06 miod Exp $	*/
+/*	$OpenBSD: com_pcmcia.c,v 1.43 2005/11/21 18:16:41 millert Exp $	*/
 /*	$NetBSD: com_pcmcia.c,v 1.15 1998/08/22 17:47:58 msaitoh Exp $	*/
 
 /*
@@ -141,6 +141,7 @@ struct com_pcmcia_product {
 	char *cis1_info[4];
 } com_pcmcia_prod[] = {
 	{ PCMCIA_CIS_MEGAHERTZ_XJ2288 },
+	{ PCMCIA_CIS_NOVATEL_NRM6831 },
 };
 
 int com_pcmcia_match(struct device *, void *, void *);
