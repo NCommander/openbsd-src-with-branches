@@ -1,4 +1,4 @@
-/*	$OpenBSD: ancontrol.c,v 1.27 2004/08/19 18:26:52 jmc Exp $	*/
+/*	$OpenBSD: ancontrol.c,v 1.28 2004/10/24 11:50:47 deraadt Exp $	*/
 /*
  * Copyright (c) 2001 Eric Jackson <ericj@monkey.org>
  *
@@ -1120,7 +1120,7 @@ an_str2key(char *s, struct an_ltv_key *k)
 	char			*p;
 
 	/* Is this a hex string? */
-	if ((s[0] = '0' && (s[1] == 'x' || s[1] == 'X'))) {
+	if ((s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))) {
 		/* Yes, convert to int */
 		n = 0;
 		p = (char *)&k->key[0];
