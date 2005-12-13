@@ -1218,13 +1218,13 @@ struct sys_msgctl_args {
 };
 
 struct sys_thrsleep_args {
-	syscallarg(long) ident;
+	syscallarg(void *) ident;
 	syscallarg(int) timeout;
 	syscallarg(void *) lock;
 };
 
 struct sys_thrwakeup_args {
-	syscallarg(long) ident;
+	syscallarg(void *) ident;
 };
 
 struct sys_threxit_args {

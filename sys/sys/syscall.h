@@ -676,10 +676,10 @@
 /* syscall: "getthrid" ret: "pid_t" args: */
 #define	SYS_getthrid	299
 
-/* syscall: "thrsleep" ret: "int" args: "long" "int" "void *" */
+/* syscall: "thrsleep" ret: "int" args: "void *" "int" "void *" */
 #define	SYS_thrsleep	300
 
-/* syscall: "thrwakeup" ret: "int" args: "long" */
+/* syscall: "thrwakeup" ret: "int" args: "void *" */
 #define	SYS_thrwakeup	301
 
 /* syscall: "threxit" ret: "int" args: "int" */
