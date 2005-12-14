@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdarg.h,v 1.4 2003/06/02 23:27:46 millert Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.5 2005/12/14 21:46:30 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -57,6 +57,6 @@ typedef double *va_list;
 	((dest) = (src))
 #endif
 
-#define	va_end(ap)
+#define	va_end(ap)	
 
 #endif /* !_MACHINE_STDARG_H */

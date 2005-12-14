@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdarg.h,v 1.2 2005/08/07 07:29:44 miod Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.3 2005/12/14 21:46:31 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -137,7 +137,7 @@ enum {
 #ifndef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif
-#define va_end(__AP)	((void)0)
+#define va_end(__AP)	
 
 #if defined (__mips_eabi)
 
