@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.63 2005/09/26 21:11:09 pedro Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.64 2005/10/25 20:12:52 pedro Exp $	*/
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
  *
@@ -106,7 +106,7 @@ const char *softdep_typenames[] = {
  */
 #define CURPROC curproc
 /*
- * End system adaptaion definitions.
+ * End system adaptation definitions.
  */
 
 /*
