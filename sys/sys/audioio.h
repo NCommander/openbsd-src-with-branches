@@ -1,4 +1,4 @@
-/*	$OpenBSD: audioio.h,v 1.14 2001/10/24 16:27:20 mickey Exp $	*/
+/*	$OpenBSD: audioio.h,v 1.15 2004/01/31 17:00:50 jmc Exp $	*/
 /*	$NetBSD: audioio.h,v 1.24 1998/08/13 06:28:41 mrg Exp $	*/
 
 /*
@@ -303,6 +303,7 @@ typedef struct mixer_ctrl {
 #define AudioNcenter	"center"
 #define AudioNdepth	"depth"
 #define AudioNlfe	"lfe"
+#define AudioNextamp	"extamp"
 
 #define AudioEmulaw		"mulaw"
 #define AudioEalaw		"alaw"
