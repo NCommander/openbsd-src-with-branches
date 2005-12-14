@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdefs.h,v 1.19 2005/11/15 15:46:41 millert Exp $	*/
+/*	$OpenBSD: cdefs.h,v 1.20 2005/11/19 19:05:02 millert Exp $	*/
 /*	$NetBSD: cdefs.h,v 1.16 1996/04/03 20:46:39 christos Exp $	*/
 
 /*
@@ -177,6 +177,14 @@
 
 #if !__GNUC_PREREQ__(2, 8)
 #define	__extension__
+#endif
+
+#if __GNUC_PREREQ__(2, 8)
+#define __statement(x)	__extension__(x)
+#elif defined(lint)
+#define __statement(x)	(0)
+#else
+#define __statement(x)	(x)
 #endif
 
 /*
