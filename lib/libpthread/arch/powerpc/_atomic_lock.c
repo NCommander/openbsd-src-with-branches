@@ -1,4 +1,4 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.4 2002/10/11 19:08:41 marc Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.5 2002/11/12 18:56:28 drahn Exp $	*/
 /*
  * Atomic lock for powerpc
  */
@@ -21,7 +21,7 @@ _atomic_lock(volatile _spinlock_lock_t *lock)
 	return (old != _SPINLOCK_UNLOCKED);
 
 	/*
-	 * Dale <rahnds@openbsd.org> says:
+	 * Dale <drahn@openbsd.org> says:
 	 *   Side note. to prevent two processes from accessing
 	 *   the same address with the lwarx in one instrution
 	 *   and the stwcx in another process, the current powerpc
