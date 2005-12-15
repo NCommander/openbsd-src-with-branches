@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.216 2005/10/22 23:13:26 brad Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.217 2005/10/26 21:07:38 brad Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -4629,6 +4629,7 @@ sis_setup_channel(struct channel_softc *chp)
 				sis_tim |=
 				    sis_udma100new_tim[drvp->UDMA_mode] <<
 				    SIS_TIM100_UDMA_TIME_OFF(drive);
+				break;
 			case SIS_TYPE_133OLD:
 				sis_tim |=
 				    sis_udma133old_tim[drvp->UDMA_mode] <<
@@ -4961,6 +4962,8 @@ ns_scx200_setup_channel(struct channel_softc *chp)
 
 	/* Setup DMA if needed */
 	pciide_channel_dma_setup(cp);
+
+	idedma_ctl = 0;
 
 	pioformat = (pci_conf_read(sc->sc_pc, sc->sc_tag,
 	    SCx200_TIM_DMA(0, 0)) >> SCx200_PIOFORMAT_SHIFT) & 0x01;
@@ -7816,6 +7819,8 @@ ixp_setup_channel(struct channel_softc *chp)
 
 	/* Setup DMA if needed */
 	pciide_channel_dma_setup(cp);
+
+	idedma_ctl = 0;
 
 	/* Per channel settings */
 	for (drive = 0; drive < 2; drive++) {
