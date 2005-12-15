@@ -1,4 +1,4 @@
-/*	$OpenBSD: err.c,v 1.14 2005/12/10 19:19:31 cloder Exp $	*/
+/*	$OpenBSD: err.c,v 1.15 2005/12/14 22:09:40 kjell Exp $	*/
 /*	$NetBSD: err.c,v 1.8 1995/10/02 17:37:00 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: err.c,v 1.14 2005/12/10 19:19:31 cloder Exp $";
+static char rcsid[] = "$OpenBSD: err.c,v 1.15 2005/12/14 22:09:40 kjell Exp $";
 #endif
 
 /* number of errors found */
@@ -366,6 +366,7 @@ const	char *msgs[] = {
 	"right shift of %d-bit quantity by %d bits",		      /* 310 */
 	"case ranges are illegal in ANSI C",			      /* 311 */
 	"suspicious operator for sizeof: %s",			      /* 312 */
+	"conversion of %s return value from '%s' to '%s'",	      /* 313 */
 };
 
 /*
