@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdarg.h,v 1.8 2005/12/14 21:46:31 millert Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.9 2005/12/14 23:51:33 deraadt Exp $	*/
 /*	$NetBSD: stdarg.h,v 1.10 1996/12/27 20:55:28 pk Exp $ */
 
 /*
@@ -99,7 +99,7 @@ typedef _BSD_VA_LIST_	va_list;
 	 *__va_arg(ap, type *) : __va_size(type) == 8 ?			\
 	 __va_8byte(ap, type) : __va_arg(ap, type))
 
-#if __BSD_VISIBLE >= 1999
+#if __BSD_VISIBLE
 #define va_copy(dest, src) \
 	((dest) = (src))
 #endif
