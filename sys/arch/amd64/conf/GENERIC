@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.91 2005/12/12 20:39:32 miod Exp $
+#	$OpenBSD: GENERIC,v 1.92 2005/12/14 21:58:10 jsg Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -46,7 +46,7 @@ pci*	at mainbus0
 #acpitimer* at acpi?
 #hpet*	at acpi?
 
-#ipmi0	at mainbus?		# IPMI
+ipmi0	at mainbus?		# IPMI
 
 #option		ACPIVERBOSE
 #option		ACPI_ENABLE
