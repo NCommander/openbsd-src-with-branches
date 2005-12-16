@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: acpidev.h,v 1.1 2005/12/16 04:20:39 marco Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
@@ -170,7 +170,7 @@ struct acpibat_bmd {
  * Results  : LIST of Power Class pointers
  */
 
-/* hpte device */
+/* hpet device */
 #define	HPET_REG_SIZE		1024
 
 #define	HPET_CAPABILITIES	0x000
