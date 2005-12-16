@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.26 2005/10/08 23:38:30 drahn Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.27 2005/11/07 02:19:46 brad Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -781,6 +781,7 @@ mpc_conf_read(void *cpv, pcitag_t tag, int offset)
 	if (setfault(&env)) {
 		/* we faulted during the read? */
 		curpcb->pcb_onfault = oldh;
+		splx(s);
 		return 0xffffffff;
 	}
 
