@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss.c,v 1.51 2005/04/06 02:51:13 krw Exp $	*/
+/*	$OpenBSD: ss.c,v 1.52 2005/12/10 01:36:01 deraadt Exp $	*/
 /*	$NetBSD: ss.c,v 1.10 1996/05/05 19:52:55 christos Exp $	*/
 
 /*
@@ -599,7 +599,7 @@ ssstrategy(bp)
 
 	splx(s);
 	return;
-	bp->b_flags |= B_ERROR;
+
 done:
 	/*
 	 * Correctly set the buf to indicate a completed xfer
