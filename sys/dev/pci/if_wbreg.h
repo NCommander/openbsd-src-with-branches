@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wbreg.h,v 1.6 2001/06/23 22:03:13 fgsch Exp $	*/
+/*	$OpenBSD: if_wbreg.h,v 1.7 2004/05/19 11:37:00 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -459,5 +459,5 @@ struct wb_softc {
 
 #ifdef __alpha__
 #undef vtophys
-#define vtophys(va)		alpha_XXX_dmamap((vm_offset_t)va)
+#define vtophys(va)		alpha_XXX_dmamap((vaddr_t)va)
 #endif

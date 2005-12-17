@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.70 2005/10/09 14:52:12 drahn Exp $	*/
+/*	$OpenBSD: trap.c,v 1.71 2005/10/09 22:33:18 drahn Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -313,7 +313,7 @@ trap(struct trapframe *frame)
 	case EXC_DSI:
 		{
 			struct vm_map *map;
-			vm_offset_t va;
+			vaddr_t va;
 			int ftype;
 			faultbuf *fb;
 			

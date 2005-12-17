@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.11 2003/10/15 17:50:16 drahn Exp $	*/
+/*	$OpenBSD: mem.c,v 1.12 2003/10/16 05:03:22 deraadt Exp $	*/
 /*	$NetBSD: mem.c,v 1.1 1996/09/30 16:34:50 ws Exp $ */
 
 /*
@@ -104,8 +104,8 @@ mmclose(dev_t dev, int flag, int mode, struct proc *p)
 int
 mmrw(dev_t dev, struct uio *uio, int flags)
 {
-	vm_offset_t v;
-	vm_size_t c;
+	vaddr_t v;
+	vsize_t c;
 	struct iovec *iov;
 	int error = 0;
 	static caddr_t zeropage;

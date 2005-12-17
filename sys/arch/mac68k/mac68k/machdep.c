@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.120 2005/11/06 17:59:57 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.121 2005/11/15 07:02:36 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.207 1998/07/08 04:39:34 thorpej Exp $	*/
 
 /*
@@ -327,7 +327,7 @@ cpu_startup(void)
 	int vers;
 	int base, residual;
 	vaddr_t minaddr, maxaddr;
-	vm_size_t size = 0;	/* To avoid compiler warning */
+	vsize_t size = 0;	/* To avoid compiler warning */
 	int delay;
 
 	/*
