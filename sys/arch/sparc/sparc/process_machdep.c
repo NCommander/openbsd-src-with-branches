@@ -117,7 +117,6 @@ process_write_regs(p, regs)
 	return (0);
 }
 
-#ifdef PT_STEP
 int
 process_sstep(p, sstep)
 	struct proc *p;
@@ -127,7 +126,6 @@ process_sstep(p, sstep)
 		return EINVAL;
 	return (0);
 }
-#endif
 
 int
 process_set_pc(p, addr)
