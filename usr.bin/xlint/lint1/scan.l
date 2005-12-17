@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scan.l,v 1.24 2005/12/10 18:51:54 martin Exp $	*/
+/*	$OpenBSD: scan.l,v 1.25 2005/12/11 20:02:09 deraadt Exp $	*/
 /*	$NetBSD: scan.l,v 1.8 1995/10/23 13:38:51 jpo Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: scan.l,v 1.24 2005/12/10 18:51:54 martin Exp $";
+static char rcsid[] = "$OpenBSD: scan.l,v 1.25 2005/12/11 20:02:09 deraadt Exp $";
 #endif
 
 #include <stdlib.h>
@@ -999,6 +999,7 @@ comment(void)
 		{ "CONSTCOND",		0,	constcond	},
 		{ "CONSTANTCOND",	0,	constcond	},
 		{ "CONSTANTCONDITION",	0,	constcond	},
+		{ "NORETURN",		1,	noreturn	},
 		{ "FALLTHRU",		0,	fallthru	},
 		{ "FALLTHROUGH",	0,	fallthru	},
 		{ "LINTLIBRARY",	0,	lintlib		},
