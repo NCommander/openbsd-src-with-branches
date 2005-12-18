@@ -1,7 +1,7 @@
-/*	$OpenBSD: privsep.c,v 1.16 2005/12/01 01:11:30 reyk Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.17 2005/12/10 13:10:07 reyk Exp $	*/
 
 /*
- * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
  * Copyright (c) 1995, 1999 Theo de Raadt
  *
  * Permission to use, copy, modify, and distribute this software for any

@@ -1,7 +1,7 @@
-/*	$OpenBSD: llc.c,v 1.2 2005/04/13 20:25:31 deraadt Exp $	*/
+/*	$OpenBSD: llc.c,v 1.3 2005/12/01 01:11:30 reyk Exp $	*/
 
 /*
- * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
