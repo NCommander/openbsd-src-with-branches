@@ -1,7 +1,7 @@
-/*	$OpenBSD: ieee80211_regdomain.c,v 1.4 2005/02/17 23:52:05 reyk Exp $	*/
+/*	$OpenBSD: ieee80211_regdomain.c,v 1.5 2005/09/08 13:24:53 reyk Exp $	*/
 
 /*
- * Copyright (c) 2004, 2005 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
