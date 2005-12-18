@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.c,v 1.22 2004/08/03 09:23:11 deraadt Exp $	*/
+/*	$OpenBSD: disk.c,v 1.23 2005/11/21 01:59:24 krw Exp $	*/
 
 /*
  * Copyright (c) 1997, 2001 Tobias Weingartner
@@ -198,9 +198,9 @@ DISK_getmetrics(disk_t *disk, DISK_metrics *user)
 
 		cyls = disk->label->size / (disk->bios->heads * disk->bios->sectors);
 		secs = cyls * (disk->bios->heads * disk->bios->sectors);
-		if ((disk->label->size - secs) < 0)
-			errx(1, "BIOS fixup botch (%d sectors)",
-			    disk->label->size - secs);
+		if (secs > disk->label->size)
+			errx(1, "BIOS fixup botch (secs (%d) > size (%d))",
+			    secs, disk->label->size);
 		disk->bios->cylinders = cyls;
 		disk->bios->size = secs;
 	}
