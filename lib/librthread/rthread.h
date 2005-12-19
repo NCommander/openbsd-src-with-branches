@@ -1,6 +1,6 @@
-/*	$OpenBSD: rthread.h,v 1.6 2005/12/14 06:07:54 tedu Exp $ */
+/*	$OpenBSD: rthread.h,v 1.7 2005/12/19 06:45:14 tedu Exp $ */
 /*
- * Copyright (c) 2004 Ted Unangst <tedu@openbsd.org>
+ * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
  *
  * Permission to use, copy, modify, and distribute this software for any
