@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.90 2005/12/03 15:07:21 joris Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.91 2005/12/10 20:27:45 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -428,7 +428,6 @@ struct cvs_lines {
 	struct cvs_tqh	l_lines;
 };
 
-void	  fatal(const char *, ...);
 int	  cvs_readrepo(const char *, char *, size_t);
 int	  cvs_modetostr(mode_t, char *, size_t);
 int	  cvs_strtomode(const char *, mode_t *);
