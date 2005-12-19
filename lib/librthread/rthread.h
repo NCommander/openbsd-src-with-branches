@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.h,v 1.5 2005/12/14 04:43:04 tedu Exp $ */
+/*	$OpenBSD: rthread.h,v 1.6 2005/12/14 06:07:54 tedu Exp $ */
 /*
  * Copyright (c) 2004 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -64,6 +64,7 @@ struct pthread_rwlockattr {
 };
 
 struct pthread_attr {
+	void *stack_addr;
 	size_t stack_size;
 	int detach_state;
 	int contention_scope;
