@@ -1,4 +1,4 @@
-/*	$OpenBSD: import.c,v 1.30 2005/12/03 01:02:09 joris Exp $	*/
+/*	$OpenBSD: import.c,v 1.31 2005/12/10 20:27:45 joris Exp $	*/
 /*
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -371,11 +371,7 @@ cvs_import_local(CVSFILE *cf, void *arg)
 		return (CVS_EX_DATA);
 	}
 
-	if (cvs_buf_putc(bp, '\0') < 0) {
-		rcs_close(rf);
-		(void)unlink(rpath);
-		return (CVS_EX_DATA);
-	}
+	cvs_buf_putc(bp, '\0');
 
 	fcont = cvs_buf_release(bp);
 
