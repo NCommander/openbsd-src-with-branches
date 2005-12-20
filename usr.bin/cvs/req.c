@@ -1,4 +1,4 @@
-/*	$OpenBSD: req.c,v 1.33 2005/12/03 20:27:35 joris Exp $	*/
+/*	$OpenBSD: req.c,v 1.34 2005/12/10 20:27:45 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -428,12 +428,7 @@ cvs_req_filestate(int reqid, char *line)
 			return (-1);
 
 		/* write the file */
-		if (cvs_buf_write(fdata, line, fmode) < 0) {
-			cvs_log(LP_ERR, "failed to create file %s", line);
-			cvs_buf_free(fdata);
-			return (-1);
-		}
-
+		cvs_buf_write(fdata, line, fmode);
 		cvs_buf_free(fdata);
 		break;
 	case CVS_REQ_ISMODIFIED:
