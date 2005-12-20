@@ -1,4 +1,4 @@
-/*	$OpenBSD: extend.c,v 1.42 2005/12/13 06:01:27 kjell Exp $	*/
+/*	$OpenBSD: extend.c,v 1.43 2005/12/20 05:04:28 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -562,7 +562,7 @@ extend(int f, int n)
 			macro[macrocount - 1].m_funct = funct;
 			maclcur = lp->l_bp;
 			maclcur->l_fp = lp->l_fp;
-			free((char *)lp);
+			free(lp);
 		}
 #endif /* !NO_MACRO */
 		return ((*funct)(f, n));
@@ -881,10 +881,10 @@ excline(char *line)
 			if ((curmap = name_map(lp->l_text)) == NULL) {
 				ewprintf("No such mode: %s", lp->l_text);
 				status = FALSE;
-				free((char *)lp);
+				free(lp);
 				goto cleanup;
 			}
-			free((char *)lp);
+			free(lp);
 			bind = BINDARG;
 			break;
 		default:
@@ -925,10 +925,10 @@ cleanup:
 	lp = maclcur->l_fp;
 	while (lp != maclcur) {
 		np = lp->l_fp;
-		free((char *)lp);
+		free(lp);
 		lp = np;
 	}
-	free((char *)lp);
+	free(lp);
 	return (status);
 }
 

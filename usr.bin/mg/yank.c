@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.32 2005/11/22 04:38:57 kjell Exp $	*/
+/*	$OpenBSD: yank.c,v 1.1 2005/11/22 05:02:44 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -30,7 +30,7 @@ void
 kdelete(void)
 {
 	if (kbufp != NULL) {
-		free((char *)kbufp);
+		free(kbufp);
 		kbufp = NULL;
 		kstart = kused = ksize = 0;
 	}
@@ -84,7 +84,7 @@ kgrow(int dir)
 	nstart = (dir == KBACK) ? (kstart + KBLOCK) : (KBLOCK / 4);
 	bcopy(&(kbufp[kstart]), &(nbufp[nstart]), (int)(kused - kstart));
 	if (kbufp != NULL)
-		free((char *)kbufp);
+		free(kbufp);
 	kbufp = nbufp;
 	ksize += KBLOCK;
 	kused = kused - kstart + nstart;

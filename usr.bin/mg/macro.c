@@ -1,4 +1,4 @@
-/*	$OpenBSD: macro.c,v 1.9 2005/06/14 18:14:40 kjell Exp $	*/
+/*	$OpenBSD: macro.c,v 1.10 2005/11/18 20:56:53 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -37,9 +37,9 @@ definemacro(int f, int n)
 	if (maclhead != NULL) {
 		for (lp1 = maclhead->l_fp; lp1 != maclhead; lp1 = lp2) {
 			lp2 = lp1->l_fp;
-			free((char *)lp1);
+			free(lp1);
 		}
-		free((char *)lp1);
+		free(lp1);
 	}
 
 	if ((maclhead = lp1 = lalloc(0)) == NULL)
