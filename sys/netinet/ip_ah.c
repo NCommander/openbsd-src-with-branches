@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.81 2005/05/28 15:10:07 ho Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.82 2005/07/31 03:52:19 pascoe Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -1046,13 +1046,12 @@ ah_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 	}
 
 	/*
-	 * Loop through mbuf chain; if we find an M_EXT mbuf with
-	 * more than one reference, replace the rest of the chain.
+	 * Loop through mbuf chain; if we find a readonly mbuf,
+	 * replace the rest of the chain.
 	 */
 	mo = NULL;
 	mi = m;
-	while (mi != NULL &&
-	    (!(mi->m_flags & M_EXT) || !MCLISREFERENCED(mi))) {
+	while (mi != NULL && !M_READONLY(mi)) {
 		mo = mi;
 		mi = mi->m_next;
 	}

@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.17 2004/11/25 21:54:54 markus Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.18 2005/07/31 03:52:19 pascoe Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -464,13 +464,12 @@ ipcomp_output(m, tdb, mp, skip, protoff)
 		tdb->tdb_flags &= ~TDBF_SOFT_BYTES;	/* Turn off checking */
 	}
 	/*
-	 * Loop through mbuf chain; if we find an M_EXT mbuf with
-	 * more than one reference, replace the rest of the chain.
+	 * Loop through mbuf chain; if we find a readonly mbuf,
+	 * replace the rest of the chain.
 	 */
 	mo = NULL;
 	mi = m;
-	while (mi != NULL &&
-	    (!(mi->m_flags & M_EXT) || !MCLISREFERENCED(mi))) {
+	while (mi != NULL && !M_READONLY(mi)) {
 		mo = mi;
 		mi = mi->m_next;
 	}
