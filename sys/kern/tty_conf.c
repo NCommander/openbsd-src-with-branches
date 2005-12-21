@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_conf.c,v 1.7 2002/03/14 01:27:05 millert Exp $	*/
+/*	$OpenBSD: tty_conf.c,v 1.8 2003/06/02 23:28:06 millert Exp $	*/
 /*	$NetBSD: tty_conf.c,v 1.18 1996/05/19 17:17:55 jonathan Exp $	*/
 
 /*-
@@ -151,12 +151,7 @@ int	nlinesw = sizeof (linesw) / sizeof (linesw[0]);
  */
 /*ARGSUSED*/
 int
-nullioctl(tp, cmd, data, flags, p)
-	struct tty *tp;
-	u_long cmd;
-	char *data;
-	int flags;
-	struct proc *p;
+nullioctl(struct tty *tp, u_long cmd, char *data, int flags, struct proc *p)
 {
 
 #ifdef lint
