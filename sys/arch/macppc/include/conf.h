@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.8 2002/09/15 09:01:58 deraadt Exp $	*/
+/*	$OpenBSD: conf.h,v 1.9 2003/09/23 16:51:11 millert Exp $	*/
 /*	$NetBSD: conf.h,v 1.2 1996/05/05 19:28:34 christos Exp $	*/
 
 /*
@@ -43,6 +43,5 @@ cdev_decl(mm);
 	(dev_type_stop((*))) enodev, 0, (dev_type_poll((*))) enodev, \
 	(dev_type_mmap((*))) enodev, D_KQFILTER, dev_init(c,n,kqfilter) }
 
-cdev_decl(aed);
 cdev_decl(apm);
 cdev_decl(zs);
