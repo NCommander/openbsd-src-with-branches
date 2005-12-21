@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: svc.c,v 1.20 2005/08/08 08:05:35 espie Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -38,10 +38,10 @@
  * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/errno.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_clnt.h>
 

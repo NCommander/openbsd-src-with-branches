@@ -1,4 +1,4 @@
-/*	$OpenBSD: libscsi.c,v 1.3 2005/04/09 02:10:01 cloder Exp $	*/
+/*	$OpenBSD: libscsi.c,v 1.4 2005/10/24 22:56:17 deraadt Exp $	*/
 
 /* Copyright (c) 1994 HD Associates
  * (contact: dufault@hda.com)
@@ -38,7 +38,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/scsiio.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <fcntl.h>
 

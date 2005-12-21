@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.43 2004/05/08 20:17:49 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.44 2004/09/15 22:33:15 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -28,7 +28,7 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rarpd.c,v 1.43 2004/05/08 20:17:49 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.44 2004/09/15 22:33:15 deraadt Exp $";
 #endif
 
 
@@ -55,8 +55,8 @@ static char rcsid[] = "$OpenBSD: rarpd.c,v 1.43 2004/05/08 20:17:49 deraadt Exp 
 #include <net/if_types.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <sys/errno.h>
 #include <sys/file.h>
+#include <errno.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <dirent.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchide.c,v 1.18 2003/04/16 21:11:10 drahn Exp $	 */
+/* $OpenBSD: crunchide.c,v 1.19 2004/08/24 09:12:49 jmc Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -62,10 +62,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <a.out.h>
 #include <sys/types.h>
-#include <sys/errno.h>
 #ifdef _NLIST_DO_ECOFF
 #include <sys/exec_ecoff.h>
 #endif

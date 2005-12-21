@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.c,v 1.22 2005/03/25 17:01:04 jaredy Exp $	*/
+/*	$OpenBSD: mbuf.c,v 1.23 2005/05/23 17:35:59 marius Exp $	*/
 /*	$NetBSD: mbuf.c,v 1.9 1996/05/07 02:55:03 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)mbuf.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$OpenBSD: mbuf.c,v 1.22 2005/03/25 17:01:04 jaredy Exp $";
+static char *rcsid = "$OpenBSD: mbuf.c,v 1.23 2005/05/23 17:35:59 marius Exp $";
 #endif
 #endif /* not lint */
 
@@ -44,8 +44,8 @@ static char *rcsid = "$OpenBSD: mbuf.c,v 1.22 2005/03/25 17:01:04 jaredy Exp $";
 #include <sys/mbuf.h>
 #include <sys/pool.h>
 #include <sys/sysctl.h>
-#include <sys/errno.h>
 
+#include <errno.h>
 #include <kvm.h>
 #include <limits.h>
 #include <stdio.h>

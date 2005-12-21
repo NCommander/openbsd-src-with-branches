@@ -1,4 +1,4 @@
-/* $OpenBSD: sysdep.c,v 1.33 2005/04/08 23:15:26 hshoexer Exp $	 */
+/* $OpenBSD: sysdep.c,v 1.34 2005/05/04 10:05:02 hshoexer Exp $	 */
 /* $EOM: sysdep.c,v 1.9 2000/12/04 04:46:35 angelos Exp $	 */
 
 /*
@@ -29,13 +29,13 @@
  * This code was written under funding by Ericsson Radio Systems.
  */
 
-#include <sys/errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "sysdep.h"
 

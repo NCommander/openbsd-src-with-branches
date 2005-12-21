@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc_run.c,v 1.16 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: svc_run.c,v 1.17 2005/09/10 23:04:26 brad Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -33,7 +33,7 @@
  * Wait for input, call server program.
  */
 #include <rpc/rpc.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

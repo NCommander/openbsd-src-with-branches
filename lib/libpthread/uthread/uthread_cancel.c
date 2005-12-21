@@ -1,8 +1,8 @@
-/*	$OpenBSD: uthread_cancel.c,v 1.12 2002/03/07 23:05:10 fgsch Exp $	*/
+/*	$OpenBSD: uthread_cancel.c,v 1.13 2002/05/07 05:13:17 pvalchev Exp $	*/
 /*
  * David Leonard <d@openbsd.org>, 1999. Public domain.
  */
-#include <sys/errno.h>
+#include <errno.h>
 #include <pthread.h>
 #include "pthread_private.h"
 

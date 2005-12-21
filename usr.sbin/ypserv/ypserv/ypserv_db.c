@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_db.c,v 1.20 2003/07/15 06:10:46 deraadt Exp $ */
+/*	$OpenBSD: ypserv_db.c,v 1.21 2005/10/15 18:33:51 otto Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -34,7 +34,7 @@
  */
 
 #ifndef LINT
-static const char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.20 2003/07/15 06:10:46 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.21 2005/10/15 18:33:51 otto Exp $";
 #endif
 
 /*
@@ -61,7 +61,7 @@ static const char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.20 2003/07/15 06:10:46 de
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <syslog.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include "yplog.h"
 #include "ypdb.h"
 #include "ypdef.h"

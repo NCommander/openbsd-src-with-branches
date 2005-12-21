@@ -1,4 +1,4 @@
-/* * $OpenBSD: warnings.c,v 1.9 2002/09/07 01:25:34 marc Exp $*/
+/* * $OpenBSD: warnings.c,v 1.10 2003/04/16 02:15:10 deraadt Exp $*/
 /*
  */
 
@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <sys/time.h>
-#include <sys/errno.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
