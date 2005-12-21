@@ -1,4 +1,4 @@
-/*	$OpenBSD: pca9554.c,v 1.3 2005/11/18 20:47:45 deraadt Exp $	*/
+/*	$OpenBSD: pca9554.c,v 1.4 2005/11/18 20:51:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -26,7 +26,7 @@
 
 #include <dev/gpio/gpiovar.h>
 
-/* Maxim 6690 registers */
+/* Phillips 9554 registers */
 #define PCA9554_IN		0x00
 #define PCA9554_OUT		0x01
 #define PCA9554_POLARITY	0x02
