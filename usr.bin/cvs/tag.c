@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.32 2005/09/26 18:33:54 xsa Exp $	*/
+/*	$OpenBSD: tag.c,v 1.33 2005/09/27 16:33:35 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
@@ -278,8 +278,7 @@ cvs_tag_local(CVSFILE *cf, void *arg)
 
 	tag_rev = cf->cf_lrev;
 
-	if (cvs_rcs_getpath(cf, rcspath, sizeof(rcspath)) == NULL)
-		return (CVS_EX_DATA);
+	cvs_rcs_getpath(cf, rcspath, sizeof(rcspath));
 
 	rf = rcs_open(rcspath, RCS_READ|RCS_WRITE);
 	if (rf == NULL) {
