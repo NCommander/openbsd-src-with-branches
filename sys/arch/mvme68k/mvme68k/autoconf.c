@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.29 2005/11/24 22:43:19 miod Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.30 2005/11/27 14:17:41 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -106,7 +106,7 @@ struct	device *bootdv;
  * XXX some storage space must be allocated statically because of
  * early console init
  */
-char	extiospace[EXTENT_FIXED_STORAGE_SIZE(EIOMAPSIZE / 16)];
+char	extiospace[EXTENT_FIXED_STORAGE_SIZE(8)];
 
 struct	extent *extio;
 extern	vaddr_t extiobase;
