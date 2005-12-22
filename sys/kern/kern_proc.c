@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.29 2005/12/03 18:09:08 tedu Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.30 2005/12/04 05:49:12 deraadt Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -81,10 +81,6 @@ void pgrpdump(void);
 void
 procinit(void)
 {
-#ifdef RTHREADS
-	extern struct pool sleeper_pool;
-#endif
-
 	LIST_INIT(&allproc);
 	LIST_INIT(&zombproc);
 
@@ -107,10 +103,6 @@ procinit(void)
 	    &pool_allocator_nointr);
 	pool_init(&pcred_pool, sizeof(struct pcred), 0, 0, 0, "pcredpl",
 	    &pool_allocator_nointr);
-#ifdef RTHREADS
-	pool_init(&sleeper_pool, sizeof(struct twaitnode), 0, 0, 0, "thrwaitpl",
-	    &pool_allocator_nointr);
-#endif
 }
 
 /*

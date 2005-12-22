@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.79 2005/12/03 18:09:08 tedu Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.80 2005/12/04 21:21:46 tedu Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -294,7 +294,6 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	}
 
 	LIST_INIT(&p2->p_thrchildren);
-	LIST_INIT(&p2->p_sleepers);
 
 #ifdef KTRACE
 	/*
