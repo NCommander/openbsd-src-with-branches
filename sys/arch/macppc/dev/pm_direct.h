@@ -1,4 +1,4 @@
-/*	$OpenBSD: pm_direct.h,v 1.7 2005/11/16 12:28:54 kettenis Exp $	*/
+/*	$OpenBSD: pm_direct.h,v 1.8 2005/12/10 13:45:38 pedro Exp $	*/
 /*	$NetBSD: pm_direct.h,v 1.5 1999/07/12 15:54:55 tsubai Exp $	*/
 
 /*
@@ -51,7 +51,6 @@ int	pmgrop(PMData *);
 int	pm_adb_op(u_char *, void *, void *, int);
 void	pm_adb_restart(void);
 void	pm_adb_poweroff(void);
-void	pm_check_adb_devices(int);
 void	pm_intr(void);
 void	pm_read_date_time(time_t *);
 void	pm_set_date_time(time_t);
@@ -68,11 +67,6 @@ struct pmu_battery_info
 
 int pm_battery_info(int, struct pmu_battery_info *);
 
-int pm_read_nvram(int);
-void pm_write_nvram(int, int);
-int pm_read_brightness(void);
-void pm_set_brightness(int);
-void pm_init_brightness(void);
 void pm_eject_pcmcia(int);
 
 /* PMU commands */
