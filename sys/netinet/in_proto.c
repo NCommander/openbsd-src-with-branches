@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.43 2005/01/14 14:51:27 mcbride Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.44 2005/07/14 02:09:46 uwe Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -147,10 +147,6 @@
 #include <netipx/ipx.h>
 #include <netipx/ipx_ip.h>
 #endif /* IPXIP */
-
-#ifdef MROUTING
-#include <netinet/ip_mroute.h>
-#endif /* MROUTING */
 
 #ifdef INET6
 #include <netinet6/ip6_var.h>

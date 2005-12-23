@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_gif.c,v 1.29 2003/12/03 14:51:05 markus Exp $	*/
+/*	$OpenBSD: in_gif.c,v 1.30 2003/12/10 07:22:43 itojun Exp $	*/
 /*	$KAME: in_gif.c,v 1.50 2001/01/22 07:27:16 itojun Exp $	*/
 
 /*
@@ -49,10 +49,6 @@
 #ifdef INET6
 #include <netinet/ip6.h>
 #endif
-
-#ifdef MROUTING
-#include <netinet/ip_mroute.h>
-#endif /* MROUTING */
 
 #include "gif.h"
 #include "bridge.h"
