@@ -1,4 +1,4 @@
-/*	$OpenBSD: adm1025.c,v 1.7 2005/12/23 15:06:32 deraadt Exp $	*/
+/*	$OpenBSD: adm1025.c,v 1.8 2005/12/23 20:46:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -201,7 +201,7 @@ admtm_refresh(void *arg)
 	cmd = ADM1025_Vccp;
 	if (iic_exec(sc->sc_tag, I2C_OP_READ_WITH_STOP,
 	    sc->sc_addr, &cmd, sizeof cmd, &data, sizeof data, 0) == 0)
-		sc->sc_sensor[ADMTM_Vcc].value =  + 2249000 * data / 192;
+		sc->sc_sensor[ADMTM_Vcc].value = 2249000 * data / 192;
 
 	cmd = ADM1025_V33;
 	if (iic_exec(sc->sc_tag, I2C_OP_READ_WITH_STOP,
