@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: i2c_scan.c,v 1.2 2005/12/20 05:00:47 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
@@ -17,7 +17,7 @@
  */
 
 /*
- * I2C bus scannig.
+ * I2C bus scanning.
  */
 
 #include <sys/param.h>
