@@ -1,4 +1,4 @@
-/*	$OpenBSD: adm1025.c,v 1.3 2005/12/22 23:19:07 deraadt Exp $	*/
+/*	$OpenBSD: adm1025.c,v 1.4 2005/12/22 23:49:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -84,7 +84,7 @@ admtm_match(struct device *parent, void *match, void *aux)
 		 */
 		return (1);
 	}
-	return (1);
+	return (0);
 }
 
 void

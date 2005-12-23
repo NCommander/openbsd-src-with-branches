@@ -1,4 +1,4 @@
-/*	$OpenBSD: adm1021.c,v 1.3 2005/12/22 23:19:07 deraadt Exp $	*/
+/*	$OpenBSD: adm1021.c,v 1.1 2005/12/22 23:44:12 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -71,7 +71,7 @@ admtemp_match(struct device *parent, void *match, void *aux)
 		 */
 		return (1);
 	}
-	return (1);
+	return (0);
 }
 
 void
