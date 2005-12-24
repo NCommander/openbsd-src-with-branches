@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.24 2005/10/14 13:46:36 moritz Exp $	*/
+/*	$OpenBSD: server.c,v 1.25 2005/12/20 16:55:21 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -96,10 +96,7 @@ cvs_server(int argc, char **argv)
 		fatal("cvs_server: mkdir: `%s': %s",
 		    cvs_server_tmpdir, strerror(errno));
 
-	if (cvs_chdir(cvs_server_tmpdir) == -1) {
-		(void)cvs_rmdir(cvs_server_tmpdir);
-		fatal("cvs_server: cvs_chdir failed");
-	}
+	cvs_chdir(cvs_server_tmpdir, 1);
 
 	for (;;) {
 		if (fgets(reqbuf, (int)sizeof(reqbuf), stdin) == NULL) {
