@@ -1271,6 +1271,7 @@
 #define	USB_PRODUCT_LOGITECH_RB6	0xc503		/* Cordless keyboard */
 #define	USB_PRODUCT_LOGITECH_CDO	0xc504		/* Cordless Desktop Optical */
 #define	USB_PRODUCT_LOGITECH_QUICKCAMPRO2	0xd001		/* QuickCam Pro */
+#define	USB_PRODUCT_LOGITECH_QUICKCAMZOOM	0x08b3		/* QuickCam Zoom */
 
 /* Longshine products */
 #define	USB_PRODUCT_ABOCOM_LCS8138TX	0x401a		/* LCS-8138TX */

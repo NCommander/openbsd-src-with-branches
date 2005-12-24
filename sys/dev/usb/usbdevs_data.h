@@ -2147,6 +2147,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "QuickCam Pro",
 	},
 	{
+	    USB_VENDOR_LOGITECH, USB_PRODUCT_LOGITECH_QUICKCAMZOOM,
+	    "QuickCam Zoom",
+	},
+	{
 	    USB_VENDOR_ABOCOM, USB_PRODUCT_ABOCOM_LCS8138TX,
 	    "LCS-8138TX",
 	},
