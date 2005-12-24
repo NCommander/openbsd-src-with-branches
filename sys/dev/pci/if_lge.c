@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.34 2005/10/09 04:44:45 brad Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.35 2005/11/23 11:30:14 mickey Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -1436,6 +1436,7 @@ lge_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 				CSR_WRITE_4(sc, LGE_MODE1,
 				    LGE_MODE1_RX_PROMISC);
 			} else {
+				ifp->if_flags &= ~IFF_RUNNING;
 				lge_init(sc);
 			}
 		} else {
