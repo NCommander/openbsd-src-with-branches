@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rfork_thread.S,v 1.1 2005/12/03 18:16:19 tedu Exp $ */
 /*-
  * Copyright (c) 2000 Peter Wemm <peter@FreeBSD.org>
  * Copyright (c) 2003 Alan L. Cox <alc@cs.rice.edu>
@@ -83,11 +83,7 @@ ENTRY(rfork_thread)
 	/*
 	 * Exit system call
 	 */
-#ifdef SYS_exit
-	movq	$SYS_exit, %rax
-#else
-	movq	$SYS_sys_exit, %rax
-#endif
+	movq	$SYS_threxit, %rax
 	int	$0x80
 
 	/*
