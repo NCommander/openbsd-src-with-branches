@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2c.c,v 1.5 2005/12/22 23:53:58 deraadt Exp $	*/
+/*	$OpenBSD: i2c.c,v 1.6 2005/12/23 01:26:22 deraadt Exp $	*/
 /*	$NetBSD: i2c.c,v 1.1 2003/09/30 00:35:31 thorpej Exp $	*/
 
 /*
@@ -83,6 +83,8 @@ iic_print(void *aux, const char *pnp)
 {
 	struct i2c_attach_args *ia = aux;
 
+	if (pnp != NULL)
+		printf("%s at %s", ia->ia_name, pnp);
 	printf(" addr 0x%x", ia->ia_addr);
 
 	return (UNCONF);
