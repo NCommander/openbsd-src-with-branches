@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.c,v 1.8 2004/07/01 19:15:56 mickey Exp $	*/
+/*	$OpenBSD: expand.c,v 1.9 2005/03/08 23:30:50 cloder Exp $	*/
 /*	$NetBSD: expand.c,v 1.5 1995/09/02 06:19:46 jtc Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)expand.c	8.1 (Berkeley) 6/9/93";
 #endif
-static const char rcsid[] = "$OpenBSD: expand.c,v 1.8 2004/07/01 19:15:56 mickey Exp $";
+static const char rcsid[] = "$OpenBSD: expand.c,v 1.9 2005/03/08 23:30:50 cloder Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -160,6 +160,8 @@ bad:
 		}
 		if (nstops > 0 && i <= tabstops[nstops-1])
 			goto bad;
+		if (nstops >= sizeof(tabstops) / sizeof(tabstops[0]))
+			errx(1, "Too many tab stops");
 		tabstops[nstops++] = i;
 		if (*cp == 0)
 			break;
