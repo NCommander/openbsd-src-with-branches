@@ -1,4 +1,4 @@
-/*	$Id: extern.h,v 1.3 2005/12/15 16:19:27 ray Exp $	*/
+/*	$OpenBSD$ */
 
 /*
  * Written by Raymond Lai <ray@cyth.net>.
