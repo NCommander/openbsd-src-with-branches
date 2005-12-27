@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.48 2005/12/19 18:24:12 xsa Exp $	*/
+/*	$OpenBSD: co.c,v 1.49 2005/12/23 00:59:56 joris Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -156,7 +156,7 @@ checkout_main(int argc, char **argv)
 			continue;
 		}
 
-		if ((file = rcs_open(fpath, RCS_RDWR)) == NULL)
+		if ((file = rcs_open(fpath, RCS_RDWR|RCS_PARSE_FULLY)) == NULL)
 			continue;
 
 		if (flags & PRESERVETIME)
