@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.14 2005/05/27 15:54:59 drahn Exp $
+#	$OpenBSD: RAMDISK,v 1.15 2005/06/14 13:32:49 drahn Exp $
 
 machine	cats	arm
 
@@ -16,7 +16,6 @@ option		EXT2FS		# Second Extended Filesystem
 option		FIFO		# FIFOs; RECOMMENDED
 
 options	ARM32
-options FOOTBRIDGE_INTR
 
 # estimated number of users
 
