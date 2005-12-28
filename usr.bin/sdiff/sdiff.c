@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdiff.c,v 1.10 2005/12/27 05:04:27 deraadt Exp $ */
+/*	$OpenBSD: sdiff.c,v 1.11 2005/12/27 05:13:14 tedu Exp $ */
 
 /*
  * Written by Raymond Lai <ray@cyth.net>.
@@ -252,7 +252,7 @@ main(int argc, char **argv)
 /*
  * Prints an individual column (left or right), taking into account
  * that tabs are variable-width.  Takes a string, the current column
- * the cursor is on the screen, and the maximum value of the column.  
+ * the cursor is on the screen, and the maximum value of the column.
  * The column value is updated as we go along.
  */
 static void
