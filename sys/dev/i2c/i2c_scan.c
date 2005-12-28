@@ -1,7 +1,7 @@
-/*	$OpenBSD: i2c_scan.c,v 1.30 2005/12/28 20:35:59 deraadt Exp $	*/
+/*	$OpenBSD: i2c_scan.c,v 1.31 2005/12/28 22:30:53 deraadt Exp $	*/
 
 /*
- * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
+ * Copyright (c) 2005 Theo de Raadt <deraadt@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
