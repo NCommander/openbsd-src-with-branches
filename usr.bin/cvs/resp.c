@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.64 2005/12/10 20:27:45 joris Exp $	*/
+/*	$OpenBSD: resp.c,v 1.65 2005/12/20 18:17:01 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -254,7 +254,7 @@ cvs_resp_m(struct cvsroot *root, int type, char *line)
 				cvs_log(LP_ERR, "mismatch in MT scope stack");
 				return (-1);
 			}
-			xfree(cvs_mt_stack[cvs_mtstk_depth--]);
+			xfree(cvs_mt_stack[--cvs_mtstk_depth]);
 		} else {
 			if (strcmp(line, "newline") == 0)
 				putc('\n', stdout);
