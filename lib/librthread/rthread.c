@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.c,v 1.17 2005/12/22 06:49:48 tedu Exp $ */
+/*	$OpenBSD: rthread.c,v 1.18 2005/12/23 03:27:06 tedu Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -398,6 +398,18 @@ pthread_set_name_np(pthread_t thread, char *name)
 {
 	strlcpy(thread->name, name, sizeof(thread->name));
 }
+
+int
+pthread_main_np(void)
+{
+	pthread_t me = pthread_self();
+
+	if (me == NULL)
+		return (-1);
+	else
+		return (me == &initial_thread ? 1 : 0);
+}
+
 
 /*
  * compat debug stuff
