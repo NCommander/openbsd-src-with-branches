@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.c,v 1.82 2005/12/30 02:03:28 joris Exp $	*/
+/*	$OpenBSD: proto.c,v 1.83 2005/12/30 16:47:36 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -220,7 +220,8 @@ cvs_connect(struct cvsroot *root)
 	} else if (cvs_subproc_pid == 0) {
 		if ((dup2(infd[0], STDIN_FILENO) == -1) ||
 		    (dup2(outfd[1], STDOUT_FILENO) == -1))
-			fatal("failed to setup standard streams for cvs server");
+			fatal("failed to setup standard streams "
+			    "for cvs server");
 
 		(void)close(infd[1]);
 		(void)close(outfd[0]);
@@ -610,7 +611,7 @@ cvs_sendreq(struct cvsroot *root, u_int rid, const char *arg)
 			    "remote end does not support request `%s'",
 			    req->req_str);
 		}
-		
+
 		return;
 	}
 
