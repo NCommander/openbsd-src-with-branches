@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunos_exec.c,v 1.16 2002/03/14 01:26:50 millert Exp $	*/
+/*	$OpenBSD: sunos_exec.c,v 1.17 2003/06/02 15:54:31 deraadt Exp $	*/
 /*	$NetBSD: sunos_exec.c,v 1.11 1996/05/05 12:01:47 briggs Exp $	*/
 
 /*
@@ -102,6 +102,9 @@ sunos_exec_aout_makecmds(p, epp)
 {
 	struct sunos_exec *sunmag = epp->ep_hdr;
 	int error = ENOEXEC;
+
+	if (epp->ep_hdrvalid < sizeof(struct sunos_exec))
+		return (ENOEXEC);
 
 	if(sunmag->a_machtype != SUNOS_M_NATIVE)
 		return (ENOEXEC);
