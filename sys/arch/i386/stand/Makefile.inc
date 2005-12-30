@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile.inc,v 1.36 2004/07/24 17:39:27 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.37 2005/07/30 14:32:46 millert Exp $
 
 CFLAGS=${DEBUG} ${COPTS} -Os -Wall -Werror
 CFLAGS+=	-fno-stack-protector
-CPPFLAGS+=-I${S} -I${SADIR}/libsa -I. -I${.CURDIR} -Derrno=errno
+CPPFLAGS+=-I${S} -I${SADIR}/libsa -I. -I${.CURDIR}
 SACFLAGS=-D_STANDALONE
 DEBUGLIBS=no
 DEBUGFLAGS=
