@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.11 2005/12/16 00:08:53 jordan Exp $ */
+/* $OpenBSD: dsdt.c,v 1.12 2005/12/28 03:04:56 jordan Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -26,8 +26,6 @@
 #include <dev/acpi/acpivar.h>
 #include <dev/acpi/amltypes.h>
 #include <dev/acpi/dsdt.h>
-
-extern int acpi_debug;
 
 struct aml_optable
 {
