@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.c,v 1.19 2005/12/29 19:10:20 otto Exp $ */
+/*	$OpenBSD: rthread.c,v 1.20 2005/12/29 20:34:22 otto Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -45,8 +45,6 @@ static int concurrency_level;	/* not used */
 
 struct pthread _initial_thread __attribute__((__aligned__(16)));
 
-int getthrid(void);
-void threxit(int);
 int rfork_thread(int, void *, void (*)(void *), void *);
 
 /*
