@@ -1225,6 +1225,7 @@ struct sys_thrsleep_args {
 
 struct sys_thrwakeup_args {
 	syscallarg(void *) ident;
+	syscallarg(int) n;
 };
 
 struct sys_threxit_args {

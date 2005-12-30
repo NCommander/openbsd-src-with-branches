@@ -679,7 +679,7 @@
 /* syscall: "thrsleep" ret: "int" args: "void *" "int" "void *" */
 #define	SYS_thrsleep	300
 
-/* syscall: "thrwakeup" ret: "int" args: "void *" */
+/* syscall: "thrwakeup" ret: "int" args: "void *" "int" */
 #define	SYS_thrwakeup	301
 
 /* syscall: "threxit" ret: "int" args: "int" */
