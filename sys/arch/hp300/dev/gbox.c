@@ -1,4 +1,4 @@
-/*	$OpenBSD: gbox.c,v 1.9 2005/01/27 21:24:48 miod Exp $	*/
+/*	$OpenBSD: gbox.c,v 1.10 2005/12/30 18:00:20 miod Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -475,6 +475,7 @@ gbox_console_scan(int scode, caddr_t va, void *arg)
 	 */
 	if (((cn_tab == NULL) || (cp->cn_pri > cn_tab->cn_pri)) || force) {
 		cn_tab = cp;
+		conscode = scode;
 		return (DIO_SIZE(scode, va));
 	}
 	return (0);

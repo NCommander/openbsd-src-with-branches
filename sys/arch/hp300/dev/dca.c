@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.26 2005/02/27 22:08:39 miod Exp $	*/
+/*	$OpenBSD: dca.c,v 1.27 2005/12/28 21:13:40 miod Exp $	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -1028,6 +1028,7 @@ dca_console_scan(scode, va, arg)
 	 */
 	if (((cn_tab == NULL) || (cp->cn_pri > cn_tab->cn_pri)) || force) {
 		cn_tab = cp;
+		conscode = scode;
 		return (DIO_SIZE(scode, va));
 	}
 	return (0);
