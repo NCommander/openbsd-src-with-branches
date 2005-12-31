@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.1 2005/04/01 10:40:47 mickey Exp $	*/
+/*	$OpenBSD: conf.c,v 1.2 2005/07/31 06:39:07 dlg Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -80,12 +80,6 @@ struct bdevsw   bdevsw[] =
 	bdev_lkm_dummy(),
 };
 int	nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
-
-/* open, close, read, write, ioctl, tty, mmap */
-#define cdev_wscons_init(c,n) { \
-	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
-	dev_init(c,n,write), dev_init(c,n,ioctl), dev_init(c,n,stop), \
-	dev_init(c,n,tty), ttpoll, dev_init(c,n,mmap) }
 
 #include "audio.h"
 #include "pty.h"
