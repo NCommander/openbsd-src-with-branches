@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2c_scan.c,v 1.40 2005/12/30 17:39:33 reyk Exp $	*/
+/*	$OpenBSD: i2c_scan.c,v 1.39 2005/12/30 09:45:20 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt <deraadt@openbsd.org>
@@ -477,12 +477,10 @@ iic_probe(struct device *self, struct i2cbus_attach_args *iba, u_int8_t addr)
 
 #ifdef I2C_DEBUG
 	printf("%s: addr 0x%x", self->dv_xname, addr);
-#if 0
-	for (i = 0; i < sizeof(probereg); i++) {
-		if (iicprobe(probereg[i]) != 0xff)
-			printf(" %02x=%02x", probereg[i], iicprobe(probereg[i]));
-	}
-#endif
+//	for (i = 0; i < sizeof(probereg); i++) {
+//		if (iicprobe(probereg[i]) != 0xff)
+//			printf(" %02x=%02x", probereg[i], iicprobe(probereg[i]));
+//	}
 	for (i = 0; i <= 0xff; i++) {
 		if (iicprobe(i) != 0xff)
 			printf(" %02x=%02x", i, iicprobe(i));
