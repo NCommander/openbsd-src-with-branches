@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.4 1999/08/16 09:43:08 downsj Exp $	*/
+/*	$OpenBSD: version.c,v 1.5 2000/01/14 09:11:01 downsj Exp $	*/
 
 /*
  * Record major changes in the boot code here, and increment the version
@@ -20,6 +20,8 @@
  *
  * 2.6			Fixed RTC reading for 2001.
  *
+ * 2.7			Minor syncs with the kernel (recognize more models
+ *			and use the same logic to pick the console on 425e).
  */
 
-const char version[] = "2.6";
+const char version[] = "2.7";
