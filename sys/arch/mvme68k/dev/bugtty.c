@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.12 2004/01/14 20:50:48 miod Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.13 2004/07/31 22:27:34 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -445,10 +445,8 @@ bugttycnprobe(cp)
 	int maj;
 	extern int needprom;
 
-	if (needprom == 0) {
-		cp->cn_pri = CN_DEAD;
+	if (needprom == 0)
 		return;
-	}
 		
 	/* locate the major number */
 	for (maj = 0; maj < nchrdev; maj++)

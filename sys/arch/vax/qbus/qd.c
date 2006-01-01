@@ -1,4 +1,4 @@
-/*	$OpenBSD: qd.c,v 1.9 2003/11/03 07:06:17 david Exp $	*/
+/*	$OpenBSD: qd.c,v 1.10 2003/11/10 21:05:06 miod Exp $	*/
 /*	$NetBSD: qd.c,v 1.17 2000/01/24 02:40:29 matt Exp $	*/
 
 /*-
@@ -429,8 +429,6 @@ qdcnprobe(cndev)
 {
 	int i;
 
-	cndev->cn_pri = CN_DEAD;
-   
 	if (mfpr(PR_MAPEN) == 0)
 		return; /* Cannot use qd if vm system is OFF */
 
