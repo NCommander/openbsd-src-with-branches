@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.25 2005/06/29 06:07:04 deraadt Exp $     */
+/*      $OpenBSD: pmap.h,v 1.26 2005/11/06 22:21:30 miod Exp $     */
 /*	$NetBSD: pmap.h,v 1.37 1999/08/01 13:48:07 ragge Exp $	   */
 
 /* 
@@ -43,7 +43,6 @@
 #ifndef PMAP_H
 #define PMAP_H
 
-#include <machine/types.h>
 #include <machine/pte.h>
 #include <machine/mtpr.h>
 #include <machine/pcb.h>
