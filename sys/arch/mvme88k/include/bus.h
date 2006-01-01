@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.2 2004/04/30 21:32:54 miod Exp $	*/
+/*	$OpenBSD: bus.h,v 1.3 2004/05/07 18:10:28 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -36,7 +36,6 @@
 #ifndef	_MVME88K_BUS_H_
 #define	_MVME88K_BUS_H_
 
-#include <machine/types.h>
 #include <machine/asm_macro.h>
 
 typedef	u_int32_t	bus_addr_t;
