@@ -1,4 +1,4 @@
-/*	$OpenBSD: maci2c.c,v 1.4 2005/12/27 17:18:18 deraadt Exp $	*/
+/*	$OpenBSD: maci2c.c,v 1.5 2006/01/01 20:52:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -24,8 +24,6 @@
 #include <dev/ofw/openfirm.h>
 
 #include <arch/macppc/dev/maci2cvar.h>
-
-int	maciic_print(void *, const char *);
 
 void
 maciic_scan(struct device *self, struct i2cbus_attach_args *iba, void *aux)
