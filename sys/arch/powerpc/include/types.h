@@ -1,5 +1,5 @@
 /*	$NetBSD: types.h,v 1.1 1996/09/30 16:34:36 ws Exp $	*/
-/*	$OpenBSD: types.h,v 1.16 2005/12/14 21:46:31 millert Exp $	*/
+/*	$OpenBSD: types.h,v 1.17 2005/12/17 07:31:26 miod Exp $	*/
 
 /*-
  * Copyright (C) 1995 Wolfgang Solfrank.
@@ -65,7 +65,5 @@ typedef struct label_t {
         int val[25];
 } label_t;
 #endif
-
-#define	__BROKEN_INDIRECT_CONFIG
 
 #endif	/* _POWERPC_TYPES_H_ */

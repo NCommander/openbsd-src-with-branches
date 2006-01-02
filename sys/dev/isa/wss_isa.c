@@ -1,4 +1,4 @@
-/*	$OpenBSD: wss_isa.c,v 1.3 2000/03/28 14:07:42 espie Exp $	*/
+/*	$OpenBSD: wss_isa.c,v 1.4 2002/03/14 01:26:57 millert Exp $	*/
 /*	$NetBSD: wss_isa.c,v 1.1 1998/01/19 22:18:24 augustss Exp $	*/
 
 /*
@@ -95,22 +95,13 @@ struct cfdriver wss_cd = {
 int
 wss_isa_probe(parent, match, aux)
     struct device *parent;
-#define __BROKEN_INDIRECT_CONFIG
-#ifdef __BROKEN_INDIRECT_CONFIG
     void *match;
-#else
-    struct cfdata *match;
-#endif
     void *aux;
 {
     struct wss_softc probesc, *sc = &probesc;
 
     bzero(sc, sizeof *sc);
-#ifdef __BROKEN_INDIRECT_CONFIG
     sc->sc_dev.dv_cfdata = ((struct device *)match)->dv_cfdata;
-#else
-    sc->sc_dev.dv_cfdata = match;
-#endif
     if (wssfind(parent, sc, aux)) {
         bus_space_unmap(sc->sc_iot, sc->sc_ioh, WSS_CODEC);
         ad1848_unmap(&sc->sc_ad1848);
