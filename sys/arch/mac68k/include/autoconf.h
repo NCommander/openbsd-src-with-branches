@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.8 2002/03/14 01:26:35 millert Exp $	*/
+/*	$OpenBSD: autoconf.h,v 1.9 2005/07/23 23:30:55 martin Exp $	*/
 /*	$NetBSD: autoconf.h,v 1.5 1996/12/17 06:47:40 scottr Exp $	*/
 
 /*
@@ -54,10 +54,8 @@ int	badladdr(register caddr_t addr);
 
 /* clock.h */
 
-void	enablertclock(void);
 void	cpu_initclocks(void);
 void	setstatclockrate(int);
-void	disablertclock(void);
 u_long	clkread(void);
 void	inittodr(time_t);
 void	resettodr(void);
