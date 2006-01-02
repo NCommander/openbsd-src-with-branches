@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockspool.c,v 1.10 2003/07/10 00:04:28 david Exp $	*/
+/*	$OpenBSD: lockspool.c,v 1.11 2005/04/13 02:33:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt <deraadt@theos.com>
@@ -27,10 +27,10 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: lockspool.c,v 1.10 2003/07/10 00:04:28 david Exp $";
+static const char rcsid[] = "$OpenBSD: lockspool.c,v 1.11 2005/04/13 02:33:09 deraadt Exp $";
 #endif /* not lint */
 
-#include <sys/signal.h>
+#include <signal.h>
 #include <pwd.h>
 #include <syslog.h>
 #include <unistd.h>
