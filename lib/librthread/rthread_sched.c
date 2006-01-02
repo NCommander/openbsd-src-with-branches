@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_sched.c,v 1.4 2005/12/30 04:05:55 tedu Exp $ */
+/*	$OpenBSD: rthread_sched.c,v 1.5 2005/12/31 08:51:20 otto Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -132,7 +132,7 @@ pthread_suspend_np(pthread_t thread)
 {
 	int errn = 0;
 
-	if (thread->tid == pthread_self()->tid)
+	if (thread->tid == getthrid())
 		return (EDEADLK);
 	/*
 	 * XXX Avoid a bug in current signal handling by refusing to
