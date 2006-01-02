@@ -1,4 +1,4 @@
-/*      $OpenBSD: cpu.h,v 1.16 2004/06/13 21:49:21 niklas Exp $      */
+/*      $OpenBSD: cpu.h,v 1.17 2004/07/07 23:10:45 deraadt Exp $      */
 /*      $NetBSD: cpu.h,v 1.41 1999/10/21 20:01:36 ragge Exp $      */
 
 /*
@@ -45,7 +45,6 @@
 #include <machine/uvax.h>
 #include <machine/psl.h>
 
-#define enablertclock()
 #define	cpu_wait(p)
 #define	cpu_swapout(p)
 #define	cpu_number()			0
