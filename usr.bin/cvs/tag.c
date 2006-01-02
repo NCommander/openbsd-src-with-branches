@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.34 2005/12/22 14:59:54 xsa Exp $	*/
+/*	$OpenBSD: tag.c,v 1.35 2005/12/30 02:03:28 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
@@ -25,12 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "includes.h"
 
 #include "cvs.h"
 #include "log.h"

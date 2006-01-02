@@ -1,4 +1,4 @@
-/*	$OpenBSD: xmalloc.c,v 1.3 2005/12/19 18:21:31 xsa Exp $ */
+/*	$OpenBSD: xmalloc.c,v 1.4 2005/12/30 17:51:01 reyk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -13,8 +13,7 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include "includes.h"
 
 #include "xmalloc.h"
 #include "log.h"

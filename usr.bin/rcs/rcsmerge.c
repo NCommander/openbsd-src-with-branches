@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsmerge.c,v 1.10 2005/11/28 14:43:59 xsa Exp $	*/
+/*	$OpenBSD: rcsmerge.c,v 1.11 2005/12/10 20:27:46 joris Exp $	*/
 /*
  * Copyright (c) 2005 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -24,13 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-#include <sys/stat.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "log.h"
 #include "rcs.h"

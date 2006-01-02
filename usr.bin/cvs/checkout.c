@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.42 2005/12/30 02:03:28 joris Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.43 2005/12/30 17:51:01 reyk Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,14 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "cvs.h"
 #include "log.h"

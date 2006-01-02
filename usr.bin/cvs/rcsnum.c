@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsnum.c,v 1.20 2005/12/27 16:08:26 niallo Exp $	*/
+/*	$OpenBSD: rcsnum.c,v 1.21 2005/12/30 17:51:01 reyk Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,12 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "includes.h"
 
 #include "cvs.h"
 #include "log.h"

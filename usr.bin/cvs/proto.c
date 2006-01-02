@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.c,v 1.83 2005/12/30 16:47:36 joris Exp $	*/
+/*	$OpenBSD: proto.c,v 1.84 2005/12/30 17:51:01 reyk Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -41,17 +41,7 @@
  *
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <libgen.h>
-#include <pwd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "cvs.h"
 #include "log.h"

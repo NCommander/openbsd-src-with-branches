@@ -1,4 +1,4 @@
-/*	$OpenBSD: ident.c,v 1.7 2005/11/23 16:01:47 xsa Exp $	*/
+/*	$OpenBSD: ident.c,v 1.8 2005/11/30 17:51:12 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -24,13 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "log.h"
 #include "rcs.h"

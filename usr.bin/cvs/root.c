@@ -1,4 +1,4 @@
-/*	$OpenBSD: root.c,v 1.26 2005/12/10 20:27:45 joris Exp $	*/
+/*	$OpenBSD: root.c,v 1.27 2005/12/20 16:55:21 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,15 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
-
-#include <err.h>
-#include <errno.h>
-#include <paths.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "cvs.h"
 #include "log.h"

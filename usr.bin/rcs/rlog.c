@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlog.c,v 1.16 2005/12/02 09:55:39 xsa Exp $	*/
+/*	$OpenBSD: rlog.c,v 1.17 2005/12/27 16:36:03 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -24,14 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-#include <sys/stat.h>
-
-#include <dirent.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "log.h"
 #include "rcs.h"

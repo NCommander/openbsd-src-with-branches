@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.40 2005/12/30 02:03:28 joris Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.41 2005/12/30 17:51:01 reyk Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -24,15 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/queue.h>
-#include <sys/time.h>
-#include <sys/stat.h>
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "cvs.h"
 #include "log.h"

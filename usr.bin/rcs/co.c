@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.49 2005/12/23 00:59:56 joris Exp $	*/
+/*	$OpenBSD: co.c,v 1.50 2005/12/27 16:05:21 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -24,13 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-#include <sys/stat.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "log.h"
 #include "rcs.h"

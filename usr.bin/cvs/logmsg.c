@@ -1,4 +1,4 @@
-/*	$OpenBSD: logmsg.c,v 1.25 2005/12/22 13:19:12 moritz Exp $	*/
+/*	$OpenBSD: logmsg.c,v 1.26 2005/12/30 02:03:28 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,14 +24,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "includes.h"
 
 #include "buf.h"
 #include "cvs.h"
