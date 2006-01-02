@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.31 2005/12/03 02:19:17 joris Exp $	*/
+/*	$OpenBSD: file.h,v 1.32 2005/12/04 17:39:02 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -26,11 +26,6 @@
 
 #ifndef FILE_H
 #define FILE_H
-
-#include <sys/param.h>
-
-#include <dirent.h>
-#include <search.h>
 
 #include "rcs.h"
 
