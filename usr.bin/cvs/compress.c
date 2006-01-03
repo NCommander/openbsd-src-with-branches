@@ -1,4 +1,4 @@
-/*	$OpenBSD: zlib.c,v 1.5 2005/12/21 10:49:29 xsa Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -28,7 +28,7 @@
 
 #include "log.h"
 #include "cvs.h"
-#include "zlib.h"
+#include "compress.h"
 
 #define CVS_ZLIB_BUFSIZE	1024
 
