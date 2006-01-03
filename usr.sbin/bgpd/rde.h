@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.77 2005/12/30 17:20:21 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.78 2006/01/03 22:19:59 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -235,6 +235,8 @@ struct prefix {
 	time_t				 lastchange;
 	u_int32_t			 flags;
 };
+
+extern struct rde_memstats rdemem;
 
 /* prototypes */
 /* rde.c */
