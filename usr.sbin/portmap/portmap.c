@@ -1,4 +1,4 @@
-/*	$OpenBSD: portmap.c,v 1.33 2005/05/03 01:01:15 djm Exp $	*/
+/*	$OpenBSD: portmap.c,v 1.34 2005/05/22 21:19:39 henning Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Theo de Raadt (OpenBSD). All rights reserved.
@@ -40,7 +40,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)portmap.c	5.4 (Berkeley) 4/19/91";
 #else
-static char rcsid[] = "$OpenBSD: portmap.c,v 1.33 2005/05/03 01:01:15 djm Exp $";
+static char rcsid[] = "$OpenBSD: portmap.c,v 1.34 2005/05/22 21:19:39 henning Exp $";
 #endif
 #endif /* not lint */
 
@@ -83,8 +83,18 @@ static char sccsid[] = "@(#)portmap.c 1.32 87/08/06 Copyr 1984 Sun Micro";
  * Mountain View, California  94043
  */
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
+
+#include <rpcsvc/nfs_prot.h>
+#include <arpa/inet.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_prot.h>
+
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,13 +103,6 @@ static char sccsid[] = "@(#)portmap.c 1.32 87/08/06 Copyr 1984 Sun Micro";
 #include <netdb.h>
 #include <pwd.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <sys/signal.h>
-#include <sys/resource.h>
-#include <rpcsvc/nfs_prot.h>
-#include <arpa/inet.h>
 
 void reg_service(struct svc_req *, SVCXPRT *);
 void reap(int);
@@ -262,7 +265,7 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	(void)signal(SIGCHLD, (void (*)(int))reap);
+	(void)signal(SIGCHLD, reap);
 	svc_run();
 	syslog(LOG_ERR, "svc_run returned unexpectedly");
 	abort();
