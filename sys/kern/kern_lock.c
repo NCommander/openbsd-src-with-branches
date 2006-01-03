@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.20 2005/11/19 02:18:01 pedro Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.21 2005/11/28 00:14:28 jsg Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -55,11 +55,6 @@
 
 void record_stacktrace(int *, int);
 void playback_stacktrace(int *, int);
-
-/*
- * Locking primitives implementation.
- * Locks provide shared/exclusive sychronization.
- */
 
 /*
  * Locking primitives implementation.
