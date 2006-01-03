@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.127 2005/12/24 14:11:13 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.128 2006/01/03 13:13:16 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -237,6 +237,7 @@ main(int argc, char *argv[])
 
 	while ((net = TAILQ_FIRST(&net_l)) != NULL) {
 		TAILQ_REMOVE(&net_l, net, entry);
+		filterset_free(&net->net.attrset);
 		free(net);
 	}
 

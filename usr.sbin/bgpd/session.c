@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.238 2005/11/01 10:58:29 claudio Exp $ */
+/*	$OpenBSD: session.c,v 1.239 2005/12/08 15:55:26 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -248,6 +248,7 @@ session_main(struct bgpd_config *config, struct peer *cpeers,
 	/* network list is not used in the SE */
 	while ((net = TAILQ_FIRST(net_l)) != NULL) {
 		TAILQ_REMOVE(net_l, net, entry);
+		filterset_free(&net->net.attrset);
 		free(net);
 	}
 
