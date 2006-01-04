@@ -1,8 +1,9 @@
-/*	$OpenBSD: itevar.h,v 1.3 2002/03/14 01:26:35 millert Exp $	*/
-/*	$NetBSD: itevar.h,v 1.1 1996/05/05 06:16:49 briggs Exp $	*/
+/*	$OpenBSD: akbdvar.h,v 1.3 2002/03/27 21:48:12 drahn Exp $	*/
+/*	$NetBSD: akbdvar.h,v 1.4 1999/02/17 14:56:56 tsubai Exp $	*/
 
 /*
- * Copyright (c) 1995 Allen Briggs.  All rights reserved.
+ * Copyright (C) 1998	Colin Wood
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,7 +15,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by Allen Briggs.
+ *	This product includes software developed by Colin Wood.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
@@ -26,31 +27,45 @@
  * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _MAC68K_KBDVAR_H_
+#define _MAC68K_KBDVAR_H_
 
 #include <machine/adbsys.h>
 
-int	ite_intr(adb_event_t *event);
-int	iteon(dev_t dev, int flags);
-int	iteoff(dev_t dev, int flags);
-void	itereset(void);
+/*
+ * State info, per keyboard instance.
+ */
+struct akbd_softc {
+	struct	device	sc_dev;
 
-#ifndef CN_DEAD
-#include <dev/cons.h>
-#endif
+	/* ADB info */
+	int		origaddr;	/* ADB device type (ADBADDR_KBD) */
+	int		adbaddr;	/* current ADB address */
+	int		handler_id;	/* type of keyboard */
 
-void	itestop(struct tty * tp, int flag);
-void	itestart(register struct tty * tp);
-int	iteopen(dev_t dev, int mode, int devtype, struct proc * p);
-int	iteclose(dev_t dev, int flag, int mode, struct proc * p);
-int	iteread(dev_t dev, struct uio * uio, int flag);
-int	itewrite(dev_t dev, struct uio * uio, int flag);
-int	iteioctl(dev_t, int, caddr_t, int, struct proc *);
-struct tty	*itetty(dev_t dev);
+	u_int8_t	sc_leds;	/* current LED state */
+	struct device	*sc_wskbddev;
+#ifdef WSDISPLAY_COMPAT_RAWKBD
+#define MAXKEYS 20
+#define REP_DELAY1 400
+#define REP_DELAYN 100
+	int sc_rawkbd;
+	int sc_nrep;
+	char sc_rep[MAXKEYS];
+	struct timeout sc_rawrepeat_ch;
+#endif /* defined(WSDISPLAY_COMPAT_RAWKBD) */
+};
 
-int	itecnprobe(struct consdev * cp);
-int	itecninit(struct consdev * cp);
-int	itecngetc(dev_t dev);
-void	itecnputc(dev_t dev, int c);
+/* LED register bits, inverse of actual register value */
+#define LED_NUMLOCK	0x1
+#define LED_CAPSLOCK	0x2
+#define LED_SCROLL_LOCK	0x4
+
+void kbd_adbcomplete(caddr_t buffer, caddr_t data_area, int adb_command);
+int akbd_cnattach(void);
+
+#endif /* _MAC68K_KBDVAR_H_ */
