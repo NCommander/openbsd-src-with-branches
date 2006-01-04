@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.36 2005/07/31 03:52:18 pascoe Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.37 2005/08/02 13:42:05 markus Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -223,9 +223,6 @@ loop_clone_destroy(ifp)
 	if (ifp == lo0ifp)
 		return (EPERM);
 
-#if NBPFILTER > 0
-	bpfdetach(ifp);
-#endif
 	if_detach(ifp);
 
 	free(ifp, M_DEVBUF);

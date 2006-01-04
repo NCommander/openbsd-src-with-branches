@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sl.c,v 1.28 2004/06/21 23:50:36 tholo Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.29 2004/06/24 19:35:25 tholo Exp $	*/
 /*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
@@ -253,9 +253,6 @@ sl_clone_destroy(ifp)
 	LIST_REMOVE(sc, sc_list);
 	splx(s);
 
-#if NBPFILTER > 0
-	bpfdetach(ifp);
-#endif
 	if_detach(ifp);
 
 	free(sc, M_DEVBUF);

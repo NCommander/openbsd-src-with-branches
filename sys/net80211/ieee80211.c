@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211.c,v 1.14 2005/10/07 23:30:02 reyk Exp $	*/
+/*	$OpenBSD: ieee80211.c,v 1.15 2005/12/09 03:48:11 jsg Exp $	*/
 /*	$NetBSD: ieee80211.c,v 1.19 2004/06/06 05:45:29 dyoung Exp $	*/
 
 /*-
@@ -180,9 +180,6 @@ ieee80211_ifdetach(struct ifnet *ifp)
 	ieee80211_node_detach(ifp);
 	LIST_REMOVE(ic, ic_list);
 	ifmedia_delete_instance(&ic->ic_media, IFM_INST_ANY);
-#if NBPFILTER > 0
-	bpfdetach(ifp);
-#endif
 	ether_ifdetach(ifp);
 }
 

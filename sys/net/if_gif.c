@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.31 2003/12/16 20:33:25 markus Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.32 2005/07/31 03:52:18 pascoe Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -131,9 +131,6 @@ gif_clone_destroy(ifp)
 	LIST_REMOVE(sc, gif_list);
 	splx(s);
 
-#if NBPFILTER > 0
-	bpfdetach(ifp);
-#endif
 	if_detach(ifp);
 
 	if (sc->gif_psrc)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ral.c,v 1.64 2005/11/23 20:51:20 damien Exp $  */
+/*	$OpenBSD: ral.c,v 1.65 2005/11/23 21:29:01 damien Exp $  */
 
 /*-
  * Copyright (c) 2005
@@ -473,9 +473,6 @@ ral_detach(struct ral_softc *sc)
 	timeout_del(&sc->scan_ch);
 	timeout_del(&sc->rssadapt_ch);
 
-#if NBPFILTER > 0
-	bpfdetach(ifp);
-#endif
 	ieee80211_ifdetach(ifp);
 	if_detach(ifp);
 
