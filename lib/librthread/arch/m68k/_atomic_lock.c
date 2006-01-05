@@ -1,9 +1,9 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.6 2002/10/11 19:08:41 marc Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.1 2005/12/23 18:50:23 miod Exp $	*/
 /*
  * Atomic lock for m68k
  */
 
-#include "spinlock.h"
+#include <spinlock.h>
 
 int
 _atomic_lock(volatile _spinlock_lock_t *lock)

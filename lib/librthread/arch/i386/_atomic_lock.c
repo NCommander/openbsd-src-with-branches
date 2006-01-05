@@ -1,11 +1,11 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.7 2002/10/11 19:08:41 marc Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.1 2005/12/03 18:16:19 tedu Exp $	*/
 /* David Leonard, <d@csee.uq.edu.au>. Public domain. */
 
 /*
  * Atomic lock for i386
  */
 
-#include <machine/spinlock.h>
+#include <spinlock.h>
 
 int
 _atomic_lock(register volatile _spinlock_lock_t *lock)

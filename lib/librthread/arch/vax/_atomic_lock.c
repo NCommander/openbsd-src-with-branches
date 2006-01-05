@@ -1,11 +1,11 @@
-/*	$OpenBSD: _atomic_lock.c,v 1.4 2003/05/19 18:31:49 miod Exp $	*/
+/*	$OpenBSD: _atomic_lock.c,v 1.1 2005/12/23 19:52:04 miod Exp $	*/
 
 /*
  * Atomic lock for vax
  * Written by Miodrag Vallat <miod@openbsd.org> - placed in the public domain.
  */
 
-#include "spinlock.h"
+#include <spinlock.h>
 
 int
 _atomic_lock(volatile _spinlock_lock_t *lock)
