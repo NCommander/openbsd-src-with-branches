@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.1 2005/04/01 10:54:27 mickey Exp $	*/
+/*	$OpenBSD: brk.S,v 1.2 2005/08/07 16:40:14 espie Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -36,7 +36,7 @@
 minbrk
 	.long	end
 
-SYSENTRY(brk,0)
+SYSENTRY(brk)
 #ifdef PIC
 	addil	LT%minbrk, r19
 	ldd	RT%minbrk(r1), t1
