@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi.c,v 1.12 2005/12/18 15:53:00 sturm Exp $	*/
+/*	$OpenBSD: acpi.c,v 1.13 2005/12/28 03:09:21 marco Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -810,7 +810,7 @@ acpi_enter_sleep_state(struct acpi_softc *sc, int state)
 void
 acpi_powerdown(void)
 {
-	acpi_enter_sleep_state(acpi_softc, 5);
+	acpi_enter_sleep_state(acpi_softc, ACPI_STATE_S5);
 }
 
 int
