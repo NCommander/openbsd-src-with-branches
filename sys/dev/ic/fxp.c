@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxp.c,v 1.72 2005/06/08 17:02:59 henning Exp $	*/
+/*	$OpenBSD: fxp.c,v 1.73 2005/11/07 03:20:00 brad Exp $	*/
 /*	$NetBSD: if_fxp.c,v 1.2 1997/06/05 02:01:55 thorpej Exp $	*/
 
 /*
@@ -1847,6 +1847,9 @@ struct ucode {
 	    D102_C_CPUSAVER_BUNDLE_MAX_DWORD, "fxp-d102c" },
 
 	{ FXP_REV_82551_F, D102_E_CPUSAVER_DWORD,
+	    D102_E_CPUSAVER_BUNDLE_MAX_DWORD, "fxp-d102e" },
+
+	{ FXP_REV_82551_10, D102_E_CPUSAVER_DWORD,
 	    D102_E_CPUSAVER_BUNDLE_MAX_DWORD, "fxp-d102e" },
 	
 	{ 0, 0, 0, NULL }
