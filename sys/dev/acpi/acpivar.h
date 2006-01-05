@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.8 2005/12/28 03:06:30 jordan Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.9 2005/12/30 05:59:40 tedu Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -125,6 +125,11 @@ struct acpi_softc {
 	int			 sc_sleepbtn;
 
 	struct acpi_parsestate   amlpc;
+
+	struct {
+		int slp_typa;
+		int slp_typb;
+	}			 sc_sleeptype[5];
 };
 
 struct acpi_table {
