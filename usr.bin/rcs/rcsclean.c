@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsclean.c,v 1.21 2005/12/19 18:24:12 xsa Exp $	*/
+/*	$OpenBSD: rcsclean.c,v 1.22 2006/01/02 08:13:28 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -26,10 +26,8 @@
 
 #include "includes.h"
 
-#include "log.h"
-#include "rcs.h"
-#include "diff.h"
 #include "rcsprog.h"
+#include "diff.h"
 
 static int rcsclean_file(char *, RCSNUM *);
 static int nflag = 0;
