@@ -1,4 +1,4 @@
-/*	$OpenBSD: fork.S,v 1.9 2003/06/02 20:28:04 mickey Exp $	*/
+/*	$OpenBSD: fork.S,v 1.10 2005/08/07 16:40:14 espie Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -28,7 +28,7 @@
 
 #include "SYS.h"
 
-SYSENTRY(fork,0)
+SYSENTRY(fork)
 	SYSCALL(fork)
 	addi	-1, ret1, ret1
 	bv	r0(rp)
