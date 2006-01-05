@@ -1,7 +1,7 @@
-/*	$OpenBSD: ichiic.c,v 1.7 2006/01/02 08:11:25 brad Exp $	*/
+/*	$OpenBSD: ichiic.c,v 1.8 2006/01/05 08:16:22 grange Exp $	*/
 
 /*
- * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
+ * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
