@@ -1,8 +1,7 @@
-/*	$OpenBSD: stdarg.h,v 1.5 2003/06/02 23:27:53 millert Exp $	*/
-/*	$NetBSD: stdarg.h,v 1.1 1996/09/30 16:34:35 ws Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
- * Copyright (c) 1991, 1993
+ * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,19 +28,42 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)stdarg.h	8.1 (Berkeley) 6/10/93
+ *	@(#)types.h	8.3 (Berkeley) 1/5/94
  */
 
-#ifndef _POWERPC_STDARG_H_
-#define	_POWERPC_STDARG_H_
+#ifndef _SYS__TYPES_H_
+#define	_SYS__TYPES_H_
 
 #include <machine/_types.h>
 
-#ifndef	_STDARG_H
-#define	_STDARG_H
-#endif
-#include <machine/va-ppc.h>
+typedef	unsigned long	__cpuid_t;	/* CPU id */
+typedef	__int32_t	__dev_t;	/* device number */
+typedef	__uint32_t	__fixpt_t;	/* fixed point number */
+typedef	__uint32_t	__gid_t;	/* group id */
+typedef	__uint32_t	__id_t;		/* may contain pid, uid or gid */
+typedef __uint32_t	__in_addr_t;	/* base type for internet address */
+typedef __uint16_t	__in_port_t;	/* IP port type */
+typedef	__uint32_t	__ino_t;	/* inode number */
+typedef	long		__key_t;	/* IPC key (for Sys V IPC) */
+typedef	__uint32_t	__mode_t;	/* permissions */
+typedef	__uint32_t	__nlink_t;	/* link count */
+typedef	__int32_t	__pid_t;	/* process id */
+typedef __uint64_t	__rlim_t;	/* resource limit */
+typedef __uint8_t	__sa_family_t;	/* sockaddr address family type */
+typedef	__int32_t	__segsz_t;	/* segment size */
+typedef __uint32_t	__socklen_t;	/* length type for network syscalls */
+typedef	__int32_t	__swblk_t;	/* swap offset */
+typedef	__uint32_t	__uid_t;	/* user id */
+typedef	__uint32_t	__useconds_t;	/* microseconds */
+typedef	__int32_t	__suseconds_t;	/* microseconds (signed) */
 
-typedef __va_list	va_list;
+/*
+ * mbstate_t is an opaque object to keep conversion state, during multibyte
+ * stream conversions. The content must not be referenced by user programs.
+ */
+typedef union {
+	char __mbstate8[128];
+	__int64_t __mbstateL;			/* for alignment */
+} __mbstate_t;
 
-#endif /* !_POWERPC_STDARG_H_ */
+#endif /* !_SYS__TYPES_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vasprintf.c,v 1.11 2005/08/08 08:05:36 espie Exp $	*/
+/*	$OpenBSD: vasprintf.c,v 1.12 2005/10/10 12:00:52 espie Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -23,7 +23,7 @@
 #include "local.h"
 
 int
-vasprintf(char **str, const char *fmt, _BSD_VA_LIST_ ap)
+vasprintf(char **str, const char *fmt, __va_list ap)
 {
 	int ret;
 	FILE f;

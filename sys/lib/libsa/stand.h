@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.42 2003/08/11 06:23:09 deraadt Exp $	*/
+/*	$OpenBSD: stand.h,v 1.43 2004/01/03 14:08:53 espie Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -136,7 +136,7 @@ u_int	dkcksum(struct disklabel *);
 
 void	printf(const char *, ...);
 int	snprintf(char *, size_t, const char *, ...);
-void	vprintf(const char *, _BSD_VA_LIST_);
+void	vprintf(const char *, __va_list);
 void	twiddle(void);
 void	gets(char *);
 __dead void	panic(const char *, ...) __attribute__((noreturn));

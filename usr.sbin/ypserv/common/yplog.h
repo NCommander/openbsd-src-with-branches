@@ -1,4 +1,4 @@
-/*	$OpenBSD: yplog.h,v 1.4 2002/02/16 21:28:11 millert Exp $ */
+/*	$OpenBSD: yplog.h,v 1.5 2003/06/02 21:58:26 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -31,7 +31,7 @@
 
 __BEGIN_DECLS
 void    yplog(const char *, ...);
-void    vyplog(const char *, _BSD_VA_LIST_);
+void    vyplog(const char *, __va_list);
 void	ypopenlog(void);
 void	ypcloselog(void);
 __END_DECLS

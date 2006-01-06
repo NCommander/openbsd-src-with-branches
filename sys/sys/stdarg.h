@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdarg.h,v 1.2 2004/01/03 14:55:34 espie Exp $ */
+/*	$OpenBSD: stdarg.h,v 1.3 2004/02/26 17:21:59 drahn Exp $ */
 /*
  * Copyright (c) 2003, 2004  Marc espie <espie@openbsd.org>
  *
@@ -19,7 +19,6 @@
 #define _STDARG_H_
 
 #if defined(__GNUC__) && __GNUC__ >= 3
-#include <machine/ansi.h>
 
 /* Define __gnuc_va_list.  */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: vsscanf.c,v 1.10 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -44,7 +44,7 @@ eofread(void *cookie, char *buf, int len)
 }
 
 int
-vsscanf(const char *str, const char *fmt, _BSD_VA_LIST_ ap)
+vsscanf(const char *str, const char *fmt, __va_list ap)
 {
 	FILE f;
 	struct __sfileext fext;

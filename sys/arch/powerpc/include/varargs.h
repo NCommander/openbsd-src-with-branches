@@ -1,4 +1,4 @@
-/*	$OpenBSD: varargs.h,v 1.3 2001/09/01 15:49:05 drahn Exp $	*/
+/*	$OpenBSD: varargs.h,v 1.4 2003/06/02 23:27:53 millert Exp $	*/
 /*	$NetBSD: varargs.h,v 1.1 1996/09/30 16:34:37 ws Exp $	*/
 
 /*-
@@ -42,9 +42,9 @@
 
 #define _VARARGS_H
 
-#include <machine/ansi.h>
+#include <machine/_types.h>
 #include <machine/va-ppc.h>
 
-typedef _BSD_VA_LIST_ va_list;
+typedef __va_list va_list;
 
 #endif /* !_POWERPC_VARARGS_H_ */

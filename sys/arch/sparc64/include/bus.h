@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.16 2003/06/24 21:54:39 henric Exp $	*/
+/*	$OpenBSD: bus.h,v 1.17 2005/07/10 00:23:11 brad Exp $	*/
 /*	$NetBSD: bus.h,v 1.31 2001/09/21 15:30:41 wiz Exp $	*/
 
 /*-
@@ -73,7 +73,6 @@
 #ifndef _SPARC_BUS_H_
 #define _SPARC_BUS_H_
 
-#include <machine/types.h>
 #include <machine/ctlreg.h>
 
 /*
