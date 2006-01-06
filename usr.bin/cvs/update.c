@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.50 2005/12/30 16:42:13 xsa Exp $	*/
+/*	$OpenBSD: update.c,v 1.51 2006/01/02 08:11:56 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -213,6 +213,7 @@ cvs_update_local(CVSFILE *cf, void *arg)
 
 	revdiff = ret = 0;
 	rf = NULL;
+	frev = NULL;
 	islocal = (cvs_cmdop != CVS_OP_SERVER);
 
 	root = CVS_DIR_ROOT(cf);
