@@ -1,4 +1,4 @@
-/*	$OpenBSD: dump.c,v 1.2 2001/01/29 01:58:26 niklas Exp $	*/
+/*	$OpenBSD: dump.c,v 1.3 2003/06/03 02:56:21 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -49,7 +49,7 @@ parse(fp)
 	int ch, s1, s2, s3;
 
 #define	TESTD(s) {							\
-	if ((s = getc(fp)) == EOF)					\
+	if (((s) = getc(fp)) == EOF)					\
 		return;							\
 	if (!isdigit(s))						\
 		continue;						\

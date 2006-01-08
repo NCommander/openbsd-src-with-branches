@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_at.c,v 1.4 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: v_at.c,v 1.5 2005/10/17 19:12:16 otto Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -90,9 +90,9 @@ v_at(sp, vp)
 	 * logging code to be available.
 	 */
 	CIRCLEQ_FOREACH_REVERSE(tp, &cbp->textq, q)
-		if ((F_ISSET(cbp, CB_LMODE) ||
+		if (((F_ISSET(cbp, CB_LMODE) ||
 		    CIRCLEQ_NEXT(tp, q) != CIRCLEQ_END(&cbp->textq)) &&
-		    v_event_push(sp, NULL, "\n", 1, 0) ||
+		    v_event_push(sp, NULL, "\n", 1, 0)) ||
 		    v_event_push(sp, NULL, tp->lb, tp->len, 0))
 			return (1);
 

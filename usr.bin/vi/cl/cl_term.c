@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_term.c,v 1.12 2002/02/16 21:27:56 millert Exp $	*/
+/*	$OpenBSD: cl_term.c,v 1.13 2005/10/17 19:12:16 otto Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -412,16 +412,18 @@ cl_ssize(sp, sigwinch, rowp, colp, changedp)
 	if (row == 0 || col == 0) {
 		if ((p = getenv("TERM")) == NULL)
 			goto noterm;
-		if (row == 0)
+		if (row == 0) {
 			if ((rval = tigetnum("lines")) < 0)
 				msgq(sp, M_SYSERR, "tigetnum: lines");
 			else
 				row = rval;
-		if (col == 0)
+		}
+		if (col == 0) {
 			if ((rval = tigetnum("cols")) < 0)
 				msgq(sp, M_SYSERR, "tigetnum: cols");
 			else
 				col = rval;
+		}
 	}
 
 	/* If nothing else, well, it's probably a VT100. */

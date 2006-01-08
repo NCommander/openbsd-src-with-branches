@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_line.c,v 1.6 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: vs_line.c,v 1.7 2003/07/21 07:20:18 dhartmei Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -174,7 +174,7 @@ vs_line(sp, smp, yp, xp)
 		 * Lots of special cases for empty lines, but they only apply
 		 * if we're displaying the first screen of the line.
 		 */
-		if (skip_cols == 0)
+		if (skip_cols == 0) {
 			if (dne) {
 				if (smp->lno == 1) {
 					if (list_dollar) {
@@ -191,6 +191,7 @@ vs_line(sp, smp, yp, xp)
 empty:					(void)gp->scr_addstr(sp,
 					    KEY_NAME(sp, ch), KEY_LEN(sp, ch));
 				}
+		}
 
 		(void)gp->scr_clrtoeol(sp);
 		(void)gp->scr_move(sp, oldy, oldx);

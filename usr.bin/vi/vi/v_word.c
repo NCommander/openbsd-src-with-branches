@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_word.c,v 1.3 2001/01/29 01:58:54 niklas Exp $	*/
+/*	$OpenBSD: v_word.c,v 1.4 2002/02/16 21:27:58 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -127,7 +127,7 @@ fword(sp, vp, type)
 	 *	counts as a single word move.  If it's a motion command,
 	 *	don't move off the end of the line.
 	 */
-	if (cs.cs_flags == CS_EMP || cs.cs_flags == 0 && isblank(cs.cs_ch)) {
+	if (cs.cs_flags == CS_EMP || (cs.cs_flags == 0 && isblank(cs.cs_ch))) {
 		if (ISMOTION(vp) && cs.cs_flags != CS_EMP && cnt == 1) {
 			if (ISCMD(vp->rkp, 'c'))
 				return (0);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_main.c,v 1.13 2002/02/17 19:42:33 millert Exp $	*/
+/*	$OpenBSD: cl_main.c,v 1.14 2003/07/18 23:11:43 david Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -196,7 +196,6 @@ static GS *
 gs_init(name)
 	char *name;
 {
-	CL_PRIVATE *clp;
 	GS *gp;
 	char *p;
 

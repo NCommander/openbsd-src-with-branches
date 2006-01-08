@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_increment.c,v 1.4 2001/01/29 01:58:50 niklas Exp $	*/
+/*	$OpenBSD: v_increment.c,v 1.5 2002/02/16 21:27:58 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -102,7 +102,7 @@ v_increment(sp, vp)
 	}
 
 #undef	ishex
-#define	ishex(c)	(isdigit(c) || strchr("abcdefABCDEF", c))
+#define	ishex(c)	(isdigit(c) || strchr("abcdefABCDEF", (c)))
 #undef	isoctal
 #define	isoctal(c)	(isdigit(c) && (c) != '8' && (c) != '9')
 

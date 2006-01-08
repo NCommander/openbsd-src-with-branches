@@ -1,4 +1,4 @@
-/*	$OpenBSD: getc.c,v 1.5 2001/01/29 01:58:49 niklas Exp $	*/
+/*	$OpenBSD: getc.c,v 1.6 2002/02/16 21:27:58 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -156,7 +156,7 @@ cs_fblank(sp, csp)
 		if (cs_next(sp, csp))
 			return (1);
 		if (csp->cs_flags == CS_EOL || csp->cs_flags == CS_EMP ||
-		    csp->cs_flags == 0 && isblank(csp->cs_ch))
+		    (csp->cs_flags == 0 && isblank(csp->cs_ch)))
 			continue;
 		break;
 	}
@@ -230,7 +230,7 @@ cs_bblank(sp, csp)
 		if (cs_prev(sp, csp))
 			return (1);
 		if (csp->cs_flags == CS_EOL || csp->cs_flags == CS_EMP ||
-		    csp->cs_flags == 0 && isblank(csp->cs_ch))
+		    (csp->cs_flags == 0 && isblank(csp->cs_ch)))
 			continue;
 		break;
 	}
