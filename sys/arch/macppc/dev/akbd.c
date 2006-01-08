@@ -1,4 +1,4 @@
-/*	$OpenBSD: akbd.c,v 1.18 2005/11/21 18:16:37 millert Exp $	*/
+/*	$OpenBSD: akbd.c,v 1.19 2005/12/21 18:50:52 miod Exp $	*/
 /*	$NetBSD: akbd.c,v 1.13 2001/01/25 14:08:55 tsubai Exp $	*/
 
 /*
@@ -141,6 +141,7 @@ akbdattach(struct device *parent, struct device *self, void *aux)
 	adbinfo.siServiceRtPtr = (Ptr)kbd_adbcomplete;
 	adbinfo.siDataAreaAddr = (caddr_t)sc;
 
+	printf(": ");
 	switch (sc->handler_id) {
 	case ADB_STDKBD:
 		printf("standard keyboard\n");
