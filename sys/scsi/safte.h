@@ -1,7 +1,7 @@
-/*	$OpenBSD: safte.h,v 1.4 2005/08/18 09:51:05 dlg Exp $ */
+/*	$OpenBSD: safte.h,v 1.5 2005/08/22 04:23:58 david Exp $ */
 
 /*
- * Copyright (c) 2005 Daivd Gwynne <dlg@openbsd.org>
+ * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
