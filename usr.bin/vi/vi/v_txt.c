@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_txt.c,v 1.16 2005/10/17 19:12:16 otto Exp $	*/
+/*	$OpenBSD: v_txt.c,v 1.17 2006/01/08 21:05:40 miod Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -1941,8 +1941,10 @@ txt_dent(sp, tp, isindent)
 	target = current;
 	if (isindent)
 		target += COL_OFF(target, sw);
-	else
-		target -= --target % sw;
+	else {
+		--target;
+		target -= target % sw;
+	}
 
 	/*
 	 * The AI characters will be turned into overwrite characters if the
