@@ -1,7 +1,6 @@
-#	$OpenBSD: list,v 1.5 2004/08/25 15:45:07 mickey Exp $
+#	$OpenBSD: list,v 1.6 2005/01/11 19:21:07 deraadt Exp $
 
 # hppa extra's
-LINK	instbin					sbin/ancontrol
 LINK	instbin					sbin/disklabel
 LINK	instbin					sbin/wicontrol
 LINK	instbin					usr/bin/grep usr/bin/egrep usr/bin/fgrep
