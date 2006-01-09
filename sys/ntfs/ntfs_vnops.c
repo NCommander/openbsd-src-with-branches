@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.8 2005/05/21 19:43:20 brad Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.9 2005/10/19 16:50:47 pedro Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -267,8 +267,10 @@ ntfs_inactive(ap)
 
 	dprintf(("ntfs_inactive: vnode: %p, ntnode: %d\n", vp, ip->i_number));
 
+#ifdef DIAGNOSTIC
 	if (ntfs_prtactive && vp->v_usecount != 0)
 		vprint("ntfs_inactive: pushing active", vp);
+#endif
 
 	VOP__UNLOCK(vp, 0, p);
 
@@ -298,8 +300,10 @@ ntfs_reclaim(ap)
 
 	dprintf(("ntfs_reclaim: vnode: %p, ntnode: %d\n", vp, ip->i_number));
 
+#ifdef DIAGNOSTIC
 	if (ntfs_prtactive && vp->v_usecount != 0)
 		vprint("ntfs_reclaim: pushing active", vp);
+#endif
 
 #ifndef __OpenBSD__
 	if ((error = ntfs_ntget(ip)) != 0)
