@@ -1,4 +1,4 @@
-/*	$OpenBSD: xinstall.c,v 1.41 2004/07/01 18:25:48 otto Exp $	*/
+/*	$OpenBSD: xinstall.c,v 1.42 2004/10/04 05:21:27 jsg Exp $	*/
 /*	$NetBSD: xinstall.c,v 1.9 1995/12/20 10:25:17 jonathan Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)xinstall.c	8.1 (Berkeley) 7/21/93";
 #endif
-static char rcsid[] = "$OpenBSD: xinstall.c,v 1.41 2004/07/01 18:25:48 otto Exp $";
+static char rcsid[] = "$OpenBSD: xinstall.c,v 1.42 2004/10/04 05:21:27 jsg Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -615,14 +615,13 @@ create_tempfile(char *path, char *temp, size_t tsize)
 {
 	char *p;
 
-	(void)strncpy(temp, path, tsize);
-	temp[tsize - 1] = '\0';
-	if ((p = strrchr(temp, '/')))
+	strlcpy(temp, path, tsize);
+	if ((p = strrchr(temp, '/')) != NULL)
 		p++;
 	else
 		p = temp;
-	(void)strncpy(p, "INS@XXXXXXXXXX", &temp[tsize - 1] - p);
-	temp[tsize - 1] = '\0';
+	*p = '\0';
+	strlcat(p, "INS@XXXXXXXXXX", tsize);
 
 	return(mkstemp(temp));
 }
