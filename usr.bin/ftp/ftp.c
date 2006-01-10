@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.58 2005/10/30 15:17:41 sturm Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.59 2005/11/13 20:26:09 deraadt Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -60,7 +60,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static char rcsid[] = "$OpenBSD: ftp.c,v 1.58 2005/10/30 15:17:41 sturm Exp $";
+static char rcsid[] = "$OpenBSD: ftp.c,v 1.59 2005/11/13 20:26:09 deraadt Exp $";
 #endif /* not lint and not SMALL */
 
 #include <sys/types.h>
@@ -200,7 +200,9 @@ hookup(char *host, char *port)
 				warn("connect to address %s", hbuf);
 			}
 			cause = "connect";
+			error = errno;
 			close(s);
+			errno = error;
 			s = -1;
 			continue;
 		}
