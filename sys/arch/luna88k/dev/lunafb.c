@@ -1,4 +1,4 @@
-/* $OpenBSD: lunafb.c,v 1.4 2005/01/05 23:04:24 miod Exp $ */
+/* $OpenBSD: lunafb.c,v 1.5 2005/01/31 06:41:27 miod Exp $ */
 /* $NetBSD: lunafb.c,v 1.7.6.1 2002/08/07 01:48:34 lukem Exp $ */
 
 /*-
@@ -158,7 +158,7 @@ const struct cfattach fb_ca = {
 	sizeof(struct omfb_softc), omfbmatch, omfbattach
 };
 
-const struct cfdriver fb_cd = {
+struct cfdriver fb_cd = {
         NULL, "fb", DV_DULL
 };
 
