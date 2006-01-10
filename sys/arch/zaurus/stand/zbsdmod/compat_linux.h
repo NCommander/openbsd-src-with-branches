@@ -1,4 +1,4 @@
-/*	$OpenBSD: compat_linux.h,v 1.2 2005/01/10 21:10:58 uwe Exp $	*/
+/*	$OpenBSD: compat_linux.h,v 1.3 2005/01/14 08:10:17 uwe Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@bsdx.de>
@@ -95,6 +95,7 @@ extern	void *memcpy(void *, const void *, size_t);
 
 /* BSD headers */
 #include <sys/exec_elf.h>
+#include <sys/types.h>
 #include <errno.h>
 
 /* Linux LKM support */
