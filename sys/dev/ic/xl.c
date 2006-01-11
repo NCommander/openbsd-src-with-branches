@@ -1312,19 +1312,16 @@ again:
 #endif
 
 		if (sc->xl_type == XL_TYPE_905B) {
-			if (rxstat & XL_RXSTAT_IPCKERR)
-				sumflags |= M_IPV4_CSUM_IN_BAD;
-			else if (rxstat & XL_RXSTAT_IPCKOK)
+			if (!(rxstat & XL_RXSTAT_IPCKERR) &&
+			    (rxstat & XL_RXSTAT_IPCKOK))
 				sumflags |= M_IPV4_CSUM_IN_OK;
 
-			if (rxstat & XL_RXSTAT_TCPCKERR)
-				sumflags |= M_TCP_CSUM_IN_BAD;
-			else if (rxstat & XL_RXSTAT_TCPCKOK)
+			if (!(rxstat & XL_RXSTAT_TCPCKERR) &&
+			    (rxstat & XL_RXSTAT_TCPCKOK))
 				sumflags |= M_TCP_CSUM_IN_OK;
 
-			if (rxstat & XL_RXSTAT_UDPCKERR)
-				sumflags |= M_UDP_CSUM_IN_BAD;
-			else if (rxstat & XL_RXSTAT_UDPCKOK)
+			if (!(rxstat & XL_RXSTAT_UDPCKERR) &&
+			    (rxstat & XL_RXSTAT_UDPCKOK))
 				sumflags |= M_UDP_CSUM_IN_OK;
 
 			m->m_pkthdr.csum_flags = sumflags;
