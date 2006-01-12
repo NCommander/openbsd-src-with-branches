@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.108 2005/11/15 11:41:26 mickey Exp $
+#	$OpenBSD: Makefile,v 1.109 2005/12/04 19:08:33 pedro Exp $
 #	$NetBSD: Makefile,v 1.4 1996/01/09 03:23:01 thorpej Exp $
 
 #	Makefile for section 9 (kernel function and variable) manual pages.
 
 MAN=	altq.9 audio.9 autoconf.9 boot.9 buffercache.9 bus_dma.9 bus_space.9 \
-	copy.9 crypto.9 ctxsw.9 disk.9 disklabel.9 \
+	copy.9 crypto.9 ctxsw.9 delay.9 disk.9 disklabel.9 \
 	dohooks.9 dopowerhooks.9 \
 	domountroothooks.9 doshutdownhooks.9 dostartuphooks.9 \
 	evcount.9 file.9 \
