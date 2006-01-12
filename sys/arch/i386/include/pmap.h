@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.39 2005/11/22 12:52:12 mickey Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.40 2005/11/23 16:51:28 mickey Exp $	*/
 /*	$NetBSD: pmap.h,v 1.44 2000/04/24 17:18:18 thorpej Exp $	*/
 
 /*
@@ -268,6 +268,7 @@ struct pmap {
 	vaddr_t pm_hiexec;		/* highest executable mapping */
 	int pm_flags;			/* see below */
 
+	struct	segment_descriptor pm_codeseg;	/* cs descriptor for process */
 	union descriptor *pm_ldt;	/* user-set LDT */
 	int pm_ldt_len;			/* number of LDT entries */
 	int pm_ldt_sel;			/* LDT selector */
