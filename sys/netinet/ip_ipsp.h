@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.130 2005/05/28 15:10:07 ho Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.131 2005/11/24 12:08:16 pedro Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -579,6 +579,7 @@ extern int ah_massage_headers(struct mbuf **, int, int, int, int);
 extern void ah4_input(struct mbuf *, ...);
 extern int ah4_input_cb(struct mbuf *, ...);
 extern void *ah4_ctlinput(int, struct sockaddr *, void *);
+extern void *udpencap_ctlinput(int, struct sockaddr *, void *);
 #endif /* INET */
 
 #ifdef INET6
