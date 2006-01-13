@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.10 2006/01/02 18:10:05 miod Exp $	*/
+/*	$OpenBSD: autoconf.h,v 1.11 2006/01/13 19:36:44 miod Exp $	*/
 /*	$NetBSD: autoconf.h,v 1.5 1996/12/17 06:47:40 scottr Exp $	*/
 
 /*
@@ -48,9 +48,6 @@ void	setconf(void);
 /* machdep.c */
 void	mac68k_set_io_offsets(vaddr_t);
 void	dumpconf(void);
-int	badbaddr(register caddr_t addr);
-int	badwaddr(register caddr_t addr);
-int	badladdr(register caddr_t addr);
 
 /* clock.h */
 
