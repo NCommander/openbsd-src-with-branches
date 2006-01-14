@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661reg.h,v 1.3 2006/01/11 21:39:10 damien Exp $	*/
+/*	$OpenBSD: rt2661reg.h,v 1.2 2006/01/10 21:20:46 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -266,7 +266,7 @@ struct rt2661_rx_desc {
 #define RT2661_RX_PHY_ERROR	(1 << 8)
 #define RT2661_RX_CIPHER_MASK	0x00000600
 
-	uint8_t		signal;
+	uint8_t		rate;
 	uint8_t		rssi;
 	uint8_t		reserved1;
 	uint8_t		offset;
