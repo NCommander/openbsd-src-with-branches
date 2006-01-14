@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.2 2005/03/30 00:56:19 pedro Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.3 2005/05/15 21:26:19 pedro Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -98,7 +98,6 @@
 #include <miscfs/specfs/specdev.h>
 
 #include <isofs/udf/ecma167-udf.h>
-#include <isofs/udf/osta.h>
 #include <isofs/udf/udf.h>
 #include <isofs/udf/udf_extern.h>
 

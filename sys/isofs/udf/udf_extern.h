@@ -1,9 +1,14 @@
-/*	$OpenBSD: udf_extern.h,v 1.1 2005/03/29 17:24:52 pedro Exp $	*/
+/*	$OpenBSD: udf_extern.h,v 1.2 2005/03/30 00:37:13 pedro Exp $	*/
 
 /*
  * Written by Pedro Martelletto <pedro@openbsd.org> in February 2005.
  * Public domain.
  */
+
+/*
+ * udf_subr.c
+ */
+int udf_rawnametounicode(u_int len, char *, unicode_t *);
 
 /*
  * udf_vfsops.c
