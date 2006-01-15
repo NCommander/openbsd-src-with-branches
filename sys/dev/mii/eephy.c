@@ -1,4 +1,4 @@
-/*	$OpenBSD: eephy.c,v 1.21 2005/08/14 01:35:09 jsg Exp $	*/
+/*	$OpenBSD: eephy.c,v 1.22 2005/11/06 07:16:47 brad Exp $	*/
 /*
  * Principal Author: Parag Patel
  * Copyright (c) 2001
@@ -97,8 +97,8 @@ static const struct mii_phydesc eephys[] = {
 	  MII_STR_MARVELL_E1000_5 },
 	{ MII_OUI_MARVELL,		MII_MODEL_MARVELL_E1000_6,
 	  MII_STR_MARVELL_E1000_6 },
-	{ MII_OUI_MARVELL,		MII_MODEL_MARVELL_E1111RCJ,
-	  MII_STR_MARVELL_E1111RCJ },
+	{ MII_OUI_MARVELL,		MII_MODEL_MARVELL_E1111,
+	  MII_STR_MARVELL_E1111 },
 
 	{ 0,				0,
 	  NULL },
