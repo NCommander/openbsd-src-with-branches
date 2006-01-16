@@ -1,4 +1,4 @@
-/*	$OpenBSD: rawfs.c,v 1.1 1998/12/15 06:09:51 smurph Exp $ */
+/*	$OpenBSD: rawfs.c,v 1.2 2002/03/14 01:26:40 millert Exp $ */
 
 /*
  * Copyright (c) 1995 Gordon W. Ross
@@ -93,8 +93,8 @@ int	rawfs_close(f)
 int	rawfs_read(f, start, size, resid)
 	struct open_file *f;
 	void *start;
-	u_int size;
-	u_int *resid;
+	size_t size;
+	size_t *resid;
 {
 	struct cfile *fs = (struct cfile *)f->f_fsdata;
 	char *addr = start;
