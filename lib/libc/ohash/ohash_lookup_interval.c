@@ -1,4 +1,4 @@
-/* $OpenBSD: ohash_lookup_interval.c,v 1.1 2001/03/02 13:27:07 espie Exp $ */
+/* $OpenBSD: ohash_lookup_interval.c,v 1.2 2004/06/22 20:00:17 espie Exp $ */
 /* ex:ts=8 sw=4: 
  */
 
@@ -21,7 +21,7 @@
 	
 unsigned int
 ohash_lookup_interval(struct ohash *h, const char *start, const char *end, 
-    u_int32_t hv)
+    uint32_t hv)
 {
 	unsigned int 	i, incr;
 	unsigned int	empty;
