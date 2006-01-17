@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.10 2005/12/20 19:23:57 drahn Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.11 2005/12/21 20:36:02 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.34 2003/06/23 11:01:08 martin Exp $	*/
 
 /*
@@ -290,7 +290,7 @@ void	savectx		(struct pcb *pcb);
 void userret (register struct proc *p, u_int32_t pc, quad_t ticks);
 
 /* machdep.h */
-void bootsync		(void);
+void bootsync		(int);
 
 /* fault.c */
 int badaddr_read	(void *, size_t, void *);

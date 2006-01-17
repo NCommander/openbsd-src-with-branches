@@ -1,4 +1,4 @@
-/*	$OpenBSD: cats_machdep.c,v 1.11 2005/02/17 18:07:37 jfb Exp $	*/
+/*	$OpenBSD: cats_machdep.c,v 1.12 2005/12/17 07:31:25 miod Exp $	*/
 /*	$NetBSD: cats_machdep.c,v 1.50 2003/10/04 14:28:28 chris Exp $	*/
 
 /*
@@ -258,7 +258,7 @@ boot(howto)
 	 * page part of the binary in as the filesystem has been unmounted.
 	 */
 	if (!(howto & RB_NOSYNC))
-		bootsync();
+		bootsync(howto);
 
 	/* Say NO to interrupts */
 	splhigh();
