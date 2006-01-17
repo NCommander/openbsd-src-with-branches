@@ -1,4 +1,4 @@
-/*	$OpenBSD: fingerd.c,v 1.30 2003/06/02 19:38:24 millert Exp $	*/
+/*	$OpenBSD: fingerd.c,v 1.31 2003/10/17 10:41:18 jmc Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -39,11 +39,11 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "from: @(#)fingerd.c	8.1 (Berkeley) 6/4/93";
 #else
-static char rcsid[] = "$OpenBSD: fingerd.c,v 1.30 2003/06/02 19:38:24 millert Exp $";
+static char rcsid[] = "$OpenBSD: fingerd.c,v 1.31 2003/10/17 10:41:18 jmc Exp $";
 #endif
 #endif /* not lint */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
