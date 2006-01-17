@@ -1,7 +1,7 @@
-/*	$OpenBSD: watchdogd.c,v 1.4 2005/08/09 15:09:06 mickey Exp $ */
+/*	$OpenBSD: watchdogd.c,v 1.5 2005/09/24 17:39:52 mickey Exp $ */
 
 /*
- * Copyright (c) 2005 Marc Balmer <marc@msys.ch>
+ * Copyright (c) 2005 Marc Balmer <mbalmer@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
