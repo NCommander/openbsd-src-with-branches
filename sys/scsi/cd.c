@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.101 2005/12/25 20:01:11 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.102 2006/01/12 01:06:27 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -718,6 +718,8 @@ cdminphys(bp)
 	}
 
 	(*cd->sc_link->adapter->scsi_minphys)(bp);
+
+	device_unref(&cd->sc_dev);
 }
 
 int
