@@ -1,4 +1,4 @@
-.\"	$OpenBSD: wdog_register.9,v 1.1 2004/12/17 17:32:02 jaredy Exp $
+.\"	$OpenBSD: wdog_register.9,v 1.2 2005/05/25 07:54:25 david Exp $
 .\"
 .\" Copyright (c) 2004 Michael Knudsen <mk@molioner.dk>
 .\"
@@ -57,6 +57,7 @@ The framework is implemented in the file
 .Pa sys/kern/kern_watchdog.c .
 .Sh SEE ALSO
 .Xr watchdog 4 ,
+.Xr sysctl_int 9 ,
 .Xr timeout 9
 .Sh HISTORY
 The watchdog timer framework was written by
