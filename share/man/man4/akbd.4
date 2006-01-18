@@ -32,8 +32,8 @@
 .\"	$OpenBSD: akbd.4,v 1.10 2005/05/20 08:58:43 jmc Exp $
 .\"	$NetBSD: adb.4,v 1.1 1997/07/18 02:13:42 ender Exp $
 .\"
-.Dd January 10, 2006
-.Dt AKBD 4 mac68k
+.Dd January 18, 2006
+.Dt AKBD 4
 .Os
 .Sh NAME
 .Nm akbd
@@ -66,14 +66,15 @@ Apple Keyboard II
 Apple PowerBook Keyboard
 .It
 Apple Adjustable Keyboard
-.\" .It
-.\" Apple PowerBook extended Keyboard
-.\" .It
-.\" Apple PowerBook G3 Keyboard
-.\" .It
-.\" Apple PowerBook G4 Keyboard
-.\" .It
-.\" Apple iBook Keyboard
+.It
+Apple PowerBook extended Keyboard
+.It
+Apple PowerBook G3 Keyboard
+.It
+Apple PowerBook G4 Keyboard
+.It
+Apple iBook Keyboard
+.It
 .El
 .Ed
 .Pp
@@ -96,6 +97,10 @@ The built-in mappings are at this time:
 .Dq de
 ) German with
 .Dq dead accents .
+.It KB_ES
+(
+.Dq es
+) Spanish.
 .It KB_FR
 (
 .Dq fr
@@ -133,7 +138,7 @@ The built-in mappings are at this time:
 ) English / US keyboard mapping (default).
 .El
 .Pp
-The KB_DE, KB_SG and KB_SV mappings can be used in the KB_NODEAD (
+The KB_DE, KB_FR, KB_SG and KB_SV mappings can be used in the KB_NODEAD (
 .Dq .nodead
 ) variant.
 This switches off the
@@ -151,6 +156,7 @@ option AKBD_LAYOUT="KB_DE|KB_NODEAD"
 .Sh SEE ALSO
 .Xr adb 4 ,
 .Xr intro 4 ,
+.Xr ukbd 4 ,
 .Xr wskbd 4 ,
 .Xr wsconsctl 8
 .Sh HISTORY
