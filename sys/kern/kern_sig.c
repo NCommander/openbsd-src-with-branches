@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.78 2005/12/03 18:09:08 tedu Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.79 2005/12/22 06:58:20 tedu Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -324,10 +324,12 @@ setsigvec(struct proc *p, int signum, struct sigaction *sa)
 #ifdef COMPAT_SUNOS
 	{
 		extern struct emul emul_sunos;
-		if (p->p_emul == &emul_sunos && sa->sa_flags & SA_USERTRAMP)
-			ps->ps_usertramp |= bit;
-		else
-			ps->ps_usertramp &= ~bit;
+		if (p->p_emul == &emul_sunos) {
+			if (sa->sa_flags & SA_USERTRAMP)
+				ps->ps_usertramp |= bit;
+			else
+				ps->ps_usertramp &= ~bit;
+		}
 	}
 #endif
 	/*
