@@ -31,10 +31,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _MAC68K_KBDVAR_H_
-#define _MAC68K_KBDVAR_H_
-
-#include <machine/adbsys.h>
+#ifndef _ADB_AKBDVAR_H_
+#define _ADB_AKBDVAR_H_
 
 /*
  * State info, per keyboard instance.
@@ -65,7 +63,10 @@ struct akbd_softc {
 #define LED_CAPSLOCK	0x2
 #define LED_SCROLL_LOCK	0x4
 
-void kbd_adbcomplete(caddr_t buffer, caddr_t data_area, int adb_command);
-int akbd_cnattach(void);
+int	akbd_cnattach(void);
+int	akbd_is_console(void);
 
-#endif /* _MAC68K_KBDVAR_H_ */
+extern struct wskbd_mapdata akbd_keymapdata;
+extern int adb_polledkey;
+
+#endif /* _ADB_AKBDVAR_H_ */
