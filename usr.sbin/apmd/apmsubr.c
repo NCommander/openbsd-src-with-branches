@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmsubr.c,v 1.4 2005/11/23 08:02:58 sturm Exp $	*/
+/*	$OpenBSD: apmsubr.c,v 1.5 2005/12/02 04:27:52 beck Exp $	*/
 
 /*
  *  Copyright (c) 1995,1996 John T. Kohl
@@ -77,8 +77,10 @@ perf_state(int state)
 	switch (state) {
 	case PERF_NONE:
 		return "uninitialized";
-	case PERF_MANUAL:
-		return "manual";
+	case PERF_LOW:
+		return "low";
+	case PERF_HIGH:
+		return "high";
 	case PERF_AUTO:
 		return "auto";
 	case PERF_COOL:
