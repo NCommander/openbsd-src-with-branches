@@ -1,4 +1,4 @@
-/*	$OpenBSD: adt7460.c,v 1.4 2005/12/27 17:18:18 deraadt Exp $	*/
+/*	$OpenBSD: adt7460.c,v 1.5 2005/12/28 00:42:14 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -178,7 +178,7 @@ adt_attach(struct device *parent, struct device *self, void *aux)
 	}
 
 	for (i = 0; i < ADT_NUM_SENSORS; i++)
-		SENSOR_ADD(&sc->sc_sensor[i]);
+		sensor_add(&sc->sc_sensor[i]);
 
 	printf("\n");
 }

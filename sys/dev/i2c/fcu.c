@@ -1,4 +1,4 @@
-/*	$OpenBSD: fcu.c,v 1.1 2005/11/16 18:51:45 deraadt Exp $	*/
+/*	$OpenBSD: fcu.c,v 1.2 2005/12/27 17:18:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -108,7 +108,7 @@ fcu_attach(struct device *parent, struct device *self, void *aux)
 	}
 
 	for (i = 0; i < FCU_NUM_SENSORS; i++)
-		SENSOR_ADD(&sc->sc_sensor[i]);
+		sensor_add(&sc->sc_sensor[i]);
 
 	printf("\n");
 }

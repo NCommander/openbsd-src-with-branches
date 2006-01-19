@@ -1,4 +1,4 @@
-/*	$OpenBSD: ses.c,v 1.32 2005/11/19 02:18:01 pedro Exp $ */
+/*	$OpenBSD: ses.c,v 1.33 2006/01/11 08:21:21 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -178,7 +178,7 @@ ses_attach(struct device *parent, struct device *self, void *aux)
 		}
 	} else {
 		TAILQ_FOREACH(sensor, &sc->sc_sensors, se_entry)
-			SENSOR_ADD(&sensor->se_sensor);
+			sensor_add(&sensor->se_sensor);
 	}
 
 #if NBIO > 0
