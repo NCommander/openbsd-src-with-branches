@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppi.c,v 1.13 2005/02/13 23:13:25 mickey Exp $	*/
+/*	$OpenBSD: ppi.c,v 1.14 2005/11/14 19:23:40 miod Exp $	*/
 /*	$NetBSD: ppi.c,v 1.13 1997/04/02 22:37:33 scottr Exp $	*/
 
 /*
@@ -434,6 +434,7 @@ ppiioctl(dev, cmd, data, flag, p)
 {
 	struct ppi_softc *sc = ppi_cd.cd_devs[UNIT(dev)];
 	struct ppiparam *pp, *upp;
+	int tmp;
 	int error = 0;
 
 	switch (cmd) {
@@ -455,10 +456,14 @@ ppiioctl(dev, cmd, data, flag, p)
 		pp->delay = ppimstohz(upp->delay);
 		break;
 	case PPIIOCSSEC:
-		sc->sc_sec = *(int *)data;
+		tmp = *(int *)data;
+		if (tmp == -1 || (tmp >= 0 && tmp <= 0x1f))
+			sc->sc_sec = tmp;
+		else
+			error = EINVAL;
 		break;
 	default:
-		return(EINVAL);
+		return (ENOTTY);
 	}
 	return (error);
 }
