@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.192 2006/01/13 13:04:33 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.193 2006/01/14 22:39:49 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2177,6 +2177,8 @@ network_add(struct network_config *nc, int flagstatic)
 		    DIR_IN);
 		path_update(&peerdynamic, asp, &nc->prefix, nc->prefixlen);
 	}
+
+	path_put(asp);
 	filterset_free(&nc->attrset);
 }
 
