@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.c,v 1.8 2005/05/27 20:47:11 ho Exp $	*/
+/*	$OpenBSD: net.c,v 1.9 2005/09/11 15:24:08 moritz Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -36,6 +36,7 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
+#include <signal.h>
 
 #include <openssl/aes.h>
 #include <openssl/sha.h>
