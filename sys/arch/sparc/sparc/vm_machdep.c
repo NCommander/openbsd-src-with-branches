@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.45 2002/12/10 23:45:02 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.46 2005/08/18 18:40:51 kettenis Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.30 1997/03/10 23:55:40 pk Exp $ */
 
 /*
@@ -361,7 +361,7 @@ vunmapbuf(bp, sz)
 	bp->b_data = bp->b_saveaddr;
 	bp->b_saveaddr = NULL;
 	if (CACHEINFO.c_vactype != VAC_NONE)
-		cpuinfo.cache_flush(bp->b_un.b_addr, bp->b_bcount - bp->b_resid);
+		cpuinfo.cache_flush(bp->b_data, bp->b_bcount - bp->b_resid);
 }
 
 
