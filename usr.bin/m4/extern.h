@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.41 2005/05/29 18:44:36 espie Exp $	*/
+/*	$OpenBSD: extern.h,v 1.42 2005/09/06 15:33:21 espie Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1996/01/13 23:25:24 pk Exp $	*/
 
 /*-
@@ -138,7 +138,7 @@ extern char *endest;
 extern unsigned int trace_flags;
 #define TRACE_ALL	512
 extern void trace_file(const char *);
-extern ssize_t trace(const char **, int, struct input_file *);
+extern size_t trace(const char **, int, struct input_file *);
 extern void finish_trace(size_t);
 extern void set_trace_flags(const char *);
 extern FILE *traceout;

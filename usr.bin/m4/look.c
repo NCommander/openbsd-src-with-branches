@@ -1,4 +1,4 @@
-/*	$OpenBSD: look.c,v 1.16 2003/11/17 17:12:10 espie Exp $	*/
+/*	$OpenBSD: look.c,v 1.17 2005/08/06 16:22:26 espie Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -38,9 +38,9 @@
  * by: oz
  */
 
-#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 #include <ohash.h>
