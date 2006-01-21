@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_cache.c,v 1.17 2005/05/28 07:28:07 marius Exp $	*/
+/*	$OpenBSD: vfs_cache.c,v 1.18 2005/06/18 18:09:42 millert Exp $	*/
 /*	$NetBSD: vfs_cache.c,v 1.13 1996/02/04 02:18:09 christos Exp $	*/
 
 /*
@@ -282,7 +282,7 @@ cache_revlookup(struct vnode *vp, struct vnode **dvpp, char **bpp, char *bufp)
 		    ncp->nc_vpid == vp->v_id &&
 		    (dvp = ncp->nc_dvp) != NULL &&
 		    /* avoid pesky '.' entries.. */
-		    dvp != vp) {
+		    dvp != vp && ncp->nc_dvpid == dvp->v_id) {
 
 #ifdef DIAGNOSTIC
 			if (ncp->nc_nlen == 1 &&
