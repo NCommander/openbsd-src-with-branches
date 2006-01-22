@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.16 2004/03/17 14:16:04 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.17 2005/03/30 07:52:31 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.9 1997/04/01 03:12:13 scottr Exp $	*/
 
 /*
@@ -43,8 +43,6 @@
 #include <sys/disk.h>
 #include <sys/disklabel.h>
 #include <sys/syslog.h>
-
-#define	b_cylinder	b_resid
 
 void
 dk_establish(dk, dev)
