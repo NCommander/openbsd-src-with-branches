@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.c,v 1.9 2003/06/03 02:56:08 millert Exp $	*/
+/*	$OpenBSD: net.c,v 1.10 2004/03/15 02:50:29 tedu Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -34,10 +34,10 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)net.c	5.5 (Berkeley) 6/1/90";*/
-static const char rcsid[] = "$OpenBSD: net.c,v 1.9 2003/06/03 02:56:08 millert Exp $";
+static const char rcsid[] = "$OpenBSD: net.c,v 1.10 2004/03/15 02:50:29 tedu Exp $";
 #endif /* not lint */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

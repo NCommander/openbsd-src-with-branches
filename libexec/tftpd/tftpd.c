@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.39 2005/03/05 23:15:19 cloder Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.40 2005/03/10 10:22:32 claudio Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)tftpd.c	5.13 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$OpenBSD: tftpd.c,v 1.39 2005/03/05 23:15:19 cloder Exp $";
+static char rcsid[] = "$OpenBSD: tftpd.c,v 1.40 2005/03/10 10:22:32 claudio Exp $";
 #endif /* not lint */
 
 /*
@@ -46,7 +46,7 @@ static char rcsid[] = "$OpenBSD: tftpd.c,v 1.39 2005/03/05 23:15:19 cloder Exp $
  * This version includes many modifications by Jim Guyton <guyton@rand-unix>
  */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

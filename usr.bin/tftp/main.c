@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.21 2003/12/22 22:17:38 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.22 2004/02/19 08:43:37 mpech Exp $	*/
 /*	$NetBSD: main.c,v 1.6 1995/05/21 16:54:10 mycroft Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: main.c,v 1.21 2003/12/22 22:17:38 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: main.c,v 1.22 2004/02/19 08:43:37 mpech Exp $";
 #endif /* not lint */
 
 /* Many bug fixes are from Jim Guyton <guyton@rand-unix> */
@@ -48,7 +48,7 @@ static const char rcsid[] = "$OpenBSD: main.c,v 1.21 2003/12/22 22:17:38 deraadt
 /*
  * TFTP User Program -- Command Interface.
  */
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/file.h>
 
