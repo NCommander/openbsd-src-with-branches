@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_socket.c,v 1.41 2004/12/26 21:22:13 miod Exp $	*/
+/*	$OpenBSD: nfs_socket.c,v 1.42 2005/04/02 01:00:38 mickey Exp $	*/
 /*	$NetBSD: nfs_socket.c,v 1.27 1996/04/15 20:20:00 thorpej Exp $	*/
 
 /*
@@ -699,7 +699,8 @@ nfs_reply(myrep)
 			 * Ignore routing errors on connectionless protocols??
 			 */
 			if (NFSIGNORE_SOERROR(nmp->nm_soflags, error)) {
-				nmp->nm_so->so_error = 0;
+				if (nmp->nm_so)
+					nmp->nm_so->so_error = 0;
 				if (myrep->r_flags & R_GETONEREP)
 					return (0);
 				continue;
