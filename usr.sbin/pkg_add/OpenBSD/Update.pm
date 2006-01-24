@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Update.pm,v 1.58 2005/10/19 10:41:19 espie Exp $
+# $OpenBSD: Update.pm,v 1.59 2005/11/05 10:59:21 espie Exp $
 #
 # Copyright (c) 2004 Marc Espie <espie@openbsd.org>
 #
@@ -283,8 +283,12 @@ sub can_do
 		for my $wanting (@wantlist) {
 			my $p2 = OpenBSD::PackingList->from_installation(
 			    $wanting, \&OpenBSD::PackingList::DependOnly);
-			$p2->visit('validate_depend', $state, $wanting, 
-			    $toreplace, $replacement);
+			if (!defined $p2) {
+				Warn "Error: $wanting missing from installation\n"
+			} else {
+				$p2->visit('validate_depend', $state, $wanting, 
+				    $toreplace, $replacement);
+			}
 		}
 	}
 
