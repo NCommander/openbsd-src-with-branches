@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpool.c,v 1.15 2005/10/10 19:23:41 otto Exp $	*/
+/*	$OpenBSD: mpool.c,v 1.16 2005/10/12 07:25:13 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -224,6 +224,7 @@ mpool_get(MPOOL *mp, pgno_t pgno,
 			 * new page.
 			 */
 			memset(bp->page, 0, mp->pagesize);
+			break;
 		default:
 			/* A partial read is definitely bad. */
 			errno = EINVAL;
