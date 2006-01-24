@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.20 2005/08/08 12:22:48 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.21 2006/01/12 15:10:02 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -119,6 +119,7 @@ void		 lsa_remove_invalid_sums(struct area *);
 
 /* rde_spf.c */
 void		 spf_calc(struct area *);
+void		 asext_calc(struct vertex *);
 void		 spf_tree_clr(struct area *);
 
 void		 cand_list_init(void);
