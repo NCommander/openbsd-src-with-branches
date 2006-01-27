@@ -1,4 +1,4 @@
-/*	$OpenBSD: resp.c,v 1.69 2006/01/25 08:15:05 xsa Exp $	*/
+/*	$OpenBSD: resp.c,v 1.70 2006/01/26 09:05:31 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -872,8 +872,7 @@ resp_check_dir(struct cvsroot *root, const char *dir)
 				fatal("resp_check_dir: path truncation");
 		}
 
-		if (cvs_mkadmin(dir, root->cr_str, repo, NULL, NULL, 0) < 0)
-			return (-1);
+		cvs_mkadmin(dir, root->cr_str, repo, NULL, NULL, 0);
 	}
 
 	if (strcmp(dir, cvs_resp_lastdir)) {
