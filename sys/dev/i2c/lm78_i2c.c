@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm_i2c.c,v 1.9 2006/01/17 22:02:51 kettenis Exp $	*/
+/*	$OpenBSD: lm_i2c.c,v 1.10 2006/01/26 22:07:14 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
