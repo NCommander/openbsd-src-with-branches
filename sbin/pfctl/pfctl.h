@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.h,v 1.37 2005/01/05 18:23:10 mcbride Exp $ */
+/*	$OpenBSD: pfctl.h,v 1.38 2005/05/21 21:03:58 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -106,7 +106,6 @@ extern	int loadopt;
 
 int		 check_commit_altq(int, int);
 void		 pfaltq_store(struct pf_altq *);
-void		 pfaltq_free(struct pf_altq *);
 struct pf_altq	*pfaltq_lookup(const char *);
 char		*rate2str(double);
 
