@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.32 2006/01/18 04:46:04 marco Exp $ */
+/*	$OpenBSD: ipmi.c,v 1.33 2006/01/19 17:08:39 grange Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -59,6 +59,7 @@ struct ipmi_sensor {
 int	ipmi_nintr;
 int	ipmi_dbg = 0;
 int	ipmi_poll = 1;
+int	ipmi_enabled = 0;
 
 #define SENSOR_REFRESH_RATE (10 * hz)
 
@@ -1749,6 +1750,9 @@ ipmi_attach(struct device *parent, struct device *self, void *aux)
 	if (ia->iaa_if_irq != -1)
 		printf(" irq %d", ia->iaa_if_irq);
 	printf("\n");
+
+	/* setup flag to exclude iic */
+	ipmi_enabled = 1;
 
 	/* Setup Watchdog timer */
 	sc->sc_wdog_period = 0;
