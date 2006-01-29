@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.h,v 1.19 2004/08/16 16:43:52 art Exp $ */
+/* $OpenBSD: intr.h,v 1.20 2005/04/19 15:29:47 mickey Exp $ */
 /* $NetBSD: intr.h,v 1.26 2000/06/03 20:47:41 thorpej Exp $ */
 
 /*-
@@ -242,6 +242,8 @@ void	alpha_shared_intr_set_dfltsharetype(struct alpha_shared_intr *,
 	    unsigned int, int);
 void	alpha_shared_intr_set_maxstrays(struct alpha_shared_intr *,
 	    unsigned int, int);
+void	alpha_shared_intr_reset_strays(struct alpha_shared_intr *,
+	    unsigned int);
 void	alpha_shared_intr_stray(struct alpha_shared_intr *, unsigned int,
 	    const char *);
 void	alpha_shared_intr_set_private(struct alpha_shared_intr *,

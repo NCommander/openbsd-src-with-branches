@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_pic.c,v 1.23 2004/06/18 21:33:42 miod Exp $	*/
+/*	$OpenBSD: sio_pic.c,v 1.24 2004/06/28 02:28:43 aaron Exp $	*/
 /* $NetBSD: sio_pic.c,v 1.28 2000/06/06 03:10:13 thorpej Exp $ */
 
 /*-
@@ -533,6 +533,8 @@ sio_iointr(framep, vec)
 
 	if (!alpha_shared_intr_dispatch(sio_intr, irq))
 		alpha_shared_intr_stray(sio_intr, irq, "isa irq");
+	else
+		alpha_shared_intr_reset_strays(sio_intr, irq);
 
 	/*
 	 * Some versions of the machines which use the SIO

@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_eb64plus.c,v 1.5 2003/05/10 21:11:12 deraadt Exp $ */
+/* $OpenBSD: pci_eb64plus.c,v 1.6 2004/06/28 02:28:43 aaron Exp $ */
 /* $NetBSD: pci_eb64plus.c,v 1.10 2001/07/27 00:25:20 thorpej Exp $ */
 
 /*-
@@ -261,7 +261,8 @@ eb64plus_iointr(framep, vec)
 			"eb64+ irq");
 			if (ALPHA_SHARED_INTR_DISABLE(eb64plus_pci_intr, irq))
 				eb64plus_intr_disable(irq);
-		}
+		} else
+			alpha_shared_intr_reset_strays(eb64plus_pci_intr, irq);
 		return;
 	}
 #if NSIO
