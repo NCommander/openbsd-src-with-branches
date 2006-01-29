@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_ath_cardbus.c,v 1.6 2005/09/08 12:44:56 jsg Exp $   */
+/*      $OpenBSD: if_ath_cardbus.c,v 1.7 2005/09/22 10:17:04 reyk Exp $   */
 /*	$NetBSD: if_ath_cardbus.c,v 1.4 2004/08/02 19:14:28 mycroft Exp $ */
 
 /*
@@ -277,9 +277,6 @@ ath_cardbus_disable(struct ath_softc *sc)
 void
 ath_cardbus_power(struct ath_softc *sc, int why)
 {
-
-	printf("%s: ath_cardbus_power\n", sc->sc_dev.dv_xname);
-
 	if (why == PWR_RESUME)
 		ath_enable(sc);
 }
