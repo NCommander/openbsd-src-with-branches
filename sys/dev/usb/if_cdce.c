@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.11 2005/09/29 01:18:05 deraadt Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.12 2005/12/13 17:41:59 drahn Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -626,7 +626,7 @@ cdce_rxeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 			printf("%s: usb error on rx: %s\n",
 			    USBDEVNAME(sc->cdce_dev), usbd_errstr(status));
 		if (status == USBD_STALLED)
-			usbd_clear_endpoint_stall(sc->cdce_bulkin_pipe);
+			usbd_clear_endpoint_stall_async(sc->cdce_bulkin_pipe);
 		DELAY(sc->cdce_rxeof_errors * 10000);
 		sc->cdce_rxeof_errors++;
 		goto done;
@@ -704,7 +704,7 @@ cdce_txeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 		printf("%s: usb error on tx: %s\n", USBDEVNAME(sc->cdce_dev),
 		    usbd_errstr(status));
 		if (status == USBD_STALLED)
-			usbd_clear_endpoint_stall(sc->cdce_bulkout_pipe);
+			usbd_clear_endpoint_stall_async(sc->cdce_bulkout_pipe);
 		splx(s);
 		return;
 	}

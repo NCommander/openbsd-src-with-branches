@@ -1,4 +1,4 @@
-/*	$OpenBSD: ueagle.c,v 1.7 2005/08/04 06:59:36 canacar Exp $	*/
+/*	$OpenBSD: ueagle.c,v 1.8 2006/01/04 06:04:41 canacar Exp $	*/
 
 /*-
  * Copyright (c) 2003-2005
@@ -944,7 +944,7 @@ ueagle_txeof(usbd_xfer_handle xfer, usbd_private_handle priv,
 		    USBDEVNAME(sc->sc_dev), usbd_errstr(status));
 
 		if (status == USBD_STALLED)
-			usbd_clear_endpoint_stall(sc->pipeh_tx);
+			usbd_clear_endpoint_stall_async(sc->pipeh_tx);
 
 		ifp->if_oerrors++;
 		return;
