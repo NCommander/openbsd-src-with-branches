@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_an_isapnp.c,v 1.6 2005/09/13 14:15:33 mickey Exp $	*/
+/*	$OpenBSD: if_an_isapnp.c,v 1.7 2006/01/09 21:19:48 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -40,6 +40,7 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
+#include <net80211/ieee80211_radiotap.h>
 #include <net80211/ieee80211_var.h>
 
 #include <machine/bus.h>
