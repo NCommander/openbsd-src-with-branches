@@ -1,7 +1,7 @@
-/*	$OpenBSD: asb100.c,v 1.3 2006/01/01 22:27:46 djm Exp $	*/
+/*	$OpenBSD: asb100.c,v 1.4 2006/01/19 17:08:39 grange Exp $	*/
 
 /*
- * Copyright (c) 2005 Damien Miller
+ * Copyright (c) 2005 Damien Miller <djm@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -321,7 +321,8 @@ asbtm_refresh(void *arg)
 	iic_acquire_bus(sc->sc_tag, 0);
 
 	if (asbtm_banksel(sc, 0, &orig_bank) == -1) {
-		printf(": cannot get/set register bank\n");
+		printf("%s: cannot get/set register bank\n",
+		    sc->sc_dev.dv_xname);
 		iic_release_bus(sc->sc_tag, 0);
 		return;
 	}
