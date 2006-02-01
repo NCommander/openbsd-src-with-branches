@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.42 2005/03/30 05:40:55 henning Exp $	*/
+/*	$OpenBSD: show.c,v 1.43 2005/05/27 04:55:27 mcbride Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -292,7 +292,7 @@ p_sockaddr(struct sockaddr *sa, struct sockaddr *mask, int flags, int width)
 		if ((flags & RTF_HOST) || mask == NULL)
 			cp = routename(sa);
 		else
-			cp = netname(sa, mask);;
+			cp = netname(sa, mask);
 		break;
 	}
 	if (width < 0)
