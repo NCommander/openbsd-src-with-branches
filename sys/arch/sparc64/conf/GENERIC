@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.138 2005/12/27 23:19:01 deraadt Exp $
+#	$OpenBSD: GENERIC,v 1.139 2006/01/11 21:57:53 martin Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -306,6 +306,8 @@ rgephy*	at mii?				# Realtek 8169S/8110S PHY
 ukphy*	at mii?				# Unknown PHYs
 
 # sensors
+pcfiic*	at ebus?
+iic*	at pcfiic?
 alipm*	at pci?
 iic*	at alipm?
 
