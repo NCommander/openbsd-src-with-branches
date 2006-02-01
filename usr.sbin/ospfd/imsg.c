@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.3 2005/03/23 10:46:26 henning Exp $ */
+/*	$OpenBSD: imsg.c,v 1.4 2005/04/26 15:18:22 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -202,20 +202,4 @@ void
 imsg_free(struct imsg *imsg)
 {
 	free(imsg->data);
-}
-
-int
-imsg_get_fd(struct imsgbuf *ibuf)
-{
-	int		 fd;
-	struct imsg_fd	*ifd;
-
-	if ((ifd = TAILQ_FIRST(&ibuf->fds)) == NULL)
-		return (-1);
-
-	fd = ifd->fd;
-	TAILQ_REMOVE(&ibuf->fds, ifd, entry);
-	free(ifd);
-
-	return (fd);
 }
