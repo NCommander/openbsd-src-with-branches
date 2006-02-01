@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.c,v 1.4 2006/02/01 19:07:13 otto Exp $ */
+/* $OpenBSD: if_ixgb.c,v 1.5 2006/02/01 20:11:30 brad Exp $ */
 
 #include <dev/pci/if_ixgb.h>
 
@@ -464,7 +464,6 @@ ixgb_watchdog(struct ifnet * ifp)
  *  by the driver as a hw/sw initialization routine to get to a
  *  consistent state.
  *
- *  return 0 on success, positive on failure
  **********************************************************************/
 
 void
