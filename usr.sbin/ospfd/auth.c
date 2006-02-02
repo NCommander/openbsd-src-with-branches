@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.6 2005/10/19 22:00:37 stevesk Exp $ */
+/*	$OpenBSD: auth.c,v 1.7 2005/11/12 18:18:24 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -239,12 +239,6 @@ md_list_clr(struct iface *iface)
 		TAILQ_REMOVE(&iface->auth_md_list, m, entry);
 		free(m);
 	}
-}
-
-int
-md_list_empty(struct iface *iface)
-{
-	return (TAILQ_EMPTY(&iface->auth_md_list));
 }
 
 struct auth_md *
