@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.42 2006/01/24 14:14:04 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.43 2006/02/02 14:06:05 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -181,7 +181,7 @@ rde_apply_set(struct rde_aspath *asp, struct filter_set_head *sh,
 				type = peer->conf.remote_as;
 				break;
 			default:
-				type = set->action.community.as;
+				type = set->action.community.type;
 				break;
 			}
 
@@ -241,7 +241,7 @@ rde_filter_match(struct filter_rule *f, struct rde_aspath *asp,
 			type = peer->conf.remote_as;
 			break;
 		default:
-			type = f->match.community.as;
+			type = f->match.community.type;
 			break;
 		}
 
