@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.61 2006/01/22 21:41:03 damien Exp $  */
+/*	$OpenBSD: if_ral.c,v 1.62 2006/01/29 03:22:52 brad Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -1001,7 +1001,7 @@ Static uint8_t
 ural_rxrate(struct ural_rx_desc *desc)
 {
 	if (letoh32(desc->flags) & RAL_RX_OFDM) {
-		/* reverse function of rt2560_plcp_signal */
+		/* reverse function of ural_plcp_signal */
 		switch (desc->rate) {
 		case 0xb:	return 12;
 		case 0xf:	return 18;
