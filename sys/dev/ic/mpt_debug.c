@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpt_debug.c,v 1.3 2005/04/17 18:56:35 tom Exp $	*/
+/*	$OpenBSD: mpt_debug.c,v 1.4 2005/04/21 16:02:27 deraadt Exp $	*/
 /*	$NetBSD: mpt_debug.c,v 1.2 2003/07/14 15:47:11 lukem Exp $	*/
 
 /*
@@ -40,6 +40,7 @@
 
 #include <dev/ic/mpt.h>
 
+#ifdef MPT_DEBUG
 char *mpt_ioc_status(int);
 char *mpt_ioc_function(int);
 char *mpt_ioc_event(int);
@@ -640,3 +641,4 @@ mpt_dump_sgl(SGE_IO_UNION *su)
 		iCount -= 1;
 	} while ((flags & MPI_SGE_FLAGS_END_OF_LIST) == 0 && iCount != 0);
 }
+#endif /* MPT_DEBUG */
