@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfevar.h,v 1.4 2006/01/18 20:44:51 damien Exp $	*/
+/*	$OpenBSD: if_nfevar.h,v 1.5 2006/01/22 21:35:08 damien Exp $	*/
 /*
  * Copyright (c) 2005 Jonathan Gray <jsg@openbsd.org>
  *
@@ -62,6 +62,7 @@ struct nfe_softc {
 	struct timeout		sc_timeout;
 	void			*sc_powerhook;
 
+	int			sc_if_flags;
 	u_int			sc_flags;
 #define NFE_JUMBO_SUP	0x01
 #define NFE_40BIT_ADDR	0x02
