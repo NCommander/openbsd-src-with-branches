@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.10 2005/12/13 00:18:19 jsg Exp $	*/
+/*	$OpenBSD: param.h,v 1.11 2005/12/13 01:56:43 martin Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -137,9 +137,6 @@
  */
 #define	bdbtofsb(bn)	((bn) / (BLKDEV_IOSIZE / DEV_BSIZE))
 
-/*
- * XXXfvdl the PD* stuff is different from i386.
- */
 /*
  * Mach derived conversion macros
  */
