@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_reg.h,v 1.7 2004/06/29 12:24:57 mickey Exp $	*/
+/*	$OpenBSD: bktr_reg.h,v 1.8 2005/11/21 18:16:41 millert Exp $	*/
 /*
  * $FreeBSD: src/sys/dev/bktr/bktr_reg.h,v 1.42 2000/10/31 13:09:56 roger Exp $
  *
@@ -415,6 +415,9 @@ struct TVTUNER {
 	u_char		band;
 	u_char		afc;
  	u_char		radio_mode;	/* current mode of the radio mode */
+	int		tuner_mode;	/* current tuning mode */
+#define BT848_TUNER_MODE_TV	1
+#define BT848_TUNER_MODE_RADIO	2
 };
 
 /* description of the PHYSICAL tuner */
