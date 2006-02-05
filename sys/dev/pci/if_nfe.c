@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.16 2006/02/05 10:01:23 damien Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.17 2006/02/05 10:09:39 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006 Damien Bergamini <damien.bergamini@free.fr>
@@ -269,6 +269,7 @@ nfe_power(int why, void *arg)
 	if (why == PWR_RESUME) {
 		ifp = &sc->sc_arpcom.ac_if;
 		if (ifp->if_flags & IFF_UP) {
+			ifp->if_flags &= ~IFF_RUNNING;
 			nfe_init(ifp);
 			if (ifp->if_flags & IFF_RUNNING)
 				nfe_start(ifp);
@@ -938,6 +939,9 @@ nfe_init(struct ifnet *ifp)
 {
 	struct nfe_softc *sc = ifp->if_softc;
 	uint32_t rxtxctl;
+
+	if (ifp->if_flags & IFF_RUNNING)
+		return 0;
 
 	nfe_stop(ifp, 0);
 
