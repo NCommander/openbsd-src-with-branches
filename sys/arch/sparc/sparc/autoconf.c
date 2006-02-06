@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.69 2005/09/25 20:05:37 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.70 2005/12/27 18:31:10 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.73 1997/07/29 09:41:53 fair Exp $ */
 
 /*
@@ -408,7 +408,7 @@ bootpath_build()
 				}
 			} else {
 				bp->val[0] = -1; /* no #'s: assume unit 0, no
-							sbus offset/adddress */
+							sbus offset/address */
 			}
 			++bp;
 			++nbootpath;

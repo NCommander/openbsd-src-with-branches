@@ -1,4 +1,4 @@
-/*	$OpenBSD: psychoreg.h,v 1.9 2002/03/04 02:32:51 jason Exp $	*/
+/*	$OpenBSD: psychoreg.h,v 1.10 2003/03/27 16:27:27 jason Exp $	*/
 /*	$NetBSD: psychoreg.h,v 1.6.4.2 2001/09/13 01:14:40 thorpej Exp $ */
 
 /*
@@ -350,7 +350,7 @@ struct psychoreg {
  */
 
 /*
- * For the physical adddresses split into 3 32 bit values, we deocde
+ * For the physical addresses split into 3 32 bit values, we deocde
  * them like the following (IEEE1275 PCI Bus binding 2.0, 2.2.1.1
  * Numerical Representation):
  *
