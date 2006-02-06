@@ -1,4 +1,4 @@
-/*	$OpenBSD: safe.c,v 1.16 2005/11/09 05:59:50 brad Exp $	*/
+/*	$OpenBSD: safe.c,v 1.17 2005/12/17 17:42:56 krw Exp $	*/
 
 /*-
  * Copyright (c) 2003 Sam Leffler, Errno Consulting
@@ -744,7 +744,7 @@ safe_process(struct cryptop *crp)
 					 * an error.  Note that uio requests
 					 * > SAFE_MAX_DSIZE are handled because
 					 * the DMA map and segment list for the
-					 * destination wil result in a
+					 * destination will result in a
 					 * destination particle list that does
 					 * the necessary scatter DMA.
 					 */ 

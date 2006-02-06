@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_usb.c,v 1.27 2006/01/25 20:58:12 grange Exp $ */
+/*	$OpenBSD: if_wi_usb.c,v 1.28 2006/01/29 03:22:52 brad Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -1852,7 +1852,7 @@ wi_usb_thread(void *arg)
 			wi_usb_tx_lock(sc);
 			wi_func_io.f_start(&sc->sc_wi.sc_ic.ic_if);
 			/*
-			 * tx_unlock is explictly missing here
+			 * tx_unlock is explicitly missing here
 			 * is is done in txeof_frm
 			 */
 		} else if (wi_thread_info->status & WI_INQUIRE) {
