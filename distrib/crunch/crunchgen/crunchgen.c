@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchgen.c,v 1.22 2005/08/02 11:25:05 espie Exp $	 */
+/* $OpenBSD: crunchgen.c,v 1.23 2005/08/03 22:39:54 espie Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -609,7 +609,7 @@ fillin_program(prog_t * p)
 				p->objdir = p->srcdir;
 		}
 	}
-	/* We have a sourcedir and no explict objs, try */
+	/* We have a sourcedir and no explicit objs, try */
 	/* to find makefile and get objs from it. */
 	if (p->srcdir && !p->objs) {
 		for (i = 0; mf_name[i] != NULL; i++) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.33 2005/03/28 21:28:22 deraadt Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.34 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
  * Process and job control
@@ -1480,7 +1480,7 @@ new_job(void)
 	return newj;
 }
 
-/* Allocate new process strut
+/* Allocate new process struct
  *
  * If jobs are compiled in then this routine expects sigchld to be blocked.
  */
