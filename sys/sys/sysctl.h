@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.84 2005/10/26 17:22:00 mickey Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.85 2005/12/13 00:35:23 millert Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -618,7 +618,7 @@ struct kinfo_proc2 {
  * CTL_DEBUG definitions
  *
  * Second level identifier specifies which debug variable.
- * Third level identifier specifies which stucture component.
+ * Third level identifier specifies which structure component.
  */
 #define	CTL_DEBUG_NAME		0	/* string: variable name */
 #define	CTL_DEBUG_VALUE		1	/* int: variable value */

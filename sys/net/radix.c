@@ -1,4 +1,4 @@
-/*	$OpenBSD: radix.c,v 1.18 2004/04/25 20:02:39 itojun Exp $	*/
+/*	$OpenBSD: radix.c,v 1.19 2005/05/15 16:40:09 henning Exp $	*/
 /*	$NetBSD: radix.c,v 1.20 2003/08/07 16:32:56 agc Exp $	*/
 
 /*
@@ -99,7 +99,7 @@ static struct radix_mask *rn_new_radix_mask(struct radix_node *,
  * node as high in the tree as we can go. 
  *
  * The present version of the code makes use of normal routes in short-
- * circuiting an explict mask and compare operation when testing whether
+ * circuiting an explicit mask and compare operation when testing whether
  * a key satisfies a normal route, and also in remembering the unique leaf
  * that governs a subtree.
  */
