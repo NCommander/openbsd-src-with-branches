@@ -18,14 +18,13 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: deattack.c,v 1.18 2002/03/04 17:27:39 stevesk Exp $");
+RCSID("$OpenBSD: deattack.c,v 1.19 2003/09/18 08:49:45 markus Exp $");
 
 #include "deattack.h"
 #include "log.h"
 #include "crc32.h"
 #include "getput.h"
 #include "xmalloc.h"
-#include "deattack.h"
 
 /* SSH Constants */
 #define SSH_MAXBLOCKS	(32 * 1024)
