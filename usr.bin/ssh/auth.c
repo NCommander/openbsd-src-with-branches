@@ -23,9 +23,10 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth.c,v 1.59 2005/06/06 11:20:36 djm Exp $");
+RCSID("$OpenBSD: auth.c,v 1.60 2005/06/17 02:44:32 djm Exp $");
 
 #include <libgen.h>
+#include <paths.h>
 
 #include "xmalloc.h"
 #include "match.h"

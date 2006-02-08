@@ -16,10 +16,11 @@
 
 #include "includes.h"
 
-RCSID("$OpenBSD: sftp.c,v 1.69 2005/12/06 22:38:27 reyk Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.70 2006/01/31 10:19:02 djm Exp $");
 
 #include <glob.h>
 #include <histedit.h>
+#include <paths.h>
 
 #include "buffer.h"
 #include "xmalloc.h"
