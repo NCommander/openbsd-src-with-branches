@@ -15,8 +15,9 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-glob.c,v 1.14 2004/02/17 05:39:51 djm Exp $");
+RCSID("$OpenBSD: sftp-glob.c,v 1.15 2004/02/17 07:17:29 djm Exp $");
 
+#include <dirent.h>
 #include <glob.h>
 
 #include "buffer.h"
