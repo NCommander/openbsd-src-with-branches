@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan_var.h,v 1.16 2005/07/19 11:50:20 camield Exp $	*/
+/*	$OpenBSD: if_vlan_var.h,v 1.17 2006/01/05 14:57:24 norby Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -58,6 +58,7 @@ struct	ifvlan {
 	LIST_ENTRY(ifvlan) ifv_list;
 	int ifv_flags;
 	void *lh_cookie;
+	void *dh_cookie;
 };
 
 #define	ifv_if		ifv_ac.ac_if
