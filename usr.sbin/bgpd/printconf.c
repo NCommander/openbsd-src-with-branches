@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.50 2005/11/01 10:58:29 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.51 2006/02/02 14:06:05 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -119,6 +119,10 @@ print_set(struct filter_set_head *set)
 			break;
 		case ACTION_SET_PREPEND_PEER:
 			printf("prepend-neighbor %u ", s->action.prepend);
+			break;
+		case ACTION_DEL_COMMUNITY:
+			printf("community delete %u:%u ",
+			    s->action.community.as, s->action.community.type);
 			break;
 		case ACTION_SET_COMMUNITY:
 			printf("community %u:%u ", s->action.community.as,
