@@ -24,7 +24,9 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: misc.c,v 1.43 2006/02/08 12:15:27 stevesk Exp $");
+RCSID("$OpenBSD: misc.c,v 1.44 2006/02/08 12:32:49 stevesk Exp $");
+
+#include <sys/ioctl.h>
 
 #include <net/if.h>
 #include <netinet/tcp.h>

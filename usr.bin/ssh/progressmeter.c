@@ -23,7 +23,9 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: progressmeter.c,v 1.23 2005/04/28 10:17:56 moritz Exp $");
+RCSID("$OpenBSD: progressmeter.c,v 1.24 2005/06/07 13:25:23 jaredy Exp $");
+
+#include <sys/ioctl.h>
 
 #include "progressmeter.h"
 #include "atomicio.h"
