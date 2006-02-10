@@ -15,9 +15,11 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp.c,v 1.71 2006/02/08 12:15:27 stevesk Exp $");
+RCSID("$OpenBSD: sftp.c,v 1.72 2006/02/10 00:27:13 stevesk Exp $");
 
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <glob.h>
 #include <histedit.h>
