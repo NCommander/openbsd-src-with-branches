@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc_obio.c,v 1.23 2004/10/17 08:58:56 grange Exp $	*/
+/*	$OpenBSD: wdc_obio.c,v 1.24 2006/01/13 19:25:45 miod Exp $	*/
 /*	$NetBSD: wdc_obio.c,v 1.15 2001/07/25 20:26:33 bouyer Exp $	*/
 
 /*-
@@ -86,6 +86,7 @@ void wdc_obio_write_reg(struct channel_softc *, enum wdc_regs, u_int8_t);
 struct channel_softc_vtbl wdc_obio_vtbl = {
 	wdc_obio_read_reg,
 	wdc_obio_write_reg,
+	wdc_default_lba48_write_reg,
 	wdc_default_read_raw_multi_2,
 	wdc_default_write_raw_multi_2,
 	wdc_default_read_raw_multi_4,

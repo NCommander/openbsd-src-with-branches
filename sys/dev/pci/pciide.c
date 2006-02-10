@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.223 2006/02/03 08:54:51 brad Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.224 2006/02/03 11:50:34 brad Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -7174,6 +7174,18 @@ svwsata_read_reg(struct channel_softc *chp, enum wdc_regs reg)
 
 void
 svwsata_write_reg(struct channel_softc *chp, enum wdc_regs reg, u_int8_t val)
+{
+	if (reg & _WDC_AUX) {
+		bus_space_write_4(chp->ctl_iot, chp->ctl_ioh,
+		    (reg & _WDC_REGMASK) << 2, val);
+	} else {
+		bus_space_write_4(chp->cmd_iot, chp->cmd_ioh,
+		    (reg & _WDC_REGMASK) << 2, val);
+	}
+}
+ 
+void
+svwsata_lba48_write_reg(struct channel_softc *chp, enum wdc_regs reg, u_int16_t val)
 {
 	if (reg & _WDC_AUX) {
 		bus_space_write_4(chp->ctl_iot, chp->ctl_ioh,
