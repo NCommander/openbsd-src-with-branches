@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.7 2004/06/02 14:58:46 tom Exp $	*/
+/*	$OpenBSD: tree.c,v 1.8 2005/04/18 13:21:03 pat Exp $	*/
 /*	$NetBSD: tree.c,v 1.4 1995/03/26 20:14:11 glass Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)tree.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: tree.c,v 1.7 2004/06/02 14:58:46 tom Exp $";
+static char rcsid[] = "$OpenBSD: tree.c,v 1.8 2005/04/18 13:21:03 pat Exp $";
 #endif
 #endif /* not lint */
 
@@ -86,6 +86,7 @@ pfnote(char *name, int ln)
 	np->file = curfile;
 	np->lno = ln;
 	np->left = np->right = 0;
+	np->been_warned = NO;
 	if (!(np->pat = strdup(lbuf)))
 		err(1, NULL);
 	if (!head)
