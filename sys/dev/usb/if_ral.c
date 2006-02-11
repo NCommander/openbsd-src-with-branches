@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.62 2006/01/29 03:22:52 brad Exp $  */
+/*	$OpenBSD: if_ral.c,v 1.63 2006/02/04 11:40:32 damien Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -941,7 +941,7 @@ ural_rxeof(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 	/* finalize mbuf */
 	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = m->m_len = (letoh32(desc->flags) >> 16) & 0xfff;
-	m->m_flags |= M_HASFCS; /* h/w leaves FCS */
+	m_adj(m, -IEEE80211_CRC_LEN);	/* trim FCS */
 
 	s = splnet();
 
