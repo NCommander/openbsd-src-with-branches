@@ -1,4 +1,4 @@
-/*	$OpenBSD: http_protocol.c,v 1.28 2005/02/09 12:13:09 henning Exp $ */
+/*	$OpenBSD: http_protocol.c,v 1.29 2005/11/11 15:09:54 cloder Exp $ */
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -3029,7 +3029,7 @@ int ap_create_etag_state(pool *pconf)
     u_int32_t rnd;
     unsigned int u;
     int fd;
-    const char* filename;
+    char* filename;
 
     filename = ap_server_root_relative(pconf, "logs/etag-state");
     ap_server_strip_chroot(filename, 0);
@@ -3067,7 +3067,7 @@ int ap_read_etag_state(pool *pconf)
     u_int32_t rnd;
     unsigned int u;
     int fd;
-    const char* filename;
+    char* filename;
 
     ap_SHA1Init(&baseCtx);
 
