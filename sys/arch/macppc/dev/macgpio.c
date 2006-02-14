@@ -1,4 +1,4 @@
-/*	$OpenBSD: macgpio.c,v 1.2 2005/10/23 16:43:42 drahn Exp $	*/
+/*	$OpenBSD: macgpio.c,v 1.3 2005/11/17 00:24:55 deraadt Exp $	*/
 /*	$NetBSD: gpio.c,v 1.2 2001/02/27 05:16:33 matt Exp $	*/
 
 /*-
@@ -131,7 +131,7 @@ macgpio_print(void *aux, const char *gpio)
 {
 	struct confargs *ca = aux;
 	if (gpio)
-		printf("%s at %s", ca->ca_name, gpio);
+		printf("\"%s\" at %s", ca->ca_name, gpio);
 
 	if (ca->ca_nreg > 0)
 		printf(" offset 0x%x", ca->ca_reg[0]);
