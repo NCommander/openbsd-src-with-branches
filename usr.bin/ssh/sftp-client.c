@@ -20,7 +20,7 @@
 /* XXX: copy between two remote sites */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-client.c,v 1.57 2005/07/27 10:39:03 dtucker Exp $");
+RCSID("$OpenBSD: sftp-client.c,v 1.58 2006/01/02 01:20:31 djm Exp $");
 
 #include <sys/queue.h>
 
@@ -39,7 +39,7 @@ RCSID("$OpenBSD: sftp-client.c,v 1.57 2005/07/27 10:39:03 dtucker Exp $");
 extern volatile sig_atomic_t interrupted;
 extern int showprogress;
 
-/* Minimum amount of data to read at at time */
+/* Minimum amount of data to read at a time */
 #define MIN_READ_SIZE	512
 
 struct sftp_conn {
