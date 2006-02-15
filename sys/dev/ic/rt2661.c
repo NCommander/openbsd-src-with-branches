@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.5 2006/01/11 21:39:10 damien Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.8 2006/01/14 12:43:27 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -1959,7 +1959,8 @@ rt2661_watchdog(struct ifnet *ifp)
 	if (sc->sc_tx_timer > 0) {
 		if (--sc->sc_tx_timer == 0) {
 			printf("%s: device timeout\n", sc->sc_dev.dv_xname);
-			rt2661_init(ifp);
+			ifp->if_flags &= ~IFF_UP;
+			rt2661_stop(ifp, 1);
 			ifp->if_oerrors++;
 			return;
 		}
