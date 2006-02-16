@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.59 2005/11/13 20:26:09 deraadt Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.60 2006/01/10 18:12:46 moritz Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -60,7 +60,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static char rcsid[] = "$OpenBSD: ftp.c,v 1.59 2005/11/13 20:26:09 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: ftp.c,v 1.60 2006/01/10 18:12:46 moritz Exp $";
 #endif /* not lint and not SMALL */
 
 #include <sys/types.h>
@@ -103,14 +103,11 @@ union sockunion {
 
 union sockunion myctladdr, hisctladdr, data_addr;
 
-union sockunion hisctladdr;
-union sockunion data_addr;
 int	data = -1;
 int	abrtflag = 0;
 jmp_buf	ptabort;
 int	ptabflg;
 int	ptflag = 0;
-union sockunion myctladdr;
 off_t	restart_point = 0;
 
 
