@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidev.h,v 1.2 2005/12/16 21:11:51 marco Exp $ */
+/* $OpenBSD: acpidev.h,v 1.3 2005/12/28 03:08:33 marco Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
@@ -166,8 +166,8 @@ struct acpibat_bmd {
  * Arguments: none
  * Results  : DWORD status
  */
-#define PSR_ONLINE		0x00
-#define PSR_OFFLINE		0x01
+#define PSR_OFFLINE		0x00
+#define PSR_ONLINE		0x01
 
 /*
  * _PCL (Power Consumer List)
