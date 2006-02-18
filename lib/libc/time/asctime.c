@@ -1,7 +1,7 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: asctime.c,v 1.13 2005/08/08 08:05:38 espie Exp $ */
 /*
 ** This file is in the public domain, so clarified as of
-** 1996-06-05 by Arthur David Olson (arthur_david_olson@nih.gov).
+** 1996-06-05 by Arthur David Olson.
 */
 
 /*
