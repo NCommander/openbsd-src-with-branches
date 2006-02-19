@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.177 2005/08/07 10:11:15 espie Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.178 2005/11/24 18:36:58 deraadt Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 # .
@@ -2346,11 +2346,6 @@ Chile            gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/Mexico
 Mexico           gname=bin uname=root mode=0555
 # ./usr/share/zoneinfo/Mexico
-..
-
-# ./usr/share/zoneinfo/SystemV
-SystemV          gname=bin uname=root mode=0555
-# ./usr/share/zoneinfo/SystemV
 ..
 
 # ./usr/share/zoneinfo/US
