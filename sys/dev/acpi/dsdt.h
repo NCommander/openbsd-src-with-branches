@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.h,v 1.5 2006/02/03 23:55:47 jordan Exp $ */
+/* $OpenBSD: dsdt.h,v 1.6 2006/02/16 21:11:13 jordan Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -42,5 +42,7 @@ void  aml_freevalue(struct aml_value **);
 int   aml_comparevalue(struct acpi_context *, int, struct aml_value *, struct aml_value *);
 
 int64_t aml_val2int(struct acpi_context *, struct aml_value *);
+
+struct aml_node *aml_searchname(struct aml_node *, const char *);
 
 #endif /* __DEV_ACPI_DSDT_H__ */
