@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.43 2006/02/09 20:47:20 norby Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.44 2006/02/10 18:30:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -416,6 +416,7 @@ struct ctl_nbr {
 	struct in_addr		 bdr;
 	struct in_addr		 area;
 	time_t			 dead_timer;
+	time_t			 uptime;
 	u_int32_t		 db_sum_lst_cnt;
 	u_int32_t		 ls_req_lst_cnt;
 	u_int32_t		 ls_retrans_lst_cnt;
