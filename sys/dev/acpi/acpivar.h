@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.16 2006/02/19 04:50:46 marco Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.17 2006/02/19 21:32:30 jordan Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -134,7 +134,7 @@ struct acpi_softc {
 	struct {
 		int slp_typa;
 		int slp_typb;
-	}			sc_sleeptype[5];
+	}			sc_sleeptype[6];
 
   	struct {
 		int             gpe_type;
