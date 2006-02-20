@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.12 2005/12/13 17:41:59 drahn Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.13 2006/01/29 03:22:52 brad Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -55,8 +55,8 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 
-#if NBPFILTER > 0
 #include <net/bpf.h>
+#if NBPFILTER > 0
 #define BPF_MTAP(ifp, m) bpf_mtap((ifp)->if_bpf, (m))
 #endif
 
