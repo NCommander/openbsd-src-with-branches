@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.24 2006/02/19 04:50:47 marco Exp $ */
+/* $OpenBSD: dsdt.c,v 1.25 2006/02/19 21:32:30 jordan Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -256,7 +256,7 @@ void aml_register_notify(struct aml_node *node,
 	struct aml_notify_data *pdata;
 
 	dnprintf(10, "aml_register_notify: %s %x\n",
-		 node->name, cbproc);
+		 node->name, proc);
 	pdata = acpi_os_allocmem(sizeof(struct aml_notify_data));
 	pdata->node = node;
 	pdata->cbarg = arg;
