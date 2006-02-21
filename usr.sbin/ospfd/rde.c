@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.38 2006/02/10 13:00:49 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.39 2006/02/10 18:30:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -422,7 +422,7 @@ rde_dispatch_imsg(int fd, short event, void *bula)
 				 * point 6 of "The Flooding Procedure"
 				 * We are violating the RFC here because
 				 * it does not make sense to reset a session
-				 * because a equal LSA is already in the table.
+				 * because an equal LSA is already in the table.
 				 * Only if the LSA sent is older than the one
 				 * in the table we should reset the session.
 				 */
