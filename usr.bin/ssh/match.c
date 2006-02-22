@@ -35,7 +35,9 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: match.c,v 1.19 2002/03/01 13:12:10 markus Exp $");
+RCSID("$OpenBSD: match.c,v 1.20 2005/06/17 02:44:32 djm Exp $");
+
+#include <ctype.h>
 
 #include "match.h"
 #include "xmalloc.h"
