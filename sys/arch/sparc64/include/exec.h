@@ -1,17 +1,5 @@
-/*	$OpenBSD: exec.h,v 1.5 2001/08/19 20:20:45 art Exp $	*/
+/*	$OpenBSD: exec.h,v 1.6 2002/06/15 17:23:31 art Exp $	*/
 /*	$NetBSD: elf_machdep.h,v 1.7 2001/02/11 00:18:49 eeh Exp $	*/
-
-#define ELF32_MACHDEP_ENDIANNESS	ELFDATA2MSB
-#define	ELF32_MACHDEP_ID_CASES						\
-		case EM_SPARC:						\
-		case EM_SPARC32PLUS:					\
-			break;
-
-#define	ELF64_MACHDEP_ENDIANNESS	ELFDATA2MSB
-#define	ELF64_MACHDEP_ID_CASES						\
-		case EM_SPARC32PLUS:					\
-		case EM_SPARCV9:					\
-			break;
 
 #define NATIVE_EXEC_ELF
 #define _KERN_DO_ELF64
