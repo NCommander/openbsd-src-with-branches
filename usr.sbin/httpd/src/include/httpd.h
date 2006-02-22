@@ -1,4 +1,4 @@
-/* $OpenBSD: httpd.h,v 1.25 2005/03/28 23:26:51 niallo Exp $ */
+/* $OpenBSD: httpd.h,v 1.26 2005/06/15 00:00:16 niallo Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -352,6 +352,23 @@ extern "C" {
 #endif
 #ifndef DEFAULT_EXCESS_REQUESTS_PER_CHILD
 #define DEFAULT_EXCESS_REQUESTS_PER_CHILD 0
+#endif
+
+/* Constrain the rlimits of the child processes */
+#ifndef DEFAULT_MAX_CPU_PER_CHILD
+#define DEFAULT_MAX_CPU_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_DATA_PER_CHILD
+#define DEFAULT_MAX_DATA_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_NOFILE_PER_CHILD
+#define DEFAULT_MAX_NOFILE_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_RSS_PER_CHILD
+#define DEFAULT_MAX_RSS_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_STACK_PER_CHILD
+#define DEFAULT_MAX_STACK_PER_CHILD 0
 #endif
 
 /* The maximum length of the queue of pending connections, as defined
