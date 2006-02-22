@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi.c,v 1.41 2006/02/22 19:38:01 jordan Exp $	*/
+/*	$OpenBSD: acpi.c,v 1.42 2006/02/22 20:15:03 marco Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -685,6 +685,12 @@ acpi_attach(struct device *parent, struct device *self, void *aux)
 
 	acpi_attach_machdep(sc);
 
+	printf("\n");
+	
+	printf("%s: tables ", DEVNAME(sc));
+	SIMPLEQ_FOREACH(entry, &sc->sc_tables, q_next) {
+		printf("%.4s ", entry->q_table);
+	}
 	printf("\n");
 
 	/*
