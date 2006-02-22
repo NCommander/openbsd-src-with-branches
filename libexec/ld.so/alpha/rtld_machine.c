@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.33 2005/09/21 23:12:09 drahn Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.34 2005/09/22 01:33:07 drahn Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -34,8 +34,6 @@
 #include <sys/cdefs.h>
 #include <sys/mman.h>
 #include <sys/exec.h>
-
-#include <machine/elf_machdep.h>
 
 #include <nlist.h>
 #include <link.h>
