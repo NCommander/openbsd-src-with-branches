@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.142 2005/12/14 00:44:39 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.143 2006/01/31 15:22:15 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1738,6 +1738,8 @@ send_rtmsg(int fd, int action, struct kroute *kroute)
 		r.hdr.rtm_flags |= RTF_BLACKHOLE;
 	if (kroute->flags & F_REJECT)
 		r.hdr.rtm_flags |= RTF_REJECT;
+	if (action == RTM_CHANGE)	/* reset these flags on change */
+		r.hdr.rtm_fmask = RTF_REJECT|RTF_BLACKHOLE;
 	r.hdr.rtm_seq = kr_state.rtseq++;	/* overflow doesn't matter */
 	r.hdr.rtm_addrs = RTA_DST|RTA_GATEWAY|RTA_NETMASK|RTA_LABEL;
 	r.prefix.sin_len = sizeof(r.prefix);
