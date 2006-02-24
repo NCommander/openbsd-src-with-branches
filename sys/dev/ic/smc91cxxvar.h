@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxxvar.h,v 1.4 2002/03/14 01:26:55 millert Exp $	*/
+/*	$OpenBSD: smc91cxxvar.h,v 1.5 2006/01/23 14:42:55 martin Exp $	*/
 /*	$NetBSD: smc91cxxvar.h,v 1.4 1997/10/15 05:56:13 explorer Exp $	*/
 
 /*-
@@ -38,15 +38,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if NRND > 0
-#include <sys/rnd.h>
-#endif
-
 struct smc91cxx_softc {
 	struct	device sc_dev;		/* generic device glue */
-#ifdef __NetBSD__
-	struct	ethercom sc_ethercom;	/* ethernet common glue */
-#endif
 	struct	arpcom sc_arpcom;	/* ethernet common glue */
 
 	struct mii_data sc_mii;		/* MII/media control */
@@ -67,10 +60,6 @@ struct smc91cxx_softc {
 
 	u_int8_t	sc_chipid;
 	u_int8_t	sc_internal_phy;	/* 91C111 only */
-
-#if NRND > 0
-	rndsource_element_t rnd_source;
-#endif
 };
 
 #define	SMC_SELECT_BANK(sc, x)						\
