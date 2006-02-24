@@ -34,6 +34,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef NO_IEEE
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
@@ -692,3 +694,4 @@ done:
 	}
 	return 0;
 }
+#endif
