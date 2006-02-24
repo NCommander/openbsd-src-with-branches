@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.73 2005/08/31 18:27:31 marco Exp $	*/
+/*	$OpenBSD: ami.c,v 1.73.2.1 2005/12/07 22:30:29 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -540,6 +540,15 @@ ami_attach(sc)
 			if (sc->sc_maxcmds > AMI_MAXCMDS)
 				sc->sc_maxcmds = AMI_MAXCMDS;
 
+			/*
+			 * Reserve ccb's for ioctl's and raw commands to
+			 * processors/enclosures by lowering the number of
+			 * openings available for logical units.
+			 */
+			sc->sc_maxcmds -= AMI_MAXIOCTLCMDS + AMI_MAXPROCS *
+			    AMI_MAXRAWCMDS * sc->sc_channels;
+ 
+
 			if (sc->sc_nunits)
 				sc->sc_link.openings =
 				    sc->sc_maxcmds / sc->sc_nunits;
@@ -623,7 +632,7 @@ ami_attach(sc)
 		rsc->sc_softc = sc;
 		rsc->sc_channel = rsc - sc->sc_rawsoftcs;
 		rsc->sc_link.device = &ami_raw_dev;
-		rsc->sc_link.openings = sc->sc_maxcmds;
+		rsc->sc_link.openings = AMI_MAXRAWCMDS;
 		rsc->sc_link.adapter_softc = rsc;
 		rsc->sc_link.adapter = &ami_raw_switch;
 		rsc->sc_proctarget = -1;
