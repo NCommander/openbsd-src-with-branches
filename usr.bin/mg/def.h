@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.81 2005/12/13 07:20:13 kjell Exp $	*/
+/*	$OpenBSD: def.h,v 1.82 2005/12/20 06:17:36 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -363,6 +363,7 @@ struct mgwin	*new_window(struct buffer *);
 void		 free_window(struct mgwin *);
 int		 reposition(int, int);
 int		 redraw(int, int);
+int		 do_redraw(int, int, int);
 int		 nextwind(int, int);
 int		 prevwind(int, int);
 int		 onlywind(int, int);

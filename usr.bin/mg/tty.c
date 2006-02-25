@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.24 2005/12/13 06:01:27 kjell Exp $	*/
+/*	$OpenBSD: tty.c,v 1.25 2005/12/13 19:01:32 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -69,6 +69,7 @@ ttinit(void)
 	}
 
 	signal(SIGWINCH, winchhandler);
+	signal(SIGCONT, winchhandler);
 	siginterrupt(SIGWINCH, 1);
 
 	scroll_fwd = scroll_forward;
