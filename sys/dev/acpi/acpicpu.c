@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.1 2006/02/26 02:49:28 marco Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.2 2006/02/26 04:38:38 marco Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -86,7 +86,7 @@ acpicpu_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_pss = NULL;
 
-	printf(": ");
+	printf(": %s: ", sc->sc_devnode->parent->name);
 	if (acpicpu_getpss(sc)) {
 		/* XXX not the right test but has to do for now */
 		printf("can't attach, no _PSS\n");
