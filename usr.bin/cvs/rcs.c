@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.128 2006/02/09 08:08:56 niallo Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.129 2006/02/13 11:02:58 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -2931,6 +2931,7 @@ cvs_checkout_rev(RCSFILE *rf, RCSNUM *rev, CVSFILE *cf, char *fpath,
 	}
 
 	if (type == CHECKOUT_REV_CREATED ||
+	    type == CHECKOUT_REV_MERGED ||
 	    type == CHECKOUT_REV_UPDATED) {
 		ctime_r(&rcstime, timebuf);
 		l = strlen(timebuf);
