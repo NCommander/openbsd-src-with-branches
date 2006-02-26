@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: main.c,v 1.65 2004/04/21 13:17:49 jmc Exp $ */
+/*	$OpenBSD: main.c,v 1.66 2005/02/17 02:37:21 jolan Exp $ */
 /*	$NetBSD: main.c,v 1.34 1997/03/24 20:56:36 gwr Exp $	*/
 
 /*
@@ -268,7 +268,7 @@ MainParseArgs(int argc, char **argv)
 					break;
 				default:
 					(void)fprintf(stderr,
-				"make: illegal argument to d option -- %c\n",
+				"make: illegal argument to -d option -- %c\n",
 					    *modules);
 					usage();
 				}
