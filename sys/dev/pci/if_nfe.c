@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.48 2006/02/24 04:58:25 brad Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.49 2006/02/26 11:02:29 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006 Damien Bergamini <damien.bergamini@free.fr>
@@ -356,7 +356,9 @@ int
 nfe_miibus_readreg(struct device *dev, int phy, int reg)
 {
 	struct nfe_softc *sc = (struct nfe_softc *)dev;
+#ifdef NFE_DEBUG
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+#endif	
 	uint32_t val;
 	int ntries;
 
