@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf_filter.c,v 1.15 2005/09/28 20:53:56 miod Exp $	*/
+/*	$OpenBSD: bpf_filter.c,v 1.16 2005/12/08 08:49:30 otto Exp $	*/
 /*	$NetBSD: bpf_filter.c,v 1.12 1996/02/13 22:00:00 christos Exp $	*/
 
 /*
@@ -545,6 +545,7 @@ bpf_validate(f, len)
 				 */
 				if (BPF_RVAL(p->code) == BPF_K && p->k == 0)
 					return 0;
+				break;
 			default:
 				return 0;
 			}
