@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.29 2005/05/17 21:43:08 fgsch Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.30 2006/01/05 05:05:07 jsg Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -211,8 +211,10 @@ uipc_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 				error = EPIPE;
 				break;
 			}
-			if (unp->unp_conn == NULL)
-				panic("uipc 3");
+			if (unp->unp_conn == NULL) {
+				error = ENOTCONN;
+				break;
+			}
 			so2 = unp->unp_conn->unp_socket;
 			/*
 			 * Send to paired receive port, and then reduce
