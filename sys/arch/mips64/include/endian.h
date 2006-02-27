@@ -1,4 +1,4 @@
-/*	$OpenBSD: endian.h,v 1.3 2004/08/10 21:10:56 pefo Exp $ */
+/*	$OpenBSD: endian.h,v 1.4 2005/12/13 00:35:23 millert Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -41,5 +41,7 @@
 #endif
 
 #include <sys/endian.h>
+
+#define	__STRICT_ALIGNMENT
 
 #endif /* _MIPS64_ENDIAN_H_ */
