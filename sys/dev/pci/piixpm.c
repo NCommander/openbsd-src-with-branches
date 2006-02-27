@@ -1,4 +1,4 @@
-/*	$OpenBSD: piixpm.c,v 1.18 2006/01/18 02:57:27 brad Exp $	*/
+/*	$OpenBSD: piixpm.c,v 1.19 2006/02/11 05:26:32 grange Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -43,7 +43,7 @@
 #define DPRINTF(x)
 #endif
 
-#define PIIXPM_DELAY	100
+#define PIIXPM_DELAY	200
 #define PIIXPM_TIMEOUT	1
 
 struct piixpm_softc {
