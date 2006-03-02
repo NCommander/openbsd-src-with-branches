@@ -9,32 +9,32 @@
  *	This symbol, if defined, indicates that the ioctl() routine is
  *	available to set I/O characteristics
  */
-#define	HAS_IOCTL		/ **/
+#define	HAS_IOCTL		/**/
  
 /* HAS_UTIME:
  *	This symbol, if defined, indicates that the routine utime() is
  *	available to update the access and modification times of files.
  */
-#define HAS_UTIME		/ **/
+#define HAS_UTIME		/**/
 
 /* HAS_GROUP
  *	This symbol, if defined, indicates that the getgrnam() and
  *	getgrgid() routines are available to get group entries.
  */
-#define HAS_GROUP		/ **/
+#define HAS_GROUP		/**/
 
 /* HAS_PASSWD
  *	This symbol, if defined, indicates that the getpwnam() and
  *	getpwuid() routines are available to get password entries.
  */
-#define HAS_PASSWD		/ **/
+#define HAS_PASSWD		/**/
 
 #define HAS_KILL
 #define HAS_WAIT
   
 /* USEMYBINMODE
  *	This symbol, if defined, indicates that the program should
- *	use the routine my_binmode(FILE *fp, char iotype) to insure
+ *	use the routine my_binmode(FILE *fp, char iotype, int mode) to insure
  *	that a file is in "binary" mode -- that is, that no translation
  *	of bytes occurs on read or write operations.
  */
@@ -52,7 +52,7 @@
  *	This symbol is defined if this system has a stat structure declaring
  *	st_rdev
  */
-#define USE_STAT_RDEV 	/ **/
+#define USE_STAT_RDEV 	/**/
 
 /* ACME_MESS:
  *	This symbol, if defined, indicates that error messages should be 
@@ -87,9 +87,7 @@
  */
 /* #define ALTERNATE_SHEBANG "#!" / **/
 
-#if !defined(NSIG) || defined(M_UNIX) || defined(M_XENIX)
-# include <signal.h>
-#endif
+#include <signal.h>
 
 #ifndef SIGABRT
 #    define SIGABRT SIGILL
@@ -97,7 +95,7 @@
 #ifndef SIGILL
 #    define SIGILL 6         /* blech */
 #endif
-#define ABORT() kill(getpid(),SIGABRT);
+#define ABORT() kill(PerlProc_getpid(),SIGABRT);
 
 /*
  * fwrite1() should be a routine with the same calling sequence as fwrite(),
@@ -113,12 +111,7 @@
 #define Mkdir(path,mode)   mkdir((path),(mode))
 
 #ifndef PERL_SYS_INIT
-#ifdef PERL_SCO5
-/* this should be set in a hint file, not here */
-#  define PERL_SYS_INIT(c,v)	fpsetmask(0); MALLOC_INIT
-#else
-#  define PERL_SYS_INIT(c,v)	MALLOC_INIT
-#endif
+#  define PERL_SYS_INIT(c,v)	PERL_FPU_INIT MALLOC_INIT
 #endif
 
 #ifndef PERL_SYS_TERM
@@ -137,3 +130,26 @@
 #undef PRPASSWD
 #undef PWAGE
 #undef PWCOMMENT
+
+/* various missing external function declarations */
+
+#include <sys/ipc.h>
+extern key_t ftok (char *pathname, char id);
+extern char *gcvt (double value, int ndigit, char *buf);
+extern int isnan (double value);
+extern void srand48(long int seedval);
+
+/* various missing constants -- define 'em */
+
+#define PF_UNSPEC 0
+
+/* declarations for wrappers in mpeix.c */
+
+#include <time.h>
+#include <sys/time.h>
+
+extern int ftruncate(int fd, long wantsize);
+extern int gettimeofday( struct timeval *tp, struct timezone *tpz );
+extern int truncate(const char *pathname, off_t length);
+
+#define fcntl mpe_fcntl

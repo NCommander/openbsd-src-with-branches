@@ -9,7 +9,7 @@ BEGIN {
 }
 
 require "./test.pl";
-plan( tests => 41 );
+plan( tests => 46 );
 
 eval '%@x=0;';
 like( $@, qr/^Can't modify hash dereference in repeat \(x\)/, '%@x=0' );
@@ -128,10 +128,37 @@ EOF
 {
     local $SIG{__WARN__} = sub { }; # silence mandatory warning
     eval q{ my $x = -F 1; };
-    like( $@, qr/syntax error .* near "F 1"/, "unknown filetest operators" );
+    like( $@, qr/(?:syntax|parse) error .* near "F 1"/, "unknown filetest operators" );
     is(
         eval q{ sub F { 42 } -F 1 },
 	'-42',
 	'-F calls the F function'
     );
+}
+
+# Bug #24762
+{
+    eval q{ *foo{CODE} ? 1 : 0 };
+    is( $@, '', "glob subscript in conditional" );
+}
+
+# Bug #27024
+{
+    # this used to segfault (because $[=1 is optimized away to a null block)
+    my $x;
+    $[ = 1 while $x;
+    pass();
+    $[ = 0; # restore the original value for less side-effects
+}
+
+# [perl #2738] perl segfautls on input
+{
+    eval q{ sub _ <> {} };
+    like($@, qr/Illegal declaration of subroutine main::_/, "readline operator as prototype");
+
+    eval q{ $s = sub <> {} };
+    like($@, qr/Illegal declaration of anonymous subroutine/, "readline operator as prototype");
+
+    eval q{ sub _ __FILE__ {} };
+    like($@, qr/Illegal declaration of subroutine main::_/, "__FILE__ as prototype");
 }

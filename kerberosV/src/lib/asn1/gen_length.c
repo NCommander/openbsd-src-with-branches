@@ -33,7 +33,7 @@
 
 #include "gen_locl.h"
 
-RCSID("$KTH: gen_length.c,v 1.10 2000/06/21 22:40:53 assar Exp $");
+RCSID("$KTH: gen_length.c,v 1.11.6.1 2004/01/26 09:26:10 lha Exp $");
 
 static void
 length_primitive (const char *typename,
@@ -69,8 +69,14 @@ length_type (const char *name, const Type *t, const char *variable)
     case TUInteger:
 	length_primitive ("unsigned", name, variable);
 	break;
+    case TEnumerated :
+	length_primitive ("enumerated", name, variable);
+	break;
     case TOctetString:
 	length_primitive ("octet_string", name, variable);
+	break;
+    case TOID :
+	length_primitive ("oid", name, variable);
 	break;
     case TBitString: {
 	/*
@@ -120,8 +126,12 @@ length_type (const char *name, const Type *t, const char *variable)
 		 variable, variable);
 
 	fprintf (codefile, "for(i = (%s)->len - 1; i >= 0; --i){\n", name);
+	fprintf (codefile, "int oldret = %s;\n"
+		 "%s = 0;\n", variable, variable);
 	asprintf (&n, "&(%s)->val[i]", name);
 	length_type(n, t->subtype, variable);
+	fprintf (codefile, "%s += oldret;\n",
+		 variable);
 	fprintf (codefile, "}\n");
 
 	fprintf (codefile,

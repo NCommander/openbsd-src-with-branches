@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 104 fixup scripts.
+# This script contains 103 fixup scripts.
 #
 # See README-fixinc for more information.
 #
@@ -125,7 +125,12 @@ for INPUT in ${INPUTLIST} ; do
 
 cd ${ORIGDIR}
 
-cd ${INPUT} || continue
+# This originally used cd || continue, however, that does not work with the
+# Solaris2 /bin/sh.
+if [ ! -d ${INPUT} ]; then
+  continue
+fi
+cd ${INPUT}
 INPUT=`${PWDCMD}`
 
 #
@@ -393,9 +398,9 @@ find . -name DONE -exec rm -f '{}' ';'
 
 echo 'Removing unneeded directories:'
 cd $LIB
-all_dirs=`find . -type d -print | sort -r`
+all_dirs=`find . -type d \! -name '.' -print | sort -r`
 for file in $all_dirs; do
-  rmdir $LIB/$file > /dev/null 2>&1 | :
+  rmdir $LIB/$file > /dev/null 2>&1
 done
 
 # # # # # # # # # # # # # # # # # # # # #
@@ -406,8 +411,10 @@ done
 #
 # # # # # # # # # # # # # # # # # # # # #
 
-cd $ORIGDIR
-rm -f include/assert.h
-cp ${srcdir}/assert.h include/assert.h || exit 1
-chmod a+r include/assert.h
-
+if [ x${INSTALL_ASSERT_H} != x ] && [ -f ${srcdir}/assert.h ]
+then
+  cd $ORIGDIR
+  rm -f include/assert.h
+  cp ${srcdir}/assert.h include/assert.h || exit 1
+  chmod a+r include/assert.h
+fi

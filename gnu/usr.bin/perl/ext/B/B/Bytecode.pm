@@ -1,783 +1,790 @@
-#      Bytecode.pm
-#
-#      Copyright (c) 1996-1998 Malcolm Beattie
-#
-#      You may distribute under the terms of either the GNU General Public
-#      License or the Artistic License, as specified in the README file.
-#
+# B::Bytecode.pm
+# Copyright (c) 2003 Enache Adrian. All rights reserved.
+# This module is free software; you can redistribute and/or modify
+# it under the same terms as Perl itself.
+
+# Based on the original Bytecode.pm module written by Malcolm Beattie.
+
 package B::Bytecode;
+
+our $VERSION = '1.01';
+
 use strict;
-use Carp;
-use IO::File;
+use Config;
+use B qw(class main_cv main_root main_start cstring comppadlist
+	defstash curstash begin_av init_av end_av inc_gv warnhook diehook
+	dowarn SVt_PVGV SVt_PVHV OPf_SPECIAL OPf_STACKED OPf_MOD
+	OPpLVAL_INTRO SVf_FAKE SVf_READONLY);
+use B::Asmdata qw(@specialsv_name);
+use B::Assembler qw(asm newasm endasm);
 
-use B qw(minus_c main_cv main_root main_start comppadlist
-	 class peekop walkoptree svref_2object cstring walksymtable);
-use B::Asmdata qw(@optype @specialsv_name);
-use B::Assembler qw(assemble_fh);
+#################################################
 
-my %optype_enum;
-my $i;
-for ($i = 0; $i < @optype; $i++) {
-    $optype_enum{$optype[$i]} = $i;
+my ($varix, $opix, $savebegins, %walked, %files, @cloop);
+my %strtab = (0,0);
+my %svtab = (0,0);
+my %optab = (0,0);
+my %spectab = (0,0);
+my $tix = 1;
+sub asm;
+sub nice ($) { }
+
+BEGIN {
+    my $ithreads = $Config{'useithreads'} eq 'define';
+    eval qq{
+	sub ITHREADS() { $ithreads }
+	sub VERSION() { $] }
+    }; die $@ if $@;
 }
 
-# Following is SVf_POK|SVp_POK
-# XXX Shouldn't be hardwired
-sub POK () { 0x04040000 }
-
-# Following is SVf_IOK|SVp_OK
-# XXX Shouldn't be hardwired
-sub IOK () { 0x01010000 }
-
-my ($verbose, $module_only, $no_assemble, $debug_bc, $debug_cv);
-my $assembler_pid;
-
-# Optimisation options. On the command line, use hyphens instead of
-# underscores for compatibility with gcc-style options. We use
-# underscores here because they are OK in (strict) barewords.
-my ($strip_syntree, $compress_nullops, $omit_seq, $bypass_nullops);
-my %optimise = (strip_syntax_tree	=> \$strip_syntree,
-		compress_nullops	=> \$compress_nullops,
-		omit_sequence_numbers	=> \$omit_seq,
-		bypass_nullops		=> \$bypass_nullops);
-
-my $nextix = 0;
-my %symtable;	# maps object addresses to object indices.
-		# Filled in at allocation (newsv/newop) time.
-my %saved;	# maps object addresses (for SVish classes) to "saved yet?"
-		# flag. Set at FOO::bytecode time usually by SV::bytecode.
-		# Manipulated via saved(), mark_saved(), unmark_saved().
-
-my $svix = -1;	# we keep track of when the sv register contains an element
-		# of the object table to avoid unnecessary repeated
-		# consecutive ldsv instructions.
-my $opix = -1;	# Ditto for the op register.
-
-sub ldsv {
-    my $ix = shift;
-    if ($ix != $svix) {
-	print "ldsv $ix\n";
-	$svix = $ix;
-    }
-}
-
-sub stsv {
-    my $ix = shift;
-    print "stsv $ix\n";
-    $svix = $ix;
-}
-
-sub set_svix {
-    $svix = shift;
-}
-
-sub ldop {
-    my $ix = shift;
-    if ($ix != $opix) {
-	print "ldop $ix\n";
-	$opix = $ix;
-    }
-}
-
-sub stop {
-    my $ix = shift;
-    print "stop $ix\n";
-    $opix = $ix;
-}
-
-sub set_opix {
-    $opix = shift;
-}
+#################################################
 
 sub pvstring {
-    my $str = shift;
-    if (defined($str)) {
-	return cstring($str . "\0");
-    } else {
-	return '""';
+    my $pv = shift;
+    defined($pv) ? cstring ($pv."\0") : "\"\"";
+}
+
+sub pvix {
+    my $str = pvstring shift;
+    my $ix = $strtab{$str};
+    defined($ix) ? $ix : do {
+	asm "newpv", $str;
+	asm "stpv", $strtab{$str} = $tix;
+	$tix++;
     }
 }
 
-sub saved { $saved{${$_[0]}} }
-sub mark_saved { $saved{${$_[0]}} = 1 }
-sub unmark_saved { $saved{${$_[0]}} = 0 }
-
-sub debug { $debug_bc = shift }
-
-sub B::OBJECT::nyi {
-    my $obj = shift;
-    warn sprintf("bytecode save method for %s (0x%x) not yet implemented\n",
-		 class($obj), $$obj);
-}
-
-#
-# objix may stomp on the op register (for op objects)
-# or the sv register (for SV objects)
-#
-sub B::OBJECT::objix {
-    my $obj = shift;
-    my $ix = $symtable{$$obj};
-    if (defined($ix)) {
-	return $ix;
-    } else {
-	$obj->newix($nextix);
-	return $symtable{$$obj} = $nextix++;
+sub B::OP::ix {
+    my $op = shift;
+    my $ix = $optab{$$op};
+    defined($ix) ? $ix : do {
+	nice "[".$op->name." $tix]";
+	asm "newopx", $op->size | $op->type <<7;
+	$optab{$$op} = $opix = $ix = $tix++;
+	$op->bsave($ix);
+	$ix;
     }
 }
 
-sub B::SV::newix {
-    my ($sv, $ix) = @_;
-    printf "newsv %d\t# %s\n", $sv->FLAGS & 0xf, class($sv);
-    stsv($ix);    
-}
-
-sub B::GV::newix {
-    my ($gv, $ix) = @_;
-    my $gvname = $gv->NAME;
-    my $name = cstring($gv->STASH->NAME . "::" . $gvname);
-    print "gv_fetchpv $name\n";
-    stsv($ix);
-}
-
-sub B::HV::newix {
-    my ($hv, $ix) = @_;
-    my $name = $hv->NAME;
-    if ($name) {
-	# It's a stash
-	printf "gv_stashpv %s\n", cstring($name);
-	stsv($ix);
-    } else {
-	# It's an ordinary HV. Fall back to ordinary newix method
-	$hv->B::SV::newix($ix);
+sub B::SPECIAL::ix {
+    my $spec = shift;
+    my $ix = $spectab{$$spec};
+    defined($ix) ? $ix : do {
+	nice '['.$specialsv_name[$$spec].']';
+	asm "ldspecsvx", $$spec;
+	$spectab{$$spec} = $varix = $tix++;
     }
 }
 
-sub B::SPECIAL::newix {
-    my ($sv, $ix) = @_;
-    # Special case. $$sv is not the address of the SV but an
-    # index into svspecialsv_list.
-    printf "ldspecsv $$sv\t# %s\n", $specialsv_name[$$sv];
-    stsv($ix);
-}
-
-sub B::OP::newix {
-    my ($op, $ix) = @_;
-    my $class = class($op);
-    my $typenum = $optype_enum{$class};
-    croak "OP::newix: can't understand class $class" unless defined($typenum);
-    print "newop $typenum\t# $class\n";
-    stop($ix);
-}
-
-sub B::OP::walkoptree_debug {
-    my $op = shift;
-    warn(sprintf("walkoptree: %s\n", peekop($op)));
-}
-
-sub B::OP::bytecode {
-    my $op = shift;
-    my $next = $op->next;
-    my $nextix;
-    my $sibix = $op->sibling->objix;
-    my $ix = $op->objix;
-    my $type = $op->type;
-
-    if ($bypass_nullops) {
-	$next = $next->next while $$next && $next->type == 0;
-    }
-    $nextix = $next->objix;
-
-    printf "# %s\n", peekop($op) if $debug_bc;
-    ldop($ix);
-    print "op_next $nextix\n";
-    print "op_sibling $sibix\n" unless $strip_syntree;
-    printf "op_type %s\t# %d\n", $op->ppaddr, $type;
-    printf("op_seq %d\n", $op->seq) unless $omit_seq;
-    if ($type || !$compress_nullops) {
-	printf "op_targ %d\nop_flags 0x%x\nop_private 0x%x\n",
-	    $op->targ, $op->flags, $op->private;
+sub B::SV::ix {
+    my $sv = shift;
+    my $ix = $svtab{$$sv};
+    defined($ix) ? $ix : do {
+	nice '['.class($sv).']';
+	asm "newsvx", $sv->FLAGS;
+	$svtab{$$sv} = $varix = $ix = $tix++;
+	$sv->bsave($ix);
+	$ix;
     }
 }
 
-sub B::UNOP::bytecode {
-    my $op = shift;
-    my $firstix = $op->first->objix;
-    $op->B::OP::bytecode;
-    if (($op->type || !$compress_nullops) && !$strip_syntree) {
-	print "op_first $firstix\n";
-    }
-}
+sub B::GV::ix {
+    my ($gv,$desired) = @_;
+    my $ix = $svtab{$$gv};
+    defined($ix) ? $ix : do {
+	if ($gv->GP) {
+	    my ($svix, $avix, $hvix, $cvix, $ioix, $formix);
+	    nice "[GV]";
+	    my $name = $gv->STASH->NAME . "::" . $gv->NAME;
+	    asm "gv_fetchpvx", cstring $name;
+	    $svtab{$$gv} = $varix = $ix = $tix++;
+	    asm "sv_flags", $gv->FLAGS;
+	    asm "sv_refcnt", $gv->REFCNT;
+	    asm "xgv_flags", $gv->GvFLAGS;
 
-sub B::LOGOP::bytecode {
-    my $op = shift;
-    my $otherix = $op->other->objix;
-    $op->B::UNOP::bytecode;
-    print "op_other $otherix\n";
-}
+	    asm "gp_refcnt", $gv->GvREFCNT;
+	    asm "load_glob", $ix if $name eq "CORE::GLOBAL::glob";
+	    return $ix
+		    unless $desired || desired $gv;
+	    $svix = $gv->SV->ix;
+	    $avix = $gv->AV->ix;
+	    $hvix = $gv->HV->ix;
 
-sub B::SVOP::bytecode {
-    my $op = shift;
-    my $sv = $op->sv;
-    my $svix = $sv->objix;
-    $op->B::OP::bytecode;
-    print "op_sv $svix\n";
-    $sv->bytecode;
-}
+    # XXX {{{{
+	    my $cv = $gv->CV;
+	    $cvix = $$cv && defined $files{$cv->FILE} ? $cv->ix : 0;
+	    my $form = $gv->FORM;
+	    $formix = $$form && defined $files{$form->FILE} ? $form->ix : 0;
 
-sub B::GVOP::bytecode {
-    my $op = shift;
-    my $gv = $op->gv;
-    my $gvix = $gv->objix;
-    $op->B::OP::bytecode;
-    print "op_gv $gvix\n";
-    $gv->bytecode;
-}
+	    $ioix = $name !~ /STDOUT$/ ? $gv->IO->ix : 0;	
+							    # }}}} XXX
 
-sub B::PVOP::bytecode {
-    my $op = shift;
-    my $pv = $op->pv;
-    $op->B::OP::bytecode;
-    #
-    # This would be easy except that OP_TRANS uses a PVOP to store an
-    # endian-dependent array of 256 shorts instead of a plain string.
-    #
-    if ($op->ppaddr eq "pp_trans") {
-	my @shorts = unpack("s256", $pv); # assembler handles endianness
-	print "op_pv_tr ", join(",", @shorts), "\n";
-    } else {
-	printf "newpv %s\nop_pv\n", pvstring($pv);
-    }
-}
-
-sub B::BINOP::bytecode {
-    my $op = shift;
-    my $lastix = $op->last->objix;
-    $op->B::UNOP::bytecode;
-    if (($op->type || !$compress_nullops) && !$strip_syntree) {
-	print "op_last $lastix\n";
-    }
-}
-
-sub B::CONDOP::bytecode {
-    my $op = shift;
-    my $trueix = $op->true->objix;
-    my $falseix = $op->false->objix;
-    $op->B::UNOP::bytecode;
-    print "op_true $trueix\nop_false $falseix\n";
-}
-
-sub B::LISTOP::bytecode {
-    my $op = shift;
-    my $children = $op->children;
-    $op->B::BINOP::bytecode;
-    if (($op->type || !$compress_nullops) && !$strip_syntree) {
-	print "op_children $children\n";
-    }
-}
-
-sub B::LOOP::bytecode {
-    my $op = shift;
-    my $redoopix = $op->redoop->objix;
-    my $nextopix = $op->nextop->objix;
-    my $lastopix = $op->lastop->objix;
-    $op->B::LISTOP::bytecode;
-    print "op_redoop $redoopix\nop_nextop $nextopix\nop_lastop $lastopix\n";
-}
-
-sub B::COP::bytecode {
-    my $op = shift;
-    my $stash = $op->stash;
-    my $stashix = $stash->objix;
-    my $filegv = $op->filegv;
-    my $filegvix = $filegv->objix;
-    my $line = $op->line;
-    if ($debug_bc) {
-	printf "# line %s:%d\n", $filegv->SV->PV, $line;
-    }
-    $op->B::OP::bytecode;
-    printf <<"EOT", pvstring($op->label), $op->cop_seq, $op->arybase;
-newpv %s
-cop_label
-cop_stash $stashix
-cop_seq %d
-cop_filegv $filegvix
-cop_arybase %d
-cop_line $line
-EOT
-    $filegv->bytecode;
-    $stash->bytecode;
-}
-
-sub B::PMOP::bytecode {
-    my $op = shift;
-    my $replroot = $op->pmreplroot;
-    my $replrootix = $replroot->objix;
-    my $replstartix = $op->pmreplstart->objix;
-    my $ppaddr = $op->ppaddr;
-    # pmnext is corrupt in some PMOPs (see misc.t for example)
-    #my $pmnextix = $op->pmnext->objix;
-
-    if ($$replroot) {
-	# OP_PUSHRE (a mutated version of OP_MATCH for the regexp
-	# argument to a split) stores a GV in op_pmreplroot instead
-	# of a substitution syntax tree. We don't want to walk that...
-	if ($ppaddr eq "pp_pushre") {
-	    $replroot->bytecode;
+	    nice "-GV-",
+	    asm "ldsv", $varix = $ix unless $ix == $varix;
+	    asm "gp_sv", $svix;
+	    asm "gp_av", $avix;
+	    asm "gp_hv", $hvix;
+	    asm "gp_cv", $cvix;
+	    asm "gp_io", $ioix;
+	    asm "gp_cvgen", $gv->CVGEN;
+	    asm "gp_form", $formix;
+	    asm "gp_file", pvix $gv->FILE;
+	    asm "gp_line", $gv->LINE;
+	    asm "formfeed", $svix if $name eq "main::\cL";
 	} else {
-	    walkoptree($replroot, "bytecode");
+	    nice "[GV]";
+	    asm "newsvx", $gv->FLAGS;
+	    $svtab{$$gv} = $varix = $ix = $tix++;
+	    my $stashix = $gv->STASH->ix;
+	    $gv->B::PVMG::bsave($ix);
+	    asm "xgv_flags", $gv->GvFLAGS;
+	    asm "xgv_stash", $stashix;
 	}
-    }
-    $op->B::LISTOP::bytecode;
-    if ($ppaddr eq "pp_pushre") {
-	printf "op_pmreplrootgv $replrootix\n";
-    } else {
-	print "op_pmreplroot $replrootix\nop_pmreplstart $replstartix\n";
-    }
-    my $re = pvstring($op->precomp);
-    # op_pmnext omitted since a perl bug means it's sometime corrupt
-    printf <<"EOT", $op->pmflags, $op->pmpermflags;
-op_pmflags 0x%x
-op_pmpermflags 0x%x
-newpv $re
-pregcomp
-EOT
-}
-
-sub B::SV::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    my $ix = $sv->objix;
-    my $refcnt = $sv->REFCNT;
-    my $flags = sprintf("0x%x", $sv->FLAGS);
-    ldsv($ix);
-    print "sv_refcnt $refcnt\nsv_flags $flags\n";
-    mark_saved($sv);
-}
-
-sub B::PV::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    $sv->B::SV::bytecode;
-    printf("newpv %s\nxpv\n", pvstring($sv->PV)) if $sv->FLAGS & POK;
-}
-
-sub B::IV::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    my $iv = $sv->IVX;
-    $sv->B::SV::bytecode;
-    printf "%s $iv\n", $sv->needs64bits ? "xiv64" : "xiv32";
-}
-
-sub B::NV::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    $sv->B::SV::bytecode;
-    printf "xnv %s\n", $sv->NVX;
-}
-
-sub B::RV::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    my $rv = $sv->RV;
-    my $rvix = $rv->objix;
-    $rv->bytecode;
-    $sv->B::SV::bytecode;
-    print "xrv $rvix\n";
-}
-
-sub B::PVIV::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    my $iv = $sv->IVX;
-    $sv->B::PV::bytecode;
-    printf "%s $iv\n", $sv->needs64bits ? "xiv64" : "xiv32";
-}
-
-sub B::PVNV::bytecode {
-    my ($sv, $flag) = @_;
-    # The $flag argument is passed through PVMG::bytecode by BM::bytecode
-    # and AV::bytecode and indicates special handling. $flag = 1 is used by
-    # BM::bytecode and means that we should ensure we save the whole B-M
-    # table. It consists of 257 bytes (256 char array plus a final \0)
-    # which follow the ordinary PV+\0 and the 257 bytes are *not* reflected
-    # in SvCUR. $flag = 2 is used by AV::bytecode and means that we only
-    # call SV::bytecode instead of saving PV and calling NV::bytecode since
-    # PV/NV/IV stuff is different for AVs.
-    return if saved($sv);
-    if ($flag == 2) {
-	$sv->B::SV::bytecode;
-    } else {
-	my $pv = $sv->PV;
-	$sv->B::IV::bytecode;
-	printf "xnv %s\n", $sv->NVX;
-	if ($flag == 1) {
-	    $pv .= "\0" . $sv->TABLE;
-	    printf "newpv %s\npv_cur %d\nxpv\n", pvstring($pv),length($pv)-257;
-	} else {
-	    printf("newpv %s\nxpv\n", pvstring($pv)) if $sv->FLAGS & POK;
-	}
+	$ix;
     }
 }
 
-sub B::PVMG::bytecode {
-    my ($sv, $flag) = @_;
-    # See B::PVNV::bytecode for an explanation of $flag.
-    return if saved($sv);
-    # XXX We assume SvSTASH is already saved and don't save it later ourselves
-    my $stashix = $sv->SvSTASH->objix;
-    my @mgchain = $sv->MAGIC;
-    my (@mgobjix, $mg);
-    #
-    # We need to traverse the magic chain and get objix for each OBJ
-    # field *before* we do B::PVNV::bytecode since objix overwrites
-    # the sv register. However, we need to write the magic-saving
-    # bytecode *after* B::PVNV::bytecode since sv isn't initialised
-    # to refer to $sv until then.
-    #
-    @mgobjix = map($_->OBJ->objix, @mgchain);
-    $sv->B::PVNV::bytecode($flag);
-    print "xmg_stash $stashix\n";
-    foreach $mg (@mgchain) {
-	printf "sv_magic %s\nmg_obj %d\nnewpv %s\nmg_pv\n",
-	    cstring($mg->TYPE), shift(@mgobjix), pvstring($mg->PTR);
-    }
-}
-
-sub B::PVLV::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    $sv->B::PVMG::bytecode;
-    printf <<'EOT', $sv->TARGOFF, $sv->TARGLEN, cstring($sv->TYPE);
-xlv_targoff %d
-xlv_targlen %d
-xlv_type %s
-EOT
-}
-
-sub B::BM::bytecode {
-    my $sv = shift;
-    return if saved($sv);
-    # See PVNV::bytecode for an explanation of what the argument does
-    $sv->B::PVMG::bytecode(1);
-    printf "xbm_useful %d\nxbm_previous %d\nxbm_rare %d\n",
-	$sv->USEFUL, $sv->PREVIOUS, $sv->RARE;
-}
-
-sub B::GV::bytecode {
-    my $gv = shift;
-    return if saved($gv);
-    my $ix = $gv->objix;
-    mark_saved($gv);
-    my $gvname = $gv->NAME;
-    my $name = cstring($gv->STASH->NAME . "::" . $gvname);
-    my $egv = $gv->EGV;
-    my $egvix = $egv->objix;
-    ldsv($ix);
-    printf <<"EOT", $gv->FLAGS, $gv->GvFLAGS, $gv->LINE;
-sv_flags 0x%x
-xgv_flags 0x%x
-gp_line %d
-EOT
-    my $refcnt = $gv->REFCNT;
-    printf("sv_refcnt_add %d\n", $refcnt - 1) if $refcnt > 1;
-    my $gvrefcnt = $gv->GvREFCNT;
-    printf("gp_refcnt_add %d\n", $gvrefcnt - 1) if $gvrefcnt > 1;
-    if ($gvrefcnt > 1 &&  $ix != $egvix) {
-	print "gp_share $egvix\n";
-    } else {
-	if ($gvname !~ /^([^A-Za-z]|STDIN|STDOUT|STDERR|ARGV|SIG|ENV)$/) {
-	    my $i;
-	    my @subfield_names = qw(SV AV HV CV FILEGV FORM IO);
-	    my @subfields = map($gv->$_(), @subfield_names);
-	    my @ixes = map($_->objix, @subfields);
-	    # Reset sv register for $gv
-	    ldsv($ix);
-	    for ($i = 0; $i < @ixes; $i++) {
-		printf "gp_%s %d\n", lc($subfield_names[$i]), $ixes[$i];
-	    }
-	    # Now save all the subfields
-	    my $sv;
-	    foreach $sv (@subfields) {
-		$sv->bytecode;
-	    }
-	}
-    }
-}
-
-sub B::HV::bytecode {
+sub B::HV::ix {
     my $hv = shift;
-    return if saved($hv);
-    mark_saved($hv);
-    my $name = $hv->NAME;
-    my $ix = $hv->objix;
-    if (!$name) {
-	# It's an ordinary HV. Stashes have NAME set and need no further
-	# saving beyond the gv_stashpv that $hv->objix already ensures.
-	my @contents = $hv->ARRAY;
-	my ($i, @ixes);
-	for ($i = 1; $i < @contents; $i += 2) {
-	    push(@ixes, $contents[$i]->objix);
+    my $ix = $svtab{$$hv};
+    defined($ix) ? $ix : do {
+	my ($ix,$i,@array);
+	my $name = $hv->NAME;
+	if ($name) {
+	    nice "[STASH]";
+	    asm "gv_stashpvx", cstring $name;
+	    asm "sv_flags", $hv->FLAGS;
+	    $svtab{$$hv} = $varix = $ix = $tix++;
+	    asm "xhv_name", pvix $name;
+	    # my $pmrootix = $hv->PMROOT->ix;	# XXX
+	    asm "ldsv", $varix = $ix unless $ix == $varix;
+	    # asm "xhv_pmroot", $pmrootix;	# XXX
+	} else {
+	    nice "[HV]";
+	    asm "newsvx", $hv->FLAGS;
+	    $svtab{$$hv} = $varix = $ix = $tix++;
+	    my $stashix = $hv->SvSTASH->ix;
+	    for (@array = $hv->ARRAY) {
+		next if $i = not $i;
+		$_ = $_->ix;
+	    }
+	    nice "-HV-",
+	    asm "ldsv", $varix = $ix unless $ix == $varix;
+	    ($i = not $i) ? asm ("newpv", pvstring $_) : asm("hv_store", $_)
+		for @array;
+	    asm "xnv", $hv->NVX;
+	    asm "xmg_stash", $stashix;
+	    asm "xhv_riter", $hv->RITER;
 	}
-	for ($i = 1; $i < @contents; $i += 2) {
-	    $contents[$i]->bytecode;
-	}
-	ldsv($ix);
-	for ($i = 0; $i < @contents; $i += 2) {
-	    printf("newpv %s\nhv_store %d\n",
-		   pvstring($contents[$i]), $ixes[$i / 2]);
-	}
-	printf "sv_refcnt %d\nsv_flags 0x%x\n", $hv->REFCNT, $hv->FLAGS;
+	asm "sv_refcnt", $hv->REFCNT;
+	$ix;
     }
 }
 
-sub B::AV::bytecode {
-    my $av = shift;
-    return if saved($av);
-    my $ix = $av->objix;
-    my $fill = $av->FILL;
-    my $max = $av->MAX;
-    my (@array, @ixes);
-    if ($fill > -1) {
-	@array = $av->ARRAY;
-	@ixes = map($_->objix, @array);
-	my $sv;
-	foreach $sv (@array) {
-	    $sv->bytecode;
+sub B::NULL::ix {
+    my $sv = shift;
+    $$sv ? $sv->B::SV::ix : 0;
+}
+
+sub B::NULL::opwalk { 0 }
+
+#################################################
+
+sub B::NULL::bsave {
+    my ($sv,$ix) = @_;
+
+    nice '-'.class($sv).'-',
+    asm "ldsv", $varix = $ix unless $ix == $varix;
+    asm "sv_refcnt", $sv->REFCNT;
+}
+
+sub B::SV::bsave;
+    *B::SV::bsave = *B::NULL::bsave;
+
+sub B::RV::bsave {
+    my ($sv,$ix) = @_;
+    my $rvix = $sv->RV->ix;
+    $sv->B::NULL::bsave($ix);
+    asm "xrv", $rvix;
+}
+
+sub B::PV::bsave {
+    my ($sv,$ix) = @_;
+    $sv->B::NULL::bsave($ix);
+    asm "newpv", pvstring $sv->PVBM;
+    asm "xpv";
+}
+
+sub B::IV::bsave {
+    my ($sv,$ix) = @_;
+    $sv->B::NULL::bsave($ix);
+    asm "xiv", $sv->IVX;
+}
+
+sub B::NV::bsave {
+    my ($sv,$ix) = @_;
+    $sv->B::NULL::bsave($ix);
+    asm "xnv", sprintf "%.40g", $sv->NVX;
+}
+
+sub B::PVIV::bsave {
+    my ($sv,$ix) = @_;
+    $sv->POK ?
+	$sv->B::PV::bsave($ix):
+    $sv->ROK ?
+	$sv->B::RV::bsave($ix):
+	$sv->B::NULL::bsave($ix);
+    asm "xiv", !ITHREADS && $sv->FLAGS & (SVf_FAKE|SVf_READONLY) ?
+	"0 but true" : $sv->IVX;
+}
+
+sub B::PVNV::bsave {
+    my ($sv,$ix) = @_;
+    $sv->B::PVIV::bsave($ix);
+    asm "xnv", sprintf "%.40g", $sv->NVX;
+}
+
+sub B::PVMG::domagic {
+    my ($sv,$ix) = @_;
+    nice '-MAGICAL-';
+    my @mglist = $sv->MAGIC;
+    my (@mgix, @namix);
+    for (@mglist) {
+	push @mgix, $_->OBJ->ix;
+	push @namix, $_->PTR->ix if $_->LENGTH == B::HEf_SVKEY;
+    }
+
+    nice '-'.class($sv).'-',
+    asm "ldsv", $varix = $ix unless $ix == $varix;
+    for (@mglist) {
+	asm "sv_magic", cstring $_->TYPE;
+	asm "mg_obj", shift @mgix;
+	my $length = $_->LENGTH;
+	if ($length == B::HEf_SVKEY) {
+	    asm "mg_namex", shift @namix;
+	} elsif ($length) {
+	    asm "newpv", pvstring $_->PTR;
+	    asm "mg_name";
 	}
     }
-    # See PVNV::bytecode for the meaning of the flag argument of 2.
-    $av->B::PVMG::bytecode(2);
-    # Recover sv register and set AvMAX and AvFILL to -1 (since we
-    # create an AV with NEWSV and SvUPGRADE rather than doing newAV
-    # which is what sets AvMAX and AvFILL.
-    ldsv($ix);
-    printf "xav_flags 0x%x\nxav_max -1\nxav_fill -1\n", $av->AvFLAGS;
-    if ($fill > -1) {
-	my $elix;
-	foreach $elix (@ixes) {
-	    print "av_push $elix\n";
-	}
-    } else {
-	if ($max > -1) {
-	    print "av_extend $max\n";
-	}
-    }
 }
 
-sub B::CV::bytecode {
-    my $cv = shift;
-    return if saved($cv);
-    my $ix = $cv->objix;
-    $cv->B::PVMG::bytecode;
-    my $i;
-    my @subfield_names = qw(ROOT START STASH GV FILEGV PADLIST OUTSIDE);
-    my @subfields = map($cv->$_(), @subfield_names);
-    my @ixes = map($_->objix, @subfields);
-    # Save OP tree from CvROOT (first element of @subfields)
-    my $root = shift @subfields;
-    if ($$root) {
-	walkoptree($root, "bytecode");
-    }
-    # Reset sv register for $cv (since above ->objix calls stomped on it)
-    ldsv($ix);
-    for ($i = 0; $i < @ixes; $i++) {
-	printf "xcv_%s %d\n", lc($subfield_names[$i]), $ixes[$i];
-    }
-    printf "xcv_depth %d\nxcv_flags 0x%x\n", $cv->DEPTH, $cv->FLAGS;
-    # Now save all the subfields (except for CvROOT which was handled
-    # above) and CvSTART (now the initial element of @subfields).
-    shift @subfields; # bye-bye CvSTART
-    my $sv;
-    foreach $sv (@subfields) {
-	$sv->bytecode;
-    }
+sub B::PVMG::bsave {
+    my ($sv,$ix) = @_;
+    my $stashix = $sv->SvSTASH->ix;
+    $sv->B::PVNV::bsave($ix);
+    asm "xmg_stash", $stashix;
+    $sv->domagic($ix) if $sv->MAGICAL;
 }
 
-sub B::IO::bytecode {
-    my $io = shift;
-    return if saved($io);
-    my $ix = $io->objix;
-    my $top_gv = $io->TOP_GV;
-    my $top_gvix = $top_gv->objix;
-    my $fmt_gv = $io->FMT_GV;
-    my $fmt_gvix = $fmt_gv->objix;
-    my $bottom_gv = $io->BOTTOM_GV;
-    my $bottom_gvix = $bottom_gv->objix;
+sub B::PVLV::bsave {
+    my ($sv,$ix) = @_;
+    my $targix = $sv->TARG->ix;
+    $sv->B::PVMG::bsave($ix);
+    asm "xlv_targ", $targix;
+    asm "xlv_targoff", $sv->TARGOFF;
+    asm "xlv_targlen", $sv->TARGLEN;
+    asm "xlv_type", $sv->TYPE;
 
-    $io->B::PVMG::bytecode;
-    ldsv($ix);
-    print "xio_top_gv $top_gvix\n";
-    print "xio_fmt_gv $fmt_gvix\n";
-    print "xio_bottom_gv $bottom_gvix\n";
-    my $field;
-    foreach $field (qw(TOP_NAME FMT_NAME BOTTOM_NAME)) {
-	printf "newpv %s\nxio_%s\n", pvstring($io->$field()), lc($field);
-    }
-    foreach $field (qw(LINES PAGE PAGE_LEN LINES_LEFT SUBPROCESS)) {
-	printf "xio_%s %d\n", lc($field), $io->$field();
-    }
-    printf "xio_type %s\nxio_flags 0x%x\n", cstring($io->IoTYPE), $io->IoFLAGS;
-    $top_gv->bytecode;
-    $fmt_gv->bytecode;
-    $bottom_gv->bytecode;
 }
 
-sub B::SPECIAL::bytecode {
-    # nothing extra needs doing
+sub B::BM::bsave {
+    my ($sv,$ix) = @_;
+    $sv->B::PVMG::bsave($ix);
+    asm "xpv_cur", $sv->CUR;
+    asm "xbm_useful", $sv->USEFUL;
+    asm "xbm_previous", $sv->PREVIOUS;
+    asm "xbm_rare", $sv->RARE;
 }
 
-sub bytecompile_object {
-    my $sv;
-    foreach $sv (@_) {
-	svref_2object($sv)->bytecode;
-    }
+sub B::IO::bsave {
+    my ($io,$ix) = @_;
+    my $topix = $io->TOP_GV->ix;
+    my $fmtix = $io->FMT_GV->ix;
+    my $bottomix = $io->BOTTOM_GV->ix;
+    $io->B::PVMG::bsave($ix);
+    asm "xio_lines", $io->LINES;
+    asm "xio_page", $io->PAGE;
+    asm "xio_page_len", $io->PAGE_LEN;
+    asm "xio_lines_left", $io->LINES_LEFT;
+    asm "xio_top_name", pvix $io->TOP_NAME;
+    asm "xio_top_gv", $topix;
+    asm "xio_fmt_name", pvix $io->FMT_NAME;
+    asm "xio_fmt_gv", $fmtix;
+    asm "xio_bottom_name", pvix $io->BOTTOM_NAME;
+    asm "xio_bottom_gv", $bottomix;
+    asm "xio_subprocess", $io->SUBPROCESS;
+    asm "xio_type", ord $io->IoTYPE;
+    # asm "xio_flags", ord($io->IoFLAGS) & ~32;		# XXX XXX
 }
 
-sub B::GV::bytecodecv {
+sub B::CV::bsave {
+    my ($cv,$ix) = @_;
+    my $stashix = $cv->STASH->ix;
+    my $gvix = $cv->GV->ix;
+    my $padlistix = $cv->PADLIST->ix;
+    my $outsideix = $cv->OUTSIDE->ix;
+    my $constix = $cv->CONST ? $cv->XSUBANY->ix : 0;
+    my $startix = $cv->START->opwalk;
+    my $rootix = $cv->ROOT->ix;
+
+    $cv->B::PVMG::bsave($ix);
+    asm "xcv_stash", $stashix;
+    asm "xcv_start", $startix;
+    asm "xcv_root", $rootix;
+    asm "xcv_xsubany", $constix;
+    asm "xcv_gv", $gvix;
+    asm "xcv_file", pvix $cv->FILE if $cv->FILE;	# XXX AD
+    asm "xcv_padlist", $padlistix;
+    asm "xcv_outside", $outsideix;
+    asm "xcv_flags", $cv->CvFLAGS;
+    asm "xcv_outside_seq", $cv->OUTSIDE_SEQ;
+    asm "xcv_depth", $cv->DEPTH;
+}
+
+sub B::FM::bsave {
+    my ($form,$ix) = @_;
+
+    $form->B::CV::bsave($ix);
+    asm "xfm_lines", $form->LINES;
+}
+
+sub B::AV::bsave {
+    my ($av,$ix) = @_;
+    return $av->B::PVMG::bsave($ix) if $av->MAGICAL;
+    my @array = $av->ARRAY;
+    $_ = $_->ix for @array;
+    my $stashix = $av->SvSTASH->ix;
+
+    nice "-AV-",
+    asm "ldsv", $varix = $ix unless $ix == $varix;
+    asm "av_extend", $av->MAX if $av->MAX >= 0;
+    asm "av_pushx", $_ for @array;
+    asm "sv_refcnt", $av->REFCNT;
+    asm "xav_flags", $av->AvFLAGS;
+    asm "xmg_stash", $stashix;
+}
+
+sub B::GV::desired {
     my $gv = shift;
-    my $cv = $gv->CV;
-    if ($$cv && !saved($cv)) {
-	if ($debug_cv) {
-	    warn sprintf("saving extra CV &%s::%s (0x%x) from GV 0x%x\n",
-			 $gv->STASH->NAME, $gv->NAME, $$cv, $$gv);
+    my ($cv, $form);
+    $files{$gv->FILE} && $gv->LINE
+    || ${$cv = $gv->CV} && $files{$cv->FILE}
+    || ${$form = $gv->FORM} && $files{$form->FILE}
+}
+
+sub B::HV::bwalk {
+    my $hv = shift;
+    return if $walked{$$hv}++;
+    my %stash = $hv->ARRAY;
+    while (my($k,$v) = each %stash) {
+	if ($v->SvTYPE == SVt_PVGV) {
+	    my $hash = $v->HV;
+	    if ($$hash && $hash->NAME) {
+		$hash->bwalk;
+	    } 
+	    $v->ix(1) if desired $v;
+	} else {
+	    nice "[prototype]";
+	    asm "gv_fetchpvx", cstring $hv->NAME . "::$k";
+	    $svtab{$$v} = $varix = $tix;
+	    $v->bsave($tix++);
+	    asm "sv_flags", $v->FLAGS;
 	}
-	$gv->bytecode;
     }
 }
 
-sub bytecompile_main {
-    my $curpad = (comppadlist->ARRAY)[1];
-    my $curpadix = $curpad->objix;
-    $curpad->bytecode;
-    walkoptree(main_root, "bytecode");
-    warn "done main program, now walking symbol table\n" if $debug_bc;
-    my ($pack, %exclude);
-    foreach $pack (qw(B O AutoLoader DynaLoader Config DB VMS strict vars
-		      FileHandle Exporter Carp UNIVERSAL IO Fcntl Symbol
-		      SelectSaver blib Cwd))
-    {
-	$exclude{$pack."::"} = 1;
+######################################################
+
+
+sub B::OP::bsave_thin {
+    my ($op, $ix) = @_;
+    my $next = $op->next;
+    my $nextix = $optab{$$next};
+    $nextix = 0, push @cloop, $op unless defined $nextix;
+    if ($ix != $opix) {
+	nice '-'.$op->name.'-',
+	asm "ldop", $opix = $ix;
     }
-    no strict qw(vars refs);
-    walksymtable(\%{"main::"}, "bytecodecv", sub {
-	warn "considering $_[0]\n" if $debug_bc;
-	return !defined($exclude{$_[0]});
-    });
-    if (!$module_only) {
-	printf "main_root %d\n", main_root->objix;
-	printf "main_start %d\n", main_start->objix;
-	printf "curpad $curpadix\n";
-	# XXX Do min_intro_pending and max_intro_pending matter?
+    asm "op_next", $nextix;
+    asm "op_targ", $op->targ if $op->type;		# tricky
+    asm "op_flags", $op->flags;
+    asm "op_private", $op->private;
+}
+
+sub B::OP::bsave;
+    *B::OP::bsave = *B::OP::bsave_thin;
+
+sub B::UNOP::bsave {
+    my ($op, $ix) = @_;
+    my $name = $op->name;
+    my $flags = $op->flags;
+    my $first = $op->first;
+    my $firstix = 
+	$name =~ /fl[io]p/
+			# that's just neat
+    ||	(!ITHREADS && $name eq 'regcomp')
+			# trick for /$a/o in pp_regcomp
+    ||	$name eq 'rv2sv'
+	    && $op->flags & OPf_MOD	
+	    && $op->private & OPpLVAL_INTRO
+			# change #18774 made my life hard
+    ?	$first->ix
+    :	0;
+
+    $op->B::OP::bsave($ix);
+    asm "op_first", $firstix;
+}
+
+sub B::BINOP::bsave {
+    my ($op, $ix) = @_;
+    if ($op->name eq 'aassign' && $op->private & B::OPpASSIGN_HASH()) {
+	my $last = $op->last;
+	my $lastix = do {
+	    local *B::OP::bsave = *B::OP::bsave_fat;
+	    local *B::UNOP::bsave = *B::UNOP::bsave_fat;
+	    $last->ix;
+	};
+	asm "ldop", $lastix unless $lastix == $opix;
+	asm "op_targ", $last->targ;
+	$op->B::OP::bsave($ix);
+	asm "op_last", $lastix;
+    } else {
+	$op->B::OP::bsave($ix);
     }
 }
 
-sub prepare_assemble {
-    my $newfh = IO::File->new_tmpfile;
-    select($newfh);
-    binmode $newfh;
-    return $newfh;
+# not needed if no pseudohashes
+
+*B::BINOP::bsave = *B::OP::bsave if VERSION >= 5.009;
+
+# deal with sort / formline 
+
+sub B::LISTOP::bsave {
+    my ($op, $ix) = @_;
+    my $name = $op->name;
+    sub blocksort() { OPf_SPECIAL|OPf_STACKED }
+    if ($name eq 'sort' && ($op->flags & blocksort) == blocksort) {
+	my $first = $op->first;
+	my $pushmark = $first->sibling;
+	my $rvgv = $pushmark->first;
+	my $leave = $rvgv->first;
+
+	my $leaveix = $leave->ix;
+
+	my $rvgvix = $rvgv->ix;
+	asm "ldop", $rvgvix unless $rvgvix == $opix;
+	asm "op_first", $leaveix;
+
+	my $pushmarkix = $pushmark->ix;
+	asm "ldop", $pushmarkix unless $pushmarkix == $opix;
+	asm "op_first", $rvgvix;
+
+	my $firstix = $first->ix;
+	asm "ldop", $firstix unless $firstix == $opix;
+	asm "op_sibling", $pushmarkix;
+
+	$op->B::OP::bsave($ix);
+	asm "op_first", $firstix;
+    } elsif ($name eq 'formline') {
+	$op->B::UNOP::bsave_fat($ix);
+    } else {
+	$op->B::OP::bsave($ix);
+    }
 }
 
-sub do_assemble {
-    my $fh = shift;
-    seek($fh, 0, 0); # rewind the temporary file
-    assemble_fh($fh, sub { print OUT @_ });
+# fat versions
+
+sub B::OP::bsave_fat {
+    my ($op, $ix) = @_;
+    my $siblix = $op->sibling->ix;
+
+    $op->B::OP::bsave_thin($ix);
+    asm "op_sibling", $siblix;
+    # asm "op_seq", -1;			XXX don't allocate OPs piece by piece
+}
+
+sub B::UNOP::bsave_fat {
+    my ($op,$ix) = @_;
+    my $firstix = $op->first->ix;
+
+    $op->B::OP::bsave($ix);
+    asm "op_first", $firstix;
+}
+
+sub B::BINOP::bsave_fat {
+    my ($op,$ix) = @_;
+    my $last = $op->last;
+    my $lastix = $op->last->ix;
+    if (VERSION < 5.009 && $op->name eq 'aassign' && $last->name eq 'null') {
+	asm "ldop", $lastix unless $lastix == $opix;
+	asm "op_targ", $last->targ;
+    }
+
+    $op->B::UNOP::bsave($ix);
+    asm "op_last", $lastix;
+}
+
+sub B::LOGOP::bsave {
+    my ($op,$ix) = @_;
+    my $otherix = $op->other->ix;
+
+    $op->B::UNOP::bsave($ix);
+    asm "op_other", $otherix;
+}
+
+sub B::PMOP::bsave {
+    my ($op,$ix) = @_;
+    my ($rrop, $rrarg, $rstart);
+
+    # my $pmnextix = $op->pmnext->ix;	# XXX
+
+    if (ITHREADS) {
+	if ($op->name eq 'subst') {
+	    $rrop = "op_pmreplroot";
+	    $rrarg = $op->pmreplroot->ix;
+	    $rstart = $op->pmreplstart->ix;
+	} elsif ($op->name eq 'pushre') {
+	    $rrop = "op_pmreplrootpo";
+	    $rrarg = $op->pmreplroot;
+	}
+	$op->B::BINOP::bsave($ix);
+	asm "op_pmstashpv", pvix $op->pmstashpv;
+    } else {
+	$rrop = "op_pmreplrootgv";
+	$rrarg = $op->pmreplroot->ix;
+	$rstart = $op->pmreplstart->ix if $op->name eq 'subst';
+	my $stashix = $op->pmstash->ix;
+	$op->B::BINOP::bsave($ix);
+	asm "op_pmstash", $stashix;
+    }
+
+    asm $rrop, $rrarg if $rrop;
+    asm "op_pmreplstart", $rstart if $rstart;
+
+    asm "op_pmflags", $op->pmflags;
+    asm "op_pmpermflags", $op->pmpermflags;
+    asm "op_pmdynflags", $op->pmdynflags;
+    # asm "op_pmnext", $pmnextix;	# XXX
+    asm "newpv", pvstring $op->precomp;
+    asm "pregcomp";
+}
+
+sub B::SVOP::bsave {
+    my ($op,$ix) = @_;
+    my $svix = $op->sv->ix;
+
+    $op->B::OP::bsave($ix);
+    asm "op_sv", $svix;
+}
+
+sub B::PADOP::bsave {
+    my ($op,$ix) = @_;
+
+    $op->B::OP::bsave($ix);
+    asm "op_padix", $op->padix;
+}
+
+sub B::PVOP::bsave {
+    my ($op,$ix) = @_;
+    $op->B::OP::bsave($ix);
+    return unless my $pv = $op->pv;
+
+    if ($op->name eq 'trans') {
+        asm "op_pv_tr", join ',', length($pv)/2, unpack("s*", $pv);
+    } else {
+        asm "newpv", pvstring $pv;
+        asm "op_pv";
+    }
+}
+
+sub B::LOOP::bsave {
+    my ($op,$ix) = @_;
+    my $nextix = $op->nextop->ix;
+    my $lastix = $op->lastop->ix;
+    my $redoix = $op->redoop->ix;
+
+    $op->B::BINOP::bsave($ix);
+    asm "op_redoop", $redoix;
+    asm "op_nextop", $nextix;
+    asm "op_lastop", $lastix;
+}
+
+sub B::COP::bsave {
+    my ($cop,$ix) = @_;
+    my $warnix = $cop->warnings->ix;
+    my $ioix = $cop->io->ix;
+    if (ITHREADS) {
+	$cop->B::OP::bsave($ix);
+	asm "cop_stashpv", pvix $cop->stashpv;
+	asm "cop_file", pvix $cop->file;
+    } else {
+    	my $stashix = $cop->stash->ix;
+    	my $fileix = $cop->filegv->ix(1);
+	$cop->B::OP::bsave($ix);
+	asm "cop_stash", $stashix;
+	asm "cop_filegv", $fileix;
+    }
+    asm "cop_label", pvix $cop->label if $cop->label;	# XXX AD
+    asm "cop_seq", $cop->cop_seq;
+    asm "cop_arybase", $cop->arybase;
+    asm "cop_line", $cop->line;
+    asm "cop_warnings", $warnix;
+    asm "cop_io", $ioix;
+}
+
+sub B::OP::opwalk {
+    my $op = shift;
+    my $ix = $optab{$$op};
+    defined($ix) ? $ix : do {
+	my $ix;
+	my @oplist = $op->oplist;
+	push @cloop, undef;
+	$ix = $_->ix while $_ = pop @oplist;
+	while ($_ = pop @cloop) {
+	    asm "ldop", $optab{$$_};
+	    asm "op_next", $optab{${$_->next}};
+	}
+	$ix;
+    }
+}
+
+#################################################
+
+sub save_cq {
+    my $av;
+    if (($av=begin_av)->isa("B::AV")) {
+	if ($savebegins) {
+	    for ($av->ARRAY) {
+		next unless $_->FILE eq $0;
+		asm "push_begin", $_->ix;
+	    }
+	} else {
+	    for ($av->ARRAY) {
+		next unless $_->FILE eq $0;
+		# XXX BEGIN { goto A while 1; A: }
+		for (my $op = $_->START; $$op; $op = $op->next) {
+		    next unless $op->name eq 'require' || 
+			# this kludge needed for tests
+			$op->name eq 'gv' && do {
+			    my $gv = class($op) eq 'SVOP' ?
+				$op->gv :
+			    	(($_->PADLIST->ARRAY)[1]->ARRAY)[$op->padix];
+			    $$gv && $gv->NAME =~ /use_ok|plan/
+			};
+		    asm "push_begin", $_->ix;
+		    last;
+		}
+	    }
+	}
+    }
+    if (($av=init_av)->isa("B::AV")) {
+	for ($av->ARRAY) {
+	    next unless $_->FILE eq $0;
+	    asm "push_init", $_->ix;
+	}
+    }
+    if (($av=end_av)->isa("B::AV")) {
+	for ($av->ARRAY) {
+	    next unless $_->FILE eq $0;
+	    asm "push_end", $_->ix;
+	}
+    }
 }
 
 sub compile {
-    my @options = @_;
-    my ($option, $opt, $arg);
-    open(OUT, ">&STDOUT");
-    binmode OUT;
-    select(OUT);
-  OPTION:
-    while ($option = shift @options) {
-	if ($option =~ /^-(.)(.*)/) {
-	    $opt = $1;
-	    $arg = $2;
+    my ($head, $scan, $T_inhinc, $keep_syn);
+    my $cwd = '';
+    $files{$0} = 1;
+    sub keep_syn {
+	$keep_syn = 1;
+	*B::OP::bsave = *B::OP::bsave_fat;
+	*B::UNOP::bsave = *B::UNOP::bsave_fat;
+	*B::BINOP::bsave = *B::BINOP::bsave_fat;
+	*B::LISTOP::bsave = *B::LISTOP::bsave_fat;
+    }
+    sub bwarn { print STDERR "Bytecode.pm: @_\n" }
+
+    for (@_) {
+	if (/^-S/) {
+	    *newasm = *endasm = sub { };
+	    *asm = sub { print "    @_\n" };
+	    *nice = sub ($) { print "\n@_\n" };
+	} elsif (/^-H/) {
+	    require ByteLoader;
+	    $head = "#! $^X\nuse ByteLoader $ByteLoader::VERSION;\n";
+	} elsif (/^-k/) {
+	    keep_syn;
+	} elsif (/^-o(.*)$/) {
+	    open STDOUT, ">$1" or die "open $1: $!";
+	} elsif (/^-f(.*)$/) {
+	    $files{$1} = 1;
+	} elsif (/^-s(.*)$/) {
+	    $scan = length($1) ? $1 : $0;
+	} elsif (/^-b/) {
+	    $savebegins = 1;
+    # this is here for the testsuite
+	} elsif (/^-TI/) {
+	    $T_inhinc = 1;
+	} elsif (/^-TF(.*)/) {
+	    my $thatfile = $1;
+	    *B::COP::file = sub { $thatfile };
 	} else {
-	    unshift @options, $option;
-	    last OPTION;
-	}
-	if ($opt eq "-" && $arg eq "-") {
-	    shift @options;
-	    last OPTION;
-	} elsif ($opt eq "o") {
-	    $arg ||= shift @options;
-	    open(OUT, ">$arg") or return "$arg: $!\n";
-	    binmode OUT;
-	} elsif ($opt eq "D") {
-	    $arg ||= shift @options;
-	    foreach $arg (split(//, $arg)) {
-		if ($arg eq "b") {
-		    $| = 1;
-		    debug(1);
-		} elsif ($arg eq "o") {
-		    B->debug(1);
-		} elsif ($arg eq "a") {
-		    B::Assembler::debug(1);
-		} elsif ($arg eq "C") {
-		    $debug_cv = 1;
-		}
-	    }
-	} elsif ($opt eq "v") {
-	    $verbose = 1;
-	} elsif ($opt eq "m") {
-	    $module_only = 1;
-	} elsif ($opt eq "S") {
-	    $no_assemble = 1;
-	} elsif ($opt eq "f") {
-	    $arg ||= shift @options;
-	    my $value = $arg !~ s/^no-//;
-	    $arg =~ s/-/_/g;
-	    my $ref = $optimise{$arg};
-	    if (defined($ref)) {
-		$$ref = $value;
-	    } else {
-		warn qq(ignoring unknown optimisation option "$arg"\n);
-	    }
-	} elsif ($opt eq "O") {
-	    $arg = 1 if $arg eq "";
-	    my $ref;
-	    foreach $ref (values %optimise) {
-		$$ref = 0;
-	    }
-	    if ($arg >= 6) {
-		$strip_syntree = 1;
-	    }
-	    if ($arg >= 2) {
-		$bypass_nullops = 1;
-	    }
-	    if ($arg >= 1) {
-		$compress_nullops = 1;
-		$omit_seq = 1;
-	    }
+	    bwarn "Ignoring '$_' option";
 	}
     }
-    if (@options) {
-	return sub {
-	    my $objname;
-	    my $newfh; 
-	    $newfh = prepare_assemble() unless $no_assemble;
-	    foreach $objname (@options) {
-		eval "bytecompile_object(\\$objname)";
+    if ($scan) {
+	my $f;
+	if (open $f, $scan) {
+	    while (<$f>) {
+		/^#\s*line\s+\d+\s+("?)(.*)\1/ and $files{$2} = 1;
+		/^#/ and next;
+		if (/\bgoto\b\s*[^&]/ && !$keep_syn) {
+		    bwarn "keeping the syntax tree: \"goto\" op found";
+		    keep_syn;
+		}
 	    }
-	    do_assemble($newfh) unless $no_assemble;
+	} else {
+	    bwarn "cannot rescan '$scan'";
 	}
-    } else {
-	return sub {
-	    my $newfh; 
-	    $newfh = prepare_assemble() unless $no_assemble;
-	    bytecompile_main();
-	    do_assemble($newfh) unless $no_assemble;
+	close $f;
+    }
+    binmode STDOUT;
+    return sub {
+	print $head if $head;
+	newasm sub { print @_ };
+
+	defstash->bwalk;
+	asm "main_start", main_start->opwalk;
+	asm "main_root", main_root->ix;
+	asm "main_cv", main_cv->ix;
+	asm "curpad", (comppadlist->ARRAY)[1]->ix;
+
+	asm "signal", cstring "__WARN__"		# XXX
+	    if warnhook->ix;
+	asm "incav", inc_gv->AV->ix if $T_inhinc;
+	save_cq;
+	asm "incav", inc_gv->AV->ix if $T_inhinc;
+	asm "dowarn", dowarn;
+
+	{
+	    no strict 'refs';
+	    nice "<DATA>";
+	    my $dh = *{defstash->NAME."::DATA"};
+	    unless (eof $dh) {
+		local undef $/;
+		asm "data", ord 'D';
+		print <$dh>;
+	    } else {
+		asm "ret";
+	    }
 	}
+
+	endasm;
     }
 }
 
 1;
-
-__END__
 
 =head1 NAME
 
@@ -785,124 +792,80 @@ B::Bytecode - Perl compiler's bytecode backend
 
 =head1 SYNOPSIS
 
-	perl -MO=Bytecode[,OPTIONS] foo.pl
+B<perl -MO=Bytecode>[B<,-H>][B<,-o>I<script.plc>] I<script.pl>
 
 =head1 DESCRIPTION
 
-This compiler backend takes Perl source and generates a
-platform-independent bytecode encapsulating code to load the
-internal structures perl uses to run your program. When the
-generated bytecode is loaded in, your program is ready to run,
-reducing the time which perl would have taken to load and parse
-your program into its internal semi-compiled form. That means that
-compiling with this backend will not help improve the runtime
-execution speed of your program but may improve the start-up time.
-Depending on the environment in which your program runs this may
-or may not be a help.
+Compiles a Perl script into a bytecode format that could be loaded
+later by the ByteLoader module and executed as a regular Perl script.
 
-The resulting bytecode can be run with a special byteperl executable
-or (for non-main programs) be loaded via the C<byteload_fh> function
-in the F<B> module.
+=head1 EXAMPLE
+
+    $ perl -MO=Bytecode,-H,-ohi -e 'print "hi!\n"'
+    $ perl hi
+    hi!
 
 =head1 OPTIONS
 
-If there are any non-option arguments, they are taken to be names of
-objects to be saved (probably doesn't work properly yet).  Without
-extra arguments, it saves the main program.
-
 =over 4
 
-=item B<-ofilename>
+=item B<-b>
 
-Output to filename instead of STDOUT.
+Save all the BEGIN blocks. Normally only BEGIN blocks that C<require>
+other files (ex. C<use Foo;>) are saved.
 
-=item B<-->
+=item B<-H>
 
-Force end of options.
+prepend a C<use ByteLoader VERSION;> line to the produced bytecode.
 
-=item B<-f>
+=item B<-k>
 
-Force optimisations on or off one at a time. Each can be preceded
-by B<no-> to turn the option off (e.g. B<-fno-compress-nullops>).
+keep the syntax tree - it is stripped by default.
 
-=item B<-fcompress-nullops>
+=item B<-o>I<outfile>
 
-Only fills in the necessary fields of ops which have
-been optimised away by perl's internal compiler.
+put the bytecode in <outfile> instead of dumping it to STDOUT.
 
-=item B<-fomit-sequence-numbers>
+=item B<-s>
 
-Leaves out code to fill in the op_seq field of all ops
-which is only used by perl's internal compiler.
-
-=item B<-fbypass-nullops>
-
-If op->op_next ever points to a NULLOP, replaces the op_next field
-with the first non-NULLOP in the path of execution.
-
-=item B<-fstrip-syntax-tree>
-
-Leaves out code to fill in the pointers which link the internal syntax
-tree together. They're not needed at run-time but leaving them out
-will make it impossible to recompile or disassemble the resulting
-program.  It will also stop C<goto label> statements from working.
-
-=item B<-On>
-
-Optimisation level (n = 0, 1, 2, ...). B<-O> means B<-O1>.
-B<-O1> sets B<-fcompress-nullops> B<-fomit-sequence numbers>.
-B<-O6> adds B<-fstrip-syntax-tree>.
-
-=item B<-D>
-
-Debug options (concatenated or separate flags like C<perl -D>).
-
-=item B<-Do>
-
-Prints each OP as it's processed.
-
-=item B<-Db>
-
-Print debugging information about bytecompiler progress.
-
-=item B<-Da>
-
-Tells the (bytecode) assembler to include source assembler lines
-in its output as bytecode comments.
-
-=item B<-DC>
-
-Prints each CV taken from the final symbol tree walk.
-
-=item B<-S>
-
-Output (bytecode) assembler source rather than piping it
-through the assembler and outputting bytecode.
-
-=item B<-m>
-
-Compile as a module rather than a standalone program. Currently this
-just means that the bytecodes for initialising C<main_start>,
-C<main_root> and C<curpad> are omitted.
+scan the script for C<# line ..> directives and for <goto LABEL>
+expressions. When gotos are found keep the syntax tree.
 
 =back
 
-=head1 EXAMPLES
+=head1 KNOWN BUGS
 
-        perl -MO=Bytecode,-O6,-o,foo.plc foo.pl
+=over 4
 
-        perl -MO=Bytecode,-S foo.pl > foo.S
-        assemble foo.S > foo.plc
-        byteperl foo.plc
+=item *
 
-        perl -MO=Bytecode,-m,-oFoo.pmc Foo.pm
+C<BEGIN { goto A: while 1; A: }> won't even compile.
 
-=head1 BUGS
+=item *
 
-Plenty. Current status: experimental.
+C<?...?> and C<reset> do not work as expected.
 
-=head1 AUTHOR
+=item *
 
-Malcolm Beattie, C<mbeattie@sable.ox.ac.uk>
+variables in C<(?{ ... })> constructs are not properly scoped.
+
+=item *
+
+scripts that use source filters will fail miserably. 
+
+=back
+
+=head1 NOTICE
+
+There are also undocumented bugs and options.
+
+THIS CODE IS HIGHLY EXPERIMENTAL. USE AT YOUR OWN RISK.
+
+=head1 AUTHORS
+
+Originally written by Malcolm Beattie <mbeattie@sable.ox.ac.uk> and
+modified by Benjamin Stuhl <sho_pi@hotmail.com>.
+
+Rewritten by Enache Adrian <enache@rdslink.ro>, 2003 a.d.
 
 =cut

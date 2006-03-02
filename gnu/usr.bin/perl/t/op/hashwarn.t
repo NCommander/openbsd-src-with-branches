@@ -6,15 +6,14 @@ BEGIN {
 }
 
 use strict;
+use warnings;
 
 use vars qw{ @warnings };
 
 BEGIN {
-    $^W |= 1;		# Insist upon warnings
-    # ...and save 'em as we go
     $SIG{'__WARN__'} = sub { push @warnings, @_ };
     $| = 1;
-    print "1..7\n";
+    print "1..9\n";
 }
 
 END { print "not ok\n# Uncaught warnings:\n@warnings\n" if @warnings }
@@ -46,7 +45,8 @@ sub test_warning ($$$) {
 #   print "# $num: $got\n";
 }
 
-my $odd_msg = '/^Odd number of elements in hash/';
+my $odd_msg = '/^Odd number of elements in hash assignment/';
+my $odd_msg2 = '/^Odd number of elements in anonymous hash/';
 my $ref_msg = '/^Reference found where even-sized list expected/';
 
 {
@@ -57,7 +57,7 @@ my $ref_msg = '/^Reference found where even-sized list expected/';
     test_warning 2, shift @warnings, $odd_msg;
 
     %hash = { 1..3 };
-    test_warning 3, shift @warnings, $odd_msg;
+    test_warning 3, shift @warnings, $odd_msg2;
     test_warning 4, shift @warnings, $ref_msg;
 
     %hash = [ 1..3 ];
@@ -66,6 +66,18 @@ my $ref_msg = '/^Reference found where even-sized list expected/';
     %hash = sub { print "ok" };
     test_warning 6, shift @warnings, $odd_msg;
 
-    $_ = { 1..10 };
-    test 7, ! @warnings, "Unexpected warning";
+    {
+	# "Pseudo-hashes are deprecated" warnings tested in warnings/av
+	no warnings 'deprecated';
+
+	my $avhv = [{x=>1,y=>2}];
+	%$avhv = (x=>13,'y');
+	test_warning 7, shift @warnings, $odd_msg;
+
+	%$avhv = 'x';
+	test_warning 8, shift @warnings, $odd_msg;
+
+	$_ = { 1..10 };
+	test 9, ! @warnings, "Unexpected warning";
+    }
 }

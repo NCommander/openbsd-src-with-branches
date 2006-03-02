@@ -10,7 +10,7 @@
 package Pod::Parser;
 
 use vars qw($VERSION);
-$VERSION = 1.12;  ## Current version of this package
+$VERSION = 1.14;  ## Current version of this package
 require  5.005;    ## requires this Perl version or later
 
 #############################################################################
@@ -151,7 +151,7 @@ to do more sophisticated tree-based parsing. See L<"TREE-BASED PARSING">.
 
 A I<parse-option> is simply a named option of B<Pod::Parser> with a
 value that corresponds to a certain specified behavior. These various
-behaviors of B<Pod::Parser> may be enabled/disabled by setting or
+behaviors of B<Pod::Parser> may be enabled/disabled by setting
 or unsetting one or more I<parse-options> using the B<parseopts()> method.
 The set of currently accepted parse-options is as follows:
 
@@ -205,7 +205,6 @@ use strict;
 use Pod::InputObjects;
 use Carp;
 use Exporter;
-require VMS::Filespec if $^O eq 'VMS';
 BEGIN {
    if ($] < 5.6) {
       require Symbol;
@@ -648,7 +647,7 @@ their functionality.
 
 This method is useful if you need to perform your own interpolation 
 of interior sequences and can't rely upon B<interpolate> to expand
-them in simple bottom-up order order.
+them in simple bottom-up order.
 
 The parameter C<$text> is a string or block of text to be parsed
 for interior sequences; and the parameter C<$line_num> is the
@@ -783,19 +782,21 @@ sub parse_text {
     ## Iterate over all sequence starts text (NOTE: split with
     ## capturing parens keeps the delimiters)
     $_ = $text;
-    my @tokens = split /([A-Z]<(?:<+\s+)?)/;
+    my @tokens = split /([A-Z]<(?:<+\s)?)/;
     while ( @tokens ) {
         $_ = shift @tokens;
         ## Look for the beginning of a sequence
-        if ( /^([A-Z])(<(?:<+\s+)?)$/ ) {
+        if ( /^([A-Z])(<(?:<+\s)?)$/ ) {
             ## Push a new sequence onto the stack of those "in-progress"
-            ($cmd, $ldelim) = ($1, $2);
+            my $ldelim_orig;
+            ($cmd, $ldelim_orig) = ($1, $2);
+            ($ldelim = $ldelim_orig) =~ s/\s+$//;
+            ($rdelim = $ldelim) =~ tr/</>/;
             $seq = Pod::InteriorSequence->new(
                        -name   => $cmd,
-                       -ldelim => $ldelim,  -rdelim => '',
+                       -ldelim => $ldelim_orig,  -rdelim => $rdelim,
                        -file   => $file,    -line   => $line
                    );
-            $ldelim =~ s/\s+$//, ($rdelim = $ldelim) =~ tr/</>/;
             (@seq_stack > 1)  and  $seq->nested($seq_stack[-1]);
             push @seq_stack, $seq;
         }
@@ -828,9 +829,13 @@ sub parse_text {
                 $seq_stack[-1]->append($expand_seq ? &$xseq_sub($self,$seq)
                                                    : $seq);
                 ## Remember the current cmd-name and left-delimiter
-                $cmd = (@seq_stack > 1) ? $seq_stack[-1]->name : '';
-                $ldelim = (@seq_stack > 1) ? $seq_stack[-1]->ldelim : '';
-                $ldelim =~ s/\s+$//, ($rdelim = $ldelim) =~ tr/</>/;
+                if(@seq_stack > 1) {
+                    $cmd = $seq_stack[-1]->name;
+                    $ldelim = $seq_stack[-1]->ldelim;
+                    $rdelim = $seq_stack[-1]->rdelim;
+                } else {
+                    $cmd = $ldelim = $rdelim = '';
+                }
             }
         }
         elsif (length) {
@@ -848,7 +853,6 @@ sub parse_text {
     my $errorsub = (@seq_stack > 1) ? $self->errorsub() : undef;
     while (@seq_stack > 1) {
        ($cmd, $file, $line) = ($seq->name, $seq->file_line);
-       $file = VMS::Filespec::unixify($file) if $^O eq 'VMS';
        $ldelim  = $seq->ldelim;
        ($rdelim = $ldelim) =~ tr/</>/;
        $rdelim  =~ s/^(\S+)(\s*)$/$2$1/;
@@ -1081,10 +1085,9 @@ sub parse_from_filehandle {
                                      && (length $paragraph));
 
         ## Issue a warning about any non-empty blank lines
-        if (length($1) > 1 and $myOpts{'-warnings'} and ! $myData{_CUTTING}) {
+        if (length($1) > 0 and $myOpts{'-warnings'} and ! $myData{_CUTTING}) {
             my $errorsub = $self->errorsub();
             my $file = $self->input_file();
-            $file = VMS::Filespec::unixify($file) if $^O eq 'VMS';
             my $errmsg = "*** WARNING: line containing nothing but whitespace".
                          " in paragraph at line $nlines in file $file\n";
             (ref $errorsub) and &{$errorsub}($errmsg)
@@ -1591,7 +1594,7 @@ markup languages like HTML and XML) then you may need to take the
 tree-based approach. Rather than doing everything in one pass and
 calling the B<interpolate()> method to expand sequences into text, it
 may be desirable to instead create a parse-tree using the B<parse_text()>
-method to return a tree-like structure which may contain an ordered list
+method to return a tree-like structure which may contain an ordered
 list of children (each of which may be a text-string, or a similar
 tree-like structure).
 
@@ -1760,6 +1763,8 @@ the same subclass in order to combine their functionality without
 causing any namespace clashes due to multiple inheritance.
 
 =head1 AUTHOR
+
+Please report bugs using L<http://rt.cpan.org>.
 
 Brad Appleton E<lt>bradapp@enteract.comE<gt>
 

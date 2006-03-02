@@ -10,7 +10,7 @@
 package Pod::Checker;
 
 use vars qw($VERSION);
-$VERSION = 1.098;  ## Current version of this package
+$VERSION = 1.42;  ## Current version of this package
 require  5.005;    ## requires this Perl version or later
 
 use Pod::ParseUtils; ## for hyperlinks and lists
@@ -44,7 +44,8 @@ This function can take a hash of options:
 
 =item B<-warnings> =E<gt> I<val>
 
-Turn warnings on/off. See L<"Warnings">.
+Turn warnings on/off. I<val> is usually 1 for on, but higher values
+trigger additional warnings. See L<"Warnings">.
 
 =back
 
@@ -52,11 +53,9 @@ Turn warnings on/off. See L<"Warnings">.
 
 B<podchecker> will perform syntax checking of Perl5 POD format documentation.
 
-I<NOTE THAT THIS MODULE IS CURRENTLY IN THE BETA STAGE!>
-
-It is hoped that curious/ambitious user will help flesh out and add the
-additional features they wish to see in B<Pod::Checker> and B<podchecker>
-and verify that the checks are consistent with L<perlpod>.
+Curious/ambitious users are welcome to propose additional features they wish
+to see in B<Pod::Checker> and B<podchecker> and verify that the checks are
+consistent with L<perlpod>.
 
 The following checks are currently preformed:
 
@@ -149,8 +148,8 @@ C<"">.
 =item * Unknown command "I<CMD>"
 
 An invalid POD command has been found. Valid are C<=head1>, C<=head2>,
-C<=over>, C<=item>, C<=back>, C<=begin>, C<=end>, C<=for>, C<=pod>,
-C<=cut>
+C<=head3>, C<=head4>, C<=over>, C<=item>, C<=back>, C<=begin>, C<=end>,
+C<=for>, C<=pod>, C<=cut>
 
 =item * Unknown interior-sequence "I<SEQ>"
 
@@ -201,7 +200,7 @@ These may not necessarily cause trouble, but indicate mediocre style.
 
 =over 4
 
-=item * multiple occurence of link target I<name>
+=item * multiple occurrence of link target I<name>
 
 The POD file has some C<=item> and/or C<=head> commands that have
 the same text. Potential hyperlinks to such a text cannot be unique then.
@@ -212,15 +211,14 @@ There is some whitespace on a seemingly empty line. POD is very sensitive
 to such things, so this is flagged. B<vi> users switch on the B<list>
 option to avoid this problem.
 
+=begin _disabled_
+
 =item * file does not start with =head
 
 The file starts with a different POD directive than head.
 This is most probably something you do not want.
 
-=item * No numeric argument for =over
-
-The C<=over> command is supposed to have a numeric argument (the
-indentation).
+=end _disabled_
 
 =item * previous =item has no contents
 
@@ -243,7 +241,8 @@ type of the I<first> C<=item> determines the type of the list.
 
 Angle brackets not written as C<E<lt>ltE<gt>> and C<E<lt>gtE<gt>>
 can potentially cause errors as they could be misinterpreted as
-markup commands.
+markup commands. This is only printed when the -warnings level is
+greater than 1.
 
 =item * Unknown entity
 
@@ -273,11 +272,41 @@ The NAME section (C<=head1 NAME>) should consist of a single paragraph
 with the script/module name, followed by a dash `-' and a very short
 description of what the thing is good for.
 
-=item * Hyperlinks
+=item * =headI<n> without preceding higher level
 
-There are some warnings wrt. hyperlinks:
-Leading/trailing whitespace, newlines in hyperlinks,
-brackets C<()>.
+For example if there is a C<=head2> in the POD file prior to a
+C<=head1>.
+
+=back
+
+=head2 Hyperlinks
+
+There are some warnings wrt. malformed hyperlinks.
+
+=over 4
+
+=item * ignoring leading/trailing whitespace in link
+
+There is whitespace at the beginning or the end of the contents of 
+LE<lt>...E<gt>.
+
+=item * (section) in '$page' deprecated
+
+There is a section detected in the page name of LE<lt>...E<gt>, e.g.
+C<LE<lt>passwd(2)E<gt>>. POD hyperlinks may point to POD documents only.
+Please write C<CE<lt>passwd(2)E<gt>> instead. Some formatters are able
+to expand this to appropriate code. For links to (builtin) functions,
+please say C<LE<lt>perlfunc/mkdirE<gt>>, without ().
+
+=item * alternative text/node '%s' contains non-escaped | or /
+
+The characters C<|> and C</> are special in the LE<lt>...E<gt> context.
+Although the hyperlink parser does its best to determine which "/" is
+text and which is a delimiter in case of doubt, one ought to escape
+these literal characters like this:
+
+  /     E<sol>
+  |     E<verbar>
 
 =back
 
@@ -288,7 +317,7 @@ there were no POD commands at all found in the file.
 
 =head1 EXAMPLES
 
-I<[T.B.D.]>
+See L</SYNOPSIS>
 
 =head1 INTERFACE
 
@@ -297,6 +326,13 @@ for hyperlinks (C<=headX>, C<=item>) and index entries (C<XE<lt>E<gt>>).
 POD translators can use this feature to syntax-check and get the nodes in
 a first pass before actually starting to convert. This is expensive in terms
 of execution time, but allows for very robust conversions.
+
+Since PodParser-1.24 the B<Pod::Checker> module uses only the B<poderror>
+method to print errors and warnings. The summary output (e.g. 
+"Pod syntax OK") has been dropped from the module and has been included in
+B<podchecker> (the script). This allows users of B<Pod::Checker> to
+control completely the output behaviour. Users of B<podchecker> (the script)
+get the well-known behaviour.
 
 =cut
 
@@ -307,7 +343,6 @@ use strict;
 use Carp;
 use Exporter;
 use Pod::Parser;
-require VMS::Filespec if $^O eq 'VMS';
 
 use vars qw(@ISA @EXPORT);
 @ISA = qw(Pod::Parser);
@@ -320,6 +355,8 @@ my %VALID_COMMANDS = (
     'cut'    =>  1,
     'head1'  =>  1,
     'head2'  =>  1,
+    'head3'  =>  1,
+    'head4'  =>  1,
     'over'   =>  1,
     'back'   =>  1,
     'item'   =>  1,
@@ -471,7 +508,6 @@ sub podchecker( $ ; $ % ) {
 
     ## Now create a pod checker
     my $checker = new Pod::Checker(%options);
-    $checker->parseopts(-process_cut_cmd => 1, -warnings => 1);
 
     ## Now check the pod document for errors
     $checker->parse_from_file($infile, $outfile);
@@ -485,6 +521,27 @@ sub podchecker( $ ; $ % ) {
 ##-------------------------------
 ## Method definitions begin here
 ##-------------------------------
+
+##################################
+
+=over 4
+
+=item C<Pod::Checker-E<gt>new( %options )>
+
+Return a reference to a new Pod::Checker object that inherits from
+Pod::Parser and is used for calling the required methods later. The
+following options are recognized:
+
+C<-warnings =E<gt> num>
+  Print warnings if C<num> is true. The higher the value of C<num>,
+the more warnings are printed. Currently there are only levels 1 and 2.
+
+C<-quiet =E<gt> num>
+  If C<num> is true, do not print any errors/warnings. This is useful
+when Pod::Checker is used to munge POD code into plain text from within
+POD formatters.
+
+=cut
 
 ## sub new {
 ##     my $this = shift;
@@ -501,7 +558,10 @@ sub initialize {
     ## Initialize number of errors, and setup an error function to
     ## increment this number and then print to the designated output.
     $self->{_NUM_ERRORS} = 0;
-    $self->errorsub('poderror'); # set the error handling subroutine
+    $self->{_NUM_WARNINGS} = 0;
+    $self->{-quiet} ||= 0;
+    # set the error handling subroutine
+    $self->errorsub($self->{-quiet} ? sub { 1; } : 'poderror');
     $self->{_commands} = 0; # total number of POD commands encountered
     $self->{_list_stack} = []; # stack for nested lists
     $self->{_have_begin} = ''; # stores =begin
@@ -511,11 +571,10 @@ sub initialize {
     # print warnings?
     $self->{-warnings} = 1 unless(defined $self->{-warnings});
     $self->{_current_head1} = ''; # the current =head1 block
+    $self->parseopts(-process_cut_cmd => 1, -warnings => $self->{-warnings});
 }
 
 ##################################
-
-=over 4
 
 =item C<$checker-E<gt>poderror( @args )>
 
@@ -547,7 +606,6 @@ The error level, should be 'WARNING' or 'ERROR'.
 sub poderror {
     my $self = shift;
     my %opts = (ref $_[0]) ? %{shift()} : ();
-    $opts{-file} = VMS::Filespec::unixify($opts{-file}) if (exists($opts{-file}) && $^O eq 'VMS');
 
     ## Retrieve options
     chomp( my $msg  = ($opts{-msg} || "")."@_" );
@@ -562,7 +620,9 @@ sub poderror {
     ## Increment error count and print message "
     ++($self->{_NUM_ERRORS}) 
         if(!%opts || ($opts{-severity} && $opts{-severity} eq 'ERROR'));
-    my $out_fh = $self->output_handle();
+    ++($self->{_NUM_WARNINGS})
+        if(!%opts || ($opts{-severity} && $opts{-severity} eq 'WARNING'));
+    my $out_fh = $self->output_handle() || \*STDERR;
     print $out_fh ($severity, $msg, $line, $file, "\n")
       if($self->{-warnings} || !%opts || $opts{-severity} ne 'WARNING');
 }
@@ -577,6 +637,18 @@ Set (if argument specified) and retrieve the number of errors found.
 
 sub num_errors {
    return (@_ > 1) ? ($_[0]->{_NUM_ERRORS} = $_[1]) : $_[0]->{_NUM_ERRORS};
+}
+
+##################################
+
+=item C<$checker-E<gt>num_warnings()>
+
+Set (if argument specified) and retrieve the number of warnings found.
+
+=cut
+
+sub num_warnings {
+   return (@_ > 1) ? ($_[0]->{_NUM_WARNINGS} = $_[1]) : $_[0]->{_NUM_WARNINGS};
 }
 
 ##################################
@@ -599,7 +671,7 @@ sub name {
 
 Add (if argument specified) and retrieve the nodes (as defined by C<=headX>
 and C<=item>) of the current POD. The nodes are returned in the order of
-their occurence. They consist of plain text, each piece of whitespace is
+their occurrence. They consist of plain text, each piece of whitespace is
 collapsed to a single blank.
 
 =cut
@@ -648,7 +720,7 @@ sub idx {
 =item C<$checker-E<gt>hyperlink()>
 
 Add (if argument specified) and retrieve the hyperlinks (as defined by
-C<LE<lt>E<gt>>) of the current POD. They consist of an 2-item array: line
+C<LE<lt>E<gt>>) of the current POD. They consist of a 2-item array: line
 number and C<Pod::Hyperlink> object.
 
 =back
@@ -672,11 +744,8 @@ sub end_pod {
     ## print the number of errors found
     my $self   = shift;
     my $infile = $self->input_file();
-    $infile = VMS::Filespec::unixify($infile) if $^O eq 'VMS';
-    my $out_fh = $self->output_handle();
 
     if(@{$self->{_list_stack}}) {
-        # _TODO_ display, but don't count them for now
         my $list;
         while(($list = $self->_close_list('EOF',$infile)) &&
           $list->indent() ne 'auto') {
@@ -691,11 +760,14 @@ sub end_pod {
     my %nodes;
     foreach($self->node()) {
         $nodes{$_} = 1;
-        if(/^(\S+)\s+/) {
+        if(/^(\S+)\s+\S/) {
             # we have more than one word. Use the first as a node, too.
             # This is used heavily in perlfunc.pod
             $nodes{$1} ||= 2; # derived node
         }
+    }
+    foreach($self->idx()) {
+        $nodes{$_} = 3; # index node
     }
     foreach($self->hyperlink()) {
         my ($line,$link) = @$_;
@@ -718,22 +790,11 @@ sub end_pod {
       keys %{$self->{_unique_nodes}})) {
         $self->poderror({ -line => '-', -file => $infile,
             -severity => 'WARNING',
-            -msg => "multiple occurence of link target '$_'"});
+            -msg => "multiple occurrence of link target '$_'"});
     }
 
-    ## Print the number of errors found
-    my $num_errors = $self->num_errors();
-    if ($num_errors > 0) {
-        printf $out_fh ("$infile has $num_errors pod syntax %s.\n",
-                      ($num_errors == 1) ? "error" : "errors");
-    }
-    elsif($self->{_commands} == 0) {
-        print $out_fh "$infile does not contain any pod commands.\n";
-        $self->num_errors(-1);
-    }
-    else {
-        print $out_fh "$infile pod syntax OK.\n";
-    }
+    # no POD found here
+    $self->num_errors(-1) if($self->{_commands} == 0);
 }
 
 # check a POD command directive
@@ -746,24 +807,23 @@ sub command {
        $self->poderror({ -line => $line, -file => $file, -severity => 'ERROR',
                          -msg => "Unknown command '$cmd'" });
     }
-    else {
-        # found a valid command
-        if(!$self->{_commands}++ && $cmd !~ /^head/) {
-            $self->poderror({ -line => $line, -file => $file,
-                 -severity => 'WARNING', 
-                 -msg => "file does not start with =head" });
-        }
-        ## check syntax of particular command
+    else { # found a valid command
+        $self->{_commands}++; # delete this line if below is enabled again
+
+        ##### following check disabled due to strong request
+        #if(!$self->{_commands}++ && $cmd !~ /^head/) {
+        #    $self->poderror({ -line => $line, -file => $file,
+        #         -severity => 'WARNING', 
+        #         -msg => "file does not start with =head" });
+        #}
+
+        # check syntax of particular command
         if($cmd eq 'over') {
             # check for argument
             $arg = $self->interpolate_and_check($paragraph, $line,$file);
             my $indent = 4; # default
             if($arg && $arg =~ /^\s*(\d+)\s*$/) {
                 $indent = $1;
-            } else {
-                $self->poderror({ -line => $line, -file => $file,
-                     -severity => 'WARNING', 
-                     -msg => "No numeric argument for =over"});
             }
             # start a new list
             $self->_open_list($indent,$line,$file);
@@ -859,17 +919,24 @@ sub command {
             }
         }
         elsif($cmd =~ /^head(\d+)/) {
+            my $hnum = $1;
+            $self->{"_have_head_$hnum"}++; # count head types
+            if($hnum > 1 && !$self->{"_have_head_".($hnum -1)}) {
+              $self->poderror({ -line => $line, -file => $file,
+                   -severity => 'WARNING', 
+                   -msg => "=head$hnum without preceding higher level"});
+            }
             # check whether the previous =head section had some contents
             if(defined $self->{_commands_in_head} &&
               $self->{_commands_in_head} == 0 &&
               defined $self->{_last_head} &&
-              $self->{_last_head} >= $1) {
+              $self->{_last_head} >= $hnum) {
                 $self->poderror({ -line => $line, -file => $file,
                      -severity => 'WARNING', 
                      -msg => "empty section in previous paragraph"});
             }
             $self->{_commands_in_head} = -1;
-            $self->{_last_head} = $1;
+            $self->{_last_head} = $hnum;
             # check if there is an open list
             if(@{$self->{_list_stack}}) {
                 my $list;
@@ -1003,16 +1070,17 @@ sub _check_ptree {
     foreach(@$ptree) {
         # regular text chunk
         unless(ref) {
-            my $count;
             # count the unescaped angle brackets
-            my $i = $_;
-            if($count = $i =~ tr/<>/<>/) {
+            # complain only when warning level is greater than 1
+            if($self->{-warnings} && $self->{-warnings}>1) {
+              my $count;
+              if($count = tr/<>/<>/) {
                 $self->poderror({ -line => $line, -file => $file,
                      -severity => 'WARNING', 
-                     -msg => "$count unescaped <> in paragraph" })
-                if($self->{-warnings});
+                     -msg => "$count unescaped <> in paragraph" });
+                }
             }
-            $text .= $i;
+            $text .= $_;
             next;
         }
         # have an interior sequence
@@ -1185,8 +1253,10 @@ __END__
 
 =head1 AUTHOR
 
+Please report bugs using L<http://rt.cpan.org>.
+
 Brad Appleton E<lt>bradapp@enteract.comE<gt> (initial version),
-Marek Rouchal E<lt>marek@saftsack.fs.uni-bayreuth.deE<gt>
+Marek Rouchal E<lt>marekr@cpan.orgE<gt>
 
 Based on code for B<Pod::Text::pod2text()> written by
 Tom Christiansen E<lt>tchrist@mox.perl.comE<gt>

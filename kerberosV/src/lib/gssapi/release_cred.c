@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,24 +33,33 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: release_cred.c,v 1.5 2001/01/30 00:49:05 assar Exp $");
+RCSID("$KTH: release_cred.c,v 1.8.2.1 2003/10/07 01:08:21 lha Exp $");
 
 OM_uint32 gss_release_cred
            (OM_uint32 * minor_status,
             gss_cred_id_t * cred_handle
            )
 {
+    *minor_status = 0;
+
     if (*cred_handle == GSS_C_NO_CREDENTIAL) {
         return GSS_S_COMPLETE;
     }
 
-    gssapi_krb5_init ();
+    GSSAPI_KRB5_INIT ();
 
-    krb5_free_principal(gssapi_krb5_context, (*cred_handle)->principal);
+    if ((*cred_handle)->principal != NULL)
+        krb5_free_principal(gssapi_krb5_context, (*cred_handle)->principal);
     if ((*cred_handle)->keytab != NULL)
 	krb5_kt_close(gssapi_krb5_context, (*cred_handle)->keytab);
-    if ((*cred_handle)->ccache != NULL)
-	krb5_cc_close(gssapi_krb5_context, (*cred_handle)->ccache);
+    if ((*cred_handle)->ccache != NULL) {
+	const krb5_cc_ops *ops;
+	ops = krb5_cc_get_ops(gssapi_krb5_context, (*cred_handle)->ccache);
+	if (ops == &krb5_mcc_ops)
+	    krb5_cc_destroy(gssapi_krb5_context, (*cred_handle)->ccache);
+	else 
+	    krb5_cc_close(gssapi_krb5_context, (*cred_handle)->ccache);
+    }
     gss_release_oid_set(NULL, &(*cred_handle)->mechanisms);
     free(*cred_handle);
     *cred_handle = GSS_C_NO_CREDENTIAL;

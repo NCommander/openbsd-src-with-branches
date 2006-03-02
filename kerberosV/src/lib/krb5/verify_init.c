@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: verify_init.c,v 1.12 2000/01/21 05:47:35 assar Exp $");
+RCSID("$KTH: verify_init.c,v 1.17 2002/08/20 14:47:59 joda Exp $");
 
 void
 krb5_verify_init_creds_opt_init(krb5_verify_init_creds_opt *options)
@@ -58,7 +58,7 @@ fail_verify_is_ok (krb5_context context,
 		   krb5_verify_init_creds_opt *options)
 {
     if ((options->flags & KRB5_VERIFY_INIT_CREDS_OPT_AP_REQ_NOFAIL
-	&& options->ap_req_nofail == 1)
+	 && options->ap_req_nofail != 0)
 	|| krb5_config_get_bool (context,
 				 NULL,
 				 "libdefaults",
@@ -79,7 +79,7 @@ krb5_verify_init_creds(krb5_context context,
 {
     krb5_error_code ret;
     krb5_data req;
-    krb5_ccache local_ccache;
+    krb5_ccache local_ccache = NULL;
     krb5_keytab_entry entry;
     krb5_creds *new_creds = NULL;
     krb5_auth_context auth_context = NULL;
@@ -92,8 +92,12 @@ krb5_verify_init_creds(krb5_context context,
     if (ap_req_server == NULL) {
 	char local_hostname[MAXHOSTNAMELEN];
 
-	if (gethostname (local_hostname, sizeof(local_hostname)) < 0)
-	    return errno;
+	if (gethostname (local_hostname, sizeof(local_hostname)) < 0) {
+	    ret = errno;
+	    krb5_set_error_string (context, "gethostname: %s",
+				   strerror(ret));
+	    return ret;
+	}
 
 	ret = krb5_sname_to_principal (context,
 				       local_hostname,
@@ -185,8 +189,10 @@ cleanup:
 	krb5_free_principal (context, server);
     if (ap_req_keytab == NULL && keytab)
 	krb5_kt_close (context, keytab);
-    if (ccache == NULL
-	|| (ret != 0 && *ccache == NULL))
+    if (local_ccache != NULL
+	&&
+	(ccache == NULL
+	 || (ret != 0 && *ccache == NULL)))
 	krb5_cc_destroy (context, local_ccache);
 
     if (ret == 0 && ccache != NULL && *ccache == NULL)

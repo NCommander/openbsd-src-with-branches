@@ -58,7 +58,7 @@ do {								\
     }								\
   fprintf (FILE, "\t.set noat\n");				\
   fprintf (FILE, "\t.set noreorder\n");				\
-  if (TARGET_BWX | TARGET_MAX | TARGET_CIX)			\
+  if (TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)	\
     {								\
       fprintf (FILE, "\t.arch %s\n",				\
                (alpha_cpu == PROCESSOR_EV6 ? "ev6"		\
@@ -526,3 +526,9 @@ do {									\
 
 /* We support #pragma.  */
 #define HANDLE_SYSV_PRAGMA
+
+/* Undo the auto-alignment stuff from alpha.h.  ELF has unaligned data
+   pseudos natively.  */
+#undef UNALIGNED_SHORT_ASM_OP
+#undef UNALIGNED_INT_ASM_OP
+#undef UNALIGNED_DOUBLE_INT_ASM_OP

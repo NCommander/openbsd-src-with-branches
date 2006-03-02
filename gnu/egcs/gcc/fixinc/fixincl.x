@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 104 fixup descriptions.
+ * This file contains 103 fixup descriptions.
  *
  * See README-fixinc for more information.
  *
@@ -37,7 +37,7 @@ tSCC zAix_SyswaitName[] =
  *  File name selection pattern
  */
 tSCC zAix_SyswaitList[] =
-        "|" "sys/wait.h" "|";
+  "|sys/wait.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -58,8 +58,8 @@ tTestDesc aAix_SyswaitTests[] = {
  *  Fix Command Arguments for Aix_Syswait
  */
 const char* apzAix_SyswaitPatch[] = { "sed",
-    "-e", "/^extern pid_t wait3();$/i\\\n"
-       "struct rusage;\n",
+    "-e", "/^extern pid_t wait3();$/i\\\n\
+struct rusage;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -72,7 +72,7 @@ tSCC zAix_VolatileName[] =
  *  File name selection pattern
  */
 tSCC zAix_VolatileList[] =
-        "|" "sys/signal.h" "|";
+  "|sys/signal.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -106,8 +106,7 @@ tSCC zAlpha_GetoptName[] =
  *  File name selection pattern
  */
 tSCC zAlpha_GetoptList[] =
-        "|" "stdio.h"
-        "|" "stdlib.h" "|";
+  "|stdio.h|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -141,7 +140,7 @@ tSCC zAlpha_ParensName[] =
  *  File name selection pattern
  */
 tSCC zAlpha_ParensList[] =
-        "|" "sym.h" "|";
+  "|sym.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -175,7 +174,7 @@ tSCC zAlpha_SbrkName[] =
  *  File name selection pattern
  */
 tSCC zAlpha_SbrkList[] =
-        "|" "unistd.h" "|";
+  "|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -209,7 +208,7 @@ tSCC zArm_Norcroft_HintName[] =
  *  File name selection pattern
  */
 tSCC zArm_Norcroft_HintList[] =
-        "|" "X11/Intrinsic.h" "|";
+  "|X11/Intrinsic.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -243,7 +242,7 @@ tSCC zArm_WcharName[] =
  *  File name selection pattern
  */
 tSCC zArm_WcharList[] =
-        "|" "stdlib.h" "|";
+  "|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -278,7 +277,7 @@ tSCC zAux_AsmName[] =
  *  File name selection pattern
  */
 tSCC zAux_AsmList[] =
-        "|" "sys/param.h" "|";
+  "|sys/param.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -312,10 +311,7 @@ tSCC zAvoid_BoolName[] =
  *  File name selection pattern
  */
 tSCC zAvoid_BoolList[] =
-        "|" "curses.h"
-        "|" "curses_colr/curses.h"
-        "|" "term.h"
-        "|" "tinfo.h" "|";
+  "|curses.h|curses_colr/curses.h|term.h|tinfo.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -328,18 +324,26 @@ tSCC zAvoid_BoolList[] =
  *  Fix Command Arguments for Avoid_Bool
  */
 const char* apzAvoid_BoolPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/a\\\n"
-       "#endif\n",
-    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n"
-       "#endif\n",
-    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/a\\\n"
-       "#endif\n",
+    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/a\\\n\
+#endif\n",
+    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
+    "-e", "/^typedef[ \t][ \t]*int[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^typedef[ \t][ \t]*int[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned int[ \t][ \t]*bool[ \t]*;/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/^[ ]*typedef[ \t][ \t]*unsigned int[ \t][ \t]*bool[ \t]*;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -352,7 +356,7 @@ tSCC zBad_Struct_TermName[] =
  *  File name selection pattern
  */
 tSCC zBad_Struct_TermList[] =
-        "|" "curses.h" "|";
+  "|curses.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -386,7 +390,7 @@ tSCC zBadquoteName[] =
  *  File name selection pattern
  */
 tSCC zBadquoteList[] =
-        "|" "sundev/vuid_event.h" "|";
+  "|sundev/vuid_event.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -412,35 +416,14 @@ tSCC zBad_LvalName[] =
  *  File name selection pattern
  */
 tSCC zBad_LvalList[] =
-        "|" "libgen.h"
-        "|" "dirent.h"
-        "|" "ftw.h"
-        "|" "grp.h"
-        "|" "ndbm.h"
-        "|" "pthread.h"
-        "|" "pwd.h"
-        "|" "signal.h"
-        "|" "standards.h"
-        "|" "stdlib.h"
-        "|" "string.h"
-        "|" "stropts.h"
-        "|" "time.h"
-        "|" "unistd.h" "|";
+  "|libgen.h|dirent.h|ftw.h|grp.h|ndbm.h|pthread.h|pwd.h|signal.h|standards.h|stdlib.h|string.h|stropts.h|time.h|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
 #define apzBad_LvalMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zBad_LvalSelect0[] =
-       "^[ \t]*#[ \t]*pragma[ \t]extern_prefix";
-
-#define    BAD_LVAL_TEST_CT  1
-#define    BAD_LVAL_RE_CT    1
-tTestDesc aBad_LvalTests[] = {
-  { TT_EGREP,  zBad_LvalSelect0,   (regex_t*)NULL }, };
+#define BAD_LVAL_TEST_CT  0
+#define BAD_LVAL_RE_CT    0
+#define aBad_LvalTests   (tTestDesc*)NULL
 
 /*
  *  Fix Command Arguments for Bad_Lval
@@ -459,7 +442,7 @@ tSCC zBroken_Assert_StdioName[] =
  *  File name selection pattern
  */
 tSCC zBroken_Assert_StdioList[] =
-        "|" "assert.h" "|";
+  "|assert.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -487,8 +470,8 @@ tTestDesc aBroken_Assert_StdioTests[] = {
  *  Fix Command Arguments for Broken_Assert_Stdio
  */
 const char* apzBroken_Assert_StdioPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "#include <stdio.h>\n",
+    "-e", "1i\\\n\
+#include <stdio.h>\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -501,7 +484,7 @@ tSCC zBroken_Assert_StdlibName[] =
  *  File name selection pattern
  */
 tSCC zBroken_Assert_StdlibList[] =
-        "|" "assert.h" "|";
+  "|assert.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -529,10 +512,10 @@ tTestDesc aBroken_Assert_StdlibTests[] = {
  *  Fix Command Arguments for Broken_Assert_Stdlib
  */
 const char* apzBroken_Assert_StdlibPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#include <stdlib.h>\\\n"
-       "#endif\n",
+    "-e", "1i\\\n\
+#ifdef __cplusplus\\\n\
+#include <stdlib.h>\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -579,7 +562,7 @@ tSCC zDec_Intern_AsmName[] =
  *  File name selection pattern
  */
 tSCC zDec_Intern_AsmList[] =
-        "|" "c_asm.h" "|";
+  "|c_asm.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -592,10 +575,10 @@ tSCC zDec_Intern_AsmList[] =
  *  Fix Command Arguments for Dec_Intern_Asm
  */
 const char* apzDec_Intern_AsmPatch[] = { "sed",
-    "-e", "/^[ \t]*float[ \t]*fasm/i\\\n"
-       "#ifdef __DECC\n",
-    "-e", "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\\\n"
-       "#endif\n",
+    "-e", "/^[ \t]*float[ \t]*fasm/i\\\n\
+#ifdef __DECC\n",
+    "-e", "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -623,7 +606,7 @@ tSCC zNo_Double_SlashSelect0[] =
  *  perform the 'test' shell command - do fix on success
  */
 tSCC zNo_Double_SlashTest0[] =
-       "-z `echo ${file} | egrep '(CC|cxx|\\+\\+)/' `";
+       " -z \"`echo ${file} | egrep '(CC|cxx|\\+\\+)/'`\"";
 
 #define    NO_DOUBLE_SLASH_TEST_CT  2
 #define    NO_DOUBLE_SLASH_RE_CT    1
@@ -649,8 +632,7 @@ tSCC zEcd_CursorName[] =
  *  File name selection pattern
  */
 tSCC zEcd_CursorList[] =
-        "|" "sunwindow/win_lock.h"
-        "|" "sunwindow/win_cursor.h" "|";
+  "|sunwindow/win_lock.h|sunwindow/win_cursor.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -676,7 +658,7 @@ tSCC zSco5_Stat_WrappersName[] =
  *  File name selection pattern
  */
 tSCC zSco5_Stat_WrappersList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -691,99 +673,62 @@ tSCC* apzSco5_Stat_WrappersMachs[] = {
  *  Fix Command Arguments for Sco5_Stat_Wrappers
  */
 const char* apzSco5_Stat_WrappersPatch[] = { "sed",
-    "-e", "/^static int[ \t]*[a-z]*stat(/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "extern \"C\"\\\n"
-       "{\\\n"
-       "#endif\\\n",
-    "-e", "/^}$/a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "}\\\n"
-       "#endif /* __cplusplus */\\\n",
+    "-e", "/^static int[ \t]*[a-z]*stat(/i\\\n\
+#ifdef __cplusplus\\\n\
+extern \"C\"\\\n\
+{\\\n\
+#endif\\\n",
+    "-e", "/^}$/a\\\n\
+#ifdef __cplusplus\\\n\
+}\\\n\
+#endif /* __cplusplus */\\\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  20 - Else_Label fix
+ *  Description  20 - End_Else_Label fix
  */
-tSCC zElse_LabelName[] =
-     "Else_Label";
+tSCC zEnd_Else_LabelName[] =
+     "End_Else_Label";
 /*
  *  File name selection pattern
  */
-#define zElse_LabelList (char*)NULL
+#define zEnd_Else_LabelList (char*)NULL
 /*
  *  Machine/OS name selection pattern
  */
-#define apzElse_LabelMachs (const char**)NULL
+#define apzEnd_Else_LabelMachs (const char**)NULL
 
 /*
  *  content selection pattern - do fix if pattern found
  */
-tSCC zElse_LabelSelect0[] =
-       "^[ \t]*#[ \t]*else[ \t]+[!-.0-~]";
+tSCC zEnd_Else_LabelSelect0[] =
+       "^[ \t]*#[ \t]*(else|endif)[ \t]+([!-.0-z\\{\\|\\}\\~]|/[^\\*])";
 
-#define    ELSE_LABEL_TEST_CT  1
-#define    ELSE_LABEL_RE_CT    1
-tTestDesc aElse_LabelTests[] = {
-  { TT_EGREP,  zElse_LabelSelect0,   (regex_t*)NULL }, };
+#define    END_ELSE_LABEL_TEST_CT  1
+#define    END_ELSE_LABEL_RE_CT    1
+tTestDesc aEnd_Else_LabelTests[] = {
+  { TT_EGREP,  zEnd_Else_LabelSelect0,   (regex_t*)NULL }, };
 
 /*
- *  Fix Command Arguments for Else_Label
+ *  Fix Command Arguments for End_Else_Label
  */
-const char* apzElse_LabelPatch[] = { "sed",
-    "-e", ":loop\n"
-       "/\\\\$/N\n"
-       "s/\\\\$/\\\\+++fixinc_eol+++/\n"
-       "/\\\\$/b loop\n"
-       "s/\\\\+++fixinc_eol+++/\\\\/g\n"
-       "s%^\\([ \t]*#[ \t]*else\\)[ \t]*/[^*].*%\\1%\n"
-       "s%^\\([ \t]*#[ \t]*else\\)[ \t]*[^/ \t].*%\\1%",
+const char* apzEnd_Else_LabelPatch[] = { "sed",
+    "-e", ":loop\n\
+/\\\\$/N\n\
+s/\\\\$/\\\\+++fixinc_eol+++/\n\
+/\\\\$/b loop\n\
+s/\\\\+++fixinc_eol+++/\\\\/g\n\
+s%^\\([ \t]*#[ \t]*else\\)[ \t][ \t]*/[^*].*%\\1%\n\
+s%^\\([ \t]*#[ \t]*else\\)[ \t][ \t]*[^/ \t].*%\\1%\n\
+s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*/[^*].*%\\1%\n\
+s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]**[^/].*%\\1%\n\
+s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*[^/* \t].*%\\1%",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  21 - Endif_Label fix
- */
-tSCC zEndif_LabelName[] =
-     "Endif_Label";
-/*
- *  File name selection pattern
- */
-#define zEndif_LabelList (char*)NULL
-/*
- *  Machine/OS name selection pattern
- */
-#define apzEndif_LabelMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zEndif_LabelSelect0[] =
-       "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z{|}~]";
-
-#define    ENDIF_LABEL_TEST_CT  1
-#define    ENDIF_LABEL_RE_CT    1
-tTestDesc aEndif_LabelTests[] = {
-  { TT_EGREP,  zEndif_LabelSelect0,   (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Endif_Label
- */
-const char* apzEndif_LabelPatch[] = { "sed",
-    "-e", ":loop\n"
-       "/\\\\$/N\n"
-       "s/\\\\$/\\\\+++fixinc_eol+++/\n"
-       "/\\\\$/b loop\n"
-       "s/\\\\+++fixinc_eol+++/\\\\/g\n"
-       "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*/[^*].*%\\1%\n"
-       "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*\\*[^/].*%\\1%\n"
-       "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*[^/* \t].*%\\1%",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description  22 - Hp_Inline fix
+ *  Description  21 - Hp_Inline fix
  */
 tSCC zHp_InlineName[] =
      "Hp_Inline";
@@ -791,7 +736,7 @@ tSCC zHp_InlineName[] =
  *  File name selection pattern
  */
 tSCC zHp_InlineList[] =
-        "|" "sys/spinlock.h" "|";
+  "|sys/spinlock.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -818,7 +763,7 @@ const char* apzHp_InlinePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  23 - Hp_Sysfile fix
+ *  Description  22 - Hp_Sysfile fix
  */
 tSCC zHp_SysfileName[] =
      "Hp_Sysfile";
@@ -826,7 +771,7 @@ tSCC zHp_SysfileName[] =
  *  File name selection pattern
  */
 tSCC zHp_SysfileList[] =
-        "|" "sys/file.h" "|";
+  "|sys/file.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -852,7 +797,7 @@ const char* apzHp_SysfilePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  24 - Cxx_Unready fix
+ *  Description  23 - Cxx_Unready fix
  */
 tSCC zCxx_UnreadyName[] =
      "Cxx_Unready";
@@ -860,8 +805,7 @@ tSCC zCxx_UnreadyName[] =
  *  File name selection pattern
  */
 tSCC zCxx_UnreadyList[] =
-        "|" "sys/mman.h"
-        "|" "rpc/types.h" "|";
+  "|sys/mman.h|rpc/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -882,20 +826,20 @@ tTestDesc aCxx_UnreadyTests[] = {
  *  Fix Command Arguments for Cxx_Unready
  */
 const char* apzCxx_UnreadyPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "extern \"C\" {\\\n"
-       "#endif\\\n"
-       "\n",
-    "-e", "$a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "}\\\n"
-       "#endif\n",
+    "-e", "1i\\\n\
+#ifdef __cplusplus\\\n\
+extern \"C\" {\\\n\
+#endif\\\n\
+\n",
+    "-e", "$a\\\n\
+#ifdef __cplusplus\\\n\
+}\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  25 - Hpux_Maxint fix
+ *  Description  24 - Hpux_Maxint fix
  */
 tSCC zHpux_MaxintName[] =
      "Hpux_Maxint";
@@ -903,7 +847,7 @@ tSCC zHpux_MaxintName[] =
  *  File name selection pattern
  */
 tSCC zHpux_MaxintList[] =
-        "|" "sys/param.h" "|";
+  "|sys/param.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -916,15 +860,15 @@ tSCC zHpux_MaxintList[] =
  *  Fix Command Arguments for Hpux_Maxint
  */
 const char* apzHpux_MaxintPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/i\\\n"
-       "#ifndef MAXINT\n",
-    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/a\\\n"
-       "#endif\n",
+    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/i\\\n\
+#ifndef MAXINT\n",
+    "-e", "/^#[ \t]*define[ \t]*MAXINT[ \t]/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  26 - Hpux_Systime fix
+ *  Description  25 - Hpux_Systime fix
  */
 tSCC zHpux_SystimeName[] =
      "Hpux_Systime";
@@ -932,7 +876,7 @@ tSCC zHpux_SystimeName[] =
  *  File name selection pattern
  */
 tSCC zHpux_SystimeList[] =
-        "|" "sys/time.h" "|";
+  "|sys/time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -958,7 +902,7 @@ const char* apzHpux_SystimePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  27 - Interactv_Add1 fix
+ *  Description  26 - Interactv_Add1 fix
  */
 tSCC zInteractv_Add1Name[] =
      "Interactv_Add1";
@@ -966,12 +910,7 @@ tSCC zInteractv_Add1Name[] =
  *  File name selection pattern
  */
 tSCC zInteractv_Add1List[] =
-        "|" "stdio.h"
-        "|" "math.h"
-        "|" "ctype.h"
-        "|" "sys/limits.h"
-        "|" "sys/fcntl.h"
-        "|" "sys/dirent.h" "|";
+  "|stdio.h|math.h|ctype.h|sys/limits.h|sys/fcntl.h|sys/dirent.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1000,7 +939,7 @@ const char* apzInteractv_Add1Patch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  28 - Interactv_Add2 fix
+ *  Description  27 - Interactv_Add2 fix
  */
 tSCC zInteractv_Add2Name[] =
      "Interactv_Add2";
@@ -1008,7 +947,7 @@ tSCC zInteractv_Add2Name[] =
  *  File name selection pattern
  */
 tSCC zInteractv_Add2List[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1037,7 +976,7 @@ const char* apzInteractv_Add2Patch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  29 - Interactv_Add3 fix
+ *  Description  28 - Interactv_Add3 fix
  */
 tSCC zInteractv_Add3Name[] =
      "Interactv_Add3";
@@ -1045,7 +984,7 @@ tSCC zInteractv_Add3Name[] =
  *  File name selection pattern
  */
 tSCC zInteractv_Add3List[] =
-        "|" "sys/limits.h" "|";
+  "|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1075,7 +1014,7 @@ const char* apzInteractv_Add3Patch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  30 - Io_Def_Quotes fix
+ *  Description  29 - Io_Def_Quotes fix
  */
 tSCC zIo_Def_QuotesName[] =
      "Io_Def_Quotes";
@@ -1103,14 +1042,15 @@ tTestDesc aIo_Def_QuotesTests[] = {
  *  Fix Command Arguments for Io_Def_Quotes
  */
 const char* apzIo_Def_QuotesPatch[] = { "sed",
-    "-e", "s/\\([ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
+    "-e", "s/\\([ \t]*[ \t]_IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
+    "-e", "s/\\([ \t]*[ \t]DESIO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
     "-e", "/#[ \t]*define[ \t]*[ \t]_IO/s/'\\([cgxtf]\\)'/\\1/g",
     "-e", "/#[ \t]*define[ \t]*[ \t]DESIOC/s/'\\([cdgx]\\)'/\\1/g",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  31 - Ioctl_Fix_Ctrl fix
+ *  Description  30 - Ioctl_Fix_Ctrl fix
  */
 tSCC zIoctl_Fix_CtrlName[] =
      "Ioctl_Fix_Ctrl";
@@ -1127,7 +1067,7 @@ tSCC zIoctl_Fix_CtrlName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zIoctl_Fix_CtrlSelect0[] =
-       "CTRL[ \t]";
+       "CTRL[ \t]*\\(";
 
 #define    IOCTL_FIX_CTRL_TEST_CT  1
 #define    IOCTL_FIX_CTRL_RE_CT    1
@@ -1143,11 +1083,12 @@ const char* apzIoctl_Fix_CtrlPatch[] = { "sed",
     "-e", "/#[ \t]*define[ \t]*[ \t]CTRL/s/'\\([cgx]\\)'/\\1/g",
     "-e", "/#[ \t]*define[ \t]*[ \t]_CTRL/s/'\\([cgx]\\)'/\\1/g",
     "-e", "/#[ \t]*define[ \t]*[ \t]BSD43_CTRL/s/'\\([cgx]\\)'/\\1/g",
+    "-e", "/#[ \t]*define[ \t]*[ \t]_*ISCTRL/s/'\\([cgx]\\)'/\\1/g",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  32 - Ip_Missing_Semi fix
+ *  Description  31 - Ip_Missing_Semi fix
  */
 tSCC zIp_Missing_SemiName[] =
      "Ip_Missing_Semi";
@@ -1155,7 +1096,7 @@ tSCC zIp_Missing_SemiName[] =
  *  File name selection pattern
  */
 tSCC zIp_Missing_SemiList[] =
-        "|" "netinet/ip.h" "|";
+  "|netinet/ip.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1173,7 +1114,7 @@ const char* apzIp_Missing_SemiPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  33 - Irix_Multiline_Cmnt fix
+ *  Description  32 - Irix_Multiline_Cmnt fix
  */
 tSCC zIrix_Multiline_CmntName[] =
      "Irix_Multiline_Cmnt";
@@ -1181,7 +1122,7 @@ tSCC zIrix_Multiline_CmntName[] =
  *  File name selection pattern
  */
 tSCC zIrix_Multiline_CmntList[] =
-        "|" "sys/types.h" "|";
+  "|sys/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1200,7 +1141,7 @@ const char* apzIrix_Multiline_CmntPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  34 - Irix_Sockaddr fix
+ *  Description  33 - Irix_Sockaddr fix
  */
 tSCC zIrix_SockaddrName[] =
      "Irix_Sockaddr";
@@ -1208,7 +1149,7 @@ tSCC zIrix_SockaddrName[] =
  *  File name selection pattern
  */
 tSCC zIrix_SockaddrList[] =
-        "|" "rpc/auth.h" "|";
+  "|rpc/auth.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1229,13 +1170,13 @@ tTestDesc aIrix_SockaddrTests[] = {
  *  Fix Command Arguments for Irix_Sockaddr
  */
 const char* apzIrix_SockaddrPatch[] = { "sed",
-    "-e", "/authdes_create.*struct sockaddr/i\\\n"
-       "struct sockaddr;\n",
+    "-e", "/authdes_create.*struct sockaddr/i\\\n\
+struct sockaddr;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  35 - Irix_Struct__File fix
+ *  Description  34 - Irix_Struct__File fix
  */
 tSCC zIrix_Struct__FileName[] =
      "Irix_Struct__File";
@@ -1243,7 +1184,7 @@ tSCC zIrix_Struct__FileName[] =
  *  File name selection pattern
  */
 tSCC zIrix_Struct__FileList[] =
-        "|" "rpc/xdr.h" "|";
+  "|rpc/xdr.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1256,13 +1197,13 @@ tSCC zIrix_Struct__FileList[] =
  *  Fix Command Arguments for Irix_Struct__File
  */
 const char* apzIrix_Struct__FilePatch[] = { "sed",
-    "-e", "/xdrstdio_create.*struct __file_s/i\\\n"
-       "struct __file_s;\n",
+    "-e", "/xdrstdio_create.*struct __file_s/i\\\n\
+struct __file_s;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  36 - Isc_Fmod fix
+ *  Description  35 - Isc_Fmod fix
  */
 tSCC zIsc_FmodName[] =
      "Isc_Fmod";
@@ -1270,7 +1211,7 @@ tSCC zIsc_FmodName[] =
  *  File name selection pattern
  */
 tSCC zIsc_FmodList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1296,7 +1237,7 @@ const char* apzIsc_FmodPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  37 - Motorola_Nested fix
+ *  Description  36 - Motorola_Nested fix
  */
 tSCC zMotorola_NestedName[] =
      "Motorola_Nested";
@@ -1304,8 +1245,7 @@ tSCC zMotorola_NestedName[] =
  *  File name selection pattern
  */
 tSCC zMotorola_NestedList[] =
-        "|" "limits.h"
-        "|" "sys/limits.h" "|";
+  "|limits.h|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1326,7 +1266,7 @@ const char* apzMotorola_NestedPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  38 - Isc_Sys_Limits fix
+ *  Description  37 - Isc_Sys_Limits fix
  */
 tSCC zIsc_Sys_LimitsName[] =
      "Isc_Sys_Limits";
@@ -1334,7 +1274,7 @@ tSCC zIsc_Sys_LimitsName[] =
  *  File name selection pattern
  */
 tSCC zIsc_Sys_LimitsList[] =
-        "|" "sys/limits.h" "|";
+  "|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1361,7 +1301,7 @@ const char* apzIsc_Sys_LimitsPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  39 - Kandr_Concat fix
+ *  Description  38 - Kandr_Concat fix
  */
 tSCC zKandr_ConcatName[] =
      "Kandr_Concat";
@@ -1369,24 +1309,7 @@ tSCC zKandr_ConcatName[] =
  *  File name selection pattern
  */
 tSCC zKandr_ConcatList[] =
-        "|" "sparc/asm_linkage.h"
-        "|" "sun3/asm_linkage.h"
-        "|" "sun3x/asm_linkage.h"
-        "|" "sun4/asm_linkage.h"
-        "|" "sun4c/asm_linkage.h"
-        "|" "sun4m/asm_linkage.h"
-        "|" "sun4c/debug/asm_linkage.h"
-        "|" "sun4m/debug/asm_linkage.h"
-        "|" "arm/as_support.h"
-        "|" "arm/mc_type.h"
-        "|" "arm/xcb.h"
-        "|" "dev/chardefmac.h"
-        "|" "dev/ps_irq.h"
-        "|" "dev/screen.h"
-        "|" "dev/scsi.h"
-        "|" "sys/tty.h"
-        "|" "Xm.acorn/XmP.h"
-        "|" "bsd43/bsd43_.h" "|";
+  "|sparc/asm_linkage.h|sun3/asm_linkage.h|sun3x/asm_linkage.h|sun4/asm_linkage.h|sun4c/asm_linkage.h|sun4m/asm_linkage.h|sun4c/debug/asm_linkage.h|sun4m/debug/asm_linkage.h|arm/as_support.h|arm/mc_type.h|arm/xcb.h|dev/chardefmac.h|dev/ps_irq.h|dev/screen.h|dev/scsi.h|sys/tty.h|Xm.acorn/XmP.h|bsd43/bsd43_.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1412,7 +1335,7 @@ const char* apzKandr_ConcatPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  40 - Limits_Ifndefs fix
+ *  Description  39 - Limits_Ifndefs fix
  */
 tSCC zLimits_IfndefsName[] =
      "Limits_Ifndefs";
@@ -1420,7 +1343,7 @@ tSCC zLimits_IfndefsName[] =
  *  File name selection pattern
  */
 tSCC zLimits_IfndefsList[] =
-        "|" "limits.h" "|";
+  "|limits.h|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1441,36 +1364,36 @@ tTestDesc aLimits_IfndefsTests[] = {
  *  Fix Command Arguments for Limits_Ifndefs
  */
 const char* apzLimits_IfndefsPatch[] = { "sed",
-    "-e", "/[ \t]FLT_MIN[ \t]/i\\\n"
-       "#ifndef FLT_MIN\n",
-    "-e", "/[ \t]FLT_MIN[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]FLT_MAX[ \t]/i\\\n"
-       "#ifndef FLT_MAX\n",
-    "-e", "/[ \t]FLT_MAX[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]FLT_DIG[ \t]/i\\\n"
-       "#ifndef FLT_DIG\n",
-    "-e", "/[ \t]FLT_DIG[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]DBL_MIN[ \t]/i\\\n"
-       "#ifndef DBL_MIN\n",
-    "-e", "/[ \t]DBL_MIN[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]DBL_MAX[ \t]/i\\\n"
-       "#ifndef DBL_MAX\n",
-    "-e", "/[ \t]DBL_MAX[ \t]/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]DBL_DIG[ \t]/i\\\n"
-       "#ifndef DBL_DIG\n",
-    "-e", "/[ \t]DBL_DIG[ \t]/a\\\n"
-       "#endif\n",
+    "-e", "/[ \t]FLT_MIN[ \t]/i\\\n\
+#ifndef FLT_MIN\n",
+    "-e", "/[ \t]FLT_MIN[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]FLT_MAX[ \t]/i\\\n\
+#ifndef FLT_MAX\n",
+    "-e", "/[ \t]FLT_MAX[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]FLT_DIG[ \t]/i\\\n\
+#ifndef FLT_DIG\n",
+    "-e", "/[ \t]FLT_DIG[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]DBL_MIN[ \t]/i\\\n\
+#ifndef DBL_MIN\n",
+    "-e", "/[ \t]DBL_MIN[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]DBL_MAX[ \t]/i\\\n\
+#ifndef DBL_MAX\n",
+    "-e", "/[ \t]DBL_MAX[ \t]/a\\\n\
+#endif\n",
+    "-e", "/[ \t]DBL_DIG[ \t]/i\\\n\
+#ifndef DBL_DIG\n",
+    "-e", "/[ \t]DBL_DIG[ \t]/a\\\n\
+#endif\n",
     "-e", "/^\\(\\/\\*#define\tHUGE_VAL\t3\\.[0-9e+]* *\\)\\/\\*/s//\\1/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  41 - Lynx_Void_Int fix
+ *  Description  40 - Lynx_Void_Int fix
  */
 tSCC zLynx_Void_IntName[] =
      "Lynx_Void_Int";
@@ -1478,7 +1401,7 @@ tSCC zLynx_Void_IntName[] =
  *  File name selection pattern
  */
 tSCC zLynx_Void_IntList[] =
-        "|" "curses.h" "|";
+  "|curses.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1504,7 +1427,7 @@ const char* apzLynx_Void_IntPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  42 - Lynxos_Fcntl_Proto fix
+ *  Description  41 - Lynxos_Fcntl_Proto fix
  */
 tSCC zLynxos_Fcntl_ProtoName[] =
      "Lynxos_Fcntl_Proto";
@@ -1512,7 +1435,7 @@ tSCC zLynxos_Fcntl_ProtoName[] =
  *  File name selection pattern
  */
 tSCC zLynxos_Fcntl_ProtoList[] =
-        "|" "fcntl.h" "|";
+  "|fcntl.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1538,7 +1461,7 @@ const char* apzLynxos_Fcntl_ProtoPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  43 - M88k_Bad_Hypot_Opt fix
+ *  Description  42 - M88k_Bad_Hypot_Opt fix
  */
 tSCC zM88k_Bad_Hypot_OptName[] =
      "M88k_Bad_Hypot_Opt";
@@ -1546,7 +1469,7 @@ tSCC zM88k_Bad_Hypot_OptName[] =
  *  File name selection pattern
  */
 tSCC zM88k_Bad_Hypot_OptList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1562,24 +1485,24 @@ tSCC* apzM88k_Bad_Hypot_OptMachs[] = {
  */
 const char* apzM88k_Bad_Hypot_OptPatch[] = { "sed",
     "-e", "s/extern double floor(), ceil(), fmod(), fabs();/extern double floor(), ceil(), fmod(), fabs _PARAMS((double));/",
-    "-e", "/^extern double hypot();$/a\\\n"
-       "\\/* Workaround a stupid Motorola optimization if one\\\n"
-       "   of x or y is 0.0 and the other is negative!  *\\/\\\n"
-       "#ifdef __STDC__\\\n"
-       "static __inline__ double fake_hypot (double x, double y)\\\n"
-       "#else\\\n"
-       "static __inline__ double fake_hypot (x, y)\\\n"
-       "\tdouble x, y;\\\n"
-       "#endif\\\n"
-       "{\\\n"
-       "\treturn fabs (hypot (x, y));\\\n"
-       "}\\\n"
-       "#define hypot\tfake_hypot\n",
+    "-e", "/^extern double hypot();$/a\\\n\
+\\/* Workaround a stupid Motorola optimization if one\\\n\
+   of x or y is 0.0 and the other is negative!  *\\/\\\n\
+#ifdef __STDC__\\\n\
+static __inline__ double fake_hypot (double x, double y)\\\n\
+#else\\\n\
+static __inline__ double fake_hypot (x, y)\\\n\
+\tdouble x, y;\\\n\
+#endif\\\n\
+{\\\n\
+\treturn fabs (hypot (x, y));\\\n\
+}\\\n\
+#define hypot\tfake_hypot\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  44 - M88k_Bad_S_If fix
+ *  Description  43 - M88k_Bad_S_If fix
  */
 tSCC zM88k_Bad_S_IfName[] =
      "M88k_Bad_S_If";
@@ -1587,7 +1510,7 @@ tSCC zM88k_Bad_S_IfName[] =
  *  File name selection pattern
  */
 tSCC zM88k_Bad_S_IfList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1616,7 +1539,7 @@ const char* apzM88k_Bad_S_IfPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  45 - M88k_Multi_Incl fix
+ *  Description  44 - M88k_Multi_Incl fix
  */
 tSCC zM88k_Multi_InclName[] =
      "M88k_Multi_Incl";
@@ -1624,7 +1547,7 @@ tSCC zM88k_Multi_InclName[] =
  *  File name selection pattern
  */
 tSCC zM88k_Multi_InclList[] =
-        "|" "time.h" "|";
+  "|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1647,17 +1570,17 @@ tTestDesc aM88k_Multi_InclTests[] = {
  *  Fix Command Arguments for M88k_Multi_Incl
  */
 const char* apzM88k_Multi_InclPatch[] = { "sh", "-c",
-    "echo Fixing $file, to protect against multiple inclusion. >&2\n"
-       "      cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`\n"
-       "      echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"\n"
-       "      echo \"#define __GCC_GOT_${cpp_wrapper}_\"\n"
-       "      cat\n"
-       "      echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"",
+    "echo Fixing $file, to protect against multiple inclusion. >&2\n\
+      cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`\n\
+      echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"\n\
+      echo \"#define __GCC_GOT_${cpp_wrapper}_\"\n\
+      cat\n\
+      echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  46 - Machine_Name fix
+ *  Description  45 - Machine_Name fix
  */
 tSCC zMachine_NameName[] =
      "Machine_Name";
@@ -1687,46 +1610,46 @@ tTestDesc aMachine_NameTests[] = {
  *  Fix Command Arguments for Machine_Name
  */
 const char* apzMachine_NamePatch[] = { "sed",
-    "-e", ":loop\n"
-       "/\\\\$/N\n"
-       "s/\\\\$/\\\\+++fixinc_eol+++/\n"
-       "/\\\\$/b loop\n"
-       "s/\\\\+++fixinc_eol+++/\\\\/g\n"
-       "/#[\t ]*[el]*if/ {\n"
-       "\ts/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g\n"
-       "\ts/ M32 / __M32__ /g\n"
-       "\ts/ _*MIPSE\\([LB]\\) / __MIPSE\\1__ /g\n"
-       "\ts/ _*SYSTYPE_\\([A-Z0-9]*\\) / __SYSTYPE_\\1__ /g\n"
-       "\ts/ _*\\([Rr][34]\\)000 / __\\1000__ /g\n"
-       "\ts/ _*host_mips / __host_mips__ /g\n"
-       "\ts/ _*i386 / __i386__ /g\n"
-       "\ts/ _*mips / __mips__ /g\n"
-       "\ts/ bsd4\\([0-9]\\) / __bsd4\\1__ /g\n"
-       "\ts/ is68k / __is68k__ /g\n"
-       "\ts/ m68k / __m68k__ /g\n"
-       "\ts/ m88k / __m88k__ /g\n"
-       "\ts/ mc680\\([0-9]\\)0 / __mc680\\10__ /g\n"
-       "\ts/ news\\([0-9]*\\) / __news\\1__ /g\n"
-       "\ts/ ns32000 / __ns32000__ /g\n"
-       "\ts/ pdp11 / __pdp11__ /g\n"
-       "\ts/ pyr / __pyr__ /g\n"
-       "\ts/ sel / __sel__ /g\n"
-       "\ts/ sony_news / __sony_news__ /g\n"
-       "\ts/ sparc / __sparc__ /g\n"
-       "\ts/ sun\\([a-z0-9]*\\) / __sun\\1__ /g\n"
-       "\ts/ tahoe / __tahoe__ /g\n"
-       "\ts/ tower\\([_0-9]*\\) / __tower\\1__ /g\n"
-       "\ts/ u370 / __u370__ /g\n"
-       "\ts/ u3b\\([0-9]*\\) / __u3b\\1__ /g\n"
-       "\ts/ unix / __unix__ /g\n"
-       "\ts/ vax / __vax__ /g\n"
-       "\ts/ \\([a-zA-Z0-9_][a-zA-Z0-9_]*\\) /\\1/g\n"
-       "\t}",
+    "-e", ":loop\n\
+/\\\\$/N\n\
+s/\\\\$/\\\\+++fixinc_eol+++/\n\
+/\\\\$/b loop\n\
+s/\\\\+++fixinc_eol+++/\\\\/g\n\
+/#[\t ]*[el]*if/ {\n\
+\ts/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g\n\
+\ts/ M32 / __M32__ /g\n\
+\ts/ _*MIPSE\\([LB]\\) / __MIPSE\\1__ /g\n\
+\ts/ _*SYSTYPE_\\([A-Z0-9]*\\) / __SYSTYPE_\\1__ /g\n\
+\ts/ _*\\([Rr][34]\\)000 / __\\1000__ /g\n\
+\ts/ _*host_mips / __host_mips__ /g\n\
+\ts/ _*i386 / __i386__ /g\n\
+\ts/ _*mips / __mips__ /g\n\
+\ts/ bsd4\\([0-9]\\) / __bsd4\\1__ /g\n\
+\ts/ is68k / __is68k__ /g\n\
+\ts/ m68k / __m68k__ /g\n\
+\ts/ m88k / __m88k__ /g\n\
+\ts/ mc680\\([0-9]\\)0 / __mc680\\10__ /g\n\
+\ts/ news\\([0-9]*\\) / __news\\1__ /g\n\
+\ts/ ns32000 / __ns32000__ /g\n\
+\ts/ pdp11 / __pdp11__ /g\n\
+\ts/ pyr / __pyr__ /g\n\
+\ts/ sel / __sel__ /g\n\
+\ts/ sony_news / __sony_news__ /g\n\
+\ts/ sparc / __sparc__ /g\n\
+\ts/ sun\\([a-z0-9]*\\) / __sun\\1__ /g\n\
+\ts/ tahoe / __tahoe__ /g\n\
+\ts/ tower\\([_0-9]*\\) / __tower\\1__ /g\n\
+\ts/ u370 / __u370__ /g\n\
+\ts/ u3b\\([0-9]*\\) / __u3b\\1__ /g\n\
+\ts/ unix / __unix__ /g\n\
+\ts/ vax / __vax__ /g\n\
+\ts/ \\([a-zA-Z0-9_][a-zA-Z0-9_]*\\) /\\1/g\n\
+\t}",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  47 - Math_Exception fix
+ *  Description  46 - Math_Exception fix
  */
 tSCC zMath_ExceptionName[] =
      "Math_Exception";
@@ -1734,7 +1657,7 @@ tSCC zMath_ExceptionName[] =
  *  File name selection pattern
  */
 tSCC zMath_ExceptionList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1755,27 +1678,27 @@ tTestDesc aMath_ExceptionTests[] = {
  *  Fix Command Arguments for Math_Exception
  */
 const char* apzMath_ExceptionPatch[] = { "sed",
-    "-e", "/struct exception/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#define exception __math_exception\\\n"
-       "#endif\n",
-    "-e", "/struct exception/a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#undef exception\\\n"
-       "#endif\n",
-    "-e", "/matherr/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#define exception __math_exception\\\n"
-       "#endif\n",
-    "-e", "/matherr/a\\\n"
-       "#ifdef __cplusplus\\\n"
-       "#undef exception\\\n"
-       "#endif\n",
+    "-e", "/struct exception/i\\\n\
+#ifdef __cplusplus\\\n\
+#define exception __math_exception\\\n\
+#endif\n",
+    "-e", "/struct exception/a\\\n\
+#ifdef __cplusplus\\\n\
+#undef exception\\\n\
+#endif\n",
+    "-e", "/matherr/i\\\n\
+#ifdef __cplusplus\\\n\
+#define exception __math_exception\\\n\
+#endif\n",
+    "-e", "/matherr/a\\\n\
+#ifdef __cplusplus\\\n\
+#undef exception\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  48 - Math_Gcc_Ifndefs fix
+ *  Description  47 - Math_Gcc_Ifndefs fix
  */
 tSCC zMath_Gcc_IfndefsName[] =
      "Math_Gcc_Ifndefs";
@@ -1783,7 +1706,7 @@ tSCC zMath_Gcc_IfndefsName[] =
  *  File name selection pattern
  */
 tSCC zMath_Gcc_IfndefsList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1796,24 +1719,24 @@ tSCC zMath_Gcc_IfndefsList[] =
  *  Fix Command Arguments for Math_Gcc_Ifndefs
  */
 const char* apzMath_Gcc_IfndefsPatch[] = { "sh", "-c",
-    "\tdbl_max_def=`egrep 'define[ \t]+DBL_MAX[ \t]+.*' float.h 2>/dev/null`\n"
-       "\n"
-       "\tif ( test -n \"${dbl_max_def}\" \\\n"
-       "\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n"
-       "\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n"
-       "\t   ) > /dev/null 2>&1\n"
-       "\tthen sed -e '/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/'\n"
-       "\telse cat ; fi |\n"
-       "\tsed -e'/define[ \t]HUGE_VAL[ \t]/i\\\n"
-       "#ifndef HUGE_VAL\n"
-       "' -e'/define[ \t]HUGE_VAL[ \t]/a\\\n"
-       "#endif\n"
-       "'",
+    "\tdbl_max_def=`egrep 'define[ \t]+DBL_MAX[ \t]+.*' float.h 2>/dev/null`\n\
+\n\
+\tif ( test -n \"${dbl_max_def}\" \\\n\
+\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n\
+\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n\
+\t   ) > /dev/null 2>&1\n\
+\tthen sed -e '/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/'\n\
+\telse cat ; fi |\n\
+\tsed -e '/define[ \t]HUGE_VAL[ \t]/i\\\n\
+#ifndef HUGE_VAL\n\
+' -e '/define[ \t]HUGE_VAL[ \t]/a\\\n\
+#endif\n\
+'",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  49 - Nested_Comment fix
+ *  Description  48 - Nested_Comment fix
  */
 tSCC zNested_CommentName[] =
      "Nested_Comment";
@@ -1821,7 +1744,7 @@ tSCC zNested_CommentName[] =
  *  File name selection pattern
  */
 tSCC zNested_CommentList[] =
-        "|" "rpc/rpc.h" "|";
+  "|rpc/rpc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1839,7 +1762,7 @@ const char* apzNested_CommentPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  50 - News_Os_Recursion fix
+ *  Description  49 - News_Os_Recursion fix
  */
 tSCC zNews_Os_RecursionName[] =
      "News_Os_Recursion";
@@ -1847,7 +1770,7 @@ tSCC zNews_Os_RecursionName[] =
  *  File name selection pattern
  */
 tSCC zNews_Os_RecursionList[] =
-        "|" "stdlib.h" "|";
+  "|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1868,15 +1791,15 @@ tTestDesc aNews_Os_RecursionTests[] = {
  *  Fix Command Arguments for News_Os_Recursion
  */
 const char* apzNews_Os_RecursionPatch[] = { "sed",
-    "-e", "/^#include <stdlib.h>/i\\\n"
-       "#ifdef BOGUS_RECURSION\n",
-    "-e", "/^#include <stdlib.h>/a\\\n"
-       "#endif\n",
+    "-e", "/^#include <stdlib.h>/i\\\n\
+#ifdef BOGUS_RECURSION\n",
+    "-e", "/^#include <stdlib.h>/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  51 - Next_Math_Prefix fix
+ *  Description  50 - Next_Math_Prefix fix
  */
 tSCC zNext_Math_PrefixName[] =
      "Next_Math_Prefix";
@@ -1884,7 +1807,7 @@ tSCC zNext_Math_PrefixName[] =
  *  File name selection pattern
  */
 tSCC zNext_Math_PrefixList[] =
-        "|" "ansi/math.h" "|";
+  "|ansi/math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1914,7 +1837,7 @@ const char* apzNext_Math_PrefixPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  52 - Next_Template fix
+ *  Description  51 - Next_Template fix
  */
 tSCC zNext_TemplateName[] =
      "Next_Template";
@@ -1922,7 +1845,7 @@ tSCC zNext_TemplateName[] =
  *  File name selection pattern
  */
 tSCC zNext_TemplateList[] =
-        "|" "bsd/libc.h" "|";
+  "|bsd/libc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1949,7 +1872,7 @@ const char* apzNext_TemplatePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  53 - Next_Volitile fix
+ *  Description  52 - Next_Volitile fix
  */
 tSCC zNext_VolitileName[] =
      "Next_Volitile";
@@ -1957,7 +1880,7 @@ tSCC zNext_VolitileName[] =
  *  File name selection pattern
  */
 tSCC zNext_VolitileList[] =
-        "|" "ansi/stdlib.h" "|";
+  "|ansi/stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1984,7 +1907,7 @@ const char* apzNext_VolitilePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  54 - Next_Wait_Union fix
+ *  Description  53 - Next_Wait_Union fix
  */
 tSCC zNext_Wait_UnionName[] =
      "Next_Wait_Union";
@@ -1992,7 +1915,7 @@ tSCC zNext_Wait_UnionName[] =
  *  File name selection pattern
  */
 tSCC zNext_Wait_UnionList[] =
-        "|" "sys/wait.h" "|";
+  "|sys/wait.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2018,7 +1941,7 @@ const char* apzNext_Wait_UnionPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  55 - Nodeent_Syntax fix
+ *  Description  54 - Nodeent_Syntax fix
  */
 tSCC zNodeent_SyntaxName[] =
      "Nodeent_Syntax";
@@ -2026,7 +1949,7 @@ tSCC zNodeent_SyntaxName[] =
  *  File name selection pattern
  */
 tSCC zNodeent_SyntaxList[] =
-        "|" "netdnet/dnetdb.h" "|";
+  "|netdnet/dnetdb.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2044,7 +1967,7 @@ const char* apzNodeent_SyntaxPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  56 - Osf_Namespace_A fix
+ *  Description  55 - Osf_Namespace_A fix
  */
 tSCC zOsf_Namespace_AName[] =
      "Osf_Namespace_A";
@@ -2052,8 +1975,7 @@ tSCC zOsf_Namespace_AName[] =
  *  File name selection pattern
  */
 tSCC zOsf_Namespace_AList[] =
-        "|" "reg_types.h"
-        "|" "sys/lc_core.h" "|";
+  "|reg_types.h|sys/lc_core.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2090,7 +2012,7 @@ const char* apzOsf_Namespace_APatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  57 - Osf_Namespace_B fix
+ *  Description  56 - Osf_Namespace_B fix
  */
 tSCC zOsf_Namespace_BName[] =
      "Osf_Namespace_B";
@@ -2098,7 +2020,7 @@ tSCC zOsf_Namespace_BName[] =
  *  File name selection pattern
  */
 tSCC zOsf_Namespace_BList[] =
-        "|" "regex.h" "|";
+  "|regex.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2128,15 +2050,15 @@ tTestDesc aOsf_Namespace_BTests[] = {
  *  Fix Command Arguments for Osf_Namespace_B
  */
 const char* apzOsf_Namespace_BPatch[] = { "sed",
-    "-e", "/#include <reg_types.h>/a\\\n"
-       "typedef __regex_t\tregex_t;\\\n"
-       "typedef __regoff_t\tregoff_t;\\\n"
-       "typedef __regmatch_t\tregmatch_t;\n",
+    "-e", "/#include <reg_types.h>/a\\\n\
+typedef __regex_t\tregex_t;\\\n\
+typedef __regoff_t\tregoff_t;\\\n\
+typedef __regmatch_t\tregmatch_t;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  58 - Pthread_Page_Size fix
+ *  Description  57 - Pthread_Page_Size fix
  */
 tSCC zPthread_Page_SizeName[] =
      "Pthread_Page_Size";
@@ -2144,7 +2066,7 @@ tSCC zPthread_Page_SizeName[] =
  *  File name selection pattern
  */
 tSCC zPthread_Page_SizeList[] =
-        "|" "pthread.h" "|";
+  "|pthread.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2170,7 +2092,7 @@ const char* apzPthread_Page_SizePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  59 - Rs6000_Double fix
+ *  Description  58 - Rs6000_Double fix
  */
 tSCC zRs6000_DoubleName[] =
      "Rs6000_Double";
@@ -2178,7 +2100,7 @@ tSCC zRs6000_DoubleName[] =
  *  File name selection pattern
  */
 tSCC zRs6000_DoubleList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2199,15 +2121,15 @@ tTestDesc aRs6000_DoubleTests[] = {
  *  Fix Command Arguments for Rs6000_Double
  */
 const char* apzRs6000_DoublePatch[] = { "sed",
-    "-e", "/class[(]/i\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/class[(]/a\\\n"
-       "#endif\n",
+    "-e", "/class[(]/i\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/class[(]/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  60 - Rs6000_Fchmod fix
+ *  Description  59 - Rs6000_Fchmod fix
  */
 tSCC zRs6000_FchmodName[] =
      "Rs6000_Fchmod";
@@ -2215,7 +2137,7 @@ tSCC zRs6000_FchmodName[] =
  *  File name selection pattern
  */
 tSCC zRs6000_FchmodList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2241,7 +2163,7 @@ const char* apzRs6000_FchmodPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  61 - Rs6000_Param fix
+ *  Description  60 - Rs6000_Param fix
  */
 tSCC zRs6000_ParamName[] =
      "Rs6000_Param";
@@ -2249,8 +2171,7 @@ tSCC zRs6000_ParamName[] =
  *  File name selection pattern
  */
 tSCC zRs6000_ParamList[] =
-        "|" "stdio.h"
-        "|" "unistd.h" "|";
+  "|stdio.h|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2268,7 +2189,7 @@ const char* apzRs6000_ParamPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  62 - Sony_Include fix
+ *  Description  61 - Sony_Include fix
  */
 tSCC zSony_IncludeName[] =
      "Sony_Include";
@@ -2276,7 +2197,7 @@ tSCC zSony_IncludeName[] =
  *  File name selection pattern
  */
 tSCC zSony_IncludeList[] =
-        "|" "machine/machparam.h" "|";
+  "|machine/machparam.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2302,7 +2223,7 @@ const char* apzSony_IncludePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  63 - Statsswtch fix
+ *  Description  62 - Statsswtch fix
  */
 tSCC zStatsswtchName[] =
      "Statsswtch";
@@ -2310,7 +2231,7 @@ tSCC zStatsswtchName[] =
  *  File name selection pattern
  */
 tSCC zStatsswtchList[] =
-        "|" "rpcsvc/rstat.h" "|";
+  "|rpcsvc/rstat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2336,7 +2257,7 @@ const char* apzStatsswtchPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  64 - Stdio_Va_List fix
+ *  Description  63 - Stdio_Va_List fix
  */
 tSCC zStdio_Va_ListName[] =
      "Stdio_Va_List";
@@ -2344,7 +2265,7 @@ tSCC zStdio_Va_ListName[] =
  *  File name selection pattern
  */
 tSCC zStdio_Va_ListList[] =
-        "|" "stdio.h" "|";
+  "|stdio.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2357,29 +2278,29 @@ tSCC zStdio_Va_ListList[] =
  *  Fix Command Arguments for Stdio_Va_List
  */
 const char* apzStdio_Va_ListPatch[] = { "sh", "-c",
-    "if ( egrep \"__need___va_list\" $file ) > /dev/null 2>&1 ; then\n"
-       "    :\n"
-       "  else\n"
-       "    echo \"#define __need___va_list\"\n"
-       "    echo \"#include <stdarg.h>\"\n"
-       "  fi\n"
-       "\n"
-       "  sed -e 's@ va_list @ __gnuc_va_list @' \\\n"
-       "      -e 's@ va_list)@ __gnuc_va_list)@' \\\n"
-       "      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \\\n"
-       "      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\\n"
-       "      -e 's@ va_list@ __va_list__@' \\\n"
-       "      -e 's@\\*va_list@*__va_list__@' \\\n"
-       "      -e 's@ __va_list)@ __gnuc_va_list)@' \\\n"
-       "      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \\\n"
-       "      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \\\n"
-       "      -e 's@VA_LIST@DUMMY_VA_LIST@' \\\n"
-       "      -e 's@_Va_LIST@_VA_LIST@'",
+    "if ( egrep \"__need___va_list\" $file ) > /dev/null 2>&1 ; then\n\
+    :\n\
+  else\n\
+    echo \"#define __need___va_list\"\n\
+    echo \"#include <stdarg.h>\"\n\
+  fi\n\
+\n\
+  sed -e 's@ va_list @ __gnuc_va_list @' \\\n\
+      -e 's@ va_list)@ __gnuc_va_list)@' \\\n\
+      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \\\n\
+      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\\n\
+      -e 's@ va_list@ __va_list__@' \\\n\
+      -e 's@\\*va_list@*__va_list__@' \\\n\
+      -e 's@ __va_list)@ __gnuc_va_list)@' \\\n\
+      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \\\n\
+      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \\\n\
+      -e 's@VA_LIST@DUMMY_VA_LIST@' \\\n\
+      -e 's@_Va_LIST@_VA_LIST@'",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  65 - Sun_Bogus_Ifdef fix
+ *  Description  64 - Sun_Bogus_Ifdef fix
  */
 tSCC zSun_Bogus_IfdefName[] =
      "Sun_Bogus_Ifdef";
@@ -2387,8 +2308,7 @@ tSCC zSun_Bogus_IfdefName[] =
  *  File name selection pattern
  */
 tSCC zSun_Bogus_IfdefList[] =
-        "|" "hsfs/hsfs_spec.h"
-        "|" "hsfs/iso_spec.h" "|";
+  "|hsfs/hsfs_spec.h|hsfs/iso_spec.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2414,7 +2334,7 @@ const char* apzSun_Bogus_IfdefPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  66 - Sun_Bogus_Ifdef_Sun4c fix
+ *  Description  65 - Sun_Bogus_Ifdef_Sun4c fix
  */
 tSCC zSun_Bogus_Ifdef_Sun4cName[] =
      "Sun_Bogus_Ifdef_Sun4c";
@@ -2422,7 +2342,7 @@ tSCC zSun_Bogus_Ifdef_Sun4cName[] =
  *  File name selection pattern
  */
 tSCC zSun_Bogus_Ifdef_Sun4cList[] =
-        "|" "hsfs/hsnode.h" "|";
+  "|hsfs/hsnode.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2448,7 +2368,7 @@ const char* apzSun_Bogus_Ifdef_Sun4cPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  67 - Sun_Catmacro fix
+ *  Description  66 - Sun_Catmacro fix
  */
 tSCC zSun_CatmacroName[] =
      "Sun_Catmacro";
@@ -2456,7 +2376,7 @@ tSCC zSun_CatmacroName[] =
  *  File name selection pattern
  */
 tSCC zSun_CatmacroList[] =
-        "|" "pixrect/memvar.h" "|";
+  "|pixrect/memvar.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2466,7 +2386,7 @@ tSCC zSun_CatmacroList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zSun_CatmacroSelect0[] =
-       "^#define[ \t]+CAT(a,b)";
+       "^#define[ \t]+CAT\\(a,b\\)";
 
 #define    SUN_CATMACRO_TEST_CT  1
 #define    SUN_CATMACRO_RE_CT    1
@@ -2477,17 +2397,17 @@ tTestDesc aSun_CatmacroTests[] = {
  *  Fix Command Arguments for Sun_Catmacro
  */
 const char* apzSun_CatmacroPatch[] = { "sed",
-    "-e", "/^#define[ \t]CAT(a,b)/ i\\\n"
-       "#ifdef __STDC__ \\\n"
-       "#define CAT(a,b) a##b\\\n"
-       "#else\n",
-    "-e", "/^#define[ \t]CAT(a,b)/ a\\\n"
-       "#endif\n",
+    "-e", "/^#define[ \t]CAT(a,b)/ i\\\n\
+#ifdef __STDC__ \\\n\
+#define CAT(a,b) a##b\\\n\
+#else\n",
+    "-e", "/^#define[ \t]CAT(a,b)/ a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  68 - Sun_Malloc fix
+ *  Description  67 - Sun_Malloc fix
  */
 tSCC zSun_MallocName[] =
      "Sun_Malloc";
@@ -2495,7 +2415,7 @@ tSCC zSun_MallocName[] =
  *  File name selection pattern
  */
 tSCC zSun_MallocList[] =
-        "|" "malloc.h" "|";
+  "|malloc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2516,7 +2436,7 @@ const char* apzSun_MallocPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  69 - Sun_Memcpy fix
+ *  Description  68 - Sun_Memcpy fix
  */
 tSCC zSun_MemcpyName[] =
      "Sun_Memcpy";
@@ -2524,7 +2444,7 @@ tSCC zSun_MemcpyName[] =
  *  File name selection pattern
  */
 tSCC zSun_MemcpyList[] =
-        "|" "memory.h" "|";
+  "|memory.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2545,32 +2465,32 @@ tTestDesc aSun_MemcpyTests[] = {
  *  Fix Command Arguments for Sun_Memcpy
  */
 const char* apzSun_MemcpyPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "/* This file was generated by fixincludes */\\\n"
-       "#ifndef __memory_h__\\\n"
-       "#define __memory_h__\\\n"
-       "\\\n"
-       "#ifdef __STDC__\\\n"
-       "extern void *memccpy();\\\n"
-       "extern void *memchr();\\\n"
-       "extern void *memcpy();\\\n"
-       "extern void *memset();\\\n"
-       "#else\\\n"
-       "extern char *memccpy();\\\n"
-       "extern char *memchr();\\\n"
-       "extern char *memcpy();\\\n"
-       "extern char *memset();\\\n"
-       "#endif /* __STDC__ */\\\n"
-       "\\\n"
-       "extern int memcmp();\\\n"
-       "\\\n"
-       "#endif /* __memory_h__ */\n",
+    "-e", "1i\\\n\
+/* This file was generated by fixincludes */\\\n\
+#ifndef __memory_h__\\\n\
+#define __memory_h__\\\n\
+\\\n\
+#ifdef __STDC__\\\n\
+extern void *memccpy();\\\n\
+extern void *memchr();\\\n\
+extern void *memcpy();\\\n\
+extern void *memset();\\\n\
+#else\\\n\
+extern char *memccpy();\\\n\
+extern char *memchr();\\\n\
+extern char *memcpy();\\\n\
+extern char *memset();\\\n\
+#endif /* __STDC__ */\\\n\
+\\\n\
+extern int memcmp();\\\n\
+\\\n\
+#endif /* __memory_h__ */\n",
     "-e", "1,$d",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  70 - Sun_Rusers_Semi fix
+ *  Description  69 - Sun_Rusers_Semi fix
  */
 tSCC zSun_Rusers_SemiName[] =
      "Sun_Rusers_Semi";
@@ -2578,7 +2498,7 @@ tSCC zSun_Rusers_SemiName[] =
  *  File name selection pattern
  */
 tSCC zSun_Rusers_SemiList[] =
-        "|" "rpcsvc/rusers.h" "|";
+  "|rpcsvc/rusers.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2604,7 +2524,7 @@ const char* apzSun_Rusers_SemiPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  71 - Sun_Signal fix
+ *  Description  70 - Sun_Signal fix
  */
 tSCC zSun_SignalName[] =
      "Sun_Signal";
@@ -2612,8 +2532,7 @@ tSCC zSun_SignalName[] =
  *  File name selection pattern
  */
 tSCC zSun_SignalList[] =
-        "|" "sys/signal.h"
-        "|" "signal.h" "|";
+  "|sys/signal.h|signal.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2634,17 +2553,17 @@ tTestDesc aSun_SignalTests[] = {
  *  Fix Command Arguments for Sun_Signal
  */
 const char* apzSun_SignalPatch[] = { "sed",
-    "-e", "/^void\t(\\*signal())();$/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "void\t(*signal(...))(...);\\\n"
-       "#else\n",
-    "-e", "/^void\t(\\*signal())();$/a\\\n"
-       "#endif\n",
+    "-e", "/^void\t(\\*signal())();$/i\\\n\
+#ifdef __cplusplus\\\n\
+void\t(*signal(...))(...);\\\n\
+#else\n",
+    "-e", "/^void\t(\\*signal())();$/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  72 - Sun_Auth_Proto fix
+ *  Description  71 - Sun_Auth_Proto fix
  */
 tSCC zSun_Auth_ProtoName[] =
      "Sun_Auth_Proto";
@@ -2652,10 +2571,7 @@ tSCC zSun_Auth_ProtoName[] =
  *  File name selection pattern
  */
 tSCC zSun_Auth_ProtoList[] =
-        "|" "rpc/auth.h"
-        "|" "rpc/clnt.h"
-        "|" "rpc/svc.h"
-        "|" "rpc/xdr.h" "|";
+  "|rpc/auth.h|rpc/clnt.h|rpc/svc.h|rpc/xdr.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2667,33 +2583,26 @@ tSCC zSun_Auth_ProtoList[] =
 tSCC zSun_Auth_ProtoSelect0[] =
        "\\(\\*[a-z][a-z_]*\\)\\(\\)";
 
-/*
- *  content bypass pattern - skip fix if pattern found
- */
-tSCC zSun_Auth_ProtoBypass0[] =
-       "\\(\\*[a-z][a-z_]*\\)\\([ \t]*[a-zA-Z.].*\\)";
-
-#define    SUN_AUTH_PROTO_TEST_CT  2
-#define    SUN_AUTH_PROTO_RE_CT    2
+#define    SUN_AUTH_PROTO_TEST_CT  1
+#define    SUN_AUTH_PROTO_RE_CT    1
 tTestDesc aSun_Auth_ProtoTests[] = {
-  { TT_NEGREP, zSun_Auth_ProtoBypass0,   (regex_t*)NULL },
   { TT_EGREP,  zSun_Auth_ProtoSelect0,   (regex_t*)NULL }, };
 
 /*
  *  Fix Command Arguments for Sun_Auth_Proto
  */
 const char* apzSun_Auth_ProtoPatch[] = { "sed",
-    "-e", "s/^\\(.*(\\*[a-z][a-z_]*)(\\)\\();.*\\)/\\\n"
-       "#ifdef __cplusplus\\\n"
-       "\\1...\\2\\\n"
-       "#else\\\n"
-       "\\1\\2\\\n"
-       "#endif/",
+    "-e", "s/^\\(.*(\\*[a-z][a-z_]*)(\\)\\();.*\\)/\\\n\
+#ifdef __cplusplus\\\n\
+\\1...\\2\\\n\
+#else\\\n\
+\\1\\2\\\n\
+#endif/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  73 - Sunos_Matherr_Decl fix
+ *  Description  72 - Sunos_Matherr_Decl fix
  */
 tSCC zSunos_Matherr_DeclName[] =
      "Sunos_Matherr_Decl";
@@ -2701,7 +2610,7 @@ tSCC zSunos_Matherr_DeclName[] =
  *  File name selection pattern
  */
 tSCC zSunos_Matherr_DeclList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2715,13 +2624,13 @@ tSCC zSunos_Matherr_DeclList[] =
  */
 const char* apzSunos_Matherr_DeclPatch[] = { "sed",
     "-e", "/^struct exception/,$b",
-    "-e", "/matherr/i\\\n"
-       "struct exception;\n",
+    "-e", "/matherr/i\\\n\
+struct exception;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  74 - Sunos_Strlen fix
+ *  Description  73 - Sunos_Strlen fix
  */
 tSCC zSunos_StrlenName[] =
      "Sunos_Strlen";
@@ -2729,7 +2638,7 @@ tSCC zSunos_StrlenName[] =
  *  File name selection pattern
  */
 tSCC zSunos_StrlenList[] =
-        "|" "strings.h" "|";
+  "|strings.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2747,7 +2656,7 @@ const char* apzSunos_StrlenPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  75 - Systypes fix
+ *  Description  74 - Systypes fix
  */
 tSCC zSystypesName[] =
      "Systypes";
@@ -2755,12 +2664,7 @@ tSCC zSystypesName[] =
  *  File name selection pattern
  */
 tSCC zSystypesList[] =
-        "|" "sys/types.h"
-        "|" "stdlib.h"
-        "|" "sys/stdtypes.h"
-        "|" "stddef.h"
-        "|" "memory.h"
-        "|" "unistd.h" "|";
+  "|sys/types.h|stdlib.h|sys/stdtypes.h|stddef.h|memory.h|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2782,35 +2686,35 @@ tTestDesc aSystypesTests[] = {
  */
 const char* apzSystypesPatch[] = { "sed",
     "-e", "/^[ \t]*\\*[ \t]*typedef unsigned int size_t;/N",
-    "-e", "s/^\\([ \t]*\\*[ \t]*typedef unsigned int size_t;\\n[ \t]*\\*\\/\\)/\\1\\\n"
-       "#ifndef __SIZE_TYPE__\\\n"
-       "#define __SIZE_TYPE__ long unsigned int\\\n"
-       "#endif\\\n"
-       "typedef __SIZE_TYPE__ size_t;\\\n"
-       "/",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/i\\\n"
-       "#ifndef __SIZE_TYPE__\\\n"
-       "#define __SIZE_TYPE__ long unsigned int\\\n"
-       "#endif\n",
+    "-e", "s/^\\([ \t]*\\*[ \t]*typedef unsigned int size_t;\\n[ \t]*\\*\\/\\)/\\1\\\n\
+#ifndef __SIZE_TYPE__\\\n\
+#define __SIZE_TYPE__ long unsigned int\\\n\
+#endif\\\n\
+typedef __SIZE_TYPE__ size_t;\\\n\
+/",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/i\\\n\
+#ifndef __SIZE_TYPE__\\\n\
+#define __SIZE_TYPE__ long unsigned int\\\n\
+#endif\n",
     "-e", "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/typedef __SIZE_TYPE__ size_t/",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/i\\\n"
-       "#ifndef __PTRDIFF_TYPE__\\\n"
-       "#define __PTRDIFF_TYPE__ long int\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/i\\\n\
+#ifndef __PTRDIFF_TYPE__\\\n\
+#define __PTRDIFF_TYPE__ long int\\\n\
+#endif\n",
     "-e", "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/typedef __PTRDIFF_TYPE__ ptrdiff_t/",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/i\\\n"
-       "#ifndef __WCHAR_TYPE__\\\n"
-       "#define __WCHAR_TYPE__ int\\\n"
-       "#endif\\\n"
-       "#ifndef __cplusplus\n",
-    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/a\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/i\\\n\
+#ifndef __WCHAR_TYPE__\\\n\
+#define __WCHAR_TYPE__ int\\\n\
+#endif\\\n\
+#ifndef __cplusplus\n",
+    "-e", "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/a\\\n\
+#endif\n",
     "-e", "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/typedef __WCHAR_TYPE__ wchar_t/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  76 - Systypes_For_Aix fix
+ *  Description  75 - Systypes_For_Aix fix
  */
 tSCC zSystypes_For_AixName[] =
      "Systypes_For_Aix";
@@ -2818,7 +2722,7 @@ tSCC zSystypes_For_AixName[] =
  *  File name selection pattern
  */
 tSCC zSystypes_For_AixList[] =
-        "|" "sys/types.h" "|";
+  "|sys/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2846,16 +2750,16 @@ tTestDesc aSystypes_For_AixTests[] = {
  *  Fix Command Arguments for Systypes_For_Aix
  */
 const char* apzSystypes_For_AixPatch[] = { "sed",
-    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/a\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  77 - Sysv68_String fix
+ *  Description  76 - Sysv68_String fix
  */
 tSCC zSysv68_StringName[] =
      "Sysv68_String";
@@ -2863,7 +2767,7 @@ tSCC zSysv68_StringName[] =
  *  File name selection pattern
  */
 tSCC zSysv68_StringList[] =
-        "|" "string.h" "|";
+  "|string.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2882,16 +2786,16 @@ const char* apzSysv68_StringPatch[] = { "sed",
     "-e", "/^extern char$/N",
     "-e", "s/^extern char\\(\\n\t\\*memccpy(),\\)$/extern void\\1/",
     "-e", "/^\tstrncmp(),$/N",
-    "-e", "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n"
-       "extern unsigned int\\\n"
-       "\\2/",
+    "-e", "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n\
+extern unsigned int\\\n\
+\\2/",
     "-e", "/^extern int$/N",
     "-e", "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  78 - Sysz_Stdlib_For_Sun fix
+ *  Description  77 - Sysz_Stdlib_For_Sun fix
  */
 tSCC zSysz_Stdlib_For_SunName[] =
      "Sysz_Stdlib_For_Sun";
@@ -2899,7 +2803,7 @@ tSCC zSysz_Stdlib_For_SunName[] =
  *  File name selection pattern
  */
 tSCC zSysz_Stdlib_For_SunList[] =
-        "|" "stdlib.h" "|";
+  "|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2917,17 +2821,18 @@ const char* apzSysz_Stdlib_For_SunPatch[] = { "sed",
     "-e", "s/char[ \t]*\\*[ \t]*calloc/void \\*\tcalloc/g",
     "-e", "s/char[ \t]*\\*[ \t]*malloc/void \\*\tmalloc/g",
     "-e", "s/char[ \t]*\\*[ \t]*realloc/void \\*\trealloc/g",
+    "-e", "s/char[ \t]*\\*[ \t]*bsearch/void \\*\tbsearch/g",
     "-e", "s/int[ \t][ \t]*exit/void\texit/g",
-    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/a\\\n"
-       "#endif\n",
+    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  79 - Sysz_Stdtypes_For_Sun fix
+ *  Description  78 - Sysz_Stdtypes_For_Sun fix
  */
 tSCC zSysz_Stdtypes_For_SunName[] =
      "Sysz_Stdtypes_For_Sun";
@@ -2935,7 +2840,7 @@ tSCC zSysz_Stdtypes_For_SunName[] =
  *  File name selection pattern
  */
 tSCC zSysz_Stdtypes_For_SunList[] =
-        "|" "sys/stdtypes.h" "|";
+  "|sys/stdtypes.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2948,26 +2853,26 @@ tSCC zSysz_Stdtypes_For_SunList[] =
  *  Fix Command Arguments for Sysz_Stdtypes_For_Sun
  */
 const char* apzSysz_Stdtypes_For_SunPatch[] = { "sed",
-    "-e", "/[\t ]size_t.*;/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/[\t ]size_t.*;/a\\\n"
-       "#endif\n",
-    "-e", "/[\t ]ptrdiff_t.*;/i\\\n"
-       "#ifndef _GCC_PTRDIFF_T\\\n"
-       "#define _GCC_PTRDIFF_T\n",
-    "-e", "/[\t ]ptrdiff_t.*;/a\\\n"
-       "#endif\n",
-    "-e", "/[\t ]wchar_t.*;/i\\\n"
-       "#ifndef _GCC_WCHAR_T\\\n"
-       "#define _GCC_WCHAR_T\n",
-    "-e", "/[\t ]wchar_t.*;/a\\\n"
-       "#endif\n",
+    "-e", "/[\t ]size_t.*;/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/[\t ]size_t.*;/a\\\n\
+#endif\n",
+    "-e", "/[\t ]ptrdiff_t.*;/i\\\n\
+#ifndef _GCC_PTRDIFF_T\\\n\
+#define _GCC_PTRDIFF_T\n",
+    "-e", "/[\t ]ptrdiff_t.*;/a\\\n\
+#endif\n",
+    "-e", "/[\t ]wchar_t.*;/i\\\n\
+#ifndef _GCC_WCHAR_T\\\n\
+#define _GCC_WCHAR_T\n",
+    "-e", "/[\t ]wchar_t.*;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  80 - Tinfo_Cplusplus fix
+ *  Description  79 - Tinfo_Cplusplus fix
  */
 tSCC zTinfo_CplusplusName[] =
      "Tinfo_Cplusplus";
@@ -2975,7 +2880,7 @@ tSCC zTinfo_CplusplusName[] =
  *  File name selection pattern
  */
 tSCC zTinfo_CplusplusList[] =
-        "|" "tinfo.h" "|";
+  "|tinfo.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2993,7 +2898,7 @@ const char* apzTinfo_CplusplusPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  81 - Ultrix_Ansi_Compat fix
+ *  Description  80 - Ultrix_Ansi_Compat fix
  */
 tSCC zUltrix_Ansi_CompatName[] =
      "Ultrix_Ansi_Compat";
@@ -3001,7 +2906,7 @@ tSCC zUltrix_Ansi_CompatName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Ansi_CompatList[] =
-        "|" "ansi_compat.h" "|";
+  "|ansi_compat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3022,14 +2927,14 @@ tTestDesc aUltrix_Ansi_CompatTests[] = {
  *  Fix Command Arguments for Ultrix_Ansi_Compat
  */
 const char* apzUltrix_Ansi_CompatPatch[] = { "sed",
-    "-e", "1i\\\n"
-       "/* This file intentionally left blank. */\n",
+    "-e", "1i\\\n\
+/* This file intentionally left blank. */\n",
     "-e", "1,$d",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  82 - Ultrix_Fix_Fixproto fix
+ *  Description  81 - Ultrix_Fix_Fixproto fix
  */
 tSCC zUltrix_Fix_FixprotoName[] =
      "Ultrix_Fix_Fixproto";
@@ -3037,7 +2942,7 @@ tSCC zUltrix_Fix_FixprotoName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Fix_FixprotoList[] =
-        "|" "sys/utsname.h" "|";
+  "|sys/utsname.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3058,13 +2963,13 @@ tTestDesc aUltrix_Fix_FixprotoTests[] = {
  *  Fix Command Arguments for Ultrix_Fix_Fixproto
  */
 const char* apzUltrix_Fix_FixprotoPatch[] = { "sed",
-    "-e", "/^[ \t]*extern[ \t]*int[ \t]*uname();$/i\\\n"
-       "struct utsname;\n",
+    "-e", "/^[ \t]*extern[ \t]*int[ \t]*uname();$/i\\\n\
+struct utsname;\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  83 - Ultrix_Atof_Param fix
+ *  Description  82 - Ultrix_Atof_Param fix
  */
 tSCC zUltrix_Atof_ParamName[] =
      "Ultrix_Atof_Param";
@@ -3072,7 +2977,7 @@ tSCC zUltrix_Atof_ParamName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Atof_ParamList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3094,7 +2999,7 @@ const char* apzUltrix_Atof_ParamPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  84 - Ultrix_Const fix
+ *  Description  83 - Ultrix_Const fix
  */
 tSCC zUltrix_ConstName[] =
      "Ultrix_Const";
@@ -3102,7 +3007,7 @@ tSCC zUltrix_ConstName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_ConstList[] =
-        "|" "stdio.h" "|";
+  "|stdio.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3128,7 +3033,7 @@ const char* apzUltrix_ConstPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  85 - Ultrix_Ifdef fix
+ *  Description  84 - Ultrix_Ifdef fix
  */
 tSCC zUltrix_IfdefName[] =
      "Ultrix_Ifdef";
@@ -3136,7 +3041,7 @@ tSCC zUltrix_IfdefName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_IfdefList[] =
-        "|" "sys/file.h" "|";
+  "|sys/file.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3162,7 +3067,7 @@ const char* apzUltrix_IfdefPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  86 - Ultrix_Nested_Cmnt fix
+ *  Description  85 - Ultrix_Nested_Cmnt fix
  */
 tSCC zUltrix_Nested_CmntName[] =
      "Ultrix_Nested_Cmnt";
@@ -3170,7 +3075,7 @@ tSCC zUltrix_Nested_CmntName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Nested_CmntList[] =
-        "|" "rpc/svc.h" "|";
+  "|rpc/svc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3188,7 +3093,7 @@ const char* apzUltrix_Nested_CmntPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  87 - Ultrix_Static fix
+ *  Description  86 - Ultrix_Static fix
  */
 tSCC zUltrix_StaticName[] =
      "Ultrix_Static";
@@ -3196,7 +3101,7 @@ tSCC zUltrix_StaticName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_StaticList[] =
-        "|" "machine/cpu.h" "|";
+  "|machine/cpu.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3224,7 +3129,7 @@ const char* apzUltrix_StaticPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  88 - Undefine_Null fix
+ *  Description  87 - Undefine_Null fix
  */
 tSCC zUndefine_NullName[] =
      "Undefine_Null";
@@ -3259,13 +3164,13 @@ tTestDesc aUndefine_NullTests[] = {
  *  Fix Command Arguments for Undefine_Null
  */
 const char* apzUndefine_NullPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n"
-       "#undef NULL\n",
+    "-e", "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n\
+#undef NULL\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  89 - Va_I960_Macro fix
+ *  Description  88 - Va_I960_Macro fix
  */
 tSCC zVa_I960_MacroName[] =
      "Va_I960_Macro";
@@ -3273,7 +3178,7 @@ tSCC zVa_I960_MacroName[] =
  *  File name selection pattern
  */
 tSCC zVa_I960_MacroList[] =
-        "|" "arch/i960/archI960.h" "|";
+  "|arch/i960/archI960.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3302,7 +3207,7 @@ const char* apzVa_I960_MacroPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  90 - Void_Null fix
+ *  Description  89 - Void_Null fix
  */
 tSCC zVoid_NullName[] =
      "Void_Null";
@@ -3310,17 +3215,7 @@ tSCC zVoid_NullName[] =
  *  File name selection pattern
  */
 tSCC zVoid_NullList[] =
-        "|" "curses.h"
-        "|" "dbm.h"
-        "|" "locale.h"
-        "|" "stdio.h"
-        "|" "stdlib.h"
-        "|" "string.h"
-        "|" "time.h"
-        "|" "unistd.h"
-        "|" "sys/dir.h"
-        "|" "sys/param.h"
-        "|" "sys/types.h" "|";
+  "|curses.h|dbm.h|locale.h|stdio.h|stdlib.h|string.h|time.h|unistd.h|sys/dir.h|sys/param.h|sys/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3346,7 +3241,7 @@ const char* apzVoid_NullPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  91 - Vxworks_Gcc_Problem fix
+ *  Description  90 - Vxworks_Gcc_Problem fix
  */
 tSCC zVxworks_Gcc_ProblemName[] =
      "Vxworks_Gcc_Problem";
@@ -3354,7 +3249,7 @@ tSCC zVxworks_Gcc_ProblemName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_Gcc_ProblemList[] =
-        "|" "types/vxTypesBase.h" "|";
+  "|types/vxTypesBase.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3376,26 +3271,26 @@ tTestDesc aVxworks_Gcc_ProblemTests[] = {
  */
 const char* apzVxworks_Gcc_ProblemPatch[] = { "sed",
     "-e", "s/#ifdef __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__/#if 1/",
-    "-e", "/[ \t]size_t/i\\\n"
-       "#ifndef _GCC_SIZE_T\\\n"
-       "#define _GCC_SIZE_T\n",
-    "-e", "/[ \t]size_t/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]ptrdiff_t/i\\\n"
-       "#ifndef _GCC_PTRDIFF_T\\\n"
-       "#define _GCC_PTRDIFF_T\n",
-    "-e", "/[ \t]ptrdiff_t/a\\\n"
-       "#endif\n",
-    "-e", "/[ \t]wchar_t/i\\\n"
-       "#ifndef _GCC_WCHAR_T\\\n"
-       "#define _GCC_WCHAR_T\n",
-    "-e", "/[ \t]wchar_t/a\\\n"
-       "#endif\n",
+    "-e", "/[ \t]size_t/i\\\n\
+#ifndef _GCC_SIZE_T\\\n\
+#define _GCC_SIZE_T\n",
+    "-e", "/[ \t]size_t/a\\\n\
+#endif\n",
+    "-e", "/[ \t]ptrdiff_t/i\\\n\
+#ifndef _GCC_PTRDIFF_T\\\n\
+#define _GCC_PTRDIFF_T\n",
+    "-e", "/[ \t]ptrdiff_t/a\\\n\
+#endif\n",
+    "-e", "/[ \t]wchar_t/i\\\n\
+#ifndef _GCC_WCHAR_T\\\n\
+#define _GCC_WCHAR_T\n",
+    "-e", "/[ \t]wchar_t/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  92 - Vxworks_Needs_Vxtypes fix
+ *  Description  91 - Vxworks_Needs_Vxtypes fix
  */
 tSCC zVxworks_Needs_VxtypesName[] =
      "Vxworks_Needs_Vxtypes";
@@ -3403,7 +3298,7 @@ tSCC zVxworks_Needs_VxtypesName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_Needs_VxtypesList[] =
-        "|" "time.h" "|";
+  "|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3429,7 +3324,7 @@ const char* apzVxworks_Needs_VxtypesPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  93 - Vxworks_Needs_Vxworks fix
+ *  Description  92 - Vxworks_Needs_Vxworks fix
  */
 tSCC zVxworks_Needs_VxworksName[] =
      "Vxworks_Needs_Vxworks";
@@ -3437,7 +3332,7 @@ tSCC zVxworks_Needs_VxworksName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_Needs_VxworksList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3471,13 +3366,13 @@ tTestDesc aVxworks_Needs_VxworksTests[] = {
  *  Fix Command Arguments for Vxworks_Needs_Vxworks
  */
 const char* apzVxworks_Needs_VxworksPatch[] = { "sed",
-    "-e", "/#[ \t]define[ \t][ \t]*__INCstath/a\\\n"
-       "#include <types/vxTypesOld.h>\n",
+    "-e", "/#[ \t]define[ \t][ \t]*__INCstath/a\\\n\
+#include <types/vxTypesOld.h>\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  94 - Vxworks_Time fix
+ *  Description  93 - Vxworks_Time fix
  */
 tSCC zVxworks_TimeName[] =
      "Vxworks_Time";
@@ -3485,7 +3380,7 @@ tSCC zVxworks_TimeName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_TimeList[] =
-        "|" "time.h" "|";
+  "|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3513,21 +3408,21 @@ tTestDesc aVxworks_TimeTests[] = {
  *  Fix Command Arguments for Vxworks_Time
  */
 const char* apzVxworks_TimePatch[] = { "sed",
-    "-e", "/VOIDFUNCPTR/i\\\n"
-       "#ifndef __gcc_VOIDFUNCPTR_defined\\\n"
-       "#ifdef __cplusplus\\\n"
-       "typedef void (*__gcc_VOIDFUNCPTR) (...);\\\n"
-       "#else\\\n"
-       "typedef void (*__gcc_VOIDFUNCPTR) ();\\\n"
-       "#endif\\\n"
-       "#define __gcc_VOIDFUNCPTR_defined\\\n"
-       "#endif\n",
+    "-e", "/VOIDFUNCPTR/i\\\n\
+#ifndef __gcc_VOIDFUNCPTR_defined\\\n\
+#ifdef __cplusplus\\\n\
+typedef void (*__gcc_VOIDFUNCPTR) (...);\\\n\
+#else\\\n\
+typedef void (*__gcc_VOIDFUNCPTR) ();\\\n\
+#endif\\\n\
+#define __gcc_VOIDFUNCPTR_defined\\\n\
+#endif\n",
     "-e", "s/VOIDFUNCPTR/__gcc_VOIDFUNCPTR/g",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  95 - X11_Class fix
+ *  Description  94 - X11_Class fix
  */
 tSCC zX11_ClassName[] =
      "X11_Class";
@@ -3535,7 +3430,7 @@ tSCC zX11_ClassName[] =
  *  File name selection pattern
  */
 tSCC zX11_ClassList[] =
-        "|" "X11/ShellP.h" "|";
+  "|X11/ShellP.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3556,17 +3451,17 @@ tTestDesc aX11_ClassTests[] = {
  *  Fix Command Arguments for X11_Class
  */
 const char* apzX11_ClassPatch[] = { "sed",
-    "-e", "/char \\*class;/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "\tchar *c_class;\\\n"
-       "#else\n",
-    "-e", "/char \\*class;/a\\\n"
-       "#endif\n",
+    "-e", "/char \\*class;/i\\\n\
+#ifdef __cplusplus\\\n\
+\tchar *c_class;\\\n\
+#else\n",
+    "-e", "/char \\*class;/a\\\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  96 - X11_Class_Usage fix
+ *  Description  95 - X11_Class_Usage fix
  */
 tSCC zX11_Class_UsageName[] =
      "X11_Class_Usage";
@@ -3574,7 +3469,7 @@ tSCC zX11_Class_UsageName[] =
  *  File name selection pattern
  */
 tSCC zX11_Class_UsageList[] =
-        "|" "Xm/BaseClassI.h" "|";
+  "|Xm/BaseClassI.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3600,7 +3495,7 @@ const char* apzX11_Class_UsagePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  97 - X11_New fix
+ *  Description  96 - X11_New fix
  */
 tSCC zX11_NewName[] =
      "X11_New";
@@ -3608,7 +3503,7 @@ tSCC zX11_NewName[] =
  *  File name selection pattern
  */
 tSCC zX11_NewList[] =
-        "|" "Xm/Traversal.h" "|";
+  "|Xm/Traversal.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3629,18 +3524,18 @@ tTestDesc aX11_NewTests[] = {
  *  Fix Command Arguments for X11_New
  */
 const char* apzX11_NewPatch[] = { "sed",
-    "-e", "/Widget\told, new;/i\\\n"
-       "#ifdef __cplusplus\\\n"
-       "\tWidget\told, c_new;\\\n"
-       "#else\n",
-    "-e", "/Widget\told, new;/a\\\n"
-       "#endif\n",
+    "-e", "/Widget\told, new;/i\\\n\
+#ifdef __cplusplus\\\n\
+\tWidget\told, c_new;\\\n\
+#else\n",
+    "-e", "/Widget\told, new;/a\\\n\
+#endif\n",
     "-e", "s/Widget new,/Widget c_new,/g",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  98 - X11_Sprintf fix
+ *  Description  97 - X11_Sprintf fix
  */
 tSCC zX11_SprintfName[] =
      "X11_Sprintf";
@@ -3648,7 +3543,7 @@ tSCC zX11_SprintfName[] =
  *  File name selection pattern
  */
 tSCC zX11_SprintfList[] =
-        "|" "X11*/Xmu.h" "|";
+  "|X11*/Xmu.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3661,14 +3556,14 @@ tSCC zX11_SprintfList[] =
  *  Fix Command Arguments for X11_Sprintf
  */
 const char* apzX11_SprintfPatch[] = { "sed",
-    "-e", "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n"
-       "extern char *\tsprintf();\\\n"
-       "#endif /* !defined __STDC__ */,",
+    "-e", "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n\
+extern char *\tsprintf();\\\n\
+#endif /* !defined __STDC__ */,",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description  99 - Zzz_Ki_Iface fix
+ *  Description  98 - Zzz_Ki_Iface fix
  */
 tSCC zZzz_Ki_IfaceName[] =
      "Zzz_Ki_Iface";
@@ -3676,7 +3571,7 @@ tSCC zZzz_Ki_IfaceName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Ki_IfaceList[] =
-        "|" "sys/ki_iface.h" "|";
+  "|sys/ki_iface.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3697,14 +3592,14 @@ tTestDesc aZzz_Ki_IfaceTests[] = {
  *  Fix Command Arguments for Zzz_Ki_Iface
  */
 const char* apzZzz_Ki_IfacePatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description 100 - Zzz_Ki fix
+ *  Description  99 - Zzz_Ki fix
  */
 tSCC zZzz_KiName[] =
      "Zzz_Ki";
@@ -3712,7 +3607,7 @@ tSCC zZzz_KiName[] =
  *  File name selection pattern
  */
 tSCC zZzz_KiList[] =
-        "|" "sys/ki.h" "|";
+  "|sys/ki.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3733,14 +3628,14 @@ tTestDesc aZzz_KiTests[] = {
  *  Fix Command Arguments for Zzz_Ki
  */
 const char* apzZzz_KiPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description 101 - Zzz_Ki_Calls fix
+ *  Description 100 - Zzz_Ki_Calls fix
  */
 tSCC zZzz_Ki_CallsName[] =
      "Zzz_Ki_Calls";
@@ -3748,7 +3643,7 @@ tSCC zZzz_Ki_CallsName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Ki_CallsList[] =
-        "|" "sys/ki_calls.h" "|";
+  "|sys/ki_calls.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3769,14 +3664,14 @@ tTestDesc aZzz_Ki_CallsTests[] = {
  *  Fix Command Arguments for Zzz_Ki_Calls
  */
 const char* apzZzz_Ki_CallsPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description 102 - Zzz_Ki_Defs fix
+ *  Description 101 - Zzz_Ki_Defs fix
  */
 tSCC zZzz_Ki_DefsName[] =
      "Zzz_Ki_Defs";
@@ -3784,7 +3679,7 @@ tSCC zZzz_Ki_DefsName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Ki_DefsList[] =
-        "|" "sys/ki_defs.h" "|";
+  "|sys/ki_defs.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3805,14 +3700,14 @@ tTestDesc aZzz_Ki_DefsTests[] = {
  *  Fix Command Arguments for Zzz_Ki_Defs
  */
 const char* apzZzz_Ki_DefsPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description 103 - Zzz_Bad_Fixes fix
+ *  Description 102 - Zzz_Bad_Fixes fix
  */
 tSCC zZzz_Bad_FixesName[] =
      "Zzz_Bad_Fixes";
@@ -3820,7 +3715,7 @@ tSCC zZzz_Bad_FixesName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Bad_FixesList[] =
-        "|" "sundev/ipi_error.h" "|";
+  "|sundev/ipi_error.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3833,14 +3728,14 @@ tSCC zZzz_Bad_FixesList[] =
  *  Fix Command Arguments for Zzz_Bad_Fixes
  */
 const char* apzZzz_Bad_FixesPatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description 104 - Zzz_Time fix
+ *  Description 103 - Zzz_Time fix
  */
 tSCC zZzz_TimeName[] =
      "Zzz_Time";
@@ -3848,7 +3743,7 @@ tSCC zZzz_TimeName[] =
  *  File name selection pattern
  */
 tSCC zZzz_TimeList[] =
-        "|" "sys/time.h" "|";
+  "|sys/time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3869,17 +3764,17 @@ tTestDesc aZzz_TimeTests[] = {
  *  Fix Command Arguments for Zzz_Time
  */
 const char* apzZzz_TimePatch[] = { "sh", "-c",
-    "echo \"Removing incorrect fix to <$file>\" >&2\n"
-       "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
-       "cat > /dev/null",
+    "echo \"Removing incorrect fix to <$file>\" >&2\n\
+rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n\
+cat > /dev/null",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  List of all fixes
  */
-#define  REGEX_COUNT  76
-#define  FIX_COUNT    104
+#define  REGEX_COUNT  73
+#define  FIX_COUNT    103
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAix_SyswaitName,    zAix_SyswaitList,
      apzAix_SyswaitMachs, (regex_t*)NULL,
@@ -3976,15 +3871,10 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      SCO5_STAT_WRAPPERS_TEST_CT, FD_MACH_ONLY,
      aSco5_Stat_WrappersTests,   apzSco5_Stat_WrappersPatch },
 
-  {  zElse_LabelName,    zElse_LabelList,
-     apzElse_LabelMachs, (regex_t*)NULL,
-     ELSE_LABEL_TEST_CT, FD_MACH_ONLY,
-     aElse_LabelTests,   apzElse_LabelPatch },
-
-  {  zEndif_LabelName,    zEndif_LabelList,
-     apzEndif_LabelMachs, (regex_t*)NULL,
-     ENDIF_LABEL_TEST_CT, FD_MACH_ONLY,
-     aEndif_LabelTests,   apzEndif_LabelPatch },
+  {  zEnd_Else_LabelName,    zEnd_Else_LabelList,
+     apzEnd_Else_LabelMachs, (regex_t*)NULL,
+     END_ELSE_LABEL_TEST_CT, FD_MACH_ONLY,
+     aEnd_Else_LabelTests,   apzEnd_Else_LabelPatch },
 
   {  zHp_InlineName,    zHp_InlineList,
      apzHp_InlineMachs, (regex_t*)NULL,
@@ -4103,7 +3993,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zM88k_Multi_InclName,    zM88k_Multi_InclList,
      apzM88k_Multi_InclMachs, (regex_t*)NULL,
-     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY,
+     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aM88k_Multi_InclTests,   apzM88k_Multi_InclPatch },
 
   {  zMachine_NameName,    zMachine_NameList,
@@ -4118,7 +4008,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zMath_Gcc_IfndefsName,    zMath_Gcc_IfndefsList,
      apzMath_Gcc_IfndefsMachs, (regex_t*)NULL,
-     MATH_GCC_IFNDEFS_TEST_CT, FD_MACH_ONLY,
+     MATH_GCC_IFNDEFS_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aMath_Gcc_IfndefsTests,   apzMath_Gcc_IfndefsPatch },
 
   {  zNested_CommentName,    zNested_CommentList,
@@ -4198,7 +4088,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zStdio_Va_ListName,    zStdio_Va_ListList,
      apzStdio_Va_ListMachs, (regex_t*)NULL,
-     STDIO_VA_LIST_TEST_CT, FD_MACH_ONLY,
+     STDIO_VA_LIST_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aStdio_Va_ListTests,   apzStdio_Va_ListPatch },
 
   {  zSun_Bogus_IfdefName,    zSun_Bogus_IfdefList,
@@ -4373,31 +4263,31 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zZzz_Ki_IfaceName,    zZzz_Ki_IfaceList,
      apzZzz_Ki_IfaceMachs, (regex_t*)NULL,
-     ZZZ_KI_IFACE_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_IFACE_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Ki_IfaceTests,   apzZzz_Ki_IfacePatch },
 
   {  zZzz_KiName,    zZzz_KiList,
      apzZzz_KiMachs, (regex_t*)NULL,
-     ZZZ_KI_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_KiTests,   apzZzz_KiPatch },
 
   {  zZzz_Ki_CallsName,    zZzz_Ki_CallsList,
      apzZzz_Ki_CallsMachs, (regex_t*)NULL,
-     ZZZ_KI_CALLS_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_CALLS_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Ki_CallsTests,   apzZzz_Ki_CallsPatch },
 
   {  zZzz_Ki_DefsName,    zZzz_Ki_DefsList,
      apzZzz_Ki_DefsMachs, (regex_t*)NULL,
-     ZZZ_KI_DEFS_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_DEFS_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Ki_DefsTests,   apzZzz_Ki_DefsPatch },
 
   {  zZzz_Bad_FixesName,    zZzz_Bad_FixesList,
      apzZzz_Bad_FixesMachs, (regex_t*)NULL,
-     ZZZ_BAD_FIXES_TEST_CT, FD_MACH_ONLY,
+     ZZZ_BAD_FIXES_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Bad_FixesTests,   apzZzz_Bad_FixesPatch },
 
   {  zZzz_TimeName,    zZzz_TimeList,
      apzZzz_TimeMachs, (regex_t*)NULL,
-     ZZZ_TIME_TEST_CT, FD_MACH_ONLY,
+     ZZZ_TIME_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_TimeTests,   apzZzz_TimePatch }
 };

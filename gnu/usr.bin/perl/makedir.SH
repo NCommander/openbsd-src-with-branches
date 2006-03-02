@@ -1,4 +1,4 @@
-case $CONFIG in
+case $PERL_CONFIG_SH in
 '')
     if test ! -f config.sh; then
 	ln ../config.sh . || \

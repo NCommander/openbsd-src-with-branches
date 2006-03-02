@@ -3,19 +3,56 @@
 #include "perl.h"
 #include "XSUB.h"
 
-/* For older Perls */
-#ifndef dTHR
-#  define dTHR int dummy_thr
-#endif	/* dTHR */ 
-
+/* define DBG_SUB to cause a warning on each subroutine entry. */
 /*#define DBG_SUB 1      */
-/*#define DBG_TIMER 1    */
+
+/* define DBG_TIMER to cause a warning when the timer is turned on and off. */
+/*#define DBG_TIMER 1  */
+
+#ifdef DEBUGGING
+#define ASSERT(x) assert(x)
+#else
+#define ASSERT(x)
+#endif
+
+static CV *
+db_get_cv(pTHX_ SV *sv)
+{
+	CV *cv;
+
+	if (SvIOK(sv)) {			/* if (PERLDB_SUB_NN) { */
+	    cv = INT2PTR(CV*,SvIVX(sv));
+	} else {
+	    if (SvPOK(sv)) {
+		cv = get_cv(SvPVX(sv), TRUE);
+	    } else if (SvROK(sv)) {
+		cv = (CV*)SvRV(sv);
+	    } else {
+		croak("DProf: don't know what subroutine to profile");
+	    }
+	}
+	return cv;
+}
 
 #ifdef DBG_SUB
-#  define DBG_SUB_NOTIFY(A,B) warn(A, B)
+#  define DBG_SUB_NOTIFY(A) dprof_dbg_sub_notify(aTHX_ A)
+void
+dprof_dbg_sub_notify(pTHX_ SV *Sub) {
+    CV   *cv = db_get_cv(aTHX_ Sub);
+    GV   *gv = cv ? CvGV(cv) : NULL;
+    if (cv && gv) {
+	warn("XS DBsub(%s::%s)\n",
+	     ((GvSTASH(gv) && HvNAME(GvSTASH(gv))) ?
+	      HvNAME(GvSTASH(gv)) : "(null)"),
+	     GvNAME(gv));
+    } else {
+	warn("XS DBsub(unknown) at %x", Sub);
+    }
+}
 #else
-#  define DBG_SUB_NOTIFY(A,B)  /* nothing */
+#  define DBG_SUB_NOTIFY(A)  /* nothing */
 #endif
+
 
 #ifdef DBG_TIMER
 #  define DBG_TIMER_NOTIFY(A) warn(A)
@@ -28,6 +65,7 @@
 #  define HZ ((I32)CLK_TCK)
 #  define DPROF_HZ HZ
 #  include <starlet.h>  /* prototype for sys$gettim() */
+#  include <lib$routines.h>
 #  define Times(ptr) (dprof_times(aTHX_ ptr))
 #else
 #  ifndef HZ
@@ -71,7 +109,7 @@ typedef struct {
     U32		dprof_ticks;
     char*	out_file_name;	/* output file (defaults to tmon.out) */
     PerlIO*	fp;		/* pointer to tmon.out file */
-    long	TIMES_LOCATION;	/* Where in the file to store the time totals */
+    Off_t	TIMES_LOCATION;	/* Where in the file to store the time totals */
     int		SAVE_STACK;	/* How much data to buffer until end of run */
     int		prof_pid;	/* pid of profiled process */
     struct tms	prof_start;
@@ -87,11 +125,12 @@ typedef struct {
     PROFANY*	profstack;
     int		profstack_max;
     int		profstack_ix;
-    HV*		cv_hash;
+    HV*		cv_hash;	/* cache of CV to identifier mappings */
+    SV*		key_hash;	/* key for cv_hash */
     U32		total;
     U32		lastid;
     U32		default_perldb;
-    U32		depth;
+    UV		depth;
 #ifdef OS2
     ULONG	frequ;
     long long	start_cnt;
@@ -125,6 +164,7 @@ prof_state_t g_prof_state;
 #define g_profstack_max		g_prof_state.profstack_max
 #define g_profstack_ix		g_prof_state.profstack_ix
 #define g_cv_hash		g_prof_state.cv_hash
+#define g_key_hash		g_prof_state.key_hash
 #define g_total			g_prof_state.total
 #define g_lastid		g_prof_state.lastid
 #define g_default_perldb	g_prof_state.default_perldb
@@ -276,19 +316,25 @@ prof_dump_until(pTHX_ long ix)
 }
 
 static void
+set_cv_key(pTHX_ CV *cv, char *pname, char *gname)
+{
+	SvGROW(g_key_hash, sizeof(CV**) + strlen(pname) + strlen(gname) + 3);
+	sv_setpvn(g_key_hash, (char*)&cv, sizeof(CV**));
+	sv_catpv(g_key_hash, pname);
+	sv_catpv(g_key_hash, "::");
+	sv_catpv(g_key_hash, gname);
+}
+
+static void
 prof_mark(pTHX_ opcode ptype)
 {
     struct tms t;
     clock_t realtime, rdelta, udelta, sdelta;
-    char *name, *pv;
-    char *hvname;
-    STRLEN len;
-    SV *sv;
     U32 id;
     SV *Sub = GvSV(PL_DBsub);	/* name of current sub */
 
     if (g_SAVE_STACK) {
-	if (g_profstack_ix + 5 > g_profstack_max) {
+	if (g_profstack_ix + 10 > g_profstack_max) {
 		g_profstack_max = g_profstack_max * 3 / 2;
 		Renew(g_profstack, g_profstack_max, PROFANY);
 	}
@@ -300,6 +346,7 @@ prof_mark(pTHX_ opcode ptype)
     sdelta = t.tms_stime - g_otms_stime;
     if (rdelta || udelta || sdelta) {
 	if (g_SAVE_STACK) {
+	    ASSERT(g_profstack_ix + 4 <= g_profstack_max);
 	    g_profstack[g_profstack_ix++].ptype = OP_TIME;
 	    g_profstack[g_profstack_ix++].tms_utime = udelta;
 	    g_profstack[g_profstack_ix++].tms_stime = sdelta;
@@ -320,20 +367,23 @@ prof_mark(pTHX_ opcode ptype)
 	SV **svp;
 	char *gname, *pname;
 	CV *cv;
+	GV *gv;
 
-	cv = INT2PTR(CV*,SvIVX(Sub));
-	svp = hv_fetch(g_cv_hash, (char*)&cv, sizeof(CV*), TRUE);
+	cv = db_get_cv(aTHX_ Sub);
+	gv = CvGV(cv);
+	pname = ((GvSTASH(gv) && HvNAME(GvSTASH(gv))) 
+		 ? HvNAME(GvSTASH(gv)) 
+		 : "(null)");
+	gname = GvNAME(gv);
+
+	set_cv_key(aTHX_ cv, pname, gname);
+	svp = hv_fetch(g_cv_hash, SvPVX(g_key_hash), SvCUR(g_key_hash), TRUE);
 	if (!SvOK(*svp)) {
-	    GV *gv = CvGV(cv);
-		
 	    sv_setiv(*svp, id = ++g_lastid);
-	    pname = ((GvSTASH(gv) && HvNAME(GvSTASH(gv))) 
-		     ? HvNAME(GvSTASH(gv)) 
-		     : "(null)");
-	    gname = GvNAME(gv);
 	    if (CvXSUB(cv) == XS_Devel__DProf_END)
 		return;
 	    if (g_SAVE_STACK) { /* Store it for later recording  -JH */
+		ASSERT(g_profstack_ix + 4 <= g_profstack_max);
 		g_profstack[g_profstack_ix++].ptype = OP_GV;
 		g_profstack[g_profstack_ix++].id = id;
 		g_profstack[g_profstack_ix++].name = pname;
@@ -356,6 +406,7 @@ prof_mark(pTHX_ opcode ptype)
 
     g_total++;
     if (g_SAVE_STACK) { /* Store it for later recording  -JH */
+	ASSERT(g_profstack_ix + 2 <= g_profstack_max);
 	g_profstack[g_profstack_ix++].ptype = ptype;
 	g_profstack[g_profstack_ix++].id = id;
 
@@ -388,12 +439,11 @@ prof_mark(pTHX_ opcode ptype)
 static void
 test_time(pTHX_ clock_t *r, clock_t *u, clock_t *s)
 {
-    dTHR;
     CV *cv = perl_get_cv("Devel::DProf::NONESUCH_noxs", FALSE);
     int i, j, k = 0;
     HV *oldstash = PL_curstash;
     struct tms t1, t2;
-    clock_t realtime1, realtime2;
+    clock_t realtime1 = 0, realtime2 = 0;
     U32 ototal = g_total;
     U32 ostack = g_SAVE_STACK;
     U32 operldb = PL_perldb;
@@ -477,8 +527,6 @@ prof_record(pTHX)
     /* Now that we know the runtimes, fill them in at the recorded
        location -JH */
 
-    clock_t r, u, s;
-
     if (g_SAVE_STACK) {
 	prof_dump_until(aTHX_ g_profstack_ix);
     }
@@ -502,13 +550,13 @@ prof_record(pTHX)
 static void
 check_depth(pTHX_ void *foo)
 {
-    U32 need_depth = (U32)foo;
+    U32 need_depth = PTR2UV(foo);
     if (need_depth != g_depth) {
 	if (need_depth > g_depth) {
 	    warn("garbled call depth when profiling");
 	}
 	else {
-	    I32 marks = g_depth - need_depth;
+	    IV marks = g_depth - need_depth;
 
 /* 	    warn("Check_depth: got %d, expected %d\n", g_depth, need_depth); */
 	    while (marks--) {
@@ -524,7 +572,7 @@ check_depth(pTHX_ void *foo)
 
 XS(XS_DB_sub)
 {
-    dXSARGS;
+    dMARK;
     dORIGMARK;
     SV *Sub = GvSV(PL_DBsub);		/* name of current sub */
 
@@ -532,21 +580,32 @@ XS(XS_DB_sub)
     /* profile only the interpreter that loaded us */
     if (g_THX != aTHX) {
         PUSHMARK(ORIGMARK);
-        perl_call_sv(INT2PTR(SV*,SvIV(Sub)), GIMME | G_NODEBUG);
+        perl_call_sv((SV*)db_get_cv(aTHX_ Sub), GIMME_V | G_NODEBUG);
     }
     else
 #endif
     {
 	HV *oldstash = PL_curstash;
+	I32 old_scopestack_ix = PL_scopestack_ix;
+	I32 old_cxstack_ix = cxstack_ix;
 
-        DBG_SUB_NOTIFY("XS DBsub(%s)\n", SvPV_nolen(Sub));
+        DBG_SUB_NOTIFY(Sub);
 
-	SAVEDESTRUCTOR_X(check_depth, (void*)g_depth);
+	SAVEDESTRUCTOR_X(check_depth, INT2PTR(void*,g_depth));
 	g_depth++;
 
         prof_mark(aTHX_ OP_ENTERSUB);
         PUSHMARK(ORIGMARK);
-        perl_call_sv(INT2PTR(SV*,SvIV(Sub)), GIMME | G_NODEBUG);
+        perl_call_sv((SV*)db_get_cv(aTHX_ Sub), GIMME_V | G_NODEBUG);
+        PL_curstash = oldstash;
+
+	/* Make sure we are on the same context and scope as before the call
+	 * to the sub. If the called sub was exited via a goto, next or
+	 * last then this will try to croak(), however perl may still crash
+	 * with a segfault. */
+	if (PL_scopestack_ix != old_scopestack_ix || cxstack_ix != old_cxstack_ix)
+	    croak("panic: Devel::DProf inconsistent subroutine return");
+
         prof_mark(aTHX_ OP_LEAVESUB);
 	g_depth--;
     }
@@ -578,7 +637,7 @@ XS(XS_DB_goto)
                 HV *oldstash = PL_curstash;
 		SV *Sub = GvSV(PL_DBsub);	/* name of current sub */
                 /* SP -= items;  added by xsubpp */
-                DBG_SUB_NOTIFY("XS DBsub(%s)\n", SvPV_nolen(Sub));
+                DBG_SUB_NOTIFY(Sub);
 
                 sv_setiv(PL_DBsingle, 0);	/* disable DB single-stepping */
 
@@ -586,7 +645,7 @@ XS(XS_DB_goto)
                 PUSHMARK(ORIGMARK);
 
                 PL_curstash = PL_debstash;	/* To disable debugging of perl_call_sv */
-                perl_call_sv(Sub, GIMME);
+                perl_call_sv(Sub, GIMME_V);
                 PL_curstash = oldstash;
 
                 prof_mark(aTHX_ OP_LEAVESUB);
@@ -642,7 +701,7 @@ BOOT:
          * while we do this.
          */
         {
-	    I32 warn_tmp = PL_dowarn;
+	    bool warn_tmp = PL_dowarn;
 	    PL_dowarn = 0;
 	    newXS("DB::sub", XS_DB_sub, file);
 	    newXS("DB::goto", XS_DB_goto, file);
@@ -677,6 +736,7 @@ BOOT:
 
 	g_default_perldb = PERLDBf_NONAME | PERLDBf_SUB | PERLDBf_GOTO;
 	g_cv_hash = newHV();
+	g_key_hash = newSV(256);
         g_prof_pid = (int)getpid();
 
 	New(0, g_profstack, g_profstack_max, PROFANY);
