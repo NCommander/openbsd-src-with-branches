@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nge.c,v 1.48 2005/11/23 11:30:14 mickey Exp $	*/
+/*	$OpenBSD: if_nge.c,v 1.49 2006/02/16 20:54:35 brad Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -833,7 +833,7 @@ nge_attach(parent, self, aux)
 	/*
 	 * A NatSemi chip was detected. Inform the world.
 	 */
-	printf(", address: %s\n", ether_sprintf(eaddr));
+	printf(", address %s\n", ether_sprintf(eaddr));
 
 	bcopy(eaddr, (char *)&sc->arpcom.ac_enaddr, ETHER_ADDR_LEN);
 
