@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx_openbsd.c,v 1.22 2005/11/02 03:27:39 krw Exp $	*/
+/*	$OpenBSD: aic79xx_openbsd.c,v 1.23 2005/12/28 02:43:54 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -545,10 +545,10 @@ ahd_setup_data(struct ahd_softc *ahd, struct scsi_xfer *xs,
 	
 	hscb->cdb_len = xs->cmdlen;
 	if (hscb->cdb_len > MAX_CDB_LEN) {
-		aic_set_transaction_status(scb, CAM_REQ_INVALID);
 		ahd_lock(ahd, &s);
 		ahd_free_scb(ahd, scb);
 		ahd_unlock(ahd, &s);
+		xs->error = XS_DRIVER_STUFFUP;
 		xs->flags |= ITSDONE;
 		scsi_done(xs);
 		return (COMPLETE);
