@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflog.c,v 1.14 2005/05/27 20:17:31 dhartmei Exp $	*/
+/*	$OpenBSD: if_pflog.c,v 1.15 2005/07/31 03:52:18 pascoe Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -123,7 +123,7 @@ pflogstart(struct ifnet *ifp)
 	int s;
 
 	for (;;) {
-		s = splimp();
+		s = splnet();
 		IF_DROP(&ifp->if_snd);
 		IF_DEQUEUE(&ifp->if_snd, m);
 		splx(s);

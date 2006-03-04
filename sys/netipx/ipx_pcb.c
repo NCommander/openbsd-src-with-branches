@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_pcb.c,v 1.9 2003/06/02 23:28:16 millert Exp $	*/
+/*	$OpenBSD: ipx_pcb.c,v 1.10 2003/12/10 07:22:43 itojun Exp $	*/
 
 /*-
  *
@@ -317,7 +317,7 @@ ipx_pcbnotify(dst, errno, notify, param)
 	long param;
 {
 	struct ipxpcb *ipxp, *oinp;
-	int s = splimp();
+	int s = splnet();
 
 	for (ipxp = ipxcbtable.ipxpt_queue.cqh_first;
 	    ipxp != (struct ipxpcb *)&ipxcbtable.ipxpt_queue;) {

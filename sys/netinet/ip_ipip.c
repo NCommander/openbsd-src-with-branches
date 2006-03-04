@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.32 2004/11/17 12:06:16 markus Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.33 2005/07/31 03:52:19 pascoe Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -365,7 +365,7 @@ ipip_input(struct mbuf *m, int iphlen, struct ifnet *gifp)
 		    m);
 #endif
 
-	s = splimp();			/* isn't it already? */
+	s = splnet();			/* isn't it already? */
 	if (IF_QFULL(ifq)) {
 		IF_DROP(ifq);
 		m_freem(m);

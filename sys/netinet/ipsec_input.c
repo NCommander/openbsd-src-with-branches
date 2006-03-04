@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.76 2005/07/31 03:52:19 pascoe Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.77 2006/01/13 10:11:23 mpf Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -676,7 +676,7 @@ int
 ah4_input_cb(struct mbuf *m, ...)
 {
 	struct ifqueue *ifq = &ipintrq;
-	int s = splimp();
+	int s = splnet();
 
 	/*
 	 * Interface pointer is already in first mbuf; chop off the
@@ -731,7 +731,7 @@ int
 esp4_input_cb(struct mbuf *m, ...)
 {
 	struct ifqueue *ifq = &ipintrq;
-	int s = splimp();
+	int s = splnet();
 
 	/*
 	 * Interface pointer is already in first mbuf; chop off the
@@ -773,7 +773,7 @@ int
 ipcomp4_input_cb(struct mbuf *m, ...)
 {
 	struct ifqueue *ifq = &ipintrq;
-	int s = splimp();
+	int s = splnet();
 
 	/*
 	 * Interface pointer is already in first mbuf; chop off the

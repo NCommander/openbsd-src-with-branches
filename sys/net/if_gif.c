@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.32 2005/07/31 03:52:18 pascoe Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.33 2006/01/04 06:04:42 canacar Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -166,7 +166,7 @@ gif_start(ifp)
 #endif /* NBRIDGE */
 
 	for (;;) {
-	        s = splimp();
+	        s = splnet();
 		IF_DEQUEUE(&ifp->if_snd, m);
 		splx(s);
 

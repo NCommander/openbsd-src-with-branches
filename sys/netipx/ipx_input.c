@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipx_input.c,v 1.18 2004/06/20 21:09:02 tholo Exp $	*/
+/*	$OpenBSD: ipx_input.c,v 1.19 2004/06/20 21:33:00 tholo Exp $	*/
 
 /*-
  *
@@ -129,7 +129,7 @@ next:
 	 * Get next datagram off input queue and get IPX header
 	 * in first mbuf.
 	 */
-	s = splimp();
+	s = splnet();
 	IF_DEQUEUE(&ipxintrq, m);
 	splx(s);
 	if (m == NULL) {

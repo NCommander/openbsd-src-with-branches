@@ -1,4 +1,4 @@
-/*	$OpenBSD: aarp.c,v 1.4 2002/03/14 01:27:10 millert Exp $	*/
+/*	$OpenBSD: aarp.c,v 1.5 2003/06/06 09:47:21 itojun Exp $	*/
 
 /*
  * Copyright (c) 1990,1991 Regents of The University of Michigan.
@@ -152,7 +152,7 @@ aarptimer(v)
 	if ( ++aat->aat_timer < (( aat->aat_flags & ATF_COM ) ?
 		AARPT_KILLC : AARPT_KILLI ))
 	    continue;
-	s = splimp();
+	s = splnet();
 	aarptfree( aat );
 	splx( s );
     }
@@ -291,7 +291,7 @@ aarpresolve( ac, m, destsat, desten )
 	return( 1 );
     }
 
-    s = splimp();
+    s = splnet();
     AARPTAB_LOOK( aat, destsat->sat_addr );
     if ( aat == 0 ) {			/* No entry */
 	aat = aarptnew( &destsat->sat_addr );

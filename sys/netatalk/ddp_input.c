@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_input.c,v 1.2 1998/06/11 06:18:43 deraadt Exp $	*/
+/*	$OpenBSD: ddp_input.c,v 1.3 2002/03/14 01:27:10 millert Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -100,7 +100,7 @@ atintr()
     int			s;
 
     for (;;) {
-	s = splimp();
+	s = splnet();
 
 	IF_DEQUEUE( &atintrq2, m );
 
@@ -125,7 +125,7 @@ atintr()
     }
 
     for (;;) {
-	s = splimp();
+	s = splnet();
 
 	IF_DEQUEUE( &atintrq1, m );
 
