@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.40 2005/06/17 09:40:48 markus Exp $	*/
+/*	$OpenBSD: top.c,v 1.41 2005/12/04 23:10:06 tedu Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -499,6 +499,15 @@ restart:
 
 				/* wait for the rest of it .... */
 				pause();
+				if (leaveflag)
+					exit(0);
+				if (tstopflag) {
+					(void) signal(SIGTSTP, SIG_DFL);
+					(void) kill(0, SIGTSTP);
+					/* reset the signal handler */
+					(void) signal(SIGTSTP, tstop);
+					tstopflag = 0;
+				}
 			} else {
 				while (no_command)
 					if (rundisplay())
@@ -536,10 +545,8 @@ rundisplay(void)
 	pfd[0].fd = STDIN_FILENO;
 	pfd[0].events = POLLIN;
 
-	if (leaveflag) {
-		end_screen();
-		exit(0);
-	}
+	if (leaveflag)
+		quit(0);
 	if (tstopflag) {
 		/* move to the lower left */
 		end_screen();
