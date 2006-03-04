@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mail6.nr,v 1.4 2003/06/03 02:56:11 millert Exp $
+.\"	$OpenBSD: mail6.nr,v 1.5 2004/06/04 00:04:54 jmc Exp $
 .\"
 .\" Copyright (c) 1980, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -79,7 +79,7 @@ is a shorthand way of doing
 Use the
 .b \-v
 flag when invoking sendmail. This feature may also be enabled
-by setting the the option "verbose".
+by setting the option "verbose".
 .pp
 The following command line flags are also recognized, but are
 intended for use by programs invoking
