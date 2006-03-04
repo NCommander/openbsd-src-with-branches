@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: xbox.c,v 1.1 2005/03/05 01:44:52 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -57,7 +57,7 @@ struct cfattach xbox_ca = {
 };
 
 struct cfdriver xbox_cd = {
-	NULL, "xbox", DV_IFNET
+	NULL, "xbox", DV_DULL
 };
 
 int
