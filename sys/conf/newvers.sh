@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: newvers.sh,v 1.74 2006/02/27 01:43:27 deraadt Exp $
+#	$OpenBSD: newvers.sh,v 1.72 2005/09/05 20:43:25 miod Exp $
 #	$NetBSD: newvers.sh,v 1.17.2.1 1995/10/12 05:17:11 jtc Exp $
 #
 # Copyright (c) 1984, 1986, 1990, 1993
@@ -67,9 +67,9 @@ ost="OpenBSD"
 osr="3.9"
 
 cat >vers.c <<eof
-#define STATUS "-beta"
-#if 0
 #define STATUS "-current"
+#if 0
+#define STATUS "-beta"
 #define STATUS ""			/* release */
 #endif
 
