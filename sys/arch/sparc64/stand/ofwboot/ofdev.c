@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofdev.c,v 1.5 2003/04/06 18:54:20 ho Exp $	*/
+/*	$OpenBSD: ofdev.c,v 1.6 2003/05/13 01:48:55 jason Exp $	*/
 /*	$NetBSD: ofdev.c,v 1.1 2000/08/20 14:58:41 mrg Exp $	*/
 
 /*
@@ -344,7 +344,7 @@ search_label(devp, off, buf, lp, off0)
 	struct sun_disklabel *slp;
 	int error;
 	
-	/* minimal requirements for archtypal disk label */
+	/* minimal requirements for archetypal disk label */
 	if (lp->d_secperunit == 0)
 		lp->d_secperunit = 0x1fffffff;
 	lp->d_npartitions = 1;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.20 2005/12/22 03:02:48 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.21 2006/01/22 00:40:01 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -243,7 +243,7 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 	int i;
 	struct disklabel minilabel, fallbacklabel;
 
-	/* minimal requirements for archtypal disk label */
+	/* minimal requirements for archetypal disk label */
 	if (lp->d_secsize < DEV_BSIZE)
 		lp->d_secsize = DEV_BSIZE;
 	if (lp->d_secperunit == 0)

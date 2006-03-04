@@ -1,4 +1,4 @@
-/* $OpenBSD: osf1_mmap.c,v 1.4 2001/11/06 19:53:17 miod Exp $ */
+/* $OpenBSD: osf1_mmap.c,v 1.5 2001/11/07 01:18:00 art Exp $ */
 /* $NetBSD: osf1_mmap.c,v 1.5 2000/04/11 05:26:27 chs Exp $ */
 
 /*
@@ -142,7 +142,7 @@ osf1_sys_mmap(p, v, retval)
 	 *
 	 * The OSF/1 mmap() function attempts to map non-fixed entries
 	 * near the address that the user specified.  Therefore, for
-	 * non-fixed entires we try to find space in the address space
+	 * non-fixed entries we try to find space in the address space
 	 * starting at that address.  If the user specified zero, we
 	 * start looking at at least NBPG, so that programs can't
 	 * accidentally live through deferencing NULL.
