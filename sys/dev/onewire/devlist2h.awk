@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: devlist2h.awk,v 1.1 2006/03/04 16:27:03 grange Exp $
 
 #
 # Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -25,10 +25,10 @@ NR == 1	{
 	VERSION = $0
 	gsub("\\$", "", VERSION)
 
-	printf("/*\t$OpenBSD$\t*/\n\n" \
+	printf("/*\t\$OpenBSD\$\t*/\n\n" \
 	       "/*\n * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.\n" \
 	       " *\n * Generated from:\n *\t%s\n */\n\n", VERSION) > hfile
-	printf("/*\t$OpenBSD$\t*/\n\n" \
+	printf("/*\t\$OpenBSD\$\t*/\n\n" \
 	       "/*\n * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.\n" \
 	       " *\n * Generated from:\n *\t%s\n */\n\n", VERSION) > dfile
 	printf("static const struct onewire_family " \
