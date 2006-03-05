@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibat.c,v 1.18 2006/02/22 15:29:23 marco Exp $ */
+/* $OpenBSD: acpibat.c,v 1.19 2006/02/22 19:28:17 marco Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -127,7 +127,8 @@ acpibat_attach(struct device *parent, struct device *self, void *aux)
 
 	}
 
-	aml_register_notify(sc->sc_devnode->parent, aa->aaa_dev, acpibat_notify, sc);
+	aml_register_notify(sc->sc_devnode->parent, aa->aaa_dev,
+	    acpibat_notify, sc);
 }
 
 /* XXX this is for debug only, remove later */
