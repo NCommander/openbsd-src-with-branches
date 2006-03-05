@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.84 2005/01/17 10:18:03 itojun Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.85 2005/10/22 06:38:54 brad Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1672,12 +1672,9 @@ ni6_addrs(ni6, m, ifpp, subj)
 		}
 	}
 
-	for (ifp = TAILQ_FIRST(&ifnet); ifp; ifp = TAILQ_NEXT(ifp, if_list))
-	{
+	TAILQ_FOREACH(ifp, &ifnet, if_list) {
 		addrsofif = 0;
-		for (ifa = ifp->if_addrlist.tqh_first; ifa;
-		     ifa = ifa->ifa_list.tqe_next)
-		{
+		TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
 			if (ifa->ifa_addr->sa_family != AF_INET6)
 				continue;
 			ifa6 = (struct in6_ifaddr *)ifa;
@@ -1756,11 +1753,8 @@ ni6_store_addrs(ni6, nni6, ifp0, resid)
 
   again:
 
-	for (; ifp; ifp = TAILQ_NEXT(ifp, if_list))
-	{
-		for (ifa = ifp->if_addrlist.tqh_first; ifa;
-		     ifa = ifa->ifa_list.tqe_next)
-		{
+	for (; ifp != TAILQ_END(&ifnet); ifp = TAILQ_NEXT(ifp, if_list)) {
+		TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
 			if (ifa->ifa_addr->sa_family != AF_INET6)
 				continue;
 			ifa6 = (struct in6_ifaddr *)ifa;

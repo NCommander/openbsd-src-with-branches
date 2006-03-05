@@ -1,4 +1,4 @@
-/*	$OpenBSD: lfs_vfsops.c,v 1.21 2005/11/06 00:24:17 pedro Exp $	*/
+/*	$OpenBSD: lfs_vfsops.c,v 1.22 2005/12/28 20:48:18 pedro Exp $	*/
 /*	$NetBSD: lfs_vfsops.c,v 1.11 1996/03/25 12:53:35 pk Exp $	*/
 
 /*
@@ -378,7 +378,7 @@ lfs_unmount(mp, mntflags, p)
 	fs->lfs_clean = 1;
 	if ((error = VFS_SYNC(mp, 1, p->p_ucred, p)) != 0)
 		return (error);
-	if (fs->lfs_ivnode->v_dirtyblkhd.lh_first)
+	if (!LIST_EMPTY(&fs->lfs_ivnode->v_dirtyblkhd))
 		panic("lfs_unmount: still dirty blocks on ifile vnode");
 	vrele(fs->lfs_ivnode);
 	vgone(fs->lfs_ivnode);

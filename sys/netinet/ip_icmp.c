@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.c,v 1.68 2005/07/31 03:30:55 pascoe Exp $	*/
+/*	$OpenBSD: ip_icmp.c,v 1.69 2005/10/17 08:43:34 henning Exp $	*/
 /*	$NetBSD: ip_icmp.c,v 1.19 1996/02/13 23:42:22 christos Exp $	*/
 
 /*
@@ -631,7 +631,7 @@ icmp_reflect(struct mbuf *m)
 	 * use dst as the src for the reply.  For broadcast, use
 	 * the address which corresponds to the incoming interface.
 	 */
-	for (ia = in_ifaddr.tqh_first; ia; ia = ia->ia_list.tqe_next) {
+	TAILQ_FOREACH(ia, &in_ifaddr, ia_list) {
 		if (t.s_addr == ia->ia_addr.sin_addr.s_addr)
 			break;
 		if ((ia->ia_ifp->if_flags & IFF_BROADCAST) &&

@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_subr.c,v 1.23 2005/11/19 02:18:01 pedro Exp $	*/
+/*	$OpenBSD: procfs_subr.c,v 1.24 2005/12/11 21:30:31 miod Exp $	*/
 /*	$NetBSD: procfs_subr.c,v 1.15 1996/02/12 15:01:42 christos Exp $	*/
 
 /*
@@ -107,7 +107,7 @@ procfs_allocvp(mp, vpp, pid, pfs_type)
 	if (error)
 		return (error);
 loop:
-	for (pfs = pfshead.tqh_first; pfs != NULL; pfs = pfs->list.tqe_next) {
+	TAILQ_FOREACH(pfs, &pfshead, list) {
 		vp = PFSTOV(pfs);
 		if (pfs->pfs_pid == pid &&
 		    pfs->pfs_type == pfs_type &&
