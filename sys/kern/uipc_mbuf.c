@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.71 2005/12/31 19:18:05 krw Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.72 2006/01/05 05:05:06 jsg Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -146,7 +146,7 @@ m_reclaim(void *arg, int flags)
 {
 	struct domain *dp;
 	struct protosw *pr;
-	int s = splimp();
+	int s = splvm();
 
 	for (dp = domains; dp; dp = dp->dom_next)
 		for (pr = dp->dom_protosw; pr < dp->dom_protoswNPROTOSW; pr++)
