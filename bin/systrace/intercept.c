@@ -1,4 +1,4 @@
-/*	$OpenBSD: intercept.c,v 1.48 2004/06/24 21:00:10 marius Exp $	*/
+/*	$OpenBSD: intercept.c,v 1.49 2004/07/07 07:31:40 marius Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -323,16 +323,12 @@ intercept_run(int bg, int fd, uid_t uid, gid_t gid,
 
 		/* Change to different user */
 		if (uid || gid) {
+			if (setresgid(gid, gid, gid) == -1)
+				err(1, "setresgid");
 			if (setgroups(1, &gid) == -1)
 				err(1, "setgroups");
-			if (setgid(gid) == -1)
-				err(1, "setgid");
-			if (setegid(gid) == -1)
-				err(1, "setegid");
-			if (setuid(uid) == -1)
-				err(1, "setuid");
-			if (seteuid(uid) == -1)
-				err(1, "seteuid");
+			if (setresuid(uid, uid, uid) == -1)
+				err(1, "setresuid");
 		}
 		execvp(path, argv);
 

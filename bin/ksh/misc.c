@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.27 2005/03/28 21:28:22 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.28 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -293,10 +293,11 @@ change_flag(enum sh_flag f,
 #endif /* EDIT */
 	/* Turning off -p? */
 	if (f == FPRIVILEGED && oldval && !newval) {
-		seteuid(ksheuid = getuid());
-		setuid(ksheuid);
-		setegid(getgid());
-		setgid(getgid());
+		gid_t gid = getgid();
+
+		setresgid(gid, gid, gid);
+		setgroups(1, &gid);
+		setresuid(ksheuid, ksheuid, ksheuid);
 	} else if (f == FPOSIX && newval) {
 #ifdef BRACE_EXPAND
 		Flag(FBRACEEXPAND) = 0
