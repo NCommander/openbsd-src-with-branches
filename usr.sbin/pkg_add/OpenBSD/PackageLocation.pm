@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageLocator.pm,v 1.51 2006/03/04 11:28:03 espie Exp $
+# $OpenBSD: PackageLocation.pm,v 1.1 2006/03/04 13:13:05 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -228,6 +228,7 @@ sub deref
 {
 	my $self = shift;
 	$self->{fh} = undef;
+	$self->{pid} = undef;
 	$self->{_archive} = undef;
 }
 
