@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.54 2006/02/24 14:34:56 xsa Exp $	*/
+/*	$OpenBSD: co.c,v 1.55 2006/03/05 14:18:56 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -323,6 +323,9 @@ checkout_rev(RCSFILE *file, RCSNUM *frev, const char *dst, int flags,
 		if ((verbose == 1) && !(flags & NEWFILE))
 			printf(" (unlocked)\n");
 	}
+
+	if ((verbose == 1) && !(flags & NEWFILE))
+		printf("\n");
 
 	if (flags & CO_LOCK) {
 		lcount++;
