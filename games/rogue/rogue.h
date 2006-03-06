@@ -1,4 +1,4 @@
-/*	$OpenBSD: rogue.h,v 1.13 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: rogue.h,v 1.14 2004/01/21 19:12:13 espie Exp $	*/
 /*	$NetBSD: rogue.h,v 1.4 1995/04/24 12:25:04 cgd Exp $	*/
 
 /*
@@ -504,7 +504,7 @@ void	eat(void);
 void	edit_opts(void);
 void	env_get_value(char **, char *, boolean);
 void	error_save(int);
-void	fight(int);
+void	fight(boolean);
 void	fill_it(int, boolean);
 void	fill_out_level(void);
 boolean	flame_broil(object *);
