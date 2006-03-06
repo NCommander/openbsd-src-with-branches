@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.107 2006/03/06 09:41:53 deraadt Exp $	*/
+/*	$OpenBSD: ci.c,v 1.108 2006/03/06 14:49:54 jmc Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -488,7 +488,6 @@ checkin_update(struct checkin_params *pb)
 
 	/* Load file contents */
 	if ((bp = cvs_buf_load(pb->filename, BUF_AUTOEXT)) == NULL) {
-		cvs_log(LP_ERR, "failed to load '%s'", pb->filename);
 		rcs_close(pb->file);
 		return (-1);
 	}
@@ -598,7 +597,6 @@ checkin_init(struct checkin_params *pb)
 
 	/* Load file contents */
 	if ((bp = cvs_buf_load(pb->filename, BUF_AUTOEXT)) == NULL) {
-		cvs_log(LP_ERR, "failed to load '%s'", pb->filename);
 		rcs_close(pb->file);
 		return (-1);
 	}
