@@ -1,4 +1,4 @@
-/*	$OpenBSD: save.c,v 1.9 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: save.c,v 1.10 2004/01/21 19:12:13 espie Exp $	*/
 /*	$NetBSD: save.c,v 1.3 1995/04/22 10:28:21 cgd Exp $	*/
 
 /*
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)save.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: save.c,v 1.9 2003/06/03 03:01:41 millert Exp $";
+static const char rcsid[] = "$OpenBSD: save.c,v 1.10 2004/01/21 19:12:13 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -180,7 +180,7 @@ restore(fname)
 	int new_file_id, saved_file_id;
 
 	if (((new_file_id = md_get_file_id(fname)) == -1) ||
-			((fp = open(fname, O_RDONLY, 0)) == NULL)) {
+			((fp = open(fname, O_RDONLY, 0)) == -1)) {
 		clean_up("cannot open file");
 		return;	/* NOT REACHED */
 	}
