@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.30 2006/01/05 10:28:24 xsa Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.31 2006/03/05 14:23:07 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -289,7 +289,7 @@ rcsdiff_rev(RCSFILE *file, RCSNUM *rev1, RCSNUM *rev2, const char *filename)
 
 	if (utimes(path2, (const struct timeval *)&tv2) < 0)
 		cvs_log(LP_ERRNO, "error setting utimes");
-	
+
 	cvs_diffreg(path1, path2, NULL);
 	(void)unlink(path1);
 	(void)unlink(path2);
