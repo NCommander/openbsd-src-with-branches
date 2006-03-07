@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.181 2006/02/10 14:34:40 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.182 2006/03/04 19:33:22 miod Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2200,18 +2200,25 @@ get_id(struct peer *newpeer)
 {
 	struct peer	*p;
 
-	if (newpeer->conf.remote_addr.af)
-		for (p = peer_l_old; p != NULL; p = p->next)
+	for (p = peer_l_old; p != NULL; p = p->next)
+		if (newpeer->conf.remote_addr.af) {
 			if (!memcmp(&p->conf.remote_addr,
 			    &newpeer->conf.remote_addr,
 			    sizeof(p->conf.remote_addr))) {
 				newpeer->conf.id = p->conf.id;
 				return (0);
 			}
+		} else {	/* newpeer is a group */
+			if (strcmp(newpeer->conf.group, p->conf.group) == 0) {
+				newpeer->conf.id = p->conf.groupid;
+				return (0);
+			}
+		}
 
 	/* new one */
 	for (; id < UINT_MAX / 2; id++) {
-		for (p = peer_l_old; p != NULL && p->conf.id != id; p = p->next)
+		for (p = peer_l_old; p != NULL &&
+		    p->conf.id != id && p->conf.groupid != id; p = p->next)
 			;	/* nothing */
 		if (p == NULL) {	/* we found a free id */
 			newpeer->conf.id = id++;
