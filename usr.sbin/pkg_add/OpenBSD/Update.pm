@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Update.pm,v 1.61 2006/02/21 19:20:17 espie Exp $
+# $OpenBSD: Update.pm,v 1.62 2006/03/04 11:31:18 espie Exp $
 #
 # Copyright (c) 2004 Marc Espie <espie@openbsd.org>
 #
@@ -119,7 +119,11 @@ sub find
 		} else {
 			my $result = OpenBSD::Interactive::choose1($pkgname, $state->{interactive}, sort @l2);
 			if (defined $result) {
-				push(@$new, $result);
+				if (defined $found && $found eq  $result && !$plist->uses_old_libs()) {
+					print "No need to update $pkgname\n";
+				} else {
+					push(@$new, $result);
+				}
 			} else {
 				$state->{issues} = 1;
 			}
