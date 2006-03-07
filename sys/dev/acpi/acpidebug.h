@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: acpidebug.h,v 1.1 2006/03/05 14:46:46 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@openbsd.org>
  *
@@ -15,4 +15,5 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+void db_acpi_disasm(db_expr_t, int, db_expr_t, char *);
 void db_acpi_tree(db_expr_t, int, db_expr_t, char *);
