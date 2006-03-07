@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.75 2006/01/02 18:15:55 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.76 2006/01/04 15:41:29 martin Exp $ */
 /* $NetBSD: machdep.c,v 1.108 2000/09/13 15:00:23 thorpej Exp $	 */
 
 /*
@@ -486,7 +486,7 @@ sendsig(catcher, sig, mask, code, type, val)
 	gsigf.sf_sc.sc_onstack = psp->ps_sigstk.ss_flags & SS_ONSTACK;
 	gsigf.sf_sc.sc_mask = mask;
 
-#if defined(COMPAT_13) || defined(COMPAT_ULTRIX)
+#if defined(COMPAT_ULTRIX)
 	native_sigset_to_sigset13(mask, &gsigf.sf_sc.__sc_mask13);
 #endif
 
