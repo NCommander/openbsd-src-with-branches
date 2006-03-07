@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlog.c,v 1.25 2006/03/06 15:03:37 jmc Exp $	*/
+/*	$OpenBSD: rlog.c,v 1.26 2006/03/07 01:40:52 joris Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -105,6 +105,7 @@ rlog_main(int argc, char **argv)
 			break;
 		case 'z':
 			timezone_flag = rcs_optarg;
+			break;
 		default:
 			(usage());
 			exit(1);
