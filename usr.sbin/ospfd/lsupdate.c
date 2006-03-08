@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsupdate.c,v 1.26 2006/02/21 10:12:17 claudio Exp $ */
+/*	$OpenBSD: lsupdate.c,v 1.27 2006/02/23 16:06:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -443,7 +443,7 @@ ls_retrans_timer(int fd, short event, void *bula)
 
 	clock_gettime(CLOCK_MONOTONIC, &tp);
 	now = tp.tv_sec;
-	
+
 	if (nbr->iface->self == nbr) {
 		/*
 		 * oneshot needs to be set for lsa queued for flooding,
