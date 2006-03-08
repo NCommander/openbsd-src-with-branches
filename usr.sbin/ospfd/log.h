@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: log.h,v 1.1 2005/01/28 14:05:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -29,11 +29,5 @@ void	 log_info(const char *, ...);
 void	 log_debug(const char *, ...);
 void	 fatal(const char *);
 void	 fatalx(const char *);
-
-static const char * const procnames[] = {
-	"parent",
-	"ospfe",
-	"rde"
-};
 
 #endif /* _LOG_H_ */
