@@ -1,4 +1,4 @@
-/*	$OpenBSD: externs.h,v 1.2 1996/06/26 05:44:12 deraadt Exp $	*/
+/*	$OpenBSD: externs.h,v 1.3 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: externs.h,v 1.2 1995/07/03 21:24:06 cgd Exp $	*/
 
 /*
@@ -39,7 +39,6 @@ extern	void	*xmalloc(size_t);
 extern	void	*xcalloc(size_t, size_t);
 extern	void	*xrealloc(void *, size_t);
 extern	char	*xstrdup(const char *);
-extern	void	nomem(void);
 
 /*
  * emit.c
