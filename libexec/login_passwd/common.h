@@ -1,4 +1,4 @@
-/* $OpenBSD: common.h,v 1.1 2001/06/26 05:03:28 hin Exp $ */
+/* $OpenBSD: common.h,v 1.2 2005/04/14 18:33:42 biorn Exp $ */
 /*-
  * Copyright (c) 2001 Hans Insulander <hin@openbsd.org>.
  * All rights reserved.
@@ -29,10 +29,10 @@
 #define _COMMON_H_
 
 #include <sys/types.h>
-#include <sys/signal.h>
 #include <sys/resource.h>
 #include <sys/param.h>
 
+#include <signal.h>
 #include <syslog.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -56,6 +56,7 @@ extern FILE *back;
 
 #ifdef PASSWD
 int pwd_login(char *, char *, char *, int, char *);
+int pwd_gensalt(char *, int, login_cap_t *, char);
 #endif
 #ifdef KRB5
 int krb5_login(char *, char *, char *, int, int);
