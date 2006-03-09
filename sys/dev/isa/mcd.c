@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcd.c,v 1.35 2006/01/02 05:21:40 brad Exp $ */
+/*	$OpenBSD: mcd.c,v 1.36 2006/03/09 23:05:18 miod Exp $ */
 /*	$NetBSD: mcd.c,v 1.60 1998/01/14 12:14:41 drochner Exp $	*/
 
 /*
@@ -81,8 +81,6 @@
 #include <dev/isa/isavar.h>
 #include <dev/isa/mcdreg.h>
 #include <dev/isa/opti.h>
-
-#include <lib/libkern/libkern.h>
 
 #ifndef MCDDEBUG
 #define MCD_TRACE(fmt,a,b,c,d)
