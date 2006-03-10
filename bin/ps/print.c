@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.37 2005/01/14 16:44:14 deraadt Exp $	*/
+/*	$OpenBSD: print.c,v 1.35 2004/11/24 19:17:10 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.37 2005/01/14 16:44:14 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.35 2004/11/24 19:17:10 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -103,7 +103,7 @@ void
 command(const struct kinfo_proc2 *kp, VARENT *ve)
 {
 	VAR *v;
-	int left;
+	int left, wantspace = 0;
 	char **argv, **p;
 
 	v = ve->var;
@@ -120,10 +120,12 @@ command(const struct kinfo_proc2 *kp, VARENT *ve)
 		argv = kvm_getenvv2(kd, kp, termwidth);
 		if ((p = argv) != NULL) {
 			while (*p) {
-				if (p != argv)
-					fmt_putc(' ', &left);
 				fmt_puts(*p, &left);
 				p++;
+				if (*p)
+					fmt_putc(' ', &left);
+				else
+					wantspace = 1;
 			}
 		}
 	} else
@@ -133,28 +135,45 @@ command(const struct kinfo_proc2 *kp, VARENT *ve)
 			if (kd != NULL) {
 				argv = kvm_getargv2(kd, kp, termwidth);
 				if ((p = argv) != NULL) {
+					if (wantspace) {
+						fmt_putc(' ', &left);
+						wantspace = 0;
+					}
 					while (*p) {
-						if (p != argv)
-							fmt_putc(' ', &left);
 						fmt_puts(*p, &left);
 						p++;
+						if (*p)
+							fmt_putc(' ', &left);
+						else
+							wantspace = 1;
 					}
 				}
 			}
 			if (argv == NULL || argv[0] == '\0' ||
 			    strcmp(cmdpart(argv[0]), kp->p_comm)) {
-				if (argv != NULL && argv[0] != '\0')
+				if (wantspace) {
 					fmt_putc(' ', &left);
+					wantspace = 0;
+				}
 				fmt_putc('(', &left);
 				fmt_puts(kp->p_comm, &left);
 				fmt_putc(')', &left);
 			}
 		} else {
+			if (wantspace) {
+				fmt_putc(' ', &left);
+				wantspace = 0;
+			}
 			fmt_puts(kp->p_comm, &left);
 		}
 	}
-	if (ve->next && left > 0)
+	if (ve->next && left > 0) {
+		if (wantspace) {
+			fmt_putc(' ', &left);
+			wantspace = 0;
+		}
 		printf("%*s", left, "");
+	}
 }
 
 void
