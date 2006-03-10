@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_an_pci.c,v 1.14 2006/01/09 21:19:48 jsg Exp $	*/
+/*	$OpenBSD: if_an_pci.c,v 1.15 2006/01/30 11:41:00 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -99,20 +99,14 @@ const struct pci_matchid an_pci_devices[] = {
 };
 
 int
-an_pci_match(parent, match, aux)
-	struct device *parent;
-	void *match;
-	void *aux;
+an_pci_match(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, an_pci_devices,
 	    sizeof(an_pci_devices)/sizeof(an_pci_devices[0])));
 }
 
 void
-an_pci_attach(parent, self, aux)
-	struct device *parent;
-	struct device *self;
-	void *aux;
+an_pci_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct an_softc *sc = (struct an_softc *)self;
 	struct pci_attach_args *pa = aux;
