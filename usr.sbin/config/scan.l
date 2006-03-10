@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scan.l,v 1.16 2003/06/02 23:36:52 millert Exp $	*/
+/*	$OpenBSD: scan.l,v 1.17 2004/01/04 18:30:05 deraadt Exp $	*/
 /*	$NetBSD: scan.l,v 1.13 1997/02/02 21:12:37 thorpej Exp $	*/
 
 /*
@@ -130,11 +130,11 @@ rmoptions	return RMOPTIONS;
 	}
 \"([^"\n]|\\\")+ {
 		tok = input();  /* eat closing quote */
+		yylval.str = intern(yytext + 1);
 		if (tok != '"') {
-			error("closing quote missing\n");
+			error("closing quote missing");
 			unput(tok);
 		}
-		yylval.str = intern(yytext + 1);
 		return WORD;
 	}
 0[0-7]*	{
