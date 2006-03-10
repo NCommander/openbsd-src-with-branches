@@ -1,4 +1,4 @@
-/*	$OpenBSD: iapp.h,v 1.1 2005/10/07 22:32:52 reyk Exp $	*/
+/*	$OpenBSD: iapp.h,v 1.2 2005/12/18 17:54:12 reyk Exp $	*/
 
 /*
  * Copyright (c) 2005 Reyk Floeter <reyk@openbsd.org>
@@ -71,6 +71,7 @@ struct ieee80211_iapp_add_notify {
 } __packed;
 
 #define IAPP_PORT	3517
+#define IAPP_OLD_PORT	2313
 #define IAPP_MCASTADDR	"224.0.1.178"
 #define IAPP_MAXSIZE	512
 
