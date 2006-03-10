@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.2 2004/06/13 21:49:15 niklas Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.3 2004/06/16 18:24:23 grange Exp $	*/
 /* $NetBSD: ipifuncs.c,v 1.1.2.3 2000/06/26 02:04:06 sommerfeld Exp $ */
 
 /*-
@@ -164,6 +164,7 @@ i386_broadcast_ipi(int ipimask)
 void
 i386_ipi_handler(void)
 {
+	extern struct evcount ipi_count;
 	struct cpu_info *ci = curcpu();
 	u_int32_t pending;
 	int bit;
@@ -174,6 +175,7 @@ i386_ipi_handler(void)
 		if (pending & (1<<bit)) {
 			pending &= ~(1<<bit);
 			(*ipifunc[bit])(ci);
+			ipi_count.ec_count++;
 		}
 	}
 }
