@@ -7,7 +7,7 @@
  *	OpenBSD: onewiredevs,v 1.1 2006/03/04 16:27:03 grange Exp 
  */
 
-static const struct onewire_family onewire_familytab[] = {
+static const struct onewire_family onewire_famtab[] = {
 	{ ONEWIRE_FAMILY_DS1990, "ID" },
 	{ ONEWIRE_FAMILY_DS1991, "MultiKey" },
 	{ ONEWIRE_FAMILY_DS1994, "4kb NVRAM + RTC" },
