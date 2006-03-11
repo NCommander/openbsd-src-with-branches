@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_txt.c,v 1.17 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: v_txt.c,v 1.18 2006/01/08 21:06:39 miod Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -258,7 +258,7 @@ v_txt(sp, vp, tm, lp, len, prompt, ai_line, rcount, flags)
 	u_long rcount;		/* Replay count. */
 	u_int32_t flags;	/* TXT_* flags. */
 {
-	EVENT ev, *evp;		/* Current event. */
+	EVENT ev, *evp = NULL;	/* Current event. */
 	EVENT fc;		/* File name completion event. */
 	GS *gp;
 	TEXT *ntp, *tp;		/* Input text structures. */

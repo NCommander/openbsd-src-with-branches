@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_main.c,v 1.14 2003/07/18 23:11:43 david Exp $	*/
+/*	$OpenBSD: cl_main.c,v 1.15 2006/01/08 21:05:39 miod Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -62,7 +62,10 @@ main(argc, argv)
 	GS *gp;
 	size_t rows, cols;
 	int rval;
-	char *ip_arg, **p_av, **t_av, *ttype;
+	char *ip_arg, *ttype;
+#ifdef RUNNING_IP
+	char **p_av, **t_av;
+#endif
 
 	/* If loaded at 0 and jumping through a NULL pointer, stop. */
 	if (reenter++)

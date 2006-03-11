@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_read.c,v 1.6 2001/01/29 01:58:43 niklas Exp $	*/
+/*	$OpenBSD: ex_read.c,v 1.7 2002/02/16 21:27:57 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -68,6 +68,8 @@ ex_read(sp, cmdp)
 	switch (cmdp->argc) {
 	case 0:
 		which = R_ARG;
+		arg = NULL;	/* unused */
+		arglen = 0;	/* unused */
 		break;
 	case 1:
 		arg = cmdp->argv[0]->bp;
@@ -241,6 +243,9 @@ ex_read(sp, cmdp)
 		
 		}
 		break;
+	default:
+		abort();
+		/* NOTREACHED */
 	}
 
 	/*
