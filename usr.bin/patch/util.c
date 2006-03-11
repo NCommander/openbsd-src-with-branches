@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.30 2005/05/16 15:22:46 espie Exp $	*/
+/*	$OpenBSD: util.c,v 1.31 2005/06/20 07:14:06 otto Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: util.c,v 1.30 2005/05/16 15:22:46 espie Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.31 2005/06/20 07:14:06 otto Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -38,6 +38,7 @@ static const char rcsid[] = "$OpenBSD: util.c,v 1.30 2005/05/16 15:22:46 espie E
 #include <fcntl.h>
 #include <libgen.h>
 #include <paths.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
