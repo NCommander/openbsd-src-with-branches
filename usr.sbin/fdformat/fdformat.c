@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.11 2003/03/08 11:49:32 matthieu Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.12 2003/06/26 21:36:39 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -341,6 +341,7 @@ main(int argc, char *argv[])
 			}
 		}
 	}
+	close(fd);
 	if (!quiet)
 		printf(" done.\n");
 
