@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.68 2006/03/08 20:19:39 joris Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.69 2006/03/11 22:51:13 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -663,4 +663,5 @@ rcs_set_description(RCSFILE *file, const char *in)
 	content = cvs_buf_release(bp);
 
 	rcs_desc_set(file, content);
+	xfree(content);
 }
