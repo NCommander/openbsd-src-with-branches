@@ -280,7 +280,6 @@ void
 fbwscons_attach(struct sunfb *sf, struct wsdisplay_accessops *op, int isconsole)
 {
 	struct wsemuldisplaydev_attach_args waa;
-	struct wsscreen_descr *scrlist[1];
 
 	if (isconsole == 0) {
 		/* done in wsdisplay_cnattach() earlier if console */
@@ -291,9 +290,9 @@ fbwscons_attach(struct sunfb *sf, struct wsdisplay_accessops *op, int isconsole)
 		fb_cookie = sf;
 	}
 
-	scrlist[0] = &sf->sf_wsd;
+	sf->sf_scrlist[0] = &sf->sf_wsd;
 	sf->sf_wsl.nscreens = 1;
-	sf->sf_wsl.screens = (const struct wsscreen_descr **)scrlist;
+	sf->sf_wsl.screens = (const struct wsscreen_descr **)sf->sf_scrlist;
 
 	waa.console = isconsole;
 	waa.scrdata = &sf->sf_wsl;

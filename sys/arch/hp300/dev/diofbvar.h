@@ -1,4 +1,4 @@
-/*	$OpenBSD: diofbvar.h,v 1.5 2005/12/31 18:13:41 miod Exp $	*/
+/*	$OpenBSD: diofxvar.h,v 1.5 2005/12/31 18:13:41 miod Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -92,6 +92,7 @@ struct diofb {
 	/* wsdisplay information */
 	struct wsscreen_descr wsd;
 	struct wsscreen_list wsl;
+	struct wsscreen_descr *scrlist[1];
 	int	nscreens;
 	u_int	mapmode;
 

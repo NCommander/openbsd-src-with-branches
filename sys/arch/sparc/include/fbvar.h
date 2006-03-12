@@ -71,6 +71,7 @@ struct sunfb {
 
 	struct	wsscreen_descr sf_wsd;
 	struct	wsscreen_list sf_wsl;
+	struct	wsscreen_descr *sf_scrlist[1];
 	int	sf_nscreens;
 };
 
