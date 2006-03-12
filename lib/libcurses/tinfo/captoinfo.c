@@ -1,4 +1,4 @@
-/*	$OpenBSD: captoinfo.c,v 1.11 2003/03/18 16:55:54 millert Exp $	*/
+/*	$OpenBSD: captoinfo.c,v 1.12 2003/10/15 23:33:48 tedu Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,1999,2000 Free Software Foundation, Inc.              *
@@ -807,7 +807,7 @@ main(int argc, char *argv[])
 {
     int c, tc = FALSE;
 
-    while ((c = getopt(argc, argv, "c")) != EOF)
+    while ((c = getopt(argc, argv, "c")) != -1)
 	switch (c) {
 	case 'c':
 	    tc = TRUE;
