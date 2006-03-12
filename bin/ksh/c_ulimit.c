@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ulimit.c,v 1.13 2005/02/02 07:53:01 otto Exp $	*/
+/*	$OpenBSD: c_ulimit.c,v 1.14 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
 	ulimit -- handle "ulimit" builtin
@@ -69,7 +69,7 @@ c_ulimit(char **wp)
 		*p = '\0';
 	}
 	what = 'f';
-	while ((optc = ksh_getopt(wp, &builtin_opt, options)) != EOF)
+	while ((optc = ksh_getopt(wp, &builtin_opt, options)) != -1)
 		switch (optc) {
 		case 'H':
 			how = HARD;
