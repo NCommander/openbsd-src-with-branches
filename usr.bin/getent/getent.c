@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: getent.c,v 1.2 2005/11/10 20:07:14 deraadt Exp $	*/
 /*	$NetBSD: getent.c,v 1.7 2005/08/24 14:31:02 ginsbach Exp $	*/
 
 /*-
@@ -52,12 +52,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <arpa/inet.h>
-#include <arpa/nameser.h>
-
 #include <net/if.h>
 #include <netinet/in.h>		/* for INET6_ADDRSTRLEN */
 #include <netinet/if_ether.h>
+
+#include <arpa/inet.h>
+#include <arpa/nameser.h>
 
 #include <rpc/rpc.h>
 
