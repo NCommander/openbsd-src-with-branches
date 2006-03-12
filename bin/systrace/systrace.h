@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.h,v 1.24 2003/10/08 16:32:44 sturm Exp $	*/
+/*	$OpenBSD: systrace.h,v 1.25 2004/01/23 20:51:18 sturm Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -231,6 +231,9 @@ extern struct intercept_translate ic_sockdom;
 extern struct intercept_translate ic_socktype;
 extern struct intercept_translate ic_pidname;
 extern struct intercept_translate ic_signame;
+extern struct intercept_translate ic_fcntlcmd;
+extern struct intercept_translate ic_memprot;
+extern struct intercept_translate ic_fileflags;
 
 extern struct intercept_translate ic_linux_oflags;
 
