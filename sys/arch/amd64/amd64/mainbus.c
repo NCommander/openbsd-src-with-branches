@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.3 2005/10/19 01:41:44 marco Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.4 2005/12/29 00:50:43 kettenis Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.1 2003/04/26 18:39:29 fvdl Exp $	*/
 
 /*
@@ -148,7 +148,14 @@ mainbus_attach(parent, self, aux)
 
 	printf("\n");
 
+#if NPCI > 0
+	pci_mode = pci_mode_detect();
+#endif
+
 #if NACPI > 0
+#if NPCI > 0
+	if (pci_mode != 0)
+#endif
 	{
 		memset(&mba.mba_aaa, 0, sizeof(mba.mba_aaa));
 		mba.mba_aaa.aaa_name = "acpi";
@@ -172,10 +179,6 @@ mainbus_attach(parent, self, aux)
 
 #ifdef MPBIOS
 	mpbios_present = mpbios_probe(self);
-#endif
-
-#if NPCI > 0
-	pci_mode = pci_mode_detect();
 #endif
 
 #ifdef MPBIOS
