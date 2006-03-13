@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SCP.pm,v 1.6 2006/03/08 11:22:02 espie Exp $
+# $OpenBSD: SCP.pm,v 1.7 2006/03/08 12:10:48 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -54,7 +54,6 @@ sub may_exist
 {
 	my ($self, $name) = @_;
 	my $l = $self->list();
-	$name =~ s/\.tgz$//;
 	return grep {$_ eq $name } @$l;
 }
 
@@ -70,7 +69,7 @@ sub grab_object
 	while (<$getfh>) {
 		last if m/^ABORTED/;
 	}
-	print $cmdfh "GET ", $self->{path}.$object->{name}, "\n";
+	print $cmdfh "GET ", $self->{path}.$object->{name}.".tgz", "\n";
 	close($cmdfh);
 	$_ = <$getfh>;
 	chomp;
