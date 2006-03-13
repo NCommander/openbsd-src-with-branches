@@ -1,4 +1,4 @@
-/*	$OpenBSD: ht.c,v 1.7 2005/11/13 21:48:16 drahn Exp $	*/
+/*	$OpenBSD: ht.c,v 1.8 2005/12/14 20:06:57 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -190,6 +190,7 @@ ht_attach(struct device *parent, struct device *self, void *aux)
 	pba.pba_dmat = &pci_bus_dma_tag;
 	pba.pba_pc = &sc->sc_pc;
 	pba.pba_bus = 0;
+	pba.pba_bridgetag = NULL;
 
 	printf(": %d devices\n", sc->sc_maxdevs);
 
