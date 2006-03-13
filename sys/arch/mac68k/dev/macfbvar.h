@@ -123,8 +123,10 @@ struct macfb_devconfig {
 	void		(*dc_setcolor)(void *, u_int, u_int);
 
 	/* wsdisplay information */
-	struct wsscreen_descr wsd;
-	int		nscreens;
+	struct wsscreen_descr dc_wsd;
+	struct wsscreen_descr *dc_scrlist[1];
+	struct wsscreen_list dc_screenlist;
+	int		dc_nscreens;
 };
 
 struct macfb_softc {
