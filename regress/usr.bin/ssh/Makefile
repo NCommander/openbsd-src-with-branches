@@ -51,10 +51,6 @@ CLEANFILES+=	authorized_keys_${USER} known_hosts pidfile \
 
 t1:
 	ssh-keygen -if ${.CURDIR}/rsa_ssh2.prv | diff - ${.CURDIR}/rsa_openssh.prv
-	sed 's/$$/\r/g' ${.CURDIR}/rsa_ssh2.prv > ${OBJ}/rsa_ssh2_crnl.prv
-	ssh-keygen -if ${OBJ}/rsa_ssh2_crnl.prv | diff - ${.CURDIR}/rsa_openssh.prv
-	tr '\n' '\r' <${.CURDIR}/rsa_ssh2.prv > ${OBJ}/rsa_ssh2_cr.prv
-	ssh-keygen -if ${OBJ}/rsa_ssh2_cr.prv | diff - ${.CURDIR}/rsa_openssh.prv
 
 t2:
 	cat ${.CURDIR}/rsa_openssh.prv > t2.out
