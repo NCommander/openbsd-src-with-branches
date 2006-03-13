@@ -1,4 +1,4 @@
-/*	$OpenBSD: err.c,v 1.18 2006/01/16 22:16:14 espie Exp $	*/
+/*	$OpenBSD: err.c,v 1.19 2006/03/08 07:18:51 moritz Exp $	*/
 /*	$NetBSD: err.c,v 1.8 1995/10/02 17:37:00 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: err.c,v 1.18 2006/01/16 22:16:14 espie Exp $";
+static char rcsid[] = "$OpenBSD: err.c,v 1.19 2006/03/08 07:18:51 moritz Exp $";
 #endif
 
 /* number of errors found */
@@ -368,8 +368,7 @@ const	char *msgs[] = {
 	"case ranges are illegal in ANSI C",			      /* 311 */
 	"suspicious operator for sizeof: %s",			      /* 312 */
 	"conversion of %s return value from '%s' to '%s'",	      /* 313 */
-	"function %s declared with %s, but takes no arguments",	      /* 314 */
-	"hexadecimal float constants are illegal in traditional C",   /* 315 */
+	"hexadecimal float constants are illegal in traditional C",   /* 314 */
 };
 
 /*

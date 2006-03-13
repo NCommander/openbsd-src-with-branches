@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scan.l,v 1.26 2005/12/17 21:08:27 cloder Exp $	*/
+/*	$OpenBSD: scan.l,v 1.27 2006/01/16 22:16:14 espie Exp $	*/
 /*	$NetBSD: scan.l,v 1.8 1995/10/23 13:38:51 jpo Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: scan.l,v 1.26 2005/12/17 21:08:27 cloder Exp $";
+static char rcsid[] = "$OpenBSD: scan.l,v 1.27 2006/01/16 22:16:14 espie Exp $";
 #endif
 
 #include <stdlib.h>
@@ -716,7 +716,7 @@ fhexcon(void)
 
 	if (tflag) {
 		/* hex float constant are only legal in C99 */
-		warning(315);
+		warning(314);
 	}
 
 	/* arbitrary value, until strtod can cope */
