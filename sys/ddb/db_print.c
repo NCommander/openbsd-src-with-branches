@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_print.c,v 1.8 2002/07/01 21:56:55 miod Exp $	*/
+/*	$OpenBSD: db_print.c,v 1.9 2003/07/08 16:57:20 mickey Exp $	*/
 /*	$NetBSD: db_print.c,v 1.5 1996/02/05 01:57:11 christos Exp $	*/
 
 /* 
@@ -48,13 +48,9 @@
 
 /*ARGSUSED*/
 void
-db_show_regs(addr, have_addr, count, modif)
-	db_expr_t	addr;
-	int		have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_show_regs(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
-	register struct db_variable *regp;
+	struct db_variable *regp;
 	db_expr_t	value, offset;
 	char *		name;
 

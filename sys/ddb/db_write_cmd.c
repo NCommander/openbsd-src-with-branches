@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_write_cmd.c,v 1.6 2001/11/06 19:53:18 miod Exp $	*/
+/*	$OpenBSD: db_write_cmd.c,v 1.7 2002/05/16 13:01:41 art Exp $	*/
 /*	$NetBSD: db_write_cmd.c,v 1.6 1996/02/05 01:57:25 christos Exp $	*/
 
 /* 
@@ -49,18 +49,13 @@
  */
 /*ARGSUSED*/
 void
-db_write_cmd(address, have_addr, count, modif)
-	db_expr_t	address;
-	boolean_t	have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_write_cmd(db_expr_t	address, boolean_t have_addr, db_expr_t count,
+    char *modif)
 {
-	register
 	db_addr_t	addr;
-	register
 	db_expr_t	old_value;
 	db_expr_t	new_value;
-	register int	size;
+	int		size;
 	boolean_t	wrote_one = FALSE;
 
 	addr = (db_addr_t) address;
