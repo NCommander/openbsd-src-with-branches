@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_optimize.c,v 1.8 2005/05/26 02:21:29 frantzen Exp $ */
+/*	$OpenBSD: pfctl_optimize.c,v 1.9 2005/06/13 20:17:26 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Mike Frantzen <frantzen@openbsd.org>
@@ -1061,6 +1061,7 @@ skip_cmp_dst_addr(struct pf_rule *a, struct pf_rule *b)
 			return (1);
 		return (0);
 	case PF_ADDR_NOROUTE:
+	case PF_ADDR_URPFFAILED:
 		return (0);
 	case PF_ADDR_TABLE:
 		return (strcmp(a->dst.addr.v.tblname, b->dst.addr.v.tblname));
@@ -1132,6 +1133,7 @@ skip_cmp_src_addr(struct pf_rule *a, struct pf_rule *b)
 			return (1);
 		return (0);
 	case PF_ADDR_NOROUTE:
+	case PF_ADDR_URPFFAILED:
 		return (0);
 	case PF_ADDR_TABLE:
 		return (strcmp(a->src.addr.v.tblname, b->src.addr.v.tblname));
