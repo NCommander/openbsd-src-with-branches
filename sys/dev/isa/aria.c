@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: aria.c,v 1.11 2004/06/13 21:49:24 niklas Exp $ */
 
 /*
  * Copyright (c) 1995, 1996 Roland C. Dowdeswell.  All rights reserved.
@@ -491,7 +491,7 @@ ariaopen(dev, flags)
 	DPRINTF(("ariaopen() called\n"));
     
 	if (unit >= aria_cd.cd_ndevs)
-		return ENODEV;
+		return ENXIO;
     
 	sc = aria_cd.cd_devs[unit];
 
