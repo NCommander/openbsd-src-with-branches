@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.h,v 1.6 2005/10/26 18:13:58 xsa Exp $	*/
+/*	$OpenBSD: diff.h,v 1.7 2005/11/21 15:01:10 xsa Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -97,7 +97,7 @@
 struct cvs_lines;
 #endif
 
-BUF		*cvs_diff3(RCSFILE *, char *, RCSNUM *, RCSNUM *);
+BUF		*cvs_diff3(RCSFILE *, char *, RCSNUM *, RCSNUM *, int);
 void		diff_output(const char *, ...);
 int		cvs_diffreg(const char *, const char *, BUF *out);
 int		ed_patch_lines(struct cvs_lines *, struct cvs_lines *);
