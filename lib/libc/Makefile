@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2005/09/29 12:37:35 uwe Exp $
+#	$OpenBSD: Makefile,v 1.25 2005/11/24 20:49:14 deraadt Exp $
 #
 # All library objects contain sccsid strings by default; they may be
 # excluded as a space-saving measure.  To produce a library that does
@@ -24,7 +24,7 @@ CLEANFILES+=tags
 LIBCSRCDIR=${.CURDIR}
 .include "${LIBCSRCDIR}/Makefile.inc"
 
-NLS=	C.msg Pig.msg de.msg es.msg fi.msg fr.msg nl.msg no.msg ru.msg sv.msg
+NLS=	C.msg Pig.msg de.msg es.msg fi.msg fr.msg nl.msg no.msg ru.msg sv.msg it.msg
 
 copy-to-libkern:	copy-to-libkern-machind copy-to-libkern-machdep
 
