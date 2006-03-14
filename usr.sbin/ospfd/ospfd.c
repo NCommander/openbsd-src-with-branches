@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.27 2006/02/10 18:30:47 claudio Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.28 2006/03/08 16:02:59 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -37,7 +37,6 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
-#include <util.h>
 
 #include "ospfd.h"
 #include "ospf.h"
