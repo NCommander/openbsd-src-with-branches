@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.nls.mk,v 1.5 1997/04/27 21:38:31 millert Exp $
+#	$OpenBSD: bsd.nls.mk,v 1.6 2002/11/21 03:08:44 marc Exp $
 #	$NetBSD: bsd.nls.mk,v 1.2 1995/04/27 18:05:38 jtc Exp $
 
 .if !target(.MAIN)
@@ -28,7 +28,9 @@ nlsinstall:
 	@for msg in ${NLSALL}; do \
 		NLSLANG=`basename $$msg .cat`; \
 		dir=${DESTDIR}${NLSDIR}/$${NLSLANG}; \
+		echo ${INSTALL} -d $$dir; \
 		${INSTALL} -d $$dir; \
+		echo ${INSTALL} ${INSTALL_COPY} -o ${NLSOWN} -g ${NLSGRP} -m ${NLSMODE} $$msg $$dir/${NLSNAME}.cat; \
 		${INSTALL} ${INSTALL_COPY} -o ${NLSOWN} -g ${NLSGRP} -m ${NLSMODE} $$msg $$dir/${NLSNAME}.cat; \
 	done
 .endif
