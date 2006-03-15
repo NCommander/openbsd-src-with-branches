@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.93 2006/01/26 09:05:31 xsa Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.94 2006/01/29 11:17:09 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -373,7 +373,7 @@ cvs_read_rcfile(void)
 		/* skip any whitespaces */
 		p = linebuf;
 		while (*p == ' ')
-			*p++;
+			p++;
 
 		/* allow comments */
 		if (*p == '#')
