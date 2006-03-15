@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.h,v 1.37 2006/03/14 03:33:30 ray Exp $	*/
+/*	$OpenBSD: rcsprog.h,v 1.38 2006/03/15 03:29:01 ray Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -30,6 +30,7 @@
 #include "log.h"
 #include "rcs.h"
 #include "worklist.h"
+#include "util.h"
 #include "xmalloc.h"
 
 #define RCS_DEFAULT_SUFFIX	",v/"
