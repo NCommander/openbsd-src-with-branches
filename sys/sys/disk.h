@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.h,v 1.11 2003/06/02 23:28:21 millert Exp $	*/
+/*	$OpenBSD: disk.h,v 1.12 2004/02/15 02:45:46 tedu Exp $	*/
 /*	$NetBSD: disk.h,v 1.11 1996/04/28 20:22:50 thorpej Exp $	*/
 
 /*
@@ -167,7 +167,4 @@ struct	disk *disk_find(char *);
 
 int	disk_lock(struct disk *);
 void    disk_unlock(struct disk *);
-
-struct device;
-void	dk_establish(struct disk *, struct device *);
 #endif

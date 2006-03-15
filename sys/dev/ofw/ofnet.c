@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofnet.c,v 1.8 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: ofnet.c,v 1.9 2004/11/29 12:50:05 jsg Exp $	*/
 /*	$NetBSD: ofnet.c,v 1.4 1996/10/16 19:33:21 ws Exp $	*/
 
 /*
@@ -164,8 +164,6 @@ printf("\nethernet dev: path %s\n", path);
 
 	if_attach(ifp);
 	ether_ifattach(ifp);
-
-	dk_establish(0, self);					/* XXX */
 }
 
 static void

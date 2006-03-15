@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.102 2006/03/04 19:33:22 miod Exp $	*/
+/*	$OpenBSD: sd.c,v 1.103 2006/03/05 14:58:10 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -188,8 +188,6 @@ sdattach(parent, self, aux)
 	sd->sc_dk.dk_driver = &sddkdriver;
 	sd->sc_dk.dk_name = sd->sc_dev.dv_xname;
 	disk_attach(&sd->sc_dk);
-
-	dk_establish(&sd->sc_dk, &sd->sc_dev);
 
 	if ((sc_link->flags & SDEV_ATAPI) && (sc_link->flags & SDEV_REMOVABLE))
 		sc_link->quirks |= SDEV_NOSYNCCACHE;

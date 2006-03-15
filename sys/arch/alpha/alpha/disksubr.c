@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.41 2005/09/27 23:56:10 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.42 2005/12/22 03:02:48 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -77,13 +77,6 @@ char   *readamigalabel(struct buf *, void (*)(struct buf *),
 #endif
 
 static enum disklabel_tag probe_order[] = { LABELPROBES, -1 };
-
-void
-dk_establish(dk, dev)
-	struct disk *dk;
-	struct device *dev;
-{
-}
 
 #if defined(DISKLABEL_I386) || defined(DISKLABEL_ALPHA) || defined(DISKLABEL_AMIGA) || defined(DISKLABEL_ALL)
 
