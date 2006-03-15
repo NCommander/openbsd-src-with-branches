@@ -1,4 +1,4 @@
-/*	$OpenBSD: midway.c,v 1.34 2005/11/09 05:50:25 brad Exp $	*/
+/*	$OpenBSD: midway.c,v 1.35 2005/12/17 07:31:27 miod Exp $	*/
 /*	(sync'd to midway.c 1.68)	*/
 
 /*
@@ -3203,7 +3203,7 @@ int unit, addr, len;
   struct en_softc *sc;
   u_int32_t reg;
 
-  if (unit < 0 || unit > en_cd.cd_ndevs ||
+  if (unit < 0 || unit >= en_cd.cd_ndevs ||
 	(sc = (struct en_softc *) en_cd.cd_devs[unit]) == NULL) {
     printf("invalid unit number: %d\n", unit);
     return(0);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.55 2005/01/01 02:57:36 millert Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.56 2005/12/27 18:31:09 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.20 1996/05/03 19:41:56 christos Exp $	*/
 
 /*-
@@ -386,7 +386,7 @@ retry:
 			if (unit < 0) {
 				printf("%s: not a unit number\n",
 				    &name[strlen(gc->gc_name)]);
-			} else if (unit > gc->gc_driver->cd_ndevs ||
+			} else if (unit >= gc->gc_driver->cd_ndevs ||
 			    gc->gc_driver->cd_devs[unit] == NULL) {
 				printf("%d: no such unit\n", unit);
 			} else {
