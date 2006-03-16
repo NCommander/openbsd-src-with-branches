@@ -1,4 +1,4 @@
-/* $OpenBSD: tcasic.c,v 1.12 2002/05/03 00:04:26 millert Exp $ */
+/* $OpenBSD: tcasic.c,v 1.13 2004/06/28 02:28:43 aaron Exp $ */
 /* $NetBSD: tcasic.c,v 1.36 2001/08/23 01:16:52 nisimura Exp $ */
 
 /*
@@ -67,10 +67,6 @@ tcasicmatch(parent, cfdata, aux)
         /* Make sure that we're looking for a TurboChannel ASIC. */
         if (strcmp(ma->ma_name, tcasic_cd.cd_name))
                 return (0);
-
-        /* Make sure that the system supports a TurboChannel ASIC. */
-	if ((cputype != ST_DEC_3000_500) && (cputype != ST_DEC_3000_300))
-		return (0);
 
 	if (tcasicfound)
 		return (0);
