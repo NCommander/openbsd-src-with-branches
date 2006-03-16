@@ -1,4 +1,4 @@
-/* $OpenBSD: ciavar.h,v 1.11 2001/12/14 00:44:59 nate Exp $ */
+/* $OpenBSD: ciavar.h,v 1.12 2002/03/14 01:26:27 millert Exp $ */
 /* $NetBSD: ciavar.h,v 1.17 2000/03/19 01:43:25 thorpej Exp $ */
 
 /*
@@ -64,12 +64,6 @@ struct cia_config {
 
 	struct extent *cc_io_ex, *cc_d_mem_ex, *cc_s_mem_ex;
 	int	cc_mallocsafe;
-};
-
-struct cia_softc {
-	struct	device sc_dev;
-
-	struct	cia_config *sc_ccp;
 };
 
 void	cia_init(struct cia_config *, int);
