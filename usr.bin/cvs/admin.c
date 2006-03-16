@@ -1,4 +1,4 @@
-/*	$OpenBSD: admin.c,v 1.28 2006/01/30 17:58:47 xsa Exp $	*/
+/*	$OpenBSD: admin.c,v 1.29 2006/02/01 08:33:18 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
@@ -296,11 +296,10 @@ cvs_admin_pre_exec(struct cvsroot *root)
 static int
 cvs_admin_remote(CVSFILE *cf, void *arg)
 {
-	char *repo, fpath[MAXPATHLEN];
+	char fpath[MAXPATHLEN];
 	struct cvsroot *root;
 
 	root = CVS_DIR_ROOT(cf);
-	repo = CVS_DIR_REPO(cf);
 
 	if (cf->cf_type == DT_DIR) {
 		if (cf->cf_cvstat == CVS_FST_UNKNOWN)
