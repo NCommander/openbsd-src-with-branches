@@ -1,4 +1,4 @@
-/*	$OpenBSD: tip.c,v 1.26 2006/03/17 14:43:06 moritz Exp $	*/
+/*	$OpenBSD: tip.c,v 1.27 2006/03/17 19:39:46 deraadt Exp $	*/
 /*	$NetBSD: tip.c,v 1.13 1997/04/20 00:03:05 mellon Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tip.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: tip.c,v 1.26 2006/03/17 14:43:06 moritz Exp $";
+static const char rcsid[] = "$OpenBSD: tip.c,v 1.27 2006/03/17 19:39:46 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -448,10 +448,10 @@ any(int cc, char *p)
 	return (0);
 }
 
-int
+size_t
 size(char *s)
 {
-	int i = 0;
+	size_t i = 0;
 
 	while (s && *s++)
 		i++;
