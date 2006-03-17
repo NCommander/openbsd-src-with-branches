@@ -1,4 +1,4 @@
-/*	$OpenBSD: acu.c,v 1.10 2004/05/26 18:17:58 deraadt Exp $	*/
+/*	$OpenBSD: acu.c,v 1.11 2006/03/16 19:32:46 deraadt Exp $	*/
 /*	$NetBSD: acu.c,v 1.4 1996/12/29 10:34:03 cgd Exp $	*/
 
 /*
@@ -34,15 +34,15 @@
 #if 0
 static char sccsid[] = "@(#)acu.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: acu.c,v 1.10 2004/05/26 18:17:58 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: acu.c,v 1.11 2006/03/16 19:32:46 deraadt Exp $";
 #endif /* not lint */
 
 #include "tip.h"
 
 static acu_t *acu = NOACU;
 static int conflag;
-static void acuabort();
-static acu_t *acutype();
+static void acuabort(int);
+static acu_t *acutype(char *);
 static jmp_buf jmpbuf;
 /*
  * Establish connection for tip

@@ -1,4 +1,4 @@
-/*	$OpenBSD: remote.c,v 1.13 2003/09/20 18:15:32 millert Exp $	*/
+/*	$OpenBSD: remote.c,v 1.14 2006/03/16 19:32:46 deraadt Exp $	*/
 /*	$NetBSD: remote.c,v 1.5 1997/04/20 00:02:45 mellon Exp $	*/
 
 /*
@@ -41,7 +41,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)remote.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: remote.c,v 1.13 2003/09/20 18:15:32 millert Exp $";
+static const char rcsid[] = "$OpenBSD: remote.c,v 1.14 2006/03/16 19:32:46 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -67,6 +67,8 @@ static char *capstrings[] = {
 static char	*db_array[3] = { _PATH_REMOTE, 0, 0 };
 
 #define cgetflag(f)	(cgetcap(bp, f, ':') != NULL)
+
+static void	getremcap(char *);
 
 static void
 getremcap(char *host)
