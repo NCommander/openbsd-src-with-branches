@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.14 2003/05/29 00:39:12 itojun Exp $	*/
+/*	$OpenBSD: parse.y,v 1.15 2003/07/19 11:48:58 sturm Exp $	*/
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -498,6 +498,7 @@ parse_newsymbol(char *type, int typeoff, char *data)
 		}
 		if (node->filterdata == NULL) {
 			yyerror("strdup");
+			free(node);
 			return (NULL);
 		}
 		node->filterlen = strlen(node->filterdata) + 1;
