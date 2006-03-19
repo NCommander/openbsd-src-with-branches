@@ -12,7 +12,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: readconf.c,v 1.147 2006/02/20 17:19:54 stevesk Exp $");
+RCSID("$OpenBSD: readconf.c,v 1.148 2006/02/22 00:04:44 stevesk Exp $");
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -323,7 +323,8 @@ process_config_line(Options *options, const char *host,
 
 	s = line;
 	/* Get the keyword. (Each line is supposed to begin with a keyword). */
-	keyword = strdelim(&s);
+	if ((keyword = strdelim(&s)) == NULL)
+		return 0;
 	/* Ignore leading whitespace. */
 	if (*keyword == '\0')
 		keyword = strdelim(&s);

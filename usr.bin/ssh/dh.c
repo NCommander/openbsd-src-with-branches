@@ -23,7 +23,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: dh.c,v 1.30 2004/06/13 12:53:24 djm Exp $");
+RCSID("$OpenBSD: dh.c,v 1.31 2004/08/04 10:37:52 djm Exp $");
 
 #include "xmalloc.h"
 
@@ -46,7 +46,8 @@ parse_prime(int linenum, char *line, struct dhgroup *dhg)
 	char *strsize, *gen, *prime;
 
 	cp = line;
-	arg = strdelim(&cp);
+	if ((arg = strdelim(&cp)) == NULL)
+		return 0;
 	/* Ignore leading whitespace */
 	if (*arg == '\0')
 		arg = strdelim(&cp);
