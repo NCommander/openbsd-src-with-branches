@@ -1,4 +1,4 @@
-/*	$OpenBSD: schizo.c,v 1.16 2003/06/24 21:54:39 henric Exp $	*/
+/*	$OpenBSD: schizo.c,v 1.17 2006/03/13 20:10:49 brad Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -347,7 +347,6 @@ schizo_alloc_chipset(struct schizo_pbm *pbm, int node, pci_chipset_tag_t pc)
 	memcpy(npc, pc, sizeof *pc);
 	npc->cookie = pbm; 
 	npc->rootnode = node;
-	npc->curnode = node;
 	return (npc);
 }
 
