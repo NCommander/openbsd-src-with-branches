@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.30 2005/12/21 23:26:05 marco Exp $	*/
+/*	$OpenBSD: param.h,v 1.31 2005/12/22 00:37:25 marco Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -99,14 +99,6 @@
 
 #define	btodb(x)	((x) >> DEV_BSHIFT)
 #define	dbtob(x)	((x) << DEV_BSHIFT)
-
-/*
- * Map a ``block device block'' to a file system block.
- * This should be device dependent, and should use the bsize
- * field from the disk label.
- * For now though just use DEV_BSIZE.
- */
-#define	bdbtofsb(bn)	((bn) / (BLKDEV_IOSIZE/DEV_BSIZE))
 
 #ifdef _KERNEL
 #ifdef COMPAT_HPUX
