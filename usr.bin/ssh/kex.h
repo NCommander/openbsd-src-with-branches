@@ -1,4 +1,4 @@
-/*	$OpenBSD: kex.h,v 1.38 2005/11/04 05:15:59 djm Exp $	*/
+/*	$OpenBSD: kex.h,v 1.39 2006/03/07 09:07:40 djm Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -144,7 +144,7 @@ kex_dh_hash(char *, char *, char *, int, char *, int, u_char *, int,
     BIGNUM *, BIGNUM *, BIGNUM *, u_char **, u_int *);
 void
 kexgex_hash(const EVP_MD *, char *, char *, char *, int, char *,
-    int, u_char *, int, int, int, int, BIGNUM *, BIGNUM *, BIGNUM *, 
+    int, u_char *, int, int, int, int, BIGNUM *, BIGNUM *, BIGNUM *,
     BIGNUM *, BIGNUM *, u_char **, u_int *);
 
 void
