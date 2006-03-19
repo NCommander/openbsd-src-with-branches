@@ -36,7 +36,7 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: hostfile.c,v 1.36 2005/11/22 03:36:03 dtucker Exp $");
+RCSID("$OpenBSD: hostfile.c,v 1.37 2006/02/07 03:47:05 stevesk Exp $");
 
 #include <resolv.h>
 
@@ -254,8 +254,10 @@ check_host_in_hostfile_by_key_or_type(const char *filename,
 
 		if (key == NULL) {
 			/* we found a key of the requested type */
-			if (found->type == keytype)
+			if (found->type == keytype) {
+				fclose(f);
 				return HOST_FOUND;
+			}
 			continue;
 		}
 
