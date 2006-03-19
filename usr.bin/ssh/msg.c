@@ -22,7 +22,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "includes.h"
-RCSID("$OpenBSD: msg.c,v 1.7 2003/11/17 09:45:39 djm Exp $");
 
 #include "buffer.h"
 #include "getput.h"

@@ -25,7 +25,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: atomicio.c,v 1.13 2005/05/24 17:32:43 avsm Exp $");
 
 #include "atomicio.h"
 

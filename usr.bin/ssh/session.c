@@ -33,7 +33,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: session.c,v 1.196 2006/02/20 17:19:54 stevesk Exp $");
 
 #include <sys/types.h>
 #include <sys/wait.h>

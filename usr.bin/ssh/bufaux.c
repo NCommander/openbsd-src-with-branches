@@ -37,7 +37,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: bufaux.c,v 1.36 2005/06/17 02:44:32 djm Exp $");
 
 #include <openssl/bn.h>
 #include "bufaux.h"

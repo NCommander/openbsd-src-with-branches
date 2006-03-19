@@ -36,7 +36,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth-passwd.c,v 1.33 2005/01/24 11:47:13 dtucker Exp $");
 
 #include "packet.h"
 #include "buffer.h"

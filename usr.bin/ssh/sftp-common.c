@@ -24,7 +24,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sftp-common.c,v 1.10 2003/11/10 16:23:41 jakob Exp $");
 
 #include <sys/types.h>
 #include <sys/stat.h>

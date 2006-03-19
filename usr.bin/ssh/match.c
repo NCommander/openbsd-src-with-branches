@@ -35,7 +35,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: match.c,v 1.20 2005/06/17 02:44:32 djm Exp $");
 
 #include <ctype.h>
 

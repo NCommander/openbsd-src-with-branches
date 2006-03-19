@@ -20,7 +20,6 @@
 #include <openssl/evp.h>
 #include <sha2.h>
 
-RCSID("$OpenBSD$");
 
 const EVP_MD *evp_ssh_sha256(void);
 

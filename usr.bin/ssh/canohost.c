@@ -12,7 +12,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: canohost.c,v 1.49 2006/02/22 00:04:44 stevesk Exp $");
 
 #include <ctype.h>
 

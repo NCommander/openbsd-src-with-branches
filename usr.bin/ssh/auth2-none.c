@@ -23,7 +23,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2-none.c,v 1.7 2004/05/11 19:01:43 deraadt Exp $");
 
 #include <sys/types.h>
 #include <sys/stat.h>

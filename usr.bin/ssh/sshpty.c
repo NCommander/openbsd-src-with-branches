@@ -12,7 +12,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: sshpty.c,v 1.15 2006/02/10 00:27:13 stevesk Exp $");
 
 #include <sys/ioctl.h>
 #include <sys/types.h>

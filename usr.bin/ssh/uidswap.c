@@ -12,7 +12,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: uidswap.c,v 1.23 2002/07/15 17:15:31 stevesk Exp $");
 
 #include "log.h"
 #include "uidswap.h"

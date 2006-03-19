@@ -23,7 +23,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: progressmeter.c,v 1.25 2006/02/10 00:27:13 stevesk Exp $");
 
 #include <sys/ioctl.h>
 

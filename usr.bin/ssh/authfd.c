@@ -35,7 +35,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfd.c,v 1.68 2006/03/17 22:31:11 djm Exp $");
 
 #include <sys/types.h>
 #include <sys/un.h>

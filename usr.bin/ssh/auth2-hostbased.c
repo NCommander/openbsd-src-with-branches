@@ -23,7 +23,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: auth2-hostbased.c,v 1.5 2003/06/24 08:23:46 markus Exp $");
 
 #include "ssh2.h"
 #include "xmalloc.h"

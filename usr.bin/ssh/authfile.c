@@ -36,7 +36,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: authfile.c,v 1.62 2006/02/20 17:19:54 stevesk Exp $");
 
 #include <sys/types.h>
 #include <sys/stat.h>

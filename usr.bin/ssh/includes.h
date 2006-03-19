@@ -1,4 +1,4 @@
-/*	$OpenBSD: includes.h,v 1.36 2006/02/20 17:19:53 stevesk Exp $	*/
+/*	$OpenBSD: includes.h,v 1.37 2006/02/22 00:04:44 stevesk Exp $	*/
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -15,9 +15,6 @@
 
 #ifndef INCLUDES_H
 #define INCLUDES_H
-
-#define RCSID(msg) \
-static /**/const char *const rcsid[] = { (const char *)rcsid, "\100(#)" msg }
 
 #include <sys/types.h>
 #include <sys/socket.h>

@@ -24,7 +24,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: misc.c,v 1.45 2006/02/10 00:27:13 stevesk Exp $");
 
 #include <sys/ioctl.h>
 

@@ -23,7 +23,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: kexdhs.c,v 1.2 2004/06/13 12:53:24 djm Exp $");
 
 #include "xmalloc.h"
 #include "key.h"

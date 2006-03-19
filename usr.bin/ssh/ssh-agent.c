@@ -34,7 +34,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: ssh-agent.c,v 1.128 2006/02/20 16:36:14 stevesk Exp $");
 
 #include <sys/queue.h>
 #include <sys/resource.h>

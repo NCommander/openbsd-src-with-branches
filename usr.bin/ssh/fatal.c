@@ -23,7 +23,6 @@
  */
 
 #include "includes.h"
-RCSID("$OpenBSD: fatal.c,v 1.1 2002/02/22 12:20:34 markus Exp $");
 
 #include "log.h"
 
