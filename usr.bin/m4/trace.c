@@ -1,4 +1,4 @@
-/* $OpenBSD: trace.c,v 1.12 2005/01/21 19:11:02 espie Exp $ */
+/* $OpenBSD: trace.c,v 1.13 2006/01/20 23:10:19 espie Exp $ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *
@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <err.h>
 #include "mdef.h"
 #include "stdd.h"
 #include "extern.h"
