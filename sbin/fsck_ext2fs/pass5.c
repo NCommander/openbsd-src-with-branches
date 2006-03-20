@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass5.c,v 1.11 2003/06/02 20:06:15 millert Exp $	*/
+/*	$OpenBSD: pass5.c,v 1.12 2003/06/11 06:22:13 deraadt Exp $	*/
 /*	$NetBSD: pass5.c,v 1.7 2000/01/28 16:01:46 bouyer Exp $ */
 
 /*
@@ -227,6 +227,8 @@ pass5(void)
 		fs->e2fs.e2fs_ficount = cs_nifree;
 		sbdirty();
 	}
+	free(ibmap);
+	free(bbmap);
 }
 
 void
