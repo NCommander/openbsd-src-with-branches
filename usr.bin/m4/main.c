@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.69 2006/01/20 23:10:19 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.70 2006/03/20 10:55:19 espie Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -111,6 +111,7 @@ struct keyblk keywrds[] = {	/* m4 keywords to be installed */
 	{ "esyscmd",	  ESYSCMDTYPE},
 	{ "__file__",	  FILENAMETYPE | NOARGS},
 	{ "__line__",	  LINETYPE | NOARGS},
+	{ "format",	  FORMATTYPE},
 #endif
 	{ "popdef",       POPDTYPE },
 	{ "pushdef",      PUSDTYPE },
