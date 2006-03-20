@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm.c,v 1.41 2004/09/14 22:39:56 deraadt Exp $ */
+/*	$OpenBSD: kvm.c,v 1.42 2004/09/15 19:31:31 miod Exp $ */
 /*	$NetBSD: kvm.c,v 1.43 1996/05/05 04:31:59 gwr Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm.c	8.2 (Berkeley) 2/13/94";
 #else
-static char *rcsid = "$OpenBSD: kvm.c,v 1.41 2004/09/14 22:39:56 deraadt Exp $";
+static char *rcsid = "$OpenBSD: kvm.c,v 1.42 2004/09/15 19:31:31 miod Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -799,7 +799,8 @@ int
 kvm_dump_inval(kvm_t *kd)
 {
 	struct nlist	nlist[2];
-	u_long		pa, x;
+	u_long		x;
+	paddr_t		pa;
 
 	if (ISALIVE(kd)) {
 		_kvm_err(kd, kd->program, "clearing dump on live kernel");
@@ -855,7 +856,7 @@ kvm_read(kvm_t *kd, u_long kva, void *buf, size_t len)
 		}
 		cp = buf;
 		while (len > 0) {
-			u_long	pa;
+			paddr_t	pa;
 
 			/* In case of error, _kvm_kvatop sets the err string */
 			cc = _kvm_kvatop(kd, kva, &pa);

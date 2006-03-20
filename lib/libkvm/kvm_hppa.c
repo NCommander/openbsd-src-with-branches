@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_hppa.c,v 1.3 2004/06/15 03:52:59 deraadt Exp $	*/
+/*	$OpenBSD: kvm_hppa.c,v 1.4 2004/09/15 19:31:31 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -51,7 +51,7 @@ _kvm_initvtop(kvm_t *kd)
 }
 
 int
-_kvm_kvatop(kvm_t *kd, u_long va, u_long *pa)
+_kvm_kvatop(kvm_t *kd, u_long va, paddr_t *pa)
 {
 	int offset;
 
@@ -68,7 +68,7 @@ _kvm_kvatop(kvm_t *kd, u_long va, u_long *pa)
  * Translate a physical address to a file offset in the crash dump.
  */
 off_t
-_kvm_pa2off(kvm_t *kd, u_long pa)
+_kvm_pa2off(kvm_t *kd, paddr_t pa)
 {
 	/* TODO */
 	return (0);
