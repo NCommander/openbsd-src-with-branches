@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.78 2006/03/18 04:00:34 ray Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.79 2006/03/20 17:41:37 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -362,8 +362,8 @@ rcs_statfile(char *fname, char *out, size_t len)
 	if ((rcspath = rcs_choosefile(fname)) == NULL)
 		fatal("rcs_statfile: path truncation");
 
-	/* File not found. */
-	if (stat(rcspath, &st) == -1) {
+	/* Error out if file not found and we are not creating one. */
+	if (stat(rcspath, &st) == -1 && !(rcsflags & RCS_CREATE)) {
 		if ((strcmp(__progname, "rcsclean") != 0)
 		    && (strcmp(__progname, "ci") != 0))
 			cvs_log(LP_ERRNO, "%s", rcspath);
