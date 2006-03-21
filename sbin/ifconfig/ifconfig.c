@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.156 2006/01/05 15:00:10 norby Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.157 2006/03/20 20:12:45 dhill Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -541,8 +541,8 @@ main(int argc, char *argv[])
 		if (p->c_name == 0 && setaddr)
 			for (i = setaddr; i > 0; i--) {
 				p++;
-				if (p->c_func == NULL && p->c_func2)
-					errx(1, "extra address not accepted");
+				if (p->c_func == NULL)
+					errx(1, "%s: bad value", *argv);
 			}
 		if (p->c_func || p->c_func2) {
 			if (p->c_parameter == NEXTARG) {
