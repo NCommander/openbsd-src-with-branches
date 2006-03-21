@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ralvar.h,v 1.3 2005/11/23 20:23:48 damien Exp $  */
+/*	$OpenBSD: if_ralvar.h,v 1.4 2006/01/14 12:40:39 damien Exp $  */
 
 /*-
  * Copyright (c) 2005
@@ -90,6 +90,7 @@ struct ural_softc {
 	int			sc_tx_no;
 
 	uint32_t		asic_rev;
+	uint16_t		macbbp_rev;
 	uint8_t			rf_rev;
 
 	usbd_xfer_handle	amrr_xfer;
