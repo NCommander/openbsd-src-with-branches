@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.244 2006/02/08 12:36:29 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.245 2006/03/15 11:33:42 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -2318,6 +2318,7 @@ session_dispatch_imsg(struct imsgbuf *ibuf, int idx, u_int *listener_cnt)
 			break;
 		case IMSG_CTL_SHOW_RIB:
 		case IMSG_CTL_SHOW_RIB_PREFIX:
+		case IMSG_CTL_SHOW_RIB_ATTR:
 		case IMSG_CTL_SHOW_RIB_MEM:
 		case IMSG_CTL_SHOW_NETWORK:
 		case IMSG_CTL_SHOW_NETWORK6:
