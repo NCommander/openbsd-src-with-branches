@@ -58,9 +58,9 @@ static int info_cg;
 static int info_maxcg;
 
 static int
-pass5_info(char *buf)
+pass5_info(char *buf, size_t buflen)
 {
-	return (asprintf(&buf, "phase 5, cg %d/%d",
+	return (snprintf(buf, buflen, "phase 5, cg %d/%d",
 	    info_cg, info_maxcg) > 0);
 }
 

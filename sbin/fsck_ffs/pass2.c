@@ -61,16 +61,16 @@ static int info_max;
 static int info_pos;
 
 static int
-pass2_info1(char *buf)
+pass2_info1(char *buf, size_t buflen)
 {
-	return (asprintf(&buf, "phase 2, directory %d/%d",
+	return (snprintf(buf, buflen, "phase 2, directory %d/%d",
 	    info_pos, info_max) > 0);
 }
 
 static int
-pass2_info2(char *buf)
+pass2_info2(char *buf, size_t buflen)
 {
-	if (asprintf(&buf, "phase 2, parent directory %d/%d",
+	if (snprintf(buf, buflen, "phase 2, parent directory %d/%d",
 	    info_pos, info_max) > 0)
 		return (strlen(buf));
 	return (0);

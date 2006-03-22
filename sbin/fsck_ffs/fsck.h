@@ -216,5 +216,5 @@ struct inoinfo *getinoinfo(ino_t);
 void getblk(struct bufarea *, daddr_t, long);
 ino_t allocino(ino_t, int);
 
-int	(*info_fn)(char *);
+int	(*info_fn)(char *, size_t);
 char	*info_filesys;

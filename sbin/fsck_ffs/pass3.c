@@ -49,9 +49,9 @@ static const char rcsid[] = "$OpenBSD: pass3.c,v 1.10 2005/04/16 18:15:41 miller
 static int info_pos;
 
 static int
-pass3_info(char *buf)
+pass3_info(char *buf, size_t buflen)
 {
-	return (asprintf(&buf, "phase 3, directory %d/%ld",
+	return (snprintf(buf, buflen, "phase 3, directory %d/%ld",
 	    info_pos, inplast) > 0);
 }
 

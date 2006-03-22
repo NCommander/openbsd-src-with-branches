@@ -59,9 +59,9 @@ static void checkinode(ino_t, struct inodesc *);
 static ino_t info_inumber;
 
 static int
-pass1_info(char *buf)
+pass1_info(char *buf, size_t buflen)
 {
-	return (asprintf(&buf, "phase 1, inode %d/%d",
+	return (snprintf(buf, buflen, "phase 1, inode %d/%d",
 	    info_inumber, sblock.fs_ipg * sblock.fs_ncg) > 0);
 }
 

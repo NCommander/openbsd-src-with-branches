@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/5/93";
 #else
-static const char rcsid[] = "$OpenBSD: utilities.c,v 1.22 2006/03/12 02:28:28 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: utilities.c,v 1.23 2006/03/20 20:00:05 dhill Exp $";
 #endif
 #endif /* not lint */
 
@@ -548,18 +548,19 @@ dofix(struct inodesc *idesc, char *msg)
 	/* NOTREACHED */
 }
 
-int (* info_fn)(char *) = NULL;
+int (* info_fn)(char *, size_t) = NULL;
 char *info_filesys = "?";
 
+/*ARGSUSED*/
 void
-catchinfo(int n)
+catchinfo(int signo)
 {
 	int save_errno = errno;
-	char *buf = NULL;
+	char buf[1024];
 	struct iovec iov[4];
 	int fd;
 
-	if (info_fn != NULL && info_fn(buf)) {
+	if (info_fn != NULL && info_fn(buf, sizeof buf)) {
 		fd = open(_PATH_TTY, O_WRONLY);
 		if (fd >= 0) {
 			iov[0].iov_base = info_filesys;
@@ -575,8 +576,6 @@ catchinfo(int n)
 			close(fd);
 		}
 	}
-	if (buf)
-		free(buf);
 	errno = save_errno;
 }
 

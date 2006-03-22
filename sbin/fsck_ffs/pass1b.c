@@ -54,9 +54,9 @@ static struct dups *duphead;
 static ino_t info_inumber;
 
 static int
-pass1b_info(char *buf)
+pass1b_info(char *buf, size_t buflen)
 {
-	return (asprintf(&buf, "phase 1b, inode %d/%d",
+	return (snprintf(buf, buflen, "phase 1b, inode %d/%d",
 	    info_inumber, sblock.fs_ipg * sblock.fs_ncg) > 0);
 }
 

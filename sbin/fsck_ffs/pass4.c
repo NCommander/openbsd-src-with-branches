@@ -53,9 +53,9 @@ static const char rcsid[] = "$OpenBSD: pass4.c,v 1.13 2006/01/25 06:25:46 tedu E
 static ino_t info_inumber;
 
 static int
-pass4_info(char *buf)
+pass4_info(char *buf, size_t buflen)
 {
-	return (asprintf(&buf, "phase 4, inode %d/%d",
+	return (snprintf(buf, buflen, "phase 4, inode %d/%d",
 	    info_inumber, lastino) > 0);
 }
 
