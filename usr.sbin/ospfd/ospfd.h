@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.51 2006/03/09 18:11:34 norby Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.52 2006/03/15 13:25:33 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -370,7 +370,6 @@ enum {
 struct ospfd_conf {
 	struct event		ev;
 	struct in_addr		rtr_id;
-	struct lsa_tree		lsa_tree;
 	LIST_HEAD(, area)	area_list;
 	LIST_HEAD(, vertex)	cand_list;
 
