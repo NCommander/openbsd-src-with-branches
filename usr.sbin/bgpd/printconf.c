@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.52 2006/02/09 21:05:09 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.53 2006/02/10 14:34:40 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -181,6 +181,11 @@ print_mainconf(struct bgpd_config *conf)
 	TAILQ_FOREACH(la, conf->listen_addrs, entry)
 		printf("listen on %s\n",
 		    log_sockaddr((struct sockaddr *)&la->sa));
+
+	if (conf->flags & BGPD_FLAG_NEXTHOP_BGP)
+		printf("nexthop qualify via bgp\n");
+	if (conf->flags & BGPD_FLAG_NEXTHOP_DEFAULT)
+		printf("nexthop qualify via default\n");
 
 	if (conf->flags & BGPD_FLAG_REDIST_CONNECTED) {
 		printf("network inet connected");
