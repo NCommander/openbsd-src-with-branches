@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.143 2006/03/11 22:44:11 niallo Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.144 2006/03/15 05:05:35 deraadt Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -897,10 +897,8 @@ rcs_lock_setmode(RCSFILE *file, int mode)
 		file->rf_flags |= RCS_SLOCK;
 	else if (mode == RCS_LOCK_LOOSE)
 		file->rf_flags &= ~RCS_SLOCK;
-	else {
-		cvs_log(LP_ERRNO, "invalid lock mode %d", mode);
-		return (-1);
-	}
+	else
+		fatal("rcs_lock_setmode: invalid mode `%d'", mode);
 
 	file->rf_flags &= ~RCS_SYNCED;
 	return (pmode);
