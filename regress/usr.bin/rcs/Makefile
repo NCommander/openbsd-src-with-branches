@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2006/03/17 14:06:00 xsa Exp $
+#	$OpenBSD: Makefile,v 1.8 2006/03/21 08:32:10 xsa Exp $
 
 # Regression tests by Niall O'Higgins <niallo@openbsd.org>.
 # ksh -> Makefile by Ray Lai <ray@cyth.net>.
@@ -10,7 +10,7 @@ RCSDIFF?=	rcsdiff
 RCSMERGE?=	rcsmerge
 RLOG?=		rlog
 
-CLEANFILES=	blah.c blah.c,v test test,v RCS
+CLEANFILES=	RCS blah.c blah.c,v file file,v test test,v
 
 # XXX - These may need to be done in order.
 #	(At least start with ci-initial.)
