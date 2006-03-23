@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.37 2006/03/17 07:37:08 ray Exp $	*/
+/*	$OpenBSD: buf.c,v 1.38 2006/03/20 16:18:13 niallo Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -219,9 +219,8 @@ cvs_buf_set(BUF *b, const void *src, size_t len, size_t off)
  * cvs_buf_putc()
  *
  * Append a single character <c> to the end of the buffer <b>.
- * Returns 0 on success.
  */
-int
+void
 cvs_buf_putc(BUF *b, int c)
 {
 	u_char *bp;
@@ -238,8 +237,6 @@ cvs_buf_putc(BUF *b, int c)
 	}
 	*bp = (u_char)c;
 	b->cb_len++;
-
-	return (0);
 }
 
 /*
