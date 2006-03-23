@@ -1,4 +1,4 @@
-/*	$OpenBSD: skipjack.h,v 1.2 2001/05/15 02:40:35 deraadt Exp $	*/
+/*	$OpenBSD: skipjack.h,v 1.3 2002/03/14 01:26:51 millert Exp $	*/
 
 /* 
  * Further optimized test implementation of SKIPJACK algorithm 
