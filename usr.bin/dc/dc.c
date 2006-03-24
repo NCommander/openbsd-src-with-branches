@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.6 2004/10/18 07:49:00 otto Exp $	*/
+/*	$OpenBSD: dc.c,v 1.7 2006/01/15 19:11:59 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -17,10 +17,12 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: dc.c,v 1.6 2004/10/18 07:49:00 otto Exp $";
+static const char rcsid[] = "$OpenBSD: dc.c,v 1.7 2006/01/15 19:11:59 otto Exp $";
 #endif /* not lint */
 
+#include <sys/stat.h>
 #include <err.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -46,6 +48,8 @@ main(int argc, char *argv[])
 	FILE		*file;
 	struct source	src;
 	char		*buf, *p;
+	struct stat	st;
+
 
 	if ((buf = strdup("")) == NULL)
 		err(1, NULL);
@@ -85,6 +89,13 @@ main(int argc, char *argv[])
 			return (0);
 	}
 	if (argc == 1) {
+		if (stat(argv[0], &st) == -1)
+			err(1, "%s", argv[0]);
+		if (S_ISDIR(st.st_mode)) {
+			errno = EISDIR;
+			err(1, "%s", argv[0]);
+		}
+
 		file = fopen(argv[0], "r");
 		if (file == NULL)
 			err(1, "cannot open file %s", argv[0]);
