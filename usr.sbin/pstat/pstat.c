@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.56 2005/12/28 20:48:18 pedro Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.57 2006/03/25 21:11:52 pedro Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 from: static char sccsid[] = "@(#)pstat.c	8.9 (Berkeley) 2/16/94";
 #else
-static char *rcsid = "$OpenBSD: pstat.c,v 1.56 2005/12/28 20:48:18 pedro Exp $";
+static char *rcsid = "$OpenBSD: pstat.c,v 1.57 2006/03/25 21:11:52 pedro Exp $";
 #endif
 #endif /* not lint */
 
@@ -695,7 +695,7 @@ loadvnodes(int *avnodes)
 }
 
 /*
- * simulate what a running kernel does in in kinfo_vnode
+ * simulate what a running kernel does in kinfo_vnode
  */
 struct e_vnode *
 kinfo_vnodes(int *avnodes)
