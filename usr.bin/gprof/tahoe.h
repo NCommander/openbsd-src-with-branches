@@ -1,4 +1,4 @@
-/*	$OpenBSD: tahoe.h,v 1.2 1996/06/26 05:34:02 deraadt Exp $	*/
+/*	$OpenBSD: tahoe.h,v 1.3 2003/06/03 02:56:08 millert Exp $	*/
 /*	$NetBSD: tahoe.h,v 1.4 1995/04/19 07:16:29 cgd Exp $	*/
 
 /*
@@ -56,3 +56,9 @@ enum opermodes {
     longrel, longreldef
 };
 typedef enum opermodes	operandenum;
+
+unsigned long	reladdr(char *);
+long		operandlength(unsigned char *);
+operandenum	operandmode(unsigned char *);
+char		*operandname(operandenum);
+

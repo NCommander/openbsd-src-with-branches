@@ -1,4 +1,4 @@
-/*	$OpenBSD: hertz.c,v 1.4 2003/06/03 02:56:08 millert Exp $	*/
+/*	$OpenBSD: hertz.c,v 1.5 2005/05/03 08:08:53 art Exp $	*/
 
 /*
  * Copyright (c) 2005 Artur Grabowski <art@openbsd.org>
@@ -20,6 +20,8 @@
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/sysctl.h>
+
+#include "gprof.h"
 
 /*
  * Return the tick frequency on the machine or 0 if we can't find out.
