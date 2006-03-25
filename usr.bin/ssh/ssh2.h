@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssh2.h,v 1.8 2002/03/04 17:27:39 stevesk Exp $	*/
+/* $OpenBSD: ssh2.h,v 1.9 2003/05/14 00:52:59 markus Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.

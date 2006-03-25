@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshlogin.h,v 1.4 2002/08/29 15:57:25 stevesk Exp $	*/
+/* $OpenBSD: sshlogin.h,v 1.5 2006/03/25 18:36:15 deraadt Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>

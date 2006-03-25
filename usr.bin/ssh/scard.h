@@ -1,4 +1,4 @@
-/*	$OpenBSD: scard.h,v 1.11 2002/06/30 21:59:45 deraadt Exp $	*/
+/* $OpenBSD: scard.h,v 1.12 2003/06/12 19:12:03 markus Exp $ */
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.

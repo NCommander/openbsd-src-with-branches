@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttymodes.h,v 1.12 2002/03/04 17:27:39 stevesk Exp $	*/
+/* $OpenBSD: ttymodes.h,v 1.13 2004/07/11 17:48:47 deraadt Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: getput.h,v 1.7 2001/01/10 22:56:22 markus Exp $	*/
+/* $OpenBSD: getput.h,v 1.8 2002/03/04 17:27:39 stevesk Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>

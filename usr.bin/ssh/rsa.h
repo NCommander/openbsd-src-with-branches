@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsa.h,v 1.14 2001/06/27 05:42:24 markus Exp $	*/
+/* $OpenBSD: rsa.h,v 1.15 2002/03/04 17:27:39 stevesk Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>

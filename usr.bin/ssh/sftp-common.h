@@ -1,4 +1,4 @@
-/*	$OpenBSD: sftp-common.h,v 1.6 2006/01/02 01:20:31 djm Exp $	*/
+/* $OpenBSD: sftp-common.h,v 1.7 2006/02/20 17:19:54 stevesk Exp $ */
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sftp.h,v 1.3 2001/03/07 10:11:23 djm Exp $	*/
+/* $OpenBSD: sftp.h,v 1.4 2002/02/13 00:59:23 djm Exp $ */
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.

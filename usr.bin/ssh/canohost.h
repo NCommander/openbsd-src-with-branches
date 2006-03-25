@@ -1,4 +1,4 @@
-/*	$OpenBSD: canohost.h,v 1.7 2001/06/26 06:32:49 itojun Exp $	*/
+/* $OpenBSD: canohost.h,v 1.8 2001/06/26 17:27:23 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
