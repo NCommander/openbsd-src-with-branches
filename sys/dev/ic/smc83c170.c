@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc83c170.c,v 1.6 2005/12/15 23:17:24 krw Exp $	*/
+/*	$OpenBSD: smc83c170.c,v 1.7 2005/12/15 23:40:19 krw Exp $	*/
 /*	$NetBSD: smc83c170.c,v 1.59 2005/02/27 00:27:02 perry Exp $	*/
 
 /*-
@@ -496,7 +496,7 @@ epic_start(struct ifnet *ifp)
 		 * Pass the packet to any BPF listeners.
 		 */
 		if (ifp->if_bpf)
-			bpf_mtap(ifp->if_bpf, m0);
+			bpf_mtap(ifp->if_bpf, m0, BPF_DIRECTION_OUT);
 #endif
 	}
 
@@ -775,7 +775,7 @@ epic_intr(void *arg)
 			 * pass it up the stack if its for us.
 			 */
 			if (ifp->if_bpf)
-				bpf_mtap(ifp->if_bpf, m);
+				bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
 #endif
 
 			/* Pass it on. */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc.c,v 1.20 2005/11/07 00:29:21 brad Exp $ */
+/*	$OpenBSD: if_lmc.c,v 1.21 2006/03/16 21:36:58 miod Exp $ */
 /*	$NetBSD: if_lmc.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -616,9 +616,10 @@ lmc_rx_intr(lmc_softc_t * const sc)
 #if NBPFILTER > 0
 			if (sc->lmc_bpf != NULL) {
 				if (me == ms)
-					LMC_BPF_TAP(sc, mtod(ms, caddr_t), total_len);
+					LMC_BPF_TAP(sc, mtod(ms, caddr_t),
+					    total_len, BPF_DIRECTION_IN);
 				else
-					LMC_BPF_MTAP(sc, ms);
+					LMC_BPF_MTAP(sc, ms, BPF_DIRECTION_IN);
 			}
 #endif
 			sc->lmc_flags |= LMC_RXACT;
@@ -772,7 +773,7 @@ lmc_tx_intr(lmc_softc_t * const sc)
 		    sc->lmc_txmaps[sc->lmc_txmaps_free++] = map;
 #if NBPFILTER > 0
 		    if (sc->lmc_bpf != NULL)
-			LMC_BPF_MTAP(sc, m);
+			LMC_BPF_MTAP(sc, m, BPF_DIRECTION_OUT);
 #endif
 		    m_freem(m);
 #if defined(LMC_DEBUG)

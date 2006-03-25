@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.34 2006/03/04 22:40:16 brad Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.35 2006/03/05 21:48:56 miod Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -360,7 +360,7 @@ ipip_input(struct mbuf *m, int iphlen, struct ifnet *gifp)
 #if NBPFILTER > 0
 	if (gifp && gifp->if_bpf)
 		bpf_mtap_af(gifp->if_bpf, ifq == &ipintrq ? AF_INET : AF_INET6,
-		    m);
+		    m, BPF_DIRECTION_IN);
 #endif
 
 	s = splnet();			/* isn't it already? */

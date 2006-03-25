@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.125 2005/11/28 00:17:14 jsg Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.126 2005/12/03 21:11:47 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -105,7 +105,6 @@
 
 #include <crypto/arc4.h>
 
-#define BPF_MTAP(if,mbuf) bpf_mtap((if)->if_bpf, (mbuf))
 #define BPFATTACH(if_bpf,if,dlt,sz)
 #define STATIC
 
@@ -128,7 +127,7 @@ u_int32_t	widebug = WIDEBUG;
 
 #if !defined(lint) && !defined(__OpenBSD__)
 static const char rcsid[] =
-	"$OpenBSD: if_wi.c,v 1.125 2005/11/28 00:17:14 jsg Exp $";
+	"$OpenBSD: if_wi.c,v 1.126 2005/12/03 21:11:47 brad Exp $";
 #endif	/* lint */
 
 #ifdef foo
@@ -829,7 +828,7 @@ wi_rxeof(struct wi_softc *sc)
 #if NBPFILTER > 0
 	/* Handle BPF listeners. */
 	if (ifp->if_bpf)
-		BPF_MTAP(ifp, m);
+		bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
 #endif
 
 	/* Receive packet unless in procframe or monitor mode. */
@@ -2358,7 +2357,7 @@ nextpkt:
 	 * this frame to him.
 	 */
 	if (ifp->if_bpf)
-		BPF_MTAP(ifp, m0);
+		bpf_mtap(ifp->if_bpf, m0, BPF_DIRECTION_OUT);
 #endif
 
 	m_freem(m0);

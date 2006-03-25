@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.65 2005/11/14 12:24:34 mickey Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.66 2005/11/21 18:16:39 millert Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -1025,7 +1025,7 @@ startagain:
 
 #if NBPFILTER > 0
 	if (ifp->if_bpf)
-		bpf_mtap(ifp->if_bpf, m0);
+		bpf_mtap(ifp->if_bpf, m0, BPF_DIRECTION_OUT);
 #endif
 
 	/*
@@ -1321,7 +1321,7 @@ again:
 	 * If so, hand off the raw packet to BPF.
 	 */
 	if (ifp->if_bpf)
-		bpf_mtap(ifp->if_bpf, m);
+		bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
 #endif
 
 	ether_input_mbuf(ifp, m);

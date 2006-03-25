@@ -1,4 +1,4 @@
-/* $OpenBSD: if_pppoe.c,v 1.6 2006/01/04 06:04:42 canacar Exp $ */
+/* $OpenBSD: if_pppoe.c,v 1.7 2006/03/04 22:40:15 brad Exp $ */
 /* $NetBSD: if_pppoe.c,v 1.51 2003/11/28 08:56:48 keihan Exp $ */
 
 /*
@@ -769,7 +769,7 @@ pppoe_data_input(struct mbuf *m)
 
 #if NBPFILTER > 0
 	if(sc->sc_sppp.pp_if.if_bpf)
-		bpf_mtap(sc->sc_sppp.pp_if.if_bpf, m);
+		bpf_mtap(sc->sc_sppp.pp_if.if_bpf, m, BPF_DIRECTION_IN);
 #endif
 
 	m_adj(m, PPPOE_HEADERLEN);
@@ -1433,7 +1433,8 @@ pppoe_start(struct ifnet *ifp)
 
 #if NBPFILTER > 0
 		if(sc->sc_sppp.pp_if.if_bpf)
-			bpf_mtap(sc->sc_sppp.pp_if.if_bpf, m);
+			bpf_mtap(sc->sc_sppp.pp_if.if_bpf, m,
+			    BPF_DIRECTION_OUT);
 #endif
 
 		pppoe_output(sc, m);

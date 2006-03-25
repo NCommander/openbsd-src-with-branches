@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.32 2005/07/31 03:52:19 pascoe Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.33 2006/01/15 19:49:25 miod Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.33 1997/07/29 17:55:38 fair Exp $	*/
 
 /*-
@@ -1070,7 +1070,8 @@ iexmit(sc)
 	if (sc->sc_arpcom.ac_if.if_bpf)
 		bpf_tap(sc->sc_arpcom.ac_if.if_bpf,
 		    sc->xmit_cbuffs[sc->xctail],
-		    SWAP(sc->xmit_buffs[sc->xctail]->ie_xmit_flags));
+		    SWAP(sc->xmit_buffs[sc->xctail]->ie_xmit_flags),
+		    BPF_DIRECTION_OUT);
 #endif
 
 	sc->xmit_buffs[sc->xctail]->ie_xmit_flags |= IE_XMIT_LAST;
@@ -1339,7 +1340,7 @@ ie_readframe(sc, num)
 	if (bpf_gets_it) {
 		/* Pass it up. */
 		bpf_mtap_hdr(sc->sc_arpcom.ac_if.if_bpf, (caddr_t)&eh,
-		    sizeof(eh), m);
+		    sizeof(eh), m, BPF_DIRECTION_IN);
 	}
 	/*
 	 * A signal passed up from the filtering code indicating that the

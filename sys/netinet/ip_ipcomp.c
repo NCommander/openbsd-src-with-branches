@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.18 2005/07/31 03:52:19 pascoe Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.19 2005/12/20 13:36:28 markus Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -398,7 +398,8 @@ ipcomp_output(m, tdb, mp, skip, protoff)
 		hdr.af = tdb->tdb_dst.sa.sa_family;
 		hdr.spi = tdb->tdb_spi;
 
-		bpf_mtap_hdr(ifn->if_bpf, (char *)&hdr, ENC_HDRLEN, m);
+		bpf_mtap_hdr(ifn->if_bpf, (char *)&hdr, ENC_HDRLEN, m,
+		    BPF_DIRECTION_OUT);
 	}
 #endif
 	hlen = IPCOMP_HLENGTH;

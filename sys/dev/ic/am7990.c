@@ -1,4 +1,4 @@
-/*	$OpenBSD: am7990.c,v 1.38 2005/01/15 05:24:10 brad Exp $	*/
+/*	$OpenBSD: am7990.c,v 1.39 2005/11/07 03:20:00 brad Exp $	*/
 /*	$NetBSD: am7990.c,v 1.22 1996/10/13 01:37:19 christos Exp $	*/
 
 /*-
@@ -474,7 +474,7 @@ am7990_read(sc, boff, len)
 	 * If so, hand off the raw packet to BPF.
 	 */
 	if (ifp->if_bpf)
-		bpf_mtap(ifp->if_bpf, m);
+		bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
 #endif
 
 #ifdef LANCE_REVC_BUG
@@ -780,7 +780,7 @@ am7990_start(ifp)
 		 * before we commit it to the wire.
 		 */
 		if (ifp->if_bpf)
-			bpf_mtap(ifp->if_bpf, m);
+			bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
 #endif
 
 		/*

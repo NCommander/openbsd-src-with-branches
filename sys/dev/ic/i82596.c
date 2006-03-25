@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82596.c,v 1.24 2004/05/12 06:35:10 tedu Exp $	*/
+/*	$OpenBSD: i82596.c,v 1.25 2005/01/15 05:24:11 brad Exp $	*/
 /*	$NetBSD: i82586.c,v 1.18 1998/08/15 04:42:42 mycroft Exp $	*/
 
 /*-
@@ -1127,7 +1127,7 @@ i82596_readframe(sc, num)
 #if NBPFILTER > 0
 	/* Check for a BPF filter; if so, hand it up. */
 	if (ifp->if_bpf)
-		bpf_mtap(ifp->if_bpf, m);
+		bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
 #endif /* NBPFILTER > 0 */
 
 	/*
@@ -1258,7 +1258,7 @@ i82596_start(ifp)
 #if NBPFILTER > 0
 		/* Tap off here if there is a BPF listener. */
 		if (ifp->if_bpf)
-			bpf_mtap(ifp->if_bpf, m0);
+			bpf_mtap(ifp->if_bpf, m0, BPF_DIRECTION_OUT);
 #endif
 
 		if (m0->m_pkthdr.len > IE_TBUF_SIZE)

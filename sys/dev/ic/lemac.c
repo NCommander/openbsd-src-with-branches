@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.7 2005/06/08 17:03:00 henning Exp $ */
+/* $OpenBSD: lemac.c,v 1.8 2005/11/14 14:46:41 mickey Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -310,7 +310,7 @@ lemac_input(struct lemac_softc *sc, bus_size_t offset, size_t length)
 #if NBPFILTER > 0
 	if (sc->sc_if.if_bpf != NULL) {
 		m->m_pkthdr.len = m->m_len = length;
-		bpf_mtap(sc->sc_if.if_bpf, m);
+		bpf_mtap(sc->sc_if.if_bpf, m, BPF_DIRECTION_IN);
 	}
 
 	/*
@@ -769,7 +769,7 @@ lemac_ifstart(struct ifnet *ifp)
 		LEMAC_OUTB(sc, LEMAC_REG_TQ, tx_pg);
 #if NBPFILTER > 0
 		if (sc->sc_if.if_bpf != NULL)
-			bpf_mtap(sc->sc_if.if_bpf, m);
+			bpf_mtap(sc->sc_if.if_bpf, m, BPF_DIRECTION_OUT);
 #endif
 		m_freem(m);			/* free the mbuf */
 	}

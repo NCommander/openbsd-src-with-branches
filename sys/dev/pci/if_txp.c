@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.78 2005/06/15 16:28:09 camield Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.79 2006/02/16 21:02:34 brad Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -734,7 +734,7 @@ txp_rx_reclaim(sc, r, dma)
 		 * Handle BPF listeners. Let the BPF user see the packet.
 		 */
 		if (ifp->if_bpf)
-			bpf_mtap(ifp->if_bpf, m);
+			bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
 #endif
 
 		if (rxd->rx_stat & htole32(RX_STAT_IPCKSUMBAD))
@@ -1521,7 +1521,7 @@ txp_start(ifp)
 
 #if NBPFILTER > 0
 		if (ifp->if_bpf)
-			bpf_mtap(ifp->if_bpf, m);
+			bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
 #endif
 
 		txd->tx_flags |= TX_FLAGS_VALID;

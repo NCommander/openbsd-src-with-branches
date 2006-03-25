@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.60 2006/02/20 20:12:14 damien Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.61 2006/03/04 22:40:15 brad Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1453,7 +1453,7 @@ pfsync_sendout(struct pfsync_softc *sc)
 
 #if NBPFILTER > 0
 	if (ifp->if_bpf)
-		bpf_mtap(ifp->if_bpf, m);
+		bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
 #endif
 
 	if (sc->sc_mbuf_net) {
@@ -1484,7 +1484,7 @@ pfsync_tdb_sendout(struct pfsync_softc *sc)
 
 #if NBPFILTER > 0
 	if (ifp->if_bpf)
-		bpf_mtap(ifp->if_bpf, m);
+		bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_OUT);
 #endif
 
 	return pfsync_sendout_mbuf(sc, m);
