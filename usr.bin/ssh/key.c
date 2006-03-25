@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * read_bignum():
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland

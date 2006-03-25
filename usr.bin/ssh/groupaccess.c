@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2001 Kevin Steves.  All rights reserved.
  *

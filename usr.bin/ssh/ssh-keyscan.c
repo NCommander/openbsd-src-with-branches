@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright 1995, 1996 by David Mazieres <dm@lcs.mit.edu>.
  *

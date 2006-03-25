@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * scp - secure remote copy.  This is basically patched BSD rcp which
  * uses ssh to do the data transfer (instead of using rcmd).

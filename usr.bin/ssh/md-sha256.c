@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2005 Damien Miller <djm@openbsd.org>
  *
