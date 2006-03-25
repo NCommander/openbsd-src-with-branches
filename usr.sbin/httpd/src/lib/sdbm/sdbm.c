@@ -17,15 +17,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#ifdef WIN32
-#include <io.h>
-#include <stdio.h>
-#else
 #include <unistd.h>	/* for lseek() */
-#endif
-#ifdef NETWARE
-#include <nwsemaph.h>
-#endif
 
 
 /*
@@ -59,9 +51,6 @@ static long masks[] = {
 };
 
 datum nullitem = {NULL, 0};
-#ifdef NETWARE
-extern LONG locking_sem;
-#endif
 
 DBM *
 sdbm_open(file, flags, mode)
@@ -77,25 +66,20 @@ register int mode;
 	if (file == NULL || !*file)
 		return errno = EINVAL, (DBM *) NULL;
 /*
- * need space for two seperate filenames
- */
-	n = strlen(file) * 2 + strlen(DIRFEXT) + strlen(PAGFEXT) + 2;
-
-	if ((dirname = malloc((unsigned) n)) == NULL)
-		return errno = ENOMEM, (DBM *) NULL;
-/*
  * build the file names
  */
-	dirname = strcat(strcpy(dirname, file), DIRFEXT);
-	pagname = strcpy(dirname + strlen(dirname) + 1, file);
-	pagname = strcat(pagname, PAGFEXT);
+	if (asprintf(&dirname, "%s%s", file, DIRFEXT) == -1)
+		return (DBM *) NULL;
 
-#ifdef NETWARE
-	locking_sem = OpenLocalSemaphore (1);
-#endif
+	if (asprintf(&pagname, "%s%s", file, PAGFEXT) == -1) {
+		free(dirname);
+		return (DBM *) NULL;
+	}
+
 
 	db = sdbm_prep(dirname, pagname, flags, mode);
 	free((char *) dirname);
+	free((char *) pagname);
 	return db;
 }
 
@@ -130,9 +114,6 @@ int mode;
  * open the files in sequence, and stat the dirfile.
  * If we fail anywhere, undo everything, return NULL.
  */
-#if defined(OS2) || defined(MSDOS) || defined(WIN32) || defined(NETWARE)
-	flags |= O_BINARY;
-#endif
 	if ((db->pagf = open(pagname, flags, mode)) > -1) {
 	    if ( sdbm_fd_lock(db->pagf, sdbm_rdonly(db)) > -1 ) {
 		if ((db->dirf = open(dirname, flags, mode)) > -1) {
@@ -176,9 +157,6 @@ register DBM *db;
 		(void) sdbm_fd_unlock(db->pagf);
 		(void) close(db->pagf);
 		free((char *) db);
-#ifdef NETWARE
-		CloseLocalSemaphore (locking_sem);
-#endif
 	}
 }
 

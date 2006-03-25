@@ -15,7 +15,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: sockaddr.c,v 1.48.2.1.2.10 2004/05/15 03:46:12 jinmei Exp $ */
+/* $ISC: sockaddr.c,v 1.48.2.2 2003/10/09 07:32:49 marka Exp $ */
 
 #include <config.h>
 

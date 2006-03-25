@@ -1,4 +1,5 @@
-/*	$NetBSD: ncr5380.c,v 1.10.2.1 1995/10/16 14:19:39 briggs Exp $	*/
+/*	$OpenBSD: ncr5380.c,v 1.25 2005/09/12 10:07:29 martin Exp $	*/
+/*	$NetBSD: ncr5380.c,v 1.38 1996/12/19 21:48:18 scottr Exp $	*/
 
 /*
  * Copyright (c) 1995 Leo Weppelman.
@@ -30,32 +31,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#ifdef DBG_NOSTATIC
-#	define	static
-#endif
-#ifdef DBG_SEL
-#	define	DBG_SELPRINT(a,b)	printf(a,b)
-#else
-#	define DBG_SELPRINT(a,b)
-#endif
-#ifdef DBG_PIO
-#	define DBG_PIOPRINT(a,b,c) 	printf(a,b,c)
-#else
-#	define DBG_PIOPRINT(a,b,c)
-#endif
-#ifdef DBG_INF
-#	define DBG_INFPRINT(a,b,c)	a(b,c)
-#else
-#	define DBG_INFPRINT(a,b,c)
-#endif
-#ifdef DBG_PID
-	static	char	*last_hit = NULL, *olast_hit = NULL;
-#	define	PID(a)	olast_hit = last_hit; last_hit = a; 
-#else
-#	define	PID(a)
-#endif
-
 /*
  * Bit mask of targets you want debugging to be shown
  */
@@ -67,6 +42,19 @@ u_char	dbg_target_mask = 0x7f;
  * of all transfers while the data is correct!?
  */
 u_char	ncr5380_no_parchk = 0xff;
+
+/*
+ * Flags to allow binpatching of which devices to allow or disallow
+ * issuance of linked commands.  disallowance is favored over allowance,
+ * so if the same bit is set in either, the driver will not issue linked
+ * commands to the corresponding target.
+ * SCSI-2 devices can report whether or not they will accept linked
+ * commands.  If that reports that a device supports linked commands,
+ * then it is treated as if the corresponding bit in ncr5380_allow_linked
+ * is set.
+ */
+u_char	ncr5380_allow_linked = 0x80;
+u_char	ncr5380_disallow_linked = 0x80;
 
 /*
  * This is the default sense-command we send.
@@ -86,11 +74,11 @@ static volatile int	main_running = 0;
 static u_char	busy;
 
 static void	ncr5380_minphys(struct buf *bp);
-static int	ncr5380_scsi_cmd(struct scsi_xfer *xs);
-static int	ncr5380_show_scsi_cmd(struct scsi_xfer *xs);
+static int	mac68k_ncr5380_scsi_cmd(struct scsi_xfer *xs);
+static void	ncr5380_show_scsi_cmd(struct scsi_xfer *xs);
 
 struct scsi_adapter ncr5380_switch = {
-	ncr5380_scsi_cmd,		/* scsi_cmd()			*/
+	mac68k_ncr5380_scsi_cmd,	/* scsi_cmd()			*/
 	ncr5380_minphys,		/* scsi_minphys()		*/
 	0,				/* open_target_lu()		*/
 	0				/* close_target_lu()		*/
@@ -137,10 +125,12 @@ u_char	opcode;
  * large. In 99% of the invocations nearly no timeout is needed but in
  * some cases (especially when using my tapedrive, a Tandberg 3600) the
  * device is busy internally and the first SCSI-phase will be delayed.
+ *
+ * -- A sleeping Fujitsu M2512 is even worse; try 2.5 sec     -hf 20 Jun
  */
 extern __inline__ int wait_req_true(void)
 {
-	int	timeout = 25000;
+	int	timeout = 2500000;
 
 	while (!(GET_5380_REG(NCR5380_IDSTAT) & SC_S_REQ) && --timeout)
 		delay(1);
@@ -153,7 +143,7 @@ extern __inline__ int wait_req_true(void)
  */
 extern __inline__ int wait_req_false(void)
 {
-	int	timeout = 25000;
+	int	timeout = 2500000;
 
 	while ((GET_5380_REG(NCR5380_IDSTAT) & SC_S_REQ) && --timeout)
 		delay(1);
@@ -191,43 +181,48 @@ extern __inline__ void finish_req(SC_REQ *reqp)
 	if (reqp->xs->error != 0)
 		show_request(reqp, "ERR_RET");
 #endif
-
 	/*
 	 * Return request to free-q
 	 */
 	sps = splbio();
 	reqp->next = free_head;
 	free_head  = reqp;
-	splx(sps);
 
 	xs->flags |= ITSDONE;
-	scsi_done(xs);
+	if (!(reqp->dr_flag & DRIVER_LINKCHK))
+		scsi_done(xs);
+	splx(sps);
 }
 
 /*
  * Auto config stuff....
  */
-int	ncr_cprint __P((void *auxp, char *));
-void	ncr_attach __P((struct device *, struct device *, void *));
-int	ncr_match __P((struct device *, struct cfdata *, void *));
+void	ncr_attach(struct device *, struct device *, void *);
+int	ncr_match(struct device *, void *, void *);
 
 /*
  * Tricks to make driver-name configurable
  */
-#define CFNAME(n)	__CONCAT(n,cd)
+#define CFNAME(n)	__CONCAT(n,_cd)
+#define CANAME(n)	__CONCAT(n,_ca)
 #define CFSTRING(n)	__STRING(n)
 
+struct cfattach CANAME(DRNAME) = {
+	sizeof(struct ncr_softc), ncr_match, ncr_attach
+};
+
 struct cfdriver CFNAME(DRNAME) = {
-	NULL, CFSTRING(DRNAME), (cfmatch_t)ncr_match, ncr_attach, 
-	DV_DULL, sizeof(struct ncr_softc), NULL, 0 };
+	NULL, CFSTRING(DRNAME), DV_DULL
+};
 
 int
-ncr_match(pdp, cdp, auxp)
-struct device	*pdp;
-struct cfdata	*cdp;
-void		*auxp;
+ncr_match(parent, cf, aux)
+	struct device *parent;
+	void *cf;
+	void *aux;
 {
-	return (machine_match(pdp, cdp, auxp, &CFNAME(DRNAME)));
+	return (machine_match(parent,
+				(struct cfdata *) cf, aux, &CFNAME(DRNAME)));
 }
 
 void
@@ -280,21 +275,9 @@ void		*auxp;
 	/*
 	 * attach all scsi units on us
 	 */
-	config_found(dp, &sc->sc_link, ncr_cprint);
+	config_found(dp, &sc->sc_link, scsiprint);
 }
 
-/*
- * print diag if name is NULL else just extra
- */
-int
-ncr_cprint(auxp, name)
-void	*auxp;
-char	*name;
-{
-	if (name == NULL)
-		return (UNCONF);
-	return (QUIET);
-}
 /*
  * End of auto config stuff....
  */
@@ -303,17 +286,18 @@ char	*name;
  * Carry out a request from the high level driver.
  */
 static int
-ncr5380_scsi_cmd(struct scsi_xfer *xs)
+mac68k_ncr5380_scsi_cmd(struct scsi_xfer *xs)
 {
 	int	sps;
-	SC_REQ	*reqp;
+	SC_REQ	*reqp, *link, *tmp;
 	int	flags = xs->flags;
 
 	/*
 	 * We do not queue RESET commands
 	 */
 	if (flags & SCSI_RESET) {
-		scsi_reset(xs->sc_link->adapter_softc);
+		scsi_reset_verbose(xs->sc_link->adapter_softc,
+				   "Got reset-command");
 		return (COMPLETE);
 	}
 
@@ -336,11 +320,12 @@ ncr5380_scsi_cmd(struct scsi_xfer *xs)
 	reqp->phase     = NR_PHASE;
 	reqp->msgout    = MSG_NOOP;
 	reqp->status    = SCSGOOD;
+	reqp->message   = 0xff;
 	reqp->link      = NULL;
 	reqp->xs        = xs;
 	reqp->targ_id   = xs->sc_link->target;
 	reqp->targ_lun  = xs->sc_link->lun;
-	reqp->xdata_ptr = (u_char*)xs->data;
+	reqp->xdata_ptr = (u_char *)xs->data;
 	reqp->xdata_len = xs->datalen;
 	memcpy(&reqp->xcmd, xs->cmd, sizeof(struct scsi_generic));
 	reqp->xcmd.bytes[0] |= reqp->targ_lun << 5;
@@ -351,10 +336,6 @@ ncr5380_scsi_cmd(struct scsi_xfer *xs)
 	if (flags & ITSDONE) {
 		ncr_tprint(reqp, "scsi_cmd: command already done.....\n");
 		xs->flags &= ~ITSDONE;
-	}
-	if (!(flags & INUSE)) {
-		ncr_tprint(reqp, "scsi_cmd: command not in use.....\n");
-		xs->flags |= ~INUSE;
 	}
 
 #ifdef REAL_DMA
@@ -375,24 +356,24 @@ ncr5380_scsi_cmd(struct scsi_xfer *xs)
 	 * Interrupts are disabled while we are fiddling with the issue-queue.
 	 */
 	sps = splbio();
+	link = NULL;
 	if ((issue_q == NULL) || (reqp->xcmd.opcode == REQUEST_SENSE)) {
 		reqp->next = issue_q;
 		issue_q    = reqp;
 	}
 	else {
-		SC_REQ	*tmp, *link;
-
 		tmp  = issue_q;
-		link = NULL;
 		do {
 		    if (!link && (tmp->targ_id == reqp->targ_id) && !tmp->link)
 				link = tmp;
 		} while (tmp->next && (tmp = tmp->next));
 		tmp->next = reqp;
 #ifdef AUTO_SENSE
-		if (link) {
+		if (link && (   (xs->sc_link->inquiry_flags & SID_Linked)
+			     || ((1<<reqp->targ_id) & ncr5380_allow_linked))
+			 && !((1<<reqp->targ_id) & ncr5380_disallow_linked)) {
 			link->link = reqp;
-			link->xcmd.bytes[link->xs->cmdlen-1] |= 1;
+			link->xcmd.bytes[link->xs->cmdlen-2] |= 1;
 		}
 #endif
 	}
@@ -406,8 +387,8 @@ ncr5380_scsi_cmd(struct scsi_xfer *xs)
 
 	run_main(xs->sc_link->adapter_softc);
 
-	if (xs->flags & SCSI_POLL)
-		return (COMPLETE);	/* We're booting */
+	if (xs->flags & (SCSI_POLL|ITSDONE))
+		return (COMPLETE); /* We're booting or run_main has completed */
 	return (SUCCESSFULLY_QUEUED);
 }
 
@@ -420,7 +401,7 @@ ncr5380_minphys(struct buf *bp)
 }
 #undef MIN_PHYS
 
-static int
+static void
 ncr5380_show_scsi_cmd(struct scsi_xfer *xs)
 {
 	u_char	*b = (u_char *) xs->cmd;
@@ -564,7 +545,7 @@ connected:
 		/*
 		 * Let the target guide us through the bus-phases
 		 */
-		while (information_transfer() == -1)
+		while (information_transfer(sc) == -1)
 			;
 	    }
 	}
@@ -581,8 +562,15 @@ main_exit:
 	 */
 	PID("scsi_main4");
 	scsi_ienable();
-	SET_5380_REG(NCR5380_IDSTAT, SC_HOST_ID);
-	if (GET_5380_REG(NCR5380_DMSTAT) & SC_IRQ_SET) {
+
+	/*
+	 * If we're not currently connected, enable reselection
+	 * interrupts.
+	 */
+	if (!connected)
+		SET_5380_REG(NCR5380_IDSTAT, SC_HOST_ID);
+
+	if (scsi_ipending()) {
 		if ((itype = check_intr(sc)) != INTR_SPURIOUS) {
 			scsi_idisable();
 			splx(sps);
@@ -648,15 +636,15 @@ ncr_ctrl_intr(sc)
 struct ncr_softc *sc;
 {
 	int	itype;
-	int	dma_done;
 
-	while (GET_5380_REG(NCR5380_DMSTAT) & SC_IRQ_SET) {
+	while (scsi_ipending()) {
 		scsi_idisable();
 		if ((itype = check_intr(sc)) != INTR_SPURIOUS) {
 			if (itype == INTR_RESEL)
 				reselect(sc);
 			else {
 #ifdef REAL_DMA
+			    int	dma_done;
 			    if (!(dma_done = dma_ready())) {
 				transfer_dma(connected, connected->phase, 0);
 				return;
@@ -664,7 +652,7 @@ struct ncr_softc *sc;
 #else
 			    if (pdma_ready())
 				return;
-			    panic("Got DMA interrupt without DMA\n");
+			    panic("Got DMA interrupt without DMA");
 #endif
 			}
 			scsi_clr_ipend();
@@ -688,8 +676,8 @@ struct ncr_softc *sc;
 static int
 scsi_select(reqp, code)
 SC_REQ	*reqp;
+int	code;
 {
-	u_long			timeout;
 	u_char			tmp[1];
 	u_char			phase;
 	u_long			cnt;
@@ -868,7 +856,7 @@ SC_REQ	*reqp;
 
 	/*
 	 * Here we prepare to send an 'IDENTIFY' message.
-	 * Allow disconnect only when interrups are allowed.
+	 * Allow disconnect only when interrupts are allowed.
 	 */
 	tmp[0] = MSG_IDENTIFY(reqp->targ_lun,
 			(reqp->dr_flag & DRIVER_NOINT) ? 0 : 1);
@@ -908,7 +896,7 @@ SC_REQ	*reqp;
 
 			transfer_pio(&phase, &msg, &len, 0);
 		}
-		else scsi_reset(sc);
+		else scsi_reset_verbose(sc, "Connected to unidentified target");
 
 		SET_5380_REG(NCR5380_ICOM, 0);
 		reqp->xs->error = code ? code : XS_DRIVER_STUFFUP;
@@ -936,11 +924,12 @@ identify_failed:
 
 /*
  * Return codes:
- *	-1: quit main, trigger on interrupt
- *	 0: keep on running main.
+ *	 0: Job has finished or disconnected, find something else
+ *	-1: keep on calling information_transfer() from scsi_main()
  */
 static int
-information_transfer()
+information_transfer(sc)
+struct ncr_softc *sc;
 {
 	SC_REQ	*reqp = connected;
 	u_char	tmp, phase;
@@ -953,28 +942,48 @@ information_transfer()
 	scsi_clr_ipend();
 
 	/*
-	 * We only have a valid SCSI-phase when REQ is asserted. Something
-	 * is deadly wrong when BSY has dropped.
+	 * The SCSI-spec requires BSY to be true while connected to a target,
+	 * loosing it means we lost the target...
+	 * Also REQ needs to be asserted here to indicate that the bus-phase
+	 * is valid. When the target does not supply REQ within a 'reasonable'
+	 * amount of time, it's probably lost in it's own maze of twisting
+	 * passages, we have to reset the bus to free it.
 	 */
+	if (GET_5380_REG(NCR5380_IDSTAT) & SC_S_BSY)
+		wait_req_true();
 	tmp = GET_5380_REG(NCR5380_IDSTAT);
 
-	if (!(tmp & SC_S_BSY)) {
+
+	if ((tmp & (SC_S_BSY|SC_S_REQ)) != (SC_S_BSY|SC_S_REQ)) {
 		busy           &= ~(1 << reqp->targ_id);
 		connected       = NULL;
-		reqp->xs->error = XS_BUSY;
+		reqp->xs->error = XS_TIMEOUT;
 		finish_req(reqp);
+		if (!(tmp & SC_S_REQ))
+			scsi_reset_verbose(sc,
+					   "Timeout waiting for phase-change");
 		PID("info_transf2");
 		return (0);
 	}
 
-	if (tmp & SC_S_REQ) {
-		phase = (tmp >> 2) & 7;
-		if (phase != reqp->phase) {
-			reqp->phase = phase;
-			DBG_INFPRINT(show_phase, reqp, phase);
+	phase = (tmp >> 2) & 7;
+	if (phase != reqp->phase) {
+		reqp->phase = phase;
+		DBG_INFPRINT(show_phase, reqp, phase);
+	}
+	else {
+		/*
+		 * Same data-phase. If same error give up
+		 */
+		if ((reqp->msgout == MSG_ABORT)
+		     && ((phase == PH_DATAOUT) || (phase == PH_DATAIN))) {
+			busy     &= ~(1 << reqp->targ_id);
+			connected = NULL;
+			finish_req(reqp);
+			scsi_reset_verbose(sc, "Failure to abort command");
+			return (0);
 		}
 	}
-	else return (-1);
 
 	switch (phase) {
 	    case PH_DATAOUT:
@@ -994,6 +1003,17 @@ information_transfer()
 		}
 
 	   case PH_DATAIN:
+		if (reqp->xdata_len <= 0) {
+			/*
+			 * Target keeps requesting data. Try to get into
+			 * message-out phase by feeding/taking 100 byte.
+			 */
+			ncr_tprint(reqp, "Target requests too much data\n");
+			reqp->msgout = MSG_ABORT;
+			SET_5380_REG(NCR5380_ICOM, SC_A_ATN);
+			reach_msg_out(sc, 100);
+			return (-1);
+		}
 #ifdef REAL_DMA
 		if (reqp->dr_flag & DRIVER_DMAOK) {
 			int poll = REAL_DMA_POLL|(reqp->dr_flag & DRIVER_NOINT);
@@ -1030,7 +1050,8 @@ information_transfer()
 		if (reqp->msgout == MSG_ABORT) {
 			busy     &= ~(1 << reqp->targ_id);
 			connected = NULL;
-			reqp->xs->error = XS_DRIVER_STUFFUP;
+			if (!reqp->xs->error)
+				reqp->xs->error = XS_DRIVER_STUFFUP;
 			finish_req(reqp);
 			PID("info_transf4");
 			return (0);
@@ -1067,6 +1088,7 @@ SC_REQ	*reqp;
 u_int	msg;
 {
 	int	sps;
+	SC_REQ	*prev, *req;
 
 	PID("hmessage1");
 	switch (msg) {
@@ -1086,10 +1108,13 @@ u_int	msg;
 				return (-1);
 			}
 			ack_message();
-			reqp->xs->error = 0;
+			if (!(reqp->dr_flag & DRIVER_AUTOSEN)) {
+				reqp->xs->resid = reqp->xdata_len;
+				reqp->xs->error = 0;
+			}
 
 #ifdef AUTO_SENSE
-			if (check_autosense(reqp, 0) == -1)
+			if (check_autosense(reqp, 1) == -1)
 				return (-1);
 #endif /* AUTO_SENSE */
 
@@ -1098,6 +1123,25 @@ u_int	msg;
 				show_request(reqp->link, "LINK");
 #endif
 			connected = reqp->link;
+
+			/*
+			 * Unlink the 'linked' request from the issue_q
+			 */
+			sps  = splbio();
+			prev = NULL;
+			req  = issue_q;
+			for (; req != NULL; prev = req, req = req->next) {
+				if (req == connected)
+					break;
+			}
+			if (req == NULL)
+				panic("Inconsistent issue_q");
+			if (prev == NULL)
+				issue_q = req->next;
+			else prev->next = req->next;
+			req->next = NULL;
+			splx(sps);
+
 			finish_req(reqp);
 			PID("hmessage3");
 			return (-1);
@@ -1152,10 +1196,19 @@ u_int	msg;
 			PID("hmessage9");
 			return (-1);
 		default: 
-			ncr_tprint(reqp, "Unknown message %x\n", msg);
+			if ((msg & 0x80) && !(msg & 0x18)) {	/* IDENTIFY */
+				PID("hmessage10");
+				ack_message();
+				return (0);
+			} else {
+				ncr_tprint(reqp,
+					   "Unknown message %x.  Rejecting.\n",
+					   msg);
+				nack_message(reqp, MSG_MESSAGE_REJECT);
+			}
 			return (-1);
 	}
-	PID("hmessage10");
+	PID("hmessage11");
 	return (-1);
 }
 
@@ -1187,19 +1240,31 @@ struct ncr_softc *sc;
 	 * choose something long enough to suit all targets.
 	 */
 	SET_5380_REG(NCR5380_ICOM, SC_A_BSY);
-	len = 1000;
+	len = 250000;
 	while ((GET_5380_REG(NCR5380_IDSTAT) & SC_S_SEL) && (len > 0)) {
 		delay(1);
 		len--;
 	}
 	if (GET_5380_REG(NCR5380_IDSTAT) & SC_S_SEL) {
 		/* Damn SEL isn't dropping */
-		scsi_reset(sc);
+		scsi_reset_verbose(sc, "Target won't drop SEL during Reselect");
 		return;
 	}
 
 	SET_5380_REG(NCR5380_ICOM, 0);
 	
+	/*
+	 * Check if the reselection is still valid. Check twice because
+	 * of possible line glitches - cheaper than delay(1) and we need
+	 * only a few nanoseconds.
+	 */
+	if (!(GET_5380_REG(NCR5380_IDSTAT) & SC_S_BSY)) {
+	    if (!(GET_5380_REG(NCR5380_IDSTAT) & SC_S_BSY)) {
+		ncr_aprint(sc, "Stepped into the reselection timeout\n");
+		return;
+	    }
+	}
+
 	/*
 	 * Get the expected identify message.
 	 */
@@ -1209,6 +1274,7 @@ struct ncr_softc *sc;
 	if (len || !MSG_ISIDENTIFY(msg)) {
 		ncr_aprint(sc, "Expecting IDENTIFY, got 0x%x\n", msg);
 		abort = 1;
+		tmp = NULL;
 	}
 	else {
 	    /*
@@ -1235,7 +1301,8 @@ struct ncr_softc *sc;
 		phase = PH_MSGOUT;
 
 		SET_5380_REG(NCR5380_ICOM, SC_A_ATN);
-		transfer_pio(&phase, &msg, &len, 0);
+		if (transfer_pio(&phase, &msg, &len, 0) || len)
+			scsi_reset_verbose(sc, "Failure to abort reselection");
 	}
 	else {
 		connected = tmp;
@@ -1403,12 +1470,12 @@ dma_ready()
 	 */
 	if (!is_edma && !(dmstat & (SC_END_DMA|SC_BSY_ERR))
 		     && (dmstat & SC_PHS_MTCH) ) {
-		ncr_tprint(reqp, "dma_ready: spurious call"
+		ncr_tprint(reqp, "dma_ready: spurious call "
 				 "(dm:%x,last_hit: %s)\n",
 #ifdef DBG_PID
-							dmstat, last_hit);
+					dmstat, last_hit[DBG_PID-1]);
 #else
-							dmstat, "unknown");
+					dmstat, "unknown");
 #endif
 		return (0);
 	}
@@ -1441,9 +1508,10 @@ dma_ready()
 	else reqp->dm_cur->dm_addr += bytes_done;
 
 	if (PH_IN(reqp->phase) && (dmstat & SC_PAR_ERR)) {
-		if (!(ncr5380_no_parchk & (1 << reqp->targ_id)))
-			/* XXX: Should be parity error ???? */
-			reqp->xs->error = XS_DRIVER_STUFFUP;
+		if (!(ncr5380_no_parchk & (1 << reqp->targ_id))) {
+			ncr_tprint(reqp, "parity error in data-phase\n");
+			reqp->xs->error = XS_TIMEOUT;
+		}
 	}
 
 	/*
@@ -1471,7 +1539,7 @@ dma_ready()
 
 		if (dmstat & SC_BSY_ERR) {
 			if (!reqp->xs->error)
-				reqp->xs->error = XS_BUSY;
+				reqp->xs->error = XS_TIMEOUT;
 			finish_req(reqp);
 			PID("dma_ready1");
 			return (1);
@@ -1503,8 +1571,9 @@ int	linked;
 	 */
 	PID("cautos1");
 	if (!(reqp->dr_flag & DRIVER_AUTOSEN)) {
-		if (reqp->status == SCSCHKC) {
-			memcpy(&reqp->xcmd, sense_cmd, sizeof(sense_cmd));
+		switch (reqp->status & SCSMASK) {
+		    case SCSCHKC:
+			bcopy(sense_cmd, &reqp->xcmd, sizeof(sense_cmd));
 			reqp->xdata_ptr = (u_char *)&reqp->xs->sense;
 			reqp->xdata_len = sizeof(reqp->xs->sense);
 			reqp->dr_flag  |= DRIVER_AUTOSEN;
@@ -1515,7 +1584,7 @@ int	linked;
 				issue_q    = reqp;
 				splx(sps);
 			}
-			else reqp->xcmd.bytes[4] |= 1;
+			else reqp->xcmd.bytes[sizeof(sense_cmd)-2] |= 1;
 
 #ifdef DBG_REQ
 			bzero(reqp->xdata_ptr, reqp->xdata_len);
@@ -1524,6 +1593,9 @@ int	linked;
 #endif
 			PID("cautos2");
 			return (-1);
+		    case SCSBUSY:
+			reqp->xs->error = XS_BUSY;
+			return (0);
 		}
 	}
 	else {
@@ -1546,6 +1618,7 @@ u_long		 len;
 {
 	u_char	phase;
 	u_char	data;
+	u_long	n = len;
 
 	ncr_aprint(sc, "Trying to reach Message-out phase\n");
 	if ((phase = GET_5380_REG(NCR5380_IDSTAT)) & SC_S_REQ)
@@ -1573,32 +1646,31 @@ u_long		 len;
 		if (!wait_req_false())
 			break;
 		SET_5380_REG(NCR5380_ICOM, SC_A_ATN);
-	} while (--len);
+	} while (--n);
 
 	if ((phase = GET_5380_REG(NCR5380_IDSTAT)) & SC_S_REQ) {
 		phase = (phase >> 2) & 7;
 		if (phase == PH_MSGOUT) {
-			ncr_aprint(sc, "Message-out phase reached.\n");
+			ncr_aprint(sc, "Message-out phase reached after "
+					"%ld bytes.\n", len - n);
 			return (0);
 		}
 	}
 	return (-1);
 }
 
-static void
-scsi_reset(sc)
-struct ncr_softc *sc;
+void
+scsi_reset()
 {
 	SC_REQ	*tmp, *next;
 	int	sps;
 
-	ncr_aprint(sc, "Resetting SCSI-bus\n");
-
 	PID("scsi_reset1");
 	sps = splbio();
 	SET_5380_REG(NCR5380_ICOM, SC_A_RST);
-	delay(1);
+	delay(100);
 	SET_5380_REG(NCR5380_ICOM, 0);
+	scsi_clr_ipend();
 
 	/*
 	 * None of the jobs in the discon_q will ever be reconnected,
@@ -1621,7 +1693,7 @@ struct ncr_softc *sc;
 	 * doing REAL-DMA. In that case 'dma_ready()' should correctly finish
 	 * the job because it detects BSY-loss.
 	 */
-	if (tmp = connected) {
+	if ((tmp = connected) != NULL) {
 		if (tmp->dr_flag & DRIVER_IN_DMA) {
 			tmp->xs->error = XS_DRIVER_STUFFUP;
 #ifdef REAL_DMA
@@ -1631,6 +1703,22 @@ struct ncr_softc *sc;
 	}
 	splx(sps);
 	PID("scsi_reset2");
+
+	/*
+	 * Give the attached devices some time to handle the reset. This
+	 * value is arbitrary but should be relatively long.
+	 */
+	delay(100000);
+}
+
+static void
+scsi_reset_verbose(sc, why)
+struct ncr_softc *sc;
+const char	 *why;
+{
+	ncr_aprint(sc, "Resetting SCSI-bus (%s)\n", why);
+
+	scsi_reset();
 }
 
 /*
@@ -1680,7 +1768,7 @@ SC_REQ	*reqp;
 	 * Initialize locals and requests' DMA-chain.
 	 */
 	req_len        = reqp->xdata_len;
-	req_addr       = (void*)reqp->xdata_ptr;
+	req_addr       = (void *)reqp->xdata_ptr;
 	dm             = reqp->dm_cur = reqp->dm_last = reqp->dm_chain;
 	dm->dm_count   = dm->dm_addr = 0;
 	reqp->dr_flag &= ~DRIVER_BOUNCING;
@@ -1692,7 +1780,7 @@ SC_REQ	*reqp;
 		return (0);
 
 	/*
-	 * LWP: I think that this restriction is not strictly nessecary.
+	 * LWP: I think that this restriction is not strictly necessary.
 	 */
 	if ((req_len & 0x1) || ((u_int)req_addr & 0x3))
 		return (0);
@@ -1702,7 +1790,7 @@ SC_REQ	*reqp;
 	 */
 	dm->dm_addr = phy_buf = kvtop(req_addr);
 	while (req_len) {
-		if (req_len < (phy_len = NBPG - ((u_long)req_addr & PGOFSET)))
+		if (req_len < (phy_len = NBPG - m68k_page_offset(req_addr)))
 			phy_len = req_len;
 
 		req_addr     += phy_len;
@@ -1789,9 +1877,9 @@ ncr_tprint(SC_REQ *reqp, char *fmt, ...)
 {
 	va_list	ap;
 
-	va_start(ap, fmt);
 	sc_print_addr(reqp->xs->sc_link);
-	printf("%r", fmt, ap);
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
 	va_end(ap);
 }
 
@@ -1803,8 +1891,9 @@ ncr_aprint(struct ncr_softc *sc, char *fmt, ...)
 {
 	va_list	ap;
 
+	printf("%s: ", sc->sc_dev.dv_xname);
 	va_start(ap, fmt);
-	printf("%s : %r", sc->sc_dev.dv_xname, fmt, ap);
+	vprintf(fmt, ap);
 	va_end(ap);
 }
 /****************************************************************************
@@ -1836,10 +1925,11 @@ show_request(reqp, qtxt)
 SC_REQ	*reqp;
 char	*qtxt;
 {
-	printf("REQ-%s: %d %x[%d] cmd[0]=%x S=%x M=%x R=%x resid=%d %s\n",
+	printf("REQ-%s: %d %p[%ld] cmd[0]=%x S=%x M=%x R=%x resid=%d dr_flag=%x %s\n",
 			qtxt, reqp->targ_id, reqp->xdata_ptr, reqp->xdata_len,
 			reqp->xcmd.opcode, reqp->status, reqp->message,
-			reqp->xs->error, reqp->xs->resid, reqp->link ? "L":"");
+			reqp->xs->error, reqp->xs->resid, reqp->dr_flag,
+			reqp->link ? "L":"");
 	if (reqp->status == SCSCHKC)
 		show_data_sense(reqp->xs);
 }
@@ -1854,7 +1944,7 @@ show_signals(dmstat, idstat)
 u_char	dmstat, idstat;
 {
 	u_short	tmp, mask;
-	int	i, j, need_pipe;
+	int	j, need_pipe;
 
 	tmp = idstat | ((dmstat & 3) << 8);
 	printf("Bus signals (%02x/%02x): ", idstat, dmstat & 3);
@@ -1870,17 +1960,18 @@ u_char	dmstat, idstat;
 	printf("\n");
 }
 
+void
 scsi_show()
 {
 	SC_REQ	*tmp;
 	int	sps = splhigh();
 	u_char	idstat, dmstat;
-
-#ifndef DBG_PID
-	#define	last_hit	""
-	#define	olast_hit	""
+#ifdef	DBG_PID
+	int	i;
 #endif
 
+	printf("scsi_show: scsi_main is%s running\n",
+		main_running ? "" : " not");
 	for (tmp = issue_q; tmp; tmp = tmp->next)
 		show_request(tmp, "ISSUED");
 	for (tmp = discon_q; tmp; tmp = tmp->next)
@@ -1892,8 +1983,11 @@ scsi_show()
 	show_signals(dmstat, idstat);
 	if (connected)
 		printf("phase = %d, ", connected->phase);
-	printf("busy:%x, last_hit:%s, olast_hit:%s spl:%04x\n", busy,
-						last_hit, olast_hit, sps);
+	printf("busy:%x, spl:%04x\n", busy, sps);
+#ifdef	DBG_PID
+	for (i=0; i<DBG_PID; i++)
+		printf("\t%d\t%s\n", i, last_hit[i]);
+#endif
 
 	splx(sps);
 }

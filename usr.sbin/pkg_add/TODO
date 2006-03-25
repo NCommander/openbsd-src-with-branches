@@ -1,10 +1,13 @@
-+ add pkgname parsing
-+ handle package conflicts
-+ handle package dependencies to the level of the old implementation
-+ handle chmod/chown to the level of the old implementation
-+ handle PKGPATH
-- add better error handling
-- let package delete log files it cannot delete
-- replace symlinks with @symlink commands at pkg_create time
-- smart package dependency handling
-- basic validation of packing list at end of reading it...
+- handle n-to-1 updates: mostly need to allow for a list of replaced packages.
+The tricky part is that the replaced packages will often have 
+inter-dependencies, and we must ignore those inter-dependencies.
+- clean up the interface of the dependencies module, to be able to use it in
+n-to-1 updates.
+- in interactive mode, make it ask questions whenever the user could get
+frustrated.
+- finish pulling the pkg_add code into Add.pm/Update.pm.
+- figure out when to continue after some errors, which should not stop a
+full update, for instance... or ignore already installed packages.
+- make sure all user-interface is done through a few functions, so that it's
+easy to plug another interface in.
+- add needed annotations to handle updates correctly.

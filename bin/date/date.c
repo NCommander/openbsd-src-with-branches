@@ -1,3 +1,4 @@
+/*	$OpenBSD: date.c,v 1.26 2003/10/15 15:58:22 mpech Exp $	*/
 /*	$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)date.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $";
+static char rcsid[] = "$OpenBSD: date.c,v 1.26 2003/10/15 15:58:22 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,26 +55,26 @@ static char rcsid[] = "$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $";
 #include <string.h>
 #include <locale.h>
 #include <syslog.h>
+#include <time.h>
+#include <tzfile.h>
 #include <unistd.h>
+#include <util.h>
 
 #include "extern.h"
 
+extern	char *__progname;
+
 time_t tval;
-int retval, nflag;
+int retval, jflag, nflag;
+int slidetime;
 
-static void setthetime __P((char *));
-static void badformat __P((void));
-static void usage __P((void));
-
-int logwtmp __P((char *, char *, char *));
+static void setthetime(char *);
+static void badformat(void);
+static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	extern int optind;
-	extern char *optarg;
 	struct timezone tz;
 	int ch, rflag;
 	char *format, buf[1024];
@@ -86,10 +83,16 @@ main(argc, argv)
 
 	tz.tz_dsttime = tz.tz_minuteswest = 0;
 	rflag = 0;
-	while ((ch = getopt(argc, argv, "d:nr:ut:")) != -1)
+	while ((ch = getopt(argc, argv, "ad:jnr:ut:")) != -1)
 		switch((char)ch) {
-		case 'd':		/* daylight savings time */
+		case 'd':		/* daylight saving time */
 			tz.tz_dsttime = atoi(optarg) ? 1 : 0;
+			break;
+		case 'a':
+			slidetime++;
+			break;
+		case 'j':		/* don't set */
+			jflag = 1;
 			break;
 		case 'n':		/* don't set network */
 			nflag = 1;
@@ -98,8 +101,9 @@ main(argc, argv)
 			rflag = 1;
 			tval = atol(optarg);
 			break;
-		case 'u':		/* do everything in GMT */
-			(void)setenv("TZ", "GMT0", 1);
+		case 'u':		/* do everything in UTC */
+			if (setenv("TZ", "GMT0", 1) == -1)
+				err(1, "cannot unsetenv TZ");
 			break;
 		case 't':		/* minutes west of GMT */
 					/* error check; don't allow "PST" */
@@ -115,8 +119,8 @@ main(argc, argv)
 	argv += optind;
 
 	/*
-	 * If -d or -t, set the timezone or daylight savings time; this
-	 * doesn't belong here, there kernel should not know about either.
+	 * If -d or -t, set the timezone or daylight saving time; this
+	 * doesn't belong here, the kernel should not know about either.
 	 */
 	if ((tz.tz_minuteswest || tz.tz_dsttime) &&
 	    settimeofday(NULL, &tz))
@@ -148,12 +152,13 @@ main(argc, argv)
 
 #define	ATOI2(ar)	((ar)[0] - '0') * 10 + ((ar)[1] - '0'); (ar) += 2;
 void
-setthetime(p)
-	register char *p;
+setthetime(char *p)
 {
-	register struct tm *lt;
+	struct tm *lt;
 	struct timeval tv;
 	char *dot, *t;
+	int bigyear;
+	int yearset = 0;
 
 	for (t = p, dot = NULL; *t; ++t) {
 		if (isdigit(*t))
@@ -167,7 +172,9 @@ setthetime(p)
 
 	lt = localtime(&tval);
 
-	if (dot != NULL) {			/* .ss */
+	lt->tm_isdst = -1;			/* correct for DST */
+
+	if (dot != NULL) {			/* .SS */
 		*dot++ = '\0';
 		if (strlen(dot) != 2)
 			badformat();
@@ -178,28 +185,39 @@ setthetime(p)
 		lt->tm_sec = 0;
 
 	switch (strlen(p)) {
+	case 12:				/* cc */
+		bigyear = ATOI2(p);
+		lt->tm_year = bigyear * 100 - TM_YEAR_BASE;
+		yearset = 1;
+		/* FALLTHROUGH */
 	case 10:				/* yy */
-		lt->tm_year = ATOI2(p);
-		if (lt->tm_year < 69)		/* hack for 2000 ;-} */
-			lt->tm_year += 100;
+		if (yearset) {
+			lt->tm_year += ATOI2(p);
+		} else {
+			lt->tm_year = ATOI2(p);
+			if (lt->tm_year < 69)		/* hack for 2000 ;-} */
+				lt->tm_year += (2000 - TM_YEAR_BASE);
+			else
+				lt->tm_year += (1900 - TM_YEAR_BASE);
+		}
 		/* FALLTHROUGH */
 	case 8:					/* mm */
 		lt->tm_mon = ATOI2(p);
-		if (lt->tm_mon > 12)
+		if ((lt->tm_mon > 12) || !lt->tm_mon)
 			badformat();
 		--lt->tm_mon;			/* time struct is 0 - 11 */
 		/* FALLTHROUGH */
 	case 6:					/* dd */
 		lt->tm_mday = ATOI2(p);
-		if (lt->tm_mday > 31)
+		if ((lt->tm_mday > 31) || !lt->tm_mday)
 			badformat();
 		/* FALLTHROUGH */
-	case 4:					/* hh */
+	case 4:					/* HH */
 		lt->tm_hour = ATOI2(p);
 		if (lt->tm_hour > 23)
 			badformat();
 		/* FALLTHROUGH */
-	case 2:					/* mm */
+	case 2:					/* MM */
 		lt->tm_min = ATOI2(p);
 		if (lt->tm_min > 59)
 			badformat();
@@ -208,20 +226,33 @@ setthetime(p)
 		badformat();
 	}
 
-	/* convert broken-down time to GMT clock time */
-	if ((tval = mktime(lt)) == -1)
-		badformat();
+	/* convert broken-down time to UTC clock time */
+	if ((tval = mktime(lt)) < 0)
+		errx(1, "specified date is outside allowed range");
+
+	if (jflag)
+		return;
 
 	/* set the time */
 	if (nflag || netsettime(tval)) {
-		logwtmp("|", "date", "");
-		tv.tv_sec = tval;
-		tv.tv_usec = 0;
-		if (settimeofday(&tv, NULL)) {
-			perror("date: settimeofday");
-			exit(1);
+		if (slidetime) {
+			struct timeval tv_current;
+
+			if (gettimeofday(&tv_current, NULL) == -1)
+				err(1, "Could not get local time of day");
+
+			tv.tv_sec = tval - tv_current.tv_sec;
+			tv.tv_usec = 0;
+			if (adjtime(&tv, NULL) == -1)
+				errx(1, "adjtime");
+		} else {
+			logwtmp("|", "date", "");
+			tv.tv_sec = tval;
+			tv.tv_usec = 0;
+			if (settimeofday(&tv, NULL))
+				err(1, "settimeofday");
+			logwtmp("{", "date", "");
 		}
-		logwtmp("{", "date", "");
 	}
 
 	if ((p = getlogin()) == NULL)
@@ -230,17 +261,19 @@ setthetime(p)
 }
 
 static void
-badformat()
+badformat(void)
 {
 	warnx("illegal time format");
 	usage();
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: date [-nu] [-d dst] [-r seconds] [-t west] [+format]\n");
-	(void)fprintf(stderr, "            [yy[mm[dd[hh]]]]mm[.ss]]\n");
+	    "usage: %s [-ajnu] [-d dst] [-r seconds] [-t west] [+format]\n",
+	     __progname);
+	(void)fprintf(stderr,
+	    "%-*s[[[[[[cc]yy]mm]dd]HH]MM[.SS]]\n", strlen(__progname) + 8, "");
 	exit(1);
 }

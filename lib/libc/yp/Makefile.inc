@@ -1,9 +1,17 @@
-#	$NetBSD: Makefile.inc,v 1.9 1995/09/12 19:40:27 thorpej Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 1996/07/01 07:08:52 deraadt Exp $
 
 # yp sources
-.PATH: ${.CURDIR}/arch/${MACHINE_ARCH}/yp ${.CURDIR}/yp
+.PATH: ${LIBCSRCDIR}/arch/${MACHINE_ARCH}/yp ${LIBCSRCDIR}/yp
 
-SRCS+=	xdryp.c yplib.c
+SRCS+=	ypmatch_cache.c yp_bind.c yp_get_default_domain.c \
+	yp_first.c yp_all.c yp_order.c \
+	yp_master.c yp_maplist.c yperr_string.c ypprot_err.c _yp_check.c \
+	xdr_domainname.c xdr_keydat.c xdr_mapname.c xdr_peername.c \
+	xdr_valdat.c xdr_ypbind_binding.c xdr_ypbind_resp.c \
+	xdr_ypbind_resptype.c xdr_ypbind_setdom.c xdr_ypmaplist.c \
+	xdr_ypreq_key.c xdr_ypreq_nokey.c xdr_ypresp_all.c \
+	xdr_ypresp_key_val.c xdr_ypresp_maplist.c xdr_ypresp_master.c \
+	xdr_ypresp_order.c xdr_ypresp_val.c xdr_ypstat.c
 MAN+=	ypclnt.3
 
 MLINKS+=ypclnt.3 yp_all.3 ypclnt.3 yp_bind.3 ypclnt.3 yp_first.3 \

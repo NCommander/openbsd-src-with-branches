@@ -1,8 +1,8 @@
-/*	$NetBSD: ufs_readwrite.c,v 1.10 1997/01/30 09:52:26 tls Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_readwrite.c,v 1.16 2003/06/02 23:28:22 millert Exp $	*/
+/*	$NetBSD: ext2fs_readwrite.c,v 1.16 2001/02/27 04:37:47 chs Exp $	*/
 
 /*-
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +31,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)ufs_readwrite.c	8.8 (Berkeley) 8/4/94
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/param.h>
@@ -50,8 +47,6 @@
 #include <sys/vnode.h>
 #include <sys/malloc.h>
 #include <sys/signalvar.h>
-
-#include <vm/vm.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
@@ -76,20 +71,18 @@ ext2fs_read(v)
 		int a_ioflag;
 		struct ucred *a_cred;
 	} */ *ap = v;
-	register struct vnode *vp;
-	register struct inode *ip;
-	register struct uio *uio;
-	register struct m_ext2fs *fs;
+	struct vnode *vp;
+	struct inode *ip;
+	struct uio *uio;
+	struct m_ext2fs *fs;
 	struct buf *bp;
-	daddr_t lbn, nextlbn;
+	ufs1_daddr_t lbn, nextlbn;
 	off_t bytesinfile;
 	long size, xfersize, blkoffset;
 	int error;
-	u_short mode;
 
 	vp = ap->a_vp;
 	ip = VTOI(vp);
-	mode = ip->i_e2fs_mode;
 	uio = ap->a_uio;
 
 #ifdef DIAGNOSTIC
@@ -97,20 +90,22 @@ ext2fs_read(v)
 		panic("%s: mode", "ext2fs_read");
 
 	if (vp->v_type == VLNK) {
-		if ((int)ip->i_e2fs_size < vp->v_mount->mnt_maxsymlinklen ||
-		    (vp->v_mount->mnt_maxsymlinklen == 0 &&
-		     ip->i_e2fs_nblock == 0))
+		if ((int)ext2fs_size(ip) < vp->v_mount->mnt_maxsymlinklen ||
+			(vp->v_mount->mnt_maxsymlinklen == 0 &&
+			 ip->i_e2fs_nblock == 0))
 			panic("%s: short symlink", "ext2fs_read");
 	} else if (vp->v_type != VREG && vp->v_type != VDIR)
 		panic("%s: type %d", "ext2fs_read", vp->v_type);
 #endif
 	fs = ip->i_e2fs;
-    if ((u_int64_t)uio->uio_offset >
+	if ((u_int64_t)uio->uio_offset >
 		((u_int64_t)0x80000000 * fs->e2fs_bsize - 1))
 		return (EFBIG);
+	if (uio->uio_resid == 0)
+		return (0);
 
 	for (error = 0, bp = NULL; uio->uio_resid > 0; bp = NULL) {
-		if ((bytesinfile = ip->i_e2fs_size - uio->uio_offset) <= 0)
+		if ((bytesinfile = ext2fs_size(ip) - uio->uio_offset) <= 0)
 			break;
 		lbn = lblkno(fs, uio->uio_offset);
 		nextlbn = lbn + 1;
@@ -122,20 +117,20 @@ ext2fs_read(v)
 		if (bytesinfile < xfersize)
 			xfersize = bytesinfile;
 
-        if (lblktosize(fs, nextlbn) >= ip->i_e2fs_size)
+		if (lblktosize(fs, nextlbn) >= ext2fs_size(ip))
 			error = bread(vp, lbn, size, NOCRED, &bp);
 		else if (doclusterread)
-			error = cluster_read(vp,
-			    ip->i_e2fs_size, lbn, size, NOCRED, &bp);
-		else if (lbn - 1 == vp->v_lastr) {
+			error = cluster_read(vp, &ip->i_ci,
+				ext2fs_size(ip), lbn, size, NOCRED, &bp);
+		else if (lbn - 1 == ip->i_ci.ci_lastr) {
 			int nextsize = fs->e2fs_bsize;
 			error = breadn(vp, lbn,
-			    size, &nextlbn, &nextsize, 1, NOCRED, &bp);
+				size, &nextlbn, &nextsize, 1, NOCRED, &bp);
 		} else
 			error = bread(vp, lbn, size, NOCRED, &bp);
 		if (error)
 			break;
-		vp->v_lastr = lbn;
+		ip->i_ci.ci_lastr = lbn;
 
 		/*
 		 * We should only get non-zero b_resid when an I/O error
@@ -150,16 +145,17 @@ ext2fs_read(v)
 				break;
 			xfersize = size;
 		}
-		error = uiomove((char *)bp->b_data + blkoffset, (int)xfersize,
-				uio);
+		error = uiomove((char *)bp->b_data + blkoffset, xfersize, uio);
 		if (error)
 			break;
 		brelse(bp);
 	}
 	if (bp != NULL)
 		brelse(bp);
-	if (!(vp->v_mount->mnt_flag & MNT_NOATIME))
+
+	if (!(vp->v_mount->mnt_flag & MNT_NOATIME)) {
 		ip->i_flag |= IN_ACCESS;
+	}
 	return (error);
 }
 
@@ -176,16 +172,15 @@ ext2fs_write(v)
 		int a_ioflag;
 		struct ucred *a_cred;
 	} */ *ap = v;
-	register struct vnode *vp;
-	register struct uio *uio;
-	register struct inode *ip;
-	register struct m_ext2fs *fs;
+	struct vnode *vp;
+	struct uio *uio;
+	struct inode *ip;
+	struct m_ext2fs *fs;
 	struct buf *bp;
 	struct proc *p;
-	daddr_t lbn;
+	ufs1_daddr_t lbn;
 	off_t osize;
 	int blkoffset, error, flags, ioflag, resid, size, xfersize;
-	struct timespec ts;
 
 	ioflag = ap->a_ioflag;
 	uio = ap->a_uio;
@@ -197,12 +192,19 @@ ext2fs_write(v)
 		panic("%s: mode", "ext2fs_write");
 #endif
 
+	/*
+	 * If writing 0 bytes, succeed and do not change
+	 * update time or file offset (standards compliance)
+	 */
+	if (uio->uio_resid == 0)
+		return (0);
+
 	switch (vp->v_type) {
 	case VREG:
 		if (ioflag & IO_APPEND)
-			uio->uio_offset = ip->i_e2fs_size;
+			uio->uio_offset = ext2fs_size(ip);
 		if ((ip->i_e2fs_flags & EXT2_APPEND) &&
-			uio->uio_offset != ip->i_e2fs_size)
+			uio->uio_offset != ext2fs_size(ip))
 			return (EPERM);
 		/* FALLTHROUGH */
 	case VLNK:
@@ -217,7 +219,7 @@ ext2fs_write(v)
 
 	fs = ip->i_e2fs;
 	if (uio->uio_offset < 0 ||
-        (u_int64_t)uio->uio_offset + uio->uio_resid >
+		(u_int64_t)uio->uio_offset + uio->uio_resid >
 		((u_int64_t)0x80000000 * fs->e2fs_bsize - 1))
 		return (EFBIG);
 	/*
@@ -226,14 +228,14 @@ ext2fs_write(v)
 	 */
 	p = uio->uio_procp;
 	if (vp->v_type == VREG && p &&
-	    uio->uio_offset + uio->uio_resid >
-	    p->p_rlimit[RLIMIT_FSIZE].rlim_cur) {
+		uio->uio_offset + uio->uio_resid >
+		p->p_rlimit[RLIMIT_FSIZE].rlim_cur) {
 		psignal(p, SIGXFSZ);
 		return (EFBIG);
 	}
 
 	resid = uio->uio_resid;
-	osize = ip->i_e2fs_size;
+	osize = ext2fs_size(ip);
 	flags = ioflag & IO_SYNC ? B_SYNC : 0;
 
 	for (error = 0; uio->uio_resid > 0;) {
@@ -247,30 +249,32 @@ ext2fs_write(v)
 		else
 			flags &= ~B_CLRBUF;
 
-        error = ext2fs_balloc(ip,
-		    lbn, blkoffset + xfersize, ap->a_cred, &bp, flags);
+		error = ext2fs_buf_alloc(ip,
+			lbn, blkoffset + xfersize, ap->a_cred, &bp, flags);
 		if (error)
 			break;
-		if (uio->uio_offset + xfersize > ip->i_e2fs_size) {
-			ip->i_e2fs_size = uio->uio_offset + xfersize;
-			vnode_pager_setsize(vp, (u_long)ip->i_e2fs_size);
+		if (uio->uio_offset + xfersize > ext2fs_size(ip)) {
+			error = ext2fs_setsize(ip, uio->uio_offset + xfersize);
+			if (error)
+				break;
+			uvm_vnp_setsize(vp, ip->i_e2fs_size);
 		}
-		(void)vnode_pager_uncache(vp);
+		uvm_vnp_uncache(vp);
 
 		size = fs->e2fs_bsize - bp->b_resid;
 		if (size < xfersize)
 			xfersize = size;
 
 		error =
-		    uiomove((char *)bp->b_data + blkoffset, (int)xfersize, uio);
+			uiomove((char *)bp->b_data + blkoffset, (int)xfersize, uio);
 		if (ioflag & IO_SYNC)
 			(void)bwrite(bp);
-		else if (xfersize + blkoffset == fs->e2fs_bsize)
+		else if (xfersize + blkoffset == fs->e2fs_bsize) {
 			if (doclusterwrite)
-				cluster_write(bp, ip->i_e2fs_size);
+				cluster_write(bp, &ip->i_ci, ext2fs_size(ip));
 			else
 				bawrite(bp);
-		else
+		} else
 			bdwrite(bp);
 		if (error || xfersize == 0)
 			break;
@@ -285,14 +289,13 @@ ext2fs_write(v)
 		ip->i_e2fs_mode &= ~(ISUID | ISGID);
 	if (error) {
 		if (ioflag & IO_UNIT) {
-			(void)VOP_TRUNCATE(vp, osize,
-			    ioflag & IO_SYNC, ap->a_cred, uio->uio_procp);
+			(void)ext2fs_truncate(ip, osize,
+				ioflag & IO_SYNC, ap->a_cred);
 			uio->uio_offset -= resid - uio->uio_resid;
 			uio->uio_resid = resid;
 		}
 	} else if (resid > uio->uio_resid && (ioflag & IO_SYNC)) {
-		TIMEVAL_TO_TIMESPEC(&time, &ts);
-		error = VOP_UPDATE(vp, &ts, &ts, 1);
+		error = ext2fs_update(ip, NULL, NULL, 1);
 	}
 	return (error);
 }

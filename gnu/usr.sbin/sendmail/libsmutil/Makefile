@@ -1,17 +1,15 @@
-#       $Sendmail: Makefile,v 8.2 1999/09/23 22:36:32 ca Exp $
+#	$OpenBSD: Makefile,v 1.4 2001/09/11 19:02:49 millert Exp $
 
-SHELL= /bin/sh
-BUILD=   ./Build
-OPTIONS= $(CONFIG) $(FLAGS)
+LIB=	smutil
+SRCS=	debug.c err.c lockfile.c safefile.c snprintf.c cf.c
+ENVDEF=	-DNOT_SENDMAIL
 
-all: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-clean: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
-install: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) $@
+.if ${MACHINE_ARCH} == mips64
+CFLAGS+= -fno-stack-protector
+.endif
 
-fresh: FRC
-	$(SHELL) $(BUILD) $(OPTIONS) -c
+# This is not a library that gets installed so only build the .a version
+NOPROFILE=1
+NOPIC=1
 
-FRC:
+.include <bsd.lib.mk>

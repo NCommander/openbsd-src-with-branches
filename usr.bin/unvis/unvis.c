@@ -1,3 +1,5 @@
+/*	$OpenBSD: unvis.c,v 1.6 2003/06/03 02:56:21 millert Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,7 +39,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)unvis.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$Id: unvis.c,v 1.4 1994/12/20 15:54:03 jtc Exp $";
+static char rcsid[] = "$OpenBSD: unvis.c,v 1.6 2003/06/03 02:56:21 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -49,17 +47,15 @@ static char rcsid[] = "$Id: unvis.c,v 1.4 1994/12/20 15:54:03 jtc Exp $";
 #include <err.h>
 #include <vis.h>
 
-void process __P((FILE *fp, const char *filename));
+void process(FILE *fp, const char *filename);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	FILE *fp;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch((char)ch) {
 		case '?':
 		default:
@@ -83,11 +79,9 @@ main(argc, argv)
 }
 
 void
-process(fp, filename)
-	FILE *fp;
-	const char *filename;
+process(FILE *fp, const char *filename)
 {
-	register int offset = 0, c, ret;
+	int offset = 0, c, ret;
 	int state = 0;
 	char outc;
 

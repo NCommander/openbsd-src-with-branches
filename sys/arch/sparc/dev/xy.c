@@ -1,4 +1,5 @@
-/* $NetBSD: xy.c,v 1.1 1995/09/25 20:35:14 chuck Exp $ */
+/*	$OpenBSD: xy.c,v 1.26 2006/01/20 00:20:38 miod Exp $	*/
+/*	$NetBSD: xy.c,v 1.26 1997/07/19 21:43:56 pk Exp $	*/
 
 /*
  *
@@ -36,7 +37,7 @@
  * x y . c   x y l o g i c s   4 5 0 / 4 5 1   s m d   d r i v e r
  *
  * author: Chuck Cranor <chuck@ccrc.wustl.edu>
- * id: $Id: xy.c,v 1.1 1995/09/25 20:35:14 chuck Exp $
+ * id: $NetBSD: xy.c,v 1.26 1997/07/19 21:43:56 pk Exp $
  * started: 14-Sep-95
  * references: [1] Xylogics Model 753 User's Manual
  *                 part number: 166-753-001, Revision B, May 21, 1988.
@@ -44,7 +45,7 @@
  *             [2] other NetBSD disk device drivers
  *	       [3] Xylogics Model 450 User's Manual
  *		   part number: 166-017-001, Revision B, 1983.
- *	       [4] Addendum to Xylogics Model 450 Disk Controller User's 
+ *	       [4] Addendum to Xylogics Model 450 Disk Controller User's
  *			Manual, Jan. 1985.
  *	       [5] The 451 Controller, Rev. B3, September 2, 1986.
  *	       [6] David Jones <dej@achilles.net>'s unfinished 450/451 driver
@@ -61,7 +62,6 @@
 #include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/conf.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -73,11 +73,14 @@
 #include <sys/disk.h>
 #include <sys/syslog.h>
 #include <sys/dkbad.h>
-#include <vm/vm.h>
-#include <vm/vm_kern.h>
+#include <sys/conf.h>
+#include <sys/timeout.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/autoconf.h>
-#include <machine/sun_disklabel.h>
+#include <dev/sun/disklabel.h>
+#include <machine/conf.h>
 
 #include <sparc/dev/xyreg.h>
 #include <sparc/dev/xyvar.h>
@@ -99,7 +102,7 @@
 	(XYC)->xyc_reloc_lo = ((ADDR) & 0xff); \
 	(ADDR) = ((ADDR) >> 8); \
 	(XYC)->xyc_reloc_hi = (ADDR); \
-	(XYC)->xyc_csr |= XYC_GBSY; /* go! */ \
+	(XYC)->xyc_csr = XYC_GBSY; /* go! */ \
 }
 
 /*
@@ -138,74 +141,68 @@
  * "xyc_*" functions are internal, all others are external interfaces
  */
 
-/* external (XXX should migrate to std include file?) */
-extern caddr_t dvma_malloc __P((size_t));
-extern void dvma_free __P((caddr_t, size_t));
-extern caddr_t dvma_mapin __P((struct vm_map *, vm_offset_t, int, int));
-extern void dvma_mapout __P((vm_offset_t, vm_offset_t, int));
 extern int pil_to_vme[];	/* from obio.c */
 
 /* internals */
-struct xy_iopb *xyc_chain __P((struct xyc_softc *, struct xy_iorq *));
-int	xyc_cmd __P((struct xyc_softc *, int, int, int, int, int, char *, int));
-char   *xyc_e2str __P((int));
-int	xyc_entoact __P((int));
-int	xyc_error __P((struct xyc_softc *, struct xy_iorq *,
-		   struct xy_iopb *, int));
-int	xyc_ioctlcmd __P((struct xy_softc *, dev_t dev, struct xd_iocmd *));
-void	xyc_perror __P((struct xy_iorq *, struct xy_iopb *, int));
-int	xyc_piodriver __P((struct xyc_softc *, struct xy_iorq *));
-int	xyc_remove_iorq __P((struct xyc_softc *));
-int	xyc_reset __P((struct xyc_softc *, int, struct xy_iorq *, int, 
-			struct xy_softc *));
-inline void xyc_rqinit __P((struct xy_iorq *, struct xyc_softc *,
+struct xy_iopb *xyc_chain(struct xyc_softc *, struct xy_iorq *);
+int	xyc_cmd(struct xyc_softc *, int, int, int, int, int, char *, int);
+char   *xyc_e2str(int);
+int	xyc_entoact(int);
+int	xyc_error(struct xyc_softc *, struct xy_iorq *,
+		   struct xy_iopb *, int);
+int	xyc_ioctlcmd(struct xy_softc *, dev_t dev, struct xd_iocmd *);
+void	xyc_perror(struct xy_iorq *, struct xy_iopb *, int);
+int	xyc_piodriver(struct xyc_softc *, struct xy_iorq *);
+int	xyc_remove_iorq(struct xyc_softc *);
+int	xyc_reset(struct xyc_softc *, int, struct xy_iorq *, int,
+			struct xy_softc *);
+inline void xyc_rqinit(struct xy_iorq *, struct xyc_softc *,
 			    struct xy_softc *, int, u_long, int,
-			    caddr_t, struct buf *));
-void	xyc_rqtopb __P((struct xy_iorq *, struct xy_iopb *, int, int));
-int	xyc_start __P((struct xyc_softc *, struct xy_iorq *));
-int	xyc_startbuf __P((struct xyc_softc *, struct xy_softc *, struct buf *));
-int	xyc_submit_iorq __P((struct xyc_softc *, struct xy_iorq *, int));
-void	xyc_tick __P((void *));
-int	xyc_unbusy __P((struct xyc *, int));
-int	xyc_xyreset __P((struct xyc_softc *, struct xy_softc *));
+			    caddr_t, struct buf *);
+void	xyc_rqtopb(struct xy_iorq *, struct xy_iopb *, int, int);
+void	xyc_start(struct xyc_softc *, struct xy_iorq *);
+int	xyc_startbuf(struct xyc_softc *, struct xy_softc *, struct buf *);
+int	xyc_submit_iorq(struct xyc_softc *, struct xy_iorq *, int);
+void	xyc_tick(void *);
+int	xyc_unbusy(struct xyc *, int);
+void	xyc_xyreset(struct xyc_softc *, struct xy_softc *);
 
 /* machine interrupt hook */
-int	xycintr __P((void *));
-
-/* {b,c}devsw */
-int	xyclose __P((dev_t, int, int));
-int	xydump __P((dev_t));
-int	xyioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
-int	xyopen __P((dev_t, int, int));
-int	xyread __P((dev_t, struct uio *));
-int	xywrite __P((dev_t, struct uio *));
-int	xysize __P((dev_t));
-void	xystrategy __P((struct buf *));
+int	xycintr(void *);
 
 /* autoconf */
-int	xycmatch __P((struct device *, void *, void *));
-void	xycattach __P((struct device *, struct device *, void *));
-int	xymatch __P((struct device *, void *, void *));
-void	xyattach __P((struct device *, struct device *, void *));
+int	xycmatch(struct device *, void *, void *);
+void	xycattach(struct device *, struct device *, void *);
+int	xymatch(struct device *, void *, void *);
+void	xyattach(struct device *, struct device *, void *);
 
-static	void xydummystrat __P((struct buf *));
-int	xygetdisklabel __P((struct xy_softc *, void *));
+static	void xydummystrat(struct buf *);
+int	xygetdisklabel(struct xy_softc *, void *);
 
 /*
  * cfdrivers: device driver interface to autoconfig
  */
 
-struct cfdriver xyccd = {
-	NULL, "xyc", xycmatch, xycattach, DV_DULL, sizeof(struct xyc_softc)
+struct cfattach xyc_ca = {
+	sizeof(struct xyc_softc), xycmatch, xycattach
 };
 
-struct cfdriver xycd = {
-	NULL, "xy", xymatch, xyattach, DV_DISK, sizeof(struct xy_softc)
+struct cfdriver xyc_cd = {
+	NULL, "xyc", DV_DULL
+};
+
+struct cfattach xy_ca = {
+	sizeof(struct xy_softc), xymatch, xyattach
+};
+
+struct cfdriver xy_cd = {
+	NULL, "xy", DV_DISK
 };
 
 struct xyc_attach_args {	/* this is the "aux" args to xyattach */
 	int	driveno;	/* unit number */
-	char	*dvmabuf;	/* scratch buffer for reading disk label */
+	char	*buf;		/* scratch buffer for reading disk label */
+	char	*dvmabuf;	/* DVMA address of above */
 	int	fullmode;	/* submit mode */
 	int	booting;	/* are we booting or not? */
 };
@@ -228,7 +225,7 @@ xydummystrat(bp)
 {
 	if (bp->b_bcount != XYFM_BPS)
 		panic("xydummystrat");
-	bcopy(xy_labeldata, bp->b_un.b_addr, XYFM_BPS);
+	bcopy(xy_labeldata, bp->b_data, XYFM_BPS);
 	bp->b_flags |= B_DONE;
 	bp->b_flags &= ~B_BUSY;
 }
@@ -245,35 +242,35 @@ xygetdisklabel(xy, b)
 	xy_labeldata = b;
 
 	/* Required parameter for readdisklabel() */
-	xy->sc_dk.dk_label.d_secsize = XYFM_BPS;
+	xy->sc_dk.dk_label->d_secsize = XYFM_BPS;
 
 	err = readdisklabel(MAKEDISKDEV(0, xy->sc_dev.dv_unit, RAW_PART),
 					xydummystrat,
-				&xy->sc_dk.dk_label, &xy->sc_dk.dk_cpulabel);
+				xy->sc_dk.dk_label, xy->sc_dk.dk_cpulabel, 0);
 	if (err) {
 		printf("%s: %s\n", xy->sc_dev.dv_xname, err);
 		return(XY_ERR_FAIL);
 	}
 
 	/* Ok, we have the label; fill in `pcyl' if there's SunOS magic */
-	sdl = (struct sun_disklabel *)xy->sc_dk.dk_cpulabel.cd_block;
+	sdl = (struct sun_disklabel *)xy->sc_dk.dk_cpulabel->cd_block;
 	if (sdl->sl_magic == SUN_DKMAGIC)
 		xy->pcyl = sdl->sl_pcylinders;
 	else {
-		printf("%s: WARNING: no `pcyl' in disk label.\n", 
-							xy->sc_dev.dv_xname);
-		xy->pcyl = xy->sc_dk.dk_label.d_ncylinders +
-			xy->sc_dk.dk_label.d_acylinders;
-		printf("%s: WARNING: guessing pcyl=%d (ncyl+acyl)\n", 
+		printf("%s: WARNING: no `pcyl' in disk label.\n",
+			xy->sc_dev.dv_xname);
+		xy->pcyl = xy->sc_dk.dk_label->d_ncylinders +
+			xy->sc_dk.dk_label->d_acylinders;
+		printf("%s: WARNING: guessing pcyl=%d (ncyl+acyl)\n",
 		xy->sc_dev.dv_xname, xy->pcyl);
 	}
 
-	xy->ncyl = xy->sc_dk.dk_label.d_ncylinders;
-	xy->acyl = xy->sc_dk.dk_label.d_acylinders;
-	xy->nhead = xy->sc_dk.dk_label.d_ntracks;
-	xy->nsect = xy->sc_dk.dk_label.d_nsectors;
+	xy->ncyl = xy->sc_dk.dk_label->d_ncylinders;
+	xy->acyl = xy->sc_dk.dk_label->d_acylinders;
+	xy->nhead = xy->sc_dk.dk_label->d_ntracks;
+	xy->nsect = xy->sc_dk.dk_label->d_nsectors;
 	xy->sectpercyl = xy->nhead * xy->nsect;
-	xy->sc_dk.dk_label.d_secsize = XYFM_BPS; /* not handled by
+	xy->sc_dk.dk_label->d_secsize = XYFM_BPS; /* not handled by
                                           	  * sun->bsd */
 	return(XY_ERR_AOK);
 }
@@ -291,38 +288,38 @@ xygetdisklabel(xy, b)
  * soft reset to detect the xyc.
  */
 
-int xycmatch(parent, match, aux)
+int xycmatch(parent, vcf, aux)
 	struct device *parent;
-	void   *match, *aux;
+	void *vcf, *aux;
 {
-	struct cfdata *cf = match;
+	struct cfdata *cf = vcf;
 	struct confargs *ca = aux;
 	struct romaux *ra = &ca->ca_ra;
 	struct xyc *xyc;
-	int     del = 0;
-	void	*vaddr;
 
 	if (strcmp(cf->cf_driver->cd_name, ra->ra_name))
 		return (0);
 
-	if (cputyp == CPU_SUN4) {
-		vaddr = ra->ra_vaddr;
-		if ((u_long) ra->ra_paddr & PGOFSET)
-			(u_long) vaddr |= ((u_long) ra->ra_paddr & PGOFSET);
-		xyc = (struct xyc *) vaddr;
-		if (probeget(&xyc->xyc_rsetup, 1) == -1)
+	switch (ca->ca_bustype) {
+	case BUS_OBIO:
+	case BUS_SBUS:
+	case BUS_VME32:
+	default:
+		return (0);
+	case BUS_VME16:
+		xyc = (struct xyc *) ra->ra_vaddr;
+		if (probeget((caddr_t) &xyc->xyc_rsetup, 1) == -1)
 			return (0);
 		if (xyc_unbusy(xyc, XYC_RESETUSEC) == XY_ERR_FAIL)
 			return(0);
-		ra->ra_len = NBPG;
+		return (1);
 	}
-	return (1);
 }
 
 /*
  * xycattach: attach controller
  */
-void 
+void
 xycattach(parent, self, aux)
 	struct device *parent, *self;
 	void   *aux;
@@ -333,16 +330,13 @@ xycattach(parent, self, aux)
 	struct xyc_attach_args xa;
 	int     lcv, err, pri, res, pbsz;
 	void	*tmp, *tmp2;
+	void	*dtmp, *dtmp2;
 	u_long	ultmp;
 
 	/* get addressing and intr level stuff from autoconfig and load it
 	 * into our xyc_softc. */
 
-	ca->ca_ra.ra_vaddr = mapiodev(ca->ca_ra.ra_paddr,
-	    ca->ca_ra.ra_len, ca->ca_bustype);
-	if ((u_long) ca->ca_ra.ra_paddr & PGOFSET)
-		(u_long) ca->ca_ra.ra_vaddr |=
-				((u_long) ca->ca_ra.ra_paddr & PGOFSET);
+	ca->ca_ra.ra_vaddr = mapiodev(ca->ca_ra.ra_reg, 0, sizeof(struct xyc));
 
 	xyc->xyc = (struct xyc *) ca->ca_ra.ra_vaddr;
 	pri = ca->ca_ra.ra_intr[0].int_pri;
@@ -354,37 +348,40 @@ xycattach(parent, self, aux)
 	for (lcv = 0; lcv < XYC_MAXDEV; lcv++)
 		xyc->sc_drives[lcv] = (struct xy_softc *) 0;
 
-	/* 
+	/*
 	 * allocate and zero buffers
-	 * check boundaries of the KVA's ... all IOPBs must reside in 
- 	 * the same 64K region. 
+	 * check boundaries of the KVA's ... all IOPBs must reside in
+ 	 * the same 64K region.
 	 */
 
 	pbsz = XYC_MAXIOPB * sizeof(struct xy_iopb);
-	tmp = tmp2 = (struct xy_iopb *) dvma_malloc(pbsz);	/* KVA */
-	ultmp = (u_long) tmp;
+	dtmp = dtmp2 = (struct xy_iopb *)dvma_malloc(pbsz, &tmp, M_NOWAIT);
+	tmp2 = tmp;
+	ultmp = (u_long) dtmp;
 	if ((ultmp & 0xffff0000) != ((ultmp + pbsz) & 0xffff0000)) {
-		tmp = (struct xy_iopb *) dvma_malloc(pbsz); /* retry! */
-		dvma_free(tmp2, pbsz);
-		ultmp = (u_long) tmp;
+		dtmp = (struct xy_iopb *)
+		    dvma_malloc(pbsz, &tmp, M_NOWAIT); /* retry! */
+		dvma_free(dtmp2, pbsz, &tmp2);
+		ultmp = (u_long) dtmp;
 		if ((ultmp & 0xffff0000) != ((ultmp + pbsz) & 0xffff0000)) {
-			printf("%s: can't alloc IOPB mem in 64K\n", 
+			printf("%s: can't alloc IOPB mem in 64K\n",
 				xyc->sc_dev.dv_xname);
 			return;
 		}
 	}
+	bzero(tmp, pbsz);
 	xyc->iopbase = tmp;
-	bzero(xyc->iopbase, pbsz);
-	xyc->dvmaiopb = (struct xy_iopb *) ((u_long) xyc->iopbase - DVMA_BASE);
+	xyc->iopbase = dtmp; /* XXX TMP HACK */
+	xyc->dvmaiopb = (struct xy_iopb *) ((u_long)dtmp - DVMA_BASE);
 	xyc->reqs = (struct xy_iorq *)
 	    malloc(XYC_MAXIOPB * sizeof(struct xy_iorq), M_DEVBUF, M_NOWAIT);
-	bzero(xyc->reqs, XYC_MAXIOPB * sizeof(struct xy_iorq));
 	if (xyc->reqs == NULL)
 		panic("xyc malloc");
+	bzero(xyc->reqs, XYC_MAXIOPB * sizeof(struct xy_iorq));
 
-	/* 
+	/*
 	 * init iorq to iopb pointers, and non-zero fields in the
-	 * iopb which never change. 
+	 * iopb which never change.
 	 */
 
 	for (lcv = 0; lcv < XYC_MAXIOPB; lcv++) {
@@ -422,8 +419,8 @@ xycattach(parent, self, aux)
 		return;
 	}
 	if ((xyc->xyc->xyc_csr & XYC_ADRM) == 0) {
-		printf("%s: 24 bit addressing turned off\n", 
-						xyc->sc_dev.dv_xname);
+		printf("%s: 24 bit addressing turned off\n",
+			xyc->sc_dev.dv_xname);
 		printf("please set hardware jumpers JM1-JM2=in, JM3-JM4=out\n");
 		printf("to enable 24 bit mode and this driver\n");
 		return;
@@ -434,12 +431,11 @@ xycattach(parent, self, aux)
 	xyc->sc_ih.ih_fun = xycintr;
 	xyc->sc_ih.ih_arg = xyc;
 	vmeintr_establish(ca->ca_ra.ra_intr[0].int_vec,
-			  ca->ca_ra.ra_intr[0].int_pri, &xyc->sc_ih);
-	evcnt_attach(&xyc->sc_dev, "intr", &xyc->sc_intrcnt);
-
+	    ca->ca_ra.ra_intr[0].int_pri, &xyc->sc_ih, IPL_BIO,
+	    self->dv_xname);
 
 	/* now we must look for disks using autoconfig */
-	xa.dvmabuf = (char *) dvma_malloc(XYFM_BPS);
+	xa.dvmabuf = (char *)dvma_malloc(XYFM_BPS, &xa.buf, M_NOWAIT);
 	xa.fullmode = XY_SUB_POLL;
 	xa.booting = 1;
 
@@ -451,11 +447,12 @@ xycattach(parent, self, aux)
 	for (xa.driveno = 0; xa.driveno < XYC_MAXDEV; xa.driveno++)
 		(void) config_found(self, (void *) &xa, NULL);
 
-	dvma_free(xa.dvmabuf, XYFM_BPS);
+	dvma_free(xa.dvmabuf, XYFM_BPS, &xa.buf);
 	bootpath_store(1, NULL);
 
 	/* start the watchdog clock */
-	timeout(xyc_tick, xyc, XYC_TICKCNT);
+	timeout_set(&xyc->xyc_tick_tmo, xyc_tick, xyc);
+	timeout_add(&xyc->xyc_tick_tmo, XYC_TICKCNT);
 
 }
 
@@ -466,14 +463,12 @@ xycattach(parent, self, aux)
  * spin up and configure a disk after the system is booted (we can
  * call xyattach!).
  */
-int 
-xymatch(parent, match, aux)
+int
+xymatch(parent, vcf, aux)
 	struct device *parent;
-	void   *match, *aux;
-
+	void *vcf, *aux;
 {
-	struct xyc_softc *xyc = (void *) parent;
-	struct cfdata *cf = match;
+	struct cfdata *cf = vcf;
 	struct xyc_attach_args *xa = aux;
 
 	/* looking for autoconf wildcard or exact match */
@@ -489,7 +484,7 @@ xymatch(parent, match, aux)
  * xyattach: attach a disk.   this can be called from autoconf and also
  * from xyopen/xystrategy.
  */
-void 
+void
 xyattach(parent, self, aux)
 	struct device *parent, *self;
 	void   *aux;
@@ -498,9 +493,17 @@ xyattach(parent, self, aux)
 	struct xy_softc *xy = (void *) self, *oxy;
 	struct xyc_softc *xyc = (void *) parent;
 	struct xyc_attach_args *xa = aux;
-	int     res, err, spt, mb, blk, lcv, fmode, s, newstate;
+	int     err, spt, mb, blk, lcv, fmode, s = 0, newstate;
 	struct dkbad *dkb;
 	struct bootpath *bp;
+
+	/*
+	 * Always re-initialize the disk structure.  We want statistics
+	 * to start with a clean slate.
+	 */
+	bzero(&xy->sc_dk, sizeof(xy->sc_dk));
+	xy->sc_dk.dk_driver = &xydkdriver;
+	xy->sc_dk.dk_name = xy->sc_dev.dv_xname;
 
 	/* if booting, init the xy_softc */
 
@@ -565,13 +568,13 @@ xyattach(parent, self, aux)
 	xy->nsect = 1;
 	xy->sectpercyl = 1;
 	for (lcv = 0; lcv < 126; lcv++)	/* init empty bad144 table */
-		xy->dkb.bt_bad[lcv].bt_cyl = 
+		xy->dkb.bt_bad[lcv].bt_cyl =
 			xy->dkb.bt_bad[lcv].bt_trksec = 0xffff;
 
 	/* read disk label */
-	for (xy->drive_type = 0 ; xy->drive_type <= XYC_MAXDT ; 
+	for (xy->drive_type = 0 ; xy->drive_type <= XYC_MAXDT ;
 						xy->drive_type++) {
-		err = xyc_cmd(xyc, XYCMD_RD, 0, xy->xy_drive, 0, 1, 
+		err = xyc_cmd(xyc, XYCMD_RD, 0, xy->xy_drive, 0, 1,
 						xa->dvmabuf, fmode);
 		XYC_DONE(xyc, err);
 		if (err == XY_ERR_AOK) break;
@@ -587,12 +590,15 @@ xyattach(parent, self, aux)
 	newstate = XY_DRIVE_NOLABEL;
 
 	xy->hw_spt = spt = 0; /* XXX needed ? */
-	if (xygetdisklabel(xy, xa->dvmabuf) != XY_ERR_AOK)
+	/* Attach the disk: must be before getdisklabel to malloc label */
+	disk_attach(&xy->sc_dk);
+
+	if (xygetdisklabel(xy, xa->buf) != XY_ERR_AOK)
 		goto done;
 
 	/* inform the user of what is up */
 	printf("%s: <%s>, pcyl %d\n", xy->sc_dev.dv_xname,
-		xa->dvmabuf, xy->pcyl);
+		xa->buf, xy->pcyl);
 	mb = xy->ncyl * (xy->nhead * xy->nsect) / (1048576 / XYFM_BPS);
 	printf("%s: %dMB, %d cyl, %d head, %d sec, %d bytes/sec\n",
 		xy->sc_dev.dv_xname, mb, xy->ncyl, xy->nhead, xy->nsect,
@@ -602,9 +608,9 @@ xyattach(parent, self, aux)
 	 * 450/451 stupidity: the drive type is encoded into the format
 	 * of the disk.   the drive type in the IOPB must match the drive
 	 * type in the format, or you will not be able to do I/O to the
-	 * disk (you get header not found errors).  if you have two drives 
-	 * of different sizes that have the same drive type in their 
-	 * formatting then you are out of luck.    
+	 * disk (you get header not found errors).  if you have two drives
+	 * of different sizes that have the same drive type in their
+	 * formatting then you are out of luck.
 	 *
 	 * this problem was corrected in the 753/7053.
 	 */
@@ -621,7 +627,7 @@ xyattach(parent, self, aux)
 			panic("xy drive size mismatch");
 		}
 	}
-		
+
 
 	/* now set the real drive parameters! */
 
@@ -642,10 +648,10 @@ xyattach(parent, self, aux)
 	 * last track of the disk (i.e. second cyl of "acyl" area).
 	 */
 
-	blk = (xy->ncyl + xy->acyl - 1) * (xy->nhead * xy->nsect) + 
+	blk = (xy->ncyl + xy->acyl - 1) * (xy->nhead * xy->nsect) +
 								/* last cyl */
 	    (xy->nhead - 1) * xy->nsect;	/* last head */
-	err = xyc_cmd(xyc, XYCMD_RD, 0, xy->xy_drive, blk, 1, 
+	err = xyc_cmd(xyc, XYCMD_RD, 0, xy->xy_drive, blk, 1,
 						xa->dvmabuf, fmode);
 	XYC_DONE(xyc, err);
 	if (err) {
@@ -655,7 +661,7 @@ xyattach(parent, self, aux)
 	}
 
 	/* check dkbad for sanity */
-	dkb = (struct dkbad *) xa->dvmabuf;
+	dkb = (struct dkbad *) xa->buf;
 	for (lcv = 0; lcv < 126; lcv++) {
 		if ((dkb->bt_bad[lcv].bt_cyl == 0xffff ||
 				dkb->bt_bad[lcv].bt_cyl == 0) &&
@@ -672,20 +678,18 @@ xyattach(parent, self, aux)
 		printf("%s: warning: invalid bad144 sector!\n",
 			xy->sc_dev.dv_xname);
 	} else {
-		bcopy(xa->dvmabuf, &xy->dkb, XYFM_BPS);
+		bcopy(xa->buf, &xy->dkb, XYFM_BPS);
 	}
 
 	if (xa->booting) {
-		xy->sc_dk.dk_driver = &xydkdriver;	/* link in dkdriver */
-
 		/* restore bootpath! (do this via attach_args again?)*/
 		bp = bootpath_store(0, NULL);
-		if (bp && strcmp("xy", bp->name) == 0 && 
-						xy->xy_drive == bp->val[0])
-			bootdv = &xy->sc_dev;
+		if (bp && strcmp("xy", bp->name) == 0 &&
+					xy->xy_drive == bp->val[0])
+			bp->dev = &xy->sc_dev;
 	}
 
-	dk_establish(&xy->sc_dk, &xy->sc_dev);
+	dk_establish(&xy->sc_dk, &xy->sc_dev);		/* XXX */
 
 done:
 	xy->state = newstate;
@@ -706,13 +710,14 @@ done:
 /*
  * xyclose: close device
  */
-int 
-xyclose(dev, flag, fmt)
+int
+xyclose(dev, flag, fmt, p)
 	dev_t   dev;
 	int     flag, fmt;
+	struct proc *p;
 
 {
-	struct xy_softc *xy = xycd.cd_devs[DISKUNIT(dev)];
+	struct xy_softc *xy = xy_cd.cd_devs[DISKUNIT(dev)];
 	int     part = DISKPART(dev);
 
 	/* clear mask bits */
@@ -733,20 +738,22 @@ xyclose(dev, flag, fmt)
 /*
  * xydump: crash dump system
  */
-int 
-xydump(dev)
-	dev_t   dev;
-
+int
+xydump(dev, blkno, va, size)
+	dev_t dev;
+	daddr_t blkno;
+	caddr_t va;
+	size_t size;
 {
 	int     unit, part;
 	struct xy_softc *xy;
 
 	unit = DISKUNIT(dev);
-	if (unit >= xycd.cd_ndevs)
+	if (unit >= xy_cd.cd_ndevs)
 		return ENXIO;
 	part = DISKPART(dev);
 
-	xy = xycd.cd_devs[unit];
+	xy = xy_cd.cd_devs[unit];
 
 	printf("%s%c: crash dump not supported (yet)\n", xy->sc_dev.dv_xname,
 	    'a' + part);
@@ -758,11 +765,11 @@ xydump(dev)
 	 * "dumpsize" == size of dump in clicks "physmem" == size of physical
 	 * memory (clicks, ctob() to get bytes) (normal case: dumpsize ==
 	 * physmem)
-	 * 
+	 *
 	 * dump a copy of physical memory to the dump device starting at sector
 	 * "dumplo" in the swap partition (make sure > 0).   map in pages as
 	 * we go.   use polled I/O.
-	 * 
+	 *
 	 * XXX how to handle NON_CONTIG? */
 
 }
@@ -770,7 +777,7 @@ xydump(dev)
 /*
  * xyioctl: ioctls on XY drives.   based on ioctl's of other netbsd disks.
  */
-int 
+int
 xyioctl(dev, command, addr, flag, p)
 	dev_t   dev;
 	u_long  command;
@@ -785,7 +792,7 @@ xyioctl(dev, command, addr, flag, p)
 
 	unit = DISKUNIT(dev);
 
-	if (unit >= xycd.cd_ndevs || (xy = xycd.cd_devs[unit]) == NULL)
+	if (unit >= xy_cd.cd_ndevs || (xy = xy_cd.cd_devs[unit]) == NULL)
 		return (ENXIO);
 
 	/* switch on ioctl type */
@@ -800,21 +807,21 @@ xyioctl(dev, command, addr, flag, p)
 		return 0;
 
 	case DIOCGDINFO:	/* get disk label */
-		bcopy(&xy->sc_dk.dk_label, addr, sizeof(struct disklabel));
+		bcopy(xy->sc_dk.dk_label, addr, sizeof(struct disklabel));
 		return 0;
 
 	case DIOCGPART:	/* get partition info */
-		((struct partinfo *) addr)->disklab = &xy->sc_dk.dk_label;
+		((struct partinfo *) addr)->disklab = xy->sc_dk.dk_label;
 		((struct partinfo *) addr)->part =
-		    &xy->sc_dk.dk_label.d_partitions[DISKPART(dev)];
+		    &xy->sc_dk.dk_label->d_partitions[DISKPART(dev)];
 		return 0;
 
 	case DIOCSDINFO:	/* set disk label */
 		if ((flag & FWRITE) == 0)
 			return EBADF;
-		error = setdisklabel(&xy->sc_dk.dk_label,
+		error = setdisklabel(xy->sc_dk.dk_label,
 		    (struct disklabel *) addr, /* xy->sc_dk.dk_openmask : */ 0,
-		    &xy->sc_dk.dk_cpulabel);
+		    xy->sc_dk.dk_cpulabel);
 		if (error == 0) {
 			if (xy->state == XY_DRIVE_NOLABEL)
 				xy->state = XY_DRIVE_ONLINE;
@@ -833,9 +840,9 @@ xyioctl(dev, command, addr, flag, p)
 	case DIOCWDINFO:	/* write disk label */
 		if ((flag & FWRITE) == 0)
 			return EBADF;
-		error = setdisklabel(&xy->sc_dk.dk_label,
+		error = setdisklabel(xy->sc_dk.dk_label,
 		    (struct disklabel *) addr, /* xy->sc_dk.dk_openmask : */ 0,
-		    &xy->sc_dk.dk_cpulabel);
+		    xy->sc_dk.dk_cpulabel);
 		if (error == 0) {
 			if (xy->state == XY_DRIVE_NOLABEL)
 				xy->state = XY_DRIVE_ONLINE;
@@ -843,8 +850,8 @@ xyioctl(dev, command, addr, flag, p)
 			/* Simulate opening partition 0 so write succeeds. */
 			xy->sc_dk.dk_openmask |= (1 << 0);
 			error = writedisklabel(MAKEDISKDEV(major(dev), DISKUNIT(dev), RAW_PART),
-			    xystrategy, &xy->sc_dk.dk_label,
-			    &xy->sc_dk.dk_cpulabel);
+			    xystrategy, xy->sc_dk.dk_label,
+			    xy->sc_dk.dk_cpulabel);
 			xy->sc_dk.dk_openmask =
 			    xy->sc_dk.dk_copenmask | xy->sc_dk.dk_bopenmask;
 		}
@@ -852,7 +859,7 @@ xyioctl(dev, command, addr, flag, p)
 
 	case DIOSXDCMD:
 		xio = (struct xd_iocmd *) addr;
-		if ((error = suser(p->p_ucred, &p->p_acflag)) != 0)
+		if ((error = suser(p, 0)) != 0)
 			return (error);
 		return (xyc_ioctlcmd(xy, dev, xio));
 
@@ -865,11 +872,11 @@ xyioctl(dev, command, addr, flag, p)
  * xyopen: open drive
  */
 
-int 
-xyopen(dev, flag, fmt)
+int
+xyopen(dev, flag, fmt, p)
 	dev_t   dev;
 	int     flag, fmt;
-
+	struct proc *p;
 {
 	int     unit, part;
 	struct xy_softc *xy;
@@ -878,7 +885,7 @@ xyopen(dev, flag, fmt)
 	/* first, could it be a valid target? */
 
 	unit = DISKUNIT(dev);
-	if (unit >= xycd.cd_ndevs || (xy = xycd.cd_devs[unit]) == NULL)
+	if (unit >= xy_cd.cd_ndevs || (xy = xy_cd.cd_devs[unit]) == NULL)
 		return (ENXIO);
 	part = DISKPART(dev);
 
@@ -886,12 +893,12 @@ xyopen(dev, flag, fmt)
 
 	if (xy->state == XY_DRIVE_UNKNOWN) {
 		xa.driveno = xy->xy_drive;
-		xa.dvmabuf = (char *) dvma_malloc(XYFM_BPS);
+		xa.dvmabuf = (char *)dvma_malloc(XYFM_BPS, &xa.buf, M_NOWAIT);
 		xa.fullmode = XY_SUB_WAIT;
 		xa.booting = 0;
-		xyattach((struct device *) xy->parent, 
+		xyattach((struct device *) xy->parent,
 						(struct device *) xy, &xa);
-		dvma_free(xa.dvmabuf, XYFM_BPS);
+		dvma_free(xa.dvmabuf, XYFM_BPS, &xa.buf);
 		if (xy->state == XY_DRIVE_UNKNOWN) {
 			return (EIO);
 		}
@@ -899,8 +906,8 @@ xyopen(dev, flag, fmt)
 	/* check for partition */
 
 	if (part != RAW_PART &&
-	    (part >= xy->sc_dk.dk_label.d_npartitions ||
-		xy->sc_dk.dk_label.d_partitions[part].p_fstype == FS_UNUSED)) {
+	    (part >= xy->sc_dk.dk_label->d_npartitions ||
+		xy->sc_dk.dk_label->d_partitions[part].p_fstype == FS_UNUSED)) {
 		return (ENXIO);
 	}
 	/* set open masks */
@@ -919,18 +926,20 @@ xyopen(dev, flag, fmt)
 }
 
 int
-xyread(dev, uio)
+xyread(dev, uio, flags)
 	dev_t   dev;
 	struct uio *uio;
+	int flags;
 {
 
 	return (physio(xystrategy, NULL, dev, B_READ, minphys, uio));
 }
 
 int
-xywrite(dev, uio)
+xywrite(dev, uio, flags)
 	dev_t   dev;
 	struct uio *uio;
+	int flags;
 {
 
 	return (physio(xystrategy, NULL, dev, B_WRITE, minphys, uio));
@@ -941,44 +950,46 @@ xywrite(dev, uio)
  * xysize: return size of a partition for a dump
  */
 
-int 
+int
 xysize(dev)
 	dev_t   dev;
 
 {
 	struct xy_softc *xysc;
-	int     unit, part, size;
+	int     unit, part, size, omask;
 
-	/* valid unit?  try an open */
+	/* valid unit? */
+	unit = DISKUNIT(dev);
+	if (unit >= xy_cd.cd_ndevs || (xysc = xy_cd.cd_devs[unit]) == NULL)
+		return (-1);
 
-	if (xyopen(dev, 0, S_IFBLK) != 0)
+	part = DISKPART(dev);
+	omask = xysc->sc_dk.dk_openmask & (1 << part);
+
+	if (omask == 0 && xyopen(dev, 0, S_IFBLK, NULL) != 0)
 		return (-1);
 
 	/* do it */
-
-	xysc = xycd.cd_devs[DISKUNIT(dev)];
-	part = DISKPART(dev);
-	if (xysc->sc_dk.dk_label.d_partitions[part].p_fstype != FS_SWAP)
+	if (xysc->sc_dk.dk_label->d_partitions[part].p_fstype != FS_SWAP)
 		size = -1;	/* only give valid size for swap partitions */
 	else
-		size = xysc->sc_dk.dk_label.d_partitions[part].p_size;
-	if (xyclose(dev, 0, S_IFBLK) != 0)
-		return -1;
-	return size;
+		size = xysc->sc_dk.dk_label->d_partitions[part].p_size *
+		    (xysc->sc_dk.dk_label->d_secsize / DEV_BSIZE);
+	if (omask == 0 && xyclose(dev, 0, S_IFBLK, NULL) != 0)
+		return (-1);
+	return (size);
 }
 
 /*
  * xystrategy: buffering system interface to xy.
  */
 
-void 
+void
 xystrategy(bp)
 	struct buf *bp;
 
 {
 	struct xy_softc *xy;
-	struct xyc_softc *parent;
-	struct buf *wq;
 	int     s, unit;
 	struct xyc_attach_args xa;
 
@@ -986,9 +997,9 @@ xystrategy(bp)
 
 	/* check for live device */
 
-	if (unit >= xycd.cd_ndevs || (xy = xycd.cd_devs[unit]) == 0 ||
+	if (unit >= xy_cd.cd_ndevs || (xy = xy_cd.cd_devs[unit]) == 0 ||
 	    bp->b_blkno < 0 ||
-	    (bp->b_bcount % xy->sc_dk.dk_label.d_secsize) != 0) {
+	    (bp->b_bcount % xy->sc_dk.dk_label->d_secsize) != 0) {
 		bp->b_error = EINVAL;
 		goto bad;
 	}
@@ -996,11 +1007,11 @@ xystrategy(bp)
 
 	if (xy->state == XY_DRIVE_UNKNOWN) {
 		xa.driveno = xy->xy_drive;
-		xa.dvmabuf = (char *) dvma_malloc(XYFM_BPS);
+		xa.dvmabuf = (char *)dvma_malloc(XYFM_BPS, &xa.buf, M_NOWAIT);
 		xa.fullmode = XY_SUB_WAIT;
 		xa.booting = 0;
 		xyattach((struct device *)xy->parent, (struct device *)xy, &xa);
-		dvma_free(xa.dvmabuf, XYFM_BPS);
+		dvma_free(xa.dvmabuf, XYFM_BPS, &xa.buf);
 		if (xy->state == XY_DRIVE_UNKNOWN) {
 			bp->b_error = EIO;
 			goto bad;
@@ -1021,42 +1032,14 @@ xystrategy(bp)
 	 * partition. Adjust transfer if needed, and signal errors or early
 	 * completion. */
 
-	if (bounds_check_with_label(bp, &xy->sc_dk.dk_label,
-		(xy->flags & XY_WLABEL) != 0) <= 0)
+	if (bounds_check_with_label(bp, xy->sc_dk.dk_label,
+	    xy->sc_dk.dk_cpulabel, (xy->flags & XY_WLABEL) != 0) <= 0)
 		goto done;
 
 	/*
 	 * now we know we have a valid buf structure that we need to do I/O
 	 * on.
 	 */
-
-	{			/* XXX DVMA mapin */
-
-		/* DVMA: if we've got a kernel buf structure we map it into
-		 * DVMA space here.   the advantage to this is that it allows
-		 * us to sleep if there isn't space in the DVMA area.   the
-		 * disadvantage to this is that we are mapping this in earlier
-		 * than we have to, and thus possibly wasting DVMA space.   in
-		 * an ideal world we would like to map it in once we know we
-		 * can submit an IOPB (at this point we don't know if we can
-		 * submit or not).   (XXX) If the DVMA system gets redone this
-		 * mapin can be moved elsewhere. */
-
-		caddr_t x;
-		if ((bp->b_flags & B_PHYS) == 0) {
-			x = dvma_mapin(kernel_map, (vm_offset_t)bp->b_data,
-					bp->b_bcount, 1);
-			if (x == NULL)
-				panic("xy mapin");
-			bp->b_error = (int) x;	/* XXX we store DVMA addr in
-						 * b_error, thus overloading
-						 * it.    VERY ugly.  note
-						 * that xd.c uses b_resid, but
-						 * we can't because disksort
-						 * uses it */
-		}
-	} /* XXX end DVMA mapin */
-
 	s = splbio();		/* protect the queues */
 
 	disksort(&xy->xyq, bp);
@@ -1075,7 +1058,9 @@ bad:				/* tells upper layers we have an error */
 done:				/* tells upper layers we are done with this
 				 * buf */
 	bp->b_resid = bp->b_bcount;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 /*
  * end of {b,c}devsw functions
@@ -1086,18 +1071,12 @@ done:				/* tells upper layers we are done with this
  *
  * xycintr: hardware interrupt.
  */
-int 
+int
 xycintr(v)
 	void   *v;
 
 {
 	struct xyc_softc *xycsc = v;
-	struct xy_softc *xy;
-	struct buf *bp;
-
-	/* kick the event counter */
-
-	xycsc->sc_intrcnt.ev_count++;
 
 	/* remove as many done IOPBs as possible */
 
@@ -1121,7 +1100,7 @@ xycintr(v)
  * xyc_rqinit: fill out the fields of an I/O request
  */
 
-inline void 
+inline void
 xyc_rqinit(rq, xyc, xy, md, blk, cnt, db, bp)
 	struct xy_iorq *rq;
 	struct xyc_softc *xyc;
@@ -1147,7 +1126,7 @@ xyc_rqinit(rq, xyc, xy, md, blk, cnt, db, bp)
  * xyc_rqtopb: load up an IOPB based on an iorq
  */
 
-void 
+void
 xyc_rqtopb(iorq, iopb, cmd, subfun)
 	struct xy_iorq *iorq;
 	struct xy_iopb *iopb;
@@ -1215,9 +1194,9 @@ int del;
 
 /*
  * xyc_cmd: front end for POLL'd and WAIT'd commands.  Returns 0 or error.
- * note that NORM requests are handled seperately.
+ * note that NORM requests are handled separately.
  */
-int 
+int
 xyc_cmd(xycsc, cmd, subfn, unit, block, scnt, dptr, fullmode)
 	struct xyc_softc *xycsc;
 	int     cmd, subfn, unit, block, scnt;
@@ -1225,8 +1204,7 @@ xyc_cmd(xycsc, cmd, subfn, unit, block, scnt, dptr, fullmode)
 	int     fullmode;
 
 {
-	int     submode = XY_STATE(fullmode), retry;
-	u_long  dp;
+	int     submode = XY_STATE(fullmode);
 	struct xy_iorq *iorq = xycsc->ciorq;
 	struct xy_iopb *iopb = xycsc->ciopb;
 
@@ -1235,7 +1213,7 @@ xyc_cmd(xycsc, cmd, subfn, unit, block, scnt, dptr, fullmode)
 	 */
 start:
 	if (submode == XY_SUB_WAIT && XY_STATE(iorq->mode) != XY_SUB_FREE) {
-		if (tsleep(iorq, PRIBIO, "xyc_cmd", 0)) 
+		if (tsleep(iorq, PRIBIO, "xyc_cmd", 0))
                                 return(XY_ERR_FAIL);
 		goto start;
 	}
@@ -1268,7 +1246,7 @@ start:
  * start a buffer for running
  */
 
-int 
+int
 xyc_startbuf(xycsc, xysc, bp)
 	struct xyc_softc *xycsc;
 	struct xy_softc *xysc;
@@ -1278,7 +1256,7 @@ xyc_startbuf(xycsc, xysc, bp)
 	int     partno;
 	struct xy_iorq *iorq;
 	struct xy_iopb *iopb;
-	u_long  block, dp;
+	u_long  block;
 	caddr_t dbuf;
 
 	iorq = xysc->xyrq;
@@ -1286,7 +1264,7 @@ xyc_startbuf(xycsc, xysc, bp)
 
 	/* get buf */
 
-	if (bp == NULL) 
+	if (bp == NULL)
 		panic("xyc_startbuf null buf");
 
 	partno = DISKPART(bp->b_dev);
@@ -1300,43 +1278,20 @@ xyc_startbuf(xycsc, xysc, bp)
 	/*
 	 * load request.  we have to calculate the correct block number based
 	 * on partition info.
-	 * 
-	 * also, note that there are two kinds of buf structures, those with
-	 * B_PHYS set and those without B_PHYS.   if B_PHYS is set, then it is
-	 * a raw I/O (to a cdevsw) and we are doing I/O directly to the users'
-	 * buffer which has already been mapped into DVMA space. however, if
-	 * B_PHYS is not set, then the buffer is a normal system buffer which
-	 * does *not* live in DVMA space.   in that case we call dvma_mapin to
-	 * map it into DVMA space so we can do the DMA I/O to it.
-	 * 
-	 * in cases where we do a dvma_mapin, note that iorq points to the buffer
-	 * as mapped into DVMA space, where as the bp->b_data points to its
-	 * non-DVMA mapping.
+	 *
+	 * note that iorq points to the buffer as mapped into DVMA space,
+	 * where as the bp->b_data points to its non-DVMA mapping.
 	 */
 
 	block = bp->b_blkno + ((partno == RAW_PART) ? 0 :
-	    xysc->sc_dk.dk_label.d_partitions[partno].p_offset);
+	    xysc->sc_dk.dk_label->d_partitions[partno].p_offset);
 
-	if ((bp->b_flags & B_PHYS) == 0) {
-		dbuf = (caddr_t) bp->b_error;	/* XXX: overloaded error from
-						 * xystrategy() */
-		bp->b_error = 0;		/* XXX? */
-#ifdef someday
-
-		/* XXX: this is where we would really like to do the DVMA
-		 * mapin, but we get called from intr here so we can't sleep
-		 * so we can't do it. */
-		/* allocate DVMA, map in */
-
-		if (dbuf == NULL) {	/* out of DVMA space */
-			printf("%s: warning: out of DVMA space\n", 
-						xycsc->sc_dev.dv_xname);
-			return (XY_ERR_FAIL);	/* XXX: need some sort of
-						 * call-back scheme here? */
-		}
-#endif				/* someday */
-	} else {
-		dbuf = bp->b_data;
+	dbuf = kdvma_mapin(bp->b_data, bp->b_bcount, 0);
+	if (dbuf == NULL) {	/* out of DVMA space */
+		printf("%s: warning: out of DVMA space\n",
+			xycsc->sc_dev.dv_xname);
+		return (XY_ERR_FAIL);	/* XXX: need some sort of
+					 * call-back scheme here? */
 	}
 
 	/* init iorq and load iopb from it */
@@ -1345,6 +1300,9 @@ xyc_startbuf(xycsc, xysc, bp)
 	    bp->b_bcount / XYFM_BPS, dbuf, bp);
 
 	xyc_rqtopb(iorq, iopb, (bp->b_flags & B_READ) ? XYCMD_RD : XYCMD_WR, 0);
+
+	/* Instrumentation. */
+	disk_busy(&xysc->sc_dk);
 
 	return (XY_ERR_AOK);
 }
@@ -1374,17 +1332,17 @@ xyc_startbuf(xycsc, xysc, bp)
  * time, where as a 451 can take them in chains.  [the 450 claims it
  * can handle chains, but is appears to be buggy...]   iopb are allocated
  * in DVMA space at boot up time.  each disk gets one iopb, and the
- * controller gets one (for POLL and WAIT commands).  what happens if 
- * the iopb is busy?  for i/o type [1], the buffers are queued at the 
- * "buff" layer and * picked up later by the interrupt routine.  for case 
+ * controller gets one (for POLL and WAIT commands).  what happens if
+ * the iopb is busy?  for i/o type [1], the buffers are queued at the
+ * "buff" layer and * picked up later by the interrupt routine.  for case
  * [2] we can only be blocked if there is a WAIT type I/O request being
  * run.   since this can only happen when we are crashing, we wait a sec
  * and then steal the IOPB.  for case [3] the process can sleep
- * on the iorq free list until some iopbs are avaliable.
+ * on the iorq free list until some iopbs are available.
  */
 
 
-int 
+int
 xyc_submit_iorq(xycsc, iorq, type)
 	struct xyc_softc *xycsc;
 	struct xy_iorq *iorq;
@@ -1395,7 +1353,7 @@ xyc_submit_iorq(xycsc, iorq, type)
 	u_long  iopbaddr;
 
 #ifdef XYC_DEBUG
-	printf("xyc_submit_iorq(%s, addr=0x%x, type=%d)\n", 
+	printf("xyc_submit_iorq(%s, addr=0x%x, type=%d)\n",
 		xycsc->sc_dev.dv_xname, iorq, type);
 #endif
 
@@ -1411,7 +1369,7 @@ xyc_submit_iorq(xycsc, iorq, type)
 			return XY_ERR_AOK;	/* success */
 		case XY_SUB_WAIT:
 			while (iorq->iopb->done == 0) {
-				sleep(iorq, PRIBIO);
+				tsleep(iorq, PRIBIO, "xyiorq", 0);
 			}
 			return (iorq->errno);
 		case XY_SUB_POLL:		/* steal controller */
@@ -1428,12 +1386,12 @@ xyc_submit_iorq(xycsc, iorq, type)
 
 	iopb = xyc_chain(xycsc, iorq);	 /* build chain */
 	if (iopb == NULL) { /* nothing doing? */
-		if (type == XY_SUB_NORM || type == XY_SUB_NOQ) 
+		if (type == XY_SUB_NORM || type == XY_SUB_NOQ)
 			return(XY_ERR_AOK);
-		panic("xyc_submit_iorq: xyc_chain failed!\n");
+		panic("xyc_submit_iorq: xyc_chain failed!");
 	}
 	iopbaddr = (u_long) iopb - DVMA_BASE;
-	
+
 	XYC_GO(xycsc->xyc, iopbaddr);
 
 	/* command now running, wrap it up */
@@ -1443,7 +1401,7 @@ xyc_submit_iorq(xycsc, iorq, type)
 		return (XY_ERR_AOK);	/* success */
 	case XY_SUB_WAIT:
 		while (iorq->iopb->done == 0) {
-			sleep(iorq, PRIBIO);
+			tsleep(iorq, PRIBIO, "xyiorq", 0);
 		}
 		return (iorq->errno);
 	case XY_SUB_POLL:
@@ -1481,11 +1439,11 @@ struct xy_iorq *iorq;
 		xycsc->iopbase[XYC_CTLIOPB].done == 0)
     iorq = &xycsc->reqs[XYC_CTLIOPB];
   }
-  /* 
+  /*
    * special case: if iorq != NULL then we have a POLL or WAIT request.
    * we let these take priority and do them first.
    */
-  if (iorq) { 
+  if (iorq) {
     xycsc->xy_chain[0] = iorq;
     iorq->iopb->chen = 0;
     return(iorq->iopb);
@@ -1526,9 +1484,9 @@ struct xy_iorq *iorq;
  *
  * programmed i/o driver.   this function takes over the computer
  * and drains off the polled i/o request.   it returns the status of the iorq
- * the caller is interesting in.   
+ * the caller is interesting in.
  */
-int 
+int
 xyc_piodriver(xycsc, iorq)
 	struct xyc_softc *xycsc;
 	struct xy_iorq  *iorq;
@@ -1537,7 +1495,6 @@ xyc_piodriver(xycsc, iorq)
 	int     nreset = 0;
 	int     retval = 0;
 	u_long  res;
-	struct xyc *xyc = xycsc->xyc;
 #ifdef XYC_DEBUG
 	printf("xyc_piodriver(%s, 0x%x)\n", xycsc->sc_dev.dv_xname, iorq);
 #endif
@@ -1581,7 +1538,7 @@ xyc_piodriver(xycsc, iorq)
 
 	/* start up any bufs that have queued */
 
-	xyc_start(xycsc, NULL); 
+	xyc_start(xycsc, NULL);
 
 	return (retval);
 }
@@ -1590,7 +1547,7 @@ xyc_piodriver(xycsc, iorq)
  * xyc_xyreset: reset one drive.   NOTE: assumes xyc was just reset.
  * we steal iopb[XYC_CTLIOPB] for this, but we put it back when we are done.
  */
-int 
+void
 xyc_xyreset(xycsc, xysc)
 	struct xyc_softc *xycsc;
 	struct xy_softc *xysc;
@@ -1605,7 +1562,7 @@ xyc_xyreset(xycsc, xysc)
 	xycsc->ciopb->com = XYCMD_RST;
 	xycsc->ciopb->unit = xysc->xy_drive;
 	addr = (u_long) xycsc->ciopb - DVMA_BASE;
-	
+
 	XYC_GO(xycsc->xyc, addr);
 
 	del = XYC_RESETUSEC;
@@ -1622,7 +1579,7 @@ xyc_xyreset(xycsc, xysc)
 		if (xyc_unbusy(xycsc->xyc, XYC_RESETUSEC) == XY_ERR_FAIL)
 			panic("xyc_reset");
 	} else {
-		xycsc->xyc->xyc_csr |= XYC_IPND;	/* clear IPND */
+		xycsc->xyc->xyc_csr = XYC_IPND;	/* clear IPND */
 	}
 	bcopy(&tmpiopb, xycsc->ciopb, sizeof(tmpiopb));
 }
@@ -1632,7 +1589,7 @@ xyc_xyreset(xycsc, xysc)
  * xyc_reset: reset everything: requests are marked as errors except
  * a polled request (which is resubmitted)
  */
-int 
+int
 xyc_reset(xycsc, quiet, blastmode, error, xysc)
 	struct xyc_softc *xycsc;
 	int     quiet, error;
@@ -1640,7 +1597,7 @@ xyc_reset(xycsc, quiet, blastmode, error, xysc)
 	struct xy_softc *xysc;
 
 {
-	int     del = 0, lcv, poll = -1, retval = XY_ERR_AOK;
+	int     del = 0, lcv, retval = XY_ERR_AOK;
 
 	/* soft reset hardware */
 
@@ -1658,39 +1615,40 @@ xyc_reset(xycsc, quiet, blastmode, error, xysc)
 	/* fix queues based on "blast-mode" */
 
 	for (lcv = 0; lcv < XYC_MAXIOPB; lcv++) {
-		if (XY_STATE(xycsc->reqs[lcv].mode) != XY_SUB_POLL &&
-		    XY_STATE(xycsc->reqs[lcv].mode) != XY_SUB_WAIT &&
-		    XY_STATE(xycsc->reqs[lcv].mode) != XY_SUB_NORM)
+		struct xy_iorq *iorq = &xycsc->reqs[lcv];
+
+		if (XY_STATE(iorq->mode) != XY_SUB_POLL &&
+		    XY_STATE(iorq->mode) != XY_SUB_WAIT &&
+		    XY_STATE(iorq->mode) != XY_SUB_NORM)
 			/* is it active? */
 			continue;
 
-		if (blastmode == XY_RSET_ALL || 
-				blastmode != &xycsc->reqs[lcv]) {
+		if (blastmode == XY_RSET_ALL ||
+				blastmode != iorq) {
 			/* failed */
-			xycsc->reqs[lcv].errno = error;
+			iorq->errno = error;
 			xycsc->iopbase[lcv].done = xycsc->iopbase[lcv].errs = 1;
-			switch (XY_STATE(xycsc->reqs[lcv].mode)) {
+			switch (XY_STATE(iorq->mode)) {
 			case XY_SUB_NORM:
-			    xycsc->reqs[lcv].buf->b_error = EIO;
-			    xycsc->reqs[lcv].buf->b_flags |= B_ERROR;
-			    xycsc->reqs[lcv].buf->b_resid =
-			       xycsc->reqs[lcv].sectcnt * XYFM_BPS;
-			    if ((xycsc->reqs[lcv].buf->b_flags & B_PHYS) == 0) {
-				dvma_mapout(
-				    (vm_offset_t)xycsc->reqs[lcv].dbufbase,
-				    (vm_offset_t)xycsc->reqs[lcv].buf->b_un.b_addr,
-				    xycsc->reqs[lcv].buf->b_bcount);
-				}
-			    xycsc->reqs[lcv].xy->xyq.b_actf =
-				xycsc->reqs[lcv].buf->b_actf;
-			    biodone(xycsc->reqs[lcv].buf);
-			    xycsc->reqs[lcv].mode = XY_SUB_FREE;
+			    iorq->buf->b_error = EIO;
+			    iorq->buf->b_flags |= B_ERROR;
+			    iorq->buf->b_resid = iorq->sectcnt * XYFM_BPS;
+			    dvma_mapout((vaddr_t)iorq->dbufbase,
+					(vaddr_t)iorq->buf->b_data,
+					iorq->buf->b_bcount);
+			    iorq->xy->xyq.b_actf = iorq->buf->b_actf;
+			    disk_unbusy(&xycsc->reqs[lcv].xy->sc_dk,
+				(xycsc->reqs[lcv].buf->b_bcount -
+				xycsc->reqs[lcv].buf->b_resid),
+				(xycsc->reqs[lcv].buf->b_flags & B_READ));
+			    biodone(iorq->buf);
+			    iorq->mode = XY_SUB_FREE;
 			    break;
 			case XY_SUB_WAIT:
-			    wakeup(&xycsc->reqs[lcv]);
+			    wakeup(iorq);
 			case XY_SUB_POLL:
-			    xycsc->reqs[lcv].mode =
-				XY_NEWSTATE(xycsc->reqs[lcv].mode, XY_SUB_DONE);
+			    iorq->mode =
+				XY_NEWSTATE(iorq->mode, XY_SUB_DONE);
 			    break;
 			}
 
@@ -1713,7 +1671,7 @@ xyc_reset(xycsc, quiet, blastmode, error, xysc)
  * xyc_start: start waiting buffers
  */
 
-int 
+void
 xyc_start(xycsc, iorq)
 	struct xyc_softc *xycsc;
 	struct xy_iorq *iorq;
@@ -1734,10 +1692,10 @@ xyc_start(xycsc, iorq)
 }
 
 /*
- * xyc_remove_iorq: remove "done" IOPB's.   
+ * xyc_remove_iorq: remove "done" IOPB's.
  */
 
-int 
+int
 xyc_remove_iorq(xycsc)
 	struct xyc_softc *xycsc;
 
@@ -1770,10 +1728,10 @@ xyc_remove_iorq(xycsc)
 	 */
 
 	if (xyc->xyc_csr & XYC_ERR) {
-		xyc->xyc_csr |= XYC_ERR; /* clear error condition */
+		xyc->xyc_csr = XYC_ERR; /* clear error condition */
 	}
 	if (xyc->xyc_csr & XYC_IPND) {
-		xyc->xyc_csr |= XYC_IPND; /* clear interrupt */
+		xyc->xyc_csr = XYC_IPND; /* clear interrupt */
 	}
 
 	for (rq = 0; rq < XYC_MAXIOPB; rq++) {
@@ -1817,7 +1775,7 @@ xyc_remove_iorq(xycsc)
 			 * at the bad144 sector.   to exit bad144 mode, we
 			 * must advance the pointers 1 sector and issue a new
 			 * request if there are still sectors left to process
-			 * 
+			 *
 			 */
 			XYC_ADVANCE(iorq, 1);	/* advance 1 sector */
 
@@ -1854,13 +1812,14 @@ xyc_remove_iorq(xycsc)
 			} else {
 				bp->b_resid = 0;	/* done */
 			}
-			if ((bp->b_flags & B_PHYS) == 0) {
-				dvma_mapout((vm_offset_t) iorq->dbufbase,
-					    (vm_offset_t) bp->b_un.b_addr,
-					    bp->b_bcount);
-			}
-			iorq->mode = XY_SUB_FREE;
+			dvma_mapout((vaddr_t) iorq->dbufbase,
+				    (vaddr_t) bp->b_data,
+				    bp->b_bcount);
 			iorq->xy->xyq.b_actf = bp->b_actf;
+			disk_unbusy(&iorq->xy->sc_dk,
+			    (bp->b_bcount - bp->b_resid),
+			    (bp->b_flags & B_READ));
+			iorq->mode = XY_SUB_FREE;
 			biodone(bp);
 			break;
 		case XY_SUB_WAIT:
@@ -1885,7 +1844,7 @@ xyc_remove_iorq(xycsc)
  *   is in lasterror. also, if iorq->errno == 0, then we recovered
  *   from that error (otherwise iorq->errno == iorq->lasterror).
  */
-void 
+void
 xyc_perror(iorq, iopb, still_trying)
 	struct xy_iorq *iorq;
 	struct xy_iopb *iopb;
@@ -1918,7 +1877,7 @@ xyc_perror(iorq, iopb, still_trying)
  * xyc_error: non-fatal error encountered... recover.
  * return AOK if resubmitted, return FAIL if this iopb is done
  */
-int 
+int
 xyc_error(xycsc, iorq, iopb, comm)
 	struct xyc_softc *xycsc;
 	struct xy_iorq *iorq;
@@ -1986,7 +1945,7 @@ xyc_error(xycsc, iorq, iopb, comm)
 /*
  * xyc_tick: make sure xy is still alive and ticking (err, kicking).
  */
-void 
+void
 xyc_tick(arg)
 	void   *arg;
 
@@ -2012,7 +1971,7 @@ xyc_tick(arg)
 
 	/* until next time */
 
-	timeout(xyc_tick, xycsc, XYC_TICKCNT);
+	timeout_add(&xycsc->xyc_tick_tmo, XYC_TICKCNT);
 }
 
 /*
@@ -2023,15 +1982,15 @@ xyc_tick(arg)
  *
  * XXX missing a few commands (see the 7053 driver for ideas)
  */
-int 
+int
 xyc_ioctlcmd(xy, dev, xio)
 	struct xy_softc *xy;
 	dev_t   dev;
 	struct xd_iocmd *xio;
 
 {
-	int     s, err, rqno, dummy;
-	caddr_t dvmabuf = NULL;
+	int     s, err, rqno, dummy = 0;
+	caddr_t dvmabuf = NULL, buf = NULL;
 	struct xyc_softc *xycsc;
 
 	/* check sanity of requested command */
@@ -2063,10 +2022,10 @@ xyc_ioctlcmd(xy, dev, xio)
 	/* create DVMA buffer for request if needed */
 
 	if (xio->dlen) {
-		dvmabuf = dvma_malloc(xio->dlen);
+		dvmabuf = dvma_malloc(xio->dlen, &buf, M_WAITOK);
 		if (xio->cmd == XYCMD_WR) {
-			if (err = copyin(xio->dptr, dvmabuf, xio->dlen)) {
-				dvma_free(dvmabuf, xio->dlen);
+			if ((err = copyin(xio->dptr, buf, xio->dlen)) != 0) {
+				dvma_free(dvmabuf, xio->dlen, &buf);
 				return (err);
 			}
 		}
@@ -2087,12 +2046,12 @@ xyc_ioctlcmd(xy, dev, xio)
 	XYC_DONE(xycsc, dummy);
 
 	if (xio->cmd == XYCMD_RD)
-		err = copyout(dvmabuf, xio->dptr, xio->dlen);
+		err = copyout(buf, xio->dptr, xio->dlen);
 
 done:
 	splx(s);
 	if (dvmabuf)
-		dvma_free(dvmabuf, xio->dlen);
+		dvma_free(dvmabuf, xio->dlen, &buf);
 	return (err);
 }
 
@@ -2194,7 +2153,7 @@ int errno;
 
 	return(XY_ERA_SOFT); /* an FYI error */
 
-    case XY_ERR_WPRO: 
+    case XY_ERR_WPRO:
 
 	return(XY_ERA_WPRO); /* write protect */
   }

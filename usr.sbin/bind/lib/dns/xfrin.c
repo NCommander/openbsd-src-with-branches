@@ -431,7 +431,7 @@ xfr_rr(dns_xfrin_ctx_t *xfr, dns_name_t *name, isc_uint32_t ttl,
 			FAIL(DNS_R_FORMERR);
 		}
 		/*
-		 * Remember the serial number in the intial SOA.
+		 * Remember the serial number in the initial SOA.
 		 * We need it to recognize the end of an IXFR.
 		 */
 		xfr->end_serial = dns_soa_getserial(rdata);
@@ -871,7 +871,7 @@ xfrin_connect_done(isc_task_t *task, isc_event_t *event) {
 	if (result == ISC_R_SUCCESS) {
 		isc_sockaddr_format(&sockaddr, sourcetext, sizeof(sourcetext));
 	} else
-		strcpy(sourcetext, "<UNKNOWN>");
+		strlcpy(sourcetext, "<UNKNOWN>", sizeof(sourcetext));
 	xfrin_log(xfr, ISC_LOG_INFO, "connected using %s", sourcetext);
 
 	dns_tcpmsg_init(xfr->mctx, xfr->socket, &xfr->tcpmsg);

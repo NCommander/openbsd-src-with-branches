@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $	*/
+/*	$OpenBSD: mount_ados.c,v 1.12 2003/07/03 22:41:40 tedu Exp $	*/
+/*	$NetBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -31,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_ados.c,v 1.12 2003/07/03 22:41:40 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -40,6 +41,7 @@ static char rcsid[] = "$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $
 #include <sys/stat.h>
 #include <ctype.h>
 #include <err.h>
+#include <errno.h>
 #include <grp.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -49,30 +51,28 @@ static char rcsid[] = "$NetBSD: mount_ados.c,v 1.4 1995/03/18 14:57:10 cgd Exp $
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
 
-gid_t	a_gid __P((char *));
-uid_t	a_uid __P((char *));
-mode_t	a_mask __P((char *));
-void	usage __P((void));
+gid_t	a_gid(char *);
+uid_t	a_uid(char *);
+mode_t	a_mask(char *);
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	struct adosfs_args args;
 	struct stat sb;
 	int c, mntflags, set_gid, set_uid, set_mask;
-	char *dev, *dir, ndir[MAXPATHLEN+1];
+	char *dev, dir[MAXPATHLEN];
 
 	mntflags = set_gid = set_uid = set_mask = 0;
 	(void)memset(&args, '\0', sizeof(args));
 
-	while ((c = getopt(argc, argv, "u:g:m:o:")) != EOF) {
+	while ((c = getopt(argc, argv, "u:g:m:o:")) != -1) {
 		switch (c) {
 		case 'u':
 			args.uid = a_uid(optarg);
@@ -100,23 +100,15 @@ main(argc, argv)
 		usage();
 
 	dev = argv[optind];
-	dir = argv[optind + 1];
-	if (dir[0] != '/') {
-		warnx("\"%s\" is a relative path.", dir);
-		if (getcwd(ndir, sizeof(ndir)) == NULL)
-			err(1, "getcwd");
-		strncat(ndir, "/", sizeof(ndir) - strlen(ndir) - 1);
-		strncat(ndir, dir, sizeof(ndir) - strlen(ndir) - 1);
-		dir = ndir;
-		warnx("using \"%s\" instead.", dir);
-	}
+	if (realpath(argv[optind + 1], dir) == NULL)
+		err(1, "realpath %s", argv[optind + 1]);
 
 	args.fspec = dev;
-	args.export.ex_root = -2;	/* unchecked anyway on DOS fs */
+	args.export_info.ex_root = -2;	/* unchecked anyway on DOS fs */
 	if (mntflags & MNT_RDONLY)
-		args.export.ex_flags = MNT_EXRDONLY;
+		args.export_info.ex_flags = MNT_EXRDONLY;
 	else
-		args.export.ex_flags = 0;
+		args.export_info.ex_flags = 0;
 	if (!set_gid || !set_uid || !set_mask) {
 		if (stat(dir, &sb) == -1)
 			err(1, "stat %s", dir);
@@ -129,15 +121,17 @@ main(argc, argv)
 			args.mask = sb.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
 	}
 
-	if (mount(MOUNT_ADOSFS, dir, mntflags, &args) < 0)
-		err(1, "mount");
-
+	if (mount(MOUNT_ADOSFS, dir, mntflags, &args) < 0) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel", dir);
+		else
+			err(1, "%s", dir);
+	}
 	exit (0);
 }
 
 gid_t
-a_gid(s)
-	char *s;
+a_gid(char *s)
 {
 	struct group *gr;
 	char *gname;
@@ -156,8 +150,7 @@ a_gid(s)
 }
 
 uid_t
-a_uid(s)
-	char *s;
+a_uid(char *s)
 {
 	struct passwd *pw;
 	char *uname;
@@ -176,8 +169,7 @@ a_uid(s)
 }
 
 mode_t
-a_mask(s)
-	char *s;
+a_mask(char *s)
 {
 	int done, rv;
 	char *ep;
@@ -193,9 +185,10 @@ a_mask(s)
 }
 
 void
-usage()
+usage(void)
 {
 
-	fprintf(stderr, "usage: mount_ados [-o options] [-u user] [-g group] [-m mask] bdev dir\n");
+	fprintf(stderr,
+	    "usage: mount_ados [-o options] [-u user] [-g group] [-m mask] bdev dir\n");
 	exit(1);
 }

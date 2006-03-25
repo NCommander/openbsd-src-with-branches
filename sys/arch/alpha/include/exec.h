@@ -1,3 +1,4 @@
+/*	$OpenBSD: exec.h,v 1.7 2001/01/22 14:51:02 art Exp $	*/
 /*	$NetBSD: exec.h,v 1.1 1995/02/13 23:07:37 cgd Exp $	*/
 
 /*
@@ -34,5 +35,22 @@
 
 /* Size of a page in an object file. */
 #define	__LDPGSZ	8192
+
+#define NATIVE_EXEC_ELF
+
+#define ARCH_ELFSIZE		64
+
+#define ELF_TARG_CLASS		ELFCLASS64
+#define ELF_TARG_DATA		ELFDATA2LSB
+#define ELF_TARG_MACH		EM_ALPHA_EXP
+
+#define _NLIST_DO_AOUT
+#define _NLIST_DO_ECOFF
+#define _NLIST_DO_ELF
+
+#ifdef COMPAT_OSF1
+#define _KERN_DO_ECOFF
+#endif
+#define _KERN_DO_ELF64
 
 #endif /* !_ALPHA_EXEC_H_ */

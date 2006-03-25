@@ -1,4 +1,5 @@
-/* $NetBSD: xdreg.h,v 1.1 1995/06/26 23:07:11 pk Exp $ */
+/*	$OpenBSD: xdreg.h,v 1.3 1997/08/08 08:25:36 downsj Exp $	*/
+/*	$NetBSD: xdreg.h,v 1.3 1996/03/31 22:38:54 pk Exp $	*/
 
 /*
  *
@@ -168,7 +169,7 @@ struct xd_iopb {
 #define XDFUN_DM  0xa0           /* XDCMD_{XWR,XRD}: defect map */
 #define XDFUN_DMX 0xa1           /* XDCMD_{XWR,XRD}: defect map extended */
                                  /* section 4.1.6: byte 5 */
-  volatile u_char fixd:1;        /* fixed media (vs removeable) */
+  volatile u_char fixd:1;        /* fixed media (vs removable) */
   volatile u_char reserved1:4;   /* reserved */
   volatile u_char unit:3;        /* unit number */
                                  /* note: 6 to 13 are overloaded (see below) */
@@ -203,9 +204,9 @@ struct xd_iopb {
 
 /*
  * some commands overload bytes 6 to 0x13 of the iopb with different meanings.
- * these commands include: 
+ * these commands include:
  *   section 4.2: controller parameters
- *   section 4.3: drive parameters 
+ *   section 4.3: drive parameters
  *   sectino 4.4: format parameters
  *
  * note that the commands that overload the iopb are not part of the
@@ -287,7 +288,7 @@ struct xd_iopb_ctrl {
 #define XDC_DELAY_SPARC 0
 
 /*
- * drive parameters iopb: redefines bytes: 6, 8, 9, a, b, c, d, e 
+ * drive parameters iopb: redefines bytes: 6, 8, 9, a, b, c, d, e
  */
 
 struct xd_iopb_drive {
@@ -311,7 +312,7 @@ struct xd_iopb_drive {
 };
 
 /*
- * format parameters iopb: redefines bytes: 6, 8, 9, a, b, c, d, 0x10, 0x11 
+ * format parameters iopb: redefines bytes: 6, 8, 9, a, b, c, d, 0x10, 0x11
  */
 
 struct xd_iopb_format {

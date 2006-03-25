@@ -1,3 +1,5 @@
+/*	$OpenBSD: http_log.c,v 1.16 2004/12/02 19:42:47 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -79,70 +81,29 @@ typedef struct {
 	int	t_val;
 } TRANS;
 
-#ifdef HAVE_SYSLOG
-
 static const TRANS facilities[] = {
     {"auth",	LOG_AUTH},
-#ifdef LOG_AUTHPRIV
     {"authpriv",LOG_AUTHPRIV},
-#endif
-#ifdef LOG_CRON
     {"cron", 	LOG_CRON},
-#endif
-#ifdef LOG_DAEMON
     {"daemon",	LOG_DAEMON},
-#endif
-#ifdef LOG_FTP
     {"ftp",	LOG_FTP},
-#endif
-#ifdef LOG_KERN
     {"kern",	LOG_KERN},
-#endif
-#ifdef LOG_LPR
     {"lpr",	LOG_LPR},
-#endif
-#ifdef LOG_MAIL
     {"mail",	LOG_MAIL},
-#endif
-#ifdef LOG_NEWS
     {"news",	LOG_NEWS},
-#endif
-#ifdef LOG_SYSLOG
     {"syslog",	LOG_SYSLOG},
-#endif
-#ifdef LOG_USER
     {"user",	LOG_USER},
-#endif
-#ifdef LOG_UUCP
     {"uucp",	LOG_UUCP},
-#endif
-#ifdef LOG_LOCAL0
     {"local0",	LOG_LOCAL0},
-#endif
-#ifdef LOG_LOCAL1
     {"local1",	LOG_LOCAL1},
-#endif
-#ifdef LOG_LOCAL2
     {"local2",	LOG_LOCAL2},
-#endif
-#ifdef LOG_LOCAL3
     {"local3",	LOG_LOCAL3},
-#endif
-#ifdef LOG_LOCAL4
     {"local4",	LOG_LOCAL4},
-#endif
-#ifdef LOG_LOCAL5
     {"local5",	LOG_LOCAL5},
-#endif
-#ifdef LOG_LOCAL6
     {"local6",	LOG_LOCAL6},
-#endif
-#ifdef LOG_LOCAL7
     {"local7",	LOG_LOCAL7},
-#endif
     {NULL,		-1},
 };
-#endif
 
 static const TRANS priorities[] = {
     {"emerg",	APLOG_EMERG},
@@ -163,32 +124,11 @@ static int error_log_child(void *cmd, child_info *pinfo)
      * be common for other foo-loggers to want this sort of thing...
      */
     int child_pid = 0;
-#if defined(WIN32)
-    char *shellcmd;
-#endif
 
     ap_cleanup_for_exec();
-#ifdef SIGHUP
     /* No concept of a child process on Win32 */
     signal(SIGHUP, SIG_IGN);
-#endif /* ndef SIGHUP */
-#if defined(NETWARE)
-    child_pid = spawnlp(P_NOWAIT, SHELL_PATH, (char *)cmd);
-    return(child_pid);
-#elif defined(WIN32)
-    shellcmd = getenv("COMSPEC");
-    if (!shellcmd)
-        shellcmd = SHELL_PATH;
-    child_pid = spawnl(_P_NOWAIT, shellcmd, shellcmd, "/c", (char *)cmd, NULL);
-    return(child_pid);
-#elif defined(OS2)
-    /* For OS/2 we need to use a '/' and spawn the child rather than exec as
-     * we haven't forked */
-    child_pid = spawnl(P_NOWAIT, SHELL_PATH, SHELL_PATH, "/c", (char *)cmd, NULL);
-    return(child_pid);
-#else    
-    execl(SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, NULL);
-#endif    
+    execl(SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, (char *)NULL);
     exit(1);
     /* NOT REACHED */
     return(child_pid);
@@ -200,17 +140,8 @@ static void open_error_log(server_rec *s, pool *p)
 
     if (*s->error_fname == '|') {
 	FILE *dummy;
-#ifdef TPF
-        TPF_FORK_CHILD cld;
-        cld.filename = s->error_fname+1;
-        cld.subprocess_env = NULL;
-        cld.prog_type = FORK_NAME;
-        if (!ap_spawn_child(p, NULL, &cld,
-                            kill_after_timeout, &dummy, NULL, NULL)) {
-#else
 	if (!ap_spawn_child(p, error_log_child, (void *)(s->error_fname+1),
 			    kill_after_timeout, &dummy, NULL, NULL)) {
-#endif /* TPF */
 	    perror("ap_spawn_child");
 	    fprintf(stderr, "Couldn't fork child for ErrorLog process\n");
 	    exit(1);
@@ -219,7 +150,6 @@ static void open_error_log(server_rec *s, pool *p)
 	s->error_log = dummy;
     }
 
-#ifdef HAVE_SYSLOG
     else if (!strncasecmp(s->error_fname, "syslog", 6)) {
 	if ((fname = strchr(s->error_fname, ':'))) {
 	    const TRANS *fac;
@@ -239,7 +169,6 @@ static void open_error_log(server_rec *s, pool *p)
 
 	s->error_log = NULL;
     }
-#endif
     else {
 	fname = ap_server_root_relative(p, s->error_fname);
         if (!(s->error_log = ap_pfopen(p, fname, "a"))) {
@@ -256,13 +185,6 @@ API_EXPORT(void) ap_open_logs(server_rec *s_main, pool *p)
     server_rec *virt, *q;
     int replace_stderr;
 
-#ifdef OS390
-    /*
-     * Cause errno2 (reason code) information to be generated whenever
-     * strerror(errno) is invoked.
-     */
-    setenv("_EDC_ADD_ERRNO2", "1", 1);
-#endif
 
     open_error_log(s_main, p);
 
@@ -314,6 +236,7 @@ static void log_error_core(const char *file, int line, int level,
 			   const char *fmt, va_list args)
 {
     char errstr[MAX_STRING_LEN];
+    char scratch[MAX_STRING_LEN];
     size_t len;
     int save_errno = errno;
     FILE *logf;
@@ -358,30 +281,10 @@ static void log_error_core(const char *file, int line, int level,
     len += ap_snprintf(errstr + len, sizeof(errstr) - len,
 	    "[%s] ", priorities[level & APLOG_LEVELMASK].t_name);
 
-#ifndef TPF
     if (file && (level & APLOG_LEVELMASK) == APLOG_DEBUG) {
-#ifdef _OSD_POSIX
-	char tmp[256];
-	char *e = strrchr(file, '/');
-
-	/* In OSD/POSIX, the compiler returns for __FILE__
-	 * a string like: __FILE__="*POSIX(/usr/include/stdio.h)"
-	 * (it even returns an absolute path for sources in
-	 * the current directory). Here we try to strip this
-	 * down to the basename.
-	 */
-	if (e != NULL && e[1] != '\0') {
-	    ap_snprintf(tmp, sizeof(tmp), "%s", &e[1]);
-	    e = &tmp[strlen(tmp)-1];
-	    if (*e == ')')
-		*e = '\0';
-	    file = tmp;
-	}
-#endif /*_OSD_POSIX*/
 	len += ap_snprintf(errstr + len, sizeof(errstr) - len,
 		"%s(%d): ", file, line);
     }
-#endif /* TPF */
     if (r) {
 	/* XXX: TODO: add a method of selecting whether logged client
 	 * addresses are in dotted quad or resolved form... dotted
@@ -393,59 +296,15 @@ static void log_error_core(const char *file, int line, int level,
     }
     if (!(level & APLOG_NOERRNO)
 	&& (save_errno != 0)
-#ifdef WIN32
-	&& !(level & APLOG_WIN32ERROR)
-#endif
 	) {
 	len += ap_snprintf(errstr + len, sizeof(errstr) - len,
 		"(%d)%s: ", save_errno, strerror(save_errno));
     }
-#ifdef WIN32
-    if (level & APLOG_WIN32ERROR) {
-	int nChars;
-	int nErrorCode;
 
-	nErrorCode = GetLastError();
-	len += ap_snprintf(errstr + len, sizeof(errstr) - len,
-	    "(%d)", nErrorCode);
-
-	nChars = FormatMessage( 
-	    FORMAT_MESSAGE_FROM_SYSTEM,
-	    NULL,
-	    nErrorCode,
-	    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), /* Default language */
-	    (LPTSTR) errstr + len,
-	    sizeof(errstr) - len,
-	    NULL 
-	);
-	len += nChars;
-	if (nChars == 0) {
-	    /* Um, error occurred, but we can't recurse to log it again
-	     * (and it would probably only fail anyway), so lets just
-	     * log the numeric value.
-	     */
-	    nErrorCode = GetLastError();
-	    len += ap_snprintf(errstr + len, sizeof(errstr) - len,
-			       "(FormatMessage failed with code %d): ",
-			       nErrorCode);
-	}
-	else {
-	    /* FormatMessage put the message in the buffer, but it may
-	     * have appended a newline (\r\n). So remove it and use
-	     * ": " instead like the Unix errors. The error may also
-	     * end with a . before the return - if so, trash it.
-	     */
-	    if (len > 1 && errstr[len-2] == '\r' && errstr[len-1] == '\n') {
-		if (len > 2 && errstr[len-3] == '.')
-		    len--;
-		errstr[len-2] = ':';
-		errstr[len-1] = ' ';
-	    }
-	}
+    if (ap_vsnprintf(scratch, sizeof(scratch) - len, fmt, args)) {
+        len += ap_escape_errorlog_item(errstr + len, scratch,
+                                       sizeof(errstr) - len);
     }
-#endif
-
-    len += ap_vsnprintf(errstr + len, sizeof(errstr) - len, fmt, args);
 
     /* NULL if we are logging to syslog */
     if (logf) {
@@ -453,11 +312,9 @@ static void log_error_core(const char *file, int line, int level,
 	fputc('\n', logf);
 	fflush(logf);
     }
-#ifdef HAVE_SYSLOG
     else {
 	syslog(level & APLOG_LEVELMASK, "%s", errstr);
     }
-#endif
 }
     
 API_EXPORT_NONSTD(void) ap_log_error(const char *file, int line, int level,
@@ -502,16 +359,15 @@ API_EXPORT(void) ap_log_pid(pool *p, char *fname)
     struct stat finfo;
     static pid_t saved_pid = -1;
     pid_t mypid;
-#ifndef WIN32
     mode_t u;
-#endif
 
     if (!fname) 
 	return;
 
     fname = ap_server_root_relative(p, fname);
     mypid = getpid();
-    if (mypid != saved_pid && stat(fname, &finfo) == 0) {
+    if (!ap_server_chroot_desired() && mypid != saved_pid 
+      && stat(fname, &finfo) == 0) {
       /* USR1 and HUP call this on each restart.
        * Only warn on first time through for this pid.
        *
@@ -526,19 +382,15 @@ API_EXPORT(void) ap_log_pid(pool *p, char *fname)
 		   );
     }
 
-#ifndef WIN32
     u = umask(022);
     (void) umask(u | 022);
-#endif
     if(!(pid_file = fopen(fname, "w"))) {
 	perror("fopen");
         fprintf(stderr, "%s: could not log pid to file %s\n",
 		ap_server_argv0, fname);
         exit(1);
     }
-#ifndef WIN32
     (void) umask(u);
-#endif
     fprintf(pid_file, "%ld\n", (long)mypid);
     fclose(pid_file);
     saved_pid = mypid;
@@ -577,18 +429,12 @@ API_EXPORT(void) ap_log_assert(const char *szExp, const char *szFile, int nLine)
 {
     fprintf(stderr, "[%s] file %s, line %d, assertion \"%s\" failed\n",
 	    ap_get_time(), szFile, nLine, szExp);
-#ifndef WIN32
     /* unix assert does an abort leading to a core dump */
     abort();
-#else
-    exit(1);
-#endif
 }
 
 /* piped log support */
 
-#ifndef NO_PIPED_LOGS
-#ifndef NO_RELIABLE_PIPED_LOGS
 /* forward declaration */
 static void piped_log_maintenance(int reason, void *data, ap_wait_t status);
 
@@ -599,7 +445,6 @@ static int piped_log_spawn(piped_log *pl)
     ap_block_alarms();
     pid = fork();
     if (pid == 0) {
-	/* XXX: this needs porting to OS2 and WIN32 */
 	/* XXX: need to check what open fds the logger is actually passed,
 	 * XXX: and CGIs for that matter ... cleanup_for_exec *should*
 	 * XXX: close all the relevant stuff, but hey, it could be broken. */
@@ -611,7 +456,7 @@ static int piped_log_spawn(piped_log *pl)
 	ap_cleanup_for_exec();
 	signal(SIGCHLD, SIG_DFL);	/* for HPUX */
 	signal(SIGHUP, SIG_IGN);
-	execl(SHELL_PATH, SHELL_PATH, "-c", pl->program, NULL);
+	execl(SHELL_PATH, SHELL_PATH, "-c", pl->program, (char *)NULL);
 	fprintf(stderr,
 	    "piped_log_spawn: unable to exec %s -c '%s': %s\n",
 	    SHELL_PATH, pl->program, strerror (errno));
@@ -736,67 +581,3 @@ API_EXPORT(void) ap_close_piped_log(piped_log *pl)
     ap_kill_cleanup(pl->p, pl, piped_log_cleanup);
     ap_unblock_alarms();
 }
-
-#else
-static int piped_log_child(void *cmd, child_info *pinfo)
-{
-    /* Child process code for 'TransferLog "|..."';
-     * may want a common framework for this, since I expect it will
-     * be common for other foo-loggers to want this sort of thing...
-     */
-    int child_pid = 1;
-#if defined(WIN32)
-    char *shellcmd;
-#endif
-
-    ap_cleanup_for_exec();
-#ifdef SIGHUP
-    signal(SIGHUP, SIG_IGN);
-#endif
-#if defined(NETWARE)
-    child_pid = spawnlp(P_NOWAIT, SHELL_PATH, (char *)cmd);
-    return(child_pid);
-#elif defined(WIN32)
-    shellcmd = getenv("COMSPEC");
-    if (!shellcmd)
-        shellcmd = SHELL_PATH;
-    child_pid = spawnl(_P_NOWAIT, shellcmd, shellcmd, "/c", (char *)cmd, NULL);
-    return(child_pid);
-#elif defined(OS2)
-    /* For OS/2 we need to use a '/' and spawn the child rather than exec as
-     * we haven't forked */
-    child_pid = spawnl(P_NOWAIT, SHELL_PATH, SHELL_PATH, "/c", (char *)cmd, NULL);
-    return(child_pid);
-#else
-    execl (SHELL_PATH, SHELL_PATH, "-c", (char *)cmd, NULL);
-#endif
-    perror("exec");
-    fprintf(stderr, "Exec of shell for logging failed!!!\n");
-    return(child_pid);
-}
-
-
-API_EXPORT(piped_log *) ap_open_piped_log(pool *p, const char *program)
-{
-    piped_log *pl;
-    FILE *dummy;
-    if (!ap_spawn_child(p, piped_log_child, (void *)program,
-			kill_after_timeout, &dummy, NULL, NULL)) {
-	perror("ap_spawn_child");
-	fprintf(stderr, "Couldn't fork child for piped log process\n");
-	exit (1);
-    }
-    pl = ap_palloc(p, sizeof (*pl));
-    pl->p = p;
-    pl->write_f = dummy;
-
-    return pl;
-}
-
-
-API_EXPORT(void) ap_close_piped_log(piped_log *pl)
-{
-    ap_pfclose(pl->p, pl->write_f);
-}
-#endif
-#endif

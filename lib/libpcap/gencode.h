@@ -1,7 +1,7 @@
-/*	$NetBSD: gencode.h,v 1.2 1995/03/06 11:38:24 mycroft Exp $	*/
+/*	$OpenBSD: gencode.h,v 1.11 2003/05/14 08:50:37 canacar Exp $	*/
 
 /*
- * Copyright (c) 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -20,20 +20,17 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) Header: gencode.h,v 1.20 94/06/12 14:29:30 leres Exp (LBL)
+ * @(#) $Header: /cvs/src/lib/libpcap/gencode.h,v 1.11 2003/05/14 08:50:37 canacar Exp $ (LBL)
  */
 
-/*
- * filter.h must be included before this file.
- */
-
-/* Address qualifers. */
+/* Address qualifiers. */
 
 #define Q_HOST		1
 #define Q_NET		2
 #define Q_PORT		3
 #define Q_GATEWAY	4
 #define Q_PROTO		5
+#define Q_PROTOCHAIN	6
 
 /* Protocol qualifiers. */
 
@@ -44,13 +41,27 @@
 #define Q_TCP		5
 #define Q_UDP		6
 #define Q_ICMP		7
+#define Q_IGMP		8
+#define Q_IGRP		9
 
-#define	Q_DECNET	8
-#define	Q_LAT		9
-#define	Q_MOPRC		10
-#define	Q_MOPDL		11
 
-/* Directional qualifers. */
+#define	Q_ATALK		10
+#define	Q_DECNET	11
+#define	Q_LAT		12
+#define Q_SCA		13
+#define	Q_MOPRC		14
+#define	Q_MOPDL		15
+
+
+#define Q_IPV6		16
+#define Q_ICMPV6	17
+#define Q_AH		18
+#define Q_ESP		19
+
+#define Q_PIM		20
+#define Q_STP		21
+
+/* Directional qualifiers. */
 
 #define Q_SRC		1
 #define Q_DST		2
@@ -60,9 +71,13 @@
 #define Q_DEFAULT	0
 #define Q_UNDEF		255
 
+struct slist;
+
 struct stmt {
 	int code;
-	long k;
+	struct slist *jt;	/*only for relative jump in block*/
+	struct slist *jf;	/*only for relative jump in block*/
+	bpf_int32 k;
 };
 
 struct slist {
@@ -74,14 +89,14 @@ struct slist {
  * A bit vector to represent definition sets.  We assume TOT_REGISTERS
  * is smaller than 8*sizeof(atomset).
  */
-typedef u_long atomset;
+typedef bpf_u_int32 atomset;
 #define ATOMMASK(n) (1 << (n))
 #define ATOMELEM(d, n) (d & ATOMMASK(n))
 
 /*
  * An unbounded set.
  */
-typedef u_long *uset;
+typedef bpf_u_int32 *uset;
 
 /*
  * Total number of atomic entities, including accumulator (A) and index (X).
@@ -103,6 +118,8 @@ struct block {
 	struct slist *stmts;	/* side effect stmts */
 	struct stmt s;		/* branch stmt */
 	int mark;
+	int longjt;		/* jt branch requires long jump */
+	int longjf;		/* jf branch requires long jump */
 	int level;
 	int offset;
 	int sense;
@@ -116,8 +133,8 @@ struct block {
 	atomset def, kill;
 	atomset in_use;
 	atomset out_use;
-	long oval;
-	long val[N_ATOMS];
+	int oval;
+	int val[N_ATOMS];
 };
 
 struct arth {
@@ -133,10 +150,6 @@ struct qual {
 	unsigned char pad;
 };
 
-#ifndef __GNUC__
-#define volatile
-#endif
-
 struct arth *gen_loadi(int);
 struct arth *gen_load(int, struct arth *, int);
 struct arth *gen_loadlen(void);
@@ -147,9 +160,14 @@ void gen_and(struct block *, struct block *);
 void gen_or(struct block *, struct block *);
 void gen_not(struct block *);
 
-struct block *gen_scode(char *, struct qual);
-struct block *gen_ecode(u_char *, struct qual);
-struct block *gen_ncode(u_long, struct qual);
+struct block *gen_scode(const char *, struct qual);
+struct block *gen_ecode(const u_char *, struct qual);
+struct block *gen_acode(const u_char *, struct qual);
+struct block *gen_mcode(const char *, const char *, int, struct qual);
+#ifdef INET6
+struct block *gen_mcode6(const char *, const char *, int, struct qual);
+#endif
+struct block *gen_ncode(const char *, bpf_u_int32, struct qual);
 struct block *gen_proto_abbrev(int);
 struct block *gen_relation(int, struct arth *, struct arth *, int);
 struct block *gen_less(int);
@@ -159,11 +177,20 @@ struct block *gen_broadcast(int);
 struct block *gen_multicast(int);
 struct block *gen_inbound(int);
 
+struct block *gen_pf_ifname(char *);
+struct block *gen_pf_rnr(int);
+struct block *gen_pf_srnr(int);
+struct block *gen_pf_ruleset(char *);
+struct block *gen_pf_reason(int);
+struct block *gen_pf_action(int);
+struct block *gen_pf_dir(int);
+
 void bpf_optimize(struct block **);
-volatile void bpf_error(char *, ...);
+__dead void bpf_error(const char *, ...)
+    __attribute__((volatile, __format__ (printf, 1, 2)));
 
 void finish_parse(struct block *);
-char *sdup(char *);
+char *sdup(const char *);
 
 struct bpf_insn *icode_to_fcode(struct block *, int *);
 int pcap_parse(void);
@@ -173,3 +200,5 @@ void sappend(struct slist *, struct slist *);
 /* XXX */
 #define JT(b)  ((b)->et.succ)
 #define JF(b)  ((b)->ef.succ)
+
+extern int no_optimize;

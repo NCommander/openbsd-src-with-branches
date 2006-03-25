@@ -1,19 +1,8 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: nvram.c,v 1.15 2005/10/27 16:04:08 martin Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
- * Copyright (c) 1992, 1993
- *      The Regents of the University of California.  All rights reserved.
- *
- * This software was developed by the Computer Systems Engineering group
- * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
- * contributed to Berkeley.
- *
- * All advertising materials mentioning features or use of this software
- * must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Lawrence Berkeley Laboratory.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -22,19 +11,12 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -43,14 +25,26 @@
  * SUCH DAMAGE.
  */
 
+/* 
+ * 8/22/2000 BH Cleaned up year 2000 problems with calendar hardware.
+ * This code will break again in 2068 or so - come dance on my grave.
+ */
+
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/ioctl.h>
 #include <sys/device.h>
-#include <machine/psl.h>
+
 #include <machine/autoconf.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <machine/mioctl.h>
+#include <machine/psl.h>
+
+#include <uvm/uvm_extern.h>
+
+#include <mvme68k/dev/memdevs.h>
 #include <mvme68k/dev/nvramreg.h>
 
 #if defined(GPROF)
@@ -59,18 +53,21 @@
 
 struct nvramsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_paddr;
-	caddr_t		sc_vaddr;
-	int		sc_len;
+	paddr_t		sc_paddr;
+	vaddr_t		sc_vaddr;
+	int             sc_len;
 	struct clockreg *sc_regs;
 };
 
-void	nvramattach __P((struct device *, struct device *, void *));
-int	nvrammatch __P((struct device *, void *, void *));
+void    nvramattach(struct device *, struct device *, void *);
+int     nvrammatch(struct device *, void *, void *);
 
-struct cfdriver nvramcd = {
-	NULL, "nvram", nvrammatch, nvramattach,
-	DV_DULL, sizeof(struct nvramsoftc), 0
+struct cfattach nvram_ca = {
+	sizeof(struct nvramsoftc), nvrammatch, nvramattach
+};
+
+struct cfdriver nvram_cd = {
+	NULL, "nvram", DV_DULL
 };
 
 int
@@ -78,10 +75,9 @@ nvrammatch(parent, vcf, args)
 	struct device *parent;
 	void *vcf, *args;
 {
-	struct cfdata *cf = vcf;
-	struct confargs *ca = args;
+	struct confargs *ca = args;   
 
-/*X*/	if (ca->ca_vaddr == (caddr_t)-1)
+/*X*/	if (ca->ca_vaddr == (vaddr_t)-1)
 /*X*/		return (1);
 	return (!badvaddr(ca->ca_vaddr, 1));
 }
@@ -95,20 +91,20 @@ nvramattach(parent, self, args)
 	struct nvramsoftc *sc = (struct nvramsoftc *)self;
 
 	sc->sc_paddr = ca->ca_paddr;
-	sc->sc_vaddr = ca->ca_vaddr;
+	sc->sc_vaddr = (vaddr_t)ca->ca_vaddr;
 
 	sc->sc_len = MK48T08_SIZE;
 	if (cputyp == CPU_147)
 		sc->sc_len = MK48T02_SIZE;
 
-/*X*/	if (sc->sc_vaddr == (caddr_t)-1)
-/*X*/		sc->sc_vaddr = mapiodev((caddr_t)sc->sc_paddr,
-/*X*/		    max(sc->sc_len, NBPG));
-/*X*/	if (sc->sc_vaddr == NULL)
-/*X*/		panic("failed to map!\n");
+
+/*X*/	if (sc->sc_vaddr == -1)
+/*X*/		sc->sc_vaddr = mapiodev(sc->sc_paddr, MAX(sc->sc_len, NBPG));
+/*X*/	if (sc->sc_vaddr == 0)
+/*X*/		panic("failed to map!");
 
 	sc->sc_regs = (struct clockreg *)(sc->sc_vaddr + sc->sc_len -
-	    sizeof(struct clockreg));
+					  sizeof(struct clockreg));
 
 	printf(": MK48T0%d len %d\n", sc->sc_len / 1024, sc->sc_len);
 }
@@ -131,14 +127,13 @@ microtime(tvp)
 	static struct timeval lasttime;
 
 	*tvp = time;
-	tvp->tv_usec;
-	while (tvp->tv_usec > 1000000) {
+	while (tvp->tv_usec >= 1000000) {
 		tvp->tv_sec++;
 		tvp->tv_usec -= 1000000;
 	}
 	if (tvp->tv_sec == lasttime.tv_sec &&
 	    tvp->tv_usec <= lasttime.tv_usec &&
-	    (tvp->tv_usec = lasttime.tv_usec + 1) > 1000000) {
+	    (tvp->tv_usec = lasttime.tv_usec + 1) >= 1000000) {
 		tvp->tv_sec++;
 		tvp->tv_usec -= 1000000;
 	}
@@ -161,9 +156,22 @@ microtime(tvp)
  * Will Unix still be here then??
  */
 const short dayyr[12] =
-    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
-static u_long
+struct chiptime {
+	int     sec;
+	int     min;
+	int     hour;
+	int     wday;
+	int     day;
+	int     mon;
+	int     year;
+};
+
+u_long chiptotime(int, int, int, int, int, int);
+void timetochip(struct chiptime *);
+
+u_long
 chiptotime(sec, min, hour, day, mon, year)
 	register int sec, min, hour, day, mon, year;
 {
@@ -177,38 +185,43 @@ chiptotime(sec, min, hour, day, mon, year)
 	year = FROMBCD(year) + YEAR0;
 
 	/* simple sanity checks */
-	if (year < 70 || year > 164 || mon < 1 || mon > 12 || day < 1 || day > 31)
+	if (year>164 || mon<1 || mon>12 || day<1 || day>31)
 		return (0);
+	yr = 70;
 	days = 0;
-	for (yr = 70; yr < year; yr++)
+
+	if (year < 70) {		/* 2000 <= year */
+		for (; yr < 100; yr++)	/* deal with first 30 years */
+			days += LEAPYEAR(yr) ? 366 : 365;
+		yr = 0;
+	}
+
+	for (; yr < year; yr++)		/* deal with years left */
 		days += LEAPYEAR(yr) ? 366 : 365;
+
 	days += dayyr[mon - 1] + day - 1;
+
 	if (LEAPYEAR(yr) && mon > 2)
 		days++;
+
 	/* now have days since Jan 1, 1970; the rest is easy... */
 	return (days * SECDAY + hour * 3600 + min * 60 + sec);
 }
 
-struct chiptime {
-	int	sec;
-	int	min;
-	int	hour;
-	int	wday;
-	int	day;
-	int	mon;
-	int	year;
-};
-
+void
 timetochip(c)
-	register struct chiptime *c;
+	struct chiptime *c;
 {
-	register int t, t2, t3, now = time.tv_sec;
+	int t, t2, t3, now = time.tv_sec;
 
-	/* compute the year */
+	/* January 1 1970 was a Thursday (4 in unix wdays) */
+	/* compute the days since the epoch */
 	t2 = now / SECDAY;
-	t3 = (t2 + 2) % 7;	/* day of week */
+
+	t3 = (t2 + 4) % 7;	/* day of week */
 	c->wday = TOBCD(t3 + 1);
 
+	/* compute the year */
 	t = 69;
 	while (t2 >= 0) {	/* whittle off years */
 		t3 = t2;
@@ -220,7 +233,7 @@ timetochip(c)
 	/* t3 = month + day; separate */
 	t = LEAPYEAR(t);
 	for (t2 = 1; t2 < 12; t2++)
-		if (t3 < dayyr[t2] + (t && t2 > 1))
+		if (t3 < (dayyr[t2] + ((t && (t2 > 1)) ? 1:0)))
 			break;
 
 	/* t2 is month */
@@ -241,16 +254,17 @@ timetochip(c)
 	c->hour = TOBCD(c->hour);
 	c->day = TOBCD(c->day);
 	c->mon = TOBCD(c->mon);
-	c->year = TOBCD(c->year - YEAR0);
+	c->year = TOBCD((c->year - YEAR0) % 100);
 }
 
 /*
  * Set up the system's time, given a `reasonable' time value.
  */
+void
 inittodr(base)
 	time_t base;
 {
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[0];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[0];
 	register struct clockreg *cl = sc->sc_regs;
 	int sec, min, hour, day, mon, year;
 	int badbase = 0, waszero = base == 0;
@@ -291,7 +305,7 @@ inittodr(base)
 		if (waszero || deltat < 2 * SECDAY)
 			return;
 		printf("WARNING: clock %s %d days",
-		    time.tv_sec < base ? "lost" : "gained", deltat / SECDAY);
+		       time.tv_sec < base ? "lost" : "gained", deltat / SECDAY);
 	}
 	printf(" -- CHECK AND RESET THE DATE!\n");
 }
@@ -302,9 +316,10 @@ inittodr(base)
  * and when rebooting.  Do nothing if the time is not yet known, e.g.,
  * when crashing during autoconfig.
  */
+void
 resettodr()
 {
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[0];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[0];
 	register struct clockreg *cl = sc->sc_regs;
 	struct chiptime c;
 
@@ -324,21 +339,23 @@ resettodr()
 
 /*ARGSUSED*/
 int
-nvramopen(dev, flag, mode)
+nvramopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
-	if (minor(dev) >= nvramcd.cd_ndevs ||
-	    nvramcd.cd_devs[minor(dev)] == NULL)
+	if (minor(dev) >= nvram_cd.cd_ndevs ||
+	    nvram_cd.cd_devs[minor(dev)] == NULL)
 		return (ENODEV);
 	return (0);
 }
 
 /*ARGSUSED*/
 int
-nvramclose(dev, flag, mode)
+nvramclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -347,15 +364,16 @@ nvramclose(dev, flag, mode)
 /*ARGSUSED*/
 int
 nvramioctl(dev, cmd, data, flag, p)
-	dev_t   dev;
+	dev_t dev;
+	u_long cmd;
 	caddr_t data;
-	int     cmd, flag;
+	int flag;
 	struct proc *p;
 {
 	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[unit];
 	int error = 0;
-	
+
 	switch (cmd) {
 	case MIOCGSIZ:
 		*(int *)data = sc->sc_len;
@@ -369,26 +387,13 @@ nvramioctl(dev, cmd, data, flag, p)
 
 /*ARGSUSED*/
 int
-nvramread(dev, uio, flags)
+nvramrw(dev, uio, flags)
 	dev_t dev;
 	struct uio *uio;
 	int flags;
 {
 	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
-
-	return (memdevrw(sc->sc_vaddr, sc->sc_len, uio, flags));
-}
-
-/*ARGSUSED*/
-int
-nvramwrite(dev, uio, flags)
-	dev_t dev;
-	struct uio *uio;
-	int flags;
-{
-	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[unit];
 
 	return (memdevrw(sc->sc_vaddr, sc->sc_len, uio, flags));
 }
@@ -398,19 +403,20 @@ nvramwrite(dev, uio, flags)
  * will also be mmap'd, due to NBPG being 4K. On the MVME147 the NVRAM
  * repeats, so userland gets two copies back-to-back.
  */
-int
+paddr_t
 nvrammmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	int unit = minor(dev);
-	struct nvramsoftc *sc = (struct nvramsoftc *) nvramcd.cd_devs[unit];
+	struct nvramsoftc *sc = (struct nvramsoftc *) nvram_cd.cd_devs[unit];
 
 	if (minor(dev) != 0)
 		return (-1);
 
 	/* allow access only in RAM */
-	if (off > sc->sc_len)
+	if (off < 0 || off > sc->sc_len)
 		return (-1);
-	return (m68k_btop(sc->sc_paddr + off));
+	return (atop(sc->sc_paddr + off));
 }

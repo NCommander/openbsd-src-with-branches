@@ -1,61 +1,67 @@
-#	$NetBSD: Makefile,v 1.4 1995/06/28 00:58:44 cgd Exp $
-#
-# BSD Boot blocks for the Alpha
-#
-# XXX should generate a primary boot block, too...
+#	$OpenBSD: Makefile,v 1.14 2001/05/16 00:38:11 deraadt Exp $
+#	$NetBSD: Makefile,v 1.17 1997/04/17 07:27:46 thorpej Exp $
 
-INCPATH=-I../../../.. -I.
+S=	${.CURDIR}/../../../..
 
-# Boot relocation address
-RELOC1=	20020000
-# Low memory test program relocation address
-#RELOC2=	20004000
-# High memory test program relocation address
-RELOC2=	fffffc0000230000
+.PATH: ${.CURDIR}/..
 
-# Compiler and assembler flags used to generate boot blocks.
-#
-DEFS=	-DSTANDALONE
-AFLAGS+=-DASSEMBLER ${INCPATH}
-CFLAGS= -mno-fp-regs ${INCPATH} ${DEFS}
+PROG = boot
 
-LIBS=	libsa/libsa.a -lc
-SRCS=	boot.c disk.c conf.c prom.c test.c
+SRCS = start.S boot.c loadfile.c disk.c conf.c prom.c prom_disp.S OSFpal.c
+SRCS+= devopen.c filesystem.c prom_swpal.S
+NOMAN=
+INSTALL_STRIP=
+BINMODE= 444
 
-all: boot
+BOOT_RELOC = ${SECONDARY_LOAD_ADDRESS}
+HEADERSIZE_PROG = headersize
 
-libsa/libsa.a::
-	cd libsa; make
+CLEANFILES+= vers.c vers.o ${PROG}.sym ${PROG}.nosym ${HEADERSIZE_PROG}
 
-# This boot is supposed to be installed in this way:
-#	cp boot <true_root_of_disk>/boot
-BOBJS=	boot.o conf.o disk.o prom.o prom_disp.o prom_swpal.o vers.o
-boot: start.o ${BOBJS} ${LIBS}
-	${LD} -Ttext ${RELOC1} -N \
-	    -e start -o ${.TARGET} start.o ${BOBJS} ${LIBS}
 
-# This boot is supposed to be installed in this way:
-#	cp test_boot <true_root_of_disk>/test_boot
-#
-# It is used presumably in this way:
-#	boot -fi "test_boot" dka300
-TOBJS=	prom.o prom_disp.o prom_swpal.o test.o
-test_boot: start.o ${TOBJS} ${LIBS}
-	${LD} -T ${RELOC2} -N -e start -o ${.TARGET} start.o ${TOBJS} ${LIBS}
+DEFNS= -DCOMPAT_UFS -DALPHA_BOOT_ELF
 
-clean cleandir:
-	rm -f .depend *.o *.exe *.i errs make.out core* vers.c
-	rm -f a.out boot test_boot
-	cd libsa && make cleandir
+AFLAGS += -DASSEMBLER ${DEFNS}
+CPPFLAGS += -I${.CURDIR}/../../../../lib/libsa -I${.CURDIR}/../.. -I${S} ${DEFNS}
+CFLAGS = -Os -Werror -mno-fp-regs
 
-install:
-	install -c -o root -g wheel -m 555 boot ${DESTDIR}/
+${PROG}.nosym: ${PROG}.sym
+	cp ${PROG}.sym ${PROG}.nosym
+	strip ${PROG}.nosym
 
-depend: ${SRCS}
-	mkdep -p ${INCPATH} ${DEFS} ${SRCS}
-	cd libsa && make depend
+${PROG}: ${PROG}.nosym #${HEADERSIZE_PROG}
+	objcopy --output-target=binary ${PROG}.nosym ${PROG}
+#	dd if=${PROG}.nosym of=${PROG} \
+#	    bs=`./${HEADERSIZE_PROG} ${BOOT_RELOC} ${PROG}.nosym` skip=1
 
-newvers:
-	sh newvers.sh
+# no lint here (yet?)
+lint:
 
-vers.c: newvers
+.include <bsd.prog.mk>
+
+### find out what to use for libkern
+KERN_AS=	library
+KERNDST=	${.CURDIR}/../libkern/${__objdir}
+.include "${.CURDIR}/../libkern/Makefile.inc"
+LIBKERN=	${KERNLIB}
+
+### find out what to use for libz
+Z_AS=		library
+ZDST=		${.CURDIR}/../libz/${__objdir}
+.include "${.CURDIR}/../libz/Makefile.inc"
+LIBZ=		${ZLIB}
+
+### find out what to use for libsa
+SA_AS=		library
+SADST=		${.CURDIR}/../libsa/${__objdir}
+SAREL=
+SA_ZLIB=	yes
+.include "${.CURDIR}/../libsa/Makefile.inc"
+LIBSA=		${SALIB}
+
+${PROG}.sym: ${OBJS} ${LIBSA} ${LIBZ} ${LIBKERN}
+	sh ${.CURDIR}/newvers.sh ${.CURDIR}/version
+	${COMPILE.c} vers.c
+	${LD} -Ttext ${BOOT_RELOC} -N -e start -o ${PROG}.sym \
+	    ${OBJS} vers.o ${LIBSA} ${LIBZ} ${LIBSA} ${LIBKERN}
+	size ${PROG}.sym

@@ -1,4 +1,5 @@
-/*	$NetBSD: ubavar.h,v 1.6 1995/05/11 16:53:17 jtc Exp $	*/
+/*	$OpenBSD: ubavar.h,v 1.13 2003/06/02 23:27:58 millert Exp $	*/
+/*	$NetBSD: ubavar.h,v 1.21 1999/01/19 21:04:48 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,14 +36,15 @@
  * This file contains definitions related to the kernel structures
  * for dealing with the unibus adapters.
  *
- * Each uba has a uba_hd structure.
+ * Each uba has a uba_softc structure.
  * Each unibus controller which is not a device has a uba_ctlr structure.
  * Each unibus device has a uba_device structure.
  */
 
-#ifndef LOCORE
+#include <sys/buf.h>
+#include <sys/device.h>
 
-#include "sys/buf.h"
+#include <machine/trap.h> /* For struct ivec_dsp */
 /*
  * Per-uba structure.
  *
@@ -68,121 +66,72 @@
  * the unibus driver in resource wait (mrwant, bdpwant); these
  * wait states are also recorded here.
  */
-struct	uba_hd {
+struct extent;
+struct	uba_softc {
+	struct	device uh_dev;		/* Device struct, autoconfig */
+	SIMPLEQ_HEAD(, uba_unit) uh_resq;	/* resource wait chain */
 	int	uh_type;		/* type of adaptor */
 	struct	uba_regs *uh_uba;	/* virt addr of uba adaptor regs */
-	struct	uba_regs *uh_physuba;	/* phys addr of uba adaptor regs */
-	struct	pte *uh_mr;		/* start of page map */
+	pt_entry_t *uh_mr;		/* start of page map */
 	int	uh_memsize;		/* size of uba memory, pages */
-	caddr_t	uh_mem;			/* start of uba memory address space */
 	caddr_t	uh_iopage;		/* start of uba io page */
-	int	(**Nuh_vec)();		/* interrupt vector */
-	struct	uba_device *uh_actf;	/* head of queue to transfer */
-	struct	uba_device *uh_actl;	/* tail of queue to transfer */
+	void	(**uh_reset)(int);	/* UBA reset function array */
+	int	*uh_resarg;		/* array of ubareset args */
+	int	uh_resno;		/* Number of devices to reset */
 	short	uh_mrwant;		/* someone is waiting for map reg */
 	short	uh_bdpwant;		/* someone awaits bdp's */
 	int	uh_bdpfree;		/* free bdp's */
-	int	uh_hangcnt;		/* number of ticks hung */
 	int	uh_zvcnt;		/* number of recent 0 vectors */
 	long	uh_zvtime;		/* time over which zvcnt accumulated */
 	int	uh_zvtotal;		/* total number of 0 vectors */
-	int	uh_errcnt;		/* number of errors */
 	int	uh_lastiv;		/* last free interrupt vector */
 	short	uh_users;		/* transient bdp use count */
 	short	uh_xclu;		/* an rk07 is using this uba! */
 	int	uh_lastmem;		/* limit of any unibus memory */
-#define	UAMSIZ	100
-	struct	map *uh_map;		/* register free map */
+	struct	extent *uh_ext;		/* register free map */
+	char	*uh_extspace;		/* storage space for uh_ext */
+	int	(*uh_errchk)(struct uba_softc *);
+	void	(*uh_beforescan)(struct uba_softc *);
+	void	(*uh_afterscan)(struct uba_softc *);
+	void	(*uh_ubainit)(struct uba_softc *);
+	void	(*uh_ubapurge)(struct uba_softc *, int);
+	short	uh_nr;			/* Unibus sequential number */
+	short	uh_nbdp;		/* # of BDP's */
+	int	uh_ibase;		/* Base address for vectors */
 };
 
-/* given a pointer to uba_regs, find DWBUA registers */
-/* this should be replaced with a union in uba_hd */
-#define	BUA(uba)	((struct dwbua_regs *)(uba))
+#define	UAMSIZ	100
 
 /*
  * Per-controller structure.
- * (E.g. one for each disk and tape controller, and other things
- * which use and release buffered data paths.)
- *
- * If a controller has devices attached, then there are
- * cross-referenced uba_drive structures.
- * This structure is the one which is queued in unibus resource wait,
- * and saves the information about unibus resources which are used.
- * The queue of devices waiting to transfer is also attached here.
+ * The unit struct is common to both the adapter and the controller
+ * to which it belongs. It is only used on controllers that handles
+ * BDP's, and calls the adapter queueing subroutines.
  */
-struct uba_ctlr {
-	struct	uba_driver *um_driver;
-	short	um_ctlr;	/* controller index in driver */
-	short	um_ubanum;	/* the uba it is on */
-	short	um_alive;	/* controller exists */
-	int	(*um_intr)();	/* interrupt handler(s) */
-	caddr_t	um_addr;	/* address of device in i/o space */
-	struct	uba_hd *um_hd;
-/* the driver saves the prototype command here for use in its go routine */
-	int	um_cmd;		/* communication to dgo() */
-	int	um_ubinfo;	/* save unibus registers, etc */
-	int	um_bdp;		/* for controllers that hang on to bdp's */
-	struct	buf um_tab;	/* queue of devices for this controller */
+struct	uba_unit {
+	SIMPLEQ_ENTRY(uba_unit) uu_resq;/* Queue while waiting for resources */
+	void	*uu_softc;	/* Pointer to units softc */
+	int	uu_ubinfo;	/* save unibus registers, etc */
+	int	uu_bdp;		/* for controllers that hang on to bdp's */
+	int    (*uu_ready)(struct uba_unit *);
+	short   uu_xclu;        /* want exclusive use of bdp's */
+	short   uu_keepbdp;     /* hang on to bdp's once allocated */
 };
 
 /*
- * Per ``device'' structure.
- * (A controller has devices or uses and releases buffered data paths).
- * (Everything else is a ``device''.)
- *
- * If a controller has many drives attached, then there will
- * be several uba_device structures associated with a single uba_ctlr
- * structure.
- *
- * This structure contains all the information necessary to run
- * a unibus device such as a dz or a dh.  It also contains information
- * for slaves of unibus controllers as to which device on the slave
- * this is.  A flags field here can also be given in the system specification
- * and is used to tell which dz lines are hard wired or other device
- * specific parameters.
+ * uba_attach_args is used during autoconfiguration. It is sent
+ * from ubascan() to each (possible) device.
  */
-struct uba_device {
-	struct	uba_driver *ui_driver;
-	short	ui_unit;	/* unit number on the system */
-	short	ui_ctlr;	/* mass ctlr number; -1 if none */
-	short	ui_ubanum;	/* the uba it is on */
-	short	ui_slave;	/* slave on controller */
-	int	(*ui_intr)();	/* interrupt handler(s) */
-	caddr_t	ui_addr;	/* address of device in i/o space */
-	short	ui_dk;		/* if init 1 set to number for iostat */
-	int	ui_flags;	/* parameter from system specification */
-	short	ui_alive;	/* device exists */
-	short	ui_type;	/* driver specific type information */
-	caddr_t	ui_physaddr;	/* phys addr, for standalone (dump) code */
-/* this is the forward link in a list of devices on a controller */
-	struct	uba_device *ui_forw;
-/* if the device is connected to a controller, this is the controller */
-	struct	uba_ctlr *ui_mi;
-	struct	uba_hd *ui_hd;
+struct uba_attach_args {
+	caddr_t	ua_addr;
+	    /* Pointer to int routine, filled in by probe*/
+	void	(*ua_ivec)(int);
+	    /* UBA reset routine, filled in by probe */
+	void	(*ua_reset)(int);
+	int	ua_iaddr;
+	int	ua_br;
+	int	ua_cvec;
 };
-
-/*
- * Per-driver structure.
- *
- * Each unibus driver defines entries for a set of routines
- * as well as an array of types which are acceptable to it.
- * These are used at boot time by the configuration program.
- */
-struct uba_driver {
-	int	(*ud_probe)();		/* see if a driver is really there */
-	int	(*ud_slave)();		/* see if a slave is there */
-	int	(*ud_attach)();		/* setup driver for a slave */
-	int	(*ud_dgo)();		/* fill csr/ba to start transfer */
-	u_short	*ud_addr;		/* device csr addresses */
-	char	*ud_dname;		/* name of a device */
-	struct	uba_device **ud_dinfo;	/* backpointers to ubdinit structs */
-	char	*ud_mname;		/* name of a controller */
-	struct	uba_ctlr **ud_minfo;	/* backpointers to ubminit structs */
-	short	ud_xclu;		/* want exclusive use of bdp's */
-	short	ud_keepbdp;		/* hang on to bdp's once allocated */
-	int	(*ud_ubamem)();		/* see if dedicated memory is present */
-};
-#endif
 
 /*
  * Flags to UBA map/bdp allocation routines
@@ -217,50 +166,18 @@ struct ubinfo {
 	(((bdp) << 28) | ((nmr) << 20) | ((mr) << 9) | (off))
 #endif
 
-#ifndef LOCORE
+#ifndef _LOCORE
 #ifdef _KERNEL
-#define	ubago(ui)	ubaqueue(ui, 0)
+#define	ubago(ui)	ubaqueue(ui)
+#define b_forw  b_hash.le_next	/* Nice to have when handling uba queues */
 
-/*
- * UBA related kernel variables
- */
-int	numuba;					/* number of uba's */
-struct	uba_hd uba_hd[];
+void	uba_attach(struct uba_softc *, unsigned long);
+int	uballoc(struct uba_softc *, caddr_t, int, int);
+void	ubarelse(struct uba_softc *, int *);
+int	ubaqueue(struct uba_unit *, struct buf *);
+void	ubadone(struct uba_unit *);
+void	ubareset(int);
+int	ubasetup(struct uba_softc *, struct buf *, int);
 
-/*
- * Ubminit and ubdinit initialize the mass storage controller and
- * device tables specifying possible devices.
- */
-extern	struct	uba_ctlr ubminit[];
-extern	struct	uba_device ubdinit[];
-
-/*
- * UNIBUS device address space is mapped by UMEMmap
- * into virtual address umem[][].
- * The IO page is mapped to the last 8K of each.
- * This should be enlarged for the Q22 bus.
- */
-extern	struct pte *UMEMmap[];	/* uba device addr pte's */
-/* extern	char umem[][512*NBPG];		/* uba device addr space */
-extern char *Numem;
-#define	Tumem(x)	(Numem+(UBAPAGES+UBAIOPAGES)*NBPG*x)
-
-/*
- * Since some VAXen vector their unibus interrupts
- * just adjacent to the system control block, we must
- * allocate space there when running on ``any'' cpu.  This space is
- * used for the vectors for all ubas.
- */
-extern	int (*UNIvec[][128])();			/* unibus vec for ubas */
-extern	int (*eUNIvec)();			/* end of unibus vec */
-
-#if defined(VAX780) || defined(VAX8600)
-/*
- * On DW780's, we must set the scb vectors for the nexus of the
- * UNIbus adaptors to vector to locore unibus adaptor interrupt dispatchers
- * which make 780's look like the other VAXen.
- */
-extern	Xua0int(), Xua1int(), Xua2int(), Xua3int();
-#endif VAX780
 #endif /* _KERNEL */
-#endif !LOCORE
+#endif /* !_LOCORE */

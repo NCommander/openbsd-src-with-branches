@@ -13,7 +13,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: refill.c,v 1.47 2001/06/06 00:22:56 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: refill.c,v 1.50 2002/09/09 21:50:10 gshapiro Exp $")
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -65,14 +65,22 @@ static int sm_lflush __P((SM_FILE_T *, int *));
 		errno = EAGAIN;						\
 		return SM_IO_EOF;					\
 	}								\
+	if (FD_SETSIZE > 0 && (fd) >= FD_SETSIZE)			\
+	{								\
+		errno = EINVAL;						\
+		return SM_IO_EOF;					\
+	}								\
 	FD_ZERO(&sm_io_to_mask);					\
 	FD_SET((fd), &sm_io_to_mask);					\
 	FD_ZERO(&sm_io_x_mask);						\
 	FD_SET((fd), &sm_io_x_mask);					\
 	if (gettimeofday(&sm_io_to_before, NULL) < 0)			\
 		return SM_IO_EOF;					\
-	(sel_ret) = select((fd) + 1, &sm_io_to_mask, NULL,		\
-			   &sm_io_x_mask, (to));			\
+	do								\
+	{								\
+		(sel_ret) = select((fd) + 1, &sm_io_to_mask, NULL,	\
+			   	&sm_io_x_mask, (to));			\
+	} while ((sel_ret) < 0 && errno == EINTR);			\
 	if ((sel_ret) < 0)						\
 	{								\
 		/* something went wrong, errno set */			\
@@ -89,7 +97,7 @@ static int sm_lflush __P((SM_FILE_T *, int *));
 	/* calulate wall-clock time used */				\
 	if (gettimeofday(&sm_io_to_after, NULL) < 0)			\
 		return SM_IO_EOF;					\
-	timersub(&sm_io_to_before, &sm_io_to_after, &sm_io_to_diff);	\
+	timersub(&sm_io_to_after, &sm_io_to_before, &sm_io_to_diff);	\
 	timersub((to), &sm_io_to_diff, (to));				\
 }
 

@@ -72,12 +72,6 @@
 #include "httpd.h"
 #include "http_conf_globals.h"	/* for user_id & group_id */
 #include "http_log.h"
-#if defined(SUNOS4)
-/* stdio.h has been read in ap_config.h already. Add missing prototypes here: */
-extern int fgetc(FILE *);
-extern char *fgets(char *s, int, FILE*);
-extern int fclose(FILE *);
-#endif
 
 /* A bunch of functions in util.c scan strings looking for certain characters.
  * To make that more efficient we encode a lookup table.  The test_char_table
@@ -203,7 +197,6 @@ API_EXPORT(char *) ap_gm_timestr_822(pool *p, time_t sec)
 }
 
 /* What a pain in the ass. */
-#if defined(HAVE_GMTOFF)
 API_EXPORT(struct tm *) ap_get_gmtoff(int *tz)
 {
     time_t tt = time(NULL);
@@ -213,25 +206,6 @@ API_EXPORT(struct tm *) ap_get_gmtoff(int *tz)
     *tz = (int) (t->tm_gmtoff / 60);
     return t;
 }
-#else
-API_EXPORT(struct tm *) ap_get_gmtoff(int *tz)
-{
-    time_t tt = time(NULL);
-    struct tm gmt;
-    struct tm *t;
-    int days, hours, minutes;
-
-    /* Assume we are never more than 24 hours away. */
-    gmt = *gmtime(&tt);		/* remember gmtime/localtime return ptr to static */
-    t = localtime(&tt);		/* buffer... so be careful */
-    days = t->tm_yday - gmt.tm_yday;
-    hours = ((days < -1 ? 24 : 1 < days ? -24 : days * 24)
-	     + t->tm_hour - gmt.tm_hour);
-    minutes = hours * 60 + t->tm_min - gmt.tm_min;
-    *tz = minutes;
-    return t;
-}
-#endif
 
 /* Roy owes Rob beer. */
 /* Rob owes Roy dinner. */
@@ -532,12 +506,6 @@ API_EXPORT(void) ap_no2slash(char *name)
 
     s = d = name;
 
-#ifdef HAVE_UNC_PATHS
-    /* Check for UNC names.  Leave leading two slashes. */
-    if (s[0] == '/' && s[1] == '/')
-        *d++ = *s++;
-#endif
-
     while (*s) {
 	if ((*d++ = *s) == '/') {
 	    do {
@@ -571,13 +539,6 @@ API_EXPORT(void) ap_no2slash(char *name)
  */
 API_EXPORT(char *) ap_make_dirstr_prefix(char *d, const char *s, int n)
 {
-#if defined(HAVE_DRIVE_LETTERS) || defined(NETWARE)
-    if (!n) {
-        *d = '/';
-        *++d = '\0';
-        return (d);
-    }
-#endif /* def HAVE_DRIVE_LETTERS || NETWARE */
     for (;;) {
 	*d = *s;
 	if (*d == '\0') {
@@ -883,11 +844,7 @@ API_EXPORT(configfile_t *) ap_pcfg_openfile(pool *p, const char *name)
         return NULL;
     }
 
-#ifdef FOPEN_REQUIRES_T
-    file = ap_pfopen(p, name, "rt");
-#else
     file = ap_pfopen(p, name, "r");
-#endif
 #ifdef DEBUG
     saved_errno = errno;
     ap_log_error(APLOG_MARK, APLOG_DEBUG | APLOG_NOERRNO, NULL,
@@ -900,13 +857,7 @@ API_EXPORT(configfile_t *) ap_pcfg_openfile(pool *p, const char *name)
 
     if (fstat(fileno(file), &stbuf) == 0 &&
         !S_ISREG(stbuf.st_mode) &&
-#if defined(WIN32) || defined(OS2)
-        !(strcasecmp(name, "nul") == 0 ||
-          (strlen(name) >= 4 &&
-           strcasecmp(name + strlen(name) - 4, "/nul") == 0))) {
-#else
         strcmp(name, "/dev/null") != 0) {
-#endif /* WIN32 || OS2 */
 	saved_errno = errno;
         ap_log_error(APLOG_MARK, APLOG_ERR | APLOG_NOERRNO, NULL,
                     "Access to file %s denied by server: not a regular file",
@@ -1460,9 +1411,6 @@ static const char c2x_table[] = "0123456789abcdef";
 
 static ap_inline unsigned char *c2x(unsigned what, unsigned char *where)
 {
-#ifdef CHARSET_EBCDIC
-    what = os_toascii[what];
-#endif /*CHARSET_EBCDIC*/
     *where++ = '%';
     *where++ = c2x_table[what >> 4];
     *where++ = c2x_table[what & 0xf];
@@ -1520,6 +1468,69 @@ API_EXPORT(char *) ap_escape_logitem(pool *p, const char *str)
     return ret;
 }
 
+API_EXPORT(size_t) ap_escape_errorlog_item(char *dest, const char *source,
+                                           size_t buflen)
+{
+    unsigned char *d, *ep;
+    const unsigned char *s;
+
+    if (!source || !buflen) { /* be safe */
+        return 0;
+    }
+
+    d = (unsigned char *)dest;
+    s = (const unsigned char *)source;
+    ep = d + buflen - 1;
+
+    for (; d < ep && *s; ++s) {
+
+        if (TEST_CHAR(*s, T_ESCAPE_LOGITEM)) {
+            *d++ = '\\';
+            if (d >= ep) {
+                --d;
+                break;
+            }
+
+            switch(*s) {
+            case '\b':
+                *d++ = 'b';
+                break;
+            case '\n':
+                *d++ = 'n';
+                break;
+            case '\r':
+                *d++ = 'r';
+                break;
+            case '\t':
+                *d++ = 't';
+                break;
+            case '\v':
+                *d++ = 'v';
+                break;
+            case '\\':
+                *d++ = *s;
+                break;
+            case '"': /* no need for this in error log */
+                d[-1] = *s;
+                break;
+            default:
+                if (d >= ep - 2) {
+                    ep = --d; /* break the for loop as well */
+                    break;
+                }
+                c2x(*s, d);
+                *d = 'x';
+                d += 3;
+            }
+        }
+        else {
+            *d++ = *s;
+        }
+    }
+    *d = '\0';
+
+    return (d - (unsigned char *)dest);
+}
 
 API_EXPORT(char *) ap_escape_shell_cmd(pool *p, const char *str)
 {
@@ -1532,17 +1543,6 @@ API_EXPORT(char *) ap_escape_shell_cmd(pool *p, const char *str)
     s = (const unsigned char *)str;
     for (; *s; ++s) {
 
-#if defined(WIN32) || defined(OS2)
-        /* 
-         * Newlines to Win32/OS2 CreateProcess() are ill advised.
-         * Convert them to spaces since they are effectively white
-         * space to most applications
-         */
-	if (*s == '\r' || *s == '\n') {
-	    *d++ = ' ';
-	    continue;
-	}
-#endif
 
 	if (TEST_CHAR(*s, T_ESCAPE_SHELL_CMD)) {
 	    *d++ = '\\';
@@ -1558,19 +1558,9 @@ static char x2c(const char *what)
 {
     register char digit;
 
-#ifndef CHARSET_EBCDIC
     digit = ((what[0] >= 'A') ? ((what[0] & 0xdf) - 'A') + 10 : (what[0] - '0'));
     digit *= 16;
     digit += (what[1] >= 'A' ? ((what[1] & 0xdf) - 'A') + 10 : (what[1] - '0'));
-#else /*CHARSET_EBCDIC*/
-    char xstr[5];
-    xstr[0]='0';
-    xstr[1]='x';
-    xstr[2]=what[0];
-    xstr[3]=what[1];
-    xstr[4]='\0';
-    digit = os_toebcdic[0xFF & ap_strtol(xstr, NULL, 16)];
-#endif /*CHARSET_EBCDIC*/
     return (digit);
 }
 
@@ -1702,6 +1692,8 @@ API_EXPORT(char *) ap_escape_html(pool *p, const char *s)
 	    j += 3;
 	else if (s[i] == '&')
 	    j += 4;
+	else if (s[i] == '"')
+	    j += 5; 
 
     if (j == 0)
 	return ap_pstrndup(p, s, i);
@@ -1719,6 +1711,10 @@ API_EXPORT(char *) ap_escape_html(pool *p, const char *s)
 	else if (s[i] == '&') {
 	    memcpy(&x[j], "&amp;", 5);
 	    j += 4;
+	}
+	else if (s[i] == '"') {
+	    memcpy(&x[j], "&quot;", 6);
+	    j += 5;
 	}
 	else
 	    x[j] = s[i];
@@ -1786,165 +1782,14 @@ API_EXPORT(int) ap_is_url(const char *u)
 
 API_EXPORT(int) ap_can_exec(const struct stat *finfo)
 {
-#ifdef MULTIPLE_GROUPS
-    int cnt;
-#endif
-#if defined(OS2) || defined(WIN32) || defined(NETWARE)
-    /* OS/2 dosen't have Users and Groups */
-    return 1;
-#else
     if (ap_user_id == finfo->st_uid)
 	if (finfo->st_mode & S_IXUSR)
 	    return 1;
     if (ap_group_id == finfo->st_gid)
 	if (finfo->st_mode & S_IXGRP)
 	    return 1;
-#ifdef MULTIPLE_GROUPS
-    for (cnt = 0; cnt < NGROUPS_MAX; cnt++) {
-	if (group_id_list[cnt] == finfo->st_gid)
-	    if (finfo->st_mode & S_IXGRP)
-		return 1;
-    }
-#endif
     return ((finfo->st_mode & S_IXOTH) != 0);
-#endif
 }
-
-#ifdef NEED_STRDUP
-char *strdup(const char *str)
-{
-    char *sdup;
-
-    if (!(sdup = (char *) malloc(strlen(str) + 1))) {
-	fprintf(stderr, "Ouch!  Out of memory in our strdup()!\n");
-	return NULL;
-    }
-    sdup = strcpy(sdup, str);
-
-    return sdup;
-}
-#endif
-
-/* The following two routines were donated for SVR4 by Andreas Vogel */
-#ifdef NEED_STRCASECMP
-int strcasecmp(const char *a, const char *b)
-{
-    const char *p = a;
-    const char *q = b;
-    for (p = a, q = b; *p && *q; p++, q++) {
-	int diff = ap_tolower(*p) - ap_tolower(*q);
-	if (diff)
-	    return diff;
-    }
-    if (*p)
-	return 1;		/* p was longer than q */
-    if (*q)
-	return -1;		/* p was shorter than q */
-    return 0;			/* Exact match */
-}
-
-#endif
-
-#ifdef NEED_STRNCASECMP
-int strncasecmp(const char *a, const char *b, int n)
-{
-    const char *p = a;
-    const char *q = b;
-
-    for (p = a, q = b; /*NOTHING */ ; p++, q++) {
-	int diff;
-	if (p == a + n)
-	    return 0;		/*   Match up to n characters */
-	if (!(*p && *q))
-	    return *p - *q;
-	diff = ap_tolower(*p) - ap_tolower(*q);
-	if (diff)
-	    return diff;
-    }
-    /*NOTREACHED */
-}
-#endif
-
-/* The following routine was donated for UTS21 by dwd@bell-labs.com */
-#ifdef NEED_STRSTR
-char *strstr(char *s1, char *s2)
-{
-    char *p1, *p2;
-    if (*s2 == '\0') {
-	/* an empty s2 */
-        return(s1);
-    }
-    while((s1 = strchr(s1, *s2)) != NULL) {
-	/* found first character of s2, see if the rest matches */
-        p1 = s1;
-        p2 = s2;
-        while (*++p1 == *++p2) {
-            if (*p1 == '\0') {
-                /* both strings ended together */
-                return(s1);
-            }
-        }
-        if (*p2 == '\0') {
-            /* second string ended, a match */
-            break;
-        }
-	/* didn't find a match here, try starting at next character in s1 */
-        s1++;
-    }
-    return(s1);
-}
-#endif
-
-#ifdef NEED_INITGROUPS
-int initgroups(const char *name, gid_t basegid)
-{
-#if defined(QNX) || defined(MPE) || defined(BEOS) || defined(TPF) || defined(__TANDEM) || defined(NETWARE) || defined(BONE)
-/* QNX, MPE and BeOS do not appear to support supplementary groups. */
-    return 0;
-#else /* ndef QNX */
-    gid_t groups[NGROUPS_MAX];
-    struct group *g;
-    int index = 0;
-
-    setgrent();
-
-    groups[index++] = basegid;
-
-    while (index < NGROUPS_MAX && ((g = getgrent()) != NULL))
-	if (g->gr_gid != basegid) {
-	    char **names;
-
-	    for (names = g->gr_mem; *names != NULL; ++names)
-		if (!strcmp(*names, name))
-		    groups[index++] = g->gr_gid;
-	}
-
-    endgrent();
-
-    return setgroups(index, groups);
-#endif /* def QNX */
-}
-#endif /* def NEED_INITGROUPS */
-
-#ifdef NEED_WAITPID
-/* From ikluft@amdahl.com
- * this is not ideal but it works for SVR3 variants
- * Modified by dwd@bell-labs.com to call wait3 instead of wait because
- *   apache started to use the WNOHANG option.
- */
-int waitpid(pid_t pid, int *statusp, int options)
-{
-    int tmp_pid;
-    if (kill(pid, 0) == -1) {
-	errno = ECHILD;
-	return -1;
-    }
-    while (((tmp_pid = wait3(statusp, options, 0)) != pid) &&
-		(tmp_pid != -1) && (tmp_pid != 0) && (pid != -1))
-	;
-    return tmp_pid;
-}
-#endif
 
 API_EXPORT(int) ap_ind(const char *s, char c)
 {
@@ -1978,9 +1823,6 @@ API_EXPORT(void) ap_str_tolower(char *str)
 
 API_EXPORT(uid_t) ap_uname2id(const char *name)
 {
-#if defined(WIN32) || defined(NETWARE)
-    return (1);
-#else
     struct passwd *ent;
 
     if (name[0] == '#')
@@ -1991,14 +1833,10 @@ API_EXPORT(uid_t) ap_uname2id(const char *name)
 	exit(1);
     }
     return (ent->pw_uid);
-#endif
 }
 
 API_EXPORT(gid_t) ap_gname2id(const char *name)
 {
-#if defined(WIN32) || defined(NETWARE)
-    return (1);
-#else
     struct group *ent;
 
     if (name[0] == '#')
@@ -2009,7 +1847,6 @@ API_EXPORT(gid_t) ap_gname2id(const char *name)
 	exit(1);
     }
     return (ent->gr_gid);
-#endif
 }
 
 
@@ -2092,11 +1929,7 @@ API_EXPORT(char *) ap_get_local_host(pool *a)
     char *server_hostname = NULL;
     struct hostent *p;
 
-#ifdef BEOS /* BeOS returns zero as an error for gethostname */
-    if (gethostname(str, sizeof(str) - 1) == 0) {
-#else    
     if (gethostname(str, sizeof(str) - 1) != 0) {
-#endif /* BeOS */
 	ap_log_error(APLOG_MARK, APLOG_WARNING, NULL,
 	             "%s: gethostname() failed to determine ServerName\n",
                      ap_server_argv0);
@@ -2106,19 +1939,23 @@ API_EXPORT(char *) ap_get_local_host(pool *a)
         str[sizeof(str) - 1] = '\0';
         if ((!(p = gethostbyname(str))) 
             || (!(server_hostname = find_fqdn(a, p)))) {
-            /* Recovery - return the default servername by IP: */
-            if (p && p->h_addr_list && p->h_addr_list[0]) {
-                ap_snprintf(str, sizeof(str), "%pA", p->h_addr_list[0]);
-	        server_hostname = ap_pstrdup(a, str);
-                /* We will drop through to report the IP-named server */
-            }
+           if (p == NULL || p->h_addr_list == NULL)
+              server_hostname=NULL;
+           else {
+              /* Recovery - return the default servername by IP: */
+              if (p->h_addr_list[0]) {
+		      ap_snprintf(str, sizeof(str), "%pA", p->h_addr_list[0]);
+		      server_hostname = ap_pstrdup(a, str);
+                    /* We will drop through to report the IP-named server */
+	      }
+	   }
         }
 	else
             /* Since we found a fqdn, return it with no logged message. */
             return server_hostname;
     }
 
-    /* If we don't have an fdqn or IP, fall back to the loopback addr */
+    /* If we don't have an fqdn or IP, fall back to the loopback addr */
     if (!server_hostname) 
         server_hostname = ap_pstrdup(a, "127.0.0.1");
     
@@ -2168,119 +2005,6 @@ API_EXPORT(char *) ap_uuencode(pool *p, char *string)
     return ap_pbase64encode(p, string);
 }
 
-#if defined(OS2) || defined(WIN32)
-/* quotes in the string are doubled up.
- * Used to escape quotes in args passed to OS/2's cmd.exe
- * and Win32's command.com
- */
-API_EXPORT(char *) ap_double_quotes(pool *p, const char *str)
-{
-    int num_quotes = 0;
-    int len = 0;
-    char *quote_doubled_str, *dest;
-    
-    while (str[len]) {
-        if (str[len++] == '\"') {
-            num_quotes++;
-        }
-    }
-    
-    quote_doubled_str = ap_palloc(p, len + num_quotes + 1);
-    dest = quote_doubled_str;
-    
-    while (*str) {
-        if (*str == '\"')
-            *(dest++) = '\"';
-        *(dest++) = *(str++);
-    }
-    
-    *dest = 0;
-    return quote_doubled_str;
-}
-
-/*
- * If ap_caret_escape_args resembles ap_escape_shell_cmd, it aught to.
- * Taken verbatim so we can trust the integrety of this function.
- */
-API_EXPORT(char *) ap_caret_escape_args(pool *p, const char *str)
-{
-    char *cmd;
-    unsigned char *d;
-    const unsigned char *s;
-
-    cmd = ap_palloc(p, 2 * strlen(str) + 1);	/* Be safe */
-    d = (unsigned char *)cmd;
-    s = (const unsigned char *)str;
-    for (; *s; ++s) {
-
-        /* 
-         * Newlines to Win32/OS2 CreateProcess() are ill advised.
-         * Convert them to spaces since they are effectively white
-         * space to most applications
-         */
-	if (*s == '\r' || *s == '\n') {
-	    *d++ = ' ';
-            continue;
-	}
-
-	if (TEST_CHAR(*s, T_ESCAPE_SHELL_CMD)) {
-	    *d++ = '^';
-	}
-	*d++ = *s;
-    }
-    *d = '\0';
-
-    return cmd;
-}
-#endif
-
-#ifdef OS2
-void os2pathname(char *path)
-{
-    char newpath[MAX_STRING_LEN];
-    int loop;
-    int offset;
-
-    offset = 0;
-    for (loop = 0; loop < (strlen(path) + 1) && loop < sizeof(newpath) - 1; loop++) {
-	if (path[loop] == '/') {
-	    newpath[offset] = '\\';
-	    /*
-	       offset = offset + 1;
-	       newpath[offset] = '\\';
-	     */
-	}
-	else
-	    newpath[offset] = path[loop];
-	offset = offset + 1;
-    };
-    /* Debugging code */
-    /* fprintf(stderr, "%s \n", newpath); */
-
-    strcpy(path, newpath);
-};
-#endif
-
-
-#ifdef NEED_STRERROR
-char *
-     strerror(int err)
-{
-
-    char *p;
-    extern char *const sys_errlist[];
-
-    p = sys_errlist[err];
-    return (p);
-}
-#endif
-
-#if defined(NEED_DIFFTIME)
-double difftime(time_t time1, time_t time0)
-{
-    return (time1 - time0);
-}
-#endif
 
 /* we want to downcase the type/subtype for comparison purposes
  * but nothing else because ;parameter=foo values are case sensitive.

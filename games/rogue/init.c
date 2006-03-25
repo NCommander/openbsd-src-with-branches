@@ -1,3 +1,4 @@
+/*	$OpenBSD: init.c,v 1.8 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/04/28 23:49:19 mycroft Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: init.c,v 1.4 1995/04/28 23:49:19 mycroft Exp $";
+static const char rcsid[] = "$OpenBSD: init.c,v 1.8 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,11 +53,11 @@ static char rcsid[] = "$NetBSD: init.c,v 1.4 1995/04/28 23:49:19 mycroft Exp $";
  *
  */
 
-#include <stdio.h>
+#include <err.h>
 #include "rogue.h"
 
-char login_name[MAX_OPT_LEN];
-char *nick_name = (char *) 0;
+char login_name[LOGIN_NAME_LEN];
+char *nick_name = NULL;
 char *rest_file = 0;
 boolean cant_int = 0;
 boolean did_int = 0;
@@ -70,26 +67,29 @@ boolean save_is_interactive = 1;
 boolean ask_quit = 1;
 boolean no_skull = 0;
 boolean passgo = 0;
-char *error_file = "rogue.esave";
-char *byebye_string = "Okay, bye bye!";
+const char *error_file = "rogue.esave";
+const char *byebye_string = "Okay, bye bye!";
+gid_t gid, egid;
 
-extern char *fruit;
-extern char *save_file;
-extern short party_room;
-extern boolean jump;
-
+int
 init(argc, argv)
-int argc;
-char *argv[];
+	int argc;
+	char *argv[];
 {
 	char *pn;
 	int seed;
 
+	gid = getgid();
+	egid = getegid();
+	setegid(gid);
 	pn = md_gln();
-	if ((!pn) || (strlen(pn) >= MAX_OPT_LEN)) {
+	if ((!pn) || (strlen(pn) >= LOGIN_NAME_LEN))
 		clean_up("Hey!  Who are you?");
-	}
-	(void) strcpy(login_name, pn);
+	(void) strlcpy(login_name, pn, sizeof(login_name));
+	/* ':' is reserved.  If it's in a login_name, we're on a weird
+	 * system... */
+	while ((pn = strchr(login_name, ':')) != NULL)
+		*pn = ';';
 
 	do_args(argc, argv);
 	do_opts();
@@ -101,16 +101,16 @@ char *argv[];
 	}
 
 	initscr();
+	init_curses = 1;
 	if ((LINES < DROWS) || (COLS < DCOLS)) {
-		clean_up("must be played on 24 x 80 screen");
+		clean_up("must be played on 24 x 80 screen (or larger)");
 	}
 	start_window();
-	init_curses = 1;
 
 	md_heed_signals();
 
 	if (score_only) {
-		put_scores((object *) 0, 0);
+		put_scores((object *) NULL, 0);
 	}
 	seed = md_gseed();
 	(void) srrandom(seed);
@@ -129,6 +129,7 @@ char *argv[];
 	return(0);
 }
 
+void
 player_init()
 {
 	object *obj;
@@ -177,8 +178,9 @@ player_init()
 	(void) add_to_pack(obj, &rogue.pack, 1);
 }
 
+void
 clean_up(estr)
-char *estr;
+	const char *estr;
 {
 	if (save_is_interactive) {
 		if (init_curses) {
@@ -191,22 +193,25 @@ char *estr;
 	md_exit(0);
 }
 
+void
 start_window()
 {
-	crmode();
+	cbreak();
 	noecho();
 #ifndef BAD_NONL
 	nonl();
 #endif
 }
 
+void
 stop_window()
 {
 	endwin();
 }
 
 void
-byebye()
+byebye(dummy)
+	int dummy;
 {
 	md_ignore_signals();
 	if (ask_quit) {
@@ -218,29 +223,32 @@ byebye()
 }
 
 void
-onintr()
+onintr(dummy)
+	int dummy;
 {
 	md_ignore_signals();
 	if (cant_int) {
 		did_int = 1;
 	} else {
 		check_message();
-		message("interrupt", 1);
+		messagef(1, "interrupt");
 	}
 	md_heed_signals();
 }
 
 void
-error_save()
+error_save(dummy)
+	int dummy;
 {
 	save_is_interactive = 0;
 	save_into_file(error_file);
 	clean_up("");
 }
 
+void
 do_args(argc, argv)
-int argc;
-char *argv[];
+	int argc;
+	char *argv[];
 {
 	short i, j;
 
@@ -259,18 +267,18 @@ char *argv[];
 	}
 }
 
+void
 do_opts()
 {
 	char *eptr;
 
-	if (eptr = md_getenv("ROGUEOPTS")) {
+	if ((eptr = md_getenv("ROGUEOPTS"))) {
 		for (;;) {
 			while ((*eptr) == ' ') {
 				eptr++;
 			}
-			if (!(*eptr)) {
+			if (!(*eptr))
 				break;
-			}
 			if (!strncmp(eptr, "fruit=", 6)) {
 				eptr += 6;
 				env_get_value(&fruit, eptr, 1);
@@ -306,9 +314,10 @@ do_opts()
 	init_str(&fruit, "slime-mold");
 }
 
+void
 env_get_value(s, e, add_blank)
-char **s, *e;
-boolean add_blank;
+	char **s, *e;
+	boolean add_blank;
 {
 	short i = 0;
 	char *t;
@@ -316,27 +325,30 @@ boolean add_blank;
 	t = e;
 
 	while ((*e) && (*e != ',')) {
-		if (*e == ':') {
-			*e = ';';		/* ':' reserved for score file purposes */
-		}
 		e++;
-		if (++i >= MAX_OPT_LEN) {
+		if (++i >= MAX_OPT_LEN)
 			break;
-		}
 	}
-	*s = md_malloc(MAX_OPT_LEN + 2);
-	(void) strncpy(*s, t, i);
+	/* room.c:edit_opts() depends on length MAX_OPT_LEN + 2 */
+	if (!(*s = md_malloc(MAX_OPT_LEN + 2)))
+		clean_up("out of memory");
+	(void) strlcpy(*s, t, MAX_OPT_LEN + 2);
 	if (add_blank) {
 		(*s)[i++] = ' ';
 	}
 	(*s)[i] = '\0';
 }
 
+void
 init_str(str, dflt)
-char **str, *dflt;
+	char **str;
+	const char *dflt;
 {
 	if (!(*str)) {
+		/* room.c:edit_opts() depends on length MAX_OPT_LEN + 2 */
 		*str = md_malloc(MAX_OPT_LEN + 2);
-		(void) strcpy(*str, dflt);
+		if (*str == NULL)
+			clean_up("out of memory");
+		(void) strlcpy(*str, dflt, MAX_OPT_LEN + 2);
 	}
 }

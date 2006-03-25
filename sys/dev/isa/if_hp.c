@@ -1,4 +1,5 @@
-/*	$NetBSD: if_hp.c,v 1.20 1995/04/17 12:09:01 cgd Exp $	*/
+/*    $OpenBSD: if_hp.c,v 1.14 2004/09/28 01:02:14 brad Exp $       */
+/*    $NetBSD: if_hp.c,v 1.21 1995/12/24 02:31:31 mycroft Exp $       */
 
 /* XXX THIS DRIVER IS BROKEN.  IT WILL NOT EVEN COMPILE. */
 
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -77,16 +74,10 @@
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
 #include "bpfilter.h"
 #if NBPFILTER > 0
-#include <sys/select.h>
+#include <sys/selinfo.h>
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
 
 #include <machine/cpu.h>
@@ -94,10 +85,9 @@
 
 #include <i386/isa/isa_device.h>	/* XXX BROKEN */
 #include <dev/isa/if_nereg.h>
-#include <i386/isa/icu.h>		/* XXX BROKEN */
 
 int     hpprobe(), hpattach(), hpintr();
-int     hpstart(), hpinit(), ether_output(), hpioctl();
+int     hpstart(), hpinit(), hpioctl();
 
 struct isa_driver hpdriver =
 {
@@ -105,9 +95,6 @@ struct isa_driver hpdriver =
 };
 
 struct mbuf *hpget();
-
-#define ETHER_MIN_LEN 64
-#define ETHER_MAX_LEN 1536
 
 /*
  * Ethernet software status per interface.
@@ -162,7 +149,7 @@ hpprobe(dvp)
 #endif
 
 	hpc = (ns->ns_port = dvp->id_iobase + 0x10);
-	s = splimp();
+	s = splnet();
 
 	ns->hp_irq = ffs(dvp->id_irq) - 1;
 
@@ -405,22 +392,17 @@ hpattach(dvp)
 
 	ifp->if_unit = unit;
 	ifp->if_name = hpdriver.name;
-	ifp->if_mtu = ETHERMTU;
 	printf("hp%d: %s %d-bit ethernet address %s\n", unit,
 	    hp_id(ns->hp_type), ns->ns_mode & DSDC_WTS ? 32 : 16,
 	    ether_sprintf(ns->ns_addrp));
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS;
-	ifp->if_output = ether_output;
 	ifp->if_start = hpstart;
 	ifp->if_ioctl = hpioctl;
 	ifp->if_reset = hpreset;
 	ifp->if_watchdog = 0;
+	IFQ_SET_READY(&ifp->if_snd);
 	if_attach(ifp);
-
-#if NBPFILTER > 0
-	bpfattach(&ns->ns_bpf, ifp, DLT_EN10MB,
-	    sizeof(struct ether_header));
-#endif
+	if_alloc_sadl(ifp);
 }
 /*
  * Initialization of interface; set up initialization block
@@ -441,7 +423,7 @@ hpinit(unit)
 	if (ifp->if_flags & IFF_RUNNING)
 		return;
 
-	s = splimp();
+	s = splnet();
 
 #ifdef HP_DEBUG
 	printf("hpinit: hp%d at 0x%x irq %d\n", unit, hpc, (int) ns->hp_irq);
@@ -505,7 +487,7 @@ hpinit(unit)
  * Setup output on interface.
  * Get another datagram to send off of the interface queue,
  * and map it to the interface before starting the output.
- * called only at splimp or interrupt level.
+ * called only at splnet or interrupt level.
  */
 hpstart(ifp)
 	struct ifnet *ifp;
@@ -529,7 +511,7 @@ hpstart(ifp)
 	if ((ns->ns_if.if_flags & IFF_RUNNING) == 0)
 		return;
 
-	IF_DEQUEUE(&ns->ns_if.if_snd, m);
+	IFQ_DEQUEUE(&ns->ns_if.if_snd, m);
 
 	if (m == 0)
 		return;
@@ -696,7 +678,7 @@ loop:
 
 			ns->ns_if.if_ipackets++;
 			len = ns->ns_ph.pr_sz0 + (ns->ns_ph.pr_sz1 << 8);
-			if (len < ETHER_MIN_LEN || len > ETHER_MAX_LEN) {
+			if (len < ETHER_MIN_LEN || len > ETHER_MAX_DIX_LEN) {
 				printf("hpintr: bnry %x curr %x\n", bnry, curr);
 				printf("hpintr: packet hdr: %x %x %x %x\n",
 				    ns->ns_ph.pr_status,
@@ -816,14 +798,6 @@ hpread(ns, buf, len)
 	if (ns->ns_bpf)
 		bpf_tap(ns->ns_bpf, buf, len + sizeof(struct ether_header));
 #endif
-
-	if ((ns->ns_if.if_flags & IFF_PROMISC)
-	    && bcmp(eh->ether_dhost, ns->ns_addrp,
-		sizeof(eh->ether_dhost)) != 0
-	    && bcmp(eh->ether_dhost, etherbroadcastaddr,
-		sizeof(eh->ether_dhost)) != 0)
-		return;
-
 	/*
 	       * Pull packet off interface.  Off is nonzero if packet
 	       * has trailing header; hpget will then force this header
@@ -926,8 +900,12 @@ hpioctl(ifp, cmd, data)
 	register struct ifaddr *ifa = (struct ifaddr *) data;
 	struct hp_softc *ns = &hp_softc[ifp->if_unit];
 	struct ifreq *ifr = (struct ifreq *) data;
-	int     s = splimp(), error = 0;
+	int     s = splnet(), error = 0;
 
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 
@@ -942,27 +920,6 @@ hpioctl(ifp, cmd, data)
 			    IA_SIN(ifa)->sin_addr;
 			arpwhohas((struct arpcom *) ifp, &IA_SIN(ifa)->sin_addr);
 			break;
-#endif
-#ifdef NS
-		case AF_NS:
-			{
-				register struct ns_addr *ina = &(IA_SNS(ifa)->sns_addr);
-
-				if (ns_nullhost(*ina))
-					ina->x_host = *(union ns_host *) (ns->ns_addrp);
-				else {
-					/*
-							 * The manual says we can't change the address
-							 * while the receiver is armed,
-							 * so reset everything
-							 */
-					ifp->if_flags &= ~IFF_RUNNING;
-					bcopy((caddr_t) ina->x_host.c_host,
-					    (caddr_t) ns->ns_addrp, sizeof(ns->ns_addrp));
-				}
-				hpinit(ifp->if_unit);	/* does hp_setaddr() */
-				break;
-			}
 #endif
 		default:
 			hpinit(ifp->if_unit);

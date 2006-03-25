@@ -1,7 +1,7 @@
-/*	$NetBSD: tcpdump.c,v 1.3 1995/04/24 13:27:48 cgd Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.48 2005/11/18 11:06:51 djm Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -20,11 +20,13 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
+
 #ifndef lint
-char copyright[] =
-    "@(#) Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994\nThe Regents of the University of California.  All rights reserved.\n";
-static  char rcsid[] =
-    "@(#)Header: tcpdump.c,v 1.93 94/06/10 17:01:44 mccanne Exp (LBL)";
+static const char copyright[] =
+    "@(#) Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997\n\
+The Regents of the University of California.  All rights reserved.\n";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/tcpdump.c,v 1.48 2005/11/18 11:06:51 djm Exp $ (LBL)";
 #endif
 
 /*
@@ -37,58 +39,101 @@ static  char rcsid[] =
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
 
 #include <netinet/in.h>
 
 #include <pcap.h>
 #include <signal.h>
 #include <stdio.h>
-#ifdef __STDC__
 #include <stdlib.h>
-#endif
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <err.h>
+#include <errno.h>
 
 #include "interface.h"
 #include "addrtoname.h"
+#include "machdep.h"
+#include "setsignal.h"
+#include "gmt2local.h"
 
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <net/pfvar.h>
+#include "pfctl.h"
+#include "pfctl_parser.h"
+#include "privsep.h"
+
+int aflag;			/* translate network and broadcast addresses */
+int dflag;			/* print filter code */
+int eflag;			/* print ethernet header */
 int fflag;			/* don't translate "foreign" IP address */
+int Lflag;			/* List available link types */
 int nflag;			/* leave addresses as numbers */
 int Nflag;			/* remove domains from printed host names */
+int Oflag = 1;			/* run filter code optimizer */
+int oflag;			/* print passive OS fingerprints */
 int pflag;			/* don't go promiscuous */
 int qflag;			/* quick (shorter) output */
+int Sflag;			/* print raw TCP sequence numbers */
 int tflag = 1;			/* print packet arrival time */
-int eflag;			/* print ethernet header */
 int vflag;			/* verbose */
 int xflag;			/* print packet in hex */
-int Oflag = 1;			/* run filter code optimizer */
-int Sflag;			/* print raw TCP sequence numbers */
-int packettype;
+int Xflag;			/* print packet in emacs-hexl style */
 
-int dflag;			/* print filter code */
+int packettype;
 
 char *program_name;
 
-int thiszone;
+int32_t thiszone;		/* seconds offset from gmt to local time */
 
-SIGRET cleanup(int);
+extern volatile pid_t child_pid;
+
+/* Externs */
 extern void bpf_dump(struct bpf_program *, int);
+extern int esp_init(char *);
+
+/* Forwards */
+RETSIGTYPE cleanup(int);
+RETSIGTYPE gotchld(int);
+extern __dead void usage(void);
 
 /* Length of saved portion of packet. */
-int snaplen = DEFAULT_SNAPLEN;
+int snaplen = 0;
 
 struct printer {
 	pcap_handler f;
 	int type;
 };
 
+/* XXX needed if using old bpf.h */
+#ifndef DLT_ATM_RFC1483
+#define DLT_ATM_RFC1483 11
+#endif
+
 static struct printer printers[] = {
-	{ ether_if_print,	DLT_EN10MB },
-	{ sl_if_print,		DLT_SLIP },
-	{ ppp_if_print,		DLT_PPP },
-	{ fddi_if_print,	DLT_FDDI },
-	{ null_if_print,	DLT_NULL },
-	{ NULL,			0 },
+	{ ether_if_print,		DLT_EN10MB },
+	{ ether_if_print,		DLT_IEEE802 },
+	{ sl_if_print,			DLT_SLIP },
+	{ sl_bsdos_if_print,		DLT_SLIP_BSDOS },
+	{ ppp_if_print,			DLT_PPP },
+	{ fddi_if_print,		DLT_FDDI },
+	{ null_if_print,		DLT_NULL },
+	{ raw_if_print,			DLT_RAW },
+	{ atm_if_print,			DLT_ATM_RFC1483 },
+	{ loop_if_print,		DLT_LOOP },
+	{ enc_if_print,			DLT_ENC },
+	{ pflog_if_print,		DLT_PFLOG },
+	{ pflog_old_if_print,		DLT_OLD_PFLOG },
+	{ pfsync_if_print,		DLT_PFSYNC },
+	{ ppp_ether_if_print,		DLT_PPP_ETHER },
+	{ ieee802_11_if_print,		DLT_IEEE802_11 },
+	{ ieee802_11_radio_if_print,	DLT_IEEE802_11_RADIO },
+	{ NULL,				0 },
 };
 
 static pcap_handler
@@ -96,73 +141,124 @@ lookup_printer(int type)
 {
 	struct printer *p;
 
-	for (p = printers; p->f; ++p)
+	for (p = printers; p->f; ++p) {
 		if (type == p->type)
 			return p->f;
+	}
 
 	error("unknown data link type 0x%x", type);
 	/* NOTREACHED */
 }
 
+static int
+init_pfosfp(void)
+{
+	pf_osfp_initialize();
+	if (pfctl_file_fingerprints(-1,
+	    PF_OPT_QUIET|PF_OPT_NOACTION, PF_OSFP_FILE) == 0)
+		return 1;
+	return 0;
+}
+
 static pcap_t *pd;
 
-#ifdef __osf__
-#include <sys/sysinfo.h>
-#include <sys/proc.h>
+/* Multiple DLT support */
+void		 pcap_list_linktypes(pcap_t *);
+void		 pcap_print_linktype(u_int);
+
 void
-abort_on_misalignment()
+pcap_print_linktype(u_int dlt)
 {
-	int buf[2];
-	
-	buf[0] = SSIN_UACPROC;
-	buf[1] = UAC_SIGBUS;
-	if (setsysinfo(SSI_NVPAIRS, buf, 1, 0, 0) < 0) {
-		perror("setsysinfo");
-		exit(1);
+	const char *name;
+
+	if ((name = pcap_datalink_val_to_name(dlt)) != NULL)
+		fprintf(stderr, "%s\n", name);
+	else
+		fprintf(stderr, "<unknown: %u>\n", dlt);
+}
+
+void
+pcap_list_linktypes(pcap_t *p)
+{
+	int fd = p->fd;
+	u_int n;
+
+#define MAXDLT	100
+
+	u_int dltlist[MAXDLT];
+	struct bpf_dltlist dl = {MAXDLT, dltlist};
+
+	if (fd < 0)
+		error("Invalid bpf descriptor");
+
+	if (ioctl(fd, BIOCGDLTLIST, &dl) < 0)
+		err(1, "BIOCGDLTLIST");
+
+	if (dl.bfl_len > MAXDLT)
+		error("Invalid number of linktypes: %u\n", dl.bfl_len);
+
+	fprintf(stderr, "%d link type%s supported:\n", dl.bfl_len,
+	    dl.bfl_len == 1 ? "" : "s");
+
+	for (n = 0; n < dl.bfl_len; n++) {
+		fprintf(stderr, "\t");
+		pcap_print_linktype(dltlist[n]);
 	}
 }
 
-#endif
+extern int optind;
+extern int opterr;
+extern char *optarg;
 
 int
 main(int argc, char **argv)
 {
-	register int cnt, op;
-	u_long localnet, netmask;
-	register char *cp, *infile, *cmdbuf, *device, *RFileName, *WFileName;
+	register int cnt, op, i;
+	bpf_u_int32 localnet, netmask;
+	register char *cp, *infile, *device, *RFileName, *WFileName;
 	pcap_handler printer;
-	struct bpf_program fcode;
+	struct bpf_program *fcode;
+	RETSIGTYPE (*oldhandler)(int);
 	u_char *pcap_userdata;
-	char errbuf[PCAP_ERRBUF_SIZE];
-
-	extern char *optarg;
-	extern int optind, opterr;
-
-#ifdef __osf__
-	abort_on_misalignment();
-#endif
+	char ebuf[PCAP_ERRBUF_SIZE];
+	u_int dlt = (u_int) -1;
 
 	cnt = -1;
 	device = NULL;
 	infile = NULL;
 	RFileName = NULL;
 	WFileName = NULL;
+
+	if (priv_init(argc, argv))
+		error("Failed to setup privsep");
+
+	/* state: STATE_INIT */
 	if ((cp = strrchr(argv[0], '/')) != NULL)
 		program_name = cp + 1;
 	else
 		program_name = argv[0];
 
+	if (abort_on_misalignment(ebuf, sizeof(ebuf)) < 0)
+		error("%s", ebuf);
+
 	opterr = 0;
-	while ((op = getopt(argc, argv, "c:defF:i:lnNOpqr:s:StT:vw:xY")) != EOF)
+	while ((op = getopt(argc, argv,
+	    "ac:deE:fF:i:lLnNOopqr:s:StT:vw:xXy:Y")) != -1)
 		switch (op) {
+
+		case 'a':
+			++aflag;
+			break;
+
 		case 'c':
 			cnt = atoi(optarg);
+			if (cnt <= 0)
+				error("invalid packet count %s", optarg);
 			break;
 
 		case 'd':
 			++dflag;
 			break;
-
 		case 'e':
 			++eflag;
 			break;
@@ -180,9 +276,15 @@ main(int argc, char **argv)
 			break;
 
 		case 'l':
+#ifdef HAVE_SETLINEBUF
 			setlinebuf(stdout);
+#else
+			setvbuf(stdout, NULL, _IOLBF, 0);
+#endif
 			break;
-
+		case 'L':
+			++Lflag;
+			break;
 		case 'n':
 			++nflag;
 			break;
@@ -193,6 +295,10 @@ main(int argc, char **argv)
 
 		case 'O':
 			Oflag = 0;
+			break;
+
+		case 'o':
+			oflag = 1;
 			break;
 
 		case 'p':
@@ -209,6 +315,8 @@ main(int argc, char **argv)
 
 		case 's':
 			snaplen = atoi(optarg);
+			if (snaplen <= 0)
+				error("invalid snaplen %s", optarg);
 			break;
 
 		case 'S':
@@ -221,13 +329,23 @@ main(int argc, char **argv)
 
 		case 'T':
 			if (strcasecmp(optarg, "vat") == 0)
-				packettype = 1;
+				packettype = PT_VAT;
 			else if (strcasecmp(optarg, "wb") == 0)
-				packettype = 2;
+				packettype = PT_WB;
 			else if (strcasecmp(optarg, "rpc") == 0)
-				packettype = 3;
+				packettype = PT_RPC;
 			else if (strcasecmp(optarg, "rtp") == 0)
-				packettype = 4;
+				packettype = PT_RTP;
+			else if (strcasecmp(optarg, "rtcp") == 0)
+				packettype = PT_RTCP;
+			else if (strcasecmp(optarg, "cnfp") == 0)
+				packettype = PT_CNFP;
+			else if (strcasecmp(optarg, "vrrp") == 0)
+				packettype = PT_VRRP;
+			else if (strcasecmp(optarg, "tcp") == 0)
+				packettype = PT_TCP;
+			else if (strcasecmp(optarg, "sack") == 0)
+				snaplen = SACK_SNAPLEN;
 			else
 				error("unknown packet type `%s'", optarg);
 			break;
@@ -242,13 +360,31 @@ main(int argc, char **argv)
 #ifdef YYDEBUG
 		case 'Y':
 			{
+			/* Undocumented flag */
 			extern int yydebug;
 			yydebug = 1;
 			}
 			break;
 #endif
+		case 'y':
+			i = pcap_datalink_name_to_val(optarg);
+			if (i < 0)
+				error("invalid data link type: %s", optarg);
+			dlt = (u_int)i;
+			break;
+
 		case 'x':
 			++xflag;
+			break;
+
+		case 'X':
+			++Xflag;
+			if (xflag == 0) ++xflag;
+			break;
+
+		case 'E':
+			if (esp_init(optarg) < 0)
+				error("bad esp specification `%s'", optarg);
 			break;
 
 		default:
@@ -256,158 +392,286 @@ main(int argc, char **argv)
 			/* NOTREACHED */
 		}
 
-	if (tflag > 0)
-		thiszone = gmt2local();
+	if (snaplen == 0) {
+		switch (dlt) {
+		case DLT_IEEE802_11:
+			snaplen = IEEE802_11_SNAPLEN;
+			break;
+		case DLT_IEEE802_11_RADIO:
+			snaplen = IEEE802_11_RADIO_SNAPLEN;
+			break;
+		default:
+			snaplen = DEFAULT_SNAPLEN;
+			break;
+		}
+	}
+
+	if (aflag && nflag)
+		error("-a and -n options are incompatible");
 
 	if (RFileName != NULL) {
-		/*
-		 * We don't need network access, so set it back to the user id.
-		 * Also, this prevents the user from reading anyone's
-		 * trace file.
-		 */
-		setuid(getuid());
-
-		pd = pcap_open_offline(RFileName, errbuf);
+		pd = priv_pcap_offline(RFileName, ebuf);
 		if (pd == NULL)
-			error(errbuf);
+			error("%s", ebuf);
+		/* state: STATE_BPF */
 		localnet = 0;
 		netmask = 0;
 		if (fflag != 0)
 			error("-f and -r options are incompatible");
 	} else {
 		if (device == NULL) {
-			device = pcap_lookupdev(errbuf);
+			device = pcap_lookupdev(ebuf);
 			if (device == NULL)
-				error(errbuf);
+				error("%s", ebuf);
 		}
-		pd = pcap_open_live(device, snaplen, !pflag, 1000, errbuf);
+		pd = priv_pcap_live(device, snaplen, !pflag, 1000, ebuf, dlt);
 		if (pd == NULL)
-			error(errbuf);
-		if (pcap_lookupnet(device, &localnet, &netmask, errbuf) < 0)
-			error(errbuf);
-		/*
-		 * Let user own process after socket has been opened.
-		 */
-		setuid(getuid());
-	}
-	if (infile)
-		cmdbuf = read_infile(infile);
-	else
-		cmdbuf = copy_argv(&argv[optind]);
+			error("%s", ebuf);
 
-	if (pcap_compile(pd, &fcode, cmdbuf, Oflag, netmask) < 0)
-		error(pcap_geterr(pd));
-	if (dflag) {
-		bpf_dump(&fcode, dflag);
+		/* state: STATE_BPF */
+		if (pcap_lookupnet(device, &localnet, &netmask, ebuf)) {
+			warning("%s", ebuf);
+			localnet = 0;
+			netmask = 0;
+		}
+	}
+	i = pcap_snapshot(pd);
+	if (snaplen < i) {
+		warning("snaplen raised from %d to %d", snaplen, i);
+		snaplen = i;
+	}
+
+	if (Lflag) {
+		pcap_list_linktypes(pd);
 		exit(0);
 	}
-	init_addrtoname(fflag, localnet, netmask);
 
-	(void)signal(SIGTERM, cleanup);
-	(void)signal(SIGINT, cleanup);
-	(void)signal(SIGHUP, cleanup);
+	fcode = priv_pcap_setfilter(pd, Oflag, netmask);
+	/* state: STATE_FILTER */
+	if (fcode == NULL)
+		error("%s", pcap_geterr(pd));
+	if (dflag) {
+		bpf_dump(fcode, dflag);
+		exit(0);
+	}
+	init_addrtoname(localnet, netmask);
 
-	if (pcap_setfilter(pd, &fcode) < 0)
-		error(pcap_geterr(pd));
+	setsignal(SIGTERM, cleanup);
+	setsignal(SIGINT, cleanup);
+	setsignal(SIGCHLD, gotchld);
+	/* Cooperate with nohup(1) XXX is this still necessary/working? */
+	if ((oldhandler = setsignal(SIGHUP, cleanup)) != SIG_DFL)
+		(void)setsignal(SIGHUP, oldhandler);
+
 	if (WFileName) {
-		pcap_dumper_t *p = pcap_dump_open(pd, WFileName);
+		pcap_dumper_t *p;
+
+		p = priv_pcap_dump_open(pd, WFileName);
+		/* state: STATE_RUN */
 		if (p == NULL)
-			error(pcap_geterr(pd));
+			error("%s", pcap_geterr(pd));
+		{
+			FILE *fp = (FILE *)p;	/* XXX touching pcap guts! */
+			fflush(fp);
+			setvbuf(fp, NULL, _IONBF, 0);
+		}
 		printer = pcap_dump;
 		pcap_userdata = (u_char *)p;
 	} else {
 		printer = lookup_printer(pcap_datalink(pd));
 		pcap_userdata = 0;
+		priv_init_done();
+		/* state: STATE_RUN */
 	}
 	if (RFileName == NULL) {
-		fprintf(stderr, "%s: listening on %s\n", program_name, device);
-		fflush(stderr);
+		(void)fprintf(stderr, "%s: listening on %s, link-type ",
+		    program_name, device);
+		pcap_print_linktype(pd->linktype);
+		(void)fflush(stderr);
 	}
-	pcap_loop(pd, cnt, printer, pcap_userdata);
+
+	if (oflag)
+		oflag = init_pfosfp();
+	if (tflag > 0)
+		thiszone = gmt2local(0);
+
+
+	if (pcap_loop(pd, cnt, printer, pcap_userdata) < 0) {
+		(void)fprintf(stderr, "%s: pcap_loop: %s\n",
+		    program_name, pcap_geterr(pd));
+		exit(1);
+	}
 	pcap_close(pd);
 	exit(0);
 }
 
 /* make a clean exit on interrupts */
-SIGRET
+RETSIGTYPE
 cleanup(int signo)
 {
 	struct pcap_stat stat;
+	sigset_t allsigs;
+	char buf[1024];
+
+	sigfillset(&allsigs);
+	sigprocmask(SIG_BLOCK, &allsigs, NULL);
 
 	/* Can't print the summary if reading from a savefile */
+	(void)write(STDERR_FILENO, "\n", 1);
 	if (pd != NULL && pcap_file(pd) == NULL) {
-		(void)fflush(stdout);
-		putc('\n', stderr);
-		if (pcap_stats(pd, &stat) < 0)
-			(void)fprintf(stderr, "pcap_stats: %s\n",
-			    pcap_geterr(pd));
-		else {
-			(void)fprintf(stderr, "%d packets received by filter\n",
-			    stat.ps_recv);
-			(void)fprintf(stderr, "%d packets dropped by kernel\n",
-			    stat.ps_drop);
+		if (pcap_stats(pd, &stat) < 0) {
+			(void)snprintf(buf, sizeof buf,
+			    "pcap_stats: %s\n", pcap_geterr(pd));
+			write(STDERR_FILENO, buf, strlen(buf));
+		} else {
+			(void)snprintf(buf, sizeof buf,
+			    "%d packets received by filter\n", stat.ps_recv);
+			write(STDERR_FILENO, buf, strlen(buf));
+			(void)snprintf(buf, sizeof buf,
+			    "%d packets dropped by kernel\n", stat.ps_drop);
+			write(STDERR_FILENO, buf, strlen(buf));
 		}
 	}
-	exit(0);
+	_exit(0);
+}
+
+RETSIGTYPE
+gotchld(int signo)
+{
+	pid_t pid;
+	int status;
+	int save_err = errno;
+
+	do {
+		pid = waitpid(child_pid, &status, WNOHANG);
+		if (pid > 0 && (WIFEXITED(status) || WIFSIGNALED(status)))
+			cleanup(0);
+	} while (pid == -1 && errno == EINTR);
+
+	if (pid == -1)
+		_exit(1);
+
+	errno = save_err;
+}
+
+/* dump the buffer in `emacs-hexl' style */
+void
+default_print_hexl(const u_char *cp, unsigned int length, unsigned int offset)
+{
+	unsigned int i, j, jm;
+	int c;
+	char ln[128], buf[128];
+
+	printf("\n");
+	for (i = 0; i < length; i += 0x10) {
+		snprintf(ln, sizeof(ln), "  %04x: ",
+		    (unsigned int)(i + offset));
+		jm = length - i;
+		jm = jm > 16 ? 16 : jm;
+
+		for (j = 0; j < jm; j++) {
+			if ((j % 2) == 1)
+				snprintf(buf, sizeof(buf), "%02x ",
+				    (unsigned int)cp[i+j]);
+			else
+				snprintf(buf, sizeof(buf), "%02x",
+				    (unsigned int)cp[i+j]);
+			strlcat(ln, buf, sizeof ln);
+		}
+		for (; j < 16; j++) {
+			if ((j % 2) == 1)
+				snprintf(buf, sizeof buf, "   ");
+			else
+				snprintf(buf, sizeof buf, "  ");
+			strlcat(ln, buf, sizeof ln);
+		}
+
+		strlcat(ln, " ", sizeof ln);
+		for (j = 0; j < jm; j++) {
+			c = cp[i+j];
+			c = isprint(c) ? c : '.';
+			buf[0] = c;
+			buf[1] = '\0';
+			strlcat(ln, buf, sizeof ln);
+		}
+		printf("%s\n", ln);
+	}
 }
 
 /* Like default_print() but data need not be aligned */
 void
-default_print_unaligned(register const u_char *cp, register int length)
+default_print_unaligned(register const u_char *cp, register u_int length)
 {
 	register u_int i, s;
 	register int nshorts;
 
-	nshorts = (u_int) length / sizeof(u_short);
-	i = 0;
-	while (--nshorts >= 0) {
-		if ((i++ % 8) == 0)
-			(void)printf("\n\t\t\t");
-		s = *cp++;
-		(void)printf(" %02x%02x", s, *cp++);
-	}
-	if (length & 1) {
-		if ((i % 8) == 0)
-			(void)printf("\n\t\t\t");
-		(void)printf(" %02x", *cp);
+	if (Xflag) {
+		/* dump the buffer in `emacs-hexl' style */
+		default_print_hexl(cp, length, 0);
+	} else {
+		/* dump the buffer in old tcpdump style */
+		nshorts = (u_int) length / sizeof(u_short);
+		i = 0;
+		while (--nshorts >= 0) {
+			if ((i++ % 8) == 0)
+				(void)printf("\n\t\t\t");
+			s = *cp++;
+			(void)printf(" %02x%02x", s, *cp++);
+		}
+		if (length & 1) {
+			if ((i % 8) == 0)
+				(void)printf("\n\t\t\t");
+			(void)printf(" %02x", *cp);
+		}
 	}
 }
 
 void
-default_print(register const u_char *bp, register int length)
+default_print(register const u_char *bp, register u_int length)
 {
 	register const u_short *sp;
 	register u_int i;
 	register int nshorts;
 
-	if ((long)bp & 1) {
-		default_print_unaligned(bp, length);
-		return;
-	}
-	sp = (u_short *)bp;
-	nshorts = (u_int) length / sizeof(u_short);
-	i = 0;
-	while (--nshorts >= 0) {
-		if ((i++ % 8) == 0)
-			(void)printf("\n\t\t\t");
-		(void)printf(" %04x", ntohs(*sp++));
-	}
-	if (length & 1) {
-		if ((i % 8) == 0)
-			(void)printf("\n\t\t\t");
-		(void)printf(" %02x", *(u_char *)sp);
+	if (Xflag) {
+		/* dump the buffer in `emacs-hexl' style */
+		default_print_hexl(bp, length, 0);
+	} else {
+		/* dump the buffer in old tcpdump style */
+		if ((long)bp & 1) {
+			default_print_unaligned(bp, length);
+			return;
+		}
+		sp = (u_short *)bp;
+		nshorts = (u_int) length / sizeof(u_short);
+		i = 0;
+		while (--nshorts >= 0) {
+			if ((i++ % 8) == 0)
+				(void)printf("\n\t\t\t");
+			(void)printf(" %04x", ntohs(*sp++));
+		}
+		if (length & 1) {
+			if ((i % 8) == 0)
+				(void)printf("\n\t\t\t");
+			(void)printf(" %02x", *(u_char *)sp);
+		}
 	}
 }
 
-void
-usage()
+__dead void
+usage(void)
 {
 	extern char version[];
+	extern char pcap_version[];
 
-	(void)fprintf(stderr, "Version %s\n", version);
+	(void)fprintf(stderr, "%s version %s\n", program_name, version);
+	(void)fprintf(stderr, "libpcap version %s\n", pcap_version);
 	(void)fprintf(stderr,
-"Usage: tcpdump [-deflnOpqtvx] [-c count] [-i interface]\n");
+"Usage: %s [-adefLlNnOopqStvXx] [-c count] [-E [espalg:]espkey] [-F file]\n",
+	    program_name);
 	(void)fprintf(stderr,
-"\t\t[-r filename] [-w filename] [expr]\n");
-	exit(-1);
+"\t\t[-i interface] [-r file] [-s snaplen] [-T type] [-w file]\n");
+	(void)fprintf(stderr,
+"\t\t[-y datalinktype] [expression]\n");
+	exit(1);
 }

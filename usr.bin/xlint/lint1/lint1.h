@@ -1,3 +1,4 @@
+/*	$OpenBSD: lint1.h,v 1.10 2005/12/10 17:41:03 cloder Exp $	*/
 /*	$NetBSD: lint1.h,v 1.6 1995/10/02 17:31:41 jpo Exp $	*/
 
 /*
@@ -65,7 +66,7 @@ typedef	struct strg {
  * qualifiers (only for lex/yacc interface)
  */
 typedef enum {
-	CONST, VOLATILE
+	CONST, VOLATILE, RESTRICT
 } tqual_t;
 
 /*
@@ -75,6 +76,7 @@ typedef struct {
 	tspec_t	v_tspec;
 	int	v_ansiu;		/* set if an integer constant is
 					   unsigned in ANSI C */
+	tspec_t	v_lspec;		/* the underlying type of a literal */
 	union {
 		quad_t	_v_quad;	/* integers */
 		ldbl_t	_v_ldbl;	/* floats */
@@ -122,6 +124,7 @@ typedef	struct type {
 	u_int	t_aincompl : 1;	/* incomplete array type */
 	u_int	t_const : 1;	/* const modifier */
 	u_int	t_volatile : 1;	/* volatile modifier */
+	u_int	t_restrict : 1;	/* restrict modifier */
 	u_int	t_proto : 1;	/* function prototype (t_args valid) */
 	u_int	t_vararg : 1;	/* protoype with ... */
 	u_int	t_typedef : 1;	/* type defined with typedef */
@@ -202,9 +205,10 @@ typedef	struct sym {
 	u_int	s_reg : 1;	/* symbol is register variable */
 	u_int	s_defarg : 1;	/* undefined symbol in old style function
 				   definition */
-	u_int	s_rimpl : 1;	/* return value of function implizit decl. */
+	u_int	s_rimpl : 1;	/* return value of function implicit decl. */
 	u_int	s_osdef : 1;	/* symbol stems from old style function def. */
 	u_int	s_inline : 1;	/* true if this is a inline function */
+	u_int	s_noreturn : 1;	/* true if this is a NORETURN function */
 	struct	sym *s_xsym;	/* for local declared external symbols pointer
 				   to external symbol with same name */
 	def_t	s_def;		/* declared, tentative defined, defined */
@@ -225,7 +229,7 @@ typedef	struct sym {
 	struct	sym **s_rlink;	/* pointer to s_link of prev. symbol */
 	struct	sym *s_nxt;	/* next struct/union member, enumerator,
 				   argument */
-	struct	sym *s_dlnxt; 	/* next symbol declared on same level */
+	struct	sym *s_dlnxt;	/* next symbol declared on same level */
 } sym_t;
 
 #define	s_styp	u._s_st
@@ -254,7 +258,7 @@ typedef	struct tnode {
 	op_t	tn_op;		/* operator */
 	type_t	*tn_type;	/* type */
 	u_int	tn_lvalue : 1;	/* node is lvalue */
-	u_int	tn_cast : 1;	/* if tn_op == CVT its an explizit cast */
+	u_int	tn_cast : 1;	/* if tn_op == CVT its an explicit cast */
 	u_int	tn_parn : 1;	/* node parenthesized */
 	union {
 		struct {
@@ -302,6 +306,7 @@ typedef	struct dinfo {
 	scl_t	d_ctx;		/* context of declaration */
 	u_int	d_const : 1;	/* const in declaration specifiers */
 	u_int	d_volatile : 1;	/* volatile in declaration specifiers */
+	u_int	d_restrict : 1;	/* restrict in declaration specifiers */
 	u_int	d_inline : 1;	/* inline in declaration specifiers */
 	u_int	d_mscl : 1;	/* multiple storage classes */
 	u_int	d_terr : 1;	/* invalid type combination */
@@ -341,6 +346,7 @@ typedef	struct pqinf {
 	int	p_pcnt;			/* number of asterisks */
 	u_int	p_const : 1;
 	u_int	p_volatile : 1;
+	u_int	p_restrict : 1;
 	struct	pqinf *p_nxt;
 } pqinf_t;
 

@@ -68,33 +68,17 @@
  */
 
 #include "ap_config.h"
-#ifndef NETWARE
 #include <sys/types.h>
-#endif
 #include "ap.h"
 #include "ap_md5.h"
-#if defined(MPE) || defined(QNX) || defined(WIN32) || defined(__TANDEM) || defined(OS390) || defined(BEOS) || defined(BONE)
-#include <signal.h>
-#else
 #include <sys/signal.h>
-#endif
 
-#ifdef WIN32
-#include <conio.h>
-#define unlink _unlink
-#endif
-
-#ifdef CHARSET_EBCDIC
-#define LF '\n'
-#define CR '\r'
-#else
 #define LF 10
 #define CR 13
-#endif /* CHARSET_EBCDIC */
 
 #define MAX_STRING_LEN 256
 
-char *tn;
+static char tn[MAX_STRING_LEN];
 
 
 static void getword(char *word, char *line, char stop)
@@ -157,7 +141,7 @@ static void add_password(char *user, char *realm, FILE *f)
     ap_getpass("Re-type new password: ", pwv, sizeof(pwv));
     if (strcmp(pwin, pwv) != 0) {
 	fprintf(stderr, "They don't match, sorry.\n");
-	if (tn) {
+	if (tn[0] != '\0') {
 	    unlink(tn);
 	}
 	exit(1);
@@ -166,7 +150,7 @@ static void add_password(char *user, char *realm, FILE *f)
     fprintf(f, "%s:%s:", user, realm);
 
     /* Do MD5 stuff */
-    sprintf(string, "%s:%s:%s", user, realm, pw);
+    snprintf(string, sizeof(string), "%s:%s:%s", user, realm, pw);
 
     ap_MD5Init(&context);
     ap_MD5Update(&context, (unsigned char *) string, strlen(string));
@@ -188,22 +172,12 @@ static void usage(void)
 static void interrupted(void)
 {
     fprintf(stderr, "Interrupted.\n");
-    if (tn)
+    if (tn[0] != '\0')
 	unlink(tn);
     exit(1);
 }
 
 
-#ifdef NETWARE
-static void copy_file(FILE *target, FILE *source)
-{
-    static char line[MAX_STRING_LEN];
-
-    while (!(getline(line, MAX_STRING_LEN, source))) {  
-	putline(target, line);
-    }
-}
-#endif
 
 int main(int argc, char *argv[])
 {
@@ -216,17 +190,12 @@ int main(int argc, char *argv[])
     char x[MAX_STRING_LEN];
     char command[MAX_STRING_LEN];
     int found;
+    int tfd;
 
-    tn = NULL;
     signal(SIGINT, (void (*)(int)) interrupted);
     if (argc == 5) {
 	if (strcmp(argv[1], "-c"))
 	    usage();
-#ifdef NETWARE
-    UnAugmentAsterisk(TRUE);
-    SetCurrentNameSpace(NW_NS_LONG);
-    SetTargetNameSpace(NW_NS_LONG);
-#endif
 	if (!(tfp = fopen(argv[2], "w"))) {
 	    fprintf(stderr, "Could not open passwd file %s for writing.\n",
 		    argv[2]);
@@ -241,9 +210,10 @@ int main(int argc, char *argv[])
     else if (argc != 4)
 	usage();
 
-    tn = tmpnam(NULL);
-    if (!(tfp = fopen(tn, "w"))) {
-	fprintf(stderr, "Could not open temp file.\n");
+    strlcpy(tn, "/tmp/htdigest-XXXXXXXXXX", sizeof(tn));
+    tfd = mkstemp(tn);
+    if (tfd == -1 || (tfp = fdopen(tfd, "w")) == NULL) {
+	fprintf(stderr, "Could not create temp file.\n");
 	exit(1);
     }
 
@@ -262,7 +232,7 @@ int main(int argc, char *argv[])
 	    putline(tfp, line);
 	    continue;
 	}
-	strcpy(l, line);
+	strlcpy(l, line, sizeof(l));
 	getword(w, l, ':');
 	getword(x, l, ':');
 	if (strcmp(user, w) || strcmp(realm, x)) {
@@ -281,26 +251,8 @@ int main(int argc, char *argv[])
     }   
     fclose(f);
     fclose(tfp);
-#ifndef NETWARE
-#if defined(OS2) || defined(WIN32)
-    sprintf(command, "copy \"%s\" \"%s\"", tn, argv[1]);
-#else
-    sprintf(command, "cp %s %s", tn, argv[1]);
-#endif
+    snprintf(command, sizeof(command), "cp %s %s", tn, argv[1]);
     system(command);
-#else
-    if (!(tfp = fopen(tn, "r"))) {
-    fprintf(stderr, "Could not open temp file.\n");
-    exit(1);
-    }
-    
-    if (!(f = fopen(argv[1], "w"))) {
-    fprintf(stderr, "Could not open %s.\n", argv[1]);    
-    exit(1);    
-    }
-    
-    copy_file(f, tfp);
-#endif
     unlink(tn);
     return 0;
 }

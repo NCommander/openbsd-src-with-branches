@@ -1,13 +1,21 @@
-/*	$NetBSD: private.h,v 1.3 1995/03/14 18:49:49 jtc Exp $	*/
-
+/*	$OpenBSD: private.h,v 1.17 2005/07/05 13:40:51 millert Exp $	*/
 #ifndef PRIVATE_H
+
 #define PRIVATE_H
 
-/* NetBSD defaults */
-#define TM_GMTOFF	tm_gmtoff
-#define TM_ZONE		tm_zone
-#define STD_INSPIRED	1
-#define HAVE_LONG_DOUBLE 1
+/*
+** This file is in the public domain, so clarified as of
+** 1996-06-05 by Arthur David Olson.
+*/
+
+/* OpenBSD defaults */
+#define TM_GMTOFF		tm_gmtoff
+#define TM_ZONE			tm_zone
+#define PCTS			1
+#define XPG4_1994_04_09		1
+#define STD_INSPIRED		1
+#define HAVE_STRERROR		1
+#define NO_RUN_TIME_WARNINGS_ABOUT_YEAR_2000_PROBLEMS_THANK_YOU	1
 
 /*
 ** This header is for use ONLY with the time conversion code.
@@ -21,11 +29,15 @@
 ** ID
 */
 
+#if 0
 #ifndef lint
 #ifndef NOID
-static char	privatehid[] = "@(#)private.h	7.33";
+static char	privatehid[] = "@(#)private.h	7.55";
 #endif /* !defined NOID */
 #endif /* !defined lint */
+#endif
+
+#define GRANDPARENTED	"Local time zone must be set--see zic manual page"
 
 /*
 ** Defaults for preprocessor symbols.
@@ -36,17 +48,52 @@ static char	privatehid[] = "@(#)private.h	7.33";
 #define HAVE_ADJTIME		1
 #endif /* !defined HAVE_ADJTIME */
 
+#ifndef HAVE_GETTEXT
+#define HAVE_GETTEXT		0
+#endif /* !defined HAVE_GETTEXT */
+
+#ifndef HAVE_INCOMPATIBLE_CTIME_R
+#define HAVE_INCOMPATIBLE_CTIME_R	0
+#endif /* !defined INCOMPATIBLE_CTIME_R */
+
 #ifndef HAVE_SETTIMEOFDAY
 #define HAVE_SETTIMEOFDAY	3
 #endif /* !defined HAVE_SETTIMEOFDAY */
+
+#ifndef HAVE_STRERROR
+#define HAVE_STRERROR		1
+#endif /* !defined HAVE_STRERROR */
+
+#ifndef HAVE_SYMLINK
+#define HAVE_SYMLINK		1
+#endif /* !defined HAVE_SYMLINK */
+
+#ifndef HAVE_SYS_STAT_H
+#define HAVE_SYS_STAT_H		1
+#endif /* !defined HAVE_SYS_STAT_H */
+
+#ifndef HAVE_SYS_WAIT_H
+#define HAVE_SYS_WAIT_H		1
+#endif /* !defined HAVE_SYS_WAIT_H */
 
 #ifndef HAVE_UNISTD_H
 #define HAVE_UNISTD_H		1
 #endif /* !defined HAVE_UNISTD_H */
 
+#ifndef HAVE_UTMPX_H
+#define HAVE_UTMPX_H		0
+#endif /* !defined HAVE_UTMPX_H */
+
+#if 0
 #ifndef LOCALE_HOME
-#define LOCALE_HOME		"/usr/lib/locale"
+#define LOCALE_HOME		"/usr/share/locale"
 #endif /* !defined LOCALE_HOME */
+#endif
+
+#if HAVE_INCOMPATIBLE_CTIME_R
+#define asctime_r _incompatible_asctime_r
+#define ctime_r _incompatible_ctime_r
+#endif /* HAVE_INCOMPATIBLE_CTIME_R */
 
 /*
 ** Nested includes
@@ -54,39 +101,46 @@ static char	privatehid[] = "@(#)private.h	7.33";
 
 #include "sys/types.h"	/* for time_t */
 #include "stdio.h"
-#include "ctype.h"
 #include "errno.h"
 #include "string.h"
 #include "limits.h"	/* for CHAR_BIT */
 #include "time.h"
 #include "stdlib.h"
 
-#if HAVE_UNISTD_H - 0
-#include "unistd.h"	/* for F_OK and R_OK */
-#endif /* HAVE_UNISTD_H - 0 */
+#if HAVE_GETTEXT
+#include "libintl.h"
+#endif /* HAVE_GETTEXT */
 
-#if !(HAVE_UNISTD_H - 0)
+#if HAVE_SYS_WAIT_H
+#include <sys/wait.h>	/* for WIFEXITED and WEXITSTATUS */
+#endif /* HAVE_SYS_WAIT_H */
+
+#ifndef WIFEXITED
+#define WIFEXITED(status)	(((status) & 0xff) == 0)
+#endif /* !defined WIFEXITED */
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(status)	(((status) >> 8) & 0xff)
+#endif /* !defined WEXITSTATUS */
+
+#if HAVE_UNISTD_H
+#include "unistd.h"	/* for F_OK and R_OK */
+#endif /* HAVE_UNISTD_H */
+
+#if !HAVE_UNISTD_H
 #ifndef F_OK
 #define F_OK	0
 #endif /* !defined F_OK */
 #ifndef R_OK
 #define R_OK	4
 #endif /* !defined R_OK */
-#endif /* !(HAVE_UNISTD_H - 0) */
+#endif /* !HAVE_UNISTD_H */
+
+/* Unlike <ctype.h>'s isdigit, this also works if c < 0 | c > UCHAR_MAX. */
+#define is_digit(c) ((unsigned)(c) - '0' <= 9)
 
 /*
 ** Workarounds for compilers/systems.
 */
-
-/*
-** SunOS 4.1.1 cc lacks const.
-*/
-
-#ifndef const
-#ifndef __STDC__
-#define const
-#endif /* !defined __STDC__ */
-#endif /* !defined const */
 
 /*
 ** SunOS 4.1.1 cc lacks prototypes.
@@ -138,6 +192,7 @@ static char	privatehid[] = "@(#)private.h	7.33";
 
 #endif /* !defined FILENAME_MAX */
 
+#if 0
 /*
 ** SunOS 4.1.1 libraries lack remove.
 */
@@ -146,6 +201,39 @@ static char	privatehid[] = "@(#)private.h	7.33";
 extern int	unlink P((const char * filename));
 #define remove	unlink
 #endif /* !defined remove */
+
+/*
+** Some ancient errno.h implementations don't declare errno.
+** But some newer errno.h implementations define it as a macro.
+** Fix the former without affecting the latter.
+*/
+#ifndef errno
+extern int errno;
+#endif /* !defined errno */
+
+/*
+** Some time.h implementations don't declare asctime_r.
+** Others might define it as a macro.
+** Fix the former without affecting the latter.
+*/
+
+#ifndef asctime_r
+extern char * asctime_r();
+#endif
+#endif
+
+/*
+** Private function declarations.
+*/
+
+char *	icalloc P((int nelem, int elsize));
+char *	icatalloc P((char * old, const char * new));
+char *	icpyalloc P((const char * string));
+char *	imalloc P((int n));
+void *	irealloc P((void * pointer, int size));
+void	icfree P((char * pointer));
+void	ifree P((char * pointer));
+const char *scheck P((const char *string, const char *format));
 
 /*
 ** Finally, some convenience items.
@@ -159,15 +247,33 @@ extern int	unlink P((const char * filename));
 #define FALSE	0
 #endif /* !defined FALSE */
 
+#ifndef TYPE_BIT
+#define TYPE_BIT(type)	(sizeof (type) * CHAR_BIT)
+#endif /* !defined TYPE_BIT */
+
+#ifndef TYPE_SIGNED
+#define TYPE_SIGNED(type) (((type) -1) < 0)
+#endif /* !defined TYPE_SIGNED */
+
+/*
+** Since the definition of TYPE_INTEGRAL contains floating point numbers,
+** it cannot be used in preprocessor directives.
+*/
+
+#ifndef TYPE_INTEGRAL
+#define TYPE_INTEGRAL(type) (((type) 0.5) != 0.5)
+#endif /* !defined TYPE_INTEGRAL */
+
 #ifndef INT_STRLEN_MAXIMUM
 /*
 ** 302 / 1000 is log10(2.0) rounded up.
-** Subtract one for the sign bit;
+** Subtract one for the sign bit if the type is signed;
 ** add one for integer division truncation;
-** add one more for a minus sign.
+** add one more for a minus sign if the type is signed.
 */
 #define INT_STRLEN_MAXIMUM(type) \
-	((sizeof(type) * CHAR_BIT - 1) * 302 / 1000 + 2)
+	((TYPE_BIT(type) - TYPE_SIGNED(type)) * 302 / 1000 + \
+	1 + TYPE_SIGNED(type))
 #endif /* !defined INT_STRLEN_MAXIMUM */
 
 /*
@@ -195,7 +301,32 @@ extern int	unlink P((const char * filename));
 #endif /* !defined INITIALIZE */
 
 /*
-** UNIX was a registered trademark of UNIX System Laboratories in 1993.
+** For the benefit of GNU folk...
+** `_(MSGID)' uses the current locale's message library string for MSGID.
+** The default is to use gettext if available, and use MSGID otherwise.
+*/
+
+#ifndef _
+#if HAVE_GETTEXT
+#define _(msgid) gettext(msgid)
+#else /* !HAVE_GETTEXT */
+#define _(msgid) msgid
+#endif /* !HAVE_GETTEXT */
+#endif /* !defined _ */
+
+#ifndef TZ_DOMAIN
+#define TZ_DOMAIN "tz"
+#endif /* !defined TZ_DOMAIN */
+
+#if HAVE_INCOMPATIBLE_CTIME_R
+#undef asctime_r
+#undef ctime_r
+char *asctime_r P((struct tm const *, char *));
+char *ctime_r P((time_t const *, char *));
+#endif /* HAVE_INCOMPATIBLE_CTIME_R */
+
+/*
+** UNIX was a registered trademark of The Open Group in 2003.
 */
 
 #endif /* !defined PRIVATE_H */

@@ -1,3 +1,5 @@
+/*	$OpenBSD: astosc.c,v 1.3 2001/11/19 19:02:16 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)astosc.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: astosc.c,v 1.2 1993/08/01 18:06:18 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: astosc.c,v 1.3 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -52,10 +50,10 @@ struct astosc astosc[256] = {
 
 static
 ustrcmp(string1, string2)
-register char *string1;
-register char *string2;
+char *string1;
+char *string2;
 {
-    register int c1, c2;
+    int c1, c2;
 
     while ((c1 = (unsigned char) *string1++) != 0) {
 	if (isupper(c1)) {
@@ -86,9 +84,9 @@ register char *string2;
 
 int
 ascii_to_index(string)
-register char *string;
+char *string;
 {
-    register struct astosc *this;
+    struct astosc *this;
 
     for (this = astosc; this <= &astosc[highestof(astosc)]; this++) {
 	if ((this->name != 0) && (ustrcmp(this->name, string) == 0)) {

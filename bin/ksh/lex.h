@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lex.h,v 1.9 2004/12/18 21:04:52 millert Exp $	*/
 
 /*
  * Source input, lexer and parser
@@ -12,16 +12,17 @@ typedef struct source Source;
 struct source {
 	const char *str;	/* input pointer */
 	int	type;		/* input type */
-	char const *start;	/* start of current buffer */
+	const char *start;	/* start of current buffer */
 	union {
-		char ugbuf[2];	/* buffer for ungetsc() (SREREAD) */
 		char **strv;	/* string [] */
 		struct shf *shf; /* shell file */
-		struct tbl *tblp; /* alias */
+		struct tbl *tblp; /* alias (SALIAS) */
 		char *freeme;	/* also for SREREAD */
 	} u;
+	char	ugbuf[2];	/* buffer for ungetsc() (SREREAD) and
+				 * alias (SALIAS) */
 	int	line;		/* line number */
-	int	errline;	/* line the error occured on (0 if not set) */
+	int	errline;	/* line the error occurred on (0 if not set) */
 	const char *file;	/* input file name */
 	int	flags;		/* SF_* */
 	Area	*areap;
@@ -36,7 +37,7 @@ struct source {
 #define	SSTRING		3	/* string */
 #define	SWSTR		4	/* string without \n */
 #define	SWORDS		5	/* string[] */
-#define	SWORDSEP	6	/* string[] seperator */
+#define	SWORDSEP	6	/* string[] separator */
 #define	SALIAS		7	/* alias expansion */
 #define SREREAD		8	/* read ahead to be re-scanned */
 
@@ -51,13 +52,13 @@ struct source {
  */
 #define	SBASE	0		/* outside any lexical constructs */
 #define	SWORD	1		/* implicit quoting for substitute() */
-#define	SDPAREN	2		/* inside (( )), implicit quoting */
+#define	SLETPAREN 2		/* inside (( )), implicit quoting */
 #define	SSQUOTE	3		/* inside '' */
 #define	SDQUOTE	4		/* inside "" */
 #define	SBRACE	5		/* inside ${} */
-#define	SPAREN	6		/* inside $() */
+#define	SCSPAREN 6		/* inside $() */
 #define	SBQUOTE	7		/* inside `` */
-#define	SDDPAREN 8		/* inside $(( )) */
+#define	SASPAREN 8		/* inside $(( )) */
 #define SHEREDELIM 9		/* parsing <<,<<- delimiter */
 #define SHEREDQUOTE 10		/* parsing " in <<,<<- delimiter */
 #define SPATTERN 11		/* parsing *(...|...) pattern (*+?@!) */
@@ -110,17 +111,17 @@ typedef union {
 #define ESACONLY BIT(7)		/* only accept esac keyword */
 #define CMDWORD BIT(8)		/* parsing simple command (alias related) */
 #define HEREDELIM BIT(9)	/* parsing <<,<<- delimiter */
+#define HEREDOC BIT(10)		/* parsing heredoc */
 
 #define	HERES	10		/* max << in line */
 
 EXTERN	Source *source;		/* yyparse/yylex source */
 EXTERN	YYSTYPE	yylval;		/* result from yylex */
-EXTERN	int	yynerrs;
 EXTERN	struct ioword *heres [HERES], **herep;
 EXTERN	char	ident [IDENT+1];
 
 #ifdef HISTORY
-# define HISTORYSIZE	128	/* size of saved history */
+# define HISTORYSIZE	500	/* size of saved history */
 
 EXTERN	char  **history;	/* saved commands */
 EXTERN	char  **histptr;	/* last history item */

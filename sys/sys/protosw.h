@@ -1,4 +1,5 @@
-/*	$NetBSD: protosw.h,v 1.7 1995/03/26 20:24:33 jtc Exp $	*/
+/*	$OpenBSD: protosw.h,v 1.8 2002/03/15 01:20:04 millert Exp $	*/
+/*	$NetBSD: protosw.h,v 1.10 1996/04/09 20:55:32 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -57,24 +54,40 @@
  * The userreq routine interfaces protocols to the system and is
  * described below.
  */
+
+struct mbuf;
+struct sockaddr;
+struct socket;
+struct domain;
+
 struct protosw {
 	short	pr_type;		/* socket type used for */
 	struct	domain *pr_domain;	/* domain protocol a member of */
 	short	pr_protocol;		/* protocol number */
 	short	pr_flags;		/* see below */
+
 /* protocol-protocol hooks */
-	void	(*pr_input)();		/* input to protocol (from below) */
-	int	(*pr_output)();		/* output to protocol (from above) */
-	void	(*pr_ctlinput)();	/* control input (from below) */
-	int	(*pr_ctloutput)();	/* control output (from above) */
+					/* input to protocol (from below) */
+	void	(*pr_input)(struct mbuf *, ...);
+					/* output to protocol (from above) */
+	int	(*pr_output)(struct mbuf *, ...);
+					/* control input (from below) */
+	void	*(*pr_ctlinput)(int, struct sockaddr *, void *);
+					/* control output (from above) */
+	int	(*pr_ctloutput)(int, struct socket *, int, int, struct mbuf **);
+
 /* user-protocol hook */
-	int	(*pr_usrreq)();		/* user request: see list below */
+					/* user request: see list below */
+	int	(*pr_usrreq)(struct socket *, int, struct mbuf *,
+		    struct mbuf *, struct mbuf *);
+
 /* utility hooks */
-	void	(*pr_init)();		/* initialization hook */
-	void	(*pr_fasttimo)();	/* fast timeout (200ms) */
-	void	(*pr_slowtimo)();	/* slow timeout (500ms) */
-	void	(*pr_drain)();		/* flush any excess space possible */
-	int	(*pr_sysctl)();		/* sysctl for protocol */
+	void	(*pr_init)(void);	/* initialization hook */
+	void	(*pr_fasttimo)(void);	/* fast timeout (200ms) */
+	void	(*pr_slowtimo)(void);	/* slow timeout (500ms) */
+	void	(*pr_drain)(void);	/* flush any excess space possible */
+					/* sysctl for protocol */
+	int	(*pr_sysctl)(int *, u_int, void *, size_t *, void *, size_t);
 };
 
 #define	PR_SLOWHZ	2		/* 2 slow timeouts per second */
@@ -90,6 +103,8 @@ struct protosw {
 #define	PR_CONNREQUIRED	0x04		/* connection required by protocol */
 #define	PR_WANTRCVD	0x08		/* want PRU_RCVD calls */
 #define	PR_RIGHTS	0x10		/* passes capabilities */
+#define	PR_ABRTACPTDIS	0x20		/* abort on accept(2) to disconnected
+					   socket */
 
 /*
  * The arguments to usrreq are:
@@ -126,8 +141,9 @@ struct protosw {
 #define	PRU_SLOWTIMO		19	/* 500ms timeout */
 #define	PRU_PROTORCV		20	/* receive from below */
 #define	PRU_PROTOSEND		21	/* send to below */
+#define PRU_PEEREID		22	/* get local peer eid */
 
-#define	PRU_NREQ		21
+#define	PRU_NREQ		22
 
 #ifdef PRUREQUESTS
 char *prurequests[] = {
@@ -136,7 +152,7 @@ char *prurequests[] = {
 	"RCVD",		"SEND",		"ABORT",	"CONTROL",
 	"SENSE",	"RCVOOB",	"SENDOOB",	"SOCKADDR",
 	"PEERADDR",	"CONNECT2",	"FASTTIMO",	"SLOWTIMO",
-	"PROTORCV",	"PROTOSEND",
+	"PROTORCV",	"PROTOSEND",	"PEEREID",
 };
 #endif
 
@@ -148,6 +164,7 @@ char *prurequests[] = {
  */
 #define	PRC_IFDOWN		0	/* interface transition */
 #define	PRC_ROUTEDEAD		1	/* select new route if possible ??? */
+#define	PRC_MTUINC		2	/* increase in mtu to host */
 #define	PRC_QUENCH2		3	/* DEC congestion bit says slow down */
 #define	PRC_QUENCH		4	/* some one said to slow down */
 #define	PRC_MSGSIZE		5	/* message size forced drop */
@@ -174,7 +191,7 @@ char *prurequests[] = {
 
 #ifdef PRCREQUESTS
 char	*prcrequests[] = {
-	"IFDOWN", "ROUTEDEAD", "#2", "DEC-BIT-QUENCH2",
+	"IFDOWN", "ROUTEDEAD", "MTUINC", "DEC-BIT-QUENCH2",
 	"QUENCH", "MSGSIZE", "HOSTDEAD", "#7",
 	"NET-UNREACH", "HOST-UNREACH", "PROTO-UNREACH", "PORT-UNREACH",
 	"#12", "SRCFAIL-UNREACH", "NET-REDIRECT", "HOST-REDIRECT",
@@ -208,5 +225,8 @@ char	*prcorequests[] = {
 #endif
 
 #ifdef _KERNEL
-extern	struct protosw *pffindproto(), *pffindtype();
+struct sockaddr;
+struct protosw *pffindproto(int, int, int);
+struct protosw *pffindtype(int, int);
+void pfctlinput(int, struct sockaddr *);
 #endif

@@ -1,3 +1,4 @@
+/*	$OpenBSD: read.c,v 1.8 2005/11/30 18:47:10 deraadt Exp $	*/
 /*	$NetBSD: read.c,v 1.2 1995/07/03 21:24:59 cgd Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: read.c,v 1.2 1995/07/03 21:24:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: read.c,v 1.8 2005/11/30 18:47:10 deraadt Exp $";
 #endif
 
 #include <stdio.h>
@@ -79,27 +80,26 @@ type_t	**tlst;				/* array for indexed access */
 static	size_t	tlstlen;		/* length of tlst */
 
 /* index of current C source file (as spezified at the command line) */
-static	int	csrcfile;
+int	csrcfile;
 
 
-static	void	inperr __P((void));
-static	void	setsrc __P((const char *));
-static	void	setfnid __P((int, const char *));
-static	void	funccall __P((pos_t *, const char *));
-static	void	decldef __P((pos_t *, const char *));
-static	void	usedsym __P((pos_t *, const char *));
-static	u_short	inptype __P((const char *, const char **));
-static	int	gettlen __P((const char *, const char **));
-static	u_short	findtype __P((const char *, size_t, int));
-static	u_short	storetyp __P((type_t *, const char *, size_t, int));
-static	int	thash __P((const char *, size_t));
-static	char	*inpqstrg __P((const char *, const char **));
-static	const	char *inpname __P((const char *, const char **));
-static	int	getfnidx __P((const char *));
+static	void	inperr(void);
+static	void	setsrc(const char *);
+static	void	setfnid(int, const char *);
+static	void	funccall(pos_t *, const char *);
+static	void	decldef(pos_t *, const char *);
+static	void	usedsym(pos_t *, const char *);
+static	u_short	inptype(const char *, const char **);
+static	int	gettlen(const char *, const char **);
+static	u_short	findtype(const char *, size_t, int);
+static	u_short	storetyp(type_t *, const char *, size_t, int);
+static	int	thash(const char *, size_t);
+static	char	*inpqstrg(const char *, const char **);
+static	const	char *inpname(const char *, const char **);
+static	int	getfnidx(const char *);
 
 void
-readfile(name)
-	const	char *name;
+readfile(const char *name)
 {
 	FILE	*inp;
 	size_t	len;
@@ -132,7 +132,7 @@ readfile(name)
 		/* line number in csrcfile */
 		cline = (int)strtol(cp, &eptr, 10);
 		if (cp == eptr) {
-		        cline = -1;
+			cline = -1;
 		} else {
 			cp = eptr;
 		}
@@ -201,7 +201,7 @@ readfile(name)
 
 
 static void
-inperr()
+inperr(void)
 {
 	errx(1, "input file error: %s", fnames[srcfile]);
 }
@@ -211,22 +211,19 @@ inperr()
  * currently read.
  */
 static void
-setsrc(cp)
-	const	char *cp;
+setsrc(const char *cp)
 {
 	csrcfile = getfnidx(cp);
 }
 
 /*
  * setfnid() gets as input an index as used in an input file and the
- * associated file name. If neccessary, it creates a new lint2 file
+ * associated file name. If necessary, it creates a new lint2 file
  * name index for this file name and creates the mapping of the index
  * as used in the input file to the index used in lint2.
  */
 static void
-setfnid(fid, cp)
-	int	fid;
-	const	char *cp;
+setfnid(int fid, const char *cp)
 {
 	if (fid == -1)
 		inperr();
@@ -249,9 +246,7 @@ setfnid(fid, cp)
  * Process a function call record (c-record).
  */
 static void
-funccall(posp, cp)
-	pos_t	*posp;
-	const	char *cp;
+funccall(pos_t *posp, const char *cp)
 {
 	arginf_t *ai, **lai;
 	char	c, *eptr;
@@ -266,7 +261,7 @@ funccall(posp, cp)
 	rused = rdisc = 0;
 	lai = &fcall->f_args;
 	while ((c = *cp) == 'u' || c == 'i' || c == 'd' ||
-	       c == 'z' || c == 'p' || c == 'n' || c == 's') {
+	    c == 'z' || c == 'p' || c == 'n' || c == 's') {
 		cp++;
 		switch (c) {
 		case 'u':
@@ -327,9 +322,7 @@ funccall(posp, cp)
  * Process a declaration or definition (d-record).
  */
 static void
-decldef(posp, cp)
-	pos_t	*posp;
-	const	char *cp;
+decldef(pos_t *posp, const char *cp)
 {
 	sym_t	*symp, sym;
 	char	c, *ep;
@@ -343,8 +336,8 @@ decldef(posp, cp)
 	used = 0;
 
 	while ((c = *cp) == 't' || c == 'd' || c == 'e' || c == 'u' ||
-	       c == 'r' || c == 'o' || c == 's' || c == 'v' ||
-	       c == 'P' || c == 'S') {
+	    c == 'r' || c == 'o' || c == 's' || c == 'v' ||
+	    c == 'P' || c == 'S') {
 		cp++;
 		switch (c) {
 		case 't':
@@ -459,9 +452,7 @@ decldef(posp, cp)
  * Read an u-record (emited by lint1 if a symbol was used).
  */
 static void
-usedsym(posp, cp)
-	pos_t	*posp;
-	const	char *cp;
+usedsym(pos_t *posp, const char *cp)
 {
 	usym_t	*usym;
 	hte_t	*hte;
@@ -484,8 +475,7 @@ usedsym(posp, cp)
  * Read a type and return the index of this type.
  */
 static u_short
-inptype(cp, epp)
-	const	char *cp, **epp;
+inptype(const char *cp, const char **epp)
 {
 	char	c, s, *eptr;
 	const	char *ep;
@@ -623,8 +613,7 @@ inptype(cp, epp)
  * Get the length of a type string.
  */
 static int
-gettlen(cp, epp)
-	const	char *cp, **epp;
+gettlen(const char *cp, const char **epp)
 {
 	const	char *cp1;
 	char	c, s, *eptr;
@@ -792,10 +781,7 @@ gettlen(cp, epp)
  * Search a type by it's type string.
  */
 static u_short
-findtype(cp, len, h)
-	const	char *cp;
-	size_t	len;
-	int	h;
+findtype(const char *cp, size_t len, int h)
 {
 	thtab_t	*thte;
 
@@ -814,11 +800,7 @@ findtype(cp, len, h)
  * if we read the same type string from the input file.
  */
 static u_short
-storetyp(tp, cp, len, h)
-	type_t	*tp;
-	const	char *cp;
-	size_t	len;
-	int	h;
+storetyp(type_t *tp, const char *cp, size_t len, int h)
 {
 	/* 0 ist reserved */
 	static	u_int	tidx = 1;
@@ -854,9 +836,7 @@ storetyp(tp, cp, len, h)
  * Hash function for types
  */
 static int
-thash(s, len)
-	const	char *s;
-	size_t	len;
+thash(const char *s, size_t len)
 {
 	u_int	v;
 
@@ -872,8 +852,7 @@ thash(s, len)
  * Read a string enclosed by "". This string may contain quoted chars.
  */
 static char *
-inpqstrg(src, epp)
-	const	char *src, **epp;
+inpqstrg(const char *src, const char **epp)
 {
 	char	*strg, *dst;
 	size_t	slen;
@@ -899,11 +878,7 @@ inpqstrg(src, epp)
 				c = '\t';
 				break;
 			case 'v':
-#ifdef __STDC__
 				c = '\v';
-#else
-				c = '\013';
-#endif
 				break;
 			case 'b':
 				c = '\b';
@@ -915,11 +890,7 @@ inpqstrg(src, epp)
 				c = '\f';
 				break;
 			case 'a':
-#ifdef __STDC__
 				c = '\a';
-#else
-				c = '\007';
-#endif
 				break;
 			case '\\':
 				c = '\\';
@@ -964,8 +935,7 @@ inpqstrg(src, epp)
  * Read the name of a symbol in static memory.
  */
 static const char *
-inpname(cp, epp)
-	const	char *cp, **epp;
+inpname(const char *cp, const char **epp)
 {
 	static	char	*buf;
 	static	size_t	blen = 0;
@@ -995,8 +965,7 @@ inpname(cp, epp)
  * a new entry and return the index of the newly created entry.
  */
 static int
-getfnidx(fn)
-	const	char *fn;
+getfnidx(const char *fn)
 {
 	int	i;
 
@@ -1022,8 +991,7 @@ getfnidx(fn)
  * Separate symbols with static and external linkage.
  */
 void
-mkstatic(hte)
-	hte_t	*hte;
+mkstatic(hte_t *hte)
 {
 	sym_t	*sym1, **symp, *sym;
 	fcall_t	**callp, *call;
@@ -1069,6 +1037,7 @@ mkstatic(hte)
 	 */
 	for (nhte = hte; nhte->h_link != NULL; nhte = nhte->h_link) ;
 	nhte->h_link = xalloc(sizeof (hte_t));
+	memset(nhte->h_link, 0, sizeof (hte_t));
 	nhte = nhte->h_link;
 	nhte->h_name = hte->h_name;
 	nhte->h_static = 1;

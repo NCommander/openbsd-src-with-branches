@@ -1,4 +1,7 @@
+/*	$OpenBSD: disklabel.h,v 1.7 2003/02/24 22:13:09 miod Exp $	*/
+
 /*
+ * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1995 Dale Rahn.
  * All rights reserved.
  *   
@@ -10,10 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
- * 4. The name of the author may not be used to endorse or promote products
+ * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
@@ -28,27 +28,35 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */  
 
-#ifndef _MACHINE_DISKLABEL_H_
-#define _MACHINE_DISKLABEL_H_
-
-/* number of boot pieces , ie xxboot bootxx */
-#define NUMBOOT		2
-
-#define	PARTITIONSHIFT	4
+#ifndef _MVME68K_DISKLABEL_H_
+#define _MVME68K_DISKLABEL_H_
 
 #define LABELSECTOR     0                       /* sector containing label */
 #define LABELOFFSET	0			/* offset of label in sector */
-#define MAXPARTITIONS	(1 << PARTITIONSHIFT)	/* number of partitions */
+#define MAXPARTITIONS	16			/* number of partitions */
 #define RAW_PART	2			/* raw partition: xx?c */
 
-/* 
- * used to encode disk minor numbers
- * this should probably be moved to sys/disklabel.h
+/*
+ * a cpu_disklabel is a disklabel that the bug (prom) can understand
+ * and live with.   the bug works in terms of 256 byte blocks.   in our
+ * case the first two bug blocks make up the cpu_disklabel (which is 512
+ * bytes [i.e. one sector] in length).
+ *
+ * we use a fixed layout the BSD disk structure (in 256 byte blocks):
+ *   block 0  = the volume ID block  (part of cpu_disklabel)
+ *   block 1  = media configuration area (part of cpu_disklabel)
+ *   block 2  = start of first level OS bootstrap (continues ...)
+ *   block 31 = end of OS bootstrap
+ *   block 32 = BSD filesystem superblock
+ *
+ * this gives us 30 blocks (30*256 = 7680 bytes) for the bootstrap's text+data
+ *
+ * disksubr.c translates between cpu_disklabel and BSD disklabel.
+ *
+ * Note: this structure is exactly 512 bytes in size. If you move fields
+ * around, make sure the various members are properly aligned and the
+ * compiler won't do any additional padding.
  */
-#define DISKUNIT(dev)	(minor(dev) / MAXPARTITIONS)
-#define DISKPART(dev)	(minor(dev) % MAXPARTITIONS)
-#define MAKEDISKDEV(maj, unit, part) \
-    (makedev((maj), ((unit) * MAXPARTITIONS) + (part)))
 
 struct cpu_disklabel {
 	/* VID */
@@ -59,7 +67,9 @@ struct cpu_disklabel {
 	u_char		vid_1[4];
 	u_short		vid_osa_u;
 	u_short		vid_osa_l;
-	u_char		vid_2[2];
+	u_char		version;
+	u_char		vid_2[1];
+	u_short		checksum;	/* 2 */
 	u_short		partitions;
 	u_char		vid_vd[16];
 	u_long		bbsize;
@@ -70,7 +80,6 @@ struct cpu_disklabel {
 	u_long		flags;		/* 4 */
 	u_long		drivedata[5];	/* 4 */
 	u_long		spare[5];	/* 4 */
-	u_short		checksum;	/* 2 */
 
 	u_long		secpercyl;	/* 4 */
 	u_long		secperunit;	/* 4 */
@@ -125,4 +134,4 @@ struct cpu_disklabel {
 	u_long		magic2;
 	u_char		cfg_4[192];
 };
-#endif _MACHINE_DISKLABEL_H_
+#endif	/* _MVME68K_DISKLABEL_H_ */

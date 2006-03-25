@@ -1,8 +1,10 @@
+/*	$OpenBSD: pt_exec.c,v 1.4 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: pt_exec.c,v 1.4 1995/04/23 10:33:25 cgd Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
+ * All rights reserved.
  *
  * This code is derived from software donated to Berkeley by
  * Jan-Simon Pendry.
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,13 +47,8 @@
 
 #include "portald.h"
 
-int portal_exec(pcr, key, v, so, fdp)
-struct portal_cred *pcr;
-char *key;
-char **v;
-int so;
-int *fdp;
+int
+portal_exec(struct portal_cred *pcr, char *key, char **v, int so, int *fdp)
 {
 	return (ENOEXEC);
 }
-

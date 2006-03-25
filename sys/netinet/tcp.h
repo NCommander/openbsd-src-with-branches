@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcp.h,v 1.15 2004/02/10 10:30:24 markus Exp $	*/
 /*	$NetBSD: tcp.h,v 1.8 1995/04/17 05:32:58 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +32,11 @@
  *	@(#)tcp.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NETINET_TCP_H_
+#define	_NETINET_TCP_H_
+
 typedef u_int32_t tcp_seq;
+
 /*
  * TCP header.
  * Per RFC 793, September, 1981.
@@ -46,11 +47,11 @@ struct tcphdr {
 	tcp_seq	  th_seq;		/* sequence number */
 	tcp_seq	  th_ack;		/* acknowledgement number */
 #if BYTE_ORDER == LITTLE_ENDIAN
-	u_int8_t  th_x2:4,		/* (unused) */
+	u_int     th_x2:4,		/* (unused) */
 		  th_off:4;		/* data offset */
 #endif
 #if BYTE_ORDER == BIG_ENDIAN
-	u_int8_t  th_off:4,		/* data offset */
+	u_int     th_off:4,		/* data offset */
 		  th_x2:4;		/* (unused) */
 #endif
 	u_int8_t  th_flags;
@@ -60,10 +61,14 @@ struct tcphdr {
 #define	TH_PUSH	  0x08
 #define	TH_ACK	  0x10
 #define	TH_URG	  0x20
+#define	TH_ECE	  0x40
+#define	TH_CWR	  0x80
 	u_int16_t th_win;			/* window */
 	u_int16_t th_sum;			/* checksum */
 	u_int16_t th_urp;			/* urgent pointer */
 };
+#define th_reseqlen th_urp			/* TCP data length for
+						   resequencing/reassembly */
 
 #define	TCPOPT_EOL		0
 #define	TCPOPT_NOP		1
@@ -74,12 +79,28 @@ struct tcphdr {
 #define	TCPOPT_SACK_PERMITTED	4		/* Experimental */
 #define	   TCPOLEN_SACK_PERMITTED	2
 #define	TCPOPT_SACK		5		/* Experimental */
+#define	TCPOLEN_SACK		8		/* 2*sizeof(tcp_seq) */
 #define	TCPOPT_TIMESTAMP	8
 #define	   TCPOLEN_TIMESTAMP		10
 #define	   TCPOLEN_TSTAMP_APPA		(TCPOLEN_TIMESTAMP+2) /* appendix A */
+#define	TCPOPT_SIGNATURE	19
+#define	   TCPOLEN_SIGNATURE		18
+#define	   TCPOLEN_SIGLEN		(TCPOLEN_SIGNATURE+2) /* padding */
+
+#define	MAX_TCPOPTLEN		40	/* Absolute maximum TCP options len */
 
 #define TCPOPT_TSTAMP_HDR	\
     (TCPOPT_NOP<<24|TCPOPT_NOP<<16|TCPOPT_TIMESTAMP<<8|TCPOLEN_TIMESTAMP)
+
+/* Option definitions */
+#define TCPOPT_SACK_PERMIT_HDR \
+(TCPOPT_NOP<<24|TCPOPT_NOP<<16|TCPOPT_SACK_PERMITTED<<8|TCPOLEN_SACK_PERMITTED)
+#define TCPOPT_SACK_HDR   (TCPOPT_NOP<<24|TCPOPT_NOP<<16|TCPOPT_SACK<<8)
+/* Miscellaneous constants */
+#define MAX_SACK_BLKS	6	/* Max # SACK blocks stored at sender side */
+#define TCP_MAX_SACK	3	/* MAX # SACKs sent in any segment */
+
+#define TCP_MAXBURST	4	/* Max # packets after leaving Fast Rxmit */
 
 /*
  * Default maximum segment size for TCP.
@@ -96,5 +117,9 @@ struct tcphdr {
 /*
  * User-settable options (used with setsockopt).
  */
-#define	TCP_NODELAY	0x01	/* don't delay send to coalesce packets */
-#define	TCP_MAXSEG	0x02	/* set maximum segment size */
+#define	TCP_NODELAY		0x01   /* don't delay send to coalesce pkts */
+#define	TCP_MAXSEG		0x02   /* set maximum segment size */
+#define	TCP_MD5SIG		0x04   /* enable TCP MD5 signature option */
+#define	TCP_SACK_ENABLE		0x08   /* enable SACKs (if disabled by def.) */
+
+#endif /* _NETINET_TCP_H_ */

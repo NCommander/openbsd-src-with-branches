@@ -708,6 +708,14 @@ optimize_reg_copy_3 (insn, dest, src)
 				 GET_MODE_BITSIZE (GET_MODE (src_reg))))
     return;
 
+#ifdef BROKEN_OPTIMIZE_REG_COPY_3_P
+  /* If we are on a big-endian target, do not expand to more than one
+     register.  */
+  if (BYTES_BIG_ENDIAN &&
+      GET_MODE_BITSIZE (GET_MODE (src)) > BITS_PER_WORD)
+    return;
+#endif
+
   old_mode = GET_MODE (src_reg);
   PUT_MODE (src_reg, GET_MODE (src));
   XEXP (src, 0) = SET_SRC (set);

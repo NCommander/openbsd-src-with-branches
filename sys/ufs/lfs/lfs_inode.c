@@ -1,4 +1,5 @@
-/*	$NetBSD: lfs_inode.c,v 1.3 1995/06/15 23:22:44 cgd Exp $	*/
+/*	$OpenBSD: lfs_inode.c,v 1.10 2004/06/24 19:35:27 tholo Exp $	*/
+/*	$NetBSD: lfs_inode.c,v 1.5 1996/05/11 18:27:35 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1986, 1989, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,7 +29,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)lfs_inode.c	8.5 (Berkeley) 12/30/93
+ *	@(#)lfs_inode.c	8.9 (Berkeley) 5/8/95
  */
 
 #include <sys/param.h>
@@ -45,7 +42,7 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
@@ -54,12 +51,6 @@
 
 #include <ufs/lfs/lfs.h>
 #include <ufs/lfs/lfs_extern.h>
-
-int
-lfs_init()
-{
-	return (ufs_init());
-}
 
 /* Search a block for a specific dinode. */
 struct dinode *
@@ -80,31 +71,43 @@ lfs_ifind(fs, ino, dip)
 }
 
 int
-lfs_update(ap)
+lfs_update(v)
+	void *v;
+{
 	struct vop_update_args /* {
 		struct vnode *a_vp;
-		struct timeval *a_access;
-		struct timeval *a_modify;
+		struct timespec *a_access;
+		struct timespec *a_modify;
 		int a_waitfor;
-	} */ *ap;
-{
+	} */ *ap = v;
 	struct vnode *vp = ap->a_vp;
 	struct inode *ip;
 
 	if (vp->v_mount->mnt_flag & MNT_RDONLY)
 		return (0);
 	ip = VTOI(vp);
+	if ((ap->a_vp->v_mount->mnt_flag & MNT_NOATIME) &&
+	    !(ip->i_flag & (IN_CHANGE | IN_UPDATE)))
+		ip->i_flag &= ~IN_ACCESS;
 	if ((ip->i_flag &
 	    (IN_ACCESS | IN_CHANGE | IN_MODIFIED | IN_UPDATE)) == 0)
 		return (0);
-	if (ip->i_flag & IN_ACCESS)
+	if (ip->i_flag & IN_ACCESS) {
 		ip->i_atime = ap->a_access->tv_sec;
+		ip->i_atimensec = ap->a_access->tv_nsec;
+	}
 	if (ip->i_flag & IN_UPDATE) {
 		ip->i_mtime = ap->a_modify->tv_sec;
+		ip->i_mtimensec = ap->a_modify->tv_nsec;
 		(ip)->i_modrev++;
 	}
-	if (ip->i_flag & IN_CHANGE)
-		ip->i_ctime = time.tv_sec;
+	if (ip->i_flag & IN_CHANGE) {
+		struct timespec ts;
+
+		getnanotime(&ts);
+		ip->i_ctime = ts.tv_sec;
+		ip->i_ctimensec = ts.tv_nsec;
+	}
 	ip->i_flag &= ~(IN_ACCESS | IN_CHANGE | IN_UPDATE);
 
 	if (!(ip->i_flag & IN_MODIFIED))
@@ -119,22 +122,22 @@ lfs_update(ap)
 #define UPDATE_SEGUSE \
 	if (lastseg != -1) { \
 		LFS_SEGENTRY(sup, fs, lastseg, sup_bp); \
-		if ((num << fs->lfs_bshift) > sup->su_nbytes) \
-			panic("lfs_truncate: negative bytes in segment %d\n", \
+		if (num > sup->su_nbytes) \
+			panic("lfs_truncate: negative bytes in segment %d", \
 			    lastseg); \
-		sup->su_nbytes -= num << fs->lfs_bshift; \
+		sup->su_nbytes -= num; \
 		e1 = VOP_BWRITE(sup_bp); \
-		blocksreleased += num; \
+		fragsreleased += numfrags(fs, num); \
 	}
 
-#define SEGDEC { \
+#define SEGDEC(S) { \
 	if (daddr != 0) { \
 		if (lastseg != (seg = datosn(fs, daddr))) { \
 			UPDATE_SEGUSE; \
-			num = 1; \
+			num = (S); \
 			lastseg = seg; \
 		} else \
-			++num; \
+			num += (S); \
 	} \
 }
 
@@ -144,51 +147,53 @@ lfs_update(ap)
  */
 /* ARGSUSED */
 int
-lfs_truncate(ap)
+lfs_truncate(v)
+	void *v;
+{
 	struct vop_truncate_args /* {
 		struct vnode *a_vp;
 		off_t a_length;
 		int a_flags;
 		struct ucred *a_cred;
 		struct proc *a_p;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct indir *inp;
 	register int i;
-	register daddr_t *daddrp;
+	register ufs_daddr_t *daddrp;
 	register struct vnode *vp = ap->a_vp;
 	off_t length = ap->a_length;
 	struct buf *bp, *sup_bp;
-	struct timeval tv;
+	struct timespec ts;
 	struct ifile *ifp;
 	struct inode *ip;
 	struct lfs *fs;
 	struct indir a[NIADDR + 2], a_end[NIADDR + 2];
 	SEGUSE *sup;
-	daddr_t daddr, lastblock, lbn, olastblock;
-	long off, a_released, blocksreleased, i_released;
-	int e1, e2, depth, lastseg, num, offset, seg, size;
+	ufs_daddr_t daddr, lastblock, lbn, olastblock;
+	ufs_daddr_t oldsize_lastblock, oldsize_newlast, newsize;
+	long off, a_released, fragsreleased, i_released;
+	int e1, e2, depth, lastseg, num, offset, seg, freesize;
 
 	ip = VTOI(vp);
-	tv = time;
+	getnanotime(&ts);
 	if (vp->v_type == VLNK && vp->v_mount->mnt_maxsymlinklen > 0) {
 #ifdef DIAGNOSTIC
 		if (length != 0)
 			panic("lfs_truncate: partial truncate of symlink");
 #endif
-		bzero((char *)&ip->i_shortlink, (u_int)ip->i_size);
-		ip->i_size = 0;
+		bzero((char *)&ip->i_ffs1_shortlink, (u_int)ip->i_ffs1_size);
+		ip->i_ffs1_size = 0;
 		ip->i_flag |= IN_CHANGE | IN_UPDATE;
-		return (VOP_UPDATE(vp, &tv, &tv, 0));
+		return (VOP_UPDATE(vp, &ts, &ts, 0));
 	}
 	vnode_pager_setsize(vp, (u_long)length);
 
 	fs = ip->i_lfs;
 
 	/* If length is larger than the file, just update the times. */
-	if (ip->i_size <= length) {
+	if (ip->i_ffs1_size <= length) {
 		ip->i_flag |= IN_CHANGE | IN_UPDATE;
-		return (VOP_UPDATE(vp, &tv, &tv, 0));
+		return (VOP_UPDATE(vp, &ts, &ts, 0));
 	}
 
 	/*
@@ -197,52 +202,61 @@ lfs_truncate(ap)
 	 * file is truncated to 0.
 	 */
 	lastblock = lblkno(fs, length + fs->lfs_bsize - 1);
-	olastblock = lblkno(fs, ip->i_size + fs->lfs_bsize - 1) - 1;
+	olastblock = lblkno(fs, ip->i_ffs1_size + fs->lfs_bsize - 1) - 1;
 
 	/*
 	 * Update the size of the file. If the file is not being truncated to
 	 * a block boundry, the contents of the partial block following the end
 	 * of the file must be zero'ed in case it ever become accessable again
-	 * because of subsequent file growth.
+	 * because of subsequent file growth.  For this part of the code,
+	 * oldsize_newlast refers to the old size of the new last block in the file.
 	 */
 	offset = blkoff(fs, length);
+	lbn = lblkno(fs, length);
+	oldsize_newlast = blksize(fs, ip, lbn);
+
+	/* Now set oldsize to the current size of the current last block */
+	oldsize_lastblock = blksize(fs, ip, olastblock);
 	if (offset == 0)
-		ip->i_size = length;
+		ip->i_ffs1_size = length;
 	else {
-		lbn = lblkno(fs, length);
 #ifdef QUOTA
-		if (e1 = getinoquota(ip))
+		if ((e1 = getinoquota(ip)) != 0)
 			return (e1);
 #endif	
-		if (e1 = bread(vp, lbn, fs->lfs_bsize, NOCRED, &bp))
+		if ((e1 = bread(vp, lbn, fs->lfs_bsize, NOCRED, &bp)) != 0)
 			return (e1);
-		ip->i_size = length;
-		size = blksize(fs);
+		ip->i_ffs1_size = length;
 		(void)vnode_pager_uncache(vp);
-		bzero((char *)bp->b_data + offset, (u_int)(size - offset));
-		allocbuf(bp, size);
-		if (e1 = VOP_BWRITE(bp))
+		newsize = blksize(fs, ip, lbn);
+		bzero((char *)bp->b_data + offset, (u_int)(newsize - offset));
+		allocbuf(bp, newsize);
+		if ((e1 = VOP_BWRITE(bp)) != 0)
 			return (e1);
 	}
 	/*
 	 * Modify sup->su_nbyte counters for each deleted block; keep track
-	 * of number of blocks removed for ip->i_blocks.
+	 * of number of blocks removed for ip->i_ffs1_blocks.
 	 */
-	blocksreleased = 0;
+	fragsreleased = 0;
 	num = 0;
 	lastseg = -1;
 
 	for (lbn = olastblock; lbn >= lastblock;) {
 		/* XXX use run length from bmap array to make this faster */
 		ufs_bmaparray(vp, lbn, &daddr, a, &depth, NULL);
-		if (lbn == olastblock)
+		if (lbn == olastblock) {
 			for (i = NIADDR + 2; i--;)
 				a_end[i] = a[i];
+			freesize = oldsize_lastblock;
+		} else
+			freesize = fs->lfs_bsize;
+
 		switch (depth) {
 		case 0:				/* Direct block. */
-			daddr = ip->i_db[lbn];
-			SEGDEC;
-			ip->i_db[lbn] = 0;
+			daddr = ip->i_ffs1_db[lbn];
+			SEGDEC(freesize);
+			ip->i_ffs1_db[lbn] = 0;
 			--lbn;
 			break;
 #ifdef DIAGNOSTIC
@@ -263,28 +277,29 @@ lfs_truncate(ap)
 				    inp->in_lbn, fs->lfs_bsize, NOCRED, &bp))
 					panic("lfs_truncate: bread bno %d",
 					    inp->in_lbn);
-				daddrp = (daddr_t *)bp->b_data + inp->in_off;
+				daddrp = (ufs_daddr_t *)bp->b_data +
+				    inp->in_off;
 				for (i = inp->in_off;
 				    i++ <= a_end[depth].in_off;) {
 					daddr = *daddrp++;
-					SEGDEC;
+					SEGDEC(freesize);
 				}
 				a_end[depth].in_off = NINDIR(fs) - 1;
 				if (inp->in_off == 0)
 					brelse (bp);
 				else {
-					bzero((daddr_t *)bp->b_data +
+					bzero((ufs_daddr_t *)bp->b_data +
 					    inp->in_off, fs->lfs_bsize - 
-					    inp->in_off * sizeof(daddr_t));
-					if (e1 = VOP_BWRITE(bp)) 
+					    inp->in_off * sizeof(ufs_daddr_t));
+					if ((e1 = VOP_BWRITE(bp)) != 0)
 						return (e1);
 				}
 			}
 			if (depth == 0 && a[1].in_off == 0) {
 				off = a[0].in_off;
-				daddr = ip->i_ib[off];
-				SEGDEC;
-				ip->i_ib[off] = 0;
+				daddr = ip->i_ffs1_ib[off];
+				SEGDEC(freesize);
+				ip->i_ffs1_ib[off] = 0;
 			}
 			if (lbn == lastblock || lbn <= NDADDR)
 				--lbn;
@@ -305,13 +320,14 @@ lfs_truncate(ap)
 	}
 
 #ifdef DIAGNOSTIC
-	if (ip->i_blocks < fsbtodb(fs, blocksreleased)) {
-		printf("lfs_truncate: block count < 0\n");
-		blocksreleased = ip->i_blocks;
+	if (ip->i_ffs1_blocks < fragstodb(fs, fragsreleased)) {
+		printf("lfs_truncate: frag count < 0\n");
+		fragsreleased = dbtofrags(fs, ip->i_ffs1_blocks);
+		panic("lfs_truncate: frag count < 0");
 	}
 #endif
-	ip->i_blocks -= fsbtodb(fs, blocksreleased);
-	fs->lfs_bfree +=  fsbtodb(fs, blocksreleased);
+	ip->i_ffs1_blocks -= fragstodb(fs, fragsreleased);
+	fs->lfs_bfree +=  fragstodb(fs, fragsreleased);
 	ip->i_flag |= IN_CHANGE | IN_UPDATE;
 	/*
 	 * Traverse dirty block list counting number of dirty buffers
@@ -322,7 +338,7 @@ lfs_truncate(ap)
 	i_released = 0;
 	for (bp = vp->v_dirtyblkhd.lh_first; bp; bp = bp->b_vnbufs.le_next)
 		if (bp->b_flags & B_LOCKED) {
-			++a_released;
+			a_released += numfrags(fs, bp->b_bcount);
 			/*
 			 * XXX
 			 * When buffers are created in the cache, their block
@@ -335,27 +351,30 @@ lfs_truncate(ap)
 			 * here.
 			 */
 			if (bp->b_blkno == bp->b_lblkno)
-				++i_released;
+				i_released += numfrags(fs, bp->b_bcount);
 		}
-	blocksreleased = fsbtodb(fs, i_released);
+	fragsreleased = i_released;
 #ifdef DIAGNOSTIC
-	if (blocksreleased > ip->i_blocks) {
+	if (fragsreleased > dbtofrags(fs, ip->i_ffs1_blocks)) {
 		printf("lfs_inode: Warning! %s\n",
-		    "more blocks released from inode than are in inode");
-		blocksreleased = ip->i_blocks;
+		    "more frags released from inode than are in inode");
+		fragsreleased = dbtofrags(fs, ip->i_ffs1_blocks);
+		panic("lfs_inode: Warning.  More frags released");
 	}
 #endif
-	fs->lfs_bfree += blocksreleased;
-	ip->i_blocks -= blocksreleased;
+	fs->lfs_bfree += fragstodb(fs, fragsreleased);
+	ip->i_ffs1_blocks -= fragstodb(fs, fragsreleased);
 #ifdef DIAGNOSTIC
-	if (length == 0 && ip->i_blocks != 0)
+	if (length == 0 && ip->i_ffs1_blocks != 0) {
 		printf("lfs_inode: Warning! %s%d%s\n",
-		    "Truncation to zero, but ", ip->i_blocks,
+		    "Truncation to zero, but ", ip->i_ffs1_blocks,
 		    " blocks left on inode");
+		    panic("lfs_inode");
+	}
 #endif
-	fs->lfs_avail += fsbtodb(fs, a_released);
+	fs->lfs_avail += fragstodb(fs, a_released);
 	e1 = vinvalbuf(vp, (length > 0) ? V_SAVE : 0, ap->a_cred, ap->a_p,
 	    0, 0); 
-	e2 = VOP_UPDATE(vp, &tv, &tv, 0);
+	e2 = VOP_UPDATE(vp, &ts, &ts, 0);
 	return (e1 ? e1 : e2 ? e2 : 0);
 }

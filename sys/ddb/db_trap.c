@@ -1,8 +1,9 @@
-/*	$NetBSD: db_trap.c,v 1.8 1994/12/02 06:07:37 gwr Exp $	*/
+/*	$OpenBSD: db_trap.c,v 1.9 2001/08/19 19:47:45 art Exp $	*/
+/*	$NetBSD: db_trap.c,v 1.9 1996/02/05 01:57:18 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -34,13 +35,20 @@
  */
 #include <sys/param.h>
 #include <sys/proc.h>
+#include <sys/systm.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
 
 #include <ddb/db_run.h>
 #include <ddb/db_command.h>
 #include <ddb/db_break.h>
+#include <ddb/db_output.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
 
+void
 db_trap(type, code)
 	int	type, code;
 {
@@ -51,20 +59,30 @@ db_trap(type, code)
 	watchpt = IS_WATCHPOINT_TRAP(type, code);
 
 	if (db_stop_at_pc(DDB_REGS, &bkpt)) {
-	    if (db_inst_count) {
-		db_printf("After %d instructions (%d loads, %d stores),\n",
-			  db_inst_count, db_load_count, db_store_count);
-	    }
-	    if (bkpt)
-		db_printf("Breakpoint at\t");
-	    else if (watchpt)
-		db_printf("Watchpoint at\t");
-	    else
-		db_printf("Stopped at\t");
-	    db_dot = PC_REGS(DDB_REGS);
-	    db_print_loc_and_inst(db_dot);
+		if (db_inst_count) {
+			db_printf("After %d instructions ", db_inst_count);
+			db_printf("(%d loads, %d stores),\n", db_load_count,
+			    db_store_count);
+		}
+		if (bkpt)
+			db_printf("Breakpoint at\t");
+		else if (watchpt)
+			db_printf("Watchpoint at\t");
+		else
+			db_printf("Stopped at\t");
+		db_dot = PC_REGS(DDB_REGS);
+		db_print_loc_and_inst(db_dot);
 
-	    db_command_loop();
+		if (panicstr != NULL) {
+			if (db_print_position() != 0)
+				db_printf("\n");
+			db_printf("RUN AT LEAST 'trace' AND 'ps' AND INCLUDE "
+			    "OUTPUT WHEN REPORTING THIS PANIC!\n");
+			db_printf("DO NOT EVEN BOTHER REPORTING THIS WITHOUT "
+			    "INCLUDING THAT INFORMATION!\n");
+		}
+
+		db_command_loop();
 	}
 
 	db_restart_at_pc(DDB_REGS, watchpt);

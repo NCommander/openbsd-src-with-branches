@@ -1,3 +1,5 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -420,18 +422,18 @@
       dimensions of variance.</p>
 
       <p>You should be aware that the error message returned by Apache is
-   neccessarily rather terse and might confuse some users (even though it
-   lists the available alternatives). If you want to avoid users seeing this
-   error page, you should organize your documents such that a document in a
-   default language (or with a default encoding etc.) is always returned if a
-   document is not available in any of the languages, encodings etc. the
-   browser asked for.</p>
+      necessarily rather terse and might confuse some users (even though it
+      lists the available alternatives). If you want to avoid users seeing this
+      error page, you should organize your documents such that a document in a
+      default language (or with a default encoding etc.) is always returned if a
+      document is not available in any of the languages, encodings etc. the
+      browser asked for.</p>
 
-   <p>In particular, if you want a document in a default language to
-   be returned if a document is not available in any of the languages
-   a browser asked for, you should create a document with no language
-   attribute set.  See <a href="#nolanguage">Variants with no
-   Language</a> below for details.</p></li>
+      <p>In particular, if you want a document in a default language to
+      be returned if a document is not available in any of the languages
+      a browser asked for, you should create a document with no language
+      attribute set.  See <a href="#nolanguage">Variants with no
+      Language</a> below for details.</p></li>
     </ol>
 
     <h2><a id="better" name="better">Fiddling with Quality
@@ -480,14 +482,14 @@
 
     <p>If the Accept: header contains <em>no</em> q factors at all,
     Apache sets the q value of "*/*", if present, to 0.01 to
-    emulate the desired behavior. It also sets the q value of
+    emulate the desired behaviour. It also sets the q value of
     wildcards of the format "type/*" to 0.02 (so these are
     preferred over matches against "*/*". If any media type on the
     Accept: header contains a q factor, these special values are
     <em>not</em> applied, so requests from browsers which send the
     correct information to start with work as expected.</p>
 
-    <h3><a name="nolanguage">Variants with no Language</a></h3>
+    <h3><a id="nolanguage" name="nolanguage">Variants with no Language</a></h3>
 
     <p>If some of the variants for a particular resource have a
     language attribute, and some do not, those variants with no
@@ -499,7 +501,7 @@
     variant which can be supplied if none of the other variants match
     the browser's language preferences. This allows you to avoid users
     seeing a "406" error page if their browser is set to only accept
-    languages which you do not offer for the ressource that was
+    languages which you do not offer for the resource that was
     requested.</p>
 
     <p>For example, consider the situation with Multiviews enabled and
@@ -519,7 +521,7 @@
     one of foo.en.html or foo.fr.html will be returned. If the browser
     does not list either en or fr as acceptable, foo.html will be
     returned instead.  If the client requests <code>foo.html</code>
-    instead, then no negotation will occur since the exact match
+    instead, then no negotiation will occur since the exact match
     will be returned.  To avoid this problem, it is sometimes helpful
     to name the "no language" variant <code>foo.html.html</code> to assure
     that Multiviews and language negotiation will come into play.</p>
@@ -631,7 +633,7 @@
     </table>
 
     <p>Looking at the table above you will notice that it is always
-    possible to use the name without any extensions in an hyperlink
+    possible to use the name without any extensions in a hyperlink
     (<em>e.g.</em>, <samp>foo</samp>). The advantage is that you
     can hide the actual type of a document rsp. file and can change
     it later, <em>e.g.</em>, from <samp>html</samp> to
@@ -671,4 +673,6 @@
     </p>
   </body>
 </html>
+
+
 

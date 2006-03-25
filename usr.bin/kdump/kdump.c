@@ -1,3 +1,5 @@
+/*	$OpenBSD: kdump.c,v 1.29 2005/12/20 07:37:21 miod Exp $	*/
+
 /*-
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,16 +39,16 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)kdump.c	8.4 (Berkeley) 4/28/95";
 #endif
-static char *rcsid = "$NetBSD: kdump.c,v 1.12 1995/08/31 23:18:33 jtc Exp $";
+static char *rcsid = "$OpenBSD: kdump.c,v 1.29 2005/12/20 07:37:21 miod Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
-#include <sys/errno.h>
 #include <sys/time.h>
 #include <sys/uio.h>
 #include <sys/ktrace.h>
 #include <sys/ioctl.h>
 #include <sys/ptrace.h>
+#include <sys/sysctl.h>
 #define _KERNEL
 #include <sys/errno.h>
 #undef _KERNEL
@@ -64,34 +62,63 @@ static char *rcsid = "$NetBSD: kdump.c,v 1.12 1995/08/31 23:18:33 jtc Exp $";
 #include <vis.h>
 
 #include "ktrace.h"
+#include "kdump.h"
+#include "extern.h"
 
 int timestamp, decimal, fancy = 1, tail, maxdata;
 char *tracefile = DEF_TRACEFILE;
 struct ktr_header ktr_header;
+pid_t pid = -1;
 
 #define eqs(s1, s2)	(strcmp((s1), (s2)) == 0)
 
 #include <sys/syscall.h>
 
-#include "../../sys/compat/hpux/hpux_syscall.h"
-#include "../../sys/compat/ibcs2/ibcs2_syscall.h"
-#include "../../sys/compat/linux/linux_syscall.h"
-#include "../../sys/compat/osf1/osf1_syscall.h"
-#include "../../sys/compat/sunos/sunos_syscall.h"
-#include "../../sys/compat/svr4/svr4_syscall.h"
-#include "../../sys/compat/ultrix/ultrix_syscall.h"
+#include <compat/bsdos/bsdos_syscall.h>
+#include <compat/freebsd/freebsd_syscall.h>
+#include <compat/netbsd/netbsd_syscall.h>
+#if defined(__hppa__) || defined(__m68k__)
+#include <compat/hpux/hpux_syscall.h>
+#endif
+#include <compat/ibcs2/ibcs2_syscall.h>
+#include <compat/linux/linux_syscall.h>
+#include <compat/osf1/osf1_syscall.h>
+#include <compat/sunos/sunos_syscall.h>
+#include <compat/svr4/svr4_syscall.h>
+#include <compat/ultrix/ultrix_syscall.h>
 
 #define KTRACE
-#include "../../sys/kern/syscalls.c"
+#define PTRACE
+#define NFSCLIENT
+#define NFSSERVER
+#define SYSVSEM
+#define SYSVMSG
+#define SYSVSHM
+#define LFS
+#define RTHREADS
+#include <kern/syscalls.c>
 
-#include "../../sys/compat/hpux/hpux_syscalls.c"
-#include "../../sys/compat/ibcs2/ibcs2_syscalls.c"
-#include "../../sys/compat/linux/linux_syscalls.c"
-#include "../../sys/compat/osf1/osf1_syscalls.c"
-#include "../../sys/compat/sunos/sunos_syscalls.c"
-#include "../../sys/compat/svr4/svr4_syscalls.c"
-#include "../../sys/compat/ultrix/ultrix_syscalls.c"
+#include <compat/bsdos/bsdos_syscalls.c>
+#include <compat/freebsd/freebsd_syscalls.c>
+#include <compat/netbsd/netbsd_syscalls.c>
+#if defined(__hppa__) || defined(__m68k__)
+#include <compat/hpux/hpux_syscalls.c>
+#endif
+#include <compat/ibcs2/ibcs2_syscalls.c>
+#include <compat/linux/linux_syscalls.c>
+#include <compat/osf1/osf1_syscalls.c>
+#include <compat/sunos/sunos_syscalls.c>
+#include <compat/svr4/svr4_syscalls.c>
+#include <compat/ultrix/ultrix_syscalls.c>
 #undef KTRACE
+#undef PTRACE
+#undef NFSCLIENT
+#undef NFSSERVER
+#undef SYSVSEM
+#undef SYSVMSG
+#undef SYSVSHM
+#undef LFS
+#undef RTHREADS
 
 struct emulation {
 	char *name;		/* Emulation name */
@@ -100,15 +127,20 @@ struct emulation {
 };
 
 static struct emulation emulations[] = {
-	{ "netbsd",	     syscallnames,        SYS_MAXSYSCALL },
-	{ "hpux",	hpux_syscallnames,   HPUX_SYS_MAXSYSCALL },
-	{ "ibcs2",     ibcs2_syscallnames,  IBCS2_SYS_MAXSYSCALL },
-	{ "linux",     linux_syscallnames,  LINUX_SYS_MAXSYSCALL },
-	{ "osf1",       osf1_syscallnames,   OSF1_SYS_MAXSYSCALL },
-	{ "sunos",     sunos_syscallnames,  SUNOS_SYS_MAXSYSCALL },
-	{ "svr4",       svr4_syscallnames,   SVR4_SYS_MAXSYSCALL },
-	{ "ultrix",   ultrix_syscallnames, ULTRIX_SYS_MAXSYSCALL },
-	{ NULL,			     NULL,		    NULL }
+	{ "native",	syscallnames,		SYS_MAXSYSCALL },
+#if defined(__hppa__) || defined(__m68k__)
+	{ "hpux",	hpux_syscallnames,	HPUX_SYS_MAXSYSCALL },
+#endif
+	{ "ibcs2",	ibcs2_syscallnames,	IBCS2_SYS_MAXSYSCALL },
+	{ "linux",	linux_syscallnames,	LINUX_SYS_MAXSYSCALL },
+	{ "osf1",	osf1_syscallnames,	OSF1_SYS_MAXSYSCALL },
+	{ "sunos",	sunos_syscallnames,	SUNOS_SYS_MAXSYSCALL },
+	{ "svr4",	svr4_syscallnames,	SVR4_SYS_MAXSYSCALL },
+	{ "ultrix",	ultrix_syscallnames,	ULTRIX_SYS_MAXSYSCALL },
+	{ "bsdos",	bsdos_syscallnames,	BSDOS_SYS_MAXSYSCALL },
+	{ "freebsd",	freebsd_syscallnames,	FREEBSD_SYS_MAXSYSCALL },
+	{ "netbsd",	netbsd_syscallnames,	NETBSD_SYS_MAXSYSCALL },
+	{ NULL,		NULL,			NULL }
 };
 
 struct emulation *current;
@@ -117,21 +149,31 @@ struct emulation *current;
 static char *ptrace_ops[] = {
 	"PT_TRACE_ME",	"PT_READ_I",	"PT_READ_D",	"PT_READ_U",
 	"PT_WRITE_I",	"PT_WRITE_D",	"PT_WRITE_U",	"PT_CONTINUE",
-	"PT_KILL",	"PT_ATTACH",	"PT_DETACH",
+	"PT_KILL",	"PT_ATTACH",	"PT_DETACH",	"PT_IO",
 };
 
+static int fread_tail(void *, int, int);
+static void dumpheader(struct ktr_header *);
+static void ktrcsw(struct ktr_csw *);
+static void ktremul(char *, int);
+static void ktrgenio(struct ktr_genio *, int);
+static void ktrnamei(const char *, int);
+static void ktrpsig(struct ktr_psig *);
+static void ktrsyscall(struct ktr_syscall *);
+static void ktrsysret(struct ktr_sysret *);
+static void setemul(const char *);
+static void usage(void);
+
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	int ch, ktrlen, size;
-	register void *m;
+	int ch, ktrlen, size, silent;
 	int trpoints = ALL_POINTS;
+	void *m;
 
-	current = &emulations[0];	/* NetBSD */
+	current = &emulations[0];	/* native */
 
-	while ((ch = getopt(argc, argv, "e:f:dlm:nRTt:")) != -1)
+	while ((ch = getopt(argc, argv, "e:f:dlm:nRp:Tt:")) != -1)
 		switch (ch) {
 		case 'e':
 			setemul(optarg);
@@ -151,6 +193,9 @@ main(argc, argv)
 		case 'n':
 			fancy = 0;
 			break;
+		case 'p':
+			pid = atoi(optarg);
+			break;
 		case 'R':
 			timestamp = 2;	/* relative timestamp */
 			break;
@@ -165,10 +210,7 @@ main(argc, argv)
 		default:
 			usage();
 		}
-	argv += optind;
-	argc -= optind;
-
-	if (argc > 1)
+	if (argc > optind)
 		usage();
 
 	m = (void *)malloc(size = 1025);
@@ -177,18 +219,26 @@ main(argc, argv)
 	if (!freopen(tracefile, "r", stdin))
 		err(1, "%s", tracefile);
 	while (fread_tail(&ktr_header, sizeof(struct ktr_header), 1)) {
-		if (trpoints & (1<<ktr_header.ktr_type))
+		silent = 0;
+		if (pid != -1 && pid != ktr_header.ktr_pid)
+			silent = 1;
+		if (silent == 0 && trpoints & (1<<ktr_header.ktr_type))
 			dumpheader(&ktr_header);
 		if ((ktrlen = ktr_header.ktr_len) < 0)
 			errx(1, "bogus length 0x%x", ktrlen);
 		if (ktrlen > size) {
-			m = (void *)realloc(m, ktrlen+1);
-			if (m == NULL)
+			void *newm;
+
+			newm = realloc(m, ktrlen+1);
+			if (newm == NULL)
 				errx(1, "%s", strerror(ENOMEM));
+			m = newm;
 			size = ktrlen;
 		}
 		if (ktrlen && fread_tail(m, ktrlen, 1) == 0)
 			errx(1, "data too short");
+		if (silent)
+			continue;
 		if ((trpoints & (1<<ktr_header.ktr_type)) == 0)
 			continue;
 		switch (ktr_header.ktr_type) {
@@ -217,11 +267,11 @@ main(argc, argv)
 		if (tail)
 			(void)fflush(stdout);
 	}
+	exit(0);
 }
 
-fread_tail(buf, size, num)
-	char *buf;
-	int num, size;
+static int
+fread_tail(void *buf, int size, int num)
 {
 	int i;
 
@@ -232,11 +282,11 @@ fread_tail(buf, size, num)
 	return (i);
 }
 
-dumpheader(kth)
-	struct ktr_header *kth;
+static void
+dumpheader(struct ktr_header *kth)
 {
-	char unknown[64], *type;
 	static struct timeval prevtime;
+	char unknown[64], *type;
 	struct timeval temp;
 
 	switch (kth->ktr_type) {
@@ -262,11 +312,13 @@ dumpheader(kth)
 		type = "EMUL";
 		break;
 	default:
-		(void)sprintf(unknown, "UNKNOWN(%d)", kth->ktr_type);
+		(void)snprintf(unknown, sizeof unknown, "UNKNOWN(%d)",
+		    kth->ktr_type);
 		type = unknown;
 	}
 
-	(void)printf("%6d %-8.*s ", kth->ktr_pid, MAXCOMLEN, kth->ktr_comm);
+	(void)printf("%6ld %-8.*s ", (long)kth->ktr_pid, MAXCOMLEN,
+	    kth->ktr_comm);
 	if (timestamp) {
 		if (timestamp == 2) {
 			timersub(&kth->ktr_time, &prevtime, &temp);
@@ -278,74 +330,134 @@ dumpheader(kth)
 	(void)printf("%s  ", type);
 }
 
-
-ktrsyscall(ktr)
-	register struct ktr_syscall *ktr;
+static void
+ioctldecode(u_long cmd)
 {
-	register argsize = ktr->ktr_argsize;
-	register register_t *ap;
-	char *ioctlname();
+	char dirbuf[4], *dir = dirbuf;
+
+	if (cmd & IOC_IN)
+		*dir++ = 'W';
+	if (cmd & IOC_OUT)
+		*dir++ = 'R';
+	*dir = '\0';
+
+	printf(decimal ? ",_IO%s('%c',%ld" : ",_IO%s('%c',%#lx",
+	    dirbuf, (cmd >> 8) & 0xff, cmd & 0xff);
+	if ((cmd & IOC_VOID) == 0)
+		printf(decimal ? ",%ld)" : ",%#lx)", (cmd >> 16) & 0xff);
+	else
+		printf(")");
+}
+
+static void
+ktrsyscall(struct ktr_syscall *ktr)
+{
+	int argsize = ktr->ktr_argsize;
+	register_t *ap;
 
 	if (ktr->ktr_code >= current->nsysnames || ktr->ktr_code < 0)
 		(void)printf("[%d]", ktr->ktr_code);
 	else
 		(void)printf("%s", current->sysnames[ktr->ktr_code]);
 	ap = (register_t *)((char *)ktr + sizeof(struct ktr_syscall));
+	(void)putchar('(');
 	if (argsize) {
-		char c = '(';
+		char c = '\0';
 		if (fancy) {
 			if (ktr->ktr_code == SYS_ioctl) {
-				char *cp;
+				const char *cp;
+
 				if (decimal)
-					(void)printf("(%ld", (long)*ap);
+					(void)printf("%ld", (long)*ap);
 				else
-					(void)printf("(%#lx", (long)*ap);
+					(void)printf("%#lx", (long)*ap);
 				ap++;
 				argsize -= sizeof(register_t);
 				if ((cp = ioctlname(*ap)) != NULL)
 					(void)printf(",%s", cp);
-				else {
-					if (decimal)
-						(void)printf(",%ld",
-						    (long)*ap);
-					else
-						(void)printf(",%#lx ",
-						    (long)*ap);
-				}
+				else
+					ioctldecode(*ap);
 				c = ',';
 				ap++;
 				argsize -= sizeof(register_t);
+			} else if (ktr->ktr_code == SYS___sysctl) {
+				int *np, n;
+
+				n = ap[1];
+				if (n > CTL_MAXNAME)
+					n = CTL_MAXNAME;
+				np = (int *)(ap + 6);
+				for (; n--; np++) {
+					if (c)
+						putchar(c);
+					printf("%d", *np);
+					c = '.';
+				}
+
+				c = ',';
+				ap += 2;
+				argsize -= 2 * sizeof(register_t);
 			} else if (ktr->ktr_code == SYS_ptrace) {
-				if (*ap >= 0 && *ap <=
+				if (*ap >= 0 && *ap <
 				    sizeof(ptrace_ops) / sizeof(ptrace_ops[0]))
-					(void)printf("(%s", ptrace_ops[*ap]);
-				else
-					(void)printf("(%ld", (long)*ap);
+					(void)printf("%s", ptrace_ops[*ap]);
+				else switch(*ap) {
+#ifdef PT_GETFPREGS
+				case PT_GETFPREGS:
+					(void)printf("PT_GETFPREGS");
+					break;
+#endif
+				case PT_GETREGS:
+					(void)printf("PT_GETREGS");
+					break;
+#ifdef PT_SETFPREGS
+				case PT_SETFPREGS:
+					(void)printf("PT_SETFPREGS");
+					break;
+#endif
+				case PT_SETREGS:
+					(void)printf("PT_SETREGS");
+					break;
+#ifdef PT_STEP
+				case PT_STEP:
+					(void)printf("PT_STEP");
+					break;
+#endif
+#ifdef PT_WCOOKIE
+				case PT_WCOOKIE:
+					(void)printf("PT_WCOOKIE");
+					break;
+#endif
+				default:
+					(void)printf("%ld", (long)*ap);
+					break;
+				}
 				c = ',';
 				ap++;
 				argsize -= sizeof(register_t);
 			}
 		}
 		while (argsize) {
+			if (c)
+				putchar(c);
 			if (decimal)
-				(void)printf("%c%ld", c, (long)*ap);
+				(void)printf("%ld", (long)*ap);
 			else
-				(void)printf("%c%#lx", c, (long)*ap);
+				(void)printf("%#lx", (long)*ap);
 			c = ',';
 			ap++;
 			argsize -= sizeof(register_t);
 		}
-		(void)putchar(')');
 	}
-	(void)putchar('\n');
+	(void)printf(")\n");
 }
 
-ktrsysret(ktr)
-	struct ktr_sysret *ktr;
+static void
+ktrsysret(struct ktr_sysret *ktr)
 {
-	register int ret = ktr->ktr_retval;
-	register int error = ktr->ktr_error;
-	register int code = ktr->ktr_code;
+	int ret = ktr->ktr_retval;
+	int error = ktr->ktr_error;
+	int code = ktr->ktr_code;
 
 	if (code >= current->nsysnames || code < 0)
 		(void)printf("[%d] ", code);
@@ -375,14 +487,14 @@ ktrsysret(ktr)
 	(void)putchar('\n');
 }
 
-ktrnamei(cp, len) 
-	char *cp;
+static void
+ktrnamei(const char *cp, int len)
 {
 	(void)printf("\"%.*s\"\n", len, cp);
 }
 
-ktremul(cp, len) 
-	char *cp;
+static void
+ktremul(char *cp, int len)
 {
 	char name[1024];
 
@@ -396,16 +508,14 @@ ktremul(cp, len)
 	setemul(name);
 }
 
-ktrgenio(ktr, len)
-	struct ktr_genio *ktr;
+static void
+ktrgenio(struct ktr_genio *ktr, int len)
 {
-	register int datalen = len - sizeof (struct ktr_genio);
-	register char *dp = (char *)ktr + sizeof (struct ktr_genio);
-	register char *cp;
-	register int col = 0;
-	register width;
-	char visbuf[5];
-	static screenwidth = 0;
+	char *dp = (char *)ktr + sizeof (struct ktr_genio);
+	int datalen = len - sizeof (struct ktr_genio);
+	static int screenwidth = 0;
+	int col = 0, width;
+	char visbuf[5], *cp;
 
 	if (screenwidth == 0) {
 		struct winsize ws;
@@ -425,6 +535,7 @@ ktrgenio(ktr, len)
 	for (; datalen > 0; datalen--, dp++) {
 		(void) vis(visbuf, *dp, VIS_CSTYLE, *(dp+1));
 		cp = visbuf;
+
 		/*
 		 * Keep track of printables and
 		 * space chars (like fold(1)).
@@ -433,7 +544,7 @@ ktrgenio(ktr, len)
 			(void)putchar('\t');
 			col = 8;
 		}
-		switch(*cp) {
+		switch (*cp) {
 		case '\n':
 			col = 0;
 			(void)putchar('\n');
@@ -458,36 +569,52 @@ ktrgenio(ktr, len)
 	(void)printf("\"\n");
 }
 
-ktrpsig(psig)
-	struct ktr_psig *psig;
+static void
+ktrpsig(struct ktr_psig *psig)
 {
 	(void)printf("SIG%s ", sys_signame[psig->signo]);
 	if (psig->action == SIG_DFL)
-		(void)printf("SIG_DFL\n");
+		(void)printf("SIG_DFL code %d", psig->code);
 	else
-		(void)printf("caught handler=0x%lx mask=0x%x code=0x%x\n",
-		    (u_long)psig->action, psig->mask, psig->code);
+		(void)printf("caught handler=0x%lx mask=0x%x",
+		    (u_long)psig->action, psig->mask);
+	switch (psig->signo) {
+	case SIGSEGV:
+	case SIGILL:
+	case SIGBUS:
+	case SIGFPE:
+		printf(" addr=%p trapno=%d", psig->si.si_addr,
+		    psig->si.si_trapno);
+		break;
+	default:
+		break;
+	}
+	printf("\n");
 }
 
-ktrcsw(cs)
-	struct ktr_csw *cs;
+static void
+ktrcsw(struct ktr_csw *cs)
 {
 	(void)printf("%s %s\n", cs->out ? "stop" : "resume",
 	    cs->user ? "user" : "kernel");
 }
 
-usage()
+static void
+usage(void)
 {
 
-	(void)fprintf(stderr,
-"usage: kdump [-dnlRT] [-e emulation] [-f trfile] [-m maxdata] [-t [cnis]]\n");
+	extern char *__progname;
+	fprintf(stderr, "usage: %s "
+	    "[-dnlRT] [-e emulation] [-p pid] [-f trfile] [-m maxdata] "
+	    "[-t [ceinsw]]\n", __progname);
 	exit(1);
 }
 
-setemul(name)
-	char *name;
+static void
+setemul(const char *name)
 {
 	int i;
+
 	for (i = 0; emulations[i].name != NULL; i++)
 		if (strcmp(emulations[i].name, name) == 0) {
 			current = &emulations[i];

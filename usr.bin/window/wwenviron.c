@@ -1,4 +1,5 @@
-/*	$NetBSD: wwenviron.c,v 1.3 1995/09/28 10:35:27 tls Exp $	*/
+/*	$OpenBSD: wwenviron.c,v 1.10 2003/08/01 22:01:37 david Exp $	*/
+/*	$NetBSD: wwenviron.c,v 1.4 1995/12/21 08:39:50 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,27 +37,32 @@
 #if 0
 static char sccsid[] = "@(#)wwenviron.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwenviron.c,v 1.3 1995/09/28 10:35:27 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwenviron.c,v 1.10 2003/08/01 22:01:37 david Exp $";
 #endif
 #endif /* not lint */
 
 #include "ww.h"
-#if !defined(OLD_TTY) && !defined(TIOCSCTTY) && !defined(TIOCNOTTY)
+#if !defined(OLD_TTY)
 #include <sys/ioctl.h>
 #endif
-#include <sys/signal.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 /*
  * Set up the environment of this process to run in window 'wp'.
  */
 wwenviron(wp)
-register struct ww *wp;
+struct ww *wp;
 {
-	register i;
+	int i;
 #ifndef TIOCSCTTY
-	int pgrp = getpid();
+	pid_t pgrp = getpid();
 #endif
 	char buf[1024];
+	sigset_t sigset;
 
 #ifndef TIOCSCTTY
 	if ((i = open("/dev/tty", 0)) < 0)
@@ -90,16 +92,17 @@ register struct ww *wp;
 #endif
 	/* SIGPIPE is the only one we ignore */
 	(void) signal(SIGPIPE, SIG_DFL);
-	(void) sigsetmask(0);
+	sigemptyset(&sigset);
+	sigprocmask(SIG_SETMASK, &sigset, (sigset_t *)0);
 	/*
 	 * Two conditions that make destructive setenv ok:
 	 * 1. setenv() copies the string,
 	 * 2. we've already called tgetent which copies the termcap entry.
 	 */
-	(void) sprintf(buf, "%sco#%d:li#%d:%s",
+	(void) snprintf(buf, sizeof buf, "%sco#%d:li#%d:%s",
 		WWT_TERMCAP, wp->ww_w.nc, wp->ww_w.nr, wwwintermcap);
 	(void) setenv("TERMCAP", buf, 1);
-	(void) sprintf(buf, "%d", wp->ww_id + 1);
+	(void) snprintf(buf, sizeof buf, "%d", wp->ww_id + 1);
 	(void) setenv("WINDOW_ID", buf, 1);
 	return 0;
 bad:

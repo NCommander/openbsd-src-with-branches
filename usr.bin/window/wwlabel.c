@@ -1,4 +1,5 @@
-/*	$NetBSD: wwlabel.c,v 1.3 1995/09/28 10:35:38 tls Exp $	*/
+/*	$OpenBSD: wwlabel.c,v 1.5 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$NetBSD: wwlabel.c,v 1.4 1996/02/08 21:49:11 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)wwlabel.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwlabel.c,v 1.3 1995/09/28 10:35:38 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwlabel.c,v 1.5 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,13 +55,13 @@ struct ww *f;
 char *l;
 {
 	int row;
-	register j;
+	int j;
 	int jj;
-	register char *win;
-	register union ww_char *buf;
-	register union ww_char *ns;
-	register char *fmap;
-	register char *smap;
+	char *win;
+	union ww_char *buf;
+	union ww_char *ns;
+	char *fmap;
+	unsigned char *smap;
 	char touched;
 	char *p;
 

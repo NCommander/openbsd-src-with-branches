@@ -112,7 +112,8 @@ INCLUDE_DIR =  $(srcdir)/../include
 INCLUDE_CFLAGS = -I$(INCLUDE_DIR)
 
 # Where is the "-liberty" library?  Typically in ../libiberty.
-LIBIBERTY = ../libiberty/libiberty.a
+#LIBIBERTY = ../libiberty/libiberty.a
+LIBIBERTY = -liberty
 
 # Where is the BFD library?  Typically in ../bfd.
 BFD_DIR = ../bfd
@@ -121,10 +122,11 @@ BFD_SRC = $(srcdir)/$(BFD_DIR)
 BFD_CFLAGS = -I$(BFD_DIR) -I$(BFD_SRC)
 
 # Where is the READLINE library?  Typically in ../readline.
-READLINE_DIR = ../readline
-READLINE = $(READLINE_DIR)/libreadline.a
-READLINE_SRC = $(srcdir)/$(READLINE_DIR)
-READLINE_CFLAGS = -I$(READLINE_SRC)/..
+#READLINE_DIR = ../readline
+#READLINE = $(READLINE_DIR)/libreadline.a
+#READLINE_SRC = $(srcdir)/$(READLINE_DIR)
+#READLINE_CFLAGS = -I$(READLINE_SRC)/..
+READLINE = -lreadline
 
 WARN_CFLAGS = @WARN_CFLAGS@
 WERROR_CFLAGS = @WERROR_CFLAGS@
@@ -376,7 +378,7 @@ CLIBS = $(SIM) $(BFD) $(READLINE) $(OPCODES) $(INTL) $(LIBIBERTY) \
 	$(XM_CLIBS) $(TM_CLIBS) $(NAT_CLIBS) $(GDBTKLIBS) @LIBS@ \
 	$(LIBICONV) \
 	$(LIBIBERTY) $(WIN32LIBS)
-CDEPS = $(XM_CDEPS) $(TM_CDEPS) $(NAT_CDEPS) $(SIM) $(BFD) $(READLINE) \
+CDEPS = $(XM_CDEPS) $(TM_CDEPS) $(NAT_CDEPS) $(SIM) $(BFD) \
 	$(OPCODES) $(INTL_DEPS) $(LIBIBERTY) $(CONFIG_DEPS)
 
 ADD_FILES = $(XM_ADD_FILES) $(TM_ADD_FILES) $(NAT_ADD_FILES)
@@ -584,9 +586,9 @@ remote_sim_h =	$(INCLUDE_DIR)/gdb/remote-sim.h
 demangle_h =    $(INCLUDE_DIR)/demangle.h
 obstack_h =     $(INCLUDE_DIR)/obstack.h
 opcode_m68hc11_h = $(INCLUDE_DIR)/opcode/m68hc11.h
-readline_h = 	$(READLINE_SRC)/readline.h
-readline_tilde_h =	$(READLINE_SRC)/tilde.h
-readline_history_h =	$(READLINE_SRC)/history.h
+#readline_h = 	$(READLINE_SRC)/readline.h
+#readline_tilde_h =	$(READLINE_SRC)/tilde.h
+#readline_history_h =	$(READLINE_SRC)/history.h
 frv_desc_h =	$(OPCODES_SRC)/frv-desc.h
 sh_opc_h = 	$(OPCODES_SRC)/sh-opc.h
 gdb_callback_h = $(INCLUDE_DIR)/gdb/callback.h
@@ -641,6 +643,7 @@ bfd_target_h = bfd-target.h
 block_h = block.h
 breakpoint_h = breakpoint.h $(frame_h) $(value_h) $(gdb_events_h)
 bsd_kvm_h = bsd-kvm.h
+bsd_uthread_h = bsd-uthread.h
 buildsym_h = buildsym.h
 call_cmds_h = call-cmds.h
 charset_h = charset.h
@@ -736,6 +739,7 @@ ns32k_tdep_h = ns32k-tdep.h
 nto_tdep_h = nto-tdep.h $(defs_h) $(solist_h)
 objc_lang_h = objc-lang.h
 objfiles_h = objfiles.h $(gdb_obstack_h) $(symfile_h)
+obsd_tdep_h = obsd-tdep.h
 ocd_h = ocd.h
 osabi_h = osabi.h
 pa64solib_h = pa64solib.h
@@ -1025,11 +1029,7 @@ install-only: $(CONFIG_INSTALL)
 		fi ; \
 		$(SHELL) $(srcdir)/../mkinstalldirs $(DESTDIR)$(bindir) ; \
 		$(INSTALL_PROGRAM) gdb$(EXEEXT) \
-			$(DESTDIR)$(bindir)/$$transformed_name$(EXEEXT) ; \
-		$(SHELL) $(srcdir)/../mkinstalldirs \
-			$(DESTDIR)$(man1dir) ; \
-		$(INSTALL_DATA) $(srcdir)/gdb.1 \
-			$(DESTDIR)$(man1dir)/$$transformed_name.1
+			$(DESTDIR)$(bindir)/$$transformed_name$(EXEEXT)
 	@$(MAKE) DO=install "DODIRS=$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do
 .PHONY: install-tui
 install-tui:
@@ -1042,11 +1042,7 @@ install-tui:
 		fi ; \
 		$(SHELL) $(srcdir)/../mkinstalldirs $(DESTDIR)$(bindir) ; \
 		$(INSTALL_PROGRAM) $(TUI)$(EXEEXT) \
-			$(DESTDIR)$(bindir)/$$transformed_name$(EXEEXT) ; \
-		$(SHELL) $(srcdir)/../mkinstalldirs \
-			$(DESTDIR)$(man1dir) ; \
-		$(INSTALL_DATA) $(srcdir)/gdb.1 \
-			$(DESTDIR)$(man1dir)/$$transformed_name.1
+			$(DESTDIR)$(bindir)/$$transformed_name$(EXEEXT)
 
 
 uninstall: force $(CONFIG_UNINSTALL)
@@ -1686,10 +1682,11 @@ amd64nbsd-tdep.o: amd64nbsd-tdep.c $(defs_h) $(arch_utils_h) $(frame_h) \
 amd64obsd-nat.o: amd64obsd-nat.c $(defs_h) $(gdbcore_h) $(regcache_h) \
 	$(target_h) $(gdb_assert_h) $(amd64_tdep_h) $(amd64_nat_h) \
 	$(bsd_kvm_h)
-amd64obsd-tdep.o: amd64obsd-tdep.c $(defs_h) $(frame_h) $(gdbcore_h) \
-	$(symtab_h) $(objfiles_h) $(osabi_h) $(regset_h) $(target_h) \
-	$(gdb_assert_h) $(gdb_string_h) $(amd64_tdep_h) $(i387_tdep_h) \
-	$(solib_svr4_h)
+amd64obsd-tdep.o: amd64obsd-tdep.c $(defs_h) $(frame_h) $(frame_unwind_h) \
+	$(gdbcore_h) $(symtab_h) $(objfiles_h) $(osabi_h) $(regcache_h) \
+	$(regset_h) $(target_h) $(trad_frame_h) $(gdb_assert_h) \
+	$(gdb_string_h) $(amd64_tdep_h) $(i387_tdep_h) $(solib_svr4_h) \
+	$(bsd_uthread_h)
 amd64-tdep.o: amd64-tdep.c $(defs_h) $(arch_utils_h) $(block_h) \
 	$(dummy_frame_h) $(frame_h) $(frame_base_h) $(frame_unwind_h) \
 	$(inferior_h) $(gdbcmd_h) $(gdbcore_h) $(objfiles_h) $(regcache_h) \
@@ -1749,6 +1746,10 @@ breakpoint.o: breakpoint.c $(defs_h) $(symtab_h) $(frame_h) $(breakpoint_h) \
 bsd-kvm.o: bsd-kvm.c $(defs_h) $(cli_cmds_h) $(command_h) $(frame_h) \
 	$(regcache_h) $(target_h) $(value_h) $(gdbcore_h) $(gdb_assert_h) \
 	$(readline_h) $(bsd_kvm_h)
+bsd-uthread.o: bsd-uthread.c $(defs_h) $(gdbcore_h) $(gdbthread_h) \
+	$(inferior_h) $(objfiles_h) $(observer_h) $(regcache_h) $(solib_h) \
+	$(solist_h) $(symfile_h) $(target_h) $(gdb_assert_h) \
+	$(gdb_obstack_h) $(bsd_uthread_h)
 buildsym.o: buildsym.c $(defs_h) $(bfd_h) $(gdb_obstack_h) $(symtab_h) \
 	$(symfile_h) $(objfiles_h) $(gdbtypes_h) $(gdb_assert_h) \
 	$(complaints_h) $(gdb_string_h) $(expression_h) $(bcache_h) \
@@ -2029,9 +2030,10 @@ i386-nto-tdep.o: i386-nto-tdep.c $(gdb_string_h) $(gdb_assert_h) $(defs_h) \
 	$(nto_tdep_h) $(osabi_h) $(i387_tdep_h)
 i386obsd-nat.o: i386obsd-nat.c $(defs_h) $(i386_tdep_h)
 i386obsd-tdep.o: i386obsd-tdep.c $(defs_h) $(arch_utils_h) $(frame_h) \
-	$(gdbcore_h) $(regcache_h) $(regset_h) $(symtab_h) $(objfiles_h) \
-	$(osabi_h) $(target_h) $(gdb_assert_h) $(gdb_string_h) \
-	$(i386_tdep_h) $(i387_tdep_h) $(solib_svr4_h)
+	$(frame_unwind_h) $(gdbcore_h) $(regcache_h) $(regset_h) $(symtab_h) \
+	$(objfiles_h) $(osabi_h) $(target_h) $(trad_frame_h) $(gdb_assert_h) \
+	$(gdb_string_h) $(i386_tdep_h) $(i387_tdep_h) $(solib_svr4_h) \
+	$(bsd_uthread_h)
 i386-sol2-tdep.o: i386-sol2-tdep.c $(defs_h) $(value_h) $(osabi_h) \
 	$(gdb_string_h) $(i386_tdep_h) $(solib_svr4_h)
 i386-stub.o: i386-stub.c
@@ -2288,6 +2290,7 @@ objfiles.o: objfiles.c $(defs_h) $(bfd_h) $(symtab_h) $(symfile_h) \
 	$(breakpoint_h) $(block_h) $(dictionary_h)
 observer.o: observer.c $(defs_h) $(observer_h) $(command_h) $(gdbcmd_h) \
 	$(observer_inc)
+obsd-tdep.o: obsd-tdep.c $(defs_h) $(frame_h) $(symtab_h) $(obsd_tdep_h)
 ocd.o: ocd.c $(defs_h) $(gdbcore_h) $(gdb_string_h) $(frame_h) $(inferior_h) \
 	$(bfd_h) $(symfile_h) $(target_h) $(gdbcmd_h) $(objfiles_h) \
 	$(gdb_stabs_h) $(serial_h) $(ocd_h) $(regcache_h)
@@ -2550,7 +2553,7 @@ sparc64-tdep.o: sparc64-tdep.c $(defs_h) $(arch_utils_h) $(floatformat_h) \
 	$(frame_h) $(frame_base_h) $(frame_unwind_h) $(gdbcore_h) \
 	$(gdbtypes_h) $(inferior_h) $(symtab_h) $(objfiles_h) $(osabi_h) \
 	$(regcache_h) $(target_h) $(value_h) $(gdb_assert_h) $(gdb_string_h) \
-	$(sparc64_tdep_h)
+	$(obsd_tdep_h) $(sparc64_tdep_h)
 sparc-linux-tdep.o: sparc-linux-tdep.c $(defs_h) $(floatformat_h) $(frame_h) \
 	$(frame_unwind_h) $(gdbarch_h) $(gdbcore_h) $(osabi_h) $(regcache_h) \
 	$(solib_svr4_h) $(symtab_h) $(trad_frame_h) $(gdb_assert_h) \
@@ -2566,7 +2569,7 @@ sparcnbsd-tdep.o: sparcnbsd-tdep.c $(defs_h) $(floatformat_h) $(frame_h) \
 	$(gdb_string_h) $(sparc_tdep_h) $(nbsd_tdep_h)
 sparcobsd-tdep.o: sparcobsd-tdep.c $(defs_h) $(floatformat_h) $(frame_h) \
 	$(frame_unwind_h) $(osabi_h) $(solib_svr4_h) $(symtab_h) \
-	$(trad_frame_h) $(gdb_assert_h) $(sparc_tdep_h)
+	$(trad_frame_h) $(gdb_assert_h) $(obsd_tdep_h) $(sparc_tdep_h)
 sparc-sol2-nat.o: sparc-sol2-nat.c $(defs_h) $(regcache_h) $(gregset_h) \
 	$(sparc_tdep_h) $(sparc64_tdep_h)
 sparc-sol2-tdep.o: sparc-sol2-tdep.c $(defs_h) $(frame_h) $(frame_unwind_h) \

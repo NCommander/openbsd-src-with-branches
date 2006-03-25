@@ -1,4 +1,5 @@
-/*	$NetBSD: audioctl.c,v 1.12 1997/10/19 07:44:12 augustss Exp $	*/
+/*	$OpenBSD: audioctl.c,v 1.10 2003/06/21 01:39:07 deraadt Exp $	*/
+/*	$NetBSD: audioctl.c,v 1.14 1998/04/27 16:55:23 augustss Exp $	*/
 
 /*
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -35,7 +36,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * audioctl(1) - a program to control audio device.
+ */
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <err.h>
 #include <unistd.h>
@@ -45,16 +51,14 @@
 #include <sys/ioctl.h>
 #include <sys/audioio.h>
 
-struct field *findfield __P((char *name));
-void prfield __P((struct field *p, char *sep));
-void rdfield __P((struct field *p, char *q));
-void getinfo __P((int fd));
-void usage __P((void));
-int main __P((int argc, char **argv));
+struct field *findfield(char *name);
+void prfield(struct field *p, char *sep);
+void rdfield(struct field *p, char *q);
+void getinfo(int fd);
+void usage(void);
+int main(int argc, char **argv);
 
 FILE *out = stdout;
-
-char *prog;
 
 audio_device_t adev;
 
@@ -87,7 +91,8 @@ struct field {
 	{ "config",		&adev.config,		STRING, READONLY },
 	{ "encodings",		encbuf,			STRING, READONLY },
 	{ "properties",		&properties,		PROPS,	READONLY },
-	{ "full_duplex",	&fullduplex,		INT,    0 },
+	{ "full_duplex",	&fullduplex,		UINT,	0 },
+	{ "fullduplex",		&fullduplex,		UINT,	0 },
 	{ "blocksize",		&info.blocksize,	UINT,	0 },
 	{ "hiwat",		&info.hiwat,		UINT,	0 },
 	{ "lowat",		&info.lowat,		UINT,	0 },
@@ -102,7 +107,7 @@ struct field {
 	{ "play.balance",	&info.play.balance,	UCHAR,	0 },
 	{ "play.port",		&info.play.port,	XINT,	0 },
 	{ "play.avail_ports",	&info.play.avail_ports,	XINT,	0 },
-	{ "play.seek",		&info.play.seek,	ULONG,	READONLY },
+	{ "play.seek",		&info.play.seek,	UINT,	READONLY },
 	{ "play.samples",	&info.play.samples,	UINT,	READONLY },
 	{ "play.eof",		&info.play.eof,		UINT,	READONLY },
 	{ "play.pause",		&info.play.pause,	UCHAR,	0 },
@@ -120,7 +125,7 @@ struct field {
 	{ "record.balance",	&info.record.balance,	UCHAR,	0 },
 	{ "record.port",	&info.record.port,	XINT,	0 },
 	{ "record.avail_ports",	&info.record.avail_ports,XINT,	0 },
-	{ "record.seek",	&info.record.seek,	ULONG,	READONLY },
+	{ "record.seek",	&info.record.seek,	UINT,	READONLY },
 	{ "record.samples",	&info.record.samples,	UINT,	READONLY },
 	{ "record.eof",		&info.record.eof,	UINT,	READONLY },
 	{ "record.pause",	&info.record.pause,	UCHAR,	0 },
@@ -171,20 +176,17 @@ static struct {
 };
 
 struct field *
-findfield(name)
-	char *name;
+findfield(char *name)
 {
 	int i;
 	for(i = 0; fields[i].name; i++)
 		if (strcmp(fields[i].name, name) == 0)
 			return &fields[i];
-	return 0;
+	return (0);
 }
 
 void
-prfield(p, sep)
-	struct field *p;
-	char *sep;
+prfield(struct field *p, char *sep)
 {
 	u_int v;
 	char *cm;
@@ -249,9 +251,7 @@ prfield(p, sep)
 }
 
 void
-rdfield(p, q)
-	struct field *p;
-	char *q;
+rdfield(struct field *p, char *q)
 {
 	int i;
 	u_int u;
@@ -288,23 +288,22 @@ rdfield(p, q)
 }
 
 void
-getinfo(fd)
-	int fd;
+getinfo(int fd)
 {
-	int pos, i;
+	int pos = 0, i = 0;
 
 	if (ioctl(fd, AUDIO_GETDEV, &adev) < 0)
 		err(1, "AUDIO_GETDEV");
-	for(pos = 0, i = 0; ; i++) {
+	for(;;) {
 		audio_encoding_t enc;
-		enc.index = i;
+		enc.index = i++;
 		if (ioctl(fd, AUDIO_GETENC, &enc) < 0)
 			break;
 		if (pos)
 			encbuf[pos++] = ',';
-		sprintf(encbuf+pos, "%s:%d%s", enc.name, 
-			enc.precision, 
-			enc.flags & AUDIO_ENCODINGFLAG_EMULATED ? "*" : "");
+		snprintf(encbuf+pos, sizeof(encbuf)-pos, "%s:%d%s",
+		    enc.name, enc.precision,
+		    enc.flags & AUDIO_ENCODINGFLAG_EMULATED ? "*" : "");
 		pos += strlen(encbuf+pos);
 	}
 	if (ioctl(fd, AUDIO_GETFD, &fullduplex) < 0)
@@ -318,26 +317,31 @@ getinfo(fd)
 }
 
 void
-usage()
+usage(void)
 {
-	fprintf(out, "%s [-f file] [-n] name ...\n", prog);
-	fprintf(out, "%s [-f file] [-n] -w name=value ...\n", prog);
-	fprintf(out, "%s [-f file] [-n] -a\n", prog);
+	extern char *__progname;		/* from crt0.o */
+
+	fprintf(stderr,
+	    "usage: %s [-f file] [-n] -a\n"
+	    "       %s [-f file] [-n] name [...]\n"
+	    "       %s [-f file] [-n] name=value [...]\n", __progname,
+		__progname, __progname);
+
 	exit(1);
 }
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char **argv)
 {
 	int fd, i, ch;
-	int aflag = 0, wflag = 0;
+	int aflag = 0, canwrite, writeinfo = 0;
 	struct stat dstat, ostat;
-	char *file = "/dev/audioctl";
+	struct field *p;
+	char *file;
 	char *sep = "=";
     
-	prog = *argv;
+	if ((file = getenv("AUDIOCTLDEVICE")) == 0 || *file == '\0')
+		file = "/dev/audioctl";
     
 	while ((ch = getopt(argc, argv, "af:nw")) != -1) {
 		switch(ch) {
@@ -345,7 +349,7 @@ main(argc, argv)
 			aflag++;
 			break;
 		case 'w':
-			wflag++;
+			/* backward compatibility */
 			break;
 		case 'n':
 			sep = 0;
@@ -353,19 +357,19 @@ main(argc, argv)
 		case 'f':
 			file = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}
 	}
 	argc -= optind;
 	argv += optind;
-    
-	fd = open(file, O_WRONLY);
-	if (fd < 0)
-		fd = open(file, O_RDONLY);
-	if (fd < 0)
-		err(1, "%s", file);
+
+	if ((fd = open(file, O_RDWR)) < 0) {
+		if ((fd = open(file, O_RDONLY)) < 0)
+			err(1, "%s", file);
+		canwrite = 0;
+	} else
+		canwrite = 1;
     
 	/* Check if stdout is the same device as the audio device. */
 	if (fstat(fd, &dstat) < 0)
@@ -378,71 +382,65 @@ main(argc, argv)
 		/* We can't write to stdout so use stderr */
 		out = stderr;
 
-	if (!wflag)
-		getinfo(fd);
+	if (!argc && !aflag)
+		usage();
 
-	if (argc == 0 && aflag && !wflag) {
-		for(i = 0; fields[i].name; i++) {
+	getinfo(fd);
+
+	if (aflag) {
+		for (i = 0; fields[i].name; i++) {
 			if (!(fields[i].flags & ALIAS)) {
 				prfield(&fields[i], sep);
 				fprintf(out, "\n");
 			}
 		}
-	} else if (argc > 0 && !aflag) {
-		struct field *p;
-		if (wflag) {
-			AUDIO_INITINFO(&info);
-			while(argc--) {
-				char *q;
+	} else {
+		while (argc--) {
+			char *q;
 		
-				q = strchr(*argv, '=');
-				if (q) {
-					*q++ = 0;
-					p = findfield(*argv);
-					if (p == 0)
-						warnx("field `%s' does not exist", *argv);
-					else {
-						if (p->flags & READONLY)
-							warnx("`%s' is read only", *argv);
-						else {
-							rdfield(p, q);
-							if (p->valp == &fullduplex)
-								if (ioctl(fd, AUDIO_SETFD, &fullduplex) < 0)
-									err(1, "set failed");
-						}
-					}
-				} else
-					warnx("No `=' in %s", *argv);
-				argv++;
-			}
-			if (ioctl(fd, AUDIO_SETINFO, &info) < 0)
-				err(1, "set failed");
-			if (sep) {
-				getinfo(fd);
-				for(i = 0; fields[i].name; i++) {
-					if (fields[i].flags & SET) {
-						fprintf(out, "%s: -> ", fields[i].name);
-						prfield(&fields[i], 0);
-						fprintf(out, "\n");
-					}
-				}
-			}
-		} else {
-			while(argc--) {
+			if ((q = strchr(*argv, '=')) != NULL) {
+				*q++ = 0;
 				p = findfield(*argv);
-				if (p == 0) {
-					if (strchr(*argv, '='))
-						warnx("field %s does not exist (use -w to set a variable)", *argv);
-					else
-						warnx("field %s does not exist", *argv);
-				} else {
+				if (p == 0)
+					warnx("field `%s' does not exist", *argv);
+				else {
+					if (!canwrite)
+						errx(1, "%s: permission denied",
+						    *argv);
+					if (p->flags & READONLY)
+						warnx("`%s' is read only", *argv);
+					else {
+						rdfield(p, q);
+						if (p->valp == &fullduplex)
+							if (ioctl(fd, AUDIO_SETFD,
+							    &fullduplex) < 0)
+								err(1, "set failed");
+					}
+					writeinfo = 1;
+				}
+			} else {
+				p = findfield(*argv);
+				if (p == 0)
+					warnx("field %s does not exist", *argv);
+				else {
 					prfield(p, sep);
 					fprintf(out, "\n");
 				}
-				argv++;
+			}
+			argv++;
+		}
+		if (writeinfo && ioctl(fd, AUDIO_SETINFO, &info) < 0)
+			err(1, "set failed");
+		if (sep) {
+			getinfo(fd);
+			for (i = 0; fields[i].name; i++) {
+				if (fields[i].flags & SET) {
+					fprintf(out, "%s: -> ", fields[i].name);
+					prfield(&fields[i], 0);
+					fprintf(out, "\n");
+				}
 			}
 		}
-	} else
-		usage();
+	}
 	exit(0);
 }

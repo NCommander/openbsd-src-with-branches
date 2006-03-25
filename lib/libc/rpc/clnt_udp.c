@@ -1,5 +1,4 @@
-/*	$NetBSD: clnt_udp.c,v 1.4 1995/02/25 03:01:42 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_udp.c 1.39 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)clnt_udp.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_udp.c,v 1.4 1995/02/25 03:01:42 cgd Exp $";
-#endif
-
 /*
  * clnt_udp.c, Implements a UDP/IP based, client side RPC.
  *
@@ -43,6 +36,8 @@ static char *rcsid = "$NetBSD: clnt_udp.c,v 1.4 1995/02/25 03:01:42 cgd Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <rpc/rpc.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -53,12 +48,13 @@ static char *rcsid = "$NetBSD: clnt_udp.c,v 1.4 1995/02/25 03:01:42 cgd Exp $";
 /*
  * UDP bases client side rpc operations
  */
-static enum clnt_stat	clntudp_call();
-static void		clntudp_abort();
-static void		clntudp_geterr();
-static bool_t		clntudp_freeres();
-static bool_t           clntudp_control();
-static void		clntudp_destroy();
+static enum clnt_stat	clntudp_call(CLIENT *, u_long, xdrproc_t, caddr_t,
+			    xdrproc_t, caddr_t, struct timeval);
+static void		clntudp_abort(CLIENT *);
+static void		clntudp_geterr(CLIENT *, struct rpc_err *);
+static bool_t		clntudp_freeres(CLIENT *, xdrproc_t, caddr_t);
+static bool_t           clntudp_control(CLIENT *, u_int, void *);
+static void		clntudp_destroy(CLIENT *);
 
 static struct clnt_ops udp_ops = {
 	clntudp_call,
@@ -98,24 +94,18 @@ struct cu_data {
  *     Caller may wish to set this something more useful.
  *
  * wait is the amount of time used between retransmitting a call if
- * no response has been heard;  retransmition occurs until the actual
+ * no response has been heard;  retransmission occurs until the actual
  * rpc call times out.
  *
  * sendsz and recvsz are the maximum allowable packet sizes that can be
  * sent and received.
  */
 CLIENT *
-clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
-	struct sockaddr_in *raddr;
-	u_long program;
-	u_long version;
-	struct timeval wait;
-	register int *sockp;
-	u_int sendsz;
-	u_int recvsz;
+clntudp_bufcreate(struct sockaddr_in *raddr, u_long program, u_long version,
+    struct timeval wait, int *sockp, u_int sendsz, u_int recvsz)
 {
 	CLIENT *cl;
-	register struct cu_data *cu;
+	struct cu_data *cu = NULL;
 	struct timeval now;
 	struct rpc_msg call_msg;
 
@@ -137,7 +127,7 @@ clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
 	}
 	cu->cu_outbuf = &cu->cu_inbuf[recvsz];
 
-	(void)gettimeofday(&now, (struct timezone *)0);
+	(void)gettimeofday(&now, NULL);
 	if (raddr->sin_port == 0) {
 		u_short port;
 		if ((port =
@@ -155,14 +145,14 @@ clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
 	cu->cu_total.tv_usec = -1;
 	cu->cu_sendsz = sendsz;
 	cu->cu_recvsz = recvsz;
-	call_msg.rm_xid = getpid() ^ now.tv_sec ^ now.tv_usec;
+	call_msg.rm_xid = arc4random();
 	call_msg.rm_direction = CALL;
 	call_msg.rm_call.cb_rpcvers = RPC_MSG_VERSION;
 	call_msg.rm_call.cb_prog = program;
 	call_msg.rm_call.cb_vers = version;
 	xdrmem_create(&(cu->cu_outxdrs), cu->cu_outbuf,
 	    sendsz, XDR_ENCODE);
-	if (! xdr_callhdr(&(cu->cu_outxdrs), &call_msg)) {
+	if (!xdr_callhdr(&(cu->cu_outxdrs), &call_msg)) {
 		goto fooy;
 	}
 	cu->cu_xdrpos = XDR_GETPOS(&(cu->cu_outxdrs));
@@ -175,8 +165,8 @@ clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
 			rpc_createerr.cf_error.re_errno = errno;
 			goto fooy;
 		}
-		/* attempt to bind to prov port */
-		(void)bindresvport(*sockp, (struct sockaddr_in *)0);
+		/* attempt to bind to priv port */
+		(void)bindresvport(*sockp, NULL);
 		/* the sockets rpc controls are non-blocking */
 		(void)ioctl(*sockp, FIONBIO, (char *) &dontblock);
 		cu->cu_closeit = TRUE;
@@ -191,16 +181,12 @@ fooy:
 		mem_free((caddr_t)cu, sizeof(*cu) + sendsz + recvsz);
 	if (cl)
 		mem_free((caddr_t)cl, sizeof(CLIENT));
-	return ((CLIENT *)NULL);
+	return (NULL);
 }
 
 CLIENT *
-clntudp_create(raddr, program, version, wait, sockp)
-	struct sockaddr_in *raddr;
-	u_long program;
-	u_long version;
-	struct timeval wait;
-	register int *sockp;
+clntudp_create(struct sockaddr_in *raddr, u_long program, u_long version,
+    struct timeval wait, int *sockp)
 {
 
 	return(clntudp_bufcreate(raddr, program, version, wait, sockp,
@@ -208,38 +194,36 @@ clntudp_create(raddr, program, version, wait, sockp)
 }
 
 static enum clnt_stat 
-clntudp_call(cl, proc, xargs, argsp, xresults, resultsp, utimeout)
-	register CLIENT	*cl;		/* client handle */
-	u_long		proc;		/* procedure number */
-	xdrproc_t	xargs;		/* xdr routine for args */
-	caddr_t		argsp;		/* pointer to args */
-	xdrproc_t	xresults;	/* xdr routine for results */
-	caddr_t		resultsp;	/* pointer to results */
-	struct timeval	utimeout;	/* seconds to wait before giving up */
+clntudp_call(CLIENT *cl,	/* client handle */
+    u_long proc,		/* procedure number */
+    xdrproc_t xargs,		/* xdr routine for args */
+    caddr_t argsp,		/* pointer to args */
+    xdrproc_t xresults,		/* xdr routine for results */
+    caddr_t resultsp,		/* pointer to results */
+    struct timeval utimeout)	/* seconds to wait before giving up */
 {
-	register struct cu_data *cu = (struct cu_data *)cl->cl_private;
-	register XDR *xdrs;
-	register int outlen;
-	register int inlen;
-	int fromlen;
-	fd_set readfds;
-	fd_set mask;
+	struct cu_data *cu = (struct cu_data *)cl->cl_private;
+	XDR *xdrs;
+	int outlen;
+	int inlen;
+	socklen_t fromlen;
+	struct pollfd pfd[1];
 	struct sockaddr_in from;
 	struct rpc_msg reply_msg;
 	XDR reply_xdrs;
-	struct timeval time_waited;
+	struct timeval time_waited, start, after, tmp1, tmp2;
 	bool_t ok;
 	int nrefreshes = 2;	/* number of times to refresh cred */
 	struct timeval timeout;
 
-	if (cu->cu_total.tv_usec == -1) {
+	if (cu->cu_total.tv_usec == -1)
 		timeout = utimeout;     /* use supplied timeout */
-	} else {
+	else
 		timeout = cu->cu_total; /* use default timeout */
-	}
 
-	time_waited.tv_sec = 0;
-	time_waited.tv_usec = 0;
+	pfd[0].fd = cu->cu_sock;
+	pfd[0].events = POLLIN;
+	timerclear(&time_waited);
 call_again:
 	xdrs = &(cu->cu_outxdrs);
 	xdrs->x_op = XDR_ENCODE;
@@ -248,16 +232,16 @@ call_again:
 	 * the transaction is the first thing in the out buffer
 	 */
 	(*(u_short *)(cu->cu_outbuf))++;
-	if ((! XDR_PUTLONG(xdrs, &proc)) ||
-	    (! AUTH_MARSHALL(cl->cl_auth, xdrs)) ||
-	    (! (*xargs)(xdrs, argsp)))
+	if (!XDR_PUTLONG(xdrs, (long *)&proc) ||
+	    !AUTH_MARSHALL(cl->cl_auth, xdrs) ||
+	    !(*xargs)(xdrs, argsp)) {
 		return (cu->cu_error.re_status = RPC_CANTENCODEARGS);
+	}
 	outlen = (int)XDR_GETPOS(xdrs);
 
 send_again:
 	if (sendto(cu->cu_sock, cu->cu_outbuf, outlen, 0,
-	    (struct sockaddr *)&(cu->cu_raddr), cu->cu_rlen)
-	    != outlen) {
+	    (struct sockaddr *)&(cu->cu_raddr), cu->cu_rlen) != outlen) {
 		cu->cu_error.re_errno = errno;
 		return (cu->cu_error.re_status = RPC_CANTSEND);
 	}
@@ -265,9 +249,9 @@ send_again:
 	/*
 	 * Hack to provide rpc-based message passing
 	 */
-	if (timeout.tv_sec == 0 && timeout.tv_usec == 0) {
+	if (!timerisset(&timeout))
 		return (cu->cu_error.re_status = RPC_TIMEDOUT);
-	}
+
 	/*
 	 * sub-optimal code appears here because we have
 	 * some clock time to spare while the packets are in flight.
@@ -276,53 +260,57 @@ send_again:
 	reply_msg.acpted_rply.ar_verf = _null_auth;
 	reply_msg.acpted_rply.ar_results.where = resultsp;
 	reply_msg.acpted_rply.ar_results.proc = xresults;
-	FD_ZERO(&mask);
-	FD_SET(cu->cu_sock, &mask);
+
+	gettimeofday(&start, NULL);
 	for (;;) {
-		readfds = mask;
-		switch (select(cu->cu_sock+1, &readfds, (int *)NULL, 
-			       (int *)NULL, &(cu->cu_wait))) {
-
+		switch (poll(pfd, 1,
+		    cu->cu_wait.tv_sec * 1000 + cu->cu_wait.tv_usec / 1000)) {
 		case 0:
-			time_waited.tv_sec += cu->cu_wait.tv_sec;
-			time_waited.tv_usec += cu->cu_wait.tv_usec;
-			while (time_waited.tv_usec >= 1000000) {
-				time_waited.tv_sec++;
-				time_waited.tv_usec -= 1000000;
-			}
-			if ((time_waited.tv_sec < timeout.tv_sec) ||
-				((time_waited.tv_sec == timeout.tv_sec) &&
-				(time_waited.tv_usec < timeout.tv_usec)))
-				goto send_again;	
+			timeradd(&time_waited, &cu->cu_wait, &tmp1);
+			time_waited = tmp1;
+			if (timercmp(&time_waited, &timeout, <))
+				goto send_again;
 			return (cu->cu_error.re_status = RPC_TIMEDOUT);
-
-		/*
-		 * buggy in other cases because time_waited is not being
-		 * updated.
-		 */
+		case 1:
+			if (pfd[0].revents & POLLNVAL)
+				errno = EBADF;
+			else if (pfd[0].revents & POLLERR)
+				errno = EIO;
+			else
+				break;
+			/* FALLTHROUGH */
 		case -1:
-			if (errno == EINTR)
-				continue;	
+			if (errno == EINTR) {
+				gettimeofday(&after, NULL);
+				timersub(&after, &start, &tmp1);
+				timeradd(&time_waited, &tmp1, &tmp2);
+				time_waited = tmp2;
+				if (timercmp(&time_waited, &timeout, <))
+					continue;
+				return (cu->cu_error.re_status = RPC_TIMEDOUT);
+			}
 			cu->cu_error.re_errno = errno;
 			return (cu->cu_error.re_status = RPC_CANTRECV);
 		}
+
 		do {
 			fromlen = sizeof(struct sockaddr);
 			inlen = recvfrom(cu->cu_sock, cu->cu_inbuf, 
-				(int) cu->cu_recvsz, 0,
-				(struct sockaddr *)&from, &fromlen);
+			    (int) cu->cu_recvsz, 0,
+			    (struct sockaddr *)&from, &fromlen);
 		} while (inlen < 0 && errno == EINTR);
 		if (inlen < 0) {
 			if (errno == EWOULDBLOCK)
-				continue;	
+				continue;
 			cu->cu_error.re_errno = errno;
 			return (cu->cu_error.re_status = RPC_CANTRECV);
 		}
 		if (inlen < sizeof(u_int32_t))
 			continue;	
 		/* see if reply transaction id matches sent id */
-		if (*((u_int32_t *)(cu->cu_inbuf)) != *((u_int32_t *)(cu->cu_outbuf)))
-			continue;	
+		if (((struct rpc_msg *)(cu->cu_inbuf))->rm_xid !=
+		    ((struct rpc_msg *)(cu->cu_outbuf))->rm_xid)
+			continue;
 		/* we now assume we have the proper reply */
 		break;
 	}
@@ -334,10 +322,22 @@ send_again:
 	ok = xdr_replymsg(&reply_xdrs, &reply_msg);
 	/* XDR_DESTROY(&reply_xdrs);  save a few cycles on noop destroy */
 	if (ok) {
+#if 0
+		/*
+		 * XXX Would like to check these, but call_msg is not
+		 * around.
+		 */
+		if (reply_msg.rm_call.cb_prog != call_msg.rm_call.cb_prog ||
+		    reply_msg.rm_call.cb_vers != call_msg.rm_call.cb_vers ||
+		    reply_msg.rm_call.cb_proc != call_msg.rm_call.cb_proc) {
+			goto call_again;	/* XXX spin? */
+		}
+#endif
+
 		_seterr_reply(&reply_msg, &(cu->cu_error));
 		if (cu->cu_error.re_status == RPC_SUCCESS) {
-			if (! AUTH_VALIDATE(cl->cl_auth,
-				&reply_msg.acpted_rply.ar_verf)) {
+			if (!AUTH_VALIDATE(cl->cl_auth,
+			    &reply_msg.acpted_rply.ar_verf)) {
 				cu->cu_error.re_status = RPC_AUTHERROR;
 				cu->cu_error.re_why = AUTH_INVALIDRESP;
 			}
@@ -346,58 +346,53 @@ send_again:
 				(void)xdr_opaque_auth(xdrs,
 				    &(reply_msg.acpted_rply.ar_verf));
 			} 
-		}  /* end successful completion */
-		else {
+		} else {
 			/* maybe our credentials need to be refreshed ... */
 			if (nrefreshes > 0 && AUTH_REFRESH(cl->cl_auth)) {
 				nrefreshes--;
 				goto call_again;
 			}
-		}  /* end of unsuccessful completion */
-	}  /* end of valid reply message */
-	else {
+		}
+	} else {
+		/* xdr_replymsg() may have left some things allocated */
+		int op = reply_xdrs.x_op;
+		reply_xdrs.x_op = XDR_FREE;
+		xdr_replymsg(&reply_xdrs, &reply_msg);
+		reply_xdrs.x_op = op;
 		cu->cu_error.re_status = RPC_CANTDECODERES;
 	}
+
 	return (cu->cu_error.re_status);
 }
 
 static void
-clntudp_geterr(cl, errp)
-	CLIENT *cl;
-	struct rpc_err *errp;
+clntudp_geterr(CLIENT *cl, struct rpc_err *errp)
 {
-	register struct cu_data *cu = (struct cu_data *)cl->cl_private;
+	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 
 	*errp = cu->cu_error;
 }
 
 
 static bool_t
-clntudp_freeres(cl, xdr_res, res_ptr)
-	CLIENT *cl;
-	xdrproc_t xdr_res;
-	caddr_t res_ptr;
+clntudp_freeres(CLIENT *cl, xdrproc_t xdr_res, caddr_t res_ptr)
 {
-	register struct cu_data *cu = (struct cu_data *)cl->cl_private;
-	register XDR *xdrs = &(cu->cu_outxdrs);
+	struct cu_data *cu = (struct cu_data *)cl->cl_private;
+	XDR *xdrs = &(cu->cu_outxdrs);
 
 	xdrs->x_op = XDR_FREE;
 	return ((*xdr_res)(xdrs, res_ptr));
 }
 
 static void 
-clntudp_abort(/*h*/)
-	/*CLIENT *h;*/
+clntudp_abort(CLIENT *clnt)
 {
 }
 
 static bool_t
-clntudp_control(cl, request, info)
-	CLIENT *cl;
-	int request;
-	char *info;
+clntudp_control(CLIENT *cl, u_int request, void *info)
 {
-	register struct cu_data *cu = (struct cu_data *)cl->cl_private;
+	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 
 	switch (request) {
 	case CLSET_TIMEOUT:
@@ -422,10 +417,9 @@ clntudp_control(cl, request, info)
 }
 	
 static void
-clntudp_destroy(cl)
-	CLIENT *cl;
+clntudp_destroy(CLIENT *cl)
 {
-	register struct cu_data *cu = (struct cu_data *)cl->cl_private;
+	struct cu_data *cu = (struct cu_data *)cl->cl_private;
 
 	if (cu->cu_closeit) {
 		(void)close(cu->cu_sock);

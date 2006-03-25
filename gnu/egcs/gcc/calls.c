@@ -410,11 +410,12 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
    if no arguments are actually popped.  If the target does not have
    "call" or "call_value" insns, then we must use the popping versions
    even if the call has no arguments to pop.  */
-  if (HAVE_call_pop && HAVE_call_value_pop
 #if defined (HAVE_call) && defined (HAVE_call_value)
-      && (n_popped > 0 || ! HAVE_call || ! HAVE_call_value)
+  if (HAVE_call && HAVE_call_value && HAVE_call_pop && HAVE_call_value_pop
+      && n_popped > 0)
+#else
+  if (HAVE_call_pop && HAVE_call_value_pop)
 #endif
-      )
     {
       rtx n_pop = GEN_INT (n_popped);
       rtx pat;
@@ -1753,7 +1754,7 @@ expand_call (exp, target, ignore)
 	    /* This DECL is just something to feed to mark_addressable;
 	       it doesn't get pushed.  */
 	    d = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
-	    DECL_RTL (d) = assign_temp (TREE_TYPE (exp), 1, 0, 1);
+	    DECL_RTL (d) = assign_temp (TREE_TYPE (exp), 5, 0, 1);
 	    mark_addressable (d);
 	    structure_value_addr = XEXP (DECL_RTL (d), 0);
 	    TREE_USED (d) = 1;

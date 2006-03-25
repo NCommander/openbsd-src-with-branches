@@ -1,4 +1,5 @@
-/*	$NetBSD: ibcs2_exec.c,v 1.10 1995/06/24 20:18:55 christos Exp $	*/
+/*	$OpenBSD: ibcs2_exec.c,v 1.16 2003/11/17 16:18:28 tedu Exp $	*/
+/*	$NetBSD: ibcs2_exec.c,v 1.12 1996/10/12 02:13:52 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Scott Bartram
@@ -37,41 +38,48 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/exec.h>
 #include <sys/malloc.h>
 #include <sys/vnode.h>
 #include <sys/resourcevar.h>
 #include <sys/namei.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <compat/ibcs2/ibcs2_types.h>
 #include <compat/ibcs2/ibcs2_exec.h>
 #include <compat/ibcs2/ibcs2_util.h>
 #include <compat/ibcs2/ibcs2_syscall.h>
 
-int exec_ibcs2_coff_prep_omagic __P((struct proc *, struct exec_package *,
+int exec_ibcs2_coff_prep_omagic(struct proc *, struct exec_package *,
 				     struct coff_filehdr *, 
-				     struct coff_aouthdr *));
-int exec_ibcs2_coff_prep_nmagic __P((struct proc *, struct exec_package *,
+				     struct coff_aouthdr *);
+int exec_ibcs2_coff_prep_nmagic(struct proc *, struct exec_package *,
 				     struct coff_filehdr *, 
-				     struct coff_aouthdr *));
-int exec_ibcs2_coff_prep_zmagic __P((struct proc *, struct exec_package *,
+				     struct coff_aouthdr *);
+int exec_ibcs2_coff_prep_zmagic(struct proc *, struct exec_package *,
 				     struct coff_filehdr *, 
-				     struct coff_aouthdr *));
-int exec_ibcs2_coff_setup_stack __P((struct proc *, struct exec_package *));
-void cpu_exec_ibcs2_coff_setup __P((int, struct proc *, struct exec_package *,
-				    void *));
+				     struct coff_aouthdr *);
+int exec_ibcs2_coff_setup_stack(struct proc *, struct exec_package *);
+void cpu_exec_ibcs2_coff_setup(int, struct proc *, struct exec_package *,
+				    void *);
 
-int exec_ibcs2_xout_prep_nmagic __P((struct proc *, struct exec_package *,
-				     struct xexec *, struct xext *));
-int exec_ibcs2_xout_prep_zmagic __P((struct proc *, struct exec_package *,
-				     struct xexec *, struct xext *));
-int exec_ibcs2_xout_setup_stack __P((struct proc *, struct exec_package *));
-int coff_load_shlib __P((struct proc *, char *, struct exec_package *));
+int exec_ibcs2_xout_prep_nmagic(struct proc *, struct exec_package *,
+				     struct xexec *, struct xext *);
+int exec_ibcs2_xout_prep_zmagic(struct proc *, struct exec_package *,
+				     struct xexec *, struct xext *);
+int exec_ibcs2_xout_setup_stack(struct proc *, struct exec_package *);
+int coff_load_shlib(struct proc *, char *, struct exec_package *);
+static int coff_find_section(struct proc *, struct vnode *, 
+				  struct coff_filehdr *, struct coff_scnhdr *,
+				  int);
+	
 
 extern int bsd2ibcs_errno[];
 extern struct sysent ibcs2_sysent[];
+#ifdef SYSCALL_DEBUG
 extern char *ibcs2_syscallnames[];
-extern void ibcs2_sendsig __P((sig_t, int, int, u_long));
+#endif
+extern void ibcs2_sendsig(sig_t, int, int, u_long, int, union sigval);
 extern char sigcode[], esigcode[];
 
 const char ibcs2_emul_path[] = "/emul/ibcs2";
@@ -83,10 +91,15 @@ struct emul emul_ibcs2 = {
 	0,
 	IBCS2_SYS_MAXSYSCALL,
 	ibcs2_sysent,
+#ifdef SYSCALL_DEBUG
 	ibcs2_syscallnames,
+#else
+	NULL,
+#endif
 	0,
 	copyargs,
 	setregs,
+	NULL,
 	sigcode,
 	esigcode,
 };
@@ -108,8 +121,6 @@ exec_ibcs2_coff_makecmds(p, epp)
 	struct proc *p;
 	struct exec_package *epp;
 {
-	u_long midmag, magic;
-	u_short mid;
 	int error;
 	struct coff_filehdr *fp = epp->ep_hdr;
 	struct coff_aouthdr *ap;
@@ -141,7 +152,6 @@ exec_ibcs2_coff_makecmds(p, epp)
 	if (error)
 		kill_vmcmds(&epp->ep_vmcmds);
 
-bad:
 	return error;
 }
 
@@ -281,21 +291,22 @@ coff_find_section(p, vp, fp, sh, s_type)
 	struct coff_scnhdr *sh;
 	int s_type;
 {
-	int i, pos, resid, siz, error;
+	int i, pos, error;
+	size_t siz, resid;
 	
 	pos = COFF_HDR_SIZE;
 	for (i = 0; i < fp->f_nscns; i++, pos += sizeof(struct coff_scnhdr)) {
 		siz = sizeof(struct coff_scnhdr);
-		if (error = vn_rdwr(UIO_READ, vp, (caddr_t) sh,
-				    siz, pos,
-				    UIO_SYSSPACE, IO_NODELOCKED, p->p_ucred,
-				    &resid, p)) {
+		error = vn_rdwr(UIO_READ, vp, (caddr_t) sh,
+		    siz, pos, UIO_SYSSPACE, 0, p->p_ucred,
+		    &resid, p);
+		if (error) {
 			DPRINTF(("section hdr %d read error %d\n", i, error));
 			return error;
 		}
 		siz -= resid;
 		if (siz != sizeof(struct coff_scnhdr)) {
-			DPRINTF(("incomplete read: hdr %d ask=%d, rem=%d got %d\n",
+			DPRINTF(("incomplete read: hdr %d ask=%d, rem=%u got %u\n",
 				 s_type, sizeof(struct coff_scnhdr),
 				 resid, siz));
 			return ENOEXEC;
@@ -353,11 +364,11 @@ n	 */
 	    epp->ep_vp->v_writecount != 0) {
 #ifdef DIAGNOSTIC
 		if (epp->ep_vp->v_flag & VTEXT)
-			panic("exec: a VTEXT vnode has writecount != 0\n");
+			panic("exec: a VTEXT vnode has writecount != 0");
 #endif
 		return ETXTBSY;
 	}
-	epp->ep_vp->v_flag |= VTEXT;
+	vn_marktext(epp->ep_vp);
 #endif
 	
 	/* DPRINTF(("VMCMD: addr %x size %d offset %d\n", epp->ep_taddr,
@@ -411,13 +422,16 @@ n	 */
 	/* load any shared libraries */
 	error = coff_find_section(p, epp->ep_vp, fp, &sh, COFF_STYP_SHLIB);
 	if (!error) {
-		int resid;
+		size_t resid;
 		struct coff_slhdr *slhdr;
 		char buf[128], *bufp;	/* FIXME */
-		int len = sh.s_size, path_index, entry_len;
+		unsigned int len = sh.s_size, entry_len;
 		
 		/* DPRINTF(("COFF shlib size %d offset %d\n",
 			 sh.s_size, sh.s_scnptr)); */
+
+		if (len > sizeof(buf))
+			return (ENOEXEC);
 
 		error = vn_rdwr(UIO_READ, epp->ep_vp, (caddr_t) buf,
 				len, sh.s_scnptr,
@@ -430,11 +444,16 @@ n	 */
 		bufp = buf;
 		while (len) {
 			slhdr = (struct coff_slhdr *)bufp;
+#ifdef notyet
 			path_index = slhdr->path_index * sizeof(long);
+#endif
 			entry_len = slhdr->entry_len * sizeof(long);
 
 			/* DPRINTF(("path_index: %d entry_len: %d name: %s\n",
 				 path_index, entry_len, slhdr->sl_name)); */
+
+			if (entry_len > len)
+				return (ENOEXEC);
 
 			error = coff_load_shlib(p, slhdr->sl_name, epp);
 			if (error)
@@ -463,8 +482,8 @@ coff_load_shlib(p, path, epp)
 	char *path;
 	struct exec_package *epp;
 {
-	int error, siz, resid;
-	int taddr, tsize, daddr, dsize, offset;
+	int error, taddr, tsize, daddr, dsize, offset;
+	size_t siz, resid;
 	struct nameidata nd;
 	struct coff_filehdr fh, *fhp = &fh;
 	struct coff_scnhdr sh, *shp = &sh;
@@ -478,22 +497,22 @@ coff_load_shlib(p, path, epp)
 	IBCS2_CHECK_ALT_EXIST(p, &sg, path);
 	NDINIT(&nd, LOOKUP, FOLLOW, UIO_SYSSPACE, path, p);
 	/* first get the vnode */
-	if (error = namei(&nd)) {
+	if ((error = namei(&nd)) != 0) {
 		DPRINTF(("coff_load_shlib: can't find library %s\n", path));
 		return error;
 	}
 
 	siz = sizeof(struct coff_filehdr);
-	if (error = vn_rdwr(UIO_READ, nd.ni_vp, (caddr_t) fhp, siz, 0,
-			    UIO_SYSSPACE, IO_NODELOCKED, p->p_ucred,
-			    &resid, p)) {
+	error = vn_rdwr(UIO_READ, nd.ni_vp, (caddr_t) fhp, siz, 0,
+	    UIO_SYSSPACE, IO_NODELOCKED, p->p_ucred, &resid, p);
+	if (error) {
 	    DPRINTF(("filehdr read error %d\n", error));
 	    vrele(nd.ni_vp);
 	    return error;
 	}
 	siz -= resid;
 	if (siz != sizeof(struct coff_filehdr)) {
-	    DPRINTF(("coff_load_shlib: incomplete read: ask=%d, rem=%d got %d\n",
+	    DPRINTF(("coff_load_shlib: incomplete read: ask=%d, rem=%u got %u\n",
 		     sizeof(struct coff_filehdr), resid, siz));
 	    vrele(nd.ni_vp);
 	    return ENOEXEC;
@@ -558,8 +577,6 @@ exec_ibcs2_xout_makecmds(p, epp)
 	struct proc *p;
 	struct exec_package *epp;
 {
-	u_long midmag, magic;
-	u_short mid;
 	int error;
 	struct xexec *xp = epp->ep_hdr;
 	struct xext *xep;
@@ -601,15 +618,18 @@ exec_ibcs2_xout_prep_nmagic(p, epp, xp, xep)
 	struct xexec *xp;
 	struct xext *xep;
 {
-	int error, resid, nseg, i;
+	int error, nseg, i;
+	size_t resid;
 	long baddr, bsize;
 	struct xseg *xs;
 
 	/* read in segment table */
+	if (xep->xe_segsize > 16 * sizeof(*xs))
+		return (ENOEXEC);
 	xs = (struct xseg *)malloc(xep->xe_segsize, M_TEMP, M_WAITOK);
 	error = vn_rdwr(UIO_READ, epp->ep_vp, (caddr_t)xs,
 			xep->xe_segsize, xep->xe_segpos,
-			UIO_SYSSPACE, IO_NODELOCKED, p->p_ucred,
+			UIO_SYSSPACE, 0, p->p_ucred,
 			&resid, p);
 	if (error) {
 		DPRINTF(("segment table read error %d\n", error));

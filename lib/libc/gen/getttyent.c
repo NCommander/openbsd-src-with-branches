@@ -1,5 +1,4 @@
-/*	$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getttyent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <ttyent.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -49,14 +36,16 @@ static char rcsid[] = "$NetBSD: getttyent.c,v 1.9 1995/06/16 07:05:31 jtc Exp $"
 static char zapchar;
 static FILE *tf;
 
+static char *skip(char *);
+static char *value(char *);
+
 struct ttyent *
-getttynam(tty)
-	const char *tty;
+getttynam(const char *tty)
 {
-	register struct ttyent *t;
+	struct ttyent *t;
 
 	setttyent();
-	while (t = getttyent())
+	while ((t = getttyent()))
 		if (!strcmp(tty, t->ty_name))
 			break;
 	endttyent();
@@ -64,14 +53,13 @@ getttynam(tty)
 }
 
 struct ttyent *
-getttyent()
+getttyent(void)
 {
 	static struct ttyent tty;
-	register int c;
-	register char *p;
+	int c;
+	char *p;
 #define	MAXLINELENGTH	200
 	static char line[MAXLINELENGTH];
-	static char *skip(), *value();
 
 	if (!tf && !setttyent())
 		return (NULL);
@@ -134,7 +122,7 @@ getttyent()
 	tty.ty_comment = p;
 	if (*p == 0)
 		tty.ty_comment = 0;
-	if (p = strchr(p, '\n'))
+	if ((p = strchr(p, '\n')))
 		*p = '\0';
 	return (&tty);
 }
@@ -146,11 +134,10 @@ getttyent()
  * the next field.
  */
 static char *
-skip(p)
-	register char *p;
+skip(char *p)
 {
-	register char *t;
-	register int c, q;
+	char *t;
+	int c, q;
 
 	for (q = 0, t = p; (c = *p) != '\0'; p++) {
 		if (c == '"') {
@@ -180,27 +167,26 @@ skip(p)
 }
 
 static char *
-value(p)
-	register char *p;
+value(char *p)
 {
 
 	return ((p = strchr(p, '=')) ? ++p : NULL);
 }
 
 int
-setttyent()
+setttyent(void)
 {
 
 	if (tf) {
 		rewind(tf);
 		return (1);
-	} else if (tf = fopen(_PATH_TTYS, "r"))
+	} else if ((tf = fopen(_PATH_TTYS, "r")))
 		return (1);
 	return (0);
 }
 
 int
-endttyent()
+endttyent(void)
 {
 	int rval;
 

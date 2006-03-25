@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* ho-rs6000.h  Rs6000 host-specific header file.
    Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
    

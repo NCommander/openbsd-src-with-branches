@@ -1,9 +1,11 @@
-/*	$NetBSD: res_init.c,v 1.8 1995/06/03 22:33:36 mycroft Exp $	*/
+/*	$OpenBSD: res_init.c,v 1.33 2005/08/06 20:30:04 espie Exp $	*/
 
-/*-
+/*
+ * ++Copyright++ 1985, 1989, 1993
+ * -
  * Copyright (c) 1985, 1989, 1993
- *	The Regents of the University of California.  All rights reserved.
- *
+ *    The Regents of the University of California.  All rights reserved.
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -12,14 +14,10 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -53,80 +51,199 @@
  * --Copyright--
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)res_init.c	8.1 (Berkeley) 6/7/93";
-static char rcsid[] = "$Id: res_init.c,v 4.9.1.1 1993/05/02 22:43:03 vixie Rel ";
-#else
-static char rcsid[] = "$NetBSD: res_init.c,v 1.8 1995/06/03 22:33:36 mycroft Exp $";
+#ifndef INET6
+#define INET6
 #endif
-#endif /* LIBC_SCCS and not lint */
 
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <arpa/nameser.h>
+
+#include <stdio.h>
+#include <ctype.h>
 #include <resolv.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef INET6
+#include <netdb.h>
+#endif /* INET6 */
 
-static void res_setoptions __P((char *, char *));
-static u_int32_t net_mask __P((struct in_addr));
+#include "thread_private.h"
 
-/*
- * Resolver state default settings
+/*-------------------------------------- info about "sortlist" --------------
+ * Marc Majka		1994/04/16
+ * Allan Nathanson	1994/10/29 (BIND 4.9.3.x)
+ *
+ * NetInfo resolver configuration directory support.
+ *
+ * Allow a NetInfo directory to be created in the hierarchy which
+ * contains the same information as the resolver configuration file.
+ *
+ * - The local domain name is stored as the value of the "domain" property.
+ * - The Internet address(es) of the name server(s) are stored as values
+ *   of the "nameserver" property.
+ * - The name server addresses are stored as values of the "nameserver"
+ *   property.
+ * - The search list for host-name lookup is stored as values of the
+ *   "search" property.
+ * - The sortlist comprised of IP address netmask pairs are stored as
+ *   values of the "sortlist" property. The IP address and optional netmask
+ *   should be separated by a slash (/) or ampersand (&) character.
+ * - Internal resolver variables can be set from the value of the "options"
+ *   property.
  */
 
-struct __res_state _res = {
-	RES_TIMEOUT,               	/* retransmition time interval */
-	4,                         	/* number of times to retransmit */
-	RES_DEFAULT,			/* options flags */
-	1,                         	/* number of name servers */
-};
+static void res_setoptions(char *, char *);
+
+#ifdef RESOLVSORT
+static const char sort_mask[] = "/&";
+#define ISSORTMASK(ch) (strchr(sort_mask, ch) != NULL)
+static u_int32_t net_mask(struct in_addr);
+#endif
+
+/*
+ * Resolver state default settings.
+ */
+void *__THREAD_NAME(_res);
+
+struct __res_state _res
+# if defined(__BIND_RES_TEXT)
+	= { RES_TIMEOUT, }	/* Motorola, et al. */
+# endif
+	;
+#ifdef INET6
+void *__THREAD_NAME(_res_ext);
+
+struct __res_state_ext _res_ext;
+#endif /* INET6 */
+
+int __res_chktime = 30;
 
 /*
  * Set up default settings.  If the configuration file exist, the values
  * there will have precedence.  Otherwise, the server address is set to
  * INADDR_ANY and the default domain name comes from the gethostname().
  *
- * The configuration file should only be used if you want to redefine your
- * domain or run without a server on your machine.
+ * An interrim version of this code (BIND 4.9, pre-4.4BSD) used 127.0.0.1
+ * rather than INADDR_ANY ("0.0.0.0") as the default name server address
+ * since it was noted that INADDR_ANY actually meant ``the first interface
+ * you "ifconfig"'d at boot time'' and if this was a SLIP or PPP interface,
+ * it had to be "up" in order for you to reach your own name server.  It
+ * was later decided that since the recommended practice is to always 
+ * install local static routes through 127.0.0.1 for all your network
+ * interfaces, that we could solve this problem without a code change.
+ *
+ * The configuration file should always be used, since it is the only way
+ * to specify a default domain.  If you are running a server on your local
+ * machine, you should say "nameserver 0.0.0.0" or "nameserver 127.0.0.1"
+ * in the configuration file.
  *
  * Return 0 if completes successfully, -1 on error
  */
-res_init()
+int
+res_init(void)
 {
-	register FILE *fp;
-	register char *cp, **pp, *net;
-	register int n;
-	char buf[BUFSIZ], buf2[BUFSIZ];
+
+	return (_res_init(1));
+}
+
+int
+_res_init(int usercall)
+{
+	struct stat sb;
+	struct __res_state *_resp = _THREAD_PRIVATE(_res, _res, &_res);
+#ifdef INET6
+	struct __res_state_ext *_res_extp = _THREAD_PRIVATE(_res_ext, _res_ext,
+							    &_res_ext);
+#endif
+	FILE *fp;
+	char *cp, **pp;
+	int n;
+	char buf[BUFSIZ];
 	int nserv = 0;    /* number of nameserver records read from file */
 	int haveenv = 0;
 	int havesearch = 0;
+	size_t len;
+#ifdef RESOLVSORT
 	int nsort = 0;
-	u_long mask;
-
-	_res.nsaddr.sin_len = sizeof(struct sockaddr_in);
-	_res.nsaddr.sin_family = AF_INET;
-	_res.nsaddr.sin_port = htons(NAMESERVER_PORT);
-#ifdef USELOOPBACK
-	_res.nsaddr.sin_addr = inet_makeaddr(IN_LOOPBACKNET, 1);
-#else
-	_res.nsaddr.sin_addr.s_addr = INADDR_ANY;
+	char *net;
 #endif
-	_res.nscount = 1;
-	_res.ndots = 1;
-	_res.pfcode = 0;
-	strncpy(_res.lookups, "f", sizeof _res.lookups);
+#ifndef RFC1535
+	int dots;
+#endif
+
+	if (!usercall && _resp->options & RES_INIT &&
+	    _resp->reschktime >= time(NULL))
+		return (0);
+	_resp->reschktime = time(NULL) + __res_chktime;
+	if (stat(_PATH_RESCONF, &sb) != -1) {
+		if (!usercall && timespeccmp(&sb.st_mtimespec,
+		    &_resp->restimespec, ==))
+			return (0);
+		else
+			_resp->restimespec = sb.st_mtimespec;
+	} else {
+		/*
+		 * Lost the file, in chroot?
+		 * Don't trash settings
+		 */
+		if (!usercall && timespecisset(&_resp->restimespec))
+			return (0);
+	}
+
+
+	/*
+	 * These three fields used to be statically initialized.  This made
+	 * it hard to use this code in a shared library.  It is necessary,
+	 * now that we're doing dynamic initialization here, that we preserve
+	 * the old semantics: if an application modifies one of these three
+	 * fields of _res before res_init() is called, res_init() will not
+	 * alter them.  Of course, if an application is setting them to
+	 * _zero_ before calling res_init(), hoping to override what used
+	 * to be the static default, we can't detect it and unexpected results
+	 * will follow.  Zero for any of these fields would make no sense,
+	 * so one can safely assume that the applications were already getting
+	 * unexpected results.
+	 *
+	 * _res.options is tricky since some apps were known to diddle the bits
+	 * before res_init() was first called. We can't replicate that semantic
+	 * with dynamic initialization (they may have turned bits off that are
+	 * set in RES_DEFAULT).  Our solution is to declare such applications
+	 * "broken".  They could fool us by setting RES_INIT but none do (yet).
+	 */
+	if (!_resp->retrans)
+		_resp->retrans = RES_TIMEOUT;
+	if (!_resp->retry)
+		_resp->retry = 4;
+	if (!(_resp->options & RES_INIT))
+		_resp->options = RES_DEFAULT;
+
+#ifdef USELOOPBACK
+	_resp->nsaddr.sin_addr = inet_makeaddr(IN_LOOPBACKNET, 1);
+#else
+	_resp->nsaddr.sin_addr.s_addr = INADDR_ANY;
+#endif
+	_resp->nsaddr.sin_family = AF_INET;
+	_resp->nsaddr.sin_port = htons(NAMESERVER_PORT);
+	_resp->nsaddr.sin_len = sizeof(struct sockaddr_in);
+#ifdef INET6
+	if (sizeof(_res_extp->nsaddr) >= _resp->nsaddr.sin_len)
+		memcpy(&_res_extp->nsaddr, &_resp->nsaddr, _resp->nsaddr.sin_len);
+#endif
+	_resp->nscount = 1;
+	_resp->ndots = 1;
+	_resp->pfcode = 0;
+	strlcpy(_resp->lookups, "f", sizeof _resp->lookups);
 
 	/* Allow user to override the local domain definition */
-	if ((cp = getenv("LOCALDOMAIN")) != NULL) {
-		(void)strncpy(_res.defdname, cp, sizeof(_res.defdname) - 1);
-		if ((cp = strpbrk(_res.defdname, " \t\n")) != NULL)
-			*cp = '\0';
+	if (issetugid() == 0 && (cp = getenv("LOCALDOMAIN")) != NULL) {
+		strlcpy(_resp->defdname, cp, sizeof(_resp->defdname));
 		haveenv++;
 
 		/*
@@ -136,11 +253,11 @@ res_init()
 		 * one that they want to use as an individual (even more
 		 * important now that the rfc1535 stuff restricts searches)
 		 */
-		cp = _res.defdname;
-		pp = _res.dnsrch;
+		cp = _resp->defdname;
+		pp = _resp->dnsrch;
 		*pp++ = cp;
-		for (n = 0; *cp && pp < _res.dnsrch + MAXDNSRCH; cp++) {
-			if (*cp == '\n')        /* silly backwards compat */
+		for (n = 0; *cp && pp < _resp->dnsrch + MAXDNSRCH; cp++) {
+			if (*cp == '\n')	/* silly backwards compat */
 				break;
 			else if (*cp == ' ' || *cp == '\t') {
 				*cp = 0;
@@ -158,16 +275,29 @@ res_init()
 		*pp++ = 0;
 	}
 
+#define	MATCH(line, name) \
+	(!strncmp(line, name, sizeof(name) - 1) && \
+	(line[sizeof(name) - 1] == ' ' || \
+	 line[sizeof(name) - 1] == '\t'))
+
 	if ((fp = fopen(_PATH_RESCONF, "r")) != NULL) {
-	    strncpy(_res.lookups, "bf", sizeof _res.lookups);
+	    strlcpy(_resp->lookups, "bf", sizeof _resp->lookups);
 
 	    /* read the config file */
-	    while (fgets(buf, sizeof(buf), fp) != NULL) {
+	    buf[0] = '\0';
+	    while ((cp = fgetln(fp, &len)) != NULL) {
+		/* skip lines that are too long or zero length */
+		if (len >= sizeof(buf) || len == 0)
+		    continue;
+		(void)memcpy(buf, cp, len);
+		buf[len] = '\0';
 		/* skip comments */
-		if ((*buf == ';') || (*buf == '#'))
+		if ((cp = strpbrk(buf, ";#")) != NULL)
+			*cp = '\0';
+		if (buf[0] == '\0')
 			continue;
 		/* read default domain name */
-		if (!strncmp(buf, "domain", sizeof("domain") - 1)) {
+		if (MATCH(buf, "domain")) {
 		    if (haveenv)	/* skip if have from environ */
 			    continue;
 		    cp = buf + sizeof("domain") - 1;
@@ -175,18 +305,17 @@ res_init()
 			    cp++;
 		    if ((*cp == '\0') || (*cp == '\n'))
 			    continue;
-		    (void)strncpy(_res.defdname, cp,
-				  sizeof(_res.defdname) - 1);
-		    if ((cp = strpbrk(_res.defdname, " \t\n")) != NULL)
+		    strlcpy(_resp->defdname, cp, sizeof(_resp->defdname));
+		    if ((cp = strpbrk(_resp->defdname, " \t\n")) != NULL)
 			    *cp = '\0';
 		    havesearch = 0;
 		    continue;
 		}
 		/* lookup types */
-		if (!strncmp(buf, "lookup", sizeof("lookup") -1)) {
+		if (MATCH(buf, "lookup")) {
 		    char *sp = NULL;
 
-		    bzero(_res.lookups, sizeof _res.lookups);
+		    bzero(_resp->lookups, sizeof _resp->lookups);
 		    cp = buf + sizeof("lookup") - 1;
 		    for (n = 0;; cp++) {
 		    	    if (n == MAXDNSLUS)
@@ -194,14 +323,14 @@ res_init()
 			    if ((*cp == '\0') || (*cp == '\n')) {
 				    if (sp) {
 					    if (*sp=='y' || *sp=='b' || *sp=='f')
-						    _res.lookups[n++] = *sp;
+						    _resp->lookups[n++] = *sp;
 					    sp = NULL;
 				    }
 				    break;
 			    } else if ((*cp == ' ') || (*cp == '\t') || (*cp == ',')) {
 				    if (sp) {
 					    if (*sp=='y' || *sp=='b' || *sp=='f')
-						    _res.lookups[n++] = *sp;
+						    _resp->lookups[n++] = *sp;
 					    sp = NULL;
 				    }
 			    } else if (sp == NULL)
@@ -210,7 +339,7 @@ res_init()
 		    continue;
 		}
 		/* set search list */
-		if (!strncmp(buf, "search", sizeof("search") - 1)) {
+		if (MATCH(buf, "search")) {
 		    if (haveenv)	/* skip if have from environ */
 			    continue;
 		    cp = buf + sizeof("search") - 1;
@@ -218,18 +347,17 @@ res_init()
 			    cp++;
 		    if ((*cp == '\0') || (*cp == '\n'))
 			    continue;
-		    (void)strncpy(_res.defdname, cp,
-				  sizeof(_res.defdname) - 1);
-		    if ((cp = strchr(_res.defdname, '\n')) != NULL)
+		    strlcpy(_resp->defdname, cp, sizeof(_resp->defdname));
+		    if ((cp = strchr(_resp->defdname, '\n')) != NULL)
 			    *cp = '\0';
 		    /*
 		     * Set search list to be blank-separated strings
 		     * on rest of line.
 		     */
-		    cp = _res.defdname;
-		    pp = _res.dnsrch;
+		    cp = _resp->defdname;
+		    pp = _resp->dnsrch;
 		    *pp++ = cp;
-		    for (n = 0; *cp && pp < _res.dnsrch + MAXDNSRCH; cp++) {
+		    for (n = 0; *cp && pp < _resp->dnsrch + MAXDNSRCH; cp++) {
 			    if (*cp == ' ' || *cp == '\t') {
 				    *cp = 0;
 				    n = 1;
@@ -247,130 +375,272 @@ res_init()
 		    continue;
 		}
 		/* read nameservers to query */
-		if (!strncmp(buf, "nameserver", sizeof("nameserver") - 1) &&
-		   nserv < MAXNS) {
-		   struct in_addr a;
+		if (MATCH(buf, "nameserver") && nserv < MAXNS) {
+#ifdef INET6
+		    char *q;
+		    struct addrinfo hints, *res;
+		    char pbuf[NI_MAXSERV];
+#else
+		    struct in_addr a;
+#endif /* INET6 */
 
 		    cp = buf + sizeof("nameserver") - 1;
 		    while (*cp == ' ' || *cp == '\t')
 			cp++;
-		    if ((*cp != '\0') && (*cp != '\n') && inet_aton(cp, &a)) {
-			_res.nsaddr_list[nserv].sin_len = sizeof(struct sockaddr_in);
-			_res.nsaddr_list[nserv].sin_family = AF_INET;
-			_res.nsaddr_list[nserv].sin_port =
-				htons(NAMESERVER_PORT);
-			_res.nsaddr_list[nserv].sin_addr = a;
+#ifdef INET6
+		    if ((*cp == '\0') || (*cp == '\n'))
+			continue;
+		    for (q = cp; *q; q++) {
+			if (isspace(*q)) {
+			    *q = '\0';
+			    break;
+			}
+		    }
+		    memset(&hints, 0, sizeof(hints));
+		    hints.ai_flags = AI_NUMERICHOST;
+		    hints.ai_socktype = SOCK_DGRAM;
+		    snprintf(pbuf, sizeof(pbuf), "%u", NAMESERVER_PORT);
+		    res = NULL;
+		    if (getaddrinfo(cp, pbuf, &hints, &res) == 0 &&
+			    res->ai_next == NULL) {
+			if (res->ai_addrlen <= sizeof(_res_extp->nsaddr_list[nserv])) {
+			    memcpy(&_res_extp->nsaddr_list[nserv], res->ai_addr,
+				res->ai_addrlen);
+			} else {
+			    memset(&_res_extp->nsaddr_list[nserv], 0,
+				sizeof(_res_extp->nsaddr_list[nserv]));
+			}
+			if (res->ai_addrlen <= sizeof(_resp->nsaddr_list[nserv])) {
+			    memcpy(&_resp->nsaddr_list[nserv], res->ai_addr,
+				res->ai_addrlen);
+			} else {
+			    memset(&_resp->nsaddr_list[nserv], 0,
+				sizeof(_resp->nsaddr_list[nserv]));
+			}
 			nserv++;
 		    }
+		    if (res)
+			freeaddrinfo(res);
+#else /* INET6 */
+		    if ((*cp != '\0') && (*cp != '\n') && inet_aton(cp, &a)) {
+			_resp->nsaddr_list[nserv].sin_addr = a;
+			_resp->nsaddr_list[nserv].sin_family = AF_INET;
+			_resp->nsaddr_list[nserv].sin_port =
+				htons(NAMESERVER_PORT);
+			_resp->nsaddr_list[nserv].sin_len =
+				sizeof(struct sockaddr_in);
+			nserv++;
+		    }
+#endif /* INET6 */
 		    continue;
 		}
-		if (!strncmp(buf, "sortlist", sizeof("sortlist") - 1)) {
+#ifdef RESOLVSORT
+		if (MATCH(buf, "sortlist")) {
 		    struct in_addr a;
+#ifdef INET6
+		    struct in6_addr a6;
+		    int m, i;
+		    u_char *u;
+#endif /* INET6 */
 
 		    cp = buf + sizeof("sortlist") - 1;
-		    while (*cp == ' ' || *cp == '\t')
-			cp++;
-		    while (sscanf(cp,"%[0-9./]s", buf2) && nsort < MAXRESOLVSORT) {
-			if (net = strchr(buf2, '/'))
-			    *net = '\0';
-			if (inet_aton(buf2, &a)) {
-			    _res.sort_list[nsort].addr = a;
-			    if (net && inet_aton(net+1, &a)) {
-				_res.sort_list[nsort].mask = a.s_addr;
+		    while (nsort < MAXRESOLVSORT) {
+			while (*cp == ' ' || *cp == '\t')
+			    cp++;
+			if (*cp == '\0' || *cp == '\n' || *cp == ';')
+			    break;
+			net = cp;
+			while (*cp && !ISSORTMASK(*cp) && *cp != ';' &&
+			       isascii(*cp) && !isspace(*cp))
+				cp++;
+			n = *cp;
+			*cp = 0;
+			if (inet_aton(net, &a)) {
+			    _resp->sort_list[nsort].addr = a;
+			    if (ISSORTMASK(n)) {
+				*cp++ = n;
+				net = cp;
+				while (*cp && *cp != ';' &&
+					isascii(*cp) && !isspace(*cp))
+				    cp++;
+				n = *cp;
+				*cp = 0;
+				if (inet_aton(net, &a)) {
+				    _resp->sort_list[nsort].mask = a.s_addr;
+				} else {
+				    _resp->sort_list[nsort].mask = 
+					net_mask(_resp->sort_list[nsort].addr);
+				}
 			    } else {
-				_res.sort_list[nsort].mask =
-					net_mask(_res.sort_list[nsort].addr);
+				_resp->sort_list[nsort].mask = 
+				    net_mask(_resp->sort_list[nsort].addr);
+			    }
+#ifdef INET6
+			    _res_extp->sort_list[nsort].af = AF_INET;
+			    _res_extp->sort_list[nsort].addr.ina =
+				_resp->sort_list[nsort].addr;
+			    _res_extp->sort_list[nsort].mask.ina.s_addr =
+				_resp->sort_list[nsort].mask;
+#endif /* INET6 */
+			    nsort++;
+			}
+#ifdef INET6
+			else if (inet_pton(AF_INET6, net, &a6) == 1) {
+			    _res_extp->sort_list[nsort].af = AF_INET6;
+			    _res_extp->sort_list[nsort].addr.in6a = a6;
+			    u = (u_char *)&_res_extp->sort_list[nsort].mask.in6a;
+			    *cp++ = n;
+			    net = cp;
+			    while (*cp && *cp != ';' &&
+				    isascii(*cp) && !isspace(*cp))
+				cp++;
+			    m = n;
+			    n = *cp;
+			    *cp = 0;
+			    switch (m) {
+			    case '/':
+				m = atoi(net);
+				break;
+			    case '&':
+				if (inet_pton(AF_INET6, net, u) == 1) {
+				    m = -1;
+				    break;
+				}
+				/*FALLTHRU*/
+			    default:
+				m = sizeof(struct in6_addr) * NBBY;
+				break;
+			    }
+			    if (m >= 0) {
+				for (i = 0; i < sizeof(struct in6_addr); i++) {
+				    if (m <= 0) {
+					*u = 0;
+				    } else {
+					m -= NBBY;
+					*u = (u_char)~0;
+					if (m < 0)
+					    *u <<= -m;
+				    }
+				    u++;
+				}
 			    }
 			    nsort++;
 			}
-			if (net)
-				*net = '/';
-			cp += strlen(buf2);
-			while (*cp == ' ' || *cp == '\t')
-			    cp++;
+#endif /* INET6 */
+			*cp = n;
 		    }
 		    continue;
 		}
-		if (!strncmp(buf, "options", sizeof("options") -1)) {
+#endif
+		if (MATCH(buf, "options")) {
 		    res_setoptions(buf + sizeof("options") - 1, "conf");
 		    continue;
 		}
 	    }
 	    if (nserv > 1) 
-		_res.nscount = nserv;
-	    _res.nsort = nsort;
+		_resp->nscount = nserv;
+#ifdef RESOLVSORT
+	    _resp->nsort = nsort;
+#endif
 	    (void) fclose(fp);
 	}
-	if (_res.defdname[0] == 0) {
-		if (gethostname(buf, sizeof(_res.defdname) - 1) == 0 &&
-		   (cp = strchr(buf, '.')))
-			(void)strcpy(_res.defdname, cp + 1);
+	if (_resp->defdname[0] == 0 &&
+	    gethostname(buf, sizeof(_resp->defdname) - 1) == 0 &&
+	    (cp = strchr(buf, '.')) != NULL)
+	{
+		strlcpy(_resp->defdname, cp + 1,
+		        sizeof(_resp->defdname));
 	}
 
 	/* find components of local domain that might be searched */
 	if (havesearch == 0) {
-		pp = _res.dnsrch;
-		*pp++ = _res.defdname;
-#ifndef SEARCH_LOCAL_DOMAINS
+		pp = _resp->dnsrch;
+		*pp++ = _resp->defdname;
 		*pp = NULL;
-#else
-		for (cp = _res.defdname, n = 0; *cp; cp++)
-			if (*cp == '.')
-				n++;
-		cp = _res.defdname;
-		for (; n >= LOCALDOMAINPARTS && pp < _res.dnsrch + MAXDFLSRCH;
-		    n--) {
-			cp = strchr(cp, '.');
-			*pp++ = ++cp;
+
+#ifndef RFC1535
+		dots = 0;
+		for (cp = _resp->defdname; *cp; cp++)
+			dots += (*cp == '.');
+
+		cp = _resp->defdname;
+		while (pp < _resp->dnsrch + MAXDFLSRCH) {
+			if (dots < LOCALDOMAINPARTS)
+				break;
+			cp = strchr(cp, '.') + 1;    /* we know there is one */
+			*pp++ = cp;
+			dots--;
 		}
-		*pp++ = 0;
-#endif
+		*pp = NULL;
+#ifdef DEBUG
+		if (_resp->options & RES_DEBUG) {
+			printf(";; res_init()... default dnsrch list:\n");
+			for (pp = _resp->dnsrch; *pp; pp++)
+				printf(";;\t%s\n", *pp);
+			printf(";;\t..END..\n");
+		}
+#endif /* DEBUG */
+#endif /* !RFC1535 */
 	}
 
-	if ((cp = getenv("RES_OPTIONS")) != NULL)
+	if (issetugid())
+		_resp->options |= RES_NOALIASES;
+	else if ((cp = getenv("RES_OPTIONS")) != NULL)
 		res_setoptions(cp, "env");
-	_res.options |= RES_INIT;
+	_resp->options |= RES_INIT;
 	return (0);
 }
 
+/* ARGSUSED */
 static void
-res_setoptions(options, source)
-	char *options, *source;
+res_setoptions(char *options, char *source)
 {
+	struct __res_state *_resp = _THREAD_PRIVATE(_res, _res, &_res);
 	char *cp = options;
-	int i;
+	char *endp;
+	long l;
 
 #ifdef DEBUG
-	if (_res.options & RES_DEBUG) {
+	if (_resp->options & RES_DEBUG)
 		printf(";; res_setoptions(\"%s\", \"%s\")...\n",
 		       options, source);
-	}
 #endif
 	while (*cp) {
 		/* skip leading and inner runs of spaces */
 		while (*cp == ' ' || *cp == '\t')
 			cp++;
 		/* search for and process individual options */
-		if (!strncmp(cp, "ndots:", sizeof("ndots:")-1)) {
-			i = atoi(cp + sizeof("ndots:") - 1);
-			if (i <= RES_MAXNDOTS)
-				_res.ndots = i;
-			else
-				_res.ndots = RES_MAXNDOTS;
+		if (!strncmp(cp, "ndots:", sizeof("ndots:") - 1)) {
+			char *p = cp + sizeof("ndots:") - 1;
+			l = strtol(p, &endp, 10);
+			if (l >= 0 && endp != p &&
+			    (*endp = '\0' || isspace(*endp))) {
+				if (l <= RES_MAXNDOTS)
+					_resp->ndots = l;
+				else
+					_resp->ndots = RES_MAXNDOTS;
 #ifdef DEBUG
-			if (_res.options & RES_DEBUG) {
-				printf(";;\tndots=%d\n", _res.ndots);
-			}
+				if (_resp->options & RES_DEBUG)
+					printf(";;\tndots=%u\n", _resp->ndots);
 #endif
-		} else if (!strncmp(cp, "debug", sizeof("debug")-1)) {
+			}
+		} else if (!strncmp(cp, "debug", sizeof("debug") - 1)) {
 #ifdef DEBUG
-			if (!(_res.options & RES_DEBUG)) {
+			if (!(_resp->options & RES_DEBUG)) {
 				printf(";; res_setoptions(\"%s\", \"%s\")..\n",
 				       options, source);
-				_res.options |= RES_DEBUG;
+				_resp->options |= RES_DEBUG;
 			}
 			printf(";;\tdebug\n");
 #endif
+		} else if (!strncmp(cp, "inet6", sizeof("inet6") - 1)) {
+			_resp->options |= RES_USE_INET6;
+		} else if (!strncmp(cp, "insecure1", sizeof("insecure1") - 1)) {
+			_resp->options |= RES_INSECURE1;
+		} else if (!strncmp(cp, "insecure2", sizeof("insecure2") - 1)) {
+			_resp->options |= RES_INSECURE2;
+		} else if (!strncmp(cp, "edns0", sizeof("edns0") - 1)) {
+			_resp->options |= RES_USE_EDNS0;
 		} else {
 			/* XXX - print a warning here? */
 		}
@@ -380,15 +650,17 @@ res_setoptions(options, source)
 	}
 }
 
+#ifdef RESOLVSORT
+/* XXX - should really support CIDR which means explicit masks always. */
 static u_int32_t
-net_mask(in)		/* XXX - should really use system's version of this */
-	struct in_addr in;
+net_mask(struct in_addr in)	/* XXX - should really use system's version of this */
 {
-	register u_int32_t i = ntohl(in.s_addr);
+	u_int32_t i = ntohl(in.s_addr);
 
 	if (IN_CLASSA(i))
 		return (htonl(IN_CLASSA_NET));
-	if (IN_CLASSB(i))
+	else if (IN_CLASSB(i))
 		return (htonl(IN_CLASSB_NET));
 	return (htonl(IN_CLASSC_NET));
 }
+#endif

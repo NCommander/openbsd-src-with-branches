@@ -1,3 +1,4 @@
+/*	$OpenBSD: trap.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1995/04/22 10:28:35 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)trap.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: trap.c,v 1.3 1995/04/22 10:28:35 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: trap.c,v 1.5 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -62,7 +59,7 @@ trap traps[MAX_TRAPS];
 boolean trap_door = 0;
 short bear_trap = 0;
 
-char *trap_strings[TRAPS * 2] = {
+const char *trap_strings[TRAPS * 2] = {
 	"trap door",
 			"you fell down a trap",
 	"bear trap",
@@ -77,15 +74,9 @@ char *trap_strings[TRAPS * 2] = {
 			"a gush of water hits you on the head"
 };
 
-extern short cur_level, party_room;
-extern char *new_level_message;
-extern boolean interrupted;
-extern short ring_exp;
-extern boolean sustain_strength;
-extern short blind;
-
+short
 trap_at(row, col)
-register row, col;
+	short row, col;
 {
 	short i;
 
@@ -97,8 +88,9 @@ register row, col;
 	return(NO_TRAP);
 }
 
+void
 trap_player(row, col)
-short row, col;
+	short row, col;
 {
 	short t;
 
@@ -107,7 +99,7 @@ short row, col;
 	}
 	dungeon[row][col] &= (~HIDDEN);
 	if (rand_percent(rogue.exp + ring_exp)) {
-		message("the trap failed", 1);
+		messagef(1, "the trap failed");
 		return;
 	}
 	switch(t) {
@@ -116,7 +108,7 @@ short row, col;
 		new_level_message = trap_strings[(t*2)+1];
 		break;
 	case BEAR_TRAP:
-		message(trap_strings[(t*2)+1], 1);
+		messagef(1, "%s", trap_strings[(t*2)+1]);
 		bear_trap = get_rand(4, 7);
 		break;
 	case TELE_TRAP:
@@ -124,7 +116,7 @@ short row, col;
 		tele();
 		break;
 	case DART_TRAP:
-		message(trap_strings[(t*2)+1], 1);
+		messagef(1, "%s", trap_strings[(t*2)+1]);
 		rogue.hp_current -= get_damage("1d6", 1);
 		if (rogue.hp_current <= 0) {
 			rogue.hp_current = 0;
@@ -139,16 +131,17 @@ short row, col;
 		}
 		break;
 	case SLEEPING_GAS_TRAP:
-		message(trap_strings[(t*2)+1], 1);
+		messagef(1, "%s", trap_strings[(t*2)+1]);
 		take_a_nap();
 		break;
 	case RUST_TRAP:
-		message(trap_strings[(t*2)+1], 1);
+		messagef(1, "%s", trap_strings[(t*2)+1]);
 		rust((object *) 0);
 		break;
 	}
 }
 
+void
 add_traps()
 {
 	short i, n, tries = 0;
@@ -193,14 +186,15 @@ add_traps()
 	}
 }
 
+void
 id_trap()
 {
 	short dir, row, col, d, t;
 
-	message("direction? ", 0);
+	messagef(0, "direction? ");
 
 	while (!is_direction(dir = rgetchar(), &d)) {
-		sound_bell();
+		beep();
 	}
 	check_message();
 
@@ -214,12 +208,13 @@ id_trap()
 
 	if ((dungeon[row][col] & TRAP) && (!(dungeon[row][col] & HIDDEN))) {
 		t = trap_at(row, col);
-		message(trap_strings[t*2], 0);
+		messagef(0, "%s", trap_strings[t*2]);
 	} else {
-		message("no trap there", 0);
+		messagef(0, "no trap there");
 	}
 }
 
+void
 show_traps()
 {
 	short i, j;
@@ -233,9 +228,10 @@ show_traps()
 	}
 }
 
+void
 search(n, is_auto)
-short n;
-boolean is_auto;
+	short n;
+	boolean is_auto;
 {
 	short s, i, j, row, col, t;
 	short shown = 0, found = 0;
@@ -273,7 +269,7 @@ boolean is_auto;
 						shown++;
 						if (dungeon[row][col] & TRAP) {
 							t = trap_at(row, col);
-							message(trap_strings[t*2], 1);
+							messagef(1, "%s", trap_strings[t*2]);
 						}
 					}
 				}

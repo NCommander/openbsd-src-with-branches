@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.6 1995/03/18 14:55:02 cgd Exp $	*/
+/*	$OpenBSD: main.c,v 1.37 2004/11/04 20:10:07 deraadt Exp $	*/
+/*	$NetBSD: main.c,v 1.14 1997/06/05 11:13:24 lukem Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,11 +40,13 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.4 (Berkeley) 4/15/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/03/18 14:55:02 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: main.c,v 1.37 2004/11/04 20:10:07 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
+#include <sys/mount.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #ifdef sunos
 #include <sys/vnode.h>
@@ -66,10 +65,12 @@ static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/03/18 14:55:02 cgd Exp $";
 #include <errno.h>
 #include <fcntl.h>
 #include <fstab.h>
+#include <paths.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "dump.h"
@@ -88,30 +89,35 @@ int	cartridge = 0;	/* Assume non-cartridge tape */
 long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
 char	*host = NULL;	/* remote host (if any) */
+int	maxbsize = 64*1024;	/* XXX MAXBSIZE from sys/param.h */
 
-static long numarg __P((char *, long, long));
-static void obsolete __P((int *, char **[]));
-static void usage __P((void));
+static long numarg(char *, long, long);
+static void obsolete(int *, char **[]);
+static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register ino_t ino;
-	register int dirty; 
-	register struct dinode *dp;
-	register struct	fstab *dt;
-	register char *map;
-	register int ch;
+	ino_t ino;
+	int dirty;
+	struct ufs1_dinode *dp;
+	struct	fstab *dt;
+	char *map;
+	int ch;
+	struct tm then;
+	struct statfs fsbuf;
 	int i, anydirskipped, bflag = 0, Tflag = 0, honorlevel = 1;
 	ino_t maxino;
+	time_t tnow;
+	int dirlist;
+	char *toplevel, *str, *mount_point = NULL;
 
 	spcl.c_date = 0;
 	(void)time((time_t *)&spcl.c_date);
 
 	tsize = 0;	/* Default later, based on 'c' option for cart tapes */
-	tape = _PATH_DEFTAPE;
+	if ((tape = getenv("TAPE")) == NULL)
+		tape = _PATH_DEFTAPE;
 	dumpdates = _PATH_DUMPDATES;
 	temp = _PATH_DTMP;
 	if (TP_BSIZE / DEV_BSIZE == 0 || TP_BSIZE % DEV_BSIZE != 0)
@@ -122,7 +128,7 @@ main(argc, argv)
 		usage();
 
 	obsolete(&argc, &argv);
-	while ((ch = getopt(argc, argv, "0123456789B:b:cd:f:h:ns:T:uWw")) != -1)
+	while ((ch = getopt(argc, argv, "0123456789aB:b:cd:f:h:ns:T:uWw")) != -1)
 		switch (ch) {
 		/* dump level */
 		case '0': case '1': case '2': case '3': case '4':
@@ -136,6 +142,12 @@ main(argc, argv)
 
 		case 'b':		/* blocks per tape write */
 			ntrec = numarg("blocks per write", 1L, 1000L);
+			if (ntrec > maxbsize/1024) {
+				msg("Please choose a blocksize <= %dKB\n",
+				    maxbsize/1024);
+				exit(X_STARTUP);
+			}
+			bflag = 1;
 			break;
 
 		case 'c':		/* Tape is cart. not 9-track */
@@ -165,11 +177,16 @@ main(argc, argv)
 			break;
 
 		case 'T':		/* time of last dump */
-			spcl.c_ddate = unctime(optarg);
+			str = strptime(optarg, "%a %b %e %H:%M:%S %Y", &then);
+			then.tm_isdst = -1;
+			if (str == NULL || (*str != '\n' && *str != '\0'))
+				spcl.c_ddate = (time_t) -1;
+			else
+				spcl.c_ddate = mktime(&then);
 			if (spcl.c_ddate < 0) {
 				(void)fprintf(stderr, "bad time \"%s\"\n",
 				    optarg);
-				exit(X_ABORT);
+				exit(X_STARTUP);
 			}
 			Tflag = 1;
 			lastlevel = '?';
@@ -182,7 +199,12 @@ main(argc, argv)
 		case 'W':		/* what to do */
 		case 'w':
 			lastdump(ch);
-			exit(0);	/* do nothing else */
+			exit(X_FINOK);	/* do nothing else */
+			break;
+
+		case 'a':		/* `auto-size', Write to EOM. */
+			unlimited = 1;
+			break;
 
 		default:
 			usage();
@@ -192,21 +214,74 @@ main(argc, argv)
 
 	if (argc < 1) {
 		(void)fprintf(stderr, "Must specify disk or filesystem\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
-	disk = *argv++;
-	argc--;
-	if (argc >= 1) {
-		(void)fprintf(stderr, "Unknown arguments to dump:");
-		while (argc--)
-			(void)fprintf(stderr, " %s", *argv++);
-		(void)fprintf(stderr, "\n");
-		exit(X_ABORT);
+
+	/*
+	 *	determine if disk is a subdirectory, and setup appropriately
+	 */
+	dirlist = 0;
+	toplevel = NULL;
+	for (i = 0; i < argc; i++) {
+		struct stat sb;
+
+		if (lstat(argv[i], &sb) == -1) {
+			msg("Cannot lstat %s: %s\n", argv[i], strerror(errno));
+			exit(X_STARTUP);
+		}
+		if (!S_ISDIR(sb.st_mode) && !S_ISREG(sb.st_mode))
+			break;
+		if (statfs(argv[i], &fsbuf) == -1) {
+			msg("Cannot statfs %s: %s\n", argv[i], strerror(errno));
+			exit(X_STARTUP);
+		}
+		if (strcmp(argv[i], fsbuf.f_mntonname) == 0) {
+			if (dirlist != 0) {
+				msg("Can't dump a mountpoint and a filelist\n");
+				exit(X_STARTUP);
+			}
+			break;		/* exit if sole mountpoint */
+		}
+		if (!disk) {
+			if ((toplevel = strdup(fsbuf.f_mntonname)) == NULL) {
+				msg("Cannot malloc diskname\n");
+				exit(X_STARTUP);
+			}
+			disk = toplevel;
+			if (uflag) {
+				msg("Ignoring u flag for subdir dump\n");
+				uflag = 0;
+			}
+			if (level > '0') {
+				msg("Subdir dump is done at level 0\n");
+				level = '0';
+			}
+			msg("Dumping sub files/directories from %s\n", disk);
+		} else {
+			if (strcmp(disk, fsbuf.f_mntonname) != 0) {
+				msg("%s is not on %s\n", argv[i], disk);
+				exit(X_STARTUP);
+			}
+		}
+		msg("Dumping file/directory %s\n", argv[i]);
+		dirlist++;
+	}
+	if (dirlist == 0) {
+		disk = *argv++;
+		if (argc != 1) {
+			(void)fputs("Excess arguments to dump:", stderr);
+			while (--argc) {
+				(void)putc(' ', stderr);
+				(void)fputs(*argv++, stderr);
+			}
+			(void)putc('\n', stderr);
+			exit(X_STARTUP);
+		}
 	}
 	if (Tflag && uflag) {
 	        (void)fprintf(stderr,
 		    "You cannot use the T and u flags together.\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	if (strcmp(tape, "-") == 0) {
 		pipeout++;
@@ -215,7 +290,7 @@ main(argc, argv)
 
 	if (blocksperfile)
 		blocksperfile = blocksperfile / ntrec * ntrec; /* round down */
-	else {
+	else if (!unlimited) {
 		/*
 		 * Determine how to default tape size and density
 		 *
@@ -237,13 +312,12 @@ main(argc, argv)
 		*tape++ = '\0';
 #ifdef RDUMP
 		if (rmthost(host) == 0)
-			exit(X_ABORT);
+			exit(X_STARTUP);
 #else
 		(void)fprintf(stderr, "remote dump not enabled\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 #endif
 	}
-	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
 
 	if (signal(SIGHUP, SIG_IGN) != SIG_IGN)
 		signal(SIGHUP, sig);
@@ -260,26 +334,52 @@ main(argc, argv)
 	if (signal(SIGINT, interrupt) == SIG_IGN)
 		signal(SIGINT, SIG_IGN);
 
-	set_operators();	/* /etc/group snarfed */
 	getfstab();		/* /etc/fstab snarfed */
+
 	/*
 	 *	disk can be either the full special file name,
 	 *	the suffix of the special file name,
 	 *	the special name missing the leading '/',
 	 *	the file system name with or without the leading '/'.
 	 */
-	dt = fstabsearch(disk);
-	if (dt != NULL) {
+	if (!statfs(disk, &fsbuf) && !strcmp(fsbuf.f_mntonname, disk)) {
+		/* mounted disk? */
+		disk = rawname(fsbuf.f_mntfromname);
+		if (!disk) {
+			(void)fprintf(stderr, "cannot get raw name for %s\n",
+			    fsbuf.f_mntfromname);
+			exit(X_STARTUP);
+		}
+		mount_point = fsbuf.f_mntonname;
+		(void)strlcpy(spcl.c_dev, fsbuf.f_mntfromname,
+		    sizeof(spcl.c_dev));
+		if (dirlist != 0) {
+			(void)snprintf(spcl.c_filesys, sizeof(spcl.c_filesys),
+			    "a subset of %s", mount_point);
+		} else {
+			(void)strlcpy(spcl.c_filesys, mount_point,
+			    sizeof(spcl.c_filesys));
+		}
+	} else if ((dt = fstabsearch(disk)) != NULL) {
+		/* in fstab? */
 		disk = rawname(dt->fs_spec);
-		(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
-		(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
+		mount_point = dt->fs_file;
+		(void)strlcpy(spcl.c_dev, dt->fs_spec, sizeof(spcl.c_dev));
+		if (dirlist != 0) {
+			(void)snprintf(spcl.c_filesys, sizeof(spcl.c_filesys),
+			    "a subset of %s", mount_point);
+		} else {
+			(void)strlcpy(spcl.c_filesys, mount_point,
+			    sizeof(spcl.c_filesys));
+		}
 	} else {
-		(void)strncpy(spcl.c_dev, disk, NAMELEN);
-		(void)strncpy(spcl.c_filesys, "an unlisted file system",
-		    NAMELEN);
+		/* must be a device */
+		(void)strlcpy(spcl.c_dev, disk, sizeof(spcl.c_dev));
+		(void)strlcpy(spcl.c_filesys, "an unlisted file system",
+		    sizeof(spcl.c_filesys));
 	}
-	(void)strcpy(spcl.c_label, "none");
-	(void)gethostname(spcl.c_host, NAMELEN);
+	(void)strlcpy(spcl.c_label, "none", sizeof(spcl.c_label));
+	(void)gethostname(spcl.c_host, sizeof(spcl.c_host));
 	spcl.c_level = level - '0';
 	spcl.c_type = TS_TAPE;
 	if (!Tflag)
@@ -290,8 +390,8 @@ main(argc, argv)
  	msg("Date of last level %c dump: %s", lastlevel,
 		spcl.c_ddate == 0 ? "the epoch\n" : ctime(&spcl.c_ddate));
 	msg("Dumping %s ", disk);
-	if (dt != NULL)
-		msgtail("(%s) ", dt->fs_file);
+	if (mount_point != NULL)
+		msgtail("(%s) ", mount_point);
 	if (host)
 		msgtail("to %s on host %s\n", tape, host);
 	else
@@ -299,7 +399,7 @@ main(argc, argv)
 
 	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	sync();
 	sblock = (struct fs *)sblock_buf;
@@ -309,10 +409,10 @@ main(argc, argv)
 	dev_bsize = sblock->fs_fsize / fsbtodb(sblock, 1);
 	dev_bshift = ffs(dev_bsize) - 1;
 	if (dev_bsize != (1 << dev_bshift))
-		quit("dev_bsize (%d) is not a power of 2", dev_bsize);
+		quit("dev_bsize (%d) is not a power of 2\n", dev_bsize);
 	tp_bshift = ffs(TP_BSIZE) - 1;
 	if (TP_BSIZE != (1 << tp_bshift))
-		quit("TP_BSIZE (%d) is not a power of 2", TP_BSIZE);
+		quit("TP_BSIZE (%d) is not a power of 2\n", TP_BSIZE);
 #ifdef FS_44INODEFMT
 	if (sblock->fs_inodefmt >= FS_44INODEFMT)
 		spcl.c_flags |= DR_NEWINODEFMT;
@@ -326,17 +426,20 @@ main(argc, argv)
 
 	nonodump = spcl.c_level < honorlevel;
 
+	(void)signal(SIGINFO, statussig);
+
 	msg("mapping (Pass I) [regular files]\n");
-	anydirskipped = mapfiles(maxino, &tapesize);
+	anydirskipped = mapfiles(maxino, &tapesize, toplevel,
+	    (dirlist ? argv : NULL));
 
 	msg("mapping (Pass II) [directories]\n");
 	while (anydirskipped) {
 		anydirskipped = mapdirs(maxino, &tapesize);
 	}
 
-	if (pipeout) {
+	if (pipeout || unlimited) {
 		tapesize += 10;	/* 10 trailer blocks */
-		msg("estimated %ld tape blocks.\n", tapesize);
+		msg("estimated %qd tape blocks.\n", tapesize);
 	} else {
 		double fetapes;
 
@@ -347,7 +450,7 @@ main(argc, argv)
 			   the end of each block written, and not in mid-block.
 			   Assume no erroneous blocks; this can be compensated
 			   for with an artificially low tape size. */
-			fetapes = 
+			fetapes =
 			(	  tapesize	/* blocks */
 				* TP_BSIZE	/* bytes/block */
 				* (1.0/density)	/* 0.1" / byte */
@@ -376,7 +479,7 @@ main(argc, argv)
 		tapesize += (etapes - 1) *
 			(howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
 		tapesize += etapes + 10;	/* headers + 10 trailer blks */
-		msg("estimated %ld tape blocks on %3.2f tape(s).\n",
+		msg("estimated %qd tape blocks on %3.2f tape(s).\n",
 		    tapesize, fetapes);
 	}
 
@@ -388,6 +491,7 @@ main(argc, argv)
 
 	startnewtape(1);
 	(void)time((time_t *)&(tstart_writing));
+	xferrate = 0;
 	dumpmap(usedinomap, TS_CLRI, maxino - 1);
 
 	msg("dumping (Pass III) [directories]\n");
@@ -432,10 +536,16 @@ main(argc, argv)
 	for (i = 0; i < ntrec; i++)
 		writeheader(maxino - 1);
 	if (pipeout)
-		msg("DUMP: %ld tape blocks\n",spcl.c_tapea);
+		msg("%ld tape blocks\n", spcl.c_tapea);
 	else
-		msg("DUMP: %ld tape blocks on %d volumes(s)\n",
-		    spcl.c_tapea, spcl.c_volume);
+		msg("%ld tape blocks on %d volume%s\n",
+		    spcl.c_tapea, spcl.c_volume,
+		    (spcl.c_volume == 1) ? "" : "s");
+	tnow = do_stats();
+	msg("Date of this level %c dump: %s", level,
+	    spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
+	msg("Date this dump completed:  %s", ctime(&tnow));
+	msg("Average transfer rate: %ld KB/s\n", xferrate / tapeno);
 	putdumptime();
 	trewind();
 	broadcast("DUMP IS DONE!\7\7\n");
@@ -445,12 +555,15 @@ main(argc, argv)
 }
 
 static void
-usage()
+usage(void)
 {
+	extern char *__progname;
 
-	(void)fprintf(stderr, "usage: dump [-0123456789cnu] [-B records] [-b blocksize] [-d density] [-f file]\n            [-h level] [-s feet] [-T date] filesystem\n");
-	(void)fprintf(stderr, "       dump [-W | -w]\n");
-	exit(1);
+	(void)fprintf(stderr, "usage: %s [-0123456789acnu] [-B records]"
+		      "[-b blocksize] [-d density] [-f file]\n"
+		      "            [-h level] [-s feet] [-T date] filesystem\n"
+		      "       %s [-W | -w]\n", __progname, __progname);
+	exit(X_STARTUP);
 }
 
 /*
@@ -458,24 +571,23 @@ usage()
  * range (except that a vmax of 0 means unlimited).
  */
 static long
-numarg(meaning, vmin, vmax)
-	char *meaning;
-	long vmin, vmax;
+numarg(char *meaning, long vmin, long vmax)
 {
-	char *p;
 	long val;
+	const char *errstr;
 
-	val = strtol(optarg, &p, 10);
-	if (*p)
-		errx(1, "illegal %s -- %s", meaning, optarg);
-	if (val < vmin || (vmax && val > vmax))
-		errx(1, "%s must be between %ld and %ld", meaning, vmin, vmax);
+	if (vmax == 0)
+		vmax = LONG_MAX;
+	val = strtonum(optarg, vmin, vmax, &errstr);
+	if (errstr)
+		errx(X_STARTUP, "%s is %s [%ld - %ld]",
+		    meaning, errstr, vmin, vmax);
+
 	return (val);
 }
 
 void
-sig(signo)
-	int signo;
+sig(int signo)
 {
 	switch(signo) {
 	case SIGALRM:
@@ -501,8 +613,7 @@ sig(signo)
 }
 
 char *
-rawname(cp)
-	char *cp;
+rawname(char *cp)
 {
 	static char rawbuf[MAXPATHLEN];
 	char *dp = strrchr(cp, '/');
@@ -510,10 +621,8 @@ rawname(cp)
 	if (dp == NULL)
 		return (NULL);
 	*dp = '\0';
-	(void)strcpy(rawbuf, cp);
+	(void)snprintf(rawbuf, sizeof(rawbuf), "%s/r%s", cp, dp + 1);
 	*dp = '/';
-	(void)strcat(rawbuf, "/r");
-	(void)strcat(rawbuf, dp + 1);
 	return (rawbuf);
 }
 
@@ -523,12 +632,11 @@ rawname(cp)
  *	getopt(3) will like.
  */
 static void
-obsolete(argcp, argvp)
-	int *argcp;
-	char **argvp[];
+obsolete(int *argcp, char **argvp[])
 {
 	int argc, flags;
 	char *ap, **argv, *flagsp, **nargv, *p;
+	size_t len;
 
 	/* Setup. */
 	argv = *argvp;
@@ -560,11 +668,12 @@ obsolete(argcp, argvp)
 				warnx("option requires an argument -- %c", *ap);
 				usage();
 			}
-			if ((nargv[0] = malloc(strlen(*argv) + 2 + 1)) == NULL)
+			len = 2 + strlen(*argv) + 1;
+			if ((nargv[0] = malloc(len)) == NULL)
 				err(1, NULL);
 			nargv[0][0] = '-';
 			nargv[0][1] = *ap;
-			(void)strcpy(&nargv[0][2], *argv);
+			(void)strlcpy(&nargv[0][2], *argv, len - 2);
 			++argv;
 			++nargv;
 			break;
@@ -585,7 +694,8 @@ obsolete(argcp, argvp)
 	}
 
 	/* Copy remaining arguments. */
-	while (*nargv++ = *argv++);
+	while ((*nargv++ = *argv++))
+		;
 
 	/* Update argument count. */
 	*argcp = nargv - *argvp - 1;

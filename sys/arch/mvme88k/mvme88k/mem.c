@@ -1,4 +1,4 @@
-/*	$NetBSD: mem.c,v 1.11 1995/05/29 23:57:16 pk Exp $ */
+/*	$OpenBSD: mem.c,v 1.21 2004/05/08 21:37:30 miod Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,33 +41,43 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/buf.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
 
-#include <machine/board.h>
+#include <machine/conf.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 caddr_t zeropage;
+extern vaddr_t last_addr;
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -84,9 +90,9 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
-	register int c;
-	register struct iovec *iov;
+	vaddr_t o, v;
+	int c;
+	struct iovec *iov;
 	int error = 0;
 	static int physlock = 0;
 	extern caddr_t vmmap;
@@ -117,24 +123,49 @@ mmrw(dev, uio, flags)
 		case 0:
 			/* move one page at a time */
 			v = uio->uio_offset;
-			if (v > MAXPHYSMEM) {
+			if (v > last_addr) {
 				error = EFAULT;
 				goto unlock;
 			}
-			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
-			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+			pmap_enter(pmap_kernel(), (vaddr_t)vmmap,
+			    trunc_page(v),
+			    uio->uio_rw == UIO_READ ? VM_PROT_READ : VM_PROT_WRITE,
+			    (uio->uio_rw == UIO_READ ? VM_PROT_READ : VM_PROT_WRITE) | PMAP_WIRED);
+			pmap_update(pmap_kernel());
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
-			pmap_remove(pmap_kernel(), (vm_offset_t)vmmap,
-			    (vm_offset_t)vmmap + NBPG);
+			pmap_remove(pmap_kernel(), (vaddr_t)vmmap,
+			    (vaddr_t)vmmap + NBPG);
+			pmap_update(pmap_kernel());
 			continue;
 
 /* minor device 1 is kernel memory */
 		case 1:
 			v = uio->uio_offset;
 			c = min(iov->iov_len, MAXPHYS);
+			if (!uvm_kernacc((caddr_t)v, c,
+			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
+				return (EFAULT);
+			if (v < NBPG) {
+#ifdef DEBUG
+				/*
+				 * For now, return zeros on read of page 0
+				 * and EFAULT for writes.
+				 */
+				if (uio->uio_rw == UIO_READ) {
+					if (zeropage == NULL) {
+						zeropage = (caddr_t)
+						    malloc(PAGE_SIZE, M_TEMP,
+						    M_WAITOK);
+						bzero(zeropage, PAGE_SIZE);
+					}
+					c = min(c, NBPG - (int)v);
+					v = (vaddr_t)zeropage;
+				} else
+#endif
+					return (EFAULT);
+			}
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
 
@@ -154,10 +185,10 @@ mmrw(dev, uio, flags)
 			}
 			if (zeropage == NULL) {
 				zeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
+				    malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
+				bzero(zeropage, PAGE_SIZE);
 			}
-			c = min(iov->iov_len, CLBYTES);
+			c = min(iov->iov_len, PAGE_SIZE);
 			error = uiomove(zeropage, c, uio);
 			continue;
 
@@ -180,11 +211,23 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
         dev_t dev;
-        int off, prot;
+        off_t off;
+	int prot;
 {
+	return (-1);
+}
 
+/*ARGSUSED*/
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
 	return (EOPNOTSUPP);
 }

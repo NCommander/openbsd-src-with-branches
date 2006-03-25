@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.3 1994/12/22 12:29:51 cgd Exp $
+#	$OpenBSD: Makefile,v 1.1.1.1 1995/10/18 08:45:19 deraadt Exp $
 
 PROG = getopt
 

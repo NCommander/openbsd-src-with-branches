@@ -19,7 +19,6 @@ extern "C" {
 
 #define MD5Final                       ap_MD5Final
 #define MD5Init                        ap_MD5Init
-#define MD5Update                      ap_MD5Update
 #define acquire_mutex                  ap_acquire_mutex
 #define add_cgi_vars                   ap_add_cgi_vars
 #define add_common_vars                ap_add_common_vars
@@ -207,6 +206,11 @@ extern "C" {
 #define make_table                     ap_make_table
 #define matches_request_vhost          ap_matches_request_vhost
 #define max_requests_per_child         ap_max_requests_per_child
+#define max_cpu_per_child              ap_max_cpu_per_child
+#define max_data_per_child             ap_max_data_per_child
+#define max_nofile_per_child           ap_max_nofile_per_child
+#define max_rss_per_child              ap_max_rss_per_child
+#define max_stack_per_child            ap_max_stack_per_child
 #define md5                            ap_md5
 #define meets_conditions               ap_meets_conditions
 #define merge_per_dir_configs          ap_merge_per_dir_configs

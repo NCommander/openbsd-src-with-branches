@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_exec.c,v 1.15 1995/06/24 20:29:19 christos Exp $	 */
+/*	$OpenBSD: svr4_exec.c,v 1.14 2002/03/14 01:26:51 millert Exp $	 */
+/*	$NetBSD: svr4_exec.c,v 1.16 1995/10/14 20:24:20 christos Exp $	 */
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -34,42 +35,48 @@
 #include <sys/malloc.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
+#include <sys/exec.h>
 #include <sys/exec_elf.h>
+#include <sys/exec_olf.h>
 
 #include <sys/mman.h>
-#include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/vm_map.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/reg.h>
-#include <machine/exec.h>
 #include <machine/svr4_machdep.h>
 
 #include <compat/svr4/svr4_util.h>
 #include <compat/svr4/svr4_syscall.h>
 #include <compat/svr4/svr4_exec.h>
+#include <compat/svr4/svr4_errno.h>
 
-static void *svr4_copyargs __P((struct exec_package *, struct ps_strings *,
-			       void *, void *));
+static void *svr4_copyargs(struct exec_package *, struct ps_strings *,
+			       void *, void *);
 
 const char svr4_emul_path[] = "/emul/svr4";
-extern int svr4_error[];
 extern char svr4_sigcode[], svr4_esigcode[];
 extern struct sysent svr4_sysent[];
+#ifdef SYSCALL_DEBUG
 extern char *svr4_syscallnames[];
+#endif
 
 struct emul emul_svr4 = {
 	"svr4",
-	svr4_error,
+	native_to_svr4_errno,
 	svr4_sendsig,
 	SVR4_SYS_syscall,
 	SVR4_SYS_MAXSYSCALL,
 	svr4_sysent,
+#ifdef SYSCALL_DEBUG
 	svr4_syscallnames,
+#else
+	NULL,
+#endif
 	SVR4_AUX_ARGSIZ,
 	svr4_copyargs,
 	setregs,
+	exec_elf32_fixup,
 	svr4_sigcode,
 	svr4_esigcode,
 };
@@ -82,10 +89,9 @@ svr4_copyargs(pack, arginfo, stack, argp)
 	void *argp;
 {
 	AuxInfo *a;
-	struct elf_args *ap;
 
-	if (!(a = (AuxInfo *) elf_copyargs(pack, arginfo, stack, argp)))
-		return NULL;
+	if (!(a = (AuxInfo *)elf32_copyargs(pack, arginfo, stack, argp)))
+		return (NULL);
 #ifdef SVR4_COMPAT_SOLARIS2
 	if (pack->ep_emul_arg) {
 		a->au_id = AUX_sun_uid;
@@ -105,28 +111,31 @@ svr4_copyargs(pack, arginfo, stack, argp)
 		a++;
 	}
 #endif
-	return a;
+	return (a);
 }
 
 int
-svr4_elf_probe(p, epp, itp, pos)
+svr4_elf_probe(p, epp, itp, pos, os)
 	struct proc *p;
 	struct exec_package *epp;
 	char *itp;
 	u_long *pos;
+	u_int8_t *os;
 {
 	char *bp;
 	int error;
 	size_t len;
 
-	if (itp[0]) {
+	if (itp) {
 		if ((error = emul_find(p, NULL, svr4_emul_path, itp, &bp, 0)))
-			return error;
+			return (error);
 		if ((error = copystr(bp, itp, MAXPATHLEN, &len)))
-			return error;
+			return (error);
 		free(bp, M_TEMP);
 	}
 	epp->ep_emul = &emul_svr4;
 	*pos = SVR4_INTERP_ADDR;
-	return 0;
+	if (*os == OOS_NULL)
+		*os = OOS_SVR4;
+	return (0);
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: am7990.c,v 1.3 1995/07/24 04:34:51 mycroft Exp $	*/
+/*	$OpenBSD: am7990.c,v 1.38 2005/01/15 05:24:10 brad Exp $	*/
+/*	$NetBSD: am7990.c,v 1.22 1996/10/13 01:37:19 christos Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,61 +36,124 @@
  *	@(#)if_le.c	8.2 (Berkeley) 11/16/93
  */
 
+#include "bpfilter.h"
+
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/mbuf.h> 
+#include <sys/syslog.h>
+#include <sys/socket.h>
+#include <sys/device.h>
+#include <sys/malloc.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 
+#include <net/if.h>
+#include <net/if_media.h>
+
 #ifdef INET
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
 #include <netinet/in_systm.h>
 #include <netinet/in_var.h>
 #include <netinet/ip.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
-
-#if defined(CCITT) && defined(LLC)
-#include <sys/socketvar.h>
-#include <netccitt/x25.h>
-extern llc_ctlinput(), cons_rtrequest();
-#endif
-
 #if NBPFILTER > 0
 #include <net/bpf.h>
-#include <net/bpfdesc.h>
 #endif
+
+#include <dev/ic/am7990reg.h>
+#include <dev/ic/am7990var.h>
 
 #ifdef LEDEBUG
-void recv_print __P((struct le_softc *, int));
-void xmit_print __P((struct le_softc *, int));
+void am7990_recv_print(struct am7990_softc *, int);
+void am7990_xmit_print(struct am7990_softc *, int);
 #endif
 
-void
-leconfig(sc)
-	struct le_softc *sc;
+integrate void am7990_rint(struct am7990_softc *);
+integrate void am7990_tint(struct am7990_softc *);
+
+integrate int am7990_put(struct am7990_softc *, int, struct mbuf *);
+integrate struct mbuf *am7990_get(struct am7990_softc *, int, int);
+integrate void am7990_read(struct am7990_softc *, int, int); 
+
+hide void am7990_shutdown(void *);
+
+#define	ifp	(&sc->sc_arpcom.ac_if)
+
+#if 0	/* XXX what do we do about this?!  --thorpej */
+static inline u_int16_t ether_cmp(void *, void *);
+
+/*
+ * Compare two Ether/802 addresses for equality, inlined and
+ * unrolled for speed.  I'd love to have an inline assembler
+ * version of this...   XXX: Who wanted that? mycroft?
+ * I wrote one, but the following is just as efficient.
+ * This expands to 10 short m68k instructions! -gwr
+ * Note: use this like bcmp()
+ */
+static inline u_short
+ether_cmp(one, two)
+	void *one, *two;
 {
-	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+	register u_int16_t *a = (u_short *) one;
+	register u_int16_t *b = (u_short *) two;
+	register u_int16_t diff;
+
+	diff  = *a++ - *b++;
+	diff |= *a++ - *b++;
+	diff |= *a++ - *b++;
+
+	return (diff);
+}
+
+#define ETHER_CMP	ether_cmp
+#endif /* XXX */
+
+#ifndef	ETHER_CMP
+#define	ETHER_CMP(a, b) bcmp((a), (b), ETHER_ADDR_LEN)
+#endif
+
+/*
+ * am7990 configuration driver.  Attachments are provided by
+ * machine-dependent driver front-ends.
+ */
+struct cfdriver le_cd = {
+	NULL, "le", DV_IFNET
+};
+
+void
+am7990_config(sc)
+	struct am7990_softc *sc;
+{
 	int mem;
 
 	/* Make sure the chip is stopped. */
-	lestop(sc);
+	am7990_stop(sc);
 
 	/* Initialize ifnet structure. */
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_start = lestart;
-	ifp->if_ioctl = leioctl;
-	ifp->if_watchdog = lewatchdog;
+	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
+	ifp->if_softc = sc;
+	ifp->if_start = am7990_start;
+	ifp->if_ioctl = am7990_ioctl;
+	ifp->if_watchdog = am7990_watchdog;
 	ifp->if_flags =
 	    IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS | IFF_MULTICAST;
+#ifdef LANCE_REVC_BUG
+	ifp->if_flags &= ~IFF_MULTICAST;
+#endif
+	ifp->if_baudrate = IF_Mbps(10);
+	IFQ_SET_READY(&ifp->if_snd);
+
+	ifp->if_capabilities = IFCAP_VLAN_MTU;
 
 	/* Attach the interface. */
 	if_attach(ifp);
 	ether_ifattach(ifp);
 
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
+	if (sc->sc_memsize > 262144)
+		sc->sc_memsize = 262144;
 
 	switch (sc->sc_memsize) {
 	case 8192:
@@ -112,13 +172,25 @@ leconfig(sc)
 		sc->sc_nrbuf = 32;
 		sc->sc_ntbuf = 8;
 		break;
+	case 131072:
+		sc->sc_nrbuf = 64;
+		sc->sc_ntbuf = 16;
+		break;
+	case 262144:
+		sc->sc_nrbuf = 128;
+		sc->sc_ntbuf = 32;
+		break;
 	default:
-		panic("leconfig: weird memory size");
+		panic("am7990_config: weird memory size %d", sc->sc_memsize);
 	}
 
-	printf(": address %s, %d receive buffers, %d transmit buffers\n",
-	    ether_sprintf(sc->sc_arpcom.ac_enaddr),
-	    sc->sc_nrbuf, sc->sc_ntbuf);
+	printf(": address %s\n", ether_sprintf(sc->sc_arpcom.ac_enaddr));
+	printf("%s: %d receive buffers, %d transmit buffers\n",
+	    sc->sc_dev.dv_xname, sc->sc_nrbuf, sc->sc_ntbuf);
+
+	sc->sc_sh = shutdownhook_establish(am7990_shutdown, sc);
+	if (sc->sc_sh == NULL)
+		panic("am7990_config: can't establish shutdownhook");
 
 	mem = 0;
 	sc->sc_initaddr = mem;
@@ -128,9 +200,9 @@ leconfig(sc)
 	sc->sc_tmdaddr = mem;
 	mem += sizeof(struct letmd) * sc->sc_ntbuf;
 	sc->sc_rbufaddr = mem;
-	mem += LEBLEN * sc->sc_nrbuf;
+	mem += ETHER_MAX_DIX_LEN * sc->sc_nrbuf;
 	sc->sc_tbufaddr = mem;
-	mem += LEBLEN * sc->sc_ntbuf;
+	mem += ETHER_MAX_DIX_LEN * sc->sc_ntbuf;
 #ifdef notyet
 	if (mem > ...)
 		panic(...);
@@ -138,36 +210,23 @@ leconfig(sc)
 }
 
 void
-lereset(sc)
-	struct le_softc *sc;
+am7990_reset(sc)
+	struct am7990_softc *sc;
 {
 	int s;
 
-	s = splimp();
-	leinit(sc);
+	s = splnet();
+	am7990_init(sc);
 	splx(s);
-}
-
-void
-lewatchdog(unit)
-	short unit;
-{
-	struct le_softc *sc = LE_SOFTC(unit);
-
-	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
-	++sc->sc_arpcom.ac_if.if_oerrors;
-
-	lereset(sc);
 }
 
 /*
  * Set up the initialization block and the descriptor rings.
  */
 void
-lememinit(sc)
-	register struct le_softc *sc;
+am7990_meminit(sc)
+	register struct am7990_softc *sc;
 {
-	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 	u_long a;
 	int bix;
 	struct leinit init;
@@ -186,7 +245,7 @@ lememinit(sc)
 	    (sc->sc_arpcom.ac_enaddr[3] << 8) | sc->sc_arpcom.ac_enaddr[2];
 	init.init_padr[2] =
 	    (sc->sc_arpcom.ac_enaddr[5] << 8) | sc->sc_arpcom.ac_enaddr[4];
-	lesetladrf(&sc->sc_arpcom, init.init_ladrf);
+	am7990_setladrf(&sc->sc_arpcom, init.init_ladrf);
 
 	sc->sc_last_rd = 0;
 	sc->sc_first_td = sc->sc_last_td = sc->sc_no_td = 0;
@@ -209,7 +268,7 @@ lememinit(sc)
 		rmd.rmd0 = a;
 		rmd.rmd1_hadr = a >> 16;
 		rmd.rmd1_bits = LE_R1_OWN;
-		rmd.rmd2 = -LEBLEN | LE_XMD2_ONES;
+		rmd.rmd2 = -ETHER_MAX_DIX_LEN | LE_XMD2_ONES;
 		rmd.rmd3 = 0;
 		(*sc->sc_copytodesc)(sc, &rmd, LE_RMDADDR(sc, bix),
 		    sizeof(rmd));
@@ -231,11 +290,11 @@ lememinit(sc)
 }
 
 void
-lestop(sc)
-	struct le_softc *sc;
+am7990_stop(sc)
+	struct am7990_softc *sc;
 {
 
-	lewrcsr(sc, LE_CSR0, LE_C0_STOP);
+	(*sc->sc_wrcsr)(sc, LE_CSR0, LE_C0_STOP);
 }
 
 /*
@@ -243,45 +302,51 @@ lestop(sc)
  * and transmit/receive descriptor rings.
  */
 void
-leinit(sc)
-	register struct le_softc *sc;
+am7990_init(sc)
+	register struct am7990_softc *sc;
 {
-	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 	register int timo;
 	u_long a;
 
-	lewrcsr(sc, LE_CSR0, LE_C0_STOP);
-	LE_DELAY(100);
+	(*sc->sc_wrcsr)(sc, LE_CSR0, LE_C0_STOP);
+	DELAY(100);
+
+	/* Newer LANCE chips have a reset register */
+	if (sc->sc_hwreset)
+		(*sc->sc_hwreset)(sc);
 
 	/* Set the correct byte swapping mode, etc. */
-	lewrcsr(sc, LE_CSR3, sc->sc_conf3);
+	(*sc->sc_wrcsr)(sc, LE_CSR3, sc->sc_conf3);
 
 	/* Set up LANCE init block. */
-	lememinit(sc);
+	am7990_meminit(sc);
 
 	/* Give LANCE the physical address of its init block. */
 	a = sc->sc_addr + LE_INITADDR(sc);
-	lewrcsr(sc, LE_CSR1, a);
-	lewrcsr(sc, LE_CSR2, a >> 16);
+	(*sc->sc_wrcsr)(sc, LE_CSR1, a);
+	(*sc->sc_wrcsr)(sc, LE_CSR2, a >> 16);
 
 	/* Try to initialize the LANCE. */
-	LE_DELAY(100);
-	lewrcsr(sc, LE_CSR0, LE_C0_INIT);
+	DELAY(100);
+	(*sc->sc_wrcsr)(sc, LE_CSR0, LE_C0_INIT);
 
 	/* Wait for initialization to finish. */
 	for (timo = 100000; timo; timo--)
-		if (lerdcsr(sc, LE_CSR0) & LE_C0_IDON)
+		if ((*sc->sc_rdcsr)(sc, LE_CSR0) & LE_C0_IDON)
 			break;
 
-	if (lerdcsr(sc, LE_CSR0) & LE_C0_IDON) {
+	if ((*sc->sc_rdcsr)(sc, LE_CSR0) & LE_C0_IDON) {
 		/* Start the LANCE. */
-		lewrcsr(sc, LE_CSR0, LE_C0_INEA | LE_C0_STRT | LE_C0_IDON);
+		(*sc->sc_wrcsr)(sc, LE_CSR0, LE_C0_INEA | LE_C0_STRT |
+		    LE_C0_IDON);
 		ifp->if_flags |= IFF_RUNNING;
 		ifp->if_flags &= ~IFF_OACTIVE;
 		ifp->if_timer = 0;
-		lestart(ifp);
+		am7990_start(ifp);
 	} else
-		printf("%s: card failed to initialize\n", sc->sc_dev.dv_xname);
+		printf("%s: controller failed to initialize\n", sc->sc_dev.dv_xname);
+	if (sc->sc_hwinit)
+		(*sc->sc_hwinit)(sc);
 }
 
 /*
@@ -289,8 +354,8 @@ leinit(sc)
  * network buffer memory.
  */
 integrate int
-leput(sc, boff, m)
-	struct le_softc *sc;
+am7990_put(sc, boff, m)
+	struct am7990_softc *sc;
 	int boff;
 	register struct mbuf *m;
 {
@@ -322,8 +387,8 @@ leput(sc, boff, m)
  * we copy into clusters.
  */
 integrate struct mbuf *
-leget(sc, boff, totlen)
-	struct le_softc *sc;
+am7990_get(sc, boff, totlen)
+	struct am7990_softc *sc;
 	int boff, totlen;
 {
 	register struct mbuf *m;
@@ -333,7 +398,7 @@ leget(sc, boff, totlen)
 	MGETHDR(m, M_DONTWAIT, MT_DATA);
 	if (m == 0)
 		return (0);
-	m->m_pkthdr.rcvif = &sc->sc_arpcom.ac_if;
+	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = totlen;
 	pad = ALIGN(sizeof(struct ether_header)) - sizeof(struct ether_header);
 	m->m_data += pad;
@@ -350,10 +415,15 @@ leget(sc, boff, totlen)
 			}
 			len = MLEN;
 		}
-		if (top && totlen >= MINCLSIZE) {
+		if (totlen >= MINCLSIZE) {
 			MCLGET(m, M_DONTWAIT);
-			if (m->m_flags & M_EXT)
+			if (m->m_flags & M_EXT) {
 				len = MCLBYTES;
+				if (!top) {
+					m->m_data += pad;
+					len -= pad;
+				}
+			}
 		}
 		m->m_len = len = min(totlen, len);
 		(*sc->sc_copyfrombuf)(sc, mtod(m, caddr_t), boff, len);
@@ -370,24 +440,27 @@ leget(sc, boff, totlen)
  * Pass a packet to the higher levels.
  */
 integrate void
-leread(sc, boff, len)
-	register struct le_softc *sc;
+am7990_read(sc, boff, len)
+	register struct am7990_softc *sc;
 	int boff, len;
 {
-	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 	struct mbuf *m;
+#ifdef LANCE_REVC_BUG
 	struct ether_header *eh;
+#endif
 
 	if (len <= sizeof(struct ether_header) ||
-	    len > ETHERMTU + sizeof(struct ether_header)) {
+	    len > ETHERMTU + ETHER_VLAN_ENCAP_LEN + sizeof(struct ether_header)) {
+#ifdef LEDEBUG
 		printf("%s: invalid packet size %d; dropping\n",
 		    sc->sc_dev.dv_xname, len);
+#endif
 		ifp->if_ierrors++;
 		return;
 	}
 
 	/* Pull packet off interface. */
-	m = leget(sc, boff, len);
+	m = am7990_get(sc, boff, len);
 	if (m == 0) {
 		ifp->if_ierrors++;
 		return;
@@ -395,40 +468,38 @@ leread(sc, boff, len)
 
 	ifp->if_ipackets++;
 
-	/* We assume that the header fit entirely in one mbuf. */
-	eh = mtod(m, struct ether_header *);
-
 #if NBPFILTER > 0
 	/*
 	 * Check if there's a BPF listener on this interface.
 	 * If so, hand off the raw packet to BPF.
 	 */
-	if (ifp->if_bpf) {
+	if (ifp->if_bpf)
 		bpf_mtap(ifp->if_bpf, m);
+#endif
 
-		/*
-		 * Note that the interface cannot be in promiscuous mode if
-		 * there are no BPF listeners.  And if we are in promiscuous
-		 * mode, we have to check if this packet is really ours.
-		 */
-		if ((ifp->if_flags & IFF_PROMISC) != 0 &&
-		    (eh->ether_dhost[0] & 1) == 0 && /* !mcast and !bcast */
-		    bcmp(eh->ether_dhost, sc->sc_arpcom.ac_enaddr,
-			    sizeof(eh->ether_dhost)) != 0) {
-			m_freem(m);
-			return;
-		}
+#ifdef LANCE_REVC_BUG
+	/*
+	 * The old LANCE (Rev. C) chips have a bug which causes
+	 * garbage to be inserted in front of the received packet.
+	 * The work-around is to ignore packets with an invalid
+	 * destination address (garbage will usually not match).
+	 * Of course, this precludes multicast support...
+	 */
+	eh = mtod(m, struct ether_header *);
+	if (ETHER_CMP(eh->ether_dhost, sc->sc_arpcom.ac_enaddr) &&
+	    ETHER_CMP(eh->ether_dhost, etherbroadcastaddr)) {
+		m_freem(m);
+		return;
 	}
 #endif
 
-	/* Pass the packet up, with the ether header sort-of removed. */
-	m_adj(m, sizeof(struct ether_header));
-	ether_input(ifp, eh, m);
+	/* Pass the packet up. */
+	ether_input_mbuf(ifp, m);
 }
 
 integrate void
-lerint(sc)
-	struct le_softc *sc;
+am7990_rint(sc)
+	struct am7990_softc *sc;
 {
 	register int bix;
 	int rp;
@@ -446,6 +517,7 @@ lerint(sc)
 
 		if (rmd.rmd1_bits & LE_R1_ERR) {
 			if (rmd.rmd1_bits & LE_R1_ENP) {
+#ifdef LEDEBUG
 				if ((rmd.rmd1_bits & LE_R1_OFLO) == 0) {
 					if (rmd.rmd1_bits & LE_R1_FRAM)
 						printf("%s: framing error\n",
@@ -454,6 +526,7 @@ lerint(sc)
 						printf("%s: crc mismatch\n",
 						    sc->sc_dev.dv_xname);
 				}
+#endif
 			} else {
 				if (rmd.rmd1_bits & LE_R1_OFLO)
 					printf("%s: overflow\n",
@@ -462,27 +535,34 @@ lerint(sc)
 			if (rmd.rmd1_bits & LE_R1_BUFF)
 				printf("%s: receive buffer error\n",
 				    sc->sc_dev.dv_xname);
-		} else if (rmd.rmd1_bits & (LE_R1_STP | LE_R1_ENP) !=
+			ifp->if_ierrors++;
+		} else if ((rmd.rmd1_bits & (LE_R1_STP | LE_R1_ENP)) !=
 		    (LE_R1_STP | LE_R1_ENP)) {
 			printf("%s: dropping chained buffer\n",
 			    sc->sc_dev.dv_xname);
+			ifp->if_ierrors++;
 		} else {
-#ifdef LEDEBUG
+#ifdef LEDEBUG1
 			if (sc->sc_debug)
-				recv_print(sc, sc->sc_last_rd);
+				am7990_recv_print(sc, sc->sc_last_rd);
 #endif
-			leread(sc, LE_RBUFADDR(sc, bix), (int)rmd.rmd3 - 4);
+			am7990_read(sc, LE_RBUFADDR(sc, bix),
+			    (int)rmd.rmd3 - 4);
 		}
 
 		rmd.rmd1_bits = LE_R1_OWN;
-		rmd.rmd2 = -LEBLEN | LE_XMD2_ONES;
+		rmd.rmd2 = -ETHER_MAX_DIX_LEN | LE_XMD2_ONES;
 		rmd.rmd3 = 0;
 		(*sc->sc_copytodesc)(sc, &rmd, rp, sizeof(rmd));
 
-#ifdef LEDEBUG
+#ifdef LEDEBUG1
 		if (sc->sc_debug)
-			printf("sc->sc_last_rd = %x, rmd = %x\n",
-			    sc->sc_last_rd, rmd);
+			printf("sc->sc_last_rd = %x, rmd: "
+			       "ladr %04x, hadr %02x, flags %02x, "
+			       "bcnt %04x, mcnt %04x\n",
+				sc->sc_last_rd,
+				rmd.rmd0, rmd.rmd1_hadr, rmd.rmd1_bits,
+				rmd.rmd2, rmd.rmd3);
 #endif
 
 		if (++bix == sc->sc_nrbuf)
@@ -493,10 +573,9 @@ lerint(sc)
 }
 
 integrate void
-letint(sc)
-	register struct le_softc *sc;
+am7990_tint(sc)
+	register struct am7990_softc *sc;
 {
-	register struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 	register int bix;
 	struct letmd tmd;
 
@@ -506,13 +585,17 @@ letint(sc)
 		if (sc->sc_no_td <= 0)
 			break;
 
-#ifdef LEDEBUG
-		if (sc->sc_debug)
-			printf("trans tmd = %x\n", tmd);
-#endif
-
 		(*sc->sc_copyfromdesc)(sc, &tmd, LE_TMDADDR(sc, bix),
 		    sizeof(tmd));
+
+#ifdef LEDEBUG
+		if (sc->sc_debug)
+			printf("trans tmd: "
+			    "ladr %04x, hadr %02x, flags %02x, "
+			    "bcnt %04x, mcnt %04x\n",
+			    tmd.tmd0, tmd.tmd1_hadr, tmd.tmd1_bits,
+			    tmd.tmd2, tmd.tmd3);
+#endif
 
 		if (tmd.tmd1_bits & LE_T1_OWN)
 			break;
@@ -521,20 +604,24 @@ letint(sc)
 
 		if (tmd.tmd1_bits & LE_T1_ERR) {
 			if (tmd.tmd3 & LE_T3_BUFF)
-				printf("%s: transmit buffer error\n", sc->sc_dev.dv_xname);
+				printf("%s: transmit buffer error\n",
+				    sc->sc_dev.dv_xname);
 			else if (tmd.tmd3 & LE_T3_UFLO)
 				printf("%s: underflow\n", sc->sc_dev.dv_xname);
 			if (tmd.tmd3 & (LE_T3_BUFF | LE_T3_UFLO)) {
-				lereset(sc);
+				am7990_reset(sc);
 				return;
 			}
-			if (tmd.tmd3 & LE_T3_LCAR)
-				printf("%s: lost carrier\n", sc->sc_dev.dv_xname);
+			if (tmd.tmd3 & LE_T3_LCAR) {
+				if (sc->sc_nocarrier)
+					(*sc->sc_nocarrier)(sc);
+			}
 			if (tmd.tmd3 & LE_T3_LCOL)
 				ifp->if_collisions++;
 			if (tmd.tmd3 & LE_T3_RTRY) {
 				printf("%s: excessive collisions, tdr %d\n",
-				    sc->sc_dev.dv_xname, tmd.tmd3 & LE_T3_TDR_MASK);
+				    sc->sc_dev.dv_xname,
+				    tmd.tmd3 & LE_T3_TDR_MASK);
 				ifp->if_collisions += 16;
 			}
 			ifp->if_oerrors++;
@@ -555,7 +642,7 @@ letint(sc)
 
 	sc->sc_first_td = bix;
 
-	lestart(ifp);
+	am7990_start(ifp);
 
 	if (sc->sc_no_td == 0)
 		ifp->if_timer = 0;
@@ -564,85 +651,104 @@ letint(sc)
 /*
  * Controller interrupt.
  */
-#ifdef LEINTR_UNIT
 int
-leintr(unit)
-	int unit;
-{
-	register struct le_softc *sc = LE_SOFTC(unit);
-#else
-int
-leintr(arg)
+am7990_intr(arg)
 	register void *arg;
 {
-	register struct le_softc *sc = arg;
-#endif
+	register struct am7990_softc *sc = arg;
 	register u_int16_t isr;
 
-	isr = lerdcsr(sc, LE_CSR0);
+	isr = (*sc->sc_rdcsr)(sc, LE_CSR0);
 #ifdef LEDEBUG
-	if (sc->sc_debug)
-		printf("%s: leintr entering with isr=%04x\n",
+	if (sc->sc_debug){
+		printf("%s: am7990_intr entering with isr=%04x\n",
 		    sc->sc_dev.dv_xname, isr);
+		printf(" isr: 0x%b\n", isr, LE_C0_BITS);
+	}
 #endif
 	if ((isr & LE_C0_INTR) == 0)
 		return (0);
 
-	lewrcsr(sc, LE_CSR0,
-	    isr & (LE_C0_INEA | LE_C0_BABL | LE_C0_MISS | LE_C0_MERR |
-		   LE_C0_RINT | LE_C0_TINT | LE_C0_IDON));
+	/*
+	 * After receiving an interrupt, we need to toggle the interrupt
+	 * enable bit in order to keep receiving them (some chips works
+	 * without this, some do not)
+	 */
+	(*sc->sc_wrcsr)(sc, LE_CSR0, isr & ~LE_C0_INEA);
+	(*sc->sc_wrcsr)(sc, LE_CSR0, LE_C0_INEA);
+
 	if (isr & LE_C0_ERR) {
 		if (isr & LE_C0_BABL) {
+#ifdef LEDEBUG
 			printf("%s: babble\n", sc->sc_dev.dv_xname);
-			sc->sc_arpcom.ac_if.if_oerrors++;
+#endif
+			ifp->if_oerrors++;
 		}
 #if 0
 		if (isr & LE_C0_CERR) {
 			printf("%s: collision error\n", sc->sc_dev.dv_xname);
-			sc->sc_arpcom.ac_if.if_collisions++;
+			ifp->if_collisions++;
 		}
 #endif
-		if (isr & LE_C0_MISS)
-			sc->sc_arpcom.ac_if.if_ierrors++;
+		if (isr & LE_C0_MISS) {
+#ifdef LEDEBUG
+			printf("%s: missed packet\n", sc->sc_dev.dv_xname);
+#endif
+			ifp->if_ierrors++;
+		}
 		if (isr & LE_C0_MERR) {
 			printf("%s: memory error\n", sc->sc_dev.dv_xname);
-			lereset(sc);
+			am7990_reset(sc);
 			return (1);
 		}
 	}
 
 	if ((isr & LE_C0_RXON) == 0) {
 		printf("%s: receiver disabled\n", sc->sc_dev.dv_xname);
-		sc->sc_arpcom.ac_if.if_ierrors++;
-		lereset(sc);
+		ifp->if_ierrors++;
+		am7990_reset(sc);
 		return (1);
 	}
 	if ((isr & LE_C0_TXON) == 0) {
 		printf("%s: transmitter disabled\n", sc->sc_dev.dv_xname);
-		sc->sc_arpcom.ac_if.if_oerrors++;
-		lereset(sc);
+		ifp->if_oerrors++;
+		am7990_reset(sc);
 		return (1);
 	}
 
 	if (isr & LE_C0_RINT)
-		lerint(sc);
+		am7990_rint(sc);
 	if (isr & LE_C0_TINT)
-		letint(sc);
+		am7990_tint(sc);
 
 	return (1);
+}
+
+#undef	ifp
+
+void
+am7990_watchdog(ifp)
+	struct ifnet *ifp;
+{
+	struct am7990_softc *sc = ifp->if_softc;
+
+	log(LOG_ERR, "%s: device timeout\n", sc->sc_dev.dv_xname);
+	++ifp->if_oerrors;
+
+	am7990_reset(sc);
 }
 
 /*
  * Setup output on interface.
  * Get another datagram to send off of the interface queue, and map it to the
  * interface before starting the output.
- * Called only at splimp or interrupt level.
+ * Called only at splnet or interrupt level.
  */
 void
-lestart(ifp)
+am7990_start(ifp)
 	register struct ifnet *ifp;
 {
-	register struct le_softc *sc = LE_SOFTC(ifp->if_unit);
+	register struct am7990_softc *sc = ifp->if_softc;
 	register int bix;
 	register struct mbuf *m;
 	struct letmd tmd;
@@ -664,7 +770,7 @@ lestart(ifp)
 			    sc->sc_no_td, sc->sc_last_td);
 		}
 
-		IF_DEQUEUE(&ifp->if_snd, m);
+		IFQ_DEQUEUE(&ifp->if_snd, m);
 		if (m == 0)
 			break;
 
@@ -680,7 +786,7 @@ lestart(ifp)
 		/*
 		 * Copy the mbuf chain into the transmit buffer.
 		 */
-		len = leput(sc, LE_TBUFADDR(sc, bix), m);
+		len = am7990_put(sc, LE_TBUFADDR(sc, bix), m);
 
 #ifdef LEDEBUG
 		if (len > ETHERMTU + sizeof(struct ether_header))
@@ -700,15 +806,18 @@ lestart(ifp)
 
 #ifdef LEDEBUG
 		if (sc->sc_debug)
-			xmit_print(sc, sc->sc_last_td);
+			am7990_xmit_print(sc, sc->sc_last_td);
 #endif
 
-		lewrcsr(sc, LE_CSR0, LE_C0_INEA | LE_C0_TDMD);
+		(*sc->sc_wrcsr)(sc, LE_CSR0, LE_C0_INEA | LE_C0_TDMD);
 
 		if (++bix == sc->sc_ntbuf)
 			bix = 0;
 
 		if (++sc->sc_no_td == sc->sc_ntbuf) {
+#ifdef LEDEBUG
+			printf("\nequal!\n");
+#endif
 			ifp->if_flags |= IFF_OACTIVE;
 			break;
 		}
@@ -722,17 +831,22 @@ lestart(ifp)
  * Process an ioctl request.
  */
 int
-leioctl(ifp, cmd, data)
+am7990_ioctl(ifp, cmd, data)
 	register struct ifnet *ifp;
 	u_long cmd;
 	caddr_t data;
 {
-	struct le_softc *sc = LE_SOFTC(ifp->if_unit);
+	register struct am7990_softc *sc = ifp->if_softc;
 	struct ifaddr *ifa = (struct ifaddr *)data;
 	struct ifreq *ifr = (struct ifreq *)data;
 	int s, error = 0;
 
-	s = splimp();
+	s = splnet();
+
+	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+		splx(s);
+		return error;
+	}
 
 	switch (cmd) {
 
@@ -742,42 +856,15 @@ leioctl(ifp, cmd, data)
 		switch (ifa->ifa_addr->sa_family) {
 #ifdef INET
 		case AF_INET:
-			leinit(sc);
+			am7990_init(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
 			break;
 #endif
-#ifdef NS
-		case AF_NS:
-		    {
-			register struct ns_addr *ina = &IA_SNS(ifa)->sns_addr;
-
-			if (ns_nullhost(*ina))
-				ina->x_host =
-				    *(union ns_host *)(sc->sc_arpcom.ac_enaddr);
-			else
-				bcopy(ina->x_host.c_host,
-				    sc->sc_arpcom.ac_enaddr,
-				    sizeof(sc->sc_arpcom.ac_enaddr));
-			/* Set new address. */
-			leinit(sc);
-			break;
-		    }
-#endif
 		default:
-			leinit(sc);
+			am7990_init(sc);
 			break;
 		}
 		break;
-
-#if defined(CCITT) && defined(LLC)
-	case SIOCSIFCONF_X25:
-		ifp->if_flags |= IFF_UP;
-		ifa->ifa_rtrequest = (void (*)())cons_rtrequest; /* XXX */
-		error = x25_llcglue(PRC_IFUP, ifa->ifa_addr);
-		if (error == 0)
-			leinit(sc);
-		break;
-#endif /* CCITT && LLC */
 
 	case SIOCSIFFLAGS:
 		if ((ifp->if_flags & IFF_UP) == 0 &&
@@ -786,7 +873,7 @@ leioctl(ifp, cmd, data)
 			 * If interface is marked down and it is running, then
 			 * stop it.
 			 */
-			lestop(sc);
+			am7990_stop(sc);
 			ifp->if_flags &= ~IFF_RUNNING;
 		} else if ((ifp->if_flags & IFF_UP) != 0 &&
 		    	   (ifp->if_flags & IFF_RUNNING) == 0) {
@@ -794,14 +881,14 @@ leioctl(ifp, cmd, data)
 			 * If interface is marked up and it is stopped, then
 			 * start it.
 			 */
-			leinit(sc);
+			am7990_init(sc);
 		} else {
 			/*
 			 * Reset the interface to pick up changes in any other
 			 * flags that affect hardware registers.
 			 */
-			/*lestop(sc);*/
-			leinit(sc);
+			/*am7990_stop(sc);*/
+			am7990_init(sc);
 		}
 #ifdef LEDEBUG
 		if (ifp->if_flags & IFF_DEBUG)
@@ -822,9 +909,18 @@ leioctl(ifp, cmd, data)
 			 * Multicast list has changed; set the hardware filter
 			 * accordingly.
 			 */
-			lereset(sc);
+			if (ifp->if_flags & IFF_RUNNING)
+				am7990_reset(sc);
 			error = 0;
 		}
+		break;
+
+	case SIOCGIFMEDIA:
+	case SIOCSIFMEDIA:
+		if (sc->sc_hasifmedia)
+			error = ifmedia_ioctl(ifp, ifr, &sc->sc_ifmedia, cmd);
+		else
+			error = EINVAL;
 		break;
 
 	default:
@@ -836,10 +932,18 @@ leioctl(ifp, cmd, data)
 	return (error);
 }
 
+hide void
+am7990_shutdown(arg)
+	void *arg;
+{
+
+	am7990_stop((struct am7990_softc *)arg);
+}
+
 #ifdef LEDEBUG
 void
-recv_print(sc, no)
-	struct le_softc *sc;
+am7990_recv_print(sc, no)
+	struct am7990_softc *sc;
 	int no;
 {
 	struct lermd rmd;
@@ -850,21 +954,23 @@ recv_print(sc, no)
 	len = rmd.rmd3;
 	printf("%s: receive buffer %d, len = %d\n", sc->sc_dev.dv_xname, no,
 	    len);
-	printf("%s: status %04x\n", sc->sc_dev.dv_xname, lerdcsr(sc, LE_CSR0));
+	printf("%s: status %04x\n", sc->sc_dev.dv_xname,
+	    (*sc->sc_rdcsr)(sc, LE_CSR0));
 	printf("%s: ladr %04x, hadr %02x, flags %02x, bcnt %04x, mcnt %04x\n",
 	    sc->sc_dev.dv_xname,
 	    rmd.rmd0, rmd.rmd1_hadr, rmd.rmd1_bits, rmd.rmd2, rmd.rmd3);
 	if (len >= sizeof(eh)) {
 		(*sc->sc_copyfrombuf)(sc, &eh, LE_RBUFADDR(sc, no), sizeof(eh));
-		printf("%s: dst %s", ether_sprintf(eh.ether_dhost));
+		printf("%s: dst %s", sc->sc_dev.dv_xname,
+			ether_sprintf(eh.ether_dhost));
 		printf(" src %s type %04x\n", ether_sprintf(eh.ether_shost),
-		    ntohs(eh.ether_type));
+			ntohs(eh.ether_type));
 	}
 }
 
 void
-xmit_print(sc, no)
-	struct le_softc *sc;
+am7990_xmit_print(sc, no)
+	struct am7990_softc *sc;
 	int no;
 {
 	struct letmd tmd;
@@ -875,13 +981,15 @@ xmit_print(sc, no)
 	len = -tmd.tmd2;
 	printf("%s: transmit buffer %d, len = %d\n", sc->sc_dev.dv_xname, no,
 	    len);
-	printf("%s: status %04x\n", sc->sc_dev.dv_xname, lerdcsr(sc, LE_CSR0));
+	printf("%s: status %04x\n", sc->sc_dev.dv_xname,
+	    (*sc->sc_rdcsr)(sc, LE_CSR0));
 	printf("%s: ladr %04x, hadr %02x, flags %02x, bcnt %04x, mcnt %04x\n",
 	    sc->sc_dev.dv_xname,
 	    tmd.tmd0, tmd.tmd1_hadr, tmd.tmd1_bits, tmd.tmd2, tmd.tmd3);
 	if (len >= sizeof(eh)) {
 		(*sc->sc_copyfrombuf)(sc, &eh, LE_TBUFADDR(sc, no), sizeof(eh));
-		printf("%s: dst %s", ether_sprintf(eh.ether_dhost));
+		printf("%s: dst %s", sc->sc_dev.dv_xname,
+			ether_sprintf(eh.ether_dhost));
 		printf(" src %s type %04x\n", ether_sprintf(eh.ether_shost),
 		    ntohs(eh.ether_type));
 	}
@@ -892,15 +1000,13 @@ xmit_print(sc, no)
  * Set up the logical address filter.
  */
 void
-lesetladrf(ac, af)
+am7990_setladrf(ac, af)
 	struct arpcom *ac;
 	u_int16_t *af;
 {
 	struct ifnet *ifp = &ac->ac_if;
 	struct ether_multi *enm;
-	register u_char *cp, c;
 	register u_int32_t crc;
-	register int i, len;
 	struct ether_multistep step;
 
 	/*
@@ -917,8 +1023,7 @@ lesetladrf(ac, af)
 	af[0] = af[1] = af[2] = af[3] = 0x0000;
 	ETHER_FIRST_MULTI(step, ac, enm);
 	while (enm != NULL) {
-		if (bcmp(enm->enm_addrlo, enm->enm_addrhi,
-		    sizeof(enm->enm_addrlo)) != 0) {
+		if (ETHER_CMP(enm->enm_addrlo, enm->enm_addrhi)) {
 			/*
 			 * We must listen to a range of multicast addresses.
 			 * For now, just accept all multicasts, rather than
@@ -930,21 +1035,7 @@ lesetladrf(ac, af)
 			goto allmulti;
 		}
 
-		cp = enm->enm_addrlo;
-		crc = 0xffffffff;
-		for (len = sizeof(enm->enm_addrlo); --len >= 0;) {
-			c = *cp++;
-			for (i = 8; --i >= 0;) {
-				if ((crc & 0x01) ^ (c & 0x01)) {
-					crc >>= 1;
-					crc ^= 0xedb88320;
-				} else
-					crc >>= 1;
-				c >>= 1;
-			}
-		}
-		/* Just want the 6 most significant bits. */
-		crc >>= 26;
+		crc = ether_crc32_le(enm->enm_addrlo, ETHER_ADDR_LEN) >> 26;
 
 		/* Set the corresponding bit in the filter. */
 		af[crc >> 4] |= 1 << (crc & 0xf);
@@ -960,21 +1051,26 @@ allmulti:
 }
 
 
-#if 0	/* USE OF THE FOLLOWING IS MACHINE-SPECIFIC */
 /*
- * Routines for accessing the transmit and receive buffers. Unfortunately,
- * CPU addressing of these buffers is done in one of 3 ways:
- * - contiguous (for the 3max and turbochannel option card)
- * - gap2, which means shorts (2 bytes) interspersed with short (2 byte)
- *   spaces (for the pmax)
- * - gap16, which means 16bytes interspersed with 16byte spaces
- *   for buffers which must begin on a 32byte boundary (for 3min and maxine)
- * The buffer offset is the logical byte offset, assuming contiguous storage.
+ * Routines for accessing the transmit and receive buffers.
+ * The various CPU and adapter configurations supported by this
+ * driver require three different access methods for buffers
+ * and descriptors:
+ *	(1) contig (contiguous data; no padding),
+ *	(2) gap2 (two bytes of data followed by two bytes of padding),
+ *	(3) gap16 (16 bytes of data followed by 16 bytes of padding).
  */
+
+/*
+ * contig: contiguous data with no padding.
+ *
+ * Buffers may have any alignment.
+ */
+
 void
-copytodesc_contig(sc, from, boff, len)
-	struct le_softc *sc;
-	caddr_t from;
+am7990_copytobuf_contig(sc, from, boff, len)
+	struct am7990_softc *sc;
+	void *from;
 	int boff, len;
 {
 	volatile caddr_t buf = sc->sc_mem;
@@ -986,9 +1082,9 @@ copytodesc_contig(sc, from, boff, len)
 }
 
 void
-copyfromdesc_contig(sc, to, boff, len)
-	struct le_softc *sc;
-	caddr_t to;
+am7990_copyfrombuf_contig(sc, to, boff, len)
+	struct am7990_softc *sc;
+	void *to;
 	int boff, len;
 {
 	volatile caddr_t buf = sc->sc_mem;
@@ -1000,36 +1096,8 @@ copyfromdesc_contig(sc, to, boff, len)
 }
 
 void
-copytobuf_contig(sc, from, boff, len)
-	struct le_softc *sc;
-	caddr_t from;
-	int boff, len;
-{
-	volatile caddr_t buf = sc->sc_mem;
-
-	/*
-	 * Just call bcopy() to do the work.
-	 */
-	bcopy(from, buf + boff, len);
-}
-
-void
-copyfrombuf_contig(sc, to, boff, len)
-	struct le_softc *sc;
-	caddr_t to;
-	int boff, len;
-{
-	volatile caddr_t buf = sc->sc_mem;
-
-	/*
-	 * Just call bcopy() to do the work.
-	 */
-	bcopy(buf + boff, to, len);
-}
-
-void
-zerobuf_contig(sc, boff, len)
-	struct le_softc *sc;
+am7990_zerobuf_contig(sc, boff, len)
+	struct am7990_softc *sc;
 	int boff, len;
 {
 	volatile caddr_t buf = sc->sc_mem;
@@ -1040,103 +1108,93 @@ zerobuf_contig(sc, boff, len)
 	bzero(buf + boff, len);
 }
 
+#if 0
 /*
- * For the pmax the buffer consists of shorts (2 bytes) interspersed with
- * short (2 byte) spaces and must be accessed with halfword load/stores.
- * (don't worry about doing an extra byte)
+ * Examples only; duplicate these and tweak (if necessary) in
+ * machine-specific front-ends.
  */
+
+/*
+ * gap2: two bytes of data followed by two bytes of pad.
+ *
+ * Buffers must be 4-byte aligned.  The code doesn't worry about
+ * doing an extra byte.
+ */
+
 void
-copytobuf_gap2(sc, from, boff, len)
-	struct le_softc *sc;
-	register caddr_t from;
+am7990_copytobuf_gap2(sc, fromv, boff, len)
+	struct am7990_softc *sc;
+	void *fromv;
 	int boff;
 	register int len;
 {
 	volatile caddr_t buf = sc->sc_mem;
-	register volatile u_short *bptr;
-	register int xfer;
+	register caddr_t from = fromv;
+	register volatile u_int16_t *bptr;
 
 	if (boff & 0x1) {
 		/* handle unaligned first byte */
-		bptr = ((volatile u_short *)buf) + (boff - 1);
+		bptr = ((volatile u_int16_t *)buf) + (boff - 1);
 		*bptr = (*from++ << 8) | (*bptr & 0xff);
 		bptr += 2;
 		len--;
 	} else
-		bptr = ((volatile u_short *)buf) + boff;
-	if ((unsigned)from & 0x1) {
-		while (len > 1) {
-			*bptr = (from[1] << 8) | (from[0] & 0xff);
-			bptr += 2;
-			from += 2;
-			len -= 2;
-		}
-	} else {
-		/* optimize for aligned transfers */
-		xfer = (int)((unsigned)len & ~0x1);
-		CopyToBuffer((u_short *)from, bptr, xfer);
-		bptr += xfer;
-		from += xfer;
-		len -= xfer;
+		bptr = ((volatile u_int16_t *)buf) + boff;
+	while (len > 1) {
+		*bptr = (from[1] << 8) | (from[0] & 0xff);
+		bptr += 2;
+		from += 2;
+		len -= 2;
 	}
 	if (len == 1)
-		*bptr = (u_short)*from;
+		*bptr = (u_int16_t)*from;
 }
 
 void
-copyfrombuf_gap2(sc, to, boff, len)
-	struct le_softc *sc;
-	register caddr_t to;
+am7990_copyfrombuf_gap2(sc, tov, boff, len)
+	struct am7990_softc *sc;
+	void *tov;
 	int boff, len;
 {
 	volatile caddr_t buf = sc->sc_mem;
-	register volatile u_short *bptr;
-	register u_short tmp;
-	register int xfer;
+	register caddr_t to = tov;
+	register volatile u_int16_t *bptr;
+	register u_int16_t tmp;
 
 	if (boff & 0x1) {
 		/* handle unaligned first byte */
-		bptr = ((volatile u_short *)buf) + (boff - 1);
+		bptr = ((volatile u_int16_t *)buf) + (boff - 1);
 		*to++ = (*bptr >> 8) & 0xff;
 		bptr += 2;
 		len--;
 	} else
-		bptr = ((volatile u_short *)buf) + boff;
-	if ((unsigned)to & 0x1) {
-		while (len > 1) {
-			tmp = *bptr;
-			*to++ = tmp & 0xff;
-			*to++ = (tmp >> 8) & 0xff;
-			bptr += 2;
-			len -= 2;
-		}
-	} else {
-		/* optimize for aligned transfers */
-		xfer = (int)((unsigned)len & ~0x1);
-		CopyFromBuffer(bptr, to, xfer);
-		bptr += xfer;
-		to += xfer;
-		len -= xfer;
+		bptr = ((volatile u_int16_t *)buf) + boff;
+	while (len > 1) {
+		tmp = *bptr;
+		*to++ = tmp & 0xff;
+		*to++ = (tmp >> 8) & 0xff;
+		bptr += 2;
+		len -= 2;
 	}
 	if (len == 1)
 		*to = *bptr & 0xff;
 }
 
 void
-zerobuf_gap2(sc, boff, len)
-	struct le_softc *sc;
+am7990_zerobuf_gap2(sc, boff, len)
+	struct am7990_softc *sc;
 	int boff, len;
 {
 	volatile caddr_t buf = sc->sc_mem;
-	register volatile u_short *bptr;
+	register volatile u_int16_t *bptr;
 
 	if ((unsigned)boff & 0x1) {
-		bptr = ((volatile u_short *)buf) + (boff - 1);
+		bptr = ((volatile u_int16_t *)buf) + (boff - 1);
 		*bptr &= 0xff;
 		bptr += 2;
 		len--;
 	} else
-		bptr = ((volatile u_short *)buf) + boff;
+		bptr = ((volatile u_int16_t *)buf) + boff;
 	while (len > 0) {
 		*bptr = 0;
 		bptr += 2;
@@ -1145,17 +1203,20 @@ zerobuf_gap2(sc, boff, len)
 }
 
 /*
- * For the 3min and maxine, the buffers are in main memory filled in with
- * 16byte blocks interspersed with 16byte spaces.
+ * gap16: 16 bytes of data followed by 16 bytes of pad.
+ *
+ * Buffers must be 32-byte aligned.
  */
+
 void
-copytobuf_gap16(sc, from, boff, len)
-	struct le_softc *sc;
-	register caddr_t from;
+am7990_copytobuf_gap16(sc, fromv, boff, len)
+	struct am7990_softc *sc;
+	void *fromv;
 	int boff;
 	register int len;
 {
 	volatile caddr_t buf = sc->sc_mem;
+	register caddr_t from = fromv;
 	register caddr_t bptr;
 	register int xfer;
 
@@ -1173,12 +1234,13 @@ copytobuf_gap16(sc, from, boff, len)
 }
 
 void
-copyfrombuf_gap16(sc, to, boff, len)
-	struct le_softc *sc;
-	register caddr_t to;
+am7990_copyfrombuf_gap16(sc, tov, boff, len)
+	struct am7990_softc *sc;
+	void *tov;
 	int boff, len;
 {
 	volatile caddr_t buf = sc->sc_mem;
+	register caddr_t to = tov;
 	register caddr_t bptr;
 	register int xfer;
 
@@ -1196,8 +1258,8 @@ copyfrombuf_gap16(sc, to, boff, len)
 }
 
 void
-zerobuf_gap16(sc, boff, len)
-	struct le_softc *sc;
+am7990_zerobuf_gap16(sc, boff, len)
+	struct am7990_softc *sc;
 	int boff, len;
 {
 	volatile caddr_t buf = sc->sc_mem;
@@ -1215,4 +1277,4 @@ zerobuf_gap16(sc, boff, len)
 		xfer = min(len, 16);
 	}
 }
-#endif
+#endif /* Example only */

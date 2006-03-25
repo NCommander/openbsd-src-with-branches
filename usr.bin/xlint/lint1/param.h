@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.4 1995/07/23 18:14:41 ragge Exp $	*/
+/*	$OpenBSD: param.h,v 1.12 2004/02/07 23:27:32 millert Exp $	*/
+/*	$NetBSD: param.h,v 1.6 1996/04/01 21:47:57 mark Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Jochen Pohl
@@ -60,27 +61,8 @@
  * Should be set to 1 if the difference of two pointers is of type long
  * or the value of sizeof is of type unsigned long.
  */
-#ifdef __alpha__
 #define PTRDIFF_IS_LONG		1
 #define SIZEOF_IS_ULONG		1
-#elif __i386__
-#define PTRDIFF_IS_LONG		0
-#define SIZEOF_IS_ULONG		0
-#elif __m68k__
-#define PTRDIFF_IS_LONG		0
-#define SIZEOF_IS_ULONG		0
-#elif __ns32k__
-#define PTRDIFF_IS_LONG		0
-#define SIZEOF_IS_ULONG		0
-#elif __sparc__
-#define PTRDIFF_IS_LONG		0
-#define SIZEOF_IS_ULONG		0
-#elif __vax__
-#define PTRDIFF_IS_LONG         0
-#define SIZEOF_IS_ULONG         0
-#else
-#error unknown machine type
-#endif
 
 /*
  * Make sure this matches wchar_t.
@@ -98,23 +80,9 @@ typedef	long	quad_t;
 typedef	u_long	u_quad_t;
 #endif
 #endif
-
-
-/*
- * long double only in ANSI C.
- */
-#ifdef __STDC__
 typedef	long double ldbl_t;
-#else
-typedef	double	ldbl_t;
-#endif
 
 /*
- * Some traditional compilers are not able to assign structures.
+ * Modern compilers are able to assign structures.
  */
-#ifdef __STDC__
 #define STRUCT_ASSIGN(dest, src)	(dest) = (src)
-#else
-#define STRUCT_ASSIGN(dest, src)	(void)memcpy(&(dest), &(src), \
-						     sizeof (dest));
-#endif

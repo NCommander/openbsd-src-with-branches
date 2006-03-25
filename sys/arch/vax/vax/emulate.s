@@ -1,4 +1,5 @@
-/*	$NetBSD: emulate.s,v 1.1 1995/02/24 01:35:08 ragge Exp $ */
+/*	$OpenBSD: emulate.s,v 1.3 1997/09/10 12:04:44 maja Exp $ */
+/*	$NetBSD: emulate.s,v 1.2 1997/03/15 16:14:25 ragge Exp $ */
 /*
  * Copyright (c) 1986, 1987 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,6 @@
  *	@(#)emulate.s	7.5 (Berkeley) 6/28/90
  */
 
-#if VAX630 || VAX650
 /*
  * String instruction emulation - MicroVAX only.  These routines are called
  * from locore.s when an "emulate" fault occurs on the MicroVAX.  They are
@@ -1208,8 +1204,6 @@ _EMcmpp3:
 _EMcmpp4:
 	return
 
-
-#endif UVAXII
 
 
 #ifdef notdef

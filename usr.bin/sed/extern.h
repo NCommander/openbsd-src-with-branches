@@ -1,3 +1,4 @@
+/* *	$OpenBSD: extern.h,v 1.3 2002/02/16 21:27:52 millert Exp $*/
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +32,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)extern.h	8.1 (Berkeley) 6/6/93
- *	$Id: extern.h,v 1.4 1994/02/03 23:44:52 cgd Exp $
  */
 
 extern struct s_command *prog;
@@ -48,13 +44,13 @@ extern int lastline;
 extern int aflag, eflag, nflag;
 extern char *fname;
 
-void	 cfclose __P((struct s_command *, struct s_command *));
-void	 compile __P((void));
-void	 cspace __P((SPACE *, char *, size_t, enum e_spflag));
-char	*cu_fgets __P((char *, int));
-void	 err __P((int, const char *, ...));
-int	 mf_fgets __P((SPACE *, enum e_spflag));
-void	 process __P((void));
-char	*strregerror __P((int, regex_t *));
-void	*xmalloc __P((u_int));
-void	*xrealloc __P((void *, u_int));
+void	 cfclose(struct s_command *, struct s_command *);
+void	 compile(void);
+void	 cspace(SPACE *, char *, size_t, enum e_spflag);
+char	*cu_fgets(char *, int);
+void	 err(int, const char *, ...);
+int	 mf_fgets(SPACE *, enum e_spflag);
+void	 process(void);
+char	*strregerror(int, regex_t *);
+void	*xmalloc(u_int);
+void	*xrealloc(void *, u_int);

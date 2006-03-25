@@ -156,6 +156,7 @@ krb5_addlog_func(krb5_context context,
     return 0;
 }
 
+/* Avoid conflict with syslog_data in syslog.h, rename to syslog_d */
 
 struct _heimdal_syslog_data{
     int priority;

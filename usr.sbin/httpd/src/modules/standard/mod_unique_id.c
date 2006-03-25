@@ -72,9 +72,6 @@ typedef struct {
     unsigned int stamp;
     unsigned int in_addr;
     unsigned int pid;
-#ifdef MULTITHREAD
-    unsigned int tid;
-#endif
     unsigned short counter;
 } unique_id_rec;
 
@@ -144,50 +141,6 @@ typedef struct {
 
 static unsigned global_in_addr;
 
-#ifdef WIN32
-
-static DWORD tls_index;
-
-BOOL WINAPI DllMain (HINSTANCE dllhandle, DWORD reason, LPVOID reserved)
-{
-    LPVOID memptr;
-
-    switch (reason) {
-    case DLL_PROCESS_ATTACH:
-	tls_index = TlsAlloc();
-    case DLL_THREAD_ATTACH: /* intentional no break */
-	TlsSetValue(tls_index, calloc(sizeof(unique_id_rec), 1));
-	break;
-    case DLL_THREAD_DETACH:
-	memptr = TlsGetValue(tls_index);
-	if (memptr) {
-	    free (memptr);
-	    TlsSetValue (tls_index, 0);
-	}
-	break;
-    }
-
-    return TRUE;
-}
-
-static unique_id_rec* get_cur_unique_id(int parent)
-{
-    /* Apache initializes the child process, not the individual child threads.
-     * Copy the original parent record if this->pid is not yet initialized.
-     */
-    static unique_id_rec *parent_id;
-    unique_id_rec *cur_unique_id = (unique_id_rec *) TlsGetValue(tls_index);
-
-    if (parent) {
-        parent_id = cur_unique_id;
-    }
-    else if (!cur_unique_id->pid) {
-        memcpy(cur_unique_id, parent_id, sizeof(*parent_id));
-    }
-    return cur_unique_id;
-}
-
-#else /* !WIN32 */
 
 /* Even when not MULTITHREAD, this will return a single structure, since
  * APACHE_TLS should be defined as empty on single-threaded platforms.
@@ -198,17 +151,11 @@ static unique_id_rec* get_cur_unique_id(int parent)
     return &spcid;
 }
 
-#endif /* !WIN32 */
-
 
 /*
  * Number of elements in the structure unique_id_rec.
  */
-#ifdef MULTITHREAD
-#define UNIQUE_ID_REC_MAX 5
-#else
 #define UNIQUE_ID_REC_MAX 4
-#endif
 
 static unsigned short unique_id_rec_offset[UNIQUE_ID_REC_MAX],
                       unique_id_rec_size[UNIQUE_ID_REC_MAX],
@@ -222,9 +169,7 @@ static void unique_id_global_init(server_rec *s, pool *p)
 #endif
     char str[MAXHOSTNAMELEN + 1];
     struct hostent *hent;
-#ifndef NO_GETTIMEOFDAY
     struct timeval tv;
-#endif
     unique_id_rec *cur_unique_id = get_cur_unique_id(1);
 
     /*
@@ -236,20 +181,10 @@ static void unique_id_global_init(server_rec *s, pool *p)
     unique_id_rec_size[1] = sizeof(cur_unique_id->in_addr);
     unique_id_rec_offset[2] = XtOffsetOf(unique_id_rec, pid);
     unique_id_rec_size[2] = sizeof(cur_unique_id->pid);
-#ifdef MULTITHREAD
-    unique_id_rec_offset[3] = XtOffsetOf(unique_id_rec, tid);
-    unique_id_rec_size[3] = sizeof(cur_unique_id->tid);
-    unique_id_rec_offset[4] = XtOffsetOf(unique_id_rec, counter);
-    unique_id_rec_size[4] = sizeof(cur_unique_id->counter);
-    unique_id_rec_total_size = unique_id_rec_size[0] + unique_id_rec_size[1]
-                             + unique_id_rec_size[2] + unique_id_rec_size[3]
-                             + unique_id_rec_size[4];
-#else
     unique_id_rec_offset[3] = XtOffsetOf(unique_id_rec, counter);
     unique_id_rec_size[3] = sizeof(cur_unique_id->counter);
     unique_id_rec_total_size = unique_id_rec_size[0] + unique_id_rec_size[1]
                              + unique_id_rec_size[2] + unique_id_rec_size[3];
-#endif
 
     /*
      * Calculate the size of the structure when encoded.
@@ -294,9 +229,6 @@ static void unique_id_global_init(server_rec *s, pool *p)
      * But protecting against it is relatively cheap.  We just sleep into the
      * next second.
      */
-#ifdef NO_GETTIMEOFDAY
-    sleep(1);
-#else
     if (gettimeofday(&tv, NULL) == -1) {
         sleep(1);
     }
@@ -305,15 +237,12 @@ static void unique_id_global_init(server_rec *s, pool *p)
         tv.tv_usec = 1000000 - tv.tv_usec;
         select(0, NULL, NULL, NULL, &tv);
     }
-#endif
 }
 
 static void unique_id_child_init(server_rec *s, pool *p)
 {
     pid_t pid;
-#ifndef NO_GETTIMEOFDAY
     struct timeval tv;
-#endif
     unique_id_rec *cur_unique_id = get_cur_unique_id(1);
 
     /*
@@ -343,7 +272,6 @@ static void unique_id_child_init(server_rec *s, pool *p)
      * against restart problems, and a little less protection against a clock
      * going backwards in time.
      */
-#ifndef NO_GETTIMEOFDAY
     if (gettimeofday(&tv, NULL) == -1) {
         cur_unique_id->counter = 0;
     }
@@ -353,9 +281,6 @@ static void unique_id_child_init(server_rec *s, pool *p)
 	 */
         cur_unique_id->counter = tv.tv_usec / 10;
     }
-#else
-    cur_unique_id->counter = 0;
-#endif
 
     /*
      * We must always use network ordering for these bytes, so that
@@ -406,17 +331,6 @@ static int gen_unique_id(request_rec *r)
     }
 
     cur_unique_id->stamp = htonl((unsigned int)r->request_time);
-
-#ifdef MULTITHREAD
-    /*
-     * Note that we use the pid because it's possible that on the same
-     * physical machine there are multiple servers (i.e. using Listen). But
-     * it's guaranteed that none of them will share the same pid+tids between
-     * children.
-     */
-    cur_unique_id->tid = gettid();
-    cur_unique_id->tid = htonl(cur_unique_id->tid);
-#endif
 
     /* we'll use a temporal buffer to avoid uuencoding the possible internal
      * paddings of the original structure

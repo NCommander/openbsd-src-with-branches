@@ -5,7 +5,7 @@
 !	       chrtrans header files before using this descrip.mms.
 !
 ! History:
-!  1/1/93  creation at KU (Lou montulli@ukanaix.cc.ukans.edu). 
+!  1/1/93  creation at KU (Lou montulli@ukanaix.cc.ukans.edu).
 !  4/12/93 (seb@lns61.tn.cornell.edu)
 !           modified to support either UCX or MULTINET
 !  12/2/93 modified to support Lynx rewrite
@@ -54,15 +54,16 @@
 !	$ MMS /Macro = (TCPWARE=1, GNU_C=1)	for GNUC - OpenCMU TCP/IP
 !	$ MMS /Macro = (DECNET=1, GNU_C=1)	for GNUC - socket emulation over DECnet
 
-OBJS = 	DefaultStyle.obj, GridText.obj, HTAlert.obj, HTFWriter.obj, -
+OBJS =	DefaultStyle.obj, GridText.obj, HTAlert.obj, HTFWriter.obj, -
 	HTInit.obj, HTML.obj, LYBookmark.obj, LYCgi.obj, LYCharSets.obj, -
 	LYCharUtils.obj, LYClean.obj, LYCookie.obj, LYCurses.obj, -
-	LYDownload.obj, LYEdit.obj, LYEditmap.obj, LYexit.obj, LYForms.obj, -
-	LYGetFile.obj, LYHistory.obj, LYJump.obj, LYKeymap.obj, LYLeaks.obj, -
-	LYList.obj, LYMail.obj, LYMain.obj, LYMainLoop.obj, LYMap.obj, -
-	LYNews.obj, LYOptions.obj, LYPrint.obj, LYrcFile.obj, LYReadCFG.obj, -
+	LYDownload.obj, LYEdit.obj, LYEditmap.obj, LYForms.obj, -
+	LYGetFile.obj, LYHistory.obj, LYJump.obj, LYKeymap.obj, -
+	LYLeaks.obj, LYList.obj, LYMail.obj, LYMain.obj, LYMainLoop.obj, -
+	LYMap.obj, LYNews.obj, LYOptions.obj, LYPrint.obj, LYReadCFG.obj, -
 	LYSearch.obj, LYShowInfo.obj, LYStrings.obj, LYTraversal.obj, -
-	LYUpload.obj, LYUtils.obj, UCAuto.obj, UCAux.obj, UCdomap.obj
+	LYUpload.obj, LYUtils.obj, LYexit.obj, LYrcFile.obj, TRSTable.obj, -
+	UCAuto.obj, UCAux.obj, UCdomap.obj
 
 .ifdef WIN_TCP
 TCP = WIN_TCP
@@ -84,7 +85,7 @@ CDEF = __VMS_CURSES
 TCP = SOCKETSHR_TCP
 TCPOPT = SOCKETSHR_TCP
 .ifdef DEC_C
-CDEF = __VMS_CURSES
+CDEF = _DECC_V4_SOURCE,__VMS_CURSES
 .endif
 .endif
 
@@ -133,9 +134,9 @@ CDEF = _DECC_V4_SOURCE,__SOCKET_TYPEDEFS,__VMS_CURSES
 .ifdef DEC_C
 COMPILER = DECC
 .ifdef TCPWARE
-TCPFLAGS = /decc/Prefix=All/NoMember/Define=(DEBUG,ACCESS_AUTH,$(TCP),UCX,$(CDEF))
+TCPFLAGS = /decc/Prefix=All/NoMember/Define=(ACCESS_AUTH,$(TCP),UCX,$(CDEF))
 .else
-TCPFLAGS = /decc/Prefix=All/NoMember/Define=(DEBUG,ACCESS_AUTH,$(TCP),$(CDEF))
+TCPFLAGS = /decc/Prefix=All/NoMember/Define=(ACCESS_AUTH,$(TCP),$(CDEF))
 .endif
 .else
 .ifdef GNU_C
@@ -145,23 +146,30 @@ CC = gcc
 COMPILER = VAXC
 .endif
 .ifdef TCPWARE
-TCPFLAGS = /Define = (DEBUG, ACCESS_AUTH, $(TCP), UCX)
+TCPFLAGS = /Define = (ACCESS_AUTH, $(TCP), UCX)
 .else
-TCPFLAGS = /Define = (DEBUG, ACCESS_AUTH, $(TCP))
+TCPFLAGS = /Define = (ACCESS_AUTH, $(TCP))
 .endif
 .endif
 
 TOPT = sys$disk:[]$(TCPOPT).opt
 COPT = sys$disk:[]$(COMPILER).opt
 WWWLIB = [-.WWW.Library.Implementation]WWWLib_$(TCP).olb
-CFLAGS = $(TCPFLAGS) $(CFLAGS)/Include = ([-], [.chrtrans], [-.WWW.Library.Implementation])
+CFLAGS = $(TCPFLAGS) $(CFLAGS)/Include=([], [-], [.chrtrans], [-.WWW.Library.Implementation])
 
 
 lynx :	lynx.exe
 	@ Continue
 
-lynx.exe :   $(OBJS) $(WWWLIB)
+HDRS = [.chrtrans]iso01_uni.h
+
+lynx.exe :   $(HDRS) $(OBJS) $(WWWLIB)
 	$(LINK) /Executable = Lynx.exe $(OBJS), $(WWWLIB)/lib, $(TOPT)/opt, $(COPT)/opt
+
+$(HDRS) :
+	set default [.chrtrans]
+	@build-chrtrans
+	set default [-]
 
 clean :
 	- Set Protection = (Owner:RWED) *.*;-1

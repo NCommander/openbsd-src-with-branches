@@ -257,7 +257,7 @@ do_version4(unsigned char *buf,
 	    KTEXT r;
 	    des_cblock session;
 
-	    des_new_random_key(&session);
+	    des_new_random_key((unsigned char *)&session);
 
 	    krb_create_ticket(&ticket, 0, name, inst, v4_realm,
 			      addr->sin_addr.s_addr, session, life, kdc_time, 
@@ -376,6 +376,13 @@ do_version4(unsigned char *buf,
 	    goto out2;
 	}
 
+	if (!enable_v4_cross_realm && strcmp(realm, v4_realm) != 0) {
+	    kdc_log(0, "krb4 Cross-realm %s -> %s disabled", realm, v4_realm);
+	    make_err_reply(reply, KERB_ERR_PRINCIPAL_UNKNOWN, 
+			   "Can't hop realms");
+	    goto out2;
+	}
+
 	if(strcmp(sname, "changepw") == 0){
 	    kdc_log(0, "Bad request for changepw ticket (krb4)");
 	    make_err_reply(reply, KERB_ERR_PRINCIPAL_UNKNOWN, 
@@ -445,8 +452,7 @@ do_version4(unsigned char *buf,
 	    KTEXT_ST cipher, ticket;
 	    KTEXT r;
 	    des_cblock session;
-	    des_new_random_key(&session);
-
+	    des_new_random_key((unsigned char *)&session);
 	    krb_create_ticket(&ticket, 0, ad.pname, ad.pinst, ad.prealm,
 			      addr->sin_addr.s_addr, &session, life, 
 			      issue_time,

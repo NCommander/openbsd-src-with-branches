@@ -1,3 +1,4 @@
+/*	$OpenBSD: cp.c,v 1.29 2004/12/13 20:25:34 otto Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,17 +43,17 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cp.c	8.5 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $";
+static char rcsid[] = "$OpenBSD: cp.c,v 1.29 2004/12/13 20:25:34 otto Exp $";
 #endif
 #endif /* not lint */
 
 /*
  * Cp copies source files to target files.
- * 
+ *
  * The global PATH_T structure "to" always contains the path to the
  * current target file.  Since fts(3) does not change directories,
  * this path can be either absolute or dot-relative.
- * 
+ *
  * The basic algorithm is to initialize "to" and use fts(3) to traverse
  * the file hierarchy rooted in the argument list.  A trivial case is the
  * case of 'cp file1 file2'.  The more interesting case is the case of
@@ -75,6 +72,7 @@ static char rcsid[] = "$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $";
 #include <errno.h>
 #include <fcntl.h>
 #include <fts.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -82,34 +80,32 @@ static char rcsid[] = "$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $";
 
 #include "extern.h"
 
-#define	STRIP_TRAILING_SLASH(p) {					\
-        while ((p).p_end > (p).p_path && (p).p_end[-1] == '/')		\
-                *--(p).p_end = 0;					\
-}
+#define	fts_dne(_x)	(_x->fts_pointer != NULL)
 
 PATH_T to = { to.p_path, "" };
 
 uid_t myuid;
-int Rflag, iflag, pflag, rflag;
+int Rflag, fflag, iflag, pflag, rflag;
 int myumask;
 
 enum op { FILE_TO_FILE, FILE_TO_DIR, DIR_TO_DNE };
 
-int copy __P((char *[], enum op, int));
-int mastercmp __P((const FTSENT **, const FTSENT **));
+int copy(char *[], enum op, int);
+int mastercmp(const FTSENT **, const FTSENT **);
+char *find_last_component(char *);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct stat to_stat, tmp_stat;
 	enum op type;
 	int Hflag, Lflag, Pflag, ch, fts_options, r;
 	char *target;
 
+	(void)setlocale(LC_ALL, "");
+
 	Hflag = Lflag = Pflag = Rflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRfipr")) != EOF) 
+	while ((ch = getopt(argc, argv, "HLPRfipr")) != -1)
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
@@ -127,10 +123,12 @@ main(argc, argv)
 			Rflag = 1;
 			break;
 		case 'f':
+			fflag = 1;
 			iflag = 0;
 			break;
 		case 'i':
 			iflag = isatty(fileno(stdin));
+			fflag = 0;
 			break;
 		case 'p':
 			pflag = 1;
@@ -138,7 +136,6 @@ main(argc, argv)
 		case 'r':
 			rflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 			break;
@@ -180,20 +177,18 @@ main(argc, argv)
 
 	/* Save the target base in "to". */
 	target = argv[--argc];
-	if (strlen(target) > MAXPATHLEN)
+	if (strlcpy(to.p_path, target, sizeof to.p_path) >= sizeof(to.p_path))
 		errx(1, "%s: name too long", target);
-	(void)strcpy(to.p_path, target);
 	to.p_end = to.p_path + strlen(to.p_path);
-        if (to.p_path == to.p_end) {
+	if (to.p_path == to.p_end) {
 		*to.p_end++ = '.';
-		*to.p_end = 0;
+		*to.p_end = '\0';
 	}
-        STRIP_TRAILING_SLASH(to);
 	to.target_end = to.p_end;
 
 	/* Set end of argument list for fts(3). */
-	argv[argc] = NULL;     
-	
+	argv[argc] = NULL;
+
 	/*
 	 * Cp has two distinct cases:
 	 *
@@ -214,11 +209,9 @@ main(argc, argv)
 	if (r == -1 || !S_ISDIR(to_stat.st_mode)) {
 		/*
 		 * Case (1).  Target is not a directory.
-		 */ 
-		if (argc > 1) {
+		 */
+		if (argc > 1)
 			usage();
-			exit(1);
-		}
 		/*
 		 * Need to detect the case:
 		 *	cp -R dir foo
@@ -231,7 +224,7 @@ main(argc, argv)
 				stat(*argv, &tmp_stat);
 			else
 				lstat(*argv, &tmp_stat);
-			
+
 			if (S_ISDIR(tmp_stat.st_mode) && (Rflag || rflag))
 				type = DIR_TO_DNE;
 			else
@@ -247,49 +240,62 @@ main(argc, argv)
 	exit (copy(argv, type, fts_options));
 }
 
+char *
+find_last_component(char *path)
+{
+	char *p;
+
+	if ((p = strrchr(path, '/')) == NULL)
+		p = path;
+	else {
+		/* Special case foo/ */
+		if (!*(p+1)) {
+			while ((p >= path) && *p == '/')
+				p--;
+
+			while ((p >= path) && *p != '/')
+				p--;
+		}
+
+		p++;
+	}
+
+	return (p);
+}
+
 int
-copy(argv, type, fts_options)
-	char *argv[];
-	enum op type;
-	int fts_options;
+copy(char *argv[], enum op type, int fts_options)
 {
 	struct stat to_stat;
 	FTS *ftsp;
 	FTSENT *curr;
-	int base, dne, nlen, rval;
-	char *p;
-
+	int base, nlen, rval;
+	char *p, *target_mid;
+#ifdef lint
+	base = 0;
+#endif
 	if ((ftsp = fts_open(argv, fts_options, mastercmp)) == NULL)
 		err(1, NULL);
 	for (rval = 0; (curr = fts_read(ftsp)) != NULL;) {
 		switch (curr->fts_info) {
 		case FTS_NS:
+		case FTS_DNR:
 		case FTS_ERR:
 			warnx("%s: %s",
 			    curr->fts_path, strerror(curr->fts_errno));
 			rval = 1;
 			continue;
-		case FTS_DC:			/* Warn, continue. */
+		case FTS_DC:
 			warnx("%s: directory causes a cycle", curr->fts_path);
 			rval = 1;
-			continue;
-		case FTS_DP:			/* Ignore, continue. */
 			continue;
 		}
 
 		/*
-		 * If we are in case (2) or (3) above, we need to append the 
-                 * source name to the target name.  
-                 */
+		 * If we are in case (2) or (3) above, we need to append the
+		 * source name to the target name.
+		 */
 		if (type != FILE_TO_FILE) {
-			if ((curr->fts_namelen +
-			    to.target_end - to.p_path + 1) > MAXPATHLEN) {
-				warnx("%s/%s: name too long (not copied)", 
-				    to.p_path, curr->fts_name);
-				rval = 1;
-				continue;
-			}
-
 			/*
 			 * Need to remember the roots of traversals to create
 			 * correct pathnames.  If there's a directory being
@@ -300,7 +306,7 @@ copy(argv, type, fts_options)
 			 * is the case where the target exists.
 			 *
 			 * Also, check for "..".  This is for correct path
-			 * concatentation for paths ending in "..", e.g.
+			 * concatenation for paths ending in "..", e.g.
 			 *	cp -R .. /tmp
 			 * Paths ending in ".." are changed to ".".  This is
 			 * tricky, but seems the easiest way to fix the problem.
@@ -309,35 +315,72 @@ copy(argv, type, fts_options)
 			 * Since the first level MUST be FTS_ROOTLEVEL, base
 			 * is always initialized.
 			 */
-			if (curr->fts_level == FTS_ROOTLEVEL)
+			if (curr->fts_level == FTS_ROOTLEVEL) {
 				if (type != DIR_TO_DNE) {
-					p = strrchr(curr->fts_path, '/');
-					base = (p == NULL) ? 0 : 
-					    (int)(p - curr->fts_path + 1);
-
-					if (!strcmp(&curr->fts_path[base], 
+					p = find_last_component(curr->fts_path);
+					base = p - curr->fts_path;
+					
+					if (!strcmp(&curr->fts_path[base],
 					    ".."))
 						base += 1;
 				} else
 					base = curr->fts_pathlen;
-
-			if (to.target_end[-1] != '/') {
-				*to.target_end = '/';
-				*(to.target_end + 1) = 0;
 			}
+
 			p = &curr->fts_path[base];
 			nlen = curr->fts_pathlen - base;
-
-			(void)strncat(to.target_end + 1, p, nlen);
-			to.p_end = to.target_end + nlen + 1;
-			*to.p_end = 0;
-			STRIP_TRAILING_SLASH(to);
+			target_mid = to.target_end;
+			if (*p != '/' && target_mid[-1] != '/')
+				*target_mid++ = '/';
+			*target_mid = '\0';
+			if (target_mid - to.p_path + nlen >= MAXPATHLEN) {
+				warnx("%s%s: name too long (not copied)",
+				    to.p_path, p);
+				rval = 1;
+				continue;
+			}
+			(void)strncat(target_mid, p, nlen);
+			to.p_end = target_mid + nlen;
+			*to.p_end = '\0';
 		}
 
 		/* Not an error but need to remember it happened */
-		if (stat(to.p_path, &to_stat) == -1)
-			dne = 1;
-		else {
+		if (stat(to.p_path, &to_stat) == -1) {
+			if (curr->fts_info == FTS_DP)
+				continue;
+			/*
+			 * We use fts_pointer as a boolean to indicate that
+			 * we created this directory ourselves.  We'll use
+			 * this later on via the fts_dne macro to decide
+			 * whether or not to set the directory mode during
+			 * the post-order pass.
+			 */
+			curr->fts_pointer = (void *)1;
+		} else {
+			/*
+			 * Set directory mode/user/times on the post-order
+			 * pass.  We can't do this earlier because the mode
+			 * may not allow us write permission.  Furthermore,
+			 * if we set the times during the pre-order pass,
+			 * they will get changed later when the directory
+			 * is populated.
+			 */
+			if (curr->fts_info == FTS_DP) {
+				if (!S_ISDIR(to_stat.st_mode))
+					continue;
+				/*
+				 * If not -p and directory didn't exist, set
+				 * it to be the same as the from directory,
+				 * unmodified by the umask; arguably wrong,
+				 * but it's been that way forever.
+				 */
+				if (pflag && setfile(curr->fts_statp, 0))
+					rval = 1;
+				else if (fts_dne(curr))
+					(void)chmod(to.p_path,
+					    curr->fts_statp->st_mode);
+				continue;
+			}
 			if (to_stat.st_dev == curr->fts_statp->st_dev &&
 			    to_stat.st_ino == curr->fts_statp->st_ino) {
 				warnx("%s and %s are identical (not copied).",
@@ -354,12 +397,11 @@ copy(argv, type, fts_options)
 				rval = 1;
 				continue;
 			}
-			dne = 0;
 		}
 
 		switch (curr->fts_statp->st_mode & S_IFMT) {
 		case S_IFLNK:
-			if (copy_link(curr, !dne))
+			if (copy_link(curr, !fts_dne(curr)))
 				rval = 1;
 			break;
 		case S_IFDIR:
@@ -378,45 +420,37 @@ copy(argv, type, fts_options)
 			 * 555) and not causing a permissions race.  If the
 			 * umask blocks owner writes, we fail..
 			 */
-			if (dne) {
-				if (mkdir(to.p_path, 
+			if (fts_dne(curr)) {
+				if (mkdir(to.p_path,
 				    curr->fts_statp->st_mode | S_IRWXU) < 0)
 					err(1, "%s", to.p_path);
 			} else if (!S_ISDIR(to_stat.st_mode)) {
 				errno = ENOTDIR;
 				err(1, "%s", to.p_path);
 			}
-			/*
-			 * If not -p and directory didn't exist, set it to be
-			 * the same as the from directory, umodified by the 
-                         * umask; arguably wrong, but it's been that way 
-                         * forever.
-			 */
-			if (pflag && setfile(curr->fts_statp, 0))
-				rval = 1;
-			else if (dne)
-				(void)chmod(to.p_path, 
-				    curr->fts_statp->st_mode);
 			break;
 		case S_IFBLK:
 		case S_IFCHR:
 			if (Rflag) {
-				if (copy_special(curr->fts_statp, !dne))
+				if (copy_special(curr->fts_statp, !fts_dne(curr)))
 					rval = 1;
 			} else
-				if (copy_file(curr, dne))
+				if (copy_file(curr, fts_dne(curr)))
 					rval = 1;
 			break;
 		case S_IFIFO:
 			if (Rflag) {
-				if (copy_fifo(curr->fts_statp, !dne))
+				if (copy_fifo(curr->fts_statp, !fts_dne(curr)))
 					rval = 1;
-			} else 
-				if (copy_file(curr, dne))
+			} else
+				if (copy_file(curr, fts_dne(curr)))
 					rval = 1;
 			break;
+		case S_IFSOCK:
+			warnx("%s: %s", curr->fts_path, strerror(EOPNOTSUPP));
+			break;
 		default:
-			if (copy_file(curr, dne))
+			if (copy_file(curr, fts_dne(curr)))
 				rval = 1;
 			break;
 		}
@@ -435,8 +469,7 @@ copy(argv, type, fts_options)
  *	files first reduces seeking.
  */
 int
-mastercmp(a, b)
-	const FTSENT **a, **b;
+mastercmp(const FTSENT **a, const FTSENT **b)
 {
 	int a_info, b_info;
 

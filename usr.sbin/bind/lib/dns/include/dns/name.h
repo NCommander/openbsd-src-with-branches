@@ -343,6 +343,22 @@ dns_name_hashbylabel(dns_name_t *name, isc_boolean_t case_sensitive);
  *	A hash value
  */
 
+unsigned int
+dns_fullname_hash(dns_name_t *name, isc_boolean_t case_sensitive);
+/*
+ * Provide a hash value for 'name'.  Unlike dns_name_hash(), this function
+ * always takes into account of the entire name to calculate the hash value.
+ *
+ * Note: if 'case_sensitive' is ISC_FALSE, then names which differ only in
+ * case will have the same hash value.
+ *
+ * Requires:
+ *	'name' is a valid name
+ *
+ * Returns:
+ *	A hash value
+ */
+
 /***
  *** Comparisons
  ***/

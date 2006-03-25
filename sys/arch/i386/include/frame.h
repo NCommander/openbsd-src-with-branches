@@ -1,3 +1,4 @@
+/*	$OpenBSD: frame.h,v 1.6 2004/07/02 16:29:55 niklas Exp $	*/
 /*	$NetBSD: frame.h,v 1.12 1995/10/11 04:20:08 mycroft Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,6 +46,8 @@
  * Exception/Trap Stack Frame
  */
 struct trapframe {
+	int	tf_fs;
+	int	tf_gs;
 	int	tf_es;
 	int	tf_ds;
 	int	tf_edi;
@@ -79,6 +78,8 @@ struct trapframe {
  */
 struct intrframe {
 	int	if_ppl;
+	int	if_fs;
+	int	if_gs;
 	int	if_es;
 	int	if_ds;
 	int	if_edi;
@@ -115,8 +116,10 @@ struct switchframe {
  */
 struct sigframe {
 	int	sf_signum;
-	int	sf_code;
+	siginfo_t *sf_sip;
 	struct	sigcontext *sf_scp;
 	sig_t	sf_handler;
 	struct	sigcontext sf_sc;
+	siginfo_t sf_si;
+	void	*sf_fpstate;
 };

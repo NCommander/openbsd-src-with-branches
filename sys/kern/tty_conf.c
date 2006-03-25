@@ -1,4 +1,5 @@
-/*	$NetBSD: tty_conf.c,v 1.16 1995/10/10 01:27:01 mycroft Exp $	*/
+/*	$OpenBSD: tty_conf.c,v 1.8 2003/06/02 23:28:06 millert Exp $	*/
+/*	$NetBSD: tty_conf.c,v 1.18 1996/05/19 17:17:55 jonathan Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,51 +39,59 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/buf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/tty.h>
 #include <sys/conf.h>
 
-#define	ttynodisc ((int (*) __P((dev_t, struct tty *)))enodev)
-#define	ttyerrclose ((int (*) __P((struct tty *, int flags)))enodev)
-#define	ttyerrio ((int (*) __P((struct tty *, struct uio *, int)))enodev)
-#define	ttyerrinput ((int (*) __P((int c, struct tty *)))enodev)
-#define	ttyerrstart ((int (*) __P((struct tty *)))enodev)
+#define	ttynodisc ((int (*)(dev_t, struct tty *))enodev)
+#define	ttyerrclose ((int (*)(struct tty *, int flags))enodev)
+#define	ttyerrio ((int (*)(struct tty *, struct uio *, int))enodev)
+#define	ttyerrinput ((int (*)(int c, struct tty *))enodev)
+#define	ttyerrstart ((int (*)(struct tty *))enodev)
 
-int	nullioctl __P((struct tty *tp, u_long cmd, caddr_t data,
-			int flag, struct proc *p));
+int	nullioctl(struct tty *, u_long, caddr_t, int, struct proc *);
 
 #include "tb.h"
 #if NTB > 0
-int	tbopen __P((dev_t dev, struct tty *tp));
-int	tbclose __P((struct tty *tp, int flags));
-int	tbread __P((struct tty *tp, struct uio *uio, int flags));
-int	tbtioctl __P((struct tty *tp, u_long cmd, caddr_t data,
-			int flag, struct proc *p));
-int	tbinput __P((int c, struct tty *tp));
+int	tbopen(dev_t dev, struct tty *tp);
+int	tbclose(struct tty *tp, int flags);
+int	tbread(struct tty *tp, struct uio *uio, int flags);
+int	tbtioctl(struct tty *tp, u_long cmd, caddr_t data,
+			int flag, struct proc *p);
+int	tbinput(int c, struct tty *tp);
 #endif
 
 #include "sl.h"
 #if NSL > 0
-int	slopen __P((dev_t dev, struct tty *tp));
-int	slclose __P((struct tty *tp, int flags));
-int	sltioctl __P((struct tty *tp, u_long cmd, caddr_t data,
-			int flag, struct proc *p));
-int	slinput __P((int c, struct tty *tp));
-int	slstart __P((struct tty *tp));
+int	slopen(dev_t dev, struct tty *tp);
+int	slclose(struct tty *tp, int flags);
+int	sltioctl(struct tty *tp, u_long cmd, caddr_t data,
+			int flag, struct proc *p);
+int	slinput(int c, struct tty *tp);
+int	slstart(struct tty *tp);
 #endif
 
 #include "ppp.h"
 #if NPPP > 0
-int	pppopen __P((dev_t dev, struct tty *tp));
-int	pppclose __P((struct tty *tp, int flags));
-int	ppptioctl __P((struct tty *tp, u_long cmd, caddr_t data,
-			int flag, struct proc *p));
-int	pppinput __P((int c, struct tty *tp));
-int	pppstart __P((struct tty *tp));
-int	pppread __P((struct tty *tp, struct uio *uio, int flag));
-int	pppwrite __P((struct tty *tp, struct uio *uio, int flag));
+int	pppopen(dev_t dev, struct tty *tp);
+int	pppclose(struct tty *tp, int flags);
+int	ppptioctl(struct tty *tp, u_long cmd, caddr_t data,
+			int flag, struct proc *p);
+int	pppinput(int c, struct tty *tp);
+int	pppstart(struct tty *tp);
+int	pppread(struct tty *tp, struct uio *uio, int flag);
+int	pppwrite(struct tty *tp, struct uio *uio, int flag);
+#endif
+
+#include "strip.h"
+#if NSTRIP > 0
+int	stripopen(dev_t dev, struct tty *tp);
+int	stripclose(struct tty *tp, int flags);
+int	striptioctl(struct tty *tp, u_long cmd, caddr_t data,
+			int flag, struct proc *p);
+int	stripinput(int c, struct tty *tp);
+int	stripstart(struct tty *tp);
 #endif
 
 struct	linesw linesw[] =
@@ -97,7 +102,7 @@ struct	linesw linesw[] =
 	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
 	  ttyerrinput, ttyerrstart, nullmodem },	/* 1- defunct */
 
-#if defined(COMPAT_43) || defined(COMPAT_FREEBSD)
+#if defined(COMPAT_43) || defined(COMPAT_FREEBSD) || defined(COMPAT_BSDOS)
 	{ ttyopen, ttylclose, ttread, ttwrite, nullioctl,
 	  ttyinput, ttstart, ttymodem },		/* 2- old NTTYDISC */
 #else
@@ -128,6 +133,14 @@ struct	linesw linesw[] =
 	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
 	  ttyerrinput, ttyerrstart, nullmodem },
 #endif
+
+#if NSTRIP > 0
+	{ stripopen, stripclose, ttyerrio, ttyerrio, striptioctl,
+	  stripinput, stripstart, nullmodem },		/* 6- STRIPDISC */
+#else
+	{ ttynodisc, ttyerrclose, ttyerrio, ttyerrio, nullioctl,
+	  ttyerrinput, ttyerrstart, nullmodem },
+#endif
 };
 
 int	nlinesw = sizeof (linesw) / sizeof (linesw[0]);
@@ -137,12 +150,8 @@ int	nlinesw = sizeof (linesw) / sizeof (linesw[0]);
  * discipline specific ioctl command.
  */
 /*ARGSUSED*/
-nullioctl(tp, cmd, data, flags, p)
-	struct tty *tp;
-	u_long cmd;
-	char *data;
-	int flags;
-	struct proc *p;
+int
+nullioctl(struct tty *tp, u_long cmd, char *data, int flags, struct proc *p)
 {
 
 #ifdef lint

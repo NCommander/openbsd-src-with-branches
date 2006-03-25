@@ -1,3 +1,4 @@
+/*	$OpenBSD: man.c,v 1.30 2005/10/31 10:38:04 otto Exp $	*/
 /*	$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)man.c	8.17 (Berkeley) 1/31/95";
 #else
-static char rcsid[] = "$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $";
+static char rcsid[] = "$OpenBSD: man.c,v 1.30 2005/10/31 10:38:04 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,6 +55,7 @@ static char rcsid[] = "$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $";
 #include <glob.h>
 #include <signal.h>
 #include <stdio.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -66,35 +64,48 @@ static char rcsid[] = "$NetBSD: man.c,v 1.7 1995/09/28 06:05:34 tls Exp $";
 #include "pathnames.h"
 
 int f_all, f_where;
+static TAG *section;	/* could be passed to cleanup() instead */
 
-static void	 build_page __P((char *, char **));
-static void	 cat __P((char *));
-static char	*check_pager __P((char *));
-static int	 cleanup __P((void));
-static void	 how __P((char *));
-static void	 jump __P((char **, char *, char *));
-static int	 manual __P((char *, TAG *, glob_t *));
-static void	 onsig __P((int));
-static void	 usage __P((void));
+extern char *__progname;
+
+static void	 build_page(char *, char **);
+static void	 cat(char *);
+static char	*check_pager(char *);
+static int	 cleanup(void);
+static void	 how(char *);
+static void	 jump(char **, char *, char *);
+static int	 manual(char *, TAG *, glob_t *);
+static void	 onsig(int);
+static void	 usage(void);
+
+sigset_t	blocksigs;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	extern char *optarg;
 	extern int optind;
-	TAG *defp, *defnewp, *section, *sectnewp, *subp;
+	TAG *defp, *defnewp, *sectnewp, *subp;
 	ENTRY *e_defp, *e_sectp, *e_subp, *ep;
 	glob_t pg;
 	size_t len;
 	int ch, f_cat, f_how, found;
-	char **ap, *cmd, *machine, *p, *p_add, *p_path, *pager, *slashp;
+	char **ap, *cmd, *machine, *p, *p_add, *p_path, *pager, *sflag, *slashp;
 	char *conffile, buf[MAXPATHLEN * 2];
 
+	if (argv[1] == NULL && strcmp(basename(__progname), "help") == 0) {
+		static char *nargv[3];
+		nargv[0] = "man";
+		nargv[1] = "help";
+		nargv[2] = NULL;
+		argv = nargv;
+		argc = 2;
+	}
+
+	machine = sflag = NULL;
 	f_cat = f_how = 0;
 	conffile = p_add = p_path = NULL;
-	while ((ch = getopt(argc, argv, "-aC:cfhkM:m:P:w")) != EOF)
+	while ((ch = getopt(argc, argv, "aC:cfhkM:m:P:s:S:w-")) != -1)
 		switch (ch) {
 		case 'a':
 			f_all = 1;
@@ -116,9 +127,15 @@ main(argc, argv)
 		case 'P':		/* Backward compatibility. */
 			p_path = optarg;
 			break;
+		case 's':		/* SVR4 compatibility. */
+			sflag = optarg;
+			break;
+		case 'S':
+			machine = optarg;
+			break;
 		/*
-		 * The -f and -k options are backward compatible,
-		 * undocumented ways of calling whatis(1) and apropos(1).
+		 * The -f and -k options are backward compatible
+		 * ways of calling whatis(1) and apropos(1).
 		 */
 		case 'f':
 			jump(argv, "-f", "whatis");
@@ -139,19 +156,23 @@ main(argc, argv)
 	if (!*argv)
 		usage();
 
-	if (!f_cat && !f_how && !f_where)
+	if (!f_cat && !f_how && !f_where) {
 		if (!isatty(1))
 			f_cat = 1;
-		else if ((pager = getenv("PAGER")) != NULL)
+		else if ((pager = getenv("MANPAGER")) != NULL &&
+				(*pager != '\0'))
+			pager = check_pager(pager);
+		else if ((pager = getenv("PAGER")) != NULL && (*pager != '\0'))
 			pager = check_pager(pager);
 		else
 			pager = _PATH_PAGER;
+	}
 
 	/* Read the configuration file. */
 	config(conffile);
 
-	/* Get the machine type. */
-	if ((machine = getenv("MACHINE")) == NULL)
+	/* Get the machine type unless specified by -S. */
+	if (machine == NULL && (machine = getenv("MACHINE")) == NULL)
 		machine = MACHINE;
 
 	/* If there's no _default list, create an empty one. */
@@ -166,7 +187,7 @@ main(argc, argv)
 	if (p_path == NULL)
 		p_path = getenv("MANPATH");
 	if (p_path != NULL) {
-		while ((e_defp = defp->list.tqh_first) != NULL) {
+		while ((e_defp = TAILQ_FIRST(&defp->list)) != NULL) {
 			free(e_defp->s);
 			TAILQ_REMOVE(&defp->list, e_defp, q);
 		}
@@ -174,8 +195,8 @@ main(argc, argv)
 		    p != NULL; p = strtok(NULL, ":")) {
 			slashp = p[strlen(p) - 1] == '/' ? "" : "/";
 			e_subp = (subp = getlist("_subdir")) == NULL ?
-			    NULL : subp->list.tqh_first;
-			for (; e_subp != NULL; e_subp = e_subp->q.tqe_next) {
+			    NULL : TAILQ_FIRST(&subp->list);
+			for (; e_subp != NULL; e_subp = TAILQ_NEXT(e_subp, q)) {
 				(void)snprintf(buf, sizeof(buf), "%s%s%s{/%s,}",
 				    p, slashp, e_subp->s, machine);
 				if ((ep = malloc(sizeof(ENTRY))) == NULL ||
@@ -190,20 +211,23 @@ main(argc, argv)
 	 * 2: If the user did not specify MANPATH, -M or a section, rewrite
 	 *    the _default list to include the _subdir list and the machine.
 	 */
-	if (argv[1] == NULL)
+	if (sflag == NULL && argv[1] == NULL)
 		section = NULL;
-	else if ((section = getlist(*argv)) != NULL)
-		++argv;
+	else {
+		if (sflag != NULL && (section = getlist(sflag)) == NULL)
+			errx(1, "unknown manual section `%s'", sflag);
+		else if (sflag == NULL && (section = getlist(*argv)) != NULL)
+			++argv;
+	}
 	if (p_path == NULL && section == NULL) {
 		defnewp = addlist("_default_new");
-		e_defp =
-		    defp->list.tqh_first == NULL ? NULL : defp->list.tqh_first;
-		for (; e_defp != NULL; e_defp = e_defp->q.tqe_next) {
+		e_defp = TAILQ_FIRST(&defp->list);
+		for (; e_defp != NULL; e_defp = TAILQ_NEXT(e_defp, q)) {
 			slashp =
 			    e_defp->s[strlen(e_defp->s) - 1] == '/' ? "" : "/";
 			e_subp = (subp = getlist("_subdir")) == NULL ?
-			    NULL : subp->list.tqh_first;
-			for (; e_subp != NULL; e_subp = e_subp->q.tqe_next) {
+			    NULL : TAILQ_FIRST(&subp->list);
+			for (; e_subp != NULL; e_subp = TAILQ_NEXT(e_subp, q)) {
 				(void)snprintf(buf, sizeof(buf), "%s%s%s{/%s,}",
 				e_defp->s, slashp, e_subp->s, machine);
 				if ((ep = malloc(sizeof(ENTRY))) == NULL ||
@@ -213,7 +237,7 @@ main(argc, argv)
 			}
 		}
 		defp = getlist("_default");
-		while ((e_defp = defp->list.tqh_first) != NULL) {
+		while ((e_defp = TAILQ_FIRST(&defp->list)) != NULL) {
 			free(e_defp->s);
 			TAILQ_REMOVE(&defp->list, e_defp, q);
 		}
@@ -230,21 +254,28 @@ main(argc, argv)
 	 *    whatever list we have, again appending the _subdir list and
 	 *    the machine.
 	 */
-	if (p_add != NULL)
+	if (p_add != NULL) {
+		e_sectp = NULL;
 		for (p = strtok(p_add, ":"); p != NULL; p = strtok(NULL, ":")) {
 			slashp = p[strlen(p) - 1] == '/' ? "" : "/";
 			e_subp = (subp = getlist("_subdir")) == NULL ?
-			    NULL : subp->list.tqh_first;
-			for (; e_subp != NULL; e_subp = e_subp->q.tqe_next) {
+			    NULL : TAILQ_FIRST(&subp->list);
+			for (; e_subp != NULL; e_subp = TAILQ_NEXT(e_subp, q)) {
 				(void)snprintf(buf, sizeof(buf), "%s%s%s{/%s,}",
 				    p, slashp, e_subp->s, machine);
 				if ((ep = malloc(sizeof(ENTRY))) == NULL ||
 				    (ep->s = strdup(buf)) == NULL)
 					err(1, NULL);
-				TAILQ_INSERT_HEAD(&defp->list, ep, q);
+
+				if (e_sectp == NULL)
+					TAILQ_INSERT_HEAD(&defp->list, ep, q);
+				else
+					TAILQ_INSERT_AFTER(&defp->list, e_sectp,
+					    ep, q);
+				e_sectp = ep;
 			}
 		}
-
+	}
 	/*
 	 * 4: If no -m was specified, and a section was, rewrite the section's
 	 *    paths (if they have a trailing slash) to append the _subdir list
@@ -252,8 +283,7 @@ main(argc, argv)
 	 */
 	if (p_add == NULL && section != NULL) {
 		sectnewp = addlist("_section_new");
-		for (e_sectp = section->list.tqh_first;
-		    e_sectp != NULL; e_sectp = e_sectp->q.tqe_next) {
+		TAILQ_FOREACH(e_sectp, &section->list, q) {
 			if (e_sectp->s[strlen(e_sectp->s) - 1] != '/') {
 				(void)snprintf(buf, sizeof(buf),
 				    "%s{/%s,}", e_sectp->s, machine);
@@ -264,8 +294,8 @@ main(argc, argv)
 				continue;
 			}
 			e_subp = (subp = getlist("_subdir")) == NULL ?
-			    NULL : subp->list.tqh_first;
-			for (; e_subp != NULL; e_subp = e_subp->q.tqe_next) {
+			    NULL : TAILQ_FIRST(&subp->list);
+			for (; e_subp != NULL; e_subp = TAILQ_NEXT(e_subp, q)) {
 				(void)snprintf(buf, sizeof(buf), "%s%s{/%s,}",
 				    e_sectp->s, e_subp->s, machine);
 				if ((ep = malloc(sizeof(ENTRY))) == NULL ||
@@ -285,6 +315,10 @@ main(argc, argv)
 	 */
 	(void)signal(SIGINT, onsig);
 	(void)signal(SIGHUP, onsig);
+
+	sigemptyset(&blocksigs);
+	sigaddset(&blocksigs, SIGINT);
+	sigaddset(&blocksigs, SIGHUP);
 
 	memset(&pg, 0, sizeof(pg));
 	for (found = 0; *argv; ++argv)
@@ -318,11 +352,11 @@ main(argc, argv)
 		for (ap = pg.gl_pathv; *ap != NULL; ++ap) {
 			if (**ap == '\0')
 				continue;
-			(void)printf("%s\n", *ap);
+			(void)puts(*ap);
 		}
 		exit(cleanup());
 	}
-		
+
 	/*
 	 * 8: We display things in a single command; build a list of things
 	 *    to display.
@@ -339,18 +373,18 @@ main(argc, argv)
 	}
 	p = cmd;
 	len = strlen(pager);
-	memmove(p, pager, len);
+	memcpy(p, pager, len);
 	p += len;
 	*p++ = ' ';
 	for (ap = pg.gl_pathv; *ap != NULL; ++ap) {
 		if (**ap == '\0')
 			continue;
 		len = strlen(*ap);
-		memmove(p, *ap, len);
+		memcpy(p, *ap, len);
 		p += len;
 		*p++ = ' ';
 	}
-	*p = '\0';
+	*--p = '\0';
 
 	/* Use system(3) in case someone's pager is "pager arg1 arg2". */
 	(void)system(cmd);
@@ -363,22 +397,19 @@ main(argc, argv)
  *	Search the manuals for the pages.
  */
 static int
-manual(page, tag, pg)
-	char *page;
-	TAG *tag;
-	glob_t *pg;
+manual(char *page, TAG *tag, glob_t *pg)
 {
 	ENTRY *ep, *e_sufp, *e_tag;
 	TAG *missp, *sufp;
 	int anyfound, cnt, found;
-	char *p, buf[128];
+	char *p, buf[MAXPATHLEN];
 
 	anyfound = 0;
 	buf[0] = '*';
 
 	/* For each element in the list... */
-	e_tag = tag == NULL ? NULL : tag->list.tqh_first;
-	for (; e_tag != NULL; e_tag = e_tag->q.tqe_next) {
+	e_tag = tag == NULL ? NULL : TAILQ_FIRST(&tag->list);
+	for (; e_tag != NULL; e_tag = TAILQ_NEXT(e_tag, q)) {
 		(void)snprintf(buf, sizeof(buf), "%s/%s.*", e_tag->s, page);
 		if (glob(buf,
 		    GLOB_APPEND | GLOB_BRACE | GLOB_NOSORT | GLOB_QUOTE,
@@ -408,9 +439,9 @@ manual(page, tag, pg)
 				goto next;
 
 			e_sufp = (sufp = getlist("_suffix")) == NULL ?
-			    NULL : sufp->list.tqh_first;
+			    NULL : TAILQ_FIRST(&sufp->list);
 			for (found = 0;
-			    e_sufp != NULL; e_sufp = e_sufp->q.tqe_next) {
+			    e_sufp != NULL; e_sufp = TAILQ_NEXT(e_sufp, q)) {
 				(void)snprintf(buf,
 				     sizeof(buf), "*/%s%s", page, e_sufp->s);
 				if (!fnmatch(buf, pg->gl_pathv[cnt], 0)) {
@@ -423,9 +454,9 @@ manual(page, tag, pg)
 
 			/* Try the _build key words next. */
 			e_sufp = (sufp = getlist("_build")) == NULL ?
-			    NULL : sufp->list.tqh_first;
+			    NULL : TAILQ_FIRST(&sufp->list);
 			for (found = 0;
-			    e_sufp != NULL; e_sufp = e_sufp->q.tqe_next) {
+			    e_sufp != NULL; e_sufp = TAILQ_NEXT(e_sufp, q)) {
 				for (p = e_sufp->s;
 				    *p != '\0' && !isspace(*p); ++p);
 				if (*p == '\0')
@@ -464,6 +495,10 @@ next:				anyfound = 1;
 
 	/* If not found, enter onto the missing list. */
 	if (!anyfound) {
+		sigset_t osigs;
+
+		sigprocmask(SIG_BLOCK, &blocksigs, &osigs);
+
 		if ((missp = getlist("_missing")) == NULL)
 			missp = addlist("_missing");
 		if ((ep = malloc(sizeof(ENTRY))) == NULL ||
@@ -473,24 +508,25 @@ next:				anyfound = 1;
 			exit(1);
 		}
 		TAILQ_INSERT_TAIL(&missp->list, ep, q);
+		sigprocmask(SIG_SETMASK, &osigs, NULL);
 	}
 	return (anyfound);
 }
 
-/* 
+/*
  * build_page --
  *	Build a man page for display.
  */
 static void
-build_page(fmt, pathp)
-	char *fmt, **pathp;
+build_page(char *fmt, char **pathp)
 {
 	static int warned;
 	ENTRY *ep;
 	TAG *intmpp;
 	int fd, n;
 	char *p, *b;
-	char buf[MAXPATHLEN], cmd[MAXPATHLEN], tpath[sizeof(_PATH_TMP)];
+	char buf[MAXPATHLEN], cmd[MAXPATHLEN], tpath[MAXPATHLEN];
+	sigset_t osigs;
 
 	/* Let the user know this may take awhile. */
 	if (!warned) {
@@ -499,7 +535,7 @@ build_page(fmt, pathp)
 	}
 
        /*
-        * Historically man chdir'd to the root of the man tree. 
+        * Historically man chdir'd to the root of the man tree.
         * This was used in man pages that contained relative ".so"
         * directives (including other man pages for command aliases etc.)
         * It even went one step farther, by examining the first line
@@ -507,11 +543,11 @@ build_page(fmt, pathp)
         * make hard(?) links to the cat'ted man pages for space savings.
         * (We don't do that here, but we could).
         */
- 
+
        /* copy and find the end */
        for (b = buf, p = *pathp; (*b++ = *p++) != '\0';)
                continue;
- 
+
        /* skip the last two path components, page name and man[n] */
        for (--b, n = 2; b != buf; b--)
                if (*b == '/')
@@ -522,17 +558,20 @@ build_page(fmt, pathp)
 
 
 	/* Add a remove-when-done list. */
+	sigprocmask(SIG_BLOCK, &blocksigs, &osigs);
 	if ((intmpp = getlist("_intmp")) == NULL)
 		intmpp = addlist("_intmp");
+	sigprocmask(SIG_SETMASK, &osigs, NULL);
 
 	/* Move to the printf(3) format string. */
-	for (; *fmt && isspace(*fmt); ++fmt);
+	for (; *fmt && isspace(*fmt); ++fmt)
+		;
 
 	/*
 	 * Get a temporary file and build a version of the file
 	 * to display.  Replace the old file name with the new one.
 	 */
-	(void)strcpy(tpath, _PATH_TMP);
+	(void)strlcpy(tpath, _PATH_TMPFILE, sizeof(tpath));
 	if ((fd = mkstemp(tpath)) == -1) {
 		warn("%s", tpath);
 		(void)cleanup();
@@ -563,8 +602,7 @@ build_page(fmt, pathp)
  *	display how information
  */
 static void
-how(fname)
-	char *fname;
+how(char *fname)
 {
 	FILE *fp;
 
@@ -593,9 +631,12 @@ how(fname)
 		if (*buf == '\n')
 			++lcnt;
 		else {
-			for(; lcnt; --lcnt)
+			while (lcnt) {
+				--lcnt;
 				(void)putchar('\n');
-			for (p = buf; isspace(*p); ++p);
+			}
+			for (p = buf; isspace(*p); ++p)
+				;
 			(void)fputs(p, stdout);
 		}
 	}
@@ -607,8 +648,7 @@ how(fname)
  *	cat out the file
  */
 static void
-cat(fname)
-	char *fname;
+cat(char *fname)
 {
 	int fd, n;
 	char buf[2048];
@@ -637,28 +677,27 @@ cat(fname)
  *	check the user supplied page information
  */
 static char *
-check_pager(name)
-	char *name;
+check_pager(char *name)
 {
 	char *p, *save;
 
 	/*
 	 * if the user uses "more", we make it "more -s"; watch out for
-	 * PAGER = "mypager /usr/ucb/more"
+	 * PAGER = "mypager /usr/bin/more"
 	 */
-	for (p = name; *p && !isspace(*p); ++p);
-	for (; p > name && *p != '/'; --p);
+	for (p = name; *p && !isspace(*p); ++p)
+		;
+	for (; p > name && *p != '/'; --p)
+		;
 	if (p != name)
 		++p;
 
 	/* make sure it's "more", not "morex" */
-	if (!strncmp(p, "more", 4) && (!p[4] || isspace(p[4]))){
+	if (!strncmp(p, "more", 4) && (p[4] == '\0' || isspace(p[4]))){
 		save = name;
 		/* allocate space to add the "-s" */
-		if (!(name =
-		    malloc((u_int)(strlen(save) + sizeof("-s") + 1))))
-			err(1, NULL);
-		(void)sprintf(name, "%s %s", save, "-s");
+		if (asprintf(&name, "%s -s", save) == -1)
+			err(1, "asprintf");
 	}
 	return(name);
 }
@@ -668,8 +707,7 @@ check_pager(name)
  *	strip out flag argument and jump
  */
 static void
-jump(argv, flag, name)
-	char **argv, *flag, *name;
+jump(char **argv, char *flag, char *name)
 {
 	char **arg;
 
@@ -684,21 +722,20 @@ jump(argv, flag, name)
 	exit(1);
 }
 
-/* 
+/*
  * onsig --
  *	If signaled, delete the temporary files.
  */
 static void
-onsig(signo)
-	int signo;
+onsig(int signo)
 {
-	(void)cleanup();
+	(void)cleanup();	/* XXX signal race */
 
 	(void)signal(signo, SIG_DFL);
 	(void)kill(getpid(), signo);
 
 	/* NOTREACHED */
-	exit (1);
+	_exit(1);
 }
 
 /*
@@ -706,7 +743,7 @@ onsig(signo)
  *	Clean up temporary files, show any error messages.
  */
 static int
-cleanup()
+cleanup(void)
 {
 	TAG *intmpp, *missp;
 	ENTRY *ep;
@@ -714,16 +751,20 @@ cleanup()
 
 	rval = 0;
 	ep = (missp = getlist("_missing")) == NULL ?
-	    NULL : missp->list.tqh_first;
+	    NULL : TAILQ_FIRST(&missp->list);
 	if (ep != NULL)
-		for (; ep != NULL; ep = ep->q.tqe_next) {
-			warnx("no entry for %s in the manual.", ep->s);
+		for (; ep != NULL; ep = TAILQ_NEXT(ep, q)) {
+			if (section)
+				warnx("no entry for %s in section %s of the manual.",
+					ep->s, section->s);
+			else
+				warnx("no entry for %s in the manual.", ep->s);
 			rval = 1;
 		}
 
 	ep = (intmpp = getlist("_intmp")) == NULL ?
-	    NULL : intmpp->list.tqh_first;
-	for (; ep != NULL; ep = ep->q.tqe_next)
+	    NULL : TAILQ_FIRST(&intmpp->list);
+	for (; ep != NULL; ep = TAILQ_NEXT(ep, q))
 		(void)unlink(ep->s);
 	return (rval);
 }
@@ -733,9 +774,12 @@ cleanup()
  *	print usage message and die
  */
 static void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr,
-    "usage: man [-achw] [-C file] [-M path] [-m path] [section] title ...\n");
+	(void)fprintf(stderr, "usage: %s [-achw] [-C file] [-M path] [-m path] "
+	    "[-S subsection] [-s section]\n\t   [section] name [...]\n",
+	    __progname);
+	(void)fprintf(stderr, "usage: %s -f command\n", __progname);
+	(void)fprintf(stderr, "usage: %s -k keyword\n", __progname);
 	exit(1);
 }

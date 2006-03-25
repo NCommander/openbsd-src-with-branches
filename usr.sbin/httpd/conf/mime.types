@@ -159,6 +159,8 @@ application/vnd.fujixerox.ddd
 application/vnd.fujixerox.docuworks
 application/vnd.fujixerox.docuworks.binder
 application/vnd.fut-misnet
+application/vnd.google-earth.kml+xml kml
+application/vnd.google-earth.kmz kmz
 application/vnd.grafeq
 application/vnd.groove-account
 application/vnd.groove-help
@@ -363,7 +365,7 @@ application/x-shockwave-flash	swf
 application/x-stuffit		sit
 application/x-sv4cpio		sv4cpio
 application/x-sv4crc		sv4crc
-application/x-tar		tar
+application/x-tar		tar tgz
 application/x-tcl		tcl
 application/x-tex		tex
 application/x-texinfo		texinfo texi
@@ -446,6 +448,7 @@ audio/x-pn-realaudio		ram rm
 audio/x-pn-realaudio-plugin	rpm
 audio/x-realaudio		ra
 audio/x-wav			wav
+audio/x-vorbis			ogg
 chemical/x-pdb			pdb
 chemical/x-xyz			xyz
 image/bmp			bmp

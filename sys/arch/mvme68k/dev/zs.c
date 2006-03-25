@@ -1,6 +1,7 @@
-/*	$NetBSD: zs.c,v 1.4 1994/10/26 02:33:32 cgd Exp $	*/
+/*	$OpenBSD: zs.c,v 1.22 2005/11/24 22:43:16 miod Exp $ */
 
 /*
+ * Copyright (c) 2000 Steve Murphree, Jr.
  * Copyright (c) 1995 Theo de Raadt
  * Copyright (c) 1993 Paul Mackerras.
  * All rights reserved.
@@ -13,8 +14,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -31,21 +30,27 @@
  * Serial I/O via an SCC,
  */
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
 #include <sys/fcntl.h>
 #include <sys/device.h>
-#include <machine/cpu.h>
+
 #include <machine/autoconf.h>
+#include <machine/conf.h>
+#include <machine/cpu.h>
+
+#ifdef DDB
+#include <ddb/db_var.h>
+#endif
+
 #include <dev/cons.h>
+
 #include <mvme68k/dev/scc.h>
 
 #include "pcc.h"
@@ -65,29 +70,29 @@
 #define RECV_BUF	512
 #define ERROR_DET	0xed
 
-#define TS_DRAIN	TS_FLUSH/* waiting for output to drain */
+#define TS_DRAIN	TS_FLUSH /* waiting for output to drain */
 
-#define splzs()		spl4()
+#define splzs()		_splraise(PSL_S | PSL_IPL4)
 
 struct zs {
-	short		flags;		/* see below */
-	char		rr0;		/* holds previous CTS, DCD state */
-	u_char		imask;		/* mask for input chars */
-	int		nzs_open;	/* # opens as /dev/zsn */
-	struct tty	*tty;		/* link to tty structure */
-	struct sccregs	scc;		/* SCC shadow registers */
-	u_char		*rcv_get;
-	u_char		*rcv_put;
-	u_char		*rcv_end;
-	volatile int	rcv_count;
-	int		rcv_len;
-	char		*send_ptr;
-	int		send_count;
-	int		sent_count;
-	volatile char	modem_state;
-	volatile char	modem_change;
-	volatile short	hflags;
-	char		rcv_buf[RECV_BUF];
+	short    flags;		/* see below */
+	char     rr0;		/* holds previous CTS, DCD state */
+	u_char      imask;		/* mask for input chars */
+	int      nzs_open;	/* # opens as /dev/zsn */
+	struct tty  *tty;		/* link to tty structure */
+	struct sccregs scc;		/* SCC shadow registers */
+	u_char      *rcv_get;
+	u_char      *rcv_put;
+	u_char      *rcv_end;
+	volatile int   rcv_count;
+	int      rcv_len;
+	char     *send_ptr;
+	int      send_count;
+	int      sent_count;
+	volatile char  modem_state;
+	volatile char  modem_change;
+	volatile short hflags;
+	char     rcv_buf[RECV_BUF];
 };
 
 /* Bits in flags */
@@ -104,37 +109,28 @@ struct zs {
 #define ZH_RXOVF	8	/* receiver buffer overflow */
 
 struct zssoftc {
-	struct device	sc_dev;
-	struct zs	sc_zs[2];
-	struct evcnt	sc_intrcnt;
-	struct intrhand	sc_ih;
-#if NPCC > 0
-	struct pccreg	*sc_pcc;
-#endif
-#if NMC > 0
-	struct mcreg	*sc_mc;
-#endif
-	int		sc_flags;
+	struct device  sc_dev;
+	struct zs   sc_zs[2];
+	struct intrhand   sc_ih;
+	int      sc_flags;
 };
 #define ZSSF_85230	1
 
 struct tty *zs_tty[NZSLINE];
 
-struct	termios zs_cons_termios;
-int	zs_cons_unit = 0;
-int	zs_is_console = 0;
-struct	sccregs *zs_cons_scc;
+struct   termios zs_cons_termios;
+int   zs_cons_unit = 0;
+int   zs_is_console = 0;
+struct   sccregs *zs_cons_scc;
 
-int	zsopen	__P((dev_t, int, int, struct proc *));
-void	zsstart	__P((struct tty *));
-int	zsparam	__P((struct tty *, struct termios *));
-int	zsirq	__P((int unit));
-int	zsregs	__P((caddr_t va, int unit, volatile u_char **crp,
-	    volatile u_char **drp));
-int	zspclk	__P((void));
+void  zsstart(struct tty *);
+int   zsparam(struct tty *, struct termios *);
+int   zsirq(void *);
+int   zsregs(vaddr_t, int, volatile u_char **, volatile u_char **);
+int   zspclk(void);
 
-u_long	sir_zs;
-void	zs_softint __P((void));
+u_long   sir_zs;
+void  zs_softint(void *);
 
 #define zsunit(dev)	(minor(dev) >> 1)
 #define zsside(dev)	(minor(dev) & 1)
@@ -142,28 +138,58 @@ void	zs_softint __P((void));
 /*
  * Autoconfiguration stuff.
  */
-void	zsattach __P((struct device *, struct device *, void *));
-int	zsmatch __P((struct device *, void *, void *));
+void  zsattach(struct device *, struct device *, void *);
+int   zsmatch(struct device *, void *, void *);
 
-struct cfdriver zscd = {
-	NULL, "zs", zsmatch, zsattach, DV_TTY, sizeof(struct zssoftc), 0
+struct cfattach zs_ca = {
+	sizeof(struct zssoftc), zsmatch, zsattach
 };
+
+struct cfdriver zs_cd = {
+	NULL, "zs", DV_TTY
+};
+
+void	zs_ttydef(struct zs *);
+struct tty *zstty(dev_t);
+void	zs_init(struct zs *);
+void	zscc_init(struct zs *, struct termios *);
+int	zscc_params(struct sccregs *, struct termios *);
+int	zscc_mget(struct sccregs *);
+void	zscc_mset(struct sccregs *, int);
+void	zscc_mclr(struct sccregs *, int);
+void	zs_drain(struct zs *);
+void	zs_unblock(struct tty *);
+void	zs_txint(struct zs *);
+void	zs_rxint(struct zs *);
+void	zs_extint(struct zs *);
+cons_decl(zs);
 
 int
 zsmatch(parent, vcf, args)
 	struct device *parent;
-	void	*vcf, *args;
+	void  *vcf, *args;
 {
-	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
-
-	return (!badvaddr(ca->ca_vaddr, 1));
+	unsigned char *zstest = (unsigned char *)ca->ca_vaddr;
+	/* 
+	 * If zs1 is in the config, we must test to see if it really exists.  
+	 * Some 162s only have one scc device, but the memory location for 
+	 * the second scc still checks valid and every byte contains 0xFF. So 
+	 * this is what we test with for now. XXX - smurph
+	 */
+	if (!badvaddr((vaddr_t)ca->ca_vaddr, 1))
+		if (*zstest == 0xFF)
+			return (0);
+		else
+			return (1);
+	else
+		return (0);
 }
 
 void
 zsattach(parent, self, args)
 	struct device *parent, *self;
-	void	*args;
+	void  *args;
 {
 	struct zssoftc *sc;
 	struct zs *zp, *zc;
@@ -172,26 +198,33 @@ zsattach(parent, self, args)
 	volatile u_char *scc_cr, *scc_dr;
 	struct confargs *ca = args;
 	int     zs_level = ca->ca_ipl;
-	int	size;
+	int   size;
 	static int initirq = 0;
 
-	/* connect the interrupt */
 	sc = (struct zssoftc *) self;
 
+	/* connect the interrupt */
 	sc->sc_ih.ih_fn = zsirq;
 	sc->sc_ih.ih_arg = (void *)self->dv_unit;
 	sc->sc_ih.ih_ipl = zs_level;
+	sc->sc_ih.ih_wantframe = 0;
+
 	switch (ca->ca_bustype) {
 #if NPCC > 0
 	case BUS_PCC:
-		pccintr_establish(PCCV_ZS, &sc->sc_ih);
-		sc->sc_pcc = (struct pccreg *)ca->ca_master;
+		pccintr_establish(PCCV_ZS, &sc->sc_ih, self->dv_xname);
 		break;
 #endif
 #if NMC > 0
 	case BUS_MC:
-		mcintr_establish(MCV_ZS, &sc->sc_ih);
-		sc->sc_mc = (struct mcreg *)ca->ca_master;
+		if (sys_mc->mc_chiprev == 0x01)
+			/* 
+			 * MC rev 0x01 has a bug and can not access scc regs directly. 
+			 * Macros will do the right thing based on the value of 
+			 * mc_rev1_bug - XXX smurph 
+			 */
+			mc_rev1_bug = 1; /* defined in scc.h */
+		mcintr_establish(MCV_ZS, &sc->sc_ih, self->dv_xname);
 		break;
 #endif
 	}
@@ -206,7 +239,7 @@ zsattach(parent, self, args)
 	 */
 	size = zsregs(ca->ca_vaddr, 0, &scc_cr, &scc_dr);
 
-	if (zs_is_console && self->dv_unit == zsunit(zs_cons_unit)) {
+	if (zs_is_console && self->dv_unit == zs_cons_unit) {
 		/* SCC is the console - it's already reset */
 		zc = zp + zsside(zs_cons_unit);
 		zc->scc = *zs_cons_scc;
@@ -245,29 +278,27 @@ zsattach(parent, self, args)
 	 */
 	switch (ca->ca_bustype) {
 #if NPCC > 0
-	case BUS_PCC:
-		ir = sc->sc_pcc->pcc_zsirq;
-		if ((ir & PCC_IRQ_IPL) != 0 && (ir & PCC_IRQ_IPL) != zs_level)
-			panic("zs configured at different IPLs");
-		if (initirq)
+		case BUS_PCC:
+			ir = sys_pcc->pcc_zsirq;
+			if ((ir & PCC_IRQ_IPL) != 0 && (ir & PCC_IRQ_IPL) != zs_level)
+				panic("zs configured at different IPLs");
+			if (initirq)
+				break;
+			sys_pcc->pcc_zsirq = zs_level | PCC_IRQ_IEN | PCC_ZS_PCCVEC;
 			break;
-		sc->sc_pcc->pcc_zsirq = zs_level | PCC_IRQ_IEN | PCC_ZS_PCCVEC;
-		break;
 #endif
 #if NMC > 0
-	case BUS_MC:
-		ir = sc->sc_mc->mc_zsirq;
-		if ((ir & MC_IRQ_IPL) != 0 && (ir & MC_IRQ_IPL) != zs_level)
-			panic("zs configured at different IPLs");
-		if (initirq)
+		case BUS_MC:
+			ir = sys_mc->mc_zsirq;
+			if ((ir & MC_IRQ_IPL) != 0 && (ir & MC_IRQ_IPL) != zs_level)
+				panic("zs configured at different IPLs");
+			if (initirq)
+				break;
+			sys_mc->mc_zsirq = zs_level | MC_IRQ_IEN;
 			break;
-		sc->sc_mc->mc_zsirq = zs_level | MC_IRQ_IEN;
-		break;
 #endif
 	}
 	initirq = 1;
-
-	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
 }
 
 void
@@ -316,8 +347,8 @@ zsopen(dev, flag, mode, p)
 	struct zs *zp;
 	struct zssoftc *sc;
 
-	if (zsunit(dev) >= zscd.cd_ndevs ||
-	    (sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)]) == NULL)
+	if (zsunit(dev) >= zs_cd.cd_ndevs ||
+		 (sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)]) == NULL)
 		return (ENODEV);
 
 	zp = &sc->sc_zs[zsside(dev)];
@@ -356,8 +387,8 @@ zsclose(dev, flag, mode, p)
 	struct zssoftc *sc;
 	int s;
 
-	if (zsunit(dev) > zscd.cd_ndevs ||
-	    (sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)]) == NULL)
+	if (zsunit(dev) > zs_cd.cd_ndevs ||
+		 (sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)]) == NULL)
 		return (ENODEV);
 	zp = &sc->sc_zs[zsside(dev)];
 	tp = zp->tty;
@@ -365,8 +396,8 @@ zsclose(dev, flag, mode, p)
 	(*linesw[tp->t_line].l_close) (tp, flag);
 	s = splzs();
 	if ((zp->flags & ZS_CONSOLE) == 0 && (tp->t_cflag & HUPCL) != 0)
-		ZBIC(&zp->scc, 5, 0x82);        /* drop DTR, RTS */
-	ZBIC(&zp->scc, 3, 1);   /* disable receiver */
+		ZBIC(&zp->scc, 5, 0x82);		  /* drop DTR, RTS */
+	ZBIC(&zp->scc, 3, 1);	/* disable receiver */
 	splx(s);
 	ttyclose(tp);
 	zp->nzs_open = 0;
@@ -376,11 +407,11 @@ zsclose(dev, flag, mode, p)
 /*ARGSUSED*/
 int
 zsread(dev, uio, flag)
-	dev_t	dev;
+	dev_t dev;
 	struct uio *uio;
-	int	flag;
+	int   flag;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)];
 	struct zs *zp = &sc->sc_zs[zsside(dev)];
 	struct tty *tp = zp->tty;
 
@@ -394,7 +425,7 @@ zswrite(dev, uio, flag)
 	struct uio *uio;
 	int     flag;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)];
 	struct zs *zp = &sc->sc_zs[zsside(dev)];
 	struct tty *tp = zp->tty;
 
@@ -403,12 +434,13 @@ zswrite(dev, uio, flag)
 
 int
 zsioctl(dev, cmd, data, flag, p)
-	dev_t   dev;
+	dev_t dev;
+	u_long cmd;
 	caddr_t data;
-	int     cmd, flag;
+	int flag;
 	struct proc *p;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(dev)];
 	struct zs *zp = &sc->sc_zs[zsside(dev)];
 	struct tty *tp = zp->tty;
 	register struct sccregs *scc = &zp->scc;
@@ -423,38 +455,38 @@ zsioctl(dev, cmd, data, flag, p)
 	error = 0;
 	s = splzs();
 	switch (cmd) {
-	case TIOCSDTR:
-		ZBIS(scc, 5, 0x80);
-		break;
-	case TIOCCDTR:
-		ZBIC(scc, 5, 0x80);
-		break;
-	case TIOCSBRK:
-		splx(s);
-		zs_drain(zp);
-		s = splzs();
-		ZBIS(scc, 5, 0x10);
-		spltty();
-		zs_unblock(tp);
-		break;
-	case TIOCCBRK:
-		ZBIC(scc, 5, 0x10);
-		break;
-	case TIOCMGET:
-		*(int *) data = zscc_mget(scc);
-		break;
-	case TIOCMSET:
-		zscc_mset(scc, *(int *) data);
-		zscc_mclr(scc, ~*(int *) data);
-		break;
-	case TIOCMBIS:
-		zscc_mset(scc, *(int *) data);
-		break;
-	case TIOCMBIC:
-		zscc_mclr(scc, *(int *) data);
-		break;
-	default:
-		error = ENOTTY;
+		case TIOCSDTR:
+			ZBIS(scc, 5, 0x80);
+			break;
+		case TIOCCDTR:
+			ZBIC(scc, 5, 0x80);
+			break;
+		case TIOCSBRK:
+			splx(s);
+			zs_drain(zp);
+			s = splzs();
+			ZBIS(scc, 5, 0x10);
+			spltty();
+			zs_unblock(tp);
+			break;
+		case TIOCCBRK:
+			ZBIC(scc, 5, 0x10);
+			break;
+		case TIOCMGET:
+			*(int *) data = zscc_mget(scc);
+			break;
+		case TIOCMSET:
+			zscc_mset(scc, *(int *) data);
+			zscc_mclr(scc, ~*(int *) data);
+			break;
+		case TIOCMBIS:
+			zscc_mset(scc, *(int *) data);
+			break;
+		case TIOCMBIC:
+			zscc_mclr(scc, *(int *) data);
+			break;
+		default:
+			error = ENOTTY;
 	}
 	splx(s);
 	return (error);
@@ -465,7 +497,7 @@ zsparam(tp, t)
 	struct tty *tp;
 	struct termios *t;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(tp->t_dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(tp->t_dev)];
 	struct zs *zp = &sc->sc_zs[zsside(tp->t_dev)];
 	register int s;
 
@@ -489,7 +521,7 @@ void
 zsstart(tp)
 	struct tty *tp;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(tp->t_dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(tp->t_dev)];
 	struct zs *zp = &sc->sc_zs[zsside(tp->t_dev)];
 	register int s, n;
 
@@ -510,11 +542,12 @@ zsstart(tp)
 	splx(s);
 }
 
+int
 zsstop(tp, flag)
 	struct tty *tp;
 	int flag;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[zsunit(tp->t_dev)];
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[zsunit(tp->t_dev)];
 	struct zs *zp = &sc->sc_zs[zsside(tp->t_dev)];
 	int     s, n;
 
@@ -535,8 +568,10 @@ zsstop(tp, flag)
 		}
 	}
 	splx(s);
+	return (0);
 }
 
+void
 zs_init(zp)
 	struct zs *zp;
 {
@@ -551,6 +586,7 @@ zs_init(zp)
 	splx(s);
 }
 
+void
 zscc_init(zp, par)
 	struct zs *zp;
 	struct termios *par;
@@ -558,8 +594,8 @@ zscc_init(zp, par)
 	struct sccregs *scc;
 
 	scc = &zp->scc;
-#ifdef MVME162
-	if (cputyp == CPU_162)
+#if defined(MVME162) || defined(MVME172)
+	if (cputyp == CPU_162 || cputyp == CPU_172)
 		ZWRITE(scc, 2, MC_VECBASE+MCV_ZS);
 #endif
 	ZWRITE(scc, 10, 0);
@@ -591,21 +627,21 @@ zscc_params(scc, par)
 	ZWRITE(scc, 12, divisor);
 	ZWRITE(scc, 13, divisor >> 8);
 	switch (par->c_cflag & CSIZE) {
-	case CS5:
-		spd = 0;
-		imask = 0x1F;
-		break;
-	case CS6:
-		spd = 0x40;
-		imask = 0x3F;
-		break;
-	case CS7:
-		spd = 0x20;
-		imask = 0x7F;
-		break;
-	default:
-		spd = 0x60;
-		imask = 0xFF;
+		case CS5:
+			spd = 0;
+			imask = 0x1F;
+			break;
+		case CS6:
+			spd = 0x40;
+			imask = 0x3F;
+			break;
+		case CS7:
+			spd = 0x20;
+			imask = 0x7F;
+			break;
+		default:
+			spd = 0x60;
+			imask = 0xFF;
 	}
 	ZWRITE(scc, 5, (scc->s_val[5] & ~0x60) | spd);
 	ZWRITE(scc, 3, (scc->s_val[3] & ~0xC0) | (spd << 1));
@@ -621,7 +657,7 @@ zscc_params(scc, par)
 	if ((par->c_cflag & CCTS_OFLOW) != 0)
 		ints |= SCC_CTS;
 #if 0
-	if (cputyp == CPU_162) {
+	if (cputyp == CPU_162 || cputyp == CPU_172) {
 		ZWRITE(scc, 15, ints | 1);
 		/*
 		 * now.. register 7 has become register 7': disable all
@@ -634,6 +670,7 @@ zscc_params(scc, par)
 	return (imask);
 }
 
+int
 zscc_mget(scc)
 	register struct sccregs *scc;
 {
@@ -653,6 +690,7 @@ zscc_mget(scc)
 	return (bits);
 }
 
+void
 zscc_mset(scc, bits)
 	register struct sccregs *scc;
 	int bits;
@@ -665,6 +703,7 @@ zscc_mset(scc, bits)
 		ZBIS(scc, 5, SCC_RTS);
 }
 
+void
 zscc_mclr(scc, bits)
 	register struct sccregs *scc;
 	int bits;
@@ -677,6 +716,7 @@ zscc_mclr(scc, bits)
 		ZBIC(scc, 5, SCC_RTS);
 }
 
+void
 zs_drain(zp)
 	register struct zs *zp;
 {
@@ -686,7 +726,7 @@ zs_drain(zp)
 	/* wait for Tx buffer empty and All sent bits to be set */
 	s = splzs();
 	while ((ZREAD0(&zp->scc) & SCC_TXRDY) == 0 ||
-	    (ZREAD(&zp->scc, 1) & 1) == 0) {
+			 (ZREAD(&zp->scc, 1) & 1) == 0) {
 		splx(s);
 		DELAY(100);
 		s = splzs();
@@ -694,6 +734,7 @@ zs_drain(zp)
 	splx(s);
 }
 
+void
 zs_unblock(tp)
 	register struct tty *tp;
 {
@@ -706,12 +747,13 @@ zs_unblock(tp)
  * Hardware interrupt from an SCC.
  */
 int
-zsirq(unit)
-	int unit;
+zsirq(arg)
+	void *arg;
 {
-	struct zssoftc *sc = (struct zssoftc *) zscd.cd_devs[unit];
-	register struct zs *zp = &sc->sc_zs[0];
-	register int ipend, x;
+	int unit = (int)arg;
+	struct zssoftc *sc = (struct zssoftc *) zs_cd.cd_devs[unit];
+	struct zs *zp = &sc->sc_zs[0];
+	int ipend;
 
 	ipend = ZREAD(&zp->scc, 3);	/* read int pending from A side */
 	if (ipend == 0)
@@ -731,14 +773,13 @@ zsirq(unit)
 		zs_extint(zp);
 	ZWRITE0(&zp->scc, 0x38);	/* reset highest IUS */
 
-	sc->sc_intrcnt.ev_count++;
 	return (1);
 }
 
+void
 zs_txint(zp)
 	register struct zs *zp;
 {
-	struct tty *tp = zp->tty;
 	struct sccregs *scc;
 	int     c;
 	u_char *get;
@@ -762,6 +803,7 @@ zs_txint(zp)
 	}
 }
 
+void
 zs_rxint(zp)
 	register struct zs *zp;
 {
@@ -809,6 +851,7 @@ zs_rxint(zp)
 }
 
 /* Ext/status interrupt */
+void
 zs_extint(zp)
 	register struct zs *zp;
 {
@@ -817,6 +860,15 @@ zs_extint(zp)
 
 	rr0 = ZREAD0(&zp->scc);
 	ZWRITE0(&zp->scc, 0x10);/* reset ext/status int */
+
+	/* Handle break */
+	if (rr0 & 0x80) {
+#ifdef DDB
+		if (ISSET(zp->flags, ZS_CONSOLE) && db_console != 0)
+			Debugger();
+#endif
+	}
+
 	if ((tp->t_cflag & CCTS_OFLOW) != 0) {
 		if ((rr0 & 0x20) == 0)
 			zp->hflags |= ZH_OBLOCK;
@@ -832,20 +884,22 @@ zs_extint(zp)
 	setsoftint(sir_zs);
 }
 
+/* ARGSUSED */
 void
-zs_softint()
+zs_softint(arg)
+	void *arg;
 {
-	int     s, n, n0, c, stat, rr0;
+	int     s, c, stat, rr0;
 	struct zs *zp;
 	struct tty *tp;
 	u_char *get;
 	int     unit, side;
 
 	s = splzs();
-	for (unit = 0; unit < zscd.cd_ndevs; ++unit) {
-		if (zscd.cd_devs[unit] == NULL)
+	for (unit = 0; unit < zs_cd.cd_ndevs; ++unit) {
+		if (zs_cd.cd_devs[unit] == NULL)
 			continue;
-		zp = &((struct zssoftc *) zscd.cd_devs[unit])->sc_zs[0];
+		zp = &((struct zssoftc *) zs_cd.cd_devs[unit])->sc_zs[0];
 		for (side = 0; side < 2; ++side, ++zp) {
 			if ((zp->hflags & ZH_SIRQ) == 0)
 				continue;
@@ -855,7 +909,7 @@ zs_softint()
 			/* check for tx done */
 			spltty();
 			if (tp != NULL && zp->send_count == 0
-			    && (tp->t_state & TS_BUSY) != 0) {
+				 && (tp->t_state & TS_BUSY) != 0) {
 				tp->t_state &= ~(TS_BUSY | TS_FLUSH);
 				ndflush(&tp->t_outq, zp->sent_count);
 				if (tp->t_outq.c_cc <= tp->t_lowat) {
@@ -894,6 +948,7 @@ zs_softint()
 				if (tp == NULL || (tp->t_state & TS_ISOPEN) == 0)
 					continue;
 				if (zp->nzs_open == 0) {
+					
 				} else {
 					if ((stat & 0x10) != 0)
 						c |= TTY_PE;
@@ -935,6 +990,7 @@ zs_softint()
  */
 
 /* probe for the SCC; should check hardware */
+void
 zscnprobe(cp)
 	struct consdev *cp;
 {
@@ -943,10 +999,10 @@ zscnprobe(cp)
 	switch (cputyp) {
 	case CPU_147:
 	case CPU_162:
+	case CPU_172:
 		break;
 	default:
-		cp->cn_pri = CN_DEAD;
-		return (0);
+		return;
 	}
 
 	/* locate the major number */
@@ -954,11 +1010,8 @@ zscnprobe(cp)
 		if (cdevsw[maj].d_open == zsopen)
 			break;
 
-	/* initialize required fields */
 	cp->cn_dev = makedev(maj, 0);
-	cp->cn_pri = CN_INTERNAL;	/* better than PROM console */
-
-	return (1);
+	cp->cn_pri = CN_NORMAL;
 }
 
 /* initialize the keyboard for use as the console */
@@ -974,11 +1027,6 @@ struct termios zscn_termios = {
 
 struct sccregs zs_cons_sccregs;
 int     zs_cons_imask;
-
-zscninit()
-{
-	zs_cnsetup(0, &zscn_termios);
-}
 
 /* Polling routine for console input from a serial port. */
 int
@@ -1003,6 +1051,7 @@ zscngetc(dev)
 	return (c);
 }
 
+void
 zscnputc(dev, c)
 	dev_t dev;
 	int c;
@@ -1017,10 +1066,12 @@ zscnputc(dev, c)
 	splx(s);
 }
 
-zs_cnsetup(unit, tiop)
-	int unit;
-	struct termios *tiop;
+void
+zscninit(cp)
+	struct consdev *cp;
 {
+	int unit = 0;
+	struct termios *tiop = &zscn_termios;
 	volatile u_char *scc_cr, *scc_dr;
 	struct sccregs *scc;
 	int size;
@@ -1034,7 +1085,7 @@ zs_cnsetup(unit, tiop)
 	 * on different MVME models, so we generate independent pointers
 	 * to them.
 	 */
-	size = zsregs(NULL, unit, &scc_cr, &scc_dr);
+	size = zsregs(0, unit, &scc_cr, &scc_dr);
 
 	*(scc_cr + size) = 0;
 	*(scc_cr + size) = 9;
@@ -1046,8 +1097,8 @@ zs_cnsetup(unit, tiop)
 
 	scc->s_cr = scc_cr;
 	scc->s_dr = scc_dr;
-#ifdef MVME162
-	if (cputyp == CPU_162)
+#if defined(MVME162) || defined(MVME172)
+	if (cputyp == CPU_162 || cputyp == CPU_172)
 		ZWRITE(scc, 2, MC_VECBASE+MCV_ZS);
 #endif
 	ZWRITE(scc, 10, 0);
@@ -1060,10 +1111,10 @@ zs_cnsetup(unit, tiop)
 }
 
 #ifdef MVME147
-u_long zs_cons_addrs_147[] = { ZS0_PHYS_147, ZS1_PHYS_147 };
+u_long zs_cons_addrs_147[] = { ZS0_PHYS_147, ZS1_PHYS_147};
 #endif
-#ifdef MVME162
-u_long zs_cons_addrs_162[] = { ZS0_PHYS_162, ZS1_PHYS_162 };
+#if defined(MVME162) || defined(MVME172)
+u_long zs_cons_addrs_162[] = { ZS0_PHYS_162, ZS1_PHYS_162};
 #endif
 
 /*
@@ -1075,14 +1126,14 @@ u_long zs_cons_addrs_162[] = { ZS0_PHYS_162, ZS1_PHYS_162 };
  */
 int
 zsregs(va, unit, crp, drp)
-	caddr_t	va;
+	vaddr_t va;
 	int unit;
 	volatile u_char **crp, **drp;
 {
 #ifdef MVME147
 	volatile struct scc_147 *scc_adr_147;
 #endif
-#ifdef MVME162
+#if defined(MVME162) || defined(MVME172)
 	volatile struct scc_162 *scc_adr_162;
 #endif
 	volatile u_char *scc_cr, *scc_dr;
@@ -1090,24 +1141,25 @@ zsregs(va, unit, crp, drp)
 
 	switch (cputyp) {
 #ifdef MVME147
-	case CPU_147:
-		if (!va)
-			va = (caddr_t)IIOV(zs_cons_addrs_147[zsunit(unit)]);
-		scc_adr_147 = (volatile struct scc_147 *)va;
-		scc_cr = &scc_adr_147->cr;
-		scc_dr = &scc_adr_147->dr;
-		size = sizeof(struct scc_147);
-		break;
+		case CPU_147:
+			if (va == 0)
+				va = IIOV(zs_cons_addrs_147[unit]);
+			scc_adr_147 = (volatile struct scc_147 *)va;
+			scc_cr = &scc_adr_147->cr;
+			scc_dr = &scc_adr_147->dr;
+			size = sizeof(struct scc_147);
+			break;
 #endif
-#ifdef MVME162
-	case CPU_162:
-		if (!va)
-			va = (caddr_t)IIOV(zs_cons_addrs_162[zsunit(unit)]);
-		scc_adr_162 = (volatile struct scc_162 *)va;
-		scc_cr = &scc_adr_162->cr;
-		scc_dr = &scc_adr_162->dr;
-		size = sizeof(struct scc_162);
-		break;
+#if defined(MVME162) || defined(MVME172)
+		case CPU_162:
+		case CPU_172:
+			if (va == 0)
+				va = IIOV(zs_cons_addrs_162[unit]);
+			scc_adr_162 = (volatile struct scc_162 *)va;
+			scc_cr = &scc_adr_162->cr;
+			scc_dr = &scc_adr_162->dr;
+			size = sizeof(struct scc_162);
+			break;
 #endif
 	}
 
@@ -1121,12 +1173,15 @@ zspclk()
 {
 	switch (cputyp) {
 #ifdef MVME147
-	case CPU_147:
-		return (PCLK_FREQ_147);
+		case CPU_147:
+			return (PCLK_FREQ_147);
 #endif
-#ifdef MVME162
-	case CPU_162:
-		return (PCLK_FREQ_162);
+#if defined(MVME162) || defined(MVME172)
+		case CPU_162:
+		case CPU_172:
+			return (PCLK_FREQ_162);
 #endif
+		default:
+			return 0;
 	}
 }

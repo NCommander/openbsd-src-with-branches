@@ -1,8 +1,8 @@
-/*	$NetBSD: pass1.c,v 1.16 1996/09/27 22:45:15 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: pass1.c,v 1.10 2003/06/11 06:22:13 deraadt Exp $	*/
+/*	$NetBSD: pass1.c,v 1.9 2000/01/31 11:40:12 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pass1.c	8.1 (Berkeley) 6/5/93";
-#else
-static char rcsid[] = "$NetBSD: pass1.c,v 1.16 1996/09/27 22:45:15 christos Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/param.h>
 #include <sys/time.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
@@ -54,6 +42,7 @@ static char rcsid[] = "$NetBSD: pass1.c,v 1.16 1996/09/27 22:45:15 christos Exp 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "fsck.h"
 #include "extern.h"
@@ -61,26 +50,51 @@ static char rcsid[] = "$NetBSD: pass1.c,v 1.16 1996/09/27 22:45:15 christos Exp 
 
 static daddr_t badblk;
 static daddr_t dupblk;
-static void checkinode __P((ino_t, struct inodesc *));
+static void checkinode(ino_t, struct inodesc *);
 
 void
-pass1()
+pass1(void)
 {
 	ino_t inumber;
-	int c, i, cgd;
+	int c, i;
+	daddr_t dbase;
 	struct inodesc idesc;
 
 	/*
 	 * Set file system reserved blocks in used block map.
 	 */
 	for (c = 0; c < sblock.e2fs_ncg; c++) {
-		i = c * sblock.e2fs.e2fs_bpg + sblock.e2fs.e2fs_first_dblock;
-		cgd = i + cgoverhead;
+		dbase = c * sblock.e2fs.e2fs_bpg +
+		    sblock.e2fs.e2fs_first_dblock;
+		/* Mark the blocks used for the inode table */
+		if (fs2h32(sblock.e2fs_gd[c].ext2bgd_i_tables) >= dbase) {
+			for (i = 0; i < sblock.e2fs_itpg; i++)
+				setbmap(
+				    fs2h32(sblock.e2fs_gd[c].ext2bgd_i_tables)
+				    + i);
+		}
+		/* Mark the blocks used for the block bitmap */
+		if (fs2h32(sblock.e2fs_gd[c].ext2bgd_b_bitmap) >= dbase)
+			setbmap(fs2h32(sblock.e2fs_gd[c].ext2bgd_b_bitmap));
+		/* Mark the blocks used for the inode bitmap */
+		if (fs2h32(sblock.e2fs_gd[c].ext2bgd_i_bitmap) >= dbase)
+			setbmap(fs2h32(sblock.e2fs_gd[c].ext2bgd_i_bitmap));
 
-		if (c == 0)
-			i = 0;
-		for (; i < cgd; i++)
-			setbmap(i);
+		if (sblock.e2fs.e2fs_rev == E2FS_REV0 ||
+		    (sblock.e2fs.e2fs_features_rocompat &
+			EXT2F_ROCOMPAT_SPARSESUPER) == 0 ||
+		    cg_has_sb(c)) {
+			/* Mark copuy of SB and descriptors */
+			setbmap(dbase);
+			for (i = 1; i <= sblock.e2fs_ngdb; i++)
+				setbmap(dbase+i);
+		}
+
+
+		if (c == 0) {
+			for(i = 0; i < dbase; i++)
+				setbmap(i);
+		}
 	}
 
 	/*
@@ -105,26 +119,23 @@ pass1()
 }
 
 static void
-checkinode(inumber, idesc)
-	ino_t inumber;
-	register struct inodesc *idesc;
+checkinode(ino_t inumber, struct inodesc *idesc)
 {
-	register struct ext2fs_dinode *dp;
+	struct ext2fs_dinode *dp;
 	struct zlncnt *zlnp;
 	int ndb, j;
 	mode_t mode;
-	char *symbuf;
 
 	dp = getnextinode(inumber);
-	if (inumber < EXT2_FIRSTINO && inumber != EXT2_ROOTINO) 
+	if (inumber < EXT2_FIRSTINO && inumber != EXT2_ROOTINO)
 		return;
 
-	mode = dp->e2di_mode & IFMT;
+	mode = fs2h16(dp->e2di_mode) & IFMT;
 	if (mode == 0 || (dp->e2di_dtime != 0 && dp->e2di_nlink == 0)) {
 		if (mode == 0 && (
 			memcmp(dp->e2di_blocks, zino.e2di_blocks,
 			(NDADDR + NIADDR) * sizeof(u_int32_t)) ||
-		    dp->e2di_mode || dp->e2di_size)) {
+		    dp->e2di_mode || inosize(dp))) {
 			pfatal("PARTIALLY ALLOCATED INODE I=%u", inumber);
 			if (reply("CLEAR") == 1) {
 				dp = ginode(inumber);
@@ -141,7 +152,7 @@ checkinode(inumber, idesc)
 			if (preen || reply("CORRECT")) {
 				time_t t;
 				time(&t);
-				dp->e2di_dtime = t;
+				dp->e2di_dtime = h2fs32(t);
 				dp = ginode(inumber);
 				inodirty();
 			}
@@ -152,7 +163,7 @@ checkinode(inumber, idesc)
 	}
 	lastino = inumber;
 	if (dp->e2di_dtime != 0) {
-		time_t t = dp->e2di_dtime;
+		time_t t = fs2h32(dp->e2di_dtime);
 		char *p = ctime(&t);
 		pwarn("INODE I=%u HAS DTIME=%12.12s %4.4s", inumber, &p[4], &p[20]);
 		if (preen) {
@@ -164,23 +175,22 @@ checkinode(inumber, idesc)
 			inodirty();
 		}
 	}
-	if (/* dp->di_size < 0 || */
-	    dp->e2di_size + sblock.e2fs_bsize - 1 < dp->e2di_size) {
+	if (inosize(dp) + sblock.e2fs_bsize - 1 < inosize(dp)) {
 		if (debug)
-			printf("bad size %qu:", dp->e2di_size);
+			printf("bad size %llu:", (unsigned long long)inosize(dp));
 		goto unknown;
 	}
 	if (!preen && mode == IFMT && reply("HOLD BAD BLOCK") == 1) {
 		dp = ginode(inumber);
-		dp->e2di_size = sblock.e2fs_bsize;
-		dp->e2di_mode = IFREG|0600;
+		dp->e2di_mode = h2fs16(IFREG|0600);
+		inossize(dp, sblock.e2fs_bsize);
 		inodirty();
 	}
-	ndb = howmany(dp->e2di_size, sblock.e2fs_bsize);
+	ndb = howmany(inosize(dp), sblock.e2fs_bsize);
 	if (ndb < 0) {
 		if (debug)
-			printf("bad size %qu ndb %d:",
-				dp->e2di_size, ndb);
+			printf("bad size %llu ndb %d:",
+			    (unsigned long long)inosize(dp), ndb);
 		goto unknown;
 	}
 	if (mode == IFBLK || mode == IFCHR)
@@ -190,9 +200,9 @@ checkinode(inumber, idesc)
 		 * Fake ndb value so direct/indirect block checks below
 		 * will detect any garbage after symlink string.
 		 */
-		if (dp->e2di_size < EXT2_MAXSYMLINKLEN ||
+		if (inosize(dp) < EXT2_MAXSYMLINKLEN ||
 		    (EXT2_MAXSYMLINKLEN == 0 && dp->e2di_blocks == 0)) {
-			ndb = howmany(dp->e2di_size, sizeof(u_int32_t));
+			ndb = howmany(inosize(dp), sizeof(u_int32_t));
 			if (ndb > NDADDR) {
 				j = ndb - NDADDR;
 				for (ndb = 1; j > 1; j--)
@@ -201,26 +211,31 @@ checkinode(inumber, idesc)
 			}
 		}
 	}
-	for (j = ndb; j < NDADDR; j++)
-		if (dp->e2di_blocks[j] != 0) {
-			if (debug)
-				printf("bad direct addr: %d\n", dp->e2di_blocks[j]);
-			goto unknown;
+	/* Linux puts things in blocks for FIFO, so skip this check */
+	if (mode != IFIFO) {
+		for (j = ndb; j < NDADDR; j++)
+			if (dp->e2di_blocks[j] != 0) {
+				if (debug)
+					printf("bad direct addr: %d\n",
+					    fs2h32(dp->e2di_blocks[j]));
+				goto unknown;
+			}
+		for (j = 0, ndb -= NDADDR; ndb > 0; j++)
+			ndb /= NINDIR(&sblock);
+		for (; j < NIADDR; j++) {
+			if (dp->e2di_blocks[j+NDADDR] != 0) {
+				if (debug)
+					printf("bad indirect addr: %d\n",
+					    fs2h32(dp->e2di_blocks[j+NDADDR]));
+				goto unknown;
+			}
 		}
-	for (j = 0, ndb -= NDADDR; ndb > 0; j++)
-		ndb /= NINDIR(&sblock);
-	for (; j < NIADDR; j++)
-		if (dp->e2di_blocks[j+NDADDR] != 0) {
-			if (debug)
-				printf("bad indirect addr: %d\n",
-					dp->e2di_blocks[j+NDADDR]);
-			goto unknown;
-		}
+	}
 	if (ftypeok(dp) == 0)
 		goto unknown;
 	n_files++;
-	lncntp[inumber] = dp->e2di_nlink;
-	if (dp->e2di_nlink <= 0) {
+	lncntp[inumber] = fs2h16(dp->e2di_nlink);
+	if (dp->e2di_nlink == 0) {
 		zlnp = (struct zlncnt *)malloc(sizeof *zlnp);
 		if (zlnp == NULL) {
 			pfatal("LINK COUNT TABLE OVERFLOW");
@@ -233,7 +248,7 @@ checkinode(inumber, idesc)
 		}
 	}
 	if (mode == IFDIR) {
-		if (dp->e2di_size == 0)
+		if (inosize(dp) == 0)
 			statemap[inumber] = DCLEAR;
 		else
 			statemap[inumber] = DSTATE;
@@ -241,19 +256,20 @@ checkinode(inumber, idesc)
 	} else {
 		statemap[inumber] = FSTATE;
 	}
+	typemap[inumber] = E2IFTODT(mode);
 	badblk = dupblk = 0;
 	idesc->id_number = inumber;
 	(void)ckinode(dp, idesc);
 	idesc->id_entryno *= btodb(sblock.e2fs_bsize);
-	if (dp->e2di_nblock != idesc->id_entryno) {
+	if (fs2h32(dp->e2di_nblock) != idesc->id_entryno) {
 		pwarn("INCORRECT BLOCK COUNT I=%u (%d should be %d)",
-		    inumber, dp->e2di_nblock, idesc->id_entryno);
+		    inumber, fs2h32(dp->e2di_nblock), idesc->id_entryno);
 		if (preen)
 			printf(" (CORRECTED)\n");
 		else if (reply("CORRECT") == 0)
 			return;
 		dp = ginode(inumber);
-		dp->e2di_nblock = idesc->id_entryno;
+		dp->e2di_nblock = h2fs32(idesc->id_entryno);
 		inodirty();
 	}
 	return;
@@ -269,13 +285,12 @@ unknown:
 }
 
 int
-pass1check(idesc)
-	register struct inodesc *idesc;
+pass1check(struct inodesc *idesc)
 {
 	int res = KEEPON;
 	int anyout, nfrags;
 	daddr_t blkno = idesc->id_blkno;
-	register struct dups *dlp;
+	struct dups *dlp;
 	struct dups *new;
 
 	if ((anyout = chkrange(blkno, idesc->id_numfrags)) != 0) {

@@ -188,13 +188,16 @@ if test "${target}" = "${host}"; then
   alpha*-*-*)		COREFILE=osf-core.lo ;;
   arm-*-freebsd* | arm-*-kfreebsd*-gnu)
 			COREFILE='' ;;
-  arm-*-netbsd*)	COREFILE=netbsd-core.lo ;;
+  arm-*-netbsd* | arm-*-openbsd*)
+			COREFILE=netbsd-core.lo ;;
   arm-*-riscix)		COREFILE=trad-core.lo ;;
   hppa*-*-hpux*)	COREFILE=hpux-core.lo ;;
   hppa*-*-hiux*)	COREFILE=hpux-core.lo ;;
   hppa*-*-mpeix*)	COREFILE=hpux-core.lo ;;
   hppa*-*-bsd*)		COREFILE="hpux-core.lo hppabsd-core.lo"
 			COREFLAG="-DHPUX_CORE -DHPPABSD_CORE" ;;
+  hppa*-*-openbsd*)	COREFILE=netbsd-core.lo ;;
+
   i370-*-*)
 	COREFILE=trad-core.lo
 	TRAD_HEADER='"hosts/i370linux.h"'
@@ -328,11 +331,14 @@ changequote([,])dnl
 	COREFILE=trad-core.lo
 	TRAD_HEADER='"hosts/m88kmach3.h"'
 	;;
+  m88*-*-openbsd*)
+	COREFILE=netbsd-core.lo
+	;;
   ns32k-pc532-mach)
 	COREFILE=trad-core.lo
 	TRAD_HEADER='"hosts/pc532mach.h"'
 	;;
-  ns32k-*-netbsd* | ns32k-*-openbsd*)
+  ns32k-*-netbsd*)
 	COREFILE=netbsd-core.lo
 	;;
   rs6000-*-lynx*)
@@ -739,6 +745,7 @@ do
     m68ksysvcoff_vec)		tb="$tb coff-svm68k.lo cofflink.lo" ;;
     m88kbcs_vec)		tb="$tb coff-m88k.lo" ;;
     m88kmach3_vec)		tb="$tb m88kmach3.lo aout32.lo" ;;
+    m88kopenbsd_vec)		tb="$tb m88kopenbsd.lo aout32.lo" ;;
     mach_o_be_vec)              tb="$tb mach-o.lo" ;;
     mach_o_le_vec)              tb="$tb mach-o.lo" ;;
     mach_o_fat_vec)             tb="$tb mach-o.lo" ;;

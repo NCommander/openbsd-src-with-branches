@@ -1,3 +1,4 @@
+/*	$OpenBSD: main1.c,v 1.7 2005/11/29 19:38:09 cloder Exp $	*/
 /*	$NetBSD: main1.c,v 1.3 1995/10/02 17:29:56 jpo Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: main1.c,v 1.3 1995/10/02 17:29:56 jpo Exp $";
+static char rcsid[] = "$OpenBSD: main1.c,v 1.7 2005/11/29 19:38:09 cloder Exp $";
 #endif
 
 #include <stdio.h>
@@ -47,7 +48,7 @@ int	yflag;
 
 /*
  * Print warnings if an assignment of an integertype to another integertype
- * causes an implizit narrowing conversion. If aflag is 1, these warnings
+ * causes an implicit narrowing conversion. If aflag is 1, these warnings
  * are printed only if the source type is at least as wide as long. If aflag
  * is greather then 1, they are always printed.
  */
@@ -66,7 +67,10 @@ int	dflag;
 int	eflag;
 
 /* Print complete pathnames, not only the basename. */
-int	Fflag;
+int	Fflag = 1;
+
+/* After an error or warning, print the actual text of the program source code */
+int	fflag = 0;
 
 /* Enable some extensions of gcc */
 int	gflag;
@@ -102,18 +106,16 @@ int	uflag = 1;
 int	vflag = 1;
 
 /* Complain about structures which are never defined. */
-int	zflag = 1;
+int	zflag = 0;
 
-static	void	usage __P((void));
+static	void	usage(void);
 
 int
-main(argc, argv)
-	int	argc;
-	char	*argv[];
+main(int argc, char *argv[])
 {
 	int	c;
 
-	while ((c = getopt(argc, argv, "abcdeghprstuvyzF")) != -1) {
+	while ((c = getopt(argc, argv, "abcdefghprstuvyzF")) != -1) {
 		switch (c) {
 		case 'a':	aflag++;	break;
 		case 'b':	bflag = 1;	break;
@@ -123,6 +125,7 @@ main(argc, argv)
 		case 'F':	Fflag = 1;	break;
 		case 'g':	gflag = 1;	break;
 		case 'h':	hflag = 1;	break;
+		case 'f':	fflag = 1;	break;
 		case 'p':	pflag = 1;	break;
 		case 'r':	rflag = 1;	break;
 		case 's':	sflag = 1;	break;
@@ -147,8 +150,10 @@ main(argc, argv)
 	/* initialize output */
 	outopen(argv[1]);
 
+#if YYDEBUG
 	if (yflag)
 		yydebug = 1;
+#endif
 
 	initmem();
 	initdecl();
@@ -168,14 +173,14 @@ main(argc, argv)
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr, "usage: lint1 [-abcdeghprstuvyzF] src dest\n");
 	exit(1);
 }
-	
+
 void
-norecover()
+norecover(void)
 {
 	/* cannot recover from previous errors */
 	error(224);

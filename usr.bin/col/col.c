@@ -1,3 +1,4 @@
+/*	$OpenBSD: col.c,v 1.8 2003/06/03 02:56:06 millert Exp $	*/
 /*	$NetBSD: col.c,v 1.7 1995/09/02 05:48:50 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)col.c	8.5 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$NetBSD: col.c,v 1.7 1995/09/02 05:48:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: col.c,v 1.8 2003/06/03 02:56:06 millert Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -93,15 +90,14 @@ struct line_str {
 	int	l_max_col;		/* max column in the line */
 };
 
-LINE   *alloc_line __P((void));
-void	dowarn __P((int));
-void	flush_line __P((LINE *));
-void	flush_lines __P((int));
-void	flush_blanks __P((void));
-void	free_line __P((LINE *));
-void	usage __P((void));
-void	wrerr __P((void));
-void   *xmalloc __P((void *, size_t));
+LINE   *alloc_line(void);
+void	dowarn(int);
+void	flush_line(LINE *);
+void	flush_lines(int);
+void	flush_blanks(void);
+void	free_line(LINE *);
+void	usage(void);
+void   *xmalloc(void *, size_t);
 
 CSET	last_set;		/* char_set of last char printed */
 LINE   *lines;
@@ -113,12 +109,10 @@ int	no_backspaces;		/* if not to output any backspaces */
 
 #define	PUTC(ch) \
 	if (putchar(ch) == EOF) \
-		wrerr();
+		err(1, "stdout");
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int ch;
 	CHAR *c;
@@ -134,7 +128,7 @@ main(argc, argv)
 
 	max_bufd_lines = 128;
 	compress_spaces = 1;		/* compress spaces into tabs */
-	while ((opt = getopt(argc, argv, "bfhl:x")) != EOF)
+	while ((opt = getopt(argc, argv, "bfhl:x")) != -1)
 		switch (opt) {
 		case 'b':		/* do not output backspaces */
 			no_backspaces = 1;
@@ -324,8 +318,7 @@ main(argc, argv)
 }
 
 void
-flush_lines(nflush)
-	int nflush;
+flush_lines(int nflush)
 {
 	LINE *l;
 
@@ -351,7 +344,7 @@ flush_lines(nflush)
  * feeds.
  */
 void
-flush_blanks()
+flush_blanks(void)
 {
 	int half, i, nb;
 
@@ -380,8 +373,7 @@ flush_blanks()
  * and character set shifts.
  */
 void
-flush_line(l)
-	LINE *l;
+flush_line(LINE *l)
 {
 	CHAR *c, *endc;
 	int nchars, last_col, this_col;
@@ -480,13 +472,13 @@ flush_line(l)
 static LINE *line_freelist;
 
 LINE *
-alloc_line()
+alloc_line(void)
 {
 	LINE *l;
 	int i;
 
 	if (!line_freelist) {
-		l = (LINE *)xmalloc((void *)NULL, sizeof(LINE) * NALLOC);
+		l = (LINE *)xmalloc(NULL, sizeof(LINE) * NALLOC);
 		line_freelist = l;
 		for (i = 1; i < NALLOC; i++, l++)
 			l->l_next = l + 1;
@@ -500,8 +492,7 @@ alloc_line()
 }
 
 void
-free_line(l)
-	LINE *l;
+free_line(LINE *l)
 {
 
 	l->l_next = line_freelist;
@@ -509,35 +500,23 @@ free_line(l)
 }
 
 void *
-xmalloc(p, size)
-	void *p;
-	size_t size;
+xmalloc(void *p, size_t size)
 {
 
 	if (!(p = (void *)realloc(p, size)))
-		err(1, NULL);
+		err(1, "realloc failed");
 	return (p);
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: col [-bfx] [-l nline]\n");
+	(void)fprintf(stderr, "usage: col [-bfhx] [-l num]\n");
 	exit(1);
 }
 
 void
-wrerr()
-{
-
-	(void)fprintf(stderr, "col: write error.\n");
-	exit(1);
-}
-
-void
-dowarn(line)
-	int line;
+dowarn(int line)
 {
 
 	warnx("warning: can't back up %s",

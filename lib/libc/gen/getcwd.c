@@ -1,5 +1,4 @@
-/*	$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1989, 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getcwd.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <sys/stat.h>
 
@@ -53,19 +40,17 @@ static char rcsid[] = "$NetBSD: getcwd.c,v 1.5 1995/06/16 07:05:30 jtc Exp $";
 
 #define	ISDOT(dp) \
 	(dp->d_name[0] == '.' && (dp->d_name[1] == '\0' || \
-	    dp->d_name[1] == '.' && dp->d_name[2] == '\0'))
+	    (dp->d_name[1] == '.' && dp->d_name[2] == '\0')))
 
 char *
-getcwd(pt, size)
-	char *pt;
-	size_t size;
+getcwd(char *pt, size_t size)
 {
-	register struct dirent *dp;
-	register DIR *dir;
-	register dev_t dev;
-	register ino_t ino;
-	register int first;
-	register char *bpt, *bup;
+	struct dirent *dp;
+	DIR *dir = NULL;
+	dev_t dev;
+	ino_t ino;
+	int first;
+	char *bpt, *bup;
 	struct stat s;
 	dev_t root_dev;
 	ino_t root_ino;
@@ -86,7 +71,7 @@ getcwd(pt, size)
 		}
 		ept = pt + size;
 	} else {
-		if ((pt = malloc(ptsize = 1024 - 4)) == NULL)
+		if ((pt = malloc(ptsize = MAXPATHLEN)) == NULL)
 			return (NULL);
 		ept = pt + ptsize;
 	}
@@ -94,13 +79,13 @@ getcwd(pt, size)
 	*bpt = '\0';
 
 	/*
-	 * Allocate bytes (1024 - malloc space) for the string of "../"'s.
+	 * Allocate bytes for the string of "../"'s.
 	 * Should always be enough (it's 340 levels).  If it's not, allocate
 	 * as necessary.  Special * case the first stat, it's ".", not "..".
 	 */
-	if ((up = malloc(upsize = 1024 - 4)) == NULL)
+	if ((up = malloc(upsize = MAXPATHLEN)) == NULL)
 		goto err;
-	eup = up + MAXPATHLEN;
+	eup = up + upsize;
 	bup = up;
 	up[0] = '.';
 	up[1] = '\0';
@@ -130,7 +115,7 @@ getcwd(pt, size)
 			 * path to the beginning of the buffer, but it's always
 			 * been that way and stuff would probably break.
 			 */
-			bcopy(bpt, pt, ept - bpt);
+			memmove(pt, bpt, ept - bpt);
 			free(up);
 			return (pt);
 		}
@@ -138,12 +123,15 @@ getcwd(pt, size)
 		/*
 		 * Build pointer to the parent directory, allocating memory
 		 * as necessary.  Max length is 3 for "../", the largest
-		 * possible component name, plus a trailing NULL.
+		 * possible component name, plus a trailing NUL.
 		 */
 		if (bup + 3  + MAXNAMLEN + 1 >= eup) {
-			if ((up = realloc(up, upsize *= 2)) == NULL)
+			char *nup;
+
+			if ((nup = realloc(up, upsize *= 2)) == NULL)
 				goto err;
-			bup = up;
+			bup = nup + (bup - up);
+			up = nup;
 			eup = up + upsize;
 		}
 		*bup++ = '.';
@@ -176,7 +164,7 @@ getcwd(pt, size)
 					goto notfound;
 				if (ISDOT(dp))
 					continue;
-				bcopy(dp->d_name, bup, dp->d_namlen + 1);
+				memcpy(bup, dp->d_name, dp->d_namlen + 1);
 
 				/* Save the first error for later. */
 				if (lstat(up, &s)) {
@@ -193,26 +181,27 @@ getcwd(pt, size)
 		 * Check for length of the current name, preceding slash,
 		 * leading slash.
 		 */
-		if (bpt - pt <= dp->d_namlen + (first ? 1 : 2)) {
-			size_t len, off;
+		if (bpt - pt < dp->d_namlen + (first ? 1 : 2)) {
+			size_t len;
+			char *npt;
 
 			if (!ptsize) {
 				errno = ERANGE;
 				goto err;
 			}
-			off = bpt - pt;
 			len = ept - bpt;
-			if ((pt = realloc(pt, ptsize *= 2)) == NULL)
+			if ((npt = realloc(pt, ptsize *= 2)) == NULL)
 				goto err;
-			bpt = pt + off;
+			bpt = npt + (bpt - pt);
+			pt = npt;
 			ept = pt + ptsize;
-			bcopy(bpt, ept - len, len);
+			memmove(ept - len, bpt, len);
 			bpt = ept - len;
 		}
 		if (!first)
 			*--bpt = '/';
 		bpt -= dp->d_namlen;
-		bcopy(dp->d_name, bpt, dp->d_namlen);
+		memcpy(bpt, dp->d_name, dp->d_namlen);
 		(void)closedir(dir);
 
 		/* Truncate any file name. */
@@ -229,8 +218,15 @@ notfound:
 		errno = save_errno ? save_errno : ENOENT;
 	/* FALLTHROUGH */
 err:
+	save_errno = errno;
+
 	if (ptsize)
 		free(pt);
 	free(up);
+	if (dir)
+		(void)closedir(dir);
+
+	errno = save_errno;
+
 	return (NULL);
 }

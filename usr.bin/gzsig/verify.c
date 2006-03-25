@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: verify.c,v 1.4 2005/05/29 08:37:52 djm Exp $ */
 
 /*
  * verify.c
@@ -30,7 +30,7 @@
  *   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  *   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: verify.c,v 1.3 2005/04/07 23:19:35 dugsong Exp $
+ * $Vendor: verify.c,v 1.3 2005/04/07 23:19:35 dugsong Exp $
  */
 
 #include <sys/types.h>
@@ -144,7 +144,7 @@ verify_signature(struct key *key, FILE *fin)
 void
 verify_usage(void)
 {
-	fprintf(stderr, "Usage: gzsig verify [-v] pubkey [file ...]\n");
+	fprintf(stderr, "Usage: gzsig verify [-q] [-f secret_file] pubkey [file ...]\n");
 }
 
 void
@@ -153,14 +153,17 @@ verify(int argc, char *argv[])
 	struct key *key;
 	char *gzipfile;
 	FILE *fin;
-	int i, error, vflag;
+	int i, error, qflag;
 
-	vflag = 0;
+	qflag = 0;
 	
-	while ((i = getopt(argc, argv, "vh?")) != -1) {
+	while ((i = getopt(argc, argv, "qvh?")) != -1) {
 		switch (i) {
+		case 'q':
+			qflag = 1;
+			break;
 		case 'v':
-			vflag = 1;
+			qflag = 0;
 			break;
 		default:
 			verify_usage();
@@ -186,7 +189,7 @@ verify(int argc, char *argv[])
 		argc = 0;
 		
 		if (verify_signature(key, stdin) == 0) {
-			if (vflag)
+			if (!qflag)
 				fprintf(stderr, "Verified input\n");
 		} else
 			fatal(1, "Couldn't verify input");
@@ -194,7 +197,7 @@ verify(int argc, char *argv[])
 	for (i = 1; i < argc; i++) {
 		gzipfile = argv[i];
 
-		if ((fin = fopen(gzipfile, "r")) < 0) {
+		if ((fin = fopen(gzipfile, "r")) == NULL) {
 			fprintf(stderr,  "Couldn't open %s: %s\n",
 			    gzipfile, strerror(errno));
 			continue;
@@ -203,7 +206,7 @@ verify(int argc, char *argv[])
 		fclose(fin);
 
 		if (!error) {
-			if (vflag)
+			if (!qflag)
 				fprintf(stderr, "Verified %s\n", gzipfile);
 		} else
 			fatal(1, "Couldn't verify %s", gzipfile);

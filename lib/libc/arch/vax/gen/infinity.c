@@ -1,13 +1,12 @@
-#ifndef lint
-static char rcsid[] = "$Id: infinity.c,v 1.1 1995/04/17 12:23:41 ragge Exp $";
-#endif /* not lint */
+/*	$OpenBSD$ */
 /*
- * XXX - THIS IS (probably) COMPLETELY WRONG ON VAX!!!
+ * XXX - This is not correct, but what can we do about it?
  */
 
 /* infinity.c */
 
 #include <math.h>
 
-/* bytes for +Infinity on a 387 */
-char __infinity[] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
+/* The highest D float on a vax. */
+char __infinity[] = { (char)0xff, (char)0x7f, (char)0xff, (char)0xff, 
+	(char)0xff, (char)0xff, (char)0xff, (char)0xff };

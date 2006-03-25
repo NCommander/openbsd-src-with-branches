@@ -1,6 +1,8 @@
-/*	$NetBSD: fhpib.c,v 1.6 1995/01/07 10:30:10 mycroft Exp $	*/
+/*	$OpenBSD: fhpib.c,v 1.14 2004/12/25 23:02:23 miod Exp $	*/
+/*	$NetBSD: fhpib.c,v 1.18 1997/05/05 21:04:16 thorpej Exp $	*/
 
 /*
+ * Copyright (c) 1996, 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -12,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,18 +36,25 @@
 /*
  * 98625A/B HPIB driver
  */
-#include "hpib.h"
-#if NHPIB > 0
 
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/buf.h>
+#include <sys/device.h>
+#include <sys/timeout.h>
 
-#include <hp300/dev/device.h>
+#include <machine/autoconf.h>
+#include <machine/intr.h>
+
+#include <hp300/dev/dioreg.h>
+#include <hp300/dev/diovar.h>
+#include <hp300/dev/diodevs.h>
+
+#include <hp300/dev/dmavar.h>
+
 #include <hp300/dev/fhpibreg.h>
 #include <hp300/dev/hpibvar.h>
-#include <hp300/dev/dmavar.h>
 
 /*
  * Inline version of fhpibwait to be used in places where
@@ -69,37 +74,115 @@ int	dopriodma = 0;	/* use high priority DMA */
 int	doworddma = 1;	/* non-zero if we should attempt word dma */
 int	doppollint = 1;	/* use ppoll interrupts instead of watchdog */
 int	fhpibppolldelay = 50;
-
-long	fhpibbadint[2] = { 0 };
-long	fhpibtransfer[NHPIB] = { 0 };
-long	fhpibnondma[NHPIB] = { 0 };
-long	fhpibworddma[NHPIB] = { 0 };
-long	fhpibppollfail[NHPIB] = { 0 };
 #endif
 
-int	fhpibcmd[NHPIB];
+void	fhpibifc(struct fhpibdevice *);
+void	fhpibdmadone(void *);
+int	fhpibwait(struct fhpibdevice *, int);
 
-fhpibtype(hc)
-	register struct hp_ctlr *hc;
+void	fhpibreset(struct hpibbus_softc *);
+int	fhpibsend(struct hpibbus_softc *, int, int, void *, int);
+int	fhpibrecv(struct hpibbus_softc *, int, int, void *, int);
+int	fhpibppoll(struct hpibbus_softc *);
+void	fhpibppwatch(void *);
+void	fhpibgo(struct hpibbus_softc *, int, int, void *, int, int, int);
+void	fhpibdone(struct hpibbus_softc *);
+int	fhpibintr(void *);
+
+/*
+ * Our controller ops structure.
+ */
+struct	hpib_controller fhpib_controller = {
+	fhpibreset,
+	fhpibsend,
+	fhpibrecv,
+	fhpibppoll,
+	fhpibppwatch,
+	fhpibgo,
+	fhpibdone,
+	fhpibintr
+};
+
+struct fhpib_softc {
+	struct device sc_dev;		/* generic device glue */
+	struct isr sc_isr;
+	struct fhpibdevice *sc_regs;	/* device registers */
+	struct timeout sc_dma_to;	/* DMA done timeout */
+#ifdef DEBUG
+	struct timeout sc_watch_to;	/* fhpibppwatch timeout */
+#endif
+	int	sc_cmd;
+	struct hpibbus_softc *sc_hpibbus; /* XXX */
+};
+
+int	fhpibmatch(struct device *, void *, void *);
+void	fhpibattach(struct device *, struct device *, void *);
+
+struct cfattach fhpib_ca = {
+	sizeof(struct fhpib_softc), fhpibmatch, fhpibattach
+};
+
+struct cfdriver fhpib_cd = {
+	NULL, "fhpib", DV_DULL
+};
+
+int
+fhpibmatch(parent, match, aux)
+	struct device *parent;
+	void *match, *aux;
 {
-	register struct hpib_softc *hs = &hpib_softc[hc->hp_unit];
-	register struct fhpibdevice *hd = (struct fhpibdevice *)hc->hp_addr;
+	struct dio_attach_args *da = aux;
 
-	if (hd->hpib_cid != HPIBC)
-		return(0);
-	hs->sc_type = HPIBC;
-	hs->sc_ba = HPIBC_BA;
-	hc->hp_ipl = HPIB_IPL(hd->hpib_ids);
-	return(1);
+	if (da->da_id == DIO_DEVICE_ID_FHPIB)
+		return (1);
+
+	return (0);
 }
 
-fhpibreset(unit)
-	int unit;
+void
+fhpibattach(parent, self, aux)
+	struct device *parent, *self;
+	void *aux;
 {
-	register struct hpib_softc *hs = &hpib_softc[unit];
-	register struct fhpibdevice *hd;
+	struct fhpib_softc *sc = (struct fhpib_softc *)self;
+	struct dio_attach_args *da = aux;
+	struct hpibdev_attach_args ha;
+	int ipl;
 
-	hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
+	sc->sc_regs = (struct fhpibdevice *)iomap(dio_scodetopa(da->da_scode),
+	    da->da_size);
+	if (sc->sc_regs == NULL) {
+		printf("\n%s: can't map registers\n", self->dv_xname);
+		return;
+	}
+
+	ipl = DIO_IPL(sc->sc_regs);
+	printf(" ipl %d: %s\n", ipl, DIO_DEVICE_DESC_FHPIB);
+
+	/* Initialize timeout structures */
+	timeout_set(&sc->sc_dma_to, fhpibdmadone, sc);
+
+	/* Establish the interrupt handler. */
+	sc->sc_isr.isr_func = fhpibintr;
+	sc->sc_isr.isr_arg = sc;
+	sc->sc_isr.isr_ipl = ipl;
+	sc->sc_isr.isr_priority = IPL_BIO;
+	dio_intr_establish(&sc->sc_isr, self->dv_xname);
+
+	ha.ha_ops = &fhpib_controller;
+	ha.ha_type = HPIBC;			/* XXX */
+	ha.ha_ba = HPIBC_BA;
+	ha.ha_softcpp = &sc->sc_hpibbus;	/* XXX */
+	(void)config_found(self, &ha, hpibdevprint);
+}
+
+void
+fhpibreset(hs)
+	struct hpibbus_softc *hs;
+{
+	struct fhpib_softc *sc = (struct fhpib_softc *)hs->sc_dev.dv_parent;
+	struct fhpibdevice *hd = sc->sc_regs;
+
 	hd->hpib_cid = 0xFF;
 	DELAY(100);
 	hd->hpib_cmd = CT_8BIT;
@@ -110,7 +193,7 @@ fhpibreset(unit)
 	DELAY(100000);
 	/*
 	 * See if we can do word dma.
-	 * If so, we should be able to write and read back the appropos bit.
+	 * If so, we should be able to write and read back the apropos bit.
 	 */
 	hd->hpib_ie |= IDS_WDMA;
 	if (hd->hpib_ie & IDS_WDMA) {
@@ -118,14 +201,16 @@ fhpibreset(unit)
 		hs->sc_flags |= HPIBF_DMA16;
 #ifdef DEBUG
 		if (fhpibdebug & FDB_DMA)
-			printf("fhpibtype: unit %d has word dma\n", unit);
+			printf("fhpibtype: %s has word dma\n",
+			    sc->sc_dev.dv_xname);
 
 #endif
 	}
 }
 
+void
 fhpibifc(hd)
-	register struct fhpibdevice *hd;
+	struct fhpibdevice *hd;
 {
 	hd->hpib_cmd |= CT_IFC;
 	hd->hpib_cmd |= CT_INITFIFO;
@@ -135,16 +220,18 @@ fhpibifc(hd)
 	hd->hpib_stat = ST_ATN;
 }
 
-fhpibsend(unit, slave, sec, addr, origcnt)
-	int unit, slave, sec, origcnt;
-	register char *addr;
+int
+fhpibsend(hs, slave, sec, ptr, origcnt)
+	struct hpibbus_softc *hs;
+	int slave, sec, origcnt;
+	void *ptr;
 {
-	register struct hpib_softc *hs = &hpib_softc[unit];
-	register struct fhpibdevice *hd;
-	register int cnt = origcnt;
-	register int timo;
+	struct fhpib_softc *sc = (struct fhpib_softc *)hs->sc_dev.dv_parent;
+	struct fhpibdevice *hd = sc->sc_regs;
+	int cnt = origcnt;
+	int timo;
+	char *addr = ptr;
 
-	hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
 	hd->hpib_stat = 0;
 	hd->hpib_imask = IM_IDLE | IM_ROOM;
 	if (fhpibwait(hd, IM_IDLE) < 0)
@@ -189,24 +276,26 @@ senderr:
 	fhpibifc(hd);
 #ifdef DEBUG
 	if (fhpibdebug & FDB_FAIL) {
-		printf("hpib%d: fhpibsend failed: slave %d, sec %x, ",
-			unit, slave, sec);
+		printf("%s: fhpibsend failed: slave %d, sec %x, ",
+		    sc->sc_dev.dv_xname, slave, sec);
 		printf("sent %d of %d bytes\n", origcnt-cnt-1, origcnt);
 	}
 #endif
 	return (origcnt - cnt - 1);
 }
 
-fhpibrecv(unit, slave, sec, addr, origcnt)
-	int unit, slave, sec, origcnt;
-	register char *addr;
+int
+fhpibrecv(hs, slave, sec, ptr, origcnt)
+	struct hpibbus_softc *hs;
+	int slave, sec, origcnt;
+	void *ptr;
 {
-	register struct hpib_softc *hs = &hpib_softc[unit];
-	register struct fhpibdevice *hd;
-	register int cnt = origcnt;
-	register int timo;
+	struct fhpib_softc *sc = (struct fhpib_softc *)hs->sc_dev.dv_parent;
+	struct fhpibdevice *hd = sc->sc_regs;
+	int cnt = origcnt;
+	int timo;
+	char *addr = ptr;
 
-	hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
 	/*
 	 * Slave < 0 implies continuation of a previous receive
 	 * that probably timed out.
@@ -251,25 +340,26 @@ recvbyteserror:
 	hd->hpib_imask = 0;
 #ifdef DEBUG
 	if (fhpibdebug & FDB_FAIL) {
-		printf("hpib%d: fhpibrecv failed: slave %d, sec %x, ",
-		       unit, slave, sec);
+		printf("%s: fhpibrecv failed: slave %d, sec %x, ",
+		    sc->sc_dev.dv_xname, slave, sec);
 		printf("got %d of %d bytes\n", origcnt-cnt-1, origcnt);
 	}
 #endif
 	return (origcnt - cnt - 1);
 }
 
-fhpibgo(unit, slave, sec, addr, count, rw, timo)
-	register int unit;
-	int slave, sec, count, rw;
-	char *addr;
+void
+fhpibgo(hs, slave, sec, ptr, count, rw, timo)
+	struct hpibbus_softc *hs;
+	int slave, sec, count, rw, timo;
+	void *ptr;
 {
-	register struct hpib_softc *hs = &hpib_softc[unit];
-	register struct fhpibdevice *hd;
-	register int i;
+	struct fhpib_softc *sc = (struct fhpib_softc *)hs->sc_dev.dv_parent;
+	struct fhpibdevice *hd = sc->sc_regs;
+	int i;
+	char *addr = ptr;
 	int flags = 0;
 
-	hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
 	hs->sc_flags |= HPIBF_IO;
 	if (timo)
 		hs->sc_flags |= HPIBF_TIMO;
@@ -284,7 +374,7 @@ fhpibgo(unit, slave, sec, addr, count, rw, timo)
 	hs->sc_count = count;
 	hs->sc_addr = addr;
 #ifdef DEBUG
-	fhpibtransfer[unit]++;
+	/* fhpibtransfer[unit]++;			XXX */
 #endif
 	if ((hs->sc_flags & HPIBF_DMA16) &&
 	    ((int)addr & 1) == 0 && count && (count & 1) == 0
@@ -293,7 +383,7 @@ fhpibgo(unit, slave, sec, addr, count, rw, timo)
 #endif
 	    ) {
 #ifdef DEBUG
-		fhpibworddma[unit]++;
+		/* fhpibworddma[unit]++;		XXX */
 #endif
 		flags |= DMAGO_WORD;
 		hd->hpib_latch = 0;
@@ -303,45 +393,45 @@ fhpibgo(unit, slave, sec, addr, count, rw, timo)
 		flags |= DMAGO_PRI;
 #endif
 	if (hs->sc_flags & HPIBF_READ) {
-		fhpibcmd[unit] = CT_REN | CT_8BIT;
+		sc->sc_cmd = CT_REN | CT_8BIT;
 		hs->sc_curcnt = count;
-		dmago(hs->sc_dq.dq_ctlr, addr, count, flags|DMAGO_READ);
-		if (fhpibrecv(unit, slave, sec, 0, 0) < 0) {
+		dmago(hs->sc_dq->dq_chan, addr, count, flags|DMAGO_READ);
+		if (fhpibrecv(hs, slave, sec, 0, 0) < 0) {
 #ifdef DEBUG
 			printf("fhpibgo: recv failed, retrying...\n");
 #endif
-			(void) fhpibrecv(unit, slave, sec, 0, 0);
+			(void) fhpibrecv(hs, slave, sec, 0, 0);
 		}
 		i = hd->hpib_cmd;
-		hd->hpib_cmd = fhpibcmd[unit];
-		hd->hpib_ie = IDS_DMA(hs->sc_dq.dq_ctlr) |
+		hd->hpib_cmd = sc->sc_cmd;
+		hd->hpib_ie = IDS_DMA(hs->sc_dq->dq_chan) |
 			((flags & DMAGO_WORD) ? IDS_WDMA : 0);
 		return;
 	}
-	fhpibcmd[unit] = CT_REN | CT_8BIT | CT_FIFOSEL;
+	sc->sc_cmd = CT_REN | CT_8BIT | CT_FIFOSEL;
 	if (count < hpibdmathresh) {
 #ifdef DEBUG
-		fhpibnondma[unit]++;
+		/* fhpibnondma[unit]++;			XXX */
 		if (flags & DMAGO_WORD)
-			fhpibworddma[unit]--;
+			/* fhpibworddma[unit]--;	XXX */ ;
 #endif
 		hs->sc_curcnt = count;
-		(void) fhpibsend(unit, slave, sec, addr, count);
-		fhpibdone(unit);
+		(void) fhpibsend(hs, slave, sec, addr, count);
+		fhpibdone(hs);
 		return;
 	}
 	count -= (flags & DMAGO_WORD) ? 2 : 1;
 	hs->sc_curcnt = count;
-	dmago(hs->sc_dq.dq_ctlr, addr, count, flags);
-	if (fhpibsend(unit, slave, sec, 0, 0) < 0) {
+	dmago(hs->sc_dq->dq_chan, addr, count, flags);
+	if (fhpibsend(hs, slave, sec, 0, 0) < 0) {
 #ifdef DEBUG
 		printf("fhpibgo: send failed, retrying...\n");
 #endif
-		(void) fhpibsend(unit, slave, sec, 0, 0);
+		(void) fhpibsend(hs, slave, sec, 0, 0);
 	}
 	i = hd->hpib_cmd;
-	hd->hpib_cmd = fhpibcmd[unit];
-	hd->hpib_ie = IDS_DMA(hs->sc_dq.dq_ctlr) | IDS_WRITE |
+	hd->hpib_cmd = sc->sc_cmd;
+	hd->hpib_ie = IDS_DMA(hs->sc_dq->dq_chan) | IDS_WRITE |
 		((flags & DMAGO_WORD) ? IDS_WDMA : 0);
 }
 
@@ -349,23 +439,21 @@ fhpibgo(unit, slave, sec, addr, count, rw, timo)
  * A DMA read can finish but the device can still be waiting (MAG-tape
  * with more data than we're waiting for).  This timeout routine
  * takes care of that.  Somehow, the thing gets hosed.  For now, since
- * this should be a very rare occurence, we RESET it.
+ * this should be a very rare occurrence, we RESET it.
  */
 void
 fhpibdmadone(arg)
 	void *arg;
 {
-	register int unit;
-	register struct hpib_softc *hs;
-	int s = splbio();
+	struct fhpib_softc *sc = arg;
+	struct hpibbus_softc *hs = sc->sc_hpibbus;
+	int s;
 
-	unit = (int)arg;
-	hs = &hpib_softc[unit];
+	s  = splbio();
 	if (hs->sc_flags & HPIBF_IO) {
-		register struct fhpibdevice *hd;
-		register struct devqueue *dq;
+		struct fhpibdevice *hd = sc->sc_regs;
+		struct hpibqueue *hq;
 
-		hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
 		hd->hpib_imask = 0;
 		hd->hpib_cid = 0xFF;
 		DELAY(100);
@@ -374,34 +462,35 @@ fhpibdmadone(arg)
 		fhpibifc(hd);
 		hd->hpib_ie = IDS_IE;
 		hs->sc_flags &= ~(HPIBF_DONE|HPIBF_IO|HPIBF_READ|HPIBF_TIMO);
-		dmafree(&hs->sc_dq);
-		dq = hs->sc_sq.dq_forw;
-		(dq->dq_driver->d_intr)(dq->dq_unit);
+		dmafree(hs->sc_dq);
+
+		hq = TAILQ_FIRST(&hs->sc_queue);
+		(hq->hq_intr)(hq->hq_softc);
 	}
-	(void) splx(s);
+	splx(s);
 }
 
-fhpibdone(unit)
-	int unit;
+void
+fhpibdone(hs)
+	struct hpibbus_softc *hs;
 {
-	register struct hpib_softc *hs = &hpib_softc[unit];
-	register struct fhpibdevice *hd;
-	register char *addr;
-	register int cnt;
+	struct fhpib_softc *sc = (struct fhpib_softc *)hs->sc_dev.dv_parent;
+	struct fhpibdevice *hd = sc->sc_regs;
+	char *addr;
+	int cnt;
 
-	hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
 	cnt = hs->sc_curcnt;
 	hs->sc_addr += cnt;
 	hs->sc_count -= cnt;
 #ifdef DEBUG
-	if ((fhpibdebug & FDB_DMA) && fhpibdebugunit == unit)
-		printf("fhpibdone: addr %x cnt %d\n",
+	if ((fhpibdebug & FDB_DMA) && fhpibdebugunit == sc->sc_dev.dv_unit)
+		printf("fhpibdone: addr %p cnt %d\n",
 		       hs->sc_addr, hs->sc_count);
 #endif
 	if (hs->sc_flags & HPIBF_READ) {
 		hd->hpib_imask = IM_IDLE | IM_BYTE;
 		if (hs->sc_flags & HPIBF_TIMO)
-			timeout(fhpibdmadone, (void *)unit, hz >> 2);
+			timeout_add(&sc->sc_dma_to, hz >> 2);
 	} else {
 		cnt = hs->sc_count;
 		if (cnt) {
@@ -423,89 +512,94 @@ fhpibdone(unit)
 	hd->hpib_ie = IDS_IE;
 }
 
-fhpibintr(unit)
-	register int unit;
+int
+fhpibintr(arg)
+	void *arg;
 {
-	register struct hpib_softc *hs = &hpib_softc[unit];
-	register struct fhpibdevice *hd;
-	register struct devqueue *dq;
-	register int stat0;
+	struct fhpib_softc *sc = arg;
+	struct hpibbus_softc *hs = sc->sc_hpibbus;
+	struct fhpibdevice *hd = sc->sc_regs;
+	struct hpibqueue *hq;
+	int stat0;
 
-	hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
 	stat0 = hd->hpib_ids;
 	if ((stat0 & (IDS_IE|IDS_IR)) != (IDS_IE|IDS_IR)) {
 #ifdef DEBUG
 		if ((fhpibdebug & FDB_FAIL) && (stat0 & IDS_IR) &&
 		    (hs->sc_flags & (HPIBF_IO|HPIBF_DONE)) != HPIBF_IO)
-			printf("hpib%d: fhpibintr: bad status %x\n",
-			       unit, stat0);
-		fhpibbadint[0]++;
+			printf("%s: fhpibintr: bad status %x\n",
+			sc->sc_dev.dv_xname, stat0);
+		/* fhpibbadint[0]++;			XXX */
 #endif
 		return(0);
 	}
 	if ((hs->sc_flags & (HPIBF_IO|HPIBF_DONE)) == HPIBF_IO) {
 #ifdef DEBUG
-		fhpibbadint[1]++;
+		/* fhpibbadint[1]++;			XXX */
 #endif
 		return(0);
 	}
+
 #ifdef DEBUG
-	if ((fhpibdebug & FDB_DMA) && fhpibdebugunit == unit)
+	if ((fhpibdebug & FDB_DMA) && fhpibdebugunit == sc->sc_dev.dv_unit)
 		printf("fhpibintr: flags %x\n", hs->sc_flags);
 #endif
-	dq = hs->sc_sq.dq_forw;
+	hq = TAILQ_FIRST(&hs->sc_queue);
 	if (hs->sc_flags & HPIBF_IO) {
 		if (hs->sc_flags & HPIBF_TIMO)
-			untimeout(fhpibdmadone, (void *)unit);
+			timeout_del(&sc->sc_dma_to);
 		stat0 = hd->hpib_cmd;
-		hd->hpib_cmd = fhpibcmd[unit] & ~CT_8BIT;
+		hd->hpib_cmd = sc->sc_cmd & ~CT_8BIT;
 		hd->hpib_stat = 0;
 		hd->hpib_cmd = CT_REN | CT_8BIT;
 		stat0 = hd->hpib_intr;
 		hd->hpib_imask = 0;
 		hs->sc_flags &= ~(HPIBF_DONE|HPIBF_IO|HPIBF_READ|HPIBF_TIMO);
-		dmafree(&hs->sc_dq);
-		(dq->dq_driver->d_intr)(dq->dq_unit);
+		dmafree(hs->sc_dq);
+		(hq->hq_intr)(hq->hq_softc);
 	} else if (hs->sc_flags & HPIBF_PPOLL) {
 		stat0 = hd->hpib_intr;
 #ifdef DEBUG
 		if ((fhpibdebug & FDB_FAIL) &&
 		    doppollint && (stat0 & IM_PPRESP) == 0)
-			printf("hpib%d: fhpibintr: bad intr reg %x\n",
-			       unit, stat0);
+			printf("%s: fhpibintr: bad intr reg %x\n",
+			    sc->sc_dev.dv_xname, stat0);
 #endif
 		hd->hpib_stat = 0;
 		hd->hpib_imask = 0;
 #ifdef DEBUG
-		stat0 = fhpibppoll(unit);
-		if ((fhpibdebug & FDB_PPOLL) && unit == fhpibdebugunit)
+		stat0 = fhpibppoll(hs);
+		if ((fhpibdebug & FDB_PPOLL) &&
+		    fhpibdebugunit == sc->sc_dev.dv_unit)
 			printf("fhpibintr: got PPOLL status %x\n", stat0);
-		if ((stat0 & (0x80 >> dq->dq_slave)) == 0) {
+		if ((stat0 & (0x80 >> hq->hq_slave)) == 0) {
 			/*
 			 * XXX give it another shot (68040)
 			 */
-			fhpibppollfail[unit]++;
+			/* fhpibppollfail[unit]++;	XXX */
 			DELAY(fhpibppolldelay);
-			stat0 = fhpibppoll(unit);
-			if ((stat0 & (0x80 >> dq->dq_slave)) == 0 &&
-			    (fhpibdebug & FDB_PPOLL) && unit == fhpibdebugunit)
+			stat0 = fhpibppoll(hs);
+			if ((stat0 & (0x80 >> hq->hq_slave)) == 0 &&
+			    (fhpibdebug & FDB_PPOLL) &&
+			    fhpibdebugunit == sc->sc_dev.dv_unit)
 				printf("fhpibintr: PPOLL: unit %d slave %d stat %x\n",
-				       unit, dq->dq_slave, stat0);
+				       sc->sc_dev.dv_unit, hq->hq_slave, stat0);
 		}
 #endif
 		hs->sc_flags &= ~HPIBF_PPOLL;
-		(dq->dq_driver->d_intr)(dq->dq_unit);
+		(hq->hq_intr)(hq->hq_softc);
 	}
 	return(1);
 }
 
-fhpibppoll(unit)
-	int unit;
+int
+fhpibppoll(hs)
+	struct hpibbus_softc *hs;
 {
-	register struct fhpibdevice *hd;
-	register int ppoll;
+	struct fhpib_softc *sc = (struct fhpib_softc *)hs->sc_dev.dv_parent;
+	struct fhpibdevice *hd = sc->sc_regs;
+	int ppoll;
 
-	hd = (struct fhpibdevice *)hpib_softc[unit].sc_hc->hp_addr;
 	hd->hpib_stat = 0;
 	hd->hpib_psense = 0;
 	hd->hpib_pmask = 0xFF;
@@ -521,18 +615,19 @@ fhpibppoll(unit)
 	return(ppoll);
 }
 
+int
 fhpibwait(hd, x)
-	register struct fhpibdevice *hd;
+	struct fhpibdevice *hd;
 	int x;
 {
-	register int timo = hpibtimeout;
+	int timo = hpibtimeout;
 
 	while ((hd->hpib_intr & x) == 0 && --timo)
 		DELAY(1);
 	if (timo == 0) {
 #ifdef DEBUG
 		if (fhpibdebug & FDB_FAIL)
-			printf("fhpibwait(%x, %x) timeout\n", hd, x);
+			printf("fhpibwait(%p, %x) timeout\n", hd, x);
 #endif
 		return(-1);
 	}
@@ -547,28 +642,28 @@ void
 fhpibppwatch(arg)
 	void *arg;
 {
-	register int unit;
-	register struct hpib_softc *hs;
-	register struct fhpibdevice *hd;
-	register int slave;
+	struct hpibbus_softc *hs = arg;
+	struct fhpib_softc *sc = (struct fhpib_softc *)hs->sc_dev.dv_parent;
+	struct fhpibdevice *hd = sc->sc_regs;
+	int slave;
 
-	unit = (int)arg;
-	hs = &hpib_softc[unit];
 	if ((hs->sc_flags & HPIBF_PPOLL) == 0)
 		return;
-	hd = (struct fhpibdevice *)hs->sc_hc->hp_addr;
-	slave = (0x80 >> hs->sc_sq.dq_forw->dq_slave);
+	slave = (0x80 >> TAILQ_FIRST(&hs->sc_queue)->hq_slave);
 #ifdef DEBUG
 	if (!doppollint) {
-		if (fhpibppoll(unit) & slave) {
+		if (fhpibppoll(hs) & slave) {
 			hd->hpib_stat = ST_IENAB;
 			hd->hpib_imask = IM_IDLE | IM_ROOM;
-		} else
-			timeout(fhpibppwatch, (void *)unit, 1);
+		} else {
+			timeout_set(&sc->sc_watch_to, fhpibppwatch, hs);
+			timeout_add(&sc->sc_watch_to, 1);
+		}
 		return;
 	}
-	if ((fhpibdebug & FDB_PPOLL) && unit == fhpibdebugunit)
-		printf("fhpibppwatch: sense request on %d\n", unit);
+	if ((fhpibdebug & FDB_PPOLL) && sc->sc_dev.dv_unit == fhpibdebugunit)
+		printf("fhpibppwatch: sense request on %s\n",
+		    sc->sc_dev.dv_xname);
 #endif
 	hd->hpib_psense = ~slave;
 	hd->hpib_pmask = slave;
@@ -576,4 +671,3 @@ fhpibppwatch(arg)
 	hd->hpib_imask = IM_PPRESP | IM_PABORT;
 	hd->hpib_ie = IDS_IE;
 }
-#endif

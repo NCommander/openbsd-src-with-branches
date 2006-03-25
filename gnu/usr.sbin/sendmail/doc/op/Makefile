@@ -1,31 +1,17 @@
-#	$Sendmail: Makefile,v 8.12 2001/07/01 18:36:05 gshapiro Exp $
+#	@(#)Makefile	8.2 (Berkeley) 2/28/1994
 
-DIR=		smm/08.sendmailop
-SRCS=		op.me
-OBJS=		op.ps
-MACROS=		-me
-ROFF_CMD=	groff
-PIC_CMD=	pic
-EQN_CMD=	eqn
-UL_CMD=		ul
-PIC=		${PIC_CMD} -C
-EQNASCII=	${EQN_CMD} -C -Tascii
-EQNPS=		${EQN_CMD} -C -Tps
-ROFFASCII=	${ROFF_CMD} -Tascii ${MACROS}
-ROFFPS=		${ROFF_CMD} -Tps -mps ${MACROS}
-ULASCII=	${UL_CMD} -t dumb
+DIR=	smm/08.sendmailop
+SRCS=	op.me
+MACROS=	-me
 
-all: ${OBJS}
+all: op.ps
 
 op.ps: ${SRCS}
-	rm -f $@
-	${PIC} ${SRCS} | ${EQNPS} | ${ROFFPS} > $@
+	rm -f ${.TARGET}
+	${PIC} ${SRCS} | ${EQN} | ${ROFF} > ${.TARGET}
 
-op.txt: ${SRCS}
-	rm -f $@
-	${PIC} ${SRCS} | ${EQNASCII} | ${ROFFASCII} | ${ULASCII} > $@
+paper.txt: ${SRCS}
+	rm -f ${.TARGET}
+	${PIC} ${SRCS} | ${EQN} -Tascii | ${ROFF} -Tascii > ${.TARGET}
 
-clean:
-	rm -f op.ps op.txt
-
-install: ${OBJS}
+.include <bsd.doc.mk>

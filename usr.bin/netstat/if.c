@@ -1,4 +1,5 @@
-/*	$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $	*/
+/*	$OpenBSD: if.c,v 1.45 2005/10/17 19:09:36 otto Exp $	*/
+/*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
 #else
-static char *rcsid = "$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $";
+static char *rcsid = "$OpenBSD: if.c,v 1.45 2005/10/17 19:09:36 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,16 +44,18 @@ static char *rcsid = "$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $";
 
 #include <net/if.h>
 #include <net/if_dl.h>
+#include <net/if_types.h>
 #include <netinet/in.h>
 #include <netinet/in_var.h>
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#include <netiso/iso.h>
-#include <netiso/iso_var.h>
+#include <netinet/if_ether.h>
+#include <netipx/ipx.h>
+#include <netipx/ipx_if.h>
 #include <arpa/inet.h>
 
+#include <limits.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -65,27 +64,30 @@ static char *rcsid = "$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $";
 #define	YES	1
 #define	NO	0
 
-static void sidewaysintpr __P((u_int, u_long));
-static void catchalarm __P((int));
+static void sidewaysintpr(u_int, u_long);
+static void catchalarm(int);
 
 /*
  * Print a description of the network interfaces.
+ * NOTE: ifnetaddr is the location of the kernel global "ifnet",
+ * which is a TAILQ_HEAD.
  */
 void
-intpr(interval, ifnetaddr)
-	int interval;
-	u_long ifnetaddr;
+intpr(int interval, u_long ifnetaddr)
 {
 	struct ifnet ifnet;
 	union {
 		struct ifaddr ifa;
 		struct in_ifaddr in;
-		struct ns_ifaddr ns;
-		struct iso_ifaddr iso;
+#ifdef INET6
+		struct in6_ifaddr in6;
+#endif
+		struct ipx_ifaddr ipx;
 	} ifaddr;
-	u_long ifaddraddr;
+	u_long total, ifaddraddr;
 	struct sockaddr *sa;
-	char name[16];
+	struct ifnet_head ifhead;	/* TAILQ_HEAD */
+	char name[IFNAMSIZ];
 
 	if (ifnetaddr == 0) {
 		printf("ifnet: symbol not defined\n");
@@ -95,12 +97,23 @@ intpr(interval, ifnetaddr)
 		sidewaysintpr((unsigned)interval, ifnetaddr);
 		return;
 	}
-	if (kread(ifnetaddr, (char *)&ifnetaddr, sizeof ifnetaddr))
+
+	/*
+	 * Find the pointer to the first ifnet structure.  Replace
+	 * the pointer to the TAILQ_HEAD with the actual pointer
+	 * to the first list element.
+	 */
+	if (kread(ifnetaddr, &ifhead, sizeof ifhead))
 		return;
-	printf("%-5.5s %-5.5s %-11.11s %-15.15s %10.10s %5.5s %8.8s %5.5s",
-		"Name", "Mtu", "Network", "Address", "Ipkts", "Ierrs",
-		"Opkts", "Oerrs");
-	printf(" %5s", "Coll");
+	ifnetaddr = (u_long)TAILQ_FIRST(&ifhead);
+
+	printf("%-7.7s %-5.5s %-11.11s %-17.17s ",
+	    "Name", "Mtu", "Network", "Address");
+	if (bflag)
+		printf("%10.10s %10.10s", "Ibytes", "Obytes");
+	else
+		printf("%8.8s %5.5s %8.8s %5.5s %5.5s",
+		    "Ipkts", "Ierrs", "Opkts", "Oerrs", "Colls");
 	if (tflag)
 		printf(" %s", "Time");
 	if (dflag)
@@ -109,31 +122,48 @@ intpr(interval, ifnetaddr)
 	ifaddraddr = 0;
 	while (ifnetaddr || ifaddraddr) {
 		struct sockaddr_in *sin;
-		register char *cp;
+#ifdef INET6
+		struct sockaddr_in6 *sin6;
+#endif
+		char *cp;
 		int n, m;
 
 		if (ifaddraddr == 0) {
-			if (kread(ifnetaddr, (char *)&ifnet, sizeof ifnet) ||
-			    kread((u_long)ifnet.if_name, name, 16))
+			if (kread(ifnetaddr, &ifnet, sizeof ifnet))
 				return;
-			name[15] = '\0';
-			ifnetaddr = (u_long)ifnet.if_list.tqe_next;
-			if (interface != 0 && (strcmp(name, interface) != 0 ||
-			    unit != ifnet.if_unit))
+			bcopy(ifnet.if_xname, name, IFNAMSIZ);
+			name[IFNAMSIZ - 1] = '\0';	/* sanity */
+			ifnetaddr = (u_long)TAILQ_NEXT(&ifnet, if_list);
+			if (interface != 0 && strcmp(name, interface) != 0)
 				continue;
-			cp = index(name, '\0');
-			cp += sprintf(cp, "%d", ifnet.if_unit);
+			cp = strchr(name, '\0');
 			if ((ifnet.if_flags & IFF_UP) == 0)
 				*cp++ = '*';
 			*cp = '\0';
-			ifaddraddr = (u_long)ifnet.if_addrlist.tqh_first;
+			ifaddraddr = (u_long)TAILQ_FIRST(&ifnet.if_addrlist);
 		}
-		printf("%-5.5s %-5d ", name, ifnet.if_mtu);
+
+		if (qflag) {
+			total = ifnet.if_ibytes + ifnet.if_obytes +
+			    ifnet.if_ipackets + ifnet.if_ierrors +
+			    ifnet.if_opackets + ifnet.if_oerrors +
+			    ifnet.if_collisions;
+			if (tflag)
+				total += ifnet.if_timer;
+			if (dflag)
+				total += ifnet.if_snd.ifq_drops;
+			if (total == 0) {
+				ifaddraddr = 0;
+				continue;
+			}
+		}
+
+		printf("%-7.7s %-5ld ", name, ifnet.if_mtu);
 		if (ifaddraddr == 0) {
 			printf("%-11.11s ", "none");
-			printf("%-15.15s ", "none");
+			printf("%-17.17s ", "none");
 		} else {
-			if (kread(ifaddraddr, (char *)&ifaddr, sizeof ifaddr)) {
+			if (kread(ifaddraddr, &ifaddr, sizeof ifaddr)) {
 				ifaddraddr = 0;
 				continue;
 			}
@@ -152,55 +182,134 @@ intpr(interval, ifnetaddr)
 				 * keeps nets unshifted.
 				 */
 				in = inet_makeaddr(ifaddr.in.ia_subnet,
-					INADDR_ANY);
-				printf("%-11.11s ", netname(in.s_addr,
-				    ifaddr.in.ia_subnetmask));
+				    INADDR_ANY);
+				cp = netname(in.s_addr,
+				    ifaddr.in.ia_subnetmask);
 #else
-				printf("%-11.11s ",
-				    netname(ifaddr.in.ia_subnet,
-				    ifaddr.in.ia_subnetmask));
+				cp = netname(ifaddr.in.ia_subnet,
+				    ifaddr.in.ia_subnetmask);
 #endif
-				printf("%-17.17s ",
-				    routename(sin->sin_addr.s_addr));
+				if (vflag)
+					n = strlen(cp) < 11 ? 11 : strlen(cp);
+				else
+					n = 11;
+				printf("%-*.*s ", n, n, cp);
+				cp = routename(sin->sin_addr.s_addr);
+				if (vflag)
+					n = strlen(cp) < 17 ? 17 : strlen(cp);
+				else
+					n = 17;
+				printf("%-*.*s ", n, n, cp);
 
 				if (aflag) {
 					u_long multiaddr;
 					struct in_multi inm;
-		
-					multiaddr = (u_long)ifaddr.in.ia_multiaddrs.lh_first;
+
+					multiaddr = (u_long)LIST_FIRST(&ifaddr.in.ia_multiaddrs);
 					while (multiaddr != 0) {
-						kread(multiaddr, (char *)&inm,
-						    sizeof inm);
-						printf("\n%23s %-15.15s ", "",
+						kread(multiaddr, &inm, sizeof inm);
+						printf("\n%25s %-17.17s ", "",
 						    routename(inm.inm_addr.s_addr));
-						multiaddr = (u_long)inm.inm_list.le_next;
+						multiaddr = (u_long)LIST_NEXT(&inm, inm_list);
 					}
 				}
 				break;
-			case AF_NS:
+#ifdef INET6
+			case AF_INET6:
+				sin6 = (struct sockaddr_in6 *)sa;
+#ifdef __KAME__
+				if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr)) {
+					sin6->sin6_scope_id =
+					    ntohs(*(u_int16_t *)
+					    &sin6->sin6_addr.s6_addr[2]);
+					sin6->sin6_addr.s6_addr[2] = 0;
+					sin6->sin6_addr.s6_addr[3] = 0;
+				}
+#endif
+				cp = netname6(&ifaddr.in6.ia_addr,
+				    &ifaddr.in6.ia_prefixmask.sin6_addr);
+				if (vflag)
+					n = strlen(cp) < 11 ? 11 : strlen(cp);
+				else
+					n = 11;
+				printf("%-*.*s ", n, n, cp);
+				cp = routename6(sin6);
+				if (vflag)
+					n = strlen(cp) < 17 ? 17 : strlen(cp);
+				else
+					n = 17;
+				printf("%-*.*s ", n, n, cp);
+				if (aflag) {
+					u_long multiaddr;
+					struct in6_multi inm;
+					struct sockaddr_in6 m6;
+
+					multiaddr = (u_long)LIST_FIRST(&ifaddr.in6.ia6_multiaddrs);
+					while (multiaddr != 0) {
+						kread(multiaddr, &inm, sizeof inm);
+						memset(&m6, 0, sizeof(m6));
+						m6.sin6_len = sizeof(struct sockaddr_in6);
+						m6.sin6_family = AF_INET6;
+						m6.sin6_addr = inm.in6m_addr;
+#ifdef __KAME__
+						if (IN6_IS_ADDR_MC_LINKLOCAL(&m6.sin6_addr)) {
+							m6.sin6_scope_id =
+							    ntohs(*(u_int16_t *)
+							    &m6.sin6_addr.s6_addr[2]);
+							m6.sin6_addr.s6_addr[2] = 0;
+							m6.sin6_addr.s6_addr[3] = 0;
+						}
+#endif
+						cp = routename6(&m6);
+						if (vflag)
+							n = strlen(cp) < 17 ? 17 : strlen(cp);
+						else
+							n = 17;
+						printf("\n%25s %-*.*s ", "",
+						    n, n, cp);
+						multiaddr = (u_long)LIST_NEXT(&inm, in6m_entry);
+					}
+				}
+				break;
+#endif
+			case AF_IPX:
 				{
-				struct sockaddr_ns *sns =
-					(struct sockaddr_ns *)sa;
+				struct sockaddr_ipx *sipx =
+					(struct sockaddr_ipx *)sa;
 				u_long net;
 				char netnum[8];
 
-				*(union ns_net *) &net = sns->sns_addr.x_net;
-		sprintf(netnum, "%lxH", ntohl(net));
+				*(union ipx_net *)&net = sipx->sipx_addr.ipx_net;
+				snprintf(netnum, sizeof netnum, "%xH",
+				    ntohl(net));
 				upHex(netnum);
-				printf("ns:%-8s ", netnum);
+				printf("ipx:%-8s", netnum);
 				printf("%-17s ",
-				    ns_phost((struct sockaddr *)sns));
+				    ipx_phost((struct sockaddr *)sipx));
 				}
+				break;
+			case AF_APPLETALK:
+				printf("atlk:%-12s",atalk_print(sa,0x10) );
+				printf("%-12s ",atalk_print(sa,0x0b) );
 				break;
 			case AF_LINK:
 				{
 				struct sockaddr_dl *sdl =
 					(struct sockaddr_dl *)sa;
-				    cp = (char *)LLADDR(sdl);
-				    n = sdl->sdl_alen;
-				}
 				m = printf("%-11.11s ", "<Link>");
-				goto hexprint;
+				if (sdl->sdl_type == IFT_ETHER ||
+				    sdl->sdl_type == IFT_CARP ||
+				    sdl->sdl_type == IFT_FDDI ||
+				    sdl->sdl_type == IFT_ISO88025)
+					printf("%-17.17s ",
+					    ether_ntoa((struct ether_addr *)LLADDR(sdl)));
+				else {
+					cp = (char *)LLADDR(sdl);
+					n = sdl->sdl_alen;
+					goto hexprint;
+				}
+				}
+				break;
 			default:
 				m = printf("(%d)", sa->sa_family);
 				for (cp = sa->sa_len + (char *)sa;
@@ -216,32 +325,38 @@ intpr(interval, ifnetaddr)
 					putchar(' ');
 				break;
 			}
-			ifaddraddr = (u_long)ifaddr.ifa.ifa_list.tqe_next;
+			ifaddraddr = (u_long)TAILQ_NEXT(&ifaddr.ifa, ifa_list);
 		}
-		printf("%8d %5d %8d %5d %5d",
-		    ifnet.if_ipackets, ifnet.if_ierrors,
-		    ifnet.if_opackets, ifnet.if_oerrors,
-		    ifnet.if_collisions);
+		if (bflag)
+			printf("%10lu %10lu",
+			    ifnet.if_ibytes, ifnet.if_obytes);
+		else
+			printf("%8lu %5lu %8lu %5lu %5lu",
+			    ifnet.if_ipackets, ifnet.if_ierrors,
+			    ifnet.if_opackets, ifnet.if_oerrors,
+			    ifnet.if_collisions);
 		if (tflag)
-			printf(" %3d", ifnet.if_timer);
+			printf(" %4d", ifnet.if_timer);
 		if (dflag)
-			printf(" %3d", ifnet.if_snd.ifq_drops);
+			printf(" %4d", ifnet.if_snd.ifq_drops);
 		putchar('\n');
 	}
 }
 
-#define	MAXIF	10
+#define	MAXIF	100
 struct	iftot {
-	char	ift_name[16];		/* interface name */
-	int	ift_ip;			/* input packets */
-	int	ift_ie;			/* input errors */
-	int	ift_op;			/* output packets */
-	int	ift_oe;			/* output errors */
-	int	ift_co;			/* collisions */
-	int	ift_dr;			/* drops */
+	char	ift_name[IFNAMSIZ];	/* interface name */
+	u_long	ift_ip;			/* input packets */
+	u_long	ift_ib;			/* input bytes */
+	u_long	ift_ie;			/* input errors */
+	u_long	ift_op;			/* output packets */
+	u_long	ift_ob;			/* output bytes */
+	u_long	ift_oe;			/* output errors */
+	u_long	ift_co;			/* collisions */
+	u_long	ift_dr;			/* drops */
 } iftot[MAXIF];
 
-u_char	signalled;			/* set if alarm goes off "early" */
+volatile sig_atomic_t signalled;	/* set if alarm goes off "early" */
 
 /*
  * Print a running summary of interface statistics.
@@ -250,41 +365,45 @@ u_char	signalled;			/* set if alarm goes off "early" */
  * First line printed at top of screen is always cumulative.
  */
 static void
-sidewaysintpr(interval, off)
-	unsigned interval;
-	u_long off;
+sidewaysintpr(unsigned int interval, u_long off)
 {
 	struct ifnet ifnet;
 	u_long firstifnet;
-	register struct iftot *ip, *total;
-	register int line;
+	struct iftot *ip, *total;
+	int line;
 	struct iftot *lastif, *sum, *interesting;
-	int oldmask;
+	struct ifnet_head ifhead;	/* TAILQ_HEAD */
+	sigset_t emptyset;
 
-	if (kread(off, (char *)&firstifnet, sizeof (u_long)))
+	/*
+	 * Find the pointer to the first ifnet structure.  Replace
+	 * the pointer to the TAILQ_HEAD with the actual pointer
+	 * to the first list element.
+	 */
+	if (kread(off, &ifhead, sizeof ifhead))
 		return;
+	firstifnet = (u_long)TAILQ_FIRST(&ifhead);
+
 	lastif = iftot;
 	sum = iftot + MAXIF - 1;
 	total = sum - 1;
-	interesting = iftot;
+	interesting = (interface == NULL) ? iftot : NULL;
 	for (off = firstifnet, ip = iftot; off;) {
-		char *cp;
-
-		if (kread(off, (char *)&ifnet, sizeof ifnet))
+		if (kread(off, &ifnet, sizeof ifnet))
 			break;
-		ip->ift_name[0] = '(';
-		if (kread((u_long)ifnet.if_name, ip->ift_name + 1, 15))
-			break;
-		if (interface && strcmp(ip->ift_name + 1, interface) == 0 &&
-		    unit == ifnet.if_unit)
+		bzero(ip->ift_name, sizeof(ip->ift_name));
+		snprintf(ip->ift_name, IFNAMSIZ, "%s", ifnet.if_xname);
+		if (interface && strcmp(ifnet.if_xname, interface) == 0)
 			interesting = ip;
-		ip->ift_name[15] = '\0';
-		cp = index(ip->ift_name, '\0');
-		sprintf(cp, "%d)", ifnet.if_unit);
 		ip++;
 		if (ip >= iftot + MAXIF - 2)
 			break;
-		off = (u_long)ifnet.if_list.tqe_next;
+		off = (u_long)TAILQ_NEXT(&ifnet, if_list);
+	}
+	if (interesting == NULL) {
+		fprintf(stderr, "%s: %s: unknown interface\n",
+		    __progname, interface);
+		exit(1);
 	}
 	lastif = ip;
 
@@ -292,89 +411,128 @@ sidewaysintpr(interval, off)
 	signalled = NO;
 	(void)alarm(interval);
 banner:
-	printf("   input    %-6.6s    output       ", interesting->ift_name);
+	if (bflag)
+		printf("%7.7s in %8.8s %6.6s out %5.5s",
+		    interesting->ift_name, " ",
+		    interesting->ift_name, " ");
+	else
+		printf("%5.5s in %5.5s%5.5s out %5.5s %5.5s",
+		    interesting->ift_name, " ",
+		    interesting->ift_name, " ", " ");
+	if (dflag)
+		printf(" %5.5s", " ");
 	if (lastif - iftot > 0) {
+		if (bflag)
+			printf("  %7.7s in %8.8s %6.6s out %5.5s",
+			    "total", " ", "total", " ");
+		else
+			printf("  %5.5s in %5.5s%5.5s out %5.5s %5.5s",
+			    "total", " ", "total", " ", " ");
 		if (dflag)
-			printf("      ");
-		printf("     input   (Total)    output");
+			printf(" %5.5s", " ");
 	}
 	for (ip = iftot; ip < iftot + MAXIF; ip++) {
 		ip->ift_ip = 0;
+		ip->ift_ib = 0;
 		ip->ift_ie = 0;
 		ip->ift_op = 0;
+		ip->ift_ob = 0;
 		ip->ift_oe = 0;
 		ip->ift_co = 0;
 		ip->ift_dr = 0;
 	}
 	putchar('\n');
-	printf("%8.8s %5.5s %8.8s %5.5s %5.5s ",
-		"packets", "errs", "packets", "errs", "colls");
-	if (dflag)
-		printf("%5.5s ", "drops");
-	if (lastif - iftot > 0)
-		printf(" %8.8s %5.5s %8.8s %5.5s %5.5s",
-			"packets", "errs", "packets", "errs", "colls");
+	if (bflag)
+		printf("%10.10s %8.8s %10.10s %5.5s",
+		    "bytes", " ", "bytes", " ");
+	else
+		printf("%8.8s %5.5s %8.8s %5.5s %5.5s",
+		    "packets", "errs", "packets", "errs", "colls");
 	if (dflag)
 		printf(" %5.5s", "drops");
+	if (lastif - iftot > 0) {
+		if (bflag)
+			printf("  %10.10s %8.8s %10.10s %5.5s",
+			    "bytes", " ", "bytes", " ");
+		else
+			printf("  %8.8s %5.5s %8.8s %5.5s %5.5s",
+			    "packets", "errs", "packets", "errs", "colls");
+		if (dflag)
+			printf(" %5.5s", "drops");
+	}
 	putchar('\n');
 	fflush(stdout);
 	line = 0;
 loop:
 	sum->ift_ip = 0;
+	sum->ift_ib = 0;
 	sum->ift_ie = 0;
 	sum->ift_op = 0;
+	sum->ift_ob = 0;
 	sum->ift_oe = 0;
 	sum->ift_co = 0;
 	sum->ift_dr = 0;
 	for (off = firstifnet, ip = iftot; off && ip < lastif; ip++) {
-		if (kread(off, (char *)&ifnet, sizeof ifnet)) {
+		if (kread(off, &ifnet, sizeof ifnet)) {
 			off = 0;
 			continue;
 		}
 		if (ip == interesting) {
-			printf("%8d %5d %8d %5d %5d",
-				ifnet.if_ipackets - ip->ift_ip,
-				ifnet.if_ierrors - ip->ift_ie,
-				ifnet.if_opackets - ip->ift_op,
-				ifnet.if_oerrors - ip->ift_oe,
-				ifnet.if_collisions - ip->ift_co);
+			if (bflag)
+				printf("%10lu %8.8s %10lu %5.5s",
+				    ifnet.if_ibytes - ip->ift_ib, " ",
+				    ifnet.if_obytes - ip->ift_ob, " ");
+			else
+				printf("%8lu %5lu %8lu %5lu %5lu",
+				    ifnet.if_ipackets - ip->ift_ip,
+				    ifnet.if_ierrors - ip->ift_ie,
+				    ifnet.if_opackets - ip->ift_op,
+				    ifnet.if_oerrors - ip->ift_oe,
+				    ifnet.if_collisions - ip->ift_co);
 			if (dflag)
-				printf(" %5d",
+				printf(" %5lu",
 				    ifnet.if_snd.ifq_drops - ip->ift_dr);
 		}
 		ip->ift_ip = ifnet.if_ipackets;
+		ip->ift_ib = ifnet.if_ibytes;
 		ip->ift_ie = ifnet.if_ierrors;
 		ip->ift_op = ifnet.if_opackets;
+		ip->ift_ob = ifnet.if_obytes;
 		ip->ift_oe = ifnet.if_oerrors;
 		ip->ift_co = ifnet.if_collisions;
 		ip->ift_dr = ifnet.if_snd.ifq_drops;
 		sum->ift_ip += ip->ift_ip;
+		sum->ift_ib += ip->ift_ib;
 		sum->ift_ie += ip->ift_ie;
 		sum->ift_op += ip->ift_op;
+		sum->ift_ob += ip->ift_ob;
 		sum->ift_oe += ip->ift_oe;
 		sum->ift_co += ip->ift_co;
 		sum->ift_dr += ip->ift_dr;
-		off = (u_long)ifnet.if_list.tqe_next;
+		off = (u_long)TAILQ_NEXT(&ifnet, if_list);
 	}
 	if (lastif - iftot > 0) {
-		printf("  %8d %5d %8d %5d %5d",
-			sum->ift_ip - total->ift_ip,
-			sum->ift_ie - total->ift_ie,
-			sum->ift_op - total->ift_op,
-			sum->ift_oe - total->ift_oe,
-			sum->ift_co - total->ift_co);
+		if (bflag)
+			printf("  %10lu %8.8s %10lu %5.5s",
+			    sum->ift_ib - total->ift_ib, " ",
+			    sum->ift_ob - total->ift_ob, " ");
+		else
+			printf("  %8lu %5lu %8lu %5lu %5lu",
+			    sum->ift_ip - total->ift_ip,
+			    sum->ift_ie - total->ift_ie,
+			    sum->ift_op - total->ift_op,
+			    sum->ift_oe - total->ift_oe,
+			    sum->ift_co - total->ift_co);
 		if (dflag)
-			printf(" %5d", sum->ift_dr - total->ift_dr);
+			printf(" %5lu", sum->ift_dr - total->ift_dr);
 	}
 	*total = *sum;
 	putchar('\n');
 	fflush(stdout);
 	line++;
-	oldmask = sigblock(sigmask(SIGALRM));
-	if (! signalled) {
-		sigpause(0);
-	}
-	sigsetmask(oldmask);
+	sigemptyset(&emptyset);
+	if (!signalled)
+		sigsuspend(&emptyset);
 	signalled = NO;
 	(void)alarm(interval);
 	if (line == 21)
@@ -387,9 +545,9 @@ loop:
  * Called if an interval expires before sidewaysintpr has completed a loop.
  * Sets a flag to not wait for the alarm.
  */
+/* ARGSUSED */
 static void
-catchalarm(signo)
-	int signo;
+catchalarm(int signo)
 {
 	signalled = YES;
 }

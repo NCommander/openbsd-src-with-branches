@@ -1,6 +1,29 @@
-/*	$NetBSD: autoconf.c,v 1.9 1994/10/26 07:25:21 cgd Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.32 2005/12/27 18:31:09 miod Exp $ */
 
 /*
+ * Copyright (c) 1995 Theo de Raadt
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
  * 	The Regents of the University of California. All rights reserved.
@@ -17,11 +40,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,45 +64,64 @@
 /*
  * Setup the system to run on the current machine.
  *
- * Configure() is called at boot time.  Available
+ * cpu_configure() is called at boot time.  Available
  * devices are determined (from possibilities mentioned in ioconf.c),
  * and the drivers are initialized.
  */
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/map.h>
+#include <sys/extent.h>
+#include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/dkstat.h>
 #include <sys/conf.h>
-#include <sys/dmap.h>
 #include <sys/reboot.h>
 #include <sys/device.h>
 #include <sys/disklabel.h>
 
 #include <machine/vmparam.h>
 #include <machine/autoconf.h>
+#include <machine/disklabel.h>
 #include <machine/cpu.h>
 #include <machine/pte.h>
 
+#include <scsi/scsi_all.h>
+#include <scsi/scsiconf.h>
+
+void	setroot(void);
+int	mainbus_print(void *, const char *);
+int	mainbus_scan(struct device *, void *, void *);
+int	findblkmajor(struct device *);
+struct	device *getdisk(char *, int, int, dev_t *);
+struct	device *parsedisk(char *, int, int, dev_t *);
+
+extern void init_intrs(void);
+extern void dumpconf(void);
+
+/* boot device information */
+paddr_t	bootaddr;
+int	bootctrllun, bootdevlun, bootpart;
+struct	device *bootdv;
+
 /*
- * The following several variables are related to
- * the configuration process, and are used in initializing
- * the machine.
+ * XXX some storage space must be allocated statically because of
+ * early console init
  */
-extern int cold;		/* if 1, still working on cold-start */
-int dkn;			/* number of iostat dk numbers assigned so far */
+char	extiospace[EXTENT_FIXED_STORAGE_SIZE(8)];
 
-/* XXX must be allocated statically because of early console init */
-struct	map extiomap[EIOMAPSIZE/16];
-extern	char *extiobase;
+struct	extent *extio;
+extern	vaddr_t extiobase;
 
-void mainbus_attach __P((struct device *, struct device *, void *));
-int  mainbus_match __P((struct device *, void *, void *));
+void mainbus_attach(struct device *, struct device *, void *);
+int  mainbus_match(struct device *, void *, void *);
 
-struct cfdriver mainbuscd = {
-	NULL, "mainbus", mainbus_match, mainbus_attach,
-	DV_DULL, sizeof(struct device), 0
+struct cfattach mainbus_ca = {
+	sizeof(struct device), mainbus_match, mainbus_attach
+};
+
+struct cfdriver mainbus_cd = {
+	NULL, "mainbus", DV_DULL
 };
 
 int
@@ -98,12 +136,12 @@ mainbus_match(parent, cf, args)
 int
 mainbus_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
-	if (ca->ca_paddr != (void *)-1)
-		printf(" addr 0x%x", ca->ca_paddr);
+	if (ca->ca_paddr != (paddr_t)-1)
+		printf(" addr 0x%x", (u_int32_t)ca->ca_paddr);
 	return (UNCONF);
 }
 
@@ -116,12 +154,12 @@ mainbus_scan(parent, child, args)
 	struct confargs oca;
 
 	bzero(&oca, sizeof oca);
-	oca.ca_paddr = (caddr_t)cf->cf_loc[0];
-	oca.ca_vaddr = (caddr_t)-1;
+	oca.ca_paddr = cf->cf_loc[0];
+	oca.ca_vaddr = (vaddr_t)-1;
 	oca.ca_ipl = -1;
 	oca.ca_bustype = BUS_MAIN;
 	oca.ca_name = cf->cf_driver->cd_name;
-	if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0)
+	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0)
 		return (0);
 	config_attach(parent, cf, &oca, mainbus_print);
 	return (1);
@@ -146,17 +184,22 @@ mainbus_attach(parent, self, args)
 /*
  * Determine mass storage and memory configuration for a machine.
  */
-configure()
+void
+cpu_configure()
 {
-	init_sir();
+	bootdv = NULL; /* set by device drivers (if found) */
 
-	rminit(extiomap, (long)EIOMAPSIZE, (long)1, "extio", EIOMAPSIZE/16);
+	init_intrs();
 
-	if (!config_rootfound("mainbus", NULL))
+	extio = extent_create("extio",
+	    (u_long)extiobase, (u_long)extiobase + ctob(EIOMAPSIZE),
+	    M_DEVBUF, extiospace, sizeof(extiospace), EX_NOWAIT);
+
+	if (config_rootfound("mainbus", NULL) == NULL)
 		panic("autoconfig failed, no root");
 
 	setroot();
-	swapconf();
+	dumpconf();
 	cold = 0;
 }
 
@@ -164,192 +207,235 @@ configure()
  * Allocate/deallocate a cache-inhibited range of kernel virtual address
  * space mapping the indicated physical address range [pa - pa+size)
  */
-caddr_t
+vaddr_t
 mapiodev(pa, size)
-	caddr_t pa;
+	paddr_t pa;
 	int size;
 {
-	int ix, npf, offset;
-	caddr_t kva;
+	int error;
+	vaddr_t kva;
 
-	size = roundup(size, NBPG);
-	offset = (int)pa & PGOFSET;
-	pa = (caddr_t)((int)pa & ~PGOFSET);
+	if (size <= 0)
+		return NULL;
 
 #ifdef DEBUG
-	if (((int)pa & PGOFSET) || (size & PGOFSET))
-	        panic("mapiodev: unaligned");
+	if ((pa & PGOFSET) || (size & PGOFSET))
+		panic("mapiodev: unaligned");
 #endif
-	npf = btoc(size);
-	ix = rmalloc(extiomap, npf);
-	if (ix == 0)
-	        return (0);
-	kva = extiobase + ctob(ix-1);
-	physaccess(kva, pa, size, PG_RW|PG_CI);
-	return (kva + offset);
+
+	error = extent_alloc(extio, size, EX_NOALIGN, 0, EX_NOBOUNDARY,
+	    EX_NOWAIT | EX_MALLOCOK, (u_long *)&kva);
+
+	if (error != 0)
+	        return NULL;
+
+	physaccess(kva, pa, size, PG_RW | PG_CI);
+	return (kva);
 }
 
 void
 unmapiodev(kva, size)
-	caddr_t kva;
+	vaddr_t kva;
 	int size;
 {
-	int ix;
+	int error;
 
 #ifdef DEBUG
-	if (((int)kva & PGOFSET) || (size & PGOFSET))
+	if ((kva & PGOFSET) || (size & PGOFSET))
 	        panic("unmapiodev: unaligned");
 	if (kva < extiobase || kva >= extiobase + ctob(EIOMAPSIZE))
 	        panic("unmapiodev: bad address");
 #endif
 	physunaccess(kva, size);
-	ix = btoc(kva - extiobase) + 1;
-	rmfree(extiomap, btoc(size), ix);
+
+	error = extent_free(extio, (u_long)kva, size, EX_NOWAIT);
+
+	if (error != 0)
+		printf("unmapiodev: extent_free failed\n");
 }
 
 /*
- * Configure swap space and related parameters.
+ * the rest of this file was adapted from Theo de Raadt's code in the 
+ * sparc port to nuke the "options GENERIC" stuff.
  */
-swapconf()
-{
-	register struct swdevt *swp;
-	register int nblks;
 
-	for (swp = swdevt; swp->sw_dev != NODEV; swp++)
-		if (bdevsw[major(swp->sw_dev)].d_psize) {
-			nblks =
-			  (*bdevsw[major(swp->sw_dev)].d_psize)(swp->sw_dev);
-			if (nblks != -1 &&
-			    (swp->sw_nblks == 0 || swp->sw_nblks > nblks))
-				swp->sw_nblks = nblks;
-		}
-	dumpconf();
-}
-
-u_long	bootdev;
-
-#define	PARTITIONMASK	(MAXPARTITIONS-1)
-
-struct bdevnam {
+struct nam2blk {
 	char *name;
 	int maj;
-} bdevnam[] = {
-	{ "sd", 4 },
-	{ "cd", 6 },
-	{ "xd", 10 },
+} nam2blk[] = {
+	{ "sd",		4 },
+	{ "st",		7 },
+	{ "rd",		9 },
 };
 
-char *
-blktonam(blk)
-	int blk;
+int
+findblkmajor(dv)
+	struct device *dv;
 {
-	int i;
+	char *name = dv->dv_xname;
+	register int i;
 
-	for (i = 0; i < sizeof(bdevnam)/sizeof(bdevnam[0]); i++)
-		if (bdevnam[i].maj == blk)
-			return (bdevnam[i].name);
-	return ("??");
+	for (i = 0; i < sizeof(nam2blk)/sizeof(nam2blk[0]); ++i)
+		if (strncmp(name, nam2blk[i].name, strlen(nam2blk[0].name)) == 0)
+			return (nam2blk[i].maj);
+	return (-1);
+}
+
+struct device *
+getdisk(str, len, defpart, devp)
+	char *str;
+	int len, defpart;
+	dev_t *devp;
+{
+	register struct device *dv;
+
+	if ((dv = parsedisk(str, len, defpart, devp)) == NULL) {
+		printf("use one of:");
+		TAILQ_FOREACH(dv, &alldevs, dv_list) {
+			if (dv->dv_class == DV_DISK)
+				printf(" %s[a-p]", dv->dv_xname);
+#ifdef NFSCLIENT
+			if (dv->dv_class == DV_IFNET)
+				printf(" %s", dv->dv_xname);
+#endif
+		}
+		printf("\n");
+	}
+	return (dv);
+}
+
+struct device *
+parsedisk(str, len, defpart, devp)
+	char *str;
+	int len, defpart;
+	dev_t *devp;
+{
+	register struct device *dv;
+	register char *cp, c;
+	int majdev, unit, part;
+
+	if (len == 0)
+		return (NULL);
+	cp = str + len - 1;
+	c = *cp;
+	if (c >= 'a' && (c - 'a') < MAXPARTITIONS) {
+		part = c - 'a';
+		*cp = '\0';
+	} else
+		part = defpart;
+
+	TAILQ_FOREACH(dv, &alldevs, dv_list) {
+		if (dv->dv_class == DV_DISK &&
+		    strcmp(str, dv->dv_xname) == 0) {
+			majdev = findblkmajor(dv);
+			unit = dv->dv_unit;
+			if (majdev < 0)
+				panic("parsedisk");
+			*devp = MAKEDISKDEV(majdev, unit, part);
+			break;
+		}
+#ifdef NFSCLIENT
+		if (dv->dv_class == DV_IFNET &&
+		    strcmp(str, dv->dv_xname) == 0) {
+			*devp = NODEV;
+			break;
+		}
+#endif
+	}
+
+	*cp = c;
+	return (dv);
 }
 
 /*
  * Attempt to find the device from which we were booted.
  * If we can do so, and not instructed not to do so,
  * change rootdev to correspond to the load device.
+ *
+ * XXX Actually, swap and root must be on the same type of device,
+ * (ie. DV_DISK or DV_IFNET) because of how (*mountroot) is written.
+ * That should be fixed.
  */
+void
 setroot()
 {
-	int  majdev, mindev, nswapdev;
-	extern int (*mountroot)();
+	register struct swdevt *swp;
+	register struct device *dv;
+	register int len, majdev, unit;
+	dev_t nrootdev, nswapdev = NODEV;
+	char buf[128];
+	dev_t temp;
 #if defined(NFSCLIENT)
 	extern char *nfsbootdevname;
-	extern int nfs_mountroot();
 #endif
-#if defined(FFS)
-	extern int ffs_mountroot();
-#endif
-	int boottype = DV_DISK;
-	int tmp;
 
-#ifdef DEBUG
-	printf("bootdev 0x%08x boothowto 0x%08x\n", bootdev, boothowto);
-#endif
+	printf("boot device: %s\n",
+	    (bootdv) ? bootdv->dv_xname : "<unknown>");
 
 	/*
-	 * ignore DFLTROOT in the `swap generic' case.
+	 * If 'swap generic' and we could not determine the boot device,
+	 * ask the user.
 	 */
-	if (boothowto & RB_DFLTROOT ||
-	    (bootdev & B_MAGICMASK) != (u_long)B_DEVMAGIC)
-		if (mountroot)
-			return;
+	if (mountroot == NULL && bootdv == NULL)
+		boothowto |= RB_ASKNAME;
 
 	if (boothowto & RB_ASKNAME) {
-#if 0
-		char *devname;
-
-		majdev = B_TYPE(bootdev);
-		mindev = B_UNIT(bootdev);
-		name = searchname(majdev);
-		while (mindev == 0 
-			if (bootdv && bootdv->dv_class == DV_DISK)
-				printf("root device (default %sa)? ",
-				    name);
-			else if (bootdv)
-				printf("root device (default %s)? ",
-				    name);
-			else
-				printf("root device ? ");
-			len = getstr(buf, sizeof(buf));
-			if (len == 0) {
-				if (!bootdv)
-					continue;
-				strcpy(buf, bootdv->dv_xname);
+		for (;;) {
+			printf("root device ");
+			if (bootdv != NULL)
+				printf("(default %s%c)",
+				    bootdv->dv_xname,
+				    bootdv->dv_class == DV_DISK ? 'a' : ' ');
+			printf(": ");
+			len = getsn(buf, sizeof(buf));
+			if (len == 0 && bootdv != NULL) {
+				strlcpy(buf, bootdv->dv_xname, sizeof buf);
 				len = strlen(buf);
 			}
 			if (len > 0 && buf[len - 1] == '*') {
 				buf[--len] = '\0';
 				dv = getdisk(buf, len, 1, &nrootdev);
-				if (dv != NULL) {
+				if (dv) {
 					bootdv = dv;
 					nswapdev = nrootdev;
 					goto gotswap;
 				}
 			}
 			dv = getdisk(buf, len, 0, &nrootdev);
-			if (dv != NULL) {
+			if (dv) {
 				bootdv = dv;
 				break;
 			}
 		}
-		/*XXXX remember to set boottype if we are a network device!! */
 
 		/*
 		 * because swap must be on same device as root, for
 		 * network devices this is easy.
-		 * XXX: IS THIS STILL TRUE?
 		 */
 		if (bootdv->dv_class == DV_IFNET) {
 			goto gotswap;
 		}
 		for (;;) {
-			if (bootdv && bootdv->dv_class == DV_DISK)
-				printf("swap device (default %sb)? ",
-					bootdv->dv_xname);
-			else if (bootdv)
-				printf("swap device (default %s)? ",
-					bootdv->dv_xname);
-			else
-				printf("swap device ? ");
-			len = getstr(buf, sizeof(buf));
-			if (len == 0) {
-				if (!bootdv)
-					continue;
+			printf("swap device ");
+			if (bootdv != NULL)
+				printf("(default %s%c)",
+				    bootdv->dv_xname,
+				    bootdv->dv_class == DV_DISK ? 'b' : ' ');
+			printf(": ");
+			len = getsn(buf, sizeof(buf));
+			if (len == 0 && bootdv != NULL) {
 				switch (bootdv->dv_class) {
 				case DV_IFNET:
 					nswapdev = NODEV;
 					break;
 				case DV_DISK:
-					nswapdev = makedev(major(nrootdev),
-					    (minor(nrootdev) & ~ PARTITIONMASK) | 1);
+					nswapdev = MAKEDISKDEV(major(nrootdev),
+					    DISKUNIT(nrootdev), 1);
+					break;
+				case DV_TAPE:
+				case DV_TTY:
+				case DV_DULL:
+				case DV_CPU:
 					break;
 				}
 				break;
@@ -366,41 +452,29 @@ gotswap:
 		dumpdev = nswapdev;
 		swdevt[0].sw_dev = nswapdev;
 		swdevt[1].sw_dev = NODEV;
-		/* XXX should ask for devices to boot from */
-#else
-		panic("RB_ASKNAME not implimented");
-#endif
 	} else if (mountroot == NULL) {
 		/*
-		 * `swap generic': Use the device the boot program
-		 * told us to use. This is a bit messy, since the ROM
-		 * doesn't give us a standard dev_t.
-		 *    B_TYPE: 0 = disk, 1 = net
-		 *    B_ADAPTER: major # of disk device driver XXX
-		 *    B_UNIT: disk unit number
+		 * `swap generic': Use the device the ROM told us to use.
 		 */
-		if (B_TYPE(bootdev) == 0) {
+		if (bootdv == NULL)
+			panic("boot device not known");
+
+		majdev = findblkmajor(bootdv);
+		if (majdev >= 0) {
 			/*
 			 * Root and swap are on a disk.
-			 * Assume that we are supposed to put root on
-			 * partition a, and swap on partition b.
+			 * val[2] of the boot device is the partition number.
+			 * Assume swap is on partition b.
 			 */
-			switch (B_ADAPTOR(bootdev)) {
-			case 0:
-				majdev = 4;
-				break;
-			}
-			mindev = B_UNIT(bootdev) << PARTITIONSHIFT;
-			rootdev = makedev(majdev, mindev);
-			nswapdev = dumpdev = makedev(major(rootdev),
-			    (minor(rootdev) & ~ PARTITIONMASK) | 1);
+			unit = bootdv->dv_unit;
+			rootdev = MAKEDISKDEV(majdev, unit, bootpart);
+			nswapdev = dumpdev = MAKEDISKDEV(major(rootdev),
+			    DISKUNIT(rootdev), 1);
 		} else {
 			/*
 			 * Root and swap are on a net.
-			 * XXX we don't know which network device...
 			 */
 			nswapdev = dumpdev = NODEV;
-			boottype = DV_IFNET;
 		}
 		swdevt[0].sw_dev = nswapdev;
 		swdevt[1].sw_dev = NODEV;
@@ -412,25 +486,96 @@ gotswap:
 		return;
 	}
 
-	switch (boottype) {
+	switch (bootdv->dv_class) {
 #if defined(NFSCLIENT)
 	case DV_IFNET:
 		mountroot = nfs_mountroot;
-		nfsbootdevname = NULL;		/* XXX don't know it */
-		break;
+		nfsbootdevname = bootdv->dv_xname;
+		return;
 #endif
 #if defined(FFS)
 	case DV_DISK:
-		mountroot = ffs_mountroot;
+		mountroot = dk_mountroot;
 		majdev = major(rootdev);
-		mindev = minor(rootdev);
-		printf("root on %s%d%c\n", blktonam(majdev),
-		    mindev >> PARTITIONSHIFT,
-		    (mindev & PARTITIONMASK) + 'a');
+		unit = DISKUNIT(rootdev);
+		printf("root on %s%c\n", bootdv->dv_xname,
+		    DISKPART(rootdev) + 'a');
 		break;
 #endif
 	default:
 		printf("can't figure root, hope your kernel is right\n");
-		break;
+		return;
+	}
+
+	/*
+	 * Make the swap partition on the root drive the primary swap.
+	 */
+	temp = NODEV;
+	for (swp = swdevt; swp->sw_dev != NODEV; swp++) {
+		if (majdev == major(swp->sw_dev) &&
+		    unit == DISKUNIT(swp->sw_dev)) {
+			temp = swdevt[0].sw_dev;
+			swdevt[0].sw_dev = swp->sw_dev;
+			swp->sw_dev = temp;
+			break;
+		}
+	}
+	if (swp->sw_dev == NODEV)
+		return;
+
+	/*
+	 * If dumpdev was the same as the old primary swap device, move
+	 * it to the new primary swap device.
+	 */
+	if (temp == dumpdev)
+		dumpdev = swdevt[0].sw_dev;
+}
+
+void
+device_register(struct device *dev, void *aux)
+{
+	if (bootpart == -1) /* ignore flag from controller driver? */
+		return;
+
+	/*
+	 * scsi: sd,cd
+	 */
+	if (strncmp("sd", dev->dv_xname, 2) == 0 ||
+	    strncmp("cd", dev->dv_xname, 2) == 0) {
+		struct scsibus_attach_args *sa = aux;
+		int target, lun;
+#ifdef MVME147
+		/*
+		 * The 147 can only boot from the built-in scsi controller,
+		 * and stores the scsi id as the controller number.
+		 */
+		if (cputyp == CPU_147) {
+			target = bootctrllun;
+			lun = 0;
+		} else
+#endif
+		{
+			target = bootdevlun >> 4;
+			lun = bootdevlun & 0x0f;
+		}
+    		
+		if (sa->sa_sc_link->target == target &&
+		    sa->sa_sc_link->lun == lun) {
+			bootdv = dev;
+			return;
+		}
+	}
+
+	/*
+	 * ethernet: ie,le
+	 */
+	else if (strncmp("ie", dev->dv_xname, 2) == 0 ||
+	    strncmp("le", dev->dv_xname, 2) == 0) {
+		struct confargs *ca = aux;
+
+		if (ca->ca_paddr == bootaddr) {
+			bootdv = dev;
+			return;
+		}
 	}
 }

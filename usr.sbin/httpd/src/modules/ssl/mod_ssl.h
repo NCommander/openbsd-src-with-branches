@@ -67,13 +67,6 @@
 #define MOD_SSL_H 1
 
 /* 
- * Check whether Extended API (EAPI) is enabled
- */
-#ifndef EAPI
-#error "mod_ssl requires Extended API (EAPI)"
-#endif
-
-/* 
  * Optionally enable the experimental stuff, but allow the user to
  * override the decision which experimental parts are included by using
  * CFLAGS="-DSSL_EXPERIMENTAL_xxxx_IGNORE".
@@ -104,13 +97,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
-#ifndef WIN32
 #include <sys/time.h>
-#endif
-#ifdef WIN32
-#include <wincrypt.h>
-#include <winsock2.h>
-#endif
 
 /* OpenSSL headers */
 #include <openssl/ssl.h>
@@ -250,46 +237,24 @@
  * Support for file locking: Try to determine whether we should use fcntl() or
  * flock().  Would be better ap_config.h could provide this... :-(
   */
-#if defined(USE_FCNTL_SERIALIZED_ACCEPT)
-#define SSL_USE_FCNTL 1
-#include <fcntl.h>
-#endif
 #if defined(USE_FLOCK_SERIALIZED_ACCEPT)
 #define SSL_USE_FLOCK 1
 #include <sys/file.h>
 #endif
 #if !defined(SSL_USE_FCNTL) && !defined(SSL_USE_FLOCK)
 #define SSL_USE_FLOCK 1
-#if !defined(MPE) && !defined(WIN32)
 #include <sys/file.h>
-#endif
 #ifndef LOCK_UN
 #undef SSL_USE_FLOCK
 #define SSL_USE_FCNTL 1
 #include <fcntl.h>
 #endif
 #endif
-#ifdef AIX
-#undef SSL_USE_FLOCK
-#define SSL_USE_FCNTL 1
-#include <fcntl.h>
-#endif
 
 /*
  * Support for Mutex
  */
-#ifndef WIN32
 #define SSL_MUTEX_LOCK_MODE ( S_IRUSR|S_IWUSR )
-#else
-#define SSL_MUTEX_LOCK_MODE (_S_IREAD|_S_IWRITE )
-#endif
-#if defined(USE_SYSVSEM_SERIALIZED_ACCEPT) ||\
-    (defined(__FreeBSD__) && defined(__FreeBSD_version) &&\
-     __FreeBSD_version >= 300000) ||\
-    (defined(LINUX) && defined(__GLIBC__) && defined(__GLIBC_MINOR__) &&\
-     LINUX >= 2 && __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 1) ||\
-    defined(SOLARIS2) || defined(__hpux) ||\
-    (defined (__digital__) && defined (__unix__))
 #define SSL_CAN_USE_SEM
 #define SSL_HAVE_IPCSEM
 #include <sys/types.h>
@@ -307,32 +272,16 @@ union ssl_ipc_semun {
     struct semid_ds *buf;
     unsigned short int *array;
 };
-#endif
-#ifdef WIN32
-#define SSL_CAN_USE_SEM
-#define SSL_HAVE_W32SEM
-#include "multithread.h"
-#include <process.h>
-#endif
 
 /*
  * Support for MM library
  */
-#ifndef WIN32
 #define SSL_MM_FILE_MODE ( S_IRUSR|S_IWUSR )
-#else
-#define SSL_MM_FILE_MODE ( _S_IREAD|_S_IWRITE )
-#endif
 
 /*
  * Support for DBM library
  */
-#ifndef WIN32
 #define SSL_DBM_FILE_MODE ( S_IRUSR|S_IWUSR )
-#else
-#define SSL_USE_SDBM
-#define SSL_DBM_FILE_MODE ( _S_IREAD|_S_IWRITE )
-#endif
 
 #ifdef SSL_USE_SDBM
 #include "ssl_util_sdbm.h"
@@ -371,8 +320,8 @@ union ssl_ipc_semun {
 /*
  * Check for OpenSSL version 
  */
-#if SSL_LIBRARY_VERSION < 0x00903100
-#error "mod_ssl requires OpenSSL 0.9.3 or higher"
+#if SSL_LIBRARY_VERSION < 0x00907000
+#error "mod_ssl requires OpenSSL 0.9.7 or higher"
 #endif
 
 /*
@@ -513,9 +462,7 @@ typedef enum {
     SSL_RSSRC_BUILTIN = 1,
     SSL_RSSRC_FILE    = 2,
     SSL_RSSRC_EXEC    = 3
-#if SSL_LIBRARY_VERSION >= 0x00905100
    ,SSL_RSSRC_EGD     = 4
-#endif
 } ssl_rssrc_t;
 typedef struct {
     ssl_rsctx_t  nCtx;
@@ -720,11 +667,7 @@ int          ssl_callback_SSLVerify_CRL(int, X509_STORE_CTX *, server_rec *);
 int          ssl_callback_NewSessionCacheEntry(SSL *, SSL_SESSION *);
 SSL_SESSION *ssl_callback_GetSessionCacheEntry(SSL *, unsigned char *, int, int *);
 void         ssl_callback_DelSessionCacheEntry(SSL_CTX *, SSL_SESSION *);
-#if SSL_LIBRARY_VERSION >= 0x00907000
 void         ssl_callback_LogTracingState(const SSL *, int, int);
-#else
-void         ssl_callback_LogTracingState(SSL *, int, int);
-#endif
 
 /*  Session Cache Support  */
 void         ssl_scache_init(server_rec *, pool *);
@@ -831,9 +774,6 @@ void         ssl_compat_variables(request_rec *);
 /*  Utility Functions  */
 char        *ssl_util_server_root_relative(pool *, char *, char *);
 char        *ssl_util_vhostid(pool *, server_rec *);
-void         ssl_util_strupper(char *);
-void         ssl_util_uuencode(char *, const char *, BOOL);
-void         ssl_util_uuencode_binary(unsigned char *, const unsigned char *, int, BOOL);
 FILE        *ssl_util_ppopen(server_rec *, pool *, char *);
 int          ssl_util_ppopen_child(void *, child_info *);
 void         ssl_util_ppclose(server_rec *, pool *, FILE *);

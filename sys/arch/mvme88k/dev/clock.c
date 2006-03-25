@@ -1,6 +1,29 @@
-/*	$NetBSD: clock.c,v 1.22 1995/05/29 23:57:15 pk Exp $ */
-
+/*	$OpenBSD: clock.c,v 1.43 2004/11/08 16:39:31 miod Exp $ */
 /*
+ * Copyright (c) 1999 Steve Murphree, Jr.
+ * Copyright (c) 1995 Theo de Raadt
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  * Copyright (c) 1995 Nivas Madhur
@@ -24,11 +47,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -48,20 +67,80 @@
  */
 
 /*
- * Clock driver. Has both interval timer as well as statistics timer.
+ * Interval and statistic clocks driver.
  */
 
 #include <sys/param.h>
+#include <sys/simplelock.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#ifdef GPROF
-#include <sys/gmon.h>
-#endif
+#include <sys/systm.h>
 
+#include <machine/asm.h>
+#include <machine/psl.h>
 #include <machine/autoconf.h>
+#include <machine/bugio.h>
 #include <machine/cpu.h>
 
+#include "pcctwo.h"
+#if NPCCTWO > 0
+#include <machine/mvme1x7.h>
+#include <mvme88k/dev/pcctwovar.h>
 #include <mvme88k/dev/pcctworeg.h>
+#endif
+
+#include "syscon.h"
+#if NSYSCON > 0
+#include <machine/mvme188.h>
+#include <mvme88k/dev/sysconreg.h>
+#endif
+
+#include <mvme88k/dev/vme.h>
+
+#include "bugtty.h"
+#if NBUGTTY > 0
+#include <mvme88k/dev/bugttyfunc.h>
+#endif
+
+int	clockmatch(struct device *, void *, void *);
+void	clockattach(struct device *, struct device *, void *);
+
+void	sbc_init_clocks(void);
+void	m188_init_clocks(void);
+void	m188_cio_init(unsigned);
+u_int	read_cio(int);
+void	write_cio(int, u_int);
+
+struct clocksoftc {
+	struct device	sc_dev;
+	struct intrhand	sc_profih;
+	struct intrhand	sc_statih;
+};
+
+struct cfattach clock_ca = {
+        sizeof(struct clocksoftc), clockmatch, clockattach
+};
+
+struct cfdriver clock_cd = {
+        NULL, "clock", DV_DULL
+};
+
+int	sbc_clockintr(void *);
+int	sbc_statintr(void *);
+int	m188_clockintr(void *);
+int	m188_statintr(void *);
+
+#if NPCCTWO > 0
+u_int8_t prof_reset;
+u_int8_t stat_reset;
+#endif
+
+#if NSYSCON > 0
+struct simplelock cio_lock;
+
+#define	CIO_LOCK	simple_lock(&cio_lock)
+#define	CIO_UNLOCK	simple_unlock(&cio_lock)
+#endif
 
 /*
  * Statistics clock interval and variance, in usec.  Variance must be a
@@ -73,38 +152,18 @@
  */
 int statvar = 8192;
 int statmin;			/* statclock interval - 1/2*variance */
-int timerok;
 
-u_long delay_factor = 1;
-
-static int	clockmatch __P((struct device *, void *, void *));
-static void	clockattach __P((struct device *, struct device *, void *));
-int		clockintr __P((void *, void *));
-int		statintr __P((void *, void *));
-
-struct clocksoftc {
-	struct device			sc_dev;
-	volatile struct pcc2reg		*sc_pcc2reg;
-};
-
-struct cfattach clock_ca = {
-        sizeof(struct clocksoftc), clockmatch, clockattach
-}; 
- 
-struct cfdriver clock_cd = { 
-        NULL, "clock", DV_DULL, 0
-}; 
-
-struct intrhand clockintrhand, statintrhand;
-
-static int
-clockmatch(struct device *parent, void *self, void *aux)
+/*
+ * Every machine must have a clock tick device of some sort; for this
+ * platform this file manages it, no matter what form it takes.
+ */
+int
+clockmatch(struct device *parent, void *vcf, void *args)
 {
-	register struct confargs *ca = aux;
-	register struct cfdata *cf = self;
+	struct confargs *ca = args;
+	struct cfdata *cf = vcf;
 
-	if (ca->ca_bustype != BUS_PCCTWO ||
-		strcmp(cf->cf_driver->cd_name, "clock")) {
+	if (strcmp(cf->cf_driver->cd_name, "clock")) {
 		return (0);
 	}
 
@@ -113,180 +172,117 @@ clockmatch(struct device *parent, void *self, void *aux)
 	 * We return the ipl here so that the parent can print
 	 * a message if it is different from what ioconf.c says.
 	 */
-	ca->ca_ipl   = IPL_CLOCK;
-	/* set size to 0 - see pcctwo.c:match for details */
-	ca->ca_size  = 0;
-
-	return 1;
+	ca->ca_ipl = IPL_CLOCK;
+	return (1);
 }
 
-/* ARGSUSED */
-static void
-clockattach(struct device *parent, struct device *self, void *aux)
+void
+clockattach(struct device *parent, struct device *self, void *args)
 {
-	struct confargs *ca = aux;
+	struct confargs *ca = args;
 	struct clocksoftc *sc = (struct clocksoftc *)self;
-	u_long	elapsedtime;
 
-	extern void delay(u_long);
-	extern int cpuspeed;
+	switch (ca->ca_bustype) {
+#if NPCCTWO > 0
+	case BUS_PCCTWO:
+		sc->sc_profih.ih_fn = sbc_clockintr;
+		sc->sc_profih.ih_arg = 0;
+		sc->sc_profih.ih_wantframe = 1;
+		sc->sc_profih.ih_ipl = ca->ca_ipl;
+		prof_reset = ca->ca_ipl | PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
+		pcctwointr_establish(PCC2V_TIMER1, &sc->sc_profih, "clock");
+		sc->sc_statih.ih_fn = sbc_statintr;
+		sc->sc_statih.ih_arg = 0;
+		sc->sc_statih.ih_wantframe = 1;
+		sc->sc_statih.ih_ipl = ca->ca_ipl;
+		stat_reset = ca->ca_ipl | PCC2_IRQ_IEN | PCC2_IRQ_ICLR;
+		pcctwointr_establish(PCC2V_TIMER2, &sc->sc_statih, "stat");
+		md_init_clocks = sbc_init_clocks;
+		break;
+#endif /* NPCCTWO */
+#if NSYSCON > 0
+	case BUS_SYSCON:
+		sc->sc_profih.ih_fn = m188_clockintr;
+		sc->sc_profih.ih_arg = 0;
+		sc->sc_profih.ih_wantframe = 1;
+		sc->sc_profih.ih_ipl = ca->ca_ipl;
+		sysconintr_establish(SYSCV_TIMER2, &sc->sc_profih, "clock");
+		sc->sc_statih.ih_fn = m188_statintr;
+		sc->sc_statih.ih_arg = 0;
+		sc->sc_statih.ih_wantframe = 1;
+		sc->sc_statih.ih_ipl = ca->ca_ipl;
+		sysconintr_establish(SYSCV_TIMER1, &sc->sc_statih, "stat");
+		md_init_clocks = m188_init_clocks;
+		break;
+#endif /* NSYSCON */
+	}
 
-	/*
-	 * save virtual address of the pcc2 block since our
-	 * registers are in that block.
-	 */
-	sc->sc_pcc2reg = (struct pcc2reg *)ca->ca_vaddr;
-
-	/*
-	 * calibrate for delay() calls.
-	 * We do this by using tick timer1 in free running mode before
-	 * cpu_initclocks() is called so turn on clock interrupts etc.
-	 * 
-	 *	the approach is:
-	 *		set count in timer to 0
-	 *		call delay(1000) for a 1000 us delay
-	 *		after return, stop count and figure out
-	 *			how many us went by (call it x)
-	 *		now the factor to multiply the arg. passed to
-	 *		delay would be (x/1000) rounded up to an int.
-	 */
 	printf("\n");
-	sc->sc_pcc2reg->pcc2_t1ctl 	&= ~PCC2_TICTL_CEN;
-	sc->sc_pcc2reg->pcc2_psclkadj 	= 256 - cpuspeed;
-	sc->sc_pcc2reg->pcc2_t1irq	&= ~PCC2_TTIRQ_IEN;
-	sc->sc_pcc2reg->pcc2_t1cntr	= 0;
-	sc->sc_pcc2reg->pcc2_t1ctl 	|= PCC2_TICTL_CEN;
-	delay(1000);	/* delay for 1 ms */
-	sc->sc_pcc2reg->pcc2_t1ctl 	&= ~PCC2_TICTL_CEN;
-	elapsedtime = sc->sc_pcc2reg->pcc2_t1cntr;
-
-	delay_factor = (u_long)(elapsedtime / 1000 + 1);
-
-	/*
-	 * program clock to interrupt at IPL_CLOCK. Set everything
-	 * except compare registers, interrupt enable and counter
-	 * enable registers.
-	 */
-	sc->sc_pcc2reg->pcc2_t1ctl &= ~(PCC2_TICTL_CEN);
-	sc->sc_pcc2reg->pcc2_t1cntr= 0;
-	sc->sc_pcc2reg->pcc2_t1ctl |= (PCC2_TICTL_COC|PCC2_TICTL_COVF);
-	sc->sc_pcc2reg->pcc2_t1irq = (PCC2_TTIRQ_ICLR|IPL_CLOCK);
-
-	sc->sc_pcc2reg->pcc2_t2ctl &= ~(PCC2_TICTL_CEN);
-	sc->sc_pcc2reg->pcc2_t2cntr= 0;
-	sc->sc_pcc2reg->pcc2_t2ctl |= (PCC2_TICTL_COC|PCC2_TICTL_COVF);
-	sc->sc_pcc2reg->pcc2_t2irq = (PCC2_TTIRQ_ICLR|IPL_CLOCK);
-
-	/*
-	 * Establish inerrupt handlers.
-	 */
-	clockintrhand.ih_fn = clockintr;
-	clockintrhand.ih_arg = 0; /* don't want anything */
-	clockintrhand.ih_ipl = IPL_CLOCK;
-	clockintrhand.ih_wantframe = 1;
-	intr_establish(PCC2_VECT+9, &clockintrhand);
-
-	statintrhand.ih_fn = statintr;
-	statintrhand.ih_arg = 0; /* don't want anything */
-	statintrhand.ih_ipl = IPL_CLOCK;
-	statintrhand.ih_wantframe = 1;
-	intr_establish(PCC2_VECT+8, &statintrhand);
-
-	timerok = 1;
 }
 
-/*
- * Set up the real-time and statistics clocks.  Leave stathz 0 only if
- * no alternative timer is available. mvme167/mvme187 has 2 tick timers
- * in pcc2 - we are using timer 1 for clock interrupt and timer 2 for
- * statistics.
- *
- * The frequencies of these clocks must be an even number of microseconds.
- */
-cpu_initclocks()
+#if NPCCTWO > 0
+
+void
+sbc_init_clocks(void)
 {
-	register int statint, minint;
-	volatile struct pcc2reg *pcc2reg;
+	int statint, minint;
 
-	pcc2reg = ((struct clocksoftc *)clock_cd.cd_devs[0])->sc_pcc2reg;
-
+#ifdef DIAGNOSTIC
 	if (1000000 % hz) {
 		printf("cannot get %d Hz clock; using 100 Hz\n", hz);
 		hz = 100;
-		tick = 1000000 / hz;
 	}
+#endif
+	tick = 1000000 / hz;
+
+	/* profclock */
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T1CTL) = 0;
+	*(volatile u_int32_t *)(OBIO_START + PCC2_BASE + PCCTWO_T1CMP) =
+	    pcc2_timer_us2lim(tick);
+	*(volatile u_int32_t *)(OBIO_START + PCC2_BASE + PCCTWO_T1COUNT) = 0;
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T1CTL) =
+	    PCC2_TCTL_CEN | PCC2_TCTL_COC | PCC2_TCTL_COVF;
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T1ICR) =
+	    prof_reset;
+
 	if (stathz == 0)
 		stathz = hz;
+#ifdef DIAGNOSTIC
 	if (1000000 % stathz) {
 		printf("cannot get %d Hz statclock; using 100 Hz\n", stathz);
 		stathz = 100;
 	}
+#endif
 	profhz = stathz;		/* always */
 
 	statint = 1000000 / stathz;
 	minint = statint / 2 + 100;
 	while (statvar > minint)
 		statvar >>= 1;
-	/*
-	 * hz value 100 means we want the clock to interrupt 100
-	 * times a sec or 100 times in 1000000 us ie, 1 interrupt
-	 * every 10000 us. Program the tick timer compare register
-	 * to this value.
-	 */
-	pcc2reg->pcc2_t1cmp = tick;
-	pcc2reg->pcc2_t2cmp = statint;
+
+	/* statclock */
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2CTL) = 0;
+	*(volatile u_int32_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2CMP) =
+	    pcc2_timer_us2lim(statint);
+	*(volatile u_int32_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2COUNT) = 0;
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2CTL) =
+	    PCC2_TCTL_CEN | PCC2_TCTL_COC | PCC2_TCTL_COVF;
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2ICR) =
+	    stat_reset;
+
 	statmin = statint - (statvar >> 1);
-
-	/* start the clocks ticking */
-	pcc2reg->pcc2_t1ctl = (PCC2_TICTL_CEN|PCC2_TICTL_COC|PCC2_TICTL_COVF);
-	pcc2reg->pcc2_t2ctl = (PCC2_TICTL_CEN|PCC2_TICTL_COC|PCC2_TICTL_COVF);
-	/* and enable those interrupts */
-	pcc2reg->pcc2_t1irq |= (PCC2_TTIRQ_IEN|PCC2_TTIRQ_ICLR);
-	pcc2reg->pcc2_t2irq |= (PCC2_TTIRQ_IEN|PCC2_TTIRQ_ICLR);
 }
 
 /*
- * Dummy setstatclockrate(), since we know profhz==hz.
- */
-/* ARGSUSED */
-void
-setstatclockrate(int newhz)
-{
-	/* nothing */
-}
-
-/*
- * Delay: wait for `about' n microseconds to pass.
- */
-void
-delay(volatile u_long n)
-{
-	volatile u_long cnt = n * delay_factor;
-
-	while (cnt-- > 0) {
-		asm volatile("");
-	}
-}
-
-/*
- * Clock interrupt handler. Calls hardclock() after setting up a
- * clockframe.
+ * clockintr: ack intr and call hardclock
  */
 int
-clockintr(void *cap, void *frame)
+sbc_clockintr(void *eframe)
 {
-	volatile struct pcc2reg *reg;
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T1ICR) =
+	    prof_reset;
 
-	reg = ((struct clocksoftc *)clock_cd.cd_devs[0])->sc_pcc2reg;
-	
-	/* Clear the interrupt */
-	reg->pcc2_t1irq = (PCC2_TTIRQ_IEN|PCC2_TTIRQ_ICLR|IPL_CLOCK);
-#if 0
-	reg->pcc2_t1irq |= PCC2_TTIRQ_ICLR;
-#endif /* 0 */
-
-	hardclock((struct clockframe *)frame);
-#include "bugtty.h"
+	hardclock(eframe);
 #if NBUGTTY > 0
 	bugtty_chkinput();
 #endif /* NBUGTTY */
@@ -294,24 +290,15 @@ clockintr(void *cap, void *frame)
 	return (1);
 }
 
-/*
- * Stat clock interrupt handler.
- */
 int
-statintr(void *cap, void *frame)
+sbc_statintr(void *eframe)
 {
-	volatile struct pcc2reg *reg;
-	register u_long newint, r, var;
+	u_long newint, r, var;
 
-	reg = ((struct clocksoftc *)clock_cd.cd_devs[0])->sc_pcc2reg;
-	
-	/* Clear the interrupt */
-#if 0
-	reg->pcc2_t2irq |= PCC2_TTIRQ_ICLR;
-#endif /* 0 */
-	reg->pcc2_t2irq = (PCC2_TTIRQ_IEN|PCC2_TTIRQ_ICLR|IPL_CLOCK);
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2ICR) =
+	    stat_reset;
 
-	statclock((struct clockframe *)frame);
+	statclock((struct clockframe *)eframe);
 
 	/*
 	 * Compute new randomized interval.  The intervals are uniformly
@@ -324,48 +311,261 @@ statintr(void *cap, void *frame)
 	} while (r == 0);
 	newint = statmin + r;
 
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2CTL) = 0;
+	*(volatile u_int32_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2CMP) =
+	    pcc2_timer_us2lim(newint);
+	*(volatile u_int32_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2COUNT) = 0;
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2ICR) =
+	    stat_reset;
+	*(volatile u_int8_t *)(OBIO_START + PCC2_BASE + PCCTWO_T2CTL) =
+	    PCC2_TCTL_CEN | PCC2_TCTL_COC;
+	return (1);
+}
+
+#endif /* NPCCTWO */
+
+#if NSYSCON > 0
+
+/*
+ * Notes on the MVME188 clock usage:
+ *
+ * We have two sources for timers:
+ * - two counter/timers in the DUART (MC68681/MC68692)
+ * - three counter/timers in the Zilog Z8536
+ *
+ * However:
+ * - Z8536 CT#3 is reserved as a watchdog device; and its input is
+ *   user-controllable with jumpers on the SYSCON board, so we can't
+ *   really use it.
+ * - When using the Z8536 in timer mode, it _seems_ like it resets at
+ *   0xffff instead of the initial count value...
+ * - Despite having per-counter programmable interrupt vectors, the
+ *   SYSCON logic forces fixed vectors for the DUART and the Z8536 timer
+ *   interrupts.
+ * - The DUART timers keep counting down from 0xffff even after
+ *   interrupting, and need to be manually stopped, then restarted, to
+ *   resume counting down the initial count value.
+ *
+ * Also, while the Z8536 has a very reliable 4MHz clock source, the
+ * 3.6864MHz clock source of the DUART timers does not seem to be correct.
+ *
+ * As a result, clock is run on a Z8536 counter, kept in counter mode and
+ * retriggered every interrupt, while statclock is run on a DUART counter,
+ * but in practice runs at an average 96Hz instead of the expected 100Hz.
+ *
+ * It should be possible to run statclock on the Z8536 counter #2, but
+ * this would make interrupt handling more tricky, in the case both
+ * counters interrupt at the same time...
+ */
+
+void
+m188_init_clocks(void)
+{
+	volatile u_int32_t imr;
+	int statint, minint;
+
+#ifdef DIAGNOSTIC
+	if (1000000 % hz) {
+		printf("cannot get %d Hz clock; using 100 Hz\n", hz);
+		hz = 100;
+	}
+#endif
+	tick = 1000000 / hz;
+
+	simple_lock_init(&cio_lock);
+	m188_cio_init(tick);
+
+	if (stathz == 0)
+		stathz = hz;
+#ifdef DIAGNOSTIC
+	if (1000000 % stathz) {
+		printf("cannot get %d Hz statclock; using 100 Hz\n", stathz);
+		stathz = 100;
+	}
+#endif
+	profhz = stathz;		/* always */
+
 	/*
-	 * reprogram statistics timer to interrupt at
-	 * newint us intervals.
+	 * The DUART runs at 3.6864 MHz, CT#1 will run in PCLK/16 mode.
 	 */
-	reg->pcc2_t2ctl = ~(PCC2_TICTL_CEN);
-	reg->pcc2_t2cntr = 0;
-	reg->pcc2_t2cmp = newint;
-	reg->pcc2_t2ctl = (PCC2_TICTL_CEN|PCC2_TICTL_COC|PCC2_TICTL_COVF);
-	reg->pcc2_t2irq |= (PCC2_TTIRQ_ICLR|PCC2_TTIRQ_IEN);
+	statint = (3686400 / 16) / stathz;
+	minint = statint / 2 + 100;
+	while (statvar > minint)
+		statvar >>= 1;
+	statmin = statint - (statvar >> 1);
+
+	/* clear the counter/timer output OP3 while we program the DART */
+	*(volatile u_int32_t *)DART_OPCR = 0x00;
+	/* set interrupt vec */
+	*(volatile u_int32_t *)DART_IVR = SYSCON_VECT + SYSCV_TIMER1;
+	/* do the stop counter/timer command */
+	imr = *(volatile u_int32_t *)DART_STOPC;
+	/* set counter/timer to counter mode, PCLK/16 */
+	*(volatile u_int32_t *)DART_ACR = 0x30;
+	*(volatile u_int32_t *)DART_CTUR = (statint >> 8);
+	*(volatile u_int32_t *)DART_CTLR = (statint & 0xff);
+	/* set the counter/timer output OP3 */
+	*(volatile u_int32_t *)DART_OPCR = 0x04;
+	/* give the start counter/timer command */
+	imr = *(volatile u_int32_t *)DART_STARTC;
+}
+
+int
+m188_clockintr(void *eframe)
+{
+	CIO_LOCK;
+	write_cio(CIO_CSR1, CIO_GCB | CIO_CIP);  /* Ack the interrupt */
+
+	hardclock(eframe);
+#if NBUGTTY > 0
+	bugtty_chkinput();
+#endif /* NBUGTTY */
+
+	/* restart counter */
+	write_cio(CIO_CSR1, CIO_GCB | CIO_TCB | CIO_IE);
+	CIO_UNLOCK;
 
 	return (1);
 }
 
-/*
- * Return the best possible estimate of the time in the timeval
- * to which tvp points.  We do this by returning the current time
- * plus the amount of time since the last clock interrupt.
- *
- * Check that this time is no less than any previously-reported time,
- * which could happen around the time of a clock adjustment.  Just for
- * fun, we guarantee that the time will be greater than the value
- * obtained by a previous call.
- */
+int
+m188_statintr(void *eframe)
+{
+	volatile u_int32_t tmp;
+	u_long newint, r, var;
+
+	/* stop counter and acknowledge interrupt */
+	tmp = *(volatile u_int32_t *)DART_STOPC;
+	tmp = *(volatile u_int32_t *)DART_ISR;
+
+	statclock((struct clockframe *)eframe);
+
+	/*
+	 * Compute new randomized interval.  The intervals are uniformly
+	 * distributed on [statint - statvar / 2, statint + statvar / 2],
+	 * and therefore have mean statint, giving a stathz frequency clock.
+	 */
+	var = statvar;
+	do {
+		r = random() & (var - 1);
+	} while (r == 0);
+	newint = statmin + r;
+
+	/* setup new value and restart counter */
+	*(volatile u_int32_t *)DART_CTUR = (newint >> 8);
+	*(volatile u_int32_t *)DART_CTLR = (newint & 0xff);
+	tmp = *(volatile u_int32_t *)DART_STARTC;
+
+	return (1);
+}
+
+/* Write CIO register */
 void
-microtime(tvp)
-	register struct timeval *tvp;
+write_cio(int reg, u_int val)
 {
 	int s;
-	static struct timeval lasttime;
+	volatile int i;
+	volatile u_int32_t * cio_ctrl = (volatile u_int32_t *)CIO_CTRL;
 
-	s = splhigh();
-	*tvp = time;
-	while (tvp->tv_usec > 1000000) {
-		tvp->tv_sec++;
-		tvp->tv_usec -= 1000000;
-	}
-	if (tvp->tv_sec == lasttime.tv_sec &&
-	    tvp->tv_usec <= lasttime.tv_usec &&
-	    (tvp->tv_usec = lasttime.tv_usec + 1) > 1000000) {
-		tvp->tv_sec++;
-		tvp->tv_usec -= 1000000;
-	}
-	lasttime = *tvp;
+	s = splclock();
+	CIO_LOCK;
+
+	i = *cio_ctrl;				/* goto state 1 */
+	*cio_ctrl = 0;				/* take CIO out of RESET */
+	i = *cio_ctrl;				/* reset CIO state machine */
+
+	*cio_ctrl = (reg & 0xff);		/* select register */
+	*cio_ctrl = (val & 0xff);		/* write the value */
+
+	CIO_UNLOCK;
 	splx(s);
+}
+
+/* Read CIO register */
+u_int
+read_cio(int reg)
+{
+	int c, s;
+	volatile int i;
+	volatile u_int32_t * cio_ctrl = (volatile u_int32_t *)CIO_CTRL;
+
+	s = splclock();
+	CIO_LOCK;
+
+	/* select register */
+	*cio_ctrl = (reg & 0xff);
+	/* delay for a short time to allow 8536 to settle */
+	for (i = 0; i < 100; i++)
+		;
+	/* read the value */
+	c = *cio_ctrl;
+	CIO_UNLOCK;
+	splx(s);
+	return (c & 0xff);
+}
+
+/*
+ * Initialize the CTC (8536)
+ * Only the counter/timers are used - the IO ports are un-comitted.
+ */
+void
+m188_cio_init(unsigned period)
+{
+	volatile int i;
+
+	CIO_LOCK;
+
+	/* Start by forcing chip into known state */
+	read_cio(CIO_MICR);
+	write_cio(CIO_MICR, CIO_MICR_RESET);	/* Reset the CTC */
+	for (i = 0; i < 1000; i++)	 	/* Loop to delay */
+		;
+
+	/* Clear reset and start init seq. */
+	write_cio(CIO_MICR, 0x00);
+
+	/* Wait for chip to come ready */
+	while ((read_cio(CIO_MICR) & CIO_MICR_RJA) == 0)
+		;
+
+	/* Initialize the 8536 for real */
+	write_cio(CIO_MICR,
+	    CIO_MICR_MIE /* | CIO_MICR_NV */ | CIO_MICR_RJA | CIO_MICR_DLC);
+	write_cio(CIO_CTMS1, CIO_CTMS_CSC);	/* Continuous count */
+	write_cio(CIO_PDCB, 0xff);		/* set port B to input */
+
+	period <<= 1;	/* CT#1 runs at PCLK/2, hence 2MHz */
+	write_cio(CIO_CT1MSB, period >> 8);
+	write_cio(CIO_CT1LSB, period);
+	/* enable counter #1 */
+	write_cio(CIO_MCCR, CIO_MCCR_CT1E | CIO_MCCR_PBE);
+	write_cio(CIO_CSR1, CIO_GCB | CIO_TCB | CIO_IE);
+
+	CIO_UNLOCK;
+}
+#endif /* NSYSCON */
+
+void
+delay(int us)
+{
+	if (brdtyp == BRD_188) {
+		extern void m188_delay(int);
+
+		m188_delay(us);
+	} else {
+		/*
+		 * On MVME187 and MVME197, use the VMEchip for the
+		 * delay clock.
+		 */
+		*(volatile u_int32_t *)(VME2_BASE + VME2_T1CMP) = 0xffffffff;
+		*(volatile u_int32_t *)(VME2_BASE + VME2_T1COUNT) = 0;
+		*(volatile u_int32_t *)(VME2_BASE + VME2_TCTL) |=
+		    VME2_TCTL1_CEN;
+
+		while ((*(volatile u_int32_t *)(VME2_BASE + VME2_T1COUNT)) <
+		    (u_int32_t)us)
+			;
+		*(volatile u_int32_t *)(VME2_BASE + VME2_TCTL) &=
+		    ~VME2_TCTL1_CEN;
+	}
 }

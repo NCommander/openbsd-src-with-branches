@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_lfs.c,v 1.2 1995/03/18 14:57:32 cgd Exp $	*/
+/*	$OpenBSD: mount_lfs.c,v 1.11 2003/07/03 22:41:40 tedu Exp $	*/
+/*	$NetBSD: mount_lfs.c,v 1.4 1996/04/13 05:35:44 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,12 +40,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_lfs.c	8.3 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_lfs.c,v 1.2 1995/03/18 14:57:32 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_lfs.c,v 1.11 2003/07/03 22:41:40 tedu Exp $";
 #endif
 #endif /* not lint */
 
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/mount.h>
+#include <errno.h>
 
 #include <err.h>
 #include <stdio.h>
@@ -59,29 +58,28 @@ static char rcsid[] = "$NetBSD: mount_lfs.c,v 1.2 1995/03/18 14:57:32 cgd Exp $"
 #include "mntopts.h"
 #include "pathnames.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	MOPT_UPDATE,
 	{ NULL }
 };
 
-void	usage __P((void));
-void	invoke_cleaner __P((char *));
+void	usage(void);
+void	invoke_cleaner(char *);
 
 int short_rds, cleaner_debug;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct ufs_args args;
 	int ch, mntflags, noclean;
-	char *fs_name, *options;
+	char fs_name[MAXPATHLEN], *options;
+	char *errcause;
 
 	options = NULL;
 	mntflags = noclean = 0;
-	while ((ch = getopt(argc, argv, "dno:s")) != EOF)
+	while ((ch = getopt(argc, argv, "dno:s")) != -1)
 		switch (ch) {
 		case 'd':
 			cleaner_debug = 1;
@@ -106,17 +104,34 @@ main(argc, argv)
 		usage();
 
         args.fspec = argv[0];	/* the name of the device file */
-	fs_name = argv[1];	/* the mount point */
+	if (realpath(argv[1], fs_name) == NULL)		/* the mount point */
+		err(1, "realpath %s", argv[1]);
 
 #define DEFAULT_ROOTUID	-2
-	args.export.ex_root = DEFAULT_ROOTUID;
+	args.export_info.ex_root = DEFAULT_ROOTUID;
 	if (mntflags & MNT_RDONLY)
-		args.export.ex_flags = MNT_EXRDONLY;
+		args.export_info.ex_flags = MNT_EXRDONLY;
 	else
-		args.export.ex_flags = 0;
+		args.export_info.ex_flags = 0;
 
-	if (mount(MOUNT_LFS, fs_name, mntflags, &args))
-		err(1, NULL);
+	if (mount(MOUNT_LFS, fs_name, mntflags, &args) == -1) {
+		switch (errno) {
+		case EMFILE:
+			errcause = "mount table full";
+			break;
+		case EINVAL:
+			if (mntflags & MNT_UPDATE)
+				errcause =
+			    "specified device does not match mounted device";
+			else
+				errcause = "incorrect super block";
+			break;
+		default:
+			errcause = strerror(errno);
+			break;
+		}
+		errx(1, "%s on %s: %s", args.fspec, fs_name, errcause);
+	}
 
 	if (!noclean)
 		invoke_cleaner(fs_name);
@@ -126,8 +141,7 @@ main(argc, argv)
 }
 
 void
-invoke_cleaner(name)
-	char *name;
+invoke_cleaner(char *name)
 {
 	char *args[6], **ap = args;
 
@@ -145,7 +159,7 @@ invoke_cleaner(name)
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
 		"usage: mount_lfs [-dns] [-o options] special node\n");

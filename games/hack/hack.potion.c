@@ -1,21 +1,83 @@
+/*	$OpenBSD: hack.potion.c,v 1.3 2003/03/16 21:22:36 camield Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hack.potion.c,v 1.3 1995/03/23 08:31:18 cgd Exp $";
+static const char rcsid[] = "$OpenBSD$";
 #endif /* not lint */
 
 #include "hack.h"
-extern int float_down();
 extern char *nomovemsg;
 extern struct monst youmonst;
 extern struct monst *makemon();
 
-dodrink() {
-	register struct obj *otmp,*objs;
-	register struct monst *mtmp;
-	register int unkn = 0, nothing = 0;
+static void ghost_from_bottle(void);
+
+int
+dodrink()
+{
+	struct obj *otmp,*objs;
+	struct monst *mtmp;
+	int unkn = 0, nothing = 0;
 
 	otmp = getobj("!", "drink");
 	if(!otmp) return(0);
@@ -193,26 +255,24 @@ use_it:
 	return(1);
 }
 
+void
 pluslvl()
 {
-	register num;
+	int num;
 
 	pline("You feel more experienced.");
 	num = rnd(10);
 	u.uhpmax += num;
 	u.uhp += num;
 	if(u.ulevel < 14) {
-		extern long newuexp();
-
 		u.uexp = newuexp()+1;
 		pline("Welcome to experience level %u.", ++u.ulevel);
 	}
 	flags.botl = 1;
 }
 
-strange_feeling(obj,txt)
-register struct obj *obj;
-register char *txt;
+void
+strange_feeling(struct obj *obj, char *txt)
 {
 	if(flags.beginner)
 	    pline("You have a strange feeling for a moment, then it passes.");
@@ -227,12 +287,10 @@ char *bottlenames[] = {
 	"bottle", "phial", "flagon", "carafe", "flask", "jar", "vial"
 };
 
-potionhit(mon, obj)
-register struct monst *mon;
-register struct obj *obj;
+void
+potionhit(struct monst *mon, struct obj *obj)
 {
-	extern char *xname();
-	register char *botlnam = bottlenames[rn2(SIZE(bottlenames))];
+	char *botlnam = bottlenames[rn2(SIZE(bottlenames))];
 	boolean uclose, isyou = (mon == &youmonst);
 
 	if(isyou) {
@@ -299,8 +357,8 @@ register struct obj *obj;
 	obfree(obj, Null(obj));
 }
 
-potionbreathe(obj)
-register struct obj *obj;
+void
+potionbreathe(struct obj *obj)
 {
 	switch(obj->otyp) {
 	case POT_RESTORE_STRENGTH:
@@ -358,8 +416,10 @@ register struct obj *obj;
  * -- If the flask is small, can one dip a large object? Does it magically
  * --   become a jug? Etc.
  */
-dodip(){
-	register struct obj *potion, *obj;
+int
+dodip()
+{
+	struct obj *potion, *obj;
 
 	if(!(obj = getobj("#", "dip")))
 		return(0);
@@ -376,9 +436,11 @@ dodip(){
 	return(1);
 }
 
-ghost_from_bottle(){
+static void
+ghost_from_bottle()
+{
 	extern struct permonst pm_ghost;
-	register struct monst *mtmp;
+	struct monst *mtmp;
 
 	if(!(mtmp = makemon(PM_GHOST,u.ux,u.uy))){
 		pline("This bottle turns out to be empty.");

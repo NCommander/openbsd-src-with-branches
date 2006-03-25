@@ -1,3 +1,4 @@
+/* *	$OpenBSD: pathnames.h,v 1.3 1999/08/27 08:43:22 fgsch Exp $*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,8 +28,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)pathnames.h	5.2 (Berkeley) 4/16/91
- *	$Id: pathnames.h,v 1.3 1994/01/03 19:14:20 jtc Exp $
  */
 
-#define _NAME_RANTMP	"ranlib.XXXXXX"
-#define _PATH_RANTMP	"/tmp/ranlib.XXXXXX"
+#define _NAME_RANTMP	"ranlib.XXXXXXXXXX"
+#define _PATH_RANTMP	"/tmp/ranlib.XXXXXXXXXX"

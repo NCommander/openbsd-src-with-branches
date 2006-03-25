@@ -1,3 +1,4 @@
+|	$OpenBSD: copyright.s,v 1.2 1994/10/26 07:48:57 cgd Exp $
 |	$NetBSD: copyright.s,v 1.2 1994/10/26 07:48:57 cgd Exp $
 
 .text

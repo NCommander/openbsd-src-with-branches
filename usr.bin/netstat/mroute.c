@@ -1,4 +1,5 @@
-/*	$NetBSD: mroute.c,v 1.9 1995/10/03 21:42:42 thorpej Exp $	*/
+/*	$OpenBSD: mroute.c,v 1.14 2005/03/30 07:50:11 deraadt Exp $	*/
+/*	$NetBSD: mroute.c,v 1.10 1996/05/11 13:51:27 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1989 Stephen Deering
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
  */
 
 /*
- * Print DVMRP multicast routing structures and statistics.
+ * Print multicast routing structures and statistics.
  *
  * MROUTING 1.0
  */
@@ -58,13 +55,15 @@
 #include <netinet/ip_mroute.h>
 #undef _KERNEL
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "netstat.h"
 
-char *
-pktscale(n)
-	u_long n;
+static void print_bw_meter(struct bw_meter *bw_meter, int *banner_printed);
+
+static char *
+pktscale(u_long n)
 {
 	static char buf[8];
 	char t;
@@ -79,22 +78,20 @@ pktscale(n)
 		n /= 1048576;
 	}
 
-	sprintf(buf, "%u%c", n, t);
+	snprintf(buf, sizeof buf, "%lu%c", n, t);
 	return (buf);
 }
 
 void
-mroutepr(mrpaddr, mfchashtbladdr, mfchashaddr, vifaddr)
-	u_long mrpaddr, mfchashtbladdr, mfchashaddr, vifaddr;
+mroutepr(u_long mrpaddr, u_long mfchashtbladdr, u_long mfchashaddr, u_long vifaddr)
 {
 	u_int mrtproto;
 	LIST_HEAD(, mfc) *mfchashtbl;
 	u_long mfchash;
 	struct vif viftable[MAXVIFS];
 	struct mfc *mfcp, mfc;
-	register struct vif *v;
-	register vifi_t vifi;
-	struct in_addr *grp;
+	struct vif *v;
+	vifi_t vifi;
 	int i;
 	int banner_printed;
 	int saved_nflag;
@@ -106,7 +103,7 @@ mroutepr(mrpaddr, mfchashtbladdr, mfchashaddr, vifaddr)
 		return;
 	}
 
-	kread(mrpaddr, (char *)&mrtproto, sizeof(mrtproto));
+	kread(mrpaddr, &mrtproto, sizeof(mrtproto));
 	switch (mrtproto) {
 	case 0:
 		printf("no multicast routing compiled into this system\n");
@@ -136,7 +133,7 @@ mroutepr(mrpaddr, mfchashtbladdr, mfchashaddr, vifaddr)
 	saved_nflag = nflag;
 	nflag = 1;
 
-	kread(vifaddr, (char *)&viftable, sizeof(viftable));
+	kread(vifaddr, &viftable, sizeof(viftable));
 	banner_printed = 0;
 	numvifs = 0;
 
@@ -155,43 +152,66 @@ mroutepr(mrpaddr, mfchashtbladdr, mfchashaddr, vifaddr)
 		printf(" %3u     %3u  %5u  %-15.15s",
 		    vifi, v->v_threshold, v->v_rate_limit,
 		    routename(v->v_lcl_addr.s_addr));
-		printf("  %-15.15s  %6u  %7u\n", (v->v_flags & VIFF_TUNNEL) ?
+		printf("  %-15.15s  %6lu  %7lu\n", (v->v_flags & VIFF_TUNNEL) ?
 		    routename(v->v_rmt_addr.s_addr) : "",
 		    v->v_pkt_in, v->v_pkt_out);
 	}
 	if (!banner_printed)
 		printf("\nVirtual Interface Table is empty\n");
 
-	kread(mfchashtbladdr, (char *)&mfchashtbl, sizeof(mfchashtbl));
-	kread(mfchashaddr, (char *)&mfchash, sizeof(mfchash));
+	kread(mfchashtbladdr, &mfchashtbl, sizeof(mfchashtbl));
+	kread(mfchashaddr, &mfchash, sizeof(mfchash));
 	banner_printed = 0;
 	nmfc = 0;
 
-	for (i = 0; i <= mfchash; ++i) {
-		kread((u_long)&mfchashtbl[i], (char *)&mfcp, sizeof(mfcp));
+	if (mfchashtbl != 0)
+		for (i = 0; i <= mfchash; ++i) {
+			kread((u_long)&mfchashtbl[i], &mfcp, sizeof(mfcp));
 
-		for (; mfcp != 0; mfcp = mfc.mfc_hash.le_next) {
-			if (!banner_printed) {
-				printf("\nMulticast Forwarding Cache\n %s%s",
-				    "Hash  Origin           Mcastgroup       ",
-				    "Traffic  In-Vif  Out-Vifs/Forw-ttl\n");
-				banner_printed = 1;
+			for (; mfcp != 0; mfcp = LIST_NEXT(&mfc, mfc_hash)) {
+				if (!banner_printed) {
+					printf("\nMulticast Forwarding Cache\n %s%s",
+					    "Hash  Origin           Mcastgroup       ",
+					    "Traffic  In-Vif  Out-Vifs/Forw-ttl\n");
+					banner_printed = 1;
+				}
+
+				kread((u_long)mfcp, &mfc, sizeof(mfc));
+				printf("  %3u  %-15.15s",
+				    i, routename(mfc.mfc_origin.s_addr));
+				printf("  %-15.15s  %7s     %3u ",
+				    routename(mfc.mfc_mcastgrp.s_addr),
+				    pktscale(mfc.mfc_pkt_cnt), mfc.mfc_parent);
+				for (vifi = 0; vifi <= numvifs; ++vifi)
+					if (mfc.mfc_ttls[vifi])
+						printf(" %u/%u", vifi,
+						    mfc.mfc_ttls[vifi]);
+
+				printf("\n");
+
+				/* Print the bw meter information */
+				{
+					struct bw_meter bw_meter, *bwm;
+					int banner_printed2 = 0;
+
+					bwm = mfc.mfc_bw_meter;
+					while (bwm) {
+						kread((u_long)bwm,
+						    &bw_meter,
+						    sizeof bw_meter);
+						print_bw_meter(&bw_meter,
+						    &banner_printed2);
+						bwm = bw_meter.bm_mfc_next;
+					}
+#if 0	/* Don't ever print it? */
+					if (! banner_printed2)
+						printf("\n  No Bandwidth Meters\n");
+#endif
+				}
+
+				nmfc++;
 			}
-
-			kread((u_long)mfcp, (char *)&mfc, sizeof(mfc));
-			printf("  %3u  %-15.15s",
-			    i, routename(mfc.mfc_origin.s_addr));
-			printf("  %-15.15s  %7s     %3u ",
-			    routename(mfc.mfc_mcastgrp.s_addr),
-			    pktscale(mfc.mfc_pkt_cnt), mfc.mfc_parent);
-			for (vifi = 0; vifi <= numvifs; ++vifi)
-				if (mfc.mfc_ttls[vifi])
-					printf(" %u/%u", vifi, mfc.mfc_ttls[vifi]);
-
-			printf("\n");
-			nmfc++;
 		}
-	}
 	if (!banner_printed)
 		printf("\nMulticast Forwarding Cache is empty\n");
 	else
@@ -201,10 +221,85 @@ mroutepr(mrpaddr, mfchashtbladdr, mfchashaddr, vifaddr)
 	nflag = saved_nflag;
 }
 
+static void
+print_bw_meter(struct bw_meter *bw_meter, int *banner_printed)
+{
+	char s0[256], s1[256], s2[256], s3[256];
+	struct timeval now, end, delta;
+
+	gettimeofday(&now, NULL);
+
+	if (! *banner_printed) {
+		printf(" Bandwidth Meters\n");
+		printf("  %-30s", "Measured(Start|Packets|Bytes)");
+		printf(" %s", "Type");
+		printf("  %-30s", "Thresh(Interval|Packets|Bytes)");
+		printf(" Remain");
+		printf("\n");
+		*banner_printed = 1;
+	}
+
+	/* The measured values */
+	if (bw_meter->bm_flags & BW_METER_UNIT_PACKETS)
+		snprintf(s1, sizeof s1, "%llu",
+			 bw_meter->bm_measured.b_packets);
+	else
+		snprintf(s1, sizeof s1, "?");
+	if (bw_meter->bm_flags & BW_METER_UNIT_BYTES)
+		snprintf(s2, sizeof s2, "%llu", bw_meter->bm_measured.b_bytes);
+	else
+		snprintf(s2, sizeof s2, "?");
+	snprintf(s0, sizeof s0, "%lu.%lu|%s|%s",
+		 bw_meter->bm_start_time.tv_sec,
+		 bw_meter->bm_start_time.tv_usec,
+		 s1, s2);
+	printf("  %-30s", s0);
+
+	/* The type of entry */
+	snprintf(s0, sizeof s0, "%s", "?");
+	if (bw_meter->bm_flags & BW_METER_GEQ)
+		snprintf(s0, sizeof s0, "%s", ">=");
+	else if (bw_meter->bm_flags & BW_METER_LEQ)
+		snprintf(s0, sizeof s0, "%s", "<=");
+	printf("  %-3s", s0);
+
+	/* The threshold values */
+	if (bw_meter->bm_flags & BW_METER_UNIT_PACKETS)
+		snprintf(s1, sizeof s1, "%llu",
+			 bw_meter->bm_threshold.b_packets);
+	else
+		snprintf(s1, sizeof s1, "?");
+	if (bw_meter->bm_flags & BW_METER_UNIT_BYTES)
+		snprintf(s2, sizeof s2, "%llu",
+			 bw_meter->bm_threshold.b_bytes);
+	else
+		snprintf(s2, sizeof s2, "?");
+	snprintf(s0, sizeof s0, "%lu.%lu|%s|%s",
+		 bw_meter->bm_threshold.b_time.tv_sec,
+		 bw_meter->bm_threshold.b_time.tv_usec,
+		 s1, s2);
+	printf("  %-30s", s0);
+
+	/* Remaining time */
+	timeradd(&bw_meter->bm_start_time,
+		 &bw_meter->bm_threshold.b_time, &end);
+	if (timercmp(&now, &end, <=)) {
+		timersub(&end, &now, &delta);
+		snprintf(s3, sizeof s3, "%lu.%lu",
+			 delta.tv_sec, delta.tv_usec);
+	} else {
+		/* Negative time */
+		timersub(&now, &end, &delta);
+		snprintf(s3, sizeof s3, "-%lu.%lu",
+			 delta.tv_sec, delta.tv_usec);
+	}
+	printf(" %s", s3);
+
+	printf("\n");
+}
 
 void
-mrt_stats(mrpaddr, mstaddr)
-	u_long mrpaddr, mstaddr;
+mrt_stats(u_long mrpaddr, u_long mstaddr)
 {
 	u_int mrtproto;
 	struct mrtstat mrtstat;
@@ -214,7 +309,7 @@ mrt_stats(mrpaddr, mstaddr)
 		return;
 	}
 
-	kread(mrpaddr, (char *)&mrtproto, sizeof(mrtproto));
+	kread(mrpaddr, &mrtproto, sizeof(mrtproto));
 	switch (mrtproto) {
 	case 0:
 		printf("no multicast routing compiled into this system\n");
@@ -233,28 +328,28 @@ mrt_stats(mrpaddr, mstaddr)
 		return;
 	}
 
-	kread(mstaddr, (char *)&mrtstat, sizeof(mrtstat));
+	kread(mstaddr, &mrtstat, sizeof(mrtstat));
 	printf("multicast routing:\n");
-	printf("\t%d datagram%s with no route for origin\n",
+	printf("\t%lu datagram%s with no route for origin\n",
 	    mrtstat.mrts_no_route, plural(mrtstat.mrts_no_route));
-	printf("\t%d upcall%s made to mrouted\n",
+	printf("\t%lu upcall%s made to mrouted\n",
 	    mrtstat.mrts_upcalls, plural(mrtstat.mrts_upcalls));
-	printf("\t%d datagram%s with malformed tunnel options\n",
+	printf("\t%lu datagram%s with malformed tunnel options\n",
 	    mrtstat.mrts_bad_tunnel, plural(mrtstat.mrts_bad_tunnel));
-	printf("\t%d datagram%s with no room for tunnel options\n",
+	printf("\t%lu datagram%s with no room for tunnel options\n",
 	    mrtstat.mrts_cant_tunnel, plural(mrtstat.mrts_cant_tunnel));
-	printf("\t%d datagram%s arrived on wrong interface\n",
+	printf("\t%lu datagram%s arrived on wrong interface\n",
 	    mrtstat.mrts_wrong_if, plural(mrtstat.mrts_wrong_if));
-	printf("\t%d datagram%s dropped due to upcall Q overflow\n",
+	printf("\t%lu datagram%s dropped due to upcall Q overflow\n",
 	    mrtstat.mrts_upq_ovflw, plural(mrtstat.mrts_upq_ovflw));
-	printf("\t%d datagram%s dropped due to upcall socket overflow\n",
+	printf("\t%lu datagram%s dropped due to upcall socket overflow\n",
 	    mrtstat.mrts_upq_sockfull, plural(mrtstat.mrts_upq_sockfull));
-	printf("\t%d datagram%s cleaned up by the cache\n",
+	printf("\t%lu datagram%s cleaned up by the cache\n",
 	    mrtstat.mrts_cache_cleanups, plural(mrtstat.mrts_cache_cleanups));
-	printf("\t%d datagram%s dropped selectively by ratelimiter\n",
+	printf("\t%lu datagram%s dropped selectively by ratelimiter\n",
 	    mrtstat.mrts_drop_sel, plural(mrtstat.mrts_drop_sel));
-	printf("\t%d datagram%s dropped - bucket Q overflow\n",
+	printf("\t%lu datagram%s dropped - bucket Q overflow\n",
 	    mrtstat.mrts_q_overflow, plural(mrtstat.mrts_q_overflow));
-	printf("\t%d datagram%s dropped - larger than bkt size\n",
+	printf("\t%lu datagram%s dropped - larger than bkt size\n",
 	    mrtstat.mrts_pkt2large, plural(mrtstat.mrts_pkt2large));
 }

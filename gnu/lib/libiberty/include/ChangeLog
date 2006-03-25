@@ -71,6 +71,10 @@
 	ATTRIBUTE_NULL_PRINTF_5): New.
 	(ATTRIBUTE_PRINTF): Add ATTRIBUTE_NONNULL.
 
+2003-03-17  Jan Hubicka  <jh@suse.cz>
+
+	* hashtab.h (htab_traverse_noresize): Declare.
+
 2003-02-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h: Document return value of physmem routines.
@@ -78,6 +82,17 @@
 2003-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (physmem_total, physmem_available): Prototype.
+
+2003-02-20  Daniel Jacobowitz  <drow@mvista.com>
+
+	* libiberty.h (lrealpath): Add declaration.
+
+2003-01-26  Daniel Jacobowitz  <drow@mvista.com>
+
+	* hashtab.h (htab_alloc_with_arg, htab_free_with_arg): Add new types.
+	(struct htab): Add alloc_arg, alloc_with_arg_f, free_with_arg_f.
+	(htab_create_alloc_ex): New prototype.
+	(htab_set_functions_ex): New prototype.
 
 2002-11-23  Simon Burge  <simonb@wasabisystems.com>
 
@@ -111,6 +126,14 @@
 
 	* libiberty.h (asprintf, vasprintf): Don't declare them if the
 	corresponding HAVE_DECL_ macro is 1.
+
+2002-07-17  Geoffrey Keating  <geoffk@redhat.com>
+
+	* splay-tree.h (GTY): Define if undefined.
+	(splay_tree_allocate_fn): Return PTR for compatibility, not void *.
+	(struct splay_tree_node_s): Support gengtype.
+	(struct splay_tree_s): Likewise.  Make allocate_data a PTR,
+	not a void *.
 
 2002-06-25  Alan Modra  <amodra@bigpond.net.au>
 

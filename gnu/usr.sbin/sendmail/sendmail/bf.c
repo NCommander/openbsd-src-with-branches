@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2002, 2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -18,7 +18,7 @@
 */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: bf.c,v 8.45 2001/09/04 22:43:02 ca Exp $")
+SM_RCSID("@(#)$Sendmail: bf.c,v 8.61 2004/08/03 23:59:02 ca Exp $")
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,6 +38,8 @@ static ssize_t	sm_bfread __P((SM_FILE_T *, char *, size_t));
 static ssize_t	sm_bfwrite __P((SM_FILE_T *, const char *, size_t));
 static off_t	sm_bfseek __P((SM_FILE_T *, off_t, int));
 static int	sm_bfclose __P((SM_FILE_T *));
+static int	sm_bfcommit __P((SM_FILE_T *));
+static int	sm_bftruncate __P((SM_FILE_T *));
 
 static int	sm_bfopen __P((SM_FILE_T *, const void *, int, const void *));
 static int	sm_bfsetinfo __P((SM_FILE_T *, int , void *));
@@ -61,7 +63,6 @@ struct bf
 	MODE_T	bf_filemode;	/* Mode of buffered file, if ever committed */
 	off_t	bf_offset;	/* Currect file offset */
 	int	bf_size;	/* Total current size of file */
-	int	bf_refcount;	/* Reference count */
 };
 
 #ifdef BF_STANDALONE
@@ -84,10 +85,8 @@ struct bf_info
 **
 **	Parameters:
 **		fp -- file pointer being filled-in for file being open'd
-**		filename -- name of the file being open'd
+**		info -- information about file being opened
 **		flags -- ignored
-**		fmode -- file mode (stored for use later)
-**		sflags -- "safeopen" flags (stored for use later)
 **		rpool -- ignored (currently)
 **
 **	Returns:
@@ -156,7 +155,6 @@ sm_bfopen(fp, info, flags, rpool)
 	/* Nearly home free, just set all the parameters now */
 	bfp->bf_committed = false;
 	bfp->bf_ondisk = false;
-	bfp->bf_refcount = 1;
 	bfp->bf_flags = sflags;
 	bfp->bf_bufsize = bsize;
 	bfp->bf_buffilled = 0;
@@ -173,7 +171,7 @@ sm_bfopen(fp, info, flags, rpool)
 	(void) sm_strlcpy(bfp->bf_filename, filename, l);
 	bfp->bf_filemode = fmode;
 	bfp->bf_offset = 0;
-	bfp->bf_size = bsize;
+	bfp->bf_size = 0;
 	bfp->bf_disk_fd = -1;
 	fp->f_cookie = bfp;
 
@@ -206,12 +204,24 @@ sm_bfopen(fp, info, flags, rpool)
 **		any value of errno specified by sm_io_setinfo()
 */
 
+#ifdef __STDC__
+/*
+**  XXX This is a temporary hack since MODE_T on HP-UX 10.x is short.
+**	If we use K&R here, the compiler will complain about
+**	Inconsistent parameter list declaration
+**	due to the change from short to int.
+*/
+
+SM_FILE_T *
+bfopen(char *filename, MODE_T fmode, size_t bsize, long flags)
+#else /* __STDC__ */
 SM_FILE_T *
 bfopen(filename, fmode, bsize, flags)
 	char *filename;
 	MODE_T fmode;
 	size_t bsize;
 	long flags;
+#endif /* __STDC__ */
 {
 	MODE_T omask;
 	SM_FILE_T SM_IO_SET_TYPE(vector, BF_FILE_TYPE, sm_bfopen, sm_bfclose,
@@ -262,6 +272,8 @@ sm_bfgetinfo(fp, what, valp)
 	{
 	  case SM_IO_WHAT_FD:
 		return bfp->bf_disk_fd;
+	  case SM_IO_WHAT_SIZE:
+		return bfp->bf_size;
 	  default:
 		return -1;
 	}
@@ -532,7 +544,7 @@ sm_bfwrite(fp, buf, nbytes)
 			/* Clear umask as bf_filemode are the true perms */
 			omask = umask(0);
 			retval = OPEN(bfp->bf_filename,
-				      O_RDWR | O_CREAT | O_TRUNC,
+				      O_RDWR | O_CREAT | O_TRUNC | QF_O_EXTRA,
 				      bfp->bf_filemode, bfp->bf_flags);
 			(void) umask(omask);
 
@@ -548,7 +560,11 @@ sm_bfwrite(fp, buf, nbytes)
 				**  write().
 				*/
 
-				if (!((errno == ENOSPC) || (errno == EDQUOT)))
+				if (!(errno == ENOSPC
+#ifdef EDQUOT
+				      || errno == EDQUOT
+#endif /* EDQUOT */
+				     ))
 					errno = EIO;
 
 				return -1;
@@ -611,8 +627,8 @@ finished:
 **		0 on success, -1 on error
 **
 **	Side Effects:
-**		rewinds the SM_FILE_T * and puts it into read mode. Normally one
-**		would bfopen() a file, write to it, then bfrewind() and
+**		rewinds the SM_FILE_T * and puts it into read mode. Normally
+**		one would bfopen() a file, write to it, then bfrewind() and
 **		fread(). If fp is not a buffered file, this is equivalent to
 **		rewind().
 **
@@ -667,6 +683,7 @@ sm_bfcommit(fp)
 	/* Do we need to open a file? */
 	if (!bfp->bf_ondisk)
 	{
+		int save_errno;
 		MODE_T omask;
 		struct stat st;
 
@@ -686,14 +703,17 @@ sm_bfcommit(fp)
 
 		/* Clear umask as bf_filemode are the true perms */
 		omask = umask(0);
-		retval = OPEN(bfp->bf_filename, O_RDWR | O_CREAT | O_TRUNC,
+		retval = OPEN(bfp->bf_filename,
+			      O_RDWR | O_CREAT | O_EXCL | QF_O_EXTRA,
 			      bfp->bf_filemode, bfp->bf_flags);
+		save_errno = errno;
 		(void) umask(omask);
 
 		/* Couldn't create file: failure */
 		if (retval < 0)
 		{
 			/* errno is set implicitly by open() */
+			errno = save_errno;
 			return -1;
 		}
 
@@ -784,8 +804,7 @@ sm_bftruncate(fp)
 		return ftruncate(bfp->bf_disk_fd, 0);
 #endif /* NOFTRUNCATE */
 	}
-	else
-		return 0;
+	return 0;
 }
 
 /*

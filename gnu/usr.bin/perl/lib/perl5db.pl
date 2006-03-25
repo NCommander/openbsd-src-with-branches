@@ -687,6 +687,21 @@ sub eval {
 # Note that no subroutine call is possible until &DB::sub is defined
 # (for subroutines defined outside of the package DB). In fact the same is
 # true if $deep is not defined.
+#
+# $Log: perl5db.pl,v $
+# Revision 1.9  2004/08/09 18:09:28  millert
+# merge 5.8.5 into HEAD
+# remove now-unused files
+# crank libperl shared library major number
+# update Makefile.bsd-wrapper
+# tweak openbsd hints file for arm and m68k
+#
+# Revision 1.8  2004/04/07 21:33:04  millert
+# merge local changes into perl-5.8.3
+#
+# Revision 1.7  2003/12/03 03:02:36  millert
+# Resolve conflicts for perl 5.8.2, remove old files, and add OpenBSD-specific scaffolding
+#
 
 # Enhanced by ilya@math.ohio-state.edu (Ilya Zakharevich)
 
@@ -2974,7 +2989,7 @@ Same as for C</>, except the loop runs backwards.
 =head4 C<$rc> - Recall command
 
 Manages the commands in C<@hist> (which is created if C<Term::ReadLine> reports
-that the terminal supports history). It find the the command required, puts it
+that the terminal supports history). It find the command required, puts it
 into C<$cmd>, and redoes the loop to execute it.
 
 =cut

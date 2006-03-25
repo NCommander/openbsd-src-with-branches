@@ -31,7 +31,7 @@
 .\"
 .\" $KTH: krb5.conf.5,v 1.35.2.2 2004/03/09 19:52:07 lha Exp $
 .\"
-.Dd March  9, 2004
+.Dd March 9, 2004
 .Dt KRB5.CONF 5
 .Os HEIMDAL
 .Sh NAME
@@ -168,7 +168,7 @@ A list of default encryption types to use.
 A list of default encryption types to use when requesting a DES credential.
 .It Li default_keytab_name = Va keytab
 The keytab to use if no other is specified, default is
-.Dq FILE:/etc/krb5.keytab .
+.Dq FILE:/etc/kerberosV/krb5.keytab .
 .It Li dns_lookup_kdc = Va boolean
 Use DNS SRV records to lookup KDC services location.
 .It Li dns_lookup_realm = Va boolean
@@ -203,8 +203,8 @@ Default is seven days.
 A HTTP-proxy to use when talking to the KDC via HTTP.
 .It Li dns_proxy = Va proxy-spec
 Enable using DNS via HTTP.
-.It Li extra_addresses = Va address ...
-A list of addresses to get tickets for along with all local addresses.
+.It Li extra_addresses = Va address...
+A list of addresses to get tickets for, along with all local addresses.
 .It Li time_format = Va string
 How to print time strings in logs, this string is passed to
 .Xr strftime 3 .
@@ -365,18 +365,18 @@ Turn on Kerberos 4 support.
 To what realm v4 requests should be mapped.
 .It enable-524 = Va BOOL
 Should the Kerberos 524 converting facility be turned on.
-Default is same as
+Default is the same as
 .Va enable-kerberos4 .
 .It enable-http = Va BOOL
 Should the kdc answer kdc-requests over http.
 .It enable-kaserver = Va BOOL
 If this kdc should emulate the AFS kaserver.
 .It check-ticket-addresses = Va BOOL
-verify the addresses in the tickets used in tgs requests.
+Verify the addresses in the tickets used in tgs requests.
 .\" XXX
 .It allow-null-ticket-addresses = Va BOOL
-Allow addresses-less tickets.
-.\" XXX
+Allow address-less tickets.
+.\" XXX 
 .It allow-anonymous = Va BOOL
 If the kdc is allowed to hand out anonymous tickets.
 .It encode_as_rep_as_tgs_rep = Va BOOL
@@ -395,7 +395,7 @@ List of principals to use AFS 2b tokens for.
 .It require-preauth = Va BOOL
 If pre-authentication is required to talk to the kadmin server.
 .It default_keys = Va keytypes...
-for each entry in
+For each entry in
 .Va default_keys
 try to parse it as a sequence of
 .Va etype:salttype:salt
@@ -428,8 +428,8 @@ and is only left for backwards compatibility.
 .Ev KRB5_CONFIG
 points to the configuration file to read.
 .Sh FILES
-.Bl -tag -width "/etc/krb5.conf"
-.It Pa /etc/krb5.conf
+.Bl -tag -width "/etc/kerberosV/krb5.conf"
+.It Pa /etc/kerberosV/krb5.conf
 configuration file for Kerberos 5.
 .El
 .Sh EXAMPLES

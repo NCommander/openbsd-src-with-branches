@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2005 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: mci.c,v 8.196 2001/09/04 22:43:04 ca Exp $")
+SM_RCSID("@(#)$Sendmail: mci.c,v 8.214 2005/02/04 22:01:45 ca Exp $")
 
 #if NETINET || NETINET6
 # include <arpa/inet.h>
@@ -61,7 +61,7 @@ static int	mci_read_persistent __P((SM_FILE_T *, MCI *));
 
 static MCI	**MciCache;		/* the open connection cache */
 
-/*
+/*
 **  MCI_CACHE -- enter a connection structure into the open connection cache
 **
 **	This may cause something else to be flushed.
@@ -114,7 +114,7 @@ mci_cache(mci)
 	*mcislot = mci;
 	mci->mci_flags |= MCIF_CACHED;
 }
-/*
+/*
 **  MCI_SCAN -- scan the cache, flush junk, and return best slot
 **
 **	Parameters:
@@ -157,7 +157,7 @@ mci_scan(savemci)
 			bestmci = &MciCache[i];
 			continue;
 		}
-		if ((mci->mci_lastuse + MciCacheTimeout < now ||
+		if ((mci->mci_lastuse + MciCacheTimeout <= now ||
 		     (mci->mci_mailer != NULL &&
 		      mci->mci_mailer->m_maxdeliveries > 0 &&
 		      mci->mci_deliveries + 1 >= mci->mci_mailer->m_maxdeliveries))&&
@@ -177,7 +177,7 @@ mci_scan(savemci)
 	}
 	return bestmci;
 }
-/*
+/*
 **  MCI_UNCACHE -- remove a connection from a slot.
 **
 **	May close a connection.
@@ -262,7 +262,7 @@ mci_uncache(mcislot, doquit)
 		mci->mci_rpool = NULL;
 	}
 }
-/*
+/*
 **  MCI_FLUSH -- flush the entire cache
 **
 **	Parameters:
@@ -290,7 +290,7 @@ mci_flush(doquit, allbut)
 			mci_uncache(&MciCache[i], doquit);
 	}
 }
-/*
+/*
 **  MCI_GET -- get information about a particular host
 **
 **	Parameters:
@@ -388,7 +388,7 @@ mci_get(host, m)
 		time_t now = curtime();
 
 		/* if this info is stale, ignore it */
-		if (now > mci->mci_lastuse + MciInfoTimeout)
+		if (mci->mci_lastuse + MciInfoTimeout <= now)
 		{
 			mci->mci_lastuse = now;
 			mci->mci_errno = 0;
@@ -398,7 +398,58 @@ mci_get(host, m)
 
 	return mci;
 }
-/*
+
+/*
+**  MCI_CLOSE -- (forcefully) close files used for a connection.
+**	Note: this is a last resort, usually smtpquit() or endmailer()
+**		should be used to close a connection.
+**
+**	Parameters:
+**		mci -- the connection to close.
+**		where -- where has this been called?
+**
+**	Returns:
+**		none.
+*/
+
+void
+mci_close(mci, where)
+	MCI *mci;
+	char *where;
+{
+	bool dumped;
+
+	if (mci == NULL)
+		return;
+	dumped = false;
+	if (mci->mci_out != NULL)
+	{
+		if (tTd(56, 1))
+		{
+			sm_dprintf("mci_close: mci_out!=NULL, where=%s\n",
+				where);
+			mci_dump(sm_debug_file(), mci, false);
+			dumped = true;
+		}
+		(void) sm_io_close(mci->mci_out, SM_TIME_DEFAULT);
+		mci->mci_out = NULL;
+	}
+	if (mci->mci_in != NULL)
+	{
+		if (tTd(56, 1))
+		{
+			sm_dprintf("mci_close: mci_in!=NULL, where=%s\n",
+				where);
+			if (!dumped)
+				mci_dump(sm_debug_file(), mci, false);
+		}
+		(void) sm_io_close(mci->mci_in, SM_TIME_DEFAULT);
+		mci->mci_in = NULL;
+	}
+	mci->mci_state = MCIS_CLOSED;
+}
+
+/*
 **  MCI_NEW -- allocate new MCI structure
 **
 **	Parameters:
@@ -423,7 +474,7 @@ mci_new(rpool)
 	mci->mci_macro.mac_rpool = mci->mci_rpool;
 	return mci;
 }
-/*
+/*
 **  MCI_MATCH -- check connection cache for a particular host
 **
 **	Parameters:
@@ -451,7 +502,7 @@ mci_match(host, m)
 	mci = &s->s_mci;
 	return mci->mci_state == MCIS_OPEN;
 }
-/*
+/*
 **  MCI_SETSTAT -- set status codes in MCI structure.
 **
 **	Parameters:
@@ -483,10 +534,11 @@ mci_setstat(mci, xstat, dstat, rstat)
 	if (rstat != NULL)
 		mci->mci_rstatus = sm_strdup_x(rstat);
 }
-/*
+/*
 **  MCI_DUMP -- dump the contents of an MCI structure.
 **
 **	Parameters:
+**		fp -- output file pointer
 **		mci -- the MCI structure to dump.
 **
 **	Returns:
@@ -510,7 +562,6 @@ static struct mcifbits	MciFlags[] =
 	{ MCIF_SIZE,		"SIZE"		},
 	{ MCIF_8BITMIME,	"8BITMIME"	},
 	{ MCIF_7BIT,		"7BIT"		},
-	{ MCIF_MULTSTAT,	"MULTSTAT"	},
 	{ MCIF_INHEADER,	"INHEADER"	},
 	{ MCIF_CVT8TO7,		"CVT8TO7"	},
 	{ MCIF_DSN,		"DSN"		},
@@ -530,7 +581,8 @@ static struct mcifbits	MciFlags[] =
 };
 
 void
-mci_dump(mci, logit)
+mci_dump(fp, mci, logit)
+	SM_FILE_T *fp;
 	register MCI *mci;
 	bool logit;
 {
@@ -549,11 +601,21 @@ mci_dump(mci, logit)
 	}
 	(void) sm_snprintf(p, SPACELEFT(buf, p), "flags=%lx", mci->mci_flags);
 	p += strlen(p);
+
+	/*
+	**  The following check is just for paranoia.  It protects the
+	**  assignment in the if() clause. If there's not some minimum
+	**  amount of space we can stop right now. The check will not
+	**  trigger as long as sizeof(buf)=4000.
+	*/
+
+	if (p >= buf + sizeof(buf) - 4)
+		goto printit;
 	if (mci->mci_flags != 0)
 	{
 		struct mcifbits *f;
 
-		*p++ = '<';
+		*p++ = '<';	/* protected above */
 		for (f = MciFlags; f->mcif_bit != 0; f++)
 		{
 			if (!bitset(f->mcif_bit, mci->mci_flags))
@@ -588,12 +650,13 @@ printit:
 	if (logit)
 		sm_syslog(LOG_DEBUG, CurEnv->e_id, "%.1000s", buf);
 	else
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s\n", buf);
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%s\n", buf);
 }
-/*
+/*
 **  MCI_DUMP_ALL -- print the entire MCI cache
 **
 **	Parameters:
+**		fp -- output file pointer
 **		logit -- if set, log the result instead of printing
 **			to stdout.
 **
@@ -602,7 +665,8 @@ printit:
 */
 
 void
-mci_dump_all(logit)
+mci_dump_all(fp, logit)
+	SM_FILE_T *fp;
 	bool logit;
 {
 	register int i;
@@ -611,9 +675,9 @@ mci_dump_all(logit)
 		return;
 
 	for (i = 0; i < MaxMciCache; i++)
-		mci_dump(MciCache[i], logit);
+		mci_dump(fp, MciCache[i], logit);
 }
-/*
+/*
 **  MCI_LOCK_HOST -- Lock host while sending.
 **
 **	If we are contacting a host, we'll need to
@@ -655,7 +719,7 @@ mci_lock_host_statfile(mci)
 {
 	int save_errno = errno;
 	int retVal = EX_OK;
-	char fname[MAXPATHLEN + 1];
+	char fname[MAXPATHLEN];
 
 	if (HostStatDir == NULL || mci->mci_host == NULL)
 		return EX_OK;
@@ -704,7 +768,7 @@ cleanup:
 	errno = save_errno;
 	return retVal;
 }
-/*
+/*
 **  MCI_UNLOCK_HOST -- unlock host
 **
 **	Clean up the lock on a host, close the file, let
@@ -753,7 +817,7 @@ mci_unlock_host(mci)
 
 	errno = save_errno;
 }
-/*
+/*
 **  MCI_LOAD_PERSISTENT -- load persistent host info
 **
 **	Load information about host that is kept
@@ -774,7 +838,7 @@ mci_load_persistent(mci)
 	int save_errno = errno;
 	bool locked = true;
 	SM_FILE_T *fp;
-	char fname[MAXPATHLEN + 1];
+	char fname[MAXPATHLEN];
 
 	if (mci == NULL)
 	{
@@ -830,7 +894,7 @@ cleanup:
 	errno = save_errno;
 	return locked;
 }
-/*
+/*
 **  MCI_READ_PERSISTENT -- read persistent host status file
 **
 **	Parameters:
@@ -867,7 +931,6 @@ mci_read_persistent(fp, mci)
 	{
 		sm_dprintf("mci_read_persistent: fp=%lx, mci=",
 			   (unsigned long) fp);
-		mci_dump(mci, false);
 	}
 
 	SM_FREE_CLR(mci->mci_status);
@@ -916,6 +979,8 @@ mci_read_persistent(fp, mci)
 			break;
 
 		  case '.':		/* end of file */
+			if (tTd(56, 93))
+				mci_dump(sm_debug_file(), mci, false);
 			return 0;
 
 		  default:
@@ -928,11 +993,13 @@ mci_read_persistent(fp, mci)
 		}
 	}
 	LineNumber = saveLineNumber;
+	if (tTd(56, 93))
+		sm_dprintf("incomplete (missing dot for EOF)\n");
 	if (ver < 0)
 		return -1;
 	return 0;
 }
-/*
+/*
 **  MCI_STORE_PERSISTENT -- Store persistent MCI information
 **
 **	Store information about host that is kept
@@ -1002,7 +1069,7 @@ mci_store_persistent(mci)
 	errno = save_errno;
 	return;
 }
-/*
+/*
 **  MCI_TRAVERSE_PERSISTENT -- walk persistent status tree
 **
 **	Recursively find all the mci host files in `pathname'.  Default to
@@ -1029,7 +1096,7 @@ mci_store_persistent(mci)
 
 int
 mci_traverse_persistent(action, pathname)
-	int (*action)();
+	int (*action)__P((char *, char *));
 	char *pathname;
 {
 	struct stat statbuf;
@@ -1058,7 +1125,7 @@ mci_traverse_persistent(action, pathname)
 		size_t len;
 		char *newptr;
 		struct dirent *e;
-		char newpath[MAXPATHLEN + 1];
+		char newpath[MAXPATHLEN];
 
 		if ((d = opendir(pathname)) == NULL)
 		{
@@ -1150,7 +1217,7 @@ mci_traverse_persistent(action, pathname)
 			if (hostptr != host)
 				*(hostptr++) = '.';
 			start = end;
-			while (*(start - 1) != '/')
+			while (start > pathname && *(start - 1) != '/')
 				start--;
 
 			if (*end == '.')
@@ -1160,7 +1227,7 @@ mci_traverse_persistent(action, pathname)
 				*(hostptr++) = *scan;
 
 			end = start - 2;
-		} while (*end == '.');
+		} while (end > pathname && *end == '.');
 
 		*hostptr = '\0';
 
@@ -1174,7 +1241,7 @@ mci_traverse_persistent(action, pathname)
 
 	return ret;
 }
-/*
+/*
 **  MCI_PRINT_PERSISTENT -- print persistent info
 **
 **	Dump the persistent information in the file 'pathname'
@@ -1234,7 +1301,7 @@ mci_print_persistent(pathname, hostname)
 	}
 
 	locked = !lockfile(sm_io_getinfo(fp, SM_IO_WHAT_FD, NULL), pathname,
-			   "", LOCK_EX|LOCK_NB);
+			   "", LOCK_SH|LOCK_NB);
 	(void) sm_io_close(fp, SM_TIME_DEFAULT);
 	FileName = NULL;
 
@@ -1274,7 +1341,7 @@ mci_print_persistent(pathname, hostname)
 
 	return 0;
 }
-/*
+/*
 **  MCI_PURGE_PERSISTENT -- Remove a persistence status file.
 **
 **	Parameters:
@@ -1308,16 +1375,22 @@ mci_purge_persistent(pathname, hostname)
 				pathname, sm_errstring(errno));
 		return ret;
 	}
-	if (curtime() - statbuf.st_mtime < MciInfoTimeout)
+	if (curtime() - statbuf.st_mtime <= MciInfoTimeout)
 		return 1;
 	if (hostname != NULL)
 	{
 		/* remove the file */
-		if (unlink(pathname) < 0)
+		ret = unlink(pathname);
+		if (ret < 0)
 		{
+			if (LogLevel > 8)
+				sm_syslog(LOG_ERR, NOQID,
+					  "mci_purge_persistent: failed to unlink %s: %s",
+					  pathname, sm_errstring(errno));
 			if (tTd(56, 2))
 				sm_dprintf("mci_purge_persistent: failed to unlink %s: %s\n",
 					pathname, sm_errstring(errno));
+			return ret;
 		}
 	}
 	else
@@ -1329,21 +1402,22 @@ mci_purge_persistent(pathname, hostname)
 		if (tTd(56, 1))
 			sm_dprintf("mci_purge_persistent: dpurge %s\n", pathname);
 
-		if (rmdir(pathname) < 0)
+		ret = rmdir(pathname);
+		if (ret < 0)
 		{
 			if (tTd(56, 2))
 				sm_dprintf("mci_purge_persistent: rmdir %s: %s\n",
 					pathname, sm_errstring(errno));
+			return ret;
 		}
-
 	}
 
 	return 0;
 }
-/*
+/*
 **  MCI_GENERATE_PERSISTENT_PATH -- generate path from hostname
 **
-**	Given `host', convert from a.b.c to $QueueDir/.hoststat/c./b./a,
+**	Given `host', convert from a.b.c to $HostStatDir/c./b./a,
 **	putting the result into `path'.  if `createflag' is set, intervening
 **	directories will be created as needed.
 **

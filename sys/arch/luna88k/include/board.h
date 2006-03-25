@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: board.h,v 1.4 2004/08/02 08:33:29 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -46,12 +46,9 @@
 #endif
 #define UDEFINED
 
-#define MAX_CPUS	4		/* maximum cpus on the board */
-#define MAX_CMMUS	8		/* maximum cmmus on the board */
-
 /* machtype values */
-#define LUNA_88K	1
-#define LUNA_88K2	2
+#define LUNA_88K	0x1
+#define LUNA_88K2	0x2
 
 #define	SYSV_BASE	U(0x00000000) 	/* system virtual base */
 #define VEQR_ADDR	U(0x00000000)
@@ -86,6 +83,7 @@
 #define OBIO_CAL_DAY	U(0x45001FF4) 	/* days */
 #define OBIO_CAL_MON	U(0x45001FF8) 	/* months */
 #define OBIO_CAL_YEAR	U(0x45001FFC) 	/* years */
+#define NVRAM_ADDR_88K2	U(0x47000000)	/* Non Volatile RAM area for LUNA-88K2 */
 #define OBIO_PIO0_BASE	U(0x49000000) 	/* PIO-0 */
 #define OBIO_PIO0_SPACE	U(0x0000000C) 
 #define OBIO_PIO0A	U(0x49000000) 	/* PIO-0 port A */
@@ -195,7 +193,7 @@
 #define BMAP_PALLET2	U(0xC1100000) 	/* color pallet */
 #define BOARD_CHECK_REG	U(0xD0000000) 	/* board check register */
 #define BMAP_CRTC	U(0xD1000000) 	/* CTRC-II */
-#define BMAP_IDENTROM   U(0xD1800000)   /* bitmap-boad identify ROM */
+#define BMAP_IDENTROM   U(0xD1800000)   /* bitmap-board identify ROM */
 #define SCSI_ADDR	U(0xE1000000) 	/* SCSI address */
 #define LANCE_ADDR	U(0xF1000000) 	/* LANCE */
 #define	EXT_IACK_ADDR	0xFFFFFFF7 	/* IACK Space for Extended Board */

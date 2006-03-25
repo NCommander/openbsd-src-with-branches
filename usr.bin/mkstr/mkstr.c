@@ -1,3 +1,4 @@
+/*	$OpenBSD: mkstr.c,v 1.7 2002/12/13 14:39:55 millert Exp $	*/
 /*	$NetBSD: mkstr.c,v 1.4 1995/09/28 06:22:20 tls Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,19 +31,23 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1980, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)mkstr.c	8.1 (Berkeley) 6/6/93";
+static const char sccsid[] = "@(#)mkstr.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: mkstr.c,v 1.4 1995/09/28 06:22:20 tls Exp $";
+static const char rcsid[] = "$OpenBSD: mkstr.c,v 1.7 2002/12/13 14:39:55 millert Exp $";
 #endif
 #endif /* not lint */
 
+#include <sys/param.h>
+#include <sys/stat.h>
+
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,21 +82,28 @@ static char rcsid[] = "$NetBSD: mkstr.c,v 1.4 1995/09/28 06:22:20 tls Exp $";
 
 
 FILE	*mesgread, *mesgwrite;
-char	*progname;
-char	usagestr[] =	"usage: %s [ - ] mesgfile prefix file ...\n";
-char	name[100], *np;
+char	name[MAXPATHLEN], *np;
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+void inithash(void);
+void process(void);
+int match(char *);
+void copystr(void);
+int octdigit(char);
+unsigned int hashit(char *, char, unsigned int);
+int fgetNUL(char *, int, FILE *);
+__dead void usage(void);
+
+int
+main(int argc, char **argv)
 {
+	size_t n;
 	char addon = 0;
 
-	argc--, progname = *argv++;
+	argc--, argv++;
 	if (argc > 1 && argv[0][0] == '-')
 		addon++, argc--, argv++;
 	if (argc < 3)
-		fprintf(stderr, usagestr, progname), exit(1);
+		usage();
 	mesgwrite = fopen(argv[0], addon ? "a" : "w");
 	if (mesgwrite == NULL)
 		perror(argv[0]), exit(1);
@@ -104,11 +112,14 @@ main(argc, argv)
 		perror(argv[0]), exit(1);
 	inithash();
 	argc--, argv++;
-	strcpy(name, argv[0]);
-	np = name + strlen(name);
+	if ((n = strlcpy(name, argv[0], sizeof(name))) >= sizeof(name))
+		errx(1, "%s too long", argv[0]); 
+	np = name + n;
 	argc--, argv++;
 	do {
-		strcpy(np, argv[0]);
+		if (strlcpy(np, argv[0], sizeof(name) - n) >=
+		    sizeof(name) - n)
+			errx(1, "%s too long", argv[0]);
 		if (freopen(name, "w", stdout) == NULL)
 			perror(name), exit(1);
 		if (freopen(argv[0], "r", stdin) == NULL)
@@ -116,13 +127,13 @@ main(argc, argv)
 		process();
 		argc--, argv++;
 	} while (argc > 0);
-	exit(0);
+	exit (0);
 }
 
-process()
+void
+process(void)
 {
-	register char *cp;
-	register c;
+	int c;
 
 	for (;;) {
 		c = getchar();
@@ -143,11 +154,11 @@ process()
 	}
 }
 
-match(ocp)
-	char *ocp;
+int
+match(char *ocp)
 {
-	register char *cp;
-	register c;
+	char *cp;
+	int c;
 
 	for (cp = ocp + 1; *cp; cp++) {
 		c = getchar();
@@ -161,11 +172,12 @@ match(ocp)
 	return (1);
 }
 
-copystr()
+void
+copystr(void)
 {
-	register c, ch;
+	int c, ch;
 	char buf[512];
-	register char *cp = buf;
+	char *cp = buf;
 
 	for (;;) {
 		c = getchar();
@@ -221,23 +233,24 @@ copystr()
 	}
 out:
 	*cp = 0;
-	printf("%d", hashit(buf, 1, NULL));
+	printf("%d", hashit(buf, 1, 0));
 }
 
-octdigit(c)
-	char c;
+int
+octdigit(char c)
 {
 
 	return (c >= '0' && c <= '7');
 }
 
-inithash()
+void
+inithash(void)
 {
 	char buf[512];
 	int mesgpt = 0;
 
 	rewind(mesgread);
-	while (fgetNUL(buf, sizeof buf, mesgread) != NULL) {
+	while (fgetNUL(buf, sizeof buf, mesgread) != 0) {
 		hashit(buf, 0, mesgpt);
 		mesgpt += strlen(buf) + 2;
 	}
@@ -247,20 +260,18 @@ inithash()
 
 struct	hash {
 	long	hval;
-	unsigned hpt;
+	unsigned int hpt;
 	struct	hash *hnext;
 } *bucket[NBUCKETS];
 
-hashit(str, really, fakept)
-	char *str;
-	char really;
-	unsigned fakept;
+unsigned int
+hashit(char *str, char really, unsigned int fakept)
 {
 	int i;
-	register struct hash *hp;
+	struct hash *hp;
 	char buf[512];
 	long hashval = 0;
-	register char *cp;
+	char *cp;
 
 	if (really)
 		fflush(mesgwrite);
@@ -274,14 +285,15 @@ hashit(str, really, fakept)
 		if (hp->hval == hashval) {
 			fseek(mesgread, (long) hp->hpt, 0);
 			fgetNUL(buf, sizeof buf, mesgread);
-/*
+#ifdef DEBUG
 			fprintf(stderr, "Got (from %d) %s\n", hp->hpt, buf);
-*/
+#endif
 			if (strcmp(buf, str) == 0)
 				break;
 		}
 	if (!really || hp == 0) {
-		hp = (struct hash *) calloc(1, sizeof *hp);
+		if ((hp = (struct hash *) calloc(1, sizeof *hp)) == NULL)
+			err(1, "calloc");
 		hp->hnext = bucket[i];
 		hp->hval = hashval;
 		hp->hpt = really ? ftell(mesgwrite) : fakept;
@@ -291,26 +303,30 @@ hashit(str, really, fakept)
 		}
 		bucket[i] = hp;
 	}
-/*
+#ifdef DEBUG
 	fprintf(stderr, "%s hashed to %ld at %d\n", str, hp->hval, hp->hpt);
-*/
+#endif
 	return (hp->hpt);
 }
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-fgetNUL(obuf, rmdr, file)
-	char *obuf;
-	register int rmdr;
-	FILE *file;
+int
+fgetNUL(char *obuf, int rmdr, FILE *file)
 {
-	register c;
-	register char *buf = obuf;
+	int c;
+	char *buf = obuf;
 
 	while (--rmdr > 0 && (c = getc(file)) != 0 && c != EOF)
 		*buf++ = c;
 	*buf++ = 0;
 	getc(file);
-	return ((feof(file) || ferror(file)) ? NULL : 1);
+	return ((feof(file) || ferror(file)) ? 0 : 1);
+}
+
+__dead void
+usage(void)
+{
+	extern char *__progname;
+
+	fprintf(stderr, "usage: %s [-] mesgfile prefix file ...\n", __progname);
+	exit(1);
 }

@@ -1,7 +1,7 @@
-/*	$NetBSD: addrtoname.c,v 1.4 1995/04/24 13:27:39 cgd Exp $	*/
+/*	$OpenBSD: addrtoname.c,v 1.27 2006/01/23 17:29:22 millert Exp $	*/
 
 /*
- * Copyright (c) 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,42 +24,46 @@
  *  and address to string conversion routines
  */
 #ifndef lint
-static char rcsid[] =
-    "@(#) Header: addrtoname.c,v 1.37 94/06/16 00:42:28 mccanne Exp (LBL)";
+static const char rcsid[] =
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/addrtoname.c,v 1.27 2006/01/23 17:29:22 millert Exp $ (LBL)";
 #endif
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 
+struct mbuf;
+struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
+#ifdef INET6
+#include <netinet/ip6.h>
+#endif
+
 #include <arpa/inet.h>
 
 #include <ctype.h>
+#include <inttypes.h>
 #include <netdb.h>
 #include <pcap.h>
 #include <pcap-namedb.h>
+#ifdef HAVE_MEMORY_H
+#include <memory.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef __STDC__
 #include <stdlib.h>
-#endif
 #include <unistd.h>
 
 #include "interface.h"
 #include "addrtoname.h"
 #include "llc.h"
-
-static SIGRET nohostname(int);
-#ifdef ETHER_SERVICE
-struct ether_addr;
-extern int ether_ntohost(char *, struct ether_addr *);
-#endif
+#include "privsep.h"
+#include "savestr.h"
 
 /*
  * hash tables for whatever-to-name translations
@@ -68,7 +72,7 @@ extern int ether_ntohost(char *, struct ether_addr *);
 #define HASHNAMESIZE 4096
 
 struct hnamemem {
-	u_int32 addr;
+	u_int32_t addr;
 	char *name;
 	struct hnamemem *nxt;
 };
@@ -80,20 +84,33 @@ struct hnamemem eprototable[HASHNAMESIZE];
 struct hnamemem dnaddrtable[HASHNAMESIZE];
 struct hnamemem llcsaptable[HASHNAMESIZE];
 
+#ifdef INET6
+struct h6namemem {
+	struct in6_addr addr;
+	char *name;
+	struct h6namemem *nxt;
+};
+
+struct h6namemem h6nametable[HASHNAMESIZE];
+#endif /* INET6 */
+
 struct enamemem {
 	u_short e_addr0;
 	u_short e_addr1;
 	u_short e_addr2;
 	char *e_name;
 	u_char *e_nsap;			/* used only for nsaptable[] */
+#define e_bs e_nsap			/* for bytestringtable */
 	struct enamemem *e_nxt;
 };
 
 struct enamemem enametable[HASHNAMESIZE];
 struct enamemem nsaptable[HASHNAMESIZE];
+struct enamemem bytestringtable[HASHNAMESIZE];
+static char *ipprototable[256];
 
 struct protoidmem {
-	u_long p_oui;
+	u_int32_t p_oui;
 	u_short p_proto;
 	char *p_name;
 	struct protoidmem *p_nxt;
@@ -105,7 +122,7 @@ struct protoidmem protoidtable[HASHNAMESIZE];
  * A faster replacement for inet_ntoa().
  */
 char *
-intoa(u_int32 addr)
+intoa(u_int32_t addr)
 {
 	register char *cp;
 	register u_int byte;
@@ -134,23 +151,9 @@ intoa(u_int32 addr)
 	return cp + 1;
 }
 
-static u_int32 f_netmask;
-static u_int32 f_localnet;
-static u_int32 netmask;
-
-/*
- * "getname" is written in this atrocious way to make sure we don't
- * wait forever while trying to get hostnames from yp.
- */
-#include <setjmp.h>
-
-jmp_buf getname_env;
-
-static SIGRET
-nohostname(int signo)
-{
-	longjmp(getname_env, 1);
-}
+static u_int32_t f_netmask;
+static u_int32_t f_localnet;
+static u_int32_t netmask;
 
 /*
  * Return a name for the IP address pointed to by ap.  This address
@@ -159,95 +162,149 @@ nohostname(int signo)
 char *
 getname(const u_char *ap)
 {
-	register struct hostent *hp;
-	register char *cp;
-	u_int32 addr;
-	static struct hnamemem *p;		/* static for longjmp() */
+	char host[MAXHOSTNAMELEN];
+	u_int32_t addr;
+	struct hnamemem *p;
 
-#ifndef TCPDUMP_ALIGN
-	addr = *(const u_int32 *)ap;
-#else
 	/*
-	 * Deal with alignment.
+	 * Extract 32 bits in network order, dealing with alignment.
 	 */
-	switch ((long)ap & 3) {
+	switch ((intptr_t)ap & (sizeof(u_int32_t)-1)) {
 
 	case 0:
-		addr = *(u_int32 *)ap;
+		addr = *(u_int32_t *)ap;
 		break;
 
 	case 2:
-#if BYTE_ORDER == LITTLE_ENDIAN
-		addr = ((u_int32)*(u_short *)(ap + 2) << 16) |
-			(u_int32)*(u_short *)ap;
+#if BYTE_ORDER == BIG_ENDIAN
+		addr = ((u_int32_t)*(u_short *)ap << 16) |
+			(u_int32_t)*(u_short *)(ap + 2);
 #else
-		addr = ((u_int32)*(u_short *)ap << 16) |
-			(u_int32)*(u_short *)(ap + 2);
+		addr = ((u_int32_t)*(u_short *)(ap + 2) << 16) |
+			(u_int32_t)*(u_short *)ap;
 #endif
 		break;
 
 	default:
-#if BYTE_ORDER == LITTLE_ENDIAN
-		addr = ((u_int32)ap[0] << 24) |
-			((u_int32)ap[1] << 16) |
-			((u_int32)ap[2] << 8) |
-			(u_int32)ap[3];
+#if BYTE_ORDER == BIG_ENDIAN
+		addr = ((u_int32_t)ap[0] << 24) |
+			((u_int32_t)ap[1] << 16) |
+			((u_int32_t)ap[2] << 8) |
+			(u_int32_t)ap[3];
 #else
-		addr = ((u_int32)ap[3] << 24) |
-			((u_int32)ap[2] << 16) |
-			((u_int32)ap[1] << 8) |
-			(u_int32)ap[0];
+		addr = ((u_int32_t)ap[3] << 24) |
+			((u_int32_t)ap[2] << 16) |
+			((u_int32_t)ap[1] << 8) |
+			(u_int32_t)ap[0];
 #endif
 		break;
 	}
-#endif
+
 	p = &hnametable[addr & (HASHNAMESIZE-1)];
 	for (; p->nxt; p = p->nxt) {
 		if (p->addr == addr)
 			return (p->name);
 	}
 	p->addr = addr;
-	p->nxt = (struct hnamemem *)calloc(1, sizeof (*p));
+	p->nxt = newhnamemem();
 
 	/*
 	 * Only print names when:
-	 *	(1) -n was not given.
-	 *	(2) Address is foreign and -f was given.  If -f was not
-	 *	    present, f_netmask and f_local are 0 and the second
-	 *	    test will succeed.
-	 *	(3) The host portion is not 0 (i.e., a network address).
-	 *	(4) The host portion is not broadcast.
+	 *	(1) -n was not given
+	 *      (2) Address is foreign and -f was given. (If -f was not
+	 *	    give, f_netmask and f_local are 0 and the test
+	 *	    evaluates to true)
+	 *      (3) -a was given or the host portion is not all ones
+	 *          nor all zeros (i.e. not a network or broadcast address)
 	 */
-	if (!nflag && (addr & f_netmask) == f_localnet
-	    && (addr &~ netmask) != 0 && (addr | netmask) != 0xffffffff) {
-		if (!setjmp(getname_env)) {
-			(void)signal(SIGALRM, nohostname);
-			(void)alarm(20);
-			hp = gethostbyaddr((char *)&addr, 4, AF_INET);
-			(void)alarm(0);
-			if (hp) {
-				char *dotp;
+	if (!nflag &&
+	    (addr & f_netmask) == f_localnet &&
+	    (aflag ||
+	    !((addr & ~netmask) == 0 || (addr | netmask) == 0xffffffff))) {
+		size_t n = priv_gethostbyaddr((char *)&addr, sizeof(addr),
+		    AF_INET, host, sizeof(host));
+		if (n > 0) {
+			char *dotp;
 
-				p->name = savestr(hp->h_name);
-				if (Nflag) {
-					/* Remove domain qualifications */
-					dotp = strchr(p->name, '.');
-					if (dotp)
-						*dotp = 0;
-				}
-				return (p->name);
+			p->name = savestr(host);
+			if (Nflag) {
+				/* Remove domain qualifications */
+				dotp = strchr(p->name, '.');
+				if (dotp)
+					*dotp = '\0';
 			}
+			return (p->name);
 		}
 	}
-	cp = intoa(addr);
+	p->name = savestr(intoa(addr));
+	return (p->name);
+}
+
+#ifdef INET6
+/*
+ * Return a name for the IP6 address pointed to by ap.  This address
+ * is assumed to be in network byte order.
+ */
+char *
+getname6(const u_char *ap)
+{
+	char host[MAXHOSTNAMELEN];
+	struct in6_addr addr;
+	struct h6namemem *p;
+	register char *cp;
+	char ntop_buf[INET6_ADDRSTRLEN];
+
+	memcpy(&addr, ap, sizeof(addr));
+	p = &h6nametable[*(u_int16_t *)&addr.s6_addr[14] & (HASHNAMESIZE-1)];
+	for (; p->nxt; p = p->nxt) {
+		if (memcmp(&p->addr, &addr, sizeof(addr)) == 0)
+			return (p->name);
+	}
+	p->addr = addr;
+	p->nxt = newh6namemem();
+
+	/*
+	 * Only print names when:
+	 *	(1) -n was not given
+	 *      (2) Address is foreign and -f was given. (If -f was not
+	 *	    give, f_netmask and f_local are 0 and the test
+	 *	    evaluates to true)
+	 *      (3) -a was given or the host portion is not all ones
+	 *          nor all zeros (i.e. not a network or broadcast address)
+	 */
+	if (!nflag
+#if 0
+	&&
+	    (addr & f_netmask) == f_localnet &&
+	    (aflag ||
+	    !((addr & ~netmask) == 0 || (addr | netmask) == 0xffffffff))
+#endif
+	    ) {
+		size_t n = priv_gethostbyaddr((char *)&addr, sizeof(addr),
+		    AF_INET6, host, sizeof(host));
+		if (n > 0) {
+			char *dotp;
+
+			p->name = savestr(host);
+			if (Nflag) {
+				/* Remove domain qualifications */
+				dotp = strchr(p->name, '.');
+				if (dotp)
+					*dotp = '\0';
+			}
+			return (p->name);
+		}
+	}
+	cp = (char *)inet_ntop(AF_INET6, &addr, ntop_buf, sizeof(ntop_buf));
 	p->name = savestr(cp);
 	return (p->name);
 }
+#endif /* INET6 */
 
 static char hex[] = "0123456789abcdef";
 
 
-/* Find the hash node that corresponds the ether address 'ep'. */
+/* Find the hash node that corresponds the ether address 'ep' */
 
 static inline struct enamemem *
 lookup_emem(const u_char *ep)
@@ -271,11 +328,60 @@ lookup_emem(const u_char *ep)
 	tp->e_addr1 = j;
 	tp->e_addr2 = k;
 	tp->e_nxt = (struct enamemem *)calloc(1, sizeof(*tp));
+	if (tp->e_nxt == NULL)
+		error("lookup_emem: calloc");
 
 	return tp;
 }
 
-/* Find the hash node that corresponds the NSAP 'nsap'. */
+/*
+ * Find the hash node that corresponds to the bytestring 'bs' 
+ * with length 'nlen'
+ */
+
+static inline struct enamemem *
+lookup_bytestring(register const u_char *bs, const int nlen)
+{
+	struct enamemem *tp;
+	register u_int i, j, k;
+
+	if (nlen >= 6) {
+		k = (bs[0] << 8) | bs[1];
+		j = (bs[2] << 8) | bs[3];
+		i = (bs[4] << 8) | bs[5];
+	} else if (nlen >= 4) {
+		k = (bs[0] << 8) | bs[1];
+		j = (bs[2] << 8) | bs[3];
+		i = 0;
+	} else
+		i = j = k = 0;
+
+	tp = &bytestringtable[(i ^ j) & (HASHNAMESIZE-1)];
+	while (tp->e_nxt)
+		if (tp->e_addr0 == i &&
+		    tp->e_addr1 == j &&
+		    tp->e_addr2 == k &&
+		    bcmp((char *)bs, (char *)(tp->e_bs), nlen) == 0)
+			return tp;
+		else
+			tp = tp->e_nxt;
+
+	tp->e_addr0 = i;
+	tp->e_addr1 = j;
+	tp->e_addr2 = k;
+
+	tp->e_bs = (u_char *) calloc(1, nlen + 1);
+	if (tp->e_bs == NULL)
+		error("lookup_bytestring: calloc");
+	bcopy(bs, tp->e_bs, nlen);
+	tp->e_nxt = (struct enamemem *)calloc(1, sizeof(*tp));
+	if (tp->e_nxt == NULL)
+		error("lookup_bytestring: calloc");
+
+	return tp;
+}
+
+/* Find the hash node that corresponds the NSAP 'nsap' */
 
 static inline struct enamemem *
 lookup_nsap(register const u_char *nsap)
@@ -299,7 +405,7 @@ lookup_nsap(register const u_char *nsap)
 		    tp->e_addr1 == j &&
 		    tp->e_addr2 == k &&
 		    tp->e_nsap[0] == nlen &&
-		    bcmp((char *)&(nsap[1]),
+		    memcmp((char *)&(nsap[1]),
 			(char *)&(tp->e_nsap[1]), nlen) == 0)
 			return tp;
 		else
@@ -307,9 +413,13 @@ lookup_nsap(register const u_char *nsap)
 	tp->e_addr0 = i;
 	tp->e_addr1 = j;
 	tp->e_addr2 = k;
-	tp->e_nsap = (u_char *) calloc(1, nlen + 1);
-	bcopy(nsap, tp->e_nsap, nlen + 1);
+	tp->e_nsap = (u_char *)malloc(nlen + 1);
+	if (tp->e_nsap == NULL)
+		error("lookup_nsap: malloc");
+	memcpy((char *)tp->e_nsap, (char *)nsap, nlen + 1);
 	tp->e_nxt = (struct enamemem *)calloc(1, sizeof(*tp));
+	if (tp->e_nxt == NULL)
+		error("lookup_nsap: calloc");
 
 	return tp;
 }
@@ -336,6 +446,8 @@ lookup_protoid(const u_char *pi)
 	tp->p_oui = i;
 	tp->p_proto = j;
 	tp->p_nxt = (struct protoidmem *)calloc(1, sizeof(*tp));
+	if (tp->p_nxt == NULL)
+		error("lookup_protoid: calloc");
 
 	return tp;
 }
@@ -346,25 +458,57 @@ etheraddr_string(register const u_char *ep)
 	register u_int i, j;
 	register char *cp;
 	register struct enamemem *tp;
+	char buf[sizeof("00:00:00:00:00:00")];
 
 	tp = lookup_emem(ep);
 	if (tp->e_name)
 		return (tp->e_name);
-#ifdef ETHER_SERVICE
+#ifdef HAVE_ETHER_NTOHOST
 	if (!nflag) {
-		char buf[128];
-		if (ether_ntohost(buf, (struct ether_addr *)ep) == 0) {
+		char buf[MAXHOSTNAMELEN + 1];
+		if (priv_ether_ntohost(buf, sizeof(buf),
+		    (struct ether_addr *)ep) > 0) {
 			tp->e_name = savestr(buf);
 			return (tp->e_name);
 		}
 	}
 #endif
-	tp->e_name = cp = (char *)malloc(sizeof("00:00:00:00:00:00"));
-
+	cp = buf;
 	if ((j = *ep >> 4) != 0)
 		*cp++ = hex[j];
 	*cp++ = hex[*ep++ & 0xf];
 	for (i = 5; (int)--i >= 0;) {
+		*cp++ = ':';
+		if ((j = *ep >> 4) != 0)
+			*cp++ = hex[j];
+		*cp++ = hex[*ep++ & 0xf];
+	}
+	*cp = '\0';
+	tp->e_name = savestr(buf);
+	return (tp->e_name);
+}
+
+char *
+linkaddr_string(const u_char *ep, const int len)
+{
+	register u_int i, j;
+	register char *cp;
+	register struct enamemem *tp;
+
+	if (len == 6)	/* XXX not totally correct... */
+		return etheraddr_string(ep);
+	
+	tp = lookup_bytestring(ep, len);
+	if (tp->e_name)
+		return (tp->e_name);
+
+	tp->e_name = cp = (char *)malloc(len*3);
+	if (tp->e_name == NULL)
+		error("linkaddr_string: malloc");
+	if ((j = *ep >> 4) != 0)
+		*cp++ = hex[j];
+	*cp++ = hex[*ep++ & 0xf];
+	for (i = len-1; i > 0 ; --i) {
 		*cp++ = ':';
 		if ((j = *ep >> 4) != 0)
 			*cp++ = hex[j];
@@ -379,22 +523,24 @@ etherproto_string(u_short port)
 {
 	register char *cp;
 	register struct hnamemem *tp;
-	register u_long i = port;
+	register u_int32_t i = port;
+	char buf[sizeof("0000")];
 
 	for (tp = &eprototable[i & (HASHNAMESIZE-1)]; tp->nxt; tp = tp->nxt)
 		if (tp->addr == i)
 			return (tp->name);
 
-	tp->name = cp = (char *)malloc(sizeof("0000"));
 	tp->addr = i;
-	tp->nxt = (struct hnamemem *)calloc(1, sizeof (*tp));
+	tp->nxt = newhnamemem();
 
+	cp = buf;
 	NTOHS(port);
 	*cp++ = hex[port >> 12 & 0xf];
 	*cp++ = hex[port >> 8 & 0xf];
 	*cp++ = hex[port >> 4 & 0xf];
 	*cp++ = hex[port & 0xf];
 	*cp++ = '\0';
+	tp->name = savestr(buf);
 	return (tp->name);
 }
 
@@ -404,13 +550,13 @@ protoid_string(register const u_char *pi)
 	register u_int i, j;
 	register char *cp;
 	register struct protoidmem *tp;
+	char buf[sizeof("00:00:00:00:00")];
 
 	tp = lookup_protoid(pi);
 	if (tp->p_name)
 		return tp->p_name;
 
-	tp->p_name = cp = (char *)malloc(sizeof("00:00:00:00:00"));
-
+	cp = buf;
 	if ((j = *pi >> 4) != 0)
 		*cp++ = hex[j];
 	*cp++ = hex[*pi++ & 0xf];
@@ -421,29 +567,26 @@ protoid_string(register const u_char *pi)
 		*cp++ = hex[*pi++ & 0xf];
 	}
 	*cp = '\0';
+	tp->p_name = savestr(buf);
 	return (tp->p_name);
 }
 
 char *
 llcsap_string(u_char sap)
 {
-	register char *cp;
 	register struct hnamemem *tp;
-	register u_long i = sap;
+	register u_int32_t i = sap;
+	char buf[sizeof("sap 00")];
 
 	for (tp = &llcsaptable[i & (HASHNAMESIZE-1)]; tp->nxt; tp = tp->nxt)
 		if (tp->addr == i)
 			return (tp->name);
 
-	tp->name = cp = (char *)malloc(sizeof("sap 00"));
 	tp->addr = i;
-	tp->nxt = (struct hnamemem *)calloc(1, sizeof (*tp));
+	tp->nxt = newhnamemem();
 
-	(void)strcpy(cp, "sap ");
-	cp += strlen(cp);
-	*cp++ = hex[sap >> 4 & 0xf];
-	*cp++ = hex[sap & 0xf];
-	*cp++ = '\0';
+	snprintf(buf, sizeof(buf), "sap %02x", sap & 0xff);
+	tp->name = savestr(buf);
 	return (tp->name);
 }
 
@@ -459,6 +602,8 @@ isonsap_string(const u_char *nsap)
 		return tp->e_name;
 
 	tp->e_name = cp = (char *)malloc(nlen * 2 + 2);
+	if (cp == NULL)
+		error("isonsap_string: malloc");
 
 	nsap++;
 	*cp++ = '/';
@@ -474,17 +619,18 @@ char *
 tcpport_string(u_short port)
 {
 	register struct hnamemem *tp;
-	register u_long i = port;
+	register u_int32_t i = port;
+	char buf[sizeof("00000")];
 
 	for (tp = &tporttable[i & (HASHNAMESIZE-1)]; tp->nxt; tp = tp->nxt)
 		if (tp->addr == i)
 			return (tp->name);
 
-	tp->name = (char *)malloc(sizeof("00000"));
 	tp->addr = i;
-	tp->nxt = (struct hnamemem *)calloc(1, sizeof (*tp));
+	tp->nxt = newhnamemem();
 
-	(void)sprintf(tp->name, "%d", i);
+	(void)snprintf(buf, sizeof(buf), "%u", i);
+	tp->name = savestr(buf);
 	return (tp->name);
 }
 
@@ -492,34 +638,44 @@ char *
 udpport_string(register u_short port)
 {
 	register struct hnamemem *tp;
-	register u_long i = port;
+	register u_int32_t i = port;
+	char buf[sizeof("00000")];
 
 	for (tp = &uporttable[i & (HASHNAMESIZE-1)]; tp->nxt; tp = tp->nxt)
 		if (tp->addr == i)
 			return (tp->name);
 
-	tp->name = (char *)malloc(sizeof("00000"));
 	tp->addr = i;
-	tp->nxt = (struct hnamemem *)calloc(1, sizeof(*tp));
+	tp->nxt = newhnamemem();
 
-	(void)sprintf(tp->name, "%d", i);
-
+	(void)snprintf(buf, sizeof(buf), "%u", i);
+	tp->name = savestr(buf);
 	return (tp->name);
+}
+
+char *
+ipproto_string(u_int proto)
+{
+	return ipprototable[proto & 0xff];
 }
 
 static void
 init_servarray(void)
 {
-	struct servent *sv;
-	register struct hnamemem *table;
-	register int i;
+	struct hnamemem *table;
+	int i, port;
+	char buf[sizeof("0000000000")];
+	char service[BUFSIZ];
+	char protocol[BUFSIZ];
 
-	while ((sv = getservent()) != NULL) {
-		int port = ntohs(sv->s_port);
+	priv_getserventries();
+	while (priv_getserventry(service, sizeof(service), &port, protocol,
+	    sizeof(protocol)) != 0) {
+		port = ntohs(port);
 		i = port & (HASHNAMESIZE-1);
-		if (strcmp(sv->s_proto, "tcp") == 0)
+		if (strcmp(protocol, "tcp") == 0)
 			table = &tporttable[i];
-		else if (strcmp(sv->s_proto, "udp") == 0)
+		else if (strcmp(protocol, "udp") == 0)
 			table = &uporttable[i];
 		else
 			continue;
@@ -527,16 +683,32 @@ init_servarray(void)
 		while (table->name)
 			table = table->nxt;
 		if (nflag) {
-			char buf[32];
-
-			(void)sprintf(buf, "%d", port);
+			(void)snprintf(buf, sizeof(buf), "%d", port);
 			table->name = savestr(buf);
 		} else
-			table->name = savestr(sv->s_name);
+			table->name = savestr(service);
 		table->addr = port;
-		table->nxt = (struct hnamemem *)calloc(1, sizeof(*table));
+		table->nxt = newhnamemem();
 	}
-	endservent();
+}
+
+static void
+init_ipprotoarray(void)
+{
+	int i;
+	char buf[sizeof("000")];
+	char prot[BUFSIZ];
+
+	if (!nflag) {
+		priv_getprotoentries();
+		while (priv_getprotoentry(prot, sizeof(prot), &i) != 0)
+			ipprototable[i & 0xff] = savestr(prot);
+	}
+	for (i = 0; i < 256; i++)
+		if (ipprototable[i] == NULL) {
+			(void)snprintf(buf, sizeof(buf), "%d", i);
+			ipprototable[i] = savestr(buf);
+		}
 }
 
 /*XXX from libbpfc.a */
@@ -558,7 +730,7 @@ init_eprotoarray(void)
 			table = table->nxt;
 		table->name = eproto_db[i].s;
 		table->addr = ntohs(eproto_db[i].p);
-		table->nxt = (struct hnamemem *)calloc(1, sizeof(*table));
+		table->nxt = newhnamemem();
 	}
 }
 
@@ -578,7 +750,8 @@ init_protoidarray(void)
 	protoid[2] = 0;
 	for (i = 0; eproto_db[i].s; i++) {
 		u_short etype = htons(eproto_db[i].p);
-		bcopy((char *)&etype, (char *)&protoid[3], 2);
+
+		memcpy((char *)&protoid[3], (char *)&etype, 2);
 		tp = lookup_protoid(protoid);
 		tp->p_name = savestr(eproto_db[i].s);
 	}
@@ -611,7 +784,9 @@ init_etherarray(void)
 {
 	register struct etherlist *el;
 	register struct enamemem *tp;
-#ifndef ETHER_SERVICE
+#ifdef HAVE_ETHER_NTOHOST
+	char name[MAXHOSTNAMELEN + 1];
+#else
 	register struct pcap_etherent *ep;
 	register FILE *fp;
 
@@ -628,24 +803,24 @@ init_etherarray(void)
 
 	/* Hardwire some ethernet names */
 	for (el = etherlist; el->name != NULL; ++el) {
-#ifdef ETHER_SERVICE
-                /* Use yp/nis version of name if available */
-		char wrk[256];
-                if (ether_ntohost(wrk, (struct ether_addr *)el->addr) == 0) {
-			tp = lookup_emem(el->addr);
-                        tp->e_name = savestr(wrk);
-		}
-#else
-		/* install if not already present */
 		tp = lookup_emem(el->addr);
-		if (tp->e_name == NULL)
-			tp->e_name = el->name;
-#endif
+		/* Don't override existing name */
+		if (tp->e_name != NULL)
+			continue;
 
+#ifdef HAVE_ETHER_NTOHOST
+                /* Use yp/nis version of name if available */
+                if (priv_ether_ntohost(name, sizeof(name),
+		    (struct ether_addr *)el->addr) > 0) {
+                        tp->e_name = savestr(name);
+			continue;
+		}
+#endif
+		tp->e_name = el->name;
 	}
 }
 
-static struct token llcsap_db[] = {
+static struct tok llcsap_db[] = {
 	{ LLCSAP_NULL,		"null" },
 	{ LLCSAP_8021B_I,	"802.1b-gsap" },
 	{ LLCSAP_8021B_G,	"802.1b-isap" },
@@ -672,7 +847,7 @@ init_llcsaparray(void)
 			table = table->nxt;
 		table->name = llcsap_db[i].s;
 		table->addr = llcsap_db[i].v;
-		table->nxt = (struct hnamemem *)calloc(1, sizeof(*table));
+		table->nxt = newhnamemem();
 	}
 }
 
@@ -683,13 +858,17 @@ init_llcsaparray(void)
  * of the local network.  mask is its subnet mask.
  */
 void
-init_addrtoname(int fflag, u_int32 localnet, u_int32 mask)
+init_addrtoname(u_int32_t localnet, u_int32_t mask)
 {
 	netmask = mask;
 	if (fflag) {
 		f_localnet = localnet;
 		f_netmask = mask;
 	}
+
+	init_servarray();
+	init_ipprotoarray();
+
 	if (nflag)
 		/*
 		 * Simplest way to suppress names.
@@ -697,7 +876,6 @@ init_addrtoname(int fflag, u_int32 localnet, u_int32 mask)
 		return;
 
 	init_etherarray();
-	init_servarray();
 	init_eprotoarray();
 	init_llcsaparray();
 	init_protoidarray();
@@ -714,7 +892,7 @@ dnaddr_string(u_short dnaddr)
 			return (tp->name);
 
 	tp->addr = dnaddr;
-	tp->nxt = (struct hnamemem *)calloc(1, sizeof(*tp));
+	tp->nxt = newhnamemem();
 	if (nflag)
 		tp->name = dnnum_string(dnaddr);
 	else
@@ -722,3 +900,43 @@ dnaddr_string(u_short dnaddr)
 
 	return(tp->name);
 }
+
+/* Return a zero'ed hnamemem struct and cuts down on calloc() overhead */
+struct hnamemem *
+newhnamemem(void)
+{
+	register struct hnamemem *p;
+	static struct hnamemem *ptr = NULL;
+	static u_int num = 0;
+
+	if (num  <= 0) {
+		num = 64;
+		ptr = (struct hnamemem *)calloc(num, sizeof (*ptr));
+		if (ptr == NULL)
+			error("newhnamemem: calloc");
+	}
+	--num;
+	p = ptr++;
+	return (p);
+}
+
+#ifdef INET6
+/* Return a zero'ed h6namemem struct and cuts down on calloc() overhead */
+struct h6namemem *
+newh6namemem(void)
+{
+	register struct h6namemem *p;
+	static struct h6namemem *ptr = NULL;
+	static u_int num = 0;
+
+	if (num  <= 0) {
+		num = 64;
+		ptr = (struct h6namemem *)calloc(num, sizeof (*ptr));
+		if (ptr == NULL)
+			error("newh6namemem: calloc");
+	}
+	--num;
+	p = ptr++;
+	return (p);
+}
+#endif /* INET6 */

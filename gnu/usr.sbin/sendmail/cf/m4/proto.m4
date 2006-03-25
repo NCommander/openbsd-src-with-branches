@@ -1,6 +1,6 @@
 divert(-1)
 #
-# Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+# Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.
 #	All rights reserved.
 # Copyright (c) 1983, 1995 Eric P. Allman.  All rights reserved.
 # Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@ divert(-1)
 #
 divert(0)
 
-VERSIONID(`$Sendmail: proto.m4,v 8.620 2001/08/20 00:55:08 ca Exp $')
+VERSIONID(`$Sendmail: proto.m4,v 8.711 2004/08/04 21:29:55 ca Exp $')
 
 # level CF_LEVEL config file format
 V`'CF_LEVEL/ifdef(`VENDOR_NAME', `VENDOR_NAME', `Berkeley')
@@ -111,6 +111,7 @@ Fw`'confCW_FILE',
 # ... `define' this only if sendmail cannot automatically determine your domain
 ifdef(`confDOMAIN_NAME', `Dj`'confDOMAIN_NAME', `#Dj$w.Foo.COM')
 
+# host/domain names ending with a token in class P are canonical
 CP.
 
 ifdef(`UUCP_RELAY',
@@ -196,7 +197,7 @@ ifdef(`_MACRO_MAP_', `', `# macro storage map
 define(`_MACRO_MAP_', `1')dnl
 Kmacro macro')
 # possible values for TLS_connection in access map
-C{tls}VERIFY ENCR', `dnl')
+C{Tls}VERIFY ENCR', `dnl')
 ifdef(`_CERT_REGEX_ISSUER_', `dnl
 # extract relevant part from cert issuer
 KCERTIssuer regex _CERT_REGEX_ISSUER_', `dnl')
@@ -205,11 +206,13 @@ ifdef(`_CERT_REGEX_SUBJECT_', `dnl
 KCERTSubject regex _CERT_REGEX_SUBJECT_', `dnl')
 
 ifdef(`LOCAL_RELAY', `dnl
-# who I send unqualified names to (null means deliver locally)
+# who I send unqualified names to if `FEATURE(stickyhost)' is used
+# (null means deliver locally)
 DR`'LOCAL_RELAY')
 
 ifdef(`MAIL_HUB', `dnl
-# who gets all local email traffic ($R has precedence for unqualified names)
+# who gets all local email traffic
+# ($R has precedence for unqualified names if `FEATURE(stickyhost)' is used)
 DH`'MAIL_HUB')
 
 # dequoting map
@@ -258,7 +261,7 @@ _OPTION(AliasFile, `ALIAS_FILE', `MAIL_SETTINGS_DIR`'aliases')
 _OPTION(MinFreeBlocks, `confMIN_FREE_BLOCKS', `100')
 
 # maximum message size
-_OPTION(MaxMessageSize, `confMAX_MESSAGE_SIZE', `1000000')
+_OPTION(MaxMessageSize, `confMAX_MESSAGE_SIZE', `0')
 
 # substitution for space (blank) characters
 _OPTION(BlankSub, `confBLANK_SUB', `_')
@@ -291,7 +294,7 @@ _OPTION(TempFileMode, `confTEMP_FILE_MODE', `0600')
 _OPTION(MatchGECOS, `confMATCH_GECOS', `False')
 
 # maximum hop count
-_OPTION(MaxHopCount, `confMAX_HOP', `17')
+_OPTION(MaxHopCount, `confMAX_HOP', `25')
 
 # location of help file
 O HelpFile=ifdef(`HELP_FILE', HELP_FILE, `MAIL_SETTINGS_DIR`'helpfile')
@@ -337,7 +340,8 @@ _OPTION(OldStyleHeaders, `confOLD_STYLE_HEADERS', `False')
 
 # SMTP daemon options
 ifelse(defn(`confDAEMON_OPTIONS'), `', `dnl',
-`errprint(WARNING: `confDAEMON_OPTIONS' is no longer valid.  See cf/README for more information.
+`errprint(WARNING: `confDAEMON_OPTIONS' is no longer valid.
+	Use `DAEMON_OPTIONS()'; see cf/README.
 )'dnl
 `DAEMON_OPTIONS(`confDAEMON_OPTIONS')')
 ifelse(defn(`_DPO_'), `',
@@ -395,6 +399,10 @@ O QueueDirectory=ifdef(`QUEUE_DIR', QUEUE_DIR, `/var/spool/mqueue')
 # key for shared memory; 0 to turn off
 _OPTION(SharedMemoryKey, `confSHARED_MEMORY_KEY', `0')
 
+ifdef(`confSHARED_MEMORY_KEY_FILE', `dnl
+# file to store key for shared memory (if SharedMemoryKey = -1)
+O SharedMemoryKeyFile=confSHARED_MEMORY_KEY_FILE')
+
 # timeouts (many of these)
 _OPTION(Timeout.initial, `confTO_INITIAL', `5m')
 _OPTION(Timeout.connect, `confTO_CONNECT', `5m')
@@ -417,10 +425,12 @@ _OPTION(Timeout.queuereturn, `confTO_QUEUERETURN', `5d')
 _OPTION(Timeout.queuereturn.normal, `confTO_QUEUERETURN_NORMAL', `5d')
 _OPTION(Timeout.queuereturn.urgent, `confTO_QUEUERETURN_URGENT', `2d')
 _OPTION(Timeout.queuereturn.non-urgent, `confTO_QUEUERETURN_NONURGENT', `7d')
+_OPTION(Timeout.queuereturn.dsn, `confTO_QUEUERETURN_DSN', `5d')
 _OPTION(Timeout.queuewarn, `confTO_QUEUEWARN', `4h')
 _OPTION(Timeout.queuewarn.normal, `confTO_QUEUEWARN_NORMAL', `4h')
 _OPTION(Timeout.queuewarn.urgent, `confTO_QUEUEWARN_URGENT', `1h')
 _OPTION(Timeout.queuewarn.non-urgent, `confTO_QUEUEWARN_NONURGENT', `12h')
+_OPTION(Timeout.queuewarn.dsn, `confTO_QUEUEWARN_DSN', `4h')
 _OPTION(Timeout.hoststatus, `confTO_HOSTSTATUS', `30m')
 _OPTION(Timeout.resolver.retrans, `confTO_RESOLVER_RETRANS', `5s')
 _OPTION(Timeout.resolver.retrans.first, `confTO_RESOLVER_RETRANS_FIRST', `5s')
@@ -461,6 +471,9 @@ _OPTION(UserDatabaseSpec, `confUSERDB_SPEC', `MAIL_SETTINGS_DIR`'userdb')
 # fallback MX host
 _OPTION(FallbackMXhost, `confFALLBACK_MX', `fall.back.host.net')
 
+# fallback smart host
+_OPTION(FallbackSmartHost, `confFALLBACK_SMARTHOST', `fall.back.host.net')
+
 # if we are the best MX host for a site, try it directly instead of config err
 _OPTION(TryNullMXList, `confTRY_NULL_MX_LIST', `False')
 
@@ -470,14 +483,20 @@ _OPTION(QueueLA, `confQUEUE_LA', `8')
 # load average at which we refuse connections
 _OPTION(RefuseLA, `confREFUSE_LA', `12')
 
+# log interval when refusing connections for this long
+_OPTION(RejectLogInterval, `confREJECT_LOG_INTERVAL', `3h')
+
 # load average at which we delay connections; 0 means no limit
 _OPTION(DelayLA, `confDELAY_LA', `0')
 
 # maximum number of children we allow at one time
-_OPTION(MaxDaemonChildren, `confMAX_DAEMON_CHILDREN', `12')
+_OPTION(MaxDaemonChildren, `confMAX_DAEMON_CHILDREN', `0')
 
 # maximum number of new connections per second
 _OPTION(ConnectionRateThrottle, `confCONNECTION_RATE_THROTTLE', `0')
+
+# Width of the window 
+_OPTION(ConnectionRateWindowSize, `confCONNECTION_RATE_WINDOW_SIZE', `60s')
 
 # work recipient factor
 _OPTION(RecipientFactor, `confWORK_RECIPIENT_FACTOR', `30000')
@@ -492,7 +511,7 @@ _OPTION(ClassFactor, `confWORK_CLASS_FACTOR', `1800')
 _OPTION(RetryFactor, `confWORK_TIME_FACTOR', `90000')
 
 # default character set
-_OPTION(DefaultCharSet, `confDEF_CHAR_SET', `iso-8859-1')
+_OPTION(DefaultCharSet, `confDEF_CHAR_SET', `unknown-8bit')
 
 # service switch file (name hardwired on Solaris, Ultrix, OSF/1, others)
 _OPTION(ServiceSwitchFile, `confSERVICE_SWITCH_FILE', `MAIL_SETTINGS_DIR`'service.switch')
@@ -553,11 +572,11 @@ _OPTION(DeadLetterDrop, `confDEAD_LETTER_DROP', `/var/tmp/dead.letter')
 _OPTION(RunAsUser, `confRUN_AS_USER', `sendmail')
 
 # maximum number of recipients per SMTP envelope
-_OPTION(MaxRecipientsPerMessage, `confMAX_RCPTS_PER_MESSAGE', `100')
+_OPTION(MaxRecipientsPerMessage, `confMAX_RCPTS_PER_MESSAGE', `0')
 
 # limit the rate recipients per SMTP envelope are accepted
 # once the threshold number of recipients have been rejected
-_OPTION(BadRcptThrottle, `confBAD_RCPT_THROTTLE', `20')
+_OPTION(BadRcptThrottle, `confBAD_RCPT_THROTTLE', `0')
 
 # shall we get local names from our installed interfaces?
 _OPTION(DontProbeInterfaces, `confDONT_PROBE_INTERFACES', `False')
@@ -598,8 +617,14 @@ _OPTION(XscriptFileBufferSize, `confXF_BUFFER_SIZE', `4096')
 # lookup type to find information about local mailboxes
 _OPTION(MailboxDatabase, `confMAILBOX_DATABASE', `pw')
 
+# override compile time flag REQUIRES_DIR_FSYNC
+_OPTION(RequiresDirfsync, `confREQUIRES_DIR_FSYNC', `true')
+
 # list of authentication mechanisms
 _OPTION(AuthMechanisms, `confAUTH_MECHANISMS', `EXTERNAL GSSAPI KERBEROS_V4 DIGEST-MD5 CRAM-MD5')
+
+# Authentication realm
+_OPTION(AuthRealm, `confAUTH_REALM', `')
 
 # default authentication information for outgoing connections
 _OPTION(DefaultAuthInfo, `confDEF_AUTH_INFO', `MAIL_SETTINGS_DIR`'default-auth-info')
@@ -616,18 +641,19 @@ _OPTION(TLSSrvOptions, `confTLS_SRV_OPTIONS', `')
 # Input mail filters
 _OPTION(InputMailFilters, `confINPUT_MAIL_FILTERS', `')
 
-ifdef(`confINPUT_MAIL_FILTERS', `dnl
+ifelse(len(X`'_MAIL_FILTERS_DEF), `1', `dnl', `dnl
 # Milter options
 _OPTION(Milter.LogLevel, `confMILTER_LOG_LEVEL', `')
 _OPTION(Milter.macros.connect, `confMILTER_MACROS_CONNECT', `')
 _OPTION(Milter.macros.helo, `confMILTER_MACROS_HELO', `')
 _OPTION(Milter.macros.envfrom, `confMILTER_MACROS_ENVFROM', `')
-_OPTION(Milter.macros.envrcpt, `confMILTER_MACROS_ENVRCPT', `')')
+_OPTION(Milter.macros.envrcpt, `confMILTER_MACROS_ENVRCPT', `')
+_OPTION(Milter.macros.eom, `confMILTER_MACROS_EOM', `')')
 
 # CA directory
-_OPTION(CACERTPath, `confCACERT_PATH', `')
+_OPTION(CACertPath, `confCACERT_PATH', `')
 # CA file
-_OPTION(CACERTFile, `confCACERT', `')
+_OPTION(CACertFile, `confCACERT', `')
 # Server Cert
 _OPTION(ServerCertFile, `confSERVER_CERT', `')
 # Server private key
@@ -636,6 +662,8 @@ _OPTION(ServerKeyFile, `confSERVER_KEY', `')
 _OPTION(ClientCertFile, `confCLIENT_CERT', `')
 # Client private key
 _OPTION(ClientKeyFile, `confCLIENT_KEY', `')
+# File containing certificate revocation lists 
+_OPTION(CRLFile, `confCRL', `')
 # DHParameters (only required if DSA/DH is used)
 _OPTION(DHParameters, `confDH_PARAMETERS', `')
 # Random data source (required for systems without /dev/urandom under OpenSSL)
@@ -672,6 +700,7 @@ ifdef(`confTRUSTED_USERS', `T`'confTRUSTED_USERS', `dnl')
 #########################
 
 ifdef(`confFROM_HEADER',, `define(`confFROM_HEADER', `$?x$x <$g>$|$g$.')')dnl
+ifdef(`confMESSAGEID_HEADER',, `define(`confMESSAGEID_HEADER', `<$t.$i@$j>')')dnl
 H?P?Return-Path: <$g>
 HReceived: confRECEIVED_HEADER
 H?D?Resent-Date: $a
@@ -681,8 +710,8 @@ H?F?From: confFROM_HEADER
 H?x?Full-Name: $x
 # HPosted-Date: $a
 # H?l?Received-Date: $b
-H?M?Resent-Message-Id: <$t.$i@$j>
-H?M?Message-Id: <$t.$i@$j>
+H?M?Resent-Message-Id: confMESSAGEID_HEADER
+H?M?Message-Id: confMESSAGEID_HEADER
 
 #
 ######################################################################
@@ -862,6 +891,11 @@ dnl but add a trailing dot to qualified hostnames so other rules will work
 dnl should we do this for every hostname: even unqualified?
 R$* CC $* $| $* < @ $+.$+ > $*	$: $3 < @ $4.$5 . > $6
 R$* CC $* $| $*			$: $3
+ifdef(`_FFR_NOCANONIFY_HEADERS', `dnl
+# do not canonify header addresses
+R$* $| $* < @ $* $~P > $*	$: $&{addr_type} $| $2 < @ $3 $4 > $5
+R$* h $* $| $* < @ $+.$+ > $*	$: $3 < @ $4.$5 . > $6
+R$* h $* $| $*			$: $3', `dnl')
 # pass to name server to make hostname canonical
 R$* $| $* < @ $* > $*		$: $2 < @ $[ $3 $] > $4')
 dnl remove {daemon_flags} for other cases
@@ -1005,7 +1039,7 @@ ifdef(`_MAILER_smtp_',
 `# handle numeric address spec
 dnl there is no check whether this is really an IP number
 R$* < @ [ $+ ] > $*	$: $>ParseLocal $1 < @ [ $2 ] > $3	numeric internet spec
-R$* < @ [ $+ ] > $*	$1 < @ [ $2 ] : $S > $3		Add smart host to path
+R$* < @ [ $+ ] > $*	$: $1 < @ [ $2 ] : $S > $3	Add smart host to path
 R$* < @ [ $+ ] : > $*		$#_SMTP_ $@ [$2] $: $1 < @ [$2] > $3	no smarthost: send
 R$* < @ [ $+ ] : $- : $*> $*	$#$3 $@ $4 $: $1 < @ [$2] > $5	smarthost with mailer
 R$* < @ [ $+ ] : $+ > $*	$#_SMTP_ $@ $3 $: $1 < @ [$2] > $4	smarthost without mailer',
@@ -1047,8 +1081,9 @@ R<@> $+ + $+ < @ $+ . >	$: < $(virtuser + + @ $3 $@ $1 $@ $2 $@ +$2 $: @ $) > $1
 dnl +*@domain
 R<@> $+ + $* < @ $+ . >	$: < $(virtuser + * @ $3 $@ $1 $@ $2 $@ +$2 $: @ $) > $1 + $2 < @ $3 . >
 dnl @domain if +detail exists
-R<@> $+ + $* < @ $+ . >	$: < $(virtuser @ $3 $@ $1 $@ $2 $@ +$2 $: @ $) > $1 + $2 < @ $3 . >
-dnl without +detail (or no match)
+dnl if no match, change marker to prevent a second @domain lookup
+R<@> $+ + $* < @ $+ . >	$: < $(virtuser @ $3 $@ $1 $@ $2 $@ +$2 $: ! $) > $1 + $2 < @ $3 . >
+dnl without +detail
 R<@> $+ < @ $+ . >	$: < $(virtuser @ $2 $@ $1 $: @ $) > $1 < @ $2 . >
 dnl no match
 R<@> $+			$: $1
@@ -1168,6 +1203,7 @@ R$+			$: $1 $| $&h $| $&{Host}	check h and {Host}
 R$+ $| $|		$: $(macro {Host} $@ $) $1	no h or {Host}
 R$+ $| $| $+		$: $1			h not set, {Host} set
 R$+ $| +$* $| $*	$: $1			h is +detail, {Host} set
+R$+ $| $* @ $+ $| $*	$: $(macro {Host} $@ @$3 $) $1	set {Host} to host in h
 R$+ $| $+ $| $*		$: $(macro {Host} $@ @$2 $) $1	set {Host} to h
 ')dnl
 
@@ -1265,6 +1301,7 @@ R< $* > $*		$@ $2				no mailertable match',
 dnl input: in general: <[mailer:]host> lp<@domain>rest
 dnl	<> address				-> address
 dnl	<error:d.s.n:text>			-> error
+dnl	<error:keyword:text>			-> error
 dnl	<error:text>				-> error
 dnl	<mailer:user@host> lp<@domain>rest	-> mailer host user
 dnl	<mailer:host> address			-> mailer host address
@@ -1275,7 +1312,8 @@ dnl	<host> address				-> relay host address
 SMailerToTriple=95
 R< > $*				$@ $1			strip off null relay
 R< error : $-.$-.$- : $+ > $* 	$#error $@ $1.$2.$3 $: $4
-R< error : $- $+ > $*		$#error $@ $(dequote $1 $) $: $2
+R< error : $- : $+ > $*		$#error $@ $(dequote $1 $) $: $2
+R< error : $+ > $*		$#error $: $1
 R< local : $* > $*		$>CanonLocal < $1 > $2
 dnl it is $~[ instead of $- to avoid matches on IPv6 addresses
 R< $~[ : $+ @ $+ > $*<$*>$*	$# $1 $@ $3 $: $2<@$3>	use literal user
@@ -1407,9 +1445,21 @@ ifdef(`_LDAP_ROUTING_', `dnl
 ###		Parsed address (user < @ domain . >)
 ######################################################################
 
+# SMTP operation modes
+C{SMTPOpModes} s d D
+
 SLDAPExpand
 # do the LDAP lookups
 R<$+><$+><$*>	$: <$(ldapmra $2 $: $)> <$(ldapmh $2 $: $)> <$1> <$2> <$3>
+
+# look for temporary failures and...
+R<$* <TMPF>> <$*> <$+> <$+> <$*>	$: $&{opMode} $| TMPF <$&{addr_type}> $| $3
+R<$*> <$* <TMPF>> <$+> <$+> <$*>	$: $&{opMode} $| TMPF <$&{addr_type}> $| $3
+ifelse(_LDAP_ROUTE_MAPTEMP_, `_TEMPFAIL_', `dnl
+# ... temp fail RCPT SMTP commands
+R$={SMTPOpModes} $| TMPF <e r> $| $+	$#error $@ 4.3.0 $: "451 Temporary system failure. Please try again later."')
+# ... return original address for MTA to queue up
+R$* $| TMPF <$*> $| $+			$@ $3
 
 # if mailRoutingAddress and local or non-existant mailHost,
 # return the new mailRoutingAddress
@@ -1418,6 +1468,7 @@ R<$+@$+> <$=w> <$+> <$+> <$*>	$@ $>Parse0 $>canonify $1 $6 @ $2
 R<$+@$+> <> <$+> <$+> <$*>	$@ $>Parse0 $>canonify $1 $5 @ $2')
 R<$+> <$=w> <$+> <$+> <$*>	$@ $>Parse0 $>canonify $1
 R<$+> <> <$+> <$+> <$*>		$@ $>Parse0 $>canonify $1
+
 
 # if mailRoutingAddress and non-local mailHost,
 # relay to mailHost with new mailRoutingAddress
@@ -1435,6 +1486,7 @@ R<$+> <$+> <$+> <$+> <$*>	$>LDAPMailertable <$2> $>canonify $1',
 # return original address
 R<> <$=w> <$+> <$+> <$*>	$@ $2
 
+
 # if no mailRoutingAddress and non-local mailHost,
 # relay to mailHost with original address
 ifdef(`_MAILER_TABLE_', `dnl
@@ -1447,11 +1499,12 @@ ifdef(`_LDAP_ROUTE_DETAIL_',
 # try without +detail
 R<> <> <$+> <$+ + $* @ $+> <>	$@ $>LDAPExpand <$1> <$2 @ $4> <+$3>')dnl
 
+ifdef(`_LDAP_ROUTE_NODOMAIN_', `dnl', `
 # if still no mailRoutingAddress and no mailHost,
 # try @domain
 ifelse(_LDAP_ROUTE_DETAIL_, `_PRESERVE_', `dnl
 R<> <> <$+> <$+ + $* @ $+> <>	$@ $>LDAPExpand <$1> <@ $4> <+$3>')
-R<> <> <$+> <$+ @ $+> <$*>	$@ $>LDAPExpand <$1> <@ $3> <$4>
+R<> <> <$+> <$+ @ $+> <$*>	$@ $>LDAPExpand <$1> <@ $3> <$4>')
 
 # if no mailRoutingAddress and no mailHost and this was a domain attempt,
 ifelse(_LDAP_ROUTING_, `_MUST_EXIST_', `dnl
@@ -1459,6 +1512,9 @@ ifelse(_LDAP_ROUTING_, `_MUST_EXIST_', `dnl
 R<> <> <$+> <@ $+> <$*>		$: <?> < $&{addr_type} > < $1 >
 # only give error for envelope recipient
 R<?> <e r> <$+>			$#error $@ nouser $: "550 User unknown"
+ifdef(`_LDAP_SENDER_MUST_EXIST_', `dnl
+# and the sender too
+R<?> <e s> <$+>			$#error $@ nouser $: "550 User unknown"')
 R<?> <$*> <$+>			$@ $2',
 `dnl
 # return the original address
@@ -1515,6 +1571,9 @@ R<?> <[$+:$-]> <$+> <$- $-> <$*>	$: $>D <[$1]> <$3> <$4 $5> <$6>')
 dnl not found, but subdomain: try again
 dnl   1  2    3    4  5    6
 R<?> <$+.$+> <$+> <$- $-> <$*>	$@ $>D <$2> <$3> <$4 $5> <$6>
+ifdef(`_FFR_LOOKUPTAG_', `dnl lookup Tag:
+dnl   1    2      3    4
+R<?> <$+> <$+> <! $-> <$*>	$: < $(access $3`'_TAG_DELIM_ $: ? $) > <$1> <$2> <! $3> <$4>', `dnl')
 dnl not found, no subdomain: return <default> and <passthru>
 dnl   1    2    3  4    5
 R<?> <$+> <$+> <$- $-> <$*>	$@ <$2> <$5>
@@ -1644,7 +1703,7 @@ R<$+> <$+>			$: <$1> $2',`dnl')')
 ifdef(`_RELAY_MX_SERVED_', `dnl
 dnl do "we" ($=w) act as backup MX server for the destination domain?
 R<NO> $* < @ $+ >		$: <MX> < : $(mxserved $2 $) : > < $1 < @$2 > >
-R<MX> < : $* <TEMP> : > $*	$#TEMP $@ 4.7.1 $: "450 Can not check MX records for recipient host " $1
+R<MX> < : $* <TEMP> : > $*	$#TEMP $@ 4.4.0 $: "450 Can not check MX records for recipient host " $1
 dnl yes: mark it as <RELAY>
 R<MX> < $* : $=w. : $* > < $+ >	$: <RELAY> $4
 dnl no: put old <NO> mark back
@@ -1660,15 +1719,27 @@ R<$+> $*			$@ $2
 ###  check_relay -- check hostname/address on SMTP startup
 ######################################################################
 
+ifdef(`_CONTROL_IMMEDIATE_',`dnl
+Scheck_relay
+ifdef(`_RATE_CONTROL_IMMEDIATE_',`dnl
+dnl workspace: ignored...
+R$*		$: $>"RateControl" dummy', `dnl')
+ifdef(`_CONN_CONTROL_IMMEDIATE_',`dnl
+dnl workspace: ignored...
+R$*		$: $>"ConnControl" dummy', `dnl')
+dnl')
+
 SLocal_check_relay
 Scheck`'_U_`'relay
+ifdef(`_USE_CLIENT_PTR_',`dnl
+R$* $| $*		$: $&{client_ptr} $| $2', `dnl')
 R$*			$: $1 $| $>"Local_check_relay" $1
 R$* $| $* $| $#$*	$#$3
 R$* $| $* $| $*		$@ $>"Basic_check_relay" $1 $| $2
 
 SBasic_check_relay
 # check for deferred delivery mode
-R$*			$: < ${deliveryMode} > $1
+R$*			$: < $&{deliveryMode} > $1
 R< d > $*		$@ deferred
 R< $* > $*		$: $2
 
@@ -1676,13 +1747,17 @@ ifdef(`_ACCESS_TABLE_', `dnl
 dnl workspace: {client_name} $| {client_addr}
 R$+ $| $+		$: $>D < $1 > <?> <+ Connect> < $2 >
 dnl workspace: <result-of-lookup> <{client_addr}>
+dnl OR $| $+ if client_name is empty
+R   $| $+		$: $>A < $1 > <?> <+ Connect> <>	empty client_name
+dnl workspace: <result-of-lookup> <{client_addr}>
 R<?> <$+>		$: $>A < $1 > <?> <+ Connect> <>	no: another lookup
 dnl workspace: <result-of-lookup> (<>|<{client_addr}>)
 R<?> <$*>		$: OK				found nothing
 dnl workspace: <result-of-lookup> (<>|<{client_addr}>) | OK
 R<$={Accept}> <$*>	$@ $1				return value of lookup
-R<REJECT> <$*>		$#error ifdef(`confREJECT_MSG', `$: "confREJECT_MSG"', `$@ 5.7.1 $: "550 Access denied"')
+R<REJECT> <$*>		$#error ifdef(`confREJECT_MSG', `$: confREJECT_MSG', `$@ 5.7.1 $: "550 Access denied"')
 R<DISCARD> <$*>		$#discard $: discard
+R<QUARANTINE:$+> <$*>	$#error $@ quarantine $: $1
 dnl error tag
 R<ERROR:$-.$-.$-:$+> <$*>	$#error $@ $1.$2.$3 $: $4
 R<ERROR:$+> <$*>		$#error $: $1
@@ -1696,8 +1771,16 @@ dnl workspace: ignored...
 R$*			$: $&{client_addr}
 R$-.$-.$-.$-		$: <?> $(host $4.$3.$2.$1._RBL_. $: OK $)
 R<?>OK			$: OKSOFAR
-R<?>$+			$#error $@ 5.7.1 $: "550 Mail from " $&{client_addr} " refused by blackhole site _RBL_"',
+R<?>$+			$#error $@ 5.7.1 $: "550 Rejected: " $&{client_addr} " listed at _RBL_"',
 `dnl')
+ifdef(`_RATE_CONTROL_',`dnl
+ifdef(`_RATE_CONTROL_IMMEDIATE_',`', `dnl
+dnl workspace: ignored...
+R$*		$: $>"RateControl" dummy')', `dnl')
+ifdef(`_CONN_CONTROL_',`dnl
+ifdef(`_CONN_CONTROL_IMMEDIATE_',`',`dnl
+dnl workspace: ignored...
+R$*		$: $>"ConnControl" dummy')', `dnl')
 undivert(8)
 
 ######################################################################
@@ -1712,7 +1795,7 @@ R$* $| $*		$@ $>"Basic_check_mail" $1
 
 SBasic_check_mail
 # check for deferred delivery mode
-R$*			$: < ${deliveryMode} > $1
+R$*			$: < $&{deliveryMode} > $1
 R< d > $*		$@ deferred
 R< $* > $*		$: $2
 
@@ -1777,8 +1860,10 @@ dnl workspace: <?> CanonicalAddress (i.e. address in canonical form localpart<@h
 dnl there is nothing behind the <@host> so no trailing $* needed
 R<?> $* < @ $+ . >	<?> $1 < @ $2 >			strip trailing dots
 # handle non-DNS hostnames (*.bitnet, *.decnet, *.uucp, etc)
-R<?> $* < @ $* $=P >	$: <OK> $1 < @ $2 $3 >
+R<?> $* < @ $* $=P >	$: <_RES_OK_> $1 < @ $2 $3 >
 dnl workspace <mark> CanonicalAddress	where mark is ? or OK
+dnl A sender address with my local host name ($j) is safe
+R<?> $* < @ $j >	$: <_RES_OK_> $1 < @ $j >
 ifdef(`_ACCEPT_UNRESOLVABLE_DOMAINS_',
 `R<?> $* < @ $+ >	$: <_RES_OK_> $1 < @ $2 >		... unresolvable OK',
 `R<?> $* < @ $+ >	$: <? $(resolve $2 $: $2 <PERM> $) > $1 < @ $2 >
@@ -1816,8 +1901,8 @@ dnl accept unqualified sender: change mark to avoid test
 R$* u $* $| <?> $*	$: <_RES_OK_> $3
 dnl remove daemon_flags
 R$* $| $*		$: $2
-R<?> $*			$: < ? $&{client_name} > $1
-R<?> $*			$@ <OK>				...local unqualed ok
+R<?> $*			$: < ? $&{client_addr} > $1
+R<?> $*			$@ <_RES_OK_>			...local unqualed ok
 R<? $+> $*		$#error $@ 5.5.4 $: "_CODE553 Domain name required for sender address " $&f
 							...remote is not')
 # check results
@@ -1828,7 +1913,8 @@ R<PERM> $*		$#error $@ 5.1.8 $: "_CODE553 Domain of sender address " $&f " does 
 ifdef(`_ACCESS_TABLE_', `dnl
 R<$={Accept}> $*	$# $1		accept from access map
 R<DISCARD> $*		$#discard $: discard
-R<REJECT> $*		$#error ifdef(`confREJECT_MSG', `$: "confREJECT_MSG"', `$@ 5.7.1 $: "550 Access denied"')
+R<QUARANTINE:$+> $*	$#error $@ quarantine $: $1
+R<REJECT> $*		$#error ifdef(`confREJECT_MSG', `$: confREJECT_MSG', `$@ 5.7.1 $: "550 Access denied"')
 dnl error tag
 R<ERROR:$-.$-.$-:$+> $*		$#error $@ $1.$2.$3 $: $4
 R<ERROR:$+> $*		$#error $: $1
@@ -1852,7 +1938,7 @@ SBasic_check_rcpt
 R<>			$#error $@ nouser $: "553 User address required"
 R$@			$#error $@ nouser $: "553 User address required"
 # check for deferred delivery mode
-R$*			$: < ${deliveryMode} > $1
+R$*			$: < $&{deliveryMode} > $1
 R< d > $*		$@ deferred
 R< $* > $*		$: $2
 
@@ -1869,12 +1955,14 @@ R$+			$: <?> $1
 R<?> <$+>		$: <@> <$1>
 R<?> $+			$: <@> <$1>
 R<@> < postmaster >	$: postmaster
-R<@> < $* @ $+ . $+ >	$: < $3 @ $4 . $5 >
+R<@> < $* @ $+ . $+ >	$: < $1 @ $2 . $3 >
 dnl prepend daemon_flags
 R<@> $*			$: $&{daemon_flags} $| <@> $1
 dnl workspace: ${daemon_flags} $| <@> <address>
+dnl 'r'equire qual.rcpt: ok
+R$* r $* $| <@> < $+ @ $+ >	$: < $3 @ $4 >
 dnl do not allow these at all or only from local systems?
-R$* r $* $| <@> < $* @ $* >	$: < ? $&{client_name} > < $3 @ $4 >
+R$* r $* $| <@> < $* >	$: < ? $&{client_name} > < $3 >
 R<?> < $* >		$: <$1>
 R<? $=w> < $* >		$: <$1>
 R<? $+> <$+>		$#error $@ 5.5.4 $: "553 Fully qualified domain name required"
@@ -1965,6 +2053,7 @@ dnl maybe we should stop checks already here (if SPAM_xyx)?
 R<$={SpamTag}> <$*>	$: @ $2		mark address as no match')
 R<REJECT> $*		$#error $@ 5.2.1 $: confRCPTREJ_MSG
 R<DISCARD> $*		$#discard $: discard
+R<QUARANTINE:$+> $*	$#error $@ quarantine $: $1
 dnl error tag
 R<ERROR:$-.$-.$-:$+> $*		$#error $@ $1.$2.$3 $: $4
 R<ERROR:$+> $*		$#error $: $1
@@ -2009,7 +2098,11 @@ dnl workspace: <Result-of-lookup | ?> <localpart<@domain>>
 R<?> <$+ < @ $+ >>	$: <$(access $2 $: ? $)> <$1 < @ $2 >>',`dnl')',
 `R$+ < @ $* $=R >	$@ RELAY
 ifdef(`_ACCESS_TABLE_', `dnl
-R$+ < @ $+ >		$: $>D <$2> <?> <+ To> <$1 < @ $2 >>',`dnl')')
+ifdef(`_RELAY_FULL_ADDR_', `dnl
+R$+ < @ $+ >		$: $1 < @ $2 > $| $>SearchList <+ To> $| <F:$1@$2> <D:$2> <F:$1@> <>
+R$+ < @ $+ > $| <$*>	$: <$3> <$1 <@ $2>>
+R$+ < @ $+ > $| $*	$: <$3> <$1 <@ $2>>',
+`R$+ < @ $+ >		$: $>D <$2> <?> <+ To> <$1 < @ $2 >>')')')
 ifdef(`_ACCESS_TABLE_', `dnl
 dnl workspace: <Result-of-lookup | ?> <localpart<@domain>>
 R<RELAY> $*		$@ RELAY
@@ -2021,7 +2114,7 @@ ifdef(`_RELAY_MX_SERVED_', `dnl
 # allow relaying for hosts which we MX serve
 R$+ < @ $+ >		$: < : $(mxserved $2 $) : > $1 < @ $2 >
 dnl this must not necessarily happen if the client is checked first...
-R< : $* <TEMP> : > $*	$#TEMP $@ 4.7.1 $: "450 Can not check MX records for recipient host " $1
+R< : $* <TEMP> : > $*	$#TEMP $@ 4.4.0 $: "450 Can not check MX records for recipient host " $1
 R<$* : $=w . : $*> $*	$@ RELAY
 R< : $* : > $*		$: $2',
 `dnl')
@@ -2069,10 +2162,18 @@ SRelay_ok
 R$*			$: $&{client_addr}
 R$@			$@ RELAY		originated locally
 R0			$@ RELAY		originated locally
+R127.0.0.1		$@ RELAY		originated locally
+RIPv6:::1		$@ RELAY		originated locally
 R$=R $*			$@ RELAY		relayable IP address
 ifdef(`_ACCESS_TABLE_', `dnl
 R$*			$: $>A <$1> <?> <+ Connect> <$1>
 R<RELAY> $* 		$@ RELAY		relayable IP address
+ifdef(`_FFR_REJECT_IP_IN_CHECK_RCPT_',`dnl
+dnl this will cause rejections in cases like:
+dnl Connect:My.Host.Domain	RELAY
+dnl Connect:My.Net		REJECT
+dnl since in check_relay client_name is checked before client_addr
+R<REJECT> $* 		$@ REJECT		rejected IP address')
 ifdef(`_ATMPF_', `R<_ATMPF_> $*		$#TEMP $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
 R<$*> <$*>		$: $2', `dnl')
 R$*			$: [ $1 ]		put brackets around it...
@@ -2090,7 +2191,7 @@ ifdef(`_RELAY_LOCAL_FROM_', `dnl
 # check whether local FROM is ok
 R<?> $+ < @ $=w >	$@ RELAY		FROM local', `dnl')
 ifdef(`_RELAY_DB_FROM_', `dnl
-R<?> $+ < @ $+ >	$: <@> $>SearchList <! From> $| <F:$1@$2> ifdef(`_RELAY_DB_FROM_DOMAIN_', `<D:$2>') <>
+R<?> $+ < @ $+ >	$: <@> $>SearchList <! From> $| <F:$1@$2> ifdef(`_RELAY_DB_FROM_DOMAIN_', ifdef(`_RELAY_HOSTS_ONLY_', `<E:$2>', `<D:$2>')) <>
 R<@> <RELAY>		$@ RELAY		RELAY FROM sender ok
 ifdef(`_ATMPF_', `R<@> <_ATMPF_>		$#TEMP $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
 ', `dnl
@@ -2106,13 +2207,17 @@ dnl the input. otherwise these rules must "clean up" the workspace.
 # check client name: first: did it resolve?
 dnl input: ignored
 R$*			$: < $&{client_resolve} >
-R<TEMP>			$#TEMP $@ 4.7.1 $: "450 Relaying temporarily denied. Cannot resolve PTR record for " $&{client_addr}
+R<TEMP>			$#TEMP $@ 4.4.0 $: "450 Relaying temporarily denied. Cannot resolve PTR record for " $&{client_addr}
 R<FORGED>		$#error $@ 5.7.1 $: "550 Relaying denied. IP name possibly forged " $&{client_name}
 R<FAIL>			$#error $@ 5.7.1 $: "550 Relaying denied. IP name lookup failed " $&{client_name}
 dnl ${client_resolve} should be OK, so go ahead
 R$*			$: <@> $&{client_name}
 dnl should not be necessary since it has been done for client_addr already
-R<@>			$@ RELAY
+dnl this rule actually may cause a problem if {client_name} resolves to ""
+dnl however, this should not happen since the forward lookup should fail
+dnl and {client_resolve} should be TEMP or FAIL.
+dnl nevertheless, removing the rule doesn't hurt.
+dnl R<@>			$@ RELAY
 dnl workspace: <@> ${client_name} (not empty)
 # pass to name server to make hostname canonical
 R<@> $* $=P 		$:<?>  $1 $2
@@ -2145,14 +2250,39 @@ R$* <@ $+ . >		$1 <@ $2 >
 R$* <@ $* >		$@ $1 <@ $2 >
 R$+			$@ $1 <@ $j >
 
+SDelay_TLS_Clt
+# authenticated?
+dnl code repeated here from Basic_check_mail
+dnl only called from check_rcpt in delay mode if checkrcpt returns $#
+R$*			$: $1 $| $>"tls_client" $&{verify} $| MAIL
+R$* $| $#$+		$#$2
+dnl return result from checkrcpt
+R$* $| $*		$# $1
+R$*			$# $1
+
+SDelay_TLS_Clt2
+# authenticated?
+dnl code repeated here from Basic_check_mail
+dnl only called from check_rcpt in delay mode if stopping due to Friend/Hater
+R$*			$: $1 $| $>"tls_client" $&{verify} $| MAIL
+R$* $| $#$+		$#$2
+dnl return result from friend/hater check
+R$* $| $*		$@ $1
+R$*			$@ $1
+
 # call all necessary rulesets
 Scheck_rcpt
 dnl this test should be in the Basic_check_rcpt ruleset
 dnl which is the correct DSN code?
 # R$@			$#error $@ 5.1.3 $: "553 Recipient address required"
+
 R$+			$: $1 $| $>checkrcpt $1
 dnl now we can simply stop checks by returning "$# xyz" instead of just "ok"
-R$+ $| $#$*		$#$2
+dnl on error (or discard) stop now
+R$+ $| $#error $*	$#error $2
+R$+ $| $#discard $*	$#discard $2
+dnl otherwise call tls_client; see above
+R$+ $| $#$*		$@ $>"Delay_TLS_Clt" $2
 R$+ $| $*		$: <?> $>FullAddr $>CanonAddr $1
 ifdef(`_SPAM_FH_',
 `dnl lookup user@ and user@address
@@ -2172,22 +2302,25 @@ dnl', `dnl')
 ifdef(`_SPAM_FRIEND_',
 `# is the recipient a spam friend?
 ifdef(`_SPAM_HATER_',
-	`errprint(`*** ERROR: define either SpamHater or SpamFriend
+	`errprint(`*** ERROR: define either Hater or Friend -- not both.
 ')', `dnl')
-R<FRIEND> $+		$@ SPAMFRIEND
+R<FRIEND> $+		$@ $>"Delay_TLS_Clt2" SPAMFRIEND
 R<$*> $+		$: $2',
 `dnl')
 ifdef(`_SPAM_HATER_',
 `# is the recipient no spam hater?
 R<HATER> $+		$: $1			spam hater: continue checks
-R<$*> $+		$@ NOSPAMHATER		everyone else: stop
+R<$*> $+		$@ $>"Delay_TLS_Clt2" NOSPAMHATER	everyone else: stop
 dnl',`dnl')
 dnl run further checks: check_mail
 dnl should we "clean up" $&f?
-R$*			$: $1 $| $>checkmail <$&f>
+ifdef(`_FFR_MAIL_MACRO',
+`R$*			$: $1 $| $>checkmail $&{mail_from}',
+`R$*			$: $1 $| $>checkmail <$&f>')
+dnl recipient (canonical format) $| result of checkmail
 R$* $| $#$*		$#$2
 dnl run further checks: check_relay
-R$*			$: $1 $| $>checkrelay $&{client_name} $| $&{client_addr}
+R$* $| $*		$: $1 $| $>checkrelay $&{client_name} $| $&{client_addr}
 R$* $| $#$*		$#$2
 R$* $| $*		$: $1
 ', `dnl')
@@ -2357,11 +2490,11 @@ dnl		A: recursive address lookup (LookUpAddress) [not yet required]
 
 # class with valid marks for SearchList
 dnl if A is activated: add it
-C{src}E F D U ifdef(`_FFR_SRCHLIST_A', `A')
+C{Src}E F D U ifdef(`_FFR_SRCHLIST_A', `A')
 SSearchList
 # just call the ruleset with the name of the tag... nice trick...
 dnl       2       3    4
-R<$+> $| <$={src}:$*> <$*>	$: <$1> $| <$4> $| $>$2 <$3> <?> <$1> <>
+R<$+> $| <$={Src}:$*> <$*>	$: <$1> $| <$4> $| $>$2 <$3> <?> <$1> <>
 dnl workspace: <o tag> $| <rest> $| <result of lookup> <>
 dnl no match and nothing left: return
 R<$+> $| <> $| <?> <>		$@ <?>
@@ -2391,7 +2524,7 @@ dnl seems to be useful...
 R$* $| $&{auth_authen}		$@ identical
 R$* $| <$&{auth_authen}>	$@ identical
 dnl call user supplied code
-R$* $| $*		$: $1 $| $>"Local_trust_auth" $1
+R$* $| $*		$: $1 $| $>"Local_trust_auth" $2
 R$* $| $#$*		$#$2
 dnl default: error
 R$*			$#error $@ 5.7.1 $: "550 " $&{auth_authen} " not allowed to act as " $&{auth_author}
@@ -2404,7 +2537,6 @@ R$*			$#error $@ 5.7.1 $: "550 " $&{auth_authen} " not allowed to act as " $&{au
 ######################################################################
 SLocal_Relay_Auth
 
-ifdef(`_ACCESS_TABLE_', `dnl
 ######################################################################
 ###  srv_features: which features to offer to a client?
 ###	(done in server)
@@ -2414,13 +2546,14 @@ ifdef(`_LOCAL_SRV_FEATURES_', `dnl
 R$*			$: $1 $| $>"Local_srv_features" $1
 R$* $| $#$*		$#$2
 R$* $| $*		$: $1', `dnl')
+ifdef(`_ACCESS_TABLE_', `dnl
 R$*		$: $>D <$&{client_name}> <?> <! SRV_FEAT_TAG> <>
 R<?>$*		$: $>A <$&{client_addr}> <?> <! SRV_FEAT_TAG> <>
-R<?>$*		$: <$(access SRV_FEAT_TAG: $: ? $)>
+R<?>$*		$: <$(access SRV_FEAT_TAG`'_TAG_DELIM_ $: ? $)>
 R<?>$*		$@ OK
 ifdef(`_ATMPF_', `dnl tempfail?
 R<$* _ATMPF_>$*	$#temp', `dnl')
-R<$+>$*		$# $1
+R<$+>$*		$# $1')
 
 ######################################################################
 ###  try_tls: try to use STARTTLS?
@@ -2431,14 +2564,15 @@ ifdef(`_LOCAL_TRY_TLS_', `dnl
 R$*			$: $1 $| $>"Local_try_tls" $1
 R$* $| $#$*		$#$2
 R$* $| $*		$: $1', `dnl')
+ifdef(`_ACCESS_TABLE_', `dnl
 R$*		$: $>D <$&{server_name}> <?> <! TLS_TRY_TAG> <>
 R<?>$*		$: $>A <$&{server_addr}> <?> <! TLS_TRY_TAG> <>
-R<?>$*		$: <$(access TLS_TRY_TAG: $: ? $)>
+R<?>$*		$: <$(access TLS_TRY_TAG`'_TAG_DELIM_ $: ? $)>
 R<?>$*		$@ OK
 ifdef(`_ATMPF_', `dnl tempfail?
 R<$* _ATMPF_>$*	$#error $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
-R<NO>$*		$#error $@ 5.7.1 $: "550 do not try TLS with " $&{server_name} " ["$&{server_addr}"]"
-  
+R<NO>$*		$#error $@ 5.7.1 $: "550 do not try TLS with " $&{server_name} " ["$&{server_addr}"]"')
+
 ######################################################################
 ###  tls_rcpt: is connection with server "good" enough?
 ###	(done in client, per recipient)
@@ -2452,6 +2586,7 @@ ifdef(`_LOCAL_TLS_RCPT_', `dnl
 R$*			$: $1 $| $>"Local_tls_rcpt" $1
 R$* $| $#$*		$#$2
 R$* $| $*		$: $1', `dnl')
+ifdef(`_ACCESS_TABLE_', `dnl
 dnl store name of other side
 R$*			$: $(macro {TLS_Name} $@ $&{server_name} $) $1
 dnl canonify recipient address
@@ -2553,10 +2688,10 @@ R$* $| <$*>$*			$: $1 $| <$2>
 dnl workspace: ${verify} $| <ResultOfLookup>
 # create the appropriate error codes
 dnl permanent or temporary error?
-R$* $| <PERM + $={tls} $*>	$: $1 $| <503:5.7.0> <$2 $3>
-R$* $| <TEMP + $={tls} $*>	$: $1 $| <403:4.7.0> <$2 $3>
+R$* $| <PERM + $={Tls} $*>	$: $1 $| <503:5.7.0> <$2 $3>
+R$* $| <TEMP + $={Tls} $*>	$: $1 $| <403:4.7.0> <$2 $3>
 dnl default case depends on TLS_PERM_ERR
-R$* $| <$={tls} $*>		$: $1 $| <ifdef(`TLS_PERM_ERR', `503:5.7.0', `403:4.7.0')> <$2 $3>
+R$* $| <$={Tls} $*>		$: $1 $| <ifdef(`TLS_PERM_ERR', `503:5.7.0', `403:4.7.0')> <$2 $3>
 dnl workspace: ${verify} $| [<SMTP:ESC>] <ResultOfLookup>
 # deal with TLS handshake failures: abort
 RSOFTWARE $| <$-:$+> $* 	$#error $@ $2 $: $1 " TLS handshake failed."
@@ -2566,9 +2701,9 @@ RSOFTWARE $| $* 		$#error $@ ifdef(`TLS_PERM_ERR', `5.7.0', `4.7.0') $: "ifdef(`
 R$* $| <$*> <VERIFY>		$: <$2> <VERIFY> <> $1
 dnl separate optional requirements
 R$* $| <$*> <VERIFY + $+>	$: <$2> <VERIFY> <$3> $1
-R$* $| <$*> <$={tls}:$->$*	$: <$2> <$3:$4> <> $1
+R$* $| <$*> <$={Tls}:$->$*	$: <$2> <$3:$4> <> $1
 dnl separate optional requirements
-R$* $| <$*> <$={tls}:$- + $+>$*	$: <$2> <$3:$4> <$5> $1
+R$* $| <$*> <$={Tls}:$- + $+>$*	$: <$2> <$3:$4> <$5> $1
 dnl some other value in access map: accept
 dnl this also allows to override the default case (if used)
 R$* $| $*			$@ OK
@@ -2647,12 +2782,12 @@ dnl cert subject
 R<CS:$&{cert_subject}> $* $| <$+>	$@ $>"TLS_req" $1 $| <$2>
 dnl CS does not match
 dnl  1   2      3  4
-R<CS:$+> $* $| <$-:$+>	$#error $@ $4 $: $3 " CERT Subject " $&{cert_subject} " does not match " $1
+R<CS:$+> $* $| <$-:$+>	$#error $@ $4 $: $3 " Cert Subject " $&{cert_subject} " does not match " $1
 dnl match, check rest
 R<CI:$&{cert_issuer}> $* $| <$+>	$@ $>"TLS_req" $1 $| <$2>
 dnl CI does not match
 dnl  1   2      3  4
-R<CI:$+> $* $| <$-:$+>	$#error $@ $4 $: $3 " CERT Issuer " $&{cert_issuer} " does not match " $1
+R<CI:$+> $* $| <$-:$+>	$#error $@ $4 $: $3 " Cert Issuer " $&{cert_issuer} " does not match " $1
 dnl return from recursive call
 ROK			$@ OK
 
@@ -2681,7 +2816,7 @@ SRelayTLS
 # authenticated?
 dnl we do not allow relaying for anyone who can present a cert
 dnl signed by a "trusted" CA. For example, even if we put verisigns
-dnl CA in CERTPath so we can authenticate users, we do not allow
+dnl CA in CertPath so we can authenticate users, we do not allow
 dnl them to abuse our server (they might be easier to get hold of,
 dnl but anyway).
 dnl so here is the trick: if the verification succeeded
@@ -2697,13 +2832,13 @@ R<?> $*			$@ NO		not authenticated
 ifdef(`_CERT_REGEX_ISSUER_', `dnl
 R$*			$: $(CERTIssuer $&{cert_issuer} $)',
 `R$*			$: $&{cert_issuer}')
-R$+			$: $(access CERTISSUER:$1 $)
+R$+			$: $(access CERTISSUER`'_TAG_DELIM_`'$1 $)
 dnl use $# to stop further checks (delay_check)
 RRELAY			$# RELAY
 ifdef(`_CERT_REGEX_SUBJECT_', `dnl
 RSUBJECT		$: <@> $(CERTSubject $&{cert_subject} $)',
 `RSUBJECT		$: <@> $&{cert_subject}')
-R<@> $+			$: <@> $(access CERTSUBJECT:$1 $)
+R<@> $+			$: <@> $(access CERTSUBJECT`'_TAG_DELIM_`'$1 $)
 R<@> RELAY		$# RELAY
 R$*			$: NO', `dnl')
 
@@ -2732,10 +2867,54 @@ dnl', `dnl
 ifdef(`_ACCESS_TABLE_', `dnl
 R$*		$: $1 $| $>D <$&{server_name}> <?> <! AuthInfo> <>
 R$* $| <?>$*	$: $1 $| $>A <$&{server_addr}> <?> <! AuthInfo> <>
-R$* $| <?>$*	$: $1 $| <$(access AuthInfo: $: ? $)> <>
+R$* $| <?>$*	$: $1 $| <$(access AuthInfo`'_TAG_DELIM_ $: ? $)> <>
 R$* $| <?>$*	$@ no				no authinfo available
 R$* $| <$*> <>	$# $2
 dnl', `dnl')')
+
+ifdef(`_RATE_CONTROL_',`dnl
+######################################################################
+###  RateControl: 
+###	Parameters:	ignored
+###	return: $#error or OK
+######################################################################
+SRateControl
+ifdef(`_ACCESS_TABLE_', `dnl
+R$*		$: <A:$&{client_addr}> <E:>
+dnl also look up a default value via E:
+R$+		$: $>SearchList <! ClientRate> $| $1 <>
+dnl found nothing: stop here
+R<?>		$@ OK
+ifdef(`_ATMPF_', `dnl tempfail?
+R<$* _ATMPF_>	$#error $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
+dnl use the generic routine (for now)
+R<0>		$@ OK		no limit
+R<$+>		$: <$1> $| $(arith l $@ $&{client_rate} $@ $1 $)
+dnl log this? Connection rate $&{client_rate} exceeds limit $1.
+R<$+> $| FALSE	$#error $@ 4.3.2 $: _RATE_CONTROL_REPLY Connection rate limit exceeded.
+')')
+
+ifdef(`_CONN_CONTROL_',`dnl
+######################################################################
+###  ConnControl: 
+###	Parameters:	ignored
+###	return: $#error or OK
+######################################################################
+SConnControl
+ifdef(`_ACCESS_TABLE_', `dnl
+R$*		$: <A:$&{client_addr}> <E:>
+dnl also look up a default value via E:
+R$+		$: $>SearchList <! ClientConn> $| $1 <>
+dnl found nothing: stop here
+R<?>		$@ OK
+ifdef(`_ATMPF_', `dnl tempfail?
+R<$* _ATMPF_>	$#error $@ 4.3.0 $: "451 Temporary system failure. Please try again later."', `dnl')
+dnl use the generic routine (for now)
+R<0>		$@ OK		no limit
+R<$+>		$: <$1> $| $(arith l $@ $&{client_connections} $@ $1 $)
+dnl log this: Open connections $&{client_connections} exceeds limit $1.
+R<$+> $| FALSE	$#error $@ 4.3.2 $: _CONN_CONTROL_REPLY Too many open connections.
+')')
 
 undivert(9)dnl LOCAL_RULESETS
 #

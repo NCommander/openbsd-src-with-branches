@@ -1,3 +1,4 @@
+/*	$OpenBSD: http_protocol.c,v 1.29 2005/11/11 15:09:54 cloder Exp $ */
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -76,38 +77,13 @@
 #include "util_date.h"          /* For parseHTTPdate and BAD_DATE */
 #include <stdarg.h>
 #include "http_conf_globals.h"
+#include "util_md5.h"           /* For digestAuth */
+#include "ap_sha1.h"
 
 #define SET_BYTES_SENT(r) \
   do { if (r->sent_bodyct) \
           ap_bgetopt (r->connection->client, BO_BYTECT, &r->bytes_sent); \
   } while (0)
-
-#ifdef CHARSET_EBCDIC
-/* Save & Restore the current conversion settings
- * "input"  means: ASCII -> EBCDIC (when reading MIME Headers and PUT/POST data)
- * "output" means: EBCDIC -> ASCII (when sending MIME Headers and Chunks)
- */
-
-#define PUSH_EBCDIC_INPUTCONVERSION_STATE(_buff, _onoff) \
-        int _convert_in = ap_bgetflag(_buff, B_ASCII2EBCDIC); \
-        ap_bsetflag(_buff, B_ASCII2EBCDIC, _onoff);
-
-#define POP_EBCDIC_INPUTCONVERSION_STATE(_buff) \
-        ap_bsetflag(_buff, B_ASCII2EBCDIC, _convert_in);
-
-#define PUSH_EBCDIC_INPUTCONVERSION_STATE_r(_req, _onoff) \
-        ap_bsetflag(_req->connection->client, B_ASCII2EBCDIC, _onoff);
-
-#define POP_EBCDIC_INPUTCONVERSION_STATE_r(_req) \
-        ap_bsetflag(_req->connection->client, B_ASCII2EBCDIC, _req->ebcdic.conv_in);
-
-#define PUSH_EBCDIC_OUTPUTCONVERSION_STATE_r(_req, _onoff) \
-        ap_bsetflag(_req->connection->client, B_EBCDIC2ASCII, _onoff);
-
-#define POP_EBCDIC_OUTPUTCONVERSION_STATE_r(_req) \
-        ap_bsetflag(_req->connection->client, B_EBCDIC2ASCII, _req->ebcdic.conv_out);
-
-#endif /*CHARSET_EBCDIC*/
 
 /*
  * Builds the content-type that should be sent to the client from the
@@ -246,14 +222,6 @@ static int byterange_boundary(request_rec *r, long start, long end, int output)
 {
     int length = 0;
 
-#ifdef CHARSET_EBCDIC
-    /* determine current setting of conversion flag,
-     * set to ON (protocol strings MUST be converted)
-     * and reset to original setting before returning
-     */
-    PUSH_EBCDIC_OUTPUTCONVERSION_STATE_r(r, 1);
-#endif /*CHARSET_EBCDIC*/
-
     if (start < 0 || end < 0) {
 	if (output)
 	    ap_rvputs(r, CRLF "--", r->boundary, "--" CRLF, NULL);
@@ -274,17 +242,16 @@ static int byterange_boundary(request_rec *r, long start, long end, int output)
 		+ strlen(ct) + 23 + strlen(ts) + 4;
     }
 
-#ifdef CHARSET_EBCDIC
-    POP_EBCDIC_OUTPUTCONVERSION_STATE_r(r);
-#endif /*CHARSET_EBCDIC*/
-
     return length;
 }
 
 API_EXPORT(int) ap_set_byterange(request_rec *r)
 {
     const char *range, *if_range, *match;
+    char *bbuf, *b;
+    u_int32_t rbuf[12]; /* 48 bytes yields 64 base64 chars */
     long length, start, end, one_start = 0, one_end = 0;
+    size_t u;
     int ranges, empty;
     
     if (!r->clength || r->assbackwards)
@@ -330,8 +297,20 @@ API_EXPORT(int) ap_set_byterange(request_rec *r)
      * caller will perform if we return 1.
      */
     r->range = range;
-    r->boundary = ap_psprintf(r->pool, "%lx%lx",
-			      r->request_time, (long) getpid());
+    for (u = 0; u < sizeof(rbuf)/sizeof(rbuf[0]); u++)
+        rbuf[u] = htonl(arc4random());
+
+    bbuf = ap_palloc(r->pool, ap_base64encode_len(sizeof(rbuf)));
+    ap_base64encode(bbuf, (const unsigned char *)rbuf, sizeof(rbuf));
+    for (b = bbuf; *b != '\0'; b++) {
+        if (((b - bbuf) + 1) % 7 == 0)
+            *b = '-';
+        else if (!isalnum(*b))
+            *b = 'a';
+    }
+
+    r->boundary = bbuf;
+
     length = 0;
     ranges = 0;
     empty = 1;
@@ -654,7 +633,7 @@ API_EXPORT(int) ap_meets_conditions(request_rec *r)
  * could be modified again in as short an interval.  We rationalize the
  * modification time we're given to keep it from being in the future.
  */
-API_EXPORT(char *) ap_make_etag(request_rec *r, int force_weak)
+API_EXPORT(char *) ap_make_etag_orig(request_rec *r, int force_weak)
 {
     char *etag;
     char *weak;
@@ -845,10 +824,6 @@ API_EXPORT(int) ap_method_number_of(const char *method)
            if (strcmp(method, "OPTIONS") == 0)
                return M_OPTIONS;
            break;
-        case 'T':
-           if (strcmp(method, "TRACE") == 0)
-               return M_TRACE;
-           break;
         case 'L':
            if (strcmp(method, "LOCK") == 0)
                return M_LOCK;
@@ -879,17 +854,6 @@ API_EXPORT(int) ap_getline(char *s, int n, BUFF *in, int fold)
     char *pos, next;
     int retval;
     int total = 0;
-#ifdef CHARSET_EBCDIC
-    /* When ap_getline() is called, the HTTP protocol is in a state
-     * where we MUST be reading "plain text" protocol stuff,
-     * (Request line, MIME headers, Chunk sizes) regardless of
-     * the MIME type and conversion setting of the document itself.
-     * Save the current setting of the ASCII-EBCDIC conversion flag
-     * for uploads, then temporarily set it to ON
-     * (and restore it before returning).
-     */
-    PUSH_EBCDIC_INPUTCONVERSION_STATE(in, 1);
-#endif /*CHARSET_EBCDIC*/
 
     pos = s;
 
@@ -934,11 +898,6 @@ API_EXPORT(int) ap_getline(char *s, int n, BUFF *in, int fold)
                   && (ap_blookc(&next, in) == 1)
                   && ((next == ' ') || (next == '\t')));
 
-#ifdef CHARSET_EBCDIC
-    /* restore ASCII->EBCDIC conversion state */
-    POP_EBCDIC_INPUTCONVERSION_STATE(in);
-#endif /*CHARSET_EBCDIC*/
-
     return total;
 }
 
@@ -972,18 +931,6 @@ CORE_EXPORT(void) ap_parse_uri(request_rec *r, const char *uri)
 	r->args = r->parsed_uri.query;
 	r->uri = r->parsed_uri.path ? r->parsed_uri.path
 				    : ap_pstrdup(r->pool, "/");
-#if defined(OS2) || defined(WIN32)
-	/* Handle path translations for OS/2 and plug security hole.
-	 * This will prevent "http://www.wherever.com/..\..\/" from
-	 * returning a directory for the root drive.
-	 */
-	{
-	    char *x;
-
-	    for (x = r->uri; (x = strchr(x, '\\')) != NULL; )
-		*x = '/';
-	}
-#endif  /* OS2 || WIN32 */
     }
     else {
 	r->args = NULL;
@@ -1029,9 +976,7 @@ static int read_request_line(request_rec *r)
         }
     }
     /* we've probably got something to do, ignore graceful restart requests */
-#ifdef SIGUSR1
     signal(SIGUSR1, SIG_IGN);
-#endif
 
     ap_bsetflag(conn->client, B_SAFEREAD, 0);
 
@@ -1202,14 +1147,7 @@ API_EXPORT(request_rec *) ap_read_request(conn_rec *conn)
     r->status          = HTTP_REQUEST_TIME_OUT;  /* Until we get a request */
     r->the_request     = NULL;
 
-#ifdef EAPI
     r->ctx = ap_ctx_new(r->pool);
-#endif /* EAPI */
-
-#ifdef CHARSET_EBCDIC
-    ap_bsetflag(r->connection->client, B_ASCII2EBCDIC, r->ebcdic.conv_in  = 1);
-    ap_bsetflag(r->connection->client, B_EBCDIC2ASCII, r->ebcdic.conv_out = 1);
-#endif
 
     /* Get the request... */
 
@@ -1363,9 +1301,7 @@ API_EXPORT(void) ap_set_sub_req_protocol(request_rec *rnew, const request_rec *r
 
     rnew->main = (request_rec *) r;
 
-#ifdef EAPI
     rnew->ctx = r->ctx;
-#endif /* EAPI */
 
 }
 
@@ -1400,11 +1336,25 @@ API_EXPORT(void) ap_note_basic_auth_failure(request_rec *r)
 
 API_EXPORT(void) ap_note_digest_auth_failure(request_rec *r)
 {
+    /* We need to create a nonce which:
+     * a) changes all the time (see r->request_time)
+     *    below and
+     * b) of which we can verify that it is our own
+     *    fairly easily when it comes to veryfing
+     *    the digest coming back in the response.
+     * c) and which as a whole should not
+     *    be unlikely to be in use anywhere else.
+     */
+    char * nonce_prefix = ap_md5(r->pool,
+           (unsigned char *)
+           ap_psprintf(r->pool, "%s%lu",
+                       ap_auth_nonce(r), r->request_time));
+
     ap_table_setn(r->err_headers_out,
 	    r->proxyreq == STD_PROXY ? "Proxy-Authenticate"
 		  : "WWW-Authenticate",
-	    ap_psprintf(r->pool, "Digest realm=\"%s\", nonce=\"%lu\"",
-		ap_auth_name(r), r->request_time));
+           ap_psprintf(r->pool, "Digest realm=\"%s\", nonce=\"%s%lu\"",
+               ap_auth_name(r), nonce_prefix, r->request_time));
 }
 
 API_EXPORT(int) ap_get_basic_auth_pw(request_rec *r, const char **pw)
@@ -1437,9 +1387,6 @@ API_EXPORT(int) ap_get_basic_auth_pw(request_rec *r, const char **pw)
         return AUTH_REQUIRED;
     }
 
-    /* No CHARSET_EBCDIC Issue here because the line has already
-     * been converted to native text.
-     */
     while (*auth_line== ' ' || *auth_line== '\t')
         auth_line++;
 
@@ -1462,15 +1409,7 @@ API_EXPORT(int) ap_get_basic_auth_pw(request_rec *r, const char **pw)
  * and must be listed in order.
  */
 
-#ifdef UTS21
-/* The second const triggers an assembler bug on UTS 2.1.
- * Another workaround is to move some code out of this file into another,
- *   but this is easier.  Dave Dykstra, 3/31/99 
- */
-static const char * status_lines[RESPONSE_CODES] =
-#else
 static const char * const status_lines[RESPONSE_CODES] =
-#endif
 {
     "100 Continue",
     "101 Switching Protocols",
@@ -1599,10 +1538,6 @@ API_EXPORT(void) ap_basic_http_header(request_rec *r)
     else
         protocol = SERVER_PROTOCOL;
 
-#ifdef CHARSET_EBCDIC
-    PUSH_EBCDIC_OUTPUTCONVERSION_STATE_r(r, 1);
-#endif /*CHARSET_EBCDIC*/
-
     /* output the HTTP/1.x Status-Line */
     ap_rvputs(r, protocol, " ", r->status_line, CRLF, NULL);
 
@@ -1624,9 +1559,6 @@ API_EXPORT(void) ap_basic_http_header(request_rec *r)
     /* unset so we don't send them again */
     ap_table_unset(r->headers_out, "Date");        /* Avoid bogosity */
     ap_table_unset(r->headers_out, "Server");
-#ifdef CHARSET_EBCDIC
-    POP_EBCDIC_OUTPUTCONVERSION_STATE_r(r);
-#endif /*CHARSET_EBCDIC*/
 }
 
 /* Navigator versions 2.x, 3.x and 4.0 betas up to and including 4.0b2
@@ -1696,10 +1628,6 @@ API_EXPORT(int) ap_send_http_trace(request_rec *r)
 
     r->content_type = "message/http";
     ap_send_http_header(r);
-#ifdef CHARSET_EBCDIC
-    /* Server-generated response, converted */
-    ap_bsetflag(r->connection->client, B_EBCDIC2ASCII, r->ebcdic.conv_out = 1);
-#endif
 
     /* Now we recreate the request, and echo it back */
 
@@ -1837,11 +1765,6 @@ API_EXPORT(void) ap_send_http_header(request_rec *r)
     int i;
     const long int zero = 0L;
 
-#ifdef CHARSET_EBCDIC
-    /* Use previously determined conversion (output): */
-    ap_bsetflag(r->connection->client, B_EBCDIC2ASCII, ap_checkconv(r));
-#endif /*CHARSET_EBCDIC*/
-
     if (r->assbackwards) {
         if (!r->main)
             ap_bsetopt(r->connection->client, BO_BYTECT, &zero);
@@ -1875,10 +1798,6 @@ API_EXPORT(void) ap_send_http_header(request_rec *r)
     ap_hard_timeout("send headers", r);
 
     ap_basic_http_header(r);
-
-#ifdef CHARSET_EBCDIC
-    PUSH_EBCDIC_OUTPUTCONVERSION_STATE_r(r, 1);
-#endif /*CHARSET_EBCDIC*/
 
     ap_set_keepalive(r);
 
@@ -1929,9 +1848,6 @@ API_EXPORT(void) ap_send_http_header(request_rec *r)
     /* Set buffer flags for the body */
     if (r->chunked)
         ap_bsetflag(r->connection->client, B_CHUNK, 1);
-#ifdef CHARSET_EBCDIC
-    POP_EBCDIC_OUTPUTCONVERSION_STATE_r(r);
-#endif /*CHARSET_EBCDIC*/
 }
 
 /* finalize_request_protocol is called at completion of sending the
@@ -1942,9 +1858,6 @@ API_EXPORT(void) ap_send_http_header(request_rec *r)
 API_EXPORT(void) ap_finalize_request_protocol(request_rec *r)
 {
     if (r->chunked && !r->connection->aborted) {
-#ifdef CHARSET_EBCDIC
-        PUSH_EBCDIC_OUTPUTCONVERSION_STATE_r(r, 1);
-#endif
         /*
          * Turn off chunked encoding --- we can only do this once.
          */
@@ -1957,9 +1870,6 @@ API_EXPORT(void) ap_finalize_request_protocol(request_rec *r)
         ap_rputs(CRLF, r);
         ap_kill_timeout(r);
 
-#ifdef CHARSET_EBCDIC
-        POP_EBCDIC_OUTPUTCONVERSION_STATE_r(r);
-#endif /*CHARSET_EBCDIC*/
     }
 }
 
@@ -2070,16 +1980,6 @@ API_EXPORT(int) ap_setup_client_block(request_rec *r, int read_policy)
           "limit of %lu", lenp, max_body);
         return HTTP_REQUEST_ENTITY_TOO_LARGE;
     }
-
-#ifdef CHARSET_EBCDIC
-    {
-        /* Determine the EBCDIC conversion for the uploaded content
-         * by looking at the Content-Type MIME header. 
-         * If no Content-Type header is found, text conversion is assumed.
-         */
-        ap_bsetflag(r->connection->client, B_ASCII2EBCDIC, ap_checkconv_in(r));
-    }
-#endif
 
     return OK;
 }
@@ -2293,19 +2193,10 @@ API_EXPORT(long) ap_get_client_block(request_rec *r, char *buffer, int bufsiz)
     r->remaining -= len_read;
 
     if (r->remaining == 0) {    /* End of chunk, get trailing CRLF */
-#ifdef CHARSET_EBCDIC
-        /* Chunk end is Protocol stuff! Set conversion = 1 to read CR LF: */
-        PUSH_EBCDIC_INPUTCONVERSION_STATE_r(r, 1);
-#endif /*CHARSET_EBCDIC*/
 
         if ((c = ap_bgetc(r->connection->client)) == CR) {
             c = ap_bgetc(r->connection->client);
         }
-
-#ifdef CHARSET_EBCDIC
-        /* restore ASCII->EBCDIC conversion state */
-        POP_EBCDIC_INPUTCONVERSION_STATE_r(r);
-#endif /*CHARSET_EBCDIC*/
 
         if (c != LF) {
             r->connection->keepalive = -1;
@@ -2437,20 +2328,14 @@ API_EXPORT(long) ap_send_fb_length(BUFF *fb, request_rec *r, long length)
     long total_bytes_sent = 0;
     register int n, w, o, len, fd;
     fd_set fds;
-#ifdef TPF
-    struct timeval tv;
-#endif 
 
     if (length == 0)
         return 0;
 
     /* Make fb unbuffered and non-blocking */
     ap_bsetflag(fb, B_RD, 0);
-#ifndef TPF_NO_NONSOCKET_SELECT
     ap_bnonblock(fb, B_RD);
-#endif
     fd = ap_bfileno(fb, B_RD);
-#ifdef CHECK_FD_SETSIZE
     if (fd >= FD_SETSIZE) {
 	ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, NULL,
 	    "send body: filedescriptor (%u) larger than FD_SETSIZE (%u) "
@@ -2458,21 +2343,11 @@ API_EXPORT(long) ap_send_fb_length(BUFF *fb, request_rec *r, long length)
 	    "larger FD_SETSIZE", fd, FD_SETSIZE);
 	return 0;
     }
-#endif
 
     ap_soft_timeout("send body", r);
 
     FD_ZERO(&fds);
     while (!r->connection->aborted) {
-#ifdef NDELAY_PIPE_RETURNS_ZERO
-	/* Contributed by dwd@bell-labs.com for UTS 2.1.2, where the fcntl */
-	/*   O_NDELAY flag causes read to return 0 when there's nothing */
-	/*   available when reading from a pipe.  That makes it tricky */
-	/*   to detect end-of-file :-(.  This stupid bug is even documented */
-	/*   in the read(2) man page where it says that everything but */
-	/*   pipes return -1 and EAGAIN.  That makes it a feature, right? */
-	int afterselect = 0;
-#endif
         if ((length > 0) && (total_bytes_sent + IOBUFSIZE) > length)
             len = length - total_bytes_sent;
         else
@@ -2480,13 +2355,8 @@ API_EXPORT(long) ap_send_fb_length(BUFF *fb, request_rec *r, long length)
 
         do {
             n = ap_bread(fb, buf, len);
-#ifdef NDELAY_PIPE_RETURNS_ZERO
-	    if ((n > 0) || (n == 0 && afterselect))
-		break;
-#else
             if (n >= 0)
                 break;
-#endif
             if (r->connection->aborted)
                 break;
             if (n < 0 && errno != EAGAIN)
@@ -2505,16 +2375,7 @@ API_EXPORT(long) ap_send_fb_length(BUFF *fb, request_rec *r, long length)
              * we don't care what select says, we might as well loop back
              * around and try another read
              */
-#ifdef TPF_HAVE_NONSOCKET_SELECT
-            tv.tv_sec =  1;
-            tv.tv_usec = 0;
-            ap_select(fd + 1, &fds, NULL, NULL, &tv);
-#else
             ap_select(fd + 1, &fds, NULL, NULL, NULL);
-#endif  
-#ifdef NDELAY_PIPE_RETURNS_ZERO
-	    afterselect = 1;
-#endif
         } while (!r->connection->aborted);
 
         if (n < 1 || r->connection->aborted) {
@@ -2776,10 +2637,6 @@ API_EXPORT(void) ap_send_error_response(request_rec *r, int recursive_error)
     int idx = ap_index_of_response(status);
     char *custom_response;
     const char *location = ap_table_get(r->headers_out, "Location");
-#ifdef CHARSET_EBCDIC
-    /* Error Responses (builtin / string literal / redirection) are TEXT! */
-    ap_bsetflag(r->connection->client, B_EBCDIC2ASCII, r->ebcdic.conv_out = 1);
-#endif
 
     /*
      * It's possible that the Location field might be in r->err_headers_out
@@ -2872,11 +2729,6 @@ API_EXPORT(void) ap_send_error_response(request_rec *r, int recursive_error)
             return;
         }
     }
-
-#ifdef CHARSET_EBCDIC
-    /* Server-generated response, converted */
-    ap_bsetflag(r->connection->client, B_EBCDIC2ASCII, r->ebcdic.conv_out = 1);
-#endif
 
     ap_hard_timeout("send error body", r);
 
@@ -3162,4 +3014,166 @@ API_EXPORT(void) ap_send_error_response(request_rec *r, int recursive_error)
     ap_kill_timeout(r);
     ap_finalize_request_protocol(r);
     ap_rflush(r);
+}
+
+/*
+ * The shared hash context, copies of which are used by all children for
+ * etag generation.  ap_init_etag() must be called once before all the
+ * children are created.  We use a secret hash initialization value
+ * so that people can't brute-force inode numbers.
+ */
+static AP_SHA1_CTX baseCtx;
+
+int ap_create_etag_state(pool *pconf)
+{
+    u_int32_t rnd;
+    unsigned int u;
+    int fd;
+    char* filename;
+
+    filename = ap_server_root_relative(pconf, "logs/etag-state");
+    ap_server_strip_chroot(filename, 0);
+
+    if ((fd = open(filename, O_CREAT|O_WRONLY|O_TRUNC|O_NOFOLLOW, 0640)) ==
+      -1) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, NULL,
+          "could not create %s", filename);
+        exit(-1);
+    }
+
+    if (fchown(fd, -1, ap_group_id) == -1) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, NULL,
+          "could not chown %s", filename);
+        exit(-1);
+    }
+
+    /* generate random bytes and write them */
+    for (u = 0; u < 4; u++) {
+        rnd = arc4random();
+        if (write(fd, &rnd, sizeof(rnd)) == -1) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, NULL,
+              "could not write to %s", filename);
+            exit(-1);
+        }
+    }
+
+    close (fd);
+    return (0);
+}
+
+int ap_read_etag_state(pool *pconf)
+{
+    struct stat st;
+    u_int32_t rnd;
+    unsigned int u;
+    int fd;
+    char* filename;
+
+    ap_SHA1Init(&baseCtx);
+
+    filename = ap_server_root_relative(pconf, "logs/etag-state");
+    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, NULL,
+      "Initializing etag from %s", filename);
+
+    ap_server_strip_chroot(filename, 0);
+
+    if ((fd = open(filename, O_RDONLY|O_NOFOLLOW, 0640)) == -1)
+	return (-1);
+
+    fchmod(fd, S_IRUSR|S_IWUSR|S_IRGRP);
+    fchown(fd, -1, ap_group_id);
+
+    if (fstat(fd, &st) == -1) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, NULL,
+          "could not fstat %s", filename);
+        exit(-1);
+    }
+
+    if (st.st_size != sizeof(rnd)*4) {
+	return (-1);
+    }
+
+    /* read 4 random 32-bit uints from file and update the hash context */
+    for (u = 0; u < 4; u++) {
+        if (read(fd, &rnd, sizeof(rnd)) < sizeof(rnd))
+            return (-1);
+
+        ap_SHA1Update_binary(&baseCtx, (const unsigned char *)&rnd,
+          sizeof(rnd));
+    }
+
+    if (close(fd) == -1) {
+        ap_log_error(APLOG_MARK, APLOG_CRIT, NULL,
+          "could not properly close %s", filename);
+        exit(-1);
+    }
+    return (0);
+}
+
+API_EXPORT(void) ap_init_etag(pool *pconf)
+{
+    if (ap_read_etag_state(pconf) == -1) {
+        ap_create_etag_state(pconf);
+        if (ap_read_etag_state(pconf) == -1) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, NULL,
+              "could not initialize etag state");
+            exit(-1);
+        }
+    }			
+}
+
+API_EXPORT(char *) ap_make_etag(request_rec *r, int force_weak)
+{
+    AP_SHA1_CTX hashCtx;
+    core_dir_config *cfg;
+    etag_components_t etag_bits;
+    int weak;
+    unsigned char md[SHA_DIGESTSIZE];
+    unsigned int i;
+    
+    memcpy(&hashCtx, &baseCtx, sizeof(hashCtx));
+    
+    cfg = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+      &core_module);
+    etag_bits = (cfg->etag_bits & (~ cfg->etag_remove)) | cfg->etag_add;
+    if (etag_bits == ETAG_UNSET)
+        etag_bits = ETAG_BACKWARD;
+    
+    weak = ((r->request_time - r->mtime <= 1) || force_weak);
+    
+    if (r->finfo.st_mode != 0) {
+        if (etag_bits & ETAG_NONE) {
+            ap_table_setn(r->notes, "no-etag", "omit");
+            return "";
+        }
+        if (etag_bits & ETAG_INODE) {
+            ap_SHA1Update_binary(&hashCtx,
+              (const unsigned char *)&r->finfo.st_dev,
+              sizeof(r->finfo.st_dev));
+            ap_SHA1Update_binary(&hashCtx,
+              (const unsigned char *)&r->finfo.st_ino,
+              sizeof(r->finfo.st_ino));
+        }
+        if (etag_bits & ETAG_SIZE)
+            ap_SHA1Update_binary(&hashCtx,
+              (const unsigned char *)&r->finfo.st_size,
+              sizeof(r->finfo.st_size));
+        if (etag_bits & ETAG_MTIME)
+            ap_SHA1Update_binary(&hashCtx,
+              (const unsigned char *)&r->mtime,
+              sizeof(r->mtime));
+    }
+    else {
+        weak = 1;
+        ap_SHA1Update_binary(&hashCtx, (const unsigned char *)&r->mtime,
+          sizeof(r->mtime));
+    }
+    ap_SHA1Final(md, &hashCtx);
+    return ap_psprintf(r->pool, "%s\""
+      "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x"
+        "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x"
+        "\"", weak ? "W/" : "",
+      md[0], md[1], md[2], md[3], md[4], md[5], md[6], md[7],
+      md[8], md[9], md[10], md[11], md[12], md[13], md[14], md[15],
+      md[16], md[17], md[18], md[19]);
 }

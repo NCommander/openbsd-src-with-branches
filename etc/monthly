@@ -1,21 +1,10 @@
 #!/bin/sh -
-#
-#	@(#)monthly	5.5 (Berkeley) 6/17/91
-#
+#	$OpenBSD: monthly,v 1.5 1998/02/02 23:08:57 millert Exp $
 
-host=`hostname -s`
-echo "Subject: $host monthly run output"
-
-# echo ""
-# echo "Doing login accounting:"
-# ac -p | sort -nr +1
-
-# Rotation of these logs now handled automatically by cron and 'newsyslog':
-#	kerberos.log
-#	lpd-errs
-#	wtmp
-#	aculog
-#	cron
-
-echo "Nothing to do!"
-#echo "."
+if [ -f /etc/monthly.local ];then
+	echo ""
+	echo "Running monthly.local:"
+	. /etc/monthly.local
+else
+	echo "Nothing to do!"
+fi

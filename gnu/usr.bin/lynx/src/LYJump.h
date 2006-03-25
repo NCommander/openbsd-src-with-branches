@@ -1,6 +1,7 @@
-
 #ifndef LYJUMP_H
 #define LYJUMP_H
+
+#include <HTList.h>
 
 typedef struct _JumpDatum {
     char *key;
@@ -26,4 +27,3 @@ extern BOOL LYJumpInit PARAMS((char *config));
 extern char *LYJump PARAMS((int key));
 
 #endif /* LYJUMP_H */
-

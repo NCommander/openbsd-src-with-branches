@@ -1,6 +1,6 @@
-#	$Id: Makefile,v 1.3 1993/08/02 17:56:23 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.2 1995/12/14 03:31:36 deraadt Exp $
 
-.if !make(install)
+.if make(clean) || make(cleandir) || make(depend) || make(obj) || make(lint)
 SUBDIR += tools
 .endif
 SUBDIR += tn3270 mset

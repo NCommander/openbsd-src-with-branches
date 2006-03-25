@@ -1,4 +1,5 @@
-/*	$NetBSD: uk.c,v 1.13 1995/03/24 20:17:15 glass Exp $	*/
+/*	$OpenBSD: uk.c,v 1.7 2002/03/14 01:27:13 millert Exp $	*/
+/*	$NetBSD: uk.c,v 1.15 1996/03/17 00:59:57 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
@@ -36,8 +37,10 @@
 
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
+#include <sys/conf.h>
 #include <sys/device.h>
 
 #include <scsi/scsi_all.h>
@@ -51,11 +54,15 @@ struct uk_softc {
 	struct scsi_link *sc_link;	/* all the inter level info */
 };
 
-int ukmatch __P((struct device *, void *, void *));
-void ukattach __P((struct device *, struct device *, void *));
+int ukmatch(struct device *, void *, void *);
+void ukattach(struct device *, struct device *, void *);
 
-struct cfdriver ukcd = {
-	NULL, "uk", ukmatch, ukattach, DV_DULL, sizeof(struct uk_softc)
+struct cfattach uk_ca = {
+	sizeof(struct uk_softc), ukmatch, ukattach
+};
+
+struct cfdriver uk_cd = {
+	NULL, "uk", DV_DULL
 };
 
 /*
@@ -100,31 +107,34 @@ ukattach(parent, self, aux)
 	sc_link->device_softc = uk;
 	sc_link->openings = 1;
 
-	printf(": unknown device\n");
+	printf("\n");
+	printf("%s: unknown device\n", uk->sc_dev.dv_xname);
 }
 
 /*
  * open the device.
  */
 int
-ukopen(dev)
+ukopen(dev, flag, fmt, p)
 	dev_t dev;
+	int flag, fmt;
+	struct proc *p;
 {
 	int unit;
 	struct uk_softc *uk;
 	struct scsi_link *sc_link;
 
 	unit = UKUNIT(dev);
-	if (unit >= ukcd.cd_ndevs)
+	if (unit >= uk_cd.cd_ndevs)
 		return ENXIO;
-	uk = ukcd.cd_devs[unit];
+	uk = uk_cd.cd_devs[unit];
 	if (!uk)
 		return ENXIO;
 		
 	sc_link = uk->sc_link;
 
 	SC_DEBUG(sc_link, SDEV_DB1,
-	    ("ukopen: dev=0x%x (unit %d (of %d))\n", dev, unit, ukcd.cd_ndevs));
+	    ("ukopen: dev=0x%x (unit %d (of %d))\n", dev, unit, uk_cd.cd_ndevs));
 
 	/*
 	 * Only allow one at a time
@@ -145,10 +155,12 @@ ukopen(dev)
  * occurence of an open device
  */
 int
-ukclose(dev)
+ukclose(dev, flag, fmt, p)
 	dev_t dev;
+	int flag, fmt;
+	struct proc *p;
 {
-	struct uk_softc *uk = ukcd.cd_devs[UKUNIT(dev)];
+	struct uk_softc *uk = uk_cd.cd_devs[UKUNIT(dev)];
 
 	SC_DEBUG(uk->sc_link, SDEV_DB1, ("closing\n"));
 	uk->sc_link->flags &= ~SDEV_OPEN;
@@ -168,7 +180,7 @@ ukioctl(dev, cmd, addr, flag, p)
 	int flag;
 	struct proc *p;
 {
-	register struct uk_softc *uk = ukcd.cd_devs[UKUNIT(dev)];
+	struct uk_softc *uk = uk_cd.cd_devs[UKUNIT(dev)];
 
 	return scsi_do_ioctl(uk->sc_link, dev, cmd, addr, flag, p);
 }

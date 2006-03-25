@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -14,18 +14,15 @@
 #include <sendmail.h>
 
 #if USERDB
-SM_RCSID("@(#)$Sendmail: udb.c,v 8.150 2001/09/04 22:54:42 ca Exp $ (with USERDB)")
+SM_RCSID("@(#)$Sendmail: udb.c,v 8.160 2003/04/03 16:32:46 ca Exp $ (with USERDB)")
 #else /* USERDB */
-SM_RCSID("@(#)$Sendmail: udb.c,v 8.150 2001/09/04 22:54:42 ca Exp $ (without USERDB)")
+SM_RCSID("@(#)$Sendmail: udb.c,v 8.160 2003/04/03 16:32:46 ca Exp $ (without USERDB)")
 #endif /* USERDB */
 
 #if USERDB
 
 # if NEWDB
-#  include <db.h>
-#  ifndef DB_VERSION_MAJOR
-#   define DB_VERSION_MAJOR 1
-#  endif /* ! DB_VERSION_MAJOR */
+#  include "sm/bdb.h"
 # else /* NEWDB */
 #  define DBT	struct _data_base_thang_
 DBT
@@ -179,7 +176,7 @@ udbexpand(a, sendq, aliaslevel, e)
 	keylen = sm_strlcpyn(keybuf, sizeof keybuf, 2, user, ":maildrop");
 
 	/* if name is too long, assume it won't match */
-	if (keylen > sizeof keybuf)
+	if (keylen >= sizeof keybuf)
 		return EX_OK;
 
 	/* build actual database key */
@@ -190,9 +187,9 @@ udbexpand(a, sendq, aliaslevel, e)
 		int usersize;
 		int userleft;
 		char userbuf[MEMCHUNKSIZE];
-# if defined(HESIOD) && defined(HES_GETMAILHOST)
+# if HESIOD && HES_GETMAILHOST
 		char pobuf[MAXNAME];
-# endif /* defined(HESIOD) && defined(HES_GETMAILHOST) */
+# endif /* HESIOD && HES_GETMAILHOST */
 # if defined(NEWDB) && DB_VERSION_MAJOR > 1
 		DBC *dbc = NULL;
 # endif /* defined(NEWDB) && DB_VERSION_MAJOR > 1 */
@@ -337,7 +334,7 @@ udbexpand(a, sendq, aliaslevel, e)
 				if (tTd(28, 5))
 				{
 					sm_dprintf("udbexpand: QS_EXPANDED ");
-					printaddr(a, false);
+					printaddr(sm_debug_file(), a, false);
 				}
 				a->q_state = QS_EXPANDED;
 			}
@@ -477,7 +474,7 @@ udbexpand(a, sendq, aliaslevel, e)
 				if (tTd(28, 5))
 				{
 					sm_dprintf("udbexpand: QS_EXPANDED ");
-					printaddr(a, false);
+					printaddr(sm_debug_file(), a, false);
 				}
 				a->q_state = QS_EXPANDED;
 			}
@@ -528,7 +525,7 @@ udbexpand(a, sendq, aliaslevel, e)
 				if (tTd(28, 5))
 				{
 					sm_dprintf("udbexpand: QS_EXPANDED ");
-					printaddr(a, false);
+					printaddr(sm_debug_file(), a, false);
 				}
 				a->q_state = QS_EXPANDED;
 			}
@@ -549,7 +546,7 @@ udbexpand(a, sendq, aliaslevel, e)
 	}
 	return EX_OK;
 }
-/*
+/*
 **  UDBSENDER -- return canonical external name of sender, given local name
 **
 **	Parameters:
@@ -572,7 +569,7 @@ udbsender(sender, rpool)
 {
 	return udbmatch(sender, "mailname", rpool);
 }
-/*
+/*
 **  UDBMATCH -- match user in field, return result of lookup.
 **
 **	Parameters:
@@ -817,7 +814,7 @@ udbmatch(user, field, rpool)
 	/* still nothing....  too bad */
 	return NULL;
 }
-/*
+/*
 **  UDB_MAP_LOOKUP -- look up arbitrary entry in user database map
 **
 **	Parameters:
@@ -875,7 +872,7 @@ udb_map_lookup(map, name, av, statp)
 	SM_END_TRY
 	return result;
 }
-/*
+/*
 **  _UDBX_INIT -- parse the UDB specification, opening any valid entries.
 **
 **	Parameters:
@@ -996,12 +993,8 @@ _udbx_init(e)
 				int ret;
 #  endif /* DB_VERSION_MAJOR > 2 */
 
-#  if !HASFLOCK && defined(DB_FCNTL_LOCKING)
-				flags |= DB_FCNTL_LOCKING;
-#  endif /* !HASFLOCK && defined(DB_FCNTL_LOCKING) */
-
+				SM_DB_FLAG_ADD(flags);
 				up->udb_dbp = NULL;
-
 #  if DB_VERSION_MAJOR > 2
 				ret = db_create(&up->udb_dbp, NULL, 0);
 				if (ret != 0)
@@ -1013,6 +1006,7 @@ _udbx_init(e)
 				else
 				{
 					ret = up->udb_dbp->open(up->udb_dbp,
+								DBTXN
 								up->udb_dbname,
 								NULL,
 								DB_BTREE,
@@ -1191,7 +1185,7 @@ _udb_parsespec(udbspec, opt, maxopts)
 	}
 	return optnum;
 }
-/*
+/*
 **  _UDBX_CLOSE -- close all file based UDB entries.
 **
 **	Parameters:

@@ -1063,9 +1063,9 @@ ada_demangle (mangled, option)
 	     sizeof (char));
 
   if (mangled[0] == '<')
-     strcpy (demangled, mangled);
+     strlcpy (demangled, mangled, demangled_size);
   else
-    sprintf (demangled, "<%s>", mangled);
+    snprintf (demangled, demangled_size, "<%s>", mangled);
 
   return demangled;
 }
@@ -1073,7 +1073,7 @@ ada_demangle (mangled, option)
 /* This function performs most of what cplus_demangle use to do, but
    to be able to demangle a name with a B, K or n code, we need to
    have a longer term memory of what types have been seen. The original
-   now intializes and cleans up the squangle code info, while internal
+   now initializes and cleans up the squangle code info, while internal
    calls go directly to this routine to avoid resetting that info. */
 
 static char *
@@ -1438,6 +1438,7 @@ demangle_signature (work, mangled, declp)
 	      {
 		string_append (&s, SCOPE_STRING (work));
 		string_prepends (declp, &s);
+		string_delete (&s);
 	      }
 	    oldmangled = NULL;
 	    expect_func = 1;
@@ -1517,7 +1518,6 @@ demangle_signature (work, mangled, declp)
 	    {
 	      /* Read the return type. */
 	      string return_type;
-	      string_init (&return_type);
 
 	      (*mangled)++;
 	      success = do_type (work, mangled, &return_type);
@@ -1797,31 +1797,34 @@ demangle_integral_value (work, mangled, s)
 
       success = 0;
 
-      /* Negative numbers are indicated with a leading `m'.  */
-      if (**mangled == 'm')
-	{
-	  string_appendn (s, "-", 1);
-	  (*mangled)++;
-	}
-      else if (mangled[0][0] == '_' && mangled[0][1] == 'm')
-	{
-	  /* Since consume_count_with_underscores does not handle the
-	     `m'-prefix we must do it here, using consume_count and
-	     adjusting underscores: we have to consume the underscore
-	     matching the prepended one.  */
-	  multidigit_without_leading_underscore = 1;
-	  string_appendn (s, "-", 1);
-	  (*mangled) += 2;
-	}
-      else if (**mangled == '_')
-	{
-	  /* Do not consume a following underscore;
-	     multidigit_without_leading_underscore will consume what should be
-	     consumed.  */
-	  leave_following_underscore = 1;
+      if (**mangled == '_')
+        {
+	  if (mangled[0][1] == 'm')
+	    {
+	      /* Since consume_count_with_underscores does not handle the
+		 `m'-prefix we must do it here, using consume_count and
+		 adjusting underscores: we have to consume the underscore
+		 matching the prepended one.  */
+	      multidigit_without_leading_underscore = 1;
+	      string_appendn (s, "-", 1);
+	      (*mangled) += 2;
+	    }
+	  else
+	    {
+	      /* Do not consume a following underscore;
+	         consume_count_with_underscores will consume what
+	         should be consumed.  */
+	      leave_following_underscore = 1;
+	    }
 	}
       else
 	{
+	  /* Negative numbers are indicated with a leading `m'.  */
+	  if (**mangled == 'm')
+	  {
+	    string_appendn (s, "-", 1);
+	    (*mangled)++;
+	  }
 	  /* Since consume_count_with_underscores does not handle
 	     multi-digit numbers that do not start with an underscore,
 	     and this number can be an integer template parameter,
@@ -1844,7 +1847,7 @@ demangle_integral_value (work, mangled, s)
       if (value != -1)
 	{
 	  char buf[INTBUF_SIZE];
-	  sprintf (buf, "%d", value);
+	  snprintf (buf, sizeof buf, "%d", value);
 	  string_append (s, buf);
 
 	  /* Numbers not otherwise delimited, might have an underscore
@@ -1862,7 +1865,7 @@ demangle_integral_value (work, mangled, s)
 	  /* All is well.  */
 	  success = 1;
 	}
-    }
+      }
 
   return success;
 }
@@ -2330,7 +2333,7 @@ demangle_arm_hp_template (work, mangled, n, declp)
       string_append (declp, "<");
       while (1)
         {
-          string_clear (&arg);
+          string_delete (&arg);
           switch (**mangled)
             {
               case 'T':
@@ -2387,7 +2390,7 @@ demangle_arm_hp_template (work, mangled, n, declp)
       string_append (declp, "<");
       /* should do error checking here */
       while (args < e) {
-	string_clear (&arg);
+	string_delete (&arg);
 
 	/* Check for type or literal here */
 	switch (*args)
@@ -2402,6 +2405,7 @@ demangle_arm_hp_template (work, mangled, n, declp)
 	      goto cfront_template_args_done;
             string_append (&arg, "(");
             string_appends (&arg, &type_str);
+            string_delete (&type_str);
             string_append (&arg, ")");
             if (*args != 'L')
               goto cfront_template_args_done;
@@ -3045,7 +3049,8 @@ gnu_special (work, mangled, declp)
 	  if (method)
 	    {
 	      char buf[50];
-	      sprintf (buf, "virtual function thunk (delta:%d) for ", -delta);
+	      snprintf (buf, sizeof buf, 
+	      	"virtual function thunk (delta:%d) for ", -delta);
 	      string_append (declp, buf);
 	      string_append (declp, method);
 	      free (method);
@@ -3359,6 +3364,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
             }
           else
             {
+              string_delete (&last_name);
               success = do_type (work, mangled, &last_name);
               if (!success)
                 break;
@@ -3501,10 +3507,8 @@ do_type (work, mangled, result)
   string decl;
   const char *remembered_type;
   int type_quals;
-  string btype;
   type_kind_t tk = tk_none;
 
-  string_init (&btype);
   string_init (&decl);
   string_init (result);
 
@@ -3622,6 +3626,7 @@ do_type (work, mangled, result)
 		string temp;
 		do_type (work, mangled, &temp);
 		string_prepends (&decl, &temp);
+		string_delete (&temp);
 	      }
 	    else if (**mangled == 't')
 	      {
@@ -3632,7 +3637,7 @@ do_type (work, mangled, result)
 		if (success)
 		  {
 		    string_prependn (&decl, temp.b, temp.p - temp.b);
-		    string_clear (&temp);
+		    string_delete (&temp);
 		  }
 		else
 		  break;
@@ -3812,10 +3817,7 @@ demangle_fund_type (work, mangled, result)
   int success = 1;
   char buf[10];
   unsigned int dec = 0;
-  string btype;
   type_kind_t tk = tk_integral;
-
-  string_init (&btype);
 
   /* First pick off any type qualifiers.  There can be more than one.  */
 
@@ -3955,7 +3957,7 @@ demangle_fund_type (work, mangled, result)
 	  *mangled += min (strlen (*mangled), 2);
 	}
       sscanf (buf, "%x", &dec);
-      sprintf (buf, "int%u_t", dec);
+      snprintf (buf, sizeof buf, "int%u_t", dec);
       APPEND_BLANK (result);
       string_append (result, buf);
       break;
@@ -3988,8 +3990,11 @@ demangle_fund_type (work, mangled, result)
       }
     case 't':
       {
+        string btype;
+        string_init (&btype);
         success = demangle_template (work, mangled, &btype, 0, 1, 1);
         string_appends (result, &btype);
+        string_delete (&btype);
         break;
       }
     default:
@@ -4191,12 +4196,9 @@ do_arg (work, mangled, result)
      do not want to add additional types to the back-referenceable
      type vector when processing a repeated type.  */
   if (work->previous_argument)
-    string_clear (work->previous_argument);
+    string_delete (work->previous_argument);
   else
-    {
-      work->previous_argument = (string*) xmalloc (sizeof (string));
-      string_init (work->previous_argument);
-    }
+    work->previous_argument = (string*) xmalloc (sizeof (string));
 
   if (!do_type (work, mangled, work->previous_argument))
     return 0;
@@ -4560,7 +4562,10 @@ demangle_nested_args (work, mangled, declp)
 
   /* Restore the previous_argument field.  */
   if (work->previous_argument)
-    string_delete (work->previous_argument);
+    {
+      string_delete (work->previous_argument);
+      free ((char *) work->previous_argument);
+    }
   work->previous_argument = saved_previous_argument;
   --work->forgetting_types;
   work->nrepeats = saved_nrepeats;
@@ -4882,6 +4887,6 @@ string_append_template_idx (s, idx)
      int idx;
 {
   char buf[INTBUF_SIZE + 1 /* 'T' */];
-  sprintf(buf, "T%d", idx);
+  snprintf(buf, sizeof buf, "T%d", idx);
   string_append (s, buf);
 }

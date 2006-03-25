@@ -1,3 +1,4 @@
+/*	$OpenBSD: rmail.c,v 1.19 2003/09/26 15:55:22 deraadt Exp $	*/
 /*	$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rmail.c	8.3 (Berkeley) 5/15/95";
 #else
-static char rcsid[] = "$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rmail.c,v 1.19 2003/09/26 15:55:22 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,7 +49,7 @@ static char rcsid[] = "$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $";
  *
  * This program reads the >From ... remote from ... lines that UUCP is so
  * fond of and turns them into something reasonable.  It then execs sendmail
- * with various options built from these lines. 
+ * with various options built from these lines.
  *
  * The expected syntax is:
  *
@@ -67,9 +64,6 @@ static char rcsid[] = "$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $";
  *
  * The output of rmail(8) compresses the <forward> lines into a single
  * from path.
- *
- * The err(3) routine is included here deliberately to make this code
- * a bit more portable.
  */
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -83,21 +77,22 @@ static char rcsid[] = "$NetBSD: rmail.c,v 1.8 1995/09/07 06:51:50 jtc Exp $";
 #include <string.h>
 #include <sysexits.h>
 #include <unistd.h>
+#include <errno.h>
 
 #ifndef MAX
 # define MAX(a, b)	((a) < (b) ? (b) : (a))
 #endif
 
-void err __P((int, const char *, ...));
-void usage __P((void));
+extern	char *__progname;
+
+void err(int, const char *, ...);
+void usage(void);
+
+#define TAYLOR_ENV /* use UU_MACHINE if present */
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern char *optarg;
-	extern int errno, optind;
 	FILE *fp;
 	struct stat sb;
 	size_t fplen, fptlen, len;
@@ -107,9 +102,14 @@ main(argc, argv)
 	char *from_path, *from_sys, *from_user;
 	char *args[100], buf[2048], lbuf[2048];
 
+#ifdef lint
+	fplen = fptlen = 0;
+	addrp = NULL;
+#endif
+
 	debug = 0;
 	domain = "UUCP";		/* Default "domain". */
-	while ((ch = getopt(argc, argv, "D:T")) != EOF)
+	while ((ch = getopt(argc, argv, "D:T")) != -1)
 		switch (ch) {
 		case 'T':
 			debug = 1;
@@ -117,7 +117,6 @@ main(argc, argv)
 		case 'D':
 			domain = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -165,7 +164,7 @@ main(argc, argv)
 			}
 
 		/* Else use the string up to the last bang. */
-		if (p == NULL)
+		if (p == NULL) {
 			if (*addrp == '!')
 				err(EX_DATAERR,
 				    "bang starts address: %s", addrp);
@@ -179,6 +178,7 @@ main(argc, argv)
 				if (debug)
 					(void)fprintf(stderr, "bang: %s\n", p);
 			}
+		}
 
 		/* 'p' now points to any system string from this line. */
 		if (p != NULL) {
@@ -203,10 +203,14 @@ main(argc, argv)
 					err(EX_TEMPFAIL, NULL);
 			}
 			if (fplen + len + 2 > fptlen) {
-				fptlen += MAX(fplen + len + 2, 256);
-				if ((from_path =
-				    realloc(from_path, fptlen)) == NULL)
+				size_t newfptlen = fptlen +
+				    MAX(fplen + len + 2, 256);
+				char *np;
+
+				if ((np = realloc(from_path, newfptlen)) == NULL)
 					err(EX_TEMPFAIL, NULL);
+				from_path = np;
+				fptlen = newfptlen;
 			}
 			memmove(from_path + fplen, p, len);
 			fplen += len;
@@ -219,8 +223,7 @@ main(argc, argv)
 		*p = '\0';
 		if (*addrp == '\0')
 			addrp = "<>";
-		if (from_user != NULL)
-			free(from_user);
+		free(from_user);
 		if ((from_user = strdup(addrp)) == NULL)
 			err(EX_TEMPFAIL, NULL);
 
@@ -237,11 +240,21 @@ main(argc, argv)
 
 	i = 0;
 	args[i++] = _PATH_SENDMAIL;	/* Build sendmail's argument list. */
+	args[i++] = "-G";		/* Relay submission. */
 	args[i++] = "-oee";		/* No errors, just status. */
-	args[i++] = "-odq";		/* Queue it, don't try to deliver. */
+	args[i++] = "-odi";		/* Deliver in foreground. */
 	args[i++] = "-oi";		/* Ignore '.' on a line by itself. */
 
 	/* set from system and protocol used */
+#ifdef TAYLOR_ENV
+	{
+		char *uu_machine;
+		uu_machine = getenv("UU_MACHINE");
+		/* set by Taylor UUCP's uuxqt */
+		if (uu_machine)
+			from_sys = uu_machine;
+	}
+#endif
 	if (from_sys == NULL)
 		(void)snprintf(buf, sizeof(buf), "-p%s", domain);
 	else if (strchr(from_sys, '.') == NULL)
@@ -270,12 +283,11 @@ main(argc, argv)
 		if (strchr(*argv, ',') == NULL || strchr(*argv, '<') != NULL)
 			args[i++] = *argv;
 		else {
-			if ((args[i] = malloc(strlen(*argv) + 3)) == NULL)
+			if (asprintf(&args[i++], "<%s>", *argv) == -1)
 				err(EX_TEMPFAIL, "Cannot malloc");
-			sprintf (args [i++], "<%s>", *argv);
 		}
 		argv++;
-	} 
+	}
 	args[i] = 0;
 
 	if (debug) {
@@ -343,37 +355,9 @@ main(argc, argv)
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: rmail [-T] [-D domain] user ...\n");
+	(void)fprintf(stderr, "usage: %s [-T] [-D domain] user ...\n",
+	    __progname);
 	exit(EX_USAGE);
-}
-
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#ifdef __STDC__
-err(int eval, const char *fmt, ...)
-#else
-err(eval, fmt, va_alist)
-	int eval;
-	const char *fmt;
-	va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "rmail: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	exit(eval);
 }

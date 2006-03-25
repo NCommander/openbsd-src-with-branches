@@ -71,7 +71,7 @@
 **  _________________________________________________________________
 */
 
-static int ssl_rand_choosenum(int, int);
+static int ssl_rand_choosenum(int);
 static int ssl_rand_feedfp(pool *, FILE *, int);
 
 int ssl_rand_seed(server_rec *s, pool *p, ssl_rsctx_t nCtx, char *prefix)
@@ -101,11 +101,7 @@ int ssl_rand_seed(server_rec *s, pool *p, ssl_rsctx_t nCtx, char *prefix)
                 /*
                  * seed in contents of an external file
                  */
-#ifdef WIN32
-                if ((fp = ap_pfopen(p, pRandSeed->cpPath, "rb")) == NULL)
-#else
                 if ((fp = ap_pfopen(p, pRandSeed->cpPath, "r")) == NULL)
-#endif
                     continue;
                 nDone += ssl_rand_feedfp(p, fp, pRandSeed->nBytes);
                 ap_pfclose(p, fp);
@@ -120,21 +116,15 @@ int ssl_rand_seed(server_rec *s, pool *p, ssl_rsctx_t nCtx, char *prefix)
                 nDone += ssl_rand_feedfp(p, fp, pRandSeed->nBytes);
                 ssl_util_ppclose(s, p, fp);
             }
-#if SSL_LIBRARY_VERSION >= 0x00905100
             else if (pRandSeed->nSrc == SSL_RSSRC_EGD) {
                 /*
                  * seed in contents provided by the external
                  * Entropy Gathering Daemon (EGD)
                  */
-#if SSL_LIBRARY_VERSION >= 0x00906000
                 if ((n = RAND_egd_bytes(pRandSeed->cpPath, pRandSeed->nBytes)) == -1)
-#else
-                if ((n = RAND_egd(pRandSeed->cpPath)) == -1)
-#endif
                     continue;
                 nDone += n;
             }
-#endif
             else if (pRandSeed->nSrc == SSL_RSSRC_BUILTIN) {
                 /*
                  * seed in the current time (usually just 4 bytes)
@@ -155,7 +145,7 @@ int ssl_rand_seed(server_rec *s, pool *p, ssl_rsctx_t nCtx, char *prefix)
                 /*
                  * seed in some current state of the run-time stack (128 bytes)
                  */
-                n = ssl_rand_choosenum(0, sizeof(stackdata)-128-1);
+                n = ssl_rand_choosenum(sizeof(stackdata)-128-1);
                 RAND_seed(stackdata+n, 128);
                 nDone += 128;
 
@@ -165,7 +155,7 @@ int ssl_rand_seed(server_rec *s, pool *p, ssl_rsctx_t nCtx, char *prefix)
                 if (ap_scoreboard_image != NULL && SCOREBOARD_SIZE > 16) {
                     if ((m = ((SCOREBOARD_SIZE / 2) - 1)) > 1024)
                         m = 1024;
-                    n = ssl_rand_choosenum(0, m);
+                    n = ssl_rand_choosenum(m);
                     RAND_seed(((unsigned char *)ap_scoreboard_image)+n, m);
                     nDone += m;
                 }
@@ -174,10 +164,8 @@ int ssl_rand_seed(server_rec *s, pool *p, ssl_rsctx_t nCtx, char *prefix)
     }
     ssl_log(s, SSL_LOG_INFO, "%sSeeding PRNG with %d bytes of entropy", prefix, nDone);
 
-#if SSL_LIBRARY_VERSION >= 0x00905100
     if (RAND_status() == 0)
         ssl_log(s, SSL_LOG_WARN, "%sPRNG still contains insufficient entropy!", prefix);
-#endif
     return nDone;
 }
 
@@ -210,17 +198,9 @@ static int ssl_rand_feedfp(pool *p, FILE *fp, int nReq)
     return nDone;
 }
 
-static int ssl_rand_choosenum(int l, int h)
+/* Generate a random number in the range 1-h */
+static int ssl_rand_choosenum(int h)
 {
-    int i;
-    char buf[50];
-
-    srand((unsigned int)time(NULL));
-    ap_snprintf(buf, sizeof(buf), "%.0f",
-                (((double)(rand()%RAND_MAX)/RAND_MAX)*(h-l)));
-    i = atoi(buf)+1;
-    if (i < l) i = l;
-    if (i > h) i = h;
-    return i;
+	return (int)(arc4random() / ((double)0xffffffffU + 1) * h + 1);
 }
 

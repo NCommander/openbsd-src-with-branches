@@ -1,4 +1,6 @@
+/*	$OpenBSD: autoconf.h,v 1.15 2004/07/20 20:33:19 miod Exp $ */
 /*
+ * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
  * All rights reserved.
  *
@@ -31,24 +33,38 @@
 /*
  * Autoconfiguration information.
  */
+
+#ifndef _MVME88K_AUTOCONF_H_
+#define _MVME88K_AUTOCONF_H_
+
+#include <machine/bus.h>
+
 struct confargs {
-	int	ca_bustype;
-	caddr_t	ca_parent;
-	caddr_t	ca_vaddr;
-	caddr_t	ca_paddr;
-	int	ca_size;
-	int	ca_ipl;
-	int	ca_vec;
+	bus_space_tag_t	ca_iot;
+	bus_dma_tag_t	ca_dmat;	
+	int		ca_bustype;	/* bus type */
+	paddr_t		ca_paddr;	/* physical address */
+	int		ca_offset;	/* offset from parent */
+	int		ca_ipl;		/* interrupt level */
+	int		ca_vec;		/* mandatory interrupt vector */
+	const char	*ca_name;	/* device name */
 };
 
-#define BUS_MAIN	0
-#define BUS_MC		1
-#define BUS_PCC		2
-#define BUS_PCCTWO	3
-#define BUS_VMES	4
-#define BUS_VMEL	5
+#define BUS_MAIN      0
+#define BUS_PCCTWO    3
+#define BUS_VMES      4
+#define BUS_VMEL      5
+#define BUS_SYSCON    6
+#define BUS_BUSSWITCH 7
 
-int always_match __P((struct device *, struct cfdata *, void *));
+/* the following are from the prom/bootblocks */
+extern paddr_t	bootaddr;	/* PA of boot device */
+extern int	bootpart;	/* boot partition (disk) */
+extern int	bootbus;	/* scsi bus (disk) */
 
-#define DEVICE_UNIT(device) (device->dv_unit)
-#define CFDATA_LOC(cfdata) (cfdata->cf_loc)
+extern	struct device *bootdv; /* boot device */
+
+vaddr_t	mapiodev(paddr_t pa, int size);
+void	unmapiodev(vaddr_t kva, int size);
+
+#endif

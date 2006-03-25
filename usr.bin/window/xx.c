@@ -1,3 +1,4 @@
+/*	$OpenBSD: xx.c,v 1.6 2003/06/03 02:56:23 millert Exp $	*/
 /*	$NetBSD: xx.c,v 1.3 1995/09/28 10:36:03 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,10 +37,12 @@
 #if 0
 static char sccsid[] = "@(#)xx.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: xx.c,v 1.3 1995/09/28 10:36:03 tls Exp $";
+static char rcsid[] = "$OpenBSD: xx.c,v 1.6 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
+#include <stdlib.h>
+#include <string.h>
 #include "ww.h"
 #include "xx.h"
 #include "tt.h"
@@ -56,7 +55,7 @@ xxinit()
 	/* ccinit may choose to change xxbufsize */
 	if (tt.tt_ntoken > 0 && ccinit() < 0)
 		return -1;
-	xxbuf = malloc((unsigned) xxbufsize * sizeof *xxbuf);
+	xxbuf = malloc(xxbufsize * sizeof *xxbuf);
 	if (xxbuf == 0) {
 		wwerrno = WWE_NOMEM;
 		return -1;
@@ -84,7 +83,7 @@ xxreset()
 
 xxreset1()
 {
-	register struct xx *xp, *xq;
+	struct xx *xp, *xq;
 
 	for (xp = xx_head; xp != 0; xp = xq) {
 		xq = xp->link;
@@ -113,13 +112,13 @@ xxend()
 struct xx *
 xxalloc()
 {
-	register struct xx *xp;
+	struct xx *xp;
 
 	if (xxbufp > xxbufe)
 		abort();
 	if ((xp = xx_freelist) == 0)
 		/* XXX can't deal with failure */
-		xp = (struct xx *) malloc((unsigned) sizeof *xp);
+		xp = (struct xx *) malloc(sizeof *xp);
 	else
 		xx_freelist = xp->link;
 	if (xx_head == 0)
@@ -132,7 +131,7 @@ xxalloc()
 }
 
 xxfree(xp)
-	register struct xx *xp;
+	struct xx *xp;
 {
 	xp->link = xx_freelist;
 	xx_freelist = xp;
@@ -140,7 +139,7 @@ xxfree(xp)
 
 xxmove(row, col)
 {
-	register struct xx *xp = xx_tail;
+	struct xx *xp = xx_tail;
 
 	if (xp == 0 || xp->cmd != xc_move) {
 		xp = xxalloc();
@@ -152,7 +151,7 @@ xxmove(row, col)
 
 xxscroll(dir, top, bot)
 {
-	register struct xx *xp = xx_tail;
+	struct xx *xp = xx_tail;
 
 	if (xp != 0 && xp->cmd == xc_scroll &&
 	    xp->arg1 == top && xp->arg2 == bot &&
@@ -169,7 +168,7 @@ xxscroll(dir, top, bot)
 
 xxinschar(row, col, c, m)
 {
-	register struct xx *xp;
+	struct xx *xp;
 
 	xp = xxalloc();
 	xp->cmd = xc_inschar;
@@ -181,7 +180,7 @@ xxinschar(row, col, c, m)
 
 xxinsspace(row, col)
 {
-	register struct xx *xp = xx_tail;
+	struct xx *xp = xx_tail;
 
 	if (xp != 0 && xp->cmd == xc_insspace && xp->arg0 == row &&
 	    col >= xp->arg1 && col <= xp->arg1 + xp->arg2) {
@@ -197,7 +196,7 @@ xxinsspace(row, col)
 
 xxdelchar(row, col)
 {
-	register struct xx *xp = xx_tail;
+	struct xx *xp = xx_tail;
 
 	if (xp != 0 && xp->cmd == xc_delchar &&
 	    xp->arg0 == row && xp->arg1 == col) {
@@ -213,7 +212,7 @@ xxdelchar(row, col)
 
 xxclear()
 {
-	register struct xx *xp;
+	struct xx *xp;
 
 	xxreset1();
 	xp = xxalloc();
@@ -222,7 +221,7 @@ xxclear()
 
 xxclreos(row, col)
 {
-	register struct xx *xp = xxalloc();
+	struct xx *xp = xxalloc();
 
 	xp->cmd = xc_clreos;
 	xp->arg0 = row;
@@ -231,7 +230,7 @@ xxclreos(row, col)
 
 xxclreol(row, col)
 {
-	register struct xx *xp = xxalloc();
+	struct xx *xp = xxalloc();
 
 	xp->cmd = xc_clreol;
 	xp->arg0 = row;
@@ -241,7 +240,7 @@ xxclreol(row, col)
 xxwrite(row, col, p, n, m)
 	char *p;
 {
-	register struct xx *xp;
+	struct xx *xp;
 
 	if (xxbufp + n + 1 > xxbufe)
 		xxflush(0);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,12 +13,36 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: util.c,v 8.347 2001/09/04 22:43:06 ca Exp $")
+SM_RCSID("@(#)$Sendmail: util.c,v 8.383 2004/08/02 18:50:59 ca Exp $")
 
 #include <sysexits.h>
 #include <sm/xtrap.h>
 
-/*
+/*
+**  NEWSTR -- Create a copy of a C string
+**
+**	Parameters:
+**		s -- the string to copy.
+**
+**	Returns:
+**		pointer to newly allocated string.
+*/
+
+char *
+newstr(s)
+	const char *s;
+{
+	size_t l;
+	char *n;
+
+	l = strlen(s);
+	SM_ASSERT(l + 1 > l);
+	n = xalloc(l + 1);
+	sm_strlcpy(n, s, l + 1);
+	return n;
+}
+
+/*
 **  ADDQUOTES -- Adds quotes & quote bits to a string.
 **
 **	Runs through a string and adds backslashes and quote bits.
@@ -67,7 +91,38 @@ addquotes(s, rpool)
 	*q = '\0';
 	return r;
 }
-/*
+
+/*
+**  STRIPBACKSLASH -- Strip all leading backslashes from a string, provided
+**	the following character is alpha-numerical.
+**
+**	This is done in place.
+**
+**	Parameters:
+**		s -- the string to strip.
+**
+**	Returns:
+**		none.
+*/
+
+void
+stripbackslash(s)
+	char *s;
+{
+	char *p, *q, c;
+
+	if (s == NULL || *s == '\0')
+		return;
+	p = q = s;
+	while (*p == '\\' && (p[1] == '\\' || (isascii(p[1]) && isalnum(p[1]))))
+		p++;
+	do
+	{
+		c = *q++ = *p++;
+	} while (c != '\0');
+}
+
+/*
 **  RFC822_STRING -- Checks string for proper RFC822 string quoting.
 **
 **	Runs through a string and verifies RFC822 special characters
@@ -125,7 +180,7 @@ rfc822_string(s)
 	/* unbalanced '"' or '(' */
 	return !quoted && commentlev == 0;
 }
-/*
+/*
 **  SHORTEN_RFC822_STRING -- Truncate and rebalance an RFC822 string
 **
 **	Arbitrarily shorten (in place) an RFC822 string and rebalance
@@ -233,7 +288,7 @@ increment:
 	}
 	return modified;
 }
-/*
+/*
 **  FIND_CHARACTER -- find an unquoted character in an RFC822 string
 **
 **	Find an unquoted, non-commented character in an RFC822
@@ -302,8 +357,34 @@ find_character(string, character)
 	/* Return pointer to the character */
 	return string;
 }
+
+/*
+**  CHECK_BODYTYPE -- check bodytype parameter
+**
+**	Parameters:
+**		bodytype -- bodytype parameter
+**
+**	Returns:
+**		BODYTYPE_* according to parameter
+**
+*/
+
+int
+check_bodytype(bodytype)
+	char *bodytype;
+{
+	/* check body type for legality */
+	if (bodytype == NULL)
+		return BODYTYPE_NONE;
+	if (sm_strcasecmp(bodytype, "7BIT") == 0)
+		return BODYTYPE_7BIT;
+	if (sm_strcasecmp(bodytype, "8BITMIME") == 0)
+		return BODYTYPE_8BITMIME;
+	return BODYTYPE_ILLEGAL;
+}
+
 #if _FFR_BESTMX_BETTER_TRUNCATION || _FFR_DNSMAP_MULTI
-/*
+/*
 **  TRUNCATE_AT_DELIM -- truncate string at a delimiter and append "..."
 **
 **	Parameters:
@@ -332,7 +413,7 @@ truncate_at_delim(str, len, delim)
 		*p = '\0';
 		if (p - str + 4 < len)
 		{
-			*p++ = ':';
+			*p++ = (char) delim;
 			*p = '\0';
 			(void) sm_strlcat(str, "...", len);
 			return;
@@ -346,7 +427,7 @@ truncate_at_delim(str, len, delim)
 		str[0] = '\0';
 }
 #endif /* _FFR_BESTMX_BETTER_TRUNCATION || _FFR_DNSMAP_MULTI */
-/*
+/*
 **  XALLOC -- Allocate memory, raise an exception on error
 **
 **	Parameters:
@@ -375,6 +456,8 @@ xalloc(sz)
 {
 	register char *p;
 
+	SM_REQUIRE(sz >= 0);
+
 	/* some systems can't handle size zero mallocs */
 	if (sz <= 0)
 		sz = 1;
@@ -389,7 +472,7 @@ xalloc(sz)
 	}
 	return p;
 }
-/*
+/*
 **  COPYPLIST -- copy list of pointers.
 **
 **	This routine is the equivalent of strdup for lists of
@@ -432,7 +515,7 @@ copyplist(list, copycont, rpool)
 
 	return newvp;
 }
-/*
+/*
 **  COPYQUEUE -- copy address queue.
 **
 **	This routine is the equivalent of strdup for address queues;
@@ -471,7 +554,7 @@ copyqueue(addr, rpool)
 
 	return ret;
 }
-/*
+/*
 **  LOG_SENDMAIL_PID -- record sendmail pid and command line.
 **
 **	Parameters:
@@ -482,49 +565,82 @@ copyqueue(addr, rpool)
 **
 **	Side Effects:
 **		writes pidfile, logs command line.
+**		keeps file open and locked to prevent overwrite of active file
 */
+
+static SM_FILE_T	*Pidf = NULL;
 
 void
 log_sendmail_pid(e)
 	ENVELOPE *e;
 {
 	long sff;
-	SM_FILE_T *pidf;
-	char pidpath[MAXPATHLEN + 1];
+	char pidpath[MAXPATHLEN];
 	extern char *CommandLineArgs;
 
 	/* write the pid to the log file for posterity */
-	sff = SFF_NOLINK|SFF_ROOTOK|SFF_REGONLY|SFF_CREAT;
+	sff = SFF_NOLINK|SFF_ROOTOK|SFF_REGONLY|SFF_CREAT|SFF_NBLOCK;
 	if (TrustedUid != 0 && RealUid == TrustedUid)
 		sff |= SFF_OPENASROOT;
 	expand(PidFile, pidpath, sizeof pidpath, e);
-	pidf = safefopen(pidpath, O_WRONLY|O_TRUNC, 0644, sff);
-	if (pidf == NULL)
+	Pidf = safefopen(pidpath, O_WRONLY|O_TRUNC, FileMode, sff);
+	if (Pidf == NULL)
 	{
-		sm_syslog(LOG_ERR, NOQID, "unable to write %s: %s",
-			  pidpath, sm_errstring(errno));
+		if (errno == EWOULDBLOCK)
+			sm_syslog(LOG_ERR, NOQID,
+				  "unable to write pid to %s: file in use by another process",
+				  pidpath);
+		else
+			sm_syslog(LOG_ERR, NOQID,
+				  "unable to write pid to %s: %s",
+				  pidpath, sm_errstring(errno));
 	}
 	else
 	{
-		pid_t pid;
-
-		pid = getpid();
+		PidFilePid = getpid();
 
 		/* write the process id on line 1 */
-		(void) sm_io_fprintf(pidf, SM_TIME_DEFAULT, "%ld\n",
-				     (long) pid);
+		(void) sm_io_fprintf(Pidf, SM_TIME_DEFAULT, "%ld\n",
+				     (long) PidFilePid);
 
 		/* line 2 contains all command line flags */
-		(void) sm_io_fprintf(pidf, SM_TIME_DEFAULT, "%s\n",
+		(void) sm_io_fprintf(Pidf, SM_TIME_DEFAULT, "%s\n",
 				     CommandLineArgs);
 
-		/* flush and close */
-		(void) sm_io_close(pidf, SM_TIME_DEFAULT);
+		/* flush */
+		(void) sm_io_flush(Pidf, SM_TIME_DEFAULT);
+
+		/*
+		**  Leave pid file open until process ends
+		**  so it's not overwritten by another
+		**  process.
+		*/
 	}
 	if (LogLevel > 9)
 		sm_syslog(LOG_INFO, NOQID, "started as: %s", CommandLineArgs);
 }
-/*
+
+/*
+**  CLOSE_SENDMAIL_PID -- close sendmail pid file
+**
+**	Parameters:
+**		none.
+**
+**	Returns:
+**		none.
+*/
+
+void
+close_sendmail_pid()
+{
+	if (Pidf == NULL)
+		return;
+
+	(void) sm_io_close(Pidf, SM_TIME_DEFAULT);
+	Pidf = NULL;
+}
+
+/*
 **  SET_DELIVERY_MODE -- set and record the delivery mode
 **
 **	Parameters:
@@ -550,7 +666,7 @@ set_delivery_mode(mode, e)
 	buf[1] = '\0';
 	macdefine(&e->e_macro, A_TEMP, macid("{deliveryMode}"), buf);
 }
-/*
+/*
 **  SET_OP_MODE -- set and record the op mode
 **
 **	Parameters:
@@ -576,10 +692,11 @@ set_op_mode(mode)
 	buf[1] = '\0';
 	macdefine(&BlankEnvelope.e_macro, A_TEMP, MID_OPMODE, buf);
 }
-/*
+/*
 **  PRINTAV -- print argument vector.
 **
 **	Parameters:
+**		fp -- output file pointer.
 **		av -- argument vector.
 **
 **	Returns:
@@ -590,7 +707,8 @@ set_op_mode(mode)
 */
 
 void
-printav(av)
+printav(fp, av)
+	SM_FILE_T *fp;
 	register char **av;
 {
 	while (*av != NULL)
@@ -598,15 +716,16 @@ printav(av)
 		if (tTd(0, 44))
 			sm_dprintf("\n\t%08lx=", (unsigned long) *av);
 		else
-			(void) sm_io_putc(smioout, SM_TIME_DEFAULT, ' ');
-		xputs(*av++);
+			(void) sm_io_putc(fp, SM_TIME_DEFAULT, ' ');
+		xputs(fp, *av++);
 	}
-	(void) sm_io_putc(smioout, SM_TIME_DEFAULT, '\n');
+	(void) sm_io_putc(fp, SM_TIME_DEFAULT, '\n');
 }
-/*
+/*
 **  XPUTS -- put string doing control escapes.
 **
 **	Parameters:
+**		fp -- output file pointer.
 **		s -- string to put.
 **
 **	Returns:
@@ -617,7 +736,8 @@ printav(av)
 */
 
 void
-xputs(s)
+xputs(fp, s)
+	SM_FILE_T *fp;
 	register const char *s;
 {
 	register int c;
@@ -649,7 +769,7 @@ xputs(s)
 
 	if (s == NULL)
 	{
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s<null>%s",
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%s<null>%s",
 				     TermEscape.te_rv_on, TermEscape.te_rv_off);
 		return;
 	}
@@ -657,7 +777,7 @@ xputs(s)
 	{
 		if (shiftout)
 		{
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s",
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%s",
 					     TermEscape.te_rv_off);
 			shiftout = false;
 		}
@@ -665,7 +785,7 @@ xputs(s)
 		{
 			if (c == MATCHREPL)
 			{
-				(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+				(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 						     "%s$",
 						     TermEscape.te_rv_on);
 				shiftout = true;
@@ -676,26 +796,26 @@ xputs(s)
 			}
 			if (c == MACROEXPAND || c == MACRODEXPAND)
 			{
-				(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+				(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 						     "%s$",
 						     TermEscape.te_rv_on);
 				if (c == MACRODEXPAND)
-					(void) sm_io_putc(smioout,
+					(void) sm_io_putc(fp,
 							  SM_TIME_DEFAULT, '&');
 				shiftout = true;
 				if (*s == '\0')
 					continue;
 				if (strchr("=~&?", *s) != NULL)
-					(void) sm_io_putc(smioout,
+					(void) sm_io_putc(fp,
 							  SM_TIME_DEFAULT,
 							  *s++);
 				if (bitset(0200, *s))
-					(void) sm_io_fprintf(smioout,
+					(void) sm_io_fprintf(fp,
 							     SM_TIME_DEFAULT,
 							     "{%s}",
 							     macname(bitidx(*s++)));
 				else
-					(void) sm_io_fprintf(smioout,
+					(void) sm_io_fprintf(fp,
 							     SM_TIME_DEFAULT,
 							     "%c",
 							     *s++);
@@ -705,7 +825,7 @@ xputs(s)
 			{
 				if (bitidx(mp->metaval) == c)
 				{
-					(void) sm_io_fprintf(smioout,
+					(void) sm_io_fprintf(fp,
 							     SM_TIME_DEFAULT,
 							     "%s$%c",
 							     TermEscape.te_rv_on,
@@ -717,12 +837,12 @@ xputs(s)
 			if (c == MATCHCLASS || c == MATCHNCLASS)
 			{
 				if (bitset(0200, *s))
-					(void) sm_io_fprintf(smioout,
+					(void) sm_io_fprintf(fp,
 							     SM_TIME_DEFAULT,
 							     "{%s}",
 							     macname(bitidx(*s++)));
 				else if (*s != '\0')
-					(void) sm_io_fprintf(smioout,
+					(void) sm_io_fprintf(fp,
 							     SM_TIME_DEFAULT,
 							     "%c",
 							     *s++);
@@ -731,7 +851,7 @@ xputs(s)
 				continue;
 
 			/* unrecognized meta character */
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%sM-",
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%sM-",
 					     TermEscape.te_rv_on);
 			shiftout = true;
 			c &= 0177;
@@ -739,7 +859,7 @@ xputs(s)
   printchar:
 		if (isprint(c))
 		{
-			(void) sm_io_putc(smioout, SM_TIME_DEFAULT, c);
+			(void) sm_io_putc(fp, SM_TIME_DEFAULT, c);
 			continue;
 		}
 
@@ -760,27 +880,27 @@ xputs(s)
 		}
 		if (!shiftout)
 		{
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s",
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%s",
 					     TermEscape.te_rv_on);
 			shiftout = true;
 		}
 		if (isprint(c))
 		{
-			(void) sm_io_putc(smioout, SM_TIME_DEFAULT, '\\');
-			(void) sm_io_putc(smioout, SM_TIME_DEFAULT, c);
+			(void) sm_io_putc(fp, SM_TIME_DEFAULT, '\\');
+			(void) sm_io_putc(fp, SM_TIME_DEFAULT, c);
 		}
 		else
 		{
-			(void) sm_io_putc(smioout, SM_TIME_DEFAULT, '^');
-			(void) sm_io_putc(smioout, SM_TIME_DEFAULT, c ^ 0100);
+			(void) sm_io_putc(fp, SM_TIME_DEFAULT, '^');
+			(void) sm_io_putc(fp, SM_TIME_DEFAULT, c ^ 0100);
 		}
 	}
 	if (shiftout)
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s",
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%s",
 				     TermEscape.te_rv_off);
-	(void) sm_io_flush(smioout, SM_TIME_DEFAULT);
+	(void) sm_io_flush(fp, SM_TIME_DEFAULT);
 }
-/*
+/*
 **  MAKELOWER -- Translate a line into lower case
 **
 **	Parameters:
@@ -806,7 +926,7 @@ makelower(p)
 		if (isascii(c) && isupper(c))
 			*p = tolower(c);
 }
-/*
+/*
 **  FIXCRLF -- fix <CR><LF> in line.
 **
 **	Looks for the <CR><LF> combination and turns it into the
@@ -841,7 +961,7 @@ fixcrlf(line, stripnl)
 		*p++ = '\n';
 	*p = '\0';
 }
-/*
+/*
 **  PUTLINE -- put a line like fputs obeying SMTP conventions
 **
 **	This routine always guarantees outputing a newline (or CRLF,
@@ -852,20 +972,20 @@ fixcrlf(line, stripnl)
 **		mci -- the mailer connection information.
 **
 **	Returns:
-**		none
+**		true iff line was written successfully
 **
 **	Side Effects:
 **		output of l to mci->mci_out.
 */
 
-void
+bool
 putline(l, mci)
 	register char *l;
 	register MCI *mci;
 {
-	putxline(l, strlen(l), mci, PXLF_MAPFROM);
+	return putxline(l, strlen(l), mci, PXLF_MAPFROM);
 }
-/*
+/*
 **  PUTXLINE -- putline with flags bits.
 **
 **	This routine always guarantees outputing a newline (or CRLF,
@@ -879,15 +999,16 @@ putline(l, mci)
 **		    PXLF_MAPFROM -- map From_ to >From_.
 **		    PXLF_STRIP8BIT -- strip 8th bit.
 **		    PXLF_HEADER -- map bare newline in header to newline space.
+**		    PXLF_NOADDEOL -- don't add an EOL if one wasn't present.
 **
 **	Returns:
-**		none
+**		true iff line was written successfully
 **
 **	Side Effects:
 **		output of l to mci->mci_out.
 */
 
-void
+bool
 putxline(l, len, mci, pxflags)
 	register char *l;
 	size_t len;
@@ -912,10 +1033,15 @@ putxline(l, len, mci, pxflags)
 	end = l + len;
 	do
 	{
+		bool noeol = false;
+
 		/* find the end of the line */
 		p = memchr(l, '\n', end - l);
 		if (p == NULL)
+		{
 			p = end;
+			noeol = true;
+		}
 
 		if (TrafficLogFile != NULL)
 			(void) sm_io_fprintf(TrafficLogFile, SM_TIME_DEFAULT,
@@ -934,11 +1060,6 @@ putxline(l, len, mci, pxflags)
 				if (sm_io_putc(mci->mci_out, SM_TIME_DEFAULT,
 					       '.') == SM_IO_EOF)
 					dead = true;
-				else
-				{
-					/* record progress for DATA timeout */
-					DataProgress = true;
-				}
 				if (TrafficLogFile != NULL)
 					(void) sm_io_putc(TrafficLogFile,
 							  SM_TIME_DEFAULT, '.');
@@ -951,11 +1072,6 @@ putxline(l, len, mci, pxflags)
 				if (sm_io_putc(mci->mci_out, SM_TIME_DEFAULT,
 					       '>') == SM_IO_EOF)
 					dead = true;
-				else
-				{
-					/* record progress for DATA timeout */
-					DataProgress = true;
-				}
 				if (TrafficLogFile != NULL)
 					(void) sm_io_putc(TrafficLogFile,
 							  SM_TIME_DEFAULT,
@@ -967,15 +1083,10 @@ putxline(l, len, mci, pxflags)
 			while (l < q)
 			{
 				if (sm_io_putc(mci->mci_out, SM_TIME_DEFAULT,
-					       (unsigned char) *l++) == SM_IO_EOF)
+				       (unsigned char) *l++) == SM_IO_EOF)
 				{
 					dead = true;
 					break;
-				}
-				else
-				{
-					/* record progress for DATA timeout */
-					DataProgress = true;
 				}
 			}
 			if (dead)
@@ -991,11 +1102,6 @@ putxline(l, len, mci, pxflags)
 			{
 				dead = true;
 				break;
-			}
-			else
-			{
-				/* record progress for DATA timeout */
-				DataProgress = true;
 			}
 			if (TrafficLogFile != NULL)
 			{
@@ -1020,11 +1126,9 @@ putxline(l, len, mci, pxflags)
 		{
 			if (sm_io_putc(mci->mci_out, SM_TIME_DEFAULT, '.') ==
 			    SM_IO_EOF)
-				break;
-			else
 			{
-				/* record progress for DATA timeout */
-				DataProgress = true;
+				dead = true;
+				break;
 			}
 			if (TrafficLogFile != NULL)
 				(void) sm_io_putc(TrafficLogFile,
@@ -1037,11 +1141,9 @@ putxline(l, len, mci, pxflags)
 		{
 			if (sm_io_putc(mci->mci_out, SM_TIME_DEFAULT, '>') ==
 			    SM_IO_EOF)
-				break;
-			else
 			{
-				/* record progress for DATA timeout */
-				DataProgress = true;
+				dead = true;
+				break;
 			}
 			if (TrafficLogFile != NULL)
 				(void) sm_io_putc(TrafficLogFile,
@@ -1059,11 +1161,6 @@ putxline(l, len, mci, pxflags)
 				dead = true;
 				break;
 			}
-			else
-			{
-				/* record progress for DATA timeout */
-				DataProgress = true;
-			}
 		}
 		if (dead)
 			break;
@@ -1071,13 +1168,12 @@ putxline(l, len, mci, pxflags)
 		if (TrafficLogFile != NULL)
 			(void) sm_io_putc(TrafficLogFile, SM_TIME_DEFAULT,
 					  '\n');
-		if (sm_io_fputs(mci->mci_out, SM_TIME_DEFAULT,
+		if ((!bitset(PXLF_NOADDEOL, pxflags) || !noeol) &&
+		    sm_io_fputs(mci->mci_out, SM_TIME_DEFAULT,
 				mci->mci_mailer->m_eol) == SM_IO_EOF)
-			break;
-		else
 		{
-			/* record progress for DATA timeout */
-			DataProgress = true;
+			dead = true;
+			break;
 		}
 		if (l < end && *l == '\n')
 		{
@@ -1086,11 +1182,9 @@ putxline(l, len, mci, pxflags)
 			{
 				if (sm_io_putc(mci->mci_out, SM_TIME_DEFAULT,
 					       ' ') == SM_IO_EOF)
-					break;
-				else
 				{
-					/* record progress for DATA timeout */
-					DataProgress = true;
+					dead = true;
+					break;
 				}
 
 				if (TrafficLogFile != NULL)
@@ -1099,11 +1193,11 @@ putxline(l, len, mci, pxflags)
 			}
 		}
 
-		/* record progress for DATA timeout */
-		DataProgress = true;
 	} while (l < end);
+	return !dead;
 }
-/*
+
+/*
 **  XUNLINK -- unlink a file, doing logging as appropriate.
 **
 **	Parameters:
@@ -1121,19 +1215,22 @@ xunlink(f)
 	char *f;
 {
 	register int i;
+	int save_errno;
 
 	if (LogLevel > 98)
 		sm_syslog(LOG_DEBUG, CurEnv->e_id, "unlink %s", f);
 
 	i = unlink(f);
+	save_errno = errno;
 	if (i < 0 && LogLevel > 97)
 		sm_syslog(LOG_DEBUG, CurEnv->e_id, "%s: unlink-fail %d",
 			  f, errno);
 	if (i >= 0)
 		SYNC_DIR(f, false);
+	errno = save_errno;
 	return i;
 }
-/*
+/*
 **  SFGETS -- "safe" fgets -- times out and ignores random interrupts.
 **
 **	Parameters:
@@ -1241,7 +1338,7 @@ sfgets(buf, siz, fp, timeout, during)
 	}
 	return buf;
 }
-/*
+/*
 **  FGETFOLDED -- like fgets, but knows about folded lines.
 **
 **	Parameters:
@@ -1330,7 +1427,7 @@ fgetfolded(buf, n, f)
 	*p = '\0';
 	return bp;
 }
-/*
+/*
 **  CURTIME -- return current time.
 **
 **	Parameters:
@@ -1348,7 +1445,7 @@ curtime()
 	(void) time(&t);
 	return t;
 }
-/*
+/*
 **  ATOBOOL -- convert a string representation to boolean.
 **
 **	Defaults to false
@@ -1369,7 +1466,7 @@ atobool(s)
 		return true;
 	return false;
 }
-/*
+/*
 **  ATOOCT -- convert a string representation to octal.
 **
 **	Parameters:
@@ -1390,7 +1487,7 @@ atooct(s)
 		i = (i << 3) | (*s++ - '0');
 	return i;
 }
-/*
+/*
 **  BITINTERSECT -- tell if two bitmaps intersect
 **
 **	Parameters:
@@ -1415,7 +1512,7 @@ bitintersect(a, b)
 	}
 	return false;
 }
-/*
+/*
 **  BITZEROP -- tell if a bitmap is all zero
 **
 **	Parameters:
@@ -1439,10 +1536,11 @@ bitzerop(map)
 	}
 	return true;
 }
-/*
+/*
 **  STRCONTAINEDIN -- tell if one string is contained in another
 **
 **	Parameters:
+**		icase -- ignore case?
 **		a -- possible substring.
 **		b -- possible superstring.
 **
@@ -1452,7 +1550,8 @@ bitzerop(map)
 */
 
 bool
-strcontainedin(a, b)
+strcontainedin(icase, a, b)
+	bool icase;
 	register char *a;
 	register char *b;
 {
@@ -1463,18 +1562,29 @@ strcontainedin(a, b)
 	la = strlen(a);
 	lb = strlen(b);
 	c = *a;
-	if (isascii(c) && isupper(c))
+	if (icase && isascii(c) && isupper(c))
 		c = tolower(c);
 	for (; lb-- >= la; b++)
 	{
-		if (*b != c && isascii(*b) && isupper(*b) && tolower(*b) != c)
-			continue;
-		if (sm_strncasecmp(a, b, la) == 0)
-			return true;
+		if (icase)
+		{
+			if (*b != c &&
+			    isascii(*b) && isupper(*b) && tolower(*b) != c)
+				continue;
+			if (sm_strncasecmp(a, b, la) == 0)
+				return true;
+		}
+		else
+		{
+			if (*b != c)
+				continue;
+			if (strncmp(a, b, la) == 0)
+				return true;
+		}
 	}
 	return false;
 }
-/*
+/*
 **  CHECKFD012 -- check low numbered file descriptors
 **
 **	File descriptors 0, 1, and 2 should be open at all times.
@@ -1498,7 +1608,7 @@ checkfd012(where)
 		fill_fd(i, where);
 #endif /* XDEBUG */
 }
-/*
+/*
 **  CHECKFDOPEN -- make sure file descriptor is open -- for extended debugging
 **
 **	Parameters:
@@ -1524,7 +1634,7 @@ checkfdopen(fd, where)
 	}
 #endif /* XDEBUG */
 }
-/*
+/*
 **  CHECKFDS -- check for new or missing file descriptors
 **
 **	Parameters:
@@ -1584,7 +1694,7 @@ checkfds(where)
 	}
 	errno = save_errno;
 }
-/*
+/*
 **  PRINTOPENFDS -- print the open file descriptors (for debugging)
 **
 **	Parameters:
@@ -1609,14 +1719,14 @@ printopenfds(logit)
 	for (fd = 0; fd < DtableSize; fd++)
 		dumpfd(fd, false, logit);
 }
-/*
+/*
 **  DUMPFD -- dump a file descriptor
 **
 **	Parameters:
 **		fd -- the file descriptor to dump.
 **		printclosed -- if set, print a notification even if
 **			it is closed; otherwise print nothing.
-**		logit -- if set, send output to syslog instead of stdout.
+**		logit -- if set, use sm_syslog instead of sm_dprintf()
 **
 **	Returns:
 **		none.
@@ -1669,7 +1779,7 @@ dumpfd(fd, printclosed, logit)
 		return;
 	}
 
-	i = fcntl(fd, F_GETFL, NULL);
+	i = fcntl(fd, F_GETFL, 0);
 	if (i != -1)
 	{
 		(void) sm_snprintf(p, SPACELEFT(buf, p), "fl=0x%x, ", i);
@@ -1796,9 +1906,9 @@ printit:
 		sm_syslog(LOG_DEBUG, CurEnv ? CurEnv->e_id : NULL,
 			  "%.800s", buf);
 	else
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s\n", buf);
+		sm_dprintf("%s\n", buf);
 }
-/*
+/*
 **  SHORTEN_HOSTNAME -- strip local domain information off of hostname.
 **
 **	Parameters:
@@ -1845,7 +1955,7 @@ shorten_hostname(host)
 	}
 	return NULL;
 }
-/*
+/*
 **  PROG_OPEN -- open a program for reading
 **
 **	Parameters:
@@ -1864,13 +1974,12 @@ prog_open(argv, pfd, e)
 	ENVELOPE *e;
 {
 	pid_t pid;
-	int i;
 	int save_errno;
 	int sff;
 	int ret;
 	int fdv[2];
 	char *p, *q;
-	char buf[MAXLINE + 1];
+	char buf[MAXPATHLEN];
 	extern int DtableSize;
 
 	if (pipe(fdv) < 0)
@@ -2005,13 +2114,7 @@ prog_open(argv, pfd, e)
 			  argv[0], sm_errstring(ret));
 
 	/* arrange for all the files to be closed */
-	for (i = 3; i < DtableSize; i++)
-	{
-		register int j;
-
-		if ((j = fcntl(i, F_GETFD, 0)) != -1)
-			(void) fcntl(i, F_SETFD, j | FD_CLOEXEC);
-	}
+	sm_close_on_exec(STDERR_FILENO + 1, DtableSize);
 
 	/* now exec the process */
 	(void) execve(argv[0], (ARGV_T) argv, (ARGV_T) UserEnviron);
@@ -2024,7 +2127,7 @@ prog_open(argv, pfd, e)
 	_exit(EX_CONFIG);
 	return -1;	/* avoid compiler warning on IRIX */
 }
-/*
+/*
 **  GET_COLUMN -- look up a Column in a line buffer
 **
 **	Parameters:
@@ -2097,7 +2200,7 @@ get_column(line, col, delim, buf, buflen)
 	(void) sm_strlcpy(buf, begin, i + 1);
 	return buf;
 }
-/*
+/*
 **  CLEANSTRCPY -- copy string keeping out bogus characters
 **
 **	Parameters:
@@ -2134,7 +2237,7 @@ cleanstrcpy(t, f, l)
 	}
 	*t = '\0';
 }
-/*
+/*
 **  DENLSTRING -- convert newlines in a string to spaces
 **
 **	Parameters:
@@ -2190,7 +2293,41 @@ denlstring(s, strict, logattacks)
 
 	return bp;
 }
-/*
+
+/*
+**  STRREPLNONPRT -- replace "unprintable" characters in a string with subst
+**
+**	Parameters:
+**		s -- string to manipulate (in place)
+**		subst -- character to use as replacement
+**
+**	Returns:
+**		true iff string did not contain "unprintable" characters
+*/
+
+bool
+strreplnonprt(s, c)
+	char *s;
+	int c;
+{
+	bool ok;
+
+	ok = true;
+	if (s == NULL)
+		return ok;
+	while (*s != '\0')
+	{
+		if (!(isascii(*s) && isprint(*s)))
+		{
+			*s = c;
+			ok = false;
+		}
+		++s;
+	}
+	return ok;
+}
+
+/*
 **  STR2PRT -- convert "unprintable" characters in a string to \oct
 **
 **	Parameters:
@@ -2265,7 +2402,16 @@ str2prt(s)
 				*h++ = 'r';
 				break;
 			  default:
-				(void) sm_snprintf(h, l, "%03o", (int) c);
+				SM_ASSERT(l >= 2);
+				(void) sm_snprintf(h, l, "%03o",
+					(unsigned int)((unsigned char) c));
+
+				/*
+				**  XXX since l is unsigned this may
+				**  wrap around if the calculation is screwed
+				**  up...
+				*/
+
 				l -= 2;
 				h += 3;
 				break;
@@ -2276,7 +2422,7 @@ str2prt(s)
 	buf[len - 1] = '\0';
 	return buf;
 }
-/*
+/*
 **  PATH_IS_DIR -- check to see if file exists and is a directory.
 **
 **	There are some additional checks for security violations in
@@ -2292,7 +2438,7 @@ str2prt(s)
 **		false -- otherwise
 */
 
-int
+bool
 path_is_dir(pathname, createflag)
 	char *pathname;
 	bool createflag;
@@ -2325,7 +2471,7 @@ path_is_dir(pathname, createflag)
 	}
 	return true;
 }
-/*
+/*
 **  PROC_LIST_ADD -- add process id to list of our children
 **
 **	Parameters:
@@ -2346,23 +2492,25 @@ typedef struct procs	PROCS_T;
 
 struct procs
 {
-	pid_t	proc_pid;
-	char	*proc_task;
-	int	proc_type;
-	int	proc_count;
-	int	proc_other;
+	pid_t		proc_pid;
+	char		*proc_task;
+	int		proc_type;
+	int		proc_count;
+	int		proc_other;
+	SOCKADDR	proc_hostaddr;
 };
 
 static PROCS_T	*volatile ProcListVec = NULL;
 static int	ProcListSize = 0;
 
 void
-proc_list_add(pid, task, type, count, other)
+proc_list_add(pid, task, type, count, other, hostaddr)
 	pid_t pid;
 	char *task;
 	int type;
 	int count;
 	int other;
+	SOCKADDR *hostaddr;
 {
 	int i;
 
@@ -2414,6 +2562,11 @@ proc_list_add(pid, task, type, count, other)
 	ProcListVec[i].proc_type = type;
 	ProcListVec[i].proc_count = count;
 	ProcListVec[i].proc_other = other;
+	if (hostaddr != NULL)
+		ProcListVec[i].proc_hostaddr = *hostaddr;
+	else
+		memset(&ProcListVec[i].proc_hostaddr, 0,
+			sizeof(ProcListVec[i].proc_hostaddr));
 
 	/* if process adding itself, it's not a child */
 	if (pid != CurrentPid)
@@ -2422,7 +2575,7 @@ proc_list_add(pid, task, type, count, other)
 		CurChildren++;
 	}
 }
-/*
+/*
 **  PROC_LIST_SET -- set pid task in process list
 **
 **	Parameters:
@@ -2449,29 +2602,30 @@ proc_list_set(pid, task)
 		}
 	}
 }
-/*
+/*
 **  PROC_LIST_DROP -- drop pid from process list
 **
 **	Parameters:
 **		pid -- pid to drop
-**		count -- pointer to number of processes (return).
+**		st -- process status
 **		other -- storage for proc_other (return).
 **
 **	Returns:
-**		type of process
+**		none.
 **
 **	Side Effects:
-**		May decrease CurChildren.
+**		May decrease CurChildren, CurRunners, or
+**		set RestartRequest or ShutdownRequest.
 **
 **	NOTE:	THIS CAN BE CALLED FROM A SIGNAL HANDLER.  DO NOT ADD
 **		ANYTHING TO THIS ROUTINE UNLESS YOU KNOW WHAT YOU ARE
 **		DOING.
 */
 
-int
-proc_list_drop(pid, count, other)
+void
+proc_list_drop(pid, st, other)
 	pid_t pid;
-	int *count;
+	int st;
 	int *other;
 {
 	int i;
@@ -2483,8 +2637,6 @@ proc_list_drop(pid, count, other)
 		{
 			ProcListVec[i].proc_pid = NO_PID;
 			type = ProcListVec[i].proc_type;
-			if (count != NULL)
-				*count = ProcListVec[i].proc_count;
 			if (other != NULL)
 				*other = ProcListVec[i].proc_other;
 			break;
@@ -2494,9 +2646,24 @@ proc_list_drop(pid, count, other)
 		CurChildren--;
 
 
-	return type;
+	if (type == PROC_CONTROL && WIFEXITED(st))
+	{
+		/* if so, see if we need to restart or shutdown */
+		if (WEXITSTATUS(st) == EX_RESTART)
+			RestartRequest = "control socket";
+		else if (WEXITSTATUS(st) == EX_SHUTDOWN)
+			ShutdownRequest = "control socket";
+	}
+	else if (type == PROC_QUEUE_CHILD && !WIFSTOPPED(st) &&
+		 ProcListVec[i].proc_other > -1)
+	{
+		/* restart this persistent runner */
+		mark_work_group_restart(ProcListVec[i].proc_other, st);
+	}
+	else if (type == PROC_QUEUE)
+		CurRunners -= ProcListVec[i].proc_count;
 }
-/*
+/*
 **  PROC_LIST_CLEAR -- clear the process list
 **
 **	Parameters:
@@ -2519,7 +2686,7 @@ proc_list_clear()
 		ProcListVec[i].proc_pid = NO_PID;
 	CurChildren = 0;
 }
-/*
+/*
 **  PROC_LIST_PROBE -- probe processes in the list to see if they still exist
 **
 **	Parameters:
@@ -2557,7 +2724,7 @@ proc_list_probe()
 		CurChildren = 0;
 }
 
-/*
+/*
 **  PROC_LIST_DISPLAY -- display the process list
 **
 **	Parameters:
@@ -2636,4 +2803,48 @@ proc_list_signal(type, signal)
 		(void) sm_releasesignal(SIGALRM);
 	if (chldwasblocked == 0)
 		(void) sm_releasesignal(SIGCHLD);
+}
+
+/*
+**  COUNT_OPEN_CONNECTIONS
+**
+**	Parameters:
+**		hostaddr - ClientAddress
+**
+**	Returns:
+**		the number of open connections for this client
+**
+*/
+
+int
+count_open_connections(hostaddr)
+	SOCKADDR *hostaddr;
+{
+	int i, n;
+
+	if (hostaddr == NULL)
+		return 0;
+	n = 0;
+	for (i = 0; i < ProcListSize; i++)
+	{
+		if (ProcListVec[i].proc_pid == NO_PID)
+			continue;
+
+		if (hostaddr->sa.sa_family !=
+		    ProcListVec[i].proc_hostaddr.sa.sa_family)
+			continue;
+#if NETINET
+		if (hostaddr->sa.sa_family == AF_INET &&
+		    (hostaddr->sin.sin_addr.s_addr ==
+		     ProcListVec[i].proc_hostaddr.sin.sin_addr.s_addr))
+			n++;
+#endif /* NETINET */
+#if NETINET6
+		if (hostaddr->sa.sa_family == AF_INET6 &&
+		    IN6_ARE_ADDR_EQUAL(&(hostaddr->sin6.sin6_addr),
+				       &(ProcListVec[i].proc_hostaddr.sin6.sin6_addr)))
+			n++;
+#endif /* NETINET6 */
+	}
+	return n;
 }

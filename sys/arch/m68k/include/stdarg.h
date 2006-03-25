@@ -1,4 +1,5 @@
-/*	$NetBSD: stdarg.h,v 1.11 1995/09/07 01:20:15 jtc Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.8 2005/12/14 23:51:32 deraadt Exp $	*/
+/*	$NetBSD: stdarg.h,v 1.14 1995/12/25 23:15:33 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,27 +35,33 @@
 #ifndef _M68K_STDARG_H_
 #define	_M68K_STDARG_H_
 
-#include <machine/ansi.h>
+#include <sys/cdefs.h>
+#include <machine/_types.h>
 
-typedef _BSD_VA_LIST_	va_list;
+typedef __va_list	va_list;
 
-#define	__va_promote(type) \
-	(((sizeof(type) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
+#define	__va_size(type) \
+	(((sizeof(type) + sizeof(long) - 1) / sizeof(long)) * sizeof(long))
 
-#define	va_start(ap, last) \
-	(ap = ((char *)&(last) + sizeof(last)))
-
-#ifdef _KERNEL
-#define	va_arg(ap, type) \
-	((type *)(ap += sizeof(type)))[-1]
+#ifdef __GNUC__
+#define va_start(ap, last) \
+	((ap) = (va_list)__builtin_next_arg(last))
 #else
-#define	va_arg(ap, type) \
-	((type *)(ap += __va_promote(type),				\
-		ap - (sizeof(type) < sizeof(int) &&			\
-		    sizeof(type) != __va_promote(type) ?		\
-		    sizeof(type) : __va_promote(type))))[0]
+#define	va_start(ap, last) \
+	((ap) = (va_list)&(last) + __va_size(last))
 #endif
 
-#define	va_end(ap)	((void) 0)
+#define	va_arg(ap, type) \
+	(*(type *)((ap) += __va_size(type),			\
+		   (ap) - (sizeof(type) < sizeof(long) &&	\
+			   sizeof(type) != __va_size(type) ?	\
+			   sizeof(type) : __va_size(type))))
+
+#if __ISO_C_VISIBLE >= 1999
+#define va_copy(dest, src) \
+	((dest) = (src))
+#endif
+
+#define	va_end(ap)	
 
 #endif /* !_M68K_STDARG_H_ */

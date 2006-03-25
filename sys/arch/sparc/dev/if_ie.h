@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: if_ie.h,v 1.4 1994/12/16 22:01:11 deraadt Exp $ */
 
 /*

@@ -1,4 +1,5 @@
-.\"	$NetBSD: mprotect.2,v 1.5 1995/02/27 12:34:56 cgd Exp $
+.\"	$OpenBSD: mprotect.2,v 1.12 2006/01/18 11:15:33 jmc Exp $
+.\"	$NetBSD: mprotect.2,v 1.6 1995/10/12 15:41:08 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -43,21 +40,68 @@
 .Fd #include <sys/types.h>
 .Fd #include <sys/mman.h>
 .Ft int
-.Fn mprotect "caddr_t addr" "int len" "int prot"
+.Fn mprotect "void *addr" "size_t len" "int prot"
 .Sh DESCRIPTION
 The
 .Fn mprotect
-system call
-changes the specified pages to have protection
-.Fa prot .
+system call sets the access protections for the pages that contain
+the address range
+.Fa addr
+through
+.Fa addr
+\&+
+.Fa len
+\- 1
+(inclusive).
+If
+.Fa len
+is 0, then action will be taken on the page that contains
+.Fa addr .
+.Pp
 Not all implementations will guarantee protection on a page basis;
 the granularity of protection changes may be as large as an entire region.
+Nor will all implementations guarantee to give exactly the requested
+permissions; more permissions may be granted than requested by
+.Fa prot .
+.Pp
+The protections (region accessibility) are specified in the
+.Fa prot
+argument by
+.Tn OR Ns 'ing
+the following values:
+.Pp
+.Bl -tag -width "PROT_WRITEXX" -offset indent -compact
+.It Dv PROT_EXEC
+Pages may be executed.
+.It Dv PROT_READ
+Pages may be read.
+.It Dv PROT_WRITE
+Pages may be written.
+.It Dv PROT_NONE
+No permissions.
+.El
+.Sh RETURN VALUES
+Upon successful completion,
+a value of 0 is returned.
+Otherwise, a value of \-1 is returned and
+.Va errno
+is set to indicate the error.
 .Sh SEE ALSO
-.Xr madvise 2 , 
-.Xr mincore 2 , 
+.Xr madvise 2 ,
+.Xr mincore 2 ,
 .Xr msync 2 ,
 .Xr munmap 2
 .Sh HISTORY
 The
 .Fn mprotect
-function first appeared in 4.4BSD.
+function first appeared in
+.Bx 4.4 .
+.Sh CAVEATS
+The
+.Ox
+implementation of
+.Fn mprotect
+does not require
+.Fa addr
+to be page-aligned,
+although other implementations may.

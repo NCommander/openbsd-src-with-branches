@@ -1,6 +1,8 @@
-/*	$NetBSD: dmavar.h,v 1.5 1995/03/28 18:16:03 jtc Exp $	*/
+/*	$OpenBSD: dmavar.h,v 1.6 2003/06/02 23:27:44 millert Exp $	*/
+/*	$NetBSD: dmavar.h,v 1.9 1997/04/01 03:10:59 scottr Exp $	*/
 
 /*
+ * Copyright (c) 1997 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -12,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +33,8 @@
  *	@(#)dmavar.h	8.1 (Berkeley) 6/10/93
  */
 
+#include <sys/queue.h>
+
 /* dmago flags */
 #define	DMAGO_BYTE	0x00	/* do byte (8 bit) transfers */
 #define	DMAGO_WORD	0x01	/* do word (16 bit) transfers */
@@ -47,7 +47,29 @@
 #define	DMA0		0x1
 #define	DMA1		0x2
 
+/*
+ * A DMA queue entry.  Initiator drivers each have one of these,
+ * used to queue access to the DMA controller.
+ */
+struct dmaqueue {
+	TAILQ_ENTRY(dmaqueue) dq_list;	/* entry on the queue */
+	int	dq_chan;		/* OR of channels initiator can use */
+	void	*dq_softc;		/* initiator's softc */
+
+	/*
+	 * These functions are called to start the initiator when
+	 * it has been given the DMA controller, and to stop the
+	 * initiator when the DMA controller has stopped.
+	 */
+	void	(*dq_start)(void *);
+	void	(*dq_done)(void *);
+};
+
 #ifdef _KERNEL
-extern void	dmago(), dmafree();
-extern int	dmareq();
-#endif
+void	dmainit(void);
+void	dmago(int, char *, u_int, int);
+void	dmastop(int);
+void	dmafree(struct dmaqueue *);
+int	dmareq(struct dmaqueue *);
+void	dmacomputeipl(void);
+#endif /* _KERNEL */

@@ -2089,7 +2089,7 @@ rxi_ReceiveDataPacket(struct rx_call * call,
 	}
 	/*
 	 * If the sequence number is greater than what can be
-         * accomodated by the current window, then send a negative
+         * accommodated by the current window, then send a negative
          * acknowledge and drop the packet
 	 */
 	if ((call->rnext + call->rwind) <= seq) {
@@ -2195,7 +2195,7 @@ update_timeout(struct rx_peer *peer)
     if (rtt_timeout < 1000)	/* 1000 = 1ms */
         rtt_timeout = 1000;	/* Minimum timeout */
     peer->timeout.usec = rtt_timeout % 1000000;
-    peer->timeout.sec  = rtt_timeout / 1000000;;
+    peer->timeout.sec  = rtt_timeout / 1000000;
 }
 
 /* On a dubious timeout double MDEV but within reason.
@@ -2510,7 +2510,7 @@ rxi_ReceiveAckPacket(struct rx_call * call, struct rx_packet * np)
 
 	rx_packetread(np, rx_AckDataSize(ap->nAcks), 4, &maxPacketSize);
 	maxPacketSize = (unsigned long) ntohl(maxPacketSize);
-	dpf(("maxPacketSize=%ul\n", maxPacketSize));
+	dpf(("maxPacketSize=%lu\n", maxPacketSize));
 
 	/*
 	 * sanity check - peer might have restarted with different params.
@@ -3164,8 +3164,8 @@ rxi_Start(struct rxevent * event, struct rx_call * call)
 		if (nSent) {
 		    /* Send off the prior packet */
 		    /*
-	             * Don't request an ack if it's a short packet, 'cuz the
-		     * peer will cut down its MTU as a result on 3.3 clients.
+	             * Don't request an ack if it's a short packet, because the
+		     * peer will cut down its MTU as a result.
 	             */
 		    if ((lastPacket->header.flags & RX_LAST_PACKET) == 0) {
 			if (/* call->cwind <= (u_short)call->ackRate || */

@@ -242,7 +242,7 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 						head = "";
 					tmpui = tmpi;
 				}
-				sprintf(buf, "%llu",
+				snprintf(buf, sizeof(buf), "%llu",
 					tmpui);
 				goto printint;
 			case 'o':
@@ -253,8 +253,8 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 					tmpui = va_arg(ap, long int);
 				else
 					tmpui = va_arg(ap, int);
-				sprintf(buf,
-					alt ? "%#llo" : "%llo", tmpui);
+				snprintf(buf, sizeof(buf),
+ 					alt ? "%#llo" : "%llo", tmpui);
 				goto printint;
 			case 'u':
 				if (q)
@@ -264,7 +264,7 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 					tmpui = va_arg(ap, unsigned long int);
 				else
 					tmpui = va_arg(ap, unsigned int);
-				sprintf(buf, "%llu", tmpui);
+				snprintf(buf, sizeof(buf), "%llu", tmpui);
 				goto printint;
 			case 'x':
 				if (q)
@@ -279,7 +279,7 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 					if (precision > 2U)
 						precision -= 2;
 				}
-				sprintf(buf, "%llx", tmpui);
+				snprintf(buf, sizeof(buf), "%llx", tmpui);
 				goto printint;
 			case 'X':
 				if (q)
@@ -294,7 +294,7 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 					if (precision > 2U)
 						precision -= 2;
 				}
-				sprintf(buf, "%llX", tmpui);
+				snprintf(buf, sizeof(buf), "%llX", tmpui);
 				goto printint;
 			printint:
 				if (precision != 0U || width != 0U) {
@@ -420,7 +420,7 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 			break;
 		case 'p':
 			v = va_arg(ap, void *);
-			sprintf(buf, "%p", v);
+			snprintf(buf, sizeof(buf), "%p", v);
 			length = strlen(buf);
 			if (precision > length)
 				zeropad = precision - length;
@@ -496,7 +496,8 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 			 */
 			if (precision > 512U)
 				precision = 512;
-			sprintf(fmt, "%%%s%s.%lu%s%c", alt ? "#" : "",
+			snprintf(fmt, sizeof(fmt),
+				"%%%s%s.%lu%s%c", alt ? "#" : "",
 				plus ? "+" : space ? " " : "",
 				precision, l ? "L" : "", *format);
 			switch (*format) {
@@ -508,12 +509,12 @@ lwres__print_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 #ifdef HAVE_LONG_DOUBLE
 				if (l) {
 					ldbl = va_arg(ap, long double);
-					sprintf(buf, fmt, ldbl);
+					snprintf(buf, sizeof(buf), fmt, ldbl);
 				} else
 #endif
 				{
 					dbl = va_arg(ap, double);
-					sprintf(buf, fmt, dbl);
+					snprintf(buf, sizeof(buf), fmt, dbl);
 				}
 				length = strlen(buf);
 				if (width > 0U) {

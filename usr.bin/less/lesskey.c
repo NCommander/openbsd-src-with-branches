@@ -225,11 +225,13 @@ mkpathname(dirname, filename)
 	char *filename;
 {
 	char *pathname;
+	size_t len;
 
-	pathname = calloc(strlen(dirname) + strlen(filename) + 2, sizeof(char));
-	strcpy(pathname, dirname);
-	strcat(pathname, PATHNAME_SEP);
-	strcat(pathname, filename);
+	len = strlen(dirname) + strlen(filename) + 2;
+	pathname = calloc(len, sizeof(char));
+	strlcpy(pathname, dirname, len);
+	strlcat(pathname, PATHNAME_SEP, len);
+	strlcat(pathname, filename, len);
 	return (pathname);
 }
 
@@ -781,11 +783,11 @@ main(argc, argv)
 		char *path  = getenv("HOMEPATH");
 		if (drive != NULL && path != NULL)
 		{
-			char *env = (char *) calloc(strlen(drive) + 
-					strlen(path) + 6, sizeof(char));
-			strcpy(env, "HOME=");
-			strcat(env, drive);
-			strcat(env, path);
+			size_t len = strlen(drive) + strlen(path) + 6;
+			char *env = (char *) calloc(len, sizeof(char));
+			strlcpy(env, "HOME=", len);
+			strlcat(env, drive, len);
+			strlcat(env, path, len);
 			putenv(env);
 		}
 	}

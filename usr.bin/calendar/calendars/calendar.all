@@ -1,0 +1,18 @@
+/*
+ * International and national calendar files
+ *
+ * $OpenBSD: calendar.all,v 1.2 2004/03/15 14:35:53 xsa Exp $
+ */
+
+#ifndef _calendar_all_
+#define _calendar_all_
+
+#include <calendar.world>
+#include <calendar.french>
+#include <calendar.german>
+#include <calendar.usholiday>
+#include <calendar.croatian>
+#include <calendar.russian>
+#include <calendar.discord>
+
+#endif /* !_calendar_all_ */

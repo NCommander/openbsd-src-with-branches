@@ -1,6 +1,10 @@
 #ifndef UCAUX_H
 #define UCAUX_H
 
+#ifndef HTUTILS_H
+#include <HTUtils.h>
+#endif
+
 extern BOOL UCCanUniTranslateFrom PARAMS((int from));
 extern BOOL UCCanTranslateUniTo PARAMS((int to));
 extern BOOL UCCanTranslateFromTo PARAMS((int from, int to));
@@ -26,11 +30,11 @@ struct _UCTransParams
 typedef struct _UCTransParams UCTransParams;
 
 #ifndef UCDEFS_H
-#include "UCDefs.h"
+#include <UCDefs.h>
 #endif /* UCDEFS_H */
 
 extern void UCSetTransParams PARAMS((
-	UCTransParams * 	pT,
+	UCTransParams *		pT,
 	int			cs_in,
 	CONST LYUCcharset *	p_in,
 	int			cs_out,
@@ -47,7 +51,7 @@ extern void UCSetBoxChars PARAMS((
     int		hori_in));
 
 #ifndef HTSTREAM_H
-#include "HTStream.h"
+#include <HTStream.h>
 #endif /* HTSTREAM_H */
 
 typedef void putc_func_t PARAMS((
@@ -55,16 +59,18 @@ typedef void putc_func_t PARAMS((
 	char		ch));
 
 #ifndef UCMAP_H
-#include "UCMap.h"
+#include <UCMap.h>
 #endif /* UCMAP_H */
 
 extern BOOL UCPutUtf8_charstring PARAMS((
 	HTStream *	target,
 	putc_func_t *	actions,
 	UCode_t		code));
-    
+
 extern BOOL UCConvertUniToUtf8 PARAMS((
 	UCode_t		code,
 	char *		buffer));
+
+extern UCode_t UCGetUniFromUtf8String PARAMS((char ** ppuni));
 
 #endif /* UCAUX_H */

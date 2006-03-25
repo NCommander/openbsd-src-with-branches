@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* DON'T EVEN THINK ABOUT EDITING THIS, go see regex/Makefile,
  * search for mkh */
 #ifndef _REGEX_H_
@@ -9,19 +11,11 @@ extern "C" {
 
 /* === regex2.h === */
 #ifndef API_EXPORT
-#ifdef WIN32
-#define API_EXPORT(type)    __declspec(dllexport) type __stdcall
-#else
 #define API_EXPORT(type)    type
-#endif
 #endif
 
 #undef ap_private_extern
-#if defined(MAC_OS) || defined(MAC_OS_X_SERVER) || (defined(DARWIN) && defined(__DYNAMIC__))
-#define ap_private_extern __private_extern__
-#else
 #define ap_private_extern
-#endif
 
 typedef off_t regoff_t;
 typedef struct {

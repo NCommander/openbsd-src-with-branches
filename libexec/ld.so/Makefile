@@ -1,36 +1,30 @@
-#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:55:51 millert Exp $
+#	$OpenBSD: Makefile,v 1.29 2005/09/23 01:15:03 drahn Exp $
 
-SUBDIR=libdl ldconfig
-#CFLAGS =
-.if (${MACHINE_ARCH} == "powerpc")
-CFLAGS += -fpic -msoft-float -Wall
+SUBDIR=ldconfig ldd
+VPATH=${.CURDIR}/../../lib/libc/string
+
+SRCS=	ldasm.S loader.c resolve.c dlfcn.c dl_printf.c rtld_machine.c
+SRCS+=	util.c sod.c strsep.c strtol.c dir.c library_subr.c
+.if (${MACHINE_ARCH} == "i386")
+SRCS+=	library_mquery.c
+.else
+SRCS+=	library.c
 .endif
-CFLAGS += -I${.CURDIR} -DNO_UNDERSCORE -DVERBOSE_DLINKER \
-	-DUSE_CACHE -D__PIC__ -I${.CURDIR}/${MACHINE_ARCH}
-#CFLAGS += -g
-VPATH=${.CURDIR}/../../lib/libc/string:${.CURDIR}/../../sys/lib/libsa
 
-NOMAN=
-SRCS=	ldasm.S loader.c library.c resolve.c dlfcn.c dl_printf.c rtld_machine.c
-SRCS+=  sod.c strcmp.c strlen.c strncmp.c strsep.c strtol.c strdup.c strcpy.c
-OBJS+=  strchr.o
 PROG=	ld.so
-MAN=	ld.so.8
-BINDIR=/usr/libexec
-INSTALL_STRIP=
+MAN=	ld.so.1
 
+.include "${.CURDIR}/${MACHINE_ARCH}/Makefile.inc"
 .PATH:	${.CURDIR}/${MACHINE_ARCH}
 
-.if (${MACHINE_ARCH} == "powerpc")
-#ADDR=-Ttext 21860000 -Tdata 21863000
-ADDR=-Tdata 8000
-ELF_LDFLAGS=--shared -Bsymbolic ${ADDR} # using GNU ld
-.else
-ELF_LDFLAGS=--shared -Bsymbolic # using GNU ld
-.endif
+CFLAGS += -Wall -Werror
+CFLAGS += -I${.CURDIR} -I${.CURDIR}/${MACHINE_ARCH} \
+	-Dstrsep=_dl_strsep
+INSTALL_STRIP=
+
+ELF_LDFLAGS+=--shared -Bsymbolic
 
 $(PROG):
-	$(LD) -x -e _dl_start $(ELF_LDFLAGS) -o $(PROG) $(OBJS)
+	$(LD) -x -e _dl_start $(ELF_LDFLAGS) -o $(PROG) $(OBJS) $(LDADD)
 
 .include <bsd.prog.mk>
-.include <bsd.subdir.mk>

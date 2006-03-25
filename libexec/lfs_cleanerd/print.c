@@ -1,3 +1,5 @@
+/*	$OpenBSD: print.c,v 1.4 2003/06/02 19:38:24 millert Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +30,8 @@
  */
 
 #ifndef lint
-/*static char sccsid[] = "from: @(#)print.c	8.1 (Berkeley) 6/4/93";*/
-static char *rcsid = "$Id: print.c,v 1.1 1994/06/08 18:42:18 mycroft Exp $";
+/*static char sccsid[] = "@(#)print.c	8.2 (Berkeley) 5/24/95";*/
+static char rcsid[] = "$OpenBSD: print.c,v 1.4 2003/06/02 19:38:24 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -54,11 +52,7 @@ static char *rcsid = "$Id: print.c,v 1.1 1994/06/08 18:42:18 mycroft Exp $";
  * Returns a pointer to the array of inode addresses.
  */
 int
-dump_summary(lfsp, sp, flags, iaddrp)
-	struct lfs *lfsp;
-	SEGSUM *sp;
-	u_long flags;
-	daddr_t **iaddrp;
+dump_summary(struct lfs *lfsp, SEGSUM *sp, u_long flags, daddr_t **iaddrp)
 {
 	int i, j, numblocks;
 	daddr_t *dp;
@@ -66,21 +60,31 @@ dump_summary(lfsp, sp, flags, iaddrp)
 	FINFO *fp;
 	int ck;
 
+	if (sp->ss_magic != SS_MAGIC)
+		return(-1);
+
 	if (sp->ss_sumsum != (ck = cksum(&sp->ss_datasum, 
 	    LFS_SUMMARY_SIZE - sizeof(sp->ss_sumsum))))
 		return(-1);
 
+	numblocks = (sp->ss_ninos + INOPB(lfsp) - 1) / INOPB(lfsp);
+
+	/* Do some basic sanity checking. */
+	if (sp->ss_nfinfo > LFS_SUMMARY_SIZE / sizeof(FINFO) ||
+	    numblocks > lfsp->lfs_ssize ||
+	    numblocks > LFS_SUMMARY_SIZE / sizeof(daddr_t))
+		return(-1);
+
 	if (flags & DUMP_SUM_HEADER) {
-		(void)printf("    %s0x%X\t%s%d\t%s%d\n    %s0x%X\t%s0x%X",
+		(void)printf("  %s0x%X\t%s%d\t%s%d\n  %s0x%X\t%s0x%X\t%s0x%X\n",
 			"next     ", sp->ss_next,
 			"nfinfo   ", sp->ss_nfinfo,
 			"ninos    ", sp->ss_ninos,
 			"sumsum   ", sp->ss_sumsum,
-			"datasum  ", sp->ss_datasum );
-		(void)printf("\tcreate   %s", ctime((time_t *)&sp->ss_create));
+			"datasum  ", sp->ss_datasum,
+			"magic    ", sp->ss_magic);
+		(void)printf("  create   %s", ctime((time_t *)&sp->ss_create));
 	}
-
-	numblocks = (sp->ss_ninos + INOPB(lfsp) - 1) / INOPB(lfsp);
 
 	/* Dump out inode disk addresses */
 	if (flags & DUMP_INODE_ADDRS)
@@ -89,7 +93,7 @@ dump_summary(lfsp, sp, flags, iaddrp)
 	dp = (daddr_t *)((caddr_t)sp + LFS_SUMMARY_SIZE);
 	for (--dp, i = 0; i < sp->ss_ninos; --dp)
 		if (flags & DUMP_INODE_ADDRS) {
-			(void)printf("\t0x%lx", *dp);
+			(void)printf("\t0x%x", *dp);
 			if (++i % 7 == 0)
 				(void)printf("\n");
 		} else
@@ -123,8 +127,7 @@ dump_summary(lfsp, sp, flags, iaddrp)
 
 #ifdef VERBOSE
 void
-dump_cleaner_info(ipage)
-	void *ipage;
+dump_cleaner_info(void *ipage)
 {
 	CLEANERINFO *cip;
 
@@ -134,8 +137,7 @@ dump_cleaner_info(ipage)
 }
 
 void
-dump_super(lfsp)
-	struct lfs *lfsp;
+dump_super(struct lfs *lfsp)
 {
 	int i;
 
@@ -162,13 +164,13 @@ dump_super(lfsp)
 		"cleansz  ", lfsp->lfs_cleansz,
 		"segtabsz ", lfsp->lfs_segtabsz);
 
-	(void)printf("%s0x%X\t%s%d\t%s0x%X\t%s%d\n",
+	(void)printf("%s0x%X\t%s%d\t%s0x%qX\t%s%d\n",
 		"segmask  ", lfsp->lfs_segmask,
 		"segshift ", lfsp->lfs_segshift,
 		"bmask    ", lfsp->lfs_bmask,
 		"bshift   ", lfsp->lfs_bshift);
 
-	(void)printf("%s0x%X\t\t%s%d\t%s0x%X\t%s%d\n",
+	(void)printf("%s0x%qX\t\t%s%d\t%s0x%qX\t%s%d\n",
 		"ffmask   ", lfsp->lfs_ffmask,
 		"ffshift  ", lfsp->lfs_ffshift,
 		"fbmask   ", lfsp->lfs_fbmask,

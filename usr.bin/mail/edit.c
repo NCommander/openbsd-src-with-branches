@@ -1,3 +1,6 @@
+/*	$OpenBSD: edit.c,v 1.12 2003/06/03 02:56:11 millert Exp $	*/
+/*	$NetBSD: edit.c,v 1.5 1996/06/08 19:48:20 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +31,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)edit.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: edit.c,v 1.4 1994/11/28 20:03:32 jtc Exp $";
+#if 0
+static const char sccsid[] = "@(#)edit.c	8.1 (Berkeley) 6/6/93";
+#else
+static const char rcsid[] = "$OpenBSD: edit.c,v 1.12 2003/06/03 02:56:11 millert Exp $";
+#endif
 #endif /* not lint */
 
 #include "rcv.h"
@@ -50,22 +52,22 @@ static char rcsid[] = "$Id: edit.c,v 1.4 1994/11/28 20:03:32 jtc Exp $";
  * Edit a message list.
  */
 int
-editor(msgvec)
-	int *msgvec;
+editor(void *v)
 {
+	int *msgvec = v;
 
-	return edit1(msgvec, 'e');
+	return(edit1(msgvec, 'e'));
 }
 
 /*
  * Invoke the visual editor on a message list.
  */
 int
-visual(msgvec)
-	int *msgvec;
+visual(void *v)
 {
+	int *msgvec = v;
 
-	return edit1(msgvec, 'v');
+	return(edit1(msgvec, 'v'));
 }
 
 /*
@@ -74,28 +76,25 @@ visual(msgvec)
  * We get the editor from the stuff above.
  */
 int
-edit1(msgvec, type)
-	int *msgvec;
-	int type;
+edit1(int *msgvec, int type)
 {
-	register int c;
-	int i;
+	int c, i;
 	FILE *fp;
-	register struct message *mp;
+	struct sigaction oact;
+	sigset_t oset;
+	struct message *mp;
 	off_t size;
 
 	/*
 	 * Deal with each message to be edited . . .
 	 */
 	for (i = 0; msgvec[i] && i < msgCount; i++) {
-		sig_t sigint;
-
 		if (i > 0) {
 			char buf[100];
 			char *p;
 
 			printf("Edit message %d [ynq]? ", msgvec[i]);
-			if (fgets(buf, sizeof buf, stdin) == 0)
+			if (fgets(buf, sizeof(buf), stdin) == 0)
 				break;
 			for (p = buf; *p == ' ' || *p == '\t'; p++)
 				;
@@ -106,10 +105,10 @@ edit1(msgvec, type)
 		}
 		dot = mp = &message[msgvec[i] - 1];
 		touch(mp);
-		sigint = signal(SIGINT, SIG_IGN);
-		fp = run_editor(setinput(mp), mp->m_size, type, readonly);
+		(void)ignoresig(SIGINT, &oact, &oset);
+		fp = run_editor(setinput(mp), (off_t)mp->m_size, type, readonly);
 		if (fp != NULL) {
-			(void) fseek(otf, 0L, 2);
+			(void)fseek(otf, 0L, 2);
 			size = ftell(otf);
 			mp->m_block = blockof(size);
 			mp->m_offset = offsetof(size);
@@ -124,12 +123,13 @@ edit1(msgvec, type)
 					break;
 			}
 			if (ferror(otf))
-				perror("/tmp");
-			(void) Fclose(fp);
+				warn("/tmp");
+			(void)Fclose(fp);
 		}
-		(void) signal(SIGINT, sigint);
+		(void)sigprocmask(SIG_SETMASK, &oset, NULL);
+		(void)sigaction(SIGINT, &oact, NULL);
 	}
-	return 0;
+	return(0);
 }
 
 /*
@@ -139,56 +139,55 @@ edit1(msgvec, type)
  * "Type" is 'e' for _PATH_EX, 'v' for _PATH_VI.
  */
 FILE *
-run_editor(fp, size, type, readonly)
-	register FILE *fp;
-	off_t size;
-	int type, readonly;
+run_editor(FILE *fp, off_t size, int type, int readonly)
 {
-	register FILE *nf = NULL;
-	register int t;
+	FILE *nf = NULL;
+	int t;
 	time_t modtime;
-	char *edit;
+	char *edit, tempname[PATHSIZE];
 	struct stat statb;
-	extern char *tempEdit;
 
-	if ((t = creat(tempEdit, readonly ? 0400 : 0600)) < 0) {
-		perror(tempEdit);
+	(void)snprintf(tempname, sizeof(tempname),
+	    "%s/mail.ReXXXXXXXXXX", tmpdir);
+	if ((t = mkstemp(tempname)) == -1 ||
+	    (nf = Fdopen(t, "w")) == NULL) {
+		warn("%s", tempname);
 		goto out;
 	}
-	if ((nf = Fdopen(t, "w")) == NULL) {
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+	if (readonly && fchmod(t, 0400) == -1) {
+		warn("%s", tempname);
+		(void)rm(tempname);
 		goto out;
 	}
 	if (size >= 0)
 		while (--size >= 0 && (t = getc(fp)) != EOF)
-			(void) putc(t, nf);
+			(void)putc(t, nf);
 	else
 		while ((t = getc(fp)) != EOF)
-			(void) putc(t, nf);
-	(void) fflush(nf);
+			(void)putc(t, nf);
+	(void)fflush(nf);
 	if (fstat(fileno(nf), &statb) < 0)
 		modtime = 0;
 	else
 		modtime = statb.st_mtime;
 	if (ferror(nf)) {
-		(void) Fclose(nf);
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+		(void)Fclose(nf);
+		warn("%s", tempname);
+		(void)rm(tempname);
 		nf = NULL;
 		goto out;
 	}
 	if (Fclose(nf) < 0) {
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+		warn("%s", tempname);
+		(void)rm(tempname);
 		nf = NULL;
 		goto out;
 	}
 	nf = NULL;
-	if ((edit = value(type == 'e' ? "EDITOR" : "VISUAL")) == NOSTR)
+	if ((edit = value(type == 'e' ? "EDITOR" : "VISUAL")) == NULL)
 		edit = type == 'e' ? _PATH_EX : _PATH_VI;
-	if (run_command(edit, 0, -1, -1, tempEdit, NOSTR, NOSTR) < 0) {
-		(void) unlink(tempEdit);
+	if (run_command(edit, 0, 0, -1, tempname, NULL, NULL) < 0) {
+		(void)rm(tempname);
 		goto out;
 	}
 	/*
@@ -196,26 +195,26 @@ run_editor(fp, size, type, readonly)
 	 * temporary and return.
 	 */
 	if (readonly) {
-		(void) unlink(tempEdit);
+		(void)rm(tempname);
 		goto out;
 	}
-	if (stat(tempEdit, &statb) < 0) {
-		perror(tempEdit);
+	if (stat(tempname, &statb) < 0) {
+		warn("%s", tempname);
 		goto out;
 	}
 	if (modtime == statb.st_mtime) {
-		(void) unlink(tempEdit);
+		(void)rm(tempname);
 		goto out;
 	}
 	/*
 	 * Now switch to new file.
 	 */
-	if ((nf = Fopen(tempEdit, "a+")) == NULL) {
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+	if ((nf = Fopen(tempname, "a+")) == NULL) {
+		warn("%s", tempname);
+		(void)rm(tempname);
 		goto out;
 	}
-	(void) unlink(tempEdit);
+	(void)rm(tempname);
 out:
-	return nf;
+	return(nf);
 }

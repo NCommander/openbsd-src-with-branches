@@ -94,19 +94,22 @@ parse_ports(krb5_context context, const char *str)
 }
 
 static pid_t pgrp;
-sig_atomic_t term_flag, doing_useful_work;
+volatile sig_atomic_t term_flag, doing_useful_work;
 
 static RETSIGTYPE
 sigchld(int sig)
 {
+    int save_errno = errno;
     int status;
     waitpid(-1, &status, 0);
+    errno = save_errno;
     SIGRETURN(0);
 }
 
 static RETSIGTYPE
 terminate(int sig)
 {
+    int save_errno = errno;
     if(getpid() == pgrp) {
 	/* parent */
 	term_flag = 1;
@@ -117,8 +120,9 @@ terminate(int sig)
 	if(doing_useful_work)
 	    term_flag = 1;
 	else
-	    exit(0);
+	    _exit(0);
     }
+    errno = save_errno;
     SIGRETURN(0);
 }
 
@@ -210,7 +214,7 @@ wait_for_connection(krb5_context context,
 	    }
 	}
     }
-    signal(SIGCHLD, SIG_IGN);
+    signal(SIGCHLD, SIG_DFL);
     while(1) {
 	int status;
 	pid_t pid;

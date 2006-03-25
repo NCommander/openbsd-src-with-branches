@@ -1,5 +1,4 @@
-/*	$NetBSD: ttyname.c,v 1.9 1995/05/02 01:45:33 mycroft Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ttyname.c	8.2 (Berkeley) 1/27/94";
-#else
-static char rcsid[] = "$NetBSD: ttyname.c,v 1.9 1995/05/02 01:45:33 mycroft Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -50,13 +37,46 @@ static char rcsid[] = "$NetBSD: ttyname.c,v 1.9 1995/05/02 01:45:33 mycroft Exp 
 #include <string.h>
 #include <unistd.h>
 #include <paths.h>
+#include <limits.h>
+#include <errno.h>
+#include "thread_private.h"
 
-static char buf[sizeof(_PATH_DEV) + MAXNAMLEN] = _PATH_DEV;
-static char *oldttyname __P((int, struct stat *));
+static char buf[TTY_NAME_MAX];
+static int oldttyname(int, struct stat *, char *, size_t);
+static int __ttyname_r_basic(int, char *, size_t);
+
+int
+ttyname_r(int fd, char *buf, size_t buflen)
+{
+	int ret;
+
+	if ((ret = _FD_LOCK(fd, FD_READ, NULL)) == 0) {
+		ret = __ttyname_r_basic(fd, buf, buflen);
+		_FD_UNLOCK(fd, FD_READ);
+	}
+	return ret;
+}
 
 char *
-ttyname(fd)
-	int fd;
+ttyname(int fd)
+{
+	_THREAD_PRIVATE_KEY(ttyname);
+	char * bufp = (char*) _THREAD_PRIVATE(ttyname, buf, NULL);
+	int err;
+
+	if (bufp == NULL) 
+		return NULL;
+	err = ttyname_r(fd, bufp, sizeof buf);
+	if (err) {
+		errno = err;
+		return NULL;
+	}
+	else
+	return bufp;
+}
+
+static int
+__ttyname_r_basic(int fd, char *buf, size_t len)
 {
 	struct stat sb;
 	struct termios ttyb;
@@ -69,51 +89,64 @@ ttyname(fd)
 
 	/* Must be a terminal. */
 	if (tcgetattr(fd, &ttyb) < 0)
-		return (NULL);
+		return (errno);
 	/* Must be a character device. */
-	if (fstat(fd, &sb) || !S_ISCHR(sb.st_mode))
-		return (NULL);
+	if (fstat(fd, &sb))
+		return (errno);
+	if (!S_ISCHR(sb.st_mode))
+		return (ENOTTY);
+	if (len < sizeof(_PATH_DEV))
+		return (ERANGE);
 
-	if (db = dbopen(_PATH_DEVDB, O_RDONLY, 0, DB_HASH, NULL)) {
+	memcpy(buf, _PATH_DEV, sizeof(_PATH_DEV));
+
+	if ((db = dbopen(_PATH_DEVDB, O_RDONLY, 0, DB_HASH, NULL))) {
 		memset(&bkey, 0, sizeof(bkey));
 		bkey.type = S_IFCHR;
 		bkey.dev = sb.st_rdev;
 		key.data = &bkey;
 		key.size = sizeof(bkey);
 		if (!(db->get)(db, &key, &data, 0)) {
-			bcopy(data.data,
-			    buf + sizeof(_PATH_DEV) - 1, data.size);
+			if (data.size > len - (sizeof(_PATH_DEV) - 1)) {
+				(void)(db->close)(db);
+				return (ERANGE);
+			}
+			memcpy(buf + sizeof(_PATH_DEV) - 1, data.data,
+			    data.size);
 			(void)(db->close)(db);
-			return (buf);
+			return (0);
 		}
 		(void)(db->close)(db);
 	}
-	return (oldttyname(fd, &sb));
+	return (oldttyname(fd, &sb, buf, len));
 }
 
-static char *
-oldttyname(fd, sb)
-	int fd;
-	struct stat *sb;
+/* ARGSUSED */
+static int
+oldttyname(int fd, struct stat *sb, char *buf, size_t len)
 {
-	register struct dirent *dirp;
-	register DIR *dp;
+	struct dirent *dirp;
+	DIR *dp;
 	struct stat dsb;
 
 	if ((dp = opendir(_PATH_DEV)) == NULL)
-		return (NULL);
+		return (errno);
 
-	while (dirp = readdir(dp)) {
+	while ((dirp = readdir(dp))) {
 		if (dirp->d_fileno != sb->st_ino)
 			continue;
-		bcopy(dirp->d_name, buf + sizeof(_PATH_DEV) - 1,
+		if (dirp->d_namlen > len - sizeof(_PATH_DEV)) {
+			(void)closedir(dp);
+			return (ERANGE);
+		}
+		memcpy(buf + sizeof(_PATH_DEV) - 1, dirp->d_name,
 		    dirp->d_namlen + 1);
 		if (stat(buf, &dsb) || sb->st_dev != dsb.st_dev ||
 		    sb->st_ino != dsb.st_ino)
 			continue;
 		(void)closedir(dp);
-		return (buf);
+		return (0);
 	}
 	(void)closedir(dp);
-	return (NULL);
+	return (ENOTTY);
 }

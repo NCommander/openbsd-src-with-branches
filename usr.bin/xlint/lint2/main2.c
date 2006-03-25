@@ -1,3 +1,4 @@
+/*	$OpenBSD: main2.c,v 1.7 2005/11/20 17:42:50 deraadt Exp $	*/
 /*	$NetBSD: main2.c,v 1.2 1995/07/03 21:24:53 cgd Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: main2.c,v 1.2 1995/07/03 21:24:53 cgd Exp $";
+static char rcsid[] = "$OpenBSD: main2.c,v 1.7 2005/11/20 17:42:50 deraadt Exp $";
 #endif
 
 #include <stdio.h>
@@ -58,7 +59,7 @@ const	char *libname;
 int	pflag;
 
 /*
- * warnings for (tentative) definitions of the same name in more then
+ * warnings for (tentative) definitions of the same name in more than
  * one translation unit
  */
 int	sflag;
@@ -74,7 +75,7 @@ int	Hflag;
 int	hflag;
 
 /* Print full path names, not only the last component */
-int	Fflag;
+int	Fflag = 1;
 
 /*
  * List of libraries (from -l flag). These libraries are read after all
@@ -83,13 +84,11 @@ int	Fflag;
  */
 const	char	**libs;
 
-static	void	usage __P((void));
+static	void	usage(void);
 
 
 int
-main(argc, argv)
-	int	argc;
-	char	*argv[];
+main(int argc, char *argv[])
 {
 	int	c, i;
 	size_t	len;
@@ -118,7 +117,7 @@ main(argc, argv)
 		case 'C':
 			len = strlen(optarg);
 			lname = xmalloc(len + 10);
-			(void)sprintf(lname, "llib-l%s.ln", optarg);
+			(void)snprintf(lname, len + 10, "llib-l%s.ln", optarg);
 			libname = lname;
 			Cflag = 1;
 			uflag = 0;
@@ -134,7 +133,7 @@ main(argc, argv)
 			break;
 		case 'l':
 			for (i = 0; libs[i] != NULL; i++) ;
-			libs = xrealloc(libs, (i + 2) * sizeof (char *)); 
+			libs = xrealloc(libs, (i + 2) * sizeof (char *));
 			libs[i] = xstrdup(optarg);
 			libs[i + 1] = NULL;
 			break;
@@ -142,7 +141,7 @@ main(argc, argv)
 			usage();
 		}
 	}
-	
+
 	argc -= optind;
 	argv += optind;
 
@@ -181,7 +180,7 @@ main(argc, argv)
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
 		      "usage: lint2 -hpstxuHF -Clib -l lib ... src1 ...\n");

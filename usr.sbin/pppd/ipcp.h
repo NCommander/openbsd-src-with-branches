@@ -1,22 +1,45 @@
+/*	$OpenBSD: ipcp.h,v 1.6 2002/02/16 21:28:07 millert Exp $	*/
+
 /*
  * ipcp.h - IP Control Protocol definitions.
  *
- * Copyright (c) 1989 Carnegie Mellon University.
- * All rights reserved.
+ * Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.
  *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * advertising materials, and other materials related to such
- * distribution and use acknowledge that the software was developed
- * by Carnegie Mellon University.  The name of the
- * University may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * $Id: ipcp.h,v 1.6 1995/07/04 23:47:43 paulus Exp $
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The name "Carnegie Mellon University" must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission. For permission or any legal
+ *    details, please contact
+ *      Office of Technology Transfer
+ *      Carnegie Mellon University
+ *      5000 Forbes Avenue
+ *      Pittsburgh, PA  15213-3890
+ *      (412) 268-4387, fax: (412) 268-7395
+ *      tech-transfer@andrew.cmu.edu
+ *
+ * 4. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Computing Services
+ *     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+ *
+ * CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+ * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+ * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 /*
@@ -25,6 +48,11 @@
 #define CI_ADDRS	1	/* IP Addresses */
 #define CI_COMPRESSTYPE	2	/* Compression Type */
 #define	CI_ADDR		3
+
+#define CI_MS_DNS1	129	/* Primary DNS value */
+#define CI_MS_WINS1	130	/* Primary WINS value */
+#define CI_MS_DNS2	131	/* Secondary DNS value */
+#define CI_MS_WINS2	132	/* Secondary WINS value */
 
 #define MAX_STATES 16		/* from slcompress.h */
 
@@ -50,6 +78,8 @@ typedef struct ipcp_options {
     u_short vj_protocol;	/* protocol value to use in VJ option */
     u_char maxslotindex, cflag;	/* values for RFC1332 VJ compression neg. */
     u_int32_t ouraddr, hisaddr;	/* Addresses in NETWORK BYTE ORDER */
+    u_int32_t dnsaddr[2];	/* Primary and secondary MS DNS entries */
+    u_int32_t winsaddr[2];	/* Primary and secondary MS WINS entries */
 } ipcp_options;
 
 extern fsm ipcp_fsm[];
@@ -58,11 +88,6 @@ extern ipcp_options ipcp_gotoptions[];
 extern ipcp_options ipcp_allowoptions[];
 extern ipcp_options ipcp_hisoptions[];
 
-void ipcp_init __P((int));
-void ipcp_open __P((int));
-void ipcp_close __P((int));
-void ipcp_lowerup __P((int));
-void ipcp_lowerdown __P((int));
-void ipcp_input __P((int, u_char *, int));
-void ipcp_protrej __P((int));
-int  ipcp_printpkt __P((u_char *, int, void (*)(), void *));
+char *ip_ntoa(u_int32_t);
+
+extern struct protent ipcp_protent;

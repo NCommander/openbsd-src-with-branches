@@ -1,4 +1,5 @@
-/*	$NetBSD: utilities.c,v 1.15 1995/04/23 10:33:09 cgd Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.20 2003/08/25 23:28:15 tedu Exp $	*/
+/*	$NetBSD: utilities.c,v 1.18 1996/09/27 22:45:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,12 +34,14 @@
 #if 0
 static char sccsid[] = "@(#)utilities.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$NetBSD: utilities.c,v 1.15 1995/04/23 10:33:09 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: utilities.c,v 1.20 2003/08/25 23:28:15 tedu Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/uio.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
 #include <ufs/ffs/fs.h>
@@ -51,15 +50,20 @@ static char rcsid[] = "$NetBSD: utilities.c,v 1.15 1995/04/23 10:33:09 cgd Exp $
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <paths.h>
 
+#include "fsutil.h"
 #include "fsck.h"
 #include "extern.h"
 
 long	diskreads, totalreads;	/* Disk cache statistics */
 
+static void rwerror(char *, daddr_t);
+
 int
-ftypeok(dp)
-	struct dinode *dp;
+ftypeok(struct ufs1_dinode *dp)
 {
 	switch (dp->di_mode & IFMT) {
 
@@ -80,11 +84,10 @@ ftypeok(dp)
 }
 
 int
-reply(question)
-	char *question;
+reply(char *question)
 {
 	int persevere;
-	char c;
+	int c;
 
 	if (preen)
 		pfatal("INTERNAL ERROR: GOT TO reply()");
@@ -92,6 +95,7 @@ reply(question)
 	printf("\n");
 	if (!persevere && (nflag || fswritefd < 0)) {
 		printf("%s? no\n\n", question);
+		resolved = 0;
 		return (0);
 	}
 	if (yflag || (persevere && nflag)) {
@@ -102,13 +106,17 @@ reply(question)
 		printf("%s? [yn] ", question);
 		(void) fflush(stdout);
 		c = getc(stdin);
-		while (c != '\n' && getc(stdin) != '\n')
-			if (feof(stdin))
+		while (c != '\n' && getc(stdin) != '\n') {
+			if (feof(stdin)) {
+				resolved = 0;
 				return (0);
+			}
+		}
 	} while (c != 'y' && c != 'Y' && c != 'n' && c != 'N');
 	printf("\n");
 	if (c == 'y' || c == 'Y')
 		return (1);
+	resolved = 0;
 	return (0);
 }
 
@@ -116,13 +124,13 @@ reply(question)
  * Malloc buffers and set up cache.
  */
 void
-bufinit()
+bufinit(void)
 {
-	register struct bufarea *bp;
+	struct bufarea *bp;
 	long bufcnt, i;
 	char *bufp;
 
-	pbp = pdirbp = (struct bufarea *)0;
+	pbp = pdirbp = NULL;
 	bufp = malloc((unsigned int)sblock.fs_bsize);
 	if (bufp == 0)
 		errexit("cannot allocate buffer pool\n");
@@ -133,7 +141,7 @@ bufinit()
 	if (bufcnt < MINBUFS)
 		bufcnt = MINBUFS;
 	for (i = 0; i < bufcnt; i++) {
-		bp = (struct bufarea *)malloc(sizeof(struct bufarea));
+		bp = malloc(sizeof(struct bufarea));
 		bufp = malloc((unsigned int)sblock.fs_bsize);
 		if (bp == NULL || bufp == NULL) {
 			if (i >= MINBUFS)
@@ -154,11 +162,9 @@ bufinit()
  * Manage a cache of directory blocks.
  */
 struct bufarea *
-getdatablk(blkno, size)
-	daddr_t blkno;
-	long size;
+getdatablk(daddr_t blkno, long size)
 {
-	register struct bufarea *bp;
+	struct bufarea *bp;
 
 	for (bp = bufhead.b_next; bp != &bufhead; bp = bp->b_next)
 		if (bp->b_bno == fsbtodb(&sblock, blkno))
@@ -169,7 +175,7 @@ getdatablk(blkno, size)
 	if (bp == &bufhead)
 		errexit("deadlocked buffer pool\n");
 	getblk(bp, blkno, size);
-	/* fall through */
+	/* FALLTHROUGH */
 foundit:
 	totalreads++;
 	bp->b_prev->b_next = bp->b_next;
@@ -183,10 +189,7 @@ foundit:
 }
 
 void
-getblk(bp, blk, size)
-	register struct bufarea *bp;
-	daddr_t blk;
-	long size;
+getblk(struct bufarea *bp, daddr_t blk, long size)
 {
 	daddr_t dblk;
 
@@ -201,11 +204,9 @@ getblk(bp, blk, size)
 }
 
 void
-flush(fd, bp)
-	int fd;
-	register struct bufarea *bp;
+flush(int fd, struct bufarea *bp)
 {
-	register int i, j;
+	int i, j;
 
 	if (!bp->b_dirty)
 		return;
@@ -219,31 +220,28 @@ flush(fd, bp)
 	if (bp != &sblk)
 		return;
 	for (i = 0, j = 0; i < sblock.fs_cssize; i += sblock.fs_bsize, j++) {
-		bwrite(fswritefd, (char *)sblock.fs_csp[j],
+		bwrite(fswritefd, (char *)sblock.fs_csp + i,
 		    fsbtodb(&sblock, sblock.fs_csaddr + j * sblock.fs_frag),
 		    sblock.fs_cssize - i < sblock.fs_bsize ?
 		    sblock.fs_cssize - i : sblock.fs_bsize);
 	}
 }
 
-void
-rwerror(mesg, blk)
-	char *mesg;
-	daddr_t blk;
+static void
+rwerror(char *mesg, daddr_t blk)
 {
 
 	if (preen == 0)
 		printf("\n");
-	pfatal("CANNOT %s: BLK %ld", mesg, blk);
+	pfatal("CANNOT %s: BLK %d", mesg, blk);
 	if (reply("CONTINUE") == 0)
 		errexit("Program terminated\n");
 }
 
 void
-ckfini(markclean)
-	int markclean;
+ckfini(int markclean)
 {
-	register struct bufarea *bp, *nbp;
+	struct bufarea *bp, *nbp;
 	int cnt = 0;
 
 	if (fswritefd < 0) {
@@ -264,11 +262,11 @@ ckfini(markclean)
 		flush(fswritefd, bp);
 		nbp = bp->b_prev;
 		free(bp->b_un.b_buf);
-		free((char *)bp);
+		free(bp);
 	}
 	if (bufhead.b_size != cnt)
 		errexit("Panic: lost %d buffers\n", bufhead.b_size - cnt);
-	pbp = pdirbp = (struct bufarea *)0;
+	pbp = pdirbp = NULL;
 	if (markclean && (sblock.fs_clean & FS_ISCLEAN) == 0) {
 		/*
 		 * Mark the file system as clean, and sync the superblock.
@@ -291,11 +289,7 @@ ckfini(markclean)
 }
 
 int
-bread(fd, buf, blk, size)
-	int fd;
-	char *buf;
-	daddr_t blk;
-	long size;
+bread(int fd, char *buf, daddr_t blk, long size)
 {
 	char *cp;
 	int i, errs;
@@ -330,11 +324,7 @@ bread(fd, buf, blk, size)
 }
 
 void
-bwrite(fd, buf, blk, size)
-	int fd;
-	char *buf;
-	daddr_t blk;
-	long size;
+bwrite(int fd, char *buf, daddr_t blk, long size)
 {
 	int i;
 	char *cp;
@@ -367,10 +357,10 @@ bwrite(fd, buf, blk, size)
  * allocate a data block with the specified number of fragments
  */
 int
-allocblk(frags)
-	long frags;
+allocblk(long frags)
 {
-	register int i, j, k;
+	int i, j, k, cg, baseblk;
+	struct cg *cgp = &cgrp;
 
 	if (frags <= 0 || frags > sblock.fs_frag)
 		return (0);
@@ -385,9 +375,21 @@ allocblk(frags)
 				j += k;
 				continue;
 			}
-			for (k = 0; k < frags; k++)
+			cg = dtog(&sblock, i + j);
+			getblk(&cgblk, cgtod(&sblock, cg), sblock.fs_cgsize);
+			if (!cg_chkmagic(cgp))
+				pfatal("CG %d: BAD MAGIC NUMBER\n", cg);
+			baseblk = dtogd(&sblock, i + j);
+
+			for (k = 0; k < frags; k++) {
 				setbmap(i + j + k);
+				clrbit(cg_blksfree(cgp), baseblk + k);
+			}
 			n_blks += frags;
+			if (frags == sblock.fs_frag)
+				cgp->cg_cs.cs_nbfree--;
+			else
+				cgp->cg_cs.cs_nffree -= frags;
 			return (i + j);
 		}
 	}
@@ -398,9 +400,7 @@ allocblk(frags)
  * Free a previously allocated block
  */
 void
-freeblk(blkno, frags)
-	daddr_t blkno;
-	long frags;
+freeblk(daddr_t blkno, long frags)
 {
 	struct inodesc idesc;
 
@@ -413,22 +413,20 @@ freeblk(blkno, frags)
  * Find a pathname
  */
 void
-getpathname(namebuf, curdir, ino)
-	char *namebuf;
-	ino_t curdir, ino;
+getpathname(char *namebuf, size_t namebuflen, ino_t curdir, ino_t ino)
 {
 	int len;
-	register char *cp;
+	char *cp;
 	struct inodesc idesc;
 	static int busy = 0;
 
 	if (curdir == ino && ino == ROOTINO) {
-		(void)strcpy(namebuf, "/");
+		(void)strlcpy(namebuf, "/", namebuflen);
 		return;
 	}
 	if (busy ||
 	    (statemap[curdir] != DSTATE && statemap[curdir] != DFOUND)) {
-		(void)strcpy(namebuf, "?");
+		(void)strlcpy(namebuf, "?", namebuflen);
 		return;
 	}
 	busy = 1;
@@ -469,8 +467,9 @@ getpathname(namebuf, curdir, ino)
 }
 
 void
-catch()
+catch(int n)
 {
+	/* XXX signal race */
 	if (!doinglevel2)
 		ckfini(0);
 	exit(12);
@@ -482,11 +481,14 @@ catch()
  * so that reboot sequence may be interrupted.
  */
 void
-catchquit()
+catchquit(int n)
 {
-	extern returntosingle;
+	extern volatile sig_atomic_t returntosingle;
+	char buf[1024];
 
-	printf("returning to single-user after filesystem check\n");
+	snprintf(buf, sizeof buf,
+	    "returning to single-user after filesystem check\n");
+	write(STDOUT_FILENO, buf, strlen(buf));
 	returntosingle = 1;
 	(void)signal(SIGQUIT, SIG_DFL);
 }
@@ -496,7 +498,7 @@ catchquit()
  * Used by child processes in preen.
  */
 void
-voidquit()
+voidquit(int n)
 {
 
 	sleep(1);
@@ -508,18 +510,15 @@ voidquit()
  * determine whether an inode should be fixed.
  */
 int
-dofix(idesc, msg)
-	register struct inodesc *idesc;
-	char *msg;
+dofix(struct inodesc *idesc, char *msg)
 {
-
 	switch (idesc->id_fix) {
 
 	case DONTKNOW:
 		if (idesc->id_type == DATA)
 			direrror(idesc->id_number, msg);
 		else
-			pwarn(msg);
+			pwarn("%s", msg);
 		if (preen) {
 			printf(" (SALVAGED)\n");
 			idesc->id_fix = FIX;
@@ -545,60 +544,33 @@ dofix(idesc, msg)
 	/* NOTREACHED */
 }
 
-/* VARARGS1 */
-errexit(s1, s2, s3, s4)
-	char *s1;
-	long s2, s3, s4;
-{
-	printf(s1, s2, s3, s4);
-	exit(8);
-}
+int (* info_fn)(char *, int) = NULL;
+char *info_filesys = "?";
 
-/*
- * An unexpected inconsistency occured.
- * Die if preening, otherwise just print message and continue.
- */
-/* VARARGS1 */
-pfatal(s, a1, a2, a3)
-	char *s;
-	long a1, a2, a3;
+void
+catchinfo(int n)
 {
+	int save_errno = errno;
+	char buf[1024];
+	struct iovec iov[4];
+	int fd;
 
-	if (preen) {
-		printf("%s: ", cdevname);
-		printf(s, a1, a2, a3);
-		printf("\n");
-		printf("%s: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.\n",
-			cdevname);
-		exit(8);
+	if (info_fn != NULL && info_fn(buf, sizeof buf)) {
+		fd = open(_PATH_TTY, O_WRONLY);
+		if (fd >= 0) {
+			iov[0].iov_base = info_filesys;
+			iov[0].iov_len = strlen(info_filesys);
+			iov[1].iov_base = ": ";
+			iov[1].iov_len = sizeof ": " - 1;
+			iov[2].iov_base = buf;
+			iov[2].iov_len = strlen(buf);
+			iov[3].iov_base = "\n";
+			iov[3].iov_len = sizeof "\n" - 1;
+
+			writev(fd, iov, 4);
+			close(fd);
+		}
 	}
-	printf(s, a1, a2, a3);
+	errno = save_errno;
 }
 
-/*
- * Pwarn just prints a message when not preening,
- * or a warning (preceded by filename) when preening.
- */
-/* VARARGS1 */
-pwarn(s, a1, a2, a3, a4, a5, a6)
-	char *s;
-	long a1, a2, a3, a4, a5, a6;
-{
-
-	if (preen)
-		printf("%s: ", cdevname);
-	printf(s, a1, a2, a3, a4, a5, a6);
-}
-
-#ifndef lint
-/*
- * Stub for routines from kernel.
- */
-panic(s)
-	char *s;
-{
-
-	pfatal("INTERNAL INCONSISTENCY:");
-	errexit(s);
-}
-#endif

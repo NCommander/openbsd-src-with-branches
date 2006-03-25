@@ -1,8 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pppoe.c,v 1.15 2004/09/20 17:51:07 miod Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Network Security
- *	Technologies, Inc.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -49,56 +42,68 @@
 #include <string.h>
 #include <err.h>
 #include <fcntl.h>
+#include <grp.h>
+#include <pwd.h>
 #include <unistd.h>
 #include <sysexits.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <ifaddrs.h>
 
 #include "pppoe.h"
 
 int option_verbose = 0;
 u_char etherbroadcastaddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-int main __P((int, char **));
-void usage __P((char *));
-int getifhwaddr __P((char *, char *, struct ether_addr *));
-int setupfilter __P((char *, struct ether_addr *, int));
-void child_handler __P((int));
-int signal_init __P((void));
+int main(int, char **);
+void usage(void);
+int getifhwaddr(char *, char *, struct ether_addr *);
+int setupfilter(char *, struct ether_addr *, int);
+int setup_rfilter(struct bpf_insn *, struct ether_addr *, int);
+int setup_wfilter(struct bpf_insn *, int);
+void child_handler(int);
+int signal_init(void);
+void drop_privs(struct passwd *, int);
 
 int
-main(int argc, char **argv) {
-	char *ifname = NULL, *sysname = NULL, *srvname = NULL;
+main(int argc, char **argv)
+{
+	char *ifname = NULL;
+	u_int8_t *sysname = NULL, *srvname = NULL;
 	char ifnambuf[IFNAMSIZ];
 	struct ether_addr ea;
 	int bpffd, smode = 0, c;
+	struct passwd *pw;
+
+	if ((pw = getpwnam("_ppp")) == NULL)
+		err(EX_CONFIG, "getpwnam(\"_ppp\")");
 
 	while ((c = getopt(argc, argv, "svi:n:p:")) != -1) {
 		switch (c) {
 		case 'i':
 			if (ifname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			ifname = optarg;
 			break;
 		case 'n':
 			if (srvname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
-			srvname = optarg;
+			srvname = (u_int8_t *)optarg;
 			break;
 		case 'p':
 			if (sysname != NULL) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
-			sysname = optarg;
+			sysname = (u_int8_t *)optarg;
 			break;
 		case 's':
 			if (smode) {
-				usage(argv[0]);
+				usage();
 				return (EX_USAGE);
 			}
 			smode = 1;
@@ -107,14 +112,14 @@ main(int argc, char **argv) {
 			option_verbose++;
 			break;
 		default:
-			usage(argv[0]);
+			usage();
 			return (EX_USAGE);
 		}
 	}
 
 	argc -= optind;
 	if (argc != 0) {
-		usage(argv[0]);
+		usage();
 		return (EX_USAGE);
 	}
 
@@ -124,6 +129,8 @@ main(int argc, char **argv) {
 	bpffd = setupfilter(ifnambuf, &ea, smode);
 	if (bpffd < 0)
 		return (EX_IOERR);
+
+	drop_privs(pw, smode);
 
 	signal_init();
 
@@ -135,22 +142,16 @@ main(int argc, char **argv) {
 	return (0);
 }
 
+#define MAX_INSNS	20
+
+/* bpf read filter */
 int
-setupfilter(ifn, ea, server_mode)
-	char *ifn;
-	struct ether_addr *ea;
-	int server_mode;
+setup_rfilter(struct bpf_insn *insns, struct ether_addr *ea, int server_mode)
 {
-	char device[sizeof "/dev/bpf0000000000"];
 	u_int8_t *ep = (u_int8_t *)ea;
-	int fd, idx = 0;
-	u_int u, i;
-	struct ifreq ifr;
-	struct bpf_insn insns[20];
-	struct bpf_program filter;
+	int idx = 0;
 
-	idx = 0;
-
+	/* allow session or discovery packets */
 	insns[idx].code = BPF_LD | BPF_H | BPF_ABS;
 	insns[idx].k = 12;
 	insns[idx].jt = insns[idx].jf = 0;
@@ -168,6 +169,7 @@ setupfilter(ifn, ea, server_mode)
 	insns[idx].jf = 4;
 	idx++;
 
+	/* reject packets containing our address as source */
 	insns[idx].code = BPF_LD | BPF_W | BPF_ABS;
 	insns[idx].k = 6;
 	insns[idx].jt = insns[idx].jf = 0;
@@ -186,7 +188,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = ep[4] << 8 | ep[5];
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -196,6 +198,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	if (server_mode) {
+		/* if server mode, allow broadcast as destination */
 		insns[idx].code = BPF_LD | BPF_W | BPF_ABS;
 		insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
 		idx++;
@@ -218,12 +221,14 @@ setupfilter(ifn, ea, server_mode)
 		idx++;
 	}
 
+	/* make sure packet is destined to our address */
 	insns[idx].code = BPF_LD | BPF_W | BPF_ABS;
 	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[0]) | (ep[1] << 8) | (ep[3] << 16) | (ep[3] << 24);
+	insns[idx].k =
+	    (ep[0] << 24) | (ep[1] << 16) | (ep[2] << 8) | (ep[3] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 3;
 	idx++;
@@ -234,7 +239,7 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
-	insns[idx].k = (ep[4]) | (ep[5] << 8);
+	insns[idx].k = (ep[4] << 8) | (ep[5] << 0);
 	insns[idx].jt = 0;
 	insns[idx].jf = 1;
 	idx++;
@@ -245,16 +250,102 @@ setupfilter(ifn, ea, server_mode)
 	idx++;
 
 	insns[idx].code = BPF_RET | BPF_K;
-	insns[idx].k = (u_int)-1;
+	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
+	idx++;
+
+	return idx;
+}
+
+/* bpf write filter */
+int
+setup_wfilter(struct bpf_insn *insns, int server_mode)
+{
+	int idx = 0;
+
+	/* check if dest is broadcast */
+	insns[idx].code = BPF_LD | BPF_W | BPF_ABS;
+	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
+	idx++;
+
+	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
+	insns[idx].k = 0xffffffff;
 	insns[idx].jt = 0;
+	insns[idx].jf = 2;
+	idx++;
+
+	insns[idx].code = BPF_LD | BPF_H | BPF_ABS;
+	insns[idx].k = 4;
+	insns[idx].jt = insns[idx].jf = 0;
+	idx++;
+
+	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
+	insns[idx].k = 0xffff;
+	insns[idx].jt = 4;
 	insns[idx].jf = 0;
 	idx++;
 
-	filter.bf_len = idx;
-	filter.bf_insns = insns;
+	/* dest not broadcast, check type for session or discovery */
+	insns[idx].code = BPF_LD | BPF_H | BPF_ABS;
+	insns[idx].k = 12;
+	insns[idx].jt = insns[idx].jf = 0;
+	idx++;
 
-	for (i = 0; 1; i++) {
-		snprintf(device, sizeof(device), "/dev/bpf%d", i++);
+	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
+	insns[idx].k = ETHERTYPE_PPPOE;
+	insns[idx].jt = 1;
+	insns[idx].jf = 0;
+	idx++;
+
+	insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
+	insns[idx].k = ETHERTYPE_PPPOEDISC;
+	insns[idx].jt = 0;
+	insns[idx].jf = (server_mode) ? 1 : 4;
+	idx++;
+
+	insns[idx].code = BPF_RET | BPF_K;
+	insns[idx].k = (u_int)-1;
+	insns[idx].jt = insns[idx].jf = 0;
+	idx++;
+
+	/* packet is broadcast */
+	if (! server_mode) {
+		/* only allowed for discovery in client mode */
+		insns[idx].code = BPF_LD | BPF_H | BPF_ABS;
+		insns[idx].k = 12;
+		insns[idx].jt = insns[idx].jf = 0;
+		idx++;
+
+		insns[idx].code = BPF_JMP | BPF_JEQ | BPF_K;
+		insns[idx].k = ETHERTYPE_PPPOEDISC;
+		insns[idx].jt = 0;
+		insns[idx].jf = 1;
+		idx++;
+
+		insns[idx].code = BPF_RET | BPF_K;
+		insns[idx].k = (u_int)-1;
+		insns[idx].jt = insns[idx].jf = 0;
+		idx++;
+	}
+
+	insns[idx].code = BPF_RET | BPF_K;
+	insns[idx].k = insns[idx].jt = insns[idx].jf = 0;
+	idx++;
+
+	return idx;
+}
+
+int
+setupfilter(char *ifn, struct ether_addr *ea, int server_mode)
+{
+	char device[sizeof "/dev/bpf0000000000"];
+	int fd, idx = 0;
+	u_int u, i;
+	struct ifreq ifr;
+	struct bpf_insn insns[MAX_INSNS];
+	struct bpf_program filter;
+
+	for (i = 0; ; i++) {
+		snprintf(device, sizeof(device), "/dev/bpf%d", i);
 		fd = open(device, O_RDWR);
 		if (fd < 0) {
 			if (errno != EBUSY)
@@ -276,8 +367,7 @@ setupfilter(ifn, ea, server_mode)
 		err(EX_IOERR, "set immediate");
 	}
 
-	strncpy(ifr.ifr_name, ifn, sizeof(ifr.ifr_name));
-	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = '\0';
+	strlcpy(ifr.ifr_name, ifn, IFNAMSIZ);
 	if (ioctl(fd, BIOCSETIF, &ifr) < 0) {
 		close(fd);
 		err(EX_IOERR, "set interface");
@@ -290,115 +380,106 @@ setupfilter(ifn, ea, server_mode)
 	if (u != DLT_EN10MB)
 		err(EX_IOERR, "%s is not ethernet", ifn);
 
+
+	idx = setup_rfilter(insns, ea, server_mode);
+
+	filter.bf_len = idx;
+	filter.bf_insns = insns;
+
 	if (ioctl(fd, BIOCSETF, &filter) < 0) {
 		close(fd);
 		err(EX_IOERR, "BIOCSETF");
+	}
+
+	idx = setup_wfilter(insns, server_mode);
+
+	filter.bf_len = idx;
+	filter.bf_insns = insns;
+
+	if (ioctl(fd, BIOCSETWF, &filter) < 0) {
+		close(fd);
+		err(EX_IOERR, "BIOCSETWF");
+	}
+
+	/* lock the descriptor against changes */
+	if (ioctl(fd, BIOCLOCK) < 0) {
+		close(fd);
+		err(EX_IOERR, "BIOCLOCK");
 	}
 
 	return (fd);
 }
 
 int
-getifhwaddr(ifnhint, ifnambuf, ea)
-	char *ifnhint, *ifnambuf;
-	struct ether_addr *ea;
+getifhwaddr(char *ifnhint, char *ifnambuf, struct ether_addr *ea)
 {
-	int s;
-	char *inbuf = NULL;
-	struct ifconf ifc;
-	struct ifreq *ifrp, ifreq, req;
 	struct sockaddr_dl *dl;
-	int len = 8192, i;
+	struct ifaddrs *ifap, *ifa;
 
-	s = socket(AF_INET, SOCK_DGRAM, 0);
-	if (s < 0) {
-		perror("socket");
+	if (getifaddrs(&ifap) != 0) {
+		perror("getifaddrs");
 		return (-1);
 	}
 
-	while (1) {
-		ifc.ifc_len= len;
-		ifc.ifc_buf = inbuf = realloc(inbuf, len);
-		if (inbuf == NULL)
-			err(1, "malloc");
-		if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
-			err(1, "gifconf");
-		if (ifc.ifc_len + sizeof(struct ifreq) < len)
-			break;
-		len *= 2;
-	}
-
-	ifrp = ifc.ifc_req;
-	ifreq.ifr_name[0] = '\0';
-	for (i = 0; i < ifc.ifc_len; ) {
-		ifrp = (struct ifreq *)((caddr_t)ifc.ifc_req + i);
-		i += sizeof(ifrp->ifr_name) +
-		    (ifrp->ifr_addr.sa_len > sizeof(struct sockaddr) ?
-		    ifrp->ifr_addr.sa_len : sizeof(struct sockaddr));
-		if (ifrp->ifr_addr.sa_family != AF_LINK)
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+		if (ifa->ifa_addr->sa_family != AF_LINK)
 			continue;
-		if (ifnhint != NULL && strncmp(ifnhint, ifrp->ifr_name,
-		    sizeof(ifrp->ifr_name)))
+		if (ifnhint != NULL && strcmp(ifnhint, ifa->ifa_name))
 			continue;
 		if (ifnhint == NULL) {
-			strncpy(req.ifr_name, ifrp->ifr_name, IFNAMSIZ);
-			req.ifr_name[IFNAMSIZ-1] = '\0';
-			if (ioctl(s, SIOCGIFFLAGS, &req) < 0)
-				err(EX_IOERR, "get flags");
-			if ((req.ifr_flags & IFF_UP) == 0)
+			if ((ifa->ifa_flags & IFF_UP) == 0)
 				continue;
 		}
-		dl = (struct sockaddr_dl *)&ifrp->ifr_addr;
+		dl = (struct sockaddr_dl *)ifa->ifa_addr;
 		if (dl->sdl_type != IFT_ETHER) {
 			if (ifnhint == NULL)
 				continue;
 			fprintf(stderr, "not ethernet interface: %s\n",
 				ifnhint);
-			free(inbuf);
-			close(s);
+			freeifaddrs(ifap);
 			return (-1);
 		}
 		if (dl->sdl_alen != ETHER_ADDR_LEN) {
 			fprintf(stderr, "invalid hwaddr len: %u\n",
 				dl->sdl_alen);
-			free(inbuf);
-			close(s);
+			freeifaddrs(ifap);
 			return (-1);
 		}
 		bcopy(dl->sdl_data + dl->sdl_nlen, ea, sizeof(*ea));
-		strncpy(ifnambuf, ifrp->ifr_name, IFNAMSIZ);
-		ifnambuf[IFNAMSIZ-1] = '\0';
-		free(inbuf);
-		close(s);
+		strlcpy(ifnambuf, ifa->ifa_name, IFNAMSIZ);
+		freeifaddrs(ifap);
 		return (0);
 	}
-	free(inbuf);
+	freeifaddrs(ifap);
 	if (ifnhint == NULL)
 		fprintf(stderr, "no running ethernet found\n");
 	else
 		fprintf(stderr, "no such interface: %s\n", ifnhint);
-	close(s);
 	return (-1);
 }
 
 void
-usage(progname)
-	char *progname;
+usage(void)
 {
-	fprintf(stderr, "%s [-s] [-v] [-p system] [-i interface]\n", progname);
+	extern char *__progname;
+
+	fprintf(stderr,"%s [-sv] [-i interface] [-n service] [-p system]\n",
+	    __progname);
 }
 
 void
-child_handler(sig)
-	int sig;
+child_handler(int sig)
 {
+	int save_errno = errno;
 	int status;
 
-	while (wait3(&status, WNOHANG, NULL) > 0);
+	while (wait3(&status, WNOHANG, NULL) > 0)
+		;
+	errno = save_errno;
 }
 
 int
-signal_init()
+signal_init(void)
 {
 	struct sigaction act;
 
@@ -417,4 +498,33 @@ signal_init()
 		return (-1);
 
 	return (0);
+}
+
+void
+drop_privs(struct passwd *pw, int server_mode)
+{
+	int groups[2], ng = 1;
+	struct group *gr;
+
+	groups[0] = pw->pw_gid;
+
+	if (server_mode) {
+		if ((gr = getgrnam("network")) == NULL)
+			err(EX_CONFIG, "getgrnam(\"network\")");
+		groups[ng++] = gr->gr_gid;
+	} else {
+		if (chroot(pw->pw_dir) == -1)
+			err(EX_OSERR, "chroot: %s", pw->pw_dir);
+		if (chdir("/") == -1)
+			err(EX_OSERR, "chdir");
+	}
+
+	if (setgroups(ng, groups))
+		err(EX_OSERR, "setgroups");
+	if (setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid))
+		err(EX_OSERR, "setresgid");
+	if (setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
+		err(EX_OSERR, "setresuid");
+
+	endpwent();
 }

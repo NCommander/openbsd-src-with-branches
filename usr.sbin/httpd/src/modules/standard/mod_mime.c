@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_mime.c,v 1.13 2003/08/21 13:11:37 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -68,6 +70,7 @@
 #include "httpd.h"
 #include "http_config.h"
 #include "http_log.h"
+#include "http_main.h"
 
 /*
  * isascii(c) isn't universal, and even those places where it is
@@ -344,6 +347,8 @@ static void init_mime(server_rec *s, pool *p)
         types_confname = TYPES_CONFIG_FILE;
 
     types_confname = ap_server_root_relative(p, types_confname);
+
+    ap_server_strip_chroot(types_confname, 0); /* only needed at restart */
 
     if (!(f = ap_pcfg_openfile(p, types_confname))) {
         ap_log_error(APLOG_MARK, APLOG_ERR, s,
@@ -712,11 +717,12 @@ static int find_ct(request_rec *r)
     if (r->content_type) {
 	content_type *ctp;
 	char *ct;
+	size_t ctlen;
 	int override = 0;
 
-	ct = (char *) ap_palloc(r->pool,
-				sizeof(char) * (strlen(r->content_type) + 1));
-	strcpy(ct, r->content_type);
+	ctlen = sizeof(char) * (strlen(r->content_type) + 1);
+	ct = (char *) ap_palloc(r->pool, ctlen);
+	strlcpy(ct, r->content_type, ctlen);
 
 	if ((ctp = analyze_ct(r->pool, ct))) {
 	    param *pp = ctp->param;

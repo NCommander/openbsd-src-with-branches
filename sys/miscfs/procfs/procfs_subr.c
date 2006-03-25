@@ -1,4 +1,5 @@
-/*	$NetBSD: procfs_subr.c,v 1.13 1994/06/29 06:34:57 cgd Exp $	*/
+/*	$OpenBSD: procfs_subr.c,v 1.23 2005/11/19 02:18:01 pedro Exp $	*/
+/*	$NetBSD: procfs_subr.c,v 1.15 1996/02/12 15:01:42 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Jan-Simon Pendry
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,10 +43,24 @@
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/malloc.h>
+#include <sys/stat.h>
+#include <sys/ptrace.h>
+
 #include <miscfs/procfs/procfs.h>
 
-static struct pfsnode *pfshead;
-static int pfsvplock;
+static TAILQ_HEAD(, pfsnode)	pfshead;
+struct lock pfs_vlock;
+
+/*ARGSUSED*/
+int
+procfs_init(vfsp)
+	struct vfsconf *vfsp;
+
+{
+	lockinit(&pfs_vlock, PVFS, "procfsl", 0, 0);
+	TAILQ_INIT(&pfshead);
+	return (0);
+}
 
 /*
  * allocate a pfsnode/vnode pair.  the vnode is
@@ -84,43 +95,37 @@ procfs_allocvp(mp, vpp, pid, pfs_type)
 	long pid;
 	pfstype pfs_type;
 {
+	struct proc *p = curproc;
 	struct pfsnode *pfs;
 	struct vnode *vp;
-	struct pfsnode **pp;
 	int error;
 
+	/*
+	 * Lock the vp list, getnewvnode can sleep.
+	 */
+	error = lockmgr(&pfs_vlock, LK_EXCLUSIVE, NULL);
+	if (error)
+		return (error);
 loop:
-	for (pfs = pfshead; pfs != 0; pfs = pfs->pfs_next) {
+	for (pfs = pfshead.tqh_first; pfs != NULL; pfs = pfs->list.tqe_next) {
 		vp = PFSTOV(pfs);
 		if (pfs->pfs_pid == pid &&
 		    pfs->pfs_type == pfs_type &&
 		    vp->v_mount == mp) {
-			if (vget(vp, 0))
+			if (vget(vp, 0, p))
 				goto loop;
 			*vpp = vp;
-			return (0);
+			goto out;
 		}
 	}
 
-	/*
-	 * otherwise lock the vp list while we call getnewvnode
-	 * since that can block.
-	 */ 
-	if (pfsvplock & PROCFS_LOCKED) {
-		pfsvplock |= PROCFS_WANT;
-		sleep((caddr_t) &pfsvplock, PINOD);
-		goto loop;
-	}
-	pfsvplock |= PROCFS_LOCKED;
-
-	if (error = getnewvnode(VT_PROCFS, mp, procfs_vnodeop_p, vpp))
+	if ((error = getnewvnode(VT_PROCFS, mp, procfs_vnodeop_p, vpp)) != 0)
 		goto out;
 	vp = *vpp;
 
 	MALLOC(pfs, void *, sizeof(struct pfsnode), M_TEMP, M_WAITOK);
 	vp->v_data = pfs;
 
-	pfs->pfs_next = 0;
 	pfs->pfs_pid = (pid_t) pid;
 	pfs->pfs_type = pfs_type;
 	pfs->pfs_vnode = vp;
@@ -129,46 +134,42 @@ loop:
 
 	switch (pfs_type) {
 	case Proot:	/* /proc = dr-xr-xr-x */
-		pfs->pfs_mode = (VREAD|VEXEC) |
-				(VREAD|VEXEC) >> 3 |
-				(VREAD|VEXEC) >> 6;
+		pfs->pfs_mode = S_IRUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
 		vp->v_type = VDIR;
 		vp->v_flag = VROOT;
 		break;
 
 	case Pcurproc:	/* /proc/curproc = lr--r--r-- */
-		pfs->pfs_mode = (VREAD) |
-				(VREAD >> 3) |
-				(VREAD >> 6);
+	case Pself:	/* /proc/self = lr--r--r-- */
+		pfs->pfs_mode = S_IRUSR|S_IRGRP|S_IROTH;
 		vp->v_type = VLNK;
 		break;
 
-	case Pproc:
-		pfs->pfs_mode = (VREAD|VEXEC) |
-				(VREAD|VEXEC) >> 3 |
-				(VREAD|VEXEC) >> 6;
+	case Pproc:	/* /proc/N = dr-xr-xr-x */
+		pfs->pfs_mode = S_IRUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH;
 		vp->v_type = VDIR;
 		break;
 
-	case Pfile:
-	case Pmem:
-	case Pregs:
-	case Pfpregs:
-		pfs->pfs_mode = (VREAD|VWRITE);
+	case Pfile:	/* /proc/N/file = -rw------- */
+	case Pmem:	/* /proc/N/mem = -rw------- */
+	case Pregs:	/* /proc/N/regs = -rw------- */
+	case Pfpregs:	/* /proc/N/fpregs = -rw------- */
+		pfs->pfs_mode = S_IRUSR|S_IWUSR;
 		vp->v_type = VREG;
 		break;
 
-	case Pctl:
-	case Pnote:
-	case Pnotepg:
-		pfs->pfs_mode = (VWRITE);
+	case Pctl:	/* /proc/N/ctl = --w------ */
+	case Pnote:	/* /proc/N/note = --w------ */
+	case Pnotepg:	/* /proc/N/notepg = --w------ */
+		pfs->pfs_mode = S_IWUSR;
 		vp->v_type = VREG;
 		break;
 
-	case Pstatus:
-		pfs->pfs_mode = (VREAD) |
-				(VREAD >> 3) |
-				(VREAD >> 6);
+	case Pstatus:	/* /proc/N/status = -r--r--r-- */
+	case Pcmdline:	/* /proc/N/cmdline = -r--r--r-- */
+	case Pmeminfo:	/* /proc/meminfo = -r--r--r-- */
+	case Pcpuinfo:	/* /proc/cpuinfo = -r--r--r-- */
+		pfs->pfs_mode = S_IRUSR|S_IRGRP|S_IROTH;
 		vp->v_type = VREG;
 		break;
 
@@ -177,17 +178,10 @@ loop:
 	}
 
 	/* add to procfs vnode list */
-	for (pp = &pfshead; *pp; pp = &(*pp)->pfs_next)
-		continue;
-	*pp = pfs;
-
+	TAILQ_INSERT_TAIL(&pfshead, pfs, list);
+	uvm_vnp_setsize(vp, 0);
 out:
-	pfsvplock &= ~PROCFS_LOCKED;
-
-	if (pfsvplock & PROCFS_WANT) {
-		pfsvplock &= ~PROCFS_WANT;
-		wakeup((caddr_t) &pfsvplock);
-	}
+	lockmgr(&pfs_vlock, LK_RELEASE, NULL);
 
 	return (error);
 }
@@ -196,45 +190,38 @@ int
 procfs_freevp(vp)
 	struct vnode *vp;
 {
-	struct pfsnode **pfspp;
 	struct pfsnode *pfs = VTOPFS(vp);
 
-	for (pfspp = &pfshead; *pfspp != 0; pfspp = &(*pfspp)->pfs_next) {
-		if (*pfspp == pfs) {
-			*pfspp = pfs->pfs_next;
-			break;
-		}
-	}
-
+	TAILQ_REMOVE(&pfshead, pfs, list);
 	FREE(vp->v_data, M_TEMP);
 	vp->v_data = 0;
 	return (0);
 }
 
 int
-procfs_rw(ap)
-	struct vop_read_args *ap;
+procfs_rw(v)
+	void *v;
 {
+	struct vop_read_args *ap = v;
 	struct vnode *vp = ap->a_vp;
 	struct uio *uio = ap->a_uio;
 	struct proc *curp = uio->uio_procp;
 	struct pfsnode *pfs = VTOPFS(vp);
 	struct proc *p;
 
-	p = PFIND(pfs->pfs_pid);
+	p = pfind(pfs->pfs_pid);
 	if (p == 0)
+		return (EINVAL);
+	/* Do not permit games to be played with init(8) */
+	if (p->p_pid == 1 && securelevel > 0 && uio->uio_rw == UIO_WRITE)
+		return (EPERM);
+	if (uio->uio_offset < 0)
 		return (EINVAL);
 
 	switch (pfs->pfs_type) {
 	case Pnote:
 	case Pnotepg:
 		return (procfs_donote(curp, p, pfs, uio));
-
-	case Pregs:
-		return (procfs_doregs(curp, p, pfs, uio));
-
-	case Pfpregs:
-		return (procfs_dofpregs(curp, p, pfs, uio));
 
 	case Pctl:
 		return (procfs_doctl(curp, p, pfs, uio));
@@ -243,7 +230,16 @@ procfs_rw(ap)
 		return (procfs_dostatus(curp, p, pfs, uio));
 
 	case Pmem:
-		return (procfs_domem(curp, p, pfs, uio));
+		return (process_domem(curp, p, uio, PT_WRITE_I));
+
+	case Pcmdline:
+		return (procfs_docmdline(curp, p, pfs, uio));
+
+	case Pmeminfo:
+		return (procfs_domeminfo(curp, p, pfs, uio));
+
+	case Pcpuinfo:
+		return (procfs_docpuinfo(curp, p, pfs, uio));
 
 	default:
 		return (EOPNOTSUPP);
@@ -281,7 +277,7 @@ vfs_getuserstr(uio, buf, buflenp)
 		return (EMSGSIZE);
 	xlen = uio->uio_resid;
 
-	if (error = uiomove(buf, xlen, uio))
+	if ((error = uiomove(buf, xlen, uio)) != 0)
 		return (error);
 
 	/* allow multiple writes without seeks */
@@ -297,15 +293,15 @@ vfs_getuserstr(uio, buf, buflenp)
 	return (0);
 }
 
-vfs_namemap_t *
+const vfs_namemap_t *
 vfs_findname(nm, buf, buflen)
-	vfs_namemap_t *nm;
+	const vfs_namemap_t *nm;
 	char *buf;
 	int buflen;
 {
 
 	for (; nm->nm_name; nm++)
-		if (bcmp(buf, (char *) nm->nm_name, buflen+1) == 0)
+		if (bcmp(buf, nm->nm_name, buflen + 1) == 0)
 			return (nm);
 
 	return (0);

@@ -1,8 +1,8 @@
-/*	$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: main.c,v 1.13 2004/04/07 14:09:35 aaron Exp $	*/
+/*	$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,7 +41,11 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/23/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $";
+#if 0
+static char rcsid[] = "$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $";
+#else
+static char rcsid[] = "$OpenBSD: main.c,v 1.13 2004/04/07 14:09:35 aaron Exp $";
+#endif
 #endif
 #endif /* not lint */
 
@@ -59,6 +59,7 @@ static char rcsid[] = "$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "fsck.h"
@@ -67,27 +68,22 @@ static char rcsid[] = "$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $
 
 int	returntosingle;
 
-int	main __P((int, char *[]));
+int	main(int, char *[]);
 
-static int	argtoi __P((int, char *, char *, int));
-static int	checkfilesys __P((char *, char *, long, int));
-static int	docheck __P((struct fstab *));
-static  void usage __P((void));
+static int	argtoi(int, char *, char *, int);
+static int	checkfilesys(char *, char *, long, int);
+static  void usage(void);
 
 
 int
-main(argc, argv)
-	int	argc;
-	char	*argv[];
+main(int argc, char *argv[])
 {
 	int ch;
 	int ret = 0;
-	extern char *optarg;
-	extern int optind;
 
 	sync();
 	skipclean = 1;
-	while ((ch = getopt(argc, argv, "b:c:dfm:npy")) != EOF) {
+	while ((ch = getopt(argc, argv, "b:dfm:npy")) != -1) {
 		switch (ch) {
 		case 'b':
 			skipclean = 0;
@@ -150,10 +146,7 @@ main(argc, argv)
 }
 
 static int
-argtoi(flag, req, str, base)
-	int flag;
-	char *req, *str;
-	int base;
+argtoi(int flag, char *req, char *str, int base)
 {
 	char *cp;
 	int ret;
@@ -165,35 +158,16 @@ argtoi(flag, req, str, base)
 }
 
 /*
- * Determine whether a filesystem should be checked.
- */
-static int
-docheck(fsp)
-	register struct fstab *fsp;
-{
-
-	if ( strcmp(fsp->fs_vfstype, "ext2fs") ||
-	    (strcmp(fsp->fs_type, FSTAB_RW) &&
-	     strcmp(fsp->fs_type, FSTAB_RO)) ||
-	    fsp->fs_passno == 0)
-		return (0);
-	return (1);
-}
-
-/*
  * Check the specified filesystem.
  */
 /* ARGSUSED */
 static int
-checkfilesys(filesys, mntpt, auxdata, child)
-	char *filesys, *mntpt;
-	long auxdata;
-	int child;
+checkfilesys(char *filesys, char *mntpt, long auxdata, int child)
 {
 	daddr_t n_bfree;
 	struct dups *dp;
 	struct zlncnt *zlnp;
-	int cylno;
+	int i;
 
 	if (preen && child)
 		(void)signal(SIGQUIT, voidquit);
@@ -211,6 +185,10 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	 * 1: scan inodes tallying blocks used
 	 */
 	if (preen == 0) {
+		if (sblock.e2fs.e2fs_rev > E2FS_REV0) {
+			printf("** Last Mounted on %s\n",
+			    sblock.e2fs.e2fs_fsmnt);
+		}
 		if (hotroot())
 			printf("** Root file system\n");
 		printf("** Phase 1 - Check Blocks and Sizes\n");
@@ -259,7 +237,7 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	 * print out summary statistics
 	 */
 	n_bfree = sblock.e2fs.e2fs_fbcount;
-		
+
 	pwarn("%d files, %d used, %d free\n",
 	    n_files, n_blks, n_bfree);
 	if (debug &&
@@ -267,7 +245,8 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	    (n_files -= maxino - 9 - sblock.e2fs.e2fs_ficount))
 		printf("%d files missing\n", n_files);
 	if (debug) {
-		n_blks += sblock.e2fs_ncg * cgoverhead;
+		for (i = 0; i < sblock.e2fs_ncg; i++)
+			n_blks +=  cgoverhead(i);
 		n_blks += sblock.e2fs.e2fs_first_dblock;
 		if (n_blks -= maxfsblock - n_bfree)
 			printf("%d blocks missing\n", n_blks);
@@ -318,8 +297,8 @@ checkfilesys(filesys, mntpt, auxdata, child)
 
 			if (flags & MNT_RDONLY) {
 				args.fspec = 0;
-				args.export.ex_flags = 0;
-				args.export.ex_root = 0;
+				args.export_info.ex_flags = 0;
+				args.export_info.ex_root = 0;
 				flags |= MNT_UPDATE | MNT_RELOAD;
 				ret = mount(MOUNT_EXT2FS, "/", flags, &args);
 				if (ret == 0)
@@ -335,12 +314,12 @@ checkfilesys(filesys, mntpt, auxdata, child)
 }
 
 static void
-usage()
+usage(void)
 {
 	extern char *__progname;
 
 	(void) fprintf(stderr,
-	    "Usage: %s [-dfnpy] [-b block] [-c level] [-m mode] filesystem ...\n",
+	    "usage: %s [-dfnpy] [-b block#] [-m mode] filesystem ...\n",
 	    __progname);
 	exit(1);
 }

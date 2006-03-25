@@ -1,13 +1,10 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: bcmp.S,v 1.7 1995/04/28 22:57:54 jtc Exp $")
-#endif
 
 ENTRY(bcmp)
 	pushl	%edi

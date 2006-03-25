@@ -1,3 +1,4 @@
+.\"	$OpenBSD: ac.8,v 1.13 2005/11/16 12:35:44 jmc Exp $
 .\"
 .\" Copyright (c) 1994 Simon J. Gerraty
 .\" Copyright (c) 1994 Christopher G. Demetriou
@@ -28,11 +29,9 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: ac.8,v 1.2 1995/09/27 19:17:27 jtc Exp $
-.\"
 .Dd March 15, 1994
 .Dt AC 8
-.Os NetBSD 0.9a
+.Os
 .Sh NAME
 .Nm ac
 .Nd connect time accounting
@@ -44,24 +43,24 @@
 .Op Fl w Ar wtmp
 .Op Ar users ...
 .Sh DESCRIPTION
-If the file 
+If the file
 .Pa /var/log/wtmp
 exists, a record of individual login and logout
 times are written to it by
-.Xr login 8
+.Xr login 1
 and
 .Xr init 8 ,
 respectively.
-.Nm \&Ac
+.Nm
 examines these records and writes the accumulated connect time
 for all logins to the standard output.
 .Pp
 The options are as follows:
-.Bl -tag -width indentXXX
+.Bl -tag -width Ds
 .It Fl d
 Display the connect times in 24 hour chunks.
 .\" .It Fl c Ar console
-.\" Use 
+.\" Use
 .\" .Ar console
 .\" as the name of the device that local X sessions (ut_host of ":0.0")
 .\" originate from.  If any login has been recorded on
@@ -71,11 +70,16 @@ Display the connect times in 24 hour chunks.
 .It Fl p
 Print individual users' totals.
 .It Fl t Ar tty
-Only do accounting logins on certain ttys.  The
+Only do accounting logins on certain ttys.
+The
 .Ar tty
-specification can start with '!' to indicate not this
+specification can start with
+.Ql \&!
+to indicate not this
 .Ar tty
-and end with '*' to indicate all similarly named ttys.
+and end with
+.Ql *
+to indicate all similarly named ttys.
 Multiple
 .Fl t
 flags may be specified.
@@ -89,57 +93,82 @@ Display totals for the given individuals only.
 .El
 .Pp
 If no arguments are given,
-.Nm ac
+.Nm
 displays the total connect time for all
 accounts with login sessions recorded in
-.Pa wtmp .
+.Xr wtmp 5 .
 .Pp
 The default
 .Pa wtmp
 file will increase without bound unless it is truncated.
-It is normally truncated by the daily scripts run
-by
-.Xr cron 8 ,
-which rename and rotate the
+It is normally truncated by
+.Xr newsyslog 8 ,
+which renames and rotates the
 .Pa wtmp
-files, keeping a week's worth of data on
-hand.  No login or connect time accounting is performed if
+files, keeping a week's worth of data on hand.
+In order for
+.Nm
+to run in sync with the rotation of
+.Pa wtmp ,
+.Xr newsyslog 8
+will have to be altered to run
+just after
+.Nm
+completes.
+A suggested procedure is to
+uncomment the
+.Nm
+entry provided in
+.Xr weekly 8
+and make the following amendment to
+.Pa /etc/newsyslog :
+.Bd -literal -offset 3n
+/var/log/wtmp	644  7     *    $W6D4	ZB
+.Ed
+.Pp
+This will provide weekly mail reports on user accounting information,
+truncating the log file just after
+.Xr weekly 8
+is run from root's
+.Xr crontab 5 .
+.Pp
+No login or connect time accounting is performed if
 .Pa /var/log/wtmp
 does not exist.
 .Pp
-For example,
-.Bd -literal -offset
-ac -p -t "ttyd*" > modems
-ac -p -t "!ttyd*" > other
-.Ed
-.Pp
-allows times recorded in
-.Pa modems
-to be charged out at a different rate than
-.Pa other .
-.Pp
 The
-.Nm ac
-utility exits 0 on success, and >0 if a fatal error occurs.
+.Nm
+utility exits 0 on success or \*(Gt0 if a fatal error occurred.
 .Sh FILES
-.Bl -tag -width /var/log/wtmp.[0-7] -compact
+.Bl -tag -width "/var/log/wtmp.[0-7]XX" -compact
 .It Pa /var/log/wtmp
 connect time accounting file
 .It Pa /var/log/wtmp.[0-7]
 rotated files
 .El
+.Sh EXAMPLES
+Allow times recorded in
+.Pa modems
+to be charged out at a different rate than
+.Pa other :
+.Bd -literal -offset indent
+$ ac -p -t "ttyd*" \*(Gt modems
+$ ac -p -t "!ttyd*" \*(Gt other
+.Ed
 .Sh SEE ALSO
-.Xr init 8 ,
-.Xr sa 8 ,
 .Xr login 1 ,
-.Xr utmp 5
+.Xr wtmp 5 ,
+.Xr cron 8 ,
+.Xr init 8 ,
+.Xr newsyslog 8 ,
+.Xr sa 8
 .Sh HISTORY
 An
-.Nm ac
-command appeard in
+.Nm
+command appeared in
 .At v6 .
 This version of
-.Nm ac
+.Nm
 was written for
 .Nx 0.9a
 from the specification provided by various systems' manual pages.
@@ -148,10 +177,10 @@ from the specification provided by various systems' manual pages.
 .\" .Nm ac
 .\" ignores the fact that entries with ut_host of ":0.0" are not real
 .\" login sessions.  Normally such entries are ignored except in the case
-.\" of a user being logged in when the 
+.\" of a user being logged in when the
 .\" .Pa wtmp
 .\" file was rotated, in which case a login with ut_host of ":0.0" may
-.\" appear without any preceeding console logins.  
+.\" appear without any preceding console logins.
 .\" If no one is logged in on the console, the user is deemed to have
 .\" logged in on at the earliest time stamp found in
 .\" .Pa wtmp .

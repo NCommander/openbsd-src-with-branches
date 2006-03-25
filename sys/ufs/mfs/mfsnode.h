@@ -1,4 +1,5 @@
-/*	$NetBSD: mfsnode.h,v 1.2 1994/06/29 06:47:16 cgd Exp $	*/
+/*	$OpenBSD: mfsnode.h,v 1.10 2003/06/02 23:28:23 millert Exp $	*/
+/*	$NetBSD: mfsnode.h,v 1.3 1996/02/09 22:31:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -55,34 +52,34 @@ struct mfsnode {
 #define MFSTOV(mfsp)	((mfsp)->mfs_vnode)
 
 /* Prototypes for MFS operations on vnodes. */
-#define mfs_lookup ((int (*) __P((struct  vop_lookup_args *)))mfs_badop)
-#define mfs_create ((int (*) __P((struct  vop_create_args *)))mfs_badop)
-#define mfs_mknod ((int (*) __P((struct  vop_mknod_args *)))mfs_badop)
-#define mfs_access ((int (*) __P((struct  vop_access_args *)))mfs_badop)
-#define mfs_getattr ((int (*) __P((struct  vop_getattr_args *)))mfs_badop)
-#define mfs_setattr ((int (*) __P((struct  vop_setattr_args *)))mfs_badop)
-#define mfs_read ((int (*) __P((struct  vop_read_args *)))mfs_badop)
-#define mfs_write ((int (*) __P((struct  vop_write_args *)))mfs_badop)
-#define mfs_select ((int (*) __P((struct  vop_select_args *)))mfs_badop)
-#define mfs_mmap ((int (*) __P((struct  vop_mmap_args *)))mfs_badop)
-#define mfs_seek ((int (*) __P((struct  vop_seek_args *)))mfs_badop)
-#define mfs_remove ((int (*) __P((struct  vop_remove_args *)))mfs_badop)
-#define mfs_link ((int (*) __P((struct  vop_link_args *)))mfs_badop)
-#define mfs_rename ((int (*) __P((struct  vop_rename_args *)))mfs_badop)
-#define mfs_mkdir ((int (*) __P((struct  vop_mkdir_args *)))mfs_badop)
-#define mfs_rmdir ((int (*) __P((struct  vop_rmdir_args *)))mfs_badop)
-#define mfs_symlink ((int (*) __P((struct  vop_symlink_args *)))mfs_badop)
-#define mfs_readdir ((int (*) __P((struct  vop_readdir_args *)))mfs_badop)
-#define mfs_readlink ((int (*) __P((struct  vop_readlink_args *)))mfs_badop)
-#define mfs_abortop ((int (*) __P((struct  vop_abortop_args *)))mfs_badop)
-#define mfs_lock ((int (*) __P((struct  vop_lock_args *)))nullop)
-#define mfs_unlock ((int (*) __P((struct  vop_unlock_args *)))nullop)
-#define mfs_islocked ((int (*) __P((struct  vop_islocked_args *)))nullop)
-#define mfs_pathconf ((int (*) __P((struct  vop_pathconf_args *)))mfs_badop)
-#define mfs_advlock ((int (*) __P((struct  vop_advlock_args *)))mfs_badop)
-#define mfs_blkatoff ((int (*) __P((struct  vop_blkatoff_args *)))mfs_badop)
-#define mfs_valloc ((int (*) __P((struct  vop_valloc_args *)))mfs_badop)
-#define mfs_vfree ((int (*) __P((struct  vop_vfree_args *)))mfs_badop)
-#define mfs_truncate ((int (*) __P((struct  vop_truncate_args *)))mfs_badop)
-#define mfs_update ((int (*) __P((struct  vop_update_args *)))mfs_badop)
-#define mfs_bwrite ((int (*) __P((struct  vop_bwrite_args *)))vn_bwrite)
+#define	mfs_lookup	mfs_badop
+#define	mfs_create	mfs_badop
+#define	mfs_mknod	mfs_badop
+#define	mfs_access	mfs_badop
+#define	mfs_getattr	mfs_badop
+#define	mfs_setattr	mfs_badop
+#define	mfs_read	mfs_badop
+#define	mfs_write	mfs_badop
+#define	mfs_poll	mfs_badop
+#define	mfs_mmap	mfs_badop
+#define	mfs_seek	mfs_badop
+#define	mfs_remove	mfs_badop
+#define	mfs_link	mfs_badop
+#define	mfs_rename	mfs_badop
+#define	mfs_mkdir	mfs_badop
+#define	mfs_rmdir	mfs_badop
+#define	mfs_symlink	mfs_badop
+#define	mfs_readdir	mfs_badop
+#define	mfs_readlink	mfs_badop
+#define	mfs_abortop	mfs_badop
+#define	mfs_lock	vop_generic_lock
+#define	mfs_unlock	vop_generic_unlock
+#define	mfs_islocked	vop_generic_islocked
+#define	mfs_pathconf	mfs_badop
+#define	mfs_advlock	mfs_badop
+#define	mfs_blkatoff	mfs_badop
+#define	mfs_valloc	mfs_badop
+#define	mfs_vfree	mfs_badop
+#define	mfs_truncate	mfs_badop
+#define	mfs_update	nullop
+#define	mfs_bwrite	vop_generic_bwrite

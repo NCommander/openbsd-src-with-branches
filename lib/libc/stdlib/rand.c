@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,25 +27,26 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)rand.c	5.6 (Berkeley) 6/24/91";*/
-static char *rcsid = "$Id: rand.c,v 1.4 1994/10/19 03:06:51 cgd Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <stdlib.h>
 
-static u_long next = 1;
+static u_int next = 1;
 
 int
-rand()
+rand_r(u_int *seed)
 {
-	return ((next = next * 1103515245 + 12345) % ((u_int)RAND_MAX + 1));
+	*seed = *seed * 1103515245 + 12345;
+	return (*seed % ((u_int)RAND_MAX + 1));
+}
+
+int
+rand(void)
+{
+	return (rand_r(&next));
 }
 
 void
-srand(seed)
-u_int seed;
+srand(u_int seed)
 {
 	next = seed;
 }

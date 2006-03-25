@@ -1,4 +1,8 @@
+/*	$OpenBSD: ibcs2_fcntl.c,v 1.8 2002/02/13 19:08:06 art Exp $	*/
+/*	$NetBSD: ibcs2_fcntl.c,v 1.6 1996/05/03 17:05:20 christos Exp $	*/
+
 /*
+ * Copyright (c) 1997 Theo de Raadt
  * Copyright (c) 1995 Scott Bartram
  * All rights reserved.
  *
@@ -37,12 +41,20 @@
 #include <sys/mount.h>
 #include <sys/malloc.h>
 #include <sys/syscallargs.h>
+#include <sys/vnode.h>
 
 #include <compat/ibcs2/ibcs2_types.h>
 #include <compat/ibcs2/ibcs2_fcntl.h>
+#include <compat/ibcs2/ibcs2_unistd.h>
 #include <compat/ibcs2/ibcs2_signal.h>
 #include <compat/ibcs2/ibcs2_syscallargs.h>
 #include <compat/ibcs2/ibcs2_util.h>
+
+static int cvt_o_flags(int);
+static void cvt_flock2iflock(struct flock *, struct ibcs2_flock *);
+static void cvt_iflock2flock(struct ibcs2_flock *, struct flock *);
+static int ioflags2oflags(int);
+static int oflags2ioflags(int);
 
 static int
 cvt_o_flags(flags)
@@ -55,7 +67,7 @@ cvt_o_flags(flags)
 	if (flags & IBCS2_O_RDWR) r |= O_RDWR;
 	if (flags & (IBCS2_O_NDELAY | IBCS2_O_NONBLOCK)) r |= O_NONBLOCK;
 	if (flags & IBCS2_O_APPEND) r |= O_APPEND;
-	if (flags & IBCS2_O_SYNC) r |= O_FSYNC;
+	if (flags & IBCS2_O_SYNC) r |= O_SYNC;
 	if (flags & IBCS2_O_CREAT) r |= O_CREAT;
 	if (flags & IBCS2_O_TRUNC) r |= O_TRUNC;
 	if (flags & IBCS2_O_EXCL) r |= O_EXCL;
@@ -119,7 +131,7 @@ ioflags2oflags(flags)
 	if (flags & IBCS2_O_RDWR) r |= O_RDWR;
 	if (flags & IBCS2_O_NDELAY) r |= O_NONBLOCK;
 	if (flags & IBCS2_O_APPEND) r |= O_APPEND;
-	if (flags & IBCS2_O_SYNC) r |= O_FSYNC;
+	if (flags & IBCS2_O_SYNC) r |= O_SYNC;
 	if (flags & IBCS2_O_NONBLOCK) r |= O_NONBLOCK;
 	if (flags & IBCS2_O_CREAT) r |= O_CREAT;
 	if (flags & IBCS2_O_TRUNC) r |= O_TRUNC;
@@ -140,7 +152,7 @@ oflags2ioflags(flags)
 	if (flags & O_RDWR) r |= IBCS2_O_RDWR;
 	if (flags & O_NDELAY) r |= IBCS2_O_NONBLOCK;
 	if (flags & O_APPEND) r |= IBCS2_O_APPEND;
-	if (flags & O_FSYNC) r |= IBCS2_O_SYNC;
+	if (flags & O_SYNC) r |= IBCS2_O_SYNC;
 	if (flags & O_NONBLOCK) r |= IBCS2_O_NONBLOCK;
 	if (flags & O_CREAT) r |= IBCS2_O_CREAT;
 	if (flags & O_TRUNC) r |= IBCS2_O_TRUNC;
@@ -173,11 +185,14 @@ ibcs2_sys_open(p, v, retval)
 
 	if (!ret && !noctty && SESS_LEADER(p) && !(p->p_flag & P_CONTROLT)) {
 		struct filedesc *fdp = p->p_fd;
-		struct file *fp = fdp->fd_ofiles[*retval];
+		struct file *fp;
 
-		/* ignore any error, just give it a try */
+		if ((fp = fd_getfile(fdp, *retval)) == NULL)
+			return EBADF;
+		FREF(fp);
 		if (fp->f_type == DTYPE_VNODE)
 			(fp->f_ops->fo_ioctl)(fp, TIOCSCTTY, (caddr_t) 0, p);
+		FRELE(fp);
 	}
 	return ret;
 }
@@ -219,6 +234,46 @@ ibcs2_sys_access(p, v, retval)
         SCARG(&cup, path) = SCARG(uap, path);
         SCARG(&cup, flags) = SCARG(uap, flags);
         return sys_access(p, &cup, retval);
+}
+
+int
+ibcs2_sys_eaccess(p, v, retval)
+        struct proc *p;
+	void *v;
+        register_t *retval;
+{
+	register struct ibcs2_sys_eaccess_args /* {
+		syscallarg(char *) path;
+		syscallarg(int) flags;
+	} */ *uap = v;
+	register struct ucred *cred = p->p_ucred;
+	register struct vnode *vp;
+        int error, flags;
+        struct nameidata nd;
+        caddr_t sg = stackgap_init(p->p_emul);
+
+        IBCS2_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
+
+        NDINIT(&nd, LOOKUP, FOLLOW | LOCKLEAF, UIO_USERSPACE,
+            SCARG(uap, path), p);
+        if ((error = namei(&nd)) != 0)
+                return error;
+        vp = nd.ni_vp;
+
+        /* Flags == 0 means only check for existence. */
+        if (SCARG(uap, flags)) {
+                flags = 0;
+                if (SCARG(uap, flags) & IBCS2_R_OK)
+                        flags |= VREAD;
+                if (SCARG(uap, flags) & IBCS2_W_OK)
+                        flags |= VWRITE;
+                if (SCARG(uap, flags) & IBCS2_X_OK)
+                        flags |= VEXEC;
+                if ((flags & VWRITE) == 0 || (error = vn_writechk(vp)) == 0)
+                        error = VOP_ACCESS(vp, flags, cred, p);
+        }
+        vput(vp);
+        return error;
 }
 
 int
@@ -265,7 +320,7 @@ ibcs2_sys_fcntl(p, v, retval)
 	case IBCS2_F_SETFL:
 		SCARG(&fa, fd) = SCARG(uap, fd);
 		SCARG(&fa, cmd) = F_SETFL;
-		SCARG(&fa, arg) = (void *)ioflags2oflags(SCARG(uap, arg));
+		SCARG(&fa, arg) = (void *)ioflags2oflags((int) SCARG(uap, arg));
 		return sys_fcntl(p, &fa, retval);
 
 	case IBCS2_F_GETLK:
@@ -316,6 +371,61 @@ ibcs2_sys_fcntl(p, v, retval)
 		SCARG(&fa, cmd) = F_SETLKW;
 		SCARG(&fa, arg) = (void *)flp;
 		return sys_fcntl(p, &fa, retval);
+	    }
+	case IBCS2_F_FREESP:
+	    {
+		struct ibcs2_flock	ifl;
+		off_t			off, cur;
+		caddr_t			sg = stackgap_init(p->p_emul);
+		struct sys_fstat_args	ofst;
+		struct stat		ost;
+		struct sys_lseek_args	ols;
+		struct sys_ftruncate_args /* {
+			syscallarg(int) fd;
+			syscallarg(int) pad;
+			syscallarg(off_t) length;
+		} */ nuap;
+
+		error = copyin(SCARG(uap, arg), &ifl, sizeof ifl);
+		if (error)
+			return error;
+
+		SCARG(&ofst, fd) = SCARG(uap, fd);
+		SCARG(&ofst, sb) = stackgap_alloc(&sg,
+		    sizeof(struct stat));
+		if ((error = sys_fstat(p, &ofst, retval)) != 0)
+			return error;
+		if ((error = copyin(SCARG(&ofst, sb), &ost,
+		    sizeof ost)) != 0)
+			return error;
+
+		SCARG(&ols, fd) = SCARG(uap, fd);
+		SCARG(&ols, whence) = SEEK_CUR;
+		SCARG(&ols, offset) = 0;
+		if ((error = sys_lseek(p, &ols, (register_t *)&cur)) != 0)
+			return error;
+
+		off = (off_t)ifl.l_start;
+		switch (ifl.l_whence) {
+		case 0:
+			off = (off_t)ifl.l_start;
+			break;
+		case 1:
+			off = ost.st_size + (off_t)ifl.l_start;
+			break;
+		case 2:
+			off = cur - (off_t)ifl.l_start;
+			break;
+		default:
+			return EINVAL;
+		}
+
+		if (ifl.l_len != 0 && off + ifl.l_len != ost.st_size)
+			return EINVAL;	/* Sorry, cannot truncate in middle */
+
+		SCARG(&nuap, fd) = SCARG(uap, fd);
+		SCARG(&nuap, length) = off;
+		return (sys_ftruncate(p, &nuap, retval));
 	    }
 	}
 	return ENOSYS;

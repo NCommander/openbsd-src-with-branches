@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: mkmakefile.c,v 1.16 2004/01/04 18:30:05 deraadt Exp $	*/
+/*	$NetBSD: mkmakefile.c,v 1.34 1997/02/02 21:12:36 thorpej Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -19,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +39,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mkmakefile.c	8.1 (Berkeley) 6/6/93
- *	$Id: mkmakefile.c,v 1.25 1995/04/28 06:55:15 cgd Exp $
  */
 
 #include <sys/param.h>
@@ -51,38 +49,44 @@
 #include <string.h>
 #include "config.h"
 #include "sem.h"
+
 /*
  * Make the Makefile.
  */
 
-static int emitdefs __P((FILE *));
-static int emitobjs __P((FILE *));
-static int emitcfiles __P((FILE *));
-static int emitsfiles __P((FILE *));
-static int emitfiles __P((FILE *, int));
-static int emitrules __P((FILE *));
-static int emitload __P((FILE *));
+static const char *srcpath(struct files *);
+
+static int emitdefs(FILE *);
+static int emitfiles(FILE *, int);
+
+static int emitobjs(FILE *);
+static int emitcfiles(FILE *);
+static int emitsfiles(FILE *);
+static int emitrules(FILE *);
+static int emitload(FILE *);
 
 int
-mkmakefile()
+mkmakefile(void)
 {
-	register FILE *ifp, *ofp;
-	register int lineno;
-	register int (*fn) __P((FILE *));
-	register char *ofname;
-	char line[BUFSIZ], ifname[200];
+	FILE *ifp, *ofp;
+	int lineno;
+	int (*fn)(FILE *);
+	char *ifname;
+	char line[BUFSIZ], buf[200];
 
-	(void)sprintf(ifname, "Makefile.%s", machine);
+	(void)snprintf(buf, sizeof buf, "arch/%s/conf/Makefile.%s",
+	    machine, machine);
+	ifname = sourcepath(buf);
 	if ((ifp = fopen(ifname, "r")) == NULL) {
 		(void)fprintf(stderr, "config: cannot read %s: %s\n",
 		    ifname, strerror(errno));
+		free(ifname);
 		return (1);
 	}
-	ofname = path("Makefile");
-	if ((ofp = fopen(ofname, "w")) == NULL) {
-		(void)fprintf(stderr, "config: cannot write %s: %s\n",
-		    ofname, strerror(errno));
-		free(ofname);
+	if ((ofp = fopen("Makefile", "w")) == NULL) {
+		(void)fprintf(stderr, "config: cannot write Makefile: %s\n",
+		    strerror(errno));
+		free(ifname);
 		return (1);
 	}
 	if (emitdefs(ofp) != 0)
@@ -118,8 +122,8 @@ mkmakefile()
 		    "config: error reading %s (at line %d): %s\n",
 		    ifname, lineno, strerror(errno));
 		goto bad;
-		/* (void)unlink(ofname); */
-		free(ofname);
+		/* (void)unlink("Makefile"); */
+		free(ifname);
 		return (1);
 	}
 	if (fclose(ofp)) {
@@ -127,30 +131,57 @@ mkmakefile()
 		goto wrerror;
 	}
 	(void)fclose(ifp);
-	free(ofname);
+	free(ifname);
 	return (0);
 wrerror:
-	(void)fprintf(stderr, "config: error writing %s: %s\n",
-	    ofname, strerror(errno));
+	(void)fprintf(stderr, "config: error writing Makefile: %s\n",
+	    strerror(errno));
 bad:
 	if (ofp != NULL)
 		(void)fclose(ofp);
-	/* (void)unlink(ofname); */
-	free(ofname);
+	/* (void)unlink("Makefile"); */
+	free(ifname);
 	return (1);
 }
 
-static int
-emitdefs(fp)
-	register FILE *fp;
+/*
+ * Return (possibly in a static buffer) the name of the `source' for a
+ * file.  If we have `options source', or if the file is marked `always
+ * source', this is always the path from the `file' line; otherwise we
+ * get the .o from the obj-directory.
+ */
+static const char *
+srcpath(struct files *fi)
 {
-	register struct nvlist *nv;
-	register char *sp;
+#if 1
+	/* Always have source, don't support object dirs for kernel builds. */
+	return (fi->fi_path);
+#else
+	static char buf[MAXPATHLEN];
+
+	if (have_source || (fi->fi_flags & FI_ALWAYSSRC) != 0)
+		return (fi->fi_path);
+	if (objpath == NULL) {
+		error("obj-directory not set");
+		return (NULL);
+	}
+	(void)snprintf(buf, sizeof buf, "%s/%s.o", objpath, fi->fi_base);
+	return (buf);
+#endif
+}
+
+static int
+emitdefs(FILE *fp)
+{
+	struct nvlist *nv;
+	char *sp;
 
 	if (fputs("IDENT=", fp) < 0)
 		return (1);
 	sp = "";
 	for (nv = options; nv != NULL; nv = nv->nv_next) {
+		if (ht_lookup(defopttab, nv->nv_name) != NULL)
+			continue;
 		if (fprintf(fp, "%s-D%s", sp, nv->nv_name) < 0)
 		    return 1;
 		if (nv->nv_str)
@@ -162,6 +193,24 @@ emitdefs(fp)
 		return (1);
 	if (fprintf(fp, "PARAM=-DMAXUSERS=%d\n", maxusers) < 0)
 		return (1);
+	switch (*srcdir) {
+	case '/':
+		if (fprintf(fp, "S=\t%s\n", srcdir) < 0)
+			return (1);
+		break;
+	case '.':
+		if (fprintf(fp, "S!=\techo `/bin/pwd`/%s\n", srcdir) < 0)
+			return (1);
+		break;
+	default:
+		/*
+		 * libkern and libcompat "Makefile.inc"s want relative S
+		 * specification to begin with '.'.
+		 */
+		if (fprintf(fp, "S!=\techo .`/bin/pwd`/%s\n", srcdir) < 0)
+			return (1);
+		break;
+	}
 	for (nv = mkoptions; nv != NULL; nv = nv->nv_next)
 		if (fprintf(fp, "%s=%s\n", nv->nv_name, nv->nv_str) < 0)
 			return (1);
@@ -169,11 +218,11 @@ emitdefs(fp)
 }
 
 static int
-emitobjs(fp)
-	register FILE *fp;
+emitobjs(FILE *fp)
 {
-	register struct files *fi;
-	register int lpos, len, sp;
+	struct files *fi;
+	struct objects *oi;
+	int lpos, len, sp;
 
 	if (fputs("OBJS=", fp) < 0)
 		return (1);
@@ -194,48 +243,63 @@ emitobjs(fp)
 		lpos += len + 1;
 		sp = ' ';
 	}
-	if (lpos != 7 && putc('\n', fp) < 0)
+	for (oi = allobjects; oi != NULL; oi = oi->oi_next) {
+		if ((oi->oi_flags & OI_SEL) == 0)
+			continue;
+		len = strlen(oi->oi_path) + 3;
+		if (lpos + len > 72) {
+			if (fputs(" \\\n", fp) < 0)
+				return (1);
+			sp = '\t';
+			lpos = 7;
+		}
+		if (fprintf(fp, "%c$S/%s", sp, oi->oi_path) < 0)
+			return (1);
+		lpos += len + 1;
+		sp = ' ';
+	}
+	if (putc('\n', fp) < 0)
 		return (1);
 	return (0);
 }
 
 static int
-emitcfiles(fp)
-	FILE *fp;
+emitcfiles(FILE *fp)
 {
 
 	return (emitfiles(fp, 'c'));
 }
 
 static int
-emitsfiles(fp)
-	FILE *fp;
+emitsfiles(FILE *fp)
 {
 
 	return (emitfiles(fp, 's'));
 }
 
 static int
-emitfiles(fp, suffix)
-	register FILE *fp;
-	int suffix;
+emitfiles(FILE *fp, int suffix)
 {
-	register struct files *fi;
-	register struct config *cf;
-	register int lpos, len, sp;
+	struct files *fi;
+	struct config *cf;
+	int lpos, len, sp;
+	const char *fpath;
 	char swapname[100];
+	int uppersuffix = toupper(suffix);
 
-	if (fprintf(fp, "%cFILES=", toupper(suffix)) < 0)
+	if (fprintf(fp, "%cFILES=", uppersuffix) < 0)
 		return (1);
 	sp = '\t';
 	lpos = 7;
 	for (fi = allfiles; fi != NULL; fi = fi->fi_next) {
 		if ((fi->fi_flags & FI_SEL) == 0)
 			continue;
-		len = strlen(fi->fi_path);
-		if (fi->fi_path[len - 1] != suffix)
+		if ((fpath = srcpath(fi)) == NULL)
+			return (1);
+		len = strlen(fpath);
+		if (fpath[len - 1] != suffix && fpath[len - 1] != uppersuffix)
 			continue;
-		if (*fi->fi_path != '/')
+		if (*fpath != '/')
 			len += 3;	/* "$S/" */
 		if (lpos + len > 72) {
 			if (fputs(" \\\n", fp) < 0)
@@ -243,8 +307,8 @@ emitfiles(fp, suffix)
 			sp = '\t';
 			lpos = 7;
 		}
-		if (fprintf(fp, "%c%s%s", sp, *fi->fi_path != '/' ? "$S/" : "",
-		    fi->fi_path) < 0)
+		if (fprintf(fp, "%c%s%s", sp, *fpath != '/' ? "$S/" : "",
+		    fpath) < 0)
 			return (1);
 		lpos += len + 1;
 		sp = ' ';
@@ -257,12 +321,11 @@ emitfiles(fp, suffix)
 	if (suffix == 'c') {
 		for (cf = allcf; cf != NULL; cf = cf->cf_next) {
 			if (cf->cf_root == NULL)
-				(void)sprintf(swapname,
-				    "$S/arch/%s/%s/swapgeneric.c",
-				    machine, machine);
+				(void)snprintf(swapname, sizeof swapname,
+				    "$S/conf/swapgeneric.c");
 			else
-				(void)sprintf(swapname, "swap%s.c",
-				    cf->cf_name);
+				(void)snprintf(swapname, sizeof swapname,
+				    "./swap%s.c", cf->cf_name);
 			len = strlen(swapname);
 			if (lpos + len > 72) {
 				if (fputs(" \\\n", fp) < 0)
@@ -276,7 +339,7 @@ emitfiles(fp, suffix)
 			sp = ' ';
 		}
 	}
-	if (lpos != 7 && putc('\n', fp) < 0)
+	if (putc('\n', fp) < 0)
 		return (1);
 	return (0);
 }
@@ -285,27 +348,28 @@ emitfiles(fp, suffix)
  * Emit the make-rules.
  */
 static int
-emitrules(fp)
-	register FILE *fp;
+emitrules(FILE *fp)
 {
-	register struct files *fi;
-	register const char *cp;
+	struct files *fi;
+	const char *cp, *fpath;
 	int ch;
 	char buf[200];
 
 	for (fi = allfiles; fi != NULL; fi = fi->fi_next) {
 		if ((fi->fi_flags & FI_SEL) == 0)
 			continue;
+		if ((fpath = srcpath(fi)) == NULL)
+			return (1);
 		if (fprintf(fp, "%s.o: %s%s\n", fi->fi_base,
-		    *fi->fi_path != '/' ? "$S/" : "", fi->fi_path) < 0)
+		    *fpath != '/' ? "$S/" : "", fpath) < 0)
 			return (1);
 		if ((cp = fi->fi_mkrule) == NULL) {
-			cp = fi->fi_flags & FI_DRIVER ? "DRIVER" : "NORMAL";
-			ch = fi->fi_lastc;
+			cp = "NORMAL";
+			ch = fpath[strlen(fpath) - 1];
 			if (islower(ch))
 				ch = toupper(ch);
-			(void)sprintf(buf, "${%s_%c%s}", cp, ch,
-			    fi->fi_flags & FI_CONFIGDEP ? "_C" : "");
+			(void)snprintf(buf, sizeof buf, "${%s_%c}",
+			    cp, ch);
 			cp = buf;
 		}
 		if (fprintf(fp, "\t%s\n\n", cp) < 0)
@@ -320,11 +384,10 @@ emitrules(fp)
  * This function is not to be called `spurt'.
  */
 static int
-emitload(fp)
-	register FILE *fp;
+emitload(FILE *fp)
 {
-	register struct config *cf;
-	register const char *nm, *swname;
+	struct config *cf;
+	const char *nm, *swname;
 	int first;
 
 	if (fputs("all:", fp) < 0)
@@ -346,19 +409,18 @@ emitload(fp)
 				return (1);
 			first = 0;
 		}
-		if (fprintf(fp, "\n\
-\t${SYSTEM_LD_HEAD}\n\
-\t${SYSTEM_LD} swap%s.o\n\
-\t${SYSTEM_LD_TAIL}\n\
-\n\
-swap%s.o: ", swname, swname) < 0)
+		if (fprintf(fp, "\n"
+		    "\t${SYSTEM_LD_HEAD}\n"
+		    "\t${SYSTEM_LD} swap%s.o\n"
+		    "\t${SYSTEM_LD_TAIL}\n"
+		    "\n"
+		    "swap%s.o: ", swname, swname) < 0)
 			return (1);
 		if (cf->cf_root != NULL) {
 			if (fprintf(fp, "swap%s.c\n", nm) < 0)
 				return (1);
 		} else {
-			if (fprintf(fp, "$S/arch/%s/%s/swapgeneric.c\n",
-			    machine, machine) < 0)
+			if (fprintf(fp, "$S/conf/swapgeneric.c\n") < 0)
 				return (1);
 		}
 		if (fputs("\t${NORMAL_C}\n\n", fp) < 0)

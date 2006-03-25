@@ -1,4 +1,5 @@
-/*	$NetBSD: sys_machdep.c,v 1.7 1995/10/10 03:48:33 briggs Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.9 2004/05/20 09:20:42 kettenis Exp $	*/
+/*	$NetBSD: sys_machdep.c,v 1.9 1996/05/05 06:18:58 briggs Exp $	*/
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -69,123 +66,33 @@
  *	@(#)sys_machdep.c	7.7 (Berkeley) 5/7/91
  */
 
-#include "sys/param.h"
-#include "sys/systm.h"
-#include "sys/ioctl.h"
-#include "sys/file.h"
-#include "sys/time.h"
-#include "sys/proc.h"
-#include "sys/uio.h"
-#include "sys/kernel.h"
-#include "sys/mtio.h"
-#include "sys/buf.h"
-#include "sys/trace.h"
-#include "sys/mount.h"
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/ioctl.h>
+#include <sys/file.h>
+#include <sys/time.h>
+#include <sys/proc.h>
+#include <sys/signalvar.h>
+#include <sys/uio.h>
+#include <sys/kernel.h>
+#include <sys/mtio.h>
+#include <sys/buf.h>
+#include <sys/mount.h>
 
 #include <sys/syscallargs.h>
 
-#ifdef TRACE
-int	nvualarm;
-
-vtrace(p, v, retval)
+int
+sys_sysarch(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
-	register struct vtrace_args /* {
-		syscallarg(int) request;
-		syscallarg(int) value;
-	} */ *uap = v;
-	int vdoualarm();
-
-	switch (uap->request) {
-
-	case VTR_DISABLE:		/* disable a trace point */
-	case VTR_ENABLE:		/* enable a trace point */
-		if (uap->value < 0 || uap->value >= TR_NFLAGS)
-			return (EINVAL);
-		*retval = traceflags[uap->value];
-		traceflags[uap->value] = uap->request;
-		break;
-
-	case VTR_VALUE:		/* return a trace point setting */
-		if (uap->value < 0 || uap->value >= TR_NFLAGS)
-			return (EINVAL);
-		*retval = traceflags[uap->value];
-		break;
-
-	case VTR_UALARM:	/* set a real-time ualarm, less than 1 min */
-		if (uap->value <= 0 || uap->value > 60 * hz || nvualarm > 5)
-			return (EINVAL);
-		nvualarm++;
-		timeout(vdoualarm, (caddr_t)p->p_pid, uap->value);
-		break;
-
-	case VTR_STAMP:
-		trace(TR_STAMP, uap->value, p->p_pid);
-		break;
-	}
-	return (0);
-}
-
-vdoualarm(arg)
-	int arg;
-{
-	register struct proc *p;
-
-	p = pfind(arg);
-	if (p)
-		psignal(p, 16);
-	nvualarm--;
-}
-#endif
-
-#include "machine/cpu.h"
-
-/* XXX should be in an include file somewhere */
-#define CC_PURGE	1
-#define CC_FLUSH	2
-#define CC_IPURGE	4
-#define CC_EXTPURGE	0x80000000
-/* XXX end should be */
-
-/*ARGSUSED1*/
-cachectl(req, addr, len)
-	int req;
-	caddr_t	addr;
-	int len;
-{
-	int error = 0;
-
-	switch (req) {
-	case CC_EXTPURGE|CC_PURGE:
-	case CC_EXTPURGE|CC_FLUSH:
-	case CC_PURGE:
-	case CC_FLUSH:
-		DCIU();
-		break;
-	case CC_EXTPURGE|CC_IPURGE:
-		DCIU();
-		/* fall into... */
-	case CC_IPURGE:
-		ICIA();
-		break;
-	default:
-		error = EINVAL;
-		break;
-	}
-	return(error);
-}
-
-int sys_sysarch(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
-{
-	struct sysarch_args /* {
+#if 0 /* unused */
+	struct sys_sysarch_args /* {
 		syscallarg(int) op; 
 		syscallarg(char *) parms;
 	} */ *uap = v;
+#endif
 
 	return ENOSYS;
 }

@@ -1,210 +1,195 @@
+/*	$OpenBSD: pcctwo.c,v 1.26 2004/07/30 19:02:06 miod Exp $ */
+/*
+ * Copyright (c) 1995 Theo de Raadt
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * VME1x7 PCC2 chip
+ */
 #include <sys/param.h>
+#include <sys/conf.h>
+#include <sys/ioctl.h>
+#include <sys/proc.h>
+#include <sys/user.h>
+#include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/systm.h>
+#include <sys/kernel.h>
+#include <sys/syslog.h>
+#include <sys/fcntl.h>
 #include <sys/device.h>
-#include <machine/cpu.h>
+
 #include <machine/autoconf.h>
+#include <machine/cpu.h>
+
+#include <dev/cons.h>
 
 #include <mvme88k/dev/pcctworeg.h>
+#include <mvme88k/dev/pcctwovar.h>
 
-struct pcctwosoftc {
-	struct device		sc_dev;
-	volatile struct pcc2reg *sc_pcc2reg;
-};
+#include "bussw.h"
 
-int	pcctwomatch	__P((struct device *, void *, void *));
-int	pcctwoscan	__P((struct device *, void *, void *));
-void	pcctwoattach	__P((struct device *, struct device *, void *));
+void	pcctwoattach(struct device *, struct device *, void *);
+int	pcctwomatch(struct device *, void *, void *);
 
-#ifdef MVME187
-void	setupiackvectors __P((void));
-#endif /* MVME187 */
-
-struct cfattach pcctwo_ca = { 
-        sizeof(struct pcctwosoftc), pcctwomatch, pcctwoattach
+struct cfattach pcctwo_ca = {
+	sizeof(struct pcctwosoftc), pcctwomatch, pcctwoattach
 };
 
 struct cfdriver pcctwo_cd = {
-        NULL, "pcctwo", DV_DULL, 0
-}; 
+	NULL, "pcctwo", DV_DULL
+};
 
-/*ARGSUSED*/
+int	pcctwo_print(void *args, const char *bus);
+int	pcctwo_scan(struct device *parent, void *child, void *args);
+
 int
-pcctwomatch(struct device *parent, void *self, void *aux)
+pcctwomatch(parent, vcf, args)
+	struct device *parent;
+	void *vcf, *args;
 {
-	int 		ret;
-	u_char		id, rev; 
-	caddr_t		base;
-	struct confargs *ca = aux;
-	struct cfdata *cf = self;
-	
-#if 0
-	if (cputyp != CPU_167 && cputyp != CPU_166
-#ifdef MVME187
-		&& cputyp != CPU_187
+	struct confargs *ca = args;
+	bus_space_handle_t ioh;
+	int rc;
+	u_int8_t chipid;
+
+	/* Bomb if wrong cpu */
+	switch (brdtyp) {
+	case BRD_187:
+	case BRD_8120:
+	case BRD_197:
+		break;
+	default:
+		return 0;
+	}
+
+	if (bus_space_map(ca->ca_iot, ca->ca_paddr + PCC2_BASE, PCC2_SIZE,
+	    0, &ioh) != 0)
+		return 0;
+	rc = badvaddr((vaddr_t)bus_space_vaddr(ca->ca_iot, ioh), 4);
+	if (rc == 0) {
+		chipid = bus_space_read_1(ca->ca_iot, ioh, PCCTWO_CHIPID);
+		if (chipid != PCC2_ID) {
+#ifdef DEBUG
+			printf("==> pcctwo: wrong chip id %x.\n", chipid);
+			rc = -1;
 #endif
-		)
-	{
-		return 0;
+		}
 	}
-#endif /* 0 */
-	if (cputyp != CPU_187) {
-		return 0;
-	}
-	
-	/* 
-	 * If bus or name do not match, fail.
-	 */
-	if (ca->ca_bustype != BUS_MAIN ||
-		strcmp(cf->cf_driver->cd_name, "pcctwo")) {
-		return 0;
-	}
+	bus_space_unmap(ca->ca_iot, ioh, PCC2_SIZE);
 
-	if ((base = (caddr_t)cf->cf_loc[0]) == (caddr_t)-1) {
-		return 0;
-	}
-
-	id  = badpaddr(base, 1);
-	rev = badpaddr(base + 1, 1);
-
-	if (id != PCC2_CHIP_ID || rev != PCC2_CHIP_REV) {
-		return 0;
-	}
-
-	ca->ca_size = PCC2_SIZE;
-	ca->ca_paddr = base;
-
-	return 1;
+	return rc == 0;
 }
 
-int
-pcctwoprint(void *aux, char *parent)
-{
-	struct confargs *ca = aux;
-
-	/*
-	 * We call pcctwoprint() via config_attach(). Parent
-	 * will always be null and config_attach() would have already
-	 * printed "nvram0 at pcctwo0".
-	 */
-	printf(" addr %x size %x", ca->ca_paddr, ca->ca_size);
-	if (ca->ca_ipl != -1) {
-		printf(" ipl %x", ca->ca_ipl);
-	}
-
-	return (UNCONF);
-}
-
-/*ARGSUSED*/
-int
-pcctwoscan(struct device *parent, void *self, void *aux)
-{
-	struct confargs ca;
-	struct cfdata *cf = self;
-	struct pcctwosoftc *sc = (struct pcctwosoftc *)parent;
-
-	/*
-	 * Pcctwoscan gets called by config_search() for each
-	 * child of parent (pcctwo) specified in ioconf.c.
-	 * Fill in the bus type to be PCCTWO and call the child's
-	 * match routine. If the child's match returns 1, then
-	 * we need to allocate device memory, set it in confargs
-	 * and call config_attach(). This, in turn, will call the
-	 * child's attach.
-	 */
-
-	ca.ca_bustype = BUS_PCCTWO;
-	
-	if ((*cf->cf_attach->ca_match)(parent, cf, &ca) == 0)
-		return 0;
-	
-	/*
-	 * The child would have fixed up ca to reflect what its
-	 * requirements are.
-	 */
-	
-	if (cf->cf_loc[2] != ca.ca_ipl) {
-		printf("Changing ipl %x specified in ioconf.c to %x for %s\n",
-			cf->cf_loc[2], ca.ca_ipl, cf->cf_driver->cd_name);
-	}
-
-	/*
-	 * If the size specified by the child is 0, don't map
-	 * any IO space, but pass in the address of pcc2reg as vaddr.
-	 * This is for clock and parallel port which don't have a
-	 * separate address space by themselves but use pcc2's register
-	 * block.
-	 */
-	if (ca.ca_size == 0) {
-		/*
-		 * pcc2regs addr
-		 */
-#if 0
-		ca.ca_vaddr = ((struct confargs *)aux)->ca_vaddr;
-#endif /* 0 */
-		ca.ca_vaddr = (caddr_t)sc->sc_pcc2reg;
-
-	} else  {
-		ca.ca_vaddr = ca.ca_paddr;
-	}
-
-#if 0
-	ca.ca_parent = ((struct confargs *)aux)->ca_vaddr;
-#endif /* 0 */
-	ca.ca_parent = (caddr_t)sc->sc_pcc2reg;
-
-	/*
-	 * Call child's attach using config_attach().
-	 */
-	config_attach(parent, cf, &ca, pcctwoprint);
-	return 1;
-}
-
-/*
- * This function calls the match routine of the configured children
- * in turn. For each configured child, map the device address into
- * iomap space and then call config_attach() to attach the child.
- */
-
-/* ARGSUSED */
 void
-pcctwoattach(struct device *parent, struct device *self, void *aux)
+pcctwoattach(parent, self, args)
+	struct device *parent, *self;
+	void *args;
 {
-	struct pcctwosoftc	*sc = (struct pcctwosoftc *)self;
-	struct confargs		*ca = aux;
-	caddr_t	base;
+	struct confargs *ca = args;
+	struct pcctwosoftc *sc = (struct pcctwosoftc *)self;
+	bus_space_handle_t ioh;
+	u_int8_t genctl;
 
-	if (self->dv_unit > 0) {
-		printf(" unsupported\n");
+	sc->sc_base = ca->ca_paddr + PCC2_BASE;
+
+	if (bus_space_map(ca->ca_iot, sc->sc_base, PCC2_SIZE, 0, &ioh) != 0) {
+		printf(": can't map registers!\n");
 		return;
 	}
 
-	base = ca->ca_vaddr;
+	sc->sc_iot = ca->ca_iot;
+	sc->sc_ioh = ioh;
 
-	printf(": PCCTWO id 0x%2x rev 0x%2x\n",
-		*(u_char *)base, *((u_char *)base + 1));
+	bus_space_write_1(sc->sc_iot, ioh, PCCTWO_VECBASE, PCC2_VECBASE);
+	genctl = bus_space_read_1(sc->sc_iot, ioh, PCCTWO_GENCTL);
+#if NBUSSW > 0
+	if (ca->ca_bustype == BUS_BUSSWITCH) {
+                /* Make sure the bus is mc68040 compatible */
+		genctl |= PCC2_GENCTL_C040;
+	}
+#endif
+	genctl |= PCC2_GENCTL_IEN;	/* global irq enable */
+	bus_space_write_1(sc->sc_iot, ioh, PCCTWO_GENCTL, genctl);
 
-	/*
-	 * mainbus driver would have mapped Pcc2 at base. Save
-	 * the address in pcctwosoftc.
-	 */
-	sc->sc_pcc2reg = (struct pcc2reg *)base;
+	printf(": rev %d\n",
+	    bus_space_read_1(sc->sc_iot, ioh, PCCTWO_CHIPREV));
 
-	/*
-	 * Set pcc2intr_mask and pcc2intr_ipl.
-	 */
-	pcc2intr_ipl = (u_char *)&(sc->sc_pcc2reg->pcc2_ipl);
-	pcc2intr_mask = (u_char *)&(sc->sc_pcc2reg->pcc2_imask);
+	config_search(pcctwo_scan, self, args);
+}
 
-#ifdef MVME187
-	/*
-	 * Get mappings for iack vectors. This doesn't belong here
-	 * but is more closely related to pcc than anything I can
-	 * think of. (could probably do it in locore.s).
-	 */
-	
-	setupiackvectors();
-#endif /* MVME187 */
+int
+pcctwo_print(args, bus)
+	void *args;
+	const char *bus;
+{
+	struct confargs *ca = args;
 
-	(void)config_search(pcctwoscan, self, aux);
+	if (ca->ca_offset != -1)
+		printf(" offset 0x%x", ca->ca_offset);
+	if (ca->ca_ipl > 0)
+		printf(" ipl %d", ca->ca_ipl);
+	return (UNCONF);
+}
+
+int
+pcctwo_scan(parent, child, args)
+	struct device *parent;
+	void *child, *args;
+{
+	struct cfdata *cf = child;
+	struct confargs oca, *ca = args;
+
+	bzero(&oca, sizeof oca);
+	oca.ca_iot = ca->ca_iot;
+	oca.ca_dmat = ca->ca_dmat;
+	oca.ca_offset = cf->cf_loc[0];
+	oca.ca_ipl = cf->cf_loc[1];
+	if (oca.ca_offset != -1) {
+		/* offset locator for pcctwo children is relative to segment */
+		oca.ca_paddr = ca->ca_paddr + oca.ca_offset;
+	} else {
+		oca.ca_paddr = -1;
+	}
+	oca.ca_bustype = BUS_PCCTWO;
+	oca.ca_name = cf->cf_driver->cd_name;
+	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0)
+		return (0);
+	config_attach(parent, cf, &oca, pcctwo_print);
+	return (1);
+}
+
+/*
+ * PCC2 interrupts land in a PCC2_NVEC sized hole starting at PCC2_VECBASE
+ */
+int
+pcctwointr_establish(int vec, struct intrhand *ih, const char *name)
+{
+#ifdef DIAGNOSTIC
+	if (vec < 0 || vec >= PCC2_NVEC)
+		panic("pcctwo_establish: illegal vector 0x%x", vec);
+#endif
+
+	return intr_establish(PCC2_VECBASE + vec, ih, name);
 }

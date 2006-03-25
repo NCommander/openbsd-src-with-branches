@@ -37,14 +37,14 @@
 #define __KRB5_H__
 
 #include <time.h>
-#include <krb5-types.h>
+#include <kerberosV/krb5-types.h>
 
-#include <asn1_err.h>
-#include <krb5_err.h>
-#include <heim_err.h>
-#include <k524_err.h>
+#include <kerberosV/asn1_err.h>
+#include <kerberosV/krb5_err.h>
+#include <kerberosV/heim_err.h>
+#include <kerberosV/k524_err.h>
 
-#include <krb5_asn1.h>
+#include <kerberosV/krb5_asn1.h>
 
 /* name confusion with MIT */
 #ifndef KRB5KDC_ERR_KEY_EXP
@@ -677,7 +677,7 @@ struct credentials; /* this is to keep the compiler happy */
 struct getargs;
 struct sockaddr;
 
-#include <krb5-protos.h>
+#include <kerberosV/krb5-protos.h>
 
 #endif /* __KRB5_H__ */
 

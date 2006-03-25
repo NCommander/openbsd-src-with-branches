@@ -1,5 +1,4 @@
-/*	$NetBSD: gets.c,v 1.7 1995/02/02 02:09:57 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,23 +31,16 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)gets.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: gets.c,v 1.7 1995/02/02 02:09:57 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
 
-__warn_references(gets, "warning: this program uses gets(), which is unsafe.");
+__warn_references(gets,
+    "warning: gets() is very unsafe; consider using fgets()");
 
 char *
-gets(buf)
-	char *buf;
+gets(char *buf)
 {
-	register int c;
-	register char *s;
+	int c;
+	char *s;
 
 	for (s = buf; (c = getchar()) != '\n';)
 		if (c == EOF)
@@ -62,6 +50,6 @@ gets(buf)
 				break;
 		else
 			*s++ = c;
-	*s = 0;
+	*s = '\0';
 	return (buf);
 }

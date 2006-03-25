@@ -1,3 +1,4 @@
+/*	$OpenBSD: vars.c,v 1.5 2003/09/20 18:15:32 millert Exp $	*/
 /*	$NetBSD: vars.c,v 1.3 1994/12/08 09:31:19 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)vars.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: vars.c,v 1.3 1994/12/08 09:31:19 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: vars.c,v 1.5 2003/09/20 18:15:32 millert Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -78,7 +75,7 @@ value_t vtable[] = {
 	{ "raise",	BOOL,			(READ|WRITE)<<PUBLIC,
 	  "ra",		(char *)FALSE },
 	{ "raisechar",	CHAR,			(READ|WRITE)<<PUBLIC,
-	  "rc",		(char *)CTRL('a') },
+	  "rc",		NOSTR },
 	{ "record",	STRING|INIT|IREMOTE,	(READ|WRITE)<<PUBLIC,
 	  "rec",	(char *)&RE },
 	{ "remote",	STRING|INIT|IREMOTE,	READ<<PUBLIC,
@@ -113,5 +110,7 @@ value_t vtable[] = {
 	  "le",		(char *)FALSE },
 	{ "parity",	STRING|INIT|IREMOTE,	(READ|WRITE)<<PUBLIC,
 	  "par",	(char *)&PA },
+	{ "hardwareflow", BOOL,			(READ|WRITE)<<PUBLIC,
+	  "hf",		(char *)FALSE },
 	{ NOSTR, NULL, NULL, NOSTR, NOSTR }
 };

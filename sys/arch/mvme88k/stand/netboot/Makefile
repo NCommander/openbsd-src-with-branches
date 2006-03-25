@@ -1,31 +1,43 @@
-#	$Id: Makefile,v 1.2 1995/11/07 08:50:55 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2003/10/01 22:50:29 miod Exp $
 
-RELOC=0x3F0000
+SIZE?=	size
+STRIP?= strip
 
 S=	${.CURDIR}/../../../..
-DEFS= -DSTANDALONE -DSUN_BOOTPARAMS
-INCPATH=-I${.CURDIR} -I${.CURDIR}/../libsa -I${S} -I${S}/lib/libsa
-CFLAGS=	-O2 ${INCPATH} ${DEFS} ${COPTS}
+DEFS= -DSUN_BOOTPARAMS 
+#-DNETIF_DEBUG
+INCPATH=-I${.CURDIR} -I${.CURDIR}/../libsa -I${.CURDIR}/../libbug \
+	-I${S} -I${S}/lib/libsa
+CFLAGS+=${DEFS} ${INCPATH} ${COPTS}
+CLEANFILES+=netboot netboot.bin
 
-.include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
-.PATH: ${S}/arch/${MACHINE}/stand/libsa
-SRTOBJ= SRT0.o SRT1.o
+.include "${S}/arch/mvme88k/stand/bugcrt/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libbug/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libsa/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libz/Makefile.inc"
 
-SRCS=   boot.c conf.c version.c dev_net.c
-SRCS+=	if_ie.c if_le.c
-OBJS=  ${SRTOBJ} ${SRCS:S/.c/.o/g}
+SRCS=   boot.c conf.c version.c devopen.c dev_net.c
+SRCS+=	if_ie.c 
+#SRCS+=  if_le.c
+OBJS=  ${SRCS:S/.c/.o/g}
+LIBS= ${LIBSA} ${LIBBUG} ${LIBZ}
+LDFLAGS+= -s -N -T ${STAGE2_RELOC} 
+#LDFLAGS+= -nostdlib -s -N -Ttext ${RELOC}
 
 all:	netboot.bin
 
-netboot: ${OBJS} ${LIBSA}
-	${LD} -s -N -T ${RELOC} -e start -o $@ ${OBJS} ${LIBSA}
-	@size $@
+netboot: ${OBJS} ${SINGLE} ${LIBS}
+	${LD} ${LDFLAGS} -o $@ \
+		${SINGLE} ${OBJS} ${LIBS} `cc -print-libgcc-file-name`
+#	@${SIZE} $@
 
 netboot.bin: netboot
+	${STRIP} netboot
 	dd ibs=32 skip=1 if=netboot of=$@
+#	dd ibs=38 skip=1 if=netboot of=$@
 
 install:
-	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 	  netboot.bin ${DESTDIR}${MDEC_DIR}/netboot
 
 .include <bsd.prog.mk>

@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -77,11 +73,11 @@ static char sccsid[] = "@(#)gamma.c	8.1 (Berkeley) 6/4/93";
  *	Maximum observed error < 4ulp in 1,000,000 trials.
  */
 
-static double neg_gam __P((double));
-static double small_gam __P((double));
-static double smaller_gam __P((double));
-static struct Double large_gam __P((double));
-static struct Double ratfun_gam __P((double, double));
+static double neg_gam(double);
+static double small_gam(double);
+static double smaller_gam(double);
+static struct Double large_gam(double);
+static struct Double ratfun_gam(double, double);
 
 /*
  * Rational approximation, A0 + x*x*P(x)/Q(x), on the interval
@@ -127,7 +123,7 @@ static int endian;
  * TRUNC sets trailing bits in a floating-point number to zero.
  * is a temporary variable.
  */
-#if defined(vax) || defined(tahoe)
+#if defined(__vax__) || defined(tahoe)
 #define _IEEE		0
 #define TRUNC(x)	x = (double) (float) (x)
 #else

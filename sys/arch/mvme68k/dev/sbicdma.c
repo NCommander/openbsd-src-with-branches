@@ -1,4 +1,4 @@
-/*	$NetBSD$	*/
+/*	$OpenBSD: sbicdma.c,v 1.12 2004/09/29 19:17:40 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -40,7 +35,7 @@
 #include <sys/device.h>
 #include <sys/proc.h>
 #include <sys/conf.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
@@ -51,16 +46,16 @@
 #include <mvme68k/dev/sbicvar.h>
 #include <mvme68k/dev/dmavar.h>
 
-void	sbicdmaattach	__P((struct device *, struct device *, void *));
-int	sbicdmamatch	__P((struct device *, void *, void *));
-int	sbicdmaprint	__P((void *auxp, char *));
+void	sbicdmaattach(struct device *, struct device *, void *);
+int	sbicdmamatch(struct device *, void *, void *);
+int	sbicdmaprint(void *auxp, const char *);
 
-void	sbicdma_dmafree	__P((struct sbic_softc *));
-void	sbicdma_dmastop	__P((struct sbic_softc *));
-int	sbicdma_dmanext	__P((struct sbic_softc *));
-int	sbicdma_dmago	__P((struct sbic_softc *, char *, int, int));
-int	sbicdma_dmaintr	__P((struct sbic_softc *));
-int	sbicdma_scintr	__P((struct sbic_softc *));
+void	sbicdma_dmafree(struct sbic_softc *);
+void	sbicdma_dmastop(struct sbic_softc *);
+int	sbicdma_dmanext(struct sbic_softc *);
+int	sbicdma_dmago(struct sbic_softc *, char *, int, int);
+int	sbicdma_dmaintr(struct sbic_softc *);
+int	sbicdma_scintr(struct sbic_softc *);
 
 struct scsi_adapter sbicdma_scsiswitch = {
 	sbic_scsicmd,
@@ -106,10 +101,8 @@ sbicdmaattach(parent, self, args)
 	void *args;
 {
 	struct	sbic_softc *sc = (struct sbic_softc *)self;
-	struct	pccreg *pcc;
 	struct	confargs *ca = args;
 
-	sc->sc_cregs = (struct pccreg *)ca->ca_master;
 	sc->sc_dmafree = sbicdma_dmafree;
 	sc->sc_dmago = sbicdma_dmago;
 	sc->sc_dmanext = sbicdma_dmanext;
@@ -133,21 +126,17 @@ sbicdmaattach(parent, self, args)
 	sc->sc_ih.ih_fn = sbicdma_scintr;
 	sc->sc_ih.ih_arg = sc;
 	sc->sc_ih.ih_ipl = ca->ca_ipl;
-	pccintr_establish(PCCV_SBIC, &sc->sc_ih);
+	pccintr_establish(PCCV_SBIC, &sc->sc_ih, self->dv_xname);
 
 	sc->sc_dmaih.ih_fn = sbicdma_dmaintr;
 	sc->sc_dmaih.ih_arg = sc;
 	sc->sc_dmaih.ih_ipl = ca->ca_ipl;
-	pccintr_establish(PCCV_DMA, &sc->sc_dmaih);
+	pccintr_establish(PCCV_DMA, &sc->sc_dmaih, self->dv_xname);
 
-	pcc = (struct pccreg *)sc->sc_cregs;
-	pcc->pcc_dmairq = sc->sc_dmaih.ih_ipl | PCC_IRQ_INT;
-	pcc->pcc_sbicirq = sc->sc_ih.ih_ipl | PCC_SBIC_RESETIRQ;
+	sys_pcc->pcc_dmairq = sc->sc_dmaih.ih_ipl | PCC_IRQ_INT;
+	sys_pcc->pcc_sbicirq = sc->sc_ih.ih_ipl | PCC_SBIC_RESETIRQ;
 
 	sbicreset(sc);
-
-	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
-	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_dmaintrcnt);
 
 	config_found(self, &sc->sc_link, sbicdmaprint);
 }
@@ -157,8 +146,8 @@ sbicdmaattach(parent, self, args)
  */
 int
 sbicdmaprint(auxp, pnp)
-	void	*auxp;
-	char	*pnp;
+	void		*auxp;
+	const char	*pnp;
 {
 	if (pnp == NULL)
 		return (UNCONF);
@@ -171,11 +160,10 @@ sbicdma_dmago(sc, va, count, flags)
 	char	*va;
 	int	count, flags;
 {
-	struct	pccreg *pcc = (struct pccreg *)sc->sc_cregs;
 	u_char	csr;
 	u_long	pa;
 
-	pa = (u_long)pmap_extract(pmap_kernel(), (vm_offset_t)va);
+	pmap_extract(pmap_kernel(), (vaddr_t)va, &pa);
 #ifdef DEBUG
 	if (sbicdma_debug)
 		printf("%s: dmago: va 0x%x pa 0x%x cnt %d flags %x\n",
@@ -183,20 +171,20 @@ sbicdma_dmago(sc, va, count, flags)
 #endif
 
 	sc->sc_flags |= SBICF_INTR;
-	pcc->pcc_dmadaddr = (u_long)pa;
+	sys_pcc->pcc_dmadaddr = (u_long)pa;
 	if (count & PCC_DMABCNT_CNTMASK) {
 		printf("%s: dma count 0x%x too large\n",
 		    sc->sc_dev.dv_xname, count);
 		return (0);
 	}
-	pcc->pcc_dmabcnt = (PCC_DMABCNT_MAKEFC(FC_USERD)) |
+	sys_pcc->pcc_dmabcnt = (PCC_DMABCNT_MAKEFC(FC_USERD)) |
 	    (count & PCC_DMABCNT_CNTMASK);
 
-	/* make certain interupts are disabled first, and reset */
-	pcc->pcc_dmairq = sc->sc_dmaih.ih_ipl | PCC_IRQ_IEN | PCC_IRQ_INT;
-	pcc->pcc_sbicirq = sc->sc_ih.ih_ipl | PCC_SBIC_RESETIRQ | PCC_IRQ_IEN;
-	pcc->pcc_dmacsr = 0;
-	pcc->pcc_dmacsr = PCC_DMACSR_DEN |
+	/* make certain interrupts are disabled first, and reset */
+	sys_pcc->pcc_dmairq = sc->sc_dmaih.ih_ipl | PCC_IRQ_IEN | PCC_IRQ_INT;
+	sys_pcc->pcc_sbicirq = sc->sc_ih.ih_ipl | PCC_SBIC_RESETIRQ | PCC_IRQ_IEN;
+	sys_pcc->pcc_dmacsr = 0;
+	sys_pcc->pcc_dmacsr = PCC_DMACSR_DEN |
 	    ((flags & DMAGO_READ) == 0) ? PCC_DMACSR_TOSCSI : 0;
 
 	return (sc->sc_tcnt);
@@ -206,23 +194,23 @@ int
 sbicdma_dmaintr(sc)
 	struct sbic_softc *sc;
 {
-	struct	pccreg *pcc = (struct pccreg *)sc->sc_cregs;
 	u_char	stat;
 	int	ret = 0;
 
 	/* DMA done */
-	stat = pcc->pcc_dmacsr;
+	stat = sys_pcc->pcc_dmacsr;
+#ifdef DEBUG
 printf("dmaintr%d ", stat);
+#endif
 	if (stat & PCC_DMACSR_DONE) {
-		pcc->pcc_dmacsr = 0;
-		pcc->pcc_dmairq = 0;	/* ack and remove intr */
+		sys_pcc->pcc_dmacsr = 0;
+		sys_pcc->pcc_dmairq = 0;	/* ack and remove intr */
 		if (stat & PCC_DMACSR_ERR8BIT) {
 			printf("%s: 8 bit error\n", sc->sc_dev.dv_xname);
 		}
 		if (stat & PCC_DMACSR_DMAERRDATA) {
 			printf("%s: DMA bus error\n", sc->sc_dev.dv_xname);
 		}
-		sc->sc_dmaintrcnt.ev_count++;
 		return (1);
 	}
 	return (0);
@@ -232,21 +220,21 @@ int
 sbicdma_scintr(sc)
 	struct sbic_softc *sc;
 {
-	struct	pccreg *pcc = (struct pccreg *)sc->sc_cregs;
 	u_char	stat;
 	int	ret = 0;
 
+#ifdef DEBUG
 printf("scintr%d ", stat);
-	stat = pcc->pcc_sbicirq;
+#endif
+	stat = sys_pcc->pcc_sbicirq;
 	if (stat & PCC_SBIC_RESETIRQ) {
 		printf("%s: scintr: a scsi device pulled reset\n",
 		    sc->sc_dev.dv_xname);
-		pcc->pcc_sbicirq = pcc->pcc_sbicirq | PCC_SBIC_RESETIRQ;
+		sys_pcc->pcc_sbicirq = sys_pcc->pcc_sbicirq | PCC_SBIC_RESETIRQ;
 	} else if (stat & PCC_IRQ_INT) {
-		pcc->pcc_sbicirq = 0;
+		sys_pcc->pcc_sbicirq = 0;
 		sbicintr(sc);
 		ret = 1;
-		sc->sc_intrcnt.ev_count++;
 	}
 	return (ret);
 }
@@ -255,7 +243,9 @@ void
 sbicdma_dmastop(sc)
 	struct sbic_softc *sc;
 {
+#ifdef DEBUG
 	printf("sbicdma_dmastop called\n");
+#endif
 	/* XXX do nothing */
 }
 
@@ -263,16 +253,18 @@ int
 sbicdma_dmanext(sc)
 	struct sbic_softc *sc;
 {
+#ifdef DEBUG
 	printf("sbicdma_dmanext called\n");
+#endif
 }
 
 void
 sbicdma_dmafree(sc)
 	struct sbic_softc *sc;
 {
-	struct pccreg *pcc = (struct pccreg *)sc->sc_cregs;
-
+#ifdef DEBUG
 	printf("sbicdma_dmafree called\n");
-	/* make certain interupts are disabled first, reset */
-	pcc->pcc_dmairq = 0;
+#endif
+	/* make certain interrupts are disabled first, reset */
+	sys_pcc->pcc_dmairq = 0;
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: bpf_filter.c,v 1.11 1995/04/22 13:26:39 cgd Exp $	*/
+/*	$OpenBSD: bpf_filter.c,v 1.16 2005/12/08 08:49:30 otto Exp $	*/
+/*	$NetBSD: bpf_filter.c,v 1.12 1996/02/13 22:00:00 christos Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,13 +40,13 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
-
-#ifdef sun
-#include <netinet/in.h>
+#ifndef _KERNEL
+#include <stdlib.h>
+#include "pcap.h"
 #endif
 
-#if defined(sparc) || defined(mips) || defined(ibm032) || \
-    (defined(__NetBSD__) && !defined(UNALIGNED_ACCESS))
+#include <sys/endian.h>
+#ifdef __STRICT_ALIGNMENT
 #define BPF_ALIGN
 #endif
 
@@ -82,18 +79,24 @@
 	} \
 }
 
-static int
-m_xword(m, k, err)
-	register struct mbuf *m;
-	register int k, *err;
+extern int bpf_maxbufsize;
+
+int	bpf_m_xword(struct mbuf *, u_int32_t, int *);
+int	bpf_m_xhalf(struct mbuf *, u_int32_t, int *);
+
+int
+bpf_m_xword(m, k, err)
+	struct mbuf *m;
+	u_int32_t k;
+	int *err;
 {
-	register int len;
-	register u_char *cp, *np;
-	register struct mbuf *m0;
+	int len;
+	u_char *cp, *np;
+	struct mbuf *m0;
 
 	MINDEX(len, m, k);
 	cp = mtod(m, u_char *) + k;
-	if (len - k >= 4) {
+	if (len >= k + 4) {
 		*err = 0;
 		return EXTRACT_LONG(cp);
 	}
@@ -118,18 +121,19 @@ m_xword(m, k, err)
 	return 0;
 }
 
-static int
-m_xhalf(m, k, err)
-	register struct mbuf *m;
-	register int k, *err;
+int
+bpf_m_xhalf(m, k, err)
+	struct mbuf *m;
+	u_int32_t k;
+	int *err;
 {
-	register int len;
-	register u_char *cp;
-	register struct mbuf *m0;
+	int len;
+	u_char *cp;
+	struct mbuf *m0;
 
 	MINDEX(len, m, k);
 	cp = mtod(m, u_char *) + k;
-	if (len - k >= 2) {
+	if (len >= k + 2) {
 		*err = 0;
 		return EXTRACT_SHORT(cp);
 	}
@@ -153,13 +157,13 @@ m_xhalf(m, k, err)
  */
 u_int
 bpf_filter(pc, p, wirelen, buflen)
-	register struct bpf_insn *pc;
-	register u_char *p;
+	struct bpf_insn *pc;
+	u_char *p;
 	u_int wirelen;
-	register u_int buflen;
+	u_int buflen;
 {
-	register u_int32_t A, X;
-	register int k;
+	u_int32_t A = 0, X = 0;
+	u_int32_t k;
 	int32_t mem[BPF_MEMWORDS];
 
 	if (pc == 0)
@@ -167,10 +171,6 @@ bpf_filter(pc, p, wirelen, buflen)
 		 * No filter means accept all.
 		 */
 		return (u_int)-1;
-#ifdef lint
-	A = 0;
-	X = 0;
-#endif
 	--pc;
 	while (1) {
 		++pc;
@@ -196,7 +196,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xword((struct mbuf *)p, k, &merr);
+				A = bpf_m_xword((struct mbuf *)p, k, &merr);
 				if (merr != 0)
 					return 0;
 				continue;
@@ -215,7 +215,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xhalf((struct mbuf *)p, k, &merr);
+				A = bpf_m_xhalf((struct mbuf *)p, k, &merr);
 				continue;
 #else
 				return 0;
@@ -228,8 +228,8 @@ bpf_filter(pc, p, wirelen, buflen)
 			k = pc->k;
 			if (k >= buflen) {
 #ifdef _KERNEL
-				register struct mbuf *m;
-				register int len;
+				struct mbuf *m;
+				int len;
 
 				if (buflen != 0)
 					return 0;
@@ -260,7 +260,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xword((struct mbuf *)p, k, &merr);
+				A = bpf_m_xword((struct mbuf *)p, k, &merr);
 				if (merr != 0)
 					return 0;
 				continue;
@@ -279,7 +279,7 @@ bpf_filter(pc, p, wirelen, buflen)
 
 				if (buflen != 0)
 					return 0;
-				A = m_xhalf((struct mbuf *)p, k, &merr);
+				A = bpf_m_xhalf((struct mbuf *)p, k, &merr);
 				if (merr != 0)
 					return 0;
 				continue;
@@ -294,14 +294,14 @@ bpf_filter(pc, p, wirelen, buflen)
 			k = X + pc->k;
 			if (k >= buflen) {
 #ifdef _KERNEL
-				register struct mbuf *m;
-				register int len;
+				struct mbuf *m;
+				int len;
 
 				if (buflen != 0)
 					return 0;
 				m = (struct mbuf *)p;
 				MINDEX(len, m, k);
-				A = mtod(m, char *)[k];
+				A = mtod(m, u_char *)[k];
 				continue;
 #else
 				return 0;
@@ -314,14 +314,14 @@ bpf_filter(pc, p, wirelen, buflen)
 			k = pc->k;
 			if (k >= buflen) {
 #ifdef _KERNEL
-				register struct mbuf *m;
-				register int len;
+				struct mbuf *m;
+				int len;
 
 				if (buflen != 0)
 					return 0;
 				m = (struct mbuf *)p;
 				MINDEX(len, m, k);
-				X = (mtod(m, char *)[k] & 0xf) << 2;
+				X = (mtod(m, u_char *)[k] & 0xf) << 2;
 				continue;
 #else
 				return 0;
@@ -487,38 +487,99 @@ bpf_validate(f, len)
 	struct bpf_insn *f;
 	int len;
 {
-	register int i;
-	register struct bpf_insn *p;
+	u_int i, from;
+	struct bpf_insn *p;
+
+	if (len < 1 || len > BPF_MAXINSNS)
+		return 0;
 
 	for (i = 0; i < len; ++i) {
-		/*
-		 * Check that that jumps are forward, and within 
-		 * the code block.
-		 */
 		p = &f[i];
-		if (BPF_CLASS(p->code) == BPF_JMP) {
-			register int from = i + 1;
-
-			if (BPF_OP(p->code) == BPF_JA) {
-				if (from + p->k >= len)
-					return 0;
-			}
-			else if (from + p->jt >= len || from + p->jf >= len)
-				return 0;
-		}
+		switch (BPF_CLASS(p->code)) {
 		/*
 		 * Check that memory operations use valid addresses.
 		 */
-		if ((BPF_CLASS(p->code) == BPF_ST ||
-		     (BPF_CLASS(p->code) == BPF_LD && 
-		      (p->code & 0xe0) == BPF_MEM)) &&
-		    (p->k >= BPF_MEMWORDS || p->k < 0))
+		case BPF_LD:
+		case BPF_LDX:
+			switch (BPF_MODE(p->code)) {
+			case BPF_IMM:
+				break;
+			case BPF_ABS:
+			case BPF_IND:
+			case BPF_MSH:
+				/*
+				 * More strict check with actual packet length
+				 * is done runtime.
+				 */
+				if (p->k >= bpf_maxbufsize)
+					return 0;
+				break;
+			case BPF_MEM:
+				if (p->k >= BPF_MEMWORDS)
+					return 0;
+				break;
+			case BPF_LEN:
+				break;
+			default:
+				return 0;
+			}
+			break;
+		case BPF_ST:
+		case BPF_STX:
+			if (p->k >= BPF_MEMWORDS)
+				return 0;
+			break;
+		case BPF_ALU:
+			switch (BPF_OP(p->code)) {
+			case BPF_ADD:
+			case BPF_SUB:
+			case BPF_OR:
+			case BPF_AND:
+			case BPF_LSH:
+			case BPF_RSH:
+			case BPF_NEG:
+				break;
+			case BPF_DIV:
+				/*
+				 * Check for constant division by 0.
+				 */
+				if (BPF_RVAL(p->code) == BPF_K && p->k == 0)
+					return 0;
+				break;
+			default:
+				return 0;
+			}
+			break;
+		case BPF_JMP:
+			/*
+			 * Check that that jumps are forward, and within 
+			 * the code block.
+			 */
+			from = i + 1;
+			switch (BPF_OP(p->code)) {
+			case BPF_JA:
+				if (from + p->k < from || from + p->k >= len)
+					return 0;
+				break;
+			case BPF_JEQ:
+			case BPF_JGT:
+			case BPF_JGE:
+			case BPF_JSET:
+				if (from + p->jt >= len || from + p->jf >= len)
+					return 0;
+				break;
+			default:
+				return 0;
+			}
+			break;
+		case BPF_RET:
+			break;
+		case BPF_MISC:
+			break;
+		default:
 			return 0;
-		/*
-		 * Check for constant division by 0.
-		 */
-		if (p->code == (BPF_ALU|BPF_DIV|BPF_K) && p->k == 0)
-			return 0;
+		}
+
 	}
 	return BPF_CLASS(f[len - 1].code) == BPF_RET;
 }

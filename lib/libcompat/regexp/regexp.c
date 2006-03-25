@@ -1,3 +1,5 @@
+/*	$OpenBSD: regexp.c,v 1.3 2002/02/16 21:27:26 millert Exp $	*/
+
 /*
  * regcomp and regexec -- regsub and regerror are elsewhere
  *
@@ -34,7 +36,7 @@
  */
 
 #ifndef lint
-static char *rcsid = "$Id: regexp.c,v 1.5 1995/06/07 03:55:49 cgd Exp $";
+static char *rcsid = "$OpenBSD: regexp.c,v 1.3 2002/02/16 21:27:26 millert Exp $";
 #endif /* not lint */
 
 #include <regexp.h>
@@ -149,7 +151,7 @@ static char *rcsid = "$Id: regexp.c,v 1.5 1995/06/07 03:55:49 cgd Exp $";
 #define	UCHARAT(p)	((int)*(p)&CHARBITS)
 #endif
 
-#define	FAIL(m)	{ regerror(m); return(NULL); }
+#define	FAIL(m)	{ v8_regerror(m); return(NULL); }
 #define	ISMULT(c)	((c) == '*' || (c) == '+' || (c) == '?')
 
 /*
@@ -175,18 +177,18 @@ static long regsize;		/* Code size. */
 #ifndef STATIC
 #define	STATIC	static
 #endif
-STATIC char *reg __P((int, int *));
-STATIC char *regbranch __P((int *));
-STATIC char *regpiece __P((int *));
-STATIC char *regatom __P((int *));
-STATIC char *regnode __P((char));
-STATIC char *regnext __P((char *));
-STATIC void regc __P((char));
-STATIC void reginsert __P((char, char *));
-STATIC void regtail __P((char *, char *));
-STATIC void regoptail __P((char *, char *));
+STATIC char *reg(int, int *);
+STATIC char *regbranch(int *);
+STATIC char *regpiece(int *);
+STATIC char *regatom(int *);
+STATIC char *regnode(char);
+STATIC char *regnext(char *);
+STATIC void regc(char);
+STATIC void reginsert(char, char *);
+STATIC void regtail(char *, char *);
+STATIC void regoptail(char *, char *);
 #ifdef STRCSPN
-STATIC int strcspn __P((char *, char *));
+STATIC int strcspn(char *, char *);
 #endif
 
 /*
@@ -205,7 +207,7 @@ STATIC int strcspn __P((char *, char *));
  * of the structure of the compiled regexp.
  */
 regexp *
-regcomp(exp)
+v8_regcomp(exp)
 const char *exp;
 {
 	register regexp *r;
@@ -775,21 +777,21 @@ static char **regendp;		/* Ditto for endp. */
 /*
  * Forwards.
  */
-STATIC int regtry __P((const regexp *, const char *));
-STATIC int regmatch __P((char *));
-STATIC int regrepeat __P((char *));
+STATIC int regtry(const regexp *, const char *);
+STATIC int regmatch(char *);
+STATIC int regrepeat(char *);
 
 #ifdef DEBUG
 int regnarrate = 0;
-void regdump __P((regexp *));
-STATIC char *regprop __P((char *));
+void regdump(regexp *);
+STATIC char *regprop(char *);
 #endif
 
 /*
  - regexec - match a regexp against a string
  */
 int
-regexec(prog, string)
+v8_regexec(prog, string)
 register const regexp *prog;
 register const char *string;
 {
@@ -797,13 +799,13 @@ register const char *string;
 
 	/* Be paranoid... */
 	if (prog == NULL || string == NULL) {
-		regerror("NULL parameter");
+		v8_regerror("NULL parameter");
 		return(0);
 	}
 
 	/* Check validity of program. */
 	if (UCHARAT(prog->program) != MAGIC) {
-		regerror("corrupted program");
+		v8_regerror("corrupted program");
 		return(0);
 	}
 
@@ -1069,7 +1071,7 @@ char *prog;
 			return(1);	/* Success! */
 			break;
 		default:
-			regerror("memory corruption");
+			v8_regerror("memory corruption");
 			return(0);
 			break;
 		}
@@ -1081,7 +1083,7 @@ char *prog;
 	 * We get here only if there's trouble -- normally "case END" is
 	 * the terminating point.
 	 */
-	regerror("corrupted pointers");
+	v8_regerror("corrupted pointers");
 	return(0);
 }
 
@@ -1122,7 +1124,7 @@ char *p;
 		}
 		break;
 	default:		/* Oh dear.  Called inappropriately. */
-		regerror("internal foulup");
+		v8_regerror("internal foulup");
 		count = 0;	/* Best compromise. */
 		break;
 	}
@@ -1206,10 +1208,8 @@ static char *
 regprop(op)
 char *op;
 {
-	register char *p;
+	register char *p = NULL;
 	static char buf[50];
-
-	(void) strcpy(buf, ":");
 
 	switch (OP(op)) {
 	case BOL:
@@ -1251,8 +1251,7 @@ char *op;
 	case OPEN+7:
 	case OPEN+8:
 	case OPEN+9:
-		sprintf(buf+strlen(buf), "OPEN%d", OP(op)-OPEN);
-		p = NULL;
+		snprintf(buf, sizeof buf, ":OPEN%d", OP(op)-OPEN);
 		break;
 	case CLOSE+1:
 	case CLOSE+2:
@@ -1263,8 +1262,7 @@ char *op;
 	case CLOSE+7:
 	case CLOSE+8:
 	case CLOSE+9:
-		sprintf(buf+strlen(buf), "CLOSE%d", OP(op)-CLOSE);
-		p = NULL;
+		snprintf(buf, sizeof buf, ":CLOSE%d", OP(op)-CLOSE);
 		break;
 	case STAR:
 		p = "STAR";
@@ -1279,11 +1277,12 @@ char *op;
 		p = "WORDZ";
 		break;
 	default:
-		regerror("corrupted opcode");
+		v8_regerror("corrupted opcode");
+		p = "ERROR";
 		break;
 	}
 	if (p != NULL)
-		(void) strcat(buf, p);
+		(void) snprintf(buf, sizeof buf, ":%s", p);
 	return(buf);
 }
 #endif

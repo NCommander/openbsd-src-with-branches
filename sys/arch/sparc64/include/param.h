@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: param.h,v 1.18 2005/09/12 23:05:06 miod Exp $	*/
 /*	$NetBSD: param.h,v 1.25 2001/05/30 12:28:51 mrg Exp $ */
 
 /*
@@ -22,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -68,19 +64,14 @@
  *
  */
 
-
+#ifndef _SPARC64_PARAM_H_
+#define _SPARC64_PARAM_H_
 
 #define	_MACHINE	sparc64
 #define	MACHINE		"sparc64"
-#ifdef __arch64__
 #define	_MACHINE_ARCH	sparc64
 #define	MACHINE_ARCH	"sparc64"
 #define	MID_MACHINE	MID_SPARC64
-#else
-#define	_MACHINE_ARCH	sparc
-#define	MACHINE_ARCH	"sparc"
-#define	MID_MACHINE	MID_SPARC
-#endif
 
 #ifdef _KERNEL				/* XXX */
 #ifndef _LOCORE				/* XXX */
@@ -99,13 +90,7 @@
  * (within reasonable limits). 
  *
  */
-#define ALIGNBYTES32		0x7
-#define ALIGNBYTES64		0xf
-#ifdef __arch64__
-#define	ALIGNBYTES		ALIGNBYTES64
-#else
-#define	ALIGNBYTES		ALIGNBYTES32
-#endif
+#define	ALIGNBYTES		0xf
 #define	ALIGN(p)		(((u_long)(p) + ALIGNBYTES) & ~ALIGNBYTES)
 #define ALIGN32(p)		(((u_long)(p) + ALIGNBYTES32) & ~ALIGNBYTES32)
 #define ALIGNED_POINTER(p,t)	((((u_long)(p)) & (sizeof(t)-1)) == 0)
@@ -126,13 +111,10 @@ extern int nbpg, pgofset, pgshift;
 #define	BLKDEV_IOSIZE	2048
 #define	MAXPHYS		(64 * 1024)
 
-#ifdef __arch64__
 /* We get stack overflows w/8K stacks in 64-bit mode */
-#define	SSIZE		2		/* initial stack size in pages */
-#else
-#define	SSIZE		2
-#endif
-#define	USPACE		(SSIZE*8192)
+#define	UPAGES		2		/* initial stack size in pages */
+#define	USPACE		(UPAGES*8192)
+#define	USPACE_ALIGN	(0)		/* u-area alignment 0-none */
 
 
 /*
@@ -198,21 +180,10 @@ extern int nbpg, pgofset, pgshift;
  * of the hardware page size.
  */
 #define	MSIZE		256		/* size of an mbuf */
-#define	MCLBYTES	2048		/* enough for whole Ethernet packet */
 #define	MCLSHIFT	11		/* log2(MCLBYTES) */
+#define	MCLBYTES	(1 << MCLSHIFT)	/* enough for whole Ethernet packet */
 #define	MCLOFSET	(MCLBYTES - 1)
-
-#if defined(_KERNEL_OPT)
-#include "opt_gateway.h"
-#endif
-
-#ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
-#else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
-#endif
-#endif
+#define	NMBCLUSTERS	4096		/* map size, max cluster allocation */
 
 #define MSGBUFSIZE	NBPG
 
@@ -220,7 +191,7 @@ extern int nbpg, pgofset, pgshift;
  * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
  * logical pages.
  */
-#define	NKMEMPAGES_MIN_DEFAULT	((6 * 1024 * 1024) >> PAGE_SHIFT)
+#define	NKMEMPAGES_MIN_DEFAULT	((8 * 1024 * 1024) >> PAGE_SHIFT)
 #define	NKMEMPAGES_MAX_DEFAULT	((128 * 1024 * 1024) >> PAGE_SHIFT)
 
 /* pages ("clicks") to disk blocks */
@@ -255,28 +226,9 @@ extern int nbpg, pgofset, pgshift;
  */
 #ifdef _KERNEL
 #ifndef _LOCORE
-#if 0
-extern vaddr_t	dvma_base;
-extern vaddr_t	dvma_end;
-extern struct map	*dvmamap;
-/*
- * The dvma resource map is defined in page units, which are numbered 1 to N.
- * Use these macros to convert to/from virtual addresses.
- */
-#define rctov(n)		(ctob(((n)-1))+dvma_base)
-#define vtorc(v)		((btoc((v)-dvma_base))+1)
 
-extern caddr_t	kdvma_mapin __P((caddr_t, int, int));
-extern caddr_t	dvma_malloc __P((size_t, void *, int));
-extern void	dvma_free __P((caddr_t, size_t, void *));
-#endif
-
-extern void	delay __P((unsigned int));
+extern void	delay(unsigned int);
 #define	DELAY(n)	delay(n)
-
-extern int cputyp;
-extern int cpumod;
-extern int mmumod;
 
 #endif /* _LOCORE */
 #endif /* _KERNEL */
@@ -290,13 +242,10 @@ extern int mmumod;
 #define CPU_SUN4U	3
 
 /*
- * Shorthand CPU-type macros. Enumerate all eight cases.
+ * Shorthand CPU-type macros. Enumerate all seven cases.
  * Let compiler optimize away code conditional on constants.
  *
- * On a sun4 machine, the page size is 8192, while on a sun4c and sun4m
- * it is 4096. Therefore, in the (SUN4 && (SUN4C || SUN4M)) cases below,
- * NBPG, PGOFSET and PGSHIFT are defined as variables which are initialized
- * early in locore.s after the machine type has been detected.
+ * On a sun4u machine, the page size is 8192.
  *
  * Note that whenever the macros defined below evaluate to expressions
  * involving variables, the kernel will perform slighly worse due to the
@@ -313,3 +262,9 @@ extern int mmumod;
 #define	NBPG		8192		/* bytes/page */
 #define	PGOFSET		(NBPG-1)	/* byte offset into page */
 #define	PGSHIFT		13		/* log2(NBPG) */
+
+#define PAGE_SHIFT	13
+#define PAGE_SIZE	(1 << PAGE_SHIFT)
+#define PAGE_MASK	(PAGE_SIZE - 1)
+
+#endif	/* _SPARC64_PARAM_H_ */

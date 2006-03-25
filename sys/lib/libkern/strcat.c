@@ -1,3 +1,5 @@
+/*	$OpenBSD: strcat.c,v 1.7 2004/11/28 07:16:54 mickey Exp $	*/
+
 /*
  * Copyright (c) 1988 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,20 +30,26 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strcat.c	5.6 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: strcat.c,v 1.5 1995/10/07 09:26:43 mycroft Exp $";
+static char *rcsid = "$OpenBSD: strcat.c,v 1.7 2004/11/28 07:16:54 mickey Exp $";
 #endif /* LIBC_SCCS and not lint */
 
+#if !defined(_KERNEL) && !defined(_STANDALONE)
 #include <string.h>
+#else
+#include <lib/libkern/libkern.h>
+#endif
+
+#if defined(APIWARN)
+__warn_references(strcat,
+    "warning: strcat() is almost always misused, please use strlcat()");
+#endif
 
 char *
-strcat(s, append)
-	register char *s;
-	register const char *append;
+strcat(char *s, const char *append)
 {
 	char *save = s;
 
 	for (; *s; ++s);
-	while (*s++ = *append++);
+	while ((*s++ = *append++) != '\0');
 	return(save);
 }

@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: sign.c,v 1.5 2005/05/29 09:10:23 djm Exp $ */
 
 /*
  * sign.c
@@ -30,7 +30,7 @@
  *   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  *   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: sign.c,v 1.2 2005/04/01 16:47:31 dugsong Exp $
+ * $Vendor: sign.c,v 1.2 2005/04/01 16:47:31 dugsong Exp $
  */
 
 #include <sys/param.h>
@@ -46,13 +46,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <err.h>
 
 #include "extern.h"
 #include "gzip.h"
 #include "key.h"
 #include "util.h"
 
-static char *passphrase = NULL;
+static char *passphrase_file = NULL;
 
 static int
 embed_signature(struct key *key, FILE *fin, FILE *fout)
@@ -184,17 +185,23 @@ embed_signature(struct key *key, FILE *fin, FILE *fout)
 void
 sign_usage(void)
 {
-	fprintf(stderr, "Usage: gzsig sign [-v] privkey [file ...]\n");
+	fprintf(stderr, "Usage: gzsig sign [-q] [-f secret_file] privkey [file ...]\n");
 }
 
 int
 sign_passwd_cb(char *buf, int size, int rwflag, void *u)
 {
 	char *p;
+	FILE *f;
 
-	if (passphrase != NULL) {
-		if (strlcpy(buf, passphrase, size) >= size)
-			errx(1, "Passphrase too long");
+	if (passphrase_file != NULL) {
+		if ((f = fopen(passphrase_file, "r")) == NULL)
+			err(1, "fopen(%.64s)", passphrase_file);
+		if (fgets(buf, size, f) == NULL)
+			err(1, "fgets(%.64s)", passphrase_file);
+		fclose(f);
+		if ((p = strchr(buf, '\n')) != NULL)
+			*p = '\0';
 	} else {
 		p = getpass("Enter passphrase: ");
 		if (strlcpy(buf, p, size) >= size)
@@ -209,19 +216,22 @@ void
 sign(int argc, char *argv[])
 {
 	struct key *key;
-	char *gzipfile, tmpfile[MAXPATHLEN];
+	char *gzipfile, tmppath[MAXPATHLEN];
 	FILE *fin, *fout;
-	int i, fd, error, vflag;
+	int i, fd, error, qflag;
 
-	vflag = 0;
+	qflag = 0;
 	
-	while ((i = getopt(argc, argv, "vh?p:")) != -1) {
+	while ((i = getopt(argc, argv, "qvh?f:")) != -1) {
 		switch (i) {
-		case 'v':
-			vflag = 1;
+		case 'q':
+			qflag = 1;
 			break;
-		case 'p':
-			passphrase = optarg;
+		case 'v':
+			qflag = 0;
+			break;
+		case 'f':
+			passphrase_file = optarg;
 			break;
 		default:
 			sign_usage();
@@ -247,7 +257,7 @@ sign(int argc, char *argv[])
 		argc = 0;
 		
 		if (embed_signature(key, stdin, stdout) == 0) {
-			if (vflag)
+			if (!qflag)
 				fprintf(stderr, "Signed input\n");
 		} else
 			fatal(1, "Couldn't sign input");
@@ -260,24 +270,24 @@ sign(int argc, char *argv[])
 			    gzipfile, strerror(errno));
 			continue;
 		}
-		snprintf(tmpfile, sizeof(tmpfile), "%s.XXXXXX", gzipfile);
+		snprintf(tmppath, sizeof(tmppath), "%s.XXXXXX", gzipfile);
 		
-		if ((fd = mkstemp(tmpfile)) < 0) {
+		if ((fd = mkstemp(tmppath)) < 0) {
 			fprintf(stderr, "Error creating %s: %s\n",
-			    tmpfile, strerror(errno));
+			    tmppath, strerror(errno));
 			fclose(fin);
 			continue;
 		}
 		if ((fout = fdopen(fd, "w")) == NULL) {
 			fprintf(stderr, "Error opening %s: %s\n",
-			    tmpfile, strerror(errno));
+			    tmppath, strerror(errno));
 			fclose(fin);
 			close(fd);
 			continue;
 		}
-		if (copy_permissions(gzipfile, tmpfile) < 0) {
+		if (copy_permissions(gzipfile, tmppath) < 0) {
 			fprintf(stderr, "Error initializing %s: %s\n",
-			    tmpfile, strerror(errno));
+			    tmppath, strerror(errno));
 			fclose(fin);
 			fclose(fout);
 			continue;
@@ -288,19 +298,16 @@ sign(int argc, char *argv[])
 		fclose(fout);
 
 		if (!error) {
-			if (rename(tmpfile, gzipfile) < 0) {
-				unlink(tmpfile);
+			if (rename(tmppath, gzipfile) < 0) {
+				unlink(tmppath);
 				fatal(1, "Couldn't sign %s", gzipfile);
 			}
-			if (vflag)
+			if (!qflag)
 				fprintf(stderr, "Signed %s\n", gzipfile);
 		} else {
-			unlink(tmpfile);
+			unlink(tmppath);
 			fatal(1, "Couldn't sign %s", gzipfile);
 		}
 	}
 	key_free(key);
-
-	if (passphrase != NULL)
-		memset(passphrase, 0, strlen(passphrase));
 }

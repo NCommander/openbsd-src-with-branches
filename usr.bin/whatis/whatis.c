@@ -1,3 +1,5 @@
+/*	$OpenBSD: whatis.c,v 1.9 2003/06/10 22:20:54 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,19 +51,18 @@ static char sccsid[] = "@(#)whatis.c	8.5 (Berkeley) 11/26/93";
 #include "../man/config.h"
 #include "../man/pathnames.h"
 
-#define	MAXLINELEN	256			/* max line handled */
+#define	MAXLINELEN	8192			/* max line handled */
 
 static int *found, foundman;
+extern char *__progname;
 
-void dashtrunc __P((char *, char *));
-int match __P((char *, char *));
-void usage __P((void));
-void whatis __P((char **, char *, int));
+void dashtrunc(char *, char *);
+int match(char *, char *);
+void usage(void);
+void whatis(char **, char *, int);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	ENTRY *ep;
 	TAG *tp;
@@ -74,7 +71,7 @@ main(argc, argv)
 
 	conffile = NULL;
 	p_augment = p_path = NULL;
-	while ((ch = getopt(argc, argv, "C:M:m:P:")) != EOF)
+	while ((ch = getopt(argc, argv, "C:M:m:P:")) != -1)
 		switch (ch) {
 		case 'C':
 			conffile = optarg;
@@ -101,7 +98,7 @@ main(argc, argv)
 	memset(found, 0, argc * sizeof(int));
 
 	for (p = argv; *p; ++p)			/* trim full paths */
-		if (beg = strrchr(*p, '/'))
+		if ((beg = strrchr(*p, '/')))
 			*p = beg + 1;
 
 	if (p_augment)
@@ -111,8 +108,8 @@ main(argc, argv)
 	else {
 		config(conffile);
 		ep = (tp = getlist("_whatdb")) == NULL ?
-		   NULL : tp->list.tqh_first;
-		for (; ep != NULL; ep = ep->q.tqe_next)
+		   NULL : TAILQ_FIRST(&tp->list);
+		for (; ep != NULL; ep = TAILQ_NEXT(ep, q))
 			whatis(argv, ep->s, 0);
 	}
 
@@ -130,21 +127,19 @@ main(argc, argv)
 }
 
 void
-whatis(argv, path, buildpath)
-	char **argv, *path;
-	int buildpath;
+whatis(char **argv, char *path, int buildpath)
 {
-	register char *end, *name, **p;
+	char *end, *name, **p;
 	char buf[MAXLINELEN + 1], wbuf[MAXLINELEN + 1];
+	char hold[MAXPATHLEN];
 
 	for (name = path; name; name = end) {	/* through name list */
-		if (end = strchr(name, ':'))
+		if ((end = strchr(name, ':')))
 			*end++ = '\0';
 
 		if (buildpath) {
-			char hold[MAXPATHLEN + 1];
-
-			(void)sprintf(hold, "%s/%s", name, _PATH_WHATIS);
+			(void)snprintf(hold, sizeof hold, "%s/%s",
+			    name, _PATH_WHATIS);
 			name = hold;
 		}
 
@@ -173,25 +168,37 @@ whatis(argv, path, buildpath)
 
 /*
  * match --
- *	match a full word
+ *	match a full word or a full string
  */
 int
-match(bp, str)
-	register char *bp, *str;
+match(char *bp, char *str)
 {
-	register int len;
-	register char *start;
+	int len;
+	char *start;
 
 	if (!*str || !*bp)
 		return(0);
 	for (len = strlen(str);;) {
-		for (; *bp && !isdigit(*bp) && !isalpha(*bp); ++bp);
+		/* skip leading crud */
+		for (; *bp && !isalnum(*bp); ++bp)
+			;
 		if (!*bp)
 			break;
-		for (start = bp++;
-		    *bp && (*bp == '_' || isdigit(*bp) || isalpha(*bp)); ++bp);
-		if (bp - start == len && !strncasecmp(start, str, len))
-			return(1);
+
+		/* check for word match first */
+		for (start = bp++; *bp && (*bp == '_' || isalnum(*bp)); ++bp)
+			;
+		if (bp - start == len) {
+		    if (strncasecmp(start, str, len) == 0)
+			    return(1);
+		} else if (*bp && *bp != ',') {
+		    /* check for full string match */
+		    for (bp = start;
+			*bp && *bp != ',' && *bp != '(' && !isspace(*bp); ++bp)
+			    ;
+		    if (bp - start == len && strncasecmp(start, str, len) == 0)
+			    return(1);
+		}
 	}
 	return(0);
 }
@@ -201,10 +208,9 @@ match(bp, str)
  *	truncate a string at " - "
  */
 void
-dashtrunc(from, to)
-	register char *from, *to;
+dashtrunc(char *from, char *to)
 {
-	register int ch;
+	int ch;
 
 	for (; (ch = *from) && ch != '\n' &&
 	    (ch != ' ' || from[1] != '-' || from[2] != ' '); ++from)
@@ -217,9 +223,11 @@ dashtrunc(from, to)
  *	print usage message and die
  */
 void
-usage()
+usage(void)
 {
+
 	(void)fprintf(stderr,
-	    "usage: whatis [-C file] [-M path] [-m path] command ...\n");
+	    "usage: %s [-C file] [-M path] [-m path] command ...\n",
+	    __progname);
 	exit(1);
 }

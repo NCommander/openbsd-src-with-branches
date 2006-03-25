@@ -1,4 +1,40 @@
-/*	$NetBSD: ip_mroute.c,v 1.24 1995/08/12 23:59:38 mycroft Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.41 2005/01/15 04:43:40 brad Exp $	*/
+/*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
+
+/*
+ * Copyright (c) 1989 Stephen Deering
+ * Copyright (c) 1992, 1993
+ *      The Regents of the University of California.  All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Stephen Deering of Stanford University.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *      @(#)ip_mroute.c 8.2 (Berkeley) 11/15/93
+ */
 
 /*
  * IP multicast forwarding procedures
@@ -10,9 +46,20 @@
  * Modified by Ajit Thyagarajan, PARC, August 1993
  * Modified by Bill Fenner, PARC, April 1994
  * Modified by Charles M. Hannum, NetBSD, May 1995.
+ * Modified by Ahmed Helmy, SGI, June 1996
+ * Modified by George Edmond Eddy (Rusty), ISI, February 1998
+ * Modified by Pavlin Radoslavov, USC/ISI, May 1998, August 1999, October 2000
+ * Modified by Hitoshi Asaeda, WIDE, August 2000
+ * Modified by Pavlin Radoslavov, ICSI, October 2002
  *
  * MROUTING Revision: 1.2
+ * and PIM-SMv2 and PIM-DM support, advanced API support,
+ * bandwidth metering and signaling
  */
+
+#ifdef PIM
+#define _PIM_VT 1
+#endif
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -25,9 +72,12 @@
 #include <sys/kernel.h>
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
+#include <sys/timeout.h>
+
 #include <net/if.h>
 #include <net/route.h>
 #include <net/raw_cb.h>
+
 #include <netinet/in.h>
 #include <netinet/in_var.h>
 #include <netinet/in_systm.h>
@@ -38,17 +88,19 @@
 #include <netinet/igmp.h>
 #include <netinet/igmp_var.h>
 #include <netinet/ip_mroute.h>
+#ifdef PIM
+#include <netinet/pim.h>
+#include <netinet/pim_var.h>
+#endif
+
+#include <sys/stdarg.h>
 
 #define IP_MULTICASTOPTS 0
-#define	M_PULLUP(m, len) \
-	do { \
+#define	M_PULLUP(m, len)						 \
+	do {								 \
 		if ((m) && ((m)->m_flags & M_EXT || (m)->m_len < (len))) \
-			(m) = m_pullup((m), (len)); \
-	} while (0)
-
-static int ip_mdq();
-static void phyint_send();
-static void encap_send();
+			(m) = m_pullup((m), (len));			 \
+	} while (/*CONSTCOND*/ 0)
 
 /*
  * Globals.  All but ip_mrouter and ip_mrtproto could be static,
@@ -60,9 +112,9 @@ int		ip_mrtproto = IGMP_DVMRP;    /* for netstat only */
 #define NO_RTE_FOUND 	0x1
 #define RTE_FOUND	0x2
 
-#define	MFCHASH(a, g) \
-	((((a) >> 20) ^ ((a) >> 10) ^ (a) ^ \
-	  ((g) >> 20) ^ ((g) >> 10) ^ (g)) & mfchash)
+#define	MFCHASH(a, g)							\
+	((((a).s_addr >> 20) ^ ((a).s_addr >> 10) ^ (a).s_addr ^	\
+	  ((g).s_addr >> 20) ^ ((g).s_addr >> 10) ^ (g).s_addr) & mfchash)
 LIST_HEAD(mfchashhdr, mfc) *mfchashtbl;
 u_long	mfchash;
 
@@ -74,6 +126,10 @@ u_int		mrtdebug = 0;	  /* debug level 	*/
 #define		DEBUG_FORWARD	0x04
 #define		DEBUG_EXPIRE	0x08
 #define		DEBUG_XMIT	0x10
+#define		DEBUG_PIM	0x20
+
+#define		VIFI_INVALID	((vifi_t) -1)
+
 u_int       	tbfdebug = 0;     /* tbf debug level 	*/
 #ifdef RSVP_ISI
 u_int		rsvpdebug = 0;	  /* rsvp debug level   */
@@ -81,27 +137,79 @@ extern struct socket *ip_rsvpd;
 extern int rsvp_on;
 #endif /* RSVP_ISI */
 
-static void	expire_upcalls();
 #define		EXPIRE_TIMEOUT	(hz / 4)	/* 4x / second */
 #define		UPCALL_EXPIRE	6		/* number of timeouts */
+struct timeout	expire_upcalls_ch;
 
 /*
  * Define the token bucket filter structures
- * qtable   -> each interface has an associated queue of pkts 
  */
 
-struct pkt_queue qtable[MAXVIFS][MAXQSIZE];
+#define		TBF_REPROCESS	(hz / 100)	/* 100x / second */
 
-static	void tbf_control __P((struct vif *, struct mbuf *, struct ip *,
-		u_int32_t));
-static	void tbf_queue __P((struct vif *, struct mbuf *, struct ip *));
-static	void tbf_dequeue __P((struct vif *, int));
-static	void tbf_process_q __P((struct vif *));
-static	void tbf_reprocess_q __P((void *));
-static	int tbf_dq_sel __P((struct vif *, struct ip *));
-static	void tbf_send_packet __P((struct vif *, struct mbuf *));
-static	void tbf_update_tokens __P((struct vif *));
-static	int priority __P((struct vif *, struct ip *));
+static int get_sg_cnt(struct sioc_sg_req *);
+static int get_vif_cnt(struct sioc_vif_req *);
+static int ip_mrouter_init(struct socket *, struct mbuf *);
+static int get_version(struct mbuf *);
+static int set_assert(struct mbuf *);
+static int get_assert(struct mbuf *);
+static int add_vif(struct mbuf *);
+static int del_vif(struct mbuf *);
+static void update_mfc_params(struct mfc *, struct mfcctl2 *);
+static void init_mfc_params(struct mfc *, struct mfcctl2 *);
+static void expire_mfc(struct mfc *);
+static int add_mfc(struct mbuf *);
+#ifdef UPCALL_TIMING
+static void collate(struct timeval *);
+#endif
+static int del_mfc(struct mbuf *);
+static int set_api_config(struct mbuf *); /* chose API capabilities */
+static int get_api_support(struct mbuf *);
+static int get_api_config(struct mbuf *);
+static int socket_send(struct socket *, struct mbuf *,
+			    struct sockaddr_in *);
+static void expire_upcalls(void *);
+#ifdef RSVP_ISI
+static int ip_mdq(struct mbuf *, struct ifnet *, struct mfc *, vifi_t);
+#else
+static int ip_mdq(struct mbuf *, struct ifnet *, struct mfc *);
+#endif
+static void phyint_send(struct ip *, struct vif *, struct mbuf *);
+static void encap_send(struct ip *, struct vif *, struct mbuf *);
+static void tbf_control(struct vif *, struct mbuf *, struct ip *,
+			     u_int32_t);
+static void tbf_queue(struct vif *, struct mbuf *);
+static void tbf_process_q(struct vif *);
+static void tbf_reprocess_q(void *);
+static int tbf_dq_sel(struct vif *, struct ip *);
+static void tbf_send_packet(struct vif *, struct mbuf *);
+static void tbf_update_tokens(struct vif *);
+static int priority(struct vif *, struct ip *);
+
+/*
+ * Bandwidth monitoring
+ */
+static void free_bw_list(struct bw_meter *);
+static int add_bw_upcall(struct mbuf *);
+static int del_bw_upcall(struct mbuf *);
+static void bw_meter_receive_packet(struct bw_meter *, int , struct timeval *);
+static void bw_meter_prepare_upcall(struct bw_meter *, struct timeval *);
+static void bw_upcalls_send(void);
+static void schedule_bw_meter(struct bw_meter *, struct timeval *);
+static void unschedule_bw_meter(struct bw_meter *);
+static void bw_meter_process(void);
+static void expire_bw_upcalls_send(void *);
+static void expire_bw_meter_process(void *);
+
+#ifdef PIM
+static int pim_register_send(struct ip *, struct vif *,
+		struct mbuf *, struct mfc *);
+static int pim_register_send_rp(struct ip *, struct vif *,
+		struct mbuf *, struct mfc *);
+static int pim_register_send_upcall(struct ip *, struct vif *,
+		struct mbuf *, struct mfc *);
+static struct mbuf *pim_register_prepare(struct ip *, struct mbuf *);
+#endif
 
 /*
  * 'Interfaces' associated with decapsulator (so we can tell
@@ -129,9 +237,81 @@ struct ip multicast_encap_iphdr = {
 	sizeof(struct ip),		/* total length */
 	0,				/* id */
 	0,				/* frag offset */
-	ENCAP_TTL, ENCAP_PROTO,	
+	ENCAP_TTL, ENCAP_PROTO,
 	0,				/* checksum */
 };
+
+/*
+ * Bandwidth meter variables and constants
+ */
+
+/*
+ * Pending timeouts are stored in a hash table, the key being the
+ * expiration time. Periodically, the entries are analysed and processed.
+ */
+#define BW_METER_BUCKETS	1024
+static struct bw_meter *bw_meter_timers[BW_METER_BUCKETS];
+struct timeout bw_meter_ch;
+#define BW_METER_PERIOD (hz)		/* periodical handling of bw meters */
+
+/*
+ * Pending upcalls are stored in a vector which is flushed when
+ * full, or periodically
+ */
+static struct bw_upcall	bw_upcalls[BW_UPCALLS_MAX];
+static u_int	bw_upcalls_n; /* # of pending upcalls */
+struct timeout	bw_upcalls_ch;
+#define BW_UPCALLS_PERIOD (hz)		/* periodical flush of bw upcalls */
+
+#ifdef PIM
+struct pimstat pimstat;
+
+/*
+ * Note: the PIM Register encapsulation adds the following in front of a
+ * data packet:
+ *
+ * struct pim_encap_hdr {
+ *    struct ip ip;
+ *    struct pim_encap_pimhdr  pim;
+ * }
+ *
+ */
+
+struct pim_encap_pimhdr {
+	struct pim pim;
+	uint32_t   flags;
+};
+
+static struct ip pim_encap_iphdr = {
+#if BYTE_ORDER == LITTLE_ENDIAN
+	sizeof(struct ip) >> 2,
+	IPVERSION,
+#else
+	IPVERSION,
+	sizeof(struct ip) >> 2,
+#endif
+	0,			/* tos */
+	sizeof(struct ip),	/* total length */
+	0,			/* id */
+	0,			/* frag offset */ 
+	ENCAP_TTL,
+	IPPROTO_PIM,
+	0,			/* checksum */
+};
+
+static struct pim_encap_pimhdr pim_encap_pimhdr = {
+    {
+	PIM_MAKE_VT(PIM_VERSION, PIM_REGISTER), /* PIM vers and message type */
+	0,			/* reserved */
+	0,			/* checksum */
+    },
+    0				/* flags */
+};
+
+static struct ifnet multicast_register_if;
+static vifi_t reg_vif_num = VIFI_INVALID;
+#endif /* PIM */
+
 
 /*
  * Private variables.
@@ -140,10 +320,10 @@ static vifi_t	   numvifs = 0;
 static int have_encap_tunnel = 0;
 
 /*
- * one-back cache used by ipip_input to locate a tunnel's vif
+ * one-back cache used by ipip_mroute_input to locate a tunnel's vif
  * given a datagram's src ip address.
  */
-static u_int32_t last_encap_src;
+static struct in_addr last_encap_src;
 static struct vif *last_encap_vif;
 
 /*
@@ -156,84 +336,76 @@ static int pim_assert;
 #define ASSERT_MSG_TIME		3000000
 
 /*
+ * Kernel multicast routing API capabilities and setup.
+ * If more API capabilities are added to the kernel, they should be
+ * recorded in `mrt_api_support'.
+ */
+static const u_int32_t mrt_api_support = (MRT_MFC_FLAGS_DISABLE_WRONGVIF |
+					  MRT_MFC_FLAGS_BORDER_VIF |
+					  MRT_MFC_RP |
+					  MRT_MFC_BW_UPCALL);
+static u_int32_t mrt_api_config = 0;
+
+/*
  * Find a route for a given origin IP address and Multicast group address
  * Type of service parameter to be added in the future!!!
+ * Statistics are updated by the caller if needed
+ * (mrtstat.mrts_mfc_lookups and mrtstat.mrts_mfc_misses)
  */
+static struct mfc *
+mfc_find(struct in_addr *o, struct in_addr *g)
+{
+	struct mfc *rt;
 
-#define MFCFIND(o, g, rt) { \
-	register struct mfc *_rt; \
-	(rt) = NULL; \
-	++mrtstat.mrts_mfc_lookups; \
-	for (_rt = mfchashtbl[MFCHASH(o, g)].lh_first; \
-	     _rt; _rt = _rt->mfc_hash.le_next) { \
-		if (_rt->mfc_origin.s_addr == (o) && \
-		    _rt->mfc_mcastgrp.s_addr == (g) && \
-		    _rt->mfc_stall == NULL) { \
-			(rt) = _rt; \
-			break; \
-		} \
-	} \
-	if ((rt) == NULL) \
-		++mrtstat.mrts_mfc_misses; \
+	LIST_FOREACH(rt, &mfchashtbl[MFCHASH(*o, *g)], mfc_hash) {
+		if (in_hosteq(rt->mfc_origin, *o) &&
+		    in_hosteq(rt->mfc_mcastgrp, *g) &&
+		    (rt->mfc_stall == NULL))
+			break;
+	}
+
+	return (rt);
 }
 
 /*
  * Macros to compute elapsed time efficiently
  * Borrowed from Van Jacobson's scheduling code
  */
-#define TV_DELTA(a, b, delta) { \
-	register int xxs; \
-	delta = (a).tv_usec - (b).tv_usec; \
-	xxs = (a).tv_sec - (b).tv_sec; \
-	switch (xxs) { \
-	case 2: \
-		delta += 1000000; \
-		/* fall through */ \
-	case 1: \
-		delta += 1000000; \
-		/* fall through */ \
-	case 0: \
-		break; \
-	default: \
-		delta += (1000000 * xxs); \
-		break; \
-	} \
-}
+#define TV_DELTA(a, b, delta) do {					\
+	int xxs;							\
+	delta = (a).tv_usec - (b).tv_usec;				\
+	xxs = (a).tv_sec - (b).tv_sec;					\
+	switch (xxs) {							\
+	case 2:								\
+		delta += 1000000;					\
+		/* fall through */					\
+	case 1:								\
+		delta += 1000000;					\
+		/* fall through */					\
+	case 0:								\
+		break;							\
+	default:							\
+		delta += (1000000 * xxs);				\
+		break;							\
+	}								\
+} while (/*CONSTCOND*/ 0)
 
 #ifdef UPCALL_TIMING
 u_int32_t upcall_data[51];
-static void collate __P((struct timeval *));
 #endif /* UPCALL_TIMING */
-
-static int get_sg_cnt __P((struct sioc_sg_req *));
-static int get_vif_cnt __P((struct sioc_vif_req *));
-static int ip_mrouter_init __P((struct socket *, struct mbuf *));
-static int get_version __P((struct mbuf *));
-static int set_assert __P((struct mbuf *));
-static int get_assert __P((struct mbuf *));
-static int add_vif __P((struct mbuf *));
-static void reset_vif __P((struct vif *));
-static int del_vif __P((struct mbuf *));
-static void update_mfc __P((struct mfcctl *, struct mfc *));
-static void expire_mfc __P((struct mfc *));
-static int add_mfc __P((struct mbuf *));
-static int del_mfc __P((struct mbuf *));
 
 /*
  * Handle MRT setsockopt commands to modify the multicast routing tables.
  */
 int
-ip_mrouter_set(cmd, so, m)
-	int cmd;
-	struct socket *so;
-	struct mbuf **m;
+ip_mrouter_set(struct socket *so, int optname, struct mbuf **m)
 {
 	int error;
 
-	if (cmd != MRT_INIT && so != ip_mrouter)
-		error = EACCES;
+	if (optname != MRT_INIT && so != ip_mrouter)
+		error = ENOPROTOOPT;
 	else
-		switch (cmd) {
+		switch (optname) {
 		case MRT_INIT:
 			error = ip_mrouter_init(so, *m);
 			break;
@@ -255,8 +427,17 @@ ip_mrouter_set(cmd, so, m)
 		case MRT_ASSERT:
 			error = set_assert(*m);
 			break;
+		case MRT_API_CONFIG:
+			error = set_api_config(*m);
+			break;
+		case MRT_ADD_BW_UPCALL:
+			error = add_bw_upcall(*m);
+			break;
+		case MRT_DEL_BW_UPCALL:
+			error = del_bw_upcall(*m);
+			break;
 		default:
-			error = EOPNOTSUPP;
+			error = ENOPROTOOPT;
 			break;
 		}
 
@@ -269,33 +450,35 @@ ip_mrouter_set(cmd, so, m)
  * Handle MRT getsockopt commands
  */
 int
-ip_mrouter_get(cmd, so, m)
-	int cmd;
-	struct socket *so;
-	struct mbuf **m;
+ip_mrouter_get(struct socket *so, int optname, struct mbuf **m)
 {
-	struct mbuf *mb;
 	int error;
 
 	if (so != ip_mrouter)
-		error = EACCES;
+		error = ENOPROTOOPT;
 	else {
-		*m = mb = m_get(M_WAIT, MT_SOOPTS);
+		*m = m_get(M_WAIT, MT_SOOPTS);
 
-		switch (cmd) {
+		switch (optname) {
 		case MRT_VERSION:
-			error = get_version(mb);
+			error = get_version(*m);
 			break;
 		case MRT_ASSERT:
-			error = get_assert(mb);
+			error = get_assert(*m);
+			break;
+		case MRT_API_SUPPORT:
+			error = get_api_support(*m);
+			break;
+		case MRT_API_CONFIG:
+			error = get_api_config(*m);
 			break;
 		default:
-			error = EOPNOTSUPP;
+			error = ENOPROTOOPT;
 			break;
 		}
 
 		if (error)
-			m_free(mb);
+			m_free(*m);
 	}
 
 	return (error);
@@ -305,23 +488,24 @@ ip_mrouter_get(cmd, so, m)
  * Handle ioctl commands to obtain information from the cache
  */
 int
-mrt_ioctl(cmd, data)
-	u_long cmd;
-	caddr_t data;
+mrt_ioctl(struct socket *so, u_long cmd, caddr_t data)
 {
 	int error;
 
-	switch (cmd) {
-	case SIOCGETVIFCNT:
-		error = get_vif_cnt((struct sioc_vif_req *)data);
-		break;
-	case SIOCGETSGCNT:
-		error = get_sg_cnt((struct sioc_sg_req *)data);
-		break;
-	default:
+	if (so != ip_mrouter)
 		error = EINVAL;
-		break;
-	}
+	else
+		switch (cmd) {
+		case SIOCGETVIFCNT:
+			error = get_vif_cnt((struct sioc_vif_req *)data);
+			break;
+		case SIOCGETSGCNT:
+			error = get_sg_cnt((struct sioc_sg_req *)data);
+			break;
+		default:
+			error = EINVAL;
+			break;
+		}
 
 	return (error);
 }
@@ -330,21 +514,22 @@ mrt_ioctl(cmd, data)
  * returns the packet, byte, rpf-failure count for the source group provided
  */
 static int
-get_sg_cnt(req)
-	register struct sioc_sg_req *req;
+get_sg_cnt(struct sioc_sg_req *req)
 {
-	register struct mfc *rt;
 	int s;
+	struct mfc *rt;
 
 	s = splsoftnet();
-	MFCFIND(req->src.s_addr, req->grp.s_addr, rt);
-	splx(s);
-	if (rt != NULL) {
-		req->pktcnt = rt->mfc_pkt_cnt;
-		req->bytecnt = rt->mfc_byte_cnt;
-		req->wrong_if = rt->mfc_wrong_if;
-	} else
+	rt = mfc_find(&req->src, &req->grp);
+	if (rt == NULL) {
+		splx(s);
 		req->pktcnt = req->bytecnt = req->wrong_if = 0xffffffff;
+		return (EADDRNOTAVAIL);
+	}
+	req->pktcnt = rt->mfc_pkt_cnt;
+	req->bytecnt = rt->mfc_byte_cnt;
+	req->wrong_if = rt->mfc_wrong_if;
+	splx(s);
 
 	return (0);
 }
@@ -353,10 +538,9 @@ get_sg_cnt(req)
  * returns the input and output packet and byte counts on the vif provided
  */
 static int
-get_vif_cnt(req)
-	register struct sioc_vif_req *req;
+get_vif_cnt(struct sioc_vif_req *req)
 {
-	register vifi_t vifi = req->vifi;
+	vifi_t vifi = req->vifi;
 
 	if (vifi >= numvifs)
 		return (EINVAL);
@@ -373,22 +557,20 @@ get_vif_cnt(req)
  * Enable multicast routing
  */
 static int
-ip_mrouter_init(so, m)
-	struct socket *so;
-	struct mbuf *m;
+ip_mrouter_init(struct socket *so, struct mbuf *m)
 {
 	int *v;
 
 	if (mrtdebug)
 		log(LOG_DEBUG,
-		    "ip_mrouter_init: so_type = %d, pr_protocol = %d",
+		    "ip_mrouter_init: so_type = %d, pr_protocol = %d\n",
 		    so->so_type, so->so_proto->pr_protocol);
 
 	if (so->so_type != SOCK_RAW ||
 	    so->so_proto->pr_protocol != IPPROTO_IGMP)
 		return (EOPNOTSUPP);
 
-	if (m == 0 || m->m_len < sizeof(int))
+	if (m == NULL || m->m_len < sizeof(int))
 		return (EINVAL);
 
 	v = mtod(m, int *);
@@ -400,15 +582,22 @@ ip_mrouter_init(so, m)
 
 	ip_mrouter = so;
 
-	mfchashtbl = hashinit(MFCTBLSIZ, M_MRTABLE, &mfchash);
+	mfchashtbl = hashinit(MFCTBLSIZ, M_MRTABLE, M_WAITOK, &mfchash);
 	bzero((caddr_t)nexpire, sizeof(nexpire));
 
 	pim_assert = 0;
 
-	timeout(expire_upcalls, (caddr_t)0, EXPIRE_TIMEOUT);
+	timeout_set(&expire_upcalls_ch, expire_upcalls, NULL);
+	timeout_add(&expire_upcalls_ch, EXPIRE_TIMEOUT);
+
+	timeout_set(&bw_upcalls_ch, expire_bw_upcalls_send, NULL);
+	timeout_add(&bw_upcalls_ch, BW_UPCALLS_PERIOD);
+
+	timeout_set(&bw_meter_ch, expire_bw_meter_process, NULL);
+	timeout_add(&bw_meter_ch, BW_METER_PERIOD);
 
 	if (mrtdebug)
-		log(LOG_DEBUG, "ip_mrouter_init");
+		log(LOG_DEBUG, "ip_mrouter_init\n");
 
 	return (0);
 }
@@ -420,55 +609,88 @@ int
 ip_mrouter_done()
 {
 	vifi_t vifi;
-	register struct vif *vifp;
+	struct vif *vifp;
 	int i;
 	int s;
-	
+
 	s = splsoftnet();
 
 	/* Clear out all the vifs currently in use. */
 	for (vifi = 0; vifi < numvifs; vifi++) {
 		vifp = &viftable[vifi];
-		if (vifp->v_lcl_addr.s_addr != 0)
+		if (!in_nullhost(vifp->v_lcl_addr))
 			reset_vif(vifp);
 	}
 
-	bzero((caddr_t)qtable, sizeof(qtable));
 	numvifs = 0;
 	pim_assert = 0;
-	
-	untimeout(expire_upcalls, (caddr_t)NULL);
-	
+	mrt_api_config = 0;
+
+	timeout_del(&expire_upcalls_ch);
+	timeout_del(&bw_upcalls_ch);
+	timeout_del(&bw_meter_ch);
+
 	/*
 	 * Free all multicast forwarding cache entries.
 	 */
 	for (i = 0; i < MFCTBLSIZ; i++) {
-		register struct mfc *rt, *nrt;
+		struct mfc *rt, *nrt;
 
-		for (rt = mfchashtbl[i].lh_first; rt; rt = nrt) {
-			nrt = rt->mfc_hash.le_next;
-			
+		for (rt = LIST_FIRST(&mfchashtbl[i]); rt; rt = nrt) {
+			nrt = LIST_NEXT(rt, mfc_hash);
+
 			expire_mfc(rt);
 		}
 	}
+
+	bzero((caddr_t)nexpire, sizeof(nexpire));
 	free(mfchashtbl, M_MRTABLE);
-	
+	mfchashtbl = NULL;
+
+	bw_upcalls_n = 0;
+	bzero(bw_meter_timers, sizeof(bw_meter_timers));
+
 	/* Reset de-encapsulation cache. */
 	have_encap_tunnel = 0;
-	
+
 	ip_mrouter = NULL;
-	
+
 	splx(s);
-	
+
 	if (mrtdebug)
-		log(LOG_DEBUG, "ip_mrouter_done");
-	
+		log(LOG_DEBUG, "ip_mrouter_done\n");
+
 	return (0);
 }
 
+void
+ip_mrouter_detach(struct ifnet *ifp)
+{
+	int vifi, i;
+	struct vif *vifp;
+	struct mfc *rt;
+	struct rtdetq *rte;
+
+	/* XXX not sure about side effect to userland routing daemon */
+	for (vifi = 0; vifi < numvifs; vifi++) {
+		vifp = &viftable[vifi];
+		if (vifp->v_ifp == ifp)
+			reset_vif(vifp);
+	}
+	for (i = 0; i < MFCTBLSIZ; i++) {
+		if (nexpire[i] == 0)
+			continue;
+		LIST_FOREACH(rt, &mfchashtbl[i], mfc_hash) {
+			for (rte = rt->mfc_stall; rte; rte = rte->next) {
+				if (rte->ifp == ifp)
+					rte->ifp = NULL;
+			}
+		}
+	}
+}
+
 static int
-get_version(m)
-	struct mbuf *m;
+get_version(struct mbuf *m)
 {
 	int *v = mtod(m, int *);
 
@@ -481,12 +703,11 @@ get_version(m)
  * Set PIM assert processing global
  */
 static int
-set_assert(m)
-	struct mbuf *m;
+set_assert(struct mbuf *m)
 {
 	int *i;
 
-	if (m == 0 || m->m_len < sizeof(int))
+	if (m == NULL || m->m_len < sizeof(int))
 		return (EINVAL);
 
 	i = mtod(m, int *);
@@ -498,13 +719,90 @@ set_assert(m)
  * Get PIM assert processing global
  */
 static int
-get_assert(m)
-	struct mbuf *m;
+get_assert(struct mbuf *m)
 {
 	int *i = mtod(m, int *);
 
 	*i = pim_assert;
 	m->m_len = sizeof(int);
+	return (0);
+}
+
+/*
+ * Configure API capabilities
+ */
+static int
+set_api_config(struct mbuf *m)
+{
+	int i;
+	u_int32_t *apival;
+
+	if (m == NULL || m->m_len < sizeof(u_int32_t))
+		return (EINVAL);
+
+	apival = mtod(m, u_int32_t *);
+
+	/*
+	 * We can set the API capabilities only if it is the first operation
+	 * after MRT_INIT. I.e.:
+	 *  - there are no vifs installed
+	 *  - pim_assert is not enabled
+	 *  - the MFC table is empty
+	 */
+	if (numvifs > 0) {
+		*apival = 0;
+		return (EPERM);
+	}
+	if (pim_assert) {
+		*apival = 0;
+		return (EPERM);
+	}
+	for (i = 0; i < MFCTBLSIZ; i++) {
+		if (LIST_FIRST(&mfchashtbl[i]) != NULL) {
+			*apival = 0;
+			return (EPERM);
+		}
+	}
+
+	mrt_api_config = *apival & mrt_api_support;
+	*apival = mrt_api_config;
+
+	return (0);
+}
+
+/*
+ * Get API capabilities
+ */
+static int
+get_api_support(struct mbuf *m)
+{
+	u_int32_t *apival;
+
+	if (m == NULL || m->m_len < sizeof(u_int32_t))
+		return (EINVAL);
+
+	apival = mtod(m, u_int32_t *);
+
+	*apival = mrt_api_support;
+
+	return (0);
+}
+
+/*
+ * Get API configured capabilities
+ */
+static int
+get_api_config(struct mbuf *m)
+{
+	u_int32_t *apival;
+
+	if (m == NULL || m->m_len < sizeof(u_int32_t))
+		return (EINVAL);
+
+	apival = mtod(m, u_int32_t *);
+
+	*apival = mrt_api_config;
+
 	return (0);
 }
 
@@ -514,50 +812,82 @@ static struct sockaddr_in sin = { sizeof(sin), AF_INET };
  * Add a vif to the vif table
  */
 static int
-add_vif(m)
-	struct mbuf *m;
+add_vif(struct mbuf *m)
 {
-	register struct vifctl *vifcp;
-	register struct vif *vifp;
+	struct vifctl *vifcp;
+	struct vif *vifp;
 	struct ifaddr *ifa;
 	struct ifnet *ifp;
 	struct ifreq ifr;
 	int error, s;
-	
-	if (m == 0 || m->m_len < sizeof(struct vifctl))
+
+	if (m == NULL || m->m_len < sizeof(struct vifctl))
 		return (EINVAL);
 
 	vifcp = mtod(m, struct vifctl *);
 	if (vifcp->vifc_vifi >= MAXVIFS)
 		return (EINVAL);
+	if (in_nullhost(vifcp->vifc_lcl_addr))
+		return (EADDRNOTAVAIL);
 
 	vifp = &viftable[vifcp->vifc_vifi];
-	if (vifp->v_lcl_addr.s_addr != 0)
+	if (!in_nullhost(vifp->v_lcl_addr))
 		return (EADDRINUSE);
-	
+
 	/* Find the interface with an address in AF_INET family. */
-	sin.sin_addr = vifcp->vifc_lcl_addr;
-	ifa = ifa_ifwithaddr(sintosa(&sin));
-	if (ifa == 0)
-		return (EADDRNOTAVAIL);
-	
+#ifdef PIM
+	if (vifcp->vifc_flags & VIFF_REGISTER) {
+		/*
+		 * XXX: Because VIFF_REGISTER does not really need a valid
+		 * local interface (e.g. it could be 127.0.0.2), we don't
+		 * check its address.
+		 */
+	    ifp = NULL;
+	} else
+#endif
+	{
+		sin.sin_addr = vifcp->vifc_lcl_addr;
+		ifa = ifa_ifwithaddr(sintosa(&sin));
+		if (ifa == NULL)
+			return (EADDRNOTAVAIL);
+		ifp = ifa->ifa_ifp;
+	}
+
 	if (vifcp->vifc_flags & VIFF_TUNNEL) {
 		if (vifcp->vifc_flags & VIFF_SRCRT) {
-			log(LOG_ERR, "Source routed tunnels not supported.");
+			log(LOG_ERR, "Source routed tunnels not supported.\n");
 			return (EOPNOTSUPP);
 		}
 
 		/* Create a fake encapsulation interface. */
 		ifp = (struct ifnet *)malloc(sizeof(*ifp), M_MRTABLE, M_WAITOK);
 		bzero(ifp, sizeof(*ifp));
-		ifp->if_name = "mdecap";
-		ifp->if_unit = vifcp->vifc_vifi;
+		snprintf(ifp->if_xname, sizeof ifp->if_xname,
+		    "mdecap%d", vifcp->vifc_vifi);
 
 		/* Prepare cached route entry. */
 		bzero(&vifp->v_route, sizeof(vifp->v_route));
 
-		/* Tell ipip_input() to start looking at encapsulated packets. */
+		/*
+		 * Tell ipip_mroute_input() to start looking at
+		 * encapsulated packets.
+		 */
 		have_encap_tunnel = 1;
+#ifdef PIM
+	} else if (vifcp->vifc_flags & VIFF_REGISTER) {
+		ifp = &multicast_register_if;
+		if (mrtdebug)
+			log(LOG_DEBUG, "Adding a register vif, ifp: %p\n",
+			    (void *)ifp);
+		if (reg_vif_num == VIFI_INVALID) {
+			bzero(ifp, sizeof(*ifp));
+			snprintf(ifp->if_xname, sizeof ifp->if_xname,
+				 "register_vif");
+			ifp->if_flags = IFF_LOOPBACK;
+			bzero(&vifp->v_route, sizeof(vifp->v_route));
+			reg_vif_num = vifcp->vifc_vifi;
+		}
+#endif
 	} else {
 		/* Use the physical interface associated with the address. */
 		ifp = ifa->ifa_ifp;
@@ -565,72 +895,95 @@ add_vif(m)
 		/* Make sure the interface supports multicast. */
 		if ((ifp->if_flags & IFF_MULTICAST) == 0)
 			return (EOPNOTSUPP);
-		
+
 		/* Enable promiscuous reception of all IP multicasts. */
 		satosin(&ifr.ifr_addr)->sin_len = sizeof(struct sockaddr_in);
 		satosin(&ifr.ifr_addr)->sin_family = AF_INET;
-		satosin(&ifr.ifr_addr)->sin_addr.s_addr = INADDR_ANY;
+		satosin(&ifr.ifr_addr)->sin_addr = zeroin_addr;
 		error = (*ifp->if_ioctl)(ifp, SIOCADDMULTI, (caddr_t)&ifr);
 		if (error)
 			return (error);
 	}
-	
+
 	s = splsoftnet();
+
 	/* Define parameters for the tbf structure. */
-	vifp->v_tbf.q_len = 0;
-	vifp->v_tbf.n_tok = 0;
-	vifp->v_tbf.last_pkt_t = 0;
-	
+	vifp->tbf_q = NULL;
+	vifp->tbf_t = &vifp->tbf_q;
+	microtime(&vifp->tbf_last_pkt_t);
+	vifp->tbf_n_tok = 0;
+	vifp->tbf_q_len = 0;
+	vifp->tbf_max_q_len = MAXQSIZE;
+
 	vifp->v_flags = vifcp->vifc_flags;
 	vifp->v_threshold = vifcp->vifc_threshold;
+	/* scaling up here allows division by 1024 in critical code */
+	vifp->v_rate_limit = vifcp->vifc_rate_limit * 1024 / 1000;
 	vifp->v_lcl_addr = vifcp->vifc_lcl_addr;
 	vifp->v_rmt_addr = vifcp->vifc_rmt_addr;
 	vifp->v_ifp = ifp;
-	vifp->v_rate_limit = vifcp->vifc_rate_limit;
-#ifdef RSVP_ISI
-	vifp->v_rsvp_on = 0;
-	vifp->v_rsvpd = NULL;
-#endif /* RSVP_ISI */
 	/* Initialize per vif pkt counters. */
 	vifp->v_pkt_in = 0;
 	vifp->v_pkt_out = 0;
 	vifp->v_bytes_in = 0;
 	vifp->v_bytes_out = 0;
+
+	timeout_del(&vifp->v_repq_ch);
+
+#ifdef RSVP_ISI
+	vifp->v_rsvp_on = 0;
+	vifp->v_rsvpd = NULL;
+#endif /* RSVP_ISI */
+
 	splx(s);
-	
+
 	/* Adjust numvifs up if the vifi is higher than numvifs. */
 	if (numvifs <= vifcp->vifc_vifi)
 		numvifs = vifcp->vifc_vifi + 1;
-	
+
 	if (mrtdebug)
-		log(LOG_DEBUG, "add_vif #%d, lcladdr %x, %s %x, thresh %x, rate %d",
-		    vifcp->vifc_vifi, 
+		log(LOG_DEBUG, "add_vif #%d, lcladdr %x, %s %x, thresh %x, rate %d\n",
+		    vifcp->vifc_vifi,
 		    ntohl(vifcp->vifc_lcl_addr.s_addr),
 		    (vifcp->vifc_flags & VIFF_TUNNEL) ? "rmtaddr" : "mask",
 		    ntohl(vifcp->vifc_rmt_addr.s_addr),
 		    vifcp->vifc_threshold,
-		    vifcp->vifc_rate_limit);    
-	
+		    vifcp->vifc_rate_limit);
+
 	return (0);
 }
 
 void
-reset_vif(vifp)
-	register struct vif *vifp;
+reset_vif(struct vif *vifp)
 {
+	struct mbuf *m, *n;
 	struct ifnet *ifp;
 	struct ifreq ifr;
+
+	timeout_set(&vifp->v_repq_ch, tbf_reprocess_q, vifp);
+
+	/*
+	 * Free packets queued at the interface
+	 */
+	for (m = vifp->tbf_q; m != NULL; m = n) {
+		n = m->m_nextpkt;
+		m_freem(m);
+	}
 
 	if (vifp->v_flags & VIFF_TUNNEL) {
 		free(vifp->v_ifp, M_MRTABLE);
 		if (vifp == last_encap_vif) {
-			last_encap_vif = 0;
-			last_encap_src = 0;
+			last_encap_vif = NULL;
+			last_encap_src = zeroin_addr;
 		}
+	} else if (vifp->v_flags & VIFF_REGISTER) {
+#ifdef PIM
+		reg_vif_num = VIFI_INVALID;
+#endif
 	} else {
 		satosin(&ifr.ifr_addr)->sin_len = sizeof(struct sockaddr_in);
 		satosin(&ifr.ifr_addr)->sin_family = AF_INET;
-		satosin(&ifr.ifr_addr)->sin_addr.s_addr = INADDR_ANY;
+		satosin(&ifr.ifr_addr)->sin_addr = zeroin_addr;
 		ifp = vifp->v_ifp;
 		(*ifp->if_ioctl)(ifp, SIOCDELMULTI, (caddr_t)&ifr);
 	}
@@ -641,15 +994,14 @@ reset_vif(vifp)
  * Delete a vif from the vif table
  */
 static int
-del_vif(m)
-	struct mbuf *m;
+del_vif(struct mbuf *m)
 {
 	vifi_t *vifip;
-	register struct vif *vifp;
-	register vifi_t vifi;
+	struct vif *vifp;
+	vifi_t vifi;
 	int s;
-	
-	if (m == 0 || m->m_len < sizeof(vifi_t))
+
+	if (m == NULL || m->m_len < sizeof(vifi_t))
 		return (EINVAL);
 
 	vifip = mtod(m, vifi_t *);
@@ -657,48 +1009,103 @@ del_vif(m)
 		return (EINVAL);
 
 	vifp = &viftable[*vifip];
-	if (vifp->v_lcl_addr.s_addr == 0)
+	if (in_nullhost(vifp->v_lcl_addr))
 		return (EADDRNOTAVAIL);
-	
+
 	s = splsoftnet();
-	
+
 	reset_vif(vifp);
-	
-	bzero((caddr_t)qtable[*vifip], sizeof(qtable[*vifip]));
-	
+
 	/* Adjust numvifs down */
 	for (vifi = numvifs; vifi > 0; vifi--)
-		if (viftable[vifi-1].v_lcl_addr.s_addr != 0)
+		if (!in_nullhost(viftable[vifi - 1].v_lcl_addr))
 			break;
 	numvifs = vifi;
-	
+
 	splx(s);
-	
+
 	if (mrtdebug)
-		log(LOG_DEBUG, "del_vif %d, numvifs %d", *vifip, numvifs);
-	
+		log(LOG_DEBUG, "del_vif %d, numvifs %d\n", *vifip, numvifs);
+
 	return (0);
 }
 
-static void
-update_mfc(mfccp, rt)
-	struct mfcctl *mfccp;
-	struct mfc *rt;
+void
+vif_delete(struct ifnet *ifp)
 {
-	vifi_t vifi;
+	int i;
+	struct vif *vifp;
+	struct mfc *rt;
+	struct rtdetq *rte;
+
+	for (i = 0; i < numvifs; i++) {
+		vifp = &viftable[i];
+		if (vifp->v_ifp == ifp)
+			bzero((caddr_t)vifp, sizeof *vifp);
+	}
+
+	for (i = numvifs; i > 0; i--)
+		if (!in_nullhost(viftable[i - 1].v_lcl_addr))
+			break;
+	numvifs = i;
+
+	for (i = 0; i < MFCTBLSIZ; i++) {
+		if (nexpire[i] == 0)
+			continue;
+		LIST_FOREACH(rt, &mfchashtbl[i], mfc_hash) {
+			for (rte = rt->mfc_stall; rte; rte = rte->next) {
+				if (rte->ifp == ifp)
+					rte->ifp = NULL;
+			}
+		}
+	}
+}
+
+/*
+ * update an mfc entry without resetting counters and S,G addresses.
+ */
+static void
+update_mfc_params(struct mfc *rt, struct mfcctl2 *mfccp)
+{
+	int i;
 
 	rt->mfc_parent = mfccp->mfcc_parent;
-	for (vifi = 0; vifi < numvifs; vifi++)
-		rt->mfc_ttls[vifi] = mfccp->mfcc_ttls[vifi];
-	rt->mfc_expire = 0;
-	rt->mfc_stall = 0;
+	for (i = 0; i < numvifs; i++) {
+		rt->mfc_ttls[i] = mfccp->mfcc_ttls[i];
+		rt->mfc_flags[i] = mfccp->mfcc_flags[i] & mrt_api_config &
+			MRT_MFC_FLAGS_ALL;
+	}
+	/* set the RP address */
+	if (mrt_api_config & MRT_MFC_RP)
+		rt->mfc_rp = mfccp->mfcc_rp;
+	else
+		rt->mfc_rp = zeroin_addr;
+}
+
+/*
+ * fully initialize an mfc entry from the parameter.
+ */
+static void
+init_mfc_params(struct mfc *rt, struct mfcctl2 *mfccp)
+{
+	rt->mfc_origin     = mfccp->mfcc_origin;
+	rt->mfc_mcastgrp   = mfccp->mfcc_mcastgrp;
+
+	update_mfc_params(rt, mfccp);
+
+	/* initialize pkt counters per src-grp */
+	rt->mfc_pkt_cnt    = 0;
+	rt->mfc_byte_cnt   = 0;
+	rt->mfc_wrong_if   = 0;
+	timerclear(&rt->mfc_last_assert);
 }
 
 static void
-expire_mfc(rt)
-	struct mfc *rt;
+expire_mfc(struct mfc *rt)
 {
 	struct rtdetq *rte, *nrte;
+
+	free_bw_list(rt->mfc_bw_meter);
 
 	for (rte = rt->mfc_stall; rte != NULL; rte = nrte) {
 		nrte = rte->next;
@@ -714,113 +1121,141 @@ expire_mfc(rt)
  * Add an mfc entry
  */
 static int
-add_mfc(m)
-	struct mbuf *m;
+add_mfc(struct mbuf *m)
 {
-	struct mfcctl *mfccp;
-	struct mfc *rt, *rt1;
-	u_int32_t hash;
-	vifi_t vifi;
+	struct mfcctl2 mfcctl2;
+	struct mfcctl2 *mfccp;
+	struct mfc *rt;
+	u_int32_t hash = 0;
 	struct rtdetq *rte, *nrte;
-	register u_short nstl;
+	u_short nstl;
 	int s;
+	int mfcctl_size = sizeof(struct mfcctl);
 
-	if (m == 0 || m->m_len < sizeof(struct mfcctl))
+	if (mrt_api_config & MRT_API_FLAGS_ALL)
+		mfcctl_size = sizeof(struct mfcctl2);
+
+	if (m == NULL || m->m_len < mfcctl_size)
 		return (EINVAL);
 
-	mfccp = mtod(m, struct mfcctl *);
+	/*
+	 * select data size depending on API version.
+	 */
+	if (mrt_api_config & MRT_API_FLAGS_ALL) {
+		struct mfcctl2 *mp2 = mtod(m, struct mfcctl2 *);
+		bcopy(mp2, (caddr_t)&mfcctl2, sizeof(*mp2));
+	} else {
+		struct mfcctl *mp = mtod(m, struct mfcctl *);
+		bcopy(mp, (caddr_t)&mfcctl2, sizeof(*mp));
+		bzero((caddr_t)&mfcctl2 + sizeof(struct mfcctl),
+		      sizeof(mfcctl2) - sizeof(struct mfcctl));
+	}
+	mfccp = &mfcctl2;
 
 	s = splsoftnet();
-	MFCFIND(mfccp->mfcc_origin.s_addr, mfccp->mfcc_mcastgrp.s_addr, rt);
+	rt = mfc_find(&mfccp->mfcc_origin, &mfccp->mfcc_mcastgrp);
 
 	/* If an entry already exists, just update the fields */
 	if (rt) {
 		if (mrtdebug & DEBUG_MFC)
-			log(LOG_DEBUG,"add_mfc update o %x g %x p %x",
+			log(LOG_DEBUG, "add_mfc update o %x g %x p %x\n",
 			    ntohl(mfccp->mfcc_origin.s_addr),
 			    ntohl(mfccp->mfcc_mcastgrp.s_addr),
 			    mfccp->mfcc_parent);
 
-		if (rt->mfc_expire)
-			nexpire[hash]--;
-
-		update_mfc(mfccp, rt);
+		update_mfc_params(rt, mfccp);
 
 		splx(s);
 		return (0);
 	}
 
-	/* 
+	/*
 	 * Find the entry for which the upcall was made and update
 	 */
 	nstl = 0;
-	hash = MFCHASH(mfccp->mfcc_origin.s_addr, mfccp->mfcc_mcastgrp.s_addr);
-	for (rt = mfchashtbl[hash].lh_first; rt; rt = rt->mfc_hash.le_next) {
-		if (rt->mfc_origin.s_addr == mfccp->mfcc_origin.s_addr &&
-		    rt->mfc_mcastgrp.s_addr == mfccp->mfcc_mcastgrp.s_addr &&
+	hash = MFCHASH(mfccp->mfcc_origin, mfccp->mfcc_mcastgrp);
+	LIST_FOREACH(rt, &mfchashtbl[hash], mfc_hash) {
+		if (in_hosteq(rt->mfc_origin, mfccp->mfcc_origin) &&
+		    in_hosteq(rt->mfc_mcastgrp, mfccp->mfcc_mcastgrp) &&
 		    rt->mfc_stall != NULL) {
 			if (nstl++)
-				log(LOG_ERR, "add_mfc %s o %x g %x p %x dbx %x",
+				log(LOG_ERR, "add_mfc %s o %x g %x p %x dbx %p\n",
 				    "multiple kernel entries",
 				    ntohl(mfccp->mfcc_origin.s_addr),
 				    ntohl(mfccp->mfcc_mcastgrp.s_addr),
 				    mfccp->mfcc_parent, rt->mfc_stall);
 
 			if (mrtdebug & DEBUG_MFC)
-				log(LOG_DEBUG,"add_mfc o %x g %x p %x dbg %x",
+				log(LOG_DEBUG, "add_mfc o %x g %x p %x dbg %p\n",
 				    ntohl(mfccp->mfcc_origin.s_addr),
 				    ntohl(mfccp->mfcc_mcastgrp.s_addr),
 				    mfccp->mfcc_parent, rt->mfc_stall);
 
-			if (rt->mfc_expire)
-				nexpire[hash]--;
+			rte = rt->mfc_stall;
+			init_mfc_params(rt, mfccp);
+			rt->mfc_stall = NULL;
+
+			rt->mfc_expire = 0; /* Don't clean this guy up */
+			nexpire[hash]--;
 
 			/* free packets Qed at the end of this entry */
-			for (rte = rt->mfc_stall; rte != NULL; rte = nrte) {
+			for (; rte != NULL; rte = nrte) {
 				nrte = rte->next;
+				if (rte->ifp) {
 #ifdef RSVP_ISI
-				ip_mdq(rte->m, rte->ifp, rt, -1);
+					ip_mdq(rte->m, rte->ifp, rt, -1);
 #else
-				ip_mdq(rte->m, rte->ifp, rt);
+					ip_mdq(rte->m, rte->ifp, rt);
 #endif /* RSVP_ISI */
+				}
 				m_freem(rte->m);
 #ifdef UPCALL_TIMING
 				collate(&rte->t);
 #endif /* UPCALL_TIMING */
 				free(rte, M_MRTABLE);
 			}
-
-			update_mfc(mfccp, rt);
 		}
 	}
 
+	/*
+	 * It is possible that an entry is being inserted without an upcall
+	 */
 	if (nstl == 0) {
 		/*
 		 * No mfc; make a new one
 		 */
 		if (mrtdebug & DEBUG_MFC)
-			log(LOG_DEBUG,"add_mfc no upcall o %x g %x p %x",
+			log(LOG_DEBUG, "add_mfc no upcall o %x g %x p %x\n",
 			    ntohl(mfccp->mfcc_origin.s_addr),
 			    ntohl(mfccp->mfcc_mcastgrp.s_addr),
 			    mfccp->mfcc_parent);
-	
-		rt = (struct mfc *)malloc(sizeof(*rt), M_MRTABLE, M_NOWAIT);
-		if (rt == NULL) {
-			splx(s);
-			return (ENOBUFS);
-		}
 
-		rt->mfc_origin = mfccp->mfcc_origin;
-		rt->mfc_mcastgrp = mfccp->mfcc_mcastgrp;
-		/* initialize pkt counters per src-grp */
-		rt->mfc_pkt_cnt = 0;
-		rt->mfc_byte_cnt = 0;
-		rt->mfc_wrong_if = 0;
-		timerclear(&rt->mfc_last_assert);
-		update_mfc(mfccp, rt);
-	    
-		/* insert new entry at head of hash chain */
-		LIST_INSERT_HEAD(&mfchashtbl[hash], rt, mfc_hash);
+		LIST_FOREACH(rt, &mfchashtbl[hash], mfc_hash) {
+			if (in_hosteq(rt->mfc_origin, mfccp->mfcc_origin) &&
+			    in_hosteq(rt->mfc_mcastgrp, mfccp->mfcc_mcastgrp)) {
+				init_mfc_params(rt, mfccp);
+				if (rt->mfc_expire)
+					nexpire[hash]--;
+				rt->mfc_expire = 0;
+				break; /* XXX */
+			}
+		}
+		if (rt == NULL) {	/* no upcall, so make a new entry */
+			rt = (struct mfc *)malloc(sizeof(*rt), M_MRTABLE,
+						  M_NOWAIT);
+			if (rt == NULL) {
+				splx(s);
+				return (ENOBUFS);
+			}
+
+			init_mfc_params(rt, mfccp);
+			rt->mfc_expire	= 0;
+			rt->mfc_stall	= NULL;
+			rt->mfc_bw_meter = NULL;
+
+			/* insert new entry at head of hash chain */
+			LIST_INSERT_HEAD(&mfchashtbl[hash], rt, mfc_hash);
+		}
 	}
 
 	splx(s);
@@ -829,26 +1264,26 @@ add_mfc(m)
 
 #ifdef UPCALL_TIMING
 /*
- * collect delay statistics on the upcalls 
+ * collect delay statistics on the upcalls
  */
-static void collate(t)
-register struct timeval *t;
+static void
+collate(struct timeval *t)
 {
-    register u_int32_t d;
-    register struct timeval tp;
-    register u_int32_t delta;
-    
-    microtime(&tp);
-    
-    if (timercmp(t, &tp, <)) {
-	TV_DELTA(tp, *t, delta);
-	
-	d = delta >> 10;
-	if (d > 50)
-	    d = 50;
-	
-	++upcall_data[d];
-    }
+	u_int32_t d;
+	struct timeval tp;
+	u_int32_t delta;
+
+	microtime(&tp);
+
+	if (timercmp(t, &tp, <)) {
+		TV_DELTA(tp, *t, delta);
+
+		d = delta >> 10;
+		if (d > 50)
+			d = 50;
+
+		++upcall_data[d];
+	}
 }
 #endif /* UPCALL_TIMING */
 
@@ -856,29 +1291,47 @@ register struct timeval *t;
  * Delete an mfc entry
  */
 static int
-del_mfc(m)
-	struct mbuf *m;
+del_mfc(struct mbuf *m)
 {
-	struct mfcctl *mfccp;
+	struct mfcctl2 mfcctl2;
+	struct mfcctl2 *mfccp;
 	struct mfc *rt;
 	int s;
+	int mfcctl_size = sizeof(struct mfcctl);
+	struct mfcctl *mp = mtod(m, struct mfcctl *);
 
-	if (m == 0 || m->m_len < sizeof(struct mfcctl))
+	/*
+	 * XXX: for deleting MFC entries the information in entries
+	 * of size "struct mfcctl" is sufficient.
+	 */
+
+	if (m == NULL || m->m_len < mfcctl_size)
 		return (EINVAL);
 
-	mfccp = mtod(m, struct mfcctl *);
+	bcopy(mp, (caddr_t)&mfcctl2, sizeof(*mp));
+	bzero((caddr_t)&mfcctl2 + sizeof(struct mfcctl),
+	      sizeof(mfcctl2) - sizeof(struct mfcctl));
+
+	mfccp = &mfcctl2;
 
 	if (mrtdebug & DEBUG_MFC)
-		log(LOG_DEBUG, "del_mfc origin %x mcastgrp %x",
-		    ntohl(mfccp->mfcc_origin.s_addr), ntohl(mfccp->mfcc_mcastgrp.s_addr));
+		log(LOG_DEBUG, "del_mfc origin %x mcastgrp %x\n",
+		    ntohl(mfccp->mfcc_origin.s_addr),
+		    ntohl(mfccp->mfcc_mcastgrp.s_addr));
 
 	s = splsoftnet();
 
-	MFCFIND(mfccp->mfcc_origin.s_addr, mfccp->mfcc_mcastgrp.s_addr, rt);
+	rt = mfc_find(&mfccp->mfcc_origin, &mfccp->mfcc_mcastgrp);
 	if (rt == NULL) {
 		splx(s);
 		return (EADDRNOTAVAIL);
 	}
+
+	/*
+	 * free the bw_meter entries
+	 */
+	free_bw_list(rt->mfc_bw_meter);
+	rt->mfc_bw_meter = NULL;
 
 	LIST_REMOVE(rt, mfc_hash);
 	free(rt, M_MRTABLE);
@@ -888,19 +1341,17 @@ del_mfc(m)
 }
 
 static int
-socket_send(s, mm, src)
-    struct socket *s;
-    struct mbuf *mm;
-    struct sockaddr_in *src;
+socket_send(struct socket *s, struct mbuf *mm, struct sockaddr_in *src)
 {
-    if (s) {
-	if (sbappendaddr(&s->so_rcv, sintosa(src), mm, (struct mbuf *)0) != 0) {
-	    sorwakeup(s);
-	    return (0);
+	if (s != NULL) {
+		if (sbappendaddr(&s->so_rcv, sintosa(src), mm,
+		    (struct mbuf *)NULL) != 0) {
+			sorwakeup(s);
+			return (0);
+		}
 	}
-    }
-    m_freem(mm);
-    return (-1);
+	m_freem(mm);
+	return (-1);
 }
 
 /*
@@ -919,235 +1370,251 @@ socket_send(s, mm, src)
 
 int
 #ifdef RSVP_ISI
-ip_mforward(m, ifp, imo)
+ip_mforward(struct mbuf *m, struct ifnet *ifp, struct ip_moptions *imo)
 #else
-ip_mforward(m, ifp)
-#endif /* RSVP_ISI */
-    struct mbuf *m;
-    struct ifnet *ifp;
-#ifdef RSVP_ISI
-    struct ip_moptions *imo;
+ip_mforward(struct mbuf *m, struct ifnet *ifp)
 #endif /* RSVP_ISI */
 {
-    register struct ip *ip = mtod(m, struct ip *);
-    register struct mfc *rt;
-    register struct vif *vifp;
-    register u_char *ipoptions;
-    static struct sockproto k_igmpproto = { AF_INET, IPPROTO_IGMP };
-    static int srctun = 0;
-    register struct mbuf *mm, *mn;
-    int s;
-#ifdef RSVP_ISI
-    vifi_t vifi;
-#endif /* RSVP_ISI */
+	struct ip *ip = mtod(m, struct ip *);
+	struct mfc *rt;
+	static int srctun = 0;
+	struct mbuf *mm;
+	int s;
+	vifi_t vifi;
 
-    if (mrtdebug & DEBUG_FORWARD)
-	log(LOG_DEBUG, "ip_mforward: src %x, dst %x, ifp %x",
-	    ntohl(ip->ip_src.s_addr), ntohl(ip->ip_dst.s_addr), ifp);
+	if (mrtdebug & DEBUG_FORWARD)
+		log(LOG_DEBUG, "ip_mforward: src %x, dst %x, ifp %p\n",
+		    ntohl(ip->ip_src.s_addr), ntohl(ip->ip_dst.s_addr), ifp);
 
-    if (ip->ip_hl < (IP_HDR_LEN + TUNNEL_LEN) >> 2 ||
-	(ipoptions = (u_char *)(ip + 1))[1] != IPOPT_LSRR) {
-	/*
-	 * Packet arrived via a physical interface or
-	 * an encapuslated tunnel.
-	 */
-    } else {
-	/*
-	 * Packet arrived through a source-route tunnel.
-	 * Source-route tunnels are no longer supported.
-	 */
-	if ((srctun++ % 1000) == 0)
-	    log(LOG_ERR, "ip_mforward: received source-routed packet from %x",
-		ntohl(ip->ip_src.s_addr));
-
-	return (1);
-    }
-
-#ifdef RSVP_ISI
-    if (imo && ((vifi = imo->imo_multicast_vif) < numvifs)) {
-	if (ip->ip_ttl < 255)
-	    ip->ip_ttl++;	/* compensate for -1 in *_send routines */
-	if (rsvpdebug && ip->ip_p == IPPROTO_RSVP) {
-	    vifp = viftable + vifi;
-	    printf("Sending IPPROTO_RSVP from %x to %x on vif %d (%s%s%d)\n",
-		ntohl(ip->ip_src), ntohl(ip->ip_dst), vifi,
-		(vifp->v_flags & VIFF_TUNNEL) ? "tunnel on " : "",
-		vifp->v_ifp->if_name, vifp->v_ifp->if_unit);
-	}
-	return (ip_mdq(m, ifp, rt, vifi));
-    }
-    if (rsvpdebug && ip->ip_p == IPPROTO_RSVP) {
-	printf("Warning: IPPROTO_RSVP from %x to %x without vif option\n",
-	    ntohl(ip->ip_src), ntohl(ip->ip_dst));
-    }
-#endif /* RSVP_ISI */
-
-    /*
-     * Don't forward a packet with time-to-live of zero or one,
-     * or a packet destined to a local-only group.
-     */
-    if (ip->ip_ttl <= 1 ||
-	IN_LOCAL_GROUP(ip->ip_dst.s_addr))
-	return (0);
-
-    /*
-     * Determine forwarding vifs from the forwarding cache table
-     */
-    s = splsoftnet();
-    MFCFIND(ip->ip_src.s_addr, ip->ip_dst.s_addr, rt);
-
-    /* Entry exists, so forward if necessary */
-    if (rt != NULL) {
-	splx(s);
-#ifdef RSVP_ISI
-	return (ip_mdq(m, ifp, rt, -1));
-#else
-	return (ip_mdq(m, ifp, rt));
-#endif /* RSVP_ISI */
-    } else {
-	/*
-	 * If we don't have a route for packet's origin,
-	 * Make a copy of the packet &
-	 * send message to routing daemon
-	 */
-
-	register struct mbuf *mb0;
-	register struct rtdetq *rte;
-	register u_int32_t hash;
-#ifdef UPCALL_TIMING
-	struct timeval tp;
-
-	microtime(&tp);
-#endif /* UPCALL_TIMING */
-
-	mrtstat.mrts_no_route++;
-	if (mrtdebug & (DEBUG_FORWARD | DEBUG_MFC))
-	    log(LOG_DEBUG, "ip_mforward: no rte s %x g %x",
-		ntohl(ip->ip_src.s_addr),
-		ntohl(ip->ip_dst.s_addr));
-
-	/*
-	 * Allocate mbufs early so that we don't do extra work if we are
-	 * just going to fail anyway.
-	 */
-	rte = (struct rtdetq *)malloc(sizeof(*rte), M_MRTABLE, M_NOWAIT);
-	if (rte == NULL) {
-	    splx(s);
-	    return (ENOBUFS);
-	}
-	mb0 = m_copy(m, 0, M_COPYALL);
-	if (mb0 == NULL) {
-	    free(rte, M_MRTABLE);
-	    splx(s);
-	    return (ENOBUFS);
-	}
-	    
-	/* is there an upcall waiting for this packet? */
-	hash = MFCHASH(ip->ip_src.s_addr, ip->ip_dst.s_addr);
-	for (rt = mfchashtbl[hash].lh_first; rt; rt = rt->mfc_hash.le_next) {
-	    if (ip->ip_src.s_addr == rt->mfc_origin.s_addr &&
-		ip->ip_dst.s_addr == rt->mfc_mcastgrp.s_addr &&
-		rt->mfc_stall != NULL)
-		break;
-	}
-
-	if (rt == NULL) {
-	    int hlen = ip->ip_hl << 2;
-	    int i;
-	    struct igmpmsg *im;
-
-	    /* no upcall, so make a new entry */
-	    rt = (struct mfc *)malloc(sizeof(*rt), M_MRTABLE, M_NOWAIT);
-	    if (rt == NULL) {
-		free(rte, M_MRTABLE);
-		m_free(mb0);
-		splx(s);
-		return (ENOBUFS);
-	    }
-	    /* Make a copy of the header to send to the user level process */
-	    mm = m_copy(m, 0, hlen);
-	    M_PULLUP(mm, hlen);
-	    if (mm == NULL) {
-		free(rte, M_MRTABLE);
-		m_free(mb0);
-		free(rt, M_MRTABLE);
-		splx(s);
-		return (ENOBUFS);
-	    }
-
-	    /* 
-	     * Send message to routing daemon to install 
-	     * a route into the kernel table
-	     */
-	    sin.sin_addr = ip->ip_src;
-	    
-	    im = mtod(mm, struct igmpmsg *);
-	    im->im_msgtype	= IGMPMSG_NOCACHE;
-	    im->im_mbz		= 0;
-
-	    mrtstat.mrts_upcalls++;
-
-	    if (socket_send(ip_mrouter, mm, &sin) < 0) {
-		log(LOG_WARNING, "ip_mforward: ip_mrouter socket queue full");
-		++mrtstat.mrts_upq_sockfull;
-		free(rte, M_MRTABLE);
-		m_free(mb0);
-		free(rt, M_MRTABLE);
-		splx(s);
-		return (ENOBUFS);
-	    }
-
-	    /* insert new entry at head of hash chain */
-	    rt->mfc_origin = ip->ip_src;
-	    rt->mfc_mcastgrp = ip->ip_dst;
-	    rt->mfc_pkt_cnt = 0;
-	    rt->mfc_byte_cnt = 0;
-	    rt->mfc_wrong_if = 0;
-	    rt->mfc_expire = UPCALL_EXPIRE;
-	    nexpire[hash]++;
-	    for (i = 0; i < numvifs; i++)
-		rt->mfc_ttls[i] = 0;
-	    rt->mfc_parent = -1;
-
-	    /* link into table */
-	    LIST_INSERT_HEAD(&mfchashtbl[hash], rt, mfc_hash);
-	    /* Add this entry to the end of the queue */
-	    rt->mfc_stall = rte;
+	if (ip->ip_hl < (IP_HDR_LEN + TUNNEL_LEN) >> 2 ||
+	    ((u_char *)(ip + 1))[1] != IPOPT_LSRR) {
+		/*
+		 * Packet arrived via a physical interface or
+		 * an encapsulated tunnel or a register_vif.
+		 */
 	} else {
-	    /* determine if q has overflowed */
-	    struct rtdetq **p;
-	    register int npkts = 0;
+		/*
+		 * Packet arrived through a source-route tunnel.
+		 * Source-route tunnels are no longer supported.
+		 */
+		if ((srctun++ % 1000) == 0)
+			log(LOG_ERR,
+			    "ip_mforward: received source-routed packet from %x\n",
+			    ntohl(ip->ip_src.s_addr));
 
-	    for (p = &rt->mfc_stall; *p != NULL; p = &(*p)->next)
-		if (++npkts > MAX_UPQ) {
-		    mrtstat.mrts_upq_ovflw++;
-		    free(rte, M_MRTABLE);
-		    m_free(mb0);
-		    splx(s);
-		    return (0);
-	        }
-
-	    /* Add this entry to the end of the queue */
-	    *p = rte;
+		return (1);
 	}
 
-	rte->next		= NULL;
-	rte->m 			= mb0;
-	rte->ifp 		= ifp;
+#ifdef RSVP_ISI
+	if (imo && ((vifi = imo->imo_multicast_vif) < numvifs)) {
+		if (ip->ip_ttl < 255)
+			ip->ip_ttl++;	/* compensate for -1 in *_send routines */
+		if (rsvpdebug && ip->ip_p == IPPROTO_RSVP) {
+			struct vif *vifp = viftable + vifi;
+			printf("Sending IPPROTO_RSVP from %x to %x on vif %d (%s%s)\n",
+			    ntohl(ip->ip_src), ntohl(ip->ip_dst), vifi,
+			    (vifp->v_flags & VIFF_TUNNEL) ? "tunnel on " : "",
+			    vifp->v_ifp->if_xname);
+		}
+		return (ip_mdq(m, ifp, (struct mfc *)NULL, vifi));
+	}
+	if (rsvpdebug && ip->ip_p == IPPROTO_RSVP) {
+		printf("Warning: IPPROTO_RSVP from %x to %x without vif option\n",
+		    ntohl(ip->ip_src), ntohl(ip->ip_dst));
+	}
+#endif /* RSVP_ISI */
+
+	/*
+	 * Don't forward a packet with time-to-live of zero or one,
+	 * or a packet destined to a local-only group.
+	 */
+	if (ip->ip_ttl <= 1 || IN_LOCAL_GROUP(ip->ip_dst.s_addr))
+		return (0);
+
+	/*
+	 * Determine forwarding vifs from the forwarding cache table
+	 */
+	s = splsoftnet();
+	++mrtstat.mrts_mfc_lookups;
+	rt = mfc_find(&ip->ip_src, &ip->ip_dst);
+
+	/* Entry exists, so forward if necessary */
+	if (rt != NULL) {
+		splx(s);
+#ifdef RSVP_ISI
+		return (ip_mdq(m, ifp, rt, -1));
+#else
+		return (ip_mdq(m, ifp, rt));
+#endif /* RSVP_ISI */
+	} else {
+		/*
+		 * If we don't have a route for packet's origin,
+		 * Make a copy of the packet & send message to routing daemon
+		 */
+
+		struct mbuf *mb0;
+		struct rtdetq *rte;
+		u_int32_t hash;
+		int hlen = ip->ip_hl << 2;
 #ifdef UPCALL_TIMING
-	rte->t			= tp;
+		struct timeval tp;
+
+		microtime(&tp);
 #endif /* UPCALL_TIMING */
 
+		++mrtstat.mrts_mfc_misses;
 
-	splx(s);
+		mrtstat.mrts_no_route++;
+		if (mrtdebug & (DEBUG_FORWARD | DEBUG_MFC))
+			log(LOG_DEBUG, "ip_mforward: no rte s %x g %x\n",
+			    ntohl(ip->ip_src.s_addr),
+			    ntohl(ip->ip_dst.s_addr));
 
-	return (0);
-    }
+		/*
+		 * Allocate mbufs early so that we don't do extra work if we are
+		 * just going to fail anyway.  Make sure to pullup the header so
+		 * that other people can't step on it.
+		 */
+		rte = (struct rtdetq *)malloc(sizeof(*rte), M_MRTABLE, M_NOWAIT);
+		if (rte == NULL) {
+			splx(s);
+			return (ENOBUFS);
+		}
+		mb0 = m_copy(m, 0, M_COPYALL);
+		M_PULLUP(mb0, hlen);
+		if (mb0 == NULL) {
+			free(rte, M_MRTABLE);
+			splx(s);
+			return (ENOBUFS);
+		}
+
+		/* is there an upcall waiting for this flow? */
+		hash = MFCHASH(ip->ip_src, ip->ip_dst);
+		LIST_FOREACH(rt, &mfchashtbl[hash], mfc_hash) {
+			if (in_hosteq(ip->ip_src, rt->mfc_origin) &&
+			    in_hosteq(ip->ip_dst, rt->mfc_mcastgrp) &&
+			    rt->mfc_stall != NULL)
+				break;
+		}
+
+		if (rt == NULL) {
+			int i;
+			struct igmpmsg *im;
+
+			/*
+			 * Locate the vifi for the incoming interface for
+			 * this packet.
+			 * If none found, drop packet.
+			 */
+			for (vifi = 0; vifi < numvifs &&
+				 viftable[vifi].v_ifp != ifp; vifi++)
+				;
+			if (vifi >= numvifs) /* vif not found, drop packet */
+				goto non_fatal;
+
+			/* no upcall, so make a new entry */
+			rt = (struct mfc *)malloc(sizeof(*rt), M_MRTABLE, M_NOWAIT);
+			if (rt == NULL)
+				goto fail;
+			/*
+			 * Make a copy of the header to send to the user level
+			 * process
+			 */
+			mm = m_copy(m, 0, hlen);
+			M_PULLUP(mm, hlen);
+			if (mm == NULL)
+				goto fail1;
+
+			/*
+			 * Send message to routing daemon to install
+			 * a route into the kernel table
+			 */
+
+			im = mtod(mm, struct igmpmsg *);
+			im->im_msgtype = IGMPMSG_NOCACHE;
+			im->im_mbz = 0;
+			im->im_vif = vifi;
+
+			mrtstat.mrts_upcalls++;
+
+			sin.sin_addr = ip->ip_src;
+			if (socket_send(ip_mrouter, mm, &sin) < 0) {
+				log(LOG_WARNING,
+				    "ip_mforward: ip_mrouter socket queue full\n");
+				++mrtstat.mrts_upq_sockfull;
+			fail1:
+				free(rt, M_MRTABLE);
+			fail:
+				free(rte, M_MRTABLE);
+				m_freem(mb0);
+				splx(s);
+				return (ENOBUFS);
+			}
+
+			/* insert new entry at head of hash chain */
+			rt->mfc_origin = ip->ip_src;
+			rt->mfc_mcastgrp = ip->ip_dst;
+			rt->mfc_pkt_cnt = 0;
+			rt->mfc_byte_cnt = 0;
+			rt->mfc_wrong_if = 0;
+			rt->mfc_expire = UPCALL_EXPIRE;
+			nexpire[hash]++;
+			for (i = 0; i < numvifs; i++) {
+				rt->mfc_ttls[i] = 0;
+				rt->mfc_flags[i] = 0;
+			}
+			rt->mfc_parent = -1;
+
+			/* clear the RP address */
+			rt->mfc_rp = zeroin_addr;
+
+			rt->mfc_bw_meter = NULL;
+
+			/* link into table */
+			LIST_INSERT_HEAD(&mfchashtbl[hash], rt, mfc_hash);
+			/* Add this entry to the end of the queue */
+			rt->mfc_stall = rte;
+		} else {
+			/* determine if q has overflowed */
+			struct rtdetq **p;
+			int npkts = 0;
+
+			/*
+			 * XXX ouch! we need to append to the list, but we
+			 * only have a pointer to the front, so we have to
+			 * scan the entire list every time.
+			 */
+			for (p = &rt->mfc_stall; *p != NULL; p = &(*p)->next)
+				if (++npkts > MAX_UPQ) {
+					mrtstat.mrts_upq_ovflw++;
+				non_fatal:
+					free(rte, M_MRTABLE);
+					m_freem(mb0);
+					splx(s);
+					return (0);
+				}
+
+			/* Add this entry to the end of the queue */
+			*p = rte;
+		}
+
+		rte->next = NULL;
+		rte->m = mb0;
+		rte->ifp = ifp;
+	#ifdef UPCALL_TIMING
+		rte->t = tp;
+	#endif /* UPCALL_TIMING */
+
+		splx(s);
+
+		return (0);
+	}
 }
 
 
+/*ARGSUSED*/
 static void
-expire_upcalls()
+expire_upcalls(void *v)
 {
 	int i;
 	int s;
@@ -1155,23 +1622,32 @@ expire_upcalls()
 	s = splsoftnet();
 
 	for (i = 0; i < MFCTBLSIZ; i++) {
-		register struct mfc *rt, *nrt;
+		struct mfc *rt, *nrt;
 
 		if (nexpire[i] == 0)
 			continue;
 
-		for (rt = mfchashtbl[i].lh_first; rt; rt = nrt) {
-			nrt = rt->mfc_hash.le_next;
+		for (rt = LIST_FIRST(&mfchashtbl[i]); rt; rt = nrt) {
+			nrt = LIST_NEXT(rt, mfc_hash);
 
-			if (rt->mfc_expire == 0 ||
-			    --rt->mfc_expire > 0)
+			if (rt->mfc_expire == 0 || --rt->mfc_expire > 0)
 				continue;
 			nexpire[i]--;
+
+			/*
+			 * free the bw_meter entries
+			 */
+			while (rt->mfc_bw_meter != NULL) {
+				struct bw_meter *x = rt->mfc_bw_meter;
+
+				rt->mfc_bw_meter = x->bm_mfc_next;
+				free(x, M_BWMETER);
+			}
 
 			++mrtstat.mrts_cache_cleanups;
 			if (mrtdebug & DEBUG_EXPIRE)
 				log(LOG_DEBUG,
-				    "expire_upcalls: expiring (%x %x)",
+				    "expire_upcalls: expiring (%x %x)\n",
 				    ntohl(rt->mfc_origin.s_addr),
 				    ntohl(rt->mfc_mcastgrp.s_addr));
 
@@ -1180,7 +1656,7 @@ expire_upcalls()
 	}
 
 	splx(s);
-	timeout(expire_upcalls, (caddr_t)0, EXPIRE_TIMEOUT);
+	timeout_add(&expire_upcalls_ch, EXPIRE_TIMEOUT);
 }
 
 /*
@@ -1188,150 +1664,188 @@ expire_upcalls()
  */
 static int
 #ifdef RSVP_ISI
-ip_mdq(m, ifp, rt, xmt_vif)
+ip_mdq(struct mbuf *m, struct ifnet *ifp, struct mfc *rt, vifi_t xmt_vif)
 #else
-ip_mdq(m, ifp, rt)
-#endif /* RSVP_ISI */
-    register struct mbuf *m;
-    register struct ifnet *ifp;
-    register struct mfc *rt;
-#ifdef RSVP_ISI
-    register vifi_t xmt_vif;
+ip_mdq(struct mbuf *m, struct ifnet *ifp, struct mfc *rt)
 #endif /* RSVP_ISI */
 {
-    register struct ip  *ip = mtod(m, struct ip *);
-    register vifi_t vifi;
-    register struct vif *vifp;
-    register struct mbuf *tmp;
-    register int plen = ntohs(ip->ip_len);
+	struct ip  *ip = mtod(m, struct ip *);
+	vifi_t vifi;
+	struct vif *vifp;
+	int plen = ntohs(ip->ip_len) - (ip->ip_hl << 2);
 
 /*
  * Macro to send packet on vif.  Since RSVP packets don't get counted on
  * input, they shouldn't get counted on output, so statistics keeping is
- * seperate.
+ * separate.
  */
-#define MC_SEND(ip,vifp,m) {                             \
-                if ((vifp)->v_flags & VIFF_TUNNEL)	 \
-                    encap_send((ip), (vifp), (m));       \
-                else                                     \
-                    phyint_send((ip), (vifp), (m));      \
-}
+#define MC_SEND(ip, vifp, m) do {					\
+	if ((vifp)->v_flags & VIFF_TUNNEL)				\
+		encap_send((ip), (vifp), (m));				\
+	else								\
+		phyint_send((ip), (vifp), (m));				\
+} while (/*CONSTCOND*/ 0)
 
 #ifdef RSVP_ISI
-    /*
-     * If xmt_vif is not -1, send on only the requested vif.
-     *
-     * (since vifi_t is u_short, -1 becomes MAXUSHORT, which > numvifs.
-     */
-    if (xmt_vif < numvifs) {
-        MC_SEND(ip, viftable + xmt_vif, m);
-	return (1);
-    }
+	/*
+	 * If xmt_vif is not -1, send on only the requested vif.
+	 *
+	 * (since vifi_t is u_short, -1 becomes MAXUSHORT, which > numvifs.
+	 */
+	if (xmt_vif < numvifs) {
+#ifdef PIM
+		if (viftable[xmt_vif].v_flags & VIFF_REGISTER)
+			pim_register_send(ip, viftable + xmt_vif, m, rt);
+		else
+#endif
+		MC_SEND(ip, viftable + xmt_vif, m);
+		return (1);
+	}
 #endif /* RSVP_ISI */
 
-    /*
-     * Don't forward if it didn't arrive from the parent vif for its origin.
-     */
-    vifi = rt->mfc_parent;
-    if ((vifi >= numvifs) || (viftable[vifi].v_ifp != ifp)) {
-	/* came in the wrong interface */
-	if (mrtdebug & DEBUG_FORWARD)
-	    log(LOG_DEBUG, "wrong if: ifp %x vifi %d vififp %x",
-		ifp, vifi, viftable[vifi].v_ifp); 
-	++mrtstat.mrts_wrong_if;
-	++rt->mfc_wrong_if;
 	/*
-	 * If we are doing PIM assert processing, and we are forwarding
-	 * packets on this interface, and it is a broadcast medium
-	 * interface (and not a tunnel), send a message to the routing daemon.
+	 * Don't forward if it didn't arrive from the parent vif for its origin.
 	 */
-	if (pim_assert && rt->mfc_ttls[vifi] &&
-		(ifp->if_flags & IFF_BROADCAST) &&
-		!(viftable[vifi].v_flags & VIFF_TUNNEL)) {
-	    struct mbuf *mm;
-	    struct igmpmsg *im;
-	    int hlen = ip->ip_hl << 2;
-	    struct timeval now;
-	    register u_int32_t delta;
+	vifi = rt->mfc_parent;
+	if ((vifi >= numvifs) || (viftable[vifi].v_ifp != ifp)) {
+		/* came in the wrong interface */
+		if (mrtdebug & DEBUG_FORWARD)
+			log(LOG_DEBUG, "wrong if: ifp %p vifi %d vififp %p\n",
+			    ifp, vifi,
+			    vifi >= numvifs ? 0 : viftable[vifi].v_ifp);
+		++mrtstat.mrts_wrong_if;
+		++rt->mfc_wrong_if;
+		/*
+		 * If we are doing PIM assert processing, send a message
+		 * to the routing daemon.
+		 *
+		 * XXX: A PIM-SM router needs the WRONGVIF detection so it
+		 * can complete the SPT switch, regardless of the type
+		 * of interface (broadcast media, GRE tunnel, etc).
+		 */
+		if (pim_assert && (vifi < numvifs) && viftable[vifi].v_ifp) {
+			struct timeval now;
+			u_int32_t delta;
 
-	    microtime(&now);
+#ifdef PIM
+			if (ifp == &multicast_register_if)
+				pimstat.pims_rcv_registers_wrongiif++;
+#endif
 
-	    TV_DELTA(rt->mfc_last_assert, now, delta);
+			/* Get vifi for the incoming packet */
+			for (vifi = 0;
+			     vifi < numvifs && viftable[vifi].v_ifp != ifp;
+			     vifi++)
+			    ;
+			if (vifi >= numvifs) {
+				/* The iif is not found: ignore the packet. */
+				return (0);
+			}
 
-	    if (delta > ASSERT_MSG_TIME) {
-		mm = m_copy(m, 0, hlen);
-		M_PULLUP(mm, hlen);
-		if (mm == NULL) {
-		    return (ENOBUFS);
+			if (rt->mfc_flags[vifi] &
+			    MRT_MFC_FLAGS_DISABLE_WRONGVIF) {
+				/* WRONGVIF disabled: ignore the packet */
+				return (0);
+			}
+
+			microtime(&now);
+
+			TV_DELTA(rt->mfc_last_assert, now, delta);
+
+			if (delta > ASSERT_MSG_TIME) {
+				struct igmpmsg *im;
+				int hlen = ip->ip_hl << 2;
+				struct mbuf *mm = m_copy(m, 0, hlen);
+
+				M_PULLUP(mm, hlen);
+				if (mm == NULL)
+					return (ENOBUFS);
+
+				rt->mfc_last_assert = now;
+
+				im = mtod(mm, struct igmpmsg *);
+				im->im_msgtype	= IGMPMSG_WRONGVIF;
+				im->im_mbz	= 0;
+				im->im_vif	= vifi;
+
+				mrtstat.mrts_upcalls++;
+
+				sin.sin_addr = im->im_src;
+				if (socket_send(ip_mrouter, mm, &sin) < 0) {
+					log(LOG_WARNING,
+					    "ip_mforward: ip_mrouter socket queue full\n");
+					++mrtstat.mrts_upq_sockfull;
+					return (ENOBUFS);
+				}
+			}
+		}
+		return (0);
+	}
+
+	/* If I sourced this packet, it counts as output, else it was input. */
+	if (in_hosteq(ip->ip_src, viftable[vifi].v_lcl_addr)) {
+		viftable[vifi].v_pkt_out++;
+		viftable[vifi].v_bytes_out += plen;
+	} else {
+		viftable[vifi].v_pkt_in++;
+		viftable[vifi].v_bytes_in += plen;
+	}
+	rt->mfc_pkt_cnt++;
+	rt->mfc_byte_cnt += plen;
+
+	/*
+	 * For each vif, decide if a copy of the packet should be forwarded.
+	 * Forward if:
+	 *		- the ttl exceeds the vif's threshold
+	 *		- there are group members downstream on interface
+	 */
+	for (vifp = viftable, vifi = 0; vifi < numvifs; vifp++, vifi++)
+		if ((rt->mfc_ttls[vifi] > 0) &&
+			(ip->ip_ttl > rt->mfc_ttls[vifi])) {
+			vifp->v_pkt_out++;
+			vifp->v_bytes_out += plen;
+#ifdef PIM
+			if (vifp->v_flags & VIFF_REGISTER)
+				pim_register_send(ip, vifp, m, rt);
+			else
+#endif
+			MC_SEND(ip, vifp, m);
 		}
 
-		rt->mfc_last_assert = now;
-		
-		im = mtod(mm, struct igmpmsg *);
-		im->im_msgtype	= IGMPMSG_WRONGVIF;
-		im->im_mbz	= 0;
-		im->im_vif	= vifi;
+	/*
+	 * Perform upcall-related bw measuring.
+	 */
+	if (rt->mfc_bw_meter != NULL) {
+		struct bw_meter *x;
+		struct timeval now;
 
-		sin.sin_addr = im->im_src;
-
-		socket_send(ip_mrouter, m, &sin);
-	    }
+		microtime(&now);
+		for (x = rt->mfc_bw_meter; x != NULL; x = x->bm_mfc_next)
+			bw_meter_receive_packet(x, plen, &now);
 	}
+
 	return (0);
-    }
-
-    /* If I sourced this packet, it counts as output, else it was input. */
-    if (ip->ip_src.s_addr == viftable[vifi].v_lcl_addr.s_addr) {
-	viftable[vifi].v_pkt_out++;
-	viftable[vifi].v_bytes_out += plen;
-    } else {
-	viftable[vifi].v_pkt_in++;
-	viftable[vifi].v_bytes_in += plen;
-    }
-    rt->mfc_pkt_cnt++;
-    rt->mfc_byte_cnt += plen;
-
-    /*
-     * For each vif, decide if a copy of the packet should be forwarded.
-     * Forward if:
-     *		- the ttl exceeds the vif's threshold
-     *		- there are group members downstream on interface
-     */
-    for (vifp = viftable, vifi = 0; vifi < numvifs; vifp++, vifi++)
-	if ((rt->mfc_ttls[vifi] > 0) &&
-	    (ip->ip_ttl > rt->mfc_ttls[vifi])) {
-	    vifp->v_pkt_out++;
-	    vifp->v_bytes_out += plen;
-	    MC_SEND(ip, vifp, m);
-	}
-
-    return (0);
 }
 
 #ifdef RSVP_ISI
 /*
- * check if a vif number is legal/ok. This is used by ip_output, to export
- * numvifs there, 
+ * check if a vif number is legal/ok. This is used by ip_output.
  */
 int
-legal_vif_num(vif)
-    int vif;
+legal_vif_num(int vif)
 {
-    if (vif >= 0 && vif < numvifs)
-       return (1);
-    else
-       return (0);
+	if (vif >= 0 && vif < numvifs)
+		return (1);
+	else
+		return (0);
 }
 #endif /* RSVP_ISI */
 
 static void
-phyint_send(ip, vifp, m)
-	struct ip *ip;
-	struct vif *vifp;
-	struct mbuf *m;
+phyint_send(struct ip *ip, struct vif *vifp, struct mbuf *m)
 {
-	register struct mbuf *mb_copy;
-	register int hlen = ip->ip_hl << 2;
+	struct mbuf *mb_copy;
+	int hlen = ip->ip_hl << 2;
 
 	/*
 	 * Make a new reference to the packet; make sure that
@@ -1346,18 +1860,22 @@ phyint_send(ip, vifp, m)
 	if (vifp->v_rate_limit <= 0)
 		tbf_send_packet(vifp, mb_copy);
 	else
-		tbf_control(vifp, mb_copy, mtod(mb_copy, struct ip *), ip->ip_len);
+		tbf_control(vifp, mb_copy, mtod(mb_copy, struct ip *),
+		    ntohs(ip->ip_len));
 }
 
 static void
-encap_send(ip, vifp, m)
-	register struct ip *ip;
-	register struct vif *vifp;
-	register struct mbuf *m;
+encap_send(struct ip *ip, struct vif *vifp, struct mbuf *m)
 {
-	register struct mbuf *mb_copy;
-	register struct ip *ip_copy;
-	register int i, len = ip->ip_len + sizeof(multicast_encap_iphdr);
+	struct mbuf *mb_copy;
+	struct ip *ip_copy;
+	int i, len = ntohs(ip->ip_len) + sizeof(multicast_encap_iphdr);
+
+	/* Take care of delayed checksums */
+	if (m->m_pkthdr.csum_flags & (M_TCPV4_CSUM_OUT | M_UDPV4_CSUM_OUT)) {
+		in_delayed_cksum(m);
+		m->m_pkthdr.csum_flags &= ~(M_UDPV4_CSUM_OUT | M_TCPV4_CSUM_OUT);
+	}
 
 	/*
 	 * copy the old packet & pullup it's IP header into the
@@ -1370,7 +1888,7 @@ encap_send(ip, vifp, m)
 	mb_copy->m_data += max_linkhdr;
 	mb_copy->m_pkthdr.len = len;
 	mb_copy->m_len = sizeof(multicast_encap_iphdr);
-	
+
 	if ((mb_copy->m_next = m_copy(m, 0, M_COPYALL)) == NULL) {
 		m_freem(mb_copy);
 		return;
@@ -1381,37 +1899,31 @@ encap_send(ip, vifp, m)
 	mb_copy = m_pullup(mb_copy, i);
 	if (mb_copy == NULL)
 		return;
-	
+
 	/*
 	 * fill in the encapsulating IP header.
 	 */
 	ip_copy = mtod(mb_copy, struct ip *);
 	*ip_copy = multicast_encap_iphdr;
-	ip_copy->ip_id = htons(ip_id++);
-	ip_copy->ip_len = len;
+	ip_copy->ip_id = htons(ip_randomid());
+	ip_copy->ip_len = htons(len);
 	ip_copy->ip_src = vifp->v_lcl_addr;
 	ip_copy->ip_dst = vifp->v_rmt_addr;
-	
+
 	/*
 	 * turn the encapsulated IP header back into a valid one.
 	 */
 	ip = (struct ip *)((caddr_t)ip_copy + sizeof(multicast_encap_iphdr));
 	--ip->ip_ttl;
-	HTONS(ip->ip_len);
-	HTONS(ip->ip_off);
 	ip->ip_sum = 0;
-#if defined(LBL) && !defined(ultrix) && !defined(i386)
-	ip->ip_sum = ~oc_cksum((caddr_t)ip, ip->ip_hl << 2, 0);
-#else
 	mb_copy->m_data += sizeof(multicast_encap_iphdr);
 	ip->ip_sum = in_cksum(mb_copy, ip->ip_hl << 2);
 	mb_copy->m_data -= sizeof(multicast_encap_iphdr);
-#endif
-	
+
 	if (vifp->v_rate_limit <= 0)
 		tbf_send_packet(vifp, mb_copy);
 	else
-		tbf_control(vifp, mb_copy, ip, ip_copy->ip_len);
+		tbf_control(vifp, mb_copy, ip, ntohs(ip_copy->ip_len));
 }
 
 /*
@@ -1420,52 +1932,51 @@ encap_send(ip, vifp, m)
  * ENCAP_PROTO and a local destination address).
  */
 void
-ipip_input(m, hlen)
-	register struct mbuf *m;
-	register int hlen;
+ipip_mroute_input(struct mbuf *m, ...)
 {
-	register struct ip *ip = mtod(m, struct ip *);
-	register int s;
-	register struct ifqueue *ifq;
-	register struct vif *vifp;
+	int hlen;
+	struct ip *ip = mtod(m, struct ip *);
+	int s;
+	struct ifqueue *ifq;
+	struct vif *vifp;
+	va_list ap;
+
+	va_start(ap, m);
+	hlen = va_arg(ap, int);
+	va_end(ap);
 
 	if (!have_encap_tunnel) {
-		rip_input(m);
+		rip_input(m, 0);
 		return;
 	}
 
 	/*
-	 * dump the packet if it's not to a multicast destination or if
-	 * we don't have an encapsulating tunnel with the source.
+	 * dump the packet if we don't have an encapsulating tunnel
+	 * with the source.
 	 * Note:  This code assumes that the remote site IP address
 	 * uniquely identifies the tunnel (i.e., that this site has
 	 * at most one tunnel with the remote site).
 	 */
-	if (!IN_MULTICAST(((struct ip *)((char *)ip + hlen))->ip_dst.s_addr)) {
-		++mrtstat.mrts_bad_tunnel;
-		m_freem(m);
-		return;
-	}
+	if (!in_hosteq(ip->ip_src, last_encap_src)) {
+		struct vif *vife;
 
-	if (ip->ip_src.s_addr != last_encap_src) {
-		register struct vif *vife;
-	
 		vifp = viftable;
 		vife = vifp + numvifs;
 		for (; vifp < vife; vifp++)
 			if (vifp->v_flags & VIFF_TUNNEL &&
-			    vifp->v_rmt_addr.s_addr == ip->ip_src.s_addr)
+			    in_hosteq(vifp->v_rmt_addr, ip->ip_src))
 				break;
 		if (vifp == vife) {
 			mrtstat.mrts_cant_tunnel++; /*XXX*/
 			m_freem(m);
 			if (mrtdebug)
-				log(LOG_DEBUG, "ip_mforward: no tunnel with %x",
+				log(LOG_DEBUG,
+				    "ip_mforward: no tunnel with %x\n",
 				    ntohl(ip->ip_src.s_addr));
 			return;
 		}
 		last_encap_vif = vifp;
-		last_encap_src = ip->ip_src.s_addr;
+		last_encap_src = ip->ip_src;
 	} else
 		vifp = last_encap_vif;
 
@@ -1474,7 +1985,7 @@ ipip_input(m, hlen)
 	m->m_pkthdr.len -= hlen;
 	m->m_pkthdr.rcvif = vifp->v_ifp;
 	ifq = &ipintrq;
-	s = splimp();
+	s = splnet();
 	if (IF_QFULL(ifq)) {
 		IF_DROP(ifq);
 		m_freem(m);
@@ -1495,12 +2006,15 @@ ipip_input(m, hlen)
  * Token bucket filter module
  */
 static void
-tbf_control(vifp, m, ip, p_len)
-	register struct vif *vifp;
-	register struct mbuf *m;
-	register struct ip *ip;
-	register u_int32_t p_len;
+tbf_control(struct vif *vifp, struct mbuf *m, struct ip *ip, u_int32_t len)
 {
+
+	if (len > MAX_BKT_SIZE) {
+		/* drop if packet is too large */
+		mrtstat.mrts_pkt2large++;
+		m_freem(m);
+		return;
+	}
 
 	tbf_update_tokens(vifp);
 
@@ -1508,190 +2022,158 @@ tbf_control(vifp, m, ip, p_len)
 	 * If there are enough tokens, and the queue is empty, send this packet
 	 * out immediately.  Otherwise, try to insert it on this vif's queue.
 	 */
-	if (vifp->v_tbf.q_len == 0) {
-		if (p_len <= vifp->v_tbf.n_tok) {
-			vifp->v_tbf.n_tok -= p_len;
+	if (vifp->tbf_q_len == 0) {
+		if (len <= vifp->tbf_n_tok) {
+			vifp->tbf_n_tok -= len;
 			tbf_send_packet(vifp, m);
-		} else if (p_len > MAX_BKT_SIZE) {
-			/* drop if packet is too large */
-			mrtstat.mrts_pkt2large++;
-			m_freem(m);
 		} else {
 			/* queue packet and timeout till later */
-			tbf_queue(vifp, m, ip);
-			timeout(tbf_reprocess_q, vifp, 1);
+			tbf_queue(vifp, m);
+			timeout_add(&vifp->v_repq_ch, TBF_REPROCESS);
 		}
 	} else {
-		if (vifp->v_tbf.q_len >= MAXQSIZE &&
+		if (vifp->tbf_q_len >= vifp->tbf_max_q_len &&
 		    !tbf_dq_sel(vifp, ip)) {
-			/* queue length too much, and couldn't make room */
+			/* queue full, and couldn't make room */
 			mrtstat.mrts_q_overflow++;
 			m_freem(m);
 		} else {
 			/* queue length low enough, or made room */
-			tbf_queue(vifp, m, ip);
+			tbf_queue(vifp, m);
 			tbf_process_q(vifp);
 		}
 	}
 }
 
-/* 
+/*
  * adds a packet to the queue at the interface
  */
 static void
-tbf_queue(vifp, m, ip) 
-    register struct vif *vifp;
-    register struct mbuf *m;
-    register struct ip *ip;
+tbf_queue(struct vif *vifp, struct mbuf *m)
 {
-    register u_int32_t ql;
-    register int index = (vifp - viftable);
-    register int s = splsoftnet();
+	int s = splsoftnet();
 
-    ql = vifp->v_tbf.q_len;
+	/* insert at tail */
+	*vifp->tbf_t = m;
+	vifp->tbf_t = &m->m_nextpkt;
+	vifp->tbf_q_len++;
 
-    qtable[index][ql].pkt_m = m;
-    qtable[index][ql].pkt_len = (mtod(m, struct ip *))->ip_len;
-    qtable[index][ql].pkt_ip = ip;
-
-    vifp->v_tbf.q_len++;
-    splx(s);
+	splx(s);
 }
 
 
-/* 
+/*
  * processes the queue at the interface
  */
 static void
-tbf_process_q(vifp)
-    register struct vif *vifp;
+tbf_process_q(struct vif *vifp)
 {
-    register struct mbuf *m;
-    register struct pkt_queue pkt_1;
-    register int index = (vifp - viftable);
-    register int s = splsoftnet();
+	struct mbuf *m;
+	int len;
+	int s = splsoftnet();
 
-    /* loop through the queue at the interface and send as many packets
-     * as possible
-     */
-    while (vifp->v_tbf.q_len > 0) {
-	/* locate the first packet */
-	pkt_1 = qtable[index][0];
+	/*
+	 * Loop through the queue at the interface and send as many packets
+	 * as possible.
+	 */
+	for (m = vifp->tbf_q; m != NULL; m = vifp->tbf_q) {
+		len = ntohs(mtod(m, struct ip *)->ip_len);
 
-	/* determine if the packet can be sent */
-	if (pkt_1.pkt_len <= vifp->v_tbf.n_tok) {
-	    /* if so,
-	     * reduce no of tokens, dequeue the queue,
-	     * send the packet.
-	     */
-	    vifp->v_tbf.n_tok -= pkt_1.pkt_len;
+		/* determine if the packet can be sent */
+		if (len <= vifp->tbf_n_tok) {
+			/* if so,
+			 * reduce no of tokens, dequeue the packet,
+			 * send the packet.
+			 */
+			if ((vifp->tbf_q = m->m_nextpkt) == NULL)
+				vifp->tbf_t = &vifp->tbf_q;
+			--vifp->tbf_q_len;
 
-	    tbf_dequeue(vifp, 0);
-	    tbf_send_packet(vifp, pkt_1.pkt_m);
-	} else
-	    break;
-    }
-    splx(s);
-}
-
-/* 
- * removes the jth packet from the queue at the interface
- */
-static void
-tbf_dequeue(vifp, j)
-    register struct vif *vifp;
-    register int j;
-{
-    register u_int32_t index = vifp - viftable;
-    register int i;
-
-    for (i=j+1; i <= vifp->v_tbf.q_len - 1; i++) {
-	qtable[index][i-1] = qtable[index][i];
-    }		
-    qtable[index][i-1].pkt_m = NULL;
-    qtable[index][i-1].pkt_len = NULL;
-    qtable[index][i-1].pkt_ip = NULL;
-
-    vifp->v_tbf.q_len--;
-
-    if (tbfdebug > 1)
-	log(LOG_DEBUG, "tbf_dequeue: vif# %d qlen %d",vifp-viftable, i-1);
+			m->m_nextpkt = NULL;
+			vifp->tbf_n_tok -= len;
+			tbf_send_packet(vifp, m);
+		} else
+			break;
+	}
+	splx(s);
 }
 
 static void
-tbf_reprocess_q(arg)
-	void *arg;
+tbf_reprocess_q(void *arg)
 {
-	register struct vif *vifp = arg;
+	struct vif *vifp = arg;
 
-	if (ip_mrouter == NULL) 
+	if (ip_mrouter == NULL)
 		return;
 
 	tbf_update_tokens(vifp);
 	tbf_process_q(vifp);
 
-	if (vifp->v_tbf.q_len)
-		timeout(tbf_reprocess_q, vifp, 1);
+	if (vifp->tbf_q_len != 0)
+		timeout_add(&vifp->v_repq_ch, TBF_REPROCESS);
 }
 
 /* function that will selectively discard a member of the queue
- * based on the precedence value and the priority obtained through
- * a lookup table - not yet implemented accurately!
+ * based on the precedence value and the priority
  */
 static int
-tbf_dq_sel(vifp, ip)
-    register struct vif *vifp;
-    register struct ip *ip;
+tbf_dq_sel(struct vif *vifp, struct ip *ip)
 {
-    register int i;
-    register int s = splsoftnet();
-    register u_int p;
+	u_int p;
+	struct mbuf **mp, *m;
+	int s = splsoftnet();
 
-    p = priority(vifp, ip);
+	p = priority(vifp, ip);
 
-    for(i=vifp->v_tbf.q_len-1;i >= 0;i--) {
-	if (p > priority(vifp, qtable[vifp-viftable][i].pkt_ip)) {
-	    m_freem(qtable[vifp-viftable][i].pkt_m);
-	    tbf_dequeue(vifp, i);
-	    splx(s);
-	    mrtstat.mrts_drop_sel++;
-	    return (1);
+	for (mp = &vifp->tbf_q, m = *mp;
+	    m != NULL;
+	    mp = &m->m_nextpkt, m = *mp) {
+		if (p > priority(vifp, mtod(m, struct ip *))) {
+			if ((*mp = m->m_nextpkt) == NULL)
+				vifp->tbf_t = mp;
+			--vifp->tbf_q_len;
+
+			m_freem(m);
+			mrtstat.mrts_drop_sel++;
+			splx(s);
+			return (1);
+		}
 	}
-    }
-    splx(s);
-    return (0);
+	splx(s);
+	return (0);
 }
 
 static void
-tbf_send_packet(vifp,m)
-    register struct vif *vifp;
-    register struct mbuf *m;
+tbf_send_packet(struct vif *vifp, struct mbuf *m)
 {
-    register struct mbuf *mcp;
-    int error;
-    int s = splsoftnet();
+	int error;
+	int s = splsoftnet();
 
-    if (vifp->v_flags & VIFF_TUNNEL) {
-	/* If tunnel options */
-	ip_output(m, (struct mbuf *)0, &vifp->v_route,
-		  IP_FORWARDING, NULL);
-    } else {
-	/* if physical interface option, extract the options and then send */
-	struct ip *ip = mtod(m, struct ip *);
-	struct ip_moptions imo;
-	imo.imo_multicast_ifp  = vifp->v_ifp;
-	imo.imo_multicast_ttl  = ip->ip_ttl - 1;
-	imo.imo_multicast_loop = 1;
+	if (vifp->v_flags & VIFF_TUNNEL) {
+		/* If tunnel options */
+		ip_output(m, (struct mbuf *)NULL, &vifp->v_route,
+		    IP_FORWARDING, (struct ip_moptions *)NULL,
+		    (struct socket *)NULL);
+	} else {
+		/* if physical interface option, extract the options and then send */
+		struct ip_moptions imo;
+
+		imo.imo_multicast_ifp = vifp->v_ifp;
+		imo.imo_multicast_ttl = mtod(m, struct ip *)->ip_ttl - 1;
+		imo.imo_multicast_loop = 1;
 #ifdef RSVP_ISI
-	imo.imo_multicast_vif  = -1;
+		imo.imo_multicast_vif = -1;
 #endif
 
-	error = ip_output(m, (struct mbuf *)0, (struct route *)0,
-			  IP_FORWARDING|IP_MULTICASTOPTS, &imo);
-	if (mrtdebug & DEBUG_XMIT)
-	    log(LOG_DEBUG, "phyint_send on vif %d err %d", vifp-viftable, error);
-    }
-    splx(s);
+		error = ip_output(m, (struct mbuf *)NULL, (struct route *)NULL,
+		    IP_FORWARDING|IP_MULTICASTOPTS, &imo,
+		    (struct socket *)NULL);
+
+		if (mrtdebug & DEBUG_XMIT)
+			log(LOG_DEBUG, "phyint_send on vif %ld err %d\n",
+			    (long)(vifp - viftable), error);
+	}
+	splx(s);
 }
 
 /* determine the current time and then
@@ -1699,283 +2181,1337 @@ tbf_send_packet(vifp,m)
  * in milliseconds & update the no. of tokens in the bucket
  */
 static void
-tbf_update_tokens(vifp)
-    register struct vif *vifp;
+tbf_update_tokens(struct vif *vifp)
 {
-    struct timeval tp;
-    register u_int32_t t;
-    register u_int32_t elapsed;
-    register int s = splsoftnet();
+	struct timeval tp;
+	u_int32_t tm;
+	int s = splsoftnet();
 
-    microtime(&tp);
+	microtime(&tp);
 
-    t = tp.tv_sec*1000 + tp.tv_usec/1000;
+	TV_DELTA(tp, vifp->tbf_last_pkt_t, tm);
 
-    elapsed = (t - vifp->v_tbf.last_pkt_t) * vifp->v_rate_limit /8;
-    vifp->v_tbf.n_tok += elapsed;
-    vifp->v_tbf.last_pkt_t = t;
+	/*
+	 * This formula is actually
+	 * "time in seconds" * "bytes/second".
+	 *
+	 * (tm / 1000000) * (v_rate_limit * 1000 * (1000/1024) / 8)
+	 *
+	 * The (1000/1024) was introduced in add_vif to optimize
+	 * this divide into a shift.
+	 */
+	vifp->tbf_n_tok += tm * vifp->v_rate_limit / 8192;
+	vifp->tbf_last_pkt_t = tp;
 
-    if (vifp->v_tbf.n_tok > MAX_BKT_SIZE)
-	vifp->v_tbf.n_tok = MAX_BKT_SIZE;
+	if (vifp->tbf_n_tok > MAX_BKT_SIZE)
+		vifp->tbf_n_tok = MAX_BKT_SIZE;
 
-    splx(s);
+	splx(s);
 }
 
 static int
-priority(vifp, ip)
-    register struct vif *vifp;
-    register struct ip *ip;
+priority(struct vif *vifp, struct ip *ip)
 {
-    register u_short port;
-    register int prio;
+	int prio = 50;	/* the lowest priority -- default case */
 
-    /* temporary hack; may add general packet classifier some day */
-    
-    /*
-     * The UDP port space is divided up into four priority ranges:
-     * [0, 16384)     : unclassified - lowest priority
-     * [16384, 32768) : audio - highest priority
-     * [32768, 49152) : whiteboard - medium priority
-     * [49152, 65536) : video - low priority
-     */
-    if (ip->ip_p == IPPROTO_UDP) {
-	struct udphdr *udp = (struct udphdr *)(((char *)ip) + (ip->ip_hl << 2));
+	/* temporary hack; may add general packet classifier some day */
 
-	switch (ntohs(udp->uh_dport) & 0xc000) {
-	    case 0x4000:
-		prio = 70;
-		break;
-	    case 0x8000:
-		prio = 60;
-		break;
-	    case 0xc000:
-		prio = 55;
-		break;
-	    default:
-		prio = 50;
-		break;
+	/*
+	 * The UDP port space is divided up into four priority ranges:
+	 * [0, 16384)     : unclassified - lowest priority
+	 * [16384, 32768) : audio - highest priority
+	 * [32768, 49152) : whiteboard - medium priority
+	 * [49152, 65536) : video - low priority
+	 */
+	if (ip->ip_p == IPPROTO_UDP) {
+		struct udphdr *udp = (struct udphdr *)(((char *)ip) + (ip->ip_hl << 2));
+
+		switch (ntohs(udp->uh_dport) & 0xc000) {
+		case 0x4000:
+			prio = 70;
+			break;
+		case 0x8000:
+			prio = 60;
+			break;
+		case 0xc000:
+			prio = 55;
+			break;
+		}
+
+		if (tbfdebug > 1)
+			log(LOG_DEBUG, "port %x prio %d\n",
+			    ntohs(udp->uh_dport), prio);
 	}
 
-	if (tbfdebug > 1) log(LOG_DEBUG, "port %x prio %d", ntohs(udp->uh_dport), prio);
-    } else
-	prio = 50;
-
-
-    return (prio);
+	return (prio);
 }
 
 /*
- * End of token bucket filter modifications 
+ * End of token bucket filter modifications
  */
-
 #ifdef RSVP_ISI
-
 int
-ip_rsvp_vif_init(so, m)
-    struct socket *so;
-    struct mbuf *m;
+ip_rsvp_vif_init(struct socket *so, struct mbuf *m)
 {
-    int i;
-    register int s;
+	int vifi, s;
 
-    if (rsvpdebug)
-	printf("ip_rsvp_vif_init: so_type = %d, pr_protocol = %d\n",
-	       so->so_type, so->so_proto->pr_protocol);
+	if (rsvpdebug)
+		printf("ip_rsvp_vif_init: so_type = %d, pr_protocol = %d\n",
+		    so->so_type, so->so_proto->pr_protocol);
 
-    if (so->so_type != SOCK_RAW || so->so_proto->pr_protocol != IPPROTO_RSVP)
-	return (EOPNOTSUPP);
+	if (so->so_type != SOCK_RAW ||
+	    so->so_proto->pr_protocol != IPPROTO_RSVP)
+		return (EOPNOTSUPP);
 
-    /* Check mbuf. */
-    if (m == NULL || m->m_len != sizeof(int)) {
-	return (EINVAL);
-    }
-    i = *(mtod(m, int *));
+	/* Check mbuf. */
+	if (m == NULL || m->m_len != sizeof(int)) {
+		return (EINVAL);
+	}
+	vifi = *(mtod(m, int *));
 
-    if (rsvpdebug)
-	printf("ip_rsvp_vif_init: vif = %d rsvp_on = %d\n",i,rsvp_on);
+	if (rsvpdebug)
+		printf("ip_rsvp_vif_init: vif = %d rsvp_on = %d\n",
+		       vifi, rsvp_on);
 
-    s = splsoftnet();
+	s = splsoftnet();
 
-    /* Check vif. */
-    if (!legal_vif_num(i)) {
+	/* Check vif. */
+	if (!legal_vif_num(vifi)) {
+		splx(s);
+		return (EADDRNOTAVAIL);
+	}
+
+	/* Check if socket is available. */
+	if (viftable[vifi].v_rsvpd != NULL) {
+		splx(s);
+		return (EADDRINUSE);
+	}
+
+	viftable[vifi].v_rsvpd = so;
+	/* This may seem silly, but we need to be sure we don't over-increment
+	 * the RSVP counter, in case something slips up.
+	 */
+	if (!viftable[vifi].v_rsvp_on) {
+		viftable[vifi].v_rsvp_on = 1;
+		rsvp_on++;
+	}
+
 	splx(s);
-	return (EADDRNOTAVAIL);
-    }
-
-    /* Check if socket is available. */
-    if (viftable[i].v_rsvpd != NULL) {
-	splx(s);
-	return (EADDRINUSE);
-    }
-
-    viftable[i].v_rsvpd = so;
-    /* This may seem silly, but we need to be sure we don't over-increment
-     * the RSVP counter, in case something slips up.
-     */
-    if (!viftable[i].v_rsvp_on) {
-	viftable[i].v_rsvp_on = 1;
-	rsvp_on++;
-    }
-
-    splx(s);
-    return (0);
+	return (0);
 }
 
 int
-ip_rsvp_vif_done(so, m)
-    struct socket *so;
-    struct mbuf *m;
+ip_rsvp_vif_done(struct socket *so, struct mbuf *m)
 {
-    int i;
-    register int s;
+	int vifi, s;
 
-    if (rsvpdebug)
-	printf("ip_rsvp_vif_done: so_type = %d, pr_protocol = %d\n",
-	       so->so_type, so->so_proto->pr_protocol);
+	if (rsvpdebug)
+		printf("ip_rsvp_vif_done: so_type = %d, pr_protocol = %d\n",
+		    so->so_type, so->so_proto->pr_protocol);
 
-    if (so->so_type != SOCK_RAW || so->so_proto->pr_protocol != IPPROTO_RSVP)
-	return (EOPNOTSUPP);
+	if (so->so_type != SOCK_RAW ||
+	    so->so_proto->pr_protocol != IPPROTO_RSVP)
+		return (EOPNOTSUPP);
 
-    /* Check mbuf. */
-    if (m == NULL || m->m_len != sizeof(int)) {
-	return (EINVAL);
-    }
-    i = *(mtod(m, int *));
+	/* Check mbuf. */
+	if (m == NULL || m->m_len != sizeof(int)) {
+		return (EINVAL);
+	}
+	vifi = *(mtod(m, int *));
 
-    s = splsoftnet();
+	s = splsoftnet();
 
-    /* Check vif. */
-    if (!legal_vif_num(i)) {
-	splx(s);
-        return (EADDRNOTAVAIL);
-    }
+	/* Check vif. */
+	if (!legal_vif_num(vifi)) {
+		splx(s);
+		return (EADDRNOTAVAIL);
+	}
 
-    if (rsvpdebug)
-	printf("ip_rsvp_vif_done: v_rsvpd = %x so = %x\n",
-	       viftable[i].v_rsvpd, so);
+	if (rsvpdebug)
+		printf("ip_rsvp_vif_done: v_rsvpd = %x so = %x\n",
+		    viftable[vifi].v_rsvpd, so);
 
-    viftable[i].v_rsvpd = NULL;
-    /* This may seem silly, but we need to be sure we don't over-decrement
-     * the RSVP counter, in case something slips up.
-     */
-    if (viftable[i].v_rsvp_on) {
-	viftable[i].v_rsvp_on = 0;
-	rsvp_on--;
-    }
-
-    splx(s);
-    return (0);
-}
-
-ip_rsvp_force_done(so)
-    struct socket *so;
-{
-    int vifi;
-    register int s;
-
-    /* Don't bother if it is not the right type of socket. */
-    if (so->so_type != SOCK_RAW || so->so_proto->pr_protocol != IPPROTO_RSVP)
-	return;
-
-    s = splsoftnet();
-
-    /* The socket may be attached to more than one vif...this
-     * is perfectly legal.
-     */
-    for (vifi = 0; vifi < numvifs; vifi++) {
-	if (viftable[vifi].v_rsvpd == so) {
-	    viftable[vifi].v_rsvpd = NULL;
-	    /* This may seem silly, but we need to be sure we don't
-	     * over-decrement the RSVP counter, in case something slips up.
-	     */
-	    if (viftable[vifi].v_rsvp_on) {
+	viftable[vifi].v_rsvpd = NULL;
+	/*
+	 * This may seem silly, but we need to be sure we don't over-decrement
+	 * the RSVP counter, in case something slips up.
+	 */
+	if (viftable[vifi].v_rsvp_on) {
 		viftable[vifi].v_rsvp_on = 0;
 		rsvp_on--;
+	}
+
+	splx(s);
+	return (0);
+}
+
+void
+ip_rsvp_force_done(struct socket *so)
+{
+	int vifi, s;
+
+	/* Don't bother if it is not the right type of socket. */
+	if (so->so_type != SOCK_RAW ||
+	    so->so_proto->pr_protocol != IPPROTO_RSVP)
+		return;
+
+	s = splsoftnet();
+
+	/*
+	 * The socket may be attached to more than one vif...this
+	 * is perfectly legal.
+	 */
+	for (vifi = 0; vifi < numvifs; vifi++) {
+		if (viftable[vifi].v_rsvpd == so) {
+			viftable[vifi].v_rsvpd = NULL;
+			/*
+			 * This may seem silly, but we need to be sure we don't
+			 * over-decrement the RSVP counter, in case something
+			 * slips up.
+			 */
+			if (viftable[vifi].v_rsvp_on) {
+				viftable[vifi].v_rsvp_on = 0;
+				rsvp_on--;
+			}
+		}
+	}
+
+	splx(s);
+	return;
+}
+
+void
+rsvp_input(struct mbuf *m, struct ifnet *ifp)
+{
+	int vifi, s;
+	struct ip *ip = mtod(m, struct ip *);
+	static struct sockaddr_in rsvp_src = { sizeof(sin), AF_INET };
+
+	if (rsvpdebug)
+		printf("rsvp_input: rsvp_on %d\n", rsvp_on);
+
+	/*
+	 * Can still get packets with rsvp_on = 0 if there is a local member
+	 * of the group to which the RSVP packet is addressed.  But in this
+	 * case we want to throw the packet away.
+	 */
+	if (!rsvp_on) {
+		m_freem(m);
+		return;
+	}
+
+	/*
+	 * If the old-style non-vif-associated socket is set, then use
+	 * it and ignore the new ones.
+	 */
+	if (ip_rsvpd != NULL) {
+		if (rsvpdebug)
+			printf("rsvp_input: "
+			    "Sending packet up old-style socket\n");
+		rip_input(m, 0);	/*XXX*/
+		return;
+	}
+
+	s = splsoftnet();
+
+	if (rsvpdebug)
+		printf("rsvp_input: check vifs\n");
+
+	/* Find which vif the packet arrived on. */
+	for (vifi = 0; vifi < numvifs; vifi++) {
+		if (viftable[vifi].v_ifp == ifp)
+			break;
+	}
+
+	if (vifi == numvifs) {
+		/* Can't find vif packet arrived on. Drop packet. */
+		if (rsvpdebug)
+			printf("rsvp_input: "
+			    "Can't find vif for packet...dropping it.\n");
+		m_freem(m);
+		splx(s);
+		return;
+	}
+
+	if (rsvpdebug)
+		printf("rsvp_input: check socket\n");
+
+	if (viftable[vifi].v_rsvpd == NULL) {
+		/*
+	 	 * drop packet, since there is no specific socket for this
+		 * interface
+		 */
+		if (rsvpdebug)
+			printf("rsvp_input: No socket defined for vif %d\n",
+			    vifi);
+		m_freem(m);
+		splx(s);
+		return;
+	}
+
+	rsvp_src.sin_addr = ip->ip_src;
+
+	if (rsvpdebug && m)
+		printf("rsvp_input: m->m_len = %d, sbspace() = %d\n",
+		    m->m_len, sbspace(&viftable[vifi].v_rsvpd->so_rcv));
+
+	if (socket_send(viftable[vifi].v_rsvpd, m, &rsvp_src) < 0)
+		if (rsvpdebug)
+			printf("rsvp_input: Failed to append to socket\n");
+	else
+		if (rsvpdebug)
+			printf("rsvp_input: send packet up\n");
+
+	splx(s);
+}
+#endif /* RSVP_ISI */
+
+/*
+ * Code for bandwidth monitors
+ */
+
+/*
+ * Define common interface for timeval-related methods
+ */
+#define	BW_TIMEVALCMP(tvp, uvp, cmp) timercmp((tvp), (uvp), cmp)
+#define	BW_TIMEVALDECR(vvp, uvp) timersub((vvp), (uvp), (vvp))
+#define	BW_TIMEVALADD(vvp, uvp) timeradd((vvp), (uvp), (vvp))
+
+static uint32_t
+compute_bw_meter_flags(struct bw_upcall *req)
+{
+    uint32_t flags = 0;
+
+    if (req->bu_flags & BW_UPCALL_UNIT_PACKETS)
+	flags |= BW_METER_UNIT_PACKETS;
+    if (req->bu_flags & BW_UPCALL_UNIT_BYTES)
+	flags |= BW_METER_UNIT_BYTES;
+    if (req->bu_flags & BW_UPCALL_GEQ)
+	flags |= BW_METER_GEQ;
+    if (req->bu_flags & BW_UPCALL_LEQ)
+	flags |= BW_METER_LEQ;
+    
+    return flags;
+}
+ 
+/*
+ * Add a bw_meter entry
+ */
+static int
+add_bw_upcall(struct mbuf *m)
+{
+    int s;
+    struct mfc *mfc;
+    struct timeval delta = { BW_UPCALL_THRESHOLD_INTERVAL_MIN_SEC,
+		BW_UPCALL_THRESHOLD_INTERVAL_MIN_USEC };
+    struct timeval now;
+    struct bw_meter *x;
+    uint32_t flags;
+    struct bw_upcall *req;
+
+    if (m == NULL || m->m_len < sizeof(struct bw_upcall))
+	return EINVAL;
+
+    req = mtod(m, struct bw_upcall *);
+
+    if (!(mrt_api_config & MRT_MFC_BW_UPCALL))
+	return EOPNOTSUPP;
+
+    /* Test if the flags are valid */
+    if (!(req->bu_flags & (BW_UPCALL_UNIT_PACKETS | BW_UPCALL_UNIT_BYTES)))
+	return EINVAL;
+    if (!(req->bu_flags & (BW_UPCALL_GEQ | BW_UPCALL_LEQ)))
+	return EINVAL;
+    if ((req->bu_flags & (BW_UPCALL_GEQ | BW_UPCALL_LEQ))
+	    == (BW_UPCALL_GEQ | BW_UPCALL_LEQ))
+	return EINVAL;
+
+    /* Test if the threshold time interval is valid */
+    if (BW_TIMEVALCMP(&req->bu_threshold.b_time, &delta, <))
+	return EINVAL;
+
+    flags = compute_bw_meter_flags(req);
+
+    /*
+     * Find if we have already same bw_meter entry
+     */
+    s = splsoftnet();
+    mfc = mfc_find(&req->bu_src, &req->bu_dst);
+    if (mfc == NULL) {
+	splx(s);
+	return EADDRNOTAVAIL;
+    }
+    for (x = mfc->mfc_bw_meter; x != NULL; x = x->bm_mfc_next) {
+	if ((BW_TIMEVALCMP(&x->bm_threshold.b_time,
+			   &req->bu_threshold.b_time, ==)) &&
+	    (x->bm_threshold.b_packets == req->bu_threshold.b_packets) &&
+	    (x->bm_threshold.b_bytes == req->bu_threshold.b_bytes) &&
+	    (x->bm_flags & BW_METER_USER_FLAGS) == flags)  {
+	    splx(s);
+	    return 0;		/* XXX Already installed */
+	}
+    }
+
+    /* Allocate the new bw_meter entry */
+    x = (struct bw_meter *)malloc(sizeof(*x), M_BWMETER, M_NOWAIT);
+    if (x == NULL) {
+	splx(s);
+	return ENOBUFS;
+    }
+
+    /* Set the new bw_meter entry */
+    x->bm_threshold.b_time = req->bu_threshold.b_time;
+    microtime(&now);
+    x->bm_start_time = now;
+    x->bm_threshold.b_packets = req->bu_threshold.b_packets;
+    x->bm_threshold.b_bytes = req->bu_threshold.b_bytes;
+    x->bm_measured.b_packets = 0;
+    x->bm_measured.b_bytes = 0;
+    x->bm_flags = flags;
+    x->bm_time_next = NULL;
+    x->bm_time_hash = BW_METER_BUCKETS;
+
+    /* Add the new bw_meter entry to the front of entries for this MFC */
+    x->bm_mfc = mfc;
+    x->bm_mfc_next = mfc->mfc_bw_meter;
+    mfc->mfc_bw_meter = x;
+    schedule_bw_meter(x, &now);
+    splx(s);
+
+    return 0;
+}
+
+static void
+free_bw_list(struct bw_meter *list)
+{
+    while (list != NULL) {
+	struct bw_meter *x = list;
+
+	list = list->bm_mfc_next;
+	unschedule_bw_meter(x);
+	free(x, M_BWMETER);
+    }
+}
+
+/*
+ * Delete one or multiple bw_meter entries
+ */
+static int
+del_bw_upcall(struct mbuf *m)
+{
+    int s;
+    struct mfc *mfc;
+    struct bw_meter *x;
+    struct bw_upcall *req;
+
+    if (m == NULL || m->m_len < sizeof(struct bw_upcall))
+	return EINVAL;
+
+    req = mtod(m, struct bw_upcall *);
+    
+    if (!(mrt_api_config & MRT_MFC_BW_UPCALL))
+	return EOPNOTSUPP;
+
+    s = splsoftnet();    
+    /* Find the corresponding MFC entry */
+    mfc = mfc_find(&req->bu_src, &req->bu_dst);
+    if (mfc == NULL) {
+	splx(s);
+	return EADDRNOTAVAIL;
+    } else if (req->bu_flags & BW_UPCALL_DELETE_ALL) {
+	/*
+	 * Delete all bw_meter entries for this mfc
+	 */
+	struct bw_meter *list;
+
+	list = mfc->mfc_bw_meter;
+	mfc->mfc_bw_meter = NULL;
+	free_bw_list(list);
+	splx(s);
+	return 0;
+    } else {			/* Delete a single bw_meter entry */
+	struct bw_meter *prev;
+	uint32_t flags = 0;
+
+	flags = compute_bw_meter_flags(req);
+
+	/* Find the bw_meter entry to delete */
+	for (prev = NULL, x = mfc->mfc_bw_meter; x != NULL;
+	     prev = x, x = x->bm_mfc_next) {
+	    if ((BW_TIMEVALCMP(&x->bm_threshold.b_time,
+			       &req->bu_threshold.b_time, ==)) &&
+		(x->bm_threshold.b_packets == req->bu_threshold.b_packets) &&
+		(x->bm_threshold.b_bytes == req->bu_threshold.b_bytes) &&
+		(x->bm_flags & BW_METER_USER_FLAGS) == flags)
+		break;
+	}
+	if (x != NULL) { /* Delete entry from the list for this MFC */
+	    if (prev != NULL)
+		prev->bm_mfc_next = x->bm_mfc_next;	/* remove from middle*/
+	    else
+		x->bm_mfc->mfc_bw_meter = x->bm_mfc_next;/* new head of list */
+
+	    unschedule_bw_meter(x);
+	    splx(s);
+	    /* Free the bw_meter entry */
+	    free(x, M_BWMETER);
+	    return 0;
+	} else {
+	    splx(s);
+	    return EINVAL;
+	}
+    }
+    /* NOTREACHED */
+}
+
+/*
+ * Perform bandwidth measurement processing that may result in an upcall
+ */
+static void
+bw_meter_receive_packet(struct bw_meter *x, int plen, struct timeval *nowp)
+{
+    struct timeval delta;
+
+    delta = *nowp;
+    BW_TIMEVALDECR(&delta, &x->bm_start_time);
+
+    if (x->bm_flags & BW_METER_GEQ) {
+	/*
+	 * Processing for ">=" type of bw_meter entry
+	 */
+	if (BW_TIMEVALCMP(&delta, &x->bm_threshold.b_time, >)) {
+	    /* Reset the bw_meter entry */
+	    x->bm_start_time = *nowp;
+	    x->bm_measured.b_packets = 0;
+	    x->bm_measured.b_bytes = 0;
+	    x->bm_flags &= ~BW_METER_UPCALL_DELIVERED;
+	}
+
+	/* Record that a packet is received */
+	x->bm_measured.b_packets++;
+	x->bm_measured.b_bytes += plen;
+
+	/*
+	 * Test if we should deliver an upcall
+	 */
+	if (!(x->bm_flags & BW_METER_UPCALL_DELIVERED)) {	
+	    if (((x->bm_flags & BW_METER_UNIT_PACKETS) &&
+		 (x->bm_measured.b_packets >= x->bm_threshold.b_packets)) ||
+		((x->bm_flags & BW_METER_UNIT_BYTES) &&
+		 (x->bm_measured.b_bytes >= x->bm_threshold.b_bytes))) {
+		/* Prepare an upcall for delivery */
+		bw_meter_prepare_upcall(x, nowp);
+		x->bm_flags |= BW_METER_UPCALL_DELIVERED;
+	    }
+	}
+    } else if (x->bm_flags & BW_METER_LEQ) {
+	/*
+	 * Processing for "<=" type of bw_meter entry
+	 */
+	if (BW_TIMEVALCMP(&delta, &x->bm_threshold.b_time, >)) {
+	    /*
+	     * We are behind time with the multicast forwarding table
+	     * scanning for "<=" type of bw_meter entries, so test now
+	     * if we should deliver an upcall.
+	     */
+	    if (((x->bm_flags & BW_METER_UNIT_PACKETS) &&
+		 (x->bm_measured.b_packets <= x->bm_threshold.b_packets)) ||
+		((x->bm_flags & BW_METER_UNIT_BYTES) &&
+		 (x->bm_measured.b_bytes <= x->bm_threshold.b_bytes))) {
+		/* Prepare an upcall for delivery */
+		bw_meter_prepare_upcall(x, nowp);
+	    }
+	    /* Reschedule the bw_meter entry */
+	    unschedule_bw_meter(x);
+	    schedule_bw_meter(x, nowp);
+	}
+	
+	/* Record that a packet is received */
+	x->bm_measured.b_packets++;
+	x->bm_measured.b_bytes += plen;
+
+	/*
+	 * Test if we should restart the measuring interval
+	 */
+	if ((x->bm_flags & BW_METER_UNIT_PACKETS &&
+	     x->bm_measured.b_packets <= x->bm_threshold.b_packets) ||
+	    (x->bm_flags & BW_METER_UNIT_BYTES &&
+	     x->bm_measured.b_bytes <= x->bm_threshold.b_bytes)) {
+	    /* Don't restart the measuring interval */
+	} else {
+	    /* Do restart the measuring interval */
+	    /*
+	     * XXX: note that we don't unschedule and schedule, because this
+	     * might be too much overhead per packet. Instead, when we process
+	     * all entries for a given timer hash bin, we check whether it is
+	     * really a timeout. If not, we reschedule at that time.
+	     */
+	    x->bm_start_time = *nowp;
+	    x->bm_measured.b_packets = 0;
+	    x->bm_measured.b_bytes = 0;
+	    x->bm_flags &= ~BW_METER_UPCALL_DELIVERED;
+	}
+    }
+}
+
+/*
+ * Prepare a bandwidth-related upcall
+ */
+static void
+bw_meter_prepare_upcall(struct bw_meter *x, struct timeval *nowp)
+{
+    struct timeval delta;
+    struct bw_upcall *u;
+
+    /*
+     * Compute the measured time interval 
+     */
+    delta = *nowp;
+    BW_TIMEVALDECR(&delta, &x->bm_start_time);
+
+    /*
+     * If there are too many pending upcalls, deliver them now
+     */
+    if (bw_upcalls_n >= BW_UPCALLS_MAX)
+	bw_upcalls_send();
+
+    /*
+     * Set the bw_upcall entry
+     */
+    u = &bw_upcalls[bw_upcalls_n++];
+    u->bu_src = x->bm_mfc->mfc_origin;
+    u->bu_dst = x->bm_mfc->mfc_mcastgrp;
+    u->bu_threshold.b_time = x->bm_threshold.b_time;
+    u->bu_threshold.b_packets = x->bm_threshold.b_packets;
+    u->bu_threshold.b_bytes = x->bm_threshold.b_bytes;
+    u->bu_measured.b_time = delta;
+    u->bu_measured.b_packets = x->bm_measured.b_packets;
+    u->bu_measured.b_bytes = x->bm_measured.b_bytes;
+    u->bu_flags = 0;
+    if (x->bm_flags & BW_METER_UNIT_PACKETS)
+	u->bu_flags |= BW_UPCALL_UNIT_PACKETS;
+    if (x->bm_flags & BW_METER_UNIT_BYTES)
+	u->bu_flags |= BW_UPCALL_UNIT_BYTES;
+    if (x->bm_flags & BW_METER_GEQ)
+	u->bu_flags |= BW_UPCALL_GEQ;
+    if (x->bm_flags & BW_METER_LEQ)
+	u->bu_flags |= BW_UPCALL_LEQ;
+}
+
+/*
+ * Send the pending bandwidth-related upcalls
+ */
+static void
+bw_upcalls_send(void)
+{
+    struct mbuf *m;
+    int len = bw_upcalls_n * sizeof(bw_upcalls[0]);
+    struct sockaddr_in k_igmpsrc = { sizeof k_igmpsrc, AF_INET };
+    static struct igmpmsg igmpmsg = { 0,		/* unused1 */
+				      0,		/* unused2 */
+				      IGMPMSG_BW_UPCALL,/* im_msgtype */
+				      0,		/* im_mbz  */
+				      0,		/* im_vif  */
+				      0,		/* unused3 */
+				      { 0 },		/* im_src  */
+				      { 0 } };		/* im_dst  */
+    
+    if (bw_upcalls_n == 0)
+	return;			/* No pending upcalls */
+
+    bw_upcalls_n = 0;
+
+    /*
+     * Allocate a new mbuf, initialize it with the header and
+     * the payload for the pending calls.
+     */
+    MGETHDR(m, M_DONTWAIT, MT_HEADER);
+    if (m == NULL) {
+	log(LOG_WARNING, "bw_upcalls_send: cannot allocate mbuf\n");
+	return;
+    }
+
+    m->m_len = m->m_pkthdr.len = 0;
+    m_copyback(m, 0, sizeof(struct igmpmsg), (caddr_t)&igmpmsg);
+    m_copyback(m, sizeof(struct igmpmsg), len, (caddr_t)&bw_upcalls[0]);
+
+    /*
+     * Send the upcalls
+     * XXX do we need to set the address in k_igmpsrc ?
+     */
+    mrtstat.mrts_upcalls++;
+    if (socket_send(ip_mrouter, m, &k_igmpsrc) < 0) {
+	log(LOG_WARNING, "bw_upcalls_send: ip_mrouter socket queue full\n");
+	++mrtstat.mrts_upq_sockfull;
+    }
+}
+
+/*
+ * Compute the timeout hash value for the bw_meter entries
+ */
+#define	BW_METER_TIMEHASH(bw_meter, hash)				\
+    do {								\
+	struct timeval next_timeval = (bw_meter)->bm_start_time;	\
+									\
+	BW_TIMEVALADD(&next_timeval, &(bw_meter)->bm_threshold.b_time); \
+	(hash) = next_timeval.tv_sec;					\
+	if (next_timeval.tv_usec)					\
+	    (hash)++; /* XXX: make sure we don't timeout early */	\
+	(hash) %= BW_METER_BUCKETS;					\
+    } while (/*CONSTCOND*/ 0)
+
+/*
+ * Schedule a timer to process periodically bw_meter entry of type "<="
+ * by linking the entry in the proper hash bucket.
+ */
+static void
+schedule_bw_meter(struct bw_meter *x, struct timeval *nowp)
+{
+    int time_hash;
+
+    if (!(x->bm_flags & BW_METER_LEQ))
+	return;		/* XXX: we schedule timers only for "<=" entries */
+
+    /*
+     * Reset the bw_meter entry
+     */
+    x->bm_start_time = *nowp;
+    x->bm_measured.b_packets = 0;
+    x->bm_measured.b_bytes = 0;
+    x->bm_flags &= ~BW_METER_UPCALL_DELIVERED;
+
+    /*
+     * Compute the timeout hash value and insert the entry
+     */
+    BW_METER_TIMEHASH(x, time_hash);
+    x->bm_time_next = bw_meter_timers[time_hash];
+    bw_meter_timers[time_hash] = x;
+    x->bm_time_hash = time_hash;
+}
+
+/*
+ * Unschedule the periodic timer that processes bw_meter entry of type "<="
+ * by removing the entry from the proper hash bucket.
+ */
+static void
+unschedule_bw_meter(struct bw_meter *x)
+{
+    int time_hash;
+    struct bw_meter *prev, *tmp;
+
+    if (!(x->bm_flags & BW_METER_LEQ))
+	return;		/* XXX: we schedule timers only for "<=" entries */
+
+    /*
+     * Compute the timeout hash value and delete the entry
+     */
+    time_hash = x->bm_time_hash;
+    if (time_hash >= BW_METER_BUCKETS)
+	return;		/* Entry was not scheduled */
+
+    for (prev = NULL, tmp = bw_meter_timers[time_hash];
+	     tmp != NULL; prev = tmp, tmp = tmp->bm_time_next)
+	if (tmp == x)
+	    break;
+
+    if (tmp == NULL)
+	panic("unschedule_bw_meter: bw_meter entry not found");
+
+    if (prev != NULL)
+	prev->bm_time_next = x->bm_time_next;
+    else
+	bw_meter_timers[time_hash] = x->bm_time_next;
+
+    x->bm_time_next = NULL;
+    x->bm_time_hash = BW_METER_BUCKETS;
+}
+
+/*
+ * Process all "<=" type of bw_meter that should be processed now,
+ * and for each entry prepare an upcall if necessary. Each processed
+ * entry is rescheduled again for the (periodic) processing.
+ *
+ * This is run periodically (once per second normally). On each round,
+ * all the potentially matching entries are in the hash slot that we are
+ * looking at.
+ */
+static void
+bw_meter_process()
+{
+    int s;
+    static uint32_t last_tv_sec;	/* last time we processed this */
+
+    uint32_t loops;
+    int i;
+    struct timeval now, process_endtime;
+
+    microtime(&now);
+    if (last_tv_sec == now.tv_sec)
+	return;		/* nothing to do */
+
+    loops = now.tv_sec - last_tv_sec;
+    last_tv_sec = now.tv_sec;
+    if (loops > BW_METER_BUCKETS)
+	loops = BW_METER_BUCKETS;
+
+    s = splsoftnet();
+    /*
+     * Process all bins of bw_meter entries from the one after the last
+     * processed to the current one. On entry, i points to the last bucket
+     * visited, so we need to increment i at the beginning of the loop.
+     */
+    for (i = (now.tv_sec - loops) % BW_METER_BUCKETS; loops > 0; loops--) {
+	struct bw_meter *x, *tmp_list;
+
+	if (++i >= BW_METER_BUCKETS)
+	    i = 0;
+
+	/* Disconnect the list of bw_meter entries from the bin */
+	tmp_list = bw_meter_timers[i];
+	bw_meter_timers[i] = NULL;
+
+	/* Process the list of bw_meter entries */
+	while (tmp_list != NULL) {
+	    x = tmp_list;
+	    tmp_list = tmp_list->bm_time_next;
+
+	    /* Test if the time interval is over */
+	    process_endtime = x->bm_start_time;
+	    BW_TIMEVALADD(&process_endtime, &x->bm_threshold.b_time);
+	    if (BW_TIMEVALCMP(&process_endtime, &now, >)) {
+		/* Not yet: reschedule, but don't reset */
+		int time_hash;
+
+		BW_METER_TIMEHASH(x, time_hash);
+		if (time_hash == i && process_endtime.tv_sec == now.tv_sec) {
+		    /*
+		     * XXX: somehow the bin processing is a bit ahead of time.
+		     * Put the entry in the next bin.
+		     */
+		    if (++time_hash >= BW_METER_BUCKETS)
+			time_hash = 0;
+		}
+		x->bm_time_next = bw_meter_timers[time_hash];
+		bw_meter_timers[time_hash] = x;
+		x->bm_time_hash = time_hash;
+
+		continue;
+	    }
+
+	    /*
+	     * Test if we should deliver an upcall
+	     */
+	    if (((x->bm_flags & BW_METER_UNIT_PACKETS) &&
+		 (x->bm_measured.b_packets <= x->bm_threshold.b_packets)) ||
+		((x->bm_flags & BW_METER_UNIT_BYTES) &&
+		 (x->bm_measured.b_bytes <= x->bm_threshold.b_bytes))) {
+		/* Prepare an upcall for delivery */
+		bw_meter_prepare_upcall(x, &now);
+	    }
+
+	    /*
+	     * Reschedule for next processing
+	     */
+	    schedule_bw_meter(x, &now);
+	}
+    }
+
+    /* Send all upcalls that are pending delivery */
+    bw_upcalls_send();
+
+    splx(s);
+}
+
+/*
+ * A periodic function for sending all upcalls that are pending delivery
+ */
+static void
+expire_bw_upcalls_send(void *unused)
+{
+    int s;
+
+    s = splsoftnet();
+    bw_upcalls_send();
+    splx(s);
+
+    timeout_add(&bw_upcalls_ch, BW_UPCALLS_PERIOD);
+}
+
+/*
+ * A periodic function for periodic scanning of the multicast forwarding
+ * table for processing all "<=" bw_meter entries.
+ */
+static void
+expire_bw_meter_process(void *unused)
+{
+    if (mrt_api_config & MRT_MFC_BW_UPCALL)
+	bw_meter_process();
+
+    timeout_add(&bw_meter_ch, BW_METER_PERIOD);
+}
+
+/*
+ * End of bandwidth monitoring code
+ */
+
+#ifdef PIM
+/*
+ * Send the packet up to the user daemon, or eventually do kernel encapsulation
+ */
+static int
+pim_register_send(struct ip *ip, struct vif *vifp,
+	struct mbuf *m, struct mfc *rt)
+{
+    struct mbuf *mb_copy, *mm;
+
+    if (mrtdebug & DEBUG_PIM)
+        log(LOG_DEBUG, "pim_register_send: ");
+
+    mb_copy = pim_register_prepare(ip, m);
+    if (mb_copy == NULL)
+	return ENOBUFS;
+
+    /*
+     * Send all the fragments. Note that the mbuf for each fragment
+     * is freed by the sending machinery.
+     */
+    for (mm = mb_copy; mm; mm = mb_copy) {
+	mb_copy = mm->m_nextpkt;
+	mm->m_nextpkt = NULL;
+	mm = m_pullup(mm, sizeof(struct ip));
+	if (mm != NULL) {
+	    ip = mtod(mm, struct ip *);
+	    if ((mrt_api_config & MRT_MFC_RP) &&
+		!in_nullhost(rt->mfc_rp)) {
+		pim_register_send_rp(ip, vifp, mm, rt);
+	    } else {
+		pim_register_send_upcall(ip, vifp, mm, rt);
 	    }
 	}
     }
 
-    splx(s);
+    return 0;
+}
+
+/*
+ * Return a copy of the data packet that is ready for PIM Register
+ * encapsulation.
+ * XXX: Note that in the returned copy the IP header is a valid one.
+ */
+static struct mbuf *
+pim_register_prepare(struct ip *ip, struct mbuf *m)
+{
+    struct mbuf *mb_copy = NULL;
+    int mtu;
+
+    /* Take care of delayed checksums */
+    if (m->m_pkthdr.csum_flags & (M_TCPV4_CSUM_OUT | M_UDPV4_CSUM_OUT)) {
+	in_delayed_cksum(m);
+	m->m_pkthdr.csum_flags &= ~(M_UDPV4_CSUM_OUT | M_TCPV4_CSUM_OUT);
+    }
+
+    /*
+     * Copy the old packet & pullup its IP header into the
+     * new mbuf so we can modify it.
+     */
+    mb_copy = m_copy(m, 0, M_COPYALL);
+    if (mb_copy == NULL)
+	return NULL;
+    mb_copy = m_pullup(mb_copy, ip->ip_hl << 2);
+    if (mb_copy == NULL)
+	return NULL;
+
+    /* take care of the TTL */
+    ip = mtod(mb_copy, struct ip *);
+    --ip->ip_ttl;
+
+    /* Compute the MTU after the PIM Register encapsulation */
+    mtu = 0xffff - sizeof(pim_encap_iphdr) - sizeof(pim_encap_pimhdr);
+
+    if (ntohs(ip->ip_len) <= mtu) {
+	/* Turn the IP header into a valid one */
+	ip->ip_sum = 0;
+	ip->ip_sum = in_cksum(mb_copy, ip->ip_hl << 2);
+    } else {
+	/* Fragment the packet */
+	if (ip_fragment(mb_copy, NULL, mtu) != 0) {
+	    /* XXX: mb_copy was freed by ip_fragment() */
+	    return NULL;
+	}
+    }
+    return mb_copy;
+}
+
+/*
+ * Send an upcall with the data packet to the user-level process.
+ */
+static int
+pim_register_send_upcall(struct ip *ip, struct vif *vifp,
+	struct mbuf *mb_copy, struct mfc *rt)
+{
+    struct mbuf *mb_first;
+    int len = ntohs(ip->ip_len);
+    struct igmpmsg *im;
+    struct sockaddr_in k_igmpsrc = { sizeof k_igmpsrc, AF_INET };
+
+    /*
+     * Add a new mbuf with an upcall header
+     */
+    MGETHDR(mb_first, M_DONTWAIT, MT_HEADER);
+    if (mb_first == NULL) {
+	m_freem(mb_copy);
+	return ENOBUFS;
+    }
+    mb_first->m_data += max_linkhdr;
+    mb_first->m_pkthdr.len = len + sizeof(struct igmpmsg);
+    mb_first->m_len = sizeof(struct igmpmsg);
+    mb_first->m_next = mb_copy;
+
+    /* Send message to routing daemon */
+    im = mtod(mb_first, struct igmpmsg *);
+    im->im_msgtype	= IGMPMSG_WHOLEPKT;
+    im->im_mbz		= 0;
+    im->im_vif		= vifp - viftable;
+    im->im_src		= ip->ip_src;
+    im->im_dst		= ip->ip_dst;
+
+    k_igmpsrc.sin_addr	= ip->ip_src;
+
+    mrtstat.mrts_upcalls++;
+
+    if (socket_send(ip_mrouter, mb_first, &k_igmpsrc) < 0) {
+	if (mrtdebug & DEBUG_PIM)
+	    log(LOG_WARNING,
+		"mcast: pim_register_send_upcall: ip_mrouter socket queue full");
+	++mrtstat.mrts_upq_sockfull;
+	return ENOBUFS;
+    }
+
+    /* Keep statistics */
+    pimstat.pims_snd_registers_msgs++;
+    pimstat.pims_snd_registers_bytes += len;
+
+    return 0;
+}
+
+/*
+ * Encapsulate the data packet in PIM Register message and send it to the RP.
+ */
+static int
+pim_register_send_rp(struct ip *ip, struct vif *vifp,
+	struct mbuf *mb_copy, struct mfc *rt)
+{
+    struct mbuf *mb_first;
+    struct ip *ip_outer;
+    struct pim_encap_pimhdr *pimhdr;
+    int len = ntohs(ip->ip_len);
+    vifi_t vifi = rt->mfc_parent;
+
+    if ((vifi >= numvifs) || in_nullhost(viftable[vifi].v_lcl_addr)) {
+	m_freem(mb_copy);
+	return EADDRNOTAVAIL;		/* The iif vif is invalid */
+    }
+
+    /*
+     * Add a new mbuf with the encapsulating header
+     */
+    MGETHDR(mb_first, M_DONTWAIT, MT_HEADER);
+    if (mb_first == NULL) {
+	m_freem(mb_copy);
+	return ENOBUFS;
+    }
+    mb_first->m_data += max_linkhdr;
+    mb_first->m_len = sizeof(pim_encap_iphdr) + sizeof(pim_encap_pimhdr);
+    mb_first->m_next = mb_copy;
+
+    mb_first->m_pkthdr.len = len + mb_first->m_len;
+
+    /*
+     * Fill in the encapsulating IP and PIM header
+     */
+    ip_outer = mtod(mb_first, struct ip *);
+    *ip_outer = pim_encap_iphdr;
+    ip_outer->ip_id = htons(ip_randomid());
+    ip_outer->ip_len = htons(len + sizeof(pim_encap_iphdr) +
+			     sizeof(pim_encap_pimhdr));
+    ip_outer->ip_src = viftable[vifi].v_lcl_addr;
+    ip_outer->ip_dst = rt->mfc_rp;
+    /*
+     * Copy the inner header TOS to the outer header, and take care of the
+     * IP_DF bit.
+     */
+    ip_outer->ip_tos = ip->ip_tos;
+    if (ntohs(ip->ip_off) & IP_DF)
+	ip_outer->ip_off |= IP_DF;
+    pimhdr = (struct pim_encap_pimhdr *)((caddr_t)ip_outer
+					 + sizeof(pim_encap_iphdr));
+    *pimhdr = pim_encap_pimhdr;
+    /* If the iif crosses a border, set the Border-bit */
+    if (rt->mfc_flags[vifi] & MRT_MFC_FLAGS_BORDER_VIF & mrt_api_config)
+	pimhdr->flags |= htonl(PIM_BORDER_REGISTER);
+
+    mb_first->m_data += sizeof(pim_encap_iphdr);
+    pimhdr->pim.pim_cksum = in_cksum(mb_first, sizeof(pim_encap_pimhdr));
+    mb_first->m_data -= sizeof(pim_encap_iphdr);
+
+    if (vifp->v_rate_limit == 0)
+	tbf_send_packet(vifp, mb_first);
+    else
+	tbf_control(vifp, mb_first, ip, ntohs(ip_outer->ip_len));
+
+    /* Keep statistics */
+    pimstat.pims_snd_registers_msgs++;
+    pimstat.pims_snd_registers_bytes += len;
+
+    return 0;
+}
+
+/*
+ * PIM-SMv2 and PIM-DM messages processing.
+ * Receives and verifies the PIM control messages, and passes them
+ * up to the listening socket, using rip_input().
+ * The only message with special processing is the PIM_REGISTER message
+ * (used by PIM-SM): the PIM header is stripped off, and the inner packet
+ * is passed to if_simloop().
+ */
+void
+pim_input(struct mbuf *m, ...)
+{
+    struct ip *ip = mtod(m, struct ip *);
+    struct pim *pim;
+    int minlen;
+    int datalen;
+    int ip_tos;
+    int iphlen;
+    va_list ap;
+
+    va_start(ap, m);
+    iphlen = va_arg(ap, int);
+    va_end(ap);
+
+    datalen = ntohs(ip->ip_len) - iphlen;
+
+    /* Keep statistics */
+    pimstat.pims_rcv_total_msgs++;
+    pimstat.pims_rcv_total_bytes += datalen;
+
+    /*
+     * Validate lengths
+     */
+    if (datalen < PIM_MINLEN) {
+	pimstat.pims_rcv_tooshort++;
+	log(LOG_ERR, "pim_input: packet size too small %d from %lx\n",
+	    datalen, (u_long)ip->ip_src.s_addr);
+	m_freem(m);
+	return;
+    }
+
+    /*
+     * If the packet is at least as big as a REGISTER, go agead
+     * and grab the PIM REGISTER header size, to avoid another
+     * possible m_pullup() later.
+     * 
+     * PIM_MINLEN       == pimhdr + u_int32_t == 4 + 4 = 8
+     * PIM_REG_MINLEN   == pimhdr + reghdr + encap_iphdr == 4 + 4 + 20 = 28
+     */
+    minlen = iphlen + (datalen >= PIM_REG_MINLEN ? PIM_REG_MINLEN : PIM_MINLEN);
+    /*
+     * Get the IP and PIM headers in contiguous memory, and
+     * possibly the PIM REGISTER header.
+     */
+    if ((m->m_flags & M_EXT || m->m_len < minlen) &&
+	(m = m_pullup(m, minlen)) == NULL) {
+	log(LOG_ERR, "pim_input: m_pullup failure\n");
+	return;
+    }
+    /* m_pullup() may have given us a new mbuf so reset ip. */
+    ip = mtod(m, struct ip *);
+    ip_tos = ip->ip_tos;
+
+    /* adjust mbuf to point to the PIM header */
+    m->m_data += iphlen;
+    m->m_len  -= iphlen;
+    pim = mtod(m, struct pim *);
+
+    /*
+     * Validate checksum. If PIM REGISTER, exclude the data packet.
+     *
+     * XXX: some older PIMv2 implementations don't make this distinction,
+     * so for compatibility reason perform the checksum over part of the
+     * message, and if error, then over the whole message.
+     */
+    if (PIM_VT_T(pim->pim_vt) == PIM_REGISTER && in_cksum(m, PIM_MINLEN) == 0) {
+	/* do nothing, checksum okay */
+    } else if (in_cksum(m, datalen)) {
+	pimstat.pims_rcv_badsum++;
+	if (mrtdebug & DEBUG_PIM)
+	    log(LOG_DEBUG, "pim_input: invalid checksum");
+	m_freem(m);
+	return;
+    }
+
+    /* PIM version check */
+    if (PIM_VT_V(pim->pim_vt) < PIM_VERSION) {
+	pimstat.pims_rcv_badversion++;
+	log(LOG_ERR, "pim_input: incorrect version %d, expecting %d\n",
+	    PIM_VT_V(pim->pim_vt), PIM_VERSION);
+	m_freem(m);
+	return;
+    }
+
+    /* restore mbuf back to the outer IP */
+    m->m_data -= iphlen;
+    m->m_len  += iphlen;
+
+    if (PIM_VT_T(pim->pim_vt) == PIM_REGISTER) {
+	/*
+	 * Since this is a REGISTER, we'll make a copy of the register
+	 * headers ip + pim + u_int32 + encap_ip, to be passed up to the
+	 * routing daemon.
+	 */
+	int s;
+	struct sockaddr_in dst = { sizeof(dst), AF_INET };
+	struct mbuf *mcp;
+	struct ip *encap_ip;
+	u_int32_t *reghdr;
+	struct ifnet *vifp;
+
+	s = splsoftnet();
+	if ((reg_vif_num >= numvifs) || (reg_vif_num == VIFI_INVALID)) {
+	    splx(s);
+	    if (mrtdebug & DEBUG_PIM)
+		log(LOG_DEBUG,
+		    "pim_input: register vif not set: %d\n", reg_vif_num);
+	    m_freem(m);
+	    return;
+	}
+	/* XXX need refcnt? */
+	vifp = viftable[reg_vif_num].v_ifp;
+	splx(s);
+
+	/*
+	 * Validate length
+	 */
+	if (datalen < PIM_REG_MINLEN) {
+	    pimstat.pims_rcv_tooshort++;
+	    pimstat.pims_rcv_badregisters++;
+	    log(LOG_ERR,
+		"pim_input: register packet size too small %d from %lx\n",
+		datalen, (u_long)ip->ip_src.s_addr);
+	    m_freem(m);
+	    return;
+	}
+
+	reghdr = (u_int32_t *)(pim + 1);
+	encap_ip = (struct ip *)(reghdr + 1);
+
+	if (mrtdebug & DEBUG_PIM) {
+	    log(LOG_DEBUG,
+		"pim_input[register], encap_ip: %lx -> %lx, encap_ip len %d\n",
+		(u_long)ntohl(encap_ip->ip_src.s_addr),
+		(u_long)ntohl(encap_ip->ip_dst.s_addr),
+		ntohs(encap_ip->ip_len));
+	}
+
+	/* verify the version number of the inner packet */
+	if (encap_ip->ip_v != IPVERSION) {
+	    pimstat.pims_rcv_badregisters++;
+	    if (mrtdebug & DEBUG_PIM) {
+		log(LOG_DEBUG, "pim_input: invalid IP version (%d) "
+		    "of the inner packet\n", encap_ip->ip_v);
+	    }
+	    m_freem(m);
+	    return;
+	}
+
+	/* verify the inner packet is destined to a mcast group */
+	if (!IN_MULTICAST(encap_ip->ip_dst.s_addr)) {
+	    pimstat.pims_rcv_badregisters++;
+	    if (mrtdebug & DEBUG_PIM)
+		log(LOG_DEBUG,
+		    "pim_input: inner packet of register is not "
+		    "multicast %lx\n",
+		    (u_long)ntohl(encap_ip->ip_dst.s_addr));
+	    m_freem(m);
+	    return;
+	}
+
+	/* If a NULL_REGISTER, pass it to the daemon */
+	if ((ntohl(*reghdr) & PIM_NULL_REGISTER))
+	    goto pim_input_to_daemon;
+
+	/*
+	 * Copy the TOS from the outer IP header to the inner IP header.
+	 */
+	if (encap_ip->ip_tos != ip_tos) {
+	    /* Outer TOS -> inner TOS */
+	    encap_ip->ip_tos = ip_tos;
+	    /* Recompute the inner header checksum. Sigh... */
+
+	    /* adjust mbuf to point to the inner IP header */
+	    m->m_data += (iphlen + PIM_MINLEN);
+	    m->m_len  -= (iphlen + PIM_MINLEN);
+
+	    encap_ip->ip_sum = 0;
+	    encap_ip->ip_sum = in_cksum(m, encap_ip->ip_hl << 2);
+
+	    /* restore mbuf to point back to the outer IP header */
+	    m->m_data -= (iphlen + PIM_MINLEN);
+	    m->m_len  += (iphlen + PIM_MINLEN);
+	}
+
+	/*
+	 * Decapsulate the inner IP packet and loopback to forward it
+	 * as a normal multicast packet. Also, make a copy of the 
+	 *     outer_iphdr + pimhdr + reghdr + encap_iphdr
+	 * to pass to the daemon later, so it can take the appropriate
+	 * actions (e.g., send back PIM_REGISTER_STOP).
+	 * XXX: here m->m_data points to the outer IP header.
+	 */
+	mcp = m_copy(m, 0, iphlen + PIM_REG_MINLEN);
+	if (mcp == NULL) {
+	    log(LOG_ERR,
+		"pim_input: pim register: could not copy register head\n");
+	    m_freem(m);
+	    return;
+	}
+
+	/* Keep statistics */
+	/* XXX: registers_bytes include only the encap. mcast pkt */
+	pimstat.pims_rcv_registers_msgs++;
+	pimstat.pims_rcv_registers_bytes += ntohs(encap_ip->ip_len);
+
+	/*
+	 * forward the inner ip packet; point m_data at the inner ip.
+	 */
+	m_adj(m, iphlen + PIM_MINLEN);
+
+	if (mrtdebug & DEBUG_PIM) {
+	    log(LOG_DEBUG,
+		"pim_input: forwarding decapsulated register: "
+		"src %lx, dst %lx, vif %d\n",
+		(u_long)ntohl(encap_ip->ip_src.s_addr),
+		(u_long)ntohl(encap_ip->ip_dst.s_addr),
+		reg_vif_num);
+	}
+	/* NB: vifp was collected above; can it change on us? */
+	looutput(vifp, m, (struct sockaddr *)&dst, (struct rtentry *)NULL);
+
+	/* prepare the register head to send to the mrouting daemon */
+	m = mcp;
+    }
+
+pim_input_to_daemon:
+    /*
+     * Pass the PIM message up to the daemon; if it is a Register message,
+     * pass the 'head' only up to the daemon. This includes the
+     * outer IP header, PIM header, PIM-Register header and the
+     * inner IP header.
+     * XXX: the outer IP header pkt size of a Register is not adjust to
+     * reflect the fact that the inner multicast data is truncated.
+     */
+    rip_input(m);
+
     return;
 }
-
-rsvp_input(m, ifp)
-    struct mbuf *m;
-    struct ifnet *ifp;
-{
-    int vifi;
-    register struct ip *ip = mtod(m, struct ip *);
-    static struct sockaddr_in rsvp_src = { sizeof(sin), AF_INET };
-    register int s;
-
-    if (rsvpdebug)
-	printf("rsvp_input: rsvp_on %d\n",rsvp_on);
-
-    /* Can still get packets with rsvp_on = 0 if there is a local member
-     * of the group to which the RSVP packet is addressed.  But in this
-     * case we want to throw the packet away.
-     */
-    if (!rsvp_on) {
-	m_freem(m);
-	return;
-    }
-
-    /* If the old-style non-vif-associated socket is set, then use
-     * it and ignore the new ones.
-     */
-    if (ip_rsvpd != NULL) {
-	if (rsvpdebug)
-	    printf("rsvp_input: Sending packet up old-style socket\n");
-	rip_input(m);
-	return;
-    }
-
-    s = splsoftnet();
-
-    if (rsvpdebug)
-	printf("rsvp_input: check vifs\n");
-
-    /* Find which vif the packet arrived on. */
-    for (vifi = 0; vifi < numvifs; vifi++) {
-	if (viftable[vifi].v_ifp == ifp)
-	    break;
-    }
-
-    if (vifi == numvifs) {
-	/* Can't find vif packet arrived on. Drop packet. */
-	if (rsvpdebug)
-	    printf("rsvp_input: Can't find vif for packet...dropping it.\n");
-	m_freem(m);
-	splx(s);
-	return;
-    }
-
-    if (rsvpdebug)
-	printf("rsvp_input: check socket\n");
-
-    if (viftable[vifi].v_rsvpd == NULL) {
-	/* drop packet, since there is no specific socket for this
-	 * interface */
-	if (rsvpdebug)
-	    printf("rsvp_input: No socket defined for vif %d\n",vifi);
-	m_freem(m);
-	splx(s);
-	return;
-    }
-
-    rsvp_src.sin_addr = ip->ip_src;
-
-    if (rsvpdebug && m)
-	printf("rsvp_input: m->m_len = %d, sbspace() = %d\n",
-	       m->m_len,sbspace(&viftable[vifi].v_rsvpd->so_rcv));
-
-    if (socket_send(viftable[vifi].v_rsvpd, m, &rsvp_src) < 0)
-	if (rsvpdebug)
-	    printf("rsvp_input: Failed to append to socket\n");
-    else
-	if (rsvpdebug)
-	    printf("rsvp_input: send packet up\n");
-    
-    splx(s);
-}
-#endif /* RSVP_ISI */
+#endif /* PIM */

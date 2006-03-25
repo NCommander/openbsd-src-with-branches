@@ -1,170 +1,327 @@
+# $OpenBSD: Makefile,v 1.43 2005/05/10 14:03:22 markus Exp $
 
 LIB=	crypto
+WANTLINT=
 
-SSLEAYDIST= src
+SSLEAYDIST=	src
+SSL_SRC=	${.CURDIR}/../${SSLEAYDIST}
+LCRYPTO_SRC=	${SSL_SRC}/crypto
+FIPS_SRC=	${SSL_SRC}/fips
 
-LCRYPTO_SRC= ${.CURDIR}/../${SSLEAYDIST}/crypto
-SSLEAY_INC= ${.CURDIR}/../${SSLEAYDIST}/include
-
-.if ${MACHINE_ARCH} == "i386"
-CFLAGS+= -DL_ENDIAN -DBN_ASM
-.else
-.if ${MACHINE_ARCH} == "alpha"
-# no ENDIAN stuff defined for alpha
+.if ${MACHINE_ARCH} == "i386" || ${MACHINE_ARCH} == "arm" || \
+    ${MACHINE_ARCH} == "vax" || ${MACHINE_ARCH} == "amd64" || \
+    ${MACHINE_ARCH} == "alpha"
+CFLAGS+= -DL_ENDIAN
 .else
 CFLAGS+= -DB_ENDIAN
-.endif
+.endif 
+
+.include <bsd.own.mk>		# for 'NOPIC' definition
+.if !defined(NOPIC)
+CFLAGS+= -DDSO_DLFCN -DHAVE_DLFCN_H
 .endif
 
-CFLAGS+= -DNO_IDEA -DTERMIOS -DANSI_SOURCE 
-CFLAGS+= -I${SSLEAY_INC}
+CFLAGS+= -DOPENSSL_NO_IDEA -DTERMIOS -DANSI_SOURCE -DNO_ERR -DOPENSSL_NO_ASM
+CFLAGS+= -DOPENSSL_NO_RC5 -DOPENSSL_NO_KRB5
+CFLAGS+= -DOPENSSL_NO_MDC2
+CFLAGS+= -DNO_WINDOWS_BRAINDEATH
+CFLAGS+= -DOPENSSL_NO_HW_CSWIFT -DOPENSSL_NO_HW_NCIPHER -DOPENSSL_NO_HW_ATALLA
+CFLAGS+= -DOPENSSL_NO_HW_NURON -DOPENSSL_NO_HW_UBSEC -DOPENSSL_NO_HW_AEP
+CFLAGS+= -DOPENSSL_NO_HW_SUREWARE -DOPENSSL_NO_HW_4758_CCA
+CFLAGS+= -I${.CURDIR}/../${SSLEAYDIST}
 CFLAGS+= -I${LCRYPTO_SRC}
-SRCS+=	cryptlib.c mem.c cversion.c ex_data.c cpt_err.c			
-CFLAGS+= -I${LCRYPTO_SRC}/md2
+SRCS+= o_time.c
+SRCS+=	cryptlib.c ex_data.c cpt_err.c mem.c mem_dbg.c mem_clr.c
+SRCS+=	tmdiff.c cversion.c uid.c
 SRCS+=	md2_dgst.c md2_one.c 					
-CFLAGS+= -I${LCRYPTO_SRC}/md5
 SRCS+=	md5_dgst.c md5_one.c 					
-CFLAGS+= -I${LCRYPTO_SRC}/sha
 SRCS+=	sha_dgst.c sha1dgst.c sha_one.c sha1_one.c	
-CFLAGS+= -I${LCRYPTO_SRC}/mdc2
-SRCS+=	mdc2dgst.c mdc2_one.c					
-CFLAGS+= -I${LCRYPTO_SRC}/hmac
+#SRCS+=	mdc2dgst.c mdc2_one.c					
 SRCS+=	hmac.c							
-CFLAGS+= -I${LCRYPTO_SRC}/ripemd
 SRCS+=	rmd_dgst.c rmd_one.c				
-CFLAGS+= -I${LCRYPTO_SRC}/des
-SRCS+=	cbc_cksm.c cbc_enc.c  cfb64enc.c cfb_enc.c  \
-	ecb3_enc.c ecb_enc.c  enc_read.c enc_writ.c \
-	fcrypt.c ofb64enc.c ofb_enc.c  pcbc_enc.c \
-	qud_cksm.c rand_key.c read_pwd.c rpc_enc.c  set_key.c  \
-	des_enc.c fcrypt_b.c read2pwd.c \
-	fcrypt.c xcbc_enc.c \
-	str2key.c  cfb64ede.c ofb64ede.c supp.c
-CFLAGS+= -I${LCRYPTO_SRC}/rc2
-SRCS+=	rc2_ecb.c rc2_skey.c rc2_cbc.c rc2cfb64.c 	
+SRCS+=	acss_skey.c acss_enc.c
+SRCS+= aes_cbc.c aes_cfb.c aes_ctr.c aes_ecb.c aes_ofb.c aes_misc.c
+SRCS+=	cbc_cksm.c cbc_enc.c cfb64enc.c cfb_enc.c \
+	ecb3_enc.c ecb_enc.c enc_read.c enc_writ.c \
+	ofb64enc.c ofb_enc.c pcbc_enc.c \
+	qud_cksm.c rand_key.c rpc_enc.c set_key.c \
+	des_enc.c des_old2.c fcrypt_b.c \
+	fcrypt.c xcbc_enc.c ede_cbcm_enc.c \
+	str2key.c cfb64ede.c ofb64ede.c \
+	des_old.c read2pwd.c
+SRCS+=	rc2_ecb.c rc2_skey.c rc2_cbc.c rc2cfb64.c
 SRCS+=	rc2ofb64.c							
-CFLAGS+= -I${LCRYPTO_SRC}/rc4
-SRCS+=	rc4_skey.c rc4_enc.c
-CFLAGS+= -I${LCRYPTO_SRC}/rc5
-SRCS+=	rc5_skey.c rc5_ecb.c rc5cfb64.c rc5cfb64.c 	
-SRCS+=	rc5ofb64.c rc5_enc.c
-CFLAGS+= -I${LCRYPTO_SRC}/idea
-SRCS+=	i_cbc.c i_cfb64.c i_ofb64.c i_ecb.c		
-SRCS+=	i_skey.c							
-CFLAGS+= -I${LCRYPTO_SRC}/bf
-SRCS+=	bf_skey.c bf_ecb.c bf_cfb64.c bf_ofb64.c bf_enc.c		
-CFLAGS+= -I${LCRYPTO_SRC}/cast
+SRCS+=	rc4_skey.c
+#SRCS+=	rc5_skey.c rc5_ecb.c rc5cfb64.c rc5cfb64.c 	
+#SRCS+=	rc5ofb64.c rc5_enc.c
+#SRCS+=	i_cbc.c i_cfb64.c i_ofb64.c i_ecb.c		
+#SRCS+=	i_skey.c							
+SRCS+=	bf_skey.c bf_ecb.c bf_cfb64.c bf_ofb64.c
 SRCS+=	c_skey.c c_ecb.c c_cfb64.c c_ofb64.c c_enc.c	
-CFLAGS+= -I${LCRYPTO_SRC}/bn
-SRCS+=	bn_add.c bn_div.c bn_exp.c bn_lib.c bn_mod.c	
-SRCS+=	bn_mul.c bn_print.c bn_rand.c bn_shift.c bn_sub.c
+SRCS+=	bn_add.c bn_div.c bn_exp.c bn_lib.c
+SRCS+=	bn_mul.c bn_print.c bn_rand.c bn_shift.c
 SRCS+=	bn_word.c bn_blind.c bn_gcd.c bn_prime.c bn_err.c
-SRCS+=	bn_sqr.c bn_recp.c bn_mont.c bn_mpi.c		
-CFLAGS+= -I${LCRYPTO_SRC}/rsa
-SRCS+=	rsa_eay.c rsa_gen.c rsa_lib.c rsa_sign.c 	
-SRCS+=	rsa_saos.c rsa_err.c rsa_pk1.c rsa_ssl.c 	
-SRCS+=	rsa_none.c							
-CFLAGS+= -I${LCRYPTO_SRC}/dsa
+SRCS+=	bn_sqr.c bn_recp.c bn_mont.c bn_mpi.c bn_mod.c
+SRCS+=	bn_exp2.c bn_ctx.c
+SRCS+=	bn_sqrt.c bn_kron.c
+SRCS+=	rsa_eay.c rsa_gen.c rsa_lib.c rsa_sign.c
+SRCS+=	rsa_saos.c rsa_err.c rsa_pk1.c rsa_ssl.c
+SRCS+=	rsa_none.c rsa_chk.c rsa_oaep.c rsa_null.c rsa_asn1.c
 SRCS+=	dsa_gen.c dsa_key.c dsa_lib.c dsa_vrf.c 	
-SRCS+=	dsa_sign.c dsa_err.c 					
-CFLAGS+= -I${LCRYPTO_SRC}/dh
-SRCS+=	dh_gen.c dh_key.c dh_lib.c dh_check.c dh_err.c	
-CFLAGS+= -I${LCRYPTO_SRC}/buffer
+SRCS+=	dsa_sign.c dsa_err.c dsa_asn1.c dsa_ossl.c
+SRCS+=	dh_gen.c dh_key.c dh_lib.c dh_check.c dh_err.c dh_asn1.c
 SRCS+=	buffer.c buf_err.c				
-CFLAGS+= -I${LCRYPTO_SRC}/bio
 SRCS+=	bio_lib.c bio_cb.c bio_err.c bss_mem.c 		
 SRCS+=	bss_null.c bss_fd.c bss_file.c bss_sock.c	
 SRCS+=	bss_conn.c bf_null.c bf_buff.c 
 SRCS+=	b_print.c b_dump.c b_sock.c bss_acpt.c 		
-SRCS+=	bf_nbio.c							
-CFLAGS+= -I${LCRYPTO_SRC}/stack
+SRCS+=	bf_nbio.c bss_bio.c bss_log.c
 SRCS+=	stack.c							
-CFLAGS+= -I${LCRYPTO_SRC}/lhash
 SRCS+=	lhash.c lh_stats.c					
-CFLAGS+= -I${LCRYPTO_SRC}/rand
-SRCS+=	md_rand.c randfile.c					
-CFLAGS+= -I${LCRYPTO_SRC}/err
+SRCS+=	md_rand.c randfile.c rand_lib.c	rand_egd.c rand_err.c rand_unix.c
 SRCS+=	err.c err_all.c err_prn.c				
-CFLAGS+= -I${LCRYPTO_SRC}/objects
-SRCS+=	obj_dat.c obj_lib.c obj_err.c
-CFLAGS+= -I${LCRYPTO_SRC}/evp
-SRCS+=	encode.c digest.c evp_enc.c evp_key.c 		
-SRCS+=	e_ecb_d.c e_cbc_d.c e_cfb_d.c e_ofb_d.c		
-SRCS+=	e_ecb_i.c e_cbc_i.c e_cfb_i.c e_ofb_i.c		
-SRCS+=	e_ecb_3d.c e_cbc_3d.c e_rc4.c names.c		
-SRCS+=	e_cfb_3d.c e_ofb_3d.c e_xcbc_d.c e_ecb_r2.c	
-SRCS+=	e_cbc_r2.c e_cfb_r2.c e_ofb_r2.c e_ecb_bf.c	
-SRCS+=	e_cbc_bf.c e_cfb_bf.c e_ofb_bf.c e_ecb_c.c	
-SRCS+=	e_cbc_c.c e_cfb_c.c e_ofb_c.c e_ecb_r5.c	
-SRCS+=	e_cbc_r5.c e_cfb_r5.c e_ofb_r5.c m_null.c	
-SRCS+=	m_md2.c m_md5.c m_sha.c m_sha1.c m_dss.c	
-SRCS+=	m_dss1.c m_mdc2.c m_ripemd.c p_open.c 		
-SRCS+=	p_seal.c p_sign.c p_verify.c p_lib.c p_enc.c
-SRCS+=	p_dec.c bio_md.c bio_b64.c bio_enc.c		
-SRCS+=	evp_err.c e_null.c c_all.c evp_lib.c
-CFLAGS+= -I${LCRYPTO_SRC}/pem
-SRCS+=	pem_sign.c pem_seal.c pem_info.c pem_lib.c	
-SRCS+=	pem_all.c pem_err.c					
-CFLAGS+= -I${LCRYPTO_SRC}/asn1
-SRCS+=	a_object.c a_bitstr.c a_utctm.c a_int.c	
-SRCS+=	a_octet.c a_print.c a_type.c a_set.c	
-SRCS+=	a_dup.c a_d2i_fp.c a_i2d_fp.c a_sign.c	
-SRCS+=	a_digest.c a_verify.c x_algor.c x_val.c	
-SRCS+=	x_pubkey.c x_sig.c x_req.c x_attrib.c	
-SRCS+=	x_name.c x_cinf.c x_x509.c x_crl.c		
-SRCS+=	x_info.c x_spki.c d2i_r_pr.c i2d_r_pr.c	
-SRCS+=	d2i_r_pu.c i2d_r_pu.c d2i_s_pr.c i2d_s_pr.c	
-SRCS+=	d2i_s_pu.c i2d_s_pu.c d2i_pu.c d2i_pr.c 	
-SRCS+=	i2d_pu.c i2d_pr.c t_req.c t_x509.c 		
-SRCS+=	t_pkey.c p7_i_s.c p7_signi.c p7_signd.c	
-SRCS+=	p7_recip.c p7_enc_c.c p7_evp.c p7_dgst.c	
-SRCS+=	p7_s_e.c p7_enc.c p7_lib.c f_int.c 		
-SRCS+=	f_string.c i2d_dhp.c i2d_dsap.c d2i_dhp.c	
-SRCS+=	d2i_dsap.c n_pkey.c a_hdr.c x_pkey.c 	
-SRCS+=	a_bool.c x_exten.c asn1_par.c asn1_lib.c	
-SRCS+=	asn1_err.c a_meth.c a_bytes.c evp_asn1.c	
-CFLAGS+= -I${LCRYPTO_SRC}/x509
-SRCS+=	x509_def.c x509_d2.c x509_r2x.c x509_cmp.c	
-SRCS+=	x509_obj.c x509_req.c x509_vfy.c x509_set.c	
-SRCS+=	x509rset.c x509_err.c x509name.c x509_v3.c	
-SRCS+=	x509_ext.c x509pack.c x509type.c x509_lu.c	
-SRCS+=	x_all.c x509_txt.c by_file.c by_dir.c	
-SRCS+=	v3_net.c v3_x509.c					
-CFLAGS+= -I${LCRYPTO_SRC}/conf
-SRCS+=	conf.c conf_err.c					
-CFLAGS+= -I${LCRYPTO_SRC}/txt_db
+SRCS+=	obj_dat.c obj_lib.c obj_err.c o_names.c
+SRCS+= bio_b64.c e_bf.c m_sha.c p_open.c
+SRCS+= bio_enc.c e_cast.c e_xcbc_d.c m_dss.c m_sha1.c p_seal.c
+SRCS+= bio_md.c e_des.c encode.c m_dss1.c names.c p_sign.c
+SRCS+= bio_ok.c e_des3.c evp_enc.c m_md2.c p_verify.c
+SRCS+= c_all.c evp_err.c evp_acnf.c m_md4.c p5_crpt.c e_old.c
+SRCS+= c_allc.c evp_key.c m_md5.c p5_crpt2.c
+SRCS+= c_alld.c e_null.c evp_lib.c p_dec.c
+SRCS+= digest.c e_rc2.c evp_pbe.c m_null.c p_enc.c
+SRCS+= e_acss.c e_aes.c e_rc4.c evp_pkey.c m_ripemd.c p_lib.c
+SRCS+= md4_dgst.c md4_one.c
+SRCS+=	pem_sign.c pem_seal.c pem_info.c pem_lib.c pem_pkey.c	
+SRCS+=	pem_all.c pem_err.c pem_x509.c pem_pk8.c pem_oth.c pem_xaux.c
+SRCS+=	ui_err.c ui_lib.c ui_openssl.c ui_compat.c ui_util.c
+SRCS+= a_bitstr.c a_mbstr.c a_utctm.c f_enum.c t_bitst.c x_name.c
+SRCS+= a_bool.c a_meth.c a_utf8.c f_int.c t_crl.c tasn_typ.c x_pkey.c
+SRCS+= a_bytes.c a_object.c a_verify.c f_string.c t_pkey.c tasn_utl.c x_pubkey.c
+SRCS+= a_d2i_fp.c a_octet.c asn1_err.c i2d_pr.c t_req.c x_algor.c x_req.c
+SRCS+= a_digest.c a_print.c asn1_lib.c i2d_pu.c t_spki.c x_attrib.c x_sig.c
+SRCS+= a_dup.c a_set.c asn1_par.c n_pkey.c t_x509.c x_bignum.c x_spki.c
+SRCS+= a_enum.c a_sign.c asn_pack.c nsseq.c t_x509a.c x_val.c
+SRCS+= a_gentm.c a_strex.c d2i_pr.c p5_pbe.c tasn_dec.c x_crl.c x_x509.c
+SRCS+= a_hdr.c a_strnid.c d2i_pu.c p5_pbev2.c tasn_enc.c x_exten.c x_x509a.c
+SRCS+= a_i2d_fp.c a_time.c evp_asn1.c tasn_fre.c x_info.c
+SRCS+=a_int.c a_type.c p8_pkey.c tasn_new.c x_long.c asn_moid.c
+SRCS+= x509_d2.c x509_lu.c x509_set.c x509_vfy.c x509spki.c by_dir.c
+SRCS+= x509_def.c x509_obj.c x509_trs.c x509cset.c x509type.c by_file.c
+SRCS+= x509_att.c x509_err.c x509_r2x.c x509_txt.c x509name.c x_all.c
+SRCS+= x509_cmp.c x509_ext.c x509_req.c x509_v3.c x509rset.c
+SRCS+=	v3_akey.c v3_alt.c v3_bcons.c v3_bitst.c v3_conf.c v3_cpols.c
+SRCS+=	v3_crld.c v3_enum.c v3_extku.c v3_genn.c v3_ia5.c v3_int.c
+SRCS+=	v3_lib.c v3_pku.c v3_prn.c v3_skey.c v3_sxnet.c v3_utl.c
+SRCS+=	v3err.c v3_info.c v3_purp.c v3_ocsp.c v3_akeya.c v3_pci.c v3_pcia.c
+SRCS+=	conf_err.c conf_lib.c conf_def.c conf_api.c conf_mod.c conf_mall.c
+SRCS+=	conf_sap.c
 SRCS+=	txt_db.c							
-CFLAGS+= -I${LCRYPTO_SRC}/pkcs7
-SRCS+=	pk7_lib.c pkcs7err.c pk7_doit.c
+SRCS+= pk7_lib.c pkcs7err.c
+SRCS+= pk7_asn1.c pk7_doit.c pk7_mime.c 
+SRCS+= pk7_attr.c pk7_smime.c
+SRCS+=	c_rle.c c_zlib.c comp_lib.c comp_err.c
+SRCS+=	p12_add.c p12_crpt.c p12_init.c p12_mutl.c p12_p8e.c
+SRCS+=	p12_asn.c p12_crt.c p12_key.c p12_npas.c p12_utl.c
+SRCS+=	p12_attr.c p12_decr.c p12_kiss.c p12_p8d.c pk12err.c
+SRCS+= eng_all.c eng_openssl.c eng_ctrl.c eng_pkey.c
+SRCS+= eng_dyn.c eng_table.c tb_cipher.c eng_err.c tb_rsa.c
+SRCS+= hw_cryptodev.c eng_cnf.c
+SRCS+= tb_dh.c eng_fat.c tb_digest.c eng_init.c
+SRCS+= tb_dsa.c eng_lib.c tb_rand.c eng_list.c
+SRCS+= dso_dl.c dso_dlfcn.c dso_err.c dso_lib.c dso_null.c
+SRCS+= dso_openssl.c dso_win32.c dso_vms.c
+SRCS+= ocsp_asn.c ocsp_err.c ocsp_ht.c ocsp_prn.c ocsp_vfy.c
+SRCS+= ocsp_cl.c ocsp_ext.c ocsp_lib.c ocsp_srv.c
+SRCS+= ec_cvt.c ec_lib.c ecp_mont.c ecp_recp.c
+SRCS+= ec_err.c ec_mult.c ecp_nist.c ecp_smpl.c
 
-HDRS= 	asn1/asn1.h asn1/asn1_mac.h bf/blowfish.h bio/bio.h \
-	bn/bn.h buffer/buffer.h cast/cast.h conf/conf.h des/des.h dh/dh.h \
-	dsa/dsa.h err/err.h evp/evp.h hmac/hmac.h idea/idea.h lhash/lhash.h \
-	md2/md2.h md5/md5.h mdc2/mdc2.h objects/objects.h pem/pem.h \
-	pkcs7/pkcs7.h rand/rand.h rc2/rc2.h rc4/rc4.h rc5/rc5.h \
-	ripemd/ripemd.h rsa/rsa.h sha/sha.h stack/stack.h txt_db/txt_db.h \
-	x509/x509.h x509/x509_vfy.h crypto.h cryptall.h ../include/e_os.h
+# Only used when -DOPENSSL_FIPS is set
+#SRCS+= fips.c fips_err_wrapper.c
+#SRCS+= fips_aes_core.c fips_aes_selftest.c
+#SRCS+= fips_des_enc.c fips_des_selftest.c fips_set_key.c
+#SRCS+= fips_dh_check.c fips_dh_gen.c fips_dh_key.c
+#SRCS+= fips_dsa_ossl.c fips_dsa_gen.c fips_dsa_selftest.c
+#SRCS+= fips_rand.c
+#SRCS+= fips_rsa_eay.c fips_rsa_gen.c fips_rsa_selftest.c
+#SRCS+= fips_sha1dgst.c fips_sha1_selftest.c
 
-.PATH:	${LCRYPTO_SRC}/md2 ${LCRYPTO_SRC}/md5 ${LCRYPTO_SRC}/sha ${LCRYPTO_SRC}/mdc2	\
-	${LCRYPTO_SRC}/hmac ${LCRYPTO_SRC}/ripemd ${LCRYPTO_SRC}/des  ${LCRYPTO_SRC}/rc2 \
-	${LCRYPTO_SRC}/rc4 ${LCRYPTO_SRC}/rc5 ${LCRYPTO_SRC}/idea ${LCRYPTO_SRC}/bf    \
-	${LCRYPTO_SRC}/cast ${LCRYPTO_SRC}/bn  ${LCRYPTO_SRC}/rsa ${LCRYPTO_SRC}/dsa   \
-	${LCRYPTO_SRC}/dh ${LCRYPTO_SRC}/buffer ${LCRYPTO_SRC}/bio ${LCRYPTO_SRC}/stack \
-   	${LCRYPTO_SRC}/lhash ${LCRYPTO_SRC}/rand ${LCRYPTO_SRC}/err ${LCRYPTO_SRC}/objects \
-	${LCRYPTO_SRC}/evp ${LCRYPTO_SRC}/pem ${LCRYPTO_SRC}/asn1  ${LCRYPTO_SRC}/asn1 \
-	${LCRYPTO_SRC}/x509 ${LCRYPTO_SRC}/conf txt_db/txt_db.c ${LCRYPTO_SRC}/pkcs7 \
-	${LCRYPTO_SRC}/txt_db ${LCRYPTO_SRC}
+.PATH:	${LCRYPTO_SRC}/md2 ${LCRYPTO_SRC}/md5 ${LCRYPTO_SRC}/sha \
+	${LCRYPTO_SRC}/mdc2 ${LCRYPTO_SRC}/hmac ${LCRYPTO_SRC}/ripemd \
+	${LCRYPTO_SRC}/des ${LCRYPTO_SRC}/rc2 ${LCRYPTO_SRC}/rc4 \
+	${LCRYPTO_SRC}/rc5 ${LCRYPTO_SRC}/idea ${LCRYPTO_SRC}/bf \
+	${LCRYPTO_SRC}/cast ${LCRYPTO_SRC}/bn ${LCRYPTO_SRC}/rsa \
+	${LCRYPTO_SRC}/dsa ${LCRYPTO_SRC}/dh ${LCRYPTO_SRC}/buffer \
+	${LCRYPTO_SRC}/bio ${LCRYPTO_SRC}/stack ${LCRYPTO_SRC}/lhash \
+	${LCRYPTO_SRC}/rand ${LCRYPTO_SRC}/err ${LCRYPTO_SRC}/objects \
+	${LCRYPTO_SRC}/evp ${LCRYPTO_SRC}/pem ${LCRYPTO_SRC}/asn1 \
+	${LCRYPTO_SRC}/asn1 ${LCRYPTO_SRC}/x509 ${LCRYPTO_SRC}/conf \
+	${LCRYPTO_SRC}/pkcs7 ${LCRYPTO_SRC}/x509v3 ${LCRYPTO_SRC}/pkcs12 \
+	${LCRYPTO_SRC}/comp ${LCRYPTO_SRC}/txt_db ${LCRYPTO_SRC}/md4 \
+	${LCRYPTO_SRC}/engine ${LCRYPTO_SRC}/dso ${LCRYPTO_SRC}/ui \
+	${LCRYPTO_SRC}/ocsp ${LCRYPTO_SRC}/ec ${LCRYPTO_SRC}/aes \
+	${LCRYPTO_SRC} \
+	${LCRYPTO_SRC}/acss ${.CURDIR}/arch/${MACHINE_ARCH} \
+	${LCRYPTO_SRC}/bn/asm \
+	${FIPS_SRC}/ ${FIPS_SRC}/aes ${FIPS_SRC}/des ${FIPS_SRC}/dh \
+	${FIPS_SRC}/dsa ${FIPS_SRC}/rand ${FIPS_SRC}/rsa ${FIPS_SRC}/sha1
 
-includes:
-	@cd ${LCRYPTO_SRC}; for i in $(HDRS); do \
-		j="cmp -s ${LCRYPTO_SRC}/$$i \
-		${DESTDIR}/usr/include/ssl/`basename $$i` || \
-		${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 \
-		${LCRYPTO_SRC}/$$i ${DESTDIR}/usr/include/ssl"; \
-		echo $$j; \
-		eval "$$j"; \
-	done
+HDRS=\
+	crypto/acss/acss.h \
+	crypto/aes/aes.h \
+	crypto/asn1/asn1.h \
+	crypto/asn1/asn1_mac.h \
+	crypto/asn1/asn1t.h \
+	crypto/bf/blowfish.h \
+	crypto/bio/bio.h \
+	crypto/bn/bn.h \
+	crypto/buffer/buffer.h \
+	crypto/cast/cast.h \
+	crypto/comp/comp.h \
+	crypto/conf/conf.h \
+	crypto/conf/conf_api.h \
+	crypto/crypto.h \
+	crypto/des/des.h \
+	crypto/des/des_old.h \
+	crypto/dh/dh.h \
+	crypto/dsa/dsa.h \
+	crypto/dso/dso.h \
+	crypto/ebcdic.h \
+	crypto/ec/ec.h \
+	crypto/engine/engine.h \
+	crypto/err/err.h \
+	crypto/evp/evp.h \
+	crypto/hmac/hmac.h \
+	crypto/idea/idea.h \
+	crypto/lhash/lhash.h \
+	crypto/md2/md2.h \
+	crypto/md4/md4.h \
+	crypto/md5/md5.h \
+	crypto/mdc2/mdc2.h \
+	crypto/objects/objects.h \
+	crypto/ocsp/ocsp.h \
+	crypto/opensslv.h \
+	crypto/ossl_typ.h \
+	crypto/pem/pem.h \
+	crypto/pem/pem2.h \
+	crypto/pkcs12/pkcs12.h \
+	crypto/pkcs7/pkcs7.h \
+	crypto/rand/rand.h \
+	crypto/rc2/rc2.h \
+	crypto/rc4/rc4.h \
+	crypto/rc5/rc5.h \
+	crypto/ripemd/ripemd.h \
+	crypto/rsa/rsa.h \
+	crypto/sha/sha.h \
+	crypto/stack/safestack.h \
+	crypto/stack/stack.h \
+	crypto/symhacks.h \
+	crypto/tmdiff.h \
+	crypto/txt_db/txt_db.h \
+	crypto/ui/ui.h \
+	crypto/ui/ui_compat.h \
+	crypto/x509/x509.h \
+	crypto/x509/x509_vfy.h \
+	crypto/x509v3/x509v3.h \
+	e_os2.h \
+	fips/fips.h \
+	fips/rand/fips_rand.h 
 
+HDRS_GEN=\
+	${.CURDIR}/arch/${MACHINE_ARCH}/opensslconf.h \
+	${.OBJDIR}/obj_mac.h
+
+includes: obj_mac.h
+	@test -d ${DESTDIR}/usr/include/openssl || \
+	    mkdir ${DESTDIR}/usr/include/openssl
+	@cd ${SSL_SRC}; \
+	for i in $(HDRS); do \
+	    j="cmp -s $$i ${DESTDIR}/usr/include/openssl/`basename $$i` || \
+	    ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i\
+		${DESTDIR}/usr/include/openssl"; \
+	    echo $$j; \
+	    eval "$$j"; \
+	done; \
+	for i in $(HDRS_GEN); do \
+	    j="cmp -s $$i ${DESTDIR}/usr/include/openssl/`basename $$i` || \
+	    ${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i\
+		${DESTDIR}/usr/include/openssl"; \
+	    echo $$j; \
+	    eval "$$j"; \
+	done;
+
+# generated
+CFLAGS+= -I${.OBJDIR}
+
+GENERATED=obj_mac.h obj_dat.h
+CLEANFILES=${GENERATED} obj_mac.num.tmp
+SSL_OBJECTS=${SSL_SRC}/crypto/objects
+
+obj_mac.h: ${SSL_OBJECTS}/objects.h ${SSL_OBJECTS}/obj_mac.num ${SSL_OBJECTS}/objects.txt
+	cat ${SSL_OBJECTS}/obj_mac.num > obj_mac.num.tmp
+	/usr/bin/perl ${SSL_OBJECTS}/objects.pl ${SSL_OBJECTS}/objects.txt obj_mac.num.tmp obj_mac.h
+
+obj_dat.h: obj_mac.h
+	/usr/bin/perl ${SSL_OBJECTS}/obj_dat.pl obj_mac.h obj_dat.h
+
+.if (${MACHINE_ARCH} == "vax")
+# egcs bombs optimising this file on vax
+a_strnid.o:
+	${CC} ${CFLAGS} -O0 ${CPPFLAGS} -c ${.IMPSRC}
+a_strnid.po:           
+	${CC} ${CFLAGS} -O0 ${CPPFLAGS} -c ${.IMPSRC} -o $@
+des_enc.o:             
+	${CC} ${CFLAGS} -O1 ${CPPFLAGS} -c ${.IMPSRC}
+des_enc.po:            
+	${CC} ${CFLAGS} -O1 ${CPPFLAGS} -c ${.IMPSRC} -o $@
+.endif  
+
+.if (${MACHINE_ARCH} == "i386")
+CFLAGS+= -DAES_ASM
+CFLAGS+= -DMD5_ASM
+CFLAGS+= -DSHA1_ASM
+CFLAGS+= -DRMD160_ASM
+CFLAGS+= -DOPENBSD_CAST_ASM
+CFLAGS+= -DOPENBSD_DES_ASM
+SSLASM=\
+	aes aes-586 \
+	bf bf-586 \
+	bn bn-586 \
+	bn co-586 \
+	cast cast-586 \
+	des des-586 \
+	md5 md5-586 \
+	rc4 rc4-586 \
+	ripemd rmd-586 \
+	sha sha1-586
+.for dir f in ${SSLASM}
+SRCS+=	${f}.S
+GENERATED+=${f}.S
+${f}.S: ${LCRYPTO_SRC}/${dir}/asm/${f}.pl ${LCRYPTO_SRC}/perlasm/x86unix.pl
+	/usr/bin/perl -I${LCRYPTO_SRC}/perlasm -I${LCRYPTO_SRC}/${dir}/asm \
+		${LCRYPTO_SRC}/${dir}/asm/${f}.pl openbsd-elf 386 > ${.TARGET}
+.endfor
+SRCS+= bf_cbc.c	
+.else
+.if (${MACHINE_ARCH} == "vax")
+SRCS+= aes_core.c
+SRCS+= bf_enc.c
+SRCS+= bn_asm_vax.S
+SRCS+= rc4_enc.c	
+.else
+.if (${MACHINE_ARCH} == "amd64")
+SRCS+= aes_core.c
+SRCS+= bf_enc.c
+SRCS+= x86_64-gcc.c
+SRCS+= rc4_enc.c	
+.else
+SRCS+= aes_core.c
+SRCS+= bf_enc.c	
+SRCS+= bn_asm.c
+SRCS+= rc4_enc.c	
+.endif
+.endif
+.endif
+
+all beforedepend: ${GENERATED}
 
 .include <bsd.lib.mk>
-

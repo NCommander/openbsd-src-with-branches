@@ -1,3 +1,5 @@
+/*	$OpenBSD: moptrace.c,v 1.7 2003/06/02 21:38:40 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -28,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$Id: moptrace.c,v 1.10 1996/08/05 07:49:14 moj Exp $";
+static const char rcsid[] = "$OpenBSD: moptrace.c,v 1.7 2003/06/02 21:38:40 maja Exp $";
 #endif
 
 /*
@@ -54,15 +51,9 @@ static char rcsid[] = "$Id: moptrace.c,v 1.10 1996/08/05 07:49:14 moj Exp $";
  */
 struct if_info *iflist;
 
-#ifdef NO__P
-void   Loop	     (/* void */);
-void   Usage         (/* void */);
-void   mopProcess    (/* struct if_info *, u_char * */);
-#else
-void   Loop	     __P((void));
-void   Usage         __P((void));
-void   mopProcess    __P((struct if_info *, u_char *));
-#endif
+void   Loop(void) __dead;
+void   Usage(void);
+void   mopProcess(struct if_info *, u_char *);
 
 int     AllFlag = 0;		/* listen on "all" interfaces  */
 int     DebugFlag = 0;		/* print debugging messages    */
@@ -71,7 +62,7 @@ int	Not4Flag = 0;		/* Ignore MOP V4 messages      */
 int	promisc = 1;		/* Need promisc mode           */
 char	*Program;
 
-void
+int
 main(argc, argv)
 	int     argc;
 	char  **argv;
@@ -93,7 +84,7 @@ main(argc, argv)
 	openlog(Program, LOG_PID | LOG_CONS, LOG_DAEMON);
 
 	opterr = 0;
-	while ((op = getopt(argc, argv, "34ad")) != EOF) {
+	while ((op = getopt(argc, argv, "34ad")) != -1) {
 		switch (op) {
 		case '3':
 			Not3Flag++;

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: smdb.h,v 8.36 2001/05/18 14:55:56 ca Exp $
+ *	$Sendmail: smdb.h,v 8.41 2002/09/24 19:53:28 ca Exp $
  *
  */
 
@@ -18,21 +18,12 @@
 # include <sm/gen.h>
 # include <sm/errstring.h>
 
-# ifndef NDBM
-#  ifndef NEWDB
-ERROR	NDBM or NEWDB must be defined.
-#  endif /* ! NEWDB */
-# endif /* ! NDBM */
-
 # ifdef NDBM
 #  include <ndbm.h>
 # endif /* NDBM */
 
 # ifdef NEWDB
-#  include <db.h>
-#  ifndef DB_VERSION_MAJOR
-#   define DB_VERSION_MAJOR 1
-#  endif /* ! DB_VERSION_MAJOR */
+#  include "sm/bdb.h"
 # endif /* NEWDB */
 
 /*
@@ -40,7 +31,6 @@ ERROR	NDBM or NEWDB must be defined.
 */
 
 #define SMDB_MAX_USER_NAME_LEN	1024
-#define SMDB_MAX_NAME_LEN	1024
 
 /*
 **  This file defines the abstraction for database lookups. It is pretty
@@ -56,7 +46,7 @@ typedef struct database_struct SMDB_DATABASE;
 typedef struct cursor_struct SMDB_CURSOR;
 typedef struct entry_struct SMDB_DBENT;
 
-/*
+/*
 **  DB_CLOSE_FUNC -- close the database
 **
 **	Parameters:
@@ -69,7 +59,7 @@ typedef struct entry_struct SMDB_DBENT;
 
 typedef int (*db_close_func) __P((SMDB_DATABASE *db));
 
-/*
+/*
 **  DB_DEL_FUNC -- removes a key and data pair from the database
 **
 **	Parameters:
@@ -86,7 +76,7 @@ typedef int (*db_close_func) __P((SMDB_DATABASE *db));
 typedef int (*db_del_func) __P((SMDB_DATABASE *db,
 			   SMDB_DBENT *key, unsigned int flags));
 
-/*
+/*
 **  DB_FD_FUNC -- Returns a pointer to a file used for the database.
 **
 **	Parameters:
@@ -100,7 +90,7 @@ typedef int (*db_del_func) __P((SMDB_DATABASE *db,
 
 typedef int (*db_fd_func) __P((SMDB_DATABASE *db, int* fd));
 
-/*
+/*
 **  DB_GET_FUNC -- Gets the data associated with a key.
 **
 **	Parameters:
@@ -119,7 +109,7 @@ typedef int (*db_get_func) __P((SMDB_DATABASE *db,
 			   SMDB_DBENT *key,
 			   SMDB_DBENT *data, unsigned int flags));
 
-/*
+/*
 **  DB_PUT_FUNC -- Sets some data according to the key.
 **
 **	Parameters:
@@ -140,7 +130,7 @@ typedef int (*db_put_func) __P((SMDB_DATABASE *db,
 			   SMDB_DBENT *key,
 			   SMDB_DBENT *data, unsigned int flags));
 
-/*
+/*
 **  DB_SYNC_FUNC -- Flush any cached information to disk.
 **
 **	Parameters:
@@ -154,7 +144,7 @@ typedef int (*db_put_func) __P((SMDB_DATABASE *db,
 
 typedef int (*db_sync_func) __P((SMDB_DATABASE *db, unsigned int flags));
 
-/*
+/*
 **  DB_SET_OWNER_FUNC -- Set the owner and group of the database files.
 **
 **	Parameters:
@@ -169,7 +159,7 @@ typedef int (*db_sync_func) __P((SMDB_DATABASE *db, unsigned int flags));
 
 typedef int (*db_set_owner_func) __P((SMDB_DATABASE *db, uid_t uid, gid_t gid));
 
-/*
+/*
 **  DB_CURSOR -- Obtain a cursor for sequential access
 **
 **	Parameters:
@@ -200,7 +190,7 @@ struct database_struct
 	db_lockfd_func		smdb_lockfd;
 	void			*smdb_impl;
 };
-/*
+/*
 **  DB_CURSOR_CLOSE -- Close a cursor
 **
 **	Parameters:
@@ -213,7 +203,7 @@ struct database_struct
 
 typedef int (*db_cursor_close_func) __P((SMDB_CURSOR *cursor));
 
-/*
+/*
 **  DB_CURSOR_DEL -- Delete the key/value pair of this cursor
 **
 **	Parameters:
@@ -228,7 +218,7 @@ typedef int (*db_cursor_close_func) __P((SMDB_CURSOR *cursor));
 typedef int (*db_cursor_del_func) __P((SMDB_CURSOR *cursor,
 					unsigned int flags));
 
-/*
+/*
 **  DB_CURSOR_GET -- Get the key/value of this cursor.
 **
 **	Parameters:
@@ -259,7 +249,7 @@ typedef int (*db_cursor_get_func) __P((SMDB_CURSOR *cursor,
 #define SMDB_CURSOR_GET_NEXT	2
 #define SMDB_CURSOR_GET_RANGE	3
 
-/*
+/*
 **  DB_CURSOR_PUT -- Put the key/value at this cursor.
 **
 **	Parameters:

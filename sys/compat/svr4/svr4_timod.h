@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_timod.h,v 1.3 1995/01/10 00:04:11 christos Exp $	 */
+/*	$OpenBSD: svr4_timod.h,v 1.2 1996/04/21 22:18:39 deraadt Exp $	*/
+/*	$NetBSD: svr4_timod.h,v 1.5 1996/08/30 23:06:42 christos Exp $	 */
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -45,11 +46,15 @@
 #define SVR4_TI_BIND_REQUEST		0x06
 #define SVR4_TI_SENDTO_REQUEST		0x08
 
+#define SVR4_TI_ACCEPT_REPLY		0x0b
 #define SVR4_TI_CONNECT_REPLY		0x0c
 #define SVR4_TI_INFO_REPLY		0x10
 #define SVR4_TI_BIND_REPLY		0x11
 #define SVR4_TI_OK_REPLY		0x13
 #define SVR4_TI_RECVFROM_REPLY		0x14
+
+#define SVR4_TI__ACCEPT_WAIT		0x10000001
+#define SVR4_TI__ACCEPT_OK		0x10000002
 
 struct svr4_netbuf {
 	u_int 	 maxlen;

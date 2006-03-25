@@ -1,3 +1,4 @@
+/*	$OpenBSD: externs2.h,v 1.4 2002/02/17 19:42:35 millert Exp $	*/
 /*	$NetBSD: externs2.h,v 1.2 1995/07/03 21:24:46 cgd Exp $	*/
 
 /*
@@ -49,39 +50,40 @@ extern	int	Fflag;
 /*
  * hash.c
  */
-extern	void	inithash __P((void));
-extern	hte_t	*hsearch __P((const char *, int));
-extern	void	forall __P((void (*)(hte_t *)));
+extern	void	inithash(void);
+extern	hte_t	*hsearch(const char *, int);
+extern	void	forall(void (*)(hte_t *));
 
 /*
  * read.c
  */
 extern	const	char **fnames;
 extern	type_t	**tlst;
+extern	int	csrcfile;
 
-extern	void	readfile __P((const char *));
-extern	void	mkstatic __P((hte_t *));
+extern	void	readfile(const char *);
+extern	void	mkstatic(hte_t *);
 
 /*
  * mem2.c
  */
-extern	void	initmem __P((void));
-extern	void	*xalloc __P((size_t));
+extern	void	initmem(void);
+extern	void	*xalloc(size_t);
 
 /*
  * chk.c
  */
-extern	void	inittyp __P((void));
-extern	void	mainused __P((void));
-extern	void	chkname __P((hte_t *));
+extern	void	inittyp(void);
+extern	void	mainused(void);
+extern	void	chkname(hte_t *);
 
 /*
  * msg.c
  */
-extern	void	msg __P((int, ...));
-extern	const	char *mkpos __P((pos_t *));
+extern	void	msg(int, ...);
+extern	const	char *mkpos(pos_t *);
 
 /*
  * emit2.c
  */
-extern	void	outlib __P((const char *));
+extern	void	outlib(const char *);

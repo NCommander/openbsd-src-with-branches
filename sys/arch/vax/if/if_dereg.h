@@ -1,4 +1,5 @@
-/*	$NetBSD: if_dereg.h,v 1.2 1994/10/26 08:01:51 cgd Exp $	*/
+/*	$OpenBSD: if_dereg.h,v 1.3 1997/05/29 00:04:32 niklas Exp $	*/
+/*	$NetBSD: if_dereg.h,v 1.3 1996/04/08 18:34:55 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -177,7 +174,7 @@ struct de_ring {
 #define	XFLG_BITS	"\10\10OWN\7ERRS\6MTCH\5MORE\4ONE\3DEF\2STP\1ENP"
 
 #define	XERR_BUFL	0x8000		/* Buffer length error */
-#define	XERR_UBTO	0x4000		/* UNIBUS tiemout
+#define	XERR_UBTO	0x4000		/* UNIBUS tiemout */
 #define	XERR_LCOL	0x1000		/* Late collision */
 #define	XERR_LCAR	0x0800		/* Loss of carrier */
 #define	XERR_RTRY	0x0400		/* Failed after 16 retries */

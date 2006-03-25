@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002, 2004 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,7 +11,7 @@
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: local.h,v 1.48 2001/05/14 20:42:29 gshapiro Exp $
+ *	$Sendmail: local.h,v 1.53 2004/01/09 18:34:22 ca Exp $
  */
 
 /*
@@ -37,7 +37,6 @@ int	sm_wsetup __P((SM_FILE_T *));
 int	sm_flags __P((int));
 SM_FILE_T	*sm_fp __P((const SM_FILE_T *, const int, SM_FILE_T *));
 int	sm_vprintf __P((int, char const *, va_list));
-int	sm_vfscanf __P((SM_FILE_T *, int, char const *, va_list));
 
 /* std io functions */
 ssize_t	sm_stdread __P((SM_FILE_T *, char *, size_t));
@@ -132,25 +131,9 @@ extern bool Sm_IO_DidInit;
 	(fp)->f_ub.smb_base = NULL;			\
 }
 
-/* Test for an fgetln() buffer. */
-#define HASLB(fp) ((fp)->f_lb.smb_base != NULL)
-#define FREELB(fp)				\
-{						\
-	sm_free((char *)(fp)->f_lb.smb_base);	\
-	(fp)->f_lb.smb_base = NULL;		\
-}
-
-struct sm_io_obj
-{
-	int file;
-};
-
 extern const char SmFileMagic[];
 
-#ifndef ALIGNBYTES
-# define ALIGNBYTES	(sizeof(long) - 1)
-# define ALIGN(p)	(((unsigned long)(p) + ALIGNBYTES) & ~ALIGNBYTES)
-#endif /* ALIGNBYTES */
+#define SM_ALIGN(p)	(((unsigned long)(p) + SM_ALIGN_BITS) & ~SM_ALIGN_BITS)
 
 #define sm_io_flockfile(fp)	((void) 0)
 #define sm_io_funlockfile(fp)	((void) 0)
@@ -209,7 +192,7 @@ extern const char SmFileMagic[];
 	else \
 	{ \
 		(time)->tv_sec = (val) / 1000; \
-		(time)->tv_usec = ((val) - ((time)->tv_sec * 1000)) * 10; \
+		(time)->tv_usec = ((val) - ((time)->tv_sec * 1000)) * 1000; \
 	} \
 	if ((val) == SM_TIME_FOREVER) \
 	{ \
@@ -293,7 +276,12 @@ extern const char SmFileMagic[];
 	else \
 	{ \
 		sm_io_to.tv_sec = (to) / 1000; \
-		sm_io_to.tv_usec = ((to) - (sm_io_to.tv_sec * 1000)) * 10; \
+		sm_io_to.tv_usec = ((to) - (sm_io_to.tv_sec * 1000)) * 1000; \
+	} \
+	if (FD_SETSIZE > 0 && (fd) >= FD_SETSIZE) \
+	{ \
+		errno = EINVAL; \
+		return SM_IO_EOF; \
 	} \
 	FD_ZERO(&sm_io_to_mask); \
 	FD_SET((fd), &sm_io_to_mask); \
@@ -301,8 +289,11 @@ extern const char SmFileMagic[];
 	FD_SET((fd), &sm_io_x_mask); \
 	if (gettimeofday(&sm_io_to_before, NULL) < 0) \
 		return SM_IO_EOF; \
-	sm_io_to_sel = select((fd) + 1, NULL, &sm_io_to_mask, &sm_io_x_mask, \
-			      &sm_io_to); \
+	do \
+	{	\
+		sm_io_to_sel = select((fd) + 1, NULL, &sm_io_to_mask, \
+					&sm_io_x_mask, &sm_io_to); \
+	} while (sm_io_to_sel < 0 && errno == EINTR); \
 	if (sm_io_to_sel < 0) \
 	{ \
 		/* something went wrong, errno set */ \
@@ -317,10 +308,9 @@ extern const char SmFileMagic[];
 	/* else loop again */ \
 	if (gettimeofday(&sm_io_to_after, NULL) < 0) \
 		return SM_IO_EOF; \
-	timersub(&sm_io_to_before, &sm_io_to_after, &sm_io_to_diff); \
-	timersub(&sm_io_to, &sm_io_to_diff, &sm_io_to); \
-	(to) -= (sm_io_to.tv_sec * 1000); \
-	(to) -= (sm_io_to.tv_usec / 10); \
+	timersub(&sm_io_to_after, &sm_io_to_before, &sm_io_to_diff); \
+	(to) -= (sm_io_to_diff.tv_sec * 1000); \
+	(to) -= (sm_io_to_diff.tv_usec / 1000); \
 	if ((to) < 0) \
 		(to) = 0; \
 }

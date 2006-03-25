@@ -2895,7 +2895,7 @@ RCS_getdate (rcs, date, force_tag_match)
     if (retval != NULL)
 	return (retval);
 
-    if (!force_tag_match || RCS_datecmp (vers->date, date) <= 0)
+    if (vers && (!force_tag_match || RCS_datecmp (vers->date, date) <= 0))
 	return (xstrdup (vers->version));
     else
 	return (NULL);
@@ -3342,7 +3342,7 @@ struct rcs_keyword
     size_t len;
 };
 #define KEYWORD_INIT(s) (s), sizeof (s) - 1
-static const struct rcs_keyword keywords[] =
+static struct rcs_keyword keywords[] =
 {
     { KEYWORD_INIT ("Author") },
     { KEYWORD_INIT ("Date") },
@@ -3355,6 +3355,7 @@ static const struct rcs_keyword keywords[] =
     { KEYWORD_INIT ("Revision") },
     { KEYWORD_INIT ("Source") },
     { KEYWORD_INIT ("State") },
+    { NULL, 0 },
     { NULL, 0 }
 };
 enum keyword
@@ -3369,7 +3370,8 @@ enum keyword
     KEYWORD_RCSFILE,
     KEYWORD_REVISION,
     KEYWORD_SOURCE,
-    KEYWORD_STATE
+    KEYWORD_STATE,
+    KEYWORD_LOCALID
 };
 
 /* Convert an RCS date string into a readable string.  This is like
@@ -3506,6 +3508,12 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 	return;
     }
 
+    if (RCS_citag != NULL && *RCS_citag && *RCS_citag != '-'
+	&& keywords[KEYWORD_LOCALID].string == NULL) {
+	keywords[KEYWORD_LOCALID].string = RCS_citag;
+	keywords[KEYWORD_LOCALID].len = strlen(RCS_citag);
+    }
+
     /* If we are using -kkvl, dig out the locker information if any.  */
     locker = NULL;
     if (expand == KFLAG_KVL)
@@ -3533,13 +3541,15 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 	srch_len -= (srch_next + 1) - srch;
 	srch = srch_next + 1;
 
-	/* Look for the first non alphabetic character after the '$'.  */
+	/* Look for the first non alphanumeric character after the '$'.  */
 	send = srch + srch_len;
-	for (s = srch; s < send; s++)
-	    if (! isalpha ((unsigned char) *s))
+	if (! isalpha((unsigned char) *srch))
+	    continue;	/* first character of a tag must be a letter */
+	for (s = srch+1; s < send; s++)
+	    if (! isalnum ((unsigned char) *s))
 		break;
 
-	/* If the first non alphabetic character is not '$' or ':',
+	/* If the first non alphanumeric character is not '$' or ':',
            then this is not an RCS keyword.  */
 	if (s == send || (*s != '$' && *s != ':'))
 	    continue;
@@ -3597,6 +3607,7 @@ expand_keywords (rcs, ver, name, log, loglen, expand, buf, len, retbuf, retlen)
 
 	    case KEYWORD_HEADER:
 	    case KEYWORD_ID:
+	    case KEYWORD_LOCALID:
 		{
 		    char *path;
 		    int free_path;
@@ -3957,7 +3968,7 @@ RCS_checkout (rcs, workfile, rev, nametag, options, sout, pfn, callerdat)
     size_t len;
     int free_value = 0;
     char *log = NULL;
-    size_t loglen;
+    size_t loglen = 0;
     Node *vp = NULL;
 #ifdef PRESERVE_PERMISSIONS_SUPPORT
     uid_t rcs_owner = (uid_t) -1;
@@ -4228,7 +4239,7 @@ RCS_checkout (rcs, workfile, rev, nametag, options, sout, pfn, callerdat)
 	if (info != NULL)
 	{
 	    /* If the size of `devtype' changes, fix the sscanf call also */
-	    char devtype[16];
+	    char devtype[16+1];
 
 	    if (sscanf (info->data, "%16s %lu",
 			devtype, &devnum_long) < 2)
@@ -7225,7 +7236,7 @@ RCS_deltas (rcs, fp, rcsbuf, version, op, text, len, log, loglen)
 
 		for (ln = 0; ln < headlines.nlines; ++ln)
 		{
-		    char buf[80];
+		    char *buf;
 		    /* Period which separates year from month in date.  */
 		    char *ym;
 		    /* Period which separates month from day in date.  */
@@ -7236,10 +7247,12 @@ RCS_deltas (rcs, fp, rcsbuf, version, op, text, len, log, loglen)
 		    if (prvers == NULL)
 			prvers = vers;
 
+		    buf = xmalloc (strlen (prvers->version) + 24);
 		    sprintf (buf, "%-12s (%-8.8s ",
 			     prvers->version,
 			     prvers->author);
 		    cvs_output (buf, 0);
+		    free (buf);
 
 		    /* Now output the date.  */
 		    ym = strchr (prvers->date, '.');
@@ -8405,17 +8418,14 @@ make_file_label (path, rev, rcs)
 	    else
 		wm = gmtime (&sb.st_mtime);
 	}
-	else
+	if (wm == NULL)
 	{
 	    time_t t = 0;
 	    wm = gmtime(&t);
 	}
 
-	if (wm)
-	{
-	    (void) tm_to_internet (datebuf, wm);
-	    (void) sprintf (label, "-L%s\t%s", path, datebuf);
-	}
+	(void) tm_to_internet (datebuf, wm);
+	(void) sprintf (label, "-L%s\t%s", path, datebuf);
     }
     return label;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,7 +13,7 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: err.c,v 8.184 2001/09/04 22:43:03 ca Exp $")
+SM_RCSID("@(#)$Sendmail: err.c,v 8.191 2003/01/10 02:16:46 ca Exp $")
 
 #if LDAPMAP
 # include <lber.h>
@@ -238,7 +238,7 @@ syserr(fmt, va_alist)
 	  case ESTALE:
 #endif /* ESTALE */
 		printopenfds(true);
-		mci_dump_all(true);
+		mci_dump_all(smioout, true);
 		break;
 	}
 	if (panic)
@@ -255,7 +255,7 @@ syserr(fmt, va_alist)
 	if (QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 2);
 }
-/*
+/*
 **  USRERR -- Signal user error.
 **
 **	This is much like syserr except it is for user errors.
@@ -340,7 +340,7 @@ usrerr(fmt, va_alist)
 	if (QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 1);
 }
-/*
+/*
 **  USRERRENH -- Signal user error.
 **
 **	Same as usrerr but with enhanced status code.
@@ -427,7 +427,7 @@ usrerrenh(enhsc, fmt, va_alist)
 	if (QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 1);
 }
-/*
+/*
 **  MESSAGE -- print message (not necessarily an error)
 **
 **	Parameters:
@@ -478,7 +478,7 @@ message(msg, va_alist)
 		break;
 	}
 }
-/*
+/*
 **  NMESSAGE -- print message (not necessarily an error)
 **
 **	Just like "message" except it never puts the to... tag on.
@@ -533,7 +533,7 @@ nmessage(msg, va_alist)
 		break;
 	}
 }
-/*
+/*
 **  PUTOUTMSG -- output error message to transcript and channel
 **
 **	Parameters:
@@ -656,7 +656,7 @@ putoutmsg(msg, holdmsg, heldmsg)
 			  shortenstring(msg, MAXSHORTSTR), sm_errstring(errno));
 #endif /* !PIPELINING */
 }
-/*
+/*
 **  PUTERRMSG -- like putoutmsg, but does special processing for error messages
 **
 **	Parameters:
@@ -699,7 +699,7 @@ puterrmsg(msg)
 		CurEnv->e_flags |= EF_FATALERRS;
 	}
 }
-/*
+/*
 **  ISENHSC -- check whether a string contains an enhanced status code
 **
 **	Parameters:
@@ -738,7 +738,7 @@ isenhsc(s, delim)
 		return 0;
 	return l + h;
 }
-/*
+/*
 **  EXTENHSC -- check and extract an enhanced status code
 **
 **	Parameters:
@@ -792,7 +792,7 @@ extenhsc(s, delim, e)
 	e[l + h] = '\0';
 	return l + h;
 }
-/*
+/*
 **  FMTMSG -- format a message into buffer.
 **
 **	Parameters:
@@ -925,7 +925,7 @@ fmtmsg(eb, to, num, enhsc, eno, fmt, ap)
 
 	return errtxt;
 }
-/*
+/*
 **  BUFFER_ERRORS -- arrange to buffer future error messages
 **
 **	Parameters:
@@ -941,7 +941,7 @@ buffer_errors()
 	HeldMessageBuf[0] = '\0';
 	HoldErrs = true;
 }
-/*
+/*
 **  FLUSH_ERRORS -- flush the held error message buffer
 **
 **	Parameters:
@@ -961,7 +961,7 @@ flush_errors(print)
 	HeldMessageBuf[0] = '\0';
 	HoldErrs = false;
 }
-/*
+/*
 **  SM_ERRSTRING -- return string description of error code
 **
 **	Parameters:
@@ -981,6 +981,10 @@ sm_errstring(errnum)
 	char *dnsmsg;
 	char *bp;
 	static char buf[MAXLINE];
+#if HASSTRERROR
+	char *err;
+	char errbuf[30];
+#endif /* HASSTRERROR */
 #if !HASSTRERROR && !defined(ERRLIST_PREDEFINED)
 	extern char *sys_errlist[];
 	extern int sys_nerr;
@@ -999,7 +1003,14 @@ sm_errstring(errnum)
 	  case ECONNRESET:
 		bp = buf;
 #if HASSTRERROR
-		(void) sm_strlcpy(bp, strerror(errnum), SPACELEFT(buf, bp));
+		err = strerror(errnum);
+		if (err == NULL)
+		{
+			(void) sm_snprintf(errbuf, sizeof errbuf,
+					   "Error %d", errnum);
+			err = errbuf;
+		}
+		(void) sm_strlcpy(bp, err, SPACELEFT(buf, bp));
 #else /* HASSTRERROR */
 		if (errnum >= 0 && errnum < sys_nerr)
 			(void) sm_strlcpy(bp, sys_errlist[errnum],
@@ -1133,7 +1144,13 @@ sm_errstring(errnum)
 #endif /* LDAPMAP */
 
 #if HASSTRERROR
-	return strerror(errnum);
+	err = strerror(errnum);
+	if (err == NULL)
+	{
+		(void) sm_snprintf(buf, sizeof buf, "Error %d", errnum);
+		return buf;
+	}
+	return err;
 #else /* HASSTRERROR */
 	if (errnum > 0 && errnum < sys_nerr)
 		return sys_errlist[errnum];

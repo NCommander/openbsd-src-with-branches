@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap-bpf.c,v 1.3 1995/04/29 05:42:31 cgd Exp $	*/
+/*	$OpenBSD: pcap-bpf.c,v 1.18 2006/01/11 07:31:46 jaredy Exp $	*/
 
 /*
- * Copyright (c) 1993, 1994
+ * Copyright (c) 1993, 1994, 1995, 1996, 1998
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -20,38 +20,40 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-#ifndef lint
-static  char rcsid[] =
-    "@(#)Header: pcap-bpf.c,v 1.14 94/06/03 19:58:49 leres Exp (LBL)";
-#endif
 
-#include <stdio.h>
-#include <netdb.h>
-#include <ctype.h>
-#include <signal.h>
-#include <errno.h>
 #include <sys/param.h>			/* optionally get BSD define */
 #include <sys/time.h>
 #include <sys/timeb.h>
 #include <sys/socket.h>
-#include <sys/file.h>
 #include <sys/ioctl.h>
-#include <net/bpf.h>
+
 #include <net/if.h>
-#include <string.h>
-#ifdef __NetBSD__
+
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <stdio.h>
 #include <stdlib.h>
-#endif
+#include <string.h>
+#include <unistd.h>
 
 #include "pcap-int.h"
+
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
+
+#include "gencode.h"
 
 int
 pcap_stats(pcap_t *p, struct pcap_stat *ps)
 {
 	struct bpf_stat s;
 
-	if (ioctl(p->fd, BIOCGSTATS, &s) < 0) {
-		sprintf(p->errbuf, "BIOCGSTATS: %s", pcap_strerror(errno));
+	if (ioctl(p->fd, BIOCGSTATS, (caddr_t)&s) < 0) {
+		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "BIOCGSTATS: %s",
+		    pcap_strerror(errno));
 		return (-1);
 	}
 
@@ -68,6 +70,19 @@ pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 	register u_char *bp, *ep;
 
  again:
+	/*
+	 * Has "pcap_breakloop()" been called?
+	 */
+	if (p->break_loop) {
+		/*
+		 * Yes - clear the flag that indicates that it
+		 * has, and return -2 to indicate that we were
+		 * told to break out of the loop.
+		 */
+		p->break_loop = 0;
+		return (-2);
+	}
+
 	cc = p->cc;
 	if (p->cc == 0) {
 		cc = read(p->fd, (char *)p->buffer, p->bufsize);
@@ -87,14 +102,16 @@ pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 			 * The lseek() to 0 will fix things.
 			 */
 			case EINVAL:
-				if ((long)(tell(p->fd) + p->bufsize) < 0) {
-					(void)lseek(p->fd, 0, 0);
+				if (lseek(p->fd, 0L, SEEK_CUR) +
+				    p->bufsize < 0) {
+					(void)lseek(p->fd, 0L, SEEK_SET);
 					goto again;
 				}
-				/* fall through */
+				/* FALLTHROUGH */
 #endif
 			}
-			sprintf(p->errbuf, "read: %s", pcap_strerror(errno));
+			snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "read: %s",
+			    pcap_strerror(errno));
 			return (-1);
 		}
 		bp = p->buffer;
@@ -108,6 +125,27 @@ pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 	ep = bp + cc;
 	while (bp < ep) {
 		register int caplen, hdrlen;
+
+		/*
+		 * Has "pcap_breakloop()" been called?
+		 * If so, return immediately - if we haven't read any
+		 * packets, clear the flag and return -2 to indicate
+		 * that we were told to break out of the loop, otherwise
+		 * leave the flag set, so that the *next* call will break
+		 * out of the loop without having read any packets, and
+		 * return the number of packets we've processed so far.
+		 */
+		if (p->break_loop) {
+			if (n == 0) {
+				p->break_loop = 0;
+				return (-2);
+			} else {
+				p->bp = bp;
+				p->cc = ep - bp;
+				return (n);
+			}
+		}
+
 		caplen = bhp->bh_caplen;
 		hdrlen = bhp->bh_hdrlen;
 		/*
@@ -126,42 +164,55 @@ pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 	return (n);
 }
 
-static inline int
+int
+pcap_inject(pcap_t *p, const void *buf, size_t len)
+{
+	return (write(p->fd, buf, len));
+}
+
+static __inline int
 bpf_open(pcap_t *p, char *errbuf)
 {
 	int fd;
 	int n = 0;
-	char device[sizeof "/dev/bpf000"];
+	char device[sizeof "/dev/bpf0000000000"];
 
 	/*
 	 * Go through all the minors and find one that isn't in use.
 	 */
 	do {
-		(void)sprintf(device, "/dev/bpf%d", n++);
-		fd = open(device, O_RDONLY);
+		(void)snprintf(device, sizeof device, "/dev/bpf%d", n++);
+		fd = open(device, O_RDWR);
+		if (fd < 0 && errno == EACCES)
+			fd = open(device, O_RDONLY);
 	} while (fd < 0 && errno == EBUSY);
 
 	/*
 	 * XXX better message for all minors used
 	 */
 	if (fd < 0)
-		sprintf(errbuf, "%s: %s", device, pcap_strerror(errno));
+		snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s",
+		    device, pcap_strerror(errno));
 
 	return (fd);
 }
 
 pcap_t *
-pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
+pcap_open_live(const char *device, int snaplen, int promisc, int to_ms,
+    char *ebuf)
 {
 	int fd;
 	struct ifreq ifr;
 	struct bpf_version bv;
 	u_int v;
 	pcap_t *p;
+	struct bpf_dltlist bdl;
 
+	bzero(&bdl, sizeof(bdl));
 	p = (pcap_t *)malloc(sizeof(*p));
 	if (p == NULL) {
-		sprintf(ebuf, "malloc: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "malloc: %s",
+		    pcap_strerror(errno));
 		return (NULL);
 	}
 	bzero(p, sizeof(*p));
@@ -173,25 +224,81 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 	p->snapshot = snaplen;
 
 	if (ioctl(fd, BIOCVERSION, (caddr_t)&bv) < 0) {
-		sprintf(ebuf, "BIOCVERSION: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCVERSION: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
 	if (bv.bv_major != BPF_MAJOR_VERSION ||
 	    bv.bv_minor < BPF_MINOR_VERSION) {
-		sprintf(ebuf, "kernel bpf filter out of date");
+		snprintf(ebuf, PCAP_ERRBUF_SIZE,
+		    "kernel bpf filter out of date");
 		goto bad;
 	}
-	(void)strncpy(ifr.ifr_name, device, sizeof(ifr.ifr_name));
+#if 0
+	/* Just use the kernel default */
+	v = 32768;	/* XXX this should be a user-accessible hook */
+	/* Ignore the return value - this is because the call fails on
+	 * BPF systems that don't have kernel malloc.  And if the call
+	 * fails, it's no big deal, we just continue to use the standard
+	 * buffer size.
+	 */
+	(void) ioctl(fd, BIOCSBLEN, (caddr_t)&v);
+#endif
+
+	(void)strlcpy(ifr.ifr_name, device, sizeof(ifr.ifr_name));
 	if (ioctl(fd, BIOCSETIF, (caddr_t)&ifr) < 0) {
-		sprintf(ebuf, "%s: %s", device, pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "%s: %s",
+		    device, pcap_strerror(errno));
 		goto bad;
 	}
 	/* Get the data link layer type. */
 	if (ioctl(fd, BIOCGDLT, (caddr_t)&v) < 0) {
-		sprintf(ebuf, "BIOCGDLT: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCGDLT: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
+#if _BSDI_VERSION - 0 >= 199510
+	/* The SLIP and PPP link layer header changed in BSD/OS 2.1 */
+	switch (v) {
+
+	case DLT_SLIP:
+		v = DLT_SLIP_BSDOS;
+		break;
+
+	case DLT_PPP:
+		v = DLT_PPP_BSDOS;
+		break;
+	}
+#endif
 	p->linktype = v;
+
+	/*
+	 * We know the default link type -- now determine all the DLTs
+	 * this interface supports.  If this fails with EINVAL, it's
+	 * not fatal; we just don't get to use the feature later.
+	 */
+	if (ioctl(fd, BIOCGDLTLIST, (caddr_t)&bdl) == 0) {
+		bdl.bfl_list = (u_int *) calloc(bdl.bfl_len + 1, sizeof(u_int));
+		if (bdl.bfl_list == NULL) {
+			(void)snprintf(ebuf, PCAP_ERRBUF_SIZE, "malloc: %s",
+			    pcap_strerror(errno));
+			goto bad;
+		}
+
+		if (ioctl(fd, BIOCGDLTLIST, (caddr_t)&bdl) < 0) {
+			(void)snprintf(ebuf, PCAP_ERRBUF_SIZE,
+			    "BIOCGDLTLIST: %s", pcap_strerror(errno));
+			goto bad;
+		}
+		p->dlt_count = bdl.bfl_len;
+		p->dlt_list = bdl.bfl_list;
+	} else {
+		if (errno != EINVAL) {
+			(void)snprintf(ebuf, PCAP_ERRBUF_SIZE,
+			    "BIOCGDLTLIST: %s", pcap_strerror(errno));
+			goto bad;
+		}
+	}
 
 	/* set timeout */
 	if (to_ms != 0) {
@@ -199,8 +306,8 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 		to.tv_sec = to_ms / 1000;
 		to.tv_usec = (to_ms * 1000) % 1000000;
 		if (ioctl(p->fd, BIOCSRTIMEOUT, (caddr_t)&to) < 0) {
-			sprintf(ebuf, "BIOCSRTIMEOUT: %s",
-				pcap_strerror(errno));
+			snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCSRTIMEOUT: %s",
+			    pcap_strerror(errno));
 			goto bad;
 		}
 	}
@@ -209,18 +316,23 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 		(void)ioctl(p->fd, BIOCPROMISC, NULL);
 
 	if (ioctl(fd, BIOCGBLEN, (caddr_t)&v) < 0) {
-		sprintf(ebuf, "BIOCGBLEN: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCGBLEN: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
 	p->bufsize = v;
-	p->buffer = (u_char*)malloc(p->bufsize);
+	p->buffer = (u_char *)malloc(p->bufsize);
 	if (p->buffer == NULL) {
-		sprintf(ebuf, "malloc: %s", pcap_strerror(errno));
+		snprintf(ebuf, PCAP_ERRBUF_SIZE, "malloc: %s",
+		    pcap_strerror(errno));
 		goto bad;
 	}
 
 	return (p);
  bad:
+	if (fd >= 0)
+		(void)close(fd);
+	free(bdl.bfl_list);
 	free(p);
 	return (NULL);
 }
@@ -228,11 +340,70 @@ pcap_open_live(char *device, int snaplen, int promisc, int to_ms, char *ebuf)
 int
 pcap_setfilter(pcap_t *p, struct bpf_program *fp)
 {
-	if (p->sf.rfile != NULL)
-		p->fcode = *fp;
-	else if (ioctl(p->fd, BIOCSETF, (caddr_t)fp) < 0) {
-		sprintf(p->errbuf, "BIOCSETF: %s", pcap_strerror(errno));
+	int buflen;
+	/*
+	 * It looks that BPF code generated by gen_protochain() is not
+	 * compatible with some of kernel BPF code (for example BSD/OS 3.1).
+	 * Take a safer side for now.
+	 */
+	if (no_optimize || (p->sf.rfile != NULL)){
+		if (p->fcode.bf_insns != NULL)
+			pcap_freecode(&p->fcode);
+		buflen = sizeof(*fp->bf_insns) * fp->bf_len;
+		p->fcode.bf_len = fp->bf_len;
+		p->fcode.bf_insns = malloc(buflen);
+		if (p->fcode.bf_insns == NULL) {
+			snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "malloc: %s",
+			    pcap_strerror(errno));
+			return (-1);
+		}
+		memcpy(p->fcode.bf_insns, fp->bf_insns, buflen);
+	} else if (ioctl(p->fd, BIOCSETF, (caddr_t)fp) < 0) {
+		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "BIOCSETF: %s",
+		    pcap_strerror(errno));
 		return (-1);
 	}
 	return (0);
 }
+
+int
+pcap_set_datalink(pcap_t *p, int dlt)
+{
+	int i;
+
+	if (p->dlt_count == 0) {
+		/*
+		 * We couldn't fetch the list of DLTs, or we don't
+		 * have a "set datalink" operation, which means
+		 * this platform doesn't support changing the
+		 * DLT for an interface.  Check whether the new
+		 * DLT is the one this interface supports.
+		 */
+		if (p->linktype != dlt)
+			goto unsupported;
+
+		/*
+		 * It is, so there's nothing we need to do here.
+		 */
+		return (0);
+	}
+	for (i = 0; i < p->dlt_count; i++)
+		if (p->dlt_list[i] == dlt)
+			break;
+	if (i >= p->dlt_count)
+		goto unsupported;
+	if (ioctl(p->fd, BIOCSDLT, &dlt) == -1) {
+		(void) snprintf(p->errbuf, sizeof(p->errbuf),
+		    "Cannot set DLT %d: %s", dlt, strerror(errno));
+		return (-1);
+	}
+	p->linktype = dlt;
+	return (0);
+
+unsupported:
+	(void) snprintf(p->errbuf, sizeof(p->errbuf),
+	    "DLT %d is not one of the DLTs supported by this device",
+	    dlt);
+	return (-1);
+}
+

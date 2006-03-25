@@ -1,5 +1,4 @@
-/*	$NetBSD: mul.c,v 1.2 1995/02/27 17:31:34 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -16,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,25 +32,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mul.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: mul.c,v 1.2 1995/02/27 17:31:34 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <stdio.h>
 
+int
 main()
 {
-	union { long long q; unsigned long v[2]; } a, b, m;
+	union { long long q; unsigned int v[2]; } a, b, m;
 	char buf[300];
 	extern long long __muldi3(long long, long long);
 
@@ -63,17 +45,17 @@ main()
 		printf("> ");
 		if (fgets(buf, sizeof buf, stdin) == NULL)
 			break;
-		if (sscanf(buf, "%lu:%lu %lu:%lu",
+		if (sscanf(buf, "%u:%u %u:%u",
 			    &a.v[0], &a.v[1], &b.v[0], &b.v[1]) != 4 &&
-		    sscanf(buf, "0x%lx:%lx 0x%lx:%lx",
+		    sscanf(buf, "0x%x:%x 0x%x:%x",
 			    &a.v[0], &a.v[1], &b.v[0], &b.v[1]) != 4) {
 			printf("eh?\n");
 			continue;
 		}
 		m.q = __muldi3(a.q, b.q);
-		printf("%lx:%lx * %lx:%lx => %lx:%lx\n",
+		printf("%x:%x * %x:%x => %x:%x\n",
 		    a.v[0], a.v[1], b.v[0], b.v[1], m.v[0], m.v[1]);
-		printf("  = %lX%08lX * %lX%08lX => %lX%08lX\n",
+		printf("  = %X%08X * %X%08X => %X%08X\n",
 		    a.v[0], a.v[1], b.v[0], b.v[1], m.v[0], m.v[1]);
 	}
 	exit(0);

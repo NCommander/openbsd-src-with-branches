@@ -1,4 +1,5 @@
 %{
+/*	$OpenBSD: cgram.y,v 1.16 2005/12/10 17:41:03 cloder Exp $	*/
 /*	$NetBSD: cgram.y,v 1.8 1995/10/02 17:31:35 jpo Exp $	*/
 
 /*
@@ -33,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: cgram.y,v 1.8 1995/10/02 17:31:35 jpo Exp $";
+static char rcsid[] = "$OpenBSD: cgram.y,v 1.16 2005/12/10 17:41:03 cloder Exp $";
 #endif
 
 #include <stdlib.h>
@@ -55,9 +56,9 @@ int	blklev;
  */
 int	mblklev;
 
-static	int	toicon __P((tnode_t *));
-static	void	idecl __P((sym_t *, int));
-static	void	ignuptorp __P((void));
+static	int	toicon(tnode_t *);
+static	void	idecl(sym_t *, int);
+static	void	ignuptorp(void);
 
 %}
 
@@ -106,7 +107,7 @@ static	void	ignuptorp __P((void));
 /* types (char, int, short, long, unsigned, signed, float, double, void) */
 %token	<y_tspec>	T_TYPE
 
-/* qualifiers (const, volatile) */
+/* qualifiers (const, volatile, restrict) */
 %token	<y_tqual>	T_QUAL
 
 /* struct or union */
@@ -129,6 +130,8 @@ static	void	ignuptorp __P((void));
 %token			T_BREAK
 %token			T_RETURN
 %token			T_ASM
+%token			T_LEQUAL
+%token			T_ATTRIBUTE
 
 %left	T_COMMA
 %right	T_ASSIGN T_OPASS
@@ -236,18 +239,45 @@ ext_decl:
 		glclup(0);
 		clrwflgs();
 	  }
+	| T_LEQUAL T_LPARN identifier T_COMMA identifier T_RPARN T_SEMI {
+		sym_t *new, *old;
+
+		if ($5->sb_sym && $3->sb_sym /*== NULL*/) {
+			new = getsym($5);
+			old = $3->sb_sym;
+			new->s_dpos = old->s_dpos;
+			new->s_spos = old->s_spos;
+			new->s_upos = old->s_upos;
+			new->s_kind = old->s_kind;
+			new->s_keyw = old->s_keyw;
+			new->s_field = old->s_field;
+			new->s_set = old->s_set;
+			new->s_used = old->s_used;
+			new->s_arg = old->s_arg;
+			new->s_reg = old->s_reg;
+			new->s_defarg = old->s_defarg;
+			new->s_rimpl = old->s_rimpl;
+			new->s_osdef = old->s_osdef;
+			new->s_inline = old->s_inline;
+			new->s_def = old->s_def;
+			new->s_scl = old->s_scl;
+			new->s_blklev = old->s_blklev;
+			new->s_type = old->s_type;
+			new->s_value = old->s_value;
+			new->u = old->u;
+
+			/* XXX missing 'r' because do not know return type
+			   of parent... */
+			/* outsym(new, new->s_scl, DEF); */
+			outfdef(new, &csrc_pos,
+			    new->s_rimpl || new->s_type->t_subt->t_tspec != VOID,
+			    0, NULL);
+		}
+
+	  }
 	;
 
-data_def:
-	  T_SEMI {
-		if (sflag) {
-			/* syntax error: empty declaration */
-			error(0);
-		} else if (!tflag) {
-			/* syntax error: empty declaration */
-			warning(0);
-		}
-	  }
+data_def: T_SEMI
 	| clrtyp deftyp notype_init_decls T_SEMI {
 		if (sflag) {
 			/* old style declaration; add "int" */
@@ -276,9 +306,9 @@ data_def:
 			warning(2);
 		}
 	  }
-	| declspecs deftyp type_init_decls T_SEMI
+	| declspecs deftyp type_init_decls opt_attribute_spec T_SEMI
 	| error T_SEMI {
-		globclup();		
+		globclup();
 	  }
 	| error T_RBRACE {
 		globclup();
@@ -309,6 +339,11 @@ func_def:
 		funcend();
 		popctrl(0);
 	  }
+	;
+
+opt_attribute_spec:
+	/* empty */
+	| T_ATTRIBUTE T_LPARN T_LPARN read_until_rparn T_RPARN
 	;
 
 func_decl:
@@ -757,7 +792,7 @@ type_init_decls:
 	;
 
 notype_init_decl:
-	  notype_decl opt_asm_spec {
+	  notype_decl opt_attribute_spec opt_asm_spec {
 		idecl($1, 0);
 		chksz($1);
 	  }
@@ -1053,9 +1088,7 @@ parameter_declaration:
 
 opt_asm_spec:
 	  /* empty */
-	| T_ASM T_LPARN T_STRING T_RPARN {
-		freeyyv(&$3, T_STRING);
-	  }
+	| T_ASM T_LPARN read_until_rparn
 	;
 
 initializer:
@@ -1068,6 +1101,7 @@ init_expr:
 	  }
 	| init_lbrace init_expr_list init_rbrace
 	| init_lbrace init_expr_list T_COMMA init_rbrace
+	| init_lbrace init_rbrace
 	| error
 	;
 
@@ -1176,6 +1210,14 @@ label:
 	| T_CASE constant T_COLON {
 		label(T_CASE, NULL, $2);
 		ftflg = 1;
+	  }
+	| T_CASE constant T_ELLIPSE constant T_COLON {
+		/* XXX: only using the first value of this gcc-ism */
+		label(T_CASE, NULL, $2);
+		ftflg = 1;
+
+		if (!gflag)
+			gnuism(311);
 	  }
 	| T_DEFAULT T_COLON {
 		label(T_DEFAULT, NULL, NULL);
@@ -1441,7 +1483,7 @@ expr:
 
 term:
 	  T_NAME {
-		/* XXX realy neccessary? */
+		/* XXX really necessary? */
 		if (yychar < 0)
 			yychar = yylex();
 		$$ = getnnode(getsym($1), yychar);
@@ -1503,7 +1545,7 @@ term:
 		}
 	  }
 	| T_SIZEOF term					%prec T_SIZEOF {
-		if (($$ = $2 == NULL ? NULL : bldszof($2->tn_type)) != NULL)
+		if (($$ = $2 == NULL ? NULL : bldszoftrm($2)) != NULL)
 			chkmisc($2, 0, 0, 0, 0, 0, 1);
 	  }
 	| T_SIZEOF T_LPARN type_name T_RPARN		%prec T_SIZEOF {
@@ -1565,8 +1607,7 @@ identifier:
 
 /* ARGSUSED */
 int
-yyerror(msg)
-	char	*msg;
+yyerror(char *msg)
 {
 	error(249);
 	if (++sytxerr >= 5)
@@ -1584,8 +1625,7 @@ yyerror(msg)
  * expressions, it frees the memory used for the expression.
  */
 static int
-toicon(tn)
-	tnode_t	*tn;
+toicon(tnode_t *tn)
 {
 	int	i;
 	tspec_t	t;
@@ -1607,7 +1647,7 @@ toicon(tn)
 	} else {
 		i = (int)v->v_quad;
 		if (isutyp(t)) {
-			if ((u_quad_t)v->v_quad > INT_MAX) {
+			if ((u_quad_t)v->v_quad > UINT_MAX) {
 				/* integral constant too large */
 				warning(56);
 			}
@@ -1623,9 +1663,7 @@ toicon(tn)
 }
 
 static void
-idecl(decl, initflg)
-	sym_t	*decl;
-	int	initflg;
+idecl(sym_t *decl, int initflg)
 {
 	initerr = 0;
 	initsym = decl;
@@ -1653,7 +1691,7 @@ idecl(decl, initflg)
  * unmatched right paren
  */
 void
-ignuptorp()
+ignuptorp(void)
 {
 	int	level;
 

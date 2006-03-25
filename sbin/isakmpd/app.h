@@ -1,7 +1,8 @@
-/*	$Id: app.h,v 1.2 1998/09/27 21:36:43 niklas Exp $	*/
+/* $OpenBSD: app.h,v 1.6 2003/06/03 14:28:16 ho Exp $	 */
+/* $EOM: app.h,v 1.4 1999/04/02 00:58:16 niklas Exp $	 */
 
 /*
- * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,10 +32,11 @@
 #ifndef _APP_H_
 #define _APP_H_
 
-extern int app_socket;
-extern int app_none;
+extern int      app_socket;
+extern int      app_none;
 
-extern void app_handler (void);
-extern void app_init (void);
+extern void     app_conf_init_hook(void);
+extern void     app_handler(void);
+extern void     app_init(void);
 
-#endif /* _APP_H_ */
+#endif				/* _APP_H_ */

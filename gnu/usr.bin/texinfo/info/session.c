@@ -2116,6 +2116,8 @@ info_menu_or_ref_item (window, count, key, builder, ask_p)
                       which = closest;
                   }
 
+		if (which < 0)
+		  which = 0;
                 defentry = (REFERENCE *)xmalloc (sizeof (REFERENCE));
                 defentry->label = xstrdup (refs[which]->label);
                 defentry->filename = refs[which]->filename;

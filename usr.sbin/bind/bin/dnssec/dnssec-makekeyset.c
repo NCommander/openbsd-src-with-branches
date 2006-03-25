@@ -262,12 +262,13 @@ main(int argc, char *argv[]) {
 		}
 
 		if (output == NULL) {
-			output = isc_mem_allocate(mctx,
-						  strlen("keyset-") +
-						  strlen(namestr) + 1);
+			size_t len;
+			len = strlen("keyset-") + strlen(namestr);
+			output = isc_mem_allocate(mctx, len + 1);
 			if (output == NULL)
 				fatal("out of memory");
-			sprintf(output, "keyset-%s", namestr);
+			strlcpy(output, "keyset-", len + 1);
+			strlcat(output, namestr, len + 1);
 		}
 
 		if (dst_key_iszonekey(key)) {

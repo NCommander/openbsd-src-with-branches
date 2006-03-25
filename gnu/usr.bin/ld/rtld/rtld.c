@@ -1,4 +1,5 @@
-/*	$NetBSD: rtld.c,v 1.40 1995/10/09 09:24:59 pk Exp $	*/
+/*	$OpenBSD: rtld.c,v 1.40 2005/09/30 20:13:12 deraadt Exp $	*/
+/*	$NetBSD: rtld.c,v 1.43 1996/01/14 00:35:17 pk Exp $	*/
 /*
  * Copyright (c) 1993 Paul Kranenburg
  * All rights reserved.
@@ -13,7 +14,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Paul Kranenburg.
+ *	This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -36,15 +37,16 @@
 #include <sys/file.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <sys/errno.h>
 #include <sys/mman.h>
 #ifndef MAP_COPY
 #define MAP_COPY	MAP_PRIVATE
 #endif
 #include <err.h>
+#include <errno.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <a.out.h>
+#include <limits.h>
 #include <stab.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,6 +59,18 @@
 #endif
 
 #include "ld.h"
+
+/*
+ * Stack protector dummies.
+ * Ideally, a scheme to compile these stubs from libc should be used, but
+ * this would end up dragging too much code from libc here.
+ */
+long __guard[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+void
+__stack_smash_handler(char func[], int damaged)
+{
+	_exit(127);
+}
 
 #ifndef MAP_ANON
 #define MAP_ANON	0
@@ -84,10 +98,19 @@ struct somap_private {
 #define RTLD_MAIN	1
 #define RTLD_RTLD	2
 #define RTLD_DL		4
+#define RTLD_INITED	8
+	size_t		spd_size;
 
 #ifdef SUN_COMPAT
 	long		spd_offset;	/* Correction for Sun main programs */
 #endif
+	struct dep_node	*first_child;
+	struct dep_node	*last_child;
+};
+
+struct dep_node {
+	struct dep_node *next_sibling;
+	struct so_map *data;
 };
 
 #define LM_PRIVATE(smp)	((struct somap_private *)(smp)->som_spd)
@@ -143,10 +166,8 @@ static char		us[] = "/usr/libexec/ld.so";
 
 char			**environ;
 char			*__progname = us;
-int			errno;
+/* int			errno; */
 
-static uid_t		uid, euid;
-static gid_t		gid, egid;
 static int		careful;
 static int		anon_fd = -1;
 
@@ -162,46 +183,47 @@ static int		ld_warn_non_pure_code;
 
 static int		ld_tracing;
 
-static void		*__dlopen __P((char *, int));
-static int		__dlclose __P((void *));
-static void		*__dlsym __P((void *, char *));
-static int		__dlctl __P((void *, int, void *));
-static void		__dlexit __P((void));
+static void		*__dlopen(const char *, int);
+static int		__dlclose(void *);
+static void		*__dlsym(void *, const char *);
+static int		__dlctl(void *, int, void *);
+static void		__dlexit(void);
 
 static struct ld_entry	ld_entry = {
 	__dlopen, __dlclose, __dlsym, __dlctl, __dlexit
 };
 
-       void		xprintf __P((char *, ...));
-       int		rtld __P((int, struct crt_ldso *, struct _dynamic *));
-       void		binder_entry __P((void));
-       long		binder __P((jmpslot_t *));
-static int		load_subs __P((struct so_map *));
-static struct so_map	*map_object __P((char *, struct sod *,
-					 struct so_map *));
-static struct so_map	*alloc_link_map __P((	char *, struct sod *,
+       void		xprintf(char *, ...);
+       int		rtld(int, struct crt_ldso *, struct _dynamic *);
+       void		binder_entry(void);
+       long		binder(jmpslot_t *);
+static int		load_subs(struct so_map *);
+static struct so_map	*map_object(struct sod *, struct so_map *);
+static void		unmap_object(struct so_map *);
+static struct so_map	*alloc_link_map(	char *, struct sod *,
 						struct so_map *, caddr_t,
-						struct _dynamic *));
-static inline void	check_text_reloc __P((	struct relocation_info *,
+						size_t, struct _dynamic *);
+static void		free_link_map(struct so_map *);
+static inline void	check_text_reloc(	struct relocation_info *,
 						struct so_map *,
-						caddr_t));
-static void		init_maps __P((struct so_map *));
-static void		reloc_map __P((struct so_map *));
-static void		reloc_copy __P((struct so_map *));
-static void		call_map __P((struct so_map *, char *));
-static char		*rtfindlib __P((char *, int, int, int *, char *));
-static struct nzlist	*lookup __P((char *, struct so_map **, int));
-static inline struct rt_symbol	*lookup_rts __P((char *));
-static struct rt_symbol	*enter_rts __P((char *, long, int, caddr_t,
-						long, struct so_map *));
-static void		maphints __P((void));
-static void		unmaphints __P((void));
+						caddr_t);
+static void		init_maps(struct so_map *);
+static void		reloc_map(struct so_map *);
+static void		reloc_copy(struct so_map *);
+static void		call_map(struct so_map *, char *);
+static char		*rtfindlib(char *, int, int, int *, char *);
+static struct nzlist	*lookup(const char *, struct so_map **, int);
+static inline struct rt_symbol	*lookup_rts(const char *);
+static struct rt_symbol	*enter_rts(const char *, long, int, caddr_t,
+				   long, struct so_map *);
+static void		maphints(void);
+static void		unmaphints(void);
 
-static void		preload __P((char *));
-static void		ld_trace __P((struct so_map *));
+static void		preload(char *);
+static void		ld_trace(struct so_map *);
 
 static inline int
-strcmp (register const char *s1, register const char *s2)
+strcmp (const char *s1, const char *s2)
 {
 	while (*s1 == *s2++)
 		if (*s1++ == 0)
@@ -216,10 +238,7 @@ strcmp (register const char *s1, register const char *s2)
  * and dp (our __DYNAMIC).
  */
 int
-rtld(version, crtp, dp)
-	int			version;
-	struct crt_ldso		*crtp;
-	struct _dynamic		*dp;
+rtld(int version, struct crt_ldso *crtp, struct _dynamic *dp)
 {
 	int			n;
 	int			nreloc;		/* # of ld.so relocations */
@@ -244,13 +263,10 @@ rtld(version, crtp, dp)
 
 	
 	/* Relocate ourselves */
-	for (	reloc = (struct relocation_info *)(LD_REL(dp) + crtp->crt_ba);
-		nreloc;
-		nreloc--, reloc++) {
-
-		register long	addr = reloc->r_address + crtp->crt_ba;
-
-		md_relocate_simple(reloc, crtp->crt_ba, addr);
+	for (reloc = (struct relocation_info *)(LD_REL(dp) + crtp->crt_ba);
+	    nreloc; nreloc--, reloc++) {
+		long	addr = reloc->r_address + crtp->crt_ba;
+		md_relocate_simple(reloc, crtp->crt_ba, (char*)addr);
 	}
 
 	if (version >= CRT_VERSION_BSD_4)
@@ -262,11 +278,8 @@ rtld(version, crtp, dp)
 	/* Setup out (private) environ variable */
 	environ = crtp->crt_ep;
 
-	/* Get user and group identifiers */
-	uid = getuid(); euid = geteuid();
-	gid = getgid(); egid = getegid();
-
-	careful = (uid != euid) || (gid != egid);
+	if (issetugid())
+		careful = 1;
 
 	if (careful) {
 		unsetenv("LD_LIBRARY_PATH");
@@ -291,14 +304,21 @@ rtld(version, crtp, dp)
 	 * for `main' and `rtld'.
 	 */
 	smp = alloc_link_map(main_progname, (struct sod *)0, (struct so_map *)0,
-					(caddr_t)0, crtp->crt_dp);
+					(caddr_t)0, 0, crtp->crt_dp);
 	LM_PRIVATE(smp)->spd_refcount++;
 	LM_PRIVATE(smp)->spd_flags |= RTLD_MAIN;
+	main_map = smp;
 
 	smp = alloc_link_map(us, (struct sod *)0, (struct so_map *)0,
-					(caddr_t)crtp->crt_ba, dp);
+					(caddr_t)crtp->crt_ba, 0, dp);
 	LM_PRIVATE(smp)->spd_refcount++;
 	LM_PRIVATE(smp)->spd_flags |= RTLD_RTLD;
+
+	/* Fill in some field in main's __DYNAMIC structure */
+	if (version >= CRT_VERSION_BSD_4)
+		crtp->crt_ldentry = &ld_entry;
+	else
+		crtp->crt_dp->d_entry = &ld_entry;
 
 	/* Handle LD_PRELOAD's here */
 	ld_preload_path = getenv("LD_PRELOAD");
@@ -315,12 +335,6 @@ rtld(version, crtp, dp)
 
 	init_maps(link_map_head);
 
-	/* Fill in some field in main's __DYNAMIC structure */
-	if (version >= CRT_VERSION_BSD_4)
-		crtp->crt_ldentry = &ld_entry;
-	else
-		crtp->crt_dp->d_entry = &ld_entry;
-
 	crtp->crt_dp->d_un.d_sdt->sdt_loaded = link_map_head->som_next;
 
 	ddp = crtp->crt_dp->d_debug;
@@ -330,7 +344,7 @@ rtld(version, crtp, dp)
 
 		/* Set breakpoint for the benefit of debuggers */
 		if (mprotect(addr, PAGSIZ,
-				PROT_READ|PROT_WRITE|PROT_EXEC) == -1) {
+		    PROT_READ|PROT_WRITE|PROT_EXEC) == -1) {
 			err(1, "Cannot set breakpoint (%s)", main_progname);
 		}
 		md_set_breakpoint((long)crtp->crt_bp, (long *)&ddp->dd_bpt_shadow);
@@ -353,10 +367,26 @@ rtld(version, crtp, dp)
 	return 0;
 }
 
+static void
+link_sub(struct so_map *dep, struct so_map *p)
+{
+	struct dep_node *n;
+	struct somap_private *pp;
+
+	n = xmalloc(sizeof *n);
+	n->data = dep;
+	n->next_sibling = NULL;
+	pp = LM_PRIVATE(p);
+	if (pp->first_child) {
+		pp->last_child->next_sibling = n;
+		pp->last_child = n;
+	} else {
+		pp->first_child = pp->last_child = n;
+	}
+}
 
 static int
-load_subs(smp)
-	struct so_map	*smp;
+load_subs(struct so_map	*smp)
 {
 
 	for (; smp; smp = smp->som_next) {
@@ -371,24 +401,42 @@ load_subs(smp)
 
 		while (next) {
 			struct so_map	*newmap;
-			char *name;
 
 			sodp = (struct sod *)(LM_LDBASE(smp) + next);
-			name = (char *)(sodp->sod_name + LM_LDBASE(smp));
 
-			if ((newmap = map_object(name, sodp, smp)) == NULL) {
+			if ((newmap = map_object(sodp, smp)) == NULL) {
 				if (!ld_tracing) {
-					char *fmt = sodp->sod_library ?
-						"%s: lib%s.so.%d.%d" :
-						"%s: %s";
-					err(1, fmt, main_progname, name,
+				    if (smp != main_map)
+					if (sodp->sod_library)
+					    err(1, "%s(%s): lib%s.so.%d.%d",
+						main_progname,
+						smp->som_path,
+						sodp->sod_name+LM_LDBASE(smp),
 						sodp->sod_major,
 						sodp->sod_minor);
+					else
+					    err(1, "%s(%s): %s",
+						main_progname,
+						smp->som_path,
+						sodp->sod_name+LM_LDBASE(smp));
+				    else
+					if (sodp->sod_library)
+					    err(1, "%s: lib%s.so.%d.%d",
+						main_progname,
+						sodp->sod_name+LM_LDBASE(smp),
+						sodp->sod_major,
+						sodp->sod_minor);
+					else
+					    err(1, "%s: %s",
+						main_progname,
+						sodp->sod_name+LM_LDBASE(smp));
 				}
-				newmap = alloc_link_map(NULL, sodp, smp, 0, 0);
+				newmap = alloc_link_map(NULL, sodp, smp,
+				    0, 0, 0);
+			} else {
+				link_sub(newmap, smp);
 			}
 			LM_PRIVATE(newmap)->spd_refcount++;
-			LM_PARENT(newmap) = smp;
 			next = sodp->sod_next;
 		}
 	}
@@ -396,8 +444,7 @@ load_subs(smp)
 }
 
 void
-ld_trace(smp)
-	struct so_map	*smp;
+ld_trace(struct so_map *smp)
 {
 	char	*fmt1, *fmt2, *fmt, *main_local;
 	int	c;
@@ -418,7 +465,9 @@ ld_trace(smp)
 		if ((sodp = smp->som_sod) == NULL)
 			continue;
 
-		name = sodp->sod_name + LM_LDBASE(LM_PARENT(smp));
+		name = (char *)sodp->sod_name;
+		if (LM_PARENT(smp))
+			name += (long)LM_LDBASE(LM_PARENT(smp));
 
 		if ((path = smp->som_path) == NULL)
 			path = "not found";
@@ -483,12 +532,8 @@ ld_trace(smp)
  * result of the presence of link object LOP in the link map PARENT.
  */
 static struct so_map *
-alloc_link_map(path, sodp, parent, addr, dp)
-	char		*path;
-	struct sod	*sodp;
-	struct so_map	*parent;
-	caddr_t		addr;
-	struct _dynamic	*dp;
+alloc_link_map(char *path, struct sod *sodp, struct so_map *parent,
+	       caddr_t addr, size_t size, struct _dynamic *dp)
 {
 	struct so_map		*smp;
 	struct somap_private	*smpp;
@@ -507,11 +552,12 @@ alloc_link_map(path, sodp, parent, addr, dp)
 	smp->som_dynamic = dp;
 	smp->som_spd = (caddr_t)smpp;
 
-/*XXX*/	if (addr == 0) main_map = smp;
-
 	smpp->spd_refcount = 0;
 	smpp->spd_flags = 0;
 	smpp->spd_parent = parent;
+	smpp->spd_size = size;
+	smpp->first_child = NULL;
+	smpp->last_child = NULL;
 
 #ifdef SUN_COMPAT
 	smpp->spd_offset =
@@ -521,22 +567,46 @@ alloc_link_map(path, sodp, parent, addr, dp)
 }
 
 /*
+ * Free the link map for an object being unmapped.  The link map
+ * has already been removed from the link map list, so it can't be used
+ * after it's been unmapped.
+ */
+static void
+free_link_map(struct so_map *smp)
+{
+
+	if ((LM_PRIVATE(smp)->spd_flags & RTLD_DL) != 0) {
+		/* free synthetic sod structure allocated in __dlopen() */
+		free((char *)smp->som_sod->sod_name);
+		free(smp->som_sod);
+	}
+
+	/* free the link map structure. */
+	free(smp->som_spd);
+	if (smp->som_path != NULL)
+		free(smp->som_path);
+	free(smp);
+}
+
+/*
  * Map object identified by link object SODP which was found
  * in link map SMP.
  */
 static struct so_map *
-map_object(name, sodp, smp)
-	char		*name;
-	struct sod	*sodp;
-	struct so_map	*smp;
+map_object(struct sod *sodp, struct so_map *smp)
 {
+	char		*name;
 	struct _dynamic	*dp;
 	char		*path, *ipath;
-	int		fd;
+	int		fd, sverrno;
 	caddr_t		addr;
 	struct exec	hdr;
 	int		usehints = 0;
 	struct so_map	*p;
+
+	name = (char *)sodp->sod_name;
+	if (smp)
+		name += (long)LM_LDBASE(smp);
 
 	if (sodp->sod_library) {
 		usehints = 1;
@@ -545,7 +615,7 @@ again:
 		    LD_PATHS(smp->som_dynamic) == 0) {
 			ipath = NULL;
 		} else {
-			ipath =  LM_PATHS(smp);
+			ipath = LM_PATHS(smp);
 			add_search_path(ipath);
 		}
 
@@ -553,6 +623,16 @@ again:
 				 sodp->sod_minor, &usehints, ipath);
 		if (ipath)
 			remove_search_path(ipath);
+
+		if (path == NULL && smp != main_map && main_map != NULL &&
+		    !no_intern_search && 
+		    LD_PATHS(main_map->som_dynamic) != 0) {
+		    	ipath = LM_PATHS(main_map);
+			add_search_path(ipath);
+			path = rtfindlib(name, sodp->sod_major,
+			     sodp->sod_minor, &usehints, ipath);
+			remove_search_path(ipath);
+		}
 
 		if (path == NULL) {
 			errno = ENOENT;
@@ -583,8 +663,9 @@ again:
 	}
 
 	if (read(fd, &hdr, sizeof(hdr)) != sizeof(hdr)) {
+		sverrno = errno;
 		(void)close(fd);
-		/*errno = x;*/
+		errno = sverrno;
 		return NULL;
 	}
 
@@ -595,23 +676,33 @@ again:
 	}
 
 	if ((addr = mmap(0, hdr.a_text + hdr.a_data + hdr.a_bss,
-	         PROT_READ|PROT_EXEC,
-	         MAP_COPY, fd, 0)) == (caddr_t)-1) {
+	    PROT_READ|PROT_EXEC,
+	    MAP_COPY, fd, 0)) == (caddr_t)MAP_FAILED) {
+		sverrno = errno;
 		(void)close(fd);
+		errno = sverrno;
 		return NULL;
 	}
 
+#if DEBUG
+	xprintf("map1: 0x%x for 0x%x\n", addr, hdr.a_text + hdr.a_data + hdr.a_bss);
+#endif
+
 	if (mprotect(addr + hdr.a_text, hdr.a_data,
 	    PROT_READ|PROT_WRITE|PROT_EXEC) != 0) {
+		sverrno = errno;
 		(void)close(fd);
+		errno = sverrno;
 		return NULL;
 	}
 
 	if (mmap(addr + hdr.a_text + hdr.a_data, hdr.a_bss,
-		 PROT_READ|PROT_WRITE|PROT_EXEC,
-		 MAP_ANON|MAP_COPY|MAP_FIXED,
-		 anon_fd, 0) == (caddr_t)-1) {
+	    PROT_READ|PROT_WRITE,
+	    MAP_ANON|MAP_COPY|MAP_FIXED,
+	    anon_fd, 0) == (caddr_t)MAP_FAILED) {
+		sverrno = errno;
 		(void)close(fd);
+		errno = sverrno;
 		return NULL;
 	}
 
@@ -623,12 +714,58 @@ again:
 	/* Fixup __DYNAMIC structure */
 	(long)dp->d_un.d_sdt += (long)addr;
 
-	return alloc_link_map(path, sodp, smp, addr, dp);
+	return alloc_link_map(path, sodp, smp, addr,
+	    hdr.a_text + hdr.a_data + hdr.a_bss, dp);
+}
+
+/*
+ * Unmap a mapped object.
+ */
+static void
+unmap_object(struct so_map *smp)
+{
+	struct so_map *p, **pp;
+
+	/* remove from link map list */
+	pp = &link_map_head;
+	while ((p = *pp) != NULL) {
+		if (p == smp)
+			break;
+		pp = &p->som_next;
+	}
+	if (p == NULL) {
+		warnx("warning: link map entry for %s not on link map list!",
+		    smp->som_path);
+		return;
+	}
+
+	*pp = smp->som_next;			/* make list skip it */
+	if (link_map_tail == &smp->som_next)	/* and readjust tail pointer */
+		link_map_tail = pp;
+
+	/* unmap from address space */
+	(void)munmap(smp->som_addr, LM_PRIVATE(smp)->spd_size);
+}
+
+void init_dependent_before_main(struct so_map *smp)
+{
+	struct dep_node *n;
+
+	LM_PRIVATE(smp)->spd_flags |= RTLD_INITED;
+
+	for (n = LM_PRIVATE(smp)->first_child; n; n = n->next_sibling) {
+		if (LM_PRIVATE(n->data)->spd_flags & RTLD_INITED)
+			continue;
+		init_dependent_before_main(n->data);
+	}
+
+	call_map(smp, ".init");
+	call_map(smp, "__init");
+	call_map(smp, "__GLOBAL__DI");
 }
 
 void
-init_maps(head)
-	struct so_map	*head;
+init_maps(struct so_map *head)
 {
 	struct so_map	*smp;
 
@@ -650,16 +787,14 @@ init_maps(head)
 	for (smp = head; smp; smp = smp->som_next) {
 		if (LM_PRIVATE(smp)->spd_flags & RTLD_RTLD)
 			continue;
-		call_map(smp, ".init");
-		call_map(smp, "__init");
+		if (LM_PRIVATE(smp)->spd_flags & RTLD_INITED)
+			continue;
+		init_dependent_before_main(smp);
 	}
 }
 
 static inline void
-check_text_reloc(r, smp, addr)
-	struct relocation_info	*r;
-	struct so_map		*smp;
-	caddr_t			addr;
+check_text_reloc(struct relocation_info *r, struct so_map *smp, caddr_t addr)
 {
 	char	*sym;
 
@@ -678,8 +813,8 @@ check_text_reloc(r, smp, addr)
 
 	if (smp->som_write == 0 &&
 		mprotect(smp->som_addr + LM_TXTADDR(smp),
-				LD_TEXTSZ(smp->som_dynamic),
-				PROT_READ|PROT_WRITE|PROT_EXEC) == -1) {
+		    LD_TEXTSZ(smp->som_dynamic),
+		    PROT_READ|PROT_WRITE|PROT_EXEC) == -1) {
 
 		err(1, "Cannot enable writes to %s:%s",
 					main_progname, smp->som_path);
@@ -689,8 +824,7 @@ check_text_reloc(r, smp, addr)
 }
 
 static void
-reloc_map(smp)
-	struct so_map		*smp;
+reloc_map(struct so_map *smp)
 {
 	struct _dynamic		*dp = smp->som_dynamic;
 	struct relocation_info	*r = LM_REL(smp);
@@ -729,7 +863,7 @@ reloc_map(smp)
 
 			np = lookup(sym, &src_map, 0/*XXX-jumpslots!*/);
 			if (np == NULL)
-				errx(1, "Undefined symbol \"%s\" in %s:%s\n",
+				errx(1, "Undefined symbol \"%s\" in %s:%s",
 					sym, main_progname, smp->som_path);
 
 			/*
@@ -770,19 +904,17 @@ reloc_map(smp)
 
 	if (smp->som_write) {
 		if (mprotect(smp->som_addr + LM_TXTADDR(smp),
-				LD_TEXTSZ(smp->som_dynamic),
-				PROT_READ|PROT_EXEC) == -1) {
-
-			err(1, "Cannot disable writes to %s:%s\n",
-						main_progname, smp->som_path);
+		    LD_TEXTSZ(smp->som_dynamic),
+		    PROT_READ|PROT_EXEC) == -1) {
+			err(1, "Cannot disable writes to %s:%s",
+			    main_progname, smp->som_path);
 		}
 		smp->som_write = 0;
 	}
 }
 
 static void
-reloc_copy(smp)
-	struct so_map		*smp;
+reloc_copy(struct so_map *smp)
 {
 	struct rt_symbol	*rtsp;
 
@@ -795,16 +927,14 @@ reloc_copy(smp)
 }
 
 static void
-call_map(smp, sym)
-	struct so_map		*smp;
-	char			*sym;
+call_map(struct so_map *smp, char *sym)
 {
 	struct so_map		*src_map = smp;
 	struct nzlist		*np;
 
 	np = lookup(sym, &src_map, 1);
 	if (np)
-		(*(void (*) __P((void)))(src_map->som_addr + np->nz_value))();
+		(*(void (*) (void))(src_map->som_addr + np->nz_value))();
 }
 
 /*
@@ -818,11 +948,10 @@ static struct rt_symbol 	*rt_symtab[RTC_TABSIZE];
  * Compute hash value for run-time symbol table
  */
 static inline int
-hash_string(key)
-	char *key;
+hash_string(const char *key)
 {
-	register char *cp;
-	register int k;
+	const char *cp;
+	int k;
 
 	cp = key;
 	k = 0;
@@ -837,11 +966,10 @@ hash_string(key)
  */
 
 static inline struct rt_symbol *
-lookup_rts(key)
-	char *key;
+lookup_rts(const char *key)
 {
-	register int			hashval;
-	register struct rt_symbol	*rtsp;
+	int			hashval;
+	struct rt_symbol	*rtsp;
 
 	/* Determine which bucket.  */
 
@@ -857,16 +985,11 @@ lookup_rts(key)
 }
 
 static struct rt_symbol *
-enter_rts(name, value, type, srcaddr, size, smp)
-	char		*name;
-	long		value;
-	int		type;
-	caddr_t		srcaddr;
-	long		size;
-	struct so_map	*smp;
+enter_rts(const char *name, long value, int type, caddr_t srcaddr, long size,
+	  struct so_map *smp)
 {
-	register int			hashval;
-	register struct rt_symbol	*rtsp, **rpp;
+	int			hashval;
+	struct rt_symbol	*rtsp, **rpp;
 
 	/* Determine which bucket */
 	hashval = hash_string(name) % RTC_TABSIZE;
@@ -903,17 +1026,20 @@ enter_rts(name, value, type, srcaddr, size, smp)
  * have a proper type (used by binder()).
  */
 static struct nzlist *
-lookup(name, src_map, strong)
-	char		*name;
-	struct so_map	**src_map;	/* IN/OUT */
-	int		strong;
+lookup(const char *name, struct so_map **src_map, int strong)
 {
 	long			common_size = 0;
-	struct so_map		*smp;
+	struct so_map		*smp, *weak_smp;
 	struct rt_symbol	*rtsp;
+	struct nzlist		*weak_np = 0;
 
-	if ((rtsp = lookup_rts(name)) != NULL)
+	if ((rtsp = lookup_rts(name)) != NULL) {
+		/* Common symbol is not a member of particular shlib. */
+		*src_map = NULL;
 		return rtsp->rt_sp;
+	}
+
+	weak_smp = NULL; /* XXX - gcc! */
 
 	/*
 	 * Search all maps for a definition of NAME
@@ -922,7 +1048,7 @@ lookup(name, src_map, strong)
 		int		buckets;
 		long		hashval;
 		struct rrs_hash	*hp;
-		char		*cp;
+		const char	*cp;
 		struct	nzlist	*np;
 
 		/* Some local caching */
@@ -993,7 +1119,7 @@ restart:
 			continue;
 
 		if (np->nz_type == N_UNDF+N_EXT && np->nz_value != 0) {
-			if (np->nz_other == AUX_FUNC) {
+			if (N_AUX(&np->nlist) == AUX_FUNC) {
 				/* It's a weak function definition */
 				if (strong)
 					continue;
@@ -1004,9 +1130,20 @@ restart:
 				continue;
 			}
 		}
+		if (N_BIND(&np->nlist) != BIND_WEAK) {
+			*src_map = smp;
+			return np;
+		}
+		if (N_BIND(&np->nlist) == BIND_WEAK && weak_np == 0) {
+			weak_np = np;
+			weak_smp = smp;
+			continue;
+		}
+	}
 
-		*src_map = smp;
-		return np;
+	if (weak_np) {
+		*src_map = weak_smp;
+		return weak_np;
 	}
 
 	if (common_size == 0)
@@ -1018,6 +1155,9 @@ restart:
 	 */
 	rtsp = enter_rts(name, (long)calloc(1, common_size),
 					N_UNDF + N_EXT, 0, common_size, NULL);
+
+	/* Common symbol is not a member of particular shlib. */
+	*src_map = NULL;
 
 #if DEBUG
 xprintf("Allocating common: %s size %d at %#x\n", name, common_size, rtsp->rt_sp->nz_value);
@@ -1032,8 +1172,7 @@ xprintf("Allocating common: %s size %d at %#x\n", name, common_size, rtsp->rt_sp
  * procedure calls to shared objects.
  */
 long
-binder(jsp)
-	jmpslot_t	*jsp;
+binder(jmpslot_t *jsp)
 {
 	struct so_map	*smp, *src_map = NULL;
 	long		addr;
@@ -1051,7 +1190,7 @@ binder(jsp)
 	}
 
 	if (smp == NULL)
-		errx(1, "Call to binder from unknown location: %#x\n", jsp);
+		errx(1, "Call to binder from unknown location: %p", jsp);
 
 	index = jsp->reloc_index & JMPSLOT_RELOC_MASK;
 
@@ -1061,7 +1200,7 @@ binder(jsp)
 
 	np = lookup(sym, &src_map, 1);
 	if (np == NULL)
-		errx(1, "Undefined symbol \"%s\" called from %s:%s at %#x",
+		errx(1, "Undefined symbol \"%s\" called from %s:%s at %p",
 				sym, main_progname, smp->som_path, jsp);
 
 	/* Fixup jmpslot so future calls transfer directly to target */
@@ -1083,61 +1222,53 @@ static long			hsize;
 static struct hints_header	*hheader;
 static struct hints_bucket	*hbuckets;
 static char			*hstrtab;
+static char			*hint_search_path = "";
 
 #define HINTS_VALID (hheader != NULL && hheader != (struct hints_header *)-1)
 
 static void
-maphints()
+maphints(void)
 {
-	caddr_t		addr;
+	struct stat	sb;
+	caddr_t		addr = MAP_FAILED;
 
-	if ((hfd = open(_PATH_LD_HINTS, O_RDONLY, 0)) == -1) {
-		hheader = (struct hints_header *)-1;
-		return;
-	}
+	if ((hfd = open(_PATH_LD_HINTS, O_RDONLY, 0)) < 0)
+		goto bad_hints;
 
-	hsize = PAGSIZ;
+	if (fstat(hfd, &sb) != 0 || !S_ISREG(sb.st_mode) ||
+	    sb.st_size < sizeof(struct hints_header) || sb.st_size > LONG_MAX)
+		goto bad_hints;
+
+	hsize = (long)sb.st_size;
 	addr = mmap(0, hsize, PROT_READ, MAP_COPY, hfd, 0);
-
-	if (addr == (caddr_t)-1) {
-		close(hfd);
-		hheader = (struct hints_header *)-1;
-		return;
-	}
+	if (addr == MAP_FAILED)
+		goto bad_hints;
 
 	hheader = (struct hints_header *)addr;
-	if (HH_BADMAG(*hheader)) {
-		munmap(addr, hsize);
-		close(hfd);
-		hheader = (struct hints_header *)-1;
-		return;
-	}
+	if (HH_BADMAG(*hheader) || hheader->hh_ehints > hsize)
+		goto bad_hints;
 
-	if (hheader->hh_version != LD_HINTS_VERSION_1) {
-		munmap(addr, hsize);
-		close(hfd);
-		hheader = (struct hints_header *)-1;
-		return;
-	}
-
-	if (hheader->hh_ehints > hsize) {
-		if (mmap(addr+hsize, hheader->hh_ehints - hsize,
-				PROT_READ, MAP_COPY|MAP_FIXED,
-				hfd, hsize) != (caddr_t)(addr+hsize)) {
-
-			munmap((caddr_t)hheader, hsize);
-			close(hfd);
-			hheader = (struct hints_header *)-1;
-			return;
-		}
-	}
+	if (hheader->hh_version != LD_HINTS_VERSION_1 &&
+	    hheader->hh_version != LD_HINTS_VERSION_2)
+		goto bad_hints;
 
 	hbuckets = (struct hints_bucket *)(addr + hheader->hh_hashtab);
 	hstrtab = (char *)(addr + hheader->hh_strtab);
+	if (hheader->hh_version >= LD_HINTS_VERSION_2)
+		hint_search_path = hstrtab + hheader->hh_dirlist;
+
+	return;
+
+bad_hints:
+	if (addr != MAP_FAILED)
+		munmap(addr, hsize);
+	if (hfd != -1)
+		close(hfd);
+	hheader = (struct hints_header *)-1;
 }
 
 static void
-unmaphints()
+unmaphints(void)
 {
 
 	if (HINTS_VALID) {
@@ -1147,10 +1278,8 @@ unmaphints()
 	}
 }
 
-int
-hinthash(cp, vmajor, vminor)
-	char	*cp;
-	int	vmajor, vminor;
+static int
+hinthash(char *cp, int vmajor, int vminor)
 {
 	int	k = 0;
 
@@ -1158,7 +1287,8 @@ hinthash(cp, vmajor, vminor)
 		k = (((k << 1) + (k >> 14)) ^ (*cp++)) & 0x3fff;
 
 	k = (((k << 1) + (k >> 14)) ^ (vmajor*257)) & 0x3fff;
-	k = (((k << 1) + (k >> 14)) ^ (vminor*167)) & 0x3fff;
+	if (hheader->hh_version == LD_HINTS_VERSION_1)
+		k = (((k << 1) + (k >> 14)) ^ (vminor*167)) & 0x3fff;
 
 	return k;
 }
@@ -1167,10 +1297,7 @@ hinthash(cp, vmajor, vminor)
 #undef minor
 
 static char *
-findhint(name, major, minor, prefered_path)
-	char	*name;
-	int	major, minor;
-	char	*prefered_path;
+findhint(char *name, int major, int minor, char *prefered_path)
 {
 	struct hints_bucket	*bp;
 
@@ -1179,18 +1306,18 @@ findhint(name, major, minor, prefered_path)
 	while (1) {
 		/* Sanity check */
 		if (bp->hi_namex >= hheader->hh_strtab_sz) {
-			warnx("Bad name index: %#x\n", bp->hi_namex);
+			warnx("Bad name index: %#x", bp->hi_namex);
 			break;
 		}
 		if (bp->hi_pathx >= hheader->hh_strtab_sz) {
-			warnx("Bad path index: %#x\n", bp->hi_pathx);
+			warnx("Bad path index: %#x", bp->hi_pathx);
 			break;
 		}
 
 		if (strcmp(name, hstrtab + bp->hi_namex) == 0) {
 			/* It's `name', check version numbers */
 			if (bp->hi_major == major &&
-				(bp->hi_ndewey < 2 || bp->hi_minor == minor)) {
+				(bp->hi_ndewey < 2 || bp->hi_minor >= minor)) {
 					if (prefered_path == NULL ||
 					    strncmp(prefered_path,
 						hstrtab + bp->hi_pathx,
@@ -1212,14 +1339,10 @@ findhint(name, major, minor, prefered_path)
 }
 
 static char *
-rtfindlib(name, major, minor, usehints, ipath)
-	char	*name;
-	int	major, minor;
-	int	*usehints;
-	char	*ipath;
+rtfindlib(char *name, int major, int minor, int *usehints, char *ipath)
 {
-	register char	*cp;
-	int		realminor;
+	char	*cp;
+	int	realminor;
 
 	if (hheader == NULL)
 		maphints();
@@ -1231,18 +1354,20 @@ rtfindlib(name, major, minor, usehints, ipath)
 
 	if (ld_library_path || ipath) {
 		/* Prefer paths from some explicit LD_LIBRARY_PATH */
-		register char	*lpath;
-		char		*dp;
+		char	*lpath;
+		char	*dp;
 
 		dp = lpath = concat(ld_library_path ? ld_library_path : "",
 				    (ld_library_path && ipath) ? ":" : "",
 				    ipath ? ipath : "");
 
 		while ((cp = strsep(&dp, ":")) != NULL) {
-			cp = findhint(name, major, minor, cp);
-			if (cp) {
-				free(lpath);
-				return cp;
+			if (*cp) {
+				cp = findhint(name, major, minor, cp);
+				if (cp) {
+					free(lpath);
+					return cp;
+				}
 			}
 		}
 		free(lpath);
@@ -1267,7 +1392,9 @@ lose:
 	/* No hints available for name */
 	*usehints = 0;
 	realminor = -1;
+	add_search_path(hint_search_path);
 	cp = (char *)findshlib(name, &major, &realminor, 0);
+	remove_search_path(hint_search_path);
 	if (cp) {
 		if (realminor < minor && !ld_suppress_warnings)
 			warnx("warning: lib%s.so.%d.%d: "
@@ -1279,8 +1406,7 @@ lose:
 }
 
 void
-preload(paths)
-	char		*paths;
+preload(char *paths)
 {
 	struct so_map	*nsmp;
 	struct sod	*sodp;
@@ -1301,7 +1427,7 @@ preload(paths)
 		sodp->sod_library = 0;
 		sodp->sod_major = sodp->sod_minor = 0;
 
-		if ((nsmp = map_object(cp, sodp, 0)) == NULL) {
+		if ((nsmp = map_object(sodp, 0)) == NULL) {
 			errx(1, "preload: %s: cannot map object", cp);
 		}
 		LM_PRIVATE(nsmp)->spd_refcount++;
@@ -1310,31 +1436,85 @@ preload(paths)
 	return;
 }
 
-static struct somap_private dlmap_private = {
-		0,
-		(struct so_map *)0,
-		0,
-#ifdef SUN_COMPAT
-		0,
-#endif
-};
-
-static struct so_map dlmap = {
-	(caddr_t)0,
-	"internal",
-	(struct so_map *)0,
-	(struct sod *)0,
-	(caddr_t)0,
-	(u_int)0,
-	(struct _dynamic *)0,
-	(caddr_t)&dlmap_private
-};
 static int dlerrno;
 
+/*
+ * Populate sod struct for dlopen's call to map_object
+ */
+static void
+build_sod(const char *name, struct sod *sodp)
+{
+	unsigned int	tuplet;
+	int		major, minor;
+	char		*realname, *tok, *etok, *cp;
+
+	/* default is an absolute or relative path */
+	sodp->sod_name = (long)strdup(name);	/* strtok is destructive */
+	sodp->sod_library = 0;
+	sodp->sod_major = sodp->sod_minor = 0;
+
+	/* does it look like /^lib/ ? */
+	if (strncmp((char *)sodp->sod_name, "lib", 3) != 0)
+		return;
+
+	/* is this a filename? */
+	if (strchr((char *)sodp->sod_name, '/'))
+		return;
+
+	/* skip over 'lib' */
+	cp = (char *)sodp->sod_name + 3;
+
+	/* dot guardian */
+	if ((strchr(cp, '.') == NULL) || (*(cp+strlen(cp)-1) == '.'))
+		return;
+
+	/* default */
+	major = minor = -1;
+
+	/* loop through name - parse skipping name */
+	for (tuplet = 0; (tok = strsep(&cp, ".")) != NULL; tuplet++) {
+		switch (tuplet) {
+		case 0:
+			/* removed 'lib' and extensions from name */
+			realname = tok;
+			break;
+		case 1:
+			/* 'so' extension */
+			if (strcmp(tok, "so") != 0)
+				goto backout;
+			break;
+		case 2:
+			/* major version extension */
+			major = strtol(tok, &etok, 10);
+			if (*tok == '\0' || *etok != '\0')
+				goto backout;
+			break;
+		case 3:
+			/* minor version extension */
+			minor = strtol(tok, &etok, 10);
+			if (*tok == '\0' || *etok != '\0')
+				goto backout;
+			break;
+		/* if we get here, it must be weird */
+		default:
+			goto backout;
+		}
+	}
+	cp = (char *)sodp->sod_name;
+	sodp->sod_name = (long)strdup(realname);
+	free(cp);
+	sodp->sod_library = 1;
+	sodp->sod_major = major;
+	sodp->sod_minor = minor;
+	return;
+
+backout:
+	free((char *)sodp->sod_name);
+	sodp->sod_name = (long)strdup(name);
+}
+
 static void *
-__dlopen(name, mode)
-	char	*name;
-	int	mode;
+__dlopen(const char *name, int mode)
 {
 	struct sod	*sodp;
 	struct so_map	*smp;
@@ -1352,31 +1532,40 @@ __dlopen(name, mode)
 		return NULL;
 	}
 
-	sodp->sod_name = (long)strdup(name);
-	sodp->sod_library = 0;
-	sodp->sod_major = sodp->sod_minor = 0;
+	build_sod(name, sodp);
 
-	if ((smp = map_object(name, sodp, 0)) == NULL) {
+	if ((smp = map_object(sodp, main_map)) == NULL) {
 #ifdef DEBUG
 xprintf("%s: %s\n", name, strerror(errno));
 #endif
 		dlerrno = errno;
+		free((char *)sodp->sod_name);
+		free(sodp);
 		return NULL;
 	}
 
-	if (LM_PRIVATE(smp)->spd_refcount++ > 0)
-		return smp;
+	LM_PRIVATE(smp)->spd_flags |= RTLD_DL;
 
-	if (load_subs(smp) != 0)
+	if (LM_PRIVATE(smp)->spd_refcount++ > 0) {
+		free((char *)sodp->sod_name);
+		free(sodp);
+		return smp;
+	}
+
+	if (load_subs(smp) != 0) {
+		if (--LM_PRIVATE(smp)->spd_refcount == 0) {
+			unmap_object(smp);
+			free_link_map(smp);
+		}
 		return NULL;
+	}
 
 	init_maps(smp);
 	return smp;
 }
 
 static int
-__dlclose(fd)
-	void	*fd;
+__dlclose(void *fd)
 {
 	struct so_map	*smp = (struct so_map *)fd;
 
@@ -1386,36 +1575,40 @@ xprintf("dlclose(%s): refcount = %d\n", smp->som_path, LM_PRIVATE(smp)->spd_refc
 	if (--LM_PRIVATE(smp)->spd_refcount != 0)
 		return 0;
 
+	if ((LM_PRIVATE(smp)->spd_flags & RTLD_DL) == 0)
+		return 0;
+
 	/* Dismantle shared object map and descriptor */
 	call_map(smp, "__fini");
+	call_map(smp, "__GLOBAL__DD");
 #if 0
-	unmap_object(smp);
-	free(smp->som_sod->sod_name);
-	free(smp->som_sod);
-	free(smp);
+	unload_subs(smp);		/* XXX should unload implied objects */
 #endif
-
+	unmap_object(smp);
+	free_link_map(smp);
 	return 0;
 }
 
 static void *
-__dlsym(fd, sym)
-	void	*fd;
-	char	*sym;
+__dlsym(void *fd, const char *sym)
 {
-	struct so_map	*smp = (struct so_map *)fd, *src_map = NULL;
+	struct so_map	*smp, *src_map = NULL;
 	struct nzlist	*np;
 	long		addr;
 
 	/*
 	 * Restrict search to passed map if dlopen()ed.
 	 */
-	if (LM_PRIVATE(smp)->spd_flags & RTLD_DL)
-		src_map = smp;
+	if (fd == NULL)
+		smp = link_map_head;
+	else
+		src_map = smp = (struct so_map *)fd;
 
 	np = lookup(sym, &src_map, 1);
-	if (np == NULL)
+	if (np == NULL) {
+		dlerrno = ENOENT;
 		return NULL;
+	}
 
 	/* Fixup jmpslot so future calls transfer directly to target */
 	addr = np->nz_value;
@@ -1426,13 +1619,12 @@ __dlsym(fd, sym)
 }
 
 static int
-__dlctl(fd, cmd, arg)
-	void	*fd, *arg;
-	int	cmd;
+__dlctl(void *fd, int cmd, void *arg)
 {
 	switch (cmd) {
 	case DL_GETERRNO:
 		*(int *)arg = dlerrno;
+		dlerrno = 0;
 		return 0;
 	default:
 		dlerrno = EOPNOTSUPP;
@@ -1442,7 +1634,7 @@ __dlctl(fd, cmd, arg)
 }
 
 static void
-__dlexit()
+__dlexit(void)
 {
 	struct so_map	*smp;
 
@@ -1451,6 +1643,7 @@ __dlexit()
 		if (LM_PRIVATE(smp)->spd_flags & RTLD_RTLD)
 			continue;
 		call_map(smp, ".fini");
+		call_map(smp, "__GLOBAL__DD");
 	}
 }
 
@@ -1470,7 +1663,7 @@ char	*fmt;
 	va_start(ap);
 #endif
 
-	vsprintf(buf, fmt, ap);
+	vsnprintf(buf, sizeof buf, fmt, ap);
 	(void)write(1, buf, strlen(buf));
 	va_end(ap);
 }

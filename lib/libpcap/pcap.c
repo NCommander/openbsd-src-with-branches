@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap.c,v 1.2 1995/03/06 11:39:05 mycroft Exp $	*/
+/*	$OpenBSD: pcap.c,v 1.8 2004/01/27 06:58:03 tedu Exp $	*/
 
 /*
- * Copyright (c) 1993, 1994
+ * Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,33 +33,50 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: pcap.c,v 1.12 94/06/12 14:32:23 leres Exp (LBL)";
-#endif
-
 #include <sys/types.h>
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+
+#ifdef HAVE_OS_PROTO_H
+#include "os-proto.h"
+#endif
 
 #include "pcap-int.h"
+
+static const char pcap_version_string[] = "OpenBSD libpcap";
 
 int
 pcap_dispatch(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 {
+
 	if (p->sf.rfile != NULL)
 		return (pcap_offline_read(p, cnt, callback, user));
-	else
-		return (pcap_read(p, cnt, callback, user));
+	return (pcap_read(p, cnt, callback, user));
 }
 
 int
 pcap_loop(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 {
+	register int n;
+
 	for (;;) {
-		int n = pcap_dispatch(p, cnt, callback, user);
-		if (n < 0)
+		if (p->sf.rfile != NULL)
+			n = pcap_offline_read(p, cnt, callback, user);
+		else {
+			/*
+			 * XXX keep reading until we get something
+			 * (or an error occurs)
+			 */
+			do {
+				n = pcap_read(p, cnt, callback, user);
+			} while (n == 0);
+		}
+		if (n <= 0)
 			return (n);
 		if (cnt > 0) {
 			cnt -= n;
@@ -89,15 +106,127 @@ pcap_next(pcap_t *p, struct pcap_pkthdr *h)
 	struct singleton s;
 
 	s.hdr = h;
-	if (pcap_dispatch(p, 1, pcap_oneshot, (u_char*)&s) < 0)
+	if (pcap_dispatch(p, 1, pcap_oneshot, (u_char*)&s) <= 0)
 		return (0);
 	return (s.pkt);
+}
+
+/*
+ * Force the loop in "pcap_read()" or "pcap_read_offline()" to terminate.
+ */
+void
+pcap_breakloop(pcap_t *p)
+{
+	p->break_loop = 1;
 }
 
 int
 pcap_datalink(pcap_t *p)
 {
 	return (p->linktype);
+}
+
+int
+pcap_list_datalinks(pcap_t *p, int **dlt_buffer)
+{
+	if (p->dlt_count == 0) {
+		/*
+		 * We couldn't fetch the list of DLTs, which means
+		 * this platform doesn't support changing the
+		 * DLT for an interface.  Return a list of DLTs
+		 * containing only the DLT this device supports.
+		 */
+		*dlt_buffer = (int*)malloc(sizeof(**dlt_buffer));
+		if (*dlt_buffer == NULL) {
+			(void)snprintf(p->errbuf, sizeof(p->errbuf),
+			    "malloc: %s", pcap_strerror(errno));
+			return (-1);
+		}
+		**dlt_buffer = p->linktype;
+		return (1);
+	} else {
+		*dlt_buffer = (int*)malloc(sizeof(**dlt_buffer) * p->dlt_count);
+		if (*dlt_buffer == NULL) {
+			(void)snprintf(p->errbuf, sizeof(p->errbuf),
+			    "malloc: %s", pcap_strerror(errno));
+			return (-1);
+		}
+		(void)memcpy(*dlt_buffer, p->dlt_list,
+		    sizeof(**dlt_buffer) * p->dlt_count);
+		return (p->dlt_count);
+	}
+}
+
+struct dlt_choice {
+	const char *name;
+	const char *description;
+	int	dlt;
+};
+
+static struct dlt_choice dlts[] = {
+#define DLT_CHOICE(code, description) { #code, description, code }
+DLT_CHOICE(DLT_NULL, "no link-layer encapsulation"),
+DLT_CHOICE(DLT_EN10MB, "Ethernet (10Mb)"),
+DLT_CHOICE(DLT_EN3MB, "Experimental Ethernet (3Mb)"),
+DLT_CHOICE(DLT_AX25, "Amateur Radio AX.25"),
+DLT_CHOICE(DLT_PRONET, "Proteon ProNET Token Ring"),
+DLT_CHOICE(DLT_CHAOS, "Chaos"),
+DLT_CHOICE(DLT_IEEE802, "IEEE 802 Networks"),
+DLT_CHOICE(DLT_ARCNET, "ARCNET"),
+DLT_CHOICE(DLT_SLIP, "Serial Line IP"),
+DLT_CHOICE(DLT_PPP, "Point-to-point Protocol"),
+DLT_CHOICE(DLT_FDDI, "FDDI"),
+DLT_CHOICE(DLT_ATM_RFC1483, "LLC/SNAP encapsulated atm"),
+DLT_CHOICE(DLT_LOOP, "loopback type (af header)"),
+DLT_CHOICE(DLT_ENC, "IPSEC enc type (af header, spi, flags)"),
+DLT_CHOICE(DLT_RAW, "raw IP"),
+DLT_CHOICE(DLT_SLIP_BSDOS, "BSD/OS Serial Line IP"),
+DLT_CHOICE(DLT_PPP_BSDOS, "BSD/OS Point-to-point Protocol"),
+DLT_CHOICE(DLT_OLD_PFLOG, "Packet filter logging, old (XXX remove?)"),
+DLT_CHOICE(DLT_PFSYNC, "Packet filter state syncing"),
+DLT_CHOICE(DLT_PPP_ETHER, "PPP over Ethernet; session only w/o ether header"),
+DLT_CHOICE(DLT_IEEE802_11, "IEEE 802.11 wireless"),
+DLT_CHOICE(DLT_PFLOG, "Packet filter logging, by pcap people"),
+DLT_CHOICE(DLT_IEEE802_11_RADIO, "IEEE 802.11 plus WLAN header"),
+#undef DLT_CHOICE
+	{ NULL, NULL, -1}
+};
+
+int
+pcap_datalink_name_to_val(const char *name)
+{
+	int i;
+
+	for (i = 0; dlts[i].name != NULL; i++) {
+		/* Skip leading "DLT_" */
+		if (strcasecmp(dlts[i].name + 4, name) == 0)
+			return (dlts[i].dlt);
+	}
+	return (-1);
+}
+
+const char *
+pcap_datalink_val_to_name(int dlt)
+{
+	int i;
+
+	for (i = 0; dlts[i].name != NULL; i++) {
+		if (dlts[i].dlt == dlt)
+			return (dlts[i].name + 4); /* Skip leading "DLT_" */
+	}
+	return (NULL);
+}
+
+const char *
+pcap_datalink_val_to_description(int dlt)
+{
+	int i;
+
+	for (i = 0; dlts[i].name != NULL; i++) {
+		if (dlts[i].dlt == dlt)
+			return (dlts[i].description);
+	}
+	return (NULL);
 }
 
 int
@@ -148,14 +277,79 @@ pcap_geterr(pcap_t *p)
 	return (p->errbuf);
 }
 
+int
+pcap_getnonblock(pcap_t *p, char *errbuf)
+{
+	int fdflags;
+
+	fdflags = fcntl(p->fd, F_GETFL, 0);
+	if (fdflags == -1) {
+		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "F_GETFL: %s",
+		    pcap_strerror(errno));
+		return (-1);
+	}
+	if (fdflags & O_NONBLOCK)
+		return (1);
+	else
+		return (0);
+}
+
+int
+pcap_setnonblock(pcap_t *p, int nonblock, char *errbuf)
+{
+	int fdflags;
+
+	fdflags = fcntl(p->fd, F_GETFL, 0);
+	if (fdflags == -1) {
+		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "F_GETFL: %s",
+		    pcap_strerror(errno));
+		return (-1);
+	}
+	if (nonblock)
+		fdflags |= O_NONBLOCK;
+	else
+		fdflags &= ~O_NONBLOCK;
+	if (fcntl(p->fd, F_SETFL, fdflags) == -1) {
+		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "F_SETFL: %s",
+		    pcap_strerror(errno));
+		return (-1);
+	}
+	return (0);
+}
+
 /*
  * Not all systems have strerror().
  */
 char *
 pcap_strerror(int errnum)
 {
-
+#ifdef HAVE_STRERROR
 	return (strerror(errnum));
+#else
+	extern int sys_nerr;
+	extern const char *const sys_errlist[];
+	static char ebuf[20];
+
+	if ((unsigned int)errnum < sys_nerr)
+		return ((char *)sys_errlist[errnum]);
+	(void)snprintf(ebuf, sizeof ebuf, "Unknown error: %d", errnum);
+	return(ebuf);
+#endif
+}
+
+pcap_t *
+pcap_open_dead(int linktype, int snaplen)
+{
+	pcap_t *p;
+
+	p = malloc(sizeof(*p));
+	if (p == NULL)
+		return NULL;
+	memset (p, 0, sizeof(*p));
+	p->snapshot = snaplen;
+	p->linktype = linktype;
+	p->fd = -1;
+	return p;
 }
 
 void
@@ -165,11 +359,24 @@ pcap_close(pcap_t *p)
 	if (p->fd >= 0)
 		close(p->fd);
 	if (p->sf.rfile != NULL) {
-		fclose(p->sf.rfile);
+		(void)fclose(p->sf.rfile);
 		if (p->sf.base != NULL)
 			free(p->sf.base);
 	} else if (p->buffer != NULL)
 		free(p->buffer);
-	
+#ifdef linux
+	if (p->md.device != NULL)
+		free(p->md.device);
+#endif
+	pcap_freecode(&p->fcode);
+	if (p->dlt_list != NULL)
+		free(p->dlt_list);
 	free(p);
 }
+
+const char *
+pcap_lib_version(void)
+{
+	return (pcap_version_string);
+}
+

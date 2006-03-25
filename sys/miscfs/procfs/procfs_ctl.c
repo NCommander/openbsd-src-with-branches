@@ -1,4 +1,5 @@
-/*	$NetBSD: procfs_ctl.c,v 1.13 1995/08/13 09:06:02 mycroft Exp $	*/
+/*	$OpenBSD: procfs_ctl.c,v 1.16 2005/05/31 11:35:33 art Exp $	*/
+/*	$NetBSD: procfs_ctl.c,v 1.14 1996/02/09 22:40:48 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Jan-Simon Pendry
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,7 +46,9 @@
 #include <sys/tty.h>
 #include <sys/resource.h>
 #include <sys/resourcevar.h>
+#include <sys/signalvar.h>
 #include <sys/ptrace.h>
+#include <sys/sched.h>
 #include <miscfs/procfs/procfs.h>
 
 /*
@@ -59,7 +58,9 @@
 #define TRACE_WAIT_P(curp, p) \
 	((p)->p_stat == SSTOP && \
 	 (p)->p_pptr == (curp) && \
-	 ((p)->p_flag & P_TRACED))
+	 ISSET((p)->p_flag, P_TRACED))
+
+#ifdef PTRACE
 
 #define PROCFS_CTL_ATTACH	1
 #define PROCFS_CTL_DETACH	2
@@ -67,7 +68,7 @@
 #define PROCFS_CTL_RUN		4
 #define PROCFS_CTL_WAIT		5
 
-static vfs_namemap_t ctlnames[] = {
+static const vfs_namemap_t ctlnames[] = {
 	/* special /proc commands */
 	{ "attach",	PROCFS_CTL_ATTACH },
 	{ "detach",	PROCFS_CTL_DETACH },
@@ -77,7 +78,9 @@ static vfs_namemap_t ctlnames[] = {
 	{ 0 },
 };
 
-static vfs_namemap_t signames[] = {
+#endif
+
+static const vfs_namemap_t signames[] = {
 	/* regular signal names */
 	{ "hup",	SIGHUP },	{ "int",	SIGINT },
 	{ "quit",	SIGQUIT },	{ "ill",	SIGILL },
@@ -98,26 +101,33 @@ static vfs_namemap_t signames[] = {
 	{ 0 },
 };
 
+#ifdef PTRACE
+static int procfs_control(struct proc *, struct proc *, int);
+
 static int
 procfs_control(curp, p, op)
-	struct proc *curp;
-	struct proc *p;
+	struct proc *curp;		/* tracer */
+	struct proc *p;			/* traced */
 	int op;
 {
 	int error;
+	int s;
 
 	/*
 	 * Attach - attaches the target process for debugging
 	 * by the calling process.
 	 */
 	if (op == PROCFS_CTL_ATTACH) {
-		/* check whether already being traced */
-		if (p->p_flag & P_TRACED)
-			return (EBUSY);
-
-		/* can't trace yourself! */
+		/* Can't trace yourself! */
 		if (p->p_pid == curp->p_pid)
 			return (EINVAL);
+
+		/* Check whether already being traced. */
+		if (ISSET(p->p_flag, P_TRACED))
+			return (EBUSY);
+
+		if ((error = process_checkioperm(curp, p)) != 0)
+			return (error);
 
 		/*
 		 * Go ahead and set the trace flag.
@@ -172,11 +182,11 @@ procfs_control(curp, p, op)
 	 */
 	case PROCFS_CTL_DETACH:
 		/* if not being traced, then this is a painless no-op */
-		if ((p->p_flag & P_TRACED) == 0)
+		if (!ISSET(p->p_flag, P_TRACED))
 			return (0);
 
 		/* not being traced any more */
-		p->p_flag &= ~P_TRACED;
+		CLR(p->p_flag, P_TRACED);
 
 		/* give process back to original parent */
 		if (p->p_oppid != p->p_pptr->p_pid) {
@@ -188,8 +198,8 @@ procfs_control(curp, p, op)
 		}
 
 		p->p_oppid = 0;
-		p->p_flag &= ~P_WAITED;	/* XXX ? */
-		wakeup((caddr_t) curp);	/* XXX for CTL_WAIT below ? */
+		CLR(p->p_flag, P_WAITED); /* XXX ? */
+		wakeup(curp);	/* XXX for CTL_WAIT below ? */
 
 		break;
 
@@ -218,32 +228,35 @@ procfs_control(curp, p, op)
 	 */
 	case PROCFS_CTL_WAIT:
 		error = 0;
-		if (p->p_flag & P_TRACED) {
+		if (ISSET(p->p_flag, P_TRACED)) {
 			while (error == 0 &&
 					(p->p_stat != SSTOP) &&
-					(p->p_flag & P_TRACED) &&
+					ISSET(p->p_flag, P_TRACED) &&
 					(p->p_pptr == curp)) {
-				error = tsleep((caddr_t) p,
-						PWAIT|PCATCH, "procfsx", 0);
+				error = tsleep(p, PWAIT|PCATCH, "procfsx", 0);
 			}
 			if (error == 0 && !TRACE_WAIT_P(curp, p))
 				error = EBUSY;
 		} else {
 			while (error == 0 && p->p_stat != SSTOP) {
-				error = tsleep((caddr_t) p,
-						PWAIT|PCATCH, "procfs", 0);
+				error = tsleep(p, PWAIT|PCATCH, "procfs", 0);
 			}
 		}
 		return (error);
 
+#ifdef DIAGNOSTIC
 	default:
 		panic("procfs_control");
+#endif
 	}
 
+	SCHED_LOCK(s);
 	if (p->p_stat == SSTOP)
 		setrunnable(p);
+	SCHED_UNLOCK(s);
 	return (0);
 }
+#endif
 
 int
 procfs_doctl(curp, p, pfs, uio)
@@ -255,7 +268,8 @@ procfs_doctl(curp, p, pfs, uio)
 	int xlen;
 	int error;
 	char msg[PROCFS_CTLLEN+1];
-	vfs_namemap_t *nm;
+	const vfs_namemap_t *nm;
+	int s;
 
 	if (uio->uio_rw != UIO_WRITE)
 		return (EOPNOTSUPP);
@@ -276,16 +290,21 @@ procfs_doctl(curp, p, pfs, uio)
 	 */
 	error = EOPNOTSUPP;
 
+#ifdef PTRACE
 	nm = vfs_findname(ctlnames, msg, xlen);
 	if (nm) {
 		error = procfs_control(curp, p, nm->nm_val);
-	} else {
+	} else
+#endif
+	{
 		nm = vfs_findname(signames, msg, xlen);
 		if (nm) {
 			if (TRACE_WAIT_P(curp, p)) {
 				p->p_xstat = nm->nm_val;
 				FIX_SSTEP(p);
+				SCHED_LOCK(s);
 				setrunnable(p);
+				SCHED_UNLOCK(s);
 			} else {
 				psignal(p, nm->nm_val);
 			}

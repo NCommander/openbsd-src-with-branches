@@ -1,7 +1,9 @@
-/*	$Id: dh.c,v 1.2 1998/07/18 22:08:59 provos Exp $	*/
+/* $OpenBSD: dh.c,v 1.9 2004/04/15 18:39:25 deraadt Exp $	 */
+/* $EOM: dh.c,v 1.5 1999/04/17 23:20:22 niklas Exp $	 */
 
 /*
  * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -44,9 +41,9 @@
  */
 
 int
-dh_getlen (struct group *group)
+dh_getlen(struct group *group)
 {
-  return group->getlen (group);
+	return group->getlen(group);
 }
 
 /*
@@ -54,14 +51,16 @@ dh_getlen (struct group *group)
  * Each time this function is called a new value is created, that
  * means the application has to save the exchange value itself,
  * dh_create_exchange should only be called once.
- */ 
-
-void
-dh_create_exchange (struct group *group, u_int8_t *buf)
+ */
+int
+dh_create_exchange(struct group *group, u_int8_t *buf)
 {
-  group->setrandom (group, group->c);
-  group->operation (group, group->a, group->gen, group->c);
-  group->getraw (group, group->a, buf);
+	if (group->setrandom(group, group->c))
+		return -1;
+	if (group->operation(group, group->a, group->gen, group->c))
+		return -1;
+	group->getraw(group, group->a, buf);
+	return 0;
 }
 
 /*
@@ -69,11 +68,13 @@ dh_create_exchange (struct group *group, u_int8_t *buf)
  * is the exchange value offered by the other party. No length verification
  * is done for the value, the application has to do that.
  */
-
-void
-dh_create_shared (struct group *group, u_int8_t *secret, u_int8_t *exchange)
+int
+dh_create_shared(struct group *group, u_int8_t *secret, u_int8_t *exchange)
 {
-  group->setraw (group, group->b, exchange, group->getlen(group));
-  group->operation (group, group->a, group->b, group->c);
-  group->getraw (group, group->a, secret);
+	if (group->setraw(group, group->b, exchange, group->getlen(group)))
+		return -1;
+	if (group->operation(group, group->a, group->b, group->c))
+		return -1;
+	group->getraw(group, group->a, secret);
+	return 0;
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: skpc.c,v 1.2 1994/10/26 06:42:43 cgd Exp $	*/
+/*	$OpenBSD: skpc.c,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
+/*	$NetBSD: skpc.c,v 1.3 1996/03/14 18:52:18 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,16 +33,14 @@
  */
 
 #include <sys/types.h>
+#include <lib/libkern/libkern.h>
 
 int
-skpc(mask, size, cp)
-	register int mask;
-	u_int size;
-	register u_char *cp;
+skpc(int mask, size_t size, u_char *cp)
 {
-	register u_char *end = &cp[size];
+	u_char *end = &cp[size];
 
-	while (cp < end && *cp == mask)
+	while (cp < end && *cp == (u_char) mask)
 		cp++;
 	return (end - cp);
 }

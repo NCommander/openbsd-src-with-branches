@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,22 +27,13 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)bstring.3	6.8 (Berkeley) 4/19/91
-.\"	$Id: bstring.3,v 1.2 1993/08/01 07:44:05 mycroft Exp $
+.\"	$OpenBSD: bstring.3,v 1.6 2004/02/10 14:35:35 jmc Exp $
 .\"
 .Dd April 19, 1991
 .Dt BSTRING 3
 .Os
 .Sh NAME
-.Nm bcmp ,
-.Nm bcopy ,
-.Nm bzero ,
-.Nm memccpy ,
-.Nm memchr ,
-.Nm memcmp ,
-.Nm memcpy ,
-.Nm memmove,
-.Nm memset
+.Nm bstring
 .Nd byte string operations
 .Sh SYNOPSIS
 .Fd #include <string.h>
@@ -70,7 +57,7 @@
 .Fn memset "void *b" "int c" "size_t len"
 .Sh DESCRIPTION
 These functions operate on variable length strings of bytes.
-They do not check for terminating null bytes as the routines
+They do not check for terminating NUL bytes as the routines
 listed in
 .Xr string 3
 do.
@@ -97,14 +84,15 @@ and
 conform to
 .St -ansiC .
 .Sh HISTORY
-The functions
+The
 .Fn bzero
 and
 .Fn memccpy
-appeared in
-.Bx 4.3 ;
-the functions
-.Fn bcmp ,
-.Fn bcopy ,
-appeared in
+functions appeared in
+.Bx 4.3 .
+The
+.Fn bcmp
+and
+.Fn bcopy
+functions appeared in
 .Bx 4.2 .

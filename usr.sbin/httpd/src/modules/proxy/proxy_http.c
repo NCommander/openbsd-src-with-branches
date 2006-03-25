@@ -170,9 +170,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
     const char *datestr, *urlstr;
     int result, major, minor;
     const char *content_length;
-#ifdef EAPI
     char *peer;
-#endif
 
     void *sconf = r->server->module_config;
     proxy_server_conf *conf =
@@ -194,12 +192,10 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         return HTTP_BAD_REQUEST;
     urlptr += 3;
     destport = DEFAULT_HTTP_PORT;
-#ifdef EAPI
     ap_hook_use("ap::mod_proxy::http::handler::set_destport", 
                 AP_HOOK_SIG2(int,ptr), 
                 AP_HOOK_TOPMOST,
                 &destport, r);
-#endif /* EAPI */
     strp = strchr(urlptr, '/');
     if (strp == NULL) {
         desthost = ap_pstrdup(p, urlptr);
@@ -237,18 +233,14 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         err = ap_proxy_host2addr(proxyhost, &server_hp);
         if (err != NULL)
             return DECLINED;    /* try another */
-#ifdef EAPI
 	peer = ap_psprintf(p, "%s:%u", proxyhost, proxyport);  
-#endif
     }
     else {
         server.sin_port = htons((unsigned short)destport);
         err = ap_proxy_host2addr(desthost, &server_hp);
         if (err != NULL)
             return ap_proxyerror(r, HTTP_INTERNAL_SERVER_ERROR, err);
-#ifdef EAPI
 	peer =  ap_psprintf(p, "%s:%u", desthost, destport);  
-#endif
     }
 
 
@@ -263,7 +255,6 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         return HTTP_INTERNAL_SERVER_ERROR;
     }
 
-#if !defined(TPF) && !defined(BEOS)
     if (conf->recv_buffer_size) {
         if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF,
                        (const char *)&conf->recv_buffer_size, sizeof(int))
@@ -272,20 +263,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
                           "setsockopt(SO_RCVBUF): Failed to set ProxyReceiveBufferSize, using default");
         }
     }
-#endif
 
-#ifdef SINIX_D_RESOLVER_BUG
-    {
-        struct in_addr *ip_addr = (struct in_addr *)*server_hp.h_addr_list;
-
-        for (; ip_addr->s_addr != 0; ++ip_addr) {
-            memcpy(&server.sin_addr, ip_addr, sizeof(struct in_addr));
-            i = ap_proxy_doconnect(sock, &server, r);
-            if (i == 0)
-                break;
-        }
-    }
-#else
     j = 0;
     while (server_hp.h_addr_list[j] != NULL) {
         memcpy(&server.sin_addr, server_hp.h_addr_list[j],
@@ -295,7 +273,6 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
             break;
         j++;
     }
-#endif
     if (i == -1) {
         if (proxyhost != NULL)
             return DECLINED;    /* try again another way */
@@ -323,7 +300,6 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
     f = ap_bcreate(p, B_RDWR | B_SOCKET);
     ap_bpushfd(f, sock, sock);
 
-#ifdef EAPI
     {
         char *errmsg = NULL;
         ap_hook_use("ap::mod_proxy::http::handler::new_connection", 
@@ -333,12 +309,10 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         if (errmsg != NULL)
             return ap_proxyerror(r, HTTP_BAD_GATEWAY, errmsg);
     }
-#endif /* EAPI */
 
     ap_hard_timeout("proxy send", r);
     ap_bvputs(f, r->method, " ", proxyhost ? url : urlptr, " HTTP/1.1" CRLF,
               NULL);
-#ifdef EAPI
     {
 	int rc = DECLINED;
 	ap_hook_use("ap::mod_proxy::http::handler::write_host_header", 
@@ -352,13 +326,6 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
 		ap_bvputs(f, "Host: ", desthost, CRLF, NULL);
         }
     }
-#else /* EAPI */
-    /* Send Host: now, adding it to req_hdrs wouldn't be much better */
-    if (destportstr != NULL && destport != DEFAULT_HTTP_PORT)
-        ap_bvputs(f, "Host: ", desthost, ":", destportstr, CRLF, NULL);
-    else
-        ap_bvputs(f, "Host: ", desthost, CRLF, NULL);
-#endif /* EAPI */
 
     if (conf->viaopt == via_block) {
         /* Block all outgoing Via: headers */
@@ -368,7 +335,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         /* Create a "Via:" request header entry and merge it */
         i = ap_get_server_port(r);
         if (ap_is_default_port(i, r)) {
-            strcpy(portstr, "");
+            strlcpy(portstr, "", sizeof(portstr));
         }
         else {
             ap_snprintf(portstr, sizeof portstr, ":%d", i);
@@ -533,7 +500,7 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
             /* Create a "Via:" response header entry and merge it */
             i = ap_get_server_port(r);
             if (ap_is_default_port(i, r)) {
-                strcpy(portstr, "");
+                strlcpy(portstr, "", sizeof(portstr));
             }
             else {
                 ap_snprintf(portstr, sizeof portstr, ":%d", i);
@@ -561,6 +528,13 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         content_length = ap_table_get(resp_hdrs, "Content-Length");
         if (content_length != NULL) {
             c->len = ap_strtol(content_length, NULL, 10);
+
+	    if (c->len < 0) {
+		ap_kill_timeout(r);
+		return ap_proxyerror(r, HTTP_BAD_GATEWAY, ap_pstrcat(r->pool,
+				     "Invalid Content-Length from remote server",
+                                      NULL));
+	    }
         }
 
     }
@@ -657,16 +631,6 @@ int ap_proxy_http_handler(request_rec *r, cache_req *c, char *url,
         ap_kill_timeout(r);
     }
 */
-
-#ifdef CHARSET_EBCDIC
-    /*
-     * What we read/write after the header should not be modified (i.e., the
-     * cache copy is ASCII, not EBCDIC, even for text/html)
-     */
-    r->ebcdic.conv_in = r->ebcdic.conv_out = 0;
-    ap_bsetflag(f, B_ASCII2EBCDIC | B_EBCDIC2ASCII, 0);
-    ap_bsetflag(r->connection->client, B_ASCII2EBCDIC | B_EBCDIC2ASCII, 0);
-#endif
 
 /* send body */
 /* if header only, then cache will be NULL */

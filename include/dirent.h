@@ -1,3 +1,4 @@
+/*	$OpenBSD: dirent.h,v 1.14 2005/06/18 18:09:42 millert Exp $	*/
 /*	$NetBSD: dirent.h,v 1.9 1995/03/26 20:13:37 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,17 +35,26 @@
 #ifndef _DIRENT_H_
 #define _DIRENT_H_
 
+#include <sys/cdefs.h>
+
+/*
+ * POSIX doesn't mandate this, but X/Open XPG 4.2 does.
+ */
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 420
+#include <sys/types.h>
+#endif
+
 /*
  * The kernel defines the format of directory entries returned by 
  * the getdirentries(2) system call.
  */
 #include <sys/dirent.h>
 
-#ifdef _POSIX_SOURCE
-typedef void *	DIR;
-#else
-
+#if __BSD_VISIBLE || __XPG_VISIBLE
 #define	d_ino		d_fileno	/* backward compatibility */
+#endif
+
+#if __BSD_VISIBLE
 
 /* definitions for library routines operating on directories. */
 #define	DIRBLKSIZ	1024
@@ -68,35 +74,44 @@ typedef struct _dirdesc {
 #define	dirfd(dirp)	((dirp)->dd_fd)
 
 /* flags for opendir2 */
-#define DTF_HIDEW	0x0001	/* hide whiteout entries */
 #define DTF_NODUP	0x0002	/* don't return duplicate names */
-#define DTF_REWIND	0x0004	/* rewind after reading union stack */
 #define __DTF_READALL	0x0008	/* everything has been read */
 
 #ifndef NULL
-#define	NULL	0
-#endif
+#ifdef 	__GNUG__
+#define	NULL	__null
+#else
+#define	NULL	0L
+#endif /* __GNUG__ */
+#endif /* !NULL */
 
-#endif /* _POSIX_SOURCE */
+#else /* !__BSD_VISIBLE */
+
+typedef void *	DIR;
+
+#endif /* !__BSD_VISIBLE */
 
 #ifndef _KERNEL
-
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
-DIR *opendir __P((const char *));
-struct dirent *readdir __P((DIR *));
-void rewinddir __P((DIR *));
-int closedir __P((DIR *));
-#ifndef _POSIX_SOURCE
-DIR *__opendir2 __P((const char *, int));
-long telldir __P((const DIR *));
-void seekdir __P((DIR *, long));
-int scandir __P((const char *, struct dirent ***,
-    int (*)(struct dirent *), int (*)(const void *, const void *)));
-int alphasort __P((const void *, const void *));
-int getdirentries __P((int, char *, int, long *));
-#endif /* not POSIX */
+DIR *opendir(const char *);
+struct dirent *readdir(DIR *);
+void rewinddir(DIR *);
+int closedir(DIR *);
+#if __BSD_VISIBLE
+DIR *__opendir2(const char *, int);
+int scandir(const char *, struct dirent ***,
+    int (*)(struct dirent *), int (*)(const void *, const void *));
+int alphasort(const void *, const void *);
+int getdirentries(int, char *, int, long *)
+		__attribute__ ((__bounded__(__string__,2,3)));
+#endif /* __BSD_VISIBLE */
+#if __XPG_VISIBLE
+long telldir(const DIR *);
+void seekdir(DIR *, long);
+#endif
+#if __POSIX_VISIBLE >= 199506 || __XPG_VISIBLE >= 500
+int readdir_r(DIR *, struct dirent *, struct dirent **);
+#endif
 __END_DECLS
 
 #endif /* !_KERNEL */

@@ -1,8 +1,12 @@
-/*	$NetBSD: main.c,v 1.1 1995/07/13 18:15:44 thorpej Exp $	*/
+/*	$OpenBSD: main.c,v 1.12 2004/07/09 16:22:02 deraadt Exp $	*/
+/*	$NetBSD: main.c,v 1.3 1996/05/16 16:00:55 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,22 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/param.h>
@@ -40,17 +45,11 @@
 
 #ifdef __sparc__
 #include <fcntl.h>
-#include <kvm.h>
 #include <limits.h>
-#include <nlist.h>
+#include <sys/sysctl.h>
+#include <machine/cpu.h>
 
 #include <machine/openpromio.h>
-
-struct	nlist nl[] = {
-	{ "_cputyp" },
-#define SYM_CPUTYP	0
-	{ NULL },
-};
 
 static	char *system = NULL;
 #endif /* __sparc__ */
@@ -63,12 +62,20 @@ struct	keytabent eekeytab[] = {
 	{ "hwupdate",		0x10,	ee_hwupdate },
 	{ "memsize",		0x14,	ee_num8 },
 	{ "memtest",		0x15,	ee_num8 },
+#ifdef __sparc64__
+	{ "scrsize",		0x16,	ee_notsupp },
+#else
 	{ "scrsize",		0x16,	ee_screensize },
+#endif
 	{ "watchdog_reboot",	0x17,	ee_truefalse },
 	{ "default_boot",	0x18,	ee_truefalse },
 	{ "bootdev",		0x19,	ee_bootdev },
 	{ "kbdtype",		0x1e,	ee_kbdtype },
+#ifdef __sparc64__
+	{ "console",		0x1f,	ee_notsupp },
+#else
 	{ "console",		0x1f,	ee_constype },
+#endif
 	{ "keyclick",		0x21,	ee_truefalse },
 	{ "diagdev",		0x22,	ee_bootdev },
 	{ "diagpath",		0x28,	ee_diagpath },
@@ -87,11 +94,11 @@ struct	keytabent eekeytab[] = {
 	{ NULL,			0,	ee_notsupp },
 };
 
-static	void action __P((char *));
-static	void dump_prom __P((void));
-static	void usage __P((void));
+static	void action(char *);
+static	void dump_prom(void);
+static	void usage(void);
 #ifdef __sparc__
-static	int getcputype __P((void));
+static	int getcputype(void);
 #endif /* __sparc__ */
 
 char	*path_eeprom = "/dev/eeprom";
@@ -108,16 +115,15 @@ int	verbose = 0;
 extern	char *__progname;
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int ch, do_stdin = 0;
 	char *cp, line[BUFSIZE];
 #ifdef __sparc__
-	char *optstring = "-cf:ivN:";
+	gid_t gid;
+	char *optstring = "cf:ivN:-";
 #else
-	char *optstring = "-cf:i";
+	char *optstring = "cf:i-";
 #endif /* __sparc__ */
 
 	while ((ch = getopt(argc, argv, optstring)) != -1)
@@ -156,6 +162,11 @@ main(argc, argv)
 	argv += optind;
 
 #ifdef __sparc__
+	if (system != NULL) {
+		gid = getgid();
+		if (setresgid(gid, gid, gid) == -1)
+			err(1, "setresgid");
+	}
 	if (getcputype() != CPU_SUN4)
 		use_openprom = 1;
 #endif /* __sparc__ */
@@ -183,7 +194,7 @@ main(argc, argv)
 		}
 
 		while (argc) {
-			action(argv[argc - 1]);
+			action(*argv);
 			++argv;
 			--argc;
 		}
@@ -199,31 +210,19 @@ main(argc, argv)
 }
 
 #ifdef __sparc__
-#define KVM_ABORT(kd, str) {						\
-	(void)kvm_close((kd));						\
-	errx(1, "%s: %s", (str), kvm_geterr((kd)));			\
-}
-
 static int
-getcputype()
+getcputype(void)
 {
-	char errbuf[_POSIX2_LINE_MAX];
+	int mib[2];
+	size_t len;
 	int cputype;
-	kvm_t *kd;
 
-	bzero(errbuf, sizeof(errbuf));
+	mib[0] = CTL_MACHDEP;
+	mib[1] = CPU_CPUTYPE;
+	len = sizeof(cputype);
+	if (sysctl(mib, 2, &cputype, &len, NULL, 0) < 0)
+		err(1, "sysctl(machdep.cputype)");
 
-	if ((kd = kvm_openfiles(system, NULL, NULL, O_RDONLY, errbuf)) == NULL)
-		errx(1, "can't open kvm: %s", errbuf);
-
-	if (kvm_nlist(kd, nl))
-		KVM_ABORT(kd, "can't read symbol table");
-
-	if (kvm_read(kd, nl[SYM_CPUTYP].n_value, (char *)&cputype,
-	    sizeof(cputype)) != sizeof(cputype))
-		KVM_ABORT(kd, "can't determine cpu type");
-
-	(void)kvm_close(kd);
 	return (cputype);
 }
 #endif /* __sparc__ */
@@ -233,13 +232,14 @@ getcputype()
  * the table, and call the corresponding handler function.
  */
 static void
-action(line)
-	char *line;
+action(char *line)
 {
 	char *keyword, *arg, *cp;
 	struct keytabent *ktent;
 
 	keyword = strdup(line);
+	if (!keyword)
+		errx(1, "out of memory");
 	if ((arg = strrchr(keyword, '=')) != NULL)
 		*arg++ = '\0';
 
@@ -252,7 +252,7 @@ action(line)
 		 * the generic op_handler.
 		 */
 		if ((cp = op_handler(keyword, arg)) != NULL)
-			warnx(cp);
+			warnx("%s", cp);
 		return;
 	} else
 #endif /* __sparc__ */
@@ -271,7 +271,7 @@ action(line)
  * Dump the contents of the prom corresponding to all known keywords.
  */
 static void
-dump_prom()
+dump_prom(void)
 {
 	struct keytabent *ktent;
 
@@ -288,7 +288,7 @@ dump_prom()
 }
 
 static void
-usage()
+usage(void)
 {
 
 #ifdef __sparc__

@@ -1,4 +1,5 @@
-/*	$NetBSD: param.h,v 1.26 1995/06/26 06:55:58 cgd Exp $	*/
+/*	$OpenBSD: param.h,v 1.32 2005/11/23 15:57:33 mickey Exp $	*/
+/*	$NetBSD: param.h,v 1.29 1996/03/04 05:04:26 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,75 +40,85 @@
  */
 
 #ifdef _KERNEL
-#ifdef LOCORE
+#ifdef _LOCORE
 #include <machine/psl.h>
 #else
 #include <machine/cpu.h>
 #endif
 #endif
 
-#define MACHINE		"i386"
-#define MACHINE_ARCH	"i386"
-#define MID_MACHINE	MID_I386
+#define	_MACHINE	i386
+#define	MACHINE		"i386"
+#define	_MACHINE_ARCH	i386
+#define	MACHINE_ARCH	"i386"
+#define	MID_MACHINE	MID_I386
 
 /*
  * Round p (pointer or byte index) up to a correctly-aligned value
  * for all data types (int, long, ...).   The result is u_int and
  * must be cast to any desired pointer type.
+ *
+ * ALIGNED_POINTER is a boolean macro that checks whether an address
+ * is valid to fetch data elements of type t from on this architecture.
+ * This does not reflect the optimal alignment, just the possibility
+ * (within reasonable limits). 
  */
 #define ALIGNBYTES	(sizeof(int) - 1)
 #define ALIGN(p)	(((u_int)(p) + ALIGNBYTES) &~ ALIGNBYTES)
+#define ALIGNED_POINTER(p,t)   1
 
 #define	PGSHIFT		12		/* LOG2(NBPG) */
 #define	NBPG		(1 << PGSHIFT)	/* bytes/page */
 #define	PGOFSET		(NBPG-1)	/* byte offset into page */
+
+#define PAGE_SHIFT	12
+#define PAGE_SIZE	(1 << PAGE_SHIFT)
+#define PAGE_MASK	(PAGE_SIZE - 1)
+
 #define	NPTEPG		(NBPG/(sizeof (pt_entry_t)))
 
-#define	KERNBASE	0xf8000000	/* start of kernel virtual space */
-#define	KERNSIZE	0x01800000	/* size of kernel virtual space */
-#define	KERNTEXTOFF	0xf8100000	/* start of kernel text */
-#define	BTOPKERNBASE	((u_long)KERNBASE >> PGSHIFT)
+/*
+ * Start of kernel virtual space.  Remember to alter the memory and
+ * page table layout description in pmap.h when changing this.
+ */
+#define	KERNBASE	0xd0000000
+
+#define	KERNTEXTOFF	(KERNBASE+0x100000)	/* start of kernel text */
 
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
 #define	DEV_BSIZE	(1 << DEV_BSHIFT)
 #define	BLKDEV_IOSIZE	2048
+#ifndef	MAXPHYS
 #define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
+#endif
 
-#define	CLSIZELOG2	0
-#define	CLSIZE		(1 << CLSIZELOG2)
-
-/* NOTE: SSIZE, SINCR and UPAGES must be multiples of CLSIZE */
-#define	SSIZE		1		/* initial stack size/NBPG */
-#define	SINCR		1		/* increment of stack/NBPG */
 #define	UPAGES		2		/* pages of u-area */
 #define	USPACE		(UPAGES * NBPG)	/* total size of u-area */
+#define	USPACE_ALIGN	(0)		/* u-area alignment 0-none */
+
+#ifndef MSGBUFSIZE
+#define MSGBUFSIZE	4*NBPG		/* default message buffer size */
+#endif
 
 /*
  * Constants related to network buffer management.
- * MCLBYTES must be no larger than CLBYTES (the software page size), and,
+ * MCLBYTES must be no larger than the software page size, and,
  * on machines that exchange pages of input or output buffers with mbuf
  * clusters (MAPPED_MBUFS), MCLBYTES must also be an integral multiple
  * of the hardware page size.
  */
-#define	MSIZE		128		/* size of an mbuf */
+#define	MSIZE		256		/* size of an mbuf */
 #define	MCLSHIFT	11		/* convert bytes to m_buf clusters */
 #define	MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
 #define	MCLOFSET	(MCLBYTES - 1)	/* offset within a m_buf cluster */
-
-#ifndef NMBCLUSTERS
-#ifdef GATEWAY
-#define	NMBCLUSTERS	512		/* map size, max cluster allocation */
-#else
-#define	NMBCLUSTERS	256		/* map size, max cluster allocation */
-#endif
-#endif
+#define	NMBCLUSTERS	6144		/* map size, max cluster allocation */
 
 /*
- * Size of kernel malloc arena in CLBYTES-sized logical pages
- */ 
-#ifndef NKMEMCLUSTERS
-#define	NKMEMCLUSTERS	(6 * 1024 * 1024 / CLBYTES)
-#endif
+ * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
+ * logical pages.
+ */
+#define	NKMEMPAGES_MIN_DEFAULT	((8 * 1024 * 1024) >> PAGE_SHIFT)
+#define	NKMEMPAGES_MAX_DEFAULT	((64 * 1024 * 1024) >> PAGE_SHIFT)
 
 /* pages ("clicks") to disk blocks */
 #define	ctod(x)		((x) << (PGSHIFT - DEV_BSHIFT))
@@ -138,9 +145,3 @@
  */
 #define	i386_round_pdr(x)	((((unsigned)(x)) + PDOFSET) & ~PDOFSET)
 #define	i386_trunc_pdr(x)	((unsigned)(x) & ~PDOFSET)
-#define	i386_btod(x)		((unsigned)(x) >> PDSHIFT)
-#define	i386_dtob(x)		((unsigned)(x) << PDSHIFT)
-#define	i386_round_page(x)	((((unsigned)(x)) + PGOFSET) & ~PGOFSET)
-#define	i386_trunc_page(x)	((unsigned)(x) & ~PGOFSET)
-#define	i386_btop(x)		((unsigned)(x) >> PGSHIFT)
-#define	i386_ptob(x)		((unsigned)(x) << PGSHIFT)

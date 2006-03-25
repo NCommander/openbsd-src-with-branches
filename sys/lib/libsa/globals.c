@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: globals.c,v 1.3 1995/09/18 21:19:27 pk Exp $	*/
 
 /*
@@ -8,6 +9,8 @@
  */
 
 #include <sys/param.h>
+#include <sys/socket.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 

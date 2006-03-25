@@ -1,3 +1,5 @@
+.\"	$OpenBSD: ypwhich.1,v 1.11 2000/11/10 05:10:43 aaron Exp $
+.\"	$NetBSD: ypwhich.1,v 1.3 1996/05/13 02:43:46 thorpej Exp $
 .\"
 .\" Copyright (c) 1994 Christopher G. Demetriou
 .\" All rights reserved.
@@ -27,18 +29,19 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: ypwhich.1,v 1.2 1994/10/28 16:49:43 deraadt Exp $
+.\"	$Id: ypwhich.1,v 1.11 2000/11/10 05:10:43 aaron Exp $
 .\"
 .Dd February 23, 1994
 .Dt YPWHICH 1
 .Os
 .Sh NAME
 .Nm ypwhich
-.Nd return hostname of YP server of map master
+.Nd return hostname of YP server or map master
 .Sh SYNOPSIS
 .Nm ypwhich
 .Op Fl d Ar domain
 .Oo
+.Op Fl h Ar host
 .Op Fl t
 .Fl m Op Ar mname
 |
@@ -47,7 +50,7 @@
 .Nm ypwhich
 .Fl x
 .Sh DESCRIPTION
-.Nm Ypwhich
+.Nm
 tells which
 .Tn YP
 server supplies
@@ -64,38 +67,42 @@ which
 server it is using.
 .Pp
 The options are as follows:
-.Bl -tag -width indent
+.Bl -tag -width Ds
 .It Fl d Ar domain
 Specify a domain other than the default domain.
+.It Fl h Ar host
+Specify which host to ask when
+.Fl m
+is given.
 .It Fl t
 Inhibit translation of map nicknames
 to their corresponding map names.
 .It Fl m Op Ar mname
 Find the master
 .Tn YP
-server for the named map.  No
+server for the named map.
+No
 .Ar host
 may be specified with the
 .Fl m
 option.
 .Ar Mname
-can be a map name or nickname.  If
+can be a map name or nickname.
+If
 .Ar mname
-is ommitted,
-.Nm ypwhich
+is omitted,
+.Nm
 will produce a list of available maps.
 .It Fl x
 Display the map nickname table.
 .El
 .Sh SEE ALSO
 .Xr domainname 1 ,
-.Xr ypbind 8 ,
 .Xr ypcat 1 ,
 .Xr ypmatch 1 ,
+.Xr yp 8 ,
+.Xr ypbind 8 ,
 .Xr yppoll 8 ,
-.Xr ypset 8 ,
-.Xr yp 8
-.Sh AUTHOR
+.Xr ypset 8
+.Sh AUTHORS
 Theo De Raadt
-
-

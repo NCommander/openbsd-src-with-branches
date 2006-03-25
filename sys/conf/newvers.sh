@@ -1,5 +1,6 @@
 #!/bin/sh -
 #
+#	$OpenBSD: newvers.sh,v 1.73 2006/01/19 03:30:04 deraadt Exp $
 #	$NetBSD: newvers.sh,v 1.17.2.1 1995/10/12 05:17:11 jtc Exp $
 #
 # Copyright (c) 1984, 1986, 1990, 1993
@@ -13,11 +14,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -35,7 +32,7 @@
 #
 #	@(#)newvers.sh	8.1 (Berkeley) 4/20/94
 
-if [ ! -r version ]
+if [ ! -r version -o ! -s version ]
 then
 	echo 0 > version
 fi
@@ -44,15 +41,45 @@ touch version
 v=`cat version` u=${USER-root} d=`pwd` h=`hostname` t=`date`
 id=`basename ${d}`
 
-ost="NetBSD"
-osr="1.1_ALPHA"
+# additional things which need version number upgrades:
+#	sys/sys/param.h:
+#		OpenBSD symbol
+#		OpenBSD_X_X symbol
+#	share/tmac/mdoc/doc-common
+#		change	.       ds oS OpenBSD X.X
+#		add	.	if "\\$2"X.X"  .as oS \0X.X
+#	share/mk/sys.mk
+#		OSMAJOR
+#		OSMINOR
+#	distrib/miniroot/install.sub
+#		VERSION
+#	etc/root/root.mail
+#		VERSION and other bits
+#	sys/arch/macppc/stand/tbxidata/bsd.tbxi
+#		change	/X.X/macppc/bsd.rd
+#
+# -current and -beta tagging:
+#	For release, select STATUS ""
+#	Right after release unlock, select STATUS "-current"
+#	A month or so before release, select STATUS "-beta"
 
-echo "char ostype[] = \"${ost}\";" > vers.c
-echo "char osrelease[] = \"${osr}\";" >> vers.c
-echo "char sccs[4] = { '@', '(', '#', ')' };" >> vers.c
-echo \
-  "char version[] = \
-    \"${ost} ${osr} (${id}) #${v}: ${t}\\n    ${u}@${h}:${d}\\n\";" \
-  >> vers.c
+ost="OpenBSD"
+osr="3.9"
 
-echo `expr ${v} + 1` > version
+cat >vers.c <<eof
+#define STATUS ""			/* release */
+#if 0
+#define STATUS "-current"
+#define STATUS "-beta"
+#endif
+
+const char ostype[] = "${ost}";
+const char osrelease[] = "${osr}";
+const char osversion[] = "${id}#${v}";
+const char sccs[] =
+    "    @(#)${ost} ${osr}" STATUS " (${id}) #${v}: ${t}\n";
+const char version[] =
+    "${ost} ${osr}" STATUS " (${id}) #${v}: ${t}\n    ${u}@${h}:${d}\n";
+eof
+
+expr ${v} + 1 > version

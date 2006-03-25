@@ -120,6 +120,8 @@ hunk.
 #if !defined(PERL_PATCHLEVEL_H_IMPLICIT) && !defined(LOCAL_PATCH_COUNT)
 static	char	*local_patches[] = {
 	NULL
+	,"SUIDPERLIO1 - fix PERLIO_DEBUG buffer overflow (CAN-2005-0156)"
+	,"SPRINTF0 - fixes for sprintf formatting issues - CVE-2005-3962"
 	,NULL
 };
 

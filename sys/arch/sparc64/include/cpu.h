@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.h,v 1.33 2005/11/11 16:50:19 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -22,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,12 +47,21 @@
 /*
  * CTL_MACHDEP definitions.
  */
-#define	CPU_BOOTED_KERNEL	1	/* string: booted kernel name */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
+#define	CPU_LED_BLINK		2	/* int: blink leds? */
+#define	CPU_ALLOWAPERTURE	3	/* allow xf86 operations */
+#define	CPU_CPUTYPE		4	/* cpu type */
+#define	CPU_CECCERRORS		5	/* Correctable ECC errors */
+#define	CPU_CECCLAST		6	/* Correctable ECC last fault addr */
+#define	CPU_MAXID		7	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES {			\
 	{ 0, 0 },				\
-	{ "booted_kernel", CTLTYPE_STRING },	\
+	{ 0, 0 },				\
+	{ "led_blink", CTLTYPE_INT },		\
+	{ "allowaperture", CTLTYPE_INT },	\
+	{ "cputype", CTLTYPE_INT },		\
+	{ "ceccerrs", CTLTYPE_INT },		\
+	{ "cecclast", CTLTYPE_QUAD },		\
 }
 
 #ifdef _KERNEL
@@ -64,43 +69,12 @@
  * Exported definitions unique to SPARC cpu support.
  */
 
-#if !defined(_LKM)
-#include "opt_multiprocessor.h"
-#include "opt_lockdebug.h"
-#endif
-
+#include <machine/ctlreg.h>
 #include <machine/psl.h>
 #include <machine/reg.h>
 #include <machine/intr.h>
-#include <sparc64/sparc64/intreg.h>
 
 #include <sys/sched.h>
-
-/*
- * CPU states.
- * XXX Not really scheduler state, but no other good place to put
- * it right now, and it really is per-CPU.
- */
-#define CP_USER         0
-#define CP_NICE         1
-#define CP_SYS          2
-#define CP_INTR         3
-#define CP_IDLE         4
-#define CPUSTATES       5
- 
-/*
- * Per-CPU scheduler state.
- */
-struct schedstate_percpu {
-	struct timeval spc_runtime;     /* time curproc started running */
-	__volatile int spc_flags;       /* flags; see below */
-	u_int spc_schedticks;           /* ticks for schedclock() */
-	u_int64_t spc_cp_time[CPUSTATES]; /* CPU state statistics */
-	u_char spc_curpriority;         /* usrpri of curproc */
-	int spc_rrticks;                /* ticks until roundrobin() */
-	int spc_pscnt;			/* prof/stat counter */
-	int spc_psdiv;			/* prof/stat divisor */
-};
 
 /*
  * The cpu_info structure is part of a 64KB structure mapped both the kernel
@@ -134,7 +108,7 @@ struct cpu_info {
 	u_long			ci_simple_locks;/* # of simple locks held */
 
 	/* Spinning up the CPU */
-	void			(*ci_spinup) __P((void)); /* spinup routine */
+	void			(*ci_spinup)(void); /* spinup routine */
 	void			*ci_initstack;
 	paddr_t			ci_paddr;	/* Phys addr of this structure. */
 };
@@ -174,42 +148,20 @@ struct clockframe {
 };
 
 #define	CLKF_USERMODE(framep)	(((framep)->t.tf_tstate & TSTATE_PRIV) == 0)
-#define	CLKF_BASEPRI(framep)	(((framep)->t.tf_oldpil) == 0)
 #define	CLKF_PC(framep)		((framep)->t.tf_pc)
 #define	CLKF_INTR(framep)	((!CLKF_USERMODE(framep))&&\
 				(((framep)->t.tf_kstack < (vaddr_t)EINTSTACK)&&\
 				((framep)->t.tf_kstack > (vaddr_t)INTSTACK)))
 
-/*
- * Software interrupt request `register'.
- */
-#ifdef DEPRECATED
-union sir {
-	int	sir_any;
-	char	sir_which[4];
-} sir;
+void setsoftnet(void);
 
-#define SIR_NET		0
-#define SIR_CLOCK	1
-#endif
-
-extern struct intrhand soft01intr, soft01net, soft01clock;
-
-#if 0
-#define setsoftint()	send_softint(-1, IPL_SOFTINT, &soft01intr)
-#define setsoftnet()	send_softint(-1, IPL_SOFTNET, &soft01net)
-#else
-void setsoftint __P((void));
-void setsoftnet __P((void));
-#endif
-
-int	want_ast;
+extern	int want_ast;
 
 /*
  * Preempt the current process if in interrupt from user mode,
  * or after the current trap/syscall if in system mode.
  */
-int	want_resched;		/* resched() was called */
+extern	int want_resched;	/* resched() was called */
 #define	need_resched(ci)	(want_resched = 1, want_ast = 1)
 
 /*
@@ -230,93 +182,61 @@ int	want_resched;		/* resched() was called */
  *
  * XXX this must be per-cpu (eventually)
  */
-struct	proc *fpproc;		/* FPU owner */
-int	foundfpu;		/* true => we have an FPU */
+extern	struct proc *fpproc;	/* FPU owner */
+extern	int foundfpu;		/* true => we have an FPU */
 
-/*
- * Interrupt handler chains.  Interrupt handlers should return 0 for
- * ``not me'' or 1 (``I took care of it'').  intr_establish() inserts a
- * handler into the list.  The handler is called with its (single)
- * argument, or with a pointer to a clockframe if ih_arg is NULL.
- */
-struct intrhand {
-	int			(*ih_fun) __P((void *));
-	void			*ih_arg;
-	short			ih_number;	/* interrupt number */
-						/* the H/W provides */
-	char			ih_pil;		/* interrupt priority */
-	struct intrhand		*ih_next;	/* global list */
-	struct intrhand		*ih_pending;	/* interrupt queued */
-	volatile u_int64_t	*ih_map;	/* Interrupt map reg */
-	volatile u_int64_t	*ih_clr;	/* clear interrupt reg */
-};
-extern struct intrhand *intrhand[15];
-extern struct intrhand *intrlev[MAXINTNUM];
-
-void	intr_establish __P((int level, struct intrhand *));
-
-/* cpu.c */
-paddr_t cpu_alloc __P((void));
-u_int64_t cpu_init __P((paddr_t, int));
-/* disksubr.c */
-struct dkbad;
-int isbad __P((struct dkbad *bt, int, int, int));
 /* machdep.c */
-int	ldcontrolb __P((caddr_t));
-void	dumpconf __P((void));
-caddr_t	reserve_dumppages __P((caddr_t));
+int	ldcontrolb(caddr_t);
+void	dumpconf(void);
+caddr_t	reserve_dumppages(caddr_t);
 /* clock.c */
 struct timeval;
-int	tickintr __P((void *)); /* level 10 (tick) interrupt code */
-int	clockintr __P((void *));/* level 10 (clock) interrupt code */
-int	statintr __P((void *));	/* level 14 (statclock) interrupt code */
+int	tickintr(void *); /* level 10 (tick) interrupt code */
+int	clockintr(void *);/* level 10 (clock) interrupt code */
+int	statintr(void *);	/* level 14 (statclock) interrupt code */
 /* locore.s */
 struct fpstate64;
-void	savefpstate __P((struct fpstate64 *));
-void	loadfpstate __P((struct fpstate64 *));
-u_int64_t	probeget __P((paddr_t, int, int));
-int	probeset __P((paddr_t, int, int, u_int64_t));
-#if 0
-void	write_all_windows __P((void));
-void	write_user_windows __P((void));
-#else
+void	savefpstate(struct fpstate64 *);
+void	loadfpstate(struct fpstate64 *);
+u_int64_t	probeget(paddr_t, int, int);
 #define	 write_all_windows() __asm __volatile("flushw" : : )
 #define	 write_user_windows() __asm __volatile("flushw" : : )
-#endif
-void 	proc_trampoline __P((void));
+void 	proc_trampoline(void);
 struct pcb;
-void	snapshot __P((struct pcb *));
-struct frame *getfp __P((void));
-int	xldcontrolb __P((caddr_t, struct pcb *));
-void	copywords __P((const void *, void *, size_t));
-void	qcopy __P((const void *, void *, size_t));
-void	qzero __P((void *, size_t));
-void	switchtoctx __P((int));
+void	snapshot(struct pcb *);
+struct frame *getfp(void);
+int	xldcontrolb(caddr_t, struct pcb *);
+void	copywords(const void *, void *, size_t);
+void	qcopy(const void *, void *, size_t);
+void	qzero(void *, size_t);
+void	switchtoctx(int);
 /* locore2.c */
-void	remrq __P((struct proc *));
+void	remrq(struct proc *);
 /* trap.c */
-void	kill_user_windows __P((struct proc *));
-int	rwindow_save __P((struct proc *));
+void	pmap_unuse_final(struct proc *);
+int	rwindow_save(struct proc *);
 /* amd7930intr.s */
-void	amd7930_trap __P((void));
+void	amd7930_trap(void);
 /* cons.c */
-int	cnrom __P((void));
+int	cnrom(void);
 /* zs.c */
-void zsconsole __P((struct tty *, int, int, void (**)(struct tty *, int)));
+void zsconsole(struct tty *, int, int, void (**)(struct tty *, int));
 #ifdef KGDB
-void zs_kgdb_init __P((void));
+void zs_kgdb_init(void);
 #endif
 /* fb.c */
-void	fb_unblank __P((void));
+void	fb_unblank(void);
 /* kgdb_stub.c */
 #ifdef KGDB
-void kgdb_attach __P((int (*)(void *), void (*)(void *, int), void *));
-void kgdb_connect __P((int));
-void kgdb_panic __P((void));
+void kgdb_attach(int (*)(void *), void (*)(void *, int), void *);
+void kgdb_connect(int);
+void kgdb_panic(void);
 #endif
 /* emul.c */
-int	fixalign __P((struct proc *, struct trapframe64 *));
-int	emulinstr __P((vaddr_t, struct trapframe64 *));
+int	fixalign(struct proc *, struct trapframe64 *);
+int	emulinstr(vaddr_t, struct trapframe64 *);
+int	emul_qf(int32_t, struct proc *, union sigval, struct trapframe64 *);
+int	emul_popc(int32_t, struct proc *, union sigval, struct trapframe64 *);
 
 /*
  *
@@ -337,8 +257,16 @@ struct trapvec {
 };
 extern struct trapvec *trapbase;	/* the 256 vectors */
 
-extern void wzero __P((void *, u_int));
-extern void wcopy __P((const void *, void *, u_int));
+extern void wzero(void *, u_int);
+extern void wcopy(const void *, void *, u_int);
+
+struct blink_led {
+	void (*bl_func)(void *, int);
+	void *bl_arg;
+	SLIST_ENTRY(blink_led) bl_next;
+};
+
+extern void blink_led_register(struct blink_led *);
 
 #endif /* _KERNEL */
 #endif /* _CPU_H_ */

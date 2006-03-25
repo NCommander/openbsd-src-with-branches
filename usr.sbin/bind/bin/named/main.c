@@ -31,6 +31,7 @@
 #include <isc/hash.h>
 #include <isc/os.h>
 #include <isc/platform.h>
+#include <isc/privsep.h>
 #include <isc/resource.h>
 #include <isc/stdio.h>
 #include <isc/string.h>
@@ -239,7 +240,7 @@ usage(void) {
 	fprintf(stderr,
 		"usage: named [-4|-6] [-c conffile] [-d debuglevel] "
 		"[-f|-g] [-n number_of_cpus]\n"
-		"             [-p port] [-s] [-t chrootdir] [-u username]\n"
+		"             [-p port] [-s] [-t chrootdir] [-u username] [-i pidfile]\n"
 		"             [-m {usage|trace|record}]\n");
 }
 
@@ -281,7 +282,7 @@ save_command_line(int argc, char *argv[]) {
 	INSIST(sizeof(saved_command_line) >= sizeof(truncated));
 
 	if (dst == eob)
-		strcpy(eob - sizeof(truncated), truncated);
+		strlcpy(eob - sizeof(truncated), truncated, sizeof(truncated));
 	else
 		*dst = '\0';
 }
@@ -388,9 +389,8 @@ parse_command_line(int argc, char *argv[]) {
 			ns_g_foreground = ISC_TRUE;
 			ns_g_logstderr = ISC_TRUE;
 			break;
-		/* XXXBEW -i should be removed */
 		case 'i':
-			lwresd_g_defaultpidfile = isc_commandline_argument;
+			ns_g_pidfile = isc_commandline_argument;
 			break;
 		case 'l':
 			ns_g_lwresdonly = ISC_TRUE;
@@ -541,6 +541,12 @@ static void
 setup(void) {
 	isc_result_t result;
 
+        /*
+	 * Write pidfile before chroot if specified on the command line
+	 */
+	if (ns_g_pidfile != NULL)
+		ns_os_preopenpidfile(ns_g_pidfile);
+
 	/*
 	 * Get the user and group information before changing the root
 	 * directory, so the administrator does not need to keep a copy
@@ -560,7 +566,7 @@ setup(void) {
 	 * Initialize system's random device as fallback entropy source
 	 * if running chroot'ed.
 	 */
-	if (ns_g_chrootdir != NULL) {
+	if (1) { /* Always chroot due to privsep */
 		result = isc_entropy_create(ns_g_mctx, &ns_g_fallbackentropy);
 		if (result != ISC_R_SUCCESS)
 			ns_main_earlyfatal("isc_entropy_create() failed: %s",
@@ -578,7 +584,9 @@ setup(void) {
 	}
 #endif
 
+#if 0	/* Not used due to privsep */
 	ns_os_chroot(ns_g_chrootdir);
+#endif
 
 	/*
 	 * For operating systems which have a capability mechanism, now
@@ -604,6 +612,15 @@ setup(void) {
 	 */
 	if (!ns_g_foreground)
 		ns_os_daemonize();
+
+	/*
+	 * Privilege separation
+	 */
+	isc_priv_init(ns_g_logstderr);
+	isc_drop_privs(ns_g_username, ns_g_chrootdir);
+	isc_socket_privsep(1);
+
+	/* process is now unprivileged and inside a chroot */
 
 	/*
 	 * We call isc_app_start() here as some versions of FreeBSD's fork()
@@ -694,7 +711,7 @@ ns_main_setmemstats(const char *filename) {
 		return;
 	memstats = malloc(strlen(filename) + 1);
 	if (memstats)
-		strcpy(memstats, filename);
+		strlcpy(memstats, filename, strlen(filename) + 1);
 }
 
 #ifdef HAVE_LIBSCF
@@ -791,11 +808,7 @@ main(int argc, char *argv[]) {
 	 * strings named.core | grep "named version:"
 	 */
 	strlcat(version,
-#ifdef __DATE__
-		"named version: BIND " VERSION " (" __DATE__ ")",
-#else
 		"named version: BIND " VERSION,
-#endif
 		sizeof(version));
 	result = isc_file_progname(*argv, program_name, sizeof(program_name));
 	if (result != ISC_R_SUCCESS)

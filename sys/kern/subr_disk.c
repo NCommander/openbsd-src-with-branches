@@ -1,6 +1,8 @@
-/*	$NetBSD: subr_disk.c,v 1.13 1995/03/29 20:57:35 mycroft Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.30 2005/11/19 02:18:01 pedro Exp $	*/
+/*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
+ * Copyright (c) 1995 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1982, 1986, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -17,11 +19,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,9 +40,33 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/kernel.h>
+#include <sys/malloc.h>
+#include <sys/fcntl.h>
 #include <sys/buf.h>
-#include <sys/disklabel.h>
+#include <sys/stat.h>
 #include <sys/syslog.h>
+#include <sys/time.h>
+#include <sys/disklabel.h>
+#include <sys/conf.h>
+#include <sys/lock.h>
+#include <sys/disk.h>
+#include <sys/dkio.h>
+#include <sys/dkstat.h>		/* XXX */
+#include <sys/proc.h>
+
+#include <dev/rndvar.h>
+
+/*
+ * A global list of all disks attached to the system.  May grow or
+ * shrink over time.
+ */
+struct	disklist_head disklist;	/* TAILQ_HEAD */
+int	disk_count;		/* number of drives in global disklist */
+int	disk_change;		/* set if a disk has been attached/detached
+				 * since last we looked at this variable. This
+				 * is reset by hw_sysctl()
+				 */
 
 /*
  * Seek sort for disks.  We depend on the driver which calls us using b_resid
@@ -63,10 +85,9 @@
  */
 
 void
-disksort(ap, bp)
-	register struct buf *ap, *bp;
+disksort(struct buf *ap, struct buf *bp)
 {
-	register struct buf *bq;
+	struct buf *bq;
 
 	/* If the queue is empty, then it's easy. */
 	if (ap->b_actf == NULL) {
@@ -140,23 +161,17 @@ insert:	bp->b_actf = bq->b_actf;
 	bq->b_actf = bp;
 }
 
-/* encoding of disk minor numbers, should be elsewhere... */
-#define dkunit(dev)		(minor(dev) >> 3)
-#define dkpart(dev)		(minor(dev) & 07)
-#define dkminor(unit, part)	(((unit) << 3) | (part))
-
 /*
  * Compute checksum for disk label.
  */
 u_int
-dkcksum(lp)
-	register struct disklabel *lp;
+dkcksum(struct disklabel *lp)
 {
-	register u_short *start, *end;
-	register u_short sum = 0;
+	u_int16_t *start, *end;
+	u_int16_t sum = 0;
 
-	start = (u_short *)lp;
-	end = (u_short *)&lp->d_partitions[lp->d_npartitions];
+	start = (u_int16_t *)lp;
+	end = (u_int16_t *)&lp->d_partitions[lp->d_npartitions];
 	while (start < end)
 		sum ^= *start++;
 	return (sum);
@@ -177,19 +192,17 @@ hp0g: hard error reading fsbn 12345 of 12344-12347 (hp0 bn %d cn %d tn %d sn %d)
  * or addlog, respectively.  There is no trailing space.
  */
 void
-diskerr(bp, dname, what, pri, blkdone, lp)
-	register struct buf *bp;
-	char *dname, *what;
-	int pri, blkdone;
-	register struct disklabel *lp;
+diskerr(struct buf *bp, char *dname, char *what, int pri, int blkdone,
+    struct disklabel *lp)
 {
-	int unit = dkunit(bp->b_dev), part = dkpart(bp->b_dev);
-	register void (*pr) __P((const char *, ...));
+	int unit = DISKUNIT(bp->b_dev), part = DISKPART(bp->b_dev);
+	int (*pr)(const char *, ...);
 	char partname = 'a' + part;
 	int sn;
 
 	if (pri != LOG_PRINTF) {
-		log(pri, "");
+		static const char fmt[] = "";
+		log(pri, fmt);
 		pr = addlog;
 	} else
 		pr = printf;
@@ -207,13 +220,340 @@ diskerr(bp, dname, what, pri, blkdone, lp)
 		    bp->b_blkno + (bp->b_bcount - 1) / DEV_BSIZE);
 	}
 	if (lp && (blkdone >= 0 || bp->b_bcount <= lp->d_secsize)) {
-#ifdef tahoe
-		sn *= DEV_BSIZE / lp->d_secsize;		/* XXX */
-#endif
 		sn += lp->d_partitions[part].p_offset;
 		(*pr)(" (%s%d bn %d; cn %d", dname, unit, sn,
 		    sn / lp->d_secpercyl);
 		sn %= lp->d_secpercyl;
 		(*pr)(" tn %d sn %d)", sn / lp->d_nsectors, sn % lp->d_nsectors);
 	}
+}
+
+/*
+ * Initialize the disklist.  Called by main() before autoconfiguration.
+ */
+void
+disk_init(void)
+{
+
+	TAILQ_INIT(&disklist);
+	disk_count = disk_change = 0;
+}
+
+/*
+ * Searches the disklist for the disk corresponding to the
+ * name provided.
+ */
+struct disk *
+disk_find(char *name)
+{
+	struct disk *diskp;
+
+	if ((name == NULL) || (disk_count <= 0))
+		return (NULL);
+
+	TAILQ_FOREACH(diskp, &disklist, dk_link)
+		if (strcmp(diskp->dk_name, name) == 0)
+			return (diskp);
+
+	return (NULL);
+}
+
+int
+disk_construct(struct disk *diskp, char *lockname)
+{
+	lockinit(&diskp->dk_lock, PRIBIO | PCATCH, lockname,
+		 0, LK_CANRECURSE);
+	
+	diskp->dk_flags |= DKF_CONSTRUCTED;
+	    
+	return (0);
+}
+
+/*
+ * Attach a disk.
+ */
+void
+disk_attach(struct disk *diskp)
+{
+
+	if (!diskp->dk_flags & DKF_CONSTRUCTED)
+		disk_construct(diskp, diskp->dk_name);
+
+	/*
+	 * Allocate and initialize the disklabel structures.  Note that
+	 * it's not safe to sleep here, since we're probably going to be
+	 * called during autoconfiguration.
+	 */
+	diskp->dk_label = malloc(sizeof(struct disklabel), M_DEVBUF, M_NOWAIT);
+	diskp->dk_cpulabel = malloc(sizeof(struct cpu_disklabel), M_DEVBUF,
+	    M_NOWAIT);
+	if ((diskp->dk_label == NULL) || (diskp->dk_cpulabel == NULL))
+		panic("disk_attach: can't allocate storage for disklabel");
+
+	bzero(diskp->dk_label, sizeof(struct disklabel));
+	bzero(diskp->dk_cpulabel, sizeof(struct cpu_disklabel));
+
+	/*
+	 * Set the attached timestamp.
+	 */
+	microuptime(&diskp->dk_attachtime);
+
+	/*
+	 * Link into the disklist.
+	 */
+	TAILQ_INSERT_TAIL(&disklist, diskp, dk_link);
+	++disk_count;
+	disk_change = 1;
+}
+
+/*
+ * Detach a disk.
+ */
+void
+disk_detach(struct disk *diskp)
+{
+
+	/*
+	 * Free the space used by the disklabel structures.
+	 */
+	free(diskp->dk_label, M_DEVBUF);
+	free(diskp->dk_cpulabel, M_DEVBUF);
+
+	/*
+	 * Remove from the disklist.
+	 */
+	TAILQ_REMOVE(&disklist, diskp, dk_link);
+	disk_change = 1;
+	if (--disk_count < 0)
+		panic("disk_detach: disk_count < 0");
+}
+
+/*
+ * Increment a disk's busy counter.  If the counter is going from
+ * 0 to 1, set the timestamp.
+ */
+void
+disk_busy(struct disk *diskp)
+{
+
+	/*
+	 * XXX We'd like to use something as accurate as microtime(),
+	 * but that doesn't depend on the system TOD clock.
+	 */
+	if (diskp->dk_busy++ == 0) {
+		microuptime(&diskp->dk_timestamp);
+	}
+}
+
+/*
+ * Decrement a disk's busy counter, increment the byte count, total busy
+ * time, and reset the timestamp.
+ */
+void
+disk_unbusy(struct disk *diskp, long bcount, int read)
+{
+	struct timeval dv_time, diff_time;
+
+	if (diskp->dk_busy-- == 0)
+		printf("disk_unbusy: %s: dk_busy < 0\n", diskp->dk_name);
+
+	microuptime(&dv_time);
+
+	timersub(&dv_time, &diskp->dk_timestamp, &diff_time);
+	timeradd(&diskp->dk_time, &diff_time, &diskp->dk_time);
+
+	diskp->dk_timestamp = dv_time;
+	if (bcount > 0) {
+		if (read) {
+			diskp->dk_rbytes += bcount;
+			diskp->dk_rxfer++;
+		} else {
+			diskp->dk_wbytes += bcount;
+			diskp->dk_wxfer++;
+		}
+	} else
+		diskp->dk_seek++;
+
+	add_disk_randomness(bcount ^ diff_time.tv_usec);
+}
+
+int
+disk_lock(struct disk *dk)
+{
+	int error;
+
+	error = lockmgr(&dk->dk_lock, LK_EXCLUSIVE, NULL);
+
+	return (error);
+}
+
+void
+disk_unlock(struct disk *dk)
+{
+	lockmgr(&dk->dk_lock, LK_RELEASE, NULL);
+}
+
+/*
+ * Reset the metrics counters on the given disk.  Note that we cannot
+ * reset the busy counter, as it may case a panic in disk_unbusy().
+ * We also must avoid playing with the timestamp information, as it
+ * may skew any pending transfer results.
+ */
+void
+disk_resetstat(struct disk *diskp)
+{
+	int s = splbio();
+
+	diskp->dk_rxfer = 0;
+	diskp->dk_rbytes = 0;
+	diskp->dk_wxfer = 0;
+	diskp->dk_wbytes = 0;
+	diskp->dk_seek = 0;
+
+	microuptime(&diskp->dk_attachtime);
+
+	timerclear(&diskp->dk_time);
+
+	splx(s);
+}
+
+
+int
+dk_mountroot(void)
+{
+	dev_t rawdev, rrootdev;
+	int part = DISKPART(rootdev);
+	int (*mountrootfn)(void);
+	struct disklabel dl;
+	int error;
+
+	rrootdev = blktochr(rootdev);
+	rawdev = MAKEDISKDEV(major(rrootdev), DISKUNIT(rootdev), RAW_PART);
+	printf("rootdev=0x%x rrootdev=0x%x rawdev=0x%x\n", rootdev,
+	    rrootdev, rawdev);
+
+	/*
+	 * open device, ioctl for the disklabel, and close it.
+	 */
+	error = (cdevsw[major(rrootdev)].d_open)(rawdev, FREAD,
+	    S_IFCHR, curproc);
+	if (error)
+		panic("cannot open disk, 0x%x/0x%x, error %d",
+		    rootdev, rrootdev, error);
+	error = (cdevsw[major(rrootdev)].d_ioctl)(rawdev, DIOCGDINFO,
+	    (caddr_t)&dl, FREAD, curproc);
+	if (error)
+		panic("cannot read disk label, 0x%x/0x%x, error %d",
+		    rootdev, rrootdev, error);
+	(void) (cdevsw[major(rrootdev)].d_close)(rawdev, FREAD,
+	    S_IFCHR, curproc);
+
+	if (dl.d_partitions[part].p_size == 0)
+		panic("root filesystem has size 0");
+	switch (dl.d_partitions[part].p_fstype) {
+#ifdef EXT2FS
+	case FS_EXT2FS:
+		{
+		extern int ext2fs_mountroot(void);
+		mountrootfn = ext2fs_mountroot;
+		}
+		break;
+#endif
+#ifdef FFS
+	case FS_BSDFFS:
+		{
+		extern int ffs_mountroot(void);
+		mountrootfn = ffs_mountroot;
+		}
+		break;
+#endif
+#ifdef LFS
+	case FS_BSDLFS:
+		{
+		extern int lfs_mountroot(void);
+		mountrootfn = lfs_mountroot;
+		}
+		break;
+#endif
+#ifdef CD9660
+	case FS_ISO9660:
+		{
+		extern int cd9660_mountroot(void);
+		mountrootfn = cd9660_mountroot;
+		}
+		break;
+#endif
+	default:
+#ifdef FFS
+		{ 
+		extern int ffs_mountroot(void);
+
+		printf("filesystem type %d not known.. assuming ffs\n",
+		    dl.d_partitions[part].p_fstype);
+		mountrootfn = ffs_mountroot;
+		}
+#else
+		panic("disk 0x%x/0x%x filesystem type %d not known", 
+		    rootdev, rrootdev, dl.d_partitions[part].p_fstype);
+#endif
+	}
+	return (*mountrootfn)();
+}
+
+struct bufq *
+bufq_default_alloc(void)
+{
+	struct bufq_default *bq;
+
+	bq = malloc(sizeof(*bq), M_DEVBUF, M_NOWAIT);
+	if (bq == NULL)
+		panic("bufq_default_alloc: no memory");
+
+	memset(bq, 0, sizeof(*bq));
+	bq->bufq.bufq_free = bufq_default_free;
+	bq->bufq.bufq_add = bufq_default_add;
+	bq->bufq.bufq_get = bufq_default_get;
+
+	return ((struct bufq *)bq);
+}
+
+void
+bufq_default_free(struct bufq *bq)
+{
+	free(bq, M_DEVBUF);
+}
+
+void
+bufq_default_add(struct bufq *bq, struct buf *bp)
+{
+	struct bufq_default *bufq = (struct bufq_default *)bq;
+	struct proc *p = bp->b_proc;
+	struct buf *head;
+
+	if (p == NULL || p->p_nice < NZERO)
+		head = &bufq->bufq_head[0];
+	else if (p->p_nice == NZERO)
+		head = &bufq->bufq_head[1];
+	else
+		head = &bufq->bufq_head[2];
+
+	disksort(head, bp);
+}
+
+struct buf *
+bufq_default_get(struct bufq *bq)
+{
+	struct bufq_default *bufq = (struct bufq_default *)bq;
+	struct buf *bp, *head;
+	int i;
+
+	for (i = 0; i < 3; i++) {
+		head = &bufq->bufq_head[i];
+		if ((bp = head->b_actf))
+			break;
+	}
+	if (bp == NULL)
+		return (NULL);
+	head->b_actf = bp->b_actf;
+	return (bp);
 }

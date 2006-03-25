@@ -1,6 +1,9 @@
 <html>
 <head><title>smfi_addrcpt</title></head>
 <body>
+<!--
+$Sendmail: smfi_addrcpt.html,v 1.9 2003/10/08 17:55:00 gshapiro Exp $
+-->
 <h1>smfi_addrcpt</h1>
 
 <table border="0" cellspacing=4 cellpadding=4>
@@ -48,7 +51,7 @@ Add a recipient for the current message.
 
 <td>smfi_addrcpt will fail and return MI_FAILURE if:
 <ul><li>rcpt is NULL.
-    <li>Adding headers in the current connection state is invalid.
+    <li>Adding recipients in the current connection state is invalid.
     <li>A network error occurs.
     <li>SMFIF_ADDRCPT was not set when <a href="smfi_register.html">smfi_register</a> was called.
 </ul>
@@ -70,11 +73,11 @@ in the smfiDesc_str passed to
 
 <hr size="1">
 <font size="-1">
-Copyright (c) 2000 Sendmail, Inc. and its suppliers.
+Copyright (c) 2000, 2003 Sendmail, Inc. and its suppliers.
 All rights reserved.
 <br>
 By using this file, you agree to the terms and conditions set
-forth in the <a href="LICENSE.txt">LICENSE</a>.
+forth in the LICENSE.
 </font>
 </body>
 </html>

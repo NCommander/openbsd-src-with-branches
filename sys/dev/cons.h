@@ -1,4 +1,5 @@
-/*	$NetBSD: cons.h,v 1.11 1995/04/24 21:34:04 gwr Exp $	*/
+/*	$OpenBSD: cons.h,v 1.14 2005/12/30 18:08:12 miod Exp $	*/
+/*	$NetBSD: cons.h,v 1.14 1996/03/14 19:08:35 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,18 +40,20 @@
  */
 
 struct consdev {
-	void	(*cn_probe)	/* probe hardware and fill in consdev info */
-		    __P((struct consdev *));
-	void	(*cn_init)	/* turn on as console */
-		    __P((struct consdev *));
-	int	(*cn_getc)	/* kernel getchar interface */
-		    __P((dev_t));
-	void	(*cn_putc)	/* kernel putchar interface */
-		    __P((dev_t, int));
-	void	(*cn_pollc)	/* turn on and off polling */
-		    __P((dev_t, int));
+				/* probe hardware and fill in consdev info */
+	void	(*cn_probe)(struct consdev *);
+				/* turn on as console */
+	void	(*cn_init)(struct consdev *);
+				/* kernel getchar interface */
+	int	(*cn_getc)(dev_t);
+				/* kernel putchar interface */
+	void	(*cn_putc)(dev_t, int);
+				/* turn on and off polling */
+	void	(*cn_pollc)(dev_t, int);
+				/* ring bell */
+	void	(*cn_bell)(dev_t, u_int, u_int, u_int);
 	dev_t	cn_dev;		/* major/minor of device */
-	int	cn_pri;		/* pecking order; the higher the better */
+	int	cn_pri;		/* picking order; the higher the better */
 };
 
 /* values for cn_pri - reflect our policy for console selection */
@@ -62,6 +61,7 @@ struct consdev {
 #define CN_NORMAL	1	/* device exists but is nothing special */
 #define CN_INTERNAL	2	/* "internal" bit-mapped display */
 #define CN_REMOTE	3	/* serial interface with remote bit set */
+#define	CN_FORCED	4
 
 /* XXX */
 #define	CONSMAJOR	0
@@ -71,29 +71,44 @@ struct consdev {
 extern	struct consdev constab[];
 extern	struct consdev *cn_tab;
 
-void	cninit __P((void));
-int	cnopen __P((dev_t, int, int, struct proc *));
-int	cnclose __P((dev_t, int, int, struct proc *));
-int	cnread __P((dev_t, struct uio *, int));
-int	cnwrite __P((dev_t, struct uio *, int));
-int	cnioctl __P((dev_t, u_long, caddr_t, int, struct proc *));
-int	cnselect __P((dev_t, int, struct proc *));
-int	cngetc __P((void));
-int	cnputc __P((int));
+struct knote;
+
+void	cninit(void);
+int	cnset(dev_t);
+int	cnopen(dev_t, int, int, struct proc *);
+int	cnclose(dev_t, int, int, struct proc *);
+int	cnread(dev_t, struct uio *, int);
+int	cnwrite(dev_t, struct uio *, int);
+int	cnioctl(dev_t, u_long, caddr_t, int, struct proc *);
+int	cnpoll(dev_t, int, struct proc *);
+int	cnkqfilter(dev_t, struct knote *);
+int	cngetc(void);
+void	cnputc(int);
+void	cnpollc(int);
+void	cnbell(u_int, u_int, u_int);
+void	cnrint(void);
+void	nullcnpollc(dev_t, int);
 
 /* console-specific types */
-#define	dev_type_cnprobe(n)	void n __P((struct consdev *))
-#define	dev_type_cninit(n)	void n __P((struct consdev *))
-#define	dev_type_cngetc(n)	int n __P((dev_t))
-#define	dev_type_cnputc(n)	void n __P((dev_t, int))
-#define	dev_type_cnpollc(n)	void n __P((dev_t, int))
+#define	dev_type_cnprobe(n)	void n(struct consdev *)
+#define	dev_type_cninit(n)	void n(struct consdev *)
+#define	dev_type_cngetc(n)	int n(dev_t)
+#define	dev_type_cnputc(n)	void n(dev_t, int)
+#define	dev_type_cnpollc(n)	void n(dev_t, int)
+#define	dev_type_cnbell(n)	void n(dev_t, u_int, u_int, u_int)
 
 #define	cons_decl(n) \
 	dev_decl(n,cnprobe); dev_decl(n,cninit); dev_decl(n,cngetc); \
-	dev_decl(n,cnputc); dev_decl(n,cnpollc)
+	dev_decl(n,cnputc); dev_decl(n,cnpollc); dev_decl(n,cnbell);
 
 #define	cons_init(n) { \
 	dev_init(1,n,cnprobe), dev_init(1,n,cninit), dev_init(1,n,cngetc), \
-	dev_init(1,n,cnputc), dev_init(1,n,cnpollc) }
+	dev_init(1,n,cnputc), dev_init(1,n,cnpollc), NULL, \
+	NODEV, CN_DEAD }
+
+#define cons_init_bell(n) { \
+	dev_init(1,n,cnprobe), dev_init(1,n,cninit), dev_init(1,n,cngetc), \
+	dev_init(1,n,cnputc), dev_init(1,n,cnpollc), dev_init(1,n,cnbell), \
+	NODEV, CN_DEAD }
 
 #endif

@@ -1,5 +1,4 @@
-/*	$NetBSD: math.h,v 1.10 1994/10/26 00:56:05 cgd Exp $	*/
-
+/*	$OpenBSD: math.h,v 1.10 2005/11/17 20:07:40 otto Exp $	*/
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -12,11 +11,13 @@
  */
 
 /*
- * @(#)fdlibm.h 5.1 93/09/24
+ * from: @(#)fdlibm.h 5.1 93/09/24
  */
 
 #ifndef _MATH_H_
 #define _MATH_H_
+
+#include <sys/cdefs.h>
 
 /*
  * ANSI/POSIX
@@ -24,10 +25,20 @@
 extern char __infinity[];
 #define HUGE_VAL	(*(double *) __infinity)
 
+/* 
+ * C99
+ */
+
+/* XXX just appease the committee for now, needs proper defs... */
+
+typedef float float_t;
+typedef double double_t;
+#define FLT_EVAL_METHOD (-1)
+
 /*
  * XOPEN/SVID
  */
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
+#if __BSD_VISIBLE || __XPG_VISIBLE
 #define	M_E		2.7182818284590452354	/* e */
 #define	M_LOG2E		1.4426950408889634074	/* log 2e */
 #define	M_LOG10E	0.43429448190325182765	/* log 10e */
@@ -42,10 +53,16 @@ extern char __infinity[];
 #define	M_SQRT2		1.41421356237309504880	/* sqrt(2) */
 #define	M_SQRT1_2	0.70710678118654752440	/* 1/sqrt(2) */
 
+#ifdef __vax__
+#define	MAXFLOAT        ((float)1.70141173319264430e+38)
+#else
 #define	MAXFLOAT	((float)3.40282346638528860e+38)
-extern int signgam;
+#endif
 
-#if !defined(_XOPEN_SOURCE)
+extern int signgam;
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE */
+
+#if __BSD_VISIBLE
 enum fdversion {fdlibm_ieee = -1, fdlibm_svid, fdlibm_xopen, fdlibm_posix};
 
 #define _LIB_VERSION_TYPE enum fdversion
@@ -65,6 +82,7 @@ extern  _LIB_VERSION_TYPE  _LIB_VERSION;
 #define _XOPEN_ fdlibm_xopen
 #define _POSIX_ fdlibm_posix
 
+#ifndef __cplusplus
 struct exception {
 	int type;
 	char *name;
@@ -72,6 +90,7 @@ struct exception {
 	double arg2;
 	double retval;
 };
+#endif
 
 #define	HUGE		MAXFLOAT
 
@@ -89,186 +108,194 @@ struct exception {
 #define	TLOSS		5
 #define	PLOSS		6
 
-#endif /* !_XOPEN_SOURCE */
-#endif /* !_ANSI_SOURCE && !_POSIX_SOURCE */
+#endif /* __BSD_VISIBLE */
 
-
-#include <sys/cdefs.h>
 __BEGIN_DECLS
 /*
  * ANSI/POSIX
  */
-extern double acos __P((double));
-extern double asin __P((double));
-extern double atan __P((double));
-extern double atan2 __P((double, double));
-extern double cos __P((double));
-extern double sin __P((double));
-extern double tan __P((double));
+extern double acos(double);
+extern double asin(double);
+extern double atan(double);
+extern double atan2(double, double);
+extern double cos(double);
+extern double sin(double);
+extern double tan(double);
 
-extern double cosh __P((double));
-extern double sinh __P((double));
-extern double tanh __P((double));
+extern double cosh(double);
+extern double sinh(double);
+extern double tanh(double);
 
-extern double exp __P((double));
-extern double frexp __P((double, int *));
-extern double ldexp __P((double, int));
-extern double log __P((double));
-extern double log10 __P((double));
-extern double modf __P((double, double *));
+extern double exp(double);
+extern double frexp(double, int *);
+extern double ldexp(double, int);
+extern double log(double);
+extern double log10(double);
+extern double modf(double, double *);
 
-extern double pow __P((double, double));
-extern double sqrt __P((double));
+extern double pow(double, double);
+extern double sqrt(double);
 
-extern double ceil __P((double));
-extern double fabs __P((double));
-extern double floor __P((double));
-extern double fmod __P((double, double));
+extern double ceil(double);
+extern double fabs(double);
+extern double floor(double);
+extern double fmod(double, double);
 
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
-extern double erf __P((double));
-extern double erfc __P((double));
-extern double gamma __P((double));
-extern double hypot __P((double, double));
-extern int isinf __P((double));
-extern int isnan __P((double));
-extern int finite __P((double));
-extern double j0 __P((double));
-extern double j1 __P((double));
-extern double jn __P((int, double));
-extern double lgamma __P((double));
-extern double y0 __P((double));
-extern double y1 __P((double));
-extern double yn __P((int, double));
+#if __BSD_VISIBLE || __XPG_VISIBLE
+extern double erf(double);
+extern double erfc(double);
+extern double gamma(double);
+extern double hypot(double, double);
+extern int isinf(double);
+extern int isnan(double);
+extern int finite(double);
+extern double j0(double);
+extern double j1(double);
+extern double jn(int, double);
+extern double lgamma(double);
+extern double y0(double);
+extern double y1(double);
+extern double yn(int, double);
 
-#if !defined(_XOPEN_SOURCE)
-extern double acosh __P((double));
-extern double asinh __P((double));
-extern double atanh __P((double));
-extern double cbrt __P((double));
-extern double logb __P((double));
-extern double nextafter __P((double, double));
-extern double remainder __P((double, double));
-extern double scalb __P((double, double));
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 500
+extern double acosh(double);
+extern double asinh(double);
+extern double atanh(double);
+extern double cbrt(double);
+extern double logb(double);
+extern double nextafter(double, double);
+extern double remainder(double, double);
+extern double scalb(double, double);
 
-extern int matherr __P((struct exception *));
+#ifdef __LIBM_PRIVATE
+extern int matherr(struct exception *);
+#endif
 
 /*
  * IEEE Test Vector
  */
-extern double significand __P((double));
+extern double significand(double);
 
 /*
  * Functions callable from C, intended to support IEEE arithmetic.
  */
-extern double copysign __P((double, double));
-extern int ilogb __P((double));
-extern double rint __P((double));
-extern double scalbn __P((double, int));
+extern double copysign(double, double);
+extern int ilogb(double);
+extern double rint(double);
+extern long int lrint(double);
+extern long int lround(double);
+extern long long int llrint(double);
+extern long long int llround(double);
+extern double scalbn(double, int);
 
 /*
  * BSD math library entry points
  */
 extern double cabs();
-extern double drem __P((double, double));
-extern double expm1 __P((double));
-extern double log1p __P((double));
+extern double drem(double, double);
+extern double expm1(double);
+extern double log1p(double);
 
 /*
  * Reentrant version of gamma & lgamma; passes signgam back by reference
  * as the second argument; user must allocate space for signgam.
  */
-#ifdef _REENTRANT
-extern double gamma_r __P((double, int *));
-extern double lgamma_r __P((double, int *));
-#endif /* _REENTRANT */
+#if __BSD_VISIBLE || defined(_REENTRANT)
+extern double gamma_r(double, int *);
+extern double lgamma_r(double, int *);
+#endif /* __BSD_VISIBLE || _REENTRANT */
 
 
 /* float versions of ANSI/POSIX functions */
-extern float acosf __P((float));
-extern float asinf __P((float));
-extern float atanf __P((float));
-extern float atan2f __P((float, float));
-extern float cosf __P((float));
-extern float sinf __P((float));
-extern float tanf __P((float));
+extern float acosf(float);
+extern float asinf(float);
+extern float atanf(float);
+extern float atan2f(float, float);
+extern float cosf(float);
+extern float sinf(float);
+extern float tanf(float);
 
-extern float coshf __P((float));
-extern float sinhf __P((float));
-extern float tanhf __P((float));
+extern float coshf(float);
+extern float sinhf(float);
+extern float tanhf(float);
 
-extern float expf __P((float));
-extern float frexpf __P((float, int *));
-extern float ldexpf __P((float, int));
-extern float logf __P((float));
-extern float log10f __P((float));
-extern float modff __P((float, float *));
+extern float expf(float);
+extern float frexpf(float, int *);
+extern float ldexpf(float, int);
+extern float logf(float);
+extern float log10f(float);
+extern float modff(float, float *);
 
-extern float powf __P((float, float));
-extern float sqrtf __P((float));
+extern float powf(float, float);
+extern float sqrtf(float);
 
-extern float ceilf __P((float));
-extern float fabsf __P((float));
-extern float floorf __P((float));
-extern float fmodf __P((float, float));
+extern float ceilf(float);
+extern float fabsf(float);
+extern float floorf(float);
+extern float fmodf(float, float);
 
-extern float erff __P((float));
-extern float erfcf __P((float));
-extern float gammaf __P((float));
-extern float hypotf __P((float, float));
-extern int isnanf __P((float));
-extern int finitef __P((float));
-extern float j0f __P((float));
-extern float j1f __P((float));
-extern float jnf __P((int, float));
-extern float lgammaf __P((float));
-extern float y0f __P((float));
-extern float y1f __P((float));
-extern float ynf __P((int, float));
+extern float erff(float);
+extern float erfcf(float);
+extern float gammaf(float);
+extern float hypotf(float, float);
+extern int isinff(float);
+extern int isnanf(float);
+extern int finitef(float);
+extern float j0f(float);
+extern float j1f(float);
+extern float jnf(int, float);
+extern float lgammaf(float);
+extern float y0f(float);
+extern float y1f(float);
+extern float ynf(int, float);
 
-extern float acoshf __P((float));
-extern float asinhf __P((float));
-extern float atanhf __P((float));
-extern float cbrtf __P((float));
-extern float logbf __P((float));
-extern float nextafterf __P((float, float));
-extern float remainderf __P((float, float));
-extern float scalbf __P((float, float));
+extern float acoshf(float);
+extern float asinhf(float);
+extern float atanhf(float);
+extern float cbrtf(float);
+extern float logbf(float);
+extern float nextafterf(float, float);
+extern float remainderf(float, float);
+extern float scalbf(float, float);
 
 /*
  * float version of IEEE Test Vector
  */
-extern float significandf __P((float));
+extern float significandf(float);
 
 /*
  * Float versions of functions callable from C, intended to support
  * IEEE arithmetic.
  */
-extern float copysignf __P((float, float));
-extern int ilogbf __P((float));
-extern float rintf __P((float));
-extern float scalbnf __P((float, int));
+extern float copysignf(float, float);
+extern int ilogbf(float);
+extern float rintf(float);
+extern long int lrintf(float);
+extern long int lroundf(float);
+extern long long int llrintf(float);
+extern long long int llroundf(float);
+extern float scalbnf(float, int);
 
 /*
  * float versions of BSD math library entry points
  */
 extern float cabsf ();
-extern float dremf __P((float, float));
-extern float expm1f __P((float));
-extern float log1pf __P((float));
+extern float dremf(float, float);
+extern float expm1f(float);
+extern float log1pf(float);
 
 /*
  * Float versions of reentrant version of gamma & lgamma; passes
  * signgam back by reference as the second argument; user must
  * allocate space for signgam.
  */
-#ifdef _REENTRANT
-extern float gammaf_r __P((float, int *));
-extern float lgammaf_r __P((float, int *));
-#endif	/* _REENTRANT */
+#if __BSD_VISIBLE || defined(_REENTRANT)
+extern float gammaf_r(float, int *);
+extern float lgammaf_r(float, int *);
+#endif /* __BSD_VISIBLE || _REENTRANT */
 
-#endif /* !_XOPEN_SOURCE */
-#endif /* !_ANSI_SOURCE && !_POSIX_SOURCE */
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 500 */
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE */
 __END_DECLS
 
 #endif /* _MATH_H_ */

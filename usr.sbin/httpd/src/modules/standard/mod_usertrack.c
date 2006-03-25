@@ -96,9 +96,7 @@
 #include "httpd.h"
 #include "http_config.h"
 #include "http_core.h"
-#if !defined(WIN32) && !defined(MPE) && !defined(TPF)
 #include <sys/time.h>
-#endif
 
 module MODULE_VAR_EXPORT usertrack_module;
 
@@ -147,17 +145,8 @@ typedef struct {
 static char * make_cookie_id(char * buffer, int bufsize, request_rec *r,
                              cookie_format_e cformat)
 {
-#if defined(NO_GETTIMEOFDAY) && !defined(NO_TIMES)
-    clock_t mpe_times;
-    struct tms mpe_tms;
-#elif !defined(WIN32)
     struct timeval tv;
-#ifdef NETWARE
-    time_t tz = 0;
-#else
     struct timezone tz = {0, 0};
-#endif /* defined(NETWARE) */
-#endif
 
     cookie_dir_rec *dcfg;
 
@@ -169,27 +158,6 @@ static char * make_cookie_id(char * buffer, int bufsize, request_rec *r,
 					   REMOTE_NAME);
     dcfg = ap_get_module_config(r->per_dir_config, &usertrack_module);
 
-#if defined(NO_GETTIMEOFDAY) && !defined(NO_TIMES)
-/* We lack gettimeofday(), so we must use time() to obtain the epoch
-   seconds, and then times() to obtain CPU clock ticks (milliseconds).
-   Combine this together to obtain a hopefully unique cookie ID. */
-
-    mpe_times = times(&mpe_tms);
-    clocktime = (long) mpe_tms.tms_utime;
-    
-#elif defined(NETWARE)
-    clocktime = (long) clock();
-
-#elif defined(WIN32)
-    /*
-     * We lack gettimeofday() and we lack times(). So we'll use
-     * GetTickCount(), which returns milliseconds since Windows
-     * was started. It should be relatively unique.
-     */
-
-    clocktime = (long) GetTickCount();
-
-#else
     gettimeofday(&tv, &tz);
 
     reqtime = (long) tv.tv_sec;
@@ -197,7 +165,6 @@ static char * make_cookie_id(char * buffer, int bufsize, request_rec *r,
 	clocktime = (long) (tv.tv_usec % 65535);
     else
 	clocktime = (long) (tv.tv_usec / 1000);
-#endif
 
     if (cformat == CF_COMPACT)
 	ap_snprintf(buffer, bufsize, "%s%lx%x%lx%lx", 
@@ -286,9 +253,28 @@ static void make_cookie(request_rec *r)
     return;
 }
 
-/* dcfg->regexp is "^cookie_name=([^;]+)|;[ \t]+cookie_name=([^;]+)",
- * which has three subexpressions, $0..$2 */
+/*
+ * dcfg->regexp is "^cookie_name=([^;]+)|;[ \t]+cookie_name=([^;]+)",
+ * which has three subexpressions, $0..$2
+ */
 #define NUM_SUBS 3
+
+static void set_and_comp_regexp(cookie_dir_rec *dcfg, 
+                                pool *p,
+                                const char *cookie_name) 
+{
+    /*
+     * The goal is to end up with this regexp, 
+     * ^cookie_name=([^;]+)|;[\t]+cookie_name=([^;]+) 
+     * with cookie_name obviously substituted either
+     * with the real cookie name set by the user in httpd.conf,
+     * or with the default COOKIE_NAME.
+     */
+    dcfg->regexp_string = ap_pstrcat(p, "^", cookie_name,
+                                     "=([^;]+)|;[ \t]+", cookie_name,
+                                     "=([^;]+)", NULL);
+    dcfg->regexp = ap_pregcomp(p, dcfg->regexp_string, REG_EXTENDED);
+}
 
 static int spot_cookie(request_rec *r)
 {
@@ -296,7 +282,6 @@ static int spot_cookie(request_rec *r)
 						&usertrack_module);
     const char *cookie_header;
     regmatch_t regm[NUM_SUBS];
-    int i;
 
     if (!dcfg->enabled) {
         return DECLINED;
@@ -353,6 +338,11 @@ static void *make_cookie_dir(pool *p, char *d)
     dcfg->style = CT_UNSET;
     dcfg->format = CF_NORMAL;
     dcfg->enabled = 0;
+    /*
+     * In case the user does not use the CookieName directive,
+     * we need to compile the regexp for the default cookie name.
+     */
+    set_and_comp_regexp(dcfg, p, COOKIE_NAME);
     return dcfg;
 }
 
@@ -437,18 +427,10 @@ static const char *set_cookie_name(cmd_parms *cmd, void *mconfig, char *name)
 {
     cookie_dir_rec *dcfg = (cookie_dir_rec *) mconfig;
 
-    /* The goal is to end up with this regexp, 
-     * ^cookie_name=([^;]+)|;[ \t]+cookie_name=([^;]+)
-     * with cookie_name
-     * obviously substituted with the real cookie name set by the
-     * user in httpd.conf. */
-    dcfg->regexp_string = ap_pstrcat(cmd->pool, "^", name, 
-                                     "=([^;]+)|;[ \t]+", name, 
-                                     "=([^;]+)", NULL);
-
     dcfg->cookie_name = ap_pstrdup(cmd->pool, name);
 
-    dcfg->regexp = ap_pregcomp(cmd->pool, dcfg->regexp_string, REG_EXTENDED);
+    set_and_comp_regexp(dcfg, cmd->pool, name);
+
     if (dcfg->regexp == NULL) {
 	return "Regular expression could not be compiled.";
     }

@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +39,7 @@ static char sccsid[] = "@(#)exp.c	8.1 (Berkeley) 6/4/93";
  * REVISED BY K.C. NG on 2/6/85, 2/15/85, 3/7/85, 3/24/85, 4/16/85, 6/14/86.
  *
  * Required system supported functions:
- *	scalb(x,n)	
+ *	scalbn(x,n)	
  *	copysign(x,y)	
  *	finite(x)
  *
@@ -121,9 +117,9 @@ double x;
 	double  z,hi,lo,c;
 	int k;
 
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)&&!defined(tahoe)
 	if(x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+#endif	/* !defined(__vax__)&&!defined(tahoe) */
 	if( x <= lnhuge ) {
 		if( x >= lntiny ) {
 
@@ -139,14 +135,14 @@ double x;
 		    /* return 2^k*[1+x+x*c/(2+c)]  */
 			z=x*x;
 			c= x - z*(p1+z*(p2+z*(p3+z*(p4+z*p5))));
-			return  scalb(1.0+(hi-(lo-(x*c)/(2.0-c))),k);
+			return  scalbn(1.0+(hi-(lo-(x*c)/(2.0-c))),k);
 
 		}
 		/* end of x > lntiny */
 
 		else 
 		     /* exp(-big#) underflows to zero */
-		     if(finite(x))  return(scalb(1.0,-5000));
+		     if(finite(x))  return(scalbn(1.0,-5000));
 
 		     /* exp(-INF) is zero */
 		     else return(0.0);
@@ -155,7 +151,7 @@ double x;
 
 	else 
 	/* exp(INF) is INF, exp(+big#) overflows to INF */
-	    return( finite(x) ?  scalb(1.0,5000)  : x);
+	    return( finite(x) ?  scalbn(1.0,5000)  : x);
 }
 
 /* returns exp(r = x + c) for |c| < |x| with no overlap.  */
@@ -166,9 +162,9 @@ double x, c;
 	double  z,hi,lo, t;
 	int k;
 
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)&&!defined(tahoe)
 	if (x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+#endif	/* !defined(__vax__)&&!defined(tahoe) */
 	if ( x <= lnhuge ) {
 		if ( x >= lntiny ) {
 
@@ -185,13 +181,13 @@ double x, c;
 			c= x - z*(p1+z*(p2+z*(p3+z*(p4+z*p5))));
 			c = (x*c)/(2.0-c);
 
-			return  scalb(1.+(hi-(lo - c)), k);
+			return  scalbn(1.+(hi-(lo - c)), k);
 		}
 		/* end of x > lntiny */
 
 		else 
 		     /* exp(-big#) underflows to zero */
-		     if(finite(x))  return(scalb(1.0,-5000));
+		     if(finite(x))  return(scalbn(1.0,-5000));
 
 		     /* exp(-INF) is zero */
 		     else return(0.0);
@@ -200,5 +196,5 @@ double x, c;
 
 	else 
 	/* exp(INF) is INF, exp(+big#) overflows to INF */
-	    return( finite(x) ?  scalb(1.0,5000)  : x);
+	    return( finite(x) ?  scalbn(1.0,5000)  : x);
 }

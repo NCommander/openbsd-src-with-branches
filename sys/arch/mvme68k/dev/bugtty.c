@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: bugtty.c,v 1.13 2004/07/31 22:27:34 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn.
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *   This product includes software developed by Dale Rahn.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,37 +31,36 @@
 #include <sys/device.h>
 #include <sys/tty.h>
 #include <sys/proc.h>
-#include <sys/conf.h>
 #include <sys/uio.h>
 #include <sys/queue.h>
 #include <dev/cons.h>
 
 #include <machine/autoconf.h>
+#include <machine/bugio.h>
+#include <machine/conf.h>
 #include <machine/cpu.h>
 #include <machine/prom.h>
 
 #include "bugtty.h"
 
-int bugttymatch __P((struct device *parent, void *self, void *aux));
-void bugttyattach __P((struct device *parent, struct device *self, void *aux));
+int bugttymatch(struct device *parent, void *self, void *aux);
+void bugttyattach(struct device *parent, struct device *self, void *aux);
 
-struct cfdriver bugttycd = {
-	NULL, "bugtty", bugttymatch, bugttyattach,
-	DV_TTY, sizeof(struct device)
+struct cfattach bugtty_ca = {
+	sizeof(struct device), bugttymatch, bugttyattach
+};
+
+struct cfdriver bugtty_cd = {
+	NULL, "bugtty", DV_TTY
 };
 
 /* prototypes */
-int bugttycnprobe __P((struct consdev *cp));
-int bugttycninit __P((struct consdev *cp));
-int bugttycngetc __P((dev_t dev));
-int bugttycnputc __P((dev_t dev, char c));
+cons_decl(bugtty);
 
-int bugttyopen __P((dev_t dev, int flag, int mode, struct proc *p));
-int bugttyclose __P((dev_t dev, int flag, int mode, struct proc *p));
-int bugttyread __P((dev_t dev, struct uio *uio, int flag));
-int bugttywrite __P((dev_t dev, struct uio *uio, int flag));
-int bugttyioctl __P((dev_t dev, int cmd, caddr_t data, int flag, struct proc *p));
-int bugttystop __P((struct tty *tp, int flag));
+struct tty *bugttytty(dev_t);
+int bugttymctl(dev_t, int, int);
+int bugttyparam(struct tty*, struct termios *);
+void bugtty_chkinput(void);
 
 #define DIALOUT(x) ((x) & 0x80)
 #define SWFLAGS(dev) (bugttyswflags | (DIALOUT(dev) ? TIOCFLAG_SOFTCAR : 0))
@@ -77,7 +71,8 @@ char bugtty_ibuffer[BUGBUF+1];
 volatile char *pinchar = bugtty_ibuffer;
 char bug_obuffer[BUGBUF+1];
 
-struct tty *bugtty_tty[NBUGTTY];
+#define	BUGTTYS	4
+struct tty *bugtty_tty[BUGTTYS];
 
 struct tty *
 bugttytty(dev)
@@ -86,7 +81,7 @@ bugttytty(dev)
 	int unit;
 
 	unit = BUGTTYUNIT(dev);
-	if (unit >= NBUGTTY)
+	if (unit >= BUGTTYS)
 		return (NULL);
 	return (bugtty_tty[unit]);
 }
@@ -110,10 +105,10 @@ bugttyattach(parent, self, aux)
 	struct device *self;
 	void *aux;
 {
-	printf("\n");
+	printf(": fallback console\n");
 }
 
-void bugttyoutput __P((struct tty *tp));
+void bugttyoutput(struct tty *tp);
 
 int bugttydefaultrate = TTYDEF_SPEED;
 int bugttyswflags;
@@ -123,8 +118,8 @@ bugttymctl(dev, bits, how)
 	dev_t dev;
 	int bits, how;
 {
-	static int settings = TIOCM_DTR | TIOCM_RTS |
-	    TIOCM_CTS | TIOCM_CD | TIOCM_DSR;
+	/*static int settings = TIOCM_DTR | TIOCM_RTS |
+	    TIOCM_CTS | TIOCM_CD | TIOCM_DSR;*/
 	int s;
 
 	/*printf("mctl: dev %x, bits %x, how %x,",dev, bits, how);*/
@@ -141,7 +136,7 @@ bugttymctl(dev, bits, how)
 	case DMGET:
 		break;
 	}
-	(void)splx(s);
+	splx(s);
 
 	bits = 0;
 	/* proper defaults? */
@@ -238,7 +233,9 @@ bugttyopen(dev, flag, mode, p)
 }
 
 int
-bugttyparam()
+bugttyparam(tp, tm)
+	struct tty*tp;
+	struct termios *tm;
 {
 	return (0);
 }
@@ -247,7 +244,7 @@ void
 bugttyoutput(tp)
 	struct tty *tp;
 {
-	int cc, s, unit, cnt ;
+	int cc, s, cnt;
 
 	/* only supports one unit */
 
@@ -298,6 +295,7 @@ bugttyread(dev, uio, flag)
 
 #if 1
 /* only to be called at splclk() */
+void
 bugtty_chkinput()
 {
 	struct tty *tp;
@@ -350,7 +348,7 @@ bugttywrite(dev, uio, flag)
 int
 bugttyioctl(dev, cmd, data, flag, p)
 	dev_t dev;
-	int cmd;
+	u_long cmd;
 	caddr_t data;
 	int flag;
 	struct proc *p;
@@ -406,7 +404,7 @@ bugttyioctl(dev, cmd, data, flag, p)
 		*(int *)data = SWFLAGS(dev);
 		break;
 	case TIOCSFLAGS:
-		error = suser(p->p_ucred, &p->p_acflag); 
+		error = suser(p, 0); 
 		if (error != 0)
 			return (EPERM); 
 
@@ -440,27 +438,16 @@ bugttystop(tp, flag)
 /*
  * bugtty is the last possible choice for a console device.
  */
-int
+void
 bugttycnprobe(cp)
 	struct consdev *cp;
 {
 	int maj;
 	extern int needprom;
 
-	if (needprom == 0) {
-		cp->cn_pri = CN_DEAD;
-		return (0);
-	}
+	if (needprom == 0)
+		return;
 		
-	switch (cputyp) {
-	case CPU_147:
-	case CPU_162:
-		cp->cn_pri = CN_NORMAL;
-		return (0);
-	default:
-		break;
-	}
-
 	/* locate the major number */
 	for (maj = 0; maj < nchrdev; maj++)
 		if (cdevsw[maj].d_open == bugttyopen)
@@ -468,14 +455,13 @@ bugttycnprobe(cp)
 
 	cp->cn_dev = makedev(maj, 0);
 	cp->cn_pri = CN_NORMAL;
-
-	return (1);
 }
 
-int
+void
 bugttycninit(cp)
 	struct consdev *cp;
 {
+	/* Nothing to do */
 }
 
 int
@@ -485,12 +471,10 @@ bugttycngetc(dev)
 	return (bug_inchr());
 }
 
-int
+void
 bugttycnputc(dev, c)
 	dev_t dev;
 	char c;
 {
-	if (c == '\n')
-		bug_outchr('\r');
 	bug_outchr(c);
 }

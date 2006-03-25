@@ -624,6 +624,8 @@ struct XML_ParserStruct {
     : \
     (processor != prologInitProcessor))
 
+#define MAXLEN 0x7fffffff
+
 XML_Parser
 XML_ParserCreate(const XML_Char *encodingName)
 {
@@ -1364,6 +1366,9 @@ XML_SetParamEntityParsing(XML_Parser parser,
 enum XML_Status
 XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
 {
+  /* Avoid integer overflow */
+  if (len > MAXLEN / 2)
+      return XML_STATUS_ERROR; 
   if (len == 0) {
     if (!isFinal)
       return XML_STATUS_OK;
@@ -1400,7 +1405,6 @@ XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
     nLeftOver = s + len - end;
     if (nLeftOver) {
       if (buffer == NULL || nLeftOver > bufferLim - buffer) {
-        /* FIXME avoid integer overflow */
         char *temp;
         temp = (buffer == NULL
                 ? (char *)MALLOC(len * 2)
@@ -1462,8 +1466,10 @@ XML_ParseBuffer(XML_Parser parser, int len, int isFinal)
 void *
 XML_GetBuffer(XML_Parser parser, int len)
 {
+  /* Avoid integer overflow */
+  if (len > MAXLEN - (bufferEnd - bufferPtr))
+      return NULL; 
   if (len > bufferLim - bufferEnd) {
-    /* FIXME avoid integer overflow */
     int neededSize = len + (bufferEnd - bufferPtr);
 #ifdef XML_CONTEXT_BYTES
     int keep = bufferPtr - buffer;

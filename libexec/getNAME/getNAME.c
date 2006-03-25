@@ -1,6 +1,9 @@
+/*	$OpenBSD: getNAME.c,v 1.12 2003/06/02 19:38:24 millert Exp $	*/
+/*	$NetBSD: getNAME.c,v 1.7.2.1 1997/11/10 19:54:46 thorpej Exp $	*/
+
 /*-
- * Copyright (c) 1980 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1980, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,42 +31,58 @@
  */
 
 #ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1980 The Regents of the University of California.\n\
- All rights reserved.\n";
+static char copyright[] =
+"@(#) Copyright (c) 1980, 1993\n\
+	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-/*static char sccsid[] = "from: @(#)getNAME.c	5.4 (Berkeley) 1/20/91";*/
-static char rcsid[] = "$Id: getNAME.c,v 1.2 1993/08/01 18:30:33 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)getNAME.c	8.1 (Berkeley) 6/30/93";
+#else
+static char rcsid[] = "$OpenBSD: getNAME.c,v 1.12 2003/06/02 19:38:24 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
  * Get name sections from manual pages.
  *	-t	for building toc
  *	-i	for building intro entries
+ *	-w	for querying type of manual source
  *	other	apropos database
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 
 int tocrc;
 int intro;
+int typeflag;
 
-main(argc, argv)
-	int argc;
-	char **argv;
+void doname(char *);
+void dorefname(char *);
+void getfrom(char *);
+void split(char *, char *);
+void trimln(char *);
+void usage(void);
+int main(int, char *[]);
+
+int
+main(int argc, char *argv[])
 {
-	extern int optind;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "it")) != EOF)
-		switch(ch) {
+	while ((ch = getopt(argc, argv, "itw")) != -1)
+		switch (ch) {
 		case 'i':
 			intro = 1;
 			break;
 		case 't':
 			tocrc = 1;
+			break;
+		case 'w':
+			typeflag = 1;
 			break;
 		case '?':
 		default:
@@ -84,29 +99,40 @@ main(argc, argv)
 	exit(0);
 }
 
-getfrom(name)
-	char *name;
+void
+getfrom(char *pathname)
 {
 	int i = 0;
+	char *name, *loc, *s, *t;
 	char headbuf[BUFSIZ];
 	char linbuf[BUFSIZ];
+	char savebuf[BUFSIZ];
 
-	if (freopen(name, "r", stdin) == 0) {
-		perror(name);
+	if (freopen(pathname, "r", stdin) == 0) {
+		perror(pathname);
+		return;
+	}
+	name = basename(pathname);
+	for (;;) {
+		if (fgets(headbuf, sizeof(headbuf), stdin) == NULL) {
+			if (typeflag)
+				printf("%-60s	UNKNOWN\n", pathname);
+			return;
+		}
+		if (headbuf[0] != '.')
+			continue;
+		if ((headbuf[1] == 'T' && headbuf[2] == 'H') ||
+		    (headbuf[1] == 't' && headbuf[2] == 'h'))
+			break;
+		if (headbuf[1] == 'D' && headbuf[2] == 't')
+			goto newman;
+	}
+	if (typeflag) {
+		printf("%-60s	OLD\n", pathname);
 		return;
 	}
 	for (;;) {
-		if (fgets(headbuf, sizeof headbuf, stdin) == NULL)
-			return;
-		if (headbuf[0] != '.')
-			continue;
-		if (headbuf[1] == 'T' && headbuf[2] == 'H')
-			break;
-		if (headbuf[1] == 't' && headbuf[2] == 'h')
-			break;
-	}
-	for (;;) {
-		if (fgets(linbuf, sizeof linbuf, stdin) == NULL)
+		if (fgets(linbuf, sizeof(linbuf), stdin) == NULL)
 			return;
 		if (linbuf[0] != '.')
 			continue;
@@ -118,32 +144,122 @@ getfrom(name)
 	trimln(headbuf);
 	if (tocrc)
 		doname(name);
-	if (!intro)
-		printf("%s\t", headbuf);
+	linbuf[0] = '\0';
 	for (;;) {
-		if (fgets(linbuf, sizeof linbuf, stdin) == NULL)
+		if (fgets(headbuf, sizeof(headbuf), stdin) == NULL)
 			break;
-		if (linbuf[0] == '.') {
-			if (linbuf[1] == 'S' && linbuf[2] == 'H')
+		if (headbuf[0] == '.') {
+			if (headbuf[1] == 'S' && headbuf[2] == 'H')
 				break;
-			if (linbuf[1] == 's' && linbuf[2] == 'h')
+			if (headbuf[1] == 's' && headbuf[2] == 'h')
 				break;
-		}
-		trimln(linbuf);
-		if (intro) {
-			split(linbuf, name);
-			continue;
 		}
 		if (i != 0)
-			printf(" ");
+			strlcat(linbuf, " ", sizeof(linbuf));
 		i++;
-		printf("%s", linbuf);
+		trimln(headbuf);
+		strlcat(linbuf, headbuf, sizeof(linbuf));
+		/* change the \- into (N) - */
+		if ((s = strstr(linbuf, "\\-")) != NULL) {
+			strlcpy(savebuf, s+1, sizeof savebuf);
+			if ((t = strchr(name, '.')) != NULL) {
+				t++;
+				*s++ = '(';
+				while (*t)
+					*s++ = *t++;
+				*s++ = ')';
+				*s++ = ' ';
+				*s++ = '\0';
+			}
+			strlcat(linbuf, savebuf, sizeof(linbuf));
+		}
 	}
-	printf("\n");
+	if (intro)
+		split(linbuf, name);
+	else
+		printf("%s\n", linbuf);
+	return;
+
+newman:
+	if (typeflag) {
+		printf("%-60s	NEW\n", pathname);
+		return;
+	}
+	for (;;) {
+		if (fgets(linbuf, sizeof(linbuf), stdin) == NULL)
+			return;
+		if (linbuf[0] != '.')
+			continue;
+		if (linbuf[1] == 'S' && linbuf[2] == 'h')
+			break;
+	}
+	trimln(headbuf);
+	if (tocrc)
+		doname(name);
+	linbuf[0] = '\0';
+	for (;;) {
+		if (fgets(headbuf, sizeof(headbuf), stdin) == NULL)
+			break;
+		if (headbuf[0] == '.') {
+			if (headbuf[1] == 'S' && headbuf[2] == 'h')
+				break;
+		}
+		if (i != 0)
+			strlcat(linbuf, " ", sizeof(linbuf));
+		i++;
+		trimln(headbuf);
+		for (loc = strchr(headbuf, ' '); loc; loc = strchr(loc, ' '))
+			if (loc[1] == ',')
+				memmove(loc, &loc[1], strlen(&loc[1])+1);
+			else
+				loc++;
+		if (headbuf[0] != '.') {
+			strlcat(linbuf, headbuf, sizeof(linbuf));
+		} else {
+			/*
+			 * Get rid of quotes in macros.
+			 */
+			for (loc = strchr(&headbuf[4], '"'); loc; ) {
+				memmove(loc, &loc[1], strlen(&loc[1])+1);
+				loc = strchr(loc, '"');
+			}
+			/*
+			 * Handle cross references
+			 */
+			if (headbuf[1] == 'X' && headbuf[2] == 'r') {
+				for (loc = &headbuf[4]; *loc != ' '; loc++)
+					continue;
+				loc[0] = '(';
+				loc[2] = ')';
+				loc[3] = '\0';
+			}
+
+			/*
+			 * Put dash between names and description.
+			 * Put section and dash between names and description.
+			 */
+			if (headbuf[1] == 'N' && headbuf[2] == 'd') {
+				if ((t = strchr(name, '.')) != NULL) {
+					size_t len = strlen(linbuf);
+					snprintf(linbuf+len, sizeof(linbuf)-len,
+					    "(%s)", t+1);
+				}
+				strlcat(linbuf, "- ", sizeof(linbuf));
+			}
+			/*
+			 * Skip over macro names.
+			 */
+			strlcat(linbuf, &headbuf[4], sizeof(linbuf));
+		}
+	}
+	if (intro)
+		split(linbuf, name);
+	else
+		printf("%s\n", linbuf);
 }
 
-trimln(cp)
-	register char *cp;
+void
+trimln(char *cp)
 {
 
 	while (*cp)
@@ -152,10 +268,10 @@ trimln(cp)
 		*cp = 0;
 }
 
-doname(name)
-	char *name;
+void
+doname(char *name)
 {
-	register char *dp = name, *ep;
+	char *dp = name, *ep;
 
 again:
 	while (*dp && *dp != '.')
@@ -175,13 +291,13 @@ again:
 	putchar(' ');
 }
 
-split(line, name)
-	char *line, *name;
+void
+split(char *line, char *name)
 {
-	register char *cp, *dp;
+	char *cp, *dp;
 	char *sp, *sep;
 
-	cp = index(line, '-');
+	cp = strchr(line, '-');
 	if (cp == 0)
 		return;
 	sp = cp + 1;
@@ -191,9 +307,9 @@ split(line, name)
 	while (*sp && (*sp == ' ' || *sp == '\t'))
 		sp++;
 	for (sep = "", dp = line; dp && *dp; dp = cp, sep = "\n") {
-		cp = index(dp, ',');
+		cp = strchr(dp, ',');
 		if (cp) {
-			register char *tp;
+			char *tp;
 
 			for (tp = cp - 1; *tp == ' ' || *tp == '\t'; tp--)
 				;
@@ -207,10 +323,10 @@ split(line, name)
 	}
 }
 
-dorefname(name)
-	char *name;
+void
+dorefname(char *name)
 {
-	register char *dp = name, *ep;
+	char *dp = name, *ep;
 
 again:
 	while (*dp && *dp != '.')
@@ -228,8 +344,9 @@ again:
 		putchar (*dp++);
 }
 
-usage()
+void
+usage(void)
 {
-	(void)fprintf(stderr, "usage: getNAME [-it] file ...\n");
+	(void)fprintf(stderr, "usage: getNAME [-itw] file ...\n");
 	exit(1);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmap.h,v 1.40 2005/10/09 14:01:11 drahn Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 1996/09/30 16:34:29 ws Exp $	*/
 
 /*-
@@ -31,8 +32,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	_MACHINE_PMAP_H_
-#define	_MACHINE_PMAP_H_
+#ifndef	_POWERPC_PMAP_H_
+#define	_POWERPC_PMAP_H_
 
 #include <machine/pte.h>
 
@@ -45,15 +46,50 @@ typedef u_int sr_t;
 #define	SR_TYPE		0x80000000
 #define	SR_SUKEY	0x40000000
 #define	SR_PRKEY	0x20000000
+#define SR_NOEXEC	0x10000000
 #define	SR_VSID		0x00ffffff
-
+/*
+ * bit 
+ *   3  2 2  2    2 1  1 1  1 1            0
+ *   1  8 7  4    0 9  6 5  2 1            0
+ *  |XXXX|XXXX XXXX|XXXX XXXX|XXXX XXXX XXXX
+ *
+ *  bits 28 - 31 contain SR
+ *  bits 20 - 27 contain L1 for VtoP translation
+ *  bits 12 - 19 contain L2 for VtoP translation
+ *  bits  0 - 11 contain page offset
+ */
 #ifndef _LOCORE
+/* V->P mapping data */
+#define VP_SR_SIZE	16
+#define VP_SR_MASK	(VP_SR_SIZE-1)
+#define VP_SR_POS 	28
+#define VP_IDX1_SIZE	256
+#define VP_IDX1_MASK	(VP_IDX1_SIZE-1)
+#define VP_IDX1_POS 	20
+#define VP_IDX2_SIZE	256
+#define VP_IDX2_MASK	(VP_IDX2_SIZE-1)
+#define VP_IDX2_POS 	12
+
+/* functions used by the bus layer for device accesses */
+void pmap_kenter_cache(vaddr_t va, paddr_t pa, vm_prot_t prot, int cacheable);
+void pmap_kremove_pg(vaddr_t va);
+
+/* cache flags */
+#define PMAP_CACHE_DEFAULT	0 	/* WB cache managed mem, devices not */
+#define PMAP_CACHE_CI		1 	/* cache inhibit */
+#define PMAP_CACHE_WT		2 	/* writethru */
+#define PMAP_CACHE_WB		3	/* writeback */
+
 /*
  * Pmap stuff
  */
 struct pmap {
 	sr_t pm_sr[16];		/* segments used in this pmap */
+	struct pmapvp *pm_vp[VP_SR_SIZE];	/* virtual to physical table */
+	u_int32_t pm_exec[16];	/* segments used in this pmap */
 	int pm_refs;		/* ref count */
+	struct pmap_statistics	pm_stats;	/* pmap statistics */
 };
 
 typedef	struct pmap *pmap_t;
@@ -61,17 +97,48 @@ typedef	struct pmap *pmap_t;
 #ifdef	_KERNEL
 extern struct pmap kernel_pmap_;
 #define	pmap_kernel()	(&kernel_pmap_)
+boolean_t pteclrbits(paddr_t pa, u_int mask, u_int clear);
 
-#define pmap_clear_modify(pa)		(ptemodify((pa), PTE_CHG, 0))
-#define	pmap_clear_reference(pa)	(ptemodify((pa), PTE_REF, 0))
-#define	pmap_is_modified(pa)		(ptebits((pa), PTE_CHG))
-#define	pmap_is_referenced(pa)		(ptebits((pa), PTE_REF))
-#define	pmap_change_wiring(pm, va, wired)
 
+#define pmap_clear_modify(page) \
+	(pteclrbits(VM_PAGE_TO_PHYS(page), PTE_CHG_32, TRUE))
+#define	pmap_clear_reference(page) \
+	(pteclrbits(VM_PAGE_TO_PHYS(page), PTE_REF_32, TRUE))
+#define	pmap_is_modified(page) \
+	(pteclrbits(VM_PAGE_TO_PHYS(page), PTE_CHG_32, FALSE))
+#define	pmap_is_referenced(page) \
+	(pteclrbits(VM_PAGE_TO_PHYS(page), PTE_REF_32, FALSE))
+
+#define	pmap_unwire(pm, va)
 #define	pmap_phys_address(x)		(x)
+#define pmap_update(pmap)	/* nothing (yet) */
 
-void pmap_bootstrap __P((u_int kernelstart, u_int kernelend));
+#define pmap_resident_count(pmap)       ((pmap)->pm_stats.resident_count) 
+
+/*
+ * Alternate mapping methods for pool.
+ * Really simple. 0x0->0x80000000 contain 1->1 mappings of the physical
+ * memory. - XXX
+ */
+#define pmap_map_direct(pg)		((vaddr_t)VM_PAGE_TO_PHYS(pg))
+#define pmap_unmap_direct(va)		PHYS_TO_VM_PAGE((paddr_t)va)
+#define	__HAVE_PMAP_DIRECT
+
+void pmap_bootstrap(u_int kernelstart, u_int kernelend);
+
+void pmap_pinit(struct pmap *);
+void pmap_release(struct pmap *);
+
+void pmap_real_memory(vaddr_t *start, vsize_t *size);
+void switchexit(struct proc *);
+
+int pte_spill_v(struct pmap *pm, u_int32_t va, u_int32_t dsisr, int exec_fault);
+#define pmap_copy(dst_pmap, src_pmap, dst_addr, len, src_addr) ;
+int reserve_dumppages(caddr_t p);
+
+void pmap_proc_iflush(struct proc *proc, vaddr_t va, vsize_t len);
+#define pmap_unuse_final(p)		/* nothing */
 
 #endif	/* _KERNEL */
 #endif	/* _LOCORE */
-#endif	/* _MACHINE_PMAP_H_ */
+#endif	/* _POWERPC_PMAP_H_ */

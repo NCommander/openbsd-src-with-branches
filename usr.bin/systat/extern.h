@@ -1,4 +1,5 @@
-/*	$NetBSD: extern.h,v 1.2 1995/01/20 08:51:54 jtc Exp $	*/
+/*	$OpenBSD: extern.h,v 1.13 2004/04/26 19:22:30 itojun Exp $	*/
+/*	$NetBSD: extern.h,v 1.3 1996/05/10 23:16:34 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -50,7 +47,7 @@ extern float	*dk_mspw;
 extern kvm_t	*kd;
 extern long	ntext, textp;
 extern int	*dk_select;
-extern int	CMDLINE;
+extern long	CMDLINE;
 extern int	dk_ndrive;
 extern int	hz, stathz;
 extern int	naptime, col;
@@ -58,63 +55,83 @@ extern int	nhosts;
 extern int	nports;
 extern int	protos;
 extern int	verbose;
+extern int	nflag;
 
 struct inpcb;
 
-int	 checkhost __P((struct inpcb *));
-int	 checkport __P((struct inpcb *));
-void	 closeiostat __P((WINDOW *));
-void	 closekre __P((WINDOW *));
-void	 closembufs __P((WINDOW *));
-void	 closenetstat __P((WINDOW *));
-void	 closepigs __P((WINDOW *));
-void	 closeswap __P((WINDOW *));
-int	 cmdiostat __P((char *, char *));
-int	 cmdkre __P((char *, char *));
-int	 cmdnetstat __P((char *, char *));
-struct	 cmdtab *lookup __P((char *));
-void	 command __P((char *));
-void	 die __P((int));
-void	 display __P((int));
-int	 dkinit __P((void));
-int	 dkcmd __P((char *, char *));
-void	 error __P((const char *fmt, ...));
-void	 fetchiostat __P((void));
-void	 fetchkre __P((void));
-void	 fetchmbufs __P((void));
-void	 fetchnetstat __P((void));
-void	 fetchpigs __P((void));
-void	 fetchswap __P((void));
-int	 initiostat __P((void));
-int	 initkre __P((void));
-int	 initmbufs __P((void));
-int	 initnetstat __P((void));
-int	 initpigs __P((void));
-int	 initswap __P((void));
-int	 keyboard __P((void));
-int	 kvm_ckread __P((void *, void *, int));
-void	 labeliostat __P((void));
-void	 labelkre __P((void));
-void	 labelmbufs __P((void));
-void	 labelnetstat __P((void));
-void	 labelpigs __P((void));
-void	 labels __P((void));
-void	 labelswap __P((void));
-void	 load __P((void));
-int	 netcmd __P((char *, char *));
-void	 nlisterr __P((struct nlist []));
-WINDOW	*openiostat __P((void));
-WINDOW	*openkre __P((void));
-WINDOW	*openmbufs __P((void));
-WINDOW	*opennetstat __P((void));
-WINDOW	*openpigs __P((void));
-WINDOW	*openswap __P((void));
-int	 prefix __P((char *, char *));
-void	 showiostat __P((void));
-void	 showkre __P((void));
-void	 showmbufs __P((void));
-void	 shownetstat __P((void));
-void	 showpigs __P((void));
-void	 showswap __P((void));
-void	 status __P((void));
-void	 suspend __P((int));
+int	 checkhost(struct inpcb *);
+int	 checkport(struct inpcb *);
+void	 closeifstat(WINDOW *);
+void	 closeiostat(WINDOW *);
+void	 closekre(WINDOW *);
+void	 closembufs(WINDOW *);
+void	 closenetstat(WINDOW *);
+void	 closepigs(WINDOW *);
+void	 closeswap(WINDOW *);
+int	 cmdifstat(char *, char *);
+int	 cmdiostat(char *, char *);
+int	 cmdkre(char *, char *);
+int	 cmdnetstat(char *, char *);
+struct	 cmdtab *lookup(char *);
+void	 command(char *);
+void	 sigdie(int);
+void	 sigtstp(int);
+void	 die(void);
+void	 sigdisplay(int);
+void	 display(void);
+int	 dkinit(int);
+int	 dkcmd(char *, char *);
+void	 error(const char *fmt, ...);
+void	 fetchifstat(void);
+void	 fetchiostat(void);
+void	 fetchkre(void);
+void	 fetchmbufs(void);
+void	 fetchnetstat(void);
+void	 fetchpigs(void);
+void	 fetchswap(void);
+int	 initifstat(void);
+int	 initiostat(void);
+int	 initkre(void);
+int	 initmbufs(void);
+int	 initnetstat(void);
+int	 initpigs(void);
+int	 initswap(void);
+void	 keyboard(void);
+int	 kvm_ckread(void *, void *, int);
+void	 labelifstat(void);
+void	 labeliostat(void);
+void	 labelkre(void);
+void	 labelmbufs(void);
+void	 labelnetstat(void);
+void	 labelpigs(void);
+void	 labels(void);
+void	 labelswap(void);
+void	 load(void);
+int	 netcmd(char *, char *);
+void	 nlisterr(struct nlist []);
+WINDOW	*openifstat(void);
+WINDOW	*openiostat(void);
+WINDOW	*openkre(void);
+WINDOW	*openmbufs(void);
+WINDOW	*opennetstat(void);
+WINDOW	*openpigs(void);
+WINDOW	*openswap(void);
+int	 prefix(char *, char *);
+void	 sigwinch(int);
+void	 showifstat(void);
+void	 showiostat(void);
+void	 showkre(void);
+void	 showmbufs(void);
+void	 shownetstat(void);
+void	 showpigs(void);
+void	 showswap(void);
+void	 status(void);
+void	 gethz(void);
+
+extern volatile sig_atomic_t gotdie;
+extern volatile sig_atomic_t gotdisplay;
+extern volatile sig_atomic_t gotwinch;
+extern volatile sig_atomic_t gottstp;
+
+extern double dellave;
+extern WINDOW *wload;

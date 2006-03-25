@@ -1,4 +1,5 @@
-/*	$NetBSD: stdarg.h,v 1.5 1995/03/28 18:21:25 jtc Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.7 2005/12/14 21:46:31 millert Exp $	*/
+/*	$NetBSD: stdarg.h,v 1.11 1999/05/03 16:30:34 christos Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,25 +35,29 @@
 #ifndef _VAX_STDARG_H_
 #define	_VAX_STDARG_H_
 
-#include <machine/ansi.h>
+#include <sys/cdefs.h>
+#include <machine/_types.h>
 
-typedef _BSD_VA_LIST_	va_list;
+typedef __va_list	va_list;
 
-#define __va_promote(type) \
-        (((sizeof(type) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
-
-#define va_start(ap, last) \
-        (ap = ((char *)&(last) + __va_promote(last)))
-
-#ifdef _KERNEL
-#define va_arg(ap, type) \
-        ((type *)(ap += sizeof(type)))[-1]
-#else
-#define va_arg(ap, type) \
-        ((type *)(ap += sizeof(type) < sizeof(int) ? \
-                (abort(), 0) : sizeof(type)))[-1]
+#ifdef __lint__
+#define __builtin_next_arg(t)		((t) ? 0 : 0)
 #endif
 
-#define va_end(ap)	((void) 0)
+#define	__va_size(type) \
+	(((sizeof(type) + sizeof(long) - 1) / sizeof(long)) * sizeof(long))
+
+#define va_start(ap, last) \
+	((ap) = (va_list)__builtin_next_arg(last))
+
+#define	va_arg(ap, type) \
+	(*(type *)(void *)((ap) += __va_size(type), (ap) - __va_size(type)))
+
+#if __BSD_VISIBLE
+#define va_copy(dest, src) \
+	((dest) = (src))
+#endif
+
+#define va_end(ap)	
 
 #endif /* !_VAX_STDARG_H_ */

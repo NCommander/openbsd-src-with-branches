@@ -1,23 +1,14 @@
-/*	$NetBSD: ialloc.c,v 1.2 1995/03/10 18:12:38 jtc Exp $	*/
-
-#ifndef lint
-#ifndef NOID
-static char	elsieid[] = "@(#)ialloc.c	8.28";
-#endif /* !defined NOID */
-#endif /* !defined lint */
+/*	$OpenBSD$ */
+/*
+** This file is in the public domain, so clarified as of
+** Feb 14, 2003 by Arthur David Olson (arthur_david_olson@nih.gov).
+*/
 
 /*LINTLIBRARY*/
 
 #include "private.h"
 
 #define nonzero(n)	(((n) == 0) ? 1 : (n))
-
-char *	icalloc P((int nelem, int elsize));
-char *	icatalloc P((char * old, const char * new));
-char *	icpyalloc P((const char * string));
-char *	imalloc P((int n));
-void *	irealloc P((void * pointer, int size));
-void	ifree P((char * pointer));
 
 char *
 imalloc(n)
@@ -41,9 +32,14 @@ irealloc(pointer, size)
 void * const	pointer;
 const int	size;
 {
+	void *p;
+
 	if (pointer == NULL)
 		return imalloc(size);
-	return realloc((void *) pointer, (size_t) nonzero(size));
+	p = realloc((void *) pointer, (size_t) nonzero(size));
+	if (p == NULL)
+		free(pointer);
+	return p;
 }
 
 char *
@@ -59,10 +55,11 @@ const char * const	new;
 		oldsize = 0;
 	else if (newsize == 0)
 		return old;
-	else	oldsize = strlen(old);
+	else
+		oldsize = strlen(old);
 	if ((result = irealloc(old, oldsize + newsize + 1)) != NULL)
 		if (new != NULL)
-			(void) strcpy(result + oldsize, new);
+			(void) strlcpy(result + oldsize, new, newsize + 1);
 	return result;
 }
 
