@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_up1000.c,v 1.8 2004/06/28 02:28:43 aaron Exp $	*/
+/*	$OpenBSD: pci_up1000.c,v 1.9 2004/07/18 02:18:26 deraadt Exp $	*/
 /* $NetBSD: pci_up1000.c,v 1.6 2000/12/28 22:59:07 sommerfeld Exp $ */
 
 /*-
@@ -119,7 +119,7 @@ api_up1000_intr_map(void *icv, pcitag_t bustag, int buspin, int line, pci_intr_h
 		return 1;
 	}
 
-	alpha_pci_decompose_tag(pc, bustag, &bus, &device, &function);
+	pci_decompose_tag(pc, bustag, &bus, &device, &function);
 
 	/*
 	 * The console places the interrupt mapping in the "line" value.
@@ -196,7 +196,7 @@ api_up1000_pciide_compat_intr_establish(void *icv, struct device *dev,
 	void *cookie = NULL;
 	int bus, irq;
 
-	alpha_pci_decompose_tag(pc, pa->pa_tag, &bus, NULL, NULL);
+	pci_decompose_tag(pc, pa->pa_tag, &bus, NULL, NULL);
 
 	/*
 	 * If this isn't PCI bus #0, all bets are off.

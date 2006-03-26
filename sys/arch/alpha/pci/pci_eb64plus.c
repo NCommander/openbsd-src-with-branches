@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_eb64plus.c,v 1.6 2004/06/28 02:28:43 aaron Exp $ */
+/* $OpenBSD: pci_eb64plus.c,v 1.7 2006/01/29 10:47:35 martin Exp $ */
 /* $NetBSD: pci_eb64plus.c,v 1.10 2001/07/27 00:25:20 thorpej Exp $ */
 
 /*-
@@ -166,7 +166,7 @@ dec_eb64plus_intr_map(acv, bustag, buspin, line, ihp)
 		return 1;
 	}
 
-	alpha_pci_decompose_tag(pc, bustag, &bus, &device, &function);
+	pci_decompose_tag(pc, bustag, &bus, &device, &function);
 
 	/*
 	 * The console places the interrupt mapping in the "line" value.
