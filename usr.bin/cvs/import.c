@@ -1,4 +1,4 @@
-/*	$OpenBSD: import.c,v 1.38 2006/01/30 17:58:47 xsa Exp $	*/
+/*	$OpenBSD: import.c,v 1.39 2006/02/08 18:42:41 joris Exp $	*/
 /*
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -285,11 +285,8 @@ cvs_import_local(CVSFILE *cf, void *arg)
 		    rcs_errstr(rcs_errno));
 
 	comment = rcs_comment_lookup(cf->cf_name);
-	if ((comment != NULL) && (rcs_comment_set(rf, comment) < 0)) {
-		cvs_log(LP_WARN, "failed to set RCS comment leader: %s",
-		    rcs_errstr(rcs_errno));
-		/* don't error out, no big deal */
-	}
+	if (comment != NULL)
+		rcs_comment_set(rf, comment);
 
 	rev = rcsnum_brtorev(imp_brnum);
 	if (rcs_rev_add(rf, rev, cvs_msg, stamp, NULL) < 0) {
