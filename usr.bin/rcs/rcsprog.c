@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.87 2006/03/27 07:38:24 ray Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.88 2006/03/27 08:21:01 ray Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -450,7 +450,7 @@ rcs_main(int argc, char **argv)
 	time_t rcs_mtime = -1;
 
 	kflag = lkmode = -1;
-	fmode = 0;
+	fmode =  S_IRUSR|S_IRGRP|S_IROTH;
 	flags = RCS_RDWR|RCS_PARSE_FULLY;
 	descfile = nflag = NULL;
 	logstr = alist = comment = elist = NULL;
