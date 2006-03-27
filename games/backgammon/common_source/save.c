@@ -1,4 +1,4 @@
-/*	$OpenBSD: save.c,v 1.7 2001/06/23 23:50:04 pjanzen Exp $	*/
+/*	$OpenBSD: save.c,v 1.8 2003/06/03 03:01:38 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)save.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: save.c,v 1.7 2001/06/23 23:50:04 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: save.c,v 1.8 2003/06/03 03:01:38 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -113,7 +113,6 @@ save(n)
 			}
 		}
 		printw("%s%s.\n", cantuse, fname);
-		close(fdesc);
 		cflag = 1;
 	}
 	write(fdesc, board, sizeof(board));

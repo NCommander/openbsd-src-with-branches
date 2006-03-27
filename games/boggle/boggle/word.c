@@ -1,4 +1,4 @@
-/*	$OpenBSD: word.c,v 1.4 2003/06/03 03:01:39 millert Exp $	*/
+/*	$OpenBSD: word.c,v 1.5 2004/07/10 07:26:22 deraadt Exp $	*/
 /*	$NetBSD: word.c,v 1.2 1995/03/21 12:14:45 cgd Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)word.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$OpenBSD: word.c,v 1.4 2003/06/03 03:01:39 millert Exp $";
+static char rcsid[] = "$OpenBSD: word.c,v 1.5 2004/07/10 07:26:22 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -192,11 +192,13 @@ loadindex(char *indexfile)
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if (strchr(buf, '\n') == NULL) {
 			warnx("A line in the index file is too long");
+			fclose(fp);
 			return(-1);
 		}
 		j = *buf - 'a';
 		if (i != j) {
 			warnx("Bad index order");
+			fclose(fp);
 			return(-1);
 		}
 		dictindex[j].start = atol(buf + 1);
@@ -205,6 +207,7 @@ loadindex(char *indexfile)
 	}
 	if (i != 26) {
 		warnx("Bad index length");
+		fclose(fp);
 		return(-1);
 	}
 	(void) fclose(fp);

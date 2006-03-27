@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.5 2002/07/30 05:27:49 pjanzen Exp $	*/
+/*	$OpenBSD: table.c,v 1.6 2003/06/03 03:01:38 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)table.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: table.c,v 1.5 2002/07/30 05:27:49 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: table.c,v 1.6 2003/06/03 03:01:38 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -253,6 +253,7 @@ rsetbrd()
 	for (i = 0; i < 4; i++)
 		p[i] = g[i] = -1;
 	for (j = 0; j < ncin; j++)
-		n = dotable(cin[j], n);
+		if ((n = dotable(cin[j], n)) < 0)
+			return (n);
 	return(n);
 }

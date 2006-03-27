@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.8 2003/06/03 03:01:37 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.9 2004/07/09 15:59:26 deraadt Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1996/05/21 21:53:05 mrg Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 6/2/93";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.8 2003/06/03 03:01:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.9 2004/07/09 15:59:26 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -89,7 +89,7 @@ linkdata(void)			/* secondary data manipulation */
 	int     i, j;
 
 	/* array linkages */
-	for (i = 1; i <= LOCSIZ; i++)
+	for (i = 1; i < LOCSIZ; i++)
 		if (ltext[i].seekadr != 0 && travel[i] != 0)
 			if ((travel[i]->tverb) == 1)
 				cond[i] = 2;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vocab.c,v 1.10 2003/06/03 03:01:37 millert Exp $	*/
+/*	$OpenBSD: vocab.c,v 1.11 2004/07/09 15:59:26 deraadt Exp $	*/
 /*	$NetBSD: vocab.c,v 1.2 1995/03/21 12:05:13 cgd Exp $	*/
 
 /*-
@@ -39,7 +39,7 @@
 #if 0
 static char sccsid[] = "@(#)vocab.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: vocab.c,v 1.10 2003/06/03 03:01:37 millert Exp $";
+static char rcsid[] = "$OpenBSD: vocab.c,v 1.11 2004/07/09 15:59:26 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -189,7 +189,7 @@ vocab(const char *word, int type, int value)
 		}
 
 exitloop2:			/* hashed entry does not match	*/
-		if (adr + 1 == hash || (adr == HTSIZE && hash == 0))
+		if (adr + 1 == hash || hash == 0)
 			errx(1, "Hash table overflow");
 	}
 }
