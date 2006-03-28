@@ -1063,7 +1063,7 @@ cvs_strsplit(char *str, const char *sep)
 	cp = xstrdup(str);
 	av = xmalloc(sizeof(struct cvs_argvector));
 	av->str = cp;
-	av->argv = (char **)xmalloc((i+1) * sizeof(char *));
+	av->argv = (char **)xcalloc(i + 1, sizeof(char *));
 
 	while ((p = strsep(&cp, sep)) != NULL) {
 		av->argv[i++] = p;
