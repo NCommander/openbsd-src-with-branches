@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.42 2005/12/13 06:01:27 kjell Exp $	*/
+/*	$OpenBSD: echo.c,v 1.43 2005/12/20 06:17:36 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -63,9 +63,9 @@ eyorn(const char *sp)
 	ewprintf("%s? (y or n) ", sp);
 	for (;;) {
 		s = getkey(FALSE);
-		if (s == 'y' || s == 'Y')
+		if (s == 'y' || s == 'Y' || s == ' ')
 			return (TRUE);
-		if (s == 'n' || s == 'N')
+		if (s == 'n' || s == 'N' || s == CCHR('M'))
 			return (FALSE);
 		if (s == CCHR('G'))
 			return (ctrlg(FFRAND, 1));
