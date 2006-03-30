@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.46 2006/03/29 20:21:45 hshoexer Exp $	*/
+/*	$OpenBSD: show.c,v 1.47 2006/03/30 09:57:35 claudio Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -155,6 +155,9 @@ p_rttables(int af, int Aflag)
 		free(buf);
 		buf = NULL;
 	}
+
+	if (af != 0 && af != PF_KEY)
+		return;
 
 	printf("\nEncap:\n");
 

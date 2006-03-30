@@ -1,5 +1,5 @@
 #!/bin/sh
-# $OpenBSD: keywords.sh,v 1.16 2005/03/30 08:02:34 deraadt Exp $
+# $OpenBSD: keywords.sh,v 1.17 2005/05/27 04:55:27 mcbride Exp $
 # $NetBSD: keywords.sh,v 1.2 1996/11/15 18:57:21 gwr Exp $
 # @(#)keywords	8.2 (Berkeley) 3/19/94
 #
@@ -15,6 +15,7 @@ change
 cloning
 delete
 dst
+encap
 expire
 flush
 gateway
