@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.22 2005/04/01 03:32:47 deraadt Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.23 2006/03/13 19:31:07 otto Exp $	*/
 /*	$NetBSD: iostat.c,v 1.10 1996/10/25 18:21:58 scottr Exp $	*/
 
 /*
@@ -202,6 +202,7 @@ main(int argc, char *argv[])
 	exit(0);
 }
 
+/*ARGSUSED*/
 static void
 sigheader(int signo)
 {
