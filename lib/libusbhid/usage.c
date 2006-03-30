@@ -1,4 +1,4 @@
-/*	$OpenBSD: usage.c,v 1.8 2006/03/18 03:34:22 dhill Exp $	*/
+/*	$OpenBSD: usage.c,v 1.9 2006/03/21 21:38:55 jaredy Exp $	*/
 /*	$NetBSD: usage.c,v 1.1 2001/12/28 17:45:27 augustss Exp $	*/
 
 /*
@@ -159,7 +159,8 @@ hid_start(const char *hidname)
 					}
 					pages = new;
 					bzero(pages + npagesmax,
-					    npagesmax - npagesmax);
+					    (len - npagesmax) *
+					    sizeof(struct usage_page));
 				}
 				if (!pages) {
 					free(n);
