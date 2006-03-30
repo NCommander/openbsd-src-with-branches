@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.13 2004/07/17 02:14:33 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.14 2005/02/03 05:03:50 jaredy Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/10/17 20:29:53 cgd Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
 
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: main.c,v 1.13 2004/07/17 02:14:33 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.14 2005/02/03 05:03:50 jaredy Exp $";
 #endif /* not lint */
 
 #include <stdlib.h>
@@ -134,9 +134,13 @@ ask(int def, const char *fmt, ...)
 		return (!rdonly);
 	}
 	do {
-		printf("%s? [yn] ", prompt);
+		printf("%s? [Fyn] ", prompt);
 		fflush(stdout);
 		c = getchar();
+		if (c == 'F') {
+			alwaysyes = 1;
+			return (1);
+		}
 		while (c != '\n' && getchar() != '\n')
 			if (feof(stdin))
 				return (0);

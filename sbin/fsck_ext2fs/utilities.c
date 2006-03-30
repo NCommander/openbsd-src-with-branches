@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.13 2003/06/02 20:06:15 millert Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.14 2003/06/11 06:22:13 deraadt Exp $	*/
 /*	$NetBSD: utilities.c,v 1.6 2001/02/04 21:19:34 christos Exp $	*/
 
 /*
@@ -92,10 +92,14 @@ reply(char *question)
 		printf("%s? yes\n\n", question);
 		return (1);
 	}
-	do	{
-		printf("%s? [yn] ", question);
+	do {
+		printf("%s? [Fyn] ", question);
 		(void) fflush(stdout);
 		c = getc(stdin);
+		if (c == 'F') {
+			yflag = 1;
+			return (1);
+		}
 		while (c != '\n' && getc(stdin) != '\n')
 			if (feof(stdin))
 				return (0);
