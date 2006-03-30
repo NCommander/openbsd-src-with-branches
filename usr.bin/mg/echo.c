@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.43 2005/12/20 06:17:36 kjell Exp $	*/
+/*	$OpenBSD: echo.c,v 1.44 2006/03/28 20:16:24 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -937,7 +937,7 @@ copy_list(struct list *lp)
 
 	last = NULL;
 	while (lp) {
-		current = (struct list *)malloc(sizeof(struct list));
+		current = malloc(sizeof(struct list));
 		if (current == NULL) {
 			/* Free what we have allocated so far */
 			for (current = last; current; current = nxt) {
