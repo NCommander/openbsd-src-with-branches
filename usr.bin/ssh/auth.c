@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: auth.c,v 1.66 2006/03/25 13:17:01 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -45,9 +45,11 @@
 #include "misc.h"
 #include "bufaux.h"
 #include "packet.h"
+#include "monitor_wrap.h"
 
 /* import */
 extern ServerOptions options;
+extern int use_privsep;
 
 /* Debugging messages */
 Buffer auth_debug;
@@ -165,6 +167,9 @@ auth_log(Authctxt *authctxt, int authenticated, char *method, char *info)
 {
 	void (*authlog) (const char *fmt,...) = verbose;
 	char *authmsg;
+
+	if (use_privsep && !mm_is_monitor() && !authctxt->postponed)
+		return;
 
 	/* Raise logging level */
 	if (authenticated == 1 ||
