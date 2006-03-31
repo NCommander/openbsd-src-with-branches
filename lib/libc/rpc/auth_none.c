@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: auth_none.c,v 1.9 2005/08/08 08:05:35 espie Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -105,11 +105,13 @@ authnone_marshal(AUTH *client, XDR *xdrs)
 	    ap->marshalled_client, ap->mcnt));
 }
 
+/*ARGSUSED*/
 static void 
 authnone_verf(struct __rpc_auth *none)
 {
 }
 
+/*ARGSUSED*/
 static bool_t
 authnone_validate(struct __rpc_auth *none, struct opaque_auth *noauth)
 {
@@ -117,6 +119,7 @@ authnone_validate(struct __rpc_auth *none, struct opaque_auth *noauth)
 	return (TRUE);
 }
 
+/*ARGSUSED*/
 static bool_t
 authnone_refresh(struct __rpc_auth *none)
 {
@@ -124,6 +127,7 @@ authnone_refresh(struct __rpc_auth *none)
 	return (FALSE);
 }
 
+/*ARGSUSED*/
 static void
 authnone_destroy(struct __rpc_auth *none)
 {

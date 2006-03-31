@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: clnt_tcp.c,v 1.22 2005/08/08 08:05:35 espie Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -327,6 +327,7 @@ clnttcp_freeres(CLIENT *cl, xdrproc_t xdr_res, caddr_t res_ptr)
 	return ((*xdr_res)(xdrs, res_ptr));
 }
 
+/*ARGSUSED*/
 static void
 clnttcp_abort(CLIENT *clnt)
 {
