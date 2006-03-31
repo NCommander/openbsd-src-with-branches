@@ -1,4 +1,4 @@
-/*	$OpenBSD: field.c,v 1.7 2004/07/05 18:47:49 millert Exp $	*/
+/*	$OpenBSD: field.c,v 1.8 2006/03/30 21:09:58 robert Exp $	*/
 /*	$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)field.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: field.c,v 1.7 2004/07/05 18:47:49 millert Exp $";
+static char rcsid[] = "$OpenBSD: field.c,v 1.8 2006/03/30 21:09:58 robert Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,8 +57,6 @@ static char rcsid[] = "$OpenBSD: field.c,v 1.7 2004/07/05 18:47:49 millert Exp $
 int
 p_login(char *p, struct passwd *pw, ENTRY *ep)
 {
-	struct passwd *tpw;
-
 	if (!*p) {
 		warnx("empty login field");
 		return (1);
@@ -68,7 +66,7 @@ p_login(char *p, struct passwd *pw, ENTRY *ep)
 		return (1);
 	}
 	/* XXX - what about truncated names? */
-	if (strcmp(pw->pw_name, p) != 0 && (tpw = getpwnam(p)) != NULL) {
+	if (strcmp(pw->pw_name, p) != 0 && getpwnam(p) != NULL) {
 		warnx("login %s already exists", p);
 		return (1);
 	}
