@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: bc.y,v 1.28 2006/03/18 20:44:43 otto Exp $	*/
+/*	$OpenBSD: bc.y,v 1.29 2006/03/18 21:05:50 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -31,7 +31,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: bc.y,v 1.28 2006/03/18 20:44:43 otto Exp $";
+static const char rcsid[] = "$OpenBSD: bc.y,v 1.29 2006/03/18 21:05:50 otto Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -996,7 +996,7 @@ init(void)
 static __dead void
 usage(void)
 {
-	fprintf(stderr, "%s: usage: [-cl] [-e expression] [file ...]\n",
+	fprintf(stderr, "usage: %s [-cl] [-e expression] [file ...]\n",
 	    __progname);
 	exit(1);
 }
