@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyboard.c,v 1.16 2004/07/11 05:24:56 pvalchev Exp $	*/
+/*	$OpenBSD: keyboard.c,v 1.17 2005/08/01 22:51:50 millert Exp $	*/
 /*	$NetBSD: keyboard.c,v 1.2 1995/01/20 08:51:59 jtc Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)keyboard.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: keyboard.c,v 1.16 2004/07/11 05:24:56 pvalchev Exp $";
+static char rcsid[] = "$OpenBSD: keyboard.c,v 1.17 2005/08/01 22:51:50 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -53,7 +53,7 @@ keyboard(void)
 {
 	char line[80];
 	sigset_t mask, omask;
-	int ch;
+	int ch, col;
 
 	for (;;) {
 		col = 0;
@@ -147,7 +147,7 @@ keyboard(void)
 			}
 			if (isprint(ch) || ch == ' ') {
 				line[col] = ch;
-				mvaddch(CMDLINE, col, ch);
+				mvaddch(CMDLINE, col, (chtype)ch);
 				col++;
 			}
 		} while (col == 0 || (ch != '\r' && ch != '\n'));

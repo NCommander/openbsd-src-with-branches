@@ -1,4 +1,4 @@
-/*	$OpenBSD: disks.c,v 1.13 2002/06/18 00:46:47 deraadt Exp $	*/
+/*	$OpenBSD: disks.c,v 1.14 2003/06/03 02:56:17 millert Exp $	*/
 /*	$NetBSD: disks.c,v 1.4 1996/05/10 23:16:33 thorpej Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)disks.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: disks.c,v 1.13 2002/06/18 00:46:47 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: disks.c,v 1.14 2003/06/03 02:56:17 millert Exp $";
 #endif /* not lint */
 
 #include <string.h>
@@ -59,7 +59,8 @@ dkcmd(char *cmd, char *args)
 	if (prefix(cmd, "drives")) {
 		int i;
 
-		move(CMDLINE, 0); clrtoeol();
+		move(CMDLINE, 0);
+		clrtoeol();
 		for (i = 0; i < dk_ndrive; i++)
 			printw("%s ", dr_name[i]);
 		return (1);
