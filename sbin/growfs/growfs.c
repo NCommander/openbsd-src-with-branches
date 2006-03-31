@@ -1,4 +1,4 @@
-/*	$OpenBSD: growfs.c,v 1.13 2005/12/19 15:18:01 pedro Exp $	*/
+/*	$OpenBSD: growfs.c,v 1.14 2006/01/14 21:10:20 miod Exp $	*/
 /*
  * Copyright (c) 2000 Christoph Herrmann, Thomas-Henning von Kamptz
  * Copyright (c) 1980, 1989, 1993 The Regents of the University of California.
@@ -46,7 +46,7 @@ static const char copyright[] =
 Copyright (c) 1980, 1989, 1993 The Regents of the University of California.\n\
 All rights reserved.\n";
 
-static const char rcsid[] = "$OpenBSD: growfs.c,v 1.13 2005/12/19 15:18:01 pedro Exp $";
+static const char rcsid[] = "$OpenBSD: growfs.c,v 1.14 2006/01/14 21:10:20 miod Exp $";
 #endif /* not lint */
 
 /* ********************************************************** INCLUDES ***** */
@@ -284,6 +284,8 @@ growfs(char *fsys, int fsi, int fso, unsigned int Nflag)
 	}
 }
 #endif /* FS_DEBUG */
+
+	sblock.fs_flags &= ~FS_FLAGS_UPDATED; /* Force update on next mount */
 
 	/*
 	 * Now write the new superblock back to disk.
