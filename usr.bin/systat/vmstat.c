@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.56 2006/03/28 09:03:46 mickey Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.57 2006/03/31 04:10:59 deraadt Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.2 (Berkeley) 1/12/94";
 #endif
-static char rcsid[] = "$OpenBSD: vmstat.c,v 1.56 2006/03/28 09:03:46 mickey Exp $";
+static char rcsid[] = "$OpenBSD: vmstat.c,v 1.57 2006/03/31 04:10:59 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -185,7 +185,7 @@ initkre(void)
 
 	for (i = 0; i < nintr; i++) {
 		char name[128];
- 
+
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_INTRCNT;
 		mib[2] = KERN_INTRCNT_NAME;
