@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: devname.c,v 1.6 2005/08/08 08:05:33 espie Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,9 +40,8 @@
 #include <stdlib.h>
 
 char *
-devname(int dev, int t)
+devname(int dev, mode_t type)
 {
-	mode_t type = t;
 	struct {
 		mode_t type;
 		dev_t dev;
