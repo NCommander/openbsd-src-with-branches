@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: seekdir.c,v 1.7 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,8 +30,7 @@
 
 #include <sys/param.h>
 #include <dirent.h>
-
-void __seekdir(DIR *, long);
+#include "telldir.h"
 
 /*
  * Seek to an entry in a directory.
