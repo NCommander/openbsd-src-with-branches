@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.83 2006/03/25 21:29:59 ray Exp $	*/
+/*	$OpenBSD: diff.c,v 1.85 2006/03/28 07:17:16 ray Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -133,6 +133,8 @@
 #include "diff.h"
 #include "log.h"
 #include "proto.h"
+
+#include "xmalloc.h"
 
 struct cand {
 	int	x;

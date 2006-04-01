@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.51 2006/01/02 08:11:56 xsa Exp $	*/
+/*	$OpenBSD: commit.c,v 1.52 2006/03/16 09:06:19 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -221,10 +221,9 @@ cvs_commit_prepare(CVSFILE *cf, void *arg)
 int
 cvs_commit_remote(CVSFILE *cf, void *arg)
 {
-	char *repo, fpath[MAXPATHLEN];
+	char fpath[MAXPATHLEN];
 	struct cvsroot *root;
 
-	repo = NULL;
 	root = CVS_DIR_ROOT(cf);
 
 	if (cf->cf_type == DT_DIR) {
@@ -234,9 +233,6 @@ cvs_commit_remote(CVSFILE *cf, void *arg)
 	}
 
 	cvs_file_getpath(cf, fpath, sizeof(fpath));
-
-	if (cf->cf_parent != NULL)
-		repo = cf->cf_parent->cf_repo;
 
 	if ((cf->cf_cvstat == CVS_FST_ADDED) ||
 	    (cf->cf_cvstat == CVS_FST_MODIFIED) ||
