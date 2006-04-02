@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsm_subs.h,v 1.14 2004/06/21 23:50:38 tholo Exp $	*/
+/*	$OpenBSD: nfsm_subs.h,v 1.15 2004/06/24 19:35:26 tholo Exp $	*/
 /*	$NetBSD: nfsm_subs.h,v 1.10 1996/03/20 21:59:56 fvdl Exp $	*/
 
 /*
@@ -467,6 +467,7 @@
 		nfsm_dissect(tl, u_int32_t *, NFSX_UNSIGNED); \
 		switch (fxdr_unsigned(int, *tl)) { \
 		case NFSV3SATTRTIME_TOCLIENT: \
+			(a)->va_vaflags &= ~VA_UTIMES_NULL; \
 			nfsm_dissect(tl, u_int32_t *, 2 * NFSX_UNSIGNED); \
 			fxdr_nfsv3time(tl, &(a)->va_atime); \
 			break; \
@@ -477,6 +478,7 @@
 		nfsm_dissect(tl, u_int32_t *, NFSX_UNSIGNED); \
 		switch (fxdr_unsigned(int, *tl)) { \
 		case NFSV3SATTRTIME_TOCLIENT: \
+			(a)->va_vaflags &= ~VA_UTIMES_NULL; \
 			nfsm_dissect(tl, u_int32_t *, 2 * NFSX_UNSIGNED); \
 			fxdr_nfsv3time(tl, &(a)->va_mtime); \
 			break; \
