@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypset.c,v 1.12 2003/07/18 22:58:56 david Exp $ */
+/*	$OpenBSD: ypset.c,v 1.13 2004/02/10 07:56:10 otto Exp $ */
 /*	$NetBSD: ypset.c,v 1.8 1996/05/13 02:46:33 thorpej Exp $	*/
 
 /*
@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$OpenBSD: ypset.c,v 1.12 2003/07/18 22:58:56 david Exp $";
+#ifndef lint
+static char rcsid[] = "$OpenBSD: ypset.c,v 1.13 2004/02/10 07:56:10 otto Exp $";
 #endif
 
 #include <sys/param.h>
