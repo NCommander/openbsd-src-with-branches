@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.7 2004/03/10 21:30:27 millert Exp $	*/
+/*	$OpenBSD: login.c,v 1.8 2005/04/14 18:33:42 biorn Exp $	*/
 
 /*-
  * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
@@ -94,6 +94,7 @@ main(int argc, char **argv)
 	switch (argc - optind) {
 	case 2:
 		class = argv[optind + 1];
+		/*FALLTHROUGH*/
 	case 1:
 		username = argv[optind];
 		break;
@@ -119,7 +120,7 @@ main(int argc, char **argv)
 		mode = 0;
 		count = -1;
 		while (++count < sizeof(response) &&
-		    read(3, &response[count], 1) == 1) {
+		    read(3, &response[count], (size_t)1) == (ssize_t)1) {
 			if (response[count] == '\0' && ++mode == 2)
 				break;
 			if (response[count] == '\0' && mode == 1) {
