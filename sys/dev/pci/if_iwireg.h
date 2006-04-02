@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwireg.h,v 1.21 2006/03/27 20:46:35 damien Exp $	*/
+/*	$OpenBSD: if_iwireg.h,v 1.23 2006/04/01 01:04:40 pedro Exp $	*/
 
 /*-
  * Copyright (c) 2004-2006
@@ -129,7 +129,10 @@
 
 /* firmware binary image header */
 struct iwi_firmware_hdr {
-	uint32_t	version;
+	uint8_t		oldvermaj;
+	uint8_t		oldvermin;
+	uint8_t		vermaj;
+	uint8_t		vermin;
 	uint32_t	bootsz;
 	uint32_t	ucodesz;
 	uint32_t	mainsz;
