@@ -1,4 +1,4 @@
-/*	$OpenBSD: popen.c,v 1.18 2003/02/20 20:38:08 millert Exp $	*/
+/*	$OpenBSD: popen.c,v 1.19 2003/06/02 04:39:45 millert Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -41,7 +41,7 @@
 #if 0
 static const sccsid[] = "@(#)popen.c	8.3 (Berkeley) 4/6/94";
 #else
-static const char rcsid[] = "$OpenBSD: popen.c,v 1.18 2003/02/20 20:38:08 millert Exp $";
+static const char rcsid[] = "$OpenBSD: popen.c,v 1.19 2003/06/02 04:39:45 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -72,9 +72,8 @@ cron_popen(char *program, char *type, struct passwd *pw) {
 	if (!pids) {
 		if ((fds = sysconf(_SC_OPEN_MAX)) <= 0)
 			return (NULL);
-		if (!(pids = (PID_T *)malloc((size_t)(fds * sizeof(PID_T)))))
+		if (!(pids = calloc(fds, sizeof(PID_T))))
 			return (NULL);
-		bzero(pids, fds * sizeof(PID_T));
 	}
 	if (pipe(pdes) < 0)
 		return (NULL);
