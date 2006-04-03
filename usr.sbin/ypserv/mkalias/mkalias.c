@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkalias.c,v 1.15 2003/07/15 06:10:46 deraadt Exp $ */
+/*	$OpenBSD: mkalias.c,v 1.16 2003/07/18 22:58:56 david Exp $ */
 
 /*
  * Copyright (c) 1997 Mats O Jansson <moj@stacken.kth.se>
@@ -26,8 +26,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LINT
-static const char rcsid[] = "$OpenBSD: mkalias.c,v 1.15 2003/07/15 06:10:46 deraadt Exp $";
+#ifndef lint
+static const char rcsid[] = "$OpenBSD: mkalias.c,v 1.16 2003/07/18 22:58:56 david Exp $";
 #endif
 
 #include <ctype.h>
@@ -121,7 +121,7 @@ capitalize(char *name, int len)
 	if (last == '.') {
 		for (c = name; i < len; i++) {
 			if (last == '.')
-				*c = toupper(*c);
+				*c = (char)toupper(*c);
 			last = *c++;
 		}
 	}

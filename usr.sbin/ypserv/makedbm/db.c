@@ -1,4 +1,4 @@
-/*	$OpenBSD: db.c,v 1.5 2003/05/05 08:37:05 avsm Exp $ */
+/*	$OpenBSD: db.c,v 1.6 2003/06/02 21:58:26 maja Exp $ */
 
 /*
  * Copyright (c) 1997 Mats O Jansson <moj@stacken.kth.se>
@@ -26,8 +26,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LINT
-static const char rcsid[] = "$OpenBSD: db.c,v 1.5 2003/05/05 08:37:05 avsm Exp $";
+#ifndef lint
+static const char rcsid[] = "$OpenBSD: db.c,v 1.6 2003/06/02 21:58:26 maja Exp $";
 #endif
 
 #include <sys/types.h>
