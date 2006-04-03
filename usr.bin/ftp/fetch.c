@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.57 2006/02/01 09:19:07 otto Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.58 2006/03/29 15:54:55 grunk Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static char rcsid[] = "$OpenBSD: fetch.c,v 1.57 2006/02/01 09:19:07 otto Exp $";
+static char rcsid[] = "$OpenBSD: fetch.c,v 1.58 2006/03/29 15:54:55 grunk Exp $";
 #endif /* not lint and not SMALL */
 
 /*
@@ -159,7 +159,7 @@ url_get(const char *origline, const char *proxyenv, const char *outfile)
 		goto cleanup_url_get;
 	}
 
-	if (proxyenv != NULL) {				/* use proxy */
+	if (!isfileurl && proxyenv != NULL) {		/* use proxy */
 		proxy = strdup(proxyenv);
 		if (proxy == NULL)
 			errx(1, "Can't allocate memory for proxy URL.");
