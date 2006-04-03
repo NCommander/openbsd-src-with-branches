@@ -1,4 +1,4 @@
-/* $OpenBSD: key.c,v 1.3 2005/05/29 02:41:42 marius Exp $ */
+/* $OpenBSD: key.c,v 1.4 2006/04/01 19:57:32 otto Exp $ */
 
 /*
  * key.c
@@ -101,12 +101,7 @@ load_file(struct iovec *iov, char *filename)
 struct key *
 key_new(void)
 {
-	struct key *k;
-
-	if ((k = calloc(sizeof(*k), 1)) == NULL)
-		return (NULL);
-
-	return (k);
+	return (calloc(1, sizeof(struct key)));
 }
 
 int
