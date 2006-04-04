@@ -1,4 +1,4 @@
-/* $OpenBSD: powernow-k7.c,v 1.10 2006/03/15 19:56:48 deraadt Exp $ */
+/* $OpenBSD: powernow-k7.c,v 1.11 2006/03/20 12:08:59 dlg Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -67,7 +67,7 @@
 
 #define BIOS_START		0xe0000
 #define	BIOS_LEN		0x20000
-#define BIOS_STEP		0x16
+#define BIOS_STEP		16
 
 /*
  * MSRs and bits used by Powernow technology
