@@ -316,3 +316,31 @@ pxa2x0_i2s_start_output(struct pxa2x0_i2s_softc *sc, void *block, int bsize,
 
 	return 0;
 }
+
+int
+pxa2x0_i2s_start_input(struct pxa2x0_i2s_softc *sc, void *block, int bsize,
+    void (*intr)(void *), void *intrarg)
+{
+	struct pxa2x0_i2s_dma *p;
+	int offset;
+
+	/* Find mapping which contains block completely */
+	for (p = sc->sc_dmas; p && (((caddr_t)block < p->addr) ||
+	    ((caddr_t)block + bsize > p->addr + p->size)); p = p->next)
+		;	/* Nothing */
+
+	if (!p) {
+		printf("pxa2x0_i2s_start_input: request with bad start "
+		    "address: %p, size: %d)\n", block, bsize);
+		return ENXIO;
+	}
+
+	/* Offset into block to use in mapped block */
+	offset = (caddr_t)block - p->addr;
+
+	/* Start DMA */
+	pxa2x0_dma_from_fifo(2, 2, 0x40400080, 4, 32,
+	    p->map->dm_segs[0].ds_addr + offset, bsize, intr, intrarg);
+
+	return 0;
+}
