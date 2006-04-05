@@ -1,4 +1,4 @@
-/*	$OpenBSD: import.c,v 1.40 2006/03/27 15:26:11 xsa Exp $	*/
+/*	$OpenBSD: import.c,v 1.41 2006/04/01 00:56:54 joris Exp $	*/
 /*
  * Copyright (c) 2004 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -333,7 +333,7 @@ cvs_import_local(CVSFILE *cf, void *arg)
 	 * Put the branch revision on the branches list for the first revision.
 	 */
 	rdp = rcs_findrev(rf, rev);
-	brp = (struct rcs_branch *)xmalloc(sizeof(*brp));
+	brp = xmalloc(sizeof(*brp));
 	brp->rb_num = rcsnum_alloc();
 	rcsnum_cpy(brev, brp->rb_num, 0);
 	TAILQ_INSERT_TAIL(&(rdp->rd_branches), brp, rb_list);

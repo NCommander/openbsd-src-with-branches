@@ -1,4 +1,4 @@
-/*	$OpenBSD: hist.c,v 1.12 2005/12/10 20:27:45 joris Exp $	*/
+/*	$OpenBSD: hist.c,v 1.13 2006/01/02 08:11:56 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -48,10 +48,9 @@ cvs_hist_open(const char *path)
 {
 	CVSHIST *histp;
 
-	histp = (CVSHIST *)xmalloc(sizeof(*histp));
-	memset(histp, 0, sizeof(*histp));
+	histp = xcalloc(1, sizeof(*histp));
 
-	histp->chf_buf = (char *)xmalloc((size_t)CVS_HIST_BUFSIZE);
+	histp->chf_buf = xmalloc((size_t)CVS_HIST_BUFSIZE);
 	histp->chf_blen = CVS_HIST_BUFSIZE;
 	histp->chf_off = 0;
 
