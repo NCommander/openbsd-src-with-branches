@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu401.c,v 1.8 2002/11/28 23:24:53 mickey Exp $	*/
+/*	$OpenBSD: mpu401.c,v 1.9 2004/01/09 21:32:24 brad Exp $	*/
 /*	$NetBSD: mpu401.c,v 1.3 1998/11/25 22:17:06 augustss Exp $	*/
 
 /*
@@ -84,6 +84,7 @@ struct midi_hw_if mpu_midi_hw_if = {
 	mpu_open,
 	mpu_close,
 	mpu_output,
+	0,			/* flush */
 	mpu_getinfo,
 	0,                      /* ioctl */
 };

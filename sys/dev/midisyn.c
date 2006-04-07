@@ -1,4 +1,4 @@
-/*	$OpenBSD: midisyn.c,v 1.4 2003/02/24 23:57:11 tedu Exp $	*/
+/*	$OpenBSD: midisyn.c,v 1.5 2005/11/21 18:16:38 millert Exp $	*/
 /*	$NetBSD: midisyn.c,v 1.5 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -84,6 +84,7 @@ struct midi_hw_if midisyn_hw_if = {
 	midisyn_open,
 	midisyn_close,
 	midisyn_output,
+	NULL,			/* flush */
 	midisyn_getinfo,
 	midisyn_ioctl,
 };

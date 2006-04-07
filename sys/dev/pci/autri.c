@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.16 2005/08/09 04:10:10 mickey Exp $	*/
+/*	$OpenBSD: autri.c,v 1.17 2006/02/22 18:12:24 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -184,6 +184,7 @@ struct midi_hw_if autri_midi_hw_if = {
 	autri_midi_open,
 	autri_midi_close,
 	autri_midi_output,
+	NULL,			/* flush */
 	autri_midi_getinfo,
 	NULL,			/* ioctl */
 };
