@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.6 2005/11/10 14:35:13 mickey Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.7 2006/03/06 19:10:06 kettenis Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -625,13 +625,13 @@ apic_intr_establish(int irq, int type, int level, int (*ih_fun)(void *),
 		if (type == pin->ip_type)
 			break;
 	case IST_PULSE:
-		if (type != IST_NONE)
-			/* XXX should not panic here! */
-			panic("apic_intr_establish: "
-			      "intr %d can't share %s with %s",
-			      intr,
-			      isa_intr_typename(sc->sc_pins[intr].ip_type),
-			      isa_intr_typename(type));
+		if (type != IST_NONE) {
+			/*printf("%s: intr_establish: can't share %s with %s, irq %d\n",
+			    ih_what, isa_intr_typename(pin->ip_type),
+			    isa_intr_typename(type), intr);*/
+			free(ih, M_DEVBUF);
+			return (NULL);
+		}
 		break;
 	}
 
