@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.40 2005/05/26 20:16:21 fgsch Exp $	*/
+/*	$OpenBSD: mount.c,v 1.41 2006/03/12 20:01:31 otto Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount.c	8.19 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$OpenBSD: mount.c,v 1.40 2005/05/26 20:16:21 fgsch Exp $";
+static char rcsid[] = "$OpenBSD: mount.c,v 1.41 2006/03/12 20:01:31 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -413,6 +413,7 @@ mountfs(const char *vfstype, const char *spec, const char *name,
 	case -1:				/* Error. */
 		warn("fork");
 		free(optbuf);
+		free(argv);
 		return (1);
 	case 0:					/* Child. */
 		/* Go find an executable. */
@@ -487,9 +488,9 @@ prmount(struct statfs *sf)
 
 	if (verbose) {
 		char buf[26];
-		time_t time = sf->f_ctime;
+		time_t t = sf->f_ctime;
 
-		ctime_r(&time, buf);
+		ctime_r(&t, buf);
 		buf[24] = '\0';
 		printf(", ctime=%s", buf);
 	}
