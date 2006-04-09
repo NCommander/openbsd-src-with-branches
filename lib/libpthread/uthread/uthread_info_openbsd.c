@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_info_openbsd.c,v 1.8 2003/01/31 04:46:17 marc Exp $	*/
+/*	$OpenBSD: uthread_info_openbsd.c,v 1.9 2003/03/20 00:09:21 marc Exp $	*/
 
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
@@ -460,7 +460,7 @@ _thread_dump_data(const void *addr, int len)
 
 /* Set the thread name for debug: */
 void
-pthread_set_name_np(pthread_t thread, char *name)
+pthread_set_name_np(pthread_t thread, const char *name)
 {
 	/* Check if the caller has specified a valid thread: */
 	if (thread != NULL && thread->magic == PTHREAD_MAGIC) {
