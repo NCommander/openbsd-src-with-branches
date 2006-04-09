@@ -1,4 +1,4 @@
-/*	$OpenBSD: regexp.c,v 1.3 2002/02/16 21:27:26 millert Exp $	*/
+/*	$OpenBSD: regexp.c,v 1.4 2003/03/16 03:16:45 deraadt Exp $	*/
 
 /*
  * regcomp and regexec -- regsub and regerror are elsewhere
@@ -36,7 +36,7 @@
  */
 
 #ifndef lint
-static char *rcsid = "$OpenBSD: regexp.c,v 1.3 2002/02/16 21:27:26 millert Exp $";
+static char *rcsid = "$OpenBSD: regexp.c,v 1.4 2003/03/16 03:16:45 deraadt Exp $";
 #endif /* not lint */
 
 #include <regexp.h>
@@ -539,17 +539,14 @@ int *flagp;
 	case '\n':
 	case ')':
 		FAIL("internal urp");	/* Supposed to be caught earlier. */
-		break;
 	case '?':
 	case '+':
 	case '*':
 		FAIL("?+* follows nothing");
-		break;
 	case '\\':
 		switch (*regparse++) {
 		case '\0':
 			FAIL("trailing \\");
-			break;
 		case '<':
 			ret = regnode(WORDA);
 			break;
@@ -1069,11 +1066,9 @@ char *prog;
 			break;
 		case END:
 			return(1);	/* Success! */
-			break;
 		default:
 			v8_regerror("memory corruption");
 			return(0);
-			break;
 		}
 
 		scan = next;
