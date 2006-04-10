@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.160 2006/04/02 20:57:53 joris Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.161 2006/04/05 01:38:55 ray Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1470,16 +1470,15 @@ rcs_findrev(RCSFILE *rfp, RCSNUM *rev)
  * rcs_kwexp_set()
  *
  * Set the keyword expansion mode to use on the RCS file <file> to <mode>.
- * Returns 0 on success, or -1 on failure.
  */
-int
+void
 rcs_kwexp_set(RCSFILE *file, int mode)
 {
 	int i;
 	char *tmp, buf[8] = "";
 
 	if (RCS_KWEXP_INVAL(mode))
-		return (-1);
+		return;
 
 	i = 0;
 	if (mode == RCS_KWEXP_NONE)
@@ -1501,8 +1500,6 @@ rcs_kwexp_set(RCSFILE *file, int mode)
 	file->rf_expand = tmp;
 	/* not synced anymore */
 	file->rf_flags &= ~RCS_SYNCED;
-
-	return (0);
 }
 
 /*

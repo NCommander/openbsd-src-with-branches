@@ -1,4 +1,4 @@
-/*	$OpenBSD: admin.c,v 1.31 2006/03/24 13:34:27 ray Exp $	*/
+/*	$OpenBSD: admin.c,v 1.32 2006/04/01 20:11:25 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
@@ -365,8 +365,8 @@ cvs_admin_local(CVSFILE *cf, void *arg)
 	if (!(runflags & FLAG_QUIET))
 		cvs_printf("RCS file: %s\n", rcspath);
 
-	if (!RCS_KWEXP_INVAL(kflag))
-		rcs_kwexp_set(rf, kflag);
+	rcs_kwexp_set(rf, kflag);
+
 	if (lkmode != RCS_LOCK_INVAL)
 		rcs_lock_setmode(rf, lkmode);
 
