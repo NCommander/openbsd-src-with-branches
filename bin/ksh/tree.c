@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.16 2005/03/28 21:28:22 deraadt Exp $	*/
+/*	$OpenBSD: tree.c,v 1.17 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
  * command tree climbing
@@ -96,7 +96,7 @@ ptree(struct op *t, int indent, struct shf *shf)
 	  }
 	case TSELECT:
 		fptreef(shf, indent, "select %s ", t->str);
-		/* fall through */
+		/* FALLTHROUGH */
 	case TFOR:
 		if (t->type == TFOR)
 			fptreef(shf, indent, "for %s ", t->str);
