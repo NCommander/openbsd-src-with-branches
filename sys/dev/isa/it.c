@@ -1,4 +1,4 @@
-/*	$OpenBSD: it.c,v 1.17 2006/01/19 17:08:40 grange Exp $	*/
+/*	$OpenBSD: it.c,v 1.18 2006/01/23 18:43:22 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2003 Julien Bordet <zejames@greyhats.org>
@@ -213,7 +213,7 @@ it_setup_temp(struct it_softc *sc, int start, int n)
 		sc->sensors[start + i].type = SENSOR_TEMP;
 		snprintf(sc->sensors[start + i].desc,
 		    sizeof(sc->sensors[start + i].desc),
-		    "Temp%d", i + 1);
+		    "Temp %d", i + 1);
 	}
 }
 
