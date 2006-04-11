@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.20 2006/02/22 19:29:24 jordan Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.22 2006/04/06 00:22:59 gwk Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -189,6 +189,7 @@ void	 acpi_attach_machdep(struct acpi_softc *);
 int	 acpi_interrupt(void *);
 void	 acpi_enter_sleep_state(struct acpi_softc *, int);
 void	 acpi_powerdown(void);
+void	 acpi_resume(struct acpi_softc *);
 
 #define ACPI_IOREAD 0
 #define ACPI_IOWRITE 1
