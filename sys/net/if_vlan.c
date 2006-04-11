@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.64 2006/03/04 22:40:16 brad Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.65 2006/03/25 22:41:48 djm Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -474,6 +474,7 @@ vlan_vlandev_state(void *v)
 		return;
 
 	ifv->ifv_if.if_link_state = ifv->ifv_p->if_link_state;
+	ifv->ifv_if.if_baudrate = ifv->ifv_p->if_baudrate;
 	if_link_state_change(&ifv->ifv_if);
 }
 
