@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.162 2006/04/10 08:08:00 xsa Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.163 2006/04/10 12:15:21 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -938,8 +938,6 @@ rcs_lock_add(RCSFILE *file, const char *user, RCSNUM *rev)
 	/* not synced anymore */
 	file->rf_flags &= ~RCS_SYNCED;
 	return (0);
-
-
 }
 
 
