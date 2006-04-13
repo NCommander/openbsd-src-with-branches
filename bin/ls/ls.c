@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.26 2005/11/29 20:33:01 otto Exp $	*/
+/*	$OpenBSD: ls.c,v 1.27 2005/11/30 00:57:25 deraadt Exp $	*/
 /*	$NetBSD: ls.c,v 1.18 1996/07/09 09:16:29 mycroft Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ls.c	8.7 (Berkeley) 8/5/94";
 #else
-static char rcsid[] = "$OpenBSD: ls.c,v 1.26 2005/11/29 20:33:01 otto Exp $";
+static char rcsid[] = "$OpenBSD: ls.c,v 1.27 2005/11/30 00:57:25 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -398,7 +398,7 @@ display(FTSENT *p, FTSENT *list)
 	DISPLAY d;
 	FTSENT *cur;
 	NAMES *np;
-	u_quad_t maxsize;
+	off_t maxsize;
 	u_long btotal, maxblock, maxinode, maxlen, maxnlink;
 	int bcfile, flen, glen, ulen, maxflags, maxgroup, maxuser;
 	int entries, needstats;
@@ -528,7 +528,8 @@ display(FTSENT *p, FTSENT *list)
 		(void)snprintf(buf, sizeof(buf), "%lu", maxnlink);
 		d.s_nlink = strlen(buf);
 		if (!f_humanval) {
-			(void)snprintf(buf, sizeof(buf), "%qu", maxsize);
+			(void)snprintf(buf, sizeof(buf), "%lld", 
+				(long long) maxsize);
 			d.s_size = strlen(buf);
 		} else
 			d.s_size = FMT_SCALED_STRSIZE-2; /* no - or '\0' */
