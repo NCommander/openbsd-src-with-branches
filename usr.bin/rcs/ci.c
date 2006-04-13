@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.142 2006/04/13 03:18:06 joris Exp $	*/
+/*	$OpenBSD: ci.c,v 1.143 2006/04/13 13:15:18 niallo Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -358,8 +358,6 @@ checkin_diff_file(struct checkin_params *pb)
 	b3 = NULL;
 
 out:
-	cvs_worklist_run(&rcs_temp_files, cvs_worklist_unlink);
-
 	if (b1 != NULL)
 		cvs_buf_free(b1);
 	if (b2 != NULL)
