@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.163 2006/04/10 12:15:21 xsa Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.164 2006/04/12 22:54:23 ray Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -2536,7 +2536,7 @@ rcs_expand_keywords(char *rcsfile, struct rcs_delta *rdp, char *data,
 	u_int j, found;
 	char *c, *kwstr, *start, *end, *tbuf;
 	char expbuf[256], buf[256];
-	struct tm *tb;
+	struct tm tb;
 	char *fmt;
 
 	kwtype = 0;
@@ -2546,9 +2546,9 @@ rcs_expand_keywords(char *rcsfile, struct rcs_delta *rdp, char *data,
 	/*
 	 * -z support for RCS
 	 */
-	tb = &rdp->rd_date;
+	tb = rdp->rd_date;
 	if (timezone_flag != NULL)
-		tb = rcs_set_tz(timezone_flag, rdp);
+		rcs_set_tz(timezone_flag, rdp, &tb);
 
 	/*
 	 * Keyword formats:
@@ -2651,7 +2651,7 @@ rcs_expand_keywords(char *rcsfile, struct rcs_delta *rdp, char *data,
 					else
 						fmt = "%Y/%m/%d %H:%M:%S ";
 
-					strftime(buf, sizeof(buf), fmt, tb);
+					strftime(buf, sizeof(buf), fmt, &tb);
 					strlcat(expbuf, buf, sizeof(expbuf));
 				}
 
