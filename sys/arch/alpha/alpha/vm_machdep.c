@@ -1,4 +1,4 @@
-/* $OpenBSD: vm_machdep.c,v 1.29 2003/10/18 20:14:40 jmc Exp $ */
+/* $OpenBSD: vm_machdep.c,v 1.30 2003/11/17 10:07:53 miod Exp $ */
 /* $NetBSD: vm_machdep.c,v 1.55 2000/03/29 03:49:48 simonb Exp $ */
 
 /*
@@ -304,9 +304,9 @@ pagemove(from, to, size)
 		pmap_tlb_shootdown(pmap_kernel(), (vaddr_t)to, PG_ASM);
 #endif
 
-		todo -= NBPG;
-		from += NBPG;
-		to += NBPG;
+		todo -= PAGE_SIZE;
+		from += PAGE_SIZE;
+		to += PAGE_SIZE;
 	}
 }
 
