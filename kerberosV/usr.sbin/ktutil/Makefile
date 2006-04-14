@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2003/07/14 16:14:45 mho Exp $
+# $OpenBSD: Makefile,v 1.12 2006/03/31 21:13:24 biorn Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -11,6 +11,7 @@ SRCS=	add.c \
 	copy.c \
 	get.c \
 	ktutil.c \
+	ktutil-commands.c \
 	list.c \
 	purge.c \
 	remove.c \
@@ -21,7 +22,16 @@ SRCS+=	${PRINTVER}
 .PATH:	${KRB5SRC}/admin
 .PATH:	${KRB5SRC}/lib/sl
 
-CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/kadm5
+slc:	slc-gram.o slc-lex.o ${PRINTVER}
+	$(CC) -o slc $> -lkrb5 -lcrypto
+
+SLC=	slc
+
+ktutil:	ktutil-commands.h
+ktutil-commands.c ktutil-commands.h:	ktutil-commands.in $(SLC)
+	./$(SLC) $(KRB5SRC)/admin/ktutil-commands.in
+
+CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/kadm5 -I.
 
 DPADD+=	${LIBREADLINE} ${LIBCURSES} ${LIBKADM5CLNT} ${LIBKRB5} \
 	${LIBCRYPTO} ${LIBDES}
