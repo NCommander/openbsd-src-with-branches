@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.37 2006/01/09 21:52:12 miod Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.38 2006/02/14 18:52:17 miod Exp $ */
 /* $NetBSD: wsconsio.h,v 1.74 2005/04/28 07:15:44 martin Exp $ */
 
 /*
@@ -288,6 +288,7 @@ struct wsmouse_calibcoords {
 #define		WSDISPLAY_TYPE_PXALCD	48	/* PXALCD (Zaurus) */
 #define		WSDISPLAY_TYPE_MAC68K	49	/* Generic mac68k framebuffer */
 #define		WSDISPLAY_TYPE_SUNLEO	50	/* Sun ZX/Leo */
+#define		WSDISPLAY_TYPE_TVRX	51	/* HP TurboVRX */
 
 /* Basic display information.  Not applicable to all display types. */
 struct wsdisplay_fbinfo {
