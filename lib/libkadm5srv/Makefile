@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2004/10/29 16:25:30 biorn Exp $
+# $OpenBSD: Makefile,v 1.6 2006/03/31 21:17:10 biorn Exp $
 
 KRB5DIR	= ${.CURDIR}/../../kerberosV
 .include <${.CURDIR}/../libkrb5/Makefile.common.inc>
@@ -63,8 +63,12 @@ SRCS=	acl.c           \
 
 .PATH:	${KRB5SRC}/lib/kadm5
 
-CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/asn1 -I../asn1 -I../krb5 \
-	-I${KRB5SRC}/lib/hdb -I../hdb -I.
+MAN=	kadm5_pwcheck.3
+MLINKS+=kadm5_pwcheck.3 kadm5_setup_passwd_quality_check.3
+MLINKS+=kadm5_pwcheck.3 kadm5_add_passwd_quality_verifier.3
+MLINKS+=kadm5_pwcheck.3 kadm5_check_password_quality.3
+
+CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/asn1 -I${KRB5SRC}/lib/hdb
 
 CLEANFILES+=kadm5_err.[ch]
 

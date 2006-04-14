@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.hdb.inc,v 1.4 2003/05/17 21:17:39 mho Exp $
+# $OpenBSD: Makefile.hdb.inc,v 1.6 2006/03/31 21:17:11 biorn Exp $
 
 DIR_HDB=	${KRB5SRC}/lib/hdb
 HDR_HDB=	hdb.h hdb-protos.h hdb-private.h
@@ -20,6 +20,7 @@ gen_files_hdb+=\
 	hdb_err.c
 
 SRCS+=	keytab.c \
+	keys.c \
 	hdb.c \
 	common.c \
 	db.c \
