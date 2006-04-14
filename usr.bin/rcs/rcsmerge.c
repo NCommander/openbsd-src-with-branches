@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsmerge.c,v 1.24 2006/04/12 08:23:30 ray Exp $	*/
+/*	$OpenBSD: rcsmerge.c,v 1.25 2006/04/13 00:58:25 ray Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -84,7 +84,8 @@ rcsmerge_main(int argc, char **argv)
 			timezone_flag = rcs_optarg;
 			break;
 		default:
-			break;
+			(usage)();
+			exit(1);
 		}
 	}
 
