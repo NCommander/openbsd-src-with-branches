@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.54 2006/01/30 17:58:47 xsa Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.55 2006/02/06 16:21:43 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -123,6 +123,7 @@ cvs_getlog_init(struct cvs_cmd *cmd, int argc, char **argv, int *arg)
 	}
 
 	*arg = optind;
+	rcsnum_flags |= RCSNUM_NO_MAGIC;
 	return (0);
 }
 
