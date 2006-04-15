@@ -1,4 +1,4 @@
-/* $OpenBSD: powernow-k7.c,v 1.12 2006/04/04 03:32:56 uwe Exp $ */
+/* $OpenBSD: powernow-k7.c,v 1.13 2006/04/15 04:25:12 gwk Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -212,7 +212,7 @@ k7_powernow_setperf(int level)
 
 	pentium_mhz = ((cstate->state_table[i].freq / 100000)+1)*100;
 
-	return 1;
+	return 0;
 }
 
 /*
