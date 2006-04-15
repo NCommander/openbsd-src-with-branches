@@ -1,4 +1,4 @@
-/* $OpenBSD: powernow-k7.c,v 1.14 2006/04/14 05:13:20 gwk Exp $ */
+/* $OpenBSD: powernow-k7.c,v 1.15 2006/04/14 05:25:42 gwk Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -146,7 +146,7 @@ struct pst_s {
 	uint8_t n_states;	/* Number of states */
 };
 
-struct k7pnow_cpu_state * k7pnow_current_state[I386_MAXPROCS];
+struct k7pnow_cpu_state *k7pnow_current_state;
 
 /*
  * Prototypes
@@ -162,7 +162,7 @@ k7_powernow_setperf(int level)
 	uint64_t status, ctl;
 	struct k7pnow_cpu_state * cstate;
 
-	cstate = k7pnow_current_state[cpu_number()];
+	cstate = k7pnow_current_state;
 	high = cstate->state_table[cstate->n_states - 1].freq;
 	low = cstate->state_table[0].freq;
 	freq = low + (high - low) * level / 100;
@@ -361,7 +361,7 @@ k7_powernow_init(void)
 			}
 			printf(" Mhz\n");	
 			
-			k7pnow_current_state[cpu_number()] = cstate;
+			k7pnow_current_state = cstate;
 			cpu_setperf = k7_powernow_setperf;
 			return;
 		}
