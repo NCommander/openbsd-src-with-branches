@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.31 2004/11/08 16:39:31 miod Exp $ */
+/* $OpenBSD: cpu.h,v 1.32 2004/11/09 12:01:16 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -73,6 +73,8 @@ int	intr_establish(int, struct intrhand *, const char *);
 #define	NVMEINTR	256
 typedef SLIST_HEAD(, intrhand) intrhand_t;
 extern intrhand_t intr_handlers[NVMEINTR];
+
+void nmihand(void *);
 
 #endif /* _KERNEL */
 

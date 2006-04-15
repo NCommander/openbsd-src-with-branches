@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.11 2005/12/11 21:36:06 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.12 2005/12/11 21:45:28 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -232,7 +232,6 @@ struct switchframe {
 };
 
 int badvaddr(vaddr_t, int);
-void nmihand(void *);
 
 #endif /* _KERNEL */
 #endif /* __M88K_CPU_H__ */
