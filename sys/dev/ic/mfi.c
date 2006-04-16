@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.11 2006/04/16 17:10:08 marco Exp $ */
+/* $OpenBSD: mfi.c,v 1.12 2006/04/16 17:15:36 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -296,7 +296,7 @@ mfi_intr(void *arg)
 	/* write status back to acknowledge interrupt */
 	mfi_write(sc, MFI_OSTS, status);
 
-	pcq = (struct mfi_prod_cons *)sc->sc_pcq->am_kva;
+	pcq = MFIMEM_KVA(sc->sc_pcq);
 	producer = pcq->mpc_producer;
 	consumer = pcq->mpc_consumer;
 
