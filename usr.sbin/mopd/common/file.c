@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.7 2003/12/01 00:56:51 avsm Exp $ */
+/*	$OpenBSD: file.c,v 1.8 2004/04/14 20:37:28 henning Exp $ */
 
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
@@ -24,9 +24,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
+#ifndef lint
 static const char rcsid[] =
-    "$OpenBSD: file.c,v 1.7 2003/12/01 00:56:51 avsm Exp $";
+    "$OpenBSD: file.c,v 1.8 2004/04/14 20:37:28 henning Exp $";
 #endif
 
 #include "os.h"

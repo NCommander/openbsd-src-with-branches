@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.c,v 1.13 2004/04/12 20:01:12 henning Exp $ */
+/*	$OpenBSD: process.c,v 1.14 2004/04/15 21:42:53 henning Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -24,9 +24,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
+#ifndef lint
 static const char rcsid[] =
-    "$OpenBSD: process.c,v 1.13 2004/04/12 20:01:12 henning Exp $";
+    "$OpenBSD: process.c,v 1.14 2004/04/15 21:42:53 henning Exp $";
 #endif
 
 #include "os.h"
