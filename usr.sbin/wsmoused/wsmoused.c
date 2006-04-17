@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmoused.c,v 1.18 2004/01/04 21:41:12 drahn Exp $ */
+/* $OpenBSD: wsmoused.c,v 1.19 2005/08/12 21:13:34 jmc Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -62,7 +62,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <setjmp.h>
 #include <signal.h>
 #include <poll.h>
 #include <stdio.h>
