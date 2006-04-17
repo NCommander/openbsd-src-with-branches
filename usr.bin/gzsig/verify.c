@@ -1,4 +1,4 @@
-/* $OpenBSD: verify.c,v 1.4 2005/05/29 08:37:52 djm Exp $ */
+/* $OpenBSD: verify.c,v 1.5 2005/08/05 14:17:55 jmc Exp $ */
 
 /*
  * verify.c
@@ -157,7 +157,7 @@ verify(int argc, char *argv[])
 
 	qflag = 0;
 	
-	while ((i = getopt(argc, argv, "qvh?")) != -1) {
+	while ((i = getopt(argc, argv, "qv")) != -1) {
 		switch (i) {
 		case 'q':
 			qflag = 1;
