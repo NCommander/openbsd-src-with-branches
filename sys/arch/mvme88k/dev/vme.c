@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.c,v 1.39 2004/08/02 08:35:00 miod Exp $ */
+/*	$OpenBSD: vme.c,v 1.40 2005/11/25 22:14:31 miod Exp $ */
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -286,7 +286,7 @@ vmeattach(parent, self, args)
 		u_int8_t sconc;
 
 		vmevecbase = 0x80;  /* Hard coded for MVME188 */
-		sconc = *(volatile u_int8_t *)GLB1;
+		sconc = *(volatile u_int8_t *)MVME188_GLOBAL1;
 		if (ISSET(sconc, M188_SYSCON))
 			printf(": system controller");
 		printf("\n");
