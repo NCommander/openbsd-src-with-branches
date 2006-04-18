@@ -1,4 +1,4 @@
-/*      $OpenBSD: kern_watchdog.c,v 1.1 2003/01/21 16:59:23 markus Exp $        */
+/*      $OpenBSD: kern_watchdog.c,v 1.2 2005/11/28 00:14:29 jsg Exp $        */
 
 /*
  * Copyright (c) 2003 Markus Friedl.  All rights reserved.
@@ -71,6 +71,9 @@ wdog_shutdown(void *arg)
 		return;
 	timeout_del(&wdog_timeout);
 	(void) (*wdog_ctl_cb)(wdog_ctl_cb_arg, 0);
+	wdog_ctl_cb = NULL;
+	wdog_period = 0;
+	wdog_auto = 1;
 }
 
 int
