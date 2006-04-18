@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.51 2005/04/09 04:32:54 djm Exp $
+#	$OpenBSD: Makefile,v 1.52 2006/03/07 09:07:39 djm Exp $
 
 .PATH:		${.CURDIR}/..
 
 LIB=	ssh
-SRCS=	authfd.c authfile.c bufaux.c buffer.c canohost.c channels.c \
+SRCS=	authfd.c authfile.c bufaux.c bufbn.c buffer.c canohost.c channels.c \
 	cipher.c cipher-3des1.c cipher-bf1.c cipher-ctr.c \
 	cleanup.c compat.c compress.c crc32.c deattack.c fatal.c \
 	hostfile.c log.c match.c nchan.c packet.c readpass.c \
