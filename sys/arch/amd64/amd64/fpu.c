@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.8 2005/04/21 04:39:34 mickey Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.9 2005/12/13 00:18:19 jsg Exp $	*/
 /*	$NetBSD: fpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -239,8 +239,17 @@ fpudna(struct cpu_info *ci)
 		fldcw(&p->p_addr->u_pcb.pcb_savefpu.fp_fxsave.fx_fcw);
 		ldmxcsr(&p->p_addr->u_pcb.pcb_savefpu.fp_fxsave.fx_mxcsr);
 		p->p_md.md_flags |= MDP_USEDFPU;
-	} else
+	} else {
+		static double	zero = 0.0;
+
+		/*
+		 * amd fpu does not restore fip, fdp, fop on fxrstor
+		 * thus leaking other process's execution history.
+		 */
+		fnclex();
+		__asm __volatile("ffree %%st(7)\n\tfld %0" : : "m" (zero));
 		fxrstor(&p->p_addr->u_pcb.pcb_savefpu);
+	}
 }
 
 
