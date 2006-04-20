@@ -1,4 +1,4 @@
-/*	$OpenBSD: screen.c,v 1.11 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: screen.c,v 1.12 2004/07/10 07:26:24 deraadt Exp $	*/
 /*	$NetBSD: screen.c,v 1.4 1995/04/29 01:11:36 mycroft Exp $	*/
 
 /*-
@@ -271,7 +271,7 @@ scr_set(void)
 	if (Rows < MINROWS || Cols < MINCOLS) {
 		char smallscr[55];
 
-		(void) snprintf(smallscr, 55,
+		(void)snprintf(smallscr, sizeof(smallscr),
 		    "the screen is too small (must be at least %dx%d)",
 		    MINROWS, MINCOLS);
 		stop(smallscr);
