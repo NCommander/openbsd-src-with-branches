@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.18 2006/04/18 00:21:06 marco Exp $ */
+/* $OpenBSD: mfi.c,v 1.19 2006/04/18 16:29:54 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -86,7 +86,7 @@ mfi_get_ccb(struct mfi_softc *sc)
 	int			s;
 
 	s = splbio();
-	ccb = TAILQ_LAST(&sc->sc_ccb_freeq, mfi_queue_head);
+	ccb = TAILQ_FIRST(&sc->sc_ccb_freeq);
 	if (ccb) {
 		TAILQ_REMOVE(&sc->sc_ccb_freeq, ccb, ccb_link);
 		ccb->ccb_state = MFI_CCB_READY;
