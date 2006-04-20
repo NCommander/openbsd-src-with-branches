@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpt_openbsd.c,v 1.31 2005/12/03 04:00:08 marco Exp $	*/
+/*	$OpenBSD: mpt_openbsd.c,v 1.32 2006/02/04 19:05:00 marco Exp $	*/
 /*	$NetBSD: mpt_netbsd.c,v 1.7 2003/07/14 15:47:11 lukem Exp $	*/
 
 /*
@@ -559,7 +559,7 @@ mpt_dma_mem_alloc(struct mpt_softc *mpt)
 		error = bus_dmamap_create(mpt->sc_dmat, MAXPHYS,
 		    MPT_SGL_MAX, MAXPHYS, 0, 0, &req->dmap);
 		if (error) {
-			printf("%s: unable to create req %d DMA map, error = ",
+			printf("%s: unable to create req %d DMA map, error = "
 			    "%d", mpt->mpt_dev.dv_xname, i, error);
 			goto unload_request;
 		}
