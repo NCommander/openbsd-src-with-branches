@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_pcmcia.c,v 1.43 2005/11/21 18:16:41 millert Exp $	*/
+/*	$OpenBSD: com_pcmcia.c,v 1.44 2005/12/13 23:07:31 mickey Exp $	*/
 /*	$NetBSD: com_pcmcia.c,v 1.15 1998/08/22 17:47:58 msaitoh Exp $	*/
 
 /*
@@ -318,7 +318,8 @@ found:
 		return;
 	}
 
-	printf(" port 0x%lx/%d", psc->sc_pcioh.addr, psc->sc_pcioh.size);
+	printf(" port 0x%lx/%lu", psc->sc_pcioh.addr,
+	    (u_long)psc->sc_pcioh.size);
 
 	sc->sc_iobase = -1;
 	sc->enable = com_pcmcia_enable;

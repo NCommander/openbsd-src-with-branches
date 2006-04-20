@@ -1,4 +1,4 @@
-/*	$OpenBSD: ses.c,v 1.33 2006/01/11 08:21:21 dlg Exp $ */
+/*	$OpenBSD: ses.c,v 1.34 2006/01/19 17:08:40 grange Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -552,7 +552,7 @@ ses_refresh_sensors(void *arg)
 	lockmgr(&sc->sc_lock, LK_RELEASE, NULL);
 
 	if (ret)
-		printf("%s: error in sensor data\n");
+		printf("%s: error in sensor data\n", DEVNAME(sc));
 }
 
 #if NBIO > 0
