@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.61 2006/04/19 17:19:45 hshoexer Exp $	*/
+/*	$OpenBSD: parse.y,v 1.62 2006/04/19 17:28:28 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -709,7 +709,7 @@ int
 yyerror(const char *fmt, ...)
 {
 	va_list		 ap;
-	extern char	*infile;
+	extern const char *infile;
 
 	errors = 1;
 	va_start(ap, fmt);
