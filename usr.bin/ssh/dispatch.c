@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: dispatch.c,v 1.18 2006/03/25 13:17:01 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -76,7 +76,7 @@ dispatch_set(int type, dispatch_fn *fn)
 	dispatch[type] = fn;
 }
 void
-dispatch_run(int mode, int *done, void *ctxt)
+dispatch_run(int mode, volatile sig_atomic_t *done, void *ctxt)
 {
 	for (;;) {
 		int type;

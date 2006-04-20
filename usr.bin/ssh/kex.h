@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.h,v 1.40 2006/03/19 18:53:12 deraadt Exp $ */
+/* $OpenBSD: kex.h,v 1.41 2006/03/25 22:22:43 djm Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -114,7 +114,7 @@ struct Kex {
 	int	kex_type;
 	Buffer	my;
 	Buffer	peer;
-	int	done;
+	sig_atomic_t done;
 	int	flags;
 	const EVP_MD *evp_md;
 	char	*client_version_string;
