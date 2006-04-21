@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.149 2006/04/20 13:02:26 dlg Exp $	*/
+/*	$OpenBSD: ami.c,v 1.150 2006/04/20 13:32:29 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -146,7 +146,6 @@ void		ami_done_ioctl(struct ami_softc *, struct ami_ccb *);
 void		ami_done_ccb(struct ami_softc *, struct ami_ccb *);
 
 void		ami_copy_internal_data(struct scsi_xfer *, void *, size_t);
-int		ami_inquire(struct ami_softc *, u_int8_t);
 
 int		ami_load_ptmem(struct ami_softc*, struct ami_ccb *,
 		    void *, size_t, int, int);
