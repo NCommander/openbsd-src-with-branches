@@ -1250,7 +1250,7 @@ end_rule(void)
     if (!last_was_action && plhs[nrules]->tag)
     {
 	for (i = nitems - 1; pitem[i]; --i) continue;
-	if (pitem[i] == 0 || pitem[i]->tag != plhs[nrules]->tag)
+	if (pitem[i+1] == 0 || pitem[i+1]->tag != plhs[nrules]->tag)
 	    default_action_warning();
     }
 
