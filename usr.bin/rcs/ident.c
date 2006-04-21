@@ -1,4 +1,4 @@
-/*	$OpenBSD: ident.c,v 1.15 2006/04/14 01:11:07 deraadt Exp $	*/
+/*	$OpenBSD: ident.c,v 1.16 2006/04/19 06:53:41 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -66,12 +66,12 @@ ident_main(int argc, char **argv)
 	else {
 		for (i = 0; i < argc; i++) {
 			if ((fp = fopen(argv[i], "r")) == NULL) {
-				cvs_log(LP_ERRNO, "%s", argv[i]);
+				warn("%s", argv[i]);
 				continue;
 			}
 
 			ident_file(argv[i], fp);
-			fclose(fp);
+			(void)fclose(fp);
 		}
 	}
 
