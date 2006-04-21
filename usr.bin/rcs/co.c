@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.80 2006/04/21 07:06:25 xsa Exp $	*/
+/*	$OpenBSD: co.c,v 1.81 2006/04/21 14:18:26 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -152,7 +152,7 @@ checkout_main(int argc, char **argv)
 		fatal("getlogin failed");
 
 	for (i = 0; i < argc; i++) {
-		if (rcs_statfile(argv[i], fpath, sizeof(fpath)) < 0)
+		if (rcs_statfile(argv[i], fpath, sizeof(fpath), flags) < 0)
 			continue;
 
 		if (!(flags & QUIET))

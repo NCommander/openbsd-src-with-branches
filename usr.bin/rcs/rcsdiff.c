@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.51 2006/04/19 06:53:41 xsa Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.52 2006/04/21 14:18:26 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -109,7 +109,7 @@ rcsdiff_main(int argc, char **argv)
 	}
 
 	for (i = 0; i < argc; i++) {
-		if (rcs_statfile(argv[i], fpath, sizeof(fpath)) < 0)
+		if (rcs_statfile(argv[i], fpath, sizeof(fpath), flags) < 0)
 			continue;
 
 		if ((file = rcs_open(fpath, RCS_READ|RCS_PARSE_FULLY)) == NULL)
