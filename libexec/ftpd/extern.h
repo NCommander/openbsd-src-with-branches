@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.14 2004/11/28 18:49:29 henning Exp $	*/
+/*	$OpenBSD: extern.h,v 1.15 2004/12/22 00:54:39 david Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1995/04/11 02:44:49 cgd Exp $	*/
 
 /*
@@ -77,8 +77,6 @@ void	nack(char *);
 enum auth_ret
 	pass(char *);
 void	passive(void);
-int	lpsvproto2af(int);
-int	af2lpsvproto(int);
 int	epsvproto2af(int);
 int	af2epsvproto(int);
 void	long_passive(char *, int);
