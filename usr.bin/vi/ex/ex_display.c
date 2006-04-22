@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_display.c,v 1.4 2002/02/16 21:27:57 millert Exp $	*/
+/*	$OpenBSD: ex_display.c,v 1.5 2005/10/17 19:12:16 otto Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -127,11 +127,9 @@ db(sp, cbp, name)
 	CHAR_T *name;
 {
 	CHAR_T *p;
-	GS *gp;
 	TEXT *tp;
 	size_t len;
 
-	gp = sp->gp;
 	(void)ex_printf(sp, "********** %s%s\n",
 	    name == NULL ? KEY_NAME(sp, cbp->name) : name,
 	    F_ISSET(cbp, CB_LMODE) ? " (line mode)" : " (character mode)");

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_line.c,v 1.10 2006/03/11 06:58:00 ray Exp $	*/
+/*	$OpenBSD: vs_line.c,v 1.11 2006/03/11 07:02:43 ray Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -475,13 +475,11 @@ vs_number(sp)
 {
 	GS *gp;
 	SMAP *smp;
-	VI_PRIVATE *vip;
 	size_t len, oldy, oldx;
 	int exist;
 	char nbuf[10];
 
 	gp = sp->gp;
-	vip = VIP(sp);
 
 	/* No reason to do anything if we're in input mode on the info line. */
 	if (F_ISSET(sp, SC_TINPUT_INFO))
