@@ -1,4 +1,4 @@
-/*	$OpenBSD: aacvar.h,v 1.4 2003/10/21 18:58:48 jmc Exp $	*/
+/*	$OpenBSD: aacvar.h,v 1.5 2005/11/18 05:39:10 nate Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -182,6 +182,7 @@ struct aac_interface {
 extern struct aac_interface aac_fa_interface;
 extern struct aac_interface aac_sa_interface;
 extern struct aac_interface aac_rx_interface;
+extern struct aac_interface aac_rkt_interface;
 
 #define AAC_GET_FWSTATUS(sc)		((sc)->aac_if.aif_get_fwstatus(sc))
 #define AAC_QNOTIFY(sc, qbit) \
@@ -334,7 +335,8 @@ struct aac_softc
 	int	aac_hwif;	/* controller hardware interface */
 #define AAC_HWIF_I960RX		0
 #define AAC_HWIF_STRONGARM	1
-#define	AAC_HWIF_FALCON		2
+#define AAC_HWIF_FALCON		2
+#define AAC_HWIF_RKT		3
 #define AAC_HWIF_UNKNOWN	-1
 
 	struct aac_common *aac_common;
