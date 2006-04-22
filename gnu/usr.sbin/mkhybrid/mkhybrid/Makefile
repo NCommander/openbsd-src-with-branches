@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 2000/10/10 20:40:03 beck Exp $
+#	$OpenBSD: Makefile,v 1.2 2001/11/22 21:04:14 espie Exp $
 
-# NOTE: the mkhybrid distrib also makes an "mkisofs" which is the same binary
-# linked. when we know mkhybrid makes distirb CD's ok we should modify this
+# NOTE: The mkhybrid distrib also makes an "mkisofs" which is the same binary
+# linked. When we know mkhybrid makes distrib CDs ok we should modify this
 # to make mkisofs as a link to this, rather than the (earlier) version in
 # the tree.
 
