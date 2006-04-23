@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.47 2006/03/25 22:41:46 djm Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.48 2006/04/13 15:27:49 jolan Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003
@@ -1322,7 +1322,6 @@ axe_init(void *xsc)
 
 	splx(s);
 
-	usb_callout_init(sc->axe_stat_ch);
 	usb_callout(sc->axe_stat_ch, hz, axe_tick, sc);
 	return;
 }
