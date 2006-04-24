@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.112 2006/04/21 17:17:29 xsa Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.113 2006/04/24 04:51:57 ray Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -220,8 +220,8 @@ rcs_main(int argc, char **argv)
 		case 'k':
 			kflag = rcs_kflag_get(rcs_optarg);
 			if (RCS_KWEXP_INVAL(kflag)) {
-				warnx("invalid keyword substitution "
-				    "mode `%s'", rcs_optarg);
+				warnx("invalid RCS keyword substitution mode");
+				(usage)();
 				exit(1);
 			}
 			break;
