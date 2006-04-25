@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.94 2005/12/17 07:31:26 miod Exp $ */
+/*	$OpenBSD: machdep.c,v 1.95 2006/04/21 22:21:54 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -203,6 +203,8 @@ mvme68k_init()
 void
 consinit()
 {
+	extern void db_machine_init(void);
+
 	/*
 	 * Initialize the console before we print anything out.
 	 */
