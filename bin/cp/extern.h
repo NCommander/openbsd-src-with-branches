@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.10 2003/06/01 23:50:02 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.11 2003/06/02 23:32:06 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1995/03/21 09:02:16 cgd Exp $	*/
 
 /*-
@@ -40,7 +40,8 @@ typedef struct {
 
 extern PATH_T to;
 extern uid_t myuid;
-extern int fflag, iflag, pflag, myumask;
+extern int fflag, iflag, pflag;
+extern mode_t myumask;
 extern char *__progname;
 
 #include <sys/cdefs.h>
