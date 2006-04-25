@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.58 2006/03/29 15:54:55 grunk Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.59 2006/04/03 21:05:14 uwe Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static char rcsid[] = "$OpenBSD: fetch.c,v 1.58 2006/03/29 15:54:55 grunk Exp $";
+static const char rcsid[] = "$OpenBSD: fetch.c,v 1.59 2006/04/03 21:05:14 uwe Exp $";
 #endif /* not lint and not SMALL */
 
 /*
