@@ -1,4 +1,6 @@
-#	$OpenBSD: Makefile,v 1.31 2006/04/21 17:17:29 xsa Exp $
+#	$OpenBSD: Makefile,v 1.32 2006/04/26 02:55:13 joris Exp $
+
+.PATH: ${.CURDIR}/..
 
 PROG=	rcs
 MAN=	ci.1 co.1 ident.1 rcs.1 rcsclean.1 rcsdiff.1 rcsmerge.1 rlog.1
@@ -12,6 +14,7 @@ LINKS=	${BINDIR}/rcs ${BINDIR}/ci ${BINDIR}/rcs ${BINDIR}/co \
 	${BINDIR}/rcs ${BINDIR}/rcsmerge ${BINDIR}/rcs ${BINDIR}/rlog \
 	${BINDIR}/rcs ${BINDIR}/ident
 
+CPPFLAGS+=-I${.CURDIR}
 CFLAGS+=-Wall
 CFLAGS+=-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=-Wmissing-declarations
