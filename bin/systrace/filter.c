@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.29 2003/08/04 18:15:11 sturm Exp $	*/
+/*	$OpenBSD: filter.c,v 1.30 2004/01/23 20:51:18 sturm Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -855,6 +855,7 @@ filter_regex(struct intercept_translate *tl, struct logic *logic)
 	return (res == 0);
 }
 
+/* ARGSUSED */
 int
 filter_true(struct intercept_translate *tl, struct logic *logic)
 {
