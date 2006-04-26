@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.38 2005/01/19 15:48:20 deraadt Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.39 2005/03/29 19:35:25 otto Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -430,7 +430,7 @@ Xmanual(cmd_t *cmd, disk_t *disk, mbr_t *mbr, mbr_t *tt, int offset)
 	char *pager = "/usr/bin/less";
 	char *p;
 	sig_t opipe;
-	extern const char manpage[];
+	extern const unsigned char manpage[];
 	extern const int manpage_sz;
 	FILE *f;
 
