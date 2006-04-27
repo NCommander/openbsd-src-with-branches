@@ -1,4 +1,4 @@
-/*	$OpenBSD: tss.h,v 1.5 2003/05/02 21:07:50 mickey Exp $	*/
+/*	$OpenBSD: tss.h,v 1.6 2003/06/02 23:27:47 millert Exp $	*/
 /*	$NetBSD: tss.h,v 1.6 1995/10/11 04:20:28 mycroft Exp $	*/
 
 /*-
@@ -50,7 +50,7 @@ struct i386tss {
 	int	__tss_ss1;
 	int	__tss_esp2;
 	int	__tss_ss2;
-	int	tss_cr3;	/* page directory paddr */
+	int	tss_cr3;	/* page directory [pointer] paddr */
 	int	__tss_eip;
 	int	__tss_eflags;
 	int	__tss_eax; 
