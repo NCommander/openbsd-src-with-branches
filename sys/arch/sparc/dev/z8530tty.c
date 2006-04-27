@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530tty.c,v 1.4 2003/10/03 16:44:50 miod Exp $ */
+/*	$OpenBSD: z8530tty.c,v 1.5 2005/11/11 15:21:59 fgsch Exp $ */
 /*	$NetBSD: z8530tty.c,v 1.13 1996/10/16 20:42:14 gwr Exp $	*/
 
 /*-
@@ -1397,6 +1397,10 @@ zstty_stint(cs, force)
 		delta = rr0 ^ cs->cs_rr0;
 	else
 		delta = cs->cs_rr0_mask;
+
+	ttytstamp(tp, cs->cs_rr0 & ZSRR0_CTS, rr0 & ZSRR0_CTS,
+	    cs->cs_rr0 & ZSRR0_DCD, rr0 & ZSRR0_DCD);
+
 	cs->cs_rr0 = rr0;
 
 	if (ISSET(delta, cs->cs_rr0_mask)) {
