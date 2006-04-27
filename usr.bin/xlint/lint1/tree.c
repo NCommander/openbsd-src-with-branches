@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.35 2006/04/18 04:10:05 cloder Exp $	*/
+/*	$OpenBSD: tree.c,v 1.36 2006/04/25 01:25:41 cloder Exp $	*/
 /*	$NetBSD: tree.c,v 1.12 1995/10/02 17:37:57 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: tree.c,v 1.35 2006/04/18 04:10:05 cloder Exp $";
+static char rcsid[] = "$OpenBSD: tree.c,v 1.36 2006/04/25 01:25:41 cloder Exp $";
 #endif
 
 #include <stdlib.h>
@@ -3405,10 +3405,10 @@ nulleff(tnode_t *tn)
 			 * operands has a side effect
 			 */
 			tn = tn->tn_right;
-		} else if (tn->tn_op == COLON) {
+		} else if (tn->tn_op == COLON || tn->tn_op == COMMA) {
 			/*
-			 * : has a side effect if at least one of its operands
-			 * has a side effect
+			 * : and , have a side effect if at least one of the
+			 * operands has a side effect
 			 */
 			if (modtab[tn->tn_left->tn_op].m_sideeff) {
 				tn = tn->tn_left;
