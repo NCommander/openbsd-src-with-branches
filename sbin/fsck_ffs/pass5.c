@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass5.c,v 1.21 2006/01/25 06:25:46 tedu Exp $	*/
+/*	$OpenBSD: pass5.c,v 1.23 2006/03/22 20:24:32 deraadt Exp $	*/
 /*	$NetBSD: pass5.c,v 1.16 1996/09/27 22:45:18 christos Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)pass5.c	8.6 (Berkeley) 11/30/94";
 #else
-static const char rcsid[] = "$OpenBSD: pass5.c,v 1.21 2006/01/25 06:25:46 tedu Exp $";
+static const char rcsid[] = "$OpenBSD: pass5.c,v 1.23 2006/03/22 20:24:32 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -195,6 +195,7 @@ pass5(void)
 		if (dmax > fs->fs_size)
 			dmax = fs->fs_size;
 		newcg->cg_time = cg->cg_time;
+		newcg->cg_ffs2_time = cg->cg_ffs2_time;
 		newcg->cg_cgx = c;
 		if (c == fs->fs_ncg - 1)
 			newcg->cg_ncyl = fs->fs_ncyl % fs->fs_cpg;
