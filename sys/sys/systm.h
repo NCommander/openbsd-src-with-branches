@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.67 2005/12/14 21:46:31 millert Exp $	*/
+/*	$OpenBSD: systm.h,v 1.68 2006/02/22 22:16:08 miod Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -112,9 +112,9 @@ extern struct sysent {		/* system call table */
 	short	sy_argsize;	/* total size of arguments */
 	sy_call_t *sy_call;	/* implementing function */
 } sysent[];
-#if	BYTE_ORDER == BIG_ENDIAN
+#if	_BYTE_ORDER == _BIG_ENDIAN
 #define SCARG(p, k)	((p)->k.be.datum)	/* get arg from args pointer */
-#elif	BYTE_ORDER == LITTLE_ENDIAN
+#elif	_BYTE_ORDER == _LITTLE_ENDIAN
 #define SCARG(p, k)	((p)->k.le.datum)	/* get arg from args pointer */
 #else
 #error	"what byte order is this machine?"
