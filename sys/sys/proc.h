@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.83 2005/12/07 19:04:50 deraadt Exp $	*/
+/*	$OpenBSD: proc.h,v 1.84 2005/12/22 06:55:03 tedu Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -470,5 +470,8 @@ void	proc_zap(struct proc *);
 #if defined(MULTIPROCESSOR)
 void	proc_trampoline_mp(void);	/* XXX */
 #endif
+
+int proc_isunder(struct proc *, struct proc *);
+
 #endif	/* _KERNEL */
 #endif	/* !_SYS_PROC_H_ */

@@ -1,4 +1,4 @@
-/* $OpenBSD: linux_getcwd.c,v 1.6 2005/05/26 00:33:45 pedro Exp $ */
+/* $OpenBSD: linux_getcwd.c,v 1.7 2005/06/18 18:09:42 millert Exp $ */
 /* $NetBSD: vfs_getcwd.c,v 1.3.2.3 1999/07/11 10:24:09 sommerfeld Exp $ */
 
 /*-
@@ -47,7 +47,6 @@
 #include <sys/vnode.h>
 #include <sys/mount.h>
 #include <sys/proc.h>
-int proc_isunder(struct proc *, struct proc*); /* missing from proc.h */
 #include <sys/uio.h>
 #include <sys/malloc.h>
 #include <sys/dirent.h>
@@ -72,9 +71,6 @@ linux_getcwd_getcache(struct vnode **, struct vnode **,
 static int
 linux_getcwd_common(struct vnode *, struct vnode *,
 		   char **, char *, int, int, struct proc *);
-
-static int
-linux_vn_isunder(struct vnode *, struct vnode *, struct proc *);
 
 #define DIRENT_MINSIZE (sizeof(struct dirent) - (LINUX_MAXNAMLEN+1) + 4)
 
@@ -489,51 +485,6 @@ out:
 		vput(lvp);
 	vrele(rvp);
 	return error;
-}
-
-/*
- * Check if one directory can be found inside another in the directory
- * hierarchy.
- *
- * Intended to be used in chroot, chdir, fchdir, etc., to ensure that
- * chroot() actually means something.
- */
-static int
-linux_vn_isunder(lvp, rvp, p)
-	struct vnode *lvp;
-	struct vnode *rvp;
-	struct proc *p;
-{
-	int error;
-
-	error = linux_getcwd_common (lvp, rvp, NULL, NULL, MAXPATHLEN/2, 0, p);
-
-	if (!error)
-		return 1;
-	else
-		return 0;
-}
-
-/*
- * Returns true if proc p1's root directory equal to or under p2's
- * root directory.
- *
- * Intended to be used from ptrace/procfs sorts of things.
- */
-
-int proc_isunder (p1, p2)
-	struct proc *p1;
-	struct proc *p2;
-{
-	struct vnode *r1 = p1->p_fd->fd_rdir;
-	struct vnode *r2 = p2->p_fd->fd_rdir;
-
-	if (r1 == NULL)
-		return (r2 == NULL);
-	else if (r2 == NULL)
-		return 1;
-	else
-		return linux_vn_isunder(r1, r2, p2);
 }
 
 /*
