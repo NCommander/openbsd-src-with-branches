@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsmux.c,v 1.14 2005/05/15 19:03:47 deraadt Exp $	*/
+/*	$OpenBSD: wsmux.c,v 1.15 2005/08/14 11:00:15 miod Exp $	*/
 /*      $NetBSD: wsmux.c,v 1.37 2005/04/30 03:47:12 augustss Exp $      */
 
 /*
@@ -812,7 +812,7 @@ wsmux_set_display(struct wsmux_softc *sc, struct device *displaydv)
 ,
 					 me->me_dv.dv_xname, sc->sc_rawkbd));
 				(void)wsevsrc_ioctl(me, WSKBDIO_SETMODE,
-						    &sc->sc_rawkbd, 0, 0);
+						    &sc->sc_rawkbd, FWRITE, 0);
 #endif
 			}
 		}
