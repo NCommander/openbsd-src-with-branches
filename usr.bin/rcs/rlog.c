@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlog.c,v 1.51 2006/04/26 02:55:13 joris Exp $	*/
+/*	$OpenBSD: rlog.c,v 1.52 2006/04/26 21:55:22 joris Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -332,7 +332,7 @@ rlog_rev_print(struct rcs_delta *rdp)
 
 	if (timezone_flag != NULL) {
 		rcs_set_tz(timezone_flag, rdp, &t);
-		fmt = "%Y/%m/%d %H:%M:%S%z";
+		fmt = "%Y-%m-%d %H:%M:%S%z";
 	} else {
 		t = rdp->rd_date;
 		fmt = "%Y/%m/%d %H:%M:%S";
