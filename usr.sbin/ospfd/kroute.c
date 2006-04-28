@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.29 2006/04/18 19:19:18 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.30 2006/04/25 08:01:16 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -535,8 +535,9 @@ kif_validate(int ifindex)
 	struct kif_node		*kif;
 
 	if ((kif = kif_find(ifindex)) == NULL) {
-		log_warnx("interface with index %u not found",
-		    ifindex);
+		if (ifindex > 0)
+			log_warnx("interface with index %u not found",
+			    ifindex);
 		return (1);
 	}
 
