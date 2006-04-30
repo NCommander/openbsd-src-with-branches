@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.37 2006/01/09 12:43:16 pedro Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.38 2006/04/19 11:55:55 pedro Exp $  */
 
 /*
  *  Portions of this code are:
@@ -353,7 +353,7 @@ sync_fsync(void *v)
 	 * Walk the list of vnodes pushing all that are dirty and
 	 * not already on the sync list.
 	 */
-	if (vfs_busy(mp, LK_NOWAIT, NULL) == 0) {
+	if (vfs_busy(mp, LK_NOWAIT) == 0) {
 		asyncflag = mp->mnt_flag & MNT_ASYNC;
 		mp->mnt_flag &= ~MNT_ASYNC;
 		VFS_SYNC(mp, MNT_LAZY, ap->a_cred, ap->a_p);
