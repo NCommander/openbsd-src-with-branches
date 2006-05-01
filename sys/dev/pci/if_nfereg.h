@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfereg.h,v 1.16 2006/02/22 19:23:44 damien Exp $	*/
+/*	$OpenBSD: if_nfereg.h,v 1.17 2006/04/26 02:07:30 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2005 Jonathan Gray <jsg@openbsd.org>
@@ -19,7 +19,7 @@
 #define NFE_PCI_BA		0x10
 
 #define NFE_RX_RING_COUNT	128
-#define NFE_TX_RING_COUNT	64
+#define NFE_TX_RING_COUNT	256
 
 #define NFE_JBYTES		(ETHER_MAX_LEN_JUMBO + ETHER_ALIGN)
 #define NFE_JPOOL_COUNT		(NFE_RX_RING_COUNT + 64)
