@@ -1,4 +1,4 @@
-/*	$OpenBSD: npx.c,v 1.34 2004/07/21 18:39:58 kettenis Exp $	*/
+/*	$OpenBSD: npx.c,v 1.35 2004/10/21 20:58:07 kettenis Exp $	*/
 /*	$NetBSD: npx.c,v 1.57 1996/05/12 23:12:24 mycroft Exp $	*/
 
 #if 0
@@ -636,6 +636,14 @@ npxdna_xmm(struct cpu_info *ci)
 		fldcw(&p->p_addr->u_pcb.pcb_savefpu.sv_xmm.sv_env.en_cw);
 		p->p_md.md_flags |= MDP_USEDFPU;
 	} else {
+		static double	zero = 0.0;
+
+		/*
+		 * amd fpu does not restore fip, fdp, fop on fxrstor
+		 * thus leaking other process's execution history.
+		 */
+		fnclex();
+		__asm __volatile("ffree %%st(7)\n\tfld %0" : : "m" (zero));
 		fxrstor(&p->p_addr->u_pcb.pcb_savefpu.sv_xmm);
 	}
 
