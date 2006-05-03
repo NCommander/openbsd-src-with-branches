@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysdef.h,v 1.12 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: sysdef.h,v 1.13 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -14,7 +14,6 @@
 
 #define	KBLOCK		8192	/* Kill grow.			 */
 #define	GOOD		0	/* Good exit status.		 */
-#define	SYMBLINK	1	/* Handle symbolic links.	 */
 
 typedef int	RSIZE;		/* Type for file/region sizes	 */
 typedef short	KCHAR;		/* Type for internal keystrokes	 */
