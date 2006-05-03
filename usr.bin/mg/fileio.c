@@ -234,9 +234,9 @@ fbackupfile(const char *fn)
 }
 
 /*
- * The string "fn" is a file name.  Perform any required appending of directory
- * name or case adjustments.  The same file should be referred to even if the
- * working directory changes.
+ * Convert "fn" to a canonicalized absolute filename, replacing
+ * a leading ~/ with the user's home dir, following symlinks, and
+ * and remove all occurences of /./ and /../
  */
 char *
 adjustname(const char *fn)
