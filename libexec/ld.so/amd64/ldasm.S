@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.4 2004/05/25 15:56:18 deraadt Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.5 2005/05/04 03:59:24 drahn Exp $	*/
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -89,6 +89,7 @@ DL_SYSCALL(issetugid)
 DL_SYSCALL(getdirentries)
 DL_SYSCALL(mprotect)
 DL_SYSCALL(munmap)
+DL_SYSCALL(gettimeofday)
 DL_SYSCALL(exit)
 DL_SYSCALL2(_syscall,__syscall)
 DL_SYSCALL2(sysctl,__sysctl)

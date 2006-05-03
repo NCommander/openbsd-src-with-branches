@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.2 2004/05/25 21:56:49 deraadt Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.3 2005/01/09 17:57:40 mickey Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -254,6 +254,12 @@ ENTRY(_dl_getdirentries,0)
 	bv	r0(rp)
 	nop
 EXIT(_dl_getdirentries)
+
+ENTRY(_dl_gettimeofday,0)
+	SYSCALL(gettimeofday)
+	bv	r0(rp)
+	nop
+EXIT(_dl_gettimeofday)
 
 ENTRY(_dl_sigprocmask,0)
 	stw	arg2, HPPA_FRAME_ARG(2)(sp)
