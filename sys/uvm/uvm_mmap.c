@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.56 2005/05/24 21:11:47 tedu Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.57 2005/06/01 18:34:40 tedu Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -1197,7 +1197,7 @@ uvm_mmap(map, addr, size, prot, maxprot, flags, handle, foff, locklimit, p)
 		if (*addr & PAGE_MASK)
 			return(EINVAL);
 		uvmflag |= UVM_FLAG_FIXED;
-		uvm_unmap(map, *addr, *addr + size);	/* zap! */
+		uvm_unmap_p(map, *addr, *addr + size, p);	/* zap! */
 	}
 
 	/*
