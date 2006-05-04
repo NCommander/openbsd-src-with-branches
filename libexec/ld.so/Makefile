@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.31 2006/05/03 15:48:16 drahn Exp $
+#	$OpenBSD: Makefile,v 1.32 2006/05/03 16:10:51 drahn Exp $
 
-SUBDIR=ldconfig ldd prebind prebind_strip
+SUBDIR=ldconfig ldd
 #SUBDIR+=prebind prebind_strip
 VPATH=${.CURDIR}/../../lib/libc/string
 
