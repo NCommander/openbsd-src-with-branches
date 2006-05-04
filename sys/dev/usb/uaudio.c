@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.34 2006/01/06 11:34:08 fgsch Exp $ */
+/*	$OpenBSD: uaudio.c,v 1.35 2006/04/21 15:47:27 jolan Exp $ */
 /*	$NetBSD: uaudio.c,v 1.90 2004/10/29 17:12:53 kent Exp $	*/
 
 /*
@@ -2096,6 +2096,12 @@ uaudio_open(void *addr, int flags)
 Static void
 uaudio_close(void *addr)
 {
+	struct uaudio_softc *sc = addr;
+
+	if (sc->sc_playchan.altidx != -1)
+		uaudio_chan_close(sc, &sc->sc_playchan);
+	if (sc->sc_recchan.altidx != -1)
+		uaudio_chan_close(sc, &sc->sc_recchan);
 }
 
 Static int
