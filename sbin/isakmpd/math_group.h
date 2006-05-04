@@ -1,4 +1,4 @@
-/* $OpenBSD: math_group.h,v 1.9 2004/04/07 22:45:49 ho Exp $	 */
+/* $OpenBSD: math_group.h,v 1.10 2004/04/15 18:39:26 deraadt Exp $	 */
 /* $EOM: math_group.h,v 1.7 1999/04/17 23:20:40 niklas Exp $	 */
 
 /*
@@ -56,6 +56,7 @@ struct group {
 	int             (*setraw) (struct group *, void *, u_int8_t *, int);
 	int             (*setrandom) (struct group *, void *);
 	int             (*operation) (struct group *, void *, void *, void *);
+	int             (*validate_public) (struct group *, void *);
 };
 
 /* Description of an Elliptic Group over GF(2**n) for Boot-Strapping */
