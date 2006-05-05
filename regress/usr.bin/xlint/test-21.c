@@ -1,4 +1,4 @@
- /*	$OpenBSD$*/
+ /*	$OpenBSD: test-21.c,v 1.1 2006/05/03 18:45:25 cloder Exp $*/
 
 /*
  * Placed in the public domain by Chad Loder <cloder@openbsd.org>.
@@ -12,6 +12,7 @@ struct foo
 };
 
 int bar(int, unsigned int(int, const struct foo *, int));
+int baz(int *(void *));
 
 /* ARGSUSED */
 int
