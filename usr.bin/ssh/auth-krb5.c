@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  *    Kerberos v5 authentication and ticket-passing routines.
  *
