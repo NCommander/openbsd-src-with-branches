@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.38 2005/08/23 03:59:32 deraadt Exp $       */
+/* $OpenBSD: bioctl.c,v 1.39 2005/08/23 23:20:23 deraadt Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -230,6 +230,13 @@ bio_inq(char *name)
 		warn("BIOCINQ");
 		return;
 	}
+
+	if (debug)
+		printf("bio_inq { %p, %s, %d, %d }\n",
+		    bi.bi_cookie,
+		    bi.bi_dev,
+		    bi.bi_novol,
+		    bi.bi_nodisk);
 
 	volheader = 0;
 	for (i = 0; i < bi.bi_novol; i++) {
