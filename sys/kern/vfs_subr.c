@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.123 2006/04/19 11:55:55 pedro Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.124 2006/04/30 14:20:07 sturm Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -143,7 +143,7 @@ vntblinit(void)
 
 /*
  * Mark a mount point as busy. Used to synchronize access and to delay
- * unmounting. Interlock is not released on failure.
+ * unmounting.
  *
  * historical behavior:
  *  - LK_NOWAIT means that we should just ignore the mount point if it's
