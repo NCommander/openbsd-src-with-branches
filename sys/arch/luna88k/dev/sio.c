@@ -1,4 +1,4 @@
-/* $OpenBSD: sio.c,v 1.1 2004/04/21 15:23:55 aoyama Exp $ */
+/* $OpenBSD: sio.c,v 1.2 2004/07/27 12:36:32 miod Exp $ */
 /* $NetBSD: sio.c,v 1.1 2000/01/05 08:48:55 nisimura Exp $ */
 
 /*-
@@ -45,7 +45,6 @@
 
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
-#include <machine/locore.h>		/* badaddr() */
 
 #include <luna88k/luna88k/isr.h>
 #include <luna88k/dev/siovar.h>

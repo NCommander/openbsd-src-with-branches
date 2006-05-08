@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.44 2005/04/30 16:44:11 miod Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.1 2005/10/24 19:28:30 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -34,8 +34,8 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 
+#include <machine/cpu.h>
 #include <machine/db_machdep.h>		/* local ddb stuff	*/
-#include <machine/locore.h>
 
 void
 m88k_db_prom_cmd(addr, have_addr, count, modif)
