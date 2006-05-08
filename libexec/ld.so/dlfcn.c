@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.71 2005/11/09 16:32:12 kurt Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.72 2006/05/03 15:44:56 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -194,7 +194,7 @@ dlctl(void *handle, int command, void *data)
 		_dl_thread_fnc = data;
 		retval = 0;
 		break;
-	case 0x20:  
+	case 0x20:
 		_dl_show_objects();
 		retval = 0;
 		break;
