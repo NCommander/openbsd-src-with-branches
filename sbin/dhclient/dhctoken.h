@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhctoken.h,v 1.2 2004/02/04 12:16:56 henning Exp $	*/
+/*	$OpenBSD: dhctoken.h,v 1.3 2006/04/18 19:17:54 deraadt Exp $	*/
 
 /* Tokens for config file lexer and parser. */
 
@@ -78,6 +78,7 @@
 #define TOK_PREPEND		291
 #define TOK_REJECT		292
 #define TOK_FDDI		293
+#define TOK_LINK_TIMEOUT	294
 
 #define is_identifier(x)	((x) >= TOK_FIRST_TOKEN &&	\
 				 (x) != TOK_STRING &&	\
