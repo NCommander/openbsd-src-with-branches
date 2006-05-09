@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.14 2005/11/24 12:08:16 pedro Exp $
+#	$OpenBSD: Makefile,v 1.15 2005/12/06 20:18:57 pedro Exp $
 
 # Makefile for kernel tags files, init_sysent, etc.
 
-ARCH=	alpha hp300 hppa i386 m68k mac68k mvme68k mvme88k \
+ARCH=	alpha aviion hp300 hppa i386 m68k mac68k mvme68k mvme88k \
 	mvmeppc powerpc sparc sparc64 vax
 
 all:	init_sysent.c vnode_if.c
