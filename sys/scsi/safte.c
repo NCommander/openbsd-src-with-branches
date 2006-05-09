@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.c,v 1.25 2006/01/11 08:21:21 dlg Exp $ */
+/*	$OpenBSD: safte.c,v 1.26 2006/01/19 17:08:40 grange Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -303,7 +303,7 @@ safte_read_config(struct safte_softc *sc)
 		s->se_field = (u_int8_t *)(sc->sc_encbuf + i);
 		s->se_sensor.type = SENSOR_INDICATOR;
 		snprintf(s->se_sensor.desc, sizeof(s->se_sensor.desc),
-		    "fan%d", i);
+		    "Fan%d", i);
 
 		s++;
 	}
@@ -314,7 +314,7 @@ safte_read_config(struct safte_softc *sc)
 		s->se_field = (u_int8_t *)(sc->sc_encbuf + j + i);
 		s->se_sensor.type = SENSOR_INDICATOR;
 		snprintf(s->se_sensor.desc, sizeof(s->se_sensor.desc),
-		    "psu%d", i);
+		    "PSU%d", i);
 
 		s++;
 	}
@@ -359,7 +359,7 @@ safte_read_config(struct safte_softc *sc)
 		s->se_field = (u_int8_t *)(sc->sc_encbuf + j + i);
 		s->se_sensor.type = SENSOR_TEMP;
 		snprintf(s->se_sensor.desc, sizeof(s->se_sensor.desc),
-		    "temp%d", i);
+		    "Temp%d", i);
 
 		s++;
 	}
