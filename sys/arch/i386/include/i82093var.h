@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82093var.h,v 1.3 2004/06/23 17:14:31 niklas Exp $	*/
+/*	$OpenBSD: i82093var.h,v 1.4 2005/11/23 09:24:52 mickey Exp $	*/
 /* $NetBSD: i82093var.h,v 1.1 2003/02/26 21:26:10 fvdl Exp $ */
 
 /*-
@@ -60,6 +60,7 @@ struct ioapic_softc {
 	struct ioapic_softc	*sc_next;
 	int			sc_apicid;
 	int			sc_apic_vers;
+	int			sc_apic_vecbase; /* global int base if ACPI */
 	int			sc_apic_sz;	/* apic size*/
 	int			sc_flags;
 	paddr_t			sc_pa;		/* PA of ioapic */
