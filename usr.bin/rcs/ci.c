@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.169 2006/05/05 01:29:59 ray Exp $	*/
+/*	$OpenBSD: ci.c,v 1.170 2006/05/08 16:56:40 xsa Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -199,7 +199,6 @@ checkin_main(int argc, char **argv)
 		case 'V':
 			printf("%s\n", rcs_version);
 			exit(0);
-			/* NOTREACHED */
 		case 'w':
 			if (pb.author != NULL)
 				xfree(pb.author);

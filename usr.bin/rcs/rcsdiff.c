@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.62 2006/05/08 09:48:12 xsa Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.63 2006/05/08 09:59:09 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -92,7 +92,6 @@ rcsdiff_main(int argc, char **argv)
 		case 'V':
 			printf("%s\n", rcs_version);
 			exit(0);
-			/* NOTREACHED */
 		case 'x':
 			/* Use blank extension if none given. */
 			rcs_suffixes = rcs_optarg ? rcs_optarg : "";

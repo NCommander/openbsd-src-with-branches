@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsclean.c,v 1.44 2006/04/26 02:55:13 joris Exp $	*/
+/*	$OpenBSD: rcsclean.c,v 1.45 2006/04/26 21:55:22 joris Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -78,7 +78,6 @@ rcsclean_main(int argc, char **argv)
 		case 'V':
 			printf("%s\n", rcs_version);
 			exit(0);
-			/* NOTREACHED */
 		case 'x':
 			/* Use blank extension if none given. */
 			rcs_suffixes = rcs_optarg ? rcs_optarg : "";
