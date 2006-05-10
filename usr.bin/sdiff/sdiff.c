@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdiff.c,v 1.16 2006/02/20 08:29:44 otto Exp $ */
+/*	$OpenBSD: sdiff.c,v 1.17 2006/03/05 07:12:26 otto Exp $ */
 
 /*
  * Written by Raymond Lai <ray@cyth.net>.
@@ -235,17 +235,14 @@ main(int argc, char **argv)
 			break;
 		default:
 			usage();
-			/* NOTREACHED */
 		}
 
 	}
 	argc -= optind;
 	argv += optind;
 
-	if (argc != 2) {
+	if (argc != 2)
 		usage();
-		/* NOTREACHED */
-	}
 
 	filename1 = argv[0];
 	filename2 = argv[1];
