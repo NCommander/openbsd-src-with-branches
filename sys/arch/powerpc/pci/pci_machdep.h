@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.12 2002/07/23 17:53:25 drahn Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.14 2002/09/15 09:01:59 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Carnegie-Mellon University.
@@ -84,6 +84,7 @@ int		pci_intr_line(pci_intr_handle_t ih);
 #define	pci_intr_map(pa, ihp)						\
     (*((pa)->pa_pc)->pc_intr_map)((pa)->pa_pc->pc_intr_v, 		\
 	(pa)->pa_intrtag, (pa)->pa_intrpin, (pa)->pa_intrline, (ihp))
+#define	pci_intr_line(ih)	(ih)
 #define	pci_intr_string(c, ih)						\
     (*(c)->pc_intr_string)((c)->pc_intr_v, (ih))
 #define	pci_intr_establish(c, ih, l, h, a, nm)				\
