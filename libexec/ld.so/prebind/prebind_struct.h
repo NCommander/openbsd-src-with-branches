@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: prebind_struct.h,v 1.2 2006/05/04 15:33:15 drahn Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
@@ -79,3 +79,6 @@ void elf_dump_footer(struct prebind_footer *footer);
 
 extern int verbose;
 void elf_load_existing_prebind(struct elf_object *object, int fd);
+
+void *xmalloc(size_t);
+void *xcalloc(size_t,size_t);
