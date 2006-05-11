@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm86.c,v 1.14 2002/03/14 01:26:33 millert Exp $	*/
+/*	$OpenBSD: vm86.c,v 1.15 2003/01/09 22:27:09 miod Exp $	*/
 /*	$NetBSD: vm86.c,v 1.15 1996/05/03 19:42:33 christos Exp $	*/
 
 /*-
@@ -178,14 +178,14 @@ fast_intxx(p, intrno)
 
 	u_long ss, sp;
 
-	/* 
+	/*
 	 * Note: u_vm86p points to user-space, we only compute offsets
 	 * and don't deref it. is_revectored() above does copyin() to
 	 * get stuff from it
 	 */
 	u_vm86p = (struct vm86_struct *)p->p_addr->u_pcb.vm86_userp;
 
-	/* 
+	/*
 	 * If user requested special handling, return to user space with
 	 * indication of which INT was requested.
 	 */

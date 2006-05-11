@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.48 2006/03/04 19:33:21 miod Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.49 2006/03/15 20:20:39 miod Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -121,7 +121,7 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 			bp->b_flags = B_BUSY | B_READ;
 			bp->b_cylinder = part_blkno / lp->d_secpercyl;
 			(*strat)(bp);
-		     
+
 			/* if successful, wander through dos partition table */
 			if (biowait(bp)) {
 				msg = "dos partition I/O error";

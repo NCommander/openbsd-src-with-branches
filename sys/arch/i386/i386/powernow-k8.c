@@ -1,4 +1,4 @@
-/*	$OpenBSD: powernow-k8.c,v 1.8 2006/03/20 12:08:59 dlg Exp $ */
+/*	$OpenBSD: powernow-k8.c,v 1.9 2006/04/18 02:14:33 gwk Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -335,7 +335,7 @@ k8pnow_states(struct k8pnow_cpu_state *cstate, uint32_t cpusig,
 	int i;
 
 	for (p = (u_int8_t *)ISA_HOLE_VADDR(BIOS_START);
-	    p < (u_int8_t *)ISA_HOLE_VADDR(BIOS_START + BIOS_LEN); p += 
+	    p < (u_int8_t *)ISA_HOLE_VADDR(BIOS_START + BIOS_LEN); p +=
 	    BIOS_STEP) {
 		if (memcmp(p, "AMDK7PNOW!", 10) == 0) {
 			psb = (struct psb_s *)p;
