@@ -1,4 +1,4 @@
-/* $OpenBSD: debug.c,v 1.3 2006/05/08 20:34:36 deraadt Exp $ */
+/* $OpenBSD: debug.c,v 1.4 2006/05/08 20:39:44 deraadt Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *

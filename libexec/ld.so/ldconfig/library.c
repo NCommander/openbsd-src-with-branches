@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: objarray.c,v 1.8 2006/05/12 15:12:42 drahn Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
