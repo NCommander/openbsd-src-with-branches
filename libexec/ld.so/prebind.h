@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: prebind.h,v 1.1 2006/05/03 16:10:51 drahn Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
@@ -59,6 +59,6 @@ struct symcachetab {
 
 struct fixup {
 	u_int32_t sym;
-	u_int32_t targobj_idx;
+	u_int32_t obj_idx;
 	u_int32_t sym_idx;
 };
