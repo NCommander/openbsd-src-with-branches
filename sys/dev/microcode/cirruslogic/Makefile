@@ -1,10 +1,10 @@
-# $OpenBSD: Makefile,v 1.1 2004/12/19 16:06:23 deraadt Exp $
+# $OpenBSD: Makefile,v 1.2 2005/06/16 08:23:49 markus Exp $
 
 NOPROG=
 NOMAN=
 
 # PCI capable systems only
-.if (${MACHINE} == "i386")
+.if (${MACHINE} == "i386") || (${MACHINE} == "amd64")
 
 FIRM=	cs4280
 
