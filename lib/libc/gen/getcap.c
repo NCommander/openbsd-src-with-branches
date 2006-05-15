@@ -1,4 +1,4 @@
-/*	$OpenBSD: getcap.c,v 1.25 2006/03/18 03:55:09 ray Exp $ */
+/*	$OpenBSD: getcap.c,v 1.26 2006/03/22 02:42:11 ray Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -591,6 +591,8 @@ cgetmatch(char *buf, const char *name)
 	char *bp;
 	const char *np;
 
+	if (*name == '\0')
+		return (-1);
 	/*
 	 * Start search at beginning of record.
 	 */
