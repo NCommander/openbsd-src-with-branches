@@ -1,4 +1,4 @@
-/* $OpenBSD: mfireg.h,v 1.9 2006/04/21 21:39:32 marco Exp $ */
+/* $OpenBSD: mfireg.h,v 1.10 2006/05/10 21:48:50 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -291,6 +291,7 @@ struct mfi_io_frame {
 	union mfi_sgl		mif_sgl;
 } __packed;
 
+#define MFI_PASS_FRAME_SIZE	48
 struct mfi_pass_frame {
 	struct mfi_frame_header mpf_header;
 	uint32_t		mpf_sense_addr_lo;
