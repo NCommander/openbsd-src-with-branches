@@ -1,4 +1,4 @@
-/* $OpenBSD: ipmivar.h,v 1.11 2006/05/06 15:05:19 wilfried Exp $ */
+/* $OpenBSD: ipmivar.h,v 1.12 2006/05/08 22:51:18 gwk Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -96,6 +96,8 @@ struct ipmi_softc {
 	int                 sc_max_retries;
 	int                 sc_retries;
 	int                 sc_wakeup;
+
+	struct lock         sc_lock;
 
 	struct ipmi_bmc_args *sc_iowait_args;
 };
