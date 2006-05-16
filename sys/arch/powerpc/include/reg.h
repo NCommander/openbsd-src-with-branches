@@ -1,4 +1,4 @@
-/*	$OpenBSD: reg.h,v 1.8 2002/09/15 09:01:59 deraadt Exp $	*/
+/*	$OpenBSD: reg.h,v 1.9 2003/06/02 23:27:53 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -43,7 +43,6 @@
  * That array has to look exactly like 'struct reg' though.
  */
 
-/* this table is set up to match what gdb expects */
 struct reg {
 	u_int32_t gpr[32];
 	u_int64_t fpr[32];
@@ -54,6 +53,11 @@ struct reg {
 	u_int32_t cnt;
 	u_int32_t xer;
 	u_int32_t mq;
+};
+
+struct fpreg {
+	u_int64_t fpr[32];
+	u_int32_t fpscr;
 };
 
 struct vreg {
