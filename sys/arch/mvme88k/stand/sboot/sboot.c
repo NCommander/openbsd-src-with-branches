@@ -1,8 +1,8 @@
-/*	$OpenBSD: sboot.c,v 1.2 2001/07/04 08:09:31 niklas Exp $	*/
+/*	$OpenBSD: sboot.c,v 1.3 2003/06/04 16:36:15 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995 Theo de Raadt
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -75,7 +75,7 @@ main()
 /*
  * exit to rom
  */
-void 
+void
 callrom()
 {
 	asm("trap #15; .word 0x0063");
@@ -84,7 +84,7 @@ callrom()
 /*
  * do_cmd: do a command
  */
-void 
+void
 do_cmd(buf)
 	char   *buf;
 {

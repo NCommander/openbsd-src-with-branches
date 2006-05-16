@@ -1,8 +1,8 @@
-/*	$OpenBSD: XBUG.S,v 1.3 2002/07/10 20:30:14 jsyn Exp $	*/
+/*	$OpenBSD: XBUG.S,v 1.4 2003/06/04 16:36:15 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995 Theo de Raadt
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,7 +28,7 @@
 /*
  * Theo says: I wrote a bootrom for the MVME147 *years* ago. To write
  * this ROM I copied a few chunks from the old bootrom, like this piece:
- * 
+ *
  * "watch this, the moto bastard struck here, shouldn't have hired people
  * from intel I tried to tell them...
  *       "BOOT"

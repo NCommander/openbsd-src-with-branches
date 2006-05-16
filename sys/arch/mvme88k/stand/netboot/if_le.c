@@ -1,8 +1,8 @@
-/*	$OpenBSD: if_le.c,v 1.4 2002/03/14 01:26:40 millert Exp $ */
+/*	$OpenBSD: if_le.c,v 1.5 2003/06/04 16:36:15 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:

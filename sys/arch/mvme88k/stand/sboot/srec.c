@@ -1,8 +1,8 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: srec.c,v 1.2 2001/04/30 00:06:34 miod Exp $	*/
 
 /*
  * Public domain, believed to be by Mike Price.
- * 
+ *
  * convert binary file to Srecord format
  */
 #include <stdio.h>
