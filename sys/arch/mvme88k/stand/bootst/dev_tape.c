@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_tape.c,v 1.1 1998/12/15 06:09:51 smurph Exp $ */
+/*	$OpenBSD: dev_tape.c,v 1.2 2002/03/14 03:15:57 millert Exp $ */
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -75,7 +75,6 @@ tape_open(f, fname)
 	struct open_file *f;
 	char *fname;		/* partition number, i.e. "1" */
 {
-	int	error = 0;
 	int  	part;
 	struct mvmeprom_dskio *ti;
 
