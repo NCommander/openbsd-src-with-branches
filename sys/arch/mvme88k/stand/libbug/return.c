@@ -1,4 +1,4 @@
-/*	$OpenBSD: return.c,v 1.2 2001/07/04 08:09:29 niklas Exp $	*/
+/*	$OpenBSD: return.c,v 1.3 2003/09/07 21:35:35 miod Exp $	*/
 
 /*
  * bug routines -- assumes that the necessary sections of memory
@@ -8,14 +8,6 @@
 #include <machine/prom.h>
 #include "stand.h"
 #include "prom.h"
-
-/* BUG - return to bug routine */
-void
-mvmeprom_return()
-{
-	MVMEPROM_CALL(MVMEPROM_EXIT);
-	/*NOTREACHED*/
-}
 
 /* BUG - return to bug routine */
 __dead void
