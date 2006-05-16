@@ -1,4 +1,4 @@
-/* $OpenBSD: mfivar.h,v 1.14 2006/05/10 21:48:50 marco Exp $ */
+/* $OpenBSD: mfivar.h,v 1.15 2006/05/15 23:20:57 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -17,7 +17,7 @@
 
 #define DEVNAME(_s)     ((_s)->sc_dev.dv_xname)
 
-#define MFI_DEBUG
+/* #define MFI_DEBUG */
 #ifdef MFI_DEBUG
 extern uint32_t			mfi_debug;
 #define DPRINTF(x...)		do { if (mfi_debug) printf(x); } while(0)
