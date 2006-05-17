@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcp.c,v 1.43 2006/03/12 01:51:15 djm Exp $	*/
+/*	$OpenBSD: rcp.c,v 1.44 2006/03/23 02:48:57 deraadt Exp $	*/
 /*	$NetBSD: rcp.c,v 1.9 1995/03/21 08:19:06 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rcp.c	8.2 (Berkeley) 4/2/94";
 #else
-static const char rcsid[] = "$OpenBSD: rcp.c,v 1.43 2006/03/12 01:51:15 djm Exp $";
+static const char rcsid[] = "$OpenBSD: rcp.c,v 1.44 2006/03/23 02:48:57 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -326,6 +326,7 @@ toremote(char *targ, int argc, char *argv[])
 		}
 	}
 	free(user);
+	free(arg);
 }
 
 void
