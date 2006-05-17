@@ -1,4 +1,4 @@
-/*	$OpenBSD: libbug.h,v 1.3 2002/03/14 03:15:57 millert Exp $ */
+/*	$OpenBSD: libbug.h,v 1.4 2006/05/16 22:51:30 miod Exp $ */
 
 /*
  * prototypes and such.   note that get/put char are in stand.h
@@ -7,7 +7,7 @@
 void	mvmeprom_delay(int);
 int	mvmeprom_diskrd(struct mvmeprom_dskio *);
 int	mvmeprom_diskwr(struct mvmeprom_dskio *);
-struct mvmeprom_brdid *mvmeprom_getbrdid(void);
+struct mvmeprom_brdid *mvmeprom_brdid(void);
 int	mvmeprom_netfopen(struct mvmeprom_netfopen *);
 int	mvmeprom_netfread(struct mvmeprom_netfread *);
 void	mvmeprom_outln(char *, char *);
