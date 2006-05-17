@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.180 2006/03/25 13:17:02 djm Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.181 2006/04/20 09:47:59 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -918,6 +918,7 @@ ssh_login(Sensitive *sensitive, const char *orighost,
 		ssh_kex(host, hostaddr);
 		ssh_userauth1(local_user, server_user, host, sensitive);
 	}
+	xfree(local_user);
 }
 
 void
