@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.75 2006/04/27 15:37:53 mickey Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.76 2006/05/09 09:38:35 otto Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -355,7 +355,7 @@ void	i8254_initclocks(void);
 
 /* est.c */
 #if !defined(SMALL_KERNEL) && defined(I686_CPU)
-void	est_init(const char *);
+void	est_init(const char *, int);
 int     est_setperf(int);
 #endif
 
