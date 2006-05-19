@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_bootstrap.c,v 1.20 2005/10/27 16:04:08 martin Exp $ */
+/*	$OpenBSD: pmap_bootstrap.c,v 1.21 2005/11/24 22:43:19 miod Exp $ */
 
 /* 
  * Copyright (c) 1995 Theo de Raadt
@@ -76,7 +76,7 @@ void *etherbuf;
 int etherlen;
 
 extern vaddr_t extiobase;
-extern int maxmem;
+extern int physmem;
 
 #define	RELOC(v, t)	*((t*)((u_int)&(v) + firstpa))
 #define	PA2VA(v, t)	*((t*)((u_int)&(v)))
@@ -120,7 +120,7 @@ do { \
 
 #define	PMAP_MD_MEMSIZE() \
 do { \
-	RELOC(avail_end, paddr_t) = ptoa(RELOC(maxmem, int)) - \
+	RELOC(avail_end, paddr_t) = ptoa(RELOC(physmem, int)) - \
 	    (round_page(MSGBUFSIZE) + ptoa(1)); \
 } while (0)
 
