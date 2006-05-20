@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.78 2006/03/16 02:32:37 brad Exp $	*/
+/*	$OpenBSD: if_ti.c,v 1.79 2006/03/25 22:41:45 djm Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1652,7 +1652,7 @@ ti_attach(struct device *parent, struct device *self, void *aux)
 	IFQ_SET_READY(&ifp->if_snd);
 	bcopy(sc->sc_dv.dv_xname, ifp->if_xname, IFNAMSIZ);
 
-	ifp->if_capabilities = IFCAP_VLAN_MTU;
+	ifp->if_capabilities = IFCAP_VLAN_MTU | IFCAP_JUMBO_MTU;
 
 #if TI_VLAN
 #if NVLAN > 0
