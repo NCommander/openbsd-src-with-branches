@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.46 2006/05/08 22:51:18 gwk Exp $	*/
+/*	$OpenBSD: biosvar.h,v 1.47 2006/05/09 15:16:58 tom Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -196,6 +196,11 @@ typedef struct _bios_consdev {
 } bios_consdev_t;
 
 #define BOOTARG_SMPINFO 6		/* struct mp_float[] */
+
+#define BOOTARG_BOOTMAC	7
+typedef struct _bios_bootmac {
+	char	mac[6];
+} bios_bootmac_t;
 
 #if defined(_KERNEL) || defined (_STANDALONE)
 
