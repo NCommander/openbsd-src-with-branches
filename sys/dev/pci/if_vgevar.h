@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_vgevar.h,v 1.1 2004/12/01 01:29:00 pvalchev Exp $	*/
 /*	$FreeBSD: if_vgevar.h,v 1.1 2004/09/10 20:57:45 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -31,8 +31,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#define VGE_JUMBO_MTU	9000
 
 #define VGE_IFQ_MAXLEN 64
 
