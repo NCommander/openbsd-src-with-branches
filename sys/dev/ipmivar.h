@@ -1,4 +1,4 @@
-/* $OpenBSD: ipmivar.h,v 1.13 2006/05/15 00:46:55 marco Exp $ */
+/* $OpenBSD: ipmivar.h,v 1.14 2006/05/15 00:50:57 marco Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -31,6 +31,7 @@
 #define _IPMIVAR_H_
 
 #include <sys/timeout.h>
+#include <sys/rwlock.h>
 
 #define IPMI_IF_KCS		1
 #define IPMI_IF_SMIC		2
@@ -97,7 +98,7 @@ struct ipmi_softc {
 	int			sc_retries;
 	int			sc_wakeup;
 
-	struct lock		sc_lock;
+	struct rwlock		sc_lock;
 
 	struct ipmi_bmc_args	*sc_iowait_args;
 };
