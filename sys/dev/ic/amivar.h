@@ -1,4 +1,4 @@
-/*	$OpenBSD: amivar.h,v 1.46 2006/04/20 04:39:11 dlg Exp $	*/
+/*	$OpenBSD: amivar.h,v 1.47 2006/04/20 13:02:26 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -110,7 +110,7 @@ struct ami_softc {
 	volatile struct ami_iocmd *sc_mbox;
 	paddr_t			sc_mbox_pa;
 
-	struct ami_ccb		sc_ccbs[AMI_MAXCMDS];
+	struct ami_ccb		*sc_ccbs;
 	struct ami_ccb_list	sc_ccb_freeq, sc_ccb_preq, sc_ccb_runq;
 
 	struct ami_mem		*sc_ccbmem_am;
