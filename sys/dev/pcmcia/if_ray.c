@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ray.c,v 1.30 2005/11/23 11:39:37 mickey Exp $	*/
+/*	$OpenBSD: if_ray.c,v 1.31 2006/03/25 22:41:46 djm Exp $	*/
 /*	$NetBSD: if_ray.c,v 1.21 2000/07/05 02:35:54 onoe Exp $	*/
 
 /*
@@ -717,8 +717,10 @@ ray_detach(self, flags)
 
 	ether_ifdetach(ifp);
 	if_detach(ifp);
-	powerhook_disestablish(sc->sc_pwrhook);
-	shutdownhook_disestablish(sc->sc_sdhook);
+	if (sc->sc_pwrhook != NULL)
+		powerhook_disestablish(sc->sc_pwrhook);
+	if (sc->sc_sdhook != NULL)
+		shutdownhook_disestablish(sc->sc_sdhook);
 
 	return (0);
 }

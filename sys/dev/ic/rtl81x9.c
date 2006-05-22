@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9.c,v 1.48 2006/03/25 22:41:43 djm Exp $ */
+/*	$OpenBSD: rtl81x9.c,v 1.49 2006/04/20 20:31:12 miod Exp $ */
 
 /*
  * Copyright (c) 1997, 1998
@@ -1360,8 +1360,10 @@ rl_detach(sc)
 	ether_ifdetach(ifp);
 	if_detach(ifp);
 
-	shutdownhook_disestablish(sc->sc_sdhook);
-	powerhook_disestablish(sc->sc_pwrhook);
+	if (sc->sc_sdhook != NULL)
+		shutdownhook_disestablish(sc->sc_sdhook);
+	if (sc->sc_pwrhook != NULL)
+		powerhook_disestablish(sc->sc_pwrhook);
 
 	return (0);
 }
