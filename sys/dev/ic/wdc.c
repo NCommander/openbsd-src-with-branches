@@ -1,4 +1,4 @@
-/*      $OpenBSD: wdc.c,v 1.91 2006/05/07 03:00:14 jsg Exp $     */
+/*      $OpenBSD: wdc.c,v 1.92 2006/05/08 00:18:40 jsg Exp $     */
 /*	$NetBSD: wdc.c,v 1.68 1999/06/23 19:00:17 bouyer Exp $ */
 
 
@@ -683,7 +683,7 @@ wdcprobe(chp)
 	}
 
 	/* reset the channel */
-	chp->wdc->reset(chp);
+	wdc_do_reset(chp);
 
 	ret_value = __wdcwait_reset(chp, ret_value);
 	WDCDEBUG_PRINT(("%s:%d: after reset, ret_value=0x%d\n",
