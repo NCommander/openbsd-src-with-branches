@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.222 2005/11/04 08:24:15 mcbride Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.223 2006/03/21 03:31:09 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1225,7 +1225,8 @@ ifa_grouplookup(const char *ifa_name, int flags)
 	for (ifg = ifgr.ifgr_groups; ifg && len >= sizeof(struct ifg_req);
 	    ifg++) {
 		len -= sizeof(struct ifg_req);
-		n = ifa_lookup(ifg->ifgrq_member, flags);
+		if ((n = ifa_lookup(ifg->ifgrq_member, flags)) == NULL)
+			continue;
 		if (h == NULL)
 			h = n;
 		else {
