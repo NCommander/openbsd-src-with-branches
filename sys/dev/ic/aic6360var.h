@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic6360var.h,v 1.2 2002/03/14 01:26:54 millert Exp $	*/
+/*	$OpenBSD: aic6360var.h,v 1.3 2003/05/14 09:04:59 jason Exp $	*/
 /*	$NetBSD: aic6360.c,v 1.52 1996/12/10 21:27:51 thorpej Exp $	*/
 
 /*
@@ -56,12 +56,14 @@
 typedef u_long physaddr;
 typedef u_long physlen;
 
+#ifdef notyet
 struct aic_dma_seg {
 	physaddr seg_addr;
 	physlen seg_len;
 };
 
 #define AIC_NSEG	16
+#endif
 
 /*
  * ACB. Holds additional information for each SCSI command Comments: We
