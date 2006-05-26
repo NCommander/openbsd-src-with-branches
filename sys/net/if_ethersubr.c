@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.100 2006/03/04 22:40:15 brad Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.101 2006/05/19 19:50:23 reyk Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -833,14 +833,8 @@ ether_ifattach(ifp)
 	ifp->if_mtu = ETHERMTU;
 	ifp->if_output = ether_output;
 
-	/*
-	 * If the device supports sending of jumbo frames,
-	 * either use the default maximum jumbo frame size
-	 * or the one specified by the driver.
-	 */
-	if (ifp->if_capabilities & IFCAP_JUMBO_MTU &&
-	    ifp->if_jumbo_mtu == 0)
-		ifp->if_jumbo_mtu = ETHERMTU_JUMBO;
+	if (ifp->if_hardmtu == 0)
+		ifp->if_hardmtu = ETHERMTU;
 
 	if_alloc_sadl(ifp);
 	bcopy((caddr_t)((struct arpcom *)ifp)->ac_enaddr,

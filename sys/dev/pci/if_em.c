@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_em.c,v 1.123 2006/05/25 14:31:37 jason Exp $ */
+/* $OpenBSD: if_em.c,v 1.124 2006/05/25 18:27:34 brad Exp $ */
 /* $FreeBSD: if_em.c,v 1.46 2004/09/29 18:28:28 mlaier Exp $ */
 
 #include <dev/pci/if_em.h>
@@ -1512,7 +1512,7 @@ em_setup_interface(struct em_softc *sc)
 	ifp->if_start = em_start;
 	ifp->if_watchdog = em_watchdog;
 	if (sc->hw.mac_type != em_82573) {
-		ifp->if_jumbo_mtu =
+		ifp->if_hardmtu =
 			sc->hw.max_frame_size - ETHER_HDR_LEN - ETHER_CRC_LEN;
 		ifp->if_capabilities |= IFCAP_JUMBO_MTU;
 	}
