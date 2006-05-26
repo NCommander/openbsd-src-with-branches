@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.20 2005/12/29 04:33:58 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.21 2006/05/15 20:53:02 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
@@ -1133,9 +1133,7 @@ lgetc(void)
 	while ((c = getc(file->stream)) == '\\') {
 		next = getc(file->stream);
 		if (next != '\n') {
-			if (isspace(next))
-				yyerror("whitespace after \\");
-			ungetc(next, file->stream);
+			c = next;
 			break;
 		}
 		yylval.lineno = file->lineno;
