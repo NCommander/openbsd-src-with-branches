@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_boot.c,v 1.15 2002/06/02 01:47:08 deraadt Exp $ */
+/*	$OpenBSD: nfs_boot.c,v 1.16 2004/11/04 13:14:29 pedro Exp $ */
 /*	$NetBSD: nfs_boot.c,v 1.26 1996/05/07 02:51:25 thorpej Exp $	*/
 
 /*
@@ -152,7 +152,8 @@ nfs_boot_init(nd, procp)
 	if (ifp == NULL)
 		panic("nfs_boot: no suitable interface");
 	bcopy(ifp->if_xname, ireq.ifr_name, IFNAMSIZ);
-	printf("nfs_boot: using network interface '%s'\n", ireq.ifr_name);
+	printf("nfs_boot: using interface %s, with revarp & bootparams\n",
+	    ireq.ifr_name);
 
 	/*
 	 * Bring up the interface.
