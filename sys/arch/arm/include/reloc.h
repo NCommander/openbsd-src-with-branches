@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* Processor specific relocation types */
 
 #define R_ARM_NONE		0
