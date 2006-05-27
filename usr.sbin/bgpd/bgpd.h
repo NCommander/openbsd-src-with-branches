@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.199 2006/04/26 17:13:14 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.200 2006/05/23 12:11:38 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -346,7 +346,8 @@ enum ctl_results {
 	CTL_RES_OK,
 	CTL_RES_NOSUCHPEER,
 	CTL_RES_DENIED,
-	CTL_RES_NOCAP
+	CTL_RES_NOCAP,
+	CTL_RES_PARSE_ERROR
 };
 
 /* needed for session.h parse prototype */

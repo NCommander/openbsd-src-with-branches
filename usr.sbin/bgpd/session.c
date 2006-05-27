@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.247 2006/05/23 12:11:38 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.248 2006/05/27 15:43:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -2394,6 +2394,7 @@ session_dispatch_imsg(struct imsgbuf *ibuf, int idx, u_int *listener_cnt)
 			control_imsg_relay(&imsg);
 			break;
 		case IMSG_CTL_END:
+		case IMSG_CTL_RESULT:
 			control_imsg_relay(&imsg);
 			break;
 		case IMSG_UPDATE:
