@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.34 2006/03/25 22:41:41 djm Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.35 2006/04/16 00:46:32 pascoe Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.33 1997/07/29 17:55:38 fair Exp $	*/
 
 /*-
@@ -2012,7 +2012,7 @@ ieioctl(ifp, cmd, data)
 		break;
 
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 	}
 	splx(s);
 	return error;
