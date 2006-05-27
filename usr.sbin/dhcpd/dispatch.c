@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.17 2006/03/16 15:44:40 claudio Exp $ */
+/*	$OpenBSD: dispatch.c,v 1.18 2006/05/11 01:19:08 krw Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -210,9 +210,9 @@ discover_interfaces(void)
 	for (tmp = interfaces; tmp; tmp = next) {
 		next = tmp->next;
 		if (!tmp->ifp) {
-			if (ir)
-				warning("%s: not found", tmp->name);
-			/* Remove tmp from the list of interfaces. */	
+			warning("%s: no IP address found, can't listen.",
+			    tmp->name);
+			/* Remove tmp from the list of interfaces. */
 			if (!last)
 				interfaces = interfaces->next;
 			else
