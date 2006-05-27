@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.72 2006/03/25 22:41:43 djm Exp $	*/
+/*	$OpenBSD: xl.c,v 1.73 2006/05/22 20:35:12 krw Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -101,7 +101,6 @@
  */
 
 #include "bpfilter.h"
-#include "vlan.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
