@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.64 2006/03/05 21:48:57 miod Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.65 2006/05/24 18:43:10 thib Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -901,7 +901,7 @@ ip6_savecontrol(in6p, mp, ip6, m)
 # define in6p_flags	inp_flags
 
 #ifdef SO_TIMESTAMP
-	if (in6p->in6p_socket->so_options & SO_TIMESTAMP) {
+	if (in6p->inp_socket->so_options & SO_TIMESTAMP) {
 		struct timeval tv;
 
 		microtime(&tv);
