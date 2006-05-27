@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.57 2006/04/26 02:07:29 jsg Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.58 2006/05/20 03:47:56 brad Exp $	*/
 
 /*-
  * Copyright (c) 2006 Damien Bergamini <damien.bergamini@free.fr>
@@ -259,7 +259,7 @@ nfe_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_capabilities = IFCAP_VLAN_MTU;
 
 	if (sc->sc_flags & NFE_USE_JUMBO)
-		ifp->if_capabilities |= IFCAP_JUMBO_MTU;
+		ifp->if_hardmtu = ETHERMTU_JUMBO;
 
 #if NVLAN > 0
 	if (sc->sc_flags & NFE_HW_VLAN)

@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.c,v 1.15 2006/05/20 03:47:56 brad Exp $ */
+/* $OpenBSD: if_ixgb.c,v 1.16 2006/05/26 20:50:41 deraadt Exp $ */
 
 #include <dev/pci/if_ixgb.h>
 
@@ -1039,7 +1039,7 @@ ixgb_setup_interface(struct ixgb_softc *sc)
 	IFQ_SET_MAXLEN(&ifp->if_snd, sc->num_tx_desc - 1);
 	IFQ_SET_READY(&ifp->if_snd);
 
-	ifp->if_capabilities = IFCAP_VLAN_MTU | IFCAP_JUMBO_MTU;
+	ifp->if_capabilities = IFCAP_VLAN_MTU;
 
 	/*
 	 * Specify the media types supported by this adapter and register
