@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.h,v 1.29 2004/11/23 19:08:55 miod Exp $	*/
+/*	$OpenBSD: device.h,v 1.30 2006/01/21 12:20:53 miod Exp $	*/
 /*	$NetBSD: device.h,v 1.15 1996/04/09 20:55:24 cgd Exp $	*/
 
 /*
@@ -56,7 +56,8 @@ enum devclass {
 	DV_DISK,		/* disk drive (label, etc) */
 	DV_IFNET,		/* network interface */
 	DV_TAPE,		/* tape device */
-	DV_TTY			/* serial line interface (???) */
+	DV_TTY,			/* serial line interface (???) */
+	DV_SENSOR		/* sensor stuff */
 };
 
 /*
