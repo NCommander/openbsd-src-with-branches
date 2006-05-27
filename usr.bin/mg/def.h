@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.86 2006/05/02 17:10:25 kjell Exp $	*/
+/*	$OpenBSD: def.h,v 1.87 2006/05/08 21:24:24 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -350,6 +350,7 @@ int		 lnewline(void);
 int		 ldelete(RSIZE, int);
 int		 ldelnewline(void);
 int		 lreplace(RSIZE, char *);
+char *		 linetostr(const struct line *);
 
 /* yank.c X */
 
