@@ -1,5 +1,5 @@
 /*	$NetBSD: mem.c,v 1.31 1996/05/03 19:42:19 christos Exp $	*/
-/*	$OpenBSD: mem.c,v 1.28 2005/11/13 14:23:26 martin Exp $ */
+/*	$OpenBSD: mem.c,v 1.29 2006/05/11 13:21:11 mickey Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -327,8 +327,7 @@ mem_ioctl(dev, cmd, data, flags, p)
 		break;
 		
 	case MEMRANGE_SET:
-		md = (struct mem_range_desc *)malloc(sizeof(struct mem_range_desc),
-						    M_MEMDESC, M_WAITOK);
+		md = malloc(sizeof(struct mem_range_desc), M_MEMDESC, M_WAITOK);
 		error = copyin(mo->mo_desc, md, sizeof(struct mem_range_desc));
 		/* clamp description string */
 		md->mr_owner[sizeof(md->mr_owner) - 1] = 0;
