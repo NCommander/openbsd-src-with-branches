@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.60 2006/05/27 05:20:25 joris Exp $	*/
+/*	$OpenBSD: update.c,v 1.61 2006/05/27 15:14:27 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -44,7 +44,7 @@ cvs_update(int argc, char **argv)
 	int flags;
 	struct cvs_recursion cr;
 
-	flags = CR_RECURSE_DIRS;
+	flags = CR_REPO | CR_RECURSE_DIRS;
 
 	while ((ch = getopt(argc, argv, cvs_cmd_update.cmd_opts)) != -1) {
 		switch (ch) {
