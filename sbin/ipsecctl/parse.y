@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.68 2006/05/28 01:36:06 todd Exp $	*/
+/*	$OpenBSD: parse.y,v 1.69 2006/05/28 21:10:10 hshoexer Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1269,6 +1269,8 @@ host_v4(const char *s, int mask)
 	if (ipa->name == NULL)
 		err(1, "host_v4: strdup");
 	ipa->af = AF_INET;
+	ipa->next = NULL;
+	ipa->tail = ipa;
 
 	set_ipmask(ipa, bits);
 	if (bits != (ipa->af == AF_INET ? 32 : 128))
@@ -1305,6 +1307,8 @@ host_dns(const char *s, int v4mask, int v6mask)
 		if (ipa->name == NULL)
 			err(1, "host_dns: strdup");
 		ipa->af = AF_INET;
+		ipa->next = NULL;
+		ipa->tail = ipa;
 
 		set_ipmask(ipa, bits);
 		if (bits != (ipa->af == AF_INET ? 32 : 128))
