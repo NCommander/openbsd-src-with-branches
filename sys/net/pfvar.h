@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.233 2005/11/04 08:24:15 mcbride Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.234 2006/03/14 11:09:42 djm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -611,6 +611,8 @@ struct pf_rule {
 #define PFRULE_IFBOUND		0x00010000	/* if-bound */
 
 #define PFSTATE_HIWAT		10000	/* default state table size */
+#define PFSTATE_ADAPT_START	6000	/* default adaptive timeout start */
+#define PFSTATE_ADAPT_END	12000	/* default adaptive timeout end */
 
 
 struct pf_threshold {
