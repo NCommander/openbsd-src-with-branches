@@ -1796,22 +1796,19 @@ int
 sysctl_sensors(int *name, u_int namelen, void *oldp, size_t *oldlenp,
     void *newp, size_t newlen)
 {
-	struct sensor ls, *s;
+	struct sensor *s;
+	int num;
 
 	if (namelen != 1)
 		return (ENOTDIR);
 
-	s = sensor_get(name[0]);
+	num = name[0];
+
+	s = sensor_get(num);
 	if (s == NULL)
 		return (ENOENT);
 
-	/*
-	 * Make a local copy of the sensor which cannot be freed by a driver
-	 * while it's being copied to userland.
-	 */
-	bcopy(s, &ls, sizeof(ls));
-
-	return (sysctl_rdstruct(oldp, oldlenp, newp, &ls, sizeof(ls)));
+	return (sysctl_rdstruct(oldp, oldlenp, newp, s, sizeof(struct sensor)));
 }
 
 int
