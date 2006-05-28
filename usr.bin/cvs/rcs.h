@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.3 2006/05/11 07:34:26 xsa Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.62 2006/05/27 03:30:31 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -40,6 +40,9 @@
 #define RCS_HEAD_INIT		"1.1"
 #define RCS_HEAD_REV		((RCSNUM *)(-1))
 
+#define RCS_CONFLICT_MARKER1	"<<<<<<< "
+#define RCS_CONFLICT_MARKER2	">>>>>>> "
+#define RCS_CONFLICT_MARKER3	"=======\n"
 
 #define RCS_SYM_INVALCHAR	"$,.:;@"
 
