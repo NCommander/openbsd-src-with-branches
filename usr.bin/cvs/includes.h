@@ -1,4 +1,4 @@
-/*	$OpenBSD: includes.h,v 1.3 2006/01/03 17:04:53 xsa Exp $	*/
+/*	$OpenBSD: includes.h,v 1.4 2006/01/06 13:14:24 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -30,6 +30,7 @@
 #include <sys/time.h>
 #include <sys/timeb.h>
 #include <sys/types.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/param.h>
 #include <sys/queue.h>
