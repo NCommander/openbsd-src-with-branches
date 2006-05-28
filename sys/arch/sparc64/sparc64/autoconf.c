@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.47 2006/05/28 02:49:18 jason Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.48 2006/05/28 03:22:35 henning Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -553,9 +553,9 @@ setroot()
 
 	if (boothowto & RB_ASKNAME) {
 		for (;;) {
-			printf("root device ");
+			printf("root device");
 			if (bootdv != NULL)
-				printf("(default %s%c)",
+				printf(" (default %s%c)",
 					bootdv->dv_xname,
 					bootdv->dv_class == DV_DISK
 						? bp->val[2]+'a' : ' ');
