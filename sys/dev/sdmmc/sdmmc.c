@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sdmmc.c,v 1.1 2006/05/28 17:21:14 uwe Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -39,8 +39,6 @@
 #endif
 #include <dev/sdmmc/sdmmcreg.h>
 #include <dev/sdmmc/sdmmcvar.h>
-
-#undef SDMMC_DEBUG
 
 int	sdmmc_match(struct device *, void *, void *);
 void	sdmmc_attach(struct device *, struct device *, void *);
