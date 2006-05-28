@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vic.c,v 1.5 2006/03/04 03:33:05 brad Exp $	*/
+/*	$OpenBSD: if_vic.c,v 1.6 2006/03/25 22:41:46 djm Exp $	*/
 
 /*
  * Copyright (c) 2006 Reyk Floeter <reyk@openbsd.org>
@@ -687,7 +687,7 @@ vic_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		break;
 
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 	}
 
 	if (error == ENETRESET) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_de.c,v 1.89 2006/05/06 02:57:30 brad Exp $	*/
+/*	$OpenBSD: if_de.c,v 1.90 2006/05/09 20:58:56 brad Exp $	*/
 /*	$NetBSD: if_de.c,v 1.58 1998/01/12 09:39:58 thorpej Exp $	*/
 
 /*-
@@ -4282,10 +4282,9 @@ tulip_ifioctl(
 	    ifp->if_mtu = ifr->ifr_mtu;
 	break;
 
-    default: {
-	error = EINVAL;
+    default:
+	error = ENOTTY;
 	break;
-    }
     }
 
     splx(s);

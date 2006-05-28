@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.14 2006/05/26 20:50:41 deraadt Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.15 2006/05/27 10:03:15 brad Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -917,7 +917,7 @@ xge_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		error = ifmedia_ioctl(ifp, ifr, &sc->xena_media, cmd);
 		break;
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 	}
 
 	splx(s);

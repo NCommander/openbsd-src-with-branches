@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_em.c,v 1.125 2006/05/26 20:50:41 deraadt Exp $ */
+/* $OpenBSD: if_em.c,v 1.126 2006/05/27 10:03:15 brad Exp $ */
 /* $FreeBSD: if_em.c,v 1.46 2004/09/29 18:28:28 mlaier Exp $ */
 
 #include <dev/pci/if_em.h>
@@ -539,7 +539,7 @@ em_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		break;
 	default:
 		IOCTL_DEBUGOUT1("ioctl received: UNKNOWN (0x%x)", (int)command);
-		error = EINVAL;
+		error = ENOTTY;
 	}
 
 	splx(s);

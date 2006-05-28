@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tl.c,v 1.39 2006/03/20 16:15:03 brad Exp $	*/
+/*	$OpenBSD: if_tl.c,v 1.40 2006/03/25 22:41:45 djm Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1850,7 +1850,7 @@ int tl_ioctl(ifp, command, data)
 			    &sc->sc_mii.mii_media, command);
 		break;
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 		break;
 	}
 

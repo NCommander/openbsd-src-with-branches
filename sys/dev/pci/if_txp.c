@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.80 2006/03/25 22:41:45 djm Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.81 2006/04/26 15:47:07 jason Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -1302,7 +1302,7 @@ txp_ioctl(ifp, command, data)
 		error = ifmedia_ioctl(ifp, ifr, &sc->sc_ifmedia, command);
 		break;
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 		break;
 	}
 
