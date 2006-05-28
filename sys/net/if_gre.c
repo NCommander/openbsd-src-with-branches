@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.39 2006/03/04 22:40:15 brad Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.40 2006/03/25 22:41:47 djm Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -230,6 +230,8 @@ gre_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 	}
 	bcopy(&ifp, (caddr_t)(mtag + 1), sizeof(struct ifnet *));
 	m_tag_prepend(m, mtag);
+
+	m->m_flags &= ~(M_BCAST|M_MCAST);
 
 #if NBPFILTER >0
 	if (ifp->if_bpf)
