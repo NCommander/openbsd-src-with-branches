@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.h,v 1.14 2006/04/06 16:48:34 xsa Exp $	*/
+/*	$OpenBSD: buf.h,v 1.15 2006/05/27 03:30:30 joris Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -46,6 +46,7 @@ void		 cvs_buf_putc(BUF *, int);
 size_t		 cvs_buf_len(BUF *);
 int		 cvs_buf_write_fd(BUF *, int);
 int		 cvs_buf_write(BUF *, const char *, mode_t);
+int		 cvs_buf_differ(BUF *, BUF *);
 void		 cvs_buf_write_stmp(BUF *, char *, mode_t, struct timeval *);
 
 ssize_t		 cvs_buf_copy(BUF *, size_t, void *, size_t);
