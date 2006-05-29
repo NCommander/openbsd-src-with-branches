@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: i80321_space.c,v 1.9 2005/11/24 13:08:32 yamt Exp $	*/
 
 /*

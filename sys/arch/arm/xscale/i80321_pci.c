@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: i80321_pci.c,v 1.7 2005/12/15 01:44:00 briggs Exp $	*/
 
 /*

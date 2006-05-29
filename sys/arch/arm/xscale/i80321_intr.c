@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: i80321_icu.c,v 1.11 2005/12/24 20:06:52 perry Exp $	*/
 
 /*

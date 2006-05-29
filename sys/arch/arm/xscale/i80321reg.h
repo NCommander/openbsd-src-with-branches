@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: i80321reg.h,v 1.15 2005/12/11 12:16:51 christos Exp $	*/
 
 /*
