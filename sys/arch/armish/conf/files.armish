@@ -1,3 +1,4 @@
+$	$OpenBSD$
 maxpartitions   16
 maxusers		2 8 64
 

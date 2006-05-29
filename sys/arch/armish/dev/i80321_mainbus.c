@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: i80321_mainbus.c,v 1.16 2005/12/15 01:44:00 briggs Exp $	*/
 
 /*

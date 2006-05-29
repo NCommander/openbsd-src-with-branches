@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iq80321_start.S,v 1.4 2002/10/14 22:32:54 bjh21 Exp $	*/
 
 /*

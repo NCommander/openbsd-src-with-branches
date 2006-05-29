@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iq80321_pci.c,v 1.5 2005/12/11 12:17:09 christos Exp $	*/
 
 /*
