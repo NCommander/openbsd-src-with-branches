@@ -70,7 +70,6 @@
 
 extern struct nfsstats nfsstats;
 extern int nfs_ticks;
-extern int nfs_privport;
 
 int nfs_sysctl(int *, u_int, void *, size_t *, void *, size_t, struct proc *);
 int nfs_checkexp(struct mount *mp, struct mbuf *nam,
@@ -912,8 +911,6 @@ nfs_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 
 		return rv;
 
-	case NFS_PRIVPORT:
-		return(sysctl_int(oldp, oldlenp, newp, newlen, &nfs_privport));
 	default:
 		return EOPNOTSUPP;
 	}

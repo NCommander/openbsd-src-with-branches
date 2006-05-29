@@ -221,14 +221,12 @@ struct nfsstats {
  */
 #define	NFS_NFSSTATS	1	/* struct: struct nfsstats */
 #define	NFS_NIOTHREADS	2	/* number of i/o threads */
-#define	NFS_PRIVPORT	3	/* whether priv ports are needed */
-#define	NFS_MAXID	4
+#define	NFS_MAXID	3
 
 #define FS_NFS_NAMES { \
 			{ 0, 0 }, \
 			{ "nfsstats", CTLTYPE_STRUCT }, \
-			{ "iothreads", CTLTYPE_INT }, \
-			{ "privport", CTLTYPE_INT } \
+			{ "iothreads", CTLTYPE_INT } \
 }
 
 /*
