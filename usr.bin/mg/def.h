@@ -202,7 +202,7 @@ struct mgwin {
 	int		 w_marko;	/* Byte offset for "mark"	*/
 	char		 w_toprow;	/* Origin 0 top row of window	*/
 	char		 w_ntrows;	/* # of rows of text in window	*/
-	char		 w_force;	/* If NZ, forcing row.		*/
+	char		 w_frame;	/* #lines to reframe by.	*/
 	char		 w_flag;	/* Flags.			*/
 	struct line	*w_wrapline;
 };
