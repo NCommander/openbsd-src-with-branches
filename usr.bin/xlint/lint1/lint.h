@@ -1,4 +1,4 @@
-/*	$OpenBSD: lint.h,v 1.4 2006/03/08 07:18:51 moritz Exp $	*/
+/*	$OpenBSD: lint.h,v 1.5 2006/04/25 01:25:41 cloder Exp $	*/
 /*	$NetBSD: lint.h,v 1.2 1995/07/03 21:24:18 cgd Exp $	*/
 
 /*
@@ -57,7 +57,7 @@ typedef enum {
 	QUAD,		/* (signed) long long */
 	UQUAD,		/* unsigned long long */
 	FLOAT,		/* float */
-	DOUBLE,		/* double or, with tflag, long float */
+	DOUBLE,		/* double */
 	LDOUBLE,	/* long double */
 	VOID,		/* void */
 	STRUCT,		/* structure tag */
