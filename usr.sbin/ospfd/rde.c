@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.43 2006/03/09 16:55:51 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.44 2006/03/22 16:01:20 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -400,10 +400,14 @@ rde_dispatch_imsg(int fd, short event, void *bula)
 					free(lsa);
 					break;
 				}
-				if (!(self = lsa_self(nbr, lsa, v)))
-					lsa_add(nbr, lsa);
 
 				rde_req_list_del(nbr, &lsa->hdr);
+
+				if (!(self = lsa_self(nbr, lsa, v)))
+					if (lsa_add(nbr, lsa))
+						/* delayed lsa */
+						break;
+
 				/* flood and perhaps ack LSA */
 				imsg_compose(ibuf_ospfe, IMSG_LS_FLOOD,
 				    imsg.hdr.peerid, 0, lsa,
