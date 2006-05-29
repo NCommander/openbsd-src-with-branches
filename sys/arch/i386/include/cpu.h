@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.76 2006/05/09 09:38:35 otto Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.77 2006/05/19 19:43:41 dim Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -114,10 +114,11 @@ struct cpu_info {
 	u_int32_t	ci_imask[NIPL];
 	u_int32_t	ci_iunmask[NIPL];
 
-	paddr_t ci_idle_pcb_paddr;	/* PA of idle PCB */
-	u_long ci_flags;		/* flags; see below */
-	u_int32_t ci_ipis; 		/* interprocessor interrupts pending */
-	int sc_apic_version;  		/* local APIC version */
+	paddr_t		ci_idle_pcb_paddr; /* PA of idle PCB */
+	u_long		ci_flags;	/* flags; see below */
+	u_int32_t	ci_ipis; 	/* interprocessor interrupts pending */
+	int		sc_apic_version;/* local APIC version */
+	u_int64_t	ci_tscbase;
 	
 	u_int32_t	ci_level;
 	u_int32_t	ci_vendor[4];
