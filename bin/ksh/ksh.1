@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ksh.1,v 1.112 2006/04/22 14:10:36 jmc Exp $
+.\"	$OpenBSD: ksh.1,v 1.113 2006/05/29 18:22:24 otto Exp $
 .\"
 .\"	Public Domain
 .\"
@@ -1646,6 +1646,11 @@ The default prompt i.e.\&
 if the effective UID is 0,
 otherwise
 .Sq $ \& .
+Since the shell interprets
+.Sq $
+as a special character within double quotes,
+it is safer in this case to escape the backslash
+than to try quoting it.
 .It Li \e Ns Ar nnn
 The octal character
 .Ar nnn .
