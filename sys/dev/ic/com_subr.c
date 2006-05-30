@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_subr.c,v 1.4 2005/10/13 18:37:58 fgsch Exp $	*/
+/*	$OpenBSD: com_subr.c,v 1.5 2005/11/02 22:35:06 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1997 - 1999, Jason Downs.  All rights reserved.
@@ -92,7 +92,6 @@
 #include <dev/ic/comvar.h>
 #endif
 #if NPCCOM > 0
-#include <dev/isa/isavar.h>
 #include <i386/isa/pccomvar.h>
 #endif
 
