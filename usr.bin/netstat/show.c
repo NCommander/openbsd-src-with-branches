@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.26 2003/08/26 08:33:12 itojun Exp $	*/
+/*	$OpenBSD: show.c,v 1.1 2006/05/27 19:16:37 claudio Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -372,15 +372,15 @@ p_encap(struct sockaddr *sa, struct sockaddr *mask, int width)
 	char 		*cp;
 	unsigned short	 port;
 
+	if (mask)
+		cp = netname(sa, mask);
+	else
+		cp = routename(sa);
 	switch (sa->sa_family) {
-	case AF_INET6: {
+	case AF_INET6:
+		port = ntohs(((struct sockaddr_in6 *)sa)->sin6_port);
 		break;
-	}
 	default:
-		if (mask)
-			cp = netname(sa, mask);
-		else
-			cp = routename(sa);
 		port = ntohs(((struct sockaddr_in *)sa)->sin_port);
 		break;
 	}
