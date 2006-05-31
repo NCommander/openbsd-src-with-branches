@@ -1,4 +1,4 @@
-/* 	$OpenBSD: isp.c,v 1.35 2004/07/18 03:36:35 deraadt Exp $ */
+/* 	$OpenBSD: isp.c,v 1.36 2006/04/20 20:31:12 miod Exp $ */
 /*
  * Machine and OS Independent (well, as best as possible)
  * code for the Qlogic ISP SCSI adapters.
@@ -3147,6 +3147,9 @@ isp_start(XS_T *xs)
 		 * Now turn target into what the actual Loop ID is.
 		 */
 		target = lp->loopid;
+		xs->sc_link->node_wwn = lp->node_wwn;
+		xs->sc_link->port_wwn = lp->port_wwn;
+
 	}
 
 	/*
