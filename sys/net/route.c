@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.73 2006/05/20 20:43:57 reyk Exp $	*/
+/*	$OpenBSD: route.c,v 1.74 2006/05/31 01:35:11 henning Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -214,7 +214,7 @@ route_init()
 }
 
 int
-rtable_add(char *tblname)
+rtable_add(char *tblname)	/* must be called at splsoftnet */
 {
 	u_int	 i;
 	void	*p;
