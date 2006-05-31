@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_subr.c,v 1.41 2005/11/21 18:16:44 millert Exp $ */
+/*	$OpenBSD: usb_subr.c,v 1.42 2006/05/01 01:34:10 krw Exp $ */
 /*	$NetBSD: usb_subr.c,v 1.103 2003/01/10 11:19:13 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_subr.c,v 1.18 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -571,6 +571,7 @@ usbd_fill_iface_data(usbd_device_handle dev, int ifaceidx, int altidx)
 			}
 		}
 		ifc->endpoints[endpt].refcnt = 0;
+		ifc->endpoints[endpt].savedtoggle = 0;
 		p += ed->bLength;
 	}
 #undef ed
