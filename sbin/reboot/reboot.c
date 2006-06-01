@@ -1,4 +1,4 @@
-/*	$OpenBSD: reboot.c,v 1.26 2004/07/09 18:49:57 deraadt Exp $	*/
+/*	$OpenBSD: reboot.c,v 1.27 2006/04/06 21:36:17 henning Exp $	*/
 /*	$NetBSD: reboot.c,v 1.8 1995/10/05 05:36:22 mycroft Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)reboot.c	8.1 (Berkeley) 6/5/93";
 #else
-static char rcsid[] = "$OpenBSD: reboot.c,v 1.26 2004/07/09 18:49:57 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: reboot.c,v 1.27 2006/04/06 21:36:17 henning Exp $";
 #endif
 #endif /* not lint */
 
@@ -72,7 +72,7 @@ int	dohalt;
 int
 main(int argc, char *argv[])
 {
-	int i;
+	unsigned int i;
 	struct passwd *pw;
 	int ch, howto, lflag, nflag, pflag, qflag;
 	char *p, *user;
