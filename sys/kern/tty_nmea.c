@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: tty_nmea.c,v 1.2 2006/06/01 22:32:46 ckuethe Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -267,8 +267,10 @@ nmea_hdlr(struct nmea *np, int c)
 void
 nmea_bufadd(struct nmea *np, int c)
 {
-	np->cbuf[np->pos++] = c;
-	np->cksum ^= c;
+	if (np->pos < NMEAMAX){
+		np->cbuf[np->pos++] = c;
+		np->cksum ^= c;
+	}
 }
 
 /*
