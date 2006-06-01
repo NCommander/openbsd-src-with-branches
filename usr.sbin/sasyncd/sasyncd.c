@@ -1,4 +1,4 @@
-/*	$OpenBSD: sasyncd.c,v 1.8 2005/05/24 02:35:39 ho Exp $	*/
+/*	$OpenBSD: sasyncd.c,v 1.9 2005/05/26 19:18:16 ho Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -92,6 +92,10 @@ sasyncd_run(pid_t ppid)
 		if (cfgstate.pfkey_socket + 1 > maxfd)
 			maxfd = cfgstate.pfkey_socket + 1;
 
+		carp_set_rfd(rfds);
+		if (cfgstate.route_socket + 1 > maxfd)
+			maxfd = cfgstate.route_socket + 1;
+
 		timeout = &tv;
 		timer_next_event(&tv);
 
@@ -106,6 +110,7 @@ sasyncd_run(pid_t ppid)
 			net_send_messages(wfds);
 			pfkey_read_message(rfds);
 			pfkey_send_message(wfds);
+			carp_read_message(rfds);
 		}
 		timer_run();
 
