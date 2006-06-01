@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttycom.h,v 1.6 2003/06/02 23:28:22 millert Exp $	*/
+/*	$OpenBSD: ttycom.h,v 1.7 2006/04/27 19:30:28 deraadt Exp $	*/
 /*	$NetBSD: ttycom.h,v 1.4 1996/05/19 17:17:53 jonathan Exp $	*/
 
 /*-
@@ -142,5 +142,6 @@ struct tstamps {
 #define	SLIPDISC	4		/* serial IP discipline */
 #define	PPPDISC		5		/* ppp discipline */
 #define	STRIPDISC	6		/* metricom wireless IP discipline */
+#define	NMEADISC	7		/* NMEA0183 discipline */
 
 #endif /* !_SYS_TTYCOM_H_ */
