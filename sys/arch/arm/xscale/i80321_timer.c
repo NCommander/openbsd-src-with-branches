@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: i80321_timer.c,v 1.2 2006/05/29 17:27:31 drahn Exp $	*/
 /*	$NetBSD: i80321_timer.c,v 1.13 2005/12/24 20:06:52 perry Exp $	*/
 
 /*
@@ -418,7 +418,6 @@ resettodr(void)
  *
  *	Handle the hardclock interrupt.
  */
-int poll_console(void);
 int
 clockhandler(void *arg)
 {
@@ -431,6 +430,5 @@ clockhandler(void *arg)
 	if (i80321_hardclock_hook != NULL)
 		(*i80321_hardclock_hook)();
 
-	poll_console();
 	return (1);
 }
