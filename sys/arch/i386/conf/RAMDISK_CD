@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.120 2006/05/20 21:44:10 deraadt Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.121 2006/05/31 23:24:43 dlg Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 
@@ -340,7 +340,7 @@ hme*	at pci?				# Sun Happy Meal
 bce*	at pci?				# Broadcom BCM4401
 vge*	at pci?				# VIA VT612x
 nfe*	at pci?				# NVIDIA nForce Ethernet
-#xge*	at pci?				# Neterion Xframe-I/II 10Gb ethernet
+xge*	at pci?				# Neterion Xframe-I/II 10Gb ethernet
 
 # Wireless network cards
 ath*	at pci?				# Atheros AR5k (802.11a/b/g)
