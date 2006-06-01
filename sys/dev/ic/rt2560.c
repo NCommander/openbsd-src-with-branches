@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.14 2006/03/27 20:54:15 damien Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.15 2006/04/20 20:31:12 miod Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -69,7 +69,7 @@
 #ifdef RAL_DEBUG
 #define DPRINTF(x)	do { if (rt2560_debug > 0) printf x; } while (0)
 #define DPRINTFN(n, x)	do { if (rt2560_debug >= (n)) printf x; } while (0)
-int rt2560_debug = 0;
+int rt2560_debug = 1;
 #else
 #define DPRINTF(x)
 #define DPRINTFN(n, x)
