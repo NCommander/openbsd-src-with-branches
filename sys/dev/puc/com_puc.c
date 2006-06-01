@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_puc.c,v 1.10 2005/11/21 18:16:42 millert Exp $	*/
+/*	$OpenBSD: com_puc.c,v 1.11 2005/12/24 04:42:19 djm Exp $	*/
 
 /*
  * Copyright (c) 1997 - 1999, Jason Downs.  All rights reserved.
@@ -48,10 +48,6 @@
 
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pucvar.h>
-
-#ifdef i386
-#include <dev/isa/isavar.h>	/* XXX */
-#endif
 
 #include "com.h"
 #ifdef i386
