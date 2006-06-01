@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsecctl.c,v 1.48 2006/05/30 21:56:05 msf Exp $	*/
+/*	$OpenBSD: ipsecctl.c,v 1.49 2006/06/01 04:12:34 hshoexer Exp $	*/
 /*
  * Copyright (c) 2004, 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
@@ -399,7 +399,7 @@ ipsecctl_get_rules(struct ipsecctl *ipsec)
 
 		rule = calloc(1, sizeof(struct ipsec_rule));
 		if (rule == NULL)
-			err(1, "ipsecctl_get_rules: malloc");
+			err(1, "ipsecctl_get_rules: calloc");
 		rule->nr = ipsec->rule_nr++;
 		rule->type |= RULE_FLOW;
 
