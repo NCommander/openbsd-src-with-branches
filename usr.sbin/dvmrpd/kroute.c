@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: kroute.c,v 1.1 2006/06/01 14:12:20 norby Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -80,10 +80,9 @@ kif_init(void)
 }
 
 int
-kr_init(int fs)
+kr_init(void)
 {
 	int opt, fd;
-
 
 	if ((fd = socket(AF_ROUTE, SOCK_RAW, 0)) == -1) {
 		log_warn("kr_init: socket");
@@ -108,6 +107,7 @@ void
 kr_shutdown(void)
 {
 	kif_clear();
+	close(EVENT_FD((&kr_state.ev)));
 }
 
 void
