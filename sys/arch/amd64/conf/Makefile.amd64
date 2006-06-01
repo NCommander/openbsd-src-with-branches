@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.amd64,v 1.6 2004/11/19 06:41:13 miod Exp $
+#	$OpenBSD: Makefile.amd64,v 1.7 2005/03/31 02:53:48 tedu Exp $
 
 # Makefile for OpenBSD
 #
@@ -110,8 +110,9 @@ DEBUG?=
 .if ${DEBUG} == "-g"
 LINKFLAGS+=	-X
 SYSTEM_LD_TAIL+=; \
-		echo cp $@ $@.gdb; rm -f $@.gdb; cp $@ $@.gdb; \
-		echo ${STRIP} ${STRIPFLAGS} $@; ${STRIP} ${STRIPFLAGS} $@
+		echo mv $@ $@.gdb; rm -f $@.gdb; mv $@ $@.gdb; \
+		echo ${STRIP} ${STRIPFLAGS} -o $@ $@.gdb; \
+		${STRIP} ${STRIPFLAGS} -o $@ $@.gdb
 .else
 LINKFLAGS+=	-S -x
 .endif
