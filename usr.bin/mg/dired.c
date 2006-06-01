@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.36 2006/05/02 17:10:25 kjell Exp $	*/
+/*	$OpenBSD: dired.c,v 1.37 2006/05/28 23:30:16 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -593,7 +593,7 @@ dired_(char *dname)
 	char	 line[256];
 	int	 len, ret;
 
-	if ((dname = adjustname(dname)) == NULL) {
+	if ((dname = adjustname(dname, FALSE)) == NULL) {
 		ewprintf("Bad directory name");
 		return (NULL);
 	}
