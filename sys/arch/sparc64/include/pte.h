@@ -1,4 +1,4 @@
-/*	$OpenBSD: pte.h,v 1.4 2003/05/17 19:30:55 art Exp $	*/
+/*	$OpenBSD: pte.h,v 1.5 2005/06/28 22:32:03 deraadt Exp $	*/
 /*	$NetBSD: pte.h,v 1.7 2001/07/31 06:55:46 eeh Exp $ */
 
 /*
@@ -79,7 +79,7 @@
  *  a real pain to do this in C.
  */
 #if 0
-/* We don't use bitfeilds anyway. */
+/* We don't use bitfields anyway. */
 struct sun4u_tag_fields {
 	u_int64_t	tag_g:1,	/* global flag */
 		tag_ctxt:15,	/* context for mapping */
