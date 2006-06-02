@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic6360var.h,v 1.3 2003/05/14 09:04:59 jason Exp $	*/
+/*	$OpenBSD: aic6360var.h,v 1.4 2006/05/23 20:42:21 miod Exp $	*/
 /*	$NetBSD: aic6360.c,v 1.52 1996/12/10 21:27:51 thorpej Exp $	*/
 
 /*
@@ -118,7 +118,6 @@ struct aic_tinfo {
 
 struct aic_softc {
 	struct device sc_dev;
-	struct isadev sc_id;
 	void *sc_ih;
 
 	bus_space_tag_t sc_iot;
