@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmavar.h,v 1.5 2003/06/05 12:27:02 deraadt Exp $	*/
+/*	$OpenBSD: dmavar.h,v 1.6 2005/03/02 16:42:37 miod Exp $	*/
 /*	$NetBSD: dmavar.h,v 1.11 1996/11/27 21:49:53 pk Exp $ */
 
 /*
@@ -26,7 +26,6 @@
 
 struct dma_softc {
 	struct device sc_dev;			/* us as a device */
-	struct sbusdev sc_sd;			/* sbus device */
 	struct esp_softc *sc_esp;		/* my scsi */
 	struct le_softc *sc_le;			/* my ethernet */
 	struct dma_regs *sc_regs;		/* the registers */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.17 2005/06/08 17:03:01 henning Exp $	*/
+/*	$OpenBSD: be.c,v 1.18 2006/03/25 22:41:46 djm Exp $	*/
 /*	$NetBSD: be.c,v 1.26 2001/03/20 15:39:20 pk Exp $	*/
 
 /*-
@@ -109,7 +109,6 @@
 
 struct be_softc {
 	struct	device	sc_dev;
-	struct	sbusdev sc_sd;		/* sbus device */
 	bus_space_tag_t	sc_bustag;	/* bus & dma tags */
 	bus_dma_tag_t	sc_dmatag;
 	bus_dmamap_t	sc_dmamap;

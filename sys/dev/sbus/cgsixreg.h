@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgsixreg.h,v 1.7 2003/06/02 18:32:41 jason Exp $	*/
+/*	$OpenBSD: cgsixreg.h,v 1.8 2003/06/18 17:35:30 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -265,7 +265,6 @@ union bt_cmap {
 
 struct cgsix_softc {
 	struct sunfb sc_sunfb;
-	struct sbusdev sc_sd;
 	bus_space_tag_t sc_bustag;
 	bus_addr_t sc_paddr;
 	bus_space_handle_t sc_bt_regs;

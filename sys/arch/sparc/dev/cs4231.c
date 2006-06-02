@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4231.c,v 1.24 2005/07/09 22:23:13 miod Exp $	*/
+/*	$OpenBSD: cs4231.c,v 1.25 2005/07/17 10:40:50 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -232,8 +232,6 @@ cs4231_attach(parent, self, aux)
 
 	/* Clamp at parent's burst sizes */
 	sc->sc_burst &= ((struct sbus_softc *)parent)->sc_burst;
-
-	sbus_establish(&sc->sc_sd, &sc->sc_dev);
 
 	sc->sc_ih.ih_fun = cs4231_intr;
 	sc->sc_ih.ih_arg = sc;

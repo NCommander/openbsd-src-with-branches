@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.17 2005/06/08 17:03:01 henning Exp $	*/
+/*	$OpenBSD: qe.c,v 1.18 2006/03/25 22:41:46 djm Exp $	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -115,7 +115,6 @@
 
 struct qe_softc {
 	struct	device	sc_dev;		/* base device */
-	struct	sbusdev sc_sd;		/* sbus device */
 	bus_space_tag_t	sc_bustag;	/* bus & dma tags */
 	bus_dma_tag_t	sc_dmatag;
 	bus_dmamap_t	sc_dmamap;

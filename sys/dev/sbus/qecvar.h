@@ -1,4 +1,4 @@
-/*	$OpenBSD: qecvar.h,v 1.1 2001/08/20 22:09:27 jason Exp $	*/
+/*	$OpenBSD: qecvar.h,v 1.2 2002/03/14 01:27:02 millert Exp $	*/
 /*	$NetBSD: qecvar.h,v 1.4 1999/01/17 20:47:50 pk Exp $	*/
 
 /*-
@@ -39,7 +39,6 @@
 
 struct qec_softc {
 	struct device sc_dev;		/* us as a device */
-	struct sbusdev sc_sd;		/* sbus device */
 	bus_space_tag_t	sc_bustag;	/* bus & dma tags */
 	bus_dma_tag_t	sc_dmatag;
 	struct	sbus_range *sc_range;	/* PROM ranges */
