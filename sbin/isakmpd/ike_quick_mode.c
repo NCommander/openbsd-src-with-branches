@@ -1,4 +1,4 @@
-/* $OpenBSD: ike_quick_mode.c,v 1.96 2005/05/26 06:11:09 hshoexer Exp $	 */
+/* $OpenBSD: ike_quick_mode.c,v 1.97 2005/11/14 23:25:11 deraadt Exp $	 */
 /* $EOM: ike_quick_mode.c,v 1.139 2001/01/26 10:43:17 niklas Exp $	 */
 
 /*
@@ -1327,7 +1327,7 @@ post_quick_mode(struct message *msg)
 
 			/*
 			 * There are two SAs for each SA negotiation,
-			 * incoming and outcoing.
+			 * incoming and outgoing.
 			 */
 			for (i = 0; i < 2; i++) {
 				prf = prf_alloc(isa->prf_type, isa->hash,

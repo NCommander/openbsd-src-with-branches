@@ -1,4 +1,4 @@
-/* $OpenBSD: x509.c,v 1.104 2005/11/14 23:25:11 deraadt Exp $	 */
+/* $OpenBSD: x509.c,v 1.105 2005/11/15 21:49:04 cloder Exp $	 */
 /* $EOM: x509.c,v 1.54 2001/01/16 18:42:16 ho Exp $	 */
 
 /*
@@ -72,7 +72,7 @@ static int	 x509_hash_enter(X509 *);
 
 /*
  * XXX Actually this store is not really useful, we never use it as we have
- * our own hash table.  It also gets collisons if we have several certificates
+ * our own hash table.  It also gets collisions if we have several certificates
  * only differing in subjectAltName.
  */
 static X509_STORE *x509_certs = 0;

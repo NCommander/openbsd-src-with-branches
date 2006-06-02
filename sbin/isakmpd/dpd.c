@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpd.c,v 1.13 2005/05/04 10:05:01 hshoexer Exp $	*/
+/*	$OpenBSD: dpd.c,v 1.14 2005/10/26 20:10:48 markus Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -347,7 +347,7 @@ dpd_event(void *v_sa)
 
 /*
  * Called by the timer. If this function is called, it means we did not
- * recieve any R_U_THERE_ACK confirmation from the other peer.
+ * received any R_U_THERE_ACK confirmation from the other peer.
  */
 static void
 dpd_check_event(void *v_sa)

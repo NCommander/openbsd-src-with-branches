@@ -1,4 +1,4 @@
-/* $OpenBSD: math_group.h,v 1.10 2004/04/15 18:39:26 deraadt Exp $	 */
+/* $OpenBSD: math_group.h,v 1.11 2006/05/04 14:37:51 djm Exp $	 */
 /* $EOM: math_group.h,v 1.7 1999/04/17 23:20:40 niklas Exp $	 */
 
 /*
@@ -64,7 +64,7 @@ struct group {
 struct ec2n_dscr {
 	int             id;
 	int             bits;	/* Key Bits provided by this group */
-	char           *polynomial;	/* Irreduceable polynomial */
+	char           *polynomial;	/* Irreducible polynomial */
 	char           *gen_x;	/* X - Coord. of Generator */
 	char           *a, *b;	/* Curve Parameters */
 };
