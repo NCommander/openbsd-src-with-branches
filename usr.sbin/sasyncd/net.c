@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.c,v 1.11 2006/01/26 09:53:46 moritz Exp $	*/
+/*	$OpenBSD: net.c,v 1.12 2006/04/16 19:28:36 moritz Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -653,6 +653,7 @@ net_shutdown(void)
 		if (p->name)
 			free(p->name);
 		LIST_REMOVE(p, link);
+		cfgstate.peercnt--;
 		free(p);
 	}
 
