@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.26 2003/11/03 07:01:33 david Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.27 2005/11/11 16:38:30 miod Exp $	*/
 /*	$NetBSD: pmap.c,v 1.107 2001/08/31 16:47:41 eeh Exp $	*/
 #undef	NO_VCACHE /* Don't forget the locked TLB in dostart */
 /*
@@ -410,7 +410,7 @@ void pv_check(void);
 void
 pv_check()
 {
-	int i, j, s;
+	int i, s;
 	
 	s = splhigh();
 	for (i = 0; i < physmem; i++) {
