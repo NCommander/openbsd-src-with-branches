@@ -1,4 +1,4 @@
-/* $OpenBSD: lmccontrol.c,v 1.5 2004/10/24 11:50:47 deraadt Exp $ */
+/* $OpenBSD: lmccontrol.c,v 1.6 2006/05/31 20:17:15 dhill Exp $ */
 
 /*-
  * Copyright (c) 1997-1999 LAN Media Corporation (LMC)
@@ -70,7 +70,7 @@ usage(void)
 	extern char *__progname;
 
 	fprintf(stderr,
-		"usage: %s [interface] [-l speed] [-cCeEsSkKoO]\n",
+		"usage: %s [-CcEeKkOoSs] [-l speed] [interface]\n",
 		__progname);
 }
 
