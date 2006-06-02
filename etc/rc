@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.284 2006/06/01 16:43:23 norby Exp $
+#	$OpenBSD: rc,v 1.285 2006/06/01 21:37:43 norby Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -244,6 +244,7 @@ sysctl_conf
 
 # set hostname, turn on network
 echo 'starting network'
+ifconfig -g carp carpdemote
 if [ -f /etc/resolv.conf.save ]; then
 	mv /etc/resolv.conf.save /etc/resolv.conf
 	touch /etc/resolv.conf
@@ -759,6 +760,9 @@ fi
 
 echo -n ' cron';		cron
 
+# disable carp interlock
+ifconfig -g carp -carpdemote
+
 echo '.'
 
 date
@@ -771,6 +775,7 @@ fi
 if [ X"${xdm_flags}" != X"NO" ]; then
 	echo 'starting xdm...';		/usr/X11R6/bin/xdm ${xdm_flags}
 fi
+
 
 exit 0
 
