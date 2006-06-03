@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.3 2006/06/01 21:53:41 uwe Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.4 2006/06/01 22:33:37 uwe Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -44,8 +44,7 @@ int	sdmmc_enable(struct sdmmc_softc *);
 void	sdmmc_disable(struct sdmmc_softc *);
 int	sdmmc_scan(struct sdmmc_softc *);
 int	sdmmc_init(struct sdmmc_softc *);
-int	sdmmc_set_bus_width(struct sdmmc_softc *,
-	    struct sdmmc_function *);
+int	sdmmc_set_bus_width(struct sdmmc_softc *, struct sdmmc_function *);
 
 #ifdef SDMMC_DEBUG
 #define DPRINTF(s)	printf s
