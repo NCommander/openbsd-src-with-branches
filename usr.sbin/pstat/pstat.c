@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.62 2006/03/27 14:08:14 pedro Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.63 2006/04/18 17:50:51 deraadt Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 from: static char sccsid[] = "@(#)pstat.c	8.9 (Berkeley) 2/16/94";
 #else
-static char *rcsid = "$OpenBSD: pstat.c,v 1.62 2006/03/27 14:08:14 pedro Exp $";
+static char *rcsid = "$OpenBSD: pstat.c,v 1.63 2006/04/18 17:50:51 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -867,6 +867,9 @@ ttyprt(struct itty *tp)
 		break;
 	case STRIPDISC:
 		(void)printf("strip\n");
+		break;
+	case NMEADISC:
+		(void)printf("nmea\n");
 		break;
 	default:
 		(void)printf("%d\n", tp->t_line);
