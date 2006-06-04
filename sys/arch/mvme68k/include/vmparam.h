@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.14 2003/01/27 19:37:30 miod Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.15 2003/06/02 23:27:50 millert Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -59,6 +59,6 @@
  * The mvme68k only has one physical memory segment.
  */
 #define	VM_PHYSSEG_MAX		1
-#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
+#define	VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
 
 #endif /* _MVME68K_VMPARAM_H_ */

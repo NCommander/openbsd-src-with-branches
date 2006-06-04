@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.25 2005/11/06 22:21:30 miod Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.26 2005/12/20 21:41:51 miod Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.32 2000/03/07 00:05:59 matt Exp $	*/
 
 /*-
@@ -87,7 +87,7 @@
 
 #define VM_PHYSSEG_MAX		1
 #define VM_PHYSSEG_NOADD
-#define VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH /* XXX */
+#define VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
 
 #define	VM_NFREELIST		1
 #define	VM_FREELIST_DEFAULT	0

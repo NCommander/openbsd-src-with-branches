@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.6 2006/05/19 20:56:23 miod Exp $ */
+/*	$OpenBSD: vmparam.h,v 1.7 2006/05/20 22:34:00 miod Exp $ */
 /*
  * Mach Operating System
  * Copyright (c) 1992 Carnegie Mellon University
@@ -88,7 +88,7 @@
  * The mvme88k only has one physical memory segment.
  */
 #define	VM_PHYSSEG_MAX		1
-#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
+#define	VM_PHYSSEG_STRAT	VM_PSTRAT_RANDOM
 #define	VM_PHYSSEG_NOADD
 
 #define VM_NFREELIST		1
