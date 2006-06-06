@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.24 2006/06/01 21:32:15 dlg Exp $ */
+/*	$OpenBSD: mpi.c,v 1.25 2006/06/06 14:47:45 dlg Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 David Gwynne <dlg@openbsd.org>
@@ -407,6 +407,8 @@ mpi_get_ccb(struct mpi_softc *sc)
 		return (NULL);
 
 	TAILQ_REMOVE(&sc->sc_ccb_free, ccb, ccb_link);
+
+	ccb->ccb_state = MPI_CCB_READY;
 
 	return (ccb);
 }
