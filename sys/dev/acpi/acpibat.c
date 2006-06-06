@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibat.c,v 1.21 2006/04/30 05:22:27 marco Exp $ */
+/* $OpenBSD: acpibat.c,v 1.22 2006/05/19 09:10:50 canacar Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -149,7 +149,7 @@ acpibat_monitor(struct acpibat_softc *sc)
 		sc->sc_bif.bif_cap_granu1 = 1;
 
 	strlcpy(sc->sc_sens[0].desc, "last full capacity",
-	    sizeof(sc->sc_sens[2].desc));
+	    sizeof(sc->sc_sens[0].desc));
 	sc->sc_sens[0].type = SENSOR_PERCENT;
 	sensor_add(&sc->sc_sens[0]);
 	sc->sc_sens[0].value = sc->sc_bif.bif_last_capacity /
