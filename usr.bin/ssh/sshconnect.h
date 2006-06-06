@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.h,v 1.18 2005/12/06 22:38:28 reyk Exp $ */
+/* $OpenBSD: sshconnect.h,v 1.19 2006/03/25 22:22:43 djm Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -54,16 +54,20 @@ int	 ssh_local_cmd(const char *);
 /*
  * Macros to raise/lower permissions.
  */
-#define PRIV_START do {				\
-	int save_errno = errno;			\
-	(void)seteuid(original_effective_uid);	\
-	errno = save_errno;			\
+#define PRIV_START do {					\
+	int save_errno = errno;				\
+	if (seteuid(original_effective_uid) != 0)	\
+		fatal("PRIV_START: seteuid: %s",	\
+		    strerror(errno));			\
+	errno = save_errno;				\
 } while (0)
 
-#define PRIV_END do {				\
-	int save_errno = errno;			\
-	(void)seteuid(original_real_uid);	\
-	errno = save_errno;			\
+#define PRIV_END do {					\
+	int save_errno = errno;				\
+	if (seteuid(original_real_uid) != 0)		\
+		fatal("PRIV_END: seteuid: %s",		\
+		    strerror(errno));			\
+	errno = save_errno;				\
 } while (0)
 
 #endif
