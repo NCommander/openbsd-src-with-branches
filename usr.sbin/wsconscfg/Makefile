@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.21 2006/05/09 21:17:13 miod Exp $
+#	$OpenBSD: Makefile,v 1.22 2006/06/06 00:01:50 drahn Exp $
 
 .if ${MACHINE} == "alpha" || ${MACHINE} == "amd64" || \
    ${MACHINE} == "cats" || ${MACHINE} == "hp300" || \
    ${MACHINE} == "hppa" || ${MACHINE} == "i386" || \
    ${MACHINE} == "luna88k" || ${MACHINE} == "mac68k" || \
-   ${MACHINE} == "macpppc" || ${MACHINE} == "sgi" || \
+   ${MACHINE} == "macppc" || ${MACHINE} == "sgi" || \
    ${MACHINE} == "sparc" || ${MACHINE} == "sparc64" || \
    ${MACHINE} == "zaurus"
 
