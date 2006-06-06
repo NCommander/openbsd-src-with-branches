@@ -1,14 +1,14 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2006/01/09 20:03:40 damien Exp $
 
 NOPROG=
 NOMAN=
 
 # PCI capable systems only
-.if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
-    (${MACHINE} == "alpha") || (${MACHINE} == "sparc64") || \
-    (${MACHINE_ARCH} == "powerpc") || (${MACHINE} == "cats") || \
-    (${MACHINE} == "hppa") || (${MACHINE} == "hppa64") || \
-    (${MACHINE} == "sgi")
+.if (${MACHINE_ARCH} == "powerpc") || (${MACHINE} == "alpha") || \
+    (${MACHINE} == "amd64") || (${MACHINE} == "armish") || \
+    (${MACHINE} == "cats") || (${MACHINE} == "hppa") || \
+    (${MACHINE} == "hppa64") || (${MACHINE} == "i386") || \
+    (${MACHINE} == "sgi") || (${MACHINE} == "sparc64")
 
 FIRM=	ral-rt2561 ral-rt2561s ral-rt2661
 

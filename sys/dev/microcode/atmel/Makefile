@@ -1,14 +1,15 @@
-# $OpenBSD: Makefile,v 1.10 2005/03/08 11:50:39 dlg Exp $
+# $OpenBSD: Makefile,v 1.11 2005/06/16 08:23:49 markus Exp $
 
 NOPROG=
 NOMAN=
 
 # USB capable systems only
-.if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
-    (${MACHINE} == "alpha") || (${MACHINE} == "sparc64") || \
-    (${MACHINE_ARCH} == "powerpc") || (${MACHINE} == "cats") || \
-    (${MACHINE} == "hppa") || (${MACHINE} == "hppa64") || \
-    (${MACHINE} == "sgi") || (${MACHINE} == "zaurus")
+.if (${MACHINE_ARCH} == "powerpc") || (${MACHINE} == "alpha") || \
+    (${MACHINE} == "amd64") || (${MACHINE} == "armish") || \
+    (${MACHINE} == "cats") || (${MACHINE} == "hppa") || \
+    (${MACHINE} == "hppa64") || (${MACHINE} == "i386") || \
+    (${MACHINE} == "sgi") || (${MACHINE} == "sparc64") || \
+    (${MACHINE} == "zaurus")
 
 FIRM= 	atu-intersil-int atu-intersil-ext \
 	atu-rfmd-int atu-rfmd-ext \
