@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: entries.c,v 1.57 2006/05/27 03:30:30 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -163,7 +163,7 @@ cvs_ent_parse(const char *entry)
 		ent->ce_opts = NULL;
 
 	if (strcmp(fields[5], ""))
-		ent->ce_tag = fields[5];
+		ent->ce_tag = fields[5] + 1;
 	else
 		ent->ce_tag = NULL;
 
