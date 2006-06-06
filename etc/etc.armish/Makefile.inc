@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.3 2005/01/10 00:28:15 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2006/06/06 00:01:49 drahn Exp $
 #	etc.armish/Makefile.inc -- armish-specific etc Makefile targets
 
 .ifdef DESTDIR
@@ -12,7 +12,7 @@ bsd:
 	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
 
 notes:
-	cp ${.CURDIR}/etc.i386/INSTALL.* ${DESTDIR}/snapshot
+	cp ${.CURDIR}/etc.armish/INSTALL.* ${DESTDIR}/snapshot
 
 
 .PHONY: bsd notes
