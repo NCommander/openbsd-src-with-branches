@@ -1,4 +1,4 @@
-/*	$OpenBSD: eephy.c,v 1.24 2006/05/29 00:22:46 brad Exp $	*/
+/*	$OpenBSD: eephy.c,v 1.25 2006/06/01 05:29:09 pascoe Exp $	*/
 /*
  * Principal Author: Parag Patel
  * Copyright (c) 2001
@@ -473,7 +473,6 @@ eephy_mii_phy_auto(struct mii_softc *sc, int waitfor)
 		mii_phy_auto_timeout(sc);
 	} else if ((sc->mii_flags & MIIF_DOINGAUTO) == 0) {
 		sc->mii_flags |= MIIF_DOINGAUTO;
-		sc->mii_ticks = 0;
 		timeout_set(&sc->mii_phy_timo, mii_phy_auto_timeout, sc);
 		timeout_add(&sc->mii_phy_timo, hz / 2);
 	}
