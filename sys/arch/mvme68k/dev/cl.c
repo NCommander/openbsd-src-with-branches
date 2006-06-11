@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.41 2005/11/24 22:43:16 miod Exp $ */
+/*	$OpenBSD: cl.c,v 1.42 2006/01/01 11:59:39 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -128,7 +128,7 @@ struct clsoftc {
 	char			sc_rxintrname[16 + 3];
 	char			sc_txintrname[16 + 3];
 	int			sc_flags;
-	int			ssir;
+	u_int8_t		ssir;
 };
 
 const struct {

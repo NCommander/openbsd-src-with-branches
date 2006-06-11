@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.61 2005/12/17 07:31:26 miod Exp $ */
+/*	$OpenBSD: trap.c,v 1.62 2006/01/30 21:26:19 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -1128,7 +1128,7 @@ bad:
 /*
  * Allocation routines for software interrupts.
  */
-u_long
+u_int8_t
 allocate_sir(proc, arg)
 	void (*proc)(void *);
 	void *arg;
