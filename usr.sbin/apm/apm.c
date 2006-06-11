@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.21 2006/04/12 19:41:08 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.22 2006/05/10 17:36:12 mickey Exp $	*/
 
 /*
  *  Copyright (c) 1996 John T. Kohl
@@ -248,8 +248,8 @@ main(int argc, char *argv[])
 	case SETPERF_AUTO:
 	case SETPERF_COOL:
 		if (fd == -1)
-			errx(1, "apmd not running; "
-			    "cannot change performance adjustment mode");
+			errx(1, "cannot connect to apmd, "
+			    "not changing performance adjustment mode");
 		goto balony;
 	case NONE:
 		action = GETSTATUS;
