@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_fscale.c,v 1.6 2006/01/16 22:08:26 miod Exp $	*/
+/*	$OpenBSD: fpu_fscale.c,v 1.7 2006/01/30 21:23:23 miod Exp $	*/
 /*	$NetBSD: fpu_fscale.c,v 1.11 2003/07/15 02:43:10 lukem Exp $	*/
 
 /*
@@ -43,7 +43,7 @@
 #include <sys/systm.h>
 #include <machine/frame.h>
 
-#include "fpu_emulate.h"
+#include <m68k/fpe/fpu_emulate.h>
 
 int
 fpu_emul_fscale(struct fpemu *fe, struct instruction *insn, int *typ)

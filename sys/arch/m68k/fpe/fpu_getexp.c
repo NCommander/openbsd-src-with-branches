@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_getexp.c,v 1.1 1995/11/03 04:47:11 briggs Exp $	*/
+/*	$OpenBSD: fpu_getexp.c,v 1.2 1996/05/29 21:05:15 niklas Exp $	*/
 /*	$NetBSD: fpu_getexp.c,v 1.1 1995/11/03 04:47:11 briggs Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 
 #include <sys/types.h>
 
-#include "fpu_emulate.h"
+#include <m68k/fpe/fpu_emulate.h>
 
 struct fpn *
 fpu_getexp(fe)
