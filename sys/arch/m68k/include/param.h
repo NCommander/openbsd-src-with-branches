@@ -89,7 +89,7 @@
 #define	SEGSHIFT	SEGSHIFT040
 #endif
 #else
-#define	SEGSHIFT	SEGSHOFT020
+#define	SEGSHIFT	SEGSHIFT020
 #endif
 #define	NBSEG		(1 << SEGSHIFT)
 #define	SEGOFSET	(NBSEG - 1)
