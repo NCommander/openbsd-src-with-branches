@@ -1,4 +1,4 @@
-/* $OpenBSD: powernow-k7.c,v 1.21 2006/05/11 13:21:11 mickey Exp $ */
+/* $OpenBSD: powernow-k7.c,v 1.22 2006/05/27 04:46:12 gwk Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -221,12 +221,12 @@ k7_powernow_setperf(int level)
 	if (cfid != fid || cvid != vid) {
 		printf("%s transition to fid: %d vid: %d failed.", __func__,
 		    fid, vid);
-		return 0;
+		return (EIO);
 	}
 	
 	pentium_mhz = cstate->state_table[i].freq;
 
-	return 0;
+	return (0);
 }
 
 /*
