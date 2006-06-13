@@ -1081,8 +1081,8 @@ main(int ac, char **av)
 			exit(1);
 		}
 		format = c_flag ? "unsetenv %s;\n" : "unset %s;\n";
-		printf(format, "%s", SSH_AUTHSOCKET_ENV_NAME);
-		printf(format, "%s", SSH_AGENTPID_ENV_NAME);
+		printf(format, SSH_AUTHSOCKET_ENV_NAME);
+		printf(format, SSH_AGENTPID_ENV_NAME);
 		printf("echo Agent pid %ld killed;\n", (long)pid);
 		exit(0);
 	}
