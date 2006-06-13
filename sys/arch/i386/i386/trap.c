@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.73 2006/04/15 02:52:40 weingart Exp $	*/
+/*	$OpenBSD: trap.c,v 1.74 2006/05/11 13:21:12 mickey Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 /*-
@@ -89,6 +89,10 @@ extern struct emul emul_bsdos;
 #endif
 #ifdef COMPAT_AOUT
 extern struct emul emul_aout;
+#endif
+#ifdef KVM86
+#include <machine/kvm86.h>
+#define KVM86MODE (kvm86_incall)
 #endif
 
 #include "npx.h"
@@ -272,6 +276,12 @@ trap(frame)
 		/*NOTREACHED*/
 
 	case T_PROTFLT:
+#ifdef KVM86
+		if (KVM86MODE) {
+			kvm86_gpfault(&frame);
+			return;
+		}
+#endif
 	case T_SEGNPFLT:
 	case T_ALIGNFLT:
 		/* Check for copyin/copyout fault. */
