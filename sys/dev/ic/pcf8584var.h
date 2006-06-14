@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: pcf8584var.h,v 1.1 2006/02/01 11:03:34 dlg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -21,6 +21,8 @@ struct pcfiic_softc {
 
 	bus_space_tag_t		sc_iot;
 	bus_space_handle_t	sc_ioh;
+	bus_space_handle_t	sc_ioh2;
+	int			sc_master;
 
 	int			sc_poll;
 
