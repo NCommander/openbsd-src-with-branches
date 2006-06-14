@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia_codec.c,v 1.8 2006/05/18 03:34:50 brad Exp $	*/
+/*	$OpenBSD: azalia_codec.c,v 1.9 2006/06/14 19:34:52 brad Exp $	*/
 /*	$NetBSD: azalia_codec.c,v 1.8 2006/05/10 11:17:27 kent Exp $	*/
 
 /*-
@@ -133,6 +133,9 @@ azalia_codec_init_vtbl(codec_t *this)
 	case 0x83847683:
 		this->name = "Sigmatel STAC9221D";
 		this->init_dacgroup = azalia_stac9221_init_dacgroup;
+		break;
+	case 0x83847690:
+		this->name = "Sigmatel STAC9220";
 		break;
 	}
 	return 0;
