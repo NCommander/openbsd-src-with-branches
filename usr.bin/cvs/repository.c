@@ -1,4 +1,4 @@
-/*	$OpenBSD: repository.c,v 1.2 2006/05/27 15:14:27 joris Exp $	*/
+/*	$OpenBSD: repository.c,v 1.3 2006/06/02 19:10:24 david Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -45,7 +45,6 @@ void
 cvs_repository_lock(const char *repo)
 {
 	int l, i;
-	uid_t myuid;
 	struct stat st;
 	char fpath[MAXPATHLEN];
 	struct passwd *pw;
@@ -56,7 +55,6 @@ cvs_repository_lock(const char *repo)
 	if (l == -1 || l >= (int)sizeof(fpath))
 		fatal("cvs_repository_lock: overflow");
 
-	myuid = getuid();
 	for (i = 0; i < CVS_LOCK_TRIES; i++) {
 		if (cvs_quit)
 			fatal("received signal %d", sig_received);
