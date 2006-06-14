@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.h,v 1.20 2005/11/29 00:28:18 deraadt Exp $	*/
+/*	$OpenBSD: time.h,v 1.21 2005/12/13 00:35:23 millert Exp $	*/
 /*	$NetBSD: time.h,v 1.18 1996/04/23 10:29:33 mycroft Exp $	*/
 
 /*
@@ -318,6 +318,7 @@ int	ppsratecheck(struct timeval *, int *, int);
 __BEGIN_DECLS
 #if __BSD_VISIBLE
 int	adjtime(const struct timeval *, struct timeval *);
+int	adjfreq(const int64_t *, int64_t *);
 #endif
 #if __XPG_VISIBLE
 int	clock_getres(clockid_t, struct timespec *);
