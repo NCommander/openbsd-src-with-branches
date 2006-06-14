@@ -1,4 +1,4 @@
-/*	$OpenBSD: memory.c,v 1.11 2006/05/31 02:43:15 ckuethe Exp $ */
+/*	$OpenBSD: memory.c,v 1.12 2006/06/14 14:49:46 ckuethe Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998 The Internet Software Consortium.
@@ -40,7 +40,7 @@
 
 #include "dhcpd.h"
 
-static struct subnet *subnets;
+struct subnet *subnets;
 static struct shared_network *shared_networks;
 static struct hash_table *host_hw_addr_hash;
 static struct hash_table *host_uid_hash;
