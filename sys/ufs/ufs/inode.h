@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.h,v 1.31 2005/12/19 15:18:02 pedro Exp $	*/
+/*	$OpenBSD: inode.h,v 1.32 2005/12/28 20:48:18 pedro Exp $	*/
 /*	$NetBSD: inode.h,v 1.8 1995/06/15 23:22:50 cgd Exp $	*/
 
 /*
@@ -38,6 +38,7 @@
  */
 
 #include <sys/buf.h>
+#include <sys/lock.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
