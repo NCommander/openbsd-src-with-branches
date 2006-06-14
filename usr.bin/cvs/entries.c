@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.58 2006/06/06 05:13:39 joris Exp $	*/
+/*	$OpenBSD: entries.c,v 1.59 2006/06/14 15:14:47 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -341,10 +341,10 @@ cvs_parse_tagfile(char *dir, char **tagp, char **datep, int *nbp)
 	char linebuf[128], *tagpath;
 
 	if (tagp != NULL)
-		*tagp = (char *)NULL;
+		*tagp = NULL;
 
 	if (datep != NULL)
-		*datep = (char *)NULL;
+		*datep = NULL;
 
 	if (nbp != NULL)
 		*nbp = 0;
