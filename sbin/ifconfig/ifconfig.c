@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.165 2006/06/11 18:47:58 jmc Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.166 2006/06/14 18:46:21 deraadt Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -761,7 +761,6 @@ setgroupattribs(char *groupname, int argc, char *argv[])
 	int neg = 1;
 
 	struct ifgroupreq	 ifgr;
-	struct ifg_attrib	*ifga;
 
 	getsock(AF_INET);
 	bzero(&ifgr, sizeof(ifgr));
