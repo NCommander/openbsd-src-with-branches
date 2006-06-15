@@ -1,4 +1,4 @@
-/*	$OpenBSD: armish_machdep.c,v 1.2 2006/05/31 05:54:09 drahn Exp $ */
+/*	$OpenBSD: armish_machdep.c,v 1.3 2006/06/15 21:28:59 drahn Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -748,7 +748,7 @@ printf("kernelsize text %x total %x end %xesym %x\n", textsize, totalsize,
 #ifdef VERBOSE_INIT_ARM
 	printf("irq ");
 #endif
-	i80321_intr_init();
+	i80321intc_intr_init();
 
 #ifdef VERBOSE_INIT_ARM
 	printf("done.\n");
