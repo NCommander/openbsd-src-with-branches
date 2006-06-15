@@ -1,4 +1,4 @@
-/* $OpenBSD: tcasic.c,v 1.13 2004/06/28 02:28:43 aaron Exp $ */
+/* $OpenBSD: tcasic.c,v 1.14 2006/03/16 22:32:01 miod Exp $ */
 /* $NetBSD: tcasic.c,v 1.36 2001/08/23 01:16:52 nisimura Exp $ */
 
 /*
@@ -140,7 +140,9 @@ tcasicattach(parent, self, aux)
 	tc_dma_init();
 
 	(*intr_setup)();
-	set_iointr(iointr);
+
+	/* They all come in at 0x800. */
+	scb_set(0x800, iointr, NULL);
 
 	config_found(self, &tba, tcasicprint);
 }

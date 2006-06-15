@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_axppci_33.c,v 1.16 2002/03/14 01:26:27 millert Exp $	*/
+/*	$OpenBSD: pci_axppci_33.c,v 1.17 2002/03/14 03:15:50 millert Exp $	*/
 /*	$NetBSD: pci_axppci_33.c,v 1.10 1996/11/13 21:13:29 cgd Exp $	*/
 
 /*
@@ -92,7 +92,6 @@ pci_axppci_33_pickintr(lcp)
 
 #if NSIO
 	sio_intr_setup(pc, iot);
-	set_iointr(&sio_iointr);
 #else
 	panic("pci_axppci_33_pickintr: no I/O interrupt handler (no sio)");
 #endif
