@@ -1,4 +1,4 @@
-/*	$OpenBSD: powernow-k8.c,v 1.6 2006/05/27 04:46:12 gwk Exp $ */
+/*	$OpenBSD: powernow-k8.c,v 1.7 2006/06/13 00:32:35 gwk Exp $ */
 /*
  * Copyright (c) 2004 Martin Végiard.
  * All rights reserved.
@@ -280,14 +280,9 @@ k8_powernow_setperf(int level)
 		COUNT_OFF_VST(cstate->vst);
 	}
 
-	/* Check if transition failed. */
-	if (cfid != fid || cvid != vid) {
-		printf("%s transition to fid: %d vid: %d failed.", __func__,
-		    fid, vid);
-		return (EIO);
-	}
+	if (cfid == fid || cvid == vid)
+		cpuspeed = cstate->state_table[i].freq;
 
-	cpuspeed = cstate->state_table[i].freq;
 	return (0);
 }
 
