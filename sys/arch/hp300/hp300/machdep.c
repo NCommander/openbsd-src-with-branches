@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.108 2006/05/19 22:51:07 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.109 2006/06/07 22:02:00 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.121 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -747,18 +747,10 @@ haltsys:
 	/* Run any shutdown hooks. */
 	doshutdownhooks();
 
-#if defined(PANICWAIT) && !defined(DDB)
-	if ((howto & RB_HALT) == 0 && panicstr) {
-		printf("hit any key to reboot...\n");
-		(void)cngetc();
-		printf("\n");
-	}
-#endif
-
 	/* Finally, halt/reboot the system. */
 	if (howto & RB_HALT) {
 		printf("System halted.  Hit any key to reboot.\n\n");
-		(void)cngetc();
+		while (cngetc() == 0);
 	}
 
 	printf("rebooting...\n");
