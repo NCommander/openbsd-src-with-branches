@@ -82,6 +82,7 @@ struct rt_metrics {
 };
 /* XXX overloading some values that are no longer used. */
 #define rmx_refcnt rmx_rttvar	/* # held references only used by sysctl */
+#define	rmx_rt_tableid rmx_rtt	/* routing table ID */
 
 /*
  * rmx_rtt and rmx_rttvar are stored as microseconds;
@@ -182,6 +183,8 @@ struct rt_msghdr {
 	u_long	rtm_inits;	/* which metrics we are initializing */
 	struct	rt_metrics rtm_rmx; /* metrics themselves */
 };
+/* overload no longer used field */
+#define rtm_tableid	rtm_rmx.rmx_rt_tableid
 
 #define RTM_VERSION	3	/* Up the ante and ignore older versions */
 
