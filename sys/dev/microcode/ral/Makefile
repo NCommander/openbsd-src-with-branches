@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2006/01/09 20:03:40 damien Exp $
+# $OpenBSD: Makefile,v 1.2 2006/06/06 00:01:50 drahn Exp $
 
 NOPROG=
 NOMAN=
@@ -10,7 +10,7 @@ NOMAN=
     (${MACHINE} == "hppa64") || (${MACHINE} == "i386") || \
     (${MACHINE} == "sgi") || (${MACHINE} == "sparc64")
 
-FIRM=	ral-rt2561 ral-rt2561s ral-rt2661
+FIRM=	ral-rt2561 ral-rt2561s ral-rt2573 ral-rt2661
 
 PROG=	build
 
