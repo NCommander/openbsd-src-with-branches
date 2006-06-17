@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxx.c,v 1.23 2006/02/24 01:48:27 brad Exp $	*/
+/*	$OpenBSD: smc91cxx.c,v 1.24 2006/03/25 22:41:43 djm Exp $	*/
 /*	$NetBSD: smc91cxx.c,v 1.11 1998/08/08 23:51:41 mycroft Exp $	*/
 
 /*-
@@ -86,6 +86,7 @@
 #include <sys/syslog.h>
 #include <sys/socket.h>
 #include <sys/device.h>
+#include <sys/timeout.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/ioctl.h> 
