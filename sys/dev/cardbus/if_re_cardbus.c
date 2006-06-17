@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.2 2005/05/16 01:36:25 brad Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.3 2006/05/22 20:35:12 krw Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -28,6 +28,7 @@
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+#include <sys/timeout.h>
 #include <sys/socket.h>
 
 #include <net/if.h>

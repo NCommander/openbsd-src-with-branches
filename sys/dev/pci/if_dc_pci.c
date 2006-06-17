@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_pci.c,v 1.51 2005/08/09 04:10:11 mickey Exp $	*/
+/*	$OpenBSD: if_dc_pci.c,v 1.52 2005/11/06 19:25:21 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -43,6 +43,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>
+#include <sys/timeout.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/device.h>

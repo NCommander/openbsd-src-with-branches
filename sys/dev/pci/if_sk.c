@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.112 2006/06/15 20:12:40 brad Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.113 2006/06/17 01:04:34 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -95,6 +95,7 @@
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>
+#include <sys/timeout.h>
 #include <sys/device.h>
 #include <sys/queue.h>
 

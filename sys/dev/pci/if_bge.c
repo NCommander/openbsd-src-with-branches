@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.152 2006/06/11 00:31:57 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.153 2006/06/15 20:34:41 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -82,6 +82,7 @@
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
+#include <sys/timeout.h>
 #include <sys/socket.h>
 
 #include <net/if.h>

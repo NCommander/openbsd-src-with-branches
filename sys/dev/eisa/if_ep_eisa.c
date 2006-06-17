@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_eisa.c,v 1.20 2005/11/21 18:16:39 millert Exp $	*/
+/*	$OpenBSD: if_ep_eisa.c,v 1.21 2006/05/30 21:44:07 miod Exp $	*/
 /*	$NetBSD: if_ep_eisa.c,v 1.13 1997/04/18 00:50:33 cgd Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <sys/errno.h>
 #include <sys/syslog.h>
 #include <sys/selinfo.h>
+#include <sys/timeout.h>
 #include <sys/device.h>
 
 #include <net/if.h>
