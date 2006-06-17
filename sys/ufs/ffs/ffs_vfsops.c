@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.92 2006/04/19 11:55:55 pedro Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.93 2006/05/20 16:03:46 pedro Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -632,6 +632,9 @@ ffs_validate(struct fs *fsp)
 
 	if ((u_int)fsp->fs_sbsize > SBSIZE)
 		return (0); /* Invalid super block size */
+
+	if ((u_int)fsp->fs_frag > MAXFRAG || fragtbl[fsp->fs_frag] == NULL)
+		return (0); /* Invalid number of fragments */
 
 	return (1); /* Super block is okay */
 }
