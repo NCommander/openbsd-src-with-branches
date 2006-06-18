@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.21 2005/10/17 19:12:16 otto Exp $	*/
+/*	$OpenBSD: exf.c,v 1.22 2006/01/08 21:05:39 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -174,8 +174,10 @@ file_init(sp, frp, rcv_name, flags)
 	 * Scan the user's path to find the file that we're going to
 	 * try and open.
 	 */
-	if (file_spath(sp, frp, &sb, &exists))
+	if (file_spath(sp, frp, &sb, &exists)) {
+		free(ep);
 		return (1);
+	}
 
 	/*
 	 * If no name or backing file, for whatever reason, create a backing
