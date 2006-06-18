@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560var.h,v 1.2 2006/01/14 12:43:27 damien Exp $  */
+/*	$OpenBSD: rt2560var.h,v 1.3 2006/06/02 04:30:40 robert Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -114,7 +114,9 @@ struct rt2560_softc {
 	struct timeout		rssadapt_ch;
 
 	int			sc_flags;
-#define RT2560_ENABLED	(1 << 0)
+#define RT2560_ENABLED		(1 << 0)
+#define RT2560_UPDATE_SLOT	(1 << 1)
+#define RT2560_SET_SLOTTIME	(1 << 2)
 
 	int			sc_tx_timer;
 
@@ -140,6 +142,8 @@ struct rt2560_softc {
 	int			rx_ant;
 	int			tx_ant;
 	int			nb_ant;
+
+	uint8_t			*erp;
 
 #if NBPFILTER > 0
 	caddr_t			sc_drvbpf;
