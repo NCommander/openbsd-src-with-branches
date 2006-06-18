@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.141 2006/06/16 16:49:40 henning Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.142 2006/06/18 11:47:45 pascoe Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1498,7 +1498,7 @@ ip_forward(m, srcrt)
 		ipstat.ips_forward++;
 		if (type)
 			ipstat.ips_redirectsent++;
-		else 
+		else
 			goto freecopy;
 	}
 	if (mcopy == NULL)
