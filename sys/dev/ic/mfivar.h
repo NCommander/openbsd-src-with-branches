@@ -1,4 +1,4 @@
-/* $OpenBSD: mfivar.h,v 1.24 2006/05/23 00:43:57 marco Exp $ */
+/* $OpenBSD: mfivar.h,v 1.25 2006/05/25 00:21:31 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -122,6 +122,7 @@ struct mfi_softc {
 	uint32_t		sc_max_sgl;
 	uint32_t		sc_max_ld;
 	uint32_t		sc_ld_cnt;
+	/* XXX these struct should be local to mgmt function */
 	struct mfi_ctrl_info	sc_info;
 	struct mfi_ld_list	sc_ld_list;
 	struct mfi_ld_details	sc_ld_details;
