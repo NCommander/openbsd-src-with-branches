@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.46 2006/06/18 00:10:24 marco Exp $ */
+/*	$OpenBSD: mpi.c,v 1.47 2006/06/18 22:31:06 marco Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 David Gwynne <dlg@openbsd.org>
@@ -1084,7 +1084,8 @@ mpi_scsi_cmd_done(struct mpi_ccb *ccb)
 			xs->retries++;
 			break;
 		default:
-			printf("%s: invalid status code %d\n", xs->status);
+			printf("%s: invalid status code %d\n",
+			    DEVNAME(sc), xs->status);
 			xs->error = XS_DRIVER_STUFFUP;
 			break;
 		}
