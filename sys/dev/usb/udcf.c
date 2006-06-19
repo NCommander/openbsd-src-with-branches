@@ -29,7 +29,6 @@
 #include <sys/time.h>
 #include <sys/sensors.h>
 
-#include <dev/clock_subr.h>
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdi_util.h>
