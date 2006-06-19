@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.55 2005/12/28 20:48:18 pedro Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.56 2006/03/26 17:47:11 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -37,7 +37,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fstat.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$OpenBSD: fstat.c,v 1.55 2005/12/28 20:48:18 pedro Exp $";
+static char *rcsid = "$OpenBSD: fstat.c,v 1.56 2006/03/26 17:47:11 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -742,7 +742,7 @@ kqueuetrans(struct kqueue *kq, int i, struct file *fp)
 		goto bad;
 	}
 
-	printf("kqueue %p %d state: %s%s", kq, kqi.kq_count,
+	printf("kqueue %p %d state: %s%s\n", kq, kqi.kq_count,
 	    (kqi.kq_state & KQ_SEL) ? "S" : "",
 	    (kqi.kq_state & KQ_SLEEP) ? "W" : "");
 	return;
