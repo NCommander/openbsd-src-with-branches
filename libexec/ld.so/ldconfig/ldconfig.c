@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldconfig.c,v 1.22 2006/05/18 17:00:06 deraadt Exp $	*/
+/*	$OpenBSD: ldconfig.c,v 1.23 2006/06/15 22:09:32 drahn Exp $	*/
 
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -92,7 +92,7 @@ void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: %s [-DmPrRsSUv] [path ...]\n", __progname);
+	    "usage: %s [-DmPRrSsUv] [path ...]\n", __progname);
 	exit(1);
 }
 
