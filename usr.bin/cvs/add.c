@@ -1,4 +1,4 @@
-/*	$OpenBSD: add.c,v 1.56 2006/06/14 15:14:47 xsa Exp $	*/
+/*	$OpenBSD: add.c,v 1.57 2006/06/16 14:07:42 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -70,8 +70,7 @@ cvs_add(int argc, char **argv)
 
 	cr.enterdir = NULL;
 	cr.leavedir = NULL;
-	cr.local = cvs_add_local;
-	cr.remote = NULL;
+	cr.fileproc = cvs_add_local;
 	cr.flags = flags;
 
 	cvs_file_run(argc, argv, &cr);

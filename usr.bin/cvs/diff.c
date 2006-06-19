@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.104 2006/06/16 14:07:42 joris Exp $	*/
+/*	$OpenBSD: diff.c,v 1.105 2006/06/16 20:01:10 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -95,8 +95,7 @@ cvs_diff(int argc, char **argv)
 
 	cr.enterdir = NULL;
 	cr.leavedir = NULL;
-	cr.local = cvs_diff_local;
-	cr.remote = NULL;
+	cr.fileproc = cvs_diff_local;
 	cr.flags = flags;
 
 	diff_rev1 = diff_rev2 = NULL;
