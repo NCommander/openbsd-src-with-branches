@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.11 2003/11/03 06:43:02 david Exp $	*/
+/*	$OpenBSD: zs.c,v 1.12 2006/01/09 20:57:00 miod Exp $	*/
 /*	$NetBSD: zs.c,v 1.17 2001/06/19 13:42:15 wiz Exp $	*/
 
 /*
@@ -191,6 +191,9 @@ zsc_match(struct device *parent, void *match, void *aux)
 	struct cfdata *cf = match;
 
 	if (strcmp(ca->ca_name, "escc") != 0)
+		return 0;
+
+	if (ca->ca_nreg < 8)
 		return 0;
 
 	if (cf->cf_unit > 1)

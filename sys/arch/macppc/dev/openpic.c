@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.33 2005/11/17 15:03:51 drahn Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.34 2006/03/12 02:49:50 brad Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -117,13 +117,18 @@ openpic_match(struct device *parent, void *cf, void *aux)
 	    == sizeof(pirq))
 		return 0; /* XXX */
 
-	if (strcmp(ca->ca_name, "interrupt-controller") == 0 ||
-	    strcmp(ca->ca_name, "mpic") == 0) {
-		OF_getprop(ca->ca_node, "device_type", type, sizeof(type));
-		if (strcmp(type, "open-pic") == 0)
-			return 1;
-	}
-	return 0;
+	if (strcmp(ca->ca_name, "interrupt-controller") != 0 &&
+	    strcmp(ca->ca_name, "mpic") != 0)
+		return 0;
+
+	OF_getprop(ca->ca_node, "device_type", type, sizeof(type));
+	if (strcmp(type, "open-pic") != 0)
+		return 0;
+
+	if (ca->ca_nreg < 8)
+		return 0;
+
+	return 1;
 }
 
 typedef void  (void_f) (void);

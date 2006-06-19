@@ -1,4 +1,4 @@
-/*	$OpenBSD: mediabay.c,v 1.1 2004/05/10 21:29:53 drahn Exp $	*/
+/*	$OpenBSD: mediabay.c,v 1.2 2004/06/14 00:32:31 deraadt Exp $	*/
 /*	$NetBSD: mediabay.c,v 1.9 2003/07/15 02:43:29 lukem Exp $	*/
 
 /*-
@@ -95,7 +95,8 @@ mediabay_match(parent, v, aux)
 {
 	struct confargs *ca = aux;
 
-	if (strcmp(ca->ca_name, "media-bay") == 0)
+	if (strcmp(ca->ca_name, "media-bay") == 0 &&
+	    ca->ca_nintr >= 4 && ca->ca_nreg >= 8)
 		return 1;
 
 	return 0;
