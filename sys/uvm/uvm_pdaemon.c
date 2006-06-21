@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.26 2006/05/07 20:06:50 tedu Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.27 2006/05/16 08:34:42 mickey Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.23 2000/08/20 10:24:14 bjh21 Exp $	*/
 
 /* 
@@ -544,7 +544,7 @@ uvmpd_scan_inactive(pglst)
 					KASSERT(anon->an_swslot != 0);
 
 					/* remove from object */
-					anon->u.an_page = NULL;
+					anon->an_page = NULL;
 					simple_unlock(&anon->an_lock);
 				} else {
 					/* pagefree has already removed the
@@ -857,7 +857,7 @@ uvmpd_scan_inactive(pglst)
 			if (p->flags & PG_RELEASED) {
 				if (anon) {
 					/* remove page so we can get nextpg */
-					anon->u.an_page = NULL;
+					anon->an_page = NULL;
 
 					simple_unlock(&anon->an_lock);
 					uvm_anfree(anon);	/* kills anon */
