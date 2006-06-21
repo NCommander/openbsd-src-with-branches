@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_ath_cardbus.c,v 1.7 2005/09/22 10:17:04 reyk Exp $   */
+/*      $OpenBSD: if_ath_cardbus.c,v 1.8 2006/01/29 20:39:37 fgsch Exp $   */
 /*	$NetBSD: if_ath_cardbus.c,v 1.4 2004/08/02 19:14:28 mycroft Exp $ */
 
 /*
@@ -159,10 +159,6 @@ ath_cardbus_attach(struct device *parent, struct device *self, void *aux)
 	 */
 	if (Cardbus_mapreg_map(ct, ATH_PCI_MMBA, CARDBUS_MAPREG_TYPE_MEM, 0,
 	    &sc->sc_st, &sc->sc_sh, &adr, &csc->sc_mapsize) == 0) {
-#if rbus
-#else
-		(*ct->ct_cf->cardbus_mem_open)(cc, 0, adr, adr+csc->sc_mapsize);
-#endif
 		csc->sc_bar_val = adr | CARDBUS_MAPREG_TYPE_MEM;
 	}
 
