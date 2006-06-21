@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_emu.h,v 1.3 2001/10/05 17:43:09 jason Exp $	*/
+/*	$OpenBSD: fpu_emu.h,v 1.4 2003/06/02 23:27:55 millert Exp $	*/
 /*	$NetBSD: fpu_emu.h,v 1.4 2000/08/03 18:32:07 eeh Exp $ */
 
 /*
@@ -136,11 +136,7 @@ struct fpn {
  * Emulator state.
  */
 struct fpemu {
-#ifndef SUN4U
-	struct	fpstate *fe_fpstate;	/* registers, etc */
-#else /* SUN4U */
 	struct	fpstate64 *fe_fpstate;	/* registers, etc */
-#endif /* SUN4U */
 	int	fe_fsr;			/* fsr copy (modified during op) */
 	int	fe_cx;			/* exceptions */
 	struct	fpn fe_f1;		/* operand 1 */
