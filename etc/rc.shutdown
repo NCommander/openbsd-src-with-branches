@@ -5,7 +5,7 @@
 # it is also run by init(8) when such an event happens.
 #
 
-powerdown=YES	# or NO, if you wanted to halt without powering down
+powerdown=NO	# set to YES for powerdown
 
 #
 # Your shell code goes here
