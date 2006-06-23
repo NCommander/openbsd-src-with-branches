@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.39 2005/09/25 22:26:16 miod Exp $ */
+/*	$OpenBSD: vm_machdep.c,v 1.40 2005/12/17 07:31:26 miod Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -128,7 +128,6 @@ cpu_exit(p)
 {
 
 	splhigh();
-	uvmexp.swtch++;
 	switch_exit(p);
 	/* NOTREACHED */
 }

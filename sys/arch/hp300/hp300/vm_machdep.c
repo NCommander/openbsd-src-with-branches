@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.38 2005/09/25 22:26:10 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.39 2005/11/17 23:56:44 miod Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.60 2001/07/06 05:53:35 chs Exp $	*/
 
 /*
@@ -134,7 +134,6 @@ cpu_exit(p)
 {
 
 	(void) splhigh();
-	uvmexp.swtch++;
 	switch_exit(p);
 	/* NOTREACHED */
 }
