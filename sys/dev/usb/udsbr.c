@@ -1,4 +1,4 @@
-/*	$OpenBSD: udsbr.c,v 1.7 2004/07/08 22:18:44 deraadt Exp $	*/
+/*	$OpenBSD: udsbr.c,v 1.8 2005/08/01 05:36:48 brad Exp $	*/
 /*	$NetBSD: udsbr.c,v 1.7 2002/07/11 21:14:27 augustss Exp $	*/
 
 /*
@@ -173,7 +173,6 @@ udsbr_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
 		break;
 
 	case DVACT_DEACTIVATE:

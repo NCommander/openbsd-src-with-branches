@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.c,v 1.15 2006/06/17 18:33:27 brad Exp $	*/
+/*	$OpenBSD: azalia.c,v 1.16 2006/06/21 05:17:48 brad Exp $	*/
 /*	$NetBSD: azalia.c,v 1.20 2006/05/07 08:31:44 kent Exp $	*/
 
 /*-
@@ -412,7 +412,7 @@ azalia_pci_activate(struct device *self, enum devact act)
 	ret = 0;
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return EOPNOTSUPP;
+		return ret;
 	case DVACT_DEACTIVATE:
 		if (sc->audiodev != NULL)
 			ret = config_deactivate(sc->audiodev);

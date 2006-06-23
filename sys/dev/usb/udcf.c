@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.12 2006/06/12 09:51:09 mbalmer Exp $ */
+/*	$OpenBSD: udcf.c,v 1.15 2006/06/19 16:23:32 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -628,7 +628,7 @@ udcf_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;

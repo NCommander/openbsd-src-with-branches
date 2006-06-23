@@ -1,4 +1,4 @@
-/*	$OpenBSD: ulpt.c,v 1.19 2004/07/08 22:18:44 deraadt Exp $ */
+/*	$OpenBSD: ulpt.c,v 1.20 2005/08/01 05:36:49 brad Exp $ */
 /*	$NetBSD: ulpt.c,v 1.57 2003/01/05 10:19:42 scw Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ulpt.c,v 1.24 1999/11/17 22:33:44 n_hibma Exp $	*/
 
@@ -363,7 +363,7 @@ ulpt_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;

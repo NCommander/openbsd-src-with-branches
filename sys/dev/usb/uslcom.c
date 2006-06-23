@@ -1,4 +1,4 @@
-/*	$OpenBSD: uslcom.c,v 1.1 2006/04/29 02:15:06 jsg Exp $	*/
+/*	$OpenBSD: uslcom.c,v 1.2 2006/04/29 02:58:15 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -239,7 +239,7 @@ uslcom_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		if (sc->sc_subdev != NULL)

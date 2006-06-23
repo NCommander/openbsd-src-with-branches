@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_usb.c,v 1.28 2006/01/29 03:22:52 brad Exp $ */
+/*	$OpenBSD: if_wi_usb.c,v 1.29 2006/02/06 17:29:11 jmc Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -1339,7 +1339,6 @@ wi_usb_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
 		break;
 
 	case DVACT_DEACTIVATE:

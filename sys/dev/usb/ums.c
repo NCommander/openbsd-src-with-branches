@@ -1,4 +1,4 @@
-/*	$OpenBSD: ums.c,v 1.15 2004/12/06 11:08:23 dlg Exp $ */
+/*	$OpenBSD: ums.c,v 1.16 2005/11/21 18:16:44 millert Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -252,7 +252,7 @@ ums_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		if (sc->sc_wsmousedev != NULL)

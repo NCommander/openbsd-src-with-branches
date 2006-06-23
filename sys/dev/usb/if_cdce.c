@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.17 2006/05/27 21:47:55 pascoe Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.18 2006/05/30 22:51:53 pascoe Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -768,7 +768,6 @@ cdce_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
 		break;
 
 	case DVACT_DEACTIVATE:

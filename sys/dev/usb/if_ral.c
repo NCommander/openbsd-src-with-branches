@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.68 2006/06/10 20:28:11 damien Exp $  */
+/*	$OpenBSD: if_ral.c,v 1.69 2006/06/17 19:07:19 damien Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -2246,7 +2246,7 @@ ural_activate(device_ptr_t self, enum devact act)
 {
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return EOPNOTSUPP;
+		break;
 
 	case DVACT_DEACTIVATE:
 		/*if_deactivate(&sc->sc_ic.ic_if);*/

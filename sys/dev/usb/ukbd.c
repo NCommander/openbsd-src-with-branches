@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.22 2005/07/18 07:41:38 jsg Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.23 2005/11/21 18:16:44 millert Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -384,7 +384,7 @@ ukbd_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		if (sc->sc_wskbddev != NULL)

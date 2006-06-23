@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.28 2006/03/27 08:19:39 dlg Exp $ */
+/*	$OpenBSD: ucom.c,v 1.29 2006/04/27 19:31:44 deraadt Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -257,7 +257,7 @@ ucom_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;

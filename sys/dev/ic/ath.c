@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.49 2006/05/08 18:32:11 pedro Exp $  */
+/*      $OpenBSD: ath.c,v 1.50 2006/05/22 20:35:12 krw Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -172,7 +172,6 @@ ath_activate(struct device *self, enum devact act)
 	s = splnet();
 	switch (act) {
 	case DVACT_ACTIVATE:
-		rv = EOPNOTSUPP;
 		break;
 	case DVACT_DEACTIVATE:
 		if_deactivate(&sc->sc_ic.ic_if);

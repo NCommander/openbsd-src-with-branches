@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.c,v 1.31 2005/10/11 09:09:21 dlg Exp $	*/
+/*	$OpenBSD: usb.c,v 1.32 2005/11/21 18:16:44 millert Exp $	*/
 /*	$NetBSD: usb.c,v 1.77 2003/01/01 00:10:26 thorpej Exp $	*/
 
 /*
@@ -798,7 +798,7 @@ usb_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;

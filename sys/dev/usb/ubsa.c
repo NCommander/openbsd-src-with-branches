@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsa.c,v 1.13 2005/11/21 18:16:43 millert Exp $ 	*/
+/*	$OpenBSD: ubsa.c,v 1.14 2006/02/11 09:33:45 brad Exp $ 	*/
 /*	$NetBSD: ubsa.c,v 1.5 2002/11/25 00:51:33 fvdl Exp $	*/
 /*-
  * Copyright (c) 2002, Alexander Kabaev <kan.FreeBSD.org>.
@@ -420,7 +420,7 @@ ubsa_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		if (sc->sc_subdev != NULL)

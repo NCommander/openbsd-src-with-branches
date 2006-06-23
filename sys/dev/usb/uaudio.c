@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.35 2006/04/21 15:47:27 jolan Exp $ */
+/*	$OpenBSD: uaudio.c,v 1.36 2006/05/04 15:25:10 mickey Exp $ */
 /*	$NetBSD: uaudio.c,v 1.90 2004/10/29 17:12:53 kent Exp $	*/
 
 /*
@@ -483,7 +483,7 @@ uaudio_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 	case DVACT_DEACTIVATE:
 		if (sc->sc_audiodev != NULL)
 			rv = config_deactivate(sc->sc_audiodev);

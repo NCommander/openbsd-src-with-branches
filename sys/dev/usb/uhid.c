@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhid.c,v 1.27 2004/07/08 22:18:44 deraadt Exp $ */
+/*	$OpenBSD: uhid.c,v 1.28 2005/11/21 18:16:43 millert Exp $ */
 /*	$NetBSD: uhid.c,v 1.57 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -167,7 +167,7 @@ uhid_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		sc->sc_dying = 1;

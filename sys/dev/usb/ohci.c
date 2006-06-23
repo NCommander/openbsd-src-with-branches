@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci.c,v 1.71 2006/05/29 03:49:22 pascoe Exp $ */
+/*	$OpenBSD: ohci.c,v 1.72 2006/05/31 06:18:09 pascoe Exp $ */
 /*	$NetBSD: ohci.c,v 1.139 2003/02/22 05:24:16 tsutsui Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ohci.c,v 1.22 1999/11/17 22:33:40 n_hibma Exp $	*/
 
@@ -318,7 +318,7 @@ ohci_activate(device_ptr_t self, enum devact act)
 
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 
 	case DVACT_DEACTIVATE:
 		if (sc->sc_child != NULL)

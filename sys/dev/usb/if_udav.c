@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_udav.c,v 1.16 2006/03/07 04:41:19 krw Exp $ */
+/*	$OpenBSD: if_udav.c,v 1.17 2006/03/25 22:41:47 djm Exp $ */
 /*	$NetBSD: if_udav.c,v 1.3 2004/04/23 17:25:25 itojun Exp $	*/
 /*	$nabe: if_udav.c,v 1.3 2003/08/21 16:57:19 nabe Exp $	*/
 /*
@@ -718,7 +718,6 @@ udav_activate(device_ptr_t self, enum devact act)
 		 __func__, act));
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
 		break;
 
 	case DVACT_DEACTIVATE:
