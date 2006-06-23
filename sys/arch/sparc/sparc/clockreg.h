@@ -1,4 +1,4 @@
-/*	$OpenBSD: clockreg.h,v 1.2 1997/08/08 08:27:07 downsj Exp $	*/
+/*	$OpenBSD: clockreg.h,v 1.3 2003/06/02 23:27:55 millert Exp $	*/
 /*	$NetBSD: clockreg.h,v 1.5 1994/11/20 20:54:07 deraadt Exp $ */
 
 /*
@@ -81,7 +81,7 @@ struct clockreg {
 struct clockreg *clockreg;
 
 /*
- * Sun chose the year `68' as their base count, so that
- * cl_year==0 means 1968.
+ * Machine dependent base year:
+ * Note: must be < 1970
  */
-#define	YEAR0	68
+#define CLOCK_BASE_YEAR 1968
