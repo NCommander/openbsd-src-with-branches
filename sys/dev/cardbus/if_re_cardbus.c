@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.4 2006/06/17 17:58:17 brad Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.5 2006/06/21 11:27:03 fkr Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -70,13 +70,13 @@ struct re_cardbus_softc {
 	bus_size_t sc_mapsize;
 };
 
-int re_cardbus_probe(struct device *, void *, void *);
-void re_cardbus_attach(struct device *, struct device *, void *);
-int re_cardbus_detach(struct device *, int);
-void re_cardbus_setup(struct rl_softc *);
+int	re_cardbus_probe(struct device *, void *, void *);
+void	re_cardbus_attach(struct device *, struct device *, void *);
+int	re_cardbus_detach(struct device *, int);
+void	re_cardbus_setup(struct rl_softc *);
 
-void re_cardbus_shutdown(void *);
-void re_cardbus_powerhook(int, void *);
+void	re_cardbus_shutdown(void *);
+void	re_cardbus_powerhook(int, void *);
 
 /*
  * Cardbus autoconfig definitions
