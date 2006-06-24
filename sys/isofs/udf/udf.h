@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf.h,v 1.2 2006/01/14 19:04:17 miod Exp $	*/
+/*	$OpenBSD: udf.h,v 1.3 2006/06/24 15:09:17 pedro Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -56,7 +56,6 @@ struct udf_mnt {
 	int			bmask;
 	uint32_t		part_start;
 	uint32_t		part_len;
-	uint64_t		root_id;
 	struct vnode		*root_vp;
 	struct long_ad		root_icb;
 	LIST_HEAD(udf_hash_lh, udf_node)	*hashtbl;
