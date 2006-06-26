@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.241 2006/06/24 10:11:03 jsg Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.242 2006/06/26 02:40:40 brad Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -7881,6 +7881,7 @@ nforce_setup_channel(struct channel_softc *chp)
 			else
 				mode = drvp->DMA_mode + 2;
 		} else {
+			mode = drvp->PIO_mode;
 			goto pio;
 		}
 		idedma_ctl |= IDEDMA_CTL_DRV_DMA(drive);
