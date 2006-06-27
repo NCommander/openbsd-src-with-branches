@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wivar.h,v 1.26 2005/07/31 23:08:58 pascoe Exp $	*/
+/*	$OpenBSD: if_wivar.h,v 1.27 2005/10/31 05:37:13 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -70,6 +70,8 @@ struct wi_softc	{
 	u_int8_t		wi_rxbuf[1596];
 	u_int8_t		wi_txbuf[1596];
 	u_int8_t		wi_scanbuf[1596];
+	int			wi_scan_lock;
+	struct timeout		wi_scan_timeout;
 
 	u_int8_t		wi_scanbuf_len;
 
