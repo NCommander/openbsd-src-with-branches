@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sparc64,v 1.70 2006/06/16 22:01:30 jason Exp $
+#	$OpenBSD: files.sparc64,v 1.71 2006/06/19 15:13:35 deraadt Exp $
 #	$NetBSD: files.sparc64,v 1.50 2001/08/10 20:53:50 eeh Exp $
 
 # maxpartitions must be first item in files.${ARCH}
@@ -277,4 +277,9 @@ include	"dev/usb/files.usb"
 device	pcfadc
 attach	pcfadc at i2c
 file	arch/sparc64/dev/pcf8591_ofw.c		pcfadc
+
+#
+# Machine-independent GPIO drivers
+#
+include "dev/gpio/files.gpio"
 
