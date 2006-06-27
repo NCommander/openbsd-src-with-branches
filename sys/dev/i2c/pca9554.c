@@ -1,4 +1,4 @@
-/*	$OpenBSD: pca9554.c,v 1.6 2005/12/27 17:18:18 deraadt Exp $	*/
+/*	$OpenBSD: pca9554.c,v 1.7 2006/01/19 17:08:39 grange Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -72,6 +72,7 @@ pcagpio_match(struct device *parent, void *match, void *aux)
 
 	if (strcmp(ia->ia_name, "PCA9554") == 0 ||
 	    strcmp(ia->ia_name, "PCA9554M") == 0 ||
+	    strcmp(ia->ia_name, "pca9555") == 0 ||
 	    strcmp(ia->ia_name, "pca9556") == 0 ||
 	    strcmp(ia->ia_name, "pca9557") == 0)
 		return (1);
