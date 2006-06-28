@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbus.c,v 1.24 2006/06/02 20:00:56 miod Exp $	*/
+/*	$OpenBSD: sbus.c,v 1.25 2006/06/27 20:20:48 jason Exp $	*/
 /*	$NetBSD: sbus.c,v 1.46 2001/10/07 20:30:41 eeh Exp $ */
 
 /*-
@@ -352,6 +352,7 @@ sbus_mb_attach(struct device *parent, struct device *self, void *aux)
 		panic("couldn't malloc iommu name");
 	snprintf(name, 32, "%s dvma", sc->sc_dev.dv_xname);
 
+	printf("%s: ", sc->sc_dev.dv_xname);
 	iommu_init(name, &sc->sc_is, 0, -1);
 
 	/* Enable the over temp intr */
