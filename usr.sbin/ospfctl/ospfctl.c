@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.32 2006/03/26 09:47:54 norby Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.33 2006/04/21 16:36:39 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -293,6 +293,8 @@ show_summary_msg(struct imsg *imsg)
 	case IMSG_CTL_SHOW_SUM:
 		sum = imsg->data;
 		printf("Router ID: %s\n", inet_ntoa(sum->rtr_id));
+		printf("Uptime: %s\n", sum->uptime == 0 ? "00:00:00" :
+		    fmt_timeframe_core(sum->uptime));
 		printf("RFC1583 compatibility flag is ");
 		if (sum->rfc1583compat)
 			printf("enabled\n");
