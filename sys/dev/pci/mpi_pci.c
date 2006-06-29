@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi_pci.c,v 1.8 2006/06/16 05:36:46 dlg Exp $ */
+/*	$OpenBSD: mpi_pci.c,v 1.9 2006/06/29 22:18:14 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -77,9 +77,7 @@ static const struct pci_matchid mpi_devices[] = {
 int
 mpi_pci_match(struct device *parent, void *match, void *aux)
 {
-	struct pci_attach_args		*pa = aux;
-
-	return (pci_matchbyid(pa, mpi_devices,
+	return (pci_matchbyid((struct pci_attach_args *)aux, mpi_devices,
 	    sizeof(mpi_devices) / sizeof(mpi_devices[0])));
 }
 
