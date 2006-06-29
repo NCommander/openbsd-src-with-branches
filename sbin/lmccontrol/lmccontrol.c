@@ -1,4 +1,4 @@
-/* $OpenBSD: lmccontrol.c,v 1.6 2006/05/31 20:17:15 dhill Exp $ */
+/* $OpenBSD: lmccontrol.c,v 1.7 2006/06/02 07:01:29 jmc Exp $ */
 
 /*-
  * Copyright (c) 1997-1999 LAN Media Corporation (LMC)
@@ -169,7 +169,7 @@ main(int argc, char **argv)
 				exit(1);
 			}
 
-			strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+			strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
 			ifr.ifr_data = (caddr_t)&ctl;
 			if (ioctl(fd, SPPPIOCCISCO, &ifr) < 0) {
 				fprintf(stderr, "ioctl %s SPPPIOCCISCO: %s\n",
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 				return (1);
 			}
 
-			strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+			strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
 			ifr.ifr_data = (caddr_t)&ctl;
 #if defined(linux)	/* Linux IOCTL */
 			if (ioctl(fd, SPPPIOCPPP, &ifr) < 0) {
@@ -214,7 +214,7 @@ main(int argc, char **argv)
 		return (1);
 	}
 
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+	strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
 	ifr.ifr_data = (caddr_t)&ctl;
 
 	/*
