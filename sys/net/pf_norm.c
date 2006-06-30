@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.104 2006/01/18 22:03:21 dhartmei Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.104.2.1 2006/05/02 22:00:04 brad Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -927,6 +927,18 @@ pf_normalize_ip(struct mbuf **m0, int dir, struct pfi_kif *kif, u_short *reason,
 		if (m == NULL)
 			return (PF_DROP);
 
+		/* use mtag from concatenated mbuf chain */
+		pd->pf_mtag = pf_find_mtag(m);
+#ifdef DIAGNOSTIC
+		if (pd->pf_mtag == NULL) {
+			printf("%s: pf_find_mtag returned NULL(1)\n", __func__);
+			if ((pd->pf_mtag = pf_get_mtag(m)) == NULL) {
+				m_freem(m);
+				*m0 = NULL;
+				goto no_mem;
+			}
+		}
+#endif
 		if (frag != NULL && (frag->fr_flags & PFFRAG_DROP))
 			goto drop;
 
@@ -962,6 +974,18 @@ pf_normalize_ip(struct mbuf **m0, int dir, struct pfi_kif *kif, u_short *reason,
 			goto drop;
 		}
 
+		/* use mtag from copied and trimmed mbuf chain */
+		pd->pf_mtag = pf_find_mtag(m);
+#ifdef DIAGNOSTIC
+		if (pd->pf_mtag == NULL) {
+			printf("%s: pf_find_mtag returned NULL(2)\n", __func__);
+			if ((pd->pf_mtag = pf_get_mtag(m)) == NULL) {
+				m_freem(m);
+				*m0 = NULL;
+				goto no_mem;
+			}
+		}
+#endif
 		if (dir == PF_IN)
 			pd->pf_mtag->flags |= PF_TAG_FRAGCACHE;
 
