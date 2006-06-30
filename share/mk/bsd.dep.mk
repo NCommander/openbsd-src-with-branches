@@ -1,11 +1,11 @@
-#	$OpenBSD: bsd.dep.mk,v 1.4 1998/06/09 19:29:45 downsj Exp $
+#	$OpenBSD: bsd.dep.mk,v 1.5 2003/08/07 11:24:03 espie Exp $
 #	$NetBSD: bsd.dep.mk,v 1.12 1995/09/27 01:15:09 christos Exp $
 
 # some of the rules involve .h sources, so remove them from mkdep line
 .if !target(depend)
 depend: beforedepend .depend _SUBDIRUSE afterdepend
 .  if defined(SRCS)
-.depend: ${SRCS}
+.depend: ${SRCS} ${_LEXINTM} ${_YACCINTM}
 	@rm -f .depend
 	@files="${.ALLSRC:M*.s} ${.ALLSRC:M*.S}"; \
 	if [ "$$files" != " " ]; then \
