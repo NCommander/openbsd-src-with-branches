@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.83 2005/12/17 07:31:26 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.84 2006/03/15 21:03:38 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -169,7 +169,7 @@ void bus_space_unmap(bus_space_tag_t t, bus_space_handle_t bsh,
 
 /*
  * Extent maps to manage I/O. Allocate storage for 8 regions in each,
- * initially. Later devio_malloc_safe will indicate that it's save to
+ * initially. Later devio_malloc_safe will indicate that it's safe to
  * use malloc() to dynamically allocate region descriptors.
  */
 static long devio_ex_storage[EXTENT_FIXED_STORAGE_SIZE(8) / sizeof (long)];
