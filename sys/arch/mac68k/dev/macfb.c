@@ -1,4 +1,4 @@
-/*	$OpenBSD: macfb.c,v 1.15 2006/03/13 22:35:17 miod Exp $	*/
+/*	$OpenBSD: macfb.c,v 1.16 2006/04/14 09:36:49 martin Exp $	*/
 /* $NetBSD: macfb.c,v 1.11 2005/01/15 16:00:59 chs Exp $ */
 /*
  * Copyright (c) 1998 Matt DeBergalis
@@ -455,11 +455,7 @@ macfb_alloc_screen(void *v, const struct wsscreen_descr *type, void **cookiep,
 
 	*cookiep = ri;
 	*curxp = *curyp = 0;
-	if ((ri->ri_caps & WSSCREEN_WSCOLORS) && ri->ri_depth <= 8)
-		ri->ri_ops.alloc_attr(ri, WSCOL_WHITE, WSCOL_BLACK,
-		    WSATTR_WSCOLORS, defattrp);
-	else
-		ri->ri_ops.alloc_attr(ri, 0, 0, 0, defattrp);
+	ri->ri_ops.alloc_attr(ri, 0, 0, 0, defattrp);
 	sc->sc_dc->dc_nscreens++;
 
 	return (0);
@@ -569,12 +565,7 @@ macfb_cnattach()
 		return (-1);
 
 	ri = &dc->dc_ri;
-	if ((ri->ri_caps & WSSCREEN_WSCOLORS) && ri->ri_depth <= 8)
-		ri->ri_ops.alloc_attr(ri, WSCOL_WHITE, WSCOL_BLACK,
-		    WSATTR_WSCOLORS, &defattr);
-	else
-		ri->ri_ops.alloc_attr(ri, 0, 0, 0, &defattr);
-
+	ri->ri_ops.alloc_attr(ri, 0, 0, 0, &defattr);
 	wsdisplay_cnattach(&dc->dc_wsd, ri, 0, 0, defattr);
 
 	macfb_consaddr = mac68k_vidphys;
