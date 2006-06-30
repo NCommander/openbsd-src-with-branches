@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.223 2006/03/21 03:31:09 dhartmei Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.224 2006/05/23 12:04:28 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -485,7 +485,7 @@ print_status(struct pf_status *s, int opts)
 	time_t			runtime;
 	int			i;
 	char			buf[PF_MD5_DIGEST_LENGTH * 2 + 1];
-	static const char 	hex[] = "0123456789abcdef";
+	static const char	hex[] = "0123456789abcdef";
 
 	runtime = time(NULL) - s->since;
 	running = s->running ? "Enabled" : "Disabled";
@@ -1236,7 +1236,7 @@ ifa_grouplookup(const char *ifa_name, int flags)
 			n->tail = hn;
 		}
 	}
-	free(ifgr.ifgr_groups);	
+	free(ifgr.ifgr_groups);
 	close(s);
 
 	return (h);
