@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.102 2006/04/14 16:38:42 pedro Exp $	*/
+/*	$OpenBSD: editor.c,v 1.103 2006/04/26 17:09:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.102 2006/04/14 16:38:42 pedro Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.103 2006/04/26 17:09:34 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -1628,8 +1628,8 @@ find_bounds(struct disklabel *lp, struct disklabel *bios_lp)
 			u_int32_t i, new_end;
 
 			/* Set start and end based on fdisk partition bounds */
-			starting_sector = get_le(&dosdp->dp_start);
-			ending_sector = starting_sector + get_le(&dosdp->dp_size);
+			starting_sector = letoh32(dosdp->dp_start);
+			ending_sector = starting_sector + letoh32(dosdp->dp_size);
 
 			/*
 			 * If the ending sector of the BSD fdisk partition
