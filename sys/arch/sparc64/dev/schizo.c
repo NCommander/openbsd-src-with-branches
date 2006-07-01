@@ -1,4 +1,4 @@
-/*	$OpenBSD: schizo.c,v 1.32 2006/06/30 05:02:11 deraadt Exp $	*/
+/*	$OpenBSD: schizo.c,v 1.33 2006/07/01 16:41:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -193,7 +193,6 @@ schizo_init(struct schizo_softc *sc, int busa)
 
 	printf("%s: ", sc->sc_dv.dv_xname);
 	schizo_init_iommu(sc, pbm);
-	printf("\n");
 
 	match = schizo_read(sc, busa ? SCZ_PCIA_IO_MATCH : SCZ_PCIB_IO_MATCH);
 	pbm->sp_confpaddr = match & ~0x8000000000000000UL;
