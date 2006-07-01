@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnconfig.c,v 1.16 2004/09/14 22:35:51 deraadt Exp $	*/
+/*	$OpenBSD: vnconfig.c,v 1.17 2006/06/30 16:09:27 tedu Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -274,8 +274,7 @@ usage(void)
 	extern char *__progname;
 
 	(void)fprintf(stderr,
-	    "usage: %s [-c] [-vk] [-K rounds] rawdev regular-file\n"
-	    "       %s -u [-v] rawdev\n"
-	    "       %s -l [rawdev]\n", __progname, __progname, __progname);
+	    "usage: %s [-ckluv] [-K rounds] rawdev regular_file\n",
+	    __progname);
 	exit(1);
 }
