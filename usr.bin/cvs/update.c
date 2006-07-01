@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.75 2006/06/19 05:05:17 joris Exp $	*/
+/*	$OpenBSD: update.c,v 1.76 2006/07/01 20:30:46 reyk Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -23,7 +23,7 @@
 
 int	cvs_update(int, char **);
 int	prune_dirs = 0;
-int	dump = 0;
+int	print = 0;
 int	build_dirs = 0;
 int	reset_stickies = 0;
 static char *tag = NULL;
@@ -78,7 +78,7 @@ cvs_update(int argc, char **argv)
 			prune_dirs = 1;
 			break;
 		case 'p':
-			dump = 1;
+			print = 1;
 			break;
 		case 'Q':
 		case 'q':
@@ -274,7 +274,7 @@ cvs_update_local(struct cvs_file *cf)
 		cf->file_rcsrev = rcs_head_get(cf->file_rcs);
 	}
 
-	if (dump && cf->file_status != FILE_UNKNOWN) {
+	if (print && cf->file_status != FILE_UNKNOWN) {
 		bp = rcs_getrev(cf->file_rcs, cf->file_rcsrev);
 		if (bp == NULL)
 			fatal("cvs_update_local: failed to get HEAD");
