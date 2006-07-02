@@ -1,4 +1,4 @@
-/*	$OpenBSD: openbsd-syscalls.c,v 1.29 2006/01/01 11:48:45 sturm Exp $	*/
+/*	$OpenBSD: openbsd-syscalls.c,v 1.30 2006/05/02 19:49:05 sturm Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -457,6 +457,8 @@ obsd_replace(int fd, pid_t pid, u_int16_t seqnr,
 	struct systrace_replace replace;
 	size_t len, off;
 	int i, ret;
+
+	memset(&replace, 0, sizeof(replace));
 
 	for (i = 0, len = 0; i < repl->num; i++) {
 		len += repl->len[i];
