@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.163 2006/05/16 09:00:00 markus Exp $ */
+/* $OpenBSD: clientloop.c,v 1.164 2006/06/26 10:36:15 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -925,7 +925,7 @@ process_cmdline(void)
 		    "Request local forward");
 		logit("      -R[bind_address:]port:host:hostport    "
 		    "Request remote forward");
-		logit("      -KR[bind_address:]hostport             "
+		logit("      -KR[bind_address:]port                 "
 		    "Cancel remote forward");
 		if (!options.permit_local_command)
 			goto out;
