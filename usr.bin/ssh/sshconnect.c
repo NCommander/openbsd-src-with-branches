@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.184 2006/06/08 14:45:49 markus Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.185 2006/06/14 10:50:42 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -37,6 +37,7 @@
 #include "atomicio.h"
 #include "misc.h"
 #include "dns.h"
+#include "version.h"
 
 char *client_version_string = NULL;
 char *server_version_string = NULL;

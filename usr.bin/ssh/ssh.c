@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.276 2006/04/25 08:02:27 dtucker Exp $ */
+/* $OpenBSD: ssh.c,v 1.277 2006/07/02 17:12:58 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -82,6 +82,7 @@
 #include "msg.h"
 #include "monitor_fdpass.h"
 #include "uidswap.h"
+#include "version.h"
 
 #ifdef SMARTCARD
 #include "scard.h"

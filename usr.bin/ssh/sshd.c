@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.330 2006/03/25 13:17:02 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.331 2006/06/01 09:21:48 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -89,6 +89,7 @@
 #include "monitor.h"
 #include "monitor_wrap.h"
 #include "monitor_fdpass.h"
+#include "version.h"
 
 #ifdef LIBWRAP
 #include <tcpd.h>
