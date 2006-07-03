@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.77 2006/07/01 21:09:36 reyk Exp $	*/
+/*	$OpenBSD: update.c,v 1.78 2006/07/02 21:01:48 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -79,6 +79,7 @@ cvs_update(int argc, char **argv)
 			break;
 		case 'p':
 			print = 1;
+			cvs_noexec = 1;
 			break;
 		case 'Q':
 		case 'q':
