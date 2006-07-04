@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsutil.c,v 1.14 2006/05/28 23:16:31 ray Exp $	*/
+/*	$OpenBSD: rcsutil.c,v 1.15 2006/06/03 03:05:10 niallo Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -512,6 +512,8 @@ rcs_freelines(struct rcs_lines *lines)
 
 	while ((lp = TAILQ_FIRST(&(lines->l_lines))) != NULL) {
 		TAILQ_REMOVE(&(lines->l_lines), lp, l_list);
+		if (lp->l_line != NULL)
+			xfree(lp->l_line);
 		xfree(lp);
 	}
 
