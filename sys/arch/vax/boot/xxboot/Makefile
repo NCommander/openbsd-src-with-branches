@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2002/06/11 09:36:24 hugh Exp $
+#	$OpenBSD: Makefile,v 1.5 2003/08/10 15:51:18 deraadt Exp $
 #	$NetBSD: Makefile,v 1.12 2002/02/24 01:04:25 matt Exp $
 
 S=	${.CURDIR}/../../../../
@@ -12,7 +12,7 @@ WARNS?=	1
 
 SRCS=	start.S bootxx.c romread.S str.S urem.s udiv.s
 
-STRIPFLAG=
+INSTALL_STRIP=
 CPPFLAGS+=-D_STANDALONE -DLIBSA_NO_FD_CHECKING -DLIBSA_NO_RAW_ACCESS \
 	-DLIBSA_NO_TWIDDLE -DLIBSA_SINGLE_DEVICE=rom \
 	-DLIBSA_NO_COMPAT_UFS \
