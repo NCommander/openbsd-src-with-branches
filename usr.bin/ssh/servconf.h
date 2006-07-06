@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.72 2005/12/06 22:38:27 reyk Exp $ */
+/* $OpenBSD: servconf.h,v 1.73 2006/03/25 22:22:43 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -111,6 +111,7 @@ typedef struct {
 	u_int num_subsystems;
 	char   *subsystem_name[MAX_SUBSYSTEMS];
 	char   *subsystem_command[MAX_SUBSYSTEMS];
+	char   *subsystem_args[MAX_SUBSYSTEMS];
 
 	u_int num_accept_env;
 	char   *accept_env[MAX_ACCEPT_ENV];
