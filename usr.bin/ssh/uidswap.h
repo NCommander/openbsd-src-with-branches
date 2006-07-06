@@ -1,4 +1,4 @@
-/* $OpenBSD: uidswap.h,v 1.10 2006/03/25 22:22:43 djm Exp $ */
+/* $OpenBSD: uidswap.h,v 1.11 2006/06/08 14:45:49 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -14,6 +14,10 @@
 
 #ifndef UIDSWAP_H
 #define UIDSWAP_H
+
+#include <sys/types.h>
+
+#include <pwd.h>
 
 void	 temporarily_use_uid(struct passwd *);
 void	 restore_uid(void);

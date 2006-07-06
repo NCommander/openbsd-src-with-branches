@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keysign.c,v 1.22 2006/03/25 13:17:02 djm Exp $ */
+/* $OpenBSD: ssh-keysign.c,v 1.23 2006/04/02 08:34:52 dtucker Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *
@@ -24,11 +24,14 @@
  */
 #include "includes.h"
 
-#include <paths.h>
+#include <sys/types.h>
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/rsa.h>
+
+#include <paths.h>
+#include <pwd.h>
 
 #include "log.h"
 #include "key.h"

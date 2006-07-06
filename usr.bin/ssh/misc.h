@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.30 2006/03/25 22:22:43 djm Exp $ */
+/* $OpenBSD: misc.h,v 1.31 2006/03/30 09:58:15 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -14,6 +14,10 @@
 
 #ifndef _MISC_H
 #define _MISC_H
+
+#include <sys/types.h>
+
+#include <pwd.h>
 
 /* misc.c */
 

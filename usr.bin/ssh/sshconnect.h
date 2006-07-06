@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.h,v 1.19 2006/03/25 22:22:43 djm Exp $ */
+/* $OpenBSD: sshconnect.h,v 1.20 2006/06/06 10:20:20 markus Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -25,6 +25,10 @@
  */
 #ifndef SSHCONNECT_H
 #define SSHCONNECT_H
+
+#include <sys/types.h>
+
+#include <pwd.h>
 
 typedef struct Sensitive Sensitive;
 struct Sensitive {

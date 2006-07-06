@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: auth-rhosts.c,v 1.37 2006/03/25 13:17:01 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 
 #include <netgroup.h>
+#include <pwd.h>
 
 #include "packet.h"
 #include "uidswap.h"

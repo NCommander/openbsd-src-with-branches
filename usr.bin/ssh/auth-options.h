@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-options.h,v 1.13 2005/12/06 22:38:27 reyk Exp $ */
+/* $OpenBSD: auth-options.h,v 1.14 2006/03/25 22:22:42 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -14,6 +14,10 @@
 
 #ifndef AUTH_OPTIONS_H
 #define AUTH_OPTIONS_H
+
+#include <sys/types.h>
+
+#include <pwd.h>
 
 /* Linked list of custom environment strings */
 struct envstring {
