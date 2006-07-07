@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff_internals.c,v 1.1 2006/05/27 03:30:30 joris Exp $	*/
+/*	$OpenBSD: diff_internals.c,v 1.2 2006/05/31 22:24:12 joris Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -946,7 +946,7 @@ proceed:
 				diff_output("\t%s", buf);
 			}
 
-			printf("\n");
+			diff_output("\n");
 
 			t = localtime(&stb2.st_mtime);
 			(void)strftime(buf, sizeof(buf),
@@ -961,7 +961,7 @@ proceed:
 				diff_output("\t%s", buf);
 			}
 
-			printf("\n");
+			diff_output("\n");
 			anychange = 1;
 		} else if (a > context_vec_ptr->b + (2 * context) + 1 &&
 		    c > context_vec_ptr->d + (2 * context) + 1) {
