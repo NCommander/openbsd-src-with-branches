@@ -1,4 +1,4 @@
-/* $OpenBSD: sshlogin.h,v 1.5 2006/03/25 18:36:15 deraadt Exp $ */
+/* $OpenBSD: sshlogin.h,v 1.6 2006/03/25 22:22:43 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -13,6 +13,9 @@
  */
 #ifndef SSHLOGIN_H
 #define SSHLOGIN_H
+
+#include <sys/types.h>
+#include <sys/socket.h>
 
 void
 record_login(pid_t, const char *, const char *, uid_t,

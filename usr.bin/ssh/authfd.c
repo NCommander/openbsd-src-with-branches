@@ -1,4 +1,4 @@
-/* $OpenBSD: authfd.c,v 1.73 2006/03/25 18:29:35 deraadt Exp $ */
+/* $OpenBSD: authfd.c,v 1.74 2006/03/30 09:58:15 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -39,6 +39,7 @@
 
 #include <sys/types.h>
 #include <sys/un.h>
+#include <sys/socket.h>
 
 #include <openssl/evp.h>
 

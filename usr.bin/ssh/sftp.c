@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.81 2006/04/20 21:53:44 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.82 2006/05/17 12:43:34 markus Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 
 #include <glob.h>
 #include <histedit.h>
