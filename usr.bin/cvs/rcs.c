@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.183 2006/06/06 05:13:39 joris Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.184 2006/06/09 14:57:13 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1409,11 +1409,11 @@ rcs_rev_remove(RCSFILE *rf, RCSNUM *rev)
 
 		/* calculate new diff */
 		(void)xasprintf(&path_tmp1, "%s/diff1.XXXXXXXXXX", cvs_tmpdir);
-		cvs_buf_write_stmp(nextbuf, path_tmp1, 0600, NULL);
+		cvs_buf_write_stmp(nextbuf, path_tmp1, NULL);
 		cvs_buf_free(nextbuf);
 
 		(void)xasprintf(&path_tmp2, "%s/diff2.XXXXXXXXXX", cvs_tmpdir);
-		cvs_buf_write_stmp(prevbuf, path_tmp2, 0600, NULL);
+		cvs_buf_write_stmp(prevbuf, path_tmp2, NULL);
 		cvs_buf_free(prevbuf);
 
 		diff_format = D_RCSDIFF;
