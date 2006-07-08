@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_extern.h,v 1.3 2006/01/14 19:04:17 miod Exp $	*/
+/*	$OpenBSD: udf_extern.h,v 1.4 2006/07/05 17:57:50 pedro Exp $	*/
 
 /*
  * Written by Pedro Martelletto <pedro@openbsd.org> in February 2005.
@@ -51,14 +51,14 @@ int udf_unlock(void *v);
 int udf_islocked(void *v);
 int udf_print(void *v);
 int udf_transname(char *, char *, int, struct udf_mnt *);
-int udf_readatoffset(struct udf_node *, int *, off_t, struct buf **,
+int udf_readatoffset(struct unode *, int *, off_t, struct buf **,
     uint8_t **);
 
 /*
  * Memory pools.
  */
 extern struct pool udf_trans_pool;
-extern struct pool udf_node_pool;
+extern struct pool unode_pool;
 extern struct pool udf_ds_pool;
 
 /*
