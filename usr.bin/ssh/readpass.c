@@ -1,4 +1,4 @@
-/* $OpenBSD: readpass.c,v 1.38 2006/06/06 10:20:20 markus Exp $ */
+/* $OpenBSD: readpass.c,v 1.39 2006/06/08 14:45:49 markus Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <fcntl.h>
 #include <paths.h>
 #include <readpassphrase.h>
 
