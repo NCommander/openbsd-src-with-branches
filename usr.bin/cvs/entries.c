@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.59 2006/06/14 15:14:47 xsa Exp $	*/
+/*	$OpenBSD: entries.c,v 1.60 2006/06/14 15:35:17 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -252,7 +252,8 @@ cvs_ent_add(CVSENTRIES *ep, const char *line)
 
 	cvs_ent_free(ent);
 
-	cvs_log(LP_TRACE, "cvs_ent_add(%s, %s)", ep->cef_path, line);
+	if (cvs_server_active == 0)
+		cvs_log(LP_TRACE, "cvs_ent_add(%s, %s)", ep->cef_path, line);
 
 	if ((fp = fopen(ep->cef_lpath, "a")) == NULL)
 		fatal("cvs_ent_add: failed to open '%s'", ep->cef_lpath);
@@ -274,7 +275,8 @@ cvs_ent_remove(CVSENTRIES *ep, const char *name)
 	FILE *fp;
 	struct cvs_ent_line *l;
 
-	cvs_log(LP_TRACE, "cvs_ent_remove(%s, %s)", ep->cef_path, name);
+	if (cvs_server_active == 0)
+		cvs_log(LP_TRACE, "cvs_ent_remove(%s, %s)", ep->cef_path, name);
 
 	l = ent_get_line(ep, name);
 	if (l == NULL)
