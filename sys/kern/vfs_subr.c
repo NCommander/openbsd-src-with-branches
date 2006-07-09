@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.130 2006/07/03 12:39:52 mickey Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.131 2006/07/08 20:01:13 thib Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1919,7 +1919,7 @@ vinvalbuf(struct vnode *vp, int flags, struct ucred *cred, struct proc *p,
 	struct buf *nbp, *blist;
 	int s, error;
 
-#ifdef	VFSDEBUG
+#ifdef VFSDEBUG
 	if ((vp->v_flag & VLOCKSWORK) && !VOP_ISLOCKED(vp))
 		panic("vinvalbuf(): vp isn't locked");
 #endif
