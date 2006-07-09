@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.105 2006/06/28 20:19:05 reyk Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.106 2006/07/07 17:37:17 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -83,6 +83,7 @@ sighandler(int sig)
 	switch (sig) {
 	case SIGINT:
 	case SIGTERM:
+	case SIGPIPE:
 		cvs_quit = 1;
 		break;
 	default:
