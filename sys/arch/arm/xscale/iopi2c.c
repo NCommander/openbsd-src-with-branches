@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: iopi2c.c,v 1.3 2005/12/11 12:16:51 christos Exp $	*/
 
 /*
