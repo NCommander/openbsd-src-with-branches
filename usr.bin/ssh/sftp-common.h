@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-common.h,v 1.7 2006/02/20 17:19:54 stevesk Exp $ */
+/* $OpenBSD: sftp-common.h,v 1.8 2006/03/25 22:22:43 djm Exp $ */
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -27,6 +27,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include "buffer.h"
 
 /* Maximum packet that we are willing to send/accept */
 #define SFTP_MAX_MSG_LENGTH	(256 * 1024)
