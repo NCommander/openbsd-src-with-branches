@@ -1,4 +1,4 @@
-/* $OpenBSD: includes.h,v 1.46 2006/07/08 21:47:12 stevesk Exp $ */
+/* $OpenBSD: includes.h,v 1.47 2006/07/09 15:15:10 stevesk Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -26,7 +26,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <unistd.h>
 #include <time.h>
 

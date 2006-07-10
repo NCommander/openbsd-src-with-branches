@@ -1,4 +1,4 @@
-/* $OpenBSD: xmalloc.c,v 1.20 2006/03/25 13:17:03 djm Exp $ */
+/* $OpenBSD: xmalloc.c,v 1.21 2006/03/27 01:21:18 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -14,6 +14,8 @@
  */
 
 #include "includes.h"
+
+#include <stdarg.h>
 
 #include "xmalloc.h"
 #include "log.h"

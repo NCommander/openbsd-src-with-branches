@@ -1,4 +1,4 @@
-/* $OpenBSD: log.c,v 1.31 2006/03/25 13:17:02 djm Exp $ */
+/* $OpenBSD: log.c,v 1.32 2006/07/08 23:30:06 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -36,6 +36,7 @@
 
 #include "includes.h"
 
+#include <stdarg.h>
 #include <syslog.h>
 #include <vis.h>
 
