@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.51 2006/01/06 06:46:04 tedu Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.53 2006/01/19 17:54:47 mickey Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -716,6 +716,15 @@ native:
 	 */
 	if (epp->ep_tsize == ELFDEFNNAME(NO_ADDR))
 		epp->ep_tsize = 0;
+	/*
+	 * Another possibility is that it has all load sections marked
+	 * read-only.  Fake a zero-sized data segment right after the
+	 * text segment.
+	 */
+	if (epp->ep_dsize == ELFDEFNNAME(NO_ADDR)) {
+		epp->ep_daddr = round_page(epp->ep_taddr + epp->ep_tsize);
+		epp->ep_dsize = 0;
+	}
 
 	epp->ep_interp = interp;
 	epp->ep_entry = eh->e_entry;
