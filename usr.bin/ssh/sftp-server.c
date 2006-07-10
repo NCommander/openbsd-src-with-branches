@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-server.c,v 1.58 2006/07/06 10:47:57 djm Exp $ */
+/* $OpenBSD: sftp-server.c,v 1.59 2006/07/09 15:15:11 stevesk Exp $ */
 /*
  * Copyright (c) 2000-2004 Markus Friedl.  All rights reserved.
  *
@@ -1184,7 +1184,6 @@ main(int argc, char **argv)
 	SyslogFacility log_facility = SYSLOG_FACILITY_AUTH;
 	char *cp;
 
-	extern int optind;
 	extern char *optarg;
 	extern char *__progname;
 
