@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.105 2006/05/11 00:45:59 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.106 2006/05/18 00:10:05 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -192,7 +192,7 @@ sdattach(parent, self, aux)
 	if ((sc_link->flags & SDEV_ATAPI) && (sc_link->flags & SDEV_REMOVABLE))
 		sc_link->quirks |= SDEV_NOSYNCCACHE;
 
-	if (!(sc_link->inquiry_flags & SID_RelAdr))
+	if (!(sc_link->inqdata.flags & SID_RelAdr))
 		sc_link->quirks |= SDEV_ONLYBIG;
 
 	/*
