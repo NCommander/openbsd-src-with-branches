@@ -1,4 +1,4 @@
-#	$OpenBSD: forwarding.sh,v 1.4 2002/03/15 13:08:56 markus Exp $
+#	$OpenBSD: forwarding.sh,v 1.5 2005/03/10 10:20:39 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="local and remote forwarding"
@@ -30,6 +30,36 @@ for p in 1 2; do
 	cmp /bin/ls $OBJ/ls.copy		|| fail "corrupted copy of /bin/ls"
 
 	sleep 10
+done
+
+for p in 1 2; do
+for d in L R; do
+	trace "exit on -$d forward failure, proto $p"
+
+	# this one should succeed
+	${SSH} -$p -F $OBJ/ssh_config \
+	    -$d ${base}01:127.0.0.1:$PORT \
+	    -$d ${base}02:127.0.0.1:$PORT \
+	    -$d ${base}03:127.0.0.1:$PORT \
+	    -$d ${base}04:127.0.0.1:$PORT \
+	    -oExitOnForwardFailure=yes somehost true
+	if [ $? != 0 ]; then
+		fail "connection failed, should not"
+	else
+		# this one should fail
+		${SSH} -q -$p -F $OBJ/ssh_config \
+		    -$d ${base}01:127.0.0.1:$PORT \
+		    -$d ${base}02:127.0.0.1:$PORT \
+		    -$d ${base}03:127.0.0.1:$PORT \
+		    -$d ${base}01:127.0.0.1:$PORT \
+		    -$d ${base}04:127.0.0.1:$PORT \
+		    -oExitOnForwardFailure=yes somehost true
+		r=$?
+		if [ $r != 255 ]; then
+			fail "connection not termintated, but should ($r)"
+		fi
+	fi
+done
 done
 
 for p in 1 2; do
