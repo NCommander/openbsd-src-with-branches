@@ -1,4 +1,4 @@
-/*	$OpenBSD: armish_machdep.c,v 1.3 2006/06/15 21:28:59 drahn Exp $ */
+/*	$OpenBSD: armish_machdep.c,v 1.4 2006/06/15 21:35:30 drahn Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -843,10 +843,6 @@ consinit(void)
 		IQ80321_UART1          /* com0 */
 	};
 	static int consinit_called;
-	uint32_t *p, old;
-
-	p = (void *)0xc0445000;
-	old = *p;
 
 	if (consinit_called != 0)
 		return;
@@ -868,7 +864,6 @@ consinit(void)
 #else
 	panic("serial console @%lx not configured", comcnaddrs[0]);
 #endif
-	printf("memory value %x@%p %x\n", 0xc0445000, *(uint32_t*)0xc0445000, old);
 }
 
 void
