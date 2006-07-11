@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.40 2006/07/02 11:01:06 reyk Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.41 2006/07/04 17:18:37 deraadt Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -4338,11 +4338,12 @@ sppp_null(struct sppp *unused)
 HIDE void
 sppp_set_phase(struct sppp *sp)
 {
-	struct ifnet *ifp = &sp->pp_if;
+	STDDCL;
 	int lstate, s;
 
-	log(LOG_INFO, SPP_FMT "phase %s\n", SPP_ARGS(ifp),
-	    sppp_phase_name(sp->pp_phase));
+	if (debug)
+		log(LOG_INFO, SPP_FMT "phase %s\n", SPP_ARGS(ifp),
+		    sppp_phase_name(sp->pp_phase));
 
 	/* set link state */
 	if (sp->pp_phase == PHASE_NETWORK)
