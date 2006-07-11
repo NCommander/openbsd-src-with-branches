@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdio.h,v 1.13 2005/12/10 01:30:14 deraadt Exp $	*/
+/*	$OpenBSD: cdio.h,v 1.14 2006/04/27 02:17:21 tedu Exp $	*/
 /*	$NetBSD: cdio.h,v 1.11 1996/02/19 18:29:04 scottr Exp $	*/
 
 #ifndef _SYS_CDIO_H_
@@ -182,6 +182,7 @@ struct ioc_toc_header {
 struct ioc_read_toc_entry {
 	u_char	address_format;
 	u_char	starting_track;
+#define CD_TRACK_LEADOUT	0xaa
 	u_short	data_len;
 	struct	cd_toc_entry *data;
 };
