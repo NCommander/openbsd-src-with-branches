@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.c,v 1.101 2006/05/11 00:45:59 krw Exp $	*/
+/*	$OpenBSD: scsiconf.c,v 1.102 2006/05/13 18:31:34 krw Exp $	*/
 /*	$NetBSD: scsiconf.c,v 1.57 1996/05/02 01:09:01 neil Exp $	*/
 
 /*
@@ -55,21 +55,6 @@
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
-
-#if 0
-#if NCALS > 0
-	{ T_PROCESSOR, T_FIXED, 1,
-	  0, 0, 0 },
-#endif	/* NCALS */
-#if NBLL > 0
-	{ T_PROCESSOR, T_FIXED, 1,
-	  "AEG     ", "READER          ", "V1.0" },
-#endif	/* NBLL */
-#if NKIL > 0
-	{ T_SCANNER, T_FIXED, 0,
-	  "KODAK   ", "IL Scanner 900  ", 0 },
-#endif	/* NKIL */
-#endif
 
 /*
  * Declarations
