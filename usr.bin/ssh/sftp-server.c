@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-server.c,v 1.60 2006/07/10 11:24:54 djm Exp $ */
+/* $OpenBSD: sftp-server.c,v 1.61 2006/07/10 11:25:53 djm Exp $ */
 /*
  * Copyright (c) 2000-2004 Markus Friedl.  All rights reserved.
  *
@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 
 #include <dirent.h>
+#include <errno.h>
 #include <fcntl.h>
 
 #include "buffer.h"
