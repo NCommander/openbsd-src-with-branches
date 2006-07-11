@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.21 2006/07/08 07:48:58 niallo Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.22 2006/07/08 09:25:44 ray Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -2756,7 +2756,7 @@ rcs_expand_keywords(char *rcsfile, struct rcs_delta *rdp, BUF *bp, int mode)
 					errx(1, "rcs_expand_keywords: string truncated");
 
 			sizdiff = strlen(expbuf) - (end - start);
-			tbuflen = len - (end - start);
+			tbuflen = fin - end;
 			tbuf = xmalloc(tbuflen);
 			memcpy(tbuf, end, tbuflen);
 			/* only realloc if we have to */
