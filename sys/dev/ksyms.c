@@ -1,4 +1,4 @@
-/*	$OpenBSD: ksyms.c,v 1.15 2004/01/09 21:32:23 brad Exp $	*/
+/*	$OpenBSD: ksyms.c,v 1.16 2004/08/09 22:22:50 pefo Exp $	*/
 /*
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
  * Copyright (c) 2001 Artur Grabowski <art@openbsd.org>
@@ -33,6 +33,8 @@
 #include <sys/malloc.h>
 #include <sys/fcntl.h>
 #include <sys/conf.h>
+
+#include <uvm/uvm_extern.h>
 
 #ifdef _NLIST_DO_ELF
 #include <sys/exec_elf.h>
