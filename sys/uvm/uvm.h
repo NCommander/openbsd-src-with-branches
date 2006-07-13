@@ -102,6 +102,10 @@ struct uvm {
 	int page_hashmask;		/* hash mask */
 	simple_lock_data_t hashlock;	/* lock on page_hash array */
 
+	/* anon stuff */
+	struct vm_anon *afree;		/* anon free list */
+	simple_lock_data_t afreelock; 	/* lock on anon free list */
+
 	/* static kernel map entry pool */
 	vm_map_entry_t kentry_free;	/* free page pool */
 	simple_lock_data_t kentry_lock;

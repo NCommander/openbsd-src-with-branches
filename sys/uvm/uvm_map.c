@@ -2997,7 +2997,7 @@ uvm_map_clean(map, start, end, flags)
 
 			simple_lock(&anon->an_lock);
 
-			pg = anon->an_page;
+			pg = anon->u.an_page;
 			if (pg == NULL) {
 				simple_unlock(&anon->an_lock);
 				continue;
@@ -3811,9 +3811,9 @@ uvm_page_printit(pg, full, pr)
 	/* cross-verify object/anon */
 	if ((pg->pqflags & PQ_FREE) == 0) {
 		if (pg->pqflags & PQ_ANON) {
-			if (pg->uanon == NULL || pg->uanon->an_page != pg)
+			if (pg->uanon == NULL || pg->uanon->u.an_page != pg)
 			    (*pr)("  >>> ANON DOES NOT POINT HERE <<< (%p)\n",
-				(pg->uanon) ? pg->uanon->an_page : NULL);
+				(pg->uanon) ? pg->uanon->u.an_page : NULL);
 			else
 				(*pr)("  anon backpointer is OK\n");
 		} else {

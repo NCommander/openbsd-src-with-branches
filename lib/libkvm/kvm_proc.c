@@ -228,7 +228,7 @@ _kvm_ureadm(kvm_t *kd, const struct miniproc *p, u_long va, u_long *cnt)
 	if (KREAD(kd, addr, &anon))
 		return (NULL);
 
-	addr = (u_long)anon.an_page;
+	addr = (u_long)anon.u.an_page;
 	if (addr) {
 		if (KREAD(kd, addr, &pg))
 			return (NULL);

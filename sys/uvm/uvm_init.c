@@ -134,10 +134,11 @@ uvm_init()
 	uvm_pager_init();
 
 	/*
-	 * step 8: init anonymous memory system
+	 * step 8: init anonymous memory systems (both amap and anons)
 	 */
 
 	amap_init();		/* init amap module */
+	uvm_anon_init();	/* allocate initial anons */
 
 	/*
 	 * the VM system is now up!  now that malloc is up we can resize the
@@ -152,7 +153,8 @@ uvm_init()
 	uvm_km_page_init();
 
 	/*
-	 * init anonymous memory systems
+	 * done!
 	 */
-	uvm_anon_init();
+
+	return;
 }

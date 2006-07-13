@@ -544,7 +544,7 @@ uvmpd_scan_inactive(pglst)
 					KASSERT(anon->an_swslot != 0);
 
 					/* remove from object */
-					anon->an_page = NULL;
+					anon->u.an_page = NULL;
 					simple_unlock(&anon->an_lock);
 				} else {
 					/* pagefree has already removed the
@@ -857,7 +857,7 @@ uvmpd_scan_inactive(pglst)
 			if (p->flags & PG_RELEASED) {
 				if (anon) {
 					/* remove page so we can get nextpg */
-					anon->an_page = NULL;
+					anon->u.an_page = NULL;
 
 					simple_unlock(&anon->an_lock);
 					uvm_anfree(anon);	/* kills anon */
