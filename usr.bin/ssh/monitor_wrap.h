@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.h,v 1.17 2006/07/06 16:03:53 stevesk Exp $ */
+/* $OpenBSD: monitor_wrap.h,v 1.18 2006/07/06 17:36:37 stevesk Exp $ */
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -42,7 +42,6 @@ enum mm_keytype {MM_NOKEY, MM_HOSTKEY, MM_USERKEY, MM_RSAHOSTKEY, MM_RSAUSERKEY}
 
 struct monitor;
 struct mm_master;
-struct passwd;
 struct Authctxt;
 
 int mm_is_monitor(void);
