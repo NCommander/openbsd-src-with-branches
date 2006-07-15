@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.106 2006/07/11 13:15:30 dlg Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.107 2006/07/13 11:46:16 krw Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -1006,6 +1006,9 @@ scsi_interpret_sense(struct scsi_xfer *xs)
 	case SKEY_ILLEGAL_REQUEST:
 		if ((xs->flags & SCSI_IGNORE_ILLEGAL_REQUEST) != 0)
 			return (0);
+		if (sense->add_sense_code == 0x53 &&
+		    sense->add_sense_code_qual == 0x02)
+			return(EBUSY);	/* Medium Removal Prevented */
 		error = EINVAL;
 		break;
 	case SKEY_UNIT_ATTENTION:
