@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sdhcvar.h,v 1.1 2006/05/28 17:21:14 uwe Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -25,7 +25,7 @@ struct sdhc_host;
 
 struct sdhc_softc {
 	struct device sc_dev;
-	struct sdhc_host *sc_host;
+	struct sdhc_host **sc_host;
 	int sc_nhosts;
 };
 
