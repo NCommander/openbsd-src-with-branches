@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.84 2006/07/10 16:01:57 stevesk Exp $ */
+/* $OpenBSD: sftp.c,v 1.85 2006/07/11 20:07:25 stevesk Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -28,6 +28,7 @@
 #include <histedit.h>
 #include <paths.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "xmalloc.h"
 #include "log.h"

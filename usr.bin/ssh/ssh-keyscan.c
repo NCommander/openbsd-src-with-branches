@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keyscan.c,v 1.66 2006/07/10 16:37:36 stevesk Exp $ */
+/* $OpenBSD: ssh-keyscan.c,v 1.67 2006/07/12 22:28:52 stevesk Exp $ */
 /*
  * Copyright 1995, 1996 by David Mazieres <dm@lcs.mit.edu>.
  *
@@ -18,6 +18,7 @@
 #include <netdb.h>
 #include <setjmp.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 #include <openssl/bn.h>
 

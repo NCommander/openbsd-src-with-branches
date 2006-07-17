@@ -1,4 +1,4 @@
-/* $OpenBSD: authfile.c,v 1.68 2006/07/09 15:15:10 stevesk Exp $ */
+/* $OpenBSD: authfile.c,v 1.69 2006/07/11 20:27:56 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -47,6 +47,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "cipher.h"
 #include "xmalloc.h"
