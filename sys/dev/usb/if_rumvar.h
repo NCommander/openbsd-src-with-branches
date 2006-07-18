@@ -1,4 +1,4 @@
-/*	$OpenBSD$  */
+/*	$OpenBSD: if_rumvar.h,v 1.1 2006/06/16 22:30:46 niallo Exp $  */
 /*-
  * Copyright (c) 2005, 2006 Damien Bergamini <damien.bergamini@free.fr>
  * Copyright (c) 2006 Niall O'Higgins <niallo@openbsd.org>
@@ -154,7 +154,6 @@ struct rum_softc {
 	}				sc_txtapu;
 #define sc_txtap	sc_txtapu.th
 	int				sc_txtap_len;
-	struct timeout			rssadapt_ch;
 #endif
 };
 
