@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.39 2005/03/29 19:35:25 otto Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.40 2006/04/26 17:10:43 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -114,7 +114,7 @@ Xswap(cmd_t *cmd, disk_t *disk, mbr_t *mbr, mbr_t *tt, int offset)
 		return (ret);
 	}
 
-	pt = ask_num("Swap with what paritition?", ASK_DEC,
+	pt = ask_num("Swap with what partition?", ASK_DEC,
 	    -1, 0, 3, NULL);
 	if (pt < 0 || pt > 3) {
 		printf("Invalid partition number %d.\n", pt);
