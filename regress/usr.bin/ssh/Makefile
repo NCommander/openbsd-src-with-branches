@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.39 2006/03/13 12:20:38 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.40 2006/07/17 12:08:02 dtucker Exp $
 
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7
 
@@ -38,7 +38,8 @@ LTESTS= 	connect \
 		multiplex \
 		reexec \
 		brokenkeys \
-		cfgmatch
+		cfgmatch \
+		forcecommand
 
 USER!=		id -un
 CLEANFILES+=	authorized_keys_${USER} known_hosts pidfile \
