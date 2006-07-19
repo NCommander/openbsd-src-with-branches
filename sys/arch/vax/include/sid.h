@@ -1,4 +1,4 @@
-/*	$OpenBSD: sid.h,v 1.13 2002/05/25 04:29:53 hugh Exp $	*/
+/*	$OpenBSD: sid.h,v 1.14 2006/03/04 19:33:21 miod Exp $	*/
 /*	$NetBSD: sid.h,v 1.12 1999/12/11 17:55:13 ragge Exp $	*/
 
 /*
@@ -204,11 +204,6 @@
  
 #define VAX_BTYP_1701	0x17000001
  
-/*
- * Highest Number supported by OpenBSD/VAX
- */
-#define VAX_TYP_MAX	VAX_TYP_RIGEL
-
 /*
  * compatibility with old names:
  */
