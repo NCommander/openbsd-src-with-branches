@@ -110,7 +110,12 @@ ibus_attach(parent, self, aux)
 	 * The same procedure for SHAC.
 	 */
 	bp.type = "shac";
-	if (vax_boardtype == VAX_BTYP_1303)
+	/*
+	 * XXX Clearly the address on Cheetah machines varies between models,
+	 * XXX but I could only check the address on a 4000 105A so far. -- miod
+	 */
+	if (vax_boardtype == VAX_BTYP_1303 &&
+	    ((vax_siedata >> 8) & 0xFF) != VAX_STYP_53)
 		va = vax_map_physmem(SHAC1303ADDR, 1);
 	else
 		va = vax_map_physmem(SHACADDR, 1);
