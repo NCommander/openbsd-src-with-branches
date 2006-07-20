@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.20 2005/12/27 18:31:11 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.21 2006/07/20 19:08:15 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.45 1999/10/23 14:56:05 ragge Exp $	*/
 
 /*
@@ -52,6 +52,7 @@
 #include <machine/clock.h>
 #include <machine/rpb.h>
 
+#include "led.h"
 
 #include <vax/vax/gencons.h>
 
@@ -134,6 +135,11 @@ mainbus_attach(parent, self, hej)
 
 	if (dep_call->cpu_subconf)
 		(*dep_call->cpu_subconf)(self);
+
+#if NLED > 0
+	maa.maa_bustype = VAX_LEDS;
+	config_found(self, &maa, mainbus_print);
+#endif
 
 #if 1 /* boot blocks too old */
         if (rpb.rpb_base == (void *)-1)
