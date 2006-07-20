@@ -1,4 +1,4 @@
-/*	$OpenBSD: ka860.c,v 1.7 2002/03/14 03:16:02 millert Exp $	*/
+/*	$OpenBSD: ka860.c,v 1.8 2003/06/02 23:27:59 millert Exp $	*/
 /*	$NetBSD: ka860.c,v 1.15 1999/08/07 10:36:49 ragge Exp $	*/
 /*
  * Copyright (c) 1986, 1988 Regents of the University of California.
@@ -350,7 +350,9 @@ abus_match(parent, cf, aux)
         struct cfdata *cf;
         void *aux;
 {
-        if (vax_bustype == VAX_ABUS)
+	struct mainbus_attach_args *maa = aux;
+
+	if (maa->maa_bustype == VAX_ABUS)
                 return 1;
         return 0;
 }
