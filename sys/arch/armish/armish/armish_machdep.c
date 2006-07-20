@@ -1,4 +1,4 @@
-/*	$OpenBSD: armish_machdep.c,v 1.4 2006/06/15 21:35:30 drahn Exp $ */
+/*	$OpenBSD: armish_machdep.c,v 1.5 2006/07/11 05:58:14 miod Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -148,7 +148,7 @@ u_int cpu_reset_address = 0;
 
 BootConfig bootconfig;		/* Boot config storage */
 char *boot_args = NULL;
-char *boot_file = NULL;
+char *boot_file = "wd0a";
 
 paddr_t physical_start;
 paddr_t physical_freestart;
