@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.25 2006/06/21 07:15:58 brad Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.26 2006/07/14 02:32:14 brad Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -98,7 +98,7 @@ __KERNEL_RCSID(0, "$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $");
  */
 #define RX_MODE		RX_MODE_1  /* Receive mode (buffer usage, see below) */
 #define NRXDESCS	1016	   /* # of receive descriptors (requested) */
-#define NTXDESCS	8192	   /* Number of transmit descriptors */
+#define NTXDESCS	2048	   /* Number of transmit descriptors */
 #define NTXFRAGS	100	   /* Max fragments per packet */
 
 /*
