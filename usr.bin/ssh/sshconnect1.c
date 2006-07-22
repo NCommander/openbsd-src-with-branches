@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect1.c,v 1.64 2006/03/25 13:17:02 djm Exp $ */
+/* $OpenBSD: sshconnect1.c,v 1.65 2006/04/25 08:02:27 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -17,6 +17,8 @@
 
 #include <openssl/bn.h>
 #include <openssl/md5.h>
+
+#include <string.h>
 
 #include "ssh.h"
 #include "ssh1.h"

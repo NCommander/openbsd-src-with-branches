@@ -1,4 +1,4 @@
-/* $OpenBSD: kexdhc.c,v 1.5 2006/03/25 13:17:02 djm Exp $ */
+/* $OpenBSD: kexdhc.c,v 1.6 2006/05/18 21:27:25 miod Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -24,6 +24,8 @@
  */
 
 #include "includes.h"
+
+#include <string.h>
 
 #include "xmalloc.h"
 #include "key.h"

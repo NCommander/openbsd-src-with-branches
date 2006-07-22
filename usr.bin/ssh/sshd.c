@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.337 2006/07/12 11:34:58 dtucker Exp $ */
+/* $OpenBSD: sshd.c,v 1.338 2006/07/12 22:28:52 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -56,6 +56,7 @@
 #include <paths.h>
 #include <pwd.h>
 #include <signal.h>
+#include <string.h>
 
 #include <openssl/dh.h>
 #include <openssl/bn.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.c,v 1.36 2006/05/04 14:55:23 djm Exp $ */
+/* $OpenBSD: dh.c,v 1.37 2006/07/18 22:27:55 stevesk Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  *
@@ -27,6 +27,8 @@
 
 #include <openssl/bn.h>
 #include <openssl/dh.h>
+
+#include <string.h>
 
 #include "dh.h"
 #include "pathnames.h"
