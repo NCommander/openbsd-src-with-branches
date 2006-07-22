@@ -1,4 +1,4 @@
-/* $OpenBSD: moduli.c,v 1.12 2005/07/17 07:17:55 djm Exp $ */
+/* $OpenBSD: moduli.c,v 1.13 2006/03/25 00:05:41 djm Exp $ */
 /*
  * Copyright 1994 Phil Karn <karn@qualcomm.com>
  * Copyright 1996-1998, 2003 William Allen Simpson <wsimpson@greendragon.com>
@@ -38,10 +38,15 @@
  */
 
 #include "includes.h"
-#include "xmalloc.h"
-#include "log.h"
+
+#include <sys/types.h>
 
 #include <openssl/bn.h>
+
+#include <time.h>
+
+#include "xmalloc.h"
+#include "log.h"
 
 /*
  * File output defines
