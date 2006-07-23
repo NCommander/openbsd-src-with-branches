@@ -1,4 +1,4 @@
-/*	$OpenBSD: rgephy.c,v 1.11 2005/07/22 11:48:10 brad Exp $	*/
+/*	$OpenBSD: rgephy.c,v 1.12 2006/06/27 05:36:58 brad Exp $	*/
 /*
  * Copyright (c) 2003
  *	Bill Paul <wpaul@windriver.com>.  All rights reserved.
@@ -42,6 +42,7 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
+#include <sys/timeout.h>
 #include <sys/errno.h>
 
 #include <net/if.h>

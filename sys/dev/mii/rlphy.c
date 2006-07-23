@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlphy.c,v 1.22 2006/02/12 00:12:11 maja Exp $	*/
+/*	$OpenBSD: rlphy.c,v 1.23 2006/05/16 02:24:45 brad Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Jason L. Wright (jason@thought.net)
@@ -37,6 +37,7 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/socket.h>
+#include <sys/timeout.h>
 #include <sys/errno.h>
 
 #include <net/if.h>
