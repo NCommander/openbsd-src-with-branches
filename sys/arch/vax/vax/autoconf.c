@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.21 2006/07/20 19:08:15 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.22 2006/07/20 19:15:35 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.45 1999/10/23 14:56:05 ragge Exp $	*/
 
 /*
@@ -95,8 +95,14 @@ mainbus_print(aux, hej)
 	void *aux;
 	const char *hej;
 {
-	if (hej)
+	struct mainbus_attach_args *maa = aux;
+
+	if (maa->maa_bustype == VAX_LEDS)
+		return (QUIET);
+
+	if (hej) {
 		printf("nothing at %s", hej);
+	}
 	return (UNCONF);
 }
 
