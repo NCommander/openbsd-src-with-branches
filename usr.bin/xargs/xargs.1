@@ -1,4 +1,4 @@
-.\"	$OpenBSD: xargs.1,v 1.16 2006/02/14 12:18:21 otto Exp $
+.\"	$OpenBSD: xargs.1,v 1.17 2006/02/14 15:05:11 otto Exp $
 .\"	$FreeBSD: xargs.1,v 1.30 2003/05/21 21:07:28 ru Exp $$
 .\"
 .\" Copyright (c) 1990, 1991, 1993
@@ -163,7 +163,7 @@ directories which start with an uppercase letter in the current
 directory to
 .Pa destdir :
 .Pp
-.Dl "/bin/ls -1d [A-Z]* | xargs -J % cp -rp % destdir"
+.Dl "/bin/ls -1d [A-Z]* | xargs -J % cp -Rp % destdir"
 .It Fl L Ar number
 Call
 .Ar utility
