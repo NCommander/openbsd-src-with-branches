@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.64 2006/03/20 16:43:22 hshoexer Exp $	 */
+/* $OpenBSD: monitor.c,v 1.65 2006/06/18 10:25:27 hshoexer Exp $	 */
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -358,7 +358,7 @@ monitor_req_readdir(const char *filename)
 	if (err == -1)
 		must_read(&errno, sizeof errno);
 
-	return (err);
+	return err;
 }
 
 int
