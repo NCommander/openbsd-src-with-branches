@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.192 2006/07/17 01:31:10 stevesk Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.193 2006/07/22 20:48:23 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -772,7 +772,7 @@ check_host_key(char *hostname, struct sockaddr *hostaddr, Key *host_key,
 		/*
 		 * If strict host key checking has not been requested, allow
 		 * the connection but without MITM-able authentication or
-		 * agent forwarding.
+		 * forwarding.
 		 */
 		if (options.password_authentication) {
 			error("Password authentication is disabled to avoid "
@@ -806,6 +806,11 @@ check_host_key(char *hostname, struct sockaddr *hostaddr, Key *host_key,
 			    "man-in-the-middle attacks.");
 			options.num_local_forwards =
 			    options.num_remote_forwards = 0;
+		}
+		if (options.tun_open != SSH_TUNMODE_NO) {
+			error("Tunnel forwarding is disabled to avoid "
+			    "man-in-the-middle attacks.");
+			options.tun_open = SSH_TUNMODE_NO;
 		}
 		/*
 		 * XXX Should permit the user to change to use the new id.
