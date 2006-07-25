@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.40 2006/06/01 09:00:50 kjell Exp $	*/
+/*	$OpenBSD: line.c,v 1.41 2006/07/25 08:22:32 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -426,8 +426,7 @@ ldelete(RSIZE n, int kflag)
 			chunk = n;
 		/* End of line, merge */
 		if (chunk == 0) {
-			if (dotp == lback(curbp->b_headp))
-				/* End of buffer */
+			if (dotp == blastlp(curbp))
 				return (FALSE);
 			lchange(WFFULL);
 			if (ldelnewline() == FALSE)
