@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2004/06/03 19:13:24 grange Exp $
+# $OpenBSD: Makefile,v 1.2 2005/11/16 03:42:12 deraadt Exp $
 
 .if ${MACHINE} == "i386" || ${MACHINE} == "macppc"
 
@@ -7,7 +7,7 @@ SRCS=	gpioctl.c
 
 CFLAGS+=-Wall
 CFLAGS+=-Wstrict-prototypes -Wmissing-prototypes
-CLFAGS+=-Wmissing-declarations -Wredundant-decls
+CFLAGS+=-Wmissing-declarations -Wredundant-decls
 CFLAGS+=-Wshadow -Wpointer-arith -Wcast-qual
 
 .else
