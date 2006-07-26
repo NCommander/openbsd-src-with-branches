@@ -1,4 +1,4 @@
-/* $OpenBSD: includes.h,v 1.55 2006/07/25 02:59:21 stevesk Exp $ */
+/* $OpenBSD: includes.h,v 1.56 2006/07/26 02:35:16 stevesk Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -19,6 +19,5 @@
 #include <sys/types.h>
 
 #include <stdio.h>
-#include <stdlib.h>
 
 #endif				/* INCLUDES_H */
