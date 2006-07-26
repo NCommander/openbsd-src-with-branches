@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.86 2006/07/17 01:31:09 stevesk Exp $ */
+/* $OpenBSD: sftp.c,v 1.87 2006/07/22 20:48:23 stevesk Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -22,6 +22,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <sys/param.h>
 
 #include <errno.h>
 #include <glob.h>

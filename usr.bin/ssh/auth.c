@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.71 2006/07/12 11:34:58 dtucker Exp $ */
+/* $OpenBSD: auth.c,v 1.72 2006/07/22 20:48:22 stevesk Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -27,6 +27,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 
 #include <errno.h>
 #include <libgen.h>

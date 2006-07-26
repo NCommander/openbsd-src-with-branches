@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.c,v 1.59 2006/07/17 01:31:09 stevesk Exp $ */
+/* $OpenBSD: misc.c,v 1.60 2006/07/22 20:48:23 stevesk Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2005,2006 Damien Miller.  All rights reserved.
@@ -29,6 +29,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/param.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
