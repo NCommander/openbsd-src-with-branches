@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_subr.c,v 1.25 2003/05/09 00:48:42 art Exp $	*/
+/*	$OpenBSD: exec_subr.c,v 1.26 2004/11/23 10:14:49 hshoexer Exp $	*/
 /*	$NetBSD: exec_subr.c,v 1.9 1994/12/04 03:10:42 mycroft Exp $	*/
 
 /*
@@ -251,7 +251,7 @@ vmcmd_map_readvn(struct proc *p, struct exec_vmcmd *cmd)
 		return (error);
 
 	error = vn_rdwr(UIO_READ, cmd->ev_vp, (caddr_t)cmd->ev_addr,
-	    cmd->ev_len, cmd->ev_offset, UIO_USERSPACE, IO_UNIT|IO_NODELOCKED,
+	    cmd->ev_len, cmd->ev_offset, UIO_USERSPACE, IO_UNIT,
 	    p->p_ucred, NULL, p);
 	if (error)
 		return (error);
