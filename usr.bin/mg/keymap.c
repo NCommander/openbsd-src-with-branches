@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.36 2005/11/07 23:32:20 kjell Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.37 2005/11/18 20:56:53 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -504,17 +504,6 @@ maps_add(KEYMAP *map, const char *name)
 	maps = mp;
 
 	return (TRUE);
-}
-
-const char *
-map_name(KEYMAP *map)
-{
-	struct maps_s	*mp;
-
-	for (mp = maps; mp != NULL; mp = mp->p_next)
-		if (mp->p_map == map)
-			return (mp->p_name);
-	return (NULL);
 }
 
 struct maps_s *
