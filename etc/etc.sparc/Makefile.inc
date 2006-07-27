@@ -1,5 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.12 2004/11/29 22:09:15 miod Exp $
-#	etc.sparc/Makefile.inc -- sparc-specific etc Makefile targets
+#	$OpenBSD: Makefile.inc,v 1.13 2005/04/28 22:28:14 deraadt Exp $
 
 .ifdef DESTDIR
 snap_md: bsd bootblocks distrib
