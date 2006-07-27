@@ -1,4 +1,4 @@
-/*	$OpenBSD: opl_yds.c,v 1.4 2003/04/27 11:22:53 ho Exp $	*/
+/*	$OpenBSD: opl_yds.c,v 1.5 2005/11/21 18:16:41 millert Exp $	*/
 /*	$NetBSD$	*/
 
 /*
@@ -82,14 +82,14 @@ opl_yds_match(parent, match, aux)
 {
 	struct audio_attach_args *aa = (struct audio_attach_args *)aux;
 	struct yds_softc *ssc = (struct yds_softc *)parent;
-	struct opl_softc sc;
+	struct opl_attach_arg oaa;
 
 	if (aa->type != AUDIODEV_TYPE_OPL)
 		return (0);
-	memset(&sc, 0, sizeof sc);
-	sc.iot = ssc->sc_opl_iot;
-	sc.ioh = ssc->sc_opl_ioh;
-	return (opl_find(&sc));
+	memset(&oaa, 0, sizeof oaa);
+	oaa.iot = ssc->sc_opl_iot;
+	oaa.ioh = ssc->sc_opl_ioh;
+	return (opl_find(&oaa));
 }
 
 void

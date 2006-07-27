@@ -1,4 +1,4 @@
-/*	$OpenBSD: oplvar.h,v 1.2 2001/05/01 02:21:42 mickey Exp $	*/
+/*	$OpenBSD: oplvar.h,v 1.3 2002/03/14 01:26:55 millert Exp $	*/
 /*	$NetBSD: oplvar.h,v 1.3 1998/11/25 22:17:06 augustss Exp $	*/
 
 /*
@@ -88,5 +88,5 @@ struct opl_operators {
 extern const struct opl_operators opl2_instrs[];
 extern const struct opl_operators opl3_instrs[];
 
-int	opl_find(struct opl_softc *);
+int	opl_find(struct opl_attach_arg *);
 void	opl_attach(struct opl_softc *);
