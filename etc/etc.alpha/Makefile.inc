@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile.inc,v 1.13 2002/05/13 07:22:42 espie Exp $
+#	$OpenBSD: Makefile.inc,v 1.14 2006/07/27 02:53:55 deraadt Exp $
 
 .ifdef DESTDIR
-snap_md: bsd bootlocks distrib
+snap_md: bsd bootblocks distrib
 	cp ${.CURDIR}/../sys/arch/alpha/compile/GENERIC/bsd \
 	    ${DESTDIR}/snapshot/bsd
 
