@@ -1,12 +1,11 @@
-#	$OpenBSD: Makefile.inc,v 1.7 1997/09/21 11:50:30 deraadt Exp $
-#	etc.mvme68k/Makefile.inc -- mvme68k-specific etc Makefile targets
+#	$OpenBSD: Makefile.inc,v 1.8 2002/05/13 07:22:43 espie Exp $
 
 .ifdef DESTDIR
-snap_md: bsd-generic bootblocks distrib
+snap_md: bsd bootblocks distrib
 	cp ${.CURDIR}/../sys/arch/mvme68k/compile/GENERIC/bsd \
 	    ${DESTDIR}/snapshot/bsd
 
-bsd-generic:
+bsd:
 	cd ${.CURDIR}/../sys/arch/mvme68k/conf && config GENERIC
 	cd ${.CURDIR}/../sys/arch/mvme68k/compile/GENERIC && \
 	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
@@ -14,6 +13,6 @@ bsd-generic:
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/* ${DESTDIR}/snapshot/
 
-.PHONY: bsd-generic bootblocks
+.PHONY: bsd bootblocks
 
 .endif	# DESTDIR check

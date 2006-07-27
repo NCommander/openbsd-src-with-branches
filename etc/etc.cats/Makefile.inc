@@ -1,8 +1,7 @@
-#	$OpenBSD: Makefile.inc,v 1.3 2004/02/06 02:39:50 drahn Exp $
-#	etc.cats/Makefile.inc -- cats-specific etc Makefile targets
+#	$OpenBSD: Makefile.inc,v 1.4 2004/02/09 02:28:23 drahn Exp $
 
 .ifdef DESTDIR
-snap_md: bsd distrib1
+snap_md: bsd bootblocks distrib
 	cp ${.CURDIR}/../sys/arch/cats/compile/GENERIC/bsd \
 	    ${DESTDIR}/snapshot/bsd
 
@@ -11,10 +10,9 @@ bsd:
 	cd ${.CURDIR}/../sys/arch/cats/compile/GENERIC && \
 	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
 
-# knows about bsd.rd
-distrib1:
-	${MAKE} distrib
+bootblocks:
+	#none needed
 
-.PHONY: bsd distrib1
+.PHONY: bsd bootblocks
 
 .endif	# DESTDIR check
