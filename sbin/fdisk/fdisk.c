@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.40 2005/05/01 20:53:38 jmc Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.41 2006/07/09 21:19:41 miod Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -162,7 +162,8 @@ main(int argc, char *argv[])
 
 	/* Now do what we are supposed to */
 	if (i_flag || u_flag)
-		USER_init(&disk, &mbr, u_flag);
+		if (USER_init(&disk, &mbr, u_flag) == -1)
+			err(1, "error initializing MBR");
 
 	if (m_flag)
 		USER_modify(&disk, &mbr, 0, 0);
