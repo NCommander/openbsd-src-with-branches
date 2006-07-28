@@ -1,4 +1,4 @@
-/* $OpenBSD: ipmivar.h,v 1.14 2006/05/15 00:50:57 marco Exp $ */
+/* $OpenBSD: ipmivar.h,v 1.15 2006/05/21 20:55:26 alek Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -101,6 +101,8 @@ struct ipmi_softc {
 	struct rwlock		sc_lock;
 
 	struct ipmi_bmc_args	*sc_iowait_args;
+
+	struct ipmi_sensor	*current_sensor;
 };
 
 struct ipmi_thread {
