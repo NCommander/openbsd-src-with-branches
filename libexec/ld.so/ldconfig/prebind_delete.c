@@ -1,4 +1,4 @@
-/* $OpenBSD: prebind_delete.c,v 1.6 2006/06/15 22:09:32 drahn Exp $ */
+/* $OpenBSD: prebind_delete.c,v 1.7 2006/06/26 23:26:12 drahn Exp $ */
 
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
@@ -72,8 +72,9 @@ strip_file_or_dir(char *name)
 		break;
 	default:
 		; /* links and other files we skip */
+		ret = 0;
 	}
-	return -1;
+	return ret;
 }
 
 int
