@@ -1,3 +1,6 @@
+#	$OpenBSD$
+
+NOMAN=
 PROG=		boot
 
 S=		${.CURDIR}/../../../..
