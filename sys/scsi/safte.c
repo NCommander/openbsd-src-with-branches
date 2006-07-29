@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.c,v 1.27 2006/05/09 05:51:54 deraadt Exp $ */
+/*	$OpenBSD: safte.c,v 1.28 2006/05/21 03:10:49 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -118,12 +118,12 @@ safte_match(struct device *parent, void *match, void *aux)
 
 	/* match on dell enclosures */
 	if ((inq->device & SID_TYPE) == T_PROCESSOR &&
-	    (inq->version & SID_ANSII) == SID_ANSII_SCSI3)
+	    SCSISPC(inq->version) == 3)
 		return (2);
 
 	if ((inq->device & SID_TYPE) != T_PROCESSOR ||
-	    (inq->version & SID_ANSII) != SID_ANSII_SCSI2 ||
-	    (inq->response_format & SID_ANSII) != SID_ANSII_SCSI2)
+	    SCSISPC(inq->version) != 2 ||
+	    (inq->response_format & SID_ANSII) != 2)
 		return (0);
 
 	memset(&cmd, 0, sizeof(cmd));
