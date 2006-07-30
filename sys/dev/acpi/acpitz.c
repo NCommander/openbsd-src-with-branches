@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: acpitz.c,v 1.1 2006/05/19 09:24:32 canacar Exp $ */
 /*
  * Copyright (c) 2006 Can Erkin Acar <canacar@openbsd.org>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -112,7 +112,7 @@ acpitz_attach(struct device *parent, struct device *self, void *aux)
 		printf(", critical temperature: %u degC",
 		    (unsigned)(sc->sc_crt - 2732) / 10);
 
-	aml_register_notify(sc->sc_devnode->parent, aa->aaa_dev,
+	aml_register_notify(sc->sc_devnode->parent, NULL,
 	    acpitz_notify, sc);
 	
 	memset(&sc->sc_sens, 0, sizeof(sc->sc_sens));
