@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcireg.h,v 1.30 2006/05/28 17:21:14 uwe Exp $	*/
+/*	$OpenBSD: pcireg.h,v 1.31 2006/06/01 11:17:31 brad Exp $	*/
 /*	$NetBSD: pcireg.h,v 1.26 2000/05/10 16:58:42 thorpej Exp $	*/
 
 /*
@@ -405,6 +405,11 @@ typedef u_int8_t pci_revision_t;
 #define	PCI_MAPREG_MEM_TYPE_32BIT		0x00000000
 #define	PCI_MAPREG_MEM_TYPE_32BIT_1M		0x00000002
 #define	PCI_MAPREG_MEM_TYPE_64BIT		0x00000004
+
+#define _PCI_MAPREG_TYPEBITS(reg) \
+	(PCI_MAPREG_TYPE(reg) == PCI_MAPREG_TYPE_IO ? \
+	reg & PCI_MAPREG_TYPE_MASK : \
+	reg & (PCI_MAPREG_TYPE_MASK|PCI_MAPREG_MEM_TYPE_MASK))
 
 #define	PCI_MAPREG_MEM_PREFETCHABLE(mr)					\
 	    (((mr) & PCI_MAPREG_MEM_PREFETCHABLE_MASK) != 0)
