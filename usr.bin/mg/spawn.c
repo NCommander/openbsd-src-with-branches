@@ -1,4 +1,4 @@
-/*	$OpenBSD: spawn.c,v 1.9 2005/04/03 02:09:28 db Exp $	*/
+/*	$OpenBSD: spawn.c,v 1.10 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -9,7 +9,6 @@
 
 #include "def.h"
 
-#include <signal.h>
 #include <termios.h>
 #include <term.h>
 

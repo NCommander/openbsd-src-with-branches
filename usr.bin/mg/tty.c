@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.26 2006/02/25 14:40:16 otto Exp $	*/
+/*	$OpenBSD: tty.c,v 1.27 2006/04/03 00:40:56 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -34,7 +34,6 @@
 #include <sys/ioctl.h>
 
 #include <term.h>
-#include <signal.h>
 
 static int	 charcost(char *);
 
