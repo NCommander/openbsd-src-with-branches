@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.32 2006/07/06 16:03:53 stevesk Exp $ */
+/* $OpenBSD: misc.h,v 1.33 2006/07/10 12:46:51 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -18,6 +18,7 @@
 #include <sys/types.h>
 
 #include <pwd.h>
+#include <stdio.h>
 
 /* misc.c */
 

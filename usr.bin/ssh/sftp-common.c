@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-common.c,v 1.17 2006/07/22 20:48:23 stevesk Exp $ */
+/* $OpenBSD: sftp-common.c,v 1.18 2006/07/26 02:35:17 stevesk Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2001 Damien Miller.  All rights reserved.
@@ -32,6 +32,7 @@
 
 #include <grp.h>
 #include <pwd.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
