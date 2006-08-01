@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpivar.h,v 1.6 2006/05/25 09:26:58 damien Exp $	*/
+/*	$OpenBSD: if_wpivar.h,v 1.7 2006/06/17 19:07:19 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -139,14 +139,14 @@ struct wpi_softc {
 
 	union {
 		struct wpi_rx_radiotap_header th;
-		uint8_t	pad[64];
+		uint8_t	pad[IEEE80211_RADIOTAP_HDRLEN];
 	} sc_rxtapu;
 #define sc_rxtap	sc_rxtapu.th
 	int			sc_rxtap_len;
 
 	union {
 		struct wpi_tx_radiotap_header th;
-		uint8_t	pad[64];
+		uint8_t	pad[IEEE80211_RADIOTAP_HDRLEN];
 	} sc_txtapu;
 #define sc_txtap	sc_txtapu.th
 	int			sc_txtap_len;
