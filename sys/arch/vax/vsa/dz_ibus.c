@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz_ibus.c,v 1.19 2006/07/30 09:15:03 miod Exp $	*/
+/*	$OpenBSD: dz_ibus.c,v 1.20 2006/07/30 18:30:51 miod Exp $	*/
 /*	$NetBSD: dz_ibus.c,v 1.15 1999/08/27 17:50:42 ragge Exp $ */
 /*
  * Copyright (c) 1998 Ludd, University of Lule}, Sweden.
@@ -381,9 +381,14 @@ dzcnpollc(dev, pollflag)
 int
 dzgetc(struct dz_linestate *ls)
 {
-	int line = ls->dz_line;
+	int line;
 	int s;
 	u_short rbuf;
+
+	if (ls != NULL)
+		line = ls->dz_line;
+	else
+		line = 0;	/* keyboard */
 
 	s = spltty();
 	for (;;) {
