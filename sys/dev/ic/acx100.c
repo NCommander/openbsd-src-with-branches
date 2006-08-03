@@ -1,4 +1,4 @@
-/* $Id: acx100.c,v 1.2 2006/08/01 11:32:19 hacki Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2006 The DragonFly Project.  All rights reserved.

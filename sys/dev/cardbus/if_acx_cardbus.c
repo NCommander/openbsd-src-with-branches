@@ -1,6 +1,4 @@
-/* $Id: if_acx_cardbus.c,v 1.5 2006/08/02 23:06:04 claudio Exp $ */
-
-/*	$OpenBSD: if_ral_cardbus.c,v 1.6 2006/01/09 20:03:31 damien Exp $  */
+/*	$OpenBSD: if_acx_cardbus.c,v 1.1 2006/08/03 08:45:01 mglocker Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
