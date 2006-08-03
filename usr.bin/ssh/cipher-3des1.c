@@ -1,4 +1,4 @@
-/* $OpenBSD: cipher-3des1.c,v 1.4 2006/03/25 13:17:01 djm Exp $ */
+/* $OpenBSD: cipher-3des1.c,v 1.5 2006/07/22 20:48:22 stevesk Exp $ */
 /*
  * Copyright (c) 2003 Markus Friedl.  All rights reserved.
  *
@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <sys/types.h>
 
 #include <openssl/evp.h>
 

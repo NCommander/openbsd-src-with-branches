@@ -1,4 +1,4 @@
-/* $OpenBSD: groupaccess.c,v 1.10 2006/07/17 01:31:09 stevesk Exp $ */
+/* $OpenBSD: groupaccess.c,v 1.11 2006/07/26 02:35:17 stevesk Exp $ */
 /*
  * Copyright (c) 2001 Kevin Steves.  All rights reserved.
  *
@@ -23,16 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-
 #include <sys/types.h>
 #include <sys/param.h>
 
 #include <grp.h>
 #include <unistd.h>
+#include <stdarg.h>
 
-#include "groupaccess.h"
 #include "xmalloc.h"
+#include "groupaccess.h"
 #include "match.h"
 #include "log.h"
 

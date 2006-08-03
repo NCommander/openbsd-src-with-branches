@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-common.c,v 1.18 2006/07/26 02:35:17 stevesk Exp $ */
+/* $OpenBSD: sftp-common.c,v 1.19 2006/08/01 23:22:47 stevesk Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2001 Damien Miller.  All rights reserved.
@@ -24,8 +24,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -35,11 +33,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdarg.h>
 
-#include "buffer.h"
-#include "bufaux.h"
-#include "log.h"
 #include "xmalloc.h"
+#include "buffer.h"
+#include "log.h"
 
 #include "sftp.h"
 #include "sftp-common.h"

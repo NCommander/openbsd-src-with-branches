@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: auth-skey.c,v 1.23 2006/03/25 13:17:01 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -22,9 +22,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "includes.h"
 
 #ifdef SKEY
+
+#include <sys/types.h>
 
 #include <skey.h>
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: gss-serv.c,v 1.18 2006/07/02 18:36:47 stevesk Exp $ */
+/* $OpenBSD: gss-serv.c,v 1.19 2006/07/22 20:48:23 stevesk Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Simon Wilkinson. All rights reserved.
@@ -24,18 +24,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <sys/types.h>
 
 #ifdef GSSAPI
 
 #include <string.h>
 
-#include "bufaux.h"
+#include "xmalloc.h"
+#include "buffer.h"
+#include "key.h"
+#include "hostfile.h"
 #include "auth.h"
 #include "log.h"
 #include "channels.h"
 #include "session.h"
-#include "xmalloc.h"
 #include "misc.h"
 
 #include "ssh-gss.h"

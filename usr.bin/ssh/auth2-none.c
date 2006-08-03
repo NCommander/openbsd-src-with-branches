@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-none.c,v 1.10 2006/03/25 13:17:01 djm Exp $ */
+/* $OpenBSD: auth2-none.c,v 1.11 2006/07/09 15:15:10 stevesk Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -23,21 +23,25 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include <fcntl.h>
 
-#include "auth.h"
 #include "xmalloc.h"
+#include "key.h"
+#include "hostfile.h"
+#include "auth.h"
 #include "packet.h"
 #include "log.h"
+#include "buffer.h"
 #include "servconf.h"
 #include "atomicio.h"
 #include "compat.h"
 #include "ssh2.h"
+#ifdef GSSAPI
+#include "ssh-gss.h"
+#endif
 #include "monitor_wrap.h"
 
 /* import */

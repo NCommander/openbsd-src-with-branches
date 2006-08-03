@@ -1,4 +1,4 @@
-/* $OpenBSD: bufaux.c,v 1.42 2006/04/18 10:44:28 dtucker Exp $ */
+/* $OpenBSD: bufaux.c,v 1.43 2006/07/22 20:48:22 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -37,14 +37,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <sys/types.h>
 
 #include <openssl/bn.h>
 
 #include <string.h>
+#include <stdarg.h>
 
-#include "bufaux.h"
 #include "xmalloc.h"
+#include "buffer.h"
 #include "log.h"
 #include "misc.h"
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: kexdhs.c,v 1.5 2006/03/25 13:17:02 djm Exp $ */
+/* $OpenBSD: kexdhs.c,v 1.6 2006/07/22 20:48:23 stevesk Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -23,17 +23,23 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
 
+#include <sys/types.h>
 #include <string.h>
+#include <signal.h>
 
 #include "xmalloc.h"
+#include "buffer.h"
 #include "key.h"
+#include "cipher.h"
 #include "kex.h"
 #include "log.h"
 #include "packet.h"
 #include "dh.h"
 #include "ssh2.h"
+#ifdef GSSAPI
+#include "ssh-gss.h"
+#endif
 #include "monitor_wrap.h"
 
 void

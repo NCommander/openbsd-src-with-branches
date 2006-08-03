@@ -1,4 +1,4 @@
-/* $OpenBSD: scard.c,v 1.33 2006/07/25 02:01:34 stevesk Exp $ */
+/* $OpenBSD: scard.c,v 1.34 2006/08/01 23:36:12 stevesk Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -24,16 +24,17 @@
  */
 
 #ifdef SMARTCARD
-#include "includes.h"
+
+#include <sys/types.h>
 
 #include <openssl/evp.h>
 
 #include <sectok.h>
 #include <string.h>
 
+#include "xmalloc.h"
 #include "key.h"
 #include "log.h"
-#include "xmalloc.h"
 #include "misc.h"
 #include "scard.h"
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: progressmeter.c,v 1.35 2006/08/01 23:22:47 stevesk Exp $ */
+/* $OpenBSD: progressmeter.c,v 1.36 2006/08/01 23:36:12 stevesk Exp $ */
 /*
  * Copyright (c) 2003 Nils Nordman.  All rights reserved.
  *
@@ -23,10 +23,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/uio.h>
 
 #include <errno.h>
 #include <signal.h>

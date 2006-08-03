@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.73 2006/07/26 02:35:17 stevesk Exp $ */
+/* $OpenBSD: auth.c,v 1.74 2006/08/01 23:22:47 stevesk Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -23,8 +23,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -41,16 +39,19 @@
 #include "match.h"
 #include "groupaccess.h"
 #include "log.h"
+#include "buffer.h"
 #include "servconf.h"
+#include "key.h"
+#include "hostfile.h"
 #include "auth.h"
 #include "auth-options.h"
 #include "canohost.h"
-#include "buffer.h"
-#include "bufaux.h"
 #include "uidswap.h"
 #include "misc.h"
-#include "bufaux.h"
 #include "packet.h"
+#ifdef GSSAPI
+#include "ssh-gss.h"
+#endif
 #include "monitor_wrap.h"
 
 /* import */
