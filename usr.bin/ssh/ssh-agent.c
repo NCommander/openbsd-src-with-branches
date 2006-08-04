@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.150 2006/08/01 23:22:47 stevesk Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.151 2006/08/03 03:34:42 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1003,7 +1003,7 @@ int
 main(int ac, char **av)
 {
 	int c_flag = 0, d_flag = 0, k_flag = 0, s_flag = 0;
-	int sock, fd,  ch;
+	int sock, fd, ch;
 	u_int nalloc;
 	char *shell, *format, *pidstr, *agentsocket = NULL;
 	fd_set *readsetp = NULL, *writesetp = NULL;
