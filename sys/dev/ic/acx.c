@@ -1,8 +1,7 @@
-/*	$OpenBSD: acx.c,v 1.20 2006/08/05 11:34:11 jsg Exp $ */
+/*	$OpenBSD: acx.c,v 1.21 2006/08/05 12:59:53 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
- * Copyright (c) 2006 Marcus Glocker <mglocker@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
