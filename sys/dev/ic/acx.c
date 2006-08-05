@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.18 2006/08/05 00:29:41 mglocker Exp $ */
+/*	$OpenBSD: acx.c,v 1.19 2006/08/05 09:07:35 damien Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -366,6 +366,7 @@ acx_detach(void *xsc)
 
 	acx_stop(sc);
 	ieee80211_ifdetach(ifp);
+	if_detach(ifp);
 
 	acx_dma_free(sc);
 
