@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.21 2006/08/05 12:59:53 jsg Exp $ */
+/*	$OpenBSD: acx.c,v 1.22 2006/08/05 13:06:50 mglocker Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -243,7 +243,6 @@ acx_attach(struct acx_softc *sc)
 	struct ifnet *ifp = &sc->sc_ic.ic_if;
 	int i, error;
 
-	bcopy(sc->sc_dev.dv_xname, ifp->if_xname, IFNAMSIZ);
 	ifp->if_softc = sc;
 
 	/* Initialize channel scanning timer */
