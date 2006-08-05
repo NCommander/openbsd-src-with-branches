@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcphy.c,v 1.15 2005/05/27 08:04:15 brad Exp $	*/
+/*	$OpenBSD: dcphy.c,v 1.16 2005/08/04 21:52:37 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -48,8 +48,8 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>
+#include <sys/timeout.h>
 #include <sys/errno.h>
-#include <sys/socket.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
