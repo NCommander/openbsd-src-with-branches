@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.20 2006/07/11 16:24:09 pedro Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.21 2006/07/11 22:02:08 pedro Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -401,7 +401,10 @@ bail:
 	}
 	if (bp != NULL)
 		brelse(bp);
+
+	vn_lock(devvp, LK_EXCLUSIVE|LK_RETRY, p);
 	VOP_CLOSE(devvp, FREAD, FSCRED, p);
+	VOP_UNLOCK(devvp, 0, p);
 
 	return (error);
 }
