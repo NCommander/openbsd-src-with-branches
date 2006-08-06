@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi_pci.c,v 1.8 2006/05/17 19:51:51 brad Exp $ */
+/* $OpenBSD: mfi_pci.c,v 1.9 2006/05/21 20:20:17 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -55,6 +55,8 @@ struct	mfi_pci_device {
 	uint32_t	mpd_flags;
 } mfi_pci_devices[] = {
 	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_MSAS,
+	  0,			0,		"",			0 },
+	{ PCI_VENDOR_SYMBIOS,	PCI_PRODUCT_SYMBIOS_MVERDE_ZCR,
 	  0,			0,		"",			0 },
 	{ PCI_VENDOR_DELL,	PCI_PRODUCT_DELL_PERC5,
 	  PCI_VENDOR_DELL,	0x1f01,		"Dell PERC 5/e",	0 },
