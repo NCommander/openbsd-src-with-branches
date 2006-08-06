@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.31 2006/03/09 15:43:21 claudio Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.32 2006/03/13 09:36:06 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -134,7 +134,7 @@ nbr_fsm(struct nbr *nbr, enum nbr_event event)
 		}
 
 	if (nbr_fsm_tbl[i].state == -1) {
-		/* XXX event outside of the defined fsm, ignore it. */
+		/* event outside of the defined fsm, ignore it. */
 		log_warnx("nbr_fsm: neighbor ID %s, "
 		    "event %s not expected in state %s",
 		    inet_ntoa(nbr->id), nbr_event_names[event],
