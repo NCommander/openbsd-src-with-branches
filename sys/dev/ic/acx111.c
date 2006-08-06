@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx111.c,v 1.5 2006/08/04 10:47:15 jsg Exp $ */
+/*	$OpenBSD: acx111.c,v 1.6 2006/08/05 13:06:50 mglocker Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -69,6 +69,7 @@
 #endif
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_radiotap.h>
 
 #include <dev/pci/pcireg.h>
 
