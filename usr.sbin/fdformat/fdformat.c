@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.13 2006/03/12 02:45:45 deraadt Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.14 2006/04/02 00:50:42 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -281,6 +281,8 @@ main(int argc, char *argv[])
 
 	bytes_per_track = fdt.sectrac * (1<<fdt.secsize) * 128;
 	tracks_per_dot = fdt.tracks * fdt.heads / 40;
+	if (tracks_per_dot == 0)
+		tracks_per_dot++;
 
 	if (verify_only) {
 		if (!quiet)
