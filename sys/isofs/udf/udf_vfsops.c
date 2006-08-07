@@ -401,10 +401,7 @@ bail:
 	}
 	if (bp != NULL)
 		brelse(bp);
-
-	vn_lock(devvp, LK_EXCLUSIVE|LK_RETRY, p);
 	VOP_CLOSE(devvp, FREAD, FSCRED, p);
-	VOP_UNLOCK(devvp, 0, p);
 
 	return (error);
 }

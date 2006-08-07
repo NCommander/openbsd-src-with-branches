@@ -593,9 +593,7 @@ error_exit:
 	devvp->v_specmountpoint = NULL;
 	if (bp)
 		brelse(bp);
-	vn_lock(devvp, LK_EXCLUSIVE|LK_RETRY, p);
 	(void) VOP_CLOSE(devvp, ronly ? FREAD : FREAD|FWRITE, NOCRED, p);
-	VOP_UNLOCK(devvp, 0, p);
 	if (pmp) {
 		if (pmp->pm_inusemap)
 			free(pmp->pm_inusemap, M_MSDOSFSFAT);
@@ -641,11 +639,9 @@ msdosfs_unmount(mp, mntflags, p)
 #ifdef MSDOSFS_DEBUG
 	vprint("msdosfs_umount(): just before calling VOP_CLOSE()\n", vp);
 #endif
-	vn_lock(vp, LK_EXCLUSIVE|LK_RETRY, p);
 	error = VOP_CLOSE(vp,
 	   pmp->pm_flags & MSDOSFSMNT_RONLY ? FREAD : FREAD|FWRITE, NOCRED, p);
-	vput(vp);
-
+	vrele(vp);
 	free(pmp->pm_inusemap, M_MSDOSFSFAT);
 	free(pmp, M_MSDOSFSMNT);
 	mp->mnt_data = (qaddr_t)0;
