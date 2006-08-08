@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.225 2006/06/30 16:52:27 deraadt Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.226 2006/07/06 13:26:41 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1207,7 +1207,7 @@ ifa_grouplookup(const char *ifa_name, int flags)
 	struct ifg_req		*ifg;
 	struct ifgroupreq	 ifgr;
 	int			 s, len;
-	struct node_host	*n, *h = NULL, *hn;
+	struct node_host	*n, *h = NULL;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 		err(1, "socket");
@@ -1232,10 +1232,8 @@ ifa_grouplookup(const char *ifa_name, int flags)
 		if (h == NULL)
 			h = n;
 		else {
-			for (hn = h; hn->next != NULL; hn = hn->next)
-				;	/* nothing */
-			hn->next = n;
-			n->tail = hn;
+			h->tail->next = n;
+			h->tail = n->tail;
 		}
 	}
 	free(ifgr.ifgr_groups);
