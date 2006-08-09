@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661reg.h,v 1.7 2006/06/14 19:31:47 damien Exp $	*/
+/*	$OpenBSD: rt2661reg.h,v 1.8 2006/06/18 18:44:04 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -159,9 +159,9 @@
 #define RT2661_DROP_ACKCTS	(1 << 25)
 
 /* possible flags for register TXRX_CSR4 */
-#define RT2661_SHORT_PREAMBLE	(1 << 19)
-#define RT2661_MRR_ENABLED	(1 << 20)
-#define RT2661_MRR_CCK_FALLBACK	(1 << 23)
+#define RT2661_SHORT_PREAMBLE	(1 << 18)
+#define RT2661_MRR_ENABLED	(1 << 19)
+#define RT2661_MRR_CCK_FALLBACK	(1 << 22)
 
 /* possible flags for register TXRX_CSR9 */
 #define RT2661_TSF_TICKING	(1 << 16)
