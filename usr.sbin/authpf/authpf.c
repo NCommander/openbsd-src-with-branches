@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.97 2006/03/14 21:45:14 beck Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.98 2006/03/17 22:00:27 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2002 Bob Beck (beck@openbsd.org).
@@ -308,7 +308,7 @@ main(int argc, char *argv[])
 	signal(SIGALRM, need_death);
 	signal(SIGPIPE, need_death);
 	signal(SIGHUP, need_death);
-	signal(SIGSTOP, need_death);
+	signal(SIGQUIT, need_death);
 	signal(SIGTSTP, need_death);
 	while (1) {
 		printf("\r\nHello %s. ", luser);
