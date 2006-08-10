@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.94 2006/05/07 03:56:25 brad Exp $	*/
+/*	$OpenBSD: dc.c,v 1.95 2006/05/22 20:35:12 krw Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -3075,36 +3075,30 @@ dc_ioctl(ifp, command, data)
 	switch(command) {
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
-		switch (ifa->ifa_addr->sa_family) {
-		case AF_INET:
+		if (!(ifp->if_flags & IFF_RUNNING))
 			dc_init(sc);
+#ifdef INET
+		if (ifa->ifa_addr->sa_family == AF_INET)
 			arp_ifinit(&sc->sc_arpcom, ifa);
-			break;
-		default:
-			dc_init(sc);
-			break;
-		}
+#endif
 		break;
 	case SIOCSIFFLAGS:
 		if (ifp->if_flags & IFF_UP) {
 			if (ifp->if_flags & IFF_RUNNING &&
-			    ifp->if_flags & IFF_PROMISC &&
-			    !(sc->dc_if_flags & IFF_PROMISC)) {
+			    (ifp->if_flags ^ sc->dc_if_flags) &
+			     IFF_PROMISC) {
 				dc_setfilt(sc);
-			} else if (ifp->if_flags & IFF_RUNNING &&
-			    !(ifp->if_flags & IFF_PROMISC) &&
-			    sc->dc_if_flags & IFF_PROMISC) {
-				dc_setfilt(sc);
-			} else if (!(ifp->if_flags & IFF_RUNNING)) {
-				sc->dc_txthresh = 0;
-				dc_init(sc);
+			} else {
+				if (!(ifp->if_flags & IFF_RUNNING)) {
+					sc->dc_txthresh = 0;
+					dc_init(sc);
+				}
 			}
 		} else {
 			if (ifp->if_flags & IFF_RUNNING)
 				dc_stop(sc);
 		}
 		sc->dc_if_flags = ifp->if_flags;
-		error = 0;
 		break;
 	case SIOCSIFMTU:
 		if (ifr->ifr_mtu > ETHERMTU || ifr->ifr_mtu < ETHERMIN) {
