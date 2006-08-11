@@ -1,4 +1,4 @@
-/*	$OpenBSD: rgephy.c,v 1.12 2006/06/27 05:36:58 brad Exp $	*/
+/*	$OpenBSD: rgephy.c,v 1.13 2006/07/23 06:40:05 brad Exp $	*/
 /*
  * Copyright (c) 2003
  *	Bill Paul <wpaul@windriver.com>.  All rights reserved.
@@ -217,7 +217,7 @@ setit:
 			    speed|RGEPHY_BMCR_AUTOEN|RGEPHY_BMCR_STARTNEG);
 
 			/*
-			 * When settning the link manually, one side must
+			 * When setting the link manually, one side must
 			 * be the master and the other the slave. However
 			 * ifmedia doesn't give us a good way to specify
 			 * this, so we fake it by using one of the LINK
