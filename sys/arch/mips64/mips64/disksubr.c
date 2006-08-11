@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.16 2006/07/07 23:47:37 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.17 2006/07/09 21:06:39 krw Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -158,7 +158,7 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 		lp->d_partitions[i].p_offset = 0;
 	}
 	if (lp->d_partitions[i].p_size == 0)
-		lp->d_partitions[i].p_size = 0x1fffffff;
+		lp->d_partitions[i].p_size = lp->d_secperunit;
 	lp->d_partitions[i].p_offset = 0;
 	minilabel = fallbacklabel = *lp;
 
