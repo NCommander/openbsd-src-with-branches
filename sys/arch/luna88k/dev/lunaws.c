@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* $NetBSD: lunaws.c,v 1.6 2002/03/17 19:40:42 atatat Exp $ */
 
 /*-
