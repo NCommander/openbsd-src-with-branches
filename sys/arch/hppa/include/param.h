@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.31 2005/12/22 00:37:25 marco Exp $	*/
+/*	$OpenBSD: param.h,v 1.32 2006/03/19 01:47:23 martin Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -55,8 +55,8 @@
 
 #define	KERNBASE	0x00000000	/* start of kernel virtual */
 
-#define	DEV_BSIZE	512
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
+#define	DEV_BSIZE	(1 << DEV_BSHIFT)
 #define BLKDEV_IOSIZE	2048
 #define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
 
