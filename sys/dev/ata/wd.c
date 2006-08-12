@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.46 2006/01/21 12:18:47 miod Exp $ */
+/*	$OpenBSD: wd.c,v 1.47 2006/03/05 22:49:22 krw Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -838,8 +838,7 @@ wdgetdefaultlabel(struct wd_softc *wd, struct disklabel *lp)
 	lp->d_flags = 0;
 
 	lp->d_partitions[RAW_PART].p_offset = 0;
-	lp->d_partitions[RAW_PART].p_size =
-	lp->d_secperunit * (lp->d_secsize / DEV_BSIZE);
+	lp->d_partitions[RAW_PART].p_size = lp->d_secperunit;
 	lp->d_partitions[RAW_PART].p_fstype = FS_UNUSED;
 	lp->d_npartitions = RAW_PART + 1;
 
