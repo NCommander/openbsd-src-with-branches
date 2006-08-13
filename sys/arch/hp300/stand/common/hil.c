@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.3 2005/01/19 17:09:30 miod Exp $	*/
+/*	$OpenBSD: hil.c,v 1.4 2005/04/22 00:42:16 miod Exp $	*/
 /*	$NetBSD: hil.c,v 1.2 1997/04/14 19:00:10 thorpej Exp $	*/
 
 /*
@@ -274,6 +274,6 @@ hilkbd_init()
 	HILWAIT(hiladdr);
 	hiladdr->hil_cmd = HIL_INTON;
 
-	return (0);
+	return (1);
 }
 #endif /* ITECONSOLE && HIL_KEYBOARD */
