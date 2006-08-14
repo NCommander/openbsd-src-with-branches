@@ -110,11 +110,12 @@
 #include "wskbd.h"
 #include "wsmux.h"
 
-#ifndef	SMALL_KERNEL
-#define	BURNER_SUPPORT
-#define	SCROLLBACK_SUPPORT
+#ifdef	SMALL_KERNEL
 #undef	NWSKBD_HOTKEY
 #define	NWSKBD_HOTKEY 0
+#else
+#define	BURNER_SUPPORT
+#define	SCROLLBACK_SUPPORT
 #endif
 
 #ifdef WSKBD_DEBUG
