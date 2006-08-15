@@ -655,6 +655,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "F5D705A 54g USB Network Adapter",
 	},
 	{
+	    USB_VENDOR_BELKIN, USB_PRODUCT_BELKIN_F5D7050C,
+	    "F5D705C 54g USB Network Adapter",
+	},
+	{
 	    USB_VENDOR_BILLIONTON, USB_PRODUCT_BILLIONTON_USB100,
 	    "USB100N 10/100 Ethernet",
 	},

@@ -751,6 +751,7 @@
 #define	USB_PRODUCT_BELKIN_F5U120	0x1203		/* F5U120-PC Hub */
 #define	USB_PRODUCT_BELKIN_F5D7050	0x7050		/* F5D7050 54g USB Network Adapter */
 #define	USB_PRODUCT_BELKIN_F5D7050A	0x705a		/* F5D705A 54g USB Network Adapter */
+#define	USB_PRODUCT_BELKIN_F5D7050C	0x705c		/* F5D705C 54g USB Network Adapter */
 
 /* Billionton products */
 #define	USB_PRODUCT_BILLIONTON_USB100	0x0986		/* USB100N 10/100 Ethernet */
