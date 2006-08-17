@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lereg.h,v 1.1 1997/07/14 08:14:34 downsj Exp $	*/
+/*	$OpenBSD: if_lereg.h,v 1.2 2003/06/02 23:27:46 millert Exp $	*/
 /*	$NetBSD: if_lereg.h,v 1.1 1996/01/01 18:10:56 thorpej Exp $	*/
 
 /*
@@ -124,7 +124,7 @@ struct init_block {
 #define	LE_DRX		0x0001		/* disable receiver */
 #define	LE_NORMAL	0x0000
 
-/* 
+/*
  * Message descriptor
  */
 struct mds {

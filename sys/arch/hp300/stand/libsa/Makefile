@@ -1,11 +1,12 @@
-#	$OpenBSD: Makefile,v 1.12 1999/08/16 09:43:09 downsj Exp $
+#	$OpenBSD: Makefile,v 1.13 2003/06/01 17:00:34 deraadt Exp $
 
 LIB=	sa
 
 .PATH:	${.CURDIR}/../../../../lib/libsa
 
-CFLAGS= -O2 -msoft-float \
-	-I${.CURDIR} -I${.CURDIR}/../include -I${.CURDIR}/../.. \
+.include "${.CURDIR}/../Makefile.inc"
+
+CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../include -I${.CURDIR}/../.. \
 	-I${.CURDIR}/../../.. -I${.CURDIR}/../../../.. \
 	-I${.CURDIR}/../../../../lib/libsa
 
@@ -25,8 +26,6 @@ SRCS+=	bootp.c bootparam.c rarp.c
 
 # boot filesystems
 SRCS+=	ufs.c nfs.c rawfs.c cd9660.c
-
-${OBJS}:	${.CURDIR}/../Makefile.inc
 
 NOPROFILE=
 NOPIC=
