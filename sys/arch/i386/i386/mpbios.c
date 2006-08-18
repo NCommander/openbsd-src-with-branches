@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbios.c,v 1.13 2006/05/14 19:07:46 kettenis Exp $	*/
+/*	$OpenBSD: mpbios.c,v 1.14 2006/05/29 20:40:58 miod Exp $	*/
 /*	$NetBSD: mpbios.c,v 1.2 2002/10/01 12:56:57 fvdl Exp $	*/
 
 /*-
@@ -684,7 +684,7 @@ mpbios_scan(self)
 	}
 
 #if NPCI > 0
-	if (pci_mode != 0)
+	if (pci_mode_detect() != 0)
 		mpbios_intr_fixup();
 #endif
 }
