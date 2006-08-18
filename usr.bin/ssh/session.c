@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.216 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: session.c,v 1.217 2006/08/04 20:46:05 stevesk Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -2020,7 +2020,7 @@ do_cleanup(Authctxt *authctxt)
 		return;
 	called = 1;
 
-	if (authctxt == NULL)
+	if (authctxt == NULL || !authctxt->authenticated)
 		return;
 #ifdef KRB5
 	if (options.kerberos_ticket_cleanup &&
