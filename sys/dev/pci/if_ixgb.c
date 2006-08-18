@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.c,v 1.27 2006/08/09 05:22:17 brad Exp $ */
+/* $OpenBSD: if_ixgb.c,v 1.28 2006/08/14 02:22:13 brad Exp $ */
 
 #include <dev/pci/if_ixgb.h>
 
@@ -1438,9 +1438,9 @@ ixgb_get_buf(int i, struct ixgb_softc *sc,
 		mp->m_next = NULL;
 	}
 
-	if (ifp->if_mtu <= ETHERMTU) {
+	if (sc->hw.max_frame_size <= (MCLBYTES - ETHER_ALIGN))
 		m_adj(mp, ETHER_ALIGN);
-	}
+
 	rx_buffer = &sc->rx_buffer_area[i];
 
 	/*
