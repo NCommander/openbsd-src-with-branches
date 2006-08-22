@@ -1,4 +1,4 @@
-/*	$OpenBSD: sti_sgc.c,v 1.7 2006/04/16 21:03:43 miod Exp $	*/
+/*	$OpenBSD: sti_sgc.c,v 1.8 2006/04/20 20:26:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -182,6 +182,7 @@ sticninit()
 	base = (bus_addr_t)sgc_slottopa(CONSCODE_TO_SGC_SLOT(conscode));
 
 	sti_cnattach(&stifb_cn, iot, base, STI_CODEBASE_M68K);
+	sti_clear(&stifb_cn);
 
 	/*
 	 * Since the copyright notice could not be displayed before,
