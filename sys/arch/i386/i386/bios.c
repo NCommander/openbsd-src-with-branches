@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.65 2006/05/20 22:38:52 deraadt Exp $	*/
+/*	$OpenBSD: bios.c,v 1.66 2006/07/17 20:31:57 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -721,7 +721,7 @@ fixstring(char *s)
 	int i;
 
 	for (i= 0; i < sizeof(smbios_uninfo)/sizeof(smbios_uninfo[0]); i++)
-		if ((strncmp(s, smbios_uninfo[i], strlen(smbios_uninfo[i])))==0)
+		if ((strncasecmp(s, smbios_uninfo[i], strlen(smbios_uninfo[i])))==0)
 			return NULL;
 	/*
 	 * Remove leading and trailing whitespace
