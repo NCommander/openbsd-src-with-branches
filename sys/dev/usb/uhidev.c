@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidev.c,v 1.16 2006/06/23 06:27:11 miod Exp $	*/
+/*	$OpenBSD: uhidev.c,v 1.17 2006/08/18 02:54:11 jason Exp $	*/
 /*	$NetBSD: uhidev.c,v 1.14 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -246,12 +246,12 @@ USB_ATTACH(uhidev)
 		printf("%s: %d report ids\n", USBDEVNAME(sc->sc_dev), nrepid);
 	nrepid++;
 	sc->sc_subdevs = malloc(nrepid * sizeof(device_ptr_t),
-				M_USBDEV, M_NOWAIT);
-	bzero(sc->sc_subdevs, nrepid * sizeof(device_ptr_t));
+	    M_USBDEV, M_NOWAIT);
 	if (sc->sc_subdevs == NULL) {
 		printf("%s: no memory\n", USBDEVNAME(sc->sc_dev));
 		USB_ATTACH_ERROR_RETURN;
 	}
+	bzero(sc->sc_subdevs, nrepid * sizeof(device_ptr_t));
 	sc->sc_nrepid = nrepid;
 	sc->sc_isize = 0;
 
