@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.33 2006/04/21 16:36:39 claudio Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.34 2006/06/28 10:53:39 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -80,9 +80,11 @@ usage(void)
 	exit(1);
 }
 
+/* dummy function so that ospfctl does not need libevent */
 void
 imsg_event_add(struct imsgbuf *i)
 {
+	/* nothing */
 }
 
 int
