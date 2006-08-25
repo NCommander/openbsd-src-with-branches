@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmapae.c,v 1.3 2006/05/19 20:53:31 brad Exp $	*/
+/*	$OpenBSD: pmapae.c,v 1.4 2006/08/17 17:09:51 mickey Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -819,8 +819,10 @@ pmap_bootstrap_pae()
 	vaddr_t va, eva;
 	int i, pn, pe;
 
-	if (!cpu_pae || avail_end >= avail_end2 || !(cpu_feature & CPUID_PAE))
+	if (!cpu_pae || avail_end >= avail_end2 || !(cpu_feature & CPUID_PAE)){
+		avail_end2 = avail_end;
 		return;
+	}
 
 	va = (vaddr_t)kpm->pm_pdir;
 	kpm->pm_pdidx[0] = (va + 0*NBPG - KERNBASE) | PG_V;
