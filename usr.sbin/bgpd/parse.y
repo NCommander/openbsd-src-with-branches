@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.191 2006/06/17 14:06:09 henning Exp $ */
+/*	$OpenBSD: parse.y,v 1.192 2006/08/04 12:01:48 henning Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2172,6 +2172,7 @@ alloc_peer(void)
 	p->conf.capabilities.mp_v4 = SAFI_UNICAST;
 	p->conf.capabilities.mp_v6 = SAFI_NONE;
 	p->conf.capabilities.refresh = 1;
+	p->conf.capabilities.restart = 0;
 	p->conf.softreconfig_in = 1;
 	p->conf.softreconfig_out = 1;
 
