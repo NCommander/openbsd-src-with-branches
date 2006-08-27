@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.260 2006/08/27 16:11:05 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.261 2006/08/27 16:19:18 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -1341,7 +1341,7 @@ session_open(struct peer *p)
 			u_char	c[4];
 
 			bzero(&c, 4);
-			c[0] = 0x01;
+			c[0] = 0x80;
 			errs += buf_add(opb, &c, 4);
 			optparamlen += op_len;
 		}
