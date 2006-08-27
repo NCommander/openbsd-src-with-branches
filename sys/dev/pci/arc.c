@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc.c,v 1.41 2006/08/24 13:59:36 dlg Exp $ */
+/*	$OpenBSD: arc.c,v 1.42 2006/08/25 02:48:16 dlg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -689,7 +689,7 @@ arc_load_xs(struct arc_ccb *ccb)
 	error = bus_dmamap_load(sc->sc_dmat, dmap,
 	    xs->data, xs->datalen, NULL,
 	    (xs->flags & SCSI_NOSLEEP) ? BUS_DMA_NOWAIT : BUS_DMA_WAITOK);
-	if (error) {
+	if (error != 0) {
 		printf("%s: error %d loading dmamap\n", DEVNAME(sc), error);
 		return (1);
 	}
