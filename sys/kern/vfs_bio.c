@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.82 2006/08/17 13:55:57 mickey Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.83 2006/08/28 12:48:53 jmc Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -216,7 +216,7 @@ bufinit(void)
 	 * but not more than 25% and if possible
 	 * not less than 2 * MAXBSIZE. locleanpages
 	 * value must be not too small, but probably
-	 * there is no reason to set it more than 1-2 MB.
+	 * there is no reason to set it to more than 1-2 MB.
 	 */
 	locleanpages = bufpages / 20;
 	if (locleanpages < btoc(2 * MAXBSIZE))
