@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.108 2006/07/25 09:38:05 henning Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.109 2006/08/23 08:21:11 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -521,6 +521,8 @@ show_neighbor_msg(struct imsg *imsg, enum neighbor_views nv)
 			}
 			if (p->capa.peer.refresh)
 				printf("    Route Refresh\n");
+			if (p->capa.peer.restart)
+				printf("    Graceful Restart\n");
 		}
 		printf("\n");
 		switch (nv) {
