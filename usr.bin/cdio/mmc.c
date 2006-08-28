@@ -1,4 +1,4 @@
-/* $OpenBSD: mmc.c,v 1.14 2006/06/27 02:43:18 mjc Exp $ */
+/* $OpenBSD: mmc.c,v 1.15 2006/08/26 03:48:50 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Michael Coulter <mjc@openbsd.org>
@@ -325,8 +325,8 @@ get_disc_size(off_t *availblk)
 	scr.senselen = SENSEBUFLEN;
 	scb->opcode = READ_TRACK_INFO;
 	scb->addrtype = RTI_TRACK;
-	scb->addr[1] = 1;
-	scb->data_len[3] = 0x1c;
+	scb->addr[3] = 1;
+	scb->data_len[1] = 0x1c;
 	scr.cmdlen = sizeof(*scb);
 	scr.datalen= 0x1c;
 	scr.flags = SCCMD_ESCAPE|SCCMD_READ;
