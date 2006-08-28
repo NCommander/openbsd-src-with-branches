@@ -258,7 +258,7 @@ bio_inq(char *name)
 
 		if (!volheader) {
 			volheader = 1;
-			printf("%-7s %-10s %14s %-8s\n",
+			printf("%-7s %-10s %-14s %-8s\n",
 			    "Volume", "Status", "Size", "Device");
 		}
 
