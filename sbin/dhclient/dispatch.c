@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.32 2005/05/24 03:11:12 todd Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.33 2006/08/29 03:55:09 deraadt Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -271,7 +271,7 @@ int
 interface_link_forceup(char *ifname)
 {
 	struct ifreq ifr;
-	int sock, ret = 0;
+	int sock;
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 		error("Can't create socket");
