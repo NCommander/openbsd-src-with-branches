@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.45 2006/05/30 19:53:31 miod Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.46 2006/08/11 18:57:08 miod Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -125,8 +125,15 @@ vgafbmatch(parent, vcf, aux)
 		return (1);
 
 	if (PCI_CLASS(pa->pa_class) == PCI_CLASS_DISPLAY &&
-	    PCI_SUBCLASS(pa->pa_class) == PCI_SUBCLASS_DISPLAY_VGA)
+	    PCI_SUBCLASS(pa->pa_class) == PCI_SUBCLASS_DISPLAY_VGA) {
+		extern char cpu_model[];
+
+		/* XXX Cannot yet deal with VGA devices on Blade 1000 and family */
+		if (strncmp(cpu_model, "SUNW,UltraSPARC-III",
+		    strlen("SUNW,UltraSPARC-III")) == 0)
+			return (0);
 		return (1);
+	}
 
 	if (PCI_CLASS(pa->pa_class) == PCI_CLASS_DISPLAY &&
 	    PCI_SUBCLASS(pa->pa_class) == PCI_SUBCLASS_DISPLAY_MISC)
