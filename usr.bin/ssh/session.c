@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.217 2006/08/04 20:46:05 stevesk Exp $ */
+/* $OpenBSD: session.c,v 1.218 2006/08/18 09:15:20 markus Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1823,12 +1823,13 @@ session_close(Session *s)
 	if (s->auth_proto)
 		xfree(s->auth_proto);
 	s->used = 0;
-	for (i = 0; i < s->num_env; i++) {
-		xfree(s->env[i].name);
-		xfree(s->env[i].val);
-	}
-	if (s->env != NULL)
+	if (s->env != NULL) {
+		for (i = 0; i < s->num_env; i++) {
+			xfree(s->env[i].name);
+			xfree(s->env[i].val);
+		}
 		xfree(s->env);
+	}
 	session_proctitle(s);
 }
 
