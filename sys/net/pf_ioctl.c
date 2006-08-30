@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.167 2006/07/06 13:25:40 henning Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.168 2006/07/21 01:21:17 dhartmei Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2000,7 +2000,9 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 		if (!pnl->proto ||
 		    PF_AZERO(&pnl->saddr, pnl->af) ||
 		    PF_AZERO(&pnl->daddr, pnl->af) ||
-		    !pnl->dport || !pnl->sport)
+		    ((pnl->proto == IPPROTO_TCP ||
+		    pnl->proto == IPPROTO_UDP) &&
+		    (!pnl->dport || !pnl->sport)))
 			error = EINVAL;
 		else {
 			/*
