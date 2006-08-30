@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.14 2006/06/02 20:09:43 mcbride Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.15 2006/06/02 20:31:48 moritz Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -72,11 +72,15 @@ static int
 pfkey_write(u_int8_t *buf, ssize_t len)
 {
 	struct sadb_msg *msg = (struct sadb_msg *)buf;
+	ssize_t n;
 
 	if (cfgstate.pfkey_socket == -1)
 		return 0;
 
-	if (write(cfgstate.pfkey_socket, buf, len) != len) {
+	do {
+		n = write(cfgstate.pfkey_socket, buf, len);
+	} while (n == -1 && (errno == EAGAIN || errno == EINTR));
+	if (n == -1) {
 		log_err("pfkey: msg %s write() failed on socket %d",
 		    pfkey_print_type(msg), cfgstate.pfkey_socket);
 		return -1;
