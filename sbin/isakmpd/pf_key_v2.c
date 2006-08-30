@@ -52,6 +52,7 @@
 
 #include "cert.h"
 #include "conf.h"
+#include "connection.h"
 #include "exchange.h"
 #include "ipsec.h"
 #include "ipsec_num.h"
@@ -3448,6 +3449,7 @@ pf_key_v2_acquire(struct pf_key_v2_msg *pmsg)
 
 	/* Let's rock 'n roll. */
 	pf_key_v2_connection_check(conn);
+	connection_record_passive(conn);
 	conn = 0;
 
 	/* Fall-through to cleanup. */
