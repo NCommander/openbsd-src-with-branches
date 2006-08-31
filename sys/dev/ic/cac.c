@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac.c,v 1.20 2005/09/15 05:33:39 krw Exp $	*/
+/*	$OpenBSD: cac.c,v 1.21 2005/12/03 16:53:15 krw Exp $	*/
 /*	$NetBSD: cac.c,v 1.15 2000/11/08 19:20:35 ad Exp $	*/
 
 /*
@@ -613,7 +613,7 @@ cac_scsi_cmd(xs)
 		case 3: p = "RAID5";	break;
 		default:p = "<UNK>";	break;
 		}
-		snprintf(inq.product, sizeof inq.product, "%s volume  #%02d",
+		snprintf(inq.product, sizeof inq.product, "%s vol  #%02d",
 		    p, target);
 		strlcpy(inq.revision, "   ", sizeof inq.revision);
 		cac_copy_internal_data(xs, &inq, sizeof inq);
