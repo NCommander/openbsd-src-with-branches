@@ -1,4 +1,4 @@
-/*	$OpenBSD: cissvar.h,v 1.3 2006/08/27 20:51:09 mickey Exp $	*/
+/*	$OpenBSD: cissvar.h,v 1.4 2006/08/27 22:12:10 mickey Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -38,6 +38,7 @@ struct ciss_softc {
 	struct sensor	*sensors;
 
 	u_int	sc_flags;
+#define	CISS_BIO	0x0001
 	int ccblen, maxcmd, maxsg, nbus, ndrives, maxunits;
 	ciss_queue_head	sc_free_ccb, sc_ccbq, sc_ccbdone;
 
