@@ -1,4 +1,4 @@
-/* $OpenBSD: isakmpd.c,v 1.93 2006/06/10 21:15:45 hshoexer Exp $	 */
+/* $OpenBSD: isakmpd.c,v 1.94 2006/08/30 16:56:56 hshoexer Exp $	 */
 /* $EOM: isakmpd.c,v 1.54 2000/10/05 09:28:22 niklas Exp $	 */
 
 /*
@@ -215,6 +215,7 @@ parse_args(int argc, char *argv[])
 
 		case 'S':
 			delete_sas = 0;
+			ui_daemon_passive = 1;
 			break;
 
 		case 'T':
