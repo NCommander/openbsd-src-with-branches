@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sysctl.3,v 1.157 2006/05/29 16:49:42 avsm Exp $
+.\"	$OpenBSD: sysctl.3,v 1.158 2006/06/02 12:43:01 jmc Exp $
 .\"
 .\" Copyright (c) 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -2124,6 +2124,8 @@ A process without appropriate privileges attempts to set a value.
 .It Bq Er EPERM
 An attempt to change a value protected by the current kernel security
 level is made.
+.It Bq Er ESRCH
+No process could be found which corresponds to the given process ID.
 .El
 .Sh SEE ALSO
 .Xr pathconf 2 ,
