@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997-2004 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,57 +33,21 @@
 
 #include "ktutil_locl.h"
 
-RCSID("$KTH: get.c,v 1.16 2000/12/31 02:51:43 assar Exp $");
+RCSID("$KTH: get.c,v 1.24 2004/09/23 14:44:57 joda Exp $");
 
-int
-kt_get(int argc, char **argv)
+static void*
+open_kadmin_connection(char *principal,
+		       const char *realm, 
+		       char *admin_server, 
+		       int server_port)
 {
+    static kadm5_config_params conf;
     krb5_error_code ret;
-    kadm5_config_params conf;
     void *kadm_handle;
-    char *principal = NULL;
-    char *realm = NULL;
-    char *admin_server = NULL;
-    int server_port = 0;
-    int help_flag = 0;
-    int optind = 0;
-    int i, j;
-    
-    struct getargs args[] = {
-	{ "principal",	'p',	arg_string,   NULL, 
-	  "admin principal", "principal" 
-	},
-	{ "realm",	'r',	arg_string,   NULL, 
-	  "realm to use", "realm" 
-	},
-	{ "admin-server",	'a',	arg_string, NULL,
-	  "server to contact", "host" 
-	},
-	{ "server-port",	's',	arg_integer, NULL,
-	  "port to contact", "port number" 
-	},
-	{ "help",		'h',	arg_flag,    NULL }
-    };
-
-    args[0].value = &principal;
-    args[1].value = &realm;
-    args[2].value = &admin_server;
-    args[3].value = &server_port;
-    args[4].value = &help_flag;
-
     memset(&conf, 0, sizeof(conf));
 
-    if(getarg(args, sizeof(args) / sizeof(args[0]), argc, argv, &optind)
-       || help_flag) {
-	arg_printusage(args, sizeof(args) / sizeof(args[0]), 
-		       "ktutil get", "principal...");
-	return 0;
-    }
-    
     if(realm) {
-	krb5_set_default_realm(context, realm); /* XXX should be fixed
-						   some other way */
-	conf.realm = realm;
+	conf.realm = (char*)realm;
 	conf.mask |= KADM5_CONFIG_REALM;
     }
     
@@ -97,6 +61,9 @@ kt_get(int argc, char **argv)
 	conf.mask |= KADM5_CONFIG_KADMIND_PORT;
     }
 
+    /* should get realm from each principal, instead of doing
+       everything with the same (local) realm */
+
     ret = kadm5_init_with_password_ctx(context, 
 				       principal,
 				       NULL,
@@ -105,11 +72,51 @@ kt_get(int argc, char **argv)
 				       &kadm_handle);
     if(ret) {
 	krb5_warn(context, ret, "kadm5_init_with_password");
-	return 0;
+	return NULL;
     }
+    return kadm_handle;
+}
+
+int
+kt_get(struct get_options *opt, int argc, char **argv)
+{
+    krb5_error_code ret = 0;
+    krb5_keytab keytab;
+    void *kadm_handle = NULL;
+    krb5_enctype *etypes = NULL;
+    size_t netypes = 0;
+    int i = 0, j;
+    unsigned int failed = 0;
     
+    if((keytab = ktutil_open_keytab()) == NULL)
+	return 1;
+
+    if(opt->realm_string)
+	krb5_set_default_realm(context, opt->realm_string);
+
+    if (opt->enctypes_strings.num_strings != 0) {
+	int i;
+
+	etypes = malloc (opt->enctypes_strings.num_strings * sizeof(*etypes));
+	if (etypes == NULL) {
+	    krb5_warnx(context, "malloc failed");
+	    goto out;
+	}
+	netypes = opt->enctypes_strings.num_strings;
+	for(i = 0; i < netypes; i++) {
+	    ret = krb5_string_to_enctype(context, 
+					 opt->enctypes_strings.strings[i], 
+					 &etypes[i]);
+	    if(ret) {
+		krb5_warnx(context, "unrecognized enctype: %s",
+			   opt->enctypes_strings.strings[i]);
+		goto out;
+	    }
+	}
+    }
+
     
-    for(i = optind; i < argc; i++){
+    for(i = 0; i < argc; i++){
 	krb5_principal princ_ent;
 	kadm5_principal_ent_rec princ;
 	int mask = 0;
@@ -119,6 +126,11 @@ kt_get(int argc, char **argv)
 	krb5_keytab_entry entry;
 
 	ret = krb5_parse_name(context, argv[i], &princ_ent);
+	if (ret) {
+	    krb5_warn(context, ret, "can't parse principal %s", argv[i]);
+	    failed++;
+	    continue;
+	}
 	memset(&princ, 0, sizeof(princ));
 	princ.principal = princ_ent;
 	mask |= KADM5_PRINCIPAL;
@@ -126,19 +138,35 @@ kt_get(int argc, char **argv)
 	mask |= KADM5_ATTRIBUTES;
 	princ.princ_expire_time = 0;
 	mask |= KADM5_PRINC_EXPIRE_TIME;
+
+	if(kadm_handle == NULL) {
+	    const char *r;
+	    if(opt->realm_string != NULL)
+		r = opt->realm_string;
+	    else
+		r = krb5_principal_get_realm(context, princ_ent);
+	    kadm_handle = open_kadmin_connection(opt->principal_string, 
+						 r, 
+						 opt->admin_server_string, 
+						 opt->server_port_integer);
+	    if(kadm_handle == NULL)
+		break;
+	}
 	
 	ret = kadm5_create_principal(kadm_handle, &princ, mask, "x");
 	if(ret == 0)
-	    created++;
+	    created = 1;
 	else if(ret != KADM5_DUP) {
 	    krb5_warn(context, ret, "kadm5_create_principal(%s)", argv[i]);
 	    krb5_free_principal(context, princ_ent);
+	    failed++;
 	    continue;
 	}
 	ret = kadm5_randkey_principal(kadm_handle, princ_ent, &keys, &n_keys);
 	if (ret) {
 	    krb5_warn(context, ret, "kadm5_randkey_principal(%s)", argv[i]);
 	    krb5_free_principal(context, princ_ent);
+	    failed++;
 	    continue;
 	}
 	
@@ -149,8 +177,11 @@ kt_get(int argc, char **argv)
 	    for (j = 0; j < n_keys; j++)
 		krb5_free_keyblock_contents(context, &keys[j]);
 	    krb5_free_principal(context, princ_ent);
+	    failed++;
 	    continue;
 	}
+	if(!created && (princ.attributes & KRB5_KDB_DISALLOW_ALL_TIX))
+	    krb5_warnx(context, "%s: disallow-all-tix flag set - clearing", argv[i]);
 	princ.attributes &= (~KRB5_KDB_DISALLOW_ALL_TIX);
 	mask = KADM5_ATTRIBUTES;
 	if(created) {
@@ -163,20 +194,41 @@ kt_get(int argc, char **argv)
 	    for (j = 0; j < n_keys; j++)
 		krb5_free_keyblock_contents(context, &keys[j]);
 	    krb5_free_principal(context, princ_ent);
+	    failed++;
 	    continue;
 	}
 	for(j = 0; j < n_keys; j++) {
-	    entry.principal = princ_ent;
-	    entry.vno = princ.kvno;
-	    entry.keyblock = keys[j];
-	    entry.timestamp = time (NULL);
-	    ret = krb5_kt_add_entry(context, keytab, &entry);
+	    int do_add = TRUE;
+
+	    if (netypes) {
+		int i;
+
+		do_add = FALSE;
+		for (i = 0; i < netypes; ++i)
+		    if (keys[j].keytype == etypes[i]) {
+			do_add = TRUE;
+			break;
+		    }
+	    }
+	    if (do_add) {
+		entry.principal = princ_ent;
+		entry.vno = princ.kvno;
+		entry.keyblock = keys[j];
+		entry.timestamp = time (NULL);
+		ret = krb5_kt_add_entry(context, keytab, &entry);
+		if (ret)
+		    krb5_warn(context, ret, "krb5_kt_add_entry");
+	    }
 	    krb5_free_keyblock_contents(context, &keys[j]);
 	}
 	
 	kadm5_free_principal_ent(kadm_handle, &princ);
 	krb5_free_principal(context, princ_ent);
     }
-    kadm5_destroy(kadm_handle);
-    return 0;
+ out:
+    free(etypes);
+    if (kadm_handle)
+	kadm5_destroy(kadm_handle);
+    krb5_kt_close(context, keytab);
+    return ret != 0 || failed > 0;
 }

@@ -2,10 +2,10 @@ package Encode::Guess;
 use strict;
 
 use Encode qw(:fallbacks find_encoding);
-our $VERSION = do { my @r = (q$Revision: 1.6 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+our $VERSION = do { my @r = (q$Revision: 2.0 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 my $Canon = 'Guess';
-our $DEBUG = 0;
+sub DEBUG () { 0 }
 our %DEF_SUSPECTS = map { $_ => find_encoding($_) } qw(ascii utf8);
 $Encode::Encoding{$Canon} = 
     bless { 
@@ -18,6 +18,8 @@ sub needs_lines { 1 }
 sub perlio_ok { 0 }
 
 our @EXPORT = qw(guess_encoding);
+our $NoUTFAutoGuess = 0;
+our $UTF8_BOM = pack("C3", 0xef, 0xbb, 0xbf);
 
 sub import { # Exporter not used so we do it on our own
     my $callpkg = caller;
@@ -41,7 +43,7 @@ sub add_suspects{
     for my $c (@_){
 	my $e = find_encoding($c) or die "Unknown encoding: $c";
 	$self->{Suspects}{$e->name} = $e;
-	$DEBUG and warn "Added: ", $e->name;
+	DEBUG and warn "Added: ", $e->name;
     }
 }
 
@@ -70,21 +72,51 @@ sub guess {
     return unless defined $octet and length $octet;
 
     # cheat 0: utf8 flag;
-    Encode::is_utf8($octet) and return find_encoding('utf8');
+    if ( Encode::is_utf8($octet) ) {
+	return find_encoding('utf8') unless $NoUTFAutoGuess;
+	Encode::_utf8_off($octet);
+    }
     # cheat 1: BOM
     use Encode::Unicode;
-    my $BOM = unpack('n', $octet);
-    return find_encoding('UTF-16') 
-	if (defined $BOM and ($BOM == 0xFeFF or $BOM == 0xFFFe));
-    $BOM = unpack('N', $octet);
-    return find_encoding('UTF-32') 
-	if (defined $BOM and ($BOM == 0xFeFF or $BOM == 0xFFFe0000));
-
+    unless ($NoUTFAutoGuess) {
+	my $BOM = pack('C3', unpack("C3", $octet));
+	return find_encoding('utf8')
+	    if (defined $BOM and $BOM eq $UTF8_BOM);
+	$BOM = unpack('N', $octet);
+	return find_encoding('UTF-32')
+	    if (defined $BOM and ($BOM == 0xFeFF or $BOM == 0xFFFe0000));
+	$BOM = unpack('n', $octet);
+	return find_encoding('UTF-16')
+	    if (defined $BOM and ($BOM == 0xFeFF or $BOM == 0xFFFe));
+	if ($octet =~ /\x00/o){ # if \x00 found, we assume UTF-(16|32)(BE|LE)
+	    my $utf;
+	    my ($be, $le) = (0, 0);
+	    if ($octet =~ /\x00\x00/o){ # UTF-32(BE|LE) assumed
+		$utf = "UTF-32";
+		for my $char (unpack('N*', $octet)){
+		    $char & 0x0000ffff and $be++;
+		    $char & 0xffff0000 and $le++;
+		}
+	    }else{ # UTF-16(BE|LE) assumed
+		$utf = "UTF-16";
+		for my $char (unpack('n*', $octet)){
+		    $char & 0x00ff and $be++;
+		    $char & 0xff00 and $le++;
+		}
+	    }
+	    DEBUG and warn "$utf, be == $be, le == $le";
+	    $be == $le 
+		and return
+		    "Encodings ambiguous between $utf BE and LE ($be, $le)";
+	    $utf .= ($be > $le) ? 'BE' : 'LE';
+	    return find_encoding($utf);
+	}
+    }
     my %try =  %{$obj->{Suspects}};
     for my $c (@_){
 	my $e = find_encoding($c) or die "Unknown encoding: $c";
 	$try{$e->name} = $e;
-	$DEBUG and warn "Added: ", $e->name;
+	DEBUG and warn "Added: ", $e->name;
     }
     my $nline = 1;
     for my $line (split /\r\n?|\n/, $octet){
@@ -102,14 +134,13 @@ sub guess {
 	    my $scratch = $line;
 	    $try{$k}->decode($scratch, FB_QUIET);
 	    if ($scratch eq ''){
-		$DEBUG and warn sprintf("%4d:%-24s ok\n", $nline, $k);
+		DEBUG and warn sprintf("%4d:%-24s ok\n", $nline, $k);
 	    }else{
 		use bytes ();
-		$DEBUG and 
+		DEBUG and 
 		    warn sprintf("%4d:%-24s not ok; %d bytes left\n", 
 				 $nline, $k, bytes::length($scratch));
 		delete $ok{$k};
-		
 	    }
 	}
 	%ok or return "No appropriate encodings found!";
@@ -143,7 +174,7 @@ Encode::Guess -- Guesses encoding from data
   my $data = encode("Guess", $utf8);   # this doesn't work!
 
   # more elaborate way
-  use Encode::Guess,
+  use Encode::Guess;
   my $enc = guess_encoding($data, qw/euc-jp shiftjis 7bit-jis/);
   ref($enc) or die "Can't guess: $enc"; # trap error this way
   $utf8 = $enc->decode($data);
@@ -165,8 +196,14 @@ To use it more practically, you have to give the names of encodings to
 check (I<suspects> as follows).  The name of suspects can either be
 canonical names or aliases.
 
+CAVEAT: Unlike UTF-(16|32), BOM in utf8 is NOT AUTOMATICALLY STRIPPED.
+
  # tries all major Japanese Encodings as well
   use Encode::Guess qw/euc-jp shiftjis 7bit-jis/;
+
+If the C<$Encode::Guess::NoUTFAutoGuess> variable is set to a true
+value, no heuristics will be applied to UTF8/16/32, and the result
+will be limited to the suspects and C<ascii>.
 
 =over 4
 
@@ -198,9 +235,21 @@ When you are content with suspects list, you can now
 
 =item Encode::Guess->guess($data)
 
-But it will croak if Encode::Guess fails to eliminate all other
-suspects but the right one or no suspect was good.  So you should
-instead try this;
+But it will croak if:
+
+=over
+
+=item *
+
+Two or more suspects remain
+
+=item *
+
+No suspects left
+
+=back
+
+So you should instead try this;
 
   my $decoder = Encode::Guess->guess($data);
 
@@ -249,7 +298,7 @@ one suspect (besides ascii and utf8).
 
 The reason is that Encode::Guess guesses encoding by trial and error.
 It first splits $data into lines and tries to decode the line for each
-suspect.  It keeps it going until all but one encoding was eliminated
+suspect.  It keeps it going until all but one encoding is eliminated
 out of suspects list.  ISO-8859 series is just too successful for most
 cases (because it fills almost all code points in \x00-\xff).
 

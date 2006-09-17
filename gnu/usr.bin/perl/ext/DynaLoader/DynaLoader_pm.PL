@@ -1,9 +1,8 @@
-
 use Config;
 
 sub to_string {
     my ($value) = @_;
-    $value =~ s/\\/\\\\'/g;
+    $value =~ s/\\/\\\\/g;
     $value =~ s/'/\\'/g;
     return "'$value'";
 }
@@ -12,7 +11,7 @@ unlink "DynaLoader.pm" if -f "DynaLoader.pm";
 open OUT, ">DynaLoader.pm" or die $!;
 print OUT <<'EOT';
 
-# Generated from DynaLoader.pm.PL (resolved %Config::Config values)
+# Generated from DynaLoader.pm.PL
 
 package DynaLoader;
 
@@ -21,17 +20,21 @@ package DynaLoader;
 #   feast like to keep their secret; for wonder makes the words of
 #   praise louder.'
 
-#   (Quote from Tolkien sugested by Anno Siegel.)
+#   (Quote from Tolkien suggested by Anno Siegel.)
 #
 # See pod text at end of file for documentation.
 # See also ext/DynaLoader/README in source tree for other information.
 #
 # Tim.Bunce@ig.co.uk, August 1994
 
-$VERSION = $VERSION = "1.03";	# avoid typo warning
+use vars qw($VERSION *AUTOLOAD);
+
+$VERSION = '1.05';	# avoid typo warning
 
 require AutoLoader;
 *AUTOLOAD = \&AutoLoader::AUTOLOAD;
+
+use Config;
 
 # The following require can't be removed during maintenance
 # releases, sadly, because of the risk of buggy code that does 
@@ -39,7 +42,6 @@ require AutoLoader;
 # if Carp hasn't been loaded in earlier compile time. :-( 
 # We'll let those bugs get found on the development track.
 require Carp if $] < 5.00450; 
-
 
 # enable debug/trace messages from DynaLoader perl code
 $dl_debug = $ENV{PERL_DL_DEBUG} || 0 unless defined $dl_debug;
@@ -71,39 +73,122 @@ print OUT <<'EOT';
 # (VMS support by Charles Bailey <bailey@HMIVAX.HUMGEN.UPENN.EDU>)
 # See dl_expandspec() for more details. Should be harmless but
 # inefficient to define on systems that don't need it.
-$do_expand = $Is_VMS = $^O eq 'VMS';
+$Is_VMS    = $^O eq 'VMS';
+$do_expand = $Is_VMS;
+$Is_MacOS  = $^O eq 'MacOS';
+
+my $Mac_FS;
+$Mac_FS = eval { require Mac::FileSpec::Unixish } if $Is_MacOS;
 
 @dl_require_symbols = ();       # names of symbols we need
 @dl_resolve_using   = ();       # names of files to link with
 @dl_library_path    = ();       # path to look for files
-@dl_librefs         = ();       # things we have loaded
-@dl_modules         = ();       # Modules we have loaded
+
+#XSLoader.pm may have added elements before we were required
+#@dl_shared_objects  = ();       # shared objects for symbols we have 
+#@dl_librefs         = ();       # things we have loaded
+#@dl_modules         = ();       # Modules we have loaded
 
 # This is a fix to support DLD's unfortunate desire to relink -lc
 @dl_resolve_using = dl_findfile('-lc') if $dlsrc eq "dl_dld.xs";
 
-# Initialise @dl_library_path with the 'standard' library path
-# for this platform as determined by Configure
-
-# push(@dl_library_path, split(' ', $Config::Config{'libpth'});
 EOT
 
-print OUT "push(\@dl_library_path, split(' ', ",
-          to_string($Config::Config{'libpth'}), "));\n";
+my $cfg_dl_library_path = <<'EOT';
+push(@dl_library_path, split(' ', $Config::Config{libpth}));
+EOT
+
+sub dquoted_comma_list {
+    join(", ", map {qq("$_")} @_);
+}
+
+if ($ENV{PERL_BUILD_EXPAND_CONFIG_VARS}) {
+    eval $cfg_dl_library_path;
+    if (!$ENV{PERL_BUILD_EXPAND_ENV_VARS}) {
+        my $dl_library_path = dquoted_comma_list(@dl_library_path);
+        print OUT <<EOT;
+# The below \@dl_library_path has been expanded (%Config) in Perl build time.
+
+\@dl_library_path = ($dl_library_path);
+
+EOT
+    }
+}
+else {
+    print OUT <<EOT;
+# Initialise \@dl_library_path with the 'standard' library path
+# for this platform as determined by Configure.
+
+$cfg_dl_library_path
+
+EOT
+}
+
+my $ldlibpthname;
+my $ldlibpthname_defined;
+my $pthsep;
+
+if ($ENV{PERL_BUILD_EXPAND_CONFIG_VARS}) {
+    $ldlibpthname         = $Config::Config{ldlibpthname};
+    $ldlibpthname_defined = defined $Config::Config{ldlibpthname} ? 1 : 0;
+    $pthsep               = $Config::Config{path_sep};
+}
+else {
+    $ldlibpthname         = q($Config::Config{ldlibpthname});
+    $ldlibpthname_defined = q(defined $Config::Config{ldlibpthname});
+    $pthsep               = q($Config::Config{path_sep});
+    print OUT <<EOT;
+my \$ldlibpthname         = $ldlibpthname;
+my \$ldlibpthname_defined = $ldlibpthname_defined;
+my \$pthsep               = $pthsep;
+
+EOT
+}
+
+my $env_dl_library_path = <<'EOT';
+if ($ldlibpthname_defined &&
+    exists $ENV{$ldlibpthname}) {
+    push(@dl_library_path, split(/$pthsep/, $ENV{$ldlibpthname}));
+}
+
+# E.g. HP-UX supports both its native SHLIB_PATH *and* LD_LIBRARY_PATH.
+
+if ($ldlibpthname_defined &&
+    $ldlibpthname ne 'LD_LIBRARY_PATH' &&
+    exists $ENV{LD_LIBRARY_PATH}) {
+    push(@dl_library_path, split(/$pthsep/, $ENV{LD_LIBRARY_PATH}));
+}
+EOT
+
+if ($ENV{PERL_BUILD_EXPAND_CONFIG_VARS} && $ENV{PERL_BUILD_EXPAND_ENV_VARS}) {
+    eval $env_dl_library_path;
+}
+else {
+    print OUT <<EOT;
+# Add to \@dl_library_path any extra directories we can gather from environment
+# during runtime.
+
+$env_dl_library_path
+
+EOT
+}
+
+if ($ENV{PERL_BUILD_EXPAND_CONFIG_VARS} && $ENV{PERL_BUILD_EXPAND_ENV_VARS}) {
+    my $dl_library_path = dquoted_comma_list(@dl_library_path);
+    print OUT <<EOT;
+# The below \@dl_library_path has been expanded (%Config, %ENV)
+# in Perl build time.
+
+\@dl_library_path = ($dl_library_path);
+
+EOT
+}
 
 print OUT <<'EOT';
-
-# Add to @dl_library_path any extra directories we can gather from
-# environment variables. So far LD_LIBRARY_PATH is the only known
-# variable used for this purpose. Others may be added later.
-push(@dl_library_path, split(/:/, $ENV{LD_LIBRARY_PATH}))
-    if $ENV{LD_LIBRARY_PATH};
-
-
 # No prizes for guessing why we don't say 'bootstrap DynaLoader;' here.
+# NOTE: All dl_*.xs (including dl_none.xs) define a dl_error() XSUB
 boot_DynaLoader('DynaLoader') if defined(&boot_DynaLoader) &&
-                                !defined(&dl_load_file);
-
+                                !defined(&dl_error);
 
 if ($dl_debug) {
     print STDERR "DynaLoader.pm loaded (@INC, @dl_library_path)\n";
@@ -115,6 +200,14 @@ if ($dl_debug) {
 
 
 sub croak   { require Carp; Carp::croak(@_)   }
+
+sub bootstrap_inherit {
+    my $module = $_[0];
+    local *isa = *{"$module\::ISA"};
+    local @isa = (@isa, 'DynaLoader');
+    # Cannot goto due to delocalization.  Will report errors on a wrong line?
+    bootstrap(@_);
+}
 
 # The bootstrap function cannot be autoloaded (without complications)
 # so we define it here:
@@ -137,6 +230,15 @@ sub bootstrap {
 	"  dynamic loading or has the $module module statically linked into it.)\n")
 	unless defined(&dl_load_file);
 
+EOT
+
+print OUT <<'EOT' if $^O eq 'os2';
+    # Can dynaload, but cannot dynaload Perl modules...
+    die 'Dynaloaded Perl modules are not available in this build of Perl' if $OS2::is_static;
+
+EOT
+
+print OUT <<'EOT';
     my @modparts = split(/::/,$module);
     my $modfname = $modparts[-1];
 
@@ -145,20 +247,39 @@ sub bootstrap {
     # It may also edit @modparts if required.
     $modfname = &mod2fname(\@modparts) if defined &mod2fname;
 
-    my $modpname = join('/',@modparts);
+    # Truncate the module name to 8.3 format for NetWare
+	if (($^O eq 'NetWare') && (length($modfname) > 8)) {
+		$modfname = substr($modfname, 0, 8);
+	}
+
+    my $modpname = join(($Is_MacOS ? ':' : '/'),@modparts);
 
     print STDERR "DynaLoader::bootstrap for $module ",
-		"(auto/$modpname/$modfname.$dl_dlext)\n" if $dl_debug;
+		($Is_MacOS
+		       ? "(:auto:$modpname:$modfname.$dl_dlext)\n" :
+		       "(auto/$modpname/$modfname.$dl_dlext)\n")
+	if $dl_debug;
 
     foreach (@INC) {
 	chop($_ = VMS::Filespec::unixpath($_)) if $Is_VMS;
-	my $dir = "$_/auto/$modpname";
+	my $dir;
+	if ($Is_MacOS) {
+	    my $path = $_;
+	    if ($Mac_FS && ! -d $path) {
+		$path = Mac::FileSpec::Unixish::nativize($path);
+	    }
+	    $path .= ":"  unless /:$/;
+	    $dir = "${path}auto:$modpname";
+	} else {
+	    $dir = "$_/auto/$modpname";
+	}
+	
 	next unless -d $dir; # skip over uninteresting directories
-
+	
 	# check for common cases to avoid autoload of dl_findfile
-	my $try = "$dir/$modfname.$dl_dlext";
-	last if $file = ($do_expand) ? dl_expandspec($try) : (-f $try && $try);
-
+	my $try = $Is_MacOS ? "$dir:$modfname.$dl_dlext" : "$dir/$modfname.$dl_dlext";
+	last if $file = ($do_expand) ? dl_expandspec($try) : ((-f $try) && $try);
+	
 	# no luck here, save dir for possible later dl_findfile search
 	push @dirs, $dir;
     }
@@ -168,6 +289,7 @@ sub bootstrap {
     croak("Can't locate loadable object for module $module in \@INC (\@INC contains: @INC)")
 	unless $file;	# wording similar to error from 'require'
 
+    $file = uc($file) if $Is_VMS && $Config::Config{d_vms_case_sensitive_symbols};
     my $bootname = "boot_$module";
     $bootname =~ s/\W/_/g;
     @dl_require_symbols = ($bootname);
@@ -176,11 +298,19 @@ sub bootstrap {
     # The .bs file can be used to configure @dl_resolve_using etc to
     # match the needs of the individual module on this architecture.
     my $bs = $file;
-    $bs =~ s/(\.\w+)?$/\.bs/; # look for .bs 'beside' the library
+    $bs =~ s/(\.\w+)?(;\d*)?$/\.bs/; # look for .bs 'beside' the library
     if (-s $bs) { # only read file if it's not empty
         print STDERR "BS: $bs ($^O, $dlsrc)\n" if $dl_debug;
         eval { do $bs; };
         warn "$bs: $@\n" if $@;
+    }
+
+    my $boot_symbol_ref;
+
+    if ($^O eq 'darwin') {
+        if ($boot_symbol_ref = dl_find_symbol(0, $bootname)) {
+            goto boot; #extension library has already been loaded, e.g. darwin
+        }
     }
 
     # Many dynamic extension loading problems will appear to come from
@@ -191,7 +321,7 @@ sub bootstrap {
     # it executed.
 
     my $libref = dl_load_file($file, $module->dl_load_flags) or
-	croak("Can't load '$file' for module $module: ".dl_error()."\n");
+	croak("Can't load '$file' for module $module: ".dl_error());
 
     push(@dl_librefs,$libref);  # record loaded object
 
@@ -201,14 +331,18 @@ sub bootstrap {
 	Carp::carp("Undefined symbols present after loading $file: @unresolved\n");
     }
 
-    my $boot_symbol_ref = dl_find_symbol($libref, $bootname) or
+    $boot_symbol_ref = dl_find_symbol($libref, $bootname) or
          croak("Can't find '$bootname' symbol in $file\n");
-
-    my $xs = dl_install_xsub("${module}::bootstrap", $boot_symbol_ref, $file);
 
     push(@dl_modules, $module); # record loaded module
 
+  boot:
+    my $xs = dl_install_xsub("${module}::bootstrap", $boot_symbol_ref, $file);
+
     # See comment block above
+
+	push(@dl_shared_objects, $file); # record files loaded
+
     &$xs(@args);
 }
 
@@ -251,6 +385,12 @@ print OUT <<'EOT';
 	    last arg unless wantarray;
 	    next;
         }
+	elsif ($Is_MacOS) {
+	    if (m/:/ && -f $_) {
+	    	push(@found,$_);
+	    	last arg unless wantarray;
+	    }
+	}
         elsif (m:/: && -f $_ && !$do_expand) {
 	    push(@found,$_);
 	    last arg unless wantarray;
@@ -261,11 +401,35 @@ print OUT <<'EOT';
         #  Using a -L prefix is the preferred option (faster and more robust)
         if (m:^-L:) { s/^-L//; push(@dirs, $_); next; }
 
+	if ($Is_MacOS) {
+            #  Otherwise we try to try to spot directories by a heuristic
+            #  (this is a more complicated issue than it first appears)
+	    if (m/:/ && -d $_) {   push(@dirs, $_); next; }
+            #  Only files should get this far...
+            my(@names, $name);    # what filenames to look for
+	    s/^-l//;
+	    push(@names, $_);
+            foreach $dir (@dirs, @dl_library_path) {
+            	next unless -d $dir;
+		$dir =~ s/^([^:]+)$/:$1/;
+		$dir =~ s/:$//;
+            	foreach $name (@names) {
+	    	    my($file) = "$dir:$name";
+                    print STDERR " checking in $dir for $name\n" if $dl_debug;
+		    if (-f $file) {
+                    	push(@found, $file);
+                    	next arg; # no need to look any further
+                    }
+                }
+	    }
+	    next;
+	}
+	
         #  Otherwise we try to try to spot directories by a heuristic
         #  (this is a more complicated issue than it first appears)
         if (m:/: && -d $_) {   push(@dirs, $_); next; }
 
-        # VMS: we may be using native VMS directry syntax instead of
+        # VMS: we may be using native VMS directory syntax instead of
         # Unix emulation, so check this as well
         if ($Is_VMS && /[:>\]]/ && -d $_) {   push(@dirs, $_); next; }
 
@@ -350,8 +514,6 @@ sub dl_find_symbol_anywhere
 
 DynaLoader - Dynamically load C libraries into Perl code
 
-dl_error(), dl_findfile(), dl_expandspec(), dl_load_file(), dl_find_symbol(), dl_find_symbol_anywhere(), dl_undef_symbols(), dl_install_xsub(), dl_load_flags(), bootstrap() - routines used by DynaLoader modules
-
 =head1 SYNOPSIS
 
     package YourPackage;
@@ -385,7 +547,9 @@ useless for accessing non-Perl libraries because it provides almost no
 Perl-to-C 'glue'.  There is, for example, no mechanism for calling a C
 library function or supplying arguments.  A C::DynaLib module
 is available from CPAN sites which performs that function for some
-common system types.
+common system types.  And since the year 2000, there's also Inline::C,
+a module that allows you to write Perl subroutines in C.  Also available
+from your local CPAN site.
 
 DynaLoader Interface Summary
 
@@ -395,6 +559,7 @@ DynaLoader Interface Summary
   $dl_debug
   @dl_librefs
   @dl_modules
+  @dl_shared_objects
                                                   Implemented in:
   bootstrap($modulename)                               Perl
   @filepaths = dl_findfile(@names)                     Perl
@@ -402,6 +567,7 @@ DynaLoader Interface Summary
   $symref  = dl_find_symbol_anywhere($symbol)          Perl
 
   $libref  = dl_load_file($filename, $flags)           C
+  $status  = dl_unload_file($libref)                   C
   $symref  = dl_find_symbol($libref, $symbol)          C
   @symbols = dl_undef_symbols()                        C
   dl_install_xsub($name, $symref [, $filename])        C
@@ -468,6 +634,10 @@ the loaded files.
 =item @dl_modules
 
 An array of module (package) names that have been bootstrap'ed.
+
+=item @dl_shared_objects
+
+An array of file names for the shared objects that were loaded.
 
 =item dl_error()
 
@@ -579,11 +749,47 @@ current values of @dl_require_symbols and @dl_resolve_using if required.
 Linux, and is a common choice when providing a "wrapper" on other
 mechanisms as is done in the OS/2 port.)
 
-=item dl_loadflags()
+=item dl_unload_file()
 
 Syntax:
 
-    $flags = dl_loadflags $modulename;
+    $status = dl_unload_file($libref)
+
+Dynamically unload $libref, which must be an opaque 'library reference' as
+returned from dl_load_file.  Returns one on success and zero on failure.
+
+This function is optional and may not necessarily be provided on all platforms.
+If it is defined, it is called automatically when the interpreter exits for
+every shared object or library loaded by DynaLoader::bootstrap.  All such
+library references are stored in @dl_librefs by DynaLoader::Bootstrap as it
+loads the libraries.  The files are unloaded in last-in, first-out order.
+
+This unloading is usually necessary when embedding a shared-object perl (e.g.
+one configured with -Duseshrplib) within a larger application, and the perl
+interpreter is created and destroyed several times within the lifetime of the
+application.  In this case it is possible that the system dynamic linker will
+unload and then subsequently reload the shared libperl without relocating any
+references to it from any files DynaLoaded by the previous incarnation of the
+interpreter.  As a result, any shared objects opened by DynaLoader may point to
+a now invalid 'ghost' of the libperl shared object, causing apparently random
+memory corruption and crashes.  This behaviour is most commonly seen when using
+Apache and mod_perl built with the APXS mechanism.
+
+    SunOS: dlclose($libref)
+    HP-UX: ???
+    Linux: ???
+    NeXT:  ???
+    VMS:   ???
+
+(The dlclose() function is also used by Solaris and some versions of
+Linux, and is a common choice when providing a "wrapper" on other
+mechanisms as is done in the OS/2 port.)
+
+=item dl_load_flags()
+
+Syntax:
+
+    $flags = dl_load_flags $modulename;
 
 Designed to be a method call, and to be overridden by a derived class
 (i.e. a class which has DynaLoader in its @ISA).  The definition in

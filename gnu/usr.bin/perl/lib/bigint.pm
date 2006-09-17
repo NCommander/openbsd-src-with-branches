@@ -1,10 +1,11 @@
 package bigint;
 require 5.005;
 
-$VERSION = '0.02';
+$VERSION = '0.07';
 use Exporter;
-@ISA =       qw( Exporter );
-@EXPORT_OK = qw( ); 
+@ISA		= qw( Exporter );
+@EXPORT_OK	= qw( ); 
+@EXPORT		= qw( inf NaN ); 
 
 use strict;
 use overload;
@@ -32,7 +33,7 @@ sub AUTOLOAD
         no strict 'refs';
         if (defined $_[0])
           {
-          Math::BigInt->$name($_[0]);
+          return Math::BigInt->$name($_[0]);
           }
         return Math::BigInt->$name();
         };
@@ -72,7 +73,7 @@ sub _constant
     $float =~ s/\..*//;
     return $float;
     }
-  my ($mis,$miv,$mfv,$es,$ev) = Math::BigInt::_split(\$float);
+  my ($mis,$miv,$mfv,$es,$ev) = Math::BigInt::_split($float);
   return $float if !defined $mis; 	# doesn't look like a number to me
   my $ec = int($$ev);
   my $sign = $$mis; $sign = '' if $sign eq '+';
@@ -101,7 +102,7 @@ sub import
   my $self = shift;
 
   # some defaults
-  my $lib = 'Calc';
+  my $lib = '';
 
   my @import = ( ':constant' );				# drive it w/ constant
   my @a = @_; my $l = scalar @_; my $j = 0;
@@ -161,9 +162,10 @@ sub import
       }
     require Math::BigInt if $_lite == 0;	# not already loaded?
     $class = 'Math::BigInt';			# regardless of MBIL or not
-    } 
+    }
+  push @import, 'lib' => $lib if $lib ne '';
   # Math::BigInt::Trace or plain Math::BigInt
-  $class->import(@import, lib => $lib);
+  $class->import(@import);
 
   bigint->accuracy($a) if defined $a;
   bigint->precision($p) if defined $p;
@@ -179,7 +181,12 @@ sub import
   # we take care of floating point constants, since BigFloat isn't available
   # and BigInt doesn't like them:
   overload::constant float => sub { Math::BigInt->new( _constant(shift) ); };
+
+  $self->export_to_level(1,$self,@a);           # export inf and NaN
   }
+
+sub inf () { Math::BigInt->binf(); }
+sub NaN () { Math::BigInt->bnan(); }
 
 1;
 
@@ -187,14 +194,16 @@ __END__
 
 =head1 NAME
 
-bigint - Transparent big integer support for Perl
+bigint - Transparent BigInteger support for Perl
 
 =head1 SYNOPSIS
 
-  use bignt;
+  use bigint;
 
   $x = 2 + 4.5,"\n";			# BigInt 6
-  print 2 ** 512;			# really is what you think it is
+  print 2 ** 512,"\n";			# really is what you think it is
+  print inf + 42,"\n";			# inf
+  print NaN * 7,"\n";			# NaN
 
 =head1 DESCRIPTION
 
@@ -202,9 +211,9 @@ All operators (including basic math operations) are overloaded. Integer
 constants are created as proper BigInts.
 
 Floating point constants are truncated to integer. All results are also
-trunctaed.
+truncated.
 
-=head2 OPTIONS
+=head2 Options
 
 bigint recognizes some options that can be passed while loading it via use.
 The options can (currently) be either a single letter form, or the long form.
@@ -249,9 +258,9 @@ line. This will be hopefully fixed soon ;)
 
 This prints out the name and version of all modules used and then exits.
 
-	perl -Mbigint=v -e ''
+	perl -Mbigint=v
 
-=head2 MATH LIBRARY
+=head2 Math Library
 
 Math with the numbers is done (by default) by a module called
 Math::BigInt::Calc. This is equivalent to saying:
@@ -269,7 +278,7 @@ Math::BigInt::Bar, and when this also fails, revert to Math::BigInt::Calc:
 
 Please see respective module documentation for further details.
 
-=head2 INTERNAL FORMAT
+=head2 Internal Format
 
 The numbers are stored as objects, and their internals might change at anytime,
 especially between math operations. The objects also might belong to different
@@ -277,13 +286,13 @@ classes, like Math::BigInt, or Math::BigInt::Lite. Mixing them together, even
 with normal scalars is not extraordinary, but normal and expected.
 
 You should not depend on the internal format, all accesses must go through
-accessor methods. E.g. looking at $x->{sign} is not a bright idea since there
+accessor methods. E.g. looking at $x->{sign} is not a good idea since there
 is no guaranty that the object in question has such a hash key, nor is a hash
 underneath at all.
 
-=head2 SIGN
+=head2 Sign
 
-The sign is either '+', '-', 'NaN', '+inf' or '-inf' and stored seperately.
+The sign is either '+', '-', 'NaN', '+inf' or '-inf'.
 You can access it with the sign() method.
 
 A sign of 'NaN' is used to represent the result when input arguments are not
@@ -291,11 +300,45 @@ numbers or as a result of 0/0. '+inf' and '-inf' represent plus respectively
 minus infinity. You will get '+inf' when dividing a positive number by 0, and
 '-inf' when dividing any negative number by 0.
 
-=head2 METHODS
+=head2 Methods
 
 Since all numbers are now objects, you can use all functions that are part of
 the BigInt API. You can only use the bxxx() notation, and not the fxxx()
 notation, though. 
+
+=head2 Caveat
+
+But a warning is in order. When using the following to make a copy of a number,
+only a shallow copy will be made.
+
+	$x = 9; $y = $x;
+	$x = $y = 7;
+
+Using the copy or the original with overloaded math is okay, e.g. the
+following work:
+
+	$x = 9; $y = $x;
+	print $x + 1, " ", $y,"\n";	# prints 10 9
+
+but calling any method that modifies the number directly will result in
+B<both> the original and the copy beeing destroyed:
+	
+	$x = 9; $y = $x;
+	print $x->badd(1), " ", $y,"\n";	# prints 10 10
+	
+        $x = 9; $y = $x;
+	print $x->binc(1), " ", $y,"\n";	# prints 10 10
+        
+	$x = 9; $y = $x;
+	print $x->bmul(2), " ", $y,"\n";	# prints 18 18
+	
+Using methods that do not modify, but testthe contents works:
+
+	$x = 9; $y = $x;
+	$z = 9 if $x->is_zero();		# works fine
+
+See the documentation about the copy constructor and C<=> in overload, as
+well as the documentation in BigInt for further details.
 
 =head1 MODULES USED
 
@@ -337,6 +380,6 @@ as L<Math::BigInt::BitVect>, L<Math::BigInt::Pari> and  L<Math::BigInt::GMP>.
 
 =head1 AUTHORS
 
-(C) by Tels L<http://bloodgate.com/> in early 2002.
+(C) by Tels L<http://bloodgate.com/> in early 2002 - 2005.
 
 =cut

@@ -1,15 +1,17 @@
 #!./perl
 # Test $!
 
-print "1..14\n";
+print "1..16\n";
 
 $teststring = "1\n12\n123\n1234\n1234\n12345\n\n123456\n1234567\n";
 
 # Create our test datafile
+1 while unlink 'foo';                # in case junk left around
+rmdir 'foo';
 open TESTFILE, ">./foo" or die "error $! $^E opening";
 binmode TESTFILE;
 print TESTFILE $teststring;
-close TESTFILE;
+close TESTFILE or die "error $! $^E closing";
 
 open TESTFILE, "<./foo";
 binmode TESTFILE;
@@ -24,7 +26,7 @@ $bar = <TESTFILE>;
 if ($bar eq "12\n") {print "ok 2\n";} else {print "not ok 2\n";}
 
 # Try a non line terminator
-$/ = "3";
+$/ = 3;
 $bar = <TESTFILE>;
 if ($bar eq "123") {print "ok 3\n";} else {print "not ok 3\n";}
 
@@ -84,9 +86,7 @@ $/ = \$foo;
 $bar = <TESTFILE>;
 if ($bar eq "78") {print "ok 10\n";} else {print "not ok 10\n";}
 
-# Get rid of the temp file
 close TESTFILE;
-unlink "./foo";
 
 # Now for the tricky bit--full record reading
 if ($^O eq 'VMS') {
@@ -122,10 +122,41 @@ if ($^O eq 'VMS') {
   if ($bar eq "z\n") {print "ok 14\n";} else {print "not ok 14\n";}
 
   close TESTFILE;
-  unlink "./foo.bar";
-  unlink "./foo.com";  
+  1 while unlink qw(foo.bar foo.com foo.fdl);
 } else {
   # Nobody else does this at the moment (well, maybe OS/390, but they can
   # put their own tests in) so we just punt
   foreach $test (11..14) {print "ok $test # skipped on non-VMS system\n"};
 }
+
+$/ = "\n";
+
+# see if open/readline/close work on our and my variables
+{
+    if (open our $T, "./foo") {
+        my $line = <$T>;
+	print "# $line\n";
+	length($line) == 40 or print "not ";
+        close $T or print "not ";
+    }
+    else {
+	print "not ";
+    }
+    print "ok 15\n";
+}
+
+{
+    if (open my $T, "./foo") {
+        my $line = <$T>;
+	print "# $line\n";
+	length($line) == 40 or print "not ";
+        close $T or print "not ";
+    }
+    else {
+	print "not ";
+    }
+    print "ok 16\n";
+}
+
+# Get rid of the temp file
+END { unlink "./foo"; }

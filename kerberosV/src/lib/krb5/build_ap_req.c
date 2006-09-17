@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,9 +33,9 @@
 
 #include <krb5_locl.h>
 
-RCSID("$KTH: build_ap_req.c,v 1.16 1999/12/02 17:05:07 joda Exp $");
+RCSID("$KTH: build_ap_req.c,v 1.20 2004/05/25 21:18:17 lha Exp $");
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_build_ap_req (krb5_context context,
 		   krb5_enctype enctype,
 		   krb5_creds *cred,
@@ -66,14 +66,11 @@ krb5_build_ap_req (krb5_context context,
   ap.authenticator.kvno  = NULL;
   ap.authenticator.cipher = authenticator;
 
-  retdata->length = length_AP_REQ(&ap);
-  retdata->data   = malloc(retdata->length);
-  if(retdata->data == NULL)
-      ret = ENOMEM;
-  else
-      encode_AP_REQ((unsigned char *)retdata->data + retdata->length - 1,
-		    retdata->length, &ap, &len);
+  ASN1_MALLOC_ENCODE(AP_REQ, retdata->data, retdata->length,
+		     &ap, &len, ret);
+  if(ret == 0 && retdata->length != len)
+      krb5_abortx(context, "internal error in ASN.1 encoder");
   free_AP_REQ(&ap);
-  
   return ret;
+
 }

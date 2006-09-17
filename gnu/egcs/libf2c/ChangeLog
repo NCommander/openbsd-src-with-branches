@@ -1,3 +1,61 @@
+Mon Jan 24 20:28:35 CET 2000  David M. Gay <dmg@bell-labs.com>
+
+	* libI77/endfile.c (t_runc): set state to writing
+	(b->uwrt = 1) when an endfile statement requires copying the file.
+
+Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.2 Released.
+
+Mon Aug 16 01:29:24 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.1 Released.
+
+Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
+
+	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
+	libdir, libsubdir and tooldir.
+
+Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+	* libF77/Version.c: No longer a prerelease.
+	* libI77/Version.c: No longer a prerelease.
+	* libU77/Version.c: No longer a prerelease.
+
+Wed Jul  7 15:58:16 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libU77/date_.c (G77_date_y2kbug_0): G77_time_0 returns
+	longint, not integer, and G77_ctime_0 takes longint, not
+	integer, argument.
+
+	* libU77/Version.c: Bump version.
+
+Mon Jun 28 10:22:30 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libI77/rsne.c: Fix NAMELIST bug by applying 19990627
+	Netlib patch to release branch.
+
+Wed Jun 16 11:38:58 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From Ian Watson <WATSON_IAN_A@Lilly.com> 1999-06-12:
+	* libI77/backspace.c: Reload file descriptor after
+	calling t_runc.
+	* libI77/Version.c: Bump libg2c version.
+
+Wed May 26 14:26:35 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libF77/Version.c, libI77/Version.c, libU77/Version.c:
+	Use 0.5.24 to designate the version of g77 within GCC 2.95.
+
+Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (AC_EXEEXT): Remove call.  
+	(compiler_name): Explicitly check with no extension and .exe
+	extension.
+	* configure: Regenerate.
+
 Mon May 10 17:33:45 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Update to Netlib version of 1999-05-10:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,22 +33,27 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: prompter_posix.c,v 1.5 1999/12/02 17:05:11 joda Exp $");
+RCSID("$KTH: prompter_posix.c,v 1.10 2004/05/25 21:38:14 lha Exp $");
 
-int
+int KRB5_LIB_FUNCTION
 krb5_prompter_posix (krb5_context context,
 		     void *data,
+		     const char *name,
 		     const char *banner,
 		     int num_prompts,
 		     krb5_prompt prompts[])
 {
     int i;
 
+    if (name)
+	fprintf (stderr, "%s\n", name);
     if (banner)
 	fprintf (stderr, "%s\n", banner);
+    if (name || banner)
+	fflush(stderr);
     for (i = 0; i < num_prompts; ++i) {
 	if (prompts[i].hidden) {
-	    if(des_read_pw_string(prompts[i].reply->data,
+	    if(UI_UTIL_read_pw_string(prompts[i].reply->data,
 				  prompts[i].reply->length,
 				  prompts[i].prompt,
 				  0))
@@ -62,8 +67,7 @@ krb5_prompter_posix (krb5_context context,
 		     prompts[i].reply->length,
 		     stdin) == NULL)
 		return 1;
-	    if(s[strlen(s) - 1] == '\n')
-		s[strlen(s) - 1] = '\0';
+	    s[strcspn(s, "\n")] = '\0';
 	}
     }
     return 0;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 1998 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,9 +33,9 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: get_in_tkt_with_keytab.c,v 1.5 1999/12/02 17:05:10 joda Exp $");
+RCSID("$KTH: get_in_tkt_with_keytab.c,v 1.8 2004/05/25 21:29:17 lha Exp $");
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_keytab_key_proc (krb5_context context,
 		      krb5_enctype enctype,
 		      krb5_salt salt,
@@ -68,7 +68,7 @@ krb5_keytab_key_proc (krb5_context context,
     return ret;
 }
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_get_in_tkt_with_keytab (krb5_context context,
 			     krb5_flags options,
 			     krb5_addresses *addrs,
@@ -79,14 +79,10 @@ krb5_get_in_tkt_with_keytab (krb5_context context,
 			     krb5_creds *creds,
 			     krb5_kdc_rep *ret_as_reply)
 {
-    krb5_keytab_key_proc_args *a;
+    krb5_keytab_key_proc_args a;
 
-    a = malloc(sizeof(*a));
-    if (a == NULL)
-	return ENOMEM;
-
-    a->principal = creds->client;
-    a->keytab    = keytab;
+    a.principal = creds->client;
+    a.keytab    = keytab;
 
     return krb5_get_in_tkt (context,
 			    options,
@@ -94,7 +90,7 @@ krb5_get_in_tkt_with_keytab (krb5_context context,
 			    etypes,
 			    pre_auth_types,
 			    krb5_keytab_key_proc,
-			    a,
+			    &a,
 			    NULL,
 			    NULL,
 			    creds,

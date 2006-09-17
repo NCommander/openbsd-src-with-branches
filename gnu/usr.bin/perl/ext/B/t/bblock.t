@@ -1,8 +1,17 @@
 #!./perl -Tw
 
 BEGIN {
-    chdir 't';
-    @INC = '../lib';
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	@INC = ('.', '../lib');
+    } else {
+	unshift @INC, 't';
+    }
+    require Config;
+    if (($Config::Config{'extensions'} !~ /\bB\b/) ){
+        print "1..0 # Skip -- Perl configured without B module\n";
+        exit 0;
+    }
 }
 
 use Test::More tests => 1;

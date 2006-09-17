@@ -1,42 +1,24 @@
-2002 March 25
+2005 March 30
 
-This directory contains the Unicode Character Database
-data files.
+Welcome to the Unicode Character Database
 
-Currently, the Unicode Character Database files are at
-the version level:
+This directory contains contributory data files
+for the Unicode Character Database of the Unicode Standard. 
 
-   Unicode Standard, Version 3.2.0
+Copyright (c) 1991-2005 Unicode, Inc.
+For terms of use, see http://www.unicode.org/terms_of_use.html
 
-For information about the standard itself, see
-UAX #28, Unicode 3.2. <http://www.unicode.org/unicode/reports/tr28/>.
+For an overview of how to access a specific version of 
+the Unicode Character Database (UCD) and other information, see:
 
-Detailed documentation of the files constituting the
-Unicode Character Database (contributory data files for
-the standard itself) can be found in
-UnicodeCharacterDatabase.html. See also UnicodeData.html,
-PropList.html, NamesList.html, and DerivedProperties.html
-for specific details about particular files or sets of
-files.
+http://www.unicode.org/ucd/
 
-Unihan.txt is a very large file. A zipped version is
-also provided for downloading convenience: Unihan.zip.
+If you accessed this file via the URL:
 
-The current Unicode 3.2.0 version of Unihan.txt is also available in
-two compressed formats in the Unicode 3.2.0 update directory.
-See: <http://www.unicode.org/Public/3.2-Update/> or
-<ftp://ftp.unicode.org/Public/3.2-Update/>
+http://www.unicode.org/Public/UNIDATA/ReadMe.txt
 
-Unihan-3.2.0.zip for Windows. (Use winzip)
-Unihan-3.2.0.txt.gz  for Unix.    (Use gzip or gunzip)
+then you are looking at the most current version of the UCD. 
+Otherwise the version number of the UCD is part of the path name. 
 
-Note that the files are zipped in
-exactly the same format they have on the server (with Unix
-line endings). From a browser, right-clicking on 
-Unihan-3.2.0.zip will allow automatic download and unzip on a
-Windows system with winzip installed.
-
-
-
-
-
+The file UCD.html in this directory, as well as any file 
+headers, where present, also identify the version of the UCD.

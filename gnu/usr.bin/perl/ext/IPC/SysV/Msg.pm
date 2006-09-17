@@ -11,7 +11,8 @@ use strict;
 use vars qw($VERSION);
 use Carp;
 
-$VERSION = "1.00";
+$VERSION = "1.02";
+$VERSION = eval $VERSION;
 
 {
     package IPC::Msg::stat;
@@ -68,7 +69,7 @@ sub set {
     else {
 	croak 'Bad arg count' if @_ % 2;
 	my %arg = @_;
-	my $ds = $self->stat
+	$ds = $self->stat
 		or return undef;
 	my($key,$val);
 	$ds->$key($val)
@@ -90,14 +91,14 @@ sub rcv {
     msgrcv($$self,$buf,$_[1],$_[2] || 0, $_[3] || 0) or
 	return;
     my $type;
-    ($type,$_[0]) = unpack("L a*",$buf);
+    ($type,$_[0]) = unpack("l! a*",$buf);
     $type;
 }
 
 sub snd {
     @_ <= 4 && @_ >= 3 or  croak '$msg->snd( TYPE, BUF, FLAGS )';
     my $self = shift;
-    msgsnd($$self,pack("L a*",$_[0],$_[1]), $_[2] || 0);
+    msgsnd($$self,pack("l! a*",$_[0],$_[1]), $_[2] || 0);
 }
 
 
@@ -111,20 +112,22 @@ IPC::Msg - SysV Msg IPC object class
 
 =head1 SYNOPSIS
 
-    use IPC::SysV qw(IPC_PRIVATE S_IRWXU S_IRWXG S_IRWXO);
+    use IPC::SysV qw(IPC_PRIVATE S_IRWXU);
     use IPC::Msg;
-    
-    $msg = new IPC::Msg(IPC_PRIVATE, S_IRWXU | S_IRWXG | S_IRWXO);
-    
-    $msg->snd(pack("L a*",$msgtype,$msg));
-    
+
+    $msg = new IPC::Msg(IPC_PRIVATE, S_IRWXU);
+
+    $msg->snd(pack("l! a*",$msgtype,$msg));
+
     $msg->rcv($buf,256);
-    
+
     $ds = $msg->stat;
-    
+
     $msg->remove;
 
 =head1 DESCRIPTION
+
+A class providing an object based interface to SysV IPC message queues.
 
 =head1 METHODS
 
@@ -157,8 +160,8 @@ Returns the system message queue identifier.
 
 =item rcv ( BUF, LEN [, TYPE [, FLAGS ]] )
 
-Read a message from the queue. Returns the type of the message read. See
-L<msgrcv>
+Read a message from the queue. Returns the type of the message read.
+See L<msgrcv>.  The  BUF becomes tainted.
 
 =item remove
 

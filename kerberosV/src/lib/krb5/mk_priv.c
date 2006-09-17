@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,143 +33,121 @@
 
 #include <krb5_locl.h>
 
-RCSID("$KTH: mk_priv.c,v 1.28 2000/08/18 06:48:07 assar Exp $");
+RCSID("$KTH: mk_priv.c,v 1.34 2004/05/25 21:33:32 lha Exp $");
 
-/*
- *
- */
-
-krb5_error_code
+      
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_mk_priv(krb5_context context,
 	     krb5_auth_context auth_context,
 	     const krb5_data *userdata,
 	     krb5_data *outbuf,
-	     /*krb5_replay_data*/ void *outdata)
+	     krb5_replay_data *outdata)
 {
-  krb5_error_code ret;
-  KRB_PRIV s;
-  EncKrbPrivPart part;
-  u_char *buf;
-  size_t buf_size;
-  size_t len;
-  u_int32_t tmp_seq;
-  krb5_keyblock *key;
-  int32_t sec, usec;
-  KerberosTime sec2;
-  int usec2;
-  krb5_crypto crypto;
+    krb5_error_code ret;
+    KRB_PRIV s;
+    EncKrbPrivPart part;
+    u_char *buf = NULL;
+    size_t buf_size;
+    size_t len;
+    krb5_crypto crypto;
+    krb5_keyblock *key;
+    krb5_replay_data rdata;
 
-  /* XXX - Is this right? */
+    if ((auth_context->flags & 
+	 (KRB5_AUTH_CONTEXT_RET_TIME | KRB5_AUTH_CONTEXT_RET_SEQUENCE)) &&
+	outdata == NULL)
+	return KRB5_RC_REQUIRED; /* XXX better error, MIT returns this */
 
-  if (auth_context->local_subkey)
-      key = auth_context->local_subkey;
-  else if (auth_context->remote_subkey)
-      key = auth_context->remote_subkey;
-  else
-      key = auth_context->keyblock;
+    if (auth_context->local_subkey)
+	key = auth_context->local_subkey;
+    else if (auth_context->remote_subkey)
+	key = auth_context->remote_subkey;
+    else
+	key = auth_context->keyblock;
 
-  krb5_us_timeofday (context, &sec, &usec);
+    memset(&rdata, 0, sizeof(rdata));
 
-  part.user_data = *userdata;
-  sec2           = sec;
-  part.timestamp = &sec2;
-  usec2          = usec;
-  part.usec      = &usec2;
-  if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE) {
-    tmp_seq = auth_context->local_seqnumber;
-    part.seq_number = &tmp_seq;
-  } else {
-    part.seq_number = NULL;
-  }
+    part.user_data = *userdata;
 
-  part.s_address = auth_context->local_address;
-  part.r_address = auth_context->remote_address;
+    krb5_us_timeofday (context, &rdata.timestamp, &rdata.usec);
 
-  buf_size = 1024;
-  buf = malloc (buf_size);
-  if (buf == NULL)
-      return ENOMEM;
+    if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_TIME) {
+	part.timestamp = &rdata.timestamp;
+	part.usec      = &rdata.usec;
+    } else {
+	part.timestamp = NULL;
+	part.usec      = NULL;
+    }
 
-  krb5_data_zero (&s.enc_part.cipher);
+    if (auth_context->flags & KRB5_AUTH_CONTEXT_RET_TIME) {
+	outdata->timestamp = rdata.timestamp;
+	outdata->usec = rdata.usec;
+    }
 
-  do {
-      ret = encode_EncKrbPrivPart (buf + buf_size - 1, buf_size,
-				   &part, &len);
-      if (ret) {
-	  if (ret == ASN1_OVERFLOW) {
-	      u_char *tmp;
+    if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE) {
+	rdata.seq = auth_context->local_seqnumber;
+	part.seq_number = &rdata.seq;
+    } else
+	part.seq_number = NULL;
 
-	      buf_size *= 2;
-	      tmp = realloc (buf, buf_size);
-	      if (tmp == NULL) {
-		  ret = ENOMEM;
-		  goto fail;
-	      }
-	      buf = tmp;
-	  } else {
-	      goto fail;
-	  }
-      }
-  } while(ret == ASN1_OVERFLOW);
+    if (auth_context->flags & KRB5_AUTH_CONTEXT_RET_SEQUENCE)
+	outdata->seq = auth_context->local_seqnumber;
+    
+    part.s_address = auth_context->local_address;
+    part.r_address = auth_context->remote_address;
 
-  s.pvno = 5;
-  s.msg_type = krb_priv;
-  s.enc_part.etype = key->keytype;
-  s.enc_part.kvno = NULL;
+    krb5_data_zero (&s.enc_part.cipher);
 
-  ret = krb5_crypto_init(context, key, 0, &crypto);
-  if (ret) {
-      free (buf);
-      return ret;
-  }
-  ret = krb5_encrypt (context, 
-		      crypto,
-		      KRB5_KU_KRB_PRIV,
-		      buf + buf_size - len, 
-		      len,
-		      &s.enc_part.cipher);
-  krb5_crypto_destroy(context, crypto);
-  if (ret) {
-      free(buf);
-      return ret;
-  }
+    ASN1_MALLOC_ENCODE(EncKrbPrivPart, buf, buf_size, &part, &len, ret);
+    if (ret)
+	goto fail;
+    if (buf_size != len)
+	krb5_abortx(context, "internal error in ASN.1 encoder");
 
-  do {
-      ret = encode_KRB_PRIV (buf + buf_size - 1, buf_size, &s, &len);
+    s.pvno = 5;
+    s.msg_type = krb_priv;
+    s.enc_part.etype = key->keytype;
+    s.enc_part.kvno = NULL;
 
-      if (ret){
-	  if (ret == ASN1_OVERFLOW) {
-	      u_char *tmp;
+    ret = krb5_crypto_init(context, key, 0, &crypto);
+    if (ret) {
+	free (buf);
+	return ret;
+    }
+    ret = krb5_encrypt (context, 
+			crypto,
+			KRB5_KU_KRB_PRIV,
+			buf + buf_size - len, 
+			len,
+			&s.enc_part.cipher);
+    krb5_crypto_destroy(context, crypto);
+    if (ret) {
+	free(buf);
+	return ret;
+    }
+    free(buf);
 
-	      buf_size *= 2;
-	      tmp = realloc (buf, buf_size);
-	      if (tmp == NULL) {
-		  ret = ENOMEM;
-		  goto fail;
-	      }
-	      buf = tmp;
-	  } else {
-	      goto fail;
-	  }
-      }
-  } while(ret == ASN1_OVERFLOW);
-  krb5_data_free (&s.enc_part.cipher);
 
-  outbuf->length = len;
-  outbuf->data   = malloc (len);
-  if (outbuf->data == NULL) {
-      free(buf);
-      return ENOMEM;
-  }
-  memcpy (outbuf->data, buf + buf_size - len, len);
-  free (buf);
-  if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE)
-      auth_context->local_seqnumber =
-	  (auth_context->local_seqnumber + 1) & 0xFFFFFFFF;
-  return 0;
+    ASN1_MALLOC_ENCODE(KRB_PRIV, buf, buf_size, &s, &len, ret);
 
-fail:
-  free (buf);
-  krb5_data_free (&s.enc_part.cipher);
-  return ret;
+    if(ret)
+	goto fail;
+    krb5_data_free (&s.enc_part.cipher);
+
+    ret = krb5_data_copy(outbuf, buf + buf_size - len, len);
+    if (ret) {
+	krb5_set_error_string (context, "malloc: out of memory");
+	free(buf);
+	return ENOMEM;
+    }
+    free (buf);
+    if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE)
+	auth_context->local_seqnumber =
+	    (auth_context->local_seqnumber + 1) & 0xFFFFFFFF;
+    return 0;
+
+  fail:
+    free (buf);
+    krb5_data_free (&s.enc_part.cipher);
+    return ret;
 }

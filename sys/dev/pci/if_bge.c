@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.177 2006/09/17 16:45:22 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.175 2006/08/30 21:28:06 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -172,7 +172,7 @@ void bge_free_rx_ring_jumbo(struct bge_softc *);
 void bge_free_tx_ring(struct bge_softc *);
 int bge_init_tx_ring(struct bge_softc *);
 
-void bge_chipinit(struct bge_softc *);
+int bge_chipinit(struct bge_softc *);
 int bge_blockinit(struct bge_softc *);
 
 u_int32_t bge_readmem_ind(struct bge_softc *, int);
@@ -1071,7 +1071,7 @@ bge_setpromisc(struct bge_softc *sc)
  * Do endian, PCI and DMA initialization. Also check the on-board ROM
  * self-test results.
  */
-void
+int
 bge_chipinit(struct bge_softc *sc)
 {
 	struct pci_attach_args	*pa = &(sc->bge_pa);
@@ -1081,6 +1081,18 @@ bge_chipinit(struct bge_softc *sc)
 	/* Set endianness before we access any non-PCI registers. */
 	pci_conf_write(pa->pa_pc, pa->pa_tag, BGE_PCI_MISC_CTL,
 	    BGE_INIT);
+
+	/*
+	 * Check the 'ROM failed' bit on the RX CPU to see if
+	 * self-tests passed.  Skip this check when there's no SEEPROM
+	 * fitted, since in that case it will always fail.
+	 */
+	if (sc->bge_eeprom &&
+	    CSR_READ_4(sc, BGE_RXCPU_MODE) & BGE_RXCPUMODE_ROMFAIL) {
+		printf("%s: RX CPU self-diagnostics failed!\n",
+		    sc->bge_dev.dv_xname);
+		return (ENODEV);
+	}
 
 	/* Clear the MAC control register */
 	CSR_WRITE_4(sc, BGE_MAC_MODE, 0);
@@ -1205,6 +1217,8 @@ bge_chipinit(struct bge_softc *sc)
 
 	/* Set the timer prescaler (always 66MHz) */
 	CSR_WRITE_4(sc, BGE_MISC_CFG, 65 << 1/*BGE_32BITTIME_66MHZ*/);
+
+	return (0);
 }
 
 int
@@ -1691,6 +1705,17 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 	DPRINTFN(5, ("pci_intr_string\n"));
 	intrstr = pci_intr_string(pc, ih);
 
+	DPRINTFN(5, ("pci_intr_establish\n"));
+	sc->bge_intrhand = pci_intr_establish(pc, ih, IPL_NET, bge_intr, sc,
+	    sc->bge_dev.dv_xname);
+	if (sc->bge_intrhand == NULL) {
+		printf(": couldn't establish interrupt");
+		if (intrstr != NULL)
+			printf(" at %s", intrstr);
+		printf("\n");
+		goto fail_1;
+	}
+
 	/*
 	 * Kludge for 5700 Bx bug: a hardware bug (PCIX byte enable?)
 	 * can clobber the chip's PCI config-space power control registers,
@@ -1718,6 +1743,8 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 		printf("unknown ASIC (0x%04x)", sc->bge_chipid >> 16);
 	else
 		printf("%s (0x%04x)", br->br_name, sc->bge_chipid >> 16);
+
+	printf(": %s", intrstr);
 
 	/*
 	 * PCI Express check.
@@ -1751,7 +1778,10 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 	DPRINTFN(5, ("bge_reset\n"));
 	bge_reset(sc);
 
-	bge_chipinit(sc);
+	if (bge_chipinit(sc)) {
+		printf(": chip initialization failed\n");
+		goto fail_2;
+	}
 
 	/*
 	 * Get station address from the EEPROM.
@@ -1789,8 +1819,14 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 
 	if (!gotenaddr) {
 		printf(": failed to read station address\n");
-		goto fail_1;
+		goto fail_2;
 	}
+
+	/*
+	 * A Broadcom chip was detected. Inform the world.
+	 */
+	printf(", address %s\n",
+	    ether_sprintf(sc->arpcom.ac_enaddr));
 
 	/* Allocate the general information block and ring buffers. */
 	sc->bge_dmatag = pa->pa_dmat;
@@ -1798,7 +1834,7 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 	if (bus_dmamem_alloc(sc->bge_dmatag, sizeof(struct bge_ring_data),
 			     PAGE_SIZE, 0, &seg, 1, &rseg, BUS_DMA_NOWAIT)) {
 		printf(": can't alloc rx buffers\n");
-		goto fail_1;
+		goto fail_2;
 	}
 	DPRINTFN(5, ("bus_dmamem_map\n"));
 	if (bus_dmamem_map(sc->bge_dmatag, &seg, rseg,
@@ -1806,20 +1842,20 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 			   BUS_DMA_NOWAIT)) {
 		printf(": can't map dma buffers (%d bytes)\n",
 		    sizeof(struct bge_ring_data));
-		goto fail_2;
+		goto fail_3;
 	}
 	DPRINTFN(5, ("bus_dmamem_create\n"));
 	if (bus_dmamap_create(sc->bge_dmatag, sizeof(struct bge_ring_data), 1,
 	    sizeof(struct bge_ring_data), 0,
 	    BUS_DMA_NOWAIT, &sc->bge_ring_map)) {
 		printf(": can't create dma map\n");
-		goto fail_3;
+		goto fail_4;
 	}
 	DPRINTFN(5, ("bus_dmamem_load\n"));
 	if (bus_dmamap_load(sc->bge_dmatag, sc->bge_ring_map, kva,
 			    sizeof(struct bge_ring_data), NULL,
 			    BUS_DMA_NOWAIT)) {
-		goto fail_4;
+		goto fail_5;
 	}
 
 	DPRINTFN(5, ("bzero\n"));
@@ -1904,24 +1940,6 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 	    SK_SUBSYSID_9D41)
 		sc->bge_tbi = 1;
 
-	/* Hookup IRQ last. */
-	DPRINTFN(5, ("pci_intr_establish\n"));
-	sc->bge_intrhand = pci_intr_establish(pc, ih, IPL_NET, bge_intr, sc,
-	    sc->bge_dev.dv_xname);
-	if (sc->bge_intrhand == NULL) {
-		printf(": couldn't establish interrupt");
-		if (intrstr != NULL)
-			printf(" at %s", intrstr);
-		printf("\n");
-		goto fail_5;
-	}
-
-	/*
-	 * A Broadcom chip was detected. Inform the world.
-	 */
-	printf(": %s, address %s\n", intrstr,
-	    ether_sprintf(sc->arpcom.ac_enaddr));
-
 	if (sc->bge_tbi) {
 		ifmedia_init(&sc->bge_ifmedia, IFM_IMASK, bge_ifmedia_upd,
 		    bge_ifmedia_sts);
@@ -1975,17 +1993,17 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 	return;
 
 fail_5:
-	bus_dmamap_unload(sc->bge_dmatag, sc->bge_ring_map);
-
-fail_4:
 	bus_dmamap_destroy(sc->bge_dmatag, sc->bge_ring_map);
 
-fail_3:
+fail_4:
 	bus_dmamem_unmap(sc->bge_dmatag, kva,
 	    sizeof(struct bge_ring_data));
 
-fail_2:
+fail_3:
 	bus_dmamem_free(sc->bge_dmatag, &seg, rseg);
+
+fail_2:
+	pci_intr_disestablish(pc, sc->bge_intrhand);
 
 fail_1:
 	bus_space_unmap(sc->bge_btag, sc->bge_bhandle, size);
@@ -2019,15 +2037,6 @@ bge_reset(struct bge_softc *sc)
 			reset |= (1<<29);
 		}
 	}
-
-	if (BGE_IS_5705_OR_BEYOND(sc))
-		reset |= BGE_MISCCFG_KEEP_GPHY_POWER;
-
-	/*
-	 * Write the magic number to the firmware mailbox at 0xb50
-	 * so that the driver can synchronize with the firmware.
-	 */
-	bge_writemem_ind(sc, BGE_SOFTWARE_GENCOMM, BGE_MAGIC_NUMBER);
 
 	/* Issue global reset */
 	bge_writereg_ind(sc, BGE_MISC_CFG, reset);
@@ -2063,6 +2072,12 @@ bge_reset(struct bge_softc *sc)
 		CSR_WRITE_4(sc, BGE_MARB_MODE, BGE_MARBMODE_ENABLE | val);
 	} else
 		CSR_WRITE_4(sc, BGE_MARB_MODE, BGE_MARBMODE_ENABLE);
+
+	/*
+	 * Prevent PXE restart: write a magic number to the
+	 * general communications memory at 0xB50.
+	 */
+	bge_writemem_ind(sc, BGE_SOFTWARE_GENCOMM, BGE_MAGIC_NUMBER);
 
 	/*
 	 * Poll the value location we just wrote until

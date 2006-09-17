@@ -4,20 +4,9 @@
 # Instead, put the test in the appropriate test file and use the 
 # fresh_perl_is()/fresh_perl_like() functions in t/test.pl.
 
-# This is for tests that will normally cause segfaults, and other nasty
+# This is for tests that used to abnormally cause segfaults, and other nasty
 # errors that might kill the interpreter and for some reason you can't
 # use an eval().
-#
-# New tests are added to the bottom.  For example.
-#
-#       ######## perlbug ID 20020831.001
-#       ($a, b) = (1,2)
-#       EXPECT
-#       Can't modify constant item in list assignment - at line 1
-#
-# to test that the code "($a, b) = (1,2)" causes the appropriate syntax
-# error, rather than just segfaulting as reported in perlbug ID
-# 20020831.001
 
 BEGIN {
     chdir 't' if -d 't';
@@ -46,11 +35,13 @@ foreach my $prog (@prgs) {
     my($raw_prog, $name) = @$prog;
 
     my $switch;
-    if ($raw_prog =~ s/^\s*(-\w.*)//){
+    if ($raw_prog =~ s/^\s*(-\w.*)\n//){
 	$switch = $1;
     }
 
     my($prog,$expected) = split(/\nEXPECT\n/, $raw_prog);
+    $prog .= "\n";
+    $expected = '' unless defined $expected;
 
     if ($prog =~ /^\# SKIP: (.+)/m) {
 	if (eval $1) {
@@ -61,7 +52,7 @@ foreach my $prog (@prgs) {
 
     $expected =~ s/\n+$//;
 
-    fresh_perl_is($prog, $expected, { switches => [$switch] }, $name);
+    fresh_perl_is($prog, $expected, { switches => [$switch || ''] }, $name);
 }
 
 __END__
@@ -100,7 +91,7 @@ $x=2;$y=3;$x<$y ? $x : $y += 23;print $x;
 EXPECT
 25
 ########
-eval {sub bar {print "In bar";}}
+eval 'sub bar {print "In bar"}';
 ########
 system './perl -ne "print if eof" /dev/null' unless $^O eq 'MacOS'
 ########
@@ -113,11 +104,6 @@ $aa=12345;
 print $aa;
 EXPECT
 12345
-########
-%@x=0;
-EXPECT
-Can't modify hash dereference in repeat (x) at - line 1, near "0;"
-Execution of - aborted due to compilation errors.
 ########
 $_="foo";
 printf(STDOUT "%s\n", $_);
@@ -365,7 +351,6 @@ print "you die joe!\n" unless "@x" eq 'x y z';
 ########
 /(?{"{"})/	# Check it outside of eval too
 EXPECT
-Sequence (?{...}) not terminated or not {}-balanced at - line 1, within pattern
 Sequence (?{...}) not terminated or not {}-balanced in regex; marked by <-- HERE in m/(?{ <-- HERE "{"})/ at - line 1.
 ########
 /(?{"{"}})/	# Check it outside of eval too
@@ -400,7 +385,7 @@ EXPECT
 -w
 sub testme { my $a = "test"; { local $a = "new test"; print $a }}
 EXPECT
-Can't localize lexical variable $a at - line 2.
+Can't localize lexical variable $a at - line 1.
 ########
 package X;
 sub ascalar { my $r; bless \$r }
@@ -527,7 +512,7 @@ else {
   if ($x == 0) { print "" } else { print $x }
 }
 EXPECT
-Use of uninitialized value in numeric eq (==) at - line 4.
+Use of uninitialized value in numeric eq (==) at - line 3.
 ########
 $x = sub {};
 foo();
@@ -616,9 +601,11 @@ for (@locales) {
 }
 EXPECT
 ########
+# [ID 20001202.002] and change #8066 added 'at -e line 1';
+# reversed again as a result of [perl #17763]
 die qr(x)
 EXPECT
-(?-xism:x) at - line 1.
+(?-xism:x)
 ########
 # 20001210.003 mjd@plover.com
 format REMITOUT_TOP =
@@ -666,8 +653,9 @@ new_pmop "abcdef"; reset;
 close STDERR; die;
 EXPECT
 ########
+# core dump in 20000716.007
 -w
-"x" =~ /(\G?x)?/;	# core dump in 20000716.007
+"x" =~ /(\G?x)?/;
 ########
 # Bug 20010515.004
 my @h = 1 .. 10;
@@ -686,18 +674,6 @@ OK
 EXPECT
 ok
 ########
-# Bug 20010422.005
-{s//${}/; //}
-EXPECT
-syntax error at - line 2, near "${}"
-Execution of - aborted due to compilation errors.
-########
-# Bug 20010528.007
-"\x{"
-EXPECT
-Missing right brace on \x{} at - line 2, within string
-Execution of - aborted due to compilation errors.
-########
 my $foo = Bar->new();
 my @dst;
 END {
@@ -715,26 +691,6 @@ sub DESTROY {
 }
 EXPECT
 Bar=ARRAY(0x...)
-########
-######## found by Markov chain stress testing
-eval "a.b.c.d.e.f;sub"
-EXPECT
-
-######## perlbug ID 20010831.001
-($a, b) = (1, 2);
-EXPECT
-Can't modify constant item in list assignment at - line 1, near ");"
-Execution of - aborted due to compilation errors.
-######## tying a bareword causes a segfault in 5.6.1
-tie FOO, "Foo";
-EXPECT
-Can't modify constant item in tie at - line 1, near ""Foo";"
-Execution of - aborted due to compilation errors.
-######## undefing constant causes a segfault in 5.6.1 [ID 20010906.019]
-undef foo;
-EXPECT
-Can't modify constant item in undef operator at - line 1, near "foo;"
-Execution of - aborted due to compilation errors.
 ######## (?{...}) compilation bounces on PL_rs
 -0
 {
@@ -744,11 +700,6 @@ Execution of - aborted due to compilation errors.
 BEGIN { print "ok\n" }
 EXPECT
 ok
-######## read($var, FILE, 1) segfaults on 5.6.1 [ID 20011025.054]
-read($bla, FILE, 1);
-EXPECT
-Can't modify constant item in read at - line 1, near "1)"
-Execution of - aborted due to compilation errors.
 ######## scalar ref to file test operator segfaults on 5.6.1 [ID 20011127.155]
 # This only happens if the filename is 11 characters or less.
 $foo = \-f "blah";
@@ -844,3 +795,83 @@ ok 1
 ######## [ID 20020623.009] nested eval/sub segfaults
 $eval = eval 'sub { eval "sub { %S }" }';
 $eval->({});
+######## [perl #17951] Strange UTF error
+-W
+# From: "John Kodis" <kodis@mail630.gsfc.nasa.gov>
+# Newsgroups: comp.lang.perl.moderated
+# Subject: Strange UTF error
+# Date: Fri, 11 Oct 2002 16:19:58 -0400
+# Message-ID: <pan.2002.10.11.20.19.48.407190@mail630.gsfc.nasa.gov>
+$_ = "foobar\n";
+utf8::upgrade($_); # the original code used a UTF-8 locale (affects STDIN)
+# matching is actually irrelevant: avoiding several dozen of these
+# Illegal hexadecimal digit '	' ignored at /usr/lib/perl5/5.8.0/utf8_heavy.pl line 152
+# is what matters.
+/^([[:digit:]]+)/;
+EXPECT
+######## [perl #20667] unicode regex vs non-unicode regex
+$toto = 'Hello';
+$toto =~ /\w/; # this line provokes the problem!
+$name = 'A B';
+# utf8::upgrade($name) if @ARGV;
+if ($name =~ /(\p{IsUpper}) (\p{IsUpper})/){
+    print "It's good! >$1< >$2<\n";
+} else {
+    print "It's not good...\n";
+}
+EXPECT
+It's good! >A< >B<
+######## [perl #8760] strangness with utf8 and warn
+$_="foo";utf8::upgrade($_);/bar/i,warn$_;
+EXPECT
+foo at - line 1.
+######## glob() bug Mon, 01 Sep 2003 02:25:41 -0700 <200309010925.h819Pf0X011457@smtp3.ActiveState.com>
+-lw
+BEGIN {
+  eval 'require Fcntl';
+  if ($@) { print qq[./"TEST"\n./"TEST"\n]; exit 0 } # running minitest?
+}
+if ($^O eq 'VMS') { # VMS is not *that* kind of a glob.
+print qq[./"TEST"\n./"TEST"\n];
+} else {
+print glob(q(./"TEST"));
+use File::Glob;
+print glob(q(./"TEST"));
+}
+EXPECT
+./"TEST"
+./"TEST"
+######## glob() bug Mon, 01 Sep 2003 02:25:41 -0700 <200309010925.h819Pf0X011457@smtp3.ActiveState.com>
+-lw
+BEGIN {
+  eval 'require Fcntl';
+  if ($@) { print qq[./"TEST"\n./"TEST"\n]; exit 0 } # running minitest?
+}
+if ($^O eq 'VMS') { # VMS is not *that* kind of a glob.
+print qq[./"TEST"\n./"TEST"\n];
+} else {
+use File::Glob;
+print glob(q(./"TEST"));
+use File::Glob;
+print glob(q(./"TEST"));
+}
+EXPECT
+./"TEST"
+./"TEST"
+######## "Segfault using HTML::Entities", Richard Jolly <richardjolly@mac.com>, <A3C7D27E-C9F4-11D8-B294-003065AE00B6@mac.com> in perl-unicode@perl.org
+-lw
+# SKIP: use Config; $ENV{PERL_CORE_MINITEST} or " $Config::Config{'extensions'} " !~ m[ Encode ] # Perl configured without Encode module
+BEGIN {
+  eval 'require Encode';
+  if ($@) { exit 0 } # running minitest?
+}
+# Test case cut down by jhi
+$SIG{__WARN__} = sub { $@ = shift };
+use Encode;
+my $t = "\xE9";
+Encode::_utf8_on($t);
+$t =~ s/([^a])//ge;
+$@ =~ s/ at .*/ at/;
+print $@
+EXPECT
+Malformed UTF-8 character (unexpected end of string) in substitution (s///) at

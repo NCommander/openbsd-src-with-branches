@@ -1,4 +1,4 @@
-/* $Id: MD5.xs,v 1.34 2002/05/01 23:30:28 gisle Exp $ */
+/* $Id: MD5.xs,v 1.45 2005/11/26 11:06:20 gisle Exp $ */
 
 /* 
  * This library is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define PERL_NO_GET_CONTEXT     /* we want efficiency */
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -44,9 +45,24 @@ extern "C" {
 }
 #endif
 
-#include "patchlevel.h"
-#if PATCHLEVEL <= 4 && !defined(PL_dowarn)
+#ifndef PERL_VERSION
+#    include <patchlevel.h>
+#    if !(defined(PERL_VERSION) || (SUBVERSION > 0 && defined(PATCHLEVEL)))
+#        include <could_not_find_Perl_patchlevel.h>
+#    endif
+#    define PERL_REVISION       5
+#    define PERL_VERSION        PATCHLEVEL
+#    define PERL_SUBVERSION     SUBVERSION
+#endif
+
+#if PERL_VERSION <= 4 && !defined(PL_dowarn)
    #define PL_dowarn dowarn
+#endif
+
+#ifdef G_WARN_ON
+   #define DOWARN (PL_dowarn & G_WARN_ON)
+#else
+   #define DOWARN PL_dowarn
 #endif
 
 #ifdef SvPVbyte
@@ -66,6 +82,11 @@ extern "C" {
    #endif
 #else
    #define SvPVbyte SvPV
+#endif
+
+#ifndef dTHX
+   #define pTHX_
+   #define aTHX_
 #endif
 
 /* Perl does not guarantee that U32 is exactly 32 bits.  Some system
@@ -132,7 +153,7 @@ typedef struct {
  * padding is also the reason the buffer in MD5_CTX have to be
  * 128 bytes.
  */
-static unsigned char PADDING[64] = {
+static const unsigned char PADDING[64] = {
   0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -445,7 +466,7 @@ MD5Final(U8* digest, MD5_CTX *ctx)
 #define INT2PTR(any,d)	(any)(d)
 #endif
 
-static MD5_CTX* get_md5_ctx(SV* sv)
+static MD5_CTX* get_md5_ctx(pTHX_ SV* sv)
 {
     if (SvROK(sv)) {
 	sv = SvRV(sv);
@@ -463,7 +484,7 @@ static MD5_CTX* get_md5_ctx(SV* sv)
 
 static char* hex_16(const unsigned char* from, char* to)
 {
-    static char *hexdigits = "0123456789abcdef";
+    static const char hexdigits[] = "0123456789abcdef";
     const unsigned char *end = from + 16;
     char *d = to;
 
@@ -478,7 +499,7 @@ static char* hex_16(const unsigned char* from, char* to)
 
 static char* base64_16(const unsigned char* from, char* to)
 {
-    static char* base64 =
+    static const char base64[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     const unsigned char *end = from + 16;
     unsigned char c1, c2, c3;
@@ -506,7 +527,7 @@ static char* base64_16(const unsigned char* from, char* to)
 #define F_HEX 1
 #define F_B64 2
 
-static SV* make_mortal_sv(const unsigned char *src, int type)
+static SV* make_mortal_sv(pTHX_ const unsigned char *src, int type)
 {
     STRLEN len;
     char result[33];
@@ -556,9 +577,24 @@ new(xclass)
 	    sv_setref_pv(ST(0), sclass, (void*)context);
 	    SvREADONLY_on(SvRV(ST(0)));
 	} else {
-	    context = get_md5_ctx(xclass);
+	    context = get_md5_ctx(aTHX_ xclass);
 	}
         MD5Init(context);
+	XSRETURN(1);
+
+void
+clone(self)
+	SV* self
+    PREINIT:
+	MD5_CTX* cont = get_md5_ctx(aTHX_ self);
+	char *myname = sv_reftype(SvRV(self),TRUE);
+	MD5_CTX* context;
+    PPCODE:
+	New(55, context, 1, MD5_CTX);
+	ST(0) = sv_newmortal();
+	sv_setref_pv(ST(0), myname , (void*)context);
+	SvREADONLY_on(SvRV(ST(0)));
+	memcpy(context,cont,sizeof(MD5_CTX));
 	XSRETURN(1);
 
 void
@@ -571,7 +607,7 @@ void
 add(self, ...)
 	SV* self
     PREINIT:
-	MD5_CTX* context = get_md5_ctx(self);
+	MD5_CTX* context = get_md5_ctx(aTHX_ self);
 	int i;
 	unsigned char *data;
 	STRLEN len;
@@ -587,28 +623,45 @@ addfile(self, fh)
 	SV* self
 	InputStream fh
     PREINIT:
-	MD5_CTX* context = get_md5_ctx(self);
+	MD5_CTX* context = get_md5_ctx(aTHX_ self);
 	STRLEN fill = context->bytes_low & 0x3F;
+#ifdef USE_HEAP_INSTEAD_OF_STACK
+	unsigned char* buffer;
+#else
 	unsigned char buffer[4096];
+#endif
 	int  n;
     CODE:
 	if (fh) {
+#ifdef USE_HEAP_INSTEAD_OF_STACK
+	    New(0, buffer, 4096, unsigned char);
+	    assert(buffer);
+#endif
             if (fill) {
 	        /* The MD5Update() function is faster if it can work with
 	         * complete blocks.  This will fill up any buffered block
 	         * first.
 	         */
 	        STRLEN missing = 64 - fill;
-	        if ( (n = PerlIO_read(fh, buffer, missing)))
+	        if ( (n = PerlIO_read(fh, buffer, missing)) > 0)
 	 	    MD5Update(context, buffer, n);
 	        else
 		    XSRETURN(1);  /* self */
 	    }
 
-	    /* Process blocks until EOF */
-            while ( (n = PerlIO_read(fh, buffer, sizeof(buffer)))) {
+	    /* Process blocks until EOF or error */
+            while ( (n = PerlIO_read(fh, buffer, sizeof(buffer))) > 0) {
 	        MD5Update(context, buffer, n);
 	    }
+#ifdef USE_HEAP_INSTEAD_OF_STACK
+	    Safefree(buffer);
+#endif
+	    if (PerlIO_error(fh)) {
+		croak("Reading from filehandle failed");
+	    }
+	}
+	else {
+	    croak("No filehandle passed");
 	}
 	XSRETURN(1);  /* self */
 
@@ -624,7 +677,7 @@ digest(context)
     PPCODE:
         MD5Final(digeststr, context);
 	MD5Init(context);  /* In case it is reused */
-        ST(0) = make_mortal_sv(digeststr, ix);
+        ST(0) = make_mortal_sv(aTHX_ digeststr, ix);
         XSRETURN(1);
 
 void
@@ -642,7 +695,7 @@ md5(...)
     PPCODE:
 	MD5Init(&ctx);
 
-	if (PL_dowarn) {
+	if (DOWARN) {
             char *msg = 0;
 	    if (items == 1) {
 		if (SvROK(ST(0))) {
@@ -671,5 +724,5 @@ md5(...)
 	    MD5Update(&ctx, data, len);
 	}
 	MD5Final(digeststr, &ctx);
-        ST(0) = make_mortal_sv(digeststr, ix);
+        ST(0) = make_mortal_sv(aTHX_ digeststr, ix);
         XSRETURN(1);

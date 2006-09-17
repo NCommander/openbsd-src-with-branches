@@ -1,17 +1,37 @@
 # Scalar::Util.pm
 #
-# Copyright (c) 1997-2001 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1997-2005 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Scalar::Util;
 
+use strict;
+use vars qw(@ISA @EXPORT_OK $VERSION);
 require Exporter;
 require List::Util; # List::Util loads the XS
 
-our @ISA       = qw(Exporter);
-our @EXPORT_OK = qw(blessed dualvar reftype weaken isweak tainted readonly openhandle);
-our $VERSION   = $List::Util::VERSION;
+@ISA       = qw(Exporter);
+@EXPORT_OK = qw(blessed dualvar reftype weaken isweak tainted readonly openhandle refaddr isvstring looks_like_number set_prototype);
+$VERSION    = "1.18";
+$VERSION   = eval $VERSION;
+
+sub export_fail {
+  if (grep { /^(weaken|isweak)$/ } @_ ) {
+    require Carp;
+    Carp::croak("Weak references are not implemented in the version of perl");
+  }
+  if (grep { /^(isvstring)$/ } @_ ) {
+    require Carp;
+    Carp::croak("Vstrings are not implemented in the version of perl");
+  }
+  if (grep { /^(dualvar|set_prototype)$/ } @_ ) {
+    require Carp;
+    Carp::croak("$1 is only avaliable with the XS version");
+  }
+
+  @_;
+}
 
 sub openhandle ($) {
   my $fh = shift;
@@ -31,6 +51,96 @@ sub openhandle ($) {
     ? $fh : undef;
 }
 
+eval <<'ESQ' unless defined &dualvar;
+
+use vars qw(@EXPORT_FAIL);
+push @EXPORT_FAIL, qw(weaken isweak dualvar isvstring set_prototype);
+
+# The code beyond here is only used if the XS is not installed
+
+# Hope nobody defines a sub by this name
+sub UNIVERSAL::a_sub_not_likely_to_be_here { ref($_[0]) }
+
+sub blessed ($) {
+  local($@, $SIG{__DIE__}, $SIG{__WARN__});
+  length(ref($_[0]))
+    ? eval { $_[0]->a_sub_not_likely_to_be_here }
+    : undef
+}
+
+sub refaddr($) {
+  my $pkg = ref($_[0]) or return undef;
+  if (blessed($_[0])) {
+    bless $_[0], 'Scalar::Util::Fake';
+  }
+  else {
+    $pkg = undef;
+  }
+  "$_[0]" =~ /0x(\w+)/;
+  my $i = do { local $^W; hex $1 };
+  bless $_[0], $pkg if defined $pkg;
+  $i;
+}
+
+sub reftype ($) {
+  local($@, $SIG{__DIE__}, $SIG{__WARN__});
+  my $r = shift;
+  my $t;
+
+  length($t = ref($r)) or return undef;
+
+  # This eval will fail if the reference is not blessed
+  eval { $r->a_sub_not_likely_to_be_here; 1 }
+    ? do {
+      $t = eval {
+	  # we have a GLOB or an IO. Stringify a GLOB gives it's name
+	  my $q = *$r;
+	  $q =~ /^\*/ ? "GLOB" : "IO";
+	}
+	or do {
+	  # OK, if we don't have a GLOB what parts of
+	  # a glob will it populate.
+	  # NOTE: A glob always has a SCALAR
+	  local *glob = $r;
+	  defined *glob{ARRAY} && "ARRAY"
+	  or defined *glob{HASH} && "HASH"
+	  or defined *glob{CODE} && "CODE"
+	  or length(ref(${$r})) ? "REF" : "SCALAR";
+	}
+    }
+    : $t
+}
+
+sub tainted {
+  local($@, $SIG{__DIE__}, $SIG{__WARN__});
+  local $^W = 0;
+  eval { kill 0 * $_[0] };
+  $@ =~ /^Insecure/;
+}
+
+sub readonly {
+  return 0 if tied($_[0]) || (ref(\($_[0])) ne "SCALAR");
+
+  local($@, $SIG{__DIE__}, $SIG{__WARN__});
+  my $tmp = $_[0];
+
+  !eval { $_[0] = $tmp; 1 };
+}
+
+sub looks_like_number {
+  local $_ = shift;
+
+  # checks from perlfaq4
+  return 0 if !defined($_) or ref($_);
+  return 1 if (/^[+-]?\d+$/); # is a +/- integer
+  return 1 if (/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/); # a C float
+  return 1 if ($] >= 5.008 and /^(Inf(inity)?|NaN)$/i) or ($] >= 5.006001 and /^Inf$/i);
+
+  0;
+}
+
+ESQ
+
 1;
 
 __END__
@@ -41,7 +151,8 @@ Scalar::Util - A selection of general-utility scalar subroutines
 
 =head1 SYNOPSIS
 
-    use Scalar::Util qw(blessed dualvar isweak readonly reftype tainted weaken);
+    use Scalar::Util qw(blessed dualvar isweak readonly refaddr reftype tainted
+                        weaken isvstring looks_like_number set_prototype);
 
 =head1 DESCRIPTION
 
@@ -78,6 +189,14 @@ value STRING in a string context.
     $num = $foo + 2;                    # 12
     $str = $foo . " world";             # Hello world
 
+=item isvstring EXPR
+
+If EXPR is a scalar which was coded as a vstring the result is true.
+
+    $vs   = v49.46.48;
+    $fmt  = isvstring($vs) ? "%vd" : "%s"; #true
+    printf($fmt,$vs);
+
 =item isweak EXPR
 
 If EXPR is a scalar which is a weak reference the result is true.
@@ -86,6 +205,16 @@ If EXPR is a scalar which is a weak reference the result is true.
     $weak = isweak($ref);               # false
     weaken($ref);
     $weak = isweak($ref);               # true
+
+B<NOTE>: Copying a weak reference creates a normal, strong, reference.
+
+    $copy = $ref;
+    $weak = isweak($ref);               # false
+
+=item looks_like_number EXPR
+
+Returns true if perl thinks EXPR is a number. See
+L<perlapi/looks_like_number>.
 
 =item openhandle FH
 
@@ -106,6 +235,18 @@ Returns true if SCALAR is readonly.
     $readonly = foo($bar);              # false
     $readonly = foo(0);                 # true
 
+=item refaddr EXPR
+
+If EXPR evaluates to a reference the internal memory address of
+the referenced value is returned. Otherwise C<undef> is returned.
+
+    $addr = refaddr "string";           # undef
+    $addr = refaddr \$var;              # eg 12345678
+    $addr = refaddr [];                 # eg 23456784
+
+    $obj  = bless {}, "Foo";
+    $addr = refaddr $obj;               # eg 88123488
+
 =item reftype EXPR
 
 If EXPR evaluates to a reference the type of the variable referenced
@@ -117,6 +258,13 @@ is returned. Otherwise C<undef> is returned.
 
     $obj  = bless {}, "Foo";
     $type = reftype $obj;               # HASH
+
+=item set_prototype CODEREF, PROTOTYPE
+
+Sets the prototype of the given function, or deletes it if PROTOTYPE is
+undef. Returns the CODEREF.
+
+    set_prototype \&foo, '$$';
 
 =item tainted EXPR
 
@@ -141,6 +289,25 @@ prevent the object being DESTROY-ed at its usual time.
     }
     # $ref is now undef
 
+Note that if you take a copy of a scalar with a weakened reference,
+the copy will be a strong reference.
+
+    my $var;
+    my $foo = \$var;
+    weaken($foo);                       # Make $foo a weak reference
+    my $bar = $foo;                     # $bar is now a strong reference
+
+This may be less obvious in other situations, such as C<grep()>, for instance
+when grepping through a list of weakened references to objects that may have
+been destroyed already:
+
+    @object = grep { defined } @object;
+
+This will indeed remove all references to destroyed objects, but the remaining
+references to objects will be strong, causing the remaining objects to never
+be destroyed because there is now always a strong reference to them in the
+@object array.
+
 =back
 
 =head1 KNOWN BUGS
@@ -150,7 +317,7 @@ show up as tests 8 and 9 of dualvar.t failing
 
 =head1 COPYRIGHT
 
-Copyright (c) 1997-2001 Graham Barr <gbarr@pobox.com>. All rights reserved.
+Copyright (c) 1997-2005 Graham Barr <gbarr@pobox.com>. All rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 

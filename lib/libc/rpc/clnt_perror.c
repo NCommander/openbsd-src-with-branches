@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnt_perror.c,v 1.18 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -99,11 +99,11 @@ clnt_sperror(CLIENT *rpch, char *s)
 
 	case RPC_CANTSEND:
 	case RPC_CANTRECV:
-		snprintf(str, len, "; errno = %s", strerror(e.re_errno));
+		snprintf(str, len, "; errno = %s\n", strerror(e.re_errno));
 		break;
 
 	case RPC_VERSMISMATCH:
-		snprintf(str, len, "; low version = %u, high version = %u",
+		snprintf(str, len, "; low version = %u, high version = %u\n",
 		    e.re_vers.low, e.re_vers.high);
 		break;
 
@@ -119,21 +119,21 @@ clnt_sperror(CLIENT *rpch, char *s)
 			goto truncated;
 		err = auth_errmsg(e.re_why);
 		if (err != NULL) {
-			snprintf(str, len, "%s", err);
+			snprintf(str, len, "%s\n", err);
 		} else {
 			snprintf(str, len,
-			    "(unknown authentication error - %d)",
+			    "(unknown authentication error - %d)\n",
 			    (int) e.re_why);
 		}
 		break;
 
 	case RPC_PROGVERSMISMATCH:
-		snprintf(str, len, "; low version = %u, high version = %u",
+		snprintf(str, len, "; low version = %u, high version = %u\n",
 		    e.re_vers.low, e.re_vers.high);
 		break;
 
 	default:	/* unknown */
-		snprintf(str, len, "; s1 = %u, s2 = %u",
+		snprintf(str, len, "; s1 = %u, s2 = %u\n",
 		    e.re_lb.s1, e.re_lb.s2);
 		break;
 	}

@@ -102,7 +102,7 @@ if ($^O eq 'VMS') {
      # Everyone needs libperl copied if it's not found by '-lperl'.
      $testlib = $Config{'libperl'};
      my $srclib = $testlib;
-     $testlib =~ s/^[^.]+/libperl/;
+     $testlib =~ s/.+(?=\.[^.]*)/libperl/;
      $testlib = File::Spec::->catfile($lib, $testlib);
      $srclib = File::Spec::->catfile($lib, $srclib);
      if (-f $srclib) {
@@ -151,11 +151,29 @@ __END__
 
 #define my_puts(a) if(puts(a) < 0) exit(666)
 
-static char *cmds[] = { "perl","-e", "print qq[ok 5\\n]", NULL };
+static char *cmds[] = { "perl","-e", "$|=1; print qq[ok 5\\n]", NULL };
+
+#ifdef PERL_GLOBAL_STRUCT_PRIVATE
+static struct perl_vars *my_plvarsp;
+struct perl_vars* Perl_GetVarsPrivate(void) { return my_plvarsp; }
+#endif
 
 int main(int argc, char **argv, char **env)
 {
-    PerlInterpreter *my_perl = perl_alloc();
+    PerlInterpreter *my_perl;
+#ifdef PERL_GLOBAL_STRUCT
+    dVAR;
+    struct perl_vars *plvarsp = init_global_struct();
+#  ifdef PERL_GLOBAL_STRUCT_PRIVATE
+    my_vars = my_plvarsp = plvarsp;
+#  endif
+#endif /* PERL_GLOBAL_STRUCT */
+
+    (void)argc; /* PERL_SYS_INIT3 may #define away their use */
+    (void)argv;
+    PERL_SYS_INIT3(&argc,&argv,&env);
+
+    my_perl = perl_alloc();
 
     my_puts("ok 2");
 
@@ -179,7 +197,13 @@ int main(int argc, char **argv, char **env)
 
     perl_free(my_perl);
 
+#ifdef PERL_GLOBAL_STRUCT
+    free_global_struct(plvarsp);
+#endif /* PERL_GLOBAL_STRUCT */
+
     my_puts("ok 8");
+
+    PERL_SYS_TERM();
 
     return 0;
 }

@@ -2,9 +2,9 @@ use 5.007003;
 use ExtUtils::MakeMaker;
 
 # Just for sure :)
-unless($ENV{PERL_CORE}) {
-    $ENV{PERL_CORE} = 1 if ($^X =~ m{\bminiperl[^/\\\]>:]*$}o);
-}
+my %ARGV = map { split /=/; defined $_[1] or $_[1]=1; @_ } @ARGV;
+$ARGV{DEBUG} and warn "$_ => $ARGV{$_}\n" for keys  %ARGV;
+$ENV{PERL_CORE} ||= $ARGV{PERL_CORE};
 
 my %tables = 
     (
@@ -22,14 +22,9 @@ my @more_exe_files = qw(
 			unidump
 			);
 my @pmlibdirs = qw(lib Encode);
-for my $arg (@ARGV){
-    if ($arg eq "MORE_SCRIPTS"){
-	push @exe_files, @more_exe_files;
-    }
-    if ($arg eq "INSTALL_UCM"){
-	push @pmlibdirs, "ucm";
-    }
-}
+
+$ARGV{MORE_SCRIOPTS} and push @exe_files, @more_exe_files;
+$ARGV{INSTALL_UCM}   and push @pmlibdirs, "ucm";
 
 WriteMakefile(
 	      NAME		=> "Encode",
@@ -88,8 +83,10 @@ sub postamble
 {
     my $self = shift;
     my $dir  = $self->catdir($self->curdir,'ucm');
-    my $str  = "# Encode\$(OBJ_EXT) depends on .h and .exh files not .c files - but all written by enc2xs\n";
+    my $str  = "# Encode\$(OBJ_EXT) does not depend on .c files directly\n";
+    $str  .= "# (except Encode.c), but on .h and .exh files written by enc2xs\n";
     $str  .= $^O eq 'MacOS' ? 'Encode.c.{$(MACPERL_BUILD_EXT_STATIC)}.o :' : 'Encode$(OBJ_EXT) :';
+    $str  .= ' Encode.c';
     foreach my $table (keys %tables)
     {
 	$str .= " $table.c";

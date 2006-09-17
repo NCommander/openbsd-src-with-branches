@@ -13,7 +13,7 @@ BEGIN {
         print "1..0\n";
         exit 0;
     }
-    print "1..11\n";
+    print "1..12\n";
 }
 END {
     print "not ok 1\n" unless $loaded;
@@ -44,7 +44,8 @@ print "ok 2\n";
 
 # look up the user's home directory
 # should return a list with one item, and not set ERROR
-if ($^O ne 'MSWin32' && $^O ne 'NetWare' && $^O ne 'VMS' && $^O ne 'os2') {
+if ($^O ne 'MSWin32' && $^O ne 'NetWare' && $^O ne 'VMS' && $^O ne 'os2'
+    && $^O ne 'beos') {
   eval {
     ($name, $home) = (getpwuid($>))[0,7];
     1;
@@ -182,3 +183,7 @@ print $ok ? "ok 11\n" : "not ok 11\n";
 unlink @f_names;
 chdir "..";
 rmdir "pteerslo";
+
+# this can panic if PL_glob_index gets passed as flags to bsd_glob
+<*>; <*>;
+print "ok 12\n";

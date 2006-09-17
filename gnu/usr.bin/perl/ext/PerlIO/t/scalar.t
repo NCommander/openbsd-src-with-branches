@@ -7,10 +7,15 @@ BEGIN {
 	print "1..0 # Skip: not perlio\n";
 	exit 0;
     }
+    require Config;
+    if (($Config::Config{'extensions'} !~ m!\bPerlIO/scalar\b!) ){
+        print "1..0 # Skip -- Perl configured without PerlIO::scalar module\n";
+        exit 0;
+    }
 }
 
 $| = 1;
-print "1..22\n";
+print "1..27\n";
 
 my $fh;
 my $var = "ok 2\n";
@@ -115,3 +120,46 @@ while (<$dup>) {
 close($fh);
 close($dup);
 
+# Check reading from non-string scalars
+
+open $fh, '<', \42;
+print <$fh> eq "42" ? "ok 23\n" : "not ok 23\n";
+close $fh;
+
+# reading from magic scalars
+
+{ package P; sub TIESCALAR {bless{}} sub FETCH {"ok 24\n"} }
+tie $p, P; open $fh, '<', \$p;
+print <$fh>;
+
+# don't warn when writing to an undefined scalar
+
+{
+    use warnings;
+    my $ok = 1;
+    local $SIG{__WARN__} = sub { $ok = 0; };
+    open my $fh, '>', \my $scalar;
+    print $fh "foo";
+    close $fh;
+    print $ok ? "ok 25\n" : "not ok 25\n";
+}
+
+my $data = "a non-empty PV";
+$data = undef;
+open(MEM, '<', \$data) or die "Fail: $!\n";
+my $x = join '', <MEM>;
+print $x eq '' ? "ok 26\n" : "not ok 26\n";
+
+{
+    # [perl #35929] verify that works with $/ (i.e. test PerlIOScalar_unread)
+    my $s = <<'EOF';
+line A
+line B
+a third line
+EOF
+    open(F, '<', \$s) or die "Could not open string as a file";
+    local $/ = "";
+    my $ln = <F>;
+    close F;
+    print $ln eq $s ? "ok 27\n" : "not ok 27\n";
+}

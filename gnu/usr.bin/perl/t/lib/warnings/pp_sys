@@ -103,6 +103,8 @@
 
   getc() on closed filehandle			[pp_getc]
 
+  Non-string passed as bitmask			[pp_sselect]
+
 __END__
 # pp_sys.c [pp_untie]
 use warnings 'untie' ;
@@ -389,9 +391,18 @@ my $a = sysread(F, $a,10) ;
 no warnings 'io' ;
 my $a = sysread(F, $a,10) ;
 close F ;
+use warnings 'io' ;
+sysread(F, $a, 10);
+read(F, $a, 10);
+sysread(NONEXISTENT, $a, 10);
+read(NONEXISTENT, $a, 10);
 unlink $file ;
 EXPECT
 Filehandle F opened only for output at - line 12.
+sysread() on closed filehandle F at - line 17.
+read() on closed filehandle F at - line 18.
+sysread() on unopened filehandle NONEXISTENT at - line 19.
+read() on unopened filehandle NONEXISTENT at - line 20.
 ########
 # pp_sys.c [pp_binmode]
 use warnings 'unopened' ;
@@ -437,3 +448,12 @@ EXPECT
 getc() on unopened filehandle FOO at - line 3.
 getc() on closed filehandle STDIN at - line 5.
 getc() on closed filehandle FH2 at - line 12.
+########
+# pp_sys.c [pp_sselect]
+use warnings 'misc';
+$x = 1;
+select $x, undef, undef, undef;
+no warnings 'misc';
+select $x, undef, undef, undef;
+EXPECT
+Non-string passed as bitmask at - line 4.

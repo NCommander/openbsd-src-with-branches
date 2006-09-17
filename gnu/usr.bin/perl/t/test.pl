@@ -2,8 +2,10 @@
 # t/test.pl - most of Test::More functionality without the fuss
 #
 
+$Level = 1;
 my $test = 1;
 my $planned;
+my $noplan;
 
 $TODO = 0;
 $NO_ENDING = 0;
@@ -12,18 +14,27 @@ sub plan {
     my $n;
     if (@_ == 1) {
 	$n = shift;
+	if ($n eq 'no_plan') {
+	  undef $n;
+	  $noplan = 1;
+	}
     } else {
 	my %plan = @_;
 	$n = $plan{tests}; 
     }
-    print STDOUT "1..$n\n";
+    print STDOUT "1..$n\n" unless $noplan;
     $planned = $n;
 }
 
 END {
     my $ran = $test - 1;
-    if (!$NO_ENDING && defined $planned && $planned != $ran) {
-        print STDERR "# Looks like you planned $planned tests but ran $ran.\n";
+    if (!$NO_ENDING) {
+	if (defined $planned && $planned != $ran) {
+	    print STDERR
+		"# Looks like you planned $planned tests but ran $ran.\n";
+	} elsif ($noplan) {
+	    print "1..$ran\n";
+	}
     }
 }
 
@@ -76,12 +87,12 @@ sub _ok {
 }
 
 sub _where {
-    my @caller = caller(1);
+    my @caller = caller($Level);
     return "at $caller[1] line $caller[2]";
 }
 
 # DON'T use this for matches. Use like() instead.
-sub ok {
+sub ok ($@) {
     my ($pass, $name, @mess) = @_;
     _ok($pass, _where(), $name, @mess);
 }
@@ -90,8 +101,8 @@ sub _q {
     my $x = shift;
     return 'undef' unless defined $x;
     my $q = $x;
-    $q =~ s/\\/\\\\/;
-    $q =~ s/'/\\'/;
+    $q =~ s/\\/\\\\/g;
+    $q =~ s/'/\\'/g;
     return "'$q'";
 }
 
@@ -131,9 +142,18 @@ sub display {
     return @result;
 }
 
-sub is {
+sub is ($$@) {
     my ($got, $expected, $name, @mess) = @_;
-    my $pass = $got eq $expected;
+
+    my $pass;
+    if( !defined $got || !defined $expected ) {
+        # undef only matches undef
+        $pass = !defined $got && !defined $expected;
+    }
+    else {
+        $pass = $got eq $expected;
+    }
+
     unless ($pass) {
 	unshift(@mess, "#      got "._q($got)."\n",
 		       "# expected "._q($expected)."\n");
@@ -141,9 +161,18 @@ sub is {
     _ok($pass, _where(), $name, @mess);
 }
 
-sub isnt {
+sub isnt ($$@) {
     my ($got, $isnt, $name, @mess) = @_;
-    my $pass = $got ne $isnt;
+
+    my $pass;
+    if( !defined $got || !defined $isnt ) {
+        # undef only matches undef
+        $pass = defined $got || defined $isnt;
+    }
+    else {
+        $pass = $got ne $isnt;
+    }
+
     unless( $pass ) {
         unshift(@mess, "# it should not be "._q($got)."\n",
                        "# but it is.\n");
@@ -151,7 +180,7 @@ sub isnt {
     _ok($pass, _where(), $name, @mess);
 }
 
-sub cmp_ok {
+sub cmp_ok ($$$@) {
     my($got, $type, $expected, $name, @mess) = @_;
 
     my $pass;
@@ -184,7 +213,7 @@ sub cmp_ok {
 # otherwise $range is a fractional error.
 # Here $range must be numeric, >= 0
 # Non numeric ranges might be a useful future extension. (eg %)
-sub within {
+sub within ($$$@) {
     my ($got, $expected, $range, $name, @mess) = @_;
     my $pass;
     if (!defined $got or !defined $expected or !defined $range) {
@@ -216,22 +245,20 @@ sub within {
 }
 
 # Note: this isn't quite as fancy as Test::More::like().
-sub like {
-    my ($got, $expected, $name, @mess) = @_;
+
+sub like   ($$@) { like_yn (0,@_) }; # 0 for -
+sub unlike ($$@) { like_yn (1,@_) }; # 1 for un-
+
+sub like_yn ($$$@) {
+    my ($flip, $got, $expected, $name, @mess) = @_;
     my $pass;
-    if (ref $expected eq 'Regexp') {
-	$pass = $got =~ $expected;
-	unless ($pass) {
-	    unshift(@mess, "#      got '$got'\n",
-		           "# expected /$expected/\n");
-	}
-    } else {
-	$pass = $got =~ /$expected/;
-	unless ($pass) {
-	    unshift(@mess, "#      got '$got'\n",
-		           "# expected /$expected/\n");
-	}
+    $pass = $got =~ /$expected/ if !$flip;
+    $pass = $got !~ /$expected/ if $flip;
+    unless ($pass) {
+	unshift(@mess, "#      got '$got'\n",
+		"# expected /$expected/\n");
     }
+    local $Level = 2;
     _ok($pass, _where(), $name, @mess);
 }
 
@@ -265,10 +292,25 @@ sub skip {
     last SKIP;
 }
 
+sub todo_skip {
+    my $why = shift;
+    my $n   = @_ ? shift : 1;
+
+    for (1..$n) {
+        print STDOUT "not ok $test # TODO & SKIP: $why\n";
+        $test++;
+    }
+    local $^W = 0;
+    last TODO;
+}
+
 sub eq_array {
     my ($ra, $rb) = @_;
     return 0 unless $#$ra == $#$rb;
     for my $i (0..$#$ra) {
+	next     if !defined $ra->[$i] && !defined $rb->[$i]; 
+	return 0 if !defined $ra->[$i];
+	return 0 if !defined $rb->[$i];
 	return 0 unless $ra->[$i] eq $rb->[$i];
     }
     return 1;
@@ -302,7 +344,7 @@ sub eq_hash {
   !$fail;
 }
 
-sub require_ok {
+sub require_ok ($) {
     my ($require) = @_;
     eval <<REQUIRE_OK;
 require $require;
@@ -310,7 +352,7 @@ REQUIRE_OK
     _ok(!$@, _where(), "require $require");
 }
 
-sub use_ok {
+sub use_ok ($) {
     my ($use) = @_;
     eval <<USE_OK;
 use $use;
@@ -346,9 +388,13 @@ sub _quote_args {
     }
 }
 
-sub runperl {
+sub _create_runperl { # Create the string to qx in runperl().
     my %args = @_;
-    my $runperl = $^X;
+    my $runperl = $^X =~ m/\s/ ? qq{"$^X"} : $^X;
+    #- this allows, for example, to set PERL_RUNPERL_DEBUG=/usr/bin/valgrind
+    if ($ENV{PERL_RUNPERL_DEBUG}) {
+	$runperl = "$ENV{PERL_RUNPERL_DEBUG} $runperl";
+    }
     unless ($args{nolib}) {
 	if ($is_macos) {
 	    $runperl .= ' -I::lib';
@@ -360,12 +406,19 @@ sub runperl {
 	}
     }
     if ($args{switches}) {
+	local $Level = 2;
+	die "test.pl:runperl(): 'switches' must be an ARRAYREF " . _where()
+	    unless ref $args{switches} eq "ARRAY";
 	_quote_args(\$runperl, $args{switches});
     }
     if (defined $args{prog}) {
+	die "test.pl:runperl(): both 'prog' and 'progs' cannot be used " . _where()
+	    if defined $args{progs};
         $args{progs} = [$args{prog}]
     }
     if (defined $args{progs}) {
+	die "test.pl:runperl(): 'progs' must be an ARRAYREF " . _where()
+	    unless ref $args{progs} eq "ARRAY";
         foreach my $prog (@{$args{progs}}) {
             if ($is_mswin || $is_netware || $is_vms) {
                 $runperl .= qq ( -e "$prog" );
@@ -376,6 +429,12 @@ sub runperl {
         }
     } elsif (defined $args{progfile}) {
 	$runperl .= qq( "$args{progfile}");
+    } else {
+	# You probaby didn't want to be sucking in from the upstream stdin
+	die "test.pl:runperl(): none of prog, progs, progfile, args, "
+	    . " switches or stdin specified"
+	    unless defined $args{args} or defined $args{switches}
+		or defined $args{stdin};
     }
     if (defined $args{stdin}) {
 	# so we don't try to put literal newlines and crs onto the
@@ -415,6 +474,13 @@ sub runperl {
 	$runperldisplay =~ s/\n/\n\#/g;
 	print STDERR "# $runperldisplay\n";
     }
+    return $runperl;
+}
+
+sub runperl {
+    die "test.pl:runperl() does not take a hashref"
+	if ref $_[0] and ref $_[0] eq 'HASH';
+    my $runperl = &_create_runperl;
     my $result = `$runperl`;
     $result =~ s/\n\n/\n/ if $is_vms; # XXX pipes sometimes double these
     return $result;
@@ -514,7 +580,7 @@ sub _fresh_perl {
                   {if (-e _ and -f _)}
     }
 
-    print TEST $prog, "\n";
+    print TEST $prog;
     close TEST or die "Cannot close $tmpfile: $!";
 
     my $results = runperl(%$runperl_args);
@@ -555,31 +621,95 @@ sub _fresh_perl {
 }
 
 #
-# run_perl_is
+# fresh_perl_is
 #
 # Combination of run_perl() and is().
 #
 
 sub fresh_perl_is {
     my($prog, $expected, $runperl_args, $name) = @_;
+    local $Level = 2;
     _fresh_perl($prog,
 		sub { @_ ? $_[0] eq $expected : $expected },
 		$runperl_args, $name);
 }
 
 #
-# run_perl_like
+# fresh_perl_like
 #
 # Combination of run_perl() and like().
 #
 
 sub fresh_perl_like {
     my($prog, $expected, $runperl_args, $name) = @_;
+    local $Level = 2;
     _fresh_perl($prog,
 		sub { @_ ?
 			  $_[0] =~ (ref $expected ? $expected : /$expected/) :
 		          $expected },
 		$runperl_args, $name);
+}
+
+sub can_ok ($@) {
+    my($proto, @methods) = @_;
+    my $class = ref $proto || $proto;
+
+    unless( @methods ) {
+        return _ok( 0, _where(), "$class->can(...)" );
+    }
+
+    my @nok = ();
+    foreach my $method (@methods) {
+        local($!, $@);  # don't interfere with caller's $@
+                        # eval sometimes resets $!
+        eval { $proto->can($method) } || push @nok, $method;
+    }
+
+    my $name;
+    $name = @methods == 1 ? "$class->can('$methods[0]')" 
+                          : "$class->can(...)";
+    
+    _ok( !@nok, _where(), $name );
+}
+
+sub isa_ok ($$;$) {
+    my($object, $class, $obj_name) = @_;
+
+    my $diag;
+    $obj_name = 'The object' unless defined $obj_name;
+    my $name = "$obj_name isa $class";
+    if( !defined $object ) {
+        $diag = "$obj_name isn't defined";
+    }
+    elsif( !ref $object ) {
+        $diag = "$obj_name isn't a reference";
+    }
+    else {
+        # We can't use UNIVERSAL::isa because we want to honor isa() overrides
+        local($@, $!);  # eval sometimes resets $!
+        my $rslt = eval { $object->isa($class) };
+        if( $@ ) {
+            if( $@ =~ /^Can't call method "isa" on unblessed reference/ ) {
+                if( !UNIVERSAL::isa($object, $class) ) {
+                    my $ref = ref $object;
+                    $diag = "$obj_name isn't a '$class' it's a '$ref'";
+                }
+            } else {
+                die <<WHOA;
+WHOA! I tried to call ->isa on your object and got some weird error.
+This should never happen.  Please contact the author immediately.
+Here's the error.
+$@
+WHOA
+            }
+        }
+        elsif( !$rslt ) {
+            my $ref = ref $object;
+            $diag = "$obj_name isn't a '$class' it's a '$ref'";
+        }
+    }
+
+    _ok( !$diag, _where(), $name );
 }
 
 1;

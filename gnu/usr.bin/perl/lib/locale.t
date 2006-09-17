@@ -45,6 +45,9 @@ eval {
 # and mingw32 uses said silly CRT
 $have_setlocale = 0 if (($^O eq 'MSWin32' || $^O eq 'NetWare') && $Config{cc} =~ /^(cl|gcc)/i);
 
+# UWIN seems to loop after test 98, just skip for now
+$have_setlocale = 0 if ($^O =~ /^uwin/);
+
 my $last = $have_setlocale ? &last : &last_without_setlocale;
 
 print "1..$last\n";
@@ -379,6 +382,10 @@ delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 
 if (-x "/usr/bin/locale" && open(LOCALES, "/usr/bin/locale -a 2>/dev/null|")) {
     while (<LOCALES>) {
+	# It seems that /usr/bin/locale steadfastly outputs 8 bit data, which
+	# ain't great when we're running this testPERL_UNICODE= so that utf8
+	# locales will cause all IO hadles to default to (assume) utf8
+	next unless utf8::valid($_);
         chomp;
 	trylocale($_);
     }
@@ -429,6 +436,15 @@ if (-x "/usr/bin/locale" && open(LOCALES, "/usr/bin/locale -a 2>/dev/null|")) {
 }
 
 setlocale(LC_ALL, "C");
+
+if ($^O eq 'darwin') {
+    # Darwin 8/Mac OS X 10.4 has bad Basque locales: perl bug #35895,
+    # Apple bug ID# 4139653. It also has a problem in Byelorussian.
+    if ($Config{osvers} ge '8' and $Config{osvers} lt '9') {
+	debug "# Skipping eu_ES, be_BY locales -- buggy in Darwin\n";
+	@Locale = grep ! m/^(eu_ES|be_BY.CP1131$)/, @Locale;
+    }
+}
 
 @Locale = sort @Locale;
 
@@ -523,7 +539,17 @@ foreach $Locale (@Locale) {
     
 	my $word = join('', @Neoalpha);
 
-	if ($Locale =~ /utf-?8/i) {
+	my $badutf8;
+	{
+	    local $SIG{__WARN__} = sub {
+		$badutf8 = $_[0] =~ /Malformed UTF-8/;
+	    };
+	    $Locale =~ /utf-?8/i;
+	}
+
+	if ($badutf8) {
+	    debug "# Locale name contains bad UTF-8, skipping test 99 for locale '$Locale'\n";
+	} elsif ($Locale =~ /utf-?8/i) {
 	    debug "# unknown whether locale and Unicode have the same \\w, skipping test 99 for locale '$Locale'\n";
 	    push @{$Okay{99}}, $Locale;
 	} else {

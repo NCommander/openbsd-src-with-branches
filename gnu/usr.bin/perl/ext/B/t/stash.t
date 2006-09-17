@@ -1,11 +1,21 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    if ($^O eq 'MacOS') {
-	@INC = qw(: ::lib ::macos:lib);
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	if ($^O eq 'MacOS') {
+	    @INC = qw(: ::lib ::macos:lib);
+	} else {
+	    @INC = '.';
+	    push @INC, '../lib';
+	}
     } else {
-	@INC = '../lib';
+	unshift @INC, 't';
+    }
+    require Config;
+    if (($Config::Config{'extensions'} !~ /\bB\b/) ){
+        print "1..0 # Skip -- Perl configured without B module\n";
+        exit 0;
     }
 }
 
@@ -51,7 +61,7 @@ print "# got = @got\n";
 @got = grep { ! /^Win32$/                     } @got  if $^O eq 'MSWin32';
 @got = grep { ! /^NetWare$/                   } @got  if $^O eq 'NetWare';
 @got = grep { ! /^(Cwd|File|File::Copy|OS2)$/ } @got  if $^O eq 'os2';
-@got = grep { ! /^Cwd$/                       } @got  if $^O eq 'cygwin';
+@got = grep { ! /^(Cwd|Cygwin)$/              } @got  if $^O eq 'cygwin';
 
 if ($Is_VMS) {
     @got = grep { ! /^File(?:::Copy)?$/    } @got;
@@ -66,7 +76,12 @@ print "# got = @got\n";
 
 $got = "@got";
 
-my $expected = "attributes Carp Carp::Heavy DB Exporter Exporter::Heavy Internals main utf8 warnings";
+my $expected = "attributes Carp Carp::Heavy DB Internals main Regexp utf8 version warnings";
+
+if ($] < 5.009) {
+    $expected =~ s/version //;
+    $expected =~ s/DB/DB Exporter Exporter::Heavy/;
+}
 
 {
     no strict 'vars';
@@ -76,7 +91,7 @@ my $expected = "attributes Carp Carp::Heavy DB Exporter Exporter::Heavy Internal
 if ((($Config{static_ext} eq ' ') || ($Config{static_ext} eq ''))
     && !($^O eq 'os2' and $OS2::is_aout)
 	) {
-    print "# [$got]\n# vs.\n# [$expected]\nnot " if $got ne $expected;
+    print "# got [$got]\n# vs.\n# expected [$expected]\nnot " if $got ne $expected;
     ok;
 } else {
     print "ok $test # skipped: one or more static extensions\n"; $test++;

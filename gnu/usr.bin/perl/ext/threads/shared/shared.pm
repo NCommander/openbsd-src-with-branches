@@ -1,36 +1,40 @@
 package threads::shared;
 
-use 5.007_003;
+use 5.008;
 use strict;
 use warnings;
+BEGIN {
+    require Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT = qw(share cond_wait cond_timedwait cond_broadcast cond_signal);
+    our $VERSION = '0.94';
 
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT = qw(share cond_wait cond_broadcast cond_signal _refcnt _id _thrcnt);
-our $VERSION = '0.90';
-
-if ($threads::threads) {
+    if ($threads::threads) {
 	*cond_wait = \&cond_wait_enabled;
+	*cond_timedwait = \&cond_timedwait_enabled;
 	*cond_signal = \&cond_signal_enabled;
 	*cond_broadcast = \&cond_broadcast_enabled;
 	require XSLoader;
 	XSLoader::load('threads::shared',$VERSION);
-}
-else {
-	*share = \&share_disabled;
-	*cond_wait = \&cond_wait_disabled;
-	*cond_signal = \&cond_signal_disabled;
-	*cond_broadcast = \&cond_broadcast_disabled;
-}
+	push @EXPORT,'bless';
+    }
+    else {
 
+# String eval is generally evil, but we don't want these subs to exist at all
+# if threads are loaded successfully.  Vivifying them conditionally this way
+# saves on average about 4K of memory per thread.
 
-sub cond_wait_disabled { return @_ };
-sub cond_signal_disabled { return @_};
-sub cond_broadcast_disabled { return @_};
-sub share_disabled { return @_}
+        eval <<'EOD';
+sub cond_wait      (\[$@%];\[$@%])  { undef }
+sub cond_timedwait (\[$@%]$;\[$@%]) { undef }
+sub cond_signal    (\[$@%])         { undef }
+sub cond_broadcast (\[$@%])         { undef }
+sub share          (\[$@%])         { return $_[0] }
+EOD
+    }
+}
 
 $threads::shared::threads_shared = 1;
-
 
 sub threads::shared::tie::SPLICE
 {
@@ -49,6 +53,10 @@ threads::shared - Perl extension for sharing data structures between threads
   use threads::shared;
 
   my $var : shared;
+  $var = $scalar_value;
+  $var = $shared_ref_value;
+  $var = &share($simple_unshared_ref_value);
+  $var = &share(new Foo);
 
   my($scalar, @array, %hash);
   share($scalar);
@@ -60,8 +68,14 @@ threads::shared - Perl extension for sharing data structures between threads
   { lock(%hash); ...  }
 
   cond_wait($scalar);
+  cond_timedwait($scalar, time() + 30);
   cond_broadcast(@array);
   cond_signal(%hash);
+
+  my $lockvar : shared;
+  # condition var != lock var
+  cond_wait($var, $lockvar);
+  cond_timedwait($var, time()+30, $lockvar);
 
 =head1 DESCRIPTION
 
@@ -72,7 +86,7 @@ It is used together with the threads module.
 
 =head1 EXPORT
 
-C<share>, C<lock>, C<cond_wait>, C<cond_signal>, C<cond_broadcast>
+C<share>, C<cond_wait>, C<cond_timedwait>, C<cond_signal>, C<cond_broadcast>
 
 Note that if this module is imported when C<threads> has not yet been
 loaded, then these functions all become no-ops. This makes it possible
@@ -87,10 +101,13 @@ environments.
 
 C<share> takes a value and marks it as shared. You can share a scalar,
 array, hash, scalar ref, array ref or hash ref.  C<share> will return
-the shared rvalue.
+the shared rvalue but always as a reference.
 
 C<share> will traverse up references exactly I<one> level.
 C<share(\$a)> is equivalent to C<share($a)>, while C<share(\\$a)> is not.
+This means that you must create nested shared data structures by first
+creating individual shared leaf notes, then adding them to a shared hash
+or array.
 
 A variable can also be marked as shared at compile time by using the
 C<shared> attribute: C<my $var : shared>.
@@ -98,6 +115,20 @@ C<shared> attribute: C<my $var : shared>.
 If you want to share a newly created reference unfortunately you
 need to use C<&share([])> and C<&share({})> syntax due to problems
 with Perl's prototyping.
+
+The only values that can be assigned to a shared scalar are other scalar
+values, or shared refs, eg
+
+    my $var : shared;
+    $var = 1;              # ok
+    $var = &share([]);     # ok
+    $var = [];             # error
+    $var = A->new;         # error
+    $var = &share(A->new); # ok as long as the A object is not nested
+
+Note that it is often not wise to share an object unless the class itself
+has been written to support sharing; for example, an object's destructor
+may get called multiple times, one for each thread's scope exit.
 
 =item lock VARIABLE
 
@@ -120,6 +151,8 @@ control, see L<Thread::Semaphore>.
 
 =item cond_wait VARIABLE
 
+=item cond_wait CONDVAR, LOCKVAR
+
 The C<cond_wait> function takes a B<locked> variable as a parameter,
 unlocks the variable, and blocks until another thread does a
 C<cond_signal> or C<cond_broadcast> for that same locked variable.
@@ -129,13 +162,47 @@ C<cond_wait>ing on the same variable, all but one will reblock waiting
 to reacquire the lock on the variable. (So if you're only using
 C<cond_wait> for synchronisation, give up the lock as soon as
 possible). The two actions of unlocking the variable and entering the
-blocked wait state are atomic, The two actions of exiting from the
+blocked wait state are atomic, the two actions of exiting from the
 blocked wait state and relocking the variable are not.
+
+In its second form, C<cond_wait> takes a shared, B<unlocked> variable
+followed by a shared, B<locked> variable.  The second variable is
+unlocked and thread execution suspended until another thread signals
+the first variable.
 
 It is important to note that the variable can be notified even if
 no thread C<cond_signal> or C<cond_broadcast> on the variable.
 It is therefore important to check the value of the variable and
-go back to waiting if the requirement is not fulfilled.
+go back to waiting if the requirement is not fulfilled.  For example,
+to pause until a shared counter drops to zero:
+
+    { lock($counter); cond_wait($count) until $counter == 0; }
+
+=item cond_timedwait VARIABLE, ABS_TIMEOUT
+
+=item cond_timedwait CONDVAR, ABS_TIMEOUT, LOCKVAR
+
+In its two-argument form, C<cond_timedwait> takes a B<locked> variable
+and an absolute timeout as parameters, unlocks the variable, and blocks
+until the timeout is reached or another thread signals the variable.  A
+false value is returned if the timeout is reached, and a true value
+otherwise.  In either case, the variable is re-locked upon return.
+
+Like C<cond_wait>, this function may take a shared, B<locked> variable
+as an additional parameter; in this case the first parameter is an
+B<unlocked> condition variable protected by a distinct lock variable.
+
+Again like C<cond_wait>, waking up and reacquiring the lock are not
+atomic, and you should always check your desired condition after this
+function returns.  Since the timeout is an absolute value, however, it
+does not have to be recalculated with each pass:
+
+    lock($var);
+    my $abs = time() + 15;
+    until ($ok = desired_condition($var)) {
+      last if !cond_timedwait($var, $abs);
+    }
+    # we got it if $ok, otherwise we timed out!
 
 =item cond_signal VARIABLE
 
@@ -182,10 +249,10 @@ Taking references to the elements of shared arrays and hashes does not
 autovivify the elements, and neither does slicing a shared array/hash
 over non-existent indices/keys autovivify the elements.
 
-share() allows you to C<share $hashref->{key}> without giving any error
-message.  But the C<$hashref->{key}> is B<not> shared, causing the error
+share() allows you to C<< share $hashref->{key} >> without giving any error
+message.  But the C<< $hashref->{key} >> is B<not> shared, causing the error
 "locking can only be used on shared values" to occur when you attempt to
-C<lock $hasref->{key}>.
+C<< lock $hasref->{key} >>.
 
 =head1 AUTHOR
 

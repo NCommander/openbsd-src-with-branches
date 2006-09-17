@@ -1,3 +1,5 @@
+#!/usr/bin/perl -w
+
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 
@@ -49,12 +51,15 @@ my %Tests = (
              'one_fail.plx'             => [1,      4],
              'two_fail.plx'             => [2,      4],
              'five_fail.plx'            => [5,      4],
-             'extras.plx'               => [3,      4],
-             'too_few.plx'              => [4,      4],
+             'extras.plx'               => [2,      4],
+             'too_few.plx'              => [255,    4],
+             'too_few_fail.plx'         => [2,      4],
              'death.plx'                => [255,    4],
              'last_minute_death.plx'    => [255,    4],
+             'pre_plan_death.plx'       => ['not zero',    'not zero'],
              'death_in_eval.plx'        => [0,      0],
              'require.plx'              => [0,      0],
+	     'exit.plx'                 => [1,      4],
             );
 
 print "1..".keys(%Tests)."\n";
@@ -87,6 +92,14 @@ while( my($test_name, $exit_codes) = each %Tests ) {
     my $wait_stat = system(qq{$Perl -"I../blib/lib" -"I../lib" -"I../t/lib" $file});
     my $actual_exit = exitstatus($wait_stat);
 
-    My::Test::ok( $actual_exit == $exit_code, 
-                  "$test_name exited with $actual_exit (expected $exit_code)");
+    if( $exit_code eq 'not zero' ) {
+        My::Test::ok( $actual_exit != 0,
+                      "$test_name exited with $actual_exit ".
+                      "(expected $exit_code)");
+    }
+    else {
+        My::Test::ok( $actual_exit == $exit_code, 
+                      "$test_name exited with $actual_exit ".
+                      "(expected $exit_code)");
+    }
 }
