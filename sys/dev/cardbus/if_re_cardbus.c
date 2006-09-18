@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.6 2006/06/24 02:36:15 brad Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.7 2006/07/01 21:48:08 brad Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -277,8 +277,9 @@ void
 re_cardbus_shutdown(void *arg)
 {
 	struct rl_softc *sc = (struct rl_softc *)arg;
+	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
-	re_stop(sc);
+	re_stop(ifp, 1);
 }
 
 void
