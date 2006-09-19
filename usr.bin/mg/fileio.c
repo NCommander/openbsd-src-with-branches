@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.76 2006/06/29 21:59:08 jason Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.77 2006/07/25 08:22:32 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -518,7 +518,7 @@ make_file_list(char *buf)
 				continue;
 			if (stat(statname, &statbuf) < 0)
 				continue;
-			if (statbuf.st_mode & S_IFDIR)
+			if (S_ISDIR(statbuf.st_mode))
 				isdir = 1;
 		}
 
