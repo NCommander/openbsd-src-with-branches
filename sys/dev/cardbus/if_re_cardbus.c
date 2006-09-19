@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_re_cardbus.c,v 1.7 2006/07/01 21:48:08 brad Exp $	*/
+/*	$OpenBSD: if_re_cardbus.c,v 1.8 2006/09/18 21:33:32 dim Exp $	*/
 
 /*
  * Copyright (c) 2005 Peter Valchev <pvalchev@openbsd.org>
@@ -276,7 +276,7 @@ re_cardbus_detach(struct device *self, int flags)
 void
 re_cardbus_shutdown(void *arg)
 {
-	struct rl_softc *sc = (struct rl_softc *)arg;
+	struct rl_softc *sc = arg;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
 	re_stop(ifp, 1);
@@ -285,7 +285,7 @@ re_cardbus_shutdown(void *arg)
 void
 re_cardbus_powerhook(int why, void *arg)
 {
-	struct rl_softc *sc = (struct rl_softc *)arg;
+	struct rl_softc *sc = arg;
 	struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
 	if (why == PWR_RESUME)
