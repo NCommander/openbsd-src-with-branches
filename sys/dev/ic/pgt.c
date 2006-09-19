@@ -1,4 +1,4 @@
-/*	$OpenBSD$  */
+/*	$OpenBSD: pgt.c,v 1.11 2006/09/16 12:20:10 mglocker Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -59,6 +59,7 @@
 #include <sys/kthread.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
+#include <sys/device.h>
 
 #include <machine/bus.h>
 #include <machine/endian.h>
