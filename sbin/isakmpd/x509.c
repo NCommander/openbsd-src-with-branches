@@ -1,4 +1,4 @@
-/* $OpenBSD: x509.c,v 1.105 2005/11/15 21:49:04 cloder Exp $	 */
+/* $OpenBSD: x509.c,v 1.106 2006/06/02 19:35:55 hshoexer Exp $	 */
 /* $EOM: x509.c,v 1.54 2001/01/16 18:42:16 ho Exp $	 */
 
 /*
@@ -608,7 +608,7 @@ x509_read_from_dir(X509_STORE *ctx, char *name, int hash)
 			continue;
 		}
 
-		if (!(sb.st_mode & S_IFREG)) {
+		if (!S_ISREG(sb.st_mode)) {
 			close(fd);
 			continue;
 		}
@@ -690,7 +690,7 @@ x509_read_crls_from_dir(X509_STORE *ctx, char *name)
 			continue;
 		}
 
-		if (!(sb.st_mode & S_IFREG)) {
+		if (!S_ISREG(sb.st_mode)) {
 			close(fd);
 			continue;
 		}
