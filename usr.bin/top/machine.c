@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.51 2005/12/21 01:40:24 millert Exp $	 */
+/* $OpenBSD: machine.c,v 1.52 2006/04/29 14:40:44 otto Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -725,8 +725,10 @@ swapmode(int *used, int *total)
 		return 0;
 
 	rnswap = swapctl(SWAP_STATS, swdev, nswap);
-	if (rnswap == -1)
+	if (rnswap == -1) {
+		free(swdev);
 		return 0;
+	}
 
 	/* if rnswap != nswap, then what? */
 
