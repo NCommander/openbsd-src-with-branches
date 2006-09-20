@@ -1,4 +1,4 @@
-/*	$OpenBSD: raddauth.c,v 1.20 2005/11/19 23:02:25 millert Exp $	*/
+/*	$OpenBSD: raddauth.c,v 1.21 2006/08/14 13:53:34 millert Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Berkeley Software Design, Inc. All rights reserved.
@@ -144,10 +144,11 @@ int
 raddauth(char *username, char *class, char *style, char *challenge,
     char *password, char **emsg)
 {
+	static char _pwstate[1024];
 	u_char req_id;
 	char *userstyle, *passwd, *pwstate;
 	int auth_port;
-	char vector[AUTH_VECTOR_LEN+1], _pwstate[1024], *p, *v;
+	char vector[AUTH_VECTOR_LEN+1], *p, *v;
 	int i;
 	login_cap_t *lc;
 	u_int32_t r;
