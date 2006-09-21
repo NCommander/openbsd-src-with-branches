@@ -1,4 +1,4 @@
-/*	$OpenBSD: df.c,v 1.43 2005/02/20 01:34:56 pedro Exp $	*/
+/*	$OpenBSD: df.c,v 1.44 2006/05/11 15:06:51 deraadt Exp $	*/
 /*	$NetBSD: df.c,v 1.21.2.1 1995/11/01 00:06:11 jtc Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)df.c	8.7 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: df.c,v 1.43 2005/02/20 01:34:56 pedro Exp $";
+static char rcsid[] = "$OpenBSD: df.c,v 1.44 2006/05/11 15:06:51 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -79,7 +79,6 @@ void	 prthuman(struct statfs *sfsp, unsigned long);
 
 int		raw_df(char *, struct statfs *);
 extern int	ffs_df(int, char *, struct statfs *);
-extern int	lfs_df(int, char *, struct statfs *);
 extern int	e2fs_df(int, char *, struct statfs *);
 
 int	hflag, iflag, kflag, lflag, nflag, Pflag;
@@ -447,10 +446,6 @@ raw_df(char *file, struct statfs *sfsp)
 
 	if (ffs_df(rfd, file, sfsp) == 0) {
 		ret = 0;
-#if 0
-	} else if (lfs_df(rfd, file, sfsp) == 0) {
-		ret = 0;
-#endif
 	} else if (e2fs_df(rfd, file, sfsp) == 0) {
 		ret = 0;
 	}
