@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uthread_socket.c,v 1.3 1999/11/25 07:01:46 d Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -50,7 +50,7 @@ socket(int af, int type, int protocol)
 		/* Error creating socket. */
 
 	/* Initialise the entry in the file descriptor table: */
-	} else if (_thread_fd_table_init(fd) != 0) {
+	} else if (_thread_fd_table_init(fd, NULL) != 0) {
 		_thread_sys_close(fd);
 		fd = -1;
 	}
