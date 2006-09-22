@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.71 2006/07/23 14:34:55 krw Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.72 2006/07/29 02:40:45 krw Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -308,6 +308,8 @@ const void *scsi_inqmatch(struct scsi_inquiry_data *, const void *, int,
 	    int, int *);
 
 void	scsi_init(void);
+void	scsi_deinit(void);
+int	scsi_task(void (*func)(void *, void *), void *, void *, int);
 struct scsi_xfer *
 	scsi_get_xs(struct scsi_link *, int);
 void	scsi_free_xs(struct scsi_xfer *);
