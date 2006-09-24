@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.25 2005/03/28 21:26:19 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.26 2005/03/29 16:30:21 deraadt Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -307,10 +307,7 @@ static char *fstypesnames[] = {
  * flags shared by various drives:
  */
 #define		D_REMOVABLE	0x01		/* removable media */
-#define		D_ECC		0x02		/* supports ECC */
 #define		D_BADSECT	0x04		/* supports bad sector forw. */
-#define		D_RAMDISK	0x08		/* disk emulator */
-#define		D_CHAIN		0x10		/* can do back-back transfers */
 
 /*
  * Drive data for SMD.
