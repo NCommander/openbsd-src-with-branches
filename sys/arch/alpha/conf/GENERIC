@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.180 2006/08/18 23:14:43 jason Exp $
+#	$OpenBSD: GENERIC,v 1.181 2006/08/20 12:29:20 martin Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -237,6 +237,7 @@ musycc*	at pci?				# Conexant HDLC controller
 art*	at musycc?			# Accoom Artery E1/T1 cards
 xge*	at pci?				# Neterion Xframe-I/II 10Gb ethernet
 sf*	at pci?				# Adaptec AIC-6915 ethernet
+pgt*	at pci?				# Prism54 (only full-mac varients)
 
 #UNTESTED:  the following drivers are untested.
 en*	at pci?				# ENI PCI ATM (untested)
