@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: ether.c,v 1.18 2003/04/04 20:25:06 deraadt Exp $
+ *	$OpenBSD: ether.c,v 1.19 2003/10/20 03:15:38 deraadt Exp $
  */
 
 #include <sys/param.h>
@@ -667,7 +667,7 @@ ether_Create(struct physical *p)
     /* See if we're a netgraph socket */
     struct stat st;
 
-    if (fstat(p->fd, &st) != -1 && (st.st_mode & S_IFSOCK)) {
+    if (fstat(p->fd, &st) != -1 && S_ISSOCK(st.st_mode)) {
       struct sockaddr_storage ssock;
       struct sockaddr *sock = (struct sockaddr *)&ssock;
       int sz;
