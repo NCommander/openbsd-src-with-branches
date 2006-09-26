@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_sig.c,v 1.20 2003/04/30 17:54:17 marc Exp $	*/
+/*	$OpenBSD: uthread_sig.c,v 1.21 2006/09/22 19:04:33 kurt Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -185,7 +185,8 @@ _thread_sig_handle(int sig, struct sigcontext * scp)
 			 * set some of them to block. Sigh.
 			 */
 			for (i = 0; i < _thread_dtablesize; i++)
-				if (_thread_fd_table[i] != NULL)
+				if (_thread_fd_table[i] != NULL &&
+				    _thread_fd_table[i]->status_flags != NULL)
 					_thread_sys_fcntl(i, F_SETFL,
 					    _thread_fd_table[i]->status_flags->flags |
 					    O_NONBLOCK);
