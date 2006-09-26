@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.5 2006/01/22 00:40:02 miod Exp $	*/
+/*	$OpenBSD: fd.c,v 1.6 2006/03/15 20:20:41 miod Exp $	*/
 /*	$NetBSD: fd.c,v 1.112 2003/08/07 16:29:35 agc Exp $	*/
 
 /*-
@@ -2021,7 +2021,6 @@ fdgetdisklabel(dev)
 	strncpy(lp->d_typename, "floppy disk", sizeof(lp->d_typename));
 	strncpy(lp->d_packname, "fictitious", sizeof(lp->d_packname));
 	lp->d_interleave = 1;
-	lp->d_flags = D_REMOVABLE;
 
 	lp->d_partitions[RAW_PART].p_offset = 0;
 	lp->d_partitions[RAW_PART].p_size = lp->d_secpercyl * lp->d_ncylinders;

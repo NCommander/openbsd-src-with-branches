@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskprobe.c,v 1.2 2004/03/21 21:37:41 tom Exp $	*/
+/*	$OpenBSD: diskprobe.c,v 1.3 2004/08/21 18:53:38 tom Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -255,7 +255,6 @@ cdprobe(void)
 	dip->disklabel.d_secperunit = 100;
 	dip->disklabel.d_rpm = 300;
 	dip->disklabel.d_interleave = 1;
-	dip->disklabel.d_flags = D_REMOVABLE;
 
 	dip->disklabel.d_bbsize = 2048;
 	dip->disklabel.d_sbsize = 2048;
