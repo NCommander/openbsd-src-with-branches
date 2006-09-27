@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2005/05/06 02:59:51 marco Exp $
+#	$OpenBSD: Makefile,v 1.4 2005/05/06 11:16:47 pedro Exp $
 
 S=${.CURDIR}/../..
 .include "$S/kern/Make.tags.inc"
@@ -12,8 +12,7 @@ TAMD64=	$S/arch/amd64/tags
 SAMD64=	$S/arch/amd64/amd64/*.[ch] \
 	$S/arch/amd64/include/*.h  \
 	$S/arch/amd64/isa/*.[ch] $S/arch/amd64/pci/*.[ch]
-AAMD64=	$S/arch/amd64/amd64/*.[sS] $S/arch/amd64/isa/*.[sS] \
-	$S/lib/libkern/arch/amd64/*.[sS]
+AAMD64=	$S/arch/amd64/amd64/*.[sS] $S/lib/libkern/arch/amd64/*.[sS]
 
 # Directories in which to place amd64 tags links
 DAMD64=	conf amd64 include isa pci

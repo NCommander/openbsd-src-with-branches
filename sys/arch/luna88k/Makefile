@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2005/05/06 03:25:08 marco Exp $
+#	$OpenBSD: Makefile,v 1.4 2005/05/06 11:16:47 pedro Exp $
 
 S=${.CURDIR}/../..
 .include "$S/kern/Make.tags.inc"
@@ -11,13 +11,12 @@ SUBDIR=
 
 TLUNA88K=	$S/arch/luna88k/tags
 SLUNA88K=	$S/arch/luna88k/luna88k/*.[ch] \
-		$S/arch/luna88k/ddb/*.[ch] \
 		$S/arch/luna88k/dev/*.[ch] \
 		$S/arch/luna88k/include/*.h
 ALUNA88K=	$S/arch/luna88k/luna88k/*.[sS]
 
 # Directories in which to place luna88k tags links
-DLUNA88K=	conf ddb dev include luna88k
+DLUNA88K=	conf dev include luna88k
 
 tags:
 	-ctags -wdtf ${TLUNA88K} ${COMM} ${SLUNA88K}
