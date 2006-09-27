@@ -1,4 +1,4 @@
-# 	$OpenBSD: files.cats,v 1.4 2005/03/08 20:00:23 tdeval Exp $
+# 	$OpenBSD: files.cats,v 1.5 2006/02/12 19:55:39 miod Exp $
 #	$NetBSD: files.cats,v 1.27 2003/10/21 08:15:40 skrll Exp $
 #
 # CATS-specific configuration info
@@ -100,3 +100,8 @@ include "dev/wscons/files.wscons"
 include "dev/rasops/files.rasops"
 include "dev/wsfont/files.wsfont"
 include "dev/pckbc/files.pckbc"
+
+#
+# Machine-independent 1-Wire drivers
+#
+include "dev/onewire/files.onewire"
