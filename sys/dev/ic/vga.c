@@ -1,4 +1,4 @@
-/* $OpenBSD: vga.c,v 1.37 2005/01/05 23:04:25 miod Exp $ */
+/* $OpenBSD: vga.c,v 1.38 2005/01/31 06:41:27 miod Exp $ */
 /* $NetBSD: vga.c,v 1.28.2.1 2000/06/30 16:27:47 simonb Exp $ */
 
 /*
@@ -817,6 +817,7 @@ vga_doswitch(vc)
 
 	vc->active = scr;
 
+	pcdisplay_cursor_reset(&scr->pcs);
 	pcdisplay_cursor(&scr->pcs, scr->pcs.cursoron,
 			 scr->pcs.vc_crow, scr->pcs.vc_ccol);
 
