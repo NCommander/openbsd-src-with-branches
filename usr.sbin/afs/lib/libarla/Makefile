@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2001/05/31 15:56:13 todd Exp $
+#	$OpenBSD: Makefile,v 1.1 2002/06/07 05:02:58 hin Exp $
 
 #
 # You don't want to understand this makefile.
@@ -13,11 +13,6 @@ NOPROFILE=
 MAN	=
 
 CFLAGS	+= -DHAVE_CONFIG_H -I. -I${AFSSRC}/util
-
-# XXX Until an egcs bug gets fixed
-.if (${MACHINE_ARCH} == "alpha")
-CFLAGS	+= -O0
-.endif
 
 # Don't install libarla.a
 install:
