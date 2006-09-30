@@ -1,3 +1,4 @@
+/* $OpenBSD: kexdh.c,v 1.23 2006/08/03 03:34:42 deraadt Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -22,14 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-RCSID("$OpenBSD: kexdh.c,v 1.19 2003/02/16 17:09:57 markus Exp $");
+#include <sys/types.h>
+
+#include <signal.h>
 
 #include <openssl/evp.h>
 
 #include "buffer.h"
-#include "bufaux.h"
 #include "ssh2.h"
+#include "key.h"
+#include "cipher.h"
 #include "kex.h"
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: msg.h,v 1.2 2002/12/19 00:07:02 djm Exp $	*/
+/* $OpenBSD: msg.h,v 1.4 2006/03/25 22:22:43 djm Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *

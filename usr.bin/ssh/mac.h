@@ -1,4 +1,4 @@
-/*      $OpenBSD: mac.h,v 1.2 2001/06/26 06:32:55 itojun Exp $   */
+/* $OpenBSD: mac.h,v 1.4 2006/03/25 22:22:43 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *

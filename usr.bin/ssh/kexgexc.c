@@ -1,3 +1,4 @@
+/* $OpenBSD: kexgexc.c,v 1.9 2006/08/03 03:34:42 deraadt Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -23,11 +24,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-RCSID("$OpenBSD: kexgexc.c,v 1.2 2003/12/08 11:00:47 markus Exp $");
+#include <sys/types.h>
+
+#include <stdio.h>
+#include <string.h>
+#include <signal.h>
 
 #include "xmalloc.h"
+#include "buffer.h"
 #include "key.h"
+#include "cipher.h"
 #include "kex.h"
 #include "log.h"
 #include "packet.h"
@@ -120,7 +126,7 @@ kexgex_client(Kex *kex)
 	if (kex->verify_host_key(server_host_key) == -1)
 		fatal("server_host_key verification failed");
 
-	/* DH paramter f, server public DH key */
+	/* DH parameter f, server public DH key */
 	if ((dh_server_pub = BN_new()) == NULL)
 		fatal("dh_server_pub == NULL");
 	packet_get_bignum2(dh_server_pub);
