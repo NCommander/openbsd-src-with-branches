@@ -1,4 +1,4 @@
-/*	$OpenBSD: owtemp.c,v 1.1 2006/03/04 16:27:03 grange Exp $	*/
+/*	$OpenBSD: owtemp.c,v 1.2 2006/06/23 06:27:11 miod Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -105,7 +105,10 @@ owtemp_detach(struct device *self, int flags)
 	struct owtemp_softc *sc = (struct owtemp_softc *)self;
 
 	sensor_del(&sc->sc_sensor);
+
+	onewire_lock(sc, 0);
 	sensor_task_unregister(sc);
+	onewire_unlock(sc);
 
 	return (0);
 }
