@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.c,v 1.64 2006/07/26 23:15:55 mickey Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.65 2006/07/31 11:51:29 mickey Exp $	*/
 /*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
@@ -1288,7 +1288,7 @@ sw_reg_strategy(sdp, bp, bn)
 {
 	struct vnode	*vp;
 	struct vndxfer	*vnx;
-	daddr_t		nbn;
+	daddr64_t	nbn;
 	caddr_t		addr;
 	off_t		byteoff;
 	int		s, off, nra, error, sz, resid;

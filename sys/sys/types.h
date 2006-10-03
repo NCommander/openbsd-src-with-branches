@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.28 2005/12/13 00:35:23 millert Exp $	*/
+/*	$OpenBSD: types.h,v 1.29 2006/01/06 18:53:06 millert Exp $	*/
 /*	$NetBSD: types.h,v 1.29 1996/11/15 22:48:25 jtc Exp $	*/
 
 /*-
@@ -128,7 +128,9 @@ typedef __psize_t	psize_t;
 
 /* Standard system types */
 typedef	char *		caddr_t;	/* core address */
-typedef	__int32_t	daddr_t;	/* disk address */
+typedef	__int32_t	daddr_t;	/* 32-bit disk address */
+typedef	__int32_t	daddr32_t;	/* 32-bit disk address */
+typedef	__int64_t	daddr64_t;	/* 64-bit disk address */
 typedef	__dev_t		dev_t;		/* device number */
 typedef	__fixpt_t	fixpt_t;	/* fixed point number */
 typedef	__gid_t		gid_t;		/* group id */
