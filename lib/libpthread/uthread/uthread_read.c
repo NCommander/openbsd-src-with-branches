@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_read.c,v 1.7 2001/08/21 19:24:53 fgsch Exp $	*/
+/*	$OpenBSD: uthread_read.c,v 1.8 2006/09/22 19:04:33 kurt Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -77,16 +77,22 @@ read(int fd, void *buf, size_t nbytes)
 
 				/* Reset the interrupted operation flag: */
 				curthread->interrupted = 0;
+				curthread->closing_fd = 0;
 
 				_thread_kern_sched_state(PS_FDR_WAIT,
 				    __FILE__, __LINE__);
 
 				/*
 				 * Check if the operation was
-				 * interrupted by a signal
+				 * interrupted by a signal or
+				 * a closing fd.
 				 */
 				if (curthread->interrupted) {
 					errno = EINTR;
+					ret = -1;
+					break;
+				} else if (curthread->closing_fd) {
+					errno = EBADF;
 					ret = -1;
 					break;
 				}
