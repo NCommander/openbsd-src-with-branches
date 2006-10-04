@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.54 2006/10/04 00:52:55 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.55 2006/10/04 03:23:01 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -221,7 +221,6 @@ readdoslabel(bp, strat, lp, osdep, partoffp, cylp, spoofonly)
 	struct dos_partition *dp = osdep->u._i386.dosparts, *dp2;
 	char *msg = NULL, *cp;
 	int dospartoff, cyl, i, ourpart = -1;
-	dev_t dev;
 
 	if (lp->d_secpercyl == 0) {
 		msg = "invalid label, d_secpercyl == 0";
