@@ -1,4 +1,4 @@
-/* $OpenBSD: disksubr.c,v 1.8 2006/06/11 14:08:36 krw Exp $ */
+/* $OpenBSD: disksubr.c,v 1.9 2006/08/17 10:34:14 krw Exp $ */
 /* $NetBSD: disksubr.c,v 1.12 2002/02/19 17:09:44 wiz Exp $ */
 
 /*
@@ -50,7 +50,6 @@
 #include <sys/device.h>
 #include <sys/disklabel.h>
 #include <sys/disk.h>
-#include <sys/dkbad.h>
 
 #include <dev/sun/disklabel.h>
 
