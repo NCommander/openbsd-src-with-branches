@@ -1,4 +1,4 @@
-/*	$OpenBSD: match.h,v 1.10 2001/12/05 16:54:51 markus Exp $	*/
+/* $OpenBSD: match.h,v 1.13 2006/03/25 22:22:43 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>

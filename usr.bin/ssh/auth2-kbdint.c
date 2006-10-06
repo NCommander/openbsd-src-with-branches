@@ -1,3 +1,4 @@
+/* $OpenBSD: auth2-kbdint.c,v 1.5 2006/08/03 03:34:41 deraadt Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -22,14 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
-RCSID("$OpenBSD: auth2-kbdint.c,v 1.1 2002/05/25 18:51:07 markus Exp $");
+#include <sys/types.h>
 
+#include "xmalloc.h"
 #include "packet.h"
+#include "key.h"
+#include "hostfile.h"
 #include "auth.h"
 #include "log.h"
+#include "buffer.h"
 #include "servconf.h"
-#include "xmalloc.h"
 
 /* import */
 extern ServerOptions options;

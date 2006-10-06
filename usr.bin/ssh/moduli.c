@@ -1,4 +1,4 @@
-/* $OpenBSD: moduli.c,v 1.11 2005/05/23 22:44:01 avsm Exp $ */
+/* $OpenBSD: moduli.c,v 1.18 2006/08/03 03:34:42 deraadt Exp $ */
 /*
  * Copyright 1994 Phil Karn <karn@qualcomm.com>
  * Copyright 1996-1998, 2003 William Allen Simpson <wsimpson@greendragon.com>
@@ -37,11 +37,18 @@
  * Second step: test primes' safety (processor intensive)
  */
 
-#include "includes.h"
-#include "xmalloc.h"
-#include "log.h"
+#include <sys/types.h>
 
 #include <openssl/bn.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <time.h>
+
+#include "xmalloc.h"
+#include "log.h"
 
 /*
  * File output defines
@@ -301,21 +308,10 @@ gen_candidates(FILE *out, u_int32_t memory, u_int32_t power, BIGNUM *start)
 		largewords = (largememory << SHIFT_MEGAWORD);
 	}
 
-	TinySieve = calloc(tinywords, sizeof(u_int32_t));
-	if (TinySieve == NULL) {
-		error("Insufficient memory for tiny sieve: need %u bytes",
-		    tinywords << SHIFT_BYTE);
-		exit(1);
-	}
+	TinySieve = xcalloc(tinywords, sizeof(u_int32_t));
 	tinybits = tinywords << SHIFT_WORD;
 
-	SmallSieve = calloc(smallwords, sizeof(u_int32_t));
-	if (SmallSieve == NULL) {
-		error("Insufficient memory for small sieve: need %u bytes",
-		    smallwords << SHIFT_BYTE);
-		xfree(TinySieve);
-		exit(1);
-	}
+	SmallSieve = xcalloc(smallwords, sizeof(u_int32_t));
 	smallbits = smallwords << SHIFT_WORD;
 
 	/*
