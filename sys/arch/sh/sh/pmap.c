@@ -157,6 +157,11 @@ pmap_steal_memory(vsize_t size, vaddr_t *vstart, vaddr_t *vend)
 	va = SH3_PHYS_TO_P1SEG(pa);
 	memset((caddr_t)va, 0, size);
 
+	if (vstart)
+		*vstart = VM_MIN_KERNEL_ADDRESS;
+	if (vend)
+		*vend = VM_MAX_KERNEL_ADDRESS;
+
 	return (va);
 }
 
@@ -198,13 +203,6 @@ pmap_growkernel(vaddr_t maxkvaddr)
  error:
 	panic("pmap_growkernel: out of memory.");
 	/* NOTREACHED */
-}
-
-void
-pmap_virtual_space(vaddr_t *start, vaddr_t *end)
-{
-	*start = VM_MIN_KERNEL_ADDRESS;
-	*end = VM_MAX_KERNEL_ADDRESS;
 }
 
 void

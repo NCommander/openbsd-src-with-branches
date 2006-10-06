@@ -230,7 +230,7 @@ ALTENTRY(switch_exit)
 
 	.align 2
 .L_switch_exit_proc_exit2:
-	.long	_C_LABEL(proc_exit2)
+	.long	_C_LABEL(exit2)
 .L_switch_exit_proc0_pcb:
 	.long	_C_LABEL(proc0) + P_MD_PCB
 .L_switch_exit_curpcb:

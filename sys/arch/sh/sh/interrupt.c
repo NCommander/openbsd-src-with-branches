@@ -66,6 +66,8 @@ int tmu1_intr(void *);
 void tmu2_oneshot(void);
 int tmu2_intr(void *);
 
+int netisr;
+
 /*
  * EVTCODE to intc_intrhand mapper.
  * max #76 is SH4_INTEVT_TMU4 (0xb80)

@@ -64,6 +64,7 @@ extern db_regs_t	ddb_regs;	/* register state */
 #define	db_thread_fp_used(thread)	((thread)->pcb->ims.ifps != 0)
 
 int kdb_trap(int, int, db_regs_t *);
+void db_machine_init (void);
 boolean_t inst_call(int);
 boolean_t inst_return(int);
 boolean_t inst_trap_return(int);
