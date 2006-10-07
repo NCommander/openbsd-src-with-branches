@@ -1,4 +1,4 @@
-/*	$OpenBSD: xmphy.c,v 1.14 2005/06/19 19:30:14 brad Exp $	*/
+/*	$OpenBSD: xmphy.c,v 1.15 2006/08/05 16:56:56 brad Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -170,13 +170,6 @@ xmphy_service(struct mii_softc *sc, struct mii_data *mii, int cmd)
 
 		switch (IFM_SUBTYPE(ife->ifm_media)) {
 		case IFM_AUTO:
-#ifdef foo
-			/*
-			 * If we're already in auto mode, just return.
-			 */
-			if (PHY_READ(sc, XMPHY_MII_BMCR) & XMPHY_BMCR_AUTOEN)
-				return (0);
-#endif
 			(void) xmphy_mii_phy_auto(sc);
 			break;
 		case IFM_1000_SX:
