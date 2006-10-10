@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.51 2006/09/26 12:54:34 mglocker Exp $ */
+/*	$OpenBSD: acx.c,v 1.52 2006/10/03 17:37:31 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -1747,7 +1747,7 @@ acx_newstate(struct ieee80211com *ic, enum ieee80211_state nstate, int arg)
 			}
 
 			if (acx_set_beacon_tmplt(sc, ni) != 0) {
-				printf("%s: set bescon template failed\n",
+				printf("%s: set beacon template failed\n",
 				    ifp->if_xname);
 				goto back;
 			}
