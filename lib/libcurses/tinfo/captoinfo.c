@@ -1,4 +1,4 @@
-/*	$OpenBSD: captoinfo.c,v 1.12 2003/10/15 23:33:48 tedu Exp $	*/
+/*	$OpenBSD: captoinfo.c,v 1.13 2006/03/12 00:29:34 deraadt Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,1999,2000 Free Software Foundation, Inc.              *
@@ -819,7 +819,7 @@ main(int argc, char *argv[])
 	char buf[BUFSIZ];
 
 	++curr_line;
-	if (fgets(buf, sizeof(buf), stdin) == 0)
+	if (fgets(buf, sizeof(buf), stdin) == NULL)
 	    break;
 	buf[strlen(buf) - 1] = '\0';
 	_nc_set_source(buf);
