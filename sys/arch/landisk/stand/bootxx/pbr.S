@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pbr.S,v 1.1 2006/10/06 21:48:50 mickey Exp $	*/
 /*	$NetBSD: pbr.S,v 1.1 2006/09/01 21:26:19 uwe Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 
 ENTRY(start)
 	bra	start0
-	 .byte	0x11			/* 0x4e11: cmp/pz r14... */
+	 .byte	0x11			/* 0x4f11: cmp/pz r15... */
 	.asciz	"OpenBSD"
 
 	. = _C_LABEL(start) + 0x0b	/* move to start of BPB */

@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2006/10/06 21:48:50 mickey Exp $
 
 PROG=	boot
 SRCS=	srt0.S conf.c devs.c getsecs.c scifcons.c delay.c
@@ -38,5 +38,7 @@ ${PROG}: ${OBJS} ${DPADD}
 	${LD} -o ${PROG}.sym ${LDFLAGS} \
 		-Map ${PROG}.map -cref ${OBJS} ${LDADD}
 	${OBJCOPY} -O binary ${PROG}.sym ${PROG}
+
+NOMAN=
 
 .include <bsd.prog.mk>
