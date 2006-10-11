@@ -1,4 +1,4 @@
-/*	$OpenBSD: readdir.c,v 1.6 2003/06/02 20:20:53 mickey Exp $	*/
+/*	$OpenBSD: readdir.c,v 1.7 2003/08/11 06:23:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -57,7 +57,7 @@ opendir(char *name)
 		olseek(fd, 0, 0);
 #else
 	if ((fd = open(name, O_RDONLY)) >= 0)
-		lseek(fd, 0, 0);
+		lseek(fd, 0, SEEK_SET);
 #endif
 
 	return fd;

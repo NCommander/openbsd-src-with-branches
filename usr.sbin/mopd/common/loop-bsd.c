@@ -1,4 +1,4 @@
-/*	$OpenBSD: loop-bsd.c,v 1.10 2005/12/21 01:40:24 millert Exp $ */
+/*	$OpenBSD: loop-bsd.c,v 1.11 2006/04/17 16:23:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -26,7 +26,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "$OpenBSD: loop-bsd.c,v 1.10 2005/12/21 01:40:24 millert Exp $";
+    "$OpenBSD: loop-bsd.c,v 1.11 2006/04/17 16:23:01 deraadt Exp $";
 #endif
 
 #include <errno.h>
@@ -142,7 +142,7 @@ again:
 			if (cc < 0) {
 				if (errno == EINVAL && (lseek(ii->fd, 0,
 				    SEEK_CUR) + bufsize) < 0) {
-					lseek(ii->fd, 0, 0);
+					lseek(ii->fd, 0, SEEK_SET);
 					goto again;
 				}
 				syslog(LOG_ERR, "read: %m");
