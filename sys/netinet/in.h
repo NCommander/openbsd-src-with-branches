@@ -266,6 +266,7 @@ struct ip_opts {
 #define IP_IPCOMP_LEVEL		29   /* int; compression used */
 #define IP_RECVIF		30   /* bool; receive reception if w/dgram */
 #define IP_RECVTTL		31   /* bool; receive IP TTL w/dgram */
+#define IP_MINTTL		32   /* minimum TTL for packet or drop */
 
 /*
  * Security levels - IPsec, not IPSO

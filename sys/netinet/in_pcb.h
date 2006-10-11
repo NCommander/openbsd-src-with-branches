@@ -132,6 +132,7 @@ struct inpcb {
 #define SR_FAILED         1             /* Negotiation failed permanently */
 #define SR_SUCCESS        2             /* SA successfully established */
 #define SR_WAIT           3             /* Waiting for SA */
+	u_char	inp_ip_minttl;		/* minimum TTL or drop */
 	TAILQ_ENTRY(inpcb) inp_tdb_in_next, inp_tdb_out_next;
 	struct tdb     *inp_tdb_in, *inp_tdb_out;
 	struct ipsec_policy *inp_ipo;

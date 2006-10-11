@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.195 2006/02/26 17:50:45 markus Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.196 2006/03/12 18:42:40 markus Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -636,6 +636,10 @@ findpcb:
 			goto dropwithreset_ratelim;
 		}
 	}
+
+	/* Check the minimum TTL for socket. */
+	if (inp->inp_ip_minttl && inp->inp_ip_minttl > ip->ip_ttl)
+		goto drop;
 
 	tp = intotcpcb(inp);
 	if (tp == 0)
