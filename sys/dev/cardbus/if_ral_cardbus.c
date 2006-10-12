@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral_cardbus.c,v 1.6 2006/01/09 20:03:31 damien Exp $  */
+/*	$OpenBSD: if_ral_cardbus.c,v 1.7 2006/06/21 11:27:03 fkr Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -206,7 +206,7 @@ ral_cardbus_enable(struct rt2560_softc *sc)
 
 	/* map and establish the interrupt handler */
 	csc->sc_ih = cardbus_intr_establish(cc, cf, csc->sc_intrline, IPL_NET,
-	    csc->sc_opns->intr, sc);
+	    csc->sc_opns->intr, sc, sc->sc_dev.dv_xname);
 	if (csc->sc_ih == NULL) {
 		printf("%s: could not establish interrupt at %d\n",
 		    sc->sc_dev.dv_xname, csc->sc_intrline);

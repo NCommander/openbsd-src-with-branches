@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbbvar.h,v 1.10 2006/04/02 23:29:05 brad Exp $	*/
+/*	$OpenBSD: pccbbvar.h,v 1.11 2006/06/21 11:27:03 fkr Exp $	*/
 /*	$NetBSD: pccbbvar.h,v 1.13 2000/06/08 10:28:29 haya Exp $	*/
 /*
  * Copyright (c) 1999 HAYAKAWA Koichi.  All rights reserved.
@@ -183,6 +183,7 @@ struct pccbb_intrhand_list {
 	int (*pil_func)(void *);
 	void *pil_arg;
 	int pil_level;
+	struct evcount pil_count;
 	struct pccbb_intrhand_list *pil_next;
 };
 
