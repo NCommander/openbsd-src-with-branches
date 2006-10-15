@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
  *
