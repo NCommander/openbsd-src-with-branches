@@ -817,25 +817,19 @@ int rl_intr(arg)
 			break;
 		if (status != 0)
 			CSR_WRITE_2(sc, RL_ISR, status);
-
 		if ((status & RL_INTRS) == 0)
 			break;
-
-		if ((status & RL_ISR_RX_OK) ||
-		    (status & RL_ISR_RX_ERR)) {
+		if (status & RL_ISR_RX_OK)
 			rl_rxeof(sc);
-			claimed = 1;
-		}
-		if ((status & RL_ISR_TX_OK) ||
-		    (status & RL_ISR_TX_ERR)) {
+		if (status & RL_ISR_RX_ERR)
+			rl_rxeof(sc);
+		if ((status & RL_ISR_TX_OK) || (status & RL_ISR_TX_ERR))
 			rl_txeof(sc);
-			claimed = 1;
-		}
 		if (status & RL_ISR_SYSTEM_ERR) {
 			rl_reset(sc);
 			rl_init(sc);
-			claimed = 1;
 		}
+		claimed = 1;
 	}
 
 	/* Re-enable interrupts. */
