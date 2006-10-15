@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchgen.c,v 1.24 2006/02/06 16:49:31 jmc Exp $	 */
+/* $OpenBSD: crunchgen.c,v 1.25 2006/10/14 20:23:29 drahn Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -216,7 +216,7 @@ void
 usage(void)
 {
 	fprintf(stderr, "%s [-Efq] [-c c-file-name] [-D src-root] [-e exec-file-name]\n"
-	    "\t[-L lib-dir] [-m makefile-name] [-O objdir-name ] conf-file\n",
+	    "\t[-L lib-dir] [-m makefile-name] [-O objdir-name] conf-file\n",
 	    progname);
 	exit(1);
 }
