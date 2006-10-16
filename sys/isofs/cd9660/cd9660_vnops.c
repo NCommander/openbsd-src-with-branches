@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.34 2006/01/25 21:15:55 mickey Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.35 2006/10/03 19:49:06 pedro Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -351,7 +351,7 @@ cd9660_read(v)
 #define MAX_RA 32
 			if (ci->ci_lastr + 1 == lbn) {
 				struct ra {
-					daddr_t blks[MAX_RA];
+					daddr64_t blks[MAX_RA];
 					int sizes[MAX_RA];
 				} *ra;
 				int i;
