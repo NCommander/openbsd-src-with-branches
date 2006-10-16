@@ -1,4 +1,4 @@
-/*	$OpenBSD: softdep.h,v 1.11 2006/01/03 23:34:39 pedro Exp $	*/
+/*	$OpenBSD: softdep.h,v 1.12 2006/07/11 21:17:58 mickey Exp $	*/
 
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
@@ -406,7 +406,7 @@ struct allocindir {
  * The "freefrag" structure is constructed and attached when the replacement
  * block is first allocated. It is processed after the inode claiming the
  * bigger block that replaces it has been written to disk. Note that the
- * ff_state field is is used to store the uid, so may lose data. However,
+ * ff_state field is used to store the uid, so may lose data. However,
  * the uid is used only in printing an error message, so is not critical.
  * Keeping it in a short keeps the data structure down to 32 bytes.
  */
