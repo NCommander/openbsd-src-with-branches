@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.13 2006/05/20 22:40:32 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.14 2006/05/28 14:58:14 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -495,5 +495,5 @@ rootconf()
 	}
 	if (mountroot == dk_mountroot)
 		swdevt[0].sw_dev = argdev = dumpdev =
-		    makedev(major(rootdev), minor(rootdev) + 1);
+		    makedev(major(rootdev), 1);
 }
