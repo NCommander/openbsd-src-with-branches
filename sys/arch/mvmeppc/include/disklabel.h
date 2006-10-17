@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.6 2006/07/01 16:50:33 krw Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.7 2006/10/03 01:37:22 krw Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -79,7 +79,6 @@ struct dos_partition {
 #define DOSPTYP_NETBSD	0xa9		/* NetBSD partition type */
 
 struct cpu_disklabel {
-	struct dos_partition dosparts[NDOSPART];
 };
 
 /* Isolate the relevant bits to get sector and cylinder. */
