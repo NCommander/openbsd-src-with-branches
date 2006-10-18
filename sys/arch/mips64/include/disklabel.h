@@ -149,6 +149,11 @@ struct sgilabel {
 
 struct cpu_disklabel {
 	int labelsector;
+	union {
+		struct {
+			struct dos_partition dosparts[NDOSPART];
+		} _i386;
+	} u;
 };
 
 #endif /* _MACHINE_DISKLABEL_H_ */

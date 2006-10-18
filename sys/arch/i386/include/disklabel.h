@@ -85,6 +85,7 @@ struct dos_mbr {
 #define DOSMBR_SIGNATURE_OFF	(0x1fe)
 
 struct cpu_disklabel {
+	struct dos_partition dosparts[NDOSPART];
 };
 
 /* Isolate the relevant bits to get sector and cylinder. */

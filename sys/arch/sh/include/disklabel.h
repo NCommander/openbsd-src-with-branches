@@ -104,6 +104,7 @@ struct dos_partition {
 
 
 struct cpu_disklabel {
+	struct dos_partition dosparts[NDOSPART];
 };
 
 #endif /* _ARM_DISKLABEL_H_ */

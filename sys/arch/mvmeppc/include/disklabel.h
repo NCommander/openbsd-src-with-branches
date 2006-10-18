@@ -79,6 +79,7 @@ struct dos_partition {
 #define DOSPTYP_NETBSD	0xa9		/* NetBSD partition type */
 
 struct cpu_disklabel {
+	struct dos_partition dosparts[NDOSPART];
 };
 
 /* Isolate the relevant bits to get sector and cylinder. */

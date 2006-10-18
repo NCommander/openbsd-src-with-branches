@@ -179,6 +179,9 @@ struct cpu_disklabel {
 	int labelsector;
 	union {
 		struct {
+			struct dos_partition dosparts[NDOSPART];
+		} _i386;
+		struct {
 			struct lifvol lifvol;
 			struct lifdir lifdir[LIF_NUMDIR];
 			struct hpux_label hplabel;

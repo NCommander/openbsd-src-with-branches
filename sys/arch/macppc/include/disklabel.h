@@ -134,6 +134,7 @@ struct part_map_entry {
 
 
 struct cpu_disklabel {
+	struct dos_partition dosparts[NDOSPART];
 	/* only store first entry and openbsd partition */
 	struct part_map_entry macparts[2];
 };

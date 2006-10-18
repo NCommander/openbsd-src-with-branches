@@ -96,6 +96,7 @@ struct dos_partition {
 #define	DPCYL(c, s)	((c) + (((s) & 0xc0) << 2))
 
 struct cpu_disklabel {
+	struct dos_partition dosparts[NDOSPART];
 };
 
 #endif /* _AVIION_DISKLABEL_H_ */
