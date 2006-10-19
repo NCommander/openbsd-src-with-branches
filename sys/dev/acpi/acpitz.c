@@ -1,4 +1,4 @@
-/* $OpenBSD: acpitz.c,v 1.2 2006/07/30 05:30:45 gwk Exp $ */
+/* $OpenBSD: acpitz.c,v 1.3 2006/10/12 16:38:21 jordan Exp $ */
 /*
  * Copyright (c) 2006 Can Erkin Acar <canacar@openbsd.org>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -79,7 +79,7 @@ acpitz_match(struct device *parent, void *match, void *aux)
 	    aa->aaa_table != NULL)
 		return (0);
 
-	if (aa->aaa_node->opcode != AMLOP_THERMALZONE)
+	if (aa->aaa_node->value->type != AML_OBJTYPE_THERMZONE)
 		return (0);
 
 	return (1);
