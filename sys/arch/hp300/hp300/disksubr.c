@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.20 2006/08/17 10:34:14 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.21 2006/09/24 22:43:00 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.9 1997/04/01 03:12:13 scottr Exp $	*/
 
 /*
@@ -61,6 +61,7 @@ readdisklabel(dev, strat, lp, osdep, spoofonly)
 {
 	struct buf *bp;
 	struct disklabel *dlp;
+	int i;
 	char *msg = NULL;
 
 	/* minimal requirements for archetypal disk label */
