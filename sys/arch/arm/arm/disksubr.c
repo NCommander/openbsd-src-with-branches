@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.18 2006/10/18 20:09:38 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.19 2006/10/20 23:47:42 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -184,8 +184,8 @@ donot:
 				 */
 				if (cp == (char *)(dp2 + 1))
 				    continue;
-				lp->d_partitions[8 + n++].p_fstype =
-				    FS_UNUSED;
+				pp->p_fstype = FS_UNUSED;
+				n++;
 				break;
 
 			case DOSPTYP_LINUX:
