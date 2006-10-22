@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.75 2006/09/22 00:43:18 dlg Exp $ */
+/*	$OpenBSD: mpi.c,v 1.76 2006/10/21 07:36:15 dlg Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 David Gwynne <dlg@openbsd.org>
@@ -197,10 +197,12 @@ mpi_attach(struct mpi_softc *sc)
 		goto free_replies;
 	}
 
+#ifdef notyet
 	if (mpi_eventnotify(sc) != 0) {
 		printf("%s: unable to get portfacts\n", DEVNAME(sc));
 		goto free_replies;
 	}
+#endif
 
 	if (mpi_portenable(sc) != 0) {
 		printf("%s: unable to enable port\n", DEVNAME(sc));
