@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zydreg.h,v 1.10 2006/07/02 01:04:58 jsg Exp $	*/
+/*	$OpenBSD: if_zydreg.h,v 1.11 2006/10/21 18:18:50 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -797,6 +797,11 @@ struct zyd_rx_data {
 	const uint8_t		*buf;
 };
 
+struct zyd_node {
+	struct ieee80211_node		ni;	/* must be the first */
+	struct ieee80211_amrr_node	amn;
+};
+
 struct zyd_rx_radiotap_header {
 	struct ieee80211_radiotap_header wr_ihdr;
 	uint8_t		wr_flags;
@@ -857,8 +862,6 @@ struct zyd_softc {
 	struct timeout			amrr_to;
 
 	struct ieee80211_amrr		amrr;
-	struct ieee80211_amrr_node	amn;
-
 
 	void				*odata;
 	int				olen;
