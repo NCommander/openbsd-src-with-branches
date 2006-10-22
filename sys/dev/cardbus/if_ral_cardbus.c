@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral_cardbus.c,v 1.7 2006/06/21 11:27:03 fkr Exp $  */
+/*	$OpenBSD: if_ral_cardbus.c,v 1.8 2006/10/12 16:35:52 grange Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -44,7 +44,7 @@
 #include <netinet/if_ether.h>
 
 #include <net80211/ieee80211_var.h>
-#include <net80211/ieee80211_rssadapt.h>
+#include <net80211/ieee80211_amrr.h>
 #include <net80211/ieee80211_radiotap.h>
 
 #include <dev/ic/rt2560var.h>
