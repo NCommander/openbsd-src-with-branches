@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.60 2006/06/14 15:35:17 joris Exp $	*/
+/*	$OpenBSD: entries.c,v 1.61 2006/07/09 01:47:20 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -69,8 +69,8 @@ cvs_ent_open(const char *dir)
 	if ((fp = fopen(ep->cef_lpath, "r")) != NULL) {
 		while (fgets(buf, sizeof(buf), fp)) {
 			len = strlen(buf);
-			if (len > 0 && buf[strlen(buf) - 1] == '\n')
-				buf[strlen(buf) - 1] = '\0';
+			if (len > 0 && buf[len - 1] == '\n')
+				buf[len - 1] = '\0';
 
 			p = &buf[1];
 
