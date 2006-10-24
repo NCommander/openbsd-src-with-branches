@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: message.c,v 1.1 2006/10/18 16:11:58 norby Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -304,7 +304,7 @@ recv_request(struct iface *i, struct nbr *nbr, char *buf, u_int16_t len)
 
 	/*
 	 * XXX is it guaranteed that bus is properly aligned.
-	 * If not this will bomb on strict aligenment archs.
+	 * If not this will bomb on strict alignment archs.
 	 * */
 	e = (struct rip_entry *)buf;
 

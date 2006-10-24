@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rde.c,v 1.1 2006/10/18 16:11:58 norby Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -413,7 +413,7 @@ rde_check_route(struct rip_route *e)
 		triggered_update(rn);
 	} else {
 		/*
-		 * XXX don't we have to track all incomming routes?
+		 * XXX don't we have to track all incoming routes?
 		 * what happens if the kernel route is removed later.
 		 */
 		if (rn->flags & F_KERNEL)
