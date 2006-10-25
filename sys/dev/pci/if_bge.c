@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.190 2006/10/17 22:28:07 brad Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.191 2006/10/22 21:45:36 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3006,8 +3006,7 @@ bge_ifmedia_upd(struct ifnet *ifp)
 	sc->bge_link_evt++;
 	if (mii->mii_instance) {
 		struct mii_softc *miisc;
-		for (miisc = LIST_FIRST(&mii->mii_phys); miisc != NULL;
-		    miisc = LIST_NEXT(miisc, mii_list))
+		LIST_FOREACH(miisc, &mii->mii_phys, mii_list)
 			mii_phy_reset(miisc);
 	}
 	mii_mediachg(mii);
