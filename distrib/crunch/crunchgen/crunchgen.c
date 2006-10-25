@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchgen.c,v 1.25 2006/10/14 20:23:29 drahn Exp $	 */
+/* $OpenBSD: crunchgen.c,v 1.26 2006/10/15 06:44:13 jmc Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -400,7 +400,8 @@ add_libdirs(int argc, char **argv)
 			continue;
 		}
 		if (is_dir(tmppath)) {
-			snprintf(tmppath2, sizeof(tmppath2), "%s/obj", tmppath);
+			snprintf(tmppath2, sizeof(tmppath2), "%s/%s", tmppath,
+			    objdir);
 			if (is_dir(tmppath2))
 				add_string(&libdirs, tmppath2);
 			else {
