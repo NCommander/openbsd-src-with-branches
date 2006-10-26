@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamlogd.c,v 1.11 2004/09/18 07:33:03 beck Exp $	*/
+/*	$OpenBSD: spamlogd.c,v 1.12 2006/10/25 19:17:55 henning Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -120,7 +120,7 @@ dbupdate(char *dbname, char *ip)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-I] [-i interface] [-l pflog-interface]\n",
+	fprintf(stderr, "usage: %s [-I] [-i interface] [-l pflog_interface]\n",
 	    __progname);
 	exit(1);
 }
