@@ -1,4 +1,4 @@
-/*	$OpenBSD: nmeaattach.c,v 1.2 2006/07/09 09:03:19 jmc Exp $	*/
+/*	$OpenBSD: nmeaattach.c,v 1.3 2006/09/17 16:57:22 mbalmer Exp $	*/
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -72,6 +72,7 @@ usage(void)
 	    __progname);
 	exit(1);
 }
+
 int
 main(int argc, char *argv[])
 {
