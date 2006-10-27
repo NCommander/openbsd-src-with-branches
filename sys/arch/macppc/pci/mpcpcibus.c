@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.32 2006/05/10 00:07:40 brad Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.33 2006/10/23 02:05:26 gwk Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -218,10 +218,7 @@ mpcpcibus_find_ranges_32 (struct pcibr_softc *sc, u_int32_t *range_store,
 			if (base != 0) {
 				if ((base + size) == prange[i].base)   
 					size += prange[i].size;
-				else if (prange[i].base < base) {
-					size+= base - prange[i].base;
-					base = prange[i].base;
-				} else {
+				else {
 					size = prange[i].size;
 					base = prange[i].base;
 				} 
