@@ -87,14 +87,14 @@ fmerge(int binno, union f_handle files, int nfiles,
 	}
 
 	i = min(16, nfiles) * LALIGN(MAXLLEN+sizeof(TMFILE));
-	if (!buffer || i > BUFSIZE) {
-		buffer = buffer ? realloc(buffer, i) : malloc(i);
+	if (i > bufsize) {
+		do {
+			bufsize *= 2;
+		} while  (i > bufsize);
+		buffer = realloc(buffer, bufsize);
 		if (!buffer)
 			errx(2, "cannot allocate memory");
-		if (!SINGL_FLD) {
-			if ((linebuf = malloc(MAXLLEN)) == NULL)
-				errx(2, "cannot allocate memory");
-		}
+		bufend = buffer + bufsize - 1;
 	}
 
 	if (binno >= 0)
@@ -253,14 +253,14 @@ order(union f_handle infile,
 	int c;
 	RECHEADER *crec, *prec, *trec;
 
-	if (!SINGL_FLD) {
-		if ((linebuf = malloc(MAXLLEN)) == NULL)
-			errx(2, "cannot allocate memory");
+	if (bufsize < 2 * ALIGN(MAXLLEN + sizeof(TRECHEADER))) {
+		do {
+			bufsize *= 2;
+		} while (bufsize < 2 * ALIGN(MAXLLEN + sizeof(TRECHEADER)));
+		if ((buffer = realloc(buffer, bufsize)) == NULL)
+			err(2, NULL);
+		bufend = buffer + bufsize - 1;
 	}
-	buffer = malloc(2 * ALIGN((MAXLLEN + sizeof(TRECHEADER))));
-	if (buffer == NULL)
-		errx(2, "cannot allocate memory");
-
 	crec = (RECHEADER *) buffer;
 	crec_end = ((char *)crec) + ALIGN(MAXLLEN + sizeof(TRECHEADER));
 	prec = (RECHEADER *) crec_end;
