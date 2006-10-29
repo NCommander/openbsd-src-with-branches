@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.6 2002/07/30 05:27:49 pjanzen Exp $	*/
+/*	$OpenBSD: init.c,v 1.7 2003/06/03 03:01:38 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.6 2002/07/30 05:27:49 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.7 2003/06/03 03:01:38 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,6 +64,7 @@ int     mflag = 0;		/* backgammon flag */
 int     raflag = 0;		/* 'roll again' flag for recovered game */
 int     rflag = 0;		/* recovered game flag */
 int     iroll = 0;		/* special flag for inputting rolls */
+int	dflag = 1;		/* doubling enabled */
 int     rfl = 0;
 
 const char   *const color[] = {"White", "Red", "white", "red"};
