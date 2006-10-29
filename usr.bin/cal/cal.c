@@ -1,4 +1,4 @@
-/*	$OpenBSD: cal.c,v 1.19 2006/03/24 03:44:14 ray Exp $	*/
+/*	$OpenBSD: cal.c,v 1.20 2006/04/25 05:18:26 tedu Exp $	*/
 /*	$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cal.c	8.4 (Berkeley) 4/2/94";
 #else
-static const char rcsid[] = "$OpenBSD: cal.c,v 1.19 2006/03/24 03:44:14 ray Exp $";
+static const char rcsid[] = "$OpenBSD: cal.c,v 1.20 2006/04/25 05:18:26 tedu Exp $";
 #endif
 #endif /* not lint */
 
@@ -415,9 +415,8 @@ center(const char *str, int len, int separate)
 {
 
 	len -= strlen(str);
-	(void)printf("%*s%s%*s", len / 2, "", str, len / 2 + len % 2, "");
-	if (separate)
-		(void)printf("%*s", separate, "");
+	(void)printf("%*s%s%*s", len / 2, "", str,
+	    len / 2 + len % 2 + separate, "");
 }
 
 void
