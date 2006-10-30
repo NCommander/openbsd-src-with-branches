@@ -2112,10 +2112,7 @@ em_get_buf(struct em_softc *sc, int i)
 	struct mbuf    *m;
 	bus_dmamap_t	map;
 	struct em_buffer *rx_buffer;
-	struct ifnet   *ifp;
 	int error;
-
-	ifp = &sc->interface_data.ac_if;
 
 	MGETHDR(m, M_DONTWAIT, MT_DATA);
 	if (m == NULL) {
