@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.66 2006/06/02 19:53:12 mpf Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.67 2006/10/31 14:49:01 henning Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1086,9 +1086,8 @@ pfsync_pack_state(u_int8_t action, struct pf_state *st, int flags)
 	u_int8_t i = 255, newaction = 0;
 
 	if (sc == NULL)
-		return (0)
-	else
-		ifp = &sc->sc_if;
+		return (0);
+	ifp = &sc->sc_if;
 
 	/*
 	 * If a packet falls in the forest and there's nobody around to
