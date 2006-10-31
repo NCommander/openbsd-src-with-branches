@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.h,v 1.28 2005/11/04 08:24:14 mcbride Exp $	*/
+/*	$OpenBSD: if_pfsync.h,v 1.29 2006/05/28 02:04:15 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -185,7 +185,7 @@ struct pfsync_softc {
 	int			 sc_maxupdates;	/* number of updates/state */
 };
 
-extern struct pfsync_softc pfsyncif;
+extern struct pfsync_softc	*pfsyncif;
 #endif
 
 
