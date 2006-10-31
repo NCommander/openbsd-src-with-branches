@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ripe.h,v 1.1 2006/10/18 16:11:58 norby Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -33,6 +33,7 @@ char	*pkt_ptr;
 enum nbr_event {
 	NBR_EVT_RESPONSE_RCVD,
 	NBR_EVT_REQUEST_RCVD,
+	NBR_EVT_RESPONSE_SENT,
 	NBR_EVT_TIMEOUT,
 	NBR_EVT_KILL_NBR,
 	NBR_EVT_NOTHING
