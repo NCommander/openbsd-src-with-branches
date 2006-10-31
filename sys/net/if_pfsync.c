@@ -1282,9 +1282,8 @@ pfsync_request_update(struct pfsync_state_upd *up, struct in_addr *src)
 
 	if (sc == NULL)
 		return (0);
-	else
-		ifp = &sc->sc_if;
 
+	ifp = &sc->sc_if;
 	if (sc->sc_mbuf == NULL) {
 		if ((sc->sc_mbuf = pfsync_get_mbuf(sc, PFSYNC_ACT_UREQ,
 		    (void *)&sc->sc_statep.s)) == NULL)
@@ -1328,9 +1327,8 @@ pfsync_clear_states(u_int32_t creatorid, char *ifname)
 
 	if (sc == NULL)
 		return (0);
-	else
-		ifp = &sc->sc_if;
 
+	ifp = &sc->sc_if;
 	s = splnet();
 	if (sc->sc_mbuf != NULL)
 		pfsync_sendout(sc);
