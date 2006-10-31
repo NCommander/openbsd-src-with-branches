@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.30 2006/01/05 05:05:07 jsg Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.31 2006/02/27 23:38:11 miod Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -240,6 +240,9 @@ uipc_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 		default:
 			panic("uipc 4");
 		}
+		/* we need to undo unp_internalize in case of errors */
+		if (control && error)
+			unp_dispose(control);
 		break;
 
 	case PRU_ABORT:
