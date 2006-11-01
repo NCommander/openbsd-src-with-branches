@@ -747,6 +747,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "Keyboard/Mouse",
 	},
 	{
+	    USB_VENDOR_BWCT, USB_PRODUCT_BWCT_6CHCONSER,
+	    "6ch ConSer",
+	},
+	{
 	    USB_VENDOR_CANON, USB_PRODUCT_CANON_N656U,
 	    "CANOSCAN N656U",
 	},
@@ -4461,6 +4465,10 @@ const struct usb_known_vendor usb_known_vendors[] = {
 	{
 	    USB_VENDOR_EGALAX2,
 	    "eGalax",
+	},
+	{
+	    USB_VENDOR_BWCT,
+	    "Bernd Walter Computer Technology",
 	},
 	{
 	    USB_VENDOR_AOX,

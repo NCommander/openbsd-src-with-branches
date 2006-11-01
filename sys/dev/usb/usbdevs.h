@@ -65,6 +65,7 @@
  */
 
 #define	USB_VENDOR_EGALAX2	0x0123		/* eGalax */
+#define	USB_VENDOR_BWCT	0x03da		/* Bernd Walter Computer Technology */
 #define	USB_VENDOR_AOX	0x03e8		/* AOX */
 #define	USB_VENDOR_ATMEL	0x03eb		/* Atmel */
 #define	USB_VENDOR_MITSUMI	0x03ee		/* Mitsumi */
@@ -793,6 +794,9 @@
 
 /* Behavior Technology Computer products */
 #define	USB_PRODUCT_BTC_BTC7932	0x6782		/* Keyboard/Mouse */
+
+/* Bernd Walter Computer Technology products */
+#define	USB_PRODUCT_BWCT_6CHCONSER	0x0001		/* 6ch ConSer */
 
 /* Canon, Inc. products */
 #define	USB_PRODUCT_CANON_N656U	0x2206		/* CANOSCAN N656U */
