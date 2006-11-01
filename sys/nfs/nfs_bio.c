@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.41 2005/10/31 20:22:36 otto Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.42 2006/04/20 14:43:32 pedro Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -57,7 +57,7 @@
 
 extern struct proc *nfs_iodwant[NFS_MAXASYNCDAEMON];
 extern int nfs_numasync;
-struct nfsstats nfsstats;
+extern struct nfsstats nfsstats;
 struct nfs_bufqhead nfs_bufq;
 
 /*
