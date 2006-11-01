@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.13 2006/04/07 22:41:32 jsg Exp $	*/
+/*	$OpenBSD: midi.c,v 1.14 2006/04/16 03:24:27 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -350,7 +350,7 @@ midipoll(dev_t dev, int events, struct proc *p)
 	int		   s, revents;
 	
 	if (sc->isdying)
-		return EIO;
+		return POLLERR;
 
 	revents = 0;
 	s = splaudio();

@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.c,v 1.33 2006/06/23 06:27:12 miod Exp $	*/
+/*	$OpenBSD: usb.c,v 1.34 2006/09/18 10:55:51 dlg Exp $	*/
 /*	$NetBSD: usb.c,v 1.77 2003/01/01 00:10:26 thorpej Exp $	*/
 
 /*
@@ -595,7 +595,7 @@ usbpoll(dev_t dev, int events, usb_proc_ptr p)
 
 		return (revents);
 	} else {
-		return (ENXIO);
+		return (POLLERR);
 	}
 }
 
