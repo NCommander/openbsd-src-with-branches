@@ -692,10 +692,10 @@ vic_getlladdr(struct vic_softc *sc)
 void
 vic_setlladdr(struct vic_softc *sc)
 {
-	bus_space_barrier(sc->sc_iot, sc->sc_ioh, VIC_LLADDR, ETHER_ADDR_LEN,
-	    BUS_SPACE_BARRIER_READ);
 	bus_space_write_region_1(sc->sc_iot, sc->sc_ioh, VIC_LLADDR,
 	    sc->sc_lladdr, ETHER_ADDR_LEN);
+	bus_space_barrier(sc->sc_iot, sc->sc_ioh, VIC_LLADDR, ETHER_ADDR_LEN,
+	    BUS_SPACE_BARRIER_WRITE);
 }
 
 int
