@@ -1,4 +1,4 @@
-/*	$OpenBSD: args.c,v 1.15 2005/04/08 01:46:45 jsg Exp $	*/
+/*	$OpenBSD: args.c,v 1.16 2006/03/22 18:08:04 dhill Exp $	*/
 /*	$NetBSD: args.c,v 1.7 1996/03/01 01:18:58 jtc Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static char sccsid[] = "@(#)args.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: args.c,v 1.15 2005/04/08 01:46:45 jsg Exp $";
+static char rcsid[] = "$OpenBSD: args.c,v 1.16 2006/03/22 18:08:04 dhill Exp $";
 #endif
 #endif /* not lint */
 
@@ -171,8 +171,9 @@ jcl(char **argv)
 	 * Read and write take size_t's as arguments.  Lseek, however,
 	 * takes an off_t (quad).
 	 */
-	if (in.dbsz > SIZE_T_MAX || out.dbsz > SIZE_T_MAX)
-		errx(1, "buffer sizes cannot be greater than %u", SIZE_T_MAX);
+	if (cbsz > SSIZE_MAX || in.dbsz > SSIZE_MAX || out.dbsz > SSIZE_MAX)
+		errx(1, "buffer sizes cannot be greater than %zd",
+		    (ssize_t)SSIZE_MAX);
 	if (in.offset > QUAD_MAX / in.dbsz || out.offset > QUAD_MAX / out.dbsz)
 		errx(1, "seek offsets cannot be larger than %qd", QUAD_MAX);
 }
