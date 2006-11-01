@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflog.c,v 1.19 2006/10/23 12:46:09 henning Exp $	*/
+/*	$OpenBSD: if_pflog.c,v 1.20 2006/10/25 11:26:47 henning Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -96,6 +96,7 @@ pflogattach(int npflog)
 	LIST_INIT(&pflogif_list);
 	for (i = 0; i < PFLOGIFS_MAX; i++)
 		pflogifs[i] = NULL;
+	(void) pflog_clone_create(&pflog_cloner, 0);
 	if_clone_attach(&pflog_cloner);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.70 2006/10/31 22:01:56 henning Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.71 2006/11/01 00:02:14 henning Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -114,6 +114,7 @@ struct if_clone	pfsync_cloner =
 void
 pfsyncattach(int npfsync)
 {
+	(void) pfsync_clone_create(&pfsync_cloner, 0);
 	if_clone_attach(&pfsync_cloner);
 }
 int
