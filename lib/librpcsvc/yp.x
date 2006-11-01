@@ -1,3 +1,5 @@
+/*	$OpenBSD: yp.x,v 1.4 2003/07/10 07:51:13 deraadt Exp $	*/
+
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -5,23 +7,23 @@
  * may copy or modify Sun RPC without charge, but are not authorized
  * to license or distribute it to anyone else except as part of a product or
  * program developed by the user.
- * 
+ *
  * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
  * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
+ *
  * Sun RPC is provided with no support and without any obligation on the
  * part of Sun Microsystems, Inc. to assist in its use, correction,
  * modification or enhancement.
- * 
+ *
  * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
  * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
  * OR ANY PART THEREOF.
- * 
+ *
  * In no event will Sun Microsystems, Inc. be liable for any lost revenue
  * or profits or other special, indirect and consequential damages, even if
  * Sun has been advised of the possibility of such damages.
- * 
+ *
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
@@ -34,7 +36,7 @@
 #ifndef RPC_HDR
 %#ifndef lint
 %/*static char sccsid[] = "from: @(#)yp.x	2.1 88/08/01 4.0 RPCSRC";*/
-%static char rcsid[] = "$Id: yp.x,v 1.1 1995/01/12 19:40:00 jtc Exp $";
+%static char rcsid[] = "$OpenBSD: yp.x,v 1.4 2003/07/10 07:51:13 deraadt Exp $";
 %#endif /* not lint */
 #endif
 
@@ -87,7 +89,7 @@ typedef opaque valdat<YPMAXRECORD>;
 
 
 struct ypmap_parms {
-	domainname domain;	
+	domainname domain;
 	mapname map;
 	unsigned int ordernum;
 	peername peer;
@@ -100,10 +102,10 @@ struct ypreq_key {
 };
 
 struct ypreq_nokey {
-	domainname domain;	
+	domainname domain;
 	mapname map;
 };
-	
+
 struct ypreq_xfr {
 	ypmap_parms map_parms;
 	unsigned int transid;
@@ -119,13 +121,18 @@ struct ypresp_val {
 
 struct ypresp_key_val {
 	ypstat stat;
+#ifdef STUPID_SUN_BUG /* These are backwards */
 	keydat key;
 	valdat val;
+#else
+	valdat val;
+	keydat key;
+#endif
 };
 
 
 struct ypresp_master {
-	ypstat stat;	
+	ypstat stat;
 	peername peer;
 };
 
@@ -158,12 +165,12 @@ struct ypresp_maplist {
 
 enum yppush_status {
 	YPPUSH_SUCC	=  1,	/* Success */
-	YPPUSH_AGE 	=  2,	/* Master's version not newer */
+	YPPUSH_AGE	=  2,	/* Master's version not newer */
 	YPPUSH_NOMAP	= -1,	/* Can't find server for map */
 	YPPUSH_NODOM	= -2,	/* Domain not supported */
 	YPPUSH_RSRC	= -3,	/* Local resource alloc failure */
 	YPPUSH_RPC	= -4,	/* RPC failure talking to server */
-	YPPUSH_MADDR 	= -5,	/* Can't get master address */
+	YPPUSH_MADDR	= -5,	/* Can't get master address */
 	YPPUSH_YPERR	= -6,	/* YP server/map db error */
 	YPPUSH_BADARGS	= -7,	/* Request arguments bad */
 	YPPUSH_DBM	= -8,	/* Local dbm operation failed */
@@ -171,8 +178,8 @@ enum yppush_status {
 	YPPUSH_SKEW	= -10,	/* Map version skew during transfer */
 	YPPUSH_CLEAR	= -11,	/* Can't send "Clear" req to local ypserv */
 	YPPUSH_FORCE	= -12,	/* No local order number in map  use -f flag. */
-	YPPUSH_XFRERR 	= -13,	/* ypxfr error */
-	YPPUSH_REFUSED	= -14 	/* Transfer request refused by ypserv */
+	YPPUSH_XFRERR	= -13,	/* ypxfr error */
+	YPPUSH_REFUSED	= -14	/* Transfer request refused by ypserv */
 };
 
 struct yppushresp_xfr {
@@ -184,31 +191,31 @@ struct yppushresp_xfr {
  * Response structure and overall result status codes.  Success and failure
  * represent two separate response message types.
  */
- 
+
 enum ypbind_resptype {
-	YPBIND_SUCC_VAL = 1, 
+	YPBIND_SUCC_VAL = 1,
 	YPBIND_FAIL_VAL = 2
 };
- 
+
 struct ypbind_binding {
-    opaque ypbind_binding_addr[4]; /* In network order */
-    opaque ypbind_binding_port[2]; /* In network order */
-};   
+	opaque ypbind_binding_addr[4]; /* In network order */
+	opaque ypbind_binding_port[2]; /* In network order */
+};
 
 union ypbind_resp switch (ypbind_resptype ypbind_status) {
 case YPBIND_FAIL_VAL:
-        unsigned ypbind_error;
+	unsigned ypbind_error;
 case YPBIND_SUCC_VAL:
-        ypbind_binding ypbind_bindinfo;
-};     
+	ypbind_binding ypbind_bindinfo;
+};
 
 /* Detailed failure reason codes for response field ypbind_error*/
- 
+
 const YPBIND_ERR_ERR    = 1;	/* Internal error */
 const YPBIND_ERR_NOSERV = 2;	/* No bound server for passed domain */
 const YPBIND_ERR_RESC   = 3;	/* System resource allocation failure */
- 
- 
+
+
 /*
  * Request data structure for ypbind "Set domain" procedure.
  */
@@ -224,11 +231,11 @@ struct ypbind_setdom {
  */
 program YPPROG {
 	version YPVERS {
-		void 
+		void
 		YPPROC_NULL(void) = 0;
 
-		bool 
-		YPPROC_DOMAIN(domainname) = 1;	
+		bool
+		YPPROC_DOMAIN(domainname) = 1;
 
 		bool
 		YPPROC_DOMAIN_NONACK(domainname) = 2;
@@ -236,10 +243,14 @@ program YPPROG {
 		ypresp_val
 		YPPROC_MATCH(ypreq_key) = 3;
 
-		ypresp_key_val 
+		ypresp_key_val
+#ifdef STUPID_SUN_BUG /* should be ypreq_nokey */
 		YPPROC_FIRST(ypreq_key) = 4;
+#else
+		YPPROC_FIRST(ypreq_nokey) = 4;
+#endif
 
-		ypresp_key_val 
+		ypresp_key_val
 		YPPROC_NEXT(ypreq_key) = 5;
 
 		ypresp_xfr
@@ -257,11 +268,13 @@ program YPPROG {
 		ypresp_order
 		YPPROC_ORDER(ypreq_nokey) = 10;
 
-		ypresp_maplist 
+		ypresp_maplist
 		YPPROC_MAPLIST(domainname) = 11;
 	} = 2;
 } = 100004;
 
+
+%bool_t xdr_ypresp_all_seq(XDR *, u_long *);
 
 /*
  * YPPUSHPROC_XFRRESP is the callback routine for result of YPPROC_XFR
@@ -271,7 +284,7 @@ program YPPUSH_XFRRESPPROG {
 		void
 		YPPUSHPROC_NULL(void) = 0;
 
-		yppushresp_xfr	
+		yppushresp_xfr
 		YPPUSHPROC_XFRRESP(void) = 1;
 	} = 1;
 } = 0x40000000;	/* transient: could be anything up to 0x5fffffff */
@@ -284,7 +297,7 @@ program YPBINDPROG {
 	version YPBINDVERS {
 		void
 		YPBINDPROC_NULL(void) = 0;
-	
+
 		ypbind_resp
 		YPBINDPROC_DOMAIN(domainname) = 1;
 

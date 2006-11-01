@@ -1,4 +1,5 @@
-/*	$NetBSD: scsi_ioctl.c,v 1.19 1995/09/26 19:26:58 thorpej Exp $	*/
+/*	$OpenBSD: scsi_ioctl.c,v 1.25 2006/07/11 09:26:47 dlg Exp $	*/
+/*	$NetBSD: scsi_ioctl.c,v 1.23 1996/10/12 23:23:17 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Charles Hannum.  All rights reserved.
@@ -29,42 +30,90 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* 
+/*
  * Contributed by HD Associates (hd@world.std.com).
  * Copyright (c) 1992, 1993 HD Associates
  *
- * Berkeley style copyright.  
+ * Berkeley style copyright.
  */
 
 #include <sys/types.h>
 #include <sys/errno.h>
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/file.h>
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
 #include <sys/device.h>
+#include <sys/fcntl.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 #include <sys/scsiio.h>
 
 struct scsi_ioctl {
-	LIST_ENTRY(scsi_ioctl) si_list;
-	struct buf si_bp;
-	struct uio si_uio;
-	struct iovec si_iov;
-	scsireq_t si_screq;
-	struct scsi_link *si_sc_link;
+	LIST_ENTRY(scsi_ioctl)	si_list;
+	struct buf		si_bp;
+	struct uio		si_uio;
+	struct iovec		si_iov;
+	scsireq_t		si_screq;
+	struct scsi_link	*si_sc_link;
 };
 
-LIST_HEAD(, scsi_ioctl) si_head;
+LIST_HEAD(, scsi_ioctl)		si_head;
+
+struct scsi_ioctl	*si_get(void);
+void			si_free(struct scsi_ioctl *);
+struct scsi_ioctl	*si_find(struct buf *);
+void			scsistrategy(struct buf *);
+
+const unsigned char scsi_readsafe_cmd[256] = {
+	[0x00] = 1,	/* TEST UNIT READY */
+	[0x03] = 1,	/* REQUEST SENSE */
+	[0x08] = 1,	/* READ(6) */
+	[0x12] = 1,	/* INQUIRY */
+	[0x1a] = 1,	/* MODE SENSE */
+	[0x1b] = 1,	/* START STOP */
+	[0x23] = 1,	/* READ FORMAT CAPACITIES */
+	[0x25] = 1,	/* READ CDVD CAPACITY */
+	[0x28] = 1,	/* READ(10) */
+	[0x2b] = 1,	/* SEEK */
+	[0x2f] = 1,	/* VERIFY(10) */
+	[0x3c] = 1,	/* READ BUFFER */
+	[0x3e] = 1,	/* READ LONG */
+	[0x42] = 1,	/* READ SUBCHANNEL */
+	[0x43] = 1,	/* READ TOC PMA ATIP */
+	[0x44] = 1,	/* READ HEADER */
+	[0x45] = 1,	/* PLAY AUDIO(10) */
+	[0x46] = 1,	/* GET CONFIGURATION */
+	[0x47] = 1,	/* PLAY AUDIO MSF */
+	[0x48] = 1,	/* PLAY AUDIO TI */
+	[0x4a] = 1,	/* GET EVENT STATUS NOTIFICATION */
+	[0x4b] = 1,	/* PAUSE RESUME */
+	[0x4e] = 1,	/* STOP PLAY SCAN */
+	[0x51] = 1,	/* READ DISC INFO */
+	[0x52] = 1,	/* READ TRACK RZONE INFO */
+	[0x5a] = 1,	/* MODE SENSE(10) */
+	[0x88] = 1,	/* READ(16) */
+	[0x8f] = 1,	/* VERIFY(16) */
+	[0xa4] = 1,	/* REPORT KEY */
+	[0xa5] = 1,	/* PLAY AUDIO(12) */
+	[0xa8] = 1,	/* READ(12) */
+	[0xac] = 1,	/* GET PERFORMANCE */
+	[0xad] = 1,	/* READ DVD STRUCTURE */
+	[0xb9] = 1,	/* READ CD MSF */
+	[0xba] = 1,	/* SCAN */
+	[0xbc] = 1,	/* PLAY CD */
+	[0xbd] = 1,	/* MECHANISM STATUS */
+	[0xbe] = 1	/* READ CD */
+};
 
 struct scsi_ioctl *
-si_get()
+si_get(void)
 {
-	struct scsi_ioctl *si;
-	int s;
+	struct scsi_ioctl			*si;
+	int					s;
 
 	si = malloc(sizeof(struct scsi_ioctl), M_TEMP, M_WAITOK);
 	bzero(si, sizeof(struct scsi_ioctl));
@@ -75,10 +124,9 @@ si_get()
 }
 
 void
-si_free(si)
-	struct scsi_ioctl *si;
+si_free(struct scsi_ioctl *si)
 {
-	int s;
+	int					s;
 
 	s = splbio();
 	LIST_REMOVE(si, si_list);
@@ -87,17 +135,18 @@ si_free(si)
 }
 
 struct scsi_ioctl *
-si_find(bp)
-	struct buf *bp;
+si_find(struct buf *bp)
 {
-	struct scsi_ioctl *si;
-	int s;
+	struct scsi_ioctl			*si;
+	int					s;
 
 	s = splbio();
-	for (si = si_head.lh_first; si != 0; si = si->si_list.le_next)
+	LIST_FOREACH(si, &si_head, si_list) {
 		if (bp == &si->si_bp)
 			break;
+	}
 	splx(s);
+
 	return (si);
 }
 
@@ -110,26 +159,29 @@ si_find(bp)
  * the device's queue if such exists.
  */
 void
-scsi_user_done(xs)
-	struct scsi_xfer *xs;
+scsi_user_done(struct scsi_xfer *xs)
 {
-	struct buf *bp;
-	struct scsi_ioctl *si;
-	scsireq_t *screq;
-	struct scsi_link *sc_link;
+	struct buf				*bp;
+	struct scsi_ioctl			*si;
+	scsireq_t				*screq;
+	struct scsi_link			*sc_link;
+
+	splassert(IPL_BIO);
 
 	bp = xs->bp;
-	if (!bp) {	/* ALL user requests must have a buf */
+	if (bp == NULL) {	/* ALL user requests must have a buf */
 		sc_print_addr(xs->sc_link);
 		printf("User command with no buf\n");
 		return;
 	}
+
 	si = si_find(bp);
-	if (!si) {
+	if (si == NULL) {
 		sc_print_addr(xs->sc_link);
 		printf("User command with no ioctl\n");
 		return;
 	}
+
 	screq = &si->si_screq;
 	sc_link = si->si_sc_link;
 	SC_DEBUG(xs->sc_link, SDEV_DB2, ("user-done\n"));
@@ -139,7 +191,8 @@ scsi_user_done(xs)
 	switch (xs->error) {
 	case XS_NOERROR:
 		SC_DEBUG(sc_link, SDEV_DB3, ("no error\n"));
-		screq->datalen_used = xs->datalen - xs->resid; /* probably rubbish */
+		/* probably rubbish */
+		screq->datalen_used = xs->datalen - xs->resid;
 		screq->retsts = SCCMD_OK;
 		break;
 	case XS_SENSE:
@@ -147,6 +200,12 @@ scsi_user_done(xs)
 		screq->senselen_used = min(sizeof(xs->sense), SENSEBUFLEN);
 		bcopy(&xs->sense, screq->sense, screq->senselen);
 		screq->retsts = SCCMD_SENSE;
+		break;
+	case XS_SHORTSENSE:
+		SC_DEBUG(sc_link, SDEV_DB3, ("have short sense\n"));
+		screq->senselen_used = min(sizeof(xs->sense), SENSEBUFLEN);
+		bcopy(&xs->sense, screq->sense, screq->senselen);
+		screq->retsts = SCCMD_UNKNOWN;
 		break;
 	case XS_DRIVER_STUFFUP:
 		sc_print_addr(sc_link);
@@ -163,17 +222,19 @@ scsi_user_done(xs)
 		break;
 	default:
 		sc_print_addr(sc_link);
-		printf("unknown error category from host adapter code\n");
+		printf("unknown error category (0x%x) from host adapter code\n",
+		    xs->error);
 		screq->retsts = SCCMD_UNKNOWN;
 		break;
 	}
+
 	biodone(bp); 	/* we're waiting on it in scsi_strategy() */
 }
 
 
 /* Pseudo strategy function
  * Called by scsi_do_ioctl() via physio/physstrat if there is to
- * be data transfered, and directly if there is no data transfer.
+ * be data transferred, and directly if there is no data transfer.
  * 
  * Should I reorganize this so it returns to physio instead
  * of sleeping in scsiio_scsi_cmd?  Is there any advantage, other
@@ -187,22 +248,22 @@ scsi_user_done(xs)
  * the screq structure. [JRE]
  */
 void
-scsistrategy(bp)
-	struct buf *bp;
+scsistrategy(struct buf *bp)
 {
-	struct scsi_ioctl *si;
-	scsireq_t *screq;
-	struct scsi_link *sc_link;
-	int error;
-	int flags = 0;
-	int s;
+	struct scsi_ioctl			*si;
+	scsireq_t				*screq;
+	struct scsi_link			*sc_link;
+	int					error;
+	int					flags = 0;
+	int					s;
 
 	si = si_find(bp);
-	if (!si) {
+	if (si == NULL) {
 		printf("user_strat: No ioctl\n");
 		error = EINVAL;
 		goto bad;
 	}
+
 	screq = &si->si_screq;
 	sc_link = si->si_sc_link;
 	SC_DEBUG(sc_link, SDEV_DB2, ("user_strategy\n"));
@@ -259,7 +320,9 @@ scsistrategy(bp)
 bad:
 	bp->b_flags |= B_ERROR;
 	bp->b_error = error;
+	s = splbio();
 	biodone(bp);
+	splx(s);
 }
 
 /*
@@ -270,37 +333,58 @@ bad:
  * in the context of the calling process
  */
 int
-scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
-	struct scsi_link *sc_link;
-	dev_t dev;
-	u_long cmd;
-	caddr_t addr;
-	int flag;
-	struct proc *p;
+scsi_do_ioctl(struct scsi_link *sc_link, dev_t dev, u_long cmd, caddr_t addr,
+    int flag, struct proc *p)
 {
-	int error;
+	int					error;
 
 	SC_DEBUG(sc_link, SDEV_DB2, ("scsi_do_ioctl(0x%lx)\n", cmd));
+
+	switch(cmd) {
+	case SCIOCIDENTIFY: {
+		struct scsi_addr *sca = (struct scsi_addr *)addr;
+
+		sca->type = (sc_link->flags & SDEV_ATAPI)
+			? TYPE_ATAPI : TYPE_SCSI;
+		sca->scbus = sc_link->scsibus;
+		sca->target = sc_link->target;
+		sca->lun = sc_link->lun;
+		return (0);
+	}
+	case SCIOCCOMMAND:
+		if (scsi_readsafe_cmd[((scsireq_t *)addr)->cmd[0]])
+			break;
+		/* FALLTHROUGH */
+	case SCIOCDEBUG:
+	case SCIOCRESET:
+		if ((flag & FWRITE) == 0)
+			return (EPERM);
+		break;
+	default:
+		if (sc_link->adapter->ioctl)
+			return ((sc_link->adapter->ioctl)(sc_link, cmd, addr,
+			    flag, p));
+		else
+			return (ENOTTY);
+	}
 
 	switch(cmd) {
 	case SCIOCCOMMAND: {
 		scsireq_t *screq = (scsireq_t *)addr;
 		struct scsi_ioctl *si;
-		int len;
 
 		si = si_get();
 		si->si_screq = *screq;
 		si->si_sc_link = sc_link;
-		len = screq->datalen;
-		if (len) {
+		if (screq->datalen) {
 			si->si_iov.iov_base = screq->databuf;
-			si->si_iov.iov_len = len;
+			si->si_iov.iov_len = screq->datalen;
 			si->si_uio.uio_iov = &si->si_iov;
 			si->si_uio.uio_iovcnt = 1;
-			si->si_uio.uio_resid = len;
+			si->si_uio.uio_resid = screq->datalen;
 			si->si_uio.uio_offset = 0;
 			si->si_uio.uio_segflg = UIO_USERSPACE;
-			si->si_uio.uio_rw = 
+			si->si_uio.uio_rw =
 			    (screq->flags & SCCMD_READ) ? UIO_READ : UIO_WRITE;
 			si->si_uio.uio_procp = p;
 			error = physio(scsistrategy, &si->si_bp, dev,
@@ -318,7 +402,7 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 		}
 		*screq = si->si_screq;
 		si_free(si);
-		return error;
+		return (error);
 	}
 	case SCIOCDEBUG: {
 		int level = *((int *)addr);
@@ -333,29 +417,17 @@ scsi_do_ioctl(sc_link, dev, cmd, addr, flag, p)
 			sc_link->flags |= SDEV_DB3;
 		if (level & 8)
 			sc_link->flags |= SDEV_DB4;
-		return 0;
+		return (0);
 	}
-	case SCIOCREPROBE: {
-		struct scsi_addr *sca = (struct scsi_addr *)addr;
-
-		return scsi_probe_busses(sca->scbus, sca->target, sca->lun);
-	}
-	case SCIOCRECONFIG:
-	case SCIOCDECONFIG:
-		return EINVAL;
-	case SCIOCIDENTIFY: {
-		struct scsi_addr *sca = (struct scsi_addr *)addr;
-
-		sca->scbus = sc_link->scsibus;
-		sca->target = sc_link->target;
-		sca->lun = sc_link->lun;
-		return 0;
+	case SCIOCRESET: {
+		scsi_scsi_cmd(sc_link, 0, 0, 0, 0, GENRETRY, 2000, NULL,
+		    SCSI_RESET);
+		return (0);
 	}
 	default:
-		return ENOTTY;
-	}
-
 #ifdef DIAGNOSTIC
-	panic("scsi_do_ioctl: impossible");
+		panic("scsi_do_ioctl: impossible cmd (%#lx)", cmd);
 #endif
+		return (0);
+	}
 }

@@ -295,34 +295,18 @@ static int ssl_io_suck_read(SSL *ssl, char *buf, int len)
 **  _________________________________________________________________
 */
 
-#ifndef NO_WRITEV
 #include <sys/types.h>
 #include <sys/uio.h>
-#endif
 
 static int ssl_io_hook_read(BUFF *fb, char *buf, int len);
 static int ssl_io_hook_write(BUFF *fb, char *buf, int len);
-#ifndef NO_WRITEV
 static int ssl_io_hook_writev(BUFF *fb, const struct iovec *iov, int iovcnt);
-#endif
-#ifdef WIN32
-static int ssl_io_hook_recvwithtimeout(BUFF *fb, char *buf, int len);
-static int ssl_io_hook_sendwithtimeout(BUFF *fb, const char *buf, int len);
-#endif /* WIN32 */
 
 void ssl_io_register(void)
 {
     ap_hook_register("ap::buff::read",   ssl_io_hook_read,  AP_HOOK_NOCTX);
     ap_hook_register("ap::buff::write",  ssl_io_hook_write, AP_HOOK_NOCTX);
-#ifndef NO_WRITEV
     ap_hook_register("ap::buff::writev", ssl_io_hook_writev, AP_HOOK_NOCTX);
-#endif
-#ifdef WIN32
-    ap_hook_register("ap::buff::recvwithtimeout",
-                     ssl_io_hook_recvwithtimeout, AP_HOOK_NOCTX);
-    ap_hook_register("ap::buff::sendwithtimeout",
-                     ssl_io_hook_sendwithtimeout, AP_HOOK_NOCTX);
-#endif
     return;
 }
 
@@ -330,13 +314,7 @@ void ssl_io_unregister(void)
 {
     ap_hook_unregister("ap::buff::read",   ssl_io_hook_read);
     ap_hook_unregister("ap::buff::write",  ssl_io_hook_write);
-#ifndef NO_WRITEV
     ap_hook_unregister("ap::buff::writev", ssl_io_hook_writev);
-#endif
-#ifdef WIN32
-    ap_hook_unregister("ap::buff::recvwithtimeout", ssl_io_hook_recvwithtimeout);
-    ap_hook_unregister("ap::buff::sendwithtimeout", ssl_io_hook_sendwithtimeout);
-#endif
     return;
 }
 
@@ -406,7 +384,6 @@ static int ssl_io_hook_write(BUFF *fb, char *buf, int len)
     return rc;
 }
 
-#ifndef NO_WRITEV
 /* the prototype for our own SSL_writev() */
 static int SSL_writev(SSL *, const struct iovec *, int);
 
@@ -441,39 +418,7 @@ static int ssl_io_hook_writev(BUFF *fb, const struct iovec *iov, int iovcnt)
         rc = writev(fb->fd, iov, iovcnt);
     return rc;
 }
-#endif
 
-#ifdef WIN32
-
-/* and the prototypes for our SSL_xxx variants */
-static int SSL_sendwithtimeout(BUFF *fb, const char *buf, int len);
-static int SSL_recvwithtimeout(BUFF *fb, char *buf, int len);
-
-static int ssl_io_hook_recvwithtimeout(BUFF *fb, char *buf, int len)
-{
-    SSL *ssl;
-    int rc;
-
-    if ((ssl = ap_ctx_get(fb->ctx, "ssl")) != NULL)
-        rc = SSL_recvwithtimeout(fb, buf, len);
-    else
-        rc = ap_recvwithtimeout(fb->fd, buf, len, 0);
-    return rc;
-}
-
-static int ssl_io_hook_sendwithtimeout(BUFF *fb, const char *buf, int len)
-{
-    SSL *ssl;
-    int rc;
-
-    if ((ssl = ap_ctx_get(fb->ctx, "ssl")) != NULL)
-        rc = SSL_sendwithtimeout(fb, buf, len);
-    else
-        rc = ap_sendwithtimeout(fb->fd, buf, len, 0);
-    return rc;
-}
-
-#endif /* WIN32 */
 
 /*  _________________________________________________________________
 **
@@ -481,130 +426,6 @@ static int ssl_io_hook_sendwithtimeout(BUFF *fb, const char *buf, int len)
 **  _________________________________________________________________
 */
 
-#ifdef WIN32
-
-static int SSL_sendwithtimeout(BUFF *fb, const char *buf, int len)
-{
-    int iostate = 1;
-    fd_set fdset;
-    struct timeval tv;
-    int err = WSAEWOULDBLOCK;
-    int rv;
-    int retry;
-    int sock = fb->fd;
-    SSL *ssl;
-
-    ssl = ap_ctx_get(fb->ctx, "ssl");
-
-    if (!(tv.tv_sec = ap_check_alarm()))
-        return (SSL_write(ssl, (char*)buf, len));
-
-    rv = ioctlsocket(sock, FIONBIO, &iostate);
-    iostate = 0;
-    if (rv) {
-        err = WSAGetLastError();
-        ap_assert(0);
-    }
-    rv = SSL_write(ssl, (char*)buf, len);
-    if (rv <= 0) {
-        if (BIO_sock_should_retry(rv)) {
-            do {
-                retry = 0;
-                FD_ZERO(&fdset);
-                FD_SET((unsigned int)sock, &fdset);
-                tv.tv_usec = 0;
-                rv = select(FD_SETSIZE, NULL, &fdset, NULL, &tv);
-                if (rv == SOCKET_ERROR)
-                    err = WSAGetLastError();
-                else if (rv == 0) {
-                    ioctlsocket(sock, FIONBIO, &iostate);
-                    if(ap_check_alarm() < 0) {
-                        WSASetLastError(EINTR); /* Simulate an alarm() */
-                        return (SOCKET_ERROR);
-                    }
-                }
-                else {
-                    rv = SSL_write(ssl, (char*)buf, len);
-                    if (BIO_sock_should_retry(rv)) {
-                        ap_log_error(APLOG_MARK,APLOG_DEBUG, NULL,
-                                     "select claimed we could write, "
-                                     "but in fact we couldn't. "
-                                     "This is a bug in Windows.");
-                        retry = 1;
-                        Sleep(100);
-                    }
-                }
-            } while(retry);
-        }
-    }
-    ioctlsocket(sock, FIONBIO, &iostate);
-    if (rv == SOCKET_ERROR)
-        WSASetLastError(err);
-    return (rv);
-}
-
-static int SSL_recvwithtimeout(BUFF *fb, char *buf, int len)
-{
-    int iostate = 1;
-    fd_set fdset;
-    struct timeval tv;
-    int err = WSAEWOULDBLOCK;
-    int rv;
-    int sock = fb->fd_in;
-    SSL *ssl;
-    int retry;
-
-    ssl = ap_ctx_get(fb->ctx, "ssl");
-
-    if (!(tv.tv_sec = ap_check_alarm()))
-        return (SSL_read(ssl, buf, len));
-
-    rv = ioctlsocket(sock, FIONBIO, &iostate);
-    iostate = 0;
-    ap_assert(!rv);
-    rv = SSL_read(ssl, buf, len);
-    if (rv <= 0) {
-        if (BIO_sock_should_retry(rv)) {
-            do {
-                retry = 0;
-                FD_ZERO(&fdset);
-                FD_SET((unsigned int)sock, &fdset);
-                tv.tv_usec = 0;
-                rv = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
-                if (rv == SOCKET_ERROR)
-                    err = WSAGetLastError();
-                else if (rv == 0) {
-                    ioctlsocket(sock, FIONBIO, &iostate);
-                    ap_check_alarm();
-                    WSASetLastError(WSAEWOULDBLOCK);
-                    return (SOCKET_ERROR);
-                }
-                else {
-                    rv = SSL_read(ssl, buf, len);
-                    if (rv == SOCKET_ERROR) {
-                        if (BIO_sock_should_retry(rv)) {
-                          ap_log_error(APLOG_MARK,APLOG_DEBUG, NULL,
-                                       "select claimed we could read, "
-                                       "but in fact we couldn't. "
-                                       "This is a bug in Windows.");
-                          retry = 1;
-                          Sleep(100);
-                        }
-                        else {
-                            err = WSAGetLastError();
-                        }
-                    }
-                }
-            } while(retry);
-        }
-    }
-    ioctlsocket(sock, FIONBIO, &iostate);
-    if (rv == SOCKET_ERROR)
-        WSASetLastError(err);
-    return (rv);
-}
-
-#endif /*WIN32*/
 
 /*
  * There is no SSL_writev() provided by OpenSSL. The reason is mainly because
@@ -613,7 +434,6 @@ static int SSL_recvwithtimeout(BUFF *fb, char *buf, int len)
  * to at least being able to use the write() like interface. But keep in mind
  * that the network I/O performance is not write() like, of course.
  */
-#ifndef NO_WRITEV
 static int SSL_writev(SSL *ssl, const struct iovec *iov, int iovcnt)
 {
     int i;
@@ -630,7 +450,6 @@ static int SSL_writev(SSL *ssl, const struct iovec *iov, int iovcnt)
     }
     return rc;
 }
-#endif
 
 /*  _________________________________________________________________
 **

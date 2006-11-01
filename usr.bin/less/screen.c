@@ -40,7 +40,7 @@ extern int fd0;
 
 #if HAVE_TERMIOS_H && HAVE_TERMIOS_FUNCS
 #include <termios.h>
-#if HAVE_SYS_IOCTL_H && !defined(TIOCGWINSZ)
+#if HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
 #else
@@ -230,6 +230,8 @@ extern int sigs;
 extern int wscroll;
 extern int screen_trashed;
 extern int tty;
+extern int quit_at_eof;
+extern int ismore;
 #if HILITE_SEARCH
 extern int hilite_search;
 #endif
@@ -423,10 +425,10 @@ raw_mode(on)
 		 */
 		s = save_term;
 	}
+	tcsetattr(tty, TCSASOFT | TCSADRAIN, &s);
 #if HAVE_FSYNC
 	fsync(tty);
 #endif
-	tcsetattr(tty, TCSADRAIN, &s);
 #if MUST_SET_LINE_DISCIPLINE
 	if (!on)
 	{
@@ -616,8 +618,8 @@ ltget_env(capname)
 {
 	char name[16];
 
-	strcpy(name, "LESS_TERMCAP_");
-	strcat(name, capname);
+	strlcpy(name, "LESS_TERMCAP_", sizeof(name));
+	strlcat(name, capname, sizeof(name));
 	return (lgetenv(name));
 }
 
@@ -1108,8 +1110,9 @@ get_term()
 		char *termcap;
 		if ((sp = homefile("termcap.dat")) != NULL)
 		{
-			termcap = (char *) ecalloc(strlen(sp)+9, sizeof(char));
-			sprintf(termcap, "TERMCAP=%s", sp);
+			size_t len = strlen(sp) + 9;
+			termcap = (char *) ecalloc(len, sizeof(char));
+			snprintf(termcap, len, "TERMCAP=%s", sp);
 			free(sp);
 			putenv(termcap);
 		}
@@ -1182,11 +1185,18 @@ get_term()
 	if (sc_e_keypad == NULL)
 		sc_e_keypad = "";
 		
-	sc_init = ltgetstr("ti", &sp);
+	/*
+	 * This loses for terminals with termcap entries with ti/te strings
+	 * that switch to/from an alternate screen, and we're in quit_at_eof
+	 * (eg, more(1)).
+	 */
+	if (!quit_at_eof && !ismore) {
+		sc_init = ltgetstr("ti", &sp);
+		sc_deinit= ltgetstr("te", &sp);
+	}
 	if (sc_init == NULL)
 		sc_init = "";
 
-	sc_deinit= ltgetstr("te", &sp);
 	if (sc_deinit == NULL)
 		sc_deinit = "";
 
@@ -1253,7 +1263,7 @@ get_term()
 		t2 = "";
 	else
 	{
-		strcpy(sp, tgoto(sc_move, 0, 0));
+		strlcpy(sp, tgoto(sc_move, 0, 0), sbuf + sizeof(sbuf) - sp);
 		t2 = sp;
 		sp += strlen(sp) + 1;
 	}
@@ -1270,7 +1280,8 @@ get_term()
 		t2 = "";
 	else
 	{
-		strcpy(sp, tgoto(sc_move, 0, sc_height-1));
+		strlcpy(sp, tgoto(sc_move, 0, sc_height-1),
+		    sbuf + sizeof(sbuf) - sp);
 		t2 = sp;
 		sp += strlen(sp) + 1;
 	}
@@ -1966,7 +1977,7 @@ beep()
 #if MSDOS_COMPILER==WIN32C
 	MessageBeep(0);
 #else
-	write(1, "\7", 1);
+	write(STDOUT_FILENO, "\7", 1);
 #endif
 #endif
 }

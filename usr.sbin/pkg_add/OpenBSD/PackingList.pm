@@ -1,30 +1,50 @@
-# $OpenBSD: PackingList.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: PackingList.pm,v 1.49 2005/09/07 10:39:25 espie Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 use strict;
 use warnings;
+
+package OpenBSD::PackingList::State;
+my $dot = '.';
+
+sub new
+{
+	my $class = shift;
+	bless { default_owner=>'root', 
+	     default_group=>'bin', 
+	     default_mode=> 0444,
+	     cwd=>\$dot}, $class;
+}
+
+sub cwd
+{
+	return ${$_[0]->{cwd}};
+}
+
+sub set_cwd
+{
+	my ($self, $p) = @_;
+
+	require File::Spec;
+
+	$p = File::Spec->canonpath($p);
+	$self->{cwd} = \$p;
+}
+
 package OpenBSD::PackingList;
 
 use OpenBSD::PackingElement;
@@ -34,63 +54,207 @@ sub new
 {
 	my $class = shift;
 	bless {state => 
-	    {default_owner=>'root', 
-	     default_group=>'bin', 
-	     default_mode=> 0444} }, $class;
+		OpenBSD::PackingList::State->new()
+	}, $class;
 }
 
 sub read
 {
 	my ($a, $fh, $code) = @_;
 	my $plist;
+	$code = \&defaultCode if !defined $code;
 	if (ref $a) {
 		$plist = $a;
 	} else {
 		$plist = new $a;
 	}
-	while (<$fh>) {
-		next if m/^\s*$/;
-		next if defined $code and !&$code;
-		chomp;
-		OpenBSD::PackingElement::Factory($_, $plist);
-	}
+	&$code($fh,
+		sub {
+			local $_ = shift;
+			next if m/^\s*$/;
+			chomp;
+			OpenBSD::PackingElement::Factory($_, $plist);
+			if ($plist->{need_modules}) {
+				close($fh);
+				open($fh, '<', '/dev/null');
+			}
+		});
 	return $plist;
 }
 
-sub OpenBSD::PackingList::DirrmOnly
+sub defaultCode
 {
-	m/^\@cwd/ || m/^\@dirrm/ || m/^\@name/;
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		&$cont($_);
+	}
 }
 
-sub OpenBSD::PackingList::FilesOnly
+sub SharedItemsOnly
 {
-	m/^\@cwd/ || m/^\@name/ || !m/^\@/;
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		next unless m/^\@(?:cwd|dirrm|dir|fontdir|mandir|newuser|newgroup|name)\b/o || m/^\@(?:sample|extra)\b.*\/$/o || m/^[^\@].*\/$/o;
+		&$cont($_);
+	}
 }
 
-sub OpenBSD::PackingList::ConflictOnly
+sub DirrmOnly
 {
-	m/^\@pkgcfl/ || m/^\@option/ || m/^\@name/;
+	&OpenBSD::PackingList::SharedItemsOnly;
+}
+
+sub LibraryOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		next unless m/^\@(?:cwd|lib|name)\b/o ||
+			m/^\@comment\s+subdir\=/o;
+		&$cont($_);
+	}
+}
+
+sub FilesOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+	    	next unless m/^\@(?:cwd|name|info|man|file|lib|shell)\b/o || !m/^\@/o;
+		&$cont($_);
+	}
+}
+
+sub DependOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		# XXX optimization
+		if (m/^\@arch\b/o) {
+			while (<$fh>) {
+			    if (m/^\@(?:depend|wantlib|pkgdep|newdepend|libdepend)\b/o) {
+				    &$cont($_);
+			    } elsif (m/^\@(?:groups|users|cwd)\b/o) {
+				    last;
+			    }
+			}
+			return;
+		}
+		next unless m/^\@(?:depend|wantlib|pkgdep|newdepend|libdepend)\b/o;
+		&$cont($_);
+	}
+}
+
+sub ExtraInfoOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		# XXX optimization
+		if (m/^\@arch\b/o) {
+			while (<$fh>) {
+			    if (m/^\@(?:pkgpath)\b/o) {
+				    &$cont($_);
+			    } elsif (m/^\@(?:groups|users|cwd)\b/o) {
+				    last;
+			    }
+			}
+			return;
+		}
+		next unless m/^\@(?:name\b|comment\s+subdir\=)/o;
+		&$cont($_);
+	}
+}
+
+sub UpdateInfoOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		# XXX optimization
+		if (m/^\@arch\b/o) {
+			while (<$fh>) {
+			    if (m/^\@(?:depend|wantlib|pkgdep|newdepend|libdepend|pkgpath)\b/o) {
+				    &$cont($_);
+			    } elsif (m/^\@(?:groups|users|cwd)\b/o) {
+				    last;
+			    }
+			}
+			return;
+		}
+		next unless m/^\@(?:name\b|depend\b|wantlib\b|pkgdep\b|newdepend\b|libdepend\b|pkgpath\b|comment\s+subdir\=|arch\b)/o;
+		&$cont($_);
+	}
+}
+
+sub FatOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		# XXX optimization
+		if (m/^\@arch\b/o) {
+			&$cont($_);
+			return;
+		}
+		next unless m/^\@(?:name\b)/o;
+		&$cont($_);
+	}
+}
+
+sub ConflictOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+	while (<$fh>) {
+		# XXX optimization
+		if (m/^\@arch\b/o) {
+			while (<$fh>) {
+			    if (m/^\@(?:pkgcfl|conflict|option|name)\b/o) {
+				    &$cont($_);
+			    } elsif (m/^\@(?:depend|wantlib|pkgdep|newdepend|libdepend|groups|users|cwd)\b/o) {
+				    last;
+			    }
+			}
+			return;
+		}
+	    	next unless m/^\@(?:pkgcfl|conflict|option|name)\b/o;
+		&$cont($_);
+	}
+}
+
+sub SharedStuffOnly
+{
+	my ($fh, $cont) = @_;
+	local $_;
+MAINLOOP:
+	while (<$fh>) {
+		if (m/^\@shared\b/) {
+			&$cont($_);
+			while(<$fh>) {
+				redo MAINLOOP unless m/^\@(?:md5|size|symlink|link)\b/;
+				    m/^\@size\b/ || m/^\@symlink\b/ || 
+				    m/^\@link\b/;
+				&$cont($_);
+			}
+		} else {
+			next unless m/^\@(?:cwd|dirrm|name)\b/;
+		}
+		&$cont($_);
+	}
 }
 
 sub write
 {
 	my ($self, $fh) = @_;
-	$self->{name}->write($fh);
-	if (defined $self->{'no-default-conflict'}) {
-		$self->{'no-default-conflict'}->write($fh);
-	}
-	$self->{extrainfo}->write($fh);
-	for my $listname (qw(pkgcfl pkgdep newdepend libdepend items)) {
-		if (defined $self->{$listname}) {
-			for my $item (@{$self->{$listname}}) {
-				$item->write($fh);
-			}
-		}
-	}
-	for my $special (OpenBSD::PackageInfo::info_names()) {
-		$self->{$special}->write($fh) if defined $self->{$special};
-	}
+
+	$self->visit('write', $fh);
+
 }
+
 
 sub fromfile
 {
@@ -128,14 +292,152 @@ sub addunique
 	$plist->{$category} = $object;
 }
 
+sub has
+{
+	my ($plist, $name) = @_;
+	return defined $plist->{$name};
+}
+
+sub get
+{
+	my ($plist, $name) = @_;
+	return $plist->{$name};
+}
+
 sub pkgname($)
 {
 	my $self = shift;
 	return $self->{name}->{name};
 }
 
-# allows the autoloader to work correctly
-sub DESTROY
+sub pkgbase($)
+{
+	my $self = shift;
+
+	if (defined $self->{localbase}) {
+		return $self->{localbase}->{name};
+	} else {
+		return '/usr/local';
+	}
+}
+
+
+{
+    package OpenBSD::PackingList::Visitor;
+    sub new
+    {
+	    my $class = shift;
+	    bless {list=>[], pass=>1}, $class;
+    }
+
+    sub revisit
+    {
+	    my ($self, $item) = @_;
+	    push(@{$self->{list}}, $item);
+    }
+}
+
+our @unique_categories =
+    (qw(name no-default-conflict manual-installation extrainfo arch));
+
+our @list_categories =
+    (qw(pkgcfl conflict pkgpath incompatibility updateset depend 
+    	wantlib pkgdep newdepend libdepend module groups users items));
+
+our @cache_categories =
+    (qw(depend wantlib pkgdep newdepend libdepend));
+	
+sub visit
+{
+	my ($self, $method, @l) = @_;
+
+	my $visitor = new OpenBSD::PackingList::Visitor;
+
+	push(@l, $visitor);
+
+	if (defined $self->{cvstags}) {
+		for my $item (@{$self->{cvstags}}) {
+			$item->$method(@l);
+		}
+	}
+
+	for my $unique_item (@unique_categories) {
+		$self->{$unique_item}->$method(@l) if defined $self->{$unique_item};
+	}
+
+	for my $special (OpenBSD::PackageInfo::info_names()) {
+		$self->{$special}->$method(@l) if defined $self->{$special};
+	}
+
+	for my $listname (@list_categories) {
+		if (defined $self->{$listname}) {
+			for my $item (@{$self->{$listname}}) {
+				$item->$method(@l);
+			}
+		}
+	}
+	$visitor->{pass} = 2;
+	while (my $item = shift @{$visitor->{list}}) {
+		$item->method(@l);
+	}
+}
+
+my $plist_cache = {};
+
+sub from_installation
+{
+	my ($o, $pkgname, $code) = @_;
+
+	require OpenBSD::PackageInfo;
+
+	$code = \&defaultCode if !defined $code;
+
+	if ($code == \&DependOnly && defined $plist_cache->{$pkgname}) {
+	    return $plist_cache->{$pkgname};
+	}
+	my $plist =
+	    $o->fromfile(OpenBSD::PackageInfo::installed_contents($pkgname), 
+		$code);
+	if (defined $plist && $code == \&DependOnly) {
+		$plist_cache->{$pkgname} = $plist;
+	} 
+	return $plist;
+}
+
+sub to_cache
+{
+	my ($self) = @_;
+	return if defined $plist_cache->{$self->pkgname()};
+	my $plist = new OpenBSD::PackingList;
+	for my $c (@cache_categories) {
+		if (defined $self->{$c}) {
+			$plist->{$c} = $self->{$c};
+		}
+	}
+	$plist_cache->{$self->pkgname()} = $plist;
+}
+
+sub to_installation
+{
+	my ($self) = @_;
+
+	require OpenBSD::PackageInfo;
+
+	return if $main::not;
+
+	$self->tofile(OpenBSD::PackageInfo::installed_contents($self->pkgname()));
+}
+
+
+sub signature
+{
+	my $self = shift;
+	my $k = {};
+	$self->visit('signature', $k);
+	return join(',', $self->pkgname(), sort keys %$k);
+}
+
+sub forget
 {
 }
 

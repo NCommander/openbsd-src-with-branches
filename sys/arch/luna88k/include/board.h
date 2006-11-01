@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: board.h,v 1.5 2004/08/10 17:07:20 aoyama Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -46,12 +46,9 @@
 #endif
 #define UDEFINED
 
-#define MAX_CPUS	4		/* maximum cpus on the board */
-#define MAX_CMMUS	8		/* maximum cmmus on the board */
-
 /* machtype values */
-#define LUNA_88K	1
-#define LUNA_88K2	2
+#define LUNA_88K	0x1
+#define LUNA_88K2	0x2
 
 #define	SYSV_BASE	U(0x00000000) 	/* system virtual base */
 #define VEQR_ADDR	U(0x00000000)
@@ -86,6 +83,7 @@
 #define OBIO_CAL_DAY	U(0x45001FF4) 	/* days */
 #define OBIO_CAL_MON	U(0x45001FF8) 	/* months */
 #define OBIO_CAL_YEAR	U(0x45001FFC) 	/* years */
+#define NVRAM_ADDR_88K2	U(0x47000000)	/* Non Volatile RAM area for LUNA-88K2 */
 #define OBIO_PIO0_BASE	U(0x49000000) 	/* PIO-0 */
 #define OBIO_PIO0_SPACE	U(0x0000000C) 
 #define OBIO_PIO0A	U(0x49000000) 	/* PIO-0 port A */
@@ -120,12 +118,12 @@
 #define  INT_SET_LV0	U(0xFC000000) 	/* enable interrupts */
 #define  INT_SLAVE_MASK	U(0x84000000) 	/* slave can only enable 6 and 1 */
 #define	 INT_CLOCK_MASK	0xBFFFFFFF 	/* mask clock */
-#define  INT_LV6	U(0x00800000) 	/* level 6 enebled */
-#define  INT_LV5	U(0x00400000) 	/* level 5 enebled */
-#define  INT_LV4	U(0x00200000) 	/* level 4 enebled */
-#define  INT_LV3	U(0x00100000) 	/* level 3 enebled */
-#define  INT_LV2	U(0x00080000) 	/* level 2 enebled */
-#define  INT_LV1	U(0x00040000) 	/* level 1 enebled */
+#define  INT_LV6	U(0x00800000) 	/* level 6 enabled */
+#define  INT_LV5	U(0x00400000) 	/* level 5 enabled */
+#define  INT_LV4	U(0x00200000) 	/* level 4 enabled */
+#define  INT_LV3	U(0x00100000) 	/* level 3 enabled */
+#define  INT_LV2	U(0x00080000) 	/* level 2 enabled */
+#define  INT_LV1	U(0x00040000) 	/* level 1 enabled */
 #define  INT_ST		U(0xE0000000) 	/* interrupt status */
 #define  INT_MASK_LV0	INT_LV6 | INT_LV5 | INT_LV4 | INT_LV3 | INT_LV2 | INT_LV1
 #define  INT_MASK_LV1	INT_LV6 | INT_LV5 | INT_LV4 | INT_LV3 | INT_LV2
@@ -195,7 +193,7 @@
 #define BMAP_PALLET2	U(0xC1100000) 	/* color pallet */
 #define BOARD_CHECK_REG	U(0xD0000000) 	/* board check register */
 #define BMAP_CRTC	U(0xD1000000) 	/* CTRC-II */
-#define BMAP_IDENTROM   U(0xD1800000)   /* bitmap-boad identify ROM */
+#define BMAP_IDENTROM   U(0xD1800000)   /* bitmap-board identify ROM */
 #define SCSI_ADDR	U(0xE1000000) 	/* SCSI address */
 #define LANCE_ADDR	U(0xF1000000) 	/* LANCE */
 #define	EXT_IACK_ADDR	0xFFFFFFF7 	/* IACK Space for Extended Board */

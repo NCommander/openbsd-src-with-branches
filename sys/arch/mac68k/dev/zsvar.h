@@ -1,4 +1,5 @@
-/*	$NetBSD: zsvar.h,v 1.1 1995/10/09 12:42:20 briggs Exp $	*/
+/*	$OpenBSD: zsvar.h,v 1.3 1996/05/26 18:35:37 briggs Exp $	*/
+/*	$NetBSD: zsvar.h,v 1.2 1995/12/13 03:08:12 briggs Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
@@ -22,11 +23,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -66,8 +63,8 @@
  * When the value is a character + RR1 status, the character is in the
  * upper 8 bits of the RR1 status.
  */
-#define ZLRB_RING_SIZE 256		/* ZS line ring buffer size */
-#define	ZLRB_RING_MASK 255		/* mask for same */
+#define ZLRB_RING_SIZE 512		/* ZS line ring buffer size */
+#define	ZLRB_RING_MASK 511		/* mask for same */
 
 /* 0 is reserved (means "no interrupt") */
 #define	ZRING_RINT	1		/* receive data interrupt */

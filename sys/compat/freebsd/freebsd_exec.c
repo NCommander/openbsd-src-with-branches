@@ -1,4 +1,5 @@
-/*	$NetBSD: freebsd_exec.c,v 1.1 1995/10/10 01:19:27 mycroft Exp $	*/
+/*	$OpenBSD: freebsd_exec.c,v 1.16 2004/04/15 00:22:42 tedu Exp $	*/
+/*	$NetBSD: freebsd_exec.c,v 1.2 1996/05/18 16:02:08 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -37,27 +38,59 @@
 #include <sys/vnode.h>
 #include <sys/exec.h>
 #include <sys/resourcevar.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+#include <sys/exec_elf.h>
+#include <sys/exec_olf.h>
 
 #include <machine/freebsd_machdep.h>
 
 #include <compat/freebsd/freebsd_syscall.h>
 #include <compat/freebsd/freebsd_exec.h>
+#include <compat/freebsd/freebsd_util.h>
 
 extern struct sysent freebsd_sysent[];
+#ifdef SYSCALL_DEBUG
 extern char *freebsd_syscallnames[];
+#endif
 
-struct emul emul_freebsd = {
+extern const char freebsd_emul_path[];
+
+struct emul emul_freebsd_aout = {
 	"freebsd",
 	NULL,
 	freebsd_sendsig,
 	FREEBSD_SYS_syscall,
 	FREEBSD_SYS_MAXSYSCALL,
 	freebsd_sysent,
+#ifdef SYSCALL_DEBUG
 	freebsd_syscallnames,
+#else
+	NULL,
+#endif
 	0,
 	copyargs,
 	setregs,
+	NULL,
+	freebsd_sigcode,
+	freebsd_esigcode,
+};
+
+struct emul emul_freebsd_elf = {
+	"freebsd",
+	NULL,
+	freebsd_sendsig,
+	FREEBSD_SYS_syscall,
+	FREEBSD_SYS_MAXSYSCALL,
+	freebsd_sysent,
+#ifdef SYSCALL_DEBUG
+	freebsd_syscallnames,
+#else
+	NULL,
+#endif
+	FREEBSD_ELF_AUX_ARGSIZ,
+	elf32_copyargs,
+	setregs,
+	exec_elf32_fixup,
 	freebsd_sigcode,
 	freebsd_esigcode,
 };
@@ -91,7 +124,7 @@ exec_freebsd_aout_makecmds(p, epp)
 	/* assume FreeBSD's MID_MACHINE and [ZQNO]MAGIC is same as NetBSD's */
 	switch (midmag) {
 	case (MID_MACHINE << 16) | ZMAGIC:
-		error = cpu_exec_aout_prep_oldzmagic(p, epp);
+		error = exec_aout_prep_oldzmagic(p, epp);
 		break;
 	case (MID_MACHINE << 16) | QMAGIC:
 		error = exec_aout_prep_zmagic(p, epp);
@@ -104,9 +137,53 @@ exec_freebsd_aout_makecmds(p, epp)
 		break;
 	}
 	if (error == 0)
-		epp->ep_emul = &emul_freebsd;
+		epp->ep_emul = &emul_freebsd_aout;
 	else
 		kill_vmcmds(&epp->ep_vmcmds);
 
 	return error;
+}
+
+int
+exec_freebsd_elf32_makecmds(struct proc *p, struct exec_package *epp)
+{
+	if (!(emul_freebsd_elf.e_flags & EMUL_ENABLED))
+		return (ENOEXEC);
+	return exec_elf32_makecmds(p, epp);
+
+}
+
+int
+freebsd_elf_probe(p, epp, itp, pos, os)
+	struct proc *p;
+	struct exec_package *epp;
+	char *itp;
+	u_long *pos;
+	u_int8_t *os;
+{
+	Elf32_Ehdr *eh = epp->ep_hdr;
+	char *bp, *brand;
+	int error;
+	size_t len;
+
+	/*
+	 * Older FreeBSD ELF binaries use a brand; newer ones use EI_OSABI
+	 */
+	if (eh->e_ident[EI_OSABI] != ELFOSABI_FREEBSD) {
+		brand = elf32_check_brand(eh);
+		if (brand == NULL || strcmp(brand, "FreeBSD") != 0)
+			return (EINVAL);
+	}
+	if (itp) {
+		if ((error = emul_find(p, NULL, freebsd_emul_path, itp, &bp, 0)))
+			return (error);
+		if ((error = copystr(bp, itp, MAXPATHLEN, &len)))
+			return (error);
+		free(bp, M_TEMP);
+	}
+	epp->ep_emul = &emul_freebsd_elf;
+	*pos = ELF32_NO_ADDR;
+	if (*os == OOS_NULL)
+		*os = OOS_FREEBSD;
+	return (0);
 }

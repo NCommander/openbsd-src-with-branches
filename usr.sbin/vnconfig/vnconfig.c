@@ -1,3 +1,4 @@
+/*	$OpenBSD: vnconfig.c,v 1.17 2006/06/30 16:09:27 tedu Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,28 +46,43 @@
 
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <util.h>
+
+#include "pkcs5_pbkdf2.h"
+
+#define DEFAULT_VND	"vnd0"
 
 #define VND_CONFIG	1
 #define VND_UNCONFIG	2
+#define VND_GET		3
 
 int verbose = 0;
 
-char *rawdevice __P((char *));
-void usage __P((void));
+__dead void usage(void);
+int config(char *, char *, int, char *, size_t);
+int getinfo(const char *);
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char **argv)
 {
-	int ch, rv, action = VND_CONFIG;
+	int ch, rv, rounds, action = VND_CONFIG;
+	char *key = NULL;
+	size_t keylen = 0;
+	const char *errstr;
 
-	while ((ch = getopt(argc, argv, "cuv")) != -1) {
+	while ((ch = getopt(argc, argv, "cluvK:k")) != -1) {
 		switch (ch) {
 		case 'c':
 			action = VND_CONFIG;
+			break;
+		case 'l':
+			action = VND_GET;
 			break;
 		case 'u':
 			action = VND_UNCONFIG;
@@ -78,41 +90,153 @@ main(argc, argv)
 		case 'v':
 			verbose = 1;
 			break;
+		case 'K':
+		{
+			char keybuf[128];
+			char saltbuf[128];
+			char saltfilebuf[PATH_MAX];
+			char *saltfile;
+
+			rounds = strtonum(optarg, 1000, INT_MAX, &errstr);
+			if (errstr)
+				err(1, "rounds: %s", errstr);
+			key = getpass("Encryption key: ");
+			if (!key || strlen(key) == 0)
+				errx(1, "Need an encryption key");
+			strncpy(keybuf, key, sizeof(keybuf));
+			printf("Salt file: ");
+			fflush(stdout);
+			saltfile = fgets(saltfilebuf, sizeof(saltfilebuf),
+			    stdin);
+			if (!saltfile || saltfile[0] == '\n') {
+				warnx("Skipping salt file, insecure");
+				saltfile = 0;
+			} else {
+				size_t len = strlen(saltfile);
+				if (saltfile[len - 1] == '\n')
+					saltfile[len - 1] = 0;
+			}
+			if (saltfile) {
+				int fd;
+				
+				fd = open(saltfile, O_RDONLY);
+				if (fd == -1) {
+					int *s;
+
+					fprintf(stderr, "Salt file not found, attempting to create one\n");
+					fd = open(saltfile,
+					    O_RDWR|O_CREAT|O_EXCL, 0600);
+					if (fd == -1)
+						err(1, "Unable to create salt file: '%s'", saltfile);
+					for (s = (int *)saltbuf; s <
+					    (int *)(saltbuf + sizeof(saltbuf));
+					    s++)
+						*s = arc4random();
+					if (write(fd, saltbuf, sizeof(saltbuf))
+					    != sizeof(saltbuf))
+						err(1, "Unable to write salt file: '%s'", key);
+					fprintf(stderr, "Salt file created as '%s'\n", saltfile);
+				} else {
+					if (read(fd, saltbuf, sizeof(saltbuf))
+					    != sizeof(saltbuf))
+						err(1, "Unable to read salt file: '%s'", saltfile);
+				}
+				close(fd);
+			} else {
+				memset(saltbuf, 0, sizeof(saltbuf));
+			}
+			if (pkcs5_pbkdf2((u_int8_t**)&key, 128, keybuf,
+			    sizeof(keybuf), saltbuf, sizeof(saltbuf),
+			    rounds, 0))
+				errx(1, "pkcs5_pbkdf2 failed");
+			keylen = 128;
+			break;
+		}
+		case 'k':
+			key = getpass("Encryption key: ");
+			keylen = strlen(key);
+			break;
 		default:
-		case '?':
 			usage();
 			/* NOTREACHED */
 		}
 	}
+
 	argc -= optind;
 	argv += optind;
 
 	if (action == VND_CONFIG && argc == 2)
-		rv = config(argv[0], argv[1], action);
+		rv = config(argv[0], argv[1], action, key, keylen);
 	else if (action == VND_UNCONFIG && argc == 1)
-		rv = config(argv[0], NULL, action);
+		rv = config(argv[0], NULL, action, key, keylen);
+	else if (action == VND_GET)
+		rv = getinfo(argc ? argv[0] : NULL);
 	else
 		usage();
+
 	exit(rv);
 }
 
-config(dev, file, action)
-	char *dev;
-	char *file;
-	int action;
+int
+getinfo(const char *vname)
+{
+	int vd, print_all = 0;
+	struct vnd_user vnu;
+
+	if (vname == NULL) {
+		vname = DEFAULT_VND;
+		print_all = 1;
+	}
+
+	vd = opendev((char *)vname, O_RDONLY, OPENDEV_PART, NULL);
+	if (vd < 0)
+		err(1, "open: %s", vname);
+
+	vnu.vnu_unit = -1;
+
+query:
+	if (ioctl(vd, VNDIOCGET, &vnu) == -1) {
+		close(vd);
+		return (!(errno == ENXIO && print_all));
+	}
+
+	fprintf(stdout, "vnd%d: ", vnu.vnu_unit);
+
+	if (!vnu.vnu_ino)
+		fprintf(stdout, "not in use\n");
+	else
+		fprintf(stdout, "covering %s on %s, inode %d\n", vnu.vnu_file,
+		    devname(vnu.vnu_dev, S_IFBLK), vnu.vnu_ino);
+
+	if (print_all) {
+		vnu.vnu_unit++;
+		goto query;
+	}
+
+	close(vd);
+
+	return (0);
+}
+
+int
+config(char *dev, char *file, int action, char *key, size_t keylen)
 {
 	struct vnd_ioctl vndio;
 	FILE *f;
 	char *rdev;
 	int rv;
 
-	rdev = rawdevice(dev);
+	if (opendev(dev, O_RDWR, OPENDEV_PART, &rdev) < 0)
+		err(4, "%s", rdev);
 	f = fopen(rdev, "rw");
 	if (f == NULL) {
-		warn(rdev);
-		return (1);
+		warn("%s", rdev);
+		rv = -1;
+		goto out;
 	}
 	vndio.vnd_file = file;
+	vndio.vnd_key = (u_char *)key;
+	vndio.vnd_keylen = keylen;
 
 	/*
 	 * Clear (un-configure) the device
@@ -132,43 +256,25 @@ config(dev, file, action)
 		if (rv)
 			warn("VNDIOCSET");
 		else if (verbose)
-			printf("%s: %d bytes on %s\n", dev, vndio.vnd_size,
+			printf("%s: %llu bytes on %s\n", dev, vndio.vnd_size,
 			    file);
 	}
-done:
+
 	fclose(f);
 	fflush(stdout);
+ out:
+	if (key)
+		memset(key, 0, keylen);
 	return (rv < 0);
 }
 
-char *
-rawdevice(dev)
-	char *dev;
+__dead void
+usage(void)
 {
-	register char *rawbuf, *dp, *ep;
-	struct stat sb;
-	int len;
+	extern char *__progname;
 
-	len = strlen(dev);
-	rawbuf = malloc(len + 2);
-	strcpy(rawbuf, dev);
-	if (stat(rawbuf, &sb) != 0 || !S_ISCHR(sb.st_mode)) {
-		dp = rindex(rawbuf, '/');
-		if (dp) {
-			for (ep = &rawbuf[len]; ep > dp; --ep)
-				*(ep+1) = *ep;
-			*++ep = 'r';
-		}
-	}
-	return (rawbuf);
-}
-
-void
-usage()
-{
-
-	(void)fprintf(stderr, "%s%s",
-	    "usage: vnconfig -c [-v] special-file regular-file\n",
-	    "       vnconfig -u [-v] special-file\n");
+	(void)fprintf(stderr,
+	    "usage: %s [-ckluv] [-K rounds] rawdev regular_file\n",
+	    __progname);
 	exit(1);
 }

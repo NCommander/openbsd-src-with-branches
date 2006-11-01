@@ -1,3 +1,5 @@
+/*	$OpenBSD: spray.c,v 1.6 2004/10/01 04:08:46 jsg Exp $	*/
+
 /*
  * Copyright (c) 1993 Winning Strategies, Inc.
  * All rights reserved.
@@ -27,9 +29,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: spray.c,v 1.3 1994/12/23 16:42:47 cgd Exp $
+ *	$Id: spray.c,v 1.6 2004/10/01 04:08:46 jsg Exp $
  */
 
+#include <err.h>
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -41,8 +46,8 @@
 #define SPRAYOVERHEAD	86
 #endif
 
-void usage ();
-void print_xferstats ();
+void usage(void);
+void print_xferstats(int, int, double);
 
 /* spray buffer */
 char spray_buffer[SPRAYMAX];
@@ -53,9 +58,7 @@ struct timeval ONE_WAY = { 0, 0 };
 struct timeval TIMEOUT = { 25, 0 };
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char *progname;
 	spraycumul	host_stats;
@@ -70,15 +73,25 @@ main(argc, argv)
 
 	progname = *argv;
 	while ((c = getopt(argc, argv, "c:d:l:")) != -1) {
+		const char *errstr;
+
 		switch (c) {
 		case 'c':
-			count = atoi(optarg);
+			count = strtonum(optarg, 1, INT_MAX, &errstr);
+			if (errstr)
+				errx(1, "number of packets is %s: %s",
+				    errstr, optarg);
 			break;
 		case 'd':
-			delay = atoi(optarg);
+			delay = strtonum(optarg, 0, INT_MAX, &errstr);
+			if (errstr)
+				errx(1, "delay is %s: %s", errstr, optarg);
 			break;
 		case 'l':
-			length = atoi(optarg);
+			length = strtonum(optarg, SPRAYOVERHEAD, SPRAYMAX,
+			    &errstr);
+			if (errstr)
+				errx(1, "length is %s: %s", errstr, optarg);
 			break;
 		default:
 			usage();
@@ -118,7 +131,6 @@ main(argc, argv)
 	/* Initialize spray argument */
 	host_array.sprayarr_len = length - SPRAYOVERHEAD;
 	host_array.sprayarr_val = spray_buffer;
-	
 
 	/* create connection with server */
 	cl = clnt_create(*argv, SPRAYPROG, SPRAYVERS, "udp");
@@ -127,10 +139,9 @@ main(argc, argv)
 		exit(1);
 	}
 
-
 	/*
-	 * For some strange reason, RPC 4.0 sets the default timeout, 
-	 * thus timeouts specified in clnt_call() are always ignored.  
+	 * For some strange reason, RPC 4.0 sets the default timeout,
+	 * thus timeouts specified in clnt_call() are always ignored.
 	 *
 	 * The following (undocumented) hack resets the internal state
 	 * of the client handle.
@@ -139,7 +150,8 @@ main(argc, argv)
 
 
 	/* Clear server statistics */
-	if (clnt_call(cl, SPRAYPROC_CLEAR, xdr_void, NULL, xdr_void, NULL, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(cl, SPRAYPROC_CLEAR, xdr_void, NULL, xdr_void, NULL,
+	    TIMEOUT) != RPC_SUCCESS) {
 		clnt_perror(cl, progname);
 		exit(1);
 	}
@@ -150,52 +162,48 @@ main(argc, argv)
 	fflush (stdout);
 
 	for (i = 0; i < count; i++) {
-		clnt_call(cl, SPRAYPROC_SPRAY, xdr_sprayarr, &host_array, xdr_void, NULL, ONE_WAY);
+		clnt_call(cl, SPRAYPROC_SPRAY, xdr_sprayarr, &host_array,
+		    xdr_void, NULL, ONE_WAY);
 
-		if (delay) {
+		if (delay)
 			usleep(delay);
-		}
 	}
 
 
 	/* Collect statistics from server */
-	if (clnt_call(cl, SPRAYPROC_GET, xdr_void, NULL, xdr_spraycumul, &host_stats, TIMEOUT) != RPC_SUCCESS) {
+	if (clnt_call(cl, SPRAYPROC_GET, xdr_void, NULL, xdr_spraycumul,
+	    &host_stats, TIMEOUT) != RPC_SUCCESS) {
 		clnt_perror(cl, progname);
 		exit(1);
 	}
 
 	xmit_time = host_stats.clock.sec +
-			(host_stats.clock.usec / 1000000.0);
+	    (host_stats.clock.usec / 1000000.0);
 
 	printf ("\n\tin %.2f seconds elapsed time\n", xmit_time);
-
 
 	/* report dropped packets */
 	if (host_stats.counter != count) {
 		int packets_dropped = count - host_stats.counter;
 
 		printf("\t%d packets (%.2f%%) dropped\n",
-			packets_dropped,
-			100.0 * packets_dropped / count );
-	} else {
+		    packets_dropped,
+		    100.0 * packets_dropped / count );
+	} else
 		printf("\tno packets dropped\n");
-	}
 
 	printf("Sent:");
 	print_xferstats(count, length, xmit_time);
 
 	printf("Rcvd:");
 	print_xferstats(host_stats.counter, length, xmit_time);
-	
+
 	exit (0);
 }
 
 
 void
-print_xferstats(packets, packetlen, xfertime)
-	int packets;
-	int packetlen;
-	double xfertime;
+print_xferstats(int packets, int packetlen, double xfertime)
 {
 	int datalen;
 	double pps;		/* packets per second */
@@ -207,17 +215,17 @@ print_xferstats(packets, packetlen, xfertime)
 
 	printf("\t%.0f packets/sec, ", pps);
 
-	if (bps >= 1024) 
+	if (bps >= 1024)
 		printf ("%.1fK ", bps / 1024);
 	else
 		printf ("%.0f ", bps);
-	
+
 	printf("bytes/sec\n");
 }
 
 
 void
-usage ()
+usage(void)
 {
 	fprintf(stderr, "usage: spray [-c count] [-l length] [-d delay] host\n");
 	exit(1);

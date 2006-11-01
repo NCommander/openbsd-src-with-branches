@@ -1,3 +1,4 @@
+.\"	$OpenBSD: ldd.1,v 1.7 2000/07/31 01:27:43 pjanzen Exp $
 .\"	$NetBSD: ldd.1,v 1.2 1995/10/08 23:39:58 pk Exp $
 .\"
 .\" Copyright (c) 1993 Paul Kranenburg
@@ -30,7 +31,7 @@
 .\"
 .Dd October 22, 1993
 .Dt LDD 1
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm ldd
 .Nd list dynamic object dependencies
@@ -39,21 +40,27 @@
 .Op Fl f Ar format
 .Ar program ...
 .Sh DESCRIPTION
-.Nm ldd
+.Nm
 displays all shared objects that are needed to run the given program.
-Contrary to nm(1), the list includes
+Contrary to
+.Xr nm 1 ,
+the list includes
 .Dq indirect
-depedencies that are the result of needed shared objects which themselves
+dependencies that are the result of needed shared objects which themselves
 depend on yet other shared objects.
 Zero, one or two
 .Fl f
 options may be given. The argument is a format string passed to
-.Xr rtld 1
+.Xr ld.so 1
 and allows customization of
 .Nm ldd Ns 's
 output. See
-.Xr rtld 1
+.Xr ld.so 1
 for a list of recognised conversion characters.
+.Pp
+.Nm
+also has some limited support for scanning shared libraries.
+It displays dependencies, but does not hunt them down recursively.
 .Sh SEE ALSO
 .Xr ld 1 ,
 .Xr ld.so 1 ,
@@ -61,5 +68,6 @@ for a list of recognised conversion characters.
 .Sh HISTORY
 A
 .Nm ldd
-utility first appeared in SunOS 4.0, it appeared in its current form
-in NetBSD 0.9a.
+utility first appeared in SunOS 4.0.
+It appeared in its current form in
+.Nx 0.9a .

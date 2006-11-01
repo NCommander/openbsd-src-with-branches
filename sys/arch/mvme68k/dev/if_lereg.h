@@ -1,4 +1,4 @@
-/*	$NetBSD: if_lereg.h,v 1.4 1994/11/20 20:52:22 deraadt Exp $ */
+/*	$OpenBSD: if_lereg.h,v 1.7 2003/06/02 23:27:50 millert Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,133 +31,59 @@
  * @(#)if_lereg.h	8.2 (Berkeley) 10/30/93
  */
 
-#define	LEMTU		1518
-#define	LEMINSIZE	60	/* should be 64 if mode DTCR is set */
-#define	LERBUF		8
-#define	LERBUFLOG2	3
-#define	LE_RLEN		(LERBUFLOG2 << 13)
-#define	LETBUF		1
-#define	LETBUFLOG2	0
-#define	LE_TLEN		(LETBUFLOG2 << 13)
+#define LEMEMSIZE 0x4000
 
-/* Local Area Network Controller for Ethernet (LANCE) registers */
-struct lereg1 {
-	volatile u_short	ler1_rdp;	/* register data port */
-	volatile u_short	ler1_rap;	/* register address port */
-};
-
-/* register addresses */
-#define	LE_CSR0		0		/* Control and status register */
-#define	LE_CSR1		1		/* low address of init block */
-#define	LE_CSR2		2		/* high address of init block */
-#define	LE_CSR3		3		/* Bus master and control */
-
-/* Control and status register 0 (csr0) */
-#define	LE_C0_ERR	0x8000		/* error summary */
-#define	LE_C0_BABL	0x4000		/* transmitter timeout error */
-#define	LE_C0_CERR	0x2000		/* collision */
-#define	LE_C0_MISS	0x1000		/* missed a packet */
-#define	LE_C0_MERR	0x0800		/* memory error */
-#define	LE_C0_RINT	0x0400		/* receiver interrupt */
-#define	LE_C0_TINT	0x0200		/* transmitter interrupt */
-#define	LE_C0_IDON	0x0100		/* initalization done */
-#define	LE_C0_INTR	0x0080		/* interrupt condition */
-#define	LE_C0_INEA	0x0040		/* interrupt enable */
-#define	LE_C0_RXON	0x0020		/* receiver on */
-#define	LE_C0_TXON	0x0010		/* transmitter on */
-#define	LE_C0_TDMD	0x0008		/* transmit demand */
-#define	LE_C0_STOP	0x0004		/* disable all external activity */
-#define	LE_C0_STRT	0x0002		/* enable external activity */
-#define	LE_C0_INIT	0x0001		/* begin initalization */
-
-#define LE_C0_BITS \
-    "\20\20ERR\17BABL\16CERR\15MISS\14MERR\13RINT\
-\12TINT\11IDON\10INTR\07INEA\06RXON\05TXON\04TDMD\03STOP\02STRT\01INIT"
-
-/* Control and status register 3 (csr3) */
-#define	LE_C3_BSWP	0x4		/* byte swap */
-#define	LE_C3_ACON	0x2		/* ALE control, eh? */
-#define	LE_C3_BCON	0x1		/* byte control */
 /*
- * Current size is 13,758 bytes with 8 x 1518 receive buffers and
- * 1 x 1518 transmit buffer.
+ * LANCE registers.
  */
-struct lereg2 {
-	/* initialization block */
-	volatile u_short	ler2_mode;	/* mode */
-	volatile u_char	ler2_padr[6];		/* physical address */
-	volatile u_short	ler2_ladrf[4];	/* logical address filter */
-	volatile u_short	ler2_rdra;	/* receive descriptor addr */
-	volatile u_short	ler2_rlen;	/* rda high and ring size */
-	volatile u_short	ler2_tdra;	/* transmit descriptor addr */
-	volatile u_short	ler2_tlen;	/* tda high and ring size */
-	/* receive message descriptors. bits/hadr are byte order dependent. */
-	struct	lermd {
-		volatile u_short	rmd0;	/* low address of packet */
-		volatile u_char	rmd1_bits;	/* descriptor bits */
-		volatile u_char	rmd1_hadr;	/* high address of packet */
-		volatile short	rmd2;		/* buffer byte count */
-		volatile u_short	rmd3;	/* message byte count */
-	} ler2_rmd[LERBUF];
-	/* transmit message descriptors */
-	struct	letmd {
-		volatile u_short	tmd0;	/* low address of packet */
-		volatile u_char	tmd1_bits;	/* descriptor bits */
-		volatile u_char	tmd1_hadr;	/* high address of packet */
-		volatile short	tmd2;		/* buffer byte count */
-		volatile u_short	tmd3;	/* transmit error bits */
-	} ler2_tmd[LETBUF];
-	volatile char	ler2_rbuf[LERBUF][LEMTU];
-	volatile char	ler2_tbuf[LETBUF][LEMTU];
+struct lereg1 {
+        volatile u_int16_t      ler1_rdp;       /* data port */
+        volatile u_int16_t      ler1_rap;       /* register select port */
 };
 
-/* Initialzation block (mode) */
-#define	LE_MODE_PROM	0x8000		/* promiscuous mode */
-/*			0x7f80		   reserved, must be zero */
-#define	LE_MODE_INTL	0x0040		/* internal loopback */
-#define	LE_MODE_DRTY	0x0020		/* disable retry */
-#define	LE_MODE_COLL	0x0010		/* force a collision */
-#define	LE_MODE_DTCR	0x0008		/* disable transmit CRC */
-#define	LE_MODE_LOOP	0x0004		/* loopback mode */
-#define	LE_MODE_DTX	0x0002		/* disable transmitter */
-#define	LE_MODE_DRX	0x0001		/* disable receiver */
-#define	LE_MODE_NORMAL	0		/* none of the above */
+#define	VLEMEMSIZE	0x00040000 
+#define	VLEMEMBASE	0xfd6c0000
+
+/*
+ * LANCE registers for MVME376
+ */
+struct vlereg1 {
+   volatile u_int16_t      ler1_csr;       /* board control/status register */
+   volatile u_int16_t      ler1_vec;       /* interupt vector register */
+   volatile u_int16_t      ler1_rdp;       /* data port */
+   volatile u_int16_t      ler1_rap;       /* register select port */
+   volatile u_int16_t      ler1_ear;       /* ethernet address register */
+};
+
+#define NVRAM_EN    0x0008 /* NVRAM enable bit              */
+#define INTR_EN     0x0010 /* Interrupt enable bit          */
+#define PARITYB     0x0020 /* Parity clear bit              */
+#define HW_RS       0x0040 /* Hardware reset bit            */
+#define SYSFAILB    0x0080 /* SYSFAIL bit                   */
+#define NVRAM_RWEL   0xE0  /* Reset write enable latch      */
+#define NVRAM_STO    0x60  /* Store ram to eeprom           */
+#define NVRAM_SLP    0xA0  /* Novram into low power mode    */
+#define NVRAM_WRITE  0x20  /* Writes word from location x   */
+#define NVRAM_SWEL   0xC0  /* Set write enable latch        */
+#define NVRAM_RCL    0x40  /* Recall eeprom data into ram   */
+#define NVRAM_READ   0x00  /* Reads word from location x    */
+
+#define CDELAY  delay(10000)
+#define WRITE_CSR_OR(x)    reg1->ler1_csr=((struct le_softc *)sc)->csr|=x
+#define WRITE_CSR_AND(x)   reg1->ler1_csr=((struct le_softc *)sc)->csr&=x
+#define ENABLE_NVRAM       WRITE_CSR_AND(~NVRAM_EN)
+#define DISABLE_NVRAM      WRITE_CSR_OR(NVRAM_EN)
+#define ENABLE_INTR        WRITE_CSR_AND(~INTR_EN)
+#define DISABLE_INTR       WRITE_CSR_OR(INTR_EN)
+#define RESET_HW           WRITE_CSR_AND(~0xFF00);WRITE_CSR_AND(~HW_RS);CDELAY
+#define SET_IPL(x)         WRITE_CSR_AND(~x)
+#define SET_VEC(x)         reg1->ler1_vec=0;reg1->ler1_vec |=x;
+#define PARITY_CL          WRITE_CSR_AND(~PARITYB)
+#define SYSFAIL_CL         WRITE_CSR_AND(~SYSFAILB)
+#define NVRAM_CMD(c,a)     for(i=0;i<8;i++){ \
+                              reg1->ler1_ear=((c|(a<<1))>>i); \
+                              CDELAY; \
+                           } \
+                           CDELAY;
 
 
-/* Receive message descriptor 1 (rmd1_bits) */ 
-#define	LE_R1_OWN	0x80		/* LANCE owns the packet */
-#define	LE_R1_ERR	0x40		/* error summary */
-#define	LE_R1_FRAM	0x20		/* framing error */
-#define	LE_R1_OFLO	0x10		/* overflow error */
-#define	LE_R1_CRC	0x08		/* CRC error */
-#define	LE_R1_BUFF	0x04		/* buffer error */
-#define	LE_R1_STP	0x02		/* start of packet */
-#define	LE_R1_ENP	0x01		/* end of packet */
-
-#define LE_R1_BITS \
-    "\20\10OWN\7ERR\6FRAM\5OFLO\4CRC\3BUFF\2STP\1ENP"
-
-/* Transmit message descriptor 1 (tmd1_bits) */ 
-#define	LE_T1_OWN	0x80		/* LANCE owns the packet */
-#define	LE_T1_ERR	0x40		/* error summary */
-#define	LE_T1_MORE	0x10		/* multiple collisions */
-#define	LE_T1_ONE	0x08		/* single collision */
-#define	LE_T1_DEF	0x04		/* defferred transmit */
-#define	LE_T1_STP	0x02		/* start of packet */
-#define	LE_T1_ENP	0x01		/* end of packet */
-
-#define LE_T1_BITS \
-    "\20\10OWN\7ERR\6RES\5MORE\4ONE\3DEF\2STP\1ENP"
-
-/* Transmit message descriptor 3 (tmd3) */ 
-#define	LE_T3_BUFF	0x8000		/* buffer error */
-#define	LE_T3_UFLO	0x4000		/* underflow error */
-#define	LE_T3_LCOL	0x1000		/* late collision */
-#define	LE_T3_LCAR	0x0800		/* loss of carrier */
-#define	LE_T3_RTRY	0x0400		/* retry error */
-#define	LE_T3_TDR_MASK	0x03ff		/* time domain reflectometry counter */
-
-#define LE_XMD2_ONES	0xf000
-
-#define LE_T3_BITS \
-    "\20\20BUFF\17UFLO\16RES\15LCOL\14LCAR\13RTRY"

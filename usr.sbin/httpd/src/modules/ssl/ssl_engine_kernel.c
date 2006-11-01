@@ -334,6 +334,12 @@ void ssl_hook_NewConnection(conn_rec *conn)
                 ap_ctx_set(ap_global_ctx, "ssl::handshake::timeout", (void *)FALSE);
                 return;
             }
+            else if (   (SSL_get_error(ssl, rc) == SSL_ERROR_WANT_READ  && BIO_should_retry(SSL_get_rbio(ssl)))
+                     || (SSL_get_error(ssl, rc) == SSL_ERROR_WANT_WRITE && BIO_should_retry(SSL_get_wbio(ssl)))) {
+                ssl_log(srvr, SSL_LOG_TRACE, "SSL handshake I/O retry (server %s, client %s)",
+                        cpVHostID, conn->remote_ip != NULL ? conn->remote_ip : "unknown");
+                continue;
+            }
             else {
                 /*
                  * Ok, anything else is a fatal error
@@ -423,9 +429,7 @@ void ssl_hook_NewConnection(conn_rec *conn)
      * (don't used under Win32, because
      * there we use select())
      */
-#ifndef WIN32
     SSL_set_read_ahead(ssl, TRUE);
-#endif
 
 #ifdef SSL_VENDOR
     /* Allow vendors to do more things on connection time... */
@@ -666,7 +670,7 @@ int ssl_hook_Access(request_rec *r)
     X509_STORE_CTX certstorectx;
     int depth;
     STACK_OF(SSL_CIPHER) *skCipherOld;
-    STACK_OF(SSL_CIPHER) *skCipher;
+    STACK_OF(SSL_CIPHER) *skCipher = NULL;
     SSL_CIPHER *pCipher;
     ap_ctx *apctx;
     int nVerifyOld;
@@ -862,8 +866,8 @@ int ssl_hook_Access(request_rec *r)
                     && (nVerify    != SSL_VERIFY_NONE))
                 || (  !(nVerifyOld &  SSL_VERIFY_PEER)
                     && (nVerify    &  SSL_VERIFY_PEER))
-                || (  !(nVerifyOld &  (SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT))
-                    && (nVerify    &  (SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT)))) {
+                || (  !(nVerifyOld &  SSL_VERIFY_FAIL_IF_NO_PEER_CERT)
+                    && (nVerify    &  SSL_VERIFY_FAIL_IF_NO_PEER_CERT))) {
                 renegotiate = TRUE;
                 /* optimization */
                 if (   dc->nOptions & SSL_OPT_OPTRENEGOTIATE
@@ -1061,6 +1065,20 @@ int ssl_hook_Access(request_rec *r)
             if (cert != NULL)
                 X509_free(cert);
         }
+
+        /*
+         * Also check that SSLCipherSuite has been enforced as expected
+         */
+        if (skCipher != NULL) {
+            pCipher = SSL_get_current_cipher(ssl);
+            if (sk_SSL_CIPHER_find(skCipher, pCipher) < 0) {
+                ssl_log(r->server, SSL_LOG_ERROR,
+                        "SSL cipher suite not renegotiated: "
+                        "access to %s denied using cipher %s",
+                        r->filename, SSL_CIPHER_get_name(pCipher));
+                return FORBIDDEN;
+            }
+        }
     }
 
     /*
@@ -1139,7 +1157,6 @@ int ssl_hook_Auth(request_rec *r)
 {
     SSLSrvConfigRec *sc = mySrvConfig(r->server);
     SSLDirConfigRec *dc = myDirConfig(r);
-    char b1[MAX_STRING_LEN], b2[MAX_STRING_LEN];
     char *clientdn;
     const char *cpAL;
     const char *cpUN;
@@ -1200,12 +1217,11 @@ int ssl_hook_Auth(request_rec *r)
      * adding the string "xxj31ZMTZzkVA" as the password in the user file.
      * This is just the crypted variant of the word "password" ;-)
      */
-    ap_snprintf(b1, sizeof(b1), "%s:password", clientdn);
-    ssl_util_uuencode(b2, b1, FALSE);
-    ap_snprintf(b1, sizeof(b1), "Basic %s", b2);
-    ap_table_set(r->headers_in, "Authorization", b1);
+    cpAL = ap_pstrcat(r->pool, "Basic ", ap_pbase64encode(r->pool,
+        ap_pstrcat(r->pool, clientdn, ":password", NULL)), NULL);
+    ap_table_set(r->headers_in, "Authorization", cpAL);
     ssl_log(r->server, SSL_LOG_INFO,
-            "Faking HTTP Basic Auth header: \"Authorization: %s\"", b1);
+            "Faking HTTP Basic Auth header: \"Authorization: %s\"", cpAL);
 
     return DECLINED;
 }
@@ -1524,9 +1540,7 @@ int ssl_callback_SSLVerify(int ok, X509_STORE_CTX *ctx)
     if (   (   errnum == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT
             || errnum == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN
             || errnum == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY
-#if SSL_LIBRARY_VERSION >= 0x00905000
             || errnum == X509_V_ERR_CERT_UNTRUSTED
-#endif
             || errnum == X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE  )
         && verify == SSL_CVERIFY_OPTIONAL_NO_CA                       ) {
         ssl_log(s, SSL_LOG_TRACE,
@@ -1719,17 +1733,9 @@ int ssl_callback_SSLVerify_CRL(
         /*
          * Check if the current certificate is revoked by this CRL
          */
-#if SSL_LIBRARY_VERSION < 0x00904000
-        n = sk_num(X509_CRL_get_REVOKED(crl));
-#else
         n = sk_X509_REVOKED_num(X509_CRL_get_REVOKED(crl));
-#endif
         for (i = 0; i < n; i++) {
-#if SSL_LIBRARY_VERSION < 0x00904000
-            revoked = (X509_REVOKED *)sk_value(X509_CRL_get_REVOKED(crl), i);
-#else
             revoked = sk_X509_REVOKED_value(X509_CRL_get_REVOKED(crl), i);
-#endif
             if (ASN1_INTEGER_cmp(revoked->serialNumber, X509_get_serialNumber(xs)) == 0) {
 
                 serial = ASN1_INTEGER_get(revoked->serialNumber);
@@ -1887,11 +1893,7 @@ void ssl_callback_DelSessionCacheEntry(
  * SSL handshake and does SSL record layer stuff. We use it to
  * trace OpenSSL's processing in out SSL logfile.
  */
-#if SSL_LIBRARY_VERSION >= 0x00907000
 void ssl_callback_LogTracingState(const SSL *ssl, int where, int rc)
-#else
-void ssl_callback_LogTracingState(SSL *ssl, int where, int rc)
-#endif
 {
     conn_rec *c;
     server_rec *s;

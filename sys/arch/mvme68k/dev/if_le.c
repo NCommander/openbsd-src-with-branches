@@ -1,4 +1,4 @@
-/*	$NetBSD: if_le.c,v 1.20 1995/04/12 08:47:21 pk Exp $ */
+/*	$OpenBSD: if_le.c,v 1.30 2005/11/24 22:43:16 miod Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,147 +33,253 @@
 
 #include "bpfilter.h"
 
-/*
- * AMD 7990 LANCE
- */
 #include <sys/param.h>
-#include <sys/device.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/mbuf.h>
-#include <sys/buf.h>
-#include <sys/socket.h>
 #include <sys/syslog.h>
-#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/device.h>
 #include <sys/malloc.h>
-#include <sys/errno.h>
-
-#include <vm/vm.h>
 
 #include <net/if.h>
-#include <net/netisr.h>
-#include <net/route.h>
-#if NBPFILTER > 0
-#include <sys/select.h>
-#include <net/bpf.h>
-#include <net/bpfdesc.h>
-#endif
 
 #ifdef INET
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/in_var.h>
-#include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #endif
 
-#ifdef NS
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#endif
+#include <net/if_media.h>
 
-#ifdef APPLETALK
-#include <netddp/atalk.h>
-#endif
-
-#include <machine/cpu.h>
 #include <machine/autoconf.h>
-#include <machine/pmap.h>
+#include <machine/cpu.h>
+
+#include <dev/ic/am7990reg.h>
+#include <dev/ic/am7990var.h>
 
 #include <mvme68k/dev/if_lereg.h>
+#include <mvme68k/dev/if_levar.h>
+#include <mvme68k/dev/vme.h>
+
+#include "pcc.h"
+#if NPCC > 0
 #include <mvme68k/dev/pccreg.h>
-
-/* DVMA address to LANCE address -- the Sbus/MMU will resupply the 0xff */
-#define LANCE_ADDR(x) ((int)x)
-
-int	ledebug = 0;		/* console error messages */
-
-#ifdef PACKETSTATS
-long	lexpacketsizes[LEMTU+1];
-long	lerpacketsizes[LEMTU+1];
 #endif
 
-/* Per interface statistics */
-/* XXX this should go in something like if_levar.h */
-struct	lestats {
-	long	lexints;	/* transmitter interrupts */
-	long	lerints;	/* receiver interrupts */
-	long	lerbufs;	/* total buffers received during interrupts */
-	long	lerhits;	/* times current rbuf was full */
-	long	lerscans;	/* rbufs scanned before finding first full */
-};
-
-/*
- * Ethernet software status per interface.
- *
- * Each interface is referenced by a network interface structure,
- * le_if, which the routing code uses to locate the interface.
- * This structure contains the output queue for the interface, its address, ...
- */
-struct le_softc {
-	struct	device sc_dev;		/* base device */
-	struct	evcnt sc_intrcnt;	/* # of interrupts, per le */
-	struct	evcnt sc_errcnt;	/* # of errors, per le */
-	struct	intrhand sc_ih;
-
-	struct	arpcom sc_ac;		/* common Ethernet structures */
-#define	sc_if	sc_ac.ac_if		/* network-visible interface */
-#define	sc_addr	sc_ac.ac_enaddr		/* hardware Ethernet address */
-	struct	lereg1 *sc_r1;		/* LANCE registers */
-	struct	lereg2 *sc_r2;		/* dual-port RAM */
-	int	sc_rmd;			/* predicted next rmd to process */
-	int	sc_runt;
-	int	sc_jab;
-	int	sc_merr;
-	int	sc_babl;
-	int	sc_cerr;
-	int	sc_miss;
-	int	sc_xint;
-	int	sc_xown;
-	int	sc_uflo;
-	int	sc_rxlen;
-	int	sc_rxoff;
-	int	sc_txoff;
-	int	sc_busy;
-	short	sc_iflags;
-	struct	lestats sc_lestats;	/* per interface statistics */
-};
-
-
 /* autoconfiguration driver */
-void	leattach(struct device *, struct device *, void *);
-int	lematch(struct device *, void *, void *);
-struct	cfdriver lecd =
-    { NULL, "le", lematch, leattach, DV_IFNET, sizeof(struct le_softc) };
+void  leattach(struct device *, struct device *, void *);
+int   lematch(struct device *, void *, void *);
 
-/* Forwards */
-void	leattach(struct device *, struct device *, void *);
-void	lesetladrf(struct le_softc *);
-void	lereset(struct device *);
-int	leinit(int);
-void	lestart(struct ifnet *);
-int	leintr(void *);
-void	lexint(struct le_softc *);
-void	lerint(struct le_softc *);
-void	leread(struct le_softc *, char *, int);
-int	leput(char *, struct mbuf *);
-struct mbuf *leget(char *, int, int, struct ifnet *);
-int	leioctl(struct ifnet *, u_long, caddr_t);
-void	leerror(struct le_softc *, int);
-void	lererror(struct le_softc *, char *);
-void	lexerror(struct le_softc *);
+struct cfattach le_ca = {
+	sizeof(struct le_softc), lematch, leattach
+};
 
-extern void *etherbuf;
+static int lebustype;
+
+void lewrcsr(struct am7990_softc *, u_int16_t, u_int16_t);
+u_int16_t lerdcsr(struct am7990_softc *, u_int16_t);
+void vlewrcsr(struct am7990_softc *, u_int16_t, u_int16_t);
+u_int16_t vlerdcsr(struct am7990_softc *, u_int16_t);
+void nvram_cmd(struct am7990_softc *, u_char, u_short);
+u_int16_t nvram_read(struct am7990_softc *, u_char);
+void vleetheraddr(struct am7990_softc *);
+void vleinit(struct am7990_softc *);
+void vlereset(struct am7990_softc *);
+int vle_intr(void *);
+void vle_copytobuf_contig(struct am7990_softc *, void *, int, int);
+void vle_zerobuf_contig(struct am7990_softc *, int, int);
+
+/* send command to the nvram controller */
+void
+nvram_cmd(sc, cmd, addr)
+	struct am7990_softc *sc;
+	u_char cmd;
+	u_short addr;
+{
+	int i;
+	struct vlereg1 *reg1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
+
+	for (i=0;i<8;i++) {
+		reg1->ler1_ear=((cmd|(addr<<1))>>i); 
+		CDELAY; 
+	} 
+}
+
+/* read nvram one bit at a time */
+u_int16_t
+nvram_read(sc, nvram_addr)
+	struct am7990_softc *sc;
+	u_char nvram_addr;
+{
+	u_short val = 0, mask = 0x04000;
+	u_int16_t wbit;
+	/* these used by macros DO NOT CHANGE!*/
+	struct vlereg1 *reg1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
+	((struct le_softc *)sc)->csr = 0x4f;
+	ENABLE_NVRAM;
+	nvram_cmd(sc, NVRAM_RCL, 0);
+	DISABLE_NVRAM;
+	CDELAY;
+	ENABLE_NVRAM;
+	nvram_cmd(sc, NVRAM_READ, nvram_addr);
+	for (wbit=0; wbit<15; wbit++) {
+		(reg1->ler1_ear & 0x01) ? (val = (val | mask)) : (val = (val & (~mask)));
+		mask = mask>>1;
+		CDELAY;
+	}
+	(reg1->ler1_ear & 0x01) ? (val = (val | 0x8000)) : (val = (val & 0x7FFF));
+	CDELAY;
+	DISABLE_NVRAM;
+	return (val);
+}
+
+void
+vleetheraddr(sc)
+	struct am7990_softc *sc;
+{
+	u_char * cp = sc->sc_arpcom.ac_enaddr;
+	u_int16_t ival[3];
+	u_char i;
+
+	for (i=0; i<3; i++) {
+		ival[i] = nvram_read(sc, i);
+	}
+	memcpy(cp, &ival[0], 6);
+}
+
+void
+lewrcsr(sc, port, val)
+	struct am7990_softc *sc;
+	u_int16_t port, val;
+{
+	register struct lereg1 *ler1 = (struct lereg1 *)((struct le_softc *)sc)->sc_r1;
+
+	ler1->ler1_rap = port;
+	ler1->ler1_rdp = val;
+}
+
+void
+vlewrcsr(sc, port, val)
+	struct am7990_softc *sc;
+	u_int16_t port, val;
+{
+	register struct vlereg1 *ler1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
+
+	ler1->ler1_rap = port;
+	ler1->ler1_rdp = val;
+}
+
+u_int16_t
+lerdcsr(sc, port)
+	struct am7990_softc *sc;
+	u_int16_t port;
+{
+	register struct lereg1 *ler1 = (struct lereg1 *)((struct le_softc *)sc)->sc_r1;
+	u_int16_t val;
+
+	ler1->ler1_rap = port;
+	val = ler1->ler1_rdp;
+	return (val);
+}
+
+u_int16_t
+vlerdcsr(sc, port)
+	struct am7990_softc *sc;
+	u_int16_t port;
+{
+	register struct vlereg1 *ler1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
+	u_int16_t val;
+
+	ler1->ler1_rap = port;
+	val = ler1->ler1_rdp;
+	return (val);
+}
+
+/* init MVME376, set ipl and vec */
+void
+vleinit(sc)
+	struct am7990_softc *sc;
+{
+	register struct vlereg1 *reg1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
+	u_char vec = ((struct le_softc *)sc)->sc_vec;
+	u_char ipl = ((struct le_softc *)sc)->sc_ipl;
+	((struct le_softc *)sc)->csr = 0x4f;
+	WRITE_CSR_AND( ~ipl );
+	SET_VEC(vec);
+	return;
+}
+
+/* MVME376 hardware reset */
+void
+vlereset(sc)
+	struct am7990_softc *sc;
+{
+	register struct vlereg1 *reg1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
+	RESET_HW;
+#ifdef LEDEBUG
+	if (sc->sc_debug) {
+		printf("\nle: hardware reset\n");
+	}
+#endif
+	SYSFAIL_CL;
+	return;
+}
+
+int
+vle_intr(sc)
+	void *sc;
+{
+	register struct vlereg1 *reg1 = (struct vlereg1 *)((struct le_softc *)sc)->sc_r1;
+	int rc;
+	rc = am7990_intr(sc);
+	ENABLE_INTR;
+	return (rc);
+}
+
+void
+vle_copytobuf_contig(sc, from, boff, len)
+	struct am7990_softc *sc;
+	void *from;
+	int boff, len;
+{
+	volatile caddr_t buf = sc->sc_mem;
+
+	/* 
+	 * Do the cache stuff 
+	 */
+	dma_cachectl(buf + boff, len);
+	/*
+	 * Just call bcopy() to do the work.
+	 */
+	bcopy(from, buf + boff, len);
+}
+
+void
+vle_zerobuf_contig(sc, boff, len)
+	struct am7990_softc *sc;
+	int boff, len;
+{
+	volatile caddr_t buf = sc->sc_mem;
+	/* 
+	 * Do the cache stuff 
+	 */
+	dma_cachectl(buf + boff, len);
+	/*
+	 * Just let bzero() do the work
+	 */
+	bzero(buf + boff, len);
+}
 
 int
 lematch(parent, vcf, args)
 	struct device *parent;
 	void *vcf, *args;
 {
-	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
+	/* check physical addr for bogus MVME162 addr @0xffffd200. weird XXX - smurph */
+	if (cputyp == CPU_162 && ca->ca_paddr == 0xffffd200)
+		return (0);
 
-	return (!badvaddr(ca->ca_vaddr, 2));
+	return (!badvaddr((vaddr_t)ca->ca_vaddr, 2));
 }
 
 /*
@@ -186,782 +288,125 @@ lematch(parent, vcf, args)
  * to accept packets.
  */
 void
-leattach(parent, self, args)
+leattach(parent, self, aux)
 	struct device *parent;
 	struct device *self;
-	void *args;
+	void *aux;
 {
-	register struct le_softc *sc = (struct le_softc *)self;
-	register struct lereg2 *ler2;
-	struct ifnet *ifp = &sc->sc_if;
-	struct confargs *ca = args;
-	register int a;
+	register struct le_softc *lesc = (struct le_softc *)self;
+	struct am7990_softc *sc = &lesc->sc_am7990;
+	struct confargs *ca = aux;
 	int pri = ca->ca_ipl;
+	extern void *etherbuf;
+	paddr_t addr;
+	int card;
 
 	/* XXX the following declarations should be elsewhere */
 	extern void myetheraddr(u_char *);
 
-	/* connect the interrupt */
-	sc->sc_ih.ih_fn = leintr;
-	sc->sc_ih.ih_arg = sc;
-	sc->sc_ih.ih_ipl = pri;
-	pccintr_establish(PCCV_LE, &sc->sc_ih);
+	lebustype = ca->ca_bustype;
 
-	sc->sc_r1 = (struct lereg1 *)ca->ca_vaddr;
-
-	ler2 = sc->sc_r2 = (struct lereg2 *) etherbuf;
-
-	myetheraddr(sc->sc_addr);
-	printf(": address %s\n", ether_sprintf(sc->sc_addr));
-
-	/*
-	 * Setup for transmit/receive
-	 *
-	 * According to Van, some versions of the Lance only use this
-	 * address to receive packets; it doesn't put them in
-	 * output packets. We'll want to make sure that lestart()
-	 * installs the address.
-	 */
-	ler2->ler2_padr[0] = sc->sc_addr[1];
-	ler2->ler2_padr[1] = sc->sc_addr[0];
-	ler2->ler2_padr[2] = sc->sc_addr[3];
-	ler2->ler2_padr[3] = sc->sc_addr[2];
-	ler2->ler2_padr[4] = sc->sc_addr[5];
-	ler2->ler2_padr[5] = sc->sc_addr[4];
-	a = LANCE_ADDR(&ler2->ler2_rmd);
-	ler2->ler2_rlen = LE_RLEN | (a >> 16);
-	ler2->ler2_rdra = a;
-	a = LANCE_ADDR(&ler2->ler2_tmd);
-	ler2->ler2_tlen = LE_TLEN | (a >> 16);
-	ler2->ler2_tdra = a;
-
-	/*
-	 * Set up event counters.
-	 */
-	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
-	evcnt_attach(&sc->sc_dev, "errs", &sc->sc_errcnt);
-
-	ifp->if_unit = sc->sc_dev.dv_unit;
-	ifp->if_name = "le";
-	ifp->if_ioctl = leioctl;
-	ifp->if_start = lestart;
-	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
-#ifdef IFF_NOTRAILERS
-	/* XXX still compile when the blasted things are gone... */
-	ifp->if_flags |= IFF_NOTRAILERS;
-#endif
-#if NBPFILTER > 0
-	bpfattach(&ifp->if_bpf, ifp, DLT_EN10MB, sizeof(struct ether_header));
-#endif
-	if_attach(ifp);
-	ether_ifattach(ifp);
-
-	((struct pccreg *)ca->ca_master)->pcc_leirq = pri | PCC_IRQ_IEN;
-}
-
-/*
- * Setup the logical address filter
- */
-void
-lesetladrf(sc)
-	register struct le_softc *sc;
-{
-	register struct lereg2 *ler2 = sc->sc_r2;
-	register struct ifnet *ifp = &sc->sc_if;
-	register struct ether_multi *enm;
-	register u_char *cp, c;
-	register u_long crc;
-	register int i, len;
-	struct ether_multistep step;
-
-	/*
-	 * Set up multicast address filter by passing all multicast
-	 * addresses through a crc generator, and then using the high
-	 * order 6 bits as a index into the 64 bit logical address
-	 * filter. The high order two bits select the word, while the
-	 * rest of the bits select the bit within the word.
-	 */
-
-	ler2->ler2_ladrf[0] = 0;
-	ler2->ler2_ladrf[1] = 0;
-	ler2->ler2_ladrf[2] = 0;
-	ler2->ler2_ladrf[3] = 0;
-	ifp->if_flags &= ~IFF_ALLMULTI;
-	ETHER_FIRST_MULTI(step, &sc->sc_ac, enm);
-	while (enm != NULL) {
-		if (bcmp((caddr_t)&enm->enm_addrlo,
-		    (caddr_t)&enm->enm_addrhi, sizeof(enm->enm_addrlo)) != 0) {
-			/*
-			 * We must listen to a range of multicast
-			 * addresses. For now, just accept all
-			 * multicasts, rather than trying to set only
-			 * those filter bits needed to match the range.
-			 * (At this time, the only use of address
-			 * ranges is for IP multicast routing, for
-			 * which the range is big enough to require all
-			 * bits set.)
-			 */
-			ler2->ler2_ladrf[0] = 0xffff;
-			ler2->ler2_ladrf[1] = 0xffff;
-			ler2->ler2_ladrf[2] = 0xffff;
-			ler2->ler2_ladrf[3] = 0xffff;
-			ifp->if_flags |= IFF_ALLMULTI;
-			return;
-		}
-
-		/*
-		 * One would think, given the AM7990 document's polynomial
-		 * of 0x04c11db6, that this should be 0x6db88320 (the bit
-		 * reversal of the AMD value), but that is not right.  See
-		 * the BASIC listing: bit 0 (our bit 31) must then be set.
+	switch (lebustype) {
+	case BUS_VMES:
+		/* 
+		 * get the first available etherbuf.  MVME376 uses its own
+		 * dual-ported RAM for etherbuf.  It is set by dip switches
+		 * on board.  We support the six Motorola address locations,
+		 * however, the board can be set up at any other address.
+		 * XXX These physical addresses should be mapped in extio!!!
 		 */
-		cp = (unsigned char *)&enm->enm_addrlo;
-		crc = 0xffffffff;
-		for (len = 6; --len >= 0;) {
-			c = *cp++;
-			for (i = 0; i < 8; i++) {
-				if ((c & 0x01) ^ (crc & 0x01)) {
-					crc >>= 1;
-					crc = crc ^ 0xedb88320;
-				} else
-					crc >>= 1;
-				c >>= 1;
-			}
-		}
-		/* Just want the 6 most significant bits. */
-		crc = crc >> 26;
-
-		/* Turn on the corresponding bit in the filter. */
-		ler2->ler2_ladrf[crc >> 4] |= 1 << (crc & 0xf);
-
-		ETHER_NEXT_MULTI(step, enm);
-	}
-}
-
-void
-lereset(dev)
-	struct device *dev;
-{
-	register struct le_softc *sc = (struct le_softc *)dev;
-	register struct lereg1 *ler1 = sc->sc_r1;
-	register struct lereg2 *ler2 = sc->sc_r2;
-	register int i, a, timo, stat;
-
-#if NBPFILTER > 0
-	if (sc->sc_if.if_flags & IFF_PROMISC)
-		ler2->ler2_mode = LE_MODE_NORMAL | LE_MODE_PROM;
-	else
-#endif
-		ler2->ler2_mode = LE_MODE_NORMAL;
-	ler1->ler1_rap = LE_CSR0;
-	ler1->ler1_rdp = LE_C0_STOP;
-
-	/* Setup the logical address filter */
-	lesetladrf(sc);
-
-	/* init receive and transmit rings */
-	for (i = 0; i < LERBUF; i++) {
-		a = LANCE_ADDR(&ler2->ler2_rbuf[i][0]);
-		ler2->ler2_rmd[i].rmd0 = a;
-		ler2->ler2_rmd[i].rmd1_hadr = a >> 16;
-		ler2->ler2_rmd[i].rmd1_bits = LE_R1_OWN;
-		ler2->ler2_rmd[i].rmd2 = -LEMTU | LE_XMD2_ONES;
-		ler2->ler2_rmd[i].rmd3 = 0;
-	}
-	for (i = 0; i < LETBUF; i++) {
-		a = LANCE_ADDR(&ler2->ler2_tbuf[i][0]);
-		ler2->ler2_tmd[i].tmd0 = a;
-		ler2->ler2_tmd[i].tmd1_hadr = a >> 16;
-		ler2->ler2_tmd[i].tmd1_bits = 0;
-		ler2->ler2_tmd[i].tmd2 = LE_XMD2_ONES;
-		ler2->ler2_tmd[i].tmd3 = 0;
-	}
-
-bzero((void *)&ler2->ler2_rbuf[0][0], (LERBUF + LETBUF) * LEMTU);
-	/* lance will stuff packet into receive buffer 0 next */
-	sc->sc_rmd = 0;
-
-	/* tell the chip where to find the initialization block */
-	a = LANCE_ADDR(&ler2->ler2_mode);
-	ler1->ler1_rap = LE_CSR1;
-	ler1->ler1_rdp = a;
-	ler1->ler1_rap = LE_CSR2;
-	ler1->ler1_rdp = a >> 16;
-	ler1->ler1_rap = LE_CSR3;
-	ler1->ler1_rdp = LE_C3_BSWP /*| LE_C3_ACON | LE_C3_BCON*/;
-	ler1->ler1_rap = LE_CSR0;
-	ler1->ler1_rdp = LE_C0_INIT;
-	timo = 100000;
-	while (((stat = ler1->ler1_rdp) & (LE_C0_ERR | LE_C0_IDON)) == 0) {
-		if (--timo == 0) {
-			printf("%s: init timeout, stat=%b\n",
-			    sc->sc_dev.dv_xname, stat, LE_C0_BITS);
+		switch (ca->ca_paddr) {
+		case 0xffff1200:
+			card = 0;
 			break;
-		}
-	}
-	if (stat & LE_C0_ERR)
-		printf("%s: init failed, ler1=0x%x, stat=%b\n",
-		    sc->sc_dev.dv_xname, ler1, stat, LE_C0_BITS);
-	else
-		ler1->ler1_rdp = LE_C0_IDON;	/* clear IDON */
-	ler1->ler1_rdp = LE_C0_STRT | LE_C0_INEA;
-	sc->sc_if.if_flags &= ~IFF_OACTIVE;
-}
-
-/*
- * Initialization of interface
- */
-int
-leinit(unit)
-	int unit;
-{
-	register struct le_softc *sc = lecd.cd_devs[unit];
-	register struct ifnet *ifp = &sc->sc_if;
-	register int s;
-
-	if ((ifp->if_flags & IFF_RUNNING) == 0) {
-		s = splimp();
-		ifp->if_flags |= IFF_RUNNING;
-		lereset(&sc->sc_dev);
-		lestart(ifp);
-		splx(s);
-	}
-	return (0);
-}
-
-/*
- * Start output on interface.  Get another datagram to send
- * off of the interface queue, and copy it to the interface
- * before starting the output.
- */
-void
-lestart(ifp)
-	register struct ifnet *ifp;
-{
-	register struct le_softc *sc = lecd.cd_devs[ifp->if_unit];
-	register struct letmd *tmd;
-	register struct mbuf *m;
-	register int len;
-	if ((sc->sc_if.if_flags & IFF_RUNNING) == 0) 
-		return;
-	IF_DEQUEUE(&sc->sc_if.if_snd, m);
-	if (m == 0) 
-		return;
-
-	len = leput((char *)sc->sc_r2->ler2_tbuf[0], m);
-
-#if NBPFILTER > 0
-	/*
-	 * If bpf is listening on this interface, let it
-	 * see the packet before we commit it to the wire.
-	 */
-	if (sc->sc_if.if_bpf)
-		bpf_tap(sc->sc_if.if_bpf, (char *)sc->sc_r2->ler2_tbuf[0], len);
-#endif
-
-#ifdef PACKETSTATS
-	if (len <= LEMTU)
-		lexpacketsizes[len]++;
-#endif
-	tmd = sc->sc_r2->ler2_tmd;
-	tmd->tmd3 = 0;
-	tmd->tmd2 = -len | LE_XMD2_ONES;
-	tmd->tmd1_bits = LE_T1_OWN | LE_T1_STP | LE_T1_ENP;
-	sc->sc_if.if_flags |= IFF_OACTIVE;
-	return;
-}
-
-int
-leintr(dev)
-	register void *dev;
-{
-	register struct le_softc *sc = dev;
-	register struct lereg1 *ler1 = sc->sc_r1;
-	register int csr0;
-
-	csr0 = ler1->ler1_rdp;
-	if ((csr0 & LE_C0_INTR) == 0)
-		return (0);
-	sc->sc_intrcnt.ev_count++;
-
-	if (csr0 & LE_C0_ERR) {
-		sc->sc_errcnt.ev_count++;
-		leerror(sc, csr0);
-		if (csr0 & LE_C0_MERR) {
-			sc->sc_merr++;
-			lereset(&sc->sc_dev);
-			return (1);
-		}
-		if (csr0 & LE_C0_BABL)
-			sc->sc_babl++;
-		if (csr0 & LE_C0_CERR)
-			sc->sc_cerr++;
-		if (csr0 & LE_C0_MISS)
-			sc->sc_miss++;
-		ler1->ler1_rdp = LE_C0_BABL|LE_C0_CERR|LE_C0_MISS|LE_C0_INEA;
-	}
-	if ((csr0 & LE_C0_RXON) == 0) {
-		sc->sc_rxoff++;
-		lereset(&sc->sc_dev);
-		return (1);
-	}
-	if ((csr0 & LE_C0_TXON) == 0) {
-		sc->sc_txoff++;
-		lereset(&sc->sc_dev);
-		return (1);
-	}
-	if (csr0 & LE_C0_RINT) {
-		/* interrupt is cleared in lerint */
-		lerint(sc);
-	}
-	if (csr0 & LE_C0_TINT) {
-		ler1->ler1_rdp = LE_C0_TINT|LE_C0_INEA;
-		lexint(sc);
-	}
-	return (1);
-}
-
-/*
- * Ethernet interface transmitter interrupt.
- * Start another output if more data to send.
- */
-void
-lexint(sc)
-	register struct le_softc *sc;
-{
-	register struct letmd *tmd = sc->sc_r2->ler2_tmd;
-
-	sc->sc_lestats.lexints++;
-	if ((sc->sc_if.if_flags & IFF_OACTIVE) == 0) {
-		sc->sc_xint++;
-		return;
-	}
-	if (tmd->tmd1_bits & LE_T1_OWN) {
-		sc->sc_xown++;
-		return;
-	}
-	if (tmd->tmd1_bits & LE_T1_ERR) {
-err:
-		lexerror(sc);
-		sc->sc_if.if_oerrors++;
-		if (tmd->tmd3 & (LE_T3_BUFF|LE_T3_UFLO)) {
-			sc->sc_uflo++;
-			lereset(&sc->sc_dev);
-		} else if (tmd->tmd3 & LE_T3_LCOL)
-			sc->sc_if.if_collisions++;
-		else if (tmd->tmd3 & LE_T3_RTRY)
-			sc->sc_if.if_collisions += 16;
-	}
-	else if (tmd->tmd3 & LE_T3_BUFF)
-		/* XXX documentation says BUFF not included in ERR */
-		goto err;
-	else if (tmd->tmd1_bits & LE_T1_ONE)
-		sc->sc_if.if_collisions++;
-	else if (tmd->tmd1_bits & LE_T1_MORE)
-		/* what is the real number? */
-		sc->sc_if.if_collisions += 2;
-	else
-		sc->sc_if.if_opackets++;
-	sc->sc_if.if_flags &= ~IFF_OACTIVE;
-	lestart(&sc->sc_if);
-}
-
-#define	LENEXTRMP \
-	if (++bix == LERBUF) bix = 0, rmd = sc->sc_r2->ler2_rmd; else ++rmd
-
-/*
- * Ethernet interface receiver interrupt.
- * If input error just drop packet.
- * Decapsulate packet based on type and pass to type specific
- * higher-level input routine.
- */
-void
-lerint(sc)
-	register struct le_softc *sc;
-{
-	register int bix = sc->sc_rmd;
-	register struct lermd *rmd = &sc->sc_r2->ler2_rmd[bix];
-
-	sc->sc_lestats.lerints++;
-	/*
-	 * Out of sync with hardware, should never happen?
-	 */
-	if (rmd->rmd1_bits & LE_R1_OWN) {
-		do {
-			sc->sc_lestats.lerscans++;
-			LENEXTRMP;
-		} while ((rmd->rmd1_bits & LE_R1_OWN) && bix != sc->sc_rmd);
-		if (bix == sc->sc_rmd)
-			printf("%s: RINT with no buffer\n",
-			    sc->sc_dev.dv_xname);
-	} else
-		sc->sc_lestats.lerhits++;
-
-	/*
-	 * Process all buffers with valid data
-	 */
-	while ((rmd->rmd1_bits & LE_R1_OWN) == 0) {
-		int len = rmd->rmd3;
-
-		/* Clear interrupt to avoid race condition */
-		sc->sc_r1->ler1_rdp = LE_C0_RINT|LE_C0_INEA;
-
-		if (rmd->rmd1_bits & LE_R1_ERR) {
-			sc->sc_rmd = bix;
-			lererror(sc, "bad packet");
-			sc->sc_if.if_ierrors++;
-		} else if ((rmd->rmd1_bits & (LE_R1_STP|LE_R1_ENP)) !=
-		    (LE_R1_STP|LE_R1_ENP)) {
-			/* XXX make a define for LE_R1_STP|LE_R1_ENP? */
-			/*
-			 * Find the end of the packet so we can see how long
-			 * it was.  We still throw it away.
-			 */
-			do {
-				sc->sc_r1->ler1_rdp = LE_C0_RINT|LE_C0_INEA;
-				rmd->rmd3 = 0;
-				rmd->rmd1_bits = LE_R1_OWN;
-				LENEXTRMP;
-			} while (!(rmd->rmd1_bits &
-			    (LE_R1_OWN|LE_R1_ERR|LE_R1_STP|LE_R1_ENP)));
-			sc->sc_rmd = bix;
-			lererror(sc, "chained buffer");
-			sc->sc_rxlen++;
-			/*
-			 * If search terminated without successful completion
-			 * we reset the hardware (conservative).
-			 */
-			if ((rmd->rmd1_bits &
-			    (LE_R1_OWN|LE_R1_ERR|LE_R1_STP|LE_R1_ENP)) !=
-			    LE_R1_ENP) {
-				lereset(&sc->sc_dev);
-				return;
-			}
-		} else {
-			leread(sc, (char *)sc->sc_r2->ler2_rbuf[bix], len);
-#ifdef PACKETSTATS
-			lerpacketsizes[len]++;
-#endif
-			sc->sc_lestats.lerbufs++;
-		}
-		rmd->rmd3 = 0;
-		rmd->rmd1_bits = LE_R1_OWN;
-		LENEXTRMP;
-	}
-	sc->sc_rmd = bix;
-}
-
-void
-leread(sc, pkt, len)
-	register struct le_softc *sc;
-	char *pkt;
-	int len;
-{
-	register struct ether_header *et;
-	register struct ifnet *ifp = &sc->sc_if;
-	struct mbuf *m;
-	struct ifqueue *inq;
-	int flags;
-
-	ifp->if_ipackets++;
-	et = (struct ether_header *)pkt;
-	et->ether_type = ntohs((u_short)et->ether_type);
-	/* adjust input length to account for header and CRC */
-	len -= sizeof(struct ether_header) + 4;
-
-	if (len <= 0) {
-		if (ledebug)
-			log(LOG_WARNING,
-			    "%s: ierror(runt packet): from %s: len=%d\n",
-			    sc->sc_dev.dv_xname,
-			    ether_sprintf(et->ether_shost), len);
-		sc->sc_runt++;
-		ifp->if_ierrors++;
-		return;
-	}
-
-	/* Setup mbuf flags we'll need later */
-	flags = 0;
-	if (bcmp((caddr_t)etherbroadcastaddr,
-	    (caddr_t)et->ether_dhost, sizeof(etherbroadcastaddr)) == 0)
-		flags |= M_BCAST;
-	if (et->ether_dhost[0] & 1)
-		flags |= M_MCAST;
-
-#if NBPFILTER > 0
-	/*
-	 * Check if there's a bpf filter listening on this interface.
-	 * If so, hand off the raw packet to enet, then discard things
-	 * not destined for us (but be sure to keep broadcast/multicast).
-	 */
-	if (sc->sc_if.if_bpf) {
-		bpf_tap(sc->sc_if.if_bpf, pkt,
-		    len + sizeof(struct ether_header));
-		if ((flags & (M_BCAST | M_MCAST)) == 0 &&
-		    bcmp(et->ether_dhost, sc->sc_addr,
-			    sizeof(et->ether_dhost)) != 0)
-			return;
-	}
-#endif
-	m = leget(pkt, len, 0, ifp);
-	if (m == 0)
-		return;
-	ether_input(ifp, et, m);
-}
-
-/*
- * Routine to copy from mbuf chain to transmit
- * buffer in board local memory.
- *
- * ### this can be done by remapping in some cases
- */
-int
-leput(lebuf, m)
-	register char *lebuf;
-	register struct mbuf *m;
-{
-	register struct mbuf *mp;
-	register int len, tlen = 0;
-
-	for (mp = m; mp; mp = mp->m_next) {
-		len = mp->m_len;
-		if (len == 0)
-			continue;
-		tlen += len;
-		bcopy(mtod(mp, char *), lebuf, len);
-		lebuf += len;
-	}
-	m_freem(m);
-	if (tlen < LEMINSIZE) {
-		bzero(lebuf, LEMINSIZE - tlen);
-		tlen = LEMINSIZE;
-	}
-	return (tlen);
-}
-
-/*
- * Routine to copy from board local memory into mbufs.
- */
-struct mbuf *
-leget(lebuf, totlen, off0, ifp)
-	char *lebuf;
-	int totlen, off0;
-	struct ifnet *ifp;
-{
-	register struct mbuf *m;
-	struct mbuf *top = 0, **mp = &top;
-	register int off = off0, len;
-	register char *cp;
-	char *epkt;
-
-	lebuf += sizeof(struct ether_header);
-	cp = lebuf;
-	epkt = cp + totlen;
-	if (off) {
-		cp += off + 2 * sizeof(u_short);
-		totlen -= 2 * sizeof(u_short);
-	}
-
-	MGETHDR(m, M_DONTWAIT, MT_DATA);
-	if (m == 0)
-		return (0);
-	m->m_pkthdr.rcvif = ifp;
-	m->m_pkthdr.len = totlen;
-	m->m_len = MHLEN;
-
-	while (totlen > 0) {
-		if (top) {
-			MGET(m, M_DONTWAIT, MT_DATA);
-			if (m == 0) {
-				m_freem(top);
-				return (0);
-			}
-			m->m_len = MLEN;
-		}
-		len = min(totlen, epkt - cp);
-		if (len >= MINCLSIZE) {
-			MCLGET(m, M_DONTWAIT);
-			if (m->m_flags & M_EXT)
-				m->m_len = len = min(len, MCLBYTES);
-			else
-				len = m->m_len;
-		} else {
-			/*
-			 * Place initial small packet/header at end of mbuf.
-			 */
-			if (len < m->m_len) {
-				if (top == 0 && len + max_linkhdr <= m->m_len)
-					m->m_data += max_linkhdr;
-				m->m_len = len;
-			} else
-				len = m->m_len;
-		}
-		bcopy(cp, mtod(m, caddr_t), (unsigned)len);
-		cp += len;
-		*mp = m;
-		mp = &m->m_next;
-		totlen -= len;
-		if (cp == epkt)
-			cp = lebuf;
-	}
-	return (top);
-}
-
-/*
- * Process an ioctl request.
- */
-int
-leioctl(ifp, cmd, data)
-	register struct ifnet *ifp;
-	u_long cmd;
-	caddr_t data;
-{
-	register struct ifaddr *ifa;
-	register struct le_softc *sc = lecd.cd_devs[ifp->if_unit];
-	register struct lereg1 *ler1;
-	int s = splimp(), error = 0;
-
-	switch (cmd) {
-
-	case SIOCSIFADDR:
-		ifa = (struct ifaddr *)data;
-		ifp->if_flags |= IFF_UP;
-		switch (ifa->ifa_addr->sa_family) {
-#ifdef INET
-		case AF_INET:
-			(void)leinit(ifp->if_unit);
-			arp_ifinit(&sc->sc_ac, ifa);
+		case 0xffff1400:
+			card = 1;
 			break;
-#endif
-#ifdef NS
-		case AF_NS:
-		    {
-			register struct ns_addr *ina = &(IA_SNS(ifa)->sns_addr);
-
-			if (ns_nullhost(*ina))
-				ina->x_host = *(union ns_host *)(sc->sc_addr);
-			else {
-				/*
-				 * The manual says we can't change the address
-				 * while the receiver is armed,
-				 * so reset everything
-				 */
-				ifp->if_flags &= ~IFF_RUNNING;
-				bcopy((caddr_t)ina->x_host.c_host,
-				    (caddr_t)sc->sc_addr, sizeof(sc->sc_addr));
-			}
-			(void)leinit(ifp->if_unit);	/* does le_setaddr() */
+		case 0xffff1600:
+			card = 2;
 			break;
-		    }
-#endif
+		case 0xffff5400:
+			card = 3;
+			break;
+		case 0xffff5600:
+			card = 4;
+			break;
+		case 0xffffa400:
+			card = 5;
+			break;
 		default:
-			(void)leinit(ifp->if_unit);
-			break;
+			printf(": unsupported address\n");
+			return;
 		}
-		break;
 
-	case SIOCSIFFLAGS:
-		ler1 = sc->sc_r1;
-		if ((ifp->if_flags & IFF_UP) == 0 &&
-		    ifp->if_flags & IFF_RUNNING) {
-			ler1->ler1_rdp = LE_C0_STOP;
-			ifp->if_flags &= ~IFF_RUNNING;
-		} else if (ifp->if_flags & IFF_UP &&
-		    (ifp->if_flags & IFF_RUNNING) == 0)
-			(void)leinit(ifp->if_unit);
-		/*
-		 * If the state of the promiscuous bit changes, the interface
-		 * must be reset to effect the change.
-		 */
-		if (((ifp->if_flags ^ sc->sc_iflags) & IFF_PROMISC) &&
-		    (ifp->if_flags & IFF_RUNNING)) {
-			sc->sc_iflags = ifp->if_flags;
-			lereset(&sc->sc_dev);
-			lestart(ifp);
+		addr = VLEMEMBASE - (card * VLEMEMSIZE);
+
+		sc->sc_mem = (void *)mapiodev(addr, VLEMEMSIZE);
+		if (sc->sc_mem == NULL) {
+			printf("\n%s: no more memory in external I/O map\n",
+			    sc->sc_dev.dv_xname);
+			return;
 		}
+		sc->sc_addr = addr & 0x00ffffff;
+
+		lesc->sc_r1 = (void *)ca->ca_vaddr;
+		lesc->sc_ipl = ca->ca_ipl;
+		lesc->sc_vec = ca->ca_vec;
+		sc->sc_memsize = VLEMEMSIZE;
+		sc->sc_conf3 = LE_C3_BSWP;
+		sc->sc_hwreset = vlereset;
+		sc->sc_rdcsr = vlerdcsr;
+		sc->sc_wrcsr = vlewrcsr;
+		sc->sc_hwinit = vleinit;
+		sc->sc_copytodesc = vle_copytobuf_contig;
+		sc->sc_copyfromdesc = am7990_copyfrombuf_contig;
+		sc->sc_copytobuf = vle_copytobuf_contig;
+		sc->sc_copyfrombuf = am7990_copyfrombuf_contig;
+		sc->sc_zerobuf = am7990_zerobuf_contig;
+		/* get ether address */
+		vleetheraddr(sc);
+		break;      
+	case BUS_PCC:
+		sc->sc_mem = etherbuf;
+		lesc->sc_r1 = (void *)ca->ca_vaddr;
+		sc->sc_conf3 = LE_C3_BSWP /*| LE_C3_ACON | LE_C3_BCON*/;
+		sc->sc_addr = kvtop((vaddr_t)sc->sc_mem);
+		sc->sc_memsize = LEMEMSIZE;
+		sc->sc_rdcsr = lerdcsr;
+		sc->sc_wrcsr = lewrcsr;
+		sc->sc_hwreset = NULL;
+		sc->sc_hwinit = NULL;
+		sc->sc_copytodesc = am7990_copytobuf_contig;
+		sc->sc_copyfromdesc = am7990_copyfrombuf_contig;
+		sc->sc_copytobuf = am7990_copytobuf_contig;
+		sc->sc_copyfrombuf = am7990_copyfrombuf_contig;
+		sc->sc_zerobuf = am7990_zerobuf_contig;
+		/* get ether address */
+		myetheraddr(sc->sc_arpcom.ac_enaddr);
 		break;
-
-	case SIOCADDMULTI:
-		error = ether_addmulti((struct ifreq *)data, &sc->sc_ac);
-		goto update_multicast;
-
-	case SIOCDELMULTI:
-		error = ether_delmulti((struct ifreq *)data, &sc->sc_ac);
-	update_multicast:
-		if (error == ENETRESET) {
-			/*
-			 * Multicast list has changed; set the hardware
-			 * filter accordingly.
-			 */
-			lereset(&sc->sc_dev);
-			error = 0;
-		}
-		break;
-
 	default:
-		error = EINVAL;
+		printf(": unknown bus type\n");
+		return;
 	}
-	splx(s);
-	return (error);
-}
 
-void
-leerror(sc, stat)
-	register struct le_softc *sc;
-	int stat;
-{
-	if (!ledebug)
-		return;
+	am7990_config(sc);
 
-	/*
-	 * Not all transceivers implement heartbeat
-	 * so we only log CERR once.
-	 */
-	if ((stat & LE_C0_CERR) && sc->sc_cerr)
-		return;
-	log(LOG_WARNING, "%s: error: stat=%b\n",
-	    sc->sc_dev.dv_xname, stat, LE_C0_BITS);
-}
-
-void
-lererror(sc, msg)
-	register struct le_softc *sc;
-	char *msg;
-{
-	register struct lermd *rmd;
-	int len;
-
-	if (!ledebug)
-		return;
-
-	rmd = &sc->sc_r2->ler2_rmd[sc->sc_rmd];
-	len = rmd->rmd3;
-	log(LOG_WARNING, "%s: ierror(%s): from %s: buf=%d, len=%d, rmd1=%b\n",
-	    sc->sc_dev.dv_xname, msg, len > 11 ?
-	    ether_sprintf((u_char *)&sc->sc_r2->ler2_rbuf[sc->sc_rmd][6]) :
-	    "unknown",
-	    sc->sc_rmd, len, rmd->rmd1_bits, LE_R1_BITS);
-}
-
-void
-lexerror(sc)
-	register struct le_softc *sc;
-{
-	register struct letmd *tmd;
-	register int len, tmd3, tdr;
-
-	if (!ledebug)
-		return;
-
-	tmd = sc->sc_r2->ler2_tmd;
-	tmd3 = tmd->tmd3;
-	tdr = tmd3 & LE_T3_TDR_MASK;
-	len = -(tmd->tmd2 & ~LE_XMD2_ONES);
-	log(LOG_WARNING,
-    "%s: oerror: to %s: buf=%d, len=%d, tmd1=%b, tmd3=%b, tdr=%d (%d nsecs)\n",
-	    sc->sc_dev.dv_xname, len > 5 ?
-	    ether_sprintf((u_char *)&sc->sc_r2->ler2_tbuf[0][0]) : "unknown",
-	    0, len,
-	    tmd->tmd1_bits, LE_T1_BITS,
-	    tmd3, LE_T3_BITS, tdr, tdr * 100);
+	/* connect the interrupt */
+	switch (lebustype) {
+	case BUS_VMES:
+		lesc->sc_ih.ih_fn = vle_intr;
+		lesc->sc_ih.ih_arg = sc;
+		lesc->sc_ih.ih_ipl = pri;
+		vmeintr_establish(ca->ca_vec + 0, &lesc->sc_ih, self->dv_xname);
+		break;
+#if NPCC > 0
+	case BUS_PCC:
+		lesc->sc_ih.ih_fn = am7990_intr;
+		lesc->sc_ih.ih_arg = sc;
+		lesc->sc_ih.ih_ipl = pri;
+		pccintr_establish(PCCV_LE, &lesc->sc_ih, self->dv_xname);
+		sys_pcc->pcc_leirq = pri | PCC_IRQ_IEN;
+		break;
+#endif
+	}
 }

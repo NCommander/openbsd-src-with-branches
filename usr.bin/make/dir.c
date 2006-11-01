@@ -1,5 +1,33 @@
-/*	$NetBSD: dir.c,v 1.8 1995/06/14 15:19:07 christos Exp $	*/
+/*	$OpenPackages$ */
+/*	$OpenBSD: dir.c,v 1.43 2005/06/26 15:19:12 mickey Exp $ */
+/*	$NetBSD: dir.c,v 1.14 1997/03/29 16:51:26 christos Exp $	*/
 
+/*
+ * Copyright (c) 1999 Marc Espie.
+ *
+ * Extensive code changes for the OpenBSD project.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
+ * PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
  * Copyright (c) 1988, 1989 by Adam de Boor
@@ -17,11 +45,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,67 +62,41 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dir.c	5.6 (Berkeley) 12/28/90";
-#else
-static char rcsid[] = "$NetBSD: dir.c,v 1.8 1995/06/14 15:19:07 christos Exp $";
-#endif
-#endif /* not lint */
-
-/*-
- * dir.c --
- *	Directory searching using wildcards and/or normal names...
- *	Used both for source wildcarding in the Makefile and for finding
- *	implicit sources.
- *
- * The interface for this module is:
- *	Dir_Init  	    Initialize the module.
- *
- *	Dir_End  	    Cleanup the module.
- *
- *	Dir_HasWildcards    Returns TRUE if the name given it needs to
- *	    	  	    be wildcard-expanded.
- *
- *	Dir_Expand	    Given a pattern and a path, return a Lst of names
- *	    	  	    which match the pattern on the search path.
- *
- *	Dir_FindFile	    Searches for a file on a given search path.
- *	    	  	    If it exists, the entire path is returned.
- *	    	  	    Otherwise NULL is returned.
- *
- *	Dir_MTime 	    Return the modification time of a node. The file
- *	    	  	    is searched for along the default search path.
- *	    	  	    The path and mtime fields of the node are filled
- *	    	  	    in.
- *
- *	Dir_AddDir	    Add a directory to a search path.
- *
- *	Dir_MakeFlags	    Given a search path and a command flag, create
- *	    	  	    a string with each of the directories in the path
- *	    	  	    preceded by the command flag and all of them
- *	    	  	    separated by a space.
- *
- *	Dir_Destroy	    Destroy an element of a search path. Frees up all
- *	    	  	    things that can be freed for the element as long
- *	    	  	    as the element is no longer referenced by any other
- *	    	  	    search path.
- *	Dir_ClearPath	    Resets a search path to the empty list.
- *
- * For debugging:
- *	Dir_PrintDirectories	Print stats about the directory cache.
- */
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <dirent.h>
+#include <sys/param.h>
 #include <sys/stat.h>
-#include "make.h"
-#include "hash.h"
+#include <dirent.h>
+#include <limits.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "config.h"
+#include "defines.h"
+#include "ohash.h"
 #include "dir.h"
+#include "lst.h"
+#include "memory.h"
+#include "buf.h"
+#include "gnode.h"
+#include "arch.h"
+#include "targ.h"
+#include "error.h"
+#include "str.h"
+#include "timestamp.h"
 
-/*
- *	A search path consists of a Lst of Path structures. A Path structure
+
+typedef struct Path_ {
+    int 	  refCount;	/* Number of paths with this directory */
+#ifdef DEBUG_DIRECTORY_CACHE
+    int 	  hits; 	/* the number of times a file in this
+				 * directory has been found */
+#endif
+    struct ohash   files;	/* Hash table of files in directory */
+    char	  name[1];	/* Name of directory */
+} Path;
+
+/*	A search path consists of a Lst of Path structures. A Path structure
  *	has in it the name of the directory and a hash table of all the files
  *	in the directory. This is used to cut down on the number of system
  *	calls necessary to find implicit dependents and their like. Since
@@ -107,8 +105,7 @@ static char rcsid[] = "$NetBSD: dir.c,v 1.8 1995/06/14 15:19:07 christos Exp $";
  *	hampers the style of some makefiles, they must be changed.
  *
  *	A list of all previously-read directories is kept in the
- *	openDirectories Lst. This list is checked first before a directory
- *	is opened.
+ *	openDirectories cache.
  *
  *	The need for the caching of whole directories is brought about by
  *	the multi-level transformation code in suff.c, which tends to search
@@ -164,927 +161,768 @@ static char rcsid[] = "$NetBSD: dir.c,v 1.8 1995/06/14 15:19:07 christos Exp $";
  *	essentially a stat() without the copyout() call, and that the same
  *	filesystem overhead would have to be incurred in Dir_MTime, it made
  *	sense to replace the access() with a stat() and record the mtime
- *	in a cache for when Dir_MTime was actually called.
+ *	in a cache for when Dir_MTime was actually called.  */
+
+static LIST   thedirSearchPath;		/* main search path */
+Lst	      dirSearchPath= &thedirSearchPath;
+
+#ifdef DEBUG_DIRECTORY_CACHE
+/* Variables for gathering statistics on the efficiency of the hashing
+ * mechanism.  */
+static int    hits,			/* Found in directory cache */
+	      misses,			/* Sad, but not evil misses */
+	      nearmisses,		/* Found under search path */
+	      bigmisses;		/* Sought by itself */
+#endif
+
+static Path	  *dot; 		/* contents of current directory */
+
+struct file_stamp {
+	TIMESTAMP mtime;		/* time stamp... */
+	char name[1];			/* ...for that file.  */
+};
+
+static struct ohash   openDirectories;	/* cache all open directories */
+
+/* Global structure used to cache mtimes.  XXX We don't cache an mtime
+ * before a caller actually looks up for the given time, because of the
+ * possibility a caller might update the file and invalidate the cache
+ * entry, and we don't look up in this cache except as a last resort.
  */
-
-Lst          dirSearchPath;	/* main search path */
-
-static Lst   openDirectories;	/* the list of all open directories */
-
-/*
- * Variables for gathering statistics on the efficiency of the hashing
- * mechanism.
- */
-static int    hits,	      /* Found in directory cache */
-	      misses,	      /* Sad, but not evil misses */
-	      nearmisses,     /* Found under search path */
-	      bigmisses;      /* Sought by itself */
-
-static Path    	  *dot;	    /* contents of current directory */
-static Hash_Table mtimes;   /* Results of doing a last-resort stat in
-			     * Dir_FindFile -- if we have to go to the
-			     * system to find the file, we might as well
-			     * have its mtime on record. XXX: If this is done
-			     * way early, there's a chance other rules will
-			     * have already updated the file, in which case
-			     * we'll update it again. Generally, there won't
-			     * be two rules to update a single file, so this
-			     * should be ok, but... */
+static struct ohash mtimes;  
 
 
-static int DirFindName __P((ClientData, ClientData));
-static int DirMatchFiles __P((char *, Path *, Lst));
-static void DirExpandCurly __P((char *, char *, Lst, Lst));
-static void DirExpandInt __P((char *, Lst, Lst));
-static int DirPrintWord __P((ClientData, ClientData));
-static int DirPrintDir __P((ClientData, ClientData));
+/* There are three distinct hash structures:
+ * - to collate files's last modification times (global mtimes)
+ * - to collate file names (in each Path structure)
+ * - to collate known directories (global openDirectories).  */
+static struct ohash_info stamp_info = { offsetof(struct file_stamp, name),
+    NULL, hash_alloc, hash_free, element_alloc };
 
-/*-
- *-----------------------------------------------------------------------
- * Dir_Init --
- *	initialize things for this module
- *
- * Results:
- *	none
- *
- * Side Effects:
- *	some directories may be opened.
- *-----------------------------------------------------------------------
- */
+static struct ohash_info file_info = { 0,
+    NULL, hash_alloc, hash_free, element_alloc };
+
+static struct ohash_info dir_info = { offsetof(Path, name),
+    NULL, hash_alloc, hash_free, element_alloc };
+
+/* add_file(path, name): add a file name to a path hash structure. */
+static void add_file(Path *, const char *);
+/* n = find_file_hashi(p, name, end, hv): retrieve name in a path hash
+ * 	structure. */
+static char *find_file_hashi(Path *, const char *, const char *, uint32_t);
+
+/* stamp = find_stampi(name, end): look for (name, end) in the global
+ *	cache. */
+static struct file_stamp *find_stampi(const char *, const char *);
+/* record_stamp(name, timestamp): record timestamp for name in the global
+ * 	cache. */
+static void record_stamp(const char *, TIMESTAMP);
+
+/* free_hash(o): free a ohash structure, where each element can be free'd. */
+static void free_hash(struct ohash *);
+
+/* p = DirReaddiri(name, end): read an actual directory, caching results
+ * 	as we go.  */
+static Path *DirReaddiri(const char *, const char *);
+/* Handles wildcard expansion on a given directory. */
+static void DirMatchFilesi(const char *, const char *, Path *, Lst);
+/* Handles simple wildcard expansion on a path. */
+static void PathMatchFilesi(const char *, const char *, Lst, Lst);
+/* Handles wildcards expansion except for curly braces. */
+static void DirExpandWildi(const char *, const char *, Lst, Lst);
+#define DirExpandWild(s, l1, l2) DirExpandWildi(s, strchr(s, '\0'), l1, l2)
+/* Handles wildcard expansion including curly braces. */
+static void DirExpandCurlyi(const char *, const char *, Lst, Lst);
+
+/* Debugging: show each word in an expansion list. */
+static void DirPrintWord(void *);
+/* Debugging: show a dir name in a path. */
+static void DirPrintDir(void *);
+
+static void
+record_stamp(const char *file, TIMESTAMP t)
+{
+    unsigned int	slot;
+    const char		*end = NULL;
+    struct file_stamp	*n;
+
+    slot = ohash_qlookupi(&mtimes, file, &end);
+    n = ohash_find(&mtimes, slot);
+    if (n)
+	n->mtime = t;
+    else {
+	n = ohash_create_entry(&stamp_info, file, &end);
+	n->mtime = t;
+	ohash_insert(&mtimes, slot, n);
+    }
+}
+
+static struct file_stamp *
+find_stampi(const char *file, const char *efile)
+{
+    return ohash_find(&mtimes, ohash_qlookupi(&mtimes, file, &efile));
+}
+
+static void
+add_file(Path *p, const char *file)
+{
+    unsigned int	slot;
+    const char		*end = NULL;
+    char		*n;
+    struct ohash 	*h = &p->files;
+
+    slot = ohash_qlookupi(h, file, &end);
+    n = ohash_find(h, slot);
+    if (n == NULL) {
+	n = ohash_create_entry(&file_info, file, &end);
+	ohash_insert(h, slot, n);
+    }
+}
+
+static char *
+find_file_hashi(Path *p, const char *file, const char *efile, uint32_t hv)
+{
+    struct ohash 	*h = &p->files;
+
+    return ohash_find(h, ohash_lookup_interval(h, file, efile, hv));
+}
+
+static void
+free_hash(struct ohash *h)
+{
+    void		*e;
+    unsigned int	i;
+
+    for (e = ohash_first(h, &i); e != NULL; e = ohash_next(h, &i))
+	free(e);
+    ohash_delete(h);
+}
+
+
+/* Side Effects: cache the current directory */
 void
-Dir_Init ()
+Dir_Init(void)
 {
-    dirSearchPath = Lst_Init (FALSE);
-    openDirectories = Lst_Init (FALSE);
-    Hash_InitTable(&mtimes, 0);
-    
-    /*
-     * Since the Path structure is placed on both openDirectories and
-     * the path we give Dir_AddDir (which in this case is openDirectories),
-     * we need to remove "." from openDirectories and what better time to
-     * do it than when we have to fetch the thing anyway?
-     */
-    Dir_AddDir (openDirectories, ".");
-    dot = (Path *) Lst_DeQueue (openDirectories);
+    char *dotname = ".";
 
-    /*
-     * We always need to have dot around, so we increment its reference count
-     * to make sure it's not destroyed.
-     */
-    dot->refCount += 1;
+    Static_Lst_Init(dirSearchPath);
+    ohash_init(&openDirectories, 4, &dir_info);
+    ohash_init(&mtimes, 4, &stamp_info);
+
+
+    dot = DirReaddiri(dotname, dotname+1);
+
+    if (!dot)
+    	Fatal("Can't access current directory");
+
+    /* We always need to have dot around, so we increment its reference count
+     * to make sure it won't be destroyed.  */
+    dot->refCount++;
 }
 
-/*-
- *-----------------------------------------------------------------------
- * Dir_End --
- *	cleanup things for this module
- *
- * Results:
- *	none
- *
- * Side Effects:
- *	none
- *-----------------------------------------------------------------------
- */
+#ifdef CLEANUP
 void
-Dir_End()
+Dir_End(void)
 {
-    dot->refCount -= 1;
-    Dir_Destroy((ClientData) dot);
-    Dir_ClearPath(dirSearchPath);
-    Lst_Destroy(dirSearchPath, NOFREE);
-    Dir_ClearPath(openDirectories);
-    Lst_Destroy(openDirectories, NOFREE);
-    Hash_DeleteTable(&mtimes);
-}
+    struct Path *p;
+    unsigned int i;
 
-/*-
- *-----------------------------------------------------------------------
- * DirFindName --
- *	See if the Path structure describes the same directory as the
- *	given one by comparing their names. Called from Dir_AddDir via
- *	Lst_Find when searching the list of open directories.
- *
- * Results:
- *	0 if it is the same. Non-zero otherwise
- *
- * Side Effects:
- *	None
- *-----------------------------------------------------------------------
- */
-static int
-DirFindName (p, dname)
-    ClientData    p;	      /* Current name */
-    ClientData	  dname;      /* Desired name */
-{
-    return (strcmp (((Path *)p)->name, (char *) dname));
+    dot->refCount--;
+    Dir_Destroy(dot);
+    Lst_Destroy(dirSearchPath, Dir_Destroy);
+    for (p = ohash_first(&openDirectories, &i); p != NULL;
+	p = ohash_next(&openDirectories, &i))
+	    Dir_Destroy(p);
+    ohash_delete(&openDirectories);
+    free_hash(&mtimes);
 }
+#endif
 
-/*-
- *-----------------------------------------------------------------------
- * Dir_HasWildcards  --
- *	see if the given name has any wildcard characters in it
- *
- * Results:
- *	returns TRUE if the word should be expanded, FALSE otherwise
- *
- * Side Effects:
- *	none
- *-----------------------------------------------------------------------
- */
-Boolean
-Dir_HasWildcards (name)
-    char          *name;	/* name to check */
+
+/* XXX: This code is not 100% correct ([^]] fails) */
+bool
+Dir_HasWildcardsi(const char *name, const char *ename)
 {
-    register char *cp;
-    
-    for (cp = name; *cp; cp++) {
-	switch(*cp) {
+    const char		*cp;
+    bool		wild = false;
+    unsigned long	brace = 0, bracket = 0;
+
+    for (cp = name; cp != ename; cp++) {
+	switch (*cp) {
 	case '{':
+	    brace++;
+	    wild = true;
+	    break;
+	case '}':
+	    if (brace == 0)
+		return false;
+	    brace--;
+	    break;
 	case '[':
+	    bracket++;
+	    wild = true;
+	    break;
+	case ']':
+	    if (bracket == 0)
+		return false;
+	    bracket--;
+	    break;
 	case '?':
 	case '*':
-	    return (TRUE);
+	    wild = true;
+	    break;
+	default:
+	    break;
 	}
     }
-    return (FALSE);
+    return wild && bracket == 0 && brace == 0;
 }
 
 /*-
  *-----------------------------------------------------------------------
- * DirMatchFiles --
- * 	Given a pattern and a Path structure, see if any files
+ * DirMatchFilesi --
+ *	Given a pattern and a Path structure, see if any files
  *	match the pattern and add their names to the 'expansions' list if
  *	any do. This is incomplete -- it doesn't take care of patterns like
  *	src / *src / *.c properly (just *.c on any of the directories), but it
  *	will do for now.
- *
- * Results:
- *	Always returns 0
- *
- * Side Effects:
- *	File names are added to the expansions lst. The directory will be
- *	fully hashed when this is done.
  *-----------------------------------------------------------------------
  */
-static int
-DirMatchFiles (pattern, p, expansions)
-    char	  *pattern;   	/* Pattern to look for */
-    Path	  *p;         	/* Directory to search */
-    Lst	    	  expansions;	/* Place to store the results */
+static void
+DirMatchFilesi(const char *word, const char *eword, Path *p, Lst expansions)
 {
-    Hash_Search	  search;   	/* Index into the directory's table */	
-    Hash_Entry	  *entry;   	/* Current entry in the table */
-    Boolean 	  isDot;    	/* TRUE if the directory being searched is . */
-    
-    isDot = (*p->name == '.' && p->name[1] == '\0');
-    
-    for (entry = Hash_EnumFirst(&p->files, &search);
-	 entry != (Hash_Entry *)NULL;
-	 entry = Hash_EnumNext(&search))
-    {
-	/*
-	 * See if the file matches the given pattern. Note we follow the UNIX
+    unsigned int	search; 	/* Index into the directory's table */
+    const char		*entry; 	/* Current entry in the table */
+    bool		isDot;		/* Is the directory "." ? */
+
+    isDot = p->name[0] == '.' && p->name[1] == '\0';
+
+    for (entry = ohash_first(&p->files, &search); entry != NULL;
+	 entry = ohash_next(&p->files, &search)) {
+	/* See if the file matches the given pattern. We follow the UNIX
 	 * convention that dot files will only be found if the pattern
-	 * begins with a dot (note also that as a side effect of the hashing
-	 * scheme, .* won't match . or .. since they aren't hashed).
-	 */
-	if (Str_Match(entry->name, pattern) &&
-	    ((entry->name[0] != '.') ||
-	     (pattern[0] == '.')))
-	{
-	    (void)Lst_AtEnd(expansions,
-			    (isDot ? strdup(entry->name) :
-			     str_concat(p->name, entry->name,
-					STR_ADDSLASH)));
+	 * begins with a dot (the hashing scheme doesn't hash . or ..,
+	 * so they won't match `.*'.  */
+	if (*word != '.' && *entry == '.')
+	    continue;
+	if (Str_Matchi(entry, strchr(entry, '\0'), word, eword))
+	    Lst_AtEnd(expansions,
+		isDot ? estrdup(entry) : Str_concat(p->name, entry, '/'));
+    }
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * PathMatchFilesi --
+ *	Traverse directories in the path, calling DirMatchFiles for each.
+ *	NOTE: This doesn't handle patterns in directories.
+ *-----------------------------------------------------------------------
+ */
+static void
+PathMatchFilesi(const char *word, const char *eword, Lst path, Lst expansions)
+{
+    LstNode	ln;		/* Current node */
+
+    for (ln = Lst_First(path); ln != NULL; ln = Lst_Adv(ln))
+	DirMatchFilesi(word, eword, (Path *)Lst_Datum(ln), expansions);
+}
+
+static void
+DirPrintWord(void *word)
+{
+    printf("%s ", (char *)word);
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * DirExpandWildi:
+ *	Expand all wild cards in a fully qualified name, except for
+ *	curly braces.
+ * Side-effect:
+ *	Will hash any directory in which a file is found, and add it to
+ *	the path, on the assumption that future lookups will find files
+ *	there as well.
+ *-----------------------------------------------------------------------
+ */
+static void
+DirExpandWildi(const char *word, const char *eword, Lst path, Lst expansions)
+{
+    const char	*cp;
+    const char	*slash; 	/* keep track of first slash before wildcard */
+
+    slash = memchr(word, '/', eword - word);
+    if (slash == NULL) {
+	/* First the files in dot.  */
+	DirMatchFilesi(word, eword, dot, expansions);
+
+	/* Then the files in every other directory on the path.  */
+	PathMatchFilesi(word, eword, path, expansions);
+	return;
+    }
+    /* The thing has a directory component -- find the first wildcard
+     * in the string.  */
+    slash = word;
+    for (cp = word; cp != eword; cp++) {
+	if (*cp == '/')
+	    slash = cp;
+	if (*cp == '?' || *cp == '[' || *cp == '*') {
+
+	    if (slash != word) {
+		char	*dirpath;
+
+		/* If the glob isn't in the first component, try and find
+		 * all the components up to the one with a wildcard.  */
+		dirpath = Dir_FindFilei(word, slash+1, path);
+		/* dirpath is null if we can't find the leading component
+		 * XXX: Dir_FindFile won't find internal components.
+		 * i.e. if the path contains ../Etc/Object and we're
+		 * looking for Etc, it won't be found. */
+		if (dirpath != NULL) {
+		    char *dp;
+		    LIST temp;
+
+		    dp = strchr(dirpath, '\0');
+		    while (dp > dirpath && dp[-1] == '/')
+		    	dp--;
+
+		    Lst_Init(&temp);
+		    Dir_AddDiri(&temp, dirpath, dp);
+		    PathMatchFilesi(slash+1, eword, &temp, expansions);
+		    Lst_Destroy(&temp, NOFREE);
+		}
+	    } else
+		/* Start the search from the local directory.  */
+		PathMatchFilesi(word, eword, path, expansions);
+	    return;
 	}
     }
-    return (0);
+    /* Return the file -- this should never happen.  */
+    PathMatchFilesi(word, eword, path, expansions);
 }
 
 /*-
  *-----------------------------------------------------------------------
  * DirExpandCurly --
- *	Expand curly braces like the C shell. Does this recursively.
- *	Note the special case: if after the piece of the curly brace is
- *	done there are no wildcard characters in the result, the result is
- *	placed on the list WITHOUT CHECKING FOR ITS EXISTENCE.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The given list is filled with the expansions...
- *
+ *	Expand curly braces like the C shell, and other wildcards as per
+ *	Str_Match.
+ *	XXX: if curly expansion yields a result with
+ *	no wildcards, the result is placed on the list WITHOUT CHECKING
+ *	FOR ITS EXISTENCE.
  *-----------------------------------------------------------------------
  */
 static void
-DirExpandCurly(word, brace, path, expansions)
-    char    	  *word;    	/* Entire word to expand */
-    char    	  *brace;   	/* First curly brace in it */
-    Lst	    	  path;	    	/* Search path to use */
-    Lst	    	  expansions;	/* Place to store the expansions */
+DirExpandCurlyi(const char *word, const char *eword, Lst path, Lst expansions)
 {
-    char    	  *end;	    	/* Character after the closing brace */
-    char    	  *cp;	    	/* Current position in brace clause */
-    char    	  *start;   	/* Start of current piece of brace clause */
-    int	    	  bracelevel;	/* Number of braces we've seen. If we see a
-				 * right brace when this is 0, we've hit the
-				 * end of the clause. */
-    char    	  *file;    	/* Current expansion */
-    int	    	  otherLen; 	/* The length of the other pieces of the
-				 * expansion (chars before and after the
-				 * clause in 'word') */
-    char    	  *cp2;	    	/* Pointer for checking for wildcards in
+    const char	*cp2;		/* Pointer for checking for wildcards in
 				 * expansion before calling Dir_Expand */
+    LIST	curled; 	/* Queue of words to expand */
+    char	*toexpand;	/* Current word to expand */
+    bool	dowild; 	/* Wildcard left after curlies ? */
 
-    start = brace+1;
-
-    /*
-     * Find the end of the brace clause first, being wary of nested brace
-     * clauses.
-     */
-    for (end = start, bracelevel = 0; *end != '\0'; end++) {
-	if (*end == '{') {
-	    bracelevel++;
-	} else if ((*end == '}') && (bracelevel-- == 0)) {
-	    break;
-	}
-    }
-    if (*end == '\0') {
-	Error("Unterminated {} clause \"%s\"", start);
-	return;
-    } else {
-	end++;
-    }
-    otherLen = brace - word + strlen(end);
-
-    for (cp = start; cp < end; cp++) {
-	/*
-	 * Find the end of this piece of the clause.
-	 */
-	bracelevel = 0;
-	while (*cp != ',') {
-	    if (*cp == '{') {
-		bracelevel++;
-	    } else if ((*cp == '}') && (bracelevel-- <= 0)) {
+    /* Determine once and for all if there is something else going on */
+    dowild = false;
+    for (cp2 = word; cp2 != eword; cp2++)
+	if (*cp2 == '*' || *cp2 == '?' || *cp2 == '[') {
+		dowild = true;
 		break;
-	    }
-	    cp++;
 	}
-	/*
-	 * Allocate room for the combination and install the three pieces.
-	 */
-	file = emalloc(otherLen + cp - start + 1);
-	if (brace != word) {
-	    strncpy(file, word, brace-word);
-	}
-	if (cp != start) {
-	    strncpy(&file[brace-word], start, cp-start);
-	}
-	strcpy(&file[(brace-word)+(cp-start)], end);
 
-	/*
-	 * See if the result has any wildcards in it. If we find one, call
-	 * Dir_Expand right away, telling it to place the result on our list
-	 * of expansions.
-	 */
-	for (cp2 = file; *cp2 != '\0'; cp2++) {
-	    switch(*cp2) {
-	    case '*':
-	    case '?':
-	    case '{':
-	    case '[':
-		Dir_Expand(file, path, expansions);
-		goto next;
-	    }
-	}
-	if (*cp2 == '\0') {
-	    /*
-	     * Hit the end w/o finding any wildcards, so stick the expansion
-	     * on the end of the list.
-	     */
-	    (void)Lst_AtEnd(expansions, file);
-	} else {
-	next:
-	    free(file);
-	}
-	start = cp+1;
-    }
-}
+    /* Prime queue with copy of initial word */
+    Lst_Init(&curled);
+    Lst_EnQueue(&curled, Str_dupi(word, eword));
+    while ((toexpand = (char *)Lst_DeQueue(&curled)) != NULL) {
+	const char	*brace;
+	const char	*start; /* Start of current chunk of brace clause */
+	const char	*end;	/* Character after the closing brace */
+	int		bracelevel;
+				/* Keep track of nested braces. If we hit
+				 * the right brace with bracelevel == 0,
+				 * this is the end of the clause. */
+	size_t		endLen;
+				/* The length of the ending non-curlied 
+				 * part of the current expansion */
 
+	/* End case: no curly left to expand */
+	brace = strchr(toexpand, '{');
+	if (brace == NULL) {
+	    if (dowild) {
+		DirExpandWild(toexpand, path, expansions);
+		free(toexpand);
+	    } else
+		Lst_AtEnd(expansions, toexpand);
+	    continue;
+	} 
 
-/*-
- *-----------------------------------------------------------------------
- * DirExpandInt --
- *	Internal expand routine. Passes through the directories in the
- *	path one by one, calling DirMatchFiles for each. NOTE: This still
- *	doesn't handle patterns in directories...
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	Things are added to the expansions list.
- *
- *-----------------------------------------------------------------------
- */
-static void
-DirExpandInt(word, path, expansions)
-    char    	  *word;    	/* Word to expand */
-    Lst	    	  path;	    	/* Path on which to look */
-    Lst	    	  expansions;	/* Place to store the result */
-{
-    LstNode 	  ln;	    	/* Current node */
-    Path	  *p;	    	/* Directory in the node */
+	start = brace+1;
 
-    if (Lst_Open(path) == SUCCESS) {
-	while ((ln = Lst_Next(path)) != NILLNODE) {
-	    p = (Path *)Lst_Datum(ln);
-	    DirMatchFiles(word, p, expansions);
-	}
-	Lst_Close(path);
-    }
-}
-
-/*-
- *-----------------------------------------------------------------------
- * DirPrintWord --
- *	Print a word in the list of expansions. Callback for Dir_Expand
- *	when DEBUG(DIR), via Lst_ForEach.
- *
- * Results:
- *	=== 0
- *
- * Side Effects:
- *	The passed word is printed, followed by a space.
- *
- *-----------------------------------------------------------------------
- */
-static int
-DirPrintWord(word, dummy)
-    ClientData  word;
-    ClientData  dummy;
-{
-    printf("%s ", (char *) word);
-
-    return(dummy ? 0 : 0);
-}
-
-/*-
- *-----------------------------------------------------------------------
- * Dir_Expand  --
- *	Expand the given word into a list of words by globbing it looking
- *	in the directories on the given search path.
- *
- * Results:
- *	A list of words consisting of the files which exist along the search
- *	path matching the given pattern.
- *
- * Side Effects:
- *	Directories may be opened. Who knows?
- *-----------------------------------------------------------------------
- */
-void
-Dir_Expand (word, path, expansions)
-    char    *word;      /* the word to expand */
-    Lst     path;   	/* the list of directories in which to find
-			 * the resulting files */
-    Lst	    expansions;	/* the list on which to place the results */
-{
-    char    	  *cp;
-
-    if (DEBUG(DIR)) {
-	printf("expanding \"%s\"...", word);
-    }
-    
-    cp = strchr(word, '{');
-    if (cp) {
-	DirExpandCurly(word, cp, path, expansions);
-    } else {
-	cp = strchr(word, '/');
-	if (cp) {
-	    /*
-	     * The thing has a directory component -- find the first wildcard
-	     * in the string.
-	     */
-	    for (cp = word; *cp; cp++) {
-		if (*cp == '?' || *cp == '[' || *cp == '*' || *cp == '{') {
-		    break;
-		}
-	    }
-	    if (*cp == '{') {
-		/*
-		 * This one will be fun.
-		 */
-		DirExpandCurly(word, cp, path, expansions);
+	/* Find the end of the brace clause first, being wary of nested brace
+	 * clauses.  */
+	for (end = start, bracelevel = 0;; end++) {
+	    if (*end == '{')
+		bracelevel++;
+	    else if (*end == '\0') {
+		Error("Unterminated {} clause \"%s\"", start);
 		return;
-	    } else if (*cp != '\0') {
-		/*
-		 * Back up to the start of the component
-		 */
-		char  *dirpath;
-
-		while (cp > word && *cp != '/') {
-		    cp--;
-		}
-		if (cp != word) {
-		    char sc;
-		    /*
-		     * If the glob isn't in the first component, try and find
-		     * all the components up to the one with a wildcard.
-		     */
-		    sc = cp[1];
-		    cp[1] = '\0';
-		    dirpath = Dir_FindFile(word, path);
-		    cp[1] = sc;
-		    /*
-		     * dirpath is null if can't find the leading component
-		     * XXX: Dir_FindFile won't find internal components.
-		     * i.e. if the path contains ../Etc/Object and we're
-		     * looking for Etc, it won't be found. Ah well.
-		     * Probably not important.
-		     */
-		    if (dirpath != (char *)NULL) {
-			char *dp = &dirpath[strlen(dirpath) - 1];
-			if (*dp == '/')
-			    *dp = '\0';
-			path = Lst_Init(FALSE);
-			Dir_AddDir(path, dirpath);
-			DirExpandInt(cp+1, path, expansions);
-			Lst_Destroy(path, NOFREE);
-		    }
-		} else {
-		    /*
-		     * Start the search from the local directory
-		     */
-		    DirExpandInt(word, path, expansions);
-		}
-	    } else {
-		/*
-		 * Return the file -- this should never happen.
-		 */
-		DirExpandInt(word, path, expansions);
-	    }
-	} else {
-	    /*
-	     * First the files in dot
-	     */
-	    DirMatchFiles(word, dot, expansions);
-    
-	    /*
-	     * Then the files in every other directory on the path.
-	     */
-	    DirExpandInt(word, path, expansions);
+	    } else if (*end == '}' && bracelevel-- == 0)
+		break;
 	}
+	end++;
+	endLen = strlen(end);
+
+	for (;;) {
+	    char	*file;	/* To hold current expansion */
+	    const char	*cp;	/* Current position in brace clause */
+	
+	    /* Find the end of the current expansion */
+	    for (bracelevel = 0, cp = start; 
+	    	bracelevel != 0 || (*cp != '}' && *cp != ','); cp++) {
+		if (*cp == '{')
+		    bracelevel++;
+		else if (*cp == '}')
+		    bracelevel--;
+	    }
+
+	    /* Build the current combination and enqueue it.  */
+	    file = emalloc((brace - toexpand) + (cp - start) + endLen + 1);
+	    if (brace != toexpand)
+	    	memcpy(file, toexpand, brace-toexpand);
+	    if (cp != start)
+	    	memcpy(file+(brace-toexpand), start, cp-start);
+	    memcpy(file+(brace-toexpand)+(cp-start), end, endLen + 1);
+	    Lst_EnQueue(&curled, file);
+	    if (*cp == '}')
+	    	break;
+	    start = cp+1;
+	}
+	free(toexpand);
     }
+}
+
+/* Side effects:
+ * 	Dir_Expandi will hash directories that were not yet visited */
+void
+Dir_Expandi(const char *word, const char *eword, Lst path, Lst expansions)
+{
+    const char	*cp;
+
     if (DEBUG(DIR)) {
-	Lst_ForEach(expansions, DirPrintWord, (ClientData) 0);
+    	char *s = Str_dupi(word, eword);
+	printf("expanding \"%s\"...", s);
+	free(s);
+    }
+
+    cp = memchr(word, '{', eword - word);
+    if (cp)
+	DirExpandCurlyi(word, eword, path, expansions);
+    else
+	DirExpandWildi(word, eword, path, expansions);
+
+    if (DEBUG(DIR)) {
+	Lst_Every(expansions, DirPrintWord);
 	fputc('\n', stdout);
     }
 }
 
+
 /*-
- *-----------------------------------------------------------------------
- * Dir_FindFile  --
- *	Find the file with the given name along the given search path.
- *
- * Results:
- *	The path to the file or NULL. This path is guaranteed to be in a
- *	different part of memory than name and so may be safely free'd.
- *
  * Side Effects:
  *	If the file is found in a directory which is not on the path
  *	already (either 'name' is absolute or it is a relative path
  *	[ dir1/.../dirn/file ] which exists below one of the directories
  *	already on the search path), its directory is added to the end
  *	of the path on the assumption that there will be more files in
- *	that directory later on. Sometimes this is true. Sometimes not.
- *-----------------------------------------------------------------------
+ *	that directory later on. 
  */
 char *
-Dir_FindFile (name, path)
-    char    	  *name;    /* the file to find */
-    Lst           path;	    /* the Lst of directories to search */
+Dir_FindFilei(const char *name, const char *ename, Lst path)
 {
-    register char *p1;	    /* pointer into p->name */
-    register char *p2;	    /* pointer into name */
-    LstNode       ln;	    /* a list element */
-    register char *file;    /* the current filename to check */
-    register Path *p;	    /* current path member */
-    register char *cp;	    /* index of first slash, if any */
-    Boolean	  hasSlash; /* true if 'name' contains a / */
-    struct stat	  stb;	    /* Buffer for stat, if necessary */
-    Hash_Entry	  *entry;   /* Entry for mtimes table */
-    
-    /*
-     * Find the final component of the name and note whether it has a
-     * slash in it (the name, I mean)
-     */
-    cp = strrchr (name, '/');
+    Path		*p;	/* current path member */
+    char		*p1;	/* pointer into p->name */
+    const char		*p2;	/* pointer into name */
+    LstNode		ln;	/* a list element */
+    char		*file;	/* the current filename to check */
+    char		*temp;	/* index into file */
+    const char		*cp;	/* index of first slash, if any */
+    bool		hasSlash;
+    struct stat 	stb;	/* Buffer for stat, if necessary */
+    struct file_stamp	*entry; /* Entry for mtimes table */
+    uint32_t		hv;	/* hash value for last component in file name */
+    char		*q;	/* Str_dupi(name, ename) */
+
+    /* Find the final component of the name and note whether name has a
+     * slash in it */
+    cp = Str_rchri(name, ename, '/');
     if (cp) {
-	hasSlash = TRUE;
-	cp += 1;
+	hasSlash = true;
+	cp++;
     } else {
-	hasSlash = FALSE;
+	hasSlash = false;
 	cp = name;
     }
-    
-    if (DEBUG(DIR)) {
+
+    hv = ohash_interval(cp, &ename);
+
+    if (DEBUG(DIR))
 	printf("Searching for %s...", name);
-    }
-    /*
-     * No matter what, we always look for the file in the current directory
-     * before anywhere else and we *do not* add the ./ to it if it exists.
-     * This is so there are no conflicts between what the user specifies
-     * (fish.c) and what pmake finds (./fish.c).
-     */
+    /* No matter what, we always look for the file in the current directory
+     * before anywhere else and we always return exactly what the caller 
+     * specified. */
     if ((!hasSlash || (cp - name == 2 && *name == '.')) &&
-	(Hash_FindEntry (&dot->files, cp) != (Hash_Entry *)NULL)) {
-	    if (DEBUG(DIR)) {
+	find_file_hashi(dot, cp, ename, hv) != NULL) {
+	    if (DEBUG(DIR))
 		printf("in '.'\n");
-	    }
-	    hits += 1;
-	    dot->hits += 1;
-	    return (strdup (name));
+#ifdef DEBUG_DIRECTORY_CACHE
+	    hits++;
+	    dot->hits++;
+#endif
+	    return Str_dupi(name, ename);
     }
-    
-    if (Lst_Open (path) == FAILURE) {
-	if (DEBUG(DIR)) {
-	    printf("couldn't open path, file not found\n");
-	}
-	misses += 1;
-	return ((char *) NULL);
-    }
-    
-    /*
-     * We look through all the directories on the path seeking one which
-     * contains the final component of the given name and whose final
-     * component(s) match the name's initial component(s). If such a beast
-     * is found, we concatenate the directory name and the final component
-     * and return the resulting string. If we don't find any such thing,
-     * we go on to phase two...
-     */
-    while ((ln = Lst_Next (path)) != NILLNODE) {
-	p = (Path *) Lst_Datum (ln);
-	if (DEBUG(DIR)) {
+
+    /* Then, we look through all the directories on path, seeking one 
+     * containing the final component of name and whose final
+     * component(s) match name's initial component(s). 
+     * If found, we concatenate the directory name and the 
+     * final component and return the resulting string.  */
+    for (ln = Lst_First(path); ln != NULL; ln = Lst_Adv(ln)) {
+	p = (Path *)Lst_Datum(ln);
+	if (DEBUG(DIR))
 	    printf("%s...", p->name);
-	}
-	if (Hash_FindEntry (&p->files, cp) != (Hash_Entry *)NULL) {
-	    if (DEBUG(DIR)) {
+	if (find_file_hashi(p, cp, ename, hv) != NULL) {
+	    if (DEBUG(DIR))
 		printf("here...");
-	    }
 	    if (hasSlash) {
-		/*
-		 * If the name had a slash, its initial components and p's
+		/* If the name had a slash, its initial components and p's
 		 * final components must match. This is false if a mismatch
 		 * is encountered before all of the initial components
 		 * have been checked (p2 > name at the end of the loop), or
 		 * we matched only part of one of the components of p
-		 * along with all the rest of them (*p1 != '/').
-		 */
-		p1 = p->name + strlen (p->name) - 1;
+		 * along with all the rest of them (*p1 != '/').  */
+		p1 = p->name + strlen(p->name) - 1;
 		p2 = cp - 2;
 		while (p2 >= name && p1 >= p->name && *p1 == *p2) {
-		    p1 -= 1; p2 -= 1;
+		    p1--;
+		    p2--;
 		}
 		if (p2 >= name || (p1 >= p->name && *p1 != '/')) {
-		    if (DEBUG(DIR)) {
+		    if (DEBUG(DIR))
 			printf("component mismatch -- continuing...");
-		    }
 		    continue;
 		}
 	    }
-	    file = str_concat (p->name, cp, STR_ADDSLASH);
-	    if (DEBUG(DIR)) {
+	    file = Str_concati(p->name, strchr(p->name, '\0'), cp, ename, '/');
+	    if (DEBUG(DIR))
 		printf("returning %s\n", file);
-	    }
-	    Lst_Close (path);
-	    p->hits += 1;
-	    hits += 1;
-	    return (file);
+#ifdef DEBUG_DIRECTORY_CACHE
+	    p->hits++;
+	    hits++;
+#endif
+	    return file;
 	} else if (hasSlash) {
-	    /*
-	     * If the file has a leading path component and that component
+	    /* If the file has a leading path component and that component
 	     * exactly matches the entire name of the current search
-	     * directory, we assume the file doesn't exist and return NULL.
-	     */
-	    for (p1 = p->name, p2 = name; *p1 && *p1 == *p2; p1++, p2++) {
+	     * directory, we assume the file doesn't exist and return NULL.  */
+	    for (p1 = p->name, p2 = name; *p1 && *p1 == *p2; p1++, p2++)
 		continue;
-	    }
 	    if (*p1 == '\0' && p2 == cp - 1) {
-		if (DEBUG(DIR)) {
-		    printf("must be here but isn't -- returing NULL\n");
-		}
-		Lst_Close (path);
-		return ((char *) NULL);
+		if (DEBUG(DIR))
+		    printf("has to be here but isn't -- returning NULL\n");
+		return NULL;
 	    }
 	}
     }
-    
-    /*
-     * We didn't find the file on any existing members of the directory.
-     * If the name doesn't contain a slash, that means it doesn't exist.
-     * If it *does* contain a slash, however, there is still hope: it
-     * could be in a subdirectory of one of the members of the search
-     * path. (eg. /usr/include and sys/types.h. The above search would
-     * fail to turn up types.h in /usr/include, but it *is* in
-     * /usr/include/sys/types.h) If we find such a beast, we assume there
-     * will be more (what else can we assume?) and add all but the last
-     * component of the resulting name onto the search path (at the
-     * end). This phase is only performed if the file is *not* absolute.
-     */
+
+    /* We didn't find the file on any existing member of the path.
+     * If the name doesn't contain a slash, end of story.
+     * If it does contain a slash, however, it could be in a subdirectory 
+     * of one of the members of the search path. (eg., for path=/usr/include 
+     * and name=sys/types.h, the above search fails to turn up types.h 
+     * in /usr/include, even though /usr/include/sys/types.h exists).
+     *
+     * We only perform this look-up for non-absolute file names.
+     *
+     * Whenever we score a hit, we assume there will be more matches from
+     * that directory, and append all but the last component of the 
+     * resulting name onto the search path. */
     if (!hasSlash) {
-	if (DEBUG(DIR)) {
+	if (DEBUG(DIR))
 	    printf("failed.\n");
-	}
-	misses += 1;
-	return ((char *) NULL);
+#ifdef DEBUG_DIRECTORY_CACHE
+	misses++;
+#endif
+	return NULL;
     }
-    
+
     if (*name != '/') {
-	Boolean	checkedDot = FALSE;
-	
-	if (DEBUG(DIR)) {
+	bool checkedDot = false;
+
+	if (DEBUG(DIR))
 	    printf("failed. Trying subdirectories...");
-	}
-	(void) Lst_Open (path);
-	while ((ln = Lst_Next (path)) != NILLNODE) {
-	    p = (Path *) Lst_Datum (ln);
-	    if (p != dot) {
-		file = str_concat (p->name, name, STR_ADDSLASH);
-	    } else {
-		/*
-		 * Checking in dot -- DON'T put a leading ./ on the thing.
-		 */
-		file = strdup(name);
-		checkedDot = TRUE;
+	for (ln = Lst_First(path); ln != NULL; ln = Lst_Adv(ln)) {
+	    p = (Path *)Lst_Datum(ln);
+	    if (p != dot)
+		file = Str_concati(p->name, strchr(p->name, '\0'), name, ename, '/');
+	    else {
+		/* Checking in dot -- DON'T put a leading ./ on the thing.  */
+		file = Str_dupi(name, ename);
+		checkedDot = true;
 	    }
-	    if (DEBUG(DIR)) {
+	    if (DEBUG(DIR))
 		printf("checking %s...", file);
-	    }
-	    
-		
-	    if (stat (file, &stb) == 0) {
-		if (DEBUG(DIR)) {
+
+	    if (stat(file, &stb) == 0) {
+		TIMESTAMP mtime;
+
+		ts_set_from_stat(stb, mtime);
+		if (DEBUG(DIR))
 		    printf("got it.\n");
-		}
-		
-		Lst_Close (path);
-		
-		/*
-		 * We've found another directory to search. We know there's
-		 * a slash in 'file' because we put one there. We nuke it after
-		 * finding it and call Dir_AddDir to add this new directory
-		 * onto the existing search path. Once that's done, we restore
-		 * the slash and triumphantly return the file name, knowing
-		 * that should a file in this directory every be referenced
-		 * again in such a manner, we will find it without having to do
-		 * numerous numbers of access calls. Hurrah!
-		 */
-		cp = strrchr (file, '/');
-		*cp = '\0';
-		Dir_AddDir (path, file);
-		*cp = '/';
-		
-		/*
-		 * Save the modification time so if it's needed, we don't have
-		 * to fetch it again.
-		 */
-		if (DEBUG(DIR)) {
-		    printf("Caching %s for %s\n", Targ_FmtTime(stb.st_mtime),
+
+		/* We've found another directory to search. We know there
+		 * is a slash in 'file'. We call Dir_AddDiri to add the
+		 * new directory onto the existing search path. Once 
+		 * that's done, we return the file name, knowing that 
+		 * should a file in this directory ever be referenced again 
+		 * in such a manner, we will find it without having to do 
+		 * numerous access calls.  */
+		temp = strrchr(file, '/');
+		Dir_AddDiri(path, file, temp);
+
+		/* Save the modification time so if it's needed, we don't have
+		 * to fetch it again.  */
+		if (DEBUG(DIR))
+		    printf("Caching %s for %s\n", Targ_FmtTime(mtime),
 			    file);
-		}
-		entry = Hash_CreateEntry(&mtimes, (char *) file,
-					 (Boolean *)NULL);
-		Hash_SetValue(entry, (long)stb.st_mtime);
-		nearmisses += 1;
-		return (file);
-	    } else {
-		free (file);
-	    }
+		record_stamp(file, mtime);
+#ifdef DEBUG_DIRECTORY_CACHE
+		nearmisses++;
+#endif
+		return file;
+	    } else
+		free(file);
 	}
-	
-	if (DEBUG(DIR)) {
+
+	if (DEBUG(DIR))
 	    printf("failed. ");
-	}
-	Lst_Close (path);
 
 	if (checkedDot) {
-	    /*
-	     * Already checked by the given name, since . was in the path,
-	     * so no point in proceeding...
-	     */
-	    if (DEBUG(DIR)) {
+	    /* Already checked by the given name, since . was in the path,
+	     * so no point in proceeding...  */
+	    if (DEBUG(DIR))
 		printf("Checked . already, returning NULL\n");
-	    }
-	    return(NULL);
+	    return NULL;
 	}
     }
-    
-    /*
-     * Didn't find it that way, either. Sigh. Phase 3. Add its directory
-     * onto the search path in any case, just in case, then look for the
-     * thing in the hash table. If we find it, grand. We return a new
-     * copy of the name. Otherwise we sadly return a NULL pointer. Sigh.
-     * Note that if the directory holding the file doesn't exist, this will
-     * do an extra search of the final directory on the path. Unless something
-     * weird happens, this search won't succeed and life will be groovy.
+
+    /* Didn't find it that way, either. Last resort: look for the file
+     * in the global mtime cache, then on the disk.
+     * If this doesn't succeed, we finally return a NULL pointer.
      *
-     * Sigh. We cannot add the directory onto the search path because
+     * We cannot add this directory onto the search path because
      * of this amusing case:
      * $(INSTALLDIR)/$(FILE): $(FILE)
      *
      * $(FILE) exists in $(INSTALLDIR) but not in the current one.
      * When searching for $(FILE), we will find it in $(INSTALLDIR)
-     * b/c we added it here. This is not good...
-     */
-#ifdef notdef
-    cp[-1] = '\0';
-    Dir_AddDir (path, name);
-    cp[-1] = '/';
-    
-    bigmisses += 1;
-    ln = Lst_Last (path);
-    if (ln == NILLNODE) {
-	return ((char *) NULL);
-    } else {
-	p = (Path *) Lst_Datum (ln);
-    }
-    
-    if (Hash_FindEntry (&p->files, cp) != (Hash_Entry *)NULL) {
-	return (strdup (name));
-    } else {
-	return ((char *) NULL);
-    }
-#else /* !notdef */
-    if (DEBUG(DIR)) {
-	printf("Looking for \"%s\"...", name);
-    }
-    
-    bigmisses += 1;
-    entry = Hash_FindEntry(&mtimes, name);
-    if (entry != (Hash_Entry *)NULL) {
-	if (DEBUG(DIR)) {
+     * b/c we added it here. This is not good...  */
+    q = Str_dupi(name, ename);
+    if (DEBUG(DIR))
+	printf("Looking for \"%s\"...", q);
+
+#ifdef DEBUG_DIRECTORY_CACHE
+    bigmisses++;
+#endif
+    entry = find_stampi(name, ename);
+    if (entry != NULL) {
+	if (DEBUG(DIR))
 	    printf("got it (in mtime cache)\n");
-	}
-	return(strdup(name));
-    } else if (stat (name, &stb) == 0) {
-	entry = Hash_CreateEntry(&mtimes, name, (Boolean *)NULL);
-	if (DEBUG(DIR)) {
-	    printf("Caching %s for %s\n", Targ_FmtTime(stb.st_mtime),
-		    name);
-	}
-	Hash_SetValue(entry, (long)stb.st_mtime);
-	return (strdup (name));
+	return q;
+    } else if (stat(q, &stb) == 0) {
+	TIMESTAMP mtime;
+
+	ts_set_from_stat(stb, mtime);
+	if (DEBUG(DIR))
+	    printf("Caching %s for %s\n", Targ_FmtTime(mtime),
+		    q);
+	record_stamp(q, mtime);
+	return q;
     } else {
-	if (DEBUG(DIR)) {
+	if (DEBUG(DIR))
 	    printf("failed. Returning NULL\n");
-	}
-	return ((char *)NULL);
+	free(q);
+	return NULL;
     }
-#endif /* notdef */
 }
 
-/*-
- *-----------------------------------------------------------------------
- * Dir_MTime  --
- *	Find the modification time of the file described by gn along the
- *	search path dirSearchPath.
- * 
- * Results:
- *	The modification time or 0 if it doesn't exist
- *
- * Side Effects:
- *	The modification time is placed in the node's mtime slot.
- *	If the node didn't have a path entry before, and Dir_FindFile
- *	found one for it, the full name is placed in the path slot.
- *-----------------------------------------------------------------------
- */
-int
-Dir_MTime (gn)
-    GNode         *gn;	      /* the file whose modification time is
-			       * desired */
+/* Read a directory, either from the disk, or from the cache.  */
+static Path *
+DirReaddiri(const char *name, const char *ename)
 {
-    char          *fullName;  /* the full pathname of name */
-    struct stat	  stb;	      /* buffer for finding the mod time */
-    Hash_Entry	  *entry;
-    
-    if (gn->type & OP_ARCHV) {
-	return Arch_MTime (gn);
-    } else if (gn->path == (char *)NULL) {
-	fullName = Dir_FindFile (gn->name, dirSearchPath);
-    } else {
-	fullName = gn->path;
-    }
-    
-    if (fullName == (char *)NULL) {
-	fullName = strdup(gn->name);
+    Path		*p;	/* pointer to new Path structure */
+    DIR 		*d;	/* for reading directory */
+    struct dirent	*dp;	/* entry in directory */
+    unsigned int	slot;
+
+    slot = ohash_qlookupi(&openDirectories, name, &ename);
+    p = ohash_find(&openDirectories, slot);
+
+    if (p != NULL)
+	return p;
+
+    p = ohash_create_entry(&dir_info, name, &ename);
+#ifdef DEBUG_DIRECTORY_CACHE
+    p->hits = 0;
+#endif
+    p->refCount = 0;
+    ohash_init(&p->files, 4, &file_info);
+
+    if (DEBUG(DIR)) {
+	printf("Caching %s...", p->name);
+	fflush(stdout);
     }
 
-    entry = Hash_FindEntry(&mtimes, fullName);
-    if (entry != (Hash_Entry *)NULL) {
-	/*
-	 * Only do this once -- the second time folks are checking to
-	 * see if the file was actually updated, so we need to actually go
-	 * to the file system.
-	 */
-	if (DEBUG(DIR)) {
-	    printf("Using cached time %s for %s\n",
-		    Targ_FmtTime((time_t)(long)Hash_GetValue(entry)), fullName);
-	}
-	stb.st_mtime = (time_t)(long)Hash_GetValue(entry);
-	Hash_DeleteEntry(&mtimes, entry);
-    } else if (stat (fullName, &stb) < 0) {
-	if (gn->type & OP_MEMBER) {
-	    if (fullName != gn->path)
-		free(fullName);
-	    return Arch_MemMTime (gn);
-	} else {
-	    stb.st_mtime = 0;
-	}
+    if ((d = opendir(p->name)) == NULL)
+	return NULL;
+
+    while ((dp = readdir(d)) != NULL) {
+	if (dp->d_name[0] == '.' && 
+	    (dp->d_name[1] == '\0' || 
+	    	(dp->d_name[1] == '.' && dp->d_name[2] == '\0')))
+		continue;
+	add_file(p, dp->d_name);
     }
-    if (fullName && gn->path == (char *)NULL) {
-	gn->path = fullName;
-    }
-    
-    gn->mtime = stb.st_mtime;
-    return (gn->mtime);
+    (void)closedir(d);
+    if (DEBUG(DIR))
+	printf("done\n");
+
+    ohash_insert(&openDirectories, slot, p);
+    return p;
 }
 
 /*-
  *-----------------------------------------------------------------------
- * Dir_AddDir --
+ * Dir_AddDiri --
  *	Add the given name to the end of the given path. The order of
  *	the arguments is backwards so ParseDoDependency can do a
  *	Lst_ForEach of its list of paths...
  *
- * Results:
- *	none
- *
  * Side Effects:
- *	A structure is added to the list and the directory is 
+ *	A structure is added to the list and the directory is
  *	read and hashed.
  *-----------------------------------------------------------------------
  */
+
 void
-Dir_AddDir (path, name)
-    Lst           path;	      /* the path to which the directory should be
-			       * added */
-    char          *name;      /* the name of the directory to add */
+Dir_AddDiri(Lst path, const char *name, const char *ename)
 {
-    LstNode       ln;	      /* node in case Path structure is found */
-    register Path *p;	      /* pointer to new Path structure */
-    DIR     	  *d;	      /* for reading directory */
-    register struct dirent *dp; /* entry in directory */
-    
-    ln = Lst_Find (openDirectories, (ClientData)name, DirFindName);
-    if (ln != NILLNODE) {
-	p = (Path *)Lst_Datum (ln);
-	if (Lst_Member(path, (ClientData)p) == NILLNODE) {
-	    p->refCount += 1;
-	    (void)Lst_AtEnd (path, (ClientData)p);
-	}
-    } else {
-	if (DEBUG(DIR)) {
-	    printf("Caching %s...", name);
-	    fflush(stdout);
-	}
-	
-	if ((d = opendir (name)) != (DIR *) NULL) {
-	    p = (Path *) emalloc (sizeof (Path));
-	    p->name = strdup (name);
-	    p->hits = 0;
-	    p->refCount = 1;
-	    Hash_InitTable (&p->files, -1);
-	    
-	    /*
-	     * Skip the first two entries -- these will *always* be . and ..
-	     */
-	    (void)readdir(d);
-	    (void)readdir(d);
-	    
-	    while ((dp = readdir (d)) != (struct dirent *) NULL) {
-#ifdef sun
-		/*
-		 * The sun directory library doesn't check for a 0 inode
-		 * (0-inode slots just take up space), so we have to do
-		 * it ourselves.
-		 */
-		if (dp->d_fileno == 0) {
-		    continue;
-		}
-#endif /* sun */
-		(void)Hash_CreateEntry(&p->files, dp->d_name, (Boolean *)NULL);
-	    }
-	    (void) closedir (d);
-	    (void)Lst_AtEnd (openDirectories, (ClientData)p);
-	    (void)Lst_AtEnd (path, (ClientData)p);
-	}
-	if (DEBUG(DIR)) {
-	    printf("done\n");
-	}
-    }
+    Path	*p;	/* pointer to new Path structure */
+
+    p = DirReaddiri(name, ename);
+    if (p == NULL)
+	return;
+    if (p->refCount == 0)
+	Lst_AtEnd(path, p);
+    else if (!Lst_AddNew(path, p))
+	return;
+    p->refCount++;
 }
 
 /*-
@@ -1098,16 +936,13 @@ Dir_AddDir (path, name)
  *
  * Side Effects:
  *	The refCount of the path is incremented.
- *
  *-----------------------------------------------------------------------
  */
-ClientData
-Dir_CopyDir(p)
-    ClientData p;
+void *
+Dir_CopyDir(void *p)
 {
-    ((Path *) p)->refCount += 1;
-
-    return ((ClientData)p);
+    ((Path *)p)->refCount++;
+    return p;
 }
 
 /*-
@@ -1122,33 +957,23 @@ Dir_CopyDir(p)
  *	The string mentioned above. Note that there is no space between
  *	the given flag and each directory. The empty string is returned if
  *	Things don't go well.
- *
- * Side Effects:
- *	None
  *-----------------------------------------------------------------------
  */
 char *
-Dir_MakeFlags (flag, path)
-    char	  *flag;  /* flag which should precede each directory */
-    Lst	    	  path;	  /* list of directories */
+Dir_MakeFlags(const char *flag, Lst path)
 {
-    char	  *str;	  /* the string which will be returned */
-    char	  *tstr;  /* the current directory preceded by 'flag' */
     LstNode	  ln;	  /* the node of the current directory */
-    Path	  *p;	  /* the structure describing the current directory */
-    
-    str = strdup ("");
-    
-    if (Lst_Open (path) == SUCCESS) {
-	while ((ln = Lst_Next (path)) != NILLNODE) {
-	    p = (Path *) Lst_Datum (ln);
-	    tstr = str_concat (flag, p->name, 0);
-	    str = str_concat (str, tstr, STR_ADDSPACE | STR_DOFREE);
-	}
-	Lst_Close (path);
+    BUFFER	  buf;
+
+    Buf_Init(&buf, 0);
+
+    for (ln = Lst_First(path); ln != NULL; ln = Lst_Adv(ln)) {
+	    Buf_AddString(&buf, flag);
+	    Buf_AddString(&buf, ((Path *)Lst_Datum(ln))->name);
+	    Buf_AddSpace(&buf);
     }
-    
-    return (str);
+
+    return Buf_Retrieve(&buf);
 }
 
 /*-
@@ -1157,59 +982,22 @@ Dir_MakeFlags (flag, path)
  *	Nuke a directory descriptor, if possible. Callback procedure
  *	for the suffixes module when destroying a search path.
  *
- * Results:
- *	None.
- *
  * Side Effects:
  *	If no other path references this directory (refCount == 0),
  *	the Path and all its data are freed.
- *
  *-----------------------------------------------------------------------
  */
 void
-Dir_Destroy (pp)
-    ClientData 	  pp;	    /* The directory descriptor to nuke */
+Dir_Destroy(void *pp)
 {
-    Path    	  *p = (Path *) pp;
-    p->refCount -= 1;
+    Path	*p = (Path *)pp;
 
-    if (p->refCount == 0) {
-	LstNode	ln;
-
-	ln = Lst_Member (openDirectories, (ClientData)p);
-	(void) Lst_Remove (openDirectories, ln);
-
-	Hash_DeleteTable (&p->files);
-	free((Address)p->name);
-	free((Address)p);
+    if (--p->refCount == 0) {
+	ohash_remove(&openDirectories, ohash_qlookup(&openDirectories, p->name));
+	free_hash(&p->files);
+	free(p);
     }
 }
-
-/*-
- *-----------------------------------------------------------------------
- * Dir_ClearPath --
- *	Clear out all elements of the given search path. This is different
- *	from destroying the list, notice.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	The path is set to the empty list.
- *
- *-----------------------------------------------------------------------
- */
-void
-Dir_ClearPath(path)
-    Lst	    path; 	/* Path to clear */
-{
-    Path    *p;
-    while (!Lst_IsEmpty(path)) {
-	p = (Path *)Lst_DeQueue(path);
-	Dir_Destroy((ClientData) p);
-    }
-}
-	    
 
 /*-
  *-----------------------------------------------------------------------
@@ -1217,64 +1005,100 @@ Dir_ClearPath(path)
  *	Concatenate two paths, adding the second to the end of the first.
  *	Makes sure to avoid duplicates.
  *
- * Results:
- *	None
- *
  * Side Effects:
  *	Reference counts for added dirs are upped.
- *
  *-----------------------------------------------------------------------
  */
 void
-Dir_Concat(path1, path2)
-    Lst	    path1;  	/* Dest */
-    Lst	    path2;  	/* Source */
-{
-    LstNode ln;
-    Path    *p;
-
-    for (ln = Lst_First(path2); ln != NILLNODE; ln = Lst_Succ(ln)) {
-	p = (Path *)Lst_Datum(ln);
-	if (Lst_Member(path1, (ClientData)p) == NILLNODE) {
-	    p->refCount += 1;
-	    (void)Lst_AtEnd(path1, (ClientData)p);
-	}
-    }
-}
-
-/********** DEBUG INFO **********/
-void
-Dir_PrintDirectories()
+Dir_Concat(Lst path1, Lst path2)
 {
     LstNode	ln;
     Path	*p;
-    
-    printf ("#*** Directory Cache:\n");
-    printf ("# Stats: %d hits %d misses %d near misses %d losers (%d%%)\n",
-	      hits, misses, nearmisses, bigmisses,
-	      (hits+bigmisses+nearmisses ?
-	       hits * 100 / (hits + bigmisses + nearmisses) : 0));
-    printf ("# %-20s referenced\thits\n", "directory");
-    if (Lst_Open (openDirectories) == SUCCESS) {
-	while ((ln = Lst_Next (openDirectories)) != NILLNODE) {
-	    p = (Path *) Lst_Datum (ln);
-	    printf ("# %-20s %10d\t%4d\n", p->name, p->refCount, p->hits);
-	}
-	Lst_Close (openDirectories);
+
+    for (ln = Lst_First(path2); ln != NULL; ln = Lst_Adv(ln)) {
+	p = (Path *)Lst_Datum(ln);
+	if (Lst_AddNew(path1, p))
+	    p->refCount++;
     }
 }
 
-static int DirPrintDir (p, dummy)
-    ClientData	p;
-    ClientData	dummy;
-{ 
-    printf ("%s ", ((Path *) p)->name);
-    return (dummy ? 0 : 0);
+#ifdef DEBUG_DIRECTORY_CACHE
+void
+Dir_PrintDirectories(void)
+{
+    Path		*p;
+    unsigned int	i;
+
+    printf("#*** Directory Cache:\n");
+    printf("# Stats: %d hits %d misses %d near misses %d losers (%d%%)\n",
+	      hits, misses, nearmisses, bigmisses,
+	      (hits+bigmisses+nearmisses ?
+	       hits * 100 / (hits + bigmisses + nearmisses) : 0));
+    printf("# %-20s referenced\thits\n", "directory");
+    for (p = ohash_first(&openDirectories, &i); p != NULL;
+	p = ohash_next(&openDirectories, &i))
+	    printf("# %-20s %10d\t%4d\n", p->name, p->refCount, p->hits);
+}
+#endif
+
+static void
+DirPrintDir(void *p)
+{
+    printf("%s ", ((Path *)p)->name);
 }
 
 void
-Dir_PrintPath (path)
-    Lst	path;
+Dir_PrintPath(Lst path)
 {
-    Lst_ForEach (path, DirPrintDir, (ClientData)0);
+    Lst_Every(path, DirPrintDir);
 }
+
+TIMESTAMP
+Dir_MTime(GNode *gn)
+{
+    char	  *fullName;  /* the full pathname of name */
+    struct stat   stb;	      /* buffer for finding the mod time */
+    struct file_stamp
+		  *entry;
+    unsigned int  slot;
+    TIMESTAMP	  mtime;
+
+    if (gn->type & OP_ARCHV)
+	return Arch_MTime(gn);
+
+    if (gn->path == NULL) {
+	fullName = Dir_FindFile(gn->name, dirSearchPath);
+	if (fullName == NULL)
+	    fullName = estrdup(gn->name);
+    } else
+	fullName = gn->path;
+
+    slot = ohash_qlookup(&mtimes, fullName);
+    entry = ohash_find(&mtimes, slot);
+    if (entry != NULL) {
+	/* Only do this once -- the second time folks are checking to
+	 * see if the file was actually updated, so we need to actually go
+	 * to the file system.	*/
+	if (DEBUG(DIR))
+	    printf("Using cached time %s for %s\n",
+		    Targ_FmtTime(entry->mtime), fullName);
+	mtime = entry->mtime;
+	free(entry);
+	ohash_remove(&mtimes, slot);
+    } else if (stat(fullName, &stb) == 0)
+	ts_set_from_stat(stb, mtime);
+    else {
+	if (gn->type & OP_MEMBER) {
+	    if (fullName != gn->path)
+		free(fullName);
+	    return Arch_MemMTime(gn);
+	} else
+	    ts_set_out_of_date(mtime);
+    }
+    if (fullName && gn->path == NULL)
+	gn->path = fullName;
+
+    gn->mtime = mtime;
+    return gn->mtime;
+}
+

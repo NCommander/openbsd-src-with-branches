@@ -1,5 +1,4 @@
-/*	$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,32 +28,21 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getgrouplist.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * get credential
  */
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>
 #include <grp.h>
 
 int
-getgrouplist(uname, agroup, groups, grpcnt)
-	const char *uname;
-	int agroup;
-	register int *groups;
-	int *grpcnt;
+getgrouplist(const char *uname, gid_t agroup, gid_t *groups, int *grpcnt)
 {
-	register struct group *grp;
-	register struct passwd *pw;
-	register int i, ngroups;
+	struct group *grp;
+	int i, ngroups;
 	int ret, maxgroups;
+	int bail;
 
 	ret = 0;
 	ngroups = 0;
@@ -67,14 +51,23 @@ getgrouplist(uname, agroup, groups, grpcnt)
 	/*
 	 * install primary group
 	 */
+	if (ngroups >= maxgroups) {
+		*grpcnt = ngroups;
+		return (-1);
+	}
 	groups[ngroups++] = agroup;
 
 	/*
 	 * Scan the group file to find additional groups.
 	 */
 	setgrent();
-	while (grp = getgrent()) {
+	while ((grp = getgrent())) {
 		if (grp->gr_gid == agroup)
+			continue;
+		for (bail = 0, i = 0; bail == 0 && i < ngroups; i++)
+			if (groups[i] == grp->gr_gid)
+				bail = 1;
+		if (bail)
 			continue;
 		for (i = 0; grp->gr_mem[i]; i++) {
 			if (!strcmp(grp->gr_mem[i], uname)) {

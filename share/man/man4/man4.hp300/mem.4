@@ -1,5 +1,7 @@
-.\" Copyright (c) 1990, 1991 Regents of the University of California.
-.\" All rights reserved.
+.\"	$OpenBSD: mem.4,v 1.6 2003/03/16 20:12:51 miod Exp $
+.\"
+.\" Copyright (c) 1990, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -29,19 +27,18 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)mem.4	5.2 (Berkeley) 3/27/91
-.\"	$Id: mem.4,v 1.2 1993/08/01 07:56:27 mycroft Exp $
+.\"     from: @(#)mem.4	8.1 (Berkeley) 6/5/93
 .\"
-.Dd March 27, 1991
+.Dd June 5, 1993
 .Dt MEM 4 hp300
 .Os
 .Sh NAME
 .Nm mem ,
 .Nm kmem
-.Nd main memory
+.Nd memory files
 .Sh DESCRIPTION
 The file
-.Nm /dev/mem
+.Pa /dev/mem
 is an interface to the physical memory of the
 computer.
 Byte offsets in this file are interpreted as physical memory addresses.
@@ -49,12 +46,12 @@ Reading and writing this file is equivalent to reading and writing
 memory itself.
 An error will be returned if an attempt is made to reference
 an offset outside of
-.Nm /dev/mem .
+.Pa /dev/mem .
 .Pp
 Kernel virtual memory is accessed via the file
-.Nm /dev/kmem
+.Pa /dev/kmem
 in the same manner as
-.Nm /dev/mem .
+.Pa /dev/mem .
 Only kernel virtual addresses that are currently mapped to memory are allowed.
 .Sh HP300
 On the
@@ -67,21 +64,24 @@ with
 8Mb of memory, physical memory would start
 at
 .Li 0xFF800000 .
-On the
-.Tn HP300 ,
-kernel virtual memory runs from
+The kernel virtual memory runs from
 .Li 0
 to about
 .Li 0x2400000 .
+.Pp
+Writeability of these devices is controlled by the system
+.Xr securelevel 7 .
 .Sh FILES
 .Bl -tag -width /dev/kmem -compact
-.It Pa /dev/mem
-.It Pa /dev/kmem
+.It /dev/mem
+.It /dev/kmem
 .El
+.Sh SEE ALSO
+.Xr securelevel 7
 .Sh HISTORY
-The files
-.Nm mem
+The
+.Pa /dev/mem
 and
-.Nm kmem
-appeared in
+.Pa /dev/kmem
+files appeared in
 .At v6 .

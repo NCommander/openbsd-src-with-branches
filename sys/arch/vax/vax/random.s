@@ -1,3 +1,4 @@
+/*	$OpenBSD: random.s,v 1.3 1997/01/15 23:25:21 maja Exp $ */
 /*	$NetBSD: random.s,v 1.2 1994/10/26 08:03:24 cgd Exp $	*/
 
 /*
@@ -46,19 +47,19 @@
  * The result is in (0,2^31), e.g., it's always positive.
  */
 
+#include <machine/asm.h>
+
 	.data
-randseed:
+	.globl	__randseed
+__randseed:
 	.long	1
-	.text
-	.globl _random
-_random:
-	.word 0x0
+ENTRY(random, 0)
 	movl	$16807,r0
 
-	movl	randseed,r1		# r2=16807*loword(randseed)
+	movl	__randseed,r1		# r2=16807*loword(__randseed)
 	bicl3	$0xffff0000,r1,r2
 	mull2	r0,r2
-	ashl	$-16,r1,r1		# r1=16807*hiword(randseed)
+	ashl	$-16,r1,r1		# r1=16807*hiword(__randseed)
 	bicl2	$0xffff0000,r1
 	mull2	r0,r1
 	bicl3	$0xffff0000,r2,r0
@@ -79,5 +80,5 @@ _random:
 	addl2	r1,r0
 	bgeq	L1
 	subl2	$0x7fffffff,r0
-L1:	movl	r0,randseed
+L1:	movl	r0,__randseed
 	ret

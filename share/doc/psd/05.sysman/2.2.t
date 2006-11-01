@@ -1,3 +1,5 @@
+.\"	$OpenBSD: 2.2.t,v 1.3 2001/02/03 08:15:03 niklas Exp $
+.\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -347,11 +345,11 @@ result off_t oldoffset; int fd; off_t offset; int type;
 where \fItype\fP is given in \fI<sys/file.h>\fP as one of:
 .DS
 ._d
-#define	L_SET	0	/* set absolute file offset */
-#define	L_INCR	1	/* set file offset relative to current position */
-#define	L_XTND	2	/* set offset relative to end-of-file */
+#define	SEEK_SET	0	/* set file offset to offset */
+#define	SEEK_CUR	1	/* set file offset to current plus offset */
+#define	SEEK_CUR	2	/* set file offset to EOF plus offset */
 .DE
-The call ``lseek(fd, 0, L_INCR)''
+The call ``lseek(fd, 0, SEEK_CUR)''
 returns the current offset into the file.
 .PP
 Files may have ``holes'' in them.  Holes are void areas in the

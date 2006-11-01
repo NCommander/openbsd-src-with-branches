@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.7 1995/05/28 03:10:06 jtc Exp $	*/
+/*	$OpenBSD: signal.h,v 1.9 2005/12/13 00:35:22 millert Exp $	*/
+/*	$NetBSD: signal.h,v 1.8 1996/02/29 00:04:57 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,35 +38,36 @@
 #include <sys/cdefs.h>
 #include <sys/signal.h>
 
-#if !defined(_ANSI_SOURCE)
+#if __BSD_VISIBLE || __POSIX_VISIBLE || __XPG_VISIBLE
 #include <sys/types.h>
 #endif
 
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
+#if __BSD_VISIBLE
 extern __const char *__const sys_signame[_NSIG];
 extern __const char *__const sys_siglist[_NSIG];
 #endif
 
 __BEGIN_DECLS
-int	raise __P((int));
-#ifndef	_ANSI_SOURCE
-int	kill __P((pid_t, int));
-int	sigaction __P((int, const struct sigaction *, struct sigaction *));
-int	sigaddset __P((sigset_t *, int));
-int	sigdelset __P((sigset_t *, int));
-int	sigemptyset __P((sigset_t *));
-int	sigfillset __P((sigset_t *));
-int	sigismember __P((const sigset_t *, int));
-int	sigpending __P((sigset_t *));
-int	sigprocmask __P((int, const sigset_t *, sigset_t *));
-int	sigsuspend __P((const sigset_t *));
+int	raise(int);
+#if __BSD_VISIBLE || __POSIX_VISIBLE || __XPG_VISIBLE
+void	(*bsd_signal(int, void (*)(int)))(int);
+int	kill(pid_t, int);
+int	sigaction(int, const struct sigaction *, struct sigaction *);
+int	sigaddset(sigset_t *, int);
+int	sigdelset(sigset_t *, int);
+int	sigemptyset(sigset_t *);
+int	sigfillset(sigset_t *);
+int	sigismember(const sigset_t *, int);
+int	sigpending(sigset_t *);
+int	sigprocmask(int, const sigset_t *, sigset_t *);
+int	sigsuspend(const sigset_t *);
 
-#if defined(__GNUC__) && defined(__STDC__)
+#if defined(__GNUC__)
 extern __inline int sigaddset(sigset_t *set, int signo) {
-	extern int errno;
+	int *__errno(void);
 
 	if (signo <= 0 || signo >= _NSIG) {
-		errno = 22;			/* EINVAL */
+		*__errno() = 22;		/* EINVAL */
 		return -1;
 	}
 	*set |= (1 << ((signo)-1));		/* sigmask(signo) */
@@ -77,10 +75,10 @@ extern __inline int sigaddset(sigset_t *set, int signo) {
 }
 
 extern __inline int sigdelset(sigset_t *set, int signo) {
-	extern int errno;
+	int *__errno(void);
 
 	if (signo <= 0 || signo >= _NSIG) {
-		errno = 22;			/* EINVAL */
+		*__errno() = 22;		/* EINVAL */
 		return -1;
 	}
 	*set &= ~(1 << ((signo)-1));		/* sigmask(signo) */
@@ -88,10 +86,10 @@ extern __inline int sigdelset(sigset_t *set, int signo) {
 }
 
 extern __inline int sigismember(const sigset_t *set, int signo) {
-	extern int errno;
+	int *__errno(void);
 
 	if (signo <= 0 || signo >= _NSIG) {
-		errno = 22;			/* EINVAL */
+		*__errno() = 22;		/* EINVAL */
 		return -1;
 	}
 	return ((*set & (1 << ((signo)-1))) != 0);
@@ -102,18 +100,24 @@ extern __inline int sigismember(const sigset_t *set, int signo) {
 #define	sigemptyset(set)	(*(set) = 0, 0)
 #define	sigfillset(set)		(*(set) = ~(sigset_t)0, 0)
 
-#ifndef _POSIX_SOURCE
-int	killpg __P((pid_t, int));
-int	sigblock __P((int));
-int	siginterrupt __P((int, int));
-int	sigpause __P((int));
-int	sigreturn __P((struct sigcontext *));
-int	sigsetmask __P((int));
-int	sigstack __P((const struct sigstack *, struct sigstack *));
-int	sigvec __P((int, struct sigvec *, struct sigvec *));
-void	psignal __P((unsigned int, const char *));
-#endif	/* !_POSIX_SOURCE */
-#endif	/* !_ANSI_SOURCE */
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 420
+int	killpg(pid_t, int);
+int	siginterrupt(int, int);
+int	sigpause(int);
+int	sigreturn(struct sigcontext *);
+int	sigstack(const struct sigstack *, struct sigstack *);
+int	sigaltstack(const struct sigaltstack *, struct sigaltstack *);
+#if __BSD_VISIBLE
+void	psignal(unsigned int, const char *);
+int	sigblock(int);
+int	sigsetmask(int);
+int	sigvec(int, struct sigvec *, struct sigvec *);
+#endif
+#if __BSD_VISIBLE ||  __POSIX_VISIBLE >= 199309 || __XPG_VISIBLE >= 500
+int	sigwait(const sigset_t *, int *);
+#endif
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
+#endif /* __BSD_VISIBLE || __POSIX_VISIBLE || __XPG_VISIBLE */
 __END_DECLS
 
 #endif	/* !_USER_SIGNAL_H */

@@ -10,10 +10,10 @@
 #ifndef HTFILE_H
 #define HTFILE_H
 
-#include "HTFormat.h"
-#include "HTAccess.h"
+#include <HTFormat.h>
+#include <HTAccess.h>
 #ifndef HTML_H
-#include "HTML.h"               /* SCW */
+#include <HTML.h>               /* SCW */
 #endif /* HTML_H */
 
 /*
@@ -42,12 +42,16 @@ extern int HTDirReadme;         /* Include readme files in listing? */
 /*
 **  Convert filenames between local and WWW formats
 */
-extern char * HTLocalName PARAMS((CONST char * name));
+extern char * HTURLPath_toFile PARAMS((CONST char * name, BOOL expand_all, BOOL is_remote));
+extern char * HTnameOfFile_WWW PARAMS((CONST char * name, BOOL WWW_prefix, BOOL expand_all));
+#define HTLocalName(name)      HTnameOfFile_WWW(name,TRUE,TRUE)
+#define HTfullURL_toFile(name) HTnameOfFile_WWW(name,FALSE,TRUE)
+#define HTpartURL_toFile(name) HTnameOfFile_WWW(name,FALSE,FALSE)
 
 /*
 **  Make a WWW name from a full local path name
 */
-extern char * WWW_nameOfFile PARAMS((const char * name));
+extern char * WWW_nameOfFile PARAMS((CONST char * name));
 
 /*
 **  Generate the name of a cache file
@@ -65,8 +69,15 @@ extern char * HTCacheFileName PARAMS((CONST char * name));
 */
 extern BOOL HTDirTitles PARAMS((
         HTStructured *  target,
-        HTAnchor *      anchor,
+        HTParentAnchor* anchor,
 	BOOL		tildeIsTop));
+
+/*
+**	Check existence.
+*/
+extern int HTStat PARAMS((
+	CONST char *	filename,
+	struct stat *	data));
 
 /*	Load a document.
 **	----------------
@@ -123,7 +134,7 @@ extern void HTSetSuffix5 PARAMS((
         CONST char *    representation,
         CONST char *    encoding,
         CONST char *    desc,
-        float           quality));
+        double          quality));
 
 #define HTSetSuffix(suff,rep,enc,q) HTSetSuffix5(suff, rep, enc, NULL, q)
 
@@ -154,11 +165,55 @@ extern HTFormat HTCharsetFormat PARAMS((
 	HTParentAnchor *	anchor,
 	int			default_LYhndl));
 
+/*	Get various pieces of meta info from file name.
+**	-----------------------------------------------
+**
+**  LYGetFileInfo fills in information that can be determined without
+**  an actual (new) access to the filesystem, based on current suffix
+**  and character set configuration.  If the file has been loaded and
+**  parsed before  (with the same URL generated here!) and the anchor
+**  is still around, some results may be influenced by that (in
+**  particular, charset info from a META tag - this is not actually
+**  tested!).
+**  The caller should not keep pointers to the returned objects around
+**  for too long, the valid lifetimes vary. In particular, the returned
+**  charset string should be copied if necessary.  If return of the
+**  file_anchor is requested, that one can be used to retrieve
+**  additional bits of info that are stored in the anchor object and
+**  are not covered here; as usual, don't keep pointers to the
+**  file_anchor longer than necessary since the object may disappear
+**  through HTuncache_current_document or at the next document load.
+**  - kw
+*/
+extern void LYGetFileInfo PARAMS((
+	CONST char *		filename,
+	HTParentAnchor **	pfile_anchor,
+	HTFormat *		pformat,
+	HTAtom **		pencoding,
+	CONST char**		pdesc,
+	CONST char**		pcharset,
+	int *			pfile_cs));
+
 /*
 **  Determine file value from file name.
 */
 extern float HTFileValue PARAMS((
 	CONST char *	filename));
+
+/*
+**  Determine compression type from file name, by looking at its suffix.
+*/
+typedef enum {
+    cftNone
+    , cftCompress
+    , cftGzip
+    , cftBzip2
+} CompressFileType;
+
+extern CompressFileType HTCompressFileType PARAMS((
+	char *			filename,
+	char *			dots,
+	char **			suffix));
 
 /*
 **  Determine write access to a file.
@@ -171,6 +226,30 @@ extern float HTFileValue PARAMS((
 **
 **   Isn't there a quicker way?
 */
+
+#if defined(HAVE_CONFIG_H)
+
+#ifndef HAVE_GETGROUPS
+#define NO_GROUPS
+#endif
+
+#else
+
+#ifdef VMS
+#define NO_GROUPS
+#endif /* VMS */
+#ifdef NO_UNIX_IO
+#define NO_GROUPS
+#endif /* NO_UNIX_IO */
+#ifdef PCNFS
+#define NO_GROUPS
+#endif /* PCNFS */
+#ifdef NOUSERS
+#define NO_GROUPS
+#endif /* PCNFS */
+
+#endif /* HAVE_CONFIG_H */
+
 extern BOOL HTEditable PARAMS((CONST char * filename));
 
 /*	Make a save stream.
@@ -197,6 +276,55 @@ extern CONST char * HTFileSuffix PARAMS((
                 CONST char* enc));
 
 /*
+ * Enumerate external programs that lynx may assume exists.  Unlike those
+ * given in download scripts, etc., lynx would really like to know their
+ * absolute paths, for better security.
+ */
+typedef enum {
+    ppUnknown = 0
+    ,ppBZIP2
+    ,ppCHMOD
+    ,ppCOMPRESS
+    ,ppCOPY
+    ,ppCSWING
+    ,ppGZIP
+    ,ppINSTALL
+    ,ppMKDIR
+    ,ppMV
+    ,ppRLOGIN
+    ,ppRM
+    ,ppRMDIR
+    ,ppTAR
+    ,ppTELNET
+    ,ppTN3270
+    ,ppTOUCH
+    ,ppUNCOMPRESS
+    ,ppUNZIP
+    ,ppUUDECODE
+    ,ppZCAT
+    ,ppZIP
+    ,pp_Last
+} ProgramPaths;
+
+/*
+ * Given a program number, return its path
+ */
+extern CONST char * HTGetProgramPath PARAMS((
+		ProgramPaths code));
+
+/*
+ * Store a program's path 
+ */
+extern void HTSetProgramPath PARAMS((
+		ProgramPaths code,
+		CONST char *path));
+
+/*
+ * Reset the list of known program paths to the ones that are compiled-in
+ */
+extern void HTInitProgramPaths NOPARAMS;
+
+/*
 **  The Protocols
 */
 #ifdef GLOBALREF_IS_MACRO
@@ -205,6 +333,5 @@ extern GLOBALREF (HTProtocol,HTFile);
 #else
 GLOBALREF HTProtocol HTFTP, HTFile;
 #endif /* GLOBALREF_IS_MACRO */
-#endif /* HTFILE_H */
 
-/* end of HTFile */
+#endif /* HTFILE_H */

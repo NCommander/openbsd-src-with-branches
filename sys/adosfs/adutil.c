@@ -1,7 +1,9 @@
-/*	$NetBSD: adutil.c,v 1.7 1995/01/18 09:17:33 mycroft Exp $	*/
+/*	$OpenBSD: adutil.c,v 1.14 2003/12/21 15:28:59 miod Exp $	*/
+/*	$NetBSD: adutil.c,v 1.15 1996/10/13 02:52:07 christos Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
+ * Copyright (c) 1996 Matthias Scheler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,16 +35,23 @@
 #include <sys/vnode.h>
 #include <sys/mount.h>
 #include <sys/proc.h>
+#include <sys/systm.h>
 #include <sys/malloc.h>
+#include <sys/lock.h>
 #include <sys/time.h>
 #include <sys/queue.h>
 #include <sys/buf.h>
+
+#include <machine/endian.h>
+
 #include <adosfs/adosfs.h>
 
 /*
  * look for anode in the mount's hash table, return locked.
  */
 #define AHASH(an) ((an) & (ANODEHASHSZ - 1))
+
+static __inline char	CapitalChar(char, int);
 
 struct vnode * 
 adosfs_ahashget(mp, an)
@@ -51,42 +60,60 @@ adosfs_ahashget(mp, an)
 {
 	struct anodechain *hp;
 	struct anode *ap;
+	struct proc *p = curproc; /* XXX */
+	struct vnode *vp;
 
 	hp = &VFSTOADOSFS(mp)->anodetab[AHASH(an)];
 
-start_over:
-	for (ap = hp->lh_first; ap != NULL; ap = ap->link.le_next) {
-		if (ap->block != an)
-			continue;
-		if (ap->flags & ALOCKED) {
-			ap->flags |= AWANT;
-			tsleep(ap, PINOD, "ahashget", 0);
-			goto start_over;
+	for (;;)
+		for (ap = hp->lh_first; ; ap = ap->link.le_next) {
+			if (ap == NULL)
+				return (NULL);
+			if (ABLKTOINO(ap->block) == an) {
+				vp = ATOV(ap);
+				simple_lock(&vp->v_interlock);
+				if (!vget(vp, LK_EXCLUSIVE, p))
+					return (vp);
+				break;
+			}
 		}
-		if (vget(ATOV(ap), 1))
-			goto start_over;
-		return (ATOV(ap));
-	}
-	return (NULL);
+	/* NOTREACHED */
 }
 
 /*
  * insert in hash table and lock
  */
-void
+int
 adosfs_ainshash(amp, ap)
 	struct adosfsmount *amp;
 	struct anode *ap;
 {
-	LIST_INSERT_HEAD(&amp->anodetab[AHASH(ap->block)], ap, link);
-	ap->flags |= ALOCKED;
+	struct anodechain *hp;
+	struct anode *aq;
+
+	/* lock the inode, then put it on the appropriate hash list */
+	lockmgr(&ap->a_lock, LK_EXCLUSIVE, NULL);
+
+	hp = &amp->anodetab[AHASH(ap->block)];
+
+	for (aq = hp->lh_first; aq ; aq = aq->link.le_next) {
+		if (aq->block == ap->block) {
+			lockmgr(&ap->a_lock, LK_RELEASE, NULL);
+			return (EEXIST);
+		}
+	}
+ 
+	LIST_INSERT_HEAD(hp, ap, link);
+	return (0);
 }
 
 void
 adosfs_aremhash(ap)
 	struct anode *ap;
 {
-	LIST_REMOVE(ap, link);
+
+        if (ap->link.le_prev != NULL)
+		LIST_REMOVE(ap, link);
 }
 
 int
@@ -96,7 +123,8 @@ adosfs_getblktype(amp, bp)
 {
 	if (adoscksum(bp, amp->nwords)) {
 #ifdef DIAGNOSTIC
-		printf("adosfs: aget: cksum of blk %d failed\n", bp->b_blkno);
+		printf("adosfs: aget: cksum of blk %d failed\n",
+		    bp->b_blkno / amp->secsperblk);
 #endif
 		return (-1);
 	}
@@ -106,7 +134,8 @@ adosfs_getblktype(amp, bp)
 	 */
 	if (adoswordn(bp, 0) != BPT_SHORT) {
 #ifdef DIAGNOSTIC
-		printf("adosfs: aget: bad primary type blk %d\n", bp->b_blkno);
+		printf("adosfs: aget: bad primary type blk %d\n",
+		    bp->b_blkno / amp->secsperblk);
 #endif
 		return (-1);
 	}
@@ -133,53 +162,71 @@ adunixprot(adprot)
 	int adprot;
 {
 	if (adprot & 0xc000ee00) {
-		adprot = ((adprot & 0xee00) | (~adprot & 0x000e)) >> 1;
-		return (((adprot & 0x7) << 6) | ((adprot & 0x700) >> 5) |
-			(adprot >> 12));
+		adprot = (adprot & 0xee0e) >> 1;
+		return (((adprot & 0x7) << 6) |
+			((adprot & 0x700) >> 5) |
+			((adprot & 0x7000) >> 12));
 	}
 	else {
-		adprot = (~adprot >> 1) & 0x7;
+		adprot = (adprot >> 1) & 0x7;
 		return((adprot << 6) | (adprot << 3) | adprot);
 	}
 }
 
-static char
-toupper(ch)
+static __inline char
+CapitalChar(ch, inter)
 	char ch;
+	int inter;
 {
-	if (ch >= 'a' && ch <= 'z')
-		return(ch & ~(0x20));
+	if ((ch >= 'a' && ch <= 'z') || 
+	    (inter && ch >= '\xe0' && ch <= '\xfe' && ch != '\xf7'))
+		return(ch - ('a' - 'A'));
 	return(ch);
 }
 
-long
+u_int32_t
 adoscksum(bp, n)
 	struct buf *bp;
-	long n;
+	int n;
 {
-	long sum, *lp;
+	u_int32_t sum, *lp;
 	
-	lp = (long *)bp->b_data;
+	lp = (u_int32_t *)bp->b_data;
 	sum = 0;
 
 	while (n--)
-		sum += *lp++;
+		sum += betoh32(*lp++);
 	return(sum);
 }
 
 int
-adoshash(nam, namlen, nelt)
+adoscaseequ(name1, name2, len, inter)
+	const char *name1, *name2;
+	int len, inter;
+{
+	while (len-- > 0) 
+		if (CapitalChar(*name1++, inter) != 
+		    CapitalChar(*name2++, inter))
+			return 0;
+	
+	return 1;
+}
+
+int
+adoshash(nam, namlen, nelt, inter)
 	const char *nam;
-	int namlen, nelt;
+	int namlen, nelt, inter;
 {
 	int val;
 
 	val = namlen;
 	while (namlen--)
-		val = ((val * 13) + toupper(*nam++)) & 0x7ff;
+		val = ((val * 13) + (u_char)CapitalChar(*nam++, inter)) &
+		    0x7ff;
 	return(val % nelt);
 }
 
+#ifdef notyet
 /*
  * datestamp is local time, tv is to be UTC
  */
@@ -199,14 +246,4 @@ tvtods(tvp, dsp)
 	struct datestamp *dsp;
 {
 }
-
-long
-adoswordn(bp, wn)
-	struct buf *bp;
-	int wn;
-{
-	/*
-	 * ados stored in network (big endian) order
-	 */
-	return(ntohl(*((long *)bp->b_data + wn)));
-}
+#endif

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* tc-a29k.h -- Assemble for the AMD 29000.
    Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    

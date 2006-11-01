@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1987, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -20,7 +20,7 @@ SM_IDSTR(copyright,
 	The Regents of the University of California.  All rights reserved.\n\
      Copyright (c) 1983 Eric P. Allman.  All rights reserved.\n")
 
-SM_IDSTR(id, "@(#)$Sendmail: vacation.c,v 8.127 2001/09/08 01:21:15 gshapiro Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: vacation.c,v 8.142 2004/11/02 18:25:33 ca Exp $")
 
 
 #include <ctype.h>
@@ -78,6 +78,7 @@ ALIAS *Names = NULL;
 SMDB_DATABASE *Db;
 
 char From[MAXLINE];
+bool CloseMBDB = false;
 
 #if defined(__hpux) || defined(__osf__)
 # ifndef SM_CONF_SYSLOG_INT
@@ -100,17 +101,27 @@ static void eatmsg __P((void));
 static void listdb __P((void));
 
 /* exit after reading input */
-#define EXITIT(excode) \
-{ \
-	eatmsg(); \
-	return excode; \
+#define EXITIT(excode)			\
+{					\
+	eatmsg();			\
+	if (CloseMBDB)			\
+	{				\
+		sm_mbdb_terminate();	\
+		CloseMBDB = false;	\
+	}				\
+	return excode;			\
 }
 
-#define EXITM(excode) \
-{ \
-	if (!iflag && !lflag) \
-		eatmsg(); \
-	exit(excode); \
+#define EXITM(excode)			\
+{					\
+	if (!initdb && !list)		\
+		eatmsg();		\
+	if (CloseMBDB)			\
+	{				\
+		sm_mbdb_terminate();	\
+		CloseMBDB = false;	\
+	}				\
+	exit(excode);			\
 }
 
 int
@@ -118,9 +129,10 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	bool iflag, emptysender, exclude;
+	bool alwaysrespond = false;
+	bool initdb, exclude;
 	bool runasuser = false;
-	bool lflag = false;
+	bool list = false;
 	int mfail = 0, ufail = 0;
 	int ch;
 	int result;
@@ -132,16 +144,17 @@ main(argc, argv)
 	char *msgfilename = NULL;
 	char *cfpath = NULL;
 	char *name;
+	char *returnaddr = NULL;
 	SMDB_USER_INFO user_info;
 	static char rnamebuf[MAXNAME];
 	extern int optind, opterr;
 	extern char *optarg;
 	extern void usage __P((void));
 	extern void setinterval __P((time_t));
-	extern int readheaders __P((void));
+	extern int readheaders __P((bool));
 	extern bool recent __P((void));
 	extern void setreply __P((char *, time_t));
-	extern void sendmessage __P((char *, char *, bool));
+	extern void sendmessage __P((char *, char *, char *));
 	extern void xclude __P((SM_FILE_T *));
 
 	/* Vars needed to link with smutil */
@@ -167,13 +180,13 @@ main(argc, argv)
 # endif /* LOG_MAIL */
 
 	opterr = 0;
-	iflag = false;
-	emptysender = false;
+	initdb = false;
 	exclude = false;
 	interval = INTERVAL_UNDEF;
 	*From = '\0';
 
-#define OPTIONS		"a:C:df:Iilm:r:s:t:Uxz"
+
+#define OPTIONS	"a:C:df:Iijlm:R:r:s:t:Uxz"
 
 	while (mfail == 0 && ufail == 0 &&
 	       (ch = getopt(argc, argv, OPTIONS)) != -1)
@@ -206,15 +219,23 @@ main(argc, argv)
 
 		  case 'I':			/* backward compatible */
 		  case 'i':			/* init the database */
-			iflag = true;
+			initdb = true;
+			break;
+
+		  case 'j':
+			alwaysrespond = true;
 			break;
 
 		  case 'l':
-			lflag = true;		/* list the database */
+			list = true;		/* list the database */
 			break;
 
 		  case 'm':		/* alternate message file */
 			msgfilename = optarg;
+			break;
+
+		  case 'R':
+			returnaddr = optarg;
 			break;
 
 		  case 'r':
@@ -244,7 +265,7 @@ main(argc, argv)
 			break;
 
 		  case 'z':
-			emptysender = true;
+			returnaddr = "<>";
 			break;
 
 		  case '?':
@@ -267,7 +288,7 @@ main(argc, argv)
 
 	if (argc != 1)
 	{
-		if (!iflag && !lflag && !exclude)
+		if (!initdb && !list && !exclude)
 			usage();
 		if ((pw = getpwuid(getuid())) == NULL)
 		{
@@ -308,7 +329,7 @@ main(argc, argv)
 		SM_CF_OPT_T mbdbname;
 		SM_MBDB_T user;
 
-		cfpath = getcfname(0, 0, SM_GET_SENDMAIL_CF, NULL);
+		cfpath = getcfname(0, 0, SM_GET_SENDMAIL_CF, cfpath);
 		mbdbname.opt_name = "MailboxDatabase";
 		mbdbname.opt_val = "pw";
 		(void) sm_cf_getopt(cfpath, 1, &mbdbname);
@@ -320,6 +341,7 @@ main(argc, argv)
 			       sm_strexit(err));
 			EXITM(err);
 		}
+		CloseMBDB = true;
 		err = sm_mbdb_lookup(*argv, &user);
 		if (err == EX_NOUSER)
 		{
@@ -359,9 +381,18 @@ main(argc, argv)
 		RunAsGid = user_info.smdbu_group_id = getegid();
 		sff |= SFF_OPENASROOT;
 	}
+	if (getuid() == 0)
+	{
+		/* Allow root to initialize user's vacation databases */
+		sff |= SFF_OPENASROOT|SFF_ROOTOK;
+
+		/* ... safely */
+		sff |= SFF_NOSLINK|SFF_NOHLINK|SFF_REGONLY;
+	}
+
 
 	result = smdb_open_database(&Db, dbfilename,
-				    O_CREAT|O_RDWR | (iflag ? O_TRUNC : 0),
+				    O_CREAT|O_RDWR | (initdb ? O_TRUNC : 0),
 				    S_IRUSR|S_IWUSR, sff,
 				    SMDB_TYPE_DEFAULT, &user_info, NULL);
 	if (result != SMDBE_OK)
@@ -371,7 +402,7 @@ main(argc, argv)
 		EXITM(EX_DATAERR);
 	}
 
-	if (lflag)
+	if (list)
 	{
 		listdb();
 		(void) Db->smdb_close(Db);
@@ -381,7 +412,7 @@ main(argc, argv)
 	if (interval != INTERVAL_UNDEF)
 		setinterval(interval);
 
-	if (iflag && !exclude)
+	if (initdb && !exclude)
 	{
 		(void) Db->smdb_close(Db);
 		exit(EX_OK);
@@ -405,7 +436,7 @@ main(argc, argv)
 	cur->next = Names;
 	Names = cur;
 
-	result = readheaders();
+	result = readheaders(alwaysrespond);
 	if (result == EX_OK && !recent())
 	{
 		time_t now;
@@ -413,7 +444,7 @@ main(argc, argv)
 		(void) time(&now);
 		setreply(From, now);
 		(void) Db->smdb_close(Db);
-		sendmessage(name, msgfilename, emptysender);
+		sendmessage(name, msgfilename, returnaddr);
 	}
 	else
 		(void) Db->smdb_close(Db);
@@ -448,7 +479,7 @@ eatmsg()
 ** READHEADERS -- read mail headers
 **
 **	Parameters:
-**		none.
+**		alwaysrespond -- respond regardless of whether msg is to me
 **
 **	Returns:
 **		a exit code: NOUSER if no reply, OK if reply, * if error
@@ -459,7 +490,8 @@ eatmsg()
 */
 
 int
-readheaders()
+readheaders(alwaysrespond)
+	bool alwaysrespond;
 {
 	bool tome, cont;
 	register char *p;
@@ -468,7 +500,8 @@ readheaders()
 	extern bool junkmail __P((char *));
 	extern bool nsearch __P((char *, char *));
 
-	cont = tome = false;
+	cont = false;
+	tome = alwaysrespond;
 	while (sm_io_fgets(smioin, SM_TIME_DEFAULT, buf, sizeof(buf)) &&
 	       *buf != '\n')
 	{
@@ -929,7 +962,7 @@ xclude(f)
 **	Parameters:
 **		myname -- user name.
 **		msgfn -- name of file with vacation message.
-**		emptysender -- use <> as sender address?
+**		sender -- use as sender address
 **
 **	Returns:
 **		nothing.
@@ -939,10 +972,10 @@ xclude(f)
 */
 
 void
-sendmessage(myname, msgfn, emptysender)
+sendmessage(myname, msgfn, sender)
 	char *myname;
 	char *msgfn;
-	bool emptysender;
+	char *sender;
 {
 	SM_FILE_T *mfp, *sfp;
 	int i;
@@ -968,8 +1001,8 @@ sendmessage(myname, msgfn, emptysender)
 	pv[0] = "sendmail";
 	pv[1] = "-oi";
 	pv[2] = "-f";
-	if (emptysender)
-		pv[3] = "<>";
+	if (sender != NULL)
+		pv[3] = sender;
 	else
 		pv[3] = myname;
 	pv[4] = "--";
@@ -994,7 +1027,8 @@ sendmessage(myname, msgfn, emptysender)
 	}
 	/* check return status of the following calls? XXX */
 	(void) close(pvect[0]);
-	if ((sfp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *)pvect[1],
+	if ((sfp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
+			      (void *) &(pvect[1]),
 			      SM_IO_WRONLY, NULL)) != NULL)
 	{
 		(void) sm_io_fprintf(sfp, SM_TIME_DEFAULT, "To: %s\n", From);
@@ -1017,7 +1051,7 @@ void
 usage()
 {
 	msglog(LOG_NOTICE,
-	       "uid %u: usage: vacation [-a alias] [-C cfpath] [-d] [-f db] [-i] [-l] [-m msg] [-r interval] [-s sender] [-t time] [-U] [-x] [-z] login\n",
+	       "uid %u: usage: vacation [-a alias] [-C cfpath] [-d] [-f db] [-i] [-j] [-l] [-m msg] [-R returnaddr] [-r interval] [-s sender] [-t time] [-U] [-x] [-z] login\n",
 	       getuid());
 	exit(EX_USAGE);
 }
@@ -1055,8 +1089,10 @@ listdb()
 	while ((result = cursor->smdbc_get(cursor, &db_key, &db_value,
 					   SMDB_CURSOR_GET_NEXT)) == SMDBE_OK)
 	{
+		char *timestamp;
+
 		/* skip magic VIT entry */
-		if ((int)db_key.size - 1 == strlen(VIT) &&
+		if (db_key.size == strlen(VIT) + 1 &&
 		    strncmp((char *)db_key.data, VIT,
 			    (int)db_key.size - 1) == 0)
 			continue;
@@ -1075,9 +1111,18 @@ listdb()
 		if (db_key.size > 40)
 			db_key.size = 40;
 
+		if (t <= 0)
+		{
+			/* must be an exclude */
+			timestamp = "(exclusion)\n";
+		}
+		else
+		{
+			timestamp = ctime(&t);
+		}
 		sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%-40.*s %-10s",
 			      (int) db_key.size, (char *) db_key.data,
-			      ctime(&t));
+			      timestamp);
 
 		memset(&db_key, '\0', sizeof db_key);
 		memset(&db_value, '\0', sizeof db_value);

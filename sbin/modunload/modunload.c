@@ -1,3 +1,4 @@
+/*	$OpenBSD: modunload.c,v 1.13 2003/07/02 21:44:58 deraadt Exp $	*/
 /*	$NetBSD: modunload.c,v 1.9 1995/05/28 05:23:05 jtc Exp $	*/
 
 /*
@@ -37,56 +38,52 @@
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/lkm.h>
-#include <sys/file.h>
+
+#include <a.out.h>
+#include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <err.h>
 #include <string.h>
-#include <a.out.h>
 #include <unistd.h>
+
 #include "pathnames.h"
 
-void
-usage()
+static void
+usage(void)
 {
+	extern char *__progname;
 
-	fprintf(stderr, "usage:\n");
-	fprintf(stderr, "modunload [-i <module id>] [-n <module name>]\n");
+	(void)fprintf(stderr, "usage: %s [-i id] [-n name] [-p postunload]\n",
+		__progname);
 	exit(1);
 }
 
-int devfd;
-
-void
-cleanup()
-{
-
-	close(devfd);
-}
-
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	int c;
-	int modnum = -1;
+	int c, devfd;
+	long modnum = -1;
 	char *modname = NULL;
+	char *endptr, *post = NULL;
 	struct lmc_unload ulbuf;
 
-	while ((c = getopt(argc, argv, "i:n:")) != EOF) {
+	while ((c = getopt(argc, argv, "i:n:p:")) != -1) {
 		switch (c) {
 		case 'i':
-			modnum = atoi(optarg);
-			break;	/* number */
+			modnum = strtol(optarg, &endptr, 0);
+			if (modnum < 0 || modnum > INT_MAX || *endptr != '\0')
+                                errx(1, "not a valid number");
+			break;
 		case 'n':
 			modname = optarg;
-			break;	/* name */
-		case '?':
-			usage();
+			break;
+		case 'p':
+			post = optarg;
+			break;
 		default:
-			printf("default!\n");
+			usage();
 			break;
 		}
 	}
@@ -102,26 +99,31 @@ main(argc, argv)
 	 * to ioctl() to retrive the loaded module(s) status).
 	 */
 	if ((devfd = open(_PATH_LKM, O_RDWR, 0)) == -1)
-		err(2, _PATH_LKM);
-
-	atexit(cleanup);
+		err(2, "%s", _PATH_LKM);
 
 	/*
 	 * Unload the requested module.
 	 */
 	ulbuf.name = modname;
-	ulbuf.id = modnum;
+	ulbuf.id = (int)modnum;
 
 	if (ioctl(devfd, LMUNLOAD, &ulbuf) == -1) {
 		switch (errno) {
-		case EINVAL:		/* out of range */
+		case EINVAL:
 			errx(3, "id out of range");
-		case ENOENT:		/* no such entry */
+		case ENOENT:
 			errx(3, "no such module");
-		default:		/* other error (EFAULT, etc) */
+		default:
 			err(5, "LMUNLOAD");
 		}
 	}
 
-	return 0;
+	/*
+	 * Execute the post-unload program.
+	 */
+	if (post) {
+		execl(post, post, (char *)NULL);
+		err(16, "can't exec `%s'", post);
+	}
+	exit(0);
 }

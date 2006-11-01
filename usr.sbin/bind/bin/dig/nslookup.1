@@ -49,7 +49,10 @@ when the first argument is a hyphen (\-) and the second argument is the host nam
 Non\-interactive mode is used when the name or Internet address of the host to be looked up is given as the first argument. The optional second argument specifies the host name or address of a name server.
 .PP
 Options can also be specified on the command line if they precede the arguments and are prefixed with a hyphen. For example, to change the default query type to host information, and the initial timeout to 10 seconds, type:
-.IP .sp .nf nslookup \-query=hinfo \-timeout=10 .fi
+.IP
+.nf
+nslookup \-query=hinfo \-timeout=10
+.fi
 .SH "INTERACTIVE COMMANDS"
 .TP
 host [server]
@@ -146,8 +149,8 @@ Change the default TCP/UDP name server port to
 .TP
 \fBquerytype=\fR\fIvalue\fR
 .TP
-\fBtype=\fR\fIvalue\fR
-Change the top of the information query.
+\fBtype=\fIvalue\fB\fR
+Change the type of the information query.
 .sp
 (Default = A; abbreviations = q, ty)
 .TP

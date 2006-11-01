@@ -1,8 +1,8 @@
-/*	$NetBSD: dinode.h,v 1.7 1995/06/15 23:22:48 cgd Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_dinode.h,v 1.9 2005/10/06 17:43:14 pedro Exp $	*/
+/*	$NetBSD: ext2fs_dinode.h,v 1.6 2000/01/26 16:21:33 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1982, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -15,17 +15,13 @@
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *	notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *	notice, this list of conditions and the following disclaimer in the
- *	documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *	must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *	may be used to endorse or promote products derived from this software
- *	without specific prior written permission.
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -40,6 +36,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)dinode.h	8.6 (Berkeley) 9/13/94
+ *  Modified for ext2fs by Manuel Bouyer.
  */
 
 #include <sys/stat.h>
@@ -67,30 +64,30 @@
 
 struct ext2fs_dinode {
 	u_int16_t	e2di_mode;	/*   0: IFMT, permissions; see below. */
-	u_int16_t	e2di_uid;	/*   2: Owner UID */
+	u_int16_t	e2di_uid_low;	/*   2: Owner UID, lowest bits */
 	u_int32_t	e2di_size;	/*	 4: Size (in bytes) */
-	u_int32_t	e2di_atime;	/*	 8: Acces time */
+	u_int32_t	e2di_atime;	/*	 8: Access time */
 	u_int32_t	e2di_ctime;	/*	12: Create time */
 	u_int32_t	e2di_mtime;	/*	16: Modification time */
 	u_int32_t	e2di_dtime;	/*	20: Deletion time */
-	u_int16_t	e2di_gid;	/*  24: Owner GID */
+	u_int16_t	e2di_gid_low;	/*  24: Owner GID, lowest bits */
 	u_int16_t	e2di_nlink;	/*  26: File link count */
-	u_int32_t	e2di_nblock;/*  28: Blocks count */
+	u_int32_t	e2di_nblock;	/*  28: Blocks count */
 	u_int32_t	e2di_flags;	/*  32: Status flags (chflags) */
 	u_int32_t	e2di_linux_reserved1; /* 36 */
 	u_int32_t	e2di_blocks[NDADDR+NIADDR]; /* 40: disk blocks */
-	u_int32_t	e2di_gen;		/* 100: generation number (file version) */
-	u_int32_t	e2di_facl;		/* 104: file ACL (not implemented) */
-	u_int32_t	e2di_dacl;		/* 108: dir ACL (not implemented) */
-	u_int32_t	e2di_faddr;		/* 112: fragment address */
-	u_int8_t	e2di_nfrag;		/* 116: fragment number */
-	u_int8_t	e2di_fsize;		/* 117: fragment size */
+	u_int32_t	e2di_gen;	/* 100: generation number */
+	u_int32_t	e2di_facl;	/* 104: file ACL (not implemented) */
+	u_int32_t	e2di_dacl;	/* 108: dir ACL (not implemented) */
+	u_int32_t	e2di_faddr;	/* 112: fragment address */
+	u_int8_t	e2di_nfrag;	/* 116: fragment number */
+	u_int8_t	e2di_fsize;	/* 117: fragment size */
 	u_int16_t	e2di_linux_reserved2; /* 118 */
-	u_int32_t	e2di_linux_reserved3[2]; /* 120 */
+	u_int16_t	e2di_uid_high;	/* 120: 16 highest bits of uid */
+	u_int16_t	e2di_gid_high;	/* 122: 16 highest bits of gid */
+	u_int32_t	e2di_linux_reserved3; /* 124 */
 };
-	
 
-	
 #define	E2MAXSYMLINKLEN	((NDADDR + NIADDR) * sizeof(u_int32_t))
 
 /* File permissions. */
@@ -120,6 +117,9 @@ struct ext2fs_dinode {
 #define EXT2_APPEND		0x00000020	/* writes to file may only append */
 #define EXT2_NODUMP		0x00000040	/* do not dump file */
 
+/* Size of on-disk inode. */
+#define	EXT2_DINODE_SIZE	(sizeof(struct ext2fs_dinode))	/* 128 */
+
 /*
  * The e2di_blocks fields may be overlaid with other information for
  * file types that do not have associated disk storage. Block
@@ -128,5 +128,15 @@ struct ext2fs_dinode {
  * di_db area.
  */
 
-#define e2di_rdev         e2di_blocks[0]
-#define e2di_shortlink    e2di_blocks
+#define e2di_rdev		e2di_blocks[0]
+#define e2di_shortlink	e2di_blocks
+
+/* e2fs needs byte swapping on big-endian systems */
+#if BYTE_ORDER == LITTLE_ENDIAN
+#	define e2fs_iload(old, new) memcpy((new),(old),sizeof(struct ext2fs_dinode))
+#	define e2fs_isave(old, new) memcpy((new),(old),sizeof(struct ext2fs_dinode))
+#else
+void e2fs_i_bswap(struct ext2fs_dinode *, struct ext2fs_dinode *);
+#	define e2fs_iload(old, new) e2fs_i_bswap((old), (new))
+#	define e2fs_isave(old, new) e2fs_i_bswap((old), (new))
+#endif

@@ -1,5 +1,6 @@
 #!/bin/csh -f
 #
+#	$OpenBSD: vgrind.sh,v 1.3 1996/10/03 19:32:20 tholo Exp $
 #	$NetBSD: vgrind.sh,v 1.3 1994/11/17 08:28:06 jtc Exp $
 #
 # Copyright (c) 1980, 1993
@@ -13,11 +14,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -36,13 +33,22 @@
 #       @(#)vgrind.sh	8.1 (Berkeley) 6/6/93
 #
 
+# Allow troff to be overridden
+if ( $?TROFF ) then
+	set troff = "$TROFF"
+else
+	set troff = "troff"
+endif
+
+set vf=/usr/libexec/vfontedpr
+set tm=/usr/share/tmac
+
 set voptions=
 set options=
 set files=
 set f=''
 set head=""
-set vf=/usr/libexec/vfontedpr
-set tm=/usr/share/tmac
+
 top:
 if ($#argv > 0) then
     switch ($1:q)
@@ -118,10 +124,10 @@ if (-r index) then
     else
 	if ("$head" != "") then
 	    $vf $options -h "$head" $files | \
-		sh -c "psroff -rx1 $voptions -i -mvgrind 2>> xindex"
+		sh -c "$troff -rx1 $voptions -i -mvgrind 2>> xindex"
 	else
 	    $vf $options $files | \
-		sh -c "psroff -rx1 $voptions -i -mvgrind 2>> xindex"
+		sh -c "$troff -rx1 $voptions -i -mvgrind 2>> xindex"
 	endif
     endif
     sort -df +0 -2 xindex >index
@@ -135,9 +141,9 @@ else
 	endif
     else
 	if ("$head" != "") then
-	    $vf $options -h "$head" $files | psroff -i $voptions -mvgrind
+	    $vf $options -h "$head" $files | $troff -i $voptions -mvgrind
 	else
-	    $vf $options $files | psroff -i $voptions -mvgrind
+	    $vf $options $files | $troff -i $voptions -mvgrind
 	endif
     endif
 endif

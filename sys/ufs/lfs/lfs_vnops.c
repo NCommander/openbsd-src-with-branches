@@ -1,7 +1,8 @@
-/*	$NetBSD: lfs_vnops.c,v 1.7 1995/06/15 23:22:46 cgd Exp $	*/
+/*	$OpenBSD: lfs_vnops.c,v 1.12 2005/05/28 02:02:50 pedro Exp $	*/
+/*	$NetBSD: lfs_vnops.c,v 1.11 1996/05/11 18:27:41 mycroft Exp $	*/
 
 /*
- * Copyright (c) 1986, 1989, 1991, 1993
+ * Copyright (c) 1986, 1989, 1991, 1993, 1995
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,7 +29,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)lfs_vnops.c	8.8 (Berkeley) 8/10/94
+ *	@(#)lfs_vnops.c	8.13 (Berkeley) 6/10/95
  */
 
 #include <sys/param.h>
@@ -48,8 +45,9 @@
 #include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/malloc.h>
+#include <sys/signalvar.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 #include <miscfs/specfs/specdev.h>
 #include <miscfs/fifofs/fifo.h>
@@ -64,12 +62,11 @@
 #include <ufs/lfs/lfs_extern.h>
 
 /* Global vfs data structures for lfs. */
-int (**lfs_vnodeop_p)();
+int (**lfs_vnodeop_p)(void *);
 struct vnodeopv_entry_desc lfs_vnodeop_entries[] = {
 	{ &vop_default_desc, vn_default_error },
 	{ &vop_lookup_desc, ufs_lookup },		/* lookup */
 	{ &vop_create_desc, ufs_create },		/* create */
-	{ &vop_whiteout_desc, ufs_whiteout },		/* whiteout */
 	{ &vop_mknod_desc, ufs_mknod },			/* mknod */
 	{ &vop_open_desc, ufs_open },			/* open */
 	{ &vop_close_desc, lfs_close },			/* close */
@@ -80,7 +77,7 @@ struct vnodeopv_entry_desc lfs_vnodeop_entries[] = {
 	{ &vop_write_desc, lfs_write },			/* write */
 	{ &vop_lease_desc, ufs_lease_check },		/* lease */
 	{ &vop_ioctl_desc, ufs_ioctl },			/* ioctl */
-	{ &vop_select_desc, ufs_select },		/* select */
+	{ &vop_poll_desc, ufs_poll },			/* poll */
 	{ &vop_mmap_desc, ufs_mmap },			/* mmap */
 	{ &vop_fsync_desc, lfs_fsync },			/* fsync */
 	{ &vop_seek_desc, ufs_seek },			/* seek */
@@ -109,106 +106,50 @@ struct vnodeopv_entry_desc lfs_vnodeop_entries[] = {
 	{ &vop_truncate_desc, lfs_truncate },		/* truncate */
 	{ &vop_update_desc, lfs_update },		/* update */
 	{ &vop_bwrite_desc, lfs_bwrite },		/* bwrite */
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ NULL, NULL }
 };
 struct vnodeopv_desc lfs_vnodeop_opv_desc =
 	{ &lfs_vnodeop_p, lfs_vnodeop_entries };
 
-int (**lfs_specop_p)();
+int (**lfs_specop_p)(void *);
 struct vnodeopv_entry_desc lfs_specop_entries[] = {
-	{ &vop_default_desc, vn_default_error },
-	{ &vop_lookup_desc, spec_lookup },		/* lookup */
-	{ &vop_create_desc, spec_create },		/* create */
-	{ &vop_mknod_desc, spec_mknod },		/* mknod */
-	{ &vop_open_desc, spec_open },			/* open */
+	{ &vop_default_desc, spec_vnoperate },
 	{ &vop_close_desc, ufsspec_close },		/* close */
 	{ &vop_access_desc, ufs_access },		/* access */
 	{ &vop_getattr_desc, lfs_getattr },		/* getattr */
 	{ &vop_setattr_desc, ufs_setattr },		/* setattr */
 	{ &vop_read_desc, ufsspec_read },		/* read */
 	{ &vop_write_desc, ufsspec_write },		/* write */
-	{ &vop_lease_desc, spec_lease_check },		/* lease */
-	{ &vop_ioctl_desc, spec_ioctl },		/* ioctl */
-	{ &vop_select_desc, spec_select },		/* select */
-	{ &vop_mmap_desc, spec_mmap },			/* mmap */
-	{ &vop_fsync_desc, spec_fsync },		/* fsync */
-	{ &vop_seek_desc, spec_seek },			/* seek */
-	{ &vop_remove_desc, spec_remove },		/* remove */
-	{ &vop_link_desc, spec_link },			/* link */
-	{ &vop_rename_desc, spec_rename },		/* rename */
-	{ &vop_mkdir_desc, spec_mkdir },		/* mkdir */
-	{ &vop_rmdir_desc, spec_rmdir },		/* rmdir */
-	{ &vop_symlink_desc, spec_symlink },		/* symlink */
-	{ &vop_readdir_desc, spec_readdir },		/* readdir */
-	{ &vop_readlink_desc, spec_readlink },		/* readlink */
-	{ &vop_abortop_desc, spec_abortop },		/* abortop */
 	{ &vop_inactive_desc, lfs_inactive },		/* inactive */
 	{ &vop_reclaim_desc, lfs_reclaim },		/* reclaim */
 	{ &vop_lock_desc, ufs_lock },			/* lock */
 	{ &vop_unlock_desc, ufs_unlock },		/* unlock */
-	{ &vop_bmap_desc, spec_bmap },			/* bmap */
-	{ &vop_strategy_desc, spec_strategy },		/* strategy */
 	{ &vop_print_desc, ufs_print },			/* print */
 	{ &vop_islocked_desc, ufs_islocked },		/* islocked */
-	{ &vop_pathconf_desc, spec_pathconf },		/* pathconf */
-	{ &vop_advlock_desc, spec_advlock },		/* advlock */
-	{ &vop_blkatoff_desc, spec_blkatoff },		/* blkatoff */
-	{ &vop_valloc_desc, spec_valloc },		/* valloc */
-	{ &vop_vfree_desc, lfs_vfree },			/* vfree */
-	{ &vop_truncate_desc, spec_truncate },		/* truncate */
-	{ &vop_update_desc, lfs_update },		/* update */
 	{ &vop_bwrite_desc, lfs_bwrite },		/* bwrite */
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ NULL, NULL }
 };
 struct vnodeopv_desc lfs_specop_opv_desc =
 	{ &lfs_specop_p, lfs_specop_entries };
 
 #ifdef FIFO
-int (**lfs_fifoop_p)();
+int (**lfs_fifoop_p)(void *);
 struct vnodeopv_entry_desc lfs_fifoop_entries[] = {
-	{ &vop_default_desc, vn_default_error },
-	{ &vop_lookup_desc, fifo_lookup },		/* lookup */
-	{ &vop_create_desc, fifo_create },		/* create */
-	{ &vop_mknod_desc, fifo_mknod },		/* mknod */
-	{ &vop_open_desc, fifo_open },			/* open */
+	{ &vop_default_desc, fifo_vnoperate },
 	{ &vop_close_desc, ufsfifo_close },		/* close */
 	{ &vop_access_desc, ufs_access },		/* access */
 	{ &vop_getattr_desc, lfs_getattr },		/* getattr */
 	{ &vop_setattr_desc, ufs_setattr },		/* setattr */
 	{ &vop_read_desc, ufsfifo_read },		/* read */
 	{ &vop_write_desc, ufsfifo_write },		/* write */
-	{ &vop_lease_desc, fifo_lease_check },		/* lease */
-	{ &vop_ioctl_desc, fifo_ioctl },		/* ioctl */
-	{ &vop_select_desc, fifo_select },		/* select */
-	{ &vop_mmap_desc, fifo_mmap },			/* mmap */
-	{ &vop_fsync_desc, fifo_fsync },		/* fsync */
-	{ &vop_seek_desc, fifo_seek },			/* seek */
-	{ &vop_remove_desc, fifo_remove },		/* remove */
-	{ &vop_link_desc, fifo_link },			/* link */
-	{ &vop_rename_desc, fifo_rename },		/* rename */
-	{ &vop_mkdir_desc, fifo_mkdir },		/* mkdir */
-	{ &vop_rmdir_desc, fifo_rmdir },		/* rmdir */
-	{ &vop_symlink_desc, fifo_symlink },		/* symlink */
-	{ &vop_readdir_desc, fifo_readdir },		/* readdir */
-	{ &vop_readlink_desc, fifo_readlink },		/* readlink */
-	{ &vop_abortop_desc, fifo_abortop },		/* abortop */
 	{ &vop_inactive_desc, lfs_inactive },		/* inactive */
 	{ &vop_reclaim_desc, lfs_reclaim },		/* reclaim */
 	{ &vop_lock_desc, ufs_lock },			/* lock */
 	{ &vop_unlock_desc, ufs_unlock },		/* unlock */
-	{ &vop_bmap_desc, fifo_bmap },			/* bmap */
-	{ &vop_strategy_desc, fifo_strategy },		/* strategy */
 	{ &vop_print_desc, ufs_print },			/* print */
 	{ &vop_islocked_desc, ufs_islocked },		/* islocked */
-	{ &vop_pathconf_desc, fifo_pathconf },		/* pathconf */
-	{ &vop_advlock_desc, fifo_advlock },		/* advlock */
-	{ &vop_blkatoff_desc, fifo_blkatoff },		/* blkatoff */
-	{ &vop_valloc_desc, fifo_valloc },		/* valloc */
-	{ &vop_vfree_desc, lfs_vfree },			/* vfree */
-	{ &vop_truncate_desc, fifo_truncate },		/* truncate */
-	{ &vop_update_desc, lfs_update },		/* update */
 	{ &vop_bwrite_desc, lfs_bwrite },		/* bwrite */
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+	{ NULL, NULL }
 };
 struct vnodeopv_desc lfs_fifoop_opv_desc =
 	{ &lfs_fifoop_p, lfs_fifoop_entries };
@@ -222,18 +163,20 @@ struct vnodeopv_desc lfs_fifoop_opv_desc =
  * Synch an open file.
  */
 /* ARGSUSED */
-lfs_fsync(ap)
+int
+lfs_fsync(v)
+	void *v;
+{
 	struct vop_fsync_args /* {
 		struct vnode *a_vp;
 		struct ucred *a_cred;
 		int a_waitfor;
 		struct proc *a_p;
-	} */ *ap;
-{
-	struct timeval tv;
+	} */ *ap = v;
+	struct timespec ts;
 
-	tv = time;
-	return (VOP_UPDATE(ap->a_vp, &tv, &tv,
+	getnanotime(&ts);
+	return (VOP_UPDATE(ap->a_vp, &ts, &ts,
 	    ap->a_waitfor == MNT_WAIT ? LFS_SYNC : 0));
 }
 
@@ -258,15 +201,16 @@ lfs_fsync(ap)
 #define	MARK_VNODE(dvp)	(dvp)->v_flag |= VDIROP
 
 int
-lfs_symlink(ap)
+lfs_symlink(v)
+	void *v;
+{
 	struct vop_symlink_args /* {
 		struct vnode *a_dvp;
 		struct vnode **a_vpp;
 		struct componentname *a_cnp;
 		struct vattr *a_vap;
 		char *a_target;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int ret;
 
 	SET_DIROP(VTOI(ap->a_dvp)->i_lfs);
@@ -277,14 +221,15 @@ lfs_symlink(ap)
 }
 
 int
-lfs_mknod(ap)
+lfs_mknod(v)
+	void *v;
+{
 	struct vop_mknod_args /* {
 		struct vnode *a_dvp;
 		struct vnode **a_vpp;
 		struct componentname *a_cnp;
 		struct vattr *a_vap;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int ret;
 
 	SET_DIROP(VTOI(ap->a_dvp)->i_lfs);
@@ -295,14 +240,15 @@ lfs_mknod(ap)
 }
 
 int
-lfs_create(ap)
+lfs_create(v)
+	void *v;
+{
 	struct vop_create_args /* {
 		struct vnode *a_dvp;
 		struct vnode **a_vpp;
 		struct componentname *a_cnp;
 		struct vattr *a_vap;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int ret;
 
 	SET_DIROP(VTOI(ap->a_dvp)->i_lfs);
@@ -313,14 +259,15 @@ lfs_create(ap)
 }
 
 int
-lfs_mkdir(ap)
+lfs_mkdir(v)
+	void *v;
+{
 	struct vop_mkdir_args /* {
 		struct vnode *a_dvp;
 		struct vnode **a_vpp;
 		struct componentname *a_cnp;
 		struct vattr *a_vap;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int ret;
 
 	SET_DIROP(VTOI(ap->a_dvp)->i_lfs);
@@ -331,13 +278,14 @@ lfs_mkdir(ap)
 }
 
 int
-lfs_remove(ap)
+lfs_remove(v)
+	void *v;
+{
 	struct vop_remove_args /* {
 		struct vnode *a_dvp;
 		struct vnode *a_vp;
 		struct componentname *a_cnp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int ret;
 
 	SET_DIROP(VTOI(ap->a_dvp)->i_lfs);
@@ -349,14 +297,15 @@ lfs_remove(ap)
 }
 
 int
-lfs_rmdir(ap)
+lfs_rmdir(v)
+	void *v;
+{
 	struct vop_rmdir_args /* {
 		struct vnodeop_desc *a_desc;
 		struct vnode *a_dvp;
 		struct vnode *a_vp;
 		struct componentname *a_cnp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int ret;
 
 	SET_DIROP(VTOI(ap->a_dvp)->i_lfs);
@@ -368,24 +317,27 @@ lfs_rmdir(ap)
 }
 
 int
-lfs_link(ap)
-	struct vop_link_args /* {
-		struct vnode *a_vp;
-		struct vnode *a_tdvp;
-		struct componentname *a_cnp;
-	} */ *ap;
+lfs_link(v)
+	void *v;
 {
+	struct vop_link_args /* {
+		struct vnode *a_dvp;
+		struct vnode *a_vp;
+		struct componentname *a_cnp;
+	} */ *ap = v;
 	int ret;
 
-	SET_DIROP(VTOI(ap->a_vp)->i_lfs);
-	MARK_VNODE(ap->a_vp);
+	SET_DIROP(VTOI(ap->a_dvp)->i_lfs);
+	MARK_VNODE(ap->a_dvp);
 	ret = ufs_link(ap);
-	SET_ENDOP(VTOI(ap->a_vp)->i_lfs);
+	SET_ENDOP(VTOI(ap->a_dvp)->i_lfs);
 	return (ret);
 }
-
+  
 int
-lfs_rename(ap)
+lfs_rename(v)
+	void *v;
+{
 	struct vop_rename_args  /* {
 		struct vnode *a_fdvp;
 		struct vnode *a_fvp;
@@ -393,8 +345,7 @@ lfs_rename(ap)
 		struct vnode *a_tdvp;
 		struct vnode *a_tvp;
 		struct componentname *a_tcnp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	int ret;
 
 	SET_DIROP(VTOI(ap->a_fdvp)->i_lfs);
@@ -404,16 +355,17 @@ lfs_rename(ap)
 	SET_ENDOP(VTOI(ap->a_fdvp)->i_lfs);
 	return (ret);
 }
-/* XXX hack to avoid calling ITIMES in getattr */
+/* XXX hack to avoid calling FFS_ITIMES in getattr */
 int
-lfs_getattr(ap)
+lfs_getattr(v)
+	void *v;
+{
 	struct vop_getattr_args /* {
 		struct vnode *a_vp;
 		struct vattr *a_vap;
 		struct ucred *a_cred;
 		struct proc *a_p;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp = ap->a_vp;
 	register struct inode *ip = VTOI(vp);
 	register struct vattr *vap = ap->a_vap;
@@ -422,20 +374,20 @@ lfs_getattr(ap)
 	 */
 	vap->va_fsid = ip->i_dev;
 	vap->va_fileid = ip->i_number;
-	vap->va_mode = ip->i_mode & ~IFMT;
-	vap->va_nlink = ip->i_nlink;
-	vap->va_uid = ip->i_uid;
-	vap->va_gid = ip->i_gid;
-	vap->va_rdev = (dev_t)ip->i_rdev;
-	vap->va_size = ip->i_din.di_size;
-	vap->va_atime.ts_sec = ip->i_atime;
-	vap->va_atime.ts_nsec = ip->i_atimensec;
-	vap->va_mtime.ts_sec = ip->i_mtime;
-	vap->va_mtime.ts_nsec = ip->i_mtimensec;
-	vap->va_ctime.ts_sec = ip->i_ctime;
-	vap->va_ctime.ts_nsec = ip->i_ctimensec;
-	vap->va_flags = ip->i_flags;
-	vap->va_gen = ip->i_gen;
+	vap->va_mode = ip->i_ffs1_mode & ~IFMT;
+	vap->va_nlink = ip->i_ffs1_nlink;
+	vap->va_uid = ip->i_ffs1_uid;
+	vap->va_gid = ip->i_ffs1_gid;
+	vap->va_rdev = (dev_t)ip->i_ffs1_rdev;
+	vap->va_size = ip->i_ffs1_size;
+	vap->va_atime.tv_sec = ip->i_ffs1_atime;
+	vap->va_atime.tv_nsec = ip->i_ffs1_atimensec;
+	vap->va_mtime.tv_sec = ip->i_ffs1_mtime;
+	vap->va_mtime.tv_nsec = ip->i_ffs1_mtimensec;
+	vap->va_ctime.tv_sec = ip->i_ffs1_ctime;
+	vap->va_ctime.tv_nsec = ip->i_ffs1_ctimensec;
+	vap->va_flags = ip->i_ffs1_flags;
+	vap->va_gen = ip->i_ffs1_gen;
 	/* this doesn't belong here */
 	if (vp->v_type == VBLK)
 		vap->va_blocksize = BLKDEV_IOSIZE;
@@ -443,7 +395,7 @@ lfs_getattr(ap)
 		vap->va_blocksize = MAXBSIZE;
 	else
 		vap->va_blocksize = vp->v_mount->mnt_stat.f_iosize;
-	vap->va_bytes = dbtob(ip->i_blocks);
+	vap->va_bytes = dbtob(ip->i_ffs1_blocks);
 	vap->va_type = vp->v_type;
 	vap->va_filerev = ip->i_modrev;
 	return (0);
@@ -457,21 +409,22 @@ lfs_getattr(ap)
  */
 /* ARGSUSED */
 int
-lfs_close(ap)
+lfs_close(v)
+	void *v;
+{
 	struct vop_close_args /* {
 		struct vnode *a_vp;
 		int  a_fflag;
 		struct ucred *a_cred;
 		struct proc *a_p;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp = ap->a_vp;
 	register struct inode *ip = VTOI(vp);
 	int mod;
 
 	if (vp->v_usecount > 1 && !(ip->i_flag & IN_LOCKED)) {
 		mod = ip->i_flag & IN_MODIFIED;
-		ITIMES(ip, &time, &time);
+		FFS_ITIMES(ip, &time, &time);
 		if (!mod && ip->i_flag & IN_MODIFIED)
 			ip->i_lfs->lfs_uinodes++;
 	}
@@ -484,11 +437,12 @@ lfs_close(ap)
 int lfs_no_inactive = 0;
 
 int
-lfs_inactive(ap)
+lfs_inactive(v)
+	void *v;
+{
 	struct vop_inactive_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	
 	if (lfs_no_inactive)
 		return (0);
@@ -499,15 +453,16 @@ lfs_inactive(ap)
  * Reclaim an inode so that it can be used for other purposes.
  */
 int
-lfs_reclaim(ap)
+lfs_reclaim(v)
+	void *v;
+{
 	struct vop_reclaim_args /* {
 		struct vnode *a_vp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct vnode *vp = ap->a_vp;
 	int error;
 
-	if (error = ufs_reclaim(vp))
+	if ((error = ufs_reclaim(vp)) != 0)
 		return (error);
 	FREE(vp->v_data, M_LFSNODE);
 	vp->v_data = NULL;

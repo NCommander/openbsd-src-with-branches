@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -48,19 +44,16 @@ static char sccsid[] = "@(#)rexec.c	8.1 (Berkeley) 6/4/93";
 
 int	rexecoptions;
 
-void ruserpass __P((const char *, char **, char **));
+void ruserpass(const char *, char **, char **);
 
 int
-rexec(ahost, rport, name, pass, cmd, fd2p)
-	char **ahost;
-	int rport;
-	char *name, *pass, *cmd;
-	int *fd2p;
+rexec(char **ahost, int rport, char *name, char *pass, char *cmd, int *fd2p)
 {
 	struct sockaddr_in sin, sin2, from;
 	struct hostent *hp;
+	unsigned timo = 1;
 	u_short port;
-	int s, timo = 1, s3;
+	int s, s3;
 	char c;
 
 	hp = gethostbyname(*ahost);
@@ -79,7 +72,7 @@ retry:
 	sin.sin_family = hp->h_addrtype;
 	sin.sin_len = sizeof(sin);
 	sin.sin_port = rport;
-	bcopy(hp->h_addr, (caddr_t)&sin.sin_addr, hp->h_length);
+	bcopy(hp->h_addr, &sin.sin_addr, (size_t)hp->h_length);
 	if (connect(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		if (errno == ECONNREFUSED && timo <= 16) {
 			(void) close(s);
@@ -92,7 +85,7 @@ retry:
 	}
 	port = 0;
 	if (fd2p == 0) {
-		(void) write(s, "", 1);
+		(void) write(s, "", (size_t)1);
 	} else {
 		char num[8];
 		int s2, sin2len;
@@ -105,22 +98,24 @@ retry:
 		listen(s2, 1);
 		sin2len = sizeof (sin2);
 		if (getsockname(s2, (struct sockaddr *)&sin2, &sin2len) < 0 ||
-		  sin2len != sizeof (sin2)) {
+		    sin2len != sizeof (sin2)) {
 			perror("getsockname");
 			(void) close(s2);
 			goto bad;
 		}
 		port = ntohs((u_short)sin2.sin_port);
-		(void) sprintf(num, "%u", port);
+		(void) snprintf(num, sizeof num, "%u", port);
 		(void) write(s, num, strlen(num)+1);
-		{ int len = sizeof (from);
-		  s3 = accept(s2, (struct sockaddr *)&from, &len);
-		  close(s2);
-		  if (s3 < 0) {
-			perror("accept");
-			port = 0;
-			goto bad;
-		  }
+		{
+			int len = sizeof (from);
+
+			s3 = accept(s2, (struct sockaddr *)&from, &len);
+			close(s2);
+			if (s3 < 0) {
+				perror("accept");
+				port = 0;
+				goto bad;
+			}
 		}
 		*fd2p = s3;
 	}
@@ -128,13 +123,13 @@ retry:
 	/* should public key encypt the password here */
 	(void) write(s, pass, strlen(pass) + 1);
 	(void) write(s, cmd, strlen(cmd) + 1);
-	if (read(s, &c, 1) != 1) {
+	if (read(s, &c, (size_t)1) != 1) {
 		perror(*ahost);
 		goto bad;
 	}
 	if (c != 0) {
-		while (read(s, &c, 1) == 1) {
-			(void) write(2, &c, 1);
+		while (read(s, &c, (size_t)1) == 1) {
+			(void) write(2, &c, (size_t)1);
 			if (c == '\n')
 				break;
 		}

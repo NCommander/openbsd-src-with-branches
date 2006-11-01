@@ -1,3 +1,4 @@
+/*	$OpenBSD: pmax.c,v 1.5 2003/06/03 02:56:08 millert Exp $	*/
 /*	$NetBSD: pmax.c,v 1.3 1995/04/19 07:16:18 cgd Exp $	*/
 
 /*
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@
 #if 0
 static char sccsid[] = "@(#)mips.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: pmax.c,v 1.3 1995/04/19 07:16:18 cgd Exp $";
+static char rcsid[] = "$OpenBSD: pmax.c,v 1.5 2003/06/03 02:56:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -76,16 +73,14 @@ nltype	indirectchild = {
 	(arctype *) 0 			/* list of callee arcs */
 };
 
-findcall(parentp, p_lowpc, p_highpc)
-	nltype		*parentp;
-	unsigned long	p_lowpc;
-	unsigned long	p_highpc;
+void
+findcall(nltype *parentp, unsigned long p_lowpc, unsigned long p_highpc)
 {
-	register u_long pc;
+	unsigned long pc;
 	nltype *childp;
 	unsigned long destpc;
-	register long op;
-	register int off;
+	long op;
+	int off;
 
 	if (textspace == 0)
 		return;
@@ -96,7 +91,7 @@ findcall(parentp, p_lowpc, p_highpc)
 
 	for (pc = p_lowpc; pc < p_highpc; pc += 4) {
 		off = pc - s_lowpc;
-		op = *(u_long *)&textspace[off];
+		op = *(unsigned long *)&textspace[off];
 		if ((op & 0xfc000000) == 0x0c000000) {
 			/*
 			 * a jal insn -- check that this

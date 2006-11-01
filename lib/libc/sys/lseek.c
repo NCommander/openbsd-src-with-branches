@@ -1,5 +1,4 @@
-/*	$NetBSD: lseek.c,v 1.3 1995/02/27 11:23:04 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,28 +28,27 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)lseek.c	8.1 (Berkeley) 6/17/93";
-#else
-static char rcsid[] = "$NetBSD: lseek.c,v 1.3 1995/02/27 11:23:04 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include <unistd.h>
+#include "thread_private.h"
+
+off_t __syscall(quad_t, ...);
 
 /*
  * This function provides 64-bit offset padding that
  * is not supplied by GCC 1.X but is supplied by GCC 2.X.
  */
 off_t
-lseek(fd, offset, whence)
-	int	fd;
-	off_t	offset;
-	int	whence;
+lseek(int fd, off_t offset, int whence)
 {
-	extern off_t __syscall();
+	off_t retval;
 
-	return(__syscall((quad_t)SYS_lseek, fd, 0, offset, whence));
+	if (_FD_LOCK(fd, FD_RDWR, NULL) != 0) {
+		retval = -1;
+	} else {
+		retval = __syscall((quad_t)SYS_lseek, fd, 0, offset, whence);
+		_FD_UNLOCK(fd, FD_RDWR);
+	}
+	return retval;
 }

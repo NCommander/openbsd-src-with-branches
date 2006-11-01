@@ -1,13 +1,12 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2001, 2003 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *
- *	$Sendmail: errstring.h,v 1.4 2001/06/07 20:04:53 ca Exp $
+ *	$Sendmail: errstring.h,v 1.9 2003/12/10 03:19:06 gshapiro Exp $
  */
 
 /*
@@ -18,7 +17,9 @@
 # define SM_ERRSTRING_H
 
 #include <errno.h>
+#if NEEDINTERRNO
 extern int errno;
+#endif /* NEEDINTERRNO */
 
 /*
 **  These are used in a few cases where we need some special
@@ -45,6 +46,8 @@ extern int errno;
 #define E_DNSBASE	(E_PSEUDOBASE + 20)	/* base for DNS h_errno */
 #define E_SMDBBASE	(E_PSEUDOBASE + 40)	/* base for libsmdb errors */
 #define E_LDAPBASE	(E_PSEUDOBASE + 70)	/* base for LDAP errors */
+#define E_LDAPURLBASE	(E_PSEUDOBASE + 200)	/* base for LDAP URL errors */
+
 
 /* libsmdb */
 #define SMDBE_OK			0
@@ -71,9 +74,9 @@ extern int errno;
 #define SMDBE_NOT_A_VALID_CURSOR	(E_SMDBBASE + 21)
 #define SMDBE_LAST_ENTRY		(E_SMDBBASE + 22)
 #define SMDBE_OLD_VERSION		(E_SMDBBASE + 23)
+#define SMDBE_VERSION_MISMATCH		(E_SMDBBASE + 24)
 
-extern const char *
-sm_errstring __P((
-	int _errno));
+extern const char *sm_errstring __P((int _errno));
+
 
 #endif /* SM_ERRSTRING_H */

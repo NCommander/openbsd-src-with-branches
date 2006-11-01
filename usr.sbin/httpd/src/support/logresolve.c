@@ -44,19 +44,12 @@
 
 #include <ctype.h>
 
-#if !defined(MPE) && !defined(WIN32)
-#ifndef BEOS
 #include <arpa/inet.h>
-#else
-/* BeOS lacks the necessary files until we get the new networking */
-#include <netinet/in.h>
-#define NO_ADDRESS 4
-#endif /* BEOS */
-#endif /* !MPE && !WIN32*/
 
 static void cgethost(struct in_addr ipnum, char *string, int check);
 static int getline(char *s, int n);
 static void stats(FILE *output);
+static void usage(void);
 
 
 /* maximum line length */
@@ -69,19 +62,6 @@ static void stats(FILE *output);
 
 /* number of buckets in cache hash table */
 #define BUCKETS 256
-
-#if defined(NEED_STRDUP)
-char *strdup (const char *str)
-{
-    char *dup;
-
-    if (!(dup = (char *) malloc(strlen(str) + 1)))
-	return NULL;
-    dup = strcpy(dup, str);
-
-    return dup;
-}
-#endif
 
 /*
  * struct nsrec - record of nameservice for cache linked list
@@ -101,7 +81,7 @@ struct nsrec {
  * statistics - obvious
  */
 
-#if !defined(h_errno) && !defined(CYGWIN)
+#if !defined(h_errno)
 extern int h_errno; /* some machines don't have this in their headers */
 #endif
 
@@ -274,36 +254,39 @@ static int getline (char *s, int n)
     return (1);
 }
 
+static void usage(void)
+{
+    fprintf(stderr, "Usage: logresolve [-s statfile] [-c]");
+    fprintf(stderr, " < input > output\n");
+    exit(1);
+}
+
 int main (int argc, char *argv[])
 {
     struct in_addr ipnum;
     char *bar, hoststring[MAXDNAME + 1], line[MAXLINE], *statfile;
     int i, check;
-
-#ifdef WIN32
-    WSADATA wsaData;
-    WSAStartup(0x101, &wsaData);
-#endif
+    int ch;
 
     check = 0;
     statfile = NULL;
-    for (i = 1; i < argc; i++) {
-	if (strcmp(argv[i], "-c") == 0)
-	    check = 1;
-	else if (strcmp(argv[i], "-s") == 0) {
-	    if (i == argc - 1) {
-		fprintf(stderr, "logresolve: missing filename to -s\n");
-		exit(1);
-	    }
-	    i++;
-	    statfile = argv[i];
-	}
-	else {
-	    fprintf(stderr, "Usage: logresolve [-s statfile] [-c] < input > output\n");
-	    exit(0);
-	}
+    while ((ch = getopt(argc, argv, "s:c")) != -1) {
+            switch (ch) {
+            case 'c':
+                    check = 1;
+                    break;
+            case 's':
+                    statfile = optarg;
+                    break;
+            default:
+                   usage();
+            }
     }
 
+    argc -= optind;
+    argv += optind;
+    if (argc > 0)
+        usage();
 
     for (i = 0; i < BUCKETS; i++)
 	nscache[i] = NULL;
@@ -339,10 +322,6 @@ int main (int argc, char *argv[])
 	else
 	    puts(hoststring);
     }
-
-#ifdef WIN32
-     WSACleanup();
-#endif
 
     if (statfile != NULL) {
 	FILE *fp;

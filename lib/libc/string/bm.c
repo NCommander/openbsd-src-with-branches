@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,11 +30,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)bm.c	8.7 (Berkeley) 6/21/94"; */
-static char *rcsid = "$Id: bm.c,v 1.3 1994/12/14 07:24:12 cgd Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 
@@ -90,14 +82,11 @@ static u_char const freq_def[256] = {
 };
 
 bm_pat *
-bm_comp(pb, len, freq)
-	u_char const *pb;
-	size_t len;
-	u_char const *freq;
+bm_comp(u_char const *pb, size_t len, u_char const *freq)
 {
-	register u_char const *pe, *p;
-	register size_t *d, r;
-	register int j;
+	u_char const *pe, *p;
+	size_t *d, r;
+	int j;
 	int sv_errno;
 	bm_pat *pat;
 
@@ -147,8 +136,7 @@ mem:	sv_errno = errno;
 }
 
 void
-bm_free(pat)
-	bm_pat *pat;
+bm_free(bm_pat *pat)
 {
 	if (pat->pat != NULL)
 		free(pat->pat);
@@ -158,14 +146,11 @@ bm_free(pat)
 }
 
 u_char *
-bm_exec(pat, base, n)
-	bm_pat *pat;
-	u_char *base;
-	size_t n;
+bm_exec(bm_pat *pat, u_char *base, size_t n)
 {
-	register u_char *e, *ep, *p, *q, *s;
-	register size_t *d0, k, md2, n1, ro;
-	register int rc;
+	u_char *e, *ep, *p, *q, *s;
+	size_t *d0, k, md2, n1, ro;
+	int rc;
 
 	if (n == 0)
 		return (NULL);

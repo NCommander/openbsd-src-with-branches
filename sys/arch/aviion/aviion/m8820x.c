@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x.c,v 1.45 2005/12/04 12:20:19 miod Exp $	*/
+/*	$OpenBSD: m8820x.c,v 1.3 2006/05/20 11:58:33 miod Exp $	*/
 /*
  * Copyright (c) 2004, 2006, Miodrag Vallat.
  *
@@ -30,12 +30,11 @@
 #include <uvm/uvm_extern.h>
 
 #include <machine/asm_macro.h>
+#include <machine/avcommon.h>
 #include <machine/cmmu.h>
 #include <machine/cpu.h>
 #include <machine/m8820x.h>
 #include <machine/prom.h>
-
-#include <machine/av400.h>
 
 /*
  * This routine sets up the CPU/CMMU configuration.
@@ -50,52 +49,47 @@ m8820x_setup_board_config()
 	u_int32_t whoami;
 
 	/*
-	 * These are the fixed assignments on AV400 designs.
-	 */
-	m8820x_cmmu[0].cmmu_regs = (void *)AV400_CMMU_I0;
-	m8820x_cmmu[1].cmmu_regs = (void *)AV400_CMMU_D0;
-	m8820x_cmmu[2].cmmu_regs = (void *)AV400_CMMU_I1;
-	m8820x_cmmu[3].cmmu_regs = (void *)AV400_CMMU_D1;
-	m8820x_cmmu[4].cmmu_regs = (void *)AV400_CMMU_I2;
-	m8820x_cmmu[5].cmmu_regs = (void *)AV400_CMMU_D2;
-	m8820x_cmmu[6].cmmu_regs = (void *)AV400_CMMU_I3;
-	m8820x_cmmu[7].cmmu_regs = (void *)AV400_CMMU_D3;
-
-	/*
 	 * First, find if any CPU0 CMMU is a 88204. If so, we can
 	 * issue the CPUCONFIG system call to get the configuration
 	 * details.
 	 */
-	if (badaddr(AV400_CMMU_I0, 4) != 0 ||
-	    badaddr(AV400_CMMU_D0, 4) != 0) {
+	if (badaddr((vaddr_t)m8820x_cmmu[0].cmmu_regs, 4) != 0 ||
+	    badaddr((vaddr_t)m8820x_cmmu[1].cmmu_regs, 4) != 0) {
 		printf("CPU0: missing CMMUs ???\n");
 		scm_halt();
 		/* NOTREACHED */
 	}
 
-	cr = (void *)AV400_CMMU_I0;
+	cr = (void *)m8820x_cmmu[0].cmmu_regs;
 	type = CMMU_TYPE(cr[CMMU_IDR]);
 
-	switch (type) {
-	default:
+	if (type != M88204_ID && type != M88200_ID) {
 		printf("CPU0: unrecognized CMMU type %d\n", type);
 		scm_halt();
 		/* NOTREACHED */
-		break;
+	}
+
+	/*
+	 * Try and use the CPUCONFIG system call to get all the information
+	 * we need. This is theoretically only available on 88204-based
+	 * machines, but it can't hurt to give it a try.
+	 */
+	if (scm_cpuconfig(&scc) == 0 &&
+	    scc.version == SCM_CPUCONFIG_VERSION)
+		goto knowledge;
+
+	/*
+	 * XXX Instead of deciding on the CMMU type, we should decide on
+	 * XXX the board type instead. But then, I am not sure not all
+	 * XXX 88204-based designs have the WHOAMI register... -- miod
+	 */
+	switch (type) {
 	case M88204_ID:
 		/*
-		 * We can use the CPUCONFIG system call to get all the
-		 * information we need.
-		 */
-		if (scm_cpuconfig(&scc) == 0 &&
-		    scc.version == SCM_CPUCONFIG_VERSION)
-			break;
-
-		/*
-		 * If it fails, we'll need to probe CMU addresses to
-		 * discover which CPU slots are populated. Actually,
-		 * we'll simply check how many upper slots we can ignore,
-		 * and keep using badaddr() to cope with unpopulated slots.
+		 * Probe CMMU addresses to discover which CPU slots are
+		 * populated. Actually, we'll simply check how many upper
+		 * slots we can ignore, and keep using badaddr() to cope
+		 * with unpopulated slots.
 		 */
 hardprobe:
 		/*
@@ -117,13 +111,13 @@ hardprobe:
 				break;
 		}
 		scc.cpucount = (1 + max_cmmus) >> 1;
-
 		break;
+
 	case M88200_ID:
 		/*
-		 * Deduce our configuration from the whoami register.
+		 * Deduce our configuration from the WHOAMI register.
 		 */
-		whoami = *(volatile u_int32_t *)AV400_WHOAMI;
+		whoami = *(volatile u_int32_t *)AV_WHOAMI;
 		switch ((whoami & 0xf0) >> 4) {
 		case 0:		/* 4 CPUs, 8 CMMUs */
 			scc.cpucount = 4;
@@ -133,6 +127,13 @@ hardprobe:
 			break;
 		case 0x0a:	/* 1 CPU, 2 CMMU */
 			scc.cpucount = 1;
+			break;
+		case 3:		/* 2 CPUs, 12 CMMUs */
+		case 7:		/* 1 CPU, 6 CMMU */
+			printf("MAYDAY, 6:1 CMMU configuration (whoami %x)"
+			    " but no CPUCONFIG information\n", whoami);
+			scm_halt();
+			/* NOTREACHED */
 			break;
 		default:
 			printf("unrecognized CMMU configuration, whoami %x\n",
@@ -153,6 +154,7 @@ hardprobe:
 		break;
 	}
 
+knowledge:
 	if (scc.igang != scc.dgang ||
 	    scc.igang == 0 || scc.igang > 2) {
 		printf("Unsupported CMMU to CPU ratio (%dI/%dD)\n",
@@ -214,14 +216,16 @@ m8820x_cpu_number()
 	u_int32_t whoami;
 	cpuid_t cpu;
 
-	whoami = *(volatile u_int32_t *)AV400_WHOAMI;
+	whoami = *(volatile u_int32_t *)AV_WHOAMI;
 	switch ((whoami & 0xf0) >> 4) {
 	case 0:
+	case 3:
 	case 5:
 		for (cpu = 0; cpu < 4; cpu++)
 			if (whoami & (1 << cpu))
 				return (cpu);
 		break;
+	case 7:
 	case 0x0a:
 		/* for single processors, this field of whoami is undefined */
 		return (0);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.5 2003/06/02 23:32:09 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1995/03/21 08:19:01 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,12 +38,25 @@ typedef struct {
 } BUF;
 
 extern int iamremote;
+extern char *__progname;
 
-BUF	*allocbuf __P((BUF *, int, int));
-char	*colon __P((char *));
-void	 lostconn __P((int));
-void	 nospace __P((void));
-int	 okname __P((char *));
-void	 run_err __P((const char *, ...));
-int	 susystem __P((char *, int));
-void	 verifydir __P((char *));
+typedef struct arglist arglist;
+struct arglist {
+	char    **list;
+	u_int   num;
+	u_int   nalloc;
+};
+void	 addargs(arglist *, char *, ...)
+	     __attribute__((format(printf, 2, 3)));
+void	 replacearg(arglist *, u_int, char *, ...)
+	     __attribute__((format(printf, 3, 4)));
+void	 freeargs(arglist *);
+
+BUF	*allocbuf(BUF *, int, int);
+char	*colon(char *);
+void	 lostconn(int);
+void	 nospace(void);
+int	 okname(char *);
+void	 run_err(const char *, ...);
+void	 verifydir(char *);
+int	 do_local_cmd(arglist *, uid_t, gid_t);

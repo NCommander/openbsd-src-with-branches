@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofbus.c,v 1.13 2003/10/31 04:08:10 drahn Exp $	*/
 /*	$NetBSD: ofbus.c,v 1.3 1996/10/13 01:38:11 christos Exp $	*/
 
 /*
@@ -32,13 +33,23 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/device.h>
+#include <sys/systm.h>
 
+#include <machine/autoconf.h>
 #include <dev/ofw/openfirm.h>
 
-int ofbprobe __P((struct device *, void *, void *));
-void ofbattach __P((struct device *, struct device *, void *));
-static int ofbprint __P((void *, const char *));
+/* a bit of a hack to prevent conflicts between ofdisk and sd/wd */
+#include "sd.h"
+
+extern void systype(char *);
+
+int ofrprobe(struct device *, void *, void *);
+void ofrattach(struct device *, struct device *, void *);
+int ofbprobe(struct device *, void *, void *);
+void ofbattach(struct device *, struct device *, void *);
+static int ofbprint(void *, const char *);
 
 struct cfattach ofbus_ca = {
 	sizeof(struct device), ofbprobe, ofbattach
@@ -49,7 +60,7 @@ struct cfdriver ofbus_cd = {
 };
 
 struct cfattach ofroot_ca = {
-	sizeof(struct device), ofbprobe, ofbattach
+	sizeof(struct device), ofrprobe, ofrattach
 };
  
 struct cfdriver ofroot_cd = {
@@ -57,9 +68,7 @@ struct cfdriver ofroot_cd = {
 };
 
 static int
-ofbprint(aux, name)
-	void *aux;
-	const char *name;
+ofbprint(void *aux, const char *name)
 {
 	struct ofprobe *ofp = aux;
 	char child[64];
@@ -71,17 +80,77 @@ ofbprint(aux, name)
 		l = sizeof child - 1;
 	child[l] = 0;
 	
-	if (name)
+	if (name) {
+		/* Dont print anything here, be quiet
 		printf("%s at %s", child, name);
-	else
+		return UNCONF;
+		*/
+		return QUIET;
+	} else {
 		printf(" (%s)", child);
-	return UNCONF;
+	return QUIET;
+	}
 }
 
 int
-ofbprobe(parent, cf, aux)
-	struct device *parent;
-	void *cf, *aux;
+ofrprobe(struct device *parent, void *cf, void *aux)
+{
+	struct confargs *ca = aux;
+	
+	if (strcmp(ca->ca_name, ofroot_cd.cd_name) != 0)
+		return (0);
+
+	return 1; 
+}
+void
+ofrattach(struct device *parent, struct device *dev, void *aux)
+{
+	int child;
+	char name[64];
+	struct ofprobe *ofp = aux;
+	struct ofprobe probe;
+	int node;
+#ifdef HAVE_SYSTYPE
+	char ofname[64];
+	int l;
+#endif
+	
+        if (!(node = OF_peer(0)))
+                panic("No PROM root");
+        probe.phandle = node;
+	ofp = &probe;
+
+	ofbprint(ofp, 0);
+	printf("\n");
+
+#ifdef HAVE_SYSTYPE
+	if ((l = OF_getprop(ofp->phandle, "model", ofname, sizeof ofname - 1)) < 0)
+	{
+		/* no system name? */
+	} else {
+		if (l >= sizeof ofname)
+			l = sizeof ofname - 1;
+		ofname[l] = 0;
+		systype(ofname);
+	}
+#endif
+	ofw_intr_establish();
+		
+
+	for (child = OF_child(ofp->phandle); child; child = OF_peer(child)) {
+		/*
+		 * This is a hack to skip all the entries in the tree
+		 * that aren't devices (packages, openfirmware etc.).
+		 */
+		if (OF_getprop(child, "device_type", name, sizeof name) < 0)
+			continue;
+		probe.phandle = child;
+		probe.unit = 0;
+		config_found(dev, &probe, ofbprint);
+	}
+}
+int
+ofbprobe(struct device *parent, void *cf, void *aux)
 {
 	struct ofprobe *ofp = aux;
 	
@@ -91,12 +160,10 @@ ofbprobe(parent, cf, aux)
 }
 
 void
-ofbattach(parent, dev, aux)
-	struct device *parent, *dev;
-	void *aux;
+ofbattach(struct device *parent, struct device *dev, void *aux)
 {
 	int child;
-	char name[5];
+	char name[20];
 	struct ofprobe *ofp = aux;
 	struct ofprobe probe;
 	int units;
@@ -113,10 +180,20 @@ ofbattach(parent, dev, aux)
 	 */
 	units = 1;
 	if (OF_getprop(ofp->phandle, "name", name, sizeof name) > 0) {
-		if (!strcmp(name, "scsi"))
+		if (!strcmp(name, "scsi")) {
+#if NSD > 0
+			units = 0; /* if sd driver in kernel, dont use ofw */
+#else
 			units = 7; /* What about wide or hostid != 7?	XXX */
-		else if (!strcmp(name, "ide"))
+#endif
+		} else if (!strcmp(name, "ide")) {
+#if NSD > 0
+			units = 0; /* if sd? driver in kernel, dont use ofw */
+#else 
 			units = 2;
+#endif
+
+		}
 	}
 	for (child = OF_child(ofp->phandle); child; child = OF_peer(child)) {
 		/*
@@ -135,8 +212,7 @@ ofbattach(parent, dev, aux)
  * Name matching routine for OpenFirmware
  */
 int
-ofnmmatch(cp1, cp2)
-	char *cp1, *cp2;
+ofnmmatch(char *cp1, char *cp2)
 {
 	int i;
 	

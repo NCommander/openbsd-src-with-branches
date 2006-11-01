@@ -64,19 +64,12 @@
  */
 
 #include "httpd.h"
-#ifdef EAPI
 #include "http_config.h"
 #include "http_conf_globals.h"
-#endif
 #include "multithread.h"
 #include "http_log.h"
 
 #include <stdarg.h>
-
-#ifdef OS2
-#define INCL_DOS
-#include <os2.h>
-#endif
 
 /* debugging support, define this to enable code which helps detect re-use
  * of freed memory and other such nonsense.
@@ -121,17 +114,9 @@
  */
 /* #define MAKE_TABLE_PROFILE */
 
-/* Provide some statistics on the cost of allocations.  It requires a
- * bit of an understanding of how alloc.c works.
- */
-/* #define ALLOC_STATS */
-
 #ifdef POOL_DEBUG
 #ifdef ALLOC_USE_MALLOC
 # error "sorry, no support for ALLOC_USE_MALLOC and POOL_DEBUG at the same time"
-#endif
-#ifdef MULTITHREAD
-# error "sorry, no support for MULTITHREAD and POOL_DEBUG at the same time"
 #endif
 #endif
 
@@ -142,7 +127,7 @@
 #define BLOCK_MINALLOC	0
 #endif
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
 static AP_MM *mm = NULL;
 #endif
 
@@ -174,7 +159,7 @@ union block_hdr {
 	char *endp;
 	union block_hdr *next;
 	char *first_avail;
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
 	int is_shm;
 #endif
 #ifdef POOL_DEBUG
@@ -192,13 +177,6 @@ static char *known_stack_point;
 static int stack_direction;
 static union block_hdr *global_block_list;
 #define FREE_POOL	((struct pool *)(-1))
-#endif
-#ifdef ALLOC_STATS
-static unsigned long long num_free_blocks_calls;
-static unsigned long long num_blocks_freed;
-static unsigned max_blocks_in_one_free;
-static unsigned num_malloc_calls;
-static unsigned num_malloc_bytes;
 #endif
 
 #ifdef ALLOC_DEBUG
@@ -227,7 +205,7 @@ static ap_inline void debug_verify_filled(const char *ptr,
 /* Get a completely new block from the system pool. Note that we rely on
    malloc() to provide aligned memory. */
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
 static union block_hdr *malloc_block(int size, int is_shm)
 #else
 static union block_hdr *malloc_block(int size)
@@ -242,12 +220,8 @@ static union block_hdr *malloc_block(int size)
      */
     size += CLICK_SZ;
 #endif
-#ifdef ALLOC_STATS
-    ++num_malloc_calls;
-    num_malloc_bytes += size + sizeof(union block_hdr);
-#endif
     request_size = size + sizeof(union block_hdr);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (is_shm)
         blok = (union block_hdr *)ap_mm_malloc(mm, request_size);
     else
@@ -259,7 +233,7 @@ static union block_hdr *malloc_block(int size)
 	exit(1);
     }
     debug_fill(blok, size + sizeof(union block_hdr));
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     blok->h.is_shm = is_shm;
 #endif
     blok->h.next = NULL;
@@ -309,9 +283,6 @@ static void free_blocks(union block_hdr *blok)
 	free(blok);
     }
 #else
-#ifdef ALLOC_STATS
-    unsigned num_blocks;
-#endif
     /* First, put new blocks at the head of the free list ---
      * we'll eventually bash the 'next' pointer of the last block
      * in the chain to point to the free blocks we already had.
@@ -322,7 +293,7 @@ static void free_blocks(union block_hdr *blok)
     if (blok == NULL)
 	return;			/* Sanity check --- freeing empty pool? */
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (blok->h.is_shm)
         (void)ap_mm_lock(mm, AP_MM_LOCK_RW);
 #endif
@@ -336,13 +307,7 @@ static void free_blocks(union block_hdr *blok)
      * now.
      */
 
-#ifdef ALLOC_STATS
-    num_blocks = 1;
-#endif
     while (blok->h.next != NULL) {
-#ifdef ALLOC_STATS
-	++num_blocks;
-#endif
 	chk_on_blk_list(blok, old_free_list);
 	blok->h.first_avail = (char *) (blok + 1);
 	debug_fill(blok->h.first_avail, blok->h.endp - blok->h.first_avail);
@@ -363,16 +328,8 @@ static void free_blocks(union block_hdr *blok)
 
     blok->h.next = old_free_list;
 
-#ifdef ALLOC_STATS
-    if (num_blocks > max_blocks_in_one_free) {
-	max_blocks_in_one_free = num_blocks;
-    }
-    ++num_free_blocks_calls;
-    num_blocks_freed += num_blocks;
-#endif
-
     (void) ap_release_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (blok->h.is_shm)
         (void)ap_mm_unlock(mm);
 #endif
@@ -384,7 +341,7 @@ static void free_blocks(union block_hdr *blok)
  * if necessary.  Must be called with alarms blocked.
  */
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
 static union block_hdr *new_block(int min_size, int is_shm)
 #else
 static union block_hdr *new_block(int min_size)
@@ -398,7 +355,7 @@ static union block_hdr *new_block(int min_size)
      */
 
     while (blok != NULL) {
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (blok->h.is_shm == is_shm &&
         min_size + BLOCK_MINFREE <= blok->h.endp - blok->h.first_avail) {
 #else
@@ -419,7 +376,7 @@ static union block_hdr *new_block(int min_size)
     /* Nope. */
 
     min_size += BLOCK_MINFREE;
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     blok = malloc_block((min_size > BLOCK_MINALLOC) ? min_size : BLOCK_MINALLOC, is_shm);
 #else
     blok = malloc_block((min_size > BLOCK_MINALLOC) ? min_size : BLOCK_MINALLOC);
@@ -473,7 +430,7 @@ struct pool {
 #ifdef POOL_DEBUG
     struct pool *joined;
 #endif
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     int is_shm;
 #endif
 };
@@ -490,7 +447,7 @@ static pool *permanent_pool;
 #define POOL_HDR_CLICKS (1 + ((sizeof(struct pool) - 1) / CLICK_SZ))
 #define POOL_HDR_BYTES (POOL_HDR_CLICKS * CLICK_SZ)
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
 static struct pool *make_sub_pool_internal(struct pool *p, int is_shm)
 #else
 API_EXPORT(struct pool *) ap_make_sub_pool(struct pool *p)
@@ -501,13 +458,13 @@ API_EXPORT(struct pool *) ap_make_sub_pool(struct pool *p)
 
     ap_block_alarms();
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (is_shm)
         (void)ap_mm_lock(mm, AP_MM_LOCK_RW);
 #endif
     (void) ap_acquire_mutex(alloc_mutex);
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     blok = new_block(POOL_HDR_BYTES, is_shm);
 #else
     blok = new_block(POOL_HDR_BYTES);
@@ -530,12 +487,12 @@ API_EXPORT(struct pool *) ap_make_sub_pool(struct pool *p)
 	p->sub_pools = new_pool;
     }
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     new_pool->is_shm = is_shm;
 #endif
 
     (void) ap_release_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (is_shm)
 	(void)ap_mm_unlock(mm);
 #endif
@@ -544,7 +501,6 @@ API_EXPORT(struct pool *) ap_make_sub_pool(struct pool *p)
     return new_pool;
 }
 
-#if defined(EAPI)
 #if defined(EAPI_MM)
 API_EXPORT(struct pool *) ap_make_sub_pool(struct pool *p)
 {
@@ -559,7 +515,6 @@ API_EXPORT(struct pool *) ap_make_shared_sub_pool(struct pool *p)
 {
     return NULL;
 }
-#endif
 #endif
 
 #ifdef POOL_DEBUG
@@ -576,26 +531,10 @@ static void stack_var_init(char *s)
 }
 #endif
 
-#if defined(EAPI)
 int ap_shared_pool_possible(void)
 {
     return ap_mm_useable();
 }
-#endif
-
-#ifdef ALLOC_STATS
-static void dump_stats(void)
-{
-    fprintf(stderr,
-	"alloc_stats: [%d] #free_blocks %llu #blocks %llu max %u #malloc %u #bytes %u\n",
-	(int)getpid(),
-	num_free_blocks_calls,
-	num_blocks_freed,
-	max_blocks_in_one_free,
-	num_malloc_calls,
-	num_malloc_bytes);
-}
-#endif
 
 API_EXPORT(pool *) ap_init_alloc(void)
 {
@@ -608,14 +547,9 @@ API_EXPORT(pool *) ap_init_alloc(void)
     alloc_mutex = ap_create_mutex(NULL);
     spawn_mutex = ap_create_mutex(NULL);
     permanent_pool = ap_make_sub_pool(NULL);
-#ifdef ALLOC_STATS
-    atexit(dump_stats);
-#endif
-
     return permanent_pool;
 }
 
-#if defined(EAPI)
 void ap_init_alloc_shared(int early)
 {
 #if defined(EAPI_MM)
@@ -645,11 +579,7 @@ void ap_init_alloc_shared(int early)
     }
     else {
         /* process a lot later on startup */
-#ifdef WIN32
-        ap_mm_permission(mm, (_S_IREAD|_S_IWRITE), ap_user_id, -1);
-#else
         ap_mm_permission(mm, (S_IRUSR|S_IWUSR), ap_user_id, -1);
-#endif
     }
 #endif /* EAPI_MM */
     return; 
@@ -665,7 +595,6 @@ void ap_kill_alloc_shared(void)
 #endif /* EAPI_MM */
     return;
 }
-#endif /* EAPI */
 
 void ap_cleanup_alloc(void)
 {
@@ -677,7 +606,7 @@ API_EXPORT(void) ap_clear_pool(struct pool *a)
 {
     ap_block_alarms();
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (a->is_shm)
         (void)ap_mm_lock(mm, AP_MM_LOCK_RW);
 #endif
@@ -685,7 +614,7 @@ API_EXPORT(void) ap_clear_pool(struct pool *a)
     while (a->sub_pools)
 	ap_destroy_pool(a->sub_pools);
     (void) ap_release_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (a->is_shm)
 	    (void)ap_mm_unlock(mm);
 #endif
@@ -722,7 +651,7 @@ API_EXPORT(void) ap_destroy_pool(pool *a)
     ap_block_alarms();
     ap_clear_pool(a);
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (a->is_shm)
 	(void)ap_mm_lock(mm, AP_MM_LOCK_RW);
 #endif
@@ -736,7 +665,7 @@ API_EXPORT(void) ap_destroy_pool(pool *a)
 	    a->sub_next->sub_prev = a->sub_prev;
     }
     (void) ap_release_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (a->is_shm)
 	(void)ap_mm_unlock(mm);
 #endif
@@ -754,7 +683,6 @@ API_EXPORT(long) ap_bytes_in_free_blocks(void)
     return bytes_in_block_list(block_freelist);
 }
 
-#if defined(EAPI)
 API_EXPORT(int) ap_acquire_pool(pool *p, ap_pool_lock_mode mode)
 {
 #if defined(EAPI_MM)
@@ -776,7 +704,6 @@ API_EXPORT(int) ap_release_pool(pool *p)
 	return 1;
 #endif
 }
-#endif /* EAPI */
 
 /*****************************************************************
  * POOL_DEBUG support
@@ -943,13 +870,13 @@ API_EXPORT(void *) ap_palloc(struct pool *a, int reqsize)
 
     ap_block_alarms();
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (a->is_shm)
 	(void)ap_mm_lock(mm, AP_MM_LOCK_RW);
 #endif
     (void) ap_acquire_mutex(alloc_mutex);
 
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     blok = new_block(size, a->is_shm);
 #else
     blok = new_block(size);
@@ -959,12 +886,12 @@ API_EXPORT(void *) ap_palloc(struct pool *a, int reqsize)
 #ifdef POOL_DEBUG
     blok->h.owning_pool = a;
 #endif
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     blok->h.is_shm = a->is_shm;
 #endif
 
     (void) ap_release_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (a->is_shm)
 	(void)ap_mm_unlock(mm);
 #endif
@@ -1037,7 +964,7 @@ API_EXPORT_NONSTD(char *) ap_pstrcat(pool *a,...)
     va_start(adummy, a);
 
     while ((argp = va_arg(adummy, char *)) != NULL) {
-	strcpy(cp, argp);
+	strlcpy(cp, argp, len + 1);
 	cp += strlen(argp);
     }
 
@@ -1084,7 +1011,7 @@ static int psprintf_flush(ap_vformatter_buff *vbuff)
     size = cur_len << 1;
     if (size < AP_PSPRINTF_MIN_SIZE)
         size = AP_PSPRINTF_MIN_SIZE;
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (ps->block->h.is_shm)
         ptr = ap_mm_realloc(ps->base, size);
     else
@@ -1112,18 +1039,18 @@ static int psprintf_flush(ap_vformatter_buff *vbuff)
         size = AP_PSPRINTF_MIN_SIZE;
 
     /* must try another blok */
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (blok->h.is_shm)
 	(void)ap_mm_lock(mm, AP_MM_LOCK_RW);
 #endif
     (void) ap_acquire_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     nblok = new_block(size, blok->h.is_shm);
 #else
     nblok = new_block(size);
 #endif
     (void) ap_release_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (blok->h.is_shm)
 	(void)ap_mm_unlock(mm);
 #endif
@@ -1135,7 +1062,7 @@ static int psprintf_flush(ap_vformatter_buff *vbuff)
     /* did we allocate the current blok? if so free it up */
     if (ps->got_a_new_block) {
 	debug_fill(blok->h.first_avail, blok->h.endp - blok->h.first_avail);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (blok->h.is_shm)
 	(void)ap_mm_lock(mm, AP_MM_LOCK_RW);
 #endif
@@ -1143,7 +1070,7 @@ static int psprintf_flush(ap_vformatter_buff *vbuff)
 	blok->h.next = block_freelist;
 	block_freelist = blok;
 	(void) ap_release_mutex(alloc_mutex);
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (blok->h.is_shm)
 	(void)ap_mm_unlock(mm);
 #endif
@@ -1165,7 +1092,7 @@ API_EXPORT(char *) ap_pvsprintf(pool *p, const char *fmt, va_list ap)
     void *ptr;
 
     ap_block_alarms();
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (p->is_shm)
         ps.base = ap_mm_malloc(mm, 512);
     else
@@ -1182,7 +1109,7 @@ API_EXPORT(char *) ap_pvsprintf(pool *p, const char *fmt, va_list ap)
     *ps.vbuff.curpos++ = '\0';
     ptr = ps.base;
     /* shrink */
-#if defined(EAPI) && defined(EAPI_MM)
+#if defined(EAPI_MM)
     if (p->is_shm)
         ptr = ap_mm_realloc(ptr, (char *)ps.vbuff.curpos - (char *)ptr);
     else
@@ -2000,7 +1927,6 @@ static void cleanup_pool_for_exec(pool *p)
 
 API_EXPORT(void) ap_cleanup_for_exec(void)
 {
-#if !defined(WIN32) && !defined(OS2) && !defined(NETWARE)
     /*
      * Don't need to do anything on NT, NETWARE or OS/2, because I
      * am actually going to spawn the new process - not
@@ -2013,7 +1939,6 @@ API_EXPORT(void) ap_cleanup_for_exec(void)
     ap_block_alarms();
     cleanup_pool_for_exec(permanent_pool);
     ap_unblock_alarms();
-#endif /* ndef WIN32 */
 }
 
 API_EXPORT_NONSTD(void) ap_null_cleanup(void *data)
@@ -2027,47 +1952,8 @@ API_EXPORT_NONSTD(void) ap_null_cleanup(void *data)
  * generic cleanup interface.
  */
 
-#if defined(WIN32)
-/* Provided by service.c, internal to the core library (not exported) */
-BOOL isWindowsNT(void);
-
-int ap_close_handle_on_exec(HANDLE nth)
-{
-    /* Protect the fd so that it will not be inherited by child processes */
-    if (isWindowsNT()) {
-        DWORD hinfo;
-        if (!GetHandleInformation(nth, &hinfo)) {
-	    ap_log_error(APLOG_MARK, APLOG_ERR, NULL, "GetHandleInformation"
-                         "(%08x) failed", nth);
-	    return 0;
-        }
-        if ((hinfo & HANDLE_FLAG_INHERIT)
-                && !SetHandleInformation(nth, HANDLE_FLAG_INHERIT, 0)) {
-	    ap_log_error(APLOG_MARK, APLOG_ERR, NULL, "SetHandleInformation"
-                         "(%08x, HANDLE_FLAG_INHERIT, 0) failed", nth);
-	    return 0;
-        }
-        return 1;
-    }
-    else /* Win9x */ {
-        /* XXX: This API doesn't work... you can't change the handle by just
-         * 'touching' it... you must duplicat to a second handle and close
-         * the original.
-         */
-        return 0;
-    }
-}
-
 int ap_close_fd_on_exec(int fd)
 {
-    return ap_close_handle_on_exec((HANDLE)_get_osfhandle(fd));
-}
-
-#else
-
-int ap_close_fd_on_exec(int fd)
-{
-#if defined(F_SETFD) && defined(FD_CLOEXEC)
     /* Protect the fd so that it will not be inherited by child processes */
     if(fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
 	ap_log_error(APLOG_MARK, APLOG_ERR, NULL,
@@ -2076,12 +1962,7 @@ int ap_close_fd_on_exec(int fd)
     }
 
     return 1;
-#else
-    return 0;
-#endif
 }
-
-#endif /* ndef(WIN32) */
 
 static void fd_cleanup(void *fdv)
 {
@@ -2095,9 +1976,6 @@ static int fd_magic_cleanup(void *fdv)
 
 API_EXPORT(void) ap_note_cleanups_for_fd_ex(pool *p, int fd, int domagic)
 {
-#if defined(NETWARE)
-    domagic = 0; /* skip magic for NetWare, at least for now */
-#endif
     ap_register_cleanup_ex(p, (void *) (long) fd, fd_cleanup, fd_cleanup,
                            domagic ? fd_magic_cleanup : NULL);
 }
@@ -2149,48 +2027,6 @@ API_EXPORT(int) ap_pclosef(pool *a, int fd)
     return res;
 }
 
-#ifdef WIN32
-static void h_cleanup(void *nth)
-{
-    CloseHandle((HANDLE) nth);
-}
-
-static int h_magic_cleanup(void *nth)
-{
-    /* Set handle not-inherited
-     */
-    return ap_close_handle_on_exec((HANDLE) nth);
-}
-
-API_EXPORT(void) ap_note_cleanups_for_h_ex(pool *p, HANDLE nth, int domagic)
-{
-    ap_register_cleanup_ex(p, (void *) nth, h_cleanup, h_cleanup,
-                           domagic ? h_magic_cleanup : NULL);
-}
-
-API_EXPORT(void) ap_note_cleanups_for_h(pool *p, HANDLE nth)
-{
-    ap_note_cleanups_for_h_ex(p, nth, 0);
-}
-
-API_EXPORT(int) ap_pcloseh(pool *a, HANDLE hDevice)
-{
-    int res=0;
-    int save_errno;
-
-    ap_block_alarms();
-    
-    if (!CloseHandle(hDevice)) {
-        res = GetLastError();
-    }
-    
-    save_errno = errno;
-    ap_kill_cleanup(a, (void *) hDevice, h_cleanup);
-    ap_unblock_alarms();
-    errno = save_errno;
-    return res;
-}
-#endif
 
 /* Note that we have separate plain_ and child_ cleanups for FILE *s,
  * since fclose() would flush I/O buffers, which is extremely undesirable;
@@ -2214,9 +2050,6 @@ static int file_magic_cleanup(void *fpv)
 
 API_EXPORT(void) ap_note_cleanups_for_file_ex(pool *p, FILE *fp, int domagic)
 {
-#if defined(NETWARE)
-    domagic = 0; /* skip magic for NetWare, at least for now */
-#endif
     ap_register_cleanup_ex(p, (void *) fp, file_cleanup, file_child_cleanup,
                            domagic ? file_magic_cleanup : NULL);
 }
@@ -2233,11 +2066,7 @@ API_EXPORT(FILE *) ap_pfopen(pool *a, const char *name, const char *mode)
     int modeFlags = 0;
     int saved_errno;
 
-#ifdef WIN32
-    modeFlags = _S_IREAD | _S_IWRITE;
-#else
     modeFlags = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-#endif
 
     ap_block_alarms();
 
@@ -2337,18 +2166,11 @@ static void socket_cleanup(void *fdv)
 
 static int socket_magic_cleanup(void *fpv)
 {
-#ifdef WIN32
-    return ap_close_handle_on_exec((HANDLE) fpv);
-#else
     return ap_close_fd_on_exec((int) (long) fpv);
-#endif
 }
 
 API_EXPORT(void) ap_note_cleanups_for_socket_ex(pool *p, int fd, int domagic)
 {
-#if defined(TPF) || defined(NETWARE)
-    domagic = 0; /* skip magic (fcntl) for TPF sockets, at least for now */
-#endif
     ap_register_cleanup_ex(p, (void *) (long) fd, socket_cleanup,
                            socket_cleanup,
                            domagic ? socket_magic_cleanup : NULL);
@@ -2394,9 +2216,6 @@ API_EXPORT(int) ap_pclosesocket(pool *a, int sock)
 
     ap_block_alarms();
     res = closesocket(sock);
-#if defined(WIN32) || defined(NETWARE)
-    errno = WSAGetLastError();
-#endif /* WIN32 */
     save_errno = errno;
     ap_kill_cleanup(a, (void *) (long) sock, socket_cleanup);
     ap_unblock_alarms();
@@ -2467,18 +2286,10 @@ how) {
     a->subprocesses = new;
 }
 
-#ifdef WIN32
-#define os_pipe(fds) _pipe(fds, 512, O_BINARY | O_NOINHERIT)
-#else
 #define os_pipe(fds) pipe(fds)
-#endif /* WIN32 */
 
 /* for ap_fdopen, to get binary mode */
-#if defined (OS2) || defined (WIN32) || defined (NETWARE)
-#define BINMODE	"b"
-#else
 #define BINMODE
-#endif
 
 static pid_t spawn_child_core(pool *p, int (*func) (void *, child_info *),
 			    void *data,enum kill_conditions kill_how,
@@ -2517,147 +2328,6 @@ static pid_t spawn_child_core(pool *p, int (*func) (void *, child_info *),
 	errno = save_errno;
 	return 0;
     }
-
-#ifdef WIN32
-
-    {
-	HANDLE thread_handle;
-	int hStdIn, hStdOut, hStdErr;
-	int old_priority;
-	child_info info;
-
-	(void) ap_acquire_mutex(spawn_mutex);
-	thread_handle = GetCurrentThread();	/* doesn't need to be closed */
-	old_priority = GetThreadPriority(thread_handle);
-	SetThreadPriority(thread_handle, THREAD_PRIORITY_HIGHEST);
-	/* Now do the right thing with your pipes */
-	if (pipe_in) {
-	    hStdIn = dup(fileno(stdin));
-	    if(dup2(in_fds[0], fileno(stdin)))
-		ap_log_error(APLOG_MARK, APLOG_ERR, NULL, "dup2(stdin) failed");
-	    close(in_fds[0]);
-	}
-	if (pipe_out) {
-	    hStdOut = dup(fileno(stdout));
-	    close(fileno(stdout));
-	    if(dup2(out_fds[1], fileno(stdout)))
-		ap_log_error(APLOG_MARK, APLOG_ERR, NULL, "dup2(stdout) failed");
-	    close(out_fds[1]);
-	}
-	if (pipe_err) {
-	    hStdErr = dup(fileno(stderr));
-	    if(dup2(err_fds[1], fileno(stderr)))
-		ap_log_error(APLOG_MARK, APLOG_ERR, NULL, "dup2(stderr) failed");
-	    close(err_fds[1]);
-	}
-
-	info.hPipeInputRead   = GetStdHandle(STD_INPUT_HANDLE);
-	info.hPipeOutputWrite = GetStdHandle(STD_OUTPUT_HANDLE);
-	info.hPipeErrorWrite  = GetStdHandle(STD_ERROR_HANDLE);
-
-	pid = (*func) (data, &info);
-        if (pid == -1) pid = 0;   /* map Win32 error code onto Unix default */
-
-        if (!pid) {
-	    save_errno = errno;
-	    close(in_fds[1]);
-	    close(out_fds[0]);
-	    close(err_fds[0]);
-	}
-
-	/* restore the original stdin, stdout and stderr */
-	if (pipe_in) {
-	    dup2(hStdIn, fileno(stdin));
-	    close(hStdIn);
-        }
-	if (pipe_out) {
-	    dup2(hStdOut, fileno(stdout));
-	    close(hStdOut);
-	}
-	if (pipe_err) {
-	    dup2(hStdErr, fileno(stderr));
-	    close(hStdErr);
-	}
-
-        if (pid) {
-	    ap_note_subprocess(p, pid, kill_how);
-	    if (pipe_in) {
-		*pipe_in = in_fds[1];
-	    }
-	    if (pipe_out) {
-		*pipe_out = out_fds[0];
-	    }
-	    if (pipe_err) {
-		*pipe_err = err_fds[0];
-	    }
-	}
-	SetThreadPriority(thread_handle, old_priority);
-	(void) ap_release_mutex(spawn_mutex);
-	/*
-	 * go on to the end of the function, where you can
-	 * unblock alarms and return the pid
-	 */
-
-    }
-#elif defined(NETWARE)
-     /* NetWare currently has no pipes yet. This will
-        be solved with the new libc for NetWare soon. */
-     pid = 0;
-#elif defined(OS2)
-    {
-        int save_in=-1, save_out=-1, save_err=-1;
-        
-        if (pipe_out) {
-            save_out = dup(STDOUT_FILENO);
-            dup2(out_fds[1], STDOUT_FILENO);
-            close(out_fds[1]);
-            DosSetFHState(out_fds[0], OPEN_FLAGS_NOINHERIT);
-        }
-
-        if (pipe_in) {
-            save_in = dup(STDIN_FILENO);
-            dup2(in_fds[0], STDIN_FILENO);
-            close(in_fds[0]);
-            DosSetFHState(in_fds[1], OPEN_FLAGS_NOINHERIT);
-        }
-
-        if (pipe_err) {
-            save_err = dup(STDERR_FILENO);
-            dup2(err_fds[1], STDERR_FILENO);
-            close(err_fds[1]);
-            DosSetFHState(err_fds[0], OPEN_FLAGS_NOINHERIT);
-        }
-        
-        pid = func(data, NULL);
-    
-        if ( pid )
-            ap_note_subprocess(p, pid, kill_how);
-
-        if (pipe_out) {
-            close(STDOUT_FILENO);
-            dup2(save_out, STDOUT_FILENO);
-            close(save_out);
-            *pipe_out = out_fds[0];
-        }
-
-        if (pipe_in) {
-            close(STDIN_FILENO);
-            dup2(save_in, STDIN_FILENO);
-            close(save_in);
-            *pipe_in = in_fds[1];
-        }
-
-        if (pipe_err) {
-            close(STDERR_FILENO);
-            dup2(save_err, STDERR_FILENO);
-            close(save_err);
-            *pipe_err = err_fds[0];
-        }
-    }
-#elif defined(TPF)
-   return (pid = ap_tpf_spawn_child(p, func, data, kill_how,	
-                 pipe_in, pipe_out, pipe_err, out_fds, in_fds, err_fds));		
-#else
 
     if ((pid = fork()) < 0) {
 	save_errno = errno;
@@ -2724,7 +2394,6 @@ static pid_t spawn_child_core(pool *p, int (*func) (void *, child_info *),
 	close(err_fds[1]);
 	*pipe_err = err_fds[0];
     }
-#endif /* WIN32 */
 
     return pid;
 }
@@ -2785,189 +2454,6 @@ API_EXPORT(int) ap_bspawn_child(pool *p, int (*func) (void *, child_info *), voi
 				enum kill_conditions kill_how,
 				BUFF **pipe_in, BUFF **pipe_out, BUFF **pipe_err)
 {
-#ifdef WIN32
-    SECURITY_ATTRIBUTES sa = {0};  
-    HANDLE hPipeOutputRead  = NULL;
-    HANDLE hPipeOutputWrite = NULL;
-    HANDLE hPipeInputRead   = NULL;
-    HANDLE hPipeInputWrite  = NULL;
-    HANDLE hPipeErrorRead   = NULL;
-    HANDLE hPipeErrorWrite  = NULL;
-    HANDLE hPipeInputWriteDup = NULL;
-    HANDLE hPipeOutputReadDup = NULL;
-    HANDLE hPipeErrorReadDup  = NULL;
-    HANDLE hCurrentProcess;
-    pid_t pid = 0;
-    child_info info;
-
-
-    ap_block_alarms();
-
-    /*
-     *  First thing to do is to create the pipes that we will use for stdin, stdout, and
-     *  stderr in the child process.
-     */      
-    sa.nLength = sizeof(sa);
-    sa.bInheritHandle = TRUE;
-    sa.lpSecurityDescriptor = NULL;
-
-
-    /* Create pipes for standard input/output/error redirection. */
-    if (pipe_in && !CreatePipe(&hPipeInputRead, &hPipeInputWrite, &sa, 0))
-	return 0;
-
-    if (pipe_out && !CreatePipe(&hPipeOutputRead, &hPipeOutputWrite, &sa, 0)) {
-	if(pipe_in) {
-	    CloseHandle(hPipeInputRead);
-	    CloseHandle(hPipeInputWrite);
-	}
-	return 0;
-    }
-
-    if (pipe_err && !CreatePipe(&hPipeErrorRead, &hPipeErrorWrite, &sa, 0)) {
-	if(pipe_in) {
-	    CloseHandle(hPipeInputRead);
-	    CloseHandle(hPipeInputWrite);
-	}
-	if(pipe_out) {
-	    CloseHandle(hPipeOutputRead);
-	    CloseHandle(hPipeOutputWrite);
-	}
-	return 0;
-    }
-    /*
-     * When the pipe handles are created, the security descriptor
-     * indicates that the handle can be inherited.  However, we do not
-     * want the server side handles to the pipe to be inherited by the
-     * child CGI process. If the child CGI does inherit the server
-     * side handles, then the child may be left around if the server
-     * closes its handles (e.g. if the http connection is aborted),
-     * because the child will have a valid copy of handles to both
-     * sides of the pipes, and no I/O error will occur.  Microsoft
-     * recommends using DuplicateHandle to turn off the inherit bit
-     * under NT and Win95.
-     */
-    hCurrentProcess = GetCurrentProcess();
-    if ((pipe_in && !DuplicateHandle(hCurrentProcess, hPipeInputWrite,
-				     hCurrentProcess,
-				     &hPipeInputWriteDup, 0, FALSE,
-				     DUPLICATE_SAME_ACCESS))
-	|| (pipe_out && !DuplicateHandle(hCurrentProcess, hPipeOutputRead,
-					 hCurrentProcess, &hPipeOutputReadDup,
-					 0, FALSE, DUPLICATE_SAME_ACCESS))
-	|| (pipe_err && !DuplicateHandle(hCurrentProcess, hPipeErrorRead,
-					 hCurrentProcess, &hPipeErrorReadDup,
-					 0, FALSE, DUPLICATE_SAME_ACCESS))) {
-	if (pipe_in) {
-	    CloseHandle(hPipeInputRead);
-	    CloseHandle(hPipeInputWrite);
-	}
-	if (pipe_out) {
-	    CloseHandle(hPipeOutputRead);
-	    CloseHandle(hPipeOutputWrite);
-	}
-	if (pipe_err) {
-	    CloseHandle(hPipeErrorRead);
-	    CloseHandle(hPipeErrorWrite);
-	}
-	return 0;
-    }
-    else {
-	if (pipe_in) {
-	    CloseHandle(hPipeInputWrite);
-	    hPipeInputWrite = hPipeInputWriteDup;
-	}
-	if (pipe_out) {
-	    CloseHandle(hPipeOutputRead);
-	    hPipeOutputRead = hPipeOutputReadDup;
-	}
-	if (pipe_err) {
-	    CloseHandle(hPipeErrorRead);
-	    hPipeErrorRead = hPipeErrorReadDup;
-	}
-    }
-
-    /* The script writes stdout to this pipe handle */
-    info.hPipeOutputWrite = hPipeOutputWrite;  
-
-    /* The script reads stdin from this pipe handle */
-    info.hPipeInputRead = hPipeInputRead;
-
-    /* The script writes stderr to this pipe handle */
-    info.hPipeErrorWrite = hPipeErrorWrite;    
-     
-    /*
-     *  Try to launch the CGI.  Under the covers, this call 
-     *  will try to pick up the appropriate interpreter if 
-     *  one is needed.
-     */
-    pid = func(data, &info);
-    if (pid == -1) {
-        /* Things didn't work, so cleanup */
-        pid = 0;   /* map Win32 error code onto Unix default */
-        CloseHandle(hPipeOutputRead);
-        CloseHandle(hPipeInputWrite);
-        CloseHandle(hPipeErrorRead);
-    }
-    else {
-        if (pipe_out) {
-            /*
-             *  This pipe represents stdout for the script, 
-             *  so we read from this pipe.
-             */
-	    /* Create a read buffer */
-            *pipe_out = ap_bcreate(p, B_RD);
-
-	    /* Setup the cleanup routine for the handle */
-            ap_note_cleanups_for_h_ex(p, hPipeOutputRead, 1);   
-
-	    /* Associate the handle with the new buffer */
-            ap_bpushh(*pipe_out, hPipeOutputRead);
-        }
-        
-        if (pipe_in) {
-            /*
-             *  This pipe represents stdin for the script, so we 
-             *  write to this pipe.
-             */
-	    /* Create a write buffer */
-            *pipe_in = ap_bcreate(p, B_WR);             
-
-	    /* Setup the cleanup routine for the handle */
-            ap_note_cleanups_for_h_ex(p, hPipeInputWrite, 1);
-
-	    /* Associate the handle with the new buffer */
-            ap_bpushh(*pipe_in, hPipeInputWrite);
-
-        }
-      
-        if (pipe_err) {
-            /*
-             *  This pipe represents stderr for the script, so 
-             *  we read from this pipe.
-             */
-	    /* Create a read buffer */
-            *pipe_err = ap_bcreate(p, B_RD);
-
-	    /* Setup the cleanup routine for the handle */
-            ap_note_cleanups_for_h_ex(p, hPipeErrorRead, 1);
-
-	    /* Associate the handle with the new buffer */
-            ap_bpushh(*pipe_err, hPipeErrorRead);
-        }
-    }  
-
-
-    /*
-     * Now that handles have been inherited, close them to be safe.
-     * You don't want to read or write to them accidentally, and we
-     * sure don't want to have a handle leak.
-     */
-    CloseHandle(hPipeOutputWrite);
-    CloseHandle(hPipeInputRead);
-    CloseHandle(hPipeErrorWrite);
-
-#else
     int fd_in, fd_out, fd_err;
     pid_t pid;
     int save_errno;
@@ -3003,7 +2489,6 @@ API_EXPORT(int) ap_bspawn_child(pool *p, int (*func) (void *, child_info *), voi
 	ap_note_cleanups_for_fd_ex(p, fd_err, 0);
 	ap_bpushfd(*pipe_err, fd_err, fd_err);
     }
-#endif
 
     ap_unblock_alarms();
     return pid;
@@ -3029,10 +2514,8 @@ static void free_proc_chain(struct process_chain *procs)
     struct process_chain *p;
     int need_timeout = 0;
     int status;
-#if !defined(WIN32) && !defined(NETWARE)
     int timeout_interval;
     struct timeval tv;
-#endif
 
     if (procs == NULL)
 	return;			/* No work.  Whew! */
@@ -3043,51 +2526,12 @@ static void free_proc_chain(struct process_chain *procs)
      * don't waste any more cycles doing whatever it is that they shouldn't
      * be doing anymore.
      */
-#ifdef WIN32
-    /* Pick up all defunct processes */
-    for (p = procs; p; p = p->next) {
-	if (GetExitCodeProcess((HANDLE) p->pid, &status)) {
-	    p->kill_how = kill_never;
-	}
-    }
-
-
-    for (p = procs; p; p = p->next) {
-	if (p->kill_how == kill_after_timeout) {
-	    need_timeout = 1;
-	}
-	else if (p->kill_how == kill_always) {
-	    TerminateProcess((HANDLE) p->pid, 1);
-	}
-    }
-    /* Sleep only if we have to... */
-
-    if (need_timeout)
-	sleep(3);
-
-    /* OK, the scripts we just timed out for have had a chance to clean up
-     * --- now, just get rid of them, and also clean up the system accounting
-     * goop...
-     */
-
-    for (p = procs; p; p = p->next) {
-	if (p->kill_how == kill_after_timeout)
-	    TerminateProcess((HANDLE) p->pid, 1);
-    }
-
-    for (p = procs; p; p = p->next) {
-	CloseHandle((HANDLE) p->pid);
-    }
-#elif defined(NETWARE)
-#else
-#ifndef NEED_WAITPID
     /* Pick up all defunct processes */
     for (p = procs; p; p = p->next) {
 	if (waitpid(p->pid, (int *) 0, WNOHANG) > 0) {
 	    p->kill_how = kill_never;
 	}
     }
-#endif
 
     for (p = procs; p; p = p->next) {
 	if ((p->kill_how == kill_after_timeout)
@@ -3150,5 +2594,4 @@ static void free_proc_chain(struct process_chain *procs)
 	if (p->kill_how != kill_never)
 	    waitpid(p->pid, &status, 0);
     }
-#endif /* !WIN32 && !NETWARE*/
 }

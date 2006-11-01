@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: siotty.c,v 1.3 2006/01/10 18:56:11 miod Exp $ */
 /* $NetBSD: siotty.c,v 1.9 2002/03/17 19:40:43 atatat Exp $ */
 
 /*-
@@ -65,7 +65,7 @@ static const u_int8_t ch0_regs[6] = {
 	WR5_TX8BIT | WR5_TXENBL | WR5_DTR | WR5_RTS, /* Tx */
 };
 
-static struct speedtab siospeedtab[] = {
+static const struct speedtab siospeedtab[] = {
 	{ 2400,	WR4_BAUD24, },
 	{ 4800,	WR4_BAUD48, },
 	{ 9600,	WR4_BAUD96, },
@@ -93,7 +93,7 @@ const struct cfattach siotty_ca = {
 	sizeof(struct siotty_softc), siotty_match, siotty_attach
 };
 
-const struct cfdriver siotty_cd = {
+struct cfdriver siotty_cd = {
         NULL, "siotty", DV_TTY
 };
 
@@ -537,6 +537,9 @@ sioioctl(dev, cmd, data, flag, p)
 		siomctl(sc, *(int *)data, DMBIC);
 		break;
 	case TIOCSFLAGS: /* Instruct how serial port behaves */
+		error = suser(p, 0);
+		if (error != 0)
+			return EPERM;
 		sc->sc_flags = *(int *)data;
 		break;
 	case TIOCGFLAGS: /* Return current serial port state */

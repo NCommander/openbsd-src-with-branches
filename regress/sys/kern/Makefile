@@ -1,8 +1,14 @@
-#	$NetBSD: Makefile,v 1.2 1995/04/20 22:42:51 cgd Exp $
+#	$OpenBSD: Makefile,v 1.50 2005/05/31 09:28:07 art Exp $
 
-SUBDIR+= execve
-
-regress: _SUBDIRUSE
+SUBDIR+= __syscall accept dup2 dup2_self exec_self execve exit extent
+SUBDIR+= fcntl_dup getrusage gettimeofday itimer kqueue mbuf minherit
+SUBDIR+= mmap mmap2 mmap3 mmap-fail
+#SUBDIR+= mquery
+SUBDIR+= nanosleep noexec pread preadv ptmget pwrite pwritev rcvtimeo
+#SUBDIR+= rfork
+SUBDIR+= rlimit-file signal signal-stress sigsuspend
+SUBDIR+= syscall sysvmsg sysvsem
+SUBDIR+= sysvshm unalign unfdpass wait
 
 install:
 

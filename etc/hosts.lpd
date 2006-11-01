@@ -1,1 +1,2 @@
-machine.domain
+#	$OpenBSD$
+# as described in lpd(8), place one legal access hostname per line

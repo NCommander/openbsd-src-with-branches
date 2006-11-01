@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* atof_tahoe.c - turn a string into a Tahoe floating point number
    Copyright (C) 1987 Free Software Foundation, Inc.
    */

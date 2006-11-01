@@ -1,4 +1,4 @@
-/*	$NetBSD: worms.c,v 1.8 1995/04/22 08:09:22 cgd Exp $	*/
+/*	$OpenBSD: worms.c,v 1.16 2004/01/08 20:38:29 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,21 +39,21 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)worms.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: worms.c,v 1.8 1995/04/22 08:09:22 cgd Exp $";
+static char rcsid[] = "$OpenBSD: worms.c,v 1.16 2004/01/08 20:38:29 millert Exp $";
 #endif
 #endif /* not lint */
 
 /*
  *
- *	 @@@        @@@    @@@@@@@@@@     @@@@@@@@@@@    @@@@@@@@@@@@
- *	 @@@        @@@   @@@@@@@@@@@@    @@@@@@@@@@@@   @@@@@@@@@@@@@
- *	 @@@        @@@  @@@@      @@@@   @@@@           @@@@ @@@  @@@@
- *	 @@@   @@   @@@  @@@        @@@   @@@            @@@  @@@   @@@
- *	 @@@  @@@@  @@@  @@@        @@@   @@@            @@@  @@@   @@@
- *	 @@@@ @@@@ @@@@  @@@        @@@   @@@            @@@  @@@   @@@
- *	  @@@@@@@@@@@@   @@@@      @@@@   @@@            @@@  @@@   @@@
- *	   @@@@  @@@@     @@@@@@@@@@@@    @@@            @@@  @@@   @@@
- *	    @@    @@       @@@@@@@@@@     @@@            @@@  @@@   @@@
+ *	 @@@	    @@@	   @@@@@@@@@@	  @@@@@@@@@@@	 @@@@@@@@@@@@
+ *	 @@@	    @@@	  @@@@@@@@@@@@	  @@@@@@@@@@@@	 @@@@@@@@@@@@@
+ *	 @@@	    @@@	 @@@@	   @@@@	  @@@@		 @@@@ @@@  @@@@
+ *	 @@@   @@   @@@	 @@@	    @@@	  @@@		 @@@  @@@   @@@
+ *	 @@@  @@@@  @@@	 @@@	    @@@	  @@@		 @@@  @@@   @@@
+ *	 @@@@ @@@@ @@@@	 @@@	    @@@	  @@@		 @@@  @@@   @@@
+ *	  @@@@@@@@@@@@	 @@@@	   @@@@	  @@@		 @@@  @@@   @@@
+ *	   @@@@	 @@@@	  @@@@@@@@@@@@	  @@@		 @@@  @@@   @@@
+ *	    @@	  @@	   @@@@@@@@@@	  @@@		 @@@  @@@   @@@
  *
  *				 Eric P. Scott
  *			  Caltech High Energy Physics
@@ -65,15 +61,16 @@ static char rcsid[] = "$NetBSD: worms.c,v 1.8 1995/04/22 08:09:22 cgd Exp $";
  *
  */
 #include <sys/types.h>
-#include <sys/ioctl.h>
 
+#include <curses.h>
+#include <err.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
-static struct options {
+static const struct options {
 	int nopts;
 	int opts[3];
 }
@@ -167,13 +164,10 @@ static struct options {
 	{ 0, { 0, 0, 0 } }
 };
 
-#define	cursor(c, r)	tputs(tgoto(CM, c, r), 1, fputchar)
-
-char *tcp;
-static char	flavor[] = {
+static const char	flavor[] = {
 	'O', '*', '#', '$', '%', '0', '@', '~'
 };
-static short	xinc[] = {
+static const short	xinc[] = {
 	1,  1,  1,  0, -1, -1, -1,  0
 }, yinc[] = {
 	-1,  0,  1,  1,  1,  0, -1, -1
@@ -183,134 +177,97 @@ static struct	worm {
 	short *xpos, *ypos;
 } *worm;
 
-void	 fputchar __P((int));
-void	 onsig __P((int));
-char	*tgetstr __P((char *, char **));
-char	*tgoto __P((char *, int, int));
-int	 tputs __P((char *, int, void (*)(int)));
+volatile sig_atomic_t sig_caught = 0;
+
+void	 nomem(void);
+void	 onsig(int);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern int optind;
-	extern char *optarg, *UP;
-	register int x, y, h, n;
-	register struct worm *w;
-	register struct options *op;
-	register short *ip;
-	register char *term;
-	int CO, IN, LI, last, bottom, ch, length, number, trail, Wrap;
+	int x, y, h, n;
+	struct worm *w;
+	const struct options *op;
+	short *ip;
+	int CO, LI, last, bottom, ch, length, number, trail;
 	short **ref;
-	char *AL, *BC, *CM, *EI, *HO, *IC, *IM, *IP, *SR;
-	char *field, tcb[100], *mp;
-	long random();
-	struct termios ti;
-#ifdef TIOCGWINSZ
-	struct winsize ws;
-#endif
+	const char *field;
+	struct termios term;
+	speed_t speed;
+	u_int delay = 0;
+
+	/* set default delay based on terminal baud rate */
+	if (tcgetattr(STDOUT_FILENO, &term) == 0 &&
+	    (speed = cfgetospeed(&term)) > B9600)
+		delay = (speed / B9600) - 1;
 
 	length = 16;
 	number = 3;
 	trail = ' ';
 	field = NULL;
-	while ((ch = getopt(argc, argv, "fl:n:t")) != EOF)
+	while ((ch = getopt(argc, argv, "d:fhl:n:t")) != -1)
 		switch(ch) {
+		case 'd':
+			if ((delay = (u_int)strtoul(optarg, (char **)NULL, 10)) < 1
+			    || delay > 1000)
+				errx(1, "invalid delay (1-1000)");
+			delay *= 1000;  /* ms -> us */
+			break;
 		case 'f':
 			field = "WORM";
 			break;
 		case 'l':
-			if ((length = atoi(optarg)) < 2 || length > 1024) {
-				(void)fprintf(stderr,
-				    "worms: invalid length (%d - %d).\n",
-				     2, 1024);
-				exit(1);
-			}
+			if ((length = atoi(optarg)) < 2 || length > 1024)
+				errx(1, "invalid length (%d - %d).", 2, 1024);
 			break;
 		case 'n':
-			if ((number = atoi(optarg)) < 1) {
-				(void)fprintf(stderr,
-				    "worms: invalid number of worms.\n");
-				exit(1);
-			}
+			if ((number = atoi(optarg)) < 1 || number > 100)
+				errx(1, "invalid number of worms (%d - %d).",
+				    1, 100);
 			break;
 		case 't':
 			trail = '.';
 			break;
-		case '?':
+		case '?': case 'h':
 		default:
 			(void)fprintf(stderr,
-			    "usage: worms [-ft] [-l length] [-n number]\n");
+			    "usage: worms [-ft] [-d delay] [-l length] [-n number]\n");
 			exit(1);
 		}
 
-	if (!(term = getenv("TERM"))) {
-		(void)fprintf(stderr, "worms: no TERM environment variable.\n");
-		exit(1);
-	}
-	if (!(worm = malloc((size_t)number *
-	    sizeof(struct worm))) || !(mp = malloc((size_t)1024)))
+	srandomdev();
+	if (!(worm = malloc((size_t)number * sizeof(struct worm))))
 		nomem();
-	if (tgetent(mp, term) <= 0) {
-		(void)fprintf(stderr, "worms: %s: unknown terminal type.\n",
-		    term);
-		exit(1);
-	}
-	tcp = tcb;
-	if (!(CM = tgetstr("cm", &tcp))) {
-		(void)fprintf(stderr,
-		    "worms: terminal incapable of cursor motion.\n");
-		exit(1);
-	}
-	AL = tgetstr("al", &tcp);
-	BC = tgetflag("bs") ? "\b" : tgetstr("bc", &tcp);
-	EI = tgetstr("ei", &tcp);
-	HO = tgetstr("ho", &tcp);
-	IC = tgetstr("ic", &tcp);
-	IM = tgetstr("im", &tcp);
-	IN = tgetflag("in");
-	IP = tgetstr("ip", &tcp);
-	SR = tgetstr("sr", &tcp);
-	UP = tgetstr("up", &tcp);
-#ifdef TIOCGWINSZ
-	if (ioctl(fileno(stdout), TIOCGWINSZ, &ws) != -1 &&
-	    ws.ws_col && ws.ws_row) {
-		CO = ws.ws_col;
-		LI = ws.ws_row;
-	} else
-#endif
-	{
-		if ((CO = tgetnum("co")) <= 0)
-			CO = 80;
-		if ((LI = tgetnum("li")) <= 0)
-			LI = 24;
-	}
+	initscr();
+	curs_set(0);
+	CO = COLS;
+	LI = LINES;
 	last = CO - 1;
 	bottom = LI - 1;
-	tcgetattr(fileno(stdout), &ti);
-	Wrap = tgetflag("am");
-	if (!(ip = malloc((size_t)(LI * CO * sizeof(short)))))
+	if (!(ip = malloc((size_t)(LI * CO * sizeof(short)))) ||
+	    !(ref = malloc((size_t)(LI * sizeof(short *))))) {
+		endwin();
 		nomem();
-	if (!(ref = malloc((size_t)(LI * sizeof(short *)))))
-		nomem();
+	}
 	for (n = 0; n < LI; ++n) {
 		ref[n] = ip;
 		ip += CO;
 	}
 	for (ip = ref[0], n = LI * CO; --n >= 0;)
 		*ip++ = 0;
-	if (Wrap)
-		ref[bottom][last] = 1;
 	for (n = number, w = &worm[0]; --n >= 0; w++) {
 		w->orientation = w->head = 0;
-		if (!(ip = malloc((size_t)(length * sizeof(short)))))
+		if (!(ip = malloc((size_t)(length * sizeof(short))))) {
+			endwin();
 			nomem();
+		}
 		w->xpos = ip;
 		for (x = length; --x >= 0;)
 			*ip++ = -1;
-		if (!(ip = malloc((size_t)(length * sizeof(short)))))
+		if (!(ip = malloc((size_t)(length * sizeof(short))))) {
+			endwin();
 			nomem();
+		}
 		w->ypos = ip;
 		for (y = length; --y >= 0;)
 			*ip++ = -1;
@@ -323,78 +280,30 @@ main(argc, argv)
 	(void)signal(SIGTSTP, onsig);
 	(void)signal(SIGTERM, onsig);
 
-	tputs(tgetstr("ti", &tcp), 1, fputchar);
-	tputs(tgetstr("cl", &tcp), 1, fputchar);
 	if (field) {
-		register char *p = field;
+		const char *p = field;
 
-		for (y = bottom; --y >= 0;) {
+		for (y = LI; --y >= 0;) {
 			for (x = CO; --x >= 0;) {
-				fputchar(*p++);
+				addch(*p++);
 				if (!*p)
 					p = field;
 			}
-			if (!Wrap)
-				fputchar('\n');
-			(void)fflush(stdout);
-		}
-		if (Wrap) {
-			if (IM && !IN) {
-				for (x = last; --x > 0;) {
-					fputchar(*p++);
-					if (!*p)
-						p = field;
-				}
-				y = *p++;
-				if (!*p)
-					p = field;
-				fputchar(*p);
-				if (BC)
-					tputs(BC, 1, fputchar);
-				else
-					cursor(last - 1, bottom);
-				tputs(IM, 1, fputchar);
-				if (IC)
-					tputs(IC, 1, fputchar);
-				fputchar(y);
-				if (IP)
-					tputs(IP, 1, fputchar);
-				tputs(EI, 1, fputchar);
-			}
-			else if (SR || AL) {
-				if (HO)
-					tputs(HO, 1, fputchar);
-				else
-					cursor(0, 0);
-				if (SR)
-					tputs(SR, 1, fputchar);
-				else
-					tputs(AL, LI, fputchar);
-				for (x = CO; --x >= 0;) {
-					fputchar(*p++);
-					if (!*p)
-						p = field;
-				}
-			}
-			else for (x = last; --x >= 0;) {
-				fputchar(*p++);
-				if (!*p)
-					p = field;
-			}
-		}
-		else for (x = CO; --x >= 0;) {
-			fputchar(*p++);
-			if (!*p)
-				p = field;
+			refresh();
 		}
 	}
 	for (;;) {
-		(void)fflush(stdout);
+		refresh();
+		if (sig_caught) {
+			endwin();
+			exit(0);
+		}
+		if (delay) usleep(delay);
 		for (n = 0, w = &worm[0]; n < number; n++, w++) {
 			if ((x = w->xpos[h = w->head]) < 0) {
-				cursor(x = w->xpos[h] = 0,
-				     y = w->ypos[h] = bottom);
-				fputchar(flavor[n % sizeof(flavor)]);
+				mvaddch(y = w->ypos[h] = bottom,
+				    x = w->xpos[h] = 0,
+				    flavor[n % sizeof(flavor)]);
 				ref[y][x]++;
 			}
 			else
@@ -402,22 +311,18 @@ main(argc, argv)
 			if (++h == length)
 				h = 0;
 			if (w->xpos[w->head = h] >= 0) {
-				register int x1, y1;
+				int x1, y1;
 
 				x1 = w->xpos[h];
 				y1 = w->ypos[h];
-				if (--ref[y1][x1] == 0) {
-					cursor(x1, y1);
-					if (trail)
-						fputchar(trail);
-				}
+				if (--ref[y1][x1] == 0)
+					mvaddch(y1, x1, trail);
 			}
 			op = &(!x ? (!y ? upleft : (y == bottom ? lowleft : left)) : (x == last ? (!y ? upright : (y == bottom ? lowright : right)) : (!y ? upper : (y == bottom ? lower : normal))))[w->orientation];
 			switch (op->nopts) {
 			case 0:
-				(void)fflush(stdout);
-				abort();
-				return;
+				endwin();
+				return(1);
 			case 1:
 				w->orientation = op->opts[0];
 				break;
@@ -425,33 +330,22 @@ main(argc, argv)
 				w->orientation =
 				    op->opts[(int)random() % op->nopts];
 			}
-			cursor(x += xinc[w->orientation],
-			    y += yinc[w->orientation]);
-			if (!Wrap || x != last || y != bottom)
-				fputchar(flavor[n % sizeof(flavor)]);
+			mvaddch(y += yinc[w->orientation],
+			    x += xinc[w->orientation],
+			    flavor[n % sizeof(flavor)]);
 			ref[w->ypos[h] = y][w->xpos[h] = x]++;
 		}
 	}
 }
 
 void
-onsig(signo)
-	int signo;
+onsig(int signo)
 {
-	tputs(tgetstr("cl", &tcp), 1, fputchar);
-	tputs(tgetstr("te", &tcp), 1, fputchar);
-	exit(0);
+	sig_caught = 1;
 }
 
 void
-fputchar(c)
-	int c;
+nomem(void)
 {
-	(void)putchar(c);
-}
-
-nomem()
-{
-	(void)fprintf(stderr, "worms: not enough memory.\n");
-	exit(1);
+	errx(1, "not enough memory.");
 }

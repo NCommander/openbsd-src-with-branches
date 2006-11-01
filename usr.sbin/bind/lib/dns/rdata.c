@@ -907,8 +907,7 @@ dns_rdatatype_fromtext(dns_rdatatype_t *typep, isc_textregion_t *source) {
 		char *endp;
 		unsigned int val;
 
-		strncpy(buf, source->base + 4, source->length - 4);
-		buf[source->length - 4] = '\0';
+		strlcpy(buf, source->base + 4, sizeof(buf));
 		val = strtoul(buf, &endp, 10);
 		if (*endp == '\0' && val <= 0xffff) {
 			*typep = (dns_rdatatype_t)val;

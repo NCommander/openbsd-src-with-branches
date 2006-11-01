@@ -151,6 +151,8 @@ output_function_prologue (stream, size)
   int fsize = (size + 3) & -4;
   int cfa_offset = INCOMING_FRAME_SP_OFFSET, cfa_store_offset = cfa_offset;
   
+  if (warn_stack_larger_than && fsize > stack_larger_than_size)
+    warning ("stack usage is %d bytes", fsize);
 
   if (frame_pointer_needed)
     {
@@ -356,7 +358,7 @@ output_function_prologue (stream, size)
       mask &= ~ (1 << (15 - FRAME_POINTER_REGNUM));
       num_saved_regs--;
     }
-  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+  if (flag_pic && current_function_uses_pic_offset_table)
     {
       mask |= 1 << (15 - PIC_OFFSET_TABLE_REGNUM);
       num_saved_regs++;
@@ -568,7 +570,7 @@ output_function_epilogue (stream, size)
         nregs++;
 	mask |= 1 << regno;
       }
-  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+  if (flag_pic && current_function_uses_pic_offset_table)
     {
       nregs++;
       mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
@@ -1334,8 +1336,6 @@ legitimize_pic_address (orig, mode, reg)
 			     gen_rtx_PLUS (Pmode,
 					   pic_offset_table_rtx, orig));
       current_function_uses_pic_offset_table = 1;
-      if (reload_in_progress)
-	regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
       RTX_UNCHANGING_P (pic_ref) = 1;
       emit_move_insn (reg, pic_ref);
       return reg;

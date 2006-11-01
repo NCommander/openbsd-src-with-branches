@@ -1,3 +1,4 @@
+.\"	$OpenBSD: touch.1,v 1.9 2003/06/10 09:12:12 jmc Exp $
 .\"	$NetBSD: touch.1,v 1.8 1995/08/31 22:10:05 jtc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -44,18 +41,18 @@
 .Nd change file access and modification times
 .Sh SYNOPSIS
 .Nm touch
-.Op Fl acfm
+.Op Fl acm
 .Op Fl r Ar file
 .Op Fl t Ar [[CC]YY]MMDDhhmm[.SS]
-.Ar file ...
+.Ar file Op Ar ...
 .Sh DESCRIPTION
 The
-.Nm touch
+.Nm
 utility sets the modification and access times of files to the
 current time of day.
 If the file doesn't exist, it is created with default permissions.
 .Pp
-The following options are available:
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl a
 Change the access time of the file.
@@ -65,19 +62,16 @@ flag is also specified.
 .It Fl c
 Do not create the file if it does not exist.
 The
-.Nm touch
+.Nm
 utility does not treat this as an error.
 No error messages are displayed and the exit value is not affected.
-.It Fl f
-Attempt to force the update, even if the file permissions do not
-currently permit it.
 .It Fl m
 Change the modification time of the file.
 The access time of the file is not changed unless the
 .Fl a
 flag is also specified.
 .It Fl r
-Use the access and modifications times from the specified file
+Use the access and modification times from the specified file
 instead of the current time of day.
 .It Fl t
 Change the access and modification times to the specified time.
@@ -105,7 +99,7 @@ value of 20 is used.
 .It Ar MM
 The month of the year, from 1 to 12.
 .It Ar DD
-the day of the month, from 1 to 31.
+The day of the month, from 1 to 31.
 .It Ar hh
 The hour of the day, from 0 to 23.
 .It Ar mm
@@ -126,11 +120,11 @@ letter pair is not specified, the value defaults to 0.
 .El
 .Pp
 The
-.Nm touch
-utility exits 0 on success, and >0 if an error occurs.
+.Nm
+utility exits 0 on success or >0 if an error occurred.
 .Sh SEE ALSO
 .Xr utimes 2
-.Sh COMPATIBILITY
+.Sh STANDARDS
 The obsolescent form of
 .Nm touch ,
 where a time format is specified as the first argument, is supported.
@@ -154,16 +148,16 @@ letter pairs are treated as their counterparts specified to the
 option.
 If the
 .Dq YY
-letter pair is in the range 69 to 99, the year is set to 1969 to 1999,
+letter pair is in the range 69 to 99, the year is set from 1969 to 1999;
 otherwise, the year is set in the 21st century.
-.Sh HISTORY
-A
-.Nm touch
-utility appeared in
-.At v7 .
-.Sh STANDARDS
+.Pp
 The
-.Nm touch
+.Nm
 utility is expected to be a superset of the
 .St -p1003.2
 specification.
+.Sh HISTORY
+A
+.Nm
+utility appeared in
+.At v7 .

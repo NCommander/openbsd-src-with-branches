@@ -1,3 +1,5 @@
+.\"	$OpenBSD: exp.3,v 1.15 2003/06/02 10:42:43 jmc Exp $
+.\"
 .\" Copyright (c) 1985, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,18 +28,23 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)exp.3	6.12 (Berkeley) 7/31/91
-.\"	$Id: exp.3,v 1.9 1995/04/27 18:21:43 jtc Exp $
 .\"
 .Dd July 31, 1991
 .Dt EXP 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm exp ,
+.Nm expf ,
 .Nm expm1 ,
+.Nm expm1f ,
 .Nm log ,
+.Nm logf ,
 .Nm log10 ,
+.Nm log10f ,
 .Nm log1p ,
-.Nm pow
+.Nm log1pf ,
+.Nm pow ,
+.Nm powf
 .Nd exponential, logarithm, power functions
 .Sh SYNOPSIS
 .Fd #include <math.h>
@@ -68,44 +71,115 @@
 .Ft double
 .Fn pow "double x" "double y"
 .Ft float
-.Fn powf "float x" float y"
+.Fn powf "float x" "float y"
 .Sh DESCRIPTION
 The
 .Fn exp
 function computes the exponential value of the given argument
 .Fa x .
+The
+.Fn expf
+function is a single precision version of
+.Fn exp .
 .Pp
 The
 .Fn expm1
 function computes the value exp(x)\-1 accurately even for tiny argument
 .Fa x .
+The
+.Fn expm1f
+function is a single precision version of
+.Fn expm1 .
 .Pp
 The
 .Fn log
-function computes the value of the natural logarithm of argument 
-.Fa x.
+function computes the value of the natural logarithm of argument
+.Fa x .
+The
+.Fn logf
+function is a single precision version of
+.Fn log .
 .Pp
 The
 .Fn log10
 function computes the value of the logarithm of argument
 .Fa x
 to base 10.
+The
+.Fn log10f
+function is a single precision version of
+.Fn log10 .
 .Pp
 The
 .Fn log1p
 function computes
 the value of log(1+x) accurately even for tiny argument
 .Fa x .
+The
+.Fn log1pf
+function is a single precision version of
+.Fn log1p .
 .Pp
 The
 .Fn pow
-computes the value
-of
+function computes the value of
 .Ar x
 to the exponent
 .Ar y .
-.Sh ERROR (due to Roundoff etc.)
-exp(x), log(x), expm1(x) and log1p(x) are accurate to within 
+The
+.Fn powf
+function is a single precision version of
+.Fn pow .
+.Sh RETURN VALUES
+These functions will return the appropriate computation unless an error
+occurs or an argument is out of range.
+The functions
+.Fn exp ,
+.Fn expm1
+and
+.Fn pow
+detect if the computed value will overflow,
+set the global variable
+.Va errno
+to
+.Er ERANGE
+and cause a reserved operand fault on a
+.Tn VAX
+or
+.Tn Tahoe .
+The function
+.Fn pow x y
+checks to see if
+.Fa x
+< 0 and
+.Fa y
+is not an integer, in the event this is true,
+the global variable
+.Va errno
+is set to
+.Er EDOM
+and on the
+.Tn VAX
+and
+.Tn Tahoe
+generate a reserved operand fault.
+On a
+.Tn VAX
+and
+.Tn Tahoe ,
+.Va errno
+is set to
+.Er EDOM
+and the reserved operand is returned
+by log unless
+.Fa x
+> 0, by
+.Fn log1p
+unless
+.Fa x
+> \-1.
+.Sh ERRORS (due to Roundoff etc.)
+exp(x), log(x), expm1(x) and log1p(x) are accurate to within
 an
 .Em ulp ,
 and log10(x) to within about 2
@@ -149,53 +223,6 @@ is exact until it is bigger than 2**56 on a
 2**53 for
 .Tn IEEE
 754.
-.Sh RETURN VALUES
-These functions will return the appropriate computation unless an error
-occurs or an argument is out of range.
-The functions
-.Fn exp ,
-.Fn expm1
-and
-.Fn pow
-detect if the computed value will overflow,
-set the global variable
-.Va errno to
-.Er ERANGE
-and cause a reserved operand fault on a
-.Tn VAX
-or
-.Tn Tahoe .
-The function
-.Fn pow x y
-checks to see if
-.Fa x
-< 0 and
-.Fa y
-is not an integer, in the event this is true,
-the global variable
-.Va errno
-is set to
-.Er EDOM
-and on the
-.Tn VAX
-and
-.Tn Tahoe
-generate a reserved operand fault.
-On a
-.Tn VAX
-and
-.Tn Tahoe ,
-.Va errno
-is set to
-.Er EDOM
-and the reserved operand is returned
-by log unless
-.Fa x
-> 0, by
-.Fn log1p
-unless
-.Fa x
-> \-1.
 .Sh NOTES
 The functions exp(x)\-1 and log(1+x) are called
 expm1 and logp1 in
@@ -229,19 +256,20 @@ and
 .Em NaN
 (the reserved
 operand on a
-.Tn VAX ) .  Previous implementations of pow may
-have defined x**0 to be undefined in some or all of these
-cases.  Here are reasons for returning x**0 = 1 always:
+.Tn VAX ) .
+Previous implementations of pow may
+have defined x**0 to be undefined in some or all of these cases.
+Here are reasons for returning x**0 = 1 always:
 .Bl -enum -width indent
 .It
 Any program that already tests whether x is zero (or
 infinite or \*(Na) before computing x**0 cannot care
-whether 0**0 = 1 or not. Any program that depends
-upon 0**0 to be invalid is dubious anyway since that
-expression's meaning and, if invalid, its consequences 
+whether 0**0 = 1 or not.
+Any program that depends upon 0**0 to be invalid is dubious anyway since that
+expression's meaning and, if invalid, its consequences
 vary from one computer system to another.
 .It
-Some Algebra texts (e.g. Sigler's) define x**0 = 1 for 
+Some Algebra texts (e.g., Sigler's) define x**0 = 1 for
 all x, including x = 0.
 This is compatible with the convention that accepts a[0]
 as the value of polynomial
@@ -259,7 +287,7 @@ The reason for setting 0**0 = 1 anyway is this:
 If x(z) and y(z) are
 .Em any
 functions analytic (expandable
-in power series) in z around z = 0, and if there 
+in power series) in z around z = 0, and if there
 x(0) = y(0) = 0, then x(z)**y(z) \(-> 1 as z \(-> 0.
 .Ed
 .It
@@ -272,8 +300,8 @@ then \*(Na**0 = 1 too because x**0 = 1 for all finite
 and infinite x, i.e., independently of x.
 .El
 .Sh SEE ALSO
-.Xr math 3 ,
-.Xr infnan 3
+.Xr infnan 3 ,
+.Xr math 3
 .Sh HISTORY
 A
 .Fn exp ,

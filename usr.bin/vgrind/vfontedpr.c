@@ -1,4 +1,5 @@
-/*	$NetBSD: vfontedpr.c,v 1.3 1994/11/17 08:28:03 jtc Exp $	*/
+/*	$OpenBSD: vfontedpr.c,v 1.10 2006/03/22 19:38:45 deraadt Exp $	*/
+/*	$NetBSD: vfontedpr.c,v 1.7 1998/12/19 23:41:53 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,11 +40,12 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)vfontedpr.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: vfontedpr.c,v 1.3 1994/11/17 08:28:03 jtc Exp $";
+static char rcsid[] = "$OpenBSD: vfontedpr.c,v 1.10 2006/03/22 19:38:45 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/limits.h>
 #include <time.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -73,13 +71,13 @@ static char rcsid[] = "$NetBSD: vfontedpr.c,v 1.3 1994/11/17 08:28:03 jtc Exp $"
 #define PNAMELEN 40		/* length of a function/procedure name */
 #define PSMAX 20		/* size of procedure name stacking */
 
-static int       iskw __P((char *));
-static boolean   isproc __P((char *));
-static void      putKcp __P((char *, char *, boolean));
-static void      putScp __P((char *));
-static void      putcp __P((int));
-static int       tabs __P((char *, char *));
-static int       width __P((char *, char *));
+static int       iskw(char *);
+static boolean   isproc(char *);
+static void      putKcp(char *, char *, boolean);
+static void      putScp(char *);
+static void      putcp(int);
+static int       tabs(char *, char *);
+static int       width(char *, char *);
 
 /*
  *	The state variables
@@ -130,10 +128,8 @@ char	*language = "c";	/* the language indicator */
 
 #define	ps(x)	printf("%s", x)
 
-void
-main(argc, argv)
-    int argc;
-    char *argv[];
+int
+main(int argc, char *argv[])
 {
     char *fname = "";
     struct stat stbuf;
@@ -190,10 +186,11 @@ main(argc, argv)
 
 	    /* specify the font size */
 	    if (!strncmp(argv[0], "-s", 2)) {
-		i = 0;
-		cp = argv[0] + 2;
-		while (*cp)
-		    i = i * 10 + (*cp++ - '0');
+		const char *errstr;
+
+		i = (int)strtonum(argv[0] + 2, 0, INT_MAX, &errstr);
+		if (errstr)
+			perror(argv[0]);
 		printf("'ps %d\n'vs %d\n", i, i+1);
 		argc--, argv++;
 		continue;
@@ -288,7 +285,7 @@ main(argc, argv)
 	incomm = FALSE;
 	instr = FALSE;
 	inchr = FALSE;
-	_escaped = FALSE;
+	x_escaped = FALSE;
 	blklevel = 0;
 	for (psptr=0; psptr<PSMAX; psptr++) {
 	    pstack[psptr][0] = NULL;
@@ -352,10 +349,9 @@ main(argc, argv)
 #define isidchr(c) (isalnum(c) || (c) == '_')
 
 static void
-putScp(os)
-    char *os;
+putScp(char *os)
 {
-    register char *s = os;		/* pointer to unmatched string */
+    char *s = os;			/* pointer to unmatched string */
     char dummy[BUFSIZ];			/* dummy to be used by expmatch */
     char *comptr;			/* end of a comment delimiter */
     char *acmptr;			/* end of a comment delimiter */
@@ -364,8 +360,8 @@ putScp(os)
     char *blksptr;			/* end of a lexical block start */
     char *blkeptr;			/* end of a lexical block end */
 
-    _start = os;			/* remember the start for expmatch */
-    _escaped = FALSE;
+    x_start = os;			/* remember the start for expmatch */
+    x_escaped = FALSE;
     if (nokeyw || incomm || instr)
 	goto skip;
     if (isproc(s)) {
@@ -533,10 +529,7 @@ skip:
 }
 
 static void
-putKcp (start, end, force)
-    char	*start;		/* start of string to write */
-    char	*end;		/* end of string to write */
-    boolean	force;		/* true if we should force nokeyw */
+putKcp(char *start, char *end, boolean force)
 {
     int i;
     int xfld = 0;
@@ -558,14 +551,14 @@ putKcp (start, end, force)
 	if (*start == '\t') {
 	    while (*start == '\t')
 		start++;
-	    i = tabs(_start, start) - margin / 8;
+	    i = tabs(x_start, start) - margin / 8;
 	    printf("\\h'|%dn'", i * 10 + 1 - margin % 8);
 	    continue;
 	}
 
 	if (!nokeyw && !force)
 	    if ((*start == '#' || isidchr(*start)) 
-	    && (start == _start || !isidchr(start[-1]))) {
+	    && (start == x_start || !isidchr(start[-1]))) {
 		i = iskw(start);
 		if (i > 0) {
 		    ps("\\*(+K");
@@ -583,18 +576,16 @@ putKcp (start, end, force)
 
 
 static int
-tabs(s, os)
-    char *s, *os;
+tabs(char *s, char *os)
 {
 
     return (width(s, os) / 8);
 }
 
 static int
-width(s, os)
-	register char *s, *os;
+width(char *s, char *os)
 {
-	register int i = 0;
+	int i = 0;
 
 	while (s < os) {
 		if (*s == '\t') {
@@ -612,8 +603,7 @@ width(s, os)
 }
 
 static void
-putcp(c)
-	register int c;
+putcp(int c)
 {
 
 	switch(c) {
@@ -677,8 +667,7 @@ putcp(c)
  *	look for a process beginning on this line
  */
 static boolean
-isproc(s)
-    char *s;
+isproc(char *s)
 {
     pname[0] = NULL;
     if (!l_toplex || blklevel == 0)
@@ -693,16 +682,15 @@ isproc(s)
  */
 
 static int
-iskw(s)
-	register char *s;
+iskw(char *s)
 {
-	register char **ss = l_keywds;
-	register int i = 1;
-	register char *cp = s;
+	char **ss = l_keywds;
+	int i = 1;
+	char *cp = s;
 
 	while (++cp, isidchr(*cp))
 		i++;
-	while (cp = *ss++)
+	while ((cp = *ss++))
 		if (!STRNCMP(s,cp,i) && !isidchr(cp[i]))
 			return (i);
 	return (0);

@@ -56,6 +56,7 @@ installsiteman3dir='/usr/local/man/man3p'
 # Never hardcode developer info into a distribution
 cf_by='root'
 cf_email='root@localhost'
+cf_time='Thu Jan  1  0:00:00 UTC 1970'
 perladmin='root@localhost'
 mydomain=''
 myhostname=''

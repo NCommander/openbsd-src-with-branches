@@ -1,5 +1,5 @@
+/* * $OpenBSD: warnings.c,v 1.10 2003/04/16 02:15:10 deraadt Exp $*/
 /*
- * $Id: warnings.c,v 1.18 1994/12/28 10:37:38 pk Exp $
  */
 
 #include <sys/param.h>
@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <sys/time.h>
-#include <sys/errno.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,9 +32,7 @@ static int reported_undefineds;
  */
 
 void
-prline_file_name (entry, outfile)
-     struct file_entry *entry;
-     FILE *outfile;
+prline_file_name(struct file_entry *entry, FILE *outfile)
 {
 	print_file_name (entry, outfile);
 	fprintf (outfile, "\n");
@@ -46,9 +43,7 @@ prline_file_name (entry, outfile)
  */
 
 void
-print_file_name (entry, outfile)
-     struct file_entry *entry;
-     FILE *outfile;
+print_file_name(struct file_entry *entry, FILE *outfile)
 {
 	if (entry == NULL) {
 		fprintf (outfile, "NULL");
@@ -66,10 +61,10 @@ print_file_name (entry, outfile)
  */
 
 char *
-get_file_name (entry)
-     struct file_entry *entry;
+get_file_name(struct file_entry *entry)
 {
 	char *result, *supfile;
+	size_t len;
 
 	if (entry == NULL) {
 		return (char *)strdup("NULL");
@@ -77,26 +72,26 @@ get_file_name (entry)
 
 	if (entry->superfile) {
 		supfile = get_file_name(entry->superfile);
+		len = strlen(supfile) + 1 + strlen(entry->filename) + 2;
 		result = (char *)
-			xmalloc(strlen(supfile) + strlen(entry->filename) + 3);
-		(void)sprintf(result, "%s(%s)", supfile, entry->filename);
+			xmalloc(len);
+		(void)snprintf(result, len, "%s(%s)", supfile,
+		    entry->filename);
 		free(supfile);
 
 	} else {
-		result = (char *)xmalloc(strlen(entry->filename) + 1);
-		strcpy(result, entry->filename);
+		result = (char *)xstrdup(entry->filename);
 	}
 	return result;
 }
 
 /* Print a complete or partial map of the output file. */
 
-static void	describe_file_sections __P((struct file_entry *, FILE *));
-static void	list_file_locals __P((struct file_entry *, FILE *));
+static void	describe_file_sections(struct file_entry *, void *);
+static void	list_file_locals(struct file_entry *, void *);
 
 void
-print_symbols(outfile)
-	FILE           *outfile;
+print_symbols(FILE *outfile)
 {
 	fprintf(outfile, "\nFiles:\n\n");
 	each_file(describe_file_sections, (void *)outfile);
@@ -113,7 +108,7 @@ print_symbols(outfile)
 		else if (sp->defined == (N_UNDF|N_EXT))
 			fprintf(outfile, "common: size %#x", sp->common_size);
 		else
-			fprintf(outfile, "type %d, value %#x, size %#x",
+			fprintf(outfile, "type %d, value %#lx, size %#x",
 				sp->defined, sp->value, sp->size);
 		if (sp->alias)
 			fprintf(outfile, ", aliased to %s", sp->alias->name);
@@ -124,10 +119,10 @@ print_symbols(outfile)
 }
 
 static void
-describe_file_sections(entry, outfile)
-	struct file_entry *entry;
-	FILE           *outfile;
+describe_file_sections(struct file_entry *entry, void *arg)
 {
+	FILE *outfile = arg;
+
 	fprintf(outfile, "  ");
 	print_file_name(entry, outfile);
 	if (entry->flags & (E_JUST_SYMS | E_DYNAMIC))
@@ -140,10 +135,9 @@ describe_file_sections(entry, outfile)
 }
 
 static void
-list_file_locals (entry, outfile)
-     struct file_entry *entry;
-     FILE *outfile;
+list_file_locals(struct file_entry *entry, void *arg)
 {
+	FILE			*outfile = arg;
 	struct localsymbol	*lsp, *lspend;
 
 	entry->strings = (char *)alloca(entry->string_size);
@@ -155,13 +149,13 @@ list_file_locals (entry, outfile)
 
 	lspend = entry->symbols + entry->nsymbols;
 	for (lsp = entry->symbols; lsp < lspend; lsp++) {
-		register struct nlist *p = &lsp->nzlist.nlist;
+		struct nlist *p = &lsp->nzlist.nlist;
 		/*
 		 * If this is a definition,
 		 * update it if necessary by this file's start address.
 		 */
 		if (!(p->n_type & (N_STAB | N_EXT)))
-			fprintf(outfile, "  %s: 0x%x\n",
+			fprintf(outfile, "  %s: 0x%lx\n",
 				entry->strings + p->n_un.n_strx, p->n_value);
 	}
 
@@ -173,8 +167,8 @@ list_file_locals (entry, outfile)
 static int list_unresolved_refs;	/* List unresolved refs */
 static int list_multiple_defs;		/* List multiple definitions */
 
-static struct line_debug_entry *init_debug_scan __P((int, struct file_entry *));
-static int	next_debug_entry __P((int, struct line_debug_entry *));
+static struct line_debug_entry *init_debug_scan(int, struct file_entry *);
+static int	next_debug_entry(int, struct line_debug_entry *);
 
 /*
  * Structure for communication between do_file_warnings and it's
@@ -198,9 +192,10 @@ struct line_debug_entry
  */
 
 static int
-reloc_cmp(rel1, rel2)
-	struct relocation_info *rel1, *rel2;
+reloc_cmp(const void *arg1, const void *arg2)
 {
+	const struct relocation_info *rel1 = arg1;
+	const struct relocation_info *rel2 = arg2;
 	return RELOC_ADDRESS(rel1) - RELOC_ADDRESS(rel2);
 }
 
@@ -214,13 +209,9 @@ reloc_cmp(rel1, rel2)
  */
 
 static int
-next_debug_entry(use_data_symbols, state_pointer)
-	register int use_data_symbols;
-	/* Next must be passed by reference! */
-	struct line_debug_entry state_pointer[3];
+next_debug_entry(int use_data_symbols, struct line_debug_entry state_pointer[3])
 {
-	register struct line_debug_entry
-				*current = state_pointer,
+	struct line_debug_entry	*current = state_pointer,
 				*next = state_pointer + 1,
 				/* Used to store source file */
 				*source = state_pointer + 2;
@@ -280,11 +271,9 @@ next_debug_entry(use_data_symbols, state_pointer)
  */
 
 static struct line_debug_entry *
-init_debug_scan(use_data_symbols, entry)
-	int			use_data_symbols;
-	struct file_entry	*entry;
+init_debug_scan(int use_data_symbols, struct file_entry *entry)
 {
-	register struct localsymbol	*lsp, *lspend;
+	struct localsymbol	*lsp, *lspend;
 	struct line_debug_entry *state_pointer, *current, *next, *source;
 
 	state_pointer = (struct line_debug_entry *)
@@ -341,10 +330,7 @@ init_debug_scan(use_data_symbols, entry)
  */
 
 static int
-address_to_line(address, state_pointer)
-	unsigned long   address;
-/* Next must be passed by reference! */
-	struct line_debug_entry state_pointer[3];
+address_to_line(unsigned long address, struct line_debug_entry state_pointer[3])
 {
 	struct line_debug_entry	*current, *next, *tmp_pointer;
 	int			use_data_symbols;
@@ -397,11 +383,8 @@ address_to_line(address, state_pointer)
  */
 
 static void
-do_relocation_warnings(entry, data_segment, outfile, nlist_bitvector)
-	struct file_entry *entry;
-	int             data_segment;
-	FILE           *outfile;
-	unsigned char  *nlist_bitvector;
+do_relocation_warnings(struct file_entry *entry, int data_segment,
+		       FILE *outfile, unsigned char *nlist_bitvector)
 {
 	struct relocation_info	*rp, *erp;
 	int			start_of_segment;
@@ -432,8 +415,8 @@ do_relocation_warnings(entry, data_segment, outfile, nlist_bitvector)
 	qsort(rp, erp - rp, sizeof(rp[0]), reloc_cmp);
 
 	for (; rp < erp; rp++) {
-		register struct localsymbol *lsp;
-		register symbol *g;
+		struct localsymbol *lsp;
+		symbol *g;
 
 		/*
 		 * If the relocation isn't resolved through a symbol, continue.
@@ -502,12 +485,15 @@ do_relocation_warnings(entry, data_segment, outfile, nlist_bitvector)
 
 		/* If errfmt == 0, errmsg has already been defined.  */
 		if (errfmt != 0) {
-			char           *nm;
+			char	       *nm;
+			size_t		len;
 
 			nm = g->name;
+			len = strlen(errfmt) + strlen(nm) + 1;
 			errmsg = (char *)
-				xmalloc(strlen(errfmt) + strlen(nm) + 1);
-			sprintf(errmsg, errfmt, nm, data_segment?"data":"text");
+				xmalloc(len);
+			snprintf(errmsg, len, errfmt, nm,
+			    data_segment?"data":"text");
 			if (nm != g->name)
 				free(nm);
 		}
@@ -535,10 +521,8 @@ do_relocation_warnings(entry, data_segment, outfile, nlist_bitvector)
  * possible, just the .o file if not.
  */
 
-void
-do_file_warnings (entry, outfile)
-	struct file_entry	*entry;
-	FILE			*outfile;
+static void
+do_file_warnings(struct file_entry *entry, void *arg)
 {
 	int	nsym;
 	int	i;
@@ -547,6 +531,7 @@ do_file_warnings (entry, outfile)
 	int	dont_allow_symbol_name;
 	u_char	*nlist_bitvector;
 	struct line_debug_entry	*text_scan, *data_scan;
+	FILE	*outfile = arg;
 
 	nsym = entry->nsymbols;
 	nlist_bitvector = (u_char *)alloca((nsym >> 3) + 1);
@@ -575,7 +560,7 @@ do_file_warnings (entry, outfile)
 		struct nlist *np;
 		symbol *g;
 
-	        g = entry->symbols[i].symbol;
+		g = entry->symbols[i].symbol;
 		np = &entry->symbols[i].nzlist.nlist;
 
 		if (g == NULL)
@@ -590,7 +575,7 @@ do_file_warnings (entry, outfile)
 #if 0
 			/* Check for undefined shobj symbols */
 			struct localsymbol	*lsp;
-			register int		type;
+			int			type;
 
 			for (lsp = g->sorefs; lsp; lsp = lsp->next) {
 				type = lsp->nzlist.nz_type;
@@ -679,12 +664,21 @@ do_file_warnings (entry, outfile)
 		} else if (g->def_lsp && g->def_lsp->entry != entry &&
 			   !(entry->flags & E_DYNAMIC) &&
 			   g->def_lsp->entry->flags & E_SECONDCLASS) {
-			fprintf(outfile,
-			"%s: Undefined symbol `%s' referenced (use %s ?)\n",
-				get_file_name(entry),
-				g->name,
-				g->def_lsp->entry->local_sym_name);
-			continue;
+			if (g->undef_refs == 0)
+			    reported_undefineds++;
+			if (g->undef_refs >= MAX_UREFS_PRINTED)
+				continue;
+			if (++(g->undef_refs) == MAX_UREFS_PRINTED) {
+				errfmt = "More undefined `%s' refs follow";
+				line_number = -1;
+			} else {
+				fprintf(outfile,
+			    "%s: Undefined symbol `%s' referenced (use %s ?)\n",
+				    get_file_name(entry),
+				    g->name,
+				    g->def_lsp->entry->local_sym_name);
+				continue;
+			}
 		} else if (g->warning) {
 			/*
 			 * There are two cases in which we don't want to do
@@ -720,8 +714,7 @@ do_file_warnings (entry, outfile)
 }
 
 int
-do_warnings(outfile)
-	FILE	*outfile;
+do_warnings(FILE *outfile)
 {
 
 	list_unresolved_refs = !relocatable_output &&
@@ -745,8 +738,8 @@ do_warnings(outfile)
 	if (list_unresolved_refs &&
 	    reported_undefineds !=
 	    (undefined_global_sym_count - undefined_weak_sym_count))
-		warnx("Spurious undefined symbols: "
-		      "# undefined symbols %d, reported %d",
+		warnx("internal consistency check failure: "
+		      "# undefined symbols %d, accounted for %d",
 		      (undefined_global_sym_count - undefined_weak_sym_count),
 		      reported_undefineds);
 

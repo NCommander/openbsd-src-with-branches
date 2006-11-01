@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2006 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,12 +9,18 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: sfsasl.c,v 8.84 2001/09/03 22:35:38 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: sfsasl.c,v 8.115 2006/04/18 21:34:07 ca Exp $")
 #include <stdlib.h>
 #include <sendmail.h>
+#include <sm/time.h>
 #include <errno.h>
+
+/* allow to disable error handling code just in case... */
+#ifndef DEAL_WITH_ERROR_SSL
+# define DEAL_WITH_ERROR_SSL	1
+#endif /* ! DEAL_WITH_ERROR_SSL */
+
 #if SASL
-# include <sasl.h>
 # include "sfsasl.h"
 
 /* Structure used by the "sasl" file type */
@@ -102,6 +108,11 @@ sasl_open(fp, info, flags, rpool)
 	struct sasl_info *si = (struct sasl_info *) info;
 
 	so = (struct sasl_obj *) sm_malloc(sizeof(struct sasl_obj));
+	if (so == NULL)
+	{
+		errno = ENOMEM;
+		return -1;
+	}
 	so->fp = si->fp;
 	so->conn = si->conn;
 
@@ -140,6 +151,8 @@ sasl_close(fp)
 	struct sasl_obj *so;
 
 	so = (struct sasl_obj *) fp->f_cookie;
+	if (so == NULL)
+		return 0;
 	if (so->fp != NULL)
 	{
 		sm_io_close(so->fp, SM_TIME_DEFAULT);
@@ -152,7 +165,7 @@ sasl_close(fp)
 
 /* how to deallocate a buffer allocated by SASL */
 extern void	sm_sasl_free __P((void *));
-# define SASL_DEALLOC(b)	sm_sasl_free(b)
+#  define SASL_DEALLOC(b)	sm_sasl_free(b)
 
 /*
 **  SASL_READ -- read encrypted information and decrypt it for the caller
@@ -177,7 +190,11 @@ sasl_read(fp, buf, size)
 {
 	int result;
 	ssize_t len;
+# if SASL >= 20000
+	static const char *outbuf = NULL;
+# else /* SASL >= 20000 */
 	static char *outbuf = NULL;
+# endif /* SASL >= 20000 */
 	static unsigned int outlen = 0;
 	static unsigned int offset = 0;
 	struct sasl_obj *so = (struct sasl_obj *) fp->f_cookie;
@@ -189,9 +206,16 @@ sasl_read(fp, buf, size)
 	**  data since it might be larger than the allowed size.
 	**  Therefore we use a static pointer and return portions of it
 	**  if necessary.
+	**  XXX Note: This function is not thread-safe nor can it be used
+	**  on more than one file. A correct implementation would store
+	**  this data in fp->f_cookie.
 	*/
 
+# if SASL >= 20000
+	while (outlen == 0)
+# else /* SASL >= 20000 */
 	while (outbuf == NULL && outlen == 0)
+# endif /* SASL >= 20000 */
 	{
 		len = sm_io_read(so->fp, SM_TIME_DEFAULT, buf, size);
 		if (len <= 0)
@@ -200,6 +224,9 @@ sasl_read(fp, buf, size)
 				     (unsigned int) len, &outbuf, &outlen);
 		if (result != SASL_OK)
 		{
+			if (LogLevel > 7)
+				sm_syslog(LOG_WARNING, NOQID,
+					"AUTH: sasl_decode error=%d", result);
 			outbuf = NULL;
 			offset = 0;
 			outlen = 0;
@@ -225,7 +252,9 @@ sasl_read(fp, buf, size)
 		/* return the rest of the buffer */
 		len = outlen - offset;
 		(void) memcpy(buf, outbuf + offset, (size_t) len);
+# if SASL < 20000
 		SASL_DEALLOC(outbuf);
+# endif /* SASL < 20000 */
 		outbuf = NULL;
 		offset = 0;
 		outlen = 0;
@@ -255,27 +284,61 @@ sasl_write(fp, buf, size)
 	size_t size;
 {
 	int result;
+# if SASL >= 20000
+	const char *outbuf;
+# else /* SASL >= 20000 */
 	char *outbuf;
-	unsigned int outlen;
+# endif /* SASL >= 20000 */
+	unsigned int outlen, *maxencode;
 	size_t ret = 0, total = 0;
 	struct sasl_obj *so = (struct sasl_obj *) fp->f_cookie;
+
+	/*
+	**  Fetch the maximum input buffer size for sasl_encode().
+	**  This can be less than the size set in attemptauth()
+	**  due to a negotation with the other side, e.g.,
+	**  Cyrus IMAP lmtp program sets maxbuf=4096,
+	**  digestmd5 substracts 25 and hence we'll get 4071
+	**  instead of 8192 (MAXOUTLEN).
+	**  Hack (for now): simply reduce the size, callers are (must be)
+	**  able to deal with that and invoke sasl_write() again with
+	**  the rest of the data.
+	**  Note: it would be better to store this value in the context
+	**  after the negotiation.
+	*/
+
+	result = sasl_getprop(so->conn, SASL_MAXOUTBUF,
+				(const void **) &maxencode);
+	if (result == SASL_OK && size > *maxencode && *maxencode > 0)
+		size = *maxencode;
 
 	result = sasl_encode(so->conn, buf,
 			     (unsigned int) size, &outbuf, &outlen);
 
 	if (result != SASL_OK)
+	{
+		if (LogLevel > 7)
+			sm_syslog(LOG_WARNING, NOQID,
+				"AUTH: sasl_encode error=%d", result);
 		return -1;
+	}
 
 	if (outbuf != NULL)
 	{
 		while (outlen > 0)
 		{
+			errno = 0;
+			/* XXX result == 0? */
 			ret = sm_io_write(so->fp, SM_TIME_DEFAULT,
 					  &outbuf[total], outlen);
+			if (ret <= 0)
+				return ret;
 			outlen -= ret;
 			total += ret;
 		}
+# if SASL < 20000
 		SASL_DEALLOC(outbuf);
+# endif /* SASL < 20000 */
 	}
 	return size;
 }
@@ -286,8 +349,9 @@ sasl_write(fp, buf, size)
 **
 **	Parameters:
 **		fin -- the sm_io file encrypted data to be read from
-**		fout -- the sm_io file encrypted data to be writen to
+**		fout -- the sm_io file encrypted data to be written to
 **		conn -- the sasl connection pointer
+**		tmo -- timeout
 **
 **	Returns:
 **		-1 on error
@@ -299,15 +363,16 @@ sasl_write(fp, buf, size)
 */
 
 int
-sfdcsasl(fin, fout, conn)
+sfdcsasl(fin, fout, conn, tmo)
 	SM_FILE_T **fin;
 	SM_FILE_T **fout;
 	sasl_conn_t *conn;
+	int tmo;
 {
 	SM_FILE_T *newin, *newout;
 	SM_FILE_T  SM_IO_SET_TYPE(sasl_vector, "sasl", sasl_open, sasl_close,
 		sasl_read, sasl_write, NULL, sasl_getinfo, NULL,
-		SM_TIME_FOREVER);
+		SM_TIME_DEFAULT);
 	struct sasl_info info;
 
 	if (conn == NULL)
@@ -318,19 +383,19 @@ sfdcsasl(fin, fout, conn)
 
 	SM_IO_INIT_TYPE(sasl_vector, "sasl", sasl_open, sasl_close,
 		sasl_read, sasl_write, NULL, sasl_getinfo, NULL,
-		SM_TIME_FOREVER);
+		SM_TIME_DEFAULT);
 	info.fp = *fin;
 	info.conn = conn;
-	newin = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info, SM_IO_RDONLY,
-			   NULL);
+	newin = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info,
+			SM_IO_RDONLY_B, NULL);
 
 	if (newin == NULL)
 		return -1;
 
 	info.fp = *fout;
 	info.conn = conn;
-	newout = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info, SM_IO_WRONLY,
-			    NULL);
+	newout = sm_io_open(&sasl_vector, SM_TIME_DEFAULT, &info,
+			SM_IO_WRONLY_B, NULL);
 
 	if (newout == NULL)
 	{
@@ -338,6 +403,9 @@ sfdcsasl(fin, fout, conn)
 		return -1;
 	}
 	sm_io_automode(newin, newout);
+
+	sm_io_setinfo(*fin, SM_IO_WHAT_TIMEOUT, &tmo);
+	sm_io_setinfo(*fout, SM_IO_WHAT_TIMEOUT, &tmo);
 
 	*fin = newin;
 	*fout = newout;
@@ -431,6 +499,11 @@ tls_open(fp, info, flags, rpool)
 	struct tls_info *ti = (struct tls_info *) info;
 
 	so = (struct tls_obj *) sm_malloc(sizeof(struct tls_obj));
+	if (so == NULL)
+	{
+		errno = ENOMEM;
+		return -1;
+	}
 	so->fp = ti->fp;
 	so->con = ti->con;
 
@@ -467,6 +540,8 @@ tls_close(fp)
 	struct tls_obj *so;
 
 	so = (struct tls_obj *) fp->f_cookie;
+	if (so == NULL)
+		return 0;
 	if (so->fp != NULL)
 	{
 		sm_io_close(so->fp, SM_TIME_DEFAULT);
@@ -479,6 +554,125 @@ tls_close(fp)
 
 /* maximum number of retries for TLS related I/O due to handshakes */
 # define MAX_TLS_IOS	4
+
+/*
+**  TLS_RETRY -- check whether a failed SSL operation can be retried
+**
+**	Parameters:
+**		ssl -- TLS structure
+**		rfd -- read fd
+**		wfd -- write fd
+**		tlsstart -- start time of TLS operation
+**		timeout -- timeout for TLS operation
+**		err -- SSL error
+**		where -- description of operation
+**
+**	Results:
+**		>0 on success
+**		0 on timeout
+**		<0 on error
+*/
+
+int
+tls_retry(ssl, rfd, wfd, tlsstart, timeout, err, where)
+	SSL *ssl;
+	int rfd;
+	int wfd;
+	time_t tlsstart;
+	int timeout;
+	int err;
+	const char *where;
+{
+	int ret;
+	time_t left;
+	time_t now = curtime();
+	struct timeval tv;
+
+	ret = -1;
+
+	/*
+	**  For SSL_ERROR_WANT_{READ,WRITE}:
+	**  There is not a complete SSL record available yet
+	**  or there is only a partial SSL record removed from
+	**  the network (socket) buffer into the SSL buffer.
+	**  The SSL_connect will only succeed when a full
+	**  SSL record is available (assuming a "real" error
+	**  doesn't happen). To handle when a "real" error
+	**  does happen the select is set for exceptions too.
+	**  The connection may be re-negotiated during this time
+	**  so both read and write "want errors" need to be handled.
+	**  A select() exception loops back so that a proper SSL
+	**  error message can be gotten.
+	*/
+
+	left = timeout - (now - tlsstart);
+	if (left <= 0)
+		return 0;	/* timeout */
+	tv.tv_sec = left;
+	tv.tv_usec = 0;
+
+	if (LogLevel > 14)
+	{
+		sm_syslog(LOG_INFO, NOQID,
+			  "STARTTLS=%s, info: fds=%d/%d, err=%d",
+			  where, rfd, wfd, err);
+	}
+
+	if (FD_SETSIZE > 0 &&
+	    ((err == SSL_ERROR_WANT_READ && rfd >= FD_SETSIZE) ||
+	     (err == SSL_ERROR_WANT_WRITE && wfd >= FD_SETSIZE)))
+	{
+		if (LogLevel > 5)
+		{
+			sm_syslog(LOG_ERR, NOQID,
+				  "STARTTLS=%s, error: fd %d/%d too large",
+				  where, rfd, wfd);
+		if (LogLevel > 8)
+			tlslogerr(where);
+		}
+		errno = EINVAL;
+	}
+	else if (err == SSL_ERROR_WANT_READ)
+	{
+		fd_set ssl_maskr, ssl_maskx;
+
+		FD_ZERO(&ssl_maskr);
+		FD_SET(rfd, &ssl_maskr);
+		FD_ZERO(&ssl_maskx);
+		FD_SET(rfd, &ssl_maskx);
+		do
+		{
+			ret = select(rfd + 1, &ssl_maskr, NULL, &ssl_maskx,
+					&tv);
+		} while (ret < 0 && errno == EINTR);
+		if (ret < 0 && errno > 0)
+			ret = -errno;
+	}
+	else if (err == SSL_ERROR_WANT_WRITE)
+	{
+		fd_set ssl_maskw, ssl_maskx;
+
+		FD_ZERO(&ssl_maskw);
+		FD_SET(wfd, &ssl_maskw);
+		FD_ZERO(&ssl_maskx);
+		FD_SET(rfd, &ssl_maskx);
+		do
+		{
+			ret = select(wfd + 1, NULL, &ssl_maskw, &ssl_maskx,
+					&tv);
+		} while (ret < 0 && errno == EINTR);
+		if (ret < 0 && errno > 0)
+			ret = -errno;
+	}
+	return ret;
+}
+
+/* errno to force refill() etc to stop (see IS_IO_ERROR()) */
+#ifdef ETIMEDOUT
+# define SM_ERR_TIMEOUT	ETIMEDOUT
+#else /* ETIMEDOUT */
+# define SM_ERR_TIMEOUT	EIO
+#endif /* ETIMEDOUT */
 
 /*
 **  TLS_READ -- read secured information for the caller
@@ -501,38 +695,42 @@ tls_read(fp, buf, size)
 	char *buf;
 	size_t size;
 {
-	int r;
-	static int again = MAX_TLS_IOS;
+	int r, rfd, wfd, try, ssl_err;
 	struct tls_obj *so = (struct tls_obj *) fp->f_cookie;
+	time_t tlsstart;
 	char *err;
 
+	try = 99;
+	err = NULL;
+	tlsstart = curtime();
+
+  retry:
 	r = SSL_read(so->con, (char *) buf, size);
 
 	if (r > 0)
-	{
-		again = MAX_TLS_IOS;
 		return r;
-	}
 
 	err = NULL;
-	switch (SSL_get_error(so->con, r))
+	switch (ssl_err = SSL_get_error(so->con, r))
 	{
 	  case SSL_ERROR_NONE:
 	  case SSL_ERROR_ZERO_RETURN:
-		again = MAX_TLS_IOS;
 		break;
 	  case SSL_ERROR_WANT_WRITE:
-		if (--again <= 0)
-			err = "read W BLOCK";
-		else
-			errno = EAGAIN;
-		break;
+		err = "read W BLOCK";
+		/* FALLTHROUGH */
 	  case SSL_ERROR_WANT_READ:
-		if (--again <= 0)
+		if (err == NULL)
 			err = "read R BLOCK";
-		else
-			errno = EAGAIN;
+		rfd = SSL_get_rfd(so->con);
+		wfd = SSL_get_wfd(so->con);
+		try = tls_retry(so->con, rfd, wfd, tlsstart,
+				TimeOuts.to_datablock, ssl_err, "read");
+		if (try > 0)
+			goto retry;
+		errno = SM_ERR_TIMEOUT;
 		break;
+
 	  case SSL_ERROR_WANT_X509_LOOKUP:
 		err = "write X BLOCK";
 		break;
@@ -545,19 +743,43 @@ tls_read(fp, buf, size)
 */
 		break;
 	  case SSL_ERROR_SSL:
+#if DEAL_WITH_ERROR_SSL
+		if (r == 0 && errno == 0) /* out of protocol EOF found */
+			break;
+#endif /* DEAL_WITH_ERROR_SSL */
 		err = "generic SSL error";
 		if (LogLevel > 9)
 			tlslogerr("read");
+
+#if DEAL_WITH_ERROR_SSL
+		/* avoid repeated calls? */
+		if (r == 0)
+			r = -1;
+#endif /* DEAL_WITH_ERROR_SSL */
 		break;
 	}
 	if (err != NULL)
 	{
-		again = MAX_TLS_IOS;
-		if (errno == 0)
-			errno = EIO;
-		if (LogLevel > 7)
+		int save_errno;
+
+		save_errno = (errno == 0) ? EIO : errno;
+		if (try == 0 && save_errno == SM_ERR_TIMEOUT)
+		{
+			if (LogLevel > 7)
+				sm_syslog(LOG_WARNING, NOQID,
+					  "STARTTLS: read error=timeout");
+		}
+		else if (LogLevel > 8)
 			sm_syslog(LOG_WARNING, NOQID,
-				  "STARTTLS: read error=%s (%d)", err, r);
+				  "STARTTLS: read error=%s (%d), errno=%d, get_error=%s, retry=%d, ssl_err=%d",
+				  err, r, errno,
+				  ERR_error_string(ERR_get_error(), NULL), try,
+				  ssl_err);
+		else if (LogLevel > 7)
+			sm_syslog(LOG_WARNING, NOQID,
+				  "STARTTLS: read error=%s (%d), retry=%d, ssl_err=%d",
+				  err, r, errno, try, ssl_err);
+		errno = save_errno;
 	}
 	return r;
 }
@@ -583,36 +805,39 @@ tls_write(fp, buf, size)
 	const char *buf;
 	size_t size;
 {
-	int r;
-	static int again = MAX_TLS_IOS;
+	int r, rfd, wfd, try, ssl_err;
 	struct tls_obj *so = (struct tls_obj *) fp->f_cookie;
+	time_t tlsstart;
 	char *err;
 
+	try = 99;
+	err = NULL;
+	tlsstart = curtime();
+
+  retry:
 	r = SSL_write(so->con, (char *) buf, size);
 
 	if (r > 0)
-	{
-		again = MAX_TLS_IOS;
 		return r;
-	}
 	err = NULL;
-	switch (SSL_get_error(so->con, r))
+	switch (ssl_err = SSL_get_error(so->con, r))
 	{
 	  case SSL_ERROR_NONE:
 	  case SSL_ERROR_ZERO_RETURN:
-		again = MAX_TLS_IOS;
 		break;
 	  case SSL_ERROR_WANT_WRITE:
-		if (--again <= 0)
-			err = "write W BLOCK";
-		else
-			errno = EAGAIN;
-		break;
+		err = "read W BLOCK";
+		/* FALLTHROUGH */
 	  case SSL_ERROR_WANT_READ:
-		if (--again <= 0)
-			err = "write R BLOCK";
-		else
-			errno = EAGAIN;
+		if (err == NULL)
+			err = "read R BLOCK";
+		rfd = SSL_get_rfd(so->con);
+		wfd = SSL_get_wfd(so->con);
+		try = tls_retry(so->con, rfd, wfd, tlsstart,
+				DATA_PROGRESS_TIMEOUT, ssl_err, "write");
+		if (try > 0)
+			goto retry;
+		errno = SM_ERR_TIMEOUT;
 		break;
 	  case SSL_ERROR_WANT_X509_LOOKUP:
 		err = "write X BLOCK";
@@ -632,16 +857,36 @@ tls_write(fp, buf, size)
 */
 		if (LogLevel > 9)
 			tlslogerr("write");
+
+#if DEAL_WITH_ERROR_SSL
+		/* avoid repeated calls? */
+		if (r == 0)
+			r = -1;
+#endif /* DEAL_WITH_ERROR_SSL */
 		break;
 	}
 	if (err != NULL)
 	{
-		again = MAX_TLS_IOS;
-		if (errno == 0)
-			errno = EIO;
-		if (LogLevel > 7)
+		int save_errno;
+
+		save_errno = (errno == 0) ? EIO : errno;
+		if (try == 0 && save_errno == SM_ERR_TIMEOUT)
+		{
+			if (LogLevel > 7)
+				sm_syslog(LOG_WARNING, NOQID,
+					  "STARTTLS: write error=timeout");
+		}
+		else if (LogLevel > 8)
 			sm_syslog(LOG_WARNING, NOQID,
-				  "STARTTLS: write error=%s (%d)", err, r);
+				  "STARTTLS: write error=%s (%d), errno=%d, get_error=%s, retry=%d, ssl_err=%d",
+				  err, r, errno,
+				  ERR_error_string(ERR_get_error(), NULL), try,
+				  ssl_err);
+		else if (LogLevel > 7)
+			sm_syslog(LOG_WARNING, NOQID,
+				  "STARTTLS: write error=%s (%d), errno=%d, retry=%d, ssl_err=%d",
+				  err, r, errno, try, ssl_err);
+		errno = save_errno;
 	}
 	return r;
 }
@@ -653,7 +898,7 @@ tls_write(fp, buf, size)
 **	Parameters:
 **		fin -- data input source being replaced
 **		fout -- data output source being replaced
-**		conn -- the tls connection pointer
+**		con -- the tls connection pointer
 **
 **	Returns:
 **		-1 on error
@@ -685,13 +930,13 @@ sfdctls(fin, fout, con)
 		SM_TIME_FOREVER);
 	info.fp = *fin;
 	info.con = con;
-	tlsin = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_RDONLY,
+	tlsin = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_RDONLY_B,
 			   NULL);
 	if (tlsin == NULL)
 		return -1;
 
 	info.fp = *fout;
-	tlsout = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_WRONLY,
+	tlsout = sm_io_open(&tls_vector, SM_TIME_DEFAULT, &info, SM_IO_WRONLY_B,
 			    NULL);
 	if (tlsout == NULL)
 	{

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: rwhod.8,v 1.15 2003/10/04 07:51:32 deraadt Exp $
+.\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,76 +28,85 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)rwhod.8	8.2 (Berkeley) 12/11/93
-.\"     $Id: rwhod.8,v 1.4 1994/05/29 02:53:21 jtc Exp $
+.\"     $OpenBSD: rwhod.8,v 1.15 2003/10/04 07:51:32 deraadt Exp $
 .\"
 .Dd December 11, 1993
 .Dt RWHOD 8
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm rwhod
 .Nd system status server
 .Sh SYNOPSIS
 .Nm rwhod
+.Op Fl d
 .Sh DESCRIPTION
-.Nm Rwhod
+.Nm
 is the server which maintains the database used by the
 .Xr rwho 1
 and
 .Xr ruptime 1
-programs.  Its operation is predicated on the ability to
+programs.
+Its operation is predicated on the ability to
 .Em broadcast
 messages on a network.
 .Pp
-.Nm Rwhod
+.Nm
 operates as both a producer and consumer of status information.
 As a producer of information it periodically
 queries the state of the system and constructs
 status messages which are broadcast on a network.
 As a consumer of information, it listens for other
-.Nm rwhod
+.Nm
 servers' status messages, validating them, then recording
 them in a collection of files located in the directory
 .Pa /var/rwho .
 .Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl d
+Turn on debug mode.
+.El
+.Pp
 The server transmits and receives messages at the port indicated
-in the ``rwho'' service specification; see 
+in the ``who'' service specification; see
 .Xr services 5 .
 The messages sent and received, are of the form:
 .Bd -literal -offset indent
 struct	outmp {
 	char	out_line[8];		/* tty name */
 	char	out_name[8];		/* user id */
-	long	out_time;		/* time on */
+	int32_t	out_time;		/* time on */
 };
 
 struct	whod {
 	char	wd_vers;
 	char	wd_type;
 	char	wd_fill[2];
-	int	wd_sendtime;
-	int	wd_recvtime;
+	int32_t	wd_sendtime;
+	int32_t	wd_recvtime;
 	char	wd_hostname[32];
-	int	wd_loadav[3];
-	int	wd_boottime;
+	int32_t	wd_loadav[3];
+	int32_t	wd_boottime;
 	struct	whoent {
 		struct	outmp we_utmp;
-		int	we_idle;
+		int32_t	we_idle;
 	} wd_we[1024 / sizeof (struct whoent)];
 };
 .Ed
 .Pp
 All fields are converted to network byte order prior to
-transmission.  The load averages are as calculated by the
+transmission.
+The load averages are as calculated by the
 .Xr w 1
-program, and represent load averages over the 5, 10, and 15 minute 
+program, and represent load averages over the 5, 10, and 15 minute
 intervals prior to a server's transmission; they are multiplied by 100
-for representation in an integer.  The host name
-included is that returned by the
-.Xr gethostname 2
-system call, with any trailing domain name omitted.
+for representation in an integer.
+The host name included is that returned by
+.Xr gethostname 3
+with any trailing domain name omitted.
 The array at the end of the message contains information about
-the users logged in to the sending machine.  This information 
-includes the contents of the 
+the users logged in to the sending machine.
+This information includes the contents of the
 .Xr utmp 5
 entry for each non-idle terminal line and a value indicating the
 time in seconds since a character was last received on the terminal line.
@@ -108,12 +115,14 @@ Messages received by the
 .Xr rwho
 server are discarded unless they originated at an
 .Xr rwho
-server's port.  In addition, if the host's name, as specified
+server's port.
+In addition, if the host's name, as specified
 in the message, contains any unprintable
 .Tn ASCII
 characters, the
-message is discarded.  Valid messages received by
-.Nm rwhod
+message is discarded.
+Valid messages received by
+.Nm
 are placed in files named
 .Pa whod.hostname
 in the directory
@@ -123,25 +132,17 @@ format described above.
 .Pp
 Status messages are generated approximately once every
 3 minutes.
-.Nm Rwhod
-performs an
-.Xr nlist 3
-on
-.Pa /netbsd
-every 30 minutes to guard against
-the possibility that this file is not the system
-image currently operating.
 .Sh SEE ALSO
-.Xr rwho 1 ,
-.Xr ruptime 1
-.Sh BUGS
-There should be a way to relay status information between networks. 
-Status information should be sent only upon request rather than continuously.
-People often interpret the server dying
-or network communication failures
-as a machine going down.
+.Xr ruptime 1 ,
+.Xr rwho 1
 .Sh HISTORY
 The
 .Nm
 command appeared in
 .Bx 4.2 .
+.Sh BUGS
+There should be a way to relay status information between networks.
+Status information should be sent only upon request rather than continuously.
+People often interpret the server dying
+or network communication failures
+as a machine going down.

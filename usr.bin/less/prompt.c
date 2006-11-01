@@ -43,7 +43,7 @@ extern char *editproto;
 static constant char s_proto[] =
   "?n?f%f .?m(%T %i of %m) ..?e(END) ?x- Next\\: %x..%t";
 static constant char m_proto[] =
-  "?n?f%f .?m(%T %i of %m) ..?e(END) ?x- Next\\: %x.:?pB%pB\\%:byte %bB?s/%s...%t";
+  "?f%f .?m(%T %i of %m) ..?e(END) ?x- Next\\: %x.:?pB%pB\\%:byte %bB?s/%s...%t";
 static constant char M_proto[] =
   "?f%f .?n?m(%T %i of %m) ..?ltlines %lt-%lb?L/%L. :byte %bB?s/%s. .?e(END) ?x- Next\\: %x.:?pB%pB\\%..%t";
 static constant char e_proto[] =
@@ -115,7 +115,7 @@ ap_pos(pos)
 {
 	char buf[INT_STRLEN_BOUND(pos) + 2];
 
-	postoa(pos, buf);
+	postoa(pos, buf, sizeof(buf));
 	ap_str(buf);
 }
 
@@ -128,7 +128,7 @@ ap_linenum(linenum)
 {
 	char buf[INT_STRLEN_BOUND(linenum) + 2];
 
-	linenumtoa(linenum, buf);
+	linenumtoa(linenum, buf, sizeof(buf));
 	ap_str(buf);
 }
 
@@ -141,7 +141,7 @@ ap_int(num)
 {
 	char buf[INT_STRLEN_BOUND(num) + 2];
 
-	inttoa(num, buf);
+	inttoa(num, buf, sizeof(buf));
 	ap_str(buf);
 }
 
@@ -550,9 +550,7 @@ pr_string()
 {
 	char *prompt;
 
-	prompt = pr_expand((ch_getflags() & CH_HELPFILE) ?
-				hproto : prproto[pr_type],
-			sc_width-so_s_width-so_e_width-2);
+	prompt = pr_expand(prproto[pr_type], sc_width-so_s_width-so_e_width-2);
 	new_file = 0;
 	return (prompt);
 }

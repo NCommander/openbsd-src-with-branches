@@ -284,13 +284,13 @@ void ssl_pphrase_Handle(server_rec *s, pool *p)
                 /*
                  * Ok, anything else now means a fatal error.
                  */
-                if (cpPassPhraseCur == NULL)
+                if (cpPassPhraseCur == NULL) {
                     ssl_log(pServ, SSL_LOG_ERROR|SSL_ADD_SSLERR, "Init: Private key not found");
                     if (sc->nPassPhraseDialogType == SSL_PPTYPE_BUILTIN) {
                         fprintf(stdout, "Apache:mod_ssl:Error: Private key not found.\n");
                         fprintf(stdout, "**Stopped\n");
                     }
-                else {
+                } else {
                     ssl_log(pServ, SSL_LOG_ERROR|SSL_ADD_SSLERR, "Init: Pass phrase incorrect");
                     if (sc->nPassPhraseDialogType == SSL_PPTYPE_BUILTIN) {
                         fprintf(stdout, "Apache:mod_ssl:Error: Pass phrase incorrect.\n");
@@ -346,6 +346,16 @@ void ssl_pphrase_Handle(server_rec *s, pool *p)
                 nPassPhrase++;
             }
 
+	    /*
+	     * For RSA keys, add blinding.
+	     */
+	    if (at == SSL_ALGO_RSA)
+		    if (RSA_blinding_on (pPrivateKey->pkey.rsa, NULL) != 1) {
+			    ssl_log(s, SSL_LOG_ERROR|SSL_ADD_SSLERR,
+				    "Init: RSA blinding failed for private key");
+			    ssl_die();
+		    }		
+    
             /*
              * Insert private key into the global module configuration
              * (we convert it to a stand-alone DER byte sequence
@@ -440,9 +450,6 @@ int ssl_pphrase_Handle_CB(char *buf, int bufsize, int verify)
     if (sc->nPassPhraseDialogType == SSL_PPTYPE_BUILTIN) {
         char *prompt;
         int i;
-#ifdef WIN32
-        FILE *con;
-#endif
 
         ssl_log(s, SSL_LOG_INFO,
                 "Init: Requesting pass phrase via builtin terminal dialog");
@@ -452,21 +459,10 @@ int ssl_pphrase_Handle_CB(char *buf, int bufsize, int verify)
          * at our init stage Apache already connected STDERR
          * to the general error logfile.
          */
-#ifdef WIN32
-        stderr_store = STDERR_FILENO_STORE;
-#else
         if ((stderr_store = open("/dev/null", O_WRONLY)) == -1)
             stderr_store = STDERR_FILENO_STORE;
-#endif
         dup2(STDERR_FILENO, stderr_store);
-#ifdef WIN32
-        if ((con = fopen("con", "w")) != NULL)
-            dup2(fileno(con), STDERR_FILENO);
-        else
-            dup2(STDOUT_FILENO, STDERR_FILENO);
-#else
         dup2(STDOUT_FILENO, STDERR_FILENO);
-#endif
 
         /*
          * The first time display a header to inform the user about what
@@ -509,10 +505,6 @@ int ssl_pphrase_Handle_CB(char *buf, int bufsize, int verify)
          */
         dup2(stderr_store, STDERR_FILENO);
         close(stderr_store);
-#ifdef WIN32
-        if (con != NULL)
-            fclose(con);
-#endif
     }
 
     /*

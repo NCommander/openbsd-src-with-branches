@@ -47,7 +47,7 @@ static krb5_log_facility *log_facility;
 static struct getarg_strings addresses_str;
 krb5_addresses explicit_addresses;
 
-static sig_atomic_t exit_flag = 0;
+static volatile sig_atomic_t exit_flag = 0;
 
 static void
 add_one_address (const char *str, int first)

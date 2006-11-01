@@ -1,6 +1,12 @@
-/*-
- * Copyright (c) 1991 The Regents of the University of California.
- * All rights reserved.
+/*	$OpenBSD: isinf.c,v 1.5 2003/06/02 20:18:32 millert Exp $	*/
+
+/*
+ * Copyright (c) 1992, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * This software was developed by the Computer Systems Engineering group
+ * at Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and
+ * contributed to Berkeley.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,35 +33,15 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)isinf.c	5.1 (Berkeley) 3/18/91";*/
-static char rcsid[] = "$Id: isinf.c,v 1.1.1.1 1996/09/30 05:09:55 drahn Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
+#include <machine/ieee.h>
 
-isnan(d)
-	double d;
-{
-	register struct IEEEdp {
-		u_int manl : 32;
-		u_int manh : 20;
-		u_int  exp : 11;
-		u_int sign :  1;
-	} *p = (struct IEEEdp *)&d;
-
-	return(p->exp == 2047 && (p->manh || p->manl));
-}
-
+int
 isinf(d)
 	double d;
 {
-	register struct IEEEdp {
-		u_int manl : 32;
-		u_int manh : 20;
-		u_int  exp : 11;
-		u_int sign :  1;
-	} *p = (struct IEEEdp *)&d;
+	struct ieee_double *p = (struct ieee_double *)&d;
 
-	return(p->exp == 2047 && !p->manh && !p->manl);
+	return (p->dbl_exp == DBL_EXP_INFNAN &&
+	    p->dbl_frach == 0 && p->dbl_fracl == 0);
 }

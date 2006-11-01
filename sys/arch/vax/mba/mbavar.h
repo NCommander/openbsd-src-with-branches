@@ -1,4 +1,5 @@
-/*	$NetBSD: mbavar.h,v 1.1 1995/02/13 00:44:04 ragge Exp $ */
+/*	$OpenBSD$	*/
+/*	$NetBSD: mbavar.h,v 1.7 2000/06/04 18:04:39 ragge Exp $ */
 /*
  * Copyright (c) 1994 Ludd, University of Lule}, Sweden
  * All rights reserved.
@@ -29,9 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /* All bugs are subject to removal without further notice */
-
-/* Mba n}nting... ragge 940311 */
+#include <sys/device.h>
+#include <machine/scb.h>
 
 #define MBCR_INIT	1
 #define	MBCR_IE		(1<<2)
@@ -47,48 +47,79 @@
 #define	OPEN		3
 #define	OPENRAW		4
 
-struct mba_ctrl {
-	struct mba_regs *mba_regs;
-	struct mba_device *mba_device[8];
+#define	MAXMBADEV	8	/* Max units per MBA */
+
+/*
+ * Devices that have different device drivers.
+ */
+enum	mb_devices {
+	MB_RP,	/* RM/RP disk */
+	MB_TU,	/* TM03 based tape, ex. TU45 or TU77 */
+	MB_MT	/* TU78 tape */
 };
 
-struct mba_device {
-	struct mba_driver *driver;
-	int unit;
-	int mbanum;
-	int drive;
-	int dk;
-	int alive;
-	int type;
-	struct mba_regs *mi_mba;
-	struct mba_hd *hd;
-	int drv;
-	int device;
+/*
+ * Current state of the adapter.
+ */
+enum    sc_state {
+	SC_AUTOCONF,
+	SC_ACTIVE,
+	SC_IDLE
 };
 
-struct mba_slave {
-	struct mba_driver *driver;
-	int ctlr;
-	int unit;
-	int slave;
-	int alive;
+/*
+ * Return value after a finished data transfer, from device driver.
+ */
+enum	xfer_action {
+	XFER_RESTART,
+	XFER_FINISH
 };
 
-struct mba_driver {
-	int (*slave)();
-	char *sname;
-	char *dname;
-	short *type;
-	int (*attach)();
-	struct mba_device **info;
+/*
+ * Info passed do unit device driver during autoconfig.
+ */
+struct	mba_attach_args {
+	int	ma_unit;
+        int	ma_type;
+	char	*ma_name;
+	enum	mb_devices ma_devtyp;
+	bus_space_tag_t ma_iot;
+	bus_space_handle_t ma_ioh;
 };
 
-struct mba_hd {
-	struct mba_device *device[8]; /* XXX - Var tidigare mh_mbip */
-	int ndrive;
-	int mh_active;
-	struct mba_regs *mh_mba;
-	struct mba_regs *mh_physmba;
-	struct mba_device *mh_actf;
-	struct mba_device *mh_actl;
+/*
+ * Common struct used to communicate between the mba device driver
+ * and the unit device driver.
+ */
+struct	mba_device {
+	struct	mba_device *md_back;	/* linked list of runnable devices */
+	    /* Start routine to be called by mbastart. */
+	void	(*md_start)(struct mba_device *);
+	    /* Routine to be called after attn intr */
+	int	(*md_attn)(struct mba_device *);
+	    /* Call after xfer finish */
+	enum	xfer_action (*md_finish)(struct mba_device *, int, int *);
+	void	*md_softc;	/* Backpointer to this units softc. */
+	struct	mba_softc *md_mba;
+	struct	buf_queue md_q;	/* queue of I/O requests */
 };
+
+struct	mba_softc {
+	struct  device sc_dev;
+	bus_space_tag_t sc_iot;
+	bus_space_handle_t sc_ioh;
+	struct	evcnt sc_intrcnt;
+	struct	mba_device *sc_first, *sc_last;
+	enum    sc_state sc_state;
+	struct	mba_device *sc_md[MAXMBADEV];
+};
+
+struct  mbaunit {
+	int     nr;
+	char    *name;
+	enum	mb_devices devtyp;
+};
+
+/* Common prototypes */
+void	mbaqueue(struct mba_device *);
+

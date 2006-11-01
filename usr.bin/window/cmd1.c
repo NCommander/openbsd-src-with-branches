@@ -1,4 +1,5 @@
-/*	$NetBSD: cmd1.c,v 1.3 1995/09/28 10:34:03 tls Exp $	*/
+/*	$OpenBSD: cmd1.c,v 1.5 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$NetBSD: cmd1.c,v 1.4 1996/02/08 20:44:59 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)cmd1.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: cmd1.c,v 1.3 1995/09/28 10:34:03 tls Exp $";
+static char rcsid[] = "$OpenBSD: cmd1.c,v 1.5 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -111,17 +108,18 @@ c_window()
 		wwputc('\n', cmdwin);
 	wwcurtowin(cmdwin);
 	(void) openwin(id, row, col, xrow-row+1, xcol-col+1, default_nline,
-		(char *) 0, 1, 1, default_shellfile, default_shell);
+	    (char *) 0, WWT_PTY, WWU_HASFRAME, default_shellfile,
+	    default_shell);
 }
 
 getpos(row, col, minrow, mincol, maxrow, maxcol)
-register int *row, *col;
+int *row, *col;
 int minrow, mincol;
 int maxrow, maxcol;
 {
 	static int scount;
 	int count;
-	char c;
+	int c;
 	int oldrow = *row, oldcol = *col;
 
 	while ((c = wwgetc()) >= 0) {

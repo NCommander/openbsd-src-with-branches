@@ -1,8 +1,10 @@
+/*	$OpenBSD: activate.c,v 1.5 2003/06/02 20:06:16 millert Exp $	*/
 /*	$NetBSD: activate.c,v 1.5 1995/04/23 10:33:18 cgd Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
+ * All rights reserved.
  *
  * This code is derived from software donated to Berkeley by
  * Jan-Simon Pendry.
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +34,7 @@
  * SUCH DAMAGE.
  *
  *	from: Id: activate.c,v 1.2 1992/05/27 07:09:27 jsp Exp
- *	@(#)activate.c	8.2 (Berkeley) 3/27/94
+ *	@(#)activate.c	8.3 (Berkeley) 4/28/95
  */
 
 #include <stdio.h>
@@ -58,12 +56,8 @@
  * Scan the providers list and call the
  * appropriate function.
  */
-static int activate_argv(pcr, key, v, so, fdp)
-struct portal_cred *pcr;
-char *key;
-char **v;
-int so;
-int *fdp;
+static int
+activate_argv(struct portal_cred *pcr, char *key, char **v, int so, int *fdp)
 {
 	provider *pr;
 
@@ -74,22 +68,19 @@ int *fdp;
 	return (ENOENT);
 }
 
-static int get_request(so, pcr, key, klen)
-int so;
-struct portal_cred *pcr;
-char *key;
-int klen;
+static int
+get_request(int so, struct portal_cred *pcr, char *key, int klen)
 {
 	struct iovec iov[2];
 	struct msghdr msg;
 	int n;
 
-	iov[0].iov_base = (caddr_t) pcr;
+	iov[0].iov_base = (caddr_t)pcr;
 	iov[0].iov_len = sizeof(*pcr);
 	iov[1].iov_base = key;
 	iov[1].iov_len = klen;
 
-	memset(&msg, 0, sizeof(msg));
+	(void)memset(&msg, 0, sizeof(msg));
 	msg.msg_iov = iov;
 	msg.msg_iovlen = 2;
 
@@ -106,10 +97,8 @@ int klen;
 	return (0);
 }
 
-static void send_reply(so, fd, error)
-int so;
-int fd;
-int error;
+static void
+send_reply(int so, int fd, int error)
 {
 	int n;
 	struct iovec iov;
@@ -123,13 +112,13 @@ int error;
 	 * Line up error code.  Don't worry about byte ordering
 	 * because we must be sending to the local machine.
 	 */
-	iov.iov_base = (caddr_t) &error;
+	iov.iov_base = (caddr_t)&error;
 	iov.iov_len = sizeof(error);
 
 	/*
 	 * Build a msghdr
 	 */
-	memset(&msg, 0, sizeof(msg));
+	(void)memset(&msg, 0, sizeof(msg));
 	msg.msg_iov = &iov;
 	msg.msg_iovlen = 1;
 
@@ -142,32 +131,31 @@ int error;
 		ctl.cmsg.cmsg_len = sizeof(ctl);
 		ctl.cmsg.cmsg_level = SOL_SOCKET;
 		ctl.cmsg.cmsg_type = SCM_RIGHTS;
-		msg.msg_control = (caddr_t) &ctl;
+		msg.msg_control = (caddr_t)&ctl;
 		msg.msg_controllen = ctl.cmsg.cmsg_len;
 	}
 
 	/*
 	 * Send to kernel...
 	 */
-	if ((n = sendmsg(so, &msg, MSG_EOR)) < 0)
-		syslog(LOG_ERR, "send: %s", strerror(errno));
+	if ((n = sendmsg(so, &msg, 0)) < 0)
+		syslog(LOG_ERR, "send: %m");
 #ifdef DEBUG
-	fprintf(stderr, "sent %d bytes\n", n);
+	(void)fprintf(stderr, "sent %d bytes\n", n);
 #endif
-	sleep(1);	/*XXX*/
+	sleep(1);	/* XXX */
 #ifdef notdef
 	if (shutdown(so, 2) < 0)
-		syslog(LOG_ERR, "shutdown: %s", strerror(errno));
+		syslog(LOG_ERR, "shutdown: %m");
 #endif
 	/*
 	 * Throw away the open file descriptor
 	 */
-	(void) close(fd);
+	(void)close(fd);
 }
 
-void activate(q, so)
-qelem *q;
-int so;
+void
+activate(qelem *q, int so)
 {
 	struct portal_cred pcred;
 	char key[MAXPATHLEN+1];
@@ -180,12 +168,12 @@ int so;
 	 */
 	error = get_request(so, &pcred, key, sizeof(key));
 	if (error) {
-		syslog(LOG_ERR, "activate: recvmsg: %s", strerror(error));
+		syslog(LOG_ERR, "activate: recvmsg: %m");
 		goto drop;
 	}
 
 #ifdef DEBUG
-	fprintf(stderr, "lookup key %s\n", key);
+	(void)fprintf(stderr, "lookup key %s\n", key);
 #endif
 
 	/*

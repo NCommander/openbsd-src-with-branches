@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_open.c,v 1.7 1995/02/27 13:20:27 cgd Exp $	*/
+/*	$OpenBSD: bt_open.c,v 1.12 2005/03/23 19:34:58 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)bt_open.c	8.7 (Berkeley) 6/16/94";
-#else
-static char rcsid[] = "$NetBSD: bt_open.c,v 1.7 1995/02/27 13:20:27 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Implementation of btree access method for 4.4BSD.
@@ -67,9 +55,14 @@ static char rcsid[] = "$NetBSD: bt_open.c,v 1.7 1995/02/27 13:20:27 cgd Exp $";
 #include <db.h>
 #include "btree.h"
 
-static int byteorder __P((void));
-static int nroot __P((BTREE *));
-static int tmp __P((void));
+#ifdef DEBUG
+#undef	MINPSIZE
+#define	MINPSIZE	128
+#endif
+
+static int byteorder(void);
+static int nroot(BTREE *);
+static int tmp(void);
 
 /*
  * __BT_OPEN -- Open a btree.
@@ -88,10 +81,8 @@ static int tmp __P((void));
  *
  */
 DB *
-__bt_open(fname, flags, mode, openinfo, dflags)
-	const char *fname;
-	int flags, mode, dflags;
-	const BTREEINFO *openinfo;
+__bt_open(const char *fname, int flags, int mode, const BTREEINFO *openinfo,
+    int dflags)
 {
 	struct stat sb;
 	BTMETA m;
@@ -126,7 +117,7 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 		 */
 		if (b.psize &&
 		    (b.psize < MINPSIZE || b.psize > MAX_PAGE_OFFSET + 1 ||
-		    b.psize & sizeof(indx_t) - 1))
+		    b.psize & (sizeof(indx_t) - 1)))
 			goto einval;
 
 		/* Minimum number of keys per page; absolute minimum is 2. */
@@ -163,7 +154,6 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 	if ((t = (BTREE *)malloc(sizeof(BTREE))) == NULL)
 		goto err;
 	memset(t, 0, sizeof(BTREE));
-	t->bt_bcursor.pgno = P_INVALID;
 	t->bt_fd = -1;			/* Don't close unopened fd on error. */
 	t->bt_lorder = b.lorder;
 	t->bt_order = NOT;
@@ -173,9 +163,9 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 
 	if ((t->bt_dbp = dbp = (DB *)malloc(sizeof(DB))) == NULL)
 		goto err;
-	t->bt_flags = 0;
+	memset(t->bt_dbp, 0, sizeof(DB));
 	if (t->bt_lorder != machine_lorder)
-		SET(t, B_NEEDSWAP);
+		F_SET(t, B_NEEDSWAP);
 
 	dbp->type = DB_BTREE;
 	dbp->internal = t;
@@ -192,9 +182,9 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 	 * open a backing temporary file.  Otherwise, it's a disk-based tree.
 	 */
 	if (fname) {
-		switch(flags & O_ACCMODE) {
+		switch (flags & O_ACCMODE) {
 		case O_RDONLY:
-			SET(t, B_RDONLY);
+			F_SET(t, B_RDONLY);
 			break;
 		case O_RDWR:
 			break;
@@ -211,7 +201,7 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 			goto einval;
 		if ((t->bt_fd = tmp()) == -1)
 			goto err;
-		SET(t, B_INMEM);
+		F_SET(t, B_INMEM);
 	}
 
 	if (fcntl(t->bt_fd, F_SETFD, 1) == -1)
@@ -233,28 +223,28 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 		 * don't bother to return an error, we just clear the NEEDSWAP
 		 * bit.
 		 */
-		if (m.m_magic == BTREEMAGIC)
-			CLR(t, B_NEEDSWAP);
+		if (m.magic == BTREEMAGIC)
+			F_CLR(t, B_NEEDSWAP);
 		else {
-			SET(t, B_NEEDSWAP);
-			M_32_SWAP(m.m_magic);
-			M_32_SWAP(m.m_version);
-			M_32_SWAP(m.m_psize);
-			M_32_SWAP(m.m_free);
-			M_32_SWAP(m.m_nrecs);
-			M_32_SWAP(m.m_flags);
+			F_SET(t, B_NEEDSWAP);
+			M_32_SWAP(m.magic);
+			M_32_SWAP(m.version);
+			M_32_SWAP(m.psize);
+			M_32_SWAP(m.free);
+			M_32_SWAP(m.nrecs);
+			M_32_SWAP(m.flags);
 		}
-		if (m.m_magic != BTREEMAGIC || m.m_version != BTREEVERSION)
+		if (m.magic != BTREEMAGIC || m.version != BTREEVERSION)
 			goto eftype;
-		if (m.m_psize < MINPSIZE || m.m_psize > MAX_PAGE_OFFSET + 1 ||
-		    m.m_psize & sizeof(indx_t) - 1)
+		if (m.psize < MINPSIZE || m.psize > MAX_PAGE_OFFSET + 1 ||
+		    m.psize & (sizeof(indx_t) - 1))
 			goto eftype;
-		if (m.m_flags & ~SAVEMETA)
+		if (m.flags & ~SAVEMETA)
 			goto eftype;
-		b.psize = m.m_psize;
-		t->bt_flags |= m.m_flags;
-		t->bt_free = m.m_free;
-		t->bt_nrecs = m.m_nrecs;
+		b.psize = m.psize;
+		F_SET(t, m.flags);
+		t->bt_free = m.free;
+		t->bt_nrecs = m.nrecs;
 	} else {
 		/*
 		 * Set the page size to the best value for I/O to this file.
@@ -270,18 +260,18 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 
 		/* Set flag if duplicates permitted. */
 		if (!(b.flags & R_DUP))
-			SET(t, B_NODUPS);
+			F_SET(t, B_NODUPS);
 
 		t->bt_free = P_INVALID;
 		t->bt_nrecs = 0;
-		SET(t, B_METADIRTY);
+		F_SET(t, B_METADIRTY);
 	}
 
 	t->bt_psize = b.psize;
 
 	/* Set the cache size; must be a multiple of the page size. */
-	if (b.cachesize && b.cachesize & b.psize - 1)
-		b.cachesize += (~b.cachesize & b.psize - 1) + 1;
+	if (b.cachesize && b.cachesize & (b.psize - 1))
+		b.cachesize += (~b.cachesize & (b.psize - 1)) + 1;
 	if (b.cachesize < b.psize * MINCACHE)
 		b.cachesize = b.psize * MINCACHE;
 
@@ -309,7 +299,7 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 	if ((t->bt_mp =
 	    mpool_open(NULL, t->bt_fd, t->bt_psize, ncache)) == NULL)
 		goto err;
-	if (!ISSET(t, B_INMEM))
+	if (!F_ISSET(t, B_INMEM))
 		mpool_filter(t->bt_mp, __bt_pgin, __bt_pgout, t);
 
 	/* Create a root page if new tree. */
@@ -318,11 +308,11 @@ __bt_open(fname, flags, mode, openinfo, dflags)
 
 	/* Global flags. */
 	if (dflags & DB_LOCK)
-		SET(t, B_DB_LOCK);
+		F_SET(t, B_DB_LOCK);
 	if (dflags & DB_SHMEM)
-		SET(t, B_DB_SHMEM);
+		F_SET(t, B_DB_SHMEM);
 	if (dflags & DB_TXN)
-		SET(t, B_DB_TXN);
+		F_SET(t, B_DB_TXN);
 
 	return (dbp);
 
@@ -352,24 +342,30 @@ err:	if (t) {
  *	RET_ERROR, RET_SUCCESS
  */
 static int
-nroot(t)
-	BTREE *t;
+nroot(BTREE *t)
 {
 	PAGE *meta, *root;
 	pgno_t npg;
 
-	if ((meta = mpool_get(t->bt_mp, 0, 0)) != NULL) {
-		mpool_put(t->bt_mp, meta, 0);
-		return (RET_SUCCESS);
+	if ((root = mpool_get(t->bt_mp, 1, 0)) != NULL) {
+		if (root->lower == 0 &&
+		    root->pgno == 0 &&
+		    root->linp[0] == 0) {
+			mpool_delete(t->bt_mp, root);
+			errno = EINVAL;
+		} else {
+			mpool_put(t->bt_mp, root, 0);
+			return (RET_SUCCESS);
+		}
 	}
 	if (errno != EINVAL)		/* It's OK to not exist. */
 		return (RET_ERROR);
 	errno = 0;
 
-	if ((meta = mpool_new(t->bt_mp, &npg)) == NULL)
+	if ((meta = mpool_new(t->bt_mp, &npg, MPOOL_PAGE_NEXT)) == NULL)
 		return (RET_ERROR);
 
-	if ((root = mpool_new(t->bt_mp, &npg)) == NULL)
+	if ((root = mpool_new(t->bt_mp, &npg, MPOOL_PAGE_NEXT)) == NULL)
 		return (RET_ERROR);
 
 	if (npg != P_ROOT)
@@ -386,14 +382,15 @@ nroot(t)
 }
 
 static int
-tmp()
+tmp(void)
 {
 	sigset_t set, oset;
 	int fd;
-	char *envtmp;
+	char *envtmp = NULL;
 	char path[MAXPATHLEN];
 
-	envtmp = getenv("TMPDIR");
+	if (issetugid() == 0)
+		envtmp = getenv("TMPDIR");
 	(void)snprintf(path,
 	    sizeof(path), "%s/bt.XXXXXX", envtmp ? envtmp : "/tmp");
 
@@ -406,7 +403,7 @@ tmp()
 }
 
 static int
-byteorder()
+byteorder(void)
 {
 	u_int32_t x;
 	u_char *p;
@@ -424,8 +421,7 @@ byteorder()
 }
 
 int
-__bt_fd(dbp)
-        const DB *dbp;
+__bt_fd(const DB *dbp)
 {
 	BTREE *t;
 
@@ -438,7 +434,7 @@ __bt_fd(dbp)
 	}
 
 	/* In-memory database can't have a file descriptor. */
-	if (ISSET(t, B_INMEM)) {
+	if (F_ISSET(t, B_INMEM)) {
 		errno = ENOENT;
 		return (-1);
 	}

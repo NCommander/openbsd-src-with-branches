@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.25 2004/02/11 20:41:08 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.6 2005/12/27 18:31:09 miod Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -47,6 +47,9 @@
 #include <machine/disklabel.h>
 #include <machine/vmparam.h>
 
+#include <scsi/scsi_all.h>
+#include <scsi/scsiconf.h>
+
 #include <dev/cons.h>
 
 /*
@@ -57,11 +60,10 @@
 
 struct	device *parsedisk(char *, int, int, dev_t *);
 void	setroot(void);
-void	swapconf(void);
 void	dumpconf(void);
 int	findblkmajor(struct device *);
+void	get_autoboot_device(void);
 struct device *getdisk(char *, int, int, dev_t *);
-struct device *getdevunit(char *name, int unit);
 
 int cold = 1;   /* 1 if still booting */
 
@@ -85,40 +87,13 @@ cpu_configure()
 	 * XXX We have a race here. If we enable interrupts after setroot(),
 	 * the kernel dies.
 	 */
-	enable_interrupt();
+	set_psr(get_psr() & ~PSR_IND);
 	spl0();
 	setroot();
-	swapconf();
+	dumpconf();
 
 	cold = 0;
 }
-
-/*
- * Configure swap space and related parameters.
- */
-void
-swapconf()
-{
-	struct swdevt *swp;
-	int nblks;
-
-	for (swp = swdevt; swp->sw_dev != NODEV; swp++)
-		if (bdevsw[major(swp->sw_dev)].d_psize) {
-			nblks =
-			    (*bdevsw[major(swp->sw_dev)].d_psize)(swp->sw_dev);
-			if (nblks != -1 &&
-			    (swp->sw_nblks == 0 || swp->sw_nblks > nblks))
-				swp->sw_nblks = nblks;
-			swp->sw_nblks = ctod(dtoc(swp->sw_nblks));
-		}
-
-	dumpconf();
-}
-
-/*
- * the rest of this file was adapted from Theo de Raadt's code in the
- * sparc port to nuke the "options GENERIC" stuff.
- */
 
 struct nam2blk {
 	char *name;
@@ -152,8 +127,7 @@ getdisk(str, len, defpart, devp)
 
 	if ((dv = parsedisk(str, len, defpart, devp)) == NULL) {
 		printf("use one of:");
-		for (dv = alldevs.tqh_first; dv != NULL;
-		    dv = dv->dv_list.tqe_next) {
+		TAILQ_FOREACH(dv, &alldevs, dv_list) {
 			if (dv->dv_class == DV_DISK)
 				printf(" %s[a-p]", dv->dv_xname);
 #ifdef NFSCLIENT
@@ -186,7 +160,7 @@ parsedisk(str, len, defpart, devp)
 	} else
 		part = defpart;
 
-	for (dv = alldevs.tqh_first; dv != NULL; dv = dv->dv_list.tqe_next) {
+	TAILQ_FOREACH(dv, &alldevs, dv_list) {
 		if (dv->dv_class == DV_DISK &&
 		    strcmp(str, dv->dv_xname) == 0) {
 			majdev = findblkmajor(dv);
@@ -233,6 +207,13 @@ setroot()
 
 	printf("boot device: %s\n",
 	    (bootdv) ? bootdv->dv_xname : "<unknown>");
+
+	/*
+	 * If 'swap generic' and we could not determine the boot device,
+	 * ask the user.
+	 */
+	if (mountroot == NULL && bootdv == NULL)
+		boothowto |= RB_ASKNAME;
 
 	if (boothowto & RB_ASKNAME) {
 		for (;;) {
@@ -387,29 +368,75 @@ gotswap:
 }
 
 /*
- * find a device matching "name" and unit number
+ * Get 'auto-boot' information from NVRAM
+ *
+ * XXX Right now we can not handle network boot.
  */
-struct device *
-getdevunit(name, unit)
-	char *name;
-	int unit;
+struct autoboot_t
 {
-	struct device *dev = alldevs.tqh_first;
-	char num[10], fullname[16];
-	int lunit;
+	char	cont[16];
+	int	targ;
+	int	part;
+} autoboot;
 
-	/* compute length of name and decimal expansion of unit number */
-	snprintf(num, sizeof num, "%d", unit);
-	lunit = strlen(num);
-	if (strlen(name) + lunit >= sizeof(fullname) - 1)
-		panic("config_attach: device name too long");
+void
+get_autoboot_device(void)
+{
+	char *value, c;
+	int i, len, part;
+	extern char *nvram_by_symbol(char *);		/* machdep.c */
 
-	strlcpy(fullname, name, sizeof fullname);
-	strlcat(fullname, num, sizeof fullname);
+	/* Assume default controller is internal spc (spc0) */
+	strlcpy(autoboot.cont, "spc0", sizeof(autoboot.cont));
 
-	while (strcmp(dev->dv_xname, fullname) != 0) {
-		if ((dev = dev->dv_list.tqe_next) == NULL)
-			return NULL;
+	/* Get boot controler and SCSI target from NVRAM */
+	value = nvram_by_symbol("boot_unit");
+	if (value != NULL) {
+		len = strlen(value);
+		if (len == 1) {
+			c = value[0];
+		} else if (len == 2) {
+			if (value[0] == '1') {
+				/* External spc (spc1) */
+				strlcpy(autoboot.cont, "spc1", sizeof(autoboot.cont));
+				c = value[1];
+			}
+		}
+
+		if ((c >= '0') && (c <= '6'))
+			autoboot.targ = 6 - (c - '0');
 	}
-	return dev;
+
+	/* Get partition number from NVRAM */
+	value = nvram_by_symbol("boot_partition");
+	if (value != NULL) {
+		len = strlen(value);
+		part = 0;
+		for (i = 0; i < len; i++)
+			part = part * 10 + (value[i] - '0');
+		autoboot.part = part;
+	}
+}
+
+void
+device_register(struct device *dev, void *aux)
+{
+        /*
+         * scsi: sd,cd  XXX: Can LUNA88K boot from CD-ROM?
+         */
+        if (strncmp("sd", dev->dv_xname, 2) == 0 ||
+            strncmp("cd", dev->dv_xname, 2) == 0) {
+		struct scsibus_attach_args *sa = aux;
+		struct device *spcsc;
+
+		spcsc = dev->dv_parent->dv_parent;
+
+                if (strncmp(autoboot.cont, spcsc->dv_xname, 4) == 0 &&
+		    sa->sa_sc_link->target == autoboot.targ &&
+		    sa->sa_sc_link->lun == 0) {
+                        bootdv = dev;
+			bootpart = autoboot.part;
+                        return;
+                }
+        }
 }

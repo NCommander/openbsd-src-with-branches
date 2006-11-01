@@ -1,3 +1,4 @@
+/*	$OpenBSD: svr4_machdep.h,v 1.6 1997/11/11 22:53:41 deraadt Exp $	 */
 /*	$NetBSD: svr4_machdep.h,v 1.5 1995/03/31 02:51:37 christos Exp $	 */
 
 /*
@@ -68,10 +69,11 @@ typedef struct {
 
 struct svr4_ucontext;
 
-void svr4_getcontext __P((struct proc *, struct svr4_ucontext *,
-			  int, int));
-int svr4_setcontext __P((struct proc *p, struct svr4_ucontext *));
-void svr4_sendsig __P((sig_t, int, int, u_long));
+#ifdef _KERNEL
+void svr4_getcontext(struct proc *, struct svr4_ucontext *, int, int);
+int svr4_setcontext(struct proc *, struct svr4_ucontext *);
+void svr4_sendsig(sig_t, int, int, u_long, int, union sigval);
+#endif
 
 typedef struct {
 	svr4_gregset_t	greg;
@@ -91,6 +93,8 @@ struct svr4_ssd {
 	unsigned int access1;
 	unsigned int access2;
 };
+
+#define SVR4_SYSARCH_GOSF	114	/* get OS features vector */
 
 /*
  * Processor traps

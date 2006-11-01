@@ -1,6 +1,9 @@
 <html>
 <head><title>smfi_delrcpt</title></head>
 <body>
+<!--
+$Sendmail: smfi_delrcpt.html,v 1.9 2003/10/27 15:51:12 ca Exp $
+-->
 <h1>smfi_delrcpt</h1>
 
 <table border="0" cellspacing=4 cellpadding=4>
@@ -49,7 +52,7 @@ Remove a recipient from the current message's envelope.
 <td>smfi_delrcpt will fail and return MI_FAILURE if:
 <ul>
     <li>rcpt is NULL.
-    <li>Adding headers in the current connection state is invalid.
+    <li>Deleting recipients in the current connection state is invalid.
     <li>A network error occurs.
     <li>SMFIF_DELRCPT was not set when <a href="smfi_register.html">smfi_register</a> was called.
 </ul>
@@ -69,11 +72,11 @@ The addresses to be removed must match exactly.  For example, an address and its
 
 <hr size="1">
 <font size="-1">
-Copyright (c) 2000 Sendmail, Inc. and its suppliers.
+Copyright (c) 2000, 2003 Sendmail, Inc. and its suppliers.
 All rights reserved.
 <br>
 By using this file, you agree to the terms and conditions set
-forth in the <a href="LICENSE.txt">LICENSE</a>.
+forth in the LICENSE.
 </font>
 </body>
 </html>

@@ -220,7 +220,7 @@ get_cred5(const char *princ, const char *inst, const char *krealm,
  out:
     if (id)
 	krb5_cc_close(context, id);
-    if (context);
+    if (context)
 	krb5_free_context(context);
 
     return ret;
@@ -280,7 +280,7 @@ arlalib_get_cred_krb (const char *cell, const char *host,
 	    return ret;
 
 	if (kticket.length >= ticket_len)
-	    abort();
+	    errx(-1, "kticket length >= ticket_len");
 
 	ct->ViceId = getuid();
 	ct->AuthHandle = 0;

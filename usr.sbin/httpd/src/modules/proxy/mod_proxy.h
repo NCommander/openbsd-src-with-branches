@@ -203,6 +203,8 @@ typedef struct {
     char recv_buffer_size_set;
     size_t io_buffer_size;
     char io_buffer_size_set;
+    int preserve_host;
+    int preserve_host_set;
 } proxy_server_conf;
 
 struct hdr_entry {
@@ -302,7 +304,7 @@ void ap_proxy_write_headers(cache_req *c, const char *respline, table *t);
 int ap_proxy_liststr(const char *list, const char *key, char **val);
 void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength);
 int ap_proxy_hex2sec(const char *x);
-void ap_proxy_sec2hex(int t, char *y);
+int ap_proxy_sec2hex(int t, char *y, int len);
 cache_req *ap_proxy_cache_error(cache_req *r);
 int ap_proxyerror(request_rec *r, int statuscode, const char *message);
 const char *ap_proxy_host2addr(const char *host, struct hostent *reqhp);

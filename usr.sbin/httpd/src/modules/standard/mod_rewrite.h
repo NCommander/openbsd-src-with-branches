@@ -102,9 +102,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <ctype.h>
-#ifndef NETWARE
 #include <sys/types.h>
-#endif
 #include <sys/stat.h>
 
     /* Include from the Apache server ... */
@@ -129,15 +127,13 @@
      * But we have to stat the file for the mtime,
      * so we also need to know the file extension
      */
-#ifndef NO_DBM_REWRITEMAP
 #include <ndbm.h>
 #if defined(DBM_SUFFIX)
 #define NDBM_FILE_SUFFIX DBM_SUFFIX
-#elif defined(__FreeBSD__) || (defined(DB_LOCK) && defined(DB_SHMEM))
+#elif (defined(DB_LOCK) && defined(DB_SHMEM))
 #define NDBM_FILE_SUFFIX ".db"
 #else
 #define NDBM_FILE_SUFFIX ".pag"
-#endif
 #endif
 
 
@@ -147,33 +143,16 @@
      * Small monkey business to ensure that fcntl is preferred,
      * unless we specified USE_FLOCK_SERIALIZED_ACCEPT during compile.
      */
-#if defined(HAVE_FCNTL_SERIALIZED_ACCEPT) && !defined(USE_FLOCK_SERIALIZED_ACCEPT)
-#define USE_FCNTL 1
-#include <fcntl.h>
-#elif defined(HAVE_FLOCK_SERIALIZED_ACCEPT)
 #define USE_FLOCK 1
 #include <sys/file.h>
-#endif
 #if !defined(USE_FCNTL) && !defined(USE_FLOCK)
 #define USE_FLOCK 1
-#if !defined(MPE) && !defined(WIN32) && !defined(__TANDEM) && !defined(NETWARE)
 #include <sys/file.h>
-#endif
 #ifndef LOCK_UN
 #undef USE_FLOCK
 #define USE_FCNTL 1
 #include <fcntl.h>
 #endif
-#endif
-#if defined(AIX) || defined(AIXIA64)
-#undef USE_FLOCK
-#define USE_FCNTL 1
-#include <fcntl.h>
-#endif
-#ifdef WIN32
-#undef USE_FCNTL
-#define USE_LOCKING
-#include <sys/locking.h>
 #endif
 
 
@@ -445,9 +424,7 @@ static char *expand_tildepaths(request_rec *r, char *uri);
     /* rewrite map support functions */
 static char *lookup_map(request_rec *r, char *name, char *key);
 static char *lookup_map_txtfile(request_rec *r, char *file, char *key);
-#ifndef NO_DBM_REWRITEMAP
 static char *lookup_map_dbmfile(request_rec *r, char *file, char *key);
-#endif
 static char *lookup_map_program(request_rec *r, int fpin,
                                 int fpout, char *key);
 static char *lookup_map_internal(request_rec *r,
@@ -510,6 +487,9 @@ static int compare_lexicography(char *cpNum1, char *cpNum2);
     /* Bracketed expression handling */
 static char *find_closing_bracket(char *s, int left, int right);
 static char *find_char_in_brackets(char *s, int c, int left, int right);
+
+    /* Find end of bracketed expression */
+static char *find_closing_bracket(char *s, int left, int right);
 
 #endif /* _MOD_REWRITE_H */
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: lfs_bio.c,v 1.4 1995/06/18 14:48:33 cgd Exp $	*/
+/*	$OpenBSD: lfs_bio.c,v 1.11 2004/06/21 23:50:38 tholo Exp $	*/
+/*	$NetBSD: lfs_bio.c,v 1.5 1996/02/09 22:28:49 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,20 +29,23 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)lfs_bio.c	8.4 (Berkeley) 12/30/93
+ *	@(#)lfs_bio.c	8.10 (Berkeley) 6/10/95
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
 #include <sys/vnode.h>
 #include <sys/resourcevar.h>
 #include <sys/mount.h>
 #include <sys/kernel.h>
+#include <sys/timeout.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/ufsmount.h>
+#include <ufs/ufs/ufs_extern.h>
 
 #include <ufs/lfs/lfs.h>
 #include <ufs/lfs/lfs_extern.h>
@@ -62,23 +62,26 @@ int	locked_queue_count;		/* XXX Count of locked-down buffers. */
 int	lfs_writing;			/* Set if already kicked off a writer
 					   because of buffer space */
 /*
-#define WRITE_THRESHHOLD	((nbuf >> 2) - 10)
-#define WAIT_THRESHHOLD		((nbuf >> 1) - 10)
+#define WRITE_THRESHOLD		((nbuf >> 2) - 10)
+#define WAIT_THRESHOLD		((nbuf >> 1) - 10)
 */
-#define WAIT_THRESHHOLD         (nbuf - (nbuf >> 2) - 10)
-#define WRITE_THRESHHOLD        ((nbuf >> 1) - 10)
+#define WAIT_THRESHOLD          (nbuf - (nbuf >> 2) - 10)
+#define WRITE_THRESHOLD         ((nbuf >> 1) - 10)
 #define LFS_BUFWAIT	2
 
+struct timeout wakeup_timeout;
+
 int
-lfs_bwrite(ap)
+lfs_bwrite(v)
+	void *v;
+{
 	struct vop_bwrite_args /* {
 		struct buf *a_bp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct buf *bp = ap->a_bp;
 	struct lfs *fs;
 	struct inode *ip;
-	int error, s;
+	int db, error, s;
 
 	/*
 	 * Set the delayed write flag and use reassignbuf to move the buffer
@@ -96,12 +99,15 @@ lfs_bwrite(ap)
 	 */
 	if (!(bp->b_flags & B_LOCKED)) {
 		fs = VFSTOUFS(bp->b_vp->v_mount)->um_lfs;
-		while (!LFS_FITS(fs, fsbtodb(fs, 1)) && !IS_IFILE(bp) &&
+		db = fragstodb(fs, numfrags(fs, bp->b_bcount));
+		while (!LFS_FITS(fs, db) && !IS_IFILE(bp) &&
 		    bp->b_lblkno > 0) {
 			/* Out of space, need cleaner to run */
 			wakeup(&lfs_allclean_wakeup);
-			if (error = tsleep(&fs->lfs_avail, PCATCH | PUSER,
-			    "cleaner", NULL)) {
+			wakeup(&fs->lfs_nextseg);
+			error = tsleep(&fs->lfs_avail, PCATCH | PUSER,
+				       "cleaner", NULL);
+			if (error) {
 				brelse(bp);
 				return (error);
 			}
@@ -110,12 +116,21 @@ lfs_bwrite(ap)
 		if (!(ip->i_flag & IN_MODIFIED))
 			++fs->lfs_uinodes;
 		ip->i_flag |= IN_CHANGE | IN_MODIFIED | IN_UPDATE;
-		fs->lfs_avail -= fsbtodb(fs, 1);
+		fs->lfs_avail -= db;
 		++locked_queue_count;
-		bp->b_flags |= B_DELWRI | B_LOCKED;
-		bp->b_flags &= ~(B_READ | B_ERROR);
+		bp->b_flags |= B_LOCKED;
+		TAILQ_INSERT_TAIL(&bdirties, bp, b_synclist);
+		bp->b_synctime = time_second + 30;
 		s = splbio();
-		reassignbuf(bp, bp->b_vp);
+		if (TAILQ_FIRST(&bdirties) == bp) {
+			if (timeout_triggered(&wakeup_timeout))
+				timeout_del(&wakeup_timeout);
+			if (!timeout_initialized(&wakeup_timeout))
+				timeout_set(&wakeup_timeout, wakeup, &bdirties);
+			timeout_add(&wakeup_timeout, 30 * hz);
+		}
+		bp->b_flags &= ~(B_READ | B_ERROR);
+		buf_dirty(bp);
 		splx(s);
 	}
 	brelse(bp);
@@ -141,11 +156,10 @@ lfs_flush()
 	if (lfs_writing)
 		return;
 	lfs_writing = 1;
-	for (mp = mountlist.cqh_first; mp != (void *)&mountlist;
-	     mp = mp->mnt_list.cqe_next) {
+	CIRCLEQ_FOREACH(mp, &mountlist, mnt_list) {
 		/* The lock check below is to avoid races with unmount. */
 		if (!strncmp(&mp->mnt_stat.f_fstypename[0], MOUNT_LFS, MFSNAMELEN) &&
-		    (mp->mnt_flag & (MNT_MLOCK|MNT_RDONLY|MNT_UNMOUNT)) == 0 &&
+		    (mp->mnt_flag & (MNT_RDONLY)) == 0 &&
 		    !((((struct ufsmount *)mp->mnt_data))->ufsmount_u.lfs)->lfs_dirops ) {
 			/*
 			 * We set the queue to 0 here because we are about to
@@ -166,19 +180,18 @@ lfs_flush()
 int
 lfs_check(vp, blkno)
 	struct vnode *vp;
-	daddr_t blkno;
+	ufs_daddr_t blkno;
 {
-	extern int lfs_allclean_wakeup;
 	int error;
 
 	error = 0;
 	if (incore(vp, blkno))
 		return (0);
-	if (locked_queue_count > WRITE_THRESHHOLD)
+	if (locked_queue_count > WRITE_THRESHOLD)
 		lfs_flush();
 
 	/* If out of buffers, wait on writer */
-	while (locked_queue_count > WAIT_THRESHHOLD) {
+	while (locked_queue_count > WAIT_THRESHOLD) {
 #ifdef DOSTATS
 	    ++lfs_stats.wait_exceeded;
 #endif

@@ -20,6 +20,12 @@ static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.9 89/12/10 16:12:25 rws Exp $";
 #include <X11/Xmu/Converters.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <unistd.h>
+#ifndef HAVE_MKSTEMP
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 #include "DviP.h"
 
 /****************************************************************
@@ -380,12 +386,18 @@ static void OpenFile (dw)
 	DviWidget	dw;
 {
 	char	tmpName[sizeof ("/tmp/dviXXXXXX")];
+	int	fd;
 
 	dw->dvi.tmpFile = 0;
 	if (!dw->dvi.seek) {
 		strcpy (tmpName, "/tmp/dviXXXXXX");
+#ifdef HAVE_MKSTEMP
+		fd = mkstemp (tmpName);
+#else /* not HAVE_MKSTEMP */
 		mktemp (tmpName);
-		dw->dvi.tmpFile = fopen (tmpName, "w+");
+		fd = open (tmpName, O_CREAT|O_EXCL|O_RDWR, S_IRUSR|S_IWUSR);
+#endif /* not HAVE_MKSTEMP */
+		dw->dvi.tmpFile = fdopen (fd, "w+");
 		unlink (tmpName);
 	}
 	dw->dvi.requested_page = 1;

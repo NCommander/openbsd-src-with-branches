@@ -1,3 +1,5 @@
+/* $OpenBSD: httpd.h,v 1.26 2005/06/15 00:00:16 niallo Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -70,19 +72,15 @@ extern "C" {
 /* Headers in which EVERYONE has an interest... */
 
 #include "ap_config.h"
-#ifdef EAPI
 #include "ap_mm.h"
-#endif
 #include "ap_alloc.h"
 /*
  * Include the Extended API headers.
  * Don't move the position. It has to be after ap_alloc.h because it uses the
- * pool stuff but before buff.h because the buffer stuff uses the EAPI, too. 
+ * pool stuff but before buff.h because the buffer stuff uses the EAPI, too.
  */
-#ifdef EAPI
 #include "ap_hook.h"
 #include "ap_ctx.h"
-#endif /* EAPI */
 #include "buff.h"
 #include "ap.h"
 
@@ -92,31 +90,14 @@ extern "C" {
  * file with a relative pathname will have this added.
  */
 #ifndef HTTPD_ROOT
-#ifdef OS2
-/* Set default for OS/2 file system */
-#define HTTPD_ROOT "/os2httpd"
-#elif defined(WIN32)
-/* Set default for Windows file system */
-#define HTTPD_ROOT "/apache"
-#elif defined(BEOS) || defined(BONE)
-#define HTTPD_ROOT "/boot/home/apache"
-#elif defined(NETWARE)
-#define HTTPD_ROOT "sys:/apache"
-#else
 #define HTTPD_ROOT "/usr/local/apache"
-#endif
 #endif /* HTTPD_ROOT */
 
 /* Default location of documents.  Can be overridden by the DocumentRoot
  * directive.
  */
 #ifndef DOCUMENT_LOCATION
-#ifdef OS2
-/* Set default for OS/2 file system */
-#define DOCUMENT_LOCATION  HTTPD_ROOT "/docs"
-#else
 #define DOCUMENT_LOCATION  HTTPD_ROOT "/htdocs"
-#endif
 #endif /* DOCUMENT_LOCATION */
 
 /* Max. number of dynamically loaded modules */
@@ -132,11 +113,11 @@ extern "C" {
 #define TARGET "httpd"
 #endif
 
-/* 
+/*
  * --------- You shouldn't have to edit anything below this line ----------
  *
  * Any modifications to any defaults not defined above should be done in the 
- * respective config. file. 
+ * respective config. file.
  *
  */
 
@@ -153,18 +134,12 @@ extern "C" {
 #define DEFAULT_HTTP_PORT	80
 #define DEFAULT_HTTPS_PORT	443
 #define ap_is_default_port(port,r)	((port) == ap_default_port(r))
-#ifdef NETWARE
-#define ap_http_method(r) ap_os_http_method((void*)r)
-#define ap_default_port(r) ap_os_default_port((void*)r)
-#else
-#ifdef EAPI
-#define ap_http_method(r)   (((r)->ctx != NULL && ap_ctx_get((r)->ctx, "ap::http::method") != NULL) ? ((char *)ap_ctx_get((r)->ctx, "ap::http::method")) : "http")
-#define ap_default_port(r)  (((r)->ctx != NULL && ap_ctx_get((r)->ctx, "ap::default::port") != NULL) ? atoi((char *)ap_ctx_get((r)->ctx, "ap::default::port")) : DEFAULT_HTTP_PORT)
-#else /* EAPI */
-#define ap_http_method(r)	"http"
-#define ap_default_port(r)	DEFAULT_HTTP_PORT
-#endif /* EAPI */
-#endif
+#define ap_http_method(r)   (((r)->ctx != NULL && ap_ctx_get((r)->ctx, \
+    "ap::http::method") != NULL) ? ((char *)ap_ctx_get((r)->ctx,       \
+    "ap::http::method")) : "http")
+#define ap_default_port(r)  (((r)->ctx != NULL && ap_ctx_get((r)->ctx, \
+    "ap::default::port") != NULL) ? atoi((char *)ap_ctx_get((r)->ctx,  \
+    "ap::default::port")) : DEFAULT_HTTP_PORT)
 
 /* --------- Default user name and group name running standalone ---------- */
 /* --- These may be specified as numbers by placing a # before a number --- */
@@ -177,11 +152,7 @@ extern "C" {
 #endif
 
 #ifndef DEFAULT_ERRORLOG
-#if defined(OS2) || defined(WIN32)
-#define DEFAULT_ERRORLOG "logs/error.log"
-#else
 #define DEFAULT_ERRORLOG "logs/error_log"
-#endif
 #endif /* DEFAULT_ERRORLOG */
 
 #ifndef DEFAULT_PIDLOG
@@ -212,12 +183,7 @@ extern "C" {
 
 /* Define this to be what your per-directory security files are called */
 #ifndef DEFAULT_ACCESS_FNAME
-#ifdef OS2
-/* Set default for OS/2 file system */
-#define DEFAULT_ACCESS_FNAME "htaccess"
-#else
 #define DEFAULT_ACCESS_FNAME ".htaccess"
-#endif
 #endif /* DEFAULT_ACCESS_FNAME */
 
 /* The name of the server config file */
@@ -256,12 +222,7 @@ extern "C" {
 
 /* The path to the shell interpreter, for parsed docs */
 #ifndef SHELL_PATH
-#if defined(OS2) || defined(WIN32)
-/* Set default for OS/2 and Windows file system */
-#define SHELL_PATH "CMD.EXE"
-#else
 #define SHELL_PATH "/bin/sh"
-#endif
 #endif /* SHELL_PATH */
 
 /* The path to the suExec wrapper, can be overridden in Configuration */
@@ -327,13 +288,7 @@ extern "C" {
  * the overhead.
  */
 #ifndef HARD_SERVER_LIMIT
-#ifdef WIN32
-#define HARD_SERVER_LIMIT 1024
-#elif defined(NETWARE)
-#define HARD_SERVER_LIMIT 2048
-#else
 #define HARD_SERVER_LIMIT 256
-#endif
 #endif
 
 /*
@@ -350,7 +305,7 @@ extern "C" {
  *     A fatal error, resulting in the whole server aborting.
  *     If a child exits with this error, the parent process
  *     considers this a server-wide fatal error and aborts.
- *                 
+ *
  */
 #define APEXIT_OK		0x0
 #define APEXIT_INIT		0x2
@@ -374,15 +329,13 @@ extern "C" {
 
 /*
  * Unix only:
- * Path to Shared Memory Files 
+ * Path to Shared Memory Files
  */
-#ifdef EAPI
 #ifndef EAPI_MM_CORE_PATH
 #define EAPI_MM_CORE_PATH "logs/mm"
 #endif
 #ifndef EAPI_MM_CORE_MAXSIZE
 #define EAPI_MM_CORE_MAXSIZE 1024*1024*1 /* max. 1MB */
-#endif
 #endif
 
 /* Number of requests to try to handle in a single process.  If <= 0,
@@ -401,12 +354,29 @@ extern "C" {
 #define DEFAULT_EXCESS_REQUESTS_PER_CHILD 0
 #endif
 
+/* Constrain the rlimits of the child processes */
+#ifndef DEFAULT_MAX_CPU_PER_CHILD
+#define DEFAULT_MAX_CPU_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_DATA_PER_CHILD
+#define DEFAULT_MAX_DATA_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_NOFILE_PER_CHILD
+#define DEFAULT_MAX_NOFILE_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_RSS_PER_CHILD
+#define DEFAULT_MAX_RSS_PER_CHILD 0
+#endif
+#ifndef DEFAULT_MAX_STACK_PER_CHILD
+#define DEFAULT_MAX_STACK_PER_CHILD 0
+#endif
+
 /* The maximum length of the queue of pending connections, as defined
  * by listen(2).  Under some systems, it should be increased if you
  * are experiencing a heavy TCP SYN flood attack.
  *
- * It defaults to 511 instead of 512 because some systems store it 
- * as an 8-bit datatype; 512 truncated to 8-bits is 0, while 511 is 
+ * It defaults to 511 instead of 512 because some systems store it
+ * as an 8-bit datatype; 512 truncated to 8-bits is 0, while 511 is
  * 255 when truncated.
  */
 
@@ -441,7 +411,7 @@ extern "C" {
 #endif /* default limit on number of request header fields */
 
 /*
- * The default default character set name to add if AddDefaultCharset is 
+ * The default default character set name to add if AddDefaultCharset is
  * enabled.  Overridden with AddDefaultCharsetName.
  */
 #define DEFAULT_ADD_DEFAULT_CHARSET_NAME "iso-8859-1"
@@ -453,7 +423,7 @@ extern "C" {
  * The tokens are listed in order of their significance for identifying the
  * application.
  *
- * "Product tokens should be short and to the point -- use of them for 
+ * "Product tokens should be short and to the point -- use of them for
  * advertizing or other non-essential information is explicitly forbidden."
  *
  * Example: "Apache/1.1.0 MrWidget/0.1-alpha" 
@@ -468,18 +438,16 @@ extern "C" {
 #define SERVER_REVISION SERVER_BASEREVISION
 #define SERVER_VERSION  SERVER_PRODUCT "/" SERVER_REVISION
 enum server_token_type {
-    SrvTk_MIN,		/* eg: Apache/1.3.0 */
-    SrvTk_OS,		/* eg: Apache/1.3.0 (UNIX) */
-    SrvTk_FULL,		/* eg: Apache/1.3.0 (UNIX) PHP/3.0 FooBar/1.2b */
-    SrvTk_PRODUCT_ONLY	/* eg: Apache */
+	SrvTk_MIN,	   /* eg: Apache/1.3.0 */
+	SrvTk_OS,	   /* eg: Apache/1.3.0 (UNIX) */
+	SrvTk_FULL,	   /* eg: Apache/1.3.0 (UNIX) PHP/3.0 FooBar/1.2b */
+	SrvTk_PRODUCT_ONLY /* eg: Apache */
 };
 
 API_EXPORT(const char *) ap_get_server_version(void);
 API_EXPORT(void) ap_add_version_component(const char *component);
 API_EXPORT(const char *) ap_get_server_built(void);
-#ifdef EAPI
 API_EXPORT(void) ap_add_config_define(const char *define);
-#endif /* EAPI */
 
 /* Numeric release version identifier: MMNNFFRBB: major minor fix final beta
  * Always increases along the same track as the source branch.
@@ -493,7 +461,7 @@ API_EXPORT(void) ap_add_config_define(const char *define);
 #endif
 
 #define DECLINED -1		/* Module declines to handle */
-#define DONE -2			/* Module has served the response completely 
+#define DONE -2			/* Module has served the response completely
 				 *  - it's safe to die() with no more output
 				 */
 #define OK 0			/* Module has handled this stage. */
@@ -618,9 +586,6 @@ API_EXPORT(void) ap_add_config_define(const char *define);
 #define CGI_MAGIC_TYPE "application/x-httpd-cgi"
 #define INCLUDES_MAGIC_TYPE "text/x-server-parsed-html"
 #define INCLUDES_MAGIC_TYPE3 "text/x-server-parsed-html3"
-#ifdef CHARSET_EBCDIC
-#define ASCIITEXT_MAGIC_TYPE_PREFIX "text/x-ascii-" /* Text files whose content-type starts with this are passed thru unconverted */
-#endif /*CHARSET_EBCDIC*/
 #define MAP_FILE_MAGIC_TYPE "application/x-type-map"
 #define ASIS_MAGIC_TYPE "httpd/send-as-is"
 #define DIR_MAGIC_TYPE "httpd/unix-directory"
@@ -644,25 +609,10 @@ API_EXPORT(void) ap_add_config_define(const char *define);
                           "\"http://www.w3.org/TR/REC-html40/frameset.dtd\">\n"
 
 /* Just in case your linefeed isn't the one the other end is expecting. */
-#ifndef CHARSET_EBCDIC
 #define LF 10
 #define CR 13
 #define CRLF "\015\012"
 #define OS_ASC(c) (c)
-#else /* CHARSET_EBCDIC */
-#include "ap_ebcdic.h"
-/* OSD_POSIX uses the EBCDIC charset. The transition ASCII->EBCDIC is done in
- * the buff package (bread/bputs/bwrite), so everywhere else, we use
- * "native EBCDIC" CR and NL characters. These are therefore defined as
- * '\r' and '\n'.
- * NB: this is not the whole truth - sometimes \015 and \012 are contained
- * in literal (EBCDIC!) strings, so these are not converted but passed.
- */
-#define CR '\r'
-#define LF '\n'
-#define CRLF "\r\n"
-#define OS_ASC(c) (os_toascii[c])
-#endif /* CHARSET_EBCDIC */
 
 /* Possible values for request_rec.read_body (set by handling module):
  *    REQUEST_NO_BODY          Send 413 error if message has any body
@@ -692,11 +642,11 @@ API_EXPORT(void) ap_add_config_define(const char *define);
  * each request.
  */
 struct htaccess_result {
-    char *dir;			/* the directory to which this applies */
-    int override;		/* the overrides allowed for the .htaccess file */
-    void *htaccess;		/* the configuration directives */
-/* the next one, or NULL if no more; N.B. never change this */
-    const struct htaccess_result *next;
+	char *dir;	/* the directory to which this applies */
+	int override;	/* the overrides allowed for the .htaccess file */
+	void *htaccess;	/* the configuration directives */
+	/* the next one, or NULL if no more; N.B. never change this */
+	const struct htaccess_result *next;
 };
 
 typedef struct conn_rec conn_rec;
@@ -714,47 +664,48 @@ enum proxyreqtype {
 
 struct request_rec {
 
-    ap_pool *pool;
-    conn_rec *connection;
-    server_rec *server;
+	ap_pool *pool;
+	conn_rec *connection;
+	server_rec *server;
 
-    request_rec *next;		/* If we wind up getting redirected,
+	request_rec *next;		/* If we wind up getting redirected,
 				 * pointer to the request we redirected to.
 				 */
-    request_rec *prev;		/* If this is an internal redirect,
+	request_rec *prev;		/* If this is an internal redirect,
 				 * pointer to where we redirected *from*.
 				 */
 
-    request_rec *main;		/* If this is a sub_request (see request.h) 
+	request_rec *main;	/* If this is a sub_request (see request.h) 
 				 * pointer back to the main request.
 				 */
 
-    /* Info about the request itself... we begin with stuff that only
-     * protocol.c should ever touch...
-     */
+	/* Info about the request itself... we begin with stuff that only
+	* protocol.c should ever touch...
+	*/
 
-    char *the_request;		/* First line of request, so we can log it */
-    int assbackwards;		/* HTTP/0.9, "simple" request */
-    enum proxyreqtype proxyreq;/* A proxy request (calculated during
+	char *the_request;	/* First line of request, so we can log it */
+	int assbackwards;		/* HTTP/0.9, "simple" request */
+	enum proxyreqtype proxyreq;/* A proxy request (calculated during
 				 * post_read_request or translate_name) */
-    int header_only;		/* HEAD request, as opposed to GET */
-    char *protocol;		/* Protocol, as given to us, or HTTP/0.9 */
-    int proto_num;		/* Number version of protocol; 1.1 = 1001 */
-    const char *hostname;	/* Host, as set by full URI or Host: */
+	int header_only;		/* HEAD request, as opposed to GET */
+	char *protocol;		/* Protocol, as given to us, or HTTP/0.9 */
+	int proto_num;		/* Number version of protocol; 1.1 = 1001 */
+	const char *hostname;	/* Host, as set by full URI or Host: */
 
-    time_t request_time;	/* When the request started */
+	time_t request_time;	/* When the request started */
 
-    const char *status_line;	/* Status line, if set by script */
-    int status;			/* In any case */
+	const char *status_line;	/* Status line, if set by script */
+	int status;			/* In any case */
 
-    /* Request method, two ways; also, protocol, etc..  Outside of protocol.c,
-     * look, but don't touch.
-     */
+	/* Request method, two ways; also, protocol, etc..
+	* Outside of protocol.c,
+	* look, but don't touch.
+	*/
 
-    const char *method;		/* GET, HEAD, POST, etc. */
-    int method_number;		/* M_GET, M_POST, etc. */
+	const char *method;		/* GET, HEAD, POST, etc. */
+	int method_number;		/* M_GET, M_POST, etc. */
 
-    /*
+	/*
 	allowed is a bitvector of the allowed methods.
 
 	A handler must ensure that the request method is one that
@@ -773,120 +724,109 @@ struct request_rec {
 	module which does *not* implement GET should probably return
 	METHOD_NOT_ALLOWED.  Unfortunately this means that a Script GET
 	handler can't be installed by mod_actions.
-    */
-    int allowed;		/* Allowed methods - for 405, OPTIONS, etc */
+	*/
+	int allowed;		/* Allowed methods - for 405, OPTIONS, etc */
 
-    int sent_bodyct;		/* byte count in stream is for body */
-    long bytes_sent;		/* body byte count, for easy access */
-    time_t mtime;		/* Time the resource was last modified */
+	int sent_bodyct;		/* byte count in stream is for body */
+	long bytes_sent;		/* body byte count, for easy access */
+	time_t mtime;		/* Time the resource was last modified */
 
-    /* HTTP/1.1 connection-level features */
+	/* HTTP/1.1 connection-level features */
 
-    int chunked;		/* sending chunked transfer-coding */
-    int byterange;		/* number of byte ranges */
-    char *boundary;		/* multipart/byteranges boundary */
-    const char *range;		/* The Range: header */
-    long clength;		/* The "real" content length */
+	int chunked;		/* sending chunked transfer-coding */
+	int byterange;		/* number of byte ranges */
+	char *boundary;		/* multipart/byteranges boundary */
+	const char *range;		/* The Range: header */
+	long clength;		/* The "real" content length */
 
-    long remaining;		/* bytes left to read */
-    long read_length;		/* bytes that have been read */
-    int read_body;		/* how the request body should be read */
-    int read_chunked;		/* reading chunked transfer-coding */
-    unsigned expecting_100;	/* is client waiting for a 100 response? */
+	long remaining;		/* bytes left to read */
+	long read_length;		/* bytes that have been read */
+	int read_body;		/* how the request body should be read */
+	int read_chunked;		/* reading chunked transfer-coding */
+	unsigned expecting_100;	/* is client waiting for a 100 response? */
 
-    /* MIME header environments, in and out.  Also, an array containing
-     * environment variables to be passed to subprocesses, so people can
-     * write modules to add to that environment.
-     *
-     * The difference between headers_out and err_headers_out is that the
-     * latter are printed even on error, and persist across internal redirects
-     * (so the headers printed for ErrorDocument handlers will have them).
-     *
-     * The 'notes' table is for notes from one module to another, with no
-     * other set purpose in mind...
-     */
+	/* MIME header environments, in and out.  Also, an array containing
+	* environment variables to be passed to subprocesses, so people can
+	* write modules to add to that environment.
+	*
+	* The difference between headers_out and err_headers_out is that the
+	* latter are printed even on error, and persist across internal
+	* redirects (so the headers printed for ErrorDocument handlers will
+	* have them).
+	*
+	* The 'notes' table is for notes from one module to another, with no
+	* other set purpose in mind...
+	*/
 
-    table *headers_in;
-    table *headers_out;
-    table *err_headers_out;
-    table *subprocess_env;
-    table *notes;
+	table *headers_in;
+	table *headers_out;
+	table *err_headers_out;
+	table *subprocess_env;
+	table *notes;
 
-    /* content_type, handler, content_encoding, content_language, and all
-     * content_languages MUST be lowercased strings.  They may be pointers
-     * to static strings; they should not be modified in place.
-     */
-    const char *content_type;	/* Break these out --- we dispatch on 'em */
-    const char *handler;	/* What we *really* dispatch on           */
+	/* content_type, handler, content_encoding, content_language, and all
+	* content_languages MUST be lowercased strings.  They may be pointers
+	* to static strings; they should not be modified in place.
+	*/
+	const char *content_type;	/* Break these out we dispatch on 'em */
+	const char *handler;	/* What we *really* dispatch on */
 
-    const char *content_encoding;
-    const char *content_language;	/* for back-compat. only -- do not use */
-    array_header *content_languages;	/* array of (char*) */
+	const char *content_encoding;
+	const char *content_language;	/* for back-compat. only- do not use */
+	array_header *content_languages;	/* array of (char*) */
 
-    char *vlist_validator;      /* variant list validator (if negotiated) */
+	char *vlist_validator;      /* variant list validator (if negotiated) */
 
-    int no_cache;
-    int no_local_copy;
+	int no_cache;
+	int no_local_copy;
 
-    /* What object is being requested (either directly, or via include
-     * or content-negotiation mapping).
-     */
+	/* What object is being requested (either directly, or via include
+	* or content-negotiation mapping).
+	*/
 
-    char *unparsed_uri;		/* the uri without any parsing performed */
-    char *uri;			/* the path portion of the URI */
-    char *filename;		/* filename if found, otherwise NULL */
-    char *path_info;
-    char *args;			/* QUERY_ARGS, if any */
-    struct stat finfo;		/* ST_MODE set to zero if no such file */
-    uri_components parsed_uri;	/* components of uri, dismantled */
+	char *unparsed_uri;	/* the uri without any parsing performed */
+	char *uri;			/* the path portion of the URI */
+	char *filename;		/* filename if found, otherwise NULL */
+	char *path_info;
+	char *args;			/* QUERY_ARGS, if any */
+	struct stat finfo;	/* ST_MODE set to zero if no such file */
+	uri_components parsed_uri;	/* components of uri, dismantled */
 
-    /* Various other config info which may change with .htaccess files
-     * These are config vectors, with one void* pointer for each module
-     * (the thing pointed to being the module's business).
-     */
+	/* Various other config info which may change with .htaccess files
+	* These are config vectors, with one void* pointer for each module
+	* (the thing pointed to being the module's business).
+	*/
 
-    void *per_dir_config;	/* Options set in config files, etc. */
-    void *request_config;	/* Notes on *this* request */
+	void *per_dir_config;	/* Options set in config files, etc. */
+	void *request_config;	/* Notes on *this* request */
 
-/*
- * a linked list of the configuration directives in the .htaccess files
- * accessed by this request.
- * N.B. always add to the head of the list, _never_ to the end.
- * that way, a sub request's list can (temporarily) point to a parent's list
- */
-    const struct htaccess_result *htaccess;
+	/*
+	* a linked list of the configuration directives in the .htaccess files
+	* accessed by this request.
+	* N.B. always add to the head of the list, _never_ to the end.
+	* that way, a sub request's list can (temporarily) point to a parent's
+	* list
+	*/
+	const struct htaccess_result *htaccess;
 
-    /* On systems with case insensitive file systems (Windows, OS/2, etc.), 
-     * r->filename is case canonicalized (folded to either lower or upper 
-     * case, depending on the specific system) to accomodate file access
-     * checking. case_preserved_filename is the same as r->filename 
-     * except case is preserved. There is at least one instance where Apache 
-     * needs access to the case preserved filename: Java class files published 
-     * with WebDAV need to preserve filename case to make the Java compiler 
-     * happy.
-     */
-    char *case_preserved_filename;
+	/* On systems with case insensitive file systems (Windows, OS/2, etc.),
+	* r->filename is case canonicalized (folded to either lower or upper
+	* case, depending on the specific system) to accomodate file access
+	* checking. case_preserved_filename is the same as r->filename
+	* except case is preserved. There is at least one instance where Apache
+	* needs access to the case preserved filename: Java class files
+	* published with WebDAV need to preserve filename case to make the
+	* Java compiler happy.
+	*/
+	char *case_preserved_filename;
 
-#ifdef CHARSET_EBCDIC
-    /* We don't want subrequests to modify our current conversion flags.
-     * These flags save the state of the conversion flags when subrequests
-     * are run.
-     */
-    struct {
-        unsigned conv_in:1;    /* convert ASCII->EBCDIC when read()ing? */
-        unsigned conv_out:1;   /* convert EBCDIC->ASCII when write()ing? */
-    } ebcdic;
-#endif
+	/* Things placed at the end of the record to avoid breaking binary
+	* compatibility.  It would be nice to remember to reorder the entire
+	* record to improve 64bit alignment the next time we need to break
+	* binary compatibility for some other reason.
+	*/
 
-/* Things placed at the end of the record to avoid breaking binary
- * compatibility.  It would be nice to remember to reorder the entire
- * record to improve 64bit alignment the next time we need to break
- * binary compatibility for some other reason.
- */
-
-#ifdef EAPI
-    ap_ctx *ctx;
-#endif /* EAPI */
+	ap_ctx *ctx;
 };
 
 
@@ -895,49 +835,47 @@ struct request_rec {
 
 struct conn_rec {
 
-    ap_pool *pool;
-    server_rec *server;
-    server_rec *base_server;	/* Physical vhost this conn come in on */
-    void *vhost_lookup_data;	/* used by http_vhost.c */
+	ap_pool *pool;
+	server_rec *server;
+	server_rec *base_server;/* Physical vhost this conn come in on */
+	void *vhost_lookup_data;	/* used by http_vhost.c */
 
-    /* Information about the connection itself */
+	/* Information about the connection itself */
 
-    int child_num;		/* The number of the child handling conn_rec */
-    BUFF *client;		/* Connection to the guy */
+	int child_num;		/* The number of the child handling conn_rec */
+	BUFF *client;		/* Connection to the guy */
 
-    /* Who is the client? */
+	/* Who is the client? */
 
-    struct sockaddr_in local_addr;	/* local address */
-    struct sockaddr_in remote_addr;	/* remote address */
-    char *remote_ip;		/* Client's IP address */
-    char *remote_host;		/* Client's DNS name, if known.
+	struct sockaddr_in local_addr;	/* local address */
+	struct sockaddr_in remote_addr;	/* remote address */
+	char *remote_ip;		/* Client's IP address */
+	char *remote_host;		/* Client's DNS name, if known.
 				 * NULL if DNS hasn't been checked,
 				 * "" if it has and no address was found.
 				 * N.B. Only access this though
 				 * get_remote_host() */
-    char *remote_logname;	/* Only ever set if doing rfc1413 lookups.
+	char *remote_logname;	/* Only ever set if doing rfc1413 lookups.
 				 * N.B. Only access this through
 				 * get_remote_logname() */
-    char *user;			/* If an authentication check was made,
+	char *user;			/* If an authentication check was made,
 				 * this gets set to the user name.  We assume
 				 * that there's only one user per connection(!)
 				 */
-    char *ap_auth_type;		/* Ditto. */
+	char *ap_auth_type;		/* Ditto. */
 
-    unsigned aborted:1;		/* Are we still talking? */
-    signed int keepalive:2;	/* Are we using HTTP Keep-Alive?
+	unsigned aborted:1;		/* Are we still talking? */
+	signed int keepalive:2;	/* Are we using HTTP Keep-Alive?
 				 * -1 fatal error, 0 undecided, 1 yes */
-    unsigned keptalive:1;	/* Did we use HTTP Keep-Alive? */
-    signed int double_reverse:2;/* have we done double-reverse DNS?
+	unsigned keptalive:1;	/* Did we use HTTP Keep-Alive? */
+	signed int double_reverse:2;/* have we done double-reverse DNS?
 				 * -1 yes/failure, 0 not yet, 1 yes/success */
-    int keepalives;		/* How many times have we used it? */
-    char *local_ip;		/* server IP address */
-    char *local_host;		/* used for ap_get_server_name when
+	int keepalives;		/* How many times have we used it? */
+	char *local_ip;		/* server IP address */
+	char *local_host;		/* used for ap_get_server_name when
 				 * UseCanonicalName is set to DNS
 				 * (ignores setting of HostnameLookups) */
-#ifdef EAPI
-    ap_ctx *ctx;
-#endif /* EAPI */
+	ap_ctx *ctx;
 };
 
 /* Per-vhost config... */
@@ -949,80 +887,78 @@ struct conn_rec {
 
 typedef struct server_addr_rec server_addr_rec;
 struct server_addr_rec {
-    server_addr_rec *next;
-    struct in_addr host_addr;	/* The bound address, for this server */
-    unsigned short host_port;	/* The bound port, for this server */
-    char *virthost;		/* The name given in <VirtualHost> */
+	server_addr_rec *next;
+	struct in_addr host_addr;	/* The bound address, for this server */
+	unsigned short host_port;	/* The bound port, for this server */
+	char *virthost;		/* The name given in <VirtualHost> */
 };
 
 struct server_rec {
 
-    server_rec *next;
+	server_rec *next;
 
-    /* description of where the definition came from */
-    const char *defn_name;
-    unsigned defn_line_number;
+	/* description of where the definition came from */
+	const char *defn_name;
+	unsigned defn_line_number;
 
-    /* Full locations of server config info */
+	/* Full locations of server config info */
 
-    char *srm_confname;
-    char *access_confname;
+	char *srm_confname;
+	char *access_confname;
 
-    /* Contact information */
+	/* Contact information */
 
-    char *server_admin;
-    char *server_hostname;
-    unsigned short port;	/* for redirects, etc. */
+	char *server_admin;
+	char *server_hostname;
+	unsigned short port;	/* for redirects, etc. */
 
-    /* Log files --- note that transfer log is now in the modules... */
+	/* Log files --- note that transfer log is now in the modules... */
 
-    char *error_fname;
-    FILE *error_log;
-    int loglevel;
+	char *error_fname;
+	FILE *error_log;
+	int loglevel;
 
-    /* Module-specific configuration for server, and defaults... */
+	/* Module-specific configuration for server, and defaults... */
 
-    int is_virtual;		/* true if this is the virtual server */
-    void *module_config;	/* Config vector containing pointers to
+	int is_virtual;		/* true if this is the virtual server */
+	void *module_config;	/* Config vector containing pointers to
 				 * modules' per-server config structures.
 				 */
-    void *lookup_defaults;	/* MIME type info, etc., before we start
+	void *lookup_defaults;	/* MIME type info, etc., before we start
 				 * checking per-directory info.
 				 */
-    /* Transaction handling */
+	/* Transaction handling */
 
-    server_addr_rec *addrs;
-    int timeout;		/* Timeout, in seconds, before we give up */
-    int keep_alive_timeout;	/* Seconds we'll wait for another request */
-    int keep_alive_max;		/* Maximum requests per connection */
-    int keep_alive;		/* Use persistent connections? */
-    int send_buffer_size;	/* size of TCP send buffer (in bytes) */
+	server_addr_rec *addrs;
+	int timeout;		/* Timeout, in seconds, before we give up */
+	int keep_alive_timeout;	/* Seconds we'll wait for another request */
+	int keep_alive_max;		/* Maximum requests per connection */
+	int keep_alive;		/* Use persistent connections? */
+	int send_buffer_size;	/* size of TCP send buffer (in bytes) */
 
-    char *path;			/* Pathname for ServerPath */
-    int pathlen;		/* Length of path */
+	char *path;			/* Pathname for ServerPath */
+	int pathlen;		/* Length of path */
 
-    array_header *names;	/* Normal names for ServerAlias servers */
-    array_header *wild_names;	/* Wildcarded names for ServerAlias servers */
+	array_header *names;	/* Normal names for ServerAlias servers */
+	array_header *wild_names;/* Wildcarded names for ServerAlias servers */
 
-    uid_t server_uid;        /* effective user id when calling exec wrapper */
-    gid_t server_gid;        /* effective group id when calling exec wrapper */
+	uid_t server_uid;      /* effective user id when calling exec wrapper */
+	gid_t server_gid;    /* effective group id when calling exec wrapper */
 
-    int limit_req_line;      /* limit on size of the HTTP request line    */
-    int limit_req_fieldsize; /* limit on size of any request header field */
-    int limit_req_fields;    /* limit on number of request header fields  */
+	int limit_req_line;      /* limit on size of the HTTP request line    */
+	int limit_req_fieldsize; /* limit on size of any request header field */
+	int limit_req_fields;    /* limit on number of request header fields  */
 
-#ifdef EAPI
-    ap_ctx *ctx;
-#endif /* EAPI */
-};
+	ap_ctx *ctx;
+	};
 
-/* These are more like real hosts than virtual hosts */
-struct listen_rec {
-    listen_rec *next;
-    struct sockaddr_in local_addr;	/* local IP address and port */
-    int fd;
-    int used;			/* Only used during restart */        
-/* more stuff here, like which protocol is bound to the port */
+	/* These are more like real hosts than virtual hosts */
+	struct listen_rec {
+	listen_rec *next;
+	struct sockaddr_in local_addr;	/* local IP address and port */
+	int fd;
+	int used;			/* Only used during restart */
+	/* more stuff here, like which protocol is bound to the port */
 };
 
 /* Prototypes for utilities... util.c.
@@ -1057,7 +993,8 @@ API_EXPORT(const char *) ap_size_list_item(const char **field, int *len);
 API_EXPORT(char *) ap_get_list_item(pool *p, const char **field);
 API_EXPORT(int) ap_find_list_item(pool *p, const char *line, const char *tok);
 
-API_EXPORT(char *) ap_get_token(pool *p, const char **accept_line, int accept_white);
+API_EXPORT(char *) ap_get_token(pool *p, const char **accept_line,
+    int accept_white);
 API_EXPORT(int) ap_find_token(pool *p, const char *line, const char *tok);
 API_EXPORT(int) ap_find_last_token(pool *p, const char *line, const char *tok);
 
@@ -1070,8 +1007,10 @@ API_EXPORT(char *) ap_os_escape_path(pool *p, const char *path, int partial);
 #define ap_escape_uri(ppool,path) ap_os_escape_path(ppool,path,1)
 API_EXPORT(char *) ap_escape_html(pool *p, const char *s);
 API_EXPORT(char *) ap_construct_server(pool *p, const char *hostname,
-				    unsigned port, const request_rec *r);
+    unsigned port, const request_rec *r);
 API_EXPORT(char *) ap_escape_logitem(pool *p, const char *str);
+API_EXPORT(size_t) ap_escape_errorlog_item(char *dest, const char *source,
+    size_t buflen);
 API_EXPORT(char *) ap_escape_shell_cmd(pool *p, const char *s);
 
 API_EXPORT(int) ap_count_dirs(const char *path);
@@ -1087,25 +1026,16 @@ API_EXPORT(int) ap_strcasecmp_match(const char *str, const char *exp);
 API_EXPORT(char *) ap_stripprefix(const char *bigstring, const char *prefix);
 API_EXPORT(char *) ap_strcasestr(const char *s1, const char *s2);
 API_EXPORT(char *) ap_pbase64decode(pool *p, const char *bufcoded);
-API_EXPORT(char *) ap_pbase64encode(pool *p, char *string); 
+API_EXPORT(char *) ap_pbase64encode(pool *p, char *string);
 API_EXPORT(char *) ap_uudecode(pool *p, const char *bufcoded);
-API_EXPORT(char *) ap_uuencode(pool *p, char *string); 
-
-#if defined(OS2) || defined(WIN32)
-API_EXPORT(char *) ap_double_quotes(pool *p, const char *str);
-API_EXPORT(char *) ap_caret_escape_args(pool *p, const char *str);
-#endif
-
-#ifdef OS2
-void os2pathname(char *path);
-#endif
+API_EXPORT(char *) ap_uuencode(pool *p, char *string);
 
 API_EXPORT(int)    ap_regexec(const regex_t *preg, const char *string,
-                              size_t nmatch, regmatch_t pmatch[], int eflags);
-API_EXPORT(size_t) ap_regerror(int errcode, const regex_t *preg, 
-                               char *errbuf, size_t errbuf_size);
+    size_t nmatch, regmatch_t pmatch[], int eflags);
+API_EXPORT(size_t) ap_regerror(int errcode, const regex_t *preg,
+    char *errbuf, size_t errbuf_size);
 API_EXPORT(char *) ap_pregsub(pool *p, const char *input, const char *source,
-                              size_t nmatch, regmatch_t pmatch[]);
+    size_t nmatch, regmatch_t pmatch[]);
 
 API_EXPORT(void) ap_content_type_tolower(char *);
 API_EXPORT(void) ap_str_tolower(char *);
@@ -1118,7 +1048,8 @@ API_EXPORT(void) ap_remove_spaces(char *dest, char *src);
 /* Common structure for reading of config files / passwd files etc. */
 typedef struct {
     int (*getch) (void *param);	/* a getc()-like function */
-    void *(*getstr) (void *buf, size_t bufsiz, void *param); /* a fgets()-like function */
+    /* a fgets()-like function */
+    void *(*getstr) (void *buf, size_t bufsiz, void *param);
     int (*close) (void *param);	/* a close hander function */
     void *param;		/* the argument passed to getch/getstr/close */
     const char *name;		/* the filename / description */
@@ -1130,8 +1061,7 @@ API_EXPORT(configfile_t *) ap_pcfg_openfile(pool *p, const char *name);
 
 /* Allocate a configfile_t handle with user defined functions and params */
 API_EXPORT(configfile_t *) ap_pcfg_open_custom(pool *p, const char *descr,
-    void *param,
-    int(*getc_func)(void*),
+    void *param, int(*getc_func)(void*),
     void *(*gets_func) (void *buf, size_t bufsiz, void *param),
     int(*close_func)(void *param));
 
@@ -1143,10 +1073,6 @@ API_EXPORT(int) ap_cfg_getc(configfile_t *cfp);
 
 /* Detach from open configfile_t, calling the close handler */
 API_EXPORT(int) ap_cfg_closefile(configfile_t *cfp);
-
-#ifdef NEED_STRERROR
-char *strerror(int err);
-#endif
 
 /* Misc system hackery */
 
@@ -1166,28 +1092,14 @@ API_EXPORT(void) ap_chdir_file(const char *file);
 #define ap_os_systemcase_filename(p,f)  (f)
 #else
 API_EXPORT(char *) ap_os_canonical_filename(pool *p, const char *file);
-#ifdef WIN32
-API_EXPORT(char *) ap_os_case_canonical_filename(pool *pPool, const char *szFile);
-API_EXPORT(char *) ap_os_systemcase_filename(pool *pPool, const char *szFile);
-#elif defined(OS2)
-API_EXPORT(char *) ap_os_case_canonical_filename(pool *pPool, const char *szFile);
-API_EXPORT(char *) ap_os_systemcase_filename(pool *pPool, const char *szFile);
-#elif defined(NETWARE)
-API_EXPORT(char *) ap_os_case_canonical_filename(pool *pPool, const char *szFile);
-#define ap_os_systemcase_filename(p,f) ap_os_case_canonical_filename(p,f)
-#else
 #define ap_os_case_canonical_filename(p,f) ap_os_canonical_filename(p,f)
 #define ap_os_systemcase_filename(p,f) ap_os_canonical_filename(p,f)
 #endif
-#endif
 
-#ifdef CHARSET_EBCDIC
-API_EXPORT(int)    ap_checkconv(struct request_rec *r);    /* for downloads */
-API_EXPORT(int)    ap_checkconv_in(struct request_rec *r); /* for uploads */
-#endif /*#ifdef CHARSET_EBCDIC*/
 
 API_EXPORT(char *) ap_get_local_host(pool *);
-API_EXPORT(unsigned long) ap_get_virthost_addr(char *hostname, unsigned short *port);
+API_EXPORT(unsigned long) ap_get_virthost_addr(char *hostname,
+    unsigned short *port);
 
 extern API_VAR_EXPORT time_t ap_restart_time;
 
@@ -1199,15 +1111,11 @@ extern API_VAR_EXPORT time_t ap_restart_time;
  * can't be allocated above this number then it will remain in the "slack"
  * area.
  *
- * Only the low slack line is used by default.  If HIGH_SLACK_LINE is defined
- * then an attempt is also made to keep all non-FILE * files above the high
- * slack line.  This is to work around a Solaris C library limitation, where it
- * uses an unsigned char to store the file descriptor.
+ * Only the low slack line is used by default.
  */
 #ifndef LOW_SLACK_LINE
 #define LOW_SLACK_LINE	15
 #endif
-/* #define HIGH_SLACK_LINE      255 */
 
 /*
  * The ap_slack() function takes a fd, and tries to move it above the indicated
@@ -1215,13 +1123,9 @@ extern API_VAR_EXPORT time_t ap_restart_time;
  * never fails.  If the high line was requested and it fails it will also try
  * the low line.
  */
-#ifdef NO_SLACK
-#define ap_slack(fd,line)   (fd)
-#else
 int ap_slack(int fd, int line);
 #define AP_SLACK_LOW	1
 #define AP_SLACK_HIGH	2
-#endif
 
 API_EXPORT(char *) ap_escape_quotes(pool *p, const char *instr);
 
@@ -1229,16 +1133,10 @@ API_EXPORT(char *) ap_escape_quotes(pool *p, const char *instr);
  * Redefine assert() to something more useful for an Apache...
  */
 API_EXPORT(void) ap_log_assert(const char *szExp, const char *szFile, int nLine)
-			    __attribute__((noreturn));
-#define ap_assert(exp) ((exp) ? (void)0 : ap_log_assert(#exp,__FILE__,__LINE__))
+    __attribute__((noreturn));
+#define ap_assert(exp) ((exp) ? (void)0 : ap_log_assert(#exp,__FILE__,0))
 
-/* The optimized timeout code only works if we're not MULTITHREAD and we're
- * also not using a scoreboard file
- */
-#if !defined (MULTITHREAD) && \
-    (defined (USE_MMAP_SCOREBOARD) || defined (USE_SHMGET_SCOREBOARD))
 #define OPTIMIZE_TIMEOUTS
-#endif
 
 /* A set of flags which indicate places where the server should raise(SIGSTOP).
  * This is useful for debugging, because you can then attach to that process

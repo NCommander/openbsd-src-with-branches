@@ -1,3 +1,4 @@
+/*	$OpenBSD: read.c,v 1.8 2006/03/22 19:43:29 kjell Exp $	*/
 /*	$NetBSD: read.c,v 1.4 1994/11/23 07:42:07 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,17 +37,21 @@
 #if 0
 static char sccsid[] = "@(#)read.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: read.c,v 1.4 1994/11/23 07:42:07 jtc Exp $";
+static char rcsid[] = "$OpenBSD: read.c,v 1.8 2006/03/22 19:43:29 kjell Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/limits.h>
+
+#include <err.h>
 #include <errno.h>
-#include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "extern.h"
 
 /*
@@ -62,19 +63,24 @@ static char rcsid[] = "$NetBSD: read.c,v 1.4 1994/11/23 07:42:07 jtc Exp $";
  * routine has the usual nastiness of trying to find the newlines.  Otherwise,
  * it is displayed from the character closest to the beginning of the input to
  * the end.
+ *
+ * A non-zero return means an (non-fatal) error occurred.
+ *
  */
-void
-bytes(fp, off)
-	register FILE *fp;
-	off_t off;
+int
+bytes(FILE *fp, off_t off)
 {
-	register int ch, len, tlen;
-	register char *ep, *p, *t;
+	int ch;
+	size_t len, tlen;
+	char *ep, *p, *t;
 	int wrap;
 	char *sp;
 
+	if (off > SIZE_T_MAX)
+		errx(1, "offset too large");
+
 	if ((sp = p = malloc(off)) == NULL)
-		err(1, "%s", strerror(errno));
+		err(1, NULL);
 
 	for (wrap = 0, ep = p + off; (ch = getc(fp)) != EOF;) {
 		*p = ch;
@@ -85,7 +91,7 @@ bytes(fp, off)
 	}
 	if (ferror(fp)) {
 		ierr();
-		return;
+		return(1);
 	}
 
 	if (rflag) {
@@ -115,9 +121,10 @@ bytes(fp, off)
 	} else {
 		if (wrap && (len = ep - p))
 			WR(p, len);
-		if (len = p - sp)
+		if ((len = p - sp))
 			WR(sp, len);
 	}
+	return(0);
 }
 
 /*
@@ -129,43 +136,52 @@ bytes(fp, off)
  * routine has the usual nastiness of trying to find the newlines.  Otherwise,
  * it is displayed from the line closest to the beginning of the input to
  * the end.
+ *
+ * A non-zero return means an (non-fatal) error occurred.
+ *
  */
-void
-lines(fp, off)
-	register FILE *fp;
-	off_t off;
+int
+lines(FILE *fp, off_t off)
 {
 	struct {
-		u_int blen;
-		u_int len;
+		size_t blen;
+		size_t len;
 		char *l;
 	} *lines;
-	register int ch;
-	register char *p;
-	int blen, cnt, recno, wrap;
-	char *sp;
+	int ch;
+	char *p = NULL;
+	int wrap;
+	size_t cnt, recno, blen, newsize;
+	char *sp = NULL, *newp = NULL;
 
-	if ((lines = malloc(off * sizeof(*lines))) == NULL)
-		err(1, "%s", strerror(errno));
+	if (off > SIZE_T_MAX)
+		errx(1, "offset too large");
 
-	sp = NULL;
+	if ((lines = calloc(off, sizeof(*lines))) == NULL)
+		err(1, NULL);
+
 	blen = cnt = recno = wrap = 0;
 
 	while ((ch = getc(fp)) != EOF) {
 		if (++cnt > blen) {
-			if ((sp = realloc(sp, blen += 1024)) == NULL)
-				err(1, "%s", strerror(errno));
+			newsize = blen + 1024;
+			if ((newp = realloc(sp, newsize)) == NULL)
+				err(1, NULL);
+			sp = newp;
+			blen = newsize;
 			p = sp + cnt - 1;
 		}
 		*p++ = ch;
 		if (ch == '\n') {
 			if (lines[recno].blen < cnt) {
-				lines[recno].blen = cnt + 256;
-				if ((lines[recno].l = realloc(lines[recno].l,
-				    lines[recno].blen)) == NULL)
-					err(1, "%s", strerror(errno));
+				newsize = cnt + 256;
+				if ((newp = realloc(lines[recno].l,
+				    newsize)) == NULL)
+					err(1, NULL);
+				lines[recno].l = newp;
+				lines[recno].blen = newsize;
 			}
-			bcopy(sp, lines[recno].l, lines[recno].len = cnt);
+			memcpy(lines[recno].l, sp, (lines[recno].len = cnt));
 			cnt = 0;
 			p = sp;
 			if (++recno == off) {
@@ -176,7 +192,7 @@ lines(fp, off)
 	}
 	if (ferror(fp)) {
 		ierr();
-		return;
+		return(1);
 	}
 	if (cnt) {
 		lines[recno].l = sp;
@@ -188,11 +204,11 @@ lines(fp, off)
 	}
 
 	if (rflag) {
-		for (cnt = recno - 1; cnt >= 0; --cnt)
-			WR(lines[cnt].l, lines[cnt].len);
+		for (cnt = recno; cnt > 0; --cnt)
+			WR(lines[cnt - 1].l, lines[cnt - 1].len);
 		if (wrap)
-			for (cnt = off - 1; cnt >= recno; --cnt)
-				WR(lines[cnt].l, lines[cnt].len);
+			for (cnt = off; cnt > recno; --cnt)
+				WR(lines[cnt - 1].l, lines[cnt - 1].len);
 	} else {
 		if (wrap)
 			for (cnt = recno; cnt < off; ++cnt)
@@ -200,4 +216,5 @@ lines(fp, off)
 		for (cnt = 0; cnt < recno; ++cnt)
 			WR(lines[cnt].l, lines[cnt].len);
 	}
+	return(0);
 }

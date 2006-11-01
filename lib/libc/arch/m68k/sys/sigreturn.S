@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,12 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)sigreturn.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$Id: sigreturn.S,v 1.2 1994/08/04 05:02:48 chopps Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 #include "SYS.h"
 
 /*
@@ -48,12 +39,13 @@
  */
 #ifdef PROF
 #undef ENTRY
+/* XXX should bring into line with __ENTRY in SYS.h */
 #define	ENTRY(x) \
 	.globl _/**/x; .even; _/**/x:; moveml #0xC0C0,sp@-; .data; \
 	PROF/**/x:; .long 0; .text; lea PROF/**/x,a0; jbsr mcount; \
 	moveml sp@+,#0x0303
-#endif PROF
+#endif /* PROF */
 
-ENTRY(sigreturn)
+SYSENTRY(sigreturn)
 	trap	#1		/* signals sigreturn() */
-	jra	cerror
+	jra	__cerror

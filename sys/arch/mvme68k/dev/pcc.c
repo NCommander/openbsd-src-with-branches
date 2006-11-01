@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: pcc.c,v 1.14 2004/07/30 22:29:45 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt. 
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -40,7 +35,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
@@ -54,19 +48,24 @@
 
 struct pccsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
-	caddr_t		sc_paddr;
+	vaddr_t		sc_vaddr;
+	paddr_t		sc_paddr;
 	struct pccreg	*sc_pcc;
 	struct intrhand	sc_nmiih;
 };
 
-void pccattach __P((struct device *, struct device *, void *));
-int  pccmatch __P((struct device *, void *, void *));
-int  pccabort __P((struct frame *));
+void pccattach(struct device *, struct device *, void *);
+int  pccmatch(struct device *, void *, void *);
+int  pccabort(void *);
+int  pcc_print(void *, const char *);
+int  pcc_scan(struct device *, void *, void *);
 
-struct cfdriver pcccd = {
-	NULL, "pcc", pccmatch, pccattach,
-	DV_DULL, sizeof(struct pccsoftc), 0
+struct cfattach pcc_ca = {
+	sizeof(struct pccsoftc), pccmatch, pccattach
+};
+
+struct cfdriver pcc_cd = {
+	NULL, "pcc", DV_DULL
 };
 
 struct pccreg *sys_pcc = NULL;
@@ -76,7 +75,6 @@ pccmatch(parent, vcf, args)
 	struct device *parent;
 	void *vcf, *args;
 {
-	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
 
 	/* the pcc only exist on vme147's */
@@ -88,7 +86,7 @@ pccmatch(parent, vcf, args)
 int
 pcc_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
@@ -106,13 +104,7 @@ pcc_scan(parent, child, args)
 {
 	struct cfdata *cf = child;
 	struct pccsoftc *sc = (struct pccsoftc *)parent;
-	struct confargs *ca = args;
 	struct confargs oca;
-
-	if (parent->dv_cfdata->cf_driver->cd_indirect) {
-                printf(" indirect devices not supported\n");
-                return 0;
-        }
 
 	bzero(&oca, sizeof oca);
 	oca.ca_offset = cf->cf_loc[0];
@@ -121,13 +113,12 @@ pcc_scan(parent, child, args)
 		oca.ca_vaddr = sc->sc_vaddr + oca.ca_offset;
 		oca.ca_paddr = sc->sc_paddr + oca.ca_offset;
 	} else {
-		oca.ca_vaddr = (caddr_t)-1;
-		oca.ca_paddr = (caddr_t)-1;
+		oca.ca_vaddr = (vaddr_t)-1;
+		oca.ca_paddr = (paddr_t)-1;
 	}	
 	oca.ca_bustype = BUS_PCC;
-	oca.ca_master = (void *)sc->sc_pcc;
 	oca.ca_name = cf->cf_driver->cd_name;
-	if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0)
+	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0)
 		return (0);
 	config_attach(parent, cf, &oca, pcc_print);
 	return (1);
@@ -140,7 +131,6 @@ pccattach(parent, self, args)
 {
 	struct confargs *ca = args;
 	struct pccsoftc *sc = (struct pccsoftc *)self;
-	int i;
 
 	if (sys_pcc)
 		panic("pcc already attached!");
@@ -150,17 +140,16 @@ pccattach(parent, self, args)
 	 * we must adjust our address
 	 */
 	sc->sc_paddr = ca->ca_paddr;
-	sc->sc_vaddr = (caddr_t)IIOV(sc->sc_paddr);
+	sc->sc_vaddr = IIOV(sc->sc_paddr);
 	sc->sc_pcc = (struct pccreg *)(sc->sc_vaddr + PCCSPACE_PCCCHIP_OFF);
 	sys_pcc = sc->sc_pcc;
 
 	printf(": rev %d\n", sc->sc_pcc->pcc_chiprev);
 
 	sc->sc_nmiih.ih_fn = pccabort;
-	sc->sc_nmiih.ih_arg = 0;
 	sc->sc_nmiih.ih_ipl = 7;
 	sc->sc_nmiih.ih_wantframe = 1;
-	pccintr_establish(PCCV_ABORT, &sc->sc_nmiih);
+	pccintr_establish(PCCV_ABORT, &sc->sc_nmiih, self->dv_xname);
 
 	sc->sc_pcc->pcc_vecbase = PCC_VECBASE;
 	sc->sc_pcc->pcc_abortirq = PCC_ABORT_IEN | PCC_ABORT_ACK;
@@ -175,20 +164,23 @@ pccattach(parent, self, args)
  * PCC interrupts land in a PCC_NVEC sized hole starting at PCC_VECBASE
  */
 int
-pccintr_establish(vec, ih)
+pccintr_establish(vec, ih, name)
 	int vec;
 	struct intrhand *ih;
+	const char *name;
 {
-	if (vec >= PCC_NVEC) {
-		printf("pcc: illegal vector: 0x%x\n", vec);
-		panic("pccintr_establish");
-	}
-	return (intr_establish(PCC_VECBASE+vec, ih));
+#ifdef DIAGNOSTIC
+	if (vec < 0 || vec >= PCC_NVEC)
+		panic("pccintr_establish: illegal vector for %s: 0x%x",
+		    name, vec);
+#endif
+
+	return intr_establish(PCC_VECBASE + vec, ih, name);
 }
 
 int
 pccabort(frame)
-	struct frame *frame;
+	void *frame;
 {
 #if 0
 	/* XXX wait for it to debounce -- there is something wrong here */
@@ -210,15 +202,13 @@ pccspeed(pcc)
 	volatile int cnt;
 	int speed;
 
-	/*printf("counting...lim = %d\n", lim);*/
-
 	pcc->pcc_t1irq = 0;		/* just in case */
 	pcc->pcc_t1pload = 0;
 	pcc->pcc_t1ctl = PCC_TIMERCLEAR;
 	pcc->pcc_t1ctl = PCC_TIMERSTART;
 	
 	cnt = 0;
-	while (1) {
+	for (;;) {
 		tmp = pcc->pcc_t1count;
 		if (tmp > lim)
 			break;
@@ -230,7 +220,7 @@ pccspeed(pcc)
 	printf("pccspeed cnt=%d\n", cnt);
 
 	/*
-	 * Imperically determined. Unfortunately, because of various
+	 * Empirically determined. Unfortunately, because of various
 	 * memory board effects and such, it is rather unlikely that
 	 * we will find a nice formula.
 	 */

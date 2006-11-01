@@ -1,4 +1,4 @@
-/*	$PMDB: elf_syms.c,v 1.18 2002/03/11 23:39:49 art Exp $	*/
+/*	$OpenBSD: elf_syms.c,v 1.7 2002/07/31 04:42:01 art Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -56,7 +56,6 @@ struct elf_symbol_handle {
 	Elf_Word	esh_strsize;
 	Elf_Sym 	*esh_symtab;
 	Elf_Word	esh_symsize;
-	Elf_Addr	esh_offs;
 };
 
 #define ESH_TO_ST(esh) (&(esh)->esh_st)
@@ -80,29 +79,31 @@ int
 sym_check_elf(const char *name, struct pstate *ps)
 {
 	Elf_Ehdr ehdr;
+	int error = 0;
 	int fd;
 
 	if ((fd = open(name, O_RDONLY)) < 0)
-		return (-1);
+		return (1);
 
 	if (pread(fd, &ehdr, sizeof(Elf_Ehdr), 0) != sizeof(Elf_Ehdr))
-		return (-1);
+		error = 1;
 
 #ifndef __NetBSD__
-	if (!IS_ELF(ehdr) ||
+	if (!error && (!IS_ELF(ehdr) ||
 	    ehdr.e_ident[EI_CLASS] != ELF_TARG_CLASS ||
 	    ehdr.e_ident[EI_DATA] != ELF_TARG_DATA ||
 	    ehdr.e_ident[EI_VERSION] != ELF_TARG_VER ||
 	    ehdr.e_machine != ELF_TARG_MACH ||
-	    ehdr.e_version != ELF_TARG_VER)
-		return (-1);
+	    ehdr.e_version != ELF_TARG_VER))
+		error = 1;
 #endif
 
 	close(fd);
 
-	ps->ps_sops = &elf_sops;
+	if (!error)
+		ps->ps_sops = &elf_sops;
 
-	return (0);
+	return (error);
 }
 
 struct sym_table *
@@ -164,14 +165,17 @@ elf_open(const char *name)
 		goto fail;
 	}
 
-	if ((esh->esh_strtab = mmap(NULL, esh->esh_strsize, PROT_READ,
-	    MAP_SHARED, fd, stroff)) == MAP_FAILED) {
-		goto fail;
-	}
+	if (esh->esh_symsize) {
 
-	if ((esh->esh_symtab = mmap(NULL, esh->esh_symsize, PROT_READ,
-	    MAP_SHARED, fd, symoff)) == MAP_FAILED) {
-		goto fail;
+		if ((esh->esh_strtab = mmap(NULL, esh->esh_strsize, PROT_READ,
+		    MAP_SHARED, fd, stroff)) == MAP_FAILED) {
+			goto fail;
+		}
+
+		if ((esh->esh_symtab = mmap(NULL, esh->esh_symsize, PROT_READ,
+		    MAP_SHARED, fd, symoff)) == MAP_FAILED) {
+			goto fail;
+		}
 	}
 
 	return (ESH_TO_ST(esh));
@@ -203,7 +207,10 @@ elf_name_and_off(struct sym_table *st, reg pc, reg *offs)
 	int nsyms, i;
 	char *symn;
 
-#define SYMVAL(S) (unsigned long)((S)->st_value + esh->esh_offs)
+	if (esh == NULL)
+		return (NULL);
+
+#define SYMVAL(S) (unsigned long)((S)->st_value + st->st_offs)
 
 	nsyms = esh->esh_symsize / sizeof(Elf_Sym);
 
@@ -240,6 +247,9 @@ elf_lookup_table(struct elf_symbol_handle *esh, const char *name)
 	char *symn;
 	Elf_Sym *s = NULL;
 
+	if (esh == NULL)
+		return (NULL);
+
 	/* XXX - dumb, doesn't follow the rules (weak, hash, etc.). */
 	nsyms = esh->esh_symsize / sizeof(Elf_Sym);
 	for (i = 0; i < nsyms; i++) {
@@ -266,7 +276,7 @@ elf_lookup(struct pstate *ps, const char *name, reg *res)
 	}
 
 	if (s != NULL) {
-		*res = s->st_value + ST_TO_ESH(st)->esh_offs;
+		*res = s->st_value + st->st_offs;
 		return (0);
 	}
 
@@ -310,6 +320,12 @@ sym_bkpt(struct pstate *ps, void *arg)
 	return BKPT_KEEP_CONT;
 }
 
+/* Is the ABI really so daft that it doesn't include the linking offset? */
+struct xlink_map {
+	struct link_map lm;
+	Elf_Addr a;
+};
+
 /*
  * Called after execution started so that we can load any dynamic symbols.
  */
@@ -317,9 +333,8 @@ void
 elf_update(struct pstate *ps)
 {
 #ifndef __NetBSD__
-	pid_t pid = ps->ps_pid;
-	struct elf_object_v1 eobj;
-	struct sym_table *st;
+	struct xlink_map xlm;
+#define lm xlm.lm
 	struct r_debug rdeb;
 	reg addr;
 	Elf_Dyn dyn;
@@ -330,10 +345,10 @@ elf_update(struct pstate *ps)
 		warnx("Can't find _DYNAMIC");
 		return;
 	}
-	addr = s->st_value + ST_TO_ESH(ps->ps_sym_exe)->esh_offs;
+	addr = s->st_value + ps->ps_sym_exe->st_offs;
 
 	do {
-		if (read_from_pid(pid, addr, &dyn, sizeof(dyn)) < 0) {
+		if (process_read(ps, addr, &dyn, sizeof(dyn)) < 0) {
 			warnx("Can't read _DYNAMIC");
 			return;
 		}
@@ -345,7 +360,7 @@ elf_update(struct pstate *ps)
 		return;
 	}
 
-	if (read_from_pid(pid, dyn.d_un.d_ptr, &rdeb, sizeof(rdeb)) < 0) {
+	if (process_read(ps, dyn.d_un.d_ptr, &rdeb, sizeof(rdeb)) < 0) {
 		warnx("Can't read DT_DEBUG");
 		return;
 	}
@@ -370,16 +385,16 @@ elf_update(struct pstate *ps)
 		char fname[MAXPATHLEN];
 		int i;
 
-		if (read_from_pid(pid, addr, &eobj, sizeof(eobj)) < 0) {
+		if (process_read(ps, addr, &xlm, sizeof(xlm)) < 0) {
 			warnx("Can't read symbols...");
 			return;
 		}
 
-		addr = (Elf_Addr)eobj.next;
+		addr = (Elf_Addr)lm.l_next;
 
-		if (eobj.load_name == NULL || eobj.load_name == (char *)-1)
+		if (lm.l_name == NULL || lm.l_name == (char *)-1)
 			continue;
-		if (read_from_pid(pid, (Elf_Addr)eobj.load_name, fname,
+		if (process_read(ps, (Elf_Addr)lm.l_name, fname,
 		    sizeof(fname)) < 0) {
 			warnx("Can't read symbols...");
 			return;
@@ -392,12 +407,8 @@ elf_update(struct pstate *ps)
 		if (i == MAXPATHLEN)
 			continue;
 
-		st = st_open(ps, fname);
-		if (st == NULL) {
+		if (st_open(ps, fname, xlm.a) == NULL)
 			warn("symbol loading failed");
-			continue;
-		}
-		ST_TO_ESH(st)->esh_offs = eobj.load_offs;
 	}
 #endif
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: mem.c,v 1.13 1995/04/10 13:10:51 mycroft Exp $	*/
+/*	$OpenBSD: mem.c,v 1.22 2004/12/30 21:26:15 miod Exp $	*/
+/*	$NetBSD: mem.c,v 1.25 1999/03/27 00:30:06 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,34 +42,51 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
-#include <sys/buf.h>
 #include <sys/systm.h>
-#include <sys/uio.h>
+#include <sys/buf.h>
+#include <sys/conf.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
+#include <sys/uio.h>
 
 #include <machine/cpu.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 
 extern u_int lowram;
-caddr_t zeropage;
+extern char *extiobase;
+extern int eiomapsize;
+static caddr_t devzeropage;
+
+#define	mmread	mmrw
+#define	mmwrite	mmrw
+cdev_decl(mm);
 
 /*ARGSUSED*/
 int
-mmopen(dev, flag, mode)
+mmopen(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
-	return (0);
+	switch (minor(dev)) {
+		case 0:
+		case 1:
+		case 2:
+		case 12:
+			return (0);
+		default:
+			return (ENXIO);
+	}
 }
 
 /*ARGSUSED*/
 int
-mmclose(dev, flag, mode)
+mmclose(dev, flag, mode, p)
 	dev_t dev;
 	int flag, mode;
+	struct proc *p;
 {
 
 	return (0);
@@ -85,11 +99,12 @@ mmrw(dev, uio, flags)
 	struct uio *uio;
 	int flags;
 {
-	register vm_offset_t o, v;
-	register int c;
-	register struct iovec *iov;
+	vaddr_t o, v;
+	int c;
+	struct iovec *iov;
 	int error = 0;
 	static int physlock;
+	vm_prot_t prot;
 
 	if (minor(dev) == 0) {
 		/* lock against other uses of shared vmmap */
@@ -116,30 +131,46 @@ mmrw(dev, uio, flags)
 /* minor device 0 is physical memory */
 		case 0:
 			v = uio->uio_offset;
-#ifndef DEBUG
-			/* allow reads only in RAM (except for DEBUG) */
+
+			/*
+			 * Only allow reads in physical RAM.
+			 */
 			if (v >= 0xFFFFFFFC || v < lowram) {
 				error = EFAULT;
 				goto unlock;
 			}
-#endif
-			pmap_enter(pmap_kernel(), (vm_offset_t)vmmap,
-			    trunc_page(v), uio->uio_rw == UIO_READ ?
-			    VM_PROT_READ : VM_PROT_WRITE, TRUE);
+
+			prot = uio->uio_rw == UIO_READ ? VM_PROT_READ :
+			    VM_PROT_WRITE;
+			pmap_enter(pmap_kernel(), (vaddr_t)vmmap,
+			    trunc_page(v), prot, prot|PMAP_WIRED);
+			pmap_update(pmap_kernel());
 			o = uio->uio_offset & PGOFSET;
 			c = min(uio->uio_resid, (int)(NBPG - o));
 			error = uiomove((caddr_t)vmmap + o, c, uio);
-			pmap_remove(pmap_kernel(), (vm_offset_t)vmmap,
-			    (vm_offset_t)vmmap + NBPG);
+			pmap_remove(pmap_kernel(), (vaddr_t)vmmap,
+			    (vaddr_t)vmmap + NBPG);
+			pmap_update(pmap_kernel());
 			continue;
 
 /* minor device 1 is kernel memory */
 		case 1:
 			v = uio->uio_offset;
 			c = min(iov->iov_len, MAXPHYS);
-			if (!kernacc((caddr_t)v, c,
+			if (!uvm_kernacc((caddr_t)v, c,
 			    uio->uio_rw == UIO_READ ? B_READ : B_WRITE))
 				return (EFAULT);
+
+			/*
+			 * Don't allow reading intio or dio
+			 * device space.  This could lead to
+			 * corruption of device registers.
+			 */
+			if (ISIIOVA(v) ||
+			    ((caddr_t)v >= extiobase &&
+			    (caddr_t)v < (extiobase + (eiomapsize * NBPG))))
+				return (EFAULT);
+
 			error = uiomove((caddr_t)v, c, uio);
 			continue;
 
@@ -158,22 +189,14 @@ mmrw(dev, uio, flags)
 			/*
 			 * On the first call, allocate and zero a page
 			 * of memory for use with /dev/zero.
-			 *
-			 * XXX on the hp300 we already know where there
-			 * is a global zeroed page, the null segment table.
 			 */
-			if (zeropage == NULL) {
-#if CLBYTES == NBPG
-				extern caddr_t Segtabzero;
-				zeropage = Segtabzero;
-#else
-				zeropage = (caddr_t)
-				    malloc(CLBYTES, M_TEMP, M_WAITOK);
-				bzero(zeropage, CLBYTES);
-#endif
+			if (devzeropage == NULL) {
+				devzeropage = (caddr_t)
+				    malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
+				bzero(devzeropage, PAGE_SIZE);
 			}
-			c = min(iov->iov_len, CLBYTES);
-			error = uiomove(zeropage, c, uio);
+			c = min(iov->iov_len, PAGE_SIZE);
+			error = uiomove(devzeropage, c, uio);
 			continue;
 
 		default:
@@ -181,7 +204,7 @@ mmrw(dev, uio, flags)
 		}
 		if (error)
 			break;
-		iov->iov_base += c;
+		iov->iov_base = (caddr_t)iov->iov_base + c;
 		iov->iov_len -= c;
 		uio->uio_offset += c;
 		uio->uio_resid -= c;
@@ -195,10 +218,11 @@ unlock:
 	return (error);
 }
 
-int
+paddr_t
 mmmmap(dev, off, prot)
 	dev_t dev;
-	int off, prot;
+	off_t off;
+	int prot;
 {
 	/*
 	 * /dev/mem is the only one that makes sense through this
@@ -210,13 +234,22 @@ mmmmap(dev, off, prot)
 	 */
 	if (minor(dev) != 0)
 		return (-1);
+
 	/*
 	 * Allow access only in RAM.
-	 *
-	 * XXX could be extended to allow access to IO space but must
-	 * be very careful.
 	 */
-	if ((unsigned)off < lowram || (unsigned)off >= 0xFFFFFFFC)
+	if ((u_int)off < lowram || (u_int)off >= 0xFFFFFFFC)
 		return (-1);
-	return (hp300_btop(off));
+	return (atop(off));
+}
+
+int
+mmioctl(dev, cmd, data, flags, p)
+	dev_t dev;
+	u_long cmd;
+	caddr_t data;
+	int flags;
+	struct proc *p;
+{
+	return (EOPNOTSUPP);
 }

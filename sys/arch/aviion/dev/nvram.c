@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.25 2004/04/24 19:51:48 miod Exp $ */
+/*	$OpenBSD: nvram.c,v 1.3 2006/06/19 21:10:19 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -96,7 +96,7 @@ nvramattach(parent, self, args)
 	vsize_t maplen;
 
 	sc->sc_len = MK48T02_SIZE;
-	sc->sc_regs = AV400_NVRAM_TOD_OFF;
+	sc->sc_regs = AV_NVRAM_TOD_OFF;
 
 	sc->sc_iot = ca->ca_iot;
 	sc->sc_base = ca->ca_paddr;
@@ -150,14 +150,6 @@ microtime(tvp)
 	splx(s);
 }
 
-/*
- * BCD to decimal and decimal to BCD.
- */
-#define	FROMBCD(x)	(((x) >> 4) * 10 + ((x) & 0xf))
-#define	TOBCD(x)	(((x) / 10 * 16) + ((x) % 10))
-
-#define	SECDAY		(24 * 60 * 60)
-#define	SECYR		(SECDAY * 365)
 #define	LEAPYEAR(y)	(((y) & 3) == 0)
 
 /*
@@ -446,7 +438,7 @@ nvrammmap(dev, off, prot)
 		return (-1);
 	return (atop(sc->sc_base + off));
 #else
-	/* disallow mmap on AV400 due to non-linear layout */
+	/* disallow mmap due to non-linear layout */
 	return (-1);
 #endif
 }
@@ -566,11 +558,26 @@ nvramwrite(dev_t dev, struct uio *uio, int flags)
 	dest = (u_int32_t *)bus_space_vaddr(sc->sc_iot, sc->sc_ioh);
 	cnt = sc->sc_len;
 	while (cnt-- != 0) {
-		if ((*dest & 0xff) != *src)
+		if ((*dest & 0xff) != *src) {
 			*dest = (u_int32_t)*src;
+			/*
+			 * A jumper on the motherboard may write-protect
+			 * the 0x80 bytes at offset 0x80 (i.e. addresses
+			 * 0x200-0x3ff), so check our write had successed.
+			 * If it failed, discard the remainder of the changes
+			 * and return EROFS.
+			 */
+			if ((*dest & 0xff) != *src)
+				rc = EROFS;
+		}
 		dest++;
 		src++;
 	}
 
-	return (0);
+	if (rc != 0) {
+		/* reset NVRAM copy contents */
+		read_nvram(sc);
+	}
+
+	return (rc);
 }

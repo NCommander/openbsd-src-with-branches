@@ -1,5 +1,36 @@
 '\" t
-.TH menu_hook 3X ""
+.\" $OpenBSD: menu_hook.3,v 1.5 1998/09/17 04:14:45 millert Exp $
+.\"
+.\"***************************************************************************
+.\" Copyright (c) 1998 Free Software Foundation, Inc.                        *
+.\"                                                                          *
+.\" Permission is hereby granted, free of charge, to any person obtaining a  *
+.\" copy of this software and associated documentation files (the            *
+.\" "Software"), to deal in the Software without restriction, including      *
+.\" without limitation the rights to use, copy, modify, merge, publish,      *
+.\" distribute, distribute with modifications, sublicense, and/or sell       *
+.\" copies of the Software, and to permit persons to whom the Software is    *
+.\" furnished to do so, subject to the following conditions:                 *
+.\"                                                                          *
+.\" The above copyright notice and this permission notice shall be included  *
+.\" in all copies or substantial portions of the Software.                   *
+.\"                                                                          *
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+.\" IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+.\" DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+.\" OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+.\" THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+.\"                                                                          *
+.\" Except as contained in this notice, the name(s) of the above copyright   *
+.\" holders shall not be used in advertising or otherwise to promote the     *
+.\" sale, use or other dealings in this Software without prior written       *
+.\" authorization.                                                           *
+.\"***************************************************************************
+.\"
+.\" $From: menu_hook.3x,v 1.6 1998/11/29 01:09:47 Rick.Ohnemus Exp $
+.TH menu_hook 3 ""
 .SH NAME
 \fBmenu_hook\fR - set hooks for automatic invocation by applications
 .SH SYNOPSIS
@@ -7,23 +38,23 @@
 .br
 int set_item_init(MENU *menu, void (*func)(MENU *));
 .br
-void (*)(MENU *) item_init(MWNU *menu);
+void (*)(MENU *) item_init(const MENU *menu);
 .br
 int set_item_term(MENU *menu, void (*func)(MENU *));
 .br
-void (*)(MENU *) item_term(MWNU *menu);
+void (*)(MENU *) item_term(const MENU *menu);
 .br
 int set_menu_init(MENU *menu, void (*func)(MENU *));
 .br
-void (*)(MENU *) menu_init(MWNU *menu);
+void (*)(MENU *) menu_init(const MENU *menu);
 .br
 int set_menu_term(MENU *menu, void (*func)(MENU *));
 .br
-void (*)(MENU *) menu_term(MWNU *menu);
+void (*)(MENU *) menu_term(const MENU *menu);
 .br
 .SH DESCRIPTION
 These functions make it possible to set hook functions to be called at various
-points in the automatic processing of input event codes by \fBmenu_driver\fR.  
+points in the automatic processing of input event codes by \fBmenu_driver\fR.
 
 The function \fBset_item_init\fR sets a hook to be called at menu-post time and
 each time the selected item changes (after the change).  \fBitem_init\fR
@@ -54,7 +85,7 @@ The routine succeeded.
 \fBE_SYSTEM_ERROR\fR
 System error occurred (see \fBerrno\fR).
 .SH SEE ALSO
-\fBcurses\fR(3X), \fBmenu\fR(3X).
+\fBcurses\fR(3), \fBmenu\fR(3).
 .SH NOTES
 The header file \fB<menu.h>\fR automatically includes the header file
 \fB<curses.h>\fR.

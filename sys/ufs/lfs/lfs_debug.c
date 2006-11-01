@@ -1,4 +1,5 @@
-/*	$NetBSD: lfs_debug.c,v 1.2 1994/06/29 06:46:54 cgd Exp $	*/
+/*	$OpenBSD: lfs_debug.c,v 1.4 1996/07/01 07:41:50 downsj Exp $	*/
+/*	$NetBSD: lfs_debug.c,v 1.4 1996/03/17 02:16:28 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,6 +34,7 @@
 
 #ifdef DEBUG
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
 #include <sys/mount.h>
@@ -87,7 +85,7 @@ lfs_dump_super(lfsp)
 		"fbmask   ", lfsp->lfs_fbmask,
 		"fbshift  ", lfsp->lfs_fbshift);
 
-	(void)printf("%s%d\t%s%d\t%s%lx\t%s%qx\n", 
+	(void)printf("%s%d\t%s%d\t%s%lx\t%s%qx\n",
 		"sushift  ", lfsp->lfs_sushift,
 		"fsbtodb  ", lfsp->lfs_fsbtodb,
 		"cksum    ", lfsp->lfs_cksum,
@@ -119,7 +117,7 @@ lfs_dump_dinode(dip)
 {
 	int i;
 
-	(void)printf("%s%u\t%s%d\t%s%u\t%s%u\t%s%lu\n",
+	(void)printf("%s%u\t%s%d\t%s%u\t%s%u\t%s%qu\n",
 		"mode  ", dip->di_mode,
 		"nlink ", dip->di_nlink,
 		"uid   ", dip->di_uid,

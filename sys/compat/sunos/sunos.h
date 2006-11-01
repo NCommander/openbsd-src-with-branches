@@ -1,4 +1,5 @@
-/*	$NetBSD: sunos.h,v 1.5 1995/10/09 16:54:48 mycroft Exp $	*/
+/*	$OpenBSD: sunos.h,v 1.7 1999/06/03 16:01:15 deraadt Exp $	*/
+/*	$NetBSD: sunos.h,v 1.8 1996/05/05 16:07:43 veego Exp $	*/
 
 #define	SUNM_RDONLY	0x01	/* mount fs read-only */
 #define	SUNM_NOSUID	0x02	/* mount fs with setuid disallowed */
@@ -25,6 +26,22 @@ struct sunos_nfs_args {
 	char	*netname;		/* server's netname */
 	struct	pathcnf *pathconf;	/* static pathconf kludge */
 };
+/* SunOS nfs flag values: */
+#define SUNNFS_SOFT	0x1
+#define SUNNFS_WSIZE	0x2
+#define SUNNFS_RSIZE	0x4
+#define SUNNFS_TIMEO	0x8
+#define SUNNFS_RETRANS	0x10
+#define SUNNFS_HOSTNAME	0x20
+#define SUNNFS_INT	0x40
+#define SUNNFS_NOAC	0x80
+#define SUNNFS_ACREGMIN	0x100
+#define SUNNFS_ACREGMAX	0x200
+#define SUNNFS_ACDIRMIN	0x400
+#define SUNNFS_ACDIRMAX	0x800
+#define SUNNFS_SECURE	0x1000
+#define SUNNFS_NOCTO	0x2000
+#define SUNNFS_POSIX	0x4000
 
 
 struct sunos_ustat {
@@ -93,21 +110,6 @@ struct sunos_termios {
 #define SUNOS_TCSNDBRK	_IO('T', 12)
 #define SUNOS_TCDRAIN	_IO('T', 13)
 
-struct sunos_pollfd {
-	int	fd;
-	short	events;
-	short	revents;
-};
-#define SUNOS_POLLIN	0x0001
-#define SUNOS_POLLPRI	0x0002
-#define SUNOS_POLLOUT	0x0004
-#define SUNOS_POLLERR	0x0008
-#define SUNOS_POLLHUP	0x0010
-#define SUNOS_POLLNVAL	0x0020
-#define SUNOS_POLLRDNORM 0x0040
-#define SUNOS_POLLRDBAND 0x0080
-#define SUNOS_POLLWRBAND 0x0100
-
 /* Sun audio compatibility */
 struct sunos_audio_prinfo {
 	u_int	sample_rate;
@@ -141,3 +143,9 @@ struct sunos_audio_info {
 #define SUNOS_AUDIO_DEV_SPEAKERBOX		2
 #define SUNOS_AUDIO_DEV_CODEC			3
 
+__BEGIN_DECLS
+/* Defined in arch/m68k/m68k/sunos_machdep.c -- sparc uses regular sendsig() */
+#ifndef __sparc__
+void	sunos_sendsig(sig_t, int, int, u_long, int, union sigval);
+#endif
+__END_DECLS

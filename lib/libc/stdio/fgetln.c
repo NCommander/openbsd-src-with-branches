@@ -1,5 +1,4 @@
-/*	$NetBSD: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,11 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/* from: static char sccsid[] = "@(#)fgetline.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,9 +44,7 @@ static char *rcsid = "$Id: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $";
 #endif
  */
 int
-__slbexpand(fp, newsize)
-	FILE *fp;
-	size_t newsize;
+__slbexpand(FILE *fp, size_t newsize)
 {
 	void *p;
 
@@ -80,12 +68,10 @@ __slbexpand(fp, newsize)
  * it if they wish.  Thus, we set __SMOD in case the caller does.
  */
 char *
-fgetln(fp, lenp)
-	register FILE *fp;
-	size_t *lenp;
+fgetln(FILE *fp, size_t *lenp)
 {
-	register unsigned char *p;
-	register size_t len;
+	unsigned char *p;
+	size_t len;
 	size_t off;
 
 	/* make sure there is input */
@@ -96,7 +82,7 @@ fgetln(fp, lenp)
 
 	/* look for a newline in the input */
 	if ((p = memchr((void *)fp->_p, '\n', fp->_r)) != NULL) {
-		register char *ret;
+		char *ret;
 
 		/*
 		 * Found one.  Flag buffer as modified to keep fseek from
@@ -117,13 +103,13 @@ fgetln(fp, lenp)
 	 * As a bonus, though, we can leave off the __SMOD.
 	 *
 	 * OPTIMISTIC is length that we (optimistically) expect will
-	 * accomodate the `rest' of the string, on each trip through the
+	 * accommodate the `rest' of the string, on each trip through the
 	 * loop below.
 	 */
 #define OPTIMISTIC 80
 
 	for (len = fp->_r, off = 0;; len += fp->_r) {
-		register size_t diff;
+		size_t diff;
 
 		/*
 		 * Make sure there is room for more bytes.  Copy data from
@@ -154,7 +140,7 @@ fgetln(fp, lenp)
 	}
 	*lenp = len;
 #ifdef notdef
-	fp->_lb._base[len] = 0;
+	fp->_lb._base[len] = '\0';
 #endif
 	return ((char *)fp->_lb._base);
 

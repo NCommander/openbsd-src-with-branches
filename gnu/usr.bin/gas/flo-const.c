@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* flonum_const.c - Useful Flonum constants
    Copyright (C) 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
    
@@ -18,7 +20,7 @@
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef lint
-static char rcsid[] = "$Id: flo-const.c,v 1.1 1993/10/02 20:57:28 pk Exp $";
+static char rcsid[] = "$OpenBSD: flo-const.c,v 1.1.1.1 1995/10/18 08:38:57 deraadt Exp $";
 #endif
 
 #include "flonum.h"

@@ -109,7 +109,6 @@ main(int argc, char **argv)
     int i;
     int optind = 0;
 
-    setprogname(argv[0]);
     if(getarg(getargs, num_args, argc, argv, &optind))
 	usage(1);
     if(help_flag)
@@ -176,7 +175,7 @@ main(int argc, char **argv)
     }
 #endif
 
-    snprintf (tf, sizeof(tf), "%s_XXXXXX", TKT_ROOT);
+    snprintf (tf, sizeof(tf), "%s_XXXXXXXXXX", TKT_ROOT);
     f = mkstemp (tf);
     if (f < 0)
 	err(1, "mkstemp failed");

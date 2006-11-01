@@ -1,3 +1,31 @@
+/*	$OpenBSD$ */
+/*
+ * Copyright (c) Ian F. Darwin 1986-1995.
+ * Software written by Ian F. Darwin and others;
+ * maintained 1995-present by Christos Zoulas and others.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice immediately at the beginning of the file, without modification,
+ *    this list of conditions, and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 /*
  * Header file for public domain tar (tape archive) program.
  *
@@ -5,11 +33,11 @@
  *
  * Created 25 August 1985 by John Gilmore, ihnp4!hoptoad!gnu.
  *
- * $Id: tar.h,v 1.4 1995/03/25 22:36:45 christos Exp $ # checkin only
+ * $Id: tar.h,v 1.7 2003/10/14 19:29:56 christos Exp $ # checkin only
  */
 
 /*
- * Kludge for handling systems that can't cope with multiple
+ * Kludge for handling systems that cannot cope with multiple
  * external definitions of a variable.  In ONE routine (tar.c),
  * we #define TAR_EXTERN to null; here, we set it to "extern" if
  * it is not already set.
@@ -167,13 +195,11 @@ TAR_EXTERN struct link	*linklist;	/* Points to first link in list */
 TAR_EXTERN char		read_error_flag;
 
 
+#if 0
 /*
  * Declarations of functions available to the world.
  */
 /*LINTLIBRARY*/
-union record *findrec();
-void userec();
-union record *endofrecs();
-void anno();
 #define	 annorec(stream, msg)	anno(stream, msg, 0)	/* Cur rec */
 #define	annofile(stream, msg)	anno(stream, msg, 1)	/* Saved rec */
+#endif

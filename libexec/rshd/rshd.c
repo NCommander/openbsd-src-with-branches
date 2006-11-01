@@ -1,3 +1,5 @@
+/*	$OpenBSD: rshd.c,v 1.50 2003/08/12 21:21:45 millert Exp $	*/
+
 /*-
  * Copyright (c) 1988, 1989, 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,7 +37,7 @@ static char copyright[] =
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)rshd.c	8.2 (Berkeley) 4/6/94"; */
-static char *rcsid = "$Id: rshd.c,v 1.9 1995/01/20 18:48:50 christos Exp $";
+static char *rcsid = "$OpenBSD: rshd.c,v 1.50 2003/08/12 21:21:45 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -55,13 +53,18 @@ static char *rcsid = "$Id: rshd.c,v 1.9 1995/01/20 18:48:50 christos Exp $";
 #include <sys/time.h>
 #include <sys/socket.h>
 
+#include <netinet/in_systm.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/ip_var.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <paths.h>
+#include <poll.h>
 #include <pwd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -69,35 +72,67 @@ static char *rcsid = "$Id: rshd.c,v 1.9 1995/01/20 18:48:50 christos Exp $";
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <stdarg.h>
+#include <login_cap.h>
+#include <bsd_auth.h>
 
 int	keepalive = 1;
 int	check_all;
 int	log_success;		/* If TRUE, log all successful accesses */
 int	sent_null;
+login_cap_t *lc;
 
-void	 doit __P((struct sockaddr_in *));
-void	 error __P((const char *, ...));
-void	 getstr __P((char *, int, char *));
-int	 local_domain __P((char *));
-char	*topdomain __P((char *));
-void	 usage __P((void));
+void	 doit(struct sockaddr *);
+void	 error(const char *, ...);
+void	 getstr(char *, int, char *);
+int	 local_domain(char *);
+char	*topdomain(char *);
+void	 usage(void);
 
+#ifdef	KERBEROS
+#include <des.h>
+#include <kerberosIV/krb.h>
+#define	VERSION_SIZE	9
+#define SECURE_MESSAGE  "This rsh session is using DES encryption for all transmissions.\r\n"
+
+#ifdef CRYPT
+#define OPTIONS		"alnkvxL"
+#else
+#define	OPTIONS		"alnkvL"
+#endif
+
+char	authbuf[sizeof(AUTH_DAT)];
+char	tickbuf[sizeof(KTEXT_ST)];
+int	doencrypt, use_kerberos, vacuous;
+des_key_schedule schedule;
+#ifdef CRYPT
+int des_read(int, char *, int);
+int des_write(int, char *, int);
+void desrw_clear_key();
+void desrw_set_key(des_cblock *, des_key_schedule *);
+#endif
+#else
 #define	OPTIONS	"alnL"
+#endif
+
+#define	P_SOCKREAD	0
+#define	P_PIPEREAD	1
+#define	P_CRYPTREAD	2
+#define	P_CRYPTWRITE	3
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	extern int __check_rhosts_file;
 	struct linger linger;
-	int ch, on = 1, fromlen;
-	struct sockaddr_in from;
+	int ch, on = 1;
+	socklen_t fromlen;
+	struct sockaddr_storage from;
 
 	openlog("rshd", LOG_PID | LOG_ODELAY, LOG_DAEMON);
 
 	opterr = 0;
-	while ((ch = getopt(argc, argv, OPTIONS)) != EOF)
+	while ((ch = getopt(argc, argv, OPTIONS)) != -1)
 		switch (ch) {
 		case 'a':
 			check_all = 1;
@@ -108,6 +143,21 @@ main(argc, argv)
 		case 'n':
 			keepalive = 0;
 			break;
+#ifdef	KERBEROS
+		case 'k':
+			use_kerberos = 1;
+			break;
+
+		case 'v':
+			vacuous = 1;
+			break;
+
+#ifdef CRYPT
+		case 'x':
+			doencrypt = 1;
+			break;
+#endif
+#endif
 		case 'L':
 			log_success = 1;
 			break;
@@ -120,50 +170,83 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
+#ifdef	KERBEROS
+	if (use_kerberos && vacuous) {
+		syslog(LOG_ERR, "only one of -k and -v allowed");
+		exit(2);
+	}
+#ifdef CRYPT
+	if (doencrypt && !use_kerberos) {
+		syslog(LOG_ERR, "-k is required for -x");
+		exit(2);
+	}
+#endif
+#endif
 
 	fromlen = sizeof (from);
-	if (getpeername(0, (struct sockaddr *)&from, &fromlen) < 0) {
-		syslog(LOG_ERR, "getpeername: %m");
-		_exit(1);
+	if (getpeername(STDIN_FILENO, (struct sockaddr *)&from, &fromlen) < 0) {
+		/* syslog(LOG_ERR, "getpeername: %m"); */
+		exit(1);
 	}
 	if (keepalive &&
-	    setsockopt(0, SOL_SOCKET, SO_KEEPALIVE, (char *)&on,
+	    setsockopt(STDIN_FILENO, SOL_SOCKET, SO_KEEPALIVE, (char *)&on,
 	    sizeof(on)) < 0)
 		syslog(LOG_WARNING, "setsockopt (SO_KEEPALIVE): %m");
 	linger.l_onoff = 1;
 	linger.l_linger = 60;			/* XXX */
-	if (setsockopt(0, SOL_SOCKET, SO_LINGER, (char *)&linger,
+	if (setsockopt(STDIN_FILENO, SOL_SOCKET, SO_LINGER, (char *)&linger,
 	    sizeof (linger)) < 0)
 		syslog(LOG_WARNING, "setsockopt (SO_LINGER): %m");
-	doit(&from);
+	doit((struct sockaddr *)&from);
 	/* NOTREACHED */
+	exit(0);
 }
 
-char	username[20] = "USER=";
-char	homedir[64] = "HOME=";
-char	shell[64] = "SHELL=";
-char	path[100] = "PATH=";
-char	*envinit[] =
-	    {homedir, shell, path, username, 0};
-char	**environ;
+char	*envinit[1] = { 0 };
+extern char **environ;
 
 void
-doit(fromp)
-	struct sockaddr_in *fromp;
+doit(struct sockaddr *fromp)
 {
 	extern char *__rcmd_errstr;	/* syslog hook from libc/net/rcmd.c. */
-	struct hostent *hp;
+	struct addrinfo hints, *res, *res0;
+	int gaierror;
 	struct passwd *pwd;
 	u_short port;
-	fd_set ready, readfrom;
-	int cc, nfd, pv[2], pid, s;
-	int one = 1;
-	char *hostname, *errorstr, *errorhost;
+	in_port_t *portp;
+	struct pollfd pfd[4];
+	int cc, nfd, pv[2], s = 0, one = 1;
+	pid_t pid;
+	char *hostname, *errorstr, *errorhost = (char *) NULL;
 	char *cp, sig, buf[BUFSIZ];
-	char cmdbuf[NCARGS+1], locuser[16], remuser[16];
+	char cmdbuf[NCARGS+1], locuser[_PW_NAME_LEN+1], remuser[_PW_NAME_LEN+1];
 	char remotehost[2 * MAXHOSTNAMELEN + 1];
 	char hostnamebuf[2 * MAXHOSTNAMELEN + 1];
+	char naddr[NI_MAXHOST];
+	char saddr[NI_MAXHOST];
+	char raddr[NI_MAXHOST];
+	char pbuf[NI_MAXSERV];
+	auth_session_t *as;
+	const int niflags = NI_NUMERICHOST | NI_NUMERICSERV;
 
+#ifdef	KERBEROS
+	AUTH_DAT	*kdata = (AUTH_DAT *) NULL;
+	KTEXT		ticket = (KTEXT) NULL;
+	char		instance[INST_SZ], version[VERSION_SIZE];
+	struct		sockaddr_storage fromaddr;
+	int		rc;
+	long		authopts;
+#ifdef CRYPT
+	int		pv1[2], pv2[2];
+#endif
+
+	if (sizeof(fromaddr) < fromp->sa_len) {
+		syslog(LOG_ERR, "malformed \"from\" address (af %d)",
+		    fromp->sa_family);
+		exit(1);
+	}
+	memcpy(&fromaddr, fromp, fromp->sa_len);
+#endif
 
 	(void) signal(SIGINT, SIG_DFL);
 	(void) signal(SIGQUIT, SIG_DFL);
@@ -176,46 +259,60 @@ doit(fromp)
 	  }
 	}
 #endif
-	fromp->sin_port = ntohs((u_short)fromp->sin_port);
-	if (fromp->sin_family != AF_INET) {
-		syslog(LOG_ERR, "malformed \"from\" address (af %d)\n",
-		    fromp->sin_family);
+	switch (fromp->sa_family) {
+	case AF_INET:
+		portp = &((struct sockaddr_in *)fromp)->sin_port;
+		break;
+	case AF_INET6:
+		portp = &((struct sockaddr_in6 *)fromp)->sin6_port;
+		break;
+	default:
+		syslog(LOG_ERR, "malformed \"from\" address (af %d)",
+		    fromp->sa_family);
 		exit(1);
 	}
-#ifdef IP_OPTIONS
-      {
-	u_char optbuf[BUFSIZ/3], *cp;
-	char lbuf[BUFSIZ], *lp;
-	int optsize = sizeof(optbuf), ipproto;
-	struct protoent *ip;
+	if (getnameinfo(fromp, fromp->sa_len, naddr, sizeof(naddr),
+	    pbuf, sizeof(pbuf), niflags) != 0) {
+		syslog(LOG_ERR, "malformed \"from\" address (af %d)",
+		    fromp->sa_family);
+		exit(1);
+	}
 
-	if ((ip = getprotobyname("ip")) != NULL)
-		ipproto = ip->p_proto;
-	else
-		ipproto = IPPROTO_IP;
-	if (!getsockopt(0, ipproto, IP_OPTIONS, (char *)optbuf, &optsize) &&
-	    optsize != 0) {
-		lp = lbuf;
-		for (cp = optbuf; optsize > 0; cp++, optsize--, lp += 3)
-			sprintf(lp, " %2.2x", *cp);
-		syslog(LOG_NOTICE,
-		    "Connection received from %s using IP options (ignored):%s",
-		    inet_ntoa(fromp->sin_addr), lbuf);
-		if (setsockopt(0, ipproto, IP_OPTIONS,
-		    (char *)NULL, optsize) != 0) {
-			syslog(LOG_ERR, "setsockopt IP_OPTIONS NULL: %m");
-			exit(1);
+#ifdef IP_OPTIONS
+	if (fromp->sa_family == AF_INET) {
+		struct ipoption opts;
+		socklen_t optsize = sizeof(opts);
+		int ipproto, i;
+		struct protoent *ip;
+
+		if ((ip = getprotobyname("ip")) != NULL)
+			ipproto = ip->p_proto;
+		else
+			ipproto = IPPROTO_IP;
+		if (!getsockopt(STDIN_FILENO, ipproto, IP_OPTIONS,
+		    (char *)&opts, &optsize) && optsize != 0) {
+			for (i = 0; (void *)&opts.ipopt_list[i] - (void *)&opts <
+			    optsize; ) {
+				u_char c = (u_char)opts.ipopt_list[i];
+				if (c == IPOPT_LSRR || c == IPOPT_SSRR)
+					exit(1);
+				if (c == IPOPT_EOL)
+					break;
+				i += (c == IPOPT_NOP) ? 1 :
+				    (u_char)opts.ipopt_list[i+1];
+			}
 		}
 	}
-      }
 #endif
 
-		if (fromp->sin_port >= IPPORT_RESERVED ||
-		    fromp->sin_port < IPPORT_RESERVED/2) {
+#ifdef	KERBEROS
+	if (!use_kerberos)
+#endif
+		if (ntohs(*portp) >= IPPORT_RESERVED ||
+		    ntohs(*portp) < IPPORT_RESERVED/2) {
 			syslog(LOG_NOTICE|LOG_AUTH,
 			    "Connection from %s on illegal port %u",
-			    inet_ntoa(fromp->sin_addr),
-			    fromp->sin_port);
+			    naddr, ntohs(*portp));
 			exit(1);
 		}
 
@@ -226,33 +323,44 @@ doit(fromp)
 		if ((cc = read(STDIN_FILENO, &c, 1)) != 1) {
 			if (cc < 0)
 				syslog(LOG_NOTICE, "read: %m");
-			shutdown(0, 1+1);
+			shutdown(STDIN_FILENO, SHUT_RDWR);
 			exit(1);
 		}
-		if (c== 0)
+		if (c == 0)
 			break;
 		port = port * 10 + c - '0';
 	}
 
 	(void) alarm(0);
 	if (port != 0) {
-		int lport = IPPORT_RESERVED - 1;
-		s = rresvport(&lport);
+		int lport;
+#ifdef	KERBEROS
+		if (!use_kerberos)
+#endif
+			if (port >= IPPORT_RESERVED ||
+			    port < IPPORT_RESERVED/2) {
+				syslog(LOG_ERR, "2nd port not reserved");
+				exit(1);
+			}
+		*portp = htons(port);
+		lport = IPPORT_RESERVED - 1;
+		s = rresvport_af(&lport, fromp->sa_family);
 		if (s < 0) {
 			syslog(LOG_ERR, "can't get stderr port: %m");
 			exit(1);
 		}
-			if (port >= IPPORT_RESERVED) {
-				syslog(LOG_ERR, "2nd port not reserved\n");
-				exit(1);
-			}
-		fromp->sin_port = htons(port);
-		if (connect(s, (struct sockaddr *)fromp, sizeof (*fromp)) < 0) {
+		if (connect(s, (struct sockaddr *)fromp, fromp->sa_len) < 0) {
 			syslog(LOG_INFO, "connect second port %d: %m", port);
 			exit(1);
 		}
 	}
 
+#ifdef	KERBEROS
+	if (vacuous) {
+		error("rshd: remote host requires Kerberos authentication\n");
+		exit(1);
+	}
+#endif
 
 #ifdef notdef
 	/* from inetd, socket is already on 0, 1, 2 */
@@ -261,55 +369,106 @@ doit(fromp)
 	dup2(f, 2);
 #endif
 	errorstr = NULL;
-	hp = gethostbyaddr((char *)&fromp->sin_addr, sizeof (struct in_addr),
-		fromp->sin_family);
-	if (hp) {
+	if (getnameinfo(fromp, fromp->sa_len, saddr, sizeof(saddr),
+			NULL, 0, NI_NAMEREQD)== 0) {
 		/*
-		 * If name returned by gethostbyaddr is in our domain,
+		 * If name returned by getnameinfo is in our domain,
 		 * attempt to verify that we haven't been fooled by someone
 		 * in a remote net; look up the name and check that this
 		 * address corresponds to the name.
 		 */
-		hostname = hp->h_name;
-		if (check_all || local_domain(hp->h_name)) {
-			strncpy(remotehost, hp->h_name, sizeof(remotehost) - 1);
-			remotehost[sizeof(remotehost) - 1] = 0;
+		hostname = saddr;
+		res0 = NULL;
+#ifdef	KERBEROS
+		if (!use_kerberos)
+#endif
+		if (check_all || local_domain(saddr)) {
+			strlcpy(remotehost, saddr, sizeof(remotehost));
 			errorhost = remotehost;
-			hp = gethostbyname(remotehost);
-			if (hp == NULL) {
+			memset(&hints, 0, sizeof(hints));
+			hints.ai_family = fromp->sa_family;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_flags = AI_CANONNAME;
+			gaierror = getaddrinfo(remotehost, pbuf, &hints, &res0);
+			if (gaierror) {
 				syslog(LOG_INFO,
-				    "Couldn't look up address for %s",
-				    remotehost);
+				    "Couldn't look up address for %s: %s",
+				    remotehost, gai_strerror(gaierror));
 				errorstr =
 				"Couldn't look up address for your host (%s)\n";
-				hostname = inet_ntoa(fromp->sin_addr);
-			} else for (; ; hp->h_addr_list++) {
-				if (hp->h_addr_list[0] == NULL) {
+				hostname = naddr;
+			} else {
+				for (res = res0; res; res = res->ai_next) {
+					if (res->ai_family != fromp->sa_family)
+						continue;
+					if (res->ai_addrlen != fromp->sa_len)
+						continue;
+					if (getnameinfo(res->ai_addr,
+						res->ai_addrlen,
+						raddr, sizeof(raddr), NULL, 0,
+						niflags) == 0
+					 && strcmp(naddr, raddr) == 0) {
+						hostname = res->ai_canonname
+							? res->ai_canonname
+							: saddr;
+						break;
+					}
+				}
+				if (res == NULL) {
 					syslog(LOG_NOTICE,
 					  "Host addr %s not listed for host %s",
-					    inet_ntoa(fromp->sin_addr),
-					    hp->h_name);
+					    naddr, res0->ai_canonname
+							? res0->ai_canonname
+							: saddr);
 					errorstr =
 					    "Host address mismatch for %s\n";
-					hostname = inet_ntoa(fromp->sin_addr);
-					break;
-				}
-				if (!bcmp(hp->h_addr_list[0],
-				    (caddr_t)&fromp->sin_addr,
-				    sizeof(fromp->sin_addr))) {
-					hostname = hp->h_name;
-					break;
+					hostname = naddr;
 				}
 			}
 		}
-		hostname = strncpy(hostnamebuf, hostname,
-				   sizeof(hostnamebuf) - 1);
+		strlcpy(hostnamebuf, hostname, sizeof(hostnamebuf));
+		hostname = hostnamebuf;
+		if (res0)
+			freeaddrinfo(res0);
 	} else
-		errorhost = hostname = strncpy(hostnamebuf,
-					       inet_ntoa(fromp->sin_addr),
-					       sizeof(hostnamebuf) - 1);
+		strlcpy(hostnamebuf, naddr, sizeof(hostnamebuf));
+		errorhost = hostname = hostnamebuf;
 
-	hostnamebuf[sizeof(hostnamebuf) - 1] = '\0';
+#ifdef	KERBEROS
+	if (use_kerberos) {
+		kdata = (AUTH_DAT *) authbuf;
+		ticket = (KTEXT) tickbuf;
+		authopts = 0L;
+		strlcpy(instance, "*", sizeof instance);
+		version[VERSION_SIZE - 1] = '\0';
+#ifdef CRYPT
+		if (doencrypt) {
+			struct sockaddr_in local_addr;
+
+			rc = sizeof(local_addr);
+			if (getsockname(STDIN_FILENO,
+			    (struct sockaddr *)&local_addr, &rc) < 0) {
+				syslog(LOG_ERR, "getsockname: %m");
+				error("rshd: getsockname: %m");
+				exit(1);
+			}
+			authopts = KOPT_DO_MUTUAL;
+			rc = krb_recvauth(authopts, 0, ticket,
+			    "rcmd", instance, (struct sockaddr_in *)&fromaddr,
+			    &local_addr, kdata, "", schedule, version);
+			desrw_set_key(&kdata->session, &schedule);
+		} else
+#endif
+			rc = krb_recvauth(authopts, 0, ticket, "rcmd",
+			    instance, (struct sockaddr_in *)&fromaddr,
+			    NULL, kdata, "", NULL, version);
+		if (rc != KSUCCESS) {
+			error("Kerberos authentication failure: %s\n",
+				  krb_get_err_text(rc));
+			exit(1);
+		}
+	} else
+#endif
 
 	getstr(remuser, sizeof(remuser), "remuser");
 	getstr(locuser, sizeof(locuser), "locuser");
@@ -321,9 +480,30 @@ doit(fromp)
 		    "%s@%s as %s: unknown login. cmd='%.80s'",
 		    remuser, hostname, locuser, cmdbuf);
 		if (errorstr == NULL)
+			errorstr = "Permission denied.\n";
+		goto fail;
+	}
+	lc = login_getclass(pwd->pw_class);
+	if (lc == NULL) {
+		syslog(LOG_INFO|LOG_AUTH,
+		    "%s@%s as %s: unknown class. cmd='%.80s'",
+		    remuser, hostname, locuser, cmdbuf);
+		if (errorstr == NULL)
 			errorstr = "Login incorrect.\n";
 		goto fail;
 	}
+	as = auth_open();
+	if (as == NULL || auth_setpwd(as, pwd) != 0) {
+		syslog(LOG_INFO|LOG_AUTH,
+		    "%s@%s as %s: unable to allocate memory. cmd='%.80s'",
+		    remuser, hostname, locuser, cmdbuf);
+		if (errorstr == NULL)
+			errorstr = "Cannot allocate memory.\n";
+		goto fail;
+	}
+
+	setegid(pwd->pw_gid);
+	seteuid(pwd->pw_uid);
 	if (chdir(pwd->pw_dir) < 0) {
 		(void) chdir("/");
 #ifdef notdef
@@ -334,32 +514,44 @@ doit(fromp)
 		exit(1);
 #endif
 	}
+	seteuid(0);
+	setegid(0);	/* XXX use a saved gid instead? */
 
-
-		if (errorstr ||
-		    pwd->pw_passwd != 0 && *pwd->pw_passwd != '\0' &&
-		    iruserok(fromp->sin_addr.s_addr, pwd->pw_uid == 0,
-		    remuser, locuser) < 0) {
-			if (__rcmd_errstr)
+#ifdef	KERBEROS
+	if (use_kerberos) {
+		if (pwd->pw_passwd != 0 && *pwd->pw_passwd != '\0') {
+			if (kuserok(kdata, locuser) != 0) {
 				syslog(LOG_INFO|LOG_AUTH,
-			    "%s@%s as %s: permission denied (%s). cmd='%.80s'",
-				    remuser, hostname, locuser, __rcmd_errstr,
-				    cmdbuf);
-			else
-				syslog(LOG_INFO|LOG_AUTH,
-			    "%s@%s as %s: permission denied. cmd='%.80s'",
-				    remuser, hostname, locuser, cmdbuf);
-fail:
-			if (errorstr == NULL)
-				errorstr = "Permission denied.\n";
-			error(errorstr, errorhost);
-			exit(1);
+				    "Kerberos rsh denied to %s.%s@%s",
+				    kdata->pname, kdata->pinst, kdata->prealm);
+				error("Permission denied.\n");
+				exit(1);
+			}
 		}
-
-	if (pwd->pw_uid && !access(_PATH_NOLOGIN, F_OK)) {
-		error("Logins currently disabled.\n");
+	} else
+#endif
+	if (errorstr ||
+	    (pwd->pw_passwd != 0 && *pwd->pw_passwd != '\0' &&
+	    iruserok_sa(fromp, fromp->sa_len, pwd->pw_uid == 0,
+	    remuser, locuser) < 0)) {
+		if (__rcmd_errstr)
+			syslog(LOG_INFO|LOG_AUTH,
+			    "%s@%s as %s: permission denied (%s). cmd='%.80s'",
+			    remuser, hostname, locuser, __rcmd_errstr,
+			    cmdbuf);
+		else
+			syslog(LOG_INFO|LOG_AUTH,
+			    "%s@%s as %s: permission denied. cmd='%.80s'",
+			    remuser, hostname, locuser, cmdbuf);
+fail:
+		if (errorstr == NULL)
+			errorstr = "Permission denied.\n";
+		error(errorstr, errorhost);
 		exit(1);
 	}
+
+	if (pwd->pw_uid)
+		auth_checknologin(lc);
 
 	(void) write(STDERR_FILENO, "\0", 1);
 	sent_null = 1;
@@ -369,79 +561,173 @@ fail:
 			error("Can't make pipe.\n");
 			exit(1);
 		}
+#ifdef CRYPT
+#ifdef KERBEROS
+		if (doencrypt) {
+			if (pipe(pv1) < 0) {
+				error("Can't make 2nd pipe.\n");
+				exit(1);
+			}
+			if (pipe(pv2) < 0) {
+				error("Can't make 3rd pipe.\n");
+				exit(1);
+			}
+		}
+#endif
+#endif
 		pid = fork();
 		if (pid == -1)  {
 			error("Can't fork; try again.\n");
 			exit(1);
 		}
 		if (pid) {
+#ifdef CRYPT
+#ifdef KERBEROS
+			if (doencrypt) {
+				static char msg[] = SECURE_MESSAGE;
+				(void) close(pv1[1]);
+				(void) close(pv2[1]);
+				des_write(s, msg, sizeof(msg) - 1);
+
+			} else
+#endif
+#endif
 			{
-				(void) close(0);
-				(void) close(1);
+				(void) close(STDIN_FILENO);
+				(void) close(STDOUT_FILENO);
 			}
-			(void) close(2);
+			(void) close(STDERR_FILENO);
 			(void) close(pv[1]);
 
-			FD_ZERO(&readfrom);
-			FD_SET(s, &readfrom);
-			FD_SET(pv[0], &readfrom);
-			if (pv[0] > s)
-				nfd = pv[0];
-			else
-				nfd = s;
+			pfd[P_SOCKREAD].fd = s;
+			pfd[P_SOCKREAD].events = POLLIN;
+			pfd[P_PIPEREAD].fd = pv[0];
+			pfd[P_PIPEREAD].events = POLLIN;
+			nfd = 2;
+#ifdef CRYPT
+#ifdef KERBEROS
+			if (doencrypt) {
+				pfd[P_CRYPTREAD].fd = pv1[0];
+				pfd[P_CRYPTREAD].events = POLLIN;
+				pfd[P_CRYPTWRITE].fd = pv2[0];
+				pfd[P_CRYPTWRITE].events = POLLOUT;
+				nfd += 2;
+			} else
+#endif
+#endif
 				ioctl(pv[0], FIONBIO, (char *)&one);
 
 			/* should set s nbio! */
-			nfd++;
 			do {
-				ready = readfrom;
-					if (select(nfd, &ready, (fd_set *)0,
-					  (fd_set *)0, (struct timeval *)0) < 0)
-						break;
-				if (FD_ISSET(s, &ready)) {
+				if (poll(pfd, nfd, INFTIM) < 0)
+					break;
+				if (pfd[P_SOCKREAD].revents & POLLIN) {
 					int	ret;
+#ifdef CRYPT
+#ifdef KERBEROS
+					if (doencrypt)
+						ret = des_read(s, &sig, 1);
+					else
+#endif
+#endif
 						ret = read(s, &sig, 1);
 					if (ret <= 0)
-						FD_CLR(s, &readfrom);
+						pfd[P_SOCKREAD].revents = 0;
 					else
 						killpg(pid, sig);
 				}
-				if (FD_ISSET(pv[0], &ready)) {
+				if (pfd[P_PIPEREAD].revents & POLLIN) {
 					errno = 0;
 					cc = read(pv[0], buf, sizeof(buf));
 					if (cc <= 0) {
-						shutdown(s, 1+1);
-						FD_CLR(pv[0], &readfrom);
+						shutdown(s, SHUT_RDWR);
+						pfd[P_PIPEREAD].revents = 0;
 					} else {
+
+#ifdef CRYPT
+#ifdef KERBEROS
+						if (doencrypt)
+							(void)
+							  des_write(s, buf, cc);
+						else
+#endif
+#endif
 							(void)
 							  write(s, buf, cc);
 					}
 				}
+#ifdef CRYPT
+#ifdef KERBEROS
+				if (doencrypt &&
+				    (pfd[P_CRYPTREAD].revents & POLLIN)) {
+					errno = 0;
+					cc = read(pv1[0], buf, sizeof(buf));
+					if (cc <= 0) {
+						shutdown(pv1[0], SHUT_RDWR);
+						pfd[P_CRYPTREAD].revents = 0;
+					} else
+						(void) des_write(STDOUT_FILENO,
+						    buf, cc);
+				}
 
-			} while (FD_ISSET(s, &readfrom) ||
-			    FD_ISSET(pv[0], &readfrom));
+				if (doencrypt &&
+				    (pfd[P_CRYPTWRITE].revents & POLLIN)) {
+					errno = 0;
+					cc = des_read(STDIN_FILENO,
+					    buf, sizeof(buf));
+					if (cc <= 0) {
+						shutdown(pv2[0], SHUT_RDWR);
+						pfd[P_CRYPTWRITE].revents = 0;
+					} else
+						(void) write(pv2[0], buf, cc);
+				}
+#endif
+#endif
+
+			} while ((pfd[P_SOCKREAD].revents & POLLIN) ||
+#ifdef CRYPT
+#ifdef KERBEROS
+			    (doencrypt && (pfd[P_CRYPTREAD].revents & POLLIN)) ||
+#endif
+#endif
+			    (pfd[P_PIPEREAD].revents & POLLIN));
 			exit(0);
 		}
-		setpgrp(0, getpid());
+		setsid();
 		(void) close(s);
 		(void) close(pv[0]);
+#ifdef CRYPT
+#ifdef KERBEROS
+		if (doencrypt) {
+			close(pv1[0]); close(pv2[0]);
+			dup2(pv1[1], 1);
+			dup2(pv2[1], 0);
+			close(pv1[1]);
+			close(pv2[1]);
+		}
+#endif
+#endif
 		dup2(pv[1], 2);
 		close(pv[1]);
-	}
+	} else
+		setsid();
 	if (*pwd->pw_shell == '\0')
 		pwd->pw_shell = _PATH_BSHELL;
-#if	BSD > 43
-	if (setlogin(pwd->pw_name) < 0)
-		syslog(LOG_ERR, "setlogin() failed: %m");
-#endif
-	(void) setgid((gid_t)pwd->pw_gid);
-	initgroups(pwd->pw_name, pwd->pw_gid);
-	(void) setuid((uid_t)pwd->pw_uid);
+
 	environ = envinit;
-	strncat(homedir, pwd->pw_dir, sizeof(homedir)-6);
-	strcat(path, _PATH_DEFPATH);
-	strncat(shell, pwd->pw_shell, sizeof(shell)-7);
-	strncat(username, pwd->pw_name, sizeof(username)-6);
+	if (setenv("HOME", pwd->pw_dir, 1) == -1 ||
+	    setenv("SHELL", pwd->pw_shell, 1) == -1 ||
+	    setenv("USER", pwd->pw_name, 1) == -1 ||
+	    setenv("LOGNAME", pwd->pw_name, 1) == -1)
+		errx(1, "cannot setup environment");
+
+	if (setusercontext(lc, pwd, pwd->pw_uid, LOGIN_SETALL))
+		errx(1, "cannot set user context");
+	if (auth_approval(as, lc, pwd->pw_name, "rsh") <= 0)
+		errx(1, "approval failure");
+	auth_close(as);
+	login_close(lc);
+
 	cp = strrchr(pwd->pw_shell, '/');
 	if (cp)
 		cp++;
@@ -449,10 +735,18 @@ fail:
 		cp = pwd->pw_shell;
 	endpwent();
 	if (log_success || pwd->pw_uid == 0) {
+#ifdef	KERBEROS
+		if (use_kerberos)
+		    syslog(LOG_INFO|LOG_AUTH,
+			"Kerberos shell from %s.%s@%s on %s as %s, cmd='%.80s'",
+			kdata->pname, kdata->pinst, kdata->prealm,
+			hostname, locuser, cmdbuf);
+		else
+#endif
 		    syslog(LOG_INFO|LOG_AUTH, "%s@%s as %s: cmd='%.80s'",
 			remuser, hostname, locuser, cmdbuf);
 	}
-	execl(pwd->pw_shell, cp, "-c", cmdbuf, 0);
+	execl(pwd->pw_shell, cp, "-c", cmdbuf, (char *)NULL);
 	perror(pwd->pw_shell);
 	exit(1);
 }
@@ -462,43 +756,27 @@ fail:
  * connected to client, or older clients will hang waiting for that
  * connection first.
  */
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 void
-#if __STDC__
 error(const char *fmt, ...)
-#else
-error(fmt, va_alist)
-	char *fmt;
-        va_dcl
-#endif
 {
 	va_list ap;
 	int len;
 	char *bp, buf[BUFSIZ];
-#if __STDC__
+
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	bp = buf;
 	if (sent_null == 0) {
 		*bp++ = 1;
 		len = 1;
 	} else
 		len = 0;
-	(void)vsnprintf(bp, sizeof(buf) - 1, fmt, ap);
+	(void)vsnprintf(bp, sizeof(buf) - len, fmt, ap);
 	(void)write(STDERR_FILENO, buf, len + strlen(bp));
+	va_end(ap);
 }
 
 void
-getstr(buf, cnt, err)
-	char *buf, *err;
-	int cnt;
+getstr(char *buf, int cnt, char *err)
 {
 	char c;
 
@@ -522,8 +800,7 @@ getstr(buf, cnt, err)
  * interpreted as such.
  */
 int
-local_domain(h)
-	char *h;
+local_domain(char *h)
 {
 	char localhost[MAXHOSTNAMELEN];
 	char *p1, *p2;
@@ -538,8 +815,7 @@ local_domain(h)
 }
 
 char *
-topdomain(h)
-	char *h;
+topdomain(char *h)
 {
 	char *p, *maybe = NULL;
 	int dots = 0;
@@ -555,7 +831,7 @@ topdomain(h)
 }
 
 void
-usage()
+usage(void)
 {
 
 	syslog(LOG_ERR, "usage: rshd [-%s]", OPTIONS);

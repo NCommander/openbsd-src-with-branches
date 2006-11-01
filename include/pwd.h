@@ -1,4 +1,5 @@
-/*	$NetBSD: pwd.h,v 1.8 1995/07/28 05:30:52 phil Exp $	*/
+/*	$OpenBSD: pwd.h,v 1.17 2004/07/13 21:09:47 millert Exp $	*/
+/*	$NetBSD: pwd.h,v 1.9 1996/05/15 21:36:45 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -8,7 +9,7 @@
  * to the University of California by American Telephone and Telegraph
  * Co. or Unix System Laboratories, Inc. and are reproduced herein with
  * the permission of UNIX System Laboratories, Inc.
- * Portions Copyright(C) 1995, Jason Downs.  All rights reserved.
+ * Portions Copyright(C) 1995, 1996, Jason Downs.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -18,11 +19,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,11 +41,13 @@
 #ifndef _PWD_H_
 #define	_PWD_H_
 
+#include <sys/cdefs.h>
 #include <sys/types.h>
 
-#ifndef _POSIX_SOURCE
+#if __BSD_VISIBLE
 #define	_PATH_PASSWD		"/etc/passwd"
 #define	_PATH_MASTERPASSWD	"/etc/master.passwd"
+#define	_PATH_MASTERPASSWD_LOCK	"/etc/ptmp"
 
 #define	_PATH_MP_DB		"/etc/pwd.db"
 #define	_PATH_SMP_DB		"/etc/spwd.db"
@@ -59,22 +58,30 @@
 #define	_PW_KEYBYNUM		'2'	/* stored by entry in the "file" */
 #define	_PW_KEYBYUID		'3'	/* stored by uid */
 
+#define _PW_YPTOKEN		"__YP!"
+
 #define	_PASSWORD_EFMT1		'_'	/* extended encryption format */
 
-#define	_PASSWORD_LEN		128	/* max length, not counting NULL */
+#define	_PASSWORD_LEN		128	/* max length, not counting NUL */
+#define	_PW_NAME_LEN		31	/* max length, not counting NUL */
+					/* Should be MAXLOGNAME - 1 */
 
 #define _PASSWORD_NOUID		0x01	/* flag for no specified uid. */
 #define _PASSWORD_NOGID		0x02	/* flag for no specified gid. */
 #define _PASSWORD_NOCHG		0x04	/* flag for no specified change. */
 #define _PASSWORD_NOEXP		0x08	/* flag for no specified expire. */
 
+/* Flags for pw_mkdb(3) */
+#define	_PASSWORD_SECUREONLY	0x01	/* only generate spwd.db file */
+#define	_PASSWORD_OMITV7	0x02	/* don't generate v7 passwd file */
+
 #endif
 
 struct passwd {
 	char	*pw_name;		/* user name */
 	char	*pw_passwd;		/* encrypted password */
-	int	pw_uid;			/* user uid */
-	int	pw_gid;			/* user gid */
+	uid_t	pw_uid;			/* user uid */
+	gid_t	pw_gid;			/* user gid */
 	time_t	pw_change;		/* password change time */
 	char	*pw_class;		/* user access class */
 	char	*pw_gecos;		/* Honeywell login info */
@@ -83,19 +90,21 @@ struct passwd {
 	time_t	pw_expire;		/* account expiration */
 };
 
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
-struct passwd	*getpwuid __P((uid_t));
-struct passwd	*getpwnam __P((const char *));
-#ifndef _POSIX_SOURCE
-struct passwd	*getpwent __P((void));
-#ifndef _XOPEN_SOURCE
-int		 setpassent __P((int));
-char		*user_from_uid __P((uid_t, int));
+struct passwd	*getpwuid(uid_t);
+struct passwd	*getpwnam(const char *);
+#if __BSD_VISIBLE || __XPG_VISIBLE
+struct passwd	*getpwent(void);
+void		 setpwent(void);
+void		 endpwent(void);
 #endif
-void		 setpwent __P((void));
-void		 endpwent __P((void));
+#if __BSD_VISIBLE
+int		 setpassent(int);
+char		*user_from_uid(uid_t, int);
+char		*bcrypt_gensalt(u_int8_t);
+char		*bcrypt(const char *, const char *);
+char		*md5crypt(const char *, const char *);
+struct passwd	*pw_dup(const struct passwd *);
 #endif
 __END_DECLS
 

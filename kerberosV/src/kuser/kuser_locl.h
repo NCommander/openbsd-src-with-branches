@@ -87,4 +87,6 @@
 #include <kafs.h>
 #include "crypto-headers.h" /* for des_read_pw_string */
 
+#include <sys/wait.h>
+
 #endif /* __KUSER_LOCL_H__ */

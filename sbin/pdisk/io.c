@@ -1,39 +1,35 @@
 //
 // io.c - simple io and input parsing routines
 //
-// Written by Eryk Vershen (eryk@apple.com)
+// Written by Eryk Vershen
 //
 
 /*
  * Copyright 1996,1997,1998 by Apple Computer, Inc.
- *              All Rights Reserved 
- *  
- * Permission to use, copy, modify, and distribute this software and 
- * its documentation for any purpose and without fee is hereby granted, 
- * provided that the above copyright notice appears in all copies and 
- * that both the copyright notice and this permission notice appear in 
- * supporting documentation. 
- *  
- * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- * FOR A PARTICULAR PURPOSE. 
- *  
- * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
- * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *              All Rights Reserved
+ *
+ * Permission to use, copy, modify, and distribute this software and
+ * its documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appears in all copies and
+ * that both the copyright notice and this permission notice appear in
+ * supporting documentation.
+ *
+ * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT,
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 // for *printf()
 #include <stdio.h>
 
 // for malloc() & free()
-#if !defined(__linux__) && !defined(__unix__)
 #include <stdlib.h>
-#else
-#include <malloc.h>
-#endif
 // for strncpy()
 #include <string.h>
 // for va_start(), etc.
@@ -51,18 +47,8 @@
 #define BAD_DIGIT 17	/* must be greater than any base */
 #define	STRING_CHUNK	16
 #define UNGET_MAX_COUNT 10
-#ifndef __linux__
-#ifndef __unix__
-#define SCSI_FD 8
-#endif
-#ifdef NeXT
-#define loff_t off_t
-#define llseek lseek
-#else
 #define loff_t long
 #define llseek lseek
-#endif
-#endif
 
 
 //
@@ -89,7 +75,7 @@ char io_buffer[MAXIOSIZE];
 //
 long get_number(int first_char);
 char* get_string(int eos);
-int my_getch();
+int my_getch(void);
 void my_ungetch(int c);
 
 
@@ -145,7 +131,7 @@ flush_to_newline(int keep_newline)
 
 
 int
-get_okay(char *prompt, int default_value)
+get_okay(const char *prompt, int default_value)
 {
     int		c;
 
@@ -176,7 +162,7 @@ get_okay(char *prompt, int default_value)
 
 	
 int
-get_command(char *prompt, int promptBeforeGet, int *command)
+get_command(const char *prompt, int promptBeforeGet, int *command)
 {
     int		c;
 
@@ -202,7 +188,7 @@ get_command(char *prompt, int promptBeforeGet, int *command)
 
 	
 int
-get_number_argument(char *prompt, long *number, long default_value)
+get_number_argument(const char *prompt, long *number, long default_value)
 {
     int c;
     int result = 0;
@@ -240,7 +226,7 @@ get_number_argument(char *prompt, long *number, long default_value)
 long
 get_number(int first_char)
 {
-    register int c;
+    int c;
     int base;
     int digit;
     int ret_value;
@@ -281,7 +267,7 @@ get_number(int first_char)
 
 	
 int
-get_string_argument(char *prompt, char **string, int reprompt)
+get_string_argument(const char *prompt, char **string, int reprompt)
 {
     int c;
     int result = 0;
@@ -451,7 +437,7 @@ number_of_digits(unsigned long value)
 // Print a message on standard error & flush the input.
 //
 void
-bad_input(char *fmt, ...)
+bad_input(const char *fmt, ...)
 {
     va_list ap;
 

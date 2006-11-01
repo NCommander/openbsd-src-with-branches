@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,38 +27,20 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)string.3	6.9 (Berkeley) 4/19/91
-.\"	$Id: string.3,v 1.2 1993/08/01 07:43:46 mycroft Exp $
+.\"	$OpenBSD: string.3,v 1.10 2004/02/09 20:53:12 jmc Exp $
 .\"
 .Dd April 19, 1991
 .Dt STRING 3
-.Os BSD 4
+.Os
 .Sh NAME
-.Nm strcat ,
-.Nm strncat ,
-.Nm strchr ,
-.Nm strrchr ,
-.Nm strcmp ,
-.Nm strncmp ,
-.Nm strcasecmp,
-.Nm strncasecmp ,
-.Nm strcpy ,
-.Nm strncpy ,
-.Nm strerror ,
-.Nm strlen ,
-.Nm strpbrk ,
-.Nm strsep,
-.Nm strspn ,
-.Nm strcspn ,
-.Nm strstr ,
-.Nm strtok ,
-.Nm index ,
-.Nm rindex
+.Nm string
 .Nd string specific functions
 .Sh SYNOPSIS
 .Fd #include <string.h>
 .Ft char *
-.Fn strcat "char *s" "const char * append"
+.Fn strcat "char *s" "const char *append"
+.Ft char *
+.Fn strlcat "char *s" "const char *append" "size_t size"
 .Ft char *
 .Fn strncat "char *s" "const char *append" "size_t count"
 .Ft char *
@@ -79,6 +57,8 @@
 .Fn strncasecmp "const char *s1" "const char *s2" "size_t count"
 .Ft char *
 .Fn strcpy "char *dst" "const char *src"
+.Ft char *
+.Fn strlcpy "char *dst" "const char *src" "size_t size"
 .Ft char *
 .Fn strncpy "char *dst" "const char *src" "size_t count"
 .Ft char *
@@ -103,35 +83,37 @@
 .Fn rindex "const char *s" "int c"
 .Sh DESCRIPTION
 The string functions
-functions manipulate strings terminated by a
-null byte.
+manipulate strings terminated by a
+NUL byte.
 .Pp
 See the specific manual pages for more information.
 For manipulating variable length generic objects as byte
-strings (without the null byte check), see
+strings (without the NUL-byte check), see
 .Xr bstring 3 .
 .Pp
 Except as noted in their specific manual pages,
 the string functions do not test the destination
 for size limitations.
 .Sh SEE ALSO
+.Xr bstring 3 ,
 .Xr index 3 ,
+.Xr rindex 3 ,
+.Xr strcasecmp 3 ,
 .Xr strcat 3 ,
 .Xr strchr 3 ,
-.Xr strrchr 3 ,
 .Xr strcmp 3 ,
-.Xr strcasecmp 3 ,
 .Xr strcpy 3 ,
+.Xr strcspn 3 ,
 .Xr strerror 3 ,
+.Xr strlcat 3 ,
+.Xr strlcpy 3 ,
 .Xr strlen 3 ,
 .Xr strpbrk 3 ,
+.Xr strrchr 3 ,
 .Xr strsep 3 ,
 .Xr strspn 3 ,
-.Xr strcspn 3 ,
 .Xr strstr 3 ,
-.Xr strtok 3 ,
-.Xr rindex 3
-.Xr bstring 3
+.Xr strtok 3
 .Sh STANDARDS
 The
 .Fn strcat ,
@@ -145,12 +127,10 @@ The
 .Fn strerror ,
 .Fn strlen ,
 .Fn strpbrk ,
-.Fn strsep ,
 .Fn strspn ,
 .Fn strcspn ,
 .Fn strstr ,
 and
 .Fn strtok
-functions
-conform to
+functions conform to
 .St -ansiC .

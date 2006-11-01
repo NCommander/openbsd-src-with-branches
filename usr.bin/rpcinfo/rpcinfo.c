@@ -1,7 +1,9 @@
+/*	$OpenBSD: rpcinfo.c,v 1.10 2005/09/22 20:52:55 deraadt Exp $	*/
+
 #ifndef lint
 /*static char sccsid[] = "from: @(#)rpcinfo.c 1.22 87/08/12 SMI";*/
 /*static char sccsid[] = "from: @(#)rpcinfo.c	2.2 88/08/11 4.0 RPCSRC";*/
-static char rcsid[] = "$Id: rpcinfo.c,v 1.4 1995/05/21 14:46:39 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: rpcinfo.c,v 1.10 2005/09/22 20:52:55 deraadt Exp $";
 #endif
 
 /*
@@ -49,7 +51,12 @@ static char rcsid[] = "$Id: rpcinfo.c,v 1.4 1995/05/21 14:46:39 mycroft Exp $";
 #include <rpc/pmap_prot.h>
 #include <rpc/pmap_clnt.h>
 #include <signal.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h>
 #include <arpa/inet.h>
 
 #define MAXHOSTLEN 256
@@ -57,17 +64,18 @@ static char rcsid[] = "$Id: rpcinfo.c,v 1.4 1995/05/21 14:46:39 mycroft Exp $";
 #define	MIN_VERS	((u_long) 0)
 #define	MAX_VERS	((u_long) 4294967295UL)
 
-static void	udpping(/*u_short portflag, int argc, char **argv*/);
-static void	tcpping(/*u_short portflag, int argc, char **argv*/);
-static int	pstatus(/*CLIENT *client, u_long prognum, u_long vers*/);
-static void	pmapdump(/*int argc, char **argv*/);
-static bool_t	reply_proc(/*void *res, struct sockaddr_in *who*/);
-static void	brdcst(/*int argc, char **argv*/);
-static void	deletereg(/* int argc, char **argv */) ;
-static void	usage(/*void*/);
-static u_long	getprognum(/*char *arg*/);
-static u_long	getvers(/*char *arg*/);
-static void	get_inet_address(/*struct sockaddr_in *addr, char *host*/);
+void	udpping(u_short portflag, int argc, char **argv);
+void	tcpping(u_short portflag, int argc, char **argv);
+int	pstatus(CLIENT *client, u_long prognum, u_long vers);
+void	pmapdump(int argc, char **argv);
+bool_t	reply_proc(caddr_t res, struct sockaddr_in *who);
+void	brdcst(int argc, char **argv);
+void	deletereg(int argc, char **argv);
+void	setreg(int argc, char **argv);
+void	usage(char *);
+int	getprognum(char *arg, u_long *ulp);
+int	getul(char *arg, u_long *ulp);
+void	get_inet_address(struct sockaddr_in *addr, char *host);
 
 /*
  * Functions to be performed.
@@ -78,23 +86,23 @@ static void	get_inet_address(/*struct sockaddr_in *addr, char *host*/);
 #define	UDPPING		3	/* ping UDP service */
 #define	BRDCST		4	/* ping broadcast UDP service */
 #define DELETES		5	/* delete registration for the service */
+#define SETS		6	/* set registration for the service */
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	register int c;
+	int c;
 	extern char *optarg;
 	extern int optind;
 	int errflg;
 	int function;
 	u_short portnum;
+	u_long tmp;
 
 	function = NONE;
 	portnum = 0;
 	errflg = 0;
-	while ((c = getopt(argc, argv, "ptubdn:")) != EOF) {
+	while ((c = getopt(argc, argv, "ptubdsn:")) != -1) {
 		switch (c) {
 
 		case 'p':
@@ -126,7 +134,11 @@ main(argc, argv)
 			break;
 
 		case 'n':
-			portnum = (u_short) atoi(optarg);   /* hope we don't get bogus # */
+			if (getul(optarg, &tmp))
+				usage("invalid port number");
+			if (tmp >= 65536)
+				usage("port number out of range");
+			portnum = (u_short)tmp;
 			break;
 
 		case 'd':
@@ -136,23 +148,27 @@ main(argc, argv)
 				function = DELETES;
 			break;
 
+		case 's':
+			if (function != NONE)
+				errflg = 1;
+			else
+				function = SETS;
+			break;
+
+
 		case '?':
 			errflg = 1;
 		}
 	}
 
-	if (errflg || function == NONE) {
-		usage();
-		return (1);
-	}
+	if (errflg || function == NONE)
+		usage(NULL);
 
 	switch (function) {
 
 	case PMAPDUMP:
-		if (portnum != 0) {
-			usage();
-			return (1);
-		}
+		if (portnum != 0)
+			usage(NULL);
 		pmapdump(argc - optind, argv + optind);
 		break;
 
@@ -165,26 +181,26 @@ main(argc, argv)
 		break;
 
 	case BRDCST:
-		if (portnum != 0) {
-			usage();
-			return (1);
-		}
+		if (portnum != 0)
+			usage(NULL);
+
 		brdcst(argc - optind, argv + optind);
 		break;
 
 	case DELETES:
 		deletereg(argc - optind, argv + optind);
 		break;
+
+	case SETS:
+		setreg(argc - optind, argv + optind);
+		break;
 	}
 
 	return (0);
 }
 		
-static void
-udpping(portnum, argc, argv)
-	u_short portnum;
-	int argc;
-	char **argv;
+void
+udpping(u_short portnum, int argc, char **argv)
 {
 	struct timeval to;
 	struct sockaddr_in addr;
@@ -195,18 +211,22 @@ udpping(portnum, argc, argv)
 	struct rpc_err rpcerr;
 	int failure;
     
-	if (argc < 2 || argc > 3) {
-		usage();
-		exit(1);
-	}
-	prognum = getprognum(argv[1]);
+	if (argc < 2)
+		usage("too few arguments");
+	if (argc > 3)
+		usage("too many arguments");
+	if (getprognum(argv[1], &prognum))
+		usage("program number out of range");
+
 	get_inet_address(&addr, argv[0]);
 	/* Open the socket here so it will survive calls to clnt_destroy */
-	sock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
 		perror("rpcinfo: socket");
 		exit(1);
 	}
+	if (getuid() == 0)
+		bindresvport(sock, NULL);
 	failure = 0;
 	if (argc == 2) {
 		/*
@@ -291,9 +311,8 @@ udpping(portnum, argc, argv)
 				failure = 1;
 			clnt_destroy(client);
 		}
-	}
-	else {
-		vers = getvers(argv[2]);
+	} else {
+		getul(argv[2], &vers);		/* XXX */
 		addr.sin_port = htons(portnum);
 		to.tv_sec = 5;
 		to.tv_usec = 0;
@@ -316,11 +335,8 @@ udpping(portnum, argc, argv)
 		exit(1);
 }
 
-static void
-tcpping(portnum, argc, argv)
-	u_short portnum;
-	int argc;
-	char **argv;
+void
+tcpping(u_short portnum, int argc, char **argv)
 {
 	struct timeval to;
 	struct sockaddr_in addr;
@@ -331,11 +347,13 @@ tcpping(portnum, argc, argv)
 	struct rpc_err rpcerr;
 	int failure;
 
-	if (argc < 2 || argc > 3) {
-		usage();
-		exit(1);
-	}
-	prognum = getprognum(argv[1]);
+	if (argc < 2)
+		usage("too few arguments");
+	if (argc > 3)
+		usage("too many arguments");
+	if (getprognum(argv[1], &prognum))
+		usage("program number out of range");
+
 	get_inet_address(&addr, argv[0]);
 	failure = 0;
 	if (argc == 2) {
@@ -419,9 +437,8 @@ tcpping(portnum, argc, argv)
 			(void) close(sock);
 			sock = RPC_ANYSOCK;
 		}
-	}
-	else {
-		vers = getvers(argv[2]);
+	} else {
+		getul(argv[2], &vers);		/* XXX */
 		addr.sin_port = htons(portnum);
 		if ((client = clnttcp_create(&addr, prognum, vers, &sock,
 		    0, 0)) == NULL) {
@@ -448,11 +465,8 @@ tcpping(portnum, argc, argv)
  * As such, we have to keep the CLIENT structure around in order to print
  * a good error message.
  */
-static int
-pstatus(client, prognum, vers)
-	register CLIENT *client;
-	u_long prognum;
-	u_long vers;
+int
+pstatus(CLIENT *client, u_long prognum, u_long vers)
 {
 	struct rpc_err rpcerr;
 
@@ -469,23 +483,20 @@ pstatus(client, prognum, vers)
 	}
 }
 
-static void
-pmapdump(argc, argv)
-	int argc;
-	char **argv;
+void
+pmapdump(int argc, char **argv)
 {
 	struct sockaddr_in server_addr;
-	register struct hostent *hp;
+	struct hostent *hp;
 	struct pmaplist *head = NULL;
 	int socket = RPC_ANYSOCK;
 	struct timeval minutetimeout;
-	register CLIENT *client;
+	CLIENT *client;
 	struct rpcent *rpc;
 	
-	if (argc > 1) {
-		usage();
-		exit(1);
-	}
+	if (argc > 1)
+		usage("too many arguments");
+
 	if (argc == 1)
 		get_inet_address(&server_addr, argv[0]);
 	else {
@@ -540,14 +551,11 @@ pmapdump(argc, argv)
  * to get a unique list of responses the output of rpcinfo should
  * be piped through sort(1) and then uniq(1).
  */
-
 /*ARGSUSED*/
-static bool_t
-reply_proc(res, who)
-	void *res;		/* Nothing comes back */
-	struct sockaddr_in *who; /* Who sent us the reply */
+bool_t
+reply_proc(caddr_t res, struct sockaddr_in *who)
 {
-	register struct hostent *hp;
+	struct hostent *hp;
 
 	hp = gethostbyaddr((char *) &who->sin_addr, sizeof who->sin_addr,
 	    AF_INET);
@@ -556,21 +564,20 @@ reply_proc(res, who)
 	return(FALSE);
 }
 
-static void
-brdcst(argc, argv)
-	int argc;
-	char **argv;
+void
+brdcst(int argc, char **argv)
 {
 	enum clnt_stat rpc_stat;
-	u_long prognum, vers;
+	u_long prognum, vers_num;
 
-	if (argc != 2) {
-		usage();
-		exit(1);
-	}
-	prognum = getprognum(argv[0]);
-	vers = getvers(argv[1]);
-	rpc_stat = clnt_broadcast(prognum, vers, NULLPROC, xdr_void,
+	if (argc != 2)
+		usage("incorrect number of arguments");
+	if (getprognum(argv[1], &prognum))
+		usage("program number out of range");
+	if (getul(argv[1], &vers_num))
+		usage("version number out of range");
+		
+	rpc_stat = clnt_broadcast(prognum, vers_num, NULLPROC, xdr_void,
 	    (char *)NULL, xdr_void, (char *)NULL, reply_proc);
 	if ((rpc_stat != RPC_SUCCESS) && (rpc_stat != RPC_TIMEDOUT)) {
 		fprintf(stderr, "rpcinfo: broadcast failed: %s\n",
@@ -580,45 +587,79 @@ brdcst(argc, argv)
 	exit(0);
 }
 
-static void
-deletereg(argc, argv)
-	int argc;
-	char **argv;
-{	u_long prog_num, version_num ;
+void
+deletereg(int argc, char **argv)
+{
+	u_long prog_num, version_num;
 
-	if (argc != 2) {
-		usage() ;
-		exit(1) ;
-	}
-	if (getuid()) { /* This command allowed only to root */
-		fprintf(stderr, "Sorry. You are not root\n") ;
-		exit(1) ;
-	}
-	prog_num = getprognum(argv[0]);
-	version_num = getvers(argv[1]);
+	if (argc != 2)
+		usage("incorrect number of arguments");
+	if (getprognum(argv[0], &prog_num))
+		usage("program number out of range");
+	if (getul(argv[1], &version_num))
+		usage("version number out of range");
+
 	if ((pmap_unset(prog_num, version_num)) == 0) {
-		fprintf(stderr, "rpcinfo: Could not delete registration for prog %s version %s\n",
-			argv[0], argv[1]) ;
-		exit(1) ;
+		fprintf(stderr, "rpcinfo: Could not delete "
+		    "registration for prog %s version %s\n",
+		    argv[0], argv[1]);
+		exit(1);
 	}
 }
 
-static void
-usage()
+void
+setreg(int argc, char **argv)
 {
-	fprintf(stderr, "Usage: rpcinfo [ -n portnum ] -u host prognum [ versnum ]\n");
-	fprintf(stderr, "       rpcinfo [ -n portnum ] -t host prognum [ versnum ]\n");
+	u_long prog_num, version_num, port_num;
+
+	if (argc != 3)
+		usage("incorrect number of arguments");
+	if (getprognum(argv[0], &prog_num))
+		usage("cannot parse program number");
+	if (getul(argv[1], &version_num))
+		usage("cannot parse version number");
+	if (getul(argv[2], &port_num))
+		usage("cannot parse port number");
+	if (port_num >= 65536)
+		usage("port number out of range");
+		
+	if ((pmap_set(prog_num, version_num, IPPROTO_TCP,
+	    (u_short)port_num)) == 0) {
+		fprintf(stderr, "rpcinfo: Could not set registration "
+		    "for prog %s version %s port %s protocol IPPROTO_TCP\n",
+		    argv[0], argv[1], argv[2]);
+		exit(1);
+	}
+	if ((pmap_set(prog_num, version_num, IPPROTO_UDP,
+	    (u_short)port_num)) == 0) {
+		fprintf(stderr, "rpcinfo: Could not set registration "
+		    "for prog %s version %s port %s protocol IPPROTO_UDP\n",
+		    argv[0], argv[1], argv[2]);
+		exit(1);
+	}
+}
+
+void
+usage(char *msg)
+{
+	if (msg)
+		fprintf(stderr,
+		    "rpcinfo: %s\n", msg);
+	fprintf(stderr,
+	    "Usage: rpcinfo [ -n portnum ] -u host prognum [ versnum ]\n");
+	fprintf(stderr,
+	    "       rpcinfo [ -n portnum ] -t host prognum [ versnum ]\n");
 	fprintf(stderr, "       rpcinfo -p [ host ]\n");
 	fprintf(stderr, "       rpcinfo -b prognum versnum\n");
-	fprintf(stderr, "       rpcinfo -d prognum versnum\n") ;
+	fprintf(stderr, "       rpcinfo -d prognum versnum\n");
+	fprintf(stderr, "       rpcinfo -s prognum versnum portnum\n");
+	exit(1);
 }
 
-static u_long
-getprognum(arg)
-	char *arg;
+int
+getprognum(char *arg, u_long *ulp)
 {
-	register struct rpcent *rpc;
-	register u_long prognum;
+	struct rpcent *rpc;
 
 	if (isalpha(*arg)) {
 		rpc = getrpcbyname(arg);
@@ -627,35 +668,43 @@ getprognum(arg)
 			    arg);
 			exit(1);
 		}
-		prognum = rpc->r_number;
-	} else {
-		prognum = (u_long) atoi(arg);
+		*ulp = rpc->r_number;
+		return 0;
 	}
-
-	return (prognum);
+	return getul(arg, ulp);
 }
 
-static u_long
-getvers(arg)
-	char *arg;
+int
+getul(char *arg, u_long *ulp)
 {
-	register u_long vers;
+	u_long ul;
+	int save_errno = errno;
+	char *ep;
+	int ret = 1;
 
-	vers = (int) atoi(arg);
-	return (vers);
+	errno = 0;
+	ul = strtoul(arg, &ep, 10);
+	if (arg[0] == '\0' || *ep != '\0')
+		goto fail;
+	if (errno == ERANGE && ul == ULONG_MAX)
+		goto fail;
+	*ulp = ul;
+	ret = 0;
+fail:
+	errno = save_errno;
+	return (ret);
 }
 
-static void
-get_inet_address(addr, host)
-	struct sockaddr_in *addr;
-	char *host;
+void
+get_inet_address(struct sockaddr_in *addr, char *host)
 {
-	register struct hostent *hp;
+	struct hostent *hp;
 
 	bzero((char *)addr, sizeof *addr);
 	if (inet_aton(host, &addr->sin_addr) == 0) {
 		if ((hp = gethostbyname(host)) == NULL) {
-			fprintf(stderr, "rpcinfo: %s is unknown host\n", host);
+			fprintf(stderr, "rpcinfo: %s is unknown host\n",
+			    host);
 			exit(1);
 		}
 		bcopy(hp->h_addr, (char *)&addr->sin_addr, hp->h_length);

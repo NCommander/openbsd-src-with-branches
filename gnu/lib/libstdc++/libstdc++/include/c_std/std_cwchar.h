@@ -129,7 +129,7 @@ namespace std
 #undef wprintf
 #undef wscanf
 
-#if _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
 namespace std
 {
   using ::wint_t;
@@ -140,8 +140,25 @@ namespace std
   using ::fputwc;
   using ::fputws;
   using ::fwide;
+#if defined(_GLIBCPP_USE_WCHAR_T)
   using ::fwprintf;
   using ::fwscanf;
+  using ::swprintf;
+  using ::swscanf;
+  using ::vfwprintf;
+  using ::vfwscanf;
+  using ::vswprintf;
+  using ::vswscanf;
+  using ::vwprintf;
+  using ::vwscanf;
+  using ::wcsftime;
+  using ::wcstod;
+  using ::wcstof;
+  using ::wcstol;
+  using ::wcstoul;
+  using ::wprintf;
+  using ::wscanf;
+#endif
   using ::getwc;
   using ::getwchar;
   using ::mbrlen;
@@ -150,41 +167,26 @@ namespace std
   using ::mbsrtowcs;
   using ::putwc;
   using ::putwchar;
-  using ::swprintf;
-  using ::swscanf;
   using ::ungetwc;
-  using ::vfwprintf;
-  using ::vfwscanf;
-  using ::vswprintf;
-  using ::vswscanf;
-  using ::vwprintf;
-  using ::vwscanf;
   using ::wcrtomb;
   using ::wcscat;
   using ::wcscmp;
   using ::wcscoll;
   using ::wcscpy;
   using ::wcscspn;
-  using ::wcsftime;
   using ::wcslen;
   using ::wcsncat;
   using ::wcsncmp;
   using ::wcsncpy;
   using ::wcsrtombs;
   using ::wcsspn;
-  using ::wcstod;
-  using ::wcstof;
   using ::wcstok;
-  using ::wcstol;
-  using ::wcstoul;
   using ::wcsxfrm;
   using ::wctob;
   using ::wmemcmp;
   using ::wmemcpy;
   using ::wmemmove;
   using ::wmemset;
-  using ::wprintf;
-  using ::wscanf;
 
   using ::wcschr;
 
@@ -217,7 +219,7 @@ namespace std
   { return wmemchr(const_cast<const wchar_t*>(__p), __c, __n); }
 }
 
-#if _GLIBCPP_USE_C99
+#if defined(_GLIBCPP_USE_C99)
 
 #undef wcstold
 #undef wcstoll
@@ -225,20 +227,20 @@ namespace std
 
 namespace __gnu_cxx
 {
-#if _GLIBCPP_USE_C99_CHECK || _GLIBCPP_USE_C99_DYNAMIC
+#if defined(_GLIBCPP_USE_C99_CHECK) || defined(_GLIBCPP_USE_C99_DYNAMIC)
   extern "C" long double
     (wcstold)(const wchar_t * restrict, wchar_t ** restrict);
 #endif
-#if !_GLIBCPP_USE_C99_DYNAMIC
+#if !defined(_GLIBCPP_USE_C99_DYNAMIC)
   using ::wcstold;
 #endif
-#if _GLIBCPP_USE_C99_LONG_LONG_CHECK || _GLIBCPP_USE_C99_LONG_LONG_DYNAMIC
+#if defined(_GLIBCPP_USE_C99_LONG_LONG_CHECK) || defined(_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC)
   extern "C" long long int
     (wcstoll)(const wchar_t * restrict, wchar_t ** restrict, int);
   extern "C" unsigned long long int
     (wcstoull)(const wchar_t * restrict, wchar_t ** restrict, int);
 #endif
-#if !_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC
+#if !defined(_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC)
   using ::wcstoll;
   using ::wcstoull;
 #endif

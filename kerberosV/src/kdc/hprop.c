@@ -751,8 +751,6 @@ main(int argc, char **argv)
 
     int type = 0;
 
-    setprogname(argv[0]);
-
     if(getarg(args, num_args, argc, argv, &optind))
 	usage(1);
 

@@ -870,8 +870,8 @@ Interaction, perlfaq9 - Networking
 
 =back
 
-=head2 perlfaq1 - General Questions About Perl ($Revision: 1.19 $, $Date:
-2005/12/31 00:54:37 $)
+=head2 perlfaq1 - General Questions About Perl ($Revision: 1.10 $, $Date:
+2003/07/09 15:47:28 $)
 
 =over 4
 
@@ -919,8 +919,8 @@ Scheme, or Tcl?
 
 =back
 
-=head2 perlfaq2 - Obtaining and Learning about Perl ($Revision: 1.38 $,
-$Date: 2005/12/31 00:54:37 $)
+=head2 perlfaq2 - Obtaining and Learning about Perl ($Revision: 1.10 $,
+$Date: 2005/01/15 21:30:38 $)
 
 =over 4
 
@@ -975,8 +975,8 @@ References, Tutorials, Task-Oriented, Special Topics
 
 =back
 
-=head2 perlfaq3 - Programming Tools ($Revision: 1.56 $, $Date: 2005/12/31
-00:54:37 $)
+=head2 perlfaq3 - Programming Tools ($Revision: 1.10 $, $Date: 2003/08/24
+05:26:59 $)
 
 =over 4
 
@@ -1061,8 +1061,8 @@ program; what am I doing wrong?
 
 =back
 
-=head2 perlfaq4 - Data Manipulation ($Revision: 1.73 $, $Date: 2005/12/31
-00:54:37 $)
+=head2 perlfaq4 - Data Manipulation ($Revision: 1.10 $, $Date: 2003/10/02
+04:44:33 $)
 
 =over 4
 
@@ -1278,8 +1278,8 @@ array of hashes or arrays?
 
 =back
 
-=head2 perlfaq5 - Files and Formats ($Revision: 1.42 $, $Date: 2005/12/31
-00:54:37 $)
+=head2 perlfaq5 - Files and Formats ($Revision: 1.10 $, $Date: 2003/01/26
+17:45:46 $)
 
 =over 4
 
@@ -1411,8 +1411,8 @@ X<file, selecting a random line>
 
 =back
 
-=head2 perlfaq6 - Regular Expressions ($Revision: 1.38 $, $Date: 2005/12/31
-00:54:37 $)
+=head2 perlfaq6 - Regular Expressions ($Revision: 1.10 $, $Date: 2003/01/03
+20:05:28 $)
 
 =over 4
 
@@ -1504,8 +1504,8 @@ X<regular expression, and multibyte characters>
 
 =back
 
-=head2 perlfaq7 - General Perl Language Issues ($Revision: 1.28 $, $Date:
-2005/12/31 00:54:37 $)
+=head2 perlfaq7 - General Perl Language Issues ($Revision: 1.10 $, $Date:
+2003/07/24 02:17:21 $)
 
 =over 4
 
@@ -1586,8 +1586,8 @@ methods?
 
 =back
 
-=head2 perlfaq8 - System Interaction ($Revision: 1.27 $, $Date: 2005/12/31
-00:54:37 $)
+=head2 perlfaq8 - System Interaction ($Revision: 1.10 $, $Date: 2003/01/26
+17:44:04 $)
 
 =over 4
 
@@ -1716,7 +1716,7 @@ search path?
 
 =back
 
-=head2 perlfaq9 - Networking ($Revision: 1.28 $, $Date: 2005/12/31 00:54:37
+=head2 perlfaq9 - Networking ($Revision: 1.10 $, $Date: 2003/01/31 17:36:57
 $)
 
 =over 4

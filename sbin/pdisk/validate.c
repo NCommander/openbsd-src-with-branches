@@ -1,39 +1,35 @@
 //
-// validate.c - 
+// validate.c -
 //
-// Written by Eryk Vershen (eryk@apple.com)
+// Written by Eryk Vershen
 //
 
 /*
  * Copyright 1997,1998 by Apple Computer, Inc.
- *              All Rights Reserved 
- *  
- * Permission to use, copy, modify, and distribute this software and 
- * its documentation for any purpose and without fee is hereby granted, 
- * provided that the above copyright notice appears in all copies and 
- * that both the copyright notice and this permission notice appear in 
- * supporting documentation. 
- *  
- * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- * FOR A PARTICULAR PURPOSE. 
- *  
- * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
- * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *              All Rights Reserved
+ *
+ * Permission to use, copy, modify, and distribute this software and
+ * its documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appears in all copies and
+ * that both the copyright notice and this permission notice appear in
+ * supporting documentation.
+ *
+ * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT,
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 
 // for *printf()
 #include <stdio.h>
 // for malloc(), free()
-#ifndef __linux__
 #include <stdlib.h>
-#else
-#include <malloc.h>
-#endif
 // for O_RDONLY
 #include <fcntl.h>
 // for errno
@@ -108,7 +104,7 @@ int
 get_block_zero(void)
 {
     int rtn_value;
-    
+
     if (the_map != NULL) {
 	b0 = the_map->misc;
 	rtn_value = 1;
@@ -130,7 +126,7 @@ get_block_n(int n)
 {
     partition_map * entry;
     int rtn_value;
-    
+
     if (the_map != NULL) {
 	entry = find_entry_by_disk_address(n, the_map);
 	if (entry != 0) {
@@ -156,7 +152,7 @@ range_list *
 new_range_list_item(enum range_state state, int valid, u32 low, u32 high)
 {
     range_list *item;
-    
+
     item = (range_list *) malloc(sizeof(struct range_list));
     item->next = 0;
     item->prev = 0;
@@ -172,7 +168,7 @@ void
 initialize_list(range_list **list)
 {
     range_list *item;
-    
+
     item = new_range_list_item(kUnallocated, 0, 0, 0xFFFFFFFF);
     *list = item;
 }
@@ -183,7 +179,7 @@ delete_list(range_list *list)
 {
     range_list *item;
     range_list *cur;
-    
+
     for (cur = list; cur != 0; ) {
 	item = cur;
 	cur = cur->next;
@@ -199,12 +195,12 @@ add_range(range_list **list, u32 base, u32 len, int allocate)
     range_list *cur;
     u32 low;
     u32 high;
-    
+
     if (list == 0 || *list == 0) {
     	/* XXX initialized list will always have one element */
     	return;
     }
-    
+
     low = base;
     high = base + len - 1;
     if (len == 0 || high < len - 1) {
@@ -300,8 +296,8 @@ print_range_list(range_list *list)
 {
     range_list *cur;
     int printed;
-    char *s;
-    
+    const char *s = NULL;
+
     if (list == 0) {
 	printf("Empty range list\n");
 	return;
@@ -355,9 +351,9 @@ validate_map(partition_map_header *map)
     int i;
     u32 limit;
     int printed;
-    
+
     //printf("Validation not implemented yet.\n");
-    
+
     if (map == NULL) {
     	the_map = 0;
 	if (get_string_argument("Name of device: ", &name, 1) == 0) {
@@ -399,6 +395,7 @@ validate_map(partition_map_header *map)
     // XXX size & count match DeviceCapacity
     // XXX number of descriptors matches array size
     // XXX each descriptor wholly contained in a partition
+    // XXX the range below here is in physical blocks but the map is in logical blocks!!!
     add_range(&list, 1, b0->sbBlkCount-1, 0);	/* subtract one since args are base & len */
 
 check_map:
@@ -480,13 +477,13 @@ check_map:
 
 post_processing:
     // properties of whole map
-    
+
     // every block on disk in one & only one partition
     coalesce_list(list);
     print_range_list(list);
     // there is a partition for the map
     // map fits within partition that contains it
-    
+
     // try to detect 512/2048 mixed partition map?
 
 done:

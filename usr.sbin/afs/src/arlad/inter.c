@@ -167,11 +167,11 @@ cm_check_consistency (void)
 
     if (calc_size != real_size) {
 	    log_operation ("consistency check not guaranteed "
-			   "(calc: %d, real: %d, diff %d), aborting\n", 
+			   "(calc: %d, real: %d, diff %d), exiting\n", 
 			   (int) calc_size, (int) real_size,
 			   (int)(calc_size - real_size));
 	    cm_store_state ();
-	    abort();
+	    exit(-1);
     }
     if (log_times % 100000 == 0) {
 	log_operation ("consistency check ok, rotating logs\n");
@@ -219,9 +219,6 @@ cm_open (FCacheEntry *entry, CredCacheEntry *ce, u_int tokens)
 		     tokens);
 	 mask = AREAD;
 	 tokens |= NNPFS_DATA_R;
-#if 0
-	 assert(FALSE);
-#endif
      }
 
      if (checkright (entry, mask, ce)) {
@@ -1085,8 +1082,9 @@ cm_walk (VenusFid fid,
 	     * the expansion of the symlink and append fname to it.
 	     */
 	    if (fname != NULL) {
-		strcat (symlink, "/");
-		strcat (symlink, fname);
+		    
+		strlcat (symlink, "/", sizeof(symlink));
+		strlcat (symlink, fname, sizeof(symlink));
 	    }
 	    strlcpy(store_name, symlink, sizeof(store_name));
 	    fname = store_name;

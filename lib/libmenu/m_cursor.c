@@ -1,76 +1,113 @@
+/*	$OpenBSD: m_cursor.c,v 1.6 1999/05/17 03:04:19 millert Exp $	*/
+
+/****************************************************************************
+ * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author: Juergen Pfeifer <juergen.pfeifer@gmx.net> 1995,1997            *
+ ****************************************************************************/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_cursor                                                       *
+* Module m_cursor                                                          *
 * Correctly position a menus cursor                                        *
 ***************************************************************************/
 
 #include "menu.priv.h"
 
+MODULE_ID("$From: m_cursor.c,v 1.14 2000/12/10 02:16:48 tom Exp $")
+
 /*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  pos_menu_cursor  
-|   
+|   Facility      :  libnmenu
+|   Function      :  _nc_menu_cursor_pos
+|
+|   Description   :  Return position of logical cursor to current item
+|
+|   Return Values :  E_OK            - success
+|                    E_BAD_ARGUMENT  - invalid menu
+|                    E_NOT_POSTED    - Menu is not posted
++--------------------------------------------------------------------------*/
+NCURSES_EXPORT(int)
+_nc_menu_cursor_pos
+(const MENU* menu, const ITEM* item, int* pY, int* pX)
+{
+  if (!menu || !pX || !pY)
+    return(E_BAD_ARGUMENT);
+  else
+    {
+      if ((ITEM*)0 == item)
+	item = menu->curitem;
+      assert(item!=(ITEM*)0);
+
+      if ( !( menu->status & _POSTED ) )
+	return(E_NOT_POSTED);
+
+      *pX = item->x * (menu->spc_cols + menu->itemlen);
+      *pY = (item->y - menu->toprow) * menu->spc_rows;
+    }
+  return(E_OK);
+}
+
+/*---------------------------------------------------------------------------
+|   Facility      :  libnmenu
+|   Function      :  pos_menu_cursor
+|
 |   Description   :  Position logical cursor to current item in menu
 |
 |   Return Values :  E_OK            - success
 |                    E_BAD_ARGUMENT  - invalid menu
 |                    E_NOT_POSTED    - Menu is not posted
 +--------------------------------------------------------------------------*/
-int pos_menu_cursor(const MENU * menu)
+NCURSES_EXPORT(int)
+pos_menu_cursor (const MENU * menu)
 {
-  if (!menu)
-    RETURN(E_BAD_ARGUMENT);
-  else
+  WINDOW *win, *sub;
+  int x, y;
+  int err = _nc_menu_cursor_pos(menu,(ITEM*)0,&y,&x);
+
+  if (E_OK==err)
     {
-      ITEM *item;
-      int x, y;
-      WINDOW *win, *sub;
-      
-      if ( !( menu->status & _POSTED ) )
-	RETURN(E_NOT_POSTED);
-      
-      item = menu->curitem;
-      assert(item);
-      
-      x = item->x * (1 + menu->itemlen);
-      y = item->y - menu->toprow;
       win = menu->userwin ? menu->userwin : stdscr;
       sub = menu->usersub ? menu->usersub : win;
       assert(win && sub);
-      
+
       if ((menu->opt & O_SHOWMATCH) && (menu->pindex > 0))
 	x += ( menu->pindex + menu->marklen - 1);
-      
+
       wmove(sub,y,x);
-      
+
       if ( win != sub )
 	{
 	  wcursyncup(sub);
 	  wsyncup(sub);
 	  untouchwin(sub);
-	} 
+	}
     }
-  RETURN(E_OK);
+  RETURN(err);
 }
 
 /* m_cursor.c ends here */

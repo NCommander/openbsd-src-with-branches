@@ -1,5 +1,5 @@
 /*	$OpenBSD$	*/
-/*	$NetBSD: iopctl.c,v 1.8 2001/03/20 13:07:51 ad Exp $	*/
+/*	$NetBSD: iopctl.c,v 1.12 2002/01/04 10:17:20 ad Exp $	*/
 
 /*-
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -57,9 +57,10 @@
 
 const char	*class2str(int);
 void	getparam(int, int, void *, int);
+int	gettid(char **);
 int	main(int, char *[]);
 int	show(const char *, const char *, ...);
-void	i2ostrvis(const char *, int, char *, int);
+void	i2ostrvis(const void *, int, void *, int);
 void	usage(void);
 
 void	reconfig(char **);
@@ -81,7 +82,7 @@ struct {
 	{ I2O_CLASS_WAN, "WAN port" },
 	{ I2O_CLASS_FIBRE_CHANNEL_PORT,	"fibrechannel port" },
 	{ I2O_CLASS_FIBRE_CHANNEL_PERIPHERAL, "fibrechannel peripheral" },
- 	{ I2O_CLASS_SCSI_PERIPHERAL, "SCSI peripheral" },
+	{ I2O_CLASS_SCSI_PERIPHERAL, "SCSI peripheral" },
 	{ I2O_CLASS_ATE_PORT, "ATE port" },
 	{ I2O_CLASS_ATE_PERIPHERAL, "ATE peripheral" },
 	{ I2O_CLASS_FLOPPY_CONTROLLER, "floppy controller" },
@@ -107,14 +108,14 @@ char	buf[32768];
 struct	i2o_status status;
 
 int
-main(int argc, char **argv)
+main(int argc, char *argv[])
 {
 	int ch, i;
 	const char *dv;
 	struct iovec iov;
 
 	dv = "/dev/iop0";
-	
+
 	while ((ch = getopt(argc, argv, "f:")) != -1) {
 		switch (ch) {
 		case 'f':
@@ -141,7 +142,7 @@ main(int argc, char **argv)
 		if (strcmp(argv[optind], cmdtab[i].label) == 0) {
 			if (cmdtab[i].takesargs == 0 &&
 			    argv[optind + 1] != NULL)
-			    	usage();
+				usage();
 			(*cmdtab[i].func)(argv + optind + 1);
 			break;
 		}
@@ -170,7 +171,7 @@ show(const char *hdr, const char *fmt, ...)
 {
 	int i;
 	va_list va;
-	
+
 	for (i = printf("%s", hdr); i < 25; i++)
 		putchar(' ');
 	va_start(va, fmt);
@@ -184,11 +185,11 @@ const char *
 class2str(int class)
 {
 	int i;
-	
+
 	for (i = 0; i < sizeof(i2oclass) / sizeof(i2oclass[0]); i++)
 		if (class == i2oclass[i].class)
 			return (i2oclass[i].caption);
-			
+
 	return ("unknown");
 }
 
@@ -201,7 +202,7 @@ getparam(int tid, int group, void *pbuf, int pbufsize)
 	struct {
 		struct	i2o_param_op_list_header olh;
 		struct	i2o_param_op_all_template oat;
-	} req;
+	} __attribute__ ((__packed__)) req;
 
 	mb.msgflags = I2O_MSGFLAGS(i2o_util_params_op);
 	mb.msgfunc = I2O_MSGFUNC(tid, I2O_UTIL_PARAMS_GET);
@@ -237,7 +238,7 @@ getparam(int tid, int group, void *pbuf, int pbufsize)
 		    ((struct i2o_reply *)buf)->reqstatus);
 	if ((rf->msgflags & I2O_MSGFLAGS_FAIL) != 0)
 		errx(EXIT_FAILURE, "I2O_UTIL_PARAMS_GET failed (FAIL)");
-}	
+}
 
 void
 showlct(char **argv)
@@ -270,7 +271,7 @@ showlct(char **argv)
 		show("local tid", "%d", letoh16(ent->localtid) & 4095);
 		show("change indicator", "%d", letoh32(ent->changeindicator));
 		show("flags", "%x", letoh32(ent->deviceflags));
-		show("class id", "%x (%s)", classid & 4095, 
+		show("class id", "%x (%s)", classid & 4095,
 		    class2str(classid & 4095));
 		show("version", "%x", (classid >> 12) & 15);
 		show("organisation id", "%x", classid >> 16);
@@ -282,7 +283,7 @@ showlct(char **argv)
 		    sizeof(ident));
 		show("identity tag", "<%s>", ident);
 		show("event caps", "%x", letoh32(ent->eventcaps));
-		
+
 		if (i != nent - 1)
 			printf("\n");
 	}
@@ -338,10 +339,10 @@ showddmid(char **argv)
 		struct	i2o_param_read_results prr;
 		struct	i2o_param_ddm_identity di;
 		char padding[128];
-	} __attribute__ ((__packed__)) p;
+	} __packed p;
 	char ident[128];
 
-	getparam(atoi(argv[0]), I2O_PARAM_DDM_IDENTITY, &p, sizeof(p));
+	getparam(gettid(argv), I2O_PARAM_DDM_IDENTITY, &p, sizeof(p));
 
 	show("ddm tid", "%d", letoh16(p.di.ddmtid) & 4095);
 	i2ostrvis(p.di.name, sizeof(p.di.name), ident, sizeof(ident));
@@ -365,7 +366,7 @@ showdevid(char **argv)
 	} __attribute__ ((__packed__)) p;
 	char ident[128];
 
-	getparam(atoi(argv[0]), I2O_PARAM_DEVICE_IDENTITY, &p, sizeof(p));
+	getparam(gettid(argv), I2O_PARAM_DEVICE_IDENTITY, &p, sizeof(p));
 
 	show("class id", "%d (%s)", letoh32(p.di.classid) & 4095,
 	    class2str(letoh32(p.di.classid) & 4095));
@@ -418,8 +419,10 @@ showtidmap(char **argv)
 }
 
 void
-i2ostrvis(const char *src, int slen, char *dst, int dlen)
+i2ostrvis(const void *srcv, int slen, void *dstv, int dlen)
 {
+	const char *src = srcv;
+	char *dst = dstv;
 	int hc, lc, i, nit;
 
 	dlen--;
@@ -447,6 +450,22 @@ i2ostrvis(const char *src, int slen, char *dst, int dlen)
 		}
 		src++;
 	}
-	
+
 	dst[lc] = '\0';
+}
+
+int
+gettid(char **argv)
+{
+	char *argp;
+	int tid;
+
+	if (argv[1] != NULL)
+		usage();
+
+	tid = (int)strtol(argv[0], &argp, 0);
+	if (*argp != '\0')
+		usage();
+
+	return (tid);
 }

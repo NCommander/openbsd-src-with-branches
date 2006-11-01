@@ -1,3 +1,4 @@
+/*	$OpenBSD: log.c,v 1.14 2003/09/26 15:52:16 deraadt Exp $	*/
 /*	$NetBSD: log.c,v 1.3 1995/03/21 15:04:21 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,16 +46,22 @@
 #if 0
 static char sccsid[] = "@(#)log.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: log.c,v 1.3 1995/03/21 15:04:21 cgd Exp $";
+static char rcsid[] = "$OpenBSD: log.c,v 1.14 2003/09/26 15:52:16 deraadt Exp $";
 #endif
-#endif not lint
+#endif /* not lint */
 
 #include "include.h"
 #include "pathnames.h"
 
-compar(a, b)
-	SCORE	*a, *b;
+static FILE *score_fp;
+
+int
+compar(const void *va, const void *vb)
 {
+	const SCORE *a, *b;
+
+	a = (const SCORE *)va;
+	b = (const SCORE *)vb;
 	if (b->planes == a->planes)
 		return (b->time - a->time);
 	else
@@ -72,42 +75,38 @@ compar(a, b)
 #define SECADAY		(SECAHOUR * HOURADAY)
 #define DAY(t)		((t) / SECADAY)
 #define HOUR(t)		(((t) % SECADAY) / SECAHOUR)
-#define MIN(t)		(((t) % SECAHOUR) / SECAMIN)
+#define MINUTES(t)		(((t) % SECAHOUR) / SECAMIN)
 #define SEC(t)		((t) % SECAMIN)
 
-char	*
-timestr(t)
+const char	*
+timestr(int t)
 {
 	static char	s[80];
 
 	if (DAY(t) > 0)
-		(void)sprintf(s, "%dd+%02dhrs", DAY(t), HOUR(t));
+		(void)snprintf(s, sizeof s, "%dd+%02dhrs", DAY(t), HOUR(t));
 	else if (HOUR(t) > 0)
-		(void)sprintf(s, "%d:%02d:%02d", HOUR(t), MIN(t), SEC(t));
-	else if (MIN(t) > 0)
-		(void)sprintf(s, "%d:%02d", MIN(t), SEC(t));
+		(void)snprintf(s, sizeof s, "%d:%02d:%02d",
+		    HOUR(t), MINUTES(t), SEC(t));
+	else if (MINUTES(t) > 0)
+		(void)snprintf(s, sizeof s, "%d:%02d", MINUTES(t), SEC(t));
 	else if (SEC(t) > 0)
-		(void)sprintf(s, ":%02d", SEC(t));
+		(void)snprintf(s, sizeof s, ":%02d", SEC(t));
 	else
 		*s = '\0';
 
 	return (s);
 }
 
-log_score(list_em)
+int
+open_score_file(void)
 {
-	register int	i, fd, num_scores = 0, good, changed = 0, found = 0;
-	struct passwd	*pw;
-	FILE		*fp;
-	char		*cp, *index(), *rindex();
-	SCORE		score[100], thisscore;
-#ifdef SYSV
-	struct utsname	name;
-#endif
+	mode_t old_mode;
+	int score_fd;
 
-	umask(0);
-	fd = open(_PATH_SCORE, O_CREAT|O_RDWR, 0644);
-	if (fd < 0) {
+	old_mode = umask(0);
+	score_fd = open(_PATH_SCORE, O_CREAT|O_RDWR, 0664);
+	if (score_fd < 0) {
 		perror(_PATH_SCORE);
 		return (-1);
 	}
@@ -115,58 +114,64 @@ log_score(list_em)
 	 * This is done to take advantage of stdio, while still 
 	 * allowing a O_CREAT during the open(2) of the log file.
 	 */
-	fp = fdopen(fd, "r+");
-	if (fp == NULL) {
+	score_fp = fdopen(score_fd, "r+");
+	if (score_fp == NULL) {
 		perror(_PATH_SCORE);
 		return (-1);
 	}
+	umask(old_mode);
+	return (0);
+}
+
+int
+log_score(int list_em)
+{
+	int		i, num_scores = 0, good, changed = 0, found = 0;
+	struct passwd	*pw;
+	char		*cp;
+	char		scanstr[50];
+	SCORE		score[NUM_SCORES], thisscore;
+
+	if (score_fp == NULL)
+		return (-1);
 #ifdef BSD
-	if (flock(fileno(fp), LOCK_EX) < 0)
+	if (flock(fileno(score_fp), LOCK_EX) < 0)
 #endif
 #ifdef SYSV
-	while (lockf(fileno(fp), F_LOCK, 1) < 0)
+	while (lockf(fileno(score_fp), F_LOCK, 1) < 0)
 #endif
 	{
 		perror("flock");
 		return (-1);
 	}
+	snprintf(scanstr, 50, "%%%ds %%%ds %%d %%d %%d", sizeof(score[0].name)-1,
+	    sizeof(score[0].game)-1);
 	for (;;) {
-		good = fscanf(fp, "%s %s %s %d %d %d",
+		good = fscanf(score_fp, scanstr,
 			score[num_scores].name, 
-			score[num_scores].host, 
 			score[num_scores].game,
 			&score[num_scores].planes, 
 			&score[num_scores].time,
 			&score[num_scores].real_time);
-		if (good != 6 || ++num_scores >= NUM_SCORES)
+		if (good != 5 || ++num_scores >= NUM_SCORES)
 			break;
 	}
 	if (!test_mode && !list_em) {
 		if ((pw = (struct passwd *) getpwuid(getuid())) == NULL) {
 			fprintf(stderr, 
-				"getpwuid failed for uid %d.  Who are you?\n",
+				"getpwuid failed for uid %u.  Who are you?\n",
 				getuid());
 			return (-1);
 		}
-		strcpy(thisscore.name, pw->pw_name);
-#ifdef BSD
-		if (gethostname(thisscore.host, sizeof (thisscore.host)) < 0) {
-			perror("gethostname");
-			return (-1);
-		}
-#endif
-#ifdef SYSV
-		uname(&name);
-		strcpy(thisscore.host, name.sysname);
-#endif
+		strlcpy(thisscore.name, pw->pw_name, sizeof(thisscore.name));
 
-		cp = rindex(file, '/');
+		cp = strrchr(file, '/');
 		if (cp == NULL) {
-			fprintf(stderr, "log: where's the '/' in %s?\n", file);
+			warnx("log: where's the '/' in %s?", file);
 			return (-1);
 		}
 		cp++;
-		strcpy(thisscore.game, cp);
+		strlcpy(thisscore.game, cp, sizeof(thisscore.game));
 
 		thisscore.time = clck;
 		thisscore.planes = safe_planes;
@@ -174,7 +179,6 @@ log_score(list_em)
 
 		for (i = 0; i < num_scores; i++) {
 			if (strcmp(thisscore.name, score[i].name) == 0 &&
-			    strcmp(thisscore.host, score[i].host) == 0 &&
 			    strcmp(thisscore.game, score[i].game) == 0) {
 				if (thisscore.time > score[i].time) {
 					score[i].time = thisscore.time;
@@ -192,10 +196,10 @@ log_score(list_em)
 				if (thisscore.time > score[i].time) {
 					if (num_scores < NUM_SCORES)
 						num_scores++;
-					bcopy(&score[i],
-						&score[num_scores - 1], 
+					memcpy(&score[num_scores - 1],
+						&score[i],
 						sizeof (score[i]));
-					bcopy(&thisscore, &score[i],
+					memcpy(&score[i], &thisscore,
 						sizeof (score[i]));
 					changed++;
 					break;
@@ -203,7 +207,7 @@ log_score(list_em)
 			}
 		}
 		if (!found && !changed && num_scores < NUM_SCORES) {
-			bcopy(&thisscore, &score[num_scores], 
+			memcpy(&score[num_scores], &thisscore,
 				sizeof (score[num_scores]));
 			num_scores++;
 			changed++;
@@ -215,10 +219,10 @@ log_score(list_em)
 			else
 				puts("You made the top players list!");
 			qsort(score, num_scores, sizeof (*score), compar);
-			rewind(fp);
+			rewind(score_fp);
 			for (i = 0; i < num_scores; i++)
-				fprintf(fp, "%s %s %s %d %d %d\n",
-					score[i].name, score[i].host, 
+				fprintf(score_fp, "%s %s %d %d %d\n",
+					score[i].name,
 					score[i].game, score[i].planes,
 					score[i].time, score[i].real_time);
 		} else {
@@ -230,24 +234,34 @@ log_score(list_em)
 		putchar('\n');
 	}
 #ifdef BSD
-	flock(fileno(fp), LOCK_UN);
+	flock(fileno(score_fp), LOCK_UN);
 #endif
 #ifdef SYSV
 	/* lock will evaporate upon close */
 #endif
-	fclose(fp);
-	printf("%2s:  %-8s  %-8s  %-18s  %4s  %9s  %4s\n", "#", "name", "host", 
-		"game", "time", "real time", "planes safe");
+#if 0
+	fclose(score_fp);
+#else
+	fflush(score_fp);
+	fsync(fileno(score_fp));
+	rewind(score_fp);
+#endif
+	printf("%2s:  %-31s  %-18s  %4s  %9s  %4s\n", "#", "name",
+		"game", "time", "real time", "safe");
 	puts("-------------------------------------------------------------------------------");
 	for (i = 0; i < num_scores; i++) {
-		cp = index(score[i].host, '.');
-		if (cp != NULL)
-			*cp = '\0';
-		printf("%2d:  %-8s  %-8s  %-18s  %4d  %9s  %4d\n", i + 1,
-			score[i].name, score[i].host, score[i].game,
+		printf("%2d:  %-31s  %-18s  %4d  %9s  %4d\n", i + 1,
+			score[i].name, score[i].game,
 			score[i].time, timestr(score[i].real_time),
 			score[i].planes);
 	}
 	putchar('\n');
 	return (0);
+}
+
+void
+log_score_quit(int dummy)
+{
+	(void)log_score(0);
+	exit(0);
 }

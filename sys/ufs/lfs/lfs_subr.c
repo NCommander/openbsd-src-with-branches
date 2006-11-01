@@ -1,4 +1,5 @@
-/*	$NetBSD: lfs_subr.c,v 1.2 1994/06/29 06:47:00 cgd Exp $	*/
+/*	$OpenBSD: lfs_subr.c,v 1.3 1996/07/01 07:41:53 downsj Exp $	*/
+/*	$NetBSD: lfs_subr.c,v 1.3 1996/02/09 22:28:55 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,10 +29,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)lfs_subr.c	8.2 (Berkeley) 9/21/93
+ *	@(#)lfs_subr.c	8.4 (Berkeley) 5/8/95
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
 #include <sys/buf.h>
@@ -54,27 +52,28 @@
  * remaining space in the directory.
  */
 int
-lfs_blkatoff(ap)
+lfs_blkatoff(v)
+	void *v;
+{
 	struct vop_blkatoff_args /* {
 		struct vnode *a_vp;
 		off_t a_offset;
 		char **a_res;
 		struct buf **a_bpp;
-	} */ *ap;
-{
+	} */ *ap = v;
 	register struct lfs *fs;
 	struct inode *ip;
 	struct buf *bp;
-	daddr_t lbn;
+	ufs_daddr_t lbn;
 	int bsize, error;
 
 	ip = VTOI(ap->a_vp);
 	fs = ip->i_lfs;
 	lbn = lblkno(fs, ap->a_offset);
-	bsize = blksize(fs);
+	bsize = blksize(fs, ip, lbn);
 
 	*ap->a_bpp = NULL;
-	if (error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) {
+	if ((error = bread(ap->a_vp, lbn, bsize, NOCRED, &bp)) != 0) {
 		brelse(bp);
 		return (error);
 	}
@@ -111,7 +110,8 @@ lfs_seglock(fs, flags)
 
 	sp = fs->lfs_sp = malloc(sizeof(struct segment), M_SEGMENT, M_WAITOK);
 	sp->bpp = malloc(((LFS_SUMMARY_SIZE - sizeof(SEGSUM)) /
-	    sizeof(daddr_t) + 1) * sizeof(struct buf *), M_SEGMENT, M_WAITOK);
+	    sizeof(ufs_daddr_t) + 1) * sizeof(struct buf *),
+	    M_SEGMENT, M_WAITOK);
 	sp->seg_flags = flags;
 	sp->vp = NULL;
 	(void) lfs_initseg(fs);

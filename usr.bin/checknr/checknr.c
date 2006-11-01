@@ -1,3 +1,4 @@
+/*	$OpenBSD: checknr.c,v 1.13 2005/03/08 23:31:53 cloder Exp $	*/
 /*	$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,16 +31,16 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1980, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)checknr.c	8.1 (Berkeley) 6/6/93";
+static const char sccsid[] = "@(#)checknr.c	8.1 (Berkeley) 6/6/93";
 #else 
-static char rcsid[] = "$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $";
+static const char rcsid[] = "$OpenBSD: checknr.c,v 1.13 2005/03/08 23:31:53 cloder Exp $";
 #endif
 #endif /* not lint */
 
@@ -56,7 +53,10 @@ static char rcsid[] = "$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $"
  */
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <ctype.h>
+#include <err.h>
 
 #define MAXSTK	100	/* Stack size */
 #define MAXBR	100	/* Max number of bracket pairs known */
@@ -73,6 +73,19 @@ struct stkstr {
 } stk[MAXSTK];
 int stktop;
 
+void	usage(void);
+void	addmac(char *);
+void	process(FILE *);
+void	pe(int);
+int	eq(char *, char *);
+void	complain(int);
+void	prop(int);
+void	chkcmd(char *, char *);
+void	addcmd(char *);
+void	nomatch(char *);
+void	checkknown(char *);
+int	binsrch(char *);
+
 /*
  * The kinds of opening and closing brackets.
  */
@@ -82,53 +95,53 @@ struct brstr {
 } br[MAXBR] = {
 	/* A few bare bones troff commands */
 #define SZ	0
-	"sz",	"sz",	/* also \s */
+	{ "sz",	"sz" },	/* also \s */
 #define FT	1
-	"ft",	"ft",	/* also \f */
+	{ "ft",	"ft" },	/* also \f */
 	/* the -mm package */
-	"AL",	"LE",
-	"AS",	"AE",
-	"BL",	"LE",
-	"BS",	"BE",
-	"DF",	"DE",
-	"DL",	"LE",
-	"DS",	"DE",
-	"FS",	"FE",
-	"ML",	"LE",
-	"NS",	"NE",
-	"RL",	"LE",
-	"VL",	"LE",
+	{ "AL",	"LE" },
+	{ "AS",	"AE" },
+	{ "BL",	"LE" },
+	{ "BS",	"BE" },
+	{ "DF",	"DE" },
+	{ "DL",	"LE" },
+	{ "DS",	"DE" },
+	{ "FS",	"FE" },
+	{ "ML",	"LE" },
+	{ "NS",	"NE" },
+	{ "RL",	"LE" },
+	{ "VL",	"LE" },
 	/* the -ms package */
-	"AB",	"AE",
-	"BD",	"DE",
-	"CD",	"DE",
-	"DS",	"DE",
-	"FS",	"FE",
-	"ID",	"DE",
-	"KF",	"KE",
-	"KS",	"KE",
-	"LD",	"DE",
-	"LG",	"NL",
-	"QS",	"QE",
-	"RS",	"RE",
-	"SM",	"NL",
-	"XA",	"XE",
-	"XS",	"XE",
+	{ "AB",	"AE" },
+	{ "BD",	"DE" },
+	{ "CD",	"DE" },
+	{ "DS",	"DE" },
+	{ "FS",	"FE" },
+	{ "ID",	"DE" },
+	{ "KF",	"KE" },
+	{ "KS",	"KE" },
+	{ "LD",	"DE" },
+	{ "LG",	"NL" },
+	{ "QS",	"QE" },
+	{ "RS",	"RE" },
+	{ "SM",	"NL" },
+	{ "XA",	"XE" },
+	{ "XS",	"XE" },
 	/* The -me package */
-	"(b",	")b",
-	"(c",	")c",
-	"(d",	")d",
-	"(f",	")f",
-	"(l",	")l",
-	"(q",	")q",
-	"(x",	")x",
-	"(z",	")z",
+	{ "(b",	")b" },
+	{ "(c",	")c" },
+	{ "(d",	")d" },
+	{ "(f",	")f" },
+	{ "(l",	")l" },
+	{ "(q",	")q" },
+	{ "(x",	")x" },
+	{ "(z",	")z" },
 	/* Things needed by preprocessors */
-	"EQ",	"EN",
-	"TS",	"TE",
+	{ "EQ",	"EN" },
+	{ "TS",	"TE" },
 	/* Refer */
-	"[",	"]",
-	0,	0
+	{ "[",	"]" },
+	{ 0,	 }
 };
 
 /*
@@ -178,11 +191,8 @@ int	sflag;		/* -s: ignore \s */
 int	ncmds;		/* size of knowncmds */
 int	slot;		/* slot in knowncmds found by binsrch */
 
-char	*malloc();
-
-main(argc, argv)
-int argc;
-char **argv;
+int
+main(int argc, char *argv[])
 {
 	FILE *f;
 	int i;
@@ -204,10 +214,14 @@ char **argv;
 			for (i=0; br[i].opbr; i++)
 				;
 			for (cp=argv[1]+3; cp[-1]; cp += 6) {
-				br[i].opbr = malloc(3);
-				strncpy(br[i].opbr, cp, 2);
-				br[i].clbr = malloc(3);
-				strncpy(br[i].clbr, cp+3, 2);
+				if (i >= MAXBR)
+					errx(1, "too many pairs");
+				if ((br[i].opbr = malloc(3)) == NULL)
+					err(1, "malloc");
+				strlcpy(br[i].opbr, cp, 3);
+				if ((br[i].clbr = malloc(3)) == NULL)
+					err(1, "malloc");
+				strlcpy(br[i].clbr, cp+3, 3);
 				addmac(br[i].opbr);	/* knows pairs are also known cmds */
 				addmac(br[i].clbr);
 				i++;
@@ -249,7 +263,7 @@ char **argv;
 			cfilename = argv[i];
 			f = fopen(cfilename, "r");
 			if (f == NULL)
-				perror(cfilename);
+				warn("%s", cfilename);
 			else
 				process(f);
 		}
@@ -260,16 +274,20 @@ char **argv;
 	exit(0);
 }
 
-usage()
+void
+usage(void)
 {
-	printf("Usage: checknr -s -f -a.xx.yy.xx.yy... -c.xx.xx.xx...\n");
+	extern char *__progname;
+	(void)fprintf(stderr,
+	    "usage: %s [-fs] [-a.x1.y1.x2.y2. ... .xn.yn] "
+	    "[-c.x1.x2.x3. ... .xn] [file]\n", __progname);
 	exit(1);
 }
 
-process(f)
-FILE *f;
+void
+process(FILE *f)
 {
-	register int i, n;
+	int i, n;
 	char mac[5];	/* The current macro or nroff command */
 	int pl;
 
@@ -362,7 +380,8 @@ FILE *f;
 	}
 }
 
-complain(i)
+void
+complain(int i)
 {
 	pe(stk[i].lno);
 	printf("Unmatched ");
@@ -370,7 +389,8 @@ complain(i)
 	printf("\n");
 }
 
-prop(i)
+void
+prop(int i)
 {
 	if (stk[i].pl == 0)
 		printf(".%s", br[stk[i].opno].opbr);
@@ -387,11 +407,10 @@ prop(i)
 	}
 }
 
-chkcmd(line, mac)
-char *line;
-char *mac;
+void
+chkcmd(char *line, char *mac)
 {
-	register int i, n;
+	int i;
 
 	/*
 	 * Check to see if it matches top of stack.
@@ -424,10 +443,10 @@ char *mac;
 	}
 }
 
-nomatch(mac)
-char *mac;
+void
+nomatch(char *mac)
 {
-	register int i, j;
+	int i, j;
 
 	/*
 	 * Look for a match further down on stack
@@ -469,23 +488,23 @@ char *mac;
 }
 
 /* eq: are two strings equal? */
-eq(s1, s2)
-char *s1, *s2;
+int
+eq(char *s1, char *s2)
 {
 	return (strcmp(s1, s2) == 0);
 }
 
 /* print the first part of an error message, given the line number */
-pe(lineno)
-int lineno;
+void
+pe(int lineno)
 {
 	if (nfiles > 1)
 		printf("%s: ", cfilename);
 	printf("%d: ", lineno);
 }
 
-checkknown(mac)
-char *mac;
+void
+checkknown(char *mac)
 {
 
 	if (eq(mac, "."))
@@ -502,8 +521,8 @@ char *mac;
 /*
  * We have a .de xx line in "line".  Add xx to the list of known commands.
  */
-addcmd(line)
-char *line;
+void
+addcmd(char *line)
 {
 	char *mac;
 
@@ -533,15 +552,15 @@ char *line;
  * me someday?)  Anyway, I claim that .de is fairly rare in user
  * nroff programs, and the register loop below is pretty fast.
  */
-addmac(mac)
-char *mac;
+void
+addmac(char *mac)
 {
-	register char **src, **dest, **loc;
+	char **src, **dest, **loc;
 
 	if (binsrch(mac) >= 0){	/* it's OK to redefine something */
 #ifdef DEBUG
 		printf("binsrch(%s) -> already in table\n", mac);
-#endif DEBUG
+#endif /* DEBUG */
 		return;
 	}
 	/* binsrch sets slot as a side effect */
@@ -553,8 +572,8 @@ printf("binsrch(%s) -> %d\n", mac, slot);
 	dest = src+1;
 	while (dest > loc)
 		*dest-- = *src--;
-	*loc = malloc(3);
-	strcpy(*loc, mac);
+	if ((*loc = strdup(mac)) == NULL)
+		err(1, "strdup");
 	ncmds++;
 #ifdef DEBUG
 printf("after: %s %s %s %s %s, %d cmds\n", knowncmds[slot-2], knowncmds[slot-1], knowncmds[slot], knowncmds[slot+1], knowncmds[slot+2], ncmds);
@@ -565,13 +584,13 @@ printf("after: %s %s %s %s %s, %d cmds\n", knowncmds[slot-2], knowncmds[slot-1],
  * Do a binary search in knowncmds for mac.
  * If found, return the index.  If not, return -1.
  */
-binsrch(mac)
-char *mac;
+int
+binsrch(char *mac)
 {
-	register char *p;	/* pointer to current cmd in list */
-	register int d;		/* difference if any */
-	register int mid;	/* mid point in binary search */
-	register int top, bot;	/* boundaries of bin search, inclusive */
+	char *p;		/* pointer to current cmd in list */
+	int d;			/* difference if any */
+	int mid;		/* mid point in binary search */
+	int top, bot;		/* boundaries of bin search, inclusive */
 
 	top = ncmds-1;
 	bot = 0;

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: 2.t,v 1.3 2003/06/02 23:30:10 millert Exp $
+.\"
 .\" Copyright (c) 1985 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -62,8 +60,8 @@ be high (above 50%).
 .PP
 If the system is busy, then the count of active jobs may be large,
 and several of these jobs may often be blocked (b).  If the virtual
-memory is active, then the paging demon will be running (sr will
-be non-zero).  It is healthy for the paging demon to free pages when
+memory is active, then the paging daemon will be running (sr will
+be non-zero).  It is healthy for the paging daemon to free pages when
 the virtual memory gets active; it is triggered by the amount of free
 memory dropping below a threshold and increases its pace as free memory
 goes to zero.

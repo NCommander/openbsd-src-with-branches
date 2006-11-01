@@ -1,4 +1,5 @@
-/*	$NetBSD: cgthreereg.h,v 1.4 1994/11/20 20:52:03 deraadt Exp $ */
+/*	$OpenBSD: cgthreereg.h,v 1.3 1997/08/08 08:24:54 downsj Exp $	*/
+/*	$NetBSD: cgthreereg.h,v 1.5 1996/02/27 00:14:17 pk Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -58,7 +55,7 @@
 struct cgthree_all {
 	long	ba_id;			/* ID = 0xfe010104 on my IPC */
 	char	ba_xxx0[0x400000-4];
-	struct	bt_regs ba_btreg;	/* Brooktree registers */
-	char	ba_xxx1[0x400000-sizeof(struct bt_regs)];
+	struct	fbcontrol ba_fbc;	/* Brooktree regs (+ misc control) */
+	char	ba_xxx1[0x400000-sizeof(struct fbcontrol)];
 	char	ba_ram[4096];		/* actually larger */
 };

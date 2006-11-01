@@ -189,7 +189,8 @@ const char extra_symbol_chars[] = "*%-([";
      || ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF))	\
 	 && !defined (TE_LINUX)				\
 	 && !defined (TE_FreeBSD)			\
-	 && !defined (TE_NetBSD)))
+	 && !defined (TE_NetBSD)			\
+	 && !defined (TE_OpenBSD)))
 /* This array holds the chars that always start a comment.  If the
    pre-processor is disabled, these aren't very useful.  */
 const char comment_chars[] = "#/";
@@ -967,6 +968,7 @@ md_begin ()
     identifier_chars['@'] = '@';
 #endif
     digit_chars['-'] = '-';
+    mnemonic_chars['-'] = '-';
     identifier_chars['_'] = '_';
     identifier_chars['.'] = '.';
 

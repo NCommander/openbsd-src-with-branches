@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: edit.h,v 1.7 2004/12/22 17:14:34 millert Exp $	*/
 
 /* NAME:
  *      edit.h - globals for edit modes
@@ -7,7 +7,7 @@
  *      This header defines various global edit objects.
  *
  * SEE ALSO:
- *      
+ *
  *
  * RCSid:
  *      $From: edit.h,v 1.2 1994/05/19 18:32:40 michael Exp michael $
@@ -44,28 +44,25 @@ EXTERN X_chars edchars;
 #define XCF_COMMAND_FILE (XCF_COMMAND|XCF_FILE)
 
 /* edit.c */
-int 	x_getc		ARGS((void));
-void 	x_flush		ARGS((void));
-void 	x_putc		ARGS((int c));
-void 	x_puts		ARGS((const char *s));
-bool_t 	x_mode		ARGS((bool_t onoff));
-int 	promptlen	ARGS((const char *cp, const char **spp));
-int	x_complete_word ARGS((const char *str, int slen, int is_command, int *multiple, char **ret));
-void	x_print_expansions ARGS((int nwords, char *const *words, int is_command));
-int	x_locate_word ARGS((const char *buf, int buflen, int pos, int *startp, int *is_command));
-int	x_cf_glob ARGS((int flags, const char *buf, int buflen, int pos, int *startp,
-			  int *endp, char ***wordsp, int *is_commandp));
-int	x_file_glob ARGS((int flags, const char *str, int slen, char ***wordsp));
-int	x_command_glob ARGS((int flags, const char *str, int slen, char ***wordsp));
-int	x_longest_prefix ARGS((int nwords, char *const *words));
-int	x_basename ARGS((const char *s, const char *se));
-void	x_free_words ARGS((int nwords, char **words));
+int	x_getc(void);
+void	x_flush(void);
+void	x_putc(int);
+void	x_puts(const char *);
+bool	x_mode(bool);
+int	promptlen(const char *, const char **);
+int	x_do_comment(char *, int, int *);
+void	x_print_expansions(int, char *const *, int);
+int	x_cf_glob(int, const char *, int, int, int *, int *, char ***, int *);
+int	x_longest_prefix(int , char *const *);
+int	x_basename(const char *, const char *);
+void	x_free_words(int, char **);
+int	x_escape(const char *, size_t, int (*)(const char *, size_t));
 /* emacs.c */
-int 	x_emacs		ARGS((char *buf, size_t len));
-void 	x_init_emacs	ARGS((void));
-void	x_emacs_keys	ARGS((X_chars *ec));
+int	x_emacs(char *, size_t);
+void	x_init_emacs(void);
+void	x_emacs_keys(X_chars *);
 /* vi.c */
-int 	x_vi		ARGS((char *buf, size_t len));
+int	x_vi(char *, size_t);
 
 
 #ifdef DEBUG

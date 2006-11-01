@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,7 +40,7 @@ static char sccsid[] = "@(#)atan2.c	8.1 (Berkeley) 6/4/93";
  *
  * Required system supported functions :
  *	copysign(x,y)
- *	scalb(x,y)
+ *	scalbn(x,y)
  *	logb(x)
  *	
  * Method :
@@ -180,10 +176,10 @@ double  y,x;
 	double t,z,signy,signx,hi,lo;
 	int k,m;
 
-#if !defined(vax)&&!defined(tahoe)
+#if !defined(__vax__)&&!defined(tahoe)
     /* if x or y is NAN */
 	if(x!=x) return(x); if(y!=y) return(y);
-#endif	/* !defined(vax)&&!defined(tahoe) */
+#endif	/* !defined(__vax__)&&!defined(tahoe) */
 
     /* copy down the sign of y and x */
 	signy = copysign(one,y) ;  
@@ -213,7 +209,7 @@ double  y,x;
 	y=copysign(y,one); 
 	if((m=(k=logb(y))-logb(x)) > 60) t=big+big; 
 	    else if(m < -80 ) t=y/x;
-	    else { t = y/x ; y = scalb(y,-k); x=scalb(x,-k); }
+	    else { t = y/x ; y = scalbn(y,-k); x=scalbn(x,-k); }
 
     /* begin argument reduction */
 begin:
@@ -269,13 +265,13 @@ begin:
 
     /* compute atan(t) for t in [-.4375, .4375] */
 	z = t*t;
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)||defined(tahoe)
 	z = t*(z*(a1+z*(a2+z*(a3+z*(a4+z*(a5+z*(a6+z*(a7+z*(a8+
 			z*(a9+z*(a10+z*(a11+z*a12))))))))))));
-#else	/* defined(vax)||defined(tahoe) */
+#else	/* defined(__vax__)||defined(tahoe) */
 	z = t*(z*(a1+z*(a2+z*(a3+z*(a4+z*(a5+z*(a6+z*(a7+z*(a8+
 			z*(a9+z*(a10+z*a11)))))))))));
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__)||defined(tahoe) */
 	z = lo - z; z += t; z += hi;
 
 	return(copysign((signx>zero)?z:PI-z,signy));
