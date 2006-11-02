@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.22 2006/04/02 04:13:07 deraadt Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.23 2006/05/27 23:42:08 moritz Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -67,6 +67,9 @@ char *
 trim(char *line)
 {
 	char *ptr;
+
+	if (line[0] == '\0')
+		return (line);
 
 	for (ptr = &line[strlen(line)-1]; ptr > line; ptr--) {
 		if (!isspace(*ptr))
