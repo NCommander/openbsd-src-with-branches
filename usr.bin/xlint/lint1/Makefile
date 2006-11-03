@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2005/12/10 17:41:03 cloder Exp $
+#	$OpenBSD: Makefile,v 1.9 2005/12/11 20:03:03 deraadt Exp $
 #	$NetBSD: Makefile,v 1.3 1995/07/04 01:53:05 cgd Exp $
 
 PROG=	lint1
@@ -10,7 +10,6 @@ DPADD+=	${LIBL}
 YFLAGS=	-d
 CFLAGS+=-I. -I${.CURDIR}
 LINTFLAGS=-aehpz
-CLEANFILES+=y.tab.h cgram.c scan.c
 
 BINDIR=	/usr/libexec
 
