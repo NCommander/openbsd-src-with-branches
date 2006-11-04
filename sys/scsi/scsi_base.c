@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.112 2006/08/04 21:35:51 beck Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.113 2006/09/22 00:33:41 dlg Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -123,7 +123,7 @@ scsi_deinit()
 void
 scsi_create_task_thread(void *arg)
 {
-	if (kthread_create(scsi_task_thread, NULL, NULL, "scsi") != NULL)
+	if (kthread_create(scsi_task_thread, NULL, NULL, "scsi") != 0)
 		panic("unable to create scsi task thread");
 }
 
