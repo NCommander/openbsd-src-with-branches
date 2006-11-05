@@ -1,4 +1,4 @@
-/*	$OpenBSD: interrupt.c,v 1.2 2006/10/06 21:16:57 mickey Exp $	*/
+/*	$OpenBSD: interrupt.c,v 1.3 2006/10/23 19:44:54 drahn Exp $	*/
 /*	$NetBSD: interrupt.c,v 1.18 2006/01/25 00:02:57 uwe Exp $	*/
 
 /*-
@@ -395,6 +395,7 @@ intc_alloc_ih(void)
 void
 intc_free_ih(struct intc_intrhand *ih)
 {
+	ih->ih_idx = 0;
 	memset(ih, 0, sizeof(*ih));
 }
 
