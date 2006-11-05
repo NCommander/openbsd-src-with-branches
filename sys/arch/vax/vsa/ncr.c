@@ -1,4 +1,4 @@
-/* $OpenBSD: ncr.c,v 1.17 2006/07/12 18:09:56 miod Exp $ */
+/* $OpenBSD: ncr.c,v 1.18 2006/07/19 20:22:38 miod Exp $ */
 /*	$NetBSD: ncr.c,v 1.32 2000/06/25 16:00:43 ragge Exp $	*/
 
 /*-
@@ -267,6 +267,7 @@ si_attach(parent, self, aux)
 	 */
 	ncr5380_init(ncr_sc);
 	ncr5380_reset_scsibus(ncr_sc);
+	DELAY(2000000);
 	config_found(&(ncr_sc->sc_dev), &(ncr_sc->sc_link), scsiprint);
 
 }
