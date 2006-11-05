@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue.c,v 1.19 2005/12/20 02:15:28 brad Exp $	*/
+/*	$OpenBSD: kqueue.c,v 1.20 2006/03/30 06:32:36 brad Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -356,7 +356,7 @@ kq_del(void *arg, struct event *ev)
 		int nsignal = EVENT_SIGNAL(ev);
 
  		memset(&kev, 0, sizeof(kev));
-		kev.ident = (int)signal;
+		kev.ident = nsignal;
 		kev.filter = EVFILT_SIGNAL;
 		kev.flags = EV_DELETE;
 		
