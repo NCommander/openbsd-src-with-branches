@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fabs.c,v 1.1.1.1 2006/10/10 22:07:10 miod Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -21,6 +21,11 @@
 double
 fabs(double x)
 {
+#ifdef __SH4__
 	__asm__ __volatile__("fabs %0" : "=f"(x));
+#else
+	if (x < 0)
+		x = -x;
+#endif
 	return (x);
 }
