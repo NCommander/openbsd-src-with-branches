@@ -1,4 +1,4 @@
-/* $OpenBSD: kexgexc.c,v 1.9 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: kexgexc.c,v 1.10 2006/10/31 16:33:12 markus Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -155,7 +155,8 @@ kexgex_client(Kex *kex)
 #endif
 	if ((shared_secret = BN_new()) == NULL)
 		fatal("kexgex_client: BN_new failed");
-	BN_bin2bn(kbuf, kout, shared_secret);
+	if (BN_bin2bn(kbuf, kout, shared_secret) == NULL)
+		fatal("kexgex_client: BN_bin2bn failed");
 	memset(kbuf, 0, klen);
 	xfree(kbuf);
 
