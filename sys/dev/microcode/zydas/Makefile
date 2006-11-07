@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2006/06/26 14:24:26 deraadt Exp $
+# $OpenBSD: Makefile,v 1.2 2006/06/26 15:46:34 deraadt Exp $
 
 NOPROG=
 NOMAN=
@@ -9,7 +9,7 @@ NOMAN=
     (${MACHINE} == "cats") || (${MACHINE} == "hppa") || \
     (${MACHINE} == "hppa64") || (${MACHINE} == "i386") || \
     (${MACHINE} == "sgi") || (${MACHINE} == "sparc64") || \
-    (${MACHINE} == "zaurus")
+    (${MACHINE} == "zaurus") || (${MACHINE} == "landisk")
 
 FIRM=	zd1211
 
