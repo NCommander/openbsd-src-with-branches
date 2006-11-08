@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.218 2006/08/18 09:15:20 markus Exp $ */
+/* $OpenBSD: session.c,v 1.220 2006/10/09 23:36:11 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -763,7 +763,7 @@ do_setup_env(Session *s, const char *shell)
 
 	/* Initialize the environment. */
 	envsize = 100;
-	env = xmalloc(envsize * sizeof(char *));
+	env = xcalloc(envsize, sizeof(char *));
 	env[0] = NULL;
 
 #ifdef GSSAPI
