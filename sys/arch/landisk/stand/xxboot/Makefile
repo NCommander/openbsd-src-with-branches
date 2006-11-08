@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2006/11/08 17:46:56 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2006/11/08 18:05:30 deraadt Exp $
 
 MAN=	xxboot.8
 
@@ -18,6 +18,8 @@ CPPFLAGS+=-D_STANDALONE
 CPPFLAGS+=-nostdinc -I${.OBJDIR} -I${.CURDIR}/.. -I${.CURDIR}/../../../..
 CPPFLAGS+=-DLOADADDRESS=0x8ff00000 -DXXBOOT_SECTORS=${XXBOOT_SECTORS}
 CFLAGS+=-m4-nofpu
+
+OBJCOPY?=objcopy
 
 S=	${.CURDIR}/../../../..
 SAREL=
