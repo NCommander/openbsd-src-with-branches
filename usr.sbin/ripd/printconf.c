@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: printconf.c,v 1.1 2006/10/18 16:11:58 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -34,10 +34,10 @@ void	 print_iface(struct iface *);
 void
 print_mainconf(struct ripd_conf *conf)
 {
-	if (conf->flags |= RIPD_FLAG_NO_FIB_UPDATE)
-		printf("fib-update yes\n");
-	else
+	if (conf->flags & RIPD_FLAG_NO_FIB_UPDATE)
 		printf("fib-update no\n");
+	else
+		printf("fib-update yes\n");
 
 	if (conf->redistribute_flags & REDISTRIBUTE_STATIC)
 		printf("redistribute static\n");
