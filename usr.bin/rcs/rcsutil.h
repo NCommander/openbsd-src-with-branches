@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsutil.h,v 1.7 2006/06/03 03:05:10 niallo Exp $	*/
+/*	$OpenBSD: rcsutil.h,v 1.8 2006/08/16 07:39:15 ray Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -64,7 +64,7 @@ BUF			*rcs_patchfile(BUF *, BUF *,
 			    int (*p)(struct rcs_lines *, struct rcs_lines *));
 struct rcs_lines	*rcs_splitlines(BUF *);
 void			 rcs_freelines(struct rcs_lines *);
-int			 rcs_yesno(void);
+int			 rcs_yesno(int);
 struct rcs_argvector	*rcs_strsplit(const char *, const char *);
 void			 rcs_argv_destroy(struct rcs_argvector *);
 
