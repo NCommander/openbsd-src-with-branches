@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.4 2006/05/31 03:24:06 claudio Exp $ */
+/*	$OpenBSD: printconf.c,v 1.5 2006/05/31 03:59:51 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -38,10 +38,10 @@ print_mainconf(struct ospfd_conf *conf)
 {
 	printf("router-id %s\n", inet_ntoa(conf->rtr_id));
 
-	if (conf->flags |= OSPFD_FLAG_NO_FIB_UPDATE)
-		printf("fib-update yes\n");
-	else
+	if (conf->flags & OSPFD_FLAG_NO_FIB_UPDATE)
 		printf("fib-update no\n");
+	else
+		printf("fib-update yes\n");
 
 	if (conf->rfc1583compat)
 		printf("rfc1583compat yes\n");
