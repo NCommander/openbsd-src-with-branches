@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.17 2006/11/09 09:24:28 xsa Exp $	*/
+/*	$OpenBSD: client.c,v 1.18 2006/11/09 14:00:14 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -246,7 +246,16 @@ cvs_client_connect_to_server(void)
 	cvs_client_send_request("valid-requests");
 	cvs_client_get_responses();
 
-	if (cvs_trace)
+	if (cvs_noexec == 1)
+		cvs_client_send_request("Global_option -n");
+
+	if (verbosity == 0)
+		cvs_client_send_request("Global_option -Q");
+
+	if (cvs_readonly == 1)
+		cvs_client_send_request("Global_option -r");
+
+	if (cvs_trace == 1)
 		cvs_client_send_request("Global_option -t");
 
 	if (verbosity == 2)
