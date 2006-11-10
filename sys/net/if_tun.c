@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.79 2006/03/25 22:41:48 djm Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.80 2006/11/01 03:37:24 tedu Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -820,7 +820,7 @@ tunwrite(dev_t dev, struct uio *uio, int ioflag)
 	if (uio->uio_resid >= MINCLSIZE) {
 		MCLGET(m, M_DONTWAIT);
 		if (!(m->m_flags & M_EXT)) {
-			m_freem(m);
+			m_free(m);
 			return (ENOBUFS);
 		}
 		mlen = MCLBYTES;
@@ -852,6 +852,7 @@ tunwrite(dev_t dev, struct uio *uio, int ioflag)
 				MCLGET(m, M_DONTWAIT);
 				if (!(m->m_flags & M_EXT)) {
 					error = ENOBUFS;
+					m_free(m);
 					break;
 				}
 				mlen = MCLBYTES;
