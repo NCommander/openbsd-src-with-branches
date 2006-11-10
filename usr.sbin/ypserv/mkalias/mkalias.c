@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkalias.c,v 1.16 2003/07/18 22:58:56 david Exp $ */
+/*	$OpenBSD: mkalias.c,v 1.17 2006/04/03 05:01:22 deraadt Exp $ */
 
 /*
  * Copyright (c) 1997 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: mkalias.c,v 1.16 2003/07/18 22:58:56 david Exp $";
+static const char rcsid[] = "$OpenBSD: mkalias.c,v 1.17 2006/04/03 05:01:22 deraadt Exp $";
 #endif
 
 #include <ctype.h>
@@ -209,7 +209,7 @@ main(int argc, char *argv[])
 		if (slash != NULL)
 			slash[1] = 0;			/* truncate to dir */
 		else
-			*output = 0;			/* elminate */
+			*output = 0;			/* eliminate */
 
 		/* note: output is now directory where map goes ! */
 
