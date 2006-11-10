@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripe.h,v 1.1 2006/10/18 16:11:58 norby Exp $ */
+/*	$OpenBSD: ripe.h,v 1.2 2006/10/31 23:43:11 michele Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -94,10 +94,11 @@ int			 if_join_group(struct iface *, struct in_addr *);
 int			 if_leave_group(struct iface *, struct in_addr *);
 struct ctl_iface	*if_to_ctl(struct iface *);
 
-/* communications */
+/* message.c */
 void	 recv_request(struct iface *, struct nbr *, char *, u_int16_t);
 void	 recv_response(struct iface *, struct nbr *, char *, u_int16_t);
 void	 add_entry(struct packet_head *, struct rip_route *);
+void	 clear_list(struct packet_head *);
 int	 send_triggered_update(struct iface *, struct rip_route *);
 int	 send_request(struct packet_head *, struct iface *, struct nbr *);
 int	 send_response(struct packet_head *, struct iface *, struct nbr *);

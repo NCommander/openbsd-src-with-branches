@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.2 2006/10/31 23:43:11 michele Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.3 2006/11/01 20:55:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -226,7 +226,8 @@ nbr_act_del(struct nbr *nbr)
 	nbr_stop_timer(nbr);
 
 	/* clear lists */
-	//response_list_clr(&nbr->rr_list);
+	clear_list(&nbr->rq_list);
+	clear_list(&nbr->rp_list);
 
 	LIST_REMOVE(nbr, entry);
 	LIST_REMOVE(nbr, hash);
