@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.211 2006/08/23 08:13:04 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.212 2006/09/19 13:02:24 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2035,7 +2035,7 @@ void
 rde_update6_queue_runner(void)
 {
 	struct rde_peer		*peer;
-	char			*b;
+	u_char			*b;
 	int			 sent;
 	u_int16_t		 len;
 
