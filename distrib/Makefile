@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.29 2006/11/10 19:37:51 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.30 2006/11/11 21:09:22 deraadt Exp $
 
-SUBDIR=	special
+SUBDIR=	special notes
 
 .if	make(obj)
 SUBDIR+=crunch
@@ -13,8 +13,6 @@ SUBDIR+=${MACHINE}
 .if	make(clean) || make(cleandir)
 SUBDIR+=crunch
 .endif
-
-SUBDIR+=notes
 
 #all: crunch-tools _SUBDIRUSE
 
