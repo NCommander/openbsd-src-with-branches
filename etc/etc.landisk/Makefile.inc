@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.5 2006/08/30 21:40:05 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2006/10/25 01:47:41 drahn Exp $
 
 .ifdef DESTDIR
 snap_md: bsd bootblocks distrib
@@ -13,7 +13,7 @@ bsd:
 # probably will be replaced by procedure to build 'miniroot' image
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/mbr ${DESTDIR}/snapshot
-	cp ${DESTDIR}/usr/mdec/bootxx ${DESTDIR}/snapshot
+	cp ${DESTDIR}/usr/mdec/xxboot ${DESTDIR}/snapshot
 	cp ${DESTDIR}/usr/mdec/boot ${DESTDIR}/snapshot
 
 .PHONY: bsd bootblocks
