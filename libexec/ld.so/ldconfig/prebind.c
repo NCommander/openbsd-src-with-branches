@@ -1,4 +1,4 @@
-/* $OpenBSD: prebind.c,v 1.6 2006/06/15 22:09:32 drahn Exp $ */
+/* $OpenBSD: prebind.c,v 1.7 2006/06/26 23:26:12 drahn Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
@@ -59,6 +59,9 @@ char *shstrtab;
 #endif
 #ifdef __i386__
 #define RELOC_JMP_SLOT	RELOC_JUMP_SLOT
+#endif
+#ifdef __sh__
+#define RELOC_JMP_SLOT	R_SH_JMP_SLOT
 #endif
 #ifdef __mips64__
 #define RELOC_JMP_SLOT	0		/* XXX mips64 doesnt have PLT reloc */
