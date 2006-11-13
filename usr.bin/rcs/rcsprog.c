@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.132 2006/08/16 07:39:15 ray Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.133 2006/10/12 17:20:12 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -188,7 +188,7 @@ rcs_main(int argc, char **argv)
 	time_t rcs_mtime = -1;
 
 	kflag = RCS_KWEXP_ERR;
-	lkmode = -1;
+	lkmode = RCS_LOCK_INVAL;
 	fmode =  S_IRUSR|S_IRGRP|S_IROTH;
 	flags = RCS_RDWR|RCS_PARSE_FULLY;
 	lrev = urev = descfile = NULL;
@@ -423,7 +423,7 @@ rcs_main(int argc, char **argv)
 
 		rcs_kwexp_set(file, kflag);
 
-		if (lkmode != -1)
+		if (lkmode != RCS_LOCK_INVAL)
 			(void)rcs_lock_setmode(file, lkmode);
 
 		if (rcsflags & RCSPROG_LFLAG) {
