@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.53 2006/01/19 17:54:47 mickey Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.54 2006/07/10 20:00:08 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -639,7 +639,7 @@ native:
 		switch (ph[i].p_type) {
 		case PT_LOAD:
 			/*
-			 * Calcuates size of text and data segments
+			 * Calculates size of text and data segments
 			 * by starting at first and going to end of last.
 			 * 'rwx' sections are treated as data.
 			 * this is correct for BSS_PLT, but may not be
