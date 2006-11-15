@@ -1,4 +1,4 @@
-/* $OpenBSD: apicvec.s,v 1.6 2006/03/14 14:46:53 mickey Exp $ */
+/* $OpenBSD: apicvec.s,v 1.7 2006/06/12 04:41:30 gwk Exp $ */
 /* $NetBSD: apicvec.s,v 1.1.2.2 2000/02/21 21:54:01 sommerfeld Exp $ */
 
 /*-
@@ -63,7 +63,9 @@ XINTR(ipi):
 	ioapic_asm_ack()
 	sti			/* safe to take interrupts.. */
 	call	_C_LABEL(i386_ipi_handler)
-	jmp	_C_LABEL(Xdoreti)
+	cli
+	popl	CPL
+	INTRFASTEXIT
 #endif
 
 	/*
