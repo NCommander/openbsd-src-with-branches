@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.42 2006/06/16 16:49:40 henning Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.43 2006/08/31 12:37:31 mcbride Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -355,10 +355,6 @@ in6_ifattach_linklocal(ifp, altifp)
 	ifra.ifra_prefixmask.sin6_len = sizeof(struct sockaddr_in6);
 	ifra.ifra_prefixmask.sin6_family = AF_INET6;
 	ifra.ifra_prefixmask.sin6_addr = in6mask64;
-#ifdef SCOPEDROUTING
-	/* take into account the sin6_scope_id field for routing */
-	ifra.ifra_prefixmask.sin6_scope_id = 0xffffffff;
-#endif
 	/* link-local addresses should NEVER expire. */
 	ifra.ifra_lifetime.ia6t_vltime = ND6_INFINITE_LIFETIME;
 	ifra.ifra_lifetime.ia6t_pltime = ND6_INFINITE_LIFETIME;
