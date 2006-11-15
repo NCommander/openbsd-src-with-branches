@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.102 2006/05/08 20:34:36 deraadt Exp $ */
+/*	$OpenBSD: loader.c,v 1.103 2006/05/08 20:37:01 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -850,8 +850,8 @@ _dl_unsetenv(const char *var, char **env)
 			for (P = env;; ++P)
 				if (!(*P = *(P + 1)))
 					break;
-		}
-		env++;
+		} else
+			env++;
 	}
 }
 
