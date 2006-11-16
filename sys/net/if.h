@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.82 2006/06/02 19:53:12 mpf Exp $	*/
+/*	$OpenBSD: if.h,v 1.83 2006/10/31 14:28:29 jason Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -702,6 +702,7 @@ int	ifconf(u_long, caddr_t);
 void	ifinit(void);
 int	ifioctl(struct socket *, u_long, caddr_t, struct proc *);
 int	ifpromisc(struct ifnet *, int);
+struct	ifg_group *if_creategroup(const char *);
 int	if_addgroup(struct ifnet *, const char *);
 int	if_delgroup(struct ifnet *, const char *);
 void	if_group_routechange(struct sockaddr *, struct sockaddr *);
