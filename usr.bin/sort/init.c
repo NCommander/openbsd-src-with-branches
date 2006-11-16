@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.7 2004/07/20 03:50:27 deraadt Exp $	*/
+/*	$OpenBSD: init.c,v 1.8 2005/04/11 07:12:03 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -36,7 +36,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.7 2004/07/20 03:50:27 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.8 2005/04/11 07:12:03 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -123,7 +123,8 @@ setcolumn(char *pos, struct field *cur_fld, int gflag)
 	if (*pos == '.') {
 		if (!col->num)
 			errx(2, "cannot indent end of line");
-		pos += sscanf(++pos, "%d", &(col->indent));
+		pos++;
+		pos += sscanf(pos, "%d", &(col->indent));
 		while (isdigit(*pos))
 			pos++;
 		if (&cur_fld->icol == col)
