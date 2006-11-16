@@ -1,4 +1,4 @@
-/*	$OpenBSD: devs.c,v 1.4 2006/10/29 14:47:59 drahn Exp $	*/
+/*	$OpenBSD: devs.c,v 1.5 2006/10/29 14:53:45 drahn Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -26,6 +26,8 @@ int sector;
 void
 machdep(void)
 {
+	tick_init();
+
 	/* scif_init(9600); */
 }
 
