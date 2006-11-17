@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.7 2006/04/14 21:33:56 marco Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.8 2006/05/08 22:51:17 gwk Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.1 2003/04/26 18:39:29 fvdl Exp $	*/
 
 /*
@@ -200,7 +200,8 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 		mpbios_scan(self);
 	else
 #endif
-	{
+
+	if ((cpu_info_primary.ci_flags & CPUF_PRESENT) == 0) {
 		struct cpu_attach_args caa;
                         
 		memset(&caa, 0, sizeof(caa));
