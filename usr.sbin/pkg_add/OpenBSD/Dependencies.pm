@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Dependencies.pm,v 1.3 2005/09/04 22:47:56 espie Exp $
+# $OpenBSD: Dependencies.pm,v 1.4 2005/10/10 11:24:34 espie Exp $
 #
 # Copyright (c) 2005 Marc Espie <espie@openbsd.org>
 #
@@ -124,7 +124,7 @@ sub check_lib_spec
 			return $candidate;
 		}
 	}
-	return undef;
+	return;
 }
 
 sub find_old_lib
@@ -139,7 +139,7 @@ sub find_old_lib
 			return "$try($lib)";
 		}
 	}
-	return undef;
+	return;
 }
 
 sub lookup_library
