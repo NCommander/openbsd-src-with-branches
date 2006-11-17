@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_forward.c,v 1.34 2004/07/14 20:19:58 dhartmei Exp $	*/
+/*	$OpenBSD: ip6_forward.c,v 1.35 2006/06/18 11:47:46 pascoe Exp $	*/
 /*	$KAME: ip6_forward.c,v 1.75 2001/06/29 12:42:13 jinmei Exp $	*/
 
 /*
@@ -425,9 +425,9 @@ ip6_forward(m, srcrt)
 	}
 	else
 		origifp = rt->rt_ifp;
-	if (IN6_IS_SCOPE_LINKLOCAL(&ip6->ip6_src))
+	if (IN6_IS_SCOPE_EMBED(&ip6->ip6_src))
 		ip6->ip6_src.s6_addr16[1] = 0;
-	if (IN6_IS_SCOPE_LINKLOCAL(&ip6->ip6_dst))
+	if (IN6_IS_SCOPE_EMBED(&ip6->ip6_dst))
 		ip6->ip6_dst.s6_addr16[1] = 0;
 
 #if NPF > 0 
