@@ -1,4 +1,4 @@
-/*	$OpenBSD: via.c,v 1.6 2006/08/24 12:29:54 hshoexer Exp $	*/
+/*	$OpenBSD: via.c,v 1.7 2006/11/17 06:48:12 tom Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -440,7 +440,7 @@ viac3_crypto_encdec(struct cryptop *crp, struct cryptodesc *crd,
 			    ses->ses_iv);
 		else
 			bcopy(crp->crp_buf + crd->crd_skip +
-			    crd->crd_len - 16, sc->ses->ses_iv, 16);
+			    crd->crd_len - 16, ses->ses_iv, 16);
 	}
 
 	if (sc->op_buf != NULL) {
