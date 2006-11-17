@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.36 2006/11/10 15:03:44 tom Exp $	*/
+/*	$OpenBSD: md5.c,v 1.37 2006/11/16 23:53:41 millert Exp $	*/
 
 /*
  * Copyright (c) 2001,2003,2005-2006 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -627,10 +627,10 @@ digest_test(struct hash_functions **hashes)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-p | -t | -x | -c [checklist ...] | "
-	    "-s string | file ...]\n", __progname);
+	fprintf(stderr, "usage: %s [-pqrtx] [-c [checklist ...]] "
+	    "[-s string] [file ...]\n", __progname);
 	if (strcmp(__progname, "cksum") == 0)
-		fprintf(stderr, "             [-a algorithms]] [-o 1 | 2] [-q | -r]\n");
+		fprintf(stderr, "\t[-a algorithms]] [-o 1 | 2]\n");
 
 	exit(EXIT_FAILURE);
 }
