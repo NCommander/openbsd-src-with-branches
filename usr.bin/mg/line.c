@@ -1,4 +1,4 @@
-/*	$OpenBSD: line.c,v 1.41 2006/07/25 08:22:32 kjell Exp $	*/
+/*	$OpenBSD: line.c,v 1.42 2006/07/25 08:27:09 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -559,7 +559,7 @@ lreplace(RSIZE plen, char *st)
 		return (FALSE);
 	}
 	undo_add_boundary();
-	undo_no_boundary(TRUE);
+	undo_boundary_enable(FALSE);
 
 	(void)backchar(FFARG | FFRAND, (int)plen);
 	(void)ldelete(plen, KNONE);
@@ -568,7 +568,7 @@ lreplace(RSIZE plen, char *st)
 	region_put_data(st, rlen);
 	lchange(WFFULL);
 
-	undo_no_boundary(FALSE);
+	undo_boundary_enable(TRUE);
 	undo_add_boundary();
 	return (TRUE);
 }
