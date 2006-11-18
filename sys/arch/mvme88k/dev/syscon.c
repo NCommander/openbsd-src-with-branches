@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscon.c,v 1.25 2006/04/17 18:27:30 miod Exp $ */
+/*	$OpenBSD: syscon.c,v 1.26 2006/04/19 19:41:24 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * All rights reserved.
@@ -36,7 +36,6 @@
 
 #include <machine/autoconf.h>
 #include <machine/cpu.h>
-#include <machine/frame.h>
 
 #include <machine/mvme188.h>
 #include <mvme88k/dev/sysconreg.h>
