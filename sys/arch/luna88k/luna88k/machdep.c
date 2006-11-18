@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.33 2006/05/15 21:40:04 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.34 2006/10/30 14:46:35 aoyama Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -1095,6 +1095,8 @@ luna88k_bootstrap()
 	setup_board_config();
 	master_cpu = cmmu_init();
 	set_cpu_number(master_cpu);
+
+	m88100_apply_patches();
 
 	/*
 	 * On the luna88k, secondary processors are not disabled while the
