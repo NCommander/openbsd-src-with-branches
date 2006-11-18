@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.h,v 1.7 2006/07/21 01:49:15 brad Exp $ */
+/* $OpenBSD: if_ixgb.h,v 1.8 2006/08/04 14:25:24 brad Exp $ */
 
 #ifndef _IXGB_H_DEFINED_
 #define _IXGB_H_DEFINED_
@@ -298,7 +298,10 @@ struct ixgb_softc {
 	bus_dma_tag_t		rxtag;		/* dma tag for Rx */
 	u_int32_t		next_rx_desc_to_use;
 
-	/* Jumbo frame */
+	/*
+	 * First/last mbuf pointers, for
+	 * collecting multisegment RX packets.
+	 */
 	struct mbuf		*fmp;
 	struct mbuf		*lmp;
 
