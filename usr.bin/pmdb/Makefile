@@ -1,10 +1,9 @@
-#	$OpenBSD: Makefile,v 1.8 2003/07/22 17:15:13 brad Exp $
+#	$OpenBSD: Makefile,v 1.9 2003/12/03 22:28:01 grange Exp $
 
 .include <bsd.own.mk>
 
 .if (!exists(arch/${MACHINE}/Makefile.inc) && \
     !exists(arch/${MACHINE_ARCH}/Makefile.inc))
-NOMAN=no, man
 NOPROG=no, man
 .else
 
