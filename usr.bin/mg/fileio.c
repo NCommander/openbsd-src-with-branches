@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.77 2006/07/25 08:22:32 kjell Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.78 2006/09/19 05:52:23 otto Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -421,7 +421,7 @@ make_file_list(char *buf)
 	char		 prefixx[NFILEN + 1];
 
 	/*
-	 * We need three different strings: 
+	 * We need three different strings:
 
 	 * dir - the name of the directory containing what the user typed.
 	 *  Must be a real unix file name, e.g. no ~user, etc..

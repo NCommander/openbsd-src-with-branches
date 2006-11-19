@@ -1,4 +1,4 @@
-/* $OpenBSD: undo.c,v 1.41 2006/07/25 08:22:32 kjell Exp $ */
+/* $OpenBSD: undo.c,v 1.42 2006/11/17 08:45:31 kjell Exp $ */
 /*
  * Copyright (c) 2002 Vincent Labrecque <vincent@openbsd.org>
  * Copyright (c) 2005, 2006 Kjell Wooding <kjell@openbsd.org>
@@ -36,7 +36,7 @@
 static LIST_HEAD(, undo_rec)	 undo_free;
 static int			 undo_free_num;
 static int			 boundary_flag = TRUE;
-static int 			 undo_enable_flag = TRUE;
+static int			 undo_enable_flag = TRUE;
 
 /*
  * Local functions

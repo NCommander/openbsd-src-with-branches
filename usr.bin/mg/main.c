@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.53 2006/07/17 14:11:55 kjell Exp $	*/
+/*	$OpenBSD: main.c,v 1.54 2006/07/25 08:22:32 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -20,7 +20,7 @@ int		 thisflag;			/* flags, this command	*/
 int		 lastflag;			/* flags, last command	*/
 int		 curgoal;			/* goal column		*/
 int		 startrow;			/* row to start		*/
-struct buffer 	*curbp;				/* current buffer	*/
+struct buffer	*curbp;				/* current buffer	*/
 struct buffer	*bheadp;			/* BUFFER list head	*/
 struct mgwin	*curwp;				/* current window	*/
 struct mgwin	*wheadp;			/* MGWIN listhead	*/
