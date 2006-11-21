@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.25 2005/05/23 22:54:34 henning Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.26 2005/11/13 20:26:00 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -238,7 +238,7 @@ relay(struct interface_info *ip, struct dhcp_packet *packet, int length,
 	/* If giaddr is set on a BOOTREQUEST, ignore it - it's already
 	   been gatewayed. */
 	if (packet->giaddr.s_addr) {
-		note("ignoring BOOTREQUEST with giaddr of %s\n",
+		note("ignoring BOOTREQUEST with giaddr of %s",
 		    inet_ntoa(packet->giaddr));
 		return;
 	}
