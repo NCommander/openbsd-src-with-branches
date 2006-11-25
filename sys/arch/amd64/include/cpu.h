@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.18 2006/03/08 03:33:21 uwe Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.19 2006/11/07 09:09:42 otto Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -46,6 +46,11 @@
 #include <machine/tss.h>
 #include <machine/intrdefs.h>
 #include <machine/cacheinfo.h>
+
+#ifdef MULTIPROCESSOR
+#include <machine/i82489reg.h>
+#include <machine/i82489var.h>
+#endif
 
 #include <sys/device.h>
 #include <sys/lock.h>
