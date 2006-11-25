@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.159 2006/09/27 08:54:44 grange Exp $
+#	$OpenBSD: GENERIC,v 1.160 2006/09/28 04:00:23 deraadt Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -258,6 +258,7 @@ qe*		at qec?
 be*		at qec?
 
 hme*		at sbus?
+#gem*		at sbus?
 
 # Magma serial/parallel port devices
 magma*		at sbus?
