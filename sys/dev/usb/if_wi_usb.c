@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_usb.c,v 1.31 2006/10/16 12:30:08 tom Exp $ */
+/*	$OpenBSD: if_wi_usb.c,v 1.32 2006/10/24 18:20:46 moritz Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -61,9 +61,8 @@
 
 #define ROUNDUP64(x) (((x)+63) & ~63)
 
-#include <net80211/ieee80211.h>
-#include <net80211/ieee80211_ioctl.h>
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_ioctl.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
