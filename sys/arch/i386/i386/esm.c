@@ -1,4 +1,4 @@
-/*	$OpenBSD: esm.c,v 1.41 2006/04/21 09:33:10 dlg Exp $ */
+/*	$OpenBSD: esm.c,v 1.42 2006/05/11 13:21:11 mickey Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -281,7 +281,7 @@ esm_watchdog(void *arg, int period)
 
 	if (sc->sc_wdog_period == period) {
 		if (period != 0) {
-			s = splsoftclock();
+			s = splclock();
 			if (sc->sc_step != 0) {
 				/* defer tickling to the sensor refresh */
 				sc->sc_wdog_tickle = 1;
@@ -302,7 +302,7 @@ esm_watchdog(void *arg, int period)
 	if (period < 10 && period > 0)
 		period = 10;
 
-	s = splsoftclock();
+	s = splclock();
 
 	prop.cmd = ESM2_CMD_HWDC;
 	prop.subcmd = ESM2_HWDC_WRITE_PROPERTY;
