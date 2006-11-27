@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.51 2006/11/21 15:04:59 stevesk Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.52 2006/11/27 16:14:07 stevesk Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -195,6 +195,7 @@ struct interface_info {
 	char			 name[IFNAMSIZ];
 	int			 rfdesc;
 	int			 wfdesc;
+	int			 ufdesc; /* unicast */
 	unsigned char		*rbuf;
 	size_t			 rbuf_max;
 	size_t			 rbuf_offset;
