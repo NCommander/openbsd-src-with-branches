@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiio.h,v 1.6 2002/05/27 23:40:31 tdeval Exp $	*/
+/*	$OpenBSD: scsiio.h,v 1.7 2006/07/23 02:50:20 dlg Exp $	*/
 /*	$NetBSD: scsiio.h,v 1.3 1994/06/29 06:45:09 cgd Exp $	*/
 
 #ifndef _SYS_SCSIIO_H_
@@ -66,5 +66,14 @@ struct scsi_addr {
 
 #define SCIOCRESET	_IO('Q', 7)	/* reset the device */
 #define SCIOCIDENTIFY	_IOR('Q', 9, struct scsi_addr) 
+
+struct sbioc_device {
+	void		*sd_cookie;
+	int		sd_target;
+	int		sd_lun;
+};
+
+#define SBIOCPROBE	_IOWR('Q', 127, struct sbioc_device)
+#define SBIOCDETACH	_IOWR('Q', 128, struct sbioc_device)
 
 #endif /* _SYS_SCSIIO_H_ */
