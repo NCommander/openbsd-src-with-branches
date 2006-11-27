@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.121 2006/11/14 09:49:52 xsa Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.122 2006/11/14 15:39:41 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -365,6 +365,7 @@ int	update_has_conflict_markers(struct cvs_file *);
 /* commands */
 int	cvs_add(int, char **);
 int	cvs_admin(int, char **);
+int	cvs_annotate(int, char **);
 int	cvs_commit(int, char **);
 int	cvs_diff(int, char **);
 int	cvs_getlog(int, char **);
