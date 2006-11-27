@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.65 2006/10/07 23:40:08 beck Exp $	*/
+/*	$OpenBSD: st.c,v 1.66 2006/11/27 18:24:43 beck Exp $	*/
 /*	$NetBSD: st.c,v 1.71 1997/02/21 23:03:49 thorpej Exp $	*/
 
 /*
@@ -1719,7 +1719,7 @@ st_interpret_sense(xs)
 	int32_t info;
 
 	if (((sc_link->flags & SDEV_OPEN) == 0) ||
-	    (serr != 0x70 && serr != 0x71))
+	    (serr != SSD_ERRCODE_CURRENT && serr != SSD_ERRCODE_DEFERRED))
 		return (EJUSTRETURN); /* let the generic code handle it */
 
 	switch (skey) {
