@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2006/11/27 16:49:13 ckuethe Exp $
 
 SCRIPT=pkg-config
 
@@ -8,6 +8,6 @@ clean:
 
 install: 
 	${INSTALL} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-		${SCRIPT} ${DESTDIR}${BINDIR}/
+		${.CURDIR}/${SCRIPT} ${DESTDIR}${BINDIR}/
 
 .include <bsd.prog.mk>
