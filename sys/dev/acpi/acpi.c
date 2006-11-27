@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi.c,v 1.63 2006/11/25 16:26:08 marco Exp $	*/
+/*	$OpenBSD: acpi.c,v 1.64 2006/11/27 15:20:26 jordan Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -955,6 +955,9 @@ acpi_print(void *aux, const char *pnp)
 #ifdef ACPIVERBOSE
 		else
 			printf("acpi device at %s from", pnp);
+#else
+		else
+			return (QUIET);
 #endif
 	}
 #ifdef ACPIVERBOSE
