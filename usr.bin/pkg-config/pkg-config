@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# $OpenBSD$
 
 #$CSK: pkgconfig.pl,v 1.39 2006/11/27 16:26:20 ckuethe Exp $
 # Copyright (c) 2006 Chris Kuethe <ckuethe@openbsd.org>
