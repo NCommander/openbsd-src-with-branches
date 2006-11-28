@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.2 2006/11/27 17:01:56 ckuethe Exp $
+# $OpenBSD: Makefile,v 1.3 2006/11/27 23:27:46 deraadt Exp $
 
-NOMAN=chris is a lazy slacker
+MAN=pkg-config.1
 
 beforeinstall: 
 	${INSTALL} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
