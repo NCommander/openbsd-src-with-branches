@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.6 2006/03/31 18:19:44 deraadt Exp $ */
+/*	$OpenBSD: if.c,v 1.7 2006/06/02 08:16:51 claudio Exp $ */
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
  *
@@ -206,6 +206,8 @@ showlinkstate(int state)
 {
 	switch (state) {
 	case LINK_STATE_UP:
+	case LINK_STATE_HALF_DUPLEX:
+	case LINK_STATE_FULL_DUPLEX:
 		return (":U");
 	case LINK_STATE_DOWN:
 		return (":D");

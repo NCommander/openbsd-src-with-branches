@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.263 2006/09/19 13:04:01 henning Exp $ */
+/*	$OpenBSD: session.c,v 1.264 2006/11/06 14:07:35 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -2322,7 +2322,7 @@ session_dispatch_imsg(struct imsgbuf *ibuf, int idx, u_int *listener_cnt)
 				fatalx("IFINFO imsg with wrong len");
 			kif = imsg.data;
 			depend_ok = (kif->flags & IFF_UP) &&
-			    (kif->link_state == LINK_STATE_UP ||
+			    (LINK_STATE_IS_UP(kif->link_state) ||
 			    (kif->link_state == LINK_STATE_UNKNOWN &&
 			    kif->media_type != IFT_CARP));
 

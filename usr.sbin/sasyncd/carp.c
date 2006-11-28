@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.6 2006/09/01 01:13:25 mpf Exp $	*/
+/*	$OpenBSD: carp.c,v 1.7 2006/09/16 11:35:18 mpf Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -53,6 +53,8 @@ carp_map_state(u_char link_state)
 
 	switch(link_state) {
 	case LINK_STATE_UP:
+	case LINK_STATE_HALF_DUPLEX:
+	case LINK_STATE_FULL_DUPLEX:
 		state = MASTER;
 		break;
 	case LINK_STATE_DOWN:
