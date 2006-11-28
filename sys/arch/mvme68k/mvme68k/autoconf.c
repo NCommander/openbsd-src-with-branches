@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.34 2006/06/24 14:04:04 miod Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.35 2006/07/10 19:23:25 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -555,7 +555,7 @@ device_register(struct device *dev, void *aux)
 	 */
 	if (strncmp("sd", dev->dv_xname, 2) == 0 ||
 	    strncmp("cd", dev->dv_xname, 2) == 0) {
-		struct scsibus_attach_args *sa = aux;
+		struct scsi_attach_args *sa = aux;
 		int target, lun;
 #ifdef MVME147
 		/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss_scanjet.c,v 1.28 2006/01/17 20:22:38 miod Exp $	*/
+/*	$OpenBSD: ss_scanjet.c,v 1.29 2006/05/11 00:45:59 krw Exp $	*/
 /*	$NetBSD: ss_scanjet.c,v 1.6 1996/05/18 22:58:01 christos Exp $	*/
 
 /*
@@ -89,7 +89,7 @@ struct ss_special scanjet_special = {
 void
 scanjet_attach(ss, sa)
 	struct ss_softc *ss;
-	struct scsibus_attach_args *sa;
+	struct scsi_attach_args *sa;
 {
 #ifdef SCSIDEBUG
 	struct scsi_link *sc_link = sa->sa_sc_link;

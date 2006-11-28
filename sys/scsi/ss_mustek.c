@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss_mustek.c,v 1.12 2005/06/05 21:03:50 krw Exp $	*/
+/*	$OpenBSD: ss_mustek.c,v 1.13 2006/05/11 00:45:59 krw Exp $	*/
 /*	$NetBSD: ss_mustek.c,v 1.4 1996/05/05 19:52:57 christos Exp $	*/
 
 /*
@@ -99,7 +99,7 @@ struct ss_special mustek_special = {
 void
 mustek_attach(ss, sa)
 	struct ss_softc *ss;
-	struct scsibus_attach_args *sa;
+	struct scsi_attach_args *sa;
 {
 #ifdef SCSIDEBUG
 	struct scsi_link *sc_link = sa->sa_sc_link;

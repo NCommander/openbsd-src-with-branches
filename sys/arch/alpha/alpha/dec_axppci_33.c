@@ -1,4 +1,4 @@
-/* $OpenBSD: dec_axppci_33.c,v 1.17 2002/06/25 21:33:19 miod Exp $ */
+/* $OpenBSD: dec_axppci_33.c,v 1.18 2005/05/09 21:55:12 martin Exp $ */
 /* $NetBSD: dec_axppci_33.c,v 1.44 2000/05/22 20:13:32 thorpej Exp $ */
 
 /*
@@ -272,7 +272,7 @@ dec_axppci_33_device_register(dev, aux)
 
 	if (!strcmp(cd->cd_name, "sd") || !strcmp(cd->cd_name, "st") ||
 	    !strcmp(cd->cd_name, "cd")) {
-		struct scsibus_attach_args *sa = aux;
+		struct scsi_attach_args *sa = aux;
 		struct scsi_link *periph = sa->sa_sc_link;
 		int unit;
 
