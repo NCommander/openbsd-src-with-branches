@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensors.h,v 1.17 2006/04/25 03:14:19 deraadt Exp $	*/
+/*	$OpenBSD: sensors.h,v 1.18 2006/07/03 21:17:37 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexander Yurchenko <grange@openbsd.org>
@@ -44,7 +44,7 @@ enum sensor_type {
 	SENSOR_PERCENT,			/* percent */
 	SENSOR_LUX,			/* illuminance (mulx) */
 	SENSOR_DRIVE,			/* disk */
-	SENSOR_TIMEDELTA		/* system time error (mSec) */
+	SENSOR_TIMEDELTA		/* system time error (nSec) */
 };
 
 #define SENSOR_DRIVE_EMPTY	1
