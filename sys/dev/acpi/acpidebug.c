@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidebug.c,v 1.10 2006/10/19 07:02:20 jordan Exp $ */
+/* $OpenBSD: acpidebug.c,v 1.11 2006/10/24 19:01:48 jordan Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@openbsd.org>
  *
@@ -59,9 +59,6 @@ const char		*db_aml_fieldlock(int);
 const char		*db_aml_fieldupdate(int);
 
 extern struct aml_node	aml_root;
-
-/* line buffer */
-char			buf[128];
 
 /* name of scope for lexer */
 char			scope[80];
