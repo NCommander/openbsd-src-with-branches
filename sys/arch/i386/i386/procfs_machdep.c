@@ -1,4 +1,4 @@
-/*	$OpenBSD: procfs_machdep.c,v 1.3 2005/04/21 00:31:23 deraadt Exp $	*/
+/*	$OpenBSD: procfs_machdep.c,v 1.4 2005/04/27 13:18:21 fgsch Exp $	*/
 /*	$NetBSD: procfs_machdep.c,v 1.6 2001/02/21 21:39:59 jdolecek Exp $	*/
 
 /*
@@ -47,10 +47,6 @@
 #include <machine/specialreg.h>
 
 extern int i386_fpu_present, i386_fpu_exception, i386_fpu_fdivbug;
-extern int cpu_feature;
-extern char cpu_model[];
-extern char cpu_vendor[];
-extern int cpu_id, cpu_class;
 
 static const char * const i386_features[] = {
 	"fpu", "vme", "de", "pse", "tsc", "msr", "pae", "mce",

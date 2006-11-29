@@ -1,4 +1,4 @@
-/* $OpenBSD: mtrr.c,v 1.7 2006/05/11 13:21:11 mickey Exp $ */
+/* $OpenBSD: mtrr.c,v 1.8 2006/09/19 11:06:33 jsg Exp $ */
 /*-
  * Copyright (c) 1999 Michael Smith <msmith@freebsd.org>
  * Copyright (c) 1999 Brian Fundakowski Feldman
@@ -32,11 +32,6 @@
 #include <sys/systm.h>
 
 #include <machine/specialreg.h>
-
-/* Pull in the cpuid values from locore.s */
-extern int cpu_id;
-extern int cpu_feature;
-extern char cpu_vendor[];
 
 extern struct mem_range_ops i686_mrops;
 extern struct mem_range_ops k6_mrops;

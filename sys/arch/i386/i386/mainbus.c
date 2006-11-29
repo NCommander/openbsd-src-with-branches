@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.28 2006/11/27 18:04:28 gwk Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.29 2006/11/28 15:24:08 dim Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -146,7 +146,6 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 	int				acpi_attached = 0;
 #endif
 	extern void			(*setperf_setup)(struct cpu_info *);
-	extern int			cpu_id, cpu_feature;
 
 	printf("\n");
 
