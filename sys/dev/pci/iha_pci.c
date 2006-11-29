@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha_pci.c,v 1.9 2005/08/09 04:10:12 mickey Exp $ */
+/*	$OpenBSD: iha_pci.c,v 1.10 2006/11/28 23:59:45 dlg Exp $ */
 /*-------------------------------------------------------------------------
  *
  * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
@@ -128,5 +128,6 @@ iha_pci_attach(parent, self, aux)
 			bzero(&saa, sizeof(saa));
 			saa.saa_sc_link = &sc->sc_link;
 			config_found(&sc->sc_dev, &saa, scsiprint);
+		}
 	}
 }
