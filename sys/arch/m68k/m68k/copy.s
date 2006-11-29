@@ -1,4 +1,4 @@
-/*	$OpenBSD: copy.s,v 1.16 2004/12/30 21:27:19 miod Exp $	*/
+/*	$OpenBSD: copy.s,v 1.17 2006/01/05 21:19:14 martin Exp $	*/
 /*	$NetBSD: copy.s,v 1.30 1998/03/04 06:39:14 thorpej Exp $	*/
 
 /*-
@@ -84,10 +84,6 @@ ENTRY(copyin)
 	CHECK_SFC
 	movl	sp@(12),d0		| check count
 	beq	Lciret			| == 0, don't do anything
-#ifdef MAPPEDCOPY
-	cmpl	_C_LABEL(mappedcopysize),d0 | size >= mappedcopysize
-	bcc	_C_LABEL(mappedcopyin)	| yes, go do it the new way
-#endif
 	movl	d2,sp@-			| save scratch register
 	movl	_C_LABEL(curpcb),a0	| set fault handler
 	movl	#Lcifault,a0@(PCB_ONFAULT)
@@ -150,10 +146,6 @@ ENTRY(copyout)
 	CHECK_DFC
 	movl	sp@(12),d0		| check count
 	beq	Lcoret			| == 0, don't do anything
-#ifdef MAPPEDCOPY
-	cmpl	_C_LABEL(mappedcopysize),d0 | size >= mappedcopysize
-	bcc	_C_LABEL(mappedcopyout)	| yes, go do it the new way
-#endif
 	movl	d2,sp@-			| save scratch register
 	movl	_C_LABEL(curpcb),a0	| set fault handler
 	movl	#Lcofault,a0@(PCB_ONFAULT)
