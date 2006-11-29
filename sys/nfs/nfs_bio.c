@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.42 2006/04/20 14:43:32 pedro Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.43 2006/11/01 00:12:35 thib Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -671,7 +671,6 @@ nfs_doio(bp, p)
 		    (np->n_mtime != np->n_vattr.va_mtime.tv_sec)) {
 			uprintf("Process killed due to text file modification\n");
 			psignal(p, SIGKILL);
-			p->p_holdcnt++;
 		}
 		break;
 	    case VLNK:
