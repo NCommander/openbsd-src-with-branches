@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmapae.c,v 1.4 2006/08/17 17:09:51 mickey Exp $	*/
+/*	$OpenBSD: pmapae.c,v 1.5 2006/08/25 13:04:16 mickey Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -439,9 +439,6 @@
 /*
  * locking data structures
  */
-
-struct simplelock pvalloc_lock;
-struct simplelock pmaps_lock;
 
 #if defined(MULTIPROCESSOR) && 0
 
