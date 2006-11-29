@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.35 2006/03/04 13:13:05 espie Exp $
+# $OpenBSD: Makefile,v 1.36 2006/03/06 10:40:31 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -31,6 +31,7 @@ PACKAGES= \
     OpenBSD/PackingList.pm \
     OpenBSD/PackingOld.pm \
     OpenBSD/PkgCfl.pm \
+    OpenBSD/PkgConfig.pm \
     OpenBSD/PkgSpec.pm \
     OpenBSD/ProgressMeter.pm \
     OpenBSD/Replace.pm \
