@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2005/11/16 03:42:12 deraadt Exp $
+# $OpenBSD: Makefile,v 1.3 2006/07/25 09:44:49 henning Exp $
 
 .if ${MACHINE} == "i386" || ${MACHINE} == "macppc"
 
@@ -17,6 +17,6 @@ NOPROG=	yes
 .endif
 
 MAN=	gpioctl.8
-MANSUBDIR=i386
+MANSUBDIR=i386 macppc
 
 .include <bsd.prog.mk>
