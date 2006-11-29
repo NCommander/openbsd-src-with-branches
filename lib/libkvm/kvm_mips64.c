@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mips64.c,v 1.2 2004/09/15 19:31:31 miod Exp $ */
+/*	$OpenBSD: kvm_mips64.c,v 1.3 2006/03/20 15:11:48 mickey Exp $ */
 /*	$NetBSD: kvm_mips.c,v 1.3 1996/03/18 22:33:44 thorpej Exp $	*/
 
 /*-
@@ -42,7 +42,7 @@
 #if 0
 static char sccsid[] = "@(#)kvm_mips.c	8.1 (Berkeley) 6/4/93";
 #else
-static char *rcsid = "$OpenBSD: kvm_mips64.c,v 1.2 2004/09/15 19:31:31 miod Exp $";
+static char *rcsid = "$OpenBSD: kvm_mips64.c,v 1.3 2006/03/20 15:11:48 mickey Exp $";
 #endif
 #endif /* LIBC_SCCS and not lint */
 
@@ -108,7 +108,7 @@ _kvm_initvtop(kvm_t *kd)
 		return (-1);
 	}
 	if (KREAD(kd, (u_long)nlist[1].n_value, &vm->Sysmapsize)) {
-		_kvm_err(kd, kd->program, "cannot read mmutype");
+		_kvm_err(kd, kd->program, "cannot read Sysmapsize");
 		return (-1);
 	}
 	return (0);
