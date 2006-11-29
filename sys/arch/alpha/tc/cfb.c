@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfb.c,v 1.16 2006/01/02 05:21:28 brad Exp $	*/
+/*	$OpenBSD: cfb.c,v 1.17 2006/07/12 15:36:04 martin Exp $	*/
 /*	$NetBSD: cfb.c,v 1.7 1996/12/05 01:39:39 cgd Exp $	*/
 
 /*
@@ -227,6 +227,7 @@ cfbattach(parent, self, aux)
 	waa.scrdata = &cfb_screenlist;
 	waa.accessops = &cfb_accessops;
 	waa.accesscookie = sc;
+	waa.defaultscreens = 0;
 
 	config_found(self, &waa, wsemuldisplaydevprint);
 }

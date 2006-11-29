@@ -1,4 +1,4 @@
-/*	$OpenBSD: macfb.c,v 1.16 2006/04/14 09:36:49 martin Exp $	*/
+/*	$OpenBSD: macfb.c,v 1.17 2006/06/30 15:15:21 miod Exp $	*/
 /* $NetBSD: macfb.c,v 1.11 2005/01/15 16:00:59 chs Exp $ */
 /*
  * Copyright (c) 1998 Matt DeBergalis
@@ -369,6 +369,7 @@ macfb_attach_common(struct macfb_softc *sc, struct macfb_devconfig *dc)
 	waa.scrdata = &dc->dc_screenlist;
 	waa.accessops = &macfb_accessops;
 	waa.accesscookie = sc;
+	waa.defaultscreens = 0;
 
 	config_found((struct device *)sc, &waa, wsemuldisplaydevprint);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.30 2006/05/02 21:02:03 matthieu Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.31 2006/05/30 20:59:56 matthieu Exp $	*/
 /*	$NetBSD: vga.c,v 1.3 1996/12/02 22:24:54 cgd Exp $	*/
 
 /*
@@ -221,6 +221,7 @@ vgafb_wsdisplay_attach(struct device *parent, struct vgafb_config *vc,
 	aa.scrdata = &vgafb_screenlist;
 	aa.accessops = &vgafb_accessops;
 	aa.accesscookie = vc;
+	aa.defaultscreens = 0;
 
 	/* no need to keep the burner function if no hw support */
 	if (cons_backlight_available == 0)

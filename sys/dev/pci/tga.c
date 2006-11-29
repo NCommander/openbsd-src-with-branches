@@ -1,4 +1,4 @@
-/* $OpenBSD: tga.c,v 1.25 2005/10/26 19:15:43 martin Exp $ */
+/* $OpenBSD: tga.c,v 1.26 2006/02/16 23:05:46 miod Exp $ */
 /* $NetBSD: tga.c,v 1.40 2002/03/13 15:05:18 ad Exp $ */
 
 /*
@@ -540,6 +540,7 @@ tgaattach(parent, self, aux)
 	aa.scrdata = &tga_screenlist;
 	aa.accessops = &tga_accessops;
 	aa.accesscookie = sc;
+	aa.defaultscreens = 0;
 
 	config_found(self, &aa, wsemuldisplaydevprint);
 
