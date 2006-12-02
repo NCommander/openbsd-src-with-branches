@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.44 2006/11/30 17:45:40 damien Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.45 2006/11/30 19:28:07 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -1422,6 +1422,7 @@ zyd_rf_attach(struct zyd_softc *sc, uint8_t type)
 		rf->switch_radio = zyd_al7230B_switch_radio;
 		rf->set_channel  = zyd_al7230B_set_channel;
 		rf->width        = 24;	/* 24-bit RF values */
+		break;
 	case ZYD_RF_AL2210:
 		rf->init         = zyd_al2210_init;
 		rf->switch_radio = zyd_al2210_switch_radio;
