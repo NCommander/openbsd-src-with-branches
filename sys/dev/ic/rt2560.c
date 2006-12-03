@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.26 2006/11/22 20:54:56 damien Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.27 2006/11/26 11:14:18 deraadt Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -2049,7 +2049,9 @@ rt2560_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		error = ieee80211_ioctl(ifp, cmd, data);
 		if (error == ENETRESET &&
 		    ic->ic_opmode == IEEE80211_M_MONITOR) {
-			rt2560_set_chan(sc, ic->ic_ibss_chan);
+			if ((ifp->if_flags & (IFF_UP | IFF_RUNNING)) ==
+			    (IFF_UP | IFF_RUNNING))
+				rt2560_set_chan(sc, ic->ic_ibss_chan);
 			error = 0;
 		}
 		break;
