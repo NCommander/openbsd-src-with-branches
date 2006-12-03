@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpd.h,v 1.3 2006/06/01 22:07:30 claudio Exp $ */
+/*	$OpenBSD: dvmrpd.h,v 1.4 2006/06/02 15:43:16 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -445,7 +445,10 @@ const char	*if_type_name(enum iface_type);
 const char	*group_state_name(int);
 
 /* printconf.c */
-void	print_config(struct dvmrpd_conf *);
+void		 print_config(struct dvmrpd_conf *);
+
+/* interface.c */
+struct iface	*if_find_index(u_short);
 
 #define	PREFIX_SIZE(x)	(((x) + 7) / 8)
 

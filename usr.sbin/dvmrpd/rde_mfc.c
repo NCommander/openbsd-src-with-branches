@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rde_mfc.c,v 1.1 2006/06/01 14:12:20 norby Exp $ */
 
 /*
  * Copyright (c) 2006 Esben Norby <norby@openbsd.org>
@@ -27,9 +27,9 @@
 #include "igmp.h"
 #include "dvmrp.h"
 #include "dvmrpd.h"
-#include "rde.h"
 #include "log.h"
 #include "dvmrpe.h"
+#include "rde.h"
 
 /* multicast forwarding cache */
 
