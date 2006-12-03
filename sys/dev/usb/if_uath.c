@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.12 2006/11/26 11:14:22 deraadt Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.13 2006/12/03 16:09:21 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -62,7 +62,6 @@
 #include <netinet/ip.h>
 
 #include <net80211/ieee80211_var.h>
-#include <net80211/ieee80211_amrr.h>
 #include <net80211/ieee80211_radiotap.h>
 
 #include <dev/rndvar.h>
