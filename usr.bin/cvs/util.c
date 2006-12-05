@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.91 2006/10/11 22:00:22 thib Exp $	*/
+/*	$OpenBSD: util.c,v 1.92 2006/11/28 14:49:58 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -497,7 +497,7 @@ cvs_rmdir(const char *path)
 
 
 	if (rmdir(path) == -1 && errno != ENOENT) {
-		cvs_log(LP_ERR, "failed to remove '%s'", path);
+		cvs_log(LP_ERRNO, "%s", path);
 		goto done;
 	}
 
