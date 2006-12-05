@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.57 2006/08/04 12:01:48 henning Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.58 2006/11/28 16:39:34 henning Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -340,6 +340,9 @@ print_peer(struct peer_config *p, struct bgpd_config *conf, const char *c)
 		printf("%s\tipsec ah ike\n", c);
 	else if (p->auth.method == AUTH_IPSEC_IKE_ESP)
 		printf("%s\tipsec esp ike\n", c);
+
+	if (p->ttlsec)
+		printf("%s\tttl-security yes\n", c);
 
 	printf("%s\tannounce IPv4 %s\n", c, print_safi(p->capabilities.mp_v4));
 	printf("%s\tannounce IPv6 %s\n", c, print_safi(p->capabilities.mp_v6));
