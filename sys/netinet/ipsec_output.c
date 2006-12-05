@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.33 2005/04/12 09:39:54 markus Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.34 2006/11/24 13:52:14 reyk Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -550,6 +550,10 @@ ipsec_adjust_mtu(struct mbuf *m, u_int32_t mtu)
 		mtu -= adjust;
 		tdbp->tdb_mtu = mtu;
 		tdbp->tdb_mtutimeout = time_second + ip_mtudisc_timeout;
+		DPRINTF(("ipsec_adjust_mtu: "
+		    "spi %08x mtu %d adjust %d mbuf %p\n",
+		    ntohl(tdbp->tdb_spi), tdbp->tdb_mtu,
+		    adjust, m));
 	}
 
 	splx(s);
