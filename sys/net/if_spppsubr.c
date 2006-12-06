@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.42 2006/07/11 21:36:51 canacar Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.43 2006/08/28 10:50:13 canacar Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -3910,7 +3910,7 @@ sppp_keepalive(void *dummy)
 			if_down (ifp);
 			sppp_qflush (&sp->pp_cpq);
 			if (! (sp->pp_flags & PP_CISCO)) {
-				printf (SPP_FMT "LCP keepalive timeout",
+				printf (SPP_FMT "LCP keepalive timeout\n",
 				    SPP_ARGS(ifp));
 				sp->pp_alivecnt = 0;
 
