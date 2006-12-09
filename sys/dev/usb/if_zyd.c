@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.45 2006/11/30 19:28:07 damien Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.46 2006/12/02 16:43:27 mglocker Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -119,6 +119,7 @@ static const struct zyd_type {
 	ZYD_ZD1211B_DEV(FIBERLINE,	WL430U),
 	ZYD_ZD1211B_DEV(SAGEM,		XG76NA),
 	ZYD_ZD1211B_DEV(UMEDIA,		TEW429UBC1),
+	ZYD_ZD1211B_DEV(USR,		USR5423),
 	ZYD_ZD1211B_DEV(ZYXEL,		M202),
 	ZYD_ZD1211B_DEV(ZYDAS,		ZD1211B),
 };
