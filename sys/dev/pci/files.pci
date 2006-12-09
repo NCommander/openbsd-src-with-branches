@@ -79,6 +79,11 @@ device	arc: scsi
 attach	arc at pci
 file	dev/pci/arc.c			arc
 
+# Advanced Host Controller Interface for Serial ATA
+device	ahci
+attach	ahci at pci
+file	dev/pci/ahci.c			ahci
+
 # AMI MegaRAID Express x00/Elite 1500/Express 1x00 RAID Controllers
 attach	ami at pci with ami_pci
 file	dev/pci/ami_pci.c		ami_pci
