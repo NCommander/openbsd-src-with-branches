@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.25 2006/12/10 15:42:12 mbalmer Exp $ */
+/*	$OpenBSD: udcf.c,v 1.26 2006/12/10 16:13:32 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -635,6 +635,7 @@ udcf_sl_probe(void *xsc)
 	DPRINTF(("no signal\n"));
 	sc->sc_sync = 1;
 	timeout_add(&sc->sc_to, t_wait);
+	timeout_add(&sc->sc_sl_to, t_wait + t_sl);
 }
 
 /* invalidate timedelta */
