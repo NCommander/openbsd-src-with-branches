@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.22 2006/06/23 19:54:30 kettenis Exp $	*/
+/*	$OpenBSD: clock.c,v 1.23 2006/06/26 20:21:02 kettenis Exp $	*/
 /*	$NetBSD: clock.c,v 1.52 1997/05/24 20:16:05 pk Exp $ */
 
 /*
@@ -917,7 +917,7 @@ oclk_set_secs(secs)
 
 	clock_secs_to_ymdhms(secs, &dt);
 	
-	idt.dt_hour = dt.dt_sec;
+	idt.dt_hour = dt.dt_hour;
 	idt.dt_min = dt.dt_min;
 	idt.dt_sec = dt.dt_sec;
 	idt.dt_month = dt.dt_mon;
