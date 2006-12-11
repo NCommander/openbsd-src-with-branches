@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcivar.h,v 1.47 2006/03/22 00:36:03 jsg Exp $	*/
+/*	$OpenBSD: pcivar.h,v 1.48 2006/04/07 01:04:49 brad Exp $	*/
 /*	$NetBSD: pcivar.h,v 1.23 1997/06/06 23:48:05 thorpej Exp $	*/
 
 /*
@@ -111,6 +111,8 @@ struct pci_attach_args {
 	u_int		pa_function;
 	pcitag_t	pa_tag;
 	pcireg_t	pa_id, pa_class;
+
+	pcitag_t	*pa_bridgetag;
 
 	/*
 	 * Interrupt information.
