@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.67 2006/07/06 18:14:49 miod Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.68 2006/11/17 09:21:52 jmc Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -739,7 +739,7 @@ reswitch:	switch (ch) {
 				while ((n = *b++) != 0) {
 					if (n & 0x80)
 						n &= 0x7f;
-					else if (n < ' ')
+					else if (n <= ' ')
 						n = n - 1;
 					if (_uquad & (1LL << n)) {
 						KPRINTF_PUTCHAR(tmp ? ',':'<');
