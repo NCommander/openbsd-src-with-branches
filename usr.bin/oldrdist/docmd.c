@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.18 2003/06/03 02:56:14 millert Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.19 2004/01/16 01:12:35 espie Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)docmd.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: docmd.c,v 1.18 2003/06/03 02:56:14 millert Exp $";
+static char *rcsid = "$OpenBSD: docmd.c,v 1.19 2004/01/16 01:12:35 espie Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -574,6 +574,7 @@ notify(file, rhost, to, lmod)
 	/*
 	 * Output the proper header information.
 	 */
+	fprintf(pf, "Auto-Submitted: auto-generated\n");
 	fprintf(pf, "From: rdist (Remote distribution program)\n");
 	fprintf(pf, "To:");
 	if (!any('@', to->n_name) && rhost != NULL)

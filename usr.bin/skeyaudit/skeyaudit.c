@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyaudit.c,v 1.21 2005/07/06 21:50:24 jmc Exp $	*/
+/*	$OpenBSD: skeyaudit.c,v 1.22 2005/10/26 17:06:39 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 2000, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -153,6 +153,7 @@ notify(struct passwd *pw, int seq, int interactive)
 
 	if (!interactive)
 		(void)fprintf(out,
+		   "Auto-Submitted: auto-generated\n"
 		   "To: %s\nSubject: IMPORTANT action required\n", pw->pw_name);
 
 	if (seq)

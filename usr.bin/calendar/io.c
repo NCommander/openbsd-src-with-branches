@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.31 2005/11/16 16:45:11 deraadt Exp $	*/
+/*	$OpenBSD: io.c,v 1.32 2005/11/24 19:36:10 moritz Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -39,7 +39,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)calendar.c  8.3 (Berkeley) 3/25/94";
 #else
-static const char rcsid[] = "$OpenBSD: io.c,v 1.31 2005/11/16 16:45:11 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: io.c,v 1.32 2005/11/24 19:36:10 moritz Exp $";
 #endif
 #endif /* not lint */
 
@@ -73,7 +73,8 @@ struct iovec header[] = {
 	{ NULL, 0 },
 	{ "\nSubject: ", 10 },
 	{ NULL, 0 },
-	{ "'s Calendar\nPrecedence: bulk\n\n",  30 },
+	{ "'s Calendar\nPrecedence: bulk\n",  29 },
+	{ "Auto-Submitted: auto-generated\n\n", 32 },
 };
 
 
@@ -425,7 +426,7 @@ closecal(FILE *fp)
 
 	header[1].iov_base = header[3].iov_base = pw->pw_name;
 	header[1].iov_len = header[3].iov_len = strlen(pw->pw_name);
-	writev(pdes[1], header, 7);
+	writev(pdes[1], header, 8);
 	while ((nread = read(fileno(fp), buf, sizeof(buf))) > 0)
 		(void)write(pdes[1], buf, nread);
 	(void)close(pdes[1]);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.17 2003/06/03 02:56:14 millert Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.18 2006/02/12 15:51:36 moritz Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -37,7 +37,7 @@ static char RCSid[] __attribute__((__unused__)) =
 "$From: docmd.c,v 1.8 2001/03/12 18:42:23 kim Exp $";
 #else
 static char RCSid[] __attribute__((__unused__)) = 
-"$OpenBSD: docmd.c,v 1.17 2003/06/03 02:56:14 millert Exp $";
+"$OpenBSD: docmd.c,v 1.18 2006/02/12 15:51:36 moritz Exp $";
 #endif
 
 static char sccsid[] __attribute__((__unused__)) =
@@ -164,6 +164,7 @@ notify(char *rhost, struct namelist *to, time_t lmod)
 	/*
 	 * Output the proper header information.
 	 */
+	(void) fprintf(pf, "Auto-Submitted: auto-generated\n");
 	(void) fprintf(pf, "From: rdist (Remote distribution program)\n");
 	(void) fprintf(pf, "To:");
 	if (!any('@', to->n_name) && rhost != NULL)
