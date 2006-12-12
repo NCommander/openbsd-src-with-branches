@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.34 2005/09/07 13:22:24 jmc Exp $	*/
+/*	$OpenBSD: misc.c,v 1.35 2006/03/20 10:55:19 espie Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $	*/
 
 /*
@@ -340,7 +340,9 @@ xstrdup(const char *s)
 void
 usage()
 {
-	fprintf(stderr, "usage: m4 [-gs] [-Dname[=value]] [-d flags] [-I dirname] [-o filename] [-t macro] [-Uname]\n");
+	fprintf(stderr, "usage: m4 [-gs] [-Dname[=value]] [-d flags] "
+			"[-I dirname] [-o filename]\n"
+			"\t[-t macro] [-Uname] [file ...]\n");
 	exit(1);
 }
 
