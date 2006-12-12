@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp-proxy.c,v 1.9 2006/03/25 20:21:42 camield Exp $ */
+/*	$OpenBSD: ftp-proxy.c,v 1.10 2006/10/15 18:23:44 camield Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -744,6 +744,7 @@ main(int argc, char *argv[])
 	event_init();
 
 	/* Setup signal handler. */
+	signal(SIGPIPE, SIG_IGN);
 	signal_set(&ev_sighup, SIGHUP, handle_signal, NULL);
 	signal_set(&ev_sigint, SIGINT, handle_signal, NULL);
 	signal_set(&ev_sigterm, SIGTERM, handle_signal, NULL);
