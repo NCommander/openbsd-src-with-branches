@@ -1,4 +1,4 @@
-/* $OpenBSD: longrun.c,v 1.9 2004/06/06 17:34:37 grange Exp $ */
+/* $OpenBSD: longrun.c,v 1.10 2005/11/10 13:01:46 dlg Exp $ */
 /*
  * Copyright (c) 2003 Ted Unangst
  * Copyright (c) 2001 Tamotsu Hattori
@@ -95,7 +95,7 @@ longrun_update(void *arg)
  * limits it handles.  Typically, there are about 5 performance
  * levels selectable.
  */
-int
+void
 longrun_setperf(int high)
 {
 	uint32_t eflags, mode;
@@ -122,7 +122,5 @@ longrun_setperf(int high)
 	write_eflags(eflags);
 
 	longrun_update(NULL);
-
-	return (0);
 }
 
