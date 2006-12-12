@@ -1,4 +1,4 @@
-/*	$OpenBSD: schizo.c,v 1.34 2006/07/01 18:19:09 deraadt Exp $	*/
+/*	$OpenBSD: schizo.c,v 1.35 2006/08/27 18:55:57 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -134,7 +134,7 @@ schizo_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_dmat = ma->ma_dmatag;
 	sc->sc_bust = ma->ma_bustag;
 	sc->sc_ctrl = ma->ma_reg[1].ur_paddr - 0x10000UL;
-	sc->sc_ign = ma->ma_upaid << 6;
+	sc->sc_ign = INTIGN(ma->ma_upaid << INTMAP_IGN_SHIFT);
 
 	if ((ma->ma_reg[0].ur_paddr & 0x00700000) == 0x00600000)
 		busa = 1;
