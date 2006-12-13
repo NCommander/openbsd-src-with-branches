@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_osfp.c,v 1.10 2004/04/09 19:30:41 frantzen Exp $ */
+/*	$OpenBSD: pf_osfp.c,v 1.11 2006/12/13 05:10:15 itojun Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@w4g.org>
@@ -151,7 +151,9 @@ pf_osfp_fingerprint_hdr(const struct ip *ip, const struct ip6_hdr *ip6, const st
 		    sizeof(struct sockaddr_in), srcname, sizeof(srcname),
 		    NULL, 0, NI_NUMERICHOST);
 #endif
-	} else if (ip6) {
+	}
+#ifdef INET6
+	else if (ip6) {
 #ifndef _KERNEL
 		struct sockaddr_in6 sin6;
 #endif
@@ -173,7 +175,9 @@ pf_osfp_fingerprint_hdr(const struct ip *ip, const struct ip6_hdr *ip6, const st
 		    sizeof(struct sockaddr_in6), srcname, sizeof(srcname),
 		    NULL, 0, NI_NUMERICHOST);
 #endif
-	} else
+	}
+#endif
+	else
 		return (NULL);
 	fp.fp_wsize = ntohs(tcp->th_win);
 
