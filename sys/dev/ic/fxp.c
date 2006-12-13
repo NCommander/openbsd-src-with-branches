@@ -1651,12 +1651,18 @@ fxp_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 	switch (command) {
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
-		if (!(ifp->if_flags & IFF_RUNNING))
-			fxp_init(sc);
+
+		switch (ifa->ifa_addr->sa_family) {
 #ifdef INET
-		if (ifa->ifa_addr->sa_family == AF_INET)
+		case AF_INET:
+			fxp_init(sc);
 			arp_ifinit(&sc->sc_arpcom, ifa);
+			break;
 #endif
+		default:
+			fxp_init(sc);
+			break;
+		}
 		break;
 
 	case SIOCSIFMTU:
