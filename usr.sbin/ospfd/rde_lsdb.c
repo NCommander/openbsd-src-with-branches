@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_lsdb.c,v 1.33 2006/08/30 05:25:33 norby Exp $ */
+/*	$OpenBSD: rde_lsdb.c,v 1.34 2006/12/08 21:28:08 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -403,7 +403,7 @@ lsa_del(struct rde_nbr *nbr, struct lsa_hdr *lsa)
 	timerclear(&tv);
 	tv.tv_sec = MIN_LS_INTERVAL;
 	if (evtimer_add(&v->ev, &tv) == -1)
-		fatal("lsa_merge");
+		fatal("lsa_del");
 }
 
 void
