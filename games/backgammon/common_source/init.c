@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.7 2003/06/03 03:01:38 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.8 2006/10/29 20:02:41 martin Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: init.c,v 1.7 2003/06/03 03:01:38 millert Exp $";
+static char rcsid[] = "$OpenBSD: init.c,v 1.8 2006/10/29 20:02:41 martin Exp $";
 #endif
 #endif /* not lint */
 
@@ -43,7 +43,7 @@ static char rcsid[] = "$OpenBSD: init.c,v 1.7 2003/06/03 03:01:38 millert Exp $"
 
 #ifdef DEBUG
 #include <stdio.h>
-FILE	*trace;
+FILE	*ftrace;
 #endif
 #include <back.h>
 
