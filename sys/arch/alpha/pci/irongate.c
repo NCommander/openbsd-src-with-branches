@@ -1,4 +1,4 @@
-/*	$OpenBSD: irongate.c,v 1.7 2006/03/13 20:10:49 brad Exp $	*/
+/*	$OpenBSD: irongate.c,v 1.8 2006/03/16 22:32:44 miod Exp $	*/
 /* $NetBSD: irongate.c,v 1.3 2000/11/29 06:29:10 thorpej Exp $ */
 
 /*-
@@ -183,6 +183,7 @@ irongate_attach(struct device *parent, struct device *self, void *aux)
 	pba.pba_dmat =
 	    alphabus_dma_get_tag(&icp->ic_dmat_pci, ALPHA_BUS_PCI);
 	pba.pba_pc = &icp->ic_pc;
+	pba.pba_domain = pci_ndomains++;
 	pba.pba_bus = 0;
 	pba.pba_bridgetag = NULL;
 #ifdef notyet

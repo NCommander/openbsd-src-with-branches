@@ -1,4 +1,4 @@
-/*	$OpenBSD: lca.c,v 1.17 2006/03/13 20:10:49 brad Exp $	*/
+/*	$OpenBSD: lca.c,v 1.18 2006/03/16 22:32:44 miod Exp $	*/
 /*	$NetBSD: lca.c,v 1.14 1996/12/05 01:39:35 cgd Exp $	*/
 
 /*-
@@ -254,6 +254,7 @@ lcaattach(parent, self, aux)
 	pba.pba_dmat =
 	    alphabus_dma_get_tag(&lcp->lc_dmat_direct, ALPHA_BUS_PCI);
 	pba.pba_pc = &lcp->lc_pc;
+	pba.pba_domain = pci_ndomains++;
 	pba.pba_bus = 0;
 	pba.pba_bridgetag = NULL;
 #ifdef notyet

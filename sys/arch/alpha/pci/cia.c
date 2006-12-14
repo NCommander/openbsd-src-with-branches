@@ -1,4 +1,4 @@
-/* $OpenBSD: cia.c,v 1.21 2006/03/13 20:10:49 brad Exp $ */
+/* $OpenBSD: cia.c,v 1.22 2006/03/16 22:32:44 miod Exp $ */
 /* $NetBSD: cia.c,v 1.56 2000/06/29 08:58:45 mrg Exp $ */
 
 /*-
@@ -400,6 +400,7 @@ ciaattach(parent, self, aux)
 	pba.pba_dmat = 
 	    alphabus_dma_get_tag(&ccp->cc_dmat_direct, ALPHA_BUS_PCI);
 	pba.pba_pc = &ccp->cc_pc;
+	pba.pba_domain = pci_ndomains++;
 	pba.pba_bus = 0;
 	pba.pba_bridgetag = NULL;
 
