@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.24 2005/07/16 16:31:05 henning Exp $	*/
+/*	$OpenBSD: options.c,v 1.25 2005/08/22 20:30:52 krw Exp $	*/
 
 /* DHCP options parsing and reassembly. */
 
@@ -156,7 +156,7 @@ parse_option_buffer(struct packet *packet,
 				    dhcp_options[code].name);
 			/*
 			 * Copy and NUL-terminate the option (in case
-			 * it's an ASCII string.
+			 * it's an ASCII string).
 			 */
 			memcpy(t, &s[2], len);
 			t[len] = 0;
