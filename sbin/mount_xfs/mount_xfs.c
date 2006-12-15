@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_xfs.c,v 1.7 2003/07/03 22:41:40 tedu Exp $	*/
+/*	$OpenBSD: mount_xfs.c,v 1.8 2005/04/08 20:09:38 jaredy Exp $	*/
 /*
  * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
@@ -62,7 +62,7 @@ static const struct mntopt mopts[] = {
 static void
 usage(void)
 {
-	fprintf(stderr, "Usage: %s [-o options] device path\n",
+	fprintf(stderr, "usage: %s [-o options] special node\n",
 		__progname);
 	exit(1);
 }
