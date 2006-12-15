@@ -1,4 +1,4 @@
-/*	$OpenBSD: mii_physubr.c,v 1.27 2005/11/06 21:46:18 brad Exp $	*/
+/*	$OpenBSD: mii_physubr.c,v 1.28 2006/11/28 19:21:15 reyk Exp $	*/
 /*	$NetBSD: mii_physubr.c,v 1.20 2001/04/13 23:30:09 thorpej Exp $	*/
 
 /*-
@@ -351,9 +351,9 @@ mii_phy_statusmsg(struct mii_softc *sc)
 
 	if (mii->mii_media_status & IFM_AVALID) {
 		if (mii->mii_media_status & IFM_ACTIVE) {
-			if (mii->mii_media_status & IFM_FDX)
+			if (mii->mii_media_active & IFM_FDX)
 				link_state = LINK_STATE_FULL_DUPLEX;
-			else if (mii->mii_media_status & IFM_HDX)
+			else if (mii->mii_media_active & IFM_HDX)
 				link_state = LINK_STATE_HALF_DUPLEX;
 			else
 				link_state = LINK_STATE_UP;
