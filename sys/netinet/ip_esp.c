@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.98 2006/05/28 02:04:15 mcbride Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.99 2006/09/21 11:10:52 otto Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -739,6 +739,9 @@ esp_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 	struct cryptop *crp;
 #if NBPFILTER > 0
 	struct ifnet *ifn = &(encif[0].sc_if);
+
+	ifn->if_opackets++;
+	ifn->if_obytes += m->m_pkthdr.len;
 
 	if (ifn->if_bpf) {
 		struct enchdr hdr;
