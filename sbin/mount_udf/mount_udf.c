@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_udf.c,v 1.2 2005/04/08 20:09:38 jaredy Exp $	*/
+/*	$OpenBSD: mount_udf.c,v 1.3 2006/07/11 16:24:09 pedro Exp $	*/
 
 /*
  * Copyright (c) 2005 Pedro Martelletto <pedro@openbsd.org>
@@ -37,7 +37,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s special node\n", __progname);
+	fprintf(stderr, "usage: %s [-o options] special node\n", __progname);
 
 	exit(EXIT_FAILURE);
 }
