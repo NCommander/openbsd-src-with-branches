@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.2 2006/12/16 12:42:14 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.3 2006/12/16 17:48:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -472,7 +472,7 @@ lookup(char *s)
 		{ "tag",		TAG },
 		{ "tcp",		TCP },
 		{ "timeout",		TIMEOUT },
-		{ "virtual",		VIRTUA L}
+		{ "virtual",		VIRTUAL }
 	};
 	const struct keywords	*p;
 
