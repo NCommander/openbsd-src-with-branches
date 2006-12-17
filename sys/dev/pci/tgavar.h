@@ -1,4 +1,4 @@
-/* $OpenBSD: tgavar.h,v 1.7 2002/04/26 20:04:50 matthieu Exp $ */
+/* $OpenBSD: tgavar.h,v 1.8 2002/07/04 00:34:28 miod Exp $ */
 /* $NetBSD: tgavar.h,v 1.8 2000/04/02 19:01:11 nathanw Exp $ */
 
 /*
@@ -31,7 +31,6 @@
 #include <dev/ic/ramdac.h>
 #include <dev/pci/tgareg.h>
 #include <dev/wscons/wsconsio.h>
-#include <dev/wscons/wscons_raster.h>
 #include <dev/wscons/wsdisplayvar.h>
 #include <dev/rasops/rasops.h>
 

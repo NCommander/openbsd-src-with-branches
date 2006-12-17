@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgthree.c,v 1.41 2006/06/02 20:00:56 miod Exp $	*/
+/*	$OpenBSD: cgthree.c,v 1.42 2006/07/25 21:23:32 miod Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -47,7 +47,6 @@
 #include <dev/sbus/sbusvar.h>
 #include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsdisplayvar.h>
-#include <dev/wscons/wscons_raster.h>
 #include <dev/rasops/rasops.h>
 #include <machine/fbvar.h>
 

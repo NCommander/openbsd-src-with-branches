@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfx.c,v 1.5 2005/03/13 23:05:23 miod Exp $	*/
+/*	$OpenBSD: rfx.c,v 1.6 2006/06/02 20:00:56 miod Exp $	*/
 
 /*
  * Copyright (c) 2004, Miodrag Vallat.
@@ -52,7 +52,6 @@
 
 #include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsdisplayvar.h>
-#include <dev/wscons/wscons_raster.h>
 #include <dev/rasops/rasops.h>
 #include <machine/fbvar.h>
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: tga.c,v 1.27 2006/11/29 12:13:55 miod Exp $ */
+/* $OpenBSD: tga.c,v 1.28 2006/11/29 19:08:22 miod Exp $ */
 /* $NetBSD: tga.c,v 1.40 2002/03/13 15:05:18 ad Exp $ */
 
 /*
@@ -52,7 +52,6 @@
 #include <dev/ic/ibm561var.h>
 
 #include <dev/wscons/wsconsio.h>
-#include <dev/wscons/wscons_raster.h>
 #include <dev/rasops/rasops.h>
 #include <dev/wsfont/wsfont.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vigra.c,v 1.8 2005/03/08 21:35:04 miod Exp $	*/
+/*	$OpenBSD: vigra.c,v 1.9 2006/06/02 20:00:56 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, Miodrag Vallat.
@@ -56,7 +56,6 @@
 
 #include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsdisplayvar.h>
-#include <dev/wscons/wscons_raster.h>
 #include <dev/rasops/rasops.h>
 #include <machine/fbvar.h>
 
