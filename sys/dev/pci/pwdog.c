@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwdog.c,v 1.4 2006/12/11 08:15:56 mbalmer Exp $ */
+/*	$OpenBSD: pwdog.c,v 1.5 2006/12/11 08:25:54 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -59,7 +59,7 @@ int
 pwdog_probe(struct device *parent, void *match, void *aux)
 {
 	return pci_matchbyid((struct pci_attach_args *)aux, pwdog_devices,
-	    sizeof(pwdog_devices)/sizeof(pwdog_devices[0]));
+	    sizeof(pwdog_devices) / sizeof(pwdog_devices[0]));
 }
 
 void
