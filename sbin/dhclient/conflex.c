@@ -1,6 +1,6 @@
-/*	$OpenBSD: conflex.c,v 1.11 2006/04/18 19:17:54 deraadt Exp $	*/
+/*	$OpenBSD: conflex.c,v 1.12 2006/05/08 17:25:59 deraadt Exp $	*/
 
-/* Lexical scanner for dhcpd config file... */
+/* Lexical scanner for dhclient config file... */
 
 /*
  * Copyright (c) 1995, 1996, 1997 The Internet Software Consortium.
