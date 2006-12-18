@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.32 2006/07/21 19:11:11 mickey Exp $	*/
+/*	$OpenBSD: aac.c,v 1.33 2006/11/28 23:59:45 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -223,7 +223,7 @@ int	aac_debug = AAC_DEBUG;
 int
 aac_attach(struct aac_softc *sc)
 {
-	struct scsibus_attach_args;
+	struct scsibus_attach_args saa;
 	int error;
 
 	/*
