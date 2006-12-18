@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.3 2004/04/20 20:56:47 canacar Exp $ */
+/*	$OpenBSD: bpf.c,v 1.4 2004/04/20 21:05:14 canacar Exp $ */
 
 /* BPF socket interface code, originally contributed by Archie Cobbs. */
 
@@ -241,7 +241,7 @@ send_packet(struct interface_info *interface,
 
 	result = writev(interface->wfdesc, iov, 2);
 	if (result < 0)
-		warn("send_packet: %m");
+		warning("send_packet: %m");
 	return (result);
 }
 
