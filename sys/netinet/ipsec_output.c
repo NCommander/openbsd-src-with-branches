@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.34 2006/11/24 13:52:14 reyk Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.35 2006/12/05 09:17:12 markus Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -270,10 +270,10 @@ ipsp_process_packet(struct mbuf *m, struct tdb *tdb, int af, int tunalready)
 				ip = mtod(m, struct ip *);
 				ip->ip_off |= htons(IP_DF);
 			}
+#endif
 
 			/* Remember that we appended a tunnel header. */
 			tdb->tdb_flags |= TDBF_USEDTUNNEL;
-#endif
 		}
 
 		/* We may be done with this TDB */
