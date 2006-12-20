@@ -1,4 +1,4 @@
-/* $OpenBSD: user.c,v 1.65 2005/08/27 23:12:36 deraadt Exp $ */
+/* $OpenBSD: user.c,v 1.66 2005/12/31 19:20:49 millert Exp $ */
 /* $NetBSD: user.c,v 1.69 2003/04/14 17:40:07 agc Exp $ */
 
 /*
@@ -443,8 +443,11 @@ modify_gid(char *group, char *newent)
 			if (newent == NULL) {
 				continue;
 			} else {
-				cc = strlen(newent);
-				(void) strlcpy(buf, newent, sizeof(buf));
+				cc = strlcpy(buf, newent, sizeof(buf));
+				if (cc >= sizeof(buf)) {
+					warnx("group `%s' entry too long", newent);
+					return (0);
+				}
 			}
 		}
 		if (fwrite(buf, cc, 1, to) != 1) {
