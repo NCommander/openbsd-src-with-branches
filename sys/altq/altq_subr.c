@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_subr.c,v 1.19 2004/07/28 17:15:12 tholo Exp $	*/
+/*	$OpenBSD: altq_subr.c,v 1.20 2006/03/04 22:40:15 brad Exp $	*/
 /*	$KAME: altq_subr.c,v 1.11 2002/01/11 08:11:49 kjc Exp $	*/
 
 /*
@@ -776,7 +776,7 @@ init_machclk(void)
 	 */
 #if defined(__i386__) && (defined(I586_CPU) || defined(I686_CPU))
 	/* XXX - this will break down with variable cpu frequency. */
-	machclk_freq = pentium_mhz * 1000000;
+	machclk_freq = cpuspeed * 1000000;
 #endif
 #if defined(__alpha__)
 	machclk_freq = (u_int32_t)(cycles_per_usec * 1000000);
