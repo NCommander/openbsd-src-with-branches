@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmdb.c,v 1.18 2003/08/02 20:38:38 mickey Exp $	*/
+/*	$OpenBSD: pmdb.c,v 1.19 2003/08/18 17:55:57 jfb Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -27,7 +27,6 @@
 #include <sys/types.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
-#include <sys/endian.h>
 
 #include <stdlib.h>
 #include <stdio.h>
