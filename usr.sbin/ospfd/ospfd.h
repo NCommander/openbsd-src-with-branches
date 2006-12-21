@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.61 2006/11/17 08:55:31 claudio Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.62 2006/12/07 19:14:27 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -383,6 +383,7 @@ struct ospfd_conf {
 	LIST_HEAD(, vertex)	cand_list;
 	SIMPLEQ_HEAD(, redistribute) redist_list;
 
+	u_int32_t		defaultmetric;
 	u_int32_t		opts;
 #define OSPFD_OPT_VERBOSE	0x00000001
 #define OSPFD_OPT_VERBOSE2	0x00000002
