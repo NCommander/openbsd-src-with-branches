@@ -1,4 +1,4 @@
-/*	$OpenBSD: vsreg.h,v 1.5 2003/09/29 09:08:17 miod Exp $ */
+/*	$OpenBSD: vsreg.h,v 1.6 2005/12/17 07:31:26 miod Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * Copyright (c) 1990 The Regents of the University of California.
@@ -652,8 +652,8 @@ typedef struct ipsg
  *  Transfer types
  */
 
-#define TT_NORMAL               0       /* Normal Mode Tranfers */
-#define TT_BLOCK                1       /* block  Mode Tranfers */
+#define TT_NORMAL               0       /* Normal Mode Transfers */
+#define TT_BLOCK                1       /* block  Mode Transfers */
 #define TT_DISABLE_INC_ADDR     2       /* Disable Incrementing Addresses */
 #define TT_D64                  3       /* D64 Mode Transfers */
 
