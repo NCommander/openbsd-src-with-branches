@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_changer.h,v 1.3 1996/10/31 01:09:22 niklas Exp $	*/
+/*	$OpenBSD: scsi_changer.h,v 1.4 2006/05/31 03:01:44 beck Exp $	*/
 /*	$NetBSD: scsi_changer.h,v 1.7 1996/04/03 00:25:48 thorpej Exp $	*/
 
 /*
@@ -281,7 +281,7 @@ struct read_element_status_descriptor {
  *		MT	Medium transport element (picker)
  *		ST	Storage transport element (slot)
  *		IE	Import/export element (portal)
- *		DT	Data tranfer element (tape/disk drive)
+ *		DT	Data transfer element (tape/disk drive)
  */
 struct page_device_capabilities {
 	u_int8_t	pg_code;	/* page code (0x1f) */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.114 2006/11/28 16:56:50 dlg Exp $	*/
+/*	$OpenBSD: sd.c,v 1.115 2006/12/12 02:44:36 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -538,7 +538,7 @@ sdstrategy(bp)
 		goto bad;
 	}
 	/*
-	 * If it's a null transfer, return immediatly
+	 * If it's a null transfer, return immediately
 	 */
 	if (bp->b_bcount == 0)
 		goto done;
