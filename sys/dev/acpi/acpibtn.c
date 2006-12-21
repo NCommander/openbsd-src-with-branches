@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibtn.c,v 1.12 2006/11/29 19:21:20 miod Exp $ */
+/* $OpenBSD: acpibtn.c,v 1.13 2006/12/18 20:57:45 canacar Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -95,7 +95,7 @@ acpibtn_attach(struct device *parent, struct device *self, void *aux)
 	else
 		sc->sc_btn_type = ACPIBTN_UNKNOWN;
 
-	acpibtn_getsta(sc); 
+	acpibtn_getsta(sc);
 
 	printf(": %s\n", sc->sc_devnode->parent->name);
 
