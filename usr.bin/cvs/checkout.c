@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.65 2006/07/01 20:30:46 reyk Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.66 2006/07/07 17:37:17 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -111,17 +111,16 @@ cvs_export(int argc, char **argv)
 static void
 checkout_check_repository(int argc, char **argv)
 {
-	int i, l;
+	int i;
 	char repo[MAXPATHLEN];
 	struct stat st;
 
 	for (i = 0; i < argc; i++) {
 		cvs_mkpath(argv[i]);
 
-		l = snprintf(repo, sizeof(repo), "%s/%s",
-		    current_cvsroot->cr_dir, argv[i]);
-		if (l == -1 || l >= (int)sizeof(repo))
-			fatal("checkout_check_repository: overflow");
+		if (cvs_path_cat(current_cvsroot->cr_dir, argv[i], repo,
+		    sizeof(repo)) >= sizeof(repo))
+			fatal("checkout_check_repository: truncation");
 
 		if (stat(repo, &st) == -1) {
 			cvs_log(LP_ERR, "cannot find repository %s - ignored",
