@@ -4,7 +4,7 @@
  *		 from the following source files:
  *
  * Id: aic79xx.seq,v 1.6 2005/03/23 23:47:22 deraadt Exp 
- * Id: aic79xx.reg,v 1.4 2004/12/11 00:08:43 krw Exp 
+ * Id: aic79xx.reg,v 1.5 2006/02/06 17:29:11 jmc Exp 
  */
 static const uint8_t seqprog[] = {
 	0xff, 0x02, 0x06, 0x78,
