@@ -1,4 +1,4 @@
-/*	$OpenBSD: itvar.h,v 1.1 2003/05/20 20:26:27 grange Exp $	*/
+/*	$OpenBSD: itvar.h,v 1.2 2003/11/05 20:57:10 grange Exp $	*/
 
 /*
  * Copyright (c) 2003 Julien Bordet <zejames@greyhats.org>
@@ -81,6 +81,7 @@ struct it_softc {
 	bus_space_handle_t it_ioh;
 
 	struct sensor sensors[IT_NUM_SENSORS];
+	struct sensordev sensordev;
 	u_int numsensors;
 	void (*refresh_sensor_data)(struct it_softc *);
 

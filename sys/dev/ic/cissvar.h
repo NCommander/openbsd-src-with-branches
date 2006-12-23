@@ -1,4 +1,4 @@
-/*	$OpenBSD: cissvar.h,v 1.4 2006/08/27 22:12:10 mickey Exp $	*/
+/*	$OpenBSD: cissvar.h,v 1.5 2006/08/31 23:19:35 krw Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -17,7 +17,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-struct sensor;
+#include <sys/sensors.h>
 
 struct ciss_ld {
 	struct ciss_blink bling;	/* a copy of blink state */
@@ -36,6 +36,7 @@ struct ciss_softc {
 	struct proc	*sc_thread;
 	int		sc_flush;
 	struct sensor	*sensors;
+	struct sensordev sensordev;
 
 	u_int	sc_flags;
 #define	CISS_BIO	0x0001

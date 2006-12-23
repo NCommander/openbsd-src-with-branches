@@ -1,4 +1,4 @@
-/* $OpenBSD: ipmivar.h,v 1.15 2006/05/21 20:55:26 alek Exp $ */
+/* $OpenBSD: ipmivar.h,v 1.16 2006/07/28 20:46:12 marco Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -32,6 +32,7 @@
 
 #include <sys/timeout.h>
 #include <sys/rwlock.h>
+#include <sys/sensors.h>
 
 #define IPMI_IF_KCS		1
 #define IPMI_IF_SMIC		2
@@ -103,6 +104,7 @@ struct ipmi_softc {
 	struct ipmi_bmc_args	*sc_iowait_args;
 
 	struct ipmi_sensor	*current_sensor;
+	struct sensordev	sc_sensordev;
 };
 
 struct ipmi_thread {
