@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.13 2003/05/11 22:09:31 jason Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.14 2005/08/06 14:26:52 miod Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -261,6 +261,23 @@ cpu_attach(parent, dev, aux)
 	}
 	printf("\n");
 	cache_enable();
+
+	if (impl >= IMPL_CHEETAH) {
+		extern vaddr_t ktext, dlflush_start;
+		extern paddr_t ktextp;
+		vaddr_t *pva;
+		paddr_t pa;
+		u_int32_t inst;
+
+		for (pva = &dlflush_start; *pva; pva++) {
+			inst = *(u_int32_t *)(*pva);
+			inst &= ~(ASI_DCACHE_TAG << 5);
+			inst |= (ASI_DCACHE_INVALIDATE << 5);
+			pa = (paddr_t) (ktextp - ktext + *pva);
+			stwa(pa, ASI_PHYS_CACHED, inst);
+			flush((void *)KERNBASE);
+		}
+	}
 }
 
 /*
