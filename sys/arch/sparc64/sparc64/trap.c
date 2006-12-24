@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.42 2006/06/26 22:18:06 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.43 2006/07/01 16:24:17 miod Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -526,7 +526,14 @@ badtrap:
 #endif
 
 	case T_AST:
-		break;	/* the work is all in userret() */
+		want_ast = 0;
+		if (p->p_flag & P_OWEUPC) {
+			p->p_flag &= ~P_OWEUPC;
+			ADDUPROF(p);
+		}
+		if (want_resched)
+			preempt(NULL);
+		break;
 
 	case T_ILLINST:
 	{
