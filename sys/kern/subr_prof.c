@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prof.c,v 1.14 2003/09/01 18:06:03 henning Exp $	*/
+/*	$OpenBSD: subr_prof.c,v 1.15 2005/12/09 09:09:52 jsg Exp $	*/
 /*	$NetBSD: subr_prof.c,v 1.12 1996/04/22 01:38:50 christos Exp $	*/
 
 /*-
@@ -200,6 +200,7 @@ addupc_intr(struct proc *p, u_long pc)
 		return;			/* out of range; ignore */
 
 	prof->pr_addr = pc;
+	prof->pr_ticks++;
 	need_proftick(p);
 }
 
