@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.58 2006/01/20 07:53:48 tedu Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.59 2006/06/14 19:52:07 otto Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -44,6 +44,7 @@
 #include <sys/kernel.h>
 #include <sys/limits.h>
 #include <sys/proc.h>
+#include <sys/user.h>
 #include <sys/resourcevar.h>
 #include <sys/signalvar.h>
 #include <uvm/uvm_extern.h>
@@ -540,6 +541,10 @@ statclock(struct clockframe *frame)
 				g->kcount[i]++;
 			}
 		}
+#endif
+#if defined(PROC_PC)
+		if (p != NULL && p->p_flag & P_PROFIL)
+			addupc_intr(p, PROC_PC(p));
 #endif
 		if (--pscnt > 0)
 			return;
