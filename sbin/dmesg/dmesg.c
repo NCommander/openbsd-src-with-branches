@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmesg.c,v 1.18 2005/04/14 10:23:37 henning Exp $	*/
+/*	$OpenBSD: dmesg.c,v 1.19 2005/04/28 11:10:03 henning Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -82,10 +82,6 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	/*
-	 * Discard setgid privileges if not the running kernel so that bad
-	 * guys can't print interesting stuff from kernel memory.
-	 */
 	if (memf == NULL && nlistf == NULL) {
 		int mib[2], msgbufsize;
 		size_t len;
