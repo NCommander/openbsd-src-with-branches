@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.c,v 1.10 2006/08/31 12:55:02 mpf Exp $	*/
+/*	$OpenBSD: monitor.c,v 1.11 2006/09/01 01:13:25 mpf Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -290,7 +290,7 @@ monitor_get_pfkey_snap(u_int8_t **sadb, u_int32_t *sadbsize, u_int8_t **spd,
 int
 monitor_isakmpd_active(int active)
 {
-	u_int32_t	cmd = 
+	u_int32_t	cmd =
 	    active ? MONITOR_ISAKMPD_ACTIVATE : MONITOR_ISAKMPD_PASSIVATE;
 	if (write(m_state.s, &cmd, sizeof cmd) < 1)
 		return -1;
