@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidev.h,v 1.12 2006/12/21 11:23:41 deraadt Exp $ */
+/* $OpenBSD: acpidev.h,v 1.13 2006/12/23 17:46:39 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
@@ -23,6 +23,9 @@
 #include <sys/rwlock.h>
 
 #define DEVNAME(s)  ((s)->sc_dev.dv_xname)
+
+#define ACPIDEV_NOPOLL		0
+#define ACPIDEV_POLL		1
 
 /*
  * _BIF (Battery InFormation)
