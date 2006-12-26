@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchgen.c,v 1.26 2006/10/15 06:44:13 jmc Exp $	 */
+/* $OpenBSD: crunchgen.c,v 1.27 2006/10/25 01:53:19 drahn Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -215,7 +215,8 @@ main(int argc, char *argv[])
 void 
 usage(void)
 {
-	fprintf(stderr, "%s [-Efq] [-c c-file-name] [-D src-root] [-e exec-file-name]\n"
+	fprintf(stderr,
+	    "usage: %s [-Efq] [-c c-file-name] [-D src-root] [-e exec-file-name]\n"
 	    "\t[-L lib-dir] [-m makefile-name] [-O objdir-name] conf-file\n",
 	    progname);
 	exit(1);
