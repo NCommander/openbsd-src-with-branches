@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
