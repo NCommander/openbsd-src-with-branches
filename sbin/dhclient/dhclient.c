@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.87 2006/08/29 03:55:08 deraadt Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.88 2006/08/31 10:12:18 deraadt Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -200,7 +200,8 @@ routehandler(struct protocol *p)
 			if (addr_eq(a, l->address))
 				break;
 
-		if (l != NULL || addr_eq(a, ifi->client->alias->address))
+		if (l != NULL || (ifi->client->alias &&
+		    addr_eq(a, ifi->client->alias->address)))
 			/* new addr is the one we set */
 			break;
 
