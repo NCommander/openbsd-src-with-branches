@@ -1,4 +1,4 @@
-/*	$OpenBSD: qsphy.c,v 1.12 2005/01/28 18:27:55 brad Exp $	*/
+/*	$OpenBSD: qsphy.c,v 1.13 2005/02/19 06:00:04 brad Exp $	*/
 /*	$NetBSD: qsphy.c,v 1.19 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -248,13 +248,13 @@ qsphy_status(struct mii_softc *sc)
 		    PHY_READ(sc, MII_QSPHY_PCTL);
 		switch (pctl & PCTL_OPMASK) {
 		case PCTL_10_T:
-			mii->mii_media_active |= IFM_10_T;
+			mii->mii_media_active |= IFM_10_T|IFM_HDX;
 			break;
 		case PCTL_10_T_FDX:
 			mii->mii_media_active |= IFM_10_T|IFM_FDX;
 			break;
 		case PCTL_100_TX:
-			mii->mii_media_active |= IFM_100_TX;
+			mii->mii_media_active |= IFM_100_TX|IFM_HDX;
 			break;
 		case PCTL_100_TX_FDX:
 			mii->mii_media_active |= IFM_100_TX|IFM_FDX;

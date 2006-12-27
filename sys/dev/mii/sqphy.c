@@ -1,4 +1,4 @@
-/*	$OpenBSD: sqphy.c,v 1.13 2005/02/05 00:14:37 jsg Exp $	*/
+/*	$OpenBSD: sqphy.c,v 1.14 2005/02/05 04:28:23 brad Exp $	*/
 /*	$NetBSD: sqphy.c,v 1.17 2000/02/02 23:34:57 thorpej Exp $	*/
 
 /*-
@@ -258,8 +258,11 @@ sqphy_status(struct mii_softc *sc)
 			mii->mii_media_active |= IFM_100_TX;
 		else
 			mii->mii_media_active |= IFM_10_T;
+
 		if (status & STATUS_DPLX_DET)
 			mii->mii_media_active |= IFM_FDX;
+		else
+			mii->mii_media_active |= IFM_HDX;
 	} else
 		mii->mii_media_active = ife->ifm_media;
 }
