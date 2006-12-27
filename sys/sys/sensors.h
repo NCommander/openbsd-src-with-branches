@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensors.h,v 1.19 2006/11/29 20:00:22 mbalmer Exp $	*/
+/*	$OpenBSD: sensors.h,v 1.20 2006/12/23 17:40:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexander Yurchenko <grange@openbsd.org>
@@ -61,7 +61,7 @@ static const char * const sensor_type_s[SENSOR_MAX_TYPES + 1] = {
 	"amphour",
 	"indicator",
 	"raw",
-	"percentage",
+	"percent",
 	"illuminance",
 	"drive",
 	"timedelta",
