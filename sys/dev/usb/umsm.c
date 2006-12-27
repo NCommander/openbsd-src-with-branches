@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.2 2006/06/23 06:27:12 miod Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.3 2006/07/17 14:26:51 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -59,6 +59,7 @@ static const struct usb_devno umsm_devs[] = {
 	{ USB_VENDOR_KYOCERA2,	USB_PRODUCT_KYOCERA2_KPC650 },
 	{ USB_VENDOR_NOVATEL,	USB_PRODUCT_NOVATEL_MERLINV620 },
 	{ USB_VENDOR_SIERRA,	USB_PRODUCT_SIERRA_AIRCARD_580 },
+	{ USB_VENDOR_SIERRA,	USB_PRODUCT_SIERRA_MC8755 },
 };
 
 USB_DECLARE_DRIVER(umsm);
