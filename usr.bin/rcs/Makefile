@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.35 2006/05/15 06:58:03 xsa Exp $
+#	$OpenBSD: Makefile,v 1.36 2006/05/15 07:00:14 xsa Exp $
 
 .PATH: ${.CURDIR}/..
 
@@ -12,7 +12,7 @@ SRCS=	ci.c co.c ident.c merge.c rcsclean.c rcsdiff.c rcsmerge.c rcsprog.c \
 LINKS=	${BINDIR}/rcs ${BINDIR}/ci ${BINDIR}/rcs ${BINDIR}/co \
 	${BINDIR}/rcs ${BINDIR}/ident ${BINDIR}/rcs ${BINDIR}/merge \
 	${BINDIR}/rcs ${BINDIR}/rcsclean ${BINDIR}/rcs ${BINDIR}/rcsdiff \
-	${BINDIR}/rcs ${BINDIR}/rcsmerge ${BINDIR}/rcs ${BINDIR}/rlog \
+	${BINDIR}/rcs ${BINDIR}/rcsmerge ${BINDIR}/rcs ${BINDIR}/rlog
 
 CPPFLAGS+=-I${.CURDIR}
 CFLAGS+=-Wall
