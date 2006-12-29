@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbg.c,v 1.7 2006/12/23 17:46:39 deraadt Exp $ */
+/*	$OpenBSD: mbg.c,v 1.8 2006/12/29 10:55:30 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -119,9 +119,9 @@ struct cfdriver mbg_cd = {
 };
 
 const struct pci_matchid mbg_devices[] = {
+	{ PCI_VENDOR_MEINBERG, PCI_PRODUCT_MEINBERG_GPS170 },
 	{ PCI_VENDOR_MEINBERG, PCI_PRODUCT_MEINBERG_PCI32 },
-	{ PCI_VENDOR_MEINBERG, PCI_PRODUCT_MEINBERG_PCI511 },
-	{ PCI_VENDOR_MEINBERG, PCI_PRODUCT_MEINBERG_GPS170 }
+	{ PCI_VENDOR_MEINBERG, PCI_PRODUCT_MEINBERG_PCI511 }
 };
 
 int
