@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.54 2006/07/10 20:00:08 kettenis Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.55 2006/11/14 18:00:27 jmc Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -159,7 +159,7 @@ ELFNAME(copyargs)(struct exec_package *pack, struct ps_strings *arginfo,
 	 */
 	if (pack->ep_interp != NULL) {
 		pack->ep_emul_argp = stack;
-		stack += ELF_AUX_ENTRIES * sizeof (AuxInfo);
+		(char *)stack += ELF_AUX_ENTRIES * sizeof (AuxInfo);
 	}
 	return (stack);
 }
