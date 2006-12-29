@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.2 2006/05/30 19:42:58 todd Exp $	*/
+/*	$OpenBSD: show.c,v 1.3 2006/11/17 01:11:23 itojun Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -683,7 +683,7 @@ netname6(struct sockaddr_in6 *sa6, struct sockaddr_in6 *mask)
 	masklen = 0;
 	if (mask) {
 		lim = mask->sin6_len - offsetof(struct sockaddr_in6, sin6_addr);
-		lim = lim < sizeof(struct in6_addr) ?
+		lim = lim < (int)sizeof(struct in6_addr) ?
 		    lim : sizeof(struct in6_addr);
 		for (p = (u_char *)&mask->sin6_addr, i = 0; i < lim; p++) {
 			if (final && *p) {
