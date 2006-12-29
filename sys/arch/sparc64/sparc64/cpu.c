@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.14 2005/08/06 14:26:52 miod Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.15 2006/12/23 12:28:11 kettenis Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -67,7 +67,9 @@
 #include <sparc64/sparc64/cache.h>
 
 /* This is declared here so that you must include a CPU for the cache code. */
-struct cacheinfo cacheinfo;
+struct cacheinfo cacheinfo = {
+	us_dcache_flush_page
+};
 
 /* Our exported CPU info; we have only one for now. */  
 struct cpu_info cpu_info_store;
@@ -277,6 +279,8 @@ cpu_attach(parent, dev, aux)
 			stwa(pa, ASI_PHYS_CACHED, inst);
 			flush((void *)KERNBASE);
 		}
+
+		cacheinfo.c_dcache_flush_page = us3_dcache_flush_page;
 	}
 }
 
