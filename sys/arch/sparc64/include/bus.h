@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.18 2006/01/06 18:53:05 millert Exp $	*/
+/*	$OpenBSD: bus.h,v 1.19 2006/06/07 19:13:07 miod Exp $	*/
 /*	$NetBSD: bus.h,v 1.31 2001/09/21 15:30:41 wiz Exp $	*/
 
 /*-
@@ -141,8 +141,6 @@ enum bus_type {
 }; 
 /* For backwards compatibility */
 #define SPARC_BUS_SPACE	UPA_BUS_SPACE
-
-#define __BUS_SPACE_HAS_STREAM_METHODS	1
 
 /*
  * Bus address and size types
