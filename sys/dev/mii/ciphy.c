@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciphy.c,v 1.16 2006/12/27 19:11:08 kettenis Exp $	*/
+/*	$OpenBSD: ciphy.c,v 1.17 2006/12/30 23:04:39 kettenis Exp $	*/
 /*	$FreeBSD: ciphy.c,v 1.1 2004/09/10 20:57:45 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -233,7 +233,7 @@ setit:
 	}
 
 	/* Update the media status. */
-	ciphy_status(sc);
+	mii_phy_status(sc);
 
 	/*
 	 * Callback if something changed. Note that we need to poke

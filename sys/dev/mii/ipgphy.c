@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipgphy.c,v 1.5 2006/12/30 20:59:44 kettenis Exp $	*/
+/*	$OpenBSD: ipgphy.c,v 1.6 2006/12/30 23:04:39 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2006, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -270,7 +270,7 @@ done:
 	}
 
 	/* Update the media status. */
-	ipgphy_status(sc);
+	mii_phy_status(sc);
 
 	/* Callback if something changed. */
 	mii_phy_update(sc, cmd);
