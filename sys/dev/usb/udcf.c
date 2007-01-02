@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.27 2006/12/10 16:47:44 mbalmer Exp $ */
+/*	$OpenBSD: udcf.c,v 1.28 2006/12/23 17:46:39 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -140,7 +140,7 @@ USB_MATCH(udcf)
 	USB_MATCH_START(udcf, uaa);
 
 	if (uaa->iface != NULL)
-		return (UMATCH_NONE);
+		return UMATCH_NONE;
 
 	return uaa->vendor == USB_VENDOR_GUDE &&
 	    uaa->product == USB_PRODUCT_GUDE_DCF ?
@@ -334,7 +334,7 @@ USB_DETACH(udcf)
 
 	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
 	    USBDEV(sc->sc_dev));
-	return (0);
+	return 0;
 }
 
 /* udcf_intr runs in an interrupt context */
@@ -698,5 +698,5 @@ udcf_activate(device_ptr_t self, enum devact act)
 		sc->sc_dying = 1;
 		break;
 	}
-	return (0);
+	return 0;
 }
