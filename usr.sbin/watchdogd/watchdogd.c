@@ -1,4 +1,4 @@
-/*	$OpenBSD: watchdogd.c,v 1.9 2006/12/21 15:51:54 mbalmer Exp $ */
+/*	$OpenBSD: watchdogd.c,v 1.10 2006/12/23 10:37:33 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2005 Marc Balmer <mbalmer@openbsd.org>
@@ -153,5 +153,5 @@ restore:	sysctl(mib, 3, NULL, 0, &speriod, sizeof(speriod));
 		sysctl(mib, 3, NULL, 0, &sauto, sizeof(sauto));
 	}
 
-	return (retval);
+	return retval;
 }
