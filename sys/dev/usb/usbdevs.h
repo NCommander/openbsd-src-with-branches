@@ -1956,7 +1956,7 @@
 
 /* Sierra Wireless products */
 #define	USB_PRODUCT_SIERRA_AIRCARD_580	0x0112		/* Aircard 580 EVDO */
-#define	USB_PRODUCT_SIERRA_MC8755	0x6804		/* MC8755 */
+#define	USB_PRODUCT_SIERRA_MC8755	0x6804		/* MC8755 HSDPA */
 
 /* Sigmatel products */
 #define	USB_PRODUCT_SIGMATEL_IRDA	0x4200		/* IrDA */

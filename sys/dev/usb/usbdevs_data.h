@@ -3788,7 +3788,7 @@ const struct usb_known_product usb_known_products[] = {
 	},
 	{
 	    USB_VENDOR_SIERRA, USB_PRODUCT_SIERRA_MC8755,
-	    "MC8755",
+	    "MC8755 HSDPA",
 	},
 	{
 	    USB_VENDOR_SIGMATEL, USB_PRODUCT_SIGMATEL_IRDA,
