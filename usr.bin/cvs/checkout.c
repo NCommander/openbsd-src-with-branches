@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.67 2006/12/22 11:51:50 xsa Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.68 2007/01/03 20:48:26 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -263,14 +263,11 @@ cvs_checkout_file(struct cvs_file *cf, RCSNUM *rnum, BUF *bp, int flags)
 		if ((p = strrchr(cf->file_rpath, ',')) != NULL)
 			*p = '\0';
 
-		if (flags & CO_COMMIT) {
-			cvs_server_send_response("Checked-in %s/",
-			    cf->file_wd);
-		} else {
-			cvs_server_send_response("Updated %s/", cf->file_wd);
-		}
+		if (flags & CO_COMMIT)
+			cvs_server_update_entry("Checked-in", cf);
+		else
+			cvs_server_update_entry("Updated", cf);
 
-		cvs_remote_output(cf->file_rpath);
 		cvs_remote_output(entry);
 
 		if (!(flags & CO_COMMIT)) {
