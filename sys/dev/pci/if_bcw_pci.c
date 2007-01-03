@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bcw_pci.c,v 1.6 2006/12/06 19:21:45 mglocker Exp $ */
+/*	$OpenBSD: if_bcw_pci.c,v 1.7 2006/12/08 01:28:40 mglocker Exp $ */
 
 /*
  * Copyright (c) 2006 Jon Simola <jsimola@gmail.com>
@@ -213,7 +213,7 @@ bcw_pci_attach(struct device *parent, struct device *self, void *aux)
 		return;
 	}
 
-	printf(": %s\n", sc->bcw_intrstr);
+	printf(": %s", sc->bcw_intrstr);
 
 	sc->sc_enable = bcw_pci_enable;
 	sc->sc_disable = bcw_pci_disable;
