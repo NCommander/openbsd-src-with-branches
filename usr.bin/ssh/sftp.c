@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.94 2006/11/23 01:35:11 ray Exp $ */
+/* $OpenBSD: sftp.c,v 1.95 2007/01/03 03:01:40 stevesk Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -154,6 +154,7 @@ static const struct CMD cmds[] = {
 
 int interactive_loop(int fd_in, int fd_out, char *file1, char *file2);
 
+/* ARGSUSED */
 static void
 killchild(int signo)
 {
@@ -165,6 +166,7 @@ killchild(int signo)
 	_exit(1);
 }
 
+/* ARGSUSED */
 static void
 cmd_interrupt(int signo)
 {
