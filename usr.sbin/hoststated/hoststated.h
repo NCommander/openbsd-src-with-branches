@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hostated.h,v 1.6 2006/12/26 02:51:00 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -159,6 +159,7 @@ TAILQ_HEAD(addresslist, address);
 #define F_ADD			0x10
 #define F_DEL			0x20
 #define F_CHANGED		0x40
+#define F_STICKY		0x80
 
 struct host {
 	u_int8_t		 flags;
