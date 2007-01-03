@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-server.c,v 1.69 2006/08/01 23:22:47 stevesk Exp $ */
+/* $OpenBSD: sftp-server.c,v 1.70 2006/08/03 03:34:42 deraadt Exp $ */
 /*
  * Copyright (c) 2000-2004 Markus Friedl.  All rights reserved.
  *
@@ -658,7 +658,7 @@ process_fstat(void)
 	debug("request %u: fstat \"%s\" (handle %u)",
 	    id, handle_to_name(handle), handle);
 	fd = handle_to_fd(handle);
-	if (fd  >= 0) {
+	if (fd >= 0) {
 		ret = fstat(fd, &st);
 		if (ret < 0) {
 			status = errno_to_portable(errno);
