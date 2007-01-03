@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbg.c,v 1.10 2006/12/30 23:44:58 mbalmer Exp $ */
+/*	$OpenBSD: mbg.c,v 1.11 2007/01/02 19:25:02 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -333,11 +333,16 @@ mbg_read_asic(struct mbg_softc *sc, int cmd, char *buf, size_t len,
 	char *p = buf;
 	u_int16_t port;
 	u_int8_t status;
+	int s;
 
 	/* write the command, optionally taking a timestamp */
-	if (tstamp)
+	if (tstamp) {
+		s = splhigh();
 		nanotime(tstamp);
-	bus_space_write_4(sc->sc_iot, sc->sc_ioh, ASIC_DATA, cmd);
+		bus_space_write_4(sc->sc_iot, sc->sc_ioh, ASIC_DATA, cmd);
+		splx(s);
+	} else
+		bus_space_write_4(sc->sc_iot, sc->sc_ioh, ASIC_DATA, cmd);
 
 	/* wait for the BUSY flag to go low */
 	timer = 0;
