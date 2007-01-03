@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.14 2007/01/02 13:51:13 xsa Exp $	*/
+/*	$OpenBSD: edit.c,v 1.15 2007/01/02 14:51:18 xsa Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -198,4 +198,7 @@ cvs_unedit_local(struct cvs_file *cf)
 	(void)fclose(fp);
 
 	/* XXX: Update revision number in CVS/Entries from CVS/Baserev */
+
+	if (fchmod(cf->fd, 0644) == -1)
+		fatal("cvs_unedit_local: fchmod %s", strerror(errno));
 }
