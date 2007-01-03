@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: agp.c,v 1.1 2006/03/16 21:32:34 matthieu Exp $ */
 /*-
  * Copyright (c) 2000 Doug Rabson
  * All rights reserved.
@@ -145,6 +145,9 @@ agp_ioctl(void *v, u_long cmd, caddr_t addr, int flag, struct proc *pb)
 	agp_unbind *unbind;
 	vsize_t size;
 	int error = 0;
+
+	if (sc->sc_methods == NULL || sc->sc_chipc == NULL)
+		return (ENXIO);
 
 	switch (cmd) {
 	case AGPIOC_INFO:
