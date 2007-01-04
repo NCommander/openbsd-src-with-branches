@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.139 2006/06/19 20:48:36 jmc Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.140 2006/11/28 16:39:34 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -216,7 +216,7 @@ main(int argc, char *argv[])
 
 	/* fork children */
 	rde_pid = rde_main(&conf, peer_l, &net_l, rules_l, &mrt_l,
-	    pipe_m2r, pipe_s2r, pipe_m2s);
+	    pipe_m2r, pipe_s2r, pipe_m2s, debug);
 	io_pid = session_main(&conf, peer_l, &net_l, rules_l, &mrt_l,
 	    pipe_m2s, pipe_s2r, pipe_m2r);
 
