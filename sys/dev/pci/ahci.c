@@ -304,7 +304,7 @@ ahci_attach(struct device *parent, struct device *self, void *aux)
 	DPRINTF(AHCI_D_VERBOSE, "%s: ports implemented: 0x%08x\n",
 	    DEVNAME(sc), reg);
 	for (i = 0; i < AHCI_MAX_PORTS; i++) {
-		if (((1 << i) & reg) == 0) {
+		if (!ISSET(reg, 1 << i)) {
 			/* dont allocate stuff if the port isnt implemented */
 			continue;
 		}
