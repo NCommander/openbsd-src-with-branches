@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcwvar.h,v 1.10 2007/01/03 05:46:42 mglocker Exp $ */
+/*	$OpenBSD: bcwvar.h,v 1.11 2007/01/03 06:31:54 mglocker Exp $ */
 
 /*
  * Copyright (c) 2006 Jon Simola <jsimola@gmail.com>
@@ -22,6 +22,12 @@
  *
  * Cliff Wright cliff@snipe444.org
  */
+
+struct fwheader {
+	char	filename[64];
+	int	filesize;
+	int	fileoffset;
+};
 
 struct bcw_initval {
         uint16_t	offset;
