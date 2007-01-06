@@ -1,4 +1,4 @@
-/*	$OpenBSD: dnkbd.c,v 1.11 2006/04/15 23:56:48 miod Exp $	*/
+/*	$OpenBSD: dnkbd.c,v 1.12 2006/08/10 23:47:34 miod Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat
@@ -38,6 +38,7 @@
 #include <sys/timeout.h>
 
 #include <machine/autoconf.h>
+#include <machine/bus.h>
 #include <machine/cpu.h>
 
 #include <dev/cons.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sgcvar.h,v 1.1 2005/01/14 22:39:26 miod Exp $	*/
 
 /*
  * Copyright (c) 2005, Miodrag Vallat.
@@ -33,6 +33,7 @@
 
 struct sgc_attach_args {
 	int	saa_slot;		/* slot number */
+	bus_space_tag_t	saa_iot;
 };
 
 #ifdef _KERNEL
