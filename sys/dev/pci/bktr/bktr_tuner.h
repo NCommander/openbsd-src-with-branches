@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bktr_tuner.h,v 1.1 2001/03/28 03:27:10 fgsch Exp $	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_tuner.h,v 1.1 1999/09/26 22:06:20 roger Exp $ */
 
 /*
@@ -60,7 +60,8 @@
 #define PHILIPS_FR1236_SECAM    11   /* These have FM radio support */
 #define ALPS_TSCH5              12
 #define ALPS_TSBH1              13
-#define Bt848_MAX_TUNER         14
+#define TIVISION_TVF5533        14
+#define Bt848_MAX_TUNER         15
 
 /* experimental code for Automatic Frequency Control */ 
 #define TUNER_AFC
