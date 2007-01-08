@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_msk.c,v 1.38 2006/12/30 22:08:15 kettenis Exp $	*/
+/*	$OpenBSD: if_msk.c,v 1.39 2007/01/03 11:49:16 krw Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -715,7 +715,6 @@ msk_ifmedia_upd(struct ifnet *ifp)
 {
 	struct sk_if_softc *sc_if = ifp->if_softc;
 
-	msk_init(sc_if);
 	mii_mediachg(&sc_if->sk_mii);
 	return (0);
 }
