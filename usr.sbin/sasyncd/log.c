@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.3 2005/05/22 12:14:16 ho Exp $	*/
+/*	$OpenBSD: log.c,v 1.4 2005/05/26 19:19:51 ho Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -46,7 +46,7 @@ void
 log_init(char *pname)
 {
 	tzset();
-	openlog(pname, LOG_CONS, LOG_DAEMON);
+	openlog(pname, LOG_CONS | LOG_PID, LOG_DAEMON);
 }
 
 static void
