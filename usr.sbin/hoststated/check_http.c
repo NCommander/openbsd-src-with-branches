@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_http.c,v 1.3 2006/12/25 18:12:14 reyk Exp $	*/
+/*	$OpenBSD: check_http.c,v 1.4 2006/12/25 19:05:41 reyk Exp $	*/
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
  *
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <regex.h>
 
 #include "hostated.h"
 
