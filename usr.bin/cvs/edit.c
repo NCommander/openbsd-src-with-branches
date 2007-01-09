@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.23 2007/01/06 17:09:08 xsa Exp $	*/
+/*	$OpenBSD: edit.c,v 1.24 2007/01/08 13:21:21 xsa Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -277,7 +277,7 @@ cvs_edit_local(struct cvs_file *cf)
 	if (getcwd(wdir, sizeof(wdir)) == NULL)
 		fatal("getcwd failed");
 
-	(void)fprintf(fp, "E%s\t%s GMT\t%s\t%s\t\n",
+	(void)fprintf(fp, "E%s\t%s GMT\t%s\t%s\t",
 	    cf->file_name, timebuf, thishost, wdir);
 
 	if (edit_aflags & E_EDIT)
