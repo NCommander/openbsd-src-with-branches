@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_http.c,v 1.6 2007/01/08 20:46:18 reyk Exp $	*/
+/*	$OpenBSD: check_http.c,v 1.7 2007/01/09 00:45:32 deraadt Exp $	*/
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
  *
@@ -131,7 +131,7 @@ http_read(int s, short event, void *arg)
 		buf_add(cte->buf, rbuf, br);
 		bcopy(&cte->table->timeout, &tv, sizeof(tv));
 		if (gettimeofday(&tv_now, NULL))
-			fatal("send_http_request: gettimeofday");
+			fatal("http_read: gettimeofday");
 		timersub(&tv_now, &cte->tv_start, &tv_now);
 		timersub(&tv, &tv_now, &tv);
 		event_once(s, EV_READ|EV_TIMEOUT, http_read, cte, &tv);
