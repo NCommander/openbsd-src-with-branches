@@ -1,4 +1,4 @@
-/*	$OpenBSD: hostatectl.c,v 1.5 2006/12/16 17:52:21 deraadt Exp $	*/
+/*	$OpenBSD: hoststatectl.c,v 1.6 2006/12/16 18:50:33 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -36,7 +36,7 @@
 #include <unistd.h>
 #include <event.h>
 
-#include "hostated.h"
+#include "hoststated.h"
 #include "parser.h"
 
 __dead void	 usage(void);

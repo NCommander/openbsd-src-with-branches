@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.3 2006/12/16 17:53:03 deraadt Exp $	*/
+/*	$OpenBSD: parser.c,v 1.4 2006/12/16 18:50:33 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -32,7 +32,7 @@
 #include <string.h>
 #include <event.h>
 
-#include "hostated.h"
+#include "hoststated.h"
 
 #include "parser.h"
 

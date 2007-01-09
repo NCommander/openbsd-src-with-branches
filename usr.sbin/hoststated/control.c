@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.5 2007/01/08 13:37:26 reyk Exp $	*/
+/*	$OpenBSD: control.c,v 1.6 2007/01/08 20:46:18 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "hostated.h"
+#include "hoststated.h"
 
 #define	CONTROL_BACKLOG	5
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.2 2007/01/08 13:37:26 reyk Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.3 2007/01/08 20:46:18 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -30,7 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "hostated.h"
+#include "hoststated.h"
 
 int	buf_realloc(struct buf *, size_t);
 void	buf_enqueue(struct msgbuf *, struct buf *);
