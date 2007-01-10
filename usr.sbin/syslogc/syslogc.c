@@ -1,4 +1,4 @@
-/* $OpenBSD: syslogc.c,v 1.11 2005/09/28 08:49:28 stevesk Exp $ */
+/* $OpenBSD: syslogc.c,v 1.12 2007/01/03 13:25:21 mpf Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller
@@ -61,7 +61,8 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "Usage: %s [-Ccfhoq] [-s ctlsock] logname\n", __progname);
+	fprintf(stderr, "usage: %s [-Ccfoq] [-s reporting_socket] logname\n",
+	    __progname);
 	exit(1);
 }
 
