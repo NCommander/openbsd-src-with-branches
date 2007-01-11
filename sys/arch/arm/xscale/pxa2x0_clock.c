@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0_clock.c,v 1.3 2005/12/22 23:23:51 drahn Exp $ */
+/*	$OpenBSD: pxa2x0_clock.c,v 1.4 2006/03/07 22:12:46 uwe Exp $ */
 
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
@@ -224,8 +224,6 @@ cpu_initclocks()
 	pxaost_sc->sc_clock_step = CLK4_TIMER_FREQUENCY / hz;
 	pxaost_sc->sc_clock_step_err_cnt = CLK4_TIMER_FREQUENCY % hz;
 	pxaost_sc->sc_clock_step_error = 0;
-
-	printf("clock: hz=%d stathz=%d\n", hz, stathz);
 
 	/* Use the channels 0 and 1 for hardclock and statclock, respectively */
 	pxaost_sc->sc_clock_count = pxaost_sc->sc_clock_step;
