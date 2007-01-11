@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.c,v 1.9 2007/01/09 13:50:11 pyr Exp $	*/
+/*	$OpenBSD: hoststated.c,v 1.10 2007/01/11 18:05:08 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -412,7 +412,8 @@ service_findbyname(struct hoststated *env, const char *name)
 }
 
 void
-event_again(struct event *ev, int fd, short event, void (*fn)(int, short, void *),
+event_again(struct event *ev, int fd, short event,
+    void (*fn)(int, short, void *),
     struct timeval *start, struct timeval *end, void *arg)
 {
 	struct timeval tv_next, tv_now, tv;
