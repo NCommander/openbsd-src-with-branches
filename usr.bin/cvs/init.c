@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.25 2006/06/16 14:07:42 joris Exp $	*/
+/*	$OpenBSD: init.c,v 1.26 2006/11/09 14:00:14 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -82,6 +82,7 @@ cvs_init(int argc, char **argv)
 		fatal("init does not take any extra arguments");
 
 	if (current_cvsroot->cr_method != CVS_METHOD_LOCAL) {
+		cvs_client_connect_to_server();
 		cvs_client_send_request("init %s", current_cvsroot->cr_dir);
 		cvs_client_get_responses();
 	} else

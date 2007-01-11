@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.67 2006/11/08 22:05:52 xsa Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.68 2006/11/10 15:49:03 xsa Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
@@ -105,6 +105,7 @@ cvs_getlog(int argc, char **argv)
 	cr.leavedir = NULL;
 
 	if (current_cvsroot->cr_method != CVS_METHOD_LOCAL) {
+		cvs_client_connect_to_server();
 		cr.fileproc = cvs_client_sendfile;
 
 		if (runflags & L_HEAD)

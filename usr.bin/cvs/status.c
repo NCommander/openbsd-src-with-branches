@@ -1,4 +1,4 @@
-/*	$OpenBSD: status.c,v 1.67 2006/07/07 13:01:40 joris Exp $	*/
+/*	$OpenBSD: status.c,v 1.68 2006/07/07 17:37:17 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -88,6 +88,7 @@ cvs_status(int argc, char **argv)
 		flags |= CR_REPO;
 		cr.fileproc = cvs_status_local;
 	} else {
+		cvs_client_connect_to_server();
 		if (!(flags & CR_RECURSE_DIRS))
 			cvs_client_send_request("Argument -l");
 		if (show_sym)

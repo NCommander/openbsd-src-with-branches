@@ -1,4 +1,4 @@
-/*	$OpenBSD: add.c,v 1.64 2006/12/19 15:15:14 joris Exp $	*/
+/*	$OpenBSD: add.c,v 1.65 2006/12/20 16:40:27 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -73,6 +73,7 @@ cvs_add(int argc, char **argv)
 	cr.leavedir = NULL;
 
 	if (current_cvsroot->cr_method != CVS_METHOD_LOCAL) {
+		cvs_client_connect_to_server();
 		cr.fileproc = cvs_client_sendfile;
 
 		if (logmsg != NULL)
