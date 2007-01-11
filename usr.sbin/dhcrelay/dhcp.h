@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.h,v 1.4 2004/02/07 13:59:45 henning Exp $	*/
+/*	$OpenBSD: dhcp.h,v 1.1 2004/04/12 21:10:28 henning Exp $	*/
 
 /* Protocol structures... */
 
@@ -52,7 +52,6 @@
 #define DHCP_OPTION_LEN		(DHCP_MTU_MAX - DHCP_FIXED_LEN)
 
 #define BOOTP_MIN_LEN		300
-#define DHCP_MIN_LEN            548
 
 struct dhcp_packet {
 	u_int8_t  op;		/* Message opcode/type */
