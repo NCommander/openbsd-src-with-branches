@@ -1,4 +1,4 @@
-/*	$OpenBSD: elfXX_exec.c,v 1.4 2002/03/14 03:16:01 millert Exp $	*/
+/*	$OpenBSD: elfXX_exec.c,v 1.5 2003/06/10 02:42:58 brad Exp $	*/
 /*	$NetBSD: elfXX_exec.c,v 1.2 2001/08/15 20:08:15 eeh Exp $	*/
 
 /*
@@ -142,7 +142,6 @@ CAT3(elf, ELFSIZE, _exec)(fd, elf, entryp, ssymp, esymp)
 		if (shp->sh_type != SHT_SYMTAB
 		    && shp->sh_type != SHT_STRTAB) {
 			shp->sh_offset = 0; 
-			shp->sh_type = SHT_NOBITS;
 			continue;
 		}
 		size += shp->sh_size;
