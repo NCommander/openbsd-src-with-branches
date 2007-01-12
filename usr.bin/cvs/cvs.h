@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.126 2007/01/07 02:39:24 joris Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.127 2007/01/12 09:27:25 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -28,8 +28,8 @@
 #define CVS_H
 
 #include "rcs.h"
-#include "xmalloc.h"
 #include "util.h"
+#include "xmalloc.h"
 #include "file.h"
 #include "repository.h"
 #include "worklist.h"
