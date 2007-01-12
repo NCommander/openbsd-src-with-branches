@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.165 2007/01/06 17:09:08 xsa Exp $	*/
+/*	$OpenBSD: file.c,v 1.166 2007/01/10 21:32:19 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -828,6 +828,8 @@ cvs_file_free(struct cvs_file *cf)
 	xfree(cf->file_wd);
 	xfree(cf->file_path);
 
+	if (cf->file_rcsrev != NULL)
+		rcsnum_free(cf->file_rcsrev);
 	if (cf->file_rpath != NULL)
 		xfree(cf->file_rpath);
 	if (cf->file_ent != NULL)
