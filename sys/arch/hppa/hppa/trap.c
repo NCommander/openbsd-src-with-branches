@@ -146,8 +146,14 @@ userret(struct proc *p, register_t pc, u_quad_t oticks)
 			p->p_flag &= ~P_OWEUPC;
 			ADDUPROF(p);
 		}
-		if (want_resched)
-			preempt(NULL);
+	}
+	if (want_resched) {
+		/*
+		 * We're being preempted.
+		 */
+		preempt(NULL);
+		while ((sig = CURSIG(p)) != 0)
+			postsig(sig);
 	}
 
 	/*
