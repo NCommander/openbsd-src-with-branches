@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rip.h,v 1.1 2006/10/18 16:11:58 norby Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -31,6 +31,7 @@
 
 /* metric */
 #define	INFINITY		16
+#define	DEFAULT_COST		1
 
 /* timers */
 #define	KEEPALIVE		30
