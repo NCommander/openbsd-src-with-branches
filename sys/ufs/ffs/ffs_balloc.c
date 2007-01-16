@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_balloc.c,v 1.28 2007/01/12 14:33:01 pedro Exp $	*/
+/*	$OpenBSD: ffs_balloc.c,v 1.29 2007/01/14 21:50:05 pedro Exp $	*/
 /*	$NetBSD: ffs_balloc.c,v 1.3 1996/02/09 22:22:21 christos Exp $	*/
 
 /*
@@ -445,7 +445,7 @@ ffs2_balloc(struct inode *ip, off_t off, int size, struct ucred *cred,
 	
 	vp = ITOV(ip);
 	fs = ip->i_fs;
-	unwindidx = 1;
+	unwindidx = -1;
 
 	lbn = lblkno(fs, off);
 	size = blkoff(fs, off) + size;
