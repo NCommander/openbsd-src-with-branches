@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs.h,v 1.26 2006/05/29 16:49:42 avsm Exp $	*/
+/*	$OpenBSD: nfs.h,v 1.27 2006/09/20 21:56:21 thib Exp $	*/
 /*	$NetBSD: nfs.h,v 1.10.4.1 1996/05/27 11:23:56 fvdl Exp $	*/
 
 /*
@@ -427,10 +427,6 @@ struct nfsrv_descript {
 };
 
 /* Bits for "nd_flag" */
-#define	ND_READ		LEASE_READ
-#define ND_WRITE	LEASE_WRITE
-#define ND_CHECK	0x04
-#define ND_LEASE	(ND_READ | ND_WRITE | ND_CHECK)
 #define ND_NFSV3	0x08
 #define ND_KERBNICK	0x20
 #define ND_KERBFULL	0x40

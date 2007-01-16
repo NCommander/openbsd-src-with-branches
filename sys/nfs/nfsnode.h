@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsnode.h,v 1.21 2004/04/26 18:57:36 millert Exp $	*/
+/*	$OpenBSD: nfsnode.h,v 1.22 2004/08/03 17:11:48 marius Exp $	*/
 /*	$NetBSD: nfsnode.h,v 1.16 1996/02/18 11:54:04 fvdl Exp $	*/
 
 /*
@@ -178,8 +178,6 @@ int	nfs_getattr(void *);
 int	nfs_setattr(void *);
 int	nfs_read(void *);
 int	nfs_write(void *);
-#define	nfs_lease_check ((int (*)(void *))nullop)
-#define nqnfs_vop_lease_check	lease_check
 int	nfsspec_read(void *);
 int	nfsspec_write(void *);
 int	nfsfifo_read(void *);
