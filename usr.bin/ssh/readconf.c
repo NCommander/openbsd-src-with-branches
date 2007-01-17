@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.158 2006/08/01 23:22:47 stevesk Exp $ */
+/* $OpenBSD: readconf.c,v 1.159 2006/08/03 03:34:42 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -359,7 +359,7 @@ parse_time:
 		if ((value = convtime(arg)) == -1)
 			fatal("%s line %d: invalid time value.",
 			    filename, linenum);
-		if (*intptr == -1)
+		if (*activep && *intptr == -1)
 			*intptr = value;
 		break;
 
