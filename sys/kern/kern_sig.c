@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.84 2006/06/15 20:08:01 miod Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.85 2007/01/16 17:52:18 thib Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -973,14 +973,15 @@ psignal(struct proc *p, int signum)
 			unsleep(p);
 		goto out;
 
+	case SONPROC:
+		signotify(p);
+		/* FALLTHROUGH */
 	default:
 		/*
 		 * SRUN, SIDL, SZOMB do nothing with the signal,
 		 * other than kicking ourselves if we are running.
 		 * It will either never be noticed, or noticed very soon.
 		 */
-		if (p == curproc)
-			signotify(p);
 		goto out;
 	}
 	/*NOTREACHED*/
