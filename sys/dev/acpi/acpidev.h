@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidev.h,v 1.14 2006/12/26 23:58:08 marco Exp $ */
+/* $OpenBSD: acpidev.h,v 1.15 2007/01/03 05:59:20 marco Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
@@ -199,6 +199,7 @@ struct acpibat_bmd {
 #define	HPET_TIMER2_INTERRUPT	0x510
 
 #define STA_PRESENT   (1L << 0)
+#define STA_ENABLED   (1L << 1)
 #define STA_BATTERY   (1L << 4)
 
 /*
