@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.98 2007/01/17 17:54:50 joris Exp $	*/
+/*	$OpenBSD: util.c,v 1.99 2007/01/19 23:55:31 todd Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -934,10 +934,12 @@ cvs_revision_select(RCSFILE *file, char *range)
 		if (lstr == NULL)
 			lstr = RCS_HEAD_INIT;
 
-		lnum = rcs_translate_tag(lstr, file);
+		if ((lnum = rcs_translate_tag(lstr, file)) == NULL)
+			fatal("cvs_revision_select: could not translate tag `%s'", lstr);
 
 		if (rstr != NULL) {
-			rnum = rcs_translate_tag(rstr, file);
+			if ((rnum = rcs_translate_tag(rstr, file)) == NULL)
+				fatal("cvs_revision_select: could not translate tag `%s'", rstr);
 		} else {
 			rnum = rcsnum_alloc();
 			rcsnum_cpy(file->rf_head, rnum, 0);
