@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.175 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: clientloop.c,v 1.176 2006/10/11 12:38:03 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1749,7 +1749,7 @@ client_request_agent(const char *request_type, int rchan)
 		error("Warning: this is probably a break-in attempt by a malicious server.");
 		return NULL;
 	}
-	sock =  ssh_get_authentication_socket();
+	sock = ssh_get_authentication_socket();
 	if (sock < 0)
 		return NULL;
 	c = channel_new("authentication agent connection",

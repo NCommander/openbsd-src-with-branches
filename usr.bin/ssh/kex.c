@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.c,v 1.75 2006/08/01 23:22:47 stevesk Exp $ */
+/* $OpenBSD: kex.c,v 1.76 2006/08/03 03:34:42 deraadt Exp $ */
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  *
@@ -541,7 +541,7 @@ dump_digest(char *msg, u_char *digest, int len)
 	u_int i;
 
 	fprintf(stderr, "%s\n", msg);
-	for (i = 0; i< len; i++) {
+	for (i = 0; i < len; i++) {
 		fprintf(stderr, "%02x", digest[i]);
 		if (i%32 == 31)
 			fprintf(stderr, "\n");
