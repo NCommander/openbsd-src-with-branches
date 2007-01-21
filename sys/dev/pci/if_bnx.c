@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.39 2007/01/19 18:35:50 mcbride Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.40 2007/01/20 00:36:07 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -450,7 +450,6 @@ bnx_read_firmware(struct bnx_softc *sc)
 		return error;
 
 	if (size < sizeof (struct bnx_firmware_header)) {
-fail:
 		free(p, M_DEVBUF);
 		return EINVAL;
 	}
@@ -462,11 +461,6 @@ fail:
 	bnx_COM_b06FwReleaseFix = ntohl(hdr->bnx_COM_b06FwReleaseFix);
 	bnx_COM_b06FwStartAddr = ntohl(hdr->bnx_COM_b06FwStartAddr);
 	bnx_COM_b06FwTextAddr = ntohl(hdr->bnx_COM_b06FwTextAddr);
-	if (bnx_COM_b06FwTextAddr > size) {
-		printf("%s: probably trying to use old firmware\n",
-		    sc->bnx_dev.dv_xname);
-		goto fail;
-	}
 	bnx_COM_b06FwTextLen = ntohl(hdr->bnx_COM_b06FwTextLen);
 	bnx_COM_b06FwDataAddr = ntohl(hdr->bnx_COM_b06FwDataAddr);
 	bnx_COM_b06FwDataLen = ntohl(hdr->bnx_COM_b06FwDataLen);
