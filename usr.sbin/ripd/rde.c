@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.2 2006/10/24 16:37:48 david Exp $ */
+/*	$OpenBSD: rde.c,v 1.3 2007/01/08 13:01:10 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -115,6 +115,7 @@ rde(struct ripd_conf *xconf, int pipe_parent2rde[2], int pipe_ripe2rde[2],
 	signal_set(&ev_sigterm, SIGTERM, rde_sig_handler, NULL);
 	signal_add(&ev_sigint, NULL);
 	signal_add(&ev_sigterm, NULL);
+	signal(SIGPIPE, SIG_IGN);
 
 	/* setup pipes */
 	close(pipe_ripe2rde[0]);

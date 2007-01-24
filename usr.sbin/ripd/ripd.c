@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripd.c,v 1.1 2006/10/18 16:11:58 norby Exp $ */
+/*	$OpenBSD: ripd.c,v 1.2 2007/01/08 13:01:10 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -225,6 +225,7 @@ main(int argc, char *argv[])
 	signal_add(&ev_sigterm, NULL);
 	signal_add(&ev_sigchld, NULL);
 	signal_add(&ev_sighup, NULL);
+	signal(SIGPIPE, SIG_IGN);
 
 	/* setup pipes to children */
 	close(pipe_parent2ripe[1]);
