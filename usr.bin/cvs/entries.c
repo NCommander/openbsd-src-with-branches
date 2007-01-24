@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.64 2006/12/07 13:28:21 xsa Exp $	*/
+/*	$OpenBSD: entries.c,v 1.65 2007/01/12 18:24:59 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -233,6 +233,7 @@ cvs_ent_close(CVSENTRIES *ep, int writefile)
 
 	if (writefile) {
 		fputc('D', fp);
+		fputc('\n', fp);
 		(void)fclose(fp);
 
 		if (rename(ep->cef_bpath, ep->cef_path) == -1)
