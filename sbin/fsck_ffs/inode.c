@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.c,v 1.25 2003/09/25 04:23:26 deraadt Exp $	*/
+/*	$OpenBSD: inode.c,v 1.26 2003/10/11 01:43:45 tedu Exp $	*/
 /*	$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)inode.c	8.5 (Berkeley) 2/8/95";
 #else
-static const char rcsid[] = "$OpenBSD: inode.c,v 1.25 2003/09/25 04:23:26 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: inode.c,v 1.26 2003/10/11 01:43:45 tedu Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +49,7 @@ static const char rcsid[] = "$OpenBSD: inode.c,v 1.25 2003/09/25 04:23:26 deraad
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "fsck.h"
 #include "fsutil.h"
@@ -588,6 +589,8 @@ allocino(ino_t request, int type)
 		return (0);
 	}
 	dp->di_mode = type;
+	dp->di_uid = geteuid();
+	dp->di_gid = getegid();
 	dp->di_flags = 0;
 	(void)time(&t);
 	dp->di_atime = t;
