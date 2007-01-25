@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.27 2007/01/11 02:35:55 joris Exp $	*/
+/*	$OpenBSD: init.c,v 1.28 2007/01/13 20:29:46 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -95,14 +95,12 @@ void
 cvs_init_local(void)
 {
 	u_int i;
-	char *path;
+	char path[MAXPATHLEN];
 
 	cvs_log(LP_TRACE, "cvs_init_local()");
 
 	/* Create repository root directory if it does not already exist */
 	init_mkdir(current_cvsroot->cr_dir, 0777);
-
-	path = xmalloc(MAXPATHLEN);
 
 	for (i = 0; i < INIT_NDIRS; i++) {
 		if (cvs_path_cat(current_cvsroot->cr_dir,
@@ -119,8 +117,6 @@ cvs_init_local(void)
 
 		init_mkfile(path, cvsroot_files[i].cf_content);
 	}
-
-	xfree(path);
 }
 
 static void
