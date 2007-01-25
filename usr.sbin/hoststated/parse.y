@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.16 2007/01/12 16:43:01 pyr Exp $	*/
+/*	$OpenBSD: parse.y,v 1.17 2007/01/24 06:31:09 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -764,7 +764,7 @@ parse_config(struct hoststated *x_conf, const char *filename, int opts)
 
 	if ((fin = fopen(filename, "r")) == NULL) {
 		warn("%s", filename);
-		return (NULL);
+		return (0);
 	}
 	infile = filename;
 	setservent(1);
