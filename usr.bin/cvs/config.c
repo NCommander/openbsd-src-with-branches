@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.5 2006/12/04 09:51:21 xsa Exp $	*/
+/*	$OpenBSD: config.c,v 1.6 2006/12/07 08:43:12 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -47,7 +47,8 @@ cvs_parse_configfile(void)
 			buf[len - 1] = '\0';
 		} else {
 			lbuf = xmalloc(len + 1);
-			strlcpy(lbuf, buf, len);
+			memcpy(lbuf, buf, len);
+			lbuf[len] = '\0';
 			buf = lbuf;
 		}
 
