@@ -292,6 +292,9 @@ struct acpidock_softc {
 	struct acpi_softc       *sc_acpi;
 	struct aml_node		*sc_devnode;
 
+	struct sensor		sc_sens[1];
+	struct sensordev	sc_sensdev;
+
 	int			sc_docked;
 	int			sc_sta;
 
