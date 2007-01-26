@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.197 2006/11/28 16:39:34 henning Exp $ */
+/*	$OpenBSD: parse.y,v 1.198 2006/12/05 12:08:13 henning Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -217,8 +217,8 @@ number		: STRING			{
 		;
 
 asnumber	: number			{
-			if ($1 > USHRT_MAX) {
-				yyerror("AS too big: max %u", USHRT_MAX);
+			if ($1 >= USHRT_MAX) {
+				yyerror("AS too big: max %u", USHRT_MAX - 1);
 				YYERROR;
 			}
 		}
