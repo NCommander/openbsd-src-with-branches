@@ -213,12 +213,12 @@ acpidock_eject(struct acpidock_softc *sc)
 	if (aml_evalname(sc->sc_acpi, sc->sc_devnode->parent, "_EJ0", 1, &cmd,
 	    &res) != 0) {
 		/* XXX */
-		dnprintf(15, "%s: _EJ0 %d failed\n", DEVNAME(sc), dock);
+		dnprintf(15, "%s: _EJ0 failed\n", DEVNAME(sc));
 
 		aml_freevalue(&res);
 		return (0);
 	} else {
-		dnprintf(15, "%s: _EJ0 %d successful\n", DEVNAME(sc), dock);
+		dnprintf(15, "%s: _EJ0 successful\n", DEVNAME(sc));
 
 		sc->sc_docked = 0;
 		aml_freevalue(&res);
