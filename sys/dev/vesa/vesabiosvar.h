@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: vesabiosvar.h,v 1.1 2006/11/27 18:04:28 gwk Exp $ */
 
 /*
  * Copyright (c) 2006 Matthieu Herrb
@@ -21,6 +21,7 @@ extern int vbeprobe(void);
 struct vesabios_softc {
 	struct device sc_dev;
 	int sc_nmodes;
+	uint32_t sc_size;
 	uint16_t *sc_modes;
 };
 
