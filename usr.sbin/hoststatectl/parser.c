@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.5 2007/01/09 00:45:32 deraadt Exp $	*/
+/*	$OpenBSD: parser.c,v 1.6 2007/01/29 10:28:11 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <event.h>
+
+#include <openssl/ssl.h>
 
 #include "hoststated.h"
 

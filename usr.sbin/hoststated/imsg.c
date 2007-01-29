@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.3 2007/01/08 20:46:18 reyk Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.4 2007/01/09 00:45:32 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <openssl/ssl.h>
 
 #include "hoststated.h"
 

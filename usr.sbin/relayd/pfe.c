@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe.c,v 1.7 2007/01/09 13:50:11 pyr Exp $	*/
+/*	$OpenBSD: pfe.c,v 1.8 2007/01/24 10:26:00 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -30,6 +30,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <pwd.h>
+
+#include <openssl/ssl.h>
 
 #include "hoststated.h"
 

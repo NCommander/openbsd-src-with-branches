@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststatectl.c,v 1.7 2007/01/09 00:45:32 deraadt Exp $	*/
+/*	$OpenBSD: hoststatectl.c,v 1.8 2007/01/09 13:50:10 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -35,6 +35,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <event.h>
+
+#include <openssl/ssl.h>
 
 #include "hoststated.h"
 #include "parser.h"

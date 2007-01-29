@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_send_expect.c,v 1.4 2007/01/11 18:05:08 reyk Exp $ */
+/*	$OpenBSD: check_send_expect.c,v 1.5 2007/01/12 16:43:01 pyr Exp $ */
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
  *
@@ -30,6 +30,8 @@
 #include <fcntl.h>
 #include <fnmatch.h>
 #include <errno.h>
+
+#include <openssl/ssl.h>
 
 #include "hoststated.h"
 
