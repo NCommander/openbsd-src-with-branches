@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.32 2006/12/21 19:59:02 deraadt Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.33 2006/12/26 23:58:08 marco Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -30,6 +30,8 @@ extern int acpi_debug;
 #define dprintf(x...)
 #define dnprintf(n,x...)
 #endif
+
+extern int acpi_hasprocfvs;
 
 struct klist;
 struct acpiec_softc;
