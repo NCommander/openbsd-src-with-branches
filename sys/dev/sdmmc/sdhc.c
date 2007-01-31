@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc.c,v 1.15 2006/11/29 14:05:45 uwe Exp $	*/
+/*	$OpenBSD: sdhc.c,v 1.16 2007/01/28 03:03:12 krw Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -788,6 +788,7 @@ sdhc_soft_reset(struct sdhc_host *hp, int mask)
 		if (!ISSET(HREAD1(hp, SDHC_SOFTWARE_RESET), mask))
 			break;
 		sdmmc_delay(10000);
+		HWRITE1(hp, SDHC_SOFTWARE_RESET, 0);
 	}
 	if (timo == 0) {
 		DPRINTF(1,("%s: timeout reg=%#x\n", HDEVNAME(hp),
