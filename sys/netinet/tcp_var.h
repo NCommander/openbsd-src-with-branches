@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.79 2005/11/20 19:25:16 brad Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.80 2005/12/11 17:21:53 deraadt Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -102,7 +102,7 @@ struct tcpcb {
 	struct	timeout t_delack_to;	/* delayed ACK callback */
 /*
  * The following fields are used as in the protocol specification.
- * See RFC783, Dec. 1981, page 21.
+ * See RFC793, Dec. 1981, page 21.
  */
 /* send sequence variables */
 	tcp_seq	snd_una;		/* send unacknowledged */
