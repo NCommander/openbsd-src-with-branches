@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.52 2006/11/07 09:09:42 otto Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.53 2007/01/15 23:19:05 jsg Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -842,6 +842,20 @@ sys_sigreturn(struct proc *p, void *v, register_t *retval)
 	p->p_sigmask = ksc.sc_mask & ~sigcantmask;
 
 	return (EJUSTRETURN);
+}
+
+/*
+ * Notify the current process (p) that it has a signal pending,
+ * process as soon as possible.
+ */
+void
+signotify(struct proc *p)
+{
+	aston(p);
+#ifdef MULTIPROCESSOR
+	if (p->p_cpu != curcpu() && p->p_cpu != NULL)
+		x86_send_ipi(p->p_cpu, X86_IPI_NOP);
+#endif
 }
 
 int	waittime = -1;
