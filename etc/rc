@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.296 2007/01/06 12:00:06 matthieu Exp $
+#	$OpenBSD: rc,v 1.297 2007/01/31 08:32:16 pyr Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -496,7 +496,10 @@ if [ $? -eq 0 ]; then
 	rm -f $T
 fi
 
-if [ -f /var/account/acct ]; then
+if [ X"${accounting}" = X"YES" ]; then
+	if [ ! -f /var/account/acct ]; then
+		touch /var/account/acct
+	fi
 	echo 'turning on accounting';	accton /var/account/acct
 fi
 
