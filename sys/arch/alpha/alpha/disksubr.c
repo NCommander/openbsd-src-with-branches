@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.63 2006/10/21 20:10:39 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.64 2006/10/28 23:26:05 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -306,6 +306,8 @@ donot:
 			if (dp2->dp_typ == DOSPTYP_OPENBSD)
 				continue;
 			if (letoh32(dp2->dp_size) > lp->d_secperunit)
+				continue;
+			if (letoh32(dp2->dp_start) > lp->d_secperunit)
 				continue;
 			if (letoh32(dp2->dp_size) == 0)
 				continue;
