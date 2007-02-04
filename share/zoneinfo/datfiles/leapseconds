@@ -1,5 +1,5 @@
-# $OpenBSD: leapseconds,v 1.12 2005/03/02 12:35:45 millert Exp $
-# @(#)leapseconds	7.20
+# $OpenBSD: leapseconds,v 1.13 2005/07/19 15:48:37 millert Exp $
+# @(#)leapseconds	8.1
 
 # Allowance for leapseconds added to each timezone file.
 
