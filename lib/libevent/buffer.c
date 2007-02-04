@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.11 2006/11/26 15:25:14 brad Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.12 2006/12/21 02:28:47 krw Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Niels Provos <provos@citi.umich.edu>
@@ -434,12 +434,13 @@ evbuffer_find(struct evbuffer *buffer, const u_char *what, size_t len)
 	u_char *search = buffer->buffer;
 	u_char *p;
 
-	while ((p = memchr(search, *what, remain)) != NULL && remain >= len) {
+	while ((p = memchr(search, *what, remain)) != NULL) {
+		remain = buffer->off - (size_t)(search - buffer->buffer);
+		if (remain < len)
+			break;
 		if (memcmp(p, what, len) == 0)
 			return (p);
-
 		search = p + 1;
-		remain = buffer->off - (size_t)(search - buffer->buffer);
 	}
 
 	return (NULL);
