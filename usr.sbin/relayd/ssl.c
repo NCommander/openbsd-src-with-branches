@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.1 2007/01/29 14:23:31 pyr Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.2 2007/01/30 11:48:06 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -39,7 +39,6 @@ void	ssl_read(int, short, void *);
 void	ssl_write(int, short, void *);
 void	ssl_connect(int, short, void *);
 void	ssl_cleanup(struct ctl_tcp_event *);
-void	ssl_error(const char *, const char *);
 
 void
 ssl_read(int s, short event, void *arg)
