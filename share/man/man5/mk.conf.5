@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mk.conf.5,v 1.8 2005/11/23 22:11:48 jmc Exp $
+.\"	$OpenBSD: mk.conf.5,v 1.9 2006/08/26 20:32:00 jmc Exp $
 .\"
 .\" Copyright (c) 2003 Jason McIntyre
 .\"
@@ -216,7 +216,10 @@ uses pipes for the temporary data.
 Compile in support for S/key authentication.
 .Bq yes; set unconditionally
 .It Ev SKIPDIR
-A space separated list of directories to be skipped during "make build".
+A space separated list of directories,
+relative to
+.Ev BSDSRCDIR ,
+to be skipped during "make build".
 .It Ev SUDO
 Command run by
 .Xr make 1
