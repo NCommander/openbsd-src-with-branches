@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.11 2007/01/24 10:26:00 claudio Exp $	*/
+/*	$OpenBSD: hce.c,v 1.12 2007/01/29 14:23:31 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -45,7 +45,6 @@ void	hce_shutdown(void);
 void	hce_dispatch_imsg(int, short, void *);
 void	hce_dispatch_parent(int, short, void *);
 void	hce_launch_checks(int, short, void *);
-int	hce_checks_done(void);
 
 static struct hoststated	*env = NULL;
 struct imsgbuf		*ibuf_pfe;
@@ -205,25 +204,6 @@ hce_launch_checks(int fd, short event, void *arg)
 
 	bcopy(&env->interval, &tv, sizeof(tv));
 	evtimer_add(&env->ev, &tv);
-}
-
-int
-hce_checks_done()
-{
-	struct table		*table;
-	struct host		*host;
-
-	TAILQ_FOREACH(table, &env->tables, entry) {
-		if (table->flags & F_DISABLE)
-			continue;
-		TAILQ_FOREACH(host, &table->hosts, entry) {
-			if (host->flags & F_DISABLE)
-				continue;
-			if (!(host->flags & F_CHECK_DONE))
-				return (0);
-		}
-	}
-	return (1);
 }
 
 void
