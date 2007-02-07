@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.9 2007/01/09 13:50:11 pyr Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.10 2007/01/29 14:23:31 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -98,7 +98,7 @@ init_tables(struct hoststated *env)
 
 	if (ioctl(env->pf->dev, DIOCRADDTABLES, &io) == -1)
 		fatal("init_tables: cannot create tables");
-	log_debug("created %d tables", io.pfrio_nadd);
+	log_debug("init_tables: created %d tables", io.pfrio_nadd);
 
 	free(tables);
 
