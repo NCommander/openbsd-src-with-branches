@@ -1,4 +1,4 @@
-/*	$OpenBSD: repository.c,v 1.8 2007/01/19 23:23:21 joris Exp $	*/
+/*	$OpenBSD: repository.c,v 1.9 2007/01/25 18:56:33 otto Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -119,10 +119,10 @@ cvs_repository_getdir(const char *dir, const char *wdir,
 		/*
 		 * nfs and afs will show d_type as DT_UNKNOWN
 		 * for files and/or directories so when we encounter
-		 * this we call stat() on the path to be sure.
+		 * this we call lstat() on the path to be sure.
 		 */
 		if (dp->d_type == DT_UNKNOWN) {
-			if (stat(rpath, &st) == -1)
+			if (lstat(rpath, &st) == -1)
 				fatal("'%s': %s", rpath, strerror(errno));
 
 			switch (st.st_mode & S_IFMT) {
