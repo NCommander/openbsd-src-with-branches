@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rum.c,v 1.50 2007/01/08 18:53:00 damien Exp $	*/
+/*	$OpenBSD: if_rum.c,v 1.51 2007/02/08 05:25:46 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2005-2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -103,6 +103,7 @@ static const struct usb_devno rum_devs[] = {
 	{ USB_VENDOR_GIGASET,		USB_PRODUCT_GIGASET_RT2573 },
 	{ USB_VENDOR_GOODWAY,		USB_PRODUCT_GOODWAY_RT2573 },
 	{ USB_VENDOR_HUAWEI3COM,	USB_PRODUCT_HUAWEI3COM_WUB320G },
+	{ USB_VENDOR_MELCO,		USB_PRODUCT_MELCO_SG54HP },
 	{ USB_VENDOR_MSI,		USB_PRODUCT_MSI_RT2573_1 },
 	{ USB_VENDOR_MSI,		USB_PRODUCT_MSI_RT2573_2 },
 	{ USB_VENDOR_MSI,		USB_PRODUCT_MSI_RT2573_3 },
