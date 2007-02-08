@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingList.pm,v 1.50 2005/09/19 09:51:01 espie Exp $
+# $OpenBSD: PackingList.pm,v 1.51 2006/11/17 15:34:15 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -378,7 +378,7 @@ sub visit
 	}
 	$visitor->{pass} = 2;
 	while (my $item = shift @{$visitor->{list}}) {
-		$item->method(@l);
+		$item->$method(@l);
 	}
 }
 
