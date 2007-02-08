@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.23 2006/03/09 13:35:02 pedro Exp $	*/
+/*	$OpenBSD: setup.c,v 1.24 2006/04/17 19:18:08 deraadt Exp $	*/
 /*	$NetBSD: setup.c,v 1.27 1996/09/27 22:45:19 christos Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)setup.c	8.5 (Berkeley) 11/23/94";
 #else
-static const char rcsid[] = "$OpenBSD: setup.c,v 1.23 2006/03/09 13:35:02 pedro Exp $";
+static const char rcsid[] = "$OpenBSD: setup.c,v 1.24 2006/04/17 19:18:08 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -58,7 +58,6 @@ static const char rcsid[] = "$OpenBSD: setup.c,v 1.23 2006/03/09 13:35:02 pedro 
 #include "extern.h"
 #include "fsutil.h"
 
-struct bufarea asblk;
 #define altsblock (*asblk.b_un.b_fs)
 #define POWEROF2(num)	(((num) & ((num) - 1)) == 0)
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.26 2005/02/03 05:03:50 jaredy Exp $	*/
+/*	$OpenBSD: main.c,v 1.27 2006/04/17 09:34:16 moritz Exp $	*/
 /*	$NetBSD: main.c,v 1.22 1996/10/11 20:15:48 thorpej Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/23/94";
 #else
-static const char rcsid[] = "$OpenBSD: main.c,v 1.26 2005/02/03 05:03:50 jaredy Exp $";
+static const char rcsid[] = "$OpenBSD: main.c,v 1.27 2006/04/17 09:34:16 moritz Exp $";
 #endif
 #endif /* not lint */
 
@@ -309,8 +309,14 @@ checkfilesys(char *filesys, char *mntpt, long auxdata, int child)
 	blockmap = NULL;
 	free(statemap);
 	statemap = NULL;
+	free(typemap);
+	typemap = NULL;
 	free(lncntp);
 	lncntp = NULL;
+	free(sblock.fs_csp);
+	free(sblk.b_un.b_buf);
+	free(asblk.b_un.b_buf);
+
 	if (!fsmodified)
 		return (0);
 	if (!preen)
