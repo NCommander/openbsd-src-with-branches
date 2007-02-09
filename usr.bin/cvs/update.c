@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.93 2007/02/09 03:49:15 joris Exp $	*/
+/*	$OpenBSD: update.c,v 1.94 2007/02/09 08:00:37 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -218,7 +218,7 @@ cvs_update_leavedir(struct cvs_file *cf)
 			dp = (struct dirent *)cp;
 			if (!strcmp(dp->d_name, ".") ||
 			    !strcmp(dp->d_name, "..") ||
-			    dp->d_reclen == 0) {
+			    dp->d_fileno == 0) {
 				cp += dp->d_reclen;
 				continue;
 			}
