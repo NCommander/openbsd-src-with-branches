@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.27 2006/11/21 14:57:00 stevesk Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.28 2006/12/18 01:08:58 stevesk Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -321,6 +321,9 @@ got_response(struct protocol *l)
 		    inet_ntoa(sp->to.sin_addr));
 		return;
 	}
+	if (result == -1 && errno == ECONNREFUSED)
+		return;
+
 	if (result == 0)
 		return;
 
