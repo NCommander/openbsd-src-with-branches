@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.17 2004/02/25 23:36:11 drahn Exp $	*/
+/*	$OpenBSD: util.c,v 1.18 2004/06/14 15:07:36 millert Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -66,7 +66,6 @@ _dl_strdup(const char *orig)
 	return (newstr);
 }
 
-#define	_dl_round_page(x)	(((x) + (__LDPGSZ - 1)) & ~(__LDPGSZ - 1))
 
 /*
  * The following malloc/free code is a very simplified implementation
