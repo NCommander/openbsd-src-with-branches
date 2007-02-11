@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_core.c,v 1.19 2006/01/20 18:14:17 millert Exp $	*/
+/*	$OpenBSD: bktr_core.c,v 1.20 2006/12/29 13:04:37 pedro Exp $	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_core.c,v 1.114 2000/10/31 13:09:56 roger Exp $ */
 
 /*
@@ -94,10 +94,6 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef __OpenBSD__
-#include "opt_bktr.h"		/* Include any kernel config options */
-#endif
 
 #ifdef __FreeBSD__
 #include "bktr.h"

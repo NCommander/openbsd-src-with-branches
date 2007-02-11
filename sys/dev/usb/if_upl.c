@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upl.c,v 1.24 2006/03/25 22:41:47 djm Exp $ */
+/*	$OpenBSD: if_upl.c,v 1.25 2006/06/23 06:27:11 miod Exp $ */
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -40,12 +40,6 @@
 /*
  * Prolific PL2301/PL2302 driver
  */
-
-#if defined(__NetBSD__)
-#include "opt_inet.h"
-#include "opt_ns.h"
-#include "rnd.h"
-#endif
 
 #include "bpfilter.h"
 

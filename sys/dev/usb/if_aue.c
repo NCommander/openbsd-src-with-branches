@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_aue.c,v 1.48 2006/06/23 06:27:11 miod Exp $ */
+/*	$OpenBSD: if_aue.c,v 1.49 2006/09/26 12:23:40 jsg Exp $ */
 /*	$NetBSD: if_aue.c,v 1.82 2003/03/05 17:37:36 shiba Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -76,12 +76,6 @@
  * investigate short rx problem
  * proper cleanup on errors
  */
-
-#if defined(__NetBSD__)
-#include "opt_inet.h"
-#include "opt_ns.h"
-#include "rnd.h"
-#endif
 
 #include "bpfilter.h"
 

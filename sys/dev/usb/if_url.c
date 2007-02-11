@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_url.c,v 1.32 2006/06/23 06:27:11 miod Exp $ */
+/*	$OpenBSD: if_url.c,v 1.33 2006/07/14 23:07:26 brad Exp $ */
 /*	$NetBSD: if_url.c,v 1.6 2002/09/29 10:19:21 martin Exp $	*/
 /*
  * Copyright (c) 2001, 2002
@@ -42,12 +42,6 @@
  *	External PHYs
  *	powerhook() support?
  */
-
-#if defined(__NetBSD__)
-#include "opt_inet.h"
-#include "opt_ns.h"
-#include "rnd.h"
-#endif
 
 #include "bpfilter.h"
 
