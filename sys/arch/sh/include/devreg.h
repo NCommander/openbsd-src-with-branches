@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: devreg.h,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
 /*	$NetBSD: devreg.h,v 1.5 2006/01/21 04:57:07 uwe Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #ifndef _SH_DEVREG_H_
 #define	_SH_DEVREG_H_
 /*
- * SH embeded device register defines.
+ * SH embedded device register defines.
  */
 
 /*
