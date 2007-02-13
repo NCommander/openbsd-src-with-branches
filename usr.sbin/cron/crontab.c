@@ -1,4 +1,4 @@
-/*	$OpenBSD: crontab.c,v 1.48 2005/01/30 21:00:31 millert Exp $	*/
+/*	$OpenBSD: crontab.c,v 1.49 2005/11/29 20:43:31 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -21,7 +21,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-static char const rcsid[] = "$OpenBSD: crontab.c,v 1.48 2005/01/30 21:00:31 millert Exp $";
+static char const rcsid[] = "$OpenBSD: crontab.c,v 1.49 2005/11/29 20:43:31 millert Exp $";
 
 /* crontab - install and manage per-user crontab files
  * vix 02may87 [RCS has the rest of the log]
@@ -319,7 +319,7 @@ edit_cmd(void) {
 	(void)signal(SIGINT, SIG_IGN);
 	(void)signal(SIGQUIT, SIG_IGN);
 
-	if (snprintf(Filename, sizeof Filename, "%s/crontab.XXXXXXXXXX",
+	if (snprintf(Filename, sizeof Filename, "%scrontab.XXXXXXXXXX",
 	    _PATH_TMP) >= sizeof(Filename)) {
 		fprintf(stderr, "path too long\n");
 		goto fatal;
