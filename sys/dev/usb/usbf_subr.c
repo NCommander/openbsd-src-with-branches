@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbf_subr.c,v 1.1 2006/11/25 18:10:29 uwe Exp $	*/
+/*	$OpenBSD: usbf_subr.c,v 1.2 2007/02/07 16:26:49 drahn Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -58,7 +58,7 @@ usbf_errstr(usbf_status err)
 {
 	static char buffer[5];
 
-	if (err < USBD_ERROR_MAX)
+	if (err < USBF_ERROR_MAX)
 		return usbf_error_strs[err];
 
 	snprintf(buffer, sizeof buffer, "%d", err);
