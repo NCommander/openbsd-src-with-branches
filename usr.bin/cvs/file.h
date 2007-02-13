@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.40 2007/01/10 21:32:19 xsa Exp $	*/
+/*	$OpenBSD: file.h,v 1.41 2007/02/09 03:49:15 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -75,12 +75,6 @@ struct cvs_recursion;
 
 #define CVS_DIR		1
 #define CVS_FILE	2
-
-#define CVS_ISDIR(cf)	\
-	((cf)->file_type == CVS_DIR)
-
-#define CVS_ISFILE(cf)	\
-	((cf)->file_type == CVS_FILE)
 
 TAILQ_HEAD(cvs_flist, cvs_file);
 
