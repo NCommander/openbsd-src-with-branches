@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.106 2007/01/27 22:05:24 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.107 2007/01/29 13:12:56 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -357,7 +357,8 @@ main(int argc, char *argv[])
 		priv_script_write_params("alias_", client->alias);
 	priv_script_go();
 
-	routefd = socket(PF_ROUTE, SOCK_RAW, 0);
+	if ((routefd = socket(PF_ROUTE, SOCK_RAW, 0)) == -1)
+		error("socket(PF_ROUTE, SOCK_RAW): %m");
 
 	/* set up the interface */
 	discover_interface();
