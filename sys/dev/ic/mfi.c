@@ -703,8 +703,8 @@ mfi_despatch_cmd(struct mfi_ccb *ccb)
 	DNPRINTF(MFI_D_CMD, "%s: mfi_despatch_cmd\n",
 	    DEVNAME(ccb->ccb_sc));
 
-	mfi_write(ccb->ccb_sc, MFI_IQP, htole32((ccb->ccb_pframe >> 3) |
-	    ccb->ccb_extra_frames));
+	mfi_write(ccb->ccb_sc, MFI_IQP, (ccb->ccb_pframe >> 3) |
+	    ccb->ccb_extra_frames);
 
 	return(0);
 }
