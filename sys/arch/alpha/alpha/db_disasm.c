@@ -1,4 +1,4 @@
-/* $OpenBSD: db_disasm.c,v 1.17 2003/05/10 21:11:11 deraadt Exp $ */
+/* $OpenBSD: db_disasm.c,v 1.18 2006/02/26 22:26:16 miod Exp $ */
 /* $NetBSD: db_disasm.c,v 1.8 2000/05/25 19:57:30 jhawk Exp $ */
 
 /* 
@@ -1021,7 +1021,7 @@ foperate:
 	case op_sts:
 	case op_stt:
 		fstore = TRUE;
-		/* fall through */
+		/* FALLTHROUGH */
 	case op_ldl:
 	case op_ldq:
 	case op_ldl_l:

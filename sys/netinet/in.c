@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.44 2006/03/05 21:48:56 miod Exp $	*/
+/*	$OpenBSD: in.c,v 1.45 2007/01/02 11:41:28 markus Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -234,7 +234,7 @@ in_control(so, cmd, data, ifp)
 	case SIOCDLIFADDR:
 		if ((so->so_state & SS_PRIV) == 0)
 			return (EPERM);
-		/*fall through*/
+		/* FALLTHROUGH */
 	case SIOCGLIFADDR:
 		if (!ifp)
 			return EINVAL;

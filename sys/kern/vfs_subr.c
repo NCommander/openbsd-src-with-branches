@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.135 2006/11/20 12:52:54 tom Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.136 2007/02/13 17:04:14 mickey Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -2178,7 +2178,7 @@ reassignbuf(struct buf *bp)
 					delay = syncdelay / 3;
 					break;
 				}
-				/* fall through */
+				/* FALLTHROUGH */
 			default:
 				delay = syncdelay;
 			}

@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.112 2006/11/24 13:52:14 reyk Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.113 2007/01/18 20:00:19 henning Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -1374,7 +1374,7 @@ pfkeyv2_send(struct socket *socket, void *message, int len)
 					ipsec_delete_policy(ipo);
 			}
 			splx(s);
-			/* Fall through */
+			/* FALLTHROUGH */
 		case SADB_SATYPE_AH:
 		case SADB_SATYPE_ESP:
 		case SADB_X_SATYPE_IPIP:

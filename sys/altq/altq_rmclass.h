@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_rmclass.h,v 1.7 2003/08/20 12:33:17 henning Exp $	*/
+/*	$OpenBSD: altq_rmclass.h,v 1.8 2003/08/22 21:50:34 david Exp $	*/
 /*	$KAME: altq_rmclass.h,v 1.6 2000/12/09 09:22:44 kjc Exp $	*/
 
 /*
@@ -86,10 +86,10 @@ struct red;
 			/* if (xxs < 0) \
 				printf("rm_class: bogus time values\n"); */ \
 			delta = 0; \
-			/* fall through */ \
+			/* FALLTHROUGH */ \
 		case 2: \
 			delta += 1000000; \
-			/* fall through */ \
+			/* FALLTHROUGH */ \
 		case 1: \
 			delta += 1000000; \
 			break; \

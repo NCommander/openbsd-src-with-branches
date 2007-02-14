@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.30 2006/05/27 23:40:27 claudio Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.31 2006/12/09 01:12:28 itojun Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -639,7 +639,7 @@ rip6_usrreq(so, req, m, nam, control, p)
 
 	case PRU_ABORT:
 		soisdisconnected(so);
-		/* Fallthrough */
+		/* FALLTHROUGH */
 	case PRU_DETACH:
 		if (in6p == 0)
 			panic("rip6_detach");

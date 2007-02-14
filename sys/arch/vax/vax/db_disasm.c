@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.13 2003/11/07 10:16:45 jmc Exp $ */
+/*	$OpenBSD: db_disasm.c,v 1.14 2006/01/11 22:49:52 miod Exp $ */
 /*	$NetBSD: db_disasm.c,v 1.10 1998/04/13 12:10:27 ragge Exp $ */
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -345,7 +345,7 @@ get_operand(ib, size)
 			add_off(ib, tmp);
 			break;
 		}
-		/* fall through */
+		/* FALLTHROUGH */
 	case 8:		/* autoincrement */
 		if (reg == 0x0F) {	/* pc: immediate ==> special syntax */
 			switch (size) {
