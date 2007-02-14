@@ -1,4 +1,4 @@
-$*	$OpenBSD$	*/
+/*	$OpenBSD: disknames.c,v 1.3 2007/02/14 23:02:03 krw Exp $	*/
 
 /*
  * Copyright (c) 2007 Kenneth R. Westerback <krw@openbsd.org>
