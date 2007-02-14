@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay_compat_usl.c,v 1.17 2006/07/29 12:52:40 miod Exp $ */
+/* $OpenBSD: wsdisplay_compat_usl.c,v 1.18 2006/10/16 15:51:26 tom Exp $ */
 /* $NetBSD: wsdisplay_compat_usl.c,v 1.12 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -429,7 +429,7 @@ wsdisplay_usl_ioctl2(sc, scr, cmd, data, flag, p)
 	    case KDENABIO:
 		if (suser(p, 0) || securelevel > 0)
 			return (EPERM);
-		/* FALLTHRU */
+		/* FALLTHROUGH */
 	    case KDDISABIO:
 #if defined(COMPAT_FREEBSD)
 		{

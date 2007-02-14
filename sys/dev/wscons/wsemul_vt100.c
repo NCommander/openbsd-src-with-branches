@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_vt100.c,v 1.16 2007/01/07 13:28:50 miod Exp $ */
+/* $OpenBSD: wsemul_vt100.c,v 1.17 2007/01/07 13:31:36 miod Exp $ */
 /* $NetBSD: wsemul_vt100.c,v 1.13 2000/04/28 21:56:16 mycroft Exp $ */
 
 /*
@@ -506,7 +506,7 @@ wsemul_vt100_output_esc(edp, c)
 		break;
 	case 'E': /* NEL */
 		edp->ccol = 0;
-		/* FALLTHRU */
+		/* FALLTHROUGH */
 	case 'D': /* IND */
 		wsemul_vt100_nextline(edp);
 		break;
