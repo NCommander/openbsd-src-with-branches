@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.12 2005/10/07 13:19:40 pedro Exp $ */
+/*	$OpenBSD: privsep.c,v 1.13 2007/02/14 23:19:26 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -76,8 +76,10 @@ buf_read(int sock, void *buf, size_t nbytes)
 
 	do {
 		n = read(sock, buf, nbytes);
-		if (n == 0)			/* connection closed */
-			error("buf_read (connection closed)");
+		if (n == 0) {			/* connection closed */
+			debug("buf_read (connection closed)");
+			exit(1);
+		}
 		if (n != -1 && n < nbytes)
 			error("buf_read (short read): %m");
 	} while (n == -1 && (errno == EINTR || errno == EAGAIN));
