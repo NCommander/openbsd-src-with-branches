@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.116 2007/01/04 21:31:21 markus Exp $	*/
+/*	$OpenBSD: parse.y,v 1.117 2007/01/10 14:37:09 markus Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1041,10 +1041,8 @@ top:
 				*p = '\0';
 				break;
 			}
-			if (c == '\n') {
-				lineno++;
-				continue;
-			}
+			if (c == '\n')
+				return (0);
 			if (p + 1 >= buf + sizeof(buf) - 1) {
 				yyerror("string too long");
 				return (findeol());
