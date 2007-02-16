@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2004/02/28 04:53:30 jolan Exp $
+#	$OpenBSD: Makefile,v 1.27 2006/12/25 01:25:39 deraadt Exp $
 
 REV=		${OSrev}
 
@@ -95,7 +95,7 @@ bsd.rd:	bsd ${IMAGE} ${RDSETROOT}
 	${STRIP} bsd.rd
 
 bsd.gz:	bsd.rd
-	${GZIP} ${GZIPFLAGS} < bsd.rd > bsd.gz
+	${GZIPCMD} ${GZIPFLAGS} < bsd.rd > bsd.gz
 
 ${RDSETROOT}: ${.CURDIR}/../common/${RDSETROOT}.c
 	${HOSTCC} ${HOSTCCFLAGS} -o ${RDSETROOT} ${.CURDIR}/../common/${RDSETROOT}.c

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.19 2005/11/22 23:10:56 miod Exp $
+#	$OpenBSD: Makefile,v 1.20 2006/02/15 22:00:59 pvalchev Exp $
 #	$NetBSD: Makefile,v 1.1 1995/07/18 04:13:06 briggs Exp $
 
 TOP=		${.CURDIR}/..
@@ -17,13 +17,13 @@ VND_CRDEV=	/dev/r${VND}c
 PID!=		echo $$$$
 REALIMAGE!=	echo /var/tmp/image.${PID}
 
-GZIP?=		gzip
+GZIPCMD?=	gzip
 GZIPFLAGS?=	-9f
 
 all: ${CBIN} ${IMAGE} bsd.rd
 
 install: bsd.rd
-	${GZIP} -c ${GZIPFLAGS} bsd.rd > ${DESTDIR}/snapshot/bsd.rd
+	${GZIPCMD} -c ${GZIPFLAGS} bsd.rd > ${DESTDIR}/snapshot/bsd.rd
 
 .include "Makefile.inc"
 

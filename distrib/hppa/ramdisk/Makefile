@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2005/03/11 15:40:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2005/03/25 22:03:10 mickey Exp $
 
 CBIN=		instbin
 ARCHDIR=	${.CURDIR}/..
@@ -35,7 +35,7 @@ BOOT?=		${DESTDIR}/usr/mdec/boot
 CDBOOT?=	${DESTDIR}/usr/mdec/cdboot
 
 STRIP?=		strip
-GZIP?=		gzip
+GZIPCMD?=	gzip
 GZIPFLAGS?=	-9
 
 # old format, minfree, opt, b/i  trks, sects, cpg
@@ -74,7 +74,7 @@ bsd.rd:	obsd ${IMAGE} ${RDSETROOT}
 	@${STRIP} bsd.rd
 
 bsd:	bsd.rd
-	${GZIP} ${GZIPFLAGS} < bsd.rd > bsd
+	${GZIPCMD} ${GZIPFLAGS} < bsd.rd > bsd
 
 ${RDSETROOT}: ${.CURDIR}/../../common/${RDSETROOT}.c
 	${HOSTCC} ${HOSTCCFLAGS} -o ${RDSETROOT} $<
