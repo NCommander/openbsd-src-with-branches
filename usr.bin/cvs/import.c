@@ -1,4 +1,4 @@
-/*	$OpenBSD: import.c,v 1.68 2007/02/01 11:06:25 xsa Exp $	*/
+/*	$OpenBSD: import.c,v 1.69 2007/02/09 03:49:15 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -128,9 +128,8 @@ cvs_import(int argc, char **argv)
 		return (0);
 	}
 
-	if (cvs_path_cat(current_cvsroot->cr_dir, import_repository,
-	    repo, sizeof(repo)) >= sizeof(repo))
-		fatal("cvs_import: truncation");
+	(void)xsnprintf(repo, sizeof(repo), "%s/%s",
+	    current_cvsroot->cr_dir, import_repository);
 
 	if (cvs_noexec != 1) {
 		if (mkdir(repo, 0755) == -1 && errno != EEXIST)
