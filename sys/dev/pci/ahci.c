@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.36 2007/01/04 12:14:51 dlg Exp $ */
+/*	$OpenBSD: ahci.c,v 1.40 2007/02/14 04:36:53 dlg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -520,12 +520,17 @@ ahci_init(struct ahci_softc *sc)
 	u_int32_t			reg;
 	const char			*revision;
 
-	/* reset the controller */
-	ahci_write(sc, AHCI_REG_GHC, AHCI_REG_GHC_HR);
-	if (ahci_wait_ne(sc, AHCI_REG_GHC, AHCI_REG_GHC_HR,
-	    AHCI_REG_GHC_HR) != 0) {
-		printf(": unable to reset controller\n");
-		return (1);
+	DPRINTF(AHCI_D_VERBOSE, " GHC 0x%b", ahci_read(sc, AHCI_REG_GHC),
+	    AHCI_FMT_GHC);
+
+	if (ISSET(AHCI_REG_GHC_AE, ahci_read(sc, AHCI_REG_GHC))) {
+		/* reset the controller */
+		ahci_write(sc, AHCI_REG_GHC, AHCI_REG_GHC_HR);
+		if (ahci_wait_ne(sc, AHCI_REG_GHC, AHCI_REG_GHC_HR,
+		    AHCI_REG_GHC_HR) != 0) {
+			printf(": unable to reset controller\n");
+			return (1);
+		}
 	}
 
 	/* enable ahci */
