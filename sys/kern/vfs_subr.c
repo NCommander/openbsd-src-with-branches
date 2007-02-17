@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.136 2007/02/13 17:04:14 mickey Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.135 2006/11/20 12:52:54 tom Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -2275,9 +2275,9 @@ void
 vfs_buf_print(struct buf *bp, int full, int (*pr)(const char *, ...))
 {
 
-	(*pr)("  vp %p lblkno 0x%x blkno 0x%x dev 0x%x\n"
+	(*pr)("  vp %p lblkno 0x%llx blkno 0x%llx dev 0x%x\n"
 	      "  proc %p error %d flags %b\n",
-	    bp->b_vp, bp->b_lblkno, bp->b_blkno, bp->b_dev,
+	    bp->b_vp, (int64_t)bp->b_lblkno, (int64_t)bp->b_blkno, bp->b_dev,
 	    bp->b_proc, bp->b_error, bp->b_flags, B_BITS);
 
 	(*pr)("  bufsize 0x%lx bcount 0x%lx resid 0x%lx sync 0x%x\n"
