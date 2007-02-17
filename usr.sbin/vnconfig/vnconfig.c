@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnconfig.c,v 1.22 2007/02/02 08:54:43 grunk Exp $	*/
+/*	$OpenBSD: vnconfig.c,v 1.23 2007/02/08 16:21:09 grunk Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -131,7 +131,8 @@ main(int argc, char **argv)
 			if (opt_K)
 				errx(1, "-k and -K are mutually exclusive");
 			key = getpass("Encryption key: ");
-			keylen = strlen(key);
+			if (key == NULL || (keylen = strlen(key)) == 0)
+				errx(1, "Need an encryption key");
 		} else if (opt_K) {
 			key = get_pkcs_key(rounds, saltopt);
 			keylen = 128;
