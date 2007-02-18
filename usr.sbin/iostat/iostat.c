@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.23 2006/03/13 19:31:07 otto Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.24 2006/03/30 23:48:39 deraadt Exp $	*/
 /*	$NetBSD: iostat.c,v 1.10 1996/10/25 18:21:58 scottr Exp $	*/
 
 /*
@@ -335,7 +335,7 @@ static void
 usage(void)
 {
 	(void)fprintf(stderr,
-"usage: iostat [-CdDIT] [-c count] [-M core] [-N system] [-w wait] [drives]\n");
+"usage: iostat [-CDdIT] [-c count] [-M core] [-N system] [-w wait] [drives]\n");
 	exit(1);
 }
 
