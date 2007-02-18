@@ -1,4 +1,4 @@
-/*	$OpenBSD: trpt.c,v 1.21 2005/05/03 03:41:11 djm Exp $	*/
+/*	$OpenBSD: trpt.c,v 1.22 2006/03/13 16:30:18 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -447,7 +447,7 @@ void
 usage(void)
 {
 
-	(void) fprintf(stderr, "usage: %s [-afjst] [-p hex-address]"
-	    " [-N system] [-M core]\n", __progname);
+	(void) fprintf(stderr, "usage: %s [-afjst] [-M core]"
+	    " [-N system] [-p hex-address]\n", __progname);
 	exit(1);
 }
