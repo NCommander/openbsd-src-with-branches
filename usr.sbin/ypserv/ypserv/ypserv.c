@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.33 2005/09/16 23:55:04 deraadt Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.34 2006/04/03 05:01:24 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: ypserv.c,v 1.33 2005/09/16 23:55:04 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ypserv.c,v 1.34 2006/04/03 05:01:24 deraadt Exp $";
 #endif
 
 #include <sys/types.h>
@@ -382,7 +382,7 @@ my_svc_run(void)
 static void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: ypserv [-a aclfile] [-d] [-x]\n");
+	(void)fprintf(stderr, "usage: ypserv [-1dx] [-a aclfile]\n");
 	exit(1);
 }
 
