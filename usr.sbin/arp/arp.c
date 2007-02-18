@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.37 2006/04/18 22:11:49 moritz Exp $ */
+/*	$OpenBSD: arp.c,v 1.38 2006/05/26 09:00:57 jmc Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -189,7 +189,7 @@ file(char *name)
 	args[3] = &arg[3][0];
 	args[4] = &arg[4][0];
 	retval = 0;
-	while (fgets(line, 100, fp) != NULL) {
+	while (fgets(line, sizeof(line), fp) != NULL) {
 		i = sscanf(line, "%49s %49s %49s %49s %49s", arg[0], arg[1],
 		    arg[2], arg[3], arg[4]);
 		if (i < 2) {
