@@ -13,3 +13,5 @@ file	dev/ata/wd.c				wd needs-flag
 file	dev/ata/ata_wdc.c			wd & wdc_base
 
 file	dev/ata/ata.c				(ata | atapi) & wdc_base
+
+file	dev/ata/atascsi.c			atascsi
