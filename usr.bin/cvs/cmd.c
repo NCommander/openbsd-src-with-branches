@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.54 2006/11/14 09:47:52 xsa Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.55 2006/11/27 14:19:53 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -95,7 +95,7 @@ cvs_findcmd(const char *cmd)
 }
 
 struct cvs_cmd *
-cvs_findcmdbyreq(int reqid)
+cvs_findcmdbyreq(u_int reqid)
 {
 	int i;
 	struct cvs_cmd *cmdp;
