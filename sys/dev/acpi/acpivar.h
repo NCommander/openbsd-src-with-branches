@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.33 2006/12/26 23:58:08 marco Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.34 2007/01/31 23:30:51 gwk Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -219,6 +219,10 @@ struct acpi_table {
 #define	ACPI_EVENT_INDEX(e)	((e) >> 16)
 
 #if defined(_KERNEL)
+struct   acpi_gas;
+int	 acpi_map_address(struct acpi_softc *, struct acpi_gas *, bus_addr_t, bus_size_t,
+			  bus_space_handle_t *, bus_space_tag_t *);
+
 int	 acpi_map(paddr_t, size_t, struct acpi_mem_map *);
 void	 acpi_unmap(struct acpi_mem_map *);
 int	 acpi_probe(struct device *, struct cfdata *, struct acpi_attach_args *);
