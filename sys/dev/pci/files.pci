@@ -80,7 +80,7 @@ attach	arc at pci
 file	dev/pci/arc.c			arc
 
 # Advanced Host Controller Interface for Serial ATA
-device	ahci
+device	ahci: scsi, atascsi
 attach	ahci at pci
 file	dev/pci/ahci.c			ahci
 
