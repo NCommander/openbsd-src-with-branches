@@ -1,4 +1,4 @@
-/* $OpenBSD: parse_netgroup.c,v 1.9 2003/07/15 06:10:46 deraadt Exp $ */
+/* $OpenBSD: parse_netgroup.c,v 1.10 2006/04/03 05:01:23 deraadt Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -47,7 +47,7 @@
 #include "hash.h"
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: parse_netgroup.c,v 1.9 2003/07/15 06:10:46 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: parse_netgroup.c,v 1.10 2006/04/03 05:01:23 deraadt Exp $";
 #endif
 
 /*
@@ -335,7 +335,7 @@ read_for_group(char *group)
 				}
 #ifdef CANT_HAPPEN
 				if (cont) {
-					if (fgets(line, LINSIZ, netf)) {
+					if (fgets(line, sizeof(line), netf)) {
 						pos = line;
 						len = strlen(pos);
 					} else

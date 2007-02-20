@@ -1,4 +1,4 @@
-/*	$OpenBSD: optr.c,v 1.27 2003/07/29 18:38:35 deraadt Exp $	*/
+/*	$OpenBSD: optr.c,v 1.28 2004/11/04 20:10:07 deraadt Exp $	*/
 /*	$NetBSD: optr.c,v 1.11 1997/05/27 08:34:36 mrg Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)optr.c	8.2 (Berkeley) 1/6/94";
 #else
-static const char rcsid[] = "$OpenBSD: optr.c,v 1.27 2003/07/29 18:38:35 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: optr.c,v 1.28 2004/11/04 20:10:07 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -92,7 +92,7 @@ query(char *question)
 	back = -1;
 	errcount = 0;
 	do {
-		if (fgets(replybuffer, 63, mytty) == NULL) {
+		if (fgets(replybuffer, sizeof(replybuffer), mytty) == NULL) {
 			clearerr(mytty);
 			if (++errcount > 30)	/* XXX	ugly */
 				quit("excessive operator query failures\n");
