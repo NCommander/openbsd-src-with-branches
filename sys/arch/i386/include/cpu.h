@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.85 2006/12/20 17:50:40 gwk Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.86 2006/12/24 20:30:35 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -419,10 +419,6 @@ int	kvtop(caddr_t);
 /* vm86.c */
 void	vm86_gpfault(struct proc *, int);
 #endif /* VM86 */
-
-#ifndef SMALL_KERNEL
-int	cpu_paenable(void *);
-#endif /* !SMALL_KERNEL */
 
 #ifdef GENERIC
 /* swapgeneric.c */

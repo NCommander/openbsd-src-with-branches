@@ -86,9 +86,9 @@ typedef __int32_t		__register_t;
 
 /* VM system types */
 typedef unsigned long		__vaddr_t;
+typedef unsigned long		__paddr_t;
 typedef unsigned long		__vsize_t;
-typedef unsigned long long	__paddr_t;
-typedef unsigned long long	__psize_t;
+typedef unsigned long		__psize_t;
 
 /* Standard system types */
 typedef int			__clock_t;

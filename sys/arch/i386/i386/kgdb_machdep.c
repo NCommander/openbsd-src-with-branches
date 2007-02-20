@@ -1,4 +1,4 @@
-/*	$OpenBSD: kgdb_machdep.c,v 1.6 2006/05/11 13:21:11 mickey Exp $	*/
+/*	$OpenBSD: kgdb_machdep.c,v 1.4 2005/11/13 17:50:44 fgsch Exp $	*/
 /*	$NetBSD: kgdb_machdep.c,v 1.6 1998/08/13 21:36:03 thorpej Exp $	*/
 
 /*-
@@ -95,13 +95,15 @@ int
 kgdb_acc(vaddr_t va, size_t len)
 {
 	vaddr_t last_va;
+	pt_entry_t *pte;
 
 	last_va = va + len;
 	va  &= ~PGOFSET;
 	last_va &= ~PGOFSET;
 
 	do {
-		if ((pmap_pte_bits(va) & PG_V) == 0)
+		pte = kvtopte(va);
+		if ((*pte & PG_V) == 0)
 			return (0);
 		va  += NBPG;
 	} while (va < last_va);

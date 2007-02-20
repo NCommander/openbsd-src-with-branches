@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcibios.c,v 1.34 2006/09/19 11:06:34 jsg Exp $	*/
+/*	$OpenBSD: pcibios.c,v 1.35 2006/11/29 22:40:13 miod Exp $	*/
 /*	$NetBSD: pcibios.c,v 1.5 2000/08/01 05:23:59 uch Exp $	*/
 
 /*
@@ -266,7 +266,7 @@ pcibios_pir_init(struct pcibios_softc *sc)
 		for (i = 0; i < pirh->tablesize; i++)
 			cksum += p[i];
 
-		printf("%s: PCI IRQ Routing Table rev %d.%d @ 0x%llx/%d "
+		printf("%s: PCI IRQ Routing Table rev %d.%d @ 0x%lx/%d "
 		    "(%d entries)\n", sc->sc_dev.dv_xname,
 		    pirh->version >> 8, pirh->version & 0xff, pa,
 		    pirh->tablesize, (pirh->tablesize - sizeof(*pirh)) / 16);
