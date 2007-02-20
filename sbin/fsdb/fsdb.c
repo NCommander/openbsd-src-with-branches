@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdb.c,v 1.17 2003/10/31 08:44:07 otto Exp $	*/
+/*	$OpenBSD: fsdb.c,v 1.18 2004/03/19 14:16:01 aaron Exp $	*/
 /*	$NetBSD: fsdb.c,v 1.7 1997/01/11 06:50:53 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: fsdb.c,v 1.17 2003/10/31 08:44:07 otto Exp $";
+static const char rcsid[] = "$OpenBSD: fsdb.c,v 1.18 2004/03/19 14:16:01 aaron Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -86,7 +86,7 @@ ino_t curinum;
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-d] -f <fsname>\n", __progname);
+	fprintf(stderr, "usage: %s [-d] -f fsname\n", __progname);
 	exit(1);
 }
 
