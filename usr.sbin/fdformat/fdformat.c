@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.15 2006/08/07 18:20:57 miod Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.16 2007/02/19 21:32:35 jmc Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -158,12 +158,11 @@ usage(void)
 static int
 yes(void)
 {
-	char reply [256], *p;
+	char reply[256], *p;
 
-	reply[sizeof(reply)-1] = 0;
 	for (;;) {
 		fflush(stdout);
-		if (! fgets (reply, sizeof(reply)-1, stdin))
+		if (!fgets(reply, sizeof(reply), stdin))
 			return (0);
 		for (p=reply; *p==' ' || *p=='\t'; ++p)
 			continue;
