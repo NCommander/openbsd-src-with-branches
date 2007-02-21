@@ -45,7 +45,19 @@ NR == 1 {
 	printf(" *\n") > dfile
 	printf(" * generated from:\n") > dfile
 	printf(" *\t%s\n", VERSION) > dfile
-	printf(" */\n") > dfile
+	printf(" */\n\n") > dfile
+
+	printf("/* Descriptions of known vendors and devices. */\n") > dfile
+	printf("struct pci_known_vendor {\n") > dfile
+	printf("\tpci_vendor_id_t vendor;\n") > dfile
+	printf("\tconst char *vendorname;\n") > dfile
+	printf("};\n\n") > dfile
+
+	printf("struct pci_known_product {\n") > dfile
+	printf("\tpci_vendor_id_t vendor;\n") > dfile
+	printf("\tpci_product_id_t product;\n") > dfile
+	printf("\tconst char *productname;\n") > dfile
+	printf("};\n\n") > dfile
 
 	printf("/*\n") > hfile
 	printf(" * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.\n") \
