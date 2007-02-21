@@ -1,4 +1,4 @@
-/*	$OpenBSD: blf.h,v 1.4 2002/03/14 01:26:51 millert Exp $	*/
+/*	$OpenBSD: blf.h,v 1.5 2002/07/02 19:38:54 nate Exp $	*/
 
 /*
  * Blowfish - a fast block cipher designed by Bruce Schneier
@@ -44,6 +44,7 @@
 
 #define BLF_N	16			/* Number of Subkeys */
 #define BLF_MAXKEYLEN ((BLF_N-2)*4)	/* 448 bits */
+#define BLF_MAXUTILIZED ((BLF_N+2)*4)	/* 576 bits */
 
 /* Blowfish context */
 typedef struct BlowfishContext {
