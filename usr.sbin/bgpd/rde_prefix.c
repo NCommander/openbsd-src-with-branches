@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_prefix.c,v 1.22 2006/01/03 22:49:17 claudio Exp $ */
+/*	$OpenBSD: rde_prefix.c,v 1.23 2007/01/26 17:40:49 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -402,7 +402,7 @@ pt_restart(struct pt_context *ctx)
 	 */
 	if (comp < 0)
 		return (prev);
-	
+
 	/* backtrack until parent is bigger */
 	do {
 		prev = RB_PARENT(prev, pt_e);
