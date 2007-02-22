@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.h,v 1.6 2007/02/02 04:24:09 ray Exp $	*/
+/*	$OpenBSD: buf.h,v 1.7 2007/02/16 03:00:52 ray Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -57,5 +57,5 @@ size_t		 rcs_buf_len(BUF *);
 int		 rcs_buf_write_fd(BUF *, int);
 int		 rcs_buf_write(BUF *, const char *, mode_t);
 void		 rcs_buf_write_stmp(BUF *, char *);
-void		*rcs_buf_get(BUF *b);
+u_char		*rcs_buf_get(BUF *b);
 #endif	/* BUF_H */
