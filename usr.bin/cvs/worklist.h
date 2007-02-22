@@ -1,4 +1,4 @@
-/*	$OpenBSD: worklist.h,v 1.4 2006/04/10 19:49:44 joris Exp $	*/
+/*	$OpenBSD: worklist.h,v 1.5 2006/05/27 03:30:31 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -26,6 +26,8 @@
 
 #ifndef WORKLIST_H
 #define WORKLIST_H
+
+#include <sys/param.h>
 
 struct cvs_worklist {
 	char					wkl_path[MAXPATHLEN];

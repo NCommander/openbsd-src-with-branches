@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsnum.c,v 1.40 2006/11/13 18:42:40 xsa Exp $	*/
+/*	$OpenBSD: rcsnum.c,v 1.41 2007/02/21 04:09:54 ray Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,11 +24,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <ctype.h>
+#include <string.h>
 
 #include "cvs.h"
-#include "log.h"
-#include "rcs.h"
 
 static void	 rcsnum_setsize(RCSNUM *, u_int);
 static char	*rcsnum_itoa(u_int16_t, char *, size_t);

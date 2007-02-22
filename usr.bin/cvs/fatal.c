@@ -1,4 +1,4 @@
-/*	$OpenBSD: fatal.c,v 1.7 2006/05/27 03:30:30 joris Exp $ */
+/*	$OpenBSD: fatal.c,v 1.8 2006/07/07 17:37:17 joris Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *
@@ -23,10 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <sys/stat.h>
+
+#include <fcntl.h>
+#include <stdlib.h>
 
 #include "cvs.h"
-#include "log.h"
 #include "remote.h"
 
 /* Fatal messages.  This function never returns. */

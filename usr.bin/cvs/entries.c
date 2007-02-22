@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.73 2007/02/17 18:23:43 xsa Exp $	*/
+/*	$OpenBSD: entries.c,v 1.74 2007/02/19 11:40:00 otto Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -15,10 +15,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "includes.h"
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
-#include "log.h"
 
 #define CVS_ENTRIES_NFIELDS	6
 #define CVS_ENTRIES_DELIM	'/'

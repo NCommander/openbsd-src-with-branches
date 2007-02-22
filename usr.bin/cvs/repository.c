@@ -1,4 +1,4 @@
-/*	$OpenBSD: repository.c,v 1.10 2007/02/07 23:47:56 todd Exp $	*/
+/*	$OpenBSD: repository.c,v 1.11 2007/02/17 18:23:43 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -15,13 +15,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "includes.h"
+#include <sys/stat.h>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <pwd.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
-#include "file.h"
-#include "log.h"
-#include "repository.h"
-#include "worklist.h"
 
 struct cvs_wklhead repo_locks;
 

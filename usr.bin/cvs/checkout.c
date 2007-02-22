@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.90 2007/02/17 18:23:43 xsa Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.91 2007/02/18 10:30:45 otto Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -15,10 +15,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "includes.h"
+#include <sys/param.h>
+#include <sys/dirent.h>
+#include <sys/stat.h>
+
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
-#include "log.h"
 #include "diff.h"
 #include "remote.h"
 

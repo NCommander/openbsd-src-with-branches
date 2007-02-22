@@ -1,4 +1,4 @@
-/*	$OpenBSD: watch.c,v 1.15 2007/01/09 17:12:14 xsa Exp $	*/
+/*	$OpenBSD: watch.c,v 1.16 2007/01/11 02:35:55 joris Exp $	*/
 /*
  * Copyright (c) 2005-2007 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -15,10 +15,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "includes.h"
+#include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
-#include "log.h"
 #include "remote.h"
 
 #define W_COMMIT	0x01

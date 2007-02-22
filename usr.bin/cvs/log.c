@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.36 2006/07/07 17:37:17 joris Exp $	*/
+/*	$OpenBSD: log.c,v 1.37 2007/01/31 21:07:35 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -25,10 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <errno.h>
+#include <string.h>
 
 #include "cvs.h"
-#include "log.h"
 
 extern char *__progname;
 static int send_m = 1;

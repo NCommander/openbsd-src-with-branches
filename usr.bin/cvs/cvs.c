@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.115 2007/02/09 03:30:31 joris Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.116 2007/02/17 18:23:43 xsa Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -25,12 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <sys/stat.h>
+
+#include <ctype.h>
+#include <errno.h>
+#include <pwd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "cvs.h"
-#include "config.h"
-#include "log.h"
-#include "file.h"
 #include "remote.h"
 
 extern char *__progname;

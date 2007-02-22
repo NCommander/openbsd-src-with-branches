@@ -1,4 +1,4 @@
-/*	$OpenBSD: root.c,v 1.34 2007/01/18 22:52:23 niallo Exp $	*/
+/*	$OpenBSD: root.c,v 1.35 2007/02/07 17:54:42 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,10 +24,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "cvs.h"
-#include "log.h"
 
 extern char *cvs_rootstr;
 

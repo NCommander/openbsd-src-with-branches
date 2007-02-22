@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.22 2006/11/14 09:47:52 xsa Exp $	*/
+/*	$OpenBSD: version.c,v 1.23 2007/01/11 02:35:55 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -16,10 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "includes.h"
-
 #include "cvs.h"
-#include "log.h"
 #include "remote.h"
 
 struct cvs_cmd cvs_cmd_version = {
