@@ -1,4 +1,4 @@
-/*	$OpenBSD: co.c,v 1.102 2007/02/18 20:54:18 xsa Exp $	*/
+/*	$OpenBSD: co.c,v 1.103 2007/02/21 18:12:36 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -149,12 +149,17 @@ checkout_main(int argc, char **argv)
 	if ((username = getlogin()) == NULL)
 		err(1, "getlogin");
 
+	/* If -x flag was not given, use default. */
+	if (rcs_suffixes == NULL)
+		rcs_suffixes = RCS_DEFAULT_SUFFIX;
+
 	for (i = 0; i < argc; i++) {
 		fd = rcs_choosefile(argv[i], fpath, sizeof(fpath));
 		if (fd < 0) {
 			warn("%s", fpath);
 			continue;
 		}
+		rcs_strip_suffix(argv[i]);
 
 		if (!(flags & QUIET))
 			(void)fprintf(stderr, "%s  -->  %s\n", fpath,
