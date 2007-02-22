@@ -1,4 +1,4 @@
-/*	$OpenBSD: hd.c,v 1.42 2007/02/21 11:01:10 mickey Exp $	*/
+/*	$OpenBSD: hd.c,v 1.43 2007/02/21 22:32:05 miod Exp $	*/
 /*	$NetBSD: rd.c,v 1.33 1997/07/10 18:14:08 kleink Exp $	*/
 
 /*
@@ -536,7 +536,7 @@ hdgetdisklabel(dev, rs, lp, clp, spoofonly)
 	errstring = readdisklabel(HDLABELDEV(dev), hdstrategy, lp, clp,
 	    spoofonly);
 	if (errstring) {
-		printf("%s: %s\n", rs->sc_dev.dv_xname, errstring);
+		/* printf("%s: %s\n", rs->sc_dev.dv_xname, errstring); */
 		return;
 	}
 }
