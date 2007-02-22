@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ProgressMeter.pm,v 1.7 2005/10/23 10:03:23 espie Exp $
+# $OpenBSD: ProgressMeter.pm,v 1.8 2006/02/10 09:52:28 bernd Exp $
 #
 # Copyright (c) 2004 Marc Espie <espie@openbsd.org>
 #
@@ -42,7 +42,7 @@ sub find_window_size
 	$sizeof{'struct winsize'} = 8;
 	require 'sys/ttycom.ph';
 	$width = 80;
-	if (ioctl(STDERR, &TIOCGWINSZ, $r) == 0) {
+	if (ioctl(STDERR, &TIOCGWINSZ, $r)) {
 		my ($rows, $cols, $xpix, $ypix) = 
 		    unpack($wsz_format, $r);
 		$width = $cols;
