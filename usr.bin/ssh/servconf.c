@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.c,v 1.167 2006/12/14 10:01:14 dtucker Exp $ */
+/* $OpenBSD: servconf.c,v 1.168 2007/02/19 10:45:58 dtucker Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -925,7 +925,7 @@ parse_flag:
 		else
 			fatal("%s line %d: Bad yes/no/clientspecified "
 			    "argument: %s", filename, linenum, arg);
-		if (*intptr == -1)
+		if (*activep && *intptr == -1)
 			*intptr = value;
 		break;
 
