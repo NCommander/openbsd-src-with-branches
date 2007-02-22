@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.11 2006/06/12 04:41:30 gwk Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.12 2007/02/19 20:44:24 kettenis Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -303,7 +303,8 @@ ioapic_attach(struct device *parent, struct device *self, void *aux)
 		    aaa->flags & IOAPIC_PICMODE ? "PIC" : "virtual wire");
 	}
 
-	printf(", version %x, %d pins\n", sc->sc_apic_vers, sc->sc_apic_sz);
+	printf(", version %x, pins %d, base %d\n", sc->sc_apic_vers,
+	    sc->sc_apic_sz, sc->sc_apic_vecbase);
 
 	/*
 	 * If either a LAPIC or an I/O APIC is already at the ID the BIOS
