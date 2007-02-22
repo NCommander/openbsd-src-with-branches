@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.267 2007/01/23 17:41:22 claudio Exp $ */
+/*	$OpenBSD: session.c,v 1.268 2007/01/26 17:40:49 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -150,8 +150,8 @@ setup_listeners(u_int *la_cnt)
 		}
 
 		/* set ttl to 255 so that ttl-security works */
-		if (setsockopt(la->fd, IPPROTO_IP, IP_TTL, &ttl,
-		    sizeof(ttl)) == -1) {
+		if (la->sa.ss_family == AF_INET && setsockopt(la->fd,
+		    IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) == -1) {
 			log_warn("setup_listeners setsockopt TTL");
 			continue;
 		}
