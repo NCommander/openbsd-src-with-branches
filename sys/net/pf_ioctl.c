@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.172 2006/11/20 14:25:11 mcbride Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.173 2007/02/09 11:20:39 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -152,6 +152,10 @@ pfattach(int num)
 
 	pool_sethardlimit(pf_pool_limits[PF_LIMIT_STATES].pp,
 	    pf_pool_limits[PF_LIMIT_STATES].limit, NULL, 0);
+
+	if (ctob(physmem) <= 100*1024*1024)
+		pf_pool_limits[PF_LIMIT_TABLE_ENTRIES].limit =
+		    PFR_KENTRY_HIWAT_SMALL;
 
 	RB_INIT(&tree_src_tracking);
 	RB_INIT(&pf_anchors);
