@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_icmp.c,v 1.12 2007/01/29 14:23:31 pyr Exp $	*/
+/*	$OpenBSD: check_icmp.c,v 1.13 2007/02/12 10:39:48 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -356,7 +356,7 @@ in_cksum(u_short *addr, int len)
 	}
 
 	/* add back carry outs from top 16 bits to low 16 bits */
-	sum = (sum >> 16) + (sum & 0xffff);     /* add hi 16 to low 16 */
+	sum = (sum >> 16) + (sum & 0xffff);	/* add hi 16 to low 16 */
 	sum += (sum >> 16);			/* add carry */
 	answer = ~sum;				/* truncate to 16 bits */
 
