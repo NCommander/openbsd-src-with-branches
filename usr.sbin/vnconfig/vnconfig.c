@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnconfig.c,v 1.23 2007/02/08 16:21:09 grunk Exp $	*/
+/*	$OpenBSD: vnconfig.c,v 1.24 2007/02/17 10:52:28 thib Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -196,7 +196,7 @@ get_pkcs_key(char *arg, char *saltopt)
 				*s = arc4random();
 			if (write(fd, saltbuf, sizeof(saltbuf))
 			    != sizeof(saltbuf))
-				err(1, "Unable to write salt file: '%s'", key);
+				err(1, "Unable to write salt file: '%s'", saltfile);
 			fprintf(stderr, "Salt file created as '%s'\n", saltfile);
 		} else {
 			if (read(fd, saltbuf, sizeof(saltbuf))
