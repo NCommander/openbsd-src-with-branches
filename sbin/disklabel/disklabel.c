@@ -1258,7 +1258,7 @@ getnum(char *nptr, u_int32_t min, u_int32_t max, const char **errstr)
 }
 
 /*
- * Read an ascii label in from fd f,
+ * Read an ascii label in from FILE f,
  * in the same format as that put out by display(),
  * and fill in lp.
  */
