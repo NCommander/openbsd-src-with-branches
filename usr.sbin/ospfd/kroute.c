@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.39 2006/12/13 13:30:07 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.40 2007/02/01 12:51:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -1012,7 +1012,7 @@ fetchifs(int ifindex)
 		case RTM_NEWADDR:
 			ifam = (struct ifa_msghdr *)rtm;
 			if (kif && ifam->ifam_index != kif->k.ifindex)
-				fatalx("fetchifs: bad interafce table");
+				fatalx("fetchifs: bad interface table");
 			if (kif == NULL || (ifam->ifam_addrs &
 			    (RTA_NETMASK | RTA_IFA | RTA_BRD)) == 0)
 				break;
