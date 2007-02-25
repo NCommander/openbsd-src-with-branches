@@ -1,4 +1,4 @@
-/*	$OpenBSD: netstat.c,v 1.28 2005/10/17 19:04:20 otto Exp $	*/
+/*	$OpenBSD: netstat.c,v 1.29 2006/03/31 04:10:59 deraadt Exp $	*/
 /*	$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)netstat.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: netstat.c,v 1.28 2005/10/17 19:04:20 otto Exp $";
+static char rcsid[] = "$OpenBSD: netstat.c,v 1.29 2006/03/31 04:10:59 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -89,7 +89,7 @@ opennetstat(void)
 {
 	sethostent(1);
 	setnetent(1);
-	return (subwin(stdscr, LINES-5-1, 0, 5, 0));
+	return (subwin(stdscr, LINES-1-2, 0, 2, 0));
 }
 
 struct netinfo {
