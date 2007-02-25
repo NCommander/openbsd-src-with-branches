@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.108 2007/02/13 15:21:59 stevesk Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.109 2007/02/13 21:54:22 stevesk Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -568,10 +568,6 @@ freeit:
 	send_request();
 }
 
-/*
- * state_requesting is called when we receive a DHCPACK message after
- * having sent out one or more DHCPREQUEST packets.
- */
 void
 dhcpack(struct iaddr client_addr, struct option_data *options)
 {
