@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.h,v 1.30 2007/02/24 16:14:02 reyk Exp $	*/
+/*	$OpenBSD: hoststated.h,v 1.31 2007/02/25 14:57:09 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -337,6 +337,7 @@ struct session {
 	struct timeval			 tv_start;
 	struct timeval			 tv_last;
 	int				 done;
+	int				 retry;
 	struct evbuffer			*log;
 	void				*relay;
 	struct ctl_natlook		*cnl;
