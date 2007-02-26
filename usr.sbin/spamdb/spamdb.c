@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamdb.c,v 1.19 2007/01/04 21:41:37 beck Exp $	*/
+/*	$OpenBSD: spamdb.c,v 1.20 2007/02/23 22:40:50 beck Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -291,6 +291,8 @@ main(int argc, char **argv)
 	}
 	argc -= optind;
 	argv += optind;
+	if (action == 0 && type != WHITE)
+		usage();
 	
 	memset(&hashinfo, 0, sizeof(hashinfo));
 	db = dbopen(PATH_SPAMD_DB, O_EXLOCK|O_RDWR, 0600, DB_HASH,
