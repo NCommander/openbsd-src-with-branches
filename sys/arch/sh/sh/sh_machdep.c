@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh_machdep.c,v 1.6 2006/11/09 00:12:12 deraadt Exp $	*/
+/*	$OpenBSD: sh_machdep.c,v 1.7 2007/01/15 22:22:19 martin Exp $	*/
 /*	$NetBSD: sh3_machdep.c,v 1.59 2006/03/04 01:13:36 uwe Exp $	*/
 
 /*-
@@ -602,6 +602,8 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
 	tf->tf_spc = pack->ep_entry;
 	tf->tf_ssr = PSL_USERSET;
 	tf->tf_r15 = stack;
+
+	rval[1] = 0;
 }
 
 void
