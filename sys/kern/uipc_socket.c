@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.64 2006/06/10 17:05:17 beck Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.65 2007/02/14 00:53:48 jsg Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -838,6 +838,7 @@ dontblock:
 				m->m_data += len;
 				m->m_len -= len;
 				so->so_rcv.sb_cc -= len;
+				so->so_rcv.sb_datacc -= len;
 			}
 		}
 		if (so->so_oobmark) {

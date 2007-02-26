@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_socket.c,v 1.9 2003/09/23 16:51:12 millert Exp $	*/
+/*	$OpenBSD: sys_socket.c,v 1.10 2005/12/13 10:33:14 jsg Exp $	*/
 /*	$NetBSD: sys_socket.c,v 1.13 1995/08/12 23:59:09 mycroft Exp $	*/
 
 /*
@@ -97,7 +97,7 @@ soo_ioctl(struct file *fp, u_long cmd, caddr_t data, struct proc *p)
 		return (0);
 
 	case FIONREAD:
-		*(int *)data = so->so_rcv.sb_cc;
+		*(int *)data = so->so_rcv.sb_datacc;
 		return (0);
 
 	case SIOCSPGRP:
