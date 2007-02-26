@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe.c,v 1.16 2007/02/22 05:58:06 reyk Exp $	*/
+/*	$OpenBSD: pfe.c,v 1.17 2007/02/23 00:28:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -691,7 +691,7 @@ pfe_sync(void)
 			continue;
 		log_debug("pfe_sync: demote %d table '%s' group '%s'",
 		    demote.level, table->name, table->demote_group);
-		strlcpy(demote.group, table->demote_group,
+		(void)strlcpy(demote.group, table->demote_group,
 		    sizeof(demote.group));
 		imsg_compose(ibuf_main, IMSG_DEMOTE, 0, 0,
 		    &demote, sizeof(demote));
