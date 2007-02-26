@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.173 2007/02/09 11:20:39 henning Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.174 2007/02/23 21:31:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -52,6 +52,7 @@
 #include <sys/malloc.h>
 #include <sys/kthread.h>
 #include <sys/rwlock.h>
+#include <uvm/uvm_extern.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
