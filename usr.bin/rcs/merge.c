@@ -1,4 +1,4 @@
-/*	$OpenBSD: merge.c,v 1.3 2006/08/01 05:14:17 ray Exp $	*/
+/*	$OpenBSD: merge.c,v 1.4 2006/08/11 08:18:19 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -24,7 +24,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "rcsprog.h"
 #include "diff.h"

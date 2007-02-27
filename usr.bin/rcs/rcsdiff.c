@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsdiff.c,v 1.70 2006/09/22 13:42:43 jmc Exp $	*/
+/*	$OpenBSD: rcsdiff.c,v 1.71 2006/10/12 17:20:12 niallo Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -24,7 +24,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <sys/stat.h>
+
+#include <err.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "rcsprog.h"
 #include "diff.h"

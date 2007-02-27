@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.135 2006/12/27 07:43:24 niallo Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.136 2007/01/10 18:04:25 joris Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -24,7 +24,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "includes.h"
+#include <sys/stat.h>
+
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "rcsprog.h"
 

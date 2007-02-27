@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.h,v 1.4 2006/05/27 08:12:29 ray Exp $	*/
+/*	$OpenBSD: rcs.h,v 1.5 2006/06/03 03:05:10 niallo Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -26,6 +26,8 @@
 
 #ifndef RCS_H
 #define RCS_H
+
+#include <sys/queue.h>
 
 #include "buf.h"
 
