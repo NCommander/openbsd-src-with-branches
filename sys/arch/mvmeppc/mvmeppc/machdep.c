@@ -574,8 +574,6 @@ setregs(p, pack, stack, retval)
 	tf->srr0 = pack->ep_entry;
 	tf->srr1 = PSL_MBO | PSL_USERSET | PSL_FE_DFLT;
 	p->p_addr->u_pcb.pcb_flags = 0;
-
-	retval[1] = 0;
 }
 
 /*
