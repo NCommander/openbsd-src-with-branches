@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.248 2007/02/22 16:55:32 henning Exp $
+#	$OpenBSD: Makefile,v 1.249 2007/02/27 02:22:01 beck Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -341,7 +341,7 @@ distrib:
 DHSIZE=1024 1536 2048 3072 4096
 update-moduli:
 	( \
-		echo '#    $$OpenBSD: Makefile,v 1.248 2007/02/22 16:55:32 henning Exp $$'; \
+		echo -n '#    $Open'; echo 'BSD$'; \
 		echo '# Time Type Tests Tries Size Generator Modulus'; \
 		( for i in ${DHSIZE}; do \
 			ssh-keygen -b $$i -G /dev/stdout; \
