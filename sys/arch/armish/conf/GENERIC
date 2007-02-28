@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.12 2006/09/27 08:54:44 grange Exp $ 
+# $OpenBSD: GENERIC,v 1.13 2006/11/29 14:26:40 deraadt Exp $ 
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -176,6 +176,7 @@ ukphy*		at mii?		# generic unknown PHYs
 # 1-Wire devices
 option ONEWIREVERBOSE
 owid*	at onewire?		# ID
+owsbm*	at onewire?		# Smart Battery Monitor
 owtemp* at onewire?		# Temperature
 
 # mouse & keyboard multiplexor pseudo-devices
