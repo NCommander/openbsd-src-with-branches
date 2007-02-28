@@ -45,6 +45,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+typedef u_int16_t usb_vendor_id_t;
+typedef u_int16_t usb_product_id_t;
+
+/*
+ * Descriptions of known vendors and devices ("products").
+ */
+struct usb_known_vendor {
+	usb_vendor_id_t		vendor;
+	char			*vendorname;
+};
+
+struct usb_known_product {
+	usb_vendor_id_t		vendor;
+	usb_product_id_t	product;
+	char			*productname;
+};
+
 const struct usb_known_product usb_known_products[] = {
 	{
 	    USB_VENDOR_3COM, USB_PRODUCT_3COM_HOMECONN,
