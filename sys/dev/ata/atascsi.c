@@ -1,4 +1,4 @@
-/*	$OpenBSD: atascsi.c,v 1.6 2007/02/19 12:04:01 dlg Exp $ */
+/*	$OpenBSD: atascsi.c,v 1.7 2007/02/19 12:06:16 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -112,7 +112,7 @@ atascsi_attach(struct device *self, struct atascsi_attach_args *aaa)
 
 	as->as_ports = malloc(sizeof(struct ata_port *) * aaa->aaa_nports,
 	    M_DEVBUF, M_WAITOK);
-	bzero(as->as_ports, sizeof(int) * aaa->aaa_nports);
+	bzero(as->as_ports, sizeof(struct ata_port *) * aaa->aaa_nports);
 
 	/* fill in the port array with the type of devices there */
 	for (i = 0; i < as->as_link.adapter_buswidth; i++)
