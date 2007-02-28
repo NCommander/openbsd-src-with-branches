@@ -7,6 +7,11 @@
  *	OpenBSD: onewiredevs,v 1.3 2007/02/28 21:20:22 grange Exp 
  */
 
+struct onewire_family {
+	int		of_type;
+	const char	*of_name;
+};
+
 static const struct onewire_family onewire_famtab[] = {
 	{ ONEWIRE_FAMILY_DS1990, "ID" },
 	{ ONEWIRE_FAMILY_DS1991, "MultiKey" },
