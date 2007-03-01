@@ -1,4 +1,4 @@
-/*	$OpenBSD: kauaiata.c,v 1.7 2006/04/10 08:10:49 brad Exp $ */
+/*	$OpenBSD: kauaiata.c,v 1.8 2007/02/05 06:46:56 drahn Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn
@@ -107,6 +107,11 @@ kauaiataattach(struct device *parent, struct device *self, void *aux)
 	node = OF_finddevice("uata");
 	if (node == -1)
 		node = OF_finddevice("/pci@f4000000/ata-6");
+
+	if (node == -1) {
+		printf("\n");
+		return;
+	}
 
 	/*
 	 * XXX - need to compare node and PCI id to verify this is the 
