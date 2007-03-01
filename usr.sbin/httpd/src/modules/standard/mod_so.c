@@ -1,4 +1,4 @@
-/*	$OpenBSD: mod_so.c,v 1.13 2004/12/02 19:42:48 henning Exp $ */
+/*	$OpenBSD: mod_so.c,v 1.14 2005/02/09 12:13:10 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -302,7 +302,7 @@ static const char *load_module(cmd_parms *cmd, void *dummy,
 
 /* 
  * This implements the LoadFile directive and loads an arbitrary
- * shared object file into the adress space of the server process.
+ * shared object file into the address space of the server process.
  */
 
 static const char *load_file(cmd_parms *cmd, void *dummy, char *filename)
