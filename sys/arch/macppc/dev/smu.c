@@ -1,4 +1,4 @@
-/*	$OpenBSD: smu.c,v 1.12 2006/03/20 22:40:18 kettenis Exp $	*/
+/*	$OpenBSD: smu.c,v 1.13 2006/12/23 17:46:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -292,6 +292,17 @@ smu_attach(struct device *parent, struct device *self, void *aux)
 		smu_fan_set_rpm(sc, fan, fan->unmanaged_rpm);
 
 		sensor_attach(&sc->sc_sensordev, &fan->sensor);
+	}
+
+	/*
+	 * Bail out if we didn't find any fans.  If we don't set the
+	 * fans to a safe speed, but tickle the SMU periodically by
+	 * reading sensors, the fans will never spin up and the
+	 * machine might overheat.
+	 */
+	if (sc->sc_num_fans == 0) {
+		printf(": no fans\n");
+		return;
 	}
 
 	/* Sensors */
