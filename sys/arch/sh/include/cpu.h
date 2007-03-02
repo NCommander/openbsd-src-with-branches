@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.3 2006/11/29 12:26:14 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.4 2007/01/15 22:22:19 martin Exp $	*/
 /*	$NetBSD: cpu.h,v 1.41 2006/01/21 04:24:12 uwe Exp $	*/
 
 /*-
@@ -204,6 +204,9 @@ void _cpu_spin(uint32_t);	/* for delay loop. */
 void delay(int);
 struct pcb;
 void savectx(struct pcb *);
+struct fpreg;
+void fpu_save(struct fpreg *);
+void fpu_restore(struct fpreg *);
 void dumpsys(void);
 #endif /* _KERNEL */
 #endif /* !_SH_CPU_H_ */
