@@ -1,4 +1,4 @@
-/*	$NetBSD: if_bnx.c,v 1.2 2007/02/15 19:24:47 bouyer Exp $	*/
+/*	$OpenBSD$	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
