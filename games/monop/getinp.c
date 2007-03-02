@@ -1,4 +1,4 @@
-/*	$OpenBSD: getinp.c,v 1.6 2002/07/28 08:44:14 pjanzen Exp $	*/
+/*	$OpenBSD: getinp.c,v 1.7 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: getinp.c,v 1.4 1995/04/24 12:24:20 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)getinp.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: getinp.c,v 1.6 2002/07/28 08:44:14 pjanzen Exp $";
+static const char rcsid[] = "$OpenBSD: getinp.c,v 1.7 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -84,8 +84,7 @@ getinp(prompt, list)
 			}
 			continue;
 		}
-		sp = buf + strlen(buf) - 1;
-		if (*sp == '\n')
+		if ((sp = strchr(buf, '\n')) != NULL)
 			*sp = '\0';
 		for (sp = buf; *sp; sp++)
 			if (isupper(*sp))
