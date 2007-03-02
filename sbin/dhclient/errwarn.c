@@ -1,4 +1,4 @@
-/*	$OpenBSD: errwarn.c,v 1.11 2005/06/01 02:05:55 cloder Exp $	*/
+/*	$OpenBSD: errwarn.c,v 1.12 2005/07/09 14:36:15 krw Exp $	*/
 
 /* Errors and warnings... */
 
@@ -220,9 +220,8 @@ parse_warn(char *fmt, ...)
 #ifndef DEBUG
 	syslog(LOG_ERR, "%s", mbuf);
 	syslog(LOG_ERR, "%s", token_line);
-	if (lexline < 81)
-		syslog(LOG_ERR,
-		    "%s^", &spaces[sizeof(spaces) - lexchar]);
+	if (lexchar < 81)
+		syslog(LOG_ERR, "%*c", lexchar, '^');
 #endif
 
 	if (log_perror) {
