@@ -1,4 +1,4 @@
-/*	$OpenBSD: irr_prefix.c,v 1.2 2007/03/04 20:05:11 henning Exp $ */
+/*	$OpenBSD: irr_prefix.c,v 1.3 2007/03/04 20:31:22 henning Exp $ */
 
 /*
  * Copyright (c) 2007 Henning Brauer <henning@openbsd.org>
@@ -24,8 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "irrfilter.h"
 
