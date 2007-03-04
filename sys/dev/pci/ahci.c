@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.62 2007/03/04 14:40:41 pascoe Exp $ */
+/*	$OpenBSD: ahci.c,v 1.63 2007/03/04 14:46:38 pascoe Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -344,6 +344,8 @@ struct ahci_port {
 #ifdef AHCI_DEBUG
 	char			ap_name[16];
 #define PORTNAME(_ap)	((_ap)->ap_name)
+#else
+#define PORTNAME(_ap)	DEVNAME((_ap)->ap_sc)
 #endif
 };
 
