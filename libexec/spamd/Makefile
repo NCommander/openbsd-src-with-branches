@@ -1,9 +1,12 @@
-#	$OpenBSD: Makefile,v 1.7 2004/02/26 07:28:55 beck Exp $
+#	$OpenBSD: Makefile,v 1.8 2005/05/24 22:23:04 millert Exp $
 
 PROG=	spamd
-SRCS=	spamd.c sdl.c grey.c
+SRCS=	spamd.c sdl.c grey.c sync.c
 MAN=	spamd.8
 
 CFLAGS+= -Wall -Wstrict-prototypes
+
+LDADD+=	-lcrypto
+DPADD+=	${LIBCRYPTO}
 
 .include <bsd.prog.mk>
