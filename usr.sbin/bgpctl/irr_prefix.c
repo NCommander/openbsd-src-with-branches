@@ -165,6 +165,17 @@ prefix_aggregate(struct irr_prefix *a, const struct irr_prefix *b)
 	if ((a->addr.in.s_addr & mask) == (b->addr.in.s_addr & mask))
 		return (1);
 
+	/* see wether we can fold them in one */
+	if (a->len == b->len && a->len > 1) {
+		mask = htonl(0xffffffff << (32 - (a->len - 1)));
+		if ((a->addr.in.s_addr & mask) ==
+		    (b->addr.in.s_addr & mask)) {
+			a->len--;
+			a->addr.in.s_addr &= mask;
+			return (1);
+		}
+	}
+
 	return (0);
 }
 
