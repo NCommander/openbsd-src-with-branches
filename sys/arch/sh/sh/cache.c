@@ -1,4 +1,4 @@
-/*	$OpenBSD: cache.c,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
+/*	$OpenBSD: cache.c,v 1.2 2007/02/28 19:37:55 deraadt Exp $	*/
 /*	$NetBSD: cache.c,v 1.11 2006/01/02 23:37:34 uwe Exp $	*/
 
 /*-
@@ -73,6 +73,7 @@ int sh_cache_line_size;
 int sh_cache_ram_mode;
 int sh_cache_index_mode_icache;
 int sh_cache_index_mode_dcache;
+int sh_cache_prefer_mask;
 
 void
 sh_cache_init()
