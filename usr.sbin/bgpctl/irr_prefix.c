@@ -1,4 +1,4 @@
-/*	$OpenBSD: irr_prefix.c,v 1.7 2007/03/05 13:57:59 henning Exp $ */
+/*	$OpenBSD: irr_prefix.c,v 1.9 2007/03/05 16:16:42 henning Exp $ */
 
 /*
  * Copyright (c) 2007 Henning Brauer <henning@openbsd.org>
@@ -83,7 +83,7 @@ prefixset_addmember(char *s)
 
 	if ((len = inet_net_pton(AF_INET, s, &pfx->addr.in,
 	    sizeof(pfx->addr.in))) == -1)
-		err(1, "inet_net_pton %s", s);
+		err(1, "prefixset_addmember inet_net_pton \"%s\"", s);
 
 	pfx->af = AF_INET;
 	pfx->len = len;
