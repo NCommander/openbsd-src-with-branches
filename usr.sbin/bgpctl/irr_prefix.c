@@ -108,35 +108,39 @@ prefixset_addmember(char *s)
 void
 prefixset_aggregate(struct prefix_set *pfxs)
 {
-	u_int			 i, newcnt;
+	u_int			 i, cnt, newcnt;
 	int			 res;
 	struct irr_prefix	*cur, *last;
 	void			*p;
 
 	qsort(pfxs->prefix, pfxs->prefixcnt, sizeof(void *), irr_prefix_cmp);
 
-	last = cur = NULL;
-	for (i = 0, newcnt = 0; i < pfxs->prefixcnt; i++) {
-		cur = pfxs->prefix[i];
-		if (last != NULL && last->af == cur->af) {
-			if (cur->af == AF_INET)
-				res = prefix_aggregate(last, cur);
-			else
-				res = 0;
+	cnt = pfxs->prefixcnt;
+	do {
+		last = cur = NULL;
+		for (i = 0, newcnt = 0; i < cnt; i++) {
+			cur = pfxs->prefix[i];
+			if (last != NULL && last->af == cur->af) {
+				if (cur->af == AF_INET)
+					res = prefix_aggregate(last, cur);
+				else
+					res = 0;
 
-			if (res == 1) {	/* cur is covered by last */
-				if (cur->len > last->maxlen)
-					last->maxlen = cur->len;
-				free(pfxs->prefix[i]);
-				pfxs->prefix[i] = cur = NULL;
+				if (res == 1) {	/* cur is covered by last */
+					if (cur->len > last->maxlen)
+						last->maxlen = cur->len;
+					free(pfxs->prefix[i]);
+					pfxs->prefix[i] = cur = NULL;
+				}
+			}	
+
+			if (cur != NULL) {
+				pfxs->prefix[newcnt++] = cur;
+				last = cur;
 			}
 		}
-
-		if (cur != NULL) {
-			pfxs->prefix[newcnt++] = cur;
-			last = cur;
-		}
-	}
+		cnt = newcnt;
+	} while (newcnt < i);
 
 	if (newcnt == pfxs->prefixcnt)
 		return;
