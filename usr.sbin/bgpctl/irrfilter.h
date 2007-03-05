@@ -1,4 +1,4 @@
-/*	$OpenBSD: irrfilter.h,v 1.4 2007/03/04 20:31:22 henning Exp $ */
+/*	$OpenBSD: irrfilter.h,v 1.5 2007/03/05 11:07:47 henning Exp $ */
 
 /*
  * Copyright (c) 2007 Henning Brauer <henning@openbsd.org>
@@ -48,7 +48,7 @@ struct router {
 };
 
 TAILQ_HEAD(router_head, router)	router_head;
-	
+
 /* keep qtype and qtype_objs in whois.c in sync! */
 enum qtype {
 	QTYPE_NONE,
