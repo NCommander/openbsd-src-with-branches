@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.58 2006/11/28 16:39:34 henning Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.59 2006/12/05 12:08:13 henning Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -467,6 +467,8 @@ print_rule(struct peer *peer_l, struct filter_rule *r)
 			printf("source-as %u ", r->match.as.as);
 		else if (r->match.as.type == AS_TRANSIT)
 			printf("transit-as %u ", r->match.as.as);
+		else if (r->match.as.type == AS_PEER)
+			printf("peer-as %u ", r->match.as.as);
 		else
 			printf("unfluffy-as %u ", r->match.as.as);
 	}

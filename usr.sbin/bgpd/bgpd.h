@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.210 2006/12/05 12:08:13 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.211 2007/01/26 17:40:49 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -524,6 +524,7 @@ enum as_spec {
 	AS_ALL,
 	AS_SOURCE,
 	AS_TRANSIT,
+	AS_PEER,
 	AS_EMPTY
 };
 
