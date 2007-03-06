@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.71 2007/03/06 06:43:56 pascoe Exp $ */
+/*	$OpenBSD: ahci.c,v 1.72 2007/03/06 09:00:03 dlg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -314,7 +314,6 @@ struct ahci_ccb {
 
 	struct ahci_cmd_hdr	*ccb_cmd_hdr;
 	struct ahci_cmd_table	*ccb_cmd_table;
-	u_int64_t		ccb_cmd_table_dva;
 
 	bus_dmamap_t		ccb_dmamap;
 
