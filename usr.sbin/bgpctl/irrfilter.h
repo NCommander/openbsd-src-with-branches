@@ -1,4 +1,4 @@
-/*	$OpenBSD: irrfilter.h,v 1.5 2007/03/05 11:07:47 henning Exp $ */
+/*	$OpenBSD: irrfilter.h,v 1.6 2007/03/05 16:43:24 henning Exp $ */
 
 /*
  * Copyright (c) 2007 Henning Brauer <henning@openbsd.org>
@@ -23,6 +23,7 @@
 #define	F_IMPORTONLY	0x01	/* skip export: items */
 
 int	irrflags;
+int	irrverbose;
 
 enum pdir {
 	PDIR_NONE,
