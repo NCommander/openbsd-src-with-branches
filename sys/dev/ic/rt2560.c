@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560.c,v 1.30 2007/01/03 18:16:43 claudio Exp $  */
+/*	$OpenBSD: rt2560.c,v 1.31 2007/01/24 17:56:24 damien Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -1730,6 +1730,8 @@ rt2560_tx_data(struct rt2560_softc *sc, struct mbuf *m0,
 		    rs_rates[ic->ic_fixed_rate];
 	} else
 		rate = ni->ni_rates.rs_rates[ni->ni_txrate];
+	if (rate == 0)
+		rate = 2;	/* XXX should not happen */
 	rate &= IEEE80211_RATE_VAL;
 
 	/*
