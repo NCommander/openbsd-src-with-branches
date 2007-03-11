@@ -25,6 +25,8 @@ PerlIOScalar_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
     if (arg) {
 	if (SvROK(arg)) {
 	    s->var = SvREFCNT_inc(SvRV(arg));
+	    if (!SvPOK(s->var) && SvTYPE(SvRV(arg)) > SVt_NULL)
+		(void)SvPV_nolen(s->var);
 	}
 	else {
 	    s->var =
@@ -35,10 +37,10 @@ PerlIOScalar_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
     else {
 	s->var = newSVpvn("", 0);
     }
-    sv_upgrade(s->var, SVt_PV);
+    SvUPGRADE(s->var, SVt_PV);
     code = PerlIOBase_pushed(aTHX_ f, mode, Nullsv, tab);
-    if ((PerlIOBase(f)->flags) & PERLIO_F_TRUNCATE)
-	SvCUR(s->var) = 0;
+    if (!SvOK(s->var) || (PerlIOBase(f)->flags) & PERLIO_F_TRUNCATE)
+	SvCUR_set(s->var, 0);
     if ((PerlIOBase(f)->flags) & PERLIO_F_APPEND)
 	s->posn = SvCUR(s->var);
     else
@@ -103,10 +105,9 @@ SSize_t
 PerlIOScalar_unread(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
-    char *dst = SvGROW(s->var, s->posn + count);
+    char *dst = SvGROW(s->var, (STRLEN)s->posn + count);
+    s->posn -= count;
     Move(vbuf, dst + s->posn, count, char);
-    s->posn += count;
-    SvCUR_set(s->var, s->posn);
     SvPOK_on(s->var);
     return count;
 }
@@ -126,7 +127,7 @@ PerlIOScalar_write(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 	}
 	else {
 	    if ((s->posn + count) > SvCUR(sv))
-		dst = SvGROW(sv, s->posn + count);
+		dst = SvGROW(sv, (STRLEN)s->posn + count);
 	    else
 		dst = SvPV_nolen(sv);
 	    offset = s->posn;
@@ -134,7 +135,7 @@ PerlIOScalar_write(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 	}
 	Move(vbuf, dst + offset, count, char);
 	if ((STRLEN) s->posn > SvCUR(sv))
-	    SvCUR_set(sv, s->posn);
+	    SvCUR_set(sv, (STRLEN)s->posn);
 	SvPOK_on(s->var);
 	return count;
     }
@@ -180,7 +181,7 @@ PerlIOScalar_get_cnt(pTHX_ PerlIO * f)
     if (PerlIOBase(f)->flags & PERLIO_F_CANREAD) {
 	PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
 	if (SvCUR(s->var) > (STRLEN) s->posn)
-	    return SvCUR(s->var) - s->posn;
+	    return SvCUR(s->var) - (STRLEN)s->posn;
 	else
 	    return 0;
     }
@@ -214,7 +215,7 @@ PerlIOScalar_open(pTHX_ PerlIO_funcs * self, PerlIO_list_t * layers, IV n,
 	if (!f) {
 	    f = PerlIO_allocate(aTHX);
 	}
-	if (f = PerlIO_push(aTHX_ f, self, mode, arg)) {
+	if ( (f = PerlIO_push(aTHX_ f, self, mode, arg)) ) {
 	    PerlIOBase(f)->flags |= PERLIO_F_OPEN;
 	}
 	return f;

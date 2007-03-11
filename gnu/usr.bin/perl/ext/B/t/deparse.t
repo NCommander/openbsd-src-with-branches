@@ -1,12 +1,21 @@
 #!./perl
 
 BEGIN {
-    chdir 't' if -d 't';
-    if ($^O eq 'MacOS') {
-	@INC = qw(: ::lib ::macos:lib);
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	if ($^O eq 'MacOS') {
+	    @INC = qw(: ::lib ::macos:lib);
+	} else {
+	    @INC = '.';
+	    push @INC, '../lib';
+	}
     } else {
-	@INC = '.';
-	push @INC, '../lib';
+	unshift @INC, 't';
+    }
+    require Config;
+    if (($Config::Config{'extensions'} !~ /\bB\b/) ){
+        print "1..0 # Skip -- Perl configured without B module\n";
+        exit 0;
     }
 }
 
@@ -15,7 +24,7 @@ use warnings;
 use strict;
 use Config;
 
-print "1..17\n";
+print "1..39\n";
 
 use B::Deparse;
 my $deparse = B::Deparse->new() or print "not ";
@@ -25,7 +34,7 @@ print "ok " . $i++ . "\n";
 
 # Tell B::Deparse about our ambient pragmas
 { my ($hint_bits, $warning_bits);
- BEGIN {($hint_bits, $warning_bits) = ($^H, ${^WARNING_BITS})}
+ BEGIN { ($hint_bits, $warning_bits) = ($^H, ${^WARNING_BITS}); }
  $deparse->ambient_pragmas (
      hint_bits    => $hint_bits,
      warning_bits => $warning_bits,
@@ -83,12 +92,11 @@ print "not " if "{\n    (-1) ** \$a;\n}"
 		ne $deparse->coderef2text(sub{(-1) ** $a });
 print "ok " . $i++ . "\n";
 
-# XXX ToDo - constsub that returns a reference
-#use constant cr => ['hello'];
-#my $string = "sub " . $deparse->coderef2text(\&cr);
-#my $val = (eval $string)->();
-#print "not " if ref($val) ne 'ARRAY' || $val->[0] ne 'hello';
-#print "ok " . $i++ . "\n";
+use constant cr => ['hello'];
+my $string = "sub " . $deparse->coderef2text(\&cr);
+my $val = (eval $string)->();
+print "not " if ref($val) ne 'ARRAY' || $val->[0] ne 'hello';
+print "ok " . $i++ . "\n";
 
 my $a;
 my $Is_VMS = $^O eq 'VMS';
@@ -121,6 +129,37 @@ $b =~ s/(LINE:)/sub BEGIN {
 $1/ if $Is_MacOS;
 print "# [$a]\n\# vs expected\n# [$b]\nnot " if $a ne $b;
 print "ok " . $i++ . "\n";
+
+#Re: perlbug #35857, patch #24505
+#handle warnings::register-ed packages properly.
+package B::Deparse::Wrapper;
+use strict;
+use warnings;
+use warnings::register;
+sub getcode {
+   my $deparser = B::Deparse->new();
+   return $deparser->coderef2text(shift);
+}
+
+package main;
+use strict;
+use warnings;
+sub test {
+   my $val = shift;
+   my $res = B::Deparse::Wrapper::getcode($val);
+   print $res =~ /use warnings/ ? '' : 'not ', 'ok ', $i++, "\n";
+}
+my ($q,$p);
+my $x=sub { ++$q,++$p };
+test($x);
+eval <<EOFCODE and test($x);
+   package bar;
+   use strict;
+   use warnings;
+   use warnings::register;
+   package main;
+   1
+EOFCODE
 
 __DATA__
 # 2
@@ -193,3 +232,91 @@ $_ .= <ARGV> . <$foo>;
 ####
 # 14
 my $foo = "Ab\x{100}\200\x{200}\377Cd\000Ef\x{1000}\cA\x{2000}\cZ";
+####
+# 15
+s/x/'y';/e;
+####
+# 16 - various lypes of loop
+{ my $x; }
+####
+# 17
+while (1) { my $k; }
+####
+# 18
+my ($x,@a);
+$x=1 for @a;
+>>>>
+my($x, @a);
+$x = 1 foreach (@a);
+####
+# 19
+for (my $i = 0; $i < 2;) {
+    my $z = 1;
+}
+####
+# 20
+for (my $i = 0; $i < 2; ++$i) {
+    my $z = 1;
+}
+####
+# 21
+for (my $i = 0; $i < 2; ++$i) {
+    my $z = 1;
+}
+####
+# 22
+my $i;
+while ($i) { my $z = 1; } continue { $i = 99; }
+####
+# 23
+foreach $i (1, 2) {
+    my $z = 1;
+}
+####
+# 24
+my $i;
+foreach $i (1, 2) {
+    my $z = 1;
+}
+####
+# 25
+my $i;
+foreach my $i (1, 2) {
+    my $z = 1;
+}
+####
+# 26
+foreach my $i (1, 2) {
+    my $z = 1;
+}
+####
+# 27
+foreach our $i (1, 2) {
+    my $z = 1;
+}
+####
+# 28
+my $i;
+foreach our $i (1, 2) {
+    my $z = 1;
+}
+####
+# 29
+my @x;
+print reverse sort(@x);
+####
+# 30
+my @x;
+print((sort {$b cmp $a} @x));
+####
+# 31
+my @x;
+print((reverse sort {$b <=> $a} @x));
+####
+# 32
+our @a;
+print $_ foreach (reverse @a);
+####
+# 33
+our @a;
+print $_ foreach (reverse 1, 2..5);

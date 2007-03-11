@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 2000, 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: strsep_copy.c,v 1.3 2000/06/29 03:13:36 assar Exp $");
+RCSID("$KTH: strsep_copy.c,v 1.5 2005/04/12 11:29:11 lha Exp $");
 #endif
 
 #include <string.h>
@@ -44,7 +44,7 @@ RCSID("$KTH: strsep_copy.c,v 1.3 2000/06/29 03:13:36 assar Exp $");
 
 /* strsep, but with const stringp, so return string in buf */
 
-ssize_t
+ssize_t ROKEN_LIB_FUNCTION
 strsep_copy(const char **stringp, const char *delim, char *buf, size_t len)
 {
     const char *save = *stringp;
@@ -53,8 +53,10 @@ strsep_copy(const char **stringp, const char *delim, char *buf, size_t len)
 	return -1;
     *stringp = *stringp + strcspn(*stringp, delim);
     l = min(len, *stringp - save);
-    memcpy(buf, save, l);
-    buf[l] = '\0';
+    if(len > 0) {
+	memcpy(buf, save, l);
+	buf[l] = '\0';
+    }
 
     l = *stringp - save;
     if(**stringp == '\0')

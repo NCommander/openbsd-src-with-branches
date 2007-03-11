@@ -1,3 +1,443 @@
+Fri Jun  9 17:55:08 2000  Jeffrey A Law  (law@cygnus.com)
+
+	2000-02-07    <loewis@informatik.hu-berlin.de>
+	* decl2.c (import_export_decl): vlist ctor wrappers follow virtual
+	methods in their interface.
+	(vlist_ctor_wrapper_p): new function.
+	(finish_vlist_ctor_wrapper): likewise.
+
+	2000-02-06    <loewis@informatik.hu-berlin.de>
+	* decl2.c (maybe_retrofit_in_chrg): Move call to
+	make_vlist_ctor_wrapper from here ...
+	* decl.c (grok_ctor_properties): ... to here.
+	* decl.c (grokfndecl): ... and here.
+	* init.c (no_vlist_base_init): Declare unseen Vlist ctor weak.
+	* decl2.c (maybe_retrofit_in_chrg): Be sorry about varargs ctors.
+
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* exception.cc (__cp_pop_exception): Cleanup the original object.
+
+1999-11-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (get_tinfo_fn_unused): Split out from get_tinfo_fn.
+	* class.c (set_rtti_entry): Use it.
+
+Wed Apr 12 00:45:49 2000  Jeffrey A Law  (law@cygnus.com)
+
+	2000-02-03    <loewis@informatik.hu-berlin.de>
+	* call.c (add_function_candidate): Do not add vlist ctor into
+	candidates in compatibility mode.
+	(build_user_type_conversion_1): Add LOOKUP_HAS_VLIST when adding
+	vlist.
+	(convert_like): Likewise.
+	(build_over_call): Skip vlist only if it is mentioned in flags.
+	(build_new_method_call): Do not add vlist in compatibility mode,
+	except for dtors.
+	* cp-tree.h (flag_vtable_thunks): Has now four possible values.
+	(DECL_VLIST_CTOR_WRAPPER_P, DECL_VLIST_CTOR_WRAPPED): New macros.
+	(in_charge_identifier): Declare external.
+	* decl.c (xref_basetypes): Check for vtable_thunks >=2.
+	(finish_dtor): Use bit 2 of in_chrg.
+	(finish_function): Do not finish vlist ctor wrappers.
+	* decl2.c (flag_vtable_thunks_compat): New variable.
+	(lang_decode_option): Set it accordingly.
+	(maybe_retrofit_in_chrg): Call make_vlist_ctor_wrapper.
+	* init.c (build_base_dtor_call): Pass 4 in in_chrg.
+	(no_vlist_base_init): New function.
+	(expand_default_init): Do not pass vlist in compatibility mode.
+	Try to call old base ctor if new one was not generated.
+	(build_new_1): Do not pass vlist in compatibility mode.
+	* method.c (get_id_2): Do not put _Vlist into dtor name in
+	compatibility mode.
+	(make_vlist_ctor_wrapper, emit_vlist_ctor_wrapper): New functions.
+	(synthesize_method): Call emit_vlist_ctor_wrapper.
+	* pt.c (instantiate_class_template): Check for vtable_thunks >=2.
+
+	Sat Nov 13 15:48:59 1999  H.J. Lu  <hjl@gnu.org>
+	* init.c (finish_dtor): Call mark_all_temps_used () before
+	declaring vlist.
+
+	Tue Nov  9 15:01:57 1999  H.J. Lu  <hjl@gnu.org>
+	* init.c (construct_virtual_bases): Update.
+	(expand_cleanup_for_base): Update.
+
+	Tue Nov  9 08:25:04 1999  H.J. Lu  <hjl@gnu.org>
+	* init.c (construct_virtual_bases): Update.
+	(expand_cleanup_for_base): Take vlist parameter.
+	(emit_base_init): Pass vlist to expand_cleanup_for_base.
+	(construct_virtual_bases): Likewise.
+
+	1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+        * class.c (prepare_ctor_vtable, finish_one_ctor_vtable,
+        prepend_ctor_vfields_for_vbase, finish_ctor_vtables_for_vbases,
+        finish_ctor_vtables_1, prepend_vbase_vfields,
+        finish_ctor_vtables): New functions.
+        (finish_struct_1): Call finish_ctor_vtables.
+        * cp-tree.h (TYPE_USES_PVBASES): New macro.
+        (constructor_for_vbase_attr): Widen to two bits.
+        (CONSTRUCTOR_FOR_VBASE, CONSTRUCTOR_FOR_PVBASE,
+        DESTRUCTOR_FOR_PVBASE): New macros.
+        (DECL_CONSTRUCTOR_FOR_VBASE_P): Adopt to new enumeration.
+        (DECL_CONSTRUCTOR_FOR_VBASE): New macro.
+        (DECL_CONSTRUCTOR_FOR_PVBASE_P, DECL_DESTRUCTOR_FOR_PVBASE_P): New
+        macros.
+        (vlist_identifier, vlist_type_node, vlist_zero_node): Declare.
+        (VCTABLE_NAME, VLIST_NAME_FORMAT, VLIST_NAME, VLIST1_NAME,
+        VLIST_TYPE_NAME): New macros.
+        (LOOKUP_HAS_VLIST): New macro.
+        (build_base_dtor_call, init_vlist): Declare.
+        (build_destructor_name): Add int argument.
+        * decl.c (vlist_identifier, vlist_type_node, vlist_zero_node):
+        Define.
+        (init_decl_processing): Initialize them.
+        (grokdeclarator): Handle vlist argument.
+        (copy_args_p): Likewise.
+        (grok_ctor_properties): Don't try to skip initial int for
+        templates.  Skip vlist if available.
+        (xref_basetypes): Set TYPE_USES_PVBASES.
+        (finish_dtor, finish_ctor): New functions, moved out of ...
+        (finish_function): ... here.
+        * decl2.c (lang_decode_option): Set flag_vtable_thunks explicitly.
+        (maybe_retrofit_in_chrg): Retrofit __vlist parameter.
+        (grokclassfn): Pass pvbase flag into mangled name.
+        * init.c (build_base_dtor_call): New function.
+        (build_partial_cleanup_for): Call it.
+        (pvbasecount, init_vlist, ): New functions.
+        (emit_base_init): Process vlist argument.
+        (expand_aggr_vbase_init_1): Likewise.
+        (expand_aggr_vbase_init): Likewise.
+        (expand_default_init): Likewise.
+        (build_new_1): Pass null vlist argument.
+        (build_delete): Likewise. Call build_base_dtor_call.
+        * method.c (process_overload_item): Mangle _Vlist specially.
+        (build_base_path, get_vlist_vtable_id): New functions.
+        (build_destructor_name): Potentially mangle _Vlist into it.
+        (do_build_copy_constructor): Skip vlist argument.
+        (synthesize_method): Likewise.
+        * pt.c (has_pvbases_p): New function.
+        (instantiate_class_template): Call it.
+        (tsubst_decl): Retrofit before mangling. Pass pvbase_p to
+        destructor mangling.
+        * search.c (expand_direct_vtbls_init_thunks): New function.
+        (expand_indirect_vtbls_init_thunks): New function.
+        (expand_indirect_vtbls_init): Call it.
+        * call.c (add_function_candidate): Process vlist argument.
+        (build_user_type_conversion_1): Add vlist argument.
+        (convert_like): Likewise.
+        (build_over_call): Likewise.
+        (build_new_method_call): Likewise.
+
+2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* typeck2.c (my_friendly_abort): Use GCCBUGURL.
+
+1999-11-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (maybe_make_one_only): Always make things comdat on
+	ELF targets, too.
+
+Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.2 Released.
+
+1999-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst): Back out 1999-08-06 patch.  Use fold and
+	decl_constant_value to simplify array bounds.
+
+1999-08-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h: Declare flag_use_repository.
+	* pt.c (do_decl_instantiation): Don't complain about duplicate
+	instantiation with -frepo.
+	(do_type_instantiation): Likewise.
+
+1999-08-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (lookup_arg_dependent): Note that we've already checked
+	the current namespace.
+
+Mon Aug 16 01:29:24 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95.1 Released.
+
+1999-08-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (lang_decode_option): Deprecate signatures.
+
+1999-08-11  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+
+	* lex.c (do_identifier): If we find a hidden type after a global
+	was selected already, continue using the global.
+
+1999-08-10  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+
+	* decl2.c (set_decl_namespace): Do not complain about non-matching
+	decls if processing a template.
+
+1999-08-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (function_try_block): Call end_protect_partials
+	before expand_start_all_catch.
+
+1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (maybe_get_template_decl_from_type_decl): Make sure that
+	we're looking at a class.
+
+	* decl.c (lookup_name_real): Set the complain flag if we're
+	looking for a namespace member.
+
+	* decl.c (pushdecl): Only give an error for shadowing a parm 
+	from *this* function.
+
+	* decl2.c (build_expr_from_tree, case METHOD_CALL_EXPR): Only
+	build_expr_from_tree on the args of a TEMPLATE_ID_EXPR.
+
+	* class.c (mark_overriders): Fix order of args to overrides.
+	(warn_hidden): Likewise.  Fix for having virtual and non-virtual
+	functions with the same name.
+
+	* cp-tree.h (DECL_VIRTUAL_CONTEXT): New macro.
+	* typeck.c (expand_ptrmemfunc_cst): Calculate delta correctly for
+	virtual functions and MI.  Simplify.
+
+	* typeck.c (c_expand_return): Downgrade pedwarn about returning NULL
+	from op new to warning.
+
+	* decl2.c (reparse_absdcl_as_casts): Don't warn about old-style
+	casts in system headers or extern "C" blocks.
+
+	* pt.c (do_decl_instantiation): Downgrade duplicate instantiation
+	errors to pedwarn.
+
+	* error.c (dump_type_real): Handle TREE_LIST again.
+
+	* typeck.c (comp_target_parms): Don't complain about 
+	converting from () to (...) if !flag_strict_prototype.
+
+	* class.c (instantiate_type): Downgrade errors for object-dependent
+	memfn refs to pedwarn.
+
+1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* pt.c (tsubst): Use build_index_type to build in-template array
+	index type.  Fixes g++.oliva/dwarf1.C.
+	* decl.c (grokdeclarator): Likewise, just for consistency, as it
+	doesn't seem to trigger the bug without it.
+
+Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * typeck2.c: Update URLs and mail addresses.
+
+1999-08-03  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* decl.c (start_decl): Set attributes before duplicate_decls call.
+
+Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+Sun Jul 25 15:24:21 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* g++FAQ.texi: Deleted per Joe Buck's request.
+	* Makefile.in: Corresponding changes.
+
+Sat Jul 17 23:50:47 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (INTERFACE): Bump to 2.
+
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+        
+	* typeck2.c (my_friendly_abort): Updated URL with bug reporting
+	instructions to gcc.gnu.org.  Removed e-mail address.
+
+1999-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+        * pt.c (check_default_tmpl_args): Handle friends defined in the
+        class just like member functions defined in the class.
+
+Thu Jul 15 01:26:49 1999  H.J. Lu  <hjl@gnu.org>
+
+	* decl.c (duplicate_decls): Relax restriction for exception
+	checks on duplicate symbols.
+
+1999-07-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Update the names of all variants when
+	de-anonymizing.
+
+Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* decl2.c (mark_vtable_entries): Fix check for rtti offset.
+
+1999-06-26  Richard Henderson  <rth@cygnus.com>
+
+	* decl.c (cp_finish_decl): Fix typo in cp_warning_at call.
+
+1999-06-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (expand_aggr_vbase_init): Rename to
+	construct_virtual_bases.  Conditionalize construction here, 
+	rather than ...
+	(emit_base_init): Here.
+
+1999-06-19  Mark Mitchell  <mark@codesourcery.com>
+
+        * semantics.c (finish_asm_statement): Apply decay conversions to
+        input operands.
+
+	* decl.c (expand_static_init): When building an anonymous function
+	for use with atexit, compute its body before and after entering
+	the function.
+
+1999-06-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (expand_aggr_vbase_init): Add flag parameter.
+	(build_partial_cleanup_for): Remove, inlining into ..
+	(expand_cleanup_for_base): ... here.  Take flag parameter.
+	(emit_base_init): Pass the in_chrg parameter to
+	emit_aggr_vbase_init. 
+	(emit_aggr_vbase_init): Pass it to expand_cleanup_for_base.
+	
+1999-06-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (import_export_decl): Use same_type_p, rather than
+	relying on pointer-equality for types.
+
+	* method.c (do_build_copy_constructor): Simplify.
+
+	* call.c (build_method_call): Remove bogus code for two-argument
+	delete.
+	* init.c (build_new_1): Expand on comment, and remove dead code.
+
+	* init.c (expand_cleanup_for_base): New function, split out
+	from ...
+	(emit_base_init): Here.
+	(expand_aggr_vbase_init): Use it.
+
+1999-06-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (class_cache_firstobj): Declare.
+	(maybe_push_cache_obstack): Rename to push_cache_obstack.
+	* class.c (permanent_obstack): Remove declaration.
+	(class_cache_firstobj): Make it global.
+	(add_method): Don't use permanent_obstack directly.
+	(pushclass): Only free the class_cache_obstack if we know how far
+	back to free it.
+	(maybe_push_cache_obstack): Rename to push_cache_obstack.
+	* decl.c: Remove dead comment.
+	(saved_scope): Add class_cache_firstobj.
+	(push_to_top_level): Save it.
+	(pop_from_top_level): Restore it.
+	(push_class_level_binding): Use push_cache_obstack, not
+	maybe_push_cache_obstack.
+	* search.c (push_class_decls): Likewise.
+
+1999-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_new_op): Remove REF_BIND from all operands.
+
+1999-06-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* search.c (convert_pointer_to_single_level): Reimplement without
+	using get_binfo.
+
+1999-06-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* method.c (is_back_referenceable_type): Back-reference bools when
+	not squangling.
+
+1999-06-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* semantics.c (finish_if_stmt_cond): Copy cond to permanent_obstack.
+	(finish_while_stmt_cond, finish_do_stmt, finish_for_cond): Likewise.
+
+1999-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* lex.c (make_lang_type): Create TYPE_BINFO for
+	TEMPLATE_TYPE_PARMs just like for non-template types.
+
+1999-05-28  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (complete_array_type): Allocate off same obstack. Fix
+	DO_DEFAULT comment to match reality.
+
+1999-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (mapcar): Handle NON_LVALUE_EXPR.
+
+1999-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (build_ptrmemfunc): Handle PTRMEM_CSTs carefully to
+	reveal optimization opportunities.
+
+1999-05-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokdeclarator): Don't treat [] as indicating a
+	zero-sized array in a typedef.
+
+	* call.c (build_object_call): Don't look at DECL_NAME for a type.
+	(pt.c): Or CP_TYPE_QUALS for an ERROR_MARK.
+	(typeck.c): Or TYPE_MAIN_VARIANT for a type.
+
+1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (lvalue_p_1): A NOP_EXPR can be an lvalue.
+	(build_cplus_new): Make sure that what we return is of the right type.
+
+1999-05-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (make_ptrmem_cst): New function.
+	* expr.c (cplus_expand_constant): Split out from ...
+	(cplus_expand_expr): Here.  Use cplus_expand_constant.
+	(init_cplus_expand): Set lang_expand_constant.
+	* pt.c (convert_nontype_argument): Use make_ptrmem_cst.
+	* tree.c (make_ptrmem_cst): Define.
+	* typeck.c (unary_complex_lvalue): Use make_ptrmem_cst.
+	* typeck2.c (initializer_constant_valid_p): Use make_ptrmem_cst.
+
+1999-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (start_static_storage_duration_function): Fix comment.
+	(finish_file): Create static storage duration functions lazily.
+
+Wed May 19 02:50:53 1999  Arvind Sankar <arvinds@mit.edu>
+
+	* gxxint.texi: Fix typo.
+
+1999-05-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (joust): Compare the types of the conv ops, not the
+	target types of the conversions.
+
+Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* lang-specs.h: Define __GNUC__ and __GNUC_MINOR__ only if -no-gcc
+	was not given.
+
+1999-05-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (TEMPLATE_ID_EXPR): Update documentation.
+	* decl.c (grokfndecl): Don't allow inline declarations of friend
+	template specializations, or friend template specializations with
+	default arguments.
+	* pt.c (tsubst): Handle substitution into array types that does
+	not yield a fixed upper bound, even when not processing a
+	template.
+	(tsubst_copy): Deal with the fact that the second operand to a
+	TEMPLATE_ID_EXPR may be NULL_TREE, a TREE_LIST, or a TREE_VEC.
+	* search.c (marked_pushdecls_p): Don't descend into
+	TEMPLATE_TYPE_PARMs and the like.
+	(unmarked_pushdecls_p): Likewise.
+	
+	* call.c (build_over_call): Don't throw away
+	initializations/copies of empty classes; use MODIFY_EXPR and
+	INIT_EXPR as for non-empty classes.
+	* class.c (finish_struct_1): Put the padding byte for an empty
+	class on the TYPE_NONCOPIED_PARTS list for the class.
+
 1999-05-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (build_expr_from_tree): Handle COMPONENT_REFs that

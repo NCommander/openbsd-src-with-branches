@@ -1,5 +1,5 @@
 /* Definitions for specs for Objective-C.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,10 +24,10 @@ Boston, MA 02111-1307, USA.  */
   {".m", {"@objective-c"}},
   {"@objective-c",
 #if USE_CPPLIB
-   {"%{E|M|MM:cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"%{E|M|MM:cpp0 -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
 	%{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
     "%{!M:%{!MM:%{!E:cc1obj %i %1 \
 		   %{nostdinc*} %{A*} %{I*} %{P} %I\
                    %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-		   -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+		   -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
 		   %{!undef:%{!ansi:%p} %P} %{trigraphs}\
 		   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 		   %{ffast-math:-D__FAST_MATH__}\
@@ -55,10 +55,10 @@ Boston, MA 02111-1307, USA.  */
 	%{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
         %{!pipe:%g.s} %A\n }}}}"}
 #else /* ! USE_CPPLIB */
-   {"cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"cpp0 -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
 	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\

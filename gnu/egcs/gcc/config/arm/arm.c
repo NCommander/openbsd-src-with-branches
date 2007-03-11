@@ -1,5 +1,6 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991, 93, 94, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -68,7 +69,10 @@ static int function_really_clobbers_lr PROTO ((rtx));
 static void emit_multi_reg_push PROTO ((int));
 static void emit_sfm PROTO ((int, int));
 static enum arm_cond_code get_arm_condition_code PROTO ((rtx));
-static int const_ok_for_op RTX_CODE_PROTO ((Hint, Rcode));
+static int const_ok_for_op RTX_CODE_PROTO ((HOST_WIDE_INT, Rcode));
+
+/* True if we are currently building a constant table. */
+int making_const_table;
 
 /*  Define the information needed to generate branch insns.  This is
    stored from the compare operation. */
@@ -483,25 +487,18 @@ arm_override_options ()
   if (flag_pic && ! TARGET_APCS_STACK)
     arm_pic_register = 10;
   
-  /* Well, I'm about to have a go, but pic is NOT going to be compatible
-     with APCS reentrancy, since that requires too much support in the
-     assembler and linker, and the ARMASM assembler seems to lack some
-     required directives.  */
-  if (flag_pic)
-    warning ("Position independent code not supported");
-  
   if (TARGET_APCS_FLOAT)
     warning ("Passing floating point arguments in fp regs not yet supported");
   
   /* Initialise boolean versions of the flags, for use in the arm.md file.  */
-  arm_fast_multiply = insn_flags & FL_FAST_MULT;
-  arm_arch4         = insn_flags & FL_ARCH4;
+  arm_fast_multiply = (insn_flags & FL_FAST_MULT) != 0;
+  arm_arch4         = (insn_flags & FL_ARCH4) != 0;
   
-  arm_ld_sched      = tune_flags & FL_LDSCHED;
-  arm_is_strong     = tune_flags & FL_STRONG;
+  arm_ld_sched      = (tune_flags & FL_LDSCHED) != 0;
+  arm_is_strong     = (tune_flags & FL_STRONG) != 0;
   arm_is_6_or_7     = ((tune_flags & (FL_MODE26 | FL_MODE32))
 		       && !(tune_flags & FL_ARCH4));
-  
+
   /* Default value for floating point code... if no co-processor
      bus, then schedule for emulated floating point.  Otherwise,
      assume the user has an FPA.
@@ -580,9 +577,14 @@ use_return_insn (iscond)
     return 0;
   if ((iscond && arm_is_strong)
       || TARGET_THUMB_INTERWORK)
-    for (regno = 0; regno < 16; regno++)
-      if (regs_ever_live[regno] && ! call_used_regs[regno])
+    {
+      for (regno = 0; regno < 16; regno++)
+	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	  return 0;
+
+      if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
 	return 0;
+    }
       
   /* Can't be done if any of the FPU regs are pushed, since this also
      requires an insn */
@@ -1563,8 +1565,11 @@ arm_finalize_pic ()
   /* On the ARM the PC register contains 'dot + 8' at the time of the
      addition.  */
   pic_tmp = plus_constant (gen_rtx_LABEL_REF (Pmode, l1), 8);
-  pic_tmp2 = gen_rtx_CONST (VOIDmode,
+  if (GOT_PCREL)
+    pic_tmp2 = gen_rtx_CONST (VOIDmode,
 			    gen_rtx_PLUS (Pmode, global_offset_table, pc_rtx));
+  else
+    pic_tmp2 = gen_rtx_CONST (VOIDmode, global_offset_table);
 
   pic_rtx = gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, pic_tmp2, pic_tmp));
   
@@ -3698,7 +3703,7 @@ arm_reload_in_hi (operands)
 				   gen_rtx_MEM (QImode, 
 						plus_constant (base,
 							       offset + 1))));
-  if (BYTES_BIG_ENDIAN)
+  if (! BYTES_BIG_ENDIAN)
     emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], 0),
 			gen_rtx_IOR (SImode, 
 				     gen_rtx_ASHIFT
@@ -5313,6 +5318,9 @@ output_return_instruction (operand, really_return, reverse)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
       live_regs++;
 
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    live_regs++;
+
   if (live_regs || (regs_ever_live[14] && ! lr_save_eliminated))
     live_regs++;
 
@@ -5332,7 +5340,9 @@ output_return_instruction (operand, really_return, reverse)
 		reverse ? "ldm%?%D0fd\t%|sp!, {" : "ldm%?%d0fd\t%|sp!, {");
 
       for (reg = 0; reg <= 10; reg++)
-        if (regs_ever_live[reg] && ! call_used_regs[reg])
+        if (regs_ever_live[reg] 
+	    && (! call_used_regs[reg]
+		|| (flag_pic && reg == PIC_OFFSET_TABLE_REGNUM)))
           {
 	    strcat (instr, "%|");
             strcat (instr, reg_names[reg]);
@@ -5492,6 +5502,9 @@ output_func_prologue (f, frame_size)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
       live_regs_mask |= (1 << reg);
 
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+
   if (frame_pointer_needed)
     live_regs_mask |= 0xD800;
   else if (regs_ever_live[14])
@@ -5567,6 +5580,12 @@ output_func_epilogue (f, frame_size)
         live_regs_mask |= (1 << reg);
 	floats_offset += 4;
       }
+
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    {
+      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+      floats_offset += 4;
+    }
 
   if (frame_pointer_needed)
     {
@@ -5828,12 +5847,17 @@ arm_expand_prologue ()
     store_arg_regs = 1;
 
   if (! volatile_func)
-    for (reg = 0; reg <= 10; reg++)
-      if (regs_ever_live[reg] && ! call_used_regs[reg])
-	live_regs_mask |= 1 << reg;
+    {
+      for (reg = 0; reg <= 10; reg++)
+	if (regs_ever_live[reg] && ! call_used_regs[reg])
+	  live_regs_mask |= 1 << reg;
 
-  if (! volatile_func && regs_ever_live[14])
-    live_regs_mask |= 0x4000;
+      if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+	live_regs_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
+
+      if (regs_ever_live[14])
+	live_regs_mask |= 0x4000;
+    }
 
   if (frame_pointer_needed)
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997, 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: inquire_context.c,v 1.3 1999/12/02 17:05:04 joda Exp $");
+RCSID("$KTH: inquire_context.c,v 1.6 2003/05/21 14:52:13 lha Exp $");
 
 OM_uint32 gss_inquire_context (
             OM_uint32 * minor_status,
@@ -44,17 +44,19 @@ OM_uint32 gss_inquire_context (
             gss_OID * mech_type,
             OM_uint32 * ctx_flags,
             int * locally_initiated,
-            int * open
+            int * open_context
            )
 {
   OM_uint32 ret;
+
+  HEIMDAL_MUTEX_lock(&context_handle->ctx_id_mutex);
 
   if (src_name) {
     ret = gss_duplicate_name (minor_status,
 			      context_handle->source,
 			      src_name);
     if (ret)
-      return ret;
+      goto failed;
   }
 
   if (targ_name) {
@@ -62,11 +64,16 @@ OM_uint32 gss_inquire_context (
 			      context_handle->target,
 			      targ_name);
     if (ret)
-      return ret;
+	goto failed;
   }
 
-  if (lifetime_rec)
-    *lifetime_rec = GSS_C_INDEFINITE;
+  if (lifetime_rec) {
+      ret = gssapi_lifetime_left(minor_status, 
+				 context_handle->lifetime,
+				 lifetime_rec);
+      if (ret)
+	  goto failed;
+  }
 
   if (mech_type)
     *mech_type = GSS_KRB5_MECHANISM;
@@ -77,8 +84,14 @@ OM_uint32 gss_inquire_context (
   if (locally_initiated)
     *locally_initiated = context_handle->more_flags & LOCAL;
 
-  if (open)
-    *open = context_handle->more_flags & OPEN;
+  if (open_context)
+    *open_context = context_handle->more_flags & OPEN;
 
-  return GSS_S_COMPLETE;
+  *minor_status = 0;
+  ret = GSS_S_COMPLETE;
+
+ failed:
+
+  HEIMDAL_MUTEX_unlock(&context_handle->ctx_id_mutex);
+  return ret;
 }

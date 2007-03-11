@@ -16,8 +16,9 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 23;
+use Test::More tests => 26;
 use MakeMaker::Test::Utils;
+use MakeMaker::Test::Setup::BFD;
 use ExtUtils::MakeMaker;
 use File::Spec;
 use TieOut;
@@ -32,6 +33,12 @@ $| = 1;
 my $Makefile = makefile_name;
 my $Curdir = File::Spec->curdir;
 my $Updir  = File::Spec->updir;
+
+ok( setup_recurs(), 'setup' );
+END {
+    ok( chdir File::Spec->updir );
+    ok( teardown_recurs(), 'teardown' );
+}
 
 ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
   diag("chdir failed: $!");
@@ -60,7 +67,7 @@ is( $mm->{VERSION}, 0.01,            'VERSION' );
 
 my $config_prefix = $Config{installprefixexp} || $Config{installprefix} ||
                     $Config{prefixexp}        || $Config{prefix};
-is( $mm->{PREFIX}, $config_prefix,   'PREFIX' );
+is( $mm->{PERLPREFIX}, $config_prefix,   'PERLPREFIX' );
 
 is( !!$mm->{PERL_CORE}, !!$ENV{PERL_CORE}, 'PERL_CORE' );
 

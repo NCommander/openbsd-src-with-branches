@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2004 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "der_locl.h"
 
-RCSID("$KTH: der_get.c,v 1.28 2000/04/06 17:19:53 assar Exp $");
+RCSID("$KTH: der_get.c,v 1.39 2005/05/29 14:23:00 lha Exp $");
 
 #include <version.h>
 
@@ -66,12 +66,26 @@ der_get_int (const unsigned char *p, size_t len,
     int val = 0;
     size_t oldlen = len;
 
-    if (len--)
+    if (len > 0) {
 	val = (signed char)*p++;
-    while (len--)
-	val = val * 256 + *p++;
+	while (--len)
+	    val = val * 256 + *p++;
+    }
     *ret = val;
     if(size) *size = oldlen;
+    return 0;
+}
+
+int
+der_get_boolean(const unsigned char *p, size_t len, int *data, size_t *size)
+{
+    if(len < 1)
+	return ASN1_OVERRUN;
+    if(*p != 0)
+	*data = 1;
+    else
+	*data = 0;
+    *size = 1;
     return 0;
 }
 
@@ -111,7 +125,7 @@ der_get_length (const unsigned char *p, size_t len,
 
 int
 der_get_general_string (const unsigned char *p, size_t len, 
-			general_string *str, size_t *size)
+			heim_general_string *str, size_t *size)
 {
     char *s;
 
@@ -127,7 +141,7 @@ der_get_general_string (const unsigned char *p, size_t len,
 
 int
 der_get_octet_string (const unsigned char *p, size_t len, 
-		      octet_string *data, size_t *size)
+		      heim_octet_string *data, size_t *size)
 {
     data->length = len;
     data->data = malloc(len);
@@ -135,6 +149,42 @@ der_get_octet_string (const unsigned char *p, size_t len,
 	return ENOMEM;
     memcpy (data->data, p, len);
     if(size) *size = len;
+    return 0;
+}
+
+int
+der_get_oid (const unsigned char *p, size_t len,
+	     heim_oid *data, size_t *size)
+{
+    int n;
+    size_t oldlen = len;
+
+    if (len < 1)
+	return ASN1_OVERRUN;
+
+    data->components = malloc((len + 1) * sizeof(*data->components));
+    if (data->components == NULL)
+	return ENOMEM;
+    data->components[0] = (*p) / 40;
+    data->components[1] = (*p) % 40;
+    --len;
+    ++p;
+    for (n = 2; len > 0; ++n) {
+	unsigned u = 0;
+
+	do {
+	    --len;
+	    u = u * 128 + (*p++ % 128);
+	} while (len > 0 && p[-1] & 0x80);
+	data->components[n] = u;
+    }
+    if (len > 0 && p[-1] & 0x80) {
+	free_oid (data);
+	return ASN1_OVERRUN;
+    }
+    data->length = n;
+    if (size)
+	*size = oldlen;
     return 0;
 }
 
@@ -188,7 +238,39 @@ der_match_tag_and_length (const unsigned char *p, size_t len,
     p += l;
     len -= l;
     ret += l;
+
     e = der_get_length (p, len, length_ret, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+    if(size) *size = ret;
+    return 0;
+}
+
+int
+decode_boolean (const unsigned char *p, size_t len,
+		int *num, size_t *size)
+{
+    size_t ret = 0;
+    size_t l, reallen;
+    int e;
+
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_Boolean, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+
+    e = der_get_length (p, len, &reallen, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+    if (reallen > len)
+	return ASN1_OVERRUN;
+
+    e = der_get_boolean (p, reallen, num, &l);
     if (e) return e;
     p += l;
     len -= l;
@@ -205,16 +287,20 @@ decode_integer (const unsigned char *p, size_t len,
     size_t l, reallen;
     int e;
 
-    e = der_match_tag (p, len, UNIV, PRIM, UT_Integer, &l);
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_Integer, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
+
     e = der_get_length (p, len, &reallen, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
+    if (reallen > len)
+	return ASN1_OVERRUN;
+
     e = der_get_int (p, reallen, num, &l);
     if (e) return e;
     p += l;
@@ -232,16 +318,20 @@ decode_unsigned (const unsigned char *p, size_t len,
     size_t l, reallen;
     int e;
 
-    e = der_match_tag (p, len, UNIV, PRIM, UT_Integer, &l);
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_Integer, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
+
     e = der_get_length (p, len, &reallen, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
+    if (reallen > len)
+	return ASN1_OVERRUN;
+
     e = der_get_unsigned (p, reallen, num, &l);
     if (e) return e;
     p += l;
@@ -252,29 +342,59 @@ decode_unsigned (const unsigned char *p, size_t len,
 }
 
 int
-decode_general_string (const unsigned char *p, size_t len, 
-		       general_string *str, size_t *size)
+decode_enumerated (const unsigned char *p, size_t len,
+		   unsigned *num, size_t *size)
 {
     size_t ret = 0;
-    size_t l;
+    size_t l, reallen;
     int e;
-    size_t slen;
 
-    e = der_match_tag (p, len, UNIV, PRIM, UT_GeneralString, &l);
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_Enumerated, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
 
-    e = der_get_length (p, len, &slen, &l);
+    e = der_get_length (p, len, &reallen, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
-    if (len < slen)
+    if (reallen > len)
 	return ASN1_OVERRUN;
 
-    e = der_get_general_string (p, slen, str, &l);
+    e = der_get_int (p, reallen, num, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+    if(size) *size = ret;
+    return 0;
+}
+
+int
+decode_general_string (const unsigned char *p, size_t len, 
+		       heim_general_string *str, size_t *size)
+{
+    size_t ret = 0;
+    size_t l, reallen;
+    int e;
+
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_GeneralString, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+
+    e = der_get_length (p, len, &reallen, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+    if (len < reallen)
+	return ASN1_OVERRUN;
+
+    e = der_get_general_string (p, reallen, str, &l);
     if (e) return e;
     p += l;
     len -= l;
@@ -285,28 +405,58 @@ decode_general_string (const unsigned char *p, size_t len,
 
 int
 decode_octet_string (const unsigned char *p, size_t len, 
-		     octet_string *k, size_t *size)
+		     heim_octet_string *k, size_t *size)
 {
     size_t ret = 0;
-    size_t l;
+    size_t l, reallen;
     int e;
-    size_t slen;
 
-    e = der_match_tag (p, len, UNIV, PRIM, UT_OctetString, &l);
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_OctetString, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
 
-    e = der_get_length (p, len, &slen, &l);
+    e = der_get_length (p, len, &reallen, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
-    if (len < slen)
+    if (len < reallen)
 	return ASN1_OVERRUN;
 
-    e = der_get_octet_string (p, slen, k, &l);
+    e = der_get_octet_string (p, reallen, k, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+    if(size) *size = ret;
+    return 0;
+}
+
+int
+decode_oid (const unsigned char *p, size_t len, 
+	    heim_oid *k, size_t *size)
+{
+    size_t ret = 0;
+    size_t l, reallen;
+    int e;
+
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_OID, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+
+    e = der_get_length (p, len, &reallen, &l);
+    if (e) return e;
+    p += l;
+    len -= l;
+    ret += l;
+    if (len < reallen)
+	return ASN1_OVERRUN;
+
+    e = der_get_oid (p, reallen, k, &l);
     if (e) return e;
     p += l;
     len -= l;
@@ -333,27 +483,27 @@ int
 decode_generalized_time (const unsigned char *p, size_t len,
 			 time_t *t, size_t *size)
 {
-    octet_string k;
+    heim_octet_string k;
     char *times;
     size_t ret = 0;
-    size_t l;
+    size_t l, reallen;
     int e;
-    size_t slen;
 
-    e = der_match_tag (p, len, UNIV, PRIM, UT_GeneralizedTime, &l);
+    e = der_match_tag (p, len, ASN1_C_UNIV, PRIM, UT_GeneralizedTime, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
 
-    e = der_get_length (p, len, &slen, &l);
+    e = der_get_length (p, len, &reallen, &l);
     if (e) return e;
     p += l;
     len -= l;
     ret += l;
-    if (len < slen)
+    if (len < reallen)
 	return ASN1_OVERRUN;
-    e = der_get_octet_string (p, slen, &k, &l);
+
+    e = der_get_octet_string (p, reallen, &k, &l);
     if (e) return e;
     p += l;
     len -= l;

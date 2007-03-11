@@ -3,6 +3,10 @@ BEGIN {
         chdir 't';
         unshift @INC, '../lib';
     }
+    if (ord("A") == 193) {
+        print "1..0 # Skip: EBCDIC\n";
+        exit 0;
+    }
     require Config; import Config;
     if ($Config{'extensions'} !~ /\bEncode\b/) {
       print "1..0 # Skip: Encode was not built\n";
@@ -21,7 +25,7 @@ my @character_set = ('0'..'9', 'A'..'Z', 'a'..'z');
 my @source = qw(ascii iso8859-1 cp1250);
 my @destiny = qw(cp1047 cp37 posix-bc);
 my @ebcdic_sets = qw(cp1047 cp37 posix-bc);
-plan test => 38+$n*@encodings + 2*@source*@destiny*@character_set + 2*@ebcdic_sets*256 + 6;
+plan test => 38+$n*@encodings + 2*@source*@destiny*@character_set + 2*@ebcdic_sets*256 + 6 + 2;
 my $str = join('',map(chr($_),0x20..0x7E));
 my $cpy = $str;
 ok(length($str),from_to($cpy,'iso8859-1','Unicode'),"Length Wrong");
@@ -138,3 +142,10 @@ $a = "\x{100}";
 chop $a;
 ok(  is_utf8($a)); # weird but true: an empty UTF-8 string
 
+# non-string arguments
+package Encode::Dummy;
+use overload q("") => sub { $_[0]->[0] };
+sub new { my $class = shift; bless [ @_  ] => $class }
+package main;
+ok(decode(latin1 => Encode::Dummy->new("foobar")), "foobar");
+ok(encode(utf8   => Encode::Dummy->new("foobar")), "foobar");
