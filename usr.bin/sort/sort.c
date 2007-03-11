@@ -254,7 +254,10 @@ main(int argc, char *argv[])
 	else
 		get = makekey;
 
-	if (!SINGL_FLD) {
+	if ((buffer = malloc(bufsize)) == NULL)
+		err(2, NULL);
+	 bufend = buffer + bufsize - 1;
+	 if (!SINGL_FLD) {
 		if ((linebuf = malloc(linebuf_size)) == NULL)
 			err(2, NULL);
 	}

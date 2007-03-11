@@ -42,8 +42,8 @@
 #define MAXFCT 1000
 #define MAXLLEN ((1 << min(POW-4, 16)) - 14)
 
-extern u_char *linebuf;
-extern size_t linebuf_size;
+extern u_char *buffer, *bufend, *linebuf;
+extern size_t bufsize, linebuf_size;
 
 /* temp files in the stack have a file descriptor, a largest bin (maxb)
  * which becomes the last non-empty bin (lastb) when the actual largest
