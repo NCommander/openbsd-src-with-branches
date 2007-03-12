@@ -1,4 +1,4 @@
-/*	$OpenBSD: grey.c,v 1.33 2007/03/05 15:09:01 beck Exp $	*/
+/*	$OpenBSD: grey.c,v 1.34 2007/03/06 23:38:36 beck Exp $	*/
 
 /*
  * Copyright (c) 2004-2006 Bob Beck.  All rights reserved.
@@ -793,6 +793,8 @@ greyupdate(char *dbname, char *helo, char *ip, char *from, char *to, int sync,
 		spamtrap = 1;
 		lookup = ip;
 		expire = trapexp;
+		syslog_r(LOG_DEBUG, &sdata, "Trapping %s for tuple %s", ip,
+		    key);
 		break;
 	default:
 		goto bad;
