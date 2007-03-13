@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.42 2007/02/25 18:10:47 deraadt Exp $ */
+/*	$OpenBSD: kroute.c,v 1.43 2007/03/13 16:48:03 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -1210,7 +1210,6 @@ dispatch_rtmsg(void)
 			if (kr->r.flags & F_OSPFD_INSERTED)
 				main_imsg_compose_rde(IMSG_KROUTE_GET, 0,
 				    &kr->r, sizeof(struct kroute));
-			rtlabel_unref(kr->r.rtlabel);
 			if (kroute_remove(kr) == -1)
 				return (-1);
 			break;
