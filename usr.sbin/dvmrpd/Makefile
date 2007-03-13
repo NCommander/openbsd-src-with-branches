@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2006/06/01 14:12:20 norby Exp $
+#	$OpenBSD: Makefile,v 1.2 2006/11/26 11:31:12 deraadt Exp $
 
 PROG=	dvmrpd
 SRCS=	ask_nbrs2.c buffer.c control.c dvmrpd.c dvmrpe.c graft.c graft_ack.c \
@@ -12,7 +12,7 @@ CFLAGS+= -Wall -I${.CURDIR}
 CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+= -Wmissing-declarations
 CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
-CFLAGS+= -Wsign-compare -g
+CFLAGS+= -Wsign-compare
 YFLAGS=
 LDADD+=	-levent
 DPADD+= ${LIBEVENT}
