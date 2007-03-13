@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgtwelve.c,v 1.3 2005/03/13 23:05:23 miod Exp $	*/
+/*	$OpenBSD: cgtwelve.c,v 1.4 2006/06/02 20:00:56 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Miodrag Vallat.  All rights reserved.
@@ -275,6 +275,9 @@ cgtwelve_ioctl(void *dev, u_long cmd, caddr_t data, int flags, struct proc *p)
 		wdf->width = sc->sc_sunfb.sf_width;
 		wdf->depth = 32;
 		wdf->cmsize = 0;
+		break;
+	case WSDISPLAYIO_GETSUPPORTEDDEPTH:
+		*(u_int *)data = WSDISPLAYIO_DEPTH_24_32;
 		break;
 	case WSDISPLAYIO_LINEBYTES:
 		*(u_int *)data = sc->sc_sunfb.sf_linebytes * 32;
