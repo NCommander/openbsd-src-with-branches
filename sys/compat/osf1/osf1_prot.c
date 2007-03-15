@@ -1,4 +1,4 @@
-/* $OpenBSD: osf1_prot.c,v 1.1 2000/08/04 15:47:55 ericj Exp $ */
+/* $OpenBSD: osf1_prot.c,v 1.2 2003/08/16 21:34:30 tedu Exp $ */
 /* $NetBSD: osf1_prot.c,v 1.2 1999/05/05 01:51:35 cgd Exp $ */
 
 /*
@@ -96,7 +96,7 @@ osf1_sys_setgid(p, v, retval)
 		pc->p_rgid = gid;
 		pc->p_svgid = gid;
 	}
-	p->p_flag |= P_SUGID;
+	atomic_setbits_int(&p->p_flag, P_SUGID);
 	return (0);
 }
 
@@ -137,6 +137,6 @@ osf1_sys_setuid(p, v, retval)
 		pc->p_ruid = uid;
 		pc->p_svuid = uid;
 	}
-	p->p_flag |= P_SUGID;
+	atomic_setbits_int(&p->p_flag, P_SUGID);
 	return (0);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.13 2006/11/29 12:26:13 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.14 2006/12/24 20:30:35 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -349,7 +349,7 @@ extern int int_nest_cntr;
  * buffer pages are invalid.  On the PICA, request an ast to send us
  * through trap, marking the proc as needing a profiling tick.
  */
-#define	need_proftick(p)	{ (p)->p_flag |= P_OWEUPC; aston(); }
+#define	need_proftick(p)	aston()
 
 /*
  * Notify the current process (p) that it has a signal pending,

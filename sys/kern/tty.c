@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.70 2006/04/27 19:30:28 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.71 2006/06/17 00:47:16 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -987,7 +987,7 @@ ttioctl(struct tty *tp, u_long cmd, caddr_t data, int flag, struct proc *p)
 		tp->t_session = p->p_session;
 		tp->t_pgrp = p->p_pgrp;
 		p->p_session->s_ttyp = tp;
-		p->p_flag |= P_CONTROLT;
+		atomic_setbits_int(&p->p_flag, P_CONTROLT);
 		break;
 	case TIOCSPGRP: {		/* set pgrp of tty */
 		struct pgrp *pgrp = pgfind(*(int *)data);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: resourcevar.h,v 1.9 2006/07/11 19:10:20 kurt Exp $	*/
+/*	$OpenBSD: resourcevar.h,v 1.10 2006/12/24 20:28:44 miod Exp $	*/
 /*	$NetBSD: resourcevar.h,v 1.12 1995/11/22 23:01:53 cgd Exp $	*/
 
 /*
@@ -81,6 +81,7 @@ struct plimit {
 /* add user profiling from AST */
 #define	ADDUPROF(p)							\
 do {									\
+	atomic_clearbits_int(&(p)->p_flag, P_OWEUPC);			\
 	addupc_task((p), (p)->p_stats->p_prof.pr_addr,			\
 	    (p)->p_stats->p_prof.pr_ticks);				\
 	(p)->p_stats->p_prof.pr_ticks = 0;				\

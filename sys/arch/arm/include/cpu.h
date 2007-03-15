@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.13 2006/12/24 20:30:35 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.14 2007/02/11 21:59:32 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.34 2003/06/23 11:01:08 martin Exp $	*/
 
 /*
@@ -260,7 +260,7 @@ extern int want_resched;	/* resched() was called */
  * buffer pages are invalid.  On the i386, request an ast to send us
  * through trap(), marking the proc as needing a profiling tick.
  */
-#define	need_proftick(p)	((p)->p_flag |= P_OWEUPC, setsoftast())
+#define	need_proftick(p)	setsoftast()
 
 #ifndef acorn26
 /*

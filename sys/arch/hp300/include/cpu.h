@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.31 2006/06/24 13:20:19 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.32 2006/11/29 12:26:13 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 1998/02/13 07:41:51 scottr Exp $	*/
 
 /*
@@ -96,7 +96,7 @@ extern int want_resched;	/* resched() was called */
  * buffer pages are invalid.  On the hp300, request an ast to send us
  * through trap, marking the proc as needing a profiling tick.
  */
-#define	need_proftick(p)	{ (p)->p_flag |= P_OWEUPC; aston(); }
+#define	need_proftick(p)	aston()
 
 /*
  * Notify the current process (p) that it has a signal pending,

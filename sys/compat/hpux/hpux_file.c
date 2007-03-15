@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_file.c,v 1.16 2005/02/15 21:12:44 aaron Exp $	*/
+/*	$OpenBSD: hpux_file.c,v 1.17 2006/09/25 07:12:57 otto Exp $	*/
 /*	$NetBSD: hpux_file.c,v 1.5 1997/04/27 21:40:48 thorpej Exp $	*/
 
 /*
@@ -282,7 +282,7 @@ hpux_sys_fcntl(p, v, retval)
 				goto out;
 			}
 
-			p->p_flag |= P_ADVLOCK;
+			atomic_setbits_int(&p->p_flag, P_ADVLOCK);
 			error = VOP_ADVLOCK(vp, (caddr_t)p, F_SETLK, &fl, flg);
 			goto out;
 
@@ -291,7 +291,7 @@ hpux_sys_fcntl(p, v, retval)
 				error = EBADF;
 				goto out;
 			}
-			p->p_flag |= P_ADVLOCK;
+			atomic_setbits_int(&p->p_flag, P_ADVLOCK);
 			error = VOP_ADVLOCK(vp, (caddr_t)p, F_SETLK, &fl, flg);
 			goto out;
 

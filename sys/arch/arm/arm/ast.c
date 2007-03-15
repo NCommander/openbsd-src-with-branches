@@ -1,4 +1,4 @@
-/*	$OpenBSD: ast.c,v 1.5 2005/11/19 01:59:36 aaron Exp $	*/
+/*	$OpenBSD: ast.c,v 1.6 2006/12/24 20:30:35 miod Exp $	*/
 /*	$NetBSD: ast.c,v 1.6 2003/10/31 16:44:34 cl Exp $	*/
 
 /*
@@ -114,7 +114,6 @@ ast(struct trapframe *tf)
 #endif	
 
 	if (p->p_flag & P_OWEUPC) {
-		p->p_flag &= ~P_OWEUPC;
 		ADDUPROF(p);
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.96 2007/01/17 19:30:12 mickey Exp $	*/
+/*	$OpenBSD: trap.c,v 1.97 2007/03/05 17:13:59 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -139,7 +139,6 @@ userret(struct proc *p)
 		astpending = 0;
 		uvmexp.softs++;
 		if (p->p_flag & P_OWEUPC) {
-			p->p_flag &= ~P_OWEUPC;
 			ADDUPROF(p);
 		}
 		if (want_resched)

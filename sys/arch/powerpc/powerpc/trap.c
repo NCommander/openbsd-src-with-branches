@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.72 2005/12/17 07:31:27 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.73 2006/12/24 20:29:19 miod Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -644,7 +644,6 @@ for (i = 0; i < errnum; i++) {
 		uvmexp.softs++;
 		astpending = 0;		/* we are about to do it */
 		if (p->p_flag & P_OWEUPC) {
-			p->p_flag &= ~P_OWEUPC;
 			ADDUPROF(p);
 		}
 		if (want_resched)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.133 2007/01/02 06:07:58 drahn Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.134 2007/01/12 07:41:31 art Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -270,7 +270,7 @@ main(void *framep)
 	p->p_thrparent = p;
 	LIST_INIT(&p->p_thrchildren);
 
-	p->p_flag = P_SYSTEM | P_NOCLDWAIT;
+	atomic_setbits_int(&p->p_flag, P_SYSTEM | P_NOCLDWAIT);
 	p->p_stat = SONPROC;
 	p->p_nice = NZERO;
 	p->p_emul = &emul_native;
