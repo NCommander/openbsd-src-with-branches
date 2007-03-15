@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctags.c,v 1.9 2003/06/03 02:56:07 millert Exp $	*/
+/*	$OpenBSD: ctags.c,v 1.10 2003/06/10 22:20:45 deraadt Exp $	*/
 /*	$NetBSD: ctags.c,v 1.4 1995/09/02 05:57:23 jtc Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ctags.c	8.4 (Berkeley) 2/7/95";
 #endif
-static char rcsid[] = "$OpenBSD: ctags.c,v 1.9 2003/06/03 02:56:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: ctags.c,v 1.10 2003/06/10 22:20:45 deraadt Exp $";
 #endif /* not lint */
 
 #include <err.h>
@@ -131,7 +131,7 @@ main(int argc, char *argv[])
 	argc -= optind;
 	if (!argc) {
 usage:		(void)fprintf(stderr,
-			"usage: ctags [-BFadtuwvx] [-f tagsfile] file ...\n");
+			"usage: ctags [-aBdFtuvwx] [-f tagsfile] file ...\n");
 		exit(1);
 	}
 
