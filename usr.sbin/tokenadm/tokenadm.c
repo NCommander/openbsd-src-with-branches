@@ -1,4 +1,4 @@
-/*	$OpenBSD: tokenadm.c,v 1.7 2004/04/07 14:09:35 aaron Exp $	*/
+/*	$OpenBSD: tokenadm.c,v 1.8 2004/06/21 15:27:19 avsm Exp $	*/
 
 /*-
  * Copyright (c) 1995 Migration Associates Corp. All Rights Reserved
@@ -205,7 +205,7 @@ main(int argc, char **argv)
 	if (optind >= argc) {
 usage:
 		fprintf(stderr,
-		    "Usage: %sadm [-BDERT1 | -d | -e | -r] [-m mode] user [...]\n",
+		    "usage: %sadm [-1BDdEeRrT] [-m [-]mode] [user ...]\n",
 			tt->name);
 		exit(1);
 	}
