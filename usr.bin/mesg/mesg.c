@@ -1,4 +1,4 @@
-/*	$OpenBSD: mesg.c,v 1.5 2003/06/03 02:56:13 millert Exp $	*/
+/*	$OpenBSD: mesg.c,v 1.6 2003/06/10 22:20:48 deraadt Exp $	*/
 /*	$NetBSD: mesg.c,v 1.4 1994/12/23 07:16:32 jtc Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mesg.c	8.2 (Berkeley) 1/21/94";
 #endif
-static char rcsid[] = "$OpenBSD: mesg.c,v 1.5 2003/06/03 02:56:13 millert Exp $";
+static char rcsid[] = "$OpenBSD: mesg.c,v 1.6 2003/06/10 22:20:48 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -99,6 +99,6 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-usage:	(void)fprintf(stderr, "usage: mesg [y | n]\n");
+usage:	(void)fprintf(stderr, "usage: mesg [n | y]\n");
 	exit(2);
 }
