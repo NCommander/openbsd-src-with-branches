@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.211 2007/01/26 17:40:49 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.212 2007/03/06 16:52:48 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -688,11 +688,10 @@ struct rde_memstats {
 #define	AFI_IPv6	2
 #define	AFI_ALL		0xffff
 
-/* Subsequent Address Family Identifier as per rfc2858 */
+/* Subsequent Address Family Identifier as per rfc4760 */
 #define	SAFI_NONE	0x00
 #define	SAFI_UNICAST	0x01
 #define	SAFI_MULTICAST	0x02
-#define	SAFI_BOTH	0x03
 #define	SAFI_ALL	0xff
 
 /* prototypes */
