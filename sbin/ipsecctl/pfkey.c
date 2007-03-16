@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.46 2006/08/30 18:02:20 henning Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.47 2006/11/10 14:47:52 hshoexer Exp $	*/
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  * Copyright (c) 2003, 2004 Markus Friedl <markus@openbsd.org>
@@ -255,7 +255,7 @@ pfkey_flow(int sd, u_int8_t satype, u_int8_t action, u_int8_t direction,
 		if (sa_srcid == NULL)
 			err(1, "pfkey_flow: calloc");
 
-		sa_srcid->sadb_ident_type = auth->idtype;
+		sa_srcid->sadb_ident_type = auth->srcid_type;
 		sa_srcid->sadb_ident_len = len / 8;
 		sa_srcid->sadb_ident_exttype = SADB_EXT_IDENTITY_SRC;
 
@@ -269,7 +269,7 @@ pfkey_flow(int sd, u_int8_t satype, u_int8_t action, u_int8_t direction,
 		if (sa_dstid == NULL)
 			err(1, "pfkey_flow: calloc");
 
-		sa_dstid->sadb_ident_type = auth->idtype;
+		sa_dstid->sadb_ident_type = auth->dstid_type;
 		sa_dstid->sadb_ident_len = len / 8;
 		sa_dstid->sadb_ident_exttype = SADB_EXT_IDENTITY_DST;
 
