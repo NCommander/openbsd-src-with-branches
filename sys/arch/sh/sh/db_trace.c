@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.2 2006/10/17 04:20:08 drahn Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.3 2006/11/04 00:01:24 mickey Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.19 2006/01/21 22:10:59 uwe Exp $	*/
 
 /*-
@@ -98,7 +98,7 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 			frame = tf->tf_r14;
 			callpc = tf->tf_spc;
 
-			(*print)("<EXPEVT %03x; SSR=%08x> at ",
+			(*print)("(EXPEVT %03x; SSR=%08x) at ",
 				 tf->tf_expevt, tf->tf_ssr);
 			db_printsym(callpc, DB_STGY_PROC, print);
 			(*print)("\n");
