@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.1 2007/02/06 17:13:33 art Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.2 2007/02/19 17:18:43 deraadt Exp $	*/
 
 /* Public Domain */
 
@@ -10,13 +10,27 @@
 static __inline void
 atomic_setbits_int(__volatile unsigned int *uip, unsigned int v)
 {
-	*uip |= v;
+	unsigned int tmp;
+
+	__asm volatile (
+	    "1:	lwarx	%0, 0, %2	\n"
+	    "	or	%0, %1, %0	\n"
+	    "	stwcx.	%0, 0, %2	\n"
+	    "	bne-	1b		\n"
+	    "	sync" : "=&r" (tmp) : "r" (v), "r" (uip) : "memory");
 }
 
 static __inline void
 atomic_clearbits_int(__volatile unsigned int *uip, unsigned int v)
 {
-	*uip &= ~v;
+	unsigned int tmp;
+
+	__asm volatile (
+	    "1:	lwarx	%0, 0, %2	\n"
+	    "	andc	%0, %0, %1	\n"
+	    "	stwcx.	%0, 0, %2	\n"
+	    "	bne-	1b		\n"
+	    "	sync" : "=&r" (tmp) : "r" (v), "r" (uip) : "memory");
 }
 
 #endif /* defined(_KERNEL) */
