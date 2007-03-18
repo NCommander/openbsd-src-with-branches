@@ -304,14 +304,8 @@ void
 usb_event_thread(void *arg)
 {
 	struct usb_softc *sc = arg;
-	int pwrdly;
 
 	DPRINTF(("usb_event_thread: start\n"));
-
-	/* Wait for power to come good. */
-	pwrdly = sc->sc_bus->root_hub->hub->hubdesc.bPwrOn2PwrGood * 
-	    UHD_PWRON_FACTOR + USB_EXTRA_POWER_UP_TIME;
-	usb_delay_ms(sc->sc_bus, pwrdly);
 
 	/* USB1 threads wait for USB2 threads to finish their first probe. */
 	while (sc->sc_bus->usbrev != USBREV_2_0 && threads_pending)

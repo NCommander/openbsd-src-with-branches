@@ -409,15 +409,9 @@ uhci_init(uhci_softc_t *sc)
 		uhci_dumpregs(sc);
 #endif
 
-	/* Save SOF over HC reset. */
-	sc->sc_saved_sof = UREAD1(sc, UHCI_SOF);
-
 	UWRITE2(sc, UHCI_INTR, 0);		/* disable interrupts */
 	uhci_globalreset(sc);			/* reset the controller */
 	uhci_reset(sc);
-
-	/* Restore saved SOF. */
-	UWRITE1(sc, UHCI_SOF, sc->sc_saved_sof);
 
 	/* Allocate and initialize real frame array. */
 	err = usb_allocmem(&sc->sc_bus,
@@ -726,6 +720,7 @@ uhci_power(int why, void *v)
 
 		/* save some state if BIOS doesn't */
 		sc->sc_saved_frnum = UREAD2(sc, UHCI_FRNUM);
+		sc->sc_saved_sof = UREAD1(sc, UHCI_SOF);
 
 		UWRITE2(sc, UHCI_INTR, 0); /* disable intrs */
 

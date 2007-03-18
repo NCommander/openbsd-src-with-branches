@@ -616,7 +616,7 @@ ohci_init(ohci_softc_t *sc)
 	ohci_soft_ed_t *sed, *psed;
 	usbd_status err;
 	int i;
-	u_int32_t ctl, rwc, ival, hcr, fm, per, rev, desca, descb;
+	u_int32_t s, ctl, rwc, ival, hcr, fm, per, rev, desca, descb;
 
 	DPRINTF(("ohci_init: start\n"));
 	printf(",");
@@ -718,12 +718,26 @@ ohci_init(ohci_softc_t *sc)
 	desca = OREAD4(sc, OHCI_RH_DESCRIPTOR_A);
 	descb = OREAD4(sc, OHCI_RH_DESCRIPTOR_B);
 
-	/* SMM handover performed by the PCI code didn't work? */
+	/* Determine in what context we are running. */
 	if (ctl & OHCI_IR) {
-		printf("%s: SMM does not respond, resetting\n",
-		       USBDEVNAME(sc->sc_bus.bdev));
-		OWRITE4(sc, OHCI_CONTROL, OHCI_HCFS_RESET | rwc);
-		goto reset;
+		/* SMM active, request change */
+		DPRINTF(("ohci_init: SMM active, request owner change\n"));
+		if ((sc->sc_intre & (OHCI_OC | OHCI_MIE)) == 
+		    (OHCI_OC | OHCI_MIE))
+			OWRITE4(sc, OHCI_INTERRUPT_ENABLE, OHCI_MIE);
+		s = OREAD4(sc, OHCI_COMMAND_STATUS);
+		OWRITE4(sc, OHCI_COMMAND_STATUS, s | OHCI_OCR);
+		for (i = 0; i < 100 && (ctl & OHCI_IR); i++) {
+			usb_delay_ms(&sc->sc_bus, 1);
+			ctl = OREAD4(sc, OHCI_CONTROL);
+		}
+		OWRITE4(sc, OHCI_INTERRUPT_DISABLE, OHCI_MIE);
+		if (ctl & OHCI_IR) {
+			printf("%s: SMM does not respond, resetting\n",
+			       USBDEVNAME(sc->sc_bus.bdev));
+			OWRITE4(sc, OHCI_CONTROL, OHCI_HCFS_RESET | rwc);
+			goto reset;
+		}
 #if 0
 /* Don't bother trying to reuse the BIOS init, we'll reset it anyway. */
 	} else if ((ctl & OHCI_HCFS_MASK) != OHCI_HCFS_RESET) {

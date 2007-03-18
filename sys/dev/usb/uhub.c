@@ -338,11 +338,9 @@ USB_ATTACH(uhub)
 			       USBDEVNAME(sc->sc_dev), port,
 			       usbd_errstr(err));
 		DPRINTF(("usb_init_port: turn on port %d power\n", port));
-	}
-
-	/* Wait for stable power.  Root hubs delay in their event thread. */
-	if (dev->powersrc->parent != NULL)
+		/* Wait for stable power. */
 		usbd_delay_ms(dev, pwrdly);
+	}
 
 	/* The usual exploration will finish the setup. */
 
