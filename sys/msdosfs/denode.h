@@ -1,4 +1,4 @@
-/*	$OpenBSD: denode.h,v 1.18 2005/03/01 14:24:33 tom Exp $	*/
+/*	$OpenBSD: denode.h,v 1.19 2007/01/16 17:52:18 thib Exp $	*/
 /*	$NetBSD: denode.h,v 1.24 1997/10/17 11:23:39 ws Exp $	*/
 
 /*-
@@ -288,7 +288,6 @@ int	msdosfs_strategy(void *);
 int	msdosfs_print(void *);
 int	msdosfs_islocked(void *);
 int	msdosfs_advlock(void *);
-int	msdosfs_reallocblks(void *);
 int	msdosfs_pathconf(void *);
 
 /*
