@@ -1,4 +1,4 @@
-/*	$OpenBSD: select.c,v 1.11 2005/06/18 01:52:22 brad Exp $	*/
+/*	$OpenBSD: select.c,v 1.12 2006/03/30 06:32:36 brad Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -133,7 +133,7 @@ check_selectop(struct selectop *sop)
 
 }
 #else
-#define check_selectop(sop)
+#define check_selectop(sop) do { (void) sop; } while (0)
 #endif
 
 /*
