@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: imsg.c,v 1.1 2006/06/01 14:12:20 norby Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -50,7 +50,7 @@ imsg_read(struct imsgbuf *ibuf)
 			log_warn("imsg_read: pipe read error");
 			return (-1);
 		}
-		return (0);
+		return (-2);
 	}
 
 	ibuf->r.wpos += n;

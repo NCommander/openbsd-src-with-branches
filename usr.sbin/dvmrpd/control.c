@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.1 2006/06/01 14:12:20 norby Exp $ */
+/*	$OpenBSD: control.c,v 1.2 2007/01/23 17:42:33 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -197,7 +197,7 @@ control_dispatch_imsg(int fd, short event, void *bula)
 
 	switch (event) {
 	case EV_READ:
-		if ((n = imsg_read(&c->ibuf)) <= 0) {
+		if ((n = imsg_read(&c->ibuf)) == -1 || n == 0) {
 			control_close(fd);
 			return;
 		}
