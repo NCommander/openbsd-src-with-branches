@@ -1,4 +1,4 @@
-/*	$OpenBSD: badsect.c,v 1.14 2004/08/08 19:04:25 deraadt Exp $	*/
+/*	$OpenBSD: badsect.c,v 1.15 2005/07/21 16:38:54 fgsch Exp $	*/
 /*	$NetBSD: badsect.c,v 1.10 1995/03/18 14:54:28 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)badsect.c	8.1 (Berkeley) 6/5/93";
 #else
-static const char rcsid[] = "$OpenBSD: badsect.c,v 1.14 2004/08/08 19:04:25 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: badsect.c,v 1.15 2005/07/21 16:38:54 fgsch Exp $";
 #endif
 #endif /* not lint */
 
@@ -160,7 +160,7 @@ chkuse(daddr_t blkno, int cnt)
 	daddr_t fsbn, bn;
 
 	fsbn = dbtofsb(fs, blkno);
-	if ((unsigned)(fsbn+cnt) > fs->fs_size) {
+	if ((unsigned)(fsbn+cnt) > fs->fs_ffs1_size) {
 		fprintf(stderr, "block %d out of range of file system\n", blkno);
 		return (1);
 	}
