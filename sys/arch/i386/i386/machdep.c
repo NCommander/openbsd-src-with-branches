@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.378 2007/02/20 21:15:01 tom Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.379 2007/02/21 19:34:25 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -256,7 +256,6 @@ void (*setperf_setup)(struct cpu_info *);
 int setperf_prio = 0;		/* for concurrent handlers */
 
 void (*delay_func)(int) = i8254_delay;
-void (*microtime_func)(struct timeval *) = i8254_microtime;
 void (*initclock_func)(void) = i8254_initclocks;
 void (*update_cpuspeed)(void) = NULL;
 
@@ -3288,9 +3287,14 @@ cpu_reset()
 }
 
 void
-cpu_initclocks()
+cpu_initclocks(void)
 {
 	(*initclock_func)();
+
+	if (initclock_func == i8254_initclocks)
+		i8254_inittimecounter();
+	else
+		i8254_inittimecounter_simple();
 }
 
 void
