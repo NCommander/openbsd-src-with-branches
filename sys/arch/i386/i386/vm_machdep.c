@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.48 2007/02/20 21:15:01 tom Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.49 2007/02/24 11:59:45 miod Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.61 1996/05/03 19:42:35 christos Exp $	*/
 
 /*-
@@ -150,6 +150,7 @@ cpu_exit(struct proc *p)
 		npxsave_proc(p, 0);
 #endif
 
+	pmap_deactivate(p);
 	switch_exit(p);
 }
 
