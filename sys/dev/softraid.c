@@ -1,4 +1,4 @@
-/* $OpenBSD $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
