@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcibiosvar.h,v 1.15 2005/11/23 09:24:57 mickey Exp $	*/
+/*	$OpenBSD: pcibiosvar.h,v 1.16 2006/11/29 22:40:13 miod Exp $	*/
 /*	$NetBSD: pcibios.h,v 1.2 2000/04/28 17:15:16 uch Exp $	*/
 
 /*
@@ -86,7 +86,7 @@ struct pcibios_intr_routing {
 /*
  * $PIR header.  Reference:
  *
- *	http://www.microsoft.com/HWDEV/busbios/PCIIRQ.htm
+ *	http://www.microsoft.com/whdc/archive/pciirq.mspx
  */
 struct pcibios_pir_header {
 	u_int32_t	signature;		/* $PIR */
