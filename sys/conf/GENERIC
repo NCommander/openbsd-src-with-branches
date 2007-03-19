@@ -68,6 +68,9 @@ option		PPP_DEFLATE
 option		MROUTING	# Multicast router
 #option		PIM		# Protocol Independent Multicast
 
+#softraid0	at root		# Software RAID
+#scsibus*	at softraid?
+
 pseudo-device	pf		# packet filter
 pseudo-device	pflog		# pf log if
 pseudo-device	pfsync		# pf sync if
