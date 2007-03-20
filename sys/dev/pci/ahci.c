@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.79 2007/03/20 05:33:02 pascoe Exp $ */
+/*	$OpenBSD: ahci.c,v 1.80 2007/03/20 05:46:50 pascoe Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -1267,6 +1267,8 @@ ahci_unload_prdt(struct ahci_ccb *ccb)
 		    BUS_DMASYNC_POSTWRITE);
 
 		bus_dmamap_unload(sc->sc_dmat, dmap);
+
+		xa->resid = xa->datalen - letoh32(ccb->ccb_cmd_hdr->prdbc);
 	}
 }
 
