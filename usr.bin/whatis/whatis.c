@@ -1,4 +1,4 @@
-/*	$OpenBSD: whatis.c,v 1.10 2005/10/17 19:04:20 otto Exp $	*/
+/*	$OpenBSD: whatis.c,v 1.11 2006/04/02 21:38:56 djm Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -185,7 +185,7 @@ match(char *bp, char *str)
 			break;
 
 		/* check for word match first */
-		for (start = bp++; *bp && (*bp == '_' || isalnum(*bp)); ++bp)
+		for (start = bp++; *bp == '_' || isalnum(*bp); ++bp)
 			;
 		if (bp - start == len) {
 		    if (strncasecmp(start, str, len) == 0)

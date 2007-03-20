@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.177 2007/01/21 01:41:54 stevesk Exp $ */
+/* $OpenBSD: clientloop.c,v 1.178 2007/02/20 10:25:14 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -927,7 +927,7 @@ process_cmdline(void)
 	cmd = s = read_passphrase("\r\nssh> ", RP_ECHO);
 	if (s == NULL)
 		goto out;
-	while (*s && isspace(*s))
+	while (isspace(*s))
 		s++;
 	if (*s == '-')
 		s++;	/* Skip cmdline '-', if any */
@@ -974,9 +974,8 @@ process_cmdline(void)
 		goto out;
 	}
 
-	s++;
-	while (*s && isspace(*s))
-		s++;
+	while (isspace(*++s))
+		;
 
 	if (delete) {
 		cancel_port = 0;
