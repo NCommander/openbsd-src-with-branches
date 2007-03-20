@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_ados.c,v 1.13 2005/04/08 20:09:36 jaredy Exp $	*/
+/*	$OpenBSD: mount_ados.c,v 1.14 2006/12/15 12:38:15 jmc Exp $	*/
 /*	$NetBSD: mount_ados.c,v 1.5 1996/04/13 01:30:59 jtc Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: mount_ados.c,v 1.13 2005/04/08 20:09:36 jaredy Exp $";
+static char rcsid[] = "$OpenBSD: mount_ados.c,v 1.14 2006/12/15 12:38:15 jmc Exp $";
 #endif /* not lint */
 
 #include <sys/cdefs.h>
@@ -140,7 +140,7 @@ a_gid(char *s)
 	if ((gr = getgrnam(s)) != NULL)
 		gid = gr->gr_gid;
 	else {
-		for (gname = s; *s && isdigit(*s); ++s);
+		for (gname = s; isdigit(*s); ++s);
 		if (!*s)
 			gid = atoi(gname);
 		else
@@ -159,7 +159,7 @@ a_uid(char *s)
 	if ((pw = getpwnam(s)) != NULL)
 		uid = pw->pw_uid;
 	else {
-		for (uname = s; *s && isdigit(*s); ++s);
+		for (uname = s; isdigit(*s); ++s);
 		if (!*s)
 			uid = atoi(uname);
 		else
