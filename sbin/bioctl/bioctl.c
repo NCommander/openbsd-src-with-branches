@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.48 2006/08/28 12:36:08 mickey Exp $       */
+/* $OpenBSD: bioctl.c,v 1.49 2007/03/19 03:02:09 marco Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -191,8 +191,11 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-Dhiv] [-a alarm-function]"
-	    " [[-bHu] chan:targ[.lun]] device\n", __progname);
+	fprintf(stderr, "usage: %s\t[-Dhiv] [-a alarm-function]"
+	    " [-b channel:target[.lun]] device\n", __progname);
+	fprintf(stderr, "\t\t[[-c raidlevel] [-H channel:target[.lun]]\n");
+	fprintf(stderr, "\t\t[-l special[,special[,...]]] "
+	    "[-u channel:target[.lun]] device\n");
 	exit(1);
 }
 
