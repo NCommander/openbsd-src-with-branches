@@ -1,4 +1,4 @@
-/*	$OpenBSD: atascsi.h,v 1.11 2007/03/20 07:09:42 pascoe Exp $ */
+/*	$OpenBSD: atascsi.h,v 1.12 2007/03/20 07:45:11 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -121,6 +121,8 @@ struct ata_xfer {
 #define ATA_S_PENDING			1
 #define ATA_S_COMPLETE			2
 #define ATA_S_ERROR			3
+#define ATA_S_TIMEOUT			4
+#define ATA_S_ONCHIP			5
 #define ATA_S_PUT			6
 
 	void			*atascsi_private;
