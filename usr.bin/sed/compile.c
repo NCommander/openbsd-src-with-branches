@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile.c,v 1.22 2006/10/09 00:23:56 tedu Exp $	*/
+/*	$OpenBSD: compile.c,v 1.23 2007/01/09 08:37:44 otto Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)compile.c	8.2 (Berkeley) 4/28/95"; */
-static const char rcsid[] = "$OpenBSD: compile.c,v 1.22 2006/10/09 00:23:56 tedu Exp $";
+static const char rcsid[] = "$OpenBSD: compile.c,v 1.23 2007/01/09 08:37:44 otto Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -139,7 +139,7 @@ compile(void)
 
 #define EATSPACE() do {							\
 	if (p)								\
-		while (*p && isascii(*p) && isspace(*p))		\
+		while (isascii(*p) && isspace(*p))			\
 			p++;						\
 	} while (0)
 

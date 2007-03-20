@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.24 2006/11/02 18:02:16 ray Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.25 2007/03/06 11:16:55 jmc Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -77,7 +77,7 @@ trim(char *line)
 	}
 	ptr[1] = '\0';
 
-	for (ptr = line; *ptr && isspace(*ptr); ptr++)
+	for (ptr = line; isspace(*ptr); ptr++)
 		;
 
 	return(ptr);

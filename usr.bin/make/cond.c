@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: cond.c,v 1.31 2006/01/20 23:10:19 espie Exp $	*/
+/*	$OpenBSD: cond.c,v 1.32 2007/01/04 18:01:32 espie Exp $	*/
 /*	$NetBSD: cond.c,v 1.7 1996/11/06 17:59:02 christos Exp $	*/
 
 /*
@@ -644,7 +644,7 @@ CondHandleDefault(bool doEval)
 		/* A variable is empty when it just contains
 		 * spaces... 4/15/92, christos */
 		char *p;
-		for (p = val; *p && isspace(*p); p++)
+		for (p = val; isspace(*p); p++)
 		    continue;
 		t = *p == '\0' ? True : False;
 	    }

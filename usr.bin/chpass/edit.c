@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.28 2005/11/14 15:31:11 deraadt Exp $	*/
+/*	$OpenBSD: edit.c,v 1.29 2006/03/30 21:08:21 robert Exp $	*/
 /*	$NetBSD: edit.c,v 1.6 1996/05/15 21:50:45 jtc Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)edit.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: edit.c,v 1.28 2005/11/14 15:31:11 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: edit.c,v 1.29 2006/03/30 21:08:21 robert Exp $";
 #endif
 #endif /* not lint */
 
@@ -182,7 +182,7 @@ verify(char *tempname, struct passwd *pw)
 					goto bad;
 				}
 				while (isspace(*++p));
-				for (q = p; *q && isprint(*q); q++) {
+				for (q = p; isprint(*q); q++) {
 					if (ep->except && strchr(ep->except,*q))
 						break;
 				}
