@@ -10,7 +10,7 @@
  *
  * S/Key verification check, lookups, and authentication.
  *
- * $OpenBSD: skeylogin.c,v 1.52 2004/08/05 13:31:36 millert Exp $
+ * $OpenBSD: skeylogin.c,v 1.53 2006/04/10 08:06:08 deraadt Exp $
  */
 
 #include <sys/param.h>
@@ -430,7 +430,7 @@ skey_fakeprompt(char *username, char *skeyprompt)
 	if (gethostname(pbuf, sizeof(pbuf)) == -1)
 		*(p = pbuf) = '.';
 	else
-		for (p = pbuf; *p && isalnum(*p); p++)
+		for (p = pbuf; isalnum(*p); p++)
 			if (isalpha(*p) && isupper(*p))
 				*p = (char)tolower(*p);
 	if (*p && pbuf - p < 4)
