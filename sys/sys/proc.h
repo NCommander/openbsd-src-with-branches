@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.89 2006/11/29 12:24:18 miod Exp $	*/
+/*	$OpenBSD: proc.h,v 1.90 2007/02/06 18:42:37 art Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -433,9 +433,6 @@ void	setrunnable(struct proc *);
 #if !defined(setrunqueue)
 void	setrunqueue(struct proc *);
 #endif
-int	ltsleep(void *chan, int pri, const char *wmesg, int timo,
-	    volatile struct simplelock *);
-#define tsleep(chan, pri, wmesg, timo) ltsleep(chan, pri, wmesg, timo, NULL)
 void	unsleep(struct proc *);
 void    wakeup_n(void *chan, int);
 void    wakeup(void *chan);
@@ -459,6 +456,23 @@ void	child_return(void *);
 
 int	proc_cansugid(struct proc *);
 void	proc_zap(struct proc *);
+
+struct sleep_state {
+	int sls_s;
+	int sls_catch;
+	int sls_do_sleep;
+	int sls_sig;
+};
+
+void	sleep_setup(struct sleep_state *, void *, int, const char *);
+void	sleep_setup_timeout(struct sleep_state *, int);
+void	sleep_setup_signal(struct sleep_state *, int);
+void	sleep_finish(struct sleep_state *, int);
+int	sleep_finish_timeout(struct sleep_state *);
+int	sleep_finish_signal(struct sleep_state *);
+
+int	tsleep(void *, int, const char *, int);
+#define ltsleep(c, p, w, t, l) tsleep(c, p, w, t)
 
 #if defined(MULTIPROCESSOR)
 void	proc_trampoline_mp(void);	/* XXX */
