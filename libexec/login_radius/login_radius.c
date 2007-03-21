@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_radius.c,v 1.4 2003/07/06 21:54:38 deraadt Exp $	*/
+/*	$OpenBSD: login_radius.c,v 1.5 2003/07/29 18:39:23 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Berkeley Software Design, Inc. All rights reserved.
@@ -204,7 +204,7 @@ static int
 cleanstring(char *s)
 {
 
-	while (*s && isgraph(*s) && *s != '\\')
+	while (isgraph(*s) && *s != '\\')
 		++s;
 	return(*s == '\0' ? 1 : 0);
 }
