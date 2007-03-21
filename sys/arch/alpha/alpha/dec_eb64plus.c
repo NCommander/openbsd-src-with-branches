@@ -1,4 +1,4 @@
-/* $OpenBSD: dec_eb64plus.c,v 1.4 2005/05/09 21:55:12 martin Exp $ */
+/* $OpenBSD: dec_eb64plus.c,v 1.5 2006/11/28 16:56:50 dlg Exp $ */
 /* $NetBSD: dec_eb64plus.c,v 1.25 2001/06/05 04:53:11 thorpej Exp $ */
 
 /*
@@ -36,8 +36,6 @@
 #include <sys/device.h>
 #include <sys/termios.h>
 #include <dev/cons.h>
-
-#include <uvm/uvm_extern.h>
 
 #include <machine/rpb.h>
 #include <machine/autoconf.h>
