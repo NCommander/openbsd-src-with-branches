@@ -690,12 +690,14 @@ atascsi_stuffup(struct scsi_xfer *xs)
 int
 ata_exec(struct atascsi *as, struct ata_xfer *xa)
 {
+	int polled = xa->flags & ATA_F_POLL;
+
 	switch (as->as_methods->ata_cmd(xa)) {
 	case ATA_COMPLETE:
 	case ATA_ERROR:
 		return (COMPLETE);
 	case ATA_QUEUED:
-		if (!(xa->flags & ATA_F_POLL))
+		if (!polled)
 			return (SUCCESSFULLY_QUEUED);
 	default:
 		panic("unexpected return from ata_exec");
