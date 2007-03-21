@@ -1,4 +1,4 @@
-/*	$OpenBSD: cache_r10k.S,v 1.1 2004/09/20 10:28:36 pefo Exp $ */
+/*	$OpenBSD: cache_r10k.S,v 1.2 2005/07/20 21:36:32 miod Exp $ */
 
 /*
  * Copyright (c) 2004 Opsycon AB (www.opsycon.se)
@@ -572,7 +572,7 @@ NON_LEAF(Mips10k_IOSyncDCache, FRAMESZ(CF_SZ+2*REGSZ), ra)
 	REG_S	a0, CF_ARGSZ(sp)		# save args
 	beqz	a2, SyncRD			# Sync PREREAD
 	REG_S	a1, CF_ARGSZ+REGSZ(sp)
-	addiu	a2, 1
+	addiu	a2, -1
 	bnez	a2, SyncRDWB			# Sync PREWRITE+PREREAD
 	nop
 
