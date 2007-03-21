@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2007/03/19 20:20:06 jmc Exp $
+#	$OpenBSD: Makefile,v 1.24 2007/03/21 12:22:30 millert Exp $
 
 LIB=	event
 WANTLINT=
@@ -35,7 +35,7 @@ MLINKS=	event.3 event_init.3 event.3 event_dispatch.3 event.3 event_loop.3 \
 	evdns.3 evdns_set_log_fn.3
 
 CFLAGS+= -I${.CURDIR} -DNDEBUG \
-	-DDNS_USE_CPU_CLOCK_FOR_ID \
+	-DDNS_USE_ARC4RANDOM_FOR_ID \
 	-DHAVE_CLOCK_GETTIME \
 	-DHAVE_CLOCK_MONOTONIC \
 	-DHAVE_FCNTL_H \
