@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.37 2006/08/10 22:08:33 jmc Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.38 2007/02/18 23:50:47 ray Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -1029,6 +1029,8 @@ rtrlist(void)
 		err(1, "sysctl(ICMPV6CTL_ND6_DRLIST)");
 		/*NOTREACHED*/
 	}
+	if (l == 0)
+		return;
 	buf = malloc(l);
 	if (buf == NULL) {
 		err(1, "malloc");
