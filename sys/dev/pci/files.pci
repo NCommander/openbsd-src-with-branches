@@ -207,6 +207,10 @@ file	dev/pci/isp_pci.c		isp_pci
 attach	mpi at pci with mpi_pci
 file	dev/pci/mpi_pci.c		mpi_pci
 
+# Silicon Image 3124/3132/3531 SATALink
+attach	sili at pci with sili_pci
+file	dev/pci/sili_pci.c		sili_pci
+
 # Ethernet driver for DC21040-based boards
 device	de: ether, ifnet, ifmedia
 attach	de at pci

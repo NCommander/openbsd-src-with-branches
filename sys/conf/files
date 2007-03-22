@@ -185,6 +185,10 @@ file	dev/ic/isp_openbsd.c		isp
 device	mpi: scsi
 file	dev/ic/mpi.c			mpi
 
+# Silicon Image 3124/3132/3531 SATALink
+device	sili: scsi, atascsi
+file	dev/ic/sili.c			sili
+
 # UltraStor SCSI controllers
 device	uha: scsi
 file	dev/ic/uha.c			uha
