@@ -147,6 +147,8 @@ struct ohci_xfer {
 	struct usb_task	abort_task;
 };
 
+usbd_status	ohci_checkrev(ohci_softc_t *);
+usbd_status	ohci_handover(ohci_softc_t *);
 usbd_status	ohci_init(ohci_softc_t *);
 int		ohci_intr(void *);
 int		ohci_detach(ohci_softc_t *, int);
