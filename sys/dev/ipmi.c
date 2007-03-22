@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.50 2006/12/23 00:36:24 deraadt Exp $ */
+/*	$OpenBSD: ipmi.c,v 1.52 2006/12/23 17:46:39 deraadt Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -53,7 +53,7 @@ struct ipmi_sensor {
 	int		i_num;
 	int		stype;
 	int		etype;
-	struct		sensor i_sensor;
+	struct		ksensor i_sensor;
 	SLIST_ENTRY(ipmi_sensor) list;
 };
 

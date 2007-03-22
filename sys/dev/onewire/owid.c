@@ -1,4 +1,4 @@
-/*	$OpenBSD: owid.c,v 1.2 2006/06/23 06:27:11 miod Exp $	*/
+/*	$OpenBSD: owid.c,v 1.3 2006/12/23 17:46:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -37,8 +37,8 @@ struct owid_softc {
 	void *			sc_onewire;
 	u_int64_t		sc_rom;
 
-	struct sensor		sc_sensor;
-	struct sensordev	sc_sensordev;
+	struct ksensor		sc_sensor;
+	struct ksensordev	sc_sensordev;
 
 	int			sc_dying;
 };

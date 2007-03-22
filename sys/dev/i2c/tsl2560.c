@@ -1,4 +1,4 @@
-/*	$OpenBSD: tsl2560.c,v 1.3 2006/01/19 17:08:39 grange Exp $	*/
+/*	$OpenBSD: tsl2560.c,v 1.4 2006/12/23 17:46:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -40,8 +40,8 @@ struct tsl_softc {
 	i2c_tag_t sc_tag;
 	i2c_addr_t sc_addr;
 
-	struct sensor sc_sensor;
-	struct sensordev sc_sensordev;
+	struct ksensor sc_sensor;
+	struct ksensordev sc_sensordev;
 };
 
 int	tsl_match(struct device *, void *, void *);

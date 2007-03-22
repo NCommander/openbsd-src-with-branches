@@ -1,4 +1,4 @@
-/*	$OpenBSD: cissvar.h,v 1.5 2006/08/31 23:19:35 krw Exp $	*/
+/*	$OpenBSD: cissvar.h,v 1.6 2006/12/23 17:46:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -35,8 +35,8 @@ struct ciss_softc {
 	void		*sc_sh;
 	struct proc	*sc_thread;
 	int		sc_flush;
-	struct sensor	*sensors;
-	struct sensordev sensordev;
+	struct ksensor	*sensors;
+	struct ksensordev sensordev;
 
 	u_int	sc_flags;
 #define	CISS_BIO	0x0001

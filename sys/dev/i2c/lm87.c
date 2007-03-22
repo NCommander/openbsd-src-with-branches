@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm87.c,v 1.16 2006/04/09 21:06:33 deraadt Exp $	*/
+/*	$OpenBSD: lm87.c,v 1.17 2006/12/23 17:46:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -61,8 +61,8 @@ struct lmenv_softc {
 	i2c_tag_t sc_tag;
 	i2c_addr_t sc_addr;
 
-	struct sensor sc_sensor[LMENV_NUM_SENSORS];
-	struct sensordev sc_sensordev;
+	struct ksensor sc_sensor[LMENV_NUM_SENSORS];
+	struct ksensordev sc_sensordev;
 	int	sc_fan1_div, sc_fan2_div;
 	int	sc_family;
 };
