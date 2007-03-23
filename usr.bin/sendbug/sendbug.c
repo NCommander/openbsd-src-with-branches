@@ -1,4 +1,4 @@
-/*	$OpenBSD: sendbug.c,v 1.2 2007/03/23 02:11:00 deraadt Exp $	*/
+/*	$OpenBSD: sendbug.c,v 1.3 2007/03/23 02:28:14 deraadt Exp $	*/
 
 /*
  * Written by Ray Lai <ray@cyth.net>.
@@ -279,7 +279,10 @@ send_file(const char *file, int dst)
 			if (blank && (sp = memchr(buf, '<', len)) != NULL)
 				ep = memchr(sp, '>', len - (sp - buf + 1));
 			/* Length of string before comment. */
-			copylen = ep ? sp - buf : len;
+			if (ep)
+				copylen = sp - buf;
+			else
+				copylen = len;
 			if (atomicio(vwrite, dst, buf, copylen) != copylen) {
 				int saved_errno = errno;
 
