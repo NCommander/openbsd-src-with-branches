@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_vnode.c,v 1.42 2006/07/26 23:15:55 mickey Exp $	*/
+/*	$OpenBSD: uvm_vnode.c,v 1.43 2006/07/31 11:51:29 mickey Exp $	*/
 /*	$NetBSD: uvm_vnode.c,v 1.36 2000/11/24 20:34:01 chs Exp $	*/
 
 /*
@@ -745,8 +745,7 @@ uvn_releasepg(pg, nextpgp)
  * so the current pager needs:
  *   int uvn_aiodone(struct uvm_aiodesc *)
  *
- * => return KERN_SUCCESS (aio finished, free it).  otherwise requeue for
- *	later collection.
+ * => return 0 (aio finished, free it). otherwise requeue for later collection.
  * => called with pageq's locked by the daemon.
  *
  * general outline:
