@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.70 2007/02/26 11:25:23 pedro Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.71 2007/03/25 18:02:37 tedu Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -76,6 +76,7 @@
 #include <sys/mount.h>
 #include <sys/vnode.h>
 #include <sys/file.h>
+#include <sys/rwlock.h>
 #include <sys/uio.h>
 #include <sys/conf.h>
 
