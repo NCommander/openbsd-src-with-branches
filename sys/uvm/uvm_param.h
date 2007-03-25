@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_param.h,v 1.9 2003/11/08 19:17:28 jmc Exp $	*/
+/*	$OpenBSD: uvm_param.h,v 1.10 2005/11/25 15:52:11 mickey Exp $	*/
 /*	$NetBSD: uvm_param.h,v 1.5 2001/03/09 01:02:12 chs Exp $	*/
 
 /* 
@@ -138,7 +138,6 @@ struct _ps_strings {
 /* 
  *	Return values from the VM routines.
  */
-#define	KERN_SUCCESS		0
 #define	KERN_INVALID_ADDRESS	EFAULT
 #define	KERN_PROTECTION_FAILURE	EACCES
 #define	KERN_NO_SPACE		ENOMEM
