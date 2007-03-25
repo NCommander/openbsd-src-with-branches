@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.60 2006/12/24 20:29:45 miod Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.61 2007/03/15 10:22:30 art Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -315,10 +315,6 @@ hardclock(struct clockframe *frame)
 	time_uptime = mono_time.tv_sec;
 #else
 	tc_ticktock();
-#endif
-
-#ifdef CPU_CLOCKUPDATE
-	CPU_CLOCKUPDATE();
 #endif
 
 	/*
