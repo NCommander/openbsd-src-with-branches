@@ -1,4 +1,4 @@
-/*	$OpenBSD:	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2006 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
