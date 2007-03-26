@@ -1,6 +1,7 @@
-/*	$OpenBSD: spamd.c,v 1.98 2007/03/07 11:30:43 jmc Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.99 2007/03/26 15:20:43 beck Exp $	*/
 
 /*
+ * Copyright (c) 2002-2007 Bob Beck.  All rights reserved.
  * Copyright (c) 2002 Theo de Raadt.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
