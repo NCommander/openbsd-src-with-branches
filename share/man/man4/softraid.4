@@ -1,4 +1,4 @@
-.\"	$OpenBSD: softraid.4,v 1.1 2007/03/20 03:40:38 todd Exp $
+.\"	$OpenBSD: softraid.4,v 1.2 2007/03/20 06:08:03 jmc Exp $
 .\"
 .\" Copyright (c) 2007 Todd T. Fries <todd@OpenBSD.org>
 .\"
@@ -82,7 +82,7 @@ It first appeared in
 .Sh CAVEATS
 RAID level 1 can protect against some
 data loss due to component failure.
-However the loss of all components of a RAID 0 system
+However the loss of any component of a RAID 0 system
 will result in the entire filesystems on that RAID device
 being lost.
 RAID is
