@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.31 2005/12/09 09:09:52 jsg Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.32 2006/05/11 18:58:59 miod Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -464,14 +464,6 @@ dk_mountroot(void)
 		{
 		extern int ffs_mountroot(void);
 		mountrootfn = ffs_mountroot;
-		}
-		break;
-#endif
-#ifdef LFS
-	case FS_BSDLFS:
-		{
-		extern int lfs_mountroot(void);
-		mountrootfn = lfs_mountroot;
 		}
 		break;
 #endif
