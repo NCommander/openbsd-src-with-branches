@@ -847,12 +847,10 @@ const struct pciide_product_desc pciide_serverworks_products[] =  {
 	  0,
 	  serverworks_chip_map,
 	},
-#if 0
 	{ PCI_PRODUCT_RCC_K2_SATA,
 	  IDE_PCI_CLASS_OVERRIDE,
 	  svwsata_chip_map,
 	},
-#endif
 	{ PCI_PRODUCT_RCC_FRODO4_SATA,
 	  0,
 	  svwsata_chip_map,
