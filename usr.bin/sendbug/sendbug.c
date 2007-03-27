@@ -1,4 +1,4 @@
-/*	$OpenBSD: sendbug.c,v 1.30 2007/03/26 07:16:11 ray Exp $	*/
+/*	$OpenBSD: sendbug.c,v 1.31 2007/03/26 18:13:08 moritz Exp $	*/
 
 /*
  * Written by Ray Lai <ray@cyth.net>.
@@ -30,7 +30,7 @@
 int	editit(char *);
 void	init(void);
 int	prompt(void);
-int	send_file(const char *, int dst);
+int	send_file(const char *, int);
 int	sendmail(const char *);
 void	template(FILE *);
 
