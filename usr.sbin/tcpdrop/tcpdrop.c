@@ -1,4 +1,4 @@
-/* $OpenBSD: tcpdrop.c,v 1.5 2006/01/03 01:46:27 stevesk Exp $ */
+/* $OpenBSD: tcpdrop.c,v 1.6 2007/03/25 17:20:27 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
@@ -73,9 +73,11 @@ main(int argc, char **argv)
 		port2 = argv[4];
 	} else {
 fail:
-		fprintf(stderr, "usage: %s laddr lport faddr fport\n",
+		fprintf(stderr,
+		    "usage: %s local-addr local-port remote-addr remote-port\n",
 		    __progname);
-		fprintf(stderr, "       %s laddr:lport faddr:fport\n",
+		fprintf(stderr,
+		    "       %s local-addr:local-port remote-addr:remote-port\n",
 		    __progname);
 		exit(1);
 	}
