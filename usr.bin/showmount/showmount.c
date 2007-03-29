@@ -1,4 +1,4 @@
-/*	$OpenBSD: showmount.c,v 1.14 2003/12/12 02:14:36 deraadt Exp $	*/
+/*	$OpenBSD: showmount.c,v 1.15 2005/12/22 23:22:37 deraadt Exp $	*/
 /*	$NetBSD: showmount.c,v 1.7 1996/05/01 18:14:10 cgd Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)showmount.c	8.3 (Berkeley) 3/29/95";
 #endif
-static char rcsid[] = "$OpenBSD: showmount.c,v 1.14 2003/12/12 02:14:36 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: showmount.c,v 1.15 2005/12/22 23:22:37 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -360,7 +360,7 @@ void
 usage(void)
 {
 
-	fprintf(stderr, "usage: showmount [-ade3] host\n");
+	fprintf(stderr, "usage: showmount [-3ade] [host]\n");
 	exit(1);
 }
 
