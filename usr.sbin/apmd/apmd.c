@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.43 2006/03/15 20:30:28 sturm Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.44 2006/04/12 19:40:18 deraadt Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -382,8 +382,6 @@ suspend(int ctl_fd)
 {
 	do_etc_file(_PATH_APM_ETC_SUSPEND);
 	sync();
-	sync();
-	sync();
 	sleep(1);
 	ioctl(ctl_fd, APM_IOC_SUSPEND, 0);
 }
@@ -392,8 +390,6 @@ void
 stand_by(int ctl_fd)
 {
 	do_etc_file(_PATH_APM_ETC_STANDBY);
-	sync();
-	sync();
 	sync();
 	sleep(1);
 	ioctl(ctl_fd, APM_IOC_STANDBY, 0);
