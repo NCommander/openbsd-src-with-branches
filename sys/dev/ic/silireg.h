@@ -1,4 +1,4 @@
-/*	$OpenBSD: silireg.h,v 1.6 2007/03/26 00:33:38 dlg Exp $ */
+/*	$OpenBSD: silireg.h,v 1.7 2007/03/26 01:55:02 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -51,6 +51,9 @@
 #define SILI_REG_GPIOCTL	SILI_REG_FLASHDATA
 #define SILI_REG_IICADDR	0x78 /* I2C Address */
 #define SILI_REG_IIC		0x7c /* I2C Data / Control */
+
+#define SILI_PORT_SIZE		0x2000
+#define SILI_PORT_OFFSET(_p)	((_p) * SILI_PORT_SIZE)
 
 /* Port Registers */
 #define SILI_PREG_LRAM		0x0000 /* Port LRAM */
