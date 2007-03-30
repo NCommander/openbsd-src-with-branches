@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccd.c,v 1.67 2006/08/12 18:08:11 krw Exp $	*/
+/*	$OpenBSD: ccd.c,v 1.68 2006/11/29 15:03:42 krw Exp $	*/
 /*	$NetBSD: ccd.c,v 1.33 1996/05/05 04:21:14 thorpej Exp $	*/
 
 /*-
@@ -1151,7 +1151,7 @@ ccdioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 			return (EBUSY);
 
 		if (ccio->ccio_ndisks == 0 || ccio->ccio_ndisks > INT_MAX ||
-		    ccio->ccio_ileave <= 0)
+		    ccio->ccio_ileave < 0)
 			return (EINVAL);
 
 		if ((error = ccdlock(cs)) != 0)
