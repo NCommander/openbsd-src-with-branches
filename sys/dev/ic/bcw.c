@@ -1,6 +1,7 @@
-/*	$OpenBSD: bcw.c,v 1.81 2007/03/31 09:48:02 mglocker Exp $ */
+/*	$OpenBSD: bcw.c,v 1.82 2007/03/31 23:38:03 mglocker Exp $ */
 
 /*
+ * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
  * Copyright (c) 2006 Jon Simola <jsimola@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
