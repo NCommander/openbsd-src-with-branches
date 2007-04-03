@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_proc.c,v 1.31 2005/12/22 06:55:03 tedu Exp $	*/
+/*	$OpenBSD: kern_proc.c,v 1.32 2007/03/15 10:22:30 art Exp $	*/
 /*	$NetBSD: kern_proc.c,v 1.14 1996/02/09 18:59:41 christos Exp $	*/
 
 /*
@@ -64,6 +64,7 @@ struct proclist allproc;
 struct proclist zombproc;
 
 struct pool proc_pool;
+struct pool process_pool;
 struct pool rusage_pool;
 struct pool ucred_pool;
 struct pool pgrp_pool;
@@ -92,6 +93,8 @@ procinit(void)
 		panic("procinit: malloc");
 
 	pool_init(&proc_pool, sizeof(struct proc), 0, 0, 0, "procpl",
+	    &pool_allocator_nointr);
+	pool_init(&process_pool, sizeof(struct process), 0, 0, 0, "processpl",
 	    &pool_allocator_nointr);
 	pool_init(&rusage_pool, sizeof(struct rusage), 0, 0, 0, "zombiepl",
 	    &pool_allocator_nointr);
