@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.67 2006/12/01 08:14:53 otto Exp $	*/
+/*	$OpenBSD: main.c,v 1.68 2007/01/18 20:53:36 millert Exp $	*/
 
 #ifndef SMALL
 static const char copyright[] =
@@ -36,7 +36,7 @@ static const char license[] =
 #endif /* SMALL */
 
 #ifndef SMALL
-static const char main_rcsid[] = "$OpenBSD: main.c,v 1.67 2006/12/01 08:14:53 otto Exp $";
+static const char main_rcsid[] = "$OpenBSD: main.c,v 1.68 2007/01/18 20:53:36 millert Exp $";
 #endif
 
 #include <sys/param.h>
@@ -744,12 +744,10 @@ setfile(const char *name, int fd, struct stat *fs)
 	if (fs->st_flags && fchflags(fd, fs->st_flags))
 		warn("fchflags: %s", name);
 
-	if (!nosave) {
-		TIMESPEC_TO_TIMEVAL(&tv[0], &fs->st_atimespec);
-		TIMESPEC_TO_TIMEVAL(&tv[1], &fs->st_mtimespec);
-		if (futimes(fd, tv))
-			warn("futimes: %s", name);
-	}
+	TIMESPEC_TO_TIMEVAL(&tv[0], &fs->st_atimespec);
+	TIMESPEC_TO_TIMEVAL(&tv[1], &fs->st_mtimespec);
+	if (futimes(fd, tv))
+		warn("futimes: %s", name);
 }
 
 int
