@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_ebus.c,v 1.10 2004/09/23 18:55:45 miod Exp $	*/
+/*	$OpenBSD: com_ebus.c,v 1.11 2005/06/06 01:08:47 miod Exp $	*/
 /*	$NetBSD: com_ebus.c,v 1.6 2001/07/24 19:27:10 eeh Exp $	*/
 
 /*
@@ -85,8 +85,9 @@ com_ebus_match(parent, match, aux)
 		if ((i = OF_getproplen(ea->ea_node, "compatible")) &&
 			OF_getprop(ea->ea_node, "compatible", compat,
 				sizeof(compat)) == i) {
-			if (strcmp(compat, "su16550") == 0 || 
-				strcmp(compat, "su") == 0) {
+			if (strcmp(compat, "su16552") == 0 ||
+			    strcmp(compat, "su16550") == 0 ||
+			    strcmp(compat, "su") == 0) {
 				return (1);
 			}
 		}
