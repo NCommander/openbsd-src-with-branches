@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkio.h,v 1.4 1999/08/10 23:08:09 deraadt Exp $	*/
+/*	$OpenBSD: dkio.h,v 1.5 2003/06/02 23:28:21 millert Exp $	*/
 /*	$NetBSD: dkio.h,v 1.1 1996/01/30 18:21:48 thorpej Exp $	*/
 
 /*
@@ -58,5 +58,14 @@
 
 #define DIOCGPDINFO	_IOR('d', 114, struct disklabel)/* get physical */
 #define DIOCRLDINFO	_IO('d', 115)			/* reload disklabel */
+
+struct dk_inquiry {
+	char		vendor[64];
+	char		product[128];
+	char		revision[64];
+	char		serial[64];
+};
+
+#define DIOCINQ		_IOR('d', 116, struct dk_inquiry)
 
 #endif /* _SYS_DKIO_H_ */
