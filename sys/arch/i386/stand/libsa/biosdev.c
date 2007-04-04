@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.c,v 1.69 2004/06/23 00:21:49 tom Exp $	*/
+/*	$OpenBSD: biosdev.c,v 1.70 2006/10/12 12:14:17 krw Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -134,7 +134,7 @@ bios_getdiskinfo(int dev, bios_diskinfo_t *pdi)
 
 	/* NOTE:
 	 * This currently hangs/reboots some machines
-	 * The IBM Thinkpad 750ED for one.
+	 * The IBM ThinkPad 750ED for one.
 	 *
 	 * Funny that an IBM/MS extension would not be
 	 * implemented by an IBM system...
