@@ -1,4 +1,4 @@
-/*	$OpenBSD: ebusreg.h,v 1.3 2001/10/01 05:48:11 jason Exp $	*/
+/*	$OpenBSD: ebusreg.h,v 1.4 2001/10/01 18:08:04 jason Exp $	*/
 /*	$NetBSD: ebusreg.h,v 1.1 1999/06/04 13:29:13 mrg Exp $	*/
 
 /*
@@ -76,6 +76,14 @@ struct ebus_ranges {
 	u_int32_t	phys_hi;	/* parent high phys addr */
 	u_int32_t	phys_mid;	/* parent mid phys addr */
 	u_int32_t	phys_lo;	/* parent low phys addr */
+	u_int32_t	size;
+};
+
+struct ebus_mainbus_ranges {
+	u_int32_t	child_hi;
+	u_int32_t	child_lo;
+	u_int32_t	phys_hi;
+	u_int32_t	phys_lo;
 	u_int32_t	size;
 };
 
