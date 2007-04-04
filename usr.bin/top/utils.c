@@ -1,4 +1,4 @@
-/* $OpenBSD: utils.c,v 1.16 2005/06/08 22:36:43 millert Exp $	 */
+/* $OpenBSD: utils.c,v 1.17 2007/02/27 16:27:39 otto Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include "top.h"
 #include "machine.h"
