@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmapae.c,v 1.8 2007/03/18 14:23:57 mickey Exp $	*/
+/*	$OpenBSD: pmapae.c,v 1.9 2007/03/26 08:43:34 art Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -983,7 +983,7 @@ pmap_alloc_ptp_pae(struct pmap *pmap, int pde_index, boolean_t just_try)
 		return(NULL);
 
 	/* got one! */
-	ptp->flags &= ~PG_BUSY;	/* never busy */
+	ptp->pg_flags &= ~PG_BUSY;	/* never busy */
 	ptp->wire_count = 1;	/* no mappings yet */
 	PDE(pmap, pde_index) =
 	    (pd_entry_t)(VM_PAGE_TO_PHYS(ptp) | PG_u | PG_RW | PG_V);

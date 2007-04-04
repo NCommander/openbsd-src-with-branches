@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc_debug.c,v 1.22 2003/06/03 01:27:31 art Exp $	*/
+/*	$OpenBSD: kern_malloc_debug.c,v 1.23 2004/06/20 01:04:28 art Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Artur Grabowski <art@openbsd.org>
@@ -252,7 +252,7 @@ debug_malloc_allocate_free(int wait)
 		simple_lock(&uvmexp.kmem_object->vmobjlock);
 		pg = uvm_pagealloc(uvmexp.kmem_object, offset, NULL, 0);
 		if (pg) {
-			pg->flags &= ~PG_BUSY;  /* new page */
+			pg->pg_flags &= ~PG_BUSY;  /* new page */
 			UVM_PAGE_OWN(pg, NULL);
 		}
 		simple_unlock(&uvmexp.kmem_object->vmobjlock);
