@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2004/05/19 00:35:18 krw Exp $
+# $OpenBSD: Makefile,v 1.9 2004/09/18 19:51:53 mickey Exp $
 # $FreeBSD: src/sys/dev/aic7xxx/Makefile,v 1.6 1999/08/28 00:41:22 peter Exp $
 
 PROG=	aicasm
@@ -12,6 +12,7 @@ SRCS=	${GENSRCS} ${CSRCS}
 CLEANFILES+= ${GENSRCS} ${GENHDRS} y.output
 DPADD+=	${LIBL}
 LDADD+=	-ll
+CC=${HOSTCC}
 
 # Correct path for kernel builds
 # Don't rely on the kernel's .depend file
