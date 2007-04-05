@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.c,v 1.15 2007/03/01 20:06:27 otto Exp $	*/
+/*	$OpenBSD: monitor.c,v 1.16 2007/03/26 19:33:23 moritz Exp $	*/
 
 /*
  * Copyright (c) 2004 Moritz Jodeit <moritz@openbsd.org>
@@ -385,7 +385,6 @@ handle_cmds(void)
 			/* NOTREACHED */
 		}
 	}
-	/* NOTREACHED */
 }
 
 void
