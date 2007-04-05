@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.34 2007/01/12 19:19:34 kettenis Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.35 2007/04/04 17:44:45 art Exp $	*/
 /*	$NetBSD: pmap.c,v 1.107 2001/08/31 16:47:41 eeh Exp $	*/
 #undef	NO_VCACHE /* Don't forget the locked TLB in dostart */
 /*
@@ -1031,7 +1031,7 @@ remap_data:
 #endif
 
 	/*
-	 * Allocate a 64MB page for the cpu_info structure now.
+	 * Allocate a 64KB page for the cpu_info structure now.
 	 */
 	if ((cpu0paddr = prom_alloc_phys(8*NBPG, 8*NBPG)) == 0 ) {
 		prom_printf("Cannot allocate new cpu_info\r\n");
