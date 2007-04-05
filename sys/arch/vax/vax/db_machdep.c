@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.15 2006/01/02 21:44:52 miod Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.16 2006/07/14 15:22:55 miod Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.17 1999/06/20 00:58:23 ragge Exp $	*/
 
 /* 
@@ -199,7 +199,7 @@ db_write_bytes(addr, size, data)
 void
 Debugger()
 {
-	splsave = splx(0xe);
+	splsave = _splset(0xe);
 	mtpr(0xf, PR_SIRR); /* beg for debugger */
 	splx(splsave);
 }
