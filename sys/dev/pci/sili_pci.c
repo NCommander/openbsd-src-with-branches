@@ -1,4 +1,4 @@
-/*	$OpenBSD: sili_pci.c,v 1.3 2007/03/31 03:11:38 dlg Exp $ */
+/*	$OpenBSD: sili_pci.c,v 1.4 2007/03/31 23:42:18 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -21,12 +21,15 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
+#include <sys/timeout.h>
 
 #include <machine/bus.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
+
+#include <dev/ata/atascsi.h>
 
 #include <dev/ic/silireg.h>
 #include <dev/ic/silivar.h>
