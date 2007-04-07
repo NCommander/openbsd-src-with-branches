@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.29 2007/03/19 14:04:04 art Exp $	*/
+/*	$OpenBSD: clock.c,v 1.30 2007/04/01 12:22:24 kettenis Exp $	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -1138,8 +1138,6 @@ rtc_setcal(handle, v)
 {
 	return (EOPNOTSUPP);
 }
-
-#define	USECPERSEC	1000000
 
 u_int
 tick_get_timecount(struct timecounter *tc)
