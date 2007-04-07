@@ -1,4 +1,4 @@
-/*	$OpenBSD: pflogd.c,v 1.37 2006/10/26 13:34:47 jmc Exp $	*/
+/*	$OpenBSD: pflogd.c,v 1.38 2007/04/06 16:30:49 canacar Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -151,8 +151,8 @@ __dead void
 usage(void)
 {
 	fprintf(stderr, "usage: pflogd [-Dx] [-d delay] [-f filename]");
-	fprintf(stderr, " [-i interface] [-s snaplen]\n");
-	fprintf(stderr, "              [expression]\n");
+	fprintf(stderr, " [-i interface] [-p pidfile]\n");
+	fprintf(stderr, "              [-s snaplen] [expression]\n");
 	exit(1);
 }
 
