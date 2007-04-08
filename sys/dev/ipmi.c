@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.52 2006/12/23 17:46:39 deraadt Exp $ */
+/*	$OpenBSD: ipmi.c,v 1.53 2007/03/22 16:55:31 deraadt Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -1061,6 +1061,8 @@ ipmi_recvcmd(struct ipmi_softc *sc, int maxlen, int *rxlen, void *data)
 	dbg_dump(10, " recv", *rxlen, data);
 
 	free(buf, M_DEVBUF);
+
+	ipmi_delay(sc, 5); /* give bmc chance to digest command */
 
 	return (rc);
 }
