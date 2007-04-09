@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2002/04/30 07:35:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.6 2002/06/09 05:53:54 todd Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -42,7 +42,7 @@ cd: ${BSD_RD}
 	-@mkdir -p ${.OBJDIR}/cd-dir/${OSREV}/mvmeppc/
 	cp bsd.rd ${.OBJDIR}/cd-dir/${OSREV}/mvmeppc/bsd.rd
 	strip ${.OBJDIR}/cd-dir/${OSREV}/mvmeppc/bsd.rd
-	gzip -9 ${.OBJDIR}/cd-dir/${OSREV}/mvmeppc/bsd.rd
+	gzip -9n ${.OBJDIR}/cd-dir/${OSREV}/mvmeppc/bsd.rd
 	mv ${.OBJDIR}/cd-dir/${OSREV}/mvmeppc/bsd.rd.gz ${.OBJDIR}/cd-dir/${OSREV}/mvmeppc/bsd.rd
 
 

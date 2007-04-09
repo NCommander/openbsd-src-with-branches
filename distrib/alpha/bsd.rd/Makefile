@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2002/06/09 05:53:53 todd Exp $
+#	$OpenBSD: Makefile,v 1.8 2007/02/16 16:56:22 tsi Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -16,7 +16,7 @@ REALIMAGE!=	echo /var/tmp/image.${PID}
 
 STRIP?=		strip
 GZIPCMD?=	gzip
-GZIPFLAGS?=	-9f
+GZIPFLAGS?=	-9fn
 INSTALLBOOT?=	/usr/mdec/installboot -v
 
 RAMDISK=	RAMDISKBIG

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 2006/02/15 22:00:59 pvalchev Exp $
+#	$OpenBSD: Makefile,v 1.21 2007/02/16 16:56:22 tsi Exp $
 #	$NetBSD: Makefile,v 1.1 1995/07/18 04:13:06 briggs Exp $
 
 TOP=		${.CURDIR}/..
@@ -18,7 +18,7 @@ PID!=		echo $$$$
 REALIMAGE!=	echo /var/tmp/image.${PID}
 
 GZIPCMD?=	gzip
-GZIPFLAGS?=	-9f
+GZIPFLAGS?=	-9fn
 
 all: ${CBIN} ${IMAGE} bsd.rd
 
