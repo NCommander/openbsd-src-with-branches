@@ -1,4 +1,4 @@
-/*	$OpenBSD: sgecreg.h,v 1.1 2000/04/27 03:14:44 bjc Exp $	*/
+/*	$OpenBSD: sgecreg.h,v 1.2 2003/06/02 23:27:57 millert Exp $	*/
 /*	$NetBSD: sgecreg.h,v 1.1 1999/08/08 11:41:29 ragge Exp $	*/
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -35,7 +35,7 @@
 
 
 /* Driver for SGEC (second generation Ethernet controller) chip, type DC-541,
-   found on the KA670 (and prob ably other) CPU.
+   found on the KA670 (and probably other) CPU.
 
    17 May 1998...Jay Maynard, jmaynard@phoenix.net
 */
