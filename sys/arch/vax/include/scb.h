@@ -1,4 +1,4 @@
-/*	$OpenBSD: scb.h,v 1.7 2004/07/07 23:10:45 deraadt Exp $	*/
+/*	$OpenBSD: scb.h,v 1.8 2006/07/19 20:22:36 miod Exp $	*/
 /*	$NetBSD: scb.h,v 1.11 2000/07/10 09:14:34 ragge Exp $	*/
 
 /*
@@ -112,7 +112,7 @@ struct scb {
 
 /*
  * This struct is used when setting up interrupt vectors dynamically.
- * It put a opaque 32 bit quanity on the stack and also has a placeholder
+ * It puts a opaque 32 bit quantity on the stack and also has a placeholder
  * for evcount structure.
  */
 struct ivec_dsp {
