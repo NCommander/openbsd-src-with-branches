@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_isa.c,v 1.14 2004/12/25 23:02:24 miod Exp $	*/
+/*	$OpenBSD: ahc_isa.c,v 1.15 2006/09/19 11:06:33 jsg Exp $	*/
 /*	$NetBSD: ahc_isa.c,v 1.5 1996/10/21 22:27:39 thorpej Exp $	*/
 
 /*
@@ -279,7 +279,7 @@ ahc_isa_match(struct isa_attach_args *ia, bus_addr_t iobase)
 
 /*
  * Check the slots looking for a board we recognise
- * If we find one, note it's address (slot) and call
+ * If we find one, note its address (slot) and call
  * the actual probe routine to check it out.
  */
 int

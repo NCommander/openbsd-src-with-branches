@@ -1,4 +1,4 @@
-/* 	$OpenBSD: isp_openbsd.c,v 1.28 2005/12/03 16:53:16 krw Exp $ */
+/* 	$OpenBSD: isp_openbsd.c,v 1.29 2006/11/28 23:59:45 dlg Exp $ */
 /*
  * Platform (OpenBSD) dependent common attachment code for Qlogic adapters.
  *
@@ -479,7 +479,7 @@ isp_wdog(void *arg)
 
 	/*
 	 * We've decided this command is dead. Make sure we're not trying
-	 * to kill a command that's already dead by getting it's handle and
+	 * to kill a command that's already dead by getting its handle and
 	 * and seeing whether it's still alive.
 	 */
 	ISP_LOCK(isp);

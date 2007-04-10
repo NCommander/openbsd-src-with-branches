@@ -1,4 +1,4 @@
-/*	$OpenBSD: bha.c,v 1.8 2005/12/03 16:53:15 krw Exp $	*/
+/*	$OpenBSD: bha.c,v 1.9 2006/11/28 23:59:45 dlg Exp $	*/
 /*	$NetBSD: bha.c,v 1.27 1998/11/19 21:53:00 thorpej Exp $	*/
 
 #undef BHADEBUG
@@ -866,7 +866,7 @@ bha_done(sc, ccb)
 }
 
 /*
- * Find the board and find it's irq/drq
+ * Find the board and find its irq/drq
  */
 int
 bha_find(iot, ioh, sc)

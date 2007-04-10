@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpt.c,v 1.10 2004/12/26 21:22:13 miod Exp $	*/
+/*	$OpenBSD: dpt.c,v 1.11 2005/12/03 16:53:16 krw Exp $	*/
 /*	$NetBSD: dpt.c,v 1.12 1999/10/23 16:26:33 ad Exp $	*/
 
 /*-
@@ -430,7 +430,7 @@ dpt_init(sc, intrstr)
 
 /*
  * Our 'shutdownhook' to cleanly shut down the HBA. The HBA must flush 
- * all data from it's cache and mark array groups as clean.
+ * all data from its cache and mark array groups as clean.
  */
 void
 dpt_shutdown(xxx_sc)

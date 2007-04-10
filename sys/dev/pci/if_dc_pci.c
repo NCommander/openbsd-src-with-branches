@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_pci.c,v 1.55 2006/07/20 02:49:18 brad Exp $	*/
+/*	$OpenBSD: if_dc_pci.c,v 1.56 2007/02/13 10:38:00 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -432,7 +432,7 @@ void dc_pci_attach(parent, self, aux)
 		break;
 	}
 	if (found == 0) {
-		/* This shouldn't happen if probe has done it's job... */
+		/* This shouldn't happen if probe has done its job... */
 		printf(": unknown device: %x:%x\n",
 		    PCI_VENDOR(pa->pa_id), PCI_PRODUCT(pa->pa_id));
 		goto fail_2;

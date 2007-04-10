@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha.c,v 1.24 2005/11/05 03:13:29 krw Exp $ */
+/*	$OpenBSD: iha.c,v 1.25 2005/12/03 16:53:16 krw Exp $ */
 /*-------------------------------------------------------------------------
  *
  * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
@@ -1127,7 +1127,7 @@ iha_data_over_run(pScb)
 }
 
 /*
- * iha_next_state - process the current SCB as requested in it's 
+ * iha_next_state - process the current SCB as requested in its 
  *                  SCB_NxtStat member.
  */
 int
