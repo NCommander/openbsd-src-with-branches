@@ -1,4 +1,4 @@
-/* $OpenBSD: psm.c,v 1.3 2001/02/19 02:27:05 jbm Exp $ */
+/* $OpenBSD: psm.c,v 1.4 2002/03/14 01:27:00 millert Exp $ */
 /* $NetBSD: psm.c,v 1.11 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-
@@ -319,7 +319,7 @@ int data;
 
 		if (sc->dx || dy || changed)
 			wsmouse_input(sc->sc_wsmousedev,
-				      sc->buttons, sc->dx, dy, 0,
+				      sc->buttons, sc->dx, dy, 0, 0,
 				      WSMOUSE_INPUT_DELTA);
 		break;
 	}
