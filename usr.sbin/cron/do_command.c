@@ -1,4 +1,4 @@
-/*	$OpenBSD: do_command.c,v 1.29 2004/06/17 22:11:55 millert Exp $	*/
+/*	$OpenBSD: do_command.c,v 1.30 2006/08/13 20:44:00 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -22,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: do_command.c,v 1.29 2004/06/17 22:11:55 millert Exp $";
+static char const rcsid[] = "$OpenBSD: do_command.c,v 1.30 2006/08/13 20:44:00 millert Exp $";
 #endif
 
 #include "cron.h"
@@ -180,7 +180,7 @@ child_process(entry *e, user *u) {
 		dup2(STDOUT, STDERR);
 
 		/* set our directory, uid and gid.  Set gid first, since once
-		 * we set uid, we've lost root privledges.
+		 * we set uid, we've lost root privileges.
 		 */
 #ifdef LOGIN_CAP
 		{
