@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_node.c,v 1.16 2006/01/09 12:43:16 pedro Exp $	*/
+/*	$OpenBSD: cd9660_node.c,v 1.17 2007/03/21 17:29:31 thib Exp $	*/
 /*	$NetBSD: cd9660_node.c,v 1.17 1997/05/05 07:13:57 mycroft Exp $	*/
 
 /*-
@@ -255,7 +255,7 @@ cd9660_inactive(v)
 	 * so that it can be reused immediately.
 	 */
 	if (ip->inode.iso_mode == 0)
-		vrecycle(vp, (struct simplelock *)0, p);
+		vrecycle(vp, p);
 
 	return (error);
 }
