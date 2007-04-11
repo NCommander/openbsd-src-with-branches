@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_object.h,v 1.8 2001/12/19 08:58:07 art Exp $	*/
+/*	$OpenBSD: uvm_object.h,v 1.9 2005/07/26 07:11:55 art Exp $	*/
 /*	$NetBSD: uvm_object.h,v 1.11 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -74,14 +74,9 @@ struct uvm_object {
  * maps.
  */
 #define UVM_OBJ_KERN		(-2)
-#define	UVM_OBJ_KERN_INTRSAFE	(-3)
 
 #define	UVM_OBJ_IS_KERN_OBJECT(uobj)					\
-	((uobj)->uo_refs == UVM_OBJ_KERN ||				\
-	 (uobj)->uo_refs == UVM_OBJ_KERN_INTRSAFE)
-
-#define	UVM_OBJ_IS_INTRSAFE_OBJECT(uobj)				\
-	((uobj)->uo_refs == UVM_OBJ_KERN_INTRSAFE)
+	((uobj)->uo_refs == UVM_OBJ_KERN)
 
 #ifdef _KERNEL
 

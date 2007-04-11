@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.56 2006/07/31 11:51:29 mickey Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.57 2007/04/04 17:44:45 art Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /* 
@@ -1122,8 +1122,7 @@ uvm_pagerealloc(pg, newobj, newoff)
  */
 
 void
-uvm_pagefree(pg)
-	struct vm_page *pg;
+uvm_pagefree(struct vm_page *pg)
 {
 	int s;
 	int saved_loan_count = pg->loan_count;
