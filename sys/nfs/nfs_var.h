@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_var.h,v 1.22 2004/07/21 17:30:56 marius Exp $	*/
+/*	$OpenBSD: nfs_var.h,v 1.23 2004/08/03 17:11:48 marius Exp $	*/
 /*	$NetBSD: nfs_var.h,v 1.3 1996/02/18 11:53:54 fvdl Exp $	*/
 
 /*
@@ -70,7 +70,6 @@ int nfs_asyncio(struct buf *);
 int nfs_doio(struct buf *, struct proc *);
 
 /* nfs_boot.c */
-int nfs_boot_init(struct nfs_diskless *, struct proc *);
 int nfs_boot_init(struct nfs_diskless *, struct proc *);
 
 /* nfs_node.c */
