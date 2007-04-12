@@ -1,4 +1,4 @@
-.\"     $OpenBSD: mbuf.9,v 1.23 2006/10/12 07:24:31 jmc Exp $
+.\"     $OpenBSD: mbuf.9,v 1.24 2007/04/03 06:37:37 jasper Exp $
 .\"
 .\" Copyright (c) 2001 Jean-Jacques Bernard-Gundol <jjbg@openbsd.org>
 .\" All rights reserved.
@@ -427,6 +427,12 @@ See
 .Fn m_get
 for a description of
 .Fa how .
+.Pp
+.Fn m_prepend
+should never be called directly.
+Use
+.Fn M_PREPEND
+instead.
 .It Fn M_PREPEND "struct mbuf *m" "int plen" "int how"
 Prepend space of size
 .Fa plen
