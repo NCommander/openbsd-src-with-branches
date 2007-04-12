@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: _types.h,v 1.1 2006/01/06 18:50:08 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -120,5 +120,6 @@ typedef	void *			__wctype_t;
 
 /* Feature test macros */
 #define __HAVE_DEVICE_REGISTER
+#define __HAVE_CPUINFO
 
 #endif	/* _ALPHA__TYPES_H_ */
