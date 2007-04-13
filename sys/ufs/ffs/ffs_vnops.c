@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vnops.c,v 1.41 2007/01/16 17:52:18 thib Exp $	*/
+/*	$OpenBSD: ffs_vnops.c,v 1.42 2007/02/26 11:25:23 pedro Exp $	*/
 /*	$NetBSD: ffs_vnops.c,v 1.7 1996/05/11 18:27:24 mycroft Exp $	*/
 
 /*
@@ -160,9 +160,6 @@ struct vnodeopv_desc ffs_fifoop_opv_desc =
  */
 int doclusterread = 1;
 int doclusterwrite = 1;
-
-#define VN_KNOTE(vp, b) \
-	KNOTE((struct klist *)&vp->v_selectinfo.vsi_selinfo.si_note, (b))
 
 /*
  * Vnode op for reading.

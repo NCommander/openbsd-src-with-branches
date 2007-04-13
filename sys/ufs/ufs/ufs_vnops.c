@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.76 2007/04/10 11:21:17 pedro Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.77 2007/04/10 17:47:56 miod Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -95,9 +95,6 @@ union _qcvt {
 	tmp.val[_QUAD_LOWWORD] = (l); \
 	(q) = tmp.qcvt; \
 }
-#define VN_KNOTE(vp, b) \
-	KNOTE(&vp->v_selectinfo.vsi_selinfo.si_note, (b))
-
 
 /*
  * A virgin directory (no blushing please).
