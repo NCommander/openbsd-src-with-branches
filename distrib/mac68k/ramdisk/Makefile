@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2004/12/11 14:04:11 martin Exp $
+#	$OpenBSD: Makefile,v 1.8 2006/02/28 19:24:43 miod Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -21,7 +21,7 @@ PID!=		echo $$$$
 
 DISKTYPE=	rdroot
 NBLKS=		2880
-NEWFSARGS= -t ffs -m 0 -o space -u 32 -c 16 -b 4096
+NEWFSARGS= -t ffs -m 0 -o space -b 4096
 
 all:	${BSD_RD}
 

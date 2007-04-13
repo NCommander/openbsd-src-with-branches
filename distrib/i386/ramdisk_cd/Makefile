@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 2002/04/22 02:40:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 2004/01/28 21:46:38 tom Exp $
 
 .PATH: ${.CURDIR}/../ramdisk
 RAMDISK=RAMDISK_CD
-FLOPPYSIZE=288
+FLOPPYSIZE=5760
 FLOPPYTYPE=floppy288
 XNAME=cdrom
 

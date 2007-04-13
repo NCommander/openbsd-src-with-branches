@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2002/06/09 05:53:54 todd Exp $
+#	$OpenBSD: Makefile,v 1.7 2007/04/09 14:55:11 millert Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -22,7 +22,7 @@ PID!=		echo $$$$
 DISKTYPE=       rdroot
 NBLKS=          8192
 # minfree, opt, b/i  trks, sects, cpg
-NEWFSARGS= -m 0 -o space -c 16 -i 4096
+NEWFSARGS= -m 0 -o space
 
 .ifndef DESTDIR
 all ${IMAGE}:
