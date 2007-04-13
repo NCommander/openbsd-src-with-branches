@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc_debug.c,v 1.24 2007/04/04 17:44:45 art Exp $	*/
+/*	$OpenBSD: kern_malloc_debug.c,v 1.25 2007/04/11 12:10:42 art Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Artur Grabowski <art@openbsd.org>
@@ -251,7 +251,7 @@ debug_malloc_allocate_free(int wait)
 	for (;;) {
 		pg = uvm_pagealloc(NULL, 0, NULL, 0);
 		if (pg) {
-			pg->pg_flags &= ~PG_BUSY;  /* new page */
+			atomic_clearbits_int(&pg->pg_flags, PG_BUSY);
 			UVM_PAGE_OWN(pg, NULL);
 		}
 
