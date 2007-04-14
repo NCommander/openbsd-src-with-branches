@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2.c,v 1.113 2006/08/03 03:34:41 deraadt Exp $ */
+/* $OpenBSD: auth2.c,v 1.114 2007/03/01 10:28:02 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -239,8 +239,6 @@ userauth_finish(Authctxt *authctxt, int authenticated, char *method)
 		xfree(methods);
 	}
 }
-
-#define	DELIM	","
 
 static char *
 authmethods_get(void)
