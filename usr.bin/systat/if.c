@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.8 2006/11/28 19:21:15 reyk Exp $ */
+/*	$OpenBSD: if.c,v 1.9 2007/02/25 18:21:24 deraadt Exp $ */
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
  *
@@ -50,7 +50,6 @@ struct ifstat {
 } *ifstats;
 
 static	int nifs = 0;
-extern	u_int naptime;
 
 const char	*showlinkstate(int);
 
