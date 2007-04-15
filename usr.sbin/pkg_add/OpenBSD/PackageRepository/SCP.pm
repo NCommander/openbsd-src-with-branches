@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SCP.pm,v 1.8 2006/03/13 16:08:12 espie Exp $
+# $OpenBSD: SCP.pm,v 1.9 2006/05/26 17:12:09 steven Exp $
 #
-# Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above

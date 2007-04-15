@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ProgressMeter.pm,v 1.8 2006/02/10 09:52:28 bernd Exp $
+# $OpenBSD: ProgressMeter.pm,v 1.9 2007/02/22 21:36:46 espie Exp $
 #
-# Copyright (c) 2004 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2004-2007 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
