@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.85 2006/12/02 10:48:03 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.86 2006/12/16 12:28:15 espie Exp $
 #
 # Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
 #
@@ -500,7 +500,7 @@ sub add
 {
 	my ($class, $plist, @args) = @_;
 
-	$plist->{state}->{lastfile}->add_md5(pack('H*', $'));
+	$plist->{state}->{lastfile}->add_md5(pack('H*', $args[0]));
 	return;
 }
 
