@@ -1,4 +1,4 @@
-/*	$OpenBSD: free_ttype.c,v 1.4 2000/07/10 03:06:16 millert Exp $	*/
+/*	$OpenBSD: free_ttype.c,v 1.5 2001/01/22 18:01:51 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1999,2000 Free Software Foundation, Inc.                   *
@@ -51,7 +51,6 @@ NCURSES_EXPORT(void)
 _nc_free_termtype(TERMTYPE * ptr)
 {
     FreeIfNeeded(ptr->str_table);
-    FreeIfNeeded(ptr->term_names);
     FreeIfNeeded(ptr->Booleans);
     FreeIfNeeded(ptr->Numbers);
     FreeIfNeeded(ptr->Strings);
