@@ -1,4 +1,4 @@
-/*      $OpenBSD: param.h,v 1.14 2006/03/19 01:47:24 martin Exp $ */
+/*      $OpenBSD: param.h,v 1.15 2007/04/05 16:04:17 deraadt Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -80,7 +80,7 @@
 #define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
 #define	DEV_BSIZE	(1 << DEV_BSHIFT)
 #define BLKDEV_IOSIZE	2048
-#define	MAXPHYS		(32 * 1024)	/* max raw I/O transfer size */
+#define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
 
 #ifdef __LP64__
 #define	UPAGES		4		/* pages of u-area */
