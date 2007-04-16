@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsclean.c,v 1.47 2006/05/27 05:49:14 ray Exp $	*/
+/*	$OpenBSD: rcsclean.c,v 1.48 2007/02/27 07:59:13 xsa Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -126,7 +126,7 @@ rcsclean_usage(void)
 {
 	fprintf(stderr,
 	    "usage: rcsclean [-TV] [-kmode] [-n[rev]] [-q[rev]] [-r[rev]]\n"
-	    "                [-u[rev]] [-xsuffixes] [-ztz] [file] ...\n");
+	    "                [-u[rev]] [-xsuffixes] [-ztz] [file ...]\n");
 }
 
 static void
