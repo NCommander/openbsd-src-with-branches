@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.1 2007/04/16 10:35:29 dlg Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.2 2007/04/16 10:53:51 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -14,6 +14,14 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+/*
+ * Driver for the Tehuti TN30xx multi port 10Gb Ethernet chipsets,
+ * see http://www.tehutinetworks.net/.
+ *
+ * This driver was made possible because Tehuti networks provided
+ * hardware and documentation. Thanks!
  */
 
 #include <sys/param.h>
