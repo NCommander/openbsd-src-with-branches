@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccdconfig.c,v 1.29 2006/03/26 18:06:00 grunk Exp $	*/
+/*	$OpenBSD: ccdconfig.c,v 1.30 2007/04/06 06:41:42 tedu Exp $	*/
 /*	$NetBSD: ccdconfig.c,v 1.6 1996/05/16 07:11:18 thorpej Exp $	*/
 
 /*-
@@ -725,7 +725,5 @@ usage(void)
 	fprintf(stderr, "       %s -C [-v] [-f config_file]\n", __progname);
 	fprintf(stderr, "       %s -u [-v] ccd [...]\n", __progname);
 	fprintf(stderr, "       %s -U [-v] [-f config_file]\n", __progname);
-	fprintf(stderr, "       %s -g [-M core] [-N system] %s\n", __progname,
-	    "[ccd [...]]");
 	exit(1);
 }
