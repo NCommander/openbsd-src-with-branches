@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.40 2007/02/10 15:34:22 claudio Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.41 2007/02/22 15:31:44 claudio Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -196,9 +196,11 @@ gif_start(ifp)
 				log(LOG_NOTICE, "gif_output: "
 				    "recursively called too many times\n");
 				m_freem(m);
-				continue;
+				break;
 			}
 		}
+		if (mtag)
+			continue;
 
 		mtag = m_tag_get(PACKET_TAG_GIF, sizeof(caddr_t), M_NOWAIT);
 		if (mtag == NULL) {
