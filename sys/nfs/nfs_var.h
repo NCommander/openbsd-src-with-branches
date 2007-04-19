@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_var.h,v 1.24 2007/04/11 12:18:54 thib Exp $	*/
+/*	$OpenBSD: nfs_var.h,v 1.25 2007/04/13 17:09:22 thib Exp $	*/
 /*	$NetBSD: nfs_var.h,v 1.3 1996/02/18 11:53:54 fvdl Exp $	*/
 
 /*
@@ -286,5 +286,4 @@ int nfs_savenickauth(struct nfsmount *, struct ucred *, int, NFSKERBKEY_T,
 
 /* nfs_kq.c */
 int  nfs_kqfilter(void *);
-void nfs_kqinit(void);
 
