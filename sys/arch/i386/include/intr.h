@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.28 2007/03/23 16:03:52 art Exp $	*/
+/*	$OpenBSD: intr.h,v 1.29 2007/04/03 10:14:47 art Exp $	*/
 /*	$NetBSD: intr.h,v 1.5 1996/05/13 06:11:28 mycroft Exp $	*/
 
 /*
@@ -145,6 +145,7 @@ void i386_intlock(int);
 void i386_intunlock(int);
 void i386_softintlock(void);
 void i386_softintunlock(void);
+void i386_setperf_ipi(struct cpu_info *);
 
 extern void (*ipifunc[I386_NIPI])(struct cpu_info *);
 #endif
