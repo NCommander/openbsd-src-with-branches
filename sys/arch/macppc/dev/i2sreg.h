@@ -1,4 +1,4 @@
-/* $OpenBSD: */
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 2002 Tsubai Masanari.  All rights reserved.
  *
