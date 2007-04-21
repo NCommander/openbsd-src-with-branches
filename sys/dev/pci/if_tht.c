@@ -744,6 +744,7 @@ tht_up(struct tht_softc *sc)
 		goto free_rxd;
 
 	/* populate rxf fifo */
+	tht_rxf_fill(sc, 1);
 
 	ifp->if_flags |= IFF_RUNNING;
 	ifp->if_flags &= ~IFF_OACTIVE;
@@ -791,6 +792,7 @@ tht_down(struct tht_softc *sc)
 	tht_fifo_free(sc, &sc->sc_txt);
 
 	/* free mbufs that were on the rxf fifo */
+	tht_rxf_drain(sc);
 
 	tht_pkt_free(sc, &sc->sc_rx_list);
 	tht_pkt_free(sc, &sc->sc_tx_list);
