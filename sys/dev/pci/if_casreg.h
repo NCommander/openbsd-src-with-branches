@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_casreg.h,v 1.3 2007/02/27 21:45:35 kettenis Exp $	*/
+/*	$OpenBSD: if_casreg.h,v 1.4 2007/04/15 16:30:44 kettenis Exp $	*/
 
 /*
  *
@@ -131,9 +131,9 @@
 #define	CAS_TX_KICK3		0x2040
 #define	CAS_TX_KICK4		0x2044
 #define	CAS_TX_COMPLETION1	0x2048
-#define	CAS_TX_COMPLETION2	0x2048
-#define	CAS_TX_COMPLETION3	0x2048
-#define	CAS_TX_COMPLETION4	0x2048
+#define	CAS_TX_COMPLETION2	0x204c
+#define	CAS_TX_COMPLETION3	0x2050
+#define	CAS_TX_COMPLETION4	0x2054
 #define	CAS_TX_RING_PTR_LO1	0x2060
 #define	CAS_TX_RING_PTR_HI1	0x2064
 #define	CAS_TX_RING_PTR_LO2	0x2068
