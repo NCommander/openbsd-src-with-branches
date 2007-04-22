@@ -1,4 +1,4 @@
-/*	$OpenBSD: sili.c,v 1.31 2007/04/10 09:08:19 dlg Exp $ */
+/*	$OpenBSD: sili.c,v 1.32 2007/04/12 04:40:59 pascoe Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -31,7 +31,8 @@
 #include <dev/ic/silireg.h>
 #include <dev/ic/silivar.h>
 
-#define SILI_DEBUG
+/* use SILI_DEBUG for dmesg spam */
+#define NO_SILI_DEBUG
 
 #ifdef SILI_DEBUG
 #define SILI_D_VERBOSE		(1<<0)
