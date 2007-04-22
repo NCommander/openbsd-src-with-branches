@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.36 2007/03/01 15:00:57 mickey Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.37 2007/03/20 20:59:53 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -169,7 +169,7 @@ openpic_attach(struct device *parent, struct device  *self, void *aux)
 
 #if 1
 	mac_intr_establish(parent, 0x37, IST_LEVEL,
-		IPL_HIGH, openpic_prog_button, (void *)0x37, "prog button");
+		IPL_HIGH, openpic_prog_button, (void *)0x37, "progbutton");
 #endif
 	ppc_intr_enable(1);
 
