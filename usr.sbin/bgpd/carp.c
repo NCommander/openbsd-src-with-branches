@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.3 2006/06/19 12:06:24 henning Exp $ */
+/*	$OpenBSD: carp.c,v 1.4 2007/02/22 08:34:18 henning Exp $ */
 
 /*
  * Copyright (c) 2006 Henning Brauer <henning@openbsd.org>
@@ -66,7 +66,7 @@ carp_demote_init(char *group, int force)
 			return (-1);
 		}
 		if ((c->group = strdup(group)) == NULL) {
-			log_warn("carp_demote_init calloc");
+			log_warn("carp_demote_init strdup");
 			free(c);
 			return (-1);
 		}
