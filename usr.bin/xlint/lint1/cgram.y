@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: cgram.y,v 1.19 2006/04/21 23:17:10 cloder Exp $	*/
+/*	$OpenBSD: cgram.y,v 1.20 2006/05/29 20:47:22 cloder Exp $	*/
 /*	$NetBSD: cgram.y,v 1.8 1995/10/02 17:31:35 jpo Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: cgram.y,v 1.19 2006/04/21 23:17:10 cloder Exp $";
+static char rcsid[] = "$OpenBSD: cgram.y,v 1.20 2006/05/29 20:47:22 cloder Exp $";
 #endif
 
 #include <stdlib.h>
@@ -50,7 +50,7 @@ int	blklev;
 
 /*
  * level for memory allocation. Normaly the same as blklev.
- * An exeption is the declaration of arguments in prototypes. Memory
+ * An exception is the declaration of arguments in prototypes. Memory
  * for these can't be freed after the declaration, but symbols must
  * be removed from the symbol table after the declaration.
  */
