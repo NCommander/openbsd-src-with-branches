@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.14 2004/06/28 02:28:42 aaron Exp $	*/
+/*	$OpenBSD: clock.c,v 1.15 2007/04/23 10:07:43 art Exp $	*/
 /*	$NetBSD: clock.c,v 1.29 2000/06/05 21:47:10 thorpej Exp $	*/
 
 /*
@@ -264,8 +264,8 @@ inittodr(time_t base)
 		    ts.tv_sec < base ? "lost" : "gained",
 		    (long)deltat / SECDAY);
 	}
-	tc_setclock(&ts);
 bad:
+	tc_setclock(&ts);
 	printf(" -- CHECK AND RESET THE DATE!\n");
 }
 
