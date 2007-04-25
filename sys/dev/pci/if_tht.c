@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.72 2007/04/25 09:55:47 dlg Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.73 2007/04/25 10:29:36 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -999,9 +999,6 @@ tht_down(struct tht_softc *sc)
 
 	tht_pkt_free(sc, &sc->sc_rx_list);
 	tht_pkt_free(sc, &sc->sc_tx_list);
-
-	sc->sc_imr = THT_IMR_DOWN(sc->sc_port);
-	tht_write(sc, THT_REG_IMR, sc->sc_imr);
 }
 
 void
