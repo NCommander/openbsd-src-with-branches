@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.65 2007/04/25 05:40:57 dlg Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.66 2007/04/25 05:46:03 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -815,7 +815,7 @@ tht_intr(void *arg)
 		return (0);
 	}
 
-	DPRINTF(THT_D_INTR, "%s: isr: 0x%0b\n", DEVNAME(sc), isr, THT_FMT_ISR);
+	DPRINTF(THT_D_INTR, "%s: isr: 0x%b\n", DEVNAME(sc), isr, THT_FMT_ISR);
 
 	if (ISSET(isr, THT_REG_ISR_LINKCHG(0) | THT_REG_ISR_LINKCHG(1)))
 		tht_link_state(sc);
