@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.109 2007/03/18 20:00:02 otto Exp $	*/
+/*	$OpenBSD: editor.c,v 1.110 2007/04/26 22:42:11 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.109 2007/03/18 20:00:02 otto Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.110 2007/04/26 22:42:11 krw Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -26,9 +26,6 @@ static char rcsid[] = "$OpenBSD: editor.c,v 1.109 2007/03/18 20:00:02 otto Exp $
 #include <sys/ioctl.h>
 #define	DKTYPENAMES
 #include <sys/disklabel.h>
-#include <sys/reboot.h>
-#include <sys/sysctl.h>
-#include <machine/cpu.h>
 
 #include <ufs/ffs/fs.h>
 
