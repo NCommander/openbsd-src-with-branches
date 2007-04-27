@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.h,v 1.28 2003/05/31 00:15:29 weingart Exp $	*/
+/*	$OpenBSD: biosdev.h,v 1.30 2003/09/16 03:43:11 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -60,6 +60,7 @@ bios_diskinfo_t *bios_dklookup(int);
 void pc_probe(struct consdev *);
 void pc_init(struct consdev *);
 int pc_getc(dev_t);
+int pc_getshifts(dev_t);
 void pc_putc(dev_t, int);
 void pc_pollc(dev_t, int);
 void com_probe(struct consdev *);
