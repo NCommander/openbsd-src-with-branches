@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_select.c,v 1.12 2006/10/03 02:59:36 kurt Exp $	*/
+/*	$OpenBSD: uthread_select.c,v 1.13 2006/10/25 14:32:04 kurt Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -64,8 +64,8 @@ select(int numfds, fd_set * readfds, fd_set * writefds,
 	/* This is a cancellation point: */
 	_thread_enter_cancellation_point();
 
-	if (numfds > _thread_dtablesize) {
-		numfds = _thread_dtablesize;
+	if (numfds > _thread_max_fdtsize) {
+		numfds = _thread_max_fdtsize;
 	}
 	/* Check if a timeout was specified: */
 	if (timeout) {

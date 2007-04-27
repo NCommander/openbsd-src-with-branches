@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_execve.c,v 1.8 2006/09/22 19:04:33 kurt Exp $	*/
+/*	$OpenBSD: uthread_execve.c,v 1.9 2006/09/26 14:18:28 kurt Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -65,7 +65,7 @@ execve(const char *name, char *const * argv, char *const * envp)
 	 * Enter a loop to set all file descriptors to blocking
 	 * if they were not created as non-blocking:
 	 */
-	for (i = 0; i < _thread_dtablesize; i++) {
+	for (i = 0; i < _thread_max_fdtsize; i++) {
 		/* Check if this file descriptor is in use: */
 		if (_thread_fd_table[i] != NULL &&
 		    _thread_fd_table[i]->status_flags != NULL &&
