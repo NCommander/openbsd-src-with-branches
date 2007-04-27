@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_mutex.c,v 1.17 2003/01/31 04:46:17 marc Exp $	*/
+/*	$OpenBSD: uthread_mutex.c,v 1.18 2005/10/31 20:48:31 brad Exp $	*/
 /*
  * Copyright (c) 1995 John Birrell <jb@cimlogic.com.au>.
  * All rights reserved.
@@ -648,7 +648,7 @@ mutex_lock_common(pthread_mutex_t * mutex)
 
 	if (curthread->interrupted != 0 &&
 	    curthread->continuation != NULL)
-		curthread->continuation((void *) curthread);
+		curthread->continuation(curthread);
 
 	/* Return the completion status: */
 	return (ret);
