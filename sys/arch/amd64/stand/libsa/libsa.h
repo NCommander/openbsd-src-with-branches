@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.3 2004/08/21 18:53:38 tom Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.4 2006/09/18 21:15:33 mpf Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -74,3 +74,5 @@ extern bios_diskinfo_t bios_diskinfo[];
 extern u_int32_t bios_cksumlen;
 
 #define MACHINE_CMD	cmd_machine /* we have i386 specific sommands */
+
+#define CHECK_SKIP_CONF	check_skip_conf	/* we can skip boot.conf with Ctrl */
