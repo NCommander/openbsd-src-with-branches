@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.122 2007/04/12 11:33:13 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.123 2007/04/26 11:18:54 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -259,7 +259,7 @@ cddetach(self, flags)
 
 	cd_kill_buffers(cd);
 
-	/* locate the minor number */
+	/* Locate the lowest minor number to be detached. */
 	mn = DISKMINOR(self->dv_unit, 0);
 
 	for (bmaj = 0; bmaj < nblkdev; bmaj++)
