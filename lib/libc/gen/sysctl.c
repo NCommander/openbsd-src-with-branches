@@ -1,5 +1,4 @@
-/*	$NetBSD: sysctl.c,v 1.4 1995/05/13 06:58:24 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sysctl.c	8.2 (Berkeley) 1/4/94";
-#else
-static char rcsid[] = "$NetBSD: sysctl.c,v 1.4 1995/05/13 06:58:24 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
@@ -51,12 +38,11 @@ static char rcsid[] = "$NetBSD: sysctl.c,v 1.4 1995/05/13 06:58:24 jtc Exp $";
 #include <string.h>
 #include <unistd.h>
 
+int __sysctl(int *, u_int, void *, size_t *, void *, size_t);
+
 int
-sysctl(name, namelen, oldp, oldlenp, newp, newlen)
-	int *name;
-	u_int namelen;
-	void *oldp, *newp;
-	size_t *oldlenp, newlen;
+sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
+    size_t newlen)
 {
 	if (name[0] != CTL_USER)
 		return (__sysctl(name, namelen, oldp, oldlenp, newp, newlen));

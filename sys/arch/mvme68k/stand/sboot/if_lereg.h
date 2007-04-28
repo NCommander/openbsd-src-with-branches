@@ -1,4 +1,4 @@
-/*	$NetBSD: if_lereg.h,v 1.4 1994/11/20 20:52:22 deraadt Exp $ */
+/*	$OpenBSD: if_lereg.h,v 1.4 2000/12/21 16:54:55 aaron Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -64,7 +60,7 @@ struct lereg1 {
 #define	LE_C0_MERR	0x0800		/* memory error */
 #define	LE_C0_RINT	0x0400		/* receiver interrupt */
 #define	LE_C0_TINT	0x0200		/* transmitter interrupt */
-#define	LE_C0_IDON	0x0100		/* initalization done */
+#define	LE_C0_IDON	0x0100		/* initialization done */
 #define	LE_C0_INTR	0x0080		/* interrupt condition */
 #define	LE_C0_INEA	0x0040		/* interrupt enable */
 #define	LE_C0_RXON	0x0020		/* receiver on */
@@ -72,7 +68,7 @@ struct lereg1 {
 #define	LE_C0_TDMD	0x0008		/* transmit demand */
 #define	LE_C0_STOP	0x0004		/* disable all external activity */
 #define	LE_C0_STRT	0x0002		/* enable external activity */
-#define	LE_C0_INIT	0x0001		/* begin initalization */
+#define	LE_C0_INIT	0x0001		/* begin initialization */
 
 #define LE_C0_BITS \
     "\20\20ERR\17BABL\16CERR\15MISS\14MERR\13RINT\

@@ -1,3 +1,4 @@
+/*	$OpenBSD: util.c,v 1.15 2004/09/14 22:06:19 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.15 2004/09/14 22:06:19 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -54,16 +51,15 @@ static char rcsid[] = "$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdarg.h>
 
 #include "extern.h"
 
-char *
-colon(cp)
-	char *cp;
-{
-	if (*cp == ':')		/* Leading colon is part of file name. */
-		return (0);
+static pid_t do_cmd_pid = -1; /* PID of subprocess during do_local_cmd() */
 
+char *
+colon(char *cp)
+{
 	for (; *cp; ++cp) {
 		if (*cp == ':')
 			return (cp);
@@ -74,8 +70,7 @@ colon(cp)
 }
 
 void
-verifydir(cp)
-	char *cp;
+verifydir(char *cp)
 {
 	struct stat stb;
 
@@ -89,8 +84,7 @@ verifydir(cp)
 }
 
 int
-okname(cp0)
-	char *cp0;
+okname(char *cp0)
 {
 	int c;
 	char *cp;
@@ -109,41 +103,12 @@ bad:	warnx("%s: invalid user name", cp0);
 	return (0);
 }
 
-int
-susystem(s, userid)
-	int userid;
-	char *s;
-{
-	sig_t istat, qstat;
-	int status, w;
-	pid_t pid;
-
-	pid = vfork();
-	switch (pid) {
-	case -1:
-		return (127);
-	
-	case 0:
-		(void)setuid(userid);
-		execl(_PATH_BSHELL, "sh", "-c", s, NULL);
-		_exit(127);
-	}
-	istat = signal(SIGINT, SIG_IGN);
-	qstat = signal(SIGQUIT, SIG_IGN);
-	if (waitpid(pid, &status, 0) < 0)
-		status = -1;
-	(void)signal(SIGINT, istat);
-	(void)signal(SIGQUIT, qstat);
-	return (status);
-}
-
 BUF *
-allocbuf(bp, fd, blksize)
-	BUF *bp;
-	int fd, blksize;
+allocbuf(BUF *bp, int fd, int blksize)
 {
 	struct stat stb;
 	size_t size;
+	char *p;
 
 	if (fstat(fd, &stb) < 0) {
 		run_err("fstat: %s", strerror(errno));
@@ -154,20 +119,150 @@ allocbuf(bp, fd, blksize)
 		size = blksize;
 	if (bp->cnt >= size)
 		return (bp);
-	if ((bp->buf = realloc(bp->buf, size)) == NULL) {
+	if ((p = realloc(bp->buf, size)) == NULL) {
+		free(bp->buf);
+		bp->buf = NULL;
 		bp->cnt = 0;
 		run_err("%s", strerror(errno));
 		return (0);
 	}
+	memset(p, 0, size);
+	bp->buf = p;
 	bp->cnt = size;
 	return (bp);
 }
 
+/* ARGSUSED */
 void
-lostconn(signo)
-	int signo;
+lostconn(int signo)
 {
-	if (!iamremote)
-		warnx("lost connection");
+	extern char *__progname;
+	char buf[1024];
+
+	if (!iamremote) {
+		strlcpy(buf, __progname, sizeof buf);
+		strlcat(buf, ": lost connection\n", sizeof buf);
+		write(STDERR_FILENO, buf, strlen(buf));
+	}
+	_exit(1);
+}
+
+
+static void
+killchild(int signo)
+{
+	if (do_cmd_pid > 1) {
+		kill(do_cmd_pid, signo ? signo : SIGTERM);
+		waitpid(do_cmd_pid, NULL, 0);
+	}
+
+	if (signo)
+		_exit(1);
 	exit(1);
+}
+
+int
+do_local_cmd(arglist *a, uid_t userid, gid_t groupid)
+{
+	u_int i;
+	int status;
+	pid_t pid;
+
+	if (a->num == 0)
+		errx(1, "do_local_cmd: no arguments");
+
+	if ((pid = fork()) == -1)
+		err(1, "do_local_cmd: fork");
+
+	if (pid == 0) {
+		setresgid(groupid, groupid, groupid);
+		setgroups(1, &groupid);
+		setresuid(userid, userid, userid);
+		execvp(a->list[0], a->list);
+		perror(a->list[0]);
+		exit(1);
+	}
+
+	do_cmd_pid = pid;
+	signal(SIGTERM, killchild);
+	signal(SIGINT, killchild);
+	signal(SIGHUP, killchild);
+
+	while (waitpid(pid, &status, 0) == -1)
+		if (errno != EINTR)
+			err(1, "do_local_cmd: waitpid");
+
+	do_cmd_pid = -1;
+
+	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+		return (-1);
+
+	signal(SIGTERM, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
+	signal(SIGHUP, SIG_DFL);
+
+	return (0);
+}
+
+/* function to assist building execv() arguments */
+void
+addargs(arglist *args, char *fmt, ...)
+{
+	va_list ap;
+	char *cp;
+	u_int nalloc;
+	int r;
+
+	va_start(ap, fmt);
+	r = vasprintf(&cp, fmt, ap);
+	va_end(ap);
+	if (r == -1)
+		errx(1, "addargs: argument too long");
+
+	nalloc = args->nalloc;
+	if (args->list == NULL) {
+		nalloc = 32;
+		args->num = 0;
+	} else if (args->num+2 >= nalloc)
+		nalloc *= 2;
+
+	if ((args->list = realloc(args->list, nalloc * sizeof(char *))) == NULL)
+		errx(1, "addargs: realloc failed");
+	args->nalloc = nalloc;
+	args->list[args->num++] = cp;
+	args->list[args->num] = NULL;
+}
+
+void
+replacearg(arglist *args, u_int which, char *fmt, ...)
+{
+	va_list ap;
+	char *cp;
+	int r;
+
+	va_start(ap, fmt);
+	r = vasprintf(&cp, fmt, ap);
+	va_end(ap);
+	if (r == -1)
+		errx(1, "replacearg: argument too long");
+
+	if (which >= args->num)
+		errx(1, "replacearg: tried to replace invalid arg %d >= %d",
+		    which, args->num);
+	free(args->list[which]);
+	args->list[which] = cp;
+}
+
+void
+freeargs(arglist *args)
+{
+	u_int i;
+
+	if (args->list != NULL) {
+		for (i = 0; i < args->num; i++)
+			free(args->list[i]);
+		free(args->list);
+		args->nalloc = args->num = 0;
+		args->list = NULL;
+	}
 }

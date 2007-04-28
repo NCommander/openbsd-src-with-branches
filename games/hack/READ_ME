@@ -1,3 +1,4 @@
+$OpenBSD: READ_ME,v 1.2 1995/03/23 08:29:12 cgd Exp $
 $NetBSD: READ_ME,v 1.2 1995/03/23 08:29:12 cgd Exp $
 
 Hack is a display oriented dungeons & dragons - like game.
@@ -51,7 +52,7 @@ How to install hack:
    and define BSD if you are on a BSDtype system,
    define STUPID if your C-compiler chokes on complicated expressions.
    Make sure schar and uchar represent signed and unsigned types.
-   If your C compiler doesnt allow initialization of bit fields
+   If your C compiler doesn't allow initialization of bit fields
    change Bitfield. When config.h looks reasonable, say 'make'.
    (Perhaps you have to change TERMLIB in the makefile.)
 1. If it didnt exist already, introduce a loginname `play' .

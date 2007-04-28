@@ -1,3 +1,4 @@
+.\"	$OpenBSD: rename.2,v 1.11 2003/07/15 10:09:21 jmc Exp $
 .\"	$NetBSD: rename.2,v 1.7 1995/02/27 12:36:15 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,7 +32,7 @@
 .\"
 .Dd June 4, 1993
 .Dt RENAME 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm rename
 .Nd change the name of a file
@@ -44,23 +41,25 @@
 .Ft int
 .Fn rename "const char *from" "const char *to"
 .Sh DESCRIPTION
-.Fn Rename
+.Fn rename
 causes the link named
 .Fa from
 to be renamed as
 .Fa to .
-If 
+If
 .Fa to
 exists, it is first removed.
-Both 
+Both
 .Fa from
 and
 .Fa to
 must be of the same type (that is, both directories or both
 non-directories), and must reside on the same file system.
 .Pp
-.Fn Rename
-guarantees that an instance of
+.Fn rename
+guarantees that if
+.Fa to
+already exists, an instance of
 .Fa to
 will always exist, even if the system should crash in
 the middle of the operation.
@@ -70,47 +69,21 @@ If the final component of
 is a symbolic link,
 the symbolic link is renamed,
 not the file or directory to which it points.
-.Sh CAVEAT
-The system can deadlock if a loop in the file system graph is present.
-This loop takes the form of an entry in directory
-.Ql Pa a ,
-say
-.Ql Pa a/foo ,
-being a hard link to directory
-.Ql Pa b ,
-and an entry in
-directory
-.Ql Pa b ,
-say
-.Ql Pa b/bar ,
-being a hard link
-to directory
-.Ql Pa a .
-When such a loop exists and two separate processes attempt to
-perform
-.Ql rename a/foo b/bar
-and
-.Ql rename b/bar a/foo ,
-respectively, 
-the system may deadlock attempting to lock
-both directories for modification.
-Hard links to directories should be
-replaced by symbolic links by the system administrator.
 .Sh RETURN VALUES
 A 0 value is returned if the operation succeeds, otherwise
 .Fn rename
-returns -1 and the global variable 
+returns \-1 and the global variable
 .Va errno
 indicates the reason for the failure.
 .Sh ERRORS
-.Fn Rename
+.Fn rename
 will fail and neither of the argument files will be
 affected if:
 .Bl -tag -width Er
 .It Bq Er ENAMETOOLONG
-A component of a pathname exceeded 
+A component of a pathname exceeded
 .Dv {NAME_MAX}
-characters, or an entire path name exceeded 
+characters, or an entire path name exceeded
 .Dv {PATH_MAX}
 characters.
 .It Bq Er ENOENT
@@ -144,6 +117,9 @@ and neither the containing directory nor
 are owned by the effective user ID.
 .It Bq Er ELOOP
 Too many symbolic links were encountered in translating either pathname.
+.It Bq Er EMLINK
+The link count on the source file or destination directory is at the maximum.
+A rename cannot be completed under these conditions.
 .It Bq Er ENOTDIR
 A component of either path prefix is not a directory.
 .It Bq Er ENOTDIR
@@ -161,9 +137,9 @@ The link named by
 .Fa to
 and the file named by
 .Fa from
-are on different logical devices (file systems).  Note that this error
-code will not be returned if the implementation permits cross-device
-links.
+are on different logical devices (file systems).
+Note that this error code will not be returned if the implementation
+permits cross-device links.
 .It Bq Er ENOSPC
 The directory in which the entry for the new name is being placed
 cannot be extended because there is no space left on the file
@@ -179,10 +155,12 @@ An I/O error occurred while making or updating a directory entry.
 The requested link requires writing in a directory on a read-only file
 system.
 .It Bq Er EFAULT
-.Em Path
+.Fa from
+or
+.Fa to
 points outside the process's allocated address space.
 .It Bq Er EINVAL
-.Fa From
+.Fa from
 is a parent directory of
 .Fa to ,
 or an attempt is made to rename
@@ -190,14 +168,40 @@ or an attempt is made to rename
 or
 .Ql \&.. .
 .It Bq Er ENOTEMPTY
-.Fa To
+.Fa to
 is a directory and is not empty.
 .El
 .Sh SEE ALSO
-.Xr open 2
+.Xr open 2 ,
 .Xr symlink 7
 .Sh STANDARDS
 The
 .Fn rename
-function conforms to 
+function conforms to
 .St -p1003.1-88 .
+.Sh CAVEATS
+The system can deadlock if a loop in the file system graph is present.
+This loop takes the form of an entry in directory
+.Sq Pa a ,
+say
+.Sq Pa a/foo ,
+being a hard link to directory
+.Sq Pa b ,
+and an entry in
+directory
+.Sq Pa b ,
+say
+.Sq Pa b/bar ,
+being a hard link
+to directory
+.Sq Pa a .
+When such a loop exists and two separate processes attempt to
+perform
+.Ql rename a/foo b/bar
+and
+.Ql rename b/bar a/foo ,
+respectively,
+the system may deadlock attempting to lock
+both directories for modification.
+Hard links to directories should be
+replaced by symbolic links by the system administrator.

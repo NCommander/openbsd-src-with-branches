@@ -55,7 +55,6 @@ xfs_getnewvnode(struct xfs *xfsp, struct vnode **vpp,
 		struct xfs_handle *handle)
 {
     struct xfs_node *result, *check;
-    struct mount *mp;
     int error;
 
     error = getnewvnode(VT_AFS, NNPFS_TO_VFS(xfsp), xfs_vnodeop_p, vpp);
@@ -450,7 +449,7 @@ tbl_enter (size_t len, const char *name, struct vnode *dvp, struct vnode *vp)
 
 /*
  * Lookup in tbl (`dvp', `name', `len') and return result in `res'.
- * Return -1 if succesful, otherwise 0.
+ * Return -1 if successful, otherwise 0.
  */
 
 static int
@@ -644,7 +643,7 @@ xfs_dnlc_lookup_int(struct vnode *dvp,
  * do the last (and locking protocol) portion of xnlc_lookup
  *
  * return:
- * -1 for succesful
+ * -1 for successful
  * 0  for failed
  */
 
@@ -695,15 +694,15 @@ xfs_dnlc_lock(struct vnode *dvp,
 /*
  * Lookup (`dvp', `cnp') in the DNLC (and the local cache).
  *
- * Return -1 if succesful, 0 if not and ENOENT if the entry is known
+ * Return -1 if successful, 0 if not and ENOENT if the entry is known
  * not to exist.
  *
  * On modern NetBSD, cache_lookup has been changed to return 0 for
- * succesful and -1 for not.
+ * successful and -1 for not.
  * (see the comment above for version information).
  */
 
-#if __NetBSD_Version__ >= 104120000 || OpenBSD > 200211
+#if __NetBSD_Version__ >= 104120000 || defined(__OpenBSD__)
 
 int
 xfs_dnlc_lookup(struct vnode *dvp,

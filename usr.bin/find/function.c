@@ -1,3 +1,5 @@
+/*	$OpenBSD: function.c,v 1.30 2004/07/20 03:50:25 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +34,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)function.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
+static char rcsid[] = "$OpenBSD: function.c,v 1.30 2004/07/20 03:50:25 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -45,11 +43,14 @@ static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
 #include <sys/wait.h>
 #include <sys/mount.h>
 
+#include <dirent.h>
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <fnmatch.h>
 #include <fts.h>
 #include <grp.h>
+#include <libgen.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,6 +59,7 @@ static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
 #include <unistd.h>
 
 #include "find.h"
+#include "extern.h"
 
 #define	COMPARE(a, b) {							\
 	switch (plan->flags) {						\
@@ -72,16 +74,58 @@ static char rcsid[] = "$Id: function.c,v 1.16 1995/06/18 11:00:17 cgd Exp $";
 	}								\
 }
 
-static PLAN *palloc __P((enum ntype, int (*) __P((PLAN *, FTSENT *))));
+static PLAN *palloc(enum ntype, int (*)(PLAN *, FTSENT *));
+static long find_parsenum(PLAN *plan, char *option, char *vp, char *endch);
+static PLAN *palloc(enum ntype t, int (*f)(PLAN *, FTSENT *));
+
+int	f_amin(PLAN *, FTSENT *);
+int	f_atime(PLAN *, FTSENT *);
+int	f_cmin(PLAN *, FTSENT *);
+int	f_ctime(PLAN *, FTSENT *);
+int	f_always_true(PLAN *, FTSENT *);
+int	f_empty(PLAN *, FTSENT *);
+int	f_exec(PLAN *, FTSENT *);
+int	f_execdir(PLAN *, FTSENT *);
+int	f_flags(PLAN *, FTSENT *);
+int	f_fstype(PLAN *, FTSENT *);
+int	f_group(PLAN *, FTSENT *);
+int	f_inum(PLAN *, FTSENT *);
+int	f_empty(PLAN *, FTSENT *);
+int	f_links(PLAN *, FTSENT *);
+int	f_ls(PLAN *, FTSENT *);
+int	f_maxdepth(PLAN *, FTSENT *);
+int	f_mindepth(PLAN *, FTSENT *);
+int	f_mtime(PLAN *, FTSENT *);
+int	f_mmin(PLAN *, FTSENT *);
+int	f_name(PLAN *, FTSENT *);
+int	f_iname(PLAN *, FTSENT *);
+int	f_newer(PLAN *, FTSENT *);
+int	f_anewer(PLAN *, FTSENT *);
+int	f_cnewer(PLAN *, FTSENT *);
+int	f_nogroup(PLAN *, FTSENT *);
+int	f_nouser(PLAN *, FTSENT *);
+int	f_path(PLAN *, FTSENT *);
+int	f_perm(PLAN *, FTSENT *);
+int	f_print(PLAN *, FTSENT *);
+int	f_print0(PLAN *, FTSENT *);
+int	f_prune(PLAN *, FTSENT *);
+int	f_size(PLAN *, FTSENT *);
+int	f_type(PLAN *, FTSENT *);
+int	f_user(PLAN *, FTSENT *);
+int	f_expr(PLAN *, FTSENT *);
+int	f_not(PLAN *, FTSENT *);
+int	f_or(PLAN *, FTSENT *);
+
+extern int dotfd;
+extern time_t now;
+extern FTS *tree;
 
 /*
  * find_parsenum --
  *	Parse a string of the form [+-]# and return the value.
  */
 static long
-find_parsenum(plan, option, vp, endch)
-	PLAN *plan;
-	char *option, *vp, *endch;
+find_parsenum(PLAN *plan, char *option, char *vp, char *endch)
 {
 	long value;
 	char *endchar, *str;	/* Pointer to character ending conversion. */
@@ -125,7 +169,35 @@ find_parsenum(plan, option, vp, endch)
  */
 #define	TIME_CORRECT(p, ttype)						\
 	if ((p)->type == ttype && (p)->flags == F_LESSTHAN)		\
-		++((p)->t_data);
+		++((p)->sec_data);
+
+/*
+ * -amin n functions --
+ *
+ *     True if the difference between the file access time and the
+ *     current time is n min periods.
+ */
+int
+f_amin(PLAN *plan, FTSENT *entry)
+{
+	extern time_t now;
+
+	COMPARE((now - entry->fts_statp->st_atime +
+	    60 - 1) / 60, plan->sec_data);
+}
+
+PLAN *
+c_amin(char *arg, char ***ignored, int unused)
+{
+	PLAN *new;
+
+	ftsoptions &= ~FTS_NOSTAT;
+
+	new = palloc(N_AMIN, f_amin);
+	new->sec_data = find_parsenum(new, "-amin", arg, NULL);
+	TIME_CORRECT(new, N_AMIN);
+	return (new);
+}
 
 /*
  * -atime n functions --
@@ -134,29 +206,54 @@ find_parsenum(plan, option, vp, endch)
  *	current time is n 24 hour periods.
  */
 int
-f_atime(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_atime(PLAN *plan, FTSENT *entry)
 {
-	extern time_t now;
 
 	COMPARE((now - entry->fts_statp->st_atime +
-	    SECSPERDAY - 1) / SECSPERDAY, plan->t_data);
+	    SECSPERDAY - 1) / SECSPERDAY, plan->sec_data);
 }
  
 PLAN *
-c_atime(arg)
-	char *arg;
+c_atime(char *arg, char ***ignored, int unused)
 {
 	PLAN *new;
 
 	ftsoptions &= ~FTS_NOSTAT;
 
 	new = palloc(N_ATIME, f_atime);
-	new->t_data = find_parsenum(new, "-atime", arg, NULL);
+	new->sec_data = find_parsenum(new, "-atime", arg, NULL);
 	TIME_CORRECT(new, N_ATIME);
 	return (new);
 }
+
+/*
+ * -cmin n functions --
+ *
+ *     True if the difference between the last change of file
+ *     status information and the current time is n min periods.
+ */
+int
+f_cmin(PLAN *plan, FTSENT *entry)
+{
+	extern time_t now;
+
+	COMPARE((now - entry->fts_statp->st_ctime +
+	    60 - 1) / 60, plan->sec_data);
+}
+
+PLAN *
+c_cmin(char *arg, char ***ignored, int unused)
+{
+	PLAN *new;
+
+	ftsoptions &= ~FTS_NOSTAT;
+
+	new = palloc(N_CMIN, f_cmin);
+	new->sec_data = find_parsenum(new, "-cmin", arg, NULL);
+	TIME_CORRECT(new, N_CMIN);
+	return (new);
+}
+
 /*
  * -ctime n functions --
  *
@@ -164,26 +261,22 @@ c_atime(arg)
  *	status information and the current time is n 24 hour periods.
  */
 int
-f_ctime(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_ctime(PLAN *plan, FTSENT *entry)
 {
-	extern time_t now;
 
 	COMPARE((now - entry->fts_statp->st_ctime +
-	    SECSPERDAY - 1) / SECSPERDAY, plan->t_data);
+	    SECSPERDAY - 1) / SECSPERDAY, plan->sec_data);
 }
  
 PLAN *
-c_ctime(arg)
-	char *arg;
+c_ctime(char *arg, char ***ignored, int unused)
 {
 	PLAN *new;
 
 	ftsoptions &= ~FTS_NOSTAT;
 
 	new = palloc(N_CTIME, f_ctime);
-	new->t_data = find_parsenum(new, "-ctime", arg, NULL);
+	new->sec_data = find_parsenum(new, "-ctime", arg, NULL);
 	TIME_CORRECT(new, N_CTIME);
 	return (new);
 }
@@ -196,21 +289,59 @@ c_ctime(arg)
  *	itself.
  */
 int
-f_always_true(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_always_true(PLAN *plan, FTSENT *entry)
 {
 	return (1);
 }
  
 PLAN *
-c_depth()
+c_depth(char *ignore, char ***ignored, int unused)
 {
 	isdepth = 1;
 
 	return (palloc(N_DEPTH, f_always_true));
 }
  
+/*
+ * -empty functions --
+ *
+ *	True if the file or directory is empty
+ */
+int
+f_empty(PLAN *plan, FTSENT *entry)
+{
+	if (S_ISREG(entry->fts_statp->st_mode) && entry->fts_statp->st_size == 0)
+		return (1);
+	if (S_ISDIR(entry->fts_statp->st_mode)) {
+		struct dirent *dp;
+		int empty;
+		DIR *dir;
+
+		empty = 1;
+		dir = opendir(entry->fts_accpath);
+		if (dir == NULL)
+			err(1, "%s", entry->fts_accpath);
+		for (dp = readdir(dir); dp; dp = readdir(dir))
+			if (dp->d_name[0] != '.' ||
+			    (dp->d_name[1] != '\0' &&
+			     (dp->d_name[1] != '.' || dp->d_name[2] != '\0'))) {
+				empty = 0;
+				break;
+			}
+		closedir(dir);
+		return (empty);
+	}
+	return (0);
+}
+
+PLAN *
+c_empty(char *ignore, char ***ignored, int unused)
+{
+	ftsoptions &= ~FTS_NOSTAT;
+
+	return (palloc(N_EMPTY, f_empty));
+}
+
 /*
  * [-exec | -ok] utility [arg ... ] ; functions --
  *
@@ -224,12 +355,9 @@ c_depth()
  *	user before executing the utility.
  */
 int
-f_exec(plan, entry)
-	register PLAN *plan;
-	FTSENT *entry;
+f_exec(PLAN *plan, FTSENT *entry)
 {
-	extern int dotfd;
-	register int cnt;
+	int cnt;
 	pid_t pid;
 	int status;
 
@@ -270,13 +398,11 @@ f_exec(plan, entry)
  *	strings, but also flags meaning that the string has to be massaged.
  */
 PLAN *
-c_exec(argvp, isok)
-	char ***argvp;
-	int isok;
+c_exec(char *unused, char ***argvp, int isok)
 {
 	PLAN *new;			/* node returned */
-	register int cnt;
-	register char **argv, **ap, *p;
+	int cnt;
+	char **argv, **ap, *p;
 
 	isoutput = 1;
     
@@ -317,13 +443,174 @@ c_exec(argvp, isok)
 }
  
 /*
+ * -execdir utility [arg ... ] ; functions --
+ *
+ *	True if the executed utility returns a zero value as exit status.
+ *	The end of the primary expression is delimited by a semicolon.  If
+ *	"{}" occurs anywhere, it gets replaced by the unqualified pathname.
+ *	The current directory for the execution of utility is the same as
+ *	the directory where the file lives.
+ */
+int
+f_execdir(PLAN *plan, FTSENT *entry)
+{
+	int cnt;
+	pid_t pid;
+	int status, fd;
+	char base[MAXPATHLEN];
+
+	/* fts(3) does not chdir for the root level so we do it ourselves. */
+	if (entry->fts_level == FTS_ROOTLEVEL) {
+		if ((fd = open(".", O_RDONLY)) == -1) {
+			warn("cannot open \".\"");
+			return (0);
+		}
+		if (chdir(entry->fts_accpath)) {
+			(void) close(fd);
+			return (0);
+		}
+	}
+
+	/* Substitute basename(path) for {} since cwd is it's parent dir */
+	(void)strncpy(base, basename(entry->fts_path), sizeof(base) - 1);
+	base[sizeof(base) - 1] = '\0';
+	for (cnt = 0; plan->e_argv[cnt]; ++cnt)
+		if (plan->e_len[cnt])
+			brace_subst(plan->e_orig[cnt], &plan->e_argv[cnt],
+			    base, plan->e_len[cnt]);
+
+	/* don't mix output of command with find output */
+	fflush(stdout);
+	fflush(stderr);
+
+	switch (pid = vfork()) {
+	case -1:
+		err(1, "fork");
+		/* NOTREACHED */
+	case 0:
+		execvp(plan->e_argv[0], plan->e_argv);
+		warn("%s", plan->e_argv[0]);
+		_exit(1);
+	}
+
+	/* Undo the above... */
+	if (entry->fts_level == FTS_ROOTLEVEL) {
+		if (fchdir(fd) == -1) {
+			warn("unable to chdir back to starting directory");
+			(void) close(fd);
+			return (0);
+		}
+		(void) close(fd);
+	}
+
+	pid = waitpid(pid, &status, 0);
+	return (pid != -1 && WIFEXITED(status) && !WEXITSTATUS(status));
+}
+ 
+/*
+ * c_execdir --
+ *	build three parallel arrays, one with pointers to the strings passed
+ *	on the command line, one with (possibly duplicated) pointers to the
+ *	argv array, and one with integer values that are lengths of the
+ *	strings, but also flags meaning that the string has to be massaged.
+ */
+PLAN *
+c_execdir(char *ignored, char ***argvp, int unused)
+{
+	PLAN *new;			/* node returned */
+	int cnt;
+	char **argv, **ap, *p;
+
+	ftsoptions &= ~FTS_NOSTAT;
+	isoutput = 1;
+    
+	new = palloc(N_EXECDIR, f_execdir);
+
+	for (ap = argv = *argvp;; ++ap) {
+		if (!*ap)
+			errx(1,
+			    "-execdir: no terminating \";\"");
+		if (**ap == ';')
+			break;
+	}
+
+	cnt = ap - *argvp + 1;
+	new->e_argv = (char **)emalloc((u_int)cnt * sizeof(char *));
+	new->e_orig = (char **)emalloc((u_int)cnt * sizeof(char *));
+	new->e_len = (int *)emalloc((u_int)cnt * sizeof(int));
+
+	for (argv = *argvp, cnt = 0; argv < ap; ++argv, ++cnt) {
+		new->e_orig[cnt] = *argv;
+		for (p = *argv; *p; ++p)
+			if (p[0] == '{' && p[1] == '}') {
+				new->e_argv[cnt] = emalloc((u_int)MAXPATHLEN);
+				new->e_len[cnt] = MAXPATHLEN;
+				break;
+			}
+		if (!*p) {
+			new->e_argv[cnt] = *argv;
+			new->e_len[cnt] = 0;
+		}
+	}
+	new->e_argv[cnt] = new->e_orig[cnt] = NULL;
+
+	*argvp = argv + 1;
+	return (new);
+}
+
+/*
+ * -flags functions --
+ *
+ *	The flags argument is used to represent file flags bits.
+ */
+int
+f_flags(PLAN *plan, FTSENT *entry)
+{
+	u_int flags;
+
+	flags = entry->fts_statp->st_flags &
+	    (UF_NODUMP | UF_IMMUTABLE | UF_APPEND | UF_OPAQUE |
+	     SF_ARCHIVED | SF_IMMUTABLE | SF_APPEND);
+	if (plan->flags == F_ATLEAST)
+		/* note that plan->fl_flags always is a subset of
+		   plan->fl_mask */
+		return ((flags & plan->fl_mask) == plan->fl_flags);
+	else
+		return (flags == plan->fl_flags);
+	/* NOTREACHED */
+}
+
+PLAN *
+c_flags(char *flags_str, char ***ignored, int unused)
+{
+	PLAN *new;
+	u_int32_t flags, notflags;
+
+	ftsoptions &= ~FTS_NOSTAT;
+
+	new = palloc(N_FLAGS, f_flags);
+
+	if (*flags_str == '-') {
+		new->flags = F_ATLEAST;
+		++flags_str;
+	}
+
+	if (strtofflags(&flags_str, &flags, &notflags) == 1)
+		errx(1, "-flags: %s: illegal flags string", flags_str);
+
+	new->fl_flags = flags;
+	new->fl_mask = flags | notflags;
+	return (new);
+}
+ 
+/*
  * -follow functions --
  *
  *	Always true, causes symbolic links to be followed on a global
  *	basis.
  */
 PLAN *
-c_follow()
+c_follow(char *ignore, char ***ignored, int unused)
 {
 	ftsoptions &= ~FTS_PHYSICAL;
 	ftsoptions |= FTS_LOGICAL;
@@ -337,9 +624,7 @@ c_follow()
  *	True if the file is of a certain type.
  */
 int
-f_fstype(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_fstype(PLAN *plan, FTSENT *entry)
 {
 	static dev_t curdev;	/* need a guaranteed illegal dev value */
 	static int first = 1;
@@ -358,7 +643,7 @@ f_fstype(plan, entry)
 		 */
 		if (entry->fts_info == FTS_SL ||
 		    entry->fts_info == FTS_SLNONE) {
-			if (p = strrchr(entry->fts_accpath, '/'))
+			if ((p = strrchr(entry->fts_accpath, '/')))
 				++p;
 			else
 				p = entry->fts_accpath;
@@ -398,10 +683,9 @@ f_fstype(plan, entry)
 }
  
 PLAN *
-c_fstype(arg)
-	char *arg;
+c_fstype(char *arg, char ***ignored, int unused)
 {
-	register PLAN *new;
+	PLAN *new;
     
 	ftsoptions &= ~FTS_NOSTAT;
     
@@ -436,16 +720,13 @@ c_fstype(arg)
  *	name, gname is taken as a group ID.
  */
 int
-f_group(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_group(PLAN *plan, FTSENT *entry)
 {
 	return (entry->fts_statp->st_gid == plan->g_data);
 }
  
 PLAN *
-c_group(gname)
-	char *gname;
+c_group(char *gname, char ***ignored, int unused)
 {
 	PLAN *new;
 	struct group *g;
@@ -472,16 +753,13 @@ c_group(gname)
  *	True if the file has inode # n.
  */
 int
-f_inum(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_inum(PLAN *plan, FTSENT *entry)
 {
 	COMPARE(entry->fts_statp->st_ino, plan->i_data);
 }
  
 PLAN *
-c_inum(arg)
-	char *arg;
+c_inum(char *arg, char ***ignored, int unused)
 {
 	PLAN *new;
     
@@ -498,16 +776,13 @@ c_inum(arg)
  *	True if the file has n links.
  */
 int
-f_links(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_links(PLAN *plan, FTSENT *entry)
 {
 	COMPARE(entry->fts_statp->st_nlink, plan->l_data);
 }
  
 PLAN *
-c_links(arg)
-	char *arg;
+c_links(char *arg, char ***ignored, int unused)
 {
 	PLAN *new;
     
@@ -524,21 +799,67 @@ c_links(arg)
  *	Always true - prints the current entry to stdout in "ls" format.
  */
 int
-f_ls(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_ls(PLAN *plan, FTSENT *entry)
 {
 	printlong(entry->fts_path, entry->fts_accpath, entry->fts_statp);
 	return (1);
 }
  
 PLAN *
-c_ls()
+c_ls(char *ignore, char ***ignored, int unused)
 {
 	ftsoptions &= ~FTS_NOSTAT;
 	isoutput = 1;
     
 	return (palloc(N_LS, f_ls));
+}
+
+/*
+ * - maxdepth n functions --
+ *
+ *	True if the current search depth is less than or equal to the
+ *	maximum depth specified
+ */
+int
+f_maxdepth(PLAN *plan, FTSENT *entry)
+{
+
+	if (entry->fts_level >= plan->max_data)
+		fts_set(tree, entry, FTS_SKIP);
+	return (entry->fts_level <= plan->max_data);
+}
+
+PLAN *
+c_maxdepth(char *arg, char ***ignored, int unused)
+{
+	PLAN *new;
+
+	new = palloc(N_MAXDEPTH, f_maxdepth);
+	new->max_data = atoi(arg);
+	return (new);
+}
+
+/*
+ * - mindepth n functions --
+ *
+ *	True if the current search depth is greater than or equal to the
+ *	minimum depth specified
+ */
+int
+f_mindepth(PLAN *plan, FTSENT *entry)
+{
+
+	return (entry->fts_level >= plan->min_data);
+}
+
+PLAN *
+c_mindepth(char *arg, char ***ignored, int unused)
+{
+	PLAN *new;
+
+	new = palloc(N_MINDEPTH, f_mindepth);
+	new->min_data = atoi(arg);
+	return (new);
 }
 
 /*
@@ -548,27 +869,51 @@ c_ls()
  *	current time is n 24 hour periods.
  */
 int
-f_mtime(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_mtime(PLAN *plan, FTSENT *entry)
 {
-	extern time_t now;
 
 	COMPARE((now - entry->fts_statp->st_mtime + SECSPERDAY - 1) /
-	    SECSPERDAY, plan->t_data);
+	    SECSPERDAY, plan->sec_data);
 }
  
 PLAN *
-c_mtime(arg)
-	char *arg;
+c_mtime(char *arg, char ***ignored, int unused)
 {
 	PLAN *new;
 
 	ftsoptions &= ~FTS_NOSTAT;
 
 	new = palloc(N_MTIME, f_mtime);
-	new->t_data = find_parsenum(new, "-mtime", arg, NULL);
+	new->sec_data = find_parsenum(new, "-mtime", arg, NULL);
 	TIME_CORRECT(new, N_MTIME);
+	return (new);
+}
+
+/*
+ * -mmin n functions --
+ *
+ *     True if the difference between the file modification time and the
+ *     current time is n min periods.
+ */
+int
+f_mmin(PLAN *plan, FTSENT *entry)
+{
+	extern time_t now;
+
+	COMPARE((now - entry->fts_statp->st_mtime + 60 - 1) /
+	    60, plan->sec_data);
+}
+
+PLAN *
+c_mmin(char *arg, char ***ignored, int unused)
+{
+	PLAN *new;
+
+	ftsoptions &= ~FTS_NOSTAT;
+
+	new = palloc(N_MMIN, f_mmin);
+	new->sec_data = find_parsenum(new, "-mmin", arg, NULL);
+	TIME_CORRECT(new, N_MMIN);
 	return (new);
 }
 
@@ -579,20 +924,39 @@ c_mtime(arg)
  *	matches pattern using Pattern Matching Notation S3.14
  */
 int
-f_name(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_name(PLAN *plan, FTSENT *entry)
 {
 	return (!fnmatch(plan->c_data, entry->fts_name, 0));
 }
  
 PLAN *
-c_name(pattern)
-	char *pattern;
+c_name(char *pattern, char ***ignored, int unused)
 {
 	PLAN *new;
 
 	new = palloc(N_NAME, f_name);
+	new->c_data = pattern;
+	return (new);
+}
+
+/*
+ * -iname functions --
+ *
+ *	Similar to -name, but does case insensitive matching
+ *	
+ */
+int
+f_iname(PLAN *plan, FTSENT *entry)
+{
+	return (!fnmatch(plan->c_data, entry->fts_name, FNM_CASEFOLD));
+}
+ 
+PLAN *
+c_iname(char *pattern, char ***ignored, int unused)
+{
+	PLAN *new;
+
+	new = palloc(N_INAME, f_iname);
 	new->c_data = pattern;
 	return (new);
 }
@@ -605,16 +969,16 @@ c_name(pattern)
  *	file.
  */
 int
-f_newer(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_newer(PLAN *plan, FTSENT *entry)
 {
-	return (entry->fts_statp->st_mtime > plan->t_data);
+
+	return (entry->fts_statp->st_mtimespec.tv_sec > plan->t_data.tv_sec ||
+	    (entry->fts_statp->st_mtimespec.tv_sec == plan->t_data.tv_sec &&
+	    entry->fts_statp->st_mtimespec.tv_nsec > plan->t_data.tv_nsec));
 }
  
 PLAN *
-c_newer(filename)
-	char *filename;
+c_newer(char *filename, char ***ignored, int unused)
 {
 	PLAN *new;
 	struct stat sb;
@@ -624,7 +988,69 @@ c_newer(filename)
 	if (stat(filename, &sb))
 		err(1, "%s", filename);
 	new = palloc(N_NEWER, f_newer);
-	new->t_data = sb.st_mtime;
+	memcpy(&new->t_data, &sb.st_mtimespec, sizeof(struct timespec));
+	return (new);
+}
+ 
+/*
+ * -anewer file functions --
+ *
+ *	True if the current file has been accessed more recently
+ *	then the access time of the file named by the pathname
+ *	file.
+ */
+int
+f_anewer(PLAN *plan, FTSENT *entry)
+{
+
+	return (entry->fts_statp->st_atimespec.tv_sec > plan->t_data.tv_sec ||
+	    (entry->fts_statp->st_atimespec.tv_sec == plan->t_data.tv_sec &&
+	    entry->fts_statp->st_atimespec.tv_nsec > plan->t_data.tv_nsec));
+}
+ 
+PLAN *
+c_anewer(char *filename, char ***ignored, int unused)
+{
+	PLAN *new;
+	struct stat sb;
+    
+	ftsoptions &= ~FTS_NOSTAT;
+
+	if (stat(filename, &sb))
+		err(1, "%s", filename);
+	new = palloc(N_NEWER, f_anewer);
+	memcpy(&new->t_data, &sb.st_atimespec, sizeof(struct timespec));
+	return (new);
+}
+ 
+/*
+ * -cnewer file functions --
+ *
+ *	True if the current file has been changed more recently
+ *	then the inode change time of the file named by the pathname
+ *	file.
+ */
+int
+f_cnewer(PLAN *plan, FTSENT *entry)
+{
+
+	return (entry->fts_statp->st_ctimespec.tv_sec > plan->t_data.tv_sec ||
+	    (entry->fts_statp->st_ctimespec.tv_sec == plan->t_data.tv_sec &&
+	    entry->fts_statp->st_ctimespec.tv_nsec > plan->t_data.tv_nsec));
+}
+ 
+PLAN *
+c_cnewer(char *filename, char ***ignored, int unused)
+{
+	PLAN *new;
+	struct stat sb;
+    
+	ftsoptions &= ~FTS_NOSTAT;
+
+	if (stat(filename, &sb))
+		err(1, "%s", filename);
+	new = palloc(N_NEWER, f_cnewer);
+	memcpy(&new->t_data, &sb.st_ctimespec, sizeof(struct timespec));
 	return (new);
 }
  
@@ -635,17 +1061,13 @@ c_newer(filename)
  *	of the getgrnam() 9.2.1 [POSIX.1] function returns NULL.
  */
 int
-f_nogroup(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_nogroup(PLAN *plan, FTSENT *entry)
 {
-	char *group_from_gid();
-
 	return (group_from_gid(entry->fts_statp->st_gid, 1) ? 0 : 1);
 }
  
 PLAN *
-c_nogroup()
+c_nogroup(char *ignore, char ***ignored, int unused)
 {
 	ftsoptions &= ~FTS_NOSTAT;
 
@@ -659,17 +1081,13 @@ c_nogroup()
  *	of the getpwuid() 9.2.2 [POSIX.1] function returns NULL.
  */
 int
-f_nouser(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_nouser(PLAN *plan, FTSENT *entry)
 {
-	char *user_from_uid();
-
 	return (user_from_uid(entry->fts_statp->st_uid, 1) ? 0 : 1);
 }
  
 PLAN *
-c_nouser()
+c_nouser(char *ignore, char ***ignored, int unused)
 {
 	ftsoptions &= ~FTS_NOSTAT;
 
@@ -683,16 +1101,13 @@ c_nouser()
  *	matches pattern using Pattern Matching Notation S3.14
  */
 int
-f_path(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_path(PLAN *plan, FTSENT *entry)
 {
 	return (!fnmatch(plan->c_data, entry->fts_path, 0));
 }
  
 PLAN *
-c_path(pattern)
-	char *pattern;
+c_path(char *pattern, char ***ignored, int unused)
 {
 	PLAN *new;
 
@@ -709,9 +1124,7 @@ c_path(pattern)
  *	symbolic mode.
  */
 int
-f_perm(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_perm(PLAN *plan, FTSENT *entry)
 {
 	mode_t mode;
 
@@ -725,11 +1138,10 @@ f_perm(plan, entry)
 }
  
 PLAN *
-c_perm(perm)
-	char *perm;
+c_perm(char *perm, char ***ignored, int unused)
 {
 	PLAN *new;
-	mode_t *set;
+	void *set;
 
 	ftsoptions &= ~FTS_NOSTAT;
 
@@ -741,9 +1153,10 @@ c_perm(perm)
 	}
 
 	if ((set = setmode(perm)) == NULL)
-		err(1, "-perm: %s: illegal mode string", perm);
+		errx(1, "-perm: %s: illegal mode string", perm);
 
 	new->m_data = getmode(set, 0);
+	free(set);
 	return (new);
 }
  
@@ -754,18 +1167,15 @@ c_perm(perm)
  *	standard output.
  */
 int
-f_print(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_print(PLAN *plan, FTSENT *entry)
 {
 	(void)printf("%s\n", entry->fts_path);
 	return(1);
 }
 
 /* ARGSUSED */
-f_print0(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+int
+f_print0(PLAN *plan, FTSENT *entry)
 {
 	(void)fputs(entry->fts_path, stdout);
 	(void)fputc('\0', stdout);
@@ -773,7 +1183,7 @@ f_print0(plan, entry)
 }
  
 PLAN *
-c_print()
+c_print(char *ignore, char ***ignored, int unused)
 {
 	isoutput = 1;
 
@@ -781,7 +1191,7 @@ c_print()
 }
 
 PLAN *
-c_print0()
+c_print0(char *ignore, char ***ignored, int unused)
 {
 	isoutput = 1;
 
@@ -794,11 +1204,8 @@ c_print0()
  *	Prune a portion of the hierarchy.
  */
 int
-f_prune(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_prune(PLAN *plan, FTSENT *entry)
 {
-	extern FTS *tree;
 
 	if (fts_set(tree, entry, FTS_SKIP))
 		err(1, "%s", entry->fts_path);
@@ -806,7 +1213,7 @@ f_prune(plan, entry)
 }
  
 PLAN *
-c_prune()
+c_prune(char *ignore, char ***ignored, int unused)
 {
 	return (palloc(N_PRUNE, f_prune));
 }
@@ -822,9 +1229,7 @@ c_prune()
 static int divsize = 1;
 
 int
-f_size(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_size(PLAN *plan, FTSENT *entry)
 {
 	off_t size;
 
@@ -834,8 +1239,7 @@ f_size(plan, entry)
 }
  
 PLAN *
-c_size(arg)
-	char *arg;
+c_size(char *arg, char ***ignored, int unused)
 {
 	PLAN *new;
 	char endch;
@@ -858,16 +1262,13 @@ c_size(arg)
  *	regular file, respectively.
  */
 int
-f_type(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_type(PLAN *plan, FTSENT *entry)
 {
 	return ((entry->fts_statp->st_mode & S_IFMT) == plan->m_data);
 }
  
 PLAN *
-c_type(typestring)
-	char *typestring;
+c_type(char *typestring, char ***ignored, int unused)
 {
 	PLAN *new;
 	mode_t  mask;
@@ -913,16 +1314,13 @@ c_type(typestring)
  *	return a valid user name, uname is taken as a user ID.
  */
 int
-f_user(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_user(PLAN *plan, FTSENT *entry)
 {
 	return (entry->fts_statp->st_uid == plan->u_data);
 }
  
 PLAN *
-c_user(username)
-	char *username;
+c_user(char *username, char ***ignored, int unused)
 {
 	PLAN *new;
 	struct passwd *p;
@@ -950,7 +1348,7 @@ c_user(username)
  *	different device ID (st_dev, see stat() S5.6.2 [POSIX.1])
  */
 PLAN *
-c_xdev()
+c_xdev(char *ignore, char ***ignored, int unused)
 {
 	ftsoptions |= FTS_XDEV;
 
@@ -963,12 +1361,10 @@ c_xdev()
  *	True if expression is true.
  */
 int
-f_expr(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_expr(PLAN *plan, FTSENT *entry)
 {
-	register PLAN *p;
-	register int state;
+	PLAN *p;
+	int state;
 
 	for (p = plan->p_data[0];
 	    p && (state = (p->eval)(p, entry)); p = p->next);
@@ -981,15 +1377,15 @@ f_expr(plan, entry)
  * to a N_EXPR node containing the expression and the ')' node is discarded.
  */
 PLAN *
-c_openparen()
+c_openparen(char *ignore, char ***ignored, int unused)
 {
-	return (palloc(N_OPENPAREN, (int (*)())-1));
+	return (palloc(N_OPENPAREN, (int (*)(PLAN *, FTSENT *))-1));
 }
  
 PLAN *
-c_closeparen()
+c_closeparen(char *ignore, char ***ignored, int unused)
 {
-	return (palloc(N_CLOSEPAREN, (int (*)())-1));
+	return (palloc(N_CLOSEPAREN, (int (*)(PLAN *, FTSENT *))-1));
 }
  
 /*
@@ -998,12 +1394,10 @@ c_closeparen()
  *	Negation of a primary; the unary NOT operator.
  */
 int
-f_not(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_not(PLAN *plan, FTSENT *entry)
 {
-	register PLAN *p;
-	register int state;
+	PLAN *p;
+	int state;
 
 	for (p = plan->p_data[0];
 	    p && (state = (p->eval)(p, entry)); p = p->next);
@@ -1011,7 +1405,7 @@ f_not(plan, entry)
 }
  
 PLAN *
-c_not()
+c_not(char *ignore, char ***ignored, int unused)
 {
 	return (palloc(N_NOT, f_not));
 }
@@ -1023,12 +1417,10 @@ c_not()
  * not evaluated if the first expression is true.
  */
 int
-f_or(plan, entry)
-	PLAN *plan;
-	FTSENT *entry;
+f_or(PLAN *plan, FTSENT *entry)
 {
-	register PLAN *p;
-	register int state;
+	PLAN *p;
+	int state;
 
 	for (p = plan->p_data[0];
 	    p && (state = (p->eval)(p, entry)); p = p->next);
@@ -1042,23 +1434,19 @@ f_or(plan, entry)
 }
 
 PLAN *
-c_or()
+c_or(char *ignore, char ***ignored, int unused)
 {
 	return (palloc(N_OR, f_or));
 }
 
 static PLAN *
-palloc(t, f)
-	enum ntype t;
-	int (*f) __P((PLAN *, FTSENT *));
+palloc(enum ntype t, int (*f)(PLAN *, FTSENT *))
 {
 	PLAN *new;
 
-	if (new = malloc(sizeof(PLAN))) {
+	if ((new = calloc(1, sizeof(PLAN)))) {
 		new->type = t;
 		new->eval = f;
-		new->flags = 0;
-		new->next = NULL;
 		return (new);
 	}
 	err(1, NULL);

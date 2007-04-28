@@ -1,5 +1,4 @@
-/*	$NetBSD: tempnam.c,v 1.6 1995/02/02 02:10:42 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,13 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)tempnam.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: tempnam.c,v 1.6 1995/02/02 02:10:42 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <errno.h>
 #include <stdio.h>
@@ -48,9 +36,13 @@ static char rcsid[] = "$NetBSD: tempnam.c,v 1.6 1995/02/02 02:10:42 jtc Exp $";
 #include <unistd.h>
 #include <paths.h>
 
+__warn_references(tempnam,
+    "warning: tempnam() possibly used unsafely; consider using mkstemp()");
+
+extern char *_mktemp(char *);
+
 char *
-tempnam(dir, pfx)
-	const char *dir, *pfx;
+tempnam(const char *dir, const char *pfx)
 {
 	int sverrno;
 	char *f, *name;
@@ -61,28 +53,28 @@ tempnam(dir, pfx)
 	if (!pfx)
 		pfx = "tmp.";
 
-	if (f = getenv("TMPDIR")) {
-		(void)snprintf(name, MAXPATHLEN, "%s%s%sXXXXXX", f,
+	if (issetugid() == 0 && (f = getenv("TMPDIR"))) {
+		(void)snprintf(name, MAXPATHLEN, "%s%s%sXXXXXXXXXX", f,
 		    *(f + strlen(f) - 1) == '/'? "": "/", pfx);
-		if (f = mktemp(name))
+		if ((f = _mktemp(name)))
 			return(f);
 	}
 
-	if (f = (char *)dir) {
-		(void)snprintf(name, MAXPATHLEN, "%s%s%sXXXXXX", f,
+	if ((f = (char *)dir)) {
+		(void)snprintf(name, MAXPATHLEN, "%s%s%sXXXXXXXXXX", f,
 		    *(f + strlen(f) - 1) == '/'? "": "/", pfx);
-		if (f = mktemp(name))
+		if ((f = _mktemp(name)))
 			return(f);
 	}
 
 	f = P_tmpdir;
-	(void)snprintf(name, MAXPATHLEN, "%s%sXXXXXX", f, pfx);
-	if (f = mktemp(name))
+	(void)snprintf(name, MAXPATHLEN, "%s%sXXXXXXXXX", f, pfx);
+	if ((f = _mktemp(name)))
 		return(f);
 
 	f = _PATH_TMP;
-	(void)snprintf(name, MAXPATHLEN, "%s%sXXXXXX", f, pfx);
-	if (f = mktemp(name))
+	(void)snprintf(name, MAXPATHLEN, "%s%sXXXXXXXXX", f, pfx);
+	if ((f = _mktemp(name)))
 		return(f);
 
 	sverrno = errno;

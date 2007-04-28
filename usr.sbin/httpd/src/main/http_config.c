@@ -1,3 +1,5 @@
+/* $OpenBSD: http_config.c,v 1.16 2005/02/09 12:13:09 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -77,6 +79,7 @@
 #include "http_config.h"
 #include "http_core.h"
 #include "http_log.h"		/* for errors in parse_htaccess */
+#include "http_main.h"
 #include "http_request.h"	/* for default_handler (see invoke_handler) */
 #include "http_conf_globals.h"	/* Sigh... */
 #include "http_vhost.h"
@@ -554,11 +557,7 @@ API_EXPORT(void) ap_add_module(module *m)
 	fprintf(stderr, "%s: module \"%s\" is not compatible with this "
 		"version of Apache.\n", ap_server_argv0, m->name);
 	fprintf(stderr, "Please contact the vendor for the correct version.\n");
-#ifdef NETWARE
-        clean_parent_exit(1);
-#else    
 	exit(1);
-#endif
     }
 
     if (m->next == NULL) {
@@ -574,11 +573,7 @@ API_EXPORT(void) ap_add_module(module *m)
 		    " the dynamic\n", ap_server_argv0, m->name);
 	    fprintf(stderr, "module limit was reached. Please increase "
 		    "DYNAMIC_MODULE_LIMIT and recompile.\n");
-#ifdef NETWARE
-            clean_parent_exit(1);
-#else
 	    exit(1);
-#endif
 	}
     }
 
@@ -592,16 +587,6 @@ API_EXPORT(void) ap_add_module(module *m)
     if (strrchr(m->name, '\\'))
 	m->name = 1 + strrchr(m->name, '\\');
 
-#ifdef _OSD_POSIX /* __FILE__="*POSIX(/home/martin/apache/src/modules/standard/mod_info.c)" */
-    /* We cannot fix the string in-place, because it's const */
-    if (m->name[strlen(m->name)-1]==')') {
-	char *tmp = strdup(m->name);	/* FIXME:memory leak, albeit a small one */
-	tmp[strlen(tmp)-1] = '\0';
-	m->name = tmp;
-    }
-#endif /*_OSD_POSIX*/
-
-#ifdef EAPI
     /*
      * Invoke the `add_module' hook inside the now existing set
      * of modules to let them all now that this module was added.
@@ -613,7 +598,6 @@ API_EXPORT(void) ap_add_module(module *m)
                 if (m2->add_module != NULL)
                     (*m2->add_module)(m);
     }
-#endif /* EAPI */
 }
 
 /* 
@@ -628,7 +612,6 @@ API_EXPORT(void) ap_remove_module(module *m)
 {
     module *modp;
 
-#ifdef EAPI
     /*
      * Invoke the `remove_module' hook inside the now existing
      * set of modules to let them all now that this module is
@@ -641,7 +624,6 @@ API_EXPORT(void) ap_remove_module(module *m)
                 if (m2->remove_module != NULL)
                     (*m2->remove_module)(m);
     }
-#endif /* EAPI */
 
     modp = top_module;
     if (modp == m) {
@@ -745,11 +727,7 @@ API_EXPORT(void) ap_setup_prelinked_modules(void)
         sizeof(module *)*(total_modules+DYNAMIC_MODULE_LIMIT+1));
     if (ap_loaded_modules == NULL) {
 	fprintf(stderr, "Ouch!  Out of memory in ap_setup_prelinked_modules()!\n");
-#ifdef NETWARE
-        clean_parent_exit(1);
-#else
 	exit(1);
-#endif
     }
     for (m = ap_preloaded_modules, m2 = ap_loaded_modules; *m != NULL; )
         *m2++ = *m++;
@@ -1036,7 +1014,6 @@ CORE_EXPORT(const char *) ap_handle_command(cmd_parms *parms, void *config, cons
     const command_rec *cmd;
     module *mod = top_module;
 
-#ifdef EAPI
     /*
      * Invoke the `rewrite_command' of modules to allow
      * they to rewrite the directive line before we
@@ -1055,7 +1032,6 @@ CORE_EXPORT(const char *) ap_handle_command(cmd_parms *parms, void *config, cons
             }
         }
     }
-#endif /* EAPI */
 
     if ((l[0] == '#') || (!l[0]))
 	return NULL;
@@ -1142,9 +1118,7 @@ API_EXPORT_NONSTD(const char *) ap_set_file_slot(cmd_parms *cmd, char *struct_pt
        so the server can be moved or mirrored with less pain.  */
     char *p;
     int offset = (int) (long) cmd->info;
-#ifndef OS2
     arg = ap_os_canonical_filename(cmd->pool, arg);
-#endif
     if (ap_os_is_path_absolute(arg))
 	p = arg;
     else
@@ -1163,9 +1137,7 @@ static cmd_parms default_parms =
 
 API_EXPORT(char *) ap_server_root_relative(pool *p, char *file)
 {
-#ifndef OS2
     file = ap_os_canonical_filename(p, file);
-#endif
     if(ap_os_is_path_absolute(file))
 	return file;
     return ap_make_full_path(p, ap_server_root, file);
@@ -1235,11 +1207,7 @@ static void process_command_config(server_rec *s, array_header *arr, pool *p,
 
     if (errmsg) {
         fprintf(stderr, "Syntax error in -C/-c directive:\n%s\n", errmsg);
-#ifdef NETWARE
-        clean_parent_exit(1);
-#else
         exit(1);
-#endif
     }
 
     ap_cfg_closefile(parms.config_file);
@@ -1270,6 +1238,9 @@ CORE_EXPORT(void) ap_process_resource_config(server_rec *s, char *fname, pool *p
 	if (stat(fname, &finfo) == -1)
 	    return;
     }
+
+    /* if we are already chrooted here, it's a restart. strip chroot then. */
+    ap_server_strip_chroot(fname, 0);
 
     /* don't require conf/httpd.conf if we have a -C or -c switch */
     if((ap_server_pre_read_config->nelts || ap_server_post_read_config->nelts) &&
@@ -1326,11 +1297,7 @@ CORE_EXPORT(void) ap_process_resource_config(server_rec *s, char *fname, pool *p
 	    perror("fopen");
 	    fprintf(stderr, "%s: could not open config directory %s\n",
 		ap_server_argv0, path);
-#ifdef NETWARE
-	    clean_parent_exit(1);
-#else
 	    exit(1);
-#endif
 	}
 	candidates = ap_make_array(p, 1, sizeof(fnames));
 	while ((dir_entry = readdir(dirp)) != NULL) {
@@ -1372,11 +1339,7 @@ CORE_EXPORT(void) ap_process_resource_config(server_rec *s, char *fname, pool *p
 	perror("fopen");
 	fprintf(stderr, "%s: could not open document config file %s\n",
 		ap_server_argv0, fname);
-#ifdef NETWARE
-        clean_parent_exit(1);
-#else
 	exit(1);
-#endif
     }
 
     errmsg = ap_srm_command_loop(&parms, s->lookup_defaults);
@@ -1385,11 +1348,7 @@ CORE_EXPORT(void) ap_process_resource_config(server_rec *s, char *fname, pool *p
 	fprintf(stderr, "Syntax error on line %d of %s:\n",
 		parms.config_file->line_number, parms.config_file->name);
 	fprintf(stderr, "%s\n", errmsg);
-#ifdef NETWARE
-        clean_parent_exit(1);
-#else
 	exit(1);
-#endif
     }
 
     ap_cfg_closefile(parms.config_file);
@@ -1475,7 +1434,6 @@ CORE_EXPORT(const char *) ap_init_virtual_host(pool *p, const char *hostname,
 {
     server_rec *s = (server_rec *) ap_pcalloc(p, sizeof(server_rec));
 
-#ifdef RLIMIT_NOFILE
     struct rlimit limits;
 
     getrlimit(RLIMIT_NOFILE, &limits);
@@ -1486,7 +1444,6 @@ CORE_EXPORT(const char *) ap_init_virtual_host(pool *p, const char *hostname,
 	    fprintf(stderr, "Cannot exceed hard limit for open files");
 	}
     }
-#endif
 
     s->server_admin = NULL;
     s->server_hostname = NULL;
@@ -1517,9 +1474,7 @@ CORE_EXPORT(const char *) ap_init_virtual_host(pool *p, const char *hostname,
     s->limit_req_fieldsize = main_server->limit_req_fieldsize;
     s->limit_req_fields = main_server->limit_req_fields;
 
-#ifdef EAPI
     s->ctx = ap_ctx_new(p);
-#endif /* EAPI */
 
     *ps = s;
 
@@ -1581,8 +1536,11 @@ static void init_config_globals(pool *p)
 
     ap_standalone = 1;
     ap_user_name = DEFAULT_USER;
-    ap_user_id = ap_uname2id(DEFAULT_USER);
-    ap_group_id = ap_gname2id(DEFAULT_GROUP);
+    if (!ap_server_is_chrooted()) { 
+	/* can't work, just keep old setting */
+	ap_user_id = ap_uname2id(DEFAULT_USER);
+	ap_group_id = ap_gname2id(DEFAULT_GROUP);
+    }
     ap_daemons_to_start = DEFAULT_START_DAEMON;
     ap_daemons_min_free = DEFAULT_MIN_FREE_DAEMON;
     ap_daemons_max_free = DEFAULT_MAX_FREE_DAEMON;
@@ -1591,6 +1549,11 @@ static void init_config_globals(pool *p)
     ap_scoreboard_fname = DEFAULT_SCOREBOARD;
     ap_lock_fname = DEFAULT_LOCKFILE;
     ap_max_requests_per_child = DEFAULT_MAX_REQUESTS_PER_CHILD;
+    ap_max_cpu_per_child = DEFAULT_MAX_CPU_PER_CHILD;
+    ap_max_data_per_child = DEFAULT_MAX_DATA_PER_CHILD;
+    ap_max_nofile_per_child = DEFAULT_MAX_NOFILE_PER_CHILD;
+    ap_max_rss_per_child = DEFAULT_MAX_RSS_PER_CHILD;
+    ap_max_stack_per_child = DEFAULT_MAX_STACK_PER_CHILD;
     ap_bind_address.s_addr = htonl(INADDR_ANY);
     ap_listeners = NULL;
     ap_listenbacklog = DEFAULT_LISTENBACKLOG;
@@ -1632,9 +1595,7 @@ static server_rec *init_server_config(pool *p)
     s->module_config = create_server_config(p, s);
     s->lookup_defaults = create_default_per_dir_config(p);
 
-#ifdef EAPI
     s->ctx = ap_ctx_new(p);
-#endif /* EAPI */
 
     return s;
 }
@@ -1718,12 +1679,8 @@ API_EXPORT(void) ap_child_exit_modules(pool *p, server_rec *s)
 {
     module *m;
 
-#ifdef SIGHUP
     signal(SIGHUP, SIG_IGN);
-#endif
-#ifdef SIGUSR1
     signal(SIGUSR1, SIG_IGN);
-#endif
 
     for (m = top_module; m; m = m->next)
 	if (m->child_exit)
@@ -1832,10 +1789,8 @@ API_EXPORT(void) ap_show_modules(void)
     for (n = 0; ap_loaded_modules[n]; ++n) {
 	printf("  %s\n", ap_loaded_modules[n]->name);
     }
-#if !defined(WIN32) && !defined(NETWARE) && !defined(TPF)
     printf("suexec: %s\n",
 	   ap_suexec_enabled
 	       ? "enabled; valid wrapper " SUEXEC_BIN
 	       : "disabled; invalid wrapper " SUEXEC_BIN);
-#endif
 }

@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,15 +32,15 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mount_fs.c	8.1 (Berkeley) 6/6/93
- *	$Id: mount_fs.c,v 1.3 1994/06/13 20:47:40 mycroft Exp $
+ *	$Id: mount_fs.c,v 1.8 2002/08/03 08:29:31 pvalchev Exp $
  */
 
 #include "am.h"
 #ifdef NFS_3
 typedef nfs_fh fhandle_t;
 #endif /* NFS_3 */
-#include <sys/mount.h>
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 /*
@@ -87,8 +83,8 @@ struct opt_tab mnt_flags[] = {
 	{ 0, 0 }
 };
 
-int compute_mount_flags(mnt)
-struct mntent *mnt;
+int
+compute_mount_flags(struct mntent *mnt)
 {
 	struct opt_tab *opt;
 	int flags;
@@ -107,13 +103,9 @@ struct mntent *mnt;
 	return flags;
 }
 
-int mount_fs P((struct mntent *mnt, int flags, caddr_t mnt_data, int retry, MTYPE_TYPE type));
-int mount_fs(mnt, flags, mnt_data, retry, type)
-struct mntent *mnt;
-int flags;
-caddr_t mnt_data;
-int retry;
-MTYPE_TYPE type;
+int
+mount_fs(struct mntent *mnt, int flags, caddr_t mnt_data, int retry,
+    MTYPE_TYPE type)
 {
 	int error = 0;
 #ifdef MNTINFO_DEV
@@ -174,12 +166,14 @@ again:
 		xopts = mnt->mnt_opts;
 		if (sizeof(stb.st_dev) == 2) {
 			/* e.g. SunOS 4.1 */
-			sprintf(zopts, "%s,%s=%s%04lx", xopts, MNTINFO_DEV,
-					MNTINFO_PREF, (u_long) stb.st_dev & 0xffff);
+			snprintf(zopts, strlen(mnt->mnt_opts) + 32,
+					"%s,%s=%s%04x", xopts, MNTINFO_DEV,
+					MNTINFO_PREF, (u_int) stb.st_dev & 0xffff);
 		} else {
 			/* e.g. System Vr4 */
-			sprintf(zopts, "%s,%s=%s%08lx", xopts, MNTINFO_DEV,
-					MNTINFO_PREF, (u_long) stb.st_dev);
+			snprintf(zopts, strlen(mnt->mnt_opts) + 32,
+					"%s,%s=%s%08x", xopts, MNTINFO_DEV,
+					MNTINFO_PREF, (u_int) stb.st_dev);
 		}
 		mnt->mnt_opts = zopts;
 	}
@@ -215,8 +209,8 @@ again:
 
 #include <ctype.h>
 
-static char *nextmntopt(p)
-char **p;
+static char *
+nextmntopt(char **p)
 {
 	char *cp = *p;
 	char *rp;
@@ -248,15 +242,15 @@ char **p;
 	return rp;
 }
 
-char *hasmntopt(mnt, opt)
-struct mntent *mnt;
-char *opt;
+char *
+hasmntopt(struct mntent *mnt, char *opt)
 {
 	char t[MNTMAXSTR];
 	char *f;
 	char *o = t;
 	int l = strlen(opt);
-	strcpy(t, mnt->mnt_opts);
+
+	strlcpy(t, mnt->mnt_opts, sizeof(t));
 
 	while (*(f = nextmntopt(&o)))
 		if (strncmp(opt, f, l) == 0)

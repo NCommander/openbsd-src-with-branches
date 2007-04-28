@@ -1,5 +1,4 @@
-/*	$NetBSD: clnt_simple.c,v 1.5 1995/06/03 22:37:23 mycroft Exp $	*/
-
+/*	$OpenBSD: clnt_simple.c,v 1.12 2005/08/08 08:05:35 espie Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_simple.c 1.35 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)clnt_simple.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_simple.c,v 1.5 1995/06/03 22:37:23 mycroft Exp $";
-#endif
-
 /* 
  * clnt_simple.c
  * Simplified front end to rpc.
@@ -42,12 +35,14 @@ static char *rcsid = "$NetBSD: clnt_simple.c,v 1.5 1995/06/03 22:37:23 mycroft E
  * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
+#include <sys/param.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <rpc/rpc.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
 static struct callrpc_private {
 	CLIENT	*client;
@@ -56,25 +51,30 @@ static struct callrpc_private {
 	char	*oldhost;
 } *callrpc_private;
 
-callrpc(host, prognum, versnum, procnum, inproc, in, outproc, out)
-	char *host;
-	xdrproc_t inproc, outproc;
-	char *in, *out;
+int
+callrpc(char *host, int prognum, int versnum, int procnum, xdrproc_t inproc,
+    char *in, xdrproc_t outproc, char *out)
 {
-	register struct callrpc_private *crp = callrpc_private;
+	struct callrpc_private *save_callrpc_private = callrpc_private;
+	struct callrpc_private *crp = callrpc_private;
 	struct sockaddr_in server_addr;
 	enum clnt_stat clnt_stat;
 	struct hostent *hp;
 	struct timeval timeout, tottimeout;
 
-	if (crp == 0) {
+	if (crp == NULL) {
 		crp = (struct callrpc_private *)calloc(1, sizeof (*crp));
-		if (crp == 0)
+		if (crp == NULL)
 			return (0);
 		callrpc_private = crp;
 	}
 	if (crp->oldhost == NULL) {
-		crp->oldhost = malloc(256);
+		crp->oldhost = malloc(MAXHOSTNAMELEN);
+		if (crp->oldhost == NULL) {
+			free(crp);
+			callrpc_private = save_callrpc_private;
+			return (0);
+		}
 		crp->oldhost[0] = 0;
 		crp->socket = RPC_ANYSOCK;
 	}
@@ -83,7 +83,8 @@ callrpc(host, prognum, versnum, procnum, inproc, in, outproc, out)
 		/* reuse old client */		
 	} else {
 		crp->valid = 0;
-		(void)close(crp->socket);
+		if (crp->socket != -1)
+			(void)close(crp->socket);
 		crp->socket = RPC_ANYSOCK;
 		if (crp->client) {
 			clnt_destroy(crp->client);
@@ -94,7 +95,7 @@ callrpc(host, prognum, versnum, procnum, inproc, in, outproc, out)
 		timeout.tv_usec = 0;
 		timeout.tv_sec = 5;
 		memset(&server_addr, 0, sizeof(server_addr));
-		bcopy(hp->h_addr, (char *)&server_addr.sin_addr, hp->h_length);
+		memcpy((char *)&server_addr.sin_addr, hp->h_addr, hp->h_length);
 		server_addr.sin_len = sizeof(struct sockaddr_in);
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_port =  0;
@@ -104,7 +105,7 @@ callrpc(host, prognum, versnum, procnum, inproc, in, outproc, out)
 		crp->valid = 1;
 		crp->oldprognum = prognum;
 		crp->oldversnum = versnum;
-		(void) strcpy(crp->oldhost, host);
+		strlcpy(crp->oldhost, host, MAXHOSTNAMELEN);
 	}
 	tottimeout.tv_sec = 25;
 	tottimeout.tv_usec = 0;

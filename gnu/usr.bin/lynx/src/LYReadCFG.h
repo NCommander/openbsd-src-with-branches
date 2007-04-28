@@ -2,7 +2,7 @@
 #define LYREADCFG_H
 
 #ifndef LYSTRUCTS_H
-#include "LYStructs.h"
+#include <LYStructs.h>
 #endif /* LYSTRUCTS_H */
 
 #if defined(USE_COLOR_STYLE) || defined(USE_COLOR_TABLE)
@@ -39,11 +39,26 @@
 
 extern int default_fg;
 extern int default_bg;
+extern BOOL default_color_reset;
 
-extern int check_color PARAMS((char * color, int the_default));
+#if defined(HAVE_USE_DEFAULT_COLORS) && defined(USE_DEFAULT_COLORS)
+extern int lynx_default_colors NOPARAMS;
 #endif
 
-extern void read_cfg PARAMS((char *cfg_filename));
+extern int check_color PARAMS((char * color, int the_default));
+extern CONST char * lookup_color PARAMS((int code));
+#endif
+
+extern void read_cfg PARAMS((char *cfg_filename, char *parent_filename, int nesting_level, FILE *fp0));
+extern void free_lynx_cfg NOPARAMS;
 extern BOOLEAN have_read_cfg;
+
+extern FILE *LYOpenCFG PARAMS((char *cfg_filename, char *parent_filename, char *dft_filename));
+extern int lynx_cfg_infopage PARAMS((DocInfo *newdoc));
+extern int lynx_compile_opts PARAMS((DocInfo *newdoc));
+extern int match_item_by_name PARAMS((lynx_list_item_type * ptr, char * name, BOOLEAN only_overriders));
+extern lynx_list_item_type *find_item_by_number PARAMS((lynx_list_item_type * list_ptr, char * number));
+extern void reload_read_cfg NOPARAMS; /* implemented in LYMain.c */
+extern void LYSetConfigValue PARAMS((char *name, char *value));
 
 #endif /* LYREADCFG_H */

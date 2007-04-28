@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: interrupt.c,v 1.3 2006/10/23 19:44:54 drahn Exp $	*/
 /*	$NetBSD: interrupt.c,v 1.18 2006/01/25 00:02:57 uwe Exp $	*/
 
 /*-
@@ -65,6 +65,8 @@ void tmu1_oneshot(void);
 int tmu1_intr(void *);
 void tmu2_oneshot(void);
 int tmu2_intr(void *);
+
+int netisr;
 
 /*
  * EVTCODE to intc_intrhand mapper.
@@ -135,6 +137,7 @@ intc_intr_establish(int evtcode, int trigger, int level,
 	ih->ih_arg	= ih_arg;
 	ih->ih_level	= level << 4;	/* convert to SR.IMASK format. */
 	ih->ih_evtcode	= evtcode;
+	ih->ih_name = (char *)name; /* XXX strdup? */
 
 	/* Map interrupt handler */
 	EVTCODE_TO_IH_INDEX(evtcode) = ih->ih_idx;
@@ -392,6 +395,7 @@ intc_alloc_ih(void)
 void
 intc_free_ih(struct intc_intrhand *ih)
 {
+	ih->ih_idx = 0;
 	memset(ih, 0, sizeof(*ih));
 }
 

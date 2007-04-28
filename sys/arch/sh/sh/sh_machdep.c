@@ -1,6 +1,22 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sh_machdep.c,v 1.9 2007/03/02 06:11:54 miod Exp $	*/
 /*	$NetBSD: sh3_machdep.c,v 1.59 2006/03/04 01:13:36 uwe Exp $	*/
 
+/*
+ * Copyright (c) 2007 Miodrag Vallat.
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice, this permission notice, and the disclaimer below
+ * appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 /*-
  * Copyright (c) 1996, 1997, 1998, 2002 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -37,7 +53,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 /*-
  * Copyright (c) 1982, 1987, 1990 The Regents of the University of California.
  * All rights reserved.
@@ -84,8 +99,15 @@
 #include <sys/signalvar.h>
 #include <sys/syscallargs.h>
 #include <sys/user.h>
+#include <sys/sched.h>
+#include <sys/msg.h>
+#include <sys/conf.h>
+#include <sys/core.h>
+#include <sys/kcore.h>
 
 #include <uvm/uvm_extern.h>
+
+#include <dev/cons.h>
 
 #include <sh/cache.h>
 #include <sh/clock.h>
@@ -93,6 +115,24 @@
 #include <sh/mmu.h>
 #include <sh/trap.h>
 #include <sh/intr.h>
+#include <sh/kcore.h>
+
+#ifdef  NBUF
+int	nbuf = NBUF;
+#else
+int	nbuf = 0;
+#endif
+
+#ifndef BUFCACHEPERCENT
+#define BUFCACHEPERCENT 5
+#endif
+
+#ifdef  BUFPAGES
+int	bufpages = BUFPAGES;
+#else
+int	bufpages = 0;
+#endif
+int	bufcachepercent = BUFCACHEPERCENT;
 
 /* Our exported CPU info; we can have only one. */
 int cpu_arch;
@@ -107,7 +147,7 @@ struct user *proc0paddr;	/* init_main.c use this. */
 struct pcb *curpcb;
 struct md_upte *curupte;	/* SH3 wired u-area hack */
 
-#define	VBR	(uint8_t *)SH3_PHYS_TO_P1SEG(IOM_RAM_BEGIN)
+#define	VBR	(u_int8_t *)SH3_PHYS_TO_P1SEG(IOM_RAM_BEGIN)
 vaddr_t ram_start = SH3_PHYS_TO_P1SEG(IOM_RAM_BEGIN);
 /* exception handler holder (sh/sh/vectors.S) */
 extern char sh_vector_generic[], sh_vector_generic_end[];
@@ -119,12 +159,17 @@ extern char sh3_vector_tlbmiss[], sh3_vector_tlbmiss_end[];
 extern char sh4_vector_tlbmiss[], sh4_vector_tlbmiss_end[];
 #endif
 
+caddr_t allocsys(caddr_t);
+
 /*
  * These variables are needed by /sbin/savecore
  */
-uint32_t dumpmag = 0x8fca0101;	/* magic number */
-int dumpsize;			/* pages */
+u_int32_t dumpmag = 0x8fca0101;	/* magic number */
+u_int dumpsize;			/* pages */
 long dumplo;	 		/* blocks */
+cpu_kcore_hdr_t cpu_kcore_hdr;
+
+int kbd_reset;
 
 void
 sh_cpu_init(int arch, int product)
@@ -223,11 +268,16 @@ sh_proc0_init()
 void
 sh_startup()
 {
+	u_int loop;
 	vaddr_t minaddr, maxaddr;
+	caddr_t sysbase;
+	caddr_t size;
+	vsize_t bufsize;
+	int base, residual;
 
 	printf("%s", version);
 	if (*cpu_model != '\0')
-		printf("%s", cpu_model);
+		printf("%s\n", cpu_model);
 #ifdef DEBUG
 	printf("general exception handler:\t%d byte\n",
 	    sh_vector_generic_end - sh_vector_generic);
@@ -247,7 +297,62 @@ sh_startup()
 
 	printf("real mem = %u (%uK)\n", ctob(physmem), ctob(physmem) / 1024);
 
-	minaddr = 0;
+	/*
+	 * Find out how much space we need, allocate it,
+	 * and then give everything true virtual addresses.
+	 */
+	size = allocsys(NULL);
+	sysbase = (caddr_t)uvm_km_zalloc(kernel_map, round_page((vaddr_t)size));
+	if (sysbase == 0)
+		panic("sh_startup: no room for system tables; %d required",
+		    (u_int)size);
+	if ((caddr_t)((allocsys(sysbase) - sysbase)) != size)
+		panic("cpu_startup: system table size inconsistency");
+
+	/*
+	 * Now allocate buffers proper.  They are different than the above
+	 * in that they usually occupy more virtual memory than physical.
+	 */
+	bufsize = MAXBSIZE * nbuf;
+	if (uvm_map(kernel_map, (vaddr_t *)&buffers, round_page(bufsize),
+	    NULL, UVM_UNKNOWN_OFFSET, 0,
+	    UVM_MAPFLAG(UVM_PROT_NONE, UVM_PROT_NONE, UVM_INH_NONE,
+	    UVM_ADV_NORMAL, 0)) != 0)
+		panic("sh_startup: cannot allocate UVM space for buffers");
+	minaddr = (vaddr_t)buffers;
+	/* don't want to alloc more physical mem than needed */
+	if ((bufpages / nbuf) >= btoc(MAXBSIZE))
+		bufpages = btoc(MAXBSIZE) * nbuf;
+
+	base = bufpages / nbuf;
+	residual = bufpages % nbuf;
+	for (loop = 0; loop < nbuf; ++loop) {
+		vsize_t curbufsize;
+		vaddr_t curbuf;
+		struct vm_page *pg;
+
+		/*
+		 * Each buffer has MAXBSIZE bytes of VM space allocated.  Of
+		 * that MAXBSIZE space, we allocate and map (base+1) pages
+		 * for the first "residual" buffers, and then we allocate
+		 * "base" pages for the rest.
+		 */
+		curbuf = (vaddr_t) buffers + (loop * MAXBSIZE);
+		curbufsize = NBPG * ((loop < residual) ? (base+1) : base);
+
+		while (curbufsize) {
+			pg = uvm_pagealloc(NULL, 0, NULL, 0);
+			if (pg == NULL)
+				panic("sh_startup: not enough memory for buffer cache");
+
+			pmap_kenter_pa(curbuf, VM_PAGE_TO_PHYS(pg),
+			    VM_PROT_READ|VM_PROT_WRITE);
+			curbuf += PAGE_SIZE;
+			curbufsize -= PAGE_SIZE;
+		}
+	}
+	pmap_update(pmap_kernel());
+
 	/*
 	 * Allocate a submap for exec arguments.  This map effectively
 	 * limits the number of processes exec'ing at any time.
@@ -261,8 +366,210 @@ sh_startup()
 	phys_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr,
 	    VM_PHYS_SIZE, 0, FALSE, NULL);
 
+	/*
+	 * Set up buffers, so they can be used to read disk labels.
+	 */
+	bufinit();
+
 	printf("avail mem = %u (%uK)\n", ptoa(uvmexp.free),
 	    ptoa(uvmexp.free) / 1024);
+	printf("using %d buffers containing %u bytes (%uK) of memory\n",
+	    nbuf, bufpages * PAGE_SIZE, bufpages * PAGE_SIZE / 1024);
+}
+
+/*
+ * Allocate space for system data structures.  We are given
+ * a starting virtual address and we return a final virtual
+ * address; along the way we set each data structure pointer.
+ *
+ * We call allocsys() with 0 to find out how much space we want,
+ * allocate that much and fill it with zeroes, and then call
+ * allocsys() again with the correct base virtual address.
+ */
+caddr_t
+allocsys(caddr_t v)
+{
+#define	valloc(name, type, num)	v = (caddr_t)(((name) = (type *)v) + (num))
+
+#ifdef SYSVMSG
+	valloc(msgpool, char, msginfo.msgmax);
+	valloc(msgmaps, struct msgmap, msginfo.msgseg);
+	valloc(msghdrs, struct msg, msginfo.msgtql);
+	valloc(msqids, struct msqid_ds, msginfo.msgmni);
+#endif
+	/*
+	 * Determine how many buffers to allocate.  We use 10% of the
+	 * first 2MB of memory, and 5% of the rest, with a minimum of 16
+	 * buffers.  We allocate 1/2 as many swap buffer headers as file
+	 * i/o buffers.
+	 */
+	if (bufpages == 0)
+		bufpages = (btoc(2 * 1024 * 1024) + physmem) *
+		    bufcachepercent / 100;
+
+	if (nbuf == 0) {
+		nbuf = bufpages;
+		if (nbuf < 16)
+			nbuf = 16;
+	}
+
+	/* Restrict to at most 35% filled kvm */
+	/* XXX - This needs UBC... */
+	if (nbuf >
+	    (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) / MAXBSIZE * 35 / 100)
+		nbuf = (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) /
+		    MAXBSIZE * 35 / 100;
+
+	/* More buffer pages than fits into the buffers is senseless.  */ 
+	if (bufpages > nbuf * MAXBSIZE / PAGE_SIZE)
+		bufpages = nbuf * MAXBSIZE / PAGE_SIZE;
+
+	valloc(buf, struct buf, nbuf);
+	return v;
+}
+
+void
+dumpconf()
+{
+	cpu_kcore_hdr_t *h = &cpu_kcore_hdr;
+	u_int dumpextra, totaldumpsize;		/* in disk blocks */
+	u_int seg, nblks;
+	int maj;
+
+	if (dumpdev == NODEV)
+		return;
+
+	maj = major(dumpdev);
+	if (maj < 0 || maj >= nblkdev) {
+		printf("dumpconf: bad dumpdev=0x%x\n", dumpdev);
+		dumpdev = NODEV;
+		return;
+	}
+	if (bdevsw[maj].d_psize == NULL)
+		return;
+	nblks = (u_int)(*bdevsw[maj].d_psize)(dumpdev);
+	if (nblks <= btodb(1U))
+		return;
+
+	dumpsize = 0;
+	for (seg = 0; seg < h->kcore_nsegs; seg++)
+		dumpsize += atop(h->kcore_segs[seg].size);
+	dumpextra = cpu_dumpsize();
+
+	/* Always skip the first block, in case there is a label there. */
+	if (dumplo < btodb(1));
+		dumplo = btodb(1);
+
+	/* Put dump at the end of the partition, and make it fit. */
+	totaldumpsize = ctod(dumpsize) + dumpextra;
+	if (totaldumpsize > nblks - dumplo) {
+		totaldumpsize = dbtob(nblks - dumplo);
+		dumpsize = dtoc(totaldumpsize - dumpextra);
+	}
+	if (dumplo < nblks - totaldumpsize)
+		dumplo = nblks - totaldumpsize;
+}
+
+void
+dumpsys()
+{
+	cpu_kcore_hdr_t *h = &cpu_kcore_hdr;
+	daddr_t blkno;
+	int (*dump)(dev_t, daddr_t, caddr_t, size_t);
+	u_int page = 0;
+	paddr_t dumppa;
+	u_int seg;
+	int rc;
+	extern int msgbufmapped;
+
+	/* Don't record dump messages in msgbuf. */
+	msgbufmapped = 0;
+
+	/* Make sure dump settings are valid. */
+	if (dumpdev == NODEV)
+		return;
+	if (dumpsize == 0) {
+		dumpconf();
+		if (dumpsize == 0)
+			return;
+	}
+	if (dumplo <= 0) {
+		printf("\ndump to dev 0x%x not possible, not enough space\n",
+		    dumpdev);
+		return;
+	}
+
+	dump = bdevsw[major(dumpdev)].d_dump;
+	blkno = dumplo;
+
+	printf("\ndumping to dev 0x%x offset %ld\n", dumpdev, dumplo);
+
+	printf("dump ");
+
+	/* Write dump header */
+	rc = cpu_dump(dump, &blkno);
+	if (rc != 0)
+		goto bad;
+
+	for (seg = 0; seg < h->kcore_nsegs; seg++) {
+		u_int pagesleft;
+
+		pagesleft = atop(h->kcore_segs[seg].size);
+		dumppa = (paddr_t)h->kcore_segs[seg].start;
+
+		while (pagesleft != 0) {
+			u_int npages;
+
+#define	NPGMB	atop(1024 * 1024)
+			if (page != 0 && (page % NPGMB) == 0)
+				printf("%u ", page / NPGMB);
+
+			/* do not dump more than 1MB at once */
+			npages = min(pagesleft, NPGMB);
+#undef NPGMB
+			npages = min(npages, dumpsize);
+
+			rc = (*dump)(dumpdev, blkno,
+			    (caddr_t)SH3_PHYS_TO_P2SEG(dumppa), ptoa(npages));
+			if (rc != 0)
+				goto bad;
+
+			pagesleft -= npages;
+			dumppa += ptoa(npages);
+			page += npages;
+			dumpsize -= npages;
+			if (dumpsize == 0)
+				goto bad;	/* if truncated dump */
+			blkno += ctod(npages);
+		}
+	}
+bad:
+	switch (rc) {
+	case 0:
+		printf("succeeded\n");
+		break;
+	case ENXIO:
+		printf("device bad\n");
+		break;
+	case EFAULT:
+		printf("device not ready\n");
+		break;
+	case EINVAL:
+		printf("area improper\n");
+		break;
+	case EIO:
+		printf("I/O error\n");
+		break;
+	case EINTR:
+		printf("aborted\n");
+		break;
+	default:
+		printf("error %d\n", rc);
+		break;
+	}
+
+	/* make sure console can output our last message */
+	delay(1 * 1000 * 1000);
 }
 
 /*
@@ -312,30 +619,36 @@ sendsig(sig_t catcher, int sig, int mask, u_long code, int type,
 		sip = NULL;
 
 	/* Save register context. */
-	frame.sf_uc.sc_spc = tf->tf_spc;
-	frame.sf_uc.sc_ssr = tf->tf_ssr;
-	frame.sf_uc.sc_pr = tf->tf_pr;
-	frame.sf_uc.sc_r14 = tf->tf_r14;
-	frame.sf_uc.sc_r13 = tf->tf_r13;
-	frame.sf_uc.sc_r12 = tf->tf_r12;
-	frame.sf_uc.sc_r11 = tf->tf_r11;
-	frame.sf_uc.sc_r10 = tf->tf_r10;
-	frame.sf_uc.sc_r9 = tf->tf_r9;
-	frame.sf_uc.sc_r8 = tf->tf_r8;
-	frame.sf_uc.sc_r7 = tf->tf_r7;
-	frame.sf_uc.sc_r6 = tf->tf_r6;
-	frame.sf_uc.sc_r5 = tf->tf_r5;
-	frame.sf_uc.sc_r4 = tf->tf_r4;
-	frame.sf_uc.sc_r3 = tf->tf_r3;
-	frame.sf_uc.sc_r2 = tf->tf_r2;
-	frame.sf_uc.sc_r1 = tf->tf_r1;
-	frame.sf_uc.sc_r0 = tf->tf_r0;
-	frame.sf_uc.sc_r15 = tf->tf_r15;
+	frame.sf_uc.sc_reg.r_spc = tf->tf_spc;
+	frame.sf_uc.sc_reg.r_ssr = tf->tf_ssr;
+	frame.sf_uc.sc_reg.r_pr = tf->tf_pr;
+	frame.sf_uc.sc_reg.r_mach = tf->tf_mach;
+	frame.sf_uc.sc_reg.r_macl = tf->tf_macl;
+	frame.sf_uc.sc_reg.r_r15 = tf->tf_r15;
+	frame.sf_uc.sc_reg.r_r14 = tf->tf_r14;
+	frame.sf_uc.sc_reg.r_r13 = tf->tf_r13;
+	frame.sf_uc.sc_reg.r_r12 = tf->tf_r12;
+	frame.sf_uc.sc_reg.r_r11 = tf->tf_r11;
+	frame.sf_uc.sc_reg.r_r10 = tf->tf_r10;
+	frame.sf_uc.sc_reg.r_r9 = tf->tf_r9;
+	frame.sf_uc.sc_reg.r_r8 = tf->tf_r8;
+	frame.sf_uc.sc_reg.r_r7 = tf->tf_r7;
+	frame.sf_uc.sc_reg.r_r6 = tf->tf_r6;
+	frame.sf_uc.sc_reg.r_r5 = tf->tf_r5;
+	frame.sf_uc.sc_reg.r_r4 = tf->tf_r4;
+	frame.sf_uc.sc_reg.r_r3 = tf->tf_r3;
+	frame.sf_uc.sc_reg.r_r2 = tf->tf_r2;
+	frame.sf_uc.sc_reg.r_r1 = tf->tf_r1;
+	frame.sf_uc.sc_reg.r_r0 = tf->tf_r0;
+#ifdef SH4
+	if (CPU_IS_SH4)
+		fpu_save(&frame.sf_uc.sc_fpreg);
+#endif
+
 	frame.sf_uc.sc_onstack = onstack;
 	frame.sf_uc.sc_expevt = tf->tf_expevt;
 	/* frame.sf_uc.sc_err = 0; */
-	frame.sf_uc.sc_mask = p->p_sigmask;
-	/* XXX tf_macl, tf_mach not saved */
+	frame.sf_uc.sc_mask = mask;
 
 	if (copyout(&frame, fp, sizeof(frame)) != 0) {
 		/*
@@ -387,29 +700,35 @@ sys_sigreturn(struct proc *p, void *v, register_t *retval)
 	tf = p->p_md.md_regs;
 
 	/* Check for security violations. */
-	if (((context.sc_ssr ^ tf->tf_ssr) & PSL_USERSTATIC) != 0)
+	if (((context.sc_reg.r_ssr ^ tf->tf_ssr) & PSL_USERSTATIC) != 0)
 		return (EINVAL);
 
-	tf->tf_ssr = context.sc_ssr;
+	tf->tf_spc = context.sc_reg.r_spc;
+	tf->tf_ssr = context.sc_reg.r_ssr;
+	tf->tf_macl = context.sc_reg.r_macl;
+	tf->tf_mach = context.sc_reg.r_mach;
+	tf->tf_pr = context.sc_reg.r_pr;
+	tf->tf_r13 = context.sc_reg.r_r13;
+	tf->tf_r12 = context.sc_reg.r_r12;
+	tf->tf_r11 = context.sc_reg.r_r11;
+	tf->tf_r10 = context.sc_reg.r_r10;
+	tf->tf_r9 = context.sc_reg.r_r9;
+	tf->tf_r8 = context.sc_reg.r_r8;
+	tf->tf_r7 = context.sc_reg.r_r7;
+	tf->tf_r6 = context.sc_reg.r_r6;
+	tf->tf_r5 = context.sc_reg.r_r5;
+	tf->tf_r4 = context.sc_reg.r_r4;
+	tf->tf_r3 = context.sc_reg.r_r3;
+	tf->tf_r2 = context.sc_reg.r_r2;
+	tf->tf_r1 = context.sc_reg.r_r1;
+	tf->tf_r0 = context.sc_reg.r_r0;
+	tf->tf_r15 = context.sc_reg.r_r15;
+	tf->tf_r14 = context.sc_reg.r_r14;
 
-	tf->tf_r0 = context.sc_r0;
-	tf->tf_r1 = context.sc_r1;
-	tf->tf_r2 = context.sc_r2;
-	tf->tf_r3 = context.sc_r3;
-	tf->tf_r4 = context.sc_r4;
-	tf->tf_r5 = context.sc_r5;
-	tf->tf_r6 = context.sc_r6;
-	tf->tf_r7 = context.sc_r7;
-	tf->tf_r8 = context.sc_r8;
-	tf->tf_r9 = context.sc_r9;
-	tf->tf_r10 = context.sc_r10;
-	tf->tf_r11 = context.sc_r11;
-	tf->tf_r12 = context.sc_r12;
-	tf->tf_r13 = context.sc_r13;
-	tf->tf_r14 = context.sc_r14;
-	tf->tf_spc = context.sc_spc;
-	tf->tf_r15 = context.sc_r15;
-	tf->tf_pr = context.sc_pr;
+#ifdef SH4
+	if (CPU_IS_SH4)
+		fpu_restore(&context.sc_fpreg);
+#endif
 
 	/* Restore signal stack. */
 	if (context.sc_onstack)
@@ -430,6 +749,7 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
     register_t rval[2])
 {
 	struct trapframe *tf;
+	struct pcb *pcb = p->p_md.md_pcb;
 
 	p->p_md.md_flags &= ~MDP_USEDFPU;
 
@@ -453,6 +773,57 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
 	tf->tf_spc = pack->ep_entry;
 	tf->tf_ssr = PSL_USERSET;
 	tf->tf_r15 = stack;
+
+#ifdef SH4
+	if (CPU_IS_SH4) {
+		/*
+		 * Clear floating point registers.
+		 */
+		bzero(&pcb->pcb_fp, sizeof(pcb->pcb_fp));
+		fpu_restore(&pcb->pcb_fp);
+	}
+#endif
+
+	rval[1] = 0;
+}
+
+void
+setrunqueue(struct proc *p)
+{
+	int whichq = p->p_priority / PPQ;
+	struct prochd *q;
+	struct proc *prev;
+
+#ifdef DIAGNOSTIC
+	if (p->p_back != NULL || p->p_wchan != NULL || p->p_stat != SRUN)
+		panic("setrunqueue");
+#endif
+	q = &qs[whichq];
+	prev = q->ph_rlink;
+	p->p_forw = (struct proc *)q;
+	q->ph_rlink = p;
+	prev->p_forw = p;
+	p->p_back = prev;
+	whichqs |= 1 << whichq;
+}
+
+void
+remrunqueue(struct proc *p)
+{
+	struct proc *prev, *next;
+	int whichq = p->p_priority / PPQ;
+
+#ifdef DIAGNOSTIC
+       if (((whichqs & (1 << whichq)) == 0))
+		panic("remrunqueue: bit %d not set", whichq);
+#endif
+	prev = p->p_back;
+	p->p_back = NULL;
+	next = p->p_forw;
+	prev->p_forw = next;
+	next->p_back = prev;
+	if (prev == next)
+		whichqs &= ~(1 << whichq);
 }
 
 /*
@@ -467,5 +838,36 @@ cpu_reset()
 #ifndef __lint__
 	goto *(void *)0xa0000000;
 #endif
+	/* NOTREACHED */
+}
+
+int
+cpu_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
+    size_t newlen, struct proc *p)
+{
+
+	/* all sysctl names at this level are terminal */
+	if (namelen != 1)
+		return (ENOTDIR);		/* overloaded */
+
+	switch (name[0]) {
+	case CPU_CONSDEV: {
+		dev_t consdev;
+		if (cn_tab != NULL)
+			consdev = cn_tab->cn_dev;
+		else
+			consdev = NODEV;
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &consdev,
+		    sizeof consdev));
+	}
+
+	case CPU_KBDRESET:
+		if (securelevel > 0)
+			return (sysctl_rdint(oldp, oldlenp, newp, kbd_reset));
+		return (sysctl_int(oldp, oldlenp, newp, newlen, &kbd_reset));
+
+	default:
+		return (EOPNOTSUPP);
+	}
 	/* NOTREACHED */
 }

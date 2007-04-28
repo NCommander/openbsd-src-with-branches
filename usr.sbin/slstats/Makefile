@@ -1,12 +1,7 @@
-#	from: @(#)Makefile	5.6 (Berkeley) 4/23/91
-#	$Id: Makefile,v 1.5 1995/08/02 01:27:08 paulus Exp $
+#	$OpenBSD: Makefile,v 1.2 1997/09/21 11:44:25 deraadt Exp $
 
 PROG=	slstats
 SRCS=	slstats.c
 MAN=	slstats.8
-DPADD=	${LIBKVM}
-LDADD=	-lkvm
-BINGRP=	kmem
-BINMODE=2555
 
 .include <bsd.prog.mk>

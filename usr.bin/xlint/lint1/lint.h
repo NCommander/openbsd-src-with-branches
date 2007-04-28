@@ -1,3 +1,4 @@
+/*	$OpenBSD: lint.h,v 1.5 2006/04/25 01:25:41 cloder Exp $	*/
 /*	$NetBSD: lint.h,v 1.2 1995/07/03 21:24:18 cgd Exp $	*/
 
 /*
@@ -38,7 +39,7 @@
 #include "param.h"
 
 /*
- * Type specifiers, used in type structures (type_t) and otherwere.
+ * Type specifiers, used in type structures (type_t) and elsewhere.
  */
 typedef enum {
 	NOTSPEC,
@@ -56,7 +57,7 @@ typedef enum {
 	QUAD,		/* (signed) long long */
 	UQUAD,		/* unsigned long long */
 	FLOAT,		/* float */
-	DOUBLE,		/* double or, with tflag, long float */
+	DOUBLE,		/* double */
 	LDOUBLE,	/* long double */
 	VOID,		/* void */
 	STRUCT,		/* structure tag */
@@ -75,6 +76,7 @@ typedef	struct {
 	int	tt_sz;			/* size in bits */
 	int	tt_psz;			/* size, different from tt_sz
 					   if pflag is set */
+	int	tt_rank;		/* rank (C99), similar to tt_psz */
 	tspec_t	tt_styp;		/* signed counterpart */
 	tspec_t	tt_utyp;		/* unsigned counterpart */
 	u_int	tt_isityp : 1;		/* 1 if integer type */
@@ -82,11 +84,12 @@ typedef	struct {
 	u_int	tt_isftyp : 1;		/* 1 if floating point type */
 	u_int	tt_isatyp : 1;		/* 1 if arithmetic type */
 	u_int	tt_issclt : 1;		/* 1 if scalar type */
-	char	*tt_name;		/* Bezeichnung des Typs */
+	char	*tt_name;		/* type name */
 } ttab_t;
 
 #define size(t)		(ttab[t].tt_sz)
 #define psize(t)	(ttab[t].tt_psz)
+#define rank(t)		(ttab[t].tt_rank)
 #define styp(t)		(ttab[t].tt_styp)
 #define utyp(t)		(ttab[t].tt_utyp)
 #define isityp(t)	(ttab[t].tt_isityp)

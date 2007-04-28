@@ -1,3 +1,4 @@
+/*	$OpenBSD: psl.h,v 1.4 2003/06/02 23:27:48 millert Exp $	*/
 /*	$NetBSD: psl.h,v 1.5 1994/10/26 07:50:50 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,9 +32,11 @@
  *	@(#)psl.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef PSL_C
+#ifndef	_M68K_PSL_H_
+#define	_M68K_PSL_H_
+
 /*
- * MC68000 program status word
+ * MC680x0 program status word
  */
 
 #define	PSL_C		0x0001		/* carry bit */
@@ -70,4 +69,68 @@
 #define	PSL_USERCLR	(PSL_S | PSL_IPL7 | PSL_MBZ)
 
 #define	USERMODE(ps)	(((ps) & PSL_S) == 0)
+
+#ifdef	_KERNEL
+
+/* SPL asserts */
+#ifdef DIAGNOSTIC
+/*
+ * Although this function is implemented in MI code, it must be in this MD
+ * header because we don't want this header to include MI includes.
+ */
+void splassert_fail(int, int, const char *);
+extern int splassert_ctl;
+void splassert_check(int, const char *);
+#define splassert(__wantipl)						\
+do {									\
+	if (__predict_false(splassert_ctl > 0)) {			\
+		splassert_check(__wantipl, __func__);			\
+	}								\
+} while (0)
+#else
+#define	splassert(wantipl)	do { /* nothing */ } while (0)
 #endif
+
+/*
+ * Convert PSL values to CPU IPLs and vice-versa.
+ */
+#define	PSLTOIPL(x)		(((x) >> 8) & 0xf)
+#define	IPLTOPSL(x)		((((x) & 0xf) << 8) | PSL_S)
+
+/*
+ * spl functions; all but spl0 are done in-line
+ */
+
+#define	_spl(s)								\
+({									\
+	register int _spl_r;						\
+									\
+	__asm __volatile ("clrl %0; movew sr,%0; movew %1,sr" :		\
+	    "=&d" (_spl_r) : "di" (s));					\
+	_spl_r;								\
+})
+
+#define	_splraise(s)							\
+({									\
+	register int _spl_r;						\
+									\
+	__asm __volatile ("						\
+		clrl	d0					;	\
+		movw	sr,d0					;	\
+		movl	d0,%0					;	\
+		andw	#0x700,d0				;	\
+		movw	%1,d1					;	\
+		andw	#0x700,d1				;	\
+		cmpw	d0,d1					;	\
+		jle	1f					;	\
+		movw	%1,sr					;	\
+	    1:"							:	\
+		    "=&d" (_spl_r)				:	\
+		    "di" (s)					:	\
+		    "d0", "d1");					\
+	_spl_r;								\
+})
+
+#endif	/* _KERNEL */
+
+#endif	/* _M68K_PSL_H_ */

@@ -1,4 +1,5 @@
-/*	$NetBSD: amd7930.c,v 1.4 1995/07/19 19:50:16 brezak Exp $	*/
+/*	$OpenBSD: amd7930.c,v 1.29 2005/07/09 22:23:13 miod Exp $	*/
+/*	$NetBSD: amd7930.c,v 1.37 1998/03/30 14:23:40 pk Exp $	*/
 
 /*
  * Copyright (c) 1995 Rolf Grossmann
@@ -30,9 +31,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "audio.h"
-#if NAUDIO > 0
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/errno.h>
@@ -49,70 +47,86 @@
 #include <dev/ic/am7930reg.h>
 #include <sparc/dev/amd7930var.h>
 
-#ifdef AUDIO_DEBUG
-extern void Dprintf __P((const char *, ...));
+#define AUDIO_ROM_NAME "audio"
 
+#ifdef AUDIO_DEBUG
 int     amd7930debug = 0;
-#define DPRINTF(x)      if (amd7930debug) Dprintf x
+#define DPRINTF(x)      if (amd7930debug) printf x
 #else
 #define DPRINTF(x)
 #endif
+
+/*
+ * Define AUDIO_C_HANDLER to force using non-fast trap routines.
+ */
+/* #define AUDIO_C_HANDLER */
 
 /*
  * Software state, per AMD79C30 audio chip.
  */
 struct amd7930_softc {
 	struct	device sc_dev;		/* base device */
-	struct	intrhand sc_hwih;	/* hardware interrupt vector */
 	struct	intrhand sc_swih;	/* software interrupt vector */
 
 	int	sc_open;		/* single use device */
-	int	sc_locked;		/* true when transfering data */
+	int	sc_locked;		/* true when transferring data */
 	struct	mapreg sc_map;		/* current contents of map registers */
-    
+
 	u_char	sc_rlevel;		/* record level */
 	u_char	sc_plevel;		/* play level */
 	u_char	sc_mlevel;		/* monitor level */
 	u_char	sc_out_port;		/* output port */
 
 	/* interfacing with the interrupt handlers */
-	void	(*sc_rintr)(void*);	/* input completion intr handler */
+	void	(*sc_rintr)(void *);	/* input completion intr handler */
 	void	*sc_rarg;		/* arg for sc_rintr() */
-	void	(*sc_pintr)(void*);	/* output completion intr handler */
+	void	(*sc_pintr)(void *);	/* output completion intr handler */
 	void	*sc_parg;		/* arg for sc_pintr() */
 
         /* sc_au is special in that the hardware interrupt handler uses it */
         struct  auio sc_au;		/* recv and xmit buffers, etc */
-#define sc_intrcnt	sc_au.au_intrcnt	/* statistics */
+#define	sc_hwih	sc_au.au_ih		/* hardware interrupt vector */
 };
 
 /* interrupt interfaces */
-#ifdef AUDIO_C_HANDLER
-int	amd7930hwintr __P((void *));
-#define AUDIO_SET_SWINTR ienab_bis(IE_L4)
+#if defined(SUN4M)
+#define AUDIO_SET_SWINTR do {		\
+	if (CPU_ISSUN4M)		\
+		raise(0, 4);		\
+	else				\
+		ienab_bis(IE_L4);	\
+} while(0);
 #else
+#define AUDIO_SET_SWINTR ienab_bis(IE_L4)
+#endif /* defined(SUN4M) */
+
+#ifndef AUDIO_C_HANDLER
 struct auio *auiop;
-extern void amd7930_trap();
-#endif
-int	amd7930swintr __P((void *));
+#endif /* AUDIO_C_HANDLER */
+int	amd7930hwintr(void *);
+int	amd7930swintr(void *);
 
 /* forward declarations */
-void	audio_setmap __P((volatile struct amd7930 *, struct mapreg *));
-static void init_amd __P((volatile struct amd7930 *));
+void	audio_setmap(volatile struct amd7930 *, struct mapreg *);
+static void init_amd(volatile struct amd7930 *);
+int	amd7930_shareintr(void *);
 
 /* autoconfiguration driver */
-void	amd9730attach __P((struct device *, struct device *, void *));
-int	amd9730match __P((struct device *, void *, void *));
+void	amd7930attach(struct device *, struct device *, void *);
+int	amd7930match(struct device *, void *, void *);
 
-struct	cfdriver audiocd = {
-	NULL, "audio", amd9730match, amd9730attach,
-	DV_DULL, sizeof(struct amd7930_softc)
+struct cfattach audioamd_ca = {
+	sizeof(struct amd7930_softc), amd7930match, amd7930attach
+};
+
+struct	cfdriver audioamd_cd = {
+	NULL, "audioamd", DV_DULL
 };
 
 struct audio_device amd7930_device = {
 	"amd7930",
 	"x",
-	"audio"
+	"audioamd"
 };
 
 /* Write 16 bits of data from variable v to the data port of the audio chip */
@@ -127,7 +141,7 @@ struct audio_device amd7930_device = {
  * -18 to 0dB in .16dB steps then 0 to 12dB in .08dB steps.
  */
 static const u_short gx_coeff[256] = {
-	0x9008, 0x8b7c, 0x8b51, 0x8b45, 0x8b42, 0x8b3b, 0x8b36, 0x8b33,
+	0x9008, 0x8e7c, 0x8e51, 0x8e45, 0x8d42, 0x8d3b, 0x8c36, 0x8c33,
 	0x8b32, 0x8b2a, 0x8b2b, 0x8b2c, 0x8b25, 0x8b23, 0x8b22, 0x8b22,
 	0x9122, 0x8b1a, 0x8aa3, 0x8aa3, 0x8b1c, 0x8aa6, 0x912d, 0x912b,
 	0x8aab, 0x8b12, 0x8aaa, 0x8ab2, 0x9132, 0x8ab4, 0x913c, 0x8abb,
@@ -192,100 +206,71 @@ static const u_short ger_coeff[] = {
 /*
  * Define our interface to the higher level audio driver.
  */
-int	amd7930_open __P((dev_t, int));
-void	amd7930_close __P((void *));
-int	amd7930_set_in_sr __P((void *, u_long));
-u_long	amd7930_get_in_sr __P((void *));
-int	amd7930_set_out_sr __P((void *, u_long));
-u_long	amd7930_get_out_sr __P((void *));
-int	amd7930_query_encoding __P((void *, struct audio_encoding *));
-int	amd7930_set_encoding __P((void *, u_int));
-int	amd7930_get_encoding __P((void *));
-int	amd7930_set_precision __P((void *, u_int));
-int	amd7930_get_precision __P((void *));
-int	amd7930_set_channels __P((void *, int));
-int	amd7930_get_channels __P((void *));
-int	amd7930_round_blocksize __P((void *, int));
-int	amd7930_set_out_port __P((void *, int));
-int	amd7930_get_out_port __P((void *));
-int	amd7930_set_in_port __P((void *, int));
-int	amd7930_get_in_port __P((void *));
-int	amd7930_commit_settings __P((void *));
-u_int	amd7930_get_silence __P((int));
-int	amd7930_start_output __P((void *, void *, int, void (*)(), void *));
-int	amd7930_start_input __P((void *, void *, int, void (*)(), void *));
-int	amd7930_halt_output __P((void *));
-int	amd7930_halt_input __P((void *));
-int	amd7930_cont_output __P((void *));
-int	amd7930_cont_input __P((void *));
-int	amd7930_getdev __P((void *, struct audio_device *));
-int	amd7930_setfd __P((void *, int));
-int	amd7930_set_port __P((void *, mixer_ctrl_t *));
-int	amd7930_get_port __P((void *, mixer_ctrl_t *));
-int	amd7930_query_devinfo __P((void *, mixer_devinfo_t *));
-
+int	amd7930_open(void *, int);
+void	amd7930_close(void *);
+int	amd7930_query_encoding(void *, struct audio_encoding *);
+int	amd7930_set_params(void *, int, int, struct audio_params *, struct audio_params *);
+int	amd7930_round_blocksize(void *, int);
+int	amd7930_commit_settings(void *);
+int	amd7930_start_output(void *, void *, int, void (*)(void *), void *);
+int	amd7930_start_input(void *, void *, int, void (*)(void *), void *);
+int	amd7930_halt_output(void *);
+int	amd7930_halt_input(void *);
+int	amd7930_getdev(void *, struct audio_device *);
+int	amd7930_set_port(void *, mixer_ctrl_t *);
+int	amd7930_get_port(void *, mixer_ctrl_t *);
+int	amd7930_query_devinfo(void *, mixer_devinfo_t *);
+int	amd7930_get_props(void *);
 
 struct audio_hw_if sa_hw_if = {
 	amd7930_open,
 	amd7930_close,
 	NULL,
-	amd7930_set_in_sr,
-	amd7930_get_in_sr,
-	amd7930_set_out_sr,
-	amd7930_get_out_sr,
 	amd7930_query_encoding,
-	amd7930_set_encoding,
-	amd7930_get_encoding,
-	amd7930_set_precision,
-	amd7930_get_precision,
-	amd7930_set_channels,
-	amd7930_get_channels,
+	amd7930_set_params,
 	amd7930_round_blocksize,
-	amd7930_set_out_port,
-	amd7930_get_out_port,
-	amd7930_set_in_port,
-	amd7930_get_in_port,
 	amd7930_commit_settings,
-	amd7930_get_silence,
 	NULL,
 	NULL,
 	amd7930_start_output,
 	amd7930_start_input,
 	amd7930_halt_output,
 	amd7930_halt_input,
-	amd7930_cont_output,
-	amd7930_cont_input,
 	NULL,
 	amd7930_getdev,
-	amd7930_setfd,
+	NULL,
 	amd7930_set_port,
 	amd7930_get_port,
 	amd7930_query_devinfo,
-	1,
-	0
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	amd7930_get_props,
+	NULL,
+	NULL
 };
 
 /* autoconfig routines */
 
 int
-amd9730match(parent, vcf, aux)
+amd7930match(parent, vcf, aux)
 	struct device *parent;
 	void *vcf, *aux;
 {
-	struct cfdata *cf = vcf;
 	register struct confargs *ca = aux;
 	register struct romaux *ra = &ca->ca_ra;
 
-	if (cputyp==CPU_SUN4)
+	if (CPU_ISSUN4)
 		return (0);
-	return (strcmp(cf->cf_driver->cd_name, ra->ra_name) == 0);
+	return (strcmp(AUDIO_ROM_NAME, ra->ra_name) == 0);
 }
 
 /*
  * Audio chip found.
  */
 void
-amd9730attach(parent, self, args)
+amd7930attach(parent, self, args)
 	struct device *parent, *self;
 	void *args;
 {
@@ -300,10 +285,9 @@ amd9730attach(parent, self, args)
 		return;
 	}
 	pri = ra->ra_intr[0].int_pri;
-	printf(" pri %d, softpri %d\n", pri, PIL_AUSOFT);
+	printf(" pri %d, softpri %d\n", pri, IPL_AUSOFT);
 	amd = (volatile struct amd7930 *)(ra->ra_vaddr ?
-		ra->ra_vaddr : mapiodev(ra->ra_paddr, sizeof (*amd),
-					ca->ca_bustype));
+		ra->ra_vaddr : mapiodev(ra->ra_reg, 0, sizeof (*amd)));
 
 	sc->sc_map.mr_mmr1 = AMD_MMR1_GX | AMD_MMR1_GER |
 			     AMD_MMR1_GR | AMD_MMR1_STG;
@@ -313,25 +297,40 @@ amd9730attach(parent, self, args)
 	sc->sc_plevel = 128;
 	sc->sc_mlevel = 0;
 	sc->sc_out_port = SUNAUDIO_SPEAKER;
-	
+
 	init_amd(amd);
 
+	/*
+	 * Register interrupt handlers.  We'll prefer a fast trap (unless
+	 * AUDIO_C_HANDLER is defined), with a sharing callback so that we
+	 * can revert into a regular trap vector if necessary.
+	 */
 #ifndef AUDIO_C_HANDLER
-	auiop = &sc->sc_au;
-	intr_fasttrap(pri, amd7930_trap);
-#else
-	sc->sc_hwih.ih_fun = amd7930hwintr;
-	sc->sc_hwih.ih_arg = &sc->sc_au;
-	intr_establish(pri, &sc->sc_hwih);
+	sc->sc_hwih.ih_vec = pri;
+	if (intr_fasttrap(pri, amd7930_trap, amd7930_shareintr, sc) == 0) {
+		auiop = &sc->sc_au;
+		evcount_attach(&sc->sc_hwih.ih_count, sc->sc_dev.dv_xname,
+		    &sc->sc_hwih.ih_vec, &evcount_intr);
+	} else {
+#ifdef AUDIO_DEBUG
+		printf("%s: unable to register fast trap handler\n",
+		    self->dv_xname);
 #endif
+#else
+	{
+#endif
+		sc->sc_hwih.ih_fun = amd7930hwintr;
+		sc->sc_hwih.ih_arg = &sc->sc_au;
+		intr_establish(pri, &sc->sc_hwih, IPL_AUHARD,
+		    sc->sc_dev.dv_xname);
+	}
 	sc->sc_swih.ih_fun = amd7930swintr;
 	sc->sc_swih.ih_arg = sc;
-	intr_establish(PIL_AUSOFT, &sc->sc_swih);
+	intr_establish(IPL_AUSOFT, &sc->sc_swih, IPL_AUSOFT,
+	    sc->sc_dev.dv_xname);
 
-	evcnt_attach(&sc->sc_dev, "intr", &sc->sc_intrcnt);
-
-	if (audio_hardware_attach(&sa_hw_if, sc) != 0)
-		printf("audio: could not attach to audio pseudo-device driver\n");
+	audio_attach_mi(&sa_hw_if, sc, &sc->sc_dev);
+	amd7930_commit_settings(sc);
 }
 
 static void
@@ -356,20 +355,14 @@ init_amd(amd)
 }
 
 int
-amd7930_open(dev, flags)
-	dev_t dev;
+amd7930_open(addr, flags)
+	void *addr;
 	int flags;
 {
-	register struct amd7930_softc *sc;
-	register volatile struct amd7930 *amd;
-	int unit = AUDIOUNIT(dev);
+	struct amd7930_softc *sc = addr;
 
-	DPRINTF(("sa_open: unit %d\n",unit));
+	DPRINTF(("sa_open: unit %p\n", sc));
 
-	if (unit >= audiocd.cd_ndevs)
-		return (ENODEV);
-	if ((sc = audiocd.cd_devs[unit]) == NULL)
-		return (ENXIO);
 	if (sc->sc_open)
 		return (EBUSY);
 	sc->sc_open = 1;
@@ -405,110 +398,38 @@ amd7930_close(addr)
 }
 
 int
-amd7930_set_in_sr(addr, sr)
+amd7930_set_params(addr, setmode, usemode, p, r)
 	void *addr;
-	u_long sr;
+	int setmode, usemode;
+	struct audio_params *p, *r;
 {
-	if (sr != 8000)
-		return EINVAL;
-    
-	return(0);	/* no other sampling rates supported by amd chip */
-}
+	if (p->sample_rate < 7500 || p->sample_rate > 8500 ||
+	    p->encoding != AUDIO_ENCODING_ULAW ||
+	    p->precision != 8 ||
+	    p->channels != 1) 
+		return (EINVAL);
+	p->sample_rate = 8000;	/* no other rates supported by amd chip */     
 
-u_long
-amd7930_get_in_sr(addr)
-	void *addr;
-{
-	return(8000);
-}
-
-int
-amd7930_set_out_sr(addr, sr)
-	void *addr;
-	u_long sr;
-{
-	if (sr != 8000)
-		return(EINVAL);
-
-	return(0);	/* no other sampling rates supported by amd chip */
-}
-
-u_long
-amd7930_get_out_sr(addr)
-	void *addr;
-{
-	return(8000);
-}
+	return (0);
+}  
 
 int
 amd7930_query_encoding(addr, fp)
 	void *addr;
 	struct audio_encoding *fp;
 {
-	switch (fp->index) {	/* ??? */
-	    case 0:
-		    strcpy(fp->name, "MU-Law");
-		    fp->format_id = AUDIO_ENCODING_ULAW;
-		    break;
-	    default:
-		    return(EINVAL);
-		    /*NOTREACHED*/
+	switch (fp->index) {
+	case 0:
+		strlcpy(fp->name, AudioEmulaw, sizeof fp->name);
+		fp->encoding = AUDIO_ENCODING_ULAW;
+		fp->precision = 8;
+		fp->flags = 0;
+		break;
+	default:
+		return (EINVAL);
+		/*NOTREACHED*/
 	}
-	return(0);
-}
-
-int
-amd7930_set_encoding(addr, enc)
-	void *addr;
-	u_int enc;
-{
-	if (enc != AUDIO_ENCODING_ULAW)
-		return(EINVAL);
-    
-	return(0);		/* no other encoding supported by amd chip */
-}
-
-int
-amd7930_get_encoding(addr)
-	void *addr;
-{
-	return(AUDIO_ENCODING_ULAW);
-}
-
-int
-amd7930_set_precision(addr, prec)
-	void *addr;
-	u_int prec;
-{
-	if (prec != 8)
-		return(EINVAL);
-
-	return(0);		/* no other precision supported by amd chip */
-}
-
-int
-amd7930_get_precision(addr)
-	void *addr;
-{
-	return(8);
-}
-
-int
-amd7930_set_channels(addr, chans)
-	void *addr;
-	int chans;
-{
-	if (chans != 1)
-		return(EINVAL);
-
-	return(0);		/* only 1 channel supported by amd chip */
-}
-
-int
-amd7930_get_channels(addr)
-	void *addr;
-{
-	return(1);
+	return (0);
 }
 
 int
@@ -516,52 +437,7 @@ amd7930_round_blocksize(addr, blk)
 	void *addr;
 	int blk;
 {
-	return(blk);
-}
-
-int
-amd7930_set_out_port(addr, port)
-	void *addr;
-	int port;
-{
-	register struct amd7930_softc *sc = addr;
-
-	switch(port) {
-	    case SUNAUDIO_SPEAKER:
-	    case SUNAUDIO_HEADPHONES:
-		sc->sc_out_port = port;	/* set on commit */
-		break;
-	    default:
-		return(EINVAL);
-	}
-	return(0);
-}
-
-int
-amd7930_get_out_port(addr)
-	void *addr;
-{
-	register struct amd7930_softc *sc = addr;
-
-	return(sc->sc_out_port);
-}
-
-int
-amd7930_set_in_port(addr, port)
-	void *addr;
-	int port;
-{
-	if (port != SUNAUDIO_MIC_PORT)
-		return(EINVAL);
-
-	return(0);	/* only microphone input supported by amd chip */
-}
-
-int
-amd7930_get_in_port(addr)
-	void *addr;
-{
-	return(SUNAUDIO_MIC_PORT);
+	return (blk);
 }
 
 int
@@ -572,7 +448,7 @@ amd7930_commit_settings(addr)
 	register struct mapreg *map;
 	register volatile struct amd7930 *amd;
 	register int s, level;
-	
+
 	DPRINTF(("sa_commit.\n"));
 
 	map = &sc->sc_map;
@@ -580,7 +456,7 @@ amd7930_commit_settings(addr)
 
 	map->mr_gx = gx_coeff[sc->sc_rlevel];
 	map->mr_stgr = gx_coeff[sc->sc_mlevel];
-	
+
 	level = (sc->sc_plevel * (256 + NGER)) >> 8;
 	if (level >= 256) {
 		map->mr_ger = ger_coeff[level - 256];
@@ -594,9 +470,9 @@ amd7930_commit_settings(addr)
 		map->mr_mmr2 |= AMD_MMR2_LS;
 	else
 		map->mr_mmr2 &= ~AMD_MMR2_LS;
-	
+
 	s = splaudio();
-	
+
 	amd->cr = AMDR_MAP_MMR1;
 	amd->dr = map->mr_mmr1;
 	amd->cr = AMDR_MAP_GX;
@@ -611,14 +487,7 @@ amd7930_commit_settings(addr)
 	amd->dr = map->mr_mmr2;
 
 	splx(s);
-	return(0);
-}
-
-u_int
-amd7930_get_silence(enc)
-	int enc;
-{
-	return(0x7f);
+	return (0);
 }
 
 int
@@ -626,14 +495,14 @@ amd7930_start_output(addr, p, cc, intr, arg)
 	void *addr;
 	void *p;
 	int cc;
-	void (*intr)();
+	void (*intr)(void *);
 	void *arg;
 {
 	register struct amd7930_softc *sc = addr;
 
 #ifdef AUDIO_DEBUG
 	if (amd7930debug > 1)
-		Dprintf("sa_start_output: cc=%d 0x%x (0x%x)\n", cc, intr, arg);
+		printf("sa_start_output: cc=%d 0x%x (0x%x)\n", cc, intr, arg);
 #endif
 
 	if (!sc->sc_locked) {
@@ -649,7 +518,7 @@ amd7930_start_output(addr, p, cc, intr, arg)
 	sc->sc_parg = arg;
 	sc->sc_au.au_pdata = p;
 	sc->sc_au.au_pend = p + cc - 1;
-	return(0);
+	return (0);
 }
 
 /* ARGSUSED */
@@ -658,14 +527,14 @@ amd7930_start_input(addr, p, cc, intr, arg)
 	void *addr;
 	void *p;
 	int cc;
-	void (*intr)();
+	void (*intr)(void *);
 	void *arg;
 {
 	register struct amd7930_softc *sc = addr;
 
 #ifdef AUDIO_DEBUG
 	if (amd7930debug > 1)
-		Dprintf("sa_start_input: cc=%d 0x%x (0x%x)\n", cc, intr, arg);
+		printf("sa_start_input: cc=%d 0x%x (0x%x)\n", cc, intr, arg);
 #endif
 
 	if (!sc->sc_locked) {
@@ -681,7 +550,7 @@ amd7930_start_input(addr, p, cc, intr, arg)
 	sc->sc_rarg = arg;
 	sc->sc_au.au_rdata = p;
 	sc->sc_au.au_rend = p + cc -1;
-	return(0);
+	return (0);
 }
 
 int
@@ -697,7 +566,7 @@ amd7930_halt_output(addr)
 	amd->dr = AMD_INIT_PMS_ACTIVE | AMD_INIT_INT_DISABLE;
 	sc->sc_locked = 0;
 
-	return(0);
+	return (0);
 }
 
 int
@@ -713,23 +582,7 @@ amd7930_halt_input(addr)
 	amd->dr = AMD_INIT_PMS_ACTIVE | AMD_INIT_INT_DISABLE;
 	sc->sc_locked = 0;
 
-	return(0);
-}
-
-int
-amd7930_cont_output(addr)
-	void *addr;
-{
-	DPRINTF(("amd7930_cont_output: never called, what should it do?!\n"));
-	return(0);
-}
-
-int
-amd7930_cont_input(addr)
-	void *addr;
-{
-	DPRINTF(("amd7930_cont_input: never called, what should it do?!\n"));
-	return(0);
+	return (0);
 }
 
 int
@@ -738,16 +591,7 @@ amd7930_getdev(addr, retp)
         struct audio_device *retp;
 {
         *retp = amd7930_device;
-        return 0;
-}
-
-int
-amd7930_setfd(addr, flag)
-        void *addr;
-        int flag;
-{
-        /* Always full-duplex */
-        return(0);
+        return (0);
 }
 
 int
@@ -757,27 +601,42 @@ amd7930_set_port(addr, cp)
 {
 	register struct amd7930_softc *sc = addr;
 
-	DPRINTF(("amd7930_set_port: port=%d", cp->dev));
+	DPRINTF(("amd7930_set_port: port=%d type=%d\n", cp->dev, cp->type));
 
-	if (cp->type != AUDIO_MIXER_VALUE || cp->un.value.num_channels != 1)
-		return(EINVAL);
-	
-	switch(cp->dev) {
-	    case SUNAUDIO_MIC_PORT:
-		    sc->sc_rlevel = cp->un.value.level[AUDIO_MIXER_LEVEL_MONO];
-		    break;
-	    case SUNAUDIO_SPEAKER:
-	    case SUNAUDIO_HEADPHONES:
-		    sc->sc_plevel = cp->un.value.level[AUDIO_MIXER_LEVEL_MONO];
-		    break;
-	    case SUNAUDIO_MONITOR:
-		    sc->sc_mlevel = cp->un.value.level[AUDIO_MIXER_LEVEL_MONO];
-		    break;
-	    default:
-		    return(EINVAL);
-		    /* NOTREACHED */
+	if (cp->dev == SUNAUDIO_SOURCE || cp->dev == SUNAUDIO_OUTPUT) {
+		if (cp->type != AUDIO_MIXER_ENUM)
+			return (EINVAL);
 	}
-	return(0);
+	else if (cp->type != AUDIO_MIXER_VALUE ||
+	    cp->un.value.num_channels != 1)
+		return (EINVAL);
+
+	switch(cp->dev) {
+	case SUNAUDIO_MIC_PORT:
+		sc->sc_rlevel = cp->un.value.level[AUDIO_MIXER_LEVEL_MONO];
+		break;
+	case SUNAUDIO_SPEAKER:
+	case SUNAUDIO_HEADPHONES:
+		sc->sc_plevel = cp->un.value.level[AUDIO_MIXER_LEVEL_MONO];
+		break;
+	case SUNAUDIO_MONITOR:
+		sc->sc_mlevel = cp->un.value.level[AUDIO_MIXER_LEVEL_MONO];
+		break;
+	case SUNAUDIO_SOURCE:
+		if (cp->un.ord != SUNAUDIO_MIC_PORT)
+			return (EINVAL);
+		break;
+	case SUNAUDIO_OUTPUT:
+		if (cp->un.ord != SUNAUDIO_SPEAKER &&
+		    cp->un.ord != SUNAUDIO_HEADPHONES)
+			return (EINVAL);
+		sc->sc_out_port = cp->un.ord;
+		break;
+	default:
+		return (EINVAL);
+		/* NOTREACHED */
+	}
+	return (0);
 }
 
 int
@@ -787,92 +646,146 @@ amd7930_get_port(addr, cp)
 {
 	register struct amd7930_softc *sc = addr;
 
-	DPRINTF(("amd7930_get_port: port=%d", cp->dev));
+	DPRINTF(("amd7930_get_port: port=%d type=%d\n", cp->dev, cp->type));
 
-	if (cp->type != AUDIO_MIXER_VALUE || cp->un.value.num_channels != 1)
-		return(EINVAL);
-	
-	switch(cp->dev) {
-	    case SUNAUDIO_MIC_PORT:
-		    cp->un.value.level[AUDIO_MIXER_LEVEL_MONO] = sc->sc_rlevel;
-		    break;
-	    case SUNAUDIO_SPEAKER:
-	    case SUNAUDIO_HEADPHONES:
-		    cp->un.value.level[AUDIO_MIXER_LEVEL_MONO] = sc->sc_plevel;
-		    break;
-	    case SUNAUDIO_MONITOR:
-		    cp->un.value.level[AUDIO_MIXER_LEVEL_MONO] = sc->sc_mlevel;
-		    break;
-	    default:
-		    return(EINVAL);
-		    /* NOTREACHED */
+	if (cp->dev == SUNAUDIO_SOURCE || cp->dev == SUNAUDIO_OUTPUT) {
+		if (cp->type != AUDIO_MIXER_ENUM)
+			return (EINVAL);
 	}
-	return(0);
+	else if (cp->type != AUDIO_MIXER_VALUE ||
+	    cp->un.value.num_channels != 1)
+		return (EINVAL);
+
+	switch(cp->dev) {
+	case SUNAUDIO_MIC_PORT:
+		cp->un.value.level[AUDIO_MIXER_LEVEL_MONO] = sc->sc_rlevel;
+		break;
+	case SUNAUDIO_SPEAKER:
+	case SUNAUDIO_HEADPHONES:
+		cp->un.value.level[AUDIO_MIXER_LEVEL_MONO] = sc->sc_plevel;
+		break;
+	case SUNAUDIO_MONITOR:
+		cp->un.value.level[AUDIO_MIXER_LEVEL_MONO] = sc->sc_mlevel;
+		break;
+	case SUNAUDIO_SOURCE:
+		cp->un.ord = SUNAUDIO_MIC_PORT;
+		break;
+	case SUNAUDIO_OUTPUT:
+		cp->un.ord = sc->sc_out_port;
+		break;
+	default:
+		return (EINVAL);
+		/* NOTREACHED */
+	}
+	return (0);
 }
+
+int
+amd7930_get_props(addr)
+	void *addr;
+{
+	return (AUDIO_PROP_FULLDUPLEX);
+}       
 
 int
 amd7930_query_devinfo(addr, dip)
 	void *addr;
 	register mixer_devinfo_t *dip;
 {
-	register struct amd7930_softc *sc = addr;
-
 	switch(dip->index) {
-	    case SUNAUDIO_MIC_PORT:
-		    dip->type = AUDIO_MIXER_VALUE;
-		    dip->mixer_class = SUNAUDIO_INPUT_CLASS;
-		    dip->prev = dip->next = AUDIO_MIXER_LAST;
-		    strcpy(dip->label.name, AudioNmicrophone);
-		    dip->un.v.num_channels = 1;
-		    strcpy(dip->un.v.units.name, AudioNvolume);
-		    break;
-	    case SUNAUDIO_SPEAKER:
-		    dip->type = AUDIO_MIXER_VALUE;
-		    dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
-		    dip->prev = dip->next = AUDIO_MIXER_LAST;
-		    strcpy(dip->label.name, AudioNspeaker);
-		    dip->un.v.num_channels = 1;
-		    strcpy(dip->un.v.units.name, AudioNvolume);
-		    break;
-	    case SUNAUDIO_HEADPHONES:
-		    dip->type = AUDIO_MIXER_VALUE;
-		    dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
-		    dip->prev = dip->next = AUDIO_MIXER_LAST;
-		    strcpy(dip->label.name, AudioNheadphone);
-		    dip->un.v.num_channels = 1;
-		    strcpy(dip->un.v.units.name, AudioNvolume);
-		    break;
-	    case SUNAUDIO_MONITOR:
-		    dip->type = AUDIO_MIXER_VALUE;
-		    dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
-		    dip->next = dip->prev = AUDIO_MIXER_LAST;
-		    strcpy(dip->label.name, AudioNmonitor);
-		    dip->un.v.num_channels = 1;
-		    strcpy(dip->un.v.units.name, AudioNvolume);
-		    break;
-	    case SUNAUDIO_INPUT_CLASS:
-		    dip->type = AUDIO_MIXER_CLASS;
-		    dip->mixer_class = SUNAUDIO_INPUT_CLASS;
-		    dip->next = dip->prev = AUDIO_MIXER_LAST;
-		    strcpy(dip->label.name, AudioCInputs);
-		    break;
-	    case SUNAUDIO_OUTPUT_CLASS:
-		    dip->type = AUDIO_MIXER_CLASS;
-		    dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
-		    dip->next = dip->prev = AUDIO_MIXER_LAST;
-		    strcpy(dip->label.name, AudioCOutputs);
-		    break;
-	    default:
-		    return ENXIO;
-		    /*NOTREACHED*/
+	case SUNAUDIO_MIC_PORT:
+		dip->type = AUDIO_MIXER_VALUE;
+		dip->mixer_class = SUNAUDIO_INPUT_CLASS;
+		dip->prev = dip->next = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioNmicrophone, sizeof dip->label.name);
+		dip->un.v.num_channels = 1;
+		strlcpy(dip->un.v.units.name, AudioNvolume,
+		    sizeof dip->un.v.units.name);
+		break;
+	case SUNAUDIO_SPEAKER:
+		dip->type = AUDIO_MIXER_VALUE;
+		dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
+		dip->prev = dip->next = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioNspeaker, sizeof dip->label.name);
+		dip->un.v.num_channels = 1;
+		strlcpy(dip->un.v.units.name, AudioNvolume,
+		    sizeof dip->un.v.units.name);
+		break;
+	case SUNAUDIO_HEADPHONES:
+		dip->type = AUDIO_MIXER_VALUE;
+		dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
+		dip->prev = dip->next = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioNheadphone, sizeof dip->label.name);
+		dip->un.v.num_channels = 1;
+		strlcpy(dip->un.v.units.name, AudioNvolume,
+		    sizeof dip->label.name);
+		break;
+	case SUNAUDIO_MONITOR:
+		dip->type = AUDIO_MIXER_VALUE;
+		dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
+		dip->next = dip->prev = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioNmonitor, sizeof dip->label.name);
+		dip->un.v.num_channels = 1;
+		strlcpy(dip->un.v.units.name, AudioNvolume,
+		    sizeof dip->label.name);
+		break;
+	case SUNAUDIO_SOURCE:
+		dip->type = AUDIO_MIXER_ENUM;
+		dip->mixer_class = SUNAUDIO_RECORD_CLASS;
+		dip->prev = dip->next = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioNsource, sizeof dip->label.name);
+		dip->un.e.num_mem = 1;
+		strlcpy(dip->un.e.member[0].label.name, AudioNmicrophone,
+		    sizeof dip->un.e.member[0].label.name);
+		dip->un.e.member[0].ord = SUNAUDIO_MIC_PORT;
+		break;
+	case SUNAUDIO_OUTPUT:
+		dip->type = AUDIO_MIXER_ENUM;
+		dip->mixer_class = SUNAUDIO_MONITOR_CLASS;
+		dip->prev = dip->next = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioNoutput, sizeof dip->label.name);
+		dip->un.e.num_mem = 2;
+		strlcpy(dip->un.e.member[0].label.name, AudioNspeaker,
+		    sizeof dip->un.e.member[0].label.name);
+		dip->un.e.member[0].ord = SUNAUDIO_SPEAKER;
+		strlcpy(dip->un.e.member[1].label.name, AudioNheadphone,
+		    sizeof dip->un.e.member[0].label.name);
+		dip->un.e.member[1].ord = SUNAUDIO_HEADPHONES;
+		break;
+	case SUNAUDIO_INPUT_CLASS:
+		dip->type = AUDIO_MIXER_CLASS;
+		dip->mixer_class = SUNAUDIO_INPUT_CLASS;
+		dip->next = dip->prev = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioCinputs, sizeof dip->label.name);
+		break;
+	case SUNAUDIO_OUTPUT_CLASS:
+		dip->type = AUDIO_MIXER_CLASS;
+		dip->mixer_class = SUNAUDIO_OUTPUT_CLASS;
+		dip->next = dip->prev = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioCoutputs, sizeof dip->label.name);
+		break;
+	case SUNAUDIO_RECORD_CLASS:
+		dip->type = AUDIO_MIXER_CLASS;
+		dip->mixer_class = SUNAUDIO_RECORD_CLASS;
+		dip->next = dip->prev = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioCrecord, sizeof dip->label.name);
+		break;
+	case SUNAUDIO_MONITOR_CLASS:
+		dip->type = AUDIO_MIXER_CLASS;
+		dip->mixer_class = SUNAUDIO_MONITOR_CLASS;
+		dip->next = dip->prev = AUDIO_MIXER_LAST;
+		strlcpy(dip->label.name, AudioCmonitor, sizeof dip->label.name);
+		break;
+	default:
+		return (ENXIO);
+		/*NOTREACHED*/
 	}
 
 	DPRINTF(("AUDIO_MIXER_DEVINFO: name=%s\n", dip->label.name));
-    
-	return(0);
+
+	return (0);
 }
 
-#ifdef AUDIO_C_HANDLER
 int
 amd7930hwintr(au0)
 	void *au0;
@@ -893,7 +806,7 @@ amd7930hwintr(au0)
 		if (d == e) {
 #ifdef AUDIO_DEBUG
 		        if (amd7930debug > 1)
-                		Dprintf("amd7930hwintr: swintr(r) requested");
+                		printf("amd7930hwintr: swintr(r) requested");
 #endif
 			AUDIO_SET_SWINTR;
 		}
@@ -908,15 +821,14 @@ amd7930hwintr(au0)
 		if (d == e) {
 #ifdef AUDIO_DEBUG
 		        if (amd7930debug > 1)
-                		Dprintf("amd7930hwintr: swintr(p) requested");
+                		printf("amd7930hwintr: swintr(p) requested");
 #endif
 			AUDIO_SET_SWINTR;
 		}
 	}
 
-	return (1);
+	return (-1);
 }
-#endif /* AUDIO_C_HANDLER */
 
 int
 amd7930swintr(sc0)
@@ -928,7 +840,7 @@ amd7930swintr(sc0)
 
 #ifdef AUDIO_DEBUG
 	if (amd7930debug > 1)
-		Dprintf("audiointr: sc=0x%x\n",sc);
+		printf("audiointr: sc=0x%x\n",sc);
 #endif
 
 	au = &sc->sc_au;
@@ -947,4 +859,28 @@ amd7930swintr(sc0)
 		splx(s);
 	return (ret);
 }
-#endif /* NAUDIO > 0 */
+
+#ifndef AUDIO_C_HANDLER
+int
+amd7930_shareintr(void *arg)
+{
+	struct amd7930_softc *sc = arg;
+
+	/*
+	 * We are invoked at splhigh(), so there is no need to prevent the chip
+	 * from interrupting while we are messing with the handlers. We
+	 * however need to properly untie the event counter from the chain,
+	 * since it will be reused immediately by intr_establish()...
+	 */
+
+	intr_fastuntrap(sc->sc_hwih.ih_vec);
+	evcount_detach(&sc->sc_hwih.ih_count);
+
+	sc->sc_hwih.ih_fun = amd7930hwintr;
+	sc->sc_hwih.ih_arg = &sc->sc_au;
+	intr_establish(sc->sc_hwih.ih_vec, &sc->sc_hwih, IPL_AUHARD,
+	    sc->sc_dev.dv_xname);
+
+	return (0);
+}
+#endif

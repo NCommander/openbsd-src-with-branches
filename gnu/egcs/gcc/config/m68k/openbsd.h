@@ -19,8 +19,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* m68k is an old configuration that does not yet use the TARGET_CPU_DEFAULT
-   framework.  */
-#define TARGET_DEFAULT (MASK_BITFIELD | MASK_68881 | MASK_68020)
+   framework. OpenBSD uses -m68020-60 by default.  */
+#define TARGET_DEFAULT \
+	(MASK_BITFIELD | MASK_68881 | MASK_68020 | MASK_68040 | MASK_68060)
 
 #include <m68k/m68k.h>
 
@@ -36,18 +37,17 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time target specifications */
 #define CPP_PREDEFINES "-D__unix__ -D__m68k__ -D__mc68000__ -D__mc68020__ -D__OpenBSD__ -Asystem(unix) -Asystem(OpenBSD) -Acpu(m68k) -Amachine(m68k)"
 
-/* TODO: activate subtarget types when gas is updated.
+#undef ASM_SPEC
 #define ASM_SPEC "%| %{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
- */
 
 /* Layout of source language data types.  */
 
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -59,6 +59,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 #define STRUCTURE_SIZE_BOUNDARY 16
+
+/* optimize_reg_copy_3() is known to misbehave with some constructs */
+#define	BROKEN_OPTIMIZE_REG_COPY_3_P
 
 /* Specific options for DBX Output.  */
 

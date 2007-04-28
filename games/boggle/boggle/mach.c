@@ -1,3 +1,4 @@
+/*	$OpenBSD: mach.c,v 1.7 2003/06/03 03:01:39 millert Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)mach.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: mach.c,v 1.7 2003/06/03 03:01:39 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,6 +46,8 @@ static char rcsid[] = "$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $";
  *
  * Input is raw and unechoed
  */
+#include <sys/ioctl.h>
+
 #include <ctype.h>
 #include <curses.h>
 #include <fcntl.h>
@@ -70,34 +69,29 @@ int ncols, nlines;
 extern char *pword[], *mword[];
 extern int ngames, nmwords, npwords, tnmwords, tnpwords;
 
-static void	cont_catcher __P((int));
-static int	prwidth __P((char *[], int));
-static void	prword __P((char *[], int));
-static void	stop_catcher __P((int));
-static void	tty_cleanup __P((void));
-static int	tty_setup __P((void));
-static void	tty_showboard __P((char *));
-static void	winch_catcher __P((int));
+static void	cont_catcher(int);
+static int	prwidth(char *[], int);
+static void	prword(char *[], int);
+static void	stop_catcher(int);
+static void	tty_cleanup(void);
+static int	tty_setup(void);
+static void	tty_showboard(char *);
+static void	winch_catcher(int);
 
 /*
  * Do system dependent initialization
  * This is called once, when the program starts
  */
 int
-setup(sflag, seed)
-	int sflag;
-	time_t seed;
+setup(char *seed)
 {
-	extern int debug;
-
 	if (tty_setup() < 0)
 		return(-1);
 
-	if (!sflag)
-		time(&seed);
-	srandom(seed);
-	if (debug)
-		(void) printf("seed = %ld\n", seed);
+	if (seed != NULL)
+		srandom(atol(seed));
+	else
+		srandomdev();
 	return(0);
 }
 
@@ -106,7 +100,7 @@ setup(sflag, seed)
  * This is called once, just before the program terminates
  */
 void
-cleanup()
+cleanup(void)
 {
 	tty_cleanup();
 }
@@ -116,7 +110,7 @@ cleanup()
  * stats
  */
 void
-results()
+results(void)
 {
 	int col, row;
 	int denom1, denom2;
@@ -140,23 +134,19 @@ results()
  
 	move(SCORE_LINE, SCORE_COL);
 	printw("Percentage: %0.2f%% (%0.2f%% over %d game%s)\n",
-        denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
-        denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
-        ngames, ngames > 1 ? "s" : "");
+	denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
+	denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
+	ngames, ngames > 1 ? "s" : "");
 }
 
 static void
-prword(base, indx)
-	char *base[];
-	int indx;
+prword(char *base[], int indx)
 {
 	printw("%s", base[indx]);
 }
 
 static int
-prwidth(base, indx)
-	char *base[];
-	int indx;
+prwidth(char *base[], int indx)
 {
 	return (strlen(base[indx]));
 }
@@ -167,11 +157,10 @@ prwidth(base, indx)
  * - doesn't accept words longer than MAXWORDLEN or containing caps
  */
 char *
-getline(q)
-	char *q;
+getline(char *q)
 {
-	register int ch, done;
-	register char *p;
+	int ch, done;
+	char *p;
 	int row, col;
 
 	p = q;
@@ -262,21 +251,20 @@ getline(q)
 }
 
 int
-inputch()
+inputch(void)
 {
 	return (getch() & 0177);
 }
 
 void
-redraw()
+redraw(void)
 {
 	clearok(stdscr, 1);
 	refresh();
 }
 
 void
-flushin(fp)
-	FILE *fp;
+flushin(FILE *fp)
 {
 
 	(void) tcflush(fileno(fp), TCIFLUSH);
@@ -288,7 +276,7 @@ static int gone;
  * Stop the game timer
  */
 void
-stoptime()
+stoptime(void)
 {
 	extern time_t start_t;
 	time_t t;
@@ -301,7 +289,7 @@ stoptime()
  * Restart the game timer
  */
 void
-starttime()
+starttime(void)
 {
 	extern time_t start_t;
 	time_t t;
@@ -318,7 +306,7 @@ starttime()
  * There is no check for exceeding COLS
  */
 void
-startwords()
+startwords(void)
 {
 	crow = LIST_LINE;
 	ccol = LIST_COL;
@@ -335,8 +323,7 @@ startwords()
  * to start the next column
  */
 void
-addword(w)
-	char *w;
+addword(char *w)
 {
 	int n;
 
@@ -359,7 +346,7 @@ addword(w)
  * The current word is unacceptable so erase it
  */
 void
-badword()
+badword(void)
 {
 
 	move(crow, ccol);
@@ -372,8 +359,7 @@ badword()
  * No check for wild arg
  */
 void
-showword(n)
-	int n;
+showword(int n)
 {
 	int col, row;
 
@@ -401,7 +387,7 @@ showword(n)
  * Note: this function knows about the format of the board
  */
 void
-findword()
+findword(void)
 {
 	int c, col, found, i, r, row;
 	char buf[MAXWORDLEN + 1];
@@ -476,9 +462,7 @@ findword()
  * Display a string at the current cursor position for the given number of secs
  */
 void
-showstr(str, delaysecs)
-	char *str;
-	int delaysecs;
+showstr(char *str, int delaysecs)
 {
 	addstr(str);
 	refresh();
@@ -489,8 +473,7 @@ showstr(str, delaysecs)
 }
 
 void
-putstr(s)
-	char *s;
+putstr(char *s)
 {
 	addstr(s);
 }
@@ -499,8 +482,7 @@ putstr(s)
  * Get a valid word and put it in the buffer
  */
 void
-getword(q)
-	char *q;
+getword(char *q)
 {
 	int ch, col, done, i, row;
 	char *p;
@@ -557,15 +539,13 @@ getword(q)
 }
 
 void
-showboard(b)
-	char *b;
+showboard(char *b)
 {
 	tty_showboard(b);
 }
 
 void
-prompt(mesg)
-	char *mesg;
+prompt(char *mesg)
 {
 	move(PROMPT_LINE, PROMPT_COL);
 	printw("%s", mesg);
@@ -574,7 +554,7 @@ prompt(mesg)
 }
 
 static int
-tty_setup()
+tty_setup(void)
 {
 	initscr();
 	raw();
@@ -595,8 +575,7 @@ tty_setup()
 }
 
 static void
-stop_catcher(signo)
-	int signo;
+stop_catcher(int signo)
 {
 	sigset_t sigset, osigset;
 
@@ -616,8 +595,7 @@ stop_catcher(signo)
 }
  
 static void
-cont_catcher(signo)
-	int signo;
+cont_catcher(int signo)
 {
 	noecho();
 	raw();
@@ -632,8 +610,7 @@ cont_catcher(signo)
  * It would mean reformatting the entire display
  */
 static void
-winch_catcher(signo)
-	int signo;
+winch_catcher(int signo)
 {
 	struct winsize win;
 
@@ -646,7 +623,7 @@ winch_catcher(signo)
 }
 
 static void
-tty_cleanup()
+tty_cleanup(void)
 {
 	move(nlines - 1, 0);
 	refresh();
@@ -656,11 +633,9 @@ tty_cleanup()
 }
 
 static void
-tty_showboard(b)
-	char *b;
+tty_showboard(char *b)
 {
-	register int i;
-	int line;
+	int i, line;
 
 	clear();
 	move(BOARD_LINE, BOARD_COL);

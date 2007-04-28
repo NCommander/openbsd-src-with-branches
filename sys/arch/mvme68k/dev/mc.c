@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: mc.c,v 1.16 2004/07/30 22:29:45 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -31,7 +26,7 @@
  */
 
 /*
- * VME162 MCchip
+ * VME162/VME172 MCchip
  */
 #include <sys/param.h>
 #include <sys/conf.h>
@@ -40,7 +35,6 @@
 #include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
-#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
@@ -54,19 +48,24 @@
 
 struct mcsoftc {
 	struct device	sc_dev;
-	caddr_t		sc_vaddr;
-	caddr_t		sc_paddr;
+	vaddr_t		sc_vaddr;
+	paddr_t		sc_paddr;
 	struct mcreg	*sc_mc;
 	struct intrhand	sc_nmiih;
 };
 
-void mcattach __P((struct device *, struct device *, void *));
-int  mcmatch __P((struct device *, void *, void *));
-int  mcabort __P((struct frame *));
+void mcattach(struct device *, struct device *, void *);
+int  mcmatch(struct device *, void *, void *);
+int  mcabort(void *);
+int  mc_print(void *, const char *);
+int  mc_scan(struct device *, void *, void *);
 
-struct cfdriver mccd = {
-	NULL, "mc", mcmatch, mcattach,
-	DV_DULL, sizeof(struct mcsoftc), 0
+struct cfattach mc_ca = {
+	sizeof(struct mcsoftc), mcmatch, mcattach
+};
+
+struct cfdriver mc_cd = {
+	NULL, "mc", DV_DULL
 };
 
 struct mcreg *sys_mc = NULL;
@@ -76,12 +75,11 @@ mcmatch(parent, vcf, args)
 	struct device *parent;
 	void *vcf, *args;
 {
-	struct cfdata *cf = vcf;
 	struct confargs *ca = args;
 	struct mcreg *mc = (struct mcreg *)(IIOV(ca->ca_paddr) + MC_MCCHIP_OFF);
 
-	if (cputyp != CPU_162 || badvaddr(mc, 1) ||
-	    mc->mc_chipid != MC_CHIPID)
+	if ((cputyp != CPU_172 && cputyp != CPU_162) ||
+	    badvaddr((vaddr_t)mc, 1) || mc->mc_chipid != MC_CHIPID)
 		return (0);
 	return (1);
 }
@@ -89,7 +87,7 @@ mcmatch(parent, vcf, args)
 int
 mc_print(args, bus)
 	void *args;
-	char *bus;
+	const char *bus;
 {
 	struct confargs *ca = args;
 
@@ -107,28 +105,21 @@ mc_scan(parent, child, args)
 {
 	struct cfdata *cf = child;
 	struct mcsoftc *sc = (struct mcsoftc *)parent;
-	struct confargs *ca = args;
 	struct confargs oca;
-
-	if (parent->dv_cfdata->cf_driver->cd_indirect) {
-                printf(" indirect devices not supported\n");
-                return 0;
-        }
 
 	bzero(&oca, sizeof oca);
 	oca.ca_offset = cf->cf_loc[0];
 	oca.ca_ipl = cf->cf_loc[1];
 	if (oca.ca_offset != -1 && ISIIOVA(sc->sc_vaddr + oca.ca_offset)) {
-		oca.ca_paddr = sc->sc_paddr + oca.ca_offset;
 		oca.ca_vaddr = sc->sc_vaddr + oca.ca_offset;
+		oca.ca_paddr = sc->sc_paddr + oca.ca_offset;
 	} else {
-		oca.ca_paddr = (caddr_t)-1;
-		oca.ca_vaddr = (caddr_t)-1;
+		oca.ca_vaddr = (vaddr_t)-1;
+		oca.ca_paddr = (paddr_t)-1;
 	}
 	oca.ca_bustype = BUS_MC;
-	oca.ca_master = (void *)sc->sc_mc;
 	oca.ca_name = cf->cf_driver->cd_name;
-	if ((*cf->cf_driver->cd_match)(parent, cf, &oca) == 0)
+	if ((*cf->cf_attach->ca_match)(parent, cf, &oca) == 0)
 		return (0);
 	config_attach(parent, cf, &oca, mc_print);
 	return (1);
@@ -141,7 +132,6 @@ mcattach(parent, self, args)
 {
 	struct confargs *ca = args;
 	struct mcsoftc *sc = (struct mcsoftc *)self;
-	int i;
 
 	if (sys_mc)
 		panic("mc already attached!");
@@ -151,17 +141,16 @@ mcattach(parent, self, args)
 	 * we must adjust our address
 	 */
 	sc->sc_paddr = ca->ca_paddr;
-	sc->sc_vaddr = (caddr_t)IIOV(sc->sc_paddr);
+	sc->sc_vaddr = IIOV(sc->sc_paddr);
 	sc->sc_mc = (struct mcreg *)(sc->sc_vaddr + MC_MCCHIP_OFF);
 	sys_mc = sc->sc_mc;
 
 	printf(": rev %d\n", sc->sc_mc->mc_chiprev);
 
 	sc->sc_nmiih.ih_fn = mcabort;
-	sc->sc_nmiih.ih_arg = 0;
 	sc->sc_nmiih.ih_ipl = 7;
 	sc->sc_nmiih.ih_wantframe = 1;
-	mcintr_establish(MCV_ABORT, &sc->sc_nmiih);
+	mcintr_establish(MCV_ABORT, &sc->sc_nmiih, self->dv_xname);
 
 	sc->sc_mc->mc_abortirq = 7 | MC_IRQ_IEN | MC_IRQ_ICLR;
 	sc->sc_mc->mc_vecbase = MC_VECBASE;
@@ -175,20 +164,23 @@ mcattach(parent, self, args)
  * MC interrupts land in a MC_NVEC sized hole starting at MC_VECBASE
  */
 int
-mcintr_establish(vec, ih)
+mcintr_establish(vec, ih, name)
 	int vec;
 	struct intrhand *ih;
+	const char *name;
 {
-	if (vec >= MC_NVEC) {
-		printf("mc: illegal vector: 0x%x\n", vec);
-		panic("mcintr_establish");
-	}
-	return (intr_establish(MC_VECBASE+vec, ih));
+#ifdef DIAGNOSTIC
+	if (vec < 0 || vec >= MC_NVEC)
+		panic("mcintr_establish: illegal vector for %s: 0x%x",
+		    name, vec);
+#endif
+
+	return intr_establish(MC_VECBASE + vec, ih, name);
 }
 
 int
 mcabort(frame)
-	struct frame *frame;
+	void *frame;
 {
 	/* wait for it to debounce */
 	while (sys_mc->mc_abortirq & MC_ABORT_ABS)
@@ -207,11 +199,35 @@ void
 mc_enableflashwrite(on)
 	int on;
 {
-	struct mcsoftc *sc = (struct mcsoftc *) mccd.cd_devs[0];
-	volatile char *ena, x;
-
-	ena = sc->sc_vaddr +
-	    (on ? MC_ENAFLASHWRITE_OFFSET : MC_DISFLASHWRITE_OFFSET);
-	x = *ena;
+	struct mcsoftc *sc = (struct mcsoftc *) mc_cd.cd_devs[0];
+	volatile u_char *ena, x;
+	/* 
+	 * Check MC chip revision, as the way to enable flash writes
+	 * has been changed from a memory location in BBRAM to a 
+	 * bit in the Flash Control Reg.  XXX - smurph
+	 */
+	if (sc->sc_mc->mc_chiprev == 0x01) {
+		if (on) 
+			sc->sc_mc->mc_flashctl |= MC_FLASHCTL_WRITE;
+		else
+			sc->sc_mc->mc_flashctl &= ~MC_FLASHCTL_WRITE;
+	} else {
+		ena = (u_char *)sc->sc_vaddr +
+			 (on ? MC_ENAFLASHWRITE_OFFSET : MC_DISFLASHWRITE_OFFSET);
+		x = *ena;
+	}
+}
+/*
+ * Function to check if we booted from flash or prom.
+ * If we booted from PROM, flash mem is available.
+ */
+int 
+mc_hasflash(void)
+{
+	struct mcsoftc *sc = (struct mcsoftc *) mc_cd.cd_devs[0];
+   if (sc->sc_mc->mc_input & MC_INPUT_PROM)
+		return 1;
+	else 
+		return 0;
 }
 #endif

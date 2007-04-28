@@ -1,403 +1,574 @@
+/*	$OpenBSD: parse.c,v 1.42 2005/04/04 08:55:36 deraadt Exp $	*/
+
 /*
-**	$Id: parse.c,v 1.5 1995/05/21 00:39:13 mycroft Exp $
-**
-** parse.c                         This file contains the protocol parser
-**
-** This program is in the public domain and may be used freely by anyone
-** who wants to. 
-**
-** Last update: 6 Dec 1992
-**
-** Please send bug fixes/bug reports to: Peter Eriksson <pen@lysator.liu.se>
-*/
+ * This program is in the public domain and may be used freely by anyone
+ * who wants to.
+ *
+ * Please send bug fixes/bug reports to: Peter Eriksson <pen@lysator.liu.se>
+ */
+
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include <stdio.h>
+#include <poll.h>
+#include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <errno.h>
 #include <ctype.h>
 #include <pwd.h>
-
-#include <sys/types.h>
-#include <netinet/in.h>
-
-#ifndef HPUX7
-#  include <arpa/inet.h>
-#endif
-
-#include <nlist.h>
-#include <kvm.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#if defined(MIPS) || defined(BSD43)
-extern int errno;
-#endif
+#include <unistd.h>
 
 #include "identd.h"
-#include "error.h"
 
-extern void *malloc();
+#define IO_TIMEOUT	30	/* Timeout I/O operations after N seconds */
+
+int check_noident(char *);
+ssize_t timed_read(int, void *, size_t, time_t);
+ssize_t timed_write(int, const void *, size_t, time_t);
+int getuserident(char *homedir, char *buf, int len);
+void gentoken(char *, int);
 
 /*
-** This function will eat whitespace characters until
-** either a non-whitespace character is read, or EOF
-** occurs. This function is only used if the "-m" option
-** is enabled.
-*/
-static int eat_whitespace()
+ * A small routine to check for the existence of the ".noident"
+ * file in a users home directory.
+ */
+int
+check_noident(char *homedir)
 {
-  int c;
+	char   path[MAXPATHLEN];
+	struct stat st;
+	int n;
 
-  
-  while ((c = getchar()) != EOF &&
-	 !(c == '\r' || c == '\n'))
-    ;
-
-  if (c != EOF)
-    while ((c = getchar()) != EOF &&
-	   (c == ' ' || c == '\t' || c == '\n' || c == '\r'))
-      ;
-
-  if (c != EOF)
-    ungetc(c, stdin);
-  
-  return (c != EOF);
-}
-
-
-#ifdef INCLUDE_EXTENSIONS
-/*
-** Validate an indirect request
-*/
-static int valid_fhost(faddr, password)
-  struct in_addr *faddr;
-  char *password;
-{
-  if (indirect_host == NULL)
-    return 0;
-
-  if (strcmp(indirect_host, "*") != 0)
-  {
-    if (isdigit(indirect_host[0]))
-    {
-      if (strcmp(inet_ntoa(*faddr), indirect_host))
-      {
-	syslog(LOG_NOTICE, "valid_fhost: access denied for: %s",
-	       gethost(faddr));
+	if (!homedir)
+		return 0;
+	if ((n = snprintf(path, sizeof(path), "%s/.noident", homedir))
+	    >= sizeof(path) || n < 0)
+		return 0;
+	if (stat(path, &st) == 0)
+		return 1;
 	return 0;
-      }
-    }
-    else
-    {
-      if (strcmp(gethost(faddr), indirect_host))
-      {
-	syslog(LOG_NOTICE, "valid_fhost: access denied for: %s",
-	       gethost(faddr));
-	return 0;
-      }
-    }
-  }
-      
-  if (indirect_password == NULL)
-    return 1;
-  
-  if (strcmp(password, indirect_password))
-  {
-    syslog(LOG_NOTICE, "valid_fhost: invalid password from: %s",
-	   gethost(faddr));
-    return 0;
-  }
-
-  return 1;
 }
-#endif
 
 /*
-** A small routine to check for the existance of the ".noident"
-** file in a users home directory.
-*/
-static int check_noident(homedir)
-  char *homedir;
+ * A small routine to check for the existence of the ".ident"
+ * file in a users home directory, and return its contents.
+ */
+int
+getuserident(char *homedir, char *buf, int len)
 {
-  char *tmp_path;
-  struct stat sbuf;
-  int rcode;
-  
+	char   path[MAXPATHLEN], *p;
+	int    fd, nread, n;
+	struct stat st;
 
-  if (!homedir)
-    return 0;
-  
-  tmp_path = (char *) malloc(strlen(homedir) + sizeof("/.noident") + 1);
-  if (!tmp_path)
-    return 0;
+	if (len == 0)
+		return 0;
+	if (!homedir)
+		return 0;
+	if ((n = snprintf(path, sizeof path, "%s/.ident", homedir))
+	    >= sizeof(path) || n < 0)
+		return 0;
+	if ((fd = open(path, O_RDONLY|O_NONBLOCK|O_NOFOLLOW, 0)) < 0)
+		return 0;
+	if (fstat(fd, &st) != 0 || !S_ISREG(st.st_mode)) {
+		close(fd);
+		return 0;
+	}
 
-  strcpy(tmp_path, homedir);
-  strcat(tmp_path, "/.noident");
+	if ((nread = read(fd, buf, len - 1)) <= 0) {
+		close(fd);
+		return 0;
+	}
+	buf[nread] = '\0';
 
-  rcode = stat(tmp_path, &sbuf);
-  free(tmp_path);
+	/* remove illegal characters */
+	if ((p = strpbrk(buf, "\r\n")))
+		*p = '\0';
 
-  return (rcode == 0);
+	close(fd);
+	return 1;
 }
 
+static char token0cnv[] = "abcdefghijklmnopqrstuvwxyz";
+static char tokencnv[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-int parse(fp, laddr, faddr)
-  FILE *fp;
-  struct in_addr *laddr, *faddr;
+void
+gentoken(char *buf, int len)
 {
-  int uid, try, rcode;
-  struct passwd *pwp;
-  char lhostaddr[16];
-  char fhostaddr[16];
-  char password[33];
-#ifdef INCLUDE_EXTENSIONS  
-  char arg[33];
-  int c;
-#endif
-  struct in_addr laddr2;
-  struct in_addr faddr2;
-  
-  
-  if (debug_flag && syslog_flag)
-    syslog(LOG_DEBUG, "In function parse()");
-  
-  /*
-  ** Get the local/foreign port pair from the luser
-  */
-  do
-  {
-    if (debug_flag && syslog_flag)
-      syslog(LOG_DEBUG, "  Before fscanf()");
-    
-    faddr2 = *faddr;
-    laddr2 = *laddr;
-    lport = fport = 0;
-    lhostaddr[0] = fhostaddr[0] = password[0] = '\0';
+	char *p;
 
-    /* Read query from client */
-    rcode = fscanf(fp, " %d , %d", &lport, &fport);
+	if (len == 0)
+		return;
+	for (p = buf; len > 1; p++, len--) {
+		if (p == buf)
+			*p = token0cnv[arc4random() % (sizeof token0cnv-1)];
+		else
+			*p = tokencnv[arc4random() % (sizeof tokencnv-1)];
+	}
+	*p = '\0';
+}
 
-#ifdef INCLUDE_EXTENSIONS
-    /*
-    ** Do additional parsing in case of extended request
-    */
-    if (rcode == 0)
-    {
-      rcode = fscanf(fp, "%32[^ \t\n\r:]", arg);
+/*
+ * Returns 0 on timeout, -1 on error, #bytes read on success.
+ */
+ssize_t
+timed_read(int fd, void *buf, size_t siz, time_t timeout)
+{
+	struct timeval tv, start, after, duration, tmp;
+	int err, tot = 0, i, r;
+	struct pollfd rfd[1];
+	char *p = buf;
 
-      /* Skip leading space up to EOF, EOL or non-space char */
-      while ((c = getc(fp)) == ' ' || c == '\t')
-	;
-      
-      if (rcode <= 0)
-      {
-	printf("%d , %d : ERROR : %s\r\n",
-	       lport, fport,
-	       unknown_flag ? "UNKNOWN-ERROR" : "X-INVALID-REQUEST");
-	continue;
-      }
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
 
-      /*
-      ** Non-standard extended request, returns with Pidentd
-      ** version information
-      */
-      if (strcmp(arg, "VERSION") == 0)
-      {
-	printf("%d , %d : ERROR : X-VERSION : %s\r\n", lport, fport,
-	       version);
-	continue;
-      }
+	while (1) {
+		rfd[0].fd = fd;
+		rfd[0].events = POLLIN;
+		rfd[0].revents = 0;
 
-      /*
-      ** Non-standard extended proxy request
-      */
-      else if (strcmp(arg, "PROXY") == 0 && c == ':')
-      {
-	/* We have a colon char, check for port numbers */
-	rcode = fscanf(fp, " %d , %d : %15[0-9.] , %15[0-9.]",
-		       &lport, &fport, fhostaddr, lhostaddr);
+		gettimeofday(&start, NULL);
+		if ((err = poll(rfd, 1, tv.tv_sec * 1000 +
+		    tv.tv_usec / 1000)) <= 0)
+			return err;
+		r = read(fd, p, siz - tot);
+		if (r == -1 || r == 0)
+			return (r);
+		for (i = 0; i < r; i++)
+			if (p[i] == '\r' || p[i] == '\n') {
+				tot += r;
+				return (tot);
+			}
+		gettimeofday(&after, NULL);
+		timersub(&start, &after, &duration);
+		timersub(&tv, &duration, &tmp);
+		tv = tmp;
+		if (tv.tv_sec < 0 || !timerisset(&tv))
+			return (tot);
+		tot += r;
+		p += r;
+	}
+}
 
-	if (!(rcode == 3 || rcode == 4))
-	{
-	  printf("%d , %d : ERROR : %s\r\n",
-		 lport, fport,
-		 unknown_flag ? "UNKNOWN-ERROR" : "X-INVALID-REQUEST");
-	  continue;
+/*
+ * Returns 0 on timeout, -1 on error, #bytes read on success.
+ */
+ssize_t
+timed_write(int fd, const void *buf, size_t siz, time_t timeout)
+{
+	struct pollfd wfd[2];
+	struct timeval tv;
+	int err;
+
+	wfd[0].fd = fd;
+	wfd[0].events = POLLOUT;
+	wfd[0].revents = 0;
+
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+
+	if ((err = poll(wfd, 1, tv.tv_sec * 1000 +
+	    tv.tv_usec / 1000)) <= 0)
+		return err;
+	return (write(fd, buf, siz));
+}
+
+int
+parse(int fd, struct in_addr *laddr, struct in_addr *faddr)
+{
+	char	token[21], buf[BUFSIZ], *p;
+	struct	in_addr laddr2, faddr2;
+	struct	passwd *pw;
+	uid_t	uid;
+	int	n;
+
+	if (debug_flag && syslog_flag)
+		syslog(LOG_DEBUG, "In function parse(), from %s to %s",
+		    gethost4_addr(faddr), gethost4_addr(laddr));
+
+	faddr2 = *faddr;
+	laddr2 = *laddr;
+	lport = fport = 0;
+
+	/* Read query from client */
+	if ((n = timed_read(fd, buf, sizeof(buf) - 1, IO_TIMEOUT)) <= 0) {
+		if (syslog_flag)
+			syslog(LOG_NOTICE,
+			    n ? "read from %s: %m" : "read from %s: EOF",
+			    gethost4_addr(faddr));
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : ERROR : UNKNOWN-ERROR\r\n", lport, fport))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
+	}
+	buf[n] = '\0';
+
+	/* Pull out local and remote ports */
+	p = buf;
+	while (*p != '\0' && isspace(*p))
+		p++;
+	if ((p = strtok(p, " \t,"))) {
+		lport = atoi(p);
+		if ((p = strtok(NULL, " \t,")))
+			fport = atoi(p);
 	}
 
-	if (rcode == 4)
-	  (void) inet_aton(lhostaddr, &laddr2);
-	
-	(void) inet_aton(fhostaddr, &faddr2);
-
-	proxy(&laddr2, &faddr2, lport, fport, NULL);
-	continue;
-      }
-      
-      /*
-      ** Non-standard extended remote indirect request
-      */
-      else if (strcmp(arg, "REMOTE") == 0 && c == ':')
-      {
-	/* We have a colon char, check for port numbers */
-	rcode = fscanf(fp, " %d , %d", &lport, &fport);
-	
-	/* Skip leading space up to EOF, EOL or non-space char */
-	while ((c = getc(fp)) == ' ' || c == '\t')
-	  ;
-
-	if (rcode != 2 || c != ':')
-	{
-	  printf("%d , %d : ERROR : %s\r\n",
-		 lport, fport,
-		 unknown_flag ? "UNKNOWN-ERROR" : "X-INVALID-REQUEST");
-	  continue;
+	if (lport < 1 || lport > 65535 || fport < 1 || fport > 65535) {
+		if (syslog_flag)
+			syslog(LOG_NOTICE,
+			    "scanf: invalid-port(s): %d , %d from %s",
+			    lport, fport, gethost4_addr(faddr));
+		if ((n = snprintf(buf, sizeof(buf), "%d , %d : ERROR : %s\r\n",
+		    lport, fport, unknown_flag ? "UNKNOWN-ERROR" :
+		    "INVALID-PORT")) >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
 	}
-	    
-	/* We have a colon char, check for addr and password */
-	rcode = fscanf(fp, " %15[0-9.] , %32[^ \t\r\n]",
-		       fhostaddr, password);
-	if (rcode > 0)
-	  rcode += 2;
-	else
-	{
-	  printf("%d , %d : ERROR : %s\r\n",
-		 lport, fport,
-		 unknown_flag ? "UNKNOWN-ERROR" : "X-INVALID-REQUEST");
-	  continue;
-	}
-	
+	if (syslog_flag && verbose_flag)
+		syslog(LOG_NOTICE, "request for (%d,%d) from %s",
+		    lport, fport, gethost4_addr(faddr));
+
+	if (debug_flag && syslog_flag)
+		syslog(LOG_DEBUG, "  After fscanf(), before k_getuid()");
+
 	/*
-	** Verify that the host originating the indirect request
-	** is allowed to do that
-	*/
-	if (!valid_fhost(faddr, password))
-	{
-	  printf("%d , %d : ERROR : %s\r\n",
-		 lport, fport,
-		 unknown_flag ? "UNKNOWN-ERROR" : "X-ACCESS-DENIED");
-	  continue;
+	 * Next - get the specific TCP connection and return the
+	 * uid - user number.
+	 */
+	if (k_getuid(&faddr2, htons(fport), laddr, htons(lport), &uid) == -1) {
+		if (no_user_token_flag) {
+			gentoken(token, sizeof token);
+			syslog(LOG_NOTICE, "token %s == NO USER", token);
+			if ((n = snprintf(buf, sizeof(buf),
+			    "%d , %d : USERID : %s%s%s :%s\r\n", lport, fport,
+			    opsys_name, charset_sep, charset_name, token))
+			    >= sizeof(buf) || n < 0)
+				n = strlen(buf);
+			if (timed_write(fd, buf, n, IO_TIMEOUT) != n &&
+			    syslog_flag) {
+				syslog(LOG_NOTICE, "write to %s: %m",
+				    gethost4_addr(faddr));
+				return 1;
+			}
+			return 0;
+		}
+		if (syslog_flag)
+			syslog(LOG_DEBUG, "Returning: %d , %d : NO-USER",
+			    lport, fport);
+		if ((n = snprintf(buf, sizeof(buf), "%d , %d : ERROR : %s\r\n",
+		    lport, fport, unknown_flag ? "UNKNOWN-ERROR" : "NO-USER"))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
 	}
-	
-	(void) inet_aton(fhostaddr, &faddr2);
-      }
-      
-      else
-      {
-	printf("%d , %d : ERROR : %s\r\n",
-	       lport, fport,
-	       unknown_flag ? "UNKNOWN-ERROR" : "X-INVALID-REQUEST");
-	continue;
-      }
-    }
-#endif /* EXTENSIONS */
-    
-    if (rcode < 2 || lport < 1 || lport > 65535 || fport < 1 || fport > 65535)
-    {
-      if (syslog_flag && rcode > 0)
-	syslog(LOG_NOTICE, "scanf: invalid-port(s): %d , %d from %s",
-	       lport, fport, gethost(faddr));
-      
-      printf("%d , %d : ERROR : %s\r\n",
-	     lport, fport,
-	     unknown_flag ? "UNKNOWN-ERROR" : "INVALID-PORT");
-      continue;
-    }
+	if (debug_flag && syslog_flag)
+		syslog(LOG_DEBUG, "  After k_getuid(), before getpwuid()");
 
-    if (syslog_flag && verbose_flag)
-	syslog(LOG_NOTICE, "request for (%d,%d) from %s",
-	       lport, fport, gethost(faddr));
+	pw = getpwuid(uid);
+	if (!pw) {
+		if (syslog_flag)
+			syslog(LOG_WARNING,
+			    "getpwuid() could not map uid (%u) to name",
+			    uid);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%u\r\n",
+		    lport, fport, opsys_name, charset_sep, charset_name, uid))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
+	}
 
-    if (debug_flag && syslog_flag)
-      syslog(LOG_DEBUG, "  After fscanf(), before k_getuid()");
-    
-    /*
-    ** Next - get the specific TCP connection and return the
-    ** uid - user number.
-    **
-    ** Try to fetch the information 5 times incase the
-    ** kernel changed beneath us and we missed or took
-    ** a fault.
-    */
-    for (try = 0;
-	 (try < 5 &&
-	   k_getuid(&faddr2, htons(fport), laddr, htons(lport), &uid) == -1);
-	 try++)
-      ;
+	if (syslog_flag)
+		syslog(LOG_DEBUG, "Successful lookup: %d , %d : %s",
+		    lport, fport, pw->pw_name);
 
-    if (try >= 5)
-    {
-      if (syslog_flag)
-	syslog(LOG_DEBUG, "Returned: %d , %d : NO-USER", lport, fport);
-      
-      printf("%d , %d : ERROR : %s\r\n",
-	     lport, fport,
-	     unknown_flag ? "UNKNOWN-ERROR" : "NO-USER");
-      continue;
-    }
+	if (noident_flag && check_noident(pw->pw_dir)) {
+		if (syslog_flag && verbose_flag)
+			syslog(LOG_NOTICE,
+			    "user %s requested HIDDEN-USER for host %s: %d, %d",
+			    pw->pw_name, gethost4_addr(faddr), lport, fport);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : ERROR : HIDDEN-USER\r\n", lport, fport))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
+	}
 
-    if (try > 0 && syslog_flag)
-      syslog(LOG_NOTICE, "k_getuid retries: %d", try);
-    
-    if (debug_flag && syslog_flag)
-      syslog(LOG_DEBUG, "  After k_getuid(), before getpwuid()");
+	if (userident_flag && getuserident(pw->pw_dir, token, sizeof token)) {
+		syslog(LOG_NOTICE, "token \"%s\" == uid %u (%s)",
+		    token, uid, pw->pw_name);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%s\r\n", lport, fport,
+		    opsys_name, charset_sep, charset_name, token))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
+	}
 
-    /*
-    ** Then we should try to get the username. If that fails we
-    ** return it as an OTHER identifier
-    */
-    pwp = getpwuid(uid);
-    
-    if (!pwp)
-    {
-      if (syslog_flag)
-	syslog(LOG_WARNING, "getpwuid() could not map uid (%d) to name",
-	       uid);
+	if (token_flag) {
+		gentoken(token, sizeof token);
+		syslog(LOG_NOTICE, "token %s == uid %u (%s)", token, uid,
+		    pw->pw_name);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%s\r\n", lport, fport,
+		    opsys_name, charset_sep, charset_name, token))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
+	}
 
-      printf("%d , %d : USERID : OTHER%s%s : %d\r\n",
-	     lport, fport,
-	     charset_name ? " , " : "",
-	     charset_name ? charset_name : "",
-	     uid);
-      continue;
-    }
+	if (number_flag) {
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%u\r\n",
+		    lport, fport, opsys_name, charset_sep, charset_name, uid))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+			return 1;
+		}
+		return 0;
+	}
+	if ((n = snprintf(buf, sizeof(buf), "%d , %d : USERID : %s%s%s :%s\r\n",
+	    lport, fport, opsys_name, charset_sep, charset_name, pw->pw_name))
+	    >= sizeof(buf) || n < 0)
+		n = strlen(buf);
+	if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+		syslog(LOG_NOTICE, "write to %s: %m", gethost4_addr(faddr));
+		return 1;
+	}
+	return 0;
+}
 
-    /*
-    ** Hey! We finally made it!!!
-    */
-    if (syslog_flag)
-      syslog(LOG_DEBUG, "Successful lookup: %d , %d : %s\n",
-	     lport, fport, pwp->pw_name);
 
-    if (noident_flag && check_noident(pwp->pw_dir))
-    {
-      if (syslog_flag && verbose_flag)
-	syslog(LOG_NOTICE, "user %s requested HIDDEN-USER for host %s: %d, %d",
-	       pwp->pw_name,
-	       gethost(faddr),
-	       lport, fport);
-      
-      printf("%d , %d : ERROR : HIDDEN-USER\r\n",
-	   lport, fport);
-      continue;
-    }
+/* Parse, a-la IPv6 */
+int
+parse6(int fd, struct sockaddr_in6 *laddr, struct sockaddr_in6 *faddr)
+{
+	char	token[21], buf[BUFSIZ], *p;
+	struct	sockaddr_in6 laddr2, faddr2;
+	struct	passwd *pw;
+	uid_t	uid;
+	int	n;
 
-    if (number_flag)
-      printf("%d , %d : USERID : OTHER%s%s : %d\r\n",
-	     lport, fport,
-	     charset_name ? " , " : "",
-	     charset_name ? charset_name : "",
-	     uid);
-    else
-      printf("%d , %d : USERID : %s%s%s : %s\r\n",
-	     lport, fport,
-	     other_flag ? "OTHER" : "UNIX",
-	     charset_name ? " , " : "",
-	     charset_name ? charset_name : "",
-	     pwp->pw_name);
-    
-  } while(fflush(stdout), fflush(stderr), multi_flag && eat_whitespace());
+	if (debug_flag && syslog_flag)
+		syslog(LOG_DEBUG, "In function parse6(), from %s to %s",
+		    gethost6(faddr), gethost6(laddr));
 
-  return 0;
+	faddr2 = *faddr;
+	laddr2 = *laddr;
+	lport = fport = 0;
+
+	/* Read query from client */
+	if ((n = timed_read(fd, buf, sizeof(buf) - 1, IO_TIMEOUT)) <= 0) {
+		if (syslog_flag)
+			syslog(LOG_NOTICE,
+			    n ? "read from %s: %m" : "read from %s: EOF",
+			    gethost6(faddr));
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : ERROR : UNKNOWN-ERROR\r\n", lport, fport))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+	buf[n] = '\0';
+
+	/* Pull out local and remote ports */
+	p = buf;
+	while (*p != '\0' && isspace(*p))
+		p++;
+	if ((p = strtok(p, " \t,"))) {
+		lport = atoi(p);
+		if ((p = strtok(NULL, " \t,")))
+			fport = atoi(p);
+	}
+
+	if (lport < 1 || lport > 65535 || fport < 1 || fport > 65535) {
+		if (syslog_flag)
+			syslog(LOG_NOTICE,
+			    "scanf: invalid-port(s): %d , %d from %s",
+			    lport, fport, gethost6(faddr));
+		if ((n = snprintf(buf, sizeof(buf), "%d , %d : ERROR : %s\r\n",
+		    lport, fport, unknown_flag ? "UNKNOWN-ERROR" :
+		    "INVALID-PORT")) >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+	if (syslog_flag && verbose_flag)
+		syslog(LOG_NOTICE, "request for (%d,%d) from %s",
+		    lport, fport, gethost6(faddr));
+
+	if (debug_flag && syslog_flag)
+		syslog(LOG_DEBUG, "  After fscanf(), before k_getuid6()");
+
+	/*
+	 * Next - get the specific TCP connection and return the
+	 * uid - user number.
+	 */
+	if (k_getuid6(&faddr2, htons(fport), laddr, htons(lport), &uid) == -1) {
+		if (no_user_token_flag) {
+			gentoken(token, sizeof token);
+			syslog(LOG_NOTICE, "token %s == NO USER", token);
+			if ((n = snprintf(buf, sizeof(buf),
+			    "%d , %d : USERID : %s%s%s :%s\r\n", lport, fport,
+			    opsys_name, charset_sep, charset_name, token))
+			    >= sizeof(buf) || n < 0)
+				n = strlen(buf);
+			if (timed_write(fd, buf, n, IO_TIMEOUT) != n &&
+			    syslog_flag) {
+				syslog(LOG_NOTICE, "write to %s: %m",
+				    gethost6(faddr));
+				return 1;
+			}
+			return 0;
+		}
+		if (syslog_flag)
+			syslog(LOG_DEBUG, "Returning: %d , %d : NO-USER",
+			    lport, fport);
+		if ((n = snprintf(buf, sizeof(buf), "%d , %d : ERROR : %s\r\n",
+		    lport, fport, unknown_flag ? "UNKNOWN-ERROR" : "NO-USER"))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+	if (debug_flag && syslog_flag)
+		syslog(LOG_DEBUG, "  After k_getuid6(), before getpwuid()");
+
+	pw = getpwuid(uid);
+	if (!pw) {
+		if (syslog_flag)
+			syslog(LOG_WARNING,
+			    "getpwuid() could not map uid (%u) to name",
+			    uid);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%u\r\n",
+		    lport, fport, opsys_name, charset_sep, charset_name, uid))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+
+	if (syslog_flag)
+		syslog(LOG_DEBUG, "Successful lookup: %d , %d : %s",
+		    lport, fport, pw->pw_name);
+
+	if (noident_flag && check_noident(pw->pw_dir)) {
+		if (syslog_flag && verbose_flag)
+			syslog(LOG_NOTICE,
+			    "user %s requested HIDDEN-USER for host %s: %d, %d",
+			    pw->pw_name, gethost6(faddr), lport, fport);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : ERROR : HIDDEN-USER\r\n", lport, fport))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+
+	if (userident_flag && getuserident(pw->pw_dir, token, sizeof token)) {
+		syslog(LOG_NOTICE, "token \"%s\" == uid %u (%s)",
+		    token, uid, pw->pw_name);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%s\r\n", lport, fport,
+		    opsys_name, charset_sep, charset_name, token))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+
+	if (token_flag) {
+		gentoken(token, sizeof token);
+		syslog(LOG_NOTICE, "token %s == uid %u (%s)", token, uid,
+		    pw->pw_name);
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%s\r\n", lport, fport,
+		    opsys_name, charset_sep, charset_name, token))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+
+	if (number_flag) {
+		if ((n = snprintf(buf, sizeof(buf),
+		    "%d , %d : USERID : %s%s%s :%u\r\n",
+		    lport, fport, opsys_name, charset_sep, charset_name, uid))
+		    >= sizeof(buf) || n < 0)
+			n = strlen(buf);
+		if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+			syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+			return 1;
+		}
+		return 0;
+	}
+
+	if ((n = snprintf(buf, sizeof(buf), "%d , %d : USERID : %s%s%s :%s\r\n",
+	    lport, fport, opsys_name, charset_sep, charset_name, pw->pw_name))
+	    >= sizeof(buf) || n < 0)
+		n = strlen(buf);
+	if (timed_write(fd, buf, n, IO_TIMEOUT) != n && syslog_flag) {
+		syslog(LOG_NOTICE, "write to %s: %m", gethost6(faddr));
+		return 1;
+	}
+	return 0;
 }

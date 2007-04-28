@@ -1,5 +1,5 @@
 #!/bin/sh -
-copyright='
+copyright="\
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +12,7 @@ copyright='
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +28,9 @@ copyright='
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-'
-SCRIPT_ID='$NetBSD: vnode_if.sh,v 1.8 1995/03/10 04:13:52 chopps Exp $'
+"
+SCRIPT_ID='$OpenBSD: vnode_if.sh,v 1.14 2005/05/22 21:07:23 pedro Exp $'
+# SCRIPT_ID='$NetBSD: vnode_if.sh,v 1.9 1996/02/29 20:58:22 cgd Exp $'
 
 # Script to produce VFS front-end sugar.
 #
@@ -46,12 +43,13 @@ if [ $# -ne 1 ] ; then
 	exit 1
 fi
 
-# Name of the source file.
+# Name and revision of the source file.
 src=$1
+SRC_ID=`head -1 $src | sed -e 's/.*\$\(.*\)\$.*/\1/'`
 
 # Names of the created files.
 out_c=vnode_if.c
-out_h=vnode_if.h
+out_h=../sys/vnode_if.h
 
 # Awk program (must support nawk extensions)
 # Use "awk" at Berkeley, "nawk" or "gawk" elsewhere.
@@ -106,11 +104,27 @@ awk_parser='
 # Middle lines of description
 {
 	argdir[argc] = $1; i=2;
-	if ($2 == "WILLRELE") {
+	if ($2 == "WILLRELE" ||
+	    $3 == "WILLRELE") {
 		willrele[argc] = 1;
+		i++;
+	} else if ($2 == "WILLUNLOCK" ||
+	    $3 == "WILLUNLOCK") {
+		willrele[argc] = 2;
+		i++;
+	} else if ($2 == "WILLPUT" ||
+	    $3 == "WILLPUT") {
+		willrele[argc] = 3;
 		i++;
 	} else
 		willrele[argc] = 0;
+
+	if ($2 == "SHOULDBELOCKED") {
+	   shouldbelocked[argc] = 1;
+	   i++;
+	} else
+	   shouldbelocked[argc] = 0;
+
 	argtype[argc] = $i; i++;
 	while (i < NF) {
 		argtype[argc] = argtype[argc]" "$i;
@@ -123,15 +137,17 @@ awk_parser='
 '
 
 # This is put after the copyright on each generated file.
-warning="
+warning="\
 /*
  * Warning: This file is generated automatically.
  * (Modifications made here may easily be lost!)
  *
- * Created by the script:
+ * Created from the file:
+ *	${SRC_ID}
+ * by the script:
  *	${SCRIPT_ID}
  */
-"
+" 
 
 # This is to satisfy McKusick (get rid of evil spaces 8^)
 anal_retentive='s:\([^/]\*\) :\1:g'
@@ -143,11 +159,14 @@ echo "$0: Creating $out_h" 1>&2
 exec > $out_h
 
 # Begin stuff
-echo "$copyright"
-echo "$warning"
+echo -n "$warning" | sed -e 's/\$//g'
+echo ""
+echo -n "$copyright"
 echo '
 extern struct vnodeop_desc vop_default_desc;
 '
+
+echo '#include "systm.h"'
 
 # Body stuff
 # This awk program needs toupper() so define it if necessary.
@@ -162,7 +181,7 @@ function doit() {
 	printf("};\n");
 	printf("extern struct vnodeop_desc %s_desc;\n", name);
 	# Prototype it.
-	protoarg = sprintf("static __inline int %s __P((", toupper(name));
+	protoarg = sprintf("int %s(", toupper(name));
 	protolen = length(protoarg);
 	printf("%s", protoarg);
 	for (i=0; i<argc; i++) {
@@ -177,24 +196,7 @@ function doit() {
 		printf("%s", protoarg);
 		protolen += arglen;
 	}
-	printf("));\n");
-	# Define inline function.
-	printf("static __inline int %s(", toupper(name));
-	for (i=0; i<argc; i++) {
-		printf("%s", argname[i]);
-		if (i < (argc-1)) printf(", ");
-	}
-	printf(")\n");
-	for (i=0; i<argc; i++) {
-		printf("\t%s %s;\n", argtype[i], argname[i]);
-	}
-	printf("{\n\tstruct %s_args a;\n", name);
-	printf("\ta.a_desc = VDESC(%s);\n", name);
-	for (i=0; i<argc; i++) {
-		printf("\ta.a_%s = %s;\n", argname[i], argname[i]);
-	}
-	printf("\treturn (VCALL(%s%s, VOFFSET(%s), &a));\n}\n",
-		argname[0], arg0special, name);
+	printf(");\n");
 }
 BEGIN	{
 	arg0special="";
@@ -204,6 +206,7 @@ END	{
 	argc=1;
 	argtype[0]="struct buf *";
 	argname[0]="bp";
+	shouldbelocked[0] = 0;
 	arg0special="->b_vp";
 	name="vop_strategy";
 	doit();
@@ -224,8 +227,9 @@ echo "$0: Creating $out_c" 1>&2
 exec > $out_c
 
 # Begin stuff
-echo "$copyright"
-echo "$warning"
+echo -n "$warning" | sed -e 's/\$//g'
+echo ""
+echo -n "$copyright"
 echo '
 #include <sys/param.h>
 #include <sys/mount.h>
@@ -280,10 +284,17 @@ function doit() {
 	vpnum = 0;
 	for (i=0; i<argc; i++) {
 		if (willrele[i]) {
-			if (argdir[i] ~ /OUT/) {
-				printf(" | VDESC_VPP_WILLRELE");
+			if (willrele[i] == 2) {
+				word = "UNLOCK";
+			} else if (willrele[i] == 3) {
+				word = "PUT";
 			} else {
-				printf(" | VDESC_VP%s_WILLRELE", vpnum);
+				word = "RELE";
+			}
+			if (argdir[i] ~ /OUT/) {
+				printf(" | VDESC_VPP_WILL%s", word);
+			} else {
+				printf(" | VDESC_VP%s_WILL%s", vpnum, word);
 			};
 			vpnum++;
 		}
@@ -301,13 +312,52 @@ function doit() {
 	do_offset("struct componentname *");
 	# transport layer information
 	printf ("\tNULL,\n};\n");
+
+	# Define inline function.
+	printf("\nint %s(", toupper(name));
+	desclen = 5 + length(name);
+	for (i=0; i<argc; i++) {
+		arglen = length(argtype[i]) + length(argname[i]);
+		
+		if (arglen + desclen > 77) {
+			printf("\n    ");
+			arglen += 4;
+			desclen = 0;
+		}
+		printf("%s %s", argtype[i], argname[i]);
+		if (i < (argc-1)) {
+			printf(", ");
+			desclen += 2;
+		}
+		desclen += arglen;
+	}
+	printf(")\n");
+	printf("{\n\tstruct %s_args a;\n", name);
+	printf("\ta.a_desc = VDESC(%s);\n", name);
+	for (i=0; i<argc; i++) {
+		printf("\ta.a_%s = %s;\n", argname[i], argname[i]);
+		if (shouldbelocked[i]) {
+			printf ("#ifdef VFSDEBUG\n");
+			printf ("\tif ((%s->v_flag & VLOCKSWORK) && !VOP_ISLOCKED(%s))\n", argname[i], argname[i]);
+			printf ("\t\tpanic(\"%s: %s\");\n", name, argname[i]);
+			printf ("#endif\n");
+		}
+	}
+	printf("\treturn (VCALL(%s%s, VOFFSET(%s), &a));\n}\n",
+		argname[0], arg0special, name);
+
+}
+BEGIN	{
+	arg0special="";
 }
 END	{
 	printf("\n/* Special cases: */\n");
 	argc=1;
-	argdir[0]="IN";
 	argtype[0]="struct buf *";
+	argdir[0]="IN";
 	argname[0]="bp";
+	shouldbelocked[0] = 0;
+	arg0special="->b_vp";
 	willrele[0]=0;
 	name="vop_strategy";
 	doit();

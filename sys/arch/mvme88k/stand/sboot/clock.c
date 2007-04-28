@@ -1,4 +1,4 @@
-/*	$Id: clock.c,v 1.2 1995/11/07 08:51:08 deraadt Exp $ */
+/*	$OpenBSD: clock.c,v 1.3 2003/06/02 23:27:53 millert Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -23,11 +23,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -73,7 +69,7 @@ static struct clockreg *clockreg = (struct clockreg *) CLOCK_ADDR;
 const short dayyr[12] =
     {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
-static u_long 
+static u_long
 chiptotime(sec, min, hour, day, mon, year)
 	register int sec, min, hour, day, mon, year;
 {
@@ -104,7 +100,7 @@ chiptotime(sec, min, hour, day, mon, year)
 /*
  * Set up the system's time, given a `reasonable' time value.
  */
-u_long 
+u_long
 time()
 {
 	register struct clockreg *cl = clockreg;

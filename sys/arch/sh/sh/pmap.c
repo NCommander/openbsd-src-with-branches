@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmap.c,v 1.5 2007/03/05 21:47:55 miod Exp $	*/
 /*	$NetBSD: pmap.c,v 1.55 2006/08/07 23:19:36 tsutsui Exp $	*/
 
 /*-
@@ -72,11 +72,12 @@ STATIC struct pool __pmap_pmap_pool;
 struct pv_entry {
 	struct pmap *pv_pmap;
 	vaddr_t pv_va;
+	vm_prot_t pv_prot;
 	SLIST_ENTRY(pv_entry) pv_link;
 };
 #define	__pmap_pv_alloc()	pool_get(&__pmap_pv_pool, PR_NOWAIT)
 #define	__pmap_pv_free(pv)	pool_put(&__pmap_pv_pool, (pv))
-STATIC void __pmap_pv_enter(pmap_t, struct vm_page *, vaddr_t);
+STATIC void __pmap_pv_enter(pmap_t, struct vm_page *, vaddr_t, vm_prot_t);
 STATIC void __pmap_pv_remove(pmap_t, struct vm_page *, vaddr_t);
 STATIC void *__pmap_pv_page_alloc(struct pool *, int);
 STATIC void __pmap_pv_page_free(struct pool *, void *);
@@ -141,9 +142,9 @@ pmap_steal_memory(vsize_t size, vaddr_t *vstart, vaddr_t *vend)
 	KDASSERT(i != vm_nphysseg);
 
 	/* Steal pages */
-	pa = ptoa(bank->avail_start);
-	bank->avail_start += npage;
-	bank->start += npage;
+	bank->avail_end -= npage;
+	bank->end -= npage;
+	pa = ptoa(bank->avail_end);
 
 	/* GC memory bank */
 	if (bank->avail_start == bank->end) {
@@ -156,6 +157,11 @@ pmap_steal_memory(vsize_t size, vaddr_t *vstart, vaddr_t *vend)
 
 	va = SH3_PHYS_TO_P1SEG(pa);
 	memset((caddr_t)va, 0, size);
+
+	if (vstart)
+		*vstart = VM_MIN_KERNEL_ADDRESS;
+	if (vend)
+		*vend = VM_MAX_KERNEL_ADDRESS;
 
 	return (va);
 }
@@ -198,13 +204,6 @@ pmap_growkernel(vaddr_t maxkvaddr)
  error:
 	panic("pmap_growkernel: out of memory.");
 	/* NOTREACHED */
-}
-
-void
-pmap_virtual_space(vaddr_t *start, vaddr_t *end)
-{
-	*start = VM_MIN_KERNEL_ADDRESS;
-	*end = VM_MAX_KERNEL_ADDRESS;
 }
 
 void
@@ -340,7 +339,7 @@ pmap_enter(pmap_t pmap, vaddr_t va, paddr_t pa, vm_prot_t prot, int flags)
 			return (0);
 
 		/* Add to physical-virtual map list of this page */
-		__pmap_pv_enter(pmap, pg, va);
+		__pmap_pv_enter(pmap, pg, va, prot);
 
 	} else {	/* bus-space (always uncached map) */
 		if (kva) {
@@ -435,19 +434,30 @@ __pmap_map_change(pmap_t pmap, vaddr_t va, paddr_t pa, vm_prot_t prot,
  *	Assume pre-existed mapping is already removed.
  */
 void
-__pmap_pv_enter(pmap_t pmap, struct vm_page *pg, vaddr_t va)
+__pmap_pv_enter(pmap_t pmap, struct vm_page *pg, vaddr_t va, vm_prot_t prot)
 {
 	struct vm_page_md *pvh;
 	struct pv_entry *pv;
 	int s;
+	int have_writeable = 0;
+
+	if (prot & VM_PROT_WRITE)
+		have_writeable = 1;
 
 	s = splvm();
 	if (SH_HAS_VIRTUAL_ALIAS) {
 		/* Remove all other mapping on this physical page */
 		pvh = &pg->mdpage;
-		while ((pv = SLIST_FIRST(&pvh->pvh_head)) != NULL) {
-			pmap_remove(pv->pv_pmap, pv->pv_va,
-			    pv->pv_va + PAGE_SIZE);
+		SLIST_FOREACH(pv, &pvh->pvh_head, pv_link) {
+			if (pv->pv_prot & VM_PROT_WRITE) {
+				have_writeable = 1;
+				break;
+			}
+		}
+		if (have_writeable != 0) {
+			while ((pv = SLIST_FIRST(&pvh->pvh_head)) != NULL)
+				pmap_remove(pv->pv_pmap, pv->pv_va,
+				    pv->pv_va + PAGE_SIZE);
 		}
 	}
 
@@ -456,6 +466,7 @@ __pmap_pv_enter(pmap_t pmap, struct vm_page *pg, vaddr_t va)
 	pv = __pmap_pv_alloc();
 	pv->pv_pmap = pmap;
 	pv->pv_va = va;
+	pv->pv_prot = prot;
 
 	SLIST_INSERT_HEAD(&pvh->pvh_head, pv, pv_link);
 	splx(s);
@@ -608,6 +619,10 @@ pmap_protect(pmap_t pmap, vaddr_t sva, vaddr_t eva, vm_prot_t prot)
 	boolean_t kernel = pmap == pmap_kernel();
 	pt_entry_t *pte, entry;
 	vaddr_t va;
+	paddr_t pa;
+	struct vm_page *pg;
+	struct vm_page_md *pvh;
+	struct pv_entry *pv, *head;
 
 	sva = trunc_page(sva);
 
@@ -649,6 +664,34 @@ pmap_protect(pmap_t pmap, vaddr_t sva, vaddr_t eva, vm_prot_t prot)
 
 		if (pmap->pm_asid != -1)
 			sh_tlb_update(pmap->pm_asid, va, entry);
+
+		if (pmap_extract(pmap, va, &pa)) {
+			pg = PHYS_TO_VM_PAGE(pa);
+			if (pg == NULL)
+				continue;
+			pvh = &pg->mdpage;
+
+			while ((pv = SLIST_FIRST(&pvh->pvh_head)) != NULL) {
+				if (pv->pv_pmap == pmap && pv->pv_va == va) {
+					break;
+				}
+				pmap_remove(pv->pv_pmap, pv->pv_va,
+				    pv->pv_va + PAGE_SIZE);
+			}
+			/* the matching pv is first in the list */
+			SLIST_FOREACH(pv, &pvh->pvh_head, pv_link) {
+				if (pv->pv_pmap == pmap && pv->pv_va == va) {
+					pv->pv_prot = prot;
+					break;
+				}
+			}
+			/* remove the rest of the elements */
+			head = SLIST_FIRST(&pvh->pvh_head);
+			if (head != NULL)
+				while((pv = SLIST_NEXT(head, pv_link))!= NULL)
+					pmap_remove(pv->pv_pmap, pv->pv_va,
+					    pv->pv_va + PAGE_SIZE);
+		}
 	}
 }
 
@@ -841,6 +884,26 @@ pmap_clear_modify(struct vm_page *pg)
 	return (TRUE);
 }
 
+#ifdef SH4
+/*
+ * pmap_prefer(vaddr_t foff, vaddr_t *vap)
+ *
+ * Find first virtual address >= *vap that doesn't cause
+ * a virtual cache alias against vaddr_t foff.
+ */
+void
+pmap_prefer(vaddr_t foff, vaddr_t *vap)
+{
+	vaddr_t va;
+
+	if (SH_HAS_VIRTUAL_ALIAS) {
+		va = *vap;
+
+		*vap = va + ((foff - va) & sh_cache_prefer_mask);
+	}
+}
+#endif /* SH4 */
+
 /*
  * pv_entry pool allocator:
  *	void *__pmap_pv_page_alloc(struct pool *pool, int flags):
@@ -921,9 +984,11 @@ __pmap_pte_lookup(pmap_t pmap, vaddr_t va)
 pt_entry_t *
 __pmap_kpte_lookup(vaddr_t va)
 {
-	return (__pmap_kernel.pm_ptp
-	    [__PMAP_PTP_INDEX(va - VM_MIN_KERNEL_ADDRESS)] +
-	    __PMAP_PTP_OFSET(va));
+	pt_entry_t *ptp;
+
+	ptp =
+	    __pmap_kernel.pm_ptp[__PMAP_PTP_INDEX(va - VM_MIN_KERNEL_ADDRESS)];
+	return (ptp ? ptp + __PMAP_PTP_OFSET(va) : NULL);
 }
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: locale.h,v 1.5 2002/10/25 21:55:28 millert Exp $	*/
 /*	$NetBSD: locale.h,v 1.6 1994/10/26 00:56:02 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -60,7 +57,11 @@ struct lconv {
 };
 
 #ifndef NULL
-#define	NULL	0
+#ifdef 	__GNUG__
+#define NULL	__null
+#else
+#define	NULL	0L
+#endif
 #endif
 
 #define	LC_ALL		0
@@ -76,8 +77,8 @@ struct lconv {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-struct lconv	*localeconv __P((void));
-char		*setlocale __P((int, const char *));
+struct lconv	*localeconv(void);
+char		*setlocale(int, const char *);
 __END_DECLS
 
 #endif /* _LOCALE_H_ */

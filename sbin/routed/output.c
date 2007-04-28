@@ -1,4 +1,4 @@
-/*	$OpenBSD	*/
+/*	$OpenBSD: output.c,v 1.8 2003/06/02 20:06:17 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +31,8 @@
 
 #if !defined(lint)
 static char sccsid[] = "@(#)output.c	8.1 (Berkeley) 6/5/93";
+#else
+static char rcsid[] = "$OpenBSD: output.c,v 1.8 2003/06/02 20:06:17 millert Exp $";
 #endif
 
 #include "defs.h"
@@ -94,7 +92,7 @@ output(enum output_type type,
 {
 	struct sockaddr_in sin;
 	int flags;
-	char *msg;
+	char *msg = NULL;
 	int res;
 	naddr tgt_mcast;
 	int soc;
@@ -202,13 +200,16 @@ output(enum output_type type,
 static void
 set_auth(struct ws_buf *w)
 {
+	struct netauth *nap;
+
 	if (ws.ifp != 0
 	    && ws.ifp->int_passwd[0] != '\0'
 	    && (ws.state & WS_ST_RIP2_SAFE)) {
+		nap = (struct netauth *)(&w->n->n_tag);
 		w->n->n_family = RIP_AF_AUTH;
-		((struct netauth*)w->n)->a_type = RIP_AUTH_PW;
-		bcopy(ws.ifp->int_passwd, ((struct netauth*)w->n)->au.au_pw,
-		      sizeof(((struct netauth*)w->n)->au.au_pw));
+		nap->a_type = RIP_AUTH_PW;
+		bcopy(ws.ifp->int_passwd, nap->au.au_pw,
+		      sizeof(nap->au.au_pw));
 		w->n++;
 	}
 }
@@ -615,11 +616,6 @@ supply(struct sockaddr_in *dst,
 	}
 	ripv12_buf.rip.rip_vers = vers;
 
-	ws.v12.n = ws.v12.base;
-	set_auth(&ws.v12);
-	ws.v2.n = ws.v2.base;
-	set_auth(&ws.v2);
-
 	switch (type) {
 	case OUT_BROADCAST:
 		ws.v2.type = ((ws.ifp != 0
@@ -669,7 +665,12 @@ supply(struct sockaddr_in *dst,
 		ws.state |= WS_ST_SUB_AG;
 	}
 
-	if (supplier) {
+	ws.v12.n = ws.v12.base;
+	set_auth(&ws.v12);
+	ws.v2.n = ws.v2.base;
+	set_auth(&ws.v2);
+
+	if (supplier && ifp != NULL) {
 		/*  Fake a default route if asked, and if there is not
 		 * a better, real default route.
 		 */

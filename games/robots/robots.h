@@ -1,3 +1,4 @@
+/*	$OpenBSD: robots.h,v 1.5 2002/02/16 21:27:11 millert Exp $	*/
 /*	$NetBSD: robots.h,v 1.5 1995/04/24 12:24:54 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,37 +32,46 @@
  *	@(#)robots.h	8.1 (Berkeley) 5/31/93
  */
 
-# include	<curses.h>
-# include	<setjmp.h>
-# include	<string.h>
+#include	<sys/param.h>
+#include	<sys/types.h>
+#include	<sys/time.h>
+#include	<ctype.h>
+#include	<curses.h>
+#include	<err.h>
+#include	<errno.h>
+#include	<fcntl.h>
+#include	<pwd.h>
+#include	<signal.h>
+#include	<string.h>
+#include	<stdlib.h>
+#include	<termios.h>
+#include	<unistd.h>
 
 /*
  * miscellaneous constants
  */
 
-# define	Y_FIELDSIZE	23
-# define	X_FIELDSIZE	60
-# define	Y_SIZE		24
-# define	X_SIZE		80
-# define	MAXLEVELS	4
-# define	MAXROBOTS	(MAXLEVELS * 10)
-# define	ROB_SCORE	10
-# define	S_BONUS		(60 * ROB_SCORE)
-# define	Y_SCORE		21
-# define	X_SCORE		(X_FIELDSIZE + 9)
-# define	Y_PROMPT	(Y_FIELDSIZE - 1)
-# define	X_PROMPT	(X_FIELDSIZE + 2)
-# define	MAXSCORES	(Y_SIZE - 2)
-# define	MAXNAME		16
-# define	MS_NAME		"Ten"
+#define	Y_FIELDSIZE	23
+#define	X_FIELDSIZE	60
+#define	Y_SIZE		24
+#define	X_SIZE		80
+#define	MAXLEVELS	4
+#define	MAXROBOTS	(MAXLEVELS * 10)
+#define	ROB_SCORE	10
+#define	S_BONUS		(60 * ROB_SCORE)
+#define	Y_SCORE		21
+#define	X_SCORE		(X_FIELDSIZE + 9)
+#define	Y_PROMPT	(Y_FIELDSIZE - 1)
+#define	X_PROMPT	(X_FIELDSIZE + 2)
+#define	MAXSCORES	(Y_SIZE - 2)
 
 /*
  * characters on screen
  */
 
-# define	ROBOT	'+'
-# define	HEAP	'*'
-# define	PLAYER	'@'
+#define	ROBOT	'+'
+#define	HEAP	'*'
+#define	PLAYER	'@'
 
 /*
  * type definitions
@@ -74,6 +80,14 @@
 typedef struct {
 	int	y, x;
 } COORD;
+
+typedef struct {
+	uid_t	s_uid;
+	int	s_score;
+	char	s_name[MAXLOGNAME];
+} SCORE;
+
+typedef struct passwd	PASSWD;
 
 /*
  * global variables
@@ -92,19 +106,35 @@ extern char	Cnt_move, Field[Y_FIELDSIZE][X_FIELDSIZE], *Next_move,
 extern int	Count, Level, Num_robots, Num_scores, Score,
 		Start_level, Wait_bonus;
 
+extern fd_set	rset;
+extern struct timeval	tv;
+
 extern COORD	Max, Min, My_pos, Robots[];
 
-extern jmp_buf	End_move;
 
 /*
  * functions types
  */
 
-int	cmp_sc();
-void	move_robots();
-
-COORD	*rnd_pos();
-
-
-
-
+void	add_score(int);
+bool	another(void);
+int	cmp_sc(const void *, const void *);
+bool	do_move(int, int);
+bool	eaten(COORD *);
+void	get_move(void);
+void	init_field(void);
+bool	jumping(void);
+void	make_level(void);
+void	move_robots(void);
+bool	must_telep(void);
+void	play_level(void);
+int	query(char *);
+void	quit(int);
+void	reset_count(void);
+int	rnd(int);
+COORD	*rnd_pos(void);
+void	score(int);
+void	set_name(SCORE *);
+void	show_score(void);
+int	sign(int);
+void	usage(void);

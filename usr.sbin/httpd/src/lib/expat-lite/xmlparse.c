@@ -190,9 +190,6 @@ static Processor prologInitProcessor;
 static Processor contentProcessor;
 static Processor cdataSectionProcessor;
 static Processor epilogProcessor;
-#if 0
-static Processor errorProcessor;
-#endif
 static Processor externalEntityInitProcessor;
 static Processor externalEntityInitProcessor2;
 static Processor externalEntityInitProcessor3;
@@ -398,15 +395,6 @@ typedef struct {
 #define groupSize (((Parser *)parser)->m_groupSize)
 #define hadExternalDoctype (((Parser *)parser)->m_hadExternalDoctype)
 #define namespaceSeparator (((Parser *)parser)->m_namespaceSeparator)
-
-#ifdef _MSC_VER
-#ifdef _DEBUG
-Parser *asParser(XML_Parser parser)
-{
-  return parser;
-}
-#endif
-#endif
 
 XML_Parser XML_ParserCreate(const XML_Char *encodingName)
 {
@@ -1388,21 +1376,6 @@ doContent(XML_Parser parser,
 	enum XML_Error result;
 	if (startCdataSectionHandler)
   	  startCdataSectionHandler(handlerArg);
-#if 0
-	/* Suppose you doing a transformation on a document that involves
-	   changing only the character data.  You set up a defaultHandler
-	   and a characterDataHandler.  The defaultHandler simply copies
-	   characters through.  The characterDataHandler does the transformation
-	   and writes the characters out escaping them as necessary.  This case
-	   will fail to work if we leave out the following two lines (because &
-	   and < inside CDATA sections will be incorrectly escaped).
-
-	   However, now we have a start/endCdataSectionHandler, so it seems
-	   easier to let the user deal with this. */
-
-	else if (characterDataHandler)
-  	  characterDataHandler(handlerArg, dataBuf, 0);
-#endif
 	else if (defaultHandler)
 	  reportDefault(parser, enc, s, next);
 	result = doCdataSection(parser, enc, &next, end, nextPtr);
@@ -1771,11 +1744,6 @@ enum XML_Error doCdataSection(XML_Parser parser,
     case XML_TOK_CDATA_SECT_CLOSE:
       if (endCdataSectionHandler)
 	endCdataSectionHandler(handlerArg);
-#if 0
-      /* see comment under XML_TOK_CDATA_SECT_OPEN */
-      else if (characterDataHandler)
-	characterDataHandler(handlerArg, dataBuf, 0);
-#endif
       else if (defaultHandler)
 	reportDefault(parser, enc, s, next);
       *startPtr = next;
@@ -2335,17 +2303,6 @@ enum XML_Error epilogProcessor(XML_Parser parser,
   }
 }
 
-#if 0
-static
-enum XML_Error errorProcessor(XML_Parser parser,
-			      const char *s,
-			      const char *end,
-			      const char **nextPtr)
-{
-  return errorCode;
-}
-#endif
-
 static enum XML_Error
 storeAttributeValue(XML_Parser parser, const ENCODING *enc, int isCdata,
 		    const char *ptr, const char *end,
@@ -2486,9 +2443,6 @@ enum XML_Error storeEntityValue(XML_Parser parser,
 				const char *entityTextPtr,
 				const char *entityTextEnd)
 {
-#if 0
-  const ENCODING *internalEnc = ns ? XmlGetInternalEncodingNS() : XmlGetInternalEncoding();
-#endif
   STRING_POOL *pool = &(dtd.pool);
   entityTextPtr += encoding->minBytesPerChar;
   entityTextEnd -= encoding->minBytesPerChar;

@@ -1,4 +1,5 @@
-.\"	$NetBSD: link.5,v 1.4 1995/09/30 21:28:19 pk Exp $
+.\"	$OpenBSD: link.5,v 1.13 2003/01/19 21:02:15 deraadt Exp $
+.\"	$NetBSD: link.5,v 1.5 1996/01/09 00:14:32 pk Exp $
 .\"
 .\" Copyright (c) 1993 Paul Kranenburg
 .\" All rights reserved.
@@ -42,97 +43,114 @@ The include file
 declares several structures that are present in dynamically linked
 programs and libraries.
 The structures define the interface between several components of the
-link-editor and loader mechanism. The layout of a number of these
-structures within the binaries resembles the a.out format in many places
-as it serves such similar functions as symbol definitions (including the
-accompanying string table) and relocation records needed to resolve
-references to external entities. It also records a number of data structures
-unique to the dynamic loading and linking process. These include references
-to other objects that are required to complete the link-editing process and
-indirection tables to facilitate
+link editor and loader mechanism.
+The layout of a number of these structures within the binaries resembles the
+.Xr a.out 5
+format in many places as it serves such similar functions as symbol
+definitions (including the accompanying string table) and relocation records
+needed to resolve references to external entities.
+It also records a number of data structures
+unique to the dynamic loading and linking process.
+These include references to other objects that are required to complete
+the link-editing process and indirection tables to facilitate
 .Em Position Independent Code
 (PIC for short) to improve sharing of code pages among different processes.
-The collection of data structures described here will be refered to as the
-.Em Run-time Relocation Section (RRS)
-and is embedded in the standard text and data segments of the dynamically
+The collection of data structures described here will be referred to as the
+.Em Run-time Relocation Section
+(RRS) and is embedded in the standard text and data segments of the dynamically
 linked program or shared object image as the existing
-.Xr a.out
+.Xr a.out 5
 format offers no room for it elsewhere.
 .Pp
-Several utilities co-operate to ensure that the task of getting a program
+Several utilities cooperate to ensure that the task of getting a program
 ready to run can complete successfully in a way that optimizes the use
-of system resources. The compiler emits PIC code from which shared libraries
-can be built by
+of system resources.
+The compiler emits PIC code from which shared libraries can be built by
 .Xr ld 1 .
 The compiler also includes size information of any initialized data items
-through the .size assembler directive. PIC code differs from conventional code
+through the
+.Dq .size
+assembler directive.
+PIC code differs from conventional code
 in that it accesses data variables through an indirection table, the
-Global Offset Table, by convention accessable by the reserved name
-.Em _GLOBAL_OFFSET_TABLE_ .
-The exact mechanism used for this is machine dependent, usually a machine
-register is reserved for the purpose. The rational behind this construct
-is to generate code that is independent of the actual load address. Only
-the values contained in the Global Offset Table may need updating at run-time
-depending on the load addresses of the various shared objects in the address
-space.
+Global Offset Table, by convention accessible by the reserved name
+.Dv _GLOBAL_OFFSET_TABLE_ .
+The exact mechanism used for this is machine dependent; usually a machine
+register is reserved for the purpose.
+The rational behind this construct
+is to generate code that is independent of the actual load address.
+Only the values contained in the Global Offset Table may need updating at
+run-time, depending on the load addresses of the various shared objects
+in the address space.
 .Pp
 Likewise, procedure calls to globally defined functions are redirected through
-the Procedure Linkage Table (PLT) residing in the data segment of the core
-image. Again, this is done to avoid run-time modifications to the text segment.
+the Procedure Linkage Table (PLT) residing in the data segment of the
+core image.
+Again, this is done to avoid run-time modifications to the text segment.
 .Pp
 The linker-editor allocates the Global Offset Table and Procedure Linkage Table
 when combining PIC object files into an image suitable for mapping into the
-process address space. It also collects all symbols that may be needed by the
-run-time link-editor and stores these along with the image's text and data bits.
+process address space.
+It also collects all symbols that may be needed by the
+run-time link editor and stores these along with the image's text and data bits.
 Another reserved symbol,
-.Em _DYNAMIC
-is used to indicate the presence of the run-time linker structures. Whenever
-_DYNAMIC is relocated to 0, there is no need to invoke the run-time
-link-editor. If this symbol is non-zero, it points at a data structure from
-which the location of the necessary relocation- and symbol information can
-be derived. This is most notably used by the start-up module,
+.Dv _DYNAMIC ,
+is used to indicate the presence of the run-time linker structures.
+Whenever
+.Dv _DYNAMIC
+is relocated to 0, there is no need to invoke the run-time link editor.
+If this symbol is non-zero, it points at a data structure from which the
+location of the necessary relocation and symbol information can be derived.
+This is most notably used by the start-up module,
 .Em crt0 .
-The _DYNAMIC structure is conventionally located at the start of the data
+The
+.Dv _DYNAMIC
+structure is conventionally located at the start of the data
 segment of the image to which it pertains.
-.Pp
 .Sh DATA STRUCTURES
 The data structures supporting dynamic linking and run-time relocation
 reside both in the text and data segments of the image they apply to.
-The text segments contain read-only data such as symbols descriptions and
-names, while the data segments contain the tables that need to be modified by
+The text segments contain read-only data such as symbol descriptions and
+names, while the data segments contain the tables that need to be modified
 during the relocation process.
 .Pp
-The _DYNAMIC symbol references a
+The
+.Dv _DYNAMIC
+symbol references a
 .Fa _dynamic
 structure:
 .Bd -literal -offset indent
 struct	_dynamic {
 	int	d_version;
-	struct 	so_debug *d_debug;
+	struct	so_debug *d_debug;
 	union {
 		struct section_dispatch_table *d_sdt;
 	} d_un;
-	struct  ld_entry *d_entry;
+	struct	ld_entry *d_entry;
 };
 .Ed
 .Bl -tag -width d_version
 .It Fa d_version
 This field provides for different versions of the dynamic linking
-implementation. The current version numbers understood by ld and ld.so are
-.Em LD_VERSION_SUN (3),
-which is used by the SunOS 4.x releases, and
-.Em LD_VERSION_BSD (8),
-which is currently in use by NetBSD.
+implementation.
+The current version numbers understood by ld and
+.Xr ld.so 1
+are LD_VERSION_SUN(3), which is used by the SunOS 4.x releases,
+and LD_VERSION_BSD(8), which is currently in use by
+.Ox .
 .It Fa d_un
 Refers to a
 .Em d_version
 dependent data structure.
 .It Fa d_debug
-this field provides debuggers with a hook to access symbol tables of shared
-objects loaded as a result of the actions of the run-time link-editor.
+This field provides debuggers with a hook to access symbol tables of shared
+objects loaded as a result of the actions of the run-time link editor.
 .It Fa d_entry
-this field is obsoleted by CRT interface version CRT_VERSION_BSD4, and is
-replaced by the crt_ldentry in
+This field is obsoleted by CRT interface version
+.Li CRT_VERSION_BSD4 ,
+and by the
+.Fa crt_ldentry
+in
 .Fa crt_ldso .
 .El
 .Pp
@@ -160,20 +178,19 @@ struct section_dispatch_table {
 	long	sdt_plt_sz;
 };
 .Ed
-.Pp
 .Bl -tag -width sdt_loaded
 .It Fa sdt_loaded
-A pointer to the first link map loaded (see below). This field is set by
-.Xr ld.so
+A pointer to the first link map loaded (see below).
+This field is set by
+.Xr ld.so 1
 for the benefit of debuggers that may use it to load a shared object's
 symbol table.
 .It Fa sdt_sods
 The start of a (linked) list of shared object descriptors needed by
-.Em this
-object.
+this object.
 .It Fa sdt_paths
-Library search rules. A colon separated list of directories corresponding
-to the
+Library search rules.
+A colon separated list of directories corresponding to the
 .Fl R
 option of
 .Xr ld 1 .
@@ -199,7 +216,7 @@ The location of the symbol table.
 Currently unused.
 .It Fa sdt_buckets
 The number of buckets in
-.Fa sdt_hash
+.Fa sdt_hash .
 .It Fa sdt_strings
 The location of the symbol string table that goes with
 .Fa sdt_nzlist .
@@ -213,8 +230,8 @@ The size of the Procedure Linkage Table.
 .Pp
 A
 .Fa sod
-structure descibes a shared object that is needed
-to complete the link edit process of the object containing it.
+structure describes a shared object that is needed
+to complete the link-edit process of the object containing it.
 A list of such objects
 .Po
 chained through
@@ -223,44 +240,47 @@ chained through
 is pointed at
 by the
 .Fa sdt_sods
-in the section_dispatch_table structure.
+in the
+.Fa section_dispatch_table
+structure.
 .Bd -literal -offset indent
 struct sod {
 	long	sod_name;
 	u_int	sod_library : 1,
-		sod_unused : 31;
+		sod_reserved : 31;
 	short	sod_major;
 	short	sod_minor;
 	long	sod_next;
 };
 .Ed
-.Pp
 .Bl -tag -width sod_library
 .It Fa sod_name
 The offset in the text segment of a string describing this link object.
 .It Fa sod_library
 If set,
 .Fa sod_name
-specifies a library that is to be searched for by ld.so. The path name
+specifies a library that is to be searched for by
+.Xr ld.so 1 .
+The path name
 is obtained by searching a set of directories
 .Po
 see also
 .Xr ldconfig 8
 .Pc
 for a shared object matching
-.Em lib\&<sod_name>\&.so.n.m .
+.Em lib<sod_name>.so.n.m .
 If not set,
 .Fa sod_name
 should point at a full path name for the desired shared object.
 .It Fa sod_major
 Specifies the major version number of the shared object to load.
 .It Fa sod_minor
-Specifies the prefered minor version number of the shared object to load.
+Specifies the preferred minor version number of the shared object to load.
 .El
 .Pp
-The run-time link-editor maintains a list of structures called
-.Em link maps
-to keep track of all shared objects loaded into a process' address space.
+The run-time link editor maintains a list of structures called
+.Dq link maps
+to keep track of all shared objects loaded into a process's address space.
 These structures are only used at run-time and do not occur within
 the text or data segment of an executable or shared library.
 .Bd -literal -offset indent
@@ -288,7 +308,7 @@ The
 .Fa sod
 structure that was responsible for loading this shared object.
 .It Fa som_sodbase
-Tossed in later versions the run-time linker.
+Tossed in later versions of the run-time linker.
 .It Fa som_write
 Set if (some portion of) this object's text segment is currently writable.
 .It Fa som_dynamic
@@ -296,15 +316,18 @@ Pointer to this object's
 .Fa _dynamic
 structure.
 .It Fa som_spd
-Hook for attaching private data maintained by the run-time link-editor.
+Hook for attaching private data maintained by the run-time link editor.
 .El
 .Pp
-Symbol description with size. This is simply an
+Symbol description with size.
+This is simply an
 .Fa nlist
 structure with one field
 .Pq Fa nz_size
-added. Used to convey size information on items in the data segment
-of shared objects. An array of these lives in the shared object's
+added.
+Used to convey size information on items in the data segment
+of shared objects.
+An array of these lives in the shared object's
 text segment and is addressed by the
 .Fa sdt_nzlist
 field of
@@ -324,16 +347,14 @@ struct nzlist {
 .Ed
 .Bl -tag -width nz_size
 .It Fa nlist
-.Po
-see
-.Xr nlist 5
-.Pc .
+See
+.Xr nlist 3 .
 .It Fa nz_size
 The size of the data represented by this symbol.
 .El
 .Pp
-A hash table is included within the text segment of shared object to
-to facilitate quick lookup of symbols during run-time link-editing.
+A hash table is included within the text segment of shared objects to
+facilitate quick lookup of symbols during run-time link-editing.
 The
 .Fa sdt_hash
 field of the
@@ -347,7 +368,6 @@ struct rrs_hash {
 	int	rh_next;		/* next hash entry */
 };
 .Ed
-.Pp
 .Bl -tag -width rh_symbolnum
 .It Fa rh_symbolnum
 The index of the symbol in the shared object's symbol table (as given by the
@@ -355,13 +375,15 @@ The index of the symbol in the shared object's symbol table (as given by the
 field).
 .It Fa rh_next
 In case of collisions, this field is the offset of the next entry in this
-hash table bucket. It is zero for the last bucket element.
+hash table bucket.
+It is zero for the last bucket element.
 .El
+.Pp
 The
 .Fa rt_symbol
 structure is used to keep track of run-time allocated commons
-and data items copied from shared objects. These items are kept on linked list
-and is exported through the
+and data items copied from shared objects.
+These items are kept in a linked list and are exported through the
 .Fa dd_cc
 field in the
 .Fa so_debug
@@ -375,14 +397,16 @@ struct rt_symbol {
 	struct so_map		*rt_smp;
 };
 .Ed
-.Pp
 .Bl -tag -width rt_scraddr
 .It Fa rt_sp
 The symbol description.
 .It Fa rt_next
-Virtual address of next rt_symbol.
+Virtual address of next
+.Fa rt_symbol .
 .It Fa rt_link
-Next in hash bucket. Used by internally by ld.so.
+Next in hash bucket.
+Used internally by
+.Xr ld.so 1 .
 .It Fa rt_srcaddr
 Location of the source of initialized data within a shared object.
 .It Fa rt_smp
@@ -394,9 +418,11 @@ The
 .Fa so_debug
 structure is used by debuggers to gain knowledge of any shared objects
 that have been loaded in the process's address space as a result of run-time
-link-editing. Since the run-time link-editor runs as a part of process
+link-editing.
+Since the run-time link editor runs as a part of process
 initialization, a debugger that wishes to access symbols from shared objects
-can only do so after the link-editor has been called from crt0.
+can only do so after the link editor has been called from
+.Em crt0 .
 A dynamically linked binary contains a
 .Fa so_debug
 structure which can be located by means of the
@@ -408,12 +434,11 @@ struct 	so_debug {
 	int	dd_version;
 	int	dd_in_debugger;
 	int	dd_sym_loaded;
-	char    *dd_bpt_addr;
+	char	*dd_bpt_addr;
 	int	dd_bpt_shadow;
 	struct rt_symbol *dd_cc;
 };
 .Ed
-.Pp
 .Bl -tag -width dd_in_debugger
 .It Fa dd_version
 Version number of this interface.
@@ -423,11 +448,12 @@ run under control of a debugger.
 .It Fa dd_sym_loaded
 Set by the run-time linker whenever it adds symbols by loading shared objects.
 .It Fa dd_bpt_addr
-The address were a breakpoint will be set by the the run-time linker to
-divert control to the debugger. This address is determined by the start-up
-module,
-.Em crt0.o,
-to be some convenient place before the call to _main.
+The address where a breakpoint will be set by the run-time linker to
+divert control to the debugger.
+This address is determined by the start-up module,
+.Em crt0.o ,
+to be some convenient place before the call to
+.Fa _main .
 .It Fa dd_bpt_shadow
 Contains the original instruction that was at
 .Fa dd_bpt_addr .
@@ -440,22 +466,28 @@ may be interested in.
 .Pp
 The
 .Em ld_entry
-structure defines a set of service routines within ld.so. See
+structure defines a set of service routines within
+.Xr ld.so 1 .
+See
 .Xr dlfcn 3
 for more information.
 .Bd -literal -offset indent
 struct ld_entry {
-	void	*(*dlopen)(char *, int);
+	void	*(*dlopen)(const char *, int);
 	int	(*dlclose)(void *);
-	void	*(*dlsym)(void *, char *);
+	void	*(*dlsym)(void *, const char *);
 	int	(*dlctl)(void *, int, void *);
-	void	(*dlexit) __P((void));
+	void	(*dlexit)(void);
+	void	(*dlrsrvd[3])(void);
 };
 .Ed
-
+.Pp
 The
 .Fa crt_ldso
-structure defines the interface between ld.so and the start-up code in crt0.
+structure defines the interface between
+.Xr ld.so 1
+and the start-up code in
+.Em crt0 .
 .Bd -literal -offset indent
 struct crt_ldso {
 	int		crt_ba;
@@ -466,7 +498,7 @@ struct crt_ldso {
 	caddr_t		crt_bp;
 	char		*crt_prog;
 	char		*crt_ldso;
-	char		*crt_ldentry;
+	struct ld_entry	*crt_ldentry;
 };
 #define CRT_VERSION_SUN		1
 #define CRT_VERSION_BSD2	2
@@ -475,13 +507,22 @@ struct crt_ldso {
 .Ed
 .Bl -tag -width crt_dzfd
 .It Fa crt_ba
-The virtual address at which ld.so was loaded by crt0.
+The virtual address at which
+.Xr ld.so 1
+was loaded by
+.Em crt0 .
 .It Fa crt_dzfd
 On SunOS systems, this field contains an open file descriptor to
-.Dq /dev/zero
-used to get demand paged zeroed pages. On NetBSD systems it contains -1.
+.Pa /dev/zero
+used to get demand paged zeroed pages.
+On
+.Ox
+systems it contains \-1.
 .It Fa crt_ldfd
-Contains an open file descriptor that was used by crt0 to load ld.so.
+Contains an open file descriptor that was used by
+.Em crt0
+to load
+.Xr ld.so 1 .
 .It Fa crt_dp
 A pointer to main's
 .Fa _dynamic
@@ -492,11 +533,15 @@ A pointer to the environment strings.
 The address at which a breakpoint will be placed by the run-time linker
 if the main program is run by a debugger.
 See
-.Fa so_debug
+.Fa so_debug .
 .It Fa crt_prog
-The name of the main program as determined by crt0 (CRT_VERSION_BSD3 only).
+The name of the main program as determined by
+.Em crt0
+(CRT_VERSION_BSD3 only).
 .It Fa crt_ldso
-The path of the run-time linker as mapped by crt0 (CRT_VERSION_BSD4 only).
+The path of the run-time linker as mapped by
+.Em crt0
+(CRT_VERSION_BSD4 only).
 .It Fa crt_ldentry
 The
 .Xr dlfcn 3
@@ -508,11 +553,12 @@ The
 and
 .Fa hints_bucket
 structures define the layout of the library hints, normally found in
-.Dq /var/run/ld.so.hints,
-which is used by ld.so to quickly locate the shared object images in the
-filesystem.
+.Pa /var/run/ld.so.hints ,
+which is used by
+.Xr ld.so 1
+to quickly locate the shared object images in the filesystem.
 The organization of the hints file is not unlike that of an
-.Dq a.out
+.Xr a.out 5
 object file, in that it contains a header determining the offset and size
 of a table of fixed sized hash buckets and a common string pool.
 .Bd -literal -offset indent
@@ -521,11 +567,13 @@ struct hints_header {
 #define HH_MAGIC	011421044151
 	long		hh_version;
 #define LD_HINTS_VERSION_1	1
+#define LD_HINTS_VERSION_2	2
 	long		hh_hashtab;
 	long		hh_nbucket;
 	long		hh_strtab;
 	long		hh_strtab_sz;
 	long		hh_ehints;
+	long		hh_dirlist;
 };
 .Ed
 .Bl -tag -width hh_strtab_sz
@@ -541,8 +589,15 @@ Offset of string table.
 Size of strings.
 .It Fa hh_ehints
 Maximum usable offset in hints file.
+.It Fa hh_dirlist
+Offset in string table of a colon-separated list of directories that was
+used in constructing the hints file.
+See also
+.Xr ldconfig 8 .
+This field is only available with interface version number
+.Dv LD_HINTS_VERSION_2
+and higher.
 .El
-.Pp
 .Bd -literal -offset indent
 /*
  * Hash table element in hints file.
@@ -570,8 +625,6 @@ The number of valid entries in
 .It Fa hi_next
 Next bucket in case of hashing collisions.
 .El
-
 .Sh CAVEATS
 Only the (GNU) C compiler currently supports the creation of shared libraries.
 Other programming languages can not be used.
-

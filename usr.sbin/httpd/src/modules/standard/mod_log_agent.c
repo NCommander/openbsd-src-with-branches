@@ -1,3 +1,5 @@
+/*	$OpenBSD: mod_log_agent.c,v 1.7 2003/08/21 13:11:36 henning Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -60,16 +62,13 @@
 #include "httpd.h"
 #include "http_config.h"
 #include "http_log.h"
+#include "http_main.h"
+#include "fdcache.h"
 
 module agent_log_module;
 
 static int xfer_flags = (O_WRONLY | O_APPEND | O_CREAT);
-#ifdef OS2
-/* OS/2 dosen't support users and groups */
-static mode_t xfer_mode = (S_IREAD | S_IWRITE);
-#else
 static mode_t xfer_mode = (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
 
 typedef struct {
     char *fname;
@@ -125,8 +124,12 @@ static void open_agent_log(server_rec *s, pool *p)
         cls->agent_fd = ap_piped_log_write_fd(pl);
     }
     else if (*cls->fname != '\0') {
-        if ((cls->agent_fd = ap_popenf_ex(p, fname, xfer_flags, xfer_mode, 1))
-             < 0) {
+	if (ap_server_chroot_desired())
+	    cls->agent_fd = fdcache_open(fname, xfer_flags, xfer_mode);
+	else
+	    cls->agent_fd = ap_popenf_ex(p, fname, xfer_flags, xfer_mode, 1);
+
+        if (cls->agent_fd < 0) {
             ap_log_error(APLOG_MARK, APLOG_ERR, s,
                          "could not open agent log file %s.", fname);
             exit(1);

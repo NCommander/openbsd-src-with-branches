@@ -1,8 +1,8 @@
-/*	$Id: if_ie.c,v 1.3 1995/11/07 08:51:00 deraadt Exp $ */
+/*	$OpenBSD: if_ie.c,v 1.7 2003/06/04 16:36:15 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -11,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed under OpenBSD by
- *	Theo de Raadt for Willowglen Singapore.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -39,30 +33,36 @@
 
 #define ETHER_MIN_LEN   64
 #define ETHER_MAX_LEN   1518
+#define ETHER_CRC_LEN	4
 
 #define NTXBUF	1
 #define NRXBUF	16
 #define IE_RBUF_SIZE	ETHER_MAX_LEN
 
+#include <machine/prom.h>
+
 #include "stand.h"
+#include "libsa.h"
 #include "netif.h"
 #include "config.h"
+#include "net.h"
 
 #include "i82586.h"
 #include "if_iereg.h"
 
 int     ie_debug = 0;
 
-void ie_stop __P((struct netif *));
-void ie_end __P((struct netif *));
-void ie_error __P((struct netif *, char *, volatile struct iereg *));
-int ie_get __P((struct iodesc *, void *, size_t, time_t));
-void ie_init __P((struct iodesc *, void *));
-int ie_match __P((struct netif *, void *));
-int ie_poll __P((struct iodesc *, void *, int));
-int ie_probe __P((struct netif *, void *));
-int ie_put __P((struct iodesc *, void *, size_t));
-void ie_reset __P((struct netif *, u_char *));
+void ie_stop(struct netif *);
+void ie_end(struct netif *);
+void ie_error(struct netif *, char *, volatile struct iereg *);
+int ie_get(struct iodesc *, void *, size_t, time_t);
+void ie_init(struct iodesc *, void *);
+int ie_match(struct netif *, void *);
+int ie_poll(struct iodesc *, void *, int);
+int ie_probe(struct netif *, void *);
+int ie_put(struct iodesc *, void *, size_t);
+void ie_reset(struct netif *, u_char *);
+extern void machdep_common_ether(u_char *);
 
 struct netif_stats ie_stats;
 
@@ -107,10 +107,7 @@ ie_match(nif, machdep_hint)
 {
 	char   *name;
 	int     i, val = 0;
-	extern int cputyp;
 
-	if (cputyp == CPU_147)
-		return (0);
 	name = machdep_hint;
 	if (name && !bcmp(ie_driver.netif_bname, name, 2))
 		val += 10;
@@ -132,15 +129,12 @@ ie_probe(nif, machdep_hint)
 	struct netif *nif;
 	void   *machdep_hint;
 {
-	extern int cputyp;
 
 	/* the set unit is the current unit */
 	if (ie_debug)
 		printf("ie%d: ie_probe called\n", nif->nif_unit);
-
-	if (cputyp != CPU_147)
-		return (0);
-	return (1);
+	return (0);
+/*	return (1);*/
 }
 
 void
@@ -149,9 +143,10 @@ ie_error(nif, str, ier)
 	char   *str;
 	volatile struct iereg *ier;
 {
-	panic("ie%d: unknown error\n", nif->nif_unit);
+	panic("ie%d: unknown error", nif->nif_unit);
 }
 
+void
 ieack(ier, iem)
 	volatile struct iereg *ier;
 	struct iemem *iem;
@@ -170,7 +165,7 @@ ie_reset(nif, myea)
 {
 	volatile struct iereg *ier = ie_softc.sc_reg;
 	struct iemem *iem = ie_softc.sc_mem;
-	int     timo = 10000, stat, i;
+	int     timo = 10000, i;
 	volatile int t;
 	u_int   a;
 
@@ -298,10 +293,8 @@ ie_poll(desc, pkt, len)
 {
 	volatile struct iereg *ier = ie_softc.sc_reg;
 	struct iemem *iem = ie_softc.sc_mem;
-	u_char *p = pkt;
 	static int slot;
 	int     length = 0;
-	u_int   a;
 	u_short status;
 
 	asm(".word	0xf518\n");
@@ -367,8 +360,6 @@ ie_put(desc, pkt, len)
 	volatile struct iereg *ier = ie_softc.sc_reg;
 	struct iemem *iem = ie_softc.sc_mem;
 	u_char *p = pkt;
-	int     timo = 10000, stat, i;
-	volatile int t;
 	u_int   a;
 	int     xx = 0;
 
@@ -380,7 +371,11 @@ ie_put(desc, pkt, len)
 	/* copy data */
 	bcopy(p, (void *)&iem->im_txbuf[xx], len);
 
-	len = MAX(len, ETHER_MIN_LEN);
+	if (len < ETHER_MIN_LEN - ETHER_CRC_LEN) {
+		bzero((char *)&iem->im_txbuf[xx] + len,
+		    ETHER_MIN_LEN - ETHER_CRC_LEN - len);
+		len = ETHER_MIN_LEN - ETHER_CRC_LEN;
+	}
 
 	/* build transmit descriptor */
 	iem->im_xd[xx].ie_xmit_flags = len | IE_XMIT_LAST;
@@ -404,7 +399,7 @@ ie_put(desc, pkt, len)
 	ier->ie_attention = 1;	/* chan attention! */
 
 	if (ie_debug) {
-		printf("ie%d: send %d to %x:%x:%x:%x:%x:%x\n",
+		printf("ie%d: send %ld to %x:%x:%x:%x:%x:%x\n",
 		    desc->io_netif->nif_unit, len,
 		    p[0], p[1], p[2], p[3], p[4], p[5]);
 	}
@@ -444,7 +439,7 @@ ie_init(desc, machdep_hint)
 	bzero(&ie_softc, sizeof(ie_softc));
 	ie_softc.sc_reg =
 	    (struct iereg *) ie_config[desc->io_netif->nif_unit].phys_addr;
-	ie_softc.sc_mem = (struct iemem *) 0x1e0000;
+	ie_softc.sc_mem = (struct iemem *) 0xae0000;
 	ie_reset(desc->io_netif, desc->myea);
 	printf("device: %s%d attached to %s\n", nif->nif_driver->netif_bname,
 	    nif->nif_unit, ether_sprintf(desc->myea));

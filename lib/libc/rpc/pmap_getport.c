@@ -1,5 +1,4 @@
-/*	$NetBSD: pmap_getport.c,v 1.2 1995/02/25 03:01:49 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)pmap_getport.c 1.9 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)pmap_getport.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: pmap_getport.c,v 1.2 1995/02/25 03:01:49 cgd Exp $";
-#endif
-
 /*
  * pmap_getport.c
  * Client interface to pmap rpc service.
@@ -42,6 +35,7 @@ static char *rcsid = "$NetBSD: pmap_getport.c,v 1.2 1995/02/25 03:01:49 cgd Exp 
  * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
+#include <unistd.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_prot.h>
 #include <rpc/pmap_clnt.h>
@@ -57,21 +51,18 @@ static struct timeval tottimeout = { 60, 0 };
  * Returns 0 if no map exists.
  */
 u_short
-pmap_getport(address, program, version, protocol)
-	struct sockaddr_in *address;
-	u_long program;
-	u_long version;
-	u_int protocol;
+pmap_getport(struct sockaddr_in *address, u_long program, u_long version,
+    u_int protocol)
 {
 	u_short port = 0;
-	int socket = -1;
-	register CLIENT *client;
+	int sock = -1;
+	CLIENT *client;
 	struct pmap parms;
 
 	address->sin_port = htons(PMAPPORT);
 	client = clntudp_bufcreate(address, PMAPPROG,
-	    PMAPVERS, timeout, &socket, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
-	if (client != (CLIENT *)NULL) {
+	    PMAPVERS, timeout, &sock, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
+	if (client != NULL) {
 		parms.pm_prog = program;
 		parms.pm_vers = version;
 		parms.pm_prot = protocol;
@@ -85,7 +76,8 @@ pmap_getport(address, program, version, protocol)
 		}
 		CLNT_DESTROY(client);
 	}
-	(void)close(socket);
+	if (sock != -1)
+		(void)close(sock);
 	address->sin_port = 0;
 	return (port);
 }

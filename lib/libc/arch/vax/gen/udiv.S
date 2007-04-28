@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)udiv.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: udiv.S,v 1.1 1995/04/17 12:23:47 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * Unsigned division, PCC flavor.
  * udiv() takes an ordinary dividend/divisor pair;
@@ -50,7 +42,7 @@
 #define	DIVIDEND	4(ap)
 #define	DIVISOR		8(ap)
 
-ASENTRY(udiv,0)
+ASENTRY(udiv,R2)
 	movl	DIVISOR,r2
 	jlss	Leasy		# big divisor: settle by comparison
 	movl	DIVIDEND,r0
@@ -70,7 +62,7 @@ Lone:
 	movl	$1,r0
 	ret
 
-ASENTRY(audiv,0)
+ASENTRY(audiv,R2|R3)
 	movl	DIVIDEND,r3
 	movl	DIVISOR,r2
 	jlss	La_easy		# big divisor: settle by comparison

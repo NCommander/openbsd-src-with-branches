@@ -1,3 +1,4 @@
+/*	$OpenBSD: reg.h,v 1.5 2005/02/17 18:07:35 jfb Exp $	*/
 /*	$NetBSD: reg.h,v 1.14 1995/10/11 04:20:24 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -69,7 +66,7 @@
 /*
  * Registers accessible to ptrace(2) syscall for debugger
  * The machine-dependent code for PT_{SET,GET}REGS needs to
- * use whichver order, defined above, is correct, so that it
+ * use whichever order, defined above, is correct, so that it
  * is all invisible to the user.
  */
 struct reg {
@@ -96,7 +93,11 @@ struct fpreg {
 	 * XXX
 	 * Fill this in with real info.
 	 */
-	char	__data[108];
+	char	__data[116];
+};
+
+struct xmmregs {
+	char	__data[512];
 };
 
 #endif /* !_I386_REG_H_ */

@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.landisk,v 1.2 2006/10/06 21:48:50 mickey Exp $
 #
 # Makefile for OpenBSD/landisk
 #
@@ -45,14 +45,11 @@ CMACHFLAGS=	-m4-nofpu \
 		-fno-builtin-printf -fno-builtin-log -fno-builtin-main
 .if ${IDENT:M-DNO_PROPOLICE}
 CMACHFLAGS+=	-fno-stack-protector
-.else
-# to prevent the sky from falling on our heads
-CMACHFLAGS+=	-fno-stack-protector
 .endif
 COPTS?=		-O2
 CFLAGS=		${DEBUG} ${CWARNFLAGS} ${CMACHFLAGS} ${COPTS} ${PIPE}
 AFLAGS=		-x assembler-with-cpp -traditional-cpp -D_LOCORE -Wa,-little
-LINKFLAGS=	-N -Ttext 0x8c001000 -e start --warn-common
+LINKFLAGS=	-N -Ttext 0x8c002000 -e start --warn-common
 STRIPFLAGS=	-g -X -x
 
 HOSTCC?=	${CC}

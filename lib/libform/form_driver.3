@@ -1,5 +1,35 @@
-'\" t
-.TH form_driver 3X ""
+.\" $OpenBSD: form_driver.3,v 1.6 1998/07/24 02:37:01 millert Exp $
+.\"
+.\"***************************************************************************
+.\" Copyright (c) 1998 Free Software Foundation, Inc.                        *
+.\"                                                                          *
+.\" Permission is hereby granted, free of charge, to any person obtaining a  *
+.\" copy of this software and associated documentation files (the            *
+.\" "Software"), to deal in the Software without restriction, including      *
+.\" without limitation the rights to use, copy, modify, merge, publish,      *
+.\" distribute, distribute with modifications, sublicense, and/or sell       *
+.\" copies of the Software, and to permit persons to whom the Software is    *
+.\" furnished to do so, subject to the following conditions:                 *
+.\"                                                                          *
+.\" The above copyright notice and this permission notice shall be included  *
+.\" in all copies or substantial portions of the Software.                   *
+.\"                                                                          *
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+.\" IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+.\" DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+.\" OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+.\" THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+.\"                                                                          *
+.\" Except as contained in this notice, the name(s) of the above copyright   *
+.\" holders shall not be used in advertising or otherwise to promote the     *
+.\" sale, use or other dealings in this Software without prior written       *
+.\" authorization.                                                           *
+.\"***************************************************************************
+.\"
+.'" $From: form_driver.3x,v 1.7 1999/07/10 23:13:18 tom Exp $
+.TH form_driver 3 ""
 .SH NAME
 \fBform_driver\fR - command-processing loop of the form system
 .SH SYNOPSIS
@@ -133,6 +163,9 @@ Clear to end of line from cursor.
 REQ_CLR_EOF
 Clear to end of field from cursor.
 .TP 5
+REQ_CLR_FIELD
+Clear the entire field.
+.TP 5
 REQ_OVL_MODE
 Enter overlay mode.
 .TP 5
@@ -181,18 +214,18 @@ Horizontal scroll the field backward half a line.
 REQ_VALIDATION
 Validate field.
 .TP
-REQ_PREV_CHOICE
-Display previous field choice.
-.TP
 REQ_NEXT_CHOICE
 Display next field choice.
+.TP
+REQ_PREV_CHOICE
+Display previous field choice.
 .PP
 If the second argument is a printable ASCII character, the driver places it
 in the current position in the current field.  If it is one of the forms
 requests listed above, that request is executed.
 .PP
 If the second argument is neither printable ASCII nor one of the above
-pre-defined form requests, the drive asumes it is an application-specific
+pre-defined form requests, the driver assumes it is an application-specific
 command and returns \fBE_UNKNOWN_COMMAND\fR.  Application-defined commands
 should be defined relative to \fBMAX_COMMAND\fR, the maximum value of these
 pre-defined requests.
@@ -223,7 +256,7 @@ Contents of field is invalid.
 \fBE_REQUEST_DENIED\fR
 The form driver could not process the request.
 .SH SEE ALSO
-\fBcurses\fR(3X), \fBforms\fR(3x).
+\fBcurses\fR(3), \fBform\fR(3).
 .SH NOTES
 The header file \fB<form.h>\fR automatically includes the header files
 \fB<curses.h>\fR.

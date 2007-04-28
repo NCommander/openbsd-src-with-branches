@@ -1,4 +1,4 @@
-/*		Configuration-specific Initialialization	HTInit.c
+/*		Configuration-specific Initialization		HTInit.c
 **		----------------------------------------
 */
 
@@ -6,47 +6,33 @@
 **	------------------------------------------------
 */
 
-#include "HTUtils.h"
-#include "tcp.h"
+#include <HTUtils.h>
 
 /* Implements:
 */
-#include "HTInit.h"
+#include <HTInit.h>
 
-#include "HTML.h"
-#include "HTPlain.h"
-#include "HTMLGen.h"
-#include "HTFile.h"
-#include "HTFormat.h"
-#include "HTMIME.h"
-#include "HTWSRC.h"
+#include <HTML.h>
+#include <HTPlain.h>
+#include <HTMLGen.h>
+#include <HTFile.h>
+#include <HTFormat.h>
+#include <HTMIME.h>
+#include <HTWSRC.h>
 
-#include "HTSaveToFile.h"  /* LJM */
-#include "userdefs.h"
-#include "LYUtils.h"
-#include "LYGlobalDefs.h"
-#include "LYSignal.h"
-#include "LYSystem.h"
+#include <HTSaveToFile.h>  /* LJM */
+#include <LYStrings.h>
+#include <LYUtils.h>
+#include <LYGlobalDefs.h>
 
-#include "LYexit.h"
-#include "LYLeaks.h"
-
-#define FREE(x) if (x) {free(x); x = NULL;}
-
-#ifdef VMS
-#define DISPLAY "DECW$DISPLAY"
-#else
-#define DISPLAY "DISPLAY"
-#endif /* VMS */
+#include <LYexit.h>
+#include <LYLeaks.h>
 
 PRIVATE int HTLoadTypesConfigFile PARAMS((char *fn));
 PRIVATE int HTLoadExtensionsConfigFile PARAMS((char *fn));
 
 PUBLIC void HTFormatInit NOARGS
 {
- FILE *fp = NULL;
- char *cp = NULL;
-
 #ifdef NeXT
   HTSetPresentation("application/postscript",   "open %s", 1.0, 2.0, 0.0, 0);
   HTSetPresentation("image/x-tiff",             "open %s", 2.0, 2.0, 0.0, 0);
@@ -54,18 +40,20 @@ PUBLIC void HTFormatInit NOARGS
   HTSetPresentation("audio/basic",              "open %s", 1.0, 2.0, 0.0, 0);
   HTSetPresentation("*",                        "open %s", 1.0, 0.0, 0.0, 0);
 #else
- if ((cp = getenv(DISPLAY)) != NULL && *cp != '\0') {	/* Must have X11 */
+ if (LYgetXDisplay() != 0) {	/* Must have X11 */
   HTSetPresentation("application/postscript", "ghostview %s&",
-  							    1.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/gif",        XLoadImageCommand,  1.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/x-xbm",      XLoadImageCommand,  1.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/x-xbitmap",  XLoadImageCommand,  1.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/x-png",      XLoadImageCommand,  2.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/png",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/x-rgb",      XLoadImageCommand,  1.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/x-tiff",     XLoadImageCommand,  2.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/tiff",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
-  HTSetPresentation("image/jpeg",       XLoadImageCommand,  1.0, 3.0, 0.0, 0);
+							    1.0, 3.0, 0.0, 0);
+  if (XLoadImageCommand && *XLoadImageCommand) {
+      HTSetPresentation("image/gif",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/x-xbm",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/x-xbitmap",XLoadImageCommand,1.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/x-png",	XLoadImageCommand,  2.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/png",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/x-rgb",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/x-tiff", XLoadImageCommand,  2.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/tiff",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
+      HTSetPresentation("image/jpeg",	XLoadImageCommand,  1.0, 3.0, 0.0, 0);
+  }
   HTSetPresentation("video/mpeg",       "mpeg_play %s &",   1.0, 3.0, 0.0, 0);
 
  }
@@ -74,9 +62,9 @@ PUBLIC void HTFormatInit NOARGS
 #ifdef EXEC_SCRIPTS
  /* set quality to 999.0 for protected exec applications */
 #ifndef VMS
- HTSetPresentation("application/x-csh",	"csh %s", 999.0, 3.0, 0.0, 0);
- HTSetPresentation("application/x-sh",	"sh %s",  999.0, 3.0, 0.0, 0);
- HTSetPresentation("application/x-ksh",	"ksh %s", 999.0, 3.0, 0.0, 0);
+ HTSetPresentation("application/x-csh", "csh %s", 999.0, 3.0, 0.0, 0);
+ HTSetPresentation("application/x-sh",  "sh %s",  999.0, 3.0, 0.0, 0);
+ HTSetPresentation("application/x-ksh", "ksh %s", 999.0, 3.0, 0.0, 0);
 #else
  HTSetPresentation("application/x-VMS_script",	"@%s", 999.0, 3.0, 0.0, 0);
 #endif /* not VMS */
@@ -85,6 +73,12 @@ PUBLIC void HTFormatInit NOARGS
 /*
  *  Add our header handlers.
  */
+ HTSetConversion("message/x-http-redirection", "*",
+					     HTMIMERedirect, 2.0, 0.0, 0.0, 0);
+ HTSetConversion("message/x-http-redirection", "www/present",
+					     HTMIMERedirect, 2.0, 0.0, 0.0, 0);
+ HTSetConversion("message/x-http-redirection", "www/debug",
+					     HTMIMERedirect, 1.0, 0.0, 0.0, 0);
  HTSetConversion("www/mime",  "www/present",  HTMIMEConvert, 1.0, 0.0, 0.0, 0);
  HTSetConversion("www/mime",  "www/download", HTMIMEConvert, 1.0, 0.0, 0.0, 0);
  HTSetConversion("www/mime",  "www/source",   HTMIMEConvert, 1.0, 0.0, 0.0, 0);
@@ -93,28 +87,26 @@ PUBLIC void HTFormatInit NOARGS
 /*
  *  Add our compressed file handlers.
  */
- HTSetConversion("www/compressed", "www/present",
- 					      HTCompressed,   1.0, 0.0, 0.0, 0);
  HTSetConversion("www/compressed", "www/download",
- 					      HTCompressed,   1.0, 0.0, 0.0, 0);
+					      HTCompressed,   1.0, 0.0, 0.0, 0);
  HTSetConversion("www/compressed", "www/present",
- 					      HTCompressed,   1.0, 0.0, 0.0, 0);
+					      HTCompressed,   1.0, 0.0, 0.0, 0);
  HTSetConversion("www/compressed", "www/source",
- 					      HTCompressed,   1.0, 0.0, 0.0, 0);
+					      HTCompressed,   1.0, 0.0, 0.0, 0);
  HTSetConversion("www/compressed", "www/dump",
- 					      HTCompressed,   1.0, 0.0, 0.0, 0);
+					      HTCompressed,   1.0, 0.0, 0.0, 0);
 
  /*
   * Added the following to support some content types beginning to surface.
   */
  HTSetConversion("application/html", "text/x-c",
- 					HTMLToC,	0.5, 0.0, 0.0, 0);
+					HTMLToC,	0.5, 0.0, 0.0, 0);
  HTSetConversion("application/html", "text/plain",
- 					HTMLToPlain,	0.5, 0.0, 0.0, 0);
+					HTMLToPlain,	0.5, 0.0, 0.0, 0);
  HTSetConversion("application/html", "www/present",
- 					HTMLPresent,	2.0, 0.0, 0.0, 0);
+					HTMLPresent,	2.0, 0.0, 0.0, 0);
  HTSetConversion("application/html", "www/source",
- 					HTPlainPresent,	1.0, 0.0, 0.0, 0);
+					HTPlainPresent,	1.0, 0.0, 0.0, 0);
  HTSetConversion("application/x-wais-source", "www/source",
 					HTPlainPresent,	1.0, 0.0, 0.0, 0);
  HTSetConversion("application/x-wais-source", "www/present",
@@ -128,32 +120,32 @@ PUBLIC void HTFormatInit NOARGS
   *  Save all unknown mime types to disk.
   */
  HTSetConversion("www/source",  "www/present",
- 					HTSaveToFile,	1.0, 3.0, 0.0, 0);
+					HTSaveToFile,	1.0, 3.0, 0.0, 0);
  HTSetConversion("www/source",  "www/source",
- 					HTSaveToFile,	1.0, 3.0, 0.0, 0);
+					HTSaveToFile,	1.0, 3.0, 0.0, 0);
  HTSetConversion("www/source",  "www/download",
- 					HTSaveToFile,	1.0, 3.0, 0.0, 0);
+					HTSaveToFile,	1.0, 3.0, 0.0, 0);
  HTSetConversion("www/source",  "*",	HTSaveToFile,	1.0, 3.0, 0.0, 0);
 
  /*
   *  Output all www/dump presentations to stdout.
   */
  HTSetConversion("www/source",  "www/dump",
- 					HTDumpToStdout,	1.0, 3.0, 0.0, 0);
+					HTDumpToStdout,	1.0, 3.0, 0.0, 0);
 
 /*
  *  Now add our basic conversions.
  */
  HTSetConversion("text/x-sgml",
- 			      "www/source",  HTPlainPresent, 1.0, 0.0, 0.0, 0);
+			      "www/source",  HTPlainPresent, 1.0, 0.0, 0.0, 0);
  HTSetConversion("text/x-sgml",
- 			      "www/present", HTMLPresent,    2.0, 0.0, 0.0, 0);
+			      "www/present", HTMLPresent,    2.0, 0.0, 0.0, 0);
  HTSetConversion("text/sgml", "www/source",  HTPlainPresent, 1.0, 0.0, 0.0, 0);
  HTSetConversion("text/sgml", "www/present", HTMLPresent,    1.0, 0.0, 0.0, 0);
  HTSetConversion("text/plain","www/present", HTPlainPresent, 1.0, 0.0, 0.0, 0);
  HTSetConversion("text/plain","www/source",  HTPlainPresent, 1.0, 0.0, 0.0, 0);
  HTSetConversion("text/html", "www/source",  HTPlainPresent, 1.0, 0.0, 0.0, 0);
- HTSetConversion("text/html", "text/x-c",    HTMLToC, 	     0.5, 0.0, 0.0, 0);
+ HTSetConversion("text/html", "text/x-c",    HTMLToC,	     0.5, 0.0, 0.0, 0);
  HTSetConversion("text/html", "text/plain",  HTMLToPlain,    0.5, 0.0, 0.0, 0);
  HTSetConversion("text/html", "www/present", HTMLPresent,    1.0, 0.0, 0.0, 0);
 
@@ -165,18 +157,12 @@ PUBLIC void HTFormatInit NOARGS
  /*
   *  Load the local maps.
   */
- if ((fp = fopen(personal_type_map,"r")) != NULL) {
-     fclose(fp);
+ if (LYCanReadFile(personal_type_map)) {
      /* These should override everything else. */
      HTLoadTypesConfigFile(personal_type_map);
  } else {
-     char buffer[256];
-#ifdef VMS
-     sprintf(buffer, "sys$login:%s", personal_type_map);
-#else
-     sprintf(buffer, "%s/%s", (Home_Dir() ? Home_Dir() : ""),
-			      personal_type_map);
-#endif
+     char buffer[LY_MAXPATH];
+     LYAddPathToHome(buffer, sizeof(buffer), personal_type_map);
      HTLoadTypesConfigFile(buffer);
  }
 
@@ -185,6 +171,12 @@ PUBLIC void HTFormatInit NOARGS
   */
  HTReorderPresentation(WWW_PLAINTEXT, WWW_PRESENT);
  HTReorderPresentation(WWW_HTML, WWW_PRESENT);
+
+ /*
+  * Analyze the list, and set 'get_accept' for those whose representations
+  * are not redundant.
+  */
+ HTFilterPresentations();
 }
 
 PUBLIC void HTPreparsedFormatInit NOARGS
@@ -237,7 +229,6 @@ PRIVATE int ExitWithError PARAMS((char *txt));
 PRIVATE int PassesTest PARAMS((struct MailcapEntry *mc));
 
 #define LINE_BUF_SIZE		2048
-#define TMPFILE_NAME_SIZE	256
 
 PRIVATE char *GetCommand ARGS2(
 	char *,		s,
@@ -246,10 +237,11 @@ PRIVATE char *GetCommand ARGS2(
     char *s2;
     int quoted = 0;
 
+    s = LYSkipBlanks(s);
     /* marca -- added + 1 for error case -- oct 24, 1993. */
     s2 = malloc(strlen(s)*2 + 1); /* absolute max, if all % signs */
     if (!s2)
-	ExitWithError("Out of memory");
+	ExitWithError(MEMORY_EXHAUSTED_ABORT);
 
     *t = s2;
     while (s && *s) {
@@ -279,50 +271,35 @@ PRIVATE char *GetCommand ARGS2(
 PRIVATE char *Cleanse ARGS1(
 	char *,		s)
 {
-    char *tmp, *news;
-
-    /* strip leading white space */
-    while (*s && isspace((unsigned char) *s))
-	++s;
-    news = s;
-    /* put in lower case */
-    for (tmp=s; *tmp; ++tmp) {
-	*tmp = TOLOWER ((unsigned char)*tmp);
-    }
-    /* strip trailing white space */
-    while ((tmp > news) && *--tmp && isspace((unsigned char) *tmp))
-	*tmp = '\0';
-    return(news);
+    LYTrimLeading(s);
+    LYTrimTrailing(s);
+    LYLowerCase(s);
+    return(s);
 }
 
 PRIVATE int ProcessMailcapEntry ARGS2(
 	FILE *,			fp,
 	struct MailcapEntry *,	mc)
 {
-    int i, j;
-    size_t rawentryalloc = 2000, len;
-    char *rawentry, *s, *t, *LineBuf;
+    size_t rawentryalloc = 2000, len, need;
+    char *rawentry, *s, *t;
+    char *LineBuf = NULL;
 
-    LineBuf = (char *)malloc(LINE_BUF_SIZE);
-    if (!LineBuf)
-	ExitWithError("Out of memory");
-    rawentry = (char *)malloc(1 + rawentryalloc);
+    rawentry = (char *)malloc(rawentryalloc);
     if (!rawentry)
-	ExitWithError("Out of memory");
+	ExitWithError(MEMORY_EXHAUSTED_ABORT);
     *rawentry = '\0';
-    while (fgets(LineBuf, LINE_BUF_SIZE, fp)) {
-	if (LineBuf[0] == '#')
+    while (LYSafeGets(&LineBuf, fp) != 0) {
+	LYTrimNewline(LineBuf);
+	if (LineBuf[0] == '#' || LineBuf[0] == '\0')
 	    continue;
 	len = strlen(LineBuf);
-	if (len == 0)
-	    continue;
-	if (LineBuf[len-1] == '\n')
-	    LineBuf[--len] = '\0';
-	if ((len + strlen(rawentry)) > rawentryalloc) {
-	    rawentryalloc += 2000;
-	    rawentry = realloc(rawentry, rawentryalloc+1);
+	need = len + strlen(rawentry) + 1;
+	if (need > rawentryalloc) {
+	    rawentryalloc += (2000 + need);
+	    rawentry = realloc(rawentry, rawentryalloc);
 	    if (!rawentry)
-	        ExitWithError("Out of memory");
+	        ExitWithError(MEMORY_EXHAUSTED_ABORT);
 	}
 	if (len > 0 && LineBuf[len-1] == '\\') {
 	    LineBuf[len-1] = '\0';
@@ -332,11 +309,9 @@ PRIVATE int ProcessMailcapEntry ARGS2(
 	    break;
 	}
     }
-
     FREE(LineBuf);
 
-    for (s = rawentry; *s && isspace((unsigned char) *s); ++s)
-	;
+    t = s = LYSkipBlanks(rawentry);
     if (!*s) {
 	/* totally blank entry -- quietly ignore */
 	FREE(rawentry);
@@ -344,51 +319,39 @@ PRIVATE int ProcessMailcapEntry ARGS2(
     }
     s = strchr(rawentry, ';');
     if (s == NULL) {
-	if (TRACE) {
-		fprintf(stderr,
-		 "ProcessMailcapEntry: Ignoring invalid mailcap entry: %s\n",
-			rawentry);
-	}
+	CTRACE((tfp, "ProcessMailcapEntry: Ignoring invalid mailcap entry: %s\n",
+		    rawentry));
 	FREE(rawentry);
 	return(0);
     }
     *s++ = '\0';
-    if (!strncasecomp(rawentry, "text/html", 9) ||
-	!strncasecomp(rawentry, "text/plain", 10)) {
+    if (!strncasecomp(t, "text/html", 9) ||
+	!strncasecomp(t, "text/plain", 10)) {
 	--s;
 	*s = ';';
-	if (TRACE) {
-		fprintf(stderr,
-			"ProcessMailcapEntry: Ignoring mailcap entry: %s\n",
-			rawentry);
-	}
+	CTRACE((tfp, "ProcessMailcapEntry: Ignoring mailcap entry: %s\n",
+		    rawentry));
 	FREE(rawentry);
 	return(0);
     }
-    for (i = 0, j = 0; rawentry[i]; i++) {
-	if (rawentry[i] != ' ') {
-	    rawentry[j++] = TOLOWER(rawentry[i]);
-	}
-    }
-    rawentry[j] = '\0';
+    LYRemoveBlanks(rawentry);
+    LYLowerCase(rawentry);
+
     mc->needsterminal = 0;
     mc->copiousoutput = 0;
     mc->needtofree = 1;
     mc->testcommand = NULL;
     mc->label = NULL;
     mc->printcommand = NULL;
-    mc->contenttype = (char *)malloc(1 + strlen(rawentry));
-    if (!mc->contenttype)
-	ExitWithError("Out of memory");
-    strcpy(mc->contenttype, rawentry);
-    mc->quality = 1.0;
+    mc->contenttype = NULL;
+    StrAllocCopy(mc->contenttype, rawentry);
+    mc->quality = (float) 1.0;
     mc->maxbytes = 0;
     t = GetCommand(s, &mc->command);
     if (!t) {
 	goto assign_presentation;
     }
-    s = t;
-    while (s && *s && isspace((unsigned char) *s)) ++s;
+    s = LYSkipBlanks(t);
     while (s) {
 	char *arg, *eq, *mallocd_string;
 
@@ -397,6 +360,7 @@ PRIVATE int ProcessMailcapEntry ARGS2(
 	eq = strchr(arg, '=');
 	if (eq) {
 	    *eq++ = '\0';
+	    eq = LYSkipBlanks(eq);
 	}
 	if (arg && *arg) {
 	    arg = Cleanse(arg);
@@ -407,10 +371,8 @@ PRIVATE int ProcessMailcapEntry ARGS2(
 	    } else if (eq && !strcmp(arg, "test")) {
 		mc->testcommand = NULL;
 		StrAllocCopy(mc->testcommand, eq);
-		if (TRACE)
-		    fprintf(stderr,
-		    	    "ProcessMailcapEntry: Found testcommand:%s\n",
-			    mc->testcommand);
+		CTRACE((tfp, "ProcessMailcapEntry: Found testcommand:%s\n",
+			    mc->testcommand));
 	    } else if (eq && !strcmp(arg, "description")) {
 		mc->label = eq;
 	    } else if (eq && !strcmp(arg, "label")) {
@@ -421,33 +383,30 @@ PRIVATE int ProcessMailcapEntry ARGS2(
 		/* no support for now.  What does this do anyways? */
 		/* ExceptionalNewline(mc->contenttype, atoi(eq)); */
 	    } else if (eq && !strcmp(arg, "q")) {
-	        mc->quality = atof(eq);
+	        mc->quality = (float)atof(eq);
 		if (mc->quality > 0.000 && mc->quality < 0.001)
-		    mc->quality = 0.001;
+		    mc->quality = (float) 0.001;
 	    } else if (eq && !strcmp(arg, "mxb")) {
 	        mc->maxbytes = atol(eq);
 		if (mc->maxbytes < 0)
 		    mc->maxbytes = 0;
 	    } else if (strcmp(arg, "notes")) { /* IGNORE notes field */
-		if (*arg && TRACE)
-		    fprintf(stderr,
-			"ProcessMailcapEntry: Ignoring mailcap flag '%s'.\n",
-			    arg);
+		if (*arg)
+		    CTRACE((tfp, "ProcessMailcapEntry: Ignoring mailcap flag '%s'.\n",
+			        arg));
 	    }
 
 	}
-      FREE(mallocd_string);
-      s = t;
+	FREE(mallocd_string);
+	s = t;
     }
 
 assign_presentation:
     FREE(rawentry);
 
     if (PassesTest(mc)) {
-	if (TRACE)
-	    fprintf(stderr,
-	    	    "ProcessMailcapEntry Setting up conversion %s : %s\n",
-		    mc->contenttype, mc->command);
+	CTRACE((tfp, "ProcessMailcapEntry Setting up conversion %s : %s\n",
+		    mc->contenttype, mc->command));
 	HTSetPresentation(mc->contenttype, mc->command,
 			  mc->quality, 3.0, 0.0, mc->maxbytes);
     }
@@ -458,7 +417,7 @@ assign_presentation:
 }
 
 PRIVATE void BuildCommand ARGS5(
-	char **, 	pBuf,
+	char **,	pBuf,
 	size_t,		Bufsize,
 	char *,		controlstring,
 	char *,		TmpFileName,
@@ -475,23 +434,18 @@ PRIVATE void BuildCommand ARGS5(
 		    *to++ = '%';
 		    break;
 		case 'n':
+		    /* FALLTHRU */
 		case 'F':
-		    if (TRACE) {
-		        fprintf(stderr,
-			     "BuildCommand: Bad mailcap \"test\" clause: %s\n",
-				controlstring);
-		    }
+		    CTRACE((tfp, "BuildCommand: Bad mailcap \"test\" clause: %s\n",
+				controlstring));
+		    /* FALLTHRU */
 		case 's':
 		    if (TmpFileLen && TmpFileName) {
 			if ((to - *pBuf) + TmpFileLen + 1 > Bufsize) {
 			    *to = '\0';
-			    if (TRACE) {
-				fprintf(stderr,
-			"BuildCommand: Too long mailcap \"test\" clause,\n");
-				fprintf(stderr,
-					"              ignoring: %s%s...\n",
-					*pBuf, TmpFileName);
-			    }
+			    CTRACE((tfp, "BuildCommand: Too long mailcap \"test\" clause,\n"));
+			    CTRACE((tfp, "              ignoring: %s%s...\n",
+					*pBuf, TmpFileName));
 			    **pBuf = '\0';
 			    return;
 			}
@@ -500,11 +454,9 @@ PRIVATE void BuildCommand ARGS5(
 		    }
 		    break;
 		default:
-		    if (TRACE) {
-			fprintf(stderr,
+		    CTRACE((tfp,
   "BuildCommand: Ignoring unrecognized format code in mailcap file '%%%c'.\n",
-			*from);
-		    }
+			*from));
 		    break;
 	    }
 	} else if (*from == '%') {
@@ -514,13 +466,9 @@ PRIVATE void BuildCommand ARGS5(
 	}
 	if (to >= *pBuf + Bufsize) {
 	    (*pBuf)[Bufsize - 1] = '\0';
-	    if (TRACE) {
-		fprintf(stderr,
-			"BuildCommand: Too long mailcap \"test\" clause,\n");
-		fprintf(stderr,
-			"              ignoring: %s...\n",
-			*pBuf);
-	    }
+	    CTRACE((tfp, "BuildCommand: Too long mailcap \"test\" clause,\n"));
+	    CTRACE((tfp, "              ignoring: %s...\n",
+			*pBuf));
 	    **pBuf = '\0';
 	    return;
 	}
@@ -528,12 +476,55 @@ PRIVATE void BuildCommand ARGS5(
     *to = '\0';
 }
 
+#define RTR_forget      0
+#define RTR_lookup      1
+#define RTR_add         2
+
+PRIVATE int RememberTestResult ARGS3(
+	int,		mode,
+	char *,		cmd,
+	int,		result)
+{
+    struct cmdlist_s {
+	char *cmd;
+	int result;
+	struct cmdlist_s *next;
+    };
+    static struct cmdlist_s *cmdlist = NULL;
+    struct cmdlist_s *cur;
+
+    switch(mode) {
+	case RTR_forget:
+	    while(cmdlist) {
+		cur = cmdlist->next;
+		FREE(cmdlist->cmd);
+		FREE(cmdlist);
+		cmdlist = cur;
+	    }
+	    break;
+	case RTR_lookup:
+	    for(cur = cmdlist; cur; cur = cur->next)
+		if(!strcmp(cmd, cur->cmd))
+		    return cur->result;
+	    return -1;
+	case RTR_add:
+	    cur = typecalloc(struct cmdlist_s);
+	    if (cur == NULL)
+		outofmem(__FILE__, "RememberTestResult");
+	    cur->next = cmdlist;
+	    StrAllocCopy(cur->cmd, cmd);
+	    cur->result = result;
+	    cmdlist = cur;
+	    break;
+    }
+    return 0;
+}
+
 PRIVATE int PassesTest ARGS1(
 	struct MailcapEntry *,	mc)
 {
     int result;
-    char *cmd, TmpFileName[TMPFILE_NAME_SIZE];
-    char *cp = NULL;
+    char *cmd, TmpFileName[LY_MAXPATH];
 
     /*
      *  Make sure we have a command
@@ -544,33 +535,27 @@ PRIVATE int PassesTest ARGS1(
     /*
      *  Save overhead of system() calls by faking these. - FM
      */
-    if (0 == strcasecomp(mc->testcommand, "test -n \"$DISPLAY\"")) {
+    if (0 == strcmp(mc->testcommand, "test \"$DISPLAY\"") ||
+	0 == strcmp(mc->testcommand, "test \"$DISPLAY\" != \"\"") ||
+	0 == strcasecomp(mc->testcommand, "test -n \"$DISPLAY\"")) {
 	FREE(mc->testcommand);
-	if (TRACE)
-	    fprintf(stderr,
-		    "PassesTest: Testing for XWINDOWS environment.\n");
-    	if ((cp = getenv(DISPLAY)) != NULL && *cp != '\0') {
-	    if (TRACE)
-	        fprintf(stderr,"PassesTest: Test passed!\n");
+	CTRACE((tfp, "PassesTest: Testing for XWINDOWS environment.\n"));
+	if (LYgetXDisplay() != NULL) {
+	    CTRACE((tfp, "PassesTest: Test passed!\n"));
 	    return(0 == 0);
 	} else {
-	    if (TRACE)
-	        fprintf(stderr,"PassesTest: Test failed!\n");
+	    CTRACE((tfp, "PassesTest: Test failed!\n"));
 	    return(-1 == 0);
 	}
     }
     if (0 == strcasecomp(mc->testcommand, "test -z \"$DISPLAY\"")) {
 	FREE(mc->testcommand);
-	if (TRACE)
-	    fprintf(stderr,
-		    "PassesTest: Testing for NON_XWINDOWS environment.\n");
-    	if (!((cp = getenv(DISPLAY)) != NULL && *cp != '\0')) {
-	    if (TRACE)
-	        fprintf(stderr,"PassesTest: Test passed!\n");
+	CTRACE((tfp, "PassesTest: Testing for NON_XWINDOWS environment.\n"));
+	if (LYgetXDisplay() == NULL) {
+	    CTRACE((tfp,"PassesTest: Test passed!\n"));
 	    return(0 == 0);
 	} else {
-	    if (TRACE)
-	        fprintf(stderr,"PassesTest: Test failed!\n");
+	    CTRACE((tfp,"PassesTest: Test failed!\n"));
 	    return(-1 == 0);
 	}
     }
@@ -580,11 +565,8 @@ PRIVATE int PassesTest ARGS1(
      */
     if (0 == strcasecomp(mc->testcommand, "test -n \"$LYNX_VERSION\"")){
 	FREE(mc->testcommand);
-	if (TRACE) {
-	    fprintf(stderr,
-		    "PassesTest: Testing for LYNX environment.\n");
-	    fprintf(stderr,"PassesTest: Test passed!\n");
-	}
+	CTRACE((tfp, "PassesTest: Testing for LYNX environment.\n"));
+	CTRACE((tfp, "PassesTest: Test passed!\n"));
 	return(0 == 0);
     } else
     /*
@@ -592,29 +574,37 @@ PRIVATE int PassesTest ARGS1(
      */
     if (0 == strcasecomp(mc->testcommand, "test -z \"$LYNX_VERSION\"")) {
 	FREE(mc->testcommand);
-	if (TRACE) {
-	    fprintf(stderr,
-		    "PassesTest: Testing for non-LYNX environment.\n");
-	    fprintf(stderr,"PassesTest: Test failed!\n");
-	}
+	CTRACE((tfp, "PassesTest: Testing for non-LYNX environment.\n"));
+	CTRACE((tfp, "PassesTest: Test failed!\n"));
 	return(-1 == 0);
     }
 
-    /*
-     *  Build the command and execute it.
-     */
-    tempname(TmpFileName, NEW_FILE);
-    cmd = (char *)malloc(1024);
-    if (!cmd)
-	ExitWithError("Out of memory");
-    BuildCommand(&cmd, 1024,
-		 mc->testcommand,
-		 TmpFileName,
-		 strlen(TmpFileName));
-    if (TRACE)
-	fprintf(stderr,"PassesTest: Executing test command: %s\n", cmd);
-    result = system(cmd);
-    FREE(cmd);
+    result = RememberTestResult(RTR_lookup, mc->testcommand, 0);
+    if(result == -1) {
+	/*
+	 *  Build the command and execute it.
+	 */
+	if (strchr(mc->testcommand, '%')) {
+	    if (LYOpenTemp(TmpFileName, HTML_SUFFIX, "w") == 0)
+		ExitWithError(CANNOT_OPEN_TEMP);
+	    LYCloseTemp(TmpFileName);
+	} else {
+	    /* We normally don't need a temp file name - kw */
+	    TmpFileName[0] = '\0';
+	}
+	cmd = (char *)malloc(1024);
+	if (!cmd)
+	    ExitWithError(MEMORY_EXHAUSTED_ABORT);
+	BuildCommand(&cmd, 1024,
+		     mc->testcommand,
+		     TmpFileName,
+		     strlen(TmpFileName));
+	CTRACE((tfp, "PassesTest: Executing test command: %s\n", cmd));
+	result = LYSystem(cmd);
+	FREE(cmd);
+	LYRemoveTemp(TmpFileName);
+	RememberTestResult(RTR_add, mc->testcommand, result ? 1 : 0);
+    }
 
     /*
      *  Free the test command as well since
@@ -622,10 +612,11 @@ PRIVATE int PassesTest ARGS1(
      */
     FREE(mc->testcommand);
 
-    if (TRACE && result)
-	fprintf(stderr,"PassesTest: Test failed!\n");
-    else if (TRACE)
-	fprintf(stderr,"PassesTest: Test passed!\n");
+    if (result) {
+	CTRACE((tfp,"PassesTest: Test failed!\n"));
+    } else {
+	CTRACE((tfp,"PassesTest: Test passed!\n"));
+    }
 
     return(result == 0);
 }
@@ -636,22 +627,19 @@ PRIVATE int ProcessMailcapFile ARGS1(
     struct MailcapEntry mc;
     FILE *fp;
 
-    if (TRACE)
-	fprintf(stderr,
-		"ProcessMailcapFile: Loading file '%s'.\n",
-		file);
-    if ((fp = fopen(file, "r")) == NULL) {
-	if (TRACE)
-	    fprintf(stderr,
-		"ProcessMailcapFile: Could not open '%s'.\n",
-		    file);
+    CTRACE((tfp, "ProcessMailcapFile: Loading file '%s'.\n",
+		file));
+    if ((fp = fopen(file, TXT_R)) == NULL) {
+	CTRACE((tfp, "ProcessMailcapFile: Could not open '%s'.\n",
+		    file));
 	return(-1 == 0);
     }
 
     while (fp && !feof(fp)) {
 	ProcessMailcapEntry(fp, &mc);
     }
-    fclose(fp);
+    LYCloseInput(fp);
+    RememberTestResult(RTR_forget, NULL, 0);
     return(0 == 0);
 }
 
@@ -659,27 +647,38 @@ PRIVATE int ExitWithError ARGS1(
 	char *,		txt)
 {
     if (txt)
-	fprintf(stderr, "metamail: %s\n", txt);
-#ifndef NOSIGHUP
-    (void) signal(SIGHUP, SIG_DFL);
-#endif /* NOSIGHUP */
-    (void) signal(SIGTERM, SIG_DFL);
-#ifndef VMS
-    (void) signal(SIGINT, SIG_DFL);
-#endif /* !VMS */
-#ifdef SIGTSTP
-    if (no_suspend)
-	(void) signal(SIGTSTP,SIG_DFL);
-#endif /* SIGTSTP */
-    exit(-1);
+	fprintf(tfp, "Lynx: %s\n", txt);
+    exit_immediately(EXIT_FAILURE);
     return(-1);
 }
 
+/* Reverse the entries from each mailcap after it has been read, so that
+ * earlier entries have precedence.  Set to 0 to get traditional lynx
+ * behavior, which means that the last match wins. - kw */
+static int reverse_mailcap = 1;
 
 PRIVATE int HTLoadTypesConfigFile ARGS1(
 	char *,		fn)
 {
-  return ProcessMailcapFile(fn);
+    int result = 0;
+    HTList * saved = HTPresentations;
+
+    if (reverse_mailcap) {		/* temporarily hide existing list */
+	HTPresentations = NULL;
+    }
+
+    result = ProcessMailcapFile(fn);
+
+    if (reverse_mailcap) {
+	if (result && HTPresentations) {
+	    HTList_reverse(HTPresentations);
+	    HTList_appendList(HTPresentations, saved);
+	    FREE(saved);
+	} else {
+	    HTPresentations = saved;
+	}
+    }
+    return result;
 }
 
 
@@ -699,22 +698,47 @@ PRIVATE int HTLoadTypesConfigFile ARGS1(
 **	which are of the same format but are originals or regenerated,
 **	with different values.
 */
-
+/*
+ *  Additional notes: the encoding parameter may be taken into account when
+ *  looking for a match; for that purpose "7bit", "8bit", and "binary" are
+ *  equivalent.
+ *  Use of mixed case and of pseudo MIME types with embedded spaces should
+ *  be avoided.  It was once necessary for getting the fancy strings into
+ *  type labels in FTP directory listings, but that can now be done with
+ *  the description field (using HTSetSuffix5).  AFAIK the only effect of
+ *  such "fancy" (and mostly invalid) types that cannot be reproduced by
+ *  using a description fields is some statusline messages in SaveToFile
+ *  (HTFWriter.c).  And showing the user an invalid MIME type as the
+ *  'Content-type:' is not such a hot idea anyway, IMO.  Still, if you
+ *  want it, it is still possible (even in lynx.cfg now), but use of it
+ *  in the defaults below has been reduced.
+ *  Case variations rely on peculiar behavior of HTAtom.c for matching.
+ *  They lead to surprising behavior, Lynx retains the case of a string
+ *  in the form first encountered after starting up.  So while later suffix
+ *  rules generally override or modify earlier ones, the case used for a
+ *  MIME time is determined by the first suffix rule (or other occurrence).
+ *  Matching in HTAtom_for is effectively case insensitive, except for the
+ *  first character of the string which is treated as case-sensitive by the
+ *  hash function there; best not to rely on that, rather convert MIME types
+ *  to lowercase on input as is already done in most places (And HTAtom could
+ *  become consistently case-sensitive, as in newer W3C libwww).
+ *  - kw 1999-10-12
+ */
 PUBLIC void HTFileInit NOARGS
 {
-    FILE *fp;
-
-    if (TRACE)
-	fprintf(stderr,
-		"HTFileInit: Loading default (HTInit) extension maps.\n");
+#ifdef BUILTIN_SUFFIX_MAPS
+    if (LYUseBuiltinSuffixes)
+    {
+    CTRACE((tfp, "HTFileInit: Loading default (HTInit) extension maps.\n"));
 
     /* default suffix interpretation */
-    HTSetSuffix("*",		"text/plain", "7bit", 1.0);
-    HTSetSuffix("*.*",		"text/plain", "7bit", 1.0);
+    HTSetSuffix("*",		"text/plain", "8bit", 1.0);
+    HTSetSuffix("*.*",		"text/plain", "8bit", 1.0);
+
 
 #ifdef EXEC_SCRIPTS
     /*
-     *  define these extentions for exec scripts.
+     *  define these extensions for exec scripts.
      */
 #ifndef VMS
     /* for csh exec links */
@@ -726,7 +750,15 @@ PUBLIC void HTFileInit NOARGS
 #endif /* !VMS */
 #endif /* EXEC_SCRIPTS */
 
-
+    /*
+     *  Some of the old incarnation of the mappings is preserved
+     *  and can be had by defining TRADITIONAL_SUFFIXES.  This
+     *  is for some cases where I felt the old rules might be preferred
+     *  by someone, for some reason.  It's not done consistently.
+     *  A lot more of this stuff could probably be changed too or
+     *  omitted, now that nearly the equivalent functionality is
+     *  available in lynx.cfg. - kw 1999-10-12
+     */
     HTSetSuffix(".saveme",	"application/x-Binary", "binary", 1.0);
     HTSetSuffix(".dump",	"application/x-Binary", "binary", 1.0);
     HTSetSuffix(".bin",		"application/x-Binary", "binary", 1.0);
@@ -739,57 +771,104 @@ PUBLIC void HTFileInit NOARGS
     HTSetSuffix(".AXP_exe",	"application/x-Executable", "binary", 1.0);
     HTSetSuffix(".VAX-exe",	"application/x-Executable", "binary", 1.0);
     HTSetSuffix(".VAX_exe",	"application/x-Executable", "binary", 1.0);
-    HTSetSuffix(".exe",		"application/x-Executable", "binary", 1.0);
+    HTSetSuffix5(".exe",	"application/octet-stream", "binary", "Executable", 1.0);
 
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix(".exe.Z",	"application/x-Comp. Executable",
-    							     "binary", 1.0);
-
+							     "binary", 1.0);
     HTSetSuffix(".Z",	        "application/UNIX Compressed", "binary", 1.0);
-
     HTSetSuffix(".tar_Z",	"application/UNIX Compr. Tar", "binary", 1.0);
     HTSetSuffix(".tar.Z",	"application/UNIX Compr. Tar", "binary", 1.0);
+#else
+    HTSetSuffix5(".Z",	        "application/x-compress", "binary", "UNIX Compressed", 1.0);
+    HTSetSuffix5(".Z",	        NULL, "compress",      "UNIX Compressed", 1.0);
+    HTSetSuffix5(".exe.Z",	"application/octet-stream", "compress",
+						       "Executable", 1.0);
+    HTSetSuffix5(".tar_Z",	"application/x-tar", "compress",
+						       "UNIX Compr. Tar", 1.0);
+    HTSetSuffix5(".tar.Z",	"application/x-tar", "compress",
+						       "UNIX Compr. Tar", 1.0);
+#endif
 
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix("-gz",		"application/GNU Compressed", "binary", 1.0);
     HTSetSuffix("_gz",		"application/GNU Compressed", "binary", 1.0);
     HTSetSuffix(".gz",		"application/GNU Compressed", "binary", 1.0);
 
     HTSetSuffix5(".tar.gz",	"application/x-tar", "binary", "GNU Compr. Tar", 1.0);
     HTSetSuffix5(".tgz",	"application/x-tar", "gzip", "GNU Compr. Tar", 1.0);
+#else
+    HTSetSuffix5("-gz",		"application/x-gzip", "binary", "GNU Compressed", 1.0);
+    HTSetSuffix5("_gz",		"application/x-gzip", "binary", "GNU Compressed", 1.0);
+    HTSetSuffix5(".gz",		"application/x-gzip", "binary", "GNU Compressed", 1.0);
+    HTSetSuffix5("-gz",		NULL, "gzip", "GNU Compressed", 1.0);
+    HTSetSuffix5("_gz",		NULL, "gzip", "GNU Compressed", 1.0);
+    HTSetSuffix5(".gz",		NULL, "gzip", "GNU Compressed", 1.0);
 
+    HTSetSuffix5(".tar.gz",	"application/x-tar", "gzip", "GNU Compr. Tar", 1.0);
+    HTSetSuffix5(".tgz",	"application/x-tar", "gzip", "GNU Compr. Tar", 1.0);
+#endif
+
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix(".src",		"application/x-WAIS-source", "8bit", 1.0);
     HTSetSuffix(".wsrc",	"application/x-WAIS-source", "8bit", 1.0);
+#else
+    HTSetSuffix5(".wsrc",	"application/x-wais-source", "8bit", "WAIS-source", 1.0);
+#endif
 
-    HTSetSuffix(".zip",		"application/x-Zip File", "binary", 1.0);
+    HTSetSuffix5(".zip",	"application/zip", "binary", "Zip File", 1.0);
 
+    HTSetSuffix(".bz2",		"application/x-bzip2", "binary", 1.0);
+
+    HTSetSuffix(".bz2",		"application/bzip2", "binary", 1.0);
+
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix(".uu",		"application/x-UUencoded", "8bit", 1.0);
 
     HTSetSuffix(".hqx",		"application/x-Binhex", "8bit", 1.0);
 
     HTSetSuffix(".o",		"application/x-Prog. Object", "binary", 1.0);
     HTSetSuffix(".a",		"application/x-Prog. Library", "binary", 1.0);
+#else
+    HTSetSuffix5(".uu",		"application/x-uuencoded", "7bit", "UUencoded", 1.0);
+
+    HTSetSuffix5(".hqx",	"application/mac-binhex40", "8bit", "Mac BinHex", 1.0);
+
+    HTSetSuffix5(".o",		"application/octet-stream", "binary", "Prog. Object", 0.5);
+    HTSetSuffix5(".a",		"application/octet-stream", "binary", "Prog. Library", 0.5);
+    HTSetSuffix5(".so",		"application/octet-stream", "binary", "Shared Lib", 0.5);
+#endif
 
     HTSetSuffix5(".oda",	"application/oda", "binary", "ODA", 1.0);
 
     HTSetSuffix5(".pdf",	"application/pdf", "binary", "PDF", 1.0);
 
-    HTSetSuffix(".eps",		"application/Postscript", "8bit", 1.0);
-    HTSetSuffix(".ai",		"application/Postscript", "8bit", 1.0);
-    HTSetSuffix(".ps",		"application/Postscript", "8bit", 1.0);
+    HTSetSuffix5(".eps",	"application/postscript", "8bit", "Postscript", 1.0);
+    HTSetSuffix5(".ai",		"application/postscript", "8bit", "Postscript", 1.0);
+    HTSetSuffix5(".ps",		"application/postscript", "8bit", "Postscript", 1.0);
 
-    HTSetSuffix(".rtf",		"application/RTF", "8bit", 1.0);
+    HTSetSuffix5(".rtf",	"application/rtf", "8bit", "RTF", 1.0);
 
-    HTSetSuffix(".dvi",		"application/x-DVI", "8bit", 1.0);
+    HTSetSuffix5(".dvi",	"application/x-dvi", "8bit", "DVI", 1.0);
 
-    HTSetSuffix(".hdf",		"application/x-HDF", "8bit", 1.0);
+    HTSetSuffix5(".hdf",	"application/x-hdf", "8bit", "HDF", 1.0);
 
     HTSetSuffix(".cdf",		"application/x-netcdf", "8bit", 1.0);
     HTSetSuffix(".nc",		"application/x-netcdf", "8bit", 1.0);
 
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix(".latex",	"application/x-Latex", "8bit", 1.0);
-    HTSetSuffix(".tex",  	"application/x-Tex", "8bit", 1.0);
+    HTSetSuffix(".tex",		"application/x-Tex", "8bit", 1.0);
     HTSetSuffix(".texinfo",	"application/x-Texinfo", "8bit", 1.0);
     HTSetSuffix(".texi",	"application/x-Texinfo", "8bit", 1.0);
+#else
+    HTSetSuffix5(".latex",	"application/x-latex", "8bit", "LaTeX", 1.0);
+    HTSetSuffix5(".tex",	"text/x-tex", "8bit", "TeX", 1.0);
+    HTSetSuffix5(".texinfo",	"application/x-texinfo", "8bit", "Texinfo", 1.0);
+    HTSetSuffix5(".texi",	"application/x-texinfo", "8bit", "Texinfo", 1.0);
+#endif
 
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix(".t",		"application/x-Troff", "8bit", 1.0);
     HTSetSuffix(".tr",		"application/x-Troff", "8bit", 1.0);
     HTSetSuffix(".roff",	"application/x-Troff", "8bit", 1.0);
@@ -797,51 +876,80 @@ PUBLIC void HTFileInit NOARGS
     HTSetSuffix(".man",		"application/x-Troff-man", "8bit", 1.0);
     HTSetSuffix(".me",		"application/x-Troff-me", "8bit", 1.0);
     HTSetSuffix(".ms",		"application/x-Troff-ms", "8bit", 1.0);
+#else
+    HTSetSuffix5(".t",		"application/x-troff", "8bit", "Troff", 1.0);
+    HTSetSuffix5(".tr",		"application/x-troff", "8bit", "Troff", 1.0);
+    HTSetSuffix5(".roff",	"application/x-troff", "8bit", "Troff", 1.0);
+
+    HTSetSuffix5(".man",	"application/x-troff-man", "8bit", "Man Page", 1.0);
+    HTSetSuffix5(".me",		"application/x-troff-me", "8bit", "Troff me", 1.0);
+    HTSetSuffix5(".ms",		"application/x-troff-ms", "8bit", "Troff ms", 1.0);
+#endif
 
     HTSetSuffix(".zoo",		"application/x-Zoo File", "binary", 1.0);
 
+#if defined(TRADITIONAL_SUFFIXES) || defined(VMS)
     HTSetSuffix(".bak",		"application/x-VMS BAK File", "binary", 1.0);
     HTSetSuffix(".bkp",		"application/x-VMS BAK File", "binary", 1.0);
     HTSetSuffix(".bck",		"application/x-VMS BAK File", "binary", 1.0);
 
-    HTSetSuffix(".bkp_gz",	"application/x-GNU BAK File", "binary", 1.0);
-    HTSetSuffix(".bkp-gz",	"application/x-GNU BAK File", "binary", 1.0);
-    HTSetSuffix(".bck_gz",	"application/x-GNU BAK File", "binary", 1.0);
-    HTSetSuffix(".bck-gz",	"application/x-GNU BAK File", "binary", 1.0);
+    HTSetSuffix5(".bkp_gz",	"application/octet-stream", "gzip", "GNU BAK File", 1.0);
+    HTSetSuffix5(".bkp-gz",	"application/octet-stream", "gzip", "GNU BAK File", 1.0);
+    HTSetSuffix5(".bck_gz",	"application/octet-stream", "gzip", "GNU BAK File", 1.0);
+    HTSetSuffix5(".bck-gz",	"application/octet-stream", "gzip", "GNU BAK File", 1.0);
 
-    HTSetSuffix(".bkp-Z",	"application/x-Comp. BAK File", "binary", 1.0);
-    HTSetSuffix(".bkp_Z",	"application/x-Comp. BAK File", "binary", 1.0);
-    HTSetSuffix(".bck-Z",	"application/x-Comp. BAK File", "binary", 1.0);
-    HTSetSuffix(".bck_Z",	"application/x-Comp. BAK File", "binary", 1.0);
+    HTSetSuffix5(".bkp-Z",	"application/octet-stream", "compress", "Comp. BAK File", 1.0);
+    HTSetSuffix5(".bkp_Z",	"application/octet-stream", "compress", "Comp. BAK File", 1.0);
+    HTSetSuffix5(".bck-Z",	"application/octet-stream", "compress", "Comp. BAK File", 1.0);
+    HTSetSuffix5(".bck_Z",	"application/octet-stream", "compress", "Comp. BAK File", 1.0);
+#else
+    HTSetSuffix5(".bak",	NULL, "binary", "Backup", 0.5);
+    HTSetSuffix5(".bkp",	"application/octet-stream", "binary", "VMS BAK File", 1.0);
+    HTSetSuffix5(".bck",	"application/octet-stream", "binary", "VMS BAK File", 1.0);
+#endif
 
+#if defined(TRADITIONAL_SUFFIXES) || defined(VMS)
     HTSetSuffix(".hlb",		"application/x-VMS Help Libr.", "binary", 1.0);
     HTSetSuffix(".olb",		"application/x-VMS Obj. Libr.", "binary", 1.0);
     HTSetSuffix(".tlb",		"application/x-VMS Text Libr.", "binary", 1.0);
     HTSetSuffix(".obj",		"application/x-VMS Prog. Obj.", "binary", 1.0);
     HTSetSuffix(".decw$book",	"application/x-DEC BookReader", "binary", 1.0);
     HTSetSuffix(".mem",		"application/x-RUNOFF-MANUAL", "8bit", 1.0);
+#else
+    HTSetSuffix5(".hlb",	"application/octet-stream", "binary", "VMS Help Libr.", 1.0);
+    HTSetSuffix5(".olb",	"application/octet-stream", "binary", "VMS Obj. Libr.", 1.0);
+    HTSetSuffix5(".tlb",	"application/octet-stream", "binary", "VMS Text Libr.", 1.0);
+    HTSetSuffix5(".obj",	"application/octet-stream", "binary", "Prog. Object", 1.0);
+    HTSetSuffix5(".decw$book",	"application/octet-stream", "binary", "DEC BookReader", 1.0);
+    HTSetSuffix5(".mem",	"text/x-runoff-manual", "8bit", "RUNOFF-MANUAL", 1.0);
+#endif
 
     HTSetSuffix(".vsd",		"application/visio", "binary", 1.0);
 
-    HTSetSuffix(".lha",		"application/x-lha File", "binary", 1.0);
-    HTSetSuffix(".lzh",		"application/x-lzh File", "binary", 1.0);
-
-    HTSetSuffix(".sea",		"application/x-sea File", "binary", 1.0);
-    HTSetSuffix(".sit",		"application/x-sit File", "binary", 1.0);
-
-    HTSetSuffix(".dms",		"application/x-dms File", "binary", 1.0);
-
-    HTSetSuffix(".iff",		"application/x-iff File", "binary", 1.0);
+    HTSetSuffix5(".lha",	"application/x-lha", "binary", "lha File", 1.0);
+    HTSetSuffix5(".lzh",	"application/x-lzh", "binary", "lzh File", 1.0);
+    HTSetSuffix5(".sea",	"application/x-sea", "binary", "sea File", 1.0);
+#ifdef TRADITIONAL_SUFFIXES
+    HTSetSuffix5(".sit",	"application/x-sit", "binary", "sit File", 1.0);
+#else
+    HTSetSuffix5(".sit",	"application/x-stuffit", "binary", "StuffIt", 1.0);
+#endif
+    HTSetSuffix5(".dms",	"application/x-dms", "binary", "dms File", 1.0);
+    HTSetSuffix5(".iff",	"application/x-iff", "binary", "iff File", 1.0);
 
     HTSetSuffix(".bcpio",	"application/x-bcpio", "binary", 1.0);
     HTSetSuffix(".cpio",	"application/x-cpio", "binary", 1.0);
 
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix(".gtar",	"application/x-gtar", "binary", 1.0);
+#endif
 
     HTSetSuffix(".shar",	"application/x-shar", "8bit", 1.0);
     HTSetSuffix(".share",	"application/x-share", "8bit", 1.0);
 
+#ifdef TRADITIONAL_SUFFIXES
     HTSetSuffix(".sh",		"application/x-sh", "8bit", 1.0); /* xtra */
+#endif
 
     HTSetSuffix(".sv4cpio",	"application/x-sv4cpio", "binary", 1.0);
     HTSetSuffix(".sv4crc",	"application/x-sv4crc", "binary", 1.0);
@@ -903,29 +1011,51 @@ PUBLIC void HTFileInit NOARGS
     HTSetSuffix(".text",	"text/plain", "8bit", 1.0);
     HTSetSuffix(".txt",		"text/plain", "8bit", 1.0);
 
+    HTSetSuffix(".php",		"text/html", "8bit", 1.0);
+    HTSetSuffix(".php3",	"text/html", "8bit", 1.0);
     HTSetSuffix(".html3",	"text/html", "8bit", 1.0);
     HTSetSuffix(".ht3",		"text/html", "8bit", 1.0);
     HTSetSuffix(".phtml",	"text/html", "8bit", 1.0);
     HTSetSuffix(".shtml",	"text/html", "8bit", 1.0);
+    HTSetSuffix(".sht",		"text/html", "8bit", 1.0);
     HTSetSuffix(".htmlx",	"text/html", "8bit", 1.0);
     HTSetSuffix(".htm",		"text/html", "8bit", 1.0);
     HTSetSuffix(".html",	"text/html", "8bit", 1.0);
 
+    } else { /* LYSuffixRules */
+    /*
+     *  Note that even .html -> text/html, .htm -> text/html are omitted
+     *  if default maps are compiled in but then skipped because of a
+     *  configuration file directive.  Whoever changes the config file
+     *  in this way can easily also add the SUFFIX rules there. - kw
+     */
+    CTRACE((tfp, "HTFileInit: Skipping all default (HTInit) extension maps!\n"));
+    } /* LYSuffixRules */
+
+#else /* BUILTIN_SUFFIX_MAPS */
+
+    CTRACE((tfp, "HTFileInit: Default (HTInit) extension maps not compiled in.\n"));
+    /*
+     *  The followin two are still used if BUILTIN_SUFFIX_MAPS was
+     *  undefined.  Without one of them, lynx would always need to
+     *  have a mapping specified in a lynx.cfg or mime.types file
+     *  to be usable for local HTML files at all.  That includes
+     *  many of the generated user interface pages. - kw
+     */
+    HTSetSuffix(".htm",		"text/html", "8bit", 1.0);
+    HTSetSuffix(".html",	"text/html", "8bit", 1.0);
+#endif /* BUILTIN_SUFFIX_MAPS */
+
+
     /* These should override the default extensions as necessary. */
     HTLoadExtensionsConfigFile(global_extension_map);
 
-    if ((fp = fopen(personal_extension_map,"r")) != NULL) {
-	fclose(fp);
+    if (LYCanReadFile(personal_extension_map)) {
 	/* These should override everything else. */
 	HTLoadExtensionsConfigFile(personal_extension_map);
     } else {
-	char buffer[256];
-#ifdef VMS
-	sprintf(buffer, "sys$login:%s", personal_extension_map);
-#else
-	sprintf(buffer, "%s/%s", (Home_Dir() ? Home_Dir() : ""),
-				  personal_extension_map);
-#endif /* VMS */
+	char buffer[LY_MAXPATH];
+	LYAddPathToHome(buffer, sizeof(buffer), personal_extension_map);
 	/* These should override everything else. */
 	HTLoadExtensionsConfigFile(buffer);
     }
@@ -960,7 +1090,7 @@ PRIVATE int HTGetLine ARGS3(
 	if (s[i] == CR) {
 	    r = fgetc(f);
 	    if (r == LF)
-		s[i] = r;
+		s[i] = (char) r;
 	    else if (r != EOF)
 		ungetc(r, f);
 	}
@@ -999,48 +1129,36 @@ PRIVATE void HTGetWord ARGS4(
 PRIVATE int HTLoadExtensionsConfigFile ARGS1(
 	char *,		fn)
 {
-    char l[MAX_STRING_LEN],w[MAX_STRING_LEN],*ct;
+    char line[MAX_STRING_LEN];
+    char word[MAX_STRING_LEN];
+    char *ct;
     FILE *f;
-    int x, count = 0;
+    int count = 0;
 
-    if (TRACE)
-	fprintf(stderr,
-		"HTLoadExtensionsConfigFile: Loading file '%s'.\n", fn);
+    CTRACE((tfp, "HTLoadExtensionsConfigFile: Loading file '%s'.\n", fn));
 
-    if ((f = fopen(fn,"r")) == NULL) {
-	if (TRACE)
-	    fprintf(stderr,
-		    "HTLoadExtensionsConfigFile: Could not open '%s'.\n", fn);
-	    return count;
+    if ((f = fopen(fn, TXT_R)) == NULL) {
+	CTRACE((tfp, "HTLoadExtensionsConfigFile: Could not open '%s'.\n", fn));
+	return count;
     }
 
-    while (!(HTGetLine(l,MAX_STRING_LEN,f))) {
-	HTGetWord(w, l, ' ', '\t');
-	if (l[0] == '\0' || w[0] == '#')
+    while (!(HTGetLine(line,sizeof(line),f))) {
+	HTGetWord(word, line, ' ', '\t');
+	if (line[0] == '\0' || word[0] == '#')
 	    continue;
-	ct = (char *)malloc(sizeof(char) * (strlen(w) + 1));
-	if (!ct)
-	    outofmem(__FILE__, "HTLoadExtensionsConfigFile");
-	strcpy(ct,w);
-	for (x = 0; ct[x]; x++)
-	    ct[x] = TOLOWER(ct[x]);
+	ct = NULL;
+	StrAllocCopy(ct, word);
+	LYLowerCase(ct);
 
-	while(l[0]) {
-	    HTGetWord(w, l, ' ', '\t');
-	    if (w[0] && (w[0] != ' ')) {
-		char *ext = (char *)malloc(sizeof(char) * (strlen(w)+1+1));
-	        if (!ct)
-	            outofmem(__FILE__, "HTLoadExtensionsConfigFile");
+	while(line[0]) {
+	    HTGetWord(word, line, ' ', '\t');
+	    if (word[0] && (word[0] != ' ')) {
+		char *ext = NULL;
 
-		for (x = 0; w[x]; x++)
-		    ext[x+1] = TOLOWER(w[x]);
-		ext[0] = '.';
-		ext[strlen(w)+1] = '\0';
+		HTSprintf0(&ext, ".%s", word);
+		LYLowerCase(ext);
 
-		if (TRACE) {
-		    fprintf (stderr,
-			     "SETTING SUFFIX '%s' to '%s'.\n", ext, ct);
-		}
+		CTRACE((tfp, "SETTING SUFFIX '%s' to '%s'.\n", ext, ct));
 
 	        if (strstr(ct, "tex") != NULL ||
 	            strstr(ct, "postscript") != NULL ||
@@ -1057,7 +1175,7 @@ PRIVATE int HTLoadExtensionsConfigFile ARGS1(
 	}
 	FREE(ct);
     }
-    fclose(f);
+    LYCloseInput(f);
 
     return count;
 }

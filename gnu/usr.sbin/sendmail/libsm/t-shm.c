@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002, 2004, 2005 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,7 +8,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: t-shm.c,v 1.15 2001/08/27 23:00:05 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: t-shm.c,v 1.22 2005/01/14 02:14:10 ca Exp $")
 
 #include <stdio.h>
 
@@ -45,7 +45,7 @@ shminter(owner)
 	bool owner;
 {
 	int *shm, shmid;
-	int i, j, t;
+	int i, t;
 
 	shm = (int *) sm_shmstart(T_SHMKEY, SHMSIZE, 0, &shmid, owner);
 	if (shm == (int *) 0)
@@ -74,7 +74,6 @@ shminter(owner)
 			t = *shm;
 			for (i = 0; i < SHM_MAX; i++)
 			{
-				j += i;
 				++*shm;
 			}
 			if (*shm != SHM_MAX + t)
@@ -83,6 +82,10 @@ shminter(owner)
 			break;
 		  case 'v':
 			printf("shmval: %d\n", *shm);
+			break;
+		  case 'S':
+			i = sm_shmsetowner(shmid, getuid(), getgid(), 0644);
+			printf("sm_shmsetowner=%d\n", i);
 			break;
 		}
 	}
@@ -146,6 +149,8 @@ shmbig(owner, size)
 
 # define MAX_CNT	10
 
+int shmtest __P((int));
+
 int
 shmtest(owner)
 	int owner;
@@ -164,6 +169,8 @@ shmtest(owner)
 	{
 		int r;
 
+		r = sm_shmsetowner(shmid, getuid(), getgid(), 0660);
+		SM_TEST(r == 0);
 		*shm = 1;
 		while (*shm == 1 && cnt++ < MAX_CNT)
 			sleep(1);
@@ -230,6 +237,7 @@ main(argc, argv)
 	else
 	{
 		pid_t pid;
+		extern int SmTestNumErrors;
 
 		if ((pid = fork()) < 0)
 		{
@@ -250,6 +258,8 @@ main(argc, argv)
 			(void) wait(&status);
 		}
 		SM_TEST(r == 0);
+		if (SmTestNumErrors > 0)
+			printf("add -DSM_CONF_SHM=0 to confENVDEF in devtools/Site/site.config.m4\nand start over.\n");
 		return sm_test_end();
 	}
 	return r;

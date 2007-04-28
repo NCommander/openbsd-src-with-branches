@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*	$NetBSD: mainbus.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -46,19 +45,24 @@
 
 #include <landisk/dev/obiovar.h>
 
-static int mainbus_match(struct device *, struct cfdata *, void *);
-static void mainbus_attach(struct device *, struct device *, void *);
+int mainbus_match(struct device *, void *, void *);
+void mainbus_attach(struct device *, struct device *, void *);
 
-CFATTACH_DECL(mainbus, sizeof(struct device),
-    mainbus_match, mainbus_attach, NULL, NULL);
+struct cfattach mainbus_ca = {
+	sizeof(struct device), mainbus_match, mainbus_attach
+};
 
-static int mainbus_print(void *, const char *);
+struct cfdriver mainbus_cd = {
+	NULL, "mainbus", DV_DULL
+};
+
+int mainbus_print(void *, const char *);
 
 /* There can be only one. */
 int mainbus_found = 0;
 
-static int
-mainbus_match(struct device *parent, struct cfdata *cf, void *aux)
+int
+mainbus_match(struct device *parent, void *cf, void *aux)
 {
 
 	if (mainbus_found)
@@ -67,7 +71,7 @@ mainbus_match(struct device *parent, struct cfdata *cf, void *aux)
 	return (1);
 }
 
-static void
+void
 mainbus_attach(struct device *parent, struct device *self, void *aux)
 {
 	union {
@@ -86,17 +90,17 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 	mba.mba_ca.ca_node = 0;
 	config_found(self, &mba, mainbus_print);
 
+	/* SH bus */
+	memset(&mba, 0, sizeof(mba));
+	mba.mba_mba.ma_name = "shb";
+	config_found(self, &mba, mainbus_print);
+
 #if NPCI > 0
 	/* SH PCIC */
 	memset(&mba, 0, sizeof(mba));
 	mba.mba_mba.ma_name = "shpcic";
 	config_found(self, &mba, mainbus_print);
 #endif
-
-	/* SH bus */
-	memset(&mba, 0, sizeof(mba));
-	mba.mba_mba.ma_name = "shb";
-	config_found(self, &mba, mainbus_print);
 
 #if NOBIO > 0
 	/* on-board I/O */
@@ -108,7 +112,7 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 #endif
 }
 
-static int
+int
 mainbus_print(void *aux, const char *pnp)
 {
 

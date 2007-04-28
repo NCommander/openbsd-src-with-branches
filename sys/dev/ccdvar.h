@@ -1,8 +1,12 @@
-/*	$NetBSD: ccdvar.h,v 1.7.2.1 1995/10/12 21:30:18 thorpej Exp $	*/
+/*	$OpenBSD: ccdvar.h,v 1.7 2005/02/24 19:36:39 mickey Exp $	*/
+/*	$NetBSD: ccdvar.h,v 1.11 1996/02/28 01:08:32 thorpej Exp $	*/
 
-/*
- * Copyright (c) 1995 Jason R. Thorpe.
+/*-
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Jason R. Thorpe.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -14,22 +18,23 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed for the NetBSD Project
- *	by Jason R. Thorpe.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
+ *        This product includes software developed by the NetBSD
+ *        Foundation, Inc. and its contributors.
+ * 4. Neither the name of The NetBSD Foundation nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -49,11 +54,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -87,12 +88,11 @@
  * A concatenated disk is described at initialization time by this structure.
  */
 struct ccddevice {
+	struct vnode	**ccd_vpp;	/* array of component vnodes */
+	char		**ccd_cpp;	/* array of component pathnames */
 	int		ccd_unit;	/* logical unit of this ccd */
 	int		ccd_interleave;	/* interleave (DEV_BSIZE blocks) */
 	int		ccd_flags;	/* misc. information */
-	int		ccd_dk;		/* disk number */
-	struct vnode	**ccd_vpp;	/* array of component vnodes */
-	char		**ccd_cpp;	/* array of component pathnames */
 	int		ccd_ndev;	/* number of component devices */
 };
 
@@ -101,7 +101,7 @@ struct ccddevice {
  */
 struct ccd_ioctl {
 	char	**ccio_disks;		/* pointer to component paths */
-	int	ccio_ndisks;		/* number of disks to concatenate */
+	u_int	ccio_ndisks;		/* number of disks to concatenate */
 	int	ccio_ileave;		/* interleave (DEV_BSIZE blocks) */
 	int	ccio_flags;		/* misc. information */
 	int	ccio_unit;		/* unit number: use varies */
@@ -111,9 +111,14 @@ struct ccd_ioctl {
 /* ccd_flags */
 #define	CCDF_SWAP	0x01	/* interleave should be dmmax */
 #define CCDF_UNIFORM	0x02	/* use LCCD of sizes for uniform interleave */
+#define CCDF_MIRROR	0x04	/* enable data mirroring */
+#define CCDF_OLD	0x08	/* use slower but less restrictive I/O code */
+#define	CCDF_BITS \
+    "\020\01swap\02uniform\03mirror\04old"
 
 /* Mask of user-settable ccd flags. */
-#define CCDF_USERMASK	(CCDF_SWAP|CCDF_UNIFORM)
+#define CCDF_USERMASK \
+    (CCDF_SWAP|CCDF_UNIFORM|CCDF_MIRROR|CCDF_OLD)
 
 /*
  * Component info table.
@@ -121,11 +126,14 @@ struct ccd_ioctl {
  */
 struct ccdcinfo {
 	struct vnode	*ci_vp;			/* device's vnode */
-	dev_t		ci_dev;			/* XXX: device's dev_t */
-	size_t		ci_size; 		/* size */
 	char		*ci_path;		/* path to component */
+	size_t		ci_size; 		/* size */
 	size_t		ci_pathlen;		/* length of component path */
+	dev_t		ci_dev;			/* XXX: device's dev_t */
+	int		ci_flags;		/* see below */
 };
+
+#define	CCIF_FAILED	0x01	/* had a B_ERROR on this one */
 
 /*
  * Interleave description table.
@@ -154,10 +162,11 @@ struct ccdcinfo {
  * 2 starting at offset 5.
  */
 struct ccdiinfo {
-	int	ii_ndisk;	/* # of disks range is interleaved over */
 	daddr_t	ii_startblk;	/* starting scaled block # for range */
 	daddr_t	ii_startoff;	/* starting component offset (block #) */
 	int	*ii_index;	/* ordered list of components in range */
+	int	*ii_parity;	/* list of parity shifts */
+	int	ii_ndisk;	/* # of disks range is interleaved over */
 };
 
 /*
@@ -168,24 +177,24 @@ struct ccdgeom {
 	u_int32_t	ccg_nsectors;	/* # data sectors per track */
 	u_int32_t	ccg_ntracks;	/* # tracks per cylinder */
 	u_int32_t	ccg_ncylinders;	/* # cylinders per unit */
+	u_int16_t	ccg_rpm;
 };
 
 /*
  * A concatenated disk is described after initialization by this structure.
  */
 struct ccd_softc {
-	int		 sc_unit;		/* logical unit number */
-	int		 sc_flags;		/* flags */
-	int		 sc_cflags;		/* configuration flags */
-	size_t		 sc_size;		/* size of ccd */
-	int		 sc_ileave;		/* interleave */
-	int		 sc_nccdisks;		/* number of components */
-	struct ccdcinfo	 *sc_cinfo;		/* component info */
-	struct ccdiinfo	 *sc_itable;		/* interleave table */
-	int		 sc_nactive;		/* number of requests active */
-	int		 sc_dk;			/* disk index */
-	struct ccdgeom   sc_geom;		/* pseudo geometry info */
-	struct dkdevice	 sc_dkdev;		/* generic disk device info */
+	struct disk	sc_dkdev;		/* generic disk device info */
+	struct ccdgeom	sc_geom;		/* pseudo geometry info */
+	struct ccdcinfo	*sc_cinfo;		/* component info */
+	struct ccdiinfo	*sc_itable;		/* interleave table */
+	char		sc_xname[8];		/* XXX external name */
+	size_t		sc_size;		/* size of ccd */
+	int		sc_flags;		/* flags */
+	int		sc_cflags;		/* copy of ccd_flags */
+	int		sc_ileave;		/* interleave */
+	u_int		sc_nccdisks;		/* # of components */
+	u_int		sc_nccunits;		/* # of components for data */
 };
 
 /* sc_flags */

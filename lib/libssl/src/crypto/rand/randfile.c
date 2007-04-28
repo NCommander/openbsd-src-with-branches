@@ -233,7 +233,7 @@ const char *RAND_file_name(char *buf, size_t size)
 	struct stat sb;
 #endif
 
-	if (OPENSSL_issetugid() == 0)
+	if (issetugid() == 0)
 		s=getenv("RANDFILE");
 	if (s != NULL && *s && strlen(s) + 1 < size)
 		{
@@ -242,7 +242,7 @@ const char *RAND_file_name(char *buf, size_t size)
 		}
 	else
 		{
-		if (OPENSSL_issetugid() == 0)
+		if (issetugid() == 0)
 			s=getenv("HOME");
 #ifdef DEFAULT_HOME
 		if (s == NULL)

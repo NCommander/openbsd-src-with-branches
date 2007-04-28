@@ -115,6 +115,10 @@ static char *Pserver_Repos = NULL;
    CVSROOT/config.  */
 int system_auth = 1;
 
+/* Should we disable Update-prog/Checkin-prog? Can be changed by
+   CVSROOT/config.  */
+int disable_x_prog = 0;
+
 # endif /* AUTH_SERVER_SUPPORT */
 
 
@@ -790,7 +794,7 @@ E Protocol error: Root says \"%s\" but pserver says \"%s\"",
 	return;
     }
     (void) sprintf (path, "%s/%s", current_parsed_root->directory, CVSROOTADM);
-    if (!isaccessible (path, R_OK | X_OK))
+    if (readonlyfs == 0 && !isaccessible (path, R_OK | X_OK))
     {
 	int save_errno = errno;
 	if (alloc_pending (80 + strlen (path)))
@@ -926,7 +930,7 @@ serve_max_dotdot (arg)
     int i;
     char *p;
 
-    if (lim < 0)
+    if (lim < 0 || lim > 10000)
 	return;
     p = malloc (strlen (server_temp_dir) + 2 * lim + 10);
     if (p == NULL)
@@ -977,9 +981,6 @@ dirswitch (dir, repos)
 	return;
     }
 
-    if (dir_name != NULL)
-	free (dir_name);
-
     dir_len = strlen (dir);
 
     /* Check for a trailing '/'.  This is not ISDIRSEP because \ in the
@@ -994,6 +995,9 @@ dirswitch (dir, repos)
 		     "E protocol error: invalid directory syntax in %s", dir);
 	return;
     }
+
+    if (dir_name != NULL)
+	free (dir_name);
 
     dir_name = malloc (strlen (server_temp_dir) + dir_len + 40);
     if (dir_name == NULL)
@@ -1631,8 +1635,7 @@ serve_unchanged (arg)
     char *cp;
     char *timefield;
 
-    if (error_pending ())
-	return;
+    if (error_pending ()) return;
 
     if (outside_dir (arg))
 	return;
@@ -1646,9 +1649,28 @@ serve_unchanged (arg)
 	    && strlen (arg) == cp - name
 	    && strncmp (arg, name, cp - name) == 0)
 	{
-	    timefield = strchr (cp + 1, '/') + 1;
-	    if (*timefield != '=')
+	    if (!(timefield = strchr (cp + 1, '/')) || *++timefield == '\0')
 	    {
+		/* We didn't find the record separator or it is followed by
+		 * the end of the string, so just exit.
+		 */
+		if (alloc_pending (80))
+		    sprintf (pending_error_text,
+		             "E Malformed Entry encountered.");
+		return;
+	    }
+	    /* If the time field is not currently empty, then one of
+	     * serve_modified, serve_is_modified, & serve_unchanged were
+	     * already called for this file.  We would like to ignore the
+	     * reinvocation silently or, better yet, exit with an error
+	     * message, but we just avoid the copy-forward and overwrite the
+	     * value from the last invocation instead.  See the comment below
+	     * for more.
+	     */
+	    if (*timefield == '/')
+	    {
+		/* Copy forward one character.  Space was allocated for this
+		 * already in serve_entry().  */
 		cp = timefield + strlen (timefield);
 		cp[1] = '\0';
 		while (cp > timefield)
@@ -1656,8 +1678,17 @@ serve_unchanged (arg)
 		    *cp = cp[-1];
 		    --cp;
 		}
-		*timefield = '=';
 	    }
+	    /* If *TIMEFIELD wasn't "/", we assume that it was because of
+	     * multiple calls to Is-Modified & Unchanged by the client and
+	     * just overwrite the value from the last call.  Technically, we
+	     * should probably either ignore calls after the first or send the
+	     * client an error, since the client/server protocol specification
+	     * specifies that only one call to either Is-Modified or Unchanged
+	     * is allowed, but broken versions of WinCVS & TortoiseCVS rely on
+	     * this behavior.
+	     */
+	    *timefield = '=';
 	    break;
 	}
     }
@@ -1674,8 +1705,7 @@ serve_is_modified (arg)
     /* Have we found this file in "entries" yet.  */
     int found;
 
-    if (error_pending ())
-	return;
+    if (error_pending ()) return;
 
     if (outside_dir (arg))
 	return;
@@ -1690,9 +1720,28 @@ serve_is_modified (arg)
 	    && strlen (arg) == cp - name
 	    && strncmp (arg, name, cp - name) == 0)
 	{
-	    timefield = strchr (cp + 1, '/') + 1;
-	    if (!(timefield[0] == 'M' && timefield[1] == '/'))
+	    if (!(timefield = strchr (cp + 1, '/')) || *++timefield == '\0')
 	    {
+		/* We didn't find the record separator or it is followed by
+		 * the end of the string, so just exit.
+		 */
+		if (alloc_pending (80))
+		    sprintf (pending_error_text,
+		             "E Malformed Entry encountered.");
+		return;
+	    }
+	    /* If the time field is not currently empty, then one of
+	     * serve_modified, serve_is_modified, & serve_unchanged were
+	     * already called for this file.  We would like to ignore the
+	     * reinvocation silently or, better yet, exit with an error
+	     * message, but we just avoid the copy-forward and overwrite the
+	     * value from the last invocation instead.  See the comment below
+	     * for more.
+	     */
+	    if (*timefield == '/')
+	    {
+		/* Copy forward one character.  Space was allocated for this
+		 * already in serve_entry().  */
 		cp = timefield + strlen (timefield);
 		cp[1] = '\0';
 		while (cp > timefield)
@@ -1700,8 +1749,17 @@ serve_is_modified (arg)
 		    *cp = cp[-1];
 		    --cp;
 		}
-		*timefield = 'M';
 	    }
+	    /* If *TIMEFIELD wasn't "/", we assume that it was because of
+	     * multiple calls to Is-Modified & Unchanged by the client and
+	     * just overwrite the value from the last call.  Technically, we
+	     * should probably either ignore calls after the first or send the
+	     * client an error, since the client/server protocol specification
+	     * specifies that only one call to either Is-Modified or Unchanged
+	     * is allowed, but broken versions of WinCVS & TortoiseCVS rely on
+	     * this behavior.
+	     */
+	    *timefield = 'M';
 	    if (kopt != NULL)
 	    {
 		if (alloc_pending (strlen (name) + 80))
@@ -1756,8 +1814,29 @@ serve_entry (arg)
 {
     struct an_entry *p;
     char *cp;
+    int i = 0;
     if (error_pending()) return;
-    p = (struct an_entry *) malloc (sizeof (struct an_entry));
+
+    /* Verify that the entry is well-formed.  This can avoid problems later.
+     * At the moment we only check that the Entry contains five slashes in
+     * approximately the correct locations since some of the code makes
+     * assumptions about this.
+     */
+    cp = arg;
+    if (*cp == 'D') cp++;
+    while (i++ < 5)
+    {
+      if (!cp || *cp != '/')
+      {
+          if (alloc_pending (80))
+              sprintf (pending_error_text,
+                       "E protocol error: Malformed Entry");
+           return;
+      }
+    cp = strchr (cp + 1, '/');
+    }
+
+    p = xmalloc (sizeof (struct an_entry));
     if (p == NULL)
     {
 	pending_error = ENOMEM;
@@ -1989,6 +2068,9 @@ serve_notify (arg)
     {
 	char *cp;
 
+	if (!data[0])
+	    goto error;
+
 	if (strchr (data, '+'))
 	    goto error;
 
@@ -2120,6 +2202,15 @@ serve_argument (arg)
     char *p;
     
     if (error_pending()) return;
+
+    if (argument_count >= 10000)
+    {
+       if (alloc_pending (80))
+           sprintf (pending_error_text,
+                    "E Protocol error: too many arguments");
+       return;
+    }
+
     
     if (argument_vector_size <= argument_count)
     {
@@ -2150,6 +2241,15 @@ serve_argumentx (arg)
     char *p;
     
     if (error_pending()) return;
+
+    if (argument_count <= 1)
+    {
+        if (alloc_pending (80))
+            sprintf (pending_error_text,
+                     "E Protocol error: called argumentx without prior call to argument");
+        return;
+    }
+
     
     p = argument_vector[argument_count - 1];
     p = realloc (p, strlen (p) + 1 + strlen (arg) + 1);
@@ -2507,7 +2607,7 @@ check_command_legal_p (cmd_name)
                     save some code here...  -kff */
 
                  /* Chop newline by hand, for strcmp()'s sake. */
-                 if (linebuf[num_red - 1] == '\n')
+                 if (num_red > 0 && linebuf[num_red - 1] == '\n')
                      linebuf[num_red - 1] = '\0';
 
                  if (strcmp (linebuf, CVS_Username) == 0)
@@ -2562,7 +2662,7 @@ check_command_legal_p (cmd_name)
          while ((num_red = getline (&linebuf, &linebuf_len, fp)) >= 0)
          {
              /* Chop newline by hand, for strcmp()'s sake. */
-             if (linebuf[num_red - 1] == '\n')
+             if (num_red > 0 && linebuf[num_red - 1] == '\n')
                  linebuf[num_red - 1] = '\0';
            
              if (strcmp (linebuf, CVS_Username) == 0)
@@ -4629,6 +4729,17 @@ serve_checkin_prog (arg)
     char *arg;
 {
     FILE *f;
+
+    /* Before we do anything we first check if this command is not 
+       disabled. */
+    if (disable_x_prog)
+    {
+	if (alloc_pending (80))
+	    sprintf (pending_error_text, "\
+E Checkin-prog disabled by configuration");
+	return;
+    }
+
     f = CVS_FOPEN (CVSADM_CIPROG, "w+");
     if (f == NULL)
     {
@@ -4663,6 +4774,16 @@ serve_update_prog (arg)
 {
     FILE *f;
 
+    /* Before we do anything we first check if this command is not 
+       disabled. */
+    if (disable_x_prog)
+    {
+	if (alloc_pending (80))
+	    sprintf (pending_error_text, "\
+E Update-prog disabled by configuration");
+	return;
+    }
+    
     /* Before we do anything we need to make sure we are not in readonly
        mode.  */
     if (!check_command_legal_p ("commit"))
@@ -4839,9 +4960,12 @@ static void wait_sig (sig)
      int sig;
 {
     int status;
+    int save_errno = errno;
+
     pid_t r = wait (&status);
     if (r == command_pid)
 	command_pid_is_dead++;
+    errno = save_errno;
 }
 #endif /* SUNOS_KLUDGE */
 
@@ -4850,8 +4974,32 @@ server_cleanup (sig)
     int sig;
 {
     /* Do "rm -rf" on the temp directory.  */
+    static int called = 0;
     int status;
     int save_noexec;
+
+    if (called++)
+	return;
+
+    /* already processing cleanup, do not want recursion */
+#ifdef SIGABRT
+    (void) SIG_deregister (SIGABRT, server_cleanup);
+#endif
+#ifdef SIGHUP
+    (void) SIG_deregister (SIGHUP, server_cleanup);
+#endif
+#ifdef SIGINT
+    (void) SIG_deregister (SIGINT, server_cleanup);
+#endif
+#ifdef SIGQUIT
+    (void) SIG_deregister (SIGQUIT, server_cleanup);
+#endif
+#ifdef SIGPIPE
+    (void) SIG_deregister (SIGPIPE, server_cleanup);
+#endif
+#ifdef SIGTERM
+    (void) SIG_deregister (SIGTERM, server_cleanup);
+#endif
 
     if (buf_to_net != NULL)
     {
@@ -5349,7 +5497,10 @@ error 0 %s: no such user\n", username);
     /* Set LOGNAME, USER and CVS_USER in the environment, in case they
        are already set to something else.  */
     {
-	char *env, *cvs_user;
+	char *env;
+#ifdef AUTH_SERVER_SUPPORT
+	char *cvs_user;
+#endif
 
 	env = xmalloc (sizeof "LOGNAME=" + strlen (username));
 	(void) sprintf (env, "LOGNAME=%s", username);
@@ -5359,10 +5510,12 @@ error 0 %s: no such user\n", username);
 	(void) sprintf (env, "USER=%s", username);
 	(void) putenv (env);
 
+#ifdef AUTH_SERVER_SUPPORT
         cvs_user = NULL != CVS_Username ? CVS_Username : "";
         env = xmalloc (sizeof "CVS_USER=" + strlen (cvs_user));
         (void) sprintf (env, "CVS_USER=%s", cvs_user);
         (void) putenv (env);
+#endif
     }
 #endif /* HAVE_PUTENV */
 }

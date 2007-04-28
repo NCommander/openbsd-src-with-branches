@@ -1,10 +1,10 @@
-#    $Id: Makefile,v 1.6 1995/04/06 04:35:27 rahn Exp $
-
-CFLAGS+=-I${.CURDIR}/../../include
-
-.include "${MACHINE_ARCH}/Makefile.inc"
-
-.PATH:  ${.CURDIR}/${MACHINE_ARCH}
+#	$OpenBSD: Makefile,v 1.6 1996/05/16 02:21:58 chuck Exp $
+#
+# DO NOT OPTMIZE bugcrt (i.e. no "-O2")
+#
+S=${.CURDIR}/../../../..
+CFLAGS=-I${.CURDIR}/../../include -I${.CURDIR}/../libbug -I${S}/lib/libsa \
+	-fomit-frame-pointer
 
 OBJS=bugcrt.o
 
@@ -13,7 +13,7 @@ CLEANFILES+=a.out
 all:	${OBJS}
 
 bugcrt.o: bugcrt.c
-	${CC} ${CFLAGS} -c -O ${.ALLSRC}
+	${COMPILE.c} -c $<
 	${LD} -x -r ${.TARGET}
 	mv a.out ${.TARGET}
 

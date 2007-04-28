@@ -1,0 +1,3 @@
+dnl	$OpenBSD$
+Since OpenBSD/OSREV is the first MACHINE release, there is no upgrade
+functionality.

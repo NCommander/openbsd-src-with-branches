@@ -45,7 +45,7 @@
 reads the configuration file
 .Pa krb5.conf ,
 or the file given on the command line,
-and parses it, thereby verifying that the syntax is not correctly wrong.
+and parses it, thereby verifying that the syntax is correct.
 .Pp
 If the file is syntactically correct,
 .Nm
@@ -54,8 +54,8 @@ tries to verify that the contents of the file is of relevant nature.
 .Ev KRB5_CONFIG
 points to the configuration file to read.
 .Sh FILES
-.Bl -tag -width /etc/krb5.conf -compact
-.It Pa /etc/krb5.conf
+.Bl -tag -width /etc/kerberosV/krb5.conf -compact
+.It Pa /etc/kerberosV/krb5.conf
 Kerberos 5 configuration file
 .El
 .Sh DIAGNOSTICS
@@ -78,8 +78,8 @@ versa, or just that
 .Nm
 is confused.
 .It <path>: unknown entry
-Means that <string> is not known by
-.Nm "" .
+Means that <string> is unknown to
+.Nm Ns .
 .El
 .Sh SEE ALSO
 .Xr krb5.conf 5

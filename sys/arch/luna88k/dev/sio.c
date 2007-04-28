@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: sio.c,v 1.2 2004/07/27 12:36:32 miod Exp $ */
 /* $NetBSD: sio.c,v 1.1 2000/01/05 08:48:55 nisimura Exp $ */
 
 /*-
@@ -45,7 +45,6 @@
 
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
-#include <machine/locore.h>		/* badaddr() */
 
 #include <luna88k/luna88k/isr.h>
 #include <luna88k/dev/siovar.h>
@@ -100,7 +99,8 @@ sio_attach(parent, self, aux)
 		config_found(self, (void *)&sio_args, sio_print);
 	}
 
-	isrlink_autovec(xsiointr, sc, ma->ma_ilvl, ISRPRI_TTYNOBUF);
+	isrlink_autovec(xsiointr, sc, ma->ma_ilvl, ISRPRI_TTYNOBUF,
+	    self->dv_xname);
 }
 
 int

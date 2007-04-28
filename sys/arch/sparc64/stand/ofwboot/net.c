@@ -1,3 +1,4 @@
+/*	$OpenBSD: net.c,v 1.2 2001/08/20 19:55:33 jason Exp $	*/
 /*	$NetBSD: net.c,v 1.1 2000/08/20 14:58:38 mrg Exp $	*/
 
 /*
@@ -62,8 +63,8 @@
 #include <lib/libsa/netif.h>
 
 
-static int net_mountroot_bootparams __P((void));
-static int net_mountroot_bootp __P((void));
+static int net_mountroot_bootparams(void);
+static int net_mountroot_bootp(void);
 
 char	rootpath[FNAME_SIZE];
 

@@ -1,4 +1,5 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trace.c,v 1.14 2003/07/03 02:47:03 avsm Exp $	*/
+/*	$NetBSD: trace.c,v 1.13 1995/06/20 22:28:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,8 @@
 
 #if !defined(lint)
 static char sccsid[] = "@(#)trace.c	8.1 (Berkeley) 6/5/93";
+#else
+static char rcsid[] = "$OpenBSD: trace.c,v 1.14 2003/07/03 02:47:03 avsm Exp $";
 #endif
 
 #define	RIPCMDS
@@ -56,7 +55,9 @@ u_int	tracelevel, new_tracelevel;
 FILE	*ftrace = stdout;		/* output trace file */
 static char *tracelevel_pat = "%s\n";
 
-char savetracename[MAXPATHLEN+1];
+char savetracename[MAXPATHLEN];
+
+static void trace_dump(void);
 
 
 /* convert IP address to a string, but not into a single buffer
@@ -69,13 +70,13 @@ naddr_ntoa(naddr a)
 	static struct {
 	    char    str[16];		/* xxx.xxx.xxx.xxx\0 */
 	} bufs[NUM_BUFS];
-	char *s;
 	struct in_addr addr;
 
 	addr.s_addr = a;
-	s = strcpy(bufs[bufno].str, inet_ntoa(addr));
+	strlcpy(bufs[bufno].str, inet_ntoa(addr),
+	    sizeof bufs[bufno].str);
 	bufno = (bufno+1) % NUM_BUFS;
-	return s;
+	return bufs[bufno].str;
 #undef NUM_BUFS
 }
 
@@ -88,7 +89,8 @@ saddr_ntoa(struct sockaddr *sa)
 
 
 static char *
-ts(time_t secs) {
+ts(time_t secs)
+{
 	static char s[20];
 
 	secs += epoch.tv_sec;
@@ -129,6 +131,7 @@ tmsg(char *p, ...)
 		va_start(args, p);
 		vfprintf(ftrace, p, args);
 		fflush(ftrace);
+		va_end(args);
 	}
 }
 
@@ -160,7 +163,7 @@ trace_flush(void)
 	if (ftrace != 0) {
 		fflush(ftrace);
 		if (ferror(ftrace))
-			trace_off("tracing off: ", strerror(ferror(ftrace)));
+			trace_off("tracing off: %s", strerror(ferror(ftrace)));
 	}
 }
 
@@ -176,6 +179,7 @@ trace_off(char *p, ...)
 		va_start(args, p);
 		vfprintf(ftrace, p, args);
 		fflush(ftrace);
+		va_end(args);
 	}
 	trace_close();
 
@@ -184,8 +188,7 @@ trace_off(char *p, ...)
 
 
 void
-trace_on(char *filename,
-	 int trusted)
+trace_on(char *filename, int trusted)
 {
 	struct stat stbuf;
 	FILE *n_ftrace;
@@ -204,21 +207,26 @@ trace_on(char *filename,
 		}
 		filename = savetracename;
 
-	} else if (stat(filename, &stbuf) >= 0) {
-		if (!trusted) {
-			msglog("trace file \"%s\" already exists");
-			return;
-		}
-		if ((stbuf.st_mode & S_IFMT) != S_IFREG) {
+	} else if (!strcmp(filename,"dump/../table")) {
+		trace_dump();
+		return;
+
+	} else {
+		if (stat(filename, &stbuf) >= 0
+		    && (stbuf.st_mode & S_IFMT) != S_IFREG) {
 			msglog("wrong type (%#x) of trace file \"%s\"",
 			       stbuf.st_mode, filename);
 			return;
 		}
 
 		if (!trusted
-		    && strcmp(filename, savetracename)
-		    && strncmp(filename, _PATH_TRACE, sizeof(_PATH_TRACE)-1)) {
-			msglog("wrong directory for trace file: \"%s\"",
+#ifdef _PATH_TRACE
+		    && (strncmp(filename, _PATH_TRACE, sizeof(_PATH_TRACE)-1)
+			|| strstr(filename,"../")
+			|| 0 > stat(_PATH_TRACE, &stbuf))
+#endif
+		    && strcmp(filename, savetracename)) {
+			msglog("wrong directory for trace file \"%s\"",
 			       filename);
 			return;
 		}
@@ -234,7 +242,7 @@ trace_on(char *filename,
 	tmsg("switch to trace file %s\n", filename);
 	trace_close();
 	if (filename != savetracename)
-		strncpy(savetracename, filename, sizeof(savetracename)-1);
+		strlcpy(savetracename, filename, sizeof(savetracename));
 	ftrace = n_ftrace;
 
 	fflush(stdout);
@@ -330,10 +338,14 @@ addrname(naddr	addr,			/* in network byte order */
 	} bufs[NUM_BUFS];
 	char *s, *sp;
 	naddr dmask;
+	size_t l;
 	int i;
 
-	s = strcpy(bufs[bufno].str, naddr_ntoa(addr));
+	strlcpy(bufs[bufno].str, naddr_ntoa(addr),
+	    sizeof bufs[bufno].str);
 	bufno = (bufno+1) % NUM_BUFS;
+	s = bufs[bufno].str;
+	l = sizeof(bufs[bufno].str);
 
 	if (force == 1 || (force == 0 && mask != std_mask(addr))) {
 		sp = &s[strlen(s)];
@@ -342,10 +354,10 @@ addrname(naddr	addr,			/* in network byte order */
 		if (mask + dmask == 0) {
 			for (i = 0; i != 32 && ((1<<i) & mask) == 0; i++)
 				continue;
-			(void)sprintf(sp, "/%d", 32-i);
+			(void)snprintf(sp, s + l - sp, "/%d", 32-i);
 
 		} else {
-			(void)sprintf(sp, " (mask %#x)", (u_int)mask);
+			(void)snprintf(sp, s + l - sp, " (mask %#x)", (u_int)mask);
 		}
 	}
 
@@ -424,9 +436,7 @@ static struct bits rs_bits[] = {
 
 
 static void
-trace_bits(struct bits *tbl,
-	   u_int field,
-	   int force)
+trace_bits(struct bits *tbl, u_int field, int force)
 {
 	int b;
 	char c;
@@ -465,23 +475,22 @@ trace_bits(struct bits *tbl,
 
 
 static char *
-trace_pair(naddr dst,
-	   naddr mask,
-	   char *gate)
+trace_pair(naddr dst, naddr mask, char *gate)
 {
 	static char buf[3*4+3+1+2+3	/* "xxx.xxx.xxx.xxx/xx-->" */
 			+3*4+3+1];	/* "xxx.xxx.xxx.xxx" */
 	int i;
 
-	i = sprintf(buf, "%-16s-->", addrname(dst, mask, 0));
-	(void)sprintf(&buf[i], "%-*s", 15+20-MAX(20,i), gate);
+	i = snprintf(buf, sizeof buf, "%-16s-->", addrname(dst, mask, 0));
+	if (i >= sizeof buf || i == -1)
+		return buf;
+	(void)snprintf(&buf[i], sizeof buf - i, "%-*s", 15+20-MAX(20,i), gate);
 	return buf;
 }
 
 
 void
-trace_if(char *act,
-	  struct interface *ifp)
+trace_if(char *act, struct interface *ifp)
 {
 	if (!TRACEACTIONS || ftrace == 0)
 		return;
@@ -503,14 +512,9 @@ trace_if(char *act,
 
 
 void
-trace_upslot(struct rt_entry *rt,
-	     struct rt_spare *rts,
-	     naddr	gate,
-	     naddr	router,
-	     struct interface *ifp,
-	     int	metric,
-	     u_short	tag,
-	     time_t	new_time)
+trace_upslot(struct rt_entry *rt, struct rt_spare *rts, naddr gate,
+    naddr router, struct interface *ifp, int metric, u_short tag,
+    time_t new_time)
 {
 	if (!TRACEACTIONS || ftrace == 0)
 		return;
@@ -581,6 +585,7 @@ trace_kernel(char *p, ...)
 	lastlog();
 	va_start(args, p);
 	vfprintf(ftrace, p, args);
+	va_end(args);
 }
 
 
@@ -597,6 +602,7 @@ trace_act(char *p, ...)
 	lastlog();
 	va_start(args, p);
 	vfprintf(ftrace, p, args);
+	va_end(args);
 }
 
 
@@ -613,6 +619,7 @@ trace_pkt(char *p, ...)
 	lastlog();
 	va_start(args, p);
 	vfprintf(ftrace, p, args);
+	va_end(args);
 }
 
 
@@ -697,6 +704,68 @@ trace_add_del(char * action, struct rt_entry *rt)
 	(void)fprintf(ftrace, "%s ",
 		      rt->rt_ifp != 0 ? rt->rt_ifp->int_name : "?");
 	(void)fprintf(ftrace, "%s\n", ts(rt->rt_time));
+}
+
+
+/* ARGSUSED */
+static int
+walk_trace(struct radix_node *rn,
+	   void *w)
+{
+#define RT ((struct rt_entry *)rn)
+	struct rt_spare *rts;
+	int i, age;
+
+	(void)fprintf(ftrace, "  %-35s metric=%-2d ",
+		      trace_pair(RT->rt_dst, RT->rt_mask,
+				 naddr_ntoa(RT->rt_gate)),
+		      RT->rt_metric);
+	if (RT->rt_router != RT->rt_gate)
+		(void)fprintf(ftrace, "router=%s ",
+			      naddr_ntoa(RT->rt_router));
+	if (RT->rt_tag != 0)
+		(void)fprintf(ftrace, "tag=%#x ",
+			      ntohs(RT->rt_tag));
+	trace_bits(rs_bits, RT->rt_state, 0);
+	(void)fprintf(ftrace, "%s ",
+		      RT->rt_ifp == 0 ? "?" : RT->rt_ifp->int_name);
+	age = AGE_RT(RT->rt_state, RT->rt_ifp);
+	if (age)
+		(void)fprintf(ftrace, "%s", ts(RT->rt_time));
+
+	rts = &RT->rt_spares[1];
+	for (i = 1; i < NUM_SPARES; i++, rts++) {
+		if (rts->rts_metric != HOPCNT_INFINITY) {
+			(void)fprintf(ftrace,"\n    #%d%15s%-16s metric=%-2d ",
+				      i, "", naddr_ntoa(rts->rts_gate),
+				      rts->rts_metric);
+			if (rts->rts_router != rts->rts_gate)
+				(void)fprintf(ftrace, "router=%s ",
+					      naddr_ntoa(rts->rts_router));
+			if (rts->rts_tag != 0)
+				(void)fprintf(ftrace, "tag=%#x ",
+					      ntohs(rts->rts_tag));
+			(void)fprintf(ftrace, "%s ",
+				      (rts->rts_ifp == 0
+				       ? "?" : rts->rts_ifp->int_name));
+			if (age)
+				(void)fprintf(ftrace, "%s", ts(rts->rts_time));
+		}
+	}
+	(void)fputc('\n',ftrace);
+
+	return 0;
+}
+
+
+static void
+trace_dump(void)
+{
+	if (ftrace == 0)
+		return;
+	lastlog();
+
+	(void)rn_walktree(rhead, walk_trace, 0);
 }
 
 

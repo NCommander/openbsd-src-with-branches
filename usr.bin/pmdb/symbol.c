@@ -1,4 +1,4 @@
-/*	$PMDB: symbol.c,v 1.5 2002/03/07 14:27:08 art Exp $	*/
+/*	$OpenBSD: symbol.c,v 1.6 2002/07/24 14:06:27 vincent Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <err.h>
+#include <errno.h>
 
 #include "pmdb.h"
 #include "symbol.h"
@@ -51,7 +52,8 @@ sym_init_exec(struct pstate *ps, const char *name)
 		warnx("sym_init_exec: %s is not a supported file format", name);
 
 	if (ps->ps_sops) {
-		ps->ps_sym_exe = st_open(ps, name);
+		/* XXX - this 0 doesn't have to be correct.. */
+		ps->ps_sym_exe = st_open(ps, name, 0);
 		if (ps->ps_sym_exe)
 			ps->ps_sym_exe->st_flags |= ST_EXEC;
 	}
@@ -65,6 +67,8 @@ sym_destroy(struct pstate *ps)
 {
 	struct sym_table *st;
 
+	if (!(ps->ps_flags & PSF_SYMBOLS))
+		return;
 	while ((st = TAILQ_FIRST(&ps->ps_syms)) != NULL) {
 		TAILQ_REMOVE(&ps->ps_syms, st, st_list);
 		(*ps->ps_sops->sop_close)(st);
@@ -128,7 +132,11 @@ sym_print(struct pstate *ps, reg pc, char *buf, size_t buflen)
 	if (name == NULL) {
 		snprintf(buf, buflen, "0x%lx", pc);
 	} else {
-		snprintf(buf, buflen, "%s+0x%lx(0x%lx)", name, offs, pc);
+		if (offs)
+			snprintf(buf, buflen, "%s+0x%lx(0x%lx)",
+			    name, offs, pc);
+		else
+			snprintf(buf, buflen, "%s(0x%lx)", name, pc);
 	}
 
 	return (buf);
@@ -139,22 +147,47 @@ sym_print(struct pstate *ps, reg pc, char *buf, size_t buflen)
  * it's already there.
  */
 struct sym_table *
-st_open(struct pstate *ps, const char *name)
+st_open(struct pstate *ps, const char *name, reg offs)
 {
 	struct sym_table *st;
 
 	TAILQ_FOREACH(st, &ps->ps_syms, st_list) {
-		if (!strcmp(name, st->st_fname))
+		if (!strcmp(name, st->st_fname) && (st->st_offs == offs))
 			return (st);
 	}
 
-	warnx("Loading symbols from %s", name);
+	warnx("Loading symbols from %s at 0x%lx", name, offs);
 
 	if ((st = (*ps->ps_sops->sop_open)(name)) != NULL) {
 		TAILQ_INSERT_TAIL(&ps->ps_syms, st, st_list);
 		strlcpy(st->st_fname, name, sizeof(st->st_fname));
+		st->st_offs = offs;
 	}
 
 	return (st);
 }
 
+/*
+ * Load a symbol table from file argv[1] at offset argv[2].
+ */
+int
+cmd_sym_load(int argc, char **argv, void *arg)
+{
+	struct pstate *ps = arg;
+	char *fname, *ep;
+	reg offs;
+
+	fname = argv[1];
+	errno = 0;
+	offs = strtol(argv[2], &ep, 0);
+	if (argv[2][0] == '\0' || *ep != '\0' || errno == ERANGE) {
+		fprintf(stderr, "%s is not a valid offset\n", argv[2]);
+		return (0);
+	}
+
+	if (st_open(ps, fname, offs) == NULL) {
+		warnx("symbol loading failed");
+	}
+
+	return (0);
+}

@@ -1,3 +1,6 @@
+.\"	$OpenBSD: rx.4,v 1.9 2003/06/02 23:30:14 millert Exp $
+.\"	$NetBSD: rx.4,v 1.3 1996/03/03 17:14:03 thorpej Exp $
+.\"
 .\" Copyright (c) 1983, 1991 Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,11 +29,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)rx.4	6.2 (Berkeley) 3/27/91
-.\"	$Id: rx.4,v 1.2 1993/08/01 07:36:02 mycroft Exp $
 .\"
 .Dd March 27, 1991
 .Dt RX 4 vax
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm rx
 .Nd
@@ -42,9 +40,7 @@
 .Tn RX02
 floppy disk interface
 .Sh SYNOPSIS
-.Cd "controller fx0 at uba0 csr 0177170  vector rxintr"
-.Cd "disk rx0 at fx0 drive 0"
-.Cd "disk rx1 at fx0 drive 1"
+.Cd "rx* at mscpbus? drive?"
 .Sh DESCRIPTION
 The
 .Nm rx
@@ -54,7 +50,7 @@ device provides access to a
 floppy disk
 unit with M8256 interface module
 .Pf ( Tn RX211
-configuration). 
+configuration).
 The
 .Tn RX02
 uses 8-inch, single-sided, soft-sectored floppy
@@ -64,13 +60,13 @@ either single or double density.
 Floppy disks handled by the
 .Tn RX02
 contain 77 tracks, each with 26
-sectors (for a total of 2,002 sectors).  The sector size is 128
-bytes for single density, 256 bytes for double density.  Single 
-density disks are compatible with the
+sectors (for a total of 2,002 sectors).
+The sector size is 128 bytes for single density, 256 bytes for double density.
+Single density disks are compatible with the
 .Tn RX01
 floppy disk unit and with
 .Tn IBM
-3740 Series Diskette 1 systems.  
+3740 Series Diskette 1 systems.
 .Pp
 In addition to normal (`block' and `raw')
 .Tn I/O ,
@@ -83,7 +79,6 @@ operating system
 .Tn RT-11 .
 .Pp
 The minor device number is interpreted as follows:
-.Pp
 .Bl -column Otherx -offset indent
 .Sy Bit	Description
 0	Sector interleaving  (1 disables interleaving)
@@ -95,7 +90,8 @@ Other	Drive number
 The two drives in a single
 .Tn RX02
 unit are treated as
-two disks attached to a single controller.  Thus, if there are two
+two disks attached to a single controller.
+Thus, if there are two
 .Tn RX02 Ns 's
 on a system, the drives on the first
 .Tn RX02
@@ -106,11 +102,11 @@ and
 while the drives on the second are
 .Dq Li rx2
 and
-.Dq Li rx3 . 
+.Dq Li rx3 .
 .Pp
 When the device is opened, the density of the disk
-currently in the drive is automatically determined. If there
-is no floppy in the device, open will fail.
+currently in the drive is automatically determined.
+If there is no floppy in the device, open will fail.
 .Pp
 The interleaving parameters are represented in raw device
 names by the letters
@@ -119,7 +115,6 @@ through
 .Ql d .
 Thus, unit 0, drive 0 is
 called by one of the following names:
-.Pp
 .Bl -column interleavedxx "Device namexx" "Starting Track" -offset indent
 .Sy Mapping	Device name	Starting track
 interleaved	/dev/rrx0a	0
@@ -137,7 +132,7 @@ operating system
 The
 .Ql b
 device accesses the
-sectors of the disk in strictly sequential order.  
+sectors of the disk in strictly sequential order.
 The
 .Ql a
 device is the most efficient for disk-to-disk copying.
@@ -148,14 +143,14 @@ requests must start on a sector boundary, involve an integral
 number of complete sectors, and not go off the end of the disk.
 .Sh NOTES
 Even though the storage capacity on a floppy disk is quite
-small, it is possible to make filesystems on 
-double density disks. 
+small, it is possible to make filesystems on
+double density disks.
 For example, the command
 .Bd -literal -offset indent
 % mkfs /dev/rx0 1001 13 1 4096 512 32 0 4
 .Ed
 .Pp
-makes a file system on the double density disk in rx0 with 
+makes a file system on the double density disk in rx0 with
 436 kbytes available for file storage.
 Using
 .Xr tar 1
@@ -166,19 +161,11 @@ hold file systems.
 .Pp
 A number of
 .Xr ioctl 2
-calls apply to the rx devices, and
-have the form
-.Bd -literal -offset indent
-#include <vaxuba/rxreg.h>
-ioctl(fildes, code, arg)
-int *arg;
-.Ed
-.Pp
-The applicable codes are:
+calls apply to the rx devices:
 .Bl -tag -width RXIOC_GETDENS
 .It Dv RXIOC_FORMAT
-Format the diskette. The density to use is specified
-by the 
+Format the diskette.
+The density to use is specified by the
 .Ar arg
 argument, zero gives single density while non-zero
 gives double density.
@@ -187,7 +174,7 @@ Return the density of the diskette (zero or non-zero as above).
 .It Dv RXIOC_WDDMK
 On the next write, include a
 .Em deleted data address mark
-in 
+in
 the header of the first sector.
 .It Dv RXIOC_RDDMK
 Return non-zero if the last sector read contained a
@@ -203,12 +190,13 @@ return 0.
 .Sh DIAGNOSTICS
 .Bl -diag
 .It "rx%d: hard error, trk %d psec %d cs=%b, db=%b, err=%x, %x, %x, %x."
-An unrecoverable error was encountered.  The 
-track and physical sector numbers, the device registers and the 
+An unrecoverable error was encountered.
+The track and physical sector numbers, the device registers and the
 extended error status are displayed.
 .Pp
 .It rx%d: state %d (reset).
-The driver entered a bogus state.  This should not happen.
+The driver entered a bogus state.
+This should not happen.
 .El
 .Sh ERRORS
 The following errors may be returned by the driver:
@@ -217,29 +205,30 @@ The following errors may be returned by the driver:
 Drive not ready; usually because no disk is in the drive or
 the drive door is open.
 .It Bq Er ENXIO
-Nonexistent drive (on open); 
+Nonexistent drive (on open);
 offset is too large or not on a sector boundary or
 byte count is not a multiple of the sector size (on read or write);
 or bad (undefined) ioctl code.
 .It Bq Er EIO
-A physical error other than ``not ready'', probably bad media or 
+A physical error other than ``not ready'', probably bad media or
 unknown format.
 .It Bq Er EBUSY
 Drive has been opened for exclusive access.
 .It Bq Er EBADF
 No write access (on format), or wrong density; the latter
-can only happen if the disk is changed without 
+can only happen if the disk is changed without
 .Em closing
 the device
 (i.e., calling
 .Xr close 2 ) .
 .El
 .Sh SEE ALSO
-.Xr rxformat 8 ,
-.Xr newfs 8 ,
+.Xr intro 4 ,
+.Xr mscpbus 4 ,
+.\" .Xr arff 8 ,
 .Xr mkfs 8 ,
-.Xr tar 1 ,
-.Xr arff 8
+.Xr newfs 8
+.\" .Xr rxformat 8
 .Sh HISTORY
 The
 .Nm
@@ -247,9 +236,9 @@ driver appeared in
 .Bx 4.2 .
 .Sh BUGS
 A floppy may not be formatted if the
-header info on sector 1, track 0 has been damaged.  Hence, it is not
-possible to format completely degaussed disks or disks with other
-formats than the two known by the hardware. 
+header info on sector 1, track 0 has been damaged.
+Hence, it is not possible to format completely degaussed disks or disks with
+other formats than the two known by the hardware.
 .Pp
 If the drive subsystem is powered down when the machine is booted, the
 controller won't interrupt.

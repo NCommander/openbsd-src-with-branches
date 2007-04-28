@@ -396,9 +396,7 @@ compile_pattern(pattern, search_type)
 
 	if (last_pattern != NULL)
 		free(last_pattern);
-	last_pattern = (char *) calloc(1, strlen(pattern)+1);
-	if (last_pattern != NULL)
-		strcpy(last_pattern, pattern);
+	last_pattern = save(pattern);
 
 	last_search_type = search_type;
 	return (0);

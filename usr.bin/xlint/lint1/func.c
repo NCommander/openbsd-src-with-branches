@@ -1,3 +1,4 @@
+/*	$OpenBSD: func.c,v 1.17 2006/05/28 23:50:54 cloder Exp $	*/
 /*	$NetBSD: func.c,v 1.7 1995/10/02 17:31:40 jpo Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: func.c,v 1.7 1995/10/02 17:31:40 jpo Exp $";
+static char rcsid[] = "$OpenBSD: func.c,v 1.17 2006/05/28 23:50:54 cloder Exp $";
 #endif
 
 #include <stdlib.h>
@@ -57,7 +58,7 @@ int	reached = 1;
 int	rchflg;
 
 /*
- * In conjunction with reached ontrols printing of "fallthrough on ..."
+ * In conjunction with reached controls printing of "fallthrough on ..."
  * warnings.
  * Reset by each statement and set by FALLTHROUGH, switch (switch1())
  * and case (label()).
@@ -83,6 +84,18 @@ int	nargusg = -1;
 pos_t	aupos;
 
 /*
+ * If the following function has been declared NORETURN, noretflg is set
+ * to 1. Otherwise it is set to 0.
+ */
+int	noretflg = 0;
+
+/*
+ * If the following symbol should be marked as having been used, even if
+ * lint thinks otherwise, usedflg is set to 1. Otherwise it is set to 0.
+ */
+int	usedflg = 0;
+
+/*
  * Number of arguments of the following function definition whose types
  * shall be checked by lint2. -1 stands for all arguments.
  *
@@ -105,13 +118,13 @@ pos_t	prflpos;
 pos_t	scflpos;
 
 /*
- * Are both plibflg and llibflg set, prototypes are writen as function
+ * Are both plibflg and llibflg set, prototypes are written as function
  * definitions to the output file.
  */
 int	plibflg;
 
 /*
- * Nonzero means that no warnings about constands in conditional
+ * Nonzero means that no warnings about constants in conditional
  * context are printed.
  */
 int	ccflg;
@@ -132,14 +145,13 @@ int	nowarn;
  * Nonzero if complaints about use of "long long" are suppressed in
  * the next statement or declaration.
  */
-int	quadflg;
+int	quadflg = 1;
 
 /*
  * Puts a new element at the top of the stack used for control statements.
  */
 void
-pushctrl(env)
-	int	env;
+pushctrl(int env)
 {
 	cstk_t	*ci;
 
@@ -153,8 +165,7 @@ pushctrl(env)
  * Removes the top element of the stack used for control statements.
  */
 void
-popctrl(env)
-	int	env;
+popctrl(int env)
 {
 	cstk_t	*ci;
 	clst_t	*cl;
@@ -179,7 +190,7 @@ popctrl(env)
  * Prints a warning if a statement cannot be reached.
  */
 void
-chkreach()
+chkreach(void)
 {
 	if (!reached && !rchflg) {
 		/* statement not reached */
@@ -192,15 +203,14 @@ chkreach()
  * Called after a function declaration which introduces a function definition
  * and before an (optional) old style argument declaration list.
  *
- * Puts all symbols declared in the Prototype or in an old style argument
+ * Puts all symbols declared in the prototype or in an old style argument
  * list back to the symbol table.
  *
  * Does the usual checking of storage class, type (return value),
  * redeclaration etc..
  */
 void
-funcdef(fsym)
-	sym_t	*fsym;
+funcdef(sym_t *fsym)
 {
 	int	n, warn;
 	sym_t	*arg, *sym, *rdsym;
@@ -218,6 +228,26 @@ funcdef(fsym)
 			inssym(1, sym);
 		}
 	}
+
+	/*
+	 * __func__ is a "predefined identifier" in c99, which means it is a
+	 * block-scope variable supplying the name of the enclosing function.
+	 * It is defined as:
+	 *
+	 * static const char __func__[] = "function-name";
+	 *
+	 */
+	sym = getblk(sizeof (sym_t));
+	sym->s_name = "__func__";
+	sym->s_kind = FVFT;
+	sym->s_scl = STATIC;
+	sym->s_type = incref(gettyp(CHAR), ARRAY);
+	sym->s_blklev = 1;
+	sym->s_def = DEF;
+	sym->s_type->t_dim = strlen(fsym->s_name) + 1;
+	sym->s_type->t_subt = duptyp(gettyp(CHAR));
+	sym->s_type->t_subt->t_const = 1;
+	inssym(1, sym);
 
 	/*
 	 * In osfunc() we did not know whether it is an old style function
@@ -322,7 +352,7 @@ funcdef(fsym)
 	}
 
 	if (dcs->d_notyp)
-		/* return value is implizitly declared to be int */
+		/* return value is implicitly declared to be int */
 		fsym->s_rimpl = 1;
 
 	reached = 1;
@@ -332,7 +362,7 @@ funcdef(fsym)
  * Called at the end of a function definition.
  */
 void
-funcend()
+funcend(void)
 {
 	sym_t	*arg;
 	int	n;
@@ -347,7 +377,7 @@ funcend()
 	}
 
 	/*
-	 * This warning is printed only if the return value was implizitly
+	 * This warning is printed only if the return value was implicitly
 	 * declared to be int. Otherwise the wrong return statement
 	 * has already printed a warning.
 	 */
@@ -365,10 +395,14 @@ funcend()
 	}
 	nargusg = -1;
 
+	if (noretflg)
+		funcsym->s_noreturn = 1;
+	noretflg = 0;
+
 	/*
 	 * write the information about the function definition to the
 	 * output file
-	 * inline functions explicitely declared extern are written as
+	 * inline functions explicitly declared extern are written as
 	 * declarations only.
 	 */
 	if (dcs->d_scl == EXTERN && funcsym->s_inline) {
@@ -398,10 +432,7 @@ funcend()
  * tn		expression if typ == T_CASE
  */
 void
-label(typ, sym, tn)
-	int	typ;
-	sym_t	*sym;
-	tnode_t	*tn;
+label(int typ, sym_t *sym, tnode_t *tn)
 {
 	cstk_t	*ci;
 	clst_t	*cl;
@@ -450,12 +481,6 @@ label(typ, sym, tn)
 			}
 
 			t = tn->tn_type->t_tspec;
-			if (t == LONG || t == ULONG ||
-			    t == QUAD || t == UQUAD) {
-				if (tflag)
-					/* case label must be of type ... */
-					warning(203);
-			}
 
 			/*
 			 * get the value of the expression and convert it
@@ -463,7 +488,7 @@ label(typ, sym, tn)
 			 */
 			v = constant(tn);
 			nv = xcalloc(1, sizeof (val_t));
-			cvtcon(CASE, 0, ci->c_swtype, nv, v);
+			cvtcon(CASE, NULL, ci->c_swtype, nv, v);
 			free(v);
 
 			/* look if we had this value already */
@@ -519,8 +544,7 @@ label(typ, sym, tn)
  * T_IF T_LPARN expr T_RPARN
  */
 void
-if1(tn)
-	tnode_t	*tn;
+if1(tnode_t *tn)
 {
 	if (tn != NULL)
 		tn = cconv(tn);
@@ -535,7 +559,7 @@ if1(tn)
  * if_without_else T_ELSE
  */
 void
-if2()
+if2(void)
 {
 	cstk->c_rchif = reached ? 1 : 0;
 	reached = 1;
@@ -546,8 +570,7 @@ if2()
  * if_without_else T_ELSE stmnt
  */
 void
-if3(els)
-	int	els;
+if3(int els)
 {
 	if (els) {
 		reached |= cstk->c_rchif;
@@ -561,8 +584,7 @@ if3(els)
  * T_SWITCH T_LPARN expr T_RPARN
  */
 void
-switch1(tn)
-	tnode_t	*tn;
+switch1(tnode_t *tn)
 {
 	tspec_t	t;
 	type_t	*tp;
@@ -575,13 +597,6 @@ switch1(tn)
 		/* switch expression must have integral type */
 		error(205);
 		tn = NULL;
-	}
-	if (tn != NULL && tflag) {
-		t = tn->tn_type->t_tspec;
-		if (t == LONG || t == ULONG || t == QUAD || t == UQUAD) {
-			/* switch expr. must be of type `int' in trad. C */
-			warning(271);
-		}
 	}
 
 	/*
@@ -613,7 +628,7 @@ switch1(tn)
  * switch_expr stmnt
  */
 void
-switch2()
+switch2(void)
 {
 	int	nenum, nclab;
 	sym_t	*esym;
@@ -668,8 +683,7 @@ switch2()
  * T_WHILE T_LPARN expr T_RPARN
  */
 void
-while1(tn)
-	tnode_t	*tn;
+while1(tnode_t *tn)
 {
 	if (!reached) {
 		/* loop not entered at top */
@@ -705,7 +719,7 @@ while1(tn)
  * while_expr error
  */
 void
-while2()
+while2(void)
 {
 	/*
 	 * The end of the loop can be reached if it is no endless loop
@@ -721,7 +735,7 @@ while2()
  * T_DO
  */
 void
-do1()
+do1(void)
 {
 	if (!reached) {
 		/* loop not entered at top */
@@ -738,8 +752,7 @@ do1()
  * do error
  */
 void
-do2(tn)
-	tnode_t	*tn;
+do2(tnode_t *tn)
 {
 	/*
 	 * If there was a continue statement the expression controlling the
@@ -782,8 +795,7 @@ do2(tn)
  * T_FOR T_LPARN opt_expr T_SEMI opt_expr T_SEMI opt_expr T_RPARN
  */
 void
-for1(tn1, tn2, tn3)
-	tnode_t	*tn1, *tn2, *tn3;
+for1(tnode_t *tn1, tnode_t *tn2, tnode_t *tn3)
 {
 	/*
 	 * If there is no initialisation expression it is possible that
@@ -843,7 +855,7 @@ for1(tn1, tn2, tn3)
  * for_exprs error
  */
 void
-for2()
+for2(void)
 {
 	pos_t	cpos, cspos;
 	tnode_t	*tn3;
@@ -888,8 +900,7 @@ for2()
  * T_GOTO error T_SEMI
  */
 void
-dogoto(lab)
-	sym_t	*lab;
+dogoto(sym_t *lab)
 {
 	setuflg(lab, 0, 0);
 
@@ -902,7 +913,7 @@ dogoto(lab)
  * T_BREAK T_SEMI
  */
 void
-dobreak()
+dobreak(void)
 {
 	cstk_t	*ci;
 
@@ -918,7 +929,17 @@ dobreak()
 			ci->c_break = 1;
 	}
 
-	if (bflag)
+	/* Don't warn about unreachable breaks in a switch, e.g.:
+	 *
+	 * switch (foo) {
+	 * case 1:
+	 *     return 1;
+	 *     break;
+	 * case 2:
+	 *     // etc...
+	 * }
+	 */
+	if (ci == NULL || !ci->c_switch)
 		chkreach();
 
 	reached = rchflg = 0;
@@ -928,7 +949,7 @@ dobreak()
  * T_CONTINUE T_SEMI
  */
 void
-docont()
+docont(void)
 {
 	cstk_t	*ci;
 
@@ -951,8 +972,7 @@ docont()
  * T_RETURN expr T_SEMI
  */
 void
-doreturn(tn)
-	tnode_t	*tn;
+doreturn(tnode_t *tn)
 {
 	tnode_t	*ln, *rn;
 	cstk_t	*ci;
@@ -1020,8 +1040,7 @@ doreturn(tn)
  * Especially remove informations about unused lint comments.
  */
 void
-glclup(silent)
-	int	silent;
+glclup(int silent)
 {
 	pos_t	cpos;
 
@@ -1072,8 +1091,7 @@ glclup(silent)
  * for usage. A missing argument is taken to be 0.
  */
 void
-argsused(n)
-	int	n;
+argsused(int n)
 {
 	if (n == -1)
 		n = 0;
@@ -1092,14 +1110,36 @@ argsused(n)
 }
 
 /*
+ * NORETURN comment
+ *
+ * The following function will never return, which means any code
+ * following a call to this function is unreachable.
+ */
+void
+noreturn(int n)
+{
+	noretflg = 1;
+}
+
+/*
+ * LINTUSED comment
+ *
+ * Mark a symbol as used, so lint2 does not complain.
+ */
+void
+lintused(int n)
+{
+	usedflg = 1;
+}
+
+/*
  * VARARGS comment
  *
  * Makes that lint2 checks only the first n arguments for compatibility
  * to the function definition. A missing argument is taken to be 0.
  */
 void
-varargs(n)
-	int	n;
+varargs(int n)
 {
 	if (n == -1)
 		n = 0;
@@ -1124,8 +1164,7 @@ varargs(n)
  * used the check the types of remaining arguments.
  */
 void
-printflike(n)
-	int	n;
+printflike(int n)
 {
 	if (n == -1)
 		n = 0;
@@ -1150,8 +1189,7 @@ printflike(n)
  * used the check the types of remaining arguments.
  */
 void
-scanflike(n)
-	int	n;
+scanflike(int n)
 {
 	if (n == -1)
 		n = 0;
@@ -1175,8 +1213,7 @@ scanflike(n)
  */
 /* ARGSUSED */
 void
-constcond(n)
-	int	n;
+constcond(int n)
 {
 	ccflg = 1;
 }
@@ -1187,8 +1224,7 @@ constcond(n)
  */
 /* ARGSUSED */
 void
-fallthru(n)
-	int	n;
+fallthru(int n)
 {
 	ftflg = 1;
 }
@@ -1199,8 +1235,7 @@ fallthru(n)
  */
 /* ARGSUSED */
 void
-notreach(n)
-	int	n;
+notreach(int n)
 {
 	reached = 0;
 	rchflg = 1;
@@ -1208,8 +1243,7 @@ notreach(n)
 
 /* ARGSUSED */
 void
-lintlib(n)
-	int	n;
+lintlib(int n)
 {
 	if (dcs->d_ctx != EXTERN) {
 		/* must be outside function: ** %s ** */
@@ -1225,8 +1259,7 @@ lintlib(n)
  */
 /* ARGSUSED */
 void
-linted(n)
-	int	n;
+linted(int n)
 {
 	nowarn = 1;
 }
@@ -1237,8 +1270,7 @@ linted(n)
  * to PROTOLIB is nonzero. Otherwise prototypes are handled normaly.
  */
 void
-protolib(n)
-	int	n;
+protolib(int n)
 {
 	if (dcs->d_ctx != EXTERN) {
 		/* must be outside function: ** %s ** */
@@ -1254,8 +1286,7 @@ protolib(n)
  */
 /* ARGSUSED */
 void
-longlong(n)
-	int	n;
+longlong(int n)
 {
 	quadflg = 1;
 }

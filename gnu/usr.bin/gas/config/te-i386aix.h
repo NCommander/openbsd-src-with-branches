@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * This file is te-i386aix.h and is built from pieces of code from Minh Tran-Le
  * <TRANLE@INTELLICORP.COM> by rich@cygnus.com.

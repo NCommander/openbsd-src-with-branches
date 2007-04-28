@@ -1,50 +1,34 @@
-# $OpenBSD: PackageName.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: PackageName.pm,v 1.13 2006/10/17 22:08:31 espie Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2004 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 use strict;
 use warnings;
 package OpenBSD::PackageName;
 
-sub new
+sub url2pkgname($)
 {
-	my ($class, $name) = @_;
-	my $self = { name => $name };
-# remove irrelevant filesystem info
+	my $name = $_[0];
 	$name =~ s|.*/||;
-	$name =~ s|\.tgz||;
-	$self->{pkgname} = $name;
-# cut pkgname into pieces
-	my @list = splitname($name);
-	$self->{stem} = $list[0];
-	$self->{version} = $list[1];
-	$self->{flavors} = [];
-	push @{$self->{flavors}}, @list[2,];
-	bless $self, $class;
+	$name =~ s|\.tgz$||;
+
+	return $name;
 }
 
-# see package-specs(7)
+# see packages-specs(7)
 sub splitname
 {
 	local $_ = shift;
@@ -58,193 +42,278 @@ sub splitname
 	}
 }
 
-# all the shit that does handle package specifications
-sub compare_pseudo_numbers
+sub from_string
 {
-	my ($n, $m) = @_;
-
-	my ($n1, $m1);
-
-	if ($n =~ m/^\d+/) {
-		$n1 = $&;
-		$n = $';
-	}
-	if ($m =~ m/^\d+/) {
-		$m1 = $&;
-		$m = $';
-	}
-
-	if ($n1 == $m1) {
-		return $n cmp $m;
+	my $class = shift;
+	local $_ = shift;
+	if (/\-(?=\d)/) {
+		my $stem = $`;
+		my $rest = $';
+		my @all = split /\-/, $rest;
+		my $version = OpenBSD::PackageName::version->from_string(shift @all);
+		return bless {
+			stem => $stem,
+			version => $version,
+			flavors => \@all
+		}, "OpenBSD::PackageName::Name";
 	} else {
-		return $n1 <=> $m1;
+		return bless {
+			stem => $_,
+		}, "OpenBSD::PackageName::Stem";
 	}
 }
 
+sub splitstem
+{
+	local $_ = shift;
+	if (/\-(?=\d)/) {
+		return $`;
+	} else {
+		return $_;
+	}
+}
+
+sub is_stem
+{
+	local $_ = shift;
+	if (m/\-\d/ || $_ eq '-') {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+sub splitp
+{
+	local $_ = shift;
+
+	if (/^(.*\-\d[^-]*)p(\d+)/) {
+		return ($1.$', $2);
+	} else {
+		return ($_,-1);
+	}
+}
+
+sub rebuildp
+{
+	my ($pkg, $p) = @_;
+	if ($p == -1) {
+		return $pkg;
+	}
+	if ($pkg =~ m/\-\d[^-]*/) {
+		return "$`$&p$p$'";
+	} else {
+		return $pkg."p".$p;
+	}
+}
+
+sub keep_most_recent
+{
+	my $h = {};
+	for my $pkgname (@_) {
+		my ($p, $v) = splitp($pkgname);
+		if (!defined $h->{$p} || $h->{$p} < $v) {
+			$h->{$p} = $v;
+		}
+	}
+	my @list = ();
+	while (my ($p, $v) = each %$h) {
+		push(@list, rebuildp($p, $v));
+	}
+	return @list;
+}
+
+sub findstem
+{
+	my ($k, @list) = @_;
+	my @r = ();
+	for my $n (@list) {
+		my $stem = splitstem($n);
+		if ($k eq $stem) {
+			push(@r, $n);
+		}
+	}
+	return @r;
+}
+
+sub compile_stemlist
+{
+	my $hash = {};
+	for my $n (@_) {
+		my $stem = splitstem($n);
+		$hash->{$stem} = {} unless defined $hash->{$stem};
+		$hash->{$stem}->{$n} = 1;
+	}
+	bless $hash, "OpenBSD::PackageLocator::_compiled_stemlist";
+}
+
+sub avail2stems
+{
+	my $state = shift;
+	my @avail = @_;
+	if (@avail == 0) {
+		require OpenBSD::Error;
+
+		OpenBSD::Error::Warn("No packages available in the PKG_PATH\n");
+	}
+	unless ($state->{forced}->{allversions}) {
+	    @avail = OpenBSD::PackageName::keep_most_recent(@avail);
+	}
+	return OpenBSD::PackageName::compile_stemlist(@avail);
+}
+
+sub available_stems
+{
+	my $state = shift;
+	return avail2stems($state, OpenBSD::PackageLocator::available());
+}
+
+package OpenBSD::PackageLocator::_compiled_stemlist;
+
+sub findstem
+{
+	my ($self, $stem) = @_;
+	return keys %{$self->{$stem}};
+}
+	
+package OpenBSD::PackageName::version;
+
+sub make_dewey
+{
+	my $o = shift;
+	$o->{deweys} = [ split(/\./, $o->{string}) ];
+	for my $suffix (qw(rc beta pre pl)) {
+		if ($o->{deweys}->[-1] =~ m/^(\d+)$suffix(\d*)$/) {
+			$o->{deweys}->[-1] = $1;
+			$o->{$suffix} = $2;
+		}
+	}
+}
+
+sub from_string
+{
+	my ($class, $string) = @_;
+	my $vnum = -1;
+	my $pnum = -1;
+	if ($string =~ m/v(\d+)$/) {
+		$vnum = $1;
+		$string = $`;
+	}
+	if ($string =~ m/p(\d+)$/) {
+		$pnum = $1;
+		$string = $`;
+	}
+	my $o = bless {
+		pnum => $pnum,
+		vnum => $vnum,
+		string => $string,
+	}, $class;
+
+	$o->make_dewey;
+	return $o;
+}
+
+sub to_string
+{
+	my $o = shift;
+	my $string = $o->{string};
+	if ($o->{pnum} > -1) {
+		$string .= 'p'.$o->{pnum};
+	}
+	if ($o->{vnum} > -1) {
+		$string .= 'v'.$o->{vnum};
+	}
+	return $string;
+}
+
+sub compare
+{
+	my ($a, $b) = @_;
+	# Simple case: epoch number
+	if ($a->{vnum} != $b->{vnum}) {
+		return $a->{vnum} <=> $b->{vnum};
+	}
+	# Simple case: only p number differs
+	if ($a->{string} eq $b->{string}) {
+		return $a->{pnum} <=> $b->{pnum}
+	} 
+	# Try a diff in dewey numbers first
+	for (my $i = 0; ; $i++) {
+		if (!defined $a->{deweys}->[$i]) {
+			if (!defined $b->{deweys}->[$i]) {
+				return 0;
+			} else {
+				return -1;
+			}
+		}
+		if (!defined $b->{deweys}->[$i]) {
+			return 1;
+		}
+		my $r = dewey_compare($a->{deweys}->[$i],
+			$b->{deweys}->[$i]);
+		return $r if $r != 0;
+	}
+	# finally try all the usual suspects
+	# release candidates and beta and pre releases.
+	for my $suffix (qw(rc beta pre pl)) {
+		my $result = $suffix eq 'pl' ? 1 : -1;
+		if (defined $a->{$suffix} && defined $b->{$suffix}) {
+			return $a->{$suffix} <=> $b->{$suffix};
+		}
+		if (defined $a->{$suffix} && !defined $b->{$suffix}) {
+			return $result;
+		}
+		if (!defined $a->{$suffix} && defined $b->{$suffix}) {
+			return -$result;
+		}
+	}
+	# give up: we don't know how to make a difference
+	return 0;
+}
 
 sub dewey_compare
 {
 	my ($a, $b) = @_;
-	my ($pa, $pb);
-
-	unless ($b =~ m/p\d+$/) { 		# does the Dewey hold a p<number> ?
-		$a =~ s/p\d+$//; 	# No -> strip it from version.
+	# numerical comparison
+	if ($a =~ m/^\d+$/ and $b =~ m/^\d+$/) {
+		return $a <=> $b;
 	}
-
-	return 0 if $a =~ /^$b$/; 	# bare equality
-
-	if ($a =~ s/p(\d+)$//) {	# extract patchlevels
-		$pa = $1;
-	}
-	if ($b =~ s/p(\d+)$//) {
-		$pb = $1;
-	}
-
-	my @a = split(/\./, $a);
-	push @a, $pa if defined $pa;	# ... and restore them
-	my @b = split(/\\\./, $b);
-	push @b, $pb if defined $pb;
-	while (@a > 0 && @b > 0) {
-		my $va = shift @a;
-		my $vb = shift @b;
-		next if $va eq $vb;
-		return compare_pseudo_numbers($va, $vb);
-	}
-	if (@a > 0) {
-		return 1;
-	} else {
-		return -1;
-	}
-}
-
-sub check_version
-{
-	my ($v, $spec) = @_;
-	local $_;
-
-	# any version spec
-	return 1 if $spec eq '.*';
-
-	my @specs = split(/,/, $spec);
-	for (grep /^\d/, @specs) { 		# exact number: check match
-		return 1 if $v =~ /^$_$/;
-		return 1 if $v =~ /^${_}p\d+$/; # allows for recent patches
-	}
-
-	# Last chance: dewey specs ?
-	my @deweys = grep !/^\d/, @specs;		
-	for (@deweys) {
-		if (m/^\<\=|\>\=|\<|\>/) {
-			my ($op, $dewey) = ($&, $');
-			my $compare = dewey_compare($v, $dewey);
-			return 0 if $op eq '<' && $compare >= 0;
-			return 0 if $op eq '<=' && $compare > 0;
-			return 0 if $op eq '>' && $compare <= 0;
-			return 0 if $op eq '>=' && $compare < 0;
+	# added lowercase letter
+	if ("$a.$b" =~ m/^(\d+)([a-z]?)\.(\d+)([a-z]?)$/) {
+		my ($an, $al, $bn, $bl) = ($1, $2, $3, $4);
+		if ($an != $bn) {
+			return $an <=> $bn;
 		} else {
-			return 0;	# unknown spec type
+			return $al cmp $bl;
 		}
 	}
-	return @deweys == 0 ? 0 : 1;
+	return $a cmp $b;
 }
 
-sub check_1flavor
+package OpenBSD::PackageName::Stem;
+sub to_string
 {
-	my ($f, $spec) = @_;
-	local $_;
-
-	for (split /-/, $spec) {
-		# must not be here
-		if (m/^\!/) {
-			return 0 if $f->{$'};
-		# must be here
-		} else {
-			return 0 unless $f->{$_};
-		}
-	}
-	return 1;
+	my $o = shift;
+	return $o->{stem};
 }
 
-sub check_flavor
+sub to_pattern
 {
-	my ($f, $spec) = @_;
-	local $_;
-	# no flavor constraints
-	return 1 if $spec eq '';
-
-	$spec =~ s/^-//;
-	# retrieve all flavors
-	my %f = map +($_, 1), split /\-/, $f;
-
-	# check each flavor constraint
-	for (split /,/, $spec) {
-		if (check_1flavor(\%f, $_)) {
-			return 1;
-		}
-	}
-	return 0;
+	my $o = shift;
+	return $o->{stem}.'-*';
 }
 
-sub subpattern_match
+package OpenBSD::PackageName::Name;
+sub to_string
 {
-	my ($p, $list) = @_;
-	local $_;
-
-	my ($stemspec, $vspec, $flavorspec);
-
-	# first, handle special characters (shell -> perl)
-	$p =~ s/\./\\\./g;
-	$p =~ s/\+/\\\+/g;
-	$p =~ s/\*/\.\*/g;
-	$p =~ s/\?/\./g;
-
-	# then, guess at where the version number is if any,
-	
-	# this finds patterns like -<=2.3,>=3.4.p1-
-	# the only constraint is that the actual number 
-	# - must start with a digit, 
-	# - not contain - or ,
-	if ($p =~ m/\-((?:\>|\>\=|\<|\<\=)?\d[^-]*)/) {
-		($stemspec, $vspec, $flavorspec) = ($`, $1, $');
-	# `any version' matcher
-	} elsif ($p =~ m/\-(\.\*)/) {
-		($stemspec, $vspec, $flavorspec) = ($`, $1, $');
-	# okay, so no version marker. Assume no flavor spec.
-	} else {
-		($stemspec, $vspec, $flavorspec) = ($p, '', '');
-	}
-
-	$p = "$stemspec-\.\*" if $vspec ne '';
-
-	# First trim down the list
-	my @l = grep {/^$p$/} @$list;
-
-	my @result = ();
-	# Now, have to extract the version number, and the flavor...
-	for (@l) {
-		my ($stem, $v, $flavor);
-		if (m/\-(\d[^-]*)/) {
-			($stem, $v, $flavor) = ($`, $1, $');
-			if ($stem =~ m/^$stemspec$/ &&
-			    check_version($v, $vspec) &&
-			    check_flavor($flavor, $flavorspec)) {
-			    	push(@result, $_);
-			}
-	    	}
-	}
-		
-	return @result;
+	my $o = shift;
+	return join('-', $o->{stem}, $o->{version}->to_string, @{$o->{flavors}});
 }
 
-sub pkgspec_match
+sub to_pattern
 {
-	my ($pattern, @list) = @_;
-	my @l = ();
-
-	for my $subpattern (split /\|/, $pattern) {
-		push(@l, subpattern_match($subpattern, \@list));
-	}
-	return @l;
+	my $o = shift;
+	return join('-', $o->{stem}, '*', @{$o->{flavors}});
 }
 
 1;

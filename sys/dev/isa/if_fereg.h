@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * All Rights Reserved, Copyright (C) Fujitsu Limited 1995
  *

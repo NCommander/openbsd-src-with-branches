@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.16 2003/07/03 22:41:40 tedu Exp $	*/
+/*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -48,7 +45,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
 #else
-static char rcsid[] = "$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.16 2003/07/03 22:41:40 tedu Exp $";
 #endif
 #endif /* not lint */
 
@@ -57,6 +54,7 @@ static char rcsid[] = "$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp
 #include <sys/mount.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -64,25 +62,23 @@ static char rcsid[] = "$NetBSD: mount_cd9660.c,v 1.2 1995/03/18 14:57:15 cgd Exp
 
 #include "mntopts.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	MOPT_UPDATE,
 	{ NULL }
 };
 
-void	usage __P((void));
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	struct iso_args args;
 	int ch, mntflags, opts;
-	char *dev, *dir;
+	char *dev, dir[MAXPATHLEN];
 
 	mntflags = opts = 0;
-	while ((ch = getopt(argc, argv, "ego:r")) != EOF)
+	while ((ch = getopt(argc, argv, "egjo:R")) != -1)
 		switch (ch) {
 		case 'e':
 			opts |= ISOFSMNT_EXTATT;
@@ -90,10 +86,13 @@ main(argc, argv)
 		case 'g':
 			opts |= ISOFSMNT_GENS;
 			break;
+		case 'j':
+			opts |= ISOFSMNT_NOJOLIET;
+			break;
 		case 'o':
 			getmntopts(optarg, mopts, &mntflags);
 			break;
-		case 'r':
+		case 'R':
 			opts |= ISOFSMNT_NORRIP;
 			break;
 		case '?':
@@ -107,27 +106,35 @@ main(argc, argv)
 		usage();
 
 	dev = argv[0];
-	dir = argv[1];
+	if (realpath(argv[1], dir) == NULL)
+		err(1, "realpath %s", argv[1]);
 
 #define DEFAULT_ROOTUID	-2
 	args.fspec = dev;
-	args.export.ex_root = DEFAULT_ROOTUID;
+	args.export_info.ex_root = DEFAULT_ROOTUID;
 
+#if 1
+	mntflags |= MNT_RDONLY;
+#endif
 	if (mntflags & MNT_RDONLY)
-		args.export.ex_flags = MNT_EXRDONLY;
+		args.export_info.ex_flags = MNT_EXRDONLY;
 	else
-		args.export.ex_flags = 0;
+		args.export_info.ex_flags = 0;
 	args.flags = opts;
 
-	if (mount(MOUNT_CD9660, dir, mntflags, &args) < 0)
-		err(1, NULL);
+	if (mount(MOUNT_CD9660, dir, mntflags, &args) < 0) {
+		if (errno == EOPNOTSUPP)
+			errx(1, "%s: Filesystem not supported by kernel", dir);
+		else
+			err(1, "%s on %s", args.fspec, dir);
+	}
 	exit(0);
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-		"usage: mount_cd9660 [-egrt] [-o options] special node\n");
+		"usage: mount_cd9660 [-egjR] [-o options] special node\n");
 	exit(1);
 }

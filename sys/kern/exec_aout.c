@@ -1,4 +1,5 @@
-/*	$NetBSD: exec_aout.c,v 1.13 1994/08/01 18:49:49 pk Exp $	*/
+/*	$OpenBSD: exec_aout.c,v 1.9 2003/06/24 22:45:33 espie Exp $	*/
+/*	$NetBSD: exec_aout.c,v 1.14 1996/02/04 02:15:01 christos Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Christopher G. Demetriou
@@ -37,7 +38,12 @@
 #include <sys/vnode.h>
 #include <sys/exec.h>
 #include <sys/resourcevar.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+
+#if defined(_KERN_DO_AOUT)
+#if defined(COMPAT_AOUT)
+void aout_compat_setup(struct exec_package *epp);
+#endif
 
 /*
  * exec_aout_makecmds(): Check if it's an a.out-format executable.
@@ -52,9 +58,7 @@
  */
 
 int
-exec_aout_makecmds(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
+exec_aout_makecmds(struct proc *p, struct exec_package *epp)
 {
 	u_long midmag, magic;
 	u_short mid;
@@ -86,8 +90,10 @@ exec_aout_makecmds(p, epp)
 
 	if (error)
 		kill_vmcmds(&epp->ep_vmcmds);
+#ifdef COMPAT_AOUT
+	aout_compat_setup(epp);
+#endif
 
-bad:
 	return error;
 }
 
@@ -102,9 +108,7 @@ bad:
  */
 
 int
-exec_aout_prep_zmagic(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
+exec_aout_prep_zmagic(struct proc *p, struct exec_package *epp)
 {
 	struct exec *execp = epp->ep_hdr;
 
@@ -123,11 +127,11 @@ exec_aout_prep_zmagic(p, epp)
 	    epp->ep_vp->v_writecount != 0) {
 #ifdef DIAGNOSTIC
 		if (epp->ep_vp->v_flag & VTEXT)
-			panic("exec: a VTEXT vnode has writecount != 0\n");
+			panic("exec: a VTEXT vnode has writecount != 0");
 #endif
 		return ETXTBSY;
 	}
-	epp->ep_vp->v_flag |= VTEXT;
+	vn_marktext(epp->ep_vp);
 
 	/* set up command for text segment */
 	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_pagedvn, execp->a_text,
@@ -141,9 +145,9 @@ exec_aout_prep_zmagic(p, epp)
 	/* set up command for bss segment */
 	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, execp->a_bss,
 	    epp->ep_daddr + execp->a_data, NULLVP, 0,
-	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
+	    VM_PROT_READ|VM_PROT_WRITE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 /*
@@ -151,9 +155,7 @@ exec_aout_prep_zmagic(p, epp)
  */
 
 int
-exec_aout_prep_nmagic(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
+exec_aout_prep_nmagic(struct proc *p, struct exec_package *epp)
 {
 	struct exec *execp = epp->ep_hdr;
 	long bsize, baddr;
@@ -175,13 +177,13 @@ exec_aout_prep_nmagic(p, epp)
 	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
 	/* set up command for bss segment */
-	baddr = roundup(epp->ep_daddr + execp->a_data, NBPG);
+	baddr = round_page(epp->ep_daddr + execp->a_data);
 	bsize = epp->ep_daddr + epp->ep_dsize - baddr;
 	if (bsize > 0)
 		NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, bsize, baddr,
-		    NULLVP, 0, VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
+		    NULLVP, 0, VM_PROT_READ|VM_PROT_WRITE);
 
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
 /*
@@ -189,9 +191,7 @@ exec_aout_prep_nmagic(p, epp)
  */
 
 int
-exec_aout_prep_omagic(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
+exec_aout_prep_omagic(struct proc *p, struct exec_package *epp)
 {
 	struct exec *execp = epp->ep_hdr;
 	long dsize, bsize, baddr;
@@ -208,11 +208,11 @@ exec_aout_prep_omagic(p, epp)
 	    sizeof(struct exec), VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
 
 	/* set up command for bss segment */
-	baddr = roundup(epp->ep_daddr + execp->a_data, NBPG);
+	baddr = round_page(epp->ep_daddr + execp->a_data);
 	bsize = epp->ep_daddr + epp->ep_dsize - baddr;
 	if (bsize > 0)
 		NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, bsize, baddr,
-		    NULLVP, 0, VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
+		    NULLVP, 0, VM_PROT_READ|VM_PROT_WRITE);
 
 	/*
 	 * Make sure (# of pages) mapped above equals (vm_tsize + vm_dsize);
@@ -222,51 +222,9 @@ exec_aout_prep_omagic(p, epp)
 	 * Compensate `ep_dsize' for the amount of data covered by the last
 	 * text page. 
 	 */
-	dsize = epp->ep_dsize + execp->a_text - roundup(execp->a_text, NBPG);
+	dsize = epp->ep_dsize + execp->a_text - round_page(execp->a_text);
 	epp->ep_dsize = (dsize > 0) ? dsize : 0;
-	return exec_aout_setup_stack(p, epp);
+	return exec_setup_stack(p, epp);
 }
 
-/*
- * exec_aout_setup_stack(): Set up the stack segment for an a.out
- * executable.
- *
- * Note that the ep_ssize parameter must be set to be the current stack
- * limit; this is adjusted in the body of execve() to yield the
- * appropriate stack segment usage once the argument length is
- * calculated.
- *
- * This function returns an int for uniformity with other (future) formats'
- * stack setup functions.  They might have errors to return.
- */
-
-int
-exec_aout_setup_stack(p, epp)
-	struct proc *p;
-	struct exec_package *epp;
-{
-
-	epp->ep_maxsaddr = USRSTACK - MAXSSIZ;
-	epp->ep_minsaddr = USRSTACK;
-	epp->ep_ssize = p->p_rlimit[RLIMIT_STACK].rlim_cur;
-
-	/*
-	 * set up commands for stack.  note that this takes *two*, one to
-	 * map the part of the stack which we can access, and one to map
-	 * the part which we can't.
-	 *
-	 * arguably, it could be made into one, but that would require the
-	 * addition of another mapping proc, which is unnecessary
-	 *
-	 * note that in memory, things assumed to be: 0 ....... ep_maxsaddr
-	 * <stack> ep_minsaddr
-	 */
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero,
-	    ((epp->ep_minsaddr - epp->ep_ssize) - epp->ep_maxsaddr),
-	    epp->ep_maxsaddr, NULLVP, 0, VM_PROT_NONE);
-	NEW_VMCMD(&epp->ep_vmcmds, vmcmd_map_zero, epp->ep_ssize,
-	    (epp->ep_minsaddr - epp->ep_ssize), NULLVP, 0,
-	    VM_PROT_READ|VM_PROT_WRITE|VM_PROT_EXECUTE);
-
-	return 0;
-}
+#endif /* _KERN_DO_AOUT */

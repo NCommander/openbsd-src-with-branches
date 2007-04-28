@@ -1,5 +1,4 @@
-/*	$NetBSD: xdr_reference.c,v 1.5 1995/04/14 20:30:18 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,14 +28,8 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint) 
-/*static char *sccsid = "from: @(#)xdr_reference.c 1.11 87/08/11 SMI";*/
-/*static char *sccsid = "from: @(#)xdr_reference.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr_reference.c,v 1.5 1995/04/14 20:30:18 jtc Exp $";
-#endif
-
 /*
- * xdr_reference.c, Generic XDR routines impelmentation.
+ * xdr_reference.c, Generic XDR routines implementation.
  *
  * Copyright (C) 1987, Sun Microsystems, Inc.
  *
@@ -60,14 +53,13 @@ static char *rcsid = "$NetBSD: xdr_reference.c,v 1.5 1995/04/14 20:30:18 jtc Exp
  * proc is the routine to handle the referenced structure.
  */
 bool_t
-xdr_reference(xdrs, pp, size, proc)
-	register XDR *xdrs;
-	caddr_t *pp;		/* the pointer to work on */
-	u_int size;		/* size of the object pointed to */
-	xdrproc_t proc;		/* xdr routine to handle the object */
+xdr_reference(XDR *xdrs,
+    caddr_t *pp,	/* the pointer to work on */
+    u_int size,		/* size of the object pointed to */
+    xdrproc_t proc)	/* xdr routine to handle the object */
 {
-	register caddr_t loc = *pp;
-	register bool_t stat;
+	caddr_t loc = *pp;
+	bool_t stat;
 
 	if (loc == NULL)
 		switch (xdrs->x_op) {
@@ -115,11 +107,7 @@ xdr_reference(xdrs, pp, size, proc)
  *
  */
 bool_t
-xdr_pointer(xdrs,objpp,obj_size,xdr_obj)
-	register XDR *xdrs;
-	char **objpp;
-	u_int obj_size;
-	xdrproc_t xdr_obj;
+xdr_pointer(XDR *xdrs, char **objpp, u_int obj_size, xdrproc_t xdr_obj)
 {
 
 	bool_t more_data;

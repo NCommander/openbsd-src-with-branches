@@ -1,3 +1,5 @@
+/*	$OpenBSD: regsub.c,v 1.2 1996/07/24 05:39:12 downsj Exp $	*/
+
 /*
  * regsub
  *
@@ -20,7 +22,7 @@
  */
 
 #ifndef lint
-static char *rcsid = "$Id: regsub.c,v 1.4 1995/06/05 19:42:35 pk Exp $";
+static char *rcsid = "$OpenBSD: regsub.c,v 1.2 1996/07/24 05:39:12 downsj Exp $";
 #endif /* not lint */
 
 #include <regexp.h>
@@ -38,27 +40,27 @@ static char *rcsid = "$Id: regsub.c,v 1.4 1995/06/05 19:42:35 pk Exp $";
  - regsub - perform substitutions after a regexp match
  */
 void
-regsub(prog, source, dest)
+v8_regsub(prog, source, dest)
 const regexp *prog;
 const char *source;
 char *dest;
 {
-	register char *src;
+	register const char *src;
+	register size_t len;
 	register char *dst;
 	register char c;
 	register int no;
-	register int len;
 
 	if (prog == NULL || source == NULL || dest == NULL) {
-		regerror("NULL parm to regsub");
+		v8_regerror("NULL parm to regsub");
 		return;
 	}
 	if (UCHARAT(prog->program) != MAGIC) {
-		regerror("damaged regexp fed to regsub");
+		v8_regerror("damaged regexp fed to regsub");
 		return;
 	}
 
-	src = (char *)source;
+	src = source;
 	dst = dest;
 	while ((c = *src++) != '\0') {
 		if (c == '&')
@@ -76,7 +78,7 @@ char *dest;
 			(void) strncpy(dst, prog->startp[no], len);
 			dst += len;
 			if (len != 0 && *(dst-1) == '\0') {	/* strncpy hit NUL. */
-				regerror("damaged match string");
+				v8_regerror("damaged match string");
 				return;
 			}
 		}

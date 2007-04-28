@@ -1,4 +1,5 @@
-/*	$NetBSD: filedesc.h,v 1.11 1995/03/26 20:24:14 jtc Exp $	*/
+/*	$OpenBSD: filedesc.h,v 1.18 2004/07/21 12:10:20 art Exp $	*/
+/*	$NetBSD: filedesc.h,v 1.14 1996/04/09 20:55:28 cgd Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,7 @@
  *	@(#)filedesc.h	8.1 (Berkeley) 6/2/93
  */
 
+#include <sys/rwlock.h>
 /*
  * This structure is used for the management of descriptors.  It may be
  * shared by multiple processes.
@@ -50,7 +48,13 @@
  * that will fit in a power-of-two sized piece of memory.
  */
 #define NDFILE		20
-#define NDEXTENT	50		/* 250 bytes in 256-byte alloc. */ 
+#define NDEXTENT	50		/* 250 bytes in 256-byte alloc. */
+#define NDENTRIES	32		/* 32 fds per entry */
+#define NDENTRYMASK	(NDENTRIES - 1)
+#define NDENTRYSHIFT	5		/* bits per entry */
+#define NDREDUCE(x)	(((x) + NDENTRIES - 1) >> NDENTRYSHIFT)
+#define NDHISLOTS(x)	(NDREDUCE(NDREDUCE(x)))
+#define NDLOSLOTS(x)	(NDHISLOTS(x) << NDENTRYSHIFT)
 
 struct filedesc {
 	struct	file **fd_ofiles;	/* file structures for open files */
@@ -58,10 +62,18 @@ struct filedesc {
 	struct	vnode *fd_cdir;		/* current directory */
 	struct	vnode *fd_rdir;		/* root directory */
 	int	fd_nfiles;		/* number of open files allocated */
+	u_int	*fd_himap;		/* each bit points to 32 fds */
+	u_int	*fd_lomap;		/* bitmap of free fds */
 	int	fd_lastfile;		/* high-water mark of fd_ofiles */
 	int	fd_freefile;		/* approx. next free file */
 	u_short	fd_cmask;		/* mask for file creation */
 	u_short	fd_refcnt;		/* reference count */
+	struct rwlock fd_lock;		/* lock for the file descs */
+
+	int	fd_knlistsize;		/* size of knlist */
+	struct	klist *fd_knlist;	/* list of attached knotes */
+	u_long	fd_knhashmask;		/* size of knhash */
+	struct	klist *fd_knhash;	/* hash table for attached knotes */
 };
 
 /*
@@ -76,13 +88,18 @@ struct filedesc0 {
 	 */
 	struct	file *fd_dfiles[NDFILE];
 	char	fd_dfileflags[NDFILE];
+	/*
+	 * There arrays are used when the number of open files is
+	 * <= 1024, and are then pointed to by the pointers above.
+	 */
+	u_int   fd_dhimap[NDENTRIES >> NDENTRYSHIFT];
+	u_int   fd_dlomap[NDENTRIES];
 };
 
 /*
  * Per-process open flags.
  */
 #define	UF_EXCLOSE 	0x01		/* auto-close on exec */
-#define	UF_MAPPED 	0x02		/* mapped from device */
 
 /*
  * Storage required per open file descriptor.
@@ -93,11 +110,24 @@ struct filedesc0 {
 /*
  * Kernel global variables and routines.
  */
-int	dupfdopen __P((struct filedesc *fdp, int indx, int dfd, int mode,
-	    int error));
-int	fdalloc __P((struct proc *p, int want, int *result));
-int	fdavail __P((struct proc *p, int n));
-int	falloc __P((struct proc *p, struct file **resultfp, int *resultfd));
-struct	filedesc *fdcopy __P((struct proc *p));
-void	fdfree __P((struct proc *p));
+void	filedesc_init(void);
+int	dupfdopen(struct filedesc *fdp, int indx, int dfd, int mode,
+	    int error);
+int	fdalloc(struct proc *p, int want, int *result);
+void	fdexpand(struct proc *);
+int	falloc(struct proc *p, struct file **resultfp, int *resultfd);
+struct	filedesc *fdinit(struct proc *p);
+struct	filedesc *fdshare(struct proc *p);
+struct	filedesc *fdcopy(struct proc *p);
+void	fdfree(struct proc *p);
+int	fdrelease(struct proc *p, int);
+void	fdremove(struct filedesc *, int);
+void	fdcloseexec(struct proc *);
+struct file *fd_getfile(struct filedesc *, int fd);
+
+int	closef(struct file *, struct proc *);
+int	getsock(struct filedesc *, int, struct file **);
+
+#define	fdplock(fdp)	rw_enter_write(&(fdp)->fd_lock)
+#define	fdpunlock(fdp)	rw_exit_write(&(fdp)->fd_lock)
 #endif

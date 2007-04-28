@@ -1,4 +1,5 @@
-/*	$NetBSD: rmp_var.h,v 1.7 1995/10/06 05:12:19 thorpej Exp $	*/
+/*	$OpenBSD: rmp_var.h,v 1.4 2002/12/13 23:14:07 deraadt Exp $	*/
+/*	$NetBSD: rmp_var.h,v 1.7.2.1 1995/11/14 08:45:43 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988, 1992 The University of Utah and the Center
@@ -20,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -98,12 +95,12 @@
  *  limited to 255 bytes due to the preceding 1-byte length field.
  */
 
-#define	RMPBOOTSIZE(s)	htons(sizeof(struct hp_hdr) + sizeof(struct hp_llc) + \
+#define	RMPBOOTSIZE(s)	(sizeof(struct hp_hdr) + sizeof(struct hp_llc) + \
 			 sizeof(struct rmp_boot_repl) + s - sizeof(restofpkt))
-#define	RMPREADSIZE(s)	htons(sizeof(struct hp_hdr) + sizeof(struct hp_llc) + \
+#define	RMPREADSIZE(s)	(sizeof(struct hp_hdr) + sizeof(struct hp_llc) + \
 			 sizeof(struct rmp_read_repl) + s - sizeof(restofpkt) \
 			 - sizeof(u_int8_t))
-#define	RMPDONESIZE	htons(sizeof(struct hp_hdr) + sizeof(struct hp_llc) + \
+#define	RMPDONESIZE	(sizeof(struct hp_hdr) + sizeof(struct hp_llc) + \
 			 sizeof(struct rmp_boot_done))
 #define	RMPBOOTDATA	255
 #define	RMPREADDATA	(RMPDATALEN - \
@@ -129,7 +126,7 @@ typedef char	restofpkt;
  *	COPYWORD(w1,w2)	Copy u_word `w1' to `w2'.
  *	GETWORD(w,i)	Copy u_word `w' into int `i'.
  *	PUTWORD(i,w)	Copy int `i' into u_word `w'.
- * 
+ *
  * N.B. Endianness is handled by use of ntohl/htonl
  */
 #if defined(__vax__) || defined(__tahoe__) || defined(__m68k__)

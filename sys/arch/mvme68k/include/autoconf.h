@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: autoconf.h,v 1.12 2005/11/27 14:17:39 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -30,17 +25,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _MVME68K_AUTOCONF_H_
+#define _MVME68K_AUTOCONF_H_
+
 struct confargs {
 	int	ca_bustype;
-	void	*ca_vaddr;
-	void	*ca_paddr;
+	vaddr_t	ca_vaddr;
+	paddr_t	ca_paddr;
 	int	ca_offset;
-	int	ca_len;
 	int	ca_ipl;
 	int	ca_vec;
 	char	*ca_name;
-
-	void	*ca_master;	/* points to bus-dependent data */
 };
 
 #define BUS_MAIN	1
@@ -51,5 +46,15 @@ struct confargs {
 #define BUS_VMEL	6	/* 32 bit VME access */
 #define BUS_IP		7	/* VME162 IP module bus */
 
-caddr_t	mapiodev __P((caddr_t pa, int size));
-void	unmapiodev __P((caddr_t kva, int size));
+/* the following are from the prom/bootblocks */
+extern paddr_t	bootaddr;	/* PA of boot device */
+extern int	bootctrllun;	/* ctrl_lun of boot device */
+extern int	bootdevlun;	/* dev_lun of boot device */
+extern int	bootpart;	/* boot partition (disk) */
+
+extern struct	device *bootdv; /* boot device */
+
+vaddr_t	mapiodev(paddr_t, int);
+void	unmapiodev(vaddr_t, int);
+
+#endif

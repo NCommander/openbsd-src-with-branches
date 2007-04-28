@@ -1,4 +1,5 @@
-/*	$NetBSD: ventel.c,v 1.3 1994/12/08 09:31:52 jtc Exp $	*/
+/*	$OpenBSD: ventel.c,v 1.11 2006/03/17 14:43:06 moritz Exp $	*/
+/*	$NetBSD: ventel.c,v 1.6 1997/02/11 09:24:21 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)ventel.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: ventel.c,v 1.3 1994/12/08 09:31:52 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: ventel.c,v 1.11 2006/03/17 14:43:06 moritz Exp $";
 #endif /* not lint */
 
 /*
@@ -45,12 +42,18 @@ static char rcsid[] = "$NetBSD: ventel.c,v 1.3 1994/12/08 09:31:52 jtc Exp $";
  * The Ventel is expected to be strapped for local echo (just like uucp)
  */
 #include "tip.h"
+#include <termios.h>
+#include <sys/ioctl.h>
 
 #define	MAXRETRY	5
 
-static	void sigALRM();
-static	int timeout = 0;
+static	int dialtimeout = 0;
 static	jmp_buf timeoutbuf;
+
+static void	echo(char *);
+static void	sigALRM(int);
+static int	gobble(char, char *);
+static int	vensync(int);
 
 /*
  * some sleep calls have been replaced by this macro
@@ -59,18 +62,16 @@ static	jmp_buf timeoutbuf;
  */
 #define delay(num,denom) busyloop(CPUSPEED*num/denom)
 #define CPUSPEED 1000000	/* VAX 780 is 1MIPS */
-#define	DELAY(n)	{ register long N = (n); while (--N > 0); }
-busyloop(n) { DELAY(n); }
+#define DELAY(n) do { long N = (n); while (--N > 0); } while (0)
+#define busyloop(n) do { DELAY(n); } while (0)
 
-ven_dialer(num, acu)
-	register char *num;
-	char *acu;
+int
+ven_dialer(char *num, char *acu)
 {
-	register char *cp;
-	register int connected = 0;
-	char *msg, *index(), line[80];
-	static int gobble(), vensync();
-	static void echo();
+	char *cp;
+	int connected = 0;
+	char *msg, line[80];
+	struct termios	cntrl;
 
 	/*
 	 * Get in synch with a couple of carriage returns
@@ -85,7 +86,9 @@ ven_dialer(num, acu)
 	if (boolean(value(VERBOSE)))
 		printf("\ndialing...");
 	fflush(stdout);
-	ioctl(FD, TIOCHPCL, 0);
+	tcgetattr(FD, &cntrl);
+	cntrl.c_cflag |= HUPCL;
+	tcsetattr(FD, TCSANOW, &cntrl);
 	echo("#k$\r$\n$D$I$A$L$:$ ");
 	for (cp = num; *cp; cp++) {
 		delay(1, 10);
@@ -96,23 +99,23 @@ ven_dialer(num, acu)
 	gobble('\n', line);
 	if (gobble('\n', line))
 		connected = gobble('!', line);
-	ioctl(FD, TIOCFLUSH);
+	tcflush(FD, TCIOFLUSH);
 #ifdef ACULOG
-	if (timeout) {
-		sprintf(line, "%d second dial timeout",
+	if (dialtimeout) {
+		(void)snprintf(line, sizeof line, "%ld second dial timeout",
 			number(value(DIALTIMEOUT)));
 		logent(value(HOST), num, "ventel", line);
 	}
 #endif
-	if (timeout)
+	if (dialtimeout)
 		ven_disconnect();	/* insurance */
-	if (connected || timeout || !boolean(value(VERBOSE)))
+	if (connected || dialtimeout || !boolean(value(VERBOSE)))
 		return (connected);
 	/* call failed, parse response for user */
-	cp = index(line, '\r');
+	cp = strchr(line, '\r');
 	if (cp)
 		*cp = '\0';
-	for (cp = line; cp = index(cp, ' '); cp++)
+	for (cp = line; (cp = strchr(cp, ' ')) != NULL; cp++)
 		if (cp[1] == ' ')
 			break;
 	if (cp) {
@@ -129,62 +132,60 @@ ven_dialer(num, acu)
 	return (connected);
 }
 
-ven_disconnect()
+void
+ven_disconnect(void)
 {
-
 	close(FD);
 }
 
-ven_abort()
+void
+ven_abort(void)
 {
-
 	write(FD, "\03", 1);
 	close(FD);
 }
 
 static void
-echo(s)
-	register char *s;
+echo(char *s)
 {
 	char c;
 
-	while (c = *s++) switch (c) {
+	while ((c = *s++) != NULL)
+		switch (c) {
+		case '$':
+			read(FD, &c, 1);
+			s++;
+			break;
 
-	case '$':
-		read(FD, &c, 1);
-		s++;
-		break;
+		case '#':
+			c = *s++;
+			write(FD, &c, 1);
+			break;
 
-	case '#':
-		c = *s++;
-		write(FD, &c, 1);
-		break;
-
-	default:
-		write(FD, &c, 1);
-		read(FD, &c, 1);
-	}
+		default:
+			write(FD, &c, 1);
+			read(FD, &c, 1);
+		}
 }
 
+/*ARGSUSED*/
 static void
-sigALRM()
+sigALRM(int signo)
 {
 	printf("\07timeout waiting for reply\n");
-	timeout = 1;
+	dialtimeout = 1;
 	longjmp(timeoutbuf, 1);
 }
 
 static int
-gobble(match, response)
-	register char match;
-	char response[];
+gobble(char match, char response[])
 {
-	register char *cp = response;
+	char *cp = response;
 	sig_t f;
 	char c;
 
 	f = signal(SIGALRM, sigALRM);
-	timeout = 0;
+	dialtimeout = 0;
 	do {
 		if (setjmp(timeoutbuf)) {
 			signal(SIGALRM, f);
@@ -212,7 +213,7 @@ gobble(match, response)
  * there are gory ways to simulate this.
  */
 static int
-vensync(fd)
+vensync(int fd)
 {
 	int already = 0, nread;
 	char buf[60];
@@ -253,4 +254,3 @@ vensync(fd)
 	}
 	return (0);
 }
-

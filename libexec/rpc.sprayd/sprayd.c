@@ -1,3 +1,5 @@
+/*	$OpenBSD: sprayd.c,v 1.8 2003/07/06 21:57:27 deraadt Exp $*/
+
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -27,49 +29,50 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: sprayd.c,v 1.7 1995/03/26 23:36:44 mycroft Exp $
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: sprayd.c,v 1.7 1995/03/26 23:36:44 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: sprayd.c,v 1.8 2003/07/06 21:57:27 deraadt Exp $";
 #endif /* not lint */
 
-#include <stdio.h>
-#include <signal.h>
-#include <rpc/rpc.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
 #include <syslog.h>
+#include <rpc/rpc.h>
 #include <rpcsvc/spray.h>
 
-static void spray_service __P((struct svc_req *, SVCXPRT *));
+static void spray_service(struct svc_req *, SVCXPRT *);
 
 static int from_inetd = 1;
 
 #define TIMEOUT 120
 
-void
-cleanup()
+static void
+cleanup(int signo)
 {
-	(void) pmap_unset(SPRAYPROG, SPRAYVERS);
-	exit(0);
+	(void) pmap_unset(SPRAYPROG, SPRAYVERS);	/* XXX signal race */
+	_exit(0);
 }
 
-void
-die()
+static void
+die(int signo)
 {
-	exit(0);
+	_exit(0);
 }
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	SVCXPRT *transp;
 	int sock = 0;
 	int proto = 0;
-	struct sockaddr_in from;
-	int fromlen;
+	struct sockaddr_storage from;
+	socklen_t fromlen;
 
 	/*
 	 * See if inetd started us
@@ -115,12 +118,10 @@ main(argc, argv)
 
 
 static void
-spray_service(rqstp, transp)
-	struct svc_req *rqstp;
-	SVCXPRT *transp;
+spray_service(struct svc_req *rqstp, SVCXPRT *transp)
 {
-	static spraycumul scum;
 	static struct timeval clear, get;
+	static spraycumul scum;
 
 	switch (rqstp->rq_proc) {
 	case SPRAYPROC_CLEAR:

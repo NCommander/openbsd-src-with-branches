@@ -1,3 +1,5 @@
+/*	$OpenBSD: map3270.c,v 1.8 2003/09/29 09:08:20 miod Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)map3270.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: map3270.c,v 1.3 1994/04/01 04:09:28 cgd Exp $";
+static char rcsid[] = "$OpenBSD: map3270.c,v 1.8 2003/09/29 09:08:20 miod Exp $";
 #endif /* not lint */
 
 /*	This program reads a description file, somewhat like /etc/termcap,
@@ -58,11 +56,8 @@ static char rcsid[] = "$Id: map3270.c,v 1.3 1994/04/01 04:09:28 cgd Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
-#if	defined(unix)
-#include <strings.h>
-#else	/* defined(unix) */
+#include <stdlib.h>
 #include <string.h>
-#endif	/* defined(unix) */
 
 #define	IsPrint(c)	((isprint(c) && !isspace(c)) || ((c) == ' '))
 
@@ -78,7 +73,7 @@ static char rcsid[] = "$Id: map3270.c,v 1.3 1994/04/01 04:09:28 cgd Exp $";
 #define	LEX_END_OF_FILE LEX_CARETED+1		/* end of file encountered */
 #define	LEX_ILLEGAL	LEX_END_OF_FILE+1	/* trailing escape character */
 
-/* the following is part of our character set dependancy... */
+/* the following is part of our character set dependency... */
 #define	ESCAPE		0x1b
 #define	TAB		0x09
 #define	NEWLINE 	0x0a
@@ -94,13 +89,13 @@ typedef struct {
     char	array[500];	/* character string */
 } stringWithLength;
 
-#define	panic(s)	{ fprintf(stderr, s); exit(1); }
+#define	panic(s)	{ fprintf(stderr, "%s", s); exit(1); }
 
 static state firstentry = { 0, STATE_NULL, 0, 0 };
 static state *headOfQueue = &firstentry;
 
 /* the following is a primitive adm3a table, to be used when nothing
- * else seems to be avaliable.
+ * else seems to be available.
  */
 
 #ifdef	DEBUG
@@ -145,7 +140,7 @@ GetC()
 		char envname[9];
 		extern char *getenv();
 
-		(void) sprintf(envname, "MAP3270%c", suffix++);
+		(void) snprintf(envname, sizeof envname, "MAP3270%c", suffix++);
 		environPointer = getenv(envname);
 	    } else {
 		whichkey++;			/* default map */
@@ -167,8 +162,8 @@ static lexicon
 Get()
 {
     lexicon c;
-    register lexicon *pC = &c;
-    register int character;
+    lexicon *pC = &c;
+    int character;
 
     if (!Empty) {
 	*pC = lifo[rp];
@@ -264,7 +259,7 @@ lexicon c;			/* character to unget */
  */
 char *
 uncontrol(c)
-	register int c;
+	int c;
 {
 	static char buf[3];
 
@@ -287,10 +282,10 @@ uncontrol(c)
 /* compare two strings, ignoring case */
 
 ustrcmp(string1, string2)
-register char *string1;
-register char *string2;
+char *string1;
+char *string2;
 {
-    register int c1, c2;
+    int c1, c2;
 
     while ((c1 = (unsigned char) *string1++) != 0) {
 	if (isupper(c1)) {
@@ -474,9 +469,7 @@ static void
 FreeState(pState)
 state *pState;
 {
-    extern int free();
-
-    free((char *)pState);
+    free(pState);
 }
 
 
@@ -484,7 +477,6 @@ static state *
 GetState()
 {
     state *pState;
-    extern char *malloc();
 
     pState = (state *) malloc(sizeof (state));
 
@@ -825,21 +817,6 @@ char *keybdPointer;
     Return(0);
 }
 
-char *
-strsave(string)
-char *string;
-{
-    char *p;
-    extern char *malloc();
-
-    p = malloc((unsigned int)strlen(string)+1);
-    if (p != 0) {
-	strcpy(p, string);
-    }
-    return(p);
-}
-
-
 /*
  * InitControl - our interface to the outside.  What we should
  *  do is figure out keyboard (or terminal) type, set up file pointer
@@ -870,7 +847,7 @@ int	(*translator)();	/* Translates ascii string to integer */
 		     * out of a static area.  So, save the keyboard name.
 		     */
     if (keybdPointer) {
-        keybdPointer = strsave(keybdPointer);
+        keybdPointer = strdup(keybdPointer);
     }
     environPointer = getenv("MAP3270");
     if (environPointer

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: eh.S,v 1.1.1.1 2006/05/05 21:03:17 miod Exp $	*/
 /*
  * Copyright (c) 2006, Miodrag Vallat
  *
@@ -24,7 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/av400.h>
 #include <machine/m8820x.h>
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD: clock.c,v 1.2 2006/10/07 20:52:40 miod Exp $	*/
 /*	$NetBSD: clock.c,v 1.32 2006/09/05 11:09:36 uwe Exp $	*/
 
 /*-
@@ -109,6 +110,7 @@ do {									\
 } while (/*CONSTCOND*/0)
 #define	TMU_ELAPSED(x)							\
 	(0xffffffff - _reg_read_4(SH_(TCNT ## x)))
+
 void
 sh_clock_init(int flags, struct rtc_ops *rtc)
 {
@@ -283,7 +285,8 @@ cpu_initclocks()
 	_reg_write_4(SH_(TCOR2), 0xffffffff);
 
 	/* Make sure to start RTC */
-	sh_clock.rtc.init(sh_clock.rtc._cookie);
+	if (sh_clock.rtc.init != NULL)
+		sh_clock.rtc.init(sh_clock.rtc._cookie);
 }
 
 void
@@ -349,9 +352,9 @@ resettodr()
 
 	sh_clock.rtc.set(sh_clock.rtc._cookie, &dt);
 #ifdef DEBUG
-        printf("%s: %d/%d/%d/%d/%d/%d(%d) rtc_offset %d\n", __FUNCTION__,
+        printf("%s: %d/%d/%d/%d/%d/%d(%d)\n", __FUNCTION__,
 	    dt.dt_year, dt.dt_mon, dt.dt_day, dt.dt_hour, dt.dt_min, dt.dt_sec,
-	    dt.dt_wday, rtc_offset);
+	    dt.dt_wday);
 #endif
 }
 

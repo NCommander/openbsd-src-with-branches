@@ -1,3 +1,4 @@
+/*	$OpenBSD: strings.c,v 1.11 2003/06/10 22:20:52 deraadt Exp $	*/
 /*	$NetBSD: strings.c,v 1.7 1995/02/15 15:49:19 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)strings.c	8.2 (Berkeley) 1/28/94";
 #endif
-static char rcsid[] = "$NetBSD: strings.c,v 1.7 1995/02/15 15:49:19 jtc Exp $";
+static char rcsid[] = "$OpenBSD: strings.c,v 1.11 2003/06/10 22:20:52 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -57,6 +54,7 @@ static char rcsid[] = "$NetBSD: strings.c,v 1.7 1995/02/15 15:49:19 jtc Exp $";
 #include <string.h>
 #include <locale.h>
 #include <unistd.h>
+#include <err.h>
 
 #define FORMAT_DEC "%07ld "
 #define FORMAT_OCT "%07lo "
@@ -73,18 +71,18 @@ static int	hcnt,			/* head count */
 		read_len;		/* length to read */
 static u_char	hbfr[sizeof(EXEC)];	/* buffer for struct exec */
 
-static void usage();
+static void usage(void);
+int getch(void);
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char *argv[])
 {
 	extern char *optarg;
 	extern int optind;
-	register int ch, cnt;
-	register u_char *C;
+	int ch, cnt;
+	u_char *C;
 	EXEC *head;
-	int exitcode, minlen;
+	int exitcode, minlen, maxlen, bfrlen;
 	short asdata, fflg;
 	u_char *bfr;
 	char *file, *p;
@@ -99,7 +97,8 @@ main(argc, argv)
 	asdata = exitcode = fflg = 0;
 	offset_format = NULL;
 	minlen = -1;
-	while ((ch = getopt(argc, argv, "-0123456789an:oft:")) != -1)
+	maxlen = -1;
+	while ((ch = getopt(argc, argv, "0123456789an:m:oft:-")) != -1)
 		switch((char)ch) {
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
@@ -124,6 +123,9 @@ main(argc, argv)
 			break;
 		case 'n':
 			minlen = atoi(optarg);
+			break;
+		case 'm':
+			maxlen = atoi(optarg);
 			break;
 		case 'o':
 			offset_format = FORMAT_OCT;
@@ -153,23 +155,21 @@ main(argc, argv)
 
 	if (minlen == -1)
 		minlen = DEF_LEN;
-	else if (minlen < 1) {
-		(void)fprintf(stderr, "strings: length less than 1\n");
-		exit (1);
-	}
-
-	if (!(bfr = malloc(minlen))) {
-		(void)fprintf(stderr, "strings: %s\n", strerror(errno));
-		exit(1);
-	}
-	bfr[minlen] = '\0';
+	else if (minlen < 1)
+		errx(1, "length less than 1");
+	if (maxlen != -1 && maxlen < minlen)
+		errx(1, "max length less than min");
+	bfrlen = maxlen == -1 ? minlen : maxlen;
+	bfr = malloc(bfrlen + 1);
+	if (!bfr)
+		err(1, "malloc");
+	bfr[bfrlen] = '\0';
 	file = "stdin";
 	do {
 		if (*argv) {
 			file = *argv++;
 			if (!freopen(file, "r", stdin)) {
-				(void)fprintf(stderr,
-				    "strings: %s: %s\n", file, strerror(errno));
+				warn("%s", file);
 				exitcode = 1;
 				goto nextfile;
 			}
@@ -202,6 +202,21 @@ start:
 				*C++ = ch;
 				if (++cnt < minlen)
 					continue;
+				if (maxlen != -1) {
+					while ((ch = getch()) != EOF &&
+					       ISSTR(ch) && cnt++ < maxlen)
+						*C++ = ch;
+					if (ch == EOF ||
+					    (ch != 0 && ch != '\n')) {
+						/* get all of too big string */
+						while ((ch = getch()) != EOF &&
+						       ISSTR(ch))
+							;
+						ungetc(ch, stdin);
+						goto out;
+					}
+					*C = 0;
+				}
 
 				if (fflg)
 					printf("%s:", file);
@@ -210,10 +225,14 @@ start:
 					printf(offset_format, foff - minlen);
 
 				printf("%s", bfr);
-
-				while ((ch = getch()) != EOF && ISSTR(ch))
-					putchar((char)ch);
+				
+				if (maxlen == -1)
+					while ((ch = getch()) != EOF &&
+					       ISSTR(ch))
+						putchar((char)ch);
 				putchar('\n');
+			out:
+				;
 			}
 			cnt = 0;
 		}
@@ -226,7 +245,8 @@ nextfile: ;
  * getch --
  *	get next character from wherever
  */
-getch()
+int
+getch(void)
 {
 	++foff;
 	if (head_len) {
@@ -240,7 +260,7 @@ getch()
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
 	    "usage: strings [-afo] [-n length] [-t {o,d,x}] [file ... ]\n");

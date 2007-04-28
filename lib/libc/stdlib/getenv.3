@@ -1,5 +1,5 @@
-.\" Copyright (c) 1988, 1991 The Regents of the University of California.
-.\" All rights reserved.
+.\" Copyright (c) 1988, 1991, 1993
+.\"    The Regents of the University of California.  All rights reserved.
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" the American National Standards Committee X3, on Information
@@ -13,11 +13,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,10 +29,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)getenv.3	6.11 (Berkeley) 6/29/91
-.\"	$Id: getenv.3,v 1.6 1994/04/08 00:58:04 cgd Exp $
+.\"	$OpenBSD: getenv.3,v 1.10 2005/05/11 20:09:44 otto Exp $
 .\"
-.Dd June 29, 1991
+.Dd December 11, 1993
 .Dt GETENV 3
 .Os
 .Sh NAME
@@ -56,59 +51,51 @@
 .Ft void
 .Fn unsetenv "const char *name"
 .Sh DESCRIPTION
-These functions set, unset and fetch environment variables from the
-host
+These functions set, unset, and fetch environment variables from the host
 .Em environment list .
-For compatibility with differing environment conventions,
-the given arguments
-.Ar name
+For compatibility with differing environment conventions, the given arguments
+.Fa name
 and
-.Ar value
-may be appended and prepended, 
-respectively,
-with an equal sign
+.Fa value
+may be appended and prepended, respectively, with an equal sign
 .Dq Li \&= .
 .Pp
 The
 .Fn getenv
-function obtains the current value of the environment variable,
-.Ar name .
+function obtains the current value of the environment variable
+.Fa name .
 If the variable
-.Ar name
-is not in the current environment ,
-a null pointer is returned.
+.Fa name
+is not in the current environment, a null pointer is returned.
 .Pp
 The
 .Fn setenv
 function inserts or resets the environment variable
-.Ar name
+.Fa name
 in the current environment list.
 If the variable
-.Ar name
-does not exist in the list,
-it is inserted with the given
-.Ar value.
+.Fa name
+does not exist in the list, it is inserted with the given
+.Fa value .
 If the variable does exist, the argument
-.Ar overwrite
+.Fa overwrite
 is tested; if
-.Ar overwrite is
-zero, the
-variable is not reset, otherwise it is reset
-to the given
-.Ar value .
+.Fa overwrite
+is zero, the variable is not reset, otherwise it is reset to the given
+.Fa value .
 .Pp
 The
 .Fn putenv
-function takes an argument of the form ``name=value'' and is
-equivalent to:
+function takes an argument of the form
+.Ar name Ns = Ns Ar value
+and is equivalent to:
 .Bd -literal -offset indent
 setenv(name, value, 1);
 .Ed
 .Pp
 The
 .Fn unsetenv
-function
-deletes all instances of the variable name pointed to by
+function deletes all instances of the variable name pointed to by
 .Fa name
 from the list.
 .Sh RETURN VALUES
@@ -118,8 +105,11 @@ and
 .Fn putenv
 return zero if successful; otherwise the global variable
 .Va errno
-is set to indicate the error and a
-\-1 is returned.
+is set to indicate the error and \-1 is returned.
+.Pp
+If
+.Fn getenv
+is successful, the string returned should be considered read-only.
 .Sh ERRORS
 .Bl -tag -width Er
 .It Bq Er ENOMEM
@@ -140,12 +130,18 @@ The
 function conforms to
 .St -ansiC .
 .Sh HISTORY
+The function
+.Fn getenv
+appeared in
+.At v7
+and
+.Bx 3 .
 The functions
 .Fn setenv
 and
 .Fn unsetenv
 appeared in
-.At v7 .
+.Bx 4.3 Tahoe .
 The
 .Fn putenv
 function appeared in

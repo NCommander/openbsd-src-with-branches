@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.h,v 1.5 2007/03/02 06:11:54 miod Exp $	*/
 /*	$NetBSD: cpu.h,v 1.41 2006/01/21 04:24:12 uwe Exp $	*/
 
 /*-
@@ -49,13 +49,6 @@
 #include <sh/frame.h>
 
 #ifdef _KERNEL
-
-/*
- * Can't swapout u-area, (__SWAP_BROKEN)
- * since we use P1 converted address for trapframe.
- */
-#define	cpu_swapin(p)			/* nothing */
-#define	cpu_swapout(p)			/* nothing */
 
 /*
  * Arguments to hardclock and gatherstats encapsulate the previous
@@ -111,6 +104,7 @@ do {									\
 
 extern int want_resched;		/* need_resched() was called */
 
+#define	cpu_wait(p)	((void)(p))
 /*
  * We need a machine-independent name for this.
  */
@@ -193,11 +187,13 @@ extern int want_resched;		/* need_resched() was called */
  * CTL_MACHDEP definitions.
  */
 #define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
+#define	CPU_KBDRESET		2	/* keyboard reset */
+#define	CPU_MAXID		3	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES {						\
 	{ 0, 0 },							\
 	{ "console_device",	CTLTYPE_STRUCT },			\
+	{ "kbdreset",		CTLTYPE_INT },				\
 }
 
 #ifdef _KERNEL
@@ -208,6 +204,12 @@ void _cpu_spin(uint32_t);	/* for delay loop. */
 void delay(int);
 struct pcb;
 void savectx(struct pcb *);
+struct fpreg;
+void fpu_save(struct fpreg *);
+void fpu_restore(struct fpreg *);
+u_int cpu_dump(int (*)(dev_t, daddr_t, caddr_t, size_t), daddr_t *);
+u_int cpu_dumpsize(void);
+void dumpconf(void);
 void dumpsys(void);
 #endif /* _KERNEL */
 #endif /* !_SH_CPU_H_ */

@@ -1,10 +1,11 @@
-#	$Id: Makefile,v 1.12 1995/01/02 22:33:28 cgd Exp $
+#	$OpenBSD: Makefile,v 1.14 2003/05/14 01:46:51 hin Exp $
 
 .include "../../Makefile.inc"
 
 CFLAGS += -I${.CURDIR} -I.
-LDADD += -lcurses -ltermcap -ltelnet -lcrypt
-DPADD += ${LIBCURSES} ${LIBTERMCAP} /usr/lib/libtelnet.a ${LIBCRYPT}
+CFLAGS += -I${.CURDIR}/../../telnet
+LDADD += -lcurses
+DPADD += ${LIBCURSES}
 
 SRCS += apilib.c api_bsd.c api_exch.c asc_ebc.c astosc.c dctype.c
 SRCS += disp_asc.c ebc_disp.c
@@ -13,6 +14,7 @@ SRCS += api.c function.c inbound.c oia.c options.c outbound.c
 SRCS += genbsubs.c globals.c system.c termout.c
 SRCS += commands.c main.c network.c ring.c sys_bsd.c telnet.c terminal.c
 SRCS += tn3270.c utilities.c
+SRCS += auth.c encrypt.c genget.c misc.c
 
 # this and the dependency hacks below to make 'depend' target
 # work right...
@@ -29,16 +31,20 @@ DEPSRCS += tn3270.c utilities.c
 PROG = tn3270
 
 MKASTOSC!=cd $(.CURDIR)/../tools/mkastosc; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkastosc\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkastosc\n" | \
+	${MAKE} -r -s -f - xxx | grep mkastosc
 
 MKASTODS!=cd $(.CURDIR)/../tools/mkastods; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkastods\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkastods\n" | \
+	${MAKE} -r -s -f - xxx | grep mkastods
 
 MKDSTOAS!=cd $(.CURDIR)/../tools/mkdstoas; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkdstoas\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkdstoas\n" | \
+	${MAKE} -r -s -f - xxx | grep mkdstoas
 
 MKHITS!=cd $(.CURDIR)/../tools/mkhits; \
-	printf "xxx:\n\techo \$${.OBJDIR}/mkhits\n" | ${MAKE} -r -s -f - xxx
+	printf "xxx:\n\techo \$${.OBJDIR}/mkhits\n" | \
+	${MAKE} -r -s -f - xxx | grep mkhits
 
 astosc.o: astosc.OUT
 CLEANFILES += astosc.OUT astosc.out

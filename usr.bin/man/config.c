@@ -1,3 +1,4 @@
+/*	$OpenBSD: config.c,v 1.6 2004/09/15 22:20:03 deraadt Exp $	*/
 /*	$NetBSD: config.c,v 1.7 1995/09/28 06:05:21 tls Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)config.c	8.8 (Berkeley) 1/31/95";
 #else
-static char rcsid[] = "$NetBSD: config.c,v 1.7 1995/09/28 06:05:21 tls Exp $";
+static char rcsid[] = "$OpenBSD: config.c,v 1.6 2004/09/15 22:20:03 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,8 +64,7 @@ struct _head head;
  *	tag2 <-> record <-> record <-> record
  */
 void
-config(fname)
-	char *fname;
+config(char *fname)
 {
 	TAG *tp;
 	ENTRY *ep;
@@ -92,18 +88,20 @@ config(fname)
 		p[len - 1] = '\0';		/* Terminate the line. */
 
 						/* Skip leading space. */
-		for (; *p != '\0' && isspace(*p); ++p);
+		while (*p != '\0' && isspace(*p))
+			p++;
 						/* Skip empty/comment lines. */
 		if (*p == '\0' || *p == '#')
 			continue;
 						/* Find first token. */
-		for (t = p; *t && !isspace(*t); ++t);
+		for (t = p; *t && !isspace(*t); ++t)
+			continue;
 		if (*t == '\0')			/* Need more than one token.*/
 			continue;
 		*t = '\0';
 
-		for (tp = head.tqh_first;	/* Find any matching tag. */
-		    tp != NULL && strcmp(p, tp->s); tp = tp->q.tqe_next);
+		for (tp = TAILQ_FIRST(&head);	/* Find any matching tag. */
+		    tp != NULL && strcmp(p, tp->s); tp = TAILQ_NEXT(tp, q));
 
 		if (tp == NULL)		/* Create a new tag. */
 			tp = addlist(p);
@@ -137,8 +135,7 @@ config(fname)
  *	Add a tag to the list.
  */
 TAG *
-addlist(name)
-	char *name;
+addlist(char *name)
 {
 	TAG *tp;
 
@@ -155,28 +152,12 @@ addlist(name)
  *	Return the linked list of entries for a tag if it exists.
  */
 TAG *
-getlist(name)
-	char *name;
+getlist(char *name)
 {
 	TAG *tp;
 
-	for (tp = head.tqh_first; tp != NULL; tp = tp->q.tqe_next)
+	TAILQ_FOREACH(tp, &head, q)
 		if (!strcmp(name, tp->s))
 			return (tp);
 	return (NULL);
-}
-
-void
-debug(l)
-	char *l;
-{
-	TAG *tp;
-	ENTRY *ep;
-
-	(void)printf("%s ===============\n", l);
-	for (tp = head.tqh_first; tp != NULL; tp = tp->q.tqe_next) {
-		printf("%s\n", tp->s);
-		for (ep = tp->list.tqh_first; ep != NULL; ep = ep->q.tqe_next)
-			printf("\t%s\n", ep->s);
-	}
 }

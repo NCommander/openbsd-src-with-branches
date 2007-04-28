@@ -1,4 +1,4 @@
-/*	$PMDB: sparc.c,v 1.4 2002/03/05 12:04:26 art Exp $	*/
+/*	$OpenBSD: sparc.c,v 1.5 2002/07/22 02:54:23 art Exp $	*/
 /*
  * Copyright (c) 2002 Federico Schwindt <fgsch@openbsd.org>
  * All rights reserved. 
@@ -54,24 +54,25 @@ md_getframe(struct pstate *ps, int frame, struct md_frame *fram)
 	reg fp, pc;
 	int i;
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&r, 0) != 0)
-		return -1;
+	if (process_getregs(ps, &r))
+		return (-1);
 
 	if (frame == 0) {
-		fram->pc = r.r_pc;
-		fram->fp = r.r_out[6];
-		return 0;
+		pc = r.r_pc;
+		fp = r.r_out[6];
+		if (process_read(ps, fp, &fr, sizeof(fr)) < 0)
+			return (-1);
+	} else {
+		fp = r.r_out[6];
+		pc = r.r_out[7];
 	}
-
-	fp = r.r_out[6];
-	pc = r.r_out[7];
 
 	for (i = 1; i < frame; i++) {
 		if (fp < 8192 || (fp & 7) != 0)
-			return -1;
+			return (-1);
 
-		if (read_from_pid(ps->ps_pid, fp, &fr, sizeof(fr)) < 0)
-			return -1;
+		if (process_read(ps, fp, &fr, sizeof(fr)) < 0)
+			return (-1);
 		fp = (unsigned long)next_frame((&fr));
 		pc = fr.fr_pc;
 	}
@@ -83,7 +84,7 @@ md_getframe(struct pstate *ps, int frame, struct md_frame *fram)
 		fram->args[i] = fr.fr_arg[i];
 	}
 
-	return 0;
+	return (0);
 }
 
 int
@@ -92,16 +93,19 @@ md_getregs(struct pstate *ps, reg *regs)
 	struct reg r;
 	int i;
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&r, 0) != 0)
-		return -1;
+	if (process_getregs(ps, &r))
+		return (-1);
+
 	regs[0] = r.r_pc;
 	regs[1] = r.r_npc;
+
 	for (i = 0; i < 8; i++) {
 		regs[2 + i] = r.r_out[i];
 	}
+
 	for (i = 0; i < 8; i++) {
 		regs[10 + i] = r.r_global[i];
 	}
 
-	return 0;
+	return (0);
 }

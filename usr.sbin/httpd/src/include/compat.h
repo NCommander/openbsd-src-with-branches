@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  *  compat.h -- backward compatibility header for ap_compat.h
  */

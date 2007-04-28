@@ -1,3 +1,4 @@
+/*	$OpenBSD: am7990reg.h,v 1.6 2003/10/21 18:58:48 jmc Exp $	*/
 /*	$NetBSD: am7990reg.h,v 1.1 1995/04/11 04:17:50 mycroft Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,7 +36,11 @@
  *	@(#)if_lereg.h	8.1 (Berkeley) 6/10/93
  */
 
-#define	LEBLEN		1536	/* ETHERMTU + header + CRC */
+/*
+ * Documentation for this chip can be found on AMD's website:
+ *	http://www.amd.com/products/npd/techdocs/techdocs.html
+ */
+
 #define	LEMINSIZE	60	/* should be 64 if mode DTCR is set */
 
 /*
@@ -91,8 +92,8 @@ struct leinit {
 #define	LE_INITADDR(sc)		(sc->sc_initaddr)
 #define	LE_RMDADDR(sc, bix)	(sc->sc_rmdaddr + sizeof(struct lermd) * (bix))
 #define	LE_TMDADDR(sc, bix)	(sc->sc_tmdaddr + sizeof(struct letmd) * (bix))
-#define	LE_RBUFADDR(sc, bix)	(sc->sc_rbufaddr + LEBLEN * (bix))
-#define	LE_TBUFADDR(sc, bix)	(sc->sc_tbufaddr + LEBLEN * (bix))
+#define	LE_RBUFADDR(sc, bix)	(sc->sc_rbufaddr + ETHER_MAX_DIX_LEN * (bix))
+#define	LE_TBUFADDR(sc, bix)	(sc->sc_tbufaddr + ETHER_MAX_DIX_LEN * (bix))
 
 /* register addresses */
 #define	LE_CSR0		0x0000		/* Control and status register */
@@ -108,7 +109,7 @@ struct leinit {
 #define	LE_C0_MERR	0x0800		/* memory error */
 #define	LE_C0_RINT	0x0400		/* receiver interrupt */
 #define	LE_C0_TINT	0x0200		/* transmitter interrupt */
-#define	LE_C0_IDON	0x0100		/* initalization done */
+#define	LE_C0_IDON	0x0100		/* initialization done */
 #define	LE_C0_INTR	0x0080		/* interrupt condition */
 #define	LE_C0_INEA	0x0040		/* interrupt enable */
 #define	LE_C0_RXON	0x0020		/* receiver on */
@@ -116,7 +117,7 @@ struct leinit {
 #define	LE_C0_TDMD	0x0008		/* transmit demand */
 #define	LE_C0_STOP	0x0004		/* disable all external activity */
 #define	LE_C0_STRT	0x0002		/* enable external activity */
-#define	LE_C0_INIT	0x0001		/* begin initalization */
+#define	LE_C0_INIT	0x0001		/* begin initialization */
 
 #define	LE_C0_BITS \
     "\20\20ERR\17BABL\16CERR\15MISS\14MERR\13RINT\
@@ -127,7 +128,7 @@ struct leinit {
 #define	LE_C3_ACON	0x0002		/* ALE control, eh? */
 #define	LE_C3_BCON	0x0001		/* byte control */
 
-/* Initialzation block (mode) */
+/* Initialization block (mode) */
 #define	LE_MODE_PROM	0x8000		/* promiscuous mode */
 /*			0x7f80		   reserved, must be zero */
 #define	LE_MODE_INTL	0x0040		/* internal loopback */
@@ -157,7 +158,7 @@ struct leinit {
 #define	LE_T1_ERR	0x40		/* error summary */
 #define	LE_T1_MORE	0x10		/* multiple collisions */
 #define	LE_T1_ONE	0x08		/* single collision */
-#define	LE_T1_DEF	0x04		/* defferred transmit */
+#define	LE_T1_DEF	0x04		/* deferred transmit */
 #define	LE_T1_STP	0x02		/* start of packet */
 #define	LE_T1_ENP	0x01		/* end of packet */
 

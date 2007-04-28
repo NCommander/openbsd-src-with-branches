@@ -1,3 +1,4 @@
+/*	$OpenBSD: unistd.h,v 1.12 2004/05/07 18:39:19 millert Exp $	*/
 /*	$NetBSD: unistd.h,v 1.10 1994/06/29 06:46:06 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,20 +35,14 @@
 #ifndef _SYS_UNISTD_H_
 #define	_SYS_UNISTD_H_
 
+#include <sys/cdefs.h>
+
 /* compile-time symbolic constants */
 #define	_POSIX_JOB_CONTROL	/* implementation supports job control */
 
-/*
- * Although we have saved user/group IDs, we do not use them in setuid
- * as described in POSIX 1003.1, because the feature does not work for
- * root.  We use the saved IDs in seteuid/setegid, which are not currently
- * part of the POSIX 1003.1 specification.
- */
-#ifdef	_NOT_AVAILABLE
 #define	_POSIX_SAVED_IDS	/* saved set-user-ID and set-group-ID */
-#endif
 
-#define	_POSIX_VERSION		198808L
+#define	_POSIX_VERSION		199009L
 #define	_POSIX2_VERSION		199212L
 
 /* execution-time symbolic constants */
@@ -60,7 +51,9 @@
 				/* too-long path components generate errors */
 #define	_POSIX_NO_TRUNC		1
 				/* may disable terminal special characters */
-#define	_POSIX_VDISABLE		((unsigned char)'\377')
+#define	_POSIX_VDISABLE		(0377)
+				/* file synchronization is available */
+#define	_POSIX_FSYNC		1
 
 /* access function */
 #define	F_OK		0	/* test for existence of file */
@@ -73,8 +66,8 @@
 #define	SEEK_CUR	1	/* set file offset to current plus offset */
 #define	SEEK_END	2	/* set file offset to EOF plus offset */
 
-#ifndef _POSIX_SOURCE
-/* whence values for lseek(2); renamed by POSIX 1003.1 */
+#if __BSD_VISIBLE
+/* old BSD whence values for lseek(2); renamed by POSIX 1003.1 */
 #define	L_SET		SEEK_SET
 #define	L_INCR		SEEK_CUR
 #define	L_XTND		SEEK_END
@@ -119,6 +112,32 @@
 #define	_SC_2_UPE		25
 #define	_SC_STREAM_MAX		26
 #define	_SC_TZNAME_MAX		27
+#define	_SC_PAGESIZE		28
+#define	_SC_PAGE_SIZE		_SC_PAGESIZE	/* 1170 compatibility */
+#define	_SC_FSYNC		29
+#define	_SC_XOPEN_SHM		30
+#define	_SC_SEM_NSEMS_MAX	31
+#define	_SC_SEM_VALUE_MAX	32
+
+#ifdef notyet
+/* P1003.1c */
+#define _SC_GETGR_R_SIZE_MAX
+#define _SC_GETPW_R_SIZE_MAX
+#define _SC_LOGIN_NAME_MAX
+#define _SC_THREAD_DESTRUCTOR_ITERATIONS
+#define _SC_THREAD_KEYS_MAX
+#define _SC_THREAD_STACK_MIN
+#define _SC_THREAD_THREADS_MAX
+#define _SC_TTY_NAME_MAX
+#define _SC_THREADS
+#define _SC_THREAD_ATTR_STACKADDR
+#define _SC_THREAD_ATTR_STACKSIZE
+#define _SC_THREAD_PRIORITY_SCHEDULING
+#define _SC_THREAD_PRIO_INHERIT
+#define _SC_THREAD_PRIO_PROTECT
+#define _SC_THREAD_PROCESS_SHARED
+#define _SC_THREAD_SAFE_FUNCTIONS
+#endif
 
 /* configurable system strings */
 #define	_CS_PATH		 1

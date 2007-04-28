@@ -1,7 +1,9 @@
-/*	$NetBSD: adosfs.h,v 1.8 1995/08/18 15:14:35 chopps Exp $	*/
+/*	$OpenBSD: adosfs.h,v 1.11 2002/03/14 01:26:25 millert Exp $	*/
+/*	$NetBSD: adosfs.h,v 1.12 1996/10/08 22:18:02 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1994 Christian E. Hopps
+ * Copyright (c) 1996 Matthias Scheler
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,14 +36,13 @@
  * Amigados datestamp. (from 1/1/1978 00:00:00 local)
  */
 struct datestamp {
-	u_long days;
-	u_long mins;
-	u_long ticks;		/* 20000 * (ticks % 50) = useconds */
+	u_int32_t days;
+	u_int32_t mins;
+	u_int32_t ticks;	/* 20000 * (ticks % 50) = useconds */
 				/* ticks / 50 = seconds */
 };
 
 enum anode_type { AROOT, ADIR, AFILE, ALDIR, ALFILE, ASLINK };
-enum anode_flags { AWANT = 0x1, ALOCKED = 0x2 };
 
 /* 
  * similar to inode's, we use to represent:
@@ -52,37 +53,38 @@ enum anode_flags { AWANT = 0x1, ALOCKED = 0x2 };
 struct anode {
 	LIST_ENTRY(anode) link;
 	enum anode_type type;
-	char name[31];		/* (r/d/f) name for object */
+	char name[31];			/* (r/d/f) name for object */
 	struct datestamp mtimev;	/* (r) volume modified */
 	struct datestamp created;	/* (r) volume created */
-	struct datestamp mtime;	/* (r/d/f) last modified */
+	struct datestamp mtime;		/* (r/d/f) last modified */
 	struct adosfsmount *amp;	/* owner file system */
-	struct vnode *vp;	/* owner vnode */
-	u_long fsize;		/* (f) size of file in bytes */
-	u_long block;		/* block num */
-	u_long pblock;		/* (d/f/e) parent block */
-	u_long hashf;		/* (d/f) hash forward */
-	u_long extb;		/* (f/e) extension block number */
-	u_long linkto;		/* (hd/hf) header this link points at */
-	u_long linknext;	/* (d/f/hd/hf) next link (or head) in chain */
-	u_long lastlindblk;	/* (f/hf) last logical indirect block */
-	u_long lastindblk;	/* (f/hf) last indirect block read */
-	u_long *tab;		/* (r/d) hash table */
-	int *tabi;		/* (r/d) table info */
-	int ntabent;		/* (r/d) number of entries in table */
-	int nwords;		/* size of blocks in long words */
-	int adprot;		/* (d/f) amigados protection bits */
-	uid_t  uid;		/* (d/f) uid of directory/file */
-	gid_t  gid;		/* (d/f) gid of directory/file */
-	int flags;		/* misc flags */ 
-	char *slinkto;		/* name of file or dir */
+	struct vnode *vp;		/* owner vnode */
+	struct lockf *a_lockf;		/* byte level lock list */
+	struct lock a_lock;		/* anode lock */
+	u_int32_t fsize;		/* (f) size of file in bytes */
+	daddr_t block;			/* block num */
+	daddr_t pblock;			/* (d/f/e) parent block */
+	daddr_t hashf;			/* (d/f) hash forward */
+	daddr_t extb;			/* (f/e) extension block number */
+	daddr_t linkto;			/* (hd/hf) hdr this link points at */
+	daddr_t linknext;		/* (d/f/hd/hf) next chain link/head */
+	daddr_t lastlindblk;		/* (f/hf) last logical indirect blk */
+	daddr_t lastindblk;		/* (f/hf) last indirect block read */
+	daddr_t *tab;			/* (r/d) hash table */
+	int *tabi;			/* (r/d) table info */
+	int ntabent;			/* (r/d) number of entries in table */
+	int nwords;			/* size of blocks in 32-bit words */
+	int adprot;			/* (d/f) amigados protection bits */
+	uid_t uid;			/* (d/f) uid of directory/file */
+	gid_t gid;			/* (d/f) gid of directory/file */
+	char *slinkto;			/* name of file or dir */
 };
-#define VTOA(vp)	((struct anode *)(vp)->v_data)
-#define ATOV(ap)	((ap)->vp)
-#define ANODETABSZ(ap)	(((ap)->nwords - 56) * sizeof(long))
-#define ANODETABENT(ap)	((ap)->nwords - 56)
+#define VTOA(vp)		((struct anode *)(vp)->v_data)
+#define ATOV(ap)		((ap)->vp)
+#define ANODETABENT(ap)		((ap)->nwords - 56)
 #define ANODENDATBLKENT(ap)	((ap)->nwords - 56)
-
+#define ABLKTOINO(bn)		((ino_t)(bn))
+#define AINOTOBLK(bn)		((daddr_t)(bn))
 /*
  * mount data 
  */
@@ -91,44 +93,60 @@ struct anode {
 struct adosfsmount {
 	LIST_HEAD(anodechain, anode) anodetab[ANODEHASHSZ];
 	struct mount *mp;	/* owner mount */
-	u_long rootb;		/* root block number */
-	u_long startb;		/* start block */
-	u_long endb;		/* one block past last */
-	u_long bsize;		/* size of blocks */
-	u_long nwords;		/* size of blocks in long words */
-	uid_t  uid;		/* uid of mounting user */
-	gid_t  gid;		/* gid of mounting user */
-	u_long mask;		/* mode mask */
+	u_int32_t dostype;	/* type of volume */
+	daddr_t rootb;		/* root block number */
+	int secsperblk;		/* sectors per block */
+	int bsize;		/* size of blocks */
+	int nwords;		/* size of blocks in long words */
+	int dbsize;		/* data bytes per block */
+	uid_t uid;		/* uid of mounting user */
+	gid_t gid;		/* gid of mounting user */
+	mode_t mask;		/* mode mask */
 	struct vnode *devvp;	/* blk device mounted on */
 	struct vnode *rootvp;	/* out root vnode */
 	struct netexport export;
+	u_int32_t *bitmap;	/* allocation bitmap */
+	u_int32_t numblks;	/* number of usable blocks */
+	u_int32_t freeblks;	/* number of free blocks */
 };
 #define VFSTOADOSFS(mp) ((struct adosfsmount *)(mp)->mnt_data)
+
+#define IS_FFS(amp)	((amp)->dostype & 1)
+#define IS_INTER(amp)	(((amp)->dostype & 7) > 1)
 
 /*
  * AmigaDOS block stuff.
  */
-#define BPT_SHORT	(2)
-#define BPT_LIST	(16)
+#define BBOFF		(0)
 
-#define BST_RDIR	(1)
-#define BST_UDIR	(2)
-#define BST_SLINK	(3)
-#define BST_LDIR	(4)
-#define BST_FILE	(-3L)
-#define BST_LFILE	(-4L)
+#define BPT_SHORT	((u_int32_t)2)
+#define BPT_DATA	((u_int32_t)8)
+#define BPT_LIST	((u_int32_t)16)
+
+#define BST_RDIR	((u_int32_t)1)
+#define BST_UDIR	((u_int32_t)2)
+#define BST_SLINK	((u_int32_t)3)
+#define BST_LDIR	((u_int32_t)4)
+#define BST_FILE	((u_int32_t)-3)
+#define BST_LFILE	((u_int32_t)-4)
+
+#define	OFS_DATA_OFFSET	(24)
 
 /*
  * utility protos
  */
-long adoswordn __P((struct buf *, int));
-long adoscksum __P((struct buf *, long));
-int adoshash __P((const char *, int, int));
+#define adoswordn(bp,wn) betoh32(*((u_int32_t *)(bp)->b_data + (wn)))
 
-struct vnode *adosfs_ahashget __P((struct mount *, ino_t));
-void adosfs_ainshash __P((struct adosfsmount *, struct anode *));
-void adosfs_aremhash __P((struct anode *));
+u_int32_t	 adoscksum(struct buf *, int);
+int		 adoscaseequ(const char *, const char *, int, int);
+int		 adoshash(const char *, int, int, int);
+int		 adunixprot(int);
+int		 adosfs_getblktype(struct adosfsmount *, struct buf *);
 
-int adosfs_lookup __P((struct vop_lookup_args *));
+struct vnode	*adosfs_ahashget(struct mount *, ino_t);
+int		 adosfs_ainshash(struct adosfsmount *, struct anode *);
+void		 adosfs_aremhash(struct anode *);
 
-int (**adosfs_vnodeop_p)();
+int		 adosfs_lookup(void *);
+
+extern int	(**adosfs_vnodeop_p)(void *);

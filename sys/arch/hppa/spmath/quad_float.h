@@ -1,3 +1,4 @@
+/*	$OpenBSD: quad_float.h,v 1.7 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,11 +12,8 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/*
- * @(#)quad_float.h: $Revision: 1.7.88.1 $ $Date: 93/12/07 15:06:55 $
- * $Locker:  $
- * 
- */
+/* @(#)quad_float.h: Revision: 1.7.88.1 Date: 93/12/07 15:06:55 */
+
 /******************************
  *  Quad precision functions  *
  ******************************/
@@ -51,9 +49,9 @@
  *  unsigned int signlessleft, signlessright; */			\
       ( signlessleft<=signlessright &&					\
        (signlessleft<signlessright || (Qallp2(leftp2)<=Qallp2(rightp2) && \
-        (Qallp2(leftp2)<Qallp2(rightp2) || (Qallp3(leftp3)<=Qallp3(rightp3) && \
+	(Qallp2(leftp2)<Qallp2(rightp2) || (Qallp3(leftp3)<=Qallp3(rightp3) && \
 	 (Qallp3(leftp3)<Qallp3(rightp3) || Qallp4(leftp4)<Qallp4(rightp4)))))))
-         
+
 #define Quad_xor_to_intp1(leftp1,rightp1,result)		\
     /* quad_floating_point left, right;				\
      * unsigned int result; */					\
@@ -75,3 +73,5 @@
     Qallp4(leftp4)  = Qallp4(leftp4) XOR Qallp4(rightp4)	\
     Qallp4(rightp4) = Qallp4(leftp4) XOR Qallp4(rightp4)	\
     Qallp4(leftp4)  = Qallp4(leftp4) XOR Qallp4(rightp4)
+
+int quad_frnd(quad_floating_point *, quad_floating_point *, quad_floating_point *, unsigned int *);

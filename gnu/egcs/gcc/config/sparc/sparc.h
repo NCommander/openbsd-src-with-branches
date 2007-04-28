@@ -2068,7 +2068,7 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    that holds the dynamic chain--the previous frame's address.
    ??? -mflat support? */
 #define DYNAMIC_CHAIN_ADDRESS(frame) \
-  gen_rtx_PLUS (Pmode, frame, GEN_INT (14 * UNITS_PER_WORD))
+  plus_constant (frame, 14 * UNITS_PER_WORD + SPARC_STACK_BIAS)
 
 /* The return address isn't on the stack, it is in a register, so we can't
    access it from the current frame pointer.  We can access it from the
@@ -2089,7 +2089,9 @@ extern struct rtx_def *sparc_builtin_saveregs ();
   ((count == -1)				\
    ? gen_rtx_REG (Pmode, 31)			\
    : gen_rtx_MEM (Pmode,			\
-	      memory_address (Pmode, plus_constant (frame, 15 * UNITS_PER_WORD))))
+		  memory_address (Pmode, plus_constant (frame, \
+							15 * UNITS_PER_WORD \
+							+ SPARC_STACK_BIAS))))
 
 /* Before the prologue, the return address is %o7 + 8.  OK, sometimes it's
    +12, but always using +8 is close enough for frame unwind purposes.
@@ -2565,26 +2567,26 @@ do {                                                                    \
 #define MULSI3_LIBCALL "*.umul"
 
 /* Define library calls for quad FP operations.  These are all part of the
-   SPARC ABI.
-   ??? ARCH64 still does not work as the _Qp_* routines take pointers.  */
-#define ADDTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_add" : "_Q_add")
-#define SUBTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_sub" : "_Q_sub")
-#define NEGTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_neg" : "_Q_neg")
-#define MULTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_mul" : "_Q_mul")
-#define DIVTF3_LIBCALL (TARGET_ARCH64 ? "_Qp_div" : "_Q_div")
-#define FLOATSITF2_LIBCALL (TARGET_ARCH64 ? "_Qp_itoq" : "_Q_itoq")
-#define FIX_TRUNCTFSI2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtoi" : "_Q_qtoi")
-#define FIXUNS_TRUNCTFSI2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtoui" : "_Q_qtou")
-#define EXTENDSFTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_stoq" : "_Q_stoq")
-#define TRUNCTFSF2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtos" :  "_Q_qtos")
-#define EXTENDDFTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_dtoq" : "_Q_dtoq")
-#define TRUNCTFDF2_LIBCALL (TARGET_ARCH64 ? "_Qp_qtod" : "_Q_qtod")
-#define EQTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_feq" : "_Q_feq")
-#define NETF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fne" : "_Q_fne")
-#define GTTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fgt" : "_Q_fgt")
-#define GETF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fge" : "_Q_fge")
-#define LTTF2_LIBCALL (TARGET_ARCH64 ? "_Qp_flt" : "_Q_flt")
-#define LETF2_LIBCALL (TARGET_ARCH64 ? "_Qp_fle" : "_Q_fle")
+   SPARC32 ABI.  The SPARC64 ABI defines _Qp_*, but we don't generate
+   correct code for those, so punt and emit SPARC32 ABI calls. */
+#define ADDTF3_LIBCALL			"_Q_add"
+#define SUBTF3_LIBCALL			"_Q_sub"
+#define NEGTF2_LIBCALL			"_Q_neg"
+#define MULTF3_LIBCALL			"_Q_mul"
+#define DIVTF3_LIBCALL			"_Q_div"
+#define FLOATSITF2_LIBCALL		"_Q_itoq"
+#define FIX_TRUNCTFSI2_LIBCALL		"_Q_qtoi"
+#define FIXUNS_TRUNCTFSI2_LIBCALL	"_Q_qtou"
+#define EXTENDSFTF2_LIBCALL		"_Q_stoq"
+#define TRUNCTFSF2_LIBCALL		"_Q_qtos"
+#define EXTENDDFTF2_LIBCALL		"_Q_dtoq"
+#define TRUNCTFDF2_LIBCALL		"_Q_qtod"
+#define EQTF2_LIBCALL			"_Q_feq"
+#define NETF2_LIBCALL			"_Q_fne"
+#define GTTF2_LIBCALL			"_Q_fgt"
+#define GETF2_LIBCALL			"_Q_fge"
+#define LTTF2_LIBCALL			"_Q_flt"
+#define LETF2_LIBCALL			"_Q_fle"
 
 /* We can define the TFmode sqrt optab only if TARGET_FPU.  This is because
    with soft-float, the SFmode and DFmode sqrt instructions will be absent,

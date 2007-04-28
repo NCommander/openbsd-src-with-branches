@@ -74,7 +74,7 @@
  *  identify the module to SCCS `what' and RCS `ident' commands
  */
 static char const sccsid[] = "@(#) mod_ssl/" MOD_SSL_VERSION " >";
-static char const rcsid[]  = "$Id: mod_ssl/" MOD_SSL_VERSION " $";
+static char const rcsid[]  = "$Id: mod_ssl.c,v 1.8 2001/06/20 18:06:15 brad Exp $";
 
 /*
  *  the table of configuration directives we provide

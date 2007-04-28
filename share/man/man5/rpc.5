@@ -1,3 +1,4 @@
+.\"	$OpenBSD: rpc.5,v 1.6 2000/10/26 00:37:05 aaron Exp $
 .\"	$NetBSD: rpc.5,v 1.2 1994/11/30 19:31:30 jtc Exp $
 .\"	@(#)rpc.5	2.2 88/08/03 4.0 RPCSRC; from 1.4 87/11/27 SMI;
 .\"
@@ -9,10 +10,10 @@
 .Os
 .Sh NAME
 .Nm rpc
-.Nd rpc program number data base
+.Nd rpc program number database
 .Sh DESCRIPTION
 The
-.Nm rpc
+.Nm
 file contains user readable names that
 can be used in place of rpc program numbers.
 Each line has the following information:
@@ -26,12 +27,18 @@ rpc program number
 aliases
 .El
 .Pp
-Items are separated by any number of blanks and/or
-tab characters.
-A ``#'' indicates the beginning of a comment; characters up to the end of
-the line are not interpreted by routines which search the file.
+Items are separated by any number of blanks and/or tab characters.
+.Pp
+A hash mark
+.Pq Ql #
+indicates the beginning of a comment; subsequent characters up to the end of
+the line are not interpreted by the routines which search the file.
+.Sh FILES
+.Bl -tag -width /etc/rpc -compact
+.It Pa /etc/rpc
+.El
 .Sh EXAMPLES
-Here is an example of the 
+Here is an example of the
 .Pa /etc/rpc
 file from the Sun RPC Source distribution.
 .Bd -literal -offset indent
@@ -65,11 +72,9 @@ status		100024
 bootparam	100026
 ypupdated	100028	ypupdate
 keyserv		100029	keyserver
-tfsd		100037 
+tfsd		100037
 nsed		100038
 nsemntd		100039
 .Ed
-.Sh FILES
-.Pa /etc/rpc
 .Sh SEE ALSO
 .Xr getrpcent 3

@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_put.c,v 1.7 1995/02/27 13:20:40 cgd Exp $	*/
+/*	$OpenBSD: bt_put.c,v 1.12 2005/03/23 19:34:58 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)bt_put.c	8.4 (Berkeley) 5/31/94";
-#else
-static char rcsid[] = "$NetBSD: bt_put.c,v 1.7 1995/02/27 13:20:40 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 
 #include <errno.h>
@@ -54,7 +42,7 @@ static char rcsid[] = "$NetBSD: bt_put.c,v 1.7 1995/02/27 13:20:40 cgd Exp $";
 #include <db.h>
 #include "btree.h"
 
-static EPG *bt_fast __P((BTREE *, const DBT *, const DBT *, int *));
+static EPG *bt_fast(BTREE *, const DBT *, const DBT *, int *);
 
 /*
  * __BT_PUT -- Add a btree item to the tree.
@@ -70,19 +58,15 @@ static EPG *bt_fast __P((BTREE *, const DBT *, const DBT *, int *));
  *	tree and R_NOOVERWRITE specified.
  */
 int
-__bt_put(dbp, key, data, flags)
-	const DB *dbp;
-	DBT *key;
-	const DBT *data;
-	u_int flags;
+__bt_put(const DB *dbp, DBT *key, const DBT *data, u_int flags)
 {
 	BTREE *t;
 	DBT tkey, tdata;
 	EPG *e;
 	PAGE *h;
-	indx_t index, nxtindex;
+	indx_t idx, nxtindex;
 	pgno_t pg;
-	u_int32_t nbytes;
+	u_int32_t nbytes, size32;
 	int dflags, exact, status;
 	char *dest, db[NOVFLSIZE], kb[NOVFLSIZE];
 
@@ -94,33 +78,38 @@ __bt_put(dbp, key, data, flags)
 		t->bt_pinned = NULL;
 	}
 
-	switch (flags) {
-	case R_CURSOR:
-		if (!ISSET(t, B_SEQINIT))
-			goto einval;
-		if (ISSET(t, B_DELCRSR))
-			goto einval;
-		break;
-	case 0:
-	case R_NOOVERWRITE:
-		break;
-	default:
-einval:		errno = EINVAL;
-		return (RET_ERROR);
-	}
-
-	if (ISSET(t, B_RDONLY)) {
+	/* Check for change to a read-only tree. */
+	if (F_ISSET(t, B_RDONLY)) {
 		errno = EPERM;
 		return (RET_ERROR);
 	}
 
+	switch (flags) {
+	case 0:
+	case R_NOOVERWRITE:
+		break;
+	case R_CURSOR:
+		/*
+		 * If flags is R_CURSOR, put the cursor.  Must already
+		 * have started a scan and not have already deleted it.
+		 */
+		if (F_ISSET(&t->bt_cursor, CURS_INIT) &&
+		    !F_ISSET(&t->bt_cursor,
+			CURS_ACQUIRE | CURS_AFTER | CURS_BEFORE))
+			break;
+		/* FALLTHROUGH */
+	default:
+		errno = EINVAL;
+		return (RET_ERROR);
+	}
+
 	/*
-	 * If the key/data won't fit on a page, store it on indirect pages.
-	 * Only store the key on the overflow page if it's too big after the
-	 * data is on an overflow page.
+	 * If the key/data pair won't fit on a page, store it on overflow
+	 * pages.  Only put the key on the overflow page if the pair are
+	 * still too big after moving the data to an overflow page.
 	 *
 	 * XXX
-	 * If the insert fails later on, these pages aren't recovered.
+	 * If the insert fails later on, the overflow pages aren't recovered.
 	 */
 	dflags = 0;
 	if (key->size + data->size > t->bt_ovflsize) {
@@ -130,8 +119,9 @@ storekey:		if (__ovfl_put(t, key, &pg) == RET_ERROR)
 			tkey.data = kb;
 			tkey.size = NOVFLSIZE;
 			memmove(kb, &pg, sizeof(pgno_t));
+			size32 = key->size;
 			memmove(kb + sizeof(pgno_t),
-			    &key->size, sizeof(u_int32_t));
+			    &size32, sizeof(u_int32_t));
 			dflags |= P_BIGKEY;
 			key = &tkey;
 		}
@@ -141,8 +131,9 @@ storekey:		if (__ovfl_put(t, key, &pg) == RET_ERROR)
 			tdata.data = db;
 			tdata.size = NOVFLSIZE;
 			memmove(db, &pg, sizeof(pgno_t));
+			size32 = data->size;
 			memmove(db + sizeof(pgno_t),
-			    &data->size, sizeof(u_int32_t));
+			    &size32, sizeof(u_int32_t));
 			dflags |= P_BIGDATA;
 			data = &tdata;
 		}
@@ -152,51 +143,43 @@ storekey:		if (__ovfl_put(t, key, &pg) == RET_ERROR)
 
 	/* Replace the cursor. */
 	if (flags == R_CURSOR) {
-		if ((h = mpool_get(t->bt_mp, t->bt_bcursor.pgno, 0)) == NULL)
+		if ((h = mpool_get(t->bt_mp, t->bt_cursor.pg.pgno, 0)) == NULL)
 			return (RET_ERROR);
-		index = t->bt_bcursor.index;
+		idx = t->bt_cursor.pg.index;
 		goto delete;
 	}
 
 	/*
-	 * Find the key to delete, or, the location at which to insert.  Bt_fast
-	 * and __bt_search pin the returned page.
+	 * Find the key to delete, or, the location at which to insert.
+	 * Bt_fast and __bt_search both pin the returned page.
 	 */
 	if (t->bt_order == NOT || (e = bt_fast(t, key, data, &exact)) == NULL)
 		if ((e = __bt_search(t, key, &exact)) == NULL)
 			return (RET_ERROR);
 	h = e->page;
-	index = e->index;
+	idx = e->index;
 
 	/*
-	 * Add the specified key/data pair to the tree.  If an identical key
-	 * is already in the tree, and R_NOOVERWRITE is set, an error is
-	 * returned.  If R_NOOVERWRITE is not set, the key is either added (if
-	 * duplicates are permitted) or an error is returned.
-	 *
-	 * Pages are split as required.
+	 * Add the key/data pair to the tree.  If an identical key is already
+	 * in the tree, and R_NOOVERWRITE is set, an error is returned.  If
+	 * R_NOOVERWRITE is not set, the key is either added (if duplicates are
+	 * permitted) or an error is returned.
 	 */
 	switch (flags) {
 	case R_NOOVERWRITE:
 		if (!exact)
 			break;
-		/*
-		 * One special case is if the cursor references the record and
-		 * it's been flagged for deletion.  Then, we delete the record,
-		 * leaving the cursor there -- this means that the inserted
-		 * record will not be seen in a cursor scan.
-		 */
-		if (ISSET(t, B_DELCRSR) && t->bt_bcursor.pgno == h->pgno &&
-		    t->bt_bcursor.index == index) {
-			CLR(t, B_DELCRSR);
-			goto delete;
-		}
 		mpool_put(t->bt_mp, h, 0);
 		return (RET_SPECIAL);
 	default:
-		if (!exact || !ISSET(t, B_NODUPS))
+		if (!exact || !F_ISSET(t, B_NODUPS))
 			break;
-delete:		if (__bt_dleaf(t, h, index) == RET_ERROR) {
+		/*
+		 * !!!
+		 * Note, the delete may empty the page, so we need to put a
+		 * new entry into the page immediately.
+		 */
+delete:		if (__bt_dleaf(t, key, h, idx) == RET_ERROR) {
 			mpool_put(t->bt_mp, h, 0);
 			return (RET_ERROR);
 		}
@@ -212,43 +195,49 @@ delete:		if (__bt_dleaf(t, h, index) == RET_ERROR) {
 	nbytes = NBLEAFDBT(key->size, data->size);
 	if (h->upper - h->lower < nbytes + sizeof(indx_t)) {
 		if ((status = __bt_split(t, h, key,
-		    data, dflags, nbytes, index)) != RET_SUCCESS)
+		    data, dflags, nbytes, idx)) != RET_SUCCESS)
 			return (status);
 		goto success;
 	}
 
-	if (index < (nxtindex = NEXTINDEX(h)))
-		memmove(h->linp + index + 1, h->linp + index,
-		    (nxtindex - index) * sizeof(indx_t));
+	if (idx < (nxtindex = NEXTINDEX(h)))
+		memmove(h->linp + idx + 1, h->linp + idx,
+		    (nxtindex - idx) * sizeof(indx_t));
 	h->lower += sizeof(indx_t);
 
-	h->linp[index] = h->upper -= nbytes;
+	h->linp[idx] = h->upper -= nbytes;
 	dest = (char *)h + h->upper;
 	WR_BLEAF(dest, key, data, dflags);
 
-	if (t->bt_order == NOT)
+	/* If the cursor is on this page, adjust it as necessary. */
+	if (F_ISSET(&t->bt_cursor, CURS_INIT) &&
+	    !F_ISSET(&t->bt_cursor, CURS_ACQUIRE) &&
+	    t->bt_cursor.pg.pgno == h->pgno && t->bt_cursor.pg.index >= idx)
+		++t->bt_cursor.pg.index;
+
+	if (t->bt_order == NOT) {
 		if (h->nextpg == P_INVALID) {
-			if (index == NEXTINDEX(h) - 1) {
+			if (idx == NEXTINDEX(h) - 1) {
 				t->bt_order = FORWARD;
-				t->bt_last.index = index;
+				t->bt_last.index = idx;
 				t->bt_last.pgno = h->pgno;
 			}
 		} else if (h->prevpg == P_INVALID) {
-			if (index == 0) {
+			if (idx == 0) {
 				t->bt_order = BACK;
 				t->bt_last.index = 0;
 				t->bt_last.pgno = h->pgno;
 			}
 		}
+	}
 
 	mpool_put(t->bt_mp, h, MPOOL_DIRTY);
 
 success:
-	if (flags == R_SETCURSOR) {
-		t->bt_bcursor.pgno = e->page->pgno;
-		t->bt_bcursor.index = e->index;
-	}
-	SET(t, B_MODIFIED);
+	if (flags == R_SETCURSOR)
+		__bt_setcur(t, e->page->pgno, e->index);
+
+	F_SET(t, B_MODIFIED);
 	return (RET_SUCCESS);
 }
 
@@ -267,10 +256,7 @@ u_long bt_cache_hit, bt_cache_miss;
  * 	EPG for new record or NULL if not found.
  */
 static EPG *
-bt_fast(t, key, data, exactp)
-	BTREE *t;
-	const DBT *key, *data;
-	int *exactp;
+bt_fast(BTREE *t, const DBT *key, const DBT *data, int *exactp)
 {
 	PAGE *h;
 	u_int32_t nbytes;
@@ -284,8 +270,8 @@ bt_fast(t, key, data, exactp)
 	t->bt_cur.index = t->bt_last.index;
 
 	/*
-	 * If won't fit in this page or have too many keys in this page, have
-	 * to search to get split stack.
+	 * If won't fit in this page or have too many keys in this page,
+	 * have to search to get split stack.
 	 */
 	nbytes = NBLEAFDBT(key->size, data->size);
 	if (h->upper - h->lower < nbytes + sizeof(indx_t))

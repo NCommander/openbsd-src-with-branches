@@ -1,7 +1,7 @@
-/*	$NetBSD: cdefs.h,v 1.2 1995/05/03 00:13:55 cgd Exp $	*/
+/*	$OpenBSD: cdefs.h,v 1.9 2005/11/24 20:46:41 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1995 Carnegie-Mellon University.
+ * Copyright (c) 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -30,9 +30,17 @@
 #ifndef _MACHINE_CDEFS_H_
 #define	_MACHINE_CDEFS_H_
 
-#define	_C_LABEL(x)	_STRING(x)
-
-#define	__indr_references(sym,msg)	/* nothing */
-#define	__warn_references(sym,msg)	/* nothing */
+#if defined(lint)
+#define __indr_reference(sym,alias)	__lint_equal__(sym,alias)
+#define __warn_references(sym,msg)
+#define __weak_alias(alias,sym)		__lint_equal__(sym,alias)
+#elif defined(__STDC__)
+#define	__weak_alias(alias,sym)					\
+	__asm__(".weak " __STRING(alias) " ; "			\
+	    __STRING(alias) " = " __STRING(sym))
+#define	__warn_references(sym,msg)				\
+	__asm__(".section .gnu.warning." __STRING(sym)		\
+	    " ; .ascii \"" msg "\" ; .text")
+#endif
 
 #endif /* !_MACHINE_CDEFS_H_ */

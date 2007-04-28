@@ -1,13 +1,10 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: strcmp.S,v 1.11 1995/04/28 22:58:10 jtc Exp $")
-#endif
 
 /*
  * NOTE: I've unrolled the loop eight times: large enough to make a

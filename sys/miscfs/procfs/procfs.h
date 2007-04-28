@@ -1,4 +1,5 @@
-/*	$NetBSD: procfs.h,v 1.14 1995/10/09 11:18:51 mycroft Exp $	*/
+/*	$OpenBSD: procfs.h,v 1.22 2003/09/23 16:51:13 millert Exp $	*/
+/*	$NetBSD: procfs.h,v 1.17 1996/02/12 15:01:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1993 Jan-Simon Pendry
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,6 +42,7 @@
 typedef enum {
 	Proot,		/* the filesystem root */
 	Pcurproc,	/* symbolic link for curproc */
+	Pself,		/* like curproc, but this is the Linux name */
 	Pproc,		/* a process-specific sub-directory */
 	Pfile,		/* the executable file */
 	Pmem,		/* the process's memory image */
@@ -53,18 +51,21 @@ typedef enum {
 	Pctl,		/* process control */
 	Pstatus,	/* process status */
 	Pnote,		/* process notifier */
-	Pnotepg		/* process group notifier */
+	Pnotepg,	/* process group notifier */
+	Pcmdline,	/* process command line args */
+	Pmeminfo,	/* system memory info (if -o linux) */
+	Pcpuinfo	/* CPU info (if -o linux) */
 } pfstype;
 
 /*
  * control data for the proc file system.
  */
 struct pfsnode {
-	struct pfsnode	*pfs_next;	/* next on list */
+	TAILQ_ENTRY(pfsnode)	list;
 	struct vnode	*pfs_vnode;	/* vnode associated with this pfsnode */
 	pfstype		pfs_type;	/* type of procfs node */
 	pid_t		pfs_pid;	/* associated process */
-	u_short		pfs_mode;	/* mode bits for stat() */
+	mode_t		pfs_mode;	/* mode bits for stat() */
 	u_long		pfs_flags;	/* open flags */
 	u_long		pfs_fileno;	/* unique file id */
 };
@@ -84,8 +85,15 @@ struct pfsnode {
 
 #define PROCFS_FILENO(pid, type) \
 	(((type) < Pproc) ? \
-			((type) + 2) : \
-			((((pid)+1) << 4) + ((int) (type))))
+			((type) + 4) : \
+			((((pid)+1) << 5) + ((int) (type))))
+
+struct procfsmount {
+	void *pmnt_exechook;
+	int pmnt_flags;
+};
+
+#define VFSTOPROC(mp)	((struct procfsmount *)(mp)->mnt_data)
 
 /*
  * Convert between pfsnode vnode
@@ -99,72 +107,40 @@ struct vfs_namemap {
 	int nm_val;
 };
 
-int vfs_getuserstr __P((struct uio *, char *, int *));
-vfs_namemap_t *vfs_findname __P((vfs_namemap_t *, char *, int));
+int vfs_getuserstr(struct uio *, char *, int *);
+const vfs_namemap_t *vfs_findname(const vfs_namemap_t *, char *, int);
 
-#define PFIND(pid) ((pid) ? pfind(pid) : &proc0)
-int procfs_freevp __P((struct vnode *));
-int procfs_allocvp __P((struct mount *, struct vnode **, long, pfstype));
-struct vnode *procfs_findtextvp __P((struct proc *));
-int procfs_donote __P((struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio));
-int procfs_doregs __P((struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio));
-int procfs_dofpregs __P((struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio));
-int procfs_domem __P((struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio));
-int procfs_doctl __P((struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio));
-int procfs_dostatus __P((struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio));
+int procfs_allocvp(struct mount *, struct vnode **, long, pfstype);
+int procfs_doctl(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_dofpregs(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_donote(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_doregs(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_dostatus(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_docmdline(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_domeminfo(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_docpuinfo(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio);
+int procfs_domap(struct proc *, struct proc *, struct pfsnode *pfsp, struct uio *uio, int);
+int procfs_freevp(struct vnode *);
+int procfs_getcpuinfstr(char *, int *);
+int procfs_poll(void *);
 
 /* functions to check whether or not files should be displayed */
-int procfs_validfile __P((struct proc *));
-int procfs_validfpregs __P((struct proc *));
-int procfs_validregs __P((struct proc *));
+int procfs_validfile(struct proc *, struct mount *);
+int procfs_validfpregs(struct proc *, struct mount *);
+int procfs_validregs(struct proc *, struct mount *);
+int procfs_validmap(struct proc *, struct mount *);
+
+int procfs_rw(void *);
 
 #define PROCFS_LOCKED	0x01
 #define PROCFS_WANT	0x02
 
-extern int (**procfs_vnodeop_p)();
-extern struct vfsops procfs_vfsops;
+extern int (**procfs_vnodeop_p)(void *);
+extern const struct vfsops procfs_vfsops;
 
-/*
- * Prototypes for procfs vnode ops
- */
-int	procfs_badop();	/* varargs */
-int	procfs_rw __P((struct vop_read_args *));
-int	procfs_lookup __P((struct vop_lookup_args *));
-#define procfs_create ((int (*) __P((struct vop_create_args *))) procfs_badop)
-#define procfs_mknod ((int (*) __P((struct vop_mknod_args *))) procfs_badop)
-int	procfs_open __P((struct vop_open_args *));
-int	procfs_close __P((struct vop_close_args *));
-int	procfs_access __P((struct vop_access_args *));
-int	procfs_getattr __P((struct vop_getattr_args *));
-int	procfs_setattr __P((struct vop_setattr_args *));
-#define	procfs_read procfs_rw
-#define	procfs_write procfs_rw
-int	procfs_ioctl __P((struct vop_ioctl_args *));
-#define procfs_select ((int (*) __P((struct vop_select_args *))) procfs_badop)
-#define procfs_mmap ((int (*) __P((struct vop_mmap_args *))) procfs_badop)
-#define procfs_fsync ((int (*) __P((struct vop_fsync_args *))) procfs_badop)
-#define procfs_seek ((int (*) __P((struct vop_seek_args *))) procfs_badop)
-#define procfs_remove ((int (*) __P((struct vop_remove_args *))) procfs_badop)
-#define procfs_link ((int (*) __P((struct vop_link_args *))) procfs_badop)
-#define procfs_rename ((int (*) __P((struct vop_rename_args *))) procfs_badop)
-#define procfs_mkdir ((int (*) __P((struct vop_mkdir_args *))) procfs_badop)
-#define procfs_rmdir ((int (*) __P((struct vop_rmdir_args *))) procfs_badop)
-#define procfs_symlink ((int (*) __P((struct vop_symlink_args *))) procfs_badop)
-int	procfs_readdir __P((struct vop_readdir_args *));
-int	procfs_readlink __P((struct vop_readlink_args *));
-int	procfs_abortop __P((struct vop_abortop_args *));
-int	procfs_inactive __P((struct vop_inactive_args *));
-int	procfs_reclaim __P((struct vop_reclaim_args *));
-#define procfs_lock ((int (*) __P((struct vop_lock_args *))) nullop)
-#define procfs_unlock ((int (*) __P((struct vop_unlock_args *))) nullop)
-int	procfs_bmap __P((struct vop_bmap_args *));
-#define	procfs_strategy ((int (*) __P((struct vop_strategy_args *))) procfs_badop)
-int	procfs_print __P((struct vop_print_args *));
-#define procfs_islocked ((int (*) __P((struct vop_islocked_args *))) nullop)
-#define procfs_advlock ((int (*) __P((struct vop_advlock_args *))) procfs_badop)
-#define procfs_blkatoff ((int (*) __P((struct vop_blkatoff_args *))) procfs_badop)
-#define procfs_valloc ((int (*) __P((struct vop_valloc_args *))) procfs_badop)
-#define procfs_vfree ((int (*) __P((struct vop_vfree_args *))) nullop)
-#define procfs_truncate ((int (*) __P((struct vop_truncate_args *))) procfs_badop)
-#define procfs_update ((int (*) __P((struct vop_update_args *))) nullop)
+struct vfsconf;
+
+int	procfs_init(struct vfsconf *);
+int	procfs_root(struct mount *, struct vnode **);
+
 #endif /* _KERNEL */

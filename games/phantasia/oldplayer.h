@@ -1,3 +1,4 @@
+/*	$OpenBSD: oldplayer.h,v 1.2 1995/03/24 03:59:09 cgd Exp $	*/
 /*	$NetBSD: oldplayer.h,v 1.2 1995/03/24 03:59:09 cgd Exp $	*/
 
 /*

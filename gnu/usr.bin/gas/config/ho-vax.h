@@ -1,3 +1,5 @@
+/*	$OpenBSD: ho-vax.h,v 1.2 1998/02/15 18:49:20 niklas Exp $	*/
+
 /* ho-vax.h  Intended for vax ultrix
    Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
    
@@ -20,8 +22,5 @@
 #if __STDC__ != 1
 #define NO_STDARG
 #endif /* not ansi */
-
-extern char *malloc();
-extern int free();
 
 /* end of ho-vax.h */

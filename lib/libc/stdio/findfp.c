@@ -1,5 +1,4 @@
-/*	$NetBSD: findfp.c,v 1.6 1995/02/02 02:09:17 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,13 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)findfp.c	8.2 (Berkeley) 1/4/94";
-#endif
-static char rcsid[] = "$NetBSD: findfp.c,v 1.6 1995/02/02 02:09:17 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -57,13 +45,17 @@ int	__sdidinit;
 #define	NDYNAMIC 10		/* add ten more whenever necessary */
 
 #define	std(flags, file) \
-	{0,0,0,flags,file,{0},0,__sF+file,__sclose,__sread,__sseek,__swrite}
-/*	 p r w flags file _bf z  cookie      close    read    seek    write */
+	{0,0,0,flags,file,{0},0,__sF+file,__sclose,__sread,__sseek,__swrite, \
+	 {(unsigned char *)(__sFext+file), 0}}
+/*	 p r w flags file _bf z  cookie      close    read    seek    write 
+	 ext */
 
 				/* the usual - (stdin + stdout + stderr) */
 static FILE usual[FOPEN_MAX - 3];
+static struct __sfileext usualext[FOPEN_MAX - 3];
 static struct glue uglue = { 0, FOPEN_MAX - 3, usual };
 
+struct __sfileext __sFext[3];
 FILE __sF[3] = {
 	std(__SRD, STDIN_FILENO),		/* stdin */
 	std(__SWR, STDOUT_FILENO),		/* stdout */
@@ -72,22 +64,31 @@ FILE __sF[3] = {
 struct glue __sglue = { &uglue, 3, __sF };
 
 static struct glue *
-moreglue(n)
-	register int n;
+moreglue(int n)
 {
-	register struct glue *g;
-	register FILE *p;
+	struct glue *g;
+	FILE *p;
+	struct __sfileext *pext;
 	static FILE empty;
+	char *data;
 
-	g = (struct glue *)malloc(sizeof(*g) + ALIGNBYTES + n * sizeof(FILE));
-	if (g == NULL)
+	data = malloc(sizeof(*g) + ALIGNBYTES + n * sizeof(FILE)
+	    + n * sizeof(struct __sfileext));
+	if (data == NULL)
 		return (NULL);
-	p = (FILE *)ALIGN(g + 1);
+	g = (struct glue *)data;
+	p = (FILE *)ALIGN(data + sizeof(*g));
+	pext = (struct __sfileext *)
+	    (ALIGN(data + sizeof(*g)) + n * sizeof(FILE));
 	g->next = NULL;
 	g->niobs = n;
 	g->iobs = p;
-	while (--n >= 0)
-		*p++ = empty;
+	while (--n >= 0) {
+		*p = empty;
+		_FILEEXT_SETUP(p, pext);
+		p++;
+		pext++;
+	}
 	return (g);
 }
 
@@ -95,11 +96,11 @@ moreglue(n)
  * Find a free FILE for fopen et al.
  */
 FILE *
-__sfp()
+__sfp(void)
 {
-	register FILE *fp;
-	register int n;
-	register struct glue *g;
+	FILE *fp;
+	int n;
+	struct glue *g;
 
 	if (!__sdidinit)
 		__sinit();
@@ -121,21 +122,22 @@ found:
 	fp->_lbfsize = 0;	/* not line buffered */
 	fp->_file = -1;		/* no file */
 /*	fp->_cookie = <any>; */	/* caller sets cookie, _read/_write etc */
-	fp->_ub._base = NULL;	/* no ungetc buffer */
-	fp->_ub._size = 0;
 	fp->_lb._base = NULL;	/* no line buffer */
 	fp->_lb._size = 0;
+	_FILEEXT_INIT(fp);
 	return (fp);
 }
+
+#define getdtablesize()	sysconf(_SC_OPEN_MAX)
 
 /*
  * XXX.  Force immediate allocation of internal memory.  Not used by stdio,
  * but documented historically for certain applications.  Bad applications.
  */
 void
-f_prealloc()
+f_prealloc(void)
 {
-	register struct glue *g;
+	struct glue *g;
 	int n;
 
 	n = getdtablesize() - FOPEN_MAX + 20;		/* 20 for slop. */
@@ -146,14 +148,15 @@ f_prealloc()
 }
 
 /*
- * exit() calls _cleanup() through *__cleanup, set whenever we
- * open or buffer a file.  This chicanery is done so that programs
- * that do not use stdio need not link it all in.
+ * exit() and abort() call _cleanup() through the callback registered
+ * with __atexit_register_cleanup(), set whenever we open or buffer a
+ * file. This chicanery is done so that programs that do not use stdio
+ * need not link it all in.
  *
  * The name `_cleanup' is, alas, fairly well known outside stdio.
  */
 void
-_cleanup()
+_cleanup(void)
 {
 	/* (void) _fwalk(fclose); */
 	(void) _fwalk(__sflush);		/* `cheating' */
@@ -163,9 +166,14 @@ _cleanup()
  * __sinit() is called whenever stdio's internal variables must be set up.
  */
 void
-__sinit()
+__sinit(void)
 {
+	int i;
+
+	for (i = 0; i < FOPEN_MAX - 3; i++) {
+		_FILEEXT_SETUP(usual+i, usualext+i);
+	}
 	/* make sure we clean up on exit */
-	__cleanup = _cleanup;		/* conservative */
+	__atexit_register_cleanup(_cleanup); /* conservative */
 	__sdidinit = 1;
 }

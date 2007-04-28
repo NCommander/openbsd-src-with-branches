@@ -120,6 +120,10 @@ read_limits_conf(const char *file, const struct passwd *pwd)
 
 	lineno++;
 
+	if(buf[0] == '\0') {
+	    syslog(LOG_ERR, "%s: line %d: NUL character", file, lineno);
+	    continue;
+	}
 	if(buf[strlen(buf) - 1] != '\n') {
 	    /* file did not end with a newline, figure out if we're at
                the EOF, or if our buffer was too small */
@@ -153,6 +157,7 @@ read_limits_conf(const char *file, const struct passwd *pwd)
 	if(strcmp(args[3], "-") == 0) {
 	    value = RLIM_INFINITY;
 	} else {
+	    errno = 0;
 	    value = strtol(args[3], &end, 10);
 	    if(*end != '\0') {
 		syslog(LOG_ERR, "%s: line %d: bad value %s", file, lineno, args[3]);

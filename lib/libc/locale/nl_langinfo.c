@@ -1,27 +1,25 @@
+/*	$OpenBSD: nl_langinfo.c,v 1.5 2005/08/08 08:05:35 espie Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$Id: nl_langinfo.c,v 1.3 1995/04/28 23:19:37 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/localedef.h>
 #include <locale.h>
 #include <nl_types.h>
 #include <langinfo.h>
+#include "rune.h"
+#include "runetype.h"
 
 char *
-nl_langinfo(item)
-	nl_item item;
+nl_langinfo(nl_item item)
 {
 	const char *s;
 
 	switch (item) {
 	case D_T_FMT:
 		s = _CurrentTimeLocale->d_t_fmt;
-		break;	
+		break;
 	case D_FMT:
 		s = _CurrentTimeLocale->d_fmt;
 		break;
@@ -101,6 +99,11 @@ nl_langinfo(item)
 		break;
 	case CRNCYSTR:				/* XXX */
 		s = "";
+		break;
+	case CODESET:
+		s = _CurrentRuneLocale->rl_codeset;
+		if (!s)
+			s = "";
 		break;
 	default:
 		s = "";

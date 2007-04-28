@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: shpcic_machdep.c,v 1.3 2006/10/19 03:37:54 drahn Exp $	*/
 /*	$NetBSD: shpcic_machdep.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*
@@ -91,6 +91,15 @@ landisk_pci_intr_map(struct pci_attach_args *pa, pci_intr_handle_t *ihp)
 {
 	int pin = pa->pa_intrpin;
 	int line = pa->pa_intrline;
+
+	{
+		/* HACK */
+		int dev = pa->pa_device;
+		static const int irq[4] = { 5, 6, 7, 8 };
+
+		if ((dev >= 0 && dev <= 3) && (pin >= 1 && pin <= 4))
+			line = irq[(dev + pin - 1) & 3];
+	}
 
 	if (pin == 0) {
 		/* No IRQ used. */
@@ -187,9 +196,15 @@ struct _bus_space landisk_pci_bus_io =
 	.bs_rm_2 = shpcic_io_read_multi_2,
 	.bs_rm_4 = shpcic_io_read_multi_4,
 
+	.bs_rrm_2 = shpcic_io_read_raw_multi_2,
+	.bs_rrm_4 = shpcic_io_read_raw_multi_4,
+
 	.bs_rr_1 = shpcic_io_read_region_1,
 	.bs_rr_2 = shpcic_io_read_region_2,
 	.bs_rr_4 = shpcic_io_read_region_4,
+
+	.bs_rrr_2 = shpcic_io_read_raw_region_2,
+	.bs_rrr_4 = shpcic_io_read_raw_region_4,
 
 	.bs_w_1 = shpcic_io_write_1,
 	.bs_w_2 = shpcic_io_write_2,
@@ -199,9 +214,15 @@ struct _bus_space landisk_pci_bus_io =
 	.bs_wm_2 = shpcic_io_write_multi_2,
 	.bs_wm_4 = shpcic_io_write_multi_4,
 
+	.bs_wrm_2 = shpcic_io_write_raw_multi_2,
+	.bs_wrm_4 = shpcic_io_write_raw_multi_4,
+
 	.bs_wr_1 = shpcic_io_write_region_1,
 	.bs_wr_2 = shpcic_io_write_region_2,
 	.bs_wr_4 = shpcic_io_write_region_4,
+
+	.bs_wrr_2 = shpcic_io_write_raw_region_2,
+	.bs_wrr_4 = shpcic_io_write_raw_region_4,
 
 	.bs_sm_1 = shpcic_io_set_multi_1,
 	.bs_sm_2 = shpcic_io_set_multi_2,
@@ -235,9 +256,15 @@ struct _bus_space landisk_pci_bus_mem =
 	.bs_rm_2 = shpcic_mem_read_multi_2,
 	.bs_rm_4 = shpcic_mem_read_multi_4,
 
+	.bs_rrm_2 = shpcic_mem_read_raw_multi_2,
+	.bs_rrm_4 = shpcic_mem_read_raw_multi_4,
+
 	.bs_rr_1 = shpcic_mem_read_region_1,
 	.bs_rr_2 = shpcic_mem_read_region_2,
 	.bs_rr_4 = shpcic_mem_read_region_4,
+
+	.bs_rrr_2 = shpcic_mem_read_raw_region_2,
+	.bs_rrr_4 = shpcic_mem_read_raw_region_4,
 
 	.bs_w_1 = shpcic_mem_write_1,
 	.bs_w_2 = shpcic_mem_write_2,
@@ -247,9 +274,15 @@ struct _bus_space landisk_pci_bus_mem =
 	.bs_wm_2 = shpcic_mem_write_multi_2,
 	.bs_wm_4 = shpcic_mem_write_multi_4,
 
+	.bs_wrm_2 = shpcic_mem_write_raw_multi_2,
+	.bs_wrm_4 = shpcic_mem_write_raw_multi_4,
+
 	.bs_wr_1 = shpcic_mem_write_region_1,
 	.bs_wr_2 = shpcic_mem_write_region_2,
 	.bs_wr_4 = shpcic_mem_write_region_4,
+
+	.bs_wrr_2 = shpcic_mem_write_raw_region_2,
+	.bs_wrr_4 = shpcic_mem_write_raw_region_4,
 
 	.bs_sm_1 = shpcic_mem_set_multi_1,
 	.bs_sm_2 = shpcic_mem_set_multi_2,

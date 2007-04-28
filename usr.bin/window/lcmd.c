@@ -1,3 +1,4 @@
+/*	$OpenBSD: lcmd.c,v 1.4 2001/11/19 19:02:18 mpech Exp $	*/
 /*	$NetBSD: lcmd.c,v 1.3 1995/09/28 10:34:21 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)lcmd.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lcmd.c,v 1.3 1995/09/28 10:34:21 tls Exp $";
+static char rcsid[] = "$OpenBSD: lcmd.c,v 1.4 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -127,7 +124,7 @@ struct lcmd_tab *
 lcmd_lookup(name)
 char *name;
 {
-	register struct lcmd_tab *p;
+	struct lcmd_tab *p;
 
 	for (p = lcmd_tab; p->lc_name != 0; p++)
 		if (str_match(name, p->lc_name, p->lc_minlen))

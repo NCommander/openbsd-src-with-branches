@@ -255,7 +255,7 @@ Rule CYGWIN_WINSOCK=no
 #  either to 'truerand' (to use the library) or to a device or file
 #  (e.g. '/dev/urandom'). If the truerand library is selected, Configure
 #  will assume "-L/usr/local/lib -lrand".
-Rule DEV_RANDOM=default
+Rule DEV_RANDOM=/dev/arandom
 
 # The following rules should be set automatically by Configure. However, if
 # they are not set by Configure (because we don't know the correct value for
@@ -510,6 +510,11 @@ AddModule modules/standard/mod_auth.o
 ## should be the last (highest priority) module.
 
 AddModule modules/standard/mod_setenvif.o
+
+## mod_keynote adds RFC 2704 KeyNote-based authentication support.
+## It requires that mod_ssl also be configured in order to function.
+
+# AddModule modules/keynote/mod_keynote.o
 
 ## mod_ssl incorporates SSL into Apache.
 ## It must stay last here to be first in execution to 
