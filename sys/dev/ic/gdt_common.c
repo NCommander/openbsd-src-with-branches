@@ -615,7 +615,9 @@ gdt_scsi_cmd(xs)
 		 */
 		xs->error = XS_DRIVER_STUFFUP;
 		xs->flags |= ITSDONE;
+		s = splbio();
 		scsi_done(xs);
+		splx(s);
 		return (COMPLETE);
 	}
 
