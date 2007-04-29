@@ -1,4 +1,4 @@
-/*	$OpenBSD: piixpm.c,v 1.24 2006/09/28 18:19:14 grange Exp $	*/
+/*	$OpenBSD: piixpm.c,v 1.25 2006/12/11 18:16:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -95,7 +95,8 @@ const struct pci_matchid piixpm_ids[] = {
 	{ PCI_VENDOR_SMSC, PCI_PRODUCT_SMSC_VICTORY66_PM },
 	{ PCI_VENDOR_ATI, PCI_PRODUCT_ATI_SB200_SMB },
 	{ PCI_VENDOR_ATI, PCI_PRODUCT_ATI_IXP_SMB_300 },
-	{ PCI_VENDOR_ATI, PCI_PRODUCT_ATI_IXP_SMB_400 }
+	{ PCI_VENDOR_ATI, PCI_PRODUCT_ATI_IXP_SMB_400 },
+	{ PCI_VENDOR_ATI, PCI_PRODUCT_ATI_IXP_SMB_600 }
 };
 
 int
