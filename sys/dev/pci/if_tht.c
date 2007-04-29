@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.79 2007/04/27 06:45:34 cloder Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.80 2007/04/27 21:42:40 cloder Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -1151,7 +1151,7 @@ tht_txf(struct tht_softc *sc)
 
 		m_freem(pkt->tp_m);
 
-		tht_pkt_put(&sc->sc_rx_list, pkt);
+		tht_pkt_put(&sc->sc_tx_list, pkt);
 
 	} while (sc->sc_txf.tf_ready >= sizeof(txf));
 
