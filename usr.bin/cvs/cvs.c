@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.118 2007/02/24 20:52:38 otto Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.119 2007/04/24 13:36:30 sobrado Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -32,6 +32,7 @@
 #include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "cvs.h"
