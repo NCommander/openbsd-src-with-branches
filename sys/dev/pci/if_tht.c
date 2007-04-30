@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.85 2007/04/29 11:58:12 dlg Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.86 2007/04/29 21:44:32 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -788,7 +788,7 @@ tht_attach(struct device *parent, struct device *self, void *aux)
 	if_attach(ifp);
 	ether_ifattach(ifp);
 
-	printf(" address %s\n", ether_sprintf(sc->sc_ac.ac_enaddr));
+	printf(": address %s\n", ether_sprintf(sc->sc_ac.ac_enaddr));
 
 	mountroothook_establish(tht_mountroot, sc);
 }
