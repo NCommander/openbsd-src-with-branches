@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.25 2007/03/06 11:16:55 jmc Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.26 2007/03/20 03:50:39 tedu Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -35,6 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <login_cap.h>
+#include <limits.h>
 
 /*
  * Very simple little program, for encrypting passwords from the command
@@ -144,6 +145,7 @@ main(int argc, char **argv)
 	int prompt = 0;
 	int rounds;
 	void *extra = NULL;		/* Store salt or number of rounds */
+	const char *errstr;
 
 	if (strcmp(__progname, "makekey") == 0)
 		operation = DO_MAKEKEY;
@@ -179,7 +181,9 @@ main(int argc, char **argv)
 			if (operation != -1)
 				usage();
 			operation = DO_BLF;
-			rounds = atoi(optarg);
+			rounds = strtonum(optarg, 1, INT_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "%s: %s", errstr, optarg);
 			extra = &rounds;
 			break;
 
