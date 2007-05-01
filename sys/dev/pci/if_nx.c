@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nx.c,v 1.30 2007/04/30 22:53:09 reyk Exp $	*/
+/*	$OpenBSD: if_nx.c,v 1.31 2007/05/01 02:20:13 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -781,14 +781,14 @@ nxb_reset(struct nxb_softc *sc)
 	data = (u_int32_t *)(fw + sizeof(fh));
 	for (i = 0; i < (bootsz / 4); i++) {
 		nxb_write(sc, reg, *data);
-		addr += sizeof(u_int32_t);
+		reg += sizeof(u_int32_t);
 		data++;
 	}
 	if (imagesz) {
 		reg = NXFLASHMAP_FIRMWARE_0;
 		for (i = 0; i < (imagesz / 4); i++) {
 			nxb_write(sc, reg, *data);
-			addr += sizeof(u_int32_t);
+			reg += sizeof(u_int32_t);
 			data++;
 		}
 		/* tell the bootloader to load the firmware image from RAM */
