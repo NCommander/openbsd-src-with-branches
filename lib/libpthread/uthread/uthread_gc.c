@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_gc.c,v 1.15 2005/10/29 18:07:55 krw Exp $	*/
+/*	$OpenBSD: uthread_gc.c,v 1.16 2006/04/09 02:57:41 krw Exp $	*/
 /*
  * Copyright (c) 1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -45,6 +45,7 @@
 #include <pthread.h>
 #include "pthread_private.h"
 
+/* ARGSUSED */
 pthread_addr_t
 _thread_gc(pthread_addr_t arg)
 {

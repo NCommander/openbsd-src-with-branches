@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_connect.c,v 1.6 2006/09/22 19:04:33 kurt Exp $	*/
+/*	$OpenBSD: uthread_connect.c,v 1.7 2006/10/03 02:59:36 kurt Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -45,7 +45,8 @@ connect(int fd, const struct sockaddr * name, socklen_t namelen)
 {
 	struct pthread	*curthread = _get_curthread();
 	struct sockaddr tmpname;
-	int             errnolen, ret, tmpnamelen;
+	socklen_t	errnolen, tmpnamelen;
+	int             ret;
 
 	/* This is a cancellation point: */
 	_thread_enter_cancellation_point();
