@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2007 Gordon Willem Klok <gwk@openbsd.org>
  *
