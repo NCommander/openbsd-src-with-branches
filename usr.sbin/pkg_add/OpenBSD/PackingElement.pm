@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.91 2007/05/01 17:54:46 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.92 2007/05/01 18:07:00 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -45,11 +45,14 @@ sub Factory
 
 sub register_with_factory 
 {
-	my ($class, $k) = @_;
+	my ($class, $k, $o) = @_;
 	if (!defined $k) {
 		$k = $class->keyword;
 	}
-	$keyword{$k} = $class;
+	if (!defined $o) {
+		$o = $class;
+	} 
+	$keyword{$k} = $o;
 }
 
 sub category() { 'items' }
