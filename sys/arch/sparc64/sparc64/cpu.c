@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.18 2007/01/07 18:13:41 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.19 2007/03/15 21:24:23 kettenis Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -70,9 +70,6 @@
 struct cacheinfo cacheinfo = {
 	us_dcache_flush_page
 };
-
-/* Our exported CPU info; we have only one for now. */  
-struct cpu_info cpu_info_store;
 
 /* Linked list of all CPUs in system. */
 struct cpu_info *cpus = NULL;

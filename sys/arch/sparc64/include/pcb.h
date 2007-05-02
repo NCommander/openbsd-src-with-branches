@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.4 2003/06/02 23:27:56 millert Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.5 2005/03/29 19:34:07 kettenis Exp $	*/
 /*	$NetBSD: pcb.h,v 1.7 2000/12/29 17:12:05 eeh Exp $ */
 
 /*
@@ -154,9 +154,7 @@ struct md_coredump {
 	u_int64_t md_wcookie;
 };
 
-#ifdef _KERNEL
-extern struct pcb *cpcb;
-#else
+#ifndef _KERNEL
 /* Let gdb compile.  We need fancier macros to make these make sense. */
 #define pcb_psr	pcb_pstate
 #define pcb_wim	pcb_cwp
