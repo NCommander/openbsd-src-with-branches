@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.9 2005/05/22 19:40:51 art Exp $ */
+/*	$OpenBSD: db_machdep.c,v 1.10 2007/03/22 18:55:20 miod Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -240,7 +240,7 @@ loop:
 	stksize = 0;
 
 	/* check for bad SP: could foul up next frame */
-	if (sp & 3 || sp < KSEG0_BASE) {
+	if (sp & 3 || (!IS_XKPHYS((vaddr_t)sp) && sp < KSEG0_BASE)) {
 		(*pr)("SP %p: not in kernel\n", sp);
 		ra = 0;
 		subr = 0;
