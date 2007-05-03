@@ -34,6 +34,8 @@
 #define NX_MAX_MTU	ETHER_MTU
 #define NX_JUMBO_MTU	8000		/* less than 9k */
 
+#define NX_DMA_ALIGN	8		/* 64bit alignment */
+
 #define NX_POLL_SENSOR	10		/* read temp sensor every 10s */
 
 /* This driver supported the 3.4.31 (3.4.xx) NIC firmware */
@@ -135,6 +137,37 @@ struct nx_statusdesc {
 #define   NX_STSDESC_OWNER_CARD	2		/* owner is the card */
 #define  NX_STSDESC_PROTO_S	2		/* protocol type */
 #define  NX_STSDESC_PROTO_M	0x003c
+} __packed;
+
+struct nx_rxcontext {
+	u_int32_t		rc_ringaddr_low;
+	u_int32_t		rc_ringaddr_high;
+	u_int32_t		rc_ringsize;
+	u_int32_t		rc_reserved;
+} __packed;
+
+#define NX_NRXCONTEXT		3
+
+/* DMA-mapped ring context for the Rx, Tx, and Status rings */
+struct nx_ringcontext {
+	u_int64_t		rc_txconsumer_off;
+	u_int32_t		rc_txringaddr_low;
+	u_int32_t		rc_txringaddr_high;
+
+	u_int32_t		rc_txring_size;
+
+	struct nx_rxcontext	rc_rxcontext[NX_NRXCONTEXT];
+
+	u_int32_t		rc_statusringaddr_low;
+	u_int32_t		rc_statusringaddr_high;
+	u_int32_t		rc_statusring_size;
+
+	u_int32_t		rc_id;		/* context identifier */
+
+	/* d3 state register, dummy dma address */
+	u_int64_t		rc_reserved[2];
+
+	u_int32_t		rc_align;	/* 64bit aligned */
 } __packed;
 
 /*
