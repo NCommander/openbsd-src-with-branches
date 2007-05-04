@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.h,v 1.31 2006/05/27 23:51:27 mk Exp $	*/
+/*	$OpenBSD: device.h,v 1.32 2006/05/28 03:22:35 henning Exp $	*/
 /*	$NetBSD: device.h,v 1.15 1996/04/09 20:55:24 cgd Exp $	*/
 
 /*
@@ -209,6 +209,12 @@ void config_pending_decr(void);
 struct device *device_lookup(struct cfdriver *, int unit);
 void device_ref(struct device *);
 void device_unref(struct device *);
+
+int	findblkmajor(struct device *dv);
+char	*findblkname(int);
+void	setroot(struct device *, int, int);
+struct	device *getdisk(char *str, int len, int defpart, dev_t *devp);
+struct	device *parsedisk(char *str, int len, int defpart, dev_t *devp);
 
 #ifdef __HAVE_DEVICE_REGISTER
 void device_register(struct device *, void *);
