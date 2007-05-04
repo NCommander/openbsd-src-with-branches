@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.h,v 1.2 2004/06/13 21:49:16 niklas Exp $	*/
+/*	$OpenBSD: lock.h,v 1.3 2006/03/13 18:42:16 mickey Exp $	*/
 /*	$NetBSD: lock.h,v 1.1.2.2 2000/05/03 14:40:55 sommerfeld Exp $	*/
 
 /*-
@@ -116,5 +116,10 @@ __cpu_simple_unlock(__cpu_simple_lock_t *lockp)
 }
 
 #endif /* !LOCKDEBUG */
+
+#ifdef _KERNEL
+extern int (*rw_cas_p)(volatile unsigned long *, unsigned long, unsigned long);
+#define rw_cas (*rw_cas_p)
+#endif
 
 #endif /* _I386_LOCK_H_ */
