@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.35 2006/03/20 10:55:19 espie Exp $	*/
+/*	$OpenBSD: misc.c,v 1.36 2006/12/12 21:16:18 jmc Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $	*/
 
 /*
@@ -263,16 +263,17 @@ extern char *__progname;
 void
 m4errx(int eval, const char *fmt, ...)
 {
-	va_list ap;
-
-	va_start(ap, fmt);
 	fprintf(stderr, "%s: ", __progname);
 	fprintf(stderr, "%s at line %lu: ", CURRENT_NAME, CURRENT_LINE);
-	if (fmt != NULL)
+	if (fmt != NULL) {
+		va_list ap;
+
+		va_start(ap, fmt);
 		vfprintf(stderr, fmt, ap);
+		va_end(ap);
+	}
 	fprintf(stderr, "\n");
 	exit(eval);
-	va_end(ap);
 }
 
 /*
