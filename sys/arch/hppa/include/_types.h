@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.1 2006/01/06 18:50:08 millert Exp $	*/
+/*	$OpenBSD: _types.h,v 1.2 2006/01/13 17:50:06 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -124,5 +124,6 @@ typedef	void *			__wctype_t;
 
 /* Feature test macros */
 #define __HAVE_DEVICE_REGISTER
+#define	__HAVE_MUTEX
 
 #endif	/* _HPPA__TYPES_H_ */
