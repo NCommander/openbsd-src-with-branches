@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.4 2007/02/01 20:39:42 art Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.5 2007/03/23 16:44:38 gwk Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $ */
 
 /*-
@@ -91,6 +91,7 @@ void (*ipifunc[X86_NIPI])(struct cpu_info *) =
 #else
 	NULL,
 #endif
+	x86_setperf_ipi,
 };
 
 void

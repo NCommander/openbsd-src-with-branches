@@ -1,4 +1,4 @@
-/*	$OpenBSD: powernow-k8.c,v 1.16 2007/02/17 11:51:21 tom Exp $ */
+/*	$OpenBSD: powernow-k8.c,v 1.17 2007/04/25 00:27:43 gwk Exp $ */
 /*
  * Copyright (c) 2004 Martin Végiard.
  * Copyright (c) 2004-2005 Bruno Ducrot
@@ -327,16 +327,14 @@ k8pnow_states(struct k8pnow_cpu_state *cstate, uint32_t cpusig,
 }
 
 void
-k8_powernow_init(void)
+k8_powernow_init(struct cpu_info *ci)
 {
 	uint64_t status;
 	u_int maxfid, maxvid, i;
 	u_int32_t extcpuid, dummy;
 	struct k8pnow_cpu_state *cstate;
 	struct k8pnow_state *state;
-	struct cpu_info * ci;
 	char * techname = NULL;
-	ci = curcpu();
 
 	if (setperf_prio > 1)
 		return;
