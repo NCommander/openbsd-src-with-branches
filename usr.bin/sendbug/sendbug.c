@@ -1,4 +1,4 @@
-/*	$OpenBSD: sendbug.c,v 1.42 2007/04/07 04:58:50 ray Exp $	*/
+/*	$OpenBSD: sendbug.c,v 1.43 2007/04/25 04:56:14 ray Exp $	*/
 
 /*
  * Written by Ray Lai <ray@cyth.net>.
@@ -238,20 +238,20 @@ editit(const char *pathname)
 		return (-1);
 	argp[2] = p;
 
- top:
 	sighup = signal(SIGHUP, SIG_IGN);
 	sigint = signal(SIGINT, SIG_IGN);
 	sigquit = signal(SIGQUIT, SIG_IGN);
+ top:
 	if ((pid = fork()) == -1) {
 		int saved_errno = errno;
 
-		(void)signal(SIGHUP, sighup);
-		(void)signal(SIGINT, sigint);
-		(void)signal(SIGQUIT, sigquit);
 		if (saved_errno == EAGAIN) {
 			sleep(1);
 			goto top;
 		}
+		(void)signal(SIGHUP, sighup);
+		(void)signal(SIGINT, sigint);
+		(void)signal(SIGQUIT, sigquit);
 		free(p);
 		errno = saved_errno;
 		return (-1);
