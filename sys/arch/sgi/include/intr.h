@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.15 2006/07/09 22:10:05 mk Exp $ */
+/*	$OpenBSD: intr.h,v 1.16 2007/03/23 21:07:39 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -91,6 +91,7 @@
 #define splsoftnet()		splraise(SINT_NETMASK|SINT_CLOCKMASK)
 #define splsofttty()		splraise(SINT_TTYMASK)
 #define splstatclock()		splhigh()
+#define splsched()		splhigh()
 #define splhigh()		splraise(-1)
 #define spl0()			spllower(0)
 
