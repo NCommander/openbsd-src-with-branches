@@ -6345,6 +6345,14 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0,
 				log = 1;
 				goto done;
 			}
+			if (rthdr.ip6r_type == IPV6_RTHDR_TYPE_0) {
+				DPFPRINTF(PF_DEBUG_MISC,
+				    ("pf: IPv6 rthdr0\n"));
+				action = PF_DROP;
+				REASON_SET(&reason, PFRES_IPOPTIONS);
+				log = 1;
+				goto done;
+			}
 			/* FALLTHROUGH */
 		}
 		case IPPROTO_AH:
