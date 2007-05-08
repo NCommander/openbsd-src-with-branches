@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.15 2004/07/20 20:33:19 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.16 2005/11/25 22:14:34 miod Exp $ */
 /*
  * Copyright (c) 1999, Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -61,8 +61,6 @@ struct confargs {
 extern paddr_t	bootaddr;	/* PA of boot device */
 extern int	bootpart;	/* boot partition (disk) */
 extern int	bootbus;	/* scsi bus (disk) */
-
-extern	struct device *bootdv; /* boot device */
 
 vaddr_t	mapiodev(paddr_t pa, int size);
 void	unmapiodev(vaddr_t kva, int size);
