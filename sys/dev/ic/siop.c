@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop.c,v 1.45 2006/11/28 23:59:45 dlg Exp $ */
+/*	$OpenBSD: siop.c,v 1.46 2006/12/21 02:44:55 krw Exp $ */
 /*	$NetBSD: siop.c,v 1.79 2005/11/18 23:10:32 bouyer Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
 #endif
 
 
-#define SIOP_STATS
+#undef SIOP_STATS
 
 #ifndef SIOP_DEFAULT_TARGET
 #define SIOP_DEFAULT_TARGET 7
