@@ -1,4 +1,4 @@
-/*      $OpenBSD: wdcvar.h,v 1.38 2006/02/10 21:45:41 kettenis Exp $     */
+/*      $OpenBSD: wdcvar.h,v 1.39 2006/05/03 02:18:47 jsg Exp $     */
 /*	$NetBSD: wdcvar.h,v 1.17 1999/04/11 20:50:29 bouyer Exp $	*/
 
 /*-
@@ -306,8 +306,6 @@ void  wdc_delref(struct channel_softc *);
 
 /* ATA/ATAPI specs says a device can take 31s to reset */
 #define WDC_RESET_WAIT 31000
-
-int   atapi_print(void *, const char *);
 
 void wdc_disable_intr(struct channel_softc *);
 void wdc_enable_intr(struct channel_softc *);
