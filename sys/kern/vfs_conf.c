@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_conf.c,v 1.30 2006/09/22 14:23:04 pedro Exp $	*/
+/*	$OpenBSD: vfs_conf.c,v 1.31 2006/11/18 08:20:51 jmc Exp $	*/
 /*	$NetBSD: vfs_conf.c,v 1.21.4.1 1995/11/01 00:06:26 jtc Exp $	*/
 
 /*
@@ -65,9 +65,8 @@
 #endif
 
 /*
- * These define the root filesystem and device.
+ * This defines the root filesystem.
  */
-struct mount *rootfs;
 struct vnode *rootvnode;
 
 /*
