@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt.c,v 1.23 2005/09/25 20:48:21 miod Exp $	*/
+/*	$OpenBSD: gdt.c,v 1.24 2005/11/19 02:18:00 pedro Exp $	*/
 /*	$NetBSD: gdt.c,v 1.28 2002/12/14 09:38:50 junyoung Exp $	*/
 
 /*-
@@ -294,6 +294,7 @@ tss_free(int sel)
 	gdt_put_slot(IDXSEL(sel));
 }
 
+#ifdef USER_LDT
 /*
  * Caller must have pmap locked for both of these functions.
  */
@@ -316,3 +317,4 @@ ldt_free(struct pmap *pmap)
 
 	gdt_put_slot(slot);
 }
+#endif /* USER_LDT */
