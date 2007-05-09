@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vnops.c,v 1.23 2007/03/25 18:38:20 thib Exp $	*/
+/*	$OpenBSD: udf_vnops.c,v 1.24 2007/04/10 17:47:55 miod Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -951,9 +951,10 @@ udf_print(void *v)
 	 * Complete the information given by vprint().
 	 */
 	printf("tag VT_UDF, hash id %u\n", up->u_ino);
+#ifdef DIAGNOSTIC
 	lockmgr_printinfo(&up->u_lock);
 	printf("\n");
-
+#endif
 	return (0);
 }
 
