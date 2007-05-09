@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.143 2007/04/13 10:44:07 bluhm Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.144 2007/04/13 17:09:22 thib Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1350,7 +1350,6 @@ vfs_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 }
 
 int kinfo_vdebug = 1;
-int kinfo_vgetfailed;
 #define KINFO_VNODESLOP	10
 /*
  * Dump vnode list (via sysctl).
