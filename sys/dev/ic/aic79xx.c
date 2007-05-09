@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic79xx.c,v 1.37 2006/10/19 10:55:56 tom Exp $	*/
+/*	$OpenBSD: aic79xx.c,v 1.38 2007/04/10 17:47:55 miod Exp $	*/
 
 /*
  * Copyright (c) 2004 Milos Urbanek, Kenneth R. Westerback & Marco Peereboom
@@ -6321,7 +6321,7 @@ ahd_init(struct ahd_softc *ahd)
 		goto init_done;
 	}
 
-	/* Diable current sensing. */
+	/* Disable current sensing. */
 	ahd_write_flexport(ahd, FLXADDR_ROMSTAT_CURSENSECTL, 0);
 
 #ifdef AHD_DEBUG
