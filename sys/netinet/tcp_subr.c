@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.93 2006/03/04 22:40:16 brad Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.94 2007/05/08 18:46:56 deraadt Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -149,7 +149,9 @@ struct pool sackhl_pool;
 #endif
 
 struct tcpstat tcpstat;		/* tcp statistics */
+#ifdef TCP_COMPAT_42
 tcp_seq  tcp_iss;
+#endif
 
 /*
  * Tcp initialization
