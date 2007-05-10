@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.21 2005/06/15 14:19:45 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.22 2005/08/30 21:43:49 david Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: main.c,v 1.21 2005/06/15 14:19:45 millert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.22 2005/08/30 21:43:49 david Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -51,7 +51,7 @@ static char rcsid[] = "$OpenBSD: main.c,v 1.21 2005/06/15 14:19:45 millert Exp $
 
 time_t now;			/* time find was run */
 int dotfd;			/* starting directory */
-int ftsoptions;			/* options for the ftsopen(3) call */
+int ftsoptions;			/* options for the fts_open(3) call */
 int isdepth;			/* do directories on post-order visit */
 int isoutput;			/* user specified output operator */
 int isxargs;			/* don't permit xargs delimiting chars */
