@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.7 2006/03/12 02:34:39 brad Exp $	*/
+/*	$OpenBSD: intr.h,v 1.8 2007/05/06 03:37:08 gwk Exp $	*/
 /*	$NetBSD: intr.h,v 1.2 2003/05/04 22:01:56 fvdl Exp $	*/
 
 /*-
@@ -78,7 +78,6 @@ struct intrsource {
 	struct pic *is_pic;		/* originating PIC */
 	void *is_recurse;		/* entry for spllower */
 	void *is_resume;		/* entry for doreti */
-	struct evcnt is_evcnt;		/* interrupt counter */
 	char is_evname[32];		/* event counter name */
 	int is_flags;			/* see below */
 	int is_type;			/* level, edge */

@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.9 2005/07/26 08:38:29 art Exp $
+#	$OpenBSD: genassym.cf,v 1.10 2007/05/07 19:10:31 kettenis Exp $
 #	Written by Artur Grabowski art@openbsd.org, Public Domain
 
 include <sys/param.h>
@@ -111,7 +111,6 @@ member	CPU_INFO_GDT		ci_gdt
 struct	intrsource
 member	is_recurse
 member	is_resume
-member	is_evcnt
 member	is_handlers
 member	is_pic
 member	is_flags

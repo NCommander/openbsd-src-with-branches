@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mongoosevar.h,v 1.1 2004/10/29 20:23:37 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -32,7 +32,6 @@ struct hppa_isa_iv {
 	void *iv_arg;
 	int iv_pri;
 
-	struct evcnt iv_evcnt;
 	/* don't do sharing, we won't have many slots anyway
 	struct hppa_isa_iv *iv_next;
 	*/
