@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.1 2006/01/03 22:19:59 claudio Exp $ */
+/*	$OpenBSD: util.c,v 1.2 2007/04/23 13:04:24 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -237,7 +237,7 @@ aspath_strlen(void *data, u_int16_t len)
 /*
  * Extract the asnum out of the as segment at the specified position.
  * Direct access is not possible because of non-aligned reads.
- * ATTENTION: no bounds check are done.
+ * ATTENTION: no bounds checks are done.
  */
 u_int32_t
 aspath_extract(const void *seg, int pos)
