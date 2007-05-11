@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.81 2007/01/09 08:43:25 art Exp $	*/
+/*	$OpenBSD: trap.c,v 1.82 2007/03/15 10:22:29 art Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 /*-
@@ -447,7 +447,7 @@ trap(struct trapframe frame)
 			goto we_re_toast;
 #endif
 		cr2 = rcr2();
-		KERNEL_LOCK(LK_CANRECURSE|LK_EXCLUSIVE);
+		KERNEL_LOCK();
 		goto faultcommon;
 
 	case T_PAGEFLT|T_USER: {	/* page fault */

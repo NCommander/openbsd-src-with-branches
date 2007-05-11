@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.38 2007/02/11 12:49:37 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.39 2007/03/15 10:22:29 art Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -282,7 +282,7 @@ m88100_trap(unsigned type, struct trapframe *frame)
 			panic("trap: bad kernel access at %x", fault_addr);
 		}
 
-		KERNEL_LOCK(LK_CANRECURSE | LK_EXCLUSIVE);
+		KERNEL_LOCK();
 		vm = p->p_vmspace;
 		map = kernel_map;
 
@@ -738,7 +738,7 @@ m88110_trap(unsigned type, struct trapframe *frame)
 			panic("trap: bad kernel access at %x", fault_addr);
 		}
 
-		KERNEL_LOCK(LK_CANRECURSE | LK_EXCLUSIVE);
+		KERNEL_LOCK();
 		vm = p->p_vmspace;
 		map = kernel_map;
 
