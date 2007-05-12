@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.72 2007/03/25 21:52:27 tedu Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.73 2007/04/29 18:59:37 krw Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -914,7 +914,7 @@ vndioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 		    vnd->sc_dk.dk_cpulabel);
 		if (error == 0) {
 			if (cmd == DIOCWDINFO)
-				error = writedisklabel(DISKLABELDEV(dev),
+				error = writedisklabel(VNDLABELDEV(dev),
 				    vndstrategy, vnd->sc_dk.dk_label,
 				    vnd->sc_dk.dk_cpulabel);
 		}
