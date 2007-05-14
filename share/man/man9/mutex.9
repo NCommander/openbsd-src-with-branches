@@ -1,4 +1,4 @@
-.\" $OpenBSD: mutex.9,v 1.1 2005/02/18 16:15:32 pedro Exp $
+.\" $OpenBSD: mutex.9,v 1.2 2007/05/13 11:34:25 jsg Exp $
 .\"
 .\" Copyright (c) 2005 Pedro Martelletto <pedro@openbsd.org>
 .\" All rights reserved.
@@ -71,6 +71,11 @@ functions were written by
 .An Artur Grabowski
 .Aq art@openbsd.org .
 .Sh CAVEATS
+As these are spinning locks, don't sleep while holding one.
+.Pp
+If using a mutex in an interrupt handler, locks must be initialised
+with the correct IPL or deadlock will occur.
+.Pp
 Multiple mutexes may be nested, but not interleaved.
 This is okay:
 .Bd -literal -offset indent
