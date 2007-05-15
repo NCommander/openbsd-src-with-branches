@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfutils.c,v 1.5 2006/06/14 14:58:52 ckuethe Exp $ */
+/*	$OpenBSD: pfutils.c,v 1.6 2006/10/20 19:45:02 deraadt Exp $ */
 /*
  * Copyright (c) 2006 Chris Kuethe <ckuethe@openbsd.org>
  *
@@ -67,7 +67,7 @@ pftable_handler()
 	l = sizeof(struct pf_cmd);
 
 	for (;;) {
-		pfd[0].fd = fd;
+		pfd[0].fd = pfpipe[0];
 		pfd[0].events = POLLIN;
 		if ((nfds = poll(pfd, 1, -1)) == -1)
 			if (errno != EINTR)
