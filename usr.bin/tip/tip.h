@@ -1,4 +1,4 @@
-/*	$OpenBSD: tip.h,v 1.27 2006/08/18 03:06:18 jason Exp $	*/
+/*	$OpenBSD: tip.h,v 1.28 2006/11/06 19:37:21 millert Exp $	*/
 /*	$NetBSD: tip.h,v 1.7 1997/04/20 00:02:46 mellon Exp $	*/
 
 /*
@@ -228,12 +228,6 @@ extern value_t	vtable[];	/* variable table */
 #define	HARDWAREFLOW	33
 #define	LINEDISC	34
 #define	DC		35
-
-#define NOVAL	((value_t *)NULL)
-#define NOACU	((acu_t *)NULL)
-#define NOSTR	((char *)NULL)
-#define NOFILE	((FILE *)NULL)
-#define NOPWD	((struct passwd *)0)
 
 struct termios	term;		/* current mode of terminal */
 struct termios	defterm;	/* initial mode of terminal */
