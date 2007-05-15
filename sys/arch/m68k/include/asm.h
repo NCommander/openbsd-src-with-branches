@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.5 2002/11/05 18:04:35 miod Exp $	*/
+/*	$OpenBSD: asm.h,v 1.6 2003/06/12 01:07:29 deraadt Exp $	*/
 /*	$NetBSD: asm.h,v 1.13 1997/04/24 22:49:39 thorpej Exp $	*/
 
 /*
@@ -164,6 +164,8 @@
 
 #define	VECTOR_UNUSED					\
 	.long	0
+
+#define CURPROC	_C_LABEL(cpu_info_store) + CI_CURPROC
 
 #endif /* _KERNEL */
 
