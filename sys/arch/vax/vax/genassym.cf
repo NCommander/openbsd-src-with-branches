@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.7 2005/06/07 21:32:43 martin Exp $
+#	$OpenBSD: genassym.cf,v 1.8 2005/06/08 07:06:02 miod Exp $
 #	$NetBSD: genassym.cf,v 1.10 1999/11/19 22:09:55 ragge Exp $
 #
 # Copyright (c) 1997 Ludd, University of Lule}, Sweden.
@@ -61,6 +61,9 @@ member	iftrap
 struct	cpu_dep
 member	MCHK		cpu_mchk
 member	MEMERR		cpu_memerr
+
+struct	cpu_info
+member	ci_curproc
 
 export	KERNBASE
 

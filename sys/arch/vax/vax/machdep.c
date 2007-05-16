@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.83 2006/07/19 20:41:34 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.84 2006/07/20 19:15:35 miod Exp $ */
 /* $NetBSD: machdep.c,v 1.108 2000/09/13 15:00:23 thorpej Exp $	 */
 
 /*
@@ -386,7 +386,7 @@ void
 setstatclockrate(hzrate)
 	int hzrate;
 {
-	panic("setstatclockrate");
+	/* nothing to do */
 }
 
 void
