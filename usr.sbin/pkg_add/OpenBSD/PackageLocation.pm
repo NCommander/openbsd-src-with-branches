@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageLocation.pm,v 1.8 2007/05/14 17:11:05 espie Exp $
+# $OpenBSD: PackageLocation.pm,v 1.9 2007/05/15 19:47:44 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -32,7 +32,7 @@ sub new
 	}
 	my $self = { repository => $repository, name => $name, arch => $arch};
 	bless $self, $class;
-	print STDERR "Built location ", $self->stringize, "\n";
+#	print STDERR "Built location ", $self->stringize, "\n";
 	return $self;
 
 }
