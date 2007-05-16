@@ -1,4 +1,4 @@
-/*	$OpenBSD: kernel.h,v 1.10 2004/06/13 21:49:28 niklas Exp $	*/
+/*	$OpenBSD: kernel.h,v 1.11 2004/07/28 17:15:12 tholo Exp $	*/
 /*	$NetBSD: kernel.h,v 1.11 1995/03/03 01:24:16 cgd Exp $	*/
 
 /*-
@@ -48,9 +48,6 @@ extern int domainnamelen;
 
 /* 1.2 */
 extern struct timeval boottime;
-#ifndef __HAVE_CPUINFO
-extern struct timeval runtime;
-#endif
 #ifndef __HAVE_TIMECOUNTER
 extern volatile struct timeval mono_time;
 extern volatile struct timeval time;
