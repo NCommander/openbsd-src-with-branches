@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.58 2007/02/17 18:23:43 xsa Exp $	*/
+/*	$OpenBSD: client.c,v 1.59 2007/02/22 06:42:09 otto Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -957,7 +957,7 @@ cvs_client_initlog(void)
 	}
 
 	if ((cvs_client_inlog_fd = open(fpath,
-	    O_RDWR | O_CREAT | O_TRUNC, 0644)) == NULL) {
+	    O_RDWR | O_CREAT | O_TRUNC, 0644)) == -1) {
 		fatal("cvs_client_initlog: open `%s': %s",
 		    fpath, strerror(errno));
 	}
@@ -976,7 +976,7 @@ cvs_client_initlog(void)
 	}
 
 	if ((cvs_client_outlog_fd = open(fpath, 
-	    O_RDWR | O_CREAT | O_TRUNC, 0644)) == NULL) {
+	    O_RDWR | O_CREAT | O_TRUNC, 0644)) == -1) {
 		fatal("cvs_client_initlog: open `%s': %s",
 		    fpath, strerror(errno));
 	}
