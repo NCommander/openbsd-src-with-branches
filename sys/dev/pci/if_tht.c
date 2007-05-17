@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.100 2007/05/16 09:27:44 dlg Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.101 2007/05/17 09:30:54 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -980,6 +980,7 @@ tht_up(struct tht_softc *sc)
 	tht_write(sc, THT_REG_TDINTCM(0), THT_REG_TDINTCM_PKT_TH(12) |
 	    THT_REG_TDINTCM_COAL_RC | THT_REG_TDINTCM_COAL(0x20));
 
+	bcopy(sc->sc_ac.ac_enaddr, sc->sc_lladdr, ETHER_ADDR_LEN);
 	tht_lladdr_write(sc);
 
 	/* populate rxf fifo */
