@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.27 2007/05/04 03:44:44 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.28 2007/05/04 19:30:55 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.38 1996/12/18 05:46:09 scottr Exp $	*/
 
 /*
@@ -120,6 +120,11 @@ cpu_configure()
 	findbootdev();
 	md_diskconf = diskconf;
 	cold = 0;
+}
+
+void
+device_register(struct device *dev, void *aux)
+{
 }
 
 void
