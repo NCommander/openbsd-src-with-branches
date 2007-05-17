@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: lowparse.c,v 1.17 2002/12/29 17:29:35 espie Exp $ */
+/*	$OpenBSD: lowparse.c,v 1.18 2004/04/07 13:11:36 espie Exp $ */
 
 /* low-level parsing functions. */
 
@@ -373,7 +373,6 @@ ParseSkipEmptyLines(Buffer linebuf)
 			return '\n';
 		    else
 			return c;
-		    return c;
 		}
 	    }
 	}
