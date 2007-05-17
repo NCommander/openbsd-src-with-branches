@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Source.pm,v 1.1 2006/03/06 10:40:32 espie Exp $
+# $OpenBSD: Source.pm,v 1.2 2007/04/15 10:17:29 espie Exp $
 #
 # Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
@@ -19,6 +19,11 @@ use strict;
 use warnings;
 
 package PackageRepository::Source;
+
+sub urlscheme
+{
+	return 'src';
+}
 
 sub find
 {
