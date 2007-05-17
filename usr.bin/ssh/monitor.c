@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.89 2006/11/07 10:31:31 markus Exp $ */
+/* $OpenBSD: monitor.c,v 1.90 2007/02/19 10:45:58 dtucker Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -339,6 +339,7 @@ monitor_child_postauth(struct monitor *pmonitor)
 	monitor_set_child_handler(pmonitor->m_pid);
 	signal(SIGHUP, &monitor_child_handler);
 	signal(SIGTERM, &monitor_child_handler);
+	signal(SIGINT, &monitor_child_handler);
 
 	if (compat20) {
 		mon_dispatch = mon_dispatch_postauth20;
