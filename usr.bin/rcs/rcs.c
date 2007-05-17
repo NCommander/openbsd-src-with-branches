@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.35 2007/01/02 16:43:45 niallo Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.36 2007/02/27 07:59:13 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1881,7 +1881,6 @@ rcs_parse_delta(RCSFILE *rfp)
 		rcs_errno = RCS_ERR_PARSE;
 		warnx("unexpected token `%s' at start of delta",
 		    RCS_TOKSTR(rfp));
-		rcs_freedelta(rdp);
 		return (-1);
 	}
 
