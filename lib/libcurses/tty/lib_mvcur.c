@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_mvcur.c,v 1.10 2001/01/22 18:02:00 millert Exp $	*/
+/*	$OpenBSD: lib_mvcur.c,v 1.11 2003/03/18 16:55:54 millert Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998,1999,2000 Free Software Foundation, Inc.              *
@@ -982,7 +982,11 @@ main(int argc GCC_UNUSED, char *argv[]GCC_UNUSED)
 	char buf[BUFSIZ], capname[BUFSIZ];
 
 	(void) fputs("> ", stdout);
-	(void) fgets(buf, sizeof(buf), stdin);
+	if (fgets(buf, sizeof(buf), stdin) == NULL) {
+	    if (ferror(stdin))
+	    	fputs("ferror on stdin", stderr);
+	    break;
+	}
 
 	if (buf[0] == '?') {
 	    (void) puts("?                -- display this help message");
