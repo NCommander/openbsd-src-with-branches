@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmisc.c,v 1.14 2002/04/30 01:59:47 deraadt Exp $	*/
+/*	$OpenBSD: supcmisc.c,v 1.15 2003/04/15 07:21:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -249,12 +249,13 @@ ugconvert(uname, gname, uid, gid, mode)
 			*gid = gr->gr_gid;
 			return;
 		}
-		if (pw == NULL)
-			pw = getpwnam(uname);
+		if (pw == NULL && (pw = getpwnam(uname)) == NULL)
+			goto defids;
 		*mode &= ~S_ISGID;
 		*gid = pw->pw_gid;
 		return;
 	}
+defids:
 	*mode &= ~(S_ISUID|S_ISGID);
 	if (defuid != UID_MAX) {
 		*uid = defuid;
