@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass5.c,v 1.30 2007/05/05 22:17:34 millert Exp $	*/
+/*	$OpenBSD: pass5.c,v 1.31 2007/05/11 08:28:52 otto Exp $	*/
 /*	$NetBSD: pass5.c,v 1.16 1996/09/27 22:45:18 christos Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)pass5.c	8.6 (Berkeley) 11/30/94";
 #else
-static const char rcsid[] = "$OpenBSD: pass5.c,v 1.30 2007/05/05 22:17:34 millert Exp $";
+static const char rcsid[] = "$OpenBSD: pass5.c,v 1.31 2007/05/11 08:28:52 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -280,7 +280,6 @@ pass5(void)
 			}
 			if (frags == fs->fs_frag) {
 				newcg->cg_cs.cs_nbfree++;
-				j = cbtocylno(fs, i);
 				if (fs->fs_contigsumsize > 0)
 					setbit(cg_clustersfree(newcg),
 					    i / fs->fs_frag);
