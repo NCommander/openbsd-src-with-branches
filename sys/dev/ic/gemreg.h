@@ -401,7 +401,7 @@
 #define	GEM_MIF_CONFIG_MDI0	0x00000100	/* MDIO_0 Data/MDIO_0 atached */
 #define	GEM_MIF_CONFIG_MDI1	0x00000200	/* MDIO_1 Data/MDIO_1 atached */
 #define	GEM_MIF_CONFIG_PHY_ADR	0x00007c00	/* poll PHY address */
-/* MDI0 is onboard transceiver MID1 is external, PHYAD for both is 0 */
+/* MDI0 is onboard transceiver MDI1 is external, PHYAD for both is 0 */
 
 /* GEM_MIF_BASIC_STATUS and GEM_MIF_INTERRUPT_MASK bits */
 #define	GEM_MIF_STATUS		0x0000ffff
