@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_rwlock.c,v 1.4 2002/05/07 05:17:15 pvalchev Exp $	*/
+/*	$OpenBSD: uthread_rwlock.c,v 1.5 2004/02/01 06:22:14 brad Exp $	*/
 /*-
  * Copyright (c) 1998 Alex Nash
  * All rights reserved.
@@ -83,6 +83,7 @@ pthread_rwlock_destroy (pthread_rwlock_t *rwlock)
 	return (ret);
 }
 
+/* ARGSUSED */
 int
 pthread_rwlock_init (pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr)
 {
