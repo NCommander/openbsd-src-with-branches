@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.58 2007/04/23 10:18:30 pedro Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.59 2007/05/03 20:11:55 millert Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -622,6 +622,10 @@ initcg(int cylno, time_t utime)
 	dmax = cbase + sblock.fs_fpg;
 	if (dmax > sblock.fs_size)
 		dmax = sblock.fs_size;
+	if (fsbtodb(&sblock, cgsblock(&sblock, cylno)) + iobufsize / sectorsize
+	    > fssize)
+		errx(40, "inode table does not fit in cylinder group");
+
 	dlower = cgsblock(&sblock, cylno) - cbase;
 	dupper = cgdmin(&sblock, cylno) - cbase;
 	if (cylno == 0)
