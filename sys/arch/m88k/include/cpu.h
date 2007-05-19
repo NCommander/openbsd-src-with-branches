@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.20 2007/04/18 21:21:19 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.21 2007/05/14 17:00:38 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -229,11 +229,7 @@ do {									\
  */
 #define	need_proftick(p)	aston(p)
 
-/*
- * Notify the current process (p) that it has a signal pending,
- * process as soon as possible.
- */
-#define	signotify(p)		aston(p)
+void	signotify(struct proc *);
 
 /*
  * switchframe - should be double word aligned.
