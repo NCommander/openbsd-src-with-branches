@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Installed.pm,v 1.7 2007/05/17 18:52:58 espie Exp $
+# $OpenBSD: Installed.pm,v 1.8 2007/05/18 12:28:26 espie Exp $
 #
 # Copyright (c) 2007 Marc Espie <espie@openbsd.org>
 #
@@ -71,7 +71,7 @@ sub relative_url
 
 sub find
 {
-	my ($repository, $name, $arch, $srcpath) = @_;
+	my ($repository, $name, $arch) = @_;
 	my $self;
 
 	if (is_installed($name)) {
