@@ -1,4 +1,4 @@
-/*	$OpenBSD: slivar.h,v 1.1 2007/05/15 01:00:15 dlg Exp $ */
+/*	$OpenBSD: slivar.h,v 1.2 2007/05/16 04:33:57 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -31,3 +31,5 @@ struct sli_softc {
 
 int	sli_attach(struct sli_softc *);
 int	sli_detach(struct sli_softc *, int);
+
+int	sli_intr(void *);
