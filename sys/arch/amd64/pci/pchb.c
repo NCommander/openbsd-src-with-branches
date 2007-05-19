@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.4 2006/03/13 20:10:49 brad Exp $	*/
+/*	$OpenBSD: pchb.c,v 1.5 2007/01/15 23:19:05 jsg Exp $	*/
 /*	$NetBSD: pchb.c,v 1.1 2003/04/26 18:39:50 fvdl Exp $	*/
 
 /*-
@@ -130,6 +130,12 @@ pchbattach(struct device *parent, struct device *self, void *aux)
 				pchb_amd64ht_attach(self, pa, i);
 			break;
 		}
+		break;
+	case PCI_VENDOR_INTEL:
+#ifdef PCIAGP
+		pciagp_set_pchb(pa);
+#endif
+		break;
 	}
 }
 
