@@ -1,4 +1,4 @@
-/*	$OpenBSD: m8820x_machdep.c,v 1.24 2007/02/11 12:49:37 miod Exp $	*/
+/*	$OpenBSD: m8820x_machdep.c,v 1.25 2007/03/22 18:49:18 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -336,7 +336,7 @@ m8820x_cpu_configuration_print(int main)
 	{
 		static int errata_warn = 0;
 
-		if (proctype == ARN_88100 && procvers < 2) {
+		if (proctype == ARN_88100 && procvers <= 10) {
 			if (!errata_warn++)
 				printf("WARNING: M88100 bug workaround code "
 				    "not enabled.\nPlease recompile the kernel "
