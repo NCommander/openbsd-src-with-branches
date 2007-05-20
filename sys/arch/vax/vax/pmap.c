@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.38 2006/07/31 05:44:23 miod Exp $ */
+/*	$OpenBSD: pmap.c,v 1.39 2007/04/22 10:05:52 miod Exp $ */
 /*	$NetBSD: pmap.c,v 1.74 1999/11/13 21:32:25 matt Exp $	   */
 /*
  * Copyright (c) 1994, 1998, 1999 Ludd, University of Lule}, Sweden.
@@ -629,7 +629,7 @@ if (startpmapdebug)
 #endif
 
 	RECURSESTART;
-	/* Find addess of correct pte */
+	/* Find address of correct pte */
 	if (v & KERNBASE) {
 		patch = (int *)Sysmap;
 		i = (v - KERNBASE) >> VAX_PGSHIFT;
@@ -987,7 +987,7 @@ if (startpmapdebug)
 	if (bits & 1)
 		panic("pte trans len");
 #endif
-	/* Set addess on logical page boundary */
+	/* Set address on logical page boundary */
 	addr &= ~PGOFSET;
 	/* First decode userspace addr */
 	if (addr >= 0) {
