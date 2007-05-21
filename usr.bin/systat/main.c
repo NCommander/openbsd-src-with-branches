@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.35 2007/02/25 18:21:24 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.36 2007/04/24 06:32:08 tedu Exp $	*/
 /*	$NetBSD: main.c,v 1.8 1996/05/10 23:16:36 thorpej Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: main.c,v 1.35 2007/02/25 18:21:24 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.36 2007/04/24 06:32:08 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -83,7 +83,6 @@ int
 main(int argc, char *argv[])
 {
 	char errbuf[_POSIX2_LINE_MAX];
-	const char *errstr;
 	gid_t gid;
 	int ch;
 
