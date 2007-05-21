@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.89 2007/02/19 17:22:02 deraadt Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.90 2007/05/21 05:40:27 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -1415,7 +1415,7 @@ ural_read(struct ural_softc *sc, uint16_t reg)
 		    USBDEVNAME(sc->sc_dev), usbd_errstr(error));
 		return 0;
 	}
-	return le16toh(val);
+	return letoh16(val);
 }
 
 Static void
