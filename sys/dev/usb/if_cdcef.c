@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdcef.c,v 1.10 2007/02/26 15:41:28 drahn Exp $	*/
+/*	$OpenBSD: if_cdcef.c,v 1.11 2007/02/26 19:24:27 ckuethe Exp $	*/
 
 /*
  * Copyright (c) 2007 Dale Rahn <drahn@openbsd.org>
@@ -261,7 +261,7 @@ USB_ATTACH(cdcef)
 	IFQ_SET_READY(&ifp->if_snd);
 
 	if_attach(ifp);
-	Ether_ifattach(ifp, sc->cdcef_arpcom.ac_enaddr);
+	ether_ifattach(ifp);
 
 	sc->sc_attached = 1;
 	splx(s);
