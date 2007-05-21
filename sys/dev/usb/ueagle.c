@@ -1,4 +1,4 @@
-/*	$OpenBSD: ueagle.c,v 1.11 2006/06/23 06:27:11 miod Exp $	*/
+/*	$OpenBSD: ueagle.c,v 1.12 2006/09/16 13:31:04 damien Exp $	*/
 
 /*-
  * Copyright (c) 2003-2006
@@ -56,8 +56,8 @@
 #include <dev/usb/ueaglevar.h>
 
 #ifdef USB_DEBUG
-#define DPRINTF(x)	do { if (ueagledebug > 0) logprintf x; } while (0)
-#define DPRINTFN(n, x)	do { if (ueagledebug >= (n)) logprintf x; } while (0)
+#define DPRINTF(x)	do { if (ueagledebug > 0) printf x; } while (0)
+#define DPRINTFN(n, x)	do { if (ueagledebug >= (n)) printf x; } while (0)
 int ueagledebug = 0;
 #else
 #define DPRINTF(x)

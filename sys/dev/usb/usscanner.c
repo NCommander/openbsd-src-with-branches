@@ -1,4 +1,4 @@
-/*	$OpenBSD: usscanner.c,v 1.11 2006/06/23 06:27:12 miod Exp $	*/
+/*	$OpenBSD: usscanner.c,v 1.12 2006/11/28 23:59:45 dlg Exp $	*/
 /*	$NetBSD: usscanner.c,v 1.6 2001/01/23 14:04:14 augustss Exp $	*/
 
 /*
@@ -81,8 +81,8 @@
 #endif
 
 #ifdef USSCANNER_DEBUG
-#define DPRINTF(x)	do { if (usscannerdebug) logprintf x; } while (0)
-#define DPRINTFN(n,x)	do { if (usscannerdebug>(n)) logprintf x; } while (0)
+#define DPRINTF(x)	do { if (usscannerdebug) printf x; } while (0)
+#define DPRINTFN(n,x)	do { if (usscannerdebug>(n)) printf x; } while (0)
 int	usscannerdebug = 0;
 #else
 #define DPRINTF(x)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.36 2006/05/04 15:25:10 mickey Exp $ */
+/*	$OpenBSD: uaudio.c,v 1.37 2006/06/23 06:27:11 miod Exp $ */
 /*	$NetBSD: uaudio.c,v 1.90 2004/10/29 17:12:53 kent Exp $	*/
 
 /*
@@ -74,8 +74,8 @@
 /* #define UAUDIO_DEBUG */
 /* #define UAUDIO_MULTIPLE_ENDPOINTS */
 #ifdef UAUDIO_DEBUG
-#define DPRINTF(x)	do { if (uaudiodebug) logprintf x; } while (0)
-#define DPRINTFN(n,x)	do { if (uaudiodebug>(n)) logprintf x; } while (0)
+#define DPRINTF(x)	do { if (uaudiodebug) printf x; } while (0)
+#define DPRINTFN(n,x)	do { if (uaudiodebug>(n)) printf x; } while (0)
 int	uaudiodebug = 0;
 #else
 #define DPRINTF(x)

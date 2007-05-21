@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_subr.c,v 1.47 2006/07/17 05:24:16 miod Exp $ */
+/*	$OpenBSD: usb_subr.c,v 1.48 2007/02/28 22:30:55 deraadt Exp $ */
 /*	$NetBSD: usb_subr.c,v 1.103 2003/01/10 11:19:13 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_subr.c,v 1.18 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -58,8 +58,8 @@
 #include <dev/usb/usb_quirks.h>
 
 #ifdef USB_DEBUG
-#define DPRINTF(x)	do { if (usbdebug) logprintf x; } while (0)
-#define DPRINTFN(n,x)	do { if (usbdebug>(n)) logprintf x; } while (0)
+#define DPRINTF(x)	do { if (usbdebug) printf x; } while (0)
+#define DPRINTFN(n,x)	do { if (usbdebug>(n)) printf x; } while (0)
 extern int usbdebug;
 #else
 #define DPRINTF(x)

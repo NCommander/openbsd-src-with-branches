@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucycom.c,v 1.3 2006/08/18 23:08:45 jason Exp $	*/
+/*	$OpenBSD: ucycom.c,v 1.4 2006/08/24 12:14:23 jason Exp $	*/
 /*	$NetBSD: ucycom.c,v 1.3 2005/08/05 07:27:47 skrll Exp $	*/
 
 /*
@@ -68,8 +68,8 @@
 #include <dev/usb/ucomvar.h>
 
 #ifdef UCYCOM_DEBUG
-#define DPRINTF(x)	if (ucycomdebug) logprintf x
-#define DPRINTFN(n, x)	if (ucycomdebug > (n)) logprintf x
+#define DPRINTF(x)	if (ucycomdebug) printf x
+#define DPRINTFN(n, x)	if (ucycomdebug > (n)) printf x
 int	ucycomdebug = 200;
 #else
 #define DPRINTF(x)

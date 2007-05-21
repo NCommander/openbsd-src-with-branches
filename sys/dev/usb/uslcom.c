@@ -1,4 +1,4 @@
-/*	$OpenBSD: uslcom.c,v 1.3 2006/06/23 06:27:12 miod Exp $	*/
+/*	$OpenBSD: uslcom.c,v 1.4 2007/02/17 01:47:47 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -32,7 +32,7 @@
 #include <dev/usb/ucomvar.h>
 
 #ifdef USLCOM_DEBUG
-#define DPRINTFN(n, x)  do { if (uslcomdebug > (n)) logprintf x; } while (0)
+#define DPRINTFN(n, x)  do { if (uslcomdebug > (n)) printf x; } while (0)
 int	uslcomdebug = 0;
 #else
 #define DPRINTFN(n, x)
