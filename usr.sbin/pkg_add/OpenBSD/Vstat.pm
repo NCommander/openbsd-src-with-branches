@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Vstat.pm,v 1.18 2007/03/07 11:24:07 espie Exp $
+# $OpenBSD: Vstat.pm,v 1.19 2007/04/15 10:17:29 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -203,6 +203,31 @@ package OpenBSD::Vstat::Failsafe;
 sub avail
 {
 	return 1;
+}
+
+# Here we stuff things common to pkg_add and pkg_delete which do not warrant
+# their own file yet.
+package OpenBSD::SharedItemsRecorder;
+sub new
+{
+	my $class = shift;
+	return bless {}, $class;
+}
+
+sub is_empty
+{
+	my $self = shift;
+	return !(defined $self->{dirs} or defined $self->{users} or
+		defined $self->{groups});
+}
+
+sub cleanup
+{
+	my ($self, $state) = @_;
+	return if $self->is_empty or $state->{not};
+
+	require OpenBSD::SharedItems;
+	OpenBSD::SharedItems::cleanup($self, $state);
 }
 
 1;
