@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82810reg.h,v 1.2 2003/06/02 19:24:22 mickey Exp $	*/
+/*	$OpenBSD: i82810reg.h,v 1.3 2005/05/19 19:38:07 grange Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -26,11 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-/*
- * Intel i82810/810E memory and graphics controller
- *	http://
- */
+/* Intel i82810/810E memory and graphics controller */
 
 /* Host-Hub Interface Bridge/DRAM Controller Device Registers (Device 0) */
 #define	I82810_SMRAM		0x70
