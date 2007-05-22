@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Delete.pm,v 1.44 2007/05/22 09:39:23 espie Exp $
+# $OpenBSD: Delete.pm,v 1.45 2007/05/22 10:11:59 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -191,13 +191,7 @@ sub delete_plist
 		$plist->get(UNDISPLAY)->prepare($state);
 	}
 
-	# guard against duplicate pkgdep
-	my $removed = {};
-
-	my $zap_dependency = sub {
-		my $name = shift;
-
-		return if defined $removed->{$name};
+	for my $name (OpenBSD::Requiring->new($pkgname)->list) {
 		print "remove dependency on $name\n" 
 		    if $state->{very_verbose} or $state->{not};
 		local $@;
@@ -206,14 +200,6 @@ sub delete_plist
 		} catchall {
 			print STDERR "$_\n";
 		};
-		$removed->{$name} = 1;
-	};
-
-	for my $item (@{$plist->{pkgdep}}) {
-		&$zap_dependency($item->{name});
-	}
-	for my $name (OpenBSD::Requiring->new($pkgname)->list) {
-		&$zap_dependency($name);
 	}
 		
 	return if $state->{not};
