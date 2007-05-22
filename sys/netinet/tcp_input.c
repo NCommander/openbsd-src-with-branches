@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.200 2006/12/11 21:31:58 markus Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.201 2007/02/13 06:39:50 itojun Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -3243,7 +3243,12 @@ tcp_newreno(tp, th)
 		 * Partial window deflation.  Relies on fact that tp->snd_una
 		 * not updated yet.
 		 */
-		tp->snd_cwnd -= (th->th_ack - tp->snd_una - tp->t_maxseg);
+		if (tp->snd_cwnd > th->th_ack - tp->snd_una)
+			tp->snd_cwnd -= th->th_ack - tp->snd_una;
+		else
+			tp->snd_cwnd = 0;
+		tp->snd_cwnd += tp->t_maxseg;
+
 		return 1;
 	}
 	return 0;
