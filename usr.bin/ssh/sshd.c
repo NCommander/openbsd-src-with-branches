@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.349 2007/02/21 11:00:05 dtucker Exp $ */
+/* $OpenBSD: sshd.c,v 1.350 2007/03/09 05:20:06 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -51,7 +51,6 @@
 #include <sys/time.h>
 
 #include <errno.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <paths.h>
