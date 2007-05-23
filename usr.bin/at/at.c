@@ -823,7 +823,7 @@ ttime(char *arg)
 		*dot++ = '\0';
 		if (strlen(dot) != 2)
 			goto terr;
-		lt->tm_sec = ATOI2(p);
+		lt->tm_sec = ATOI2(dot);
 		if (lt->tm_sec > 61)	/* could be leap second */
 			goto terr;
 	}
