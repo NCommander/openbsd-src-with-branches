@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.107 2007/04/26 22:42:11 krw Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.108 2007/05/13 14:19:18 ray Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -39,7 +39,7 @@ static const char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.107 2007/04/26 22:42:11 krw Exp $";
+static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.108 2007/05/13 14:19:18 ray Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -306,9 +306,13 @@ main(int argc, char *argv[])
 		}
 		break;
 	case WRITE:
-		if (argc < 2 || argc > 3)
+		if (dflag) {
+			if (readlabel(f) == NULL)
+				exit(1);
+		} else if (argc < 2 || argc > 3)
 			usage();
-		makelabel(argv[1], argc == 3 ? argv[2] : NULL, &lab);
+		else	
+			makelabel(argv[1], argc == 3 ? argv[2] : NULL, &lab);
 		lp = makebootarea(bootarea, &lab, f);
 		*lp = lab;
 		if (checklabel(lp) == 0)
