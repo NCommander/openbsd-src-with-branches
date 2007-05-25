@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.3 2006/09/19 11:06:33 jsg Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.4 2007/05/04 12:58:41 art Exp $	*/
 /* $NetBSD: lock_machdep.c,v 1.1.2.3 2000/05/03 14:40:30 sommerfeld Exp $ */
 
 /*-
@@ -142,19 +142,8 @@ rw_cas_386(volatile unsigned long *p, unsigned long o, unsigned long n)
 	return (0);
 }
 
-#ifdef MULTIPROCESSOR
-#define MPLOCK "lock "
-#else
-#define MPLOCK
-#endif
-
 int
 rw_cas_486(volatile unsigned long *p, unsigned long o, unsigned long n)
 {
-	int res;
-
-        __asm volatile(MPLOCK " cmpxchgl %2, %1" : "=a" (res), "=m" (*p)
-             : "r" (n), "a" (o), "m" (*p) : "memory");
-
-	return (res != o);
+	return (i486_atomic_cas_int((u_int *)p, o, n) != o);
 }
