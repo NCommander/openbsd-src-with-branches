@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.35 2006/05/28 00:04:24 jason Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.36 2006/10/25 02:37:50 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1425,7 +1425,7 @@ void wb_start(ifp)
 	 * Place the request for the upload interrupt
 	 * in the last descriptor in the chain. This way, if
 	 * we're chaining several packets at once, we'll only
-	 * get an interupt once for the whole chain rather than
+	 * get an interrupt once for the whole chain rather than
 	 * once for each packet.
 	 */
 	WB_TXCTL(cur_tx) |= WB_TXCTL_FINT;

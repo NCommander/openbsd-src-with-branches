@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusers.c,v 1.26 2003/08/04 17:06:46 deraadt Exp $	*/
+/*	$OpenBSD: rusers.c,v 1.27 2006/09/26 10:30:41 otto Exp $	*/
 
 /*
  * Copyright (c) 2001, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -47,7 +47,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: rusers.c,v 1.26 2003/08/04 17:06:46 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: rusers.c,v 1.27 2006/09/26 10:30:41 otto Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -792,7 +792,7 @@ void
 alarmclock(int signo)
 {
 
-	;		/* just interupt */
+	;		/* just interrupt */
 }
 
 char *

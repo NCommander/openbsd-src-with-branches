@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lereg.h,v 1.7 2003/06/02 23:27:50 millert Exp $ */
+/*	$OpenBSD: if_lereg.h,v 1.8 2003/12/30 21:25:58 miod Exp $ */
 
 /*-
  * Copyright (c) 1982, 1992, 1993
@@ -49,7 +49,7 @@ struct lereg1 {
  */
 struct vlereg1 {
    volatile u_int16_t      ler1_csr;       /* board control/status register */
-   volatile u_int16_t      ler1_vec;       /* interupt vector register */
+   volatile u_int16_t      ler1_vec;       /* interrupt vector register */
    volatile u_int16_t      ler1_rdp;       /* data port */
    volatile u_int16_t      ler1_rap;       /* register select port */
    volatile u_int16_t      ler1_ear;       /* ethernet address register */
