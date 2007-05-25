@@ -1,4 +1,4 @@
-/* $OpenBSD: longrun.c,v 1.11 2006/12/12 23:14:27 dim Exp $ */
+/* $OpenBSD: longrun.c,v 1.12 2006/12/20 17:50:40 gwk Exp $ */
 /*
  * Copyright (c) 2003 Ted Unangst
  * Copyright (c) 2001 Tamotsu Hattori
@@ -88,7 +88,7 @@ longrun_update(void *arg)
 }
 
 /*
- * Transmeta documentation says performance window boundries
+ * Transmeta documentation says performance window boundaries
  * must be between 0 and 100 or a GP0 exception is generated.
  * mode is really only a bit, 0 or 1
  * These values will be rounded by the CPU to within the
