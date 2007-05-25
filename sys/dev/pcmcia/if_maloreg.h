@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: if_maloreg.h,v 1.1 2007/05/25 05:33:51 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -42,3 +42,4 @@
 /* FW commands */
 #define MALO_VAL_CMD_RESP		0x8000
 #define MALO_VAL_CMD_HWSPEC		0x0003
+#define MALO_VAL_CMD_RESET		0x0005
