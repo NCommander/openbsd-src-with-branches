@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_io.c,v 1.1 2004/02/01 05:09:49 drahn Exp $	*/
+/*	$OpenBSD: isa_io.c,v 1.2 2005/12/17 07:31:25 miod Exp $	*/
 /*	$NetBSD: isa_io.c,v 1.2 2002/09/27 15:35:44 provos Exp $	*/
 
 /*
@@ -44,7 +44,7 @@
 #include <machine/pio.h>
 #include <machine/isa_machdep.h>
 
-/* Proto types for all the bus_space structure functions */
+/* Prototypes for all the bus_space structure functions */
 
 bs_protos(isa);
 bs_protos(bs_notimpl);
