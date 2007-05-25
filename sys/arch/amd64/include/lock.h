@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.h,v 1.2 2004/06/13 21:49:16 niklas Exp $	*/
+/*	$OpenBSD: lock.h,v 1.1 2004/06/25 11:03:28 art Exp $	*/
 /*	$NetBSD: lock.h,v 1.1.2.2 2000/05/03 14:40:55 sommerfeld Exp $	*/
 
 /*-
@@ -113,6 +113,8 @@ __cpu_simple_unlock(__cpu_simple_lock_t *lockp)
 	__lockbarrier();
 	*lockp = __SIMPLELOCK_UNLOCKED;
 }
+
+#define rw_cas(p, o, n) (x86_atomic_cas_ul(p, o, n) != o)
 
 #endif /* !LOCKDEBUG */
 
