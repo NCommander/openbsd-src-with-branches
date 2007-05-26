@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.75 2007/02/22 06:42:09 otto Exp $	*/
+/*	$OpenBSD: entries.c,v 1.76 2007/05/16 20:51:22 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -152,7 +152,7 @@ cvs_ent_parse(const char *entry)
 			fatal("failed to parse entry revision '%s'", entry);
 
 		if (fields[3][0] == '\0' ||
-		    strcmp(fields[3], CVS_DATE_DUMMY) == 0 ||
+		    strncmp(fields[3], CVS_DATE_DUMMY, sizeof(CVS_DATE_DUMMY) - 1) == 0 ||
 		    strncmp(fields[3], "Initial ", 8) == 0 ||
 		    strncmp(fields[3], "Result of merge", 15) == 0)
 			ent->ce_mtime = CVS_DATE_DMSEC;
