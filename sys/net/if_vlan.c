@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.67 2006/05/09 19:43:02 mpf Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.68 2006/05/22 23:25:15 krw Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -78,7 +78,6 @@
 #include <net/if_vlan_var.h>
 
 extern struct	ifaddr	**ifnet_addrs;
-extern int ifqmaxlen;
 u_long vlan_tagmask;
 
 #define TAG_HASH_SIZE	32

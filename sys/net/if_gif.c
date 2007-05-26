@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.43 2007/04/19 09:28:40 claudio Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.44 2007/05/21 13:33:35 markus Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -63,8 +63,6 @@
 
 #include "bpfilter.h"
 #include "bridge.h"
-
-extern int ifqmaxlen;
 
 void	gifattach(int);
 int	gif_clone_create(struct if_clone *, int);

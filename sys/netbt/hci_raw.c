@@ -1,4 +1,4 @@
-/*	$OpenBSD: hci_raw.c,v 1.3 2005/01/17 18:12:49 mickey Exp $	*/
+/*	$OpenBSD: hci_raw.c,v 1.4 2006/03/04 22:40:16 brad Exp $	*/
 
 /*
  * ng_btsocket_hci_raw.c
@@ -105,7 +105,6 @@ static struct ng_type typestruct = {
 #endif
 
 /* Globals */
-extern int					ifqmaxlen;
 static u_int32_t				ng_btsocket_hci_raw_debug_level;
 static u_int32_t				ng_btsocket_hci_raw_ioctl_timeout;
 #if 0
