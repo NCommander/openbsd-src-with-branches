@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.122 2007/05/09 07:04:57 xsa Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.123 2007/05/22 16:47:22 xsa Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -104,12 +104,13 @@ cvs_cleanup(void)
 	cvs_log(LP_TRACE, "cvs_cleanup: removing temp files");
 	cvs_worklist_run(&temp_files, cvs_worklist_unlink);
 
-	if (cvs_server_active) {
+	if (cvs_server_path != NULL) {
 		if (cvs_rmdir(cvs_server_path) == -1)
 			cvs_log(LP_ERR,
 			    "warning: failed to remove server directory: %s",
 			    cvs_server_path);
 		xfree(cvs_server_path);
+		cvs_server_path = NULL;
 	}
 }
 
