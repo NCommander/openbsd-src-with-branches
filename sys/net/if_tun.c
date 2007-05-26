@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.85 2007/02/21 13:24:55 claudio Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.86 2007/05/03 21:03:46 mpf Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -819,7 +819,7 @@ tunwrite(dev_t dev, struct uio *uio, int ioflag)
 	if (tp->tun_flags & TUN_LAYER2) {
 		/*
 		 * Pad so that IP header is correctly aligned
-		 * this is neccessary for all strict aligned architectures.
+		 * this is necessary for all strict aligned architectures.
 		 */
 		mlen -= ETHER_ALIGN;
 		m->m_data += ETHER_ALIGN;

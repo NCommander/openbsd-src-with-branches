@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.106 2006/03/25 20:55:24 dhartmei Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.107 2006/04/16 00:59:52 pascoe Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -1658,7 +1658,7 @@ pf_normalize_tcp_stateful(struct mbuf *m, int off, struct pf_pdesc *pd,
 		 *    network conditions that re-order packets and
 		 *    cause our view of them to decrease.  For now the
 		 *    only lowerbound we can safely determine is that
-		 *    the TS echo will never be less than the orginal
+		 *    the TS echo will never be less than the original
 		 *    TS.  XXX There is probably a better lowerbound.
 		 *    Remove TS_MAX_CONN with better lowerbound check.
 		 *        tescr >= other original TS
