@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.175 2006/09/30 23:44:17 ray Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.177 2006/11/15 01:53:00 itojun Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -1794,7 +1794,7 @@ init_current_media(void)
 			 * that there are more, so we can ignore it.
 			 */
 			if (errno != E2BIG)
-				err(1, "SGIOCGIFMEDIA");
+				err(1, "SIOCGIFMEDIA");
 		}
 
 		media_current = ifmr.ifm_current;
