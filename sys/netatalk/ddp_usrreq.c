@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_usrreq.c,v 1.6 2002/03/14 01:27:10 millert Exp $	*/
+/*	$OpenBSD: ddp_usrreq.c,v 1.7 2003/09/02 16:57:29 tedu Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -85,6 +85,13 @@ static void at_pcbdetach( struct socket *, struct ddpcb * );
 struct ddpcb *ddp_search( struct sockaddr_at *,
 			struct sockaddr_at *, struct at_ifaddr * );
 void ddp_init(void);
+
+struct at_ifaddr	*at_ifaddr;
+struct ifqueue		atintrq1, atintrq2;
+int			atdebug;
+
+struct ddpcb		*ddp_ports[ ATPORT_LAST ];
+struct ddpstat		ddpstat;
 
 struct ddpcb	*ddpcb = NULL;
 u_long		ddp_sendspace = DDP_MAXSZ; /* Max ddp size + 1 (ddp_type) */
