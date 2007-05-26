@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_physio.c,v 1.26 2006/11/29 12:24:17 miod Exp $	*/
+/*	$OpenBSD: kern_physio.c,v 1.27 2006/12/21 02:28:47 krw Exp $	*/
 /*	$NetBSD: kern_physio.c,v 1.28 1997/05/19 10:43:28 pk Exp $	*/
 
 /*-
@@ -262,8 +262,12 @@ struct buf *
 getphysbuf(void)
 {
 	struct buf *bp;
+	int s;
 
+	s = splbio();
 	bp = pool_get(&bufpool, PR_WAITOK);
+	splx(s);
+
 	bzero(bp, sizeof(*bp));
 
 	/* XXXCDC: are the following two lines necessary? */
@@ -281,6 +285,8 @@ getphysbuf(void)
 void
 putphysbuf(struct buf *bp)
 {
+	splassert(IPL_BIO);
+
 	/* XXXCDC: is this necessary? */
 	if (bp->b_vp)
 		brelvp(bp);
