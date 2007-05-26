@@ -1,4 +1,4 @@
-/*	$OpenBSD: astro.c,v 1.1 2007/05/21 19:33:09 kettenis Exp $	*/
+/*	$OpenBSD: astro.c,v 1.2 2007/05/21 21:43:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -226,7 +226,7 @@ astro_attach(struct device *parent, struct device *self, void *aux)
 	r->tlb_pcom = htole32(31);
 
 	/*
-	 * Allocate memort for I/O pagetables.  They need to be physically
+	 * Allocate memory for I/O pagetables.  They need to be physically
 	 * contiguous.
 	 */
 
