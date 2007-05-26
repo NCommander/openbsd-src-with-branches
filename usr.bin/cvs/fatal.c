@@ -49,9 +49,6 @@ fatal(const char *fmt,...)
 
 	cvs_cleanup();
 
-	if (cvs_server_active)
-		cvs_server_send_response("error");
-
  end:
 	exit(1);
 }
