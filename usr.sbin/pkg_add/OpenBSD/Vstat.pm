@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Vstat.pm,v 1.23 2007/05/27 10:38:12 espie Exp $
+# $OpenBSD: Vstat.pm,v 1.24 2007/05/27 11:21:55 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -282,6 +282,39 @@ sub add_older
 {
 	my ($self, @handles) = @_;
 	push(@{$self->{older}}, @handles);
+}
+
+sub newer
+{
+	my $self =shift;
+	return @{$self->{newer}};
+}
+
+sub older
+{
+	my $self = shift;
+	require OpenBSD::PackageInfo;
+	my @l = ();
+	for my $h (@{$self->{older}}) {
+		if (OpenBSD::PackageInfo::is_installed($h->{pkgname})) {
+			push(@l, $h);
+		}
+	}
+	return @l;
+}
+
+sub validate_plists
+{
+	my ($self, $state) = @_;
+	for my $o ($self->older) {
+		require OpenBSD::Delete;
+		OpenBSD::Delete::validate_plist($o->{plist}, $state);
+	}
+	for my $n ($self->newer) {
+		require OpenBSD::Add;
+		OpenBSD::Add::validate_plist($n->{plist}, $state);
+	}
+	OpenBSD::Vstat::synchronize();
 }
 
 # temporary shortcut
