@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbf.c,v 1.1 2006/11/25 18:10:29 uwe Exp $	*/
+/*	$OpenBSD: usbf.c,v 1.2 2007/02/07 16:26:49 drahn Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -105,12 +105,14 @@ struct cfdriver usbf_cd = {
 
 static const char * const usbrev_str[] = USBREV_STR;
 
-USB_MATCH(usbf)
+int
+usbf_match(struct device *parent, void *match, void *aux)
 {
 	return UMATCH_GENERIC;
 }
 
-USB_ATTACH(usbf)
+void
+usbf_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct usbf_softc *sc = (struct usbf_softc *)self;
 	int usbrev;
