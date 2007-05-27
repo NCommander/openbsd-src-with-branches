@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.29 2007/02/11 12:49:37 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.30 2007/03/21 19:32:29 miod Exp $	*/
 /*
  * Copyright (c) 2001-2004, Miodrag Vallat
  * Copyright (c) 1998-2001 Steve Murphree, Jr.
@@ -105,7 +105,6 @@ extern vaddr_t	last_addr;
 #define CD_CBIT		0x0040000	/* pmap_changebit */
 #define CD_TBIT		0x0080000	/* pmap_testbit */
 #define CD_USBIT	0x0100000	/* pmap_unsetbit */
-#define CD_PGMV		0x0200000	/* pagemove */
 #define CD_ALL		0x0FFFFFC
 
 int pmap_con_dbg = 0;
