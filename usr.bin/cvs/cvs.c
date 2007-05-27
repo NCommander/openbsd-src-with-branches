@@ -118,7 +118,7 @@ __dead void
 usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: %s [-flnQqRrtVvwx] [-d root] [-e editor] [-s var=val]\n"
+	    "usage: %s [-flnQqRrtVvw] [-d root] [-e editor] [-s var=val]\n"
 	    "           [-T tmpdir] [-z level] command [...]\n", __progname);
 	exit(1);
 }
