@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_vnd.c,v 1.1 2007/05/26 03:37:45 grunk Exp $	*/
+/*	$OpenBSD: mount_vnd.c,v 1.2 2007/05/27 03:19:15 ray Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -330,7 +330,7 @@ usage(void)
 
 	if (run_mount_vnd)
 		(void)fprintf(stderr,
-		    "usage: %s [-ckluv] [-o mntopts] [-K rounds] "
+		    "usage: %s [-k] [-K rounds] [-o options] "
 		    "[-S saltfile] image vnd_dev\n", __progname);
 	else
 		(void)fprintf(stderr,
