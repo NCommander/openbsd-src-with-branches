@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.39 2007/05/23 20:33:47 pvalchev Exp $ */
+/*	$OpenBSD: machdep.c,v 1.40 2007/05/26 20:26:51 pedro Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -725,7 +725,7 @@ cpu_startup()
 	printf("real mem = %u (%uMB)\n", ptoa(physmem),
 	    ptoa(physmem)/1024/1024);
 	printf("rsvd mem = %u (%uMB)\n", ptoa(rsvdmem),
-	    ptoa(physmem)/1024/1024);
+	    ptoa(rsvdmem)/1024/1024);
 
 	/*
 	 * Determine how many buffers to allocate.
