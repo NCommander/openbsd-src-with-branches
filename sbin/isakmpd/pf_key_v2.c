@@ -1,4 +1,4 @@
-/* $OpenBSD: pf_key_v2.c,v 1.179 2007/04/08 11:20:31 moritz Exp $  */
+/* $OpenBSD: pf_key_v2.c,v 1.180 2007/04/16 13:01:39 moritz Exp $  */
 /* $EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	 */
 
 /*
@@ -40,7 +40,6 @@
 
 #include <net/pfkeyv2.h>
 #include <netinet/in.h>
-#include <sys/mbuf.h>
 #include <netinet/ip_ipsp.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
