@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.8 2004/06/13 21:49:16 niklas Exp $	*/
+/*	$OpenBSD: asm.h,v 1.9 2006/04/24 14:30:07 drahn Exp $	*/
 /*	$NetBSD: asm.h,v 1.7 1994/10/27 04:15:56 cgd Exp $	*/
 
 /*-
@@ -109,5 +109,15 @@
 #define	ASMSTR		.asciz
 
 #define RCSID(x)	.text; .asciz x
+
+#ifdef _KERNEL
+
+#ifdef MULTIPROCESSOR
+#define CPUVAR(var)	%fs:__CONCAT(CPU_INFO_,var)
+#else
+#define CPUVAR(var)	_C_LABEL(cpu_info_primary)+__CONCAT(CPU_INFO_,var)
+#endif
+
+#endif /* _KERNEL */
 
 #endif /* !_I386_ASM_H_ */

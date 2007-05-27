@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.S,v 1.2 2005/04/08 07:07:06 jolan Exp $	*/
+/*	$OpenBSD: mutex.S,v 1.3 2006/05/11 13:21:11 mickey Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -62,7 +62,7 @@ ENTRY(mtx_enter)
 	xchgl	%eax, MTX_LOCK(%ecx)	# test_and_set(mtx->mtx_lock)
 	testl	%eax, %eax		# if (already held)
 	jnz	3f
-	GET_CPUINFO(%eax)
+	movl	CPUVAR(SELF), %eax
 	movl	%eax, MTX_OWNER(%ecx)
 	movl	%edx, MTX_OLDIPL(%ecx)
 	leave
@@ -75,7 +75,7 @@ ENTRY(mtx_enter)
 	movl	SOFF(%ebp), %ecx		# %ecx clobbered
 4:
 #ifdef DIAGNOSTIC
-	GET_CPUINFO(%edx)
+	movl	CPUVAR(SELF), %edx
 	cmpl	MTX_OWNER(%ecx), %edx
 	je	5f
 #endif
