@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.98 2006/11/19 16:51:19 deraadt Exp $	*/
+/*	$OpenBSD: def.h,v 1.99 2007/02/21 23:33:12 deanna Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -619,6 +619,7 @@ void		 mail_init(void);
 
 /* grep.c X */
 int		 next_error(int, int);
+int		 globalwdtoggle(int, int);
 
 /*
  * Externals.
