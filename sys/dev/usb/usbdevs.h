@@ -1843,7 +1843,7 @@
 #define	USB_PRODUCT_PLANEX2_GWUSMM	0xed02		/* GW-USMM */
 
 /* Plantronics products */
-#define	USB_PRODUCT_PLANTRONICS_HEADSET	0x0ca1		/* Platronics DSP-400 Headset */
+#define	USB_PRODUCT_PLANTRONICS_HEADSET	0x0ca1		/* DSP-400 Headset */
 
 /* PLX products */
 #define	USB_PRODUCT_PLX_TESTBOARD	0x9060		/* test board */

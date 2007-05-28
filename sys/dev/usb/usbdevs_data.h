@@ -3526,7 +3526,7 @@ const struct usb_known_product usb_known_products[] = {
 	},
 	{
 	    USB_VENDOR_PLANTRONICS, USB_PRODUCT_PLANTRONICS_HEADSET,
-	    "Platronics DSP-400 Headset",
+	    "DSP-400 Headset",
 	},
 	{
 	    USB_VENDOR_PLX, USB_PRODUCT_PLX_TESTBOARD,
