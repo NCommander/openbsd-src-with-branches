@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe.c,v 1.22 2007/05/26 19:58:49 pyr Exp $	*/
+/*	$OpenBSD: pfe.c,v 1.23 2007/05/27 20:53:10 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -84,6 +84,7 @@ pfe(struct hoststated *x_env, int pipe_parent2pfe[2], int pipe_parent2hce[2],
 	}
 
 	env = x_env;
+	purge_config(env, PURGE_PROTOS);
 
 	if (control_init() == -1)
 		fatalx("pfe: control socket setup failed");
