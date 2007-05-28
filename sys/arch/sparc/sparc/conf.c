@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.44 2007/05/26 19:54:24 todd Exp $	*/
+/*	$OpenBSD: conf.c,v 1.45 2007/05/27 01:50:36 todd Exp $	*/
 /*	$NetBSD: conf.c,v 1.40 1996/04/11 19:20:03 thorpej Exp $ */
 
 /*
@@ -51,6 +51,7 @@
 
 #include <machine/conf.h>
 
+#include "bio.h"
 #include "pty.h"
 #include "bpfilter.h"
 #include "tun.h"
@@ -263,7 +264,7 @@ struct cdevsw	cdevsw[] =
 	cdev_ss_init(NSS,ss),           /* 121: SCSI scanner */
 	cdev_ksyms_init(NKSYMS,ksyms),	/* 122: Kernel symbols device */
 	cdev_disk_init(NRAID,raid),     /* 123: RAIDframe disk driver */
-	cdev_notdef(),			/* 124 */
+	cdev_bio_init(NBIO,bio),	/* 124: ioctl tunnel */
 	cdev_ptm_init(NPTY,ptm),	/* 125: pseudo-tty ptm device */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
