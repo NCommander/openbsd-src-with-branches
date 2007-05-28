@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff_internals.c,v 1.4 2007/02/22 06:42:09 otto Exp $	*/
+/*	$OpenBSD: diff_internals.c,v 1.5 2007/03/27 07:21:21 xsa Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -155,10 +155,10 @@ struct line {
  * understand the highly mnemonic field names)
  */
 struct context_vec {
-	int	a;	/* start line in old file */
-	int	b;	/* end line in old file */
-	int	c;	/* start line in new file */
-	int	d;	/* end line in new file */
+	int	a;		/* start line in old file */
+	int	b;		/* end line in old file */
+	int	c;		/* start line in new file */
+	int	d;		/* end line in new file */
 };
 
 struct diff_arg {
