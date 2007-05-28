@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.43 2007/04/06 18:36:32 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.44 2007/04/23 13:05:35 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -643,6 +643,9 @@ parse_asnum(const char *word, u_int32_t *asnum)
 	u_int32_t	 uval, uvalh = 0;
 
 	if (word == NULL)
+		return (0);
+
+	if (strlen(word) < 1 || word[0] < '0' || word[0] > '9')
 		return (0);
 
 	if ((dot = strchr(word,'.')) != NULL) {
