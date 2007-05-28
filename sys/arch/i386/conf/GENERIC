@@ -61,7 +61,7 @@ pci*	at mainbus0
 #option		ACPIVERBOSE
 #option		ACPI_ENABLE
 
-acpi0		at mainbus?
+acpi0		at mainbus?	disable
 #acpitimer*	at acpi?
 #acpihpet*	at acpi?
 #acpiac*	at acpi?
@@ -69,7 +69,7 @@ acpi0		at mainbus?
 #acpibtn*	at acpi?
 #acpicpu*	at acpi?
 #acpidock*	at acpi?
-acpiec*		at acpi?
+acpiec*		at acpi?	disable
 acpiprt*	at acpi?
 #acpitz*	at acpi?
 
