@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sisreg.h,v 1.25 2006/03/25 03:21:56 brad Exp $ */
+/*	$OpenBSD: if_sisreg.h,v 1.26 2006/07/10 03:06:28 brad Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ee.columbia.edu>.  All rights reserved.
@@ -214,9 +214,9 @@
 /*
  * Interrupt holdoff value for NS DP8316. We can have the chip
  * delay interrupt delivery for a certain period. Units are in
- * 100us, and the default is 100us holdoff.
+ * 100us - this sets the delay to 1ms holdoff.
  */
-#define NS_IHR_DELAY 0
+#define NS_IHR_DELAY 10
 
 #define NS_IHR_VALUE (NS_IHR_HOLDCTL|NS_IHR_DELAY)
 
