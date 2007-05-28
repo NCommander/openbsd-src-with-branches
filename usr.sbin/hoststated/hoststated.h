@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.h,v 1.42 2007/05/26 19:58:49 pyr Exp $	*/
+/*	$OpenBSD: hoststated.h,v 1.43 2007/05/27 20:53:10 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -515,6 +515,7 @@ enum {
 struct hoststated {
 	u_int8_t		 opts;
 	u_int16_t		 flags;
+	const char		*confpath;
 	struct pfdata		*pf;
 	int			 tablecount;
 	int			 servicecount;
