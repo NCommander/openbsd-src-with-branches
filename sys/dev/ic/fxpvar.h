@@ -1,4 +1,4 @@
-/*	$OpenBSD: fxpvar.h,v 1.25 2006/07/01 21:48:08 brad Exp $	*/
+/*	$OpenBSD: fxpvar.h,v 1.26 2007/05/08 20:33:07 deraadt Exp $	*/
 /*	$NetBSD: if_fxpvar.h,v 1.1 1997/06/05 02:01:58 thorpej Exp $	*/
 
 /*                  
@@ -57,7 +57,7 @@
  * microcode is loaded.
  */
 #ifndef FXP_INT_DELAY
-#define FXP_INT_DELAY 64 
+#define FXP_INT_DELAY 128 
 #endif
 
 /*
