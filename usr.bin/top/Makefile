@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.11 2007/01/02 19:09:24 otto Exp $
+#	$OpenBSD: Makefile,v 1.12 2007/02/23 13:31:45 millert Exp $
 #
 # Makefile for OpenBSD top-3.4.
 
 PROG=	top
 
-CFLAGS+=-I.
+CFLAGS+=-I. -Wall -g -Wmissing-prototypes
 SRCS=	commands.c display.c machine.c screen.c top.c username.c utils.c \
 	version.c
 DPADD=	${LIBCURSES}
