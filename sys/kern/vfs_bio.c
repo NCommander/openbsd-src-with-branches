@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.90 2007/05/28 22:18:48 thib Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.91 2007/05/29 18:50:08 art Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -996,6 +996,7 @@ getsome:
 			goto getsome;
 	}
 	if (bp == NULL) {
+		splx(s);
 		return (NULL);
 	}
 
