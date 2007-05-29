@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.8 2006/03/15 16:13:30 deraadt Exp $
+#	$OpenBSD: install.md,v 1.9 2007/02/11 18:59:31 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -124,10 +124,10 @@ md_congrats() {
 	val=`ztsscale`
 	case $? in
 	0)
-		grep -v '^machdep\.ztsscale.*$' /mnt/etc/sysctl.conf \
+		grep -v '^mouse\.scale.*$' /mnt/etc/wsconsctl.conf \
 		     >/tmp/sysctl.conf
-		echo $val "	# see ztsscale(8)" >> /tmp/sysctl.conf
-		cp /tmp/sysctl.conf /mnt/etc/sysctl.conf
+		echo $val "	# see ztsscale(8)" >> /tmp/wsconsctl.conf
+		cp /tmp/wsconsctl.conf /mnt/etc/wsconsctl.conf
 		;;
 	esac
 }
