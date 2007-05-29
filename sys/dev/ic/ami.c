@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.178 2007/04/26 11:39:33 bluhm Exp $	*/
+/*	$OpenBSD: ami.c,v 1.179 2007/05/08 13:11:21 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -1093,8 +1093,8 @@ ami_stimeout(void *v)
 		 * it off the hardware in case it finishes later, but we can
 		 * warn the user to look at what is happening.
 		 */
-		printf("%s: stimeout ccb %d, check volume state\n",
-		    DEVNAME(sc), cmd->acc_id);
+		AMI_DPRINTF(AMI_D_CMD, ("%s: stimeout ccb %d, check volume "
+		    "state\n", DEVNAME(sc), cmd->acc_id));
 		break;
 
 	default:
