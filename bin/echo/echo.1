@@ -1,4 +1,4 @@
-.\"	$OpenBSD: echo.1,v 1.12 2003/05/29 13:04:26 jmc Exp $
+.\"	$OpenBSD: echo.1,v 1.13 2003/06/02 23:32:07 millert Exp $
 .\"	$NetBSD: echo.1,v 1.7 1995/03/21 09:04:26 cgd Exp $
 .\"
 .\" Copyright (c) 1990, 1993
@@ -68,6 +68,10 @@ utility exits 0 on success or >0 if an error occurred.
 .Sh STANDARDS
 The
 .Nm
-utility is expected to be
-.St -p1003.2
-compatible.
+utility is compliant with the
+.St -p1003.1-2004
+specification.
+.Pp
+The flag
+.Op Fl n
+is an extension to that specification.
