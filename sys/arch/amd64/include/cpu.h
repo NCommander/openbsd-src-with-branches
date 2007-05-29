@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.29 2007/05/10 17:59:24 deraadt Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.30 2007/05/29 06:31:44 tedu Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -56,6 +56,8 @@
 #include <sys/lock.h>
 #include <sys/sched.h>
 #include <sys/sensors.h>
+
+#ifdef _KERNEL
 
 struct cpu_info {
 	struct device *ci_dev;
@@ -199,6 +201,8 @@ extern struct cpu_info cpu_info_primary;
 #define CPU_IS_PRIMARY(ci)	1
 
 #endif	/* MULTIPROCESSOR */
+
+#endif /* _KERNEL */
 
 #include <machine/psl.h>
 
