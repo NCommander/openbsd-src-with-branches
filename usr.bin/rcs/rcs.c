@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.36 2007/02/27 07:59:13 xsa Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.37 2007/05/17 03:33:24 ray Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -2532,11 +2532,10 @@ rcs_pushtok(RCSFILE *rfp, const char *tok, int type)
 static void
 rcs_growbuf(RCSFILE *rf)
 {
-	void *tmp;
 	struct rcs_pdata *pdp = (struct rcs_pdata *)rf->rf_pdata;
 
-	tmp = xrealloc(pdp->rp_buf, 1, pdp->rp_blen + RCS_BUFEXTSIZE);
-	pdp->rp_buf = tmp;
+	pdp->rp_buf = xrealloc(pdp->rp_buf, 1,
+	    pdp->rp_blen + RCS_BUFEXTSIZE);
 	pdp->rp_blen += RCS_BUFEXTSIZE;
 	pdp->rp_bufend = pdp->rp_buf + pdp->rp_blen - 1;
 }
