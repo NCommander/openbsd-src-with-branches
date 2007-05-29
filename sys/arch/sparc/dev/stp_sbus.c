@@ -1,4 +1,4 @@
-/*	$OpenBSD: stp_sbus.c,v 1.4 2004/09/29 07:35:11 miod Exp $	*/
+/*	$OpenBSD: stp_sbus.c,v 1.5 2006/06/02 20:00:54 miod Exp $	*/
 /*	$NetBSD: stp4020.c,v 1.23 2002/06/01 23:51:03 lukem Exp $	*/
 
 /*-
@@ -120,7 +120,7 @@ stpattach(parent, self, aux)
 	}
 
 	if (ca->ca_ra.ra_nintr != 2) {
-		printf(": expect 2 interrupt Sbus levels; got %d\n",
+		printf(": expect 2 interrupt SBus levels; got %d\n",
 		    ca->ca_ra.ra_nintr);
 		return;
 	}
