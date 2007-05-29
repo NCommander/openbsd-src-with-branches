@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.c,v 1.67 2007/01/12 07:41:31 art Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.68 2007/04/13 18:57:49 art Exp $	*/
 /*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
@@ -227,7 +227,7 @@ LIST_HEAD(swap_priority, swappri);
 static struct swap_priority swap_priority;
 
 /* locks */
-struct rwlock swap_syscall_lock = RWLOCK_INITIALIZER;
+struct rwlock swap_syscall_lock = RWLOCK_INITIALIZER("swplk");
 
 /*
  * prototypes

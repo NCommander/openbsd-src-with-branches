@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_kq.c,v 1.5 2007/05/17 23:46:28 thib Exp $ */
+/*	$OpenBSD: nfs_kq.c,v 1.6 2007/05/28 21:47:50 thib Exp $ */
 /*	$NetBSD: nfs_kq.c,v 1.7 2003/10/30 01:43:10 simonb Exp $	*/
 
 /*-
@@ -73,7 +73,7 @@ struct kevq {
 };
 SLIST_HEAD(kevqlist, kevq);
 
-struct rwlock nfskevq_lock = RWLOCK_INITIALIZER;
+struct rwlock nfskevq_lock = RWLOCK_INITIALIZER("nfskqlk");
 static struct proc *pnfskq;
 static struct kevqlist kevlist = SLIST_HEAD_INITIALIZER(kevlist);
 
