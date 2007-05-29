@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.91 2007/05/08 14:16:36 miod Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.92 2007/05/29 00:03:18 tedu Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1363,7 +1363,8 @@ coredump(struct proc *p)
 
 	/*
 	 * Don't dump if not root and the process has used set user or
-	 * group privileges.
+	 * group privileges, unless the nosuidcoredump sysctl is set to 2,
+	 * in which case dumps are put into /var/crash/.
 	 */
 	if (((p->p_flag & P_SUGID) && (error = suser(p, 0))) ||
 	   ((p->p_flag & P_SUGID) && nosuidcoredump)) {
