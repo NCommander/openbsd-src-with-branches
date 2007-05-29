@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mbuftest.c,v 1.1 2003/04/23 21:45:57 jason Exp $	*/
 
 /*
  * Copyright (c) 2003 Jason L. Wright (jason@thought.net)
@@ -34,7 +34,7 @@
  */
 
 #include <sys/types.h>
-#include <machine/param.h>
+#include <sys/param.h>
 #include <sys/mbuf.h>
 #include <stdio.h>
 #include <err.h>
