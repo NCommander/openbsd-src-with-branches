@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.31 2004/06/24 17:10:17 tom Exp $	*/
+/*	$OpenBSD: boot.c,v 1.32 2004/06/24 22:32:26 tom Exp $	*/
 
 /*
  * Copyright (c) 2003 Dale Rahn
@@ -37,12 +37,9 @@
 
 #include "cmd.h"
 
-static const char *const kernels[] = {
-	"/bsd",
-	"/obsd",
-	"/bsd.old",
-	NULL
-};
+#ifndef KERNEL
+#define KERNEL "/bsd"
+#endif
 
 char prog_ident[40];
 char *progname = "BOOT";
@@ -56,8 +53,8 @@ int bootprompt = 1;
 void
 boot(dev_t bootdev)
 {
-	const char *bootfile = kernels[0];
-	int i = 0, try = 0, st;
+	const char *bootfile = KERNEL;
+	int try = 0, st;
 	u_long marks[MARK_MAX];
 
 	machdep();
@@ -92,11 +89,8 @@ boot(dev_t bootdev)
 		if (loadfile(cmd.path, marks, LOAD_ALL) >= 0)
 			break;
 
-		if (kernels[++i] == NULL) {
-			try += 1;
-			bootfile = kernels[i=0];
-		} else
-			bootfile = kernels[i];
+		bootfile = KERNEL;
+		try++;
 		strlcpy(cmd.image, bootfile, sizeof(cmd.image));
 		printf(" failed(%d). will try %s\n", errno, bootfile);
 

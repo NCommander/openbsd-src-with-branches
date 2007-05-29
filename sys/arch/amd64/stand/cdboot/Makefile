@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2005/08/01 13:20:23 mickey Exp $
+#	$OpenBSD: Makefile,v 1.7 2007/05/27 18:38:33 tom Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -67,4 +67,5 @@ CPPFLAGS+=-DSLOW -DSMALL -DNOBYFOUR -DNO_GZIP -DDYNAMIC_CRC_TABLE
 CPPFLAGS+=-DLINKADDR=${LINKADDR} -I${S}/stand/boot
 CFLAGS+=-m32 ${SACFLAGS} -D__INTERNAL_LIBSA_CREAD
 CFLAGS+=-DOSREV=\"${OSREV}\" -DMACHINE=\"${MACHINE}\"
+CFLAGS+=-DKERNEL=\"/${OSREV}/${MACHINE}/bsd.rd\"
 AFLAGS+=-m32
