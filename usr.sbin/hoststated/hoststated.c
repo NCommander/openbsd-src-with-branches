@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.c,v 1.23 2007/05/27 20:53:10 pyr Exp $	*/
+/*	$OpenBSD: hoststated.c,v 1.24 2007/05/28 22:11:33 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -596,7 +596,7 @@ relay_find(struct hoststated *env, objid_t id)
 	struct relay	*rlay;
 
 	TAILQ_FOREACH(rlay, &env->relays, entry)
-		if (rlay->id == id)
+		if (rlay->conf.id == id)
 			return (rlay);
 	return (NULL);
 }
@@ -655,7 +655,7 @@ relay_findbyname(struct hoststated *env, const char *name)
 	struct relay	*rlay;
 
 	TAILQ_FOREACH(rlay, &env->relays, entry)
-		if (strcmp(rlay->name, name) == 0)
+		if (strcmp(rlay->conf.name, name) == 0)
 			return (rlay);
 	return (NULL);
 }
