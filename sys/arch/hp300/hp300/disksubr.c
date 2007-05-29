@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.23 2006/10/29 14:12:21 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.24 2007/05/29 05:08:19 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.9 1997/04/01 03:12:13 scottr Exp $	*/
 
 /*
@@ -125,6 +125,7 @@ done:
 		bp->b_flags = B_INVAL | B_AGE;
 		brelse(bp);
 	}
+	cvtdisklabelv1(lp);
 	return (msg);
 }
 
@@ -158,8 +159,7 @@ setdisklabel(olp, nlp, openmask, osdep)
 		 */
 		if (npp->p_fstype == FS_UNUSED && opp->p_fstype != FS_UNUSED) {
 			npp->p_fstype = opp->p_fstype;
-			npp->p_fsize = opp->p_fsize;
-			npp->p_frag = opp->p_frag;
+			npp->p_fragblock = opp->p_fragblock;
 			npp->p_cpg = opp->p_cpg;
 		}
 	}
