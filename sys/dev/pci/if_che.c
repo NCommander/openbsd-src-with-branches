@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_che.c,v 1.6 2007/05/28 07:42:22 claudio Exp $ */
+/*	$OpenBSD: if_che.c,v 1.7 2007/05/28 16:26:23 claudio Exp $ */
 
 /*
  * Copyright (c) 2007 Claudio Jeker <claudio@openbsd.org>
@@ -625,7 +625,7 @@ che_conv_lladdr(char *mac, u_int8_t *lladdr)
 		else if (mac[i] >= 'a' && mac[i] <= 'f')
 			digit = mac[i] - 'a' + 10;
 
-		if (i & 1)
+		if ((i & 1) == 0)
 			digit <<= 4;
 
 		lladdr[i/2] |= digit;
