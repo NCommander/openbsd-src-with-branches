@@ -239,17 +239,17 @@ vfs_getcwd_getcache(struct vnode **lvpp, struct vnode **uvpp, char **bpp,
 	if (error)
 		*uvpp = NULL;
 
-
-#ifdef DIAGNOSTIC
-	/* XXX should not happen with vhold/vdrop in cache layer now. */
-	if (vpid != uvp->v_id)
-		panic("vpid %d != uvp->v_id %d\n");
-#endif
-	if (error) {
+	/*
+	 * Verify that vget() succeeded, and check that vnode capability
+	 * didn't change while we were waiting for the lock.
+	 */
+	if (error || (vpid != uvp->v_id)) {
 		/*
 		 * Try to get our lock back. If that works, tell the caller to
 		 * try things the hard way, otherwise give up.
 		 */
+		if (!error)
+			vput(uvp);
 
 		*uvpp = NULL;
 		
