@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.144 2006/09/16 19:53:37 djm Exp $ */
+/* $OpenBSD: packet.c,v 1.145 2006/09/19 21:14:08 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1226,7 +1226,6 @@ packet_read_poll_seqnr(u_int32_t *seqnr_p)
 				logit("Received disconnect from %s: %.400s",
 				    get_remote_ipaddr(), msg);
 				cleanup_exit(255);
-				xfree(msg);
 				break;
 			default:
 				if (type)
