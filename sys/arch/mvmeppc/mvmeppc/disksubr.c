@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.34 2007/05/29 06:28:15 otto Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.35 2007/05/31 16:05:50 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -448,11 +448,8 @@ done:
  * if needed, and signal errors or early completion.
  */
 int
-bounds_check_with_label(bp, lp, osdep, wlabel)
-	struct buf *bp;
-	struct disklabel *lp;
-	struct cpu_disklabel *osdep;
-	int wlabel;
+bounds_check_with_label(struct buf *bp, struct disklabel *lp,
+    struct cpu_disklabel *osdep, int wlabel)
 {
 #define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
 	struct partition *p = lp->d_partitions + DISKPART(bp->b_dev);
@@ -466,6 +463,7 @@ bounds_check_with_label(bp, lp, osdep, wlabel)
 		goto bad;
 	}
 
+	/* beyond partition? */
 	if (bp->b_blkno + sz > blockpersec(p->p_size, lp)) {
 		sz = blockpersec(p->p_size, lp) - bp->b_blkno;
 		if (sz == 0) {
