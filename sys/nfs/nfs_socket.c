@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_socket.c,v 1.46 2006/10/28 20:56:46 thib Exp $	*/
+/*	$OpenBSD: nfs_socket.c,v 1.47 2007/04/24 18:15:04 thib Exp $	*/
 /*	$NetBSD: nfs_socket.c,v 1.27 1996/04/15 20:20:00 thorpej Exp $	*/
 
 /*
@@ -1055,7 +1055,8 @@ tryagain:
 			 */
 			if (error == ESTALE)
 				cache_purge(vp);
-			if (nmp->nm_flag & NFSMNT_NFSV3) {
+
+			if (nmp->nm_flag & NFSMNT_NFSV3 || error == ESTALE) {
 				*mrp = mrep;
 				*mdp = md;
 				*dposp = dpos;
