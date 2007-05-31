@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus_machdep.c,v 1.1 2005/10/05 21:48:34 tdeval Exp $ */
+/*	$OpenBSD: rbus_machdep.c,v 1.2 2007/01/15 23:19:05 jsg Exp $ */
 /*	$NetBSD: rbus_machdep.c,v 1.2 1999/10/15 06:43:06 haya Exp $	*/
 
 /*
@@ -50,7 +50,6 @@
 #include <dev/isa/isavar.h>
 
 #include <dev/pci/pcivar.h>
-#include <arch/amd64/pci/pchbvar.h>
 
 
 /**********************************************************************
