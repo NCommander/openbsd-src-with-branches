@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.31 2007/05/29 05:08:19 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.32 2007/05/29 06:28:15 otto Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -736,5 +736,5 @@ bounds_check_with_label(bp, lp, osdep, wlabel)
 bad:
 	bp->b_flags |= B_ERROR;
 done:
-	return (0);
+	return (-1);
 }

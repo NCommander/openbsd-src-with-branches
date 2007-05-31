@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.33 2007/05/29 05:08:20 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.34 2007/05/29 06:28:15 otto Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -500,5 +500,5 @@ bounds_check_with_label(bp, lp, osdep, wlabel)
 bad:
 	bp->b_flags |= B_ERROR;
 done:
-	return (0);
+	return (-1);
 }
