@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.123 2007/04/23 13:05:35 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.124 2007/05/30 01:13:19 otto Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -215,7 +215,8 @@ main(int argc, char *argv[])
 			ribreq.prefixlen = res->prefixlen;
 			type = IMSG_CTL_SHOW_RIB_PREFIX;
 		}
-		if (res->community.as != 0 && res->community.type != 0) {
+		if (res->community.as != COMMUNITY_UNSET &&
+		    res->community.type != COMMUNITY_UNSET) {
 			memcpy(&ribreq.community, &res->community,
 			    sizeof(res->community));
 			type = IMSG_CTL_SHOW_RIB_COMMUNITY;
