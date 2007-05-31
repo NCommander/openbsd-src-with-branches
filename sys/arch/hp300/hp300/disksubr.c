@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.24 2007/05/29 05:08:19 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.25 2007/05/29 06:28:14 otto Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.9 1997/04/01 03:12:13 scottr Exp $	*/
 
 /*
@@ -270,7 +270,7 @@ bounds_check_with_label(bp, lp, osdep, wlabel)
 	}
 
 	/* calculate cylinder for disksort to order transfers with */
-	bp->b_resid = (bp->b_blkno + blockpersec(p->p_offset, lp)) /
+	bp->b_cylinder = (bp->b_blkno + blockpersec(p->p_offset, lp)) /
 	    lp->d_secpercyl;
 	return (1);
 
