@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.83 2007/03/17 10:25:39 dlg Exp $ */
+/*	$OpenBSD: mpi.c,v 1.84 2007/04/03 04:15:50 dlg Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 David Gwynne <dlg@openbsd.org>
@@ -1907,7 +1907,7 @@ mpi_eventnotify_done(struct mpi_ccb *ccb)
 		if (sc->sc_scsibus == NULL)
 			break;
 
-		if (scsi_task(mpi_evt_sas, sc, ccb->ccb_rcb, 1) != 0) {
+		if (scsi_task(mpi_evt_sas, sc, ccb->ccb_rcb, 0) != 0) {
 			printf("%s: unable to run SAS device status change\n",
 			    DEVNAME(sc));
 			break;
