@@ -1,4 +1,4 @@
-/*	$OpenBSD: filio.h,v 1.3 1999/12/08 06:32:57 angelos Exp $	*/
+/*	$OpenBSD: filio.h,v 1.4 2003/06/02 23:28:21 millert Exp $	*/
 /*	$NetBSD: filio.h,v 1.5 1994/06/29 06:44:14 cgd Exp $	*/
 
 /*-
@@ -50,6 +50,5 @@
 #define	FIOASYNC	_IOW('f', 125, int)	/* set/clear async i/o */
 #define	FIOSETOWN	_IOW('f', 124, int)	/* set owner */
 #define	FIOGETOWN	_IOR('f', 123, int)	/* get owner */
-#define FIBMAP          _IOWR('f', 122, daddr_t) /* get logical block */
 
 #endif /* !_SYS_FILIO_H_ */
