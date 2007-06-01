@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2005/05/06 02:03:15 marco Exp $
+#	$OpenBSD: Makefile,v 1.3 2005/05/06 11:16:47 pedro Exp $
 
 S=${.CURDIR}/../..
 .include "$S/kern/Make.tags.inc"
@@ -13,6 +13,7 @@ SUBDIR= stand
 TMACPPC=	$S/arch/macppc/tags
 SMACPPC=	$S/arch/macppc/macppc/*.[ch] \
 		$S/arch/macppc/include/*.h   \
+		$S/arch/macppc/dev/*.[ch]    \
 		$S/arch/macppc/pci/*.[ch]
 AMACPPC=	$S/arch/macppc/macppc/*.[sS]
 
