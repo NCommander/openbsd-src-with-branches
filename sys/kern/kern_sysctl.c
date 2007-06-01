@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.152 2007/05/16 17:27:30 art Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.153 2007/05/29 00:17:32 thib Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -289,7 +289,7 @@ kern_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 	case KERN_VERSION:
 		return (sysctl_rdstring(oldp, oldlenp, newp, version));
 	case KERN_MAXVNODES:
-		return(sysctl_int(oldp, oldlenp, newp, newlen, &desiredvnodes));
+		return(sysctl_int(oldp, oldlenp, newp, newlen, &maxvnodes));
 	case KERN_MAXPROC:
 		return (sysctl_int(oldp, oldlenp, newp, newlen, &maxproc));
 	case KERN_MAXFILES:
