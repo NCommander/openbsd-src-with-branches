@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.97 2007/02/22 06:42:09 otto Exp $	*/
+/*	$OpenBSD: update.c,v 1.98 2007/05/27 21:02:23 ray Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -30,7 +30,7 @@ int	prune_dirs = 0;
 int	print = 0;
 int	build_dirs = 0;
 int	reset_stickies = 0;
-static char *tag = NULL;
+char *tag = NULL;
 
 static void update_clear_conflict(struct cvs_file *);
 
