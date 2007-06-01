@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vnops.c,v 1.72 2007/02/23 14:27:06 deraadt Exp $	*/
+/*	$OpenBSD: nfs_vnops.c,v 1.73 2007/03/18 15:05:33 mickey Exp $	*/
 /*	$NetBSD: nfs_vnops.c,v 1.62.4.1 1996/07/08 20:26:52 jtc Exp $	*/
 
 /*
@@ -2668,9 +2668,9 @@ nfs_bmap(v)
 {
 	struct vop_bmap_args /* {
 		struct vnode *a_vp;
-		daddr_t  a_bn;
+		daddr64_t  a_bn;
 		struct vnode **a_vpp;
-		daddr_t *a_bnp;
+		daddr64_t *a_bnp;
 		int *a_runp;
 	} */ *ap = v;
 	struct vnode *vp = ap->a_vp;
