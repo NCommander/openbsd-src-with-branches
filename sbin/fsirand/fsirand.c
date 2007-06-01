@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsirand.c,v 1.23 2007/02/20 13:55:17 jmc Exp $	*/
+/*	$OpenBSD: fsirand.c,v 1.24 2007/03/19 13:30:55 pedro Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -100,7 +100,7 @@ fsirand(char *device)
 	size_t ibufsize;
 	struct fs *sblock, *tmpsblock;
 	ino_t inumber;
-	ufs2_daddr_t sblockloc, dblk;
+	daddr64_t sblockloc, dblk;
 	char sbuf[SBSIZE], sbuftmp[SBSIZE];
 	int devfd, n, cg, i;
 	char *devpath;

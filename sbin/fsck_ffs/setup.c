@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.34 2007/04/18 20:49:46 otto Exp $	*/
+/*	$OpenBSD: setup.c,v 1.35 2007/05/29 06:28:15 otto Exp $	*/
 /*	$NetBSD: setup.c,v 1.27 1996/09/27 22:45:19 christos Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)setup.c	8.5 (Berkeley) 11/23/94";
 #else
-static const char rcsid[] = "$OpenBSD: setup.c,v 1.34 2007/04/18 20:49:46 otto Exp $";
+static const char rcsid[] = "$OpenBSD: setup.c,v 1.35 2007/05/29 06:28:15 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -357,7 +357,7 @@ setup(char *dev)
 		}
 	}
 	if (sblock.fs_magic == FS_UFS2_MAGIC)
-		nindir = sblock.fs_bsize / sizeof(ufs2_daddr_t);
+		nindir = sblock.fs_bsize / sizeof(daddr64_t);
 	else
 		nindir = sblock.fs_bsize / sizeof(ufs1_daddr_t);
 	if (NINDIR(&sblock) != nindir) {
@@ -461,7 +461,7 @@ badsblabel:
 static int
 readsb(int listerr)
 {
-	ufs2_daddr_t super = 0;
+	daddr64_t super = 0;
 	int i;
 
 	if (bflag) {
