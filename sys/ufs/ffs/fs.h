@@ -1,4 +1,4 @@
-/*	$OpenBSD: fs.h,v 1.29 2007/04/23 10:18:30 pedro Exp $	*/
+/*	$OpenBSD: fs.h,v 1.30 2007/05/03 20:11:55 millert Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -245,7 +245,7 @@ struct fs {
 	int32_t	 fs_ncyl;		/* cylinders in file system */
 /* these fields can be computed from the others */
 	int32_t	 fs_cpg;		/* cylinders per group */
-	int32_t	 fs_ipg;		/* inodes per group */
+	int32_t	 fs_ipg;		/* inode blocks per group */
 	int32_t	 fs_fpg;		/* blocks per group * fs_frag */
 /* this data must be re-computed after crashes */
 	struct	csum fs_ffs1_cstotal;	/* cylinder summary information */
