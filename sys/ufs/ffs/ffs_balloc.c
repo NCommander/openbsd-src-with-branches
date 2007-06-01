@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_balloc.c,v 1.32 2007/05/26 20:26:51 pedro Exp $	*/
+/*	$OpenBSD: ffs_balloc.c,v 1.33 2007/06/01 06:38:54 deraadt Exp $	*/
 /*	$NetBSD: ffs_balloc.c,v 1.3 1996/02/09 22:22:21 christos Exp $	*/
 
 /*
@@ -80,9 +80,9 @@ ffs1_balloc(struct inode *ip, off_t startoffset, int size, struct ucred *cred,
 	struct vnode *vp;
 	struct proc *p;
 	struct indir indirs[NIADDR + 2];
-	ufs1_daddr_t newb, *bap, pref;
+	int32_t newb, *bap, pref;
 	int deallocated, osize, nsize, num, i, error;
-	ufs1_daddr_t *allocib, *blkp, *allocblk, allociblk[NIADDR+1];
+	int32_t *allocib, *blkp, *allocblk, allociblk[NIADDR+1];
 	int unwindidx = -1;
 
 	vp = ITOV(ip);
