@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.37 2007/05/04 03:44:44 deraadt Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.39 2007/06/01 19:20:46 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -197,10 +197,14 @@ cpu_configure()
 
 	printf("boot device: %s\n",
 	    (bootdv) ? bootdv->dv_xname : "<unknown>");
+	cold = 0;
+}
 
+void
+diskconf(void)
+{
 	setroot(bootdv, bootpart, RB_USERREQ);
 	dumpconf();
-	cold = 0;
 }
 
 /*

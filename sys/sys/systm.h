@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.70 2006/10/26 13:18:24 jmc Exp $	*/
+/*	$OpenBSD: systm.h,v 1.72 2007/06/01 19:20:44 deraadt Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -289,8 +289,7 @@ void	consinit(void);
 
 void	cpu_startup(void);
 void	cpu_configure(void);
-extern void (*md_diskconf)(void);
-
+void	diskconf(void);
 
 #ifdef GPROF
 void	kmstartup(void);
