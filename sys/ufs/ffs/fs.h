@@ -245,7 +245,7 @@ struct fs {
 	int32_t	 fs_ncyl;		/* cylinders in file system */
 /* these fields can be computed from the others */
 	int32_t	 fs_cpg;		/* cylinders per group */
-	int32_t	 fs_ipg;		/* inode blocks per group */
+	int32_t	 fs_ipg;		/* inodes per group */
 	int32_t	 fs_fpg;		/* blocks per group * fs_frag */
 /* this data must be re-computed after crashes */
 	struct	csum fs_ffs1_cstotal;	/* cylinder summary information */
