@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdump.c,v 1.54 2006/04/22 19:26:05 moritz Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.55 2006/06/16 16:55:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -26,7 +26,7 @@ static const char copyright[] =
     "@(#) Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997\n\
 The Regents of the University of California.  All rights reserved.\n";
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/tcpdump.c,v 1.54 2006/04/22 19:26:05 moritz Exp $ (LBL)";
+    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/tcpdump.c,v 1.55 2006/06/16 16:55:46 deraadt Exp $ (LBL)";
 #endif
 
 /*
@@ -423,7 +423,8 @@ main(int argc, char **argv)
 
 		/* state: STATE_BPF */
 		if (pcap_lookupnet(device, &localnet, &netmask, ebuf)) {
-			warning("%s", ebuf);
+			if (fflag)
+				warning("%s", ebuf);
 			localnet = 0;
 			netmask = 0;
 		}
