@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.36 2007/05/31 19:57:44 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.37 2007/05/31 22:06:03 krw Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -144,7 +144,7 @@ done:
 		bp->b_flags = B_INVAL | B_AGE | B_READ;
 		brelse(bp);
 	}
-	cvtdisklabelv1(lp);
+	disklabeltokernlabel(lp);
 	return (msg);
 }
 

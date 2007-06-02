@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.25 2007/05/31 02:57:53 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.26 2007/05/31 19:57:44 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.13 2000/12/17 22:39:18 pk Exp $ */
 
 /*
@@ -185,7 +185,7 @@ done:
 		bp->b_flags = B_INVAL | B_AGE | B_READ;
 		brelse(bp);
 	}
-	cvtdisklabelv1(lp);
+	disklabeltokernlabel(lp);
 	return (msg);
 }
 

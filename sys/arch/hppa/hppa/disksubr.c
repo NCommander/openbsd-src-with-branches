@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.50 2007/05/31 16:05:50 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.51 2007/05/31 19:57:43 krw Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -197,7 +197,7 @@ done:
 		bp->b_flags |= B_INVAL;
 		brelse(bp);
 	}
-	cvtdisklabelv1(lp);
+	disklabeltokernlabel(lp);
 	return (msg);
 }
 
