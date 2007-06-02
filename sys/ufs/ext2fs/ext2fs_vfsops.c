@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.45 2006/04/19 11:55:55 pedro Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.46 2007/03/21 17:29:32 thib Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -417,7 +417,7 @@ ext2fs_reload(mountp, cred, p)
 		size = DEV_BSIZE;
 	else
 		size = dpart.disklab->d_secsize;
-	error = bread(devvp, (ufs1_daddr_t)(SBOFF / size), SBSIZE, NOCRED, &bp);
+	error = bread(devvp, (int32_t)(SBOFF / size), SBSIZE, NOCRED, &bp);
 	if (error) {
 		brelse(bp);
 		return (error);
