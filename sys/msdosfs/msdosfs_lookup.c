@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_lookup.c,v 1.17 2007/04/10 15:21:04 pedro Exp $	*/
+/*	$OpenBSD: msdosfs_lookup.c,v 1.18 2007/06/01 23:47:57 deraadt Exp $	*/
 /*	$NetBSD: msdosfs_lookup.c,v 1.34 1997/10/18 22:12:27 ws Exp $	*/
 
 /*-
@@ -801,7 +801,7 @@ doscheckpath(source, target)
 	struct denode *source;
 	struct denode *target;
 {
-	daddr_t scn;
+	uint32_t scn;
 	struct msdosfsmount *pmp;
 	struct direntry *ep;
 	struct denode *dep;
@@ -893,7 +893,7 @@ readep(pmp, dirclust, diroffset, bpp, epp)
 	struct direntry **epp;
 {
 	int error;
-	daddr_t bn;
+	daddr64_t bn;
 	int blsize;
 	uint32_t boff;
 
