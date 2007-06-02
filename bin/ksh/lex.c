@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.41 2006/06/16 20:34:22 drahn Exp $	*/
+/*	$OpenBSD: lex.c,v 1.42 2006/07/10 17:12:41 beck Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -299,7 +299,7 @@ yylex(int cf)
 						*wp++ = QCHAR, *wp++ = c;
 						break;
 					}
-					/* FALLTROUGH */
+					/* FALLTHROUGH */
 				default:
 					Xcheck(ws, wp);
 					if (c) { /* trailing \ is lost */
