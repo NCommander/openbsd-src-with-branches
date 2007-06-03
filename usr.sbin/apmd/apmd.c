@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.45 2007/03/29 22:17:34 deraadt Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.46 2007/04/28 06:42:43 sturm Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -632,6 +632,10 @@ main(int argc, char *argv[])
 	if (sysctl(ncpu_mib, 2, &ncpu, &ncpu_sz, NULL, 0) < 0)
 		error("cannot read hw.ncpu", NULL);
 
+	if (doperf == PERF_AUTO || doperf == PERF_COOL) {
+		setperf(0);
+		setperf(100);
+	}
 	for (;;) {
 		int rv;
 
