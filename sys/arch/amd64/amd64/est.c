@@ -1,4 +1,4 @@
-/*	$OpenBSD: est.c,v 1.1 2007/05/29 06:31:44 tedu Exp $ */
+/*	$OpenBSD: est.c,v 1.2 2007/06/01 22:28:21 tedu Exp $ */
 /*
  * Copyright (c) 2003 Michael Eriksson.
  * All rights reserved.
@@ -168,6 +168,9 @@ p3_get_bus_clock(struct cpu_info *ci)
 			break;
 		case 3:
 			bus_clock = 16666;
+			break;
+		case 2:
+			bus_clock = 20000;
 			break;
 		case 0:
 			bus_clock = 26666;
