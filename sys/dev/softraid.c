@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.72 2007/06/02 01:52:25 marco Exp $ */
+/* $OpenBSD: softraid.c,v 1.73 2007/06/03 04:27:09 marco Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -37,8 +37,6 @@
 #include <sys/uio.h>
 
 #include <crypto/cryptodev.h>
-
-#include <machine/bus.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
