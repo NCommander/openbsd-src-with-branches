@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Error.pm,v 1.8 2004/12/06 12:35:36 espie Exp $
+# $OpenBSD: Error.pm,v 1.10 2004/12/12 22:44:51 espie Exp $
 #
 # Copyright (c) 2004 Marc Espie <espie@openbsd.org>
 #
@@ -164,7 +164,7 @@ sub dienow
 {
 	my ($error, $handler) = @_;
 	if ($error) {
-		if ($error =~ m/^(Expected:\s+)?(.*?)(?:\s+at\s+(.*)\s+line\s+(\d+)\.?)?$/) {
+		if ($error =~ m/^(Expected:\s+)?(.*?)(?:\s+at\s+(.*)\s+line\s+(\d+)\.?)?$/o) {
 			local $_ = $2;
 			$FileName = $3;
 			$Line = $4;
