@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass_quirks.c,v 1.24 2006/12/09 21:22:30 pedro Exp $	*/
+/*	$OpenBSD: umass_quirks.c,v 1.25 2007/03/13 06:23:45 steven Exp $	*/
 /*	$NetBSD: umass_quirks.c,v 1.67 2004/06/28 07:49:16 mycroft Exp $	*/
 
 /*
@@ -42,13 +42,8 @@
 #include <sys/device.h>
 #include <sys/buf.h>
 
-#if defined(__NetBSD__)
-#include <dev/scsipi/scsipi_all.h> /* for scsiconf.h below */
-#include <dev/scsipi/scsiconf.h> /* for quirks defines */
-#elif defined(__OpenBSD__)
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
-#endif
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>

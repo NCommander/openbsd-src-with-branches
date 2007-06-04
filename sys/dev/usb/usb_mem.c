@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_mem.c,v 1.16 2004/07/08 22:18:44 deraadt Exp $ */
+/*	$OpenBSD: usb_mem.c,v 1.17 2007/05/21 05:40:28 jsg Exp $ */
 /*	$NetBSD: usb_mem.c,v 1.26 2003/02/01 06:23:40 thorpej Exp $	*/
 
 /*
@@ -69,12 +69,6 @@ extern int usbdebug;
 #else
 #define DPRINTF(x)
 #define DPRINTFN(n,x)
-#endif
-
-#if defined(__NetBSD__)
-MALLOC_DEFINE(M_USB, "USB", "USB misc. memory");
-MALLOC_DEFINE(M_USBDEV, "USB device", "USB device driver");
-MALLOC_DEFINE(M_USBHC, "USB HC", "USB host controller");
 #endif
 
 #define USB_MEM_SMALL 64
