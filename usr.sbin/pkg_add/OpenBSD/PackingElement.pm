@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.129 2007/06/04 14:57:33 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.130 2007/06/04 15:57:09 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -498,8 +498,8 @@ sub ensure_ldconfig
 sub parse
 {
 	my ($self, $filename) = @_;
-	if ($filename =~ m/^(.*)\/?lib(.*?)\.so\.(\d+)\.(\d+)$/o) {
-		return ($1, $2, $3, $4);
+	if ($filename =~ m/^(.*?)\/?lib([^\/]+)\.so\.(\d+)\.(\d+)$/o) {
+		return ($2, $3, $4, $1);
 	} else {
 		return undef;
 	}
