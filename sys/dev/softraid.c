@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.76 2007/06/03 22:36:27 tedu Exp $ */
+/* $OpenBSD: softraid.c,v 1.77 2007/06/04 04:53:31 marco Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -1073,7 +1073,7 @@ sr_open_chunks(struct sr_softc *sc, struct sr_chunk_head *cl, dev_t *dt,
 		}
 		
 		/* get partition size */
-		ch_entry->src_size = size = label.d_partitions[part].p_size -
+		ch_entry->src_size = size = DL_GETPSIZE(&label.d_partitions[part]) -
 		    SR_META_SIZE - SR_META_OFFSET;
 		if (size <= 0) {
 			printf("%s: %s partition too small\n",
