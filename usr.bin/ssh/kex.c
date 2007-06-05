@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.c,v 1.77 2007/01/21 01:41:54 stevesk Exp $ */
+/* $OpenBSD: kex.c,v 1.78 2007/05/30 05:58:13 djm Exp $ */
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  *
@@ -270,7 +270,7 @@ choose_mac(Mac *mac, char *client, char *server)
 	if (name == NULL)
 		fatal("no matching mac found: client %s server %s",
 		    client, server);
-	if (mac_init(mac, name) < 0)
+	if (mac_setup(mac, name) < 0)
 		fatal("unsupported mac %s", name);
 	/* truncate the key */
 	if (datafellows & SSH_BUG_HMAC)
