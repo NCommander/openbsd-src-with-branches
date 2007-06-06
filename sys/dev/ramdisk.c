@@ -1,4 +1,4 @@
-/*	$OpenBSD: ramdisk.c,v 1.31 2007/06/01 00:07:48 krw Exp $	*/
+/*	$OpenBSD: ramdisk.c,v 1.32 2007/06/05 00:38:20 deraadt Exp $	*/
 /*	$NetBSD: ramdisk.c,v 1.8 1996/04/12 08:30:09 leo Exp $	*/
 
 /*
@@ -211,14 +211,14 @@ dev_type_dump(rddump);
 int
 rddump(dev, blkno, va, size)
 	dev_t dev;
-	daddr_t blkno;
+	daddr64_t blkno;
 	caddr_t va;
 	size_t size;
 {
 	return ENODEV;
 }
 
-int
+daddr64_t
 rdsize(dev_t dev)
 {
 	int part, unit;

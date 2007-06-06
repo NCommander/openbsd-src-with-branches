@@ -1,4 +1,4 @@
-/*	$OpenBSD: flash.c,v 1.3 2007/06/01 00:07:48 krw Exp $	*/
+/*	$OpenBSD: flash.c,v 1.4 2007/06/05 00:38:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@openbsd.org>
@@ -865,13 +865,13 @@ flashioctl(dev_t dev, u_long cmd, caddr_t data, int fflag, struct proc *p)
 }
 
 int
-flashdump(dev_t dev, daddr_t blkno, caddr_t va, size_t size)
+flashdump(dev_t dev, daddr64_t blkno, caddr_t va, size_t size)
 {
 	printf("flashdump\n");
 	return ENODEV;
 }
 
-int
+daddr64_t
 flashsize(dev_t dev)
 {
 	printf("flashsize\n");
@@ -900,7 +900,7 @@ void
 _flashstart(struct flash_softc *sc, struct buf *bp)
 {
 	int part;
-	long offset;
+	daddr64_t offset;
 	long pgno;
 
 	part = flashpart(bp->b_dev);

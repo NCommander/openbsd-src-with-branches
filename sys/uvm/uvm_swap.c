@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.c,v 1.69 2007/05/29 00:17:33 thib Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.70 2007/06/01 07:35:35 deraadt Exp $	*/
 /*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
@@ -1364,7 +1364,7 @@ sw_reg_strategy(sdp, bp, bn)
 			sz = resid;
 
 		UVMHIST_LOG(pdhist, "sw_reg_strategy: "
-			    "vp %p/%p offset 0x%lx/0x%lx",
+			    "vp %p/%p offset 0x%lx/0x%llx",
 			    sdp->swd_vp, vp, (u_long)byteoff, nbn);
 
 		/*
@@ -1802,7 +1802,7 @@ uvm_swap_io(pps, startslot, npages, flags)
 	struct vm_page **pps;
 	int startslot, npages, flags;
 {
-	daddr_t startblk;
+	daddr64_t startblk;
 	struct	buf *bp;
 	vaddr_t kva;
 	int	result, s, mapinflags, pflag;

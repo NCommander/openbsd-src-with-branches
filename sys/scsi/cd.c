@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.126 2007/06/01 00:07:48 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.127 2007/06/05 00:38:23 deraadt Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -1636,7 +1636,7 @@ cd_get_parms(struct cd_softc *cd, int flags)
 	return (0);
 }
 
-int
+daddr64_t
 cdsize(dev_t dev)
 {
 
@@ -1645,7 +1645,7 @@ cdsize(dev_t dev)
 }
 
 int
-cddump(dev_t dev, daddr_t blkno, caddr_t va, size_t size)
+cddump(dev_t dev, daddr64_t blkno, caddr_t va, size_t size)
 {
 	/* Not implemented. */
 	return ENXIO;

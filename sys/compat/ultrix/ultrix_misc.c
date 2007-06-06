@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_misc.c,v 1.28 2002/08/23 22:21:44 art Exp $	*/
+/*	$OpenBSD: ultrix_misc.c,v 1.29 2003/06/02 23:28:01 millert Exp $	*/
 /*	$NetBSD: ultrix_misc.c,v 1.23 1996/04/07 17:23:04 jonathan Exp $	*/
 
 /*
@@ -467,7 +467,7 @@ ultrix_sys_nfssvc(p, v, retval)
 #endif /* NFSSERVER */
 
 struct ultrix_ustat {
-	daddr_t	f_tfree;	/* total free */
+	int32_t	f_tfree;	/* total free */
 	ino_t	f_tinode;	/* total inodes free */
 	char	f_fname[6];	/* filsys name */
 	char	f_fpack[6];	/* filsys pack name */
