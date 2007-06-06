@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbt.c,v 1.4 2007/06/02 01:30:37 uwe Exp $	*/
+/*	$OpenBSD: sbt.c,v 1.5 2007/06/03 21:57:38 uwe Exp $	*/
 
 /*
  * Copyright (c) 2007 Uwe Stuehler <uwe@openbsd.org>
@@ -406,7 +406,7 @@ sbt_start(struct hci_unit *unit, struct ifqueue *q, int xmit)
 	case BTF_XMIT_ACL:
 		what = "ACL";
 		break;
-	case BTF_XMIT_SCL:
+	case BTF_XMIT_SCO:
 		what = "SCO";
 		break;
 	}
