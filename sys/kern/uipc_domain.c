@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_domain.c,v 1.24 2006/06/15 10:46:58 henning Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.25 2007/01/18 20:00:18 henning Exp $	*/
 /*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
@@ -88,9 +88,6 @@ domaininit(void)
 #if defined (KEY) || defined (IPSEC) || defined (TCP_SIGNATURE)
 	pfkey_init();
 #endif /* KEY || IPSEC */
-#ifdef IPX
-	ADDDOMAIN(ipx);
-#endif
 #ifdef NETATALK
 	ADDDOMAIN(atalk);
 #endif
