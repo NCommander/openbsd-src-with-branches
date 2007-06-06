@@ -1,4 +1,4 @@
-/*	$OpenBSD: uts.c,v 1.9 2007/05/31 02:56:03 robert Exp $ */
+/*	$OpenBSD: uts.c,v 1.10 2007/06/05 08:43:56 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org> 
@@ -61,7 +61,7 @@ struct tsscale {
 };
  
 struct uts_softc {
-	USBBASEDEVICE		sc_dev;
+	struct device		sc_dev;
 	usbd_device_handle	sc_udev;
 	usbd_interface_handle	sc_iface;
 	int			sc_iface_number;

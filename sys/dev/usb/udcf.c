@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.32 2007/04/21 20:17:04 art Exp $ */
+/*	$OpenBSD: udcf.c,v 1.33 2007/05/27 04:00:25 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -63,7 +63,7 @@ static const char	*clockname[2] = {
 	"HBG" };
 
 struct udcf_softc {
-	USBBASEDEVICE		sc_dev;		/* base device */
+	struct device		sc_dev;		/* base device */
 	usbd_device_handle	sc_udev;	/* USB device */
 	usbd_interface_handle	sc_iface;	/* data interface */
 	u_char			sc_dying;	/* disconnecting */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.c,v 1.41 2007/06/04 10:34:04 mbalmer Exp $	*/
+/*	$OpenBSD: usb.c,v 1.42 2007/06/05 08:43:56 mbalmer Exp $	*/
 /*	$NetBSD: usb.c,v 1.77 2003/01/01 00:10:26 thorpej Exp $	*/
 
 /*
@@ -94,7 +94,7 @@ int	usb_noexplore = 0;
 #endif
 
 struct usb_softc {
-	USBBASEDEVICE	sc_dev;		/* base device */
+	struct device	sc_dev;		/* base device */
 	usbd_bus_handle sc_bus;		/* USB controller */
 	struct usbd_port sc_port;	/* dummy port for root hub */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uplcom.c,v 1.35 2007/05/27 04:00:25 jsg Exp $	*/
+/*	$OpenBSD: uplcom.c,v 1.36 2007/06/05 08:43:56 mbalmer Exp $	*/
 /*	$NetBSD: uplcom.c,v 1.29 2002/09/23 05:51:23 simonb Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -89,7 +89,7 @@ int	uplcomdebug = 0;
 #define RSAQ_STATUS_DCD		0x01
 
 struct	uplcom_softc {
-	USBBASEDEVICE		sc_dev;		/* base device */
+	struct device		sc_dev;		/* base device */
 	usbd_device_handle	sc_udev;	/* USB device */
 	usbd_interface_handle	sc_iface;	/* interface */
 	int			sc_iface_number;	/* interface number */

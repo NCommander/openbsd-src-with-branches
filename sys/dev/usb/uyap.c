@@ -1,4 +1,4 @@
-/*	$OpenBSD: uyap.c,v 1.9 2005/08/01 05:36:49 brad Exp $ */
+/*	$OpenBSD: uyap.c,v 1.10 2007/05/27 04:00:25 jsg Exp $ */
 /*	$NetBSD: uyap.c,v 1.6 2002/07/11 21:14:37 augustss Exp $	*/
 
 /*
@@ -51,7 +51,7 @@
 #include <dev/usb/ezload.h>
 
 struct uyap_softc {
-	USBBASEDEVICE		sc_dev;		/* base device */
+	struct device		sc_dev;		/* base device */
 	usbd_device_handle	sc_udev;
 };
 

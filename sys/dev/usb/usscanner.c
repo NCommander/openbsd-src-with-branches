@@ -1,4 +1,4 @@
-/*	$OpenBSD: usscanner.c,v 1.15 2007/06/04 10:34:04 mbalmer Exp $	*/
+/*	$OpenBSD: usscanner.c,v 1.16 2007/06/05 08:43:56 mbalmer Exp $	*/
 /*	$NetBSD: usscanner.c,v 1.6 2001/01/23 14:04:14 augustss Exp $	*/
 
 /*
@@ -117,7 +117,7 @@ struct scsipi_device usscanner_dev =
 };
 
 struct usscanner_softc {
- 	USBBASEDEVICE		sc_dev;
+ 	struct device		sc_dev;
 	usbd_device_handle	sc_udev;
 	usbd_interface_handle	sc_iface;
 

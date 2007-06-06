@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uathvar.h,v 1.3 2006/09/20 19:47:17 damien Exp $	*/
+/*	$OpenBSD: if_uathvar.h,v 1.4 2006/12/03 16:09:21 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -100,7 +100,7 @@ struct uath_wme_settings {
 #define UATH_CMD_FLAG_MAGIC	(1 << 2)
 
 struct uath_softc {
-	USBBASEDEVICE			sc_dev;
+	struct device			sc_dev;
 	struct ieee80211com		sc_ic;
 	int				(*sc_newstate)(struct ieee80211com *,
 					    enum ieee80211_state, int);

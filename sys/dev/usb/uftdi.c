@@ -1,4 +1,4 @@
-/*	$OpenBSD: uftdi.c,v 1.34 2007/05/27 04:00:25 jsg Exp $ 	*/
+/*	$OpenBSD: uftdi.c,v 1.35 2007/06/05 08:43:55 mbalmer Exp $ 	*/
 /*	$NetBSD: uftdi.c,v 1.14 2003/02/23 04:20:07 simonb Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ int uftdidebug = 0;
 #define UFTDIOBUFSIZE 64
 
 struct uftdi_softc {
-	USBBASEDEVICE		sc_dev;		/* base device */
+	struct device		sc_dev;		/* base device */
 	usbd_device_handle	sc_udev;	/* device */
 	usbd_interface_handle	sc_iface;	/* interface */
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: umodem.c,v 1.25 2007/05/27 04:00:25 jsg Exp $ */
+/*	$OpenBSD: umodem.c,v 1.26 2007/06/05 08:43:56 mbalmer Exp $ */
 /*	$NetBSD: umodem.c,v 1.45 2002/09/23 05:51:23 simonb Exp $	*/
 
 /*
@@ -92,7 +92,7 @@ int	umodemdebug = 0;
 #define UMODEMOBUFSIZE 1024
 
 struct umodem_softc {
-	USBBASEDEVICE		sc_dev;		/* base device */
+	struct device		sc_dev;		/* base device */
 
 	usbd_device_handle	sc_udev;	/* USB device */
 

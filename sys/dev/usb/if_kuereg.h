@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_kuereg.h,v 1.6 2006/03/07 04:41:19 krw Exp $ */
+/*	$OpenBSD: if_kuereg.h,v 1.7 2007/06/04 10:34:04 mbalmer Exp $ */
 /*	$NetBSD: if_kuereg.h,v 1.11 2001/01/21 02:35:31 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -160,7 +160,7 @@ struct kue_cdata {
 };
 
 struct kue_softc {
-	USBBASEDEVICE		kue_dev;
+	struct device		kue_dev;
 
 	struct arpcom		arpcom;
 #define GET_IFP(sc) (&(sc)->arpcom.ac_if)

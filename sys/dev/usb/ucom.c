@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.34 2007/05/27 04:00:25 jsg Exp $ */
+/*	$OpenBSD: ucom.c,v 1.35 2007/06/05 08:43:55 mbalmer Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -86,7 +86,7 @@ int ucomdebug = 0;
 #define	UCOMCUA(x)		(minor(x) & UCOMCUA_MASK)
 
 struct ucom_softc {
-	USBBASEDEVICE		sc_dev;		/* base device */
+	struct device		sc_dev;		/* base device */
 
 	usbd_device_handle	sc_udev;	/* USB device */
 	struct uhidev_softc	*sc_uhidev;	/* hid device (if deeper) */

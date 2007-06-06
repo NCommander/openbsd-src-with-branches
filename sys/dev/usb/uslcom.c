@@ -1,4 +1,4 @@
-/*	$OpenBSD: uslcom.c,v 1.6 2007/05/27 04:00:25 jsg Exp $	*/
+/*	$OpenBSD: uslcom.c,v 1.7 2007/06/05 08:43:56 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -80,7 +80,7 @@ int	uslcomdebug = 0;
 
 
 struct uslcom_softc {
-	USBBASEDEVICE		sc_dev;
+	struct device		sc_dev;
 	usbd_device_handle	sc_udev;
 	usbd_interface_handle	sc_iface;
 	device_ptr_t		sc_subdev;

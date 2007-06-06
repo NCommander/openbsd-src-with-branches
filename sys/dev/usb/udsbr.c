@@ -1,4 +1,4 @@
-/*	$OpenBSD: udsbr.c,v 1.11 2007/05/27 04:00:25 jsg Exp $	*/
+/*	$OpenBSD: udsbr.c,v 1.12 2007/06/05 08:43:55 mbalmer Exp $	*/
 /*	$NetBSD: udsbr.c,v 1.7 2002/07/11 21:14:27 augustss Exp $	*/
 
 /*
@@ -82,7 +82,7 @@ struct radio_hw_if udsbr_hw_if = {
 };
 
 struct udsbr_softc {
- 	USBBASEDEVICE		sc_dev;
+ 	struct device		sc_dev;
 	usbd_device_handle	sc_udev;
 
 	char			sc_mute;

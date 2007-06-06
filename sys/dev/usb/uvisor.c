@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvisor.c,v 1.28 2007/05/27 04:00:25 jsg Exp $	*/
+/*	$OpenBSD: uvisor.c,v 1.29 2007/06/05 08:43:56 mbalmer Exp $	*/
 /*	$NetBSD: uvisor.c,v 1.21 2003/08/03 21:59:26 nathanw Exp $	*/
 
 /*
@@ -133,7 +133,7 @@ struct uvisor_palm_connection_info {
 #define UVISOROBUFSIZE 1024
 
 struct uvisor_softc {
-	USBBASEDEVICE		sc_dev;		/* base device */
+	struct device		sc_dev;		/* base device */
 	usbd_device_handle	sc_udev;	/* device */
 	usbd_interface_handle	sc_iface;	/* interface */
 /* 
