@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.14 2007/03/19 10:11:59 henning Exp $	*/
+/*	$OpenBSD: control.c,v 1.15 2007/05/29 23:19:18 pyr Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -318,8 +318,16 @@ control_dispatch_imsg(int fd, short event, void *arg)
 				    NULL, 0);
 				break;
 			}
-			imsg_compose(&c->ibuf, IMSG_CTL_FAIL, 0, 0, NULL, 0);
 			imsg_compose(ibuf_main, IMSG_CTL_RELOAD, 0, 0, NULL, 0);
+			/*
+			 * we unconditionnaly return a CTL_OK imsg because
+			 * we have no choice.
+			 *
+			 * so in this case, the reply hoststatectl gets means
+			 * that the reload command has been set,
+			 * it doesn't say wether the command succeeded or not.
+			 */
+			imsg_compose(&c->ibuf, IMSG_CTL_OK, 0, 0, NULL, 0);
 			break;
 		case IMSG_CTL_NOTIFY:
 			if (c->flags & CTL_CONN_NOTIFY) {
