@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.178 2007/05/31 18:48:05 mcbride Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.179 2007/06/01 18:44:23 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1577,7 +1577,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 		struct pfioc_state_kill	*psk = (struct pfioc_state_kill *)addr;
 		int			 killed = 0;
 
-		for (s = RB_MIN(pf_state_tree_id, &tree_id); sk;
+		for (s = RB_MIN(pf_state_tree_id, &tree_id); s;
 		    s = nexts) {
 			nexts = RB_NEXT(pf_state_tree_id, &tree_id, s);
 			sk = s->state_key;
