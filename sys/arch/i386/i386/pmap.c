@@ -1532,6 +1532,11 @@ pmap_release(struct pmap *pmap)
 	simple_unlock(&pmaps_lock);
 
 	/*
+	 * Before we free the pmap just make sure it's not cached anywhere.
+	 */
+	tlbflushg();
+
+	/*
 	 * free any remaining PTPs
 	 */
 
