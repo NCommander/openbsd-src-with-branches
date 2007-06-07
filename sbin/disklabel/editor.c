@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.115 2007/06/04 20:23:32 otto Exp $	*/
+/*	$OpenBSD: editor.c,v 1.116 2007/06/06 21:08:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.115 2007/06/04 20:23:32 otto Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.116 2007/06/06 21:08:55 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -1999,7 +1999,7 @@ get_size(struct disklabel *lp, int partno, u_int32_t *freep, int new)
 
 	for (;;) {
 		ui = getuint(lp, partno, "size", "Size of the partition.",
-		    pp->p_size, *freep + new ? 0 : pp->p_size, pp->p_offset,
+		    pp->p_size, *freep + (new ? 0 : pp->p_size), pp->p_offset,
 		    DO_CONVERSIONS | ((pp->p_fstype == FS_BSDFFS ||
 		    pp->p_fstype == FS_SWAP) ?  DO_ROUNDING : 0));
 		if (ui == UINT_MAX - 1) {
