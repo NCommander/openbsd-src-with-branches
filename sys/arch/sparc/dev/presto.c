@@ -1,4 +1,4 @@
-/*	$OpenBSD: presto.c,v 1.9 2007/06/05 00:38:18 deraadt Exp $	*/
+/*	$OpenBSD: presto.c,v 1.10 2007/06/06 17:15:12 deraadt Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -387,6 +387,7 @@ presto_getdisklabel(dev_t dev, struct presto_softc *sc)
 	strncpy(lp->d_packname, sc->sc_model, 16);
 	lp->d_rpm = 3600;
 	lp->d_interleave = 1;
+	lp->d_version = 1;
 
 	lp->d_magic = DISKMAGIC;
 	lp->d_magic2 = DISKMAGIC;

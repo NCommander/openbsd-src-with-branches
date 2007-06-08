@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_flash.c,v 1.1 2006/11/25 14:31:59 uwe Exp $	*/
+/*	$OpenBSD: zaurus_flash.c,v 1.2 2007/06/05 00:38:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@openbsd.org>
@@ -376,9 +376,9 @@ zflash_default_disklabel(void *arg, dev_t dev, struct disklabel *lp,
 	DL_SETPOFFSET(&lp->d_partitions[10],
 	    DL_GETPOFFSET(&lp->d_partitions[9]) + DL_GETPSIZE(&lp->d_partitions[9]));
 	lp->d_partitions[10].p_fstype = FS_OTHER;
-
 	lp->d_npartitions = 11;
 
+	lp->d_version = 1;
 	/* Re-calculate the checksum. */
 	lp->d_checksum = dkcksum(lp);
 }
