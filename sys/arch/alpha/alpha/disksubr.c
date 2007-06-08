@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.75 2007/06/06 17:15:11 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.76 2007/06/07 00:28:16 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -96,6 +96,7 @@ readbsdlabel(struct buf *bp, void (*strat)(struct buf *),
 			if (dlp->d_npartitions > MAXPARTITIONS || cksum != 0) {
 				msg = "disk label corrupted";
 			} else {
+				DL_SETDSIZE(dlp, DL_GETDSIZE(lp));
 				*lp = *dlp;
 				msg = NULL;
 				break;

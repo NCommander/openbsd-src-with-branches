@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.79 2007/06/06 17:15:12 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.80 2007/06/07 00:28:17 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -296,6 +296,7 @@ notfat:
 			   dkcksum(dlp) != 0)
 			msg = "disk label corrupted";
 		else {
+			DL_SETDSIZE(dlp, DL_GETDSIZE(lp));
 			*lp = *dlp;
 			msg = NULL;
 			break;

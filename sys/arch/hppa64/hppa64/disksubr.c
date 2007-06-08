@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.39 2007/06/07 00:28:17 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.40 2007/06/07 02:55:12 krw Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -100,6 +100,7 @@ readbsdlabel(struct buf *bp, void (*strat)(struct buf *),
 			if (dlp->d_npartitions > MAXPARTITIONS || cksum != 0) {
 				msg = "disk label corrupted";
 			} else {
+				DL_SETDSIZE(dlp, DL_GETDSIZE(lp));
 				*lp = *dlp;
 				msg = NULL;
 				break;
