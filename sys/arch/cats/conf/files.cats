@@ -1,4 +1,4 @@
-# 	$OpenBSD: files.cats,v 1.5 2006/02/12 19:55:39 miod Exp $
+# 	$OpenBSD: files.cats,v 1.6 2006/09/27 06:33:03 grange Exp $
 #	$NetBSD: files.cats,v 1.27 2003/10/21 08:15:40 skrll Exp $
 #
 # CATS-specific configuration info
@@ -94,6 +94,9 @@ file	arch/cats/pci/pciide_machdep.c			pciide
 
 # Include USB stuff
 include "dev/usb/files.usb"
+
+# Bluetooth
+include "dev/bluetooth/files.bluetooth"
 
 # Include WSCONS stuff
 include "dev/wscons/files.wscons"
