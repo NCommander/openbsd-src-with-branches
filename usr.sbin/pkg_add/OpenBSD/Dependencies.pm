@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Dependencies.pm,v 1.51 2007/06/04 16:58:40 espie Exp $
+# $OpenBSD: Dependencies.pm,v 1.52 2007/06/05 23:19:00 espie Exp $
 #
 # Copyright (c) 2005-2007 Marc Espie <espie@openbsd.org>
 #
@@ -313,7 +313,7 @@ sub lookup_library
 			return 1;
 		} 
 	}
-	for my $dep (@{$plist->{depends}}) {
+	for my $dep (@{$plist->{depend}}) {
 		$r = find_old_lib($state, $plist->localbase, $dep->{pattern}, $lib, $dependencies);
 		if ($r) {
 			print "found libspec $lib in old package $r\n" if $state->{verbose};
