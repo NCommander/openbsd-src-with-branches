@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.90 2007/05/28 22:18:48 thib Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.95 2007/06/03 20:25:12 otto Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*-
@@ -241,9 +241,9 @@ buf_stub(struct vnode *vp, daddr64_t lblkno)
 	bp->b_validoff = bp->b_validend = 0;
 
 	LIST_INIT(&bp->b_dep);
-	LIST_INSERT_HEAD(&bufhead, bp, b_list);
 
 	s = splbio();
+	LIST_INSERT_HEAD(&bufhead, bp, b_list);
 	bgetvp(vp, bp);
 	splx(s);
 
