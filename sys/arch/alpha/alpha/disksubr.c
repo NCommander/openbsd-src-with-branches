@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.78 2007/06/09 02:03:45 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.79 2007/06/09 04:08:39 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -32,12 +32,6 @@
  * SUCH DAMAGE.
  *
  *	@(#)ufs_disksubr.c	7.16 (Berkeley) 5/4/91
- */
-
-/*
- * This disksubr.c module started to take its present form on OpenBSD/alpha
- * but it was always thought it should be made completely MI and not need to
- * be in that alpha-specific tree at all.
  */
 
 #include <sys/param.h>
