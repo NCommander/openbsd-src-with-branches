@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.52 2007/02/11 00:08:04 jsg Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.53 2007/05/27 04:00:25 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -2533,7 +2533,6 @@ zyd_activate(device_ptr_t self, enum devact act)
 		break;
 
 	case DVACT_DEACTIVATE:
-		/*if_deactivate(&sc->sc_ic.sc_if);*/
 		break;
 	}
 	return 0;

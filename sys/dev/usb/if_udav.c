@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_udav.c,v 1.25 2007/05/27 04:00:25 jsg Exp $ */
+/*	$OpenBSD: if_udav.c,v 1.26 2007/06/05 08:43:55 mbalmer Exp $ */
 /*	$NetBSD: if_udav.c,v 1.3 2004/04/23 17:25:25 itojun Exp $	*/
 /*	$nabe: if_udav.c,v 1.3 2003/08/21 16:57:19 nabe Exp $	*/
 /*
@@ -721,7 +721,6 @@ udav_activate(device_ptr_t self, enum devact act)
 		break;
 
 	case DVACT_DEACTIVATE:
-		if_deactivate(&sc->sc_ec.ec_if);
 		sc->sc_dying = 1;
 		break;
 	}
