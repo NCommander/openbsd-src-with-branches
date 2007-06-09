@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.76 2007/06/07 00:28:16 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.77 2007/06/08 05:34:26 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -400,7 +400,7 @@ setdisklabel(struct disklabel *olp, struct disklabel *nlp,
 	/* sanity clause */
 	if (nlp->d_secpercyl == 0 || nlp->d_secsize == 0 ||
 	    (nlp->d_secsize % DEV_BSIZE) != 0)
-		return(EINVAL);
+		return (EINVAL);
 
 	/*
 	 * XXX Nice thought, but it doesn't work, if the intention was to
