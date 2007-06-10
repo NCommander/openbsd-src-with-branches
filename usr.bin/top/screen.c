@@ -1,4 +1,4 @@
-/* $OpenBSD: screen.c,v 1.16 2007/04/04 19:12:15 otto Exp $	 */
+/* $OpenBSD: screen.c,v 1.17 2007/05/29 00:56:56 otto Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -169,8 +169,12 @@ init_screen(void)
 void
 end_screen(void)
 {
-	if (smart_terminal)
+	if (smart_terminal) {
+		move(screen_length-1, 0);
+		clrtoeol();
+		refresh();
 		endwin();
+	}
 	if (is_a_terminal)
 		(void) tcsetattr(STDOUT_FILENO, TCSADRAIN, &old_settings);
 }
