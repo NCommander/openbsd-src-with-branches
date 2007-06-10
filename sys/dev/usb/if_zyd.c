@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.53 2007/05/27 04:00:25 jsg Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.54 2007/06/09 12:22:53 mbalmer Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -402,7 +402,7 @@ zyd_complete_attach(struct zyd_softc *sc)
 #endif
 
 	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->sc_udev,
-	    USBDEV(sc->sc_dev));
+	    &sc->sc_dev);
 
 fail:	return error;
 }
@@ -438,7 +438,7 @@ zyd_detach(struct device *self, int flags)
 	splx(s);
 
 	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
-	    USBDEV(sc->sc_dev));
+	    &sc->sc_dev);
 
 	return 0;
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.27 2007/06/05 08:43:55 mbalmer Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.28 2007/06/09 12:22:53 mbalmer Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -265,7 +265,7 @@ cdce_attach(struct device *parent, struct device *self, void *aux)
 	splx(s);
 
 	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->cdce_udev,
-	    USBDEV(sc->cdce_dev));
+	    &sc->cdce_dev);
 }
 
 int

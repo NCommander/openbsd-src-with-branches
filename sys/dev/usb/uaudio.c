@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.41 2007/06/05 08:43:55 mbalmer Exp $ */
+/*	$OpenBSD: uaudio.c,v 1.42 2007/06/06 19:25:49 mk Exp $ */
 /*	$NetBSD: uaudio.c,v 1.90 2004/10/29 17:12:53 kent Exp $	*/
 
 /*
@@ -452,7 +452,7 @@ uaudio_attach(struct device *parent, struct device *self, void *aux)
 	printf(", %d mixer controls\n", sc->sc_nctls);
 
 	usbd_add_drv_event(USB_EVENT_DRIVER_ATTACH, sc->sc_udev,
-			   USBDEV(sc->sc_dev));
+			   &sc->sc_dev);
 
 	DPRINTF(("uaudio_attach: doing audio_attach_mi\n"));
 	sc->sc_audiodev = audio_attach_mi(&uaudio_hw_if, sc, &sc->sc_dev);
@@ -497,7 +497,7 @@ uaudio_detach(device_ptr_t self, int flags)
 		rv = config_detach(sc->sc_audiodev, flags);
 
 	usbd_add_drv_event(USB_EVENT_DRIVER_DETACH, sc->sc_udev,
-			   USBDEV(sc->sc_dev));
+			   &sc->sc_dev);
 
 	return (rv);
 }
