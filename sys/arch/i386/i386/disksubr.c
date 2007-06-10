@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.84 2007/06/09 18:05:47 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.85 2007/06/09 23:06:46 krw Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.21 1996/05/03 19:42:03 christos Exp $	*/
 
 /*
@@ -407,4 +407,3 @@ done:
 	brelse(bp);
 	return (error);
 }
-
