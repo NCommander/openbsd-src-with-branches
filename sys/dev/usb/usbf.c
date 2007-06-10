@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbf.c,v 1.4 2007/05/27 10:24:51 jsg Exp $	*/
+/*	$OpenBSD: usbf.c,v 1.5 2007/06/06 19:25:49 mk Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -80,7 +80,7 @@ struct usbf_softc {
 	int		 sc_dying;
 };
 
-#define DEVNAME(sc)	USBDEVNAME((sc)->sc_dev)
+#define DEVNAME(sc)	((sc)->sc_dev.dv_xname)
 
 int	    usbf_match(struct device *, void *, void *);
 void	    usbf_attach(struct device *, struct device *, void *);
