@@ -1,4 +1,4 @@
-/*	$OpenBSD: uscanner.c,v 1.30 2007/06/11 09:26:55 mk Exp $ */
+/*	$OpenBSD: uscanner.c,v 1.31 2007/06/11 10:58:21 mbalmer Exp $ */
 /*	$NetBSD: uscanner.c,v 1.40 2003/01/27 00:32:44 wiz Exp $	*/
 
 /*
@@ -330,7 +330,11 @@ uscanneropen(dev_t dev, int flag, int mode, usb_proc_ptr p)
 	int unit = USCANNERUNIT(dev);
 	usbd_status err;
 
-	USB_GET_SC_OPEN(uscanner, unit, sc);
+	if (unit >= uscanner_cd.cd_ndevs)
+		return (ENXIO);
+	sc = uscanner_cd.cd_devs[unit];
+	if (sc == NULL)
+		return (ENXIO);
 
  	DPRINTFN(5, ("uscanneropen: flag=%d, mode=%d, unit=%d\n",
 		     flag, mode, unit));
