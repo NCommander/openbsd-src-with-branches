@@ -1,4 +1,4 @@
-/*	$OpenBSD: uow.c,v 1.18 2007/06/10 10:53:48 mbalmer Exp $	*/
+/*	$OpenBSD: uow.c,v 1.19 2007/06/10 14:49:01 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -115,10 +115,9 @@ uow_attach(struct device *parent, struct device *self, void *aux)
 
 	/* Display device info string */
 	printf("\n");
-	if ((devinfop = usbd_devinfo_alloc(uaa->device, 0)) != NULL) {
-		printf("%s: %s\n", sc->sc_dev.dv_xname, devinfop);
-		usbd_devinfo_free(devinfop);
-	}
+	devinfop = usbd_devinfo_alloc(uaa->device, 0);
+	printf("%s: %s\n", sc->sc_dev.dv_xname, devinfop);
+	usbd_devinfo_free(devinfop);
 
 	/* Set USB configuration */
 	if ((error = usbd_set_config_no(sc->sc_udev,
