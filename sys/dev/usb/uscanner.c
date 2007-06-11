@@ -1,4 +1,4 @@
-/*	$OpenBSD: uscanner.c,v 1.28 2007/06/10 10:53:49 mbalmer Exp $ */
+/*	$OpenBSD: uscanner.c,v 1.29 2007/06/10 14:49:01 mbalmer Exp $ */
 /*	$NetBSD: uscanner.c,v 1.40 2003/01/27 00:32:44 wiz Exp $	*/
 
 /*
@@ -640,7 +640,7 @@ filt_uscannerdetach(struct knote *kn)
 {
 	struct uscanner_softc *sc = (void *)kn->kn_hook;
 
-	SLIST_REMOVE(&sc->sc_selq.sel_klist, kn, knote, kn_selnext);
+	SLIST_REMOVE(&sc->sc_selq.si_note, kn, knote, kn_selnext);
 }
 
 struct filterops uscanner_seltrue_filtops =
@@ -665,7 +665,7 @@ uscannerkqfilter(dev_t dev, struct knote *kn)
 		 * yield any data or a write will happen.
 		 * Pretend they will.
 		 */
-		klist = &sc->sc_selq.sel_klist;
+		klist = &sc->sc_selq.si_note;
 		kn->kn_fop = &uscanner_seltrue_filtops;
 		break;
 
