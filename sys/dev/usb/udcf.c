@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.35 2007/06/10 10:53:48 mbalmer Exp $ */
+/*	$OpenBSD: udcf.c,v 1.36 2007/06/10 14:49:00 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -689,7 +689,7 @@ udcf_ct_probe(void *xsc)
 }
 
 int
-udcf_activate(device_ptr_t self, enum devact act)
+udcf_activate(struct device *self, enum devact act)
 {
 	struct udcf_softc *sc = (struct udcf_softc *)self;
 
