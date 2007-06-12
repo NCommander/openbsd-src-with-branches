@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCfl.pm,v 1.22 2007/05/14 11:22:00 espie Exp $
+# $OpenBSD: PkgCfl.pm,v 1.23 2007/05/29 10:40:20 espie Exp $
 #
 # Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
 #
@@ -100,7 +100,7 @@ sub find($$)
 	while (my ($name, $l) = each %{$state->{conflict_list}}) {
 		next if $name eq $pkgname;
 		if (!defined $l) {
-			die "Error: $name has no definition\n";
+			die "Error: $name has no definition";
 		}
 		if ($l->conflicts_with($pkgname)) {
 			push(@bad, $name);
