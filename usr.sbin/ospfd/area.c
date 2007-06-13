@@ -1,4 +1,4 @@
-/*	$OpenBSD: area.c,v 1.4 2005/05/26 18:59:14 norby Exp $ */
+/*	$OpenBSD: area.c,v 1.5 2007/05/29 22:08:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -68,7 +68,6 @@ area_del(struct area *area)
 
 	for (v = RB_MIN(lsa_tree, &area->lsa_tree); v != NULL; v = nv) {
 		nv = RB_NEXT(lsa_tree, &area->lsa_tree, v);
-		RB_REMOVE(lsa_tree, &area->lsa_tree, v);
 		vertex_free(v);
 	}
 
