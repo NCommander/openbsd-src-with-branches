@@ -1,4 +1,4 @@
-/*	$OpenBSD: uow.c,v 1.20 2007/06/11 01:05:43 jsg Exp $	*/
+/*	$OpenBSD: uow.c,v 1.21 2007/06/12 16:26:37 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -45,19 +45,19 @@
 #define UOW_TIMEOUT	1000	/* ms */
 
 struct uow_softc {
-	struct device		sc_dev;
+	struct device		 sc_dev;
 
-	struct onewire_bus	sc_ow_bus;
-	struct device *		sc_ow_dev;
+	struct onewire_bus	 sc_ow_bus;
+	struct device		*sc_ow_dev;
 
-	usbd_device_handle	sc_udev;
-	usbd_interface_handle	sc_iface;
-	usbd_pipe_handle	sc_ph_ibulk;
-	usbd_pipe_handle	sc_ph_obulk;
-	usbd_pipe_handle	sc_ph_intr;
-	u_int8_t		sc_regs[DS2490_NREGS];
-	usbd_xfer_handle	sc_xfer;
-	u_int8_t		sc_fifo[DS2490_DATAFIFOSIZE];
+	usbd_device_handle	 sc_udev;
+	usbd_interface_handle	 sc_iface;
+	usbd_pipe_handle	 sc_ph_ibulk;
+	usbd_pipe_handle	 sc_ph_obulk;
+	usbd_pipe_handle	 sc_ph_intr;
+	u_int8_t		 sc_regs[DS2490_NREGS];
+	usbd_xfer_handle	 sc_xfer;
+	u_int8_t		 sc_fifo[DS2490_DATAFIFOSIZE];
 };
 
 USB_DECLARE_DRIVER(uow);
