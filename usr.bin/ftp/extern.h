@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.28 2005/10/12 06:50:42 otto Exp $	*/
+/*	$OpenBSD: extern.h,v 1.29 2007/06/06 19:15:33 pyr Exp $	*/
 /*	$NetBSD: extern.h,v 1.17 1997/08/18 10:20:19 lukem Exp $	*/
 
 /*
@@ -191,6 +191,8 @@ void	user(int, char **);
 
 #ifndef SMALL
 int	ruserpass(const char *, char **, char **, char **);
+void	cookie_load(void);
+void	cookie_get(const char *, const char *, int, char **);
 #endif
 
 
