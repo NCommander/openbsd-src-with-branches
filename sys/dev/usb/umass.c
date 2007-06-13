@@ -1,4 +1,4 @@
-/*	$OpenBSD: umass.c,v 1.48 2007/06/10 10:53:48 mbalmer Exp $ */
+/*	$OpenBSD: umass.c,v 1.49 2007/06/10 14:49:01 mbalmer Exp $ */
 /*	$NetBSD: umass.c,v 1.116 2004/06/30 05:53:46 mycroft Exp $	*/
 
 /*
@@ -601,8 +601,7 @@ umass_attach(struct device *parent, struct device *self, void *aux)
 #if (NATAPIBUS > 0) || (NATAPISCSI > 0)
 		error = umass_atapi_attach(sc);
 #else
-		printf("%s: "UMASS_ATAPISTR" not configured\n",
-		       sc->sc_dev.dv_xname);
+		printf("%s: atapiscsi not configured\n", sc->sc_dev.dv_xname);
 #endif
 		break;
 
