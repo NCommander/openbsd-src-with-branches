@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ospf.h,v 1.8 2000/10/03 14:31:56 ho Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993, 1994, 1995, 1996, 1997
@@ -141,7 +141,7 @@ struct lsa {
 	    struct aslametric {
 		u_int32_t asla_tosmetric;
 		struct in_addr asla_forward;
-		struct in_addr asla_tag;
+		u_int32_t asla_tag;
 	    } asla_metric[1];		/* may repeat	*/
 	} un_asla;
 
