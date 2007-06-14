@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pkg_create.1,v 1.40 2007/06/02 10:19:29 espie Exp $
+.\"	$OpenBSD: pkg_create.1,v 1.41 2007/06/02 15:32:07 jmc Exp $
 .\"
 .\" Documentation and design originally from FreeBSD. All the code has
 .\" been rewritten since. We keep the documentation's notice:
@@ -187,14 +187,10 @@ Print out the actual packing-list of the package being generated
 Most often used in combination with
 .Fl n .
 .It Fl S Ar pkg-destdir
-Set
-.Ar pkg-destdir
-as the prefix to prepend to any file to select for the package.
-This option is identical to the
+Deprecated, use
+identical
 .Fl B
-option; however the
-.Fl B
-option is preferred.
+option instead.
 .It Fl U Ar undisplayfile
 Display the file (using
 .Xr more 1 )
