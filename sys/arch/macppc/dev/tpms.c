@@ -1,4 +1,4 @@
-/*	$OpenBSD: tpms.c,v 1.10 2007/06/11 16:30:31 mbalmer Exp $	*/
+/*	$OpenBSD: tpms.c,v 1.11 2007/06/12 16:26:37 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2005, Johan Wallén
@@ -288,7 +288,22 @@ const struct wsmouse_accessops tpms_accessops = {
 };
 
 /* This take cares also of the basic device registration. */
-USB_DECLARE_DRIVER(tpms);
+int tpms_match(struct device *, void *, void *); 
+void tpms_attach(struct device *, struct device *, void *); 
+int tpms_detach(struct device *, int); 
+int tpms_activate(struct device *, enum devact); 
+
+struct cfdriver tpms_cd = { 
+	NULL, "tpms", DV_DULL 
+}; 
+
+const struct cfattach tpms_ca = { 
+	sizeof(struct tpms_softc), 
+	tpms_match, 
+	tpms_attach, 
+	tpms_detach, 
+	tpms_activate, 
+};
 
 /*
  * Basic driver. 
