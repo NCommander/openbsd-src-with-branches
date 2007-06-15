@@ -852,6 +852,7 @@ vic_iff(struct vic_softc *sc)
 	struct ether_multi *enm;
 	struct ether_multistep step;
 	u_int32_t crc;
+	u_int16_t *mcastfil = (u_int16_t *)sc->sc_data->vd_mcastfil;
 	u_int flags = 0;
 
 	bzero(&sc->sc_data->vd_mcastfil, sizeof(sc->sc_data->vd_mcastfil));
@@ -869,7 +870,7 @@ vic_iff(struct vic_softc *sc)
 
 		crc = ether_crc32_le(enm->enm_addrlo, ETHER_ADDR_LEN);
 		crc >>= 26;
-		sc->sc_data->vd_mcastfil[crc >> 4] |= htole16(1 << (crc & 0xf));
+		mcastfil[crc >> 4] |= htole16(1 << (crc & 0xf));
 
 		ETHER_NEXT_MULTI(step, enm);
 	}
