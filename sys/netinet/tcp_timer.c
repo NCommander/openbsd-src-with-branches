@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_timer.c,v 1.37 2005/06/30 08:51:31 markus Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.38 2005/11/15 21:09:46 miod Exp $	*/
 /*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
@@ -138,6 +138,8 @@ tcp_slowtimo()
 	tcp_iss += TCP_ISSINCR/PR_SLOWHZ;		/* increment iss */
 	if ((int)tcp_iss < 0)
 		tcp_iss = 0;				/* XXX */
+#else
+	tcp_iss += TCP_ISSINCR2/PR_SLOWHZ;		/* increment iss */
 #endif /* TCP_COMPAT_42 */
 	tcp_now++;					/* for timestamps */
 	splx(s);
