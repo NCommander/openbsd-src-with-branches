@@ -1,4 +1,4 @@
-/*	$OpenBSD: presto.c,v 1.10 2007/06/06 17:15:12 deraadt Exp $	*/
+/*	$OpenBSD: presto.c,v 1.11 2007/06/08 05:27:58 deraadt Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -183,7 +183,7 @@ prestodump(dev_t dev, daddr64_t blkno, caddr_t va, size_t size)
 	return (ENXIO);
 }
 
-int
+daddr64_t
 prestosize(dev_t dev)
 {
 	struct presto_softc *sc;
