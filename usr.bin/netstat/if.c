@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.49 2006/11/17 01:11:23 itojun Exp $	*/
+/*	$OpenBSD: if.c,v 1.50 2007/06/04 12:20:24 henning Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
 #else
-static char *rcsid = "$OpenBSD: if.c,v 1.49 2006/11/17 01:11:23 itojun Exp $";
+static char *rcsid = "$OpenBSD: if.c,v 1.50 2007/06/04 12:20:24 henning Exp $";
 #endif
 #endif /* not lint */
 
@@ -155,7 +155,7 @@ intpr(int interval, u_long ifnetaddr)
 			}
 		}
 
-		printf("%-7.7s %-5ld ", name, ifnet.if_mtu);
+		printf("%-7s %-5ld ", name, ifnet.if_mtu);
 		if (ifaddraddr == 0) {
 			printf("%-11.11s ", "none");
 			printf("%-17.17s ", "none");
