@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpivar.h,v 1.10 2006/10/23 18:16:56 damien Exp $	*/
+/*	$OpenBSD: if_wpivar.h,v 1.11 2007/06/05 19:49:40 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007
@@ -143,7 +143,6 @@ struct wpi_softc {
 	/* rings */
 	struct wpi_tx_ring	txq[4];
 	struct wpi_tx_ring	cmdq;
-	struct wpi_tx_ring	svcq;
 	struct wpi_rx_ring	rxq;
 
 	bus_space_tag_t		sc_st;

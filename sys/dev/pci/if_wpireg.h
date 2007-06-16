@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpireg.h,v 1.13 2007/06/05 19:49:40 damien Exp $	*/
+/*	$OpenBSD: if_wpireg.h,v 1.14 2007/06/09 09:50:00 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007
@@ -18,7 +18,6 @@
  */
 
 #define WPI_TX_RING_COUNT	256
-#define WPI_SVC_RING_COUNT	256
 #define WPI_CMD_RING_COUNT	256
 #define WPI_RX_RING_COUNT	64
 
