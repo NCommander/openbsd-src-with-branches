@@ -1,4 +1,4 @@
-/*	$OpenBSD: unixdev.c,v 1.4 2005/04/13 04:33:47 uwe Exp $	*/
+/*	$OpenBSD: unixdev.c,v 1.5 2005/05/24 20:38:20 uwe Exp $	*/
 
 /*
  * Copyright (c) 1996-1998 Michael Shalayeff
@@ -192,11 +192,11 @@ ulseek(int fd, off_t off, int wh)
 		while (off > OFFT_OFFSET_MAX) {
 			off -= OFFT_OFFSET_MAX;
 			if (ulseek32(fd, OFFT_OFFSET_MAX, SEEK_CUR) < 0 &&
-			    errno != EOVERFLOW)
+			    errno != LINUX_EOVERFLOW)
 				return -1;
 		}
 		r = ulseek32(fd, (long)off, SEEK_CUR);
-		if (r == -1 && errno == EOVERFLOW)
+		if (r == -1 && errno == LINUX_EOVERFLOW)
 			r = off;
 	} else
 		r = ulseek32(fd, (long)off, wh);
