@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.138 2007/06/16 12:16:42 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.139 2007/06/17 09:50:02 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -586,9 +586,17 @@ sub add
 	if ($args eq 'no checksum') {
 		$plist->{state}->{lastfile}->{nochecksum} = 1;
 	} else {
-		die "Unknown tag $args";
+		my $object = $plist->{state}->{lastfileobject};
+		$object->{tags}->{$args} = 1;
+		push(@{$plist->{tags}->{$args}}, $object);
 	}
 }
+
+package OpenBSD::PackingElement::DefineTag;
+our @ISA=qw(OpenBSD::PackingElement::Meta);
+
+sub keyword() { 'define-tag' }
+__PACKAGE__->register_with_factory;
 
 package OpenBSD::PackingElement::symlink;
 our @ISA=qw(OpenBSD::PackingElement::Annotation);
