@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.13 2007/06/07 02:55:12 krw Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.14 2007/06/17 00:27:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -99,7 +99,6 @@ struct sgilabel {
 
 
 struct cpu_disklabel {
-	int labelsector;
 };
 
 #endif /* _MACHINE_DISKLABEL_H_ */
