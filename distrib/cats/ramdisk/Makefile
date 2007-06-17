@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2004/02/02 21:01:19 drahn Exp $
+#	$OpenBSD: Makefile,v 1.3 2004/02/09 02:27:25 drahn Exp $
 
 REV=	${OSrev}
 
@@ -53,7 +53,7 @@ bsd:
 rd_setup:
 	dd if=/dev/zero of=${IMAGE} bs=512 count=${NBLKS}
 	vnconfig -v -c ${VND} ${IMAGE}
-	disklabel -w -r ${VND} ${DISKTYPE}
+	disklabel -w ${VND} ${DISKTYPE}
 	newfs ${NEWFSARGS} ${VND_RDEV}
 	fsck ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}

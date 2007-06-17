@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.6 2002/04/30 09:18:20 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.7 2007/04/13 17:34:40 millert Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -30,7 +30,7 @@ all:	${FS}
 ${FS}:	bsd.rd
 	dd if=/dev/zero of=${REALIMAGE} bs=10k count=${FLOPPYSIZE}
 	vnconfig -v -c ${VND} ${REALIMAGE}
-	disklabel -w -r ${VND} ${FLOPPYTYPE}
+	disklabel -w ${VND} ${FLOPPYTYPE}
 	newfs -m 0 -o space -i 524288 -c ${FLOPPYSIZE} ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
@@ -55,7 +55,7 @@ ${IMAGE}: ${CBIN} rd_setup do_files rd_teardown
 rd_setup: ${CBIN}
 	dd if=/dev/zero of=${REALIMAGE} bs=512 count=${NBLKS}
 	vnconfig -v -c ${VND} ${REALIMAGE}
-	disklabel -w -r ${VND} ${DISKTYPE}
+	disklabel -w ${VND} ${DISKTYPE}
 	newfs ${NEWFSARGS} ${VND_RDEV}
 	fsck ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}

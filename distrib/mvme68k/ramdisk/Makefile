@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.18 2004/12/11 14:04:11 martin Exp $
+#	$OpenBSD: Makefile,v 1.19 2007/04/13 17:34:40 millert Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -45,7 +45,7 @@ rd_test: rd_setup rd_teardown
 rd_setup:
 	dd if=/dev/zero of=${IMAGE} bs=512 count=${NBLKS}
 	vnconfig -v -c ${VND} ${IMAGE}
-	disklabel -w -r ${VND} ${DISKTYPE}
+	disklabel -w ${VND} ${DISKTYPE}
 	newfs ${NEWFSARGS} ${VND_RDEV}
 	fsck ${VND_RDEV}
 	mount ${VND_DEV} ${MOUNT_POINT}

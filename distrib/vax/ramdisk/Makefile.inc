@@ -1,11 +1,10 @@
-#	$OpenBSD: Makefile.inc,v 1.5 2007/04/09 14:55:11 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.6 2007/04/13 17:34:40 millert Exp $
 
 IMAGESIZE=		3072
 GZIPCMD?=		gzip
 GZIPFLAGS?=		-9nv
 GZIPEXT?=		.gz
 MAKEFLOPPY=		1
-RAWLABEL=
 #STRIP=			echo
 #NEWFS_WILL_FAIL=	true
 #NEWFSOPTS_RD= -t ffs -m 0 -o space -f 1024 -i 16384 -s 8192
