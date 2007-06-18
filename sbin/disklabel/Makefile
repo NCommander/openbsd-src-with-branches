@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.44 2007/06/16 17:32:13 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.45 2007/06/17 00:32:21 deraadt Exp $
 
 PROG=	disklabel
 SRCS=	disklabel.c dkcksum.c editor.c manual.c
@@ -43,7 +43,7 @@ CFLAGS+= -DNUMBOOT=1
 .endif
 
 .if (${MACHINE} == "landisk")
-CFLAGS+= NUMBOOT=1 -DDOSLABEL
+CFLAGS+= -DNUMBOOT=1 -DDOSLABEL
 CFLAGS+= -DSEEALSO="\"fdisk(8)\""
 .endif
 
