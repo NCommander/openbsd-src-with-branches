@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.57 2007/06/14 03:37:23 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.58 2007/06/17 00:27:29 deraadt Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -30,7 +30,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
-#include <sys/device.h>
 #include <sys/disklabel.h>
 #include <sys/disk.h>
 
