@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.54 2007/02/09 03:49:15 joris Exp $	*/
+/*	$OpenBSD: tag.c,v 1.55 2007/02/22 06:42:09 otto Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -215,6 +215,7 @@ cvs_tag_local(struct cvs_file *cf)
 				cvs_printf("T %s\n", cf->file_path);
 
 			rcs_write(cf->file_rcs);
+			cvs_history_add(CVS_HISTORY_TAG, cf, tag_name);
 		}
 		break;
 	default:
