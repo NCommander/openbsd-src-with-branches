@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.11 2006/10/20 23:47:43 krw Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.12 2007/06/17 00:27:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -87,10 +87,7 @@ struct part_map_entry {
 #define PART_TYPE_MAC           "APPLE_HFS"
 #define PART_TYPE_OPENBSD       "OPENBSD"
 
-
 struct cpu_disklabel {
-	/* only store first entry and openbsd partition */
-	struct part_map_entry macparts[2];
 };
 
 #endif /* _MACHINE_DISKLABEL_H_ */
