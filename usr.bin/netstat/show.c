@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.5 2007/03/23 10:59:38 pyr Exp $	*/
+/*	$OpenBSD: show.c,v 1.6 2007/06/04 12:20:24 henning Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -281,7 +281,6 @@ void
 p_pfkentry(struct sadb_msg *msg)
 {
 	static int	 	 old = 0;
-	struct sadb_ext		*ext;
 	struct sadb_address	*saddr;
 	struct sadb_protocol	*sap, *saft;
 	struct sockaddr		*sa, *mask;
