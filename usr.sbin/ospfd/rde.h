@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.32 2007/04/05 18:50:45 pyr Exp $ */
+/*	$OpenBSD: rde.h,v 1.33 2007/04/10 13:26:39 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -88,6 +88,7 @@ struct rt_node {
 	struct in_addr		area;
 	u_int32_t		cost;
 	u_int32_t		cost2;
+	u_int32_t		ext_tag;
 	enum path_type		p_type;
 	enum dst_type		d_type;
 	u_int8_t		flags;
