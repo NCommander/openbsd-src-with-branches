@@ -1,4 +1,4 @@
-/*	$OpenBSD: netstat.h,v 1.40 2007/03/23 10:59:38 pyr Exp $	*/
+/*	$OpenBSD: netstat.h,v 1.41 2007/06/04 12:20:24 henning Exp $	*/
 /*	$NetBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 
 /*
@@ -87,6 +87,8 @@ void	pfsync_stats (u_long, char *);
 void	etherip_stats(u_long, char *);
 void	protopr(u_long, char *);
 void	ipcomp_stats(u_long, char *);
+
+void	net80211_ifstats(char *);
 
 void	tcp_dump(u_long);
 
