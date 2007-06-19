@@ -1,4 +1,4 @@
-/*	$OpenBSD: vars.c,v 1.9 2002/08/12 00:42:56 aaron Exp $	*/
+/*	$OpenBSD: vars.c,v 1.10 2003/06/03 02:56:11 millert Exp $	*/
 /*	$NetBSD: vars.c,v 1.4 1996/06/08 19:48:45 christos Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static const char sccsid[] = "@(#)vars.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: vars.c,v 1.9 2002/08/12 00:42:56 aaron Exp $";
+static const char rcsid[] = "$OpenBSD: vars.c,v 1.10 2003/06/03 02:56:11 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -101,7 +101,7 @@ vcopy(char *str)
 
 /*
  * Get the value of a variable and return it.
- * Look in the environment if its not available locally.
+ * Look in the environment if it's not available locally.
  */
 
 char *
