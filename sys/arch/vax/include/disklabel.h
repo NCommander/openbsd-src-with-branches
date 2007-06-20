@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.7 2001/12/06 23:47:28 miod Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.8 2007/06/17 00:27:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
@@ -37,9 +37,4 @@
 #define	LABELOFFSET	64			/* offset of label in sector */
 #define	MAXPARTITIONS	16			/* number of partitions */
 
-#ifndef _LOCORE
-struct cpu_disklabel {
-};
-
-#endif
 #endif /* _MACHINE_DISKLABEL_H_ */
