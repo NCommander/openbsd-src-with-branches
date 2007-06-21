@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.517 2007/02/03 23:26:40 dhartmei Exp $	*/
+/*	$OpenBSD: parse.y,v 1.518 2007/06/20 14:14:17 mpf Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -3439,8 +3439,8 @@ redirection	: /* empty */			{ $$ = NULL; }
 		}
 		;
 
-natpasslog	: /* empty */	{ $$.b1 = $$.b2 = 0; }
-		| PASS		{ $$.b1 = 1; $$.b2 = 0; }
+natpasslog	: /* empty */	{ $$.b1 = $$.b2 = 0; $$.w2 = 0; }
+		| PASS		{ $$.b1 = 1; $$.b2 = 0; $$.w2 = 0; }
 		| PASS log	{ $$.b1 = 1; $$.b2 = $2.log; $$.w2 = $2.logif; }
 		| log		{ $$.b1 = 0; $$.b2 = $1.log; $$.w2 = $1.logif; }
 		;
