@@ -1,4 +1,4 @@
-/*	$OpenBSD: hd.c,v 1.51 2007/06/20 18:15:47 deraadt Exp $	*/
+/*	$OpenBSD: hd.c,v 1.52 2007/06/20 20:13:40 miod Exp $	*/
 /*	$NetBSD: rd.c,v 1.33 1997/07/10 18:14:08 kleink Exp $	*/
 
 /*
@@ -1137,7 +1137,7 @@ hdioctl(dev, cmd, data, flag, p)
 	if (sc == NULL)
 		return (ENXIO);
 
-	switch (cmd)
+	switch (cmd) {
 	case DIOCGPDINFO:
 		hdgetdisklabel(dev, sc, (struct disklabel *)data, 1);
 		goto exit;
