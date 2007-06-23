@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_disk.h,v 1.20 2005/09/15 05:33:39 krw Exp $	*/
+/*	$OpenBSD: scsi_disk.h,v 1.21 2007/04/12 16:33:27 weingart Exp $	*/
 /*	$NetBSD: scsi_disk.h,v 1.10 1996/07/05 16:19:05 christos Exp $	*/
 
 /*
@@ -203,6 +203,7 @@ struct scsi_read_capacity {
 struct scsi_read_capacity_16 {
 	u_int8_t opcode;
 	u_int8_t byte2;
+#define	SRC16_SERVICE_ACTION	0x10
 	u_int8_t addr[8];
 	u_int8_t length[4];
 	u_int8_t reserved;
