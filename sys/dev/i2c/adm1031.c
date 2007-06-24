@@ -1,4 +1,4 @@
-/*	$OpenBSD: adm1031.c,v 1.6 2006/12/23 17:46:39 deraadt Exp $	*/
+/*	$OpenBSD: adm1031.c,v 1.7 2007/03/22 16:55:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -112,7 +112,7 @@ admtt_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_sensor[ADMTT_FAN2].type = SENSOR_FANRPM;
 
-	if (sensor_task_register(sc, admtt_refresh, 5)) {
+	if (sensor_task_register(sc, admtt_refresh, 5) == NULL) {
 		printf(", unable to register update task\n");
 		return;
 	}
