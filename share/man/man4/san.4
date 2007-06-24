@@ -1,4 +1,4 @@
-.\"	$OpenBSD: san.4,v 1.5 2004/09/30 19:59:25 mickey Exp $
+.\"	$OpenBSD: san.4,v 1.6 2007/05/31 19:19:51 jmc Exp $
 .\"
 .\" Copyright (c) 2001-2004 Sangoma Technologies (SAN)
 .\" All rights reserved.  www.sangoma.com
@@ -114,3 +114,11 @@ The
 .Nm
 device driver and this manual page were written by
 Alex Feldman.
+.Sh BUGS
+There is no hardware documentation.
+.Pp
+There appears to be a memory corruption bug during device
+initialization.
+.Pp
+Since Sangoma stopped supporting the driver,
+it is unlikely that these bugs will be fixed.
