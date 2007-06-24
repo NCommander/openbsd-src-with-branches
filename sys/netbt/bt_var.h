@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bt_var.h,v 1.1 2005/01/14 12:04:02 grange Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -17,9 +17,5 @@
 
 #ifndef _NETBT_BT_VAR_H_
 #define _NETBT_BT_VAR_H_
-
-extern struct ifqueue btintrq;
-
-void bt_init(void);
 
 #endif	/* !_NETBT_BT_VAR_H_ */
