@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.89 2007/05/29 18:18:57 uwe Exp $	*/
+/*	$OpenBSD: if.h,v 1.90 2007/06/14 18:31:49 reyk Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -346,7 +346,7 @@ do {									\
 } while (0)
 #define	IF_IS_EMPTY(ifq)	((ifq)->ifq_len == 0)
 
-#define	IFQ_MAXLEN	50
+#define	IFQ_MAXLEN	256
 #define	IFNET_SLOWHZ	1		/* granularity is 1 second */
 
 /* symbolic names for terminal (per-protocol) CTL_IFQ_ nodes */
