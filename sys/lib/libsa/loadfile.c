@@ -1,5 +1,5 @@
 /* $NetBSD: loadfile.c,v 1.10 2000/12/03 02:53:04 tsutsui Exp $ */
-/* $OpenBSD: loadfile.c,v 1.12 2007/01/04 07:09:30 miod Exp $ */
+/* $OpenBSD: loadfile.c,v 1.13 2007/05/30 01:25:43 tom Exp $ */
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -114,8 +114,9 @@ int elf64_exec(int, Elf64_Ehdr *, u_long *, int);
 #endif
 
 /*
- * Open 'filename', read in program and and return 0 if ok 1 on error.
- * Fill in marks
+ * Open 'filename', read in program and return -1 on error otherwise fd,
+ * with file still open.
+ * Also fills in marks.
  */
 int
 loadfile(const char *fname, u_long *marks, int flags)
