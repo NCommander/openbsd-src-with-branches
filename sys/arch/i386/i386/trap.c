@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.83 2007/05/11 10:06:55 pedro Exp $	*/
+/*	$OpenBSD: trap.c,v 1.84 2007/05/29 18:47:51 tom Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 /*-
@@ -311,8 +311,10 @@ trap(struct trapframe frame)
 				    offsetof(struct trapframe, tf_gs));
 				resume = (int)resume_pop_gs;
 				break;
+			default:
+				goto we_re_toast;
 			}
-                        break;
+			break;
 		default:
 			goto we_re_toast;
 		}
