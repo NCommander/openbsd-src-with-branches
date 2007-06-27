@@ -1,4 +1,4 @@
-/*	$OpenBSD: checknr.c,v 1.13 2005/03/08 23:31:53 cloder Exp $	*/
+/*	$OpenBSD: checknr.c,v 1.14 2005/03/29 23:46:19 jaredy Exp $	*/
 /*	$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)checknr.c	8.1 (Berkeley) 6/6/93";
 #else 
-static const char rcsid[] = "$OpenBSD: checknr.c,v 1.13 2005/03/08 23:31:53 cloder Exp $";
+static const char rcsid[] = "$OpenBSD: checknr.c,v 1.14 2005/03/29 23:46:19 jaredy Exp $";
 #endif
 #endif /* not lint */
 
@@ -208,7 +208,7 @@ main(int argc, char *argv[])
 		/* -a: add pairs of macros */
 		case 'a':
 			i = strlen(argv[1]) - 2;
-			if (i % 6 != 0)
+			if (i == 0 || i % 6 != 0)
 				usage();
 			/* look for empty macro slots */
 			for (i=0; br[i].opbr; i++)
@@ -231,7 +231,7 @@ main(int argc, char *argv[])
 		/* -c: add known commands */
 		case 'c':
 			i = strlen(argv[1]) - 2;
-			if (i % 3 != 0)
+			if (i == 0 || i % 3 != 0)
 				usage();
 			for (cp=argv[1]+3; cp[-1]; cp += 3) {
 				if (cp[2] && cp[2] != '.')
@@ -264,8 +264,10 @@ main(int argc, char *argv[])
 			f = fopen(cfilename, "r");
 			if (f == NULL)
 				warn("%s", cfilename);
-			else
+			else {
 				process(f);
+				fclose(f);
+			}
 		}
 	} else {
 		cfilename = "stdin";
