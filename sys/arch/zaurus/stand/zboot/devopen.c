@@ -1,4 +1,4 @@
-/*	$OpenBSD: devopen.c,v 1.4 2005/05/12 05:10:30 uwe Exp $	*/
+/*	$OpenBSD: devopen.c,v 1.5 2005/05/24 20:38:20 uwe Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -34,7 +34,7 @@
 
 /* XXX use slot for 'rd' for 'hd' pseudo-device */
 const char bdevs[][4] = {
-	"wd", "", "fd", "wt", "sd", "st", "cd", "mcd",
+	"wd", "", "fd", "", "sd", "st", "cd", "mcd",
 	"", "", "", "", "", "", "", "scd", "", "hd", ""
 
 };
