@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.55 2007/02/22 06:42:09 otto Exp $	*/
+/*	$OpenBSD: tag.c,v 1.56 2007/06/18 17:54:13 joris Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -238,7 +238,7 @@ tag_del(struct cvs_file *cf)
 static int
 tag_add(struct cvs_file *cf)
 {
-	char revbuf[16], trevbuf[16];
+	char revbuf[CVS_REV_BUFSZ], trevbuf[CVS_REV_BUFSZ];
 	RCSNUM *trev;
 	struct rcs_sym *sym;
 
