@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.266 2007/04/21 14:50:26 henning Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.267 2007/05/31 04:13:37 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -201,11 +201,11 @@ static const struct {
 
 static const char *clearopt_list[] = {
 	"nat", "queue", "rules", "Sources",
-	"state", "info", "Tables", "osfp", "all", NULL
+	"states", "info", "Tables", "osfp", "all", NULL
 };
 
 static const char *showopt_list[] = {
-	"nat", "queue", "rules", "Anchors", "Sources", "state", "info",
+	"nat", "queue", "rules", "Anchors", "Sources", "states", "info",
 	"Interfaces", "labels", "timeouts", "memory", "Tables", "osfp",
 	"all", NULL
 };
