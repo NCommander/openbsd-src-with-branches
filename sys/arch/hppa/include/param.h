@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.32 2006/03/19 01:47:23 martin Exp $	*/
+/*	$OpenBSD: param.h,v 1.33 2006/08/12 17:54:38 krw Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -109,14 +109,6 @@
 #define HPMMMASK	0xF0000000
 #define ISHPMMADDR(v)	0		/* XXX ...jef */
 #define HPMMBASEADDR(v)	((unsigned)(v) & ~HPMMMASK)
-#endif
-
-#ifndef _LOCORE
-#define	CONADDR	conaddr
-#define	CONUNIT	conunit
-#define	COM_FREQ	7372800
-extern hppa_hpa_t conaddr;
-extern int conunit;
 #endif
 #endif
 
