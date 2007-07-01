@@ -1,4 +1,4 @@
-/*	$OpenBSD: obio.c,v 1.16 2004/09/29 07:35:11 miod Exp $	*/
+/*	$OpenBSD: obio.c,v 1.17 2007/05/29 09:54:11 sobrado Exp $	*/
 /*	$NetBSD: obio.c,v 1.37 1997/07/29 09:58:11 fair Exp $	*/
 
 /*
@@ -349,9 +349,9 @@ vmeattach(parent, self, aux)
 	node = ra->ra_node;
 
 	sc->sc_reg = (struct vmebusreg *)
-		mapdev(&ra->ra_reg[0], 0, 0, ra->ra_reg[0].rr_len);
+		mapiodev(&ra->ra_reg[0], 0, ra->ra_reg[0].rr_len);
 	sc->sc_vec = (struct vmebusvec *)
-		mapdev(&ra->ra_reg[1], 0, 0, ra->ra_reg[1].rr_len);
+		mapiodev(&ra->ra_reg[1], 0, ra->ra_reg[1].rr_len);
 
 	/*
 	 * Get "range" property, though we don't do anything with it yet.
