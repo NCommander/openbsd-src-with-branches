@@ -110,6 +110,14 @@
 #define ISHPMMADDR(v)	0		/* XXX ...jef */
 #define HPMMBASEADDR(v)	((unsigned)(v) & ~HPMMMASK)
 #endif
+
+#ifndef _LOCORE
+#define	CONADDR	conaddr
+#define	CONUNIT	conunit
+#define	COM_FREQ	7372800
+extern hppa_hpa_t conaddr;
+extern int conunit;
+#endif
 #endif
 
 #define	__SWAP_BROKEN
