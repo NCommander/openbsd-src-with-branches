@@ -402,6 +402,10 @@ struct cfattach ahci_pci_ca = {
 	sizeof(struct ahci_softc), ahci_pci_match, ahci_pci_attach
 };
 
+struct cfattach ahci_jmb_ca = {
+	sizeof(struct ahci_softc), ahci_pci_match, ahci_pci_attach
+};
+
 struct cfdriver ahci_cd = {
 	NULL, "ahci", DV_DULL
 };
