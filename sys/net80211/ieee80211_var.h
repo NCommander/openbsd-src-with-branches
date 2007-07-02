@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_var.h,v 1.24 2007/06/21 18:21:01 damien Exp $	*/
+/*	$OpenBSD: ieee80211_var.h,v 1.25 2007/06/21 20:11:16 damien Exp $	*/
 /*	$NetBSD: ieee80211_var.h,v 1.7 2004/05/06 03:07:10 dyoung Exp $	*/
 
 /*-
@@ -253,6 +253,12 @@ struct ieee80211com {
 							 */
 	struct ieee80211_edca_ac_params ic_edca_ac[EDCA_NUM_AC];
 	u_int			ic_edca_updtcount;
+
+	u_int8_t		*ic_tim_bitmap;
+	u_int			ic_tim_len;
+	u_int			ic_tim_mcast;
+	u_int			ic_dtim_period;
+	u_int			ic_dtim_count;
 };
 #define	ic_if		ic_ac.ac_if
 #define	ic_softc	ic_if.if_softc
