@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.77 2007/05/26 02:30:28 ray Exp $	*/
+/*	$OpenBSD: entries.c,v 1.78 2007/06/02 09:00:19 niallo Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -442,6 +442,7 @@ cvs_write_tagfile(const char *dir, char *tag, char *date, int nb)
 			}
 			return;
 		}
+
 		if (tag != NULL) {
 			if (nb != 0)
 				(void)fprintf(fp, "N%s\n", tag);

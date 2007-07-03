@@ -1,4 +1,4 @@
-/*	$OpenBSD: repository.c,v 1.12 2007/02/22 06:42:09 otto Exp $	*/
+/*	$OpenBSD: repository.c,v 1.13 2007/06/01 17:47:47 niallo Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -147,7 +147,10 @@ cvs_repository_getdir(const char *dir, const char *wdir,
 
 		switch (type) {
 		case CVS_DIR:
-			cvs_file_get(fpath, dl);
+			if (!strcmp(dp->d_name, CVS_PATH_ATTIC))
+				cvs_repository_getdir(rpath, wdir, fl, dl, 0);
+			else
+				cvs_file_get(fpath, dl);
 			break;
 		case CVS_FILE:
 			if ((s = strrchr(fpath, ',')) != NULL)
