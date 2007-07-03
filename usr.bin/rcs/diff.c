@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.22 2007/06/28 05:01:39 ray Exp $	*/
+/*	$OpenBSD: diff.c,v 1.23 2007/06/29 05:04:40 ray Exp $	*/
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
  * All rights reserved.
@@ -293,7 +293,7 @@ u_char cup2low[256] = {
 };
 
 int
-rcs_diffreg(const char *file1, const char *file2, BUF *out, int flags)
+diffreg(const char *file1, const char *file2, BUF *out, int flags)
 {
 	FILE *f1, *f2;
 	int i, rval;

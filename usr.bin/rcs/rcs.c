@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.39 2007/06/13 18:01:22 niallo Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.40 2007/06/30 08:23:49 xsa Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1408,8 +1408,8 @@ rcs_rev_remove(RCSFILE *rf, RCSNUM *rev)
 		rcs_buf_free(prevbuf);
 
 		diff_format = D_RCSDIFF;
-		if (rcs_diffreg(path_tmp1, path_tmp2, newdiff, 0) == D_ERROR)
-			errx(1, "rcs_diffreg failed");
+		if (diffreg(path_tmp1, path_tmp2, newdiff, 0) == D_ERROR)
+			errx(1, "diffreg failed");
 
 		newdeltatext = newdiff;
 	} else if (nextrdp == NULL && prevrdp != NULL) {
