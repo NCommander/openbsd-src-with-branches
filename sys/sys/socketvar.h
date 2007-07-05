@@ -1,4 +1,4 @@
-/*	$OpenBSD: socketvar.h,v 1.38 2005/11/21 18:16:46 millert Exp $	*/
+/*	$OpenBSD: socketvar.h,v 1.39 2007/02/26 23:53:33 kurt Exp $	*/
 /*	$NetBSD: socketvar.h,v 1.18 1996/02/09 18:25:38 christos Exp $	*/
 
 /*-
@@ -204,7 +204,7 @@ do {									\
  */
 #define sblock(sb, wf) ((sb)->sb_flags & SB_LOCK ? \
 		(((wf) == M_WAITOK) ? sb_lock(sb) : EWOULDBLOCK) : \
-		((sb)->sb_flags |= SB_LOCK), 0)
+		((sb)->sb_flags |= SB_LOCK, 0))
 
 /* release lock on sockbuf sb */
 #define	sbunlock(sb) { \
