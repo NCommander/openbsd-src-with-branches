@@ -1,4 +1,4 @@
-/*      $OpenBSD: whois.c,v 1.37 2006/06/01 18:17:35 mk Exp $   */
+/*      $OpenBSD: whois.c,v 1.38 2006/09/17 17:07:16 henning Exp $   */
 
 /*
  * Copyright (c) 1980, 1993
@@ -76,9 +76,9 @@ int
 main(int argc, char *argv[])
 {
 	int ch, flags, rval;
-	char *host, *name, *country, *server;
+	char *host, *name, *country;
 
-	country = host = server = NULL;
+	country = host = NULL;
 	flags = rval = 0;
 	while ((ch = getopt(argc, argv, "aAc:dgh:ilmp:qQrR6")) != -1)
 		switch (ch) {
