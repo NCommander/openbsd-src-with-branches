@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.163 2007/06/17 21:01:32 henning Exp $	*/
+/*	$OpenBSD: if.c,v 1.164 2007/07/04 12:15:53 claudio Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -552,9 +552,6 @@ do { \
 #endif
 #ifdef NATM
 	IF_DETACH_QUEUES(natmintrq);
-#endif
-#if NBLUETOOTH > 0
-	IF_DETACH_QUEUES(btintrq);
 #endif
 #undef IF_DETACH_QUEUES
 
