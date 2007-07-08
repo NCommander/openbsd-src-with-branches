@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2004/09/18 19:51:53 mickey Exp $
+# $OpenBSD: Makefile,v 1.10 2007/04/05 23:41:20 drahn Exp $
 # $FreeBSD: src/sys/dev/aic7xxx/Makefile,v 1.6 1999/08/28 00:41:22 peter Exp $
 
 PROG=	aicasm
@@ -21,7 +21,7 @@ CC=${HOSTCC}
 DEPENDFILE=
 .endif
 
-CFLAGS+= -I/usr/include -I. -I${.CURDIR}
+CFLAGS+= -I. -I${.CURDIR}
 YFLAGS= -d
 LFLAGS+= ${.TARGET:M*macro*:S/$(.TARGET)/-olex.yy.c/} ${.TARGET:M*macro*:S/$(.TARGET)/-Pmm/}
 NOMAN=	noman
