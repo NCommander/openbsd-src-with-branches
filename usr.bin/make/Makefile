@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.39 2006/04/25 11:47:43 espie Exp $
+#	$OpenBSD: Makefile,v 1.40 2007/03/18 15:37:06 mickey Exp $
 
 PROG=	make
 CFLAGS+= -I${.OBJDIR} -I${.CURDIR}
@@ -6,6 +6,7 @@ HOSTCFLAGS+= -I${.OBJDIR} -I${.CURDIR}
 CDIAGFLAGS=-Wall -W -Wno-char-subscripts -Wstrict-prototypes -pedantic \
 	-Wmissing-prototypes
 
+DESTDIR=
 CDEFS+=-DUSE_TIMESPEC
 CDEFS+=-DHAS_BOOL_H
 CDEFS+=-DHAS_PATHS_H
@@ -24,6 +25,8 @@ SRCS+=	lstAddNew.c lstAppend.c lstConcat.c lstConcatDestroy.c \
 	lstInsert.c lstMember.c lstRemove.c lstReplace.c lstSucc.c
 .PATH:	${.CURDIR}/lst.lib
 
+a:
+	echo "Bindir is ${BINDIR}"
 
 CLEANFILES+=generate hashconsts.h generate.o regress.o check
 
