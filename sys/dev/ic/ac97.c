@@ -1,4 +1,4 @@
-/*	$OpenBSD: ac97.c,v 1.60 2006/04/27 21:40:00 matthieu Exp $	*/
+/*	$OpenBSD: ac97.c,v 1.61 2006/06/30 14:46:11 mickey Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Constantine Sapuntzakis
@@ -539,13 +539,12 @@ void	ac97_setup_defaults(struct ac97_softc *);
 int	ac97_read(struct ac97_softc *, u_int8_t, u_int16_t *);
 int	ac97_write(struct ac97_softc *, u_int8_t, u_int16_t);
 
-#define AC97_DEBUG 10
 
 #ifdef AUDIO_DEBUG
 #define DPRINTF(x)	if (ac97debug) printf x
 #define DPRINTFN(n,x)	if (ac97debug>(n)) printf x
 #ifdef AC97_DEBUG
-int	ac97debug = AC97_DEBUG;
+int	ac97debug = 1;
 #else
 int	ac97debug = 0;
 #endif
