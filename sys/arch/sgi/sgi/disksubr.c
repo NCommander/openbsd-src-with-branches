@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.1 2007/06/18 21:46:41 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.2 2007/06/20 18:15:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -225,10 +225,6 @@ finished:
 	return checkdisklabel(bp->b_data + LABELOFFSET, lp);
 
 done:
-	if (bp) {
-		bp->b_flags |= B_INVAL;
-		brelse(bp);
-	}
 	return (msg);
 }
 
