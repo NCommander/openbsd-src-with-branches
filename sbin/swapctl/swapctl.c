@@ -1,4 +1,4 @@
-/*	$OpenBSD: swapctl.c,v 1.13 2004/01/12 19:46:08 avsm Exp $	*/
+/*	$OpenBSD: swapctl.c,v 1.14 2005/04/12 06:41:57 deraadt Exp $	*/
 /*	$NetBSD: swapctl.c,v 1.9 1998/07/26 20:23:15 mycroft Exp $	*/
 
 /*
@@ -208,11 +208,11 @@ main(int argc, char *argv[])
 	/* Dispatch the command. */
 	switch (command) {
 	case CMD_l:
-		list_swap(pri, kflag, pflag, 0, 1);
+		list_swap(pri, kflag, pflag, 1);
 		break;
 
 	case CMD_s:
-		list_swap(pri, kflag, pflag, 0, 0);
+		list_swap(pri, kflag, pflag, 0);
 		break;
 
 	case CMD_c:
