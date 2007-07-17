@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: cond.c,v 1.33 2007/03/20 03:50:39 tedu Exp $	*/
+/*	$OpenBSD: cond.c,v 1.34 2007/07/08 17:44:20 espie Exp $	*/
 /*	$NetBSD: cond.c,v 1.7 1996/11/06 17:59:02 christos Exp $	*/
 
 /*
@@ -171,6 +171,7 @@ static const char *
 find_cond(const char *p)
 {
     for (;;p++) {
+    	/* XXX: when *p == '\0', strchr() returns !NULL */
 	if (strchr(" \t)&|$", *p) != NULL)
 	    return p;
     }
