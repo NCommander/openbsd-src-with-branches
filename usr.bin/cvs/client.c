@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.68 2007/06/29 12:42:05 xsa Exp $	*/
+/*	$OpenBSD: client.c,v 1.69 2007/07/03 13:22:42 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -390,7 +390,8 @@ cvs_client_senddir(const char *dir)
 
 	cvs_get_repository_path(dir, repo, MAXPATHLEN);
 
-	cvs_client_send_request("Directory %s\n%s", dir, repo);
+	if (cvs_cmdop != CVS_OP_RLOG)
+		cvs_client_send_request("Directory %s\n%s", dir, repo);
 
 	(void)xsnprintf(fpath, MAXPATHLEN, "%s/%s",
 	    dir, CVS_PATH_STATICENTRIES);
