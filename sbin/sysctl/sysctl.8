@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sysctl.8,v 1.138 2007/05/31 19:19:48 jmc Exp $
+.\"	$OpenBSD: sysctl.8,v 1.139 2007/06/04 20:06:22 henning Exp $
 .\"	$NetBSD: sysctl.8,v 1.4 1995/09/30 07:12:49 thorpej Exp $
 .\"
 .\" Copyright (c) 1993
@@ -336,7 +336,7 @@ not all of the variables are relevant to all architectures.
 .It hw.diskstats	struct	no
 .It hw.disknames	string	no
 .It hw.diskcount	integer	no
-.It hw.sensors	struct	no
+.It hw.sensors.<xname>.<type><numt>	struct	no
 .It hw.cpuspeed	integer	no
 .It hw.setperf	integer	yes
 .It hw.vendor	string	no
