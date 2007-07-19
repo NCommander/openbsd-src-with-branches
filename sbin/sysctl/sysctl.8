@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sysctl.8,v 1.139 2007/06/04 20:06:22 henning Exp $
+.\"	$OpenBSD: sysctl.8,v 1.140 2007/07/18 15:50:29 cnst Exp $
 .\"	$NetBSD: sysctl.8,v 1.4 1995/09/30 07:12:49 thorpej Exp $
 .\"
 .\" Copyright (c) 1993
@@ -199,7 +199,7 @@ not all of the variables are relevant to all architectures.
 .It kern.emul.other	integer	yes
 .It kern.maxclusters	integer	yes
 .It kern.timecounter.tick	integer	no
-.It kern.timecounter.timestepwarnings	integer	no
+.It kern.timecounter.timestepwarnings	integer	yes
 .It kern.timecounter.hardware	string	yes
 .It kern.timecounter.choice	string	no
 .It vm.vmmeter	struct	no
