@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.83 2007/05/28 19:20:14 tedu Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.84 2007/06/02 09:45:32 art Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -239,8 +239,29 @@ struct mbuf *
 m_free(struct mbuf *m)
 {
 	struct mbuf *n;
+	int s;
 
-	MFREE(m, n);
+	s = splvm();
+	mbstat.m_mtypes[m->m_type]--;
+	if (m->m_flags & M_PKTHDR)
+		m_tag_delete_chain(m);
+	if (m->m_flags & M_EXT) {
+		if (MCLISREFERENCED(m))
+			_MCLDEREFERENCE(m);
+		else if (m->m_flags & M_CLUSTER)
+			pool_put(&mclpool, m->m_ext.ext_buf);
+		else if (m->m_ext.ext_free)
+			(*(m->m_ext.ext_free))(m->m_ext.ext_buf,
+			    m->m_ext.ext_size, m->m_ext.ext_arg);
+		else
+			free(m->m_ext.ext_buf,m->m_ext.ext_type);
+		m->m_flags &= ~(M_CLUSTER|M_EXT);
+		m->m_ext.ext_size = 0;
+	}
+	n = m->m_next;
+	pool_put(&mbpool, m);
+	splx(s);
+
 	return (n);
 }
 
