@@ -1094,13 +1094,15 @@ Var_NewLoopVar(const char *name, const char *ename)
 
 	l->me = find_global_var_without_env(name, ename, k);
 	l->old = *(l->me);			
-	l->me->flags |= VAR_SEEN_ENV;
+	l->me->flags = VAR_SEEN_ENV | VAR_DUMMY;
 	return l;
 }
 
 void
 Var_DeleteLoopVar(struct LoopVar *l)
 {
+	if ((l->me->flags & VAR_DUMMY) == 0)
+		Buf_Destroy(&(l->me->val));
 	*(l->me) = l->old;
 	free(l);
 }
