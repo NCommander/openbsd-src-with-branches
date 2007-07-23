@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.81 2007/02/06 22:39:13 dlg Exp $	*/
+/*	$OpenBSD: conf.h,v 1.82 2007/06/06 17:15:14 deraadt Exp $	*/
 /*	$NetBSD: conf.h,v 1.33 1996/05/03 20:03:32 christos Exp $	*/
 
 /*-
@@ -483,6 +483,13 @@ void	randomattach(void);
 	(dev_type_stop((*))) enodev, 0, (dev_type_poll((*))) enodev, \
 	(dev_type_mmap((*))) enodev }
 
+/* open, close, ioctl */
+#define       cdev_bthub_init(c,n) { \
+	dev_init(c,n,open), dev_init(c,n,close), (dev_type_read((*))) enodev, \
+	(dev_type_write((*))) enodev, dev_init(c,n,ioctl), \
+	(dev_type_stop((*))) enodev, 0, (dev_type_poll((*))) enodev, \
+	(dev_type_mmap((*))) enodev }
+
 #endif
 
 /*
@@ -623,6 +630,7 @@ cdev_decl(crypto);
 cdev_decl(systrace);
 
 cdev_decl(bio);
+cdev_decl(bthub);
 
 cdev_decl(gpr);
 cdev_decl(bktr);
