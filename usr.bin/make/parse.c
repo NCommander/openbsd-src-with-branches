@@ -609,7 +609,7 @@ ParseDoDependency(char *line)	/* the line to parse */
 		 * so we can safely advance beyond it...There should be
 		 * no errors in this, as they would have been discovered
 		 * in the initial Var_Subst and we wouldn't be here.  */
-		cp += Var_ParseSkip(cp, NULL, NULL);
+		Var_ParseSkip(&cp, NULL);
 	    else {
 		/* We don't want to end a word on ':' or '!' if there is a
 		 * better match later on in the string.  By "better" I mean
