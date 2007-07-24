@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.30 2007/06/01 23:14:06 deraadt Exp $ */
+/*	$OpenBSD: conf.c,v 1.31 2007/06/04 10:23:51 otto Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -121,6 +121,7 @@ cdev_decl(xfs_dev);
 #include "inet.h"
 
 #include "apm.h"
+#include "bthub.h"
 
 #include "wsmux.h"
 
@@ -235,6 +236,7 @@ struct cdevsw cdevsw[] = {
 	cdev_hotplug_init(NHOTPLUG,hotplug), /* 78: devices hot plugging */
 	cdev_gpio_init(NGPIO,gpio),	/* 79: GPIO interface */
 	cdev_bio_init(NBIO,bio),	/* 80: ioctl tunnel */
+	cdev_bthub_init(NBTHUB,bthub),	/* 81: bthub */
 };
 int nchrdev = sizeof cdevsw / sizeof cdevsw[0];
 
