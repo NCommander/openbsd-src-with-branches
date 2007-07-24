@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.31 2007/02/17 13:32:15 jmc Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.32 2007/02/17 18:27:38 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -89,7 +89,7 @@ main(int argc, char *argv[])
 			break;
 		case 'd':
 			daemonize = 0;
-			log_perror = -1;
+			log_perror = 1;
 			break;
 		case 'f':
 			daemonize = 0;
@@ -100,7 +100,7 @@ main(int argc, char *argv[])
 		case 'n':
 			daemonize = 0;
 			cftest = 1;
-			log_perror = -1;
+			log_perror = 1;
 			break;
 		default:
 			usage();
