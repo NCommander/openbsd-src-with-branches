@@ -1,4 +1,4 @@
-.\"	$OpenBSD: hoststated.conf.5,v 1.44 2007/05/29 17:12:04 reyk Exp $
+.\"	$OpenBSD: hoststated.conf.5,v 1.45 2007/05/31 19:20:24 jmc Exp $
 .\"
 .\" Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
 .\"
@@ -672,7 +672,7 @@ interval 5
 table phphosts {
 	timeout 300
 	real port 8080
-	check http "/" digest 630aa3c2f...
+	check http "/" digest "630aa3c2f..."
 	host $www1
 	host $www2
 	host $www3
