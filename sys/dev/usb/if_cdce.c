@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.34 2007/07/23 16:41:15 mbalmer Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.35 2007/07/25 16:42:24 mbalmer Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -619,8 +619,9 @@ cdce_init(void *xsc)
 		    &sc->cdce_intr_buf, sc->cdce_intr_size, cdce_intr,
 		    USBD_DEFAULT_INTERVAL);
 		if (err) {
-			printf("Failed to establish interrupt pipe: %s\n",
-			    usbd_errstr(err));
+			printf("%s: open interrupt pipe failed: %s\n",
+			    sc->cdce_dev.dv_xname, usbd_errstr(err));
+			splx(s);
 			return;
 		}
 	}
