@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.98 2007/05/16 17:27:30 art Exp $	*/
+/*	$OpenBSD: proc.h,v 1.91 2007/03/21 09:09:52 art Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -224,8 +224,6 @@ struct proc {
 					/* pad to 256, avoid shifting eproc. */
 
 	sigset_t p_sigdivert;		/* Signals to be diverted to thread. */
-
-	TAILQ_HEAD(,selinfo) p_selects;	/* selinfos we're selecting on */
 
 /* End area that is zeroed on creation. */
 #define	p_endzero	p_startcopy

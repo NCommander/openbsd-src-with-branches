@@ -496,6 +496,8 @@ bpf_wakeup(struct bpf_d *d)
 		    d->bd_siguid, d->bd_sigeuid);
 
 	selwakeup(&d->bd_sel);
+	/* XXX */
+	d->bd_sel.si_selpid = 0;
 	KNOTE(&d->bd_sel.si_note, 0);
 }
 
