@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.31 2006/03/17 23:05:32 otto Exp $	*/
+/*	$OpenBSD: cp.c,v 1.32 2006/04/25 15:41:07 deraadt Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)cp.c	8.5 (Berkeley) 4/29/95";
 #else
-static char rcsid[] = "$OpenBSD: cp.c,v 1.31 2006/03/17 23:05:32 otto Exp $";
+static char rcsid[] = "$OpenBSD: cp.c,v 1.32 2006/04/25 15:41:07 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -127,7 +127,7 @@ main(int argc, char *argv[])
 			iflag = 0;
 			break;
 		case 'i':
-			iflag = isatty(fileno(stdin));
+			iflag = isatty(STDIN_FILENO);
 			fflag = 0;
 			break;
 		case 'p':
