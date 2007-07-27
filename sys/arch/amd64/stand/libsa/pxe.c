@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxe.c,v 1.3 2005/03/13 22:31:49 tom Exp $ */
+/*	$OpenBSD: pxe.c,v 1.4 2006/05/20 22:37:43 deraadt Exp $ */
 /*	$NetBSD: pxe.c,v 1.5 2003/03/11 18:29:00 drochner Exp $	*/
 
 /*
@@ -115,6 +115,8 @@ BOOTPLAYER bootplayer;
 
 struct in_addr servip;			/* for tftp */	/* XXX init this */
 
+extern char *bootmac;			/* To pass to kernel */
+
 /* static struct btinfo_netif bi_netif; */
 
 /*****************************************************************************
@@ -230,7 +232,7 @@ pxe_netif_open()
 	}
 
 	bcopy(bootplayer.CAddr, desc.myea, ETHER_ADDR_LEN);
-	addbootarg(BOOTARG_BOOTMAC, sizeof(bios_bootmac_t), bootplayer.CAddr);
+	bootmac = bootplayer.CAddr;
 
 	/*
 	 * Since the PXE BIOS has already done DHCP, make sure we
