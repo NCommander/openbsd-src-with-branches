@@ -1,4 +1,4 @@
-/* $OpenBSD: display.c,v 1.25 2007/05/29 00:56:56 otto Exp $	 */
+/* $OpenBSD: display.c,v 1.26 2007/07/27 13:57:50 deraadt Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -505,7 +505,7 @@ i_process(int line, char *thisline, int hl)
 }
 
 void
-u_endscreen(int hi)
+u_endscreen(void)
 {
 	if (smart_terminal) {
 		clrtobot();

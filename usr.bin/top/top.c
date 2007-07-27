@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.50 2007/04/01 19:07:48 jmc Exp $	*/
+/*	$OpenBSD: top.c,v 1.51 2007/05/29 00:56:56 otto Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -463,7 +463,7 @@ restart:
 			i = 0;
 
 		/* do end-screen processing */
-		u_endscreen(i);
+		u_endscreen();
 
 		/* now, flush the output buffer */
 		fflush(stdout);
