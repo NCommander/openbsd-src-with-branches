@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: btdev.h,v 1.6 2007/04/21 06:15:22 plunky Exp $	*/
 
 /*-
