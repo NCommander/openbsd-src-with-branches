@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: lstMember.c,v 1.12 2003/06/03 02:56:12 millert Exp $	*/
+/*	$OpenBSD: lstMember.c,v 1.13 2004/04/07 13:11:36 espie Exp $	*/
 /*	$NetBSD: lstMember.c,v 1.5 1996/11/06 17:59:48 christos Exp $	*/
 
 /*
@@ -45,10 +45,10 @@
 LstNode
 Lst_Member(Lst l, void *d)
 {
-    LstNode		lNode;
+	LstNode lNode;
 
-    for (lNode = l->firstPtr; lNode != NULL; lNode = lNode->nextPtr)
-	if (lNode->datum == d)
-	    return lNode;
-    return NULL;
+	for (lNode = l->firstPtr; lNode != NULL; lNode = lNode->nextPtr)
+		if (lNode->datum == d)
+			return lNode;
+	return NULL;
 }
