@@ -542,22 +542,22 @@ do_assign(const char *s, const struct Name *n, void *arg)
 
     switch (v->flags) {
     case VAR_EQUAL:
-    	Var_Seti(n->s, n->e, v->lbuffer, VAR_GLOBAL);
+    	Var_Seti(n->s, n->e, v->lbuffer);
 	break;
     case VAR_MAY_EQUAL:
     	if (s == NULL)
-	    Var_Seti(n->s, n->e, v->lbuffer, VAR_GLOBAL);
+	    Var_Seti(n->s, n->e, v->lbuffer);
 	break;
     case VAR_ADD_EQUAL:
     	if (s == NULL)
-	    Var_Seti(n->s, n->e, v->lbuffer, VAR_GLOBAL);
+	    Var_Seti(n->s, n->e, v->lbuffer);
 	else
-	    Var_Appendi(n->s, n->e, v->lbuffer, VAR_GLOBAL);
+	    Var_Appendi(n->s, n->e, v->lbuffer);
 	break;
     case VAR_BANG_EQUAL:
     	result = Cmd_Exec(v->lbuffer, &msg);
 	if (result != NULL) {
-		Var_Seti(n->s, n->e, result, VAR_GLOBAL);
+		Var_Seti(n->s, n->e, result);
 		free(result);
 	} else
 		Error(msg, v->lbuffer);

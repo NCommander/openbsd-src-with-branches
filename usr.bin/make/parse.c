@@ -436,7 +436,7 @@ ParseDoSrc(
 	 * Add the name to the .TARGETS variable as well, so the user can
 	 * employ that, if desired.
 	 */
-	Var_Append(".TARGETS", src, VAR_GLOBAL);
+	Var_Append(".TARGETS", src);
 	return;
 
     case Order:

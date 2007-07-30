@@ -184,7 +184,7 @@ parse_variable_assignment(const char *line, int ctxt)
 		/* ensure the variable is set to something to avoid `variable
 		 * is recursive' errors.  */
 		if (!Var_Definedi(name.s, name.e))
-			Var_Seti(name.s, name.e, "", ctxt);
+			Var_Seti_with_ctxt(name.s, name.e, "", ctxt);
 
 		res2 = Var_Subst(arg, NULL, false);
 		errorIsOkay = saved;
@@ -193,9 +193,9 @@ parse_variable_assignment(const char *line, int ctxt)
 	}
 
 	if (type & VAR_APPEND)
-		Var_Appendi(name.s, name.e, arg, ctxt);
+		Var_Appendi_with_ctxt(name.s, name.e, arg, ctxt);
 	else
-		Var_Seti(name.s, name.e, arg, ctxt);
+		Var_Seti_with_ctxt(name.s, name.e, arg, ctxt);
 
 	VarName_Free(&name);
 	free(res2);

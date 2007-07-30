@@ -792,9 +792,9 @@ Suff_DoPaths(void)
 	    Lst_Clone(&s->searchPath, dirSearchPath, Dir_CopyDir);
     }
 
-    Var_Set(".INCLUDES", ptr = Dir_MakeFlags("-I", &inIncludes), VAR_GLOBAL);
+    Var_Set(".INCLUDES", ptr = Dir_MakeFlags("-I", &inIncludes));
     free(ptr);
-    Var_Set(".LIBS", ptr = Dir_MakeFlags("-L", &inLibs), VAR_GLOBAL);
+    Var_Set(".LIBS", ptr = Dir_MakeFlags("-L", &inLibs));
     free(ptr);
 
     Lst_Destroy(&inIncludes, Dir_Destroy);
