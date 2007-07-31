@@ -1,4 +1,0 @@
-dnl	$OpenBSD: whatis,v 1.7 2004/09/10 19:11:52 miod Exp $
-
-OpenBSD/MACHINE runs on a broad range of VAX machines, formerly manufactured
-by Digital (now HP).
