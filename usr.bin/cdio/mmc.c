@@ -1,4 +1,4 @@
-/* $OpenBSD: mmc.c,v 1.15 2006/08/26 03:48:50 deraadt Exp $ */
+/* $OpenBSD: mmc.c,v 1.16 2006/08/28 02:36:43 mjc Exp $ */
 
 /*
  * Copyright (c) 2006 Michael Coulter <mjc@openbsd.org>
@@ -223,7 +223,7 @@ writetrack(struct track_info *tr, int track)
 again:
 			r = ioctl(fd, SCIOCCOMMAND, &scr);
 			if (r != 0) {
-				printf("%60s\r", "");
+				printf("\r%60s", "");
 				warn("ioctl failed while attempting to write");
 				return (-1);
 			}
@@ -232,7 +232,7 @@ again:
 				goto again;
 			}
 			if (scr.retsts != SCCMD_OK) {
-				printf("%60s\r", "");
+				printf("\r%60s", "");
 				warnx("ioctl returned bad status while "
 				    "attempting to write: %d",
 				    scr.retsts);
@@ -243,7 +243,7 @@ again:
 			gettimeofday(&tv, NULL);
 			if (lba == end_lba || timercmp(&tv, &otv, >)) {
 				fprintf(stderr,
-				    "track %02d '%c' %08u/%08u %3d%%\r",
+				    "\rtrack %02d '%c' %08u/%08u %3d%%",
 				    track, tr->type,
 				    lba, end_lba, 100 * lba / end_lba);
 				timeradd(&tv, &atv, &otv);
