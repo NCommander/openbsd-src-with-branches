@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.251 2007/05/04 03:49:17 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.252 2007/05/04 07:31:43 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -286,7 +286,6 @@ snap_pre:
 MAKEDEVARCHS+= alpha
 MAKEDEVARCHS+= amd64
 MAKEDEVARCHS+= armish
-MAKEDEVARCHS+= cats
 MAKEDEVARCHS+= hp300
 MAKEDEVARCHS+= hppa
 MAKEDEVARCHS+= hppa64
