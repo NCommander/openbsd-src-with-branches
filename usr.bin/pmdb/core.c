@@ -1,4 +1,4 @@
-/*	$OpenBSD: core.c,v 1.5 2003/03/29 00:01:46 mickey Exp $	*/
+/*	$OpenBSD: core.c,v 1.6 2003/08/17 23:43:45 mickey Exp $	*/
 /*
  * Copyright (c) 2002 Jean-Francois Brousseau <krapht@secureops.com>
  * All rights reserved. 
@@ -66,6 +66,7 @@ read_core(const char *path, struct pstate *ps)
 	    cfd, 0);
 	if (core_map == MAP_FAILED)
 		err(1, "mmap() failed on core");
+	close(cfd);
 
 	cf->chdr = (struct core *)core_map;
 	c_off = cf->chdr->c_hdrsize;
