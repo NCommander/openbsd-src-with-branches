@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto.h,v 1.3 2007/07/18 18:10:31 damien Exp $	*/
+/*	$OpenBSD: ieee80211_crypto.h,v 1.4 2007/07/28 11:01:19 damien Exp $	*/
 /*	$NetBSD: ieee80211_crypto.h,v 1.2 2003/09/14 01:14:55 dyoung Exp $	*/
 
 /*-
@@ -67,7 +67,8 @@ struct ieee80211_key {
 #define IEEE80211_KEY_GROUP	0x00000001	/* group key */
 #define IEEE80211_KEY_TX	0x00000002	/* Tx+Rx */
 
-	u_int64_t		k_rsc;		/* receive sequence counter */
+	u_int64_t		k_rsc;
+	u_int64_t		k_tsc;
 	int			k_len;
 	u_int8_t		k_key[IEEE80211_KEYBUF_SIZE];
 };
