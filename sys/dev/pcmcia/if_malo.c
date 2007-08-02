@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_malo.c,v 1.28 2007/07/31 23:19:40 mglocker Exp $ */
+/*      $OpenBSD: if_malo.c,v 1.29 2007/08/01 11:30:22 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -860,6 +860,7 @@ cmalo_rx(struct malo_softc *sc)
 	}
 	m->m_pkthdr.rcvif = ifp;
 	m->m_pkthdr.len = m->m_len = rxdesc->pkglen;
+	m->m_data += ETHER_ALIGN;
 	data = mtod(m, uint8_t *);
 	bcopy(sc->sc_data + rxdesc->pkgoffset, data, m->m_pkthdr.len);
 
