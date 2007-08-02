@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.31 2005/12/11 20:31:21 otto Exp $	*/
+/*	$OpenBSD: edit.c,v 1.32 2007/08/01 10:08:56 fgsch Exp $	*/
 
 /*
  * Command line editing - common code
@@ -431,12 +431,18 @@ x_file_glob(int flags, const char *str, int slen, char ***wordsp)
 		    stat(words[0], &statb) < 0) ||
 		    words[0][0] == '\0') {
 			x_free_words(nwords, words);
+			words = NULL;
 			nwords = 0;
 		}
 	}
 	afree(toglob, ATEMP);
 
-	*wordsp = nwords ? words : (char **) 0;
+	if (nwords) {
+		*wordsp = words;
+	} else if (words) {
+		x_free_words(nwords, words);
+		*wordsp = NULL;
+	}
 
 	return nwords;
 }
