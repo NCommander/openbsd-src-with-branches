@@ -981,7 +981,7 @@ setspec(struct tbl *vp)
 			afree(tmpdir, APERM);
 			tmpdir = (char *) 0;
 		}
-		/* Use tmpdir if it is an absolute path, is writable and
+		/* Use tmpdir iff it is an absolute path, is writable and
 		 * searchable and is a directory...
 		 */
 		{

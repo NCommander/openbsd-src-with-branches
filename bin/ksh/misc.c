@@ -495,7 +495,7 @@ gmatch(const char *s, const char *p, int isfile)
 		return 0;
 	se = s + strlen(s);
 	pe = p + strlen(p);
-	/* isfile is false if no syntax check has been done on
+	/* isfile is false iff no syntax check has been done on
 	 * the pattern.  If check fails, just to a strcmp().
 	 */
 	if (!isfile && !has_globbing(p, pe)) {

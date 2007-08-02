@@ -681,7 +681,7 @@ expand(char *cp,	/* input word */
 static int
 varsub(Expand *xp, char *sp, char *word,
     int *stypep,	/* becomes qualifier type */
-    int *slenp)		/* " " len (=, :=, etc.) valid if *stypep != 0 */
+    int *slenp)		/* " " len (=, :=, etc.) valid iff *stypep != 0 */
 {
 	int c;
 	int state;	/* next state: XBASE, XARG, XSUB, XNULLSUB */
