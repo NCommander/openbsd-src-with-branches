@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.107 2007/06/01 06:38:54 deraadt Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.108 2007/06/06 09:53:16 pedro Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -1445,7 +1445,6 @@ ffs_sbupdate(struct ufsmount *mp, int waitfor)
 	 * being written out as clean.
 	 */
 	if (allerror) {
-		brelse(bp);
 		return (allerror);
 	}
 
