@@ -592,7 +592,7 @@ add_target_nodes(const char *line)
 		Dir_Expand(line, &emptyPath, &curTargs);
 		Lst_Destroy(&emptyPath, Dir_Destroy);
 		while ((targName = (char *)Lst_DeQueue(&curTargs)) != NULL) {
-			add_target_node(line);
+			add_target_node(targName);
 		}
 		Lst_Destroy(&curTargs, NOFREE);
 	} else {
