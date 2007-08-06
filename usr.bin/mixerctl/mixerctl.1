@@ -1,4 +1,4 @@
-.\" $OpenBSD: mixerctl.1,v 1.26 2005/10/18 14:49:35 jmc Exp $
+.\" $OpenBSD: mixerctl.1,v 1.27 2007/05/31 19:20:13 jmc Exp $
 .\" $NetBSD: mixerctl.1,v 1.8 1998/05/09 12:41:16 augustss Exp $
 .\"
 .\" Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -34,7 +34,7 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: May 31 2007 $
 .Dt MIXERCTL 1
 .Os
 .Sh NAME
@@ -48,17 +48,16 @@
 .Nm mixerctl
 .Op Fl nv
 .Op Fl f Ar file
-.Ar name Op Ar ...
+.Ar name ...
 .Nm mixerctl
 .Op Fl qt
 .Op Fl f Ar file
-.Ar name Op Ar ...
+.Ar name ...
 .Nm mixerctl
 .Op Fl q
 .Pf \ \& Op Fl f Ar file
 .Xo
-.Ar name Ns = Ns Ar value
-.Op Ar ...
+.Ar name Ns = Ns Ar value ...
 .Xc
 .Sh DESCRIPTION
 The

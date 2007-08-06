@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-#	$OpenBSD: mkdep.gcc.sh,v 1.12 2003/06/03 02:56:13 millert Exp $
+#	$OpenBSD: mkdep.gcc.sh,v 1.13 2003/07/16 09:38:01 otto Exp $
 #	$NetBSD: mkdep.gcc.sh,v 1.9 1994/12/23 07:34:59 jtc Exp $
 #
 # Copyright (c) 1991, 1993
@@ -78,7 +78,7 @@ while :
 done
 
 if [ $# = 0 ] ; then
-	echo 'usage: mkdep [-p] [-f depend_file] [cc_flags] file ...'
+	echo 'usage: mkdep [-ap] [-f file] [flags] file ...'
 	exit 1
 fi
 

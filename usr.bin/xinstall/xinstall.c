@@ -1,4 +1,4 @@
-/*	$OpenBSD: xinstall.c,v 1.44 2007/05/16 17:33:07 moritz Exp $	*/
+/*	$OpenBSD: xinstall.c,v 1.45 2007/05/25 20:32:29 krw Exp $	*/
 /*	$NetBSD: xinstall.c,v 1.9 1995/12/20 10:25:17 jonathan Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)xinstall.c	8.1 (Berkeley) 7/21/93";
 #endif
-static char rcsid[] = "$OpenBSD: xinstall.c,v 1.44 2007/05/16 17:33:07 moritz Exp $";
+static char rcsid[] = "$OpenBSD: xinstall.c,v 1.45 2007/05/25 20:32:29 krw Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -601,7 +601,7 @@ void
 usage(void)
 {
 	(void)fprintf(stderr, "\
-usage: install [-bCcdpSs] [-B suffix] [-f flags] [-g group] [-m mode] [-o owner]\n	       source [...] target [...]\n");
+usage: install [-bCcdpSs] [-B suffix] [-f flags] [-g group] [-m mode] [-o owner]\n	       source ... target ...\n");
 	exit(EX_USAGE);
 	/* NOTREACHED */
 }

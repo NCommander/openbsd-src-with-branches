@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccdconfig.c,v 1.30 2007/04/06 06:41:42 tedu Exp $	*/
+/*	$OpenBSD: ccdconfig.c,v 1.31 2007/04/17 15:52:24 tedu Exp $	*/
 /*	$NetBSD: ccdconfig.c,v 1.6 1996/05/16 07:11:18 thorpej Exp $	*/
 
 /*-
@@ -720,10 +720,10 @@ static void
 usage(void)
 {
 
-	fprintf(stderr, "usage: %s [-cv] ccd ileave [flags] %s\n", __progname,
-	    "dev [...]");
+	fprintf(stderr, "usage: %s [-cv] ccd ileave [flags] dev ...\n",
+	    __progname);
 	fprintf(stderr, "       %s -C [-v] [-f config_file]\n", __progname);
-	fprintf(stderr, "       %s -u [-v] ccd [...]\n", __progname);
+	fprintf(stderr, "       %s -u [-v] ccd ...\n", __progname);
 	fprintf(stderr, "       %s -U [-v] [-f config_file]\n", __progname);
 	exit(1);
 }
