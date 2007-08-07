@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.34 2006/06/23 22:20:39 sturm Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.35 2006/06/25 15:01:53 sturm Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -613,7 +613,7 @@ relookup(struct vnode *dvp, struct vnode **vpp, struct componentname *cnp)
 	int rdonly;			/* lookup read-only flag bit */
 	int error = 0;
 #ifdef NAMEI_DIAGNOSTIC
-	int newhash;			/* DEBUG: check name hash */
+	u_int32_t newhash;		/* DEBUG: check name hash */
 	char *cp;			/* DEBUG: check name ptr/len */
 #endif
 
