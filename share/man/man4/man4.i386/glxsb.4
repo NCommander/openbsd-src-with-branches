@@ -1,4 +1,4 @@
-.\"	$OpenBSD: glxsb.4,v 1.4 2007/03/18 22:44:12 jmc Exp $
+.\"	$OpenBSD: glxsb.4,v 1.5 2007/05/31 19:19:54 jmc Exp $
 .\"
 .\"Copyright (c) 2006 Tom Cosgrove <tom@openbsd.org>
 .\"
@@ -55,9 +55,3 @@ The
 .Nm
 driver was written by
 .An Tom Cosgrove .
-.Sh BUGS
-The
-.Nm
-driver only provides random numbers and AES acceleration.
-Since it does not provide HMACs, IPSec will not currently use it;
-it will however be used by OpenSSH.
