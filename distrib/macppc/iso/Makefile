@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.19 2007/06/17 00:28:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2007/08/10 02:28:53 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -17,7 +17,7 @@ ${CDROM}:
 	    ${.OBJDIR}/cd-dir/${OSREV}/macppc
 	cp -p ${RELDIR}/{bsd,bsd.rd} \
 	    ${.OBJDIR}/cd-dir/${OSREV}/macppc
-	cp -p ${RELXDIR}/{xetc,xfont,xserv,xshare}${OSrev}.tgz \
+	cp -p ${RELXDIR}/{xbase,xetc,xfont,xserv,xshare}${OSrev}.tgz \
 	    ${.OBJDIR}/cd-dir/${OSREV}/macppc
 	cp -p ${RELDIR}/INSTALL.macppc \
 	    ${.OBJDIR}/cd-dir/${OSREV}/macppc
