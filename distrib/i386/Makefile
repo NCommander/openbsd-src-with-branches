@@ -1,6 +1,10 @@
-#	$OpenBSD: Makefile,v 1.6 2003/03/04 09:28:16 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2004/08/15 21:43:35 deraadt Exp $
 
 SUBDIR= ramdisk_cd ramdiskA ramdiskB ramdiskC cdfs cdfs-emu
+
+.if	make(obj)
+SUBDIR+= iso
+.endif
 
 unconfig:
 	cd ramdisk_cd; ${MAKE} unconfig
