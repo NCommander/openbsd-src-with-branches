@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nxe.c,v 1.10 2007/08/15 00:16:22 dlg Exp $ */
+/*	$OpenBSD: if_nxe.c,v 1.11 2007/08/15 00:22:16 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -316,6 +316,8 @@ nxe_attach(struct device *parent, struct device *self, void *aux)
 		/* error already printed by nxe_pci_map() */
 		return;
 	}
+
+	nxe_crb_set(sc, 1);
 
 	printf("\n");
 }
