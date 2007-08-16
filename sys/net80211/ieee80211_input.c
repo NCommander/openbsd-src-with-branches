@@ -355,9 +355,6 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 				ic->ic_stats.is_rx_nowep++;
 				goto out;
 			}
-		} else if (ic->ic_flags & IEEE80211_F_WEPON) {
-			ic->ic_stats.is_rx_unencrypted++;
-			goto out;
 		}
 #if NBPFILTER > 0
 		/* copy to listener after decrypt */
