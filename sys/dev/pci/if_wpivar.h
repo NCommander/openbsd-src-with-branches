@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpivar.h,v 1.11 2007/06/05 19:49:40 damien Exp $	*/
+/*	$OpenBSD: if_wpivar.h,v 1.12 2007/06/16 14:15:37 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007
@@ -80,7 +80,7 @@ struct wpi_tx_ring {
 	int			cur;
 };
 
-#define WPI_RBUF_COUNT	(WPI_RX_RING_COUNT + 16)
+#define WPI_RBUF_COUNT	(WPI_RX_RING_COUNT + 32)
 
 struct wpi_softc;
 
