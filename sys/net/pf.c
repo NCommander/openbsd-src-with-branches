@@ -3842,7 +3842,8 @@ pf_test_state_tcp(struct pf_state **state, int direction, struct pfi_kif *kif,
 	    (ackskew <= (MAXACKWINDOW << sws)) &&
 	    /* Acking not more than one window forward */
 	    ((th->th_flags & TH_RST) == 0 || orig_seq == src->seqlo ||
-	    (orig_seq == src->seqlo + 1) || (pd->flags & PFDESC_IP_REAS) == 0)) {
+	    (orig_seq == src->seqlo + 1) || (orig_seq + 1 == src->seqlo) ||
+	    (pd->flags & PFDESC_IP_REAS) == 0)) {
 	    /* Require an exact/+1 sequence match on resets when possible */
 
 		if (dst->scrub || src->scrub) {
@@ -3937,9 +3938,12 @@ pf_test_state_tcp(struct pf_state **state, int direction, struct pfi_kif *kif,
 			pf_print_state(*state);
 			pf_print_flags(th->th_flags);
 			printf(" seq=%u (%u) ack=%u len=%u ackskew=%d "
-			    "pkts=%llu:%llu\n", seq, orig_seq, ack, pd->p_len,
-			    ackskew, (*state)->packets[0],
-			    (*state)->packets[1]);
+			    "pkts=%llu:%llu dir=%s,%s\n", seq, orig_seq, ack,
+			    pd->p_len, ackskew, (*state)->packets[0],
+			    (*state)->packets[1],
+			    direction == PF_IN ? "in" : "out",
+			    direction == (*state)->state_key->direction ?
+				"fwd" : "rev");
 		}
 
 		if (dst->scrub || src->scrub) {
