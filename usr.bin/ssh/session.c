@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.221 2007/01/21 01:41:54 stevesk Exp $ */
+/* $OpenBSD: session.c,v 1.222 2007/08/23 02:49:43 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -42,6 +42,7 @@
 
 #include <errno.h>
 #include <grp.h>
+#include <login_cap.h>
 #include <paths.h>
 #include <pwd.h>
 #include <signal.h>
