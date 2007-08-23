@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-none.c,v 1.12 2006/08/03 03:34:41 deraadt Exp $ */
+/* $OpenBSD: auth2-none.c,v 1.13 2006/08/05 07:52:52 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -29,6 +29,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "xmalloc.h"
 #include "key.h"
@@ -90,7 +91,9 @@ userauth_banner(void)
 {
 	char *banner = NULL;
 
-	if (options.banner == NULL || (datafellows & SSH_BUG_BANNER))
+	if (options.banner == NULL ||
+	    strcasecmp(options.banner, "none") == 0 ||
+	    (datafellows & SSH_BUG_BANNER) != 0)
 		return;
 
 	if ((banner = PRIVSEP(auth2_read_banner())) == NULL)
