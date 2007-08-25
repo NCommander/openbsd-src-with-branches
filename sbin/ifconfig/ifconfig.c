@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.184 2007/07/30 14:13:29 pyr Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.185 2007/07/31 06:37:48 pyr Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -3865,6 +3865,8 @@ getifgroups(void)
 	}
 	if (cnt)
 		printf("\n");
+
+	free(ifgr.ifgr_groups);
 }
 
 #ifdef INET6
