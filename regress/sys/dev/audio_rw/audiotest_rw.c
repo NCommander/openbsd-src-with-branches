@@ -1,4 +1,4 @@
-/*	$OpenBSD: audiotest_rw.c,v 1.4 2007/07/31 03:34:13 jakemsr Exp $	*/
+/*	$OpenBSD: audiotest_rw.c,v 1.5 2007/08/26 08:32:38 jakemsr Exp $	*/
 
 /*
  * Copyright (c) 2007 Jacob Meuser <jakemsr@sdf.lonestar.org>
@@ -32,7 +32,6 @@
 #include <string.h>
 
 extern char *__progname;
-/* extern int errno; */
 
 void useage(void);
 int audio_set_duplex(int, char *, int);
@@ -184,11 +183,6 @@ u_int precision;
 			    encoding, audio_if.play.encoding);
 			return 1;
 		}
-	}
-
-	if (ioctl(audio_fd, AUDIO_FLUSH) < 0) {
-		warn("AUDIO_FLUSH");
-		return 1;
 	}
 
 	return 0;
