@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.50 2007/08/10 16:29:27 jasper Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.51 2007/08/22 19:50:25 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007
@@ -1021,8 +1021,8 @@ wpi_load_firmware(struct wpi_softc *sc)
 
 	/* load firmware image from disk */
 	if ((error = loadfirmware("wpi-3945abg", &fw, &size)) != 0) {
-		printf("%s: could not read firmware file\n",
-		    sc->sc_dev.dv_xname);
+		printf("%s: error, %d, could not read firmware %s\n",
+		    sc->sc_dev.dv_xname, error, "wpi-3945abg");
 		goto fail1;
 	}
 

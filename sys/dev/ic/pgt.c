@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.42 2007/05/22 04:29:16 ray Exp $  */
+/*	$OpenBSD: pgt.c,v 1.43 2007/07/18 18:10:31 damien Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -308,7 +308,7 @@ pgt_load_firmware(struct pgt_softc *sc)
 	error = loadfirmware(name, &ucode, &size);
 
 	if (error != 0) {
-		DPRINTF(("%s: error %d, could not read microcode %s!\n",
+		DPRINTF(("%s: error %d, could not read firmware %s\n",
 		    sc->sc_dev.dv_xname, error, name));
 		return (EIO);
 	}

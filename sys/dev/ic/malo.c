@@ -1,4 +1,4 @@
-/*	$OpenBSD: malo.c,v 1.77 2007/08/27 19:11:13 mglocker Exp $ */
+/*	$OpenBSD: malo.c,v 1.78 2007/08/28 17:04:18 mglocker Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -1776,7 +1776,7 @@ malo_load_bootimg(struct malo_softc *sc)
 
 	/* load boot firmware */
 	if ((error = loadfirmware(name, &ucode, &size)) != 0) {
-		printf("%s: error %d, could not read microcode %s!\n",
+		printf("%s: error %d, could not read firmware %s\n",
 		    sc->sc_dev.dv_xname, error, name);
 		return (EIO);
 	}
@@ -1839,7 +1839,7 @@ malo_load_firmware(struct malo_softc *sc)
 
 	/* load real firmware now */
 	if ((error = loadfirmware(name, &ucode, &size)) != 0) {
-		printf("%s: error %d, could not read microcode %s!\n",
+		printf("%s: error %d, could not read firmware %s\n",
 		    sc->sc_dev.dv_xname, error, name);
 		return (EIO);
 	}

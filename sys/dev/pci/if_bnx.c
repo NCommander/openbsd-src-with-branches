@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.52 2007/05/22 22:08:57 reyk Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.53 2007/07/04 00:20:22 krw Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -766,7 +766,7 @@ bnx_attachhook(void *xsc)
 	int error;
 
 	if ((error = bnx_read_firmware(sc)) != 0) {
-		printf("%s: could not read firmware (error=%d)\n",
+		printf("%s: error %d, could not read firmware\n",
 		    sc->bnx_dev.dv_xname, error);
 		return;
 	}
