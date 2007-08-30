@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.54 2005/08/30 17:05:33 miod Exp $
+dnl	$OpenBSD: contents,v 1.55 2006/02/28 20:42:35 miod Exp $
 TopPart
 
 OpenBSDminiroot
@@ -16,6 +16,8 @@ OpenBSDbsd
 			mapped as 3.
 
 OpenBSDrd
+
+OpenBSDinstalliso
 
 OpenBSDcd
 
