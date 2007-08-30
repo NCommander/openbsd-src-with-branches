@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_output.c,v 1.57 2007/08/27 18:53:27 damien Exp $	*/
+/*	$OpenBSD: ieee80211_output.c,v 1.54 2007/08/03 16:51:06 damien Exp $	*/
 /*	$NetBSD: ieee80211_output.c,v 1.13 2004/05/31 11:02:55 dyoung Exp $	*/
 
 /*-
@@ -1530,7 +1530,7 @@ ieee80211_send_eapol_key(struct ieee80211com *ic, struct mbuf *m,
 	key->desc = ni->ni_eapol_desc;
 
 	info = BE_READ_2(key->info);
-	/* use V2 descriptor iff pairwise cipher is CCMP */
+	/* use V2 descriptor only when pairwise cipher is CCMP */
 	info |= (ni->ni_pairwise_cipher != IEEE80211_CIPHER_CCMP) ?
 	    EAPOL_KEY_DESC_V1 : EAPOL_KEY_DESC_V2;
 	BE_WRITE_2(key->info, info);
@@ -1538,6 +1538,9 @@ ieee80211_send_eapol_key(struct ieee80211com *ic, struct mbuf *m,
 	len = m->m_len - sizeof(struct ether_header);
 	BE_WRITE_2(key->paylen, len - sizeof(*key));
 	BE_WRITE_2(key->len, len - 4);
+
+	KASSERT((info & (EAPOL_KEY_ENCRYPTED | EAPOL_KEY_KEYMIC)) == 0 ||
+	    ni->ni_ptk_ok);
 
 	if (info & EAPOL_KEY_ENCRYPTED)
 		ieee80211_eapol_key_encrypt(ic, key, ni->ni_ptk.kek);
@@ -1627,10 +1630,6 @@ ieee80211_send_4way_msg1(struct ieee80211com *ic, struct ieee80211_node *ni)
 	u_int8_t *pmkid;
 	u_int8_t *frm;
 
-	ni->ni_rsn_state = RSNA_PTKSTART;
-	if (++ni->ni_rsn_tocnt == 3)
-		return 0;	/* XXX move to RSNA_DISCONNECT */
-
 	m = ieee80211_get_eapol_key(M_DONTWAIT, MT_DATA,
 	    (ni->ni_eapol_desc == EAPOL_KEY_DESC_IEEE80211) ? 2 + 20 : 0);
 	if (m == NULL)
@@ -1641,7 +1640,8 @@ ieee80211_send_4way_msg1(struct ieee80211com *ic, struct ieee80211_node *ni)
 	info = EAPOL_KEY_PAIRWISE | EAPOL_KEY_KEYACK;
 	BE_WRITE_2(key->info, info);
 
-	/* copy the authenticator's nonce (ANonce) */
+	/* generate a new nonce ANonce */
+	get_random_bytes(ni->ni_nonce, EAPOL_KEY_NONCE_LEN);
 	memcpy(key->nonce, ni->ni_nonce, EAPOL_KEY_NONCE_LEN);
 
 	keylen = ieee80211_cipher_keylen(ni->ni_pairwise_cipher);
@@ -1727,10 +1727,6 @@ ieee80211_send_4way_msg3(struct ieee80211com *ic, struct ieee80211_node *ni)
 	u_int16_t info, keylen;
 	u_int8_t *frm;
 
-	ni->ni_rsn_state = RSNA_PTKINITNEGOTIATING;
-	if (++ni->ni_rsn_tocnt == 3)
-		return 0;	/* XXX move to RSNA_KEYERROR */
-
 	m = ieee80211_get_eapol_key(M_DONTWAIT, MT_DATA,
 	    2 + 48 +
 	    ((ni->ni_eapol_desc == EAPOL_KEY_DESC_IEEE80211) ?
@@ -1742,7 +1738,7 @@ ieee80211_send_4way_msg3(struct ieee80211com *ic, struct ieee80211_node *ni)
 	memset(key, 0, sizeof(*key));
 
 	info = EAPOL_KEY_PAIRWISE | EAPOL_KEY_INSTALL | EAPOL_KEY_KEYACK |
-	    EAPOL_KEY_KEYMIC;
+	    EAPOL_KEY_KEYMIC | EAPOL_KEY_SECURE;
 
 	BE_WRITE_8(key->replaycnt, ni->ni_replaycnt);
 	/* use same nonce as in Message 1 */
@@ -1758,7 +1754,7 @@ ieee80211_send_4way_msg3(struct ieee80211com *ic, struct ieee80211_node *ni)
 		/* RSN: encapsulate the GTK and ask for encryption */
 		frm = ieee80211_add_gtk_kde(frm, gtk);
 		LE_WRITE_8(key->rsc, gtk->k_rsc);
-		info |= EAPOL_KEY_ENCRYPTED | EAPOL_KEY_SECURE;
+		info |= EAPOL_KEY_ENCRYPTED;
 	} else	/* WPA1 */
 		frm = ieee80211_add_wpa1(frm, ic, ic->ic_bss);
 
@@ -1792,7 +1788,8 @@ ieee80211_send_4way_msg4(struct ieee80211com *ic, struct ieee80211_node *ni)
 	key = mtod(m, struct ieee80211_eapol_key *);
 	memset(key, 0, sizeof(*key));
 
-	info = EAPOL_KEY_PAIRWISE | EAPOL_KEY_KEYMIC;
+	info = EAPOL_KEY_PAIRWISE | EAPOL_KEY_KEYMIC | EAPOL_KEY_SECURE;
+	BE_WRITE_2(key->info, info);
 
 	/* copy key replay counter from authenticator */
 	BE_WRITE_8(key->replaycnt, ni->ni_replaycnt);
@@ -1802,11 +1799,7 @@ ieee80211_send_4way_msg4(struct ieee80211com *ic, struct ieee80211_node *ni)
 		/* WPA1 sets the key length field here */
 		keylen = ieee80211_cipher_keylen(ni->ni_pairwise_cipher);
 		BE_WRITE_2(key->keylen, keylen);
-	} else
-		info |= EAPOL_KEY_SECURE;
-
-	/* write the key info field */
-	BE_WRITE_2(key->info, info);
+	}
 
 	/* empty key data field */
 	m->m_pkthdr.len = m->m_len = sizeof(*key);
@@ -1845,12 +1838,7 @@ ieee80211_send_group_msg1(struct ieee80211com *ic, struct ieee80211_node *ni)
 	    EAPOL_KEY_ENCRYPTED;
 
 	BE_WRITE_8(key->replaycnt, ni->ni_replaycnt);
-#if 0
-	/* use global counter as GNonce */
-	ieee80211_derive_gtk(ic->ic_gmk, IEEE80211_PMK_LEN, ic->ic_myaddr,
-	    ic->ic_globalcnt, &gtk, sizeof gtk);
-	/* XXX increment global counter */
-#endif
+
 	frm = (u_int8_t *)&key[1];
 	if (ni->ni_eapol_desc == EAPOL_KEY_DESC_WPA1) {
 		/* WPA1 does not have GTK KDE */

@@ -33,13 +33,13 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: parse_bytes.c,v 1.2 1999/12/02 16:58:51 joda Exp $");
+RCSID("$KTH: parse_bytes.c,v 1.5 2005/04/12 11:28:58 lha Exp $");
 #endif
 
 #include <parse_units.h>
 #include "parse_bytes.h"
 
-static units bytes_units[] = {
+static struct units bytes_units[] = {
     { "gigabyte", 1024 * 1024 * 1024 },
     { "gbyte", 1024 * 1024 * 1024 },
     { "GB", 1024 * 1024 * 1024 },
@@ -52,26 +52,26 @@ static units bytes_units[] = {
     { NULL, 0 }
 };
 
-static units bytes_short_units[] = {
+static struct units bytes_short_units[] = {
     { "GB", 1024 * 1024 * 1024 },
     { "MB", 1024 * 1024 },
     { "KB", 1024 },
     { NULL, 0 }
 };
 
-int
+int ROKEN_LIB_FUNCTION
 parse_bytes (const char *s, const char *def_unit)
 {
     return parse_units (s, bytes_units, def_unit);
 }
 
-size_t
+int ROKEN_LIB_FUNCTION
 unparse_bytes (int t, char *s, size_t len)
 {
     return unparse_units (t, bytes_units, s, len);
 }
 
-size_t
+int ROKEN_LIB_FUNCTION
 unparse_bytes_short (int t, char *s, size_t len)
 {
     return unparse_units_approx (t, bytes_short_units, s, len);

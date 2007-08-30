@@ -1,4 +1,4 @@
-/*	$OpenBSD: identd.c,v 1.43 2007/06/28 21:43:36 millert Exp $	*/
+/*	$OpenBSD: identd.c,v 1.42 2005/12/06 22:05:22 deraadt Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -318,13 +318,13 @@ main(int argc, char *argv[])
 	}
 	if (set_gid) {
 		if (setegid(set_gid) == -1)
-			error("main: setegid");
+			error("main: setgid");
 		if (setgid(set_gid) == -1)
 			error("main: setgid");
 	}
 	if (set_uid) {
 		if (seteuid(set_uid) == -1)
-			error("main: seteuid");
+			error("main: setuid");
 		if (setuid(set_uid) == -1)
 			error("main: setuid");
 	}
@@ -371,10 +371,10 @@ main(int argc, char *argv[])
 			} while (nfds < 0 && errno == EINTR);
 
 			/*
-			 * An error occurred in poll? Just die
+			 * An error occurred in select? Just die
 			 */
 			if (nfds < 0)
-				error("main: poll");
+				error("main: select");
 
 			/*
 			 * Timeout limit reached. Exit nicely
@@ -423,7 +423,7 @@ main(int argc, char *argv[])
 		 * reach to other end anyway, so lets give the poor user some
 		 * errors.
 		 */
-		perror("identd: getpeername()");
+		perror("in.identd: getpeername()");
 		exit(1);
 	}
 	if (sa.ss_family == AF_INET6) {

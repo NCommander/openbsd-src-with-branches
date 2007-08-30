@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.403 2007/07/20 17:04:14 mk Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.402 2007/06/07 11:20:58 dim Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3347,7 +3347,7 @@ cpu_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 }
 
 int
-bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size, int flags,
+bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size, int cacheable,
     bus_space_handle_t *bshp)
 {
 	int error;
@@ -3359,8 +3359,6 @@ bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size, int flags,
 	switch (t) {
 	case I386_BUS_SPACE_IO:
 		ex = ioport_ex;
-		if (flags & BUS_SPACE_MAP_LINEAR)
-			return (EINVAL);
 		break;
 
 	case I386_BUS_SPACE_MEM:
@@ -3397,7 +3395,7 @@ bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size, int flags,
 	 * For memory space, map the bus physical address to
 	 * a kernel virtual address.
 	 */
-	error = bus_mem_add_mapping(bpa, size, flags, bshp);
+	error = bus_mem_add_mapping(bpa, size, cacheable, bshp);
 	if (error) {
 		if (extent_free(ex, bpa, size, EX_NOWAIT |
 		    (ioport_malloc_safe ? EX_MALLOCOK : 0))) {
@@ -3412,7 +3410,7 @@ bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size, int flags,
 
 int
 _bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size,
-    int flags, bus_space_handle_t *bshp)
+    int cacheable, bus_space_handle_t *bshp)
 {
 	/*
 	 * For I/O space, that's all she wrote.
@@ -3426,13 +3424,13 @@ _bus_space_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size,
 	 * For memory space, map the bus physical address to
 	 * a kernel virtual address.
 	 */
-	return (bus_mem_add_mapping(bpa, size, flags, bshp));
+	return (bus_mem_add_mapping(bpa, size, cacheable, bshp));
 }
 
 int
 bus_space_alloc(bus_space_tag_t t, bus_addr_t rstart, bus_addr_t rend,
     bus_size_t size, bus_size_t alignment, bus_size_t boundary,
-    int flags, bus_addr_t *bpap, bus_space_handle_t *bshp)
+    int cacheable, bus_addr_t *bpap, bus_space_handle_t *bshp)
 {
 	struct extent *ex;
 	u_long bpa;
@@ -3482,7 +3480,7 @@ bus_space_alloc(bus_space_tag_t t, bus_addr_t rstart, bus_addr_t rend,
 	 * For memory space, map the bus physical address to
 	 * a kernel virtual address.
 	 */
-	error = bus_mem_add_mapping(bpa, size, flags, bshp);
+	error = bus_mem_add_mapping(bpa, size, cacheable, bshp);
 	if (error) {
 		if (extent_free(iomem_ex, bpa, size, EX_NOWAIT |
 		    (ioport_malloc_safe ? EX_MALLOCOK : 0))) {
@@ -3498,7 +3496,7 @@ bus_space_alloc(bus_space_tag_t t, bus_addr_t rstart, bus_addr_t rend,
 }
 
 int
-bus_mem_add_mapping(bus_addr_t bpa, bus_size_t size, int flags,
+bus_mem_add_mapping(bus_addr_t bpa, bus_size_t size, int cacheable,
     bus_space_handle_t *bshp)
 {
 	u_long pa, endpa;
@@ -3527,7 +3525,7 @@ bus_mem_add_mapping(bus_addr_t bpa, bus_size_t size, int flags,
 		pmap_kenter_pa(va, pa, VM_PROT_READ | VM_PROT_WRITE);
 
 		pte = kvtopte(va);
-		if (flags & BUS_SPACE_MAP_CACHEABLE)
+		if (cacheable)
 			*pte &= ~PG_N;
 		else
 			*pte |= PG_N;

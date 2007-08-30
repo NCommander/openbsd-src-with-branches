@@ -11,6 +11,7 @@ BEGIN {
 }
 chdir 't';
 
+my $Is_VMS = $^O eq 'VMS';
 
 use strict;
 
@@ -31,21 +32,21 @@ my $ei = bless( {}, 'ExtUtils::Installed' );
 
 # _is_prefix
 ok( $ei->_is_prefix('foo/bar', 'foo'),
-	'_is_prefix() should match valid path prefix' );
+        '_is_prefix() should match valid path prefix' );
 ok( !$ei->_is_prefix('\foo\bar', '\bar'),
-	'... should not match wrong prefix' );
+        '... should not match wrong prefix' );
 
 # _is_type
 ok( $ei->_is_type(0, 'all'), '_is_type() should be true for type of "all"' );
 
 foreach my $path (qw( man1dir man3dir )) {
-SKIP: {
-	my $dir = $Config{$path.'exp'};
+    SKIP: {
+        my $dir = $Config{$path.'exp'};
         skip("no man directory $path on this system", 2 ) unless $dir;
 
-	my $file = $dir . '/foo';
-	ok( $ei->_is_type($file, 'doc'),   "... should find doc file in $path" );
-	ok( !$ei->_is_type($file, 'prog'), "... but not prog file in $path" );
+        my $file = $dir . '/foo';
+        ok( $ei->_is_type($file, 'doc'),   "... should find doc file in $path" );
+        ok( !$ei->_is_type($file, 'prog'), "... but not prog file in $path" );
     }
 }
 
@@ -54,22 +55,22 @@ my $prefix = $Config{prefix} || $Config{prefixexp};
 
 # You can concatenate /foo but not foo:, which defaults in the current 
 # directory
-$prefix = VMS::Filespec::unixify($prefix) if $^O eq 'VMS';
+$prefix = VMS::Filespec::unixify($prefix) if $Is_VMS;
 
 # ActivePerl 5.6.1/631 has $Config{prefixexp} as 'p:' for some reason
 $prefix = $Config{prefix} if $prefix eq 'p:' && $^O eq 'MSWin32';
 
 ok( $ei->_is_type( File::Spec->catfile($prefix, 'bar'), 'prog'),
-	"... should find prog file under $prefix" );
+        "... should find prog file under $prefix" );
 
 SKIP: {
-	skip('no man directories on this system', 1) unless $mandirs;
-	is( $ei->_is_type('bar', 'doc'), 0, 
-		'... should not find doc file outside path' );
+    skip('no man directories on this system', 1) unless $mandirs;
+    is( $ei->_is_type('bar', 'doc'), 0, 
+	'... should not find doc file outside path' );
 }
 
 ok( !$ei->_is_type('bar', 'prog'),
-	'... nor prog file outside path' );
+        '... nor prog file outside path' );
 ok( !$ei->_is_type('whocares', 'someother'), '... nor other type anywhere' );
 
 # _is_under
@@ -80,11 +81,9 @@ ok( !$ei->_is_under('foo', @under), '... should find no file not under dirs');
 ok( $ei->_is_under('baz', @under),  '... should find file under dir' );
 
 
-my $wrotelist;
-
 rmtree 'auto/FakeMod';
 ok( mkpath('auto/FakeMod') );
-END { rmtree 'auto/FakeMod' }
+END { rmtree 'auto' }
 
 ok(open(PACKLIST, '>auto/FakeMod/.packlist'));
 print PACKLIST 'list';
@@ -107,36 +106,36 @@ close FAKEMOD;
     my $fake_mod_dir = File::Spec->catdir(cwd(), 'auto', 'FakeMod');
     %ExtUtils::Installed::Config = (
         %Config,
-        archlibexp	   => cwd(),
-        sitearchexp	   => $fake_mod_dir,
+        archlibexp         => cwd(),
+        sitearchexp        => $fake_mod_dir,
     );
 
-	# necessary to fool new()
-	push @INC, $fake_mod_dir;
+    # necessary to fool new()
+    push @INC, $fake_mod_dir;
 
-	my $realei = ExtUtils::Installed->new();
+    my $realei = ExtUtils::Installed->new();
     isa_ok( $realei, 'ExtUtils::Installed' );
     isa_ok( $realei->{Perl}{packlist}, 'ExtUtils::Packlist' );
     is( $realei->{Perl}{version}, $Config{version}, 
         'new() should set Perl version from %Config' );
 
-	ok( exists $realei->{FakeMod}, 'new() should find modules with .packlists');
-	isa_ok( $realei->{FakeMod}{packlist}, 'ExtUtils::Packlist' );
-	is( $realei->{FakeMod}{version}, '1.1.1', 
-		'... should find version in modules' );
+    ok( exists $realei->{FakeMod}, 'new() should find modules with .packlists');
+    isa_ok( $realei->{FakeMod}{packlist}, 'ExtUtils::Packlist' );
+    is( $realei->{FakeMod}{version}, '1.1.1', 
+	'... should find version in modules' );
 }
 
 # modules
 $ei->{$_} = 1 for qw( abc def ghi );
 is( join(' ', $ei->modules()), 'abc def ghi', 
-	'modules() should return sorted keys' );
+    'modules() should return sorted keys' );
 
 # This didn't work for a long time due to a sort in scalar context oddity.
 is( $ei->modules, 3,    'modules() in scalar context' );
 
 # files
 $ei->{goodmod} = { 
-	packlist => { 
+        packlist => { 
                 ($Config{man1direxp} ? 
                     (File::Spec->catdir($Config{man1direxp}, 'foo') => 1) : 
                         ()),
@@ -144,8 +143,8 @@ $ei->{goodmod} = {
                     (File::Spec->catdir($Config{man3direxp}, 'bar') => 1) : 
                         ()),
                 File::Spec->catdir($prefix, 'foobar') => 1,
-		foobaz	=> 1,
-	},
+                foobaz  => 1,
+        },
 };
 
 eval { $ei->files('badmod') };
@@ -207,45 +206,37 @@ SKIP: {
 my $fakepak = Fakepak->new(102);
 
 $ei->{yesmod} = { 
-	version		=> 101,
-	packlist	=> $fakepak,
+        version         => 101,
+        packlist        => $fakepak,
 };
 
 # these should all croak
 foreach my $sub (qw( validate packlist version )) {
-	eval { $ei->$sub('nomod') };
-	like( $@, qr/nomod is not installed/, 
-		"$sub() should croak when asked about uninstalled module" );
+    eval { $ei->$sub('nomod') };
+    like( $@, qr/nomod is not installed/, 
+	  "$sub() should croak when asked about uninstalled module" );
 }
 
 # validate
 is( $ei->validate('yesmod'), 'validated', 
-	'validate() should return results of packlist validate() call' );
+        'validate() should return results of packlist validate() call' );
 
 # packlist
 is( ${ $ei->packlist('yesmod') }, 102, 
-	'packlist() should report installed mod packlist' );
+        'packlist() should report installed mod packlist' );
 
 # version
 is( $ei->version('yesmod'), 101, 
-	'version() should report installed mod version' );
+        'version() should report installed mod version' );
 
-END {
-	if ($wrotelist) {
-		for my $file (qw( .packlist FakePak.pm )) {
-			1 while unlink $file;
-		}
-		File::Path::rmtree('auto') or warn "Couldn't rmtree auto: $!";
-	}
-}
 
 package Fakepak;
 
 sub new {
-	my $class = shift;
-	bless(\(my $scalar = shift), $class);
+    my $class = shift;
+    bless(\(my $scalar = shift), $class);
 }
 
 sub validate {
-	'validated'
+    return 'validated'
 }

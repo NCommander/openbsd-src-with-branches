@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.h,v 1.1 2007/02/03 20:08:50 miod Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -28,22 +28,27 @@
 #ifndef _MACHINE_MUTEX_H_
 #define _MACHINE_MUTEX_H_
 
+/*
+ * Simple non-mp implementation.
+ */
 struct mutex {
-	__volatile void *mtx_owner; /* mutex.S relies upon this being first */
+	int mtx_lock;
 	int mtx_wantipl;
 	int mtx_oldipl;
 };
 
-#define MUTEX_INITIALIZER(ipl) { NULL, ipl, 0 }
+void mtx_init(struct mutex *, int);
+
+#define MUTEX_INITIALIZER(ipl) { 0, ipl, 0 }
 
 #ifdef DIAGNOSTIC
 #define MUTEX_ASSERT_LOCKED(mtx) do {					\
-	if ((mtx)->mtx_owner != curcpu())				\
+	if ((mtx)->mtx_lock == 0)					\
 		panic("mutex %p not held in %s", (mtx), __func__);	\
 } while (0)
 
 #define MUTEX_ASSERT_UNLOCKED(mtx) do {					\
-	if ((mtx)->mtx_owner == curcpu())				\
+	if ((mtx)->mtx_lock != 0)					\
 		panic("mutex %p held in %s", (mtx), __func__);		\
 } while (0)
 #else

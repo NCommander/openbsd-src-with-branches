@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.66 2007/08/23 13:17:53 joris Exp $	*/
+/*	$OpenBSD: server.c,v 1.64 2007/06/29 12:42:05 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -448,18 +448,6 @@ cvs_server_argument(char *data)
 void
 cvs_server_argumentx(char *data)
 {
-	int idx;
-	size_t len;
-
-	if (server_argc < 0)
-		fatal("Protocol Error: ArgumentX without previous argument");
-
-	idx = server_argc - 1;
-
-	len = strlen(server_argv[idx]) + strlen(data) + 2;
-	server_argv[idx] = xrealloc(server_argv[idx], len, sizeof(char));
-	strlcat(server_argv[idx], "\n", len);
-	strlcat(server_argv[idx], data, len);
 }
 
 void
@@ -565,7 +553,7 @@ void
 cvs_server_release(char *data)
 {
 	if (chdir(server_currentdir) == -1)
-		fatal("cvs_server_release: %s", strerror(errno));
+		fatal("cvs_server_init: %s", strerror(errno));
 
 	cvs_cmdop = CVS_OP_RELEASE;
 	cvs_release(server_argc, server_argv);
@@ -617,7 +605,7 @@ cvs_server_rlog(char *data)
 	    cvsroot->cr_dir, server_currentdir);
 
 	if (chdir(fpath) == -1)
-		fatal("cvs_server_rlog: %s", strerror(errno));
+		fatal("cvs_server_log: %s", strerror(errno));
 
 	cvs_cmdop = CVS_OP_RLOG;
 	cvs_getlog(server_argc, server_argv);

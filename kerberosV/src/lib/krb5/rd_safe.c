@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include <krb5_locl.h>
 
-RCSID("$KTH: rd_safe.c,v 1.23 2001/01/19 04:25:37 assar Exp $");
+RCSID("$KTH: rd_safe.c,v 1.29 2004/05/25 21:40:13 lha Exp $");
 
 static krb5_error_code
 verify_checksum(krb5_context context,
@@ -46,26 +46,27 @@ verify_checksum(krb5_context context,
     size_t len;
     Checksum c;
     krb5_crypto crypto;
+    krb5_keyblock *key;
 
     c = safe->cksum;
     safe->cksum.cksumtype       = 0;
     safe->cksum.checksum.data   = NULL;
     safe->cksum.checksum.length = 0;
 
+    ASN1_MALLOC_ENCODE(KRB_SAFE, buf, buf_size, safe, &len, ret);
+    if(ret)
+	return ret;
+    if(buf_size != len)
+	krb5_abortx(context, "internal error in ASN.1 encoder");
 
-    buf_size = length_KRB_SAFE(safe);
-    buf = malloc(buf_size);
+    if (auth_context->remote_subkey)
+	key = auth_context->remote_subkey;
+    else if (auth_context->local_subkey)
+	key = auth_context->local_subkey;
+    else
+	key = auth_context->keyblock;
 
-    if (buf == NULL) {
-	ret = ENOMEM;
-	goto out;
-    }
-
-    ret = encode_KRB_SAFE (buf + buf_size - 1,
-			   buf_size,
-			   safe,
-			   &len);
-    ret = krb5_crypto_init(context, auth_context->keyblock, 0, &crypto);
+    ret = krb5_crypto_init(context, key, 0, &crypto);
     if (ret)
 	goto out;
     ret = krb5_verify_checksum (context,
@@ -81,101 +82,128 @@ out:
     return ret;
 }
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_rd_safe(krb5_context context,
 	     krb5_auth_context auth_context,
 	     const krb5_data *inbuf,
 	     krb5_data *outbuf,
-	     /*krb5_replay_data*/ void *outdata)
+	     krb5_replay_data *outdata)
 {
-  krb5_error_code ret;
-  KRB_SAFE safe;
-  size_t len;
+    krb5_error_code ret;
+    KRB_SAFE safe;
+    size_t len;
 
-  ret = decode_KRB_SAFE (inbuf->data, inbuf->length, &safe, &len);
-  if (ret) 
-      return ret;
-  if (safe.pvno != 5) {
-      ret = KRB5KRB_AP_ERR_BADVERSION;
-      goto failure;
-  }
-  if (safe.msg_type != krb_safe) {
-      ret = KRB5KRB_AP_ERR_MSG_TYPE;
-      goto failure;
-  }
-  if (!krb5_checksum_is_keyed(context, safe.cksum.cksumtype)
-      || !krb5_checksum_is_collision_proof(context, safe.cksum.cksumtype)) {
-      ret = KRB5KRB_AP_ERR_INAPP_CKSUM;
-      goto failure;
-  }
+    if ((auth_context->flags & 
+	 (KRB5_AUTH_CONTEXT_RET_TIME | KRB5_AUTH_CONTEXT_RET_SEQUENCE)) &&
+	outdata == NULL) {
+	krb5_set_error_string(context, "rd_safe: need outdata to return data");
+	return KRB5_RC_REQUIRED; /* XXX better error, MIT returns this */
+    }
 
-  /* check sender address */
+    ret = decode_KRB_SAFE (inbuf->data, inbuf->length, &safe, &len);
+    if (ret) 
+	return ret;
+    if (safe.pvno != 5) {
+	ret = KRB5KRB_AP_ERR_BADVERSION;
+	krb5_clear_error_string (context);
+	goto failure;
+    }
+    if (safe.msg_type != krb_safe) {
+	ret = KRB5KRB_AP_ERR_MSG_TYPE;
+	krb5_clear_error_string (context);
+	goto failure;
+    }
+    if (!krb5_checksum_is_keyed(context, safe.cksum.cksumtype)
+	|| !krb5_checksum_is_collision_proof(context, safe.cksum.cksumtype)) {
+	ret = KRB5KRB_AP_ERR_INAPP_CKSUM;
+	krb5_clear_error_string (context);
+	goto failure;
+    }
 
-  if (safe.safe_body.s_address
-      && auth_context->remote_address
-      && !krb5_address_compare (context,
-				auth_context->remote_address,
-				safe.safe_body.s_address)) {
-      ret = KRB5KRB_AP_ERR_BADADDR;
-      goto failure;
-  }
+    /* check sender address */
 
-  /* check receiver address */
+    if (safe.safe_body.s_address
+	&& auth_context->remote_address
+	&& !krb5_address_compare (context,
+				  auth_context->remote_address,
+				  safe.safe_body.s_address)) {
+	ret = KRB5KRB_AP_ERR_BADADDR;
+	krb5_clear_error_string (context);
+	goto failure;
+    }
 
-  if (safe.safe_body.r_address
-      && auth_context->local_address
-      && !krb5_address_compare (context,
-				auth_context->local_address,
-				safe.safe_body.r_address)) {
-      ret = KRB5KRB_AP_ERR_BADADDR;
-      goto failure;
-  }
+    /* check receiver address */
 
-  /* check timestamp */
-  if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_TIME) {
-      krb5_timestamp sec;
+    if (safe.safe_body.r_address
+	&& auth_context->local_address
+	&& !krb5_address_compare (context,
+				  auth_context->local_address,
+				  safe.safe_body.r_address)) {
+	ret = KRB5KRB_AP_ERR_BADADDR;
+	krb5_clear_error_string (context);
+	goto failure;
+    }
 
-      krb5_timeofday (context, &sec);
+    /* check timestamp */
+    if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_TIME) {
+	krb5_timestamp sec;
 
-      if (safe.safe_body.timestamp == NULL ||
-	  safe.safe_body.usec      == NULL ||
-	  abs(*safe.safe_body.timestamp - sec) > context->max_skew) {
-	  ret = KRB5KRB_AP_ERR_SKEW;
-	  goto failure;
-      }
-  }
-  /* XXX - check replay cache */
+	krb5_timeofday (context, &sec);
 
-  /* check sequence number. since MIT krb5 cannot generate a sequence
-     number of zero but instead generates no sequence number, we accept that
-  */
+	if (safe.safe_body.timestamp == NULL ||
+	    safe.safe_body.usec      == NULL ||
+	    abs(*safe.safe_body.timestamp - sec) > context->max_skew) {
+	    ret = KRB5KRB_AP_ERR_SKEW;
+	    krb5_clear_error_string (context);
+	    goto failure;
+	}
+    }
+    /* XXX - check replay cache */
 
-  if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE) {
-      if ((safe.safe_body.seq_number == NULL
-	   && auth_context->remote_seqnumber != 0)
-	  || (safe.safe_body.seq_number != NULL
-	      && *safe.safe_body.seq_number !=
-	      auth_context->remote_seqnumber)) {
-	  ret = KRB5KRB_AP_ERR_BADORDER;
-	  goto failure;
-      }
-      auth_context->remote_seqnumber++;
-  }
+    /* check sequence number. since MIT krb5 cannot generate a sequence
+       number of zero but instead generates no sequence number, we accept that
+    */
 
-  ret = verify_checksum (context, auth_context, &safe);
-  if (ret)
-      goto failure;
+    if (auth_context->flags & KRB5_AUTH_CONTEXT_DO_SEQUENCE) {
+	if ((safe.safe_body.seq_number == NULL
+	     && auth_context->remote_seqnumber != 0)
+	    || (safe.safe_body.seq_number != NULL
+		&& *safe.safe_body.seq_number !=
+		auth_context->remote_seqnumber)) {
+	    ret = KRB5KRB_AP_ERR_BADORDER;
+	    krb5_clear_error_string (context);
+	    goto failure;
+	}
+	auth_context->remote_seqnumber++;
+    }
+
+    ret = verify_checksum (context, auth_context, &safe);
+    if (ret)
+	goto failure;
   
-  outbuf->length = safe.safe_body.user_data.length;
-  outbuf->data   = malloc(outbuf->length);
-  if (outbuf->data == NULL) {
-      ret = ENOMEM;
-      goto failure;
-  }
-  memcpy (outbuf->data, safe.safe_body.user_data.data, outbuf->length);
-  free_KRB_SAFE (&safe);
-  return 0;
-failure:
-  free_KRB_SAFE (&safe);
-  return ret;
+    outbuf->length = safe.safe_body.user_data.length;
+    outbuf->data   = malloc(outbuf->length);
+    if (outbuf->data == NULL) {
+	ret = ENOMEM;
+	krb5_set_error_string (context, "malloc: out of memory");
+	goto failure;
+    }
+    memcpy (outbuf->data, safe.safe_body.user_data.data, outbuf->length);
+
+    if ((auth_context->flags & 
+	 (KRB5_AUTH_CONTEXT_RET_TIME | KRB5_AUTH_CONTEXT_RET_SEQUENCE))) {
+	/* if these fields are not present in the safe-part, silently
+           return zero */
+	memset(outdata, 0, sizeof(*outdata));
+	if(safe.safe_body.timestamp)
+	    outdata->timestamp = *safe.safe_body.timestamp;
+	if(safe.safe_body.usec)
+	    outdata->usec = *safe.safe_body.usec;
+	if(safe.safe_body.seq_number)
+	    outdata->seq = *safe.safe_body.seq_number;
+    }
+
+  failure:
+    free_KRB_SAFE (&safe);
+    return ret;
 }

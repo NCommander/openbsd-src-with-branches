@@ -1,4 +1,4 @@
-/*	$OpenBSD: audiotest_rw.c,v 1.5 2007/08/26 08:32:38 jakemsr Exp $	*/
+/*	$OpenBSD: audiotest_rw.c,v 1.3 2007/07/06 15:56:15 jmc Exp $	*/
 
 /*
  * Copyright (c) 2007 Jacob Meuser <jakemsr@sdf.lonestar.org>
@@ -32,11 +32,11 @@
 #include <string.h>
 
 extern char *__progname;
+/* extern int errno; */
 
 void useage(void);
 int audio_set_duplex(int, char *, int);
 int audio_set_info(int, u_int, u_int, u_int, u_int, u_int);
-int audio_trigger_record(int);
 int audio_wait_frame(int, u_int, int, int);
 int audio_do_frame(int, size_t , char *, char *, u_int, int, int);
 int audio_do_test(int, size_t, char *, char *, u_int, int, int, int, int);
@@ -185,24 +185,14 @@ u_int precision;
 		}
 	}
 
-	return 0;
-}
-
-int
-audio_trigger_record(int audio_fd)
-{
-audio_info_t audio_if;
-
-	AUDIO_INITINFO(&audio_if);
-	audio_if.record.pause = 0;
-	if (ioctl(audio_fd, AUDIO_SETINFO, &audio_if) < 0) {
-		warn("AUDIO_SETINFO: audio_if.record.pause = %d",
-		    audio_if.record.pause);
+	if (ioctl(audio_fd, AUDIO_FLUSH) < 0) {
+		warn("AUDIO_FLUSH");
 		return 1;
 	}
 
 	return 0;
 }
+
 
 /* return 0 on error, 1 if read, 2 if write, 3 if both read and write */
 int
@@ -611,10 +601,6 @@ extern int optind;
 		warnx("buffer_size:        %lu", (unsigned long)buffer_size);
 	}
 
-	/* need to trigger recording in duplex mode */
-	if (use_duplex && (mode & AUMODE_RECORD))
-		if (audio_trigger_record(audio_fd))
-			exit(1);
 
 	if (audio_do_test(audio_fd, buffer_size, input_file, output_file,
 	    mode, use_poll, use_select, loops, verbose))

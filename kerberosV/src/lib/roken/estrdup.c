@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: estrdup.c,v 1.2 1999/12/02 16:58:45 joda Exp $");
+RCSID("$KTH: estrdup.c,v 1.4 2005/04/12 11:28:39 lha Exp $");
 #endif
 
 #include <stdlib.h>
@@ -45,12 +45,12 @@ RCSID("$KTH: estrdup.c,v 1.2 1999/12/02 16:58:45 joda Exp $");
  * Like strdup but never fails.
  */
 
-char *
+char * ROKEN_LIB_FUNCTION
 estrdup (const char *str)
 {
     char *tmp = strdup (str);
 
     if (tmp == NULL)
-	err (1, "strdup");
+	errx (1, "strdup failed");
     return tmp;
 }

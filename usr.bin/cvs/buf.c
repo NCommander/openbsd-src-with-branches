@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.63 2007/08/29 09:35:42 joris Exp $	*/
+/*	$OpenBSD: buf.c,v 1.61 2007/05/29 00:19:10 ray Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -82,7 +82,7 @@ cvs_buf_load(const char *path, u_int flags)
 	BUF *bp;
 
 	if ((fd = open(path, O_RDONLY, 0600)) == -1)
-		fatal("cvs_buf_load: failed to load '%s' : %s", path,
+		fatal("cvs_buf_load_fd: failed to load '%s' : %s", path,
 		    strerror(errno));
 
 	bp = cvs_buf_load_fd(fd, flags);
@@ -110,7 +110,7 @@ cvs_buf_load_fd(int fd, u_int flags)
 		len = SIZE_LEFT(buf);
 		ret = read(fd, bp, len);
 		if (ret == -1)
-			fatal("cvs_buf_load_fd: read: %s", strerror(errno));
+			fatal("cvs_buf_load: read: %s", strerror(errno));
 		else if (ret == 0)
 			break;
 

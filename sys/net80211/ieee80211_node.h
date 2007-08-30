@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.22 2007/08/27 18:53:27 damien Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.20 2007/08/01 15:40:40 damien Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -65,29 +65,6 @@ enum ieee80211_node_state {
 		(__ni)->ni_state = (__state);	\
 	} while (0)
 
-/* RSNA Authenticator state machine (see 8.5.6). */
-enum {
-	RSNA_AUTHENTICATION,
-	RSNA_AUTHENTICATION_2,
-	RSNA_INITPMK,
-	RSNA_INITPSK,
-	RSNA_PTKSTART,
-	RSNA_PTKCALCNEGOTIATING,
-	RSNA_PTKCALCNEGOTIATING_2,
-	RSNA_PTKINITNEGOTIATING,
-	RSNA_PTKINITDONE,
-	RSNA_DISCONNECT,
-	RSNA_DISCONNECTED,
-	RSNA_INITIALIZE,
-	RSNA_IDLE,
-	RSNA_REKEYNEGOTIATING,
-	RSNA_KEYERROR,
-	RSNA_REKEYESTABLISHED,
-	RSNA_GTK_INIT,
-	RSNA_SETKEYSDONE,
-	RSNA_SETKEYS
-};
-
 /*
  * Node specific information.  Note that drivers are expected
  * to derive from this structure to add device-specific per-node
@@ -136,8 +113,6 @@ struct ieee80211_node {
 	struct ifqueue		ni_savedq;	/* packets queued for pspoll */
 
 	/* RSN */
-	u_int			ni_rsn_state;
-	u_int			ni_rsn_tocnt;
 	u_int			ni_group_cipher;
 	enum ieee80211_cipher	ni_pairwise_cipher;
 	u_int			ni_pairwise_cipherset;
@@ -152,6 +127,7 @@ struct ieee80211_node {
 	u_int8_t		*ni_rsnie;
 	struct ieee80211_key	ni_pairwise_key;
 	struct ieee80211_ptk	ni_ptk;
+	u_int8_t		ni_ptk_ok;
 	u_int8_t		ni_key_count;
 
 	/* others */

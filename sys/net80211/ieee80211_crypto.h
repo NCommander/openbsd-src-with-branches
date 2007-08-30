@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto.h,v 1.8 2007/08/22 20:52:26 damien Exp $	*/
+/*	$OpenBSD: ieee80211_crypto.h,v 1.5 2007/08/01 12:37:46 damien Exp $	*/
 /*	$NetBSD: ieee80211_crypto.h,v 1.2 2003/09/14 01:14:55 dyoung Exp $	*/
 
 /*-
@@ -60,14 +60,6 @@ enum ieee80211_akm {
 
 #define	IEEE80211_KEYBUF_SIZE	16
 
-#define IEEE80211_TKIP_HDRLEN	8
-#define IEEE80211_TKIP_MICLEN	8
-#define IEEE80211_TKIP_ICVLEN	4
-#define IEEE80211_CCMP_HDRLEN	8
-#define IEEE80211_CCMP_MICLEN	8
-
-#define IEEE80211_PMK_LEN	32
-
 struct ieee80211_key {
 	u_int8_t		k_id;		/* identifier (0-3) */
 	enum ieee80211_cipher	k_cipher;
@@ -79,17 +71,7 @@ struct ieee80211_key {
 	u_int64_t		k_tsc;
 	int			k_len;
 	u_int8_t		k_key[IEEE80211_KEYBUF_SIZE];
-	u_int8_t		k_rxmic[IEEE80211_TKIP_MICLEN];
-	u_int8_t		k_txmic[IEEE80211_TKIP_MICLEN];
 };
-
-/* pseudo-header used for TKIP MIC computation */
-struct ieee80211_tkip_frame {
-	u_int8_t	i_da[IEEE80211_ADDR_LEN];
-	u_int8_t	i_sa[IEEE80211_ADDR_LEN];
-	u_int8_t	i_pri;
-	u_int8_t	i_pad[3];
-} __packed;
 
 /* forward references */
 struct ieee80211com;
@@ -97,10 +79,8 @@ struct ieee80211_node;
 
 extern	void ieee80211_crypto_attach(struct ifnet *);
 extern	void ieee80211_crypto_detach(struct ifnet *);
-extern	struct ieee80211_key *ieee80211_get_txkey(struct ieee80211com *,
-	    const struct ieee80211_frame *, struct ieee80211_node *);
 extern	struct mbuf *ieee80211_encrypt(struct ieee80211com *, struct mbuf *,
-	    struct ieee80211_key *);
+	    struct ieee80211_node *);
 extern	struct mbuf *ieee80211_decrypt(struct ieee80211com *, struct mbuf *,
 	    struct ieee80211_node *);
 extern	struct mbuf *ieee80211_wep_crypt(struct ifnet *, struct mbuf *, int);
@@ -108,9 +88,5 @@ extern	void ieee80211_derive_ptk(const u_int8_t *, size_t, const u_int8_t *,
 	    const u_int8_t *, const u_int8_t *, const u_int8_t *, u_int8_t *,
 	    size_t);
 extern	int ieee80211_cipher_keylen(enum ieee80211_cipher);
-extern	void ieee80211_map_ptk(const struct ieee80211_ptk *,
-	    enum ieee80211_cipher, struct ieee80211_key *);
-extern	void ieee80211_map_gtk(const u_int8_t *, enum ieee80211_cipher, int,
-	    int, u_int64_t, struct ieee80211_key *);
 
 #endif /* _NET80211_IEEE80211_CRYPTO_H_ */

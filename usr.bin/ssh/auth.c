@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.76 2007/08/23 02:49:43 djm Exp $ */
+/* $OpenBSD: auth.c,v 1.74 2006/08/01 23:22:47 stevesk Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -29,7 +29,6 @@
 
 #include <errno.h>
 #include <libgen.h>
-#include <login_cap.h>
 #include <paths.h>
 #include <pwd.h>
 #include <stdarg.h>
@@ -382,9 +381,11 @@ secure_filename(FILE *f, const char *file, struct passwd *pw,
 struct passwd *
 getpwnamallow(const char *user)
 {
+#ifdef HAVE_LOGIN_CAP
 	extern login_cap_t *lc;
 #ifdef BSD_AUTH
 	auth_session_t *as;
+#endif
 #endif
 	struct passwd *pw;
 
@@ -399,6 +400,7 @@ getpwnamallow(const char *user)
 	}
 	if (!allowed_user(pw))
 		return (NULL);
+#ifdef HAVE_LOGIN_CAP
 	if ((lc = login_getclass(pw->pw_class)) == NULL) {
 		debug("unable to get login class: %s", user);
 		return (NULL);
@@ -411,6 +413,7 @@ getpwnamallow(const char *user)
 	}
 	if (as != NULL)
 		auth_close(as);
+#endif
 #endif
 	if (pw != NULL)
 		return (pwcopy(pw));

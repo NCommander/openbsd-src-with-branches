@@ -32,7 +32,7 @@
    "SUPER::flush.
 
    Note that "flush" is _also_ called for read mode - we still do the
-   (back)-translate so that the the base class's "flush" sees the
+   (back)-translate so that the base class's "flush" sees the
    correct number of encoded chars for positioning the seek
    pointer. (This double translation is the worst performance issue -
    particularly with all-perl encode engine.)
@@ -113,12 +113,13 @@ PerlIOEncode_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg, PerlIO_funcs *
 	code = -1;
     }
     else {
-#ifdef USE_NEW_SEQUENCE
+
+       /* $enc->renew */
 	PUSHMARK(sp);
 	XPUSHs(result);
 	PUTBACK;
-	if (call_method("new_sequence",G_SCALAR|G_EVAL) != 1 || SvTRUE(ERRSV)) {
-	    Perl_warner(aTHX_ packWARN(WARN_IO), "\"%" SVf "\" does not support new_sequence",
+	if (call_method("renew",G_SCALAR|G_EVAL) != 1 || SvTRUE(ERRSV)) {
+	    Perl_warner(aTHX_ packWARN(WARN_IO), "\"%" SVf "\" does not support renew method",
 			arg);
 	}
 	else {
@@ -126,7 +127,6 @@ PerlIOEncode_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg, PerlIO_funcs *
 	    result = POPs;
 	    PUTBACK;
 	}
-#endif
 	e->enc = newSVsv(result);
 	PUSHMARK(sp);
 	XPUSHs(e->enc);
@@ -308,8 +308,8 @@ PerlIOEncode_fill(pTHX_ PerlIO * f)
 	}
 	else {
 	    /* Create a "dummy" SV to represent the available data from layer below */
-	    if (SvLEN(e->dataSV) && SvPVX(e->dataSV)) {
-		Safefree(SvPVX(e->dataSV));
+	    if (SvLEN(e->dataSV) && SvPVX_const(e->dataSV)) {
+		Safefree(SvPVX_mutable(e->dataSV));
 	    }
 	    if (use > (SSize_t)e->base.bufsiz) {
 		if (e->flags & NEEDS_LINES) {
@@ -321,8 +321,8 @@ PerlIOEncode_fill(pTHX_ PerlIO * f)
 	       use = e->base.bufsiz;
 	    }
 	    }
-	    SvPVX(e->dataSV) = (char *) ptr;
-	    SvLEN(e->dataSV) = 0;  /* Hands off sv.c - it isn't yours */
+	    SvPV_set(e->dataSV, (char *) ptr);
+	    SvLEN_set(e->dataSV, 0);  /* Hands off sv.c - it isn't yours */
 	    SvCUR_set(e->dataSV,use);
 	    SvPOK_only(e->dataSV);
 	}
@@ -462,8 +462,8 @@ PerlIOEncode_flush(pTHX_ PerlIO * f)
 		SAVETMPS;
 		str = sv_newmortal();
 		sv_upgrade(str, SVt_PV);
-		SvPVX(str) = (char*)e->base.ptr;
-		SvLEN(str) = 0;
+		SvPV_set(str, (char*)e->base.ptr);
+		SvLEN_set(str, 0);
 		SvCUR_set(str, e->base.end - e->base.ptr);
 		SvPOK_only(str);
 		SvUTF8_on(str);

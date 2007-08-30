@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.27 2007/07/18 18:10:31 damien Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.26 2007/06/14 10:11:15 mbalmer Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -223,8 +223,8 @@ uath_attachhook(void *xsc)
 	int error;
 
 	if ((error = loadfirmware("uath-ar5523", &fw, &size)) != 0) {
-		printf("%s: error %d, could not read firmware %s\n",
-		    sc->sc_dev.dv_xname, error, "uath-ar5523");
+		printf("%s: could not read firmware (error=%d)\n",
+		    sc->sc_dev.dv_xname, error);
 		return;
 	}
 

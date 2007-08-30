@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto.c,v 1.34 2007/08/23 16:49:57 damien Exp $	*/
+/*	$OpenBSD: ieee80211_crypto.c,v 1.30 2007/08/01 15:40:40 damien Exp $	*/
 /*	$NetBSD: ieee80211_crypto.c,v 1.5 2003/12/14 09:56:53 dyoung Exp $	*/
 
 /*-
@@ -123,20 +123,21 @@ ieee80211_crypto_detach(struct ifnet *ifp)
 	}
 }
 
-struct ieee80211_key *
-ieee80211_get_txkey(struct ieee80211com *ic, const struct ieee80211_frame *wh,
-    struct ieee80211_node *ni)
-{
-	if (IEEE80211_IS_MULTICAST(wh->i_addr1) ||
-	    ni->ni_pairwise_cipher == IEEE80211_CIPHER_USEGROUP)
-		return &ic->ic_nw_keys[ic->ic_wep_txkey];
-	return &ni->ni_pairwise_key;
-}
-
 struct mbuf *
 ieee80211_encrypt(struct ieee80211com *ic, struct mbuf *m0,
-    struct ieee80211_key *k)
+    struct ieee80211_node *ni)
 {
+	struct ieee80211_frame *wh;
+	struct ieee80211_key *k;
+
+	/* select the key for encryption */
+	wh = mtod(m0, struct ieee80211_frame *);
+	if (IEEE80211_IS_MULTICAST(wh->i_addr1) ||
+	    ni->ni_pairwise_cipher == IEEE80211_CIPHER_USEGROUP)
+		k = &ic->ic_nw_keys[ic->ic_wep_txkey];
+	else
+		k = &ni->ni_pairwise_key;
+
 	switch (k->k_cipher) {
 	case IEEE80211_CIPHER_WEP40:
 	case IEEE80211_CIPHER_WEP104:
@@ -167,7 +168,7 @@ ieee80211_decrypt(struct ieee80211com *ic, struct mbuf *m0,
 	wh = mtod(m0, struct ieee80211_frame *);
 	if (IEEE80211_IS_MULTICAST(wh->i_addr1) ||
 	    ni->ni_pairwise_cipher == IEEE80211_CIPHER_USEGROUP) {
-		int hdrlen = ieee80211_get_hdrlen(wh);
+		size_t hdrlen = sizeof(*wh);	/* XXX QoS */
 		u_int8_t *ivp = (u_int8_t *)wh + hdrlen;
 		/* key identifier is always located at the same index */
 		int kid = ivp[IEEE80211_WEP_IVLEN] >> 6;
@@ -194,16 +195,17 @@ ieee80211_decrypt(struct ieee80211com *ic, struct mbuf *m0,
 	return m0;
 }
 
+#define IEEE80211_CCMP_HDRLEN	8
+#define IEEE80211_CCMP_MICLEN	8
+
 struct mbuf *
 ieee80211_ccmp_encrypt(struct ieee80211com *ic, struct mbuf *m0,
     struct ieee80211_key *k)
 {
 	struct ieee80211_frame *wh;
+	size_t hdrlen = sizeof(*wh);	/* XXX QoS */
 	u_int8_t *ivp;
-	int hdrlen;
 
-	wh = mtod(m0, struct ieee80211_frame *);
-	hdrlen = ieee80211_get_hdrlen(wh);
 	M_PREPEND(m0, IEEE80211_CCMP_HDRLEN, M_NOWAIT);
 	if (m0 == NULL)
 		return m0;
@@ -231,12 +233,11 @@ ieee80211_ccmp_decrypt(struct ieee80211com *ic, struct mbuf *m0,
     struct ieee80211_key *k)
 {
 	struct ieee80211_frame *wh;
+	size_t hdrlen = sizeof(*wh);	/* XXX QoS */
 	u_int64_t pn;
 	u_int8_t *ivp;
-	int hdrlen;
 
 	wh = mtod(m0, struct ieee80211_frame *);
-	hdrlen = ieee80211_get_hdrlen(wh);
 	ivp = (u_int8_t *)wh + hdrlen;
 
 	/* check that ExtIV bit is be set */
@@ -272,16 +273,18 @@ ieee80211_ccmp_decrypt(struct ieee80211com *ic, struct mbuf *m0,
 	return m0;
 }
 
+#define IEEE80211_TKIP_HDRLEN	8
+#define IEEE80211_TKIP_MICLEN	8
+#define IEEE80211_TKIP_ICVLEN	4
+
 struct mbuf *
 ieee80211_tkip_encrypt(struct ieee80211com *ic, struct mbuf *m0,
     struct ieee80211_key *k)
 {
 	struct ieee80211_frame *wh;
+	size_t hdrlen = sizeof(*wh);	/* XXX QoS */
 	u_int8_t *ivp;
-	int hdrlen;
 
-	wh = mtod(m0, struct ieee80211_frame *);
-	hdrlen = ieee80211_get_hdrlen(wh);
 	M_PREPEND(m0, IEEE80211_TKIP_HDRLEN, M_NOWAIT);
 	if (m0 == NULL)
 		return m0;
@@ -311,12 +314,11 @@ ieee80211_tkip_decrypt(struct ieee80211com *ic, struct mbuf *m0,
     struct ieee80211_key *k)
 {
 	struct ieee80211_frame *wh;
+	size_t hdrlen = sizeof(*wh);	/* XXX QoS */
 	u_int64_t tsc;
 	u_int8_t *ivp;
-	int hdrlen;
 
 	wh = mtod(m0, struct ieee80211_frame *);
-	hdrlen = ieee80211_get_hdrlen(wh);
 	ivp = (u_int8_t *)wh + hdrlen;
 
 	/* check that ExtIV bit is be set */
@@ -405,7 +407,12 @@ ieee80211_wep_crypt(struct ifnet *ifp, struct mbuf *m0, int txflag)
 			n->m_len = n->m_ext.ext_size;
 	}
 	wh = mtod(m, struct ieee80211_frame *);
-	len = ieee80211_get_hdrlen(wh);
+	if ((wh->i_fc[0] &
+	     (IEEE80211_FC0_TYPE_MASK | IEEE80211_FC0_SUBTYPE_QOS)) ==
+	    (IEEE80211_FC0_TYPE_DATA | IEEE80211_FC0_SUBTYPE_QOS))
+		len = sizeof(struct ieee80211_qosframe);
+	else
+		len = sizeof(struct ieee80211_frame);
 	memcpy(mtod(n, caddr_t), wh, len);
 	wh = mtod(n, struct ieee80211_frame *);
 	left -= len;
@@ -1028,50 +1035,4 @@ ieee80211_cipher_keylen(enum ieee80211_cipher cipher)
 	default:	/* unknown cipher */
 		return 0;
 	}
-}
-
-/*
- * Map PTK to IEEE 802.11 key (see 8.6).
- */
-void
-ieee80211_map_ptk(const struct ieee80211_ptk *ptk,
-    enum ieee80211_cipher cipher, struct ieee80211_key *k)
-{
-	memset(k, 0, sizeof(*k));
-	k->k_cipher = cipher;
-	k->k_flags = IEEE80211_KEY_TX;
-	k->k_len = ieee80211_cipher_keylen(cipher);
-	if (cipher == IEEE80211_CIPHER_TKIP) {
-		memcpy(k->k_key, ptk->tk, 16);
-		/* use bits 128-191 as the Michael key for AA->SPA */
-		memcpy(k->k_rxmic, &ptk->tk[16], 8);
-		/* use bits 192-255 as the Michael key for SPA->AA */
-		memcpy(k->k_txmic, &ptk->tk[24], 8);
-	} else
-		memcpy(k->k_key, ptk->tk, k->k_len);
-}
-
-/*
- * Map GTK to IEEE 802.11 key (see 8.6).
- */
-void
-ieee80211_map_gtk(const u_int8_t *gtk, enum ieee80211_cipher cipher, int kid,
-    int txflag, u_int64_t rsc, struct ieee80211_key *k)
-{
-	memset(k, 0, sizeof(*k));
-	k->k_id = kid;
-	k->k_cipher = cipher;
-	k->k_flags = IEEE80211_KEY_GROUP;
-	if (txflag)
-		k->k_flags |= IEEE80211_KEY_TX;
-	k->k_len = ieee80211_cipher_keylen(cipher);
-	k->k_rsc = rsc;
-	if (cipher == IEEE80211_CIPHER_TKIP) {
-		memcpy(k->k_key, gtk, 16);
-		/* use bits 128-191 as the Michael key for AA->SPA */
-		memcpy(k->k_rxmic, &gtk[16], 8);
-		/* use bits 192-255 as the Michael key for SPA->AA */
-		memcpy(k->k_txmic, &gtk[24], 8);
-	} else
-		memcpy(k->k_key, gtk, k->k_len);
 }

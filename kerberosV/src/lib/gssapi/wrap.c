@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2001 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2003 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,50 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: wrap.c,v 1.15 2001/01/29 02:08:59 assar Exp $");
+RCSID("$KTH: wrap.c,v 1.31 2005/01/05 02:52:12 lukeh Exp $");
+
+OM_uint32
+gss_krb5_get_subkey(const gss_ctx_id_t context_handle,
+		    krb5_keyblock **key)
+{
+    krb5_keyblock *skey = NULL;
+
+    HEIMDAL_MUTEX_lock(&context_handle->ctx_id_mutex);
+    if (context_handle->more_flags & LOCAL) {
+	krb5_auth_con_getremotesubkey(gssapi_krb5_context,
+				      context_handle->auth_context, 
+				      &skey);
+    } else {
+	krb5_auth_con_getlocalsubkey(gssapi_krb5_context,
+				     context_handle->auth_context, 
+				     &skey);
+    }
+    /*
+     * Only use the initiator subkey or ticket session key if
+     * an acceptor subkey was not required.
+     */
+    if (skey == NULL &&
+	(context_handle->more_flags & ACCEPTOR_SUBKEY) == 0) {
+	if (context_handle->more_flags & LOCAL) {
+	    krb5_auth_con_getlocalsubkey(gssapi_krb5_context,
+					 context_handle->auth_context,
+					 &skey);
+	} else {
+	    krb5_auth_con_getremotesubkey(gssapi_krb5_context,
+					  context_handle->auth_context,
+					  &skey);
+	}
+	if(skey == NULL)
+	    krb5_auth_con_getkey(gssapi_krb5_context,
+				 context_handle->auth_context, 
+				 &skey);
+    }
+    HEIMDAL_MUTEX_unlock(&context_handle->ctx_id_mutex);
+    if(skey == NULL)
+	return GSS_KRB5_S_KG_NO_SUBKEY; /* XXX */
+    *key = skey;
+    return 0;
+}
 
 static OM_uint32
 sub_wrap_size (
@@ -43,12 +86,20 @@ sub_wrap_size (
 	    int extrasize
            )
 {
-  size_t len, total_len, padlength;
-  padlength = blocksize - (req_output_size % blocksize);
-  len = req_output_size + 8 + padlength + extrasize;
-  gssapi_krb5_encap_length(len, &len, &total_len);
-  *max_input_size = (OM_uint32)total_len;
-  return GSS_S_COMPLETE;
+    size_t len, total_len; 
+
+    len = 8 + req_output_size + blocksize + extrasize;
+
+    gssapi_krb5_encap_length(len, &len, &total_len, GSS_KRB5_MECHANISM);
+
+    total_len -= req_output_size; /* token length */
+    if (total_len < req_output_size) {
+        *max_input_size = (req_output_size - total_len);
+        (*max_input_size) &= (~(OM_uint32)(blocksize - 1));
+    } else {
+        *max_input_size = 0;
+    }
+    return GSS_S_COMPLETE;
 }
 
 OM_uint32
@@ -65,8 +116,9 @@ gss_wrap_size_limit (
   OM_uint32 ret;
   krb5_keytype keytype;
 
-  ret = gss_krb5_getsomekey(context_handle, &key);
+  ret = gss_krb5_get_subkey(context_handle, &key);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       *minor_status = ret;
       return GSS_S_FAILURE;
   }
@@ -74,17 +126,21 @@ gss_wrap_size_limit (
 
   switch (keytype) {
   case KEYTYPE_DES :
+  case KEYTYPE_ARCFOUR:
+  case KEYTYPE_ARCFOUR_56:
       ret = sub_wrap_size(req_output_size, max_input_size, 8, 22);
       break;
   case KEYTYPE_DES3 :
       ret = sub_wrap_size(req_output_size, max_input_size, 8, 34);
       break;
   default :
-      *minor_status = KRB5_PROG_ETYPE_NOSUPP;
-      ret = GSS_S_FAILURE;
+      ret = _gssapi_wrap_size_cfx(minor_status, context_handle, 
+				  conf_req_flag, qop_req, 
+				  req_output_size, max_input_size, key);
       break;
   }
   krb5_free_keyblock (gssapi_krb5_context, key);
+  *minor_status = 0;
   return ret;
 }
 
@@ -103,9 +159,9 @@ wrap_des
   u_char *p;
   MD5_CTX md5;
   u_char hash[16];
-  des_key_schedule schedule;
-  des_cblock deskey;
-  des_cblock zero;
+  DES_key_schedule schedule;
+  DES_cblock deskey;
+  DES_cblock zero;
   int i;
   int32_t seq_number;
   size_t len, total_len, padlength, datalen;
@@ -113,16 +169,19 @@ wrap_des
   padlength = 8 - (input_message_buffer->length % 8);
   datalen = input_message_buffer->length + padlength + 8;
   len = datalen + 22;
-  gssapi_krb5_encap_length (len, &len, &total_len);
+  gssapi_krb5_encap_length (len, &len, &total_len, GSS_KRB5_MECHANISM);
 
   output_message_buffer->length = total_len;
   output_message_buffer->value  = malloc (total_len);
-  if (output_message_buffer->value == NULL)
+  if (output_message_buffer->value == NULL) {
+    *minor_status = ENOMEM;
     return GSS_S_FAILURE;
+  }
 
   p = gssapi_krb5_make_header(output_message_buffer->value,
 			      len,
-			      "\x02\x01"); /* TOK_ID */
+			      "\x02\x01", /* TOK_ID */
+			      GSS_KRB5_MECHANISM);
 
   /* SGN_ALG */
   memcpy (p, "\x00\x00", 2);
@@ -142,7 +201,7 @@ wrap_des
   p += 16;
 
   /* confounder + data + pad */
-  des_new_random_key((des_cblock*)p);
+  krb5_generate_random_block(p, 8);
   memcpy (p + 8, input_message_buffer->value,
 	  input_message_buffer->length);
   memset (p + 8 + input_message_buffer->length, padlength, padlength);
@@ -155,13 +214,14 @@ wrap_des
 
   memset (&zero, 0, sizeof(zero));
   memcpy (&deskey, key->keyvalue.data, sizeof(deskey));
-  des_set_key (&deskey, schedule);
-  des_cbc_cksum ((void *)hash, (void *)hash, sizeof(hash),
-		 schedule, &zero);
+  DES_set_key (&deskey, &schedule);
+  DES_cbc_cksum ((void *)hash, (void *)hash, sizeof(hash),
+		 &schedule, &zero);
   memcpy (p - 8, hash, 8);
 
   /* sequence number */
-  krb5_auth_getlocalseqnumber (gssapi_krb5_context,
+  HEIMDAL_MUTEX_lock(&context_handle->ctx_id_mutex);
+  krb5_auth_con_getlocalseqnumber (gssapi_krb5_context,
 			       context_handle->auth_context,
 			       &seq_number);
 
@@ -174,13 +234,14 @@ wrap_des
 	  (context_handle->more_flags & LOCAL) ? 0 : 0xFF,
 	  4);
 
-  des_set_key (&deskey, schedule);
-  des_cbc_encrypt ((void *)p, (void *)p, 8,
-		   schedule, (des_cblock *)(p + 8), DES_ENCRYPT);
+  DES_set_key (&deskey, &schedule);
+  DES_cbc_encrypt ((void *)p, (void *)p, 8,
+		   &schedule, (DES_cblock *)(p + 8), DES_ENCRYPT);
 
-  krb5_auth_setlocalseqnumber (gssapi_krb5_context,
+  krb5_auth_con_setlocalseqnumber (gssapi_krb5_context,
 			       context_handle->auth_context,
 			       ++seq_number);
+  HEIMDAL_MUTEX_unlock(&context_handle->ctx_id_mutex);
 
   /* encrypt the data */
   p += 16;
@@ -190,20 +251,21 @@ wrap_des
 
       for (i = 0; i < sizeof(deskey); ++i)
 	  deskey[i] ^= 0xf0;
-      des_set_key (&deskey, schedule);
+      DES_set_key (&deskey, &schedule);
       memset (&zero, 0, sizeof(zero));
-      des_cbc_encrypt ((void *)p,
+      DES_cbc_encrypt ((void *)p,
 		       (void *)p,
 		       datalen,
-		       schedule,
+		       &schedule,
 		       &zero,
 		       DES_ENCRYPT);
-      
-      memset (deskey, 0, sizeof(deskey));
-      memset (schedule, 0, sizeof(schedule));
   }
+  memset (deskey, 0, sizeof(deskey));
+  memset (&schedule, 0, sizeof(schedule));
+
   if(conf_state != NULL)
       *conf_state = conf_req_flag;
+  *minor_status = 0;
   return GSS_S_COMPLETE;
 }
 
@@ -231,16 +293,19 @@ wrap_des3
   padlength = 8 - (input_message_buffer->length % 8);
   datalen = input_message_buffer->length + padlength + 8;
   len = datalen + 34;
-  gssapi_krb5_encap_length (len, &len, &total_len);
+  gssapi_krb5_encap_length (len, &len, &total_len, GSS_KRB5_MECHANISM);
 
   output_message_buffer->length = total_len;
   output_message_buffer->value  = malloc (total_len);
-  if (output_message_buffer->value == NULL)
+  if (output_message_buffer->value == NULL) {
+    *minor_status = ENOMEM;
     return GSS_S_FAILURE;
+  }
 
   p = gssapi_krb5_make_header(output_message_buffer->value,
 			      len,
-			      "\x02\x01"); /* TOK_ID */
+			      "\x02\x01", /* TOK_ID */
+			      GSS_KRB5_MECHANISM); 
 
   /* SGN_ALG */
   memcpy (p, "\x04\x00", 2);	/* HMAC SHA1 DES3-KD */
@@ -258,13 +323,14 @@ wrap_des3
   /* calculate checksum (the above + confounder + data + pad) */
 
   memcpy (p + 20, p - 8, 8);
-  des_new_random_key((des_cblock*)(p + 28));
+  krb5_generate_random_block(p + 28, 8);
   memcpy (p + 28 + 8, input_message_buffer->value,
 	  input_message_buffer->length);
   memset (p + 28 + 8 + input_message_buffer->length, padlength, padlength);
 
   ret = krb5_crypto_init(gssapi_krb5_context, key, 0, &crypto);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       free (output_message_buffer->value);
       *minor_status = ret;
       return GSS_S_FAILURE;
@@ -273,11 +339,13 @@ wrap_des3
   ret = krb5_create_checksum (gssapi_krb5_context,
 			      crypto,
 			      KRB5_KU_USAGE_SIGN,
+			      0,
 			      p + 20,
 			      datalen + 8,
 			      &cksum);
   krb5_crypto_destroy (gssapi_krb5_context, crypto);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       free (output_message_buffer->value);
       *minor_status = ret;
       return GSS_S_FAILURE;
@@ -289,8 +357,9 @@ wrap_des3
   memcpy (p + 8, cksum.checksum.data, cksum.checksum.length);
   free_Checksum (&cksum);
 
+  HEIMDAL_MUTEX_lock(&context_handle->ctx_id_mutex);
   /* sequence number */
-  krb5_auth_getlocalseqnumber (gssapi_krb5_context,
+  krb5_auth_con_getlocalseqnumber (gssapi_krb5_context,
 			       context_handle->auth_context,
 			       &seq_number);
 
@@ -303,7 +372,7 @@ wrap_des3
 	  4);
 
 
-  ret = krb5_crypto_init(gssapi_krb5_context, key, ETYPE_DES3_CBC_NONE_IVEC,
+  ret = krb5_crypto_init(gssapi_krb5_context, key, ETYPE_DES3_CBC_NONE,
 			 &crypto);
   if (ret) {
       free (output_message_buffer->value);
@@ -312,7 +381,7 @@ wrap_des3
   }
 
   {
-      des_cblock ivec;
+      DES_cblock ivec;
 
       memcpy (&ivec, p + 8, 8);
       ret = krb5_encrypt_ivec (gssapi_krb5_context,
@@ -323,6 +392,7 @@ wrap_des3
   }
   krb5_crypto_destroy (gssapi_krb5_context, crypto);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       free (output_message_buffer->value);
       *minor_status = ret;
       return GSS_S_FAILURE;
@@ -333,9 +403,10 @@ wrap_des3
   memcpy (p, encdata.data, encdata.length);
   krb5_data_free (&encdata);
 
-  krb5_auth_setlocalseqnumber (gssapi_krb5_context,
+  krb5_auth_con_setlocalseqnumber (gssapi_krb5_context,
 			       context_handle->auth_context,
 			       ++seq_number);
+  HEIMDAL_MUTEX_unlock(&context_handle->ctx_id_mutex);
 
   /* encrypt the data */
   p += 28;
@@ -346,6 +417,7 @@ wrap_des3
       ret = krb5_crypto_init(gssapi_krb5_context, key,
 			     ETYPE_DES3_CBC_NONE, &crypto);
       if (ret) {
+	  gssapi_krb5_set_error_string ();
 	  free (output_message_buffer->value);
 	  *minor_status = ret;
 	  return GSS_S_FAILURE;
@@ -354,6 +426,7 @@ wrap_des3
 			 p, datalen, &tmp);
       krb5_crypto_destroy(gssapi_krb5_context, crypto);
       if (ret) {
+	  gssapi_krb5_set_error_string ();
 	  free (output_message_buffer->value);
 	  *minor_status = ret;
 	  return GSS_S_FAILURE;
@@ -365,6 +438,7 @@ wrap_des3
   }
   if(conf_state != NULL)
       *conf_state = conf_req_flag;
+  *minor_status = 0;
   return GSS_S_COMPLETE;
 }
 
@@ -382,8 +456,9 @@ OM_uint32 gss_wrap
   OM_uint32 ret;
   krb5_keytype keytype;
 
-  ret = gss_krb5_getsomekey(context_handle, &key);
+  ret = gss_krb5_get_subkey(context_handle, &key);
   if (ret) {
+      gssapi_krb5_set_error_string ();
       *minor_status = ret;
       return GSS_S_FAILURE;
   }
@@ -400,9 +475,16 @@ OM_uint32 gss_wrap
 		       qop_req, input_message_buffer, conf_state,
 		       output_message_buffer, key);
       break;
+  case KEYTYPE_ARCFOUR:
+  case KEYTYPE_ARCFOUR_56:
+      ret = _gssapi_wrap_arcfour (minor_status, context_handle, conf_req_flag,
+				  qop_req, input_message_buffer, conf_state,
+				  output_message_buffer, key);
+      break;
   default :
-      *minor_status = KRB5_PROG_ETYPE_NOSUPP;
-      ret = GSS_S_FAILURE;
+      ret = _gssapi_wrap_cfx (minor_status, context_handle, conf_req_flag,
+			      qop_req, input_message_buffer, conf_state,
+			      output_message_buffer, key);
       break;
   }
   krb5_free_keyblock (gssapi_krb5_context, key);

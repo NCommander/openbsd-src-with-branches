@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: erealloc.c,v 1.4 1999/12/02 16:58:45 joda Exp $");
+RCSID("$KTH: erealloc.c,v 1.6 2005/04/12 11:28:37 lha Exp $");
 #endif
 
 #include <stdlib.h>
@@ -45,12 +45,12 @@ RCSID("$KTH: erealloc.c,v 1.4 1999/12/02 16:58:45 joda Exp $");
  * Like realloc but never fails.
  */
 
-void *
+void * ROKEN_LIB_FUNCTION
 erealloc (void *ptr, size_t sz)
 {
     void *tmp = realloc (ptr, sz);
 
     if (tmp == NULL && sz != 0)
-	err (1, "realloc %lu", (unsigned long)sz);
+	errx (1, "realloc %lu failed", (unsigned long)sz);
     return tmp;
 }

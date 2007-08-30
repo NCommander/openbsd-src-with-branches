@@ -16,7 +16,7 @@ BEGIN
 	unshift @INC, $dir;
 }
 
-use Test::More tests => 18;
+use Test::More tests => 17;
 
 # First we must set up some autoloader files
 my $fulldir = File::Spec->catdir( $dir, 'auto', 'Foo' );
@@ -160,19 +160,7 @@ AutoLoader->unimport();
 
 ::is( Baz->AUTOLOAD(), 'i am here', '... but not non-imported AUTOLOAD()' );
 
-package SomeClass;
-use AutoLoader 'AUTOLOAD';
-sub new {
-    bless {} => shift;
-}
-
 package main;
-
-$INC{"SomeClass.pm"} = $0; # Prepare possible recursion
-{
-    my $p = SomeClass->new();
-} # <-- deep recursion in AUTOLOAD looking for SomeClass::DESTROY?
-::ok(1, "AutoLoader shouldn't loop forever if \%INC is modified");
 
 # cleanup
 END {

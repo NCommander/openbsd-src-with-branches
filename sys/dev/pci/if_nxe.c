@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nxe.c,v 1.50 2007/08/24 14:02:55 dlg Exp $ */
+/*	$OpenBSD: if_nxe.c,v 1.39 2007/08/15 10:14:59 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -84,8 +84,8 @@ int nxedebug = 0;
 
 #define NXE_DB			0x00000000
 #define  NXE_DB_PEGID			0x00000003
-#define  NXE_DB_PEGID_TX		0x00000001 /* rx unit */
-#define  NXE_DB_PEGID_RX		0x00000002 /* tx unit */
+#define  NXE_DB_PEGID_RX		0x00000001 /* rx unit */
+#define  NXE_DB_PEGID_TX		0x00000002 /* tx unit */
 #define  NXE_DB_PRIVID			0x00000004 /* must be set */
 #define  NXE_DB_COUNT(_c)		((_c)<<3) /* count */
 #define  NXE_DB_CTXID(_c)		((_c)<<18) /* context id */
@@ -181,10 +181,10 @@ int nxedebug = 0;
 
 /* Interrupts */
 #define NXE_ISR_VECTOR		0x06110100 /* Interrupt Vector */
+#define  NXE_ISR_VECTOR_FUNC(_f)	(0x08 << (_f))
 #define NXE_ISR_MASK		0x06110104 /* Interrupt Mask */
 #define NXE_ISR_TARGET_STATUS	0x06110118
 #define NXE_ISR_TARGET_MASK	0x06110128
-#define  NXE_ISR_MINE(_f)		(0x08 << (_f))
 
 /* lock registers (semaphores between chipset and driver) */
 #define NXE_SEM_ROM_LOCK	0x0611c010 /* ROM access lock */
@@ -201,7 +201,6 @@ int nxedebug = 0;
 #define  NXE_0_NIU_MODE_XGE		(1<<2) /* XGE interface enabled */
 #define  NXE_0_NIU_MODE_GBE		(1<<1) /* 4 GbE interfaces enabled */
 #define NXE_0_NIU_SINGLE_TERM	0x00600004
-#define NXE_0_NIU_INT_MASK	0x00600040
 
 #define NXE_0_NIU_RESET_XG	0x0060001c /* reset XG */
 #define NXE_0_NIU_RESET_FIFO	0x00600088 /* reset sys fifos */
@@ -230,26 +229,8 @@ int nxedebug = 0;
 #define  NXE_0_XG_CFG1_SEQ_ERR_EN	(1<<10) /* enable seq err detection */
 #define  NXE_0_XG_CFG1_MULTICAST	(1<<12) /* accept all multicast */
 #define  NXE_0_XG_CFG1_PROMISC		(1<<13) /* accept all multicast */
-#define NXE_0_XG_IPG(_p)	(0x00670008 + _P(_p))
 #define NXE_0_XG_MAC_LO(_p)	(0x00670010 + _P(_p))
 #define NXE_0_XG_MAC_HI(_p)	(0x0067000c + _P(_p))
-#define NXE_0_XG_STATUS(_p)	(0x00670018 + _P(_p))
-#define NXE_0_XG_MTU(_p)	(0x0067001c + _P(_p))
-#define NXE_0_XG_PAUSE_FRM(_p)	(0x00670020 + _P(_p))
-#define NXE_0_XG_TX_BYTES(_p)	(0x00670024 + _P(_p))
-#define NXE_0_XG_TX_PKTS(_p)	(0x00670028 + _P(_p))
-#define NXE_0_XG_RX_BYTES(_p)	(0x0067002c + _P(_p))
-#define NXE_0_XG_RX_PKTS(_p)	(0x00670030 + _P(_p))
-#define NXE_0_XG_AGGR_ERRS(_p)	(0x00670034 + _P(_p))
-#define NXE_0_XG_MCAST_PKTS(_p)	(0x00670038 + _P(_p))
-#define NXE_0_XG_UCAST_PKTS(_p)	(0x0067003c + _P(_p))
-#define NXE_0_XG_CRC_ERRS(_p)	(0x00670040 + _P(_p))
-#define NXE_0_XG_OVERSIZE(_p)	(0x00670044 + _P(_p))
-#define NXE_0_XG_UNDERSIZE(_p)	(0x00670048 + _P(_p))
-#define NXE_0_XG_LOCAL_ERRS(_p)	(0x0067004c + _P(_p))
-#define NXE_0_XG_REMOTE_ERRS(_p) (0x00670050 + _P(_p))
-#define NXE_0_XG_CNTL_CHARS(_p)	(0x00670054 + _P(_p))
-#define NXE_0_XG_PAUSE_PKTS(_p)	(0x00670058 + _P(_p))
 
 /*
  * Software Defined Registers
@@ -289,7 +270,7 @@ static const u_int32_t nxe_regmap[][4] = {
     { 0x002023c0, 0x002023c4, 0x002023c8, 0x002023cc },
 
 #define NXE_1_SW_INT_MASK(_p)		(nxe_regmap[5][(_p)])
-    { 0x002023d8, 0x002023e0, 0x002023e4, 0x002023e8 },
+    { 0x002023d8, 0x082023e0, 0x082023e4, 0x082023e8 },
 
 #define NXE_1_SW_RX_PRODUCER(_c)	(nxe_regmap[6][(_c)])
     { 0x00202300, 0x00202344, 0x002023d8, 0x0020242c },
@@ -351,12 +332,10 @@ static const u_int32_t nxe_regmap[][4] = {
 #define  NXE_1_SW_MPORT_MODE_SINGLE	0x1111
 #define  NXE_1_SW_MPORT_MODE_MULTI	0x2222
 
-#define NXE_1_SW_INT_VECTOR	0x002022d4
-
 #define NXE_1_SW_NIC_CAP_HOST	0x002023a8 /* host capabilities */
-#define NXE_1_SW_NIC_CAP_FW	0x002023dc /* firmware capabilities */
-#define  NXE_1_SW_NIC_CAP_PORTINTR	0x1 /* per port interrupts */
-#define NXE_1_SW_DRIVER_VER	0x002024a0 /* host driver version */
+#define  NXE_1_SW_NIC_CAP_HOST_DEF	0x1 /* nfi */
+
+#define  NXE_1_SW_DRIVER_VER	0x002024a0 /* host driver version */
 
 
 #define NXE_1_SW_TEMP		0x002023b4 /* Temperature sensor */
@@ -650,7 +629,7 @@ struct nxe_dmamem {
 #define NXE_DMA_KVA(_ndm)	((void *)(_ndm)->ndm_kva)
 
 struct nxe_pkt {
-	int			pkt_id;
+	u_int16_t		pkt_id;
 	bus_dmamap_t		pkt_dmap;
 	struct mbuf		*pkt_m;
 	TAILQ_ENTRY(nxe_pkt)	pkt_link;
@@ -709,11 +688,9 @@ struct nxe_softc {
 
 	/* allocations for the hw */
 	struct nxe_dmamem	*sc_dummy_dma;
-	struct nxe_dmamem	*sc_dummy_rx;
 
 	struct nxe_dmamem	*sc_ctx;
 	u_int32_t		*sc_cmd_consumer;
-	u_int32_t		sc_cmd_consumer_cur;
 
 	struct nxe_ring		*sc_cmd_ring;
 	struct nxe_ring		*sc_rx_rings[NXE_NRING];
@@ -762,10 +739,7 @@ void			nxe_link_state(struct nxe_softc *);
 /* interface operations */
 int			nxe_ioctl(struct ifnet *, u_long, caddr_t);
 void			nxe_start(struct ifnet *);
-int			nxe_complete(struct nxe_softc *);
 void			nxe_watchdog(struct ifnet *);
-
-void			nxe_rx_start(struct nxe_softc *);
 
 void			nxe_up(struct nxe_softc *);
 void			nxe_lladdr(struct nxe_softc *);
@@ -813,8 +787,6 @@ u_int32_t		nxe_read(struct nxe_softc *, bus_size_t);
 void			nxe_write(struct nxe_softc *, bus_size_t, u_int32_t);
 int			nxe_wait(struct nxe_softc *, bus_size_t, u_int32_t,
 			    u_int32_t, u_int);
-
-void			nxe_doorbell(struct nxe_softc *, u_int32_t);
 
 int			nxe_crb_set(struct nxe_softc *, int);
 u_int32_t		nxe_crb_read(struct nxe_softc *, bus_size_t);
@@ -998,20 +970,7 @@ nxe_pci_unmap(struct nxe_softc *sc)
 int
 nxe_intr(void *xsc)
 {
-	struct nxe_softc		*sc = xsc;
-	u_int32_t			vector;
-
-	DASSERT(sc->sc_window == 1);
-
-	vector = nxe_crb_read(sc, NXE_1_SW_INT_VECTOR);
-	if (!ISSET(vector, NXE_ISR_MINE(sc->sc_function)))
-		return (0);
-
-	nxe_crb_write(sc, NXE_1_SW_INT_VECTOR, 0x80 << sc->sc_function);
-
-	/* the interrupt is mine! we should do some work now */
-
-	return (1);
+	return (0);
 }
 
 int
@@ -1093,7 +1052,6 @@ nxe_up(struct nxe_softc *sc)
 	struct nxe_ctx_ring		*ring;
 	struct nxe_ring			*nr;
 	u_int64_t			dva;
-	u_int32_t			intr_scheme;
 	int				i;
 
 	if (nxe_up_fw(sc) != 0)
@@ -1120,7 +1078,6 @@ nxe_up(struct nxe_softc *sc)
 	ctx->ctx_id = htole32(sc->sc_function);
 
 	sc->sc_cmd_consumer = &dmamem->cmd_consumer;
-	sc->sc_cmd_consumer_cur = 0;
 
 	/* allocate the cmd/tx ring */
 	sc->sc_cmd_ring = nxe_ring_alloc(sc,
@@ -1130,7 +1087,7 @@ nxe_up(struct nxe_softc *sc)
 
 	ctx->ctx_cmd_ring.r_addr =
 	    htole64(NXE_DMA_DVA(sc->sc_cmd_ring->nr_dmamem));
-	ctx->ctx_cmd_ring.r_size = htole32(sc->sc_cmd_ring->nr_nentries);
+	ctx->ctx_cmd_ring.r_size = htole64(sc->sc_cmd_ring->nr_nentries);
 
 	/* allocate the status ring */
 	sc->sc_status_ring = nxe_ring_alloc(sc,
@@ -1140,12 +1097,7 @@ nxe_up(struct nxe_softc *sc)
 
 	ctx->ctx_status_ring_addr =
 	    htole64(NXE_DMA_DVA(sc->sc_status_ring->nr_dmamem));
-	ctx->ctx_status_ring_size = htole32(sc->sc_status_ring->nr_nentries);
-
-	/* allocate something to point the jumbo and lro rings at */
-	sc->sc_dummy_rx = nxe_dmamem_alloc(sc, NXE_MAX_PKTLEN, PAGE_SIZE);
-	if (sc->sc_dummy_rx == NULL)
-		goto free_status_ring;
+	ctx->ctx_status_ring_size = htole64(sc->sc_status_ring->nr_nentries);
 
 	/* allocate the rx rings */
 	for (i = 0; i < NXE_NRING; i++) {
@@ -1163,8 +1115,6 @@ nxe_up(struct nxe_softc *sc)
 	}
 
 	/* nothing can possibly go wrong now */
-	bus_dmamap_sync(sc->sc_dmat, NXE_DMA_MAP(sc->sc_dummy_rx),
-	    0, NXE_DMA_LEN(sc->sc_dummy_rx), BUS_DMASYNC_PREREAD);
 	nxe_ring_sync(sc, sc->sc_status_ring, BUS_DMASYNC_PREREAD);
 	nxe_ring_sync(sc, sc->sc_cmd_ring, BUS_DMASYNC_PREWRITE);
 	bus_dmamap_sync(sc->sc_dmat, NXE_DMA_MAP(sc->sc_ctx),
@@ -1179,8 +1129,6 @@ nxe_up(struct nxe_softc *sc)
 	    NXE_1_SW_CONTEXT_SIG(sc->sc_port));
 
 	nxe_crb_set(sc, 0);
-	nxe_crb_write(sc, NXE_0_XG_MTU(sc->sc_function),
-	    MCLBYTES - ETHER_ALIGN);
 	nxe_lladdr(sc);
 	nxe_iff(sc);
 	nxe_crb_set(sc, 1);
@@ -1189,13 +1137,6 @@ nxe_up(struct nxe_softc *sc)
 	CLR(ifp->if_flags, IFF_OACTIVE);
 
 	/* enable interrupts */
-	intr_scheme = nxe_crb_read(sc, NXE_1_SW_NIC_CAP_FW);
-	if (intr_scheme != NXE_1_SW_NIC_CAP_PORTINTR)
-		nxe_write(sc, NXE_ISR_MASK, 0x77f);
-	nxe_crb_write(sc, NXE_1_SW_INT_MASK(sc->sc_function), 0x1);
-	if (intr_scheme != NXE_1_SW_NIC_CAP_PORTINTR)
-		nxe_crb_write(sc, NXE_1_SW_INT_VECTOR, 0x0);
-	nxe_write(sc, NXE_ISR_TARGET_MASK, 0xbff);
 
 	return;
 
@@ -1206,8 +1147,6 @@ free_rx_rings:
 		nxe_ring_free(sc, sc->sc_rx_rings[i]);
 	}
 
-	nxe_dmamem_free(sc, sc->sc_dummy_rx);
-free_status_ring:
 	nxe_ring_free(sc, sc->sc_status_ring);
 free_cmd_ring:
 	nxe_ring_free(sc, sc->sc_cmd_ring);
@@ -1231,7 +1170,7 @@ nxe_up_fw(struct nxe_softc *sc)
 	if (r != NXE_1_SW_CMDPEG_STATE_DONE)
 		return (1);
 
-	nxe_crb_write(sc, NXE_1_SW_NIC_CAP_HOST, NXE_1_SW_NIC_CAP_PORTINTR);
+	nxe_crb_write(sc, NXE_1_SW_NIC_CAP_HOST, NXE_1_SW_NIC_CAP_HOST_DEF);
 	nxe_crb_write(sc, NXE_1_SW_MPORT_MODE, NXE_1_SW_MPORT_MODE_MULTI);
 	nxe_crb_write(sc, NXE_1_SW_CMDPEG_STATE, NXE_1_SW_CMDPEG_STATE_ACK);
 
@@ -1251,10 +1190,10 @@ nxe_lladdr(struct nxe_softc *sc)
 	DASSERT(sc->sc_window == 0);
 
 	nxe_crb_write(sc, NXE_0_XG_MAC_LO(sc->sc_port),
-	    (lladdr[0] << 16) | (lladdr[1] << 24));
+	    (lladdr[0] << 24) | (lladdr[1] << 16));
 	nxe_crb_write(sc, NXE_0_XG_MAC_HI(sc->sc_port),
-	    (lladdr[2] << 0)  | (lladdr[3] << 8) |
-	    (lladdr[4] << 16) | (lladdr[5] << 24));
+	    (lladdr[2] << 24) | (lladdr[3] << 16) |
+	    (lladdr[4] << 8)  | (lladdr[5] << 0));
 }
 
 void
@@ -1294,14 +1233,11 @@ nxe_down(struct nxe_softc *sc)
 	    BUS_DMASYNC_POSTWRITE | BUS_DMASYNC_POSTREAD);
 	nxe_ring_sync(sc, sc->sc_cmd_ring, BUS_DMASYNC_POSTWRITE);
 	nxe_ring_sync(sc, sc->sc_status_ring, BUS_DMASYNC_POSTREAD);
-	bus_dmamap_sync(sc->sc_dmat, NXE_DMA_MAP(sc->sc_dummy_rx),
-	    0, NXE_DMA_LEN(sc->sc_dummy_rx), BUS_DMASYNC_POSTREAD);
 
 	for (i = 0; i < NXE_NRING; i++) {
 		nxe_ring_sync(sc, sc->sc_rx_rings[i], BUS_DMASYNC_POSTWRITE);
 		nxe_ring_free(sc, sc->sc_rx_rings[i]);
 	}
-	nxe_dmamem_free(sc, sc->sc_dummy_rx);
 	nxe_ring_free(sc, sc->sc_status_ring);
 	nxe_ring_free(sc, sc->sc_cmd_ring);
 	nxe_dmamem_free(sc, sc->sc_ctx);
@@ -1326,7 +1262,7 @@ nxe_start(struct ifnet *ifp)
 	    IFQ_IS_EMPTY(&ifp->if_snd))
 		return;
 
-	if (nxe_ring_writeable(nr, sc->sc_cmd_consumer_cur) < NXE_TXD_DESCS) {
+	if (nxe_ring_writeable(nr, 0 /* XXX */) < NXE_TXD_DESCS) {
 		SET(ifp->if_flags, IFF_OACTIVE);
 		return;
 	}
@@ -1366,6 +1302,7 @@ nxe_start(struct ifnet *ifp)
 		txd->tx_flags = htole16(NXE_TXD_F_OPCODE_TX);
 		txd->tx_nbufs = dmap->dm_nsegs;
 		txd->tx_length = htole16(dmap->dm_mapsize);
+		txd->tx_id = pkt->pkt_id;
 		txd->tx_port = sc->sc_port;
 
 		segs = dmap->dm_segs;
@@ -1394,8 +1331,6 @@ nxe_start(struct ifnet *ifp)
 			nsegs -= NXE_TXD_SEGS;
 			segs += NXE_TXD_SEGS;
 
-			pkt->pkt_id = nr->nr_slot;
-
 			txd = nxe_ring_next(sc, nr);
 			bzero(txd, sizeof(struct nxe_tx_desc));
 		} while (nsegs > 0);
@@ -1408,52 +1343,6 @@ nxe_start(struct ifnet *ifp)
 
 	nxe_ring_sync(sc, nr, BUS_DMASYNC_PREWRITE);
 	nxe_crb_write(sc, NXE_1_SW_CMD_PRODUCER(sc->sc_function), nr->nr_slot);
-}
-
-int
-nxe_complete(struct nxe_softc *sc)
-{
-	struct nxe_pkt			*pkt;
-	int				new_cons, cur_cons;
-	int				rv = 0;
-
-	bus_dmamap_sync(sc->sc_dmat, NXE_DMA_MAP(sc->sc_ctx),
-	    0, NXE_DMA_LEN(sc->sc_ctx),
-	    BUS_DMASYNC_POSTWRITE | BUS_DMASYNC_POSTREAD);
-	new_cons = letoh32(*sc->sc_cmd_consumer);
-	bus_dmamap_sync(sc->sc_dmat, NXE_DMA_MAP(sc->sc_ctx),
-	    0, NXE_DMA_LEN(sc->sc_ctx),
-	    BUS_DMASYNC_PREWRITE | BUS_DMASYNC_PREREAD);
-
-	cur_cons = sc->sc_cmd_consumer_cur;
-	pkt = nxe_pkt_used(sc->sc_tx_pkts);
-
-	while (pkt != NULL && cur_cons != new_cons) {
-		if (pkt->pkt_id == cur_cons) {
-			bus_dmamap_sync(sc->sc_dmat, pkt->pkt_dmap,
-			    0, pkt->pkt_dmap->dm_mapsize,
-			    BUS_DMASYNC_POSTWRITE);
-			    bus_dmamap_unload(sc->sc_dmat, pkt->pkt_dmap);
-
-			m_freem(pkt->pkt_m);
-
-			nxe_pkt_put(sc->sc_tx_pkts, pkt);
-
-			pkt = nxe_pkt_used(sc->sc_tx_pkts);
-		}
-
-		cur_cons++;
-		cur_cons %= sc->sc_cmd_ring->nr_nentries;
-
-		rv = 1;
-	}
-
-	if (rv == 1) {
-		sc->sc_cmd_consumer_cur = cur_cons;
-		CLR(sc->sc_ac.ac_if.if_flags, IFF_OACTIVE);
-	}
-
-	return (rv);
 }
 
 struct mbuf *
@@ -1507,68 +1396,6 @@ nxe_load_pkt(struct nxe_softc *sc, bus_dmamap_t dmap, struct mbuf *m)
 	}
 
 	return (m);
-}
-
-void
-nxe_rx_start(struct nxe_softc *sc)
-{
-	struct nxe_ring			*nr = sc->sc_rx_rings[NXE_RING_RX];
-	struct nxe_rx_desc		*rxd;
-	struct nxe_pkt			*pkt;
-	struct mbuf			*m;
-
-	if (nxe_ring_writeable(nr, 0) == 0)
-		return;
-
-	nxe_ring_sync(sc, nr, BUS_DMASYNC_POSTWRITE);
-	rxd = nxe_ring_cur(sc, nr);
-
-	for (;;) {
-		pkt = nxe_pkt_get(sc->sc_rx_pkts);
-		if (pkt == NULL)
-			goto done;
-
-		MGETHDR(m, M_DONTWAIT, MT_DATA);
-		if (m == NULL)
-			goto put_pkt;
-
-		MCLGET(m, M_DONTWAIT);
-		if (!ISSET(m->m_flags, M_EXT))
-			goto free_m;
-
-		m->m_data += ETHER_ALIGN;
-		m->m_len = m->m_pkthdr.len = MCLBYTES - ETHER_ALIGN;
-
-		if (bus_dmamap_load_mbuf(sc->sc_dmat, pkt->pkt_dmap, m,
-		    BUS_DMA_NOWAIT) != 0)
-			goto free_m;
-
-		pkt->pkt_m = m;
-
-		bzero(rxd, sizeof(struct nxe_rx_desc));
-		rxd->rx_len = htole32(m->m_len);
-		rxd->rx_id = pkt->pkt_id;
-		rxd->rx_addr = htole64(pkt->pkt_dmap->dm_segs[0].ds_addr);
-
-		bus_dmamap_sync(sc->sc_dmat, pkt->pkt_dmap, 0,
-		    pkt->pkt_dmap->dm_mapsize, BUS_DMASYNC_PREREAD);
-
-		rxd = nxe_ring_next(sc, nr);
-
-		if (nr->nr_ready == 0)
-			goto done;
-	}
-
-free_m:
-	m_freem(m);
-put_pkt:
-	nxe_pkt_put(sc->sc_rx_pkts, pkt);
-done:
-	nxe_ring_sync(sc, nr, BUS_DMASYNC_PREWRITE);
-	nxe_crb_write(sc, NXE_1_SW_RX_PRODUCER(sc->sc_function), nr->nr_slot);
-	nxe_doorbell(sc, NXE_DB_PEGID_RX | NXE_DB_PRIVID |
-	    NXE_DB_OPCODE_RX_PROD |
-	    NXE_DB_COUNT(nr->nr_slot) | NXE_DB_CTXID(sc->sc_function));
 }
 
 void
@@ -1795,7 +1622,7 @@ nxe_mountroot(void *arg)
 	if (sc->sc_port == 0x55555555)
 		sc->sc_port = sc->sc_function;
 
-	nxe_crb_write(sc, NXE_1_SW_NIC_CAP_HOST, NXE_1_SW_NIC_CAP_PORTINTR);
+	nxe_crb_write(sc, NXE_1_SW_NIC_CAP_HOST, NXE_1_SW_NIC_CAP_HOST_DEF);
 	nxe_crb_write(sc, NXE_1_SW_MPORT_MODE, NXE_1_SW_MPORT_MODE_MULTI);
 	nxe_crb_write(sc, NXE_1_SW_CMDPEG_STATE, NXE_1_SW_CMDPEG_STATE_ACK);
 
@@ -2080,28 +1907,16 @@ nxe_wait(struct nxe_softc *sc, bus_size_t r, u_int32_t m, u_int32_t v,
 	return (1);
 }
 
-void
-nxe_doorbell(struct nxe_softc *sc, u_int32_t v)
-{
-	bus_space_write_4(sc->sc_memt, sc->sc_memh, NXE_DB, v);
-	bus_space_barrier(sc->sc_memt, sc->sc_memh, NXE_DB, 4,
-	    BUS_SPACE_BARRIER_WRITE);
-}
-
 int
 nxe_crb_set(struct nxe_softc *sc, int window)
 {
 	int			oldwindow = sc->sc_window;
-	u_int32_t		r;
 
 	if (sc->sc_window != window) {
 		sc->sc_window = window;
 
-		r = window ? NXE_WIN_CRB_1 : NXE_WIN_CRB_0;
-		nxe_write(sc, NXE_WIN_CRB(sc->sc_function), r);
-
-		if (nxe_read(sc, NXE_WIN_CRB(sc->sc_function)) != r)
-			printf("%s: crb window hasnt moved\n");
+		nxe_write(sc, NXE_WIN_CRB(sc->sc_function),
+		    window ? NXE_WIN_CRB_1 : NXE_WIN_CRB_0);
 	}
 
 	return (oldwindow);

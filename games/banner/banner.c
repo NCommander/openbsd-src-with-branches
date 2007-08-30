@@ -1,4 +1,4 @@
-/*	$OpenBSD: banner.c,v 1.13 2006/11/22 19:31:39 otto Exp $	*/
+/*	$OpenBSD: banner.c,v 1.12 2004/07/09 15:59:26 deraadt Exp $	*/
 /*	$NetBSD: banner.c,v 1.4 1995/04/22 11:55:15 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)banner.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: banner.c,v 1.13 2006/11/22 19:31:39 otto Exp $";
+static char rcsid[] = "$OpenBSD: banner.c,v 1.12 2004/07/09 15:59:26 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -1064,15 +1064,14 @@ main(int argc, char *argv[])
 			strlcat(message, " ", sizeof message);
 			strlcat(message, *argv, sizeof message);
 		}
+		nchars = strlen(message);
 	} else {
 		if (isatty(fileno(stdin)))
 			fprintf(stderr,"Message: ");
-		if (fgets(message, sizeof(message), stdin) == NULL)
-			errx(1, "error reading message");
-		/* get rid of newline */
-		message[strcspn(message, "\n")] = '\0';
+		(void)fgets(message, sizeof(message), stdin);
+		nchars = strlen(message);
+		message[nchars--] = '\0';	/* get rid of newline */
 	}
-	nchars = strlen(message);
 
 	/* some debugging print statements */
 	if (debug) {
