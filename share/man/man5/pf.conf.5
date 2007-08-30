@@ -1442,6 +1442,14 @@ the route back to the packet's source address.
 Any address that matches the given table.
 .El
 .Pp
+Ranges of addresses are specified by using the
+.Sq -
+operator.
+For instance:
+.Dq 10.1.1.10 - 10.1.1.12
+means all addresses from 10.1.1.10 to 10.1.1.12,
+hence addresses 10.1.1.10, 10.1.1.11, and 10.1.1.12.
+.Pp
 Interface names and interface group names can have modifiers appended:
 .Pp
 .Bl -tag -width xxxxxxxxxxxx -compact
