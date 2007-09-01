@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccd.c,v 1.77 2007/06/08 05:27:58 deraadt Exp $	*/
+/*	$OpenBSD: ccd.c,v 1.78 2007/06/20 18:15:46 deraadt Exp $	*/
 /*	$NetBSD: ccd.c,v 1.33 1996/05/05 04:21:14 thorpej Exp $	*/
 
 /*-
@@ -953,9 +953,9 @@ ccdiodone(struct buf *vbp)
 
 	count = vbp->b_bcount;
 
-	putccdbuf(cbp);
 	if (cbp->cb_dep)
 		putccdbuf(cbp->cb_dep);
+	putccdbuf(cbp);
 
 	/*
 	 * If all done, "interrupt".
