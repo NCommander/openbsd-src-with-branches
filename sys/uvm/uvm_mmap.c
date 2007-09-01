@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.68 2007/05/31 21:20:30 thib Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.69 2007/06/18 21:51:15 pedro Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -592,7 +592,7 @@ sys_mmap(p, v, retval)
 	if ((flags & MAP_ANON) != 0 ||
 	    ((flags & MAP_PRIVATE) != 0 && (prot & PROT_WRITE) != 0)) {
 		if (size >
-		    (p->p_rlimit[RLIMIT_DATA].rlim_cur - ctob(p->p_vmspace->vm_dused))) {
+		    (p->p_rlimit[RLIMIT_DATA].rlim_cur - ptoa(p->p_vmspace->vm_dused))) {
 			error = ENOMEM;
 			goto out;
 		}
