@@ -1,4 +1,4 @@
-/* $OpenBSD: db_disasm.c,v 1.18 2006/02/26 22:26:16 miod Exp $ */
+/* $OpenBSD: db_disasm.c,v 1.19 2007/02/14 00:53:47 jsg Exp $ */
 /* $NetBSD: db_disasm.c,v 1.8 2000/05/25 19:57:30 jhawk Exp $ */
 
 /* 
@@ -849,6 +849,7 @@ alpha_print_instruction(iadr, i, showregs)
 	long		signed_immediate;
 	boolean_t	fstore;
 	pal_instruction	p;
+	char		tmpfmt[24];
 
 	regcount = 0;
 	fstore = FALSE;
@@ -1041,8 +1042,9 @@ loadstore:
 		        register_name(i.mem_format.ra));
 		signed_immediate = (long)i.mem_format.displacement;
 loadstore_address:
-		db_printf("%lz(%s)", signed_immediate,
-			register_name(i.mem_format.rb));
+		db_printf("%s(%s)", db_format(tmpfmt, sizeof tmpfmt,
+		    signed_immediate, DB_FORMAT_Z, 0, 0),
+		    register_name(i.mem_format.rb));
 		/*
 		 * For convenience, do the address computation
 		 */
