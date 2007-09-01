@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_osfp.c,v 1.11 2006/12/13 05:10:15 itojun Exp $ */
+/*	$OpenBSD: pf_osfp.c,v 1.12 2006/12/13 18:14:10 itojun Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@w4g.org>
@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #ifdef _KERNEL
 # include <sys/systm.h>
+#include <sys/pool.h>
 #endif /* _KERNEL */
 #include <sys/mbuf.h>
 

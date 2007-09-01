@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.90 2007/06/15 18:23:07 markus Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.91 2007/06/25 12:17:43 markus Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -78,6 +78,7 @@
 #include <sys/sysctl.h>
 #include <sys/domain.h>
 #include <sys/kernel.h>
+#include <sys/pool.h>
 
 #include <dev/rndvar.h>
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.114 2007/02/14 00:53:48 jsg Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.115 2007/06/22 12:14:05 markus Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -77,6 +77,7 @@
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
+#include <sys/pool.h>
 #include <net/route.h>
 #include <netinet/ip_ipsp.h>
 #include <net/pfkeyv2.h>
