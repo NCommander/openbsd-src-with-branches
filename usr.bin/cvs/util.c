@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.112 2007/07/03 13:22:43 joris Exp $	*/
+/*	$OpenBSD: util.c,v 1.113 2007/07/19 06:34:15 ray Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -259,6 +259,9 @@ cvs_getargv(const char *line, char **argv, int argvlen)
 					break;
 				}
 			}
+			if (error)
+				break;
+			lp++;
 
 			arg = qbuf;
 		} else {
