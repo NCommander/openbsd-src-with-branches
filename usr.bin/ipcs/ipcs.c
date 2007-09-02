@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcs.c,v 1.20 2003/06/04 16:24:45 deraadt Exp $	*/
+/*	$OpenBSD: ipcs.c,v 1.21 2005/02/22 14:47:45 jmc Exp $	*/
 /*	$NetBSD: ipcs.c,v 1.25 2000/06/16 03:58:20 simonb Exp $	*/
 
 /*-
@@ -718,10 +718,10 @@ ipcs_kvm(void)
 				errx(1, "kvm_read (%s): %s",
 				    symbols[X_MSQIDS].n_name, kvm_geterr(kd));
 
-			msqids = malloc(sizeof(struct msqid_ds) *
+			msqids = calloc(sizeof(struct msqid_ds),
 			    msginfo.msgmni);
 			if (msqids == NULL)
-				err(1, "malloc");
+				err(1, "calloc");
 
 			if (kvm_read(kd, addr, msqids,
 			    sizeof(struct msqid_ds) * msginfo.msgmni) !=
@@ -770,10 +770,10 @@ ipcs_kvm(void)
 				errx(1, "kvm_read (%s): %s",
 				    symbols[X_SHMSEGS].n_name, kvm_geterr(kd));
 
-			shmsegs = malloc(sizeof(struct shmid_ds *) *
+			shmsegs = calloc(sizeof(struct shmid_ds *),
 			    shminfo.shmmni);
 			if (shmsegs == NULL)
-				err(1, "malloc");
+				err(1, "calloc");
 
 			if (kvm_read(kd, addr, shmsegs,
 			    sizeof(struct shmid_ds *) * shminfo.shmmni) !=
@@ -824,10 +824,10 @@ ipcs_kvm(void)
 				errx(1, "kvm_read (%s): %s",
 				    symbols[X_SEMA].n_name, kvm_geterr(kd));
 
-			sema = malloc(sizeof(struct semid_ds *) *
+			sema = calloc(sizeof(struct semid_ds *),
 			    seminfo.semmni);
 			if (sema == NULL)
-				err(1, "malloc");
+				err(1, "calloc");
 
 			if (kvm_read(kd, addr, sema,
 			    sizeof(struct semid_ds *) * seminfo.semmni) !=
