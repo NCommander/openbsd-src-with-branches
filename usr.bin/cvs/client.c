@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.73 2007/09/01 15:41:34 joris Exp $	*/
+/*	$OpenBSD: client.c,v 1.74 2007/09/02 11:11:12 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -106,7 +106,7 @@ struct cvs_req cvs_requests[] = {
 	{ "watch-remove",		0,	NULL, 0 },
 	{ "watchers",			0,	NULL, 0 },
 	{ "editors",			0,	NULL, 0 },
-	{ "init",			0,	cvs_server_init, REQ_NEEDDIR },
+	{ "init",			0,	cvs_server_init, 0 },
 	{ "annotate",			0,	cvs_server_annotate,
 	    REQ_NEEDDIR },
 	{ "rannotate",			0,	NULL, 0 },
