@@ -1,4 +1,4 @@
-/*	$OpenBSD: uow.c,v 1.22 2007/06/13 06:25:03 mbalmer Exp $	*/
+/*	$OpenBSD: uow.c,v 1.23 2007/06/14 10:11:16 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -223,7 +223,9 @@ uow_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_ow_bus.bus_read_block = uow_ow_read_block;
 	sc->sc_ow_bus.bus_write_block = uow_ow_write_block;
 	sc->sc_ow_bus.bus_matchrom = uow_ow_matchrom;
+#if 0
 	sc->sc_ow_bus.bus_search = uow_ow_search;
+#endif
 
 	bzero(&oba, sizeof(oba));
 	oba.oba_bus = &sc->sc_ow_bus;
