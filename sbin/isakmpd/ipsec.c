@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsec.c,v 1.128 2007/04/16 13:01:39 moritz Exp $	 */
+/* $OpenBSD: ipsec.c,v 1.129 2007/07/31 20:59:33 hshoexer Exp $	 */
 /* $EOM: ipsec.c,v 1.143 2000/12/11 23:57:42 niklas Exp $	 */
 
 /*
@@ -1632,7 +1632,7 @@ ipsec_handle_leftover_payload(struct message *msg, u_int8_t type,
 			    spisz, proto);
 			return -1;
 		}
-		spis = (u_int8_t *) malloc(nspis * spisz);
+		spis = (u_int8_t *) calloc(nspis, spisz);
 		if (!spis) {
 			log_error("ipsec_handle_leftover_payload: malloc "
 			    "(%d) failed", nspis * spisz);

@@ -1,4 +1,4 @@
-/* $OpenBSD: pf_key_v2.c,v 1.180 2007/04/16 13:01:39 moritz Exp $  */
+/* $OpenBSD: pf_key_v2.c,v 1.181 2007/05/27 18:31:30 claudio Exp $  */
 /* $EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	 */
 
 /*
@@ -337,7 +337,7 @@ pf_key_v2_write(struct pf_key_v2_msg *pmsg)
 	struct sadb_msg *msg = TAILQ_FIRST(pmsg)->seg;
 	struct pf_key_v2_node *np = TAILQ_FIRST(pmsg);
 
-	iov = (struct iovec *) malloc(cnt * sizeof *iov);
+	iov = (struct iovec *) calloc(cnt, sizeof *iov);
 	if (!iov) {
 		log_error("pf_key_v2_write: malloc (%lu) failed",
 		    cnt * (unsigned long) sizeof *iov);

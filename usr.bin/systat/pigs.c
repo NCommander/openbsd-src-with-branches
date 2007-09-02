@@ -1,4 +1,4 @@
-/*	$OpenBSD: pigs.c,v 1.19 2006/11/29 12:34:22 miod Exp $	*/
+/*	$OpenBSD: pigs.c,v 1.20 2007/02/25 18:21:24 deraadt Exp $	*/
 /*	$NetBSD: pigs.c,v 1.3 1995/04/29 05:54:50 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)pigs.c	8.2 (Berkeley) 9/23/93";
 #endif
-static char rcsid[] = "$OpenBSD: pigs.c,v 1.19 2006/11/29 12:34:22 miod Exp $";
+static char rcsid[] = "$OpenBSD: pigs.c,v 1.20 2007/02/25 18:21:24 deraadt Exp $";
 #endif /* not lint */
 
 /*
@@ -181,8 +181,7 @@ fetchpigs(void)
 	}
 	if (nproc > lastnproc) {
 		free(pt);
-		if ((pt =
-		    malloc((nproc + 1) * sizeof(struct p_times))) == NULL) {
+		if ((pt = calloc(nproc + 1, sizeof(struct p_times))) == NULL) {
 			error("Out of memory");
 			die();
 		}

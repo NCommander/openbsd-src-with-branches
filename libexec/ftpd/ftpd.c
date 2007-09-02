@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.179 2007/07/27 14:12:46 moritz Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.180 2007/07/31 03:35:04 ray Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -70,7 +70,7 @@ static const char copyright[] =
 static const char sccsid[] = "@(#)ftpd.c	8.4 (Berkeley) 4/16/94";
 #else
 static const char rcsid[] =
-    "$OpenBSD: ftpd.c,v 1.179 2007/07/27 14:12:46 moritz Exp $";
+    "$OpenBSD: ftpd.c,v 1.180 2007/07/31 03:35:04 ray Exp $";
 #endif
 #endif /* not lint */
 
@@ -439,8 +439,8 @@ main(int argc, char *argv[])
 		for (res = res0; res; res = res->ai_next)
 			n++;
 
-		fds = malloc(n * sizeof(int));
-		pfds = malloc(n * sizeof(struct pollfd));
+		fds = calloc(n, sizeof(int));
+		pfds = calloc(n, sizeof(struct pollfd));
 		if (!fds || !pfds) {
 			syslog(LOG_ERR, "%s", strerror(errno));
 			exit(1);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: scandir.c,v 1.10 2005/08/08 08:05:34 espie Exp $ */
+/*	$OpenBSD: scandir.c,v 1.11 2007/06/26 05:00:50 ray Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -78,7 +78,7 @@ scandir(const char *dirname, struct dirent ***namelist,
 		errno = ENOMEM;
 		goto fail;
 	}
-	names = (struct dirent **)malloc(arraysz * sizeof(struct dirent *));
+	names = (struct dirent **)calloc(arraysz, sizeof(struct dirent *));
 	if (names == NULL)
 		goto fail;
 

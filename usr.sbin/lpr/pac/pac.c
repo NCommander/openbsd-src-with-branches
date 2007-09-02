@@ -1,4 +1,4 @@
-/*	$OpenBSD: pac.c,v 1.16 2003/03/13 09:09:48 deraadt Exp $ */
+/*	$OpenBSD: pac.c,v 1.17 2003/06/02 23:36:53 millert Exp $ */
 /*	$NetBSD: pac.c,v 1.14 2000/04/27 13:40:18 msaitoh Exp $	*/
 
 /*
@@ -41,7 +41,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)pac.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: pac.c,v 1.16 2003/03/13 09:09:48 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: pac.c,v 1.17 2003/06/02 23:36:53 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -286,7 +286,7 @@ dumpit(void)
 
 	hp = hashtab[0];
 	hno = 1;
-	base = (struct hent **) malloc(hcount * sizeof(hp));
+	base = (struct hent **) calloc(hcount, sizeof(hp));
 	if (base == NULL)
 		err(1, NULL);
 	for (ap = base, c = hcount; c--; ap++) {

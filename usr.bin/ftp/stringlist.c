@@ -1,4 +1,4 @@
-/*	$OpenBSD: stringlist.c,v 1.6 2004/09/16 04:39:16 deraadt Exp $	*/
+/*	$OpenBSD: stringlist.c,v 1.7 2006/04/25 05:45:20 tedu Exp $	*/
 /*	$NetBSD: stringlist.c,v 1.2 1997/01/17 07:26:20 lukem Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint) && !defined(SMALL)
-static const char rcsid[] = "$OpenBSD: stringlist.c,v 1.6 2004/09/16 04:39:16 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: stringlist.c,v 1.7 2006/04/25 05:45:20 tedu Exp $";
 #endif /* LIBC_SCCS and not lint and not SMALL */
 
 #include <stdio.h>
@@ -57,7 +57,7 @@ sl_init(void)
 
 	sl->sl_cur = 0;
 	sl->sl_max = _SL_CHUNKSIZE;
-	sl->sl_str = malloc(sl->sl_max * sizeof(char *));
+	sl->sl_str = calloc(sl->sl_max, sizeof(char *));
 	if (sl->sl_str == NULL)
 		err(1, "stringlist");
 	return sl;

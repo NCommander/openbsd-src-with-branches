@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_rmt.c,v 1.26 2006/03/31 17:31:59 deraadt Exp $ */
+/*	$OpenBSD: pmap_rmt.c,v 1.27 2006/09/22 18:42:04 otto Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -172,7 +172,7 @@ newgetbroadcastnets(struct in_addr **addrsp)
 		}
 	}
 
-	addrs = (struct in_addr *)malloc(n * sizeof(*addrs));
+	addrs = (struct in_addr *)calloc(n, sizeof(*addrs));
 	if (addrs == NULL) {
 		freeifaddrs(ifap);
 		return 0;

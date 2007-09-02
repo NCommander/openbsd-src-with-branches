@@ -1,4 +1,4 @@
-/*	$OpenBSD: tables.c,v 1.23 2005/04/21 21:47:18 beck Exp $	*/
+/*	$OpenBSD: tables.c,v 1.24 2006/11/17 08:38:04 otto Exp $	*/
 /*	$NetBSD: tables.c,v 1.4 1995/03/21 09:07:45 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static const char sccsid[] = "@(#)tables.c	8.1 (Berkeley) 5/31/93";
 #else
-static const char rcsid[] = "$OpenBSD: tables.c,v 1.23 2005/04/21 21:47:18 beck Exp $";
+static const char rcsid[] = "$OpenBSD: tables.c,v 1.24 2006/11/17 08:38:04 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -1102,7 +1102,7 @@ dir_start(void)
 		return(0);
 
 	dirsize = DIRP_SIZE;
-	if ((dirp = malloc(dirsize * sizeof(DIRDATA))) == NULL) {
+	if ((dirp = calloc(dirsize, sizeof(DIRDATA))) == NULL) {
 		paxwarn(1, "Unable to allocate memory for directory times");
 		return(-1);
 	}

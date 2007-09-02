@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdiff.c,v 1.21 2007/06/27 04:29:40 ray Exp $ */
+/*	$OpenBSD: sdiff.c,v 1.22 2007/06/28 02:14:41 ray Exp $ */
 
 /*
  * Written by Raymond Lai <ray@cyth.net>.
@@ -172,7 +172,7 @@ main(int argc, char **argv)
 	 * waste some memory; however we need an extra space for the
 	 * NULL at the end, so it sort of works out.
 	 */
-	if (!(diffargv = malloc(sizeof(char **) * argc * 2)))
+	if (!(diffargv = calloc(argc, sizeof(char **) * 2)))
 		err(2, "main");
 
 	/* Add first argument, the program name. */

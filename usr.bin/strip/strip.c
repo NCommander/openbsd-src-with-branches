@@ -1,4 +1,4 @@
-/*	$OpenBSD: strip.c,v 1.22 2004/07/12 10:44:11 miod Exp $	*/
+/*	$OpenBSD: strip.c,v 1.23 2004/10/09 20:36:05 mickey Exp $	*/
 
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)strip.c	5.8 (Berkeley) 11/6/91";*/
-static char rcsid[] = "$OpenBSD: strip.c,v 1.22 2004/07/12 10:44:11 miod Exp $";
+static char rcsid[] = "$OpenBSD: strip.c,v 1.23 2004/10/09 20:36:05 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -268,7 +268,7 @@ s_stab(const char *fn, int fd, EXEC *ep, struct stat *sp, off_t *sz)
 		warnx("%s", strerror(ENOMEM));
 		goto end;
 	}
-	mapping = malloc(nsyms * sizeof(unsigned int));
+	mapping = calloc(nsyms, sizeof(unsigned int));
 	if (!mapping) {
 		warnx("%s", strerror(ENOMEM));
 		goto end;

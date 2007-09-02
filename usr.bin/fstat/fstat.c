@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.57 2006/06/19 22:31:20 deraadt Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.58 2007/04/07 23:20:19 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -37,7 +37,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fstat.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$OpenBSD: fstat.c,v 1.57 2006/06/19 22:31:20 deraadt Exp $";
+static char *rcsid = "$OpenBSD: fstat.c,v 1.58 2007/04/07 23:20:19 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -131,7 +131,7 @@ int maxfiles;
 #define ALLOC_OFILES(d)	\
 	if ((d) > maxfiles) { \
 		free(ofiles); \
-		ofiles = malloc((d) * sizeof(struct file *)); \
+		ofiles = calloc((d), sizeof(struct file *)); \
 		if (ofiles == NULL) \
 			err(1, "malloc"); \
 		maxfiles = (d); \

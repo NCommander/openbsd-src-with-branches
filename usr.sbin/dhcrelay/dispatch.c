@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.5 2004/09/21 04:07:04 david Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.6 2006/12/18 01:08:58 stevesk Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -146,7 +146,7 @@ dispatch(void)
 	for (l = protocols; l; l = l->next)
 		nfds++;
 
-	fds = malloc(nfds * sizeof(struct pollfd));
+	fds = calloc(nfds, sizeof(struct pollfd));
 	if (fds == NULL)
 		error("Can't allocate poll structures.");
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_read.c,v 1.13 2005/10/17 19:12:16 otto Exp $	*/
+/*	$OpenBSD: cl_read.c,v 1.14 2007/07/26 16:11:56 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -159,7 +159,7 @@ cl_read(sp, flags, bp, blen, nrp, tp)
 	CIRCLEQ_FOREACH(tsp, &gp->dq, q)
 		if (F_ISSET(tsp, SC_SCRIPT) && tsp->script->sh_master > maxfd)
 			maxfd = tsp->script->sh_master;
-	rdfd = (fd_set *)malloc(howmany(maxfd + 1, NFDBITS) * sizeof(fd_mask));
+	rdfd = (fd_set *)calloc(howmany(maxfd + 1, NFDBITS), sizeof(fd_mask));
 	if (rdfd == NULL)
 		goto err;
 
