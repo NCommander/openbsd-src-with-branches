@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.h,v 1.21 2006/06/02 19:53:12 mpf Exp $	*/
+/*	$OpenBSD: ip_carp.h,v 1.22 2007/03/18 23:23:17 mpf Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -109,7 +109,7 @@ struct carpstats {
 	u_int64_t	carps_onomem;		/* no memory for an mbuf */
 	u_int64_t	carps_ostates;		/* total state updates sent */
 
-	u_int64_t	carps_preempt;		/* if enabled, preemptions */
+	u_int64_t	carps_preempt;		/* transitions to master */
 };
 
 #define CARPDEVNAMSIZ	16
