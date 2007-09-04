@@ -1,4 +1,4 @@
-/*	$OpenBSD: logmsg.c,v 1.42 2007/08/30 11:07:18 joris Exp $	*/
+/*	$OpenBSD: logmsg.c,v 1.43 2007/09/04 11:47:14 tobias Exp $	*/
 /*
  * Copyright (c) 2007 Joris Vink <joris@openbsd.org>
  *
@@ -71,7 +71,7 @@ cvs_logmsg_read(const char *path)
 		len = strlen(buf);
 
 		if (!strncmp(buf, CVS_LOGMSG_PREFIX,
-		    strlen(CVS_LOGMSG_PREFIX)))
+		    sizeof(CVS_LOGMSG_PREFIX) - 1))
 			continue;
 
 		cvs_buf_append(bp, buf, len);
