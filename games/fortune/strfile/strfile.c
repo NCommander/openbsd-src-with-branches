@@ -1,4 +1,4 @@
-/*	$OpenBSD: strfile.c,v 1.14 2004/07/09 15:59:26 deraadt Exp $	*/
+/*	$OpenBSD: strfile.c,v 1.15 2007/06/26 17:51:28 moritz Exp $	*/
 /*	$NetBSD: strfile.c,v 1.4 1995/04/24 12:23:09 cgd Exp $	*/
 
 /*-
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)strfile.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: strfile.c,v 1.14 2004/07/09 15:59:26 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: strfile.c,v 1.15 2007/06/26 17:51:28 moritz Exp $";
 #endif
 #endif /* not lint */
 
@@ -88,7 +88,7 @@ static char rcsid[] = "$OpenBSD: strfile.c,v 1.14 2004/07/09 15:59:26 deraadt Ex
 
 # define	ALLOC(ptr,sz)	do { \
 			if (ptr == NULL) \
-				ptr = malloc(CHUNKSIZE * sizeof *ptr); \
+				ptr = calloc(CHUNKSIZE, sizeof *ptr); \
 			else if (((sz) + 1) % CHUNKSIZE == 0) \
 				ptr = realloc((void *) ptr, ((sz) + CHUNKSIZE) * sizeof *ptr); \
 			if (ptr == NULL) \

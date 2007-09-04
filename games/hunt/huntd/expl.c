@@ -1,4 +1,4 @@
-/*	$OpenBSD: expl.c,v 1.7 2003/06/11 08:45:33 pjanzen Exp $	*/
+/*	$OpenBSD: expl.c,v 1.8 2004/01/16 00:13:19 espie Exp $	*/
 /*	$NetBSD: expl.c,v 1.2 1997/10/10 16:33:18 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -154,7 +154,7 @@ static	REGEN	*rem_index = NULL;
 static void
 init_removed()
 {
-	rem_index = removed = malloc(conf_maxremove * sizeof(REGEN));
+	rem_index = removed = calloc(conf_maxremove, sizeof(REGEN));
 	if (rem_index == NULL) {
 		logit(LOG_ERR, "malloc");
 		cleanup(1);
