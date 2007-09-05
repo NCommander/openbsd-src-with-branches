@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.46 2006/04/10 14:38:59 jaredy Exp $	*/
+/*	$OpenBSD: exec.c,v 1.47 2007/08/02 10:52:10 fgsch Exp $	*/
 
 /*
  * execute command tree
@@ -363,9 +363,9 @@ execute(struct op *volatile t,
 	if ((flags&XEXEC))
 		unwind(LEXIT);	/* exit child */
 	if (rv != 0 && !(flags & XERROK)) {
+		trapsig(SIGERR_);
 		if (Flag(FERREXIT))
 			unwind(LERROR);
-		trapsig(SIGERR_);
 	}
 	return rv;
 }
