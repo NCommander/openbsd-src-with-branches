@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.50 2007/07/05 09:42:26 thib Exp $	*/
+/*	$OpenBSD: parse.y,v 1.51 2007/09/04 14:15:05 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -906,7 +906,7 @@ relay		: RELAY STRING	{
 				rlay->conf.proto = conf->proto_default.id;
 			}
 			conf->relaycount++;
-			TAILQ_INIT(&rlay->sessions);
+			SPLAY_INIT(&rlay->sessions);
 			TAILQ_INSERT_HEAD(&conf->relays, rlay, entry);
 		}
 		;

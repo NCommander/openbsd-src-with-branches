@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.c,v 1.37 2007/06/19 06:29:20 pyr Exp $	*/
+/*	$OpenBSD: hoststated.c,v 1.38 2007/07/05 09:42:26 thib Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -472,8 +472,8 @@ purge_config(struct hoststated *env, u_int8_t what)
 	if (what & PURGE_RELAYS) {
 		while ((rly = TAILQ_FIRST(&env->relays)) != NULL) {
 			TAILQ_REMOVE(&env->relays, rly, entry);
-			while ((sess = TAILQ_FIRST(&rly->sessions)) != NULL) {
-				TAILQ_REMOVE(&rly->sessions, sess, entry);
+			while ((sess = SPLAY_ROOT(&rly->sessions)) != NULL) {
+				SPLAY_REMOVE(session_tree, &rly->sessions, sess);
 				free(sess);
 			}
 			if (rly->bev != NULL)
@@ -744,7 +744,7 @@ session_find(struct hoststated *env, objid_t id)
 	struct session		*con;
 
 	TAILQ_FOREACH(rlay, &env->relays, entry)
-		TAILQ_FOREACH(con, &rlay->sessions, entry)
+		SPLAY_FOREACH(con, session_tree, &rlay->sessions)
 			if (con->id == id)
 				return (con);
 	return (NULL);
