@@ -1,4 +1,4 @@
-/*	$OpenBSD: ch.c,v 1.31 2006/11/27 23:14:22 beck Exp $	*/
+/*	$OpenBSD: ch.c,v 1.32 2006/11/28 16:56:50 dlg Exp $	*/
 /*	$NetBSD: ch.c,v 1.26 1997/02/21 22:06:52 thorpej Exp $	*/
 
 /*
@@ -606,8 +606,7 @@ ch_usergetelemstatus(sc, cesr)
 	}
 	udsize = avail * sizeof(struct changer_element_status);
 
-	user_data = malloc(udsize, M_DEVBUF, M_WAITOK);
-	bzero(user_data, udsize);
+	user_data = malloc(udsize, M_DEVBUF, M_WAITOK | M_ZERO);
 
 	desc = (struct read_element_status_descriptor *)((u_long)data +
 	    sizeof(struct read_element_status_header) +
