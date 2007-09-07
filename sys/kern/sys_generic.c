@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.55 2007/03/15 10:22:30 art Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.57 2007/07/25 23:11:52 art Exp $	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -639,8 +639,7 @@ sys_select(struct proc *p, void *v, register_t *retval)
 	if (nd > sizeof(bits[0])) {
 		caddr_t mbits;
 
-		mbits = malloc(ni * 6, M_TEMP, M_WAITOK);
-		bzero(mbits, ni * 6);
+		mbits = malloc(ni * 6, M_TEMP, M_WAITOK|M_ZERO);
 		pibits[0] = (fd_set *)&mbits[ni * 0];
 		pibits[1] = (fd_set *)&mbits[ni * 1];
 		pibits[2] = (fd_set *)&mbits[ni * 2];

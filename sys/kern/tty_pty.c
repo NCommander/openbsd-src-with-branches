@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_pty.c,v 1.33 2006/03/04 19:33:21 miod Exp $	*/
+/*	$OpenBSD: tty_pty.c,v 1.34 2007/05/29 00:17:32 thib Exp $	*/
 /*	$NetBSD: tty_pty.c,v 1.33.4.1 1996/06/02 09:08:11 mrg Exp $	*/
 
 /*
@@ -154,8 +154,8 @@ ptyarralloc(int nelem)
 {
 	struct pt_softc **pt;
 
-	pt = malloc(nelem * sizeof(struct pt_softc *), M_DEVBUF, M_WAITOK);
-	bzero(pt, nelem * sizeof(struct pt_softc *));
+	pt = malloc(nelem * sizeof(struct pt_softc *), M_DEVBUF,
+	    M_WAITOK|M_ZERO);
 	return pt;
 }
 
@@ -199,9 +199,8 @@ check_pty(int minor)
 	 * If the entry is not yet allocated, allocate one.
 	 */
 	if (!pt_softc[minor]) {
-		MALLOC(pti, struct pt_softc *, sizeof(struct pt_softc),
-		    M_DEVBUF, M_WAITOK);
-		bzero(pti, sizeof(struct pt_softc));
+		pti = malloc(sizeof(struct pt_softc), M_DEVBUF,
+		    M_WAITOK|M_ZERO);
 		pti->pt_tty = ttymalloc();
 		ptydevname(minor, pti);
 		pt_softc[minor] = pti;
