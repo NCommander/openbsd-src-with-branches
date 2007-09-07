@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.83 2007/07/18 18:10:31 damien Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.84 2007/08/28 18:34:38 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2004-2006
@@ -40,7 +40,6 @@
 #include <sys/kernel.h>
 #include <sys/socket.h>
 #include <sys/systm.h>
-#include <sys/malloc.h>
 #include <sys/conf.h>
 #include <sys/device.h>
 

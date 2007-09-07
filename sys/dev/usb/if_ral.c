@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.99 2007/06/14 10:11:15 mbalmer Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.100 2007/07/18 18:10:31 damien Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -31,7 +31,6 @@
 #include <sys/kernel.h>
 #include <sys/socket.h>
 #include <sys/systm.h>
-#include <sys/malloc.h>
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>

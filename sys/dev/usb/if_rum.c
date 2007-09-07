@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rum.c,v 1.63 2007/06/12 16:26:36 mbalmer Exp $	*/
+/*	$OpenBSD: if_rum.c,v 1.64 2007/06/14 10:11:15 mbalmer Exp $	*/
 
 /*-
  * Copyright (c) 2005-2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -31,7 +31,6 @@
 #include <sys/kernel.h>
 #include <sys/socket.h>
 #include <sys/systm.h>
-#include <sys/malloc.h>
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>

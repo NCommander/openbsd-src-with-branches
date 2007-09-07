@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.69 2007/03/02 00:16:59 jsg Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.70 2007/09/01 19:19:39 ckuethe Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -29,7 +29,6 @@
 #include <sys/sockio.h>
 #include <sys/mbuf.h>
 #include <sys/queue.h>
-#include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/timeout.h>
