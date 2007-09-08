@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.51 2007/07/05 22:16:30 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.52 2007/09/04 20:36:52 kettenis Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -491,7 +491,7 @@ badtrap:
 #endif
 
 	case T_AST:
-		want_ast = 0;
+		p->p_md.md_astpending = 0;
 		if (p->p_flag & P_OWEUPC) {
 			ADDUPROF(p);
 		}
