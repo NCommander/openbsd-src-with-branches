@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: cgram.y,v 1.20 2006/05/29 20:47:22 cloder Exp $	*/
+/*	$OpenBSD: cgram.y,v 1.21 2007/04/24 16:47:36 miod Exp $	*/
 /*	$NetBSD: cgram.y,v 1.8 1995/10/02 17:31:35 jpo Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: cgram.y,v 1.20 2006/05/29 20:47:22 cloder Exp $";
+static char rcsid[] = "$OpenBSD: cgram.y,v 1.21 2007/04/24 16:47:36 miod Exp $";
 #endif
 
 #include <stdlib.h>
@@ -259,6 +259,7 @@ ext_decl:
 			new->s_rimpl = old->s_rimpl;
 			new->s_osdef = old->s_osdef;
 			new->s_inline = old->s_inline;
+			new->s_noreturn = old->s_noreturn;
 			new->s_def = old->s_def;
 			new->s_scl = old->s_scl;
 			new->s_blklev = old->s_blklev;
