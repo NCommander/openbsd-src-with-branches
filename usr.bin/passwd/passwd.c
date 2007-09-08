@@ -1,4 +1,4 @@
-/*	$OpenBSD: passwd.c,v 1.22 2005/12/18 12:29:26 biorn Exp $	*/
+/*	$OpenBSD: passwd.c,v 1.23 2006/01/22 06:04:28 biorn Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static const char sccsid[] = "from: @(#)passwd.c	5.5 (Berkeley) 7/6/91";*/
-static const char rcsid[] = "$OpenBSD: passwd.c,v 1.22 2005/12/18 12:29:26 biorn Exp $";
+static const char rcsid[] = "$OpenBSD: passwd.c,v 1.23 2006/01/22 06:04:28 biorn Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -164,8 +164,9 @@ main(int argc, char **argv)
 	if (force_yp || ((status = local_passwd(username, 0)) && use_yp))
 		exit(yp_passwd(username));
 	exit(status);
-#endif
+#else
 	exit(local_passwd(username, 0));
+#endif
 }
 
 void
