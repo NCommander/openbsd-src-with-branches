@@ -1,4 +1,4 @@
-/*	$OpenBSD: midisyn.c,v 1.5 2005/11/21 18:16:38 millert Exp $	*/
+/*	$OpenBSD: midisyn.c,v 1.6 2006/04/07 22:41:32 jsg Exp $	*/
 /*	$NetBSD: midisyn.c,v 1.5 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -180,8 +180,7 @@ midisyn_attach(sc, ms)
 {
 	if (ms->flags & MS_DOALLOC) {
 		ms->voices = malloc(ms->nvoice * sizeof (struct voice), 
-				    M_DEVBUF, M_WAITOK);
-		memset(ms->voices, 0, ms->nvoice * sizeof (struct voice));
+				    M_DEVBUF, M_WAITOK|M_ZERO);
 		ms->seqno = 1;
 		if (ms->mets->allocv == 0)
 			ms->mets->allocv = &midisyn_allocvoice;
