@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.159 2007/01/12 20:20:41 jmc Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.160 2007/01/21 01:41:54 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -999,7 +999,7 @@ do_change_comment(struct passwd *pw)
 static void
 usage(void)
 {
-	fprintf(stderr, "Usage: %s [options]\n", __progname);
+	fprintf(stderr, "usage: %s [options]\n", __progname);
 	fprintf(stderr, "Options:\n");
 	fprintf(stderr, "  -a trials   Number of trials for screening DH-GEX moduli.\n");
 	fprintf(stderr, "  -B          Show bubblebabble digest of key file.\n");
