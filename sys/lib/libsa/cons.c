@@ -1,4 +1,4 @@
-/*	$OpenBSD: cons.c,v 1.10 2003/06/02 23:28:09 millert Exp $	*/
+/*	$OpenBSD: cons.c,v 1.11 2003/08/11 06:23:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -87,7 +87,7 @@ cnset(dev_t dev)
 				cn_tab = cp;
 				cp->cn_dev = dev;
 				/* Turn it on.  */
-				(cp->cn_init)(cp);
+				(*cp->cn_init)(cp);
 				return (0);
 			}
 			break;
