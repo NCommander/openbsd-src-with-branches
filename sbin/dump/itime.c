@@ -1,4 +1,4 @@
-/*	$OpenBSD: itime.c,v 1.14 2007/03/04 22:37:18 deraadt Exp $	*/
+/*	$OpenBSD: itime.c,v 1.15 2007/06/03 20:16:08 millert Exp $	*/
 /*	$NetBSD: itime.c,v 1.4 1997/04/15 01:09:50 lukem Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)itime.c	8.1 (Berkeley) 6/5/93";
 #else
-static const char rcsid[] = "$OpenBSD: itime.c,v 1.14 2007/03/04 22:37:18 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: itime.c,v 1.15 2007/06/03 20:16:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -179,7 +179,7 @@ putdumptime(void)
 	dthead = 0;
 	ddates_in = 0;
 	readdumptimes(df);
-	if (fseek(df, 0L, 0) < 0)
+	if (fseek(df, 0L, SEEK_SET) < 0)
 		quit("fseek: %s\n", strerror(errno));
 	spcl.c_ddate = 0;
 	ITITERATE(i, dtwalk) {

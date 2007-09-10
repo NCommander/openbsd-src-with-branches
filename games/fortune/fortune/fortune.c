@@ -1,4 +1,4 @@
-/*	$OpenBSD: fortune.c,v 1.23 2006/09/25 06:03:29 otto Exp $	*/
+/*	$OpenBSD: fortune.c,v 1.24 2007/06/26 17:51:28 moritz Exp $	*/
 /*	$NetBSD: fortune.c,v 1.8 1995/03/23 08:28:40 cgd Exp $	*/
 
 /*-
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)fortune.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: fortune.c,v 1.23 2006/09/25 06:03:29 otto Exp $";
+static char rcsid[] = "$OpenBSD: fortune.c,v 1.24 2007/06/26 17:51:28 moritz Exp $";
 #endif
 #endif /* not lint */
 
@@ -246,7 +246,7 @@ display(FILEDESC *fp)
 	char	line[BUFSIZ];
 
 	open_fp(fp);
-	(void) fseek(fp->inf, (long)Seekpts[0], 0);
+	(void) fseek(fp->inf, (long)Seekpts[0], SEEK_SET);
 	for (Fort_len = 0; fgets(line, sizeof line, fp->inf) != NULL &&
 	    !STR_ENDSTRING(line, fp->tbl); Fort_len++) {
 		if (fp->tbl.str_flags & STR_ROTATED)
@@ -274,7 +274,7 @@ fortlen(void)
 		nchar = (Seekpts[1] - Seekpts[0] <= SLEN);
 	else {
 		open_fp(Fortfile);
-		(void) fseek(Fortfile->inf, (long)Seekpts[0], 0);
+		(void) fseek(Fortfile->inf, (long)Seekpts[0], SEEK_SET);
 		nchar = 0;
 		while (fgets(line, sizeof line, Fortfile->inf) != NULL &&
 		       !STR_ENDSTRING(line, Fortfile->tbl))

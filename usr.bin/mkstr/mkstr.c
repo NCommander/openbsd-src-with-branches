@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkstr.c,v 1.8 2003/06/03 02:56:13 millert Exp $	*/
+/*	$OpenBSD: mkstr.c,v 1.9 2007/08/06 19:16:06 sobrado Exp $	*/
 /*	$NetBSD: mkstr.c,v 1.4 1995/09/28 06:22:20 tls Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)mkstr.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: mkstr.c,v 1.8 2003/06/03 02:56:13 millert Exp $";
+static const char rcsid[] = "$OpenBSD: mkstr.c,v 1.9 2007/08/06 19:16:06 sobrado Exp $";
 #endif
 #endif /* not lint */
 
@@ -283,7 +283,7 @@ hashit(char *str, char really, unsigned int fakept)
 	if (really != 0)
 		for (hp = bucket[i]; hp != 0; hp = hp->hnext)
 		if (hp->hval == hashval) {
-			fseek(mesgread, (long) hp->hpt, 0);
+			fseek(mesgread, (long) hp->hpt, SEEK_SET);
 			fgetNUL(buf, sizeof buf, mesgread);
 #ifdef DEBUG
 			fprintf(stderr, "Got (from %d) %s\n", hp->hpt, buf);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: collect.c,v 1.26 2003/10/24 20:32:06 avsm Exp $	*/
+/*	$OpenBSD: collect.c,v 1.27 2004/01/03 20:06:59 millert Exp $	*/
 /*	$NetBSD: collect.c,v 1.9 1997/07/09 05:25:45 mikel Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static const char sccsid[] = "@(#)collect.c	8.2 (Berkeley) 4/19/94";
 #else
-static const char rcsid[] = "$OpenBSD: collect.c,v 1.26 2003/10/24 20:32:06 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: collect.c,v 1.27 2004/01/03 20:06:59 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -447,7 +447,7 @@ mesedit(FILE *fp, int c)
 	(void)ignoresig(SIGINT, &oact, &oset);
 	nf = run_editor(fp, (off_t)-1, c, 0);
 	if (nf != NULL) {
-		fseek(nf, 0L, 2);
+		fseek(nf, 0L, SEEK_END);
 		collf = nf;
 		(void)Fclose(fp);
 	}
@@ -497,7 +497,7 @@ mespipe(FILE *fp, char *cmd)
 	/*
 	 * Take new files.
 	 */
-	(void)fseek(nf, 0L, 2);
+	(void)fseek(nf, 0L, SEEK_END);
 	collf = nf;
 	(void)Fclose(fp);
 out:
