@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.43 2007/05/03 18:40:19 miod Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.44 2007/05/27 15:46:02 drahn Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 1996/09/30 16:34:29 ws Exp $	*/
 
 /*-
@@ -139,6 +139,7 @@ int reserve_dumppages(caddr_t p);
 
 void pmap_proc_iflush(struct proc *proc, vaddr_t va, vsize_t len);
 #define pmap_unuse_final(p)		/* nothing */
+#define	pmap_remove_holes(map)		do { /* nothing */ } while (0)
 
 #define	PMAP_STEAL_MEMORY
 

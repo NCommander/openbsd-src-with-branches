@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.8 2005/12/03 19:06:08 miod Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.9 2005/12/11 21:45:28 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1991 Carnegie Mellon University
@@ -67,6 +67,7 @@ void	pmap_bootstrap_cpu(cpuid_t);
 void	pmap_cache_ctrl(pmap_t, vaddr_t, vaddr_t, u_int);
 void	pmap_proc_iflush(struct proc *, vaddr_t, vsize_t);
 #define pmap_unuse_final(p)		/* nothing */
+#define	pmap_remove_holes(map)		do { /* nothing */ } while (0)
 boolean_t pmap_unsetbit(struct vm_page *, int);
 
 #endif	/* _KERNEL */
