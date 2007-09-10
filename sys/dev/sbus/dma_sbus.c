@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma_sbus.c,v 1.12 2005/03/03 01:41:45 miod Exp $	*/
+/*	$OpenBSD: dma_sbus.c,v 1.13 2006/06/02 20:00:56 miod Exp $	*/
 /*	$NetBSD: dma_sbus.c,v 1.5 2000/07/09 20:57:42 pk Exp $ */
 
 /*-
@@ -279,11 +279,10 @@ dma_alloc_bustag(struct dma_softc *sc)
 {
 	struct sparc_bus_space_tag *sbt;
 
-	sbt = malloc(sizeof(*sbt), M_DEVBUF, M_NOWAIT);
+	sbt = malloc(sizeof(*sbt), M_DEVBUF, M_NOWAIT|M_ZERO);
 	if (sbt == NULL)
 		return (NULL);
 
-	bzero(sbt, sizeof *sbt);
 	sbt->cookie = sc;
 	sbt->parent = sc->sc_lsi64854.sc_bustag;
 	sbt->asi = sbt->parent->asi;
