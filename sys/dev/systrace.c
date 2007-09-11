@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.44 2007/03/15 10:22:30 art Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.45 2007/09/10 19:49:31 gilles Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -563,7 +563,7 @@ systraceioctl(dev, cmd, data, flag, p)
 	switch (cmd) {
 	case STRIOCCLONE:
 		fst = (struct fsystrace *)malloc(sizeof(struct fsystrace),
-		    M_XDATA, M_WAITOK|M_ZERO);
+		    M_XDATA, M_WAITOK | M_ZERO);
 		rw_init(&fst->lock, "systrace");
 		TAILQ_INIT(&fst->processes);
 		TAILQ_INIT(&fst->messages);

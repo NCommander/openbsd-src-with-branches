@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfxga.c,v 1.14 2006/11/29 19:11:17 miod Exp $	*/
+/*	$OpenBSD: cfxga.c,v 1.15 2007/09/09 01:00:35 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, Matthieu Herrb and Miodrag Vallat
@@ -223,7 +223,7 @@ cfxga_install_function(struct pcmcia_function *pf)
 
 	/* Create a simple cfe. */
 	cfe = (struct pcmcia_config_entry *)malloc(sizeof *cfe,
-	    M_DEVBUF, M_NOWAIT|M_ZERO);
+	    M_DEVBUF, M_NOWAIT | M_ZERO);
 	if (cfe == NULL) {
 		DPRINTF(("%s: cfe allocation failed\n", __func__));
 		return (ENOMEM);

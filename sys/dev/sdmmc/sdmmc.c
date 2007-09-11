@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.12 2007/05/31 10:09:01 uwe Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.13 2007/09/10 19:49:31 gilles Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -420,7 +420,7 @@ sdmmc_function_alloc(struct sdmmc_softc *sc)
 	struct sdmmc_function *sf;
 
 	sf = (struct sdmmc_function *)malloc(sizeof *sf, M_DEVBUF,
-	    M_WAITOK|M_ZERO);
+	    M_WAITOK | M_ZERO);
 	sf->sc = sc;
 	sf->number = -1;
 	sf->cis.manufacturer = SDMMC_VENDOR_INVALID;
