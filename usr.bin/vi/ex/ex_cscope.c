@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_cscope.c,v 1.12 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: ex_cscope.c,v 1.13 2007/03/20 03:56:13 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1994, 1996
@@ -675,8 +675,7 @@ parse(sp, csc, tqp, matchesp)
 #define	CSCOPE_NLINES_FMT	"cscope: %d lines%1[\n]"
 		if (sscanf(buf, CSCOPE_NLINES_FMT, &nlines, dummy) == 2)
 			break;
-		if ((p = strchr(buf, '\n')) != NULL)
-			*p = '\0';
+		buf[strcspn(buf, "\n")] = '\0';
 		msgq(sp, M_ERR, "%s: \"%s\"", csc->dname, buf);
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmain.c,v 1.19 2004/05/31 15:48:26 pedro Exp $	*/
+/*	$OpenBSD: supcmain.c,v 1.20 2005/04/27 18:13:16 mickey Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -666,8 +666,7 @@ init(argc, argv)
 	lastC = NULL;
 	bogus = FALSE;
 	while ((p = fgets(buf, sizeof(buf), f)) != NULL) {
-		if ((q = strchr(p, '\n')))
-			*q = '\0';
+		p[strcspn(p, "\n")] = '\0';
 		if (strchr("#;:", *p))
 			continue;
 		arg = nxtarg (&p, " \t");

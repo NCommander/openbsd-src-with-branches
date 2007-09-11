@@ -1,4 +1,4 @@
-/*	$OpenBSD: message.c,v 1.14 2003/05/14 01:34:35 millert Exp $	*/
+/*	$OpenBSD: message.c,v 1.15 2003/06/03 02:56:14 millert Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -37,7 +37,7 @@ static char RCSid[] __attribute__((__unused__)) =
 "$From: message.c,v 1.5 1999/11/01 00:21:39 christos Exp $";
 #else
 static char RCSid[] __attribute__((__unused__)) =
-"$OpenBSD: message.c,v 1.14 2003/05/14 01:34:35 millert Exp $";
+"$OpenBSD: message.c,v 1.15 2003/06/03 02:56:14 millert Exp $";
 #endif
 
 static char sccsid[] __attribute__((__unused__)) =
@@ -517,8 +517,7 @@ _message(int flags, char *msgbuf)
 		/*
 		 * Ensure no stray newlines are present
 		 */
-		if ((cp = strchr(msgbuf, '\n')) != NULL)
-			*cp = CNULL;
+		msgbuf[strcspn(msgbuf, "\n")] = CNULL;
 
 		checkhostname();
 		if (strncmp(currenthost, msgbuf, strlen(currenthost)) == 0)

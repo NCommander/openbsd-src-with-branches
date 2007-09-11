@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmeat.c,v 1.20 2005/03/26 21:37:56 mickey Exp $	*/
+/*	$OpenBSD: supcmeat.c,v 1.21 2005/04/27 18:13:16 mickey Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -501,8 +501,7 @@ listfiles()
 	f = fopen(buf, "r");
 	if (f) {
 		while ((p = fgets(buf, sizeof(buf), f)) != NULL) {
-			if ((q = strchr(p, '\n')))
-				*q = '\0';
+			p[strcspn(p, "\n")] = '\0';
 			if (strchr("#;:", *p))
 				continue;
 			(void) Tinsert(&lastT, p, FALSE);
@@ -514,8 +513,7 @@ listfiles()
 	f = fopen(buf, "r");
 	if (f) {
 		while ((p = fgets(buf, sizeof(buf), f)) != NULL) {
-			if ((q = strchr(p, '\n')))
-				*q = '\0';
+			p[strcspn(p, "\n")] = '\0';
 			if (strchr("#;:", *p))
 				continue;
 			(void) Tinsert(&refuseT, p, FALSE);

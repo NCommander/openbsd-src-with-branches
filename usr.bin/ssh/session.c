@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.222 2007/08/23 02:49:43 djm Exp $ */
+/* $OpenBSD: session.c,v 1.223 2007/08/23 02:55:51 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -724,8 +724,9 @@ read_environment_file(char ***env, u_int *envsize,
 			;
 		if (!*cp || *cp == '#' || *cp == '\n')
 			continue;
-		if (strchr(cp, '\n'))
-			*strchr(cp, '\n') = '\0';
+
+		cp[strcspn(cp, "\n")] = '\0';
+
 		value = strchr(cp, '=');
 		if (value == NULL) {
 			fprintf(stderr, "Bad line %u in %.100s\n", lineno,
