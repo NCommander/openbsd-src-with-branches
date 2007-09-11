@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.3 2006/06/02 17:06:50 norby Exp $ */
+/*	$OpenBSD: interface.c,v 1.4 2006/12/03 20:14:37 michele Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -196,6 +196,7 @@ if_new(struct kif *kif)
 	iface->flags = kif->flags;
 	iface->linkstate = kif->link_state;
 	iface->media_type = kif->media_type;
+	iface->baudrate = kif->baudrate;
 
 	/* get address */
 	if (ioctl(s, SIOCGIFADDR, (caddr_t)ifr) < 0)
@@ -647,7 +648,6 @@ if_to_ctl(struct iface *iface)
 
 	ictl.gen_id = iface->gen_id;
 	ictl.group_cnt = iface->group_cnt;
-	ictl.baudrate = iface->baudrate;
 	ictl.probe_interval = iface->probe_interval;
 	ictl.query_interval = iface->query_interval;
 	ictl.query_resp_interval = iface->query_resp_interval;
