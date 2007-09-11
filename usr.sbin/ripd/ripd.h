@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripd.h,v 1.5 2007/01/08 13:01:10 claudio Exp $ */
+/*	$OpenBSD: ripd.h,v 1.6 2007/09/11 17:26:22 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -213,9 +213,9 @@ struct iface {
 	struct packet_head	 rp_list;
 	struct auth_md_head	 auth_md_list;
 
+	u_int64_t		 baudrate;
 	time_t			 uptime;
-	u_long			 mtu;
-	u_long			 baudrate;	/* XXX u_int64_t */
+	u_int			 mtu;
 	int			 fd; /* XXX */
 	int			 state;
 	u_short			 ifindex;
@@ -312,8 +312,7 @@ struct ctl_iface {
 	time_t			 uptime;
 	time_t			 report_timer;
 
-	u_int32_t		 baudrate;	/* XXX 32bit only? */
-
+	u_int64_t		 baudrate;
 	unsigned int		 ifindex;
 	int			 state;
 	int			 mtu;
