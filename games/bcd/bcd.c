@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcd.c,v 1.10 2003/07/10 00:03:01 david Exp $	*/
+/*	$OpenBSD: bcd.c,v 1.11 2004/07/09 15:59:26 deraadt Exp $	*/
 /*	$NetBSD: bcd.c,v 1.6 1995/04/24 12:22:23 cgd Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)bcd.c	8.2 (Berkeley) 3/20/94";
 #else
-static char rcsid[] = "$OpenBSD: bcd.c,v 1.10 2003/07/10 00:03:01 david Exp $";
+static char rcsid[] = "$OpenBSD: bcd.c,v 1.11 2004/07/09 15:59:26 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -155,8 +155,7 @@ printcard(char *str)
 	char	*p;
 
 	/* ruthlessly remove newlines and truncate at 48 characters. */
-	if ((p = strchr(str, '\n')))
-		*p = '\0';
+	str[strcspn(str, "\n")] = '\0';
 
 	if (strlen(str) > COLUMNS)
 		str[COLUMNS] = '\0';
