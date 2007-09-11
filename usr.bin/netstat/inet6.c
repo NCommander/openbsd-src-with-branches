@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet6.c,v 1.32 2005/03/25 17:01:03 jaredy Exp $	*/
+/*	$OpenBSD: inet6.c,v 1.33 2006/11/17 01:11:23 itojun Exp $	*/
 /*	BSDI inet.c,v 2.3 1995/10/24 02:19:29 prb Exp	*/
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)inet.c	8.4 (Berkeley) 4/20/94";
 #else
-/*__RCSID("$OpenBSD: inet6.c,v 1.32 2005/03/25 17:01:03 jaredy Exp $");*/
+/*__RCSID("$OpenBSD: inet6.c,v 1.33 2006/11/17 01:11:23 itojun Exp $");*/
 /*__RCSID("KAME Id: inet6.c,v 1.10 2000/02/09 10:49:31 itojun Exp");*/
 #endif
 #endif /* not lint */
@@ -991,7 +991,7 @@ void
 rip6_stats(u_long off, char *name)
 {
 	struct rip6stat rip6stat;
-	u_quad_t delivered;
+	u_int64_t delivered;
 
 	if (off == 0)
 		return;
