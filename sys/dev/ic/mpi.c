@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.87 2007/09/07 12:11:11 dlg Exp $ */
+/*	$OpenBSD: mpi.c,v 1.88 2007/09/11 13:39:33 gilles Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 David Gwynne <dlg@openbsd.org>
@@ -1051,7 +1051,8 @@ mpi_scsi_cmd(struct scsi_xfer *xs)
 		break;
 	}
 
-	if (link->quirks & SDEV_NOTAGS)
+	if (sc->sc_porttype != MPI_PORTFACTS_PORTTYPE_SCSI &&
+	    (link->quirks & SDEV_NOTAGS))
 		io->tagging = MPI_SCSIIO_ATTR_UNTAGGED;
 	else 
 		io->tagging = MPI_SCSIIO_ATTR_SIMPLE_Q;
