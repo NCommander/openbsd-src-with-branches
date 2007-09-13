@@ -1,5 +1,5 @@
 /*	$NetBSD: vmstat.c,v 1.29.4.1 1996/06/05 00:21:05 cgd Exp $	*/
-/*	$OpenBSD: vmstat.c,v 1.103 2006/03/31 18:19:38 deraadt Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.104 2006/10/02 23:03:56 pedro Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1991, 1993
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)vmstat.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: vmstat.c,v 1.103 2006/03/31 18:19:38 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: vmstat.c,v 1.104 2006/10/02 23:03:56 pedro Exp $";
 #endif
 #endif /* not lint */
 
@@ -364,7 +364,8 @@ getuptime(void)
 	return(uptime);
 }
 
-int	hz, hdrcnt;
+int	hz;
+volatile sig_atomic_t hdrcnt;
 
 void
 dovmstat(u_int interval, int reps)
