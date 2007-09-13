@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-server.c,v 1.72 2007/04/18 01:12:43 stevesk Exp $ */
+/* $OpenBSD: sftp-server.c,v 1.73 2007/05/17 07:55:29 djm Exp $ */
 /*
  * Copyright (c) 2000-2004 Markus Friedl.  All rights reserved.
  *
@@ -1222,7 +1222,7 @@ main(int argc, char **argv)
 			break;
 		case 'f':
 			log_facility = log_facility_number(optarg);
-			if (log_level == SYSLOG_FACILITY_NOT_SET)
+			if (log_facility == SYSLOG_FACILITY_NOT_SET)
 				error("Invalid log facility \"%s\"", optarg);
 			break;
 		case 'h':
