@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmeat.c,v 1.21 2005/04/27 18:13:16 mickey Exp $	*/
+/*	$OpenBSD: supcmeat.c,v 1.22 2007/09/11 15:47:17 gilles Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -489,7 +489,7 @@ listfiles()
 {
 	char buf[STRINGLENGTH];
 	char relsufix[STRINGLENGTH];
-	char *p,*q;
+	char *p;
 	FILE *f;
 	int x;
 
