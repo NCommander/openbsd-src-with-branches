@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwivar.h,v 1.5 2007/09/14 13:00:41 mglocker Exp $	*/
+/*	$OpenBSD: bwivar.h,v 1.6 2007/09/14 20:26:04 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -446,6 +446,7 @@ struct bwi_softc {
 	uint8_t			 sc_bbp_pkg;
 
 	uint8_t			 sc_pci_revid;
+	uint16_t		 sc_pci_did;
 	uint16_t		 sc_pci_subvid;
 	uint16_t		 sc_pci_subdid;
 
