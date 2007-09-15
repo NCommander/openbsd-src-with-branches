@@ -1,4 +1,4 @@
-/*	$Id: pftn.c,v 1.169 2007/09/15 07:37:44 ragge Exp $	*/
+/*	$OpenBSD: pftn.c,v 1.1.1.1 2007/09/15 18:12:34 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

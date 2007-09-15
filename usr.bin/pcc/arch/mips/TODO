@@ -1,3 +1,5 @@
+$OpenBSD$
+
 * Look at long long support for the new register allocator.
 
 * Add floating point support.

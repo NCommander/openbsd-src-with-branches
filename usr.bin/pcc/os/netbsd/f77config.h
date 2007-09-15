@@ -1,4 +1,4 @@
-/*	$Id: f77config.h,v 1.1 2005/04/17 20:22:18 ragge Exp $	*/
+/*	$OpenBSD: f77config.h,v 1.1.1.1 2007/09/15 18:12:37 otto Exp $	*/
 
 /*
  * Copyright (c) 2004 Anders Magnusson (ragge@ludd.luth.se).

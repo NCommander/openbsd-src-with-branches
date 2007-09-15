@@ -1,4 +1,4 @@
-/*	$Id: order.c,v 1.58 2004/05/16 09:34:33 ragge Exp $	*/
+/*	$OpenBSD: order.c,v 1.1.1.1 2007/09/15 18:12:29 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

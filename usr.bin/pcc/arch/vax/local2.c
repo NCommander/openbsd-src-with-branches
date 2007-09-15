@@ -1,4 +1,4 @@
-/*	$Id: local2.c,v 1.1 2006/06/18 10:17:45 ragge Exp $	*/
+/*	$OpenBSD: local2.c,v 1.1.1.1 2007/09/15 18:12:30 otto Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *

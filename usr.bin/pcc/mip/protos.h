@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 
 struct optab;
 struct symtab;

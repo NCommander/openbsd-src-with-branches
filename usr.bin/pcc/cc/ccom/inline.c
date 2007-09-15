@@ -1,4 +1,4 @@
-/*	$Id: inline.c,v 1.17 2007/09/09 10:01:01 ragge Exp $	*/
+/*	$OpenBSD: inline.c,v 1.1.1.1 2007/09/15 18:12:33 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

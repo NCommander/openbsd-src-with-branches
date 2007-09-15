@@ -1,4 +1,4 @@
-/*	$Id: init.c,v 1.26 2007/08/19 19:24:52 ragge Exp $	*/
+/*	$OpenBSD: init.c,v 1.1.1.1 2007/09/15 18:12:33 otto Exp $	*/
 
 /*
  * Copyright (c) 2004, 2007 Anders Magnusson (ragge@ludd.ltu.se).

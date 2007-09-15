@@ -1,4 +1,4 @@
-/*	$Id: manifest.h,v 1.58 2007/08/19 19:21:14 ragge Exp $	*/
+/*	$OpenBSD: manifest.h,v 1.1.1.1 2007/09/15 18:12:35 otto Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *

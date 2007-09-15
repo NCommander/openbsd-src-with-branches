@@ -1,4 +1,4 @@
-/*	$Id: common.c,v 1.67 2007/09/09 17:42:33 ragge Exp $	*/
+/*	$OpenBSD: common.c,v 1.1.1.1 2007/09/15 18:12:35 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

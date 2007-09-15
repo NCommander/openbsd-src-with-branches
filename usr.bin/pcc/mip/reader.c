@@ -1,4 +1,4 @@
-/*	$Id: reader.c,v 1.200 2007/09/15 07:37:46 ragge Exp $	*/
+/*	$OpenBSD: reader.c,v 1.1.1.1 2007/09/15 18:12:37 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

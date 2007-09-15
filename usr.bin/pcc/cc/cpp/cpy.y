@@ -1,4 +1,4 @@
-/*	$Id: cpy.y,v 1.12 2006/10/08 13:41:39 ragge Exp $	*/
+/*	$OpenBSD: cpy.y,v 1.1.1.1 2007/09/15 18:12:32 otto Exp $	*/
 
 /*
  * Copyright (c) 2004 Anders Magnusson (ragge@ludd.luth.se).

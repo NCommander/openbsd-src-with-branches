@@ -1,4 +1,4 @@
-/*	$Id: local.c,v 1.55 2007/09/09 10:02:59 ragge Exp $	*/
+/*	$OpenBSD: local.c,v 1.1.1.1 2007/09/15 18:12:30 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

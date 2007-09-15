@@ -1,4 +1,4 @@
-
+/*	$OpenBSD$	*/
 /*
  * Generate defines for the needed hardops.
  */

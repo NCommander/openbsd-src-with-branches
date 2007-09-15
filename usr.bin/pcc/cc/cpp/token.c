@@ -1,4 +1,4 @@
-/*	$Id: token.c,v 1.11 2006/09/28 11:10:08 ragge Exp $	*/
+/*	$OpenBSD: token.c,v 1.1.1.1 2007/09/15 18:12:32 otto Exp $	*/
 
 /*
  * Copyright (c) 2004 Anders Magnusson. All rights reserved.

@@ -1,4 +1,4 @@
-/*	$Id: main.c,v 1.70 2007/09/09 10:01:01 ragge Exp $	*/
+/*	$OpenBSD: main.c,v 1.1.1.1 2007/09/15 18:12:33 otto Exp $	*/
 
 /*
  * Copyright (c) 2002 Anders Magnusson. All rights reserved.

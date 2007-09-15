@@ -1,4 +1,4 @@
-/*	$Id: pass2.h,v 1.98 2006/12/22 06:23:09 ragge Exp $	*/
+/*	$OpenBSD: pass2.h,v 1.1.1.1 2007/09/15 18:12:36 otto Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *

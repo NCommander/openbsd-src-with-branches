@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include "pass2.h"
 
 # define ANYSIGNED TINT|TLONG|TCHAR

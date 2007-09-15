@@ -1,4 +1,4 @@
-/*	$Id: code.c,v 1.15 2007/07/06 17:02:27 ragge Exp $	*/
+/*	$OpenBSD: code.c,v 1.1.1.1 2007/09/15 18:12:30 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

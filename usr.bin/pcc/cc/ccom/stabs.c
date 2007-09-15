@@ -1,4 +1,4 @@
-/*	$Id: stabs.c,v 1.15 2007/09/15 07:37:44 ragge Exp $	*/
+/*	$OpenBSD: stabs.c,v 1.1.1.1 2007/09/15 18:12:34 otto Exp $	*/
 
 /*
  * Copyright (c) 2004 Anders Magnusson (ragge@ludd.luth.se).
