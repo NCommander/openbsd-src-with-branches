@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_default.c,v 1.33 2007/05/26 18:42:21 thib Exp $  */
+/*	$OpenBSD: vfs_default.c,v 1.34 2007/06/01 23:47:56 deraadt Exp $  */
 
 /*
  * Portions of this code are:
@@ -68,6 +68,18 @@ vop_generic_revoke(void *v)
 
 	vp = ap->a_vp;
  
+	if (vp->v_type == VBLK && vp->v_specinfo != 0) {
+		struct mount *mp = vp->v_specmountpoint;
+
+		/*
+		 * If we have a mount point associated with the vnode, we must
+		 * flush it out now, as to not leave a dangling zombie mount
+		 * point laying around in VFS.
+		 */
+		if (mp != NULL && !vfs_busy(mp, VB_WRITE|VB_WAIT))
+			dounmount(mp, MNT_FORCE | MNT_DOOMED, p, NULL);
+	}
+
 	if (vp->v_flag & VALIASED) {
 		/*
 		 * If a vgone (or vclean) is already in progress,
