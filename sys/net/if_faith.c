@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_faith.c,v 1.21 2006/03/04 22:40:15 brad Exp $	*/
+/*	$OpenBSD: if_faith.c,v 1.22 2006/03/25 22:41:47 djm Exp $	*/
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -95,10 +95,9 @@ faith_clone_create(ifc, unit)
 {
 	struct ifnet *ifp;
 
-	ifp = malloc(sizeof(*ifp), M_DEVBUF, M_NOWAIT);
+	ifp = malloc(sizeof(*ifp), M_DEVBUF, M_NOWAIT|M_ZERO);
 	if (!ifp)
 		return (ENOMEM);
-	bzero(ifp, sizeof(*ifp));
 	snprintf(ifp->if_xname, sizeof ifp->if_xname, "%s%d", ifc->ifc_name, 
 	    unit);
 	ifp->if_mtu = FAITHMTU;

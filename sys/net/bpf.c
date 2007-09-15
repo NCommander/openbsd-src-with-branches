@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.64 2007/03/04 23:36:34 canacar Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.66 2007/07/25 23:11:53 art Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -1485,8 +1485,7 @@ bpfilter_create(int unit)
 
 	if ((bd = bpfilter_lookup(unit)) != NULL)
 		return (NULL);
-	if ((bd = malloc(sizeof(*bd), M_DEVBUF, M_NOWAIT)) != NULL) {
-		bzero(bd, sizeof(*bd));
+	if ((bd = malloc(sizeof(*bd), M_DEVBUF, M_NOWAIT|M_ZERO)) != NULL) {
 		bd->bd_unit = unit;
 		LIST_INSERT_HEAD(&bpf_d_list, bd, bd_list);
 	}
