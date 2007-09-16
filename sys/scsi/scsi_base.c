@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.121 2007/05/31 18:21:44 dlg Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.122 2007/06/23 19:19:49 krw Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/kernel.h>
 #include <sys/buf.h>
 #include <sys/uio.h>
-#include <sys/malloc.h>
 #include <sys/errno.h>
 #include <sys/device.h>
 #include <sys/proc.h>
