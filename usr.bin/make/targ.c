@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: targ.c,v 1.39 2004/04/07 13:11:36 espie Exp $ */
+/*	$OpenBSD: targ.c,v 1.40 2006/01/20 23:10:19 espie Exp $ */
 /*	$NetBSD: targ.c,v 1.11 1997/02/20 16:51:50 christos Exp $	*/
 
 /*
@@ -397,34 +397,6 @@ Targ_PrintCmd(void *cmd)
 
 /*-
  *-----------------------------------------------------------------------
- * Targ_FmtTime --
- *	Format a modification time in some reasonable way and return it.
- *
- * Results:
- *	The time reformatted.
- *
- * Side Effects:
- *	The time is placed in a static area, so it is overwritten
- *	with each call.
- *-----------------------------------------------------------------------
- */
-char *
-Targ_FmtTime(TIMESTAMP time)
-{
-    struct tm		*parts;
-    static char 	buf[128];
-    time_t t;
-
-    t = timestamp2time_t(time);
-
-    parts = localtime(&t);
-    strftime(buf, sizeof buf, "%H:%M:%S %b %d, %Y", parts);
-    buf[sizeof(buf) - 1] = '\0';
-    return buf;
-}
-
-/*-
- *-----------------------------------------------------------------------
  * Targ_PrintType --
  *	Print out a type field giving only those attributes the user can
  *	set.
@@ -486,7 +458,7 @@ TargPrintNode(GNode *gn, int pass)
 	    if (! (gn->type & (OP_JOIN|OP_USE|OP_EXEC))) {
 		if (!is_out_of_date(gn->mtime)) {
 		    printf("# last modified %s: %s\n",
-			      Targ_FmtTime(gn->mtime),
+			      time_to_string(gn->mtime),
 			      (gn->made == UNMADE ? "unmade" :
 			       (gn->made == MADE ? "made" :
 				(gn->made == UPTODATE ? "up-to-date" :
