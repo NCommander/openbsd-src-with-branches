@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: main.c,v 1.70 2007/07/08 17:44:20 espie Exp $ */
+/*	$OpenBSD: main.c,v 1.77 2007/09/16 09:46:14 espie Exp $ */
 /*	$NetBSD: main.c,v 1.34 1997/03/24 20:56:36 gwr Exp $	*/
 
 /*
@@ -53,6 +53,7 @@
 #include "parse.h"
 #include "parsevar.h"
 #include "dir.h"
+#include "direxpand.h"
 #include "error.h"
 #include "pathnames.h"
 #include "init.h"
