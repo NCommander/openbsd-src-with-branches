@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.217 2007/09/07 23:05:04 joris Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.218 2007/09/13 13:10:57 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -34,6 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "atomicio.h"
 #include "cvs.h"
 #include "diff.h"
 #include "rcs.h"
@@ -2914,11 +2915,11 @@ rcs_rev_write_fd(RCSFILE *rfp, RCSNUM *rev, int fd, int mode)
 		if (cvs_server_active == 1 &&
 		    (cvs_cmdop == CVS_OP_CHECKOUT ||
 		    cvs_cmdop == CVS_OP_UPDATE) && print_stdout == 1) {
-			if (write(fd, "M ", 2) == -1)
+			if (atomicio(vwrite, fd, "M ", 2) != 2)
 				fatal("rcs_rev_write_fd: %s", strerror(errno));
 		}
 
-		if (write(fd, lp->l_line, lp->l_len) == -1)
+		if (atomicio(vwrite, fd, lp->l_line, lp->l_len) != lp->l_len)
 			fatal("rcs_rev_write_fd: %s", strerror(errno));
 	}
 

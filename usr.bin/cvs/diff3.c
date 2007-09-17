@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff3.c,v 1.37 2007/06/28 21:38:09 xsa Exp $	*/
+/*	$OpenBSD: diff3.c,v 1.38 2007/09/10 14:29:53 tobias Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -72,7 +72,7 @@ static const char copyright[] =
 
 #ifndef lint
 static const char rcsid[] =
-    "$OpenBSD: diff3.c,v 1.37 2007/06/28 21:38:09 xsa Exp $";
+    "$OpenBSD: diff3.c,v 1.38 2007/09/10 14:29:53 tobias Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -83,6 +83,7 @@ static const char rcsid[] =
 #include <string.h>
 #include <unistd.h>
 
+#include "atomicio.h"
 #include "cvs.h"
 #include "diff.h"
 
@@ -245,7 +246,8 @@ cvs_merge_file(struct cvs_file *cf, int verbose)
 		if (lp->l_line == NULL)
 			continue;
 
-		if (write(cf->fd, lp->l_line, lp->l_len) == -1)
+		if (atomicio(vwrite, cf->fd, lp->l_line, lp->l_len) !=
+		    lp->l_len)
 			fatal("cvs_merge_file: %s", strerror(errno));
 	}
 
