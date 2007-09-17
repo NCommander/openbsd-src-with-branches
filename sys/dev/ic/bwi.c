@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.34 2007/09/16 19:02:36 mglocker Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.35 2007/09/16 19:08:42 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -1781,7 +1781,8 @@ bwi_mac_fw_init(struct bwi_mac *mac)
 	else {
 		printf("%s: no suitable IV for MAC rev %d\n",
 		    sc->sc_dev.dv_xname, mac->mac_rev);
-			return (ENODEV);
+		error = ENODEV;
+		goto out;
 	}
 	snprintf(fwname, sizeof(fwname), "bwi_initval%02d.fw", idx);
 
