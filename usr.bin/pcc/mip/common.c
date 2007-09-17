@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.2 2007/09/15 22:04:39 ray Exp $	*/
+/*	$OpenBSD: common.c,v 1.3 2007/09/16 18:52:52 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -514,7 +514,8 @@ tmpalloc(int size)
 	void *rv;
 
 	if (size > MEMCHUNKSZ) {
-		return malloc(size);
+		if ((rv = malloc(size)) == NULL)
+			cerror("tmpalloc: out of memory");
 	//	cerror("tmpalloc %d", size);
 	}
 	if (size <= 0)
