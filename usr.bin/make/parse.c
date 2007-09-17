@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: parse.c,v 1.82 2007/09/16 10:57:02 espie Exp $	*/
+/*	$OpenBSD: parse.c,v 1.83 2007/09/16 12:30:35 espie Exp $	*/
 /*	$NetBSD: parse.c,v 1.29 1997/03/10 21:20:04 christos Exp $	*/
 
 /*
@@ -1048,7 +1048,7 @@ ParseDoDependency(char *line)	/* the line to parse */
 	    } else {
 		if (*cp) {
 		    *cp = '\0';
-		    cp += 1;
+		    cp++;
 		}
 
 		ParseDoSrc(tOp, line);
