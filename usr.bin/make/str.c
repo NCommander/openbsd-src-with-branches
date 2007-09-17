@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: str.c,v 1.23 2007/09/16 15:24:53 espie Exp $	*/
+/*	$OpenBSD: str.c,v 1.24 2007/09/17 09:28:36 espie Exp $	*/
 /*	$NetBSD: str.c,v 1.13 1996/11/06 17:59:23 christos Exp $	*/
 
 /*-
@@ -367,7 +367,7 @@ Str_Matchi(const char *string, const char *estring,
  *-----------------------------------------------------------------------
  */
 const char *
-Str_SYSVMatch(const char *word, const char *pattern, size_t *len)	
+Str_SYSVMatch(const char *word, const char *pattern, size_t *len)
 {
 	const char *p = pattern;
 	const char *w = word;
