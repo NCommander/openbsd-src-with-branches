@@ -49,14 +49,15 @@ do {								\
 #define MAY_INCREASE_STATS
 #endif
 
-#define Array_AtEnd(l, gn) 						    \
-do { 									    \
-	if ((l)->n >= (l)->size) { 					    \
-	    (l)->size *= 2; 					    	    \
-	    (l)->a = erealloc((l)->a, sizeof(struct GNode *) * (l)->size);  \
-	    MAY_INCREASE_STATS;						    \
-	} 								    \
-	(l)->a[(l)->n++] = (gn); 					    \
+#define Array_AtEnd(l, gn) 				\
+do { 							\
+	if ((l)->n >= (l)->size) { 			\
+		(l)->size *= 2; 			\
+		(l)->a = erealloc((l)->a, 		\
+		    sizeof(struct GNode *) * (l)->size);\
+		MAY_INCREASE_STATS;			\
+	} 						\
+	(l)->a[(l)->n++] = (gn); 			\
 } while (0)
 
 #define Array_Find(l, func, v)			\
@@ -65,6 +66,14 @@ do {						\
 	for (i = 0; i < (l)->n; i++)		\
 		if ((func)((l)->a[i], (v)) == 0)\
 		    break;			\
+} while (0)
+
+#define Array_FindP(l, func, v)				\
+do {							\
+	unsigned int i;					\
+	for (i = 0; i < (l)->n; i++)			\
+		if ((func)(&((l)->a[i]), (v)) == 0)	\
+		    break;				\
 } while (0)
 
 #define Array_ForEach(l, func, v)		\
