@@ -2,7 +2,7 @@
 #define LOWPARSE_H
 
 /* $OpenPackages$ */
-/* $OpenBSD$ */
+/* $OpenBSD: lowparse.h,v 1.4 2001/05/23 12:34:45 espie Exp $ */
 
 /*
  * Copyright (c) 1999 Marc Espie.
@@ -40,7 +40,7 @@
  * Parse_Fromxxx(source);
  * do {
  * 	while ((line = Parse_ReadNormalLine(&buf)) != NULL) {
- *		handle line, use Parse_Fromxxx to push includes, 
+ *		handle line, use Parse_Fromxxx to push includes,
  *		Parse_ReadNextConditional to get over non-conditional lines.
  *		or Parse_ReadUnparsedLine to handle special cases manually.
  * 	}
