@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cue.c,v 1.44 2007/06/14 06:55:10 mbalmer Exp $ */
+/*	$OpenBSD: if_cue.c,v 1.45 2007/06/14 10:11:15 mbalmer Exp $ */
 /*	$NetBSD: if_cue.c,v 1.40 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -62,7 +62,6 @@
 #include <sys/systm.h>
 #include <sys/sockio.h>
 #include <sys/mbuf.h>
-#include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>
 #include <sys/timeout.h>

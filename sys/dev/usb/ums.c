@@ -1,4 +1,4 @@
-/*	$OpenBSD: ums.c,v 1.24 2007/06/12 16:26:36 mbalmer Exp $ */
+/*	$OpenBSD: ums.c,v 1.25 2007/06/14 10:11:16 mbalmer Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>

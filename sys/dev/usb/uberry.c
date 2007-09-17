@@ -1,4 +1,4 @@
-/*	$OpenBSD: uberry.c,v 1.12 2007/08/24 01:16:36 deraadt Exp $	*/
+/*	$OpenBSD: uberry.c,v 1.13 2007/08/30 05:06:21 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2006 Theo de Raadt <deraadt@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/kernel.h>
 #include <sys/socket.h>
 #include <sys/systm.h>
-#include <sys/malloc.h>
 #include <sys/timeout.h>
 #include <sys/conf.h>
 #include <sys/device.h>
