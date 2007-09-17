@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbus.c,v 1.26 2006/06/28 20:09:15 deraadt Exp $	*/
+/*	$OpenBSD: sbus.c,v 1.27 2007/05/29 09:54:13 sobrado Exp $	*/
 /*	$NetBSD: sbus.c,v 1.46 2001/10/07 20:30:41 eeh Exp $ */
 
 /*-
@@ -772,11 +772,10 @@ sbus_alloc_bustag(struct sbus_softc *sc, int indirect)
 {
 	struct sparc_bus_space_tag *sbt;
 
-	sbt = malloc(sizeof(*sbt), M_DEVBUF, M_NOWAIT);
+	sbt = malloc(sizeof(*sbt), M_DEVBUF, M_NOWAIT | M_ZERO);
 	if (sbt == NULL)
 		return (NULL);
 
-	bzero(sbt, sizeof *sbt);
 	snprintf(sbt->name, sizeof(sbt->name), "%s",
 		sc->sc_dev.dv_xname);
 	sbt->cookie = sc;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ips.c,v 1.28 2007/05/29 16:56:01 grange Exp $	*/
+/*	$OpenBSD: ips.c,v 1.29 2007/06/06 20:51:13 grange Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Alexander Yurchenko <grange@openbsd.org>
@@ -951,9 +951,8 @@ ips_ccb_alloc(struct ips_softc *sc, int n)
 	struct ips_ccb *ccb;
 	int i;
 
-	if ((ccb = malloc(n * sizeof(*ccb), M_DEVBUF, M_NOWAIT)) == NULL)
+	if ((ccb = malloc(n * sizeof(*ccb), M_DEVBUF, M_NOWAIT|M_ZERO)) == NULL)
 		return (NULL);
-	bzero(ccb, n * sizeof(*ccb));
 
 	for (i = 0; i < n; i++) {
 		ccb[i].c_id = i;
