@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2007/09/16 19:16:58 kjell Exp $
+#	$OpenBSD: Makefile,v 1.6 2007/09/17 07:20:49 todd Exp $
 #
 # Makefile for the cpp part of pcc.
 #
@@ -30,11 +30,13 @@ cgram.c: cgram.y
 	mv y.tab.c cgram.c
 	mv y.tab.h cgram.h
 
-external.h external.c: mkext.c table.c common.c
+mkext: mkext.c table.c common.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DMKEXT -o mkext 		\
 		${.CURDIR}/../../mip/mkext.c			\
 		${.CURDIR}/../../arch/${TARGMACH}/table.c	\
 		${.CURDIR}/../../mip/common.c
+
+external.h external.c: mkext
 	./mkext
 
 pass2.h: external.h
