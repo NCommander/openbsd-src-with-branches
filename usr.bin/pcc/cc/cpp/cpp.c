@@ -1,4 +1,4 @@
-/*	$Id: cpp.c,v 1.58 2007/09/16 19:42:51 ragge Exp $	*/
+/*	$OpenBSD: cpp.c,v 1.5 2007/09/17 18:29:20 otto Exp $	*/
 
 /*
  * Copyright (c) 2004 Anders Magnusson (ragge@ludd.luth.se).
