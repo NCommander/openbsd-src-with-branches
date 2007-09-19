@@ -1,4 +1,4 @@
-/*	$OpenBSD: cc.c,v 1.7 2007/09/19 15:00:01 todd Exp $	*/
+/*	$OpenBSD: cc.c,v 1.8 2007/09/19 15:21:07 todd Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -239,6 +239,8 @@ main(int argc, char *argv[])
 				pgflag++;
 			else if (strcmp(argv[i], "-pthread") == 0)
 				pthreads++;
+			else if (strcmp(argv[i], "-pipe") == 0)
+				/* NOTHING YET */;
 			else
 				errorx(1, "unknown option %s", argv[i]);
 			break;
