@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.c,v 1.35 2006/11/28 04:45:08 brad Exp $ */
+/* $OpenBSD: if_ixgb.c,v 1.36 2006/12/04 14:35:20 reyk Exp $ */
 
 #include <dev/pci/if_ixgb.h>
 
@@ -838,7 +838,7 @@ ixgb_update_link_status(struct ixgb_softc *sc)
 
 	if (sc->hw.link_up) {
 		if (!sc->link_active) {
-			ifp->if_baudrate = 1000000000;
+			ifp->if_baudrate = IF_Gbps(10);
 			sc->link_active = 1;
 			ifp->if_link_state = LINK_STATE_FULL_DUPLEX;
 			if_link_state_change(ifp);

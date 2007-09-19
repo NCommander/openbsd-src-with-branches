@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.41 2007/05/26 18:40:28 dlg Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.42 2007/05/28 23:39:07 ckuethe Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -631,7 +631,7 @@ xge_attach(struct device *parent, struct device *self, void *aux)
 	ifp = &sc->sc_arpcom.ac_if;
 	strlcpy(ifp->if_xname, XNAME, IFNAMSIZ);
 	memcpy(sc->sc_arpcom.ac_enaddr, enaddr, ETHER_ADDR_LEN);
-	ifp->if_baudrate = 1000000000;
+	ifp->if_baudrate = IF_Gbps(10);
 	ifp->if_softc = sc;
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
 	ifp->if_ioctl = xge_ioctl;
