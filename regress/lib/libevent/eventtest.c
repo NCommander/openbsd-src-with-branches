@@ -1,4 +1,4 @@
-/*	$OpenBSD: eventtest.c,v 1.8 2005/12/25 02:51:24 brad Exp $	*/
+/*	$OpenBSD: eventtest.c,v 1.9 2006/01/23 20:19:34 brad Exp $	*/
 /*	$NetBSD: eventtest.c,v 1.3 2004/08/07 21:09:47 provos Exp $	*/
 
 /*
@@ -461,9 +461,10 @@ test_loopexit(void)
 
 void
 test_evbuffer(void) {
+	struct evbuffer *evb;
 	setup_test("Evbuffer: ");
 
-	struct evbuffer *evb = evbuffer_new();
+	evb = evbuffer_new();
 
 	evbuffer_add_printf(evb, "%s/%d", "hello", 1);
 
