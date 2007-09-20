@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_srvcache.c,v 1.11 2004/07/16 15:01:51 henning Exp $	*/
+/*	$OpenBSD: nfs_srvcache.c,v 1.12 2004/12/26 21:22:14 miod Exp $	*/
 /*	$NetBSD: nfs_srvcache.c,v 1.12 1996/02/18 11:53:49 fvdl Exp $	*/
 
 /*
@@ -217,9 +217,7 @@ loop:
 	}
 	nfsstats.srvcache_misses++;
 	if (numnfsrvcache < desirednfsrvcache) {
-		rp = (struct nfsrvcache *)malloc((u_long)sizeof *rp,
-		    M_NFSD, M_WAITOK);
-		bzero((char *)rp, sizeof *rp);
+		rp = malloc(sizeof(*rp), M_NFSD, M_WAITOK|M_ZERO);
 		numnfsrvcache++;
 		rp->rc_flag = RC_LOCKED;
 	} else {

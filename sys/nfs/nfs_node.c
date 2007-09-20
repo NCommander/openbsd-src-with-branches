@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.34 2007/05/29 00:17:33 thib Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.35 2007/06/01 23:47:57 deraadt Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -184,7 +184,7 @@ nfs_inactive(v)
 		nfs_removeit(sp);
 		crfree(sp->s_cred);
 		vrele(sp->s_dvp);
-		FREE((caddr_t)sp, M_NFSREQ);
+		free(sp, M_NFSREQ);
 	}
 	np->n_flag &= (NMODIFIED | NFLUSHINPROG | NFLUSHWANT);
 
@@ -222,7 +222,7 @@ nfs_reclaim(v)
 		while (dp) {
 			dp2 = dp;
 			dp = LIST_NEXT(dp, ndm_list);
-			FREE((caddr_t)dp2, M_NFSDIROFF);
+			free(dp2, M_NFSDIROFF);
 		}
 	}
 	if (np->n_fhsize > NFS_SMALLFH) {
