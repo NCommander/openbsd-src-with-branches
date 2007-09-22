@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.70 2007/09/07 19:18:41 tobias Exp $	*/
+/*	$OpenBSD: server.c,v 1.71 2007/09/22 15:57:24 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -701,16 +701,14 @@ cvs_server_update_entry(const char *resp, struct cvs_file *cf)
 void
 cvs_server_set_sticky(char *dir, char *tag)
 {
-	char fpath[MAXPATHLEN], tbuf[CVS_ENT_MAXLINELEN];
+	char fpath[MAXPATHLEN];
 
 	(void)xsnprintf(fpath, MAXPATHLEN, "%s/%s",
 	    current_cvsroot->cr_dir, dir);
 
-	(void)xsnprintf(tbuf, MAXPATHLEN, "T%s", tag);
-
 	cvs_server_send_response("Set-sticky %s", dir);
 	cvs_remote_output(fpath);
-	cvs_remote_output(tbuf);
+	cvs_remote_output(tag);
 }
 
 void
