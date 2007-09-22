@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.27 2007/09/09 08:55:27 kettenis Exp $	*/
+/*	$OpenBSD: intr.c,v 1.28 2007/09/17 01:33:33 krw Exp $	*/
 /*	$NetBSD: intr.c,v 1.39 2001/07/19 23:38:11 eeh Exp $ */
 
 /*
@@ -355,4 +355,25 @@ splassert_check(int wantipl, const char *func)
 		splassert_fail(wantipl, ci->ci_handled_intr_level, func);
 	}
 }
+#endif
+
+#ifdef MULTIPROCESSOR
+
+void sparc64_intlock(struct trapframe64 *);
+void sparc64_intunlock(struct trapframe64 *);
+
+void
+sparc64_intlock(struct trapframe64 *tf)
+{
+	if(tf->tf_pil < PIL_SCHED)
+		__mp_lock(&kernel_lock);
+}
+
+void
+sparc64_intunlock(struct trapframe64 *tf)
+{
+	if(tf->tf_pil < PIL_SCHED)
+		__mp_unlock(&kernel_lock);
+}
+
 #endif
