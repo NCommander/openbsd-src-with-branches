@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.34 2007/07/01 12:14:13 kettenis Exp $	*/
+/*	$OpenBSD: param.h,v 1.36 2007/07/15 19:25:49 kettenis Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -92,10 +92,6 @@
 /* pages ("clicks") (4096 bytes) to disk blocks */
 #define	ctod(x)		((x) << (PGSHIFT - DEV_BSHIFT))
 #define	dtoc(x)		((x) >> (PGSHIFT - DEV_BSHIFT))
-
-/* pages to bytes */
-#define	ctob(x)		((x) << PGSHIFT)
-#define	btoc(x)		(((x) + PGOFSET) >> PGSHIFT)
 
 #define	btodb(x)	((x) >> DEV_BSHIFT)
 #define	dbtob(x)	((x) << DEV_BSHIFT)
