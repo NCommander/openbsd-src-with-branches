@@ -1,7 +1,7 @@
 #ifndef GNODE_H
 #define GNODE_H
 /*	$OpenPackages$ */
-/*	$OpenBSD: gnode.h,v 1.4 2001/11/23 23:42:45 deraadt Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -155,6 +155,7 @@ struct GNode_ {
 #define OP_FORCE	0x00000002  /* Always execute commands (!) */
 #define OP_DOUBLEDEP	0x00000004  /* Execution of commands depends on kids
 				     * per line (::) */
+#define OP_ERROR	0x00000000
 #define OP_OPMASK	(OP_DEPENDS|OP_FORCE|OP_DOUBLEDEP)
 
 #define OP_OPTIONAL	0x00000008  /* Don't care if the target doesn't
