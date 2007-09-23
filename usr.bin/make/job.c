@@ -985,7 +985,7 @@ JobExec(Job *job, char **argv)
 		 * input.
 		 */
 		if (dup2(fileno(job->cmdFILE), 0) == -1)
-			Punt("Cannot dup2: %s", strerror(errno));
+			Punt("Cannot dup2(job->cmdFile): %s", strerror(errno));
 		(void)fcntl(0, F_SETFD, 0);
 		(void)lseek(0, 0, SEEK_SET);
 
@@ -994,7 +994,7 @@ JobExec(Job *job, char **argv)
 		 * we've created for it.
 		 */
 		if (dup2(job->outPipe, 1) == -1)
-			Punt("Cannot dup2: %s", strerror(errno));
+			Punt("Cannot dup2(job->outPipe): %s", strerror(errno));
 		/*
 		 * The output channels are marked close on exec. This bit was
 		 * duplicated by the dup2 (on some systems), so we have to
@@ -1003,7 +1003,7 @@ JobExec(Job *job, char **argv)
 		 */
 		(void)fcntl(1, F_SETFD, 0);
 		if (dup2(1, 2) == -1)
-			Punt("Cannot dup2: %s", strerror(errno));
+			Punt("Cannot dup2(stdout): %s", strerror(errno));
 
 #ifdef USE_PGRP
 		/*
