@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.2 2007/09/15 22:04:38 ray Exp $	*/
+/*	$OpenBSD: main.c,v 1.72 2007/09/25 06:43:06 ragge Exp $	*/
 
 /*
  * Copyright (c) 2002 Anders Magnusson. All rights reserved.
@@ -287,7 +287,8 @@ main(int argc, char *argv[])
 	yyaccpt();
 
 	ejobcode( nerrors ? 1 : 0 );
-	lcommprint();
+	if (!nerrors)
+		lcommprint();
 
 	if (sflag)
 		prtstats();
