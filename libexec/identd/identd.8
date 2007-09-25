@@ -1,4 +1,4 @@
-.\"	$OpenBSD: identd.8,v 1.23 2003/06/07 19:30:07 henning Exp $
+.\"	$OpenBSD: identd.8,v 1.24 2007/05/31 19:19:39 jmc Exp $
 .\"
 .\" Copyright (c) 1997, Jason Downs.  All rights reserved.
 .\"
@@ -183,7 +183,7 @@ check for a file
 .Pa .ident
 in the user's home directory.
 If this file is accessible, return
-the contents of the file
+at most 20 characters of the first line of the file
 instead of the normal USERID response.
 .It Fl m
 Allow multiple requests to be processed per session.
