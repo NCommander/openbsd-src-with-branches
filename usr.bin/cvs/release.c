@@ -1,4 +1,4 @@
-/*	$OpenBSD: release.c,v 1.34 2007/06/26 18:02:43 xsa Exp $	*/
+/*	$OpenBSD: release.c,v 1.35 2007/09/22 16:01:22 joris Exp $	*/
 /*-
  * Copyright (c) 2005-2007 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -22,8 +22,6 @@
 
 #include "cvs.h"
 #include "remote.h"
-
-extern char *__progname;
 
 void	cvs_release_local(struct cvs_file *);
 

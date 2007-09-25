@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.61 2007/06/27 20:27:38 xsa Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.62 2007/09/04 19:07:03 tobias Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -29,8 +29,6 @@
 #include <string.h>
 
 #include "cvs.h"
-
-extern char *cvs_rootstr;
 
 struct cvs_cmd *cvs_cdt[] = {
 	&cvs_cmd_add,
