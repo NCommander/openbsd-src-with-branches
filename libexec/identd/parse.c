@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.43 2005/12/06 22:05:22 deraadt Exp $	*/
+/*	$OpenBSD: parse.c,v 1.44 2007/03/21 03:32:28 tedu Exp $	*/
 
 /*
  * This program is in the public domain and may be used freely by anyone
@@ -62,7 +62,7 @@ check_noident(char *homedir)
 int
 getuserident(char *homedir, char *buf, int len)
 {
-	char   path[MAXPATHLEN], *p;
+	char   path[MAXPATHLEN];
 	int    fd, nread, n;
 	struct stat st;
 
@@ -87,8 +87,7 @@ getuserident(char *homedir, char *buf, int len)
 	buf[nread] = '\0';
 
 	/* remove illegal characters */
-	if ((p = strpbrk(buf, "\r\n")))
-		*p = '\0';
+	buf[strcspn(buf, "\r\n")] = '\0';
 
 	close(fd);
 	return 1;
