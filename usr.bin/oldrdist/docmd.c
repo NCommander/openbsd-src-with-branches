@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.19 2004/01/16 01:12:35 espie Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.20 2006/12/11 20:50:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)docmd.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: docmd.c,v 1.19 2004/01/16 01:12:35 espie Exp $";
+static char *rcsid = "$OpenBSD: docmd.c,v 1.20 2006/12/11 20:50:54 deraadt Exp $";
 #endif /* not lint */
 
 #include "defs.h"
@@ -562,7 +562,7 @@ notify(file, rhost, to, lmod)
 		return;
 	}
 	/*
-	 * Create a pipe to mailling program.
+	 * Create a pipe to a mail program.
 	 */
 	(void) snprintf(buf, sizeof(buf), "%s -oi -t", _PATH_SENDMAIL);
 	pf = popen(buf, "w");
