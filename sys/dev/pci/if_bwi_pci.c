@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bwi_pci.c,v 1.3 2007/09/13 12:31:47 mglocker Exp $ */
+/*	$OpenBSD: if_bwi_pci.c,v 1.4 2007/09/15 07:20:51 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -43,6 +43,7 @@
 #include <netinet/if_ether.h>
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_amrr.h>
 #include <net80211/ieee80211_radiotap.h>
 
 #include <dev/ic/bwivar.h>

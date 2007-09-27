@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bwi_cardbus.c,v 1.4 2007/09/15 07:20:51 jsg Exp $ */
+/*	$OpenBSD: if_bwi_cardbus.c,v 1.5 2007/09/24 20:12:34 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -36,6 +36,7 @@
 #include <netinet/if_ether.h>
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_amrr.h>
 #include <net80211/ieee80211_radiotap.h>
 
 #include <dev/pci/pcireg.h>
