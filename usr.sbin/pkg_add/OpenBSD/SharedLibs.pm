@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SharedLibs.pm,v 1.28 2007/06/16 09:29:37 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
 #
@@ -124,7 +124,7 @@ sub add_libs_from_installed_package
 	$done_plist->{$pkgname} = 1;
 	my $plist = OpenBSD::PackingList->from_installation($pkgname, 
 	    \&OpenBSD::PackingList::LibraryOnly);
-	next if !defined $plist;
+	return if !defined $plist;
 
 	$plist->mark_available_lib($pkgname);
 }
