@@ -1,7 +1,7 @@
-/*	$OpenBSD: pfe.c,v 1.34 2007/09/07 08:20:24 reyk Exp $	*/
+/*	$OpenBSD: pfe.c,v 1.35 2007/09/27 07:32:50 pyr Exp $	*/
 
 /*
- * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
+ * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

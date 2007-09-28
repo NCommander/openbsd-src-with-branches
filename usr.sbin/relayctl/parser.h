@@ -1,7 +1,7 @@
-/*	$OpenBSD: parser.h,v 1.4 2007/02/22 03:32:40 reyk Exp $	*/
+/*	$OpenBSD: parser.h,v 1.5 2007/09/07 08:33:31 reyk Exp $	*/
 
 /*
- * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
+ * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

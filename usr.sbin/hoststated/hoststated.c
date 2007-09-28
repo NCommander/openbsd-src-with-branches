@@ -1,7 +1,7 @@
-/*	$OpenBSD: hoststated.c,v 1.38 2007/07/05 09:42:26 thib Exp $	*/
+/*	$OpenBSD: hoststated.c,v 1.39 2007/09/05 08:48:42 reyk Exp $	*/
 
 /*
- * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@spootnik.org>
+ * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
