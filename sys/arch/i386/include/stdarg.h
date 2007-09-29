@@ -45,13 +45,10 @@ typedef __va_list	va_list;
 
 #ifdef lint
 #define	va_start(ap,lastarg)	((ap) = (ap))
-#elif defined(__GCC__)
-#define va_start(ap, last) \
-	((ap) = (va_list)__builtin_next_arg(last))
 #else
 #define va_start(ap, last) \
-	((ap) = (va_list)&(last) + __va_size(last))
-#endif
+	((ap) = (va_list)__builtin_next_arg(last))
+#endif /* lint */
 
 #define	va_arg(ap, type) \
 	(*(type *)((ap) += __va_size(type), (ap) - __va_size(type)))
