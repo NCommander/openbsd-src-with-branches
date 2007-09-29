@@ -1653,6 +1653,7 @@ Job_CatchOutput(void)
 
 	int count = howmany(outputsn+1, NFDBITS) * sizeof(fd_mask);
 	fd_set *readfdsp = malloc(count);
+
 	(void)fflush(stdout);
 	if (readfdsp == NULL)
 		return;
@@ -1661,13 +1662,9 @@ Job_CatchOutput(void)
 	timeout.tv_sec = SEL_SEC;
 	timeout.tv_usec = SEL_USEC;
 
-	if ((nfds = select(outputsn+1, readfdsp, (fd_set *) 0,
-	    (fd_set *) 0, &timeout)) <= 0) {
-		HandleSigs();
-		free(readfdsp);
-		return;
-	} else {
-		HandleSigs();
+	nfds = select(outputsn+1, readfdsp, NULL, NULL, &timeout);
+	HandleSigs();
+	if (nfds > 0) {
 		for (ln = Lst_First(&jobs); nfds && ln != NULL;
 		    ln = Lst_Adv(ln)) {
 			job = (Job *)Lst_Datum(ln);
