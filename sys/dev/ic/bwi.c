@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.50 2007/09/27 22:17:32 mglocker Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.51 2007/09/29 22:27:59 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -1052,7 +1052,7 @@ bwi_mac_init(struct bwi_mac *mac)
 	/*
 	 * Initialize PHY
 	 */
-	CSR_WRITE_4(sc, BWI_BBP_ATTEN, 0);
+	CSR_WRITE_2(sc, BWI_BBP_ATTEN, 0);
 	bwi_phy_init(mac);
 
 	/* TODO: interference mitigation */
