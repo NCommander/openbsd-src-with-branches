@@ -1,4 +1,4 @@
-/*	$OpenBSD: malo.c,v 1.78 2007/08/28 17:04:18 mglocker Exp $ */
+/*	$OpenBSD: malo.c,v 1.79 2007/08/28 18:34:38 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -1176,11 +1176,9 @@ malo_node_alloc(struct ieee80211com *ic)
 {
 	struct malo_node *wn;
 
-	wn = malloc(sizeof(struct malo_node), M_DEVBUF, M_NOWAIT);
+	wn = malloc(sizeof(*wn), M_DEVBUF, M_NOWAIT | M_ZERO);
 	if (wn == NULL)
 		return (NULL);
-
-	bzero(wn, sizeof(struct malo_node));
 
 	return ((struct ieee80211_node *)wn);
 }
