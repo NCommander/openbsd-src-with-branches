@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.50 2007/07/11 14:10:25 pyr Exp $ */
+/*	$OpenBSD: parse.y,v 1.51 2007/09/12 09:59:09 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -852,9 +852,11 @@ top:
 			const char *errstr = NULL;
 
 			*p = '\0';
-			yylval.v.number = strtonum(buf, LLONG_MIN, LLONG_MAX, &errstr);
+			yylval.v.number = strtonum(buf, LLONG_MIN, LLONG_MAX,
+			    &errstr);
 			if (errstr) {
-				yyerror("\"%s\" invalid number: %s", buf, errstr);
+				yyerror("\"%s\" invalid number: %s", buf,
+				    errstr);
 				return (findeol());
 			}
 			return (NUMBER);
