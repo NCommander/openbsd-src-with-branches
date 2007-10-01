@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.73 2007/05/28 22:17:21 pyr Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.74 2007/06/08 09:31:38 henning Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -141,8 +141,7 @@ nd6_ifattach(ifp)
 {
 	struct nd_ifinfo *nd;
 
-	nd = (struct nd_ifinfo *)malloc(sizeof(*nd), M_IP6NDP, M_WAITOK);
-	bzero(nd, sizeof(*nd));
+	nd = malloc(sizeof(*nd), M_IP6NDP, M_WAITOK | M_ZERO);
 
 	nd->initialized = 1;
 
