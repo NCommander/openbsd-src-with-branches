@@ -1,4 +1,4 @@
-/*	$OpenBSD: pckbc_isa.c,v 1.3 2002/03/14 01:26:56 millert Exp $	*/
+/*	$OpenBSD: pckbc_isa.c,v 1.4 2004/04/02 04:39:51 deraadt Exp $	*/
 /*	$NetBSD: pckbc_isa.c,v 1.2 2000/03/23 07:01:35 thorpej Exp $	*/
 
 /*
@@ -148,8 +148,7 @@ pckbc_isa_attach(parent, self, aux)
 		    bus_space_map(iot, IO_KBD + KBCMDP, 1, 0, &ioh_c))
 			panic("pckbc_attach: couldn't map");
 
-		t = malloc(sizeof(struct pckbc_internal), M_DEVBUF, M_WAITOK);
-		bzero(t, sizeof(struct pckbc_internal));
+		t = malloc(sizeof(*t), M_DEVBUF, M_WAITOK | M_ZERO);
 		t->t_iot = iot;
 		t->t_ioh_d = ioh_d;
 		t->t_ioh_c = ioh_c;

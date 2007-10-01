@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.152 2006/06/29 21:34:51 deraadt Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.153 2007/09/18 22:02:18 djm Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -1958,13 +1958,11 @@ hifn_process(struct cryptop *crp)
 		goto errout;
 	}
 
-	cmd = (struct hifn_command *)malloc(sizeof(struct hifn_command),
-	    M_DEVBUF, M_NOWAIT);
+	cmd = malloc(sizeof(*cmd), M_DEVBUF, M_NOWAIT | M_ZERO);
 	if (cmd == NULL) {
 		err = ENOMEM;
 		goto errout;
 	}
-	bzero(cmd, sizeof(struct hifn_command));
 
 	if (crp->crp_flags & CRYPTO_F_IMBUF) {
 		cmd->srcu.src_m = (struct mbuf *)crp->crp_buf;

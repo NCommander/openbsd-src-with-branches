@@ -1,4 +1,4 @@
-/*	$OpenBSD: seagate.c,v 1.20 2006/11/28 23:59:45 dlg Exp $	*/
+/*	$OpenBSD: seagate.c,v 1.21 2007/06/29 15:17:02 jasper Exp $	*/
 
 /*
  * ST01/02, Future Domain TMC-885, TMC-950 SCSI driver
@@ -624,10 +624,8 @@ sea_get_scb(struct sea_softc *sea, int flags)
 			break;
 		}
 		if (sea->numscbs < SEA_SCB_MAX) {
-			scb = (struct sea_scb *) malloc(sizeof(struct sea_scb),
-			    M_TEMP, M_NOWAIT);
+			scb = malloc(sizeof(*scb), M_TEMP, M_NOWAIT | M_ZERO);
 			if (scb) {
-				bzero(scb, sizeof(struct sea_scb));
 				sea->numscbs++;
 			} else
 				printf("%s: can't malloc scb\n",
