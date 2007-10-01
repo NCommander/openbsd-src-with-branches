@@ -1,4 +1,4 @@
-/*	$OpenBSD: gsckbc.c,v 1.8 2004/02/13 21:28:19 mickey Exp $	*/
+/*	$OpenBSD: gsckbc.c,v 1.9 2006/12/17 21:27:20 miod Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -392,8 +392,7 @@ gsckbc_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->intr_establish = gsckbc_intr_establish;
 
-	t = malloc(sizeof(struct pckbc_internal), M_DEVBUF, M_WAITOK);
-	bzero(t, sizeof(struct pckbc_internal));
+	t = malloc(sizeof(*t), M_DEVBUF, M_WAITOK | M_ZERO);
 	t->t_iot = iot;
 	/* XXX it does not make sense to only map two ports here */
 	t->t_ioh_d = t->t_ioh_c = ioh;
