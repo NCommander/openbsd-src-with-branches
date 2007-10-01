@@ -1,4 +1,4 @@
-/*	$OpenBSD: reader.c,v 1.3 2007/09/22 14:41:41 otto Exp $	*/
+/*	$OpenBSD: reader.c,v 1.4 2007/09/24 17:56:17 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -681,6 +681,7 @@ gencode(NODE *p, int cookie)
 }
 
 int negrel[] = { NE, EQ, GT, GE, LT, LE, UGT, UGE, ULT, ULE } ;  /* negatives of relationals */
+size_t negrelsize = sizeof negrel / sizeof negrel[0];
 
 #ifdef PCC_DEBUG
 #undef	PRTABLE
