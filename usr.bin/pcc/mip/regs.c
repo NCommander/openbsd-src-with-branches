@@ -1,4 +1,4 @@
-/*	$OpenBSD: regs.c,v 1.5 2007/09/21 07:48:13 otto Exp $	*/
+/*	$OpenBSD: regs.c,v 1.6 2007/09/22 14:42:26 otto Exp $	*/
 /*
  * Copyright (c) 2005 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -2137,8 +2137,8 @@ ngenregs(struct interpass *ipole)
 
 		nblock -= tempmin;
 		live = tmpalloc(BIT2BYTE(nbits));
-		RDEBUG(("nblock %p num %d size %d\n",
-		    nblock, nbits, (int)(nbits * sizeof(REGW))));
+		RDEBUG(("nblock %p num %d size %zu\n",
+		    nblock, nbits, (size_t)(nbits * sizeof(REGW))));
 	}
 
 
