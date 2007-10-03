@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.63 2006/11/28 23:59:45 dlg Exp $	*/
+/*	$OpenBSD: vs.c,v 1.64 2006/12/01 19:36:09 miod Exp $	*/
 
 /*
  * Copyright (c) 2004, Miodrag Vallat.
@@ -958,8 +958,7 @@ vs_alloc_scatter_gather(void)
 {
 	M328_SG sg;
 
-	MALLOC(sg, M328_SG, sizeof(struct m328_sg), M_DEVBUF, M_WAITOK);
-	bzero(sg, sizeof(struct m328_sg));
+	sg = malloc(sizeof(struct m328_sg), M_DEVBUF, M_WAITOK | M_ZERO);
 
 	return (sg);
 }
