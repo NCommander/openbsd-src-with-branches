@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpc_sample.c,v 1.13 2002/07/05 05:39:42 deraadt Exp $	*/
+/*	$OpenBSD: rpc_sample.c,v 1.14 2003/07/09 03:35:21 deraadt Exp $	*/
 /*	$NetBSD: rpc_sample.c,v 1.2 1995/06/11 21:50:01 pk Exp $	*/
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
@@ -31,8 +31,7 @@
  */
 
 #ifndef lint
-static char sccsid[] = "@(#)rpc_sample.c  1.1  90/08/30  (C) 1987 SMI";
-
+static const char sccsid[] = "@(#)rpc_sample.c  1.1  90/08/30  (C) 1987 SMI";
 #endif
 
 /*
