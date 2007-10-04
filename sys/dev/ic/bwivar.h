@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwivar.h,v 1.16 2007/09/27 22:17:32 mglocker Exp $	*/
+/*	$OpenBSD: bwivar.h,v 1.17 2007/10/01 11:27:11 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -394,6 +394,8 @@ struct bwi_mac {
 	struct bwi_tpctl	 mac_tpctl;	/* TX power control */
 	uint32_t		 mac_flags;	/* BWI_MAC_F_ */
 
+	uint8_t			*mac_fw;
+	size_t			 mac_fw_size;
 	uint8_t			*mac_ucode;
 	size_t			 mac_ucode_size;
 	uint8_t			*mac_pcm;
