@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.55 2007/09/26 11:06:41 otto Exp $	*/
+/*	$OpenBSD: top.c,v 1.56 2007/09/27 19:44:54 otto Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -386,7 +386,8 @@ main(int argc, char *argv[])
 	sigaddset(&mask, SIGQUIT);
 	sigaddset(&mask, SIGTSTP);
 	sigprocmask(SIG_BLOCK, &mask, &oldmask);
-	init_screen();
+	if (interactive)
+		init_screen();
 	(void) signal(SIGINT, leave);
 	siginterrupt(SIGINT, 1);
 	(void) signal(SIGQUIT, leave);
