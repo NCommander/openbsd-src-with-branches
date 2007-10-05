@@ -1,6 +1,9 @@
-# $OpenBSD: Makefile,v 1.1 2007/09/21 06:24:05 otto Exp $
+# $OpenBSD: Makefile,v 1.2 2007/10/05 16:45:22 otto Exp $
 
 CC=/usr/local/bin/cc
 
 regress:
-	${CC} -E -I subdir skip001.c | cmp - ${.CURDIR}/skip001.out
+	@echo skip001.c
+	${CC} -E -I ${.CURDIR}/subdir ${.CURDIR}/skip001.c | cmp - ${.CURDIR}/skip001.out
+
+.include "bsd.regress.mk"
