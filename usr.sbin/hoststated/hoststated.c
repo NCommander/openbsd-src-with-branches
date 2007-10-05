@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.c,v 1.41 2007/09/28 20:23:38 pyr Exp $	*/
+/*	$OpenBSD: hoststated.c,v 1.42 2007/10/02 21:04:13 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -481,8 +481,8 @@ purge_config(struct hoststated *env, u_int8_t what)
 				bufferevent_free(rly->bev);
 			if (rly->dstbev != NULL)
 				bufferevent_free(rly->dstbev);
-			if (rly->ctx != NULL)
-				SSL_CTX_free(rly->ctx);
+			if (rly->ssl_ctx != NULL)
+				SSL_CTX_free(rly->ssl_ctx);
 			free(rly);
 		}
 	}
