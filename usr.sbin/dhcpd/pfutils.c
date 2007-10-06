@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfutils.c,v 1.6 2006/10/20 19:45:02 deraadt Exp $ */
+/*	$OpenBSD: pfutils.c,v 1.7 2007/05/15 06:22:32 tedu Exp $ */
 /*
  * Copyright (c) 2006 Chris Kuethe <ckuethe@openbsd.org>
  *
@@ -234,24 +234,14 @@ pfmsg(char c, struct lease *lp)
 
 	switch (c) {
 	case 'A': /* address is being abandoned */
-		if (abandoned_tab != NULL)
-			(void)atomicio(vwrite, pfpipe[1], &cmd,
-			    sizeof(struct pf_cmd));
-		break;
+		/* FALLTHROUGH */
 	case 'C': /* IP moved to different ethernet address */
-		if (changedmac_tab != NULL)
-			(void)atomicio(vwrite, pfpipe[1], &cmd,
-			    sizeof(struct pf_cmd));
-		break;
+		/* FALLTHROUGH */
 	case 'L': /* Address is being leased (unabandoned) */
-		if (abandoned_tab != NULL)
-			(void)atomicio(vwrite, pfpipe[1], &cmd,
-			    sizeof(struct pf_cmd));
-		break;
+		/* FALLTHROUGH */
 	case 'R': /* Address is being released or lease has expired */
-		if (leased_tab != NULL)
-			(void)atomicio(vwrite, pfpipe[1], &cmd,
-			    sizeof(struct pf_cmd));
+		(void)atomicio(vwrite, pfpipe[1], &cmd,
+		    sizeof(struct pf_cmd));
 		break;
 	default: /* silently ignore unknown commands */
 		break;
