@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.32 2007/06/02 02:04:21 deraadt Exp $	*/
+/*	$OpenBSD: msdosfs_denode.c,v 1.33 2007/10/03 10:52:11 krw Exp $	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -615,7 +615,7 @@ msdosfs_reclaim(v)
 #if 0 /* XXX */
 	dep->de_flag = 0;
 #endif
-	FREE(dep, M_MSDOSFSNODE);
+	free(dep, M_MSDOSFSNODE);
 	vp->v_data = NULL;
 	return (0);
 }

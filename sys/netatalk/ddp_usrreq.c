@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_usrreq.c,v 1.8 2007/05/26 12:09:40 claudio Exp $	*/
+/*	$OpenBSD: ddp_usrreq.c,v 1.9 2007/10/03 10:52:11 krw Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -525,7 +525,7 @@ at_pcbdetach( so, ddp )
 	ddp->ddp_next->ddp_prev = ddp->ddp_prev;
     }
 
-    FREE( ddp, M_PCB );
+    free( ddp, M_PCB );
 }
 
 /*
