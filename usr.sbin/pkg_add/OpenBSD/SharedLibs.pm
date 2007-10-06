@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: SharedLibs.pm,v 1.30 2007/09/28 14:42:12 espie Exp $
 #
 # Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
 #
@@ -55,6 +55,7 @@ sub init_path($)
 				for my $d (split(/\:/o, $1)) {
 					$path->{$d} = 1;
 				}
+				last;
 			}
 		}
 		close($fh);
