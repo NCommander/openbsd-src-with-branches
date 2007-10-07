@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.1 2007/09/19 15:21:07 todd Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2007/10/07 17:58:51 otto Exp $
 #
 # Makefile for the ccom part of pcc.
 #
@@ -40,6 +40,8 @@ mkext: mkext.c table.c common.c
 
 external.h external.c: mkext
 	./mkext
+
+pftn.o: cgram.c
 
 cleandepend:
 	rm -f .depend ${.CURDIR}/tags cgram.h
