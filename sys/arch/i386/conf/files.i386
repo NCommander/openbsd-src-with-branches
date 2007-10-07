@@ -1,4 +1,4 @@
-#	$OpenBSD: files.i386,v 1.163 2007/05/31 18:52:27 uwe Exp $
+#	$OpenBSD: files.i386,v 1.164 2007/07/04 08:16:13 mpf Exp $
 #
 # new style config file for i386 architecture
 #
@@ -132,10 +132,15 @@ device	gscpm
 attach	gscpm at pci
 file	arch/i386/pci/gscpm.c		gscpm
 
+# AMD Geode CS5536 PCI-ISA bridge
+device	glxpcib: isabus   
+attach	glxpcib at pci
+file	arch/i386/pci/glxpcib.c		glxpcib   
+
 # PCI-ISA bridge chipsets
 device	pcib: isabus
 attach	pcib at pci
-file	arch/i386/pci/pcib.c		pcib | ichpcib | gscpcib | piixpcib
+file	arch/i386/pci/pcib.c		pcib | ichpcib | gscpcib | glxpcib | piixpcib
 
 # Intel ICHx/ICHx-M LPC bridges
 device	ichpcib: isabus
