@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: setsignal.h,v 1.2 2000/10/03 14:31:59 ho Exp $	*/
 
 /*
  * Copyright (c) 1997
@@ -20,7 +20,7 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) $Header: /cvs/src/usr.sbin/tcpdump/setsignal.h,v 1.1 1999/07/28 20:41:36 jakob Exp $ (LBL)
+ * @(#) $Id$ (LBL)
  */
 #ifndef setsignal_h
 #define setsignal_h

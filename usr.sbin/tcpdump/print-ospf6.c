@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ospf6.c,v 1.2 2000/05/05 12:32:09 jakob Exp $	*/
+/*	$OpenBSD: print-ospf6.c,v 1.3 2006/04/21 23:09:34 cloder Exp $	*/
 
 
 /*
@@ -26,7 +26,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-ospf6.c,v 1.2 2000/05/05 12:32:09 jakob Exp $ (LBL)";
+    "@(#) $Id$ (LBL)";
 #endif
 
 #ifdef INET6

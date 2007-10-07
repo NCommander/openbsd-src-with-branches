@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-timed.c,v 1.2 2004/01/09 19:47:17 otto Exp $	*/
+/*	$OpenBSD: print-timed.c,v 1.3 2004/01/10 11:58:37 otto Exp $	*/
 
 /*
  * Copyright (c) 2000 Ben Smithurst <ben@scientia.demon.co.uk>
@@ -27,7 +27,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-timed.c,v 1.2 2004/01/09 19:47:17 otto Exp $";
+    "@(#) $Id$";
 #endif
 
 #ifdef HAVE_CONFIG_H

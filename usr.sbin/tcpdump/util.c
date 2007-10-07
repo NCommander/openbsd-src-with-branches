@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.21 2006/04/22 17:24:33 moritz Exp $	*/
+/*	$OpenBSD: util.c,v 1.22 2007/08/28 12:52:06 markus Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -23,7 +23,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/util.c,v 1.21 2006/04/22 17:24:33 moritz Exp $ (LBL)";
+    "@(#) $Id$ (LBL)";
 #endif
 
 #include <sys/types.h>

@@ -1,9 +1,9 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ipx.h,v 1.6 2000/10/03 14:31:55 ho Exp $	*/
 
 /*
  * IPX protocol formats 
  *
- * @(#) $Header: /cvs/src/usr.sbin/tcpdump/ipx.h,v 1.5 1996/12/12 16:22:52 bitblt Exp $
+ * @(#) $Id$
  */
 
 /* well-known sockets */

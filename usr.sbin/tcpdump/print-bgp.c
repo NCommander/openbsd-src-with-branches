@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-bgp.c,v 1.8 2007/05/27 12:38:39 canacar Exp $	*/
+/*	$OpenBSD: print-bgp.c,v 1.9 2007/06/14 17:42:06 claudio Exp $	*/
 
 /*
  * Copyright (C) 1999 WIDE Project.
@@ -31,7 +31,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-     "@(#) $TCPDUMP: /tcpdump/master/tcpdump/print-bgp.c,v 1.27 2001/10/18 09:52:17 itojun Exp $";
+     "@(#) $Id$";
 #endif
 
 #include <sys/param.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-pfsync.c,v 1.30 2007/05/31 04:16:26 mcbride Exp $	*/
+/*	$OpenBSD: print-pfsync.c,v 1.31 2007/09/21 08:42:00 markus Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -28,7 +28,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-pfsync.c,v 1.30 2007/05/31 04:16:26 mcbride Exp $";
+    "@(#) $Id$";
 #endif
 
 #include <sys/param.h>

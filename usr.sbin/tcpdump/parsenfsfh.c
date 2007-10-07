@@ -1,4 +1,4 @@
-/*	$OpenBSD: parsenfsfh.c,v 1.7 2000/10/03 14:31:56 ho Exp $	*/
+/*	$OpenBSD: parsenfsfh.c,v 1.8 2001/06/15 01:11:26 itojun Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Jeffrey C. Mogul, Digital Equipment Corporation,
@@ -44,7 +44,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/parsenfsfh.c,v 1.7 2000/10/03 14:31:56 ho Exp $ (LBL)";
+    "@(#) $Id$ (LBL)";
 #endif
 
 #include <sys/types.h>

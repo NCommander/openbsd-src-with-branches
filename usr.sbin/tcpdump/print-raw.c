@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-raw.c,v 1.3 2000/10/03 14:31:58 ho Exp $	*/
+/*	$OpenBSD: print-raw.c,v 1.4 2002/02/19 19:39:40 millert Exp $	*/
 
 /*
  * Copyright (c) 1996
@@ -23,7 +23,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Header: /cvs/src/usr.sbin/tcpdump/print-raw.c,v 1.3 2000/10/03 14:31:58 ho Exp $ (LBL)";
+    "@(#) $Id$ (LBL)";
 #endif
 
 #include <sys/param.h>
