@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2007/10/05 16:49:37 otto Exp $
+# $OpenBSD: Makefile,v 1.2 2007/10/05 17:28:47 otto Exp $
 
 CC=/usr/local/bin/cc
 
