@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_malo.c,v 1.56 2007/08/28 18:34:38 deraadt Exp $ */
+/*      $OpenBSD: if_malo.c,v 1.57 2007/10/08 22:08:12 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -1204,6 +1204,9 @@ cmalo_cmd_set_reset(struct malo_softc *sc)
 	/* process command request */
 	if (cmalo_cmd_request(sc, psize, 1) != 0)
 		return (EIO);
+
+	/* give the device some time to finish the reset */
+	delay(100);
 
 	return (0);
 }
