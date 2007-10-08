@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpiprt.c,v 1.16 2007/02/23 00:04:40 jordan Exp $	*/
+/*	$OpenBSD: acpiprt.c,v 1.17 2007/09/07 19:48:58 kettenis Exp $	*/
 /*
  * Copyright (c) 2006 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -215,11 +215,10 @@ acpiprt_prt_add(struct acpiprt_softc *sc, struct aml_value *v)
 			return;
 		}
 
-		map = malloc(sizeof (struct mp_intr_map), M_DEVBUF, M_NOWAIT);
+		map = malloc(sizeof(*map), M_DEVBUF, M_NOWAIT | M_ZERO);
 		if (map == NULL)
 			return;
 
-		memset(map, 0, sizeof *map);
 		map->ioapic = apic;
 		map->ioapic_pin = irq - apic->sc_apic_vecbase;
 		map->bus_pin = ((addr >> 14) & 0x7c) | (pin & 0x3);
