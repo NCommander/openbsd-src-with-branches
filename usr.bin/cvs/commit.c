@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.113 2007/09/24 13:56:09 joris Exp $	*/
+/*	$OpenBSD: commit.c,v 1.114 2007/10/03 13:12:06 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -289,7 +289,7 @@ cvs_commit_local(struct cvs_file *cf)
 	crev = NULL;
 	rrev = NULL;
 
-	if (cf->file_rcs->rf_branch != NULL) {
+	if (cf->file_rcs != NULL && cf->file_rcs->rf_branch != NULL) {
 		rcsnum_free(cf->file_rcs->rf_branch);
 		cf->file_rcs->rf_branch = NULL;
 	}
