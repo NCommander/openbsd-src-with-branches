@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.50 2007/07/11 14:10:25 pyr Exp $ */
+/*	$OpenBSD: parse.y,v 1.1 2007/10/08 10:44:51 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -63,7 +63,7 @@ u_int32_t	get_rtr_id(void);
 int	 host(const char *, struct in_addr *, struct in_addr *);
 
 struct config_defaults {
-	u_int32_t	dead_interval;
+	u_int16_t	dead_interval;
 	u_int16_t	transmit_delay;
 	u_int16_t	hello_interval;
 	u_int16_t	rxmt_interval;

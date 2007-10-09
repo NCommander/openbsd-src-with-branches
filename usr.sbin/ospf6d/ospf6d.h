@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.68 2007/06/19 16:45:15 reyk Exp $ */
+/*	$OpenBSD: ospf6d.h,v 1.1 2007/10/08 10:44:50 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2007 Esben Norby <norby@openbsd.org>
@@ -326,7 +326,6 @@ struct iface {
 	struct area		*area;
 
 	u_int64_t		 baudrate;
-	u_int32_t		 dead_interval;
 	u_int32_t		 ls_ack_cnt;
 	u_int32_t		 crypt_seq_num;
 	time_t			 uptime;
@@ -338,6 +337,7 @@ struct iface {
 	u_int16_t		 transmit_delay;
 	u_int16_t		 hello_interval;
 	u_int16_t		 rxmt_interval;
+	u_int16_t		 dead_interval;
 	u_int16_t		 metric;
 	enum iface_type		 type;
 	u_int8_t		 media_type;
