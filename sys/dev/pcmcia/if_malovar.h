@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_malovar.h,v 1.24 2007/08/09 21:24:02 mglocker Exp $ */
+/*	$OpenBSD: if_malovar.h,v 1.25 2007/10/08 22:08:12 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -340,6 +340,10 @@ struct malo_softc {
 				     int);
 
 	int			 sc_flags;
+	uint8_t			*sc_fw_h;
+	uint8_t			*sc_fw_m;
+	size_t			 sc_fw_h_size;
+	size_t			 sc_fw_m_size;
 	int			 sc_cmd_ctxsave;
 	void			*sc_cmd;
 	void			*sc_data;
