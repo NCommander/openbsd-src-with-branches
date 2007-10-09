@@ -1309,12 +1309,9 @@ prepare_job(GNode *gn, int flags)
 				    job->node);
 				Make_Update(job->node);
 			}
-			free(job);
-			return NULL;
-		} else {
-			free(job);
-			return NULL;
 		}
+		free(job);
+		return NULL;
 	} else {
 		(void)fflush(job->cmdFILE);
 		return job;
