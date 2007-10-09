@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.202 2007/09/24 13:44:20 joris Exp $	*/
+/*	$OpenBSD: file.c,v 1.203 2007/10/05 19:28:23 gilles Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -815,7 +815,7 @@ cvs_file_classify(struct cvs_file *cf, const char *tag)
 					    "locally modified",
 					    cf->file_path);
 					cf->file_status = FILE_CONFLICT;
-				} else {
+				} else if (cvs_cmdop != CVS_OP_IMPORT) {
 					cvs_log(LP_NOTICE,
 					    "%s is no longer in the "
 					    "repository",
