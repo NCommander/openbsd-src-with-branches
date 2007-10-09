@@ -1,4 +1,4 @@
-/*	$OpenBSD: maestro.c,v 1.20 2006/10/01 21:46:33 espie Exp $	*/
+/*	$OpenBSD: maestro.c,v 1.21 2006/12/29 13:04:37 pedro Exp $	*/
 /* $FreeBSD: /c/ncvs/src/sys/dev/sound/pci/maestro.c,v 1.3 2000/11/21 12:22:11 julian Exp $ */
 /*
  * FreeBSD's ESS Agogo/Maestro driver 
@@ -1824,7 +1824,7 @@ salloc_new(addr, size, nzones)
 	struct salloc_zone *space;
 	int i;
 
-	MALLOC(pool, salloc_t, sizeof *pool + nzones * sizeof pool->zones[0],
+	pool = malloc(sizeof *pool + nzones * sizeof pool->zones[0],
 	    M_TEMP, M_NOWAIT);
 	if (pool == NULL)
 		return NULL;
@@ -1846,7 +1846,7 @@ void
 salloc_destroy(pool)
 	salloc_t pool;
 {
-	FREE(pool, M_TEMP);
+	free(pool, M_TEMP);
 }
 
 void

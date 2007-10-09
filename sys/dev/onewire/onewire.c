@@ -1,4 +1,4 @@
-/*	$OpenBSD: onewire.c,v 1.6 2006/09/30 17:45:31 grange Exp $	*/
+/*	$OpenBSD: onewire.c,v 1.7 2006/10/08 21:12:51 grange Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -469,8 +469,8 @@ onewire_scan(struct onewire_softc *sc)
 			    onewire_print)) == NULL)
 				continue;
 
-			MALLOC(nd, struct onewire_device *,
-			    sizeof(struct onewire_device), M_DEVBUF, M_NOWAIT);
+			nd = malloc(sizeof(struct onewire_device),
+			    M_DEVBUF, M_NOWAIT);
 			if (nd == NULL)
 				continue;
 			nd->d_dev = dev;
@@ -488,7 +488,7 @@ out:
 		if (!d->d_present) {
 			config_detach(d->d_dev, DETACH_FORCE);
 			TAILQ_REMOVE(&sc->sc_devs, d, d_list);
-			FREE(d, M_DEVBUF);
+			free(d, M_DEVBUF);
 		}
 	}
 }
