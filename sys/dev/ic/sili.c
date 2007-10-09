@@ -1,4 +1,4 @@
-/*	$OpenBSD: sili.c,v 1.33 2007/04/22 00:06:51 dlg Exp $ */
+/*	$OpenBSD: sili.c,v 1.34 2007/10/01 04:03:51 krw Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -677,7 +677,7 @@ sili_post_direct(struct sili_port *sp, u_int slot, void *buf, size_t buflen)
 
 #ifdef DIAGNOSTIC
 	if (buflen != 64 && buflen != 128)
-		panic("sili_pcopy: buflen of %d is not 64 or 128", buflen);
+		panic("sili_pcopy: buflen of %zu is not 64 or 128", buflen);
 #endif
 
 	bus_space_write_raw_region_4(sp->sp_sc->sc_iot_port, sp->sp_ioh, r,

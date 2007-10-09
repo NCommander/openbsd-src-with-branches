@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.212 2007/05/03 10:11:25 tom Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.213 2007/06/21 01:11:50 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -1907,7 +1907,7 @@ bge_attach(struct device *parent, struct device *self, void *aux)
 	if (bus_dmamem_map(sc->bge_dmatag, &seg, rseg,
 			   sizeof(struct bge_ring_data), &kva,
 			   BUS_DMA_NOWAIT)) {
-		printf(": can't map dma buffers (%d bytes)\n",
+		printf(": can't map dma buffers (%zu bytes)\n",
 		    sizeof(struct bge_ring_data));
 		goto fail_2;
 	}
