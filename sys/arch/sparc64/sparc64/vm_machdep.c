@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.14 2007/05/27 20:59:26 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.15 2007/06/20 17:29:36 miod Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.38 2001/06/30 00:02:20 eeh Exp $ */
 
 /*
@@ -316,8 +316,7 @@ cpu_fork(p1, p2, stack, stacksize, func, arg)
  * run.
  */
 void
-cpu_exit(p)
-	struct proc *p;
+cpu_exit(struct proc *p)
 {
 	register struct fpstate64 *fs;
 
@@ -328,8 +327,9 @@ cpu_exit(p)
 		}
 		free((void *)fs, M_SUBPROC);
 	}
-	switchexit(p);
-	/* NOTREACHED */
+
+	pmap_deactivate(p);
+	sched_exit(p);
 }
 
 /*

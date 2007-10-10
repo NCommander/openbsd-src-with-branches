@@ -1,4 +1,4 @@
-/*	$OpenBSD: mptramp.s,v 1.5 2006/03/14 14:44:37 mickey Exp $	*/
+/*	$OpenBSD: mptramp.s,v 1.8 2007/02/20 21:15:01 tom Exp $	*/
 
 /*-
  * Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -249,9 +249,7 @@ mp_cont:
 	HALTT(0x30,%ecx)
 	pushl	%ecx
 	call	_C_LABEL(cpu_hatch)
-	HALT(0x33)
-	xorl	%esi,%esi
-	jmp	_C_LABEL(idle_start)
+	/* NOTREACHED */
 
 	.data
 _C_LABEL(mp_pdirpa):

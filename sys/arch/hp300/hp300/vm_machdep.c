@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.42 2007/03/13 19:38:19 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.43 2007/05/27 20:59:25 miod Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.60 2001/07/06 05:53:35 chs Exp $	*/
 
 /*
@@ -133,10 +133,10 @@ void
 cpu_exit(p)
 	struct proc *p;
 {
+	(void)splhigh();
 
-	(void) splhigh();
-	switch_exit(p);
-	/* NOTREACHED */
+	pmap_deactivate(p);
+	sched_exit(p);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $OpenBSD: vm_machdep.c,v 1.33 2007/05/27 20:59:24 miod Exp $ */
+/* $OpenBSD: vm_machdep.c,v 1.34 2007/09/03 01:24:22 krw Exp $ */
 /* $NetBSD: vm_machdep.c,v 1.55 2000/03/29 03:49:48 simonb Exp $ */
 
 /*
@@ -114,9 +114,7 @@ cpu_exit(p)
 	 * vmspace's context until the switch to proc0 in switch_exit().
 	 */
 	pmap_deactivate(p);
-
-	(void) splhigh();
-	switch_exit(p);
+	sched_exit(p);
 	/* NOTREACHED */
 }
 

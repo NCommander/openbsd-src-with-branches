@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.50 2007/05/15 16:03:52 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.51 2007/07/20 22:12:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -64,6 +64,7 @@
 
 #ifndef _LOCORE
 #ifdef _KERNEL
+#include <sys/queue.h>
 #include <sys/sched.h>
 
 struct cpu_info {
