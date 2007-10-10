@@ -38,7 +38,7 @@
 .Nm kdc
 .Nd Kerberos 5 server
 .Sh SYNOPSIS
-.Nm
+.Nm kdc
 .Bk -words
 .Oo Fl c Ar file \*(Ba Xo
 .Fl -config-file= Ns Ar file
@@ -166,7 +166,7 @@ The entity used for logging is
 The configuration file has the same syntax as 
 .Xr krb5.conf 5 ,
 but will be read before 
-.Pa /etc/krb5.conf ,
+.Pa /etc/kerberosV/krb5.conf ,
 so it may override settings found there.
 Options specific to the KDC only are found in the
 .Dq [kdc] 

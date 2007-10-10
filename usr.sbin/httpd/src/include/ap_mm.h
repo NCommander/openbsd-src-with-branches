@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* ====================================================================
  * Copyright (c) 1999-2000 The Apache Group.  All rights reserved.
  *
@@ -60,8 +62,6 @@
 **
 */
 
-#ifdef EAPI
-
 #ifndef AP_MM_H 
 #define AP_MM_H 1
 
@@ -93,7 +93,8 @@ API_EXPORT(char *)  ap_MM_error(void);
 
 /* Standard Malloc-Style API */
 API_EXPORT(AP_MM *) ap_mm_create(size_t size, char *file);
-API_EXPORT(int)     ap_mm_permission(AP_MM *mm, mode_t mode, uid_t owner, gid_t group);
+API_EXPORT(int)     ap_mm_permission(AP_MM *mm, mode_t mode, uid_t owner,
+    gid_t group);
 API_EXPORT(void)    ap_mm_destroy(AP_MM *mm);
 API_EXPORT(int)     ap_mm_lock(AP_MM *mm, ap_mm_lock_mode mode);
 API_EXPORT(int)     ap_mm_unlock(AP_MM *mm);
@@ -110,7 +111,8 @@ API_EXPORT(void)    ap_mm_display_info(AP_MM *mm);
 
 /* Low-Level Shared Memory API */
 API_EXPORT(void *)  ap_mm_core_create(size_t size, char *file);
-API_EXPORT(int)     ap_mm_core_permission(void *core, mode_t mode, uid_t owner, gid_t group);
+API_EXPORT(int)     ap_mm_core_permission(void *core, mode_t mode, uid_t owner,
+    gid_t group);
 API_EXPORT(void)    ap_mm_core_delete(void *core);
 API_EXPORT(size_t)  ap_mm_core_size(void *core);
 API_EXPORT(int)     ap_mm_core_lock(void *core, ap_mm_lock_mode mode);
@@ -125,6 +127,3 @@ API_EXPORT(char *)  ap_mm_lib_error_get(void);
 API_EXPORT(int)     ap_mm_lib_version(void);
 
 #endif /* AP_MM_H */
-
-#endif /* EAPI */
-

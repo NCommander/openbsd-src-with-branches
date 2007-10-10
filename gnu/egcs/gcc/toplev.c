@@ -770,7 +770,23 @@ int flag_instrument_function_entry_exit = 0;
    On SVR4 targets, it also controls whether or not to emit a
    string identifying the compiler.  */
 
+#ifdef OPENBSD_NATIVE
+int flag_no_ident = 1;
+#else
 int flag_no_ident = 0;
+#endif
+
+#if defined(STACK_PROTECTOR) && defined(STACK_GROWS_DOWNWARD)
+/* Nonzero means use propolice as a stack protection method */
+int flag_propolice_protection = 1;
+int flag_stack_protection = 0;
+#else
+int flag_propolice_protection = 0;
+int flag_stack_protection = 0;
+#endif
+
+int flag_trampolines = 0;
+int warn_trampolines = 0;
 
 /* Table of supported debugging formats.  */
 static struct
@@ -941,7 +957,7 @@ lang_independent_options f_options[] =
   {"fast-math", &flag_fast_math, 1,
    "Improve FP speed by violating ANSI & IEEE rules" },
   {"common", &flag_no_common, 0,
-   "Do not put unitialised globals in the common section" },
+   "Do not put uninitialized globals in the common section" },
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1,
    "Do not generate .size directives" },
   {"function-sections", &flag_function_sections, 1,
@@ -979,7 +995,13 @@ lang_independent_options f_options[] =
   {"leading-underscore", &flag_leading_underscore, 1,
    "External symbols have a leading underscore" },
   {"ident", &flag_no_ident, 0,
-   "Process #ident directives"}
+   "Process #ident directives"},
+  {"stack-protector", &flag_propolice_protection, 1,
+   "Enables stack protection" },
+  {"stack-protector-all", &flag_stack_protection, 1,
+   "Enables stack protection of every function" },
+  {"trampolines", &flag_trampolines, 1,
+   "Allows trampolines" }
 };
 
 #define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))
@@ -1053,6 +1075,8 @@ documented_lang_options[] =
   { "-Wno-conversion", "" },
   { "-Wformat", "Warn about printf format anomalies" },
   { "-Wno-format", "" },
+  { "-Wbounded", "Warn about potential overruns in static buffers" },
+  { "-Wno-bounded", "" },
   { "-Wimplicit-function-declaration",
     "Warn about implicit function declarations" },
   { "-Wno-implicit-function-declaration", "" },
@@ -1233,6 +1257,12 @@ unsigned id_clash_len;
 int warn_larger_than;
 unsigned larger_than_size;
 
+/* Nonzero means warn about any function whose stack usage is larger
+   than N bytes.  The value N is in `stack_larger_than_size'.  */
+ 
+int warn_stack_larger_than;
+unsigned stack_larger_than_size;
+
 /* Nonzero means warn if inline function is too large.  */
 
 int warn_inline;
@@ -1256,9 +1286,13 @@ lang_independent_options W_options[] =
   {"cast-align", &warn_cast_align, 1,
    "Warn about pointer casts which increase alignment" },
   {"uninitialized", &warn_uninitialized, 1,
-   "Warn about unitialized automatic variables"},
+   "Warn about uninitialized automatic variables"},
   {"inline", &warn_inline, 1,
-   "Warn when an inlined function cannot be inlined"}
+   "Warn when an inlined function cannot be inlined"},
+  {"stack-protector", &warn_stack_protector, 1,
+   "Warn when disabling stack protector for some reason"},
+  {"trampolines", &warn_trampolines, 1,
+   "Warn when trampolines are emitted"}
 };
 
 /* Output files for assembler code (real compiler output)
@@ -3608,6 +3642,10 @@ rest_of_compilation (decl)
   int failure = 0;
   int rebuild_label_notes_after_reload;
 
+  /* When processing delayed functions, init_function_start() won't
+     have been run to re-initialize it.  */
+  cse_not_expected = ! optimize;
+
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
 
@@ -3620,6 +3658,7 @@ rest_of_compilation (decl)
       if (DECL_INLINE (decl) || flag_inline_functions)
 	TIMEVAR (integration_time,
 		 {
+                   current_function_is_leaf = leaf_function_p ();
 		   lose = function_cannot_inline_p (decl);
 		   if (lose || ! optimize)
 		     {
@@ -3645,6 +3684,9 @@ rest_of_compilation (decl)
 
       insns = get_insns ();
 
+      flag_propolice_protection |= flag_stack_protection;
+      if (flag_propolice_protection) prepare_stack_protection (inlinable);
+  
       /* Dump the rtl code if we are dumping rtl.  */
 
       if (rtl_dump)
@@ -4540,6 +4582,7 @@ display_help ()
   
   printf ("  -Wid-clash-<num>        Warn if 2 identifiers have the same first <num> chars\n");
   printf ("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n");
+  printf ("  -Wstack-larger-than-<number>  Warn if a function stack usage is larger than <number> bytes\n");
   printf ("  -p                      Enable function profiling\n");
 #if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER)
   printf ("  -a                      Enable block profiling \n");
@@ -5181,6 +5224,16 @@ main (argc, argv)
 		    {
 		      larger_than_size = larger_than_val;
 		      warn_larger_than = 1;
+		    }
+		}
+	      else if (!strncmp (p, "stack-larger-than-", 18))
+		{
+		  const int stack_larger_than_val
+		    = read_integral_parameter (p + 18, p - 2, -1);
+		  if (stack_larger_than_val != -1)
+		    {
+		      stack_larger_than_size = stack_larger_than_val;
+		      warn_stack_larger_than = 1;
 		    }
 		}
 	      else

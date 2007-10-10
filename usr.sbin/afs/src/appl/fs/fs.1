@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	$arla: fs.1,v 1.17 2003/06/06 12:53:48 hin Exp $
-.\"     $OpenBSD: fs.1,v 1.5 2000/04/15 2:15:18 aaron Exp $
+.\"     $OpenBSD: fs.1,v 1.14 2004/09/15 23:05:53 jmc Exp $
 .\"
 .Dd March 29, 2000
 .Dt FS 1
@@ -92,7 +92,7 @@ get fid
 .It Cm getserverprefs
 not yet implemented
 .It Cm getstatistics
-get statistics from the cachemanager
+get statistics from the cache manager
 .It Cm getpriority
 get priority of a file/dir
 .It Cm gp
@@ -137,7 +137,7 @@ create mount point
 .It Cm mkm
 shorthand of the
 .Cm mkmount
-comman
+command
 .It Cm connect
 connect mode
 .It Cm monitor
@@ -179,7 +179,7 @@ set upper limit of prio gc
 .It Cm smq
 shorthand for the
 .Cm setmaxpriority
-command
+command.
 .It Cm setquota
 change quota on a volume
 .It Cm sq
@@ -306,6 +306,7 @@ from the cache, causing it to be stored on the fileserver.
 Flush all the files in the volume where the
 .Ar file
 is stored, causing them to be stored on the fileserver.
+Meta information about the volume is also flushed.
 .Ed
 .Pp
 .Ic fs gcpags
@@ -320,7 +321,7 @@ Print information about cache usage.
 .Pp
 .Ic fs getcrypt
 .Bd -filled -offset indent -compact
-Display wether traffic between the client and server is encrypted.
+Display whether traffic between the client and server is encrypted.
 .Ed
 .Pp
 .Ic fs getcellstatus
@@ -343,7 +344,7 @@ Not yet implemented.
 .Pp
 .Ic fs getstatistics
 .Bd -filled -offset indent -compact
-Get statistics from the cachemanager.  Possible type to get statistics
+Get statistics from the cache manager.  Possible type to get statistics
 for are fetchstatus, fetchdata, storestatus, storedata, bulkstatus.
 .Ed
 .Pp
@@ -404,7 +405,7 @@ command.
 .Bd -filled -offset indent -compact
 List cells that the cache handler can communicate with.
 These are the cells listed in the file
-.Pa CellServDB .
+.Pa /etc/afs/CellServDB .
 .Ed
 .Pp
 .Ic fs listquota
@@ -433,8 +434,8 @@ command.
 .Ed
 .Pp
 .Ic fs lsmount
-.Bd -filled -offset indent -compact
 .Ar path
+.Bd -filled -offset indent -compact
 Show a mount point.
 .Ed
 .Pp
@@ -452,7 +453,7 @@ Not yet implemented.
 Create a mountpoint point to
 .Ar volume
 in optional
-.Ar cell.
+.Ar cell .
 If
 .Fl rw
 is given, a mountpoint to the readwrite volume is created.
@@ -474,7 +475,7 @@ Valid modes are:
 .It Cm connected
 Connected mode - this is the normal operating mode.
 .It Cm fetch
-Fetch only mode - files are retreived from fileserver but are not stored back.
+Fetch only mode - files are retrieved from fileserver but are not stored back.
 .It Cm disconnected
 Disconnected mode - files are read and written from/to the cache, and no
 attempt is made to contact a fileserver-
@@ -498,7 +499,7 @@ Not yet implemented.
 Add a new cell to the running configuration of the cache manager, or update
 already existing information.
 This information should also be entered in the file
-.Pa /usr/arla/etc/CellServDB .
+.Pa /etc/afs/CellServDB .
 .Ed
 .Pp
 .Ic fs nop
@@ -521,14 +522,14 @@ Leave interactive mode.
 .Ar mountpoint
 .Bd -filled -offset indent -compact
 Delete
-.Ar mountpoint Ns .
+.Ar mountpoint .
 .Ed
 .Pp
 .Ic fs removepriority
 .Ar path
 .Bd -filled -offset indent -compact
 Remove priority from file or directory
-.Ar path Ns .
+.Ar path .
 .Ed
 .Pp
 .Ic fs rmp
@@ -591,7 +592,7 @@ The group and world permission bits are ignored, but they are stored.
 .Pp
 .Ic fs sa
 .Bd -filled -offset indent -compact
-shorthand for the
+Shorthand for the
 .Cm setacl
 command
 .Ed
@@ -630,7 +631,7 @@ Set upper limit of priority.
 .Pp
 .Ic fs smq
 .Bd -filled -offset indent -compact
-shorthand for the
+Shorthand for the
 .Cm setmaxpriority
 command.
 .Ed
@@ -660,10 +661,10 @@ Not yet implemented.
 .Ic fs setcrypt
 .Ar yes | no
 .Bd -filled -offset indent -compact
-If 
+If
 .Ar no
 is specified, encryption of the traffic to/from fileservers is
-disabled, and if 
+disabled, and if
 .Ar yes
 is specified, it is enabled.
 .Ed
@@ -675,7 +676,7 @@ Not yet implemented.
 .Pp
 .Ic fs suidcells
 .Bd -filled -offset indent -compact
-Print cells and wether setuid execution is allowed for them.
+Print cells and whether setuid execution is allowed for them.
 .Ed
 .Pp
 .Ic fs sysname
@@ -723,7 +724,7 @@ Make nnpfs print debug info.
 .Ed
 .Sh SEE ALSO
 .Xr pts 1 ,
-.Xr arlad 8 ,
+.Xr afsd 8 ,
 .Xr bos 8 ,
 .Xr vos 8
 .Sh STANDARDS

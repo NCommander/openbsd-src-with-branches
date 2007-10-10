@@ -1,7 +1,11 @@
+/*	$OpenBSD$ */
 /*
  * Written by J.T. Conklin, Apr 10, 1995
  * Public domain.
  */
+
+#include <sys/types.h>
+#include <machine/float.h>
 
 static const int map[] = {
 	1,	/* round to nearest */

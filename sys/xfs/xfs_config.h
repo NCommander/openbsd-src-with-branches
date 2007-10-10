@@ -225,10 +225,10 @@ static /**/const char *const rcsid[] = { (const char *)rcsid, "@(#)" msg }
 #define HAVE_FNMATCH_H 1
 
 /* define if lockmgr takes four arguments */
-#define HAVE_FOUR_ARGUMENT_LOCKMGR 1
+/* #undef HAVE_FOUR_ARGUMENT_LOCKMGR */
 
 /* define if vfs_busy takes four arguments */
-#define HAVE_FOUR_ARGUMENT_VFS_BUSY 1
+/* #undef HAVE_FOUR_ARGUMENT_VFS_BUSY */
 
 /* define if vfs_name_hash takes four arguments */
 /* #undef HAVE_FOUR_ARGUMENT_VFS_NAME_HASH */
@@ -1288,6 +1288,9 @@ static /**/const char *const rcsid[] = { (const char *)rcsid, "@(#)" msg }
 
 /* define if vfs_getnewfsid takes two arguments */
 /* #undef HAVE_TWO_ARGUMENT_VFS_GETNEWFSID */
+
+/* define if vfs_busy takes two arguments */
+#define HAVE_TWO_ARGUMENT_VFS_BUSY 1
 
 /* define if vget takes two arguments */
 /* #undef HAVE_TWO_ARGUMENT_VGET */

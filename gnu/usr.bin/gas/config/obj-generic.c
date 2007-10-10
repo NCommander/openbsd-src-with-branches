@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* This file is obj-generic.c and is intended to be a template for
    object format specific source files. 
 

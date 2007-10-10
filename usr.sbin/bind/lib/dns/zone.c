@@ -878,8 +878,8 @@ default_journal(dns_zone_t *zone) {
 		journal = isc_mem_allocate(zone->mctx, len);
 		if (journal == NULL)
 			return (ISC_R_NOMEMORY);
-		strcpy(journal, zone->masterfile);
-		strcat(journal, ".jnl");
+		strlcpy(journal, zone->masterfile, len);
+		strlcat(journal, ".jnl", len);
 	} else {
 		journal = NULL;
 	}
@@ -5633,7 +5633,7 @@ zone_xfrdone(dns_zone_t *zone, isc_result_t result) {
 		}
 
 		/*
-		 * This is not neccessary if we just performed a AXFR
+		 * This is not necessary if we just performed a AXFR
 		 * however it is necessary for an IXFR / UPTODATE and
 		 * won't hurt with an AXFR.
 		 */

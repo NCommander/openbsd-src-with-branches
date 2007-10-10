@@ -1,12 +1,13 @@
-.include <bsd.own.mk>
+# $OpenBSD: Makefile,v 1.13 2002/09/03 18:59:55 markus Exp $
 
-ECHO= /bin/echo
+SUBDIR=crypto ssl man
 
-.if exists(${.OBJDIR}/src-patent)
-SUBDIR= crypto-patent ssl-patent ssleay 
-.else
-SUBDIR= crypto ssl ssleay
-.endif
+distribution:
+	${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
+	   ${.CURDIR}/openssl.cnf ${DESTDIR}/etc/ssl/openssl.cnf && \
+	${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
+	   ${.CURDIR}/cert.pem ${DESTDIR}/etc/ssl/cert.pem && \
+	${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
+	   ${.CURDIR}/x509v3.cnf ${DESTDIR}/etc/ssl/x509v3.cnf
 
 .include <bsd.subdir.mk>
-

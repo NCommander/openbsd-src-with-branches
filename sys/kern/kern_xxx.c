@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_xxx.c,v 1.29 1995/10/07 06:28:30 mycroft Exp $	*/
+/*	$OpenBSD: kern_xxx.c,v 1.9 2003/08/15 20:32:18 tedu Exp $	*/
+/*	$NetBSD: kern_xxx.c,v 1.32 1996/04/22 01:38:41 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,29 +37,35 @@
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/reboot.h>
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
-
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
 /* ARGSUSED */
 int
-sys_reboot(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
+sys_reboot(struct proc *p, void *v, register_t *retval)
 {
 	struct sys_reboot_args /* {
 		syscallarg(int) opt;
 	} */ *uap = v;
 	int error;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	if ((error = suser(p, 0)) != 0)
 		return (error);
 	boot(SCARG(uap, opt));
 	return (0);
 }
+
+#if !defined(NO_PROPOLICE)
+void __stack_smash_handler(char [], int __attribute__((unused)));
+
+void
+__stack_smash_handler(char func[], int damaged)
+{
+	panic("smashed stack in %s", func);
+}
+#endif
 
 #ifdef SYSCALL_DEBUG
 #define	SCDEBUG_CALLS		0x0001	/* show calls */
@@ -73,9 +76,7 @@ sys_reboot(p, v, retval)
 int	scdebug = SCDEBUG_CALLS|SCDEBUG_RETURNS|SCDEBUG_SHOWARGS;
 
 void
-scdebug_call(p, code, args)
-	struct proc *p;
-	register_t code, args[];
+scdebug_call(struct proc *p, register_t code, register_t args[])
 {
 	struct sysent *sy;
 	struct emul *em;
@@ -87,7 +88,7 @@ scdebug_call(p, code, args)
 	em = p->p_emul;
 	sy = &em->e_sysent[code];
 	if (!(scdebug & SCDEBUG_ALL || code < 0 || code >= em->e_nsysent ||
-	     sy->sy_call == nosys))
+	     sy->sy_call == sys_nosys))
 		return;
 		
 	printf("proc %d (%s): %s num ", p->p_pid, p->p_comm, em->e_name);
@@ -108,11 +109,7 @@ scdebug_call(p, code, args)
 }
 
 void
-scdebug_ret(p, code, error, retval)
-	struct proc *p;
-	register_t code;
-	int error;
-	register_t retval[];
+scdebug_ret(struct proc *p, register_t code, int error, register_t retval[])
 {
 	struct sysent *sy;
 	struct emul *em;
@@ -123,7 +120,7 @@ scdebug_ret(p, code, error, retval)
 	em = p->p_emul;
 	sy = &em->e_sysent[code];
 	if (!(scdebug & SCDEBUG_ALL || code < 0 || code >= em->e_nsysent ||
-	    sy->sy_call == nosys))
+	    sy->sy_call == sys_nosys))
 		return;
 		
 	printf("proc %d (%s): %s num ", p->p_pid, p->p_comm, em->e_name);

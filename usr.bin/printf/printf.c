@@ -1,3 +1,5 @@
+/*	$OpenBSD: printf.c,v 1.11 2003/06/23 16:40:44 millert Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,7 +39,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)printf.c	5.9 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: printf.c,v 1.13 1994/02/03 01:10:49 jtc Exp $";
+static char rcsid[] = "$OpenBSD: printf.c,v 1.11 2003/06/23 16:40:44 millert Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -53,18 +51,18 @@ static char rcsid[] = "$Id: printf.c,v 1.13 1994/02/03 01:10:49 jtc Exp $";
 #include <errno.h>
 #include <err.h>
 
-static int	 print_escape_str __P((const char *));
-static int	 print_escape __P((const char *));
+static int	 print_escape_str(const char *);
+static int	 print_escape(const char *);
 
-static int	 getchr __P((void));
-static double	 getdouble __P((void));
-static int	 getint __P((void));
-static long	 getlong __P((void));
-static unsigned long getulong __P ((void));
-static char	*getstr __P((void));
-static char	*mklong __P((const char *, int)); 
-static void      check_conversion __P((const char *, const char *));
-static void	 usage __P((void)); 
+static int	 getchr(void);
+static double	 getdouble(void);
+static int	 getint(void);
+static long	 getlong(void);
+static unsigned long getulong(void);
+static char	*getstr(void);
+static char	*mklong(const char *, int); 
+static void      check_conversion(const char *, const char *);
+static void	 usage(void); 
      
 static int	rval;
 static char  **gargv;
@@ -76,32 +74,17 @@ static char  **gargv;
 #ifdef SHELL
 #define main printfcmd
 #include "../../bin/sh/bltin/bltin.h"
-
-#ifdef __STDC__
 #include <stdarg.h>
-#else
-#include <vararg.h>
-#endif
 
 static void 
-#ifdef __STDC__
 warnx(const char *fmt, ...)
-#else
-warnx(fmt, va_alist)
-	const char *fmt;
-	va_dcl
-#endif
 {
 	
 	char buf[64];
 	va_list ap;
 
-#ifdef __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	vsprintf(buf, fmt, ap);
+	vsnprintf(buf, sizeof buf, fmt, ap);
 	va_end(ap);
 
 	error(buf);
@@ -122,40 +105,26 @@ warnx(fmt, va_alist)
 
 int
 #ifdef BUILTIN
-progprintf(argc, argv)
+progprintf(int argc, char *argv[])
 #else
-main(argc, argv)
+main(int argc, char *argv[])
 #endif
-	int argc;
-	char **argv;
 {
-	register char *fmt, *start;
-	register int fieldwidth, precision;
+	char *fmt, *start;
+	int fieldwidth, precision;
 	char convch, nextch;
 	char *format;
-	int ch;
 
 #if !defined(SHELL) && !defined(BUILTIN)
 	setlocale (LC_ALL, "");
 #endif
 
-	while ((ch = getopt(argc, argv, "")) != -1) {
-		switch (ch) {
-		case '?':
-		default:
-			usage();
-			return (1);
-		}
-	}
-	argc -= optind;
-	argv += optind;
-
-	if (argc < 1) {
+	if (argc < 2) {
 		usage();
 		return (1);
 	}
 
-	format = *argv;
+	format = *++argv;
 	gargv = ++argv;
 
 #define SKIP1	"#-+ 0"
@@ -188,16 +157,16 @@ main(argc, argv)
 				}
 
 				/* skip to field width */
-				for (; index(SKIP1, *fmt); ++fmt) ;
+				for (; strchr(SKIP1, *fmt); ++fmt) ;
 				fieldwidth = *fmt == '*' ? getint() : 0;
 
 				/* skip to possible '.', get following precision */
-				for (; index(SKIP2, *fmt); ++fmt) ;
+				for (; strchr(SKIP2, *fmt); ++fmt) ;
 				if (*fmt == '.')
 					++fmt;
 				precision = *fmt == '*' ? getint() : 0;
 
-				for (; index(SKIP2, *fmt); ++fmt) ;
+				for (; strchr(SKIP2, *fmt); ++fmt) ;
 				if (!*fmt) {
 					warnx ("missing format character");
 					return(1);
@@ -219,8 +188,13 @@ main(argc, argv)
 				}
 				case 'd':
 				case 'i': {
+					long p;
 					char *f = mklong(start, convch);
-					long p = getlong();
+					if (!f) {
+						warnx("out of memory");
+						return (1);
+					}
+					p = getlong();
 					PF(f, p);
 					break;
 				}
@@ -228,8 +202,13 @@ main(argc, argv)
 				case 'u':
 				case 'x':
 				case 'X': {
+					unsigned long p;
 					char *f = mklong(start, convch);
-					unsigned long p = getulong();
+					if (!f) {
+						warnx("out of memory");
+						return (1);
+					}
+					p = getulong();
 					PF(f, p);
 					break;
 				}
@@ -269,8 +248,7 @@ main(argc, argv)
  *	Halts processing string and returns 1 if a \c escape is encountered.
  */
 static int
-print_escape_str(str)
-	register const char *str;
+print_escape_str(const char *str)
 {
 	int value;
 	int c;
@@ -310,8 +288,7 @@ print_escape_str(str)
  * Print "standard" escape characters 
  */
 static int
-print_escape(str)
-	register const char *str;
+print_escape(const char *str)
 {
 	const char *start = str;
 	int value;
@@ -357,11 +334,7 @@ print_escape(str)
 		break;
 
 	case 'a':			/* alert */
-#ifdef __STDC__
 		putchar('\a');
-#else
-		putchar(007);
-#endif
 		break;
 
 	case 'b':			/* backspace */
@@ -406,14 +379,26 @@ print_escape(str)
 }
 
 static char *
-mklong(str, ch)
-	const char *str;
-	char ch;
+mklong(const char *str, int ch)
 {
-	static char copy[64];
+	static char *copy;
+	static int copysize;
 	int len;	
 
 	len = strlen(str) + 2;
+	if (copysize < len) {
+		char *newcopy;
+		copysize = len + 256;
+
+		newcopy = realloc(copy, copysize);
+		if (newcopy == NULL) {
+			copysize = 0;
+			free(copy);
+			copy = NULL;
+			return (NULL);
+		}
+		copy = newcopy;
+	}
 	(void) memmove(copy, str, len - 3);
 	copy[len - 3] = 'l';
 	copy[len - 2] = ch;
@@ -422,7 +407,7 @@ mklong(str, ch)
 }
 
 static int
-getchr()
+getchr(void)
 {
 	if (!*gargv)
 		return((int)'\0');
@@ -430,7 +415,7 @@ getchr()
 }
 
 static char *
-getstr()
+getstr(void)
 {
 	if (!*gargv)
 		return("");
@@ -439,19 +424,19 @@ getstr()
 
 static char *number = "+-.0123456789";
 static int
-getint()
+getint(void)
 {
 	if (!*gargv)
 		return(0);
 
-	if (index(number, **gargv))
+	if (strchr(number, **gargv))
 		return(atoi(*gargv++));
 
 	return 0;
 }
 
 static long
-getlong()
+getlong(void)
 {
 	long val;
 	char *ep;
@@ -469,7 +454,7 @@ getlong()
 }
 
 static unsigned long
-getulong()
+getulong(void)
 {
 	unsigned long val;
 	char *ep;
@@ -487,7 +472,7 @@ getulong()
 }
 
 static double
-getdouble()
+getdouble(void)
 {
 	double val;
 	char *ep;
@@ -505,9 +490,7 @@ getdouble()
 }
 
 static void
-check_conversion(s, ep)
-	const char *s;
-	const char *ep;
+check_conversion(const char *s, const char *ep)
 {
 	if (*ep) {
 		if (ep == s)
@@ -522,7 +505,7 @@ check_conversion(s, ep)
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr, "usage: printf format [arg ...]\n");
 }

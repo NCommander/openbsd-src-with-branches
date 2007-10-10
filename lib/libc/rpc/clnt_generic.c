@@ -1,5 +1,4 @@
-/*	$NetBSD: clnt_generic.c,v 1.6 1995/06/03 22:37:21 mycroft Exp $	*/
-
+/*	$OpenBSD: clnt_generic.c,v 1.5 2005/08/08 08:05:35 espie Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,19 +28,13 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)clnt_generic.c 1.4 87/08/11 (C) 1987 SMI";*/
-/*static char *sccsid = "from: @(#)clnt_generic.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: clnt_generic.c,v 1.6 1995/06/03 22:37:21 mycroft Exp $";
-#endif
-
 /*
  * Copyright (C) 1987, Sun Microsystems, Inc.
  */
+#include <errno.h>
 #include <string.h>
 #include <rpc/rpc.h>
 #include <sys/socket.h>
-#include <sys/errno.h>
 #include <netdb.h>
 
 /*
@@ -50,11 +43,7 @@ static char *rcsid = "$NetBSD: clnt_generic.c,v 1.6 1995/06/03 22:37:21 mycroft 
  * change using the rpc equivalent of ioctl()'s.
  */
 CLIENT *
-clnt_create(hostname, prog, vers, proto)
-	char *hostname;
-	u_long prog;
-	u_long vers;
-	char *proto;
+clnt_create(char *hostname, u_long prog, u_long vers, char *proto)
 {
 	struct hostent *h;
 	struct protoent *p;
@@ -80,7 +69,7 @@ clnt_create(hostname, prog, vers, proto)
 	sin.sin_len = sizeof(struct sockaddr_in);
 	sin.sin_family = h->h_addrtype;
 	sin.sin_port = 0;
-	bcopy(h->h_addr, (char*)&sin.sin_addr, h->h_length);
+	memcpy((char*)&sin.sin_addr, h->h_addr, h->h_length);
 	p = getprotobyname(proto);
 	if (p == NULL) {
 		rpc_createerr.cf_stat = RPC_UNKNOWNPROTO;

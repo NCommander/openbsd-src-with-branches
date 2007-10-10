@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2002, 2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1992 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1992, 1993
@@ -14,13 +14,13 @@
 #include <sm/gen.h>
 
 SM_IDSTR(copyright,
-"@(#) Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.\n\
+"@(#) Copyright (c) 1998-2002, 2004 Sendmail, Inc. and its suppliers.\n\
 	All rights reserved.\n\
      Copyright (c) 1992 Eric P. Allman.  All rights reserved.\n\
      Copyright (c) 1992, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n")
 
-SM_IDSTR(id, "@(#)$Sendmail: makemap.c,v 8.170 2001/08/28 23:07:04 gshapiro Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: makemap.c,v 8.177 2004/08/03 23:57:24 ca Exp $")
 
 
 #include <sys/types.h>
@@ -50,15 +50,23 @@ uid_t	TrustedUid = 0;
 BITMAP256 DontBlameSendmail;
 
 #define BUFSIZE		1024
-#define ISSEP(c) ((sep == '\0' && isascii(c) && isspace(c)) || (c) == sep)
+#define ISSEP(c) (sep == '\0' ? isascii(c) && isspace(c) : (c) == sep)
+
+static void usage __P((char *));
 
 static void
 usage(progname)
 	char *progname;
 {
 	sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
-		"Usage: %s [-C cffile] [-N] [-c cachesize] [-d] [-e] [-f] [-l] [-o] [-r] [-s] [-t delimiter] [-u] [-v] type mapname\n",
-		progname);
+		      "Usage: %s [-C cffile] [-N] [-c cachesize] [-D commentchar]\n",
+		      progname);
+	sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
+		      "       %*s [-d] [-e] [-f] [-l] [-o] [-r] [-s] [-t delimiter]\n",
+		      (int) strlen(progname), "");
+	sm_io_fprintf(smioerr, SM_TIME_DEFAULT,
+		      "       %*s [-u] [-v] type mapname\n",
+		      (int) strlen(progname), "");
 	exit(EX_USAGE);
 }
 
@@ -77,6 +85,7 @@ main(argc, argv)
 	bool foldcase = true;
 	bool unmake = false;
 	char sep = '\0';
+	char comment = '#';
 	int exitstat;
 	int opt;
 	char *typename = NULL;
@@ -127,8 +136,7 @@ main(argc, argv)
 	(void) sm_strlcpy(user_info.smdbu_name, RunAsUserName,
 		       SMDB_MAX_USER_NAME_LEN);
 
-
-#define OPTIONS		"C:Nc:t:deflorsuv"
+#define OPTIONS		"C:D:Nc:deflorst:uv"
 	while ((opt = getopt(argc, argv, OPTIONS)) != -1)
 	{
 		switch (opt)
@@ -155,6 +163,10 @@ main(argc, argv)
 
 		  case 'f':
 			foldcase = false;
+			break;
+
+		  case 'D':
+			comment = *optarg;
 			break;
 
 		  case 'l':
@@ -366,9 +378,10 @@ main(argc, argv)
 				break;
 
 			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
-					     "%.*s\t%.*s\n",
+					     "%.*s%c%.*s\n",
 					     (int) db_key.size,
 					     (char *) db_key.data,
+					     sep ? sep : '\t',
 					     (int) db_val.size,
 					     (char *)db_val.data);
 
@@ -402,7 +415,7 @@ main(argc, argv)
 				continue;
 			}
 
-			if (ibuf[0] == '\0' || ibuf[0] == '#')
+			if (ibuf[0] == '\0' || ibuf[0] == comment)
 				continue;
 			if (sep == '\0' && isascii(ibuf[0]) && isspace(ibuf[0]))
 			{
@@ -428,7 +441,7 @@ main(argc, argv)
 
 			if (*p != '\0')
 				*p++ = '\0';
-			while (ISSEP(*p))
+			while (*p != '\0' && ISSEP(*p))
 				p++;
 			if (!allowempty && *p == '\0')
 			{
@@ -510,6 +523,7 @@ main(argc, argv)
 	smdb_free_database(database);
 
 	exit(exitstat);
+
 	/* NOTREACHED */
 	return exitstat;
 }

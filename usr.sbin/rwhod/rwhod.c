@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,13 +35,12 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "@(#)rwhod.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: rwhod.c,v 1.8 1994/05/29 02:53:23 jtc Exp $";
+static char rcsid[] = "$OpenBSD: rwhod.c,v 1.30 2004/09/16 08:55:00 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/signal.h>
 #include <sys/ioctl.h>
 #include <sys/sysctl.h>
 
@@ -54,18 +49,22 @@ static char rcsid[] = "$Id: rwhod.c,v 1.8 1994/05/29 02:53:23 jtc Exp $";
 #include <net/route.h>
 #include <netinet/in.h>
 #include <protocols/rwhod.h>
+#include <arpa/inet.h>
 
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <netdb.h>
 #include <paths.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
 #include <utmp.h>
+#include <err.h>
 
 /*
  * Alarm interval. Don't forget to change the down time check in ruptime
@@ -75,6 +74,8 @@ static char rcsid[] = "$Id: rwhod.c,v 1.8 1994/05/29 02:53:23 jtc Exp $";
 
 char	myname[MAXHOSTNAMELEN];
 
+int	debug;
+
 /*
  * We communicate with each neighbor in a list constructed at the time we're
  * started up.  Neighbors are currently directly connected via a hardware
@@ -83,7 +84,7 @@ char	myname[MAXHOSTNAMELEN];
 struct	neighbor {
 	struct	neighbor *n_next;
 	char	*n_name;		/* interface name */
-	struct	sockaddr *n_addr;		/* who to send to */
+	struct	sockaddr *n_addr;	/* who to send to */
 	int	n_addrlen;		/* size of address */
 	int	n_flags;		/* should forward?, interface flags */
 };
@@ -93,67 +94,85 @@ struct	whod mywd;
 struct	servent *sp;
 int	s, utmpf;
 
+volatile sig_atomic_t gothup;
+
 #define	WHDRSIZE	(sizeof(mywd) - sizeof(mywd.wd_we))
 
-int	 configure __P((int));
-void	 getboottime __P((int));
-void	 onalrm __P((int));
-void	 quit __P((char *));
-void	 rt_xaddrs __P((caddr_t, caddr_t, struct rt_addrinfo *));
-int	 verify __P((char *));
-#ifdef DEBUG
-char	*interval __P((int, char *));
-void	 Sendto __P((int, char *, int, int, char *, int));
-#define	 sendto Sendto
-#endif
+int	 configure(void);
+void	 getboottime(void);
+void	 hup(int);
+void	 timer(void);
+void	 quit(char *);
+void	 rt_xaddrs(caddr_t, caddr_t, struct rt_addrinfo *);
+int	 verify(char *);
+void	 handleread(int s);
+int	 Sendto(int, const void *, size_t, int, const struct sockaddr *,
+	    socklen_t);
+char	*interval(int, char *);
+
+/* ARGSUSED */
+void
+hup(int signo)
+{
+	gothup = 1;
+}
+
+void
+usage(void)
+{
+	extern char *__progname;
+	fprintf(stderr, "usage: %s [-d]\n", __progname);
+	exit(1);
+}
 
 int
-main(argc, argv)
-	int argc;
-	char argv[];
+main(int argc, char *argv[])
 {
-	struct sockaddr_in from;
-	struct stat st;
-	char path[64];
-	int on = 1;
-	char *cp;
+	struct timeval start, next, delta, now;
 	struct sockaddr_in sin;
+	struct pollfd pfd[1];
+	int on = 1, ch;
+	char *cp;
 
-	if (getuid()) {
-		fprintf(stderr, "rwhod: not super user\n");
-		exit(1);
+	while ((ch = getopt(argc, argv, "d")) != -1) {
+		switch (ch) {
+		case 'd':
+			debug = 1;
+			break;
+		default:
+			usage();
+		}
 	}
+
+	if (getuid())
+		errx(1, "not super user");
 	sp = getservbyname("who", "udp");
-	if (sp == NULL) {
-		fprintf(stderr, "rwhod: udp/who: unknown service\n");
-		exit(1);
-	}
-#ifndef DEBUG
-	daemon(1, 0);
-#endif
-	if (chdir(_PATH_RWHODIR) < 0) {
-		(void)fprintf(stderr, "rwhod: %s: %s\n",
-		    _PATH_RWHODIR, strerror(errno));
-		exit(1);
-	}
-	(void) signal(SIGHUP, getboottime);
+	if (sp == NULL)
+		errx(1, "udp/who: unknown service");
+	if (chdir(_PATH_RWHODIR) < 0)
+		err(1, "%s", _PATH_RWHODIR);
+	if (!debug)
+		daemon(1, 0);
+
+	(void) signal(SIGHUP, hup);
 	openlog("rwhod", LOG_PID, LOG_DAEMON);
 	/*
 	 * Establish host name as returned by system.
 	 */
-	if (gethostname(myname, sizeof(myname) - 1) < 0) {
+	if (gethostname(myname, sizeof(myname)) < 0) {
 		syslog(LOG_ERR, "gethostname: %m");
 		exit(1);
 	}
-	if ((cp = index(myname, '.')) != NULL)
+	if ((cp = strchr(myname, '.')) != NULL)
 		*cp = '\0';
-	strncpy(mywd.wd_hostname, myname, sizeof(myname) - 1);
+	strncpy(mywd.wd_hostname, myname, sizeof(mywd.wd_hostname) - 1);
+	mywd.wd_hostname[sizeof(mywd.wd_hostname) - 1] = '\0';
 	utmpf = open(_PATH_UTMP, O_RDONLY|O_CREAT, 0644);
 	if (utmpf < 0) {
 		syslog(LOG_ERR, "%s: %m", _PATH_UTMP);
 		exit(1);
 	}
-	getboottime(0);
+	getboottime();
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		syslog(LOG_ERR, "socket: %m");
 		exit(1);
@@ -163,76 +182,120 @@ main(argc, argv)
 		exit(1);
 	}
 	memset(&sin, 0, sizeof(sin));
+	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_family = AF_INET;
 	sin.sin_port = sp->s_port;
 	if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
 		syslog(LOG_ERR, "bind: %m");
 		exit(1);
 	}
-	if (!configure(s))
+	if (!configure())
 		exit(1);
-	signal(SIGALRM, onalrm);
-	onalrm(0);
+	timer();
+
+	gettimeofday(&start, NULL);
+	delta.tv_sec = AL_INTERVAL;
+	delta.tv_usec = 0;
+	timeradd(&start, &delta, &next);
+
+	pfd[0].fd = s;
+	pfd[0].events = POLLIN;
+
 	for (;;) {
-		struct whod wd;
-		int cc, whod, len = sizeof(from);
+		int n;
 
-		cc = recvfrom(s, (char *)&wd, sizeof(struct whod), 0,
-			(struct sockaddr *)&from, &len);
-		if (cc <= 0) {
-			if (cc < 0 && errno != EINTR)
-				syslog(LOG_WARNING, "recv: %m");
-			continue;
-		}
-		if (from.sin_port != sp->s_port) {
-			syslog(LOG_WARNING, "%d: bad from port",
-				ntohs(from.sin_port));
-			continue;
-		}
-		if (wd.wd_vers != WHODVERSION)
-			continue;
-		if (wd.wd_type != WHODTYPE_STATUS)
-			continue;
-		if (!verify(wd.wd_hostname)) {
-			syslog(LOG_WARNING, "malformed host name from %x",
-				from.sin_addr);
-			continue;
-		}
-		(void) sprintf(path, "whod.%s", wd.wd_hostname);
-		/*
-		 * Rather than truncating and growing the file each time,
-		 * use ftruncate if size is less than previous size.
-		 */
-		whod = open(path, O_WRONLY | O_CREAT, 0644);
-		if (whod < 0) {
-			syslog(LOG_WARNING, "%s: %m", path);
-			continue;
-		}
-#if ENDIAN != BIG_ENDIAN
-		{
-			int i, n = (cc - WHDRSIZE)/sizeof(struct whoent);
-			struct whoent *we;
+		n = poll(pfd, 1, 1000);
 
-			/* undo header byte swapping before writing to file */
-			wd.wd_sendtime = ntohl(wd.wd_sendtime);
-			for (i = 0; i < 3; i++)
-				wd.wd_loadav[i] = ntohl(wd.wd_loadav[i]);
-			wd.wd_boottime = ntohl(wd.wd_boottime);
-			we = wd.wd_we;
-			for (i = 0; i < n; i++) {
-				we->we_idle = ntohl(we->we_idle);
-				we->we_utmp.out_time =
-				    ntohl(we->we_utmp.out_time);
-				we++;
-			}
+		if (n == 1)
+			handleread(s);
+
+		if (gothup) {
+			gothup = 0;
+			getboottime();
 		}
-#endif
-		(void) time((time_t *)&wd.wd_recvtime);
-		(void) write(whod, (char *)&wd, cc);
-		if (fstat(whod, &st) < 0 || st.st_size > cc)
-			ftruncate(whod, cc);
-		(void) close(whod);
+
+		gettimeofday(&now, NULL);
+		if (timercmp(&now, &next, >)) {
+			timer();
+			timeradd(&now, &delta, &next);
+		}
 	}
+}
+
+void
+handleread(int s)
+{
+	struct sockaddr_in from;
+	struct stat st;
+	char path[64];
+	struct whod wd;
+	int cc, whod;
+	socklen_t len = sizeof(from);
+
+	cc = recvfrom(s, (char *)&wd, sizeof(struct whod), 0,
+	    (struct sockaddr *)&from, &len);
+	if (cc <= 0) {
+		if (cc < 0 && errno != EINTR)
+			syslog(LOG_WARNING, "recv: %m");
+		return;
+	}
+	if (from.sin_port != sp->s_port) {
+		syslog(LOG_WARNING, "%d: bad source port from %s",
+		    ntohs(from.sin_port), inet_ntoa(from.sin_addr));
+		return;
+	}
+	if (cc < WHDRSIZE) {
+		syslog(LOG_WARNING, "short packet from %s",
+		    inet_ntoa(from.sin_addr));
+		return;
+	}
+	if (wd.wd_vers != WHODVERSION)
+		return;
+	if (wd.wd_type != WHODTYPE_STATUS)
+		return;
+	wd.wd_hostname[sizeof(wd.wd_hostname)-1] = '\0';
+	if (!verify(wd.wd_hostname)) {
+		syslog(LOG_WARNING, "malformed host name from %s",
+		    inet_ntoa(from.sin_addr));
+		return;
+	}
+	if (debug)
+		printf("host %s\n", wd.wd_hostname);
+
+	(void) snprintf(path, sizeof path, "whod.%s", wd.wd_hostname);
+	/*
+	 * Rather than truncating and growing the file each time,
+	 * use ftruncate if size is less than previous size.
+	 */
+	whod = open(path, O_WRONLY | O_CREAT, 0644);
+	if (whod < 0) {
+		syslog(LOG_WARNING, "%s: %m", path);
+		return;
+	}
+#if ENDIAN != BIG_ENDIAN
+	{
+		int i, n = (cc - WHDRSIZE)/sizeof(struct whoent);
+		struct whoent *we;
+
+		/* undo header byte swapping before writing to file */
+		wd.wd_sendtime = ntohl(wd.wd_sendtime);
+		for (i = 0; i < 3; i++)
+			wd.wd_loadav[i] = ntohl(wd.wd_loadav[i]);
+		wd.wd_boottime = ntohl(wd.wd_boottime);
+		we = wd.wd_we;
+		for (i = 0; i < n; i++) {
+			we->we_idle = ntohl(we->we_idle);
+			we->we_utmp.out_time =
+			    ntohl(we->we_utmp.out_time);
+			we++;
+		}
+	}
+#endif
+	(void) time((time_t *)&wd.wd_recvtime);
+	(void) write(whod, (char *)&wd, cc);
+	if (fstat(whod, &st) < 0 || st.st_size > cc)
+		ftruncate(whod, (off_t)cc);
+	(void) close(whod);
 }
 
 /*
@@ -241,17 +304,30 @@ main(argc, argv)
  * to be created.  Sorry, but blanks aren't allowed.
  */
 int
-verify(name)
-	register char *name;
+verify(char *p)
 {
-	register int size = 0;
+	char c;
 
-	while (*name) {
-		if (!isascii(*name) || !(isalnum(*name) || ispunct(*name)))
-			return (0);
-		name++, size++;
+	/*
+	 * Many people do not obey RFC 822 and 1035.  The valid
+	 * characters are a-z, A-Z, 0-9, '-' and . But the others
+	 * tested for below can happen, and we must be more permissive
+	 * than the resolver until those idiots clean up their act.
+	 */
+	if (*p == '.' || *p == '-')
+		return 0;
+	while ((c = *p++)) {
+		if (('a' <= c && c <= 'z') ||
+		    ('A' <= c && c <= 'Z') ||
+		    ('0' <= c && c <= '9'))
+			continue;
+		if (c == '.' && *p == '.')
+			return 0;
+		if (c == '.' || c == '-')
+			continue;
+		return 0;
 	}
-	return (size > 0);
+	return 1;
 }
 
 int	utmptime;
@@ -261,42 +337,46 @@ struct	utmp *utmp;
 int	alarmcount;
 
 void
-onalrm(signo)
-	int signo;
+timer(void)
 {
-	register struct neighbor *np;
-	register struct whoent *we = mywd.wd_we, *wlast;
-	register int i;
+	struct neighbor *np;
+	struct whoent *we = mywd.wd_we, *wlast;
+	int i;
 	struct stat stb;
 	double avenrun[3];
 	time_t now;
+	struct	utmp *nutmp;
 	int cc;
 
 	now = time(NULL);
 	if (alarmcount % 10 == 0)
-		getboottime(0);
+		getboottime();
 	alarmcount++;
 	(void) fstat(utmpf, &stb);
+
+	/* implicitly safe truncation */
+	if (stb.st_size > 1024*1024 * sizeof(struct utmp))
+		stb.st_size = 1024*1024 * sizeof(struct utmp);
+
 	if ((stb.st_mtime != utmptime) || (stb.st_size > utmpsize)) {
 		utmptime = stb.st_mtime;
 		if (stb.st_size > utmpsize) {
-			utmpsize = stb.st_size + 10 * sizeof(struct utmp);
-			if (utmp)
-				utmp = (struct utmp *)realloc(utmp, utmpsize);
-			else
-				utmp = (struct utmp *)malloc(utmpsize);
-			if (! utmp) {
-				fprintf(stderr, "rwhod: malloc failed\n");
+			int nutmpsize = stb.st_size + 10 * sizeof(struct utmp);
+			nutmp = (struct utmp *)realloc(utmp, nutmpsize);
+			if (!nutmp) {
+				warnx("malloc failed");
+				free(utmp);
 				utmpsize = 0;
-				goto done;
+				return;
 			}
+			utmp = nutmp;
+			utmpsize = nutmpsize;
 		}
-		(void) lseek(utmpf, (off_t)0, L_SET);
-		cc = read(utmpf, (char *)utmp, stb.st_size);
+		(void) lseek(utmpf, (off_t)0, SEEK_SET);
+		cc = read(utmpf, (char *)utmp, (size_t)stb.st_size);
 		if (cc < 0) {
-			fprintf(stderr, "rwhod: %s: %s\n",
-			    _PATH_UTMP, strerror(errno));
-			goto done;
+			warnx("%s", _PATH_UTMP);
+			return;
 		}
 		wlast = &mywd.wd_we[1024 / sizeof(struct whoent) - 1];
 		utmpent = cc / sizeof(struct utmp);
@@ -337,19 +417,15 @@ onalrm(signo)
 	mywd.wd_vers = WHODVERSION;
 	mywd.wd_type = WHODTYPE_STATUS;
 	for (np = neighbors; np != NULL; np = np->n_next)
-		(void)sendto(s, (char *)&mywd, cc, 0,
-				np->n_addr, np->n_addrlen);
+		(void)Sendto(s, &mywd, cc, 0, np->n_addr, np->n_addrlen);
 	if (utmpent && chdir(_PATH_RWHODIR)) {
 		syslog(LOG_ERR, "chdir(%s): %m", _PATH_RWHODIR);
 		exit(1);
 	}
-done:
-	(void) alarm(AL_INTERVAL);
 }
 
 void
-getboottime(signo)
-	int signo;
+getboottime(void)
 {
 	int mib[2];
 	size_t size;
@@ -366,10 +442,9 @@ getboottime(signo)
 }
 
 void
-quit(msg)
-	char *msg;
+quit(char *msg)
 {
-	syslog(LOG_ERR, msg);
+	syslog(LOG_ERR, "%s", msg);
 	exit(1);
 }
 
@@ -378,12 +453,10 @@ quit(msg)
 #define ADVANCE(x, n) (x += ROUNDUP((n)->sa_len))
 
 void
-rt_xaddrs(cp, cplim, rtinfo)
-	register caddr_t cp, cplim;
-	register struct rt_addrinfo *rtinfo;
+rt_xaddrs(caddr_t cp, caddr_t cplim, struct rt_addrinfo *rtinfo)
 {
-	register struct sockaddr *sa;
-	register int i;
+	struct sockaddr *sa;
+	int i;
 
 	memset(rtinfo->rti_info, 0, sizeof(rtinfo->rti_info));
 	for (i = 0; (i < RTAX_MAX) && (cp < cplim); i++) {
@@ -399,12 +472,11 @@ rt_xaddrs(cp, cplim, rtinfo)
  * networks which deserve status information.
  */
 int
-configure(s)
-	int s;
+configure(void)
 {
-	register struct neighbor *np;
-	register struct if_msghdr *ifm;
-	register struct ifa_msghdr *ifam;
+	struct neighbor *np;
+	struct if_msghdr *ifm;
+	struct ifa_msghdr *ifam;
 	struct sockaddr_dl *sdl;
 	size_t needed;
 	int mib[6], flags = 0, len;
@@ -441,7 +513,7 @@ configure(s)
 		ifam = (struct ifa_msghdr *)ifm;
 		info.rti_addrs = ifam->ifam_addrs;
 		rt_xaddrs((char *)(ifam + 1), ifam->ifam_msglen + (char *)ifam,
-			&info);
+		    &info);
 		/* gag, wish we could get rid of Internet dependencies */
 #define dstaddr	info.rti_info[RTAX_BRD]
 #define IPADDR_SA(x) ((struct sockaddr_in *)(x))->sin_addr.s_addr
@@ -474,67 +546,69 @@ configure(s)
 	return (1);
 }
 
-#ifdef DEBUG
-void
-Sendto(s, buf, cc, flags, to, tolen)
-	int s;
-	char *buf;
-	int cc, flags;
-	char *to;
-	int tolen;
+int
+Sendto(int s, const void *buf, size_t cc, int flags,
+    const struct sockaddr *to, socklen_t tolen)
 {
-	register struct whod *w = (struct whod *)buf;
-	register struct whoent *we;
+	struct whod *w = (struct whod *)buf;
+	struct whoent *we;
 	struct sockaddr_in *sin = (struct sockaddr_in *)to;
+	int ret;
 
-	printf("sendto %x.%d\n", ntohl(sin->sin_addr), ntohs(sin->sin_port));
-	printf("hostname %s %s\n", w->wd_hostname,
-	   interval(ntohl(w->wd_sendtime) - ntohl(w->wd_boottime), "  up"));
-	printf("load %4.2f, %4.2f, %4.2f\n",
-	    ntohl(w->wd_loadav[0]) / 100.0, ntohl(w->wd_loadav[1]) / 100.0,
-	    ntohl(w->wd_loadav[2]) / 100.0);
-	cc -= WHDRSIZE;
-	for (we = w->wd_we, cc /= sizeof(struct whoent); cc > 0; cc--, we++) {
-		time_t t = ntohl(we->we_utmp.out_time);
-		printf("%-8.8s %s:%s %.12s",
-			we->we_utmp.out_name,
-			w->wd_hostname, we->we_utmp.out_line,
-			ctime(&t)+4);
-		we->we_idle = ntohl(we->we_idle) / 60;
-		if (we->we_idle) {
-			if (we->we_idle >= 100*60)
-				we->we_idle = 100*60 - 1;
-			if (we->we_idle >= 60)
-				printf(" %2d", we->we_idle / 60);
-			else
-				printf("   ");
-			printf(":%02d", we->we_idle % 60);
+	ret = sendto(s, buf, cc, flags, to, tolen);
+	if (debug) {
+		printf("sendto %s.%d\n", inet_ntoa(sin->sin_addr),
+		    ntohs(sin->sin_port));
+		printf("hostname %s %s\n", w->wd_hostname,
+		    interval(ntohl(w->wd_sendtime) - ntohl(w->wd_boottime),
+		    "  up"));
+		printf("load %4.2f, %4.2f, %4.2f\n",
+		    ntohl(w->wd_loadav[0]) / 100.0,
+		    ntohl(w->wd_loadav[1]) / 100.0,
+		    ntohl(w->wd_loadav[2]) / 100.0);
+		cc -= WHDRSIZE;
+		for (we = w->wd_we, cc /= sizeof(struct whoent); cc > 0;
+		    cc--, we++) {
+			time_t t = ntohl(we->we_utmp.out_time);
+			printf("%-8.8s %s:%s %.12s",
+			    we->we_utmp.out_name,
+			    w->wd_hostname, we->we_utmp.out_line,
+			    ctime(&t)+4);
+			we->we_idle = ntohl(we->we_idle) / 60;
+			if (we->we_idle) {
+				if (we->we_idle >= 100*60)
+					we->we_idle = 100*60 - 1;
+				if (we->we_idle >= 60)
+					printf(" %2d", we->we_idle / 60);
+				else
+					printf("   ");
+				printf(":%02u", we->we_idle % 60);
+			}
+			printf("\n");
 		}
-		printf("\n");
 	}
+	return (ret);
 }
 
 char *
-interval(time, updown)
-	int time;
-	char *updown;
+interval(int time, char *updown)
 {
 	static char resbuf[32];
 	int days, hours, minutes;
 
 	if (time < 0 || time > 3*30*24*60*60) {
-		(void) sprintf(resbuf, "   %s ??:??", updown);
+		(void) snprintf(resbuf, sizeof(resbuf),
+		    "   %s ??:??", updown);
 		return (resbuf);
 	}
 	minutes = (time + 59) / 60;		/* round to minutes */
 	hours = minutes / 60; minutes %= 60;
 	days = hours / 24; hours %= 24;
 	if (days)
-		(void) sprintf(resbuf, "%s %2d+%02d:%02d",
-		    updown, days, hours, minutes);
+		(void) snprintf(resbuf, sizeof(resbuf),
+		    "%s %2d+%02d:%02d", updown, days, hours, minutes);
 	else
-		(void) sprintf(resbuf, "%s    %2d:%02d",
-		    updown, hours, minutes);
+		(void) snprintf(resbuf, sizeof(resbuf),
+		    "%s    %2d:%02d", updown, hours, minutes);
 	return (resbuf);
 }
-#endif

@@ -109,6 +109,8 @@
  *
  */
 
+#include <sys/types.h>
+#include <netinet/in.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -183,6 +185,8 @@ static void sc_usage(void)
 	{
 	BIO_printf(bio_err,"usage: s_client args\n");
 	BIO_printf(bio_err,"\n");
+	BIO_printf(bio_err," -4            - Force IPv4\n");
+	BIO_printf(bio_err," -6            - Force IPv6\n");
 	BIO_printf(bio_err," -host host     - use -connect instead\n");
 	BIO_printf(bio_err," -port port     - use -connect instead\n");
 	BIO_printf(bio_err," -connect host:port - who to connect to (default is %s:%s)\n",SSL_HOST_NAME,PORT_STR);
@@ -235,12 +239,13 @@ int MAIN(int argc, char **argv)
 	int off=0;
 	SSL *con=NULL,*con2=NULL;
 	X509_STORE *store = NULL;
-	int s,k,width,state=0;
+	int s,k,width,state=0, af=AF_UNSPEC;
 	char *cbuf=NULL,*sbuf=NULL,*mbuf=NULL;
 	int cbuf_len,cbuf_off;
 	int sbuf_len,sbuf_off;
+	int mbuf_len,mbuf_off;
 	fd_set readfds,writefds;
-	short port=PORT;
+	char *port=PORT_STR;
 	int full_log=1;
 	char *host=SSL_HOST_NAME;
 	char *cert_file=NULL,*key_file=NULL;
@@ -287,7 +292,7 @@ int MAIN(int argc, char **argv)
 
 	if (	((cbuf=OPENSSL_malloc(BUFSIZZ)) == NULL) ||
 		((sbuf=OPENSSL_malloc(BUFSIZZ)) == NULL) ||
-		((mbuf=OPENSSL_malloc(BUFSIZZ)) == NULL))
+		((mbuf=OPENSSL_malloc(BUFSIZZ + 1)) == NULL))	/* NUL byte */
 		{
 		BIO_printf(bio_err,"out of memory\n");
 		goto end;
@@ -311,8 +316,8 @@ int MAIN(int argc, char **argv)
 		else if	(strcmp(*argv,"-port") == 0)
 			{
 			if (--argc < 1) goto bad;
-			port=atoi(*(++argv));
-			if (port == 0) goto bad;
+			port= *(++argv);
+			if (port == NULL || *port == '\0') goto bad;
 			}
 		else if (strcmp(*argv,"-connect") == 0)
 			{
@@ -436,6 +441,8 @@ int MAIN(int argc, char **argv)
 			if (--argc < 1) goto bad;
 			inrand= *(++argv);
 			}
+		else if (strcmp(*argv,"-4") == 0) { af = AF_INET;}
+		else if (strcmp(*argv,"-6") == 0) { af = AF_INET6;}
 		else
 			{
 			BIO_printf(bio_err,"unknown option %s\n",*argv);
@@ -531,7 +538,7 @@ bad:
 
 re_start:
 
-	if (init_client(&s,host,port) == 0)
+	if (init_client(&s,host,port,af) == 0)
 		{
 		BIO_printf(bio_err,"connect:errno=%d\n",get_last_socket_error());
 		SHUTDOWN(s);
@@ -590,22 +597,41 @@ re_start:
 	cbuf_off=0;
 	sbuf_len=0;
 	sbuf_off=0;
+	mbuf_len=0;
+	mbuf_off=0;
 
 	/* This is an ugly hack that does a lot of assumptions */
 	if (starttls_proto == 1)
 		{
-		BIO_read(sbio,mbuf,BUFSIZZ);
+		mbuf_off = mbuf_len = BIO_read(sbio,mbuf,BUFSIZZ);
+		if (mbuf_len == -1)
+			{
+			BIO_printf(bio_err,"BIO_read failed\n");
+			goto end;
+			}
 		BIO_printf(sbio,"EHLO some.host.name\r\n");
-		BIO_read(sbio,mbuf,BUFSIZZ);
+		mbuf_len = BIO_read(sbio,mbuf + mbuf_off,BUFSIZZ - mbuf_off);
+		if (mbuf_len == -1)
+			{
+			BIO_printf(bio_err,"BIO_read failed\n");
+			goto end;
+			}
 		BIO_printf(sbio,"STARTTLS\r\n");
 		BIO_read(sbio,sbuf,BUFSIZZ);
 		}
 	if (starttls_proto == 2)
 		{
-		BIO_read(sbio,mbuf,BUFSIZZ);
+		mbuf_len = BIO_read(sbio,mbuf,BUFSIZZ);
+		if (mbuf_len == -1)
+			{
+			BIO_printf(bio_err,"BIO_read failed\n");
+			goto end;
+			}
 		BIO_printf(sbio,"STLS\r\n");
 		BIO_read(sbio,sbuf,BUFSIZZ);
 		}
+
+	mbuf[mbuf_off + mbuf_len] = '\0';
 
 	for (;;)
 		{
@@ -798,7 +824,7 @@ re_start:
 				/* goto end; */
 				}
 
-			sbuf_len-=i;;
+			sbuf_len-=i;
 			sbuf_off+=i;
 			if (sbuf_len <= 0)
 				{

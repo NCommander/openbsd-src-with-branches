@@ -67,6 +67,10 @@ case "${host}" in
   fi
   ;;
 
+*-*-openbsd*)
+  HOSTING_CRT0=/usr/lib/crt0.o
+  ;;
+
 esac
 
 #
@@ -238,6 +242,9 @@ x86_64-*-linux-gnu*)
   ;;
 
 *-*-netbsd*)
+  ;;
+
+*-*-openbsd*)
   ;;
 
 alpha*-*-*)

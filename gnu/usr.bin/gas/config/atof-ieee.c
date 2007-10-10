@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* atof_ieee.c - turn a Flonum into an IEEE floating point number
    Copyright (C) 1987, 1992 Free Software Foundation, Inc.
    
@@ -18,7 +20,7 @@
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef lint
-static char rcsid[] = "$Id: atof-ieee.c,v 1.3 1993/10/02 20:58:25 pk Exp $";
+static char rcsid[] = "$OpenBSD: atof-ieee.c,v 1.2 1995/12/27 21:36:04 deraadt Exp $";
 #endif
 
 #include "as.h"
@@ -128,12 +130,12 @@ static void
 LITTLENUM_TYPE *words;
 {
 	as_bad("cannot create floating-point number");
-	words[0] = ((unsigned) -1) >> 1; /* Zero the leftmost bit */
-	words[1] = -1;
-	words[2] = -1;
-	words[3] = -1;
-	words[4] = -1;
-	words[5] = -1;
+	words[0] = (LITTLENUM_TYPE) ((unsigned) -1) >> 1; /* Zero the leftmost bit */
+	words[1] = (LITTLENUM_TYPE) -1;
+	words[2] = (LITTLENUM_TYPE) -1;
+	words[3] = (LITTLENUM_TYPE) -1;
+	words[4] = (LITTLENUM_TYPE) -1;
+	words[5] = (LITTLENUM_TYPE) -1;
 }
 
 /***********************************************************************\
@@ -173,7 +175,7 @@ LITTLENUM_TYPE *words;	/* Build the binary here. */
 	generic_floating_point_number.low	= bits + MAX_PRECISION;
 	generic_floating_point_number.high	= NULL;
 	generic_floating_point_number.leader	= NULL;
-	generic_floating_point_number.exponent	= NULL;
+	generic_floating_point_number.exponent	= 0;
 	generic_floating_point_number.sign	= '\0';
 	
 	/* Use more LittleNums than seems */

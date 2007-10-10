@@ -1,3 +1,4 @@
+/*	$OpenBSD: xstr.c,v 1.12 2004/06/21 15:27:19 avsm Exp $	*/
 /*	$NetBSD: xstr.c,v 1.5 1994/12/24 16:57:59 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)xstr.c	8.1 (Berkeley) 6/9/93";
 #endif
-static char rcsid[] = "$NetBSD: xstr.c,v 1.5 1994/12/24 16:57:59 cgd Exp $";
+static char rcsid[] = "$OpenBSD: xstr.c,v 1.12 2004/06/21 15:27:19 avsm Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -63,30 +60,46 @@ static char rcsid[] = "$NetBSD: xstr.c,v 1.5 1994/12/24 16:57:59 cgd Exp $";
  * November, 1978
  */
 
-#define	ignore(a)	((void) a)
+#define	BUCKETS	128
 
 off_t	tellpt;
-off_t	hashit();
-void	onintr();
-char	*savestr();
-off_t	yankstr();
-
 off_t	mesgpt;
-char	*strings =	"strings";
-
-char	*array =	0;
+char	*strings = "strings";
+char	*array = 0;
 
 int	cflg;
 int	vflg;
 int	readstd;
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+struct	hash {
+	off_t	hpt;
+	char	*hstr;
+	struct	hash *hnext;
+	short	hnew;
+} bucket[BUCKETS];
+
+void process(char *);
+off_t yankstr(char **);
+int octdigit(char);
+void inithash(void);
+int fgetNUL(char *, int, FILE *);
+int xgetc(FILE *);
+off_t hashit(char *, int);
+void flushsh(void);
+void found(int, off_t, char *);
+void prstr(char *);
+void xsdotc(void);
+char lastchr(char *);
+int istail(char *, char *);
+void onintr(void);
+
+int
+main(int argc, char *argv[])
 {
 	int c;
+	int fdesc;
 
-	while ((c = getopt(argc, argv, "-cvl:")) != -1)
+	while ((c = getopt(argc, argv, "cvl:-")) != -1)
 		switch (c) {
 		case '-':
 			readstd++;
@@ -101,8 +114,9 @@ main(argc, argv)
 			array = optarg;
 			break;
 		default:
-			fprintf(stderr, "usage: xstr [ -v ] [ -c ] [ -l array ] [ - ] [ name ... ]\n");
-			exit (1);
+			fprintf(stderr,
+			    "usage: xstr [-cv] [-l array] [-] [file ...]\n");
+			exit(1);
 		} 
 	argc -= optind;
 	argv += optind;
@@ -111,38 +125,55 @@ main(argc, argv)
 		array = "xstr";
 
 	if (signal(SIGINT, SIG_IGN) == SIG_DFL)
-		signal(SIGINT, onintr);
-	if (cflg || argc == 0 && !readstd)
+		signal(SIGINT, (void(*)(int))onintr);
+	if (cflg || (argc == 0 && !readstd))
 		inithash();
-	else
-		strings = mktemp(strdup(_PATH_TMP));
+	else {
+		strings = strdup (_PATH_TMPFILE);
+		if (strings == NULL) {
+			fprintf(stderr, "Unable to allocate memory: %s",
+			    strerror (errno));
+			exit(1);
+		}
+		fdesc = mkstemp (strings);
+		if (fdesc < 0) {
+			fprintf(stderr, "Unable to create temporary file.\n");
+			exit(1);
+		}
+		close (fdesc);
+	}
+
 	while (readstd || argc > 0) {
-		if (freopen("x.c", "w", stdout) == NULL)
-			perror("x.c"), exit(1);
-		if (!readstd && freopen(argv[0], "r", stdin) == NULL)
-			perror(argv[0]), exit(2);
+		if (freopen("x.c", "w", stdout) == NULL) {
+			perror("x.c");
+			exit(1);
+		}
+		if (!readstd && freopen(argv[0], "r", stdin) == NULL) {
+			perror(argv[0]);
+			exit(2);
+		}
 		process("x.c");
 		if (readstd == 0)
 			argc--, argv++;
 		else
 			readstd = 0;
-	};
+	}
 	flushsh();
 	if (cflg == 0)
 		xsdotc();
 	if (strings[0] == '/')
-		ignore(unlink(strings));
+		unlink(strings);
 	exit(0);
 }
 
 char linebuf[BUFSIZ];
 
-process(name)
-	char *name;
+void
+process(char *name)
 {
 	char *cp;
-	register int c;
-	register int incomm = 0;
+	int c;
+	int incomm = 0;
 	int ret;
 
 	printf("extern char\t%s[];\n", array);
@@ -161,46 +192,42 @@ process(name)
 				printf("%s", linebuf);
 			continue;
 		}
-		for (cp = linebuf; c = *cp++;) switch (c) {
-			
-		case '"':
-			if (incomm)
-				goto def;
-			if ((ret = (int) yankstr(&cp)) == -1)
-				goto out;
-			printf("(&%s[%d])", array, ret);
-			break;
-
-		case '\'':
-			if (incomm)
-				goto def;
-			putchar(c);
-			if (*cp)
-				putchar(*cp++);
-			break;
-
-		case '/':
-			if (incomm || *cp != '*')
-				goto def;
-			incomm = 1;
-			cp++;
-			printf("/*");
-			continue;
-
-		case '*':
-			if (incomm && *cp == '/') {
-				incomm = 0;
+		for (cp = linebuf; (c = *cp++); )
+			switch (c) {
+			case '"':
+				if (incomm)
+					goto def;
+				if ((ret = (int) yankstr(&cp)) == -1)
+					goto out;
+				printf("(&%s[%d])", array, ret);
+				break;
+			case '\'':
+				if (incomm)
+					goto def;
+				putchar(c);
+				if (*cp)
+					putchar(*cp++);
+				break;
+			case '/':
+				if (incomm || *cp != '*')
+					goto def;
+				incomm = 1;
 				cp++;
-				printf("*/");
+				printf("/*");
 				continue;
+			case '*':
+				if (incomm && *cp == '/') {
+					incomm = 0;
+					cp++;
+					printf("*/");
+					continue;
+				}
+				goto def;
+			def:
+			default:
+				putchar(c);
+				break;
 			}
-			goto def;
-		
-def:
-		default:
-			putchar(c);
-			break;
-		}
 	}
 out:
 	if (ferror(stdout))
@@ -208,28 +235,25 @@ out:
 }
 
 off_t
-yankstr(cpp)
-	register char **cpp;
+yankstr(char **cpp)
 {
-	register char *cp = *cpp;
-	register int c, ch;
+	char *cp = *cpp;
+	int c, ch;
 	char dbuf[BUFSIZ];
-	register char *dp = dbuf;
-	register char *tp;
+	char *dp = dbuf;
+	char *tp;
 
-	while (c = *cp++) {
+	while ((c = *cp++)) {
 		switch (c) {
-
 		case '"':
 			cp++;
 			goto out;
-
 		case '\\':
 			c = *cp++;
 			if (c == 0)
 				break;
 			if (c == '\n') {
-				if (fgets(linebuf, sizeof linebuf, stdin) 
+				if (fgets(linebuf, sizeof linebuf, stdin)
 				    == NULL) {
 					if (ferror(stdin)) {
 						perror("x.c");
@@ -240,7 +264,7 @@ yankstr(cpp)
 				cp = linebuf;
 				continue;
 			}
-			for (tp = "b\bt\tr\rn\nf\f\\\\\"\""; ch = *tp++; tp++)
+			for (tp = "b\bt\tr\rn\nf\f\\\\\"\""; (ch = *tp++); tp++)
 				if (c == ch) {
 					c = *tp;
 					goto gotc;
@@ -267,36 +291,35 @@ out:
 	return (hashit(dbuf, 1));
 }
 
-octdigit(c)
-	char c;
+int
+octdigit(char c)
 {
 
 	return (isdigit(c) && c != '8' && c != '9');
 }
 
-inithash()
+void
+inithash(void)
 {
 	char buf[BUFSIZ];
-	register FILE *mesgread = fopen(strings, "r");
+	FILE *mesgread = fopen(strings, "r");
 
 	if (mesgread == NULL)
 		return;
 	for (;;) {
 		mesgpt = tellpt;
-		if (fgetNUL(buf, sizeof buf, mesgread) == NULL)
+		if (fgetNUL(buf, sizeof buf, mesgread) == 0)
 			break;
-		ignore(hashit(buf, 0));
+		hashit(buf, 0);
 	}
-	ignore(fclose(mesgread));
+	fclose(mesgread);
 }
 
-fgetNUL(obuf, rmdr, file)
-	char *obuf;
-	register int rmdr;
-	FILE *file;
+int
+fgetNUL(char *obuf, int rmdr, FILE  *file)
 {
-	register c;
-	register char *buf = obuf;
+	int c;
+	char *buf = obuf;
 
 	while (--rmdr > 0 && (c = xgetc(file)) != 0 && c != EOF)
 		*buf++ = c;
@@ -304,30 +327,20 @@ fgetNUL(obuf, rmdr, file)
 	return ((feof(file) || ferror(file)) ? NULL : 1);
 }
 
-xgetc(file)
-	FILE *file;
+int
+xgetc(FILE *file)
 {
 
 	tellpt++;
 	return (getc(file));
 }
 
-#define	BUCKETS	128
-
-struct	hash {
-	off_t	hpt;
-	char	*hstr;
-	struct	hash *hnext;
-	short	hnew;
-} bucket[BUCKETS];
 
 off_t
-hashit(str, new)
-	char *str;
-	int new;
+hashit(char *str, int new)
 {
 	int i;
-	register struct hash *hp, *hp0;
+	struct hash *hp, *hp0;
 
 	hp = hp0 = &bucket[lastchr(str) & 0177];
 	while (hp->hnext) {
@@ -352,12 +365,13 @@ hashit(str, new)
 	return (hp->hpt);
 }
 
-flushsh()
+void
+flushsh(void)
 {
-	register int i;
-	register struct hash *hp;
-	register FILE *mesgwrit;
-	register int old = 0, new = 0;
+	int i;
+	struct hash *hp;
+	FILE *mesgwrit;
+	int old = 0, new = 0;
 
 	for (i = 0; i < BUCKETS; i++)
 		for (hp = bucket[i].hnext; hp != NULL; hp = hp->hnext)
@@ -368,26 +382,30 @@ flushsh()
 	if (new == 0 && old != 0)
 		return;
 	mesgwrit = fopen(strings, old ? "r+" : "w");
-	if (mesgwrit == NULL)
-		perror(strings), exit(4);
+	if (mesgwrit == NULL) {
+		perror(strings);
+		exit(4);
+	}
 	for (i = 0; i < BUCKETS; i++)
 		for (hp = bucket[i].hnext; hp != NULL; hp = hp->hnext) {
 			found(hp->hnew, hp->hpt, hp->hstr);
 			if (hp->hnew) {
 				fseek(mesgwrit, hp->hpt, 0);
-				ignore(fwrite(hp->hstr, strlen(hp->hstr) + 1, 1, mesgwrit));
-				if (ferror(mesgwrit))
-					perror(strings), exit(4);
+				fwrite(hp->hstr, strlen(hp->hstr) + 1, 1, mesgwrit);
+				if (ferror(mesgwrit)) {
+					perror(strings);
+					exit(4);
+				}
 			}
 		}
-	if (fclose(mesgwrit) == EOF)
-		perror(strings), exit(4);
+	if (fclose(mesgwrit) == EOF) {
+		perror(strings);
+		exit(4);
+	}
 }
 
-found(new, off, str)
-	int new;
-	off_t off;
-	char *str;
+void
+found(int new, off_t off, char *str)
 {
 	if (vflg == 0)
 		return;
@@ -399,12 +417,12 @@ found(new, off, str)
 	fprintf(stderr, "\n");
 }
 
-prstr(cp)
-	register char *cp;
+void
+prstr(char *cp)
 {
-	register int c;
+	int c;
 
-	while (c = (*cp++ & 0377))
+	while ((c = (*cp++ & 0377)))
 		if (c < ' ')
 			fprintf(stderr, "^%c", c + '`');
 		else if (c == 0177)
@@ -415,19 +433,24 @@ prstr(cp)
 			fprintf(stderr, "%c", c);
 }
 
-xsdotc()
+void
+xsdotc(void)
 {
-	register FILE *strf = fopen(strings, "r");
-	register FILE *xdotcf;
+	FILE *strf = fopen(strings, "r");
+	FILE *xdotcf;
 
-	if (strf == NULL)
-		perror(strings), exit(5);
+	if (strf == NULL) {
+		perror(strings);
+		exit(5);
+	}
 	xdotcf = fopen("xs.c", "w");
-	if (xdotcf == NULL)
-		perror("xs.c"), exit(6);
+	if (xdotcf == NULL) {
+		perror("xs.c");
+		exit(6);
+	}
 	fprintf(xdotcf, "char\t%s[] = {\n", array);
 	for (;;) {
-		register int i, c;
+		int i, c;
 
 		for (i = 0; i < 8; i++) {
 			c = getc(strf);
@@ -445,12 +468,12 @@ xsdotc()
 	}
 out:
 	fprintf(xdotcf, "};\n");
-	ignore(fclose(xdotcf));
-	ignore(fclose(strf));
+	fclose(xdotcf);
+	fclose(strf);
 }
 
-lastchr(cp)
-	register char *cp;
+char
+lastchr(char *cp)
 {
 
 	while (cp[0] && cp[1])
@@ -458,10 +481,10 @@ lastchr(cp)
 	return (*cp);
 }
 
-istail(str, of)
-	register char *str, *of;
+int
+istail(char *str, char *of)
 {
-	register int d = strlen(of) - strlen(str);
+	int d = strlen(of) - strlen(str);
 
 	if (d < 0 || strcmp(&of[d], str) != 0)
 		return (-1);
@@ -469,13 +492,13 @@ istail(str, of)
 }
 
 void
-onintr()
+onintr(void)
 {
 
-	ignore(signal(SIGINT, SIG_IGN));
+	signal(SIGINT, SIG_IGN);
 	if (strings[0] == '/')
-		ignore(unlink(strings));
-	ignore(unlink("x.c"));
-	ignore(unlink("xs.c"));
-	exit(7);
+		unlink(strings);
+	unlink("x.c");
+	unlink("xs.c");
+	_exit(7);
 }

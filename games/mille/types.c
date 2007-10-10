@@ -1,3 +1,4 @@
+/*	$OpenBSD: types.c,v 1.5 2001/09/03 21:36:12 pjanzen Exp $	*/
 /*	$NetBSD: types.c,v 1.4 1995/03/24 05:02:22 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)types.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: types.c,v 1.4 1995/03/24 05:02:22 cgd Exp $";
+static char rcsid[] = "$OpenBSD: types.c,v 1.5 2001/09/03 21:36:12 pjanzen Exp $";
 #endif
 #endif /* not lint */
 
@@ -47,15 +44,18 @@ static char rcsid[] = "$NetBSD: types.c,v 1.4 1995/03/24 05:02:22 cgd Exp $";
  * @(#)types.c	1.1 (Berkeley) 4/1/82
  */
 
-isrepair(card)
-reg CARD	card; {
-
-	return card == C_GAS || card == C_SPARE || card == C_REPAIRS || card == C_INIT;
+int
+is_repair(card)
+	CARD	card;
+{
+	return card == C_GAS || card == C_SPARE ||
+	    card == C_REPAIRS || card == C_INIT;
 }
 
+int
 safety(card)
-reg CARD	card; {
-
+	CARD	card;
+{
 	switch (card) {
 	  case C_EMPTY:
 	  case C_GAS:
@@ -76,6 +76,6 @@ reg CARD	card; {
 	  case C_END_LIMIT:
 		return C_RIGHT_WAY;
 	}
+	errx(1, "safety() failed; please submit bug report.");
 	/* NOTREACHED */
 }
-

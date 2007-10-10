@@ -1,3 +1,4 @@
+/*	$OpenBSD: hangman.h,v 1.5 2002/02/16 21:27:10 millert Exp $	*/
 /*	$NetBSD: hangman.h,v 1.5 1995/04/24 12:23:44 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,29 +32,35 @@
  *	@(#)hangman.h	8.1 (Berkeley) 5/31/93
  */
 
-# include	<curses.h>
-# include	<sys/types.h>
-# include	<sys/stat.h>
-# include	<ctype.h>
-# include	<signal.h>
-# include	<string.h>
-# include	"pathnames.h"
+#include	<sys/types.h>
+#include	<sys/stat.h>
+#include	<ctype.h>
+#include	<curses.h>
+#include	<err.h>
+#include	<signal.h>
+#include	<stdlib.h>
+#include	<string.h>
+#include	<unistd.h>
+#include	"pathnames.h"
+ 
+#define	MAXBADWORDS	100
 
-# define	MINLEN	6
-# define	MAXERRS	7
+#define	MINLEN	6
+#define	MAXLEN	60
+#define	MAXERRS	7
 
-# define	MESGY	12
-# define	MESGX	0
-# define	PROMPTY	11
-# define	PROMPTX	0
-# define	KNOWNY	10
-# define	KNOWNX	1
-# define	NUMBERY	4
-# define	NUMBERX	(COLS - 1 - 26)
-# define	AVGY	5
-# define	AVGX	(COLS - 1 - 26)
-# define	GUESSY	2
-# define	GUESSX	(COLS - 1 - 26)
+#define	MESGY	12
+#define	MESGX	0
+#define	PROMPTY	11
+#define	PROMPTX	0
+#define	KNOWNY	10
+#define	KNOWNX	1
+#define	NUMBERY	4
+#define	NUMBERX	(COLS - 11 - 26)
+#define	AVGY	5
+#define	AVGX	(COLS - 11 - 26)
+#define	GUESSY	2
+#define	GUESSX	(COLS - 11 - 26)
 
 
 typedef struct {
@@ -65,18 +68,30 @@ typedef struct {
 	char	ch;
 } ERR_POS;
 
-extern bool	Guessed[];
+extern bool Guessed[];
 
-extern char	Word[], Known[], *Noose_pict[];
+extern char Word[], Known[];
+extern const char *const Noose_pict[];
 
-extern int	Errors, Wordnum;
+extern int Errors, Wordnum;
 
-extern double	Average;
+extern double Average;
 
-extern ERR_POS	Err_pos[];
+extern const ERR_POS Err_pos[];
 
-extern FILE	*Dict;
+extern const char *Dict_name;
 
-extern off_t	Dict_size;
+extern FILE *Dict;
 
-void	die();
+extern off_t Dict_size;
+
+void	die(int);
+void	endgame(void);
+void	getguess(void);
+void	getword(void);
+void	playgame(void);
+void	prdata(void);
+void	prman(void);
+void	prword(void);
+int	readch(void);
+void	setup(void);

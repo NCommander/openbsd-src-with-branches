@@ -1,4 +1,5 @@
-/*	$NetBSD: sys_machdep.c,v 1.6 1995/10/07 06:26:10 mycroft Exp $ */
+/*	$OpenBSD: sys_machdep.c,v 1.5 2000/06/23 02:14:37 mickey Exp $	*/
+/*	$NetBSD: sys_machdep.c,v 1.7 1996/03/14 21:09:33 christos Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -50,70 +47,16 @@
 #include <sys/file.h>
 #include <sys/time.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/uio.h>
 #include <sys/kernel.h>
 #include <sys/mtio.h>
 #include <sys/buf.h>
-#include <sys/trace.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-#ifdef TRACE
-int	nvualarm;
-
-vtrace(p, uap, retval)
-	struct proc *p;
-	register struct vtrace_args /* {
-		syscallarg(int) request;
-		syscallarg(int) value;
-	} */ *uap;
-	register_t *retval;
-{
-	int vdoualarm();
-
-	switch (SCARG(uap, request)) {
-
-	case VTR_DISABLE:		/* disable a trace point */
-	case VTR_ENABLE:		/* enable a trace point */
-		if (SCARG(uap, value) < 0 || SCARG(uap, value) >= TR_NFLAGS)
-			return (EINVAL);
-		*retval = traceflags[SCARG(uap, value)];
-		traceflags[SCARG(uap, value)] = SCARG(uap, request);
-		break;
-
-	case VTR_VALUE:		/* return a trace point setting */
-		if (SCARG(uap, value) < 0 || SCARG(uap, value) >= TR_NFLAGS)
-			return (EINVAL);
-		*retval = traceflags[SCARG(uap, value)];
-		break;
-
-	case VTR_UALARM:	/* set a real-time ualarm, less than 1 min */
-		if (SCARG(uap, value) <= 0 || SCARG(uap, value) > 60 * hz ||
-		    nvualarm > 5)
-			return (EINVAL);
-		nvualarm++;
-		timeout(vdoualarm, (caddr_t)p->p_pid, SCARG(uap, value));
-		break;
-
-	case VTR_STAMP:
-		trace(TR_STAMP, SCARG(uap, value), p->p_pid);
-		break;
-	}
-	return (0);
-}
-
-vdoualarm(arg)
-	int arg;
-{
-	register struct proc *p = pfind(arg);
-
-	if (p != NULL)
-		psignal(p, 16);
-	nvualarm--;
-}
-#endif
-
+int
 sys_sysarch(p, v, retval)
 	struct proc *p;
 	void *v;

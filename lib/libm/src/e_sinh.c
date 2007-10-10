@@ -35,18 +35,10 @@ static char rcsid[] = "$NetBSD: e_sinh.c,v 1.7 1995/05/10 20:46:13 jtc Exp $";
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double one = 1.0, shuge = 1.0e307;
-#else
-static double one = 1.0, shuge = 1.0e307;
-#endif
 
-#ifdef __STDC__
-	double __ieee754_sinh(double x)
-#else
-	double __ieee754_sinh(x)
-	double x;
-#endif
+double
+__ieee754_sinh(double x)
 {	
 	double t,w,h;
 	int32_t ix,jx;
@@ -75,7 +67,7 @@ static double one = 1.0, shuge = 1.0e307;
 
     /* |x| in [log(maxdouble), overflowthresold] */
 	GET_LOW_WORD(lx,x);
-	if (ix<0x408633CE || (ix==0x408633ce)&&(lx<=(u_int32_t)0x8fb9f87d)) {
+	if (ix<0x408633CE || ((ix==0x408633ce)&&(lx<=(u_int32_t)0x8fb9f87d))) {
 	    w = __ieee754_exp(0.5*fabs(x));
 	    t = h*w;
 	    return t*w;

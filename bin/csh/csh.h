@@ -1,3 +1,4 @@
+/*	$OpenBSD: csh.h,v 1.16 2005/02/25 16:08:18 deraadt Exp $	*/
 /*	$NetBSD: csh.h,v 1.9 1995/03/21 09:02:40 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -74,7 +71,7 @@ typedef char Char;
 #endif
 
 /*
- * Make sure a variable is not stored in a register by taking its address
+ * Make sure a variable is not stored in register a by taking its address
  * This is used where variables might be clobbered by longjmp.
  */
 #define UNREGISTER(a)	(void) &a
@@ -85,7 +82,7 @@ typedef void *ptr_t;
 
 #include "const.h"
 #include "char.h"
-#include "err.h"
+#include "error.h"
 
 #define xmalloc(i)	Malloc(i)
 #define xrealloc(p, i)	Realloc(p, i)
@@ -138,7 +135,6 @@ int     onelflg;		/* 2 -> need line for -t, 1 -> exit on read */
 Char   *ffile;			/* Name of shell file for $0 */
 
 char   *seterr;			/* Error message from scanner/parser */
-Char   *shtemp;			/* Temp name for << shell files in /tmp */
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -152,14 +148,14 @@ struct rusage ru0;
  */
 Char   *doldol;			/* Character pid for $$ */
 int	backpid;		/* Pid of the last background process */
-int     uid, euid;		/* Invokers uid */
-int     gid, egid;		/* Invokers gid */
+uid_t	uid, euid;		/* Invokers uid */
+gid_t	gid, egid;		/* Invokers gid */
 time_t  chktim;			/* Time mail last checked */
-int     shpgrp;			/* Pgrp of shell */
-int     tpgrp;			/* Terminal process group */
+pid_t	shpgrp;			/* Pgrp of shell */
+pid_t	tpgrp;			/* Terminal process group */
 
 /* If tpgrp is -1, leave tty alone! */
-int     opgrp;			/* Initial pgrp and tty pgrp */
+pid_t	opgrp;			/* Initial pgrp and tty pgrp */
 
 
 /*
@@ -184,6 +180,7 @@ int   OLDSTD;			/* Old standard input (def for cmds) */
 
 #include <setjmp.h>
 jmp_buf reslab;
+int exitset;
 
 #define	setexit()	(setjmp(reslab))
 #define	reset()		longjmp(reslab, 1)
@@ -208,7 +205,7 @@ sig_t parterm;			/* Parents terminate catch */
 #define	ASCII		0177
 #ifdef SHORT_STRINGS
 #define	CHAR		0377
-#define	QUOTE 		0100000	/* 16nth char bit used for 'ing */
+#define	QUOTE 		0100000U /* 16nth char bit used for 'ing */
 #define	TRIM		0077777	/* Mask to strip quote bit */
 #else
 #define	CHAR		0177
@@ -262,8 +259,8 @@ extern int aret;		/* What was the last character returned */
 #define	fbuf	B.Bfbuf
 
 /*
- * The shell finds commands in loops by reseeking the input
- * For whiles, in particular, it reseeks to the beginning of the
+ * The shell finds commands in loops by re-seeking the input
+ * For whiles, in particular, it re-seeks to the beginning of the
  * line the while was on; hence the while placement restrictions.
  */
 struct Ain lineloc;
@@ -307,7 +304,7 @@ Char   *lap;
  *
  * Each command is parsed to a tree of command structures and
  * flags are set bottom up during this process, to be propagated down
- * as needed during the semantics/exeuction pass (sh.sem.c).
+ * as needed during the semantics/execution pass (sh.sem.c).
  */
 struct command {
     short   t_dtyp;		/* Type of node 		 */
@@ -359,7 +356,7 @@ struct command {
 
 extern struct biltins {
     char   *bname;
-    void    (*bfunct) __P((Char **, struct command *));
+    void    (*bfunct)(Char **, struct command *);
     short   minargs, maxargs;
 }       bfunc[];
 extern int nbfunc;
@@ -422,7 +419,7 @@ struct varent {
 #define v_right		v_link[1]
 #define v_parent	v_link[2]
 
-struct varent *adrof1();
+struct varent *adrof1(Char *, struct varent *);
 
 #define adrof(v)	adrof1(v, &shvhed)
 #define value(v)	value1(v, &shvhed)
@@ -488,10 +485,8 @@ Char    HISTSUB;		/* auto-substitute character */
 #ifndef SHORT_STRINGS
 #define Strchr(a, b)		strchr(a, b)
 #define Strrchr(a, b)		strrchr(a, b)
-#define Strcat(a, b)		strcat(a, b)
-#define Strncat(a, b, c) 	strncat(a, b, c)
-#define Strcpy(a, b)		strcpy(a, b)
-#define Strncpy(a, b, c) 	strncpy(a, b, c)
+#define Strlcat(a, b, l)	strlcat(a, b, l)
+#define Strlcpy(a, b, l)	strlcpy(a, b, l)
 #define Strlen(a)		strlen(a)
 #define Strcmp(a, b)		strcmp(a, b)
 #define Strncmp(a, b, c)	strncmp(a, b, c)
@@ -508,10 +503,8 @@ Char    HISTSUB;		/* auto-substitute character */
 #else
 #define Strchr(a, b)		s_strchr(a, b)
 #define Strrchr(a, b) 		s_strrchr(a, b)
-#define Strcat(a, b)		s_strcat(a, b)
-#define Strncat(a, b, c) 	s_strncat(a, b, c)
-#define Strcpy(a, b)		s_strcpy(a, b)
-#define Strncpy(a, b, c)	s_strncpy(a, b, c)
+#define Strlcat(a, b, l)	s_strlcat(a, b, l)
+#define Strlcpy(a, b, l)	s_strlcpy(a, b, l)
 #define Strlen(a)		s_strlen(a)
 #define Strcmp(a, b)		s_strcmp(a, b)
 #define Strncmp(a, b, c)	s_strncmp(a, b, c)

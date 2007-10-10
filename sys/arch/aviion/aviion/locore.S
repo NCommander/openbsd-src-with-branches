@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.46 2005/12/11 21:45:31 miod Exp $	*/
+/*	$OpenBSD: locore.S,v 1.2 2006/05/20 11:57:02 miod Exp $	*/
 /*
  * Copyright (c) 2005, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -68,11 +68,8 @@
 #include <machine/trap.h>
 #include <machine/vmparam.h>
 
-/*
- * The memory looks like:
- *   0x0000 - 0x1000	trap vectors
- *   0x1000 == start	Boot loader jumps here.
- */
+#define	SYM_MAGIC	0x6274ef2e
+
 	text
 
 GLOBAL(kernelstart)
@@ -97,6 +94,8 @@ ASLOCAL(main_start)
 	 *	r3 boot device
 	 *	r4 boot unit number
 	 *	r5 boot partition number
+	 *	r6 magic number if not loaded by the PROM
+	 *	r7 end of loaded binary if not loaded by the PROM
 	 */
 	or.u	r13, r0,  hi16(_C_LABEL(prom_bootargs))
 	st	r2,  r13, lo16(_C_LABEL(prom_bootargs))
@@ -106,6 +105,15 @@ ASLOCAL(main_start)
 	st	r4,  r13, lo16(_C_LABEL(bootunit))
 	or.u	r13, r0,  hi16(_C_LABEL(bootpart))
 	st	r5,  r13, lo16(_C_LABEL(bootpart))
+#if defined(DDB) || NKSYMS > 0
+	or.u	r12, r0,  hi16(SYM_MAGIC)
+	or	r12, r12, lo16(SYM_MAGIC)
+	cmp	r2,  r6,  r12
+	bcnd	ne0, r2,  1f
+	or.u	r13, r0,  hi16(_C_LABEL(esym))
+	st	r7,  r13, lo16(_C_LABEL(esym))
+1:
+#endif
 
 	/* set cputyp */
 	ldcr	r1,  PID
@@ -175,6 +183,11 @@ ASLOCAL(main_start)
 	set	r11, r11, 1<PSR_SERIALIZE_BIT>
 	stcr	r11, PSR
 	FLUSH_PIPELINE
+
+	/* save PROM vbr */
+	ldcr	r12, VBR
+	or.u	r13, r0,  hi16(_C_LABEL(prom_vbr))
+	st	r12,  r13, lo16(_C_LABEL(prom_vbr))
 	stcr	r0,  VBR
 
 #ifdef MULTIPROCESSOR

@@ -1,4 +1,5 @@
-/*	$NetBSD: sunos_machdep.c,v 1.7 1995/10/10 21:18:01 gwr Exp $	*/
+/*	$OpenBSD: sunos_machdep.c,v 1.17 2005/08/06 12:10:28 miod Exp $	*/
+/*	$NetBSD: sunos_machdep.c,v 1.12 1996/10/13 03:19:22 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -57,6 +54,7 @@
 #include <sys/buf.h>
 
 #include <sys/syscallargs.h>
+#include <compat/sunos/sunos.h>
 #include <compat/sunos/sunos_syscallargs.h>
 
 #include <machine/reg.h>
@@ -93,10 +91,12 @@ struct sunos_sigframe {
  * SIG_DFL for "dangerous" signals.
  */
 void
-sunos_sendsig(catcher, sig, mask, code)
+sunos_sendsig(catcher, sig, mask, code, type, val)
 	sig_t catcher;
 	int sig, mask;
 	u_long code;
+	int type;
+	union sigval val;
 {
 	register struct proc *p = curproc;
 	register struct sunos_sigframe *fp;
@@ -116,12 +116,8 @@ sunos_sendsig(catcher, sig, mask, code)
 	 * have the process die unconditionally. 
 	 */
 	if (ft >= FMT9) {
-		SIGACTION(p, sig) = SIG_DFL;
-		p->p_sigignore &= ~sig;
-		p->p_sigcatch &= ~sig;
-		p->p_sigmask &= ~sig;
-		psignal(p, sig);
-		return;
+		sigexit(p, sig);
+		/* NOTREACHED */
 	}
 
 	/*
@@ -134,43 +130,25 @@ sunos_sendsig(catcher, sig, mask, code)
 	fsize = sizeof(struct sunos_sigframe);
 	if ((psp->ps_flags & SAS_ALTSTACK) && oonstack == 0 &&
 	    (psp->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sunos_sigframe *)(psp->ps_sigstk.ss_base +
+		fp = (struct sunos_sigframe *)(psp->ps_sigstk.ss_sp +
 		    psp->ps_sigstk.ss_size - sizeof(struct sunos_sigframe));
 		psp->ps_sigstk.ss_flags |= SS_ONSTACK;
 	} else
 		fp = (struct sunos_sigframe *)frame->f_regs[SP] - 1;
-	if ((unsigned)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize)) 
-		(void)grow(p, (unsigned)fp);
+	if ((vaddr_t)fp <= USRSTACK - ctob(p->p_vmspace->vm_ssize)) 
+		(void)uvm_grow(p, (unsigned)fp);
 #ifdef DEBUG
 	if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-		printf("sunos_sendsig(%d): sig %d ssp %x usp %x scp %x ft %d\n",
+		printf("sunos_sendsig(%d): sig %d ssp %p usp %p scp %p ft %d\n",
 		       p->p_pid, sig, &oonstack, fp, &fp->sf_sc, ft);
 #endif
-	if (useracc((caddr_t)fp, fsize, B_WRITE) == 0) {
-#ifdef DEBUG
-		if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
-			printf("sunos_sendsig(%d): useracc failed on sig %d\n",
-			       p->p_pid, sig);
-#endif
-		/*
-		 * Process has trashed its stack; give it an illegal
-		 * instruction to halt it in its tracks.
-		 */
-		SIGACTION(p, SIGILL) = SIG_DFL;
-		sig = sigmask(SIGILL);
-		p->p_sigignore &= ~sig;
-		p->p_sigcatch &= ~sig;
-		p->p_sigmask &= ~sig;
-		psignal(p, SIGILL);
-		return;
-	}
 	/* 
 	 * Build the argument list for the signal handler.
 	 */
 	kfp.sf_signum = sig;
 	kfp.sf_code = code;
 	kfp.sf_scp = &fp->sf_sc;
-	kfp.sf_addr = ~0;		/* means: not computable */
+	kfp.sf_addr = (u_int)val.sival_ptr;
 
 	/*
 	 * Build the signal context to be used by sigreturn.
@@ -182,19 +160,24 @@ sunos_sendsig(catcher, sig, mask, code)
 	kfp.sf_sc.sc_ps = frame->f_sr;
 
 	if (copyout(&kfp, fp, fsize) != 0) {
+#ifdef DEBUG
+		if ((sigdebug & SDB_KSTACK) && p->p_pid == sigpid)
+			printf("sunos_sendsig(%d): copyout failed on sig %d\n",
+			       p->p_pid, sig);
+#endif
 		/*
 		 * Process has trashed its stack; give it an illegal
 		 * instruction to halt it in its tracks.
 		 */
 		sigexit(p, SIGILL);
-		/* NOTREACHED */ 
+		/* NOTREACHED */
 	}
 
 	frame->f_regs[SP] = (int)fp;
 #ifdef DEBUG
 	if (sigdebug & SDB_FOLLOW)
-		printf("sunos_sendsig(%d): sig %d scp %x sc_sp %x\n",
-		       p->p_pid, sig, kfp.sf_sc.sc_sp);
+		printf("sunos_sendsig(%d): sig %d scp %p sc_sp %x\n",
+		       p->p_pid, sig, &fp->sf_sc,kfp.sf_sc.sc_sp);
 #endif
 
 	/* have the user-level trampoline code sort out what registers it
@@ -215,7 +198,7 @@ sunos_sendsig(catcher, sig, mask, code)
  * Return to previous pc and psl as specified by
  * context left by sendsig. Check carefully to
  * make sure that the user has not modified the
- * psl to gain improper priviledges or to cause
+ * psl to gain improper privileges or to cause
  * a machine fault.
  */
 int
@@ -232,7 +215,7 @@ sunos_sys_sigreturn(p, v, retval)
 	scp = (struct sunos_sigcontext *) SCARG(uap, sigcntxp);
 #ifdef DEBUG
 	if (sigdebug & SDB_FOLLOW)
-		printf("sunos_sigreturn: pid %d, scp %x\n", p->p_pid, scp);
+		printf("sunos_sigreturn: pid %d, scp %p\n", p->p_pid, scp);
 #endif
 	if ((int)scp & 1)
 		return (EINVAL);
@@ -240,11 +223,11 @@ sunos_sys_sigreturn(p, v, retval)
 	 * Test and fetch the context structure.
 	 * We grab it all at once for speed.
 	 */
-	if (useracc((caddr_t)scp, sizeof(*scp), B_WRITE) == 0 ||
-	    copyin((caddr_t)scp, (caddr_t)&tsigc, sizeof(tsigc)))
+	if (copyin((caddr_t)scp, (caddr_t)&tsigc, sizeof(tsigc)))
 		return (EINVAL);
 	scp = &tsigc;
-	if ((scp->sc_ps & (PSL_MBZ|PSL_IPL|PSL_S)) != 0)
+	if ((scp->sc_ps & PSL_USERCLR) != 0 ||
+	    (scp->sc_ps & PSL_USERSET) != PSL_USERSET)
 		return (EINVAL);
 	/*
 	 * Restore the user supplied information

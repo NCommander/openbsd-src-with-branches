@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -15,10 +15,10 @@
 #include <sm/io.h>
 #include <sm/errstring.h>
 
-SM_RCSID("@(#)$Sendmail: safefile.c,v 8.114 2001/09/08 01:21:03 gshapiro Exp $")
+SM_RCSID("@(#)$Sendmail: safefile.c,v 8.128 2004/09/30 18:15:49 ca Exp $")
 
 
-/*
+/*
 **  SAFEFILE -- return 0 if a file exists and is safe for a user.
 **
 **	Parameters:
@@ -58,7 +58,7 @@ safefile(fn, uid, gid, user, flags, mode, st)
 	bool checkpath;
 	struct stat stbuf;
 	struct stat fstbuf;
-	char fbuf[MAXPATHLEN + 1];
+	char fbuf[MAXPATHLEN];
 
 	if (tTd(44, 4))
 		sm_dprintf("safefile(%s, uid=%d, gid=%d, flags=%lx, mode=%o):\n",
@@ -206,6 +206,7 @@ safefile(fn, uid, gid, user, flags, mode, st)
 		{
 			int md = S_IWRITE|S_IEXEC;
 
+			ret = 0;
 			if (stbuf.st_uid == uid)
 				/* EMPTY */
 				;
@@ -237,9 +238,10 @@ safefile(fn, uid, gid, user, flags, mode, st)
 					md >>= 3;
 			}
 			if ((stbuf.st_mode & md) != md)
-				errno = EACCES;
+				ret = errno = EACCES;
 		}
-		ret = errno;
+		else
+			ret = errno;
 		if (tTd(44, 4))
 			sm_dprintf("\t[final dir %s uid %d mode %lo] %s\n",
 				dir, (int) stbuf.st_uid,
@@ -302,7 +304,7 @@ safefile(fn, uid, gid, user, flags, mode, st)
 	    bitset(S_IXUSR|S_IXGRP|S_IXOTH, st->st_mode))
 	{
 		if (tTd(44, 4))
-			sm_dprintf("\t[exec bits %lo]\tE_SM_ISEXEC]\n",
+			sm_dprintf("\t[exec bits %lo]\tE_SM_ISEXEC\n",
 				(unsigned long) st->st_mode);
 		return E_SM_ISEXEC;
 	}
@@ -365,7 +367,7 @@ safefile(fn, uid, gid, user, flags, mode, st)
 		sm_dprintf("\tEACCES\n");
 	return EACCES;
 }
-/*
+/*
 **  SAFEDIRPATH -- check to make sure a path to a directory is safe
 **
 **	Safe means not writable and owned by the right folks.
@@ -404,7 +406,7 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 	char *saveptr = NULL;
 	char *p, *enddir;
 	register struct group *gr = NULL;
-	char s[MAXLINKPATHLEN + 1];
+	char s[MAXLINKPATHLEN];
 	struct stat stbuf;
 
 	/* make sure we aren't in a symlink loop */
@@ -484,13 +486,22 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 		/* Follow symlinks */
 		if (S_ISLNK(stbuf.st_mode))
 		{
+			int linklen;
 			char *target;
-			char buf[MAXPATHLEN + 1];
+			char buf[MAXPATHLEN];
+			char fullbuf[MAXLINKPATHLEN];
 
 			memset(buf, '\0', sizeof buf);
-			if (readlink(s, buf, sizeof buf) < 0)
+			linklen = readlink(s, buf, sizeof buf);
+			if (linklen < 0)
 			{
 				ret = errno;
+				break;
+			}
+			if (linklen >= sizeof buf)
+			{
+				/* file name too long for buffer */
+				ret = errno = EINVAL;
 				break;
 			}
 
@@ -534,7 +545,6 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 			else
 			{
 				char *sptr;
-				char fullbuf[MAXLINKPATHLEN + 1];
 
 				sptr = strrchr(s, '/');
 				if (sptr != NULL)
@@ -654,7 +664,7 @@ safedirpath(fn, uid, gid, user, flags, level, offset)
 			ret == 0 ? "OK" : sm_errstring(ret));
 	return ret;
 }
-/*
+/*
 **  SAFEOPEN -- do a file open with extra checking
 **
 **	Parameters:
@@ -674,6 +684,9 @@ safeopen(fn, omode, cmode, sff)
 	int cmode;
 	long sff;
 {
+#if !NOFTRUNCATE
+	bool truncate;
+#endif /* !NOFTRUNCATE */
 	int rval;
 	int fd;
 	int smode;
@@ -725,6 +738,12 @@ safeopen(fn, omode, cmode, sff)
 		return -1;
 	}
 
+#if !NOFTRUNCATE
+	truncate = bitset(O_TRUNC, omode);
+	if (truncate)
+		omode &= ~O_TRUNC;
+#endif /* !NOFTRUNCATE */
+
 	fd = dfopen(fn, omode, cmode, sff);
 	if (fd < 0)
 		return fd;
@@ -735,9 +754,25 @@ safeopen(fn, omode, cmode, sff)
 		errno = E_SM_FILECHANGE;
 		return -1;
 	}
+
+#if !NOFTRUNCATE
+	if (truncate &&
+	    ftruncate(fd, (off_t) 0) < 0)
+	{
+		int save_errno;
+
+		save_errno = errno;
+		syserr("554 5.3.0 cannot open: file %s could not be truncated",
+		       fn);
+		(void) close(fd);
+		errno = save_errno;
+		return -1;
+	}
+#endif /* !NOFTRUNCATE */
+
 	return fd;
 }
-/*
+/*
 **  SAFEFOPEN -- do a file open with extra checking
 **
 **	Parameters:
@@ -798,7 +833,8 @@ safefopen(fn, omode, cmode, sff)
 		errno = save_errno;
 		return NULL;
 	}
-	fp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *) fd, fmode, NULL);
+	fp = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
+			(void *) &fd, fmode, NULL);
 	if (fp != NULL)
 		return fp;
 
@@ -812,7 +848,7 @@ safefopen(fn, omode, cmode, sff)
 	errno = save_errno;
 	return NULL;
 }
-/*
+/*
 **  FILECHANGED -- check to see if file changed after being opened
 **
 **	Parameters:
@@ -879,7 +915,7 @@ filechanged(fn, fd, stb)
 
 	return false;
 }
-/*
+/*
 **  DFOPEN -- determined file open
 **
 **	This routine has the semantics of open, except that it will
@@ -929,6 +965,9 @@ dfopen(filename, omode, cmode, sff)
 			locktype = LOCK_EX;
 		else
 			locktype = LOCK_SH;
+		if (bitset(SFF_NBLOCK, sff))
+			locktype |= LOCK_NB;
+
 		if (!lockfile(fd, filename, NULL, locktype))
 		{
 			int save_errno = errno;

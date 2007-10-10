@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -96,7 +92,7 @@ static char sccsid[] = "@(#)jn.c	8.2 (Berkeley) 11/30/93";
 #include <float.h>
 #include <errno.h>
 
-#if defined(vax) || defined(tahoe)
+#if defined(__vax__) || defined(tahoe)
 #define _IEEE	0
 #else
 #define _IEEE	1
@@ -239,11 +235,11 @@ double jn(n,x)
 		        b = ((i+i)/x)*b - a;
 		        a = temp;
 		    /* scale b to avoid spurious overflow */
-#			if defined(vax) || defined(tahoe)
+#			if defined(__vax__) || defined(tahoe)
 #				define BMAX 1e13
 #			else
 #				define BMAX 1e100
-#			endif /* defined(vax) || defined(tahoe) */
+#			endif /* defined(__vax__) || defined(tahoe) */
 			if (b > BMAX) {
 				a /= b;
 				t /= b;

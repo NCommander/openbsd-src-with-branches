@@ -1,3 +1,4 @@
+/*	$OpenBSD: profile.h,v 1.5 2002/03/14 01:26:34 millert Exp $	*/
 /*	$NetBSD: profile.h,v 1.3 1995/03/26 17:08:37 briggs Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,13 +32,13 @@
  *	@(#)profile.h	8.1 (Berkeley) 6/10/93
  */
 
-#define	_MCOUNT_DECL static inline void _mcount
+#define	_MCOUNT_DECL static __inline void _mcount
 
 #define	MCOUNT \
-extern void mcount() asm("mcount"); void mcount() { \
+extern void mcount(void) __asm("mcount"); void mcount() { \
 	int selfpc, frompcindex; \
-	asm("movl a6@(4),%0" : "=r" (selfpc)); \
-	asm("movl a6@(0)@(4),%0" : "=r" (frompcindex)); \
+	__asm("movl a6@(4),%0" : "=r" (selfpc)); \
+	__asm("movl a6@(0)@(4),%0" : "=r" (frompcindex)); \
 	_mcount(frompcindex, selfpc); \
 }
 
@@ -53,9 +50,9 @@ extern void mcount() asm("mcount"); void mcount() { \
  * recursively.
  */
 #define MCOUNT_ENTER \
-	asm("movw	sr,%0" : "=g" (s)); \
-	asm("movw	#0x2700,sr")
+	__asm("movw	sr,%0" : "=g" (s)); \
+	__asm("movw	#0x2700,sr")
 
 #define MCOUNT_EXIT \
-	asm("movw	%0,sr" : : "g" (s))
+	__asm("movw	%0,sr" : : "g" (s))
 #endif /* _KERNEL */

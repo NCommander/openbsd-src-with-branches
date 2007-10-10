@@ -327,6 +327,9 @@ isc_socket_bind(isc_socket_t *sock, isc_sockaddr_t *addressp);
  */
 
 isc_result_t
+isc_socket_privsep(int);
+
+isc_result_t
 isc_socket_filter(isc_socket_t *sock, const char *filter);
 /*
  * Inform the kernel that it should perform accept filtering.

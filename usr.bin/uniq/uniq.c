@@ -1,3 +1,4 @@
+/*	$OpenBSD: uniq.c,v 1.14 2003/06/03 02:56:21 millert Exp $	*/
 /*	$NetBSD: uniq.c,v 1.7 1995/08/31 22:03:48 jtc Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,12 +43,14 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)uniq.c	8.3 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$NetBSD: uniq.c,v 1.7 1995/08/31 22:03:48 jtc Exp $";
+static char rcsid[] = "$OpenBSD: uniq.c,v 1.14 2003/06/03 02:56:21 millert Exp $";
 #endif /* not lint */
 
-#include <errno.h>
-#include <stdio.h>
 #include <ctype.h>
+#include <err.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -61,29 +60,25 @@ static char rcsid[] = "$NetBSD: uniq.c,v 1.7 1995/08/31 22:03:48 jtc Exp $";
 int cflag, dflag, uflag;
 int numchars, numfields, repeats;
 
-void	 err __P((const char *, ...));
-FILE	*file __P((char *, char *));
-void	 show __P((FILE *, char *));
-char	*skip __P((char *));
-void	 obsolete __P((char *[]));
-void	 usage __P((void));
+FILE	*file(char *, char *);
+void	 show(FILE *, char *);
+char	*skip(char *);
+void	 obsolete(char *[]);
+__dead void	usage(void);
 
 int
-main (argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register char *t1, *t2;
-	FILE *ifp, *ofp;
+	char *t1, *t2;
+	FILE *ifp = NULL, *ofp = NULL;
 	int ch;
-	char *prevline, *thisline, *p;
+	char *prevline, *thisline;
 
 	obsolete(argv);
-	while ((ch = getopt(argc, argv, "-cdf:s:u")) != EOF)
+	while ((ch = getopt(argc, argv, "cdf:s:u")) != -1) {
+		const char *errstr;
+
 		switch (ch) {
-		case '-':
-			--optind;
-			goto done;
 		case 'c':
 			cflag = 1;
 			break;
@@ -91,25 +86,30 @@ main (argc, argv)
 			dflag = 1;
 			break;
 		case 'f':
-			numfields = strtol(optarg, &p, 10);
-			if (numfields < 0 || *p)
-				err("illegal field skip value: %s", optarg);
+			numfields = (int)strtonum(optarg, 0, INT_MAX,
+			    &errstr);
+			if (errstr)
+				errx(1, "field skip value is %s: %s",
+				    errstr, optarg);
 			break;
 		case 's':
-			numchars = strtol(optarg, &p, 10);
-			if (numchars < 0 || *p)
-				err("illegal character skip value: %s", optarg);
+			numchars = (int)strtonum(optarg, 0, INT_MAX,
+			    &errstr);
+			if (errstr)
+				errx(1,
+				    "character skip value is %s: %s",
+				    errstr, optarg);
 			break;
 		case 'u':
 			uflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
+		}
 	}
 
-done:	argc -= optind;
-	argv +=optind;
+	argc -= optind;
+	argv += optind;
 
 	/* If no flags are set, default is -d -u. */
 	if (cflag) {
@@ -138,7 +138,7 @@ done:	argc -= optind;
 	prevline = malloc(MAXLINELEN);
 	thisline = malloc(MAXLINELEN);
 	if (prevline == NULL || thisline == NULL)
-		err("%s", strerror(errno));
+		err(1, "malloc");
 
 	if (fgets(prevline, MAXLINELEN, ifp) == NULL)
 		exit(0);
@@ -173,22 +173,19 @@ done:	argc -= optind;
  *	of the line.
  */
 void
-show(ofp, str)
-	FILE *ofp;
-	char *str;
+show(FILE *ofp, char *str)
 {
 
 	if (cflag && *str)
 		(void)fprintf(ofp, "%4d %s", repeats + 1, str);
-	if (dflag && repeats || uflag && !repeats)
+	if ((dflag && repeats) || (uflag && !repeats))
 		(void)fprintf(ofp, "%s", str);
 }
 
 char *
-skip(str)
-	register char *str;
+skip(char *str)
 {
-	register int infield, nchars, nfields;
+	int infield, nchars, nfields;
 
 	for (nfields = numfields, infield = 0; nfields && *str; ++str)
 		if (isspace(*str)) {
@@ -198,29 +195,30 @@ skip(str)
 			}
 		} else if (!infield)
 			infield = 1;
-	for (nchars = numchars; nchars-- && *str; ++str);
-	return(str);
+	for (nchars = numchars; nchars-- && *str; ++str)
+		;
+	return (str);
 }
 
 FILE *
-file(name, mode)
-	char *name, *mode;
+file(char *name, char *mode)
 {
 	FILE *fp;
 
+	if (strcmp(name, "-") == 0)
+		return(*mode == 'r' ? stdin : stdout);
 	if ((fp = fopen(name, mode)) == NULL)
-		err("%s: %s", name, strerror(errno));
-	return(fp);
+		err(1, "%s", name);
+	return (fp);
 }
 
 void
-obsolete(argv)
-	char *argv[];
+obsolete(char *argv[])
 {
-	int len;
+	size_t len;
 	char *ap, *p, *start;
 
-	while (ap = *++argv) {
+	while ((ap = *++argv)) {
 		/* Return if "--" or not an option of any form. */
 		if (ap[0] != '-') {
 			if (ap[0] != '+')
@@ -233,49 +231,23 @@ obsolete(argv)
 		 * Digit signifies an old-style option.  Malloc space for dash,
 		 * new option and argument.
 		 */
-		len = strlen(ap);
-		if ((start = p = malloc(len + 3)) == NULL)
-			err("%s", strerror(errno));
+		len = strlen(ap) + 3;
+		if ((start = p = malloc(len)) == NULL)
+			err(1, "malloc");
 		*p++ = '-';
 		*p++ = ap[0] == '+' ? 's' : 'f';
-		(void)strcpy(p, ap + 1);
+		(void)strlcpy(p, ap + 1, len - 2);
 		*argv = start;
 	}
 }
 
-void
-usage()
+__dead void
+usage(void)
 {
+	extern char *__progname;
+	
 	(void)fprintf(stderr,
-	    "usage: uniq [-c | -du] [-f fields] [-s chars] [input [output]]\n");
+	    "usage: %s [-c | -d | -u] [-f fields] [-s chars] [input_file [output_file]]\n",
+	    __progname);
 	exit(1);
-}
-
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(const char *fmt, ...)
-#else
-err(fmt, va_alist)
-	char *fmt;
-        va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "uniq: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	exit(1);
-	/* NOTREACHED */
 }

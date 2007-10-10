@@ -1,4 +1,4 @@
-/*	$NetBSD: ndbm.c,v 1.7 1995/02/27 13:22:44 cgd Exp $	*/
+/*	$OpenBSD: ndbm.c,v 1.20 2004/09/15 00:26:07 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,55 +32,207 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ndbm.c	8.3 (Berkeley) 5/30/94";
-#else
-static char rcsid[] = "$NetBSD: ndbm.c,v 1.7 1995/02/27 13:22:44 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-/*
- * This package provides a dbm compatible interface to the new hashing
- * package described in db(3).
- */
-
 #include <sys/param.h>
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <ndbm.h>
+#include <dbm.h>
 #include "hash.h"
+
+/*
+ *
+ * This package provides dbm and ndbm compatible interfaces to DB.
+ * First are the DBM routines, which call the NDBM routines, and
+ * the NDBM routines, which call the DB routines.
+ */
+static DBM *__cur_db;
+
+static DBM *_dbm_open(const char *, const char *, int, mode_t);
+
+/*
+ * Returns:
+ * 	 0 on success
+ *	<0 on failure
+ */
+int
+dbminit(file)
+	const char *file;
+{
+
+	if (__cur_db != NULL)
+		(void)dbm_close(__cur_db);
+	if ((__cur_db = _dbm_open(file, ".pag", O_RDWR, 0)) != NULL)
+		return (0);
+	if ((__cur_db = _dbm_open(file, ".pag", O_RDONLY, 0)) != NULL)
+		return (0);
+	return (-1);
+}
+
+/*
+ * Returns:
+ * 	 0 on success
+ *	<0 on failure
+ */
+int
+dbmclose()
+{
+	int rval;
+
+	if (__cur_db == NULL)
+		return (-1);
+	rval = (__cur_db->close)(__cur_db);
+	__cur_db = NULL;
+	return (rval);
+}
+
+/*
+ * Returns:
+ *	DATUM on success
+ *	NULL on failure
+ */
+datum
+fetch(key)
+	datum key;
+{
+	datum item;
+
+	if (__cur_db == NULL) {
+		item.dptr = NULL;
+		item.dsize = 0;
+		return (item);
+	}
+	return (dbm_fetch(__cur_db, key));
+}
+
+/*
+ * Returns:
+ *	DATUM on success
+ *	NULL on failure
+ */
+datum
+firstkey()
+{
+	datum item;
+
+	if (__cur_db == NULL) {
+		item.dptr = NULL;
+		item.dsize = 0;
+		return (item);
+	}
+	return (dbm_firstkey(__cur_db));
+}
+
+/*
+ * Returns:
+ *	DATUM on success
+ *	NULL on failure
+ */
+/* ARGSUSED */
+datum
+nextkey(datum key)
+{
+	datum item;
+
+	if (__cur_db == NULL) {
+		item.dptr = NULL;
+		item.dsize = 0;
+		return (item);
+	}
+	return (dbm_nextkey(__cur_db));
+}
+
+/*
+ * Returns:
+ * 	 0 on success
+ *	<0 on failure
+ */
+int
+delete(key)
+	datum key;
+{
+
+	if (__cur_db == NULL || dbm_rdonly(__cur_db))
+		return (-1);
+	return (dbm_delete(__cur_db, key));
+}
+
+/*
+ * Returns:
+ * 	 0 on success
+ *	<0 on failure
+ */
+int
+store(key, dat)
+	datum key, dat;
+{
+
+	if (__cur_db == NULL || dbm_rdonly(__cur_db))
+		return (-1);
+	return (dbm_store(__cur_db, key, dat, DBM_REPLACE));
+}
 
 /*
  * Returns:
  * 	*DBM on success
  *	 NULL on failure
  */
-extern DBM *
-dbm_open(file, flags, mode)
+static DBM *
+_dbm_open(file, suff, flags, mode)
 	const char *file;
-	int flags, mode;
+	const char *suff;
+	int flags;
+	mode_t mode;
 {
 	HASHINFO info;
 	char path[MAXPATHLEN];
 
+	if (strlen(file) + strlen(suff) > sizeof(path) - 1) {
+		errno = ENAMETOOLONG;
+		return (NULL);
+	}
+	/* O_WRONLY not supported by db(3) but traditional ndbm allowed it. */
+	if ((flags & O_ACCMODE) == O_WRONLY) {
+		flags &= ~O_WRONLY;
+		flags |= O_RDWR;
+	}
 	info.bsize = 4096;
 	info.ffactor = 40;
 	info.nelem = 1;
-	info.cachesize = NULL;
+	info.cachesize = 0;
 	info.hash = NULL;
 	info.lorder = 0;
-	(void)strcpy(path, file);
-	(void)strcat(path, DBM_SUFFIX);
+	snprintf(path, sizeof path, "%s%s", file, suff);
 	return ((DBM *)__hash_open(path, flags, mode, &info, 0));
 }
 
-extern void
+/*
+ * Returns:
+ * 	*DBM on success
+ *	 NULL on failure
+ */
+DBM *
+dbm_open(file, flags, mode)
+	const char *file;
+	int flags;
+	mode_t mode;
+{
+
+	return(_dbm_open(file, DBM_SUFFIX, flags, mode));
+}
+
+/*
+ * Returns:
+ *	Nothing.
+ */
+void
 dbm_close(db)
 	DBM *db;
 {
+
 	(void)(db->close)(db);
 }
 
@@ -93,20 +241,25 @@ dbm_close(db)
  *	DATUM on success
  *	NULL on failure
  */
-extern datum
+datum
 dbm_fetch(db, key)
 	DBM *db;
 	datum key;
 {
-	datum retval;
+	datum retdata;
 	int status;
+	DBT dbtkey, dbtretdata;
 
-	status = (db->get)(db, (DBT *)&key, (DBT *)&retval, 0);
+	dbtkey.data = key.dptr;
+	dbtkey.size = key.dsize;
+	status = (db->get)(db, &dbtkey, &dbtretdata, 0);
 	if (status) {
-		retval.dptr = NULL;
-		retval.dsize = 0;
+		dbtretdata.data = NULL;
+		dbtretdata.size = 0;
 	}
-	return (retval);
+	retdata.dptr = dbtretdata.data;
+	retdata.dsize = dbtretdata.size;
+	return (retdata);
 }
 
 /*
@@ -114,16 +267,19 @@ dbm_fetch(db, key)
  *	DATUM on success
  *	NULL on failure
  */
-extern datum
+datum
 dbm_firstkey(db)
 	DBM *db;
 {
 	int status;
-	datum retdata, retkey;
+	datum retkey;
+	DBT dbtretkey, dbtretdata;
 
-	status = (db->seq)(db, (DBT *)&retkey, (DBT *)&retdata, R_FIRST);
+	status = (db->seq)(db, &dbtretkey, &dbtretdata, R_FIRST);
 	if (status)
-		retkey.dptr = NULL;
+		dbtretkey.data = NULL;
+	retkey.dptr = dbtretkey.data;
+	retkey.dsize = dbtretkey.size;
 	return (retkey);
 }
 
@@ -132,31 +288,38 @@ dbm_firstkey(db)
  *	DATUM on success
  *	NULL on failure
  */
-extern datum
+datum
 dbm_nextkey(db)
 	DBM *db;
 {
 	int status;
-	datum retdata, retkey;
+	datum retkey;
+	DBT dbtretkey, dbtretdata;
 
-	status = (db->seq)(db, (DBT *)&retkey, (DBT *)&retdata, R_NEXT);
+	status = (db->seq)(db, &dbtretkey, &dbtretdata, R_NEXT);
 	if (status)
-		retkey.dptr = NULL;
+		dbtretkey.data = NULL;
+	retkey.dptr = dbtretkey.data;
+	retkey.dsize = dbtretkey.size;
 	return (retkey);
 }
+
 /*
  * Returns:
  *	 0 on success
- *	<0 failure
+ *	<0 on failure
  */
-extern int
+int
 dbm_delete(db, key)
 	DBM *db;
 	datum key;
 {
 	int status;
+	DBT dbtkey;
 
-	status = (db->del)(db, (DBT *)&key, 0);
+	dbtkey.data = key.dptr;
+	dbtkey.size = key.dsize;
+	status = (db->del)(db, &dbtkey, 0);
 	if (status)
 		return (-1);
 	else
@@ -166,43 +329,60 @@ dbm_delete(db, key)
 /*
  * Returns:
  *	 0 on success
- *	<0 failure
+ *	<0 on failure
  *	 1 if DBM_INSERT and entry exists
  */
-extern int
-dbm_store(db, key, content, flags)
+int
+dbm_store(db, key, data, flags)
 	DBM *db;
-	datum key, content;
+	datum key, data;
 	int flags;
 {
-	return ((db->put)(db, (DBT *)&key, (DBT *)&content,
+	DBT dbtkey, dbtdata;
+
+	dbtkey.data = key.dptr;
+	dbtkey.size = key.dsize;
+	dbtdata.data = data.dptr;
+	dbtdata.size = data.dsize;
+	return ((db->put)(db, &dbtkey, &dbtdata,
 	    (flags == DBM_INSERT) ? R_NOOVERWRITE : 0));
 }
 
-extern int
+int
 dbm_error(db)
 	DBM *db;
 {
 	HTAB *hp;
 
 	hp = (HTAB *)db->internal;
-	return (hp->errno);
+	return (hp->err);
 }
 
-extern int
+int
 dbm_clearerr(db)
 	DBM *db;
 {
 	HTAB *hp;
 
 	hp = (HTAB *)db->internal;
-	hp->errno = 0;
+	hp->err = 0;
 	return (0);
 }
 
-extern int
+int
 dbm_dirfno(db)
 	DBM *db;
 {
+
 	return(((HTAB *)db->internal)->fp);
+}
+
+int
+dbm_rdonly(dbp)
+	DBM *dbp;
+{
+	HTAB *hashp = (HTAB *)dbp->internal;
+
+	/* Could use DBM_RDONLY instead if we wanted... */
+	return ((hashp->flags & O_ACCMODE) == O_RDONLY);
 }

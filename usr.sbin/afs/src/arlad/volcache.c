@@ -183,10 +183,9 @@ create_new_entries (unsigned n)
     VolCacheEntry *entries;
     int i;
 
-    entries = (VolCacheEntry *)malloc (n * sizeof(VolCacheEntry));
+    entries = calloc (n, sizeof(VolCacheEntry));
     if (entries == NULL)
-	arla_errx (1, ADEBERROR, "volcache: malloc failed");
-    memset(entries, 0, n * sizeof(VolCacheEntry));
+	arla_errx (1, ADEBERROR, "volcache: calloc failed");
 
     for (i = 0; i < n; ++i) {
 	entries[i].cell = -1;
@@ -494,7 +493,10 @@ volcache_recover_entry (struct volcache_store *st, void *ptr)
     struct vstore_context *c = (struct vstore_context *)ptr;
 
     e->cell = cell_name2num (st->cell);
-    assert (e->cell != -1);
+    if (e->cell == -1) {
+	arla_warnx(ADEBWARN, "can't resolve cell name");
+	return(-1);
+    }
     e->entry = st->entry;
     e->volsync = st->volsync;
     e->refcount = st->refcount;
@@ -691,7 +693,6 @@ get_info_loop (VolCacheEntry *e, nvldbentry *entry,
 		    "Cannot find any db servers in cell %d(%s) while "
 		    "getting data for volume `%s'",
 		    cell, cell_num2name(cell), name);
-	assert (cell_is_sanep (cell));
 	return ENOENT;
     }
 

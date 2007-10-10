@@ -1,11 +1,13 @@
+/*	$OpenBSD: skey.c,v 1.22 2005/07/06 21:39:31 jmc Exp $	*/
 /*
- * S/KEY v1.1b (skey.c)
+ * OpenBSD S/Key (skey.c)
  *
  * Authors:
  *          Neil M. Haller <nmh@thumper.bellcore.com>
  *          Philip R. Karn <karn@chicago.qualcomm.com>
  *          John S. Walden <jsw@thumper.bellcore.com>
  *          Scott Chasin <chasin@crimelab.com>
+ *          Todd C. Miller <Todd.Miller@courtesan.com>
  *
  *
  * Stand-alone program for computing responses to S/Key challenges.
@@ -18,97 +20,126 @@
  *	OMEN US HORN OMIT BACK AHOY
  *	>
  *
- * $Id: skey.c,v 1.3 1995/06/05 19:55:40 pk Exp $
  */
 
-#include <sys/cdefs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <sgtty.h>
-#include "md4.h"
-#include "skey.h"
+#include <err.h>
+#include <unistd.h>
+#include <skey.h>
 
-void    usage __P((char *));
+void    usage(char *);
 
 int
-main(argc, argv)
-	int	argc;
-	char	*argv[];
+main(int argc, char *argv[])
 {
-	int     n, cnt, i, pass = 0;
-	char    passwd[256], key[8], buf[33], *seed, *slash;
-	extern int optind;
-	extern char *optarg;
+	int     n, i, cnt = 1, pass = 0, hexmode = 0;
+	char    passwd[SKEY_MAX_PW_LEN+1], key[SKEY_BINKEY_SIZE];
+	char	buf[33], *seed, *slash;
 
-	cnt = 1;
-
-	while ((i = getopt(argc, argv, "n:p:")) != EOF) {
-		switch (i) {
-		case 'n':
-			cnt = atoi(optarg);
-			break;
-		case 'p':
-			strcpy(passwd, optarg);
-			pass = 1;
-			break;
-		}
+	/* If we were called as otp-METHOD, set algorithm based on that */
+	if ((slash = strrchr(argv[0], '/')))
+		slash++;
+	else
+		slash = argv[0];
+	if (strncmp(slash, "otp-", 4) == 0) {
+		slash += 4;
+		if (skey_set_algorithm(slash) == NULL)
+			errx(1, "Unknown hash algorithm %s", slash);
 	}
 
-	/* could be in the form <number>/<seed> */
+	for (i = 1; i < argc && argv[i][0] == '-' && strcmp(argv[i], "--");) {
+		if (argv[i][2] == '\0') {
+			/* Single character switch */
+			switch (argv[i][1]) {
+			case 'n':
+				if (++i == argc)
+					usage(argv[0]);
+				cnt = atoi(argv[i]);
+				break;
+			case 'p':
+				if (++i == argc)
+					usage(argv[0]);
+				if (strlcpy(passwd, argv[i], sizeof(passwd)) >=
+				    sizeof(passwd))
+					errx(1, "Password too long");
+				pass = 1;
+				break;
+			case 'x':
+				hexmode = 1;
+				break;
+			default:
+				usage(argv[0]);
+			}
+		} else {
+			/* Multi character switches are hash types */
+			if (skey_set_algorithm(&argv[i][1]) == NULL) {
+				warnx("Unknown hash algorithm %s", &argv[i][1]);
+				usage(argv[0]);
+			}
+		}
+		i++;
+	}
 
-	if (argc <= optind + 1) {
+	if (argc > i + 2)
+		usage(argv[0]);
+
+	/* Could be in the form <number>/<seed> */
+	if (argc <= i + 1) {
 		/* look for / in it */
-		if (argc <= optind)
+		if (argc <= i)
 			usage(argv[0]);
-		slash = strchr(argv[optind], '/');
+		slash = strchr(argv[i], '/');
 		if (slash == NULL)
 			usage(argv[0]);
 		*slash++ = '\0';
 		seed = slash;
 
-		if ((n = atoi(argv[optind])) < 0) {
-			fprintf(stderr, "%s not positive\n", argv[optind]);
+		if ((n = atoi(argv[i])) < 0) {
+			warnx("%d not positive", n);
+			usage(argv[0]);
+		} else if (n > SKEY_MAX_SEQ) {
+			warnx("%d is larger than max (%d)", n, SKEY_MAX_SEQ);
 			usage(argv[0]);
 		}
 	} else {
-
-		if ((n = atoi(argv[optind])) < 0) {
-			fprintf(stderr, "%s not positive\n", argv[optind]);
+		if ((n = atoi(argv[i])) < 0) {
+			warnx("%d not positive", n);
+			usage(argv[0]);
+		} else if (n > SKEY_MAX_SEQ) {
+			warnx("%d is larger than max (%d)", n, SKEY_MAX_SEQ);
 			usage(argv[0]);
 		}
-		seed = argv[++optind];
+		seed = argv[++i];
 	}
 
-	/* Get user's secret password */
+	/* Get user's secret passphrase */
 	if (!pass) {
-		fprintf(stderr, "Enter secret password: ");
+		fputs("Reminder - Do not use this program while"
+		    " logged in via telnet.\n", stderr);
+		(void)fputs("Enter secret passphrase: ", stderr);
 		readpass(passwd, sizeof(passwd));
+		if (passwd[0] == '\0')
+			exit(1);
 	}
-	rip(passwd);
 
-	/* Crunch seed and password into starting key */
-	if (keycrunch(key, seed, passwd) != 0) {
-		fprintf(stderr, "%s: key crunch failed\n", argv[0]);
-		exit(1);
-	}
+	/* Crunch seed and passphrase into starting key */
+	if (keycrunch(key, seed, passwd) != 0)
+		errx(1, "key crunch failed");
+
 	if (cnt == 1) {
 		while (n-- != 0)
 			f(key);
-		printf("%s\n", btoe(buf, key));
-#ifdef	HEXIN
-		printf("%s\n", put8(buf, key));
-#endif
+		(void)puts(hexmode ? put8(buf, key) : btoe(buf, key));
 	} else {
 		for (i = 0; i <= n - cnt; i++)
 			f(key);
 		for (; i <= n; i++) {
-#ifdef	HEXIN
-			printf("%d: %-29s  %s\n", i, btoe(buf, key), put8(buf, key));
-#else
-			printf("%d: %-29s\n", i, btoe(buf, key));
-#endif
+			(void)printf("%d: %-29s", i, btoe(buf, key));
+			if (hexmode)
+				(void)printf("  %s", put8(buf, key));
+			putchar('\n');
 			f(key);
 		}
 	}
@@ -116,11 +147,10 @@ main(argc, argv)
 }
 
 void
-usage(s)
-	char   *s;
+usage(char *s)
 {
-
 	fprintf(stderr,
-	    "Usage: %s [-n count] [-p password ] sequence# [/] key\n", s);
+	    "Usage: %s [-x] [-md4 | -md5 | -rmd160 | -sha1] [-n count]\n\t"
+	    "[-p passphrase] <sequence#>[/] key\n", s);
 	exit(1);
 }

@@ -1,6 +1,8 @@
-/*	$NetBSD: svr4_fcntl.c,v 1.13 1995/10/09 23:56:17 thorpej Exp $	 */
+/*	$OpenBSD: svr4_fcntl.c,v 1.21 2002/02/13 19:08:06 art Exp $	 */
+/*	$NetBSD: svr4_fcntl.c,v 1.14 1995/10/14 20:24:24 christos Exp $	 */
 
 /*
+ * Copyright (c) 1997 Theo de Raadt
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
  *
@@ -33,12 +35,13 @@
 #include <sys/proc.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/vnode.h>
 #include <sys/filedesc.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
 #include <sys/mount.h>
 #include <sys/malloc.h>
-
+#include <sys/poll.h>
 #include <sys/syscallargs.h>
 
 #include <compat/svr4/svr4_types.h>
@@ -46,13 +49,20 @@
 #include <compat/svr4/svr4_syscallargs.h>
 #include <compat/svr4/svr4_util.h>
 #include <compat/svr4/svr4_fcntl.h>
-#include <compat/svr4/svr4_poll.h>
+
+static u_long svr4_to_bsd_cmd(u_long);
+static int svr4_to_bsd_flags(int);
+static int bsd_to_svr4_flags(int);
+static void bsd_to_svr4_flock(struct flock *, struct svr4_flock *);
+static void svr4_to_bsd_flock(struct svr4_flock *, struct flock *);
+static void bsd_to_svr3_flock(struct flock *, struct svr4_flock_svr3 *);
+static void svr3_to_bsd_flock(struct svr4_flock_svr3 *, struct flock *);
+static int fd_truncate(struct proc *, int, struct flock *, register_t *);
 
 static u_long
 svr4_to_bsd_cmd(cmd)
-	u_long cmd;
+	u_long	cmd;
 {
-
 	switch (cmd) {
 	case SVR4_F_DUPFD:
 		return F_DUPFD;
@@ -65,6 +75,7 @@ svr4_to_bsd_cmd(cmd)
 	case SVR4_F_SETFL:
 		return F_SETFL;
 	case SVR4_F_GETLK:
+	case SVR4_F_GETLK_SVR3:
 		return F_GETLK;
 	case SVR4_F_SETLK:
 		return F_SETLK;
@@ -86,8 +97,13 @@ svr4_to_bsd_flags(l)
 	r |= (l & SVR4_O_RDWR) ? O_RDWR : 0;
 	r |= (l & SVR4_O_NDELAY) ? O_NONBLOCK : 0;
 	r |= (l & SVR4_O_APPEND) ? O_APPEND : 0;
-	r |= (l & SVR4_O_SYNC) ? O_FSYNC : 0;
+#if 0
+	/* Dellism ??? */
 	r |= (l & SVR4_O_RAIOSIG) ? O_ASYNC : 0;
+#endif
+	r |= (l & SVR4_O_SYNC) ? O_FSYNC : 0;
+	r |= (l & SVR4_O_RSYNC) ? O_RSYNC : 0;
+	r |= (l & SVR4_O_DSYNC) ? O_DSYNC : 0;
 	r |= (l & SVR4_O_NONBLOCK) ? O_NONBLOCK : 0;
 	r |= (l & SVR4_O_PRIV) ? O_EXLOCK : 0;
 	r |= (l & SVR4_O_CREAT) ? O_CREAT : 0;
@@ -108,8 +124,13 @@ bsd_to_svr4_flags(l)
 	r |= (l & O_RDWR) ? SVR4_O_RDWR : 0;
 	r |= (l & O_NDELAY) ? SVR4_O_NONBLOCK : 0;
 	r |= (l & O_APPEND) ? SVR4_O_APPEND : 0;
-	r |= (l & O_FSYNC) ? SVR4_O_SYNC : 0;
+#if 0
+	/* Dellism ??? */
 	r |= (l & O_ASYNC) ? SVR4_O_RAIOSIG : 0;
+#endif
+	r |= (l & O_FSYNC) ? SVR4_O_SYNC : 0;
+	r |= (l & O_RSYNC) ? SVR4_O_RSYNC : 0;
+	r |= (l & O_DSYNC) ? SVR4_O_DSYNC : 0;
 	r |= (l & O_NONBLOCK) ? SVR4_O_NONBLOCK : 0;
 	r |= (l & O_EXLOCK) ? SVR4_O_PRIV : 0;
 	r |= (l & O_CREAT) ? SVR4_O_CREAT : 0;
@@ -146,7 +167,6 @@ bsd_to_svr4_flock(iflp, oflp)
 	oflp->l_pid = (svr4_pid_t) iflp->l_pid;
 }
 
-
 static void
 svr4_to_bsd_flock(iflp, oflp)
 	struct svr4_flock	*iflp;
@@ -171,7 +191,125 @@ svr4_to_bsd_flock(iflp, oflp)
 	oflp->l_start = (off_t) iflp->l_start;
 	oflp->l_len = (off_t) iflp->l_len;
 	oflp->l_pid = (pid_t) iflp->l_pid;
+}
 
+static void
+bsd_to_svr3_flock(iflp, oflp)
+	struct flock		*iflp;
+	struct svr4_flock_svr3	*oflp;
+{
+	switch (iflp->l_type) {
+	case F_RDLCK:
+		oflp->l_type = SVR4_F_RDLCK;
+		break;
+	case F_WRLCK:
+		oflp->l_type = SVR4_F_WRLCK;
+		break;
+	case F_UNLCK:
+		oflp->l_type = SVR4_F_UNLCK;
+		break;
+	default:
+		oflp->l_type = -1;
+		break;
+	}
+
+	oflp->l_whence = (short) iflp->l_whence;
+	oflp->l_start = (svr4_off_t) iflp->l_start;
+	oflp->l_len = (svr4_off_t) iflp->l_len;
+	oflp->l_sysid = 0;
+	oflp->l_pid = (svr4_pid_t) iflp->l_pid;
+}
+
+
+static void
+svr3_to_bsd_flock(iflp, oflp)
+	struct svr4_flock_svr3	*iflp;
+	struct flock		*oflp;
+{
+	switch (iflp->l_type) {
+	case SVR4_F_RDLCK:
+		oflp->l_type = F_RDLCK;
+		break;
+	case SVR4_F_WRLCK:
+		oflp->l_type = F_WRLCK;
+		break;
+	case SVR4_F_UNLCK:
+		oflp->l_type = F_UNLCK;
+		break;
+	default:
+		oflp->l_type = -1;
+		break;
+	}
+
+	oflp->l_whence = iflp->l_whence;
+	oflp->l_start = (off_t) iflp->l_start;
+	oflp->l_len = (off_t) iflp->l_len;
+	oflp->l_pid = (pid_t) iflp->l_pid;
+}
+
+static int
+fd_truncate(p, fd, flp, retval)
+	struct proc *p;
+	int fd;
+	struct flock *flp;
+	register_t *retval;
+{
+	struct filedesc *fdp = p->p_fd;
+	struct file *fp;
+	off_t start, length;
+	struct vnode *vp;
+	struct vattr vattr;
+	int error;
+	struct sys_ftruncate_args ft;
+
+	/*
+	 * We only support truncating the file.
+	 */
+	if ((fp = fd_getfile(fdp, fd)) == NULL)
+		return EBADF;
+
+	vp = (struct vnode *)fp->f_data;
+	if (fp->f_type != DTYPE_VNODE || vp->v_type == VFIFO)
+		return ESPIPE;
+
+	FREF(fp);
+
+	if ((error = VOP_GETATTR(vp, &vattr, p->p_ucred, p)) != 0)
+		goto out;
+
+	length = vattr.va_size;
+
+	switch (flp->l_whence) {
+	case SEEK_CUR:
+		start = fp->f_offset + flp->l_start;
+		break;
+
+	case SEEK_END:
+		start = flp->l_start + length;
+		break;
+
+	case SEEK_SET:
+		start = flp->l_start;
+		break;
+
+	default:
+		error = EINVAL;
+		goto out;
+	}
+
+	if (start + flp->l_len < length) {
+		/* We don't support free'ing in the middle of the file */
+		error = EINVAL;
+		goto out;
+	}
+
+	SCARG(&ft, fd) = fd;
+	SCARG(&ft, length) = start;
+
+	error = sys_ftruncate(p, &ft, retval);
+out:
+	FRELE(fp);
+	return (error);
 }
 
 int
@@ -185,28 +323,45 @@ svr4_sys_open(p, v, retval)
 	struct sys_open_args	cup;
 
 	caddr_t sg = stackgap_init(p->p_emul);
-	SVR4_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
+
+	SCARG(&cup, flags) = svr4_to_bsd_flags(SCARG(uap, flags));
+
+	if (SCARG(&cup, flags) & O_CREAT)
+		SVR4_CHECK_ALT_CREAT(p, &sg, SCARG(uap, path));
+	else
+		SVR4_CHECK_ALT_EXIST(p, &sg, SCARG(uap, path));
 
 	SCARG(&cup, path) = SCARG(uap, path);
-	SCARG(&cup, flags) = svr4_to_bsd_flags(SCARG(uap, flags));
 	SCARG(&cup, mode) = SCARG(uap, mode);
 	error = sys_open(p, &cup, retval);
 
 	if (error)
 		return error;
 
-	if ((SCARG(&cup, flags) & O_NOCTTY) && SESS_LEADER(p) &&
+	if (!(SCARG(&cup, flags) & O_NOCTTY) && SESS_LEADER(p) &&
 	    !(p->p_flag & P_CONTROLT)) {
 		struct filedesc	*fdp = p->p_fd;
-		struct file	*fp = fdp->fd_ofiles[*retval];
+		struct file	*fp;
 
+		if ((fp = fd_getfile(fdp, *retval)) == NULL)
+			return (EBADF);
+		FREF(fp);
 		/* ignore any error, just give it a try */
 		if (fp->f_type == DTYPE_VNODE)
 			(fp->f_ops->fo_ioctl) (fp, TIOCSCTTY, (caddr_t) 0, p);
+		FRELE(fp);
 	}
 	return 0;
 }
 
+int
+svr4_sys_open64(p, v, retval)
+	register struct proc *p;
+	void *v;  
+	register_t *retval;  
+{
+	return svr4_sys_open(p, v, retval);
+}
 
 int
 svr4_sys_creat(p, v, retval)
@@ -227,6 +382,37 @@ svr4_sys_creat(p, v, retval)
 	return sys_open(p, &cup, retval);
 }
 
+int
+svr4_sys_creat64(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	return (svr4_sys_creat(p, v, retval));
+}
+
+int             
+svr4_sys_llseek(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct svr4_sys_llseek_args *uap = v;
+	struct sys_lseek_args ap;
+                
+	SCARG(&ap, fd) = SCARG(uap, fd);
+
+#if BYTE_ORDER == BIG_ENDIAN
+	SCARG(&ap, offset) = (((long long) SCARG(uap, offset1)) << 32) |
+		SCARG(uap, offset2);
+#else   
+	SCARG(&ap, offset) = (((long long) SCARG(uap, offset2)) << 32) |
+		SCARG(uap, offset1);
+#endif  
+	SCARG(&ap, whence) = SCARG(uap, whence);
+   
+	return sys_lseek(p, &ap, retval);
+}
 
 int
 svr4_sys_access(p, v, retval)
@@ -246,6 +432,73 @@ svr4_sys_access(p, v, retval)
 	return sys_access(p, &cup, retval);
 }
 
+int
+svr4_sys_pread(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct svr4_sys_pread_args *uap = v;
+	struct sys_pread_args pra;
+
+	SCARG(&pra, fd) = SCARG(uap, fd);
+	SCARG(&pra, buf) = SCARG(uap, buf);
+	SCARG(&pra, nbyte) = SCARG(uap, nbyte);
+	SCARG(&pra, offset) = SCARG(uap, off);
+
+	return (sys_pread(p, &pra, retval));
+}
+
+int
+svr4_sys_pread64(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct svr4_sys_pread64_args *uap = v;
+	struct sys_pread_args pra;
+
+	SCARG(&pra, fd) = SCARG(uap, fd);
+	SCARG(&pra, buf) = SCARG(uap, buf);
+	SCARG(&pra, nbyte) = SCARG(uap, nbyte);
+	SCARG(&pra, offset) = SCARG(uap, off);
+
+	return (sys_pread(p, &pra, retval));
+}
+
+int
+svr4_sys_pwrite(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct svr4_sys_pwrite_args *uap = v;
+	struct sys_pwrite_args pwa;
+
+	SCARG(&pwa, fd) = SCARG(uap, fd);
+	SCARG(&pwa, buf) = SCARG(uap, buf);
+	SCARG(&pwa, nbyte) = SCARG(uap, nbyte);
+	SCARG(&pwa, offset) = SCARG(uap, off);
+
+	return (sys_pwrite(p, &pwa, retval));
+}
+
+int
+svr4_sys_pwrite64(p, v, retval)
+	register struct proc *p;
+	void *v;
+	register_t *retval;
+{
+	struct svr4_sys_pwrite64_args *uap = v;
+	struct sys_pwrite_args pwa;
+
+	SCARG(&pwa, fd) = SCARG(uap, fd);
+	SCARG(&pwa, buf) = SCARG(uap, buf);
+	SCARG(&pwa, nbyte) = SCARG(uap, nbyte);
+	SCARG(&pwa, offset) = SCARG(uap, off);
+
+	return (sys_pwrite(p, &pwa, retval));
+}
 
 int
 svr4_sys_fcntl(p, v, retval)
@@ -276,16 +529,66 @@ svr4_sys_fcntl(p, v, retval)
 		return error;
 
 	case F_SETFL:
-		SCARG(&fa, arg) = (void *) svr4_to_bsd_flags(SCARG(uap, arg));
-		return sys_fcntl(p, &fa, retval);
+		{
+			/*
+			 * we must save the O_ASYNC flag, as that is
+			 * handled by ioctl(_, I_SETSIG, _) emulation.
+			 */
+			register_t flags;
+			int cmd;
+
+			cmd = SCARG(&fa, cmd); /* save it for a while */
+
+			SCARG(&fa, cmd) = F_GETFL;
+			if ((error = sys_fcntl(p, &fa, &flags)) != 0)
+				return error;
+			flags &= O_ASYNC;
+			flags |= svr4_to_bsd_flags((u_long) SCARG(uap, arg));
+			SCARG(&fa, cmd) = cmd;
+			SCARG(&fa, arg) = (void *) flags;
+			return sys_fcntl(p, &fa, retval);
+		}
 
 	case F_GETLK:
+		if (SCARG(uap, cmd) == SVR4_F_GETLK_SVR3)		{
+			struct svr4_flock_svr3	ifl;
+			struct flock		*flp, fl;
+			caddr_t			sg = stackgap_init(p->p_emul);
+
+			flp = stackgap_alloc(&sg, sizeof(*flp));
+			error = copyin((caddr_t)SCARG(uap, arg), (caddr_t)&ifl,
+			    sizeof ifl);
+			if (error)
+				return error;
+			svr3_to_bsd_flock(&ifl, &fl);
+
+			error = copyout(&fl, flp, sizeof fl);
+			if (error)
+				return error;
+
+			SCARG(&fa, fd) = SCARG(uap, fd);
+			SCARG(&fa, cmd) = F_GETLK;
+			SCARG(&fa, arg) = (void *)flp;
+			error = sys_fcntl(p, &fa, retval);
+			if (error)
+				return error;
+
+			error = copyin(flp, &fl, sizeof fl);
+			if (error)
+				return error;
+
+			bsd_to_svr3_flock(&fl, &ifl);
+
+			return copyout((caddr_t)&ifl, (caddr_t)SCARG(uap, arg),
+			    sizeof ifl);
+		}
+		/*FALLTHROUGH*/
 	case F_SETLK:
 	case F_SETLKW:
 		{
-			struct svr4_flock	 ifl;
+			struct svr4_flock	ifl;
 			struct flock		*flp, fl;
-			caddr_t sg = stackgap_init(p->p_emul);
+			caddr_t			sg = stackgap_init(p->p_emul);
 
 			flp = stackgap_alloc(&sg, sizeof(struct flock));
 			SCARG(&fa, arg) = (void *) flp;
@@ -312,139 +615,39 @@ svr4_sys_fcntl(p, v, retval)
 
 			return copyout(&ifl, SCARG(uap, arg), sizeof ifl);
 		}
+	case -1:
+		switch (SCARG(uap, cmd)) {
+		case SVR4_F_DUP2FD:
+			{
+				struct sys_dup2_args du;
+
+				SCARG(&du, from) = SCARG(uap, fd);
+				SCARG(&du, to) = (int)SCARG(uap, arg);
+				error = sys_dup2(p, &du, retval);
+				if (error)
+					return error;
+				*retval = SCARG(&du, to);
+				return 0;
+			}
+		case SVR4_F_FREESP:
+			{
+				struct svr4_flock       ifl;
+				struct flock		fl;
+
+				error = copyin(SCARG(uap, arg), &ifl,
+				    sizeof ifl);
+				if (error)
+					return error;
+				svr4_to_bsd_flock(&ifl, &fl);
+				return fd_truncate(p, SCARG(uap, fd), &fl,
+				    retval);
+			}
+
+		default:
+			return ENOSYS;
+		}
+
 	default:
 		return ENOSYS;
 	}
-}
-
-
-static void
-svr4_pollscan(p, pl, nfd, retval)
-	struct proc *p;
-	struct svr4_pollfd *pl;
-	int nfd;
-	register_t *retval;
-{
-	register struct filedesc *fdp = p->p_fd;
-	register int msk, i;
-	struct file *fp;
-	int n = 0;
-	static int flag[3] = { FREAD, FWRITE, 0 };
-	static int pflag[3] = { SVR4_POLLIN|SVR4_POLLRDNORM, 
-				SVR4_POLLOUT, SVR4_POLLERR };
-
-	/* 
-	 * XXX: We need to implement the rest of the flags.
-	 */
-	for (i = 0; i < nfd; i++) {
-		fp = fdp->fd_ofiles[pl[i].fd];
-		if (fp == NULL) {
-			if (pl[i].events & SVR4_POLLNVAL) {
-			    pl[i].revents |= SVR4_POLLNVAL;
-			    n++;
-			}
-			continue;
-		}
-		for (msk = 0; msk < 3; msk++) {
-			if (pl[i].events & pflag[msk]) {
-				if ((*fp->f_ops->fo_select)(fp, flag[msk], p)) {
-					pl[i].revents |= 
-						pflag[msk] & pl[i].events;
-					n++;
-				}
-			}
-		}
-	}
-	*retval = n;
-}
-
-
-/*
- * We are using the same mechanism as select only we encode/decode args
- * differently.
- */
-int
-svr4_sys_poll(p, v, retval)
-	register struct proc *p;
-	void *v;
-	register_t *retval;
-{
-	struct svr4_sys_poll_args *uap = v;
-	int i, s;
-	int error, error2;
-	size_t sz = sizeof(struct svr4_pollfd) * SCARG(uap, nfds);
-	struct svr4_pollfd *pl;
-	int msec = SCARG(uap, timeout);
-	struct timeval atv;
-	int timo;
-	u_int ni;
-	int ncoll;
-	extern int nselcoll, selwait;
-
-	pl = (struct svr4_pollfd *) malloc(sz, M_TEMP, M_WAITOK);
-
-	if (error = copyin(SCARG(uap, fds), pl, sz))
-		goto bad;
-
-	for (i = 0; i < SCARG(uap, nfds); i++) {
-		DPRINTF(("pollfd %d, %x\n", pl[i].fd, pl[i].events));
-		pl[i].revents = 0;
-	}
-
-	if (msec != -1) {
-		atv.tv_sec = msec / 1000;
-		atv.tv_usec = (msec - (atv.tv_sec * 1000)) * 1000;
-
-		if (itimerfix(&atv)) {
-			error = EINVAL;
-			goto done;
-		}
-		s = splclock();
-		timeradd(&atv, &time, &atv);
-		timo = hzto(&atv);
-		/*
-		 * Avoid inadvertently sleeping forever.
-		 */
-		if (timo == 0)
-			timo = 1;
-		splx(s);
-	} else
-		timo = 0;
-
-retry:
-	ncoll = nselcoll;
-	p->p_flag |= P_SELECT;
-	svr4_pollscan(p, pl, SCARG(uap, nfds), retval);
-	if (*retval)
-		goto done;
-	s = splhigh();
-	if (timo && timercmp(&time, &atv, >=)) {
-		splx(s);
-		goto done;
-	}
-	if ((p->p_flag & P_SELECT) == 0 || nselcoll != ncoll) {
-		splx(s);
-		goto retry;
-	}
-	p->p_flag &= ~P_SELECT;
-	error = tsleep((caddr_t)&selwait, PSOCK | PCATCH, "svr4_poll", timo);
-	splx(s);
-	if (error == 0)
-		goto retry;
-
-done:
-	p->p_flag &= ~P_SELECT;
-	/* poll is not restarted after signals... */
-	if (error == ERESTART)
-		error = EINTR;
-	if (error == EWOULDBLOCK)
-		error = 0;
-
-	if (error2 = copyout(pl, SCARG(uap, fds), sz))
-		error = error2;
-
-bad:
-	free((char *) pl, M_TEMP);
-
-	return (error);
 }

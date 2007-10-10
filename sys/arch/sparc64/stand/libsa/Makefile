@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 1997/09/17 10:46:23 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 2001/10/10 20:41:40 miod Exp $
 
 LIB=	sa
 
@@ -12,9 +12,11 @@ CFLAGS= ${CEXTRAFLAGS} ${AFLAGS} -O2 -D__INTERNAL_LIBSA_CREAD -nostdinc \
 	-I${.CURDIR}/../../../../lib/libsa \
 	-I${.OBJDIR}
 
+CPPFLAGS+= -D__INTERNAL_LIBSA_CREAD
+
 # stand routines
 SRCS=	alloc.c exit.c exec.c getfile.c gets.c globals.c \
-	memcmp.c memcpy.c memset.c printf.c strerror.c strncpy.c
+	memcmp.c memcpy.c memset.c printf.c snprintf.c strerror.c strncpy.c
 
 # io routines
 SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fstat.c ioctl.c lseek.c \
@@ -34,13 +36,11 @@ ${OBJS}:	${.CURDIR}/../Makefile.inc
 NOPROFILE=
 NOPIC=
 
-.NOPATH: machine
-${SRCS}: machine
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir) && !make(obj)
+.BEGIN:
+	@([ -h machine ] || ln -s ${.CURDIR}/../../include machine)
+.endif
 
 install:
 
 .include <bsd.lib.mk>
-
-machine:
-	rm -f machine
-	ln -s ${.CURDIR}/../../include machine

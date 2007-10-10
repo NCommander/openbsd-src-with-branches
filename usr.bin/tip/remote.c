@@ -1,4 +1,5 @@
-/*	$NetBSD: remote.c,v 1.3 1994/12/08 09:31:03 jtc Exp $	*/
+/*	$OpenBSD: remote.c,v 1.16 2006/06/06 23:24:52 deraadt Exp $	*/
+/*	$NetBSD: remote.c,v 1.5 1997/04/20 00:02:45 mellon Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +32,7 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1992, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
@@ -44,7 +41,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)remote.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: remote.c,v 1.3 1994/12/08 09:31:03 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: remote.c,v 1.16 2006/06/06 23:24:52 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -71,17 +68,16 @@ static char	*db_array[3] = { _PATH_REMOTE, 0, 0 };
 
 #define cgetflag(f)	(cgetcap(bp, f, ':') != NULL)
 
-static
-getremcap(host)
-	register char *host;
+static void	getremcap(char *);
+
+static void
+getremcap(char *host)
 {
-	register char **p, ***q;
-	char *bp;
-	char *rempath;
+	char **p, ***q, *bp, *rempath;
 	int   stat;
 
 	rempath = getenv("REMOTE");
-	if (rempath != NULL)
+	if (rempath != NULL) {
 		if (*rempath != '/')
 			/* we have an entry */
 			cgetset(rempath);
@@ -89,10 +85,11 @@ getremcap(host)
 			db_array[1] = rempath;
 			db_array[2] = _PATH_REMOTE;
 		}
+	}
 
 	if ((stat = cgetent(&bp, db_array, host)) < 0) {
-		if (DV ||
-		    host[0] == '/' && access(DV = host, R_OK | W_OK) == 0) {
+		if ((DV != NULL) ||
+		    (host[0] == '/' && access(DV = host, R_OK | W_OK) == 0)) {
 			CU = DV;
 			HO = host;
 			HW = 1;
@@ -102,17 +99,19 @@ getremcap(host)
 			FS = DEFFS;
 			return;
 		}
-		switch(stat) {
+		switch (stat) {
 		case -1:
-			fprintf(stderr, "tip: unknown host %s\n", host);
+			fprintf(stderr, "%s: unknown host %s\n", __progname,
+			    host);
 			break;
 		case -2:
-			fprintf(stderr, 
-			    "tip: can't open host description file\n");
+			fprintf(stderr,
+			    "%s: can't open host description file\n",
+			    __progname);
 			break;
 		case -3:
-			fprintf(stderr, 
-			    "tip: possible reference loop in host description file\n");
+			fprintf(stderr,
+			    "%s: possible reference loop in host description file\n", __progname);
 			break;
 		}
 		exit(3);
@@ -123,20 +122,26 @@ getremcap(host)
 			cgetstr(bp, *p, *q);
 	if (!BR && (cgetnum(bp, "br", &BR) == -1))
 		BR = DEFBR;
+	if (!LD && (cgetnum(bp, "ld", &LD) == -1))
+		LD = TTYDISC;
 	if (cgetnum(bp, "fs", &FS) == -1)
 		FS = DEFFS;
 	if (DU < 0)
 		DU = 0;
 	else
 		DU = cgetflag("du");
-	if (DV == NOSTR) {
+	if (DV == NULL) {
 		fprintf(stderr, "%s: missing device spec\n", host);
 		exit(3);
 	}
-	if (DU && CU == NOSTR)
+	if (DU && CU == NULL)
 		CU = DV;
-	if (DU && PN == NOSTR) {
+	if (DU && PN == NULL) {
 		fprintf(stderr, "%s: missing phone number\n", host);
+		exit(3);
+	}
+	if (DU && AT == NULL) {
+		fprintf(stderr, "%s: missing acu type\n", host);
 		exit(3);
 	}
 
@@ -147,46 +152,50 @@ getremcap(host)
 	 *   from the description file
 	 */
 	if (!HW)
-		HW = (CU == NOSTR) || (DU && equal(DV, CU));
+		HW = (CU == NULL) || (DU && equal(DV, CU));
 	HO = host;
 	/*
 	 * see if uppercase mode should be turned on initially
 	 */
 	if (cgetflag("ra"))
-		boolean(value(RAISE)) = 1;
+		setboolean(value(RAISE), 1);
 	if (cgetflag("ec"))
-		boolean(value(ECHOCHECK)) = 1;
+		setboolean(value(ECHOCHECK), 1);
 	if (cgetflag("be"))
-		boolean(value(BEAUTIFY)) = 1;
+		setboolean(value(BEAUTIFY), 1);
 	if (cgetflag("nb"))
-		boolean(value(BEAUTIFY)) = 0;
+		setboolean(value(BEAUTIFY), 0);
 	if (cgetflag("sc"))
-		boolean(value(SCRIPT)) = 1;
+		setboolean(value(SCRIPT), 1);
 	if (cgetflag("tb"))
-		boolean(value(TABEXPAND)) = 1;
+		setboolean(value(TABEXPAND), 1);
 	if (cgetflag("vb"))
-		boolean(value(VERBOSE)) = 1;
+		setboolean(value(VERBOSE), 1);
 	if (cgetflag("nv"))
-		boolean(value(VERBOSE)) = 0;
+		setboolean(value(VERBOSE), 0);
 	if (cgetflag("ta"))
-		boolean(value(TAND)) = 1;
+		setboolean(value(TAND), 1);
 	if (cgetflag("nt"))
-		boolean(value(TAND)) = 0;
+		setboolean(value(TAND), 0);
 	if (cgetflag("rw"))
-		boolean(value(RAWFTP)) = 1;
+		setboolean(value(RAWFTP), 1);
 	if (cgetflag("hd"))
-		boolean(value(HALFDUPLEX)) = 1;
-	if (RE == NOSTR)
+		setboolean(value(HALFDUPLEX), 1);
+	if (cgetflag("dc"))
+		setboolean(value(DC), 1);
+	if (cgetflag("hf"))
+		setboolean(value(HARDWAREFLOW), 1);
+	if (RE == NULL)
 		RE = (char *)"tip.record";
-	if (EX == NOSTR)
+	if (EX == NULL)
 		EX = (char *)"\t\n\b\f";
-	if (ES != NOSTR)
+	if (ES != NULL)
 		vstring("es", ES);
-	if (FO != NOSTR)
+	if (FO != NULL)
 		vstring("fo", FO);
-	if (PR != NOSTR)
+	if (PR != NULL)
 		vstring("pr", PR);
-	if (RC != NOSTR)
+	if (RC != NULL)
 		vstring("rc", RC);
 	if (cgetnum(bp, "dl", &DL) == -1)
 		DL = 0;
@@ -197,16 +206,15 @@ getremcap(host)
 }
 
 char *
-getremote(host)
-	char *host;
+getremote(char *host)
 {
-	register char *cp;
+	char *cp;
 	static char *next;
 	static int lookedup = 0;
 
 	if (!lookedup) {
-		if (host == NOSTR && (host = getenv("HOST")) == NOSTR) {
-			fprintf(stderr, "tip: no host specified\n");
+		if (host == NULL && (host = getenv("HOST")) == NULL) {
+			fprintf(stderr, "%s: no host specified\n", __progname);
 			exit(3);
 		}
 		getremcap(host);
@@ -217,11 +225,11 @@ getremote(host)
 	 * We return a new device each time we're called (to allow
 	 *   a rotary action to be simulated)
 	 */
-	if (next == NOSTR)
-		return (NOSTR);
-	if ((cp = index(next, ',')) == NULL) {
+	if (next == NULL)
+		return (NULL);
+	if ((cp = strchr(next, ',')) == NULL) {
 		DV = next;
-		next = NOSTR;
+		next = NULL;
 	} else {
 		*cp++ = '\0';
 		DV = next;

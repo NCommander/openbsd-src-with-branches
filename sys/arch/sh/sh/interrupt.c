@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: interrupt.c,v 1.6 2007/05/29 18:10:43 miod Exp $	*/
 /*	$NetBSD: interrupt.c,v 1.18 2006/01/25 00:02:57 uwe Exp $	*/
 
 /*-
@@ -48,6 +48,7 @@
 #include <sh/trap.h>
 #include <sh/intcreg.h>
 #include <sh/tmureg.h>
+#include <machine/atomic.h>
 #include <machine/intr.h>
 
 void intc_intr_priority(int, int);
@@ -65,6 +66,8 @@ void tmu1_oneshot(void);
 int tmu1_intr(void *);
 void tmu2_oneshot(void);
 int tmu2_intr(void *);
+
+int netisr;
 
 /*
  * EVTCODE to intc_intrhand mapper.
@@ -135,6 +138,11 @@ intc_intr_establish(int evtcode, int trigger, int level,
 	ih->ih_arg	= ih_arg;
 	ih->ih_level	= level << 4;	/* convert to SR.IMASK format. */
 	ih->ih_evtcode	= evtcode;
+	ih->ih_irq	= evtcode >> 5;
+	ih->ih_name	= name;
+	if (name)
+		evcount_attach(&ih->ih_count, name, (void *)&ih->ih_irq,
+		    &evcount_intr);
 
 	/* Map interrupt handler */
 	EVTCODE_TO_IH_INDEX(evtcode) = ih->ih_idx;
@@ -159,6 +167,8 @@ intc_intr_disestablish(void *arg)
 	/* Unmap interrupt handler */
 	EVTCODE_TO_IH_INDEX(evtcode) = 0;
 
+	if (ih->ih_name)
+		evcount_detach(&ih->ih_count);
 	intc_free_ih(ih);
 }
 
@@ -392,6 +402,7 @@ intc_alloc_ih(void)
 void
 intc_free_ih(struct intc_intrhand *ih)
 {
+	ih->ih_idx = 0;
 	memset(ih, 0, sizeof(*ih));
 }
 
@@ -574,9 +585,6 @@ intpri_intr_disable(int evtcode)
 void
 softintr_init(void)
 {
-#if 0
-	static const char *softintr_names[] = IPL_SOFTNAMES;
-#endif
 	struct sh_soft_intr *asi;
 	int i;
 
@@ -586,10 +594,6 @@ softintr_init(void)
 
 		asi->softintr_ipl = IPL_SOFT + i;
 		simple_lock_init(&asi->softintr_slock);
-#if 0
-		evcnt_attach_dynamic(&asi->softintr_evcnt, EVCNT_TYPE_INTR,
-		    NULL, "soft", softintr_names[i]);
-#endif
 	}
 
 	/* XXX Establish legacy soft interrupt handlers. */
@@ -613,9 +617,6 @@ softintr_dispatch(int ipl)
 	s = _cpu_intr_suspend();
 
 	asi = &sh_soft_intrs[ipl - IPL_SOFT];
-
-	if (TAILQ_FIRST(&asi->softintr_q) != NULL)
-		asi->softintr_evcnt.ev_count++;
 
 	while ((sih = TAILQ_FIRST(&asi->softintr_q)) != NULL) {
 		TAILQ_REMOVE(&asi->softintr_q, sih, sih_q);
@@ -691,21 +692,21 @@ softintr_disestablish(void *arg)
 void
 netintr(void)
 {
+	int n;
+
+	while ((n = netisr) != 0) {
+		atomic_clearbits_int(&netisr, n);
+
 #define	DONETISR(bit, fn)						\
-	do {								\
-		if (n & (1 << bit))					\
-			fn();						\
-	} while (/*CONSTCOND*/0)
+		do {							\
+			if (n & (1 << bit))				\
+				fn();					\
+		} while (/*CONSTCOND*/0)
 
-	int s, n;
-
-	s = splnet();
-	n = netisr;
-	netisr = 0;
-	splx(s);
 #include <net/netisr_dispatch.h>
 
 #undef DONETISR
+	}
 }
 
 /*

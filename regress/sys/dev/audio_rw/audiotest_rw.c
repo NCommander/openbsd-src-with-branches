@@ -1,3 +1,5 @@
+/*	$OpenBSD: audiotest_rw.c,v 1.3 2007/07/06 15:56:15 jmc Exp $	*/
+
 /*
  * Copyright (c) 2007 Jacob Meuser <jakemsr@sdf.lonestar.org>
  *
@@ -14,9 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * $Id: audiotest_rw.c,v 1.3 2007/07/04 04:03:07 jakemsr Exp $
- */
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -37,7 +36,7 @@ extern char *__progname;
 
 void useage(void);
 int audio_set_duplex(int, char *, int);
-int audio_set_info(int, u_int, u_int, u_int, u_int);
+int audio_set_info(int, u_int, u_int, u_int, u_int, u_int);
 int audio_wait_frame(int, u_int, int, int);
 int audio_do_frame(int, size_t , char *, char *, u_int, int, int);
 int audio_do_test(int, size_t, char *, char *, u_int, int, int, int, int);
@@ -46,8 +45,8 @@ void
 useage(void)
 {
 	fprintf(stderr,
-	    "Usage: %s [-dpsv] [-b buffersize] [-c channels] [-e encoding]\n"
-	    "          [-f device] [-i input ] [-l loops] [-o output] [-r samplerate]\n",
+	    "usage: %s [-dpsv] [-b buffersize] [-c channels] [-e encoding]\n"
+	    "          [-f device] [-i input] [-l loops] [-o output] [-r samplerate]\n",
 	    __progname);
 	return;
 }
@@ -89,7 +88,7 @@ int i, has_duplex;
 
 int
 audio_set_info(int audio_fd, u_int mode, u_int encoding, u_int sample_rate,
-    u_int channels)
+    u_int channels, u_int buffer_size)
 {
 audio_info_t audio_if;
 audio_encoding_t audio_enc;
@@ -115,6 +114,7 @@ u_int precision;
 	AUDIO_INITINFO(&audio_if);
 
 	audio_if.mode = mode;
+	audio_if.blocksize = buffer_size;
 
 	if (mode & AUMODE_RECORD) {
 		audio_if.record.precision = precision;
@@ -567,7 +567,8 @@ extern int optind;
 	if (audio_set_duplex(audio_fd, audio_device, use_duplex))
 		errx(1, "could not set duplex mode");
 
-	if (audio_set_info(audio_fd, mode, encoding, sample_rate, channels))
+	if (audio_set_info(audio_fd, mode, encoding, sample_rate, channels,
+	    (u_int)buffer_size))
 		errx(1, "could not initialize audio device");
 
 	if (verbose) {

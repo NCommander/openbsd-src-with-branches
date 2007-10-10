@@ -1,4 +1,5 @@
-/*	$NetBSD: lcmd1.c,v 1.5 1995/09/29 00:44:02 cgd Exp $	*/
+/*	$OpenBSD: lcmd1.c,v 1.8 2003/06/03 02:56:23 millert Exp $	*/
+/*	$NetBSD: lcmd1.c,v 1.6 1996/02/08 20:45:00 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)lcmd1.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: lcmd1.c,v 1.5 1995/09/29 00:44:02 cgd Exp $";
+static char rcsid[] = "$OpenBSD: lcmd1.c,v 1.8 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,7 +46,10 @@ static char rcsid[] = "$NetBSD: lcmd1.c,v 1.5 1995/09/29 00:44:02 cgd Exp $";
 #include "value.h"
 #include "lcmd.h"
 #include "var.h"
+#include <sys/types.h>
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 struct lcmd_arg arg_window[] = {
 	{ "row",	1,	ARG_NUM },
@@ -69,15 +69,15 @@ struct lcmd_arg arg_window[] = {
 
 l_window(v, a)
 struct value *v;
-register struct value *a;
+struct value *a;
 {
 	struct ww *w;
 	int col, row, ncol, nrow, id, nline;
 	char *label;
-	char haspty, hasframe, mapnl, keepopen, smooth;
+	int haspty, hasframe, mapnl, keepopen, smooth;
 	char *shf, **sh;
 	char *argv[sizeof default_shell / sizeof *default_shell];
-	register char **pp;
+	char **pp;
 
 	if ((id = findid()) < 0)
 		return;
@@ -108,7 +108,7 @@ register struct value *a;
 			*pp = a->v_str;
 		*pp = 0;
 		shf = *(sh = argv);
-		if (*sh = rindex(shf, '/'))
+		if (*sh = strrchr(shf, '/'))
 			(*sh)++;
 		else
 			*sh = shf;
@@ -116,12 +116,22 @@ register struct value *a;
 		sh = default_shell;
 		shf = default_shellfile;
 	}
-	if ((w = openwin(id, row, col, nrow, ncol, nline, label, haspty,
-	    hasframe, shf, sh)) == 0)
+	if ((w = openwin(id, row, col, nrow, ncol, nline, label,
+	    haspty ? WWT_PTY : WWT_SOCKET, hasframe ? WWU_HASFRAME : 0, shf,
+	    sh)) == 0)
 		return;
-	w->ww_mapnl = mapnl;
-	w->ww_keepopen = keepopen;
-	w->ww_noupdate = !smooth;
+	if (mapnl)
+		SET(w->ww_wflags, WWW_MAPNL);
+	else
+		CLR(w->ww_wflags, WWW_MAPNL);
+	if (keepopen)
+		SET(w->ww_uflags, WWU_KEEPOPEN);
+	else
+		CLR(w->ww_uflags, WWU_KEEPOPEN);
+	if (!smooth)
+		SET(w->ww_wflags, WWW_NOUPDATE);
+	else
+		CLR(w->ww_wflags, WWW_NOUPDATE);
 	v->v_type = V_NUM;
 	v->v_num = id + 1;
 }
@@ -132,7 +142,7 @@ struct lcmd_arg arg_def_nline[] = {
 };
 
 l_def_nline(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	v->v_num = default_nline;
 	v->v_type = V_NUM;
@@ -147,7 +157,7 @@ struct lcmd_arg arg_smooth[] = {
 };
 
 l_smooth(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	struct ww *w;
 
@@ -155,8 +165,11 @@ register struct value *v, *a;
 	v->v_num = 0;
 	if ((w = vtowin(a++, selwin)) == 0)
 		return;
-	v->v_num = !w->ww_noupdate;
-	w->ww_noupdate = !vtobool(a, v->v_num, v->v_num);
+	v->v_num = ISSET(w->ww_wflags, WWW_NOUPDATE) == 0;
+	if (!vtobool(a, v->v_num, v->v_num))
+		SET(w->ww_wflags, WWW_NOUPDATE);
+	else
+		CLR(w->ww_wflags, WWW_NOUPDATE);
 }
 
 struct lcmd_arg arg_def_smooth[] = {
@@ -165,7 +178,7 @@ struct lcmd_arg arg_def_smooth[] = {
 };
 
 l_def_smooth(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	v->v_type = V_NUM;
 	v->v_num = default_smooth;
@@ -178,7 +191,7 @@ struct lcmd_arg arg_select[] = {
 };
 
 l_select(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	struct ww *w;
 
@@ -197,7 +210,7 @@ struct lcmd_arg arg_debug[] = {
 };
 
 l_debug(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	v->v_type = V_NUM;
 	v->v_num = debug;
@@ -210,7 +223,7 @@ struct lcmd_arg arg_escape[] = {
 };
 
 l_escape(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	char buf[2];
 
@@ -234,7 +247,7 @@ struct lcmd_arg arg_label[] = {
 /*ARGSUSED*/
 l_label(v, a)
 struct value *v;
-register struct value *a;
+struct value *a;
 {
 	struct ww *w;
 
@@ -252,7 +265,7 @@ struct lcmd_arg arg_foreground[] = {
 };
 
 l_foreground(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	struct ww *w;
 	char flag;
@@ -275,7 +288,7 @@ struct lcmd_arg arg_terse[] = {
 };
 
 l_terse(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	v->v_type = V_NUM;
 	v->v_num = terse;
@@ -288,7 +301,7 @@ struct lcmd_arg arg_source[] = {
 };
 
 l_source(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	v->v_type = V_NUM;
 	if (a->v_type != V_ERR && dosource(a->v_str) < 0) {
@@ -307,7 +320,7 @@ struct lcmd_arg arg_write[] = {
 /*ARGSUSED*/
 l_write(v, a)
 struct value *v;
-register struct value *a;
+struct value *a;
 {
 	char buf[20];
 	struct ww *w;
@@ -316,7 +329,7 @@ register struct value *a;
 		return;
 	while (a->v_type != V_ERR) {
 		if (a->v_type == V_NUM) {
-			(void) sprintf(buf, "%d", a->v_num);
+			(void) snprintf(buf, sizeof(buf), "%d", a->v_num);
 			(void) write(w->ww_pty, buf, strlen(buf));
 		} else
 			(void) write(w->ww_pty, a->v_str, strlen(a->v_str));
@@ -333,7 +346,7 @@ struct lcmd_arg arg_close[] = {
 /*ARGSUSED*/
 l_close(v, a)
 struct value *v;
-register struct value *a;
+struct value *a;
 {
 	struct ww *w;
 
@@ -351,7 +364,7 @@ struct lcmd_arg arg_cursormodes[] = {
 };
 
 l_cursormodes(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 
 	v->v_type = V_NUM;
@@ -366,7 +379,7 @@ struct lcmd_arg arg_unset[] = {
 };
 
 l_unset(v, a)
-register struct value *v, *a;
+struct value *v, *a;
 {
 	v->v_type = V_NUM;
 	switch (a->v_type) {
@@ -387,7 +400,7 @@ register struct value *v, *a;
 
 struct ww *
 vtowin(v, w)
-register struct value *v;
+struct value *v;
 struct ww *w;
 {
 	switch (v->v_type) {
@@ -409,7 +422,7 @@ struct ww *w;
 }
 
 vtobool(v, def, err)
-register struct value *v;
+struct value *v;
 char def, err;
 {
 	switch (v->v_type) {

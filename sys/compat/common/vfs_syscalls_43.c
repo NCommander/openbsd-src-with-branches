@@ -1,4 +1,5 @@
-/*	$NetBSD: vfs_syscalls_43.c,v 1.3 1995/10/07 06:26:31 mycroft Exp $	*/
+/*	$OpenBSD: vfs_syscalls_43.c,v 1.26 2005/05/26 00:33:45 pedro Exp $	*/
+/*	$NetBSD: vfs_syscalls_43.c,v 1.4 1996/03/14 19:31:52 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -62,13 +59,19 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
+#include <uvm/uvm_extern.h>
+
+#include <sys/pipe.h>
+
+static void cvtstat(struct stat *, struct stat43 *);
+
 /*
- * Convert from an old to a new stat structure.
+ * Convert from a new to an old stat structure.
  */
-static int
+static void
 cvtstat(st, ost)
 	struct stat *st;
-	struct ostat *ost;
+	struct stat43 *ost;
 {
 
 	ost->st_dev = st->st_dev;
@@ -103,23 +106,26 @@ compat_43_sys_stat(p, v, retval)
 {
 	register struct compat_43_sys_stat_args /* {
 		syscallarg(char *) path;
-		syscallarg(struct ostat *) ub;
+		syscallarg(struct stat43 *) ub;
 	} */ *uap = v;
 	struct stat sb;
-	struct ostat osb;
+	struct stat43 osb;
 	int error;
 	struct nameidata nd;
 
 	NDINIT(&nd, LOOKUP, FOLLOW | LOCKLEAF, UIO_USERSPACE,
 	    SCARG(uap, path), p);
-	if (error = namei(&nd))
+	if ((error = namei(&nd)) != 0)
 		return (error);
 	error = vn_stat(nd.ni_vp, &sb, p);
 	vput(nd.ni_vp);
 	if (error)
 		return (error);
+	/* Don't let non-root see generation numbers (for NFS security) */
+	if (suser(p, 0))
+		sb.st_gen = 0;
 	cvtstat(&sb, &osb);
-	error = copyout((caddr_t)&osb, (caddr_t)SCARG(uap, ub), sizeof (osb));
+	error = copyout(&osb, SCARG(uap, ub), sizeof(osb));
 	return (error);
 }
 
@@ -136,100 +142,65 @@ compat_43_sys_lstat(p, v, retval)
 {
 	register struct compat_43_sys_lstat_args /* {
 		syscallarg(char *) path;
-		syscallarg(struct ostat *) ub;
+		syscallarg(struct stat43 *) ub;
 	} */ *uap = v;
-	struct vnode *vp, *dvp;
-	struct stat sb, sb1;
-	struct ostat osb;
+	struct stat sb;
+	struct stat43 osb;
 	int error;
 	struct nameidata nd;
 
-	NDINIT(&nd, LOOKUP, NOFOLLOW | LOCKLEAF | LOCKPARENT, UIO_USERSPACE,
+	NDINIT(&nd, LOOKUP, NOFOLLOW | LOCKLEAF, UIO_USERSPACE,
 	    SCARG(uap, path), p);
-	if (error = namei(&nd))
+	if ((error = namei(&nd)) != 0)
 		return (error);
-	/*
-	 * For symbolic links, always return the attributes of its
-	 * containing directory, except for mode, size, and links.
-	 */
-	vp = nd.ni_vp;
-	dvp = nd.ni_dvp;
-	if (vp->v_type != VLNK) {
-		if (dvp == vp)
-			vrele(dvp);
-		else
-			vput(dvp);
-		error = vn_stat(vp, &sb, p);
-		vput(vp);
-		if (error)
-			return (error);
-	} else {
-		error = vn_stat(dvp, &sb, p);
-		vput(dvp);
-		if (error) {
-			vput(vp);
-			return (error);
-		}
-		error = vn_stat(vp, &sb1, p);
-		vput(vp);
-		if (error)
-			return (error);
-		sb.st_mode &= ~S_IFDIR;
-		sb.st_mode |= S_IFLNK;
-		sb.st_nlink = sb1.st_nlink;
-		sb.st_size = sb1.st_size;
-		sb.st_blocks = sb1.st_blocks;
-	}
+	error = vn_stat(nd.ni_vp, &sb, p);
+	vput(nd.ni_vp);
+	if (error)
+		return (error);
+	/* Don't let non-root see generation numbers (for NFS security) */
+	if (suser(p, 0))
+		sb.st_gen = 0;
 	cvtstat(&sb, &osb);
-	error = copyout((caddr_t)&osb, (caddr_t)SCARG(uap, ub), sizeof (osb));
+	error = copyout(&osb, SCARG(uap, ub), sizeof(osb));
 	return (error);
 }
-
 
 /*
  * Return status information about a file descriptor.
  */
 /* ARGSUSED */
+int
 compat_43_sys_fstat(p, v, retval)
 	struct proc *p;
 	void *v;
 	register_t *retval;
 {
-	register struct compat_43_sys_fstat_args /* {
+	struct compat_43_sys_fstat_args /* {
 		syscallarg(int) fd;
-		syscallarg(struct ostat *) sb;
+		syscallarg(struct stat43 *) sb;
 	} */ *uap = v;
 	int fd = SCARG(uap, fd);
-	register struct filedesc *fdp = p->p_fd;
-	register struct file *fp;
+	struct filedesc *fdp = p->p_fd;
+	struct file *fp;
 	struct stat ub;
-	struct ostat oub;
+	struct stat43 oub;
 	int error;
 
-	if ((u_int)fd >= fdp->fd_nfiles ||
-	    (fp = fdp->fd_ofiles[fd]) == NULL)
+	if ((fp = fd_getfile(fdp, fd)) == NULL)
 		return (EBADF);
-	switch (fp->f_type) {
-
-	case DTYPE_VNODE:
-		error = vn_stat((struct vnode *)fp->f_data, &ub, p);
-		break;
-
-	case DTYPE_SOCKET:
-		error = soo_stat((struct socket *)fp->f_data, &ub);
-		break;
-
-	default:
-		panic("ofstat");
-		/*NOTREACHED*/
+	FREF(fp);
+	error = (*fp->f_ops->fo_stat)(fp, &ub, p);
+	FRELE(fp);
+	if (error == 0) {
+		/* Don't let non-root see generation numbers
+		   (for NFS security) */
+		if (suser(p, 0))
+			ub.st_gen = 0;
+		cvtstat(&ub, &oub);
+		error = copyout(&oub, SCARG(uap, sb), sizeof(oub));
 	}
-	cvtstat(&ub, &oub);
-	if (error == 0)
-		error = copyout((caddr_t)&oub, (caddr_t)SCARG(uap, sb),
-		    sizeof (oub));
 	return (error);
 }
-
 
 /*
  * Truncate a file given a file descriptor.
@@ -325,12 +296,12 @@ compat_43_sys_creat(p, v, retval)
 {
 	register struct compat_43_sys_creat_args /* {
 		syscallarg(char *) path;
-		syscallarg(int) mode;
+		syscallarg(mode_t) mode;
 	} */ *uap = v;
 	struct sys_open_args /* {
 		syscallarg(char *) path;
 		syscallarg(int) flags;
-		syscallarg(int) mode;
+		syscallarg(mode_t) mode;
 	} */ nuap;
 
 	SCARG(&nuap, path) = SCARG(uap, path);
@@ -363,10 +334,10 @@ compat_43_sys_getdirentries(p, v, retval)
 	register struct compat_43_sys_getdirentries_args /* {
 		syscallarg(int) fd;
 		syscallarg(char *) buf;
-		syscallarg(u_int) count;
+		syscallarg(int) count;
 		syscallarg(long *) basep;
 	} */ *uap = v;
-	register struct vnode *vp;
+	struct vnode *vp;
 	struct file *fp;
 	struct uio auio, kuio;
 	struct iovec aiov, kiov;
@@ -375,14 +346,19 @@ compat_43_sys_getdirentries(p, v, retval)
 	int error, eofflag, readcnt;
 	long loff;
 
-	if (error = getvnode(p->p_fd, SCARG(uap, fd), &fp))
+	if (SCARG(uap, count) < 0)
+		return EINVAL;
+	if ((error = getvnode(p->p_fd, SCARG(uap, fd), &fp)) != 0)
 		return (error);
-	if ((fp->f_flag & FREAD) == 0)
-		return (EBADF);
+	if ((fp->f_flag & FREAD) == 0) {
+		error = EBADF;
+		goto bad;
+	}
 	vp = (struct vnode *)fp->f_data;
-unionread:
-	if (vp->v_type != VDIR)
-		return (EINVAL);
+	if (vp->v_type != VDIR) {
+		error = EINVAL;
+		goto bad;
+	}
 	aiov.iov_base = SCARG(uap, buf);
 	aiov.iov_len = SCARG(uap, count);
 	auio.uio_iov = &aiov;
@@ -391,27 +367,33 @@ unionread:
 	auio.uio_segflg = UIO_USERSPACE;
 	auio.uio_procp = p;
 	auio.uio_resid = SCARG(uap, count);
-	VOP_LOCK(vp);
+       
+	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
 	loff = auio.uio_offset = fp->f_offset;
 #	if (BYTE_ORDER != LITTLE_ENDIAN)
 		if (vp->v_mount->mnt_maxsymlinklen <= 0) {
 			error = VOP_READDIR(vp, &auio, fp->f_cred, &eofflag,
-			    (u_long *)0, 0);
+			    (int *)0, (u_long **)0);
 			fp->f_offset = auio.uio_offset;
 		} else
 #	endif
 	{
+		u_int  nbytes = SCARG(uap, count);
+
+		nbytes = min(nbytes, MAXBSIZE);
+
 		kuio = auio;
 		kuio.uio_iov = &kiov;
 		kuio.uio_segflg = UIO_SYSSPACE;
-		kiov.iov_len = SCARG(uap, count);
-		MALLOC(dirbuf, caddr_t, SCARG(uap, count), M_TEMP, M_WAITOK);
+		kiov.iov_len = nbytes;
+		dirbuf = (caddr_t)malloc(nbytes, M_TEMP, M_WAITOK);
 		kiov.iov_base = dirbuf;
+
 		error = VOP_READDIR(vp, &kuio, fp->f_cred, &eofflag,
-			    (u_long *)0, 0);
+				    0, 0);
 		fp->f_offset = kuio.uio_offset;
 		if (error == 0) {
-			readcnt = SCARG(uap, count) - kuio.uio_resid;
+			readcnt = nbytes - kuio.uio_resid;
 			edp = (struct dirent *)&dirbuf[readcnt];
 			for (dp = (struct dirent *)dirbuf; dp < edp; ) {
 #				if (BYTE_ORDER == LITTLE_ENDIAN)
@@ -444,67 +426,13 @@ unionread:
 		}
 		FREE(dirbuf, M_TEMP);
 	}
-	VOP_UNLOCK(vp);
+	VOP_UNLOCK(vp, 0, p);
 	if (error)
-		return (error);
-
-#ifdef UNION
-{
-	extern int (**union_vnodeop_p)();
-	extern struct vnode *union_dircache __P((struct vnode *));
-
-	if ((SCARG(uap, count) == auio.uio_resid) &&
-	    (vp->v_op == union_vnodeop_p)) {
-		struct vnode *lvp;
-
-		lvp = union_dircache(vp);
-		if (lvp != NULLVP) {
-			struct vattr va;
-
-			/*
-			 * If the directory is opaque,
-			 * then don't show lower entries
-			 */
-			error = VOP_GETATTR(vp, &va, fp->f_cred, p);
-			if (va.va_flags & OPAQUE) {
-				vput(lvp);
-				lvp = NULL;
-			}
-		}
-		
-		if (lvp != NULLVP) {
-			error = VOP_OPEN(lvp, FREAD, fp->f_cred, p);
-			VOP_UNLOCK(lvp);
-
-			if (error) {
-				vrele(lvp);
-				return (error);
-			}
-			fp->f_data = (caddr_t) lvp;
-			fp->f_offset = 0;
-			error = vn_close(vp, FREAD, fp->f_cred, p);
-			if (error)
-				return (error);
-			vp = lvp;
-			goto unionread;
-		}
-	}
-}
-#endif /* UNION */
-
-	if ((SCARG(uap, count) == auio.uio_resid) &&
-	    (vp->v_flag & VROOT) &&
-	    (vp->v_mount->mnt_flag & MNT_UNION)) {
-		struct vnode *tvp = vp;
-		vp = vp->v_mount->mnt_vnodecovered;
-		VREF(vp);
-		fp->f_data = (caddr_t) vp;
-		fp->f_offset = 0;
-		vrele(tvp);
-		goto unionread;
-	}
+		goto bad;
 	error = copyout((caddr_t)&loff, (caddr_t)SCARG(uap, basep),
 	    sizeof(long));
 	*retval = SCARG(uap, count) - auio.uio_resid;
+bad:
+	FRELE(fp);
 	return (error);
 }

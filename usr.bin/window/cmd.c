@@ -1,4 +1,5 @@
-/*	$NetBSD: cmd.c,v 1.3 1995/09/28 10:34:02 tls Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.7 2003/06/03 02:56:23 millert Exp $	*/
+/*	$NetBSD: cmd.c,v 1.4 1996/02/08 20:44:57 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,17 +37,20 @@
 #if 0
 static char sccsid[] = "@(#)cmd.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: cmd.c,v 1.3 1995/09/28 10:34:02 tls Exp $";
+static char rcsid[] = "$OpenBSD: cmd.c,v 1.7 2003/06/03 02:56:23 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include "defs.h"
 #include "char.h"
 
+#include <sys/types.h>
+#include <unistd.h>
+
 docmd()
 {
-	register char c;
-	register struct ww *w;
+	int c;
+	struct ww *w;
 	char out = 0;
 
 	while (!out && !quit) {
@@ -99,7 +99,7 @@ docmd()
 				 out = 1;
 			break;
 		case '%':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				setselwin(w);
 			break;
 		case ctrl('^'):
@@ -111,26 +111,26 @@ docmd()
 				error("No previous window.");
 			break;
 		case 'c':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				closewin(w);
 			break;
 		case 'w':
 			c_window();
 			break;
 		case 'm':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				c_move(w);
 			break;
 		case 'M':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				movewin(w, w->ww_alt.t, w->ww_alt.l);
 			break;
 		case 's':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				c_size(w);
 			break;
 		case 'S':
-			if ((w = getwin()) != 0)
+			if ((w = getwindow()) != 0)
 				sizewin(w, w->ww_alt.nr, w->ww_alt.nc);
 			break;
 		case 'y':
@@ -219,9 +219,9 @@ docmd()
 }
 
 struct ww *
-getwin()
+getwindow()
 {
-	register int c;
+	int c;
 	struct ww *w = 0;
 
 	if (!terse)

@@ -1,3 +1,4 @@
+/*	$OpenBSD: unix.c,v 1.11 2004/03/13 22:02:13 deraadt Exp $	*/
 /*	$NetBSD: unix.c,v 1.13 1995/10/03 21:42:48 thorpej Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "from: @(#)unix.c	8.1 (Berkeley) 6/6/93";
 #else
-static char *rcsid = "$NetBSD: unix.c,v 1.13 1995/10/03 21:42:48 thorpej Exp $";
+static char *rcsid = "$OpenBSD: unix.c,v 1.11 2004/03/13 22:02:13 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -59,28 +56,28 @@ struct proc;
 
 #include <netinet/in.h>
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <kvm.h>
 #include "netstat.h"
 
-static	void unixdomainpr __P((struct socket *, caddr_t));
+static	void unixdomainpr(struct socket *, caddr_t);
 
 static struct	file *file, *fileNFILE;
 static int	nfiles;
 extern	kvm_t *kvmd;
 
 void
-unixpr(off)
-	u_long	off;
+unixpr(u_long off)
 {
-	register struct file *fp;
+	struct file *fp;
 	struct socket sock, *so = &sock;
 	char *filebuf;
 	struct protosw *unixsw = (struct protosw *)off;
 
-	filebuf = (char *)kvm_getfiles(kvmd, KERN_FILE, 0, &nfiles);
-	if (filebuf == 0) {
+	filebuf = kvm_getfiles(kvmd, KERN_FILE, 0, &nfiles);
+	if (filebuf == NULL) {
 		printf("Out of memory (file table).\n");
 		return;
 	}
@@ -89,7 +86,7 @@ unixpr(off)
 	for (fp = file; fp < fileNFILE; fp++) {
 		if (fp->f_count == 0 || fp->f_type != DTYPE_SOCKET)
 			continue;
-		if (kread((u_long)fp->f_data, (char *)so, sizeof (*so)))
+		if (kread((u_long)fp->f_data, so, sizeof (*so)))
 			continue;
 		/* kludge */
 		if (so->so_proto >= unixsw && so->so_proto <= unixsw + 2)
@@ -102,39 +99,37 @@ static	char *socktype[] =
     { "#0", "stream", "dgram", "raw", "rdm", "seqpacket" };
 
 static void
-unixdomainpr(so, soaddr)
-	register struct socket *so;
-	caddr_t soaddr;
+unixdomainpr(struct socket *so, caddr_t soaddr)
 {
 	struct unpcb unpcb, *unp = &unpcb;
 	struct mbuf mbuf, *m;
-	struct sockaddr_un *sa;
+	struct sockaddr_un *sa = NULL;
 	static int first = 1;
 
-	if (kread((u_long)so->so_pcb, (char *)unp, sizeof (*unp)))
+	if (kread((u_long)so->so_pcb, unp, sizeof (*unp)))
 		return;
 	if (unp->unp_addr) {
 		m = &mbuf;
-		if (kread((u_long)unp->unp_addr, (char *)m, sizeof (*m)))
-			m = (struct mbuf *)0;
+		if (kread((u_long)unp->unp_addr, m, sizeof (*m)))
+			m = NULL;
 		sa = (struct sockaddr_un *)(m->m_dat);
 	} else
-		m = (struct mbuf *)0;
+		m = NULL;
 	if (first) {
 		printf("Active UNIX domain sockets\n");
-		printf(
-"%-8.8s %-6.6s %-6.6s %-6.6s %8.8s %8.8s %8.8s %8.8s Addr\n",
-		    "Address", "Type", "Recv-Q", "Send-Q",
-		    "Inode", "Conn", "Refs", "Nextref");
+		printf("%-*.*s %-6.6s %-6.6s %-6.6s %*.*s %*.*s %*.*s %*.*s Addr\n",
+		    PLEN, PLEN, "Address", "Type", "Recv-Q", "Send-Q",
+		    PLEN, PLEN, "Inode", PLEN, PLEN, "Conn",
+		    PLEN, PLEN, "Refs", PLEN, PLEN, "Nextref");
 		first = 0;
 	}
-	printf("%8x %-6.6s %6d %6d %8x %8x %8x %8x",
-	    soaddr, socktype[so->so_type], so->so_rcv.sb_cc, so->so_snd.sb_cc,
-	    unp->unp_vnode, unp->unp_conn,
-	    unp->unp_refs, unp->unp_nextref);
+	printf("%*p %-6.6s %6ld %6ld %*p %*p %*p %*p",
+	    PLEN, soaddr, socktype[so->so_type], so->so_rcv.sb_cc,
+	    so->so_snd.sb_cc, PLEN, unp->unp_vnode, PLEN, unp->unp_conn,
+	    PLEN, unp->unp_refs, PLEN, unp->unp_nextref);
 	if (m)
 		printf(" %.*s",
-		    m->m_len - (int)(sizeof(*sa) - sizeof(sa->sun_path)),
+		    (int)(m->m_len - (int)(sizeof(*sa) - sizeof(sa->sun_path))),
 		    sa->sun_path);
 	putchar('\n');
 }

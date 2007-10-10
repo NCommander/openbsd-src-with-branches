@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)system.c	5.10 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: system.c,v 1.10 1995/06/14 05:20:01 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -46,25 +38,28 @@ static char *rcsid = "$Id: system.c,v 1.10 1995/06/14 05:20:01 jtc Exp $";
 extern char **environ;
 
 int
-system(command)
-	const char *command;
+system(const char *command)
 {
 	pid_t pid;
 	sig_t intsave, quitsave;
-	int omask;
+	sigset_t mask, omask;
 	int pstat;
-	char *argp[] = {"sh", "-c", (char *) command, NULL};
+	char *argp[] = {"sh", "-c", NULL, NULL};
 
 	if (!command)		/* just checking... */
 		return(1);
 
-	omask = sigblock(sigmask(SIGCHLD));
-	switch(pid = vfork()) {
+	argp[2] = (char *)command;
+
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
+	switch (pid = vfork()) {
 	case -1:			/* error */
-		(void)sigsetmask(omask);
+		sigprocmask(SIG_SETMASK, &omask, NULL);
 		return(-1);
 	case 0:				/* child */
-		(void)sigsetmask(omask);
+		sigprocmask(SIG_SETMASK, &omask, NULL);
 		execve(_PATH_BSHELL, argp, environ);
 		_exit(127);
 	}
@@ -72,8 +67,8 @@ system(command)
 	intsave = signal(SIGINT, SIG_IGN);
 	quitsave = signal(SIGQUIT, SIG_IGN);
 	pid = waitpid(pid, (int *)&pstat, 0);
-	(void)sigsetmask(omask);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 	(void)signal(SIGINT, intsave);
 	(void)signal(SIGQUIT, quitsave);
-	return(pid == -1 ? -1 : pstat);
+	return (pid == -1 ? -1 : pstat);
 }

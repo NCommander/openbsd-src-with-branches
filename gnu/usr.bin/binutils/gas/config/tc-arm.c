@@ -152,7 +152,7 @@ enum arm_float_abi
 #define FPU_DEFAULT FPU_ARCH_FPA
 #endif
 
-#ifdef TE_NetBSD
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
 #ifdef OBJ_ELF
 #define FPU_DEFAULT FPU_ARCH_VFP	/* Soft-float, but VFP order.  */
 #else
@@ -11649,7 +11649,7 @@ md_begin ()
     }
   else if (mfpu_opt == -1)
     {
-#if !(defined (TE_LINUX) || defined (TE_NetBSD))
+#if !(defined (TE_LINUX) || defined (TE_NetBSD) || defined(TE_OpenBSD))
       /* Some environments specify a default FPU.  If they don't, infer it
 	 from the processor.  */
       if (mcpu_fpu_opt != -1)

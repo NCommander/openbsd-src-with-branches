@@ -1,5 +1,4 @@
-/*	$NetBSD: popen.c,v 1.11 1995/06/16 07:05:33 jtc Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +30,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)popen.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: popen.c,v 1.11 1995/06/16 07:05:33 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/param.h>
 #include <sys/wait.h>
@@ -62,15 +49,14 @@ static struct pid {
 } *pidlist; 
 	
 FILE *
-popen(program, type)
-	const char *program;
-	const char *type;
+popen(const char *program, const char *type)
 {
-	struct pid *cur;
+	struct pid * volatile cur;
 	FILE *iop;
-	int pdes[2], pid;
+	int pdes[2];
+	pid_t pid;
 
-	if (*type != 'r' && *type != 'w' || type[1]) {
+	if ((*type != 'r' && *type != 'w') || type[1] != '\0') {
 		errno = EINVAL;
 		return (NULL);
 	}
@@ -91,22 +77,39 @@ popen(program, type)
 		return (NULL);
 		/* NOTREACHED */
 	case 0:				/* Child. */
+	    {
+		struct pid *pcur;
+		/*
+		 * because vfork() instead of fork(), must leak FILE *,
+		 * but luckily we are terminally headed for an execl()
+		 */
+		for (pcur = pidlist; pcur; pcur = pcur->next)
+			close(fileno(pcur->fp));
+
 		if (*type == 'r') {
-			if (pdes[1] != STDOUT_FILENO) {
-				(void)dup2(pdes[1], STDOUT_FILENO);
-				(void)close(pdes[1]);
-			}
+			int tpdes1 = pdes[1];
+
 			(void) close(pdes[0]);
+			/*
+			 * We must NOT modify pdes, due to the
+			 * semantics of vfork.
+			 */
+			if (tpdes1 != STDOUT_FILENO) {
+				(void)dup2(tpdes1, STDOUT_FILENO);
+				(void)close(tpdes1);
+				tpdes1 = STDOUT_FILENO;
+			}
 		} else {
+			(void)close(pdes[1]);
 			if (pdes[0] != STDIN_FILENO) {
 				(void)dup2(pdes[0], STDIN_FILENO);
 				(void)close(pdes[0]);
 			}
-			(void)close(pdes[1]);
 		}
-		execl(_PATH_BSHELL, "sh", "-c", program, NULL);
+		execl(_PATH_BSHELL, "sh", "-c", program, (char *)NULL);
 		_exit(127);
 		/* NOTREACHED */
+	    }
 	}
 
 	/* Parent; assume fdopen can't fail. */
@@ -133,21 +136,21 @@ popen(program, type)
  *	if already `pclosed', or waitpid returns an error.
  */
 int
-pclose(iop)
-	FILE *iop;
+pclose(FILE *iop)
 {
-	register struct pid *cur, *last;
+	struct pid *cur, *last;
 	int pstat;
 	pid_t pid;
-
-	(void)fclose(iop);
 
 	/* Find the appropriate file pointer. */
 	for (last = NULL, cur = pidlist; cur; last = cur, cur = cur->next)
 		if (cur->fp == iop)
 			break;
+
 	if (cur == NULL)
 		return (-1);
+
+	(void)fclose(iop);
 
 	do {
 		pid = waitpid(cur->pid, &pstat, 0);

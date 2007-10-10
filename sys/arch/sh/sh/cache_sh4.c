@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cache_sh4.c,v 1.2 2007/03/05 21:48:23 miod Exp $	*/
 /*	$NetBSD: cache_sh4.c,v 1.15 2005/12/24 23:24:02 perry Exp $	*/
 
 /*-
@@ -112,6 +112,10 @@ sh4_cache_config(void)
 #if defined(SH4_CACHE_DISABLE_DCACHE)
 	r &= ~SH4_CCR_OCE;
 #endif
+#if !defined (SH4_CACHE_WT)
+#define	SH4_CACHE_WB_U0_P0_P3
+#define	SH4_CACHE_WB_P1
+#endif
 #if defined(SH4_CACHE_WB_U0_P0_P3)
 	r &= ~SH4_CCR_WT;
 #endif
@@ -132,6 +136,7 @@ sh4_cache_config(void)
 	sh_cache_enable_dcache = (r & SH4_CCR_OCE);
 	sh_cache_ways = ways;
 	sh_cache_line_size = SH4_CACHE_LINESZ;
+	sh_cache_prefer_mask = (dcache_size / ways - 1);
 	sh_cache_write_through_p0_u0_p3 = (r & SH4_CCR_WT);
 	sh_cache_write_through_p1 = !(r & SH4_CCR_CB);
 	sh_cache_write_through = sh_cache_write_through_p0_u0_p3 &&

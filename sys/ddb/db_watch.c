@@ -1,8 +1,9 @@
-/*	$NetBSD: db_watch.c,v 1.7 1994/10/09 08:30:15 mycroft Exp $	*/
+/*	$OpenBSD: db_watch.c,v 1.8 2002/02/27 17:37:05 pefo Exp $ */
+/*	$NetBSD: db_watch.c,v 1.9 1996/03/30 22:30:12 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  * 	Author: Richard P. Draves, Carnegie Mellon University
  *	Date:	10/90
@@ -38,7 +39,11 @@
 #include <ddb/db_watch.h>
 #include <ddb/db_lex.h>
 #include <ddb/db_access.h>
+#include <ddb/db_run.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_output.h>
+#include <ddb/db_command.h>
+#include <ddb/db_extern.h>
 
 /*
  * Watchpoints.
@@ -53,9 +58,9 @@ db_watchpoint_t		db_free_watchpoints = 0;
 db_watchpoint_t		db_watchpoint_list = 0;
 
 db_watchpoint_t
-db_watchpoint_alloc()
+db_watchpoint_alloc(void)
 {
-	register db_watchpoint_t	watch;
+	db_watchpoint_t	watch;
 
 	if ((watch = db_free_watchpoints) != 0) {
 	    db_free_watchpoints = watch->link;
@@ -72,20 +77,16 @@ db_watchpoint_alloc()
 }
 
 void
-db_watchpoint_free(watch)
-	register db_watchpoint_t	watch;
+db_watchpoint_free(db_watchpoint_t watch)
 {
 	watch->link = db_free_watchpoints;
 	db_free_watchpoints = watch;
 }
 
 void
-db_set_watchpoint(map, addr, size)
-	vm_map_t	map;
-	db_addr_t	addr;
-	vm_size_t	size;
+db_set_watchpoint(struct vm_map *map, db_addr_t addr, vsize_t size)
 {
-	register db_watchpoint_t	watch;
+	db_watchpoint_t	watch;
 
 	if (map == NULL) {
 	    db_printf("No map.\n");
@@ -123,12 +124,10 @@ db_set_watchpoint(map, addr, size)
 }
 
 void
-db_delete_watchpoint(map, addr)
-	vm_map_t	map;
-	db_addr_t	addr;
+db_delete_watchpoint(struct vm_map *map, db_addr_t addr)
 {
-	register db_watchpoint_t	watch;
-	register db_watchpoint_t	*prev;
+	db_watchpoint_t	watch;
+	db_watchpoint_t	*prev;
 
 	for (prev = &db_watchpoint_list;
 	     (watch = *prev) != 0;
@@ -145,9 +144,9 @@ db_delete_watchpoint(map, addr)
 }
 
 void
-db_list_watchpoints()
+db_list_watchpoints(void)
 {
-	register db_watchpoint_t	watch;
+	db_watchpoint_t	watch;
 
 	if (db_watchpoint_list == 0) {
 	    db_printf("No watchpoints set\n");
@@ -158,7 +157,7 @@ db_list_watchpoints()
 	for (watch = db_watchpoint_list;
 	     watch != 0;
 	     watch = watch->link)
-	    db_printf("%s%8x  %8x  %x\n",
+	    db_printf("%s%p  %8lx  %lx\n",
 		      db_map_current(watch->map) ? "*" : " ",
 		      watch->map, watch->loaddr,
 		      watch->hiaddr - watch->loaddr);
@@ -167,11 +166,7 @@ db_list_watchpoints()
 /* Delete watchpoint */
 /*ARGSUSED*/
 void
-db_deletewatch_cmd(addr, have_addr, count, modif)
-	db_expr_t	addr;
-	int		have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_deletewatch_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
 	db_delete_watchpoint(db_map_addr(addr), addr);
 }
@@ -179,17 +174,13 @@ db_deletewatch_cmd(addr, have_addr, count, modif)
 /* Set watchpoint */
 /*ARGSUSED*/
 void
-db_watchpoint_cmd(addr, have_addr, count, modif)
-	db_expr_t	addr;
-	int		have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_watchpoint_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
-	vm_size_t	size;
+	vsize_t 	size;
 	db_expr_t	value;
 
 	if (db_expression(&value))
-	    size = (vm_size_t) value;
+	    size = (vsize_t) value;
 	else
 	    size = 4;
 	db_skip_to_eol();
@@ -198,18 +189,19 @@ db_watchpoint_cmd(addr, have_addr, count, modif)
 }
 
 /* list watchpoints */
+/*ARGSUSED*/
 void
-db_listwatch_cmd()
+db_listwatch_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
 	db_list_watchpoints();
 }
 
 void
-db_set_watchpoints()
+db_set_watchpoints(void)
 {
-	register db_watchpoint_t	watch;
+	db_watchpoint_t	watch;
 
-	if (!db_watchpoints_inserted) {
+	if (!db_watchpoints_inserted && db_watchpoint_list != NULL) {
 	    for (watch = db_watchpoint_list;
 	         watch != 0;
 	         watch = watch->link)
@@ -217,24 +209,21 @@ db_set_watchpoints()
 			     trunc_page(watch->loaddr),
 			     round_page(watch->hiaddr),
 			     VM_PROT_READ);
-
+	    pmap_update(watch->map->pmap);
 	    db_watchpoints_inserted = TRUE;
 	}
 }
 
 void
-db_clear_watchpoints()
+db_clear_watchpoints(void)
 {
 	db_watchpoints_inserted = FALSE;
 }
 
 boolean_t
-db_find_watchpoint(map, addr, regs)
-	vm_map_t	map;
-	db_addr_t	addr;
-	db_regs_t	*regs;
+db_find_watchpoint(struct vm_map *map, db_addr_t addr, db_regs_t *regs)
 {
-	register db_watchpoint_t watch;
+	db_watchpoint_t watch;
 	db_watchpoint_t found = 0;
 
 	for (watch = db_watchpoint_list;

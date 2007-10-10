@@ -1,22 +1,22 @@
-#	$NetBSD: Makefile,v 1.2 1995/09/02 05:04:25 thorpej Exp $
+#	$OpenBSD: Makefile,v 1.13 2003/06/01 17:00:34 deraadt Exp $
 
 LIB=	sa
 
 .PATH:	${.CURDIR}/../../../../lib/libsa
 
-# Don't need these now...
-# DEBUGFLAGS=-DNETIF_DEBUG -DRPC_DEBUG -DNFS_DEBUG -DRARP_DEBUG -DNET_DEBUG
+.include "${.CURDIR}/../Makefile.inc"
 
-CFLAGS+=-DSTANDALONE -DCOMPAT_UFS ${DEBUGFLAGS}
-CFLAGS+=-I${.CURDIR}/../../../..  -I${.CURDIR}/../../../../lib/libsa
+CFLAGS+=-I${.CURDIR} -I${.CURDIR}/../include -I${.CURDIR}/../.. \
+	-I${.CURDIR}/../../.. -I${.CURDIR}/../../../.. \
+	-I${.CURDIR}/../../../../lib/libsa
 
 # stand routines
-SRCS=	alloc.c bcopy.c exit.c exec.c getfile.c gets.c globals.c \
-	printf.c strerror.c
+SRCS=	alloc.c devopen.c exit.c exec.c getfile.c gets.c globals.c \
+	memcmp.c memcpy.c memset.c printf.c snprintf.c strerror.c strncpy.c
 
 # io routines
-SRCS+=	close.c dev.c disklabel.c ioctl.c lseek.c open.c read.c \
-	stat.c write.c
+SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fstat.c ioctl.c lseek.c \
+	open.c read.c stat.c write.c
 
 # network routines
 SRCS+=	arp.c ether.c in_cksum.c net.c netif.c rpc.c
@@ -25,11 +25,10 @@ SRCS+=	arp.c ether.c in_cksum.c net.c netif.c rpc.c
 SRCS+=	bootp.c bootparam.c rarp.c
 
 # boot filesystems
-SRCS+=	ufs.c nfs.c
+SRCS+=	ufs.c nfs.c rawfs.c cd9660.c
 
 NOPROFILE=
 NOPIC=
-OBJMACHINE=
 
 install:
 

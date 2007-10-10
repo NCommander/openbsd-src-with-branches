@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * This file contains functions which can be inlined if the compiler
  * has an "inline" modifier. Because of this, this file is both a
@@ -25,7 +27,8 @@
 
 #endif
 
-INLINE int ap_os_is_path_absolute(const char *file)
+INLINE int
+ap_os_is_path_absolute(const char *file)
 {
-  return file[0] == '/';
+	return file[0] == '/';
 }

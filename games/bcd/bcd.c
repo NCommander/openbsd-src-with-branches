@@ -1,3 +1,4 @@
+/*	$OpenBSD: bcd.c,v 1.10 2003/07/10 00:03:01 david Exp $	*/
 /*	$NetBSD: bcd.c,v 1.6 1995/04/24 12:22:23 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,11 @@ static char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)bcd.c	8.2 (Berkeley) 3/20/94";
+#else
+static char rcsid[] = "$OpenBSD: bcd.c,v 1.10 2003/07/10 00:03:01 david Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -77,10 +78,11 @@ static char sccsid[] = "@(#)bcd.c	8.2 (Berkeley) 3/20/94";
  */
 
 #include <sys/types.h>
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 u_short holes[256] = {
     0x0,	 0x0,	  0x0,	   0x0,	    0x0,     0x0,     0x0,     0x0,
@@ -122,10 +124,10 @@ u_short holes[256] = {
  */
 #define	bit(w,i)	((w)&(1<<(i)))
 
+void	printcard(char *);
+
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char cardline[80];
 
@@ -145,16 +147,15 @@ main(argc, argv)
 
 #define	COLUMNS	48
 
-printcard(str)
-	register char *str;
+void
+printcard(char *str)
 {
-	static char rowchars[] = "   123456789";
-	register int i, row;
-	register char *p;
-	char *index();
+	static const char rowchars[] = "   123456789";
+	int	i, row;
+	char	*p;
 
 	/* ruthlessly remove newlines and truncate at 48 characters. */
-	if ((p = index(str, '\n')))
+	if ((p = strchr(str, '\n')))
 		*p = '\0';
 
 	if (strlen(str) > COLUMNS)
@@ -178,7 +179,7 @@ printcard(str)
 	p = str;
 	putchar('/');
 	for (i = 1; *p; i++, p++)
-		if (holes[*p])
+		if (holes[(int)*p])
 			putchar(*p);
 		else
 			putchar(' ');
@@ -196,7 +197,7 @@ printcard(str)
 	for (row = 0; row <= 11; ++row) {
 		putchar('|');
 		for (i = 0, p = str; *p; i++, p++) {
-			if (bit(holes[*p], 11 - row))
+			if (bit(holes[(int)*p], 11 - row))
 				putchar(']');
 			else
 				putchar(rowchars[row]);

@@ -162,6 +162,12 @@ extern int warn_cast_align;
 extern int warn_larger_than;
 extern HOST_WIDE_INT larger_than_size;
 
+/* Nonzero means warn about any function whose stack usage is larger
+   than N bytes.  The value N is in `stack_larger_than_size'.  */
+
+extern int warn_stack_larger_than;
+extern HOST_WIDE_INT stack_larger_than_size;
+
 /* Warn if a function returns an aggregate,
    since there are often incompatible calling conventions for doing this.  */
 
@@ -689,5 +695,14 @@ extern const char *flag_random_seed;
    and the rounding mode is important.  */
 #define HONOR_SIGN_DEPENDENT_ROUNDING(MODE) \
   (MODE_HAS_SIGN_DEPENDENT_ROUNDING (MODE) && !flag_unsafe_math_optimizations)
+
+/* Nonzero means use propolice as a stack protection method */
+
+extern int flag_propolice_protection;
+extern int flag_stack_protection;
+
+/* Warn when not issuing stack smashing protection for some reason */
+
+extern int warn_stack_protector;
 
 #endif /* ! GCC_FLAGS_H */
