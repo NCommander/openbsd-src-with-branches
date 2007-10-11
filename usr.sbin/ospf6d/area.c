@@ -1,4 +1,4 @@
-/*	$OpenBSD: area.c,v 1.6 2007/06/13 17:23:36 claudio Exp $ */
+/*	$OpenBSD: area.c,v 1.1 2007/10/08 10:44:50 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2007 Esben Norby <norby@openbsd.org>
@@ -114,4 +114,15 @@ area_border_router(struct ospfd_conf *conf)
 			active++;
 
 	return (active > 1);
+}
+
+u_int32_t
+area_ospf_options(struct area *area)
+{
+	u_int32_t	opt = OSPF_OPTION_V6 | OSPF_OPTION_R;
+
+	if (area && !area->stub)
+		opt |= OSPF_OPTION_E;
+
+	return (opt);
 }
