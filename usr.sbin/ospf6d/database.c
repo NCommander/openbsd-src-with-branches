@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.3 2007/10/11 18:43:42 claudio Exp $ */
+/*	$OpenBSD: database.c,v 1.4 2007/10/11 19:02:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -112,6 +112,8 @@ send_db_description(struct nbr *nbr)
 	default:
 		fatalx("send_db_description: unknown neighbor state");
 	}
+
+	bzero(&dd_hdr, sizeof(dd_hdr));
 
 	switch (nbr->iface->type) {
 	case IF_TYPE_POINTOPOINT:
