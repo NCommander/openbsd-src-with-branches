@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.h,v 1.5 2007/10/11 19:10:55 claudio Exp $ */
+/*	$OpenBSD: ospf6d.h,v 1.6 2007/10/11 20:20:44 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2007 Esben Norby <norby@openbsd.org>
@@ -318,7 +318,6 @@ struct iface {
 	char			 demote_group[IFNAMSIZ];
 	struct in6_addr		 addr;
 	struct in6_addr		 dst;
-	struct in6_addr		 mask;
 	struct in_addr		 abr_id;
 	struct nbr		*dr;	/* designated router */
 	struct nbr		*bdr;	/* backup designated router */
