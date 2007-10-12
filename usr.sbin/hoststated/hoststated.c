@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.c,v 1.42 2007/10/02 21:04:13 pyr Exp $	*/
+/*	$OpenBSD: hoststated.c,v 1.43 2007/10/05 17:32:13 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -75,6 +75,7 @@ main_sig_handler(int sig, short event, void *arg)
 	case SIGTERM:
 	case SIGINT:
 		die = 1;
+		/* FALLTHROUGH */
 	case SIGCHLD:
 		if (check_child(pfe_pid, "pf udpate engine")) {
 			pfe_pid = 0;

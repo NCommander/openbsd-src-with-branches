@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.29 2007/06/19 13:06:00 pyr Exp $	*/
+/*	$OpenBSD: hce.c,v 1.30 2007/09/28 13:29:56 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -40,8 +40,8 @@
 
 #include "hoststated.h"
 
+__dead void hce_shutdown(void);
 void	hce_sig_handler(int sig, short, void *);
-void	hce_shutdown(void);
 void	hce_dispatch_imsg(int, short, void *);
 void	hce_dispatch_parent(int, short, void *);
 void	hce_launch_checks(int, short, void *);
