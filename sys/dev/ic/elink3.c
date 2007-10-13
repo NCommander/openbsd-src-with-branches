@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.69 2007/01/19 01:33:44 krw Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.70 2007/09/26 13:09:59 henning Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -782,8 +782,6 @@ epsetmedia(sc, medium)
 	 * PHY which media to use.
 	 */
 	if (sc->ep_flags & EP_FLAGS_MII) {
-		int config0, config1;
-
 		GO_WINDOW(3);
 
 		if (sc->ep_chipset == EP_CHIPSET_ROADRUNNER) {
