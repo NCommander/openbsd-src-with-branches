@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.70 2007/01/10 23:04:53 kettenis Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.71 2007/01/30 02:35:16 krw Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -135,6 +135,8 @@ static const struct mii_phydesc brgphys[] = {
 	  MII_STR_xxBROADCOM_BCM5706C },
 	{ MII_OUI_xxBROADCOM,		MII_MODEL_xxBROADCOM_BCM5708C,
 	  MII_STR_xxBROADCOM_BCM5708C },
+	{ MII_OUI_BROADCOM2,		MII_MODEL_BROADCOM2_BCM5906,
+	  MII_STR_BROADCOM2_BCM5906 },
 
 	{ 0,				0,
 	  NULL },
