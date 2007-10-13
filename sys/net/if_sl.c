@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sl.c,v 1.32 2006/03/25 22:41:47 djm Exp $	*/
+/*	$OpenBSD: if_sl.c,v 1.33 2007/09/15 16:43:51 henning Exp $	*/
 /*	$NetBSD: if_sl.c,v 1.39.4.1 1996/06/02 16:26:31 thorpej Exp $	*/
 
 /*
@@ -553,8 +553,8 @@ slstart(tp)
 			 * to the packet transmission time).
 			 */
 			struct mbuf *m1 = m;
-			u_char *cp = bpfbuf + SLIP_HDRLEN;
 
+			cp = bpfbuf + SLIP_HDRLEN;
 			len = 0;
 			do {
 				int mlen = m1->m_len;
