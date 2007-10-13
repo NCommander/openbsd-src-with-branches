@@ -1,4 +1,4 @@
-/* $OpenBSD: vm_machdep.c,v 1.34 2007/09/03 01:24:22 krw Exp $ */
+/* $OpenBSD: vm_machdep.c,v 1.35 2007/10/10 15:53:51 art Exp $ */
 /* $NetBSD: vm_machdep.c,v 1.55 2000/03/29 03:49:48 simonb Exp $ */
 
 /*
@@ -96,9 +96,6 @@ cpu_coredump(p, vp, cred, chdr)
 
 /*
  * cpu_exit is called as the last action during exit.
- * We block interrupts and call switch_exit.  switch_exit switches
- * to proc0's PCB and stack, then jumps into the middle of cpu_switch,
- * as if it were switching from proc0.
  */
 void
 cpu_exit(p)

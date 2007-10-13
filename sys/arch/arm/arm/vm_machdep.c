@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.6 2007/05/27 20:59:25 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.7 2007/10/10 15:53:51 art Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.31 2004/01/04 11:33:29 jdolecek Exp $	*/
 
 /*
@@ -185,9 +185,6 @@ cpu_fork(p1, p2, stack, stacksize, func, arg)
 void
 cpu_exit(struct proc *p)
 {
-#if 0
-	pmap_update(p->p_vmspace->vm_map.pmap); /* XXX DSR help stability */
-#endif
 	pmap_deactivate(p);
 	sched_exit(p);
 }
