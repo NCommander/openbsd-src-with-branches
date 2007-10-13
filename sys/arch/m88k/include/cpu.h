@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.22 2007/05/19 20:34:32 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.23 2007/10/10 15:53:52 art Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -166,7 +166,9 @@ void	set_cpu_number(cpuid_t);
 #define	cpu_exec(p)		do { /* nothing */ } while (0)
 #define	cpu_wait(p)		do { /* nothing */ } while (0)
 
+#define	cpu_idle_enter()	do { /* nothing */ } while (0)
 #define	cpu_idle_cycle()	do { /* nothing */ } while (0)
+#define	cpu_idle_leave()	do { /* nothing */ } while (0)
 
 #if defined(MULTIPROCESSOR)
 #include <sys/lock.h>
