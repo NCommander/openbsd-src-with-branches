@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.18 2007/03/31 08:31:02 kettenis Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.19 2007/04/03 14:48:53 gwk Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -181,6 +181,12 @@ mbattach(struct device *parent, struct device *self, void *aux)
 				printf ("name not found on node %x\n",
 				    node);
 				continue;
+		}
+		if (strcmp(name, "memory") == 0) {
+			nca.ca_name = "mem";
+			nca.ca_node = node;
+			nca.ca_bus = &sc->sc_bus;
+			config_found(self, &nca, mbprint);
 		}
 		if (strcmp(name, "memory-controller") == 0) {
 			nca.ca_name = "memc";
