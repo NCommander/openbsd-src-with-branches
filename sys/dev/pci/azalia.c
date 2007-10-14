@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.c,v 1.34 2007/09/10 22:37:08 deanna Exp $	*/
+/*	$OpenBSD: azalia.c,v 1.35 2007/10/10 03:39:21 deanna Exp $	*/
 /*	$NetBSD: azalia.c,v 1.20 2006/05/07 08:31:44 kent Exp $	*/
 
 /*-
@@ -1847,6 +1847,7 @@ azalia_stream_reset(stream_t *this)
 	ctl = STR_READ_2(this, CTL);
 	ctl &= ~HDA_SD_CTL_RUN;
 	STR_WRITE_2(this, CTL, ctl);
+	DELAY(40);
 
 	/* Start reset and wait for chip to enter. */
 	ctl = STR_READ_2(this, CTL);
