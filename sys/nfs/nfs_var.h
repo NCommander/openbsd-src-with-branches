@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_var.h,v 1.28 2007/06/21 22:59:49 thib Exp $	*/
+/*	$OpenBSD: nfs_var.h,v 1.29 2007/10/13 17:38:43 thib Exp $	*/
 /*	$NetBSD: nfs_var.h,v 1.3 1996/02/18 11:53:54 fvdl Exp $	*/
 
 /*
@@ -284,12 +284,6 @@ void nfsrv_init(int);
 int nfssvc_iod(struct proc *);
 void start_nfsio(void *);
 void nfs_getset_niothreads(int);
-int nfs_getauth(struct nfsmount *, struct nfsreq *, struct ucred *,
-		     char **, int *, char *, int *, NFSKERBKEY_T);
-int nfs_getnickauth(struct nfsmount *, struct ucred *, char **, int *,
-			 char *, int);
-int nfs_savenickauth(struct nfsmount *, struct ucred *, int, NFSKERBKEY_T,
-			  struct mbuf **, char **, struct mbuf *);
 
 /* nfs_kq.c */
 int  nfs_kqfilter(void *);
