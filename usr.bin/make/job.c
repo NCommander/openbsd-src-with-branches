@@ -593,7 +593,6 @@ JobPrintCommand(LstNode cmdNode,	/* command string to print */
 	/* For debugging, we replace each command with the result of expanding
 	 * the variables in the command.  */
 	cmdStart = cmd = Var_Subst(cmd, &job->node->context, false);
-	Lst_Replace(cmdNode, cmdStart);
 
 	cmdTemplate = "%s\n";
 
