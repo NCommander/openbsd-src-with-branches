@@ -1,4 +1,4 @@
-/*	$OpenBSD: macebus.c,v 1.27 2007/10/10 15:53:52 art Exp $ */
+/*	$OpenBSD: macebus.c,v 1.28 2007/10/13 06:25:48 miod Exp $ */
 
 /*
  * Copyright (c) 2000-2004 Opsycon AB  (www.opsycon.se)
@@ -240,7 +240,9 @@ macebusattach(struct device *parent, struct device *self, void *aux)
 		return;
 	}
 
-	bus_space_write_8(&macebus_tag, mace_h, MACE_ISA_INT_MASK, 0xffffffff);
+	/* Turn on all interrupts except for MACE compare/timer. */
+	bus_space_write_8(&macebus_tag, mace_h, MACE_ISA_INT_MASK, 
+			  0xffffffff & ~MACE_ISA_INT_TIMER);
 	bus_space_write_8(&macebus_tag, mace_h, MACE_ISA_INT_STAT, 0);
 
 	/*
