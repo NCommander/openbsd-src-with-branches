@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.26 2007/02/15 12:43:26 reyk Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.27 2007/09/15 16:43:51 henning Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -1029,7 +1029,7 @@ bstp_update_state(struct bstp_state *bs, struct bstp_port *bp)
 	struct bstp_port *bp2;
 	int synced;
 
-	/* check if all the ports have syncronised again */
+	/* check if all the ports have synchronized again */
 	if (!bs->bs_allsynced) {
 		synced = 1;
 		LIST_FOREACH(bp2, &bs->bs_bplist, bp_next) {
