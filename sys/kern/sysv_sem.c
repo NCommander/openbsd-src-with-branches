@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_sem.c,v 1.33 2006/08/10 17:03:48 millert Exp $	*/
+/*	$OpenBSD: sysv_sem.c,v 1.34 2007/09/07 15:00:20 art Exp $	*/
 /*	$NetBSD: sysv_sem.c,v 1.26 1996/02/09 19:00:25 christos Exp $	*/
 
 /*
@@ -39,11 +39,6 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
-
-/* SVID defines EIDRM but BSD does not */
-#ifndef EIDRM
-#define EIDRM	EINVAL
-#endif
 
 #ifdef SEM_DEBUG
 #define DPRINTF(x)	printf x
