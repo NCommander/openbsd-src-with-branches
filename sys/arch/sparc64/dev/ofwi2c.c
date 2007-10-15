@@ -83,6 +83,18 @@ ofwiic_scan(struct device *self, struct i2cbus_attach_args *iba, void *aux)
 		if (strncmp(ia.ia_name, "i2c-", strlen("i2c-")) == 0)
 			ia.ia_name += strlen("i2c-");
 
+		/* Skip non-SPD EEPROMs.  */
+		if (strcmp(ia.ia_name, "at24c64") == 0 ||
+		    strcmp(ia.ia_name, "at34c02") == 0) {
+			if (OF_getprop(node, "name", name, sizeof(name)) == -1)
+				continue;
+			if (strcmp(name, "dimm") == 0 ||
+			    strcmp(name, "dimm-spd") == 0)
+				ia.ia_name = "spd";
+			else
+				continue;
+		}
+
 		config_found(self, &ia, iic_print);
 	}
 }
