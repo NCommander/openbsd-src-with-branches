@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpctl.c,v 1.2 2006/11/28 19:21:15 reyk Exp $ */
+/*	$OpenBSD: dvmrpctl.c,v 1.3 2007/05/30 02:21:08 henning Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -444,7 +444,7 @@ fmt_timeframe_core(time_t t)
 	char		*buf;
 	static char	 tfbuf[TF_BUFS][TF_LEN];	/* ring buffer */
 	static int	 idx = 0;
-	unsigned	 sec, min, hrs, day, week;
+	unsigned int	 sec, min, hrs, day, week;
 
 	if (t == 0)
 		return ("Stopped");
