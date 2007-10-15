@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.82 2007/09/12 18:45:14 mk Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.83 2007/09/29 07:08:02 fkr Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -517,7 +517,7 @@ vndstrategy(struct buf *bp)
 	for (resid = bp->b_resid; resid; resid -= sz) {
 		struct vnode *vp;
 		daddr64_t nbn;
-		int off, s, nra;
+		int off, nra;
 
 		nra = 0;
 		vn_lock(vnd->sc_vp, LK_RETRY | LK_EXCLUSIVE, p);

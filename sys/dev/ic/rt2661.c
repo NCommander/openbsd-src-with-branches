@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.37 2007/08/28 18:34:38 deraadt Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.38 2007/09/07 19:05:05 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -1597,7 +1597,6 @@ rt2661_tx_data(struct rt2661_softc *sc, struct mbuf *m0,
 	if (needrts || needcts) {
 		struct mbuf *mprot;
 		int protrate, ackrate;
-		uint16_t dur;
 
 		protrate = IEEE80211_IS_CHAN_5GHZ(ni->ni_chan) ? 12 : 2;
 		ackrate  = rt2661_ack_rate(ic, rate);
