@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.5 2007/10/11 21:29:53 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.6 2007/10/13 16:35:22 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -742,8 +742,10 @@ top:
 			} else if (c == '\\') {
 				if ((next = lgetc(quotec)) == EOF)
 					return (0);
-				if (next == quotec)
+				if (next == quotec || c == ' ' || c == '\t')
 					c = next;
+				else if (next == '\n')
+					continue;
 				else
 					lungetc(next);
 			} else if (c == quotec) {
