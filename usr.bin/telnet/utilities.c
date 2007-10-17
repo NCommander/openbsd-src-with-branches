@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.8 2003/04/03 12:05:58 hin Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.9 2003/06/03 02:56:18 millert Exp $	*/
 /*	$NetBSD: utilities.c,v 1.5 1996/02/28 21:04:21 thorpej Exp $	*/
 
 /*
@@ -277,7 +277,9 @@ printsub(direction, pointer, length)
     int		  length;	/* length of suboption data */
 {
     int i;
+#if defined(AUTHENTICATION) || defined(ENCRYPTION)
     char buf[512];
+#endif
     extern int want_status_response;
 
     if (showoptions || direction == 0 ||

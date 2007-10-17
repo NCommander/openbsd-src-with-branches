@@ -1,4 +1,4 @@
-/*	$OpenBSD: keybound.c,v 1.2 2001/01/22 18:01:36 millert Exp $	*/
+/*	$OpenBSD: keybound.c,v 1.3 2006/05/14 09:01:06 espie Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1999,2000 Free Software Foundation, Inc.                   *
@@ -45,8 +45,6 @@ MODULE_ID("$From: keybound.c,v 1.3 2000/12/10 02:43:26 tom Exp $")
 NCURSES_EXPORT(char *)
 keybound(int code, int count)
 {
-    unsigned short k;
-
     if (code < 0 || code > (int)USHRT_MAX) {
     	return NULL;
     } else {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: supcmain.c,v 1.20 2005/04/27 18:13:16 mickey Exp $	*/
+/*	$OpenBSD: supcmain.c,v 1.21 2007/09/11 15:47:17 gilles Exp $	*/
 
 /*
  * Copyright (c) 1992 Carnegie Mellon University
@@ -592,7 +592,7 @@ init(argc, argv)
 	int argc;
 	char **argv;
 {
-	char buf[STRINGLENGTH], *p, *q;
+	char buf[STRINGLENGTH], *p;
 	char username[STRINGLENGTH];
 	char *supfname, *arg;
 	COLLECTION *c, *lastC;

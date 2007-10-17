@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkastosc.c,v 1.2 1996/06/26 05:41:37 deraadt Exp $	*/
+/*	$OpenBSD: mkastosc.c,v 1.3 2003/06/03 02:56:19 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)mkastosc.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: mkastosc.c,v 1.2 1996/06/26 05:41:37 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mkastosc.c,v 1.3 2003/06/03 02:56:19 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -68,10 +68,8 @@ char	*argv[];
 {
     int scancode;
     int asciicode;
-    int empty;
     int i;
     int c;
-    int found;
     struct hits *ph;
     struct Hits *Ph;
     struct thing *this;

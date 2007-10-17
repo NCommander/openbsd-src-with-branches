@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.1 2004/01/28 01:46:17 mickey Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.2 2005/08/04 16:33:05 espie Exp $	*/
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
  * All rights reserved.
@@ -74,7 +74,6 @@ ___start(argc, argv, envp, cleanup, obj, ps_strings)
 	struct ps_strings *ps_strings;
 {
 	char *namep;
-	register struct kframe *kfp;
 	char *s;
 
         environ = envp;

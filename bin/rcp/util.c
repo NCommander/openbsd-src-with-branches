@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.15 2004/09/14 22:06:19 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.16 2006/03/12 01:51:15 djm Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.2 (Berkeley) 4/2/94";
 #else
-static const char rcsid[] = "$OpenBSD: util.c,v 1.15 2004/09/14 22:06:19 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.16 2006/03/12 01:51:15 djm Exp $";
 #endif
 #endif /* not lint */
 
@@ -164,7 +164,6 @@ killchild(int signo)
 int
 do_local_cmd(arglist *a, uid_t userid, gid_t groupid)
 {
-	u_int i;
 	int status;
 	pid_t pid;
 

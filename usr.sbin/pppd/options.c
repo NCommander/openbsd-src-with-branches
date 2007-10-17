@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.21 2007/03/06 03:06:41 ray Exp $	*/
+/*	$OpenBSD: options.c,v 1.22 2007/06/04 14:59:45 henning Exp $	*/
 
 /*
  * options.c - handles option processing for PPP.
@@ -46,7 +46,7 @@
 #if 0
 static char rcsid[] = "Id: options.c,v 1.42 1998/03/26 04:46:06 paulus Exp $";
 #else
-static char rcsid[] = "$OpenBSD: options.c,v 1.21 2007/03/06 03:06:41 ray Exp $";
+static char rcsid[] = "$OpenBSD: options.c,v 1.22 2007/06/04 14:59:45 henning Exp $";
 #endif
 #endif
 
@@ -667,7 +667,7 @@ options_from_user()
 int
 options_for_tty()
 {
-    char *dev, *path, *p;
+    char *dev, *path;
     int ret;
 
     dev = devnam;
