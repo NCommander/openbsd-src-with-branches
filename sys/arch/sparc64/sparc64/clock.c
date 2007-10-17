@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.32 2007/04/09 19:59:06 kettenis Exp $	*/
+/*	$OpenBSD: clock.c,v 1.33 2007/05/06 14:52:36 kettenis Exp $	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -126,7 +126,7 @@ struct timecounter tick_timecounter = {
 int statvar = 8192;
 int statmin;			/* statclock interval - 1/2*variance */
 
-static long tick_increment;
+long tick_increment;
 int schedintr(void *);
 
 static struct intrhand level10 = { clockintr };
