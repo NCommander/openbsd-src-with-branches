@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 1997/07/06 07:46:20 downsj Exp $
+#	$OpenBSD: Makefile,v 1.14 2001/09/14 05:35:31 art Exp $
 #	$NetBSD: Makefile,v 1.6 1997/04/25 22:17:33 veego Exp $
 
 #	MOTOROLA MICROPROCESSOR & MEMORY TECHNOLOGY GROUP
@@ -36,6 +36,7 @@
 #
 #	Makefile for 68040 Floating Point Software Package
 #
+.if ${MACHINE_ARCH} == "m68k"
 
 TARGET = fpsp
 
@@ -338,6 +339,11 @@ clean cleandir:
 clobber:	clean
 
 _SUBDIRUSE:
+
+.else
+clean cleandir:
+
+.endif
 
 all:
 
