@@ -1,4 +1,4 @@
-/*	$OpenBSD: rip.h,v 1.2 2007/01/15 18:23:43 michele Exp $ */
+/*	$OpenBSD: rip.h,v 1.3 2007/01/23 21:10:10 michele Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -63,7 +63,7 @@ struct rip_entry {
 };
 
 /* auth */
-#define AUTH                    0xFFFF
+#define AUTH			0xFFFF
 #define	AUTH_TRLR_HDR_LEN	4
 
 /* auth general struct */
