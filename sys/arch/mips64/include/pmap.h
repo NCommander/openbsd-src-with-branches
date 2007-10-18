@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.12 2007/04/27 18:14:11 miod Exp $ */
+/*      $OpenBSD: pmap.h,v 1.13 2007/09/10 18:49:45 miod Exp $ */
 
 /*
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -40,6 +40,8 @@
 
 #ifdef	_KERNEL
 
+#include <machine/pte.h>
+
 /*
  * The user address space is 2Gb (0x0 - 0x80000000).
  * User programs are laid out in memory as follows:
@@ -68,10 +70,8 @@
 
 #define PMAP_SEGTABSIZE		512
 
-union pt_entry;
-
 struct segtab {
-	union pt_entry	*seg_tab[PMAP_SEGTABSIZE];
+	pt_entry_t	*seg_tab[PMAP_SEGTABSIZE];
 };
 
 /*
