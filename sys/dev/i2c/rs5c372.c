@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: rs5c372.c,v 1.5 2006/03/29 06:41:24 thorpej Exp $	*/
 
 /*
