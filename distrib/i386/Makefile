@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.7 2004/08/15 21:43:35 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2007/08/14 18:57:32 deraadt Exp $
 
 SUBDIR= ramdisk_cd ramdiskA ramdiskB ramdiskC cdfs cdfs-emu
 
-.if	make(obj)
+.if	make(obj) || make(cleandir) || make(clean)
 SUBDIR+= iso
 .endif
 

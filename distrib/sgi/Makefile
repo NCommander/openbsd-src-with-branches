@@ -1,5 +1,9 @@
-#	$OpenBSD: Makefile,v 1.2 2005/04/27 03:59:39 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 2007/10/13 21:22:27 deraadt Exp $
 
-SUBDIR= ramdisk cdfs iso
+SUBDIR= ramdisk cdfs
+
+.if	make(obj) || make(cleandir) || make(clean)
+SUBDIR+= iso
+.endif
 
 .include <bsd.subdir.mk>

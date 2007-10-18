@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.7 2005/08/09 16:48:11 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2007/08/14 18:57:32 deraadt Exp $
 
 # preserve order: 'miniroot' depends on 'bsd.rd', 'cdfs' depends on 'miniroot'
 SUBDIR+= ramdisk ramdiskB bsd.rd miniroot cdfs
 
-.if	make(obj)
+.if	make(obj) || make(cleandir) || make(clean)
 SUBDIR+= iso
 .endif
 

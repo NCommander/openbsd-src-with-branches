@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 2003/01/30 21:05:00 mickey Exp $
+#	$OpenBSD: Makefile,v 1.2 2007/08/14 18:57:32 deraadt Exp $
 
 SUBDIR=ramdisk
 
-.if	make(obj)
+.if	make(obj) || make(cleandir) || make(clean)
 SUBDIR+= iso
 .endif
 
