@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.5 2004/10/20 12:49:15 pefo Exp $ */
+/*	$OpenBSD: locore.S,v 1.6 2004/12/24 22:50:31 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -34,7 +34,6 @@
 #include <machine/cpu.h>
 #include <machine/regnum.h>
 #include <machine/cpustate.h>
-#include <machine/pte.h>
 
 #include "assym.h"
 

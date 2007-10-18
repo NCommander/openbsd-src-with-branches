@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp0access.S,v 1.6 2007/07/16 20:20:08 miod Exp $ */
+/*	$OpenBSD: cp0access.S,v 1.7 2007/07/16 20:23:09 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -38,7 +38,6 @@
 #include <machine/asm.h>
 #include <machine/cpu.h>
 #include <machine/regnum.h>
-#include <machine/pte.h>
 
 #include "assym.h"
 

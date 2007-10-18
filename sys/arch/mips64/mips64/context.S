@@ -1,4 +1,4 @@
-/*	$OpenBSD: context.S,v 1.14 2007/10/10 15:53:52 art Exp $ */
+/*	$OpenBSD: context.S,v 1.15 2007/10/13 12:46:18 miod Exp $ */
 
 /*
  * Copyright (c) 2002-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -34,7 +34,6 @@
 #include <machine/cpu.h>
 #include <machine/regnum.h>
 #include <machine/cpustate.h>
-#include <machine/pte.h>
 
 #include "assym.h"
 
