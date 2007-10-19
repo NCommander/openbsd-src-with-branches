@@ -1,4 +1,5 @@
-# $OpenBSD: Makefile,v 1.4 2006/05/06 16:09:30 alek Exp $
+#	$OpenBSD: Makefile,v 1.5 2007/10/19 14:29:41 deraadt Exp $
+
 .PATH: ${.CURDIR}/lib
 
 LIB=	expat
