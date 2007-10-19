@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.33 2007/05/06 14:52:36 kettenis Exp $	*/
+/*	$OpenBSD: clock.c,v 1.34 2007/10/17 21:23:28 kettenis Exp $	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -441,11 +441,13 @@ timermatch(parent, cf, aux)
 	void *cf;
 	void *aux;
 {
+#ifndef MULTIPROCESSOR
 	struct mainbus_attach_args *ma = aux;
 
 	if (!timerreg_4u.t_timer || !timerreg_4u.t_clrintr)
 		return (strcmp("counter-timer", ma->ma_name) == 0);
 	else
+#endif
 		return (0);
 }
 
