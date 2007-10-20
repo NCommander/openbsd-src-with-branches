@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass2.h,v 1.2 2007/09/15 22:04:39 ray Exp $	*/
+/*	$OpenBSD: pass2.h,v 1.3 2007/10/01 18:51:02 otto Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -251,7 +251,6 @@ void comperr(char *str, ...);
 void genregs(NODE *p);
 void ngenregs(struct interpass *);
 NODE *store(NODE *);
-void gencall(NODE *, NODE *prev);
 struct interpass *ipnode(NODE *);
 void deflab(int);
 void rmove(int, int, TWORD);
