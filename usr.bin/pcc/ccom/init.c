@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.9 2007/10/05 12:48:29 otto Exp $	*/
+/*	$OpenBSD: init.c,v 1.34 2007/10/05 12:51:18 otto Exp $	*/
 
 /*
  * Copyright (c) 2004, 2007 Anders Magnusson (ragge@ludd.ltu.se).
@@ -266,7 +266,6 @@ stkpush(void)
 	if (idebug) {
 		printf("stkpush: '%s' %s ", sp->sname, scnames(sp->sclass));
 		tprint(stdout, t, 0);
-		printf("\n");
 	}
 #endif
 
@@ -900,7 +899,7 @@ prtstk(struct instk *in)
 		printf("%p) '%s' ", in, in->in_sym->sname);
 		tprint(stdout, in->in_t, 0);
 		printf(" %s ", scnames(in->in_sym->sclass));
-		if (ISARY(in->in_t) && in->in_df->ddim)
+		if (in->in_df && in->in_df->ddim)
 		    printf("arydim=%d ", in->in_df->ddim);
 		printf("ninit=%d ", in->in_n);
 		if (BTYPE(in->in_t) == STRTY || ISARY(in->in_t))

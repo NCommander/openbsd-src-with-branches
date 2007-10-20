@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scan.l,v 1.1 2007/10/07 17:58:51 otto Exp $	*/
+/*	$OpenBSD: scan.l,v 1.63 2007/10/10 16:22:39 ragge Exp $	*/
 
 /*
  * Copyright (c) 2002 Anders Magnusson. All rights reserved.
@@ -142,10 +142,11 @@ extern void yyset_lineno (int);
 				int i;
 
 				yylval.strp = addname(yytext);
+#ifdef GCC_COMPAT
 				if ((i = gcc_keyword(yylval.strp,
 				    &yylval.nodep)) != 0)
 					return i;
-// printf("str: %s notype %d parbal %d\n", yytext, notype, parbal);
+#endif
 				if (!notype) {
 					s = lookup(yylval.strp, SNOCREAT);
 					if (s && s->sclass == TYPEDEF)

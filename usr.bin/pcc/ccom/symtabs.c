@@ -1,4 +1,4 @@
-/*	$OpenBSD: symtabs.c,v 1.2 2007/09/15 22:04:39 ray Exp $	*/
+/*	$OpenBSD: symtabs.c,v 1.14 2006/06/16 09:30:32 ragge Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
