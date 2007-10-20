@@ -472,7 +472,7 @@ usage(void)
 	extern char *__progname;
 
 	fprintf(stderr, "usage: %s "
-	    "[-dfnpvy] [-l maxparallel] [-T fstype:fsoptions]\n"
+	    "[-dfnpvy] [-b block#] [-l maxparallel] [-T fstype:fsoptions]\n"
 	    "            [-t fstype] [special | node ...]\n", __progname);
 	exit(1);
 }
