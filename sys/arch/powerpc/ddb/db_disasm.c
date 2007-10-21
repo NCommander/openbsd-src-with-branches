@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.13 2003/10/15 01:06:13 drahn Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.14 2003/12/21 15:17:29 miod Exp $	*/
 /*
  * Copyright (c) 1996, 2001, 2003 Dale Rahn. All rights reserved.
  *
@@ -1080,6 +1080,7 @@ disasm_fields(u_int32_t addr, const struct opcode *popcode, instr_t instr,
 		return;
 	}
 	pfmt = popcode->decode_str;
+	disasm_str[0] = '\0';
 
 	while (*pfmt != '\0')  {
 		if (*pfmt == '%') {
