@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.22 2006/01/09 20:56:59 miod Exp $	*/
+/*	$OpenBSD: zs.c,v 1.23 2007/01/14 18:50:23 martin Exp $	*/
 /*	$NetBSD: zs.c,v 1.19 1998/01/12 19:22:18 thorpej Exp $	*/
 
 /*
@@ -757,7 +757,7 @@ zs_set_modes(cs, cflag)
 	/*
 	 * Output hardware flow control on the chip is horrendous:
 	 * if carrier detect drops, the receiver is disabled, and if
-	 * CTS drops, the transmitter is stoped IN MID CHARACTER!
+	 * CTS drops, the transmitter is stopped IN MID CHARACTER!
 	 * Therefore, NEVER set the HFC bit, and instead use the
 	 * status interrupt to detect CTS changes.
 	 */
