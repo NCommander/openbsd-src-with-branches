@@ -1,4 +1,4 @@
-/*	$OpenBSD: order.c,v 1.2 2007/09/15 22:04:38 ray Exp $	*/
+/*	$OpenBSD: order.c,v 1.1 2007/10/07 17:58:52 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
