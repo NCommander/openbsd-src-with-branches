@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.161 2007/01/21 01:45:35 stevesk Exp $ */
+/* $OpenBSD: readconf.c,v 1.162 2007/03/20 03:56:12 tedu Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1250,7 +1250,7 @@ parse_forward(Forward *fwd, const char *fwdspec)
 
 	xfree(p);
 
-	if (fwd->listen_port == 0 && fwd->connect_port == 0)
+	if (fwd->listen_port == 0 || fwd->connect_port == 0)
 		goto fail_free;
 
 	if (fwd->connect_host != NULL &&
