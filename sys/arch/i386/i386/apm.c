@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.75 2007/05/29 08:22:14 gwk Exp $	*/
+/*	$OpenBSD: apm.c,v 1.76 2007/07/02 17:11:29 thib Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -910,9 +910,6 @@ apmattach(struct device *parent, struct device *self, void *aux)
 		setgdt(GAPM16CODE_SEL, NULL, 0, 0, 0, 0, 0);
 		setgdt(GAPMDATA_SEL, NULL, 0, 0, 0, 0, 0);
 	}
-	/* XXX - To go away */
-	printf("apm0: flags %x dobusy %d doidle %d\n",
-	    apm_flags, apm_dobusy, apm_doidle);
 }
 
 void
