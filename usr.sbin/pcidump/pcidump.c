@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2006, 2007 David Gwynne <loki@animata.net>
  *
