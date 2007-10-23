@@ -1,4 +1,4 @@
-/*	$OpenBSD: auconv.h,v 1.5 2002/03/14 01:26:51 millert Exp $ */
+/*	$OpenBSD: auconv.h,v 1.6 2002/05/06 02:34:57 nate Exp $ */
 /*	$NetBSD: auconv.h,v 1.5 1999/11/01 18:12:19 augustss Exp $	*/
 
 /*-
@@ -69,6 +69,20 @@ extern void change_sign16_le_mts(void *, u_char *, int);
 extern void change_sign16_be_mts(void *, u_char *, int);
 extern void change_sign16_swap_bytes_le_mts(void *, u_char *, int);
 extern void change_sign16_swap_bytes_be_mts(void *, u_char *, int);
+void swap_bytes_change_sign16_le_mts(void *, u_char *, int);
+void swap_bytes_change_sign16_be_mts(void *, u_char *, int);
+
+/* 16-bit signed linear stereo to mono.  drops every other sample */
+void linear16_decimator(void *, u_char *, int);
+void linear16_to_linear8_le_stm(void *, u_char *, int);
+void linear16_to_linear8_be_stm(void *, u_char *, int);
+void linear16_to_ulinear8_le_stm(void *, u_char *, int);
+void linear16_to_ulinear8_be_stm(void *, u_char *, int);
+void change_sign16_le_stm(void *, u_char *, int);
+void change_sign16_be_stm(void *, u_char *, int);
+void swap_bytes_stm(void *, u_char *, int);
+void swap_bytes_change_sign16_be_stm(void *, u_char *, int);
+void change_sign16_swap_bytes_le_stm(void *, u_char *, int);
 
 /* backwards compat for now */
 #if BYTE_ORDER == LITTLE_ENDIAN
