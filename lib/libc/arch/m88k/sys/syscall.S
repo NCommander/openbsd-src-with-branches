@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.S,v 1.8 2004/07/28 08:48:17 miod Exp $	*/
+/*	$OpenBSD: syscall.S,v 1.9 2005/08/07 16:40:15 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -36,9 +36,6 @@
 #include "SYS.h"
 
 SYSENTRY(syscall)
-	ld	r10,r31,0
-	ld	r11,r31,4
-	ld	r12,r31,8
 	or	r13,r0,0
 	tb0	0,r0,128
 	br	__cerror
