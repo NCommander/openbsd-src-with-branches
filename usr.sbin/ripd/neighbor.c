@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.7 2007/03/27 20:19:04 michele Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.8 2007/10/18 17:00:59 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -44,7 +44,6 @@ void	nbr_stop_timer(struct nbr *);
 
 void	nbr_failed_new(struct nbr *);
 void	nbr_failed_timeout(int, short, void *);
-void	nbr_failed_stop_timer(struct nbr_failed *);
 
 LIST_HEAD(nbr_head, nbr);
 

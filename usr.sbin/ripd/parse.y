@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.14 2007/10/18 17:00:59 deraadt Exp $ */
+/*	$OpenBSD: parse.y,v 1.15 2007/10/20 13:26:50 pyr Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -84,7 +84,6 @@ static struct {
 struct iface	*iface = NULL;
 static struct ripd_conf	*conf;
 static int		 errors = 0;
-char			*start_state;
 
 struct iface	*conf_get_if(struct kif *);
 void		 clear_config(struct ripd_conf *);
