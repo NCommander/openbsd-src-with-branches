@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.115 2007/10/03 07:51:26 kettenis Exp $	*/
+/*	$OpenBSD: locore.s,v 1.116 2007/10/10 15:53:51 art Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -1446,10 +1446,6 @@ ENTRY(cpu_idle_cycle)
 #if NAPM > 0
 	call	_C_LABEL(apm_cpu_idle)
 #else
-#if NPCTR > 0
-	addl	$1,_C_LABEL(pctr_idlcnt)
-	adcl	$0,_C_LABEL(pctr_idlcnt)+4
-#endif
 	sti
 	hlt
 #endif

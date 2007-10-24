@@ -1,4 +1,4 @@
-/*	$OpenBSD: pctr.c,v 1.23 2007/10/17 02:30:25 deraadt Exp $	*/
+/*	$OpenBSD: pctr.c,v 1.24 2007/10/24 06:30:25 mikeb Exp $	*/
 
 /*
  * Pentium performance counter driver for OpenBSD.
@@ -30,8 +30,6 @@
 				(((cpu_id >> 4) & 15) > 0))
 #define usepctr		((pctr_isamd || pctr_isintel) && \
 			    ((cpu_id >> 8) & 15) >= 6)
-
-u_int64_t		pctr_idlcnt;	/* Gets incremented in locore.S */
 
 int			pctr_isamd;
 int			pctr_isintel;
@@ -188,7 +186,6 @@ pctrioctl(dev_t dev, u_long cmd, caddr_t data, int fflag, struct proc *p)
 			if (usetsc)
 				st->pctr_tsc = rdtsc();
 		}
-		st->pctr_idl = pctr_idlcnt;
 		return (0);
 	}
 	case PCIOCS0:
