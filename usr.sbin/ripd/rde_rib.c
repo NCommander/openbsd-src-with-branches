@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.3 2007/10/18 17:00:59 deraadt Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.4 2007/10/24 11:47:59 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -167,7 +167,7 @@ rt_new_kr(struct kroute *kr)
 }
 
 struct rt_node *
-rt_new_rr(struct rip_route *e, int metric)
+rt_new_rr(struct rip_route *e, u_int8_t metric)
 {
 	struct rt_node	*rn;
 
