@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.71 2007/10/17 21:23:28 kettenis Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.72 2007/10/25 05:19:55 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -871,7 +871,7 @@ getprop(node, name, size, nitem, bufp)
 	buf = *bufp;
 	if (buf == NULL) {
 		/* No storage provided, so we allocate some */
-		buf = malloc(len, M_DEVBUF, M_NOWAIT);
+		buf = malloc(len + 1, M_DEVBUF, M_NOWAIT);
 		if (buf == NULL)
 			return (ENOMEM);
 	}
