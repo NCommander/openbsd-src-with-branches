@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.54 2003/10/19 22:20:37 brad Exp $
+#	$OpenBSD: Makefile,v 1.55 2005/11/24 20:49:16 deraadt Exp $
 
 # Uncomment this to enable tracing in libcurses
 #CURSESTRACE=-DTRACE
@@ -263,4 +263,5 @@ afterinstall:
 
 .include <bsd.lib.mk>
 
+init_keytry.o init_keytry.so init_keytry.po init_keytry.ln: init_keytry.h
 lib_options.o lib_options.so lib_options.po lib_options.ln: init_keytry.h
