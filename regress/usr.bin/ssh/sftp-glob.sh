@@ -1,4 +1,4 @@
-#	$OpenBSD: sftp-glob.sh,v 1.1 2004/12/10 01:31:30 fgsch Exp $
+#	$OpenBSD: sftp-glob.sh,v 1.2 2007/10/24 03:32:35 djm Exp $
 #	Placed in the Public Domain.
 
 tid="sftp glob"
@@ -9,7 +9,7 @@ sftp_ls() {
 	expected=$3
 	unexpected=$4
 	verbose "$tid: $errtag"
-	$ECHOE "ls -l ${target}" | \
+	printf "ls -l %s" "${target}" | \
 		${SFTP} -b - -P ${SFTPSERVER} 2>/dev/null | \
 		grep -v "^sftp>" > ${RESULTS}
 	if [ $? -ne 0 ]; then
