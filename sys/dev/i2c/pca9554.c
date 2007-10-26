@@ -1,4 +1,4 @@
-/*	$OpenBSD: pca9554.c,v 1.14 2007/07/31 21:34:39 cnst Exp $	*/
+/*	$OpenBSD: pca9554.c,v 1.15 2007/10/20 22:06:43 cnst Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -26,7 +26,7 @@
 
 #include <dev/gpio/gpiovar.h>
 
-/* Phillips 9554 registers */
+/* Philips 9554 registers */
 #define PCA9554_IN		0x00
 #define PCA9554_OUT		0x01
 #define PCA9554_POLARITY	0x02
