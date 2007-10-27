@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.44 2007/10/17 21:23:28 kettenis Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.45 2007/10/18 20:44:47 kettenis Exp $	*/
 /*	$NetBSD: pmap.c,v 1.107 2001/08/31 16:47:41 eeh Exp $	*/
 #undef	NO_VCACHE /* Don't forget the locked TLB in dostart */
 /*
@@ -827,7 +827,7 @@ remap_data:
 	BDPRINTF(PDB_BOOT1, ("Calculating physmem:"));
 
 	for (mp = mem; mp->size; mp++)
-		physmem += btoc(mp->size);
+		physmem += atop(mp->size);
 	BDPRINTF(PDB_BOOT1, (" result %x or %d pages\r\n", 
 			     (int)physmem, (int)physmem));
 	/* 
@@ -1183,7 +1183,7 @@ remap_data:
 		}
 		s = mp->start;
 		sz = mp->size;
-		npgs += btoc(sz);
+		npgs += atop(sz);
 		for (mp1 = avail; mp1 < mp; mp1++)
 			if (s < mp1->start)
 				break;
