@@ -403,12 +403,12 @@ CompatMake(void *gnp,	/* The node to make */
 			gn->type |= OP_SILENT;
 
 		if (Job_CheckCommands(gn, Fatal)) {
-		    /* Our commands are ok, but we still have to worry
-		     * about the -t flag...	*/
-		    if (!touchFlag)
-			    run_gnode(gn);
-		    else
-			    Job_Touch(gn, gn->type & OP_SILENT);
+			/* Our commands are ok, but we still have to worry
+			 * about the -t flag...	*/
+			if (!touchFlag)
+				run_gnode(gn);
+			else
+				Job_Touch(gn, gn->type & OP_SILENT);
 		} else
 			gn->made = ERROR;
 
