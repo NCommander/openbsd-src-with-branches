@@ -212,7 +212,7 @@ invalidate_pte(pt_entry_t *pte)
 
 	oldpte = PG_NV;
 	__asm__ __volatile__
-	    ("xmem %0, %2, r0" : "=r"(oldpte) : "0"(oldpte), "r"(pte));
+	    ("xmem %0, %2, r0" : "+r"(oldpte), "+m"(*pte) : "r"(pte));
 	return oldpte;
 }
 
