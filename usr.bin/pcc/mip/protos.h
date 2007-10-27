@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: protos.h,v 1.2 2007/09/15 22:04:39 ray Exp $	*/
 
 struct optab;
 struct symtab;
@@ -53,7 +53,6 @@ int noinit(void);
 void eprint(NODE *, int, int *, int *);
 int uclass(int class);
 int fixclass(int, TWORD type);
-void lineid(int, char *);
 void mycanon(NODE *);
 void delay(NODE *);
 int delay1(NODE *);
