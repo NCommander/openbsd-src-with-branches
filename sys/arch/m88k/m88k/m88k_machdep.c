@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88k_machdep.c,v 1.22 2007/10/10 15:53:52 art Exp $	*/
+/*	$OpenBSD: m88k_machdep.c,v 1.23 2007/10/24 20:54:53 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -294,8 +294,6 @@ set_cpu_number(cpuid_t number)
 		ci->ci_primary = 1;
 		ci->ci_idle_pcb = &idle_u;
 	}
-
-	ci->ci_alive = 1;
 }
 
 /*
