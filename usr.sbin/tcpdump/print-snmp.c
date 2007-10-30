@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-snmp.c,v 1.12 2005/04/11 07:40:10 deraadt Exp $	*/
+/*	$OpenBSD: print-snmp.c,v 1.13 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -57,7 +57,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
+    "@(#) $Id: print-snmp.c,v 1.13 2007/10/07 16:41:05 deraadt Exp $ (LBL)";
 #endif
 
 #include <sys/param.h>
@@ -162,7 +162,7 @@ char *GenericTrap[] = {
 	"authenticationFailure",
 	"egpNeighborLoss",
 	"enterpriseSpecific"
-#define GT_ENTERPRISE 7
+#define GT_ENTERPRISE 6
 };
 #define DECODE_GenericTrap(t) \
 	( t >= 0 && t <= sizeof(GenericTrap)/sizeof(GenericTrap[0]) \
