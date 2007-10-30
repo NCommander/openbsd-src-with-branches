@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2001/06/26 21:58:02 smurph Exp $
+#	$OpenBSD: Makefile,v 1.2 2004/11/15 14:03:06 miod Exp $
 #
 # DO NOT OPTMIZE bugcrt (i.e. no "-O2")
 #
@@ -18,18 +18,18 @@ all:	${OBJS}
 
 stage1crt.o: crt.c
 	${CC} ${CFLAGS} ${STAGE1_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
-	${LD} -x -r ${.TARGET}
-	mv a.out ${.TARGET}
+	${LD} -x -r ${.TARGET} -o ${.TARGET}ut 
+	mv ${.TARGET}ut ${.TARGET}
 
 stage2crt.o: crt.c
 	${CC} ${CFLAGS} ${STAGE2_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
-	${LD} -x -r ${.TARGET}
-	mv a.out ${.TARGET}
+	${LD} -x -r ${.TARGET} -o ${.TARGET}ut 
+	mv ${.TARGET}ut ${.TARGET}
 
 singlecrt.o: crt.c
 	${CC} ${CFLAGS} ${SINGLE_CFLAGS} -c ${.CURDIR}/crt.c -o ${.TARGET}
-	${LD} -x -r ${.TARGET}
-	mv a.out ${.TARGET}
+	${LD} -x -r ${.TARGET} -o ${.TARGET}ut 
+	mv ${.TARGET}ut ${.TARGET}
 
 install:
 
