@@ -1,4 +1,4 @@
-/*	$OpenBSD: adt7460.c,v 1.17 2007/03/22 16:55:31 deraadt Exp $	*/
+/*	$OpenBSD: adt7460.c,v 1.18 2007/06/24 05:34:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -240,7 +240,6 @@ adt_attach(struct device *parent, struct device *self, void *aux)
 		if (worklist[i].index >= 32768 &&
 		    sc->chip->ratio[worklist[i].index - 32768] == 0)
 			continue;
-		sc->sc_sensor[i].flags &= ~SENSOR_FINVALID;
 		sensor_attach(&sc->sc_sensordev, &sc->sc_sensor[i]);
 	}
 	sensordev_install(&sc->sc_sensordev);
