@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.61 2007/05/29 00:56:56 otto Exp $	 */
+/* $OpenBSD: machine.c,v 1.62 2007/07/27 13:57:50 deraadt Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -75,7 +75,7 @@ static char header[] =
 #define UNAME_START 6
 
 #define Proc_format \
-	"%5d %-8.8s %3d %4d %5s %5s %-8s %-7.7s %6s %5.2f%% %.50s"
+	"%5d %-8.8s %3d %4d %5s %5s %-8s %-7.7s %6s %5.2f%% %s"
 
 /* process state names for the "STATE" column of the display */
 /*
@@ -425,8 +425,7 @@ state_abbr(struct kinfo_proc2 *pp)
 static char *
 format_comm(struct kinfo_proc2 *kp)
 {
-#define ARG_SIZE 60
-	static char **s, buf[ARG_SIZE];
+	static char **s, buf[MAX_COLS];
 	size_t siz = 100;
 	char **p;
 	int mib[4];
