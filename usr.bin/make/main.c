@@ -258,6 +258,9 @@ MainParseArgs(int argc, char **argv)
 				case 'j':
 					debug |= DEBUG_JOB;
 					break;
+				case 'J':
+					debug |= DEBUG_JOBTOKEN;
+					break;
 				case 'l':
 					debug |= DEBUG_LOUD;
 					break;
@@ -678,6 +681,7 @@ main(int argc, char **argv)
 		Dir_AddDir(defaultPath, d.current);
 	Var_Set(".CURDIR", d.current);
 	Var_Set(".OBJDIR", d.object);
+	Targ_setdirs(d.current, d.object);
 
 	/*
 	 * Initialize various variables.

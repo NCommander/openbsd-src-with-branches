@@ -2,7 +2,7 @@
 #define DEFINES_H
 
 /*	$OpenPackages$ */
-/*	$OpenBSD: defines.h,v 1.2 2002/02/19 19:39:38 millert Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -89,6 +89,7 @@ extern int debug;
 #define DEBUG_VAR	0x0200
 #define DEBUG_FOR	0x0400
 #define DEBUG_LOUD	0x0800
+#define DEBUG_JOBTOKEN	0x1000
 
 #define CONCAT(a,b)	a##b
 

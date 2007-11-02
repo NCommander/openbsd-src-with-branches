@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: arch.c,v 1.70 2007/09/17 10:06:44 espie Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: arch.c,v 1.17 1996/11/06 17:58:59 christos Exp $	*/
 
 /*
@@ -934,26 +934,10 @@ Arch_MemMTime(GNode *gn)
 	return gn->mtime;
 }
 
-/* If the system can handle the -L flag when linking (or we cannot find
- * the library), we assume that the user has placed the .LIBRARIES variable
- * in the final linking command (or the linker will know where to find it)
- * and set the TARGET variable for this node to be the node's name. Otherwise,
- * we set the TARGET variable to be the full path of the library,
- * as returned by Dir_FindFile.
- */
+/* we assume the system knows how to find libraries */
 void
-Arch_FindLib(GNode *gn, Lst path)
+Arch_FindLib(GNode *gn, Lst path UNUSED)
 {
-	char *libName;	/* file name for archive */
-	size_t length = strlen(gn->name) + 6 - 2;
-
-	libName = emalloc(length);
-	snprintf(libName, length, "lib%s.a", &gn->name[2]);
-
-	gn->path = Dir_FindFile(libName, path);
-
-	free(libName);
-
 	Varq_Set(TARGET_INDEX, gn->name, gn);
 }
 

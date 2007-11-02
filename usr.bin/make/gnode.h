@@ -196,8 +196,8 @@ struct GNode_ {
 #define OP_HAS_COMMANDS 0x08000000  /* Target has all the commands it should.
 				     * Used when parsing to catch multiple
 				     * commands for a target */
-#define OP_SAVE_CMDS	0x04000000  /* Saving commands on .END (Compat) */
 #define OP_DEPS_FOUND	0x02000000  /* Already processed by Suff_FindDeps */
+#define OP_RESOLVED	0x01000000  /* We looked harder already */
 
 /*
  * OP_NOP will return true if the node with the given type was not the

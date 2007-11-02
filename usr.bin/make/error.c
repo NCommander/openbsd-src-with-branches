@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: error.c,v 1.12 2004/04/07 13:11:35 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -29,12 +29,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "defines.h"
 #include "error.h"
 #include "job.h"
 #include "targ.h"
+#include "var.h"
 
 #include "lowparse.h"
 
@@ -132,7 +135,16 @@ DieHorribly(void)
 void
 Finish(int errors) /* number of errors encountered in Make_Make */
 {
-	Fatal("%d error%s", errors, errors == 1 ? "" : "s");
+	Job_Wait();
+	if (errors != 0) {
+		Error("make pid #%ld: %d error%s in directory %s:", (long)getpid(), 
+		    errors, errors == 1 ? "" : "s", 
+		    Var_Value(".CURDIR"));
+	}
+	print_errors();
+	if (DEBUG(GRAPH2))
+		Targ_PrintGraph(2);
+	exit(2);		/* Not 1 so -q can distinguish error */
 }
 
 

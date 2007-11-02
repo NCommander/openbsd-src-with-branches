@@ -60,5 +60,6 @@ extern void Job_End(void);
 #endif
 extern void Job_Wait(void);
 extern void Job_AbortAll(void);
+extern void print_errors(void);
 
 #endif /* _JOB_H_ */
