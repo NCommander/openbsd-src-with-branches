@@ -41,7 +41,9 @@
 
 #include "lowparse.h"
 
-int	    fatal_errors = 0;
+int fatal_errors = 0;
+bool supervise_jobs = false;
+
 static void ParseVErrorInternal(const char *, unsigned long, int, const char *, va_list);
 /*-
  * Error --
@@ -73,9 +75,10 @@ Fatal(char *fmt, ...)
 {
 	va_list ap;
 
-	va_start(ap, fmt);
-	Job_Wait();
+	if (supervise_jobs)
+		Job_Wait();
 
+	va_start(ap, fmt);
 	(void)vfprintf(stderr, fmt, ap);
 	va_end(ap);
 	(void)fprintf(stderr, "\n");
