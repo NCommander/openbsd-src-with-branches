@@ -213,17 +213,15 @@ Make_Update(GNode *cgn)	/* the child node */
 			(void)Lst_QueueNew(&toBeMade, succ);
 	}
 
-	/* Set the .PREFIX and .IMPSRC variables for all the implied parents
+	/* Set the .IMPSRC variables for all the implied parents
 	 * of this node.  */
 	{
 	char	*cpref = Varq_Value(PREFIX_INDEX, cgn);
 
 	for (ln = Lst_First(&cgn->iParents); ln != NULL; ln = Lst_Adv(ln)) {
 		pgn = (GNode *)Lst_Datum(ln);
-		if (pgn->make) {
+		if (pgn->make)
 			Varq_Set(IMPSRC_INDEX, cname, pgn);
-			Varq_Set(PREFIX_INDEX, cpref, pgn);
-		}
 	}
 	}
 
