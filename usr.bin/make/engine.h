@@ -43,11 +43,11 @@
  * 	.DEFAULT and other places if necessary.
  */
 extern bool Job_CheckCommands(GNode *, void (*abortProc)(char *, ...));
-/* Job_Touch(node, besilent);
+/* Job_Touch(node);
  *	touch the path corresponding to a node or update the corresponding
  *	archive object.
  */
-extern void Job_Touch(GNode *, bool);
+extern void Job_Touch(GNode *);
 /* Make_TimeStamp(parent, child);
  *	ensure parent is at least as recent as child.
  */

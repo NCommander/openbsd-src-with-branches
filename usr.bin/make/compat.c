@@ -134,7 +134,7 @@ CompatMake(void *gnp,	/* The node to make */
 			if (!touchFlag)
 				run_gnode(gn, 0);
 			else
-				Job_Touch(gn, gn->type & OP_SILENT);
+				Job_Touch(gn);
 		} else
 			gn->made = ERROR;
 

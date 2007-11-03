@@ -158,7 +158,7 @@ rewrite_time(const char *name)
 }
 
 void
-Job_Touch(GNode *gn, bool silent)
+Job_Touch(GNode *gn)
 {
 	if (gn->type & (OP_JOIN|OP_USE|OP_EXEC|OP_OPTIONAL)) {
 		/*
@@ -168,7 +168,7 @@ Job_Touch(GNode *gn, bool silent)
 		return;
 	}
 
-	if (!silent) {
+	if (!(gn->type & OP_SILENT)) {
 		(void)fprintf(stdout, "touch %s\n", gn->name);
 		(void)fflush(stdout);
 	}
