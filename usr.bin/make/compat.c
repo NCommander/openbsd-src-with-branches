@@ -128,14 +128,6 @@ CompatMake(void *gnp,	/* The node to make */
 		 * variable using Make_DoAllVar().  */
 		Make_DoAllVar(gn);
 
-		/* Alter our type to tell if errors should be ignored or things
-		 * should not be printed so CompatRunCommand knows what to do.
-		 */
-		if (Targ_Ignore(gn))
-			gn->type |= OP_IGNORE;
-		if (Targ_Silent(gn))
-			gn->type |= OP_SILENT;
-
 		if (Job_CheckCommands(gn, Fatal)) {
 			/* Our commands are ok, but we still have to worry
 			 * about the -t flag...	*/
