@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.26 2007/06/15 22:37:40 gwk Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.27 2007/10/08 04:15:15 krw Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -487,7 +487,6 @@ acpicpu_fetch_pss(struct acpicpu_pss **pss) {
 
 	sc = acpicpu_sc[0];
 	if (!sc) {
-		printf("couldnt fetch acpicpu_softc\n");
 		return 0;
 	}
 	*pss = sc->sc_pss;
