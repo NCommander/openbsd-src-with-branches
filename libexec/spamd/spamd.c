@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.101 2007/03/26 16:40:56 beck Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.102 2007/04/13 22:05:43 beck Exp $	*/
 
 /*
  * Copyright (c) 2002-2007 Bob Beck.  All rights reserved.
@@ -192,6 +192,10 @@ parse_configline(char *line)
 	if (*cp != ';')
 		goto parse_error;
 	*cp++ = '\0';
+	if (!*cp) {
+		sdl_del(name);
+		return (0);
+	}
 	msg = cp;
 	if (*cp++ != '"')
 		goto parse_error;
