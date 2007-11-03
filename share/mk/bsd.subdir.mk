@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.subdir.mk,v 1.13 2005/01/19 18:01:51 espie Exp $
+#	$OpenBSD: bsd.subdir.mk,v 1.14 2005/02/05 10:39:50 espie Exp $
 #	$NetBSD: bsd.subdir.mk,v 1.11 1996/04/04 02:05:06 jtc Exp $
 #	@(#)bsd.subdir.mk	5.9 (Berkeley) 2/1/91
 
@@ -43,7 +43,7 @@ _SUBDIRUSE: .USE
 			${MAKE} SKIPDIR="$${subskipdir}" \
 			    $${_makefile_spec_} _THISDIR_="$${_nextdir_}" \
 			    ${MAKE_FLAGS} \
-			    ${.TARGET:S/realinstall/install/:S/.depend/depend/}; \
+			    ${.TARGET:S/realinstall/install/:S/subdirdepend/depend/}; \
 		fi); \
 	done
 
