@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: var.c,v 1.79 2007/09/17 09:45:37 espie Exp $	*/
+/*	$OpenBSD: var.c,v 1.80 2007/09/17 10:39:33 espie Exp $	*/
 /*	$NetBSD: var.c,v 1.18 1997/03/18 19:24:46 christos Exp $	*/
 
 /*
@@ -1017,6 +1017,7 @@ Var_Parse(const char *str,	/* The string to parse */
 					Fatal(
 "Using $< in a non-suffix rule context is a GNUmake idiom (line %lu of %s)",
 					    n->lineno, n->fname);
+					break;
 				default:
 					Error(
 "Using undefined dynamic variable $%s (line %lu of %s)",
