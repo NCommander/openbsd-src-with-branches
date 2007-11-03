@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.27 2007/06/01 20:10:04 tedu Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.28 2007/09/04 23:20:23 thib Exp $	*/
 /*	$NetBSD: pmap.c,v 1.3 2003/05/08 18:13:13 thorpej Exp $	*/
 
 /*
@@ -2077,10 +2077,6 @@ pmap_enter(struct pmap *pmap, vaddr_t va, paddr_t pa, vm_prot_t prot, int flags)
 	int error;
 
 #ifdef DIAGNOSTIC
-	/* sanity check: totally out of range? */
-	if (va >= VM_MAX_KERNEL_ADDRESS)
-		panic("pmap_enter: too big");
-
 	if (va == (vaddr_t) PDP_BASE || va == (vaddr_t) APDP_BASE)
 		panic("pmap_enter: trying to map over PDP/APDP!");
 
