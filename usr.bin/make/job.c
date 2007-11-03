@@ -965,6 +965,7 @@ prepare_job(GNode *gn, int flags)
 		 */
 		if (cmdsOK) {
 			if (aborting == 0) {
+				job->node->made = MADE;
 				Make_Update(job->node);
 			}
 		}
