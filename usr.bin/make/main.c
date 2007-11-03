@@ -259,7 +259,7 @@ MainParseArgs(int argc, char **argv)
 					debug |= DEBUG_JOB;
 					break;
 				case 'J':
-					debug |= DEBUG_JOBTOKEN;
+					debug |= DEBUG_JOBBANNER;
 					break;
 				case 'l':
 					debug |= DEBUG_LOUD;

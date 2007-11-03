@@ -89,7 +89,7 @@ extern int debug;
 #define DEBUG_VAR	0x0200
 #define DEBUG_FOR	0x0400
 #define DEBUG_LOUD	0x0800
-#define DEBUG_JOBTOKEN	0x1000
+#define DEBUG_JOBBANNER	0x1000
 
 #define CONCAT(a,b)	a##b
 
