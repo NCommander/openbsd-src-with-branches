@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.306 2007/11/03 01:24:06 deraadt Exp $ */
+/* $OpenBSD: ssh.c,v 1.307 2007/11/03 02:00:32 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1274,8 +1274,12 @@ control_client_sighandler(int signo)
 static void
 control_client_sigrelay(int signo)
 {
+	int save_errno = errno;
+
 	if (control_server_pid > 1)
 		kill(control_server_pid, signo);
+
+	errno = save_errno;
 }
 
 static int
