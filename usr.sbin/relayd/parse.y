@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.74 2007/10/22 12:18:15 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.75 2007/10/22 16:53:30 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -1704,7 +1704,6 @@ parse_config(const char *filename, int opts)
 	TAILQ_FOREACH(proto, &conf->protos, entry) {
 		if (!(proto->flags & F_USED)) {
 			log_warnx("unused protocol: %s", proto->name);
-			errors++;
 		}
 	}
 
