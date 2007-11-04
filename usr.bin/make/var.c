@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: var.c,v 1.80 2007/09/17 10:39:33 espie Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: var.c,v 1.18 1997/03/18 19:24:46 christos Exp $	*/
 
 /*
@@ -560,10 +560,10 @@ find_global_var(const char *name, const char *ename, uint32_t k)
 
 	v = find_global_var_without_env(name, ename, k);
 
-	if ((v->flags & VAR_SEEN_ENV) == 0 &&
-	    (checkEnvFirst  && (v->flags & VAR_FROM_CMD) == 0 ||
-		(v->flags & VAR_DUMMY) != 0))
-		    fill_from_env(v);
+	if ((v->flags & VAR_SEEN_ENV) == 0)
+		if ((checkEnvFirst && (v->flags & VAR_FROM_CMD) == 0) ||
+		    (v->flags & VAR_DUMMY) != 0)
+			fill_from_env(v);
 
 	return v;
 }
