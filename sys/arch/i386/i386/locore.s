@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.118 2007/11/03 03:06:21 weingart Exp $	*/
+/*	$OpenBSD: locore.s,v 1.119 2007/11/03 03:37:08 weingart Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -1857,7 +1857,7 @@ ENTRY(i686_pagezero)
 
 #if NACPI > 0
 ENTRY(acpi_acquire_global_lock)
-	movl	8(%esp), %ecx
+	movl	4(%esp), %ecx
 1:	movl	(%ecx), %eax
 	movl	%eax, %edx
 	andl	$~1, %edx
@@ -1872,7 +1872,7 @@ ENTRY(acpi_acquire_global_lock)
 	ret
 
 ENTRY(acpi_release_global_lock)
-	movl	8(%esp), %ecx
+	movl	4(%esp), %ecx
 1:	movl	(%ecx), %eax
 	movl	%eax, %edx
 	andl	$~3, %edx
