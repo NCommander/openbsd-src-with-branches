@@ -1,4 +1,4 @@
-/* $OpenBSD: qli_pci.c,v 1.10 2007/09/29 16:03:43 marco Exp $ */
+/* $OpenBSD: qli_pci.c,v 1.11 2007/10/08 04:15:15 krw Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2007 David Collins <dave@davec.name>
@@ -1001,6 +1001,7 @@ nofwcb:
 int
 qli_scsi_cmd(struct scsi_xfer *xs)
 {
+	int s;
 #ifdef QLI_DEBUG
 	struct scsi_link	*link = xs->sc_link;
 	struct qli_softc	*sc = link->adapter_softc;
@@ -1016,7 +1017,9 @@ qli_scsi_cmd(struct scsi_xfer *xs)
 stuffup:
 	xs->error = XS_DRIVER_STUFFUP;
 	xs->flags |= ITSDONE;
+	s = splbio();
 	scsi_done(xs);
+	splx(s);
 	return (COMPLETE);
 }
 
