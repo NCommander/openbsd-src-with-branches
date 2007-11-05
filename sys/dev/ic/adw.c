@@ -1,4 +1,4 @@
-/*	$OpenBSD: adw.c,v 1.30 2005/12/03 16:53:15 krw Exp $ */
+/*	$OpenBSD: adw.c,v 1.31 2006/11/28 23:59:45 dlg Exp $ */
 /* $NetBSD: adw.c,v 1.23 2000/05/27 18:24:50 dante Exp $	 */
 
 /*
@@ -969,10 +969,13 @@ adw_poll(sc, xs, count)
 	struct scsi_xfer *xs;
 	int             count;
 {
+	int s;
 
 	/* timeouts are in msec, so we loop in 1000 usec cycles */
 	while (count > 0) {
+		s = splbio();
 		adw_intr(sc);
+		splx(s);
 		if (xs->flags & ITSDONE) {
 			if ((xs->cmd->opcode == INQUIRY)
 			    && (xs->sc_link->lun == 0)
