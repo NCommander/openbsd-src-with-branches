@@ -1,4 +1,4 @@
-/*	$OpenBSD: iha.c,v 1.26 2007/04/10 17:47:55 miod Exp $ */
+/*	$OpenBSD: iha.c,v 1.27 2007/10/18 20:28:26 otto Exp $ */
 /*-------------------------------------------------------------------------
  *
  * Device driver for the INI-9XXXU/UW or INIC-940/950  PCI SCSI Controller.
@@ -350,10 +350,10 @@ iha_scsi_cmd(xs)
 
 	iha_exec_scb(sc, pScb);
 
-	if ((xs->flags & ITSDONE) == 0)
-		return (SUCCESSFULLY_QUEUED);
-	else
+	if (xs->flags & (SCSI_POLL | ITSDONE))
 		return (COMPLETE);
+	else
+		return (SUCCESSFULLY_QUEUED);
 }
 
 /*
