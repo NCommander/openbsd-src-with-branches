@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.10 2002/03/24 22:17:04 millert Exp $	*/
+/*	$OpenBSD: io.c,v 1.11 2003/06/11 23:42:12 deraadt Exp $	*/
 /*	$NetBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $	*/
 
 /* io.c: This file contains the i/o routines for the ed line editor */
@@ -32,7 +32,7 @@
 #if 0
 static char *rcsid = "@(#)io.c,v 1.1 1994/02/01 00:34:41 alm Exp";
 #else
-static char rcsid[] = "$OpenBSD: io.c,v 1.10 2002/03/24 22:17:04 millert Exp $";
+static char rcsid[] = "$OpenBSD: io.c,v 1.11 2003/06/11 23:42:12 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,7 +61,7 @@ read_file(char *fn, int n)
 		seterrmsg("cannot close input file");
 		return ERR;
 	}
-	fprintf(stderr, !scripted ? "%lu\n" : "", size);
+	fprintf(stderr, !scripted ? "%d\n" : "", size);
 	return current_addr - n;
 }
 
@@ -169,7 +169,7 @@ write_file(char *fn, char *mode, int n, int m)
 		seterrmsg("cannot close output file");
 		return ERR;
 	}
-	fprintf(stderr, !scripted ? "%lu\n" : "", size);
+	fprintf(stderr, !scripted ? "%d\n" : "", size);
 	return n ? m - n + 1 : 0;
 }
 

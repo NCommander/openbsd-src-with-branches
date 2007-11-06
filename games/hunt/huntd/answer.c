@@ -1,4 +1,4 @@
-/*	$OpenBSD: answer.c,v 1.9 2003/06/11 08:45:33 pjanzen Exp $	*/
+/*	$OpenBSD: answer.c,v 1.10 2004/01/16 00:13:19 espie Exp $	*/
 /*	$NetBSD: answer.c,v 1.3 1997/10/10 16:32:50 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -103,7 +103,7 @@ answer_first()
 	/* Warn if we lose connection info: */
 	if (socklen > sizeof Spawn->source) 
 		logx(LOG_WARNING, 
-		    "struct sockaddr is not big enough! (%d > %d)",
+		    "struct sockaddr is not big enough! (%d > %zu)",
 		    socklen, sizeof Spawn->source);
 
 	/*

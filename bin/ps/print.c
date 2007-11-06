@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.41 2006/05/02 05:25:19 hugh Exp $	*/
+/*	$OpenBSD: print.c,v 1.42 2006/11/29 12:34:19 miod Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.41 2006/05/02 05:25:19 hugh Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.42 2006/11/29 12:34:19 miod Exp $";
 #endif
 #endif /* not lint */
 
@@ -269,7 +269,7 @@ state(const struct kinfo_proc2 *kp, VARENT *ve)
 	if (state == 'R' && ncpu && kp->p_cpuid != KI_NOCPU) {
 		char pbuf[16];
 
-		snprintf(pbuf, sizeof pbuf, "/%d", kp->p_cpuid);
+		snprintf(pbuf, sizeof pbuf, "/%llu", kp->p_cpuid);
 		*++cp = '\0';
 		strlcat(buf, pbuf, sizeof buf);
 		cp = buf + strlen(buf);
