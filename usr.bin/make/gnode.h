@@ -121,8 +121,7 @@ struct GNode_ {
     TIMESTAMP cmtime;	/* The modification time of its youngest
 			 * child */
 
-    LIST iParents;	/* Links to parents for which this is an
-			 * implied source, if any */
+    GNode *impliedsrc;
     LIST cohorts;	/* Other nodes for the :: operator */
     LIST parents;	/* Nodes that depend on this one */
     LIST children;	/* Nodes on which this one depends */

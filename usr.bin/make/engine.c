@@ -287,6 +287,10 @@ Make_DoAllVar(GNode *gn)
 {
 	Lst_ForEach(&gn->children, MakeAddAllSrc, gn);
 
+	if (gn->impliedsrc)
+		Varq_Set(IMPSRC_INDEX, 
+		    Varq_Value(TARGET_INDEX, gn->impliedsrc), gn);
+			
 	if (Varq_Value(OODATE_INDEX, gn) == NULL)
 		Varq_Set(OODATE_INDEX, "", gn);
 	if (Varq_Value(ALLSRC_INDEX, gn) == NULL)

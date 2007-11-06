@@ -99,11 +99,6 @@ CompatMake(void *gnp,	/* The node to make */
 			return;
 		}
 
-		if (Lst_Member(&gn->iParents, pgn) != NULL) {
-			Varq_Set(IMPSRC_INDEX, Varq_Value(TARGET_INDEX, gn),
-			    pgn);
-		}
-
 		/* All the children were made ok. Now cmtime contains the
 		 * modification time of the newest child, we need to find out
 		 * if we exist and when we were modified last. The criteria
@@ -189,10 +184,6 @@ CompatMake(void *gnp,	/* The node to make */
 		 * to abort.  */
 		pgn->make = false;
 	else {
-		if (Lst_Member(&gn->iParents, pgn) != NULL) {
-			Varq_Set(IMPSRC_INDEX, Varq_Value(TARGET_INDEX, gn),
-			    pgn);
-		}
 		switch (gn->made) {
 		case BEINGMADE:
 			Error("Graph cycles through %s\n", gn->name);
