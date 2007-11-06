@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.67 2007/03/18 23:23:17 mpf Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.68 2007/03/25 16:43:22 claudio Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -473,8 +473,12 @@ arpintr()
 		s = splnet();
 		IF_DEQUEUE(&arpintrq, m);
 		splx(s);
-		if (m == 0 || (m->m_flags & M_PKTHDR) == 0)
+		if (m == NULL)
+			break;
+#ifdef DIAGNOSTIC
+		if ((m->m_flags & M_PKTHDR) == 0)
 			panic("arpintr");
+#endif
 
 		len = sizeof(struct arphdr);
 		if (m->m_len < len && (m = m_pullup(m, len)) == NULL)
