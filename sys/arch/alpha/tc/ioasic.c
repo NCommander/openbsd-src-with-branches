@@ -1,4 +1,4 @@
-/* $OpenBSD: ioasic.c,v 1.11 2004/06/28 02:28:43 aaron Exp $ */
+/* $OpenBSD: ioasic.c,v 1.12 2006/03/04 12:33:17 miod Exp $ */
 /* $NetBSD: ioasic.c,v 1.34 2000/07/18 06:10:06 thorpej Exp $ */
 
 /*-
@@ -207,7 +207,7 @@ ioasicattach(parent, self, aux)
 		evcount_attach(&ioasicintrs[i].iai_count,
 		    ioasicintrs[i].iai_name, NULL, &evcount_intr);
 	}
-	tc_intr_establish(parent, ta->ta_cookie, TC_IPL_NONE, ioasic_intr, sc);
+	tc_intr_establish(parent, ta->ta_cookie, IPL_NONE, ioasic_intr, sc);
 
 	/*
 	 * Try to configure each device.
@@ -219,7 +219,7 @@ void
 ioasic_intr_establish(ioa, cookie, level, func, arg)
 	struct device *ioa;
 	void *cookie, *arg;
-	tc_intrlevel_t level;
+	int level;
 	int (*func)(void *);
 {
 	struct ioasic_softc *sc = (void *)ioasic_cd.cd_devs[0];
