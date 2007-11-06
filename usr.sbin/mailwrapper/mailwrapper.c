@@ -1,4 +1,4 @@
-/*	$OpenBSD: mailwrapper.c,v 1.16 2004/07/06 03:38:14 millert Exp $	*/
+/*	$OpenBSD: mailwrapper.c,v 1.17 2007/09/02 15:19:39 deraadt Exp $	*/
 /*	$NetBSD: mailwrapper.c,v 1.2 1999/02/20 22:10:07 thorpej Exp $	*/
 
 /*
@@ -125,7 +125,7 @@ main(int argc, char *argv[], char *envp[])
 			continue;
 		}
 
-		if ((from = strsep(&cp, WS)) == NULL)
+		if ((from = strsep(&cp, WS)) == NULL || cp == NULL)
 			goto parse_error;
 
 		cp += strspn(cp, WS);
