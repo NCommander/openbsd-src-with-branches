@@ -1548,7 +1548,7 @@ SuffFindNormalDeps(
 
 	record_possible_suffixes(gn, &srcs, &targs);
 	/* Handle target of unknown suffix...  */
-	if (Lst_IsEmpty(&targs)) {
+	if (Lst_IsEmpty(&srcs)) {
 		if (DEBUG(SUFF))
 			printf("\tNo known suffix on %s. Using .NULL suffix\n",
 			    gn->name);
