@@ -707,7 +707,12 @@ JobExec(Job *job)
 	int i;
 
 	if (DEBUG(JOB)) {
+		LstNode ln;
+
 		(void)fprintf(stdout, "Running %s\n", job->node->name);
+		for (ln = Lst_First(&job->node->commands); ln != NULL ; 
+		    ln = Lst_Adv(ln))
+		    	fprintf(stdout, "\t%s\n", (char *)Lst_Datum(ln));
 		(void)fflush(stdout);
 	}
 
