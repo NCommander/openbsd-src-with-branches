@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.49 2007/09/15 16:43:51 henning Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.50 2007/09/27 22:24:05 mpf Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -633,6 +633,8 @@ pfi_update_status(const char *name, struct pf_status *pfs)
 		bzero(pfs->bcounters, sizeof(pfs->bcounters));
 	}
 	TAILQ_FOREACH(ifgm, &ifg_members, ifgm_next) {
+		if (ifgm->ifgm_ifp == NULL)
+			continue;
 		p = (struct pfi_kif *)ifgm->ifgm_ifp->if_pf_kif;
 
 		/* just clear statistics */
