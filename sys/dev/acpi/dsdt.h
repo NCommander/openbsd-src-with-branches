@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.h,v 1.28 2007/04/11 02:51:11 jordan Exp $ */
+/* $OpenBSD: dsdt.h,v 1.29 2007/09/13 03:43:22 weingart Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -244,5 +244,7 @@ void			aml_hashopcodes(void);
 
 void	aml_foreachpkg(struct aml_value *, int,
 	    void (*fn)(struct aml_value *, void *), void *);
+
+const char *aml_val_to_string(const struct aml_value *);
 
 #endif /* __DEV_ACPI_DSDT_H__ */
