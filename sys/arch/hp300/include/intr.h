@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.19 2007/05/15 13:46:22 martin Exp $	*/
+/*	$OpenBSD: intr.h,v 1.20 2007/05/25 21:27:15 krw Exp $	*/
 /*	$NetBSD: intr.h,v 1.2 1997/07/24 05:43:08 scottr Exp $	*/
 
 /*-
@@ -77,7 +77,6 @@ extern	unsigned short hp300_vmipl;
 #define	IPL_BIO		1
 #define	IPL_NET		2
 #define	IPL_TTY		3
-#define	IPL_TTYNOBUF	4 /* XXX */
 #define	IPL_CLOCK	6
 #define	IPL_STATCLOCK	6
 #define	IPL_HIGH	7
