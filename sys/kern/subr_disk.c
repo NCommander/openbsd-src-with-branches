@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.64 2007/08/05 04:26:21 krw Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.65 2007/09/07 15:00:20 art Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -463,6 +463,11 @@ donot:
 
 			case DOSPTYP_LINUX:
 				pp->p_fstype = FS_EXT2FS;
+				n++;
+				break;
+
+			case DOSPTYP_NTFS:
+				pp->p_fstype = FS_NTFS;
 				n++;
 				break;
 
