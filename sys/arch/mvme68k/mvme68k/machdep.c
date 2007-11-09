@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.106 2007/06/06 17:15:12 deraadt Exp $ */
+/*	$OpenBSD: machdep.c,v 1.107 2007/11/02 19:18:54 martin Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -993,6 +993,27 @@ memsize162()
 		 * perhaps it has a MCECC or MEMC040 controller?
 		 */
 		return (memsize1x7());
+	}
+}
+#endif
+
+#ifdef DIAGNOSTIC
+void
+splassert_check(int wantipl, const char *func)
+{
+	int oldipl;
+
+	__asm __volatile ("movew sr,%0" : "=&d" (oldipl));
+
+	oldipl = PSLTOIPL(oldipl);
+
+	if (oldipl < wantipl) {
+		splassert_fail(wantipl, oldipl, func);
+		/*
+		 * If the splassert_ctl is set to not panic, raise the ipl
+		 * in a feeble attempt to reduce damage.
+		 */
+		_spl(PSL_S | IPLTOPSL(wantipl));
 	}
 }
 #endif
