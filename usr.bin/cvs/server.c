@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.71 2007/09/22 15:57:24 joris Exp $	*/
+/*	$OpenBSD: server.c,v 1.72 2007/09/22 16:01:22 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <errno.h>
@@ -165,6 +166,9 @@ cvs_server_root(char *data)
 
 	if (data[0] != '/' || (current_cvsroot = cvsroot_get(data)) == NULL)
 		fatal("Invalid Root specified!");
+
+	cvs_parse_configfile();
+	umask(cvs_umask);
 }
 
 void
