@@ -1,4 +1,4 @@
-/* $OpenBSD: ubt.c,v 1.8 2007/06/14 10:11:15 mbalmer Exp $ */
+/* $OpenBSD: ubt.c,v 1.9 2007/10/11 18:33:14 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2006 Itronix Inc.
@@ -962,7 +962,7 @@ ubt_xmit_acl_start(struct hci_unit *unit)
 	if (sc->sc_dying)
 		return;
 
-	if (IF_IS_EMPTY(&unit->hci_acltxq) == NULL)
+	if (IF_IS_EMPTY(&unit->hci_acltxq))
 		return;
 
 	sc->sc_refcnt++;
