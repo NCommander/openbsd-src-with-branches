@@ -88,10 +88,10 @@ struct Suff_;
 struct GNode_ {
     int special_op;	/* special op to apply */
     unsigned char special;/* type of special node */
-    char make;		/* true if this target needs to be remade */
+    char must_make;		/* true if this target needs to be remade */
     char childMade;	/* true if one of this target's children was
 			 * made */
-    char made;		/* Set to reflect the state of processing
+    char built_status;	/* Set to reflect the state of processing
 			 * on this node:
 			 *  UNMADE - Not examined yet
 			 *  BEINGMADE - Target is already being made.
@@ -106,7 +106,7 @@ struct GNode_ {
 			 *  CYCLE - Marked as potentially being part of
 			 *	a graph cycle. If we come back to a
 			 *	node marked this way, it is printed
-			 *	and 'made' is changed to ENDCYCLE.
+			 *	and 'built_status' is changed to ENDCYCLE.
 			 *  ENDCYCLE - the cycle has been completely
 			 *	printed. Go back and unmark all its
 			 *	members.

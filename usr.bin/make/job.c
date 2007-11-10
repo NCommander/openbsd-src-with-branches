@@ -627,7 +627,7 @@ JobFinish(Job *job, int status)
 		/* As long as we aren't aborting and the job didn't return a
 		 * non-zero status that we shouldn't ignore, we call
 		 * Make_Update to update the parents. */
-		job->node->made = MADE;
+		job->node->built_status = MADE;
 		Make_Update(job->node);
 		free(job);
 	} else if (status != 0) {
@@ -953,7 +953,7 @@ prepare_job(GNode *gn, int flags)
 		 */
 		if (cmdsOK) {
 			if (aborting == 0) {
-				job->node->made = MADE;
+				job->node->built_status = MADE;
 				Make_Update(job->node);
 			}
 		}
