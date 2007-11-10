@@ -81,7 +81,7 @@ CompatMake(void *gnp,	/* The node to make */
 
 	if (gn->type & OP_USE) {
 		Make_HandleUse(gn, pgn);
-	} else if (gn->built_status == UNMADE) {
+	} else if (gn->built_status == UNKNOWN) {
 		/* First mark ourselves to be made, then apply whatever
 		 * transformations the suffix module thinks are necessary.
 		 * Once that's done, we can descend and make all our children.

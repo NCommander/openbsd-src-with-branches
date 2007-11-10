@@ -182,7 +182,7 @@ Targ_NewGNi(const char *name, const char *ename)
 	gn->special = SPECIAL_NONE;
 	gn->unmade = 0;
 	gn->must_make = false;
-	gn->built_status = UNMADE;
+	gn->built_status = UNKNOWN;
 	gn->childMade =	false;
 	gn->order = 0;
 	ts_set_out_of_date(gn->mtime);
@@ -353,8 +353,8 @@ static const char *
 status_to_string(GNode *gn)
 {
 	switch (gn->built_status) {
-	case UNMADE:
-		return "unmade";
+	case UNKNOWN:
+		return "unknown";
 	case MADE:
 		return "made";
 	case UPTODATE:
@@ -381,7 +381,7 @@ TargPrintNode(GNode *gn, int pass)
 				printf("# last modified %s: %s\n",
 				      time_to_string(gn->mtime),
 				      status_to_string(gn));
-			} else if (gn->built_status != UNMADE) {
+			} else if (gn->built_status != UNKNOWN) {
 				printf("# non-existent (maybe): %s\n",
 				    status_to_string(gn));
 			} else {
