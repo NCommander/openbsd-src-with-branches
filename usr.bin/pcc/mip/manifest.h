@@ -1,4 +1,4 @@
-/*	$OpenBSD: manifest.h,v 1.3 2007/10/01 18:51:02 otto Exp $	*/
+/*	$OpenBSD: manifest.h,v 1.4 2007/11/04 18:52:45 ragge Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -37,6 +37,7 @@
 #define	MANIFEST
 
 #include <stdio.h>
+#include <string.h>
 #include "../config.h"
 #include "macdefs.h"
 #include "node.h"
