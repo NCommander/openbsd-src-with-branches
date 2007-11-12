@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.27 2007/10/08 04:15:15 krw Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.28 2007/11/03 20:53:02 gwk Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -328,8 +328,9 @@ acpicpu_attach(struct device *parent, struct device *self, void *aux)
 	/* 
 	 * Nicely enumerate what power management capabilities
 	 * ACPI CPU provides.
-	 * */
+	 */
 	i = 0;
+	printf(":");
 	SLIST_FOREACH(cx, &sc->sc_cstates, link) {
 		if (i)
 			printf(",");
