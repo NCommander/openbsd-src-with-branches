@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpiprt.c,v 1.17 2007/09/07 19:48:58 kettenis Exp $	*/
+/*	$OpenBSD: acpiprt.c,v 1.18 2007/10/08 04:15:15 krw Exp $	*/
 /*
  * Copyright (c) 2006 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -169,7 +169,7 @@ acpiprt_prt_add(struct acpiprt_softc *sc, struct aml_value *v)
 	if (pp->type == AML_OBJTYPE_NAMEREF) {
 		node = aml_searchname(sc->sc_devnode, pp->v_nameref);
 		if (node == NULL) {
-			printf("Invalid device!\n");
+			printf("Invalid device\n");
 			return;
 		}
 		pp = node->value;
