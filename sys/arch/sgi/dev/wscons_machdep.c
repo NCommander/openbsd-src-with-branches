@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.3 2005/12/09 14:39:26 jsg Exp $ */
+/*	$OpenBSD: wscons_machdep.c,v 1.4 2006/06/11 21:00:48 matthieu Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -37,10 +37,6 @@
 #include <machine/bus.h>
 
 #include <dev/cons.h>
-#include <dev/ic/mc6845reg.h>
-#include <dev/ic/pcdisplayvar.h>
-#include <dev/ic/vgareg.h>
-#include <dev/ic/vgavar.h>
 
 #include "wsdisplay.h"
 #if NWSDISPLAY > 0
@@ -70,7 +66,6 @@ wscnprobe(struct consdev *cp)
 
 	cp->cn_dev = makedev(maj, 0);
 	cp->cn_pri = CN_INTERNAL;
-	cp->cn_pri = CN_REMOTE;
 }
 
 void
@@ -83,10 +78,10 @@ static int initted;
 
 	initted = 1;
 
-	if (!vga_cnattach(&sys_config.pci_io[0], &sys_config.pci_mem[0],
-	    WSDISPLAY_TYPE_PCIVGA, 1)) {
-		ukbd_cnattach();
-	}
+#if notyet
+	ukbd_cnattach();
+#endif
+
 	return;
 }
 
