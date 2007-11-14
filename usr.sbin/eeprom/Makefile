@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2007/09/04 23:28:26 fgsch Exp $
+#	$OpenBSD: Makefile,v 1.11 2007/11/12 20:54:54 kettenis Exp $
 
 .if ${MACHINE} == "macppc" || ${MACHINE} == "sparc" || ${MACHINE} == "sparc64"
 PROG=	eeprom
@@ -9,7 +9,7 @@ BINMODE=2555
 SRCS=	getdate.c main.c
 SRCS+=	ophandlers.c optree.c
 
-.  if ${MACHINE} == "sparc" || ${MACHINE} == "sparc64"
+.  if ${MACHINE} == "sparc"
 SRCS+=	eehandlers.c
 .  endif
 
