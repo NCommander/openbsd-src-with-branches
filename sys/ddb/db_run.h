@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_run.h,v 1.7 2002/03/14 01:26:51 millert Exp $	*/
+/*	$OpenBSD: db_run.h,v 1.8 2003/02/12 14:41:07 jason Exp $	*/
 /*	$NetBSD: db_run.h,v 1.3 1996/02/05 01:57:14 christos Exp $	*/
 
 /* 
@@ -39,6 +39,7 @@
 extern	int db_inst_count;
 extern	int db_load_count;
 extern	int db_store_count;
+extern	int db_cmd_loop_done;
 
 boolean_t db_stop_at_pc(db_regs_t *, boolean_t *);
 void db_restart_at_pc(db_regs_t *, boolean_t);

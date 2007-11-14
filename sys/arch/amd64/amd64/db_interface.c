@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.10 2006/10/24 19:03:10 marco Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.11 2007/01/15 23:19:05 jsg Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.1 2003/04/26 18:39:27 fvdl Exp $	*/
 
 /*
@@ -54,6 +54,7 @@
 #include <ddb/db_extern.h>
 #include <ddb/db_access.h>
 #include <ddb/db_output.h>
+#include <ddb/db_run.h>
 #include <ddb/db_var.h>
 
 #include "acpi.h"
@@ -64,7 +65,6 @@
 extern label_t *db_recover;
 extern char *trap_type[];
 extern int trap_types;
-extern boolean_t db_cmd_loop_done;
 
 #ifdef MULTIPROCESSOR
 struct mutex ddb_mp_mutex = MUTEX_INITIALIZER(IPL_HIGH);
