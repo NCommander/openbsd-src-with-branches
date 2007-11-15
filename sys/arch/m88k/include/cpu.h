@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.29 2007/11/06 21:48:42 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.30 2007/11/14 23:12:45 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -96,8 +96,6 @@ struct cpu_info {
 
 	struct schedstate_percpu ci_schedstate;	/* scheduling state */
 	int	ci_want_resched;		/* need_resched() invoked */
-
-	vaddr_t	ci_init_stack;			/* startup stack */
 
 	u_int	ci_intrdepth;			/* interrupt depth */
 
