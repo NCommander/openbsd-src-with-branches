@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_ebus.c,v 1.11 2005/06/06 01:08:47 miod Exp $	*/
+/*	$OpenBSD: com_ebus.c,v 1.12 2007/04/03 23:17:42 kettenis Exp $	*/
 /*	$NetBSD: com_ebus.c,v 1.6 2001/07/24 19:27:10 eeh Exp $	*/
 
 /*
@@ -62,6 +62,7 @@ struct cfattach com_ebus_ca = {
 static char *com_names[] = {
 	"su",
 	"su_pnp",
+	"rsc-console",
 	NULL
 };
 
