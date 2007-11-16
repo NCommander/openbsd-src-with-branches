@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.9 2007/02/19 11:59:00 tom Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.10 2007/05/25 16:22:11 art Exp $	*/
 /* $NetBSD: lapic.c,v 1.2 2003/05/08 01:04:35 fvdl Exp $ */
 
 /*-
@@ -164,7 +164,7 @@ lapic_set_lvt(void)
 	}
 #endif
 
-	for (i = 0; i < mp_nintr; i++) {
+	for (i = 0; i < mp_nintrs; i++) {
 		mpi = &mp_intrs[i];
 		if (mpi->ioapic == NULL && (mpi->cpu_id == MPS_ALL_APICS
 					    || mpi->cpu_id == ci->ci_apicid)) {
