@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgram.y,v 1.2 2007/10/07 18:34:41 otto Exp $	*/
+/*	$OpenBSD: cgram.y,v 1.175 2007/11/15 23:54:29 gmcgarry Exp $	*/
 
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
@@ -147,6 +147,7 @@
 # include "pass1.h"
 # include <stdarg.h>
 # include <string.h>
+# include <stdlib.h>
 
 static int fun_inline;	/* Reading an inline function */
 int oldstyle;	/* Current function being defined */
@@ -780,7 +781,7 @@ statement:	   e ';' { ecomp( $1 ); }
 				ecomp(temp->n_right);
 			else
 				ecomp(buildtree(FORCE, temp->n_right, NIL));
-			nfree(temp->n_left);
+			tfree(temp->n_left);
 			nfree(temp);
 			branch(retlab);
 			reached = 0;
@@ -966,10 +967,12 @@ term:		   term C_INCOP {  $$ = buildtree( $2, $1, bcon(1) ); }
 		}
 		|  C_SIZEOF term { $$ = doszof($2); }
 		|  '(' cast_type ')' term  %prec C_INCOP {
+			register NODE *q;
 			$$ = buildtree(CAST, $2, $4);
 			nfree($$->n_left);
+			q = $$->n_right;
 			nfree($$);
-			$$ = $$->n_right; /* XXX use after free */
+			$$ = q;
 		}
 		|  C_SIZEOF '(' cast_type ')'  %prec C_SIZEOF {
 			$$ = doszof($3);

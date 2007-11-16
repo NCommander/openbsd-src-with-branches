@@ -1,4 +1,4 @@
-/*	$OpenBSD: manifest.h,v 1.4 2007/11/04 18:52:45 ragge Exp $	*/
+/*	$OpenBSD: manifest.h,v 1.65 2007/11/15 23:44:14 gmcgarry Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -174,7 +174,7 @@
 extern int bdebug, tdebug, edebug;
 extern int ddebug, xdebug, f2debug;
 extern int iTflag, oTflag, kflag;
-extern int vdebug, sflag, nflag, gflag;
+extern int sflag, nflag, gflag;
 extern int Wstrict_prototypes, Wmissing_prototypes, Wimplicit_int,
 	Wimplicit_function_declaration;
 extern int xssaflag, xtailcallflag, xtemps, xdeljumps;
