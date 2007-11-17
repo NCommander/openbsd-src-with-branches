@@ -316,7 +316,7 @@ Make_OODate(GNode *gn)
 	 * Certain types of targets needn't even be sought as their datedness
 	 * doesn't depend on their modification time...
 	 */
-	if ((gn->type & (OP_JOIN|OP_USE|OP_EXEC)) == 0) {
+	if ((gn->type & (OP_JOIN|OP_USE|OP_EXEC|OP_PHONY)) == 0) {
 		(void)Dir_MTime(gn);
 		if (DEBUG(MAKE)) {
 			if (!is_out_of_date(gn->mtime))
