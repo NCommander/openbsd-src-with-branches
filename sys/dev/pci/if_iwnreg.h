@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwnreg.h,v 1.5 2007/09/10 18:14:55 damien Exp $	*/
+/*	$OpenBSD: if_iwnreg.h,v 1.6 2007/09/10 20:36:49 damien Exp $	*/
 
 /*-
  * Copyright (c) 2007
@@ -162,6 +162,7 @@
 
 /* possible flags for register IWN_EEPROM_CTL */
 #define IWN_EEPROM_READY	(1 << 0)
+#define IWN_EEPROM_CMD		(1 << 1)
 
 /* possible flags for register IWN_TXQ_STATUS */
 #define IWN_TXQ_STATUS_ACTIVE	0x0007fc01
