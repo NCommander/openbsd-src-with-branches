@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ipw.c,v 1.68 2007/08/28 18:34:38 deraadt Exp $	*/
+/*	$OpenBSD: if_ipw.c,v 1.69 2007/09/07 19:05:05 damien Exp $	*/
 
 /*-
  * Copyright (c) 2004-2006
@@ -860,6 +860,7 @@ ipw_data_intr(struct ipw_softc *sc, struct ipw_status *status,
 			panic("%s: could not load old rx mbuf",
 			    sc->sc_dev.dv_xname);
 		}
+		sbd->bd->physaddr = htole32(sbuf->map->dm_segs[0].ds_addr);
 		ifp->if_ierrors++;
 		return;
 	}
