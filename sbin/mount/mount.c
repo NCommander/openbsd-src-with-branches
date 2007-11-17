@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.46 2007/09/02 15:19:24 deraadt Exp $	*/
+/*	$OpenBSD: mount.c,v 1.47 2007/10/16 20:19:27 sobrado Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount.c	8.19 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$OpenBSD: mount.c,v 1.46 2007/09/02 15:19:24 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: mount.c,v 1.47 2007/10/16 20:19:27 sobrado Exp $";
 #endif
 #endif /* not lint */
 
@@ -375,8 +375,10 @@ mountfs(const char *vfstype, const char *spec, const char *name,
 		if (!hasopt(optbuf, "update"))
 			optbuf = catopt(optbuf, "update");
 	} else if (skipmounted) {
-		if (statfs(name, &sf) < 0)
-			err(1, "statfs %s", name);
+		if (statfs(name, &sf) < 0) {
+			warn("statfs %s", name);
+			return (1);
+		}
 		/* XXX can't check f_mntfromname, thanks to mfs, etc. */
 		if (strncmp(name, sf.f_mntonname, MNAMELEN) == 0 &&
 		    strncmp(vfstype, sf.f_fstypename, MFSNAMELEN) == 0) {
