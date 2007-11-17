@@ -1,4 +1,4 @@
-/*	$OpenBSD: vme.c,v 1.45 2006/11/16 23:21:56 miod Exp $ */
+/*	$OpenBSD: vme.c,v 1.46 2007/03/22 18:52:38 miod Exp $ */
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -459,7 +459,9 @@ u_int vmevec_hints[8] = {
 int
 vmeintr_establish(int vec, struct intrhand *ih, const char *name)
 {
+#if NPCCTWO > 0
 	struct vmesoftc *sc = (struct vmesoftc *) vme_cd.cd_devs[0];
+#endif
 	int rc;
 
 #ifdef DIAGNOSTIC
