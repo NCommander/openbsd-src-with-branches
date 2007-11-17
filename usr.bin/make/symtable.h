@@ -28,15 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-struct Var_;
-
 #define LOCAL_SIZE	7
 
 /* SymTable is private to var.c, but is declared here to allow for
    local declaration of context tables
  */
 struct SymTable_ {
-	struct Var_ *locals[LOCAL_SIZE];
+	char *locals[LOCAL_SIZE];
 };
 
 #endif

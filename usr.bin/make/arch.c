@@ -872,7 +872,7 @@ ArchTouch(const char *archive, const char *member)
 void
 Arch_Touch(GNode *gn)
 {
-	ArchTouch(Varq_Value(ARCHIVE_INDEX, gn), Varq_Value(MEMBER_INDEX, gn));
+	ArchTouch(Var(ARCHIVE_INDEX, gn), Var(MEMBER_INDEX, gn));
 }
 
 /*ARGSUSED*/
@@ -891,8 +891,8 @@ Arch_TouchLib(GNode *gn UNUSED)
 TIMESTAMP
 Arch_MTime(GNode *gn)
 {
-	gn->mtime = ArchMTimeMember(Varq_Value(ARCHIVE_INDEX, gn),
-	     Varq_Value(MEMBER_INDEX, gn), true);
+	gn->mtime = ArchMTimeMember(Var(ARCHIVE_INDEX, gn),
+	     Var(MEMBER_INDEX, gn), true);
 
 	return gn->mtime;
 }
@@ -940,7 +940,7 @@ Arch_MemMTime(GNode *gn)
 void
 Arch_FindLib(GNode *gn, Lst path UNUSED)
 {
-	Varq_Set(TARGET_INDEX, gn->name, gn);
+	Var(TARGET_INDEX, gn) = gn->name;
 }
 
 /*-

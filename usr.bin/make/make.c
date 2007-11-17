@@ -146,7 +146,7 @@ Make_Update(GNode *cgn)	/* the child node */
 	char	*cname; /* the child's name */
 	LstNode	ln;	/* Element in parents list */
 
-	cname = Varq_Value(TARGET_INDEX, cgn);
+	cname = Var(TARGET_INDEX, cgn);
 
 	/*
 	 * If the child was actually made, see what its modification time is
