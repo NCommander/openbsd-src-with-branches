@@ -1,4 +1,4 @@
-/*	$OpenBSD: regs.c,v 1.163 2007/11/15 23:27:54 gmcgarry Exp $	*/
+/*	$OpenBSD: regs.c,v 1.11 2007/11/16 09:00:12 otto Exp $	*/
 /*
  * Copyright (c) 2005 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -28,7 +28,6 @@
 
 #include "pass2.h"
 #include <string.h>
-#include <strings.h>
 #include <stdint.h>
 #include <stdlib.h>
 

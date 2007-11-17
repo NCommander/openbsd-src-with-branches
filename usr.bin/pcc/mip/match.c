@@ -1,4 +1,4 @@
-/*	$OpenBSD: match.c,v 1.2 2007/09/15 22:04:39 ray Exp $	*/
+/*	$OpenBSD: match.c,v 1.3 2007/10/23 18:43:00 ragge Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -62,7 +62,7 @@
 
 # include "pass2.h"
 
-#include <strings.h>
+#include <string.h>
 
 void prttype(int t);
 void setclass(int tmp, int class);

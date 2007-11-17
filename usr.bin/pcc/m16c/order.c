@@ -1,4 +1,4 @@
-/*	$OpenBSD: order.c,v 1.18 2007/11/12 19:03:27 ragge Exp $	*/
+/*	$OpenBSD: order.c,v 1.2 2007/11/16 09:00:12 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -28,7 +28,7 @@
 
 
 # include "pass2.h"
-# include <strings.h>
+# include <string.h>
 
 int canaddr(NODE *);
 
