@@ -14,7 +14,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: ac.c,v 1.17 2004/03/18 01:28:40 tedu Exp $";
+static const char rcsid[] = "$OpenBSD: ac.c,v 1.18 2006/04/03 21:32:38 dhill Exp $";
 #endif
 
 #include <sys/types.h>
@@ -528,13 +528,12 @@ void
 usage(void)
 {
 	extern char *__progname;
-	(void)fprintf(stderr,
+	(void)fprintf(stderr, "usage: "
 #ifdef CONSOLE_TTY
-	    "%s [-d | -p] [-c console] [-t tty] [-w wtmp] [users ...]\n",
+	    "%s [-dp] [-c console] [-t tty] [-w wtmp] [user ...]\n",
 	    __progname);
 #else
-	    "%s [-d | -p] [-t tty] [-w wtmp] [users ...]\n",
-	    __progname);
+	    "%s [-dp] [-t tty] [-w wtmp] [user ...]\n", __progname);
 #endif
 	exit(1);
 }
