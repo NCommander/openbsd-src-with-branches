@@ -234,18 +234,17 @@ try_to_make_node(GNode *gn)
 					printf(
 					    "predecessor %s not made yet.\n", 
 					    pgn->name);
-				break;
+				/*
+				 * there's a predecessor as yet unmade, so we
+				 * just drop this node on the floor. When the
+				 * node in question has been made, it will
+				 * notice this node as being ready to make but
+				 * as yet unmade and will place the node on the
+				 * queue.
+				 */
+				return false;
 			}
 		}
-		/*
-		 * If ln isn't NULL, there's a predecessor as yet
-		 * unmade, so we just drop this node on the floor. When
-		 * the node in question has been made, it will notice
-		 * this node as being ready to make but as yet unmade
-		 * and will place the node on the queue.
-		 */
-		if (ln != NULL)
-			return false;
 	}
 
 	numNodes--;
