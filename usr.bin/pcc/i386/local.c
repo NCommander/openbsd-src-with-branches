@@ -1,4 +1,4 @@
-/*	$OpenBSD: local.c,v 1.2 2007/11/04 18:55:21 ragge Exp $	*/
+/*	$OpenBSD: local.c,v 1.3 2007/11/17 11:56:32 ragge Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -318,8 +318,6 @@ clocal(NODE *p)
 			case UNSIGNED:
 				l->n_lval = val & 0xffffffff;
 				break;
-			case ENUMTY:
-			case MOETY:
 			case LONG:
 			case INT:
 				l->n_lval = (int)val;
