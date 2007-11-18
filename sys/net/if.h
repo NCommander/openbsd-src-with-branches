@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.91 2007/06/25 16:37:58 henning Exp $	*/
+/*	$OpenBSD: if.h,v 1.92 2007/09/03 15:24:49 claudio Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -135,6 +135,7 @@ struct	if_data {
 
 /*
  * Structure defining a queue for a network interface.
+ * XXX keep in sync with struct ifaltq.
  */
 struct	ifqueue {
 	struct	mbuf *ifq_head;
