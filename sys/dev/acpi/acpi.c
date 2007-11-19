@@ -43,9 +43,8 @@
 #ifdef ACPI_DEBUG
 int acpi_debug = 16;
 #endif
-int acpi_enabled = 0;
-int acpi_poll_enabled = 0;
-int acpi_hasprocfvs = 0;
+int acpi_poll_enabled;
+int acpi_hasprocfvs;
 
 #define ACPIEN_RETRIES 15
 
@@ -420,11 +419,6 @@ acpi_attach(struct device *parent, struct device *self, void *aux)
 	SIMPLEQ_INIT(&sc->sc_tables);
 	SIMPLEQ_INIT(&sc->sc_wakedevs);
 
-	sc->sc_fadt = NULL;
-	sc->sc_facs = NULL;
-	sc->sc_powerbtn = 0;
-	sc->sc_sleepbtn = 0;
-
 	sc->sc_note = malloc(sizeof(struct klist), M_DEVBUF, M_NOWAIT | M_ZERO);
 	if (sc->sc_note == NULL) {
 		printf(", can't allocate memory\n");
@@ -479,8 +473,6 @@ acpi_attach(struct device *parent, struct device *self, void *aux)
 
 	/* Create opcode hashtable */
 	aml_hashopcodes();
-
-	acpi_enabled = 1;
 
 	/* Create Default AML objects */
 	aml_create_defaultobjects();
