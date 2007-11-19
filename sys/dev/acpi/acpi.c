@@ -43,6 +43,7 @@
 #ifdef ACPI_DEBUG
 int acpi_debug = 16;
 #endif
+int acpi_enabled;
 int acpi_poll_enabled;
 int acpi_hasprocfvs;
 
@@ -470,6 +471,8 @@ acpi_attach(struct device *parent, struct device *self, void *aux)
 		printf(" !FACS");
 	else
 		sc->sc_facs = (struct acpi_facs *)handle.va;
+
+	acpi_enabled = 1;
 
 	/* Create opcode hashtable */
 	aml_hashopcodes();
