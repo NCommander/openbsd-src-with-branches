@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.31 2007/10/12 12:50:59 blambert Exp $	*/
+/*	$OpenBSD: hce.c,v 1.32 2007/10/19 12:08:55 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -415,7 +415,7 @@ hce_dispatch_parent(int fd, short event, void * ptr)
 	struct imsgbuf		*ibuf;
 	struct imsg		 imsg;
 	struct ctl_script	 scr;
-	ssize_t		 	 n;
+	ssize_t			 n;
 	size_t			 len;
 
 	static struct table	*table = NULL;
