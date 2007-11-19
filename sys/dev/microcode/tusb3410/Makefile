@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2007/08/01 21:42:44 deraadt Exp $
+# $OpenBSD: Makefile,v 1.1 2007/11/16 16:30:03 deraadt Exp $
 
 NOPROG=
 NOMAN=
@@ -9,7 +9,8 @@ CC=${HOSTCC}
     (${MACHINE} == "alpha") || (${MACHINE} == "sparc64") || \
     (${MACHINE_ARCH} == "powerpc") || (${MACHINE} == "hppa") || \
     (${MACHINE} == "hppa64") || (${MACHINE} == "sgi") || \
-    (${MACHINE} == "landisk")
+    (${MACHINE} == "landisk") || (${MACHINE} == "armish") || \
+    (${MACHINE} == "zaurus")
 
 FIRM= 	tusb3410
 
