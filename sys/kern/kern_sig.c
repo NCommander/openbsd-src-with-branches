@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.94 2007/05/30 07:42:52 moritz Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.95 2007/09/01 15:14:44 martin Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1406,9 +1406,9 @@ coredump(struct proc *p)
 	vp = nd.ni_vp;
 	if ((error = VOP_GETATTR(vp, &vattr, cred, p)) != 0)
 		goto out;
-	/* Don't dump to non-regular files or files with links. */
 	if (vp->v_type != VREG || vattr.va_nlink != 1 ||
-	    vattr.va_mode & ((VREAD | VWRITE) >> 3 | (VREAD | VWRITE) >> 6)) {
+	    vattr.va_mode & ((VREAD | VWRITE) >> 3 | (VREAD | VWRITE) >> 6) ||
+	    vattr.va_uid != cred->cr_uid) {
 		error = EACCES;
 		goto out;
 	}
