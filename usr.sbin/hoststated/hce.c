@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.32 2007/10/19 12:08:55 pyr Exp $	*/
+/*	$OpenBSD: hce.c,v 1.33 2007/11/19 15:31:36 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -229,6 +229,12 @@ hce_launch_checks(int fd, short event, void *arg)
 	TAILQ_FOREACH(table, env->tables, entry) {
 		if (table->conf.flags & F_DISABLE)
 			continue;
+		if (table->conf.skip_cnt) {
+			if (table->skipped++ > table->conf.skip_cnt)
+				table->skipped = 0;
+			if (table->skipped != 1)
+				continue;
+		}
 		if (table->conf.check == CHECK_NOCHECK)
 			fatalx("hce_launch_checks: unknown check type");
 
