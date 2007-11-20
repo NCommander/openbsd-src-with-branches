@@ -1,4 +1,4 @@
-/*	$OpenBSD: hoststated.h,v 1.72 2007/11/14 10:59:01 pyr Exp $	*/
+/*	$OpenBSD: hoststated.h,v 1.73 2007/11/19 14:48:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -29,7 +29,7 @@
 #define CHECK_INTERVAL		10
 #define EMPTY_TABLE		UINT_MAX
 #define EMPTY_ID		UINT_MAX
-#define TABLE_NAME_SIZE		32
+#define TABLE_NAME_SIZE		64
 #define	TAG_NAME_SIZE		64
 #define SRV_NAME_SIZE		64
 #define MAX_NAME_SIZE		64
