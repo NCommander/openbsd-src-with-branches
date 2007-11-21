@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.33 2007/11/19 15:31:36 reyk Exp $	*/
+/*	$OpenBSD: hce.c,v 1.34 2007/11/20 15:44:21 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -403,6 +403,8 @@ hce_dispatch_imsg(int fd, short event, void *ptr)
 			break;
 		case IMSG_CTL_POLL:
 			evtimer_del(&env->ev);
+			TAILQ_FOREACH(table, env->tables, entry)
+				table->skipped = 0;
 			hce_launch_checks(-1, EV_TIMEOUT, env);
 			break;
 		default:
