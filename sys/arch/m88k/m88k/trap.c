@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.46 2007/11/20 22:08:40 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.47 2007/11/21 19:30:09 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -608,8 +608,6 @@ m88110_trap(u_int type, struct trapframe *frame)
 	u_int psr;
 #endif
 	int sig = 0;
-
-	extern int pmap_set_modify(pmap_t, vaddr_t);
 
 	uvmexp.traps++;
 	if ((p = curproc) == NULL)
