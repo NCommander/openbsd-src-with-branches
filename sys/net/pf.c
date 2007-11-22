@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.561 2007/10/31 21:15:27 mpf Exp $ */
+/*	$OpenBSD: pf.c,v 1.564 2007/11/18 21:53:47 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -816,6 +816,8 @@ pf_insert_state(struct pfi_kif *kif, struct pf_state *s)
 		TAILQ_FOREACH(sp, &cur->states, next)
 			if (sp->kif == kif) {	/* collision! */
 				pf_stateins_err("tree_lan_ext", s, kif);
+				pf_detach_state(s,
+				    PF_DT_SKIP_LANEXT|PF_DT_SKIP_EXTGWY);
 				return (-1);
 			}
 		pf_detach_state(s, PF_DT_SKIP_LANEXT|PF_DT_SKIP_EXTGWY);
@@ -958,10 +960,8 @@ pf_src_tree_remove_state(struct pf_state *s)
 	u_int32_t timeout;
 
 	if (s->src_node != NULL) {
-		if (s->state_key->proto == IPPROTO_TCP) {
-			if (s->src.tcp_est)
-				--s->src_node->conn;
-		}
+		if (s->src.tcp_est)
+			--s->src_node->conn;
 		if (--s->src_node->states <= 0) {
 			timeout = s->rule.ptr->timeout[PFTM_SRC_NODE];
 			if (!timeout)
