@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.37 2007/11/21 19:41:43 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.38 2007/11/22 05:46:07 miod Exp $	*/
 /*
  * Copyright (c) 2001-2004, Miodrag Vallat
  * Copyright (c) 1998-2001 Steve Murphree, Jr.
@@ -730,7 +730,7 @@ pmap_bootstrap_cpu(cpuid_t cpu)
 		cmmu_flush_tlb(cpu, TRUE, 0, -1);
 
 	/* Load supervisor pointer to segment table. */
-	cmmu_set_sapr(cpu, kernel_pmap->pm_apr);
+	cmmu_set_sapr(kernel_pmap->pm_apr);
 #ifdef PMAPDEBUG
 	printf("cpu%d: running virtual\n", cpu);
 #endif
