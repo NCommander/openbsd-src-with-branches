@@ -134,7 +134,6 @@ static LIST allTargets;
 static void TargFreeGN(void *);
 #endif
 #define Targ_FindConstantNode(n, f) Targ_FindNodeh(n, sizeof(n), K_##n, f)
-static const char *status_to_string(GNode *);
 
 
 GNode *begin_node, *end_node, *interrupt_node, *DEFAULT;
@@ -349,7 +348,7 @@ Targ_PrintType(int type)
 		}
     }
 }
-static const char *
+const char *
 status_to_string(GNode *gn)
 {
 	switch (gn->built_status) {

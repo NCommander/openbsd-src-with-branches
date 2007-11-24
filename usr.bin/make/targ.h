@@ -79,4 +79,5 @@ extern struct ohash_info gnode_info;
 
 extern void look_harder_for_target(GNode *);
 extern void Targ_setdirs(const char *, const char *);
+const char *status_to_string(GNode *);
 #endif

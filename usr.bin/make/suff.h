@@ -1,7 +1,7 @@
 #ifndef SUFF_H
 #define SUFF_H
 /*	$OpenPackages$ */
-/*	$OpenBSD: suff.h,v 1.2 2004/05/05 09:10:48 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -45,5 +45,8 @@ extern void Suff_End(void);
 #define Suff_End()
 #endif
 extern void Suff_PrintAll(void);
+extern void expand_children_from(GNode *, LstNode);
+#define expand_all_children(gn)	\
+    expand_children_from(gn, Lst_First(&(gn)->children))
 
 #endif
