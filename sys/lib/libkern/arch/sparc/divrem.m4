@@ -1,4 +1,4 @@
-/*	$OpenBSD: divrem.m4,v 1.5 2002/08/11 12:21:33 art Exp $	*/
+/*	$OpenBSD: divrem.m4,v 1.6 2003/06/02 23:28:09 millert Exp $	*/
 /*	$NetBSD: divrem.m4,v 1.3 1995/04/22 09:37:39 pk Exp $	*/
 
 /*
@@ -40,13 +40,6 @@
  * Division and remainder, from Appendix E of the Sparc Version 8
  * Architecture Manual, with fixes from Gordon Irlam.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#ifdef notdef
-	.asciz "@(#)divrem.m4	8.1 (Berkeley) 6/4/93"
-#endif
-	.asciz "$OpenBSD: divrem.m4,v 1.5 2002/08/11 12:21:33 art Exp $"
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Input: dividend and divisor in %o0 and %o1 respectively.

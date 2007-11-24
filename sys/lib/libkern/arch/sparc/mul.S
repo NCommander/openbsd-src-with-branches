@@ -1,4 +1,4 @@
-/*	$OpenBSD: mul.S,v 1.4 1999/12/10 02:25:43 deraadt Exp $	*/
+/*	$OpenBSD: mul.S,v 1.5 2003/06/02 23:28:09 millert Exp $	*/
 /*	$NetBSD: mul.S,v 1.2 1994/10/26 06:40:01 cgd Exp $	*/
 
 /*
@@ -35,13 +35,6 @@
  *
  * Header: mul.s,v 1.5 92/06/25 13:24:03 torek Exp
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#ifdef notdef
-	.asciz "@(#)mul.s	8.1 (Berkeley) 6/4/93"
-#endif
-	.asciz "$OpenBSD: mul.S,v 1.4 1999/12/10 02:25:43 deraadt Exp $"
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Signed multiply, from Appendix E of the Sparc Version 8
