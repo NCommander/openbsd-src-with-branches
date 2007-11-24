@@ -1,4 +1,4 @@
-/*      $OpenBSD$    */
+/*      $OpenBSD: ssl_privsep.c,v 1.5 2007/11/23 09:22:40 sthen Exp $    */
 
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
@@ -64,6 +64,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+
 #include <openssl/err.h>
 #include <openssl/bio.h>
 #include <openssl/objects.h>

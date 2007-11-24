@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.2 2007/02/22 05:58:06 reyk Exp $ */
+/*	$OpenBSD: carp.c,v 1.3 2007/02/26 16:10:24 reyk Exp $ */
 
 /*
  * Copyright (c) 2006 Henning Brauer <henning@openbsd.org>
@@ -16,10 +16,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <sys/param.h>
+
 #include <net/if.h>
 
 #include <errno.h>

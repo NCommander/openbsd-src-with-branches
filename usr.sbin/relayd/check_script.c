@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_script.c,v 1.2 2007/06/12 15:16:10 msf Exp $	*/
+/*	$OpenBSD: check_script.c,v 1.3 2007/10/13 17:50:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -16,11 +16,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
-#include <sys/param.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 
 #include <net/if.h>

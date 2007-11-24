@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.17 2007/05/31 03:24:05 pyr Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.18 2007/09/28 13:29:56 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -20,7 +20,6 @@
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <sys/param.h>
 
 #include <net/if.h>
 #include <net/pfvar.h>

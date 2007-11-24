@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.9 2007/05/27 20:53:10 pyr Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.10 2007/09/28 13:29:56 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -16,12 +16,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
-#include <sys/param.h>
-#include <netinet/in.h>
+
 #include <net/if.h>
+#include <netinet/in.h>
+
 #include <limits.h>
 #include <event.h>
 #include <fcntl.h>
