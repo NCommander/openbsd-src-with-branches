@@ -1,4 +1,4 @@
-/*	$OpenBSD: strcmp.S,v 1.2 1997/11/07 15:57:09 niklas Exp $	*/
+/*	$OpenBSD: strcmp.S,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -32,12 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	/*.asciz "from: @(#)strcmp.s	5.1 (Berkeley) 5/12/90"*/
-	.asciz "$OpenBSD: strcmp.S,v 1.2 1997/11/07 15:57:09 niklas Exp $"
-#endif /* LIBC_SCCS and not lint */
 
 #include "DEFS.h"
 
