@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.66 2007/11/22 16:07:03 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.67 2007/11/23 09:39:42 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -1564,7 +1564,7 @@ relay_lookup_url(struct ctl_relay_event *cre, const char *str,
 	PROTONODE_FOREACH(pnv, proot, entry) {
 		ret = relay_handle_http(cre, proot, pnv, &pkv, 0);
 		if (ret == PN_FAIL)
-			goto done;
+			goto fail;
 	}
 
  done:
