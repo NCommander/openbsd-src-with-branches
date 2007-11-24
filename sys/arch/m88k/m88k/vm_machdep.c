@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.18 2007/10/16 04:57:39 miod Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.19 2007/11/22 05:46:38 miod Exp $	*/
 
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -211,8 +211,14 @@ vmapbuf(bp, len)
 		addr += PAGE_SIZE;
 		kva += PAGE_SIZE;
 	}
+
 	/* make sure snooping will be possible... */
-	pmap_cache_ctrl(pmap_kernel(), ova, ova + len, CACHE_GLOBAL);
+#if !defined(MULTIPROCESSOR) && defined(M88110)
+	if (CPU_IS88110)
+		pmap_cache_ctrl(pmap_kernel(), ova, ova + len, 0);
+	else
+#endif
+		pmap_cache_ctrl(pmap_kernel(), ova, ova + len, CACHE_GLOBAL);
 	pmap_update(pmap_kernel());
 }
 
