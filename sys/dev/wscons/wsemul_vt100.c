@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_vt100.c,v 1.19 2007/09/10 19:49:31 gilles Exp $ */
+/* $OpenBSD: wsemul_vt100.c,v 1.20 2007/09/11 13:39:34 gilles Exp $ */
 /* $NetBSD: wsemul_vt100.c,v 1.13 2000/04/28 21:56:16 mycroft Exp $ */
 
 /*
@@ -267,6 +267,10 @@ wsemul_vt100_resetop(cookie, op)
 		edp->ccol = edp->crow = 0;
 		(*edp->emulops->cursor)(edp->emulcookie,
 					edp->flags & VTFL_CURSORON, 0, 0);
+		break;
+	case WSEMUL_CLEARCURSOR:
+		(*edp->emulops->cursor)(edp->emulcookie, 0,
+		    edp->crow, edp->ccol);
 		break;
 	default:
 		break;

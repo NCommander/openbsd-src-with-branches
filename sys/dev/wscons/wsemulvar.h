@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemulvar.h,v 1.6 2002/03/14 01:27:03 millert Exp $ */
+/* $OpenBSD: wsemulvar.h,v 1.7 2006/12/09 20:06:48 miod Exp $ */
 /* $NetBSD: wsemulvar.h,v 1.6 1999/01/17 15:46:15 drochner Exp $ */
 
 /*
@@ -37,7 +37,8 @@ struct wsdisplay_emulops;
 enum wsemul_resetops {
 	WSEMUL_RESET,
 	WSEMUL_SYNCFONT,
-	WSEMUL_CLEARSCREEN
+	WSEMUL_CLEARSCREEN,
+	WSEMUL_CLEARCURSOR
 };
 
 struct wsemul_ops {
