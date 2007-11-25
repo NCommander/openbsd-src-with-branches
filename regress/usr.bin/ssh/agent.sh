@@ -1,9 +1,9 @@
-#	$OpenBSD: agent.sh,v 1.5 2002/02/17 22:22:45 markus Exp $
+#	$OpenBSD: agent.sh,v 1.6 2002/03/15 13:08:56 markus Exp $
 #	Placed in the Public Domain.
 
 tid="simple agent test"
 
-SSH_AUTH_SOCK=/nonexistant ${SSHADD} -l > /dev/null 2>&1
+SSH_AUTH_SOCK=/nonexistent ${SSHADD} -l > /dev/null 2>&1
 if [ $? -ne 2 ]; then
 	fail "ssh-add -l did not fail with exit code 2"
 fi
