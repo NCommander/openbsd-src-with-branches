@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.32 2005/07/30 14:32:46 millert Exp $
+#	$OpenBSD: Makefile,v 1.33 2006/10/30 18:28:57 jmc Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -24,10 +24,13 @@ SRCS+=	boot.c cmd.c vars.c bootarg.c conf.c
 S	=${.CURDIR}/../../../..
 SADIR=	${.CURDIR}/..
 
-LDADD=	${LIBSA} ${LIBZ} ${LIBKERN}
-DPADD=	${LIBSA} ${LIBZ} ${LIBKERN}
+LDADD=	${LIBSA} ${LIBZ}
+DPADD=	${LIBSA} ${LIBZ}
 
 .PATH:	${S}/stand/boot
+
+.PATH:	${S}/lib/libkern/arch/i386 ${S}/lib/libkern
+SRCS+=	strlcpy.c moddi3.c divdi3.c qdivrem.c
 
 boot.bin: boot
 	objcopy -v -O binary ${PROG} boot.bin
