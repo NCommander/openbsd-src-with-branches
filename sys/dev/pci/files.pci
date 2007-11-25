@@ -15,7 +15,6 @@ file	dev/pci/pci_subr.c		pci
 # Generic VGA
 attach	vga at pci with vga_pci
 file	dev/pci/vga_pci.c		vga_pci
-file	dev/pci/agp.c			vga_pci & pciagp
 
 device	tga: wsemuldisplaydev, rasops8, rasops32
 attach	tga at pci
