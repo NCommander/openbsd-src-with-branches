@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpleaps.h,v 1.2 2002/07/31 12:48:46 jakob Exp $	*/
+/*	$OpenBSD: ntpleaps.h,v 1.3 2004/05/05 20:29:54 jakob Exp $	*/
 
 /*
  * Copyright (c) 2002 Thorsten Glaser. All rights reserved.
@@ -52,7 +52,7 @@
 #define	TAI64_TO_SEC(t)	((t) - NTPLEAPS_OFFSET)
 
 /* Initializes the leap second table. Does not need to be called
- * before usage of the subtract funtion, but calls ntpleaps_read.
+ * before usage of the subtract function, but calls ntpleaps_read.
  * returns 0 on success, -1 on error (displays a warning on stderr)
  */
 int ntpleaps_init(void);
