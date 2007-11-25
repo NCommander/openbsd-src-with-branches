@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.53 2007/07/04 00:20:22 krw Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.54 2007/08/28 18:34:38 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -868,7 +868,7 @@ bnx_attachhook(void *xsc)
 	ifp->if_start = bnx_start;
 	ifp->if_watchdog = bnx_watchdog;
         if (sc->bnx_phy_flags & BNX_PHY_2_5G_CAPABLE_FLAG)
-                ifp->if_baudrate = IF_Gbps(2.5);
+                ifp->if_baudrate = IF_Mbps(2500);
         else
                 ifp->if_baudrate = IF_Gbps(1);
 	IFQ_SET_MAXLEN(&ifp->if_snd, USABLE_TX_BD - 1);
