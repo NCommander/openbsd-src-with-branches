@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.50 2007/11/25 18:57:50 deraadt Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.51 2007/11/25 18:59:12 deraadt Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -1010,6 +1010,7 @@ pccbbintr(arg)
 			timeout_add(&sc->sc_ins_tmo, hz / 10);
 			sc->sc_flags |= CBB_INSERTING;
 		}
+		return (1);
 	}
 
 	return (0);
