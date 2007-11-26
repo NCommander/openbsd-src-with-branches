@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.85 2007/11/16 05:08:39 djm Exp $ */
+/* $OpenBSD: softraid.c,v 1.86 2007/11/26 13:49:26 tedu Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -820,7 +820,7 @@ sr_ioctl_createraid(struct sr_softc *sc, struct bioc_createraid *bc, int user)
 		case 'C':
 			if (no_chunk != 1)
 				goto unwind;
-			strlcpy(sd->sd_name, "RAID CRYPTO", sizeof(sd->sd_name));
+			strlcpy(sd->sd_name, "CRYPTO", sizeof(sd->sd_name));
 			break;
 #endif
 		default:
