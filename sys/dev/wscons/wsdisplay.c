@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.82 2007/11/24 16:45:59 miod Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.83 2007/11/25 19:11:42 miod Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -1552,7 +1552,7 @@ wsdisplay_kbdinput(struct device *dev, keysym_t ks)
 {
 	struct wsdisplay_softc *sc = (struct wsdisplay_softc *)dev;
 	struct wsscreen *scr;
-	char *dp;
+	const char *dp;
 	int count;
 	struct tty *tp;
 
