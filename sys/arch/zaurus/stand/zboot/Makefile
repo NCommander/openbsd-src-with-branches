@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2006/10/30 18:28:57 jmc Exp $
+#	$OpenBSD: Makefile,v 1.8 2007/11/25 18:25:33 deraadt Exp $
 
 MAN=	boot.8
 MANSUBDIR=zaurus
@@ -14,7 +14,7 @@ SRCS=	crt0.c
 S=	${.CURDIR}/../../../..
 
 CLEANFILES+= arm machine
-.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir) && !make(obj)
+.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(obj)
 .BEGIN:
 	@([ X$(S) = X -o -h arm ] || ln -s $(S)/arch/arm/include arm)
 	@([ X$(S) = X -o -h machine ] || ln -s $(S)/arch/zaurus/include machine)
