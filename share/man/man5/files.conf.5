@@ -1,4 +1,4 @@
-.\"	$OpenBSD: files.conf.5,v 1.15 2007/05/31 19:19:58 jmc Exp $
+.\"	$OpenBSD: files.conf.5,v 1.16 2007/11/25 10:30:39 deraadt Exp $
 .\"
 .\" Copyright (c) 2002 Miodrag Vallat.
 .\" All rights reserved.
@@ -24,7 +24,7 @@
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .\"
-.Dd $Mdocdate: May 31 2007 $
+.Dd $Mdocdate: November 25 2007 $
 .Dt FILES.CONF 5
 .Os
 .Sh NAME
@@ -277,8 +277,10 @@ and
 will select a file based on existance.
 If
 .Dq ${MACHINE_ARCH}
+or 
+.Dq ${MACHINE}
 is found in the filename, it will be substited with the
-base architecture name.
+relevant base architecture name.
 .Pp
 If the
 .Dq dependencies
