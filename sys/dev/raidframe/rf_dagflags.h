@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_dagflags.h,v 1.2 1999/02/16 00:02:31 niklas Exp $	*/
+/*	$OpenBSD: rf_dagflags.h,v 1.3 2002/12/16 07:01:03 tdeval Exp $	*/
 /*	$NetBSD: rf_dagflags.h,v 1.3 1999/02/05 00:06:08 oster Exp $	*/
 
 /*
@@ -46,13 +46,13 @@
  * by DoAccess, SelectAlgorithm, and the DAG creation routines.
  *
  * If USE_DAG or USE_ASM is specified, neither the DAG nor the ASM
- * will be modified, which means that you can't SUPRESS if you
+ * will be modified, which means that you can't SUPPRESS if you
  * specify USE_DAG.
  */
 
 #define	RF_DAG_FLAGS_NONE		    0	/* No flags */
 #define	RF_DAG_SUPPRESS_LOCKS		(1<<0)	/*
-						 * Supress all stripe locks in
+						 * Suppress all stripe locks in
 						 * the DAG.
 						 */
 #define	RF_DAG_RETURN_ASM		(1<<1)	/*

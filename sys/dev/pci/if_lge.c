@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.44 2006/05/28 00:20:21 brad Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.45 2006/10/25 02:37:50 brad Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -1057,7 +1057,7 @@ lge_intr(void *arg)
 	sc = arg;
 	ifp = &sc->arpcom.ac_if;
 
-	/* Supress unwanted interrupts */
+	/* Suppress unwanted interrupts */
 	if (!(ifp->if_flags & IFF_UP)) {
 		lge_stop(sc);
 		return (0);

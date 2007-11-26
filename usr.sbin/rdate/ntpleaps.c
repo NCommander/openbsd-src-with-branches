@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpleaps.c,v 1.7 2004/05/05 20:29:54 jakob Exp $	*/
+/*	$OpenBSD: ntpleaps.c,v 1.8 2006/01/28 07:25:23 tedu Exp $	*/
 
 /*
  * Copyright (c) 2002 Thorsten Glaser. All rights reserved.
@@ -31,7 +31,7 @@
 
 /* Leap second support for NTP clients (generic) */
 
-static const char RCSId[] = "$OpenBSD: ntpleaps.c,v 1.7 2004/05/05 20:29:54 jakob Exp $";
+static const char RCSId[] = "$OpenBSD: ntpleaps.c,v 1.8 2006/01/28 07:25:23 tedu Exp $";
 
 
 /*
@@ -137,7 +137,7 @@ ntpleaps_read(void)
 		return (-1);
 	}
 
-	/* Pre-initalize buf[24..27] so we need not check read(2) result */
+	/* Pre-initialize buf[24..27] so we need not check read(2) result */
 	buf[24] = 0;
 	buf[25] = 0;
 	buf[26] = 0;
