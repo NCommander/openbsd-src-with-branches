@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2004/09/16 18:54:48 pefo Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 2005/12/30 02:03:49 millert Exp $
 #	$NetBSD: Makefile.inc,v 1.7 2000/08/20 14:57:16 mrg Exp $
 
 .ifndef __INCLUDED_STAND_MAKEFILE_INC
@@ -20,21 +20,6 @@ SAABI=		-mabi=32 -mips2 -Wl,-m=elf32btsmip
 AS=		as -32
 LD=		ld -m elf32btsmip
 .endif
-
-
-
-### Figure out what to use for libkern
-LIBKERNDIR=             ${.CURDIR}/../libkern
-
-.if exists(${LIBKERNDIR}/obj.${MACHINE})
-LIBKERNOBJDIR=          ${LIBKERNDIR}/obj.${MACHINE}
-.elif exists(${LIBKERNDIR}/obj)
-LIBKERNOBJDIR=          ${LIBKERNDIR}/obj
-.else 
-LIBKERNOBJDIR=          ${LIBKERNDIR}
-.endif
-
-LIBKERN=                ${LIBKERNOBJDIR}/libkern.a
 
 ### Figure out what to use for libsa
 LIBSADIR=               ${.CURDIR}/../libsa

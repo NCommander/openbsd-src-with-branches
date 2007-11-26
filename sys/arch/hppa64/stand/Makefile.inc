@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.1 2005/04/01 10:40:48 mickey Exp $
+#	$OpenBSD: Makefile.inc,v 1.2 2005/12/30 02:03:48 millert Exp $
 
 CFLAGS=${DEBUG} -Os -Wall -Werror
 CPPFLAGS+=-I${S} -I. -I${.CURDIR}
@@ -24,11 +24,6 @@ DEBUGLIBS=	no
 LIBSA=${STANDIR}/libsa/libsa.a
 .else
 LIBSA=${STANDIR}/libsa/${__objdir}/libsa.a
-.endif
-.if exists(${STANDIR}/libkern/libkern.a)
-LIBKERN=${STANDIR}/libkern/libkern.a
-.else
-LIBKERN=${STANDIR}/libkern/${__objdir}/libkern.a
 .endif
 .if exists(${STANDIR}/libz/libz.a)
 LIBZ=${STANDIR}/libz/libz.a

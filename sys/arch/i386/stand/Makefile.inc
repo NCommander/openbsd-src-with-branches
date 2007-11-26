@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.37 2005/07/30 14:32:46 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.38 2005/12/30 02:03:49 millert Exp $
 
 CFLAGS=${DEBUG} ${COPTS} -Os -Wall -Werror
 CFLAGS+=	-fno-stack-protector
@@ -42,11 +42,6 @@ CPPFLAGS+=-I${SADIR}/etc/${__objdir}
 LIBSA=${SADIR}/libsa/libsa.a
 .else
 LIBSA=${SADIR}/libsa/${__objdir}/libsa.a
-.endif
-.if exists(${SADIR}/libkern/libkern.a)
-LIBKERN=${SADIR}/libkern/libkern.a
-.else
-LIBKERN=${SADIR}/libkern/${__objdir}/libkern.a
 .endif
 .if exists(${SADIR}/libz/libz.a)
 LIBZ=${SADIR}/libz/libz.a

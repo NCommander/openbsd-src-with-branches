@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1999/10/05 13:05:46 downsj Exp $
+#	$OpenBSD: Makefile,v 1.4 2006/08/17 06:31:10 miod Exp $
 
 PROG=	cdboot
 
@@ -18,7 +18,7 @@ AFLAGS=	-x assembler-with-cpp -traditional-cpp -I${.CURDIR}/../include \
 
 SRCS=	srt0.S cdboot.c clock.c conf.c cons.c devopen.c
 
-LIBS=	${LIBCOMMON} ${LIBSA} ${LIBZ} ${LIBKERN}
+LIBS=	${LIBCOMMON} ${LIBSA} ${LIBZ}
 
 CLEANFILES+=	cdboot.lif
 
