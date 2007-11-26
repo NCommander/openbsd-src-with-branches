@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dc_pci.c,v 1.57 2007/04/10 17:47:55 miod Exp $	*/
+/*	$OpenBSD: if_dc_pci.c,v 1.58 2007/08/01 16:30:03 miod Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -256,7 +256,7 @@ void dc_pci_attach(parent, self, aux)
 		printf("\n");
 		goto fail_1;
 	}
-	printf(": %s,", intrstr);
+	printf(": %s", intrstr);
 
 	/* Need this info to decide on a chip type. */
 	sc->dc_revision = revision = PCI_REVISION(pa->pa_class);

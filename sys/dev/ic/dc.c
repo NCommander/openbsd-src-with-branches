@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.97 2007/05/08 00:04:47 deraadt Exp $	*/
+/*	$OpenBSD: dc.c,v 1.98 2007/10/01 04:03:51 krw Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1759,7 +1759,7 @@ hasmac:
 	/*
 	 * A 21143 or clone chip was detected. Inform the world.
 	 */
-	printf(" address %s\n", ether_sprintf(sc->sc_arpcom.ac_enaddr));
+	printf(", address %s\n", ether_sprintf(sc->sc_arpcom.ac_enaddr));
 
 	ifp = &sc->sc_arpcom.ac_if;
 	ifp->if_softc = sc;
