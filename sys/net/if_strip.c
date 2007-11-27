@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_strip.c,v 1.31 2006/03/11 22:44:47 brad Exp $	*/
+/*	$OpenBSD: if_strip.c,v 1.32 2006/03/25 22:41:47 djm Exp $	*/
 /*	$NetBSD: if_strip.c,v 1.2.4.3 1996/08/03 00:58:32 jtc Exp $	*/
 /*	from: NetBSD: if_sl.c,v 1.38 1996/02/13 22:00:23 christos Exp $	*/
 
@@ -301,7 +301,7 @@ void strip_timeout(void *x);
 /* Grace period for radio to answer probe, in seconds */
 #define ST_PROBERESPONSE_INTERVAL 2
 
-/* Be less agressive about repeated resetting. */
+/* Be less aggressive about repeated resetting. */
 #define STRIP_RESET_INTERVAL 5
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: decl.c,v 1.22 2006/05/05 06:47:28 otto Exp $	*/
+/*	$OpenBSD: decl.c,v 1.23 2006/05/29 20:47:22 cloder Exp $	*/
 /*	$NetBSD: decl.c,v 1.11 1995/10/02 17:34:16 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: decl.c,v 1.22 2006/05/05 06:47:28 otto Exp $";
+static char rcsid[] = "$OpenBSD: decl.c,v 1.23 2006/05/29 20:47:22 cloder Exp $";
 #endif
 
 #include <sys/param.h>
@@ -2889,7 +2889,7 @@ chktusg(sym_t *sym)
 	if (!incompl(sym->s_type))
 		return;
 
-	/* complain alwasy about incomplet tags declared inside blocks */
+	/* complain always about incomplete tags declared inside blocks */
 	if (!zflag || dcs->d_ctx != EXTERN)
 		return;
 

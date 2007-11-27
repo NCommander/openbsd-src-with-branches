@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.207 2007/06/15 18:23:06 markus Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.208 2007/09/01 18:49:28 henning Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -1586,7 +1586,7 @@ trimthenstep6:
 			/*
 			 * If we get an old ACK, there is probably packet
 			 * reordering going on.  Be conservative and reset
-			 * t_dupacks so that we are less agressive in
+			 * t_dupacks so that we are less aggressive in
 			 * doing a fast retransmit.
 			 */
 			if (th->th_ack != tp->snd_una) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.26 2007/10/10 15:53:51 art Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.27 2007/11/16 16:16:06 deraadt Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -530,7 +530,7 @@ cpu_set_tss_gates(struct cpu_info *ci)
 
 #if defined(DDB) && defined(MULTIPROCESSOR)
 	/*
-	 * Set up seperate handler for the DDB IPI, so that it doesn't
+	 * Set up separate handler for the DDB IPI, so that it doesn't
 	 * stomp on a possibly corrupted stack.
 	 *
 	 * XXX overwriting the gate set in db_machine_init.

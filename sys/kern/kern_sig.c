@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.95 2007/09/01 15:14:44 martin Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.96 2007/11/19 17:47:47 millert Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1278,7 +1278,7 @@ postsig(int signum)
 #endif
 		/*
 		 * Set the new mask value and also defer further
-		 * occurences of this signal.
+		 * occurrences of this signal.
 		 *
 		 * Special case: user has done a sigpause.  Here the
 		 * current mask is not of interest, but rather the
