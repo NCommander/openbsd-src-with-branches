@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifstated.c,v 1.30 2006/11/28 19:28:16 reyk Exp $	*/
+/*	$OpenBSD: ifstated.c,v 1.31 2007/10/25 06:03:31 pyr Exp $	*/
 
 /*
  * Copyright (c) 2004 Marco Pfatschbacher <mpf@openbsd.org>
@@ -35,14 +35,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #include <signal.h>
 #include <err.h>
 #include <event.h>
-#include <util.h>
 #include <unistd.h>
-#include <syslog.h>
-#include <stdarg.h>
 #include <ifaddrs.h>
 
 #include "ifstated.h"
