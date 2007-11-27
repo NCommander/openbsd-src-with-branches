@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.33 2007/11/26 13:49:26 tedu Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.34 2007/11/27 16:37:05 tedu Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -361,6 +361,13 @@ void			sr_raid_set_chunk_state(struct sr_discipline *,
 			    int, int);
 void			sr_raid_set_vol_state(struct sr_discipline *);
 void			sr_raid_startwu(struct sr_workunit *);
+
+int			sr_raid1_alloc_resources(struct sr_discipline *);
+int			sr_raid1_free_resources(struct sr_discipline *);
+int			sr_raid1_rw(struct sr_workunit *);
+void			sr_raid1_intr(struct buf *);
+void			sr_raid1_recreate_wu(struct sr_workunit *);
+
 
 /* crypto discipline */
 struct cryptop *	sr_crypto_getcryptop(struct sr_workunit *, int);
