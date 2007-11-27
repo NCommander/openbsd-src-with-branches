@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi.c,v 1.105 2007/11/19 19:17:30 deraadt Exp $	*/
+/*	$OpenBSD: acpi.c,v 1.106 2007/11/25 09:11:12 jsg Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -373,7 +373,7 @@ acpi_add_device(struct aml_node *node, void *arg)
 		if (proc_id && (proc_id >= LAPIC_MAP_SIZE ||
 		    (acpi_lapic_flags[proc_id] & ACPI_PROC_ENABLE) == 0))
 #else
-		if (proc_id > 1)
+		if (proc_id > 0)
 #endif
 			return 0;
 		aaa.aaa_name = "acpicpu";
