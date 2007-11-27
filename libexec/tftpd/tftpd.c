@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.56 2007/04/04 18:31:03 deraadt Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.57 2007/11/26 18:39:06 jolan Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)tftpd.c	5.13 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$OpenBSD: tftpd.c,v 1.56 2007/04/04 18:31:03 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: tftpd.c,v 1.57 2007/11/26 18:39:06 jolan Exp $";
 #endif /* not lint */
 
 /*
@@ -53,6 +53,7 @@ static char rcsid[] = "$OpenBSD: tftpd.c,v 1.56 2007/04/04 18:31:03 deraadt Exp 
 #include <sys/uio.h>
 
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <arpa/tftp.h>
 #include <netdb.h>
 
