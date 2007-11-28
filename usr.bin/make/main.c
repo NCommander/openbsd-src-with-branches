@@ -267,6 +267,9 @@ MainParseArgs(int argc, char **argv)
 				case 'm':
 					debug |= DEBUG_MAKE;
 					break;
+				case 'p':
+					debug |= DEBUG_PARALLEL;
+					break;
 				case 's':
 					debug |= DEBUG_SUFF;
 					break;
