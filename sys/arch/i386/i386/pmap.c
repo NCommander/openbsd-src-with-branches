@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.119 2007/06/27 16:16:53 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.120 2007/11/16 16:16:06 deraadt Exp $	*/
 /*	$NetBSD: pmap.c,v 1.91 2000/06/02 17:46:37 thorpej Exp $	*/
 
 /*
@@ -313,10 +313,8 @@ static pt_entry_t *csrc_pte, *cdst_pte, *zero_pte, *ptp_pte;
 static caddr_t csrcp, cdstp, zerop, ptpp;
 caddr_t vmmap; /* XXX: used by mem.c... it should really uvm_map_reserve it */
 
-#if defined(I586_CPU)
 /* stuff to fix the pentium f00f bug */
 extern vaddr_t pentium_idt_vaddr;
-#endif
 
 
 /*
