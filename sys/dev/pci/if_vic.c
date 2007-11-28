@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vic.c,v 1.50 2007/10/23 07:15:18 dlg Exp $	*/
+/*	$OpenBSD: if_vic.c,v 1.51 2007/10/28 12:38:43 dlg Exp $	*/
 
 /*
  * Copyright (c) 2006 Reyk Floeter <reyk@openbsd.org>
@@ -357,7 +357,7 @@ vic_match(struct device *parent, void *match, void *aux)
 	struct pci_attach_args		*pa = aux;
 	pcireg_t			memtype;
 	bus_size_t			pcisize;
-	paddr_t				pciaddr;
+	bus_addr_t			pciaddr;
 
 	switch (pa->pa_id) {
 	case PCI_ID_CODE(PCI_VENDOR_VMWARE, PCI_PRODUCT_VMWARE_NET):
