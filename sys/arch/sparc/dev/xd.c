@@ -1,4 +1,4 @@
-/*	$OpenBSD: xd.c,v 1.41 2007/07/01 19:06:57 miod Exp $	*/
+/*	$OpenBSD: xd.c,v 1.42 2007/10/01 16:11:19 krw Exp $	*/
 /*	$NetBSD: xd.c,v 1.37 1997/07/29 09:58:16 fair Exp $	*/
 
 /*
@@ -804,7 +804,7 @@ xddump(dev, blkno, va, size)
 	/* outline: globals: "dumplo" == sector number of partition to start
 	 * dump at (convert to physical sector with partition table)
 	 * "dumpsize" == size of dump in clicks "physmem" == size of physical
-	 * memory (clicks, ctob() to get bytes) (normal case: dumpsize ==
+	 * memory (clicks, ptoa() to get bytes) (normal case: dumpsize ==
 	 * physmem)
 	 *
 	 * dump a copy of physical memory to the dump device starting at sector
