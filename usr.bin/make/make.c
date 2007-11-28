@@ -221,8 +221,8 @@ Make_Update(GNode *cgn)	/* the child node */
 
 	for (ln = Lst_First(&cgn->parents); ln != NULL; ln = Lst_Adv(ln)) {
 		pgn = (GNode *)Lst_Datum(ln);
+		pgn->unmade--;
 		if (pgn->must_make) {
-			pgn->unmade--;
 			if (DEBUG(MAKE))
 				printf("%s--=%d ", 
 				    pgn->name, pgn->unmade);
