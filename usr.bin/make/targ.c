@@ -477,7 +477,7 @@ look_harder_for_target(GNode *gn)
 	GNode *extra, *cgn;
 	LstNode ln;
 
-	if (gn->type & OP_RESOLVED)
+	if (gn->type & (OP_RESOLVED|OP_PHONY))
 		return;
 	gn->type |= OP_RESOLVED;
 	if (strncmp(gn->name, objdir, objdir_len) == 0) {
