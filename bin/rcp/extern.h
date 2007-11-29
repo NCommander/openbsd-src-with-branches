@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.5 2003/06/02 23:32:09 millert Exp $	*/
+/*	$OpenBSD: extern.h,v 1.6 2006/03/12 01:51:15 djm Exp $	*/
 /*	$NetBSD: extern.h,v 1.2 1995/03/21 08:19:01 cgd Exp $	*/
 
 /*-
@@ -48,8 +48,6 @@ struct arglist {
 };
 void	 addargs(arglist *, char *, ...)
 	     __attribute__((format(printf, 2, 3)));
-void	 replacearg(arglist *, u_int, char *, ...)
-	     __attribute__((format(printf, 3, 4)));
 void	 freeargs(arglist *);
 
 BUF	*allocbuf(BUF *, int, int);

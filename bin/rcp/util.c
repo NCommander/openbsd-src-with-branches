@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.16 2006/03/12 01:51:15 djm Exp $	*/
+/*	$OpenBSD: util.c,v 1.17 2007/10/17 20:10:44 chl Exp $	*/
 /*	$NetBSD: util.c,v 1.2 1995/03/21 08:19:08 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.2 (Berkeley) 4/2/94";
 #else
-static const char rcsid[] = "$OpenBSD: util.c,v 1.16 2006/03/12 01:51:15 djm Exp $";
+static const char rcsid[] = "$OpenBSD: util.c,v 1.17 2007/10/17 20:10:44 chl Exp $";
 #endif
 #endif /* not lint */
 
@@ -230,26 +230,6 @@ addargs(arglist *args, char *fmt, ...)
 	args->nalloc = nalloc;
 	args->list[args->num++] = cp;
 	args->list[args->num] = NULL;
-}
-
-void
-replacearg(arglist *args, u_int which, char *fmt, ...)
-{
-	va_list ap;
-	char *cp;
-	int r;
-
-	va_start(ap, fmt);
-	r = vasprintf(&cp, fmt, ap);
-	va_end(ap);
-	if (r == -1)
-		errx(1, "replacearg: argument too long");
-
-	if (which >= args->num)
-		errx(1, "replacearg: tried to replace invalid arg %d >= %d",
-		    which, args->num);
-	free(args->list[which]);
-	args->list[which] = cp;
 }
 
 void
