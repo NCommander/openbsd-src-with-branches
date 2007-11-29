@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmcvar.h,v 1.8 2007/05/26 18:37:45 uwe Exp $	*/
+/*	$OpenBSD: sdmmcvar.h,v 1.9 2007/05/31 10:09:01 uwe Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -20,6 +20,7 @@
 #define _SDMMCVAR_H_
 
 #include <sys/queue.h>
+#include <sys/lock.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
