@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2007/11/25 18:25:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2007/11/26 10:26:02 deraadt Exp $
 
 
 PROG=		boot
@@ -14,6 +14,7 @@ AFLAGS+=	${SAABI}
 
 LDFLAGS+=	${SALDFLAGS} -T ${.CURDIR}/ld.script -e __start
 
+S=		${.CURDIR}/../../../..
 SRCS=		start.S boot.c filesystem.c conf.c diskio.c arcbios.c strstr.c
 
 CLEANFILES+= machine mips64
