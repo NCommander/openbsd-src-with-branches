@@ -175,14 +175,15 @@ Also known as loud behavior.
 Print debugging information about making targets, including modification
 dates.
 .It Ar p
-Help finding concurrency issues for parallel make by adding some randomization.
+Help finding concurrency issues for parallel make by adding some 
+randomization.
 If
 .Va RANDOM_ORDER
 is defined,
 targets will be shuffled before being built.
 If
 .Va RANDOM_DELAY
-is defined, 
+is defined,
 .Nm
 will wait between 0 and ${RANDOM_DELAY} seconds at the start of each job.
 A given random seed can be forced by setting

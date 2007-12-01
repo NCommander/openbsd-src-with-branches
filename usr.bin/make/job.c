@@ -764,7 +764,8 @@ JobExec(Job *job)
 #endif /* USE_PGRP */
 
 		if (random_delay)
-			usleep(random() % random_delay);
+			if (!(nJobs == 1 && no_jobs_left()))
+				usleep(random() % random_delay);
 
 		/* most cases won't return, but will exit directly */
 		result = run_gnode(job->node, 1);

@@ -2,7 +2,7 @@
 #define GARRAY_H
 
 /* $OpenPackages$ */
-/* $OpenBSD: garray.h,v 1.1 2001/06/12 22:44:21 espie Exp $ */
+/* $OpenBSD$ */
 /* Growable array implementation */
 
 /*
@@ -58,6 +58,21 @@ do { 							\
 		MAY_INCREASE_STATS;			\
 	} 						\
 	(l)->a[(l)->n++] = (gn); 			\
+} while (0)
+
+#define Array_Push(l, gn)	Array_AtEnd(l, gn)
+
+#define Array_Pop(l) \
+	((l)->n > 0 ?  (l)->a[--(l)->n] : NULL)
+
+#define Array_PushNew(l, gn) \
+do {						\
+	unsigned int i;				\
+	for (i = 0; i < (l)->n; i++)		\
+		if ((l)->a[i] == (gn))		\
+		    break;			\
+	if (i == (l)->n)			\
+		Array_Push(l, gn);		\
 } while (0)
 
 #define Array_Find(l, func, v)			\
