@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.257 2007/08/31 12:37:50 thib Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.258 2007/09/27 22:24:05 mpf Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1332,8 +1332,7 @@ struct pfioc_natlook {
 };
 
 struct pfioc_state {
-	u_int32_t 	 nr;
-	void		*state;
+	struct pfsync_state	state;
 };
 
 struct pfioc_src_node_kill {
