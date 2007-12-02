@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.14 2006/06/11 20:46:50 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.15 2007/05/15 13:46:22 martin Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -66,6 +66,7 @@ u_int8_t allocate_sir(void (*proc)(void *), void *arg);
 #define IPL_BIO		2
 #define IPL_NET		3
 #define IPL_TTY		3
+#define	IPL_VM		3
 #define IPL_CLOCK	5
 #define IPL_STATCLOCK	5
 #define IPL_HIGH	7
