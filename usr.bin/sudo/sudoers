@@ -1,8 +1,10 @@
-# $OpenBSD: sudoers,v 1.17 2007/10/07 13:02:33 steven Exp $
+# $OpenBSD: sudoers,v 1.18 2007/10/20 10:37:12 henning Exp $
 #
 # sudoers file.
 #
 # This file MUST be edited with the 'visudo' command as root.
+# Failure to use 'visudo' may result in syntax or file permission errors
+# that prevent sudo from running.
 #
 # See the sudoers man page for the details on how to write a sudoers file.
 #
