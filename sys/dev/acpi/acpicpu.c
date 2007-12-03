@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.33 2007/11/16 16:16:04 deraadt Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.34 2007/11/16 16:55:27 mikeb Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -467,9 +467,9 @@ acpicpu_getpss(struct acpicpu_softc *sc)
 		sc->sc_pss[i].pss_status = aml_val2int(
 		    res.v_package[i]->v_package[5]);
 	}
-	aml_freevalue(&res);
-
 	sc->sc_pss_len = res.length;
+
+	aml_freevalue(&res);
 
 	return (0);
 }
