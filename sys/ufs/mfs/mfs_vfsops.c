@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vfsops.c,v 1.35 2007/11/24 12:57:18 mpf Exp $	*/
+/*	$OpenBSD: mfs_vfsops.c,v 1.36 2007/11/28 19:31:31 millert Exp $	*/
 /*	$NetBSD: mfs_vfsops.c,v 1.10 1996/02/09 22:31:28 christos Exp $	*/
 
 /*
@@ -172,14 +172,12 @@ mfs_start(struct mount *mp, int flags, struct proc *p)
 	struct vnode *vp = VFSTOUFS(mp)->um_devvp;
 	struct mfsnode *mfsp = VTOMFS(vp);
 	struct buf *bp;
-	caddr_t base;
 	int sleepreturn = 0;
 
-	base = mfsp->mfs_baseoff;
 	while (mfsp->mfs_buflist != (struct buf *)-1) {
 		while ((bp = mfsp->mfs_buflist) != NULL) {
 			mfsp->mfs_buflist = bp->b_actf;
-			mfs_doio(bp, base);
+			mfs_doio(mfsp, bp);
 			wakeup((caddr_t)bp);
 		}
 		/*
