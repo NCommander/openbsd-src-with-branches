@@ -1641,6 +1641,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "Expert mouseCLOCK USB II",
 	},
 	{
+	    USB_VENDOR_FTDI, USB_PRODUCT_FTDI_MSF,
+	    "Expert mouseCLOCK UBS II MSF",
+	},
+	{
 	    USB_VENDOR_FTDI, USB_PRODUCT_FTDI_HBG,
 	    "Expert mouseCLOCK UBS II HBG",
 	},
