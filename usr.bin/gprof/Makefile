@@ -15,17 +15,11 @@ SRCS+=elf.c
 .else
 SRCS+=aout.c
 .endif
+
 .if defined(PROG)
 beforedepend:
 	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.h machine.h
 	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.c machine.c
-
-machine.c:
-	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.c machine.c
-
-machine.h:
-	ln -sf ${.CURDIR}/${TARGET_MACHINE_ARCH}.h machine.h
-
 .endif # defined (PROG)
 
 beforeinstall:
