@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpimadt.c,v 1.14 2007/11/16 16:21:05 deraadt Exp $	*/
+/*	$OpenBSD: acpimadt.c,v 1.15 2007/11/18 21:52:03 kettenis Exp $	*/
 /*
  * Copyright (c) 2006 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -119,7 +119,7 @@ void
 acpimadt_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct acpi_softc *acpi_sc = (struct acpi_softc *)parent;
-	struct device *mainbus = parent->dv_parent;
+	struct device *mainbus = parent->dv_parent->dv_parent;
 	struct acpi_attach_args *aaa = aux;
 	struct acpi_madt *madt = (struct acpi_madt *)aaa->aaa_table;
 	caddr_t addr = (caddr_t)(madt + 1);

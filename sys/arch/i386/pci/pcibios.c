@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcibios.c,v 1.36 2007/02/20 21:15:01 tom Exp $	*/
+/*	$OpenBSD: pcibios.c,v 1.37 2007/03/19 05:32:05 deraadt Exp $	*/
 /*	$NetBSD: pcibios.c,v 1.5 2000/08/01 05:23:59 uch Exp $	*/
 
 /*
@@ -152,7 +152,7 @@ pcibiosprobe(struct device *parent, void *match, void *aux)
 	u_int32_t rev_maj, rev_min, mech1, mech2, scmech1, scmech2, maxbus;
 	int rv;
 
-	if (strcmp(ba->bios_dev, "pcibios"))
+	if (strcmp(ba->ba_name, "pcibios"))
 		return 0;
 
 	rv = bios32_service(PCIBIOS_SIGNATURE, &pcibios_entry,

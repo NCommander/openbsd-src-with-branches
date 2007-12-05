@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.145 2007/11/15 22:21:32 deraadt Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.146 2007/11/28 17:05:09 tedu Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 
@@ -36,7 +36,7 @@ config		bsd	root on rd0a swap on rd0b and wd0b and sd0b
 
 mainbus0 at root
 
-acpi0		at mainbus?
+acpi0		at bios?
 #acpitimer*	at acpi?
 #acpihpet*	at acpi?
 #acpiac*	at acpi?
