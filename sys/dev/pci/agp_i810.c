@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_i810.c,v 1.23 2007/11/28 23:37:34 oga Exp $	*/
+/*	$OpenBSD: agp_i810.c,v 1.24 2007/12/02 14:44:20 oga Exp $	*/
 /*	$NetBSD: agp_i810.c,v 1.15 2003/01/31 00:07:39 thorpej Exp $	*/
 
 /*-
@@ -437,7 +437,7 @@ agp_i810_attach(struct agp_softc *sc, struct pci_attach_args *pa)
 }
 
 #if 0
-static int
+int
 agp_i810_detach(struct agp_softc *sc)
 {
 	int error;
