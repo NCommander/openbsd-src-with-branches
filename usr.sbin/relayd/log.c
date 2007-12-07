@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.9 2007/11/20 15:54:55 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.10 2007/11/24 17:07:28 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -37,7 +37,7 @@
 
 #include <openssl/ssl.h>
 
-#include "hoststated.h"
+#include "relayd.h"
 
 int	 debug;
 

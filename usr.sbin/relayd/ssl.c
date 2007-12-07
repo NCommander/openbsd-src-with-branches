@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.11 2007/11/24 17:07:28 reyk Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.12 2007/12/05 23:02:05 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -35,7 +35,7 @@
 #include <openssl/err.h>
 #include <openssl/engine.h>
 
-#include "hoststated.h"
+#include "relayd.h"
 
 void	ssl_read(int, short, void *);
 void	ssl_write(int, short, void *);
@@ -249,7 +249,7 @@ ssl_error(const char *where, const char *what)
 }
 
 void
-ssl_init(struct hoststated *env)
+ssl_init(struct relayd *env)
 {
 	SSL_library_init();
 	SSL_load_error_strings();
@@ -283,7 +283,7 @@ ssl_transaction(struct ctl_tcp_event *cte)
 }
 
 SSL_CTX *
-ssl_ctx_create(struct hoststated *env)
+ssl_ctx_create(struct relayd *env)
 {
 	SSL_CTX	*ctx;
 

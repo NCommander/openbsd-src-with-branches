@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.8 2007/07/24 12:42:32 pyr Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.9 2007/11/24 17:07:28 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -31,7 +31,7 @@
 
 #include <openssl/ssl.h>
 
-#include "hoststated.h"
+#include "relayd.h"
 
 void
 imsg_init(struct imsgbuf *ibuf, int fd, void (*handler)(int, short, void *))
