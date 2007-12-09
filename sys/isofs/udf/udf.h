@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf.h,v 1.10 2006/07/11 22:02:08 pedro Exp $	*/
+/*	$OpenBSD: udf.h,v 1.11 2006/07/12 14:26:44 pedro Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -29,7 +29,7 @@
  */
 
 /*
- * Ported to OpenBSD by Pedro Martelletto <pedro@openbsd.org> in February 2005.
+ * Ported to OpenBSD by Pedro Martelletto in February 2005.
  */
 
 #define UDF_HASHTBLSIZE 100
