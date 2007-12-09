@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_nbr.c,v 1.44 2007/06/01 00:52:38 henning Exp $	*/
+/*	$OpenBSD: nd6_nbr.c,v 1.45 2007/06/08 09:31:38 henning Exp $	*/
 /*	$KAME: nd6_nbr.c,v 1.61 2001/02/10 16:06:14 jinmei Exp $	*/
 
 /*
@@ -1103,7 +1103,7 @@ nd6_dad_start(ifa, tick)
 		return;
 	}
 
-	dp = malloc(sizeof(*dp), M_IP6NDP, M_NOWAIT);
+	dp = malloc(sizeof(*dp), M_IP6NDP, M_NOWAIT | M_ZERO);
 	if (dp == NULL) {
 		log(LOG_ERR, "nd6_dad_start: memory allocation failed for "
 			"%s(%s)\n",
@@ -1111,7 +1111,6 @@ nd6_dad_start(ifa, tick)
 			ifa->ifa_ifp ? ifa->ifa_ifp->if_xname : "???");
 		return;
 	}
-	bzero(dp, sizeof(*dp));
 	bzero(&dp->dad_timer_ch, sizeof(dp->dad_timer_ch));
 	TAILQ_INSERT_TAIL(&dadq, (struct dadq *)dp, dad_list);
 
