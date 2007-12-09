@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus_machdep.c,v 1.5 2003/10/25 12:35:32 drahn Exp $ */
+/*	$OpenBSD: rbus_machdep.c,v 1.6 2004/03/23 03:25:46 drahn Exp $ */
 /*	$NetBSD: rbus_machdep.c,v 1.2 1999/10/15 06:43:06 haya Exp $	*/
 
 /*
@@ -150,4 +150,10 @@ macppc_cardbus_init(pci_chipset_tag_t pc, pcitag_t tag)
 		x |= 0x02;
 		pci_conf_write(pc, tag, 0x8c, x);
 	}
+}
+
+void
+pccbb_attach_hook(struct device *parent, struct device *self,
+    struct pci_attach_args *pa)
+{
 }
