@@ -1,4 +1,4 @@
-/*	$OpenBSD: code.c,v 1.4 2007/11/18 17:39:55 ragge Exp $	*/
+/*	$OpenBSD: code.c,v 1.5 2007/11/22 15:06:43 stefan Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -183,7 +183,7 @@ funcode(NODE *p)
 	} else {
 		for (r = p->n_right; r->n_left->n_op == CM; r = r->n_left)
 			;
-		r->n_left = block(CM, l, p->n_left, INT, 0, MKSUE(INT));
+		r->n_left = block(CM, l, r->n_left, INT, 0, MKSUE(INT));
 	}
 	return p;
 }
@@ -220,16 +220,6 @@ bycode(int t, int i)
 			putchar(t);
 		}
 	}
-}
-
-/*
- * n integer words of zeros
- */
-void
-zecode(int n)
-{
-	printf("	.zero %d\n", n * (SZINT/SZCHAR));
-//	inoff += n * SZINT;
 }
 
 /*

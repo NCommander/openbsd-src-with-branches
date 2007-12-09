@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.1 2007/10/22 13:39:37 otto Exp $	*/
+/*	$OpenBSD: table.c,v 1.2 2007/10/23 14:48:36 ragge Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -389,13 +389,13 @@ struct optab table[] = {
 
 { CALL,	INAREG,
 	SCON,	TANY,
-	SAREG,	TWORD|TPOINT,
+	SAREG,	TSHORT|TUSHORT|TWORD|TPOINT,
 		NAREG|NASL,	RESC1,	/* should be 0 */
 		"	call CL\nZC", },
 
 { UCALL,	INAREG,
 	SCON,	TANY,
-	SAREG,	TWORD|TPOINT,
+	SAREG,	TSHORT|TUSHORT|TWORD|TPOINT,
 		NAREG|NASL,	RESC1,	/* should be 0 */
 		"	call CL\n", },
 
