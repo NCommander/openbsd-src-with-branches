@@ -1,4 +1,4 @@
-/*	$OpenBSD: order.c,v 1.51 2007/11/12 19:02:15 ragge Exp $	*/
+/*	$OpenBSD: order.c,v 1.3 2007/11/16 09:00:12 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -111,18 +111,6 @@ shumul(NODE *p)
 
 	/* Turns currently anything into OREG on x86 */
 	return SOREG;
-}
-
-/*
- * Rewrite increment/decrement operation.
- */
-int
-setincr(NODE *p)
-{
-	if (x2debug)
-		printf("setincr(%p)\n", p);
-
-	return(0);
 }
 
 /*
@@ -295,4 +283,13 @@ livecall(NODE *p)
 	static int r[2] = { EBX, -1 };
 
 	return kflag ? &r[0] : &r[1];
+}
+
+/*
+ * Signal whether the instruction is acceptable for this target.
+ */
+int
+acceptable(struct optab *op)
+{
+	return 1;
 }
