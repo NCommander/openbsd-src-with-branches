@@ -1,4 +1,4 @@
-/*	$OpenBSD: local2.c,v 1.3 2007/10/29 16:38:55 ragge Exp $	*/
+/*	$OpenBSD: local2.c,v 1.4 2007/11/17 12:00:37 ragge Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -1008,4 +1008,12 @@ int
 special(NODE *p, int shape)
 {
 	return SRNOPE;
+}
+
+/*
+ * Target-dependent command-line options.
+ */
+void
+mflags(char *str)
+{
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: code.c,v 1.3 2007/11/16 09:00:13 otto Exp $	*/
+/*	$OpenBSD: code.c,v 1.4 2007/11/22 15:06:43 stefan Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -182,13 +182,6 @@ bycode( t, i ){
 		printf( "0x%x", t );
 		if( i == 07 ) printf( "\n" );
 		}
-	}
-
-void
-zecode( n ){
-	/* n integer words of zeros */
-	if( n <= 0 ) return;
-	printf( "	.space	%d\n", (SZINT/SZCHAR)*n );
 	}
 
 int
