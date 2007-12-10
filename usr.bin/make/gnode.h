@@ -130,8 +130,6 @@ struct GNode_ {
     unsigned long lineno;/* First line number of commands.  */
     const char *fname;	/* File name of commands.  */
     LIST commands;	/* Creation commands */
-    LstNode current;	/* Current command, for job */
-
     struct Suff_ *suffix;/* Suffix for the node (determined by
 			 * Suff_FindDeps and opaque to everyone
 			 * but the Suff module) */
