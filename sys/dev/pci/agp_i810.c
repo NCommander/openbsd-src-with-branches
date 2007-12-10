@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_i810.c,v 1.27 2007/12/09 00:09:22 oga Exp $	*/
+/*	$OpenBSD: agp_i810.c,v 1.28 2007/12/09 18:21:14 kettenis Exp $	*/
 /*	$NetBSD: agp_i810.c,v 1.15 2003/01/31 00:07:39 thorpej Exp $	*/
 
 /*-
@@ -174,7 +174,7 @@ agp_i810_attach(struct agp_softc *sc, struct pci_attach_args *pa)
 			return (agp_intel_attach(sc, pa));
 		}
 #endif
-		printf("can't find internal VGA device config space\n");
+		printf("no integrated graphics\n");
 		free(isc, M_AGP);
 		return (ENOENT);
 	}
