@@ -1,4 +1,4 @@
-#	$OpenBSD: sftp-cmds.sh,v 1.7 2006/08/29 09:44:00 djm Exp $
+#	$OpenBSD: sftp-cmds.sh,v 1.8 2007/10/24 03:32:35 djm Exp $
 #	Placed in the Public Domain.
 
 # XXX - TODO: 
@@ -24,9 +24,12 @@ rm -rf ${COPY} ${COPY}.1 ${COPY}.2 ${COPY}.dd ${COPY}.dd2 ${BATCH}.*
 mkdir ${COPY}.dd
 
 verbose "$tid: lls"
-echo "lls ${OBJ}" | ${SFTP} -P ${SFTPSERVER} >/dev/null 2>&1 \
-	|| fail "lls failed"
-# XXX always successful
+echo "cd ${OBJ}\nlls" | ${SFTP} -P ${SFTPSERVER} 2>&1 | \
+	grep -q copy.dd || fail "lls failed"
+
+verbose "$tid: lls w/path"
+echo "lls ${OBJ}" | ${SFTP} -P ${SFTPSERVER} 2>&1 | \
+	grep -q copy.dd || fail "lls w/path failed"
 
 verbose "$tid: ls"
 echo "ls ${OBJ}" | ${SFTP} -P ${SFTPSERVER} >/dev/null 2>&1 \
