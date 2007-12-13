@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.71 2007/07/17 18:53:03 otto Exp $	*/
+/*	$OpenBSD: param.h,v 1.72 2007/07/25 20:07:28 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
@@ -113,8 +113,8 @@
 
 #define	PRIMASK		0x0ff
 #define	PCATCH		0x100	/* OR'd with pri for tsleep to check signals */
-#define PNORELOCK	0x200	/* OR'd with pri for ltsleep to not relock
-				   the interlock */
+#define PNORELOCK	0x200	/* OR'd with pri for msleep to not reaquire
+				   the mutex */
 
 #define	NBPW	sizeof(int)	/* number of bytes per word (integer) */
 
