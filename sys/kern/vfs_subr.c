@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.159 2007/11/15 16:50:28 deraadt Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.160 2007/11/16 13:47:27 deraadt Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -600,7 +600,7 @@ vget(struct vnode *vp, int flags, struct proc *p)
 		}
 
 		vp->v_flag |= VXWANT;
-		ltsleep(vp, PINOD | PNORELOCK, "vget", 0, NULL);
+		tsleep(vp, PINOD, "vget", 0);
 		return (ENOENT);
 	}
 
@@ -1013,7 +1013,7 @@ vgonel(struct vnode *vp, struct proc *p)
 	 */
 	if (vp->v_flag & VXLOCK) {
 		vp->v_flag |= VXWANT;
-		ltsleep(vp, PINOD | PNORELOCK, "vgone", 0, NULL);
+		tsleep(vp, PINOD, "vgone", 0);
 		return;
 	}
 
