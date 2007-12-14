@@ -456,10 +456,12 @@ pccbbattach(parent, self, aux)
 	 * mode.
 	 */
 	busreg = pci_conf_read(pc, pa->pa_tag, PCI_BUSNUM);
+#if notyet
 	if (((busreg >> 8) & 0xff) == 0) {
 		printf(": CardBus support disabled because of unconfigured bus number\n");
 		flags |= PCCBB_PCMCIA_16BITONLY;
 	}
+#endif
 
 	/* pccbb_machdep.c end */
 
