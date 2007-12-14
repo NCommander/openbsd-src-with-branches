@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_var.h,v 1.1 1997/07/23 03:39:54 denny Exp $	*/
+/*	$OpenBSD: ddp_var.h,v 1.2 2007/05/26 12:09:40 claudio Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -75,10 +75,28 @@ struct ddpstat {
     u_long	ddps_nosockspace;	/* no space in sockbuf for packet */
 };
 
+/*
+ * Names for DDP sysctl objects
+ */
+#define DDPCTL_STATS		1 /* DDP statistics */
+#define DDPCTL_MAXID		2
+
+#define DDPCTL_NAMES { \
+	{ 0, 0 }, \
+	{ "stats",	CTLTYPE_STRUCT } \
+}
+
+#define UDPCTL_VARS { \
+	NULL \
+}
+
 #ifdef _KERNEL
 extern struct ddpcb		*ddp_ports[ ATPORT_LAST ];
 extern struct ddpcb		*ddpcb;
 extern struct ddpstat		ddpstat;
+
+int	 ddp_sysctl(int *, u_int, void *, size_t *, void *, size_t);
+
 #endif
 
 #endif /* _NETATALK_DDP_VAR_H_ */
