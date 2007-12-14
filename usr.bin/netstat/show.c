@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.10 2007/07/25 11:50:47 claudio Exp $	*/
+/*	$OpenBSD: show.c,v 1.11 2007/09/05 20:29:05 claudio Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -191,7 +191,7 @@ p_rttables(int af, u_int tableid)
 	}
 }
 
-/* 
+/*
  * column widths; each followed by one space
  * width of destination/gateway column
  * strlen("fe80::aaaa:bbbb:cccc:dddd@gif0") == 30, strlen("/128") == 4
