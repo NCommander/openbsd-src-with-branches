@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.2 2007/03/05 21:48:21 miod Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.3 2007/09/10 18:49:45 miod Exp $	*/
 /*	$NetBSD: pmap.h,v 1.28 2006/04/10 23:12:11 uwe Exp $	*/
 
 /*-
@@ -49,6 +49,8 @@
 #include <sys/queue.h>
 #include <sh/pte.h>
 
+#ifdef _KERNEL
+
 #define	PMAP_STEAL_MEMORY
 #define	PMAP_GROWKERNEL
 
@@ -98,4 +100,6 @@ void pmap_prefer(vaddr_t, vaddr_t *);
 pt_entry_t *__pmap_pte_lookup(pmap_t, vaddr_t);
 pt_entry_t *__pmap_kpte_lookup(vaddr_t);
 boolean_t __pmap_pte_load(pmap_t, vaddr_t, int);
+
+#endif /* !_KERNEL */
 #endif /* !_SH_PMAP_H_ */
