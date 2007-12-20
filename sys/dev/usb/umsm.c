@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.16 2007/06/19 23:59:27 jcs Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.17 2007/10/11 18:33:15 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -73,6 +73,7 @@ static const struct usb_devno umsm_devs[] = {
 	{ USB_VENDOR_SIERRA,	USB_PRODUCT_SIERRA_MC5725 },
 	{ USB_VENDOR_SIERRA,	USB_PRODUCT_SIERRA_MC8755 },
 	{ USB_VENDOR_SIERRA,	USB_PRODUCT_SIERRA_MC8755_2 },
+	{ USB_VENDOR_SIERRA,    USB_PRODUCT_SIERRA_MC8755_3 },
 	{ USB_VENDOR_SIERRA,	USB_PRODUCT_SIERRA_MC8765 },
 	{ USB_VENDOR_SIERRA,	USB_PRODUCT_SIERRA_MC8775 },
 };
