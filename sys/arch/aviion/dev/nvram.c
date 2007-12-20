@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.3 2006/06/19 21:10:19 miod Exp $ */
+/*	$OpenBSD: nvram.c,v 1.4 2006/07/17 04:21:30 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -434,7 +434,7 @@ nvrammmap(dev, off, prot)
 		return (-1);
 
 	/* allow access only in RAM */
-	if (off < 0 || off > sc->sc_len)
+	if (off < 0 || off >= round_page(sc->sc_len))
 		return (-1);
 	return (atop(sc->sc_base + off));
 #else
