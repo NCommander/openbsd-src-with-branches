@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.65 2007/02/14 00:53:48 jsg Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.66 2007/02/26 23:53:33 kurt Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -424,7 +424,7 @@ restart:
 		if ((atomic && resid > so->so_snd.sb_hiwat) ||
 		    clen > so->so_snd.sb_hiwat)
 			snderr(EMSGSIZE);
-		if (space < resid + clen && uio &&
+		if (space < resid + clen &&
 		    (atomic || space < so->so_snd.sb_lowat || space < clen)) {
 			if (so->so_state & SS_NBIO)
 				snderr(EWOULDBLOCK);
