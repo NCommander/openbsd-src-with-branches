@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_faith.c,v 1.22 2006/03/25 22:41:47 djm Exp $	*/
+/*	$OpenBSD: if_faith.c,v 1.23 2007/09/15 16:43:51 henning Exp $	*/
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -256,7 +256,7 @@ faithioctl(ifp, cmd, data)
 		break;
 
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 	}
 	return (error);
 }

@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.41 2006/05/28 04:30:16 claudio Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.42 2007/09/15 16:43:51 henning Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -578,7 +578,7 @@ gre_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		memcpy(&lifr->dstaddr, &si, sizeof(si));
 		break;
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 	}
 
 	splx(s);

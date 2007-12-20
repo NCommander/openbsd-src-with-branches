@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflog.c,v 1.25 2007/09/16 16:00:27 pyr Exp $	*/
+/*	$OpenBSD: if_pflog.c,v 1.26 2007/10/18 21:58:18 mpf Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -198,7 +198,7 @@ pflogioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			ifp->if_flags &= ~IFF_RUNNING;
 		break;
 	default:
-		return (EINVAL);
+		return (ENOTTY);
 	}
 
 	return (0);
