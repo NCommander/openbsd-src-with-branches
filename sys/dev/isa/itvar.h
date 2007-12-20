@@ -1,7 +1,9 @@
-/*	$OpenBSD: itvar.h,v 1.4 2007/03/22 16:55:31 deraadt Exp $	*/
+/*	$OpenBSD: itvar.h,v 1.5 2007/12/18 21:17:54 form Exp $	*/
 
 /*
  * Copyright (c) 2007 Oleg Safiullin <form@pdp-11.org.ru>
+ * Copyright (c) 2006-2007 Juan Romero Pardines <juan@xtrarom.org>
+ * Copyright (c) 2003 Julien Bordet <zejames@greyhats.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
