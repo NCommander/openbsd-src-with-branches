@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardslot.c,v 1.8 2007/09/17 20:29:47 miod Exp $	*/
+/*	$OpenBSD: cardslot.c,v 1.9 2007/12/16 13:46:36 kettenis Exp $	*/
 /*	$NetBSD: cardslot.c,v 1.9 2000/03/22 09:35:06 haya Exp $	*/
 
 /*
@@ -318,7 +318,8 @@ cardslot_event_thread(void *arg)
 					    CARDSLOT_STATUS_NOTWORK);
 				}
 			} else {
-				panic("no cardbus on %s", sc->sc_dev.dv_xname);
+				printf("%s: CardBus support disabled\n",
+				    sc->sc_dev.dv_xname);
 			}
 
 			break;
