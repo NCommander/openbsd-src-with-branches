@@ -1,4 +1,4 @@
-/*	$Id: macdefs.h,v 1.4 2007/11/22 18:36:44 gmcgarry Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

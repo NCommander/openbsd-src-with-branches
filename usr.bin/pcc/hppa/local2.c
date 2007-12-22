@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: local2.c,v 1.2 2007/12/19 20:19:54 otto Exp $	*/
 
 /*
  * Copyright (c) 2007 Michael Shalayeff
@@ -389,6 +389,12 @@ canaddr(NODE *p)
 	    (o == UMUL && shumul(p->n_left)))
 		return(1);
 	return(0);
+}
+
+int
+fldexpand(NODE *p, int cookie, char **cp)
+{
+	return 0;
 }
 
 /*

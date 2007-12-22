@@ -1,4 +1,4 @@
-/*	$OpenBSD: protos.h,v 1.4 2007/11/04 18:51:28 ragge Exp $	*/
+/*	$OpenBSD: protos.h,v 1.5 2007/12/09 18:38:49 ragge Exp $	*/
 
 struct optab;
 struct symtab;
@@ -36,6 +36,7 @@ void dclargs(void);
 void cendarg(void);
 void defalign(int);
 int fldal(unsigned int);
+int fldexpand(NODE *, int, char **);
 void putbyte(int v);
 void ecomp(NODE *p);
 void bccode(void);
@@ -54,7 +55,6 @@ void oreg2(NODE *p);
 int notoff(TWORD, int, CONSZ, char *);
 void bycode(int, int);
 int notlval(NODE *);
-int icons(NODE *);
 void ecode(NODE *p);
 int yylex(void);
 void yyerror(char *s);
