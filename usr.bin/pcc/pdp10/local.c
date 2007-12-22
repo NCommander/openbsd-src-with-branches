@@ -1,4 +1,4 @@
-/*	$OpenBSD: local.c,v 1.2 2007/11/16 09:00:13 otto Exp $	*/
+/*	$OpenBSD: local.c,v 1.3 2007/11/18 17:39:55 ragge Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -484,7 +484,6 @@ xptype(TWORD t)
 	case DOUBLE:
 	case STRTY:
 	case UNIONTY:
-	case ENUMTY:
 	case UNSIGNED:
 	case ULONG:
 	case ULONGLONG:
@@ -556,7 +555,6 @@ offcon(OFFSZ off, TWORD t, union dimfun *d, struct suedef *sue)
 	case ULONG:
 	case STRTY:
 	case UNIONTY:
-	case ENUMTY:
 	case LONGLONG:
 	case ULONGLONG:
 	case FLOAT:
