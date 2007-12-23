@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.8 2006/05/27 21:24:36 claudio Exp $ */
+/*	$OpenBSD: log.h,v 1.9 2007/02/25 11:59:39 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -110,4 +110,14 @@ static const char * const ctl_res_strerror[] = {
 	"permission denied",
 	"neighbor does not have this capability",
 	"config file has errors, reload failed"
+};
+
+static const char * const timernames[] = {
+	"None",
+	"ConnectRetryTimer",
+	"KeepaliveTimer",
+	"HoldTimer",
+	"IdleHoldTimer",
+	"IdleHoldResetTimer",
+	""
 };
