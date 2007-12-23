@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.157 2007/09/07 15:00:20 art Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.158 2007/10/10 15:53:53 art Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1587,6 +1587,7 @@ sysctl_diskinit(int update, struct proc *p)
 			sdk = diskstats + i;
 			strlcpy(sdk->ds_name, dk->dk_name,
 			    sizeof(sdk->ds_name));
+			mtx_enter(&dk->dk_mtx);
 			sdk->ds_busy = dk->dk_busy;
 			sdk->ds_rxfer = dk->dk_rxfer;
 			sdk->ds_wxfer = dk->dk_wxfer;
@@ -1596,6 +1597,7 @@ sysctl_diskinit(int update, struct proc *p)
 			sdk->ds_attachtime = dk->dk_attachtime;
 			sdk->ds_timestamp = dk->dk_timestamp;
 			sdk->ds_time = dk->dk_time;
+			mtx_leave(&dk->dk_mtx);
 		}
 
 		/* Eliminate trailing comma */
@@ -1609,6 +1611,7 @@ sysctl_diskinit(int update, struct proc *p)
 			sdk = diskstats + i;
 			strlcpy(sdk->ds_name, dk->dk_name,
 			    sizeof(sdk->ds_name));
+			mtx_enter(&dk->dk_mtx);
 			sdk->ds_busy = dk->dk_busy;
 			sdk->ds_rxfer = dk->dk_rxfer;
 			sdk->ds_wxfer = dk->dk_wxfer;
@@ -1618,6 +1621,7 @@ sysctl_diskinit(int update, struct proc *p)
 			sdk->ds_attachtime = dk->dk_attachtime;
 			sdk->ds_timestamp = dk->dk_timestamp;
 			sdk->ds_time = dk->dk_time;
+			mtx_leave(&dk->dk_mtx);
 		}
 	}
 	rw_exit_write(&sysctl_disklock);
