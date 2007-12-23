@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfutils.c,v 1.7 2007/05/15 06:22:32 tedu Exp $ */
+/*	$OpenBSD: pfutils.c,v 1.8 2007/10/06 15:45:00 ckuethe Exp $ */
 /*
  * Copyright (c) 2006 Chris Kuethe <ckuethe@openbsd.org>
  *
@@ -83,7 +83,7 @@ pftable_handler()
 			switch (cmd.type) {
 			case 'A':
 				/*
-				 * When we abandon an address, we add it to the
+				 * When we abandon an address, we add it to
 				 * the table of abandoned addresses, and remove
 				 * it from the table of active leases.
 				 */
