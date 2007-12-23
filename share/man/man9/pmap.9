@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pmap.9,v 1.8 2004/11/22 21:31:51 hshoexer Exp $
+.\"	$OpenBSD: pmap.9,v 1.9 2007/05/31 19:20:00 jmc Exp $
 .\"
 .\" Copyright (c) 2001, 2002, 2003 CubeSoft Communications, Inc.
 .\" <http://www.csoft.org>
@@ -337,7 +337,7 @@ and retires it from service if the count drops to zero, assuming
 it contains no valid mappings.
 .Sh OPTIONAL FUNCTIONS
 .nr nS 1
-.Ft void
+.Ft vaddr_t
 .Fn pmap_steal_memory "vsize_t size" "vaddr_t *vstartp" "vaddr_t *vendp"
 .Ft vaddr_t
 .Fn pmap_growkernel "vaddr_t maxkvaddr"
