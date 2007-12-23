@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff3.c,v 1.23 2007/07/03 00:56:23 ray Exp $	*/
+/*	$OpenBSD: diff3.c,v 1.24 2007/09/10 14:29:53 tobias Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -72,7 +72,7 @@ static const char copyright[] =
 
 #ifndef lint
 static const char rcsid[] =
-    "$OpenBSD: diff3.c,v 1.23 2007/07/03 00:56:23 ray Exp $";
+    "$OpenBSD: diff3.c,v 1.24 2007/09/10 14:29:53 tobias Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -137,7 +137,7 @@ static int last[4];
 static int eflag = 3;	/* default -E for compatibility with former RCS */
 static int oflag = 1;	/* default -E for compatibility with former RCS */
 static int debug  = 0;
-static char f1mark[40], f3mark[40];	/* markers for -E and -X */
+static char f1mark[256], f3mark[256];	/* markers for -E and -X */
 
 static int duplicate(struct range *, struct range *);
 static int edit(struct diff *, int, int);
