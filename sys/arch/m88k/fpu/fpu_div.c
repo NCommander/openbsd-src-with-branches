@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_div.c,v 1.3 2003/06/02 23:27:54 millert Exp $	*/
+/*	$OpenBSD: fpu_div.c,v 1.1 2007/12/25 00:29:49 miod Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -178,6 +178,8 @@ fpu_div(struct fpemu *fe)
 	if (ISINF(x) || ISZERO(x)) {
 		if (x->fp_class == y->fp_class)
 			return (fpu_newnan(fe, !ISINF(x)));
+		if (ISZERO(x))
+			x->fp_sign = y->fp_sign;
 		return (x);
 	}
 
