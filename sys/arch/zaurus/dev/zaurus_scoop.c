@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_scoop.c,v 1.15 2007/03/27 23:23:22 deraadt Exp $	*/
+/*	$OpenBSD: zaurus_scoop.c,v 1.16 2007/03/29 18:42:38 uwe Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@bsdx.de>
@@ -428,11 +428,11 @@ scoop_timeout(void *v)
 	static int state = 0;
 
 	if (dk == NULL) {
-		for (dk = TAILQ_FIRST(&disklist); dk;
-		    dk = TAILQ_NEXT(dk, dk_link))
+		TAILQ_FOREACH(dk, &disklist, dk_link) {
 			if (dk->dk_name &&
 			    strcmp(dk->dk_name, "wd0") == 0)
 				break;
+		}
 	}
 
 	if (sc->sc_suspended)
