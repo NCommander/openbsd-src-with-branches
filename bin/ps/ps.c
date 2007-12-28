@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.42 2006/11/01 19:07:18 jmc Exp $	*/
+/*	$OpenBSD: ps.c,v 1.43 2007/09/01 19:32:19 deraadt Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ps.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: ps.c,v 1.42 2006/11/01 19:07:18 jmc Exp $";
+static char rcsid[] = "$OpenBSD: ps.c,v 1.43 2007/09/01 19:32:19 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -493,6 +493,6 @@ usage(void)
 	    "usage: %s [-aCcehjkLlmrSTuvwx] [-M core] [-N system] [-O fmt] [-o fmt] [-p pid]\n",
 	    __progname);	
 	(void)fprintf(stderr,
-	    "%-*s[-t tty] [-U username] [-W swap]\n", strlen(__progname) + 8, "");
+	    "%-*s[-t tty] [-U username] [-W swap]\n", (int)strlen(__progname) + 8, "");
 	exit(1);
 }
