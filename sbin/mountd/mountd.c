@@ -1,4 +1,4 @@
-/*	$OpenBSD: mountd.c,v 1.67 2006/05/29 16:49:42 avsm Exp $	*/
+/*	$OpenBSD: mountd.c,v 1.68 2007/06/01 05:37:14 deraadt Exp $	*/
 /*	$NetBSD: mountd.c,v 1.31 1996/02/18 11:57:53 fvdl Exp $	*/
 
 /*
@@ -241,7 +241,7 @@ main(int argc, char *argv[])
 			/* Compatibility */
 			break;
 		default:
-			fprintf(stderr, "Usage: mountd [-dn] [export_file]\n");
+			fprintf(stderr, "usage: mountd [-dn] [exportsfile]\n");
 			exit(1);
 		}
 	argc -= optind;
