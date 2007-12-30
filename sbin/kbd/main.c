@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.6 2003/07/10 00:00:57 david Exp $	*/
+/*	$OpenBSD: main.c,v 1.7 2004/09/16 09:53:21 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Juergen Hannken-Illjes
@@ -44,8 +44,8 @@ extern char *__progname;
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s -l  or  %s [-q] name\n",
-	    __progname, __progname);
+	fprintf(stderr, "usage: %s -l\n", __progname);
+	fprintf(stderr, "       %s [-q] name\n", __progname);
 	exit(1);
 }
 
