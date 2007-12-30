@@ -1,4 +1,4 @@
-/*	$OpenBSD: cyberflex.c,v 1.26 2004/03/15 15:03:11 aaron Exp $ */
+/*	$OpenBSD: cyberflex.c,v 1.27 2006/12/06 05:03:29 ray Exp $ */
 
 /*
  * copyright 1999, 2000
@@ -938,7 +938,7 @@ cyberflex_load_key(int fd, u_char *buf)
 	token = strtok(buf, DELIMITER);
 	token = strtok(NULL, DELIMITER);
 	if (token == NULL) {
-		printf("Usage: jk number_of_keys\n");
+		printf("usage: jk number_of_keys\n");
 		return -1;
 	}
 	argc = atoi(token);
