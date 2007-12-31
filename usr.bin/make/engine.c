@@ -238,6 +238,13 @@ Make_HandleUse(GNode	*cgn,	/* The .USE node */
 		if (cgn->type & OP_USE)
 			pgn->unmade--;
 	}
+	/* if the parent node doesn't have any location, then inherit the
+	 * use stuff, since that gives us better error messages.
+	 */
+	if (!pgn->lineno) {
+		pgn->lineno = cgn->lineno;
+		pgn->fname = cgn->fname;
+	}
 }
 
 void
