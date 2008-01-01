@@ -1,4 +1,4 @@
-/* $OpenBSD: rthread_libc.c,v 1.3 2006/10/27 02:41:24 tedu Exp $ */
+/* $OpenBSD: rthread_libc.c,v 1.4 2007/06/05 18:11:49 kurt Exp $ */
 /* $snafu: libc_tag.c,v 1.4 2004/11/30 07:00:06 marc Exp $ */
 
 /* PUBLIC DOMAIN: No Rights Reserved. Marco S Hyman <marc@snafu.org> */
@@ -173,6 +173,23 @@ _thread_malloc_unlock(void)
 void
 _thread_malloc_init(void)
 {
+}
+
+/*
+ * arc4random lock
+ */
+static _spinlock_lock_t arc4_lock = _SPINLOCK_UNLOCKED;
+
+void
+_thread_arc4_lock(void)
+{
+	_spinlock(&arc4_lock);
+}
+
+void
+_thread_arc4_unlock(void)
+{
+	_spinunlock(&arc4_lock);
 }
 
 #if 0
