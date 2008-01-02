@@ -1,2 +1,0 @@
-dnl	$OpenBSD$
-OpenBSDUpgrade({:- the bsd.rd kernel-:})
