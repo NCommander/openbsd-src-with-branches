@@ -85,12 +85,13 @@ Job_CheckCommands(GNode *gn, void (*abortProc)(char *, ...))
 		gn->type |= OP_SILENT;
 
 	if (OP_NOP(gn->type) && Lst_IsEmpty(&gn->commands) &&
-	    (gn->type & (OP_NODEFAULT | OP_LIB)) == 0) {
+	    (gn->type & OP_LIB) == 0) {
 		/*
 		 * No commands. Look for .DEFAULT rule from which we might infer
 		 * commands
 		 */
-		if ((DEFAULT->type & OP_DUMMY) == 0 &&
+		if ((gn->type & OP_NODEFAULT) == 0 && 
+		    (DEFAULT->type & OP_DUMMY) == 0 &&
 		    !Lst_IsEmpty(&DEFAULT->commands)) {
 			/*
 			 * Make only looks for a .DEFAULT if the node was never
