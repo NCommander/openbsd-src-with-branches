@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide.c,v 1.275 2007/10/17 22:11:52 brad Exp $	*/
+/*	$OpenBSD: pciide.c,v 1.276 2007/11/27 16:22:13 martynas Exp $	*/
 /*	$NetBSD: pciide.c,v 1.127 2001/08/03 01:31:08 tsutsui Exp $	*/
 
 /*
@@ -1076,6 +1076,10 @@ const struct pciide_product_desc pciide_ati_products[] = {
 	  ixp_chip_map
 	},
 	{ PCI_PRODUCT_ATI_IXP_IDE_600,
+	  0,
+	  ixp_chip_map
+	},
+	{ PCI_PRODUCT_ATI_IXP_IDE_700,
 	  0,
 	  ixp_chip_map
 	},
