@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.20 2003/05/14 01:34:35 millert Exp $	*/
+/*	$OpenBSD: common.c,v 1.21 2003/06/03 02:56:14 millert Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -36,7 +36,7 @@ static char RCSid[] __attribute__((__unused__)) =
 "$From: common.c,v 1.8 2001/03/12 18:16:36 kim Exp $";
 #else
 static char RCSid[] __attribute__((__unused__)) = 
-"$OpenBSD: common.c,v 1.20 2003/05/14 01:34:35 millert Exp $";
+"$OpenBSD: common.c,v 1.21 2003/06/03 02:56:14 millert Exp $";
 #endif
 
 static char sccsid[] __attribute__((__unused__)) =
@@ -976,21 +976,4 @@ mysetlinebuf(FILE *fp)
 #if	!defined(SETBUF_TYPE)
 	No SETBUF_TYPE is defined!
 #endif	/* SETBUF_TYPE */
-}
-
-/*
- * Our interface to system call to get a socket pair.
- */
-int
-getsocketpair(int domain, int type, int protocol, int sv[])
-{
-#if	SOCKPAIR_TYPE == SOCKPAIR_SOCKETPAIR
-	return(socketpair(domain, type, protocol, sv));
-#endif	/* SOCKPAIR_SOCKETPAIR */
-#if	SOCKPAIR_TYPE == SOCKPAIR_SPIPE
-	return(spipe(sv));
-#endif	/* SOCKPAIR_SPIPE */
-#if	!defined(SOCKPAIR_TYPE)
-	No SOCKPAIR_TYPE is defined!
-#endif	/* SOCKPAIR_TYPE */
 }
