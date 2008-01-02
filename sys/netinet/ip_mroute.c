@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.48 2007/05/22 09:51:13 michele Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.49 2007/12/14 18:33:41 deraadt Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -497,7 +497,7 @@ mrt_ioctl(struct socket *so, u_long cmd, caddr_t data)
 			error = get_sg_cnt((struct sioc_sg_req *)data);
 			break;
 		default:
-			error = EINVAL;
+			error = ENOTTY;
 			break;
 		}
 
