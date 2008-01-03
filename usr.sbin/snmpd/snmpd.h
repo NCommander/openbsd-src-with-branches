@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.8 2007/12/29 09:24:43 reyk Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.9 2008/01/02 20:54:59 maja Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
@@ -39,6 +39,7 @@
 
 #define SNMPD_MAXSTRLEN		484
 #define SNMPD_MAXCOMMUNITYLEN	SNMPD_MAXSTRLEN
+#define SNMPD_MAXVARBIND	0x7fffffff
 #define SNMPD_MAXVARBINDLEN	1210
 
 #define SMALL_READ_BUF_SIZE	1024
