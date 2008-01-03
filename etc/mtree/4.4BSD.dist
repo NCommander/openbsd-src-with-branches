@@ -2565,6 +2565,11 @@ slave		uname=root gname=named mode=0775
 # ./var/named/slave
 ..
 
+# ./var/named/standard
+standard
+# ./var/named/standard
+..
+
 # ./var/named/tmp
 tmp		uname=root gname=named mode=0775
 # ./var/named/tmp
