@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbus.c,v 1.29 2007/10/08 17:48:06 krw Exp $	*/
+/*	$OpenBSD: sbus.c,v 1.30 2007/12/07 00:34:20 deraadt Exp $	*/
 /*	$NetBSD: sbus.c,v 1.46 2001/10/07 20:30:41 eeh Exp $ */
 
 /*-
@@ -172,8 +172,6 @@ struct cfattach sbus_xbox_ca = {
 struct cfdriver sbus_cd = {
 	NULL, "sbus", DV_DULL
 };
-
-extern struct cfdriver sbus_cd;
 
 /*
  * DVMA routines
