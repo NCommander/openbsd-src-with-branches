@@ -92,6 +92,14 @@ emalloc(size_t len)
 	return(p);
 }
 
+const char *
+rname(const char *path)
+{
+	const char *ind;
+
+	return((ind = strrchr(path, '/')) ? ind + 1 : path);
+}
+
 void
 badfmt(void)
 {
