@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.115 2007/06/06 17:15:11 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.116 2007/11/02 19:18:54 martin Exp $	*/
 /*	$NetBSD: machdep.c,v 1.121 1999/03/26 23:41:29 mycroft Exp $	*/
 
 /*
@@ -728,9 +728,10 @@ dumpconf(void)
 		return;
 
 	/*
-	 * XXX include the final RAM page which is not included in physmem.
+	 * Since lowram starts two pages after the beginning of memory,
+	 * we're not dumping exactly all the memory.
 	 */
-	dumpsize = physmem;
+	dumpsize = physmem - 2;
 
 	/* hp300 only uses a single segment. */
 	cpu_kcore_hdr.ram_segs[0].start = lowram;
