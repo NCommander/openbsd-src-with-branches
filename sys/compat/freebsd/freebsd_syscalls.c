@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: freebsd_syscalls.c,v 1.34 2007/11/28 13:48:31 deraadt Exp $	*/
 
 /*
  * System call names.
@@ -92,7 +92,7 @@ char *freebsd_syscallnames[] = {
 	"sbrk",			/* 69 = sbrk */
 	"sstk",			/* 70 = sstk */
 	"ommap",			/* 71 = ommap */
-	"vadvise",			/* 72 = vadvise */
+	"#72 (obsolete vadvise)",		/* 72 = obsolete vadvise */
 	"munmap",			/* 73 = munmap */
 	"mprotect",			/* 74 = mprotect */
 	"madvise",			/* 75 = madvise */

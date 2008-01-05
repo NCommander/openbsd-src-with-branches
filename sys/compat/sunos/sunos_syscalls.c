@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sunos_syscalls.c,v 1.19 2007/11/27 18:05:59 art Exp $	*/
 
 /*
  * System call names.
@@ -88,7 +88,7 @@ char *sunos_syscallnames[] = {
 	"sbrk",			/* 69 = sbrk */
 	"sstk",			/* 70 = sstk */
 	"mmap",			/* 71 = mmap */
-	"vadvise",			/* 72 = vadvise */
+	"#72 (obsolete vadvise)",		/* 72 = obsolete vadvise */
 	"munmap",			/* 73 = munmap */
 	"mprotect",			/* 74 = mprotect */
 	"madvise",			/* 75 = madvise */

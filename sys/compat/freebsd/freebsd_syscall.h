@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: freebsd_syscall.h,v 1.34 2007/11/28 13:48:31 deraadt Exp $	*/
 
 /*
  * System call numbers.
@@ -217,9 +217,7 @@
 /* syscall: "ommap" ret: "int" args: "caddr_t" "size_t" "int" "int" "int" "long" */
 #define	FREEBSD_SYS_ommap	71
 
-/* syscall: "vadvise" ret: "int" args: "int" */
-#define	FREEBSD_SYS_vadvise	72
-
+				/* 72 is obsolete vadvise */
 /* syscall: "munmap" ret: "int" args: "caddr_t" "size_t" */
 #define	FREEBSD_SYS_munmap	73
 

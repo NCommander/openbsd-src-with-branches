@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sunos_syscallargs.h,v 1.20 2007/11/27 18:05:59 art Exp $	*/
 
 /*
  * System call argument lists.
@@ -283,7 +283,6 @@ int	sys_vfork(struct proc *, void *, register_t *);
 int	sys_sbrk(struct proc *, void *, register_t *);
 int	sys_sstk(struct proc *, void *, register_t *);
 int	sunos_sys_mmap(struct proc *, void *, register_t *);
-int	sys_ovadvise(struct proc *, void *, register_t *);
 int	sys_munmap(struct proc *, void *, register_t *);
 int	sys_mprotect(struct proc *, void *, register_t *);
 int	sys_madvise(struct proc *, void *, register_t *);
