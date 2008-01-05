@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.h,v 1.34 2006/10/29 00:53:37 thib Exp $	*/
+/*	$OpenBSD: inode.h,v 1.35 2007/06/02 00:45:50 pedro Exp $	*/
 /*	$NetBSD: inode.h,v 1.8 1995/06/15 23:22:50 cgd Exp $	*/
 
 /*
@@ -290,7 +290,7 @@ struct inode_vtbl {
  * ufs_getlbns and used by truncate and bmap code.
  */
 struct indir {
-	daddr_t in_lbn;			/* Logical block number. */
+	daddr64_t in_lbn;		/* Logical block number. */
 	int	in_off;			/* Offset in buffer. */
 	int	in_exists;		/* Flag if the block exists. */
 };
