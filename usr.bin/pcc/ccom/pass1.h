@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass1.h,v 1.5 2007/11/22 15:06:43 stefan Exp $	*/
+/*	$OpenBSD: pass1.h,v 1.6 2007/12/22 22:56:31 stefan Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -35,6 +35,7 @@
 
 #include <sys/types.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 #include "manifest.h"
 
