@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.48 2007/12/05 19:43:15 kettenis Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.49 2007/12/23 21:43:30 kettenis Exp $	*/
 /*	$NetBSD: pmap.c,v 1.107 2001/08/31 16:47:41 eeh Exp $	*/
 #undef	NO_VCACHE /* Don't forget the locked TLB in dostart */
 /*
@@ -444,7 +444,7 @@ pmap_enter_kpage(vaddr_t va, int64_t data)
 }
 
 /*
- * See checp bootargs to see if we need to enable bootdebug.
+ * Check bootargs to see if we need to enable bootdebug.
  */
 #ifdef DEBUG
 void pmap_bootdebug(void);
