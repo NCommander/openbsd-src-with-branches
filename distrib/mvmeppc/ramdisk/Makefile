@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2007/04/13 17:34:40 millert Exp $
+#	$OpenBSD: Makefile,v 1.9 2007/06/17 00:28:21 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -53,7 +53,7 @@ ${IMAGE}: rd_setup do_files rd_teardown
 bsd:
 	cd ${TOP}/../../sys/arch/mvmeppc/conf && config RAMDISK
 	cd ${TOP}/../../sys/arch/mvmeppc/compile/RAMDISK && \
-	    make clean && make
+	    ${MAKE} clean && ${MAKE}
 	cp ${TOP}/../../sys/arch/mvmeppc/compile/RAMDISK/bsd bsd
 
 rd_setup:
@@ -85,7 +85,7 @@ ${CBIN}.mk ${CBIN}.cache ${CBIN}.c: ${CBIN}.conf
 	crunchgen -E -D ${.CURDIR}/../../.. -L ${DESTDIR}/usr/lib ${.ALLSRC}
 
 ${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
-	make -f ${CBIN}.mk all
+	${MAKE} -f ${CBIN}.mk all
 
 do_files:
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
