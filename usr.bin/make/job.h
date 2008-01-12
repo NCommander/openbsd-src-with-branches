@@ -46,8 +46,6 @@
  *	Definitions pertaining to the running of jobs in parallel mode.
  */
 
-extern void Job_CatchChildren(void);
-extern void Job_CatchOutput(void);
 extern void Job_Make(GNode *);
 extern void Job_Init(int);
 extern bool Job_Full(void);
@@ -61,5 +59,6 @@ extern void Job_End(void);
 extern void Job_Wait(void);
 extern void Job_AbortAll(void);
 extern void print_errors(void);
+extern void handle_running_jobs(void);
 
 #endif /* _JOB_H_ */

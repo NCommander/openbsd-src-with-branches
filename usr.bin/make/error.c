@@ -140,9 +140,7 @@ Finish(int errors) /* number of errors encountered in Make_Make */
 {
 	Job_Wait();
 	if (errors != 0) {
-		Error("make pid #%ld: %d error%s in directory %s:", (long)getpid(), 
-		    errors, errors == 1 ? "" : "s", 
-		    Var_Value(".CURDIR"));
+		Error("Stop in %s:", Var_Value(".CURDIR"));
 	}
 	print_errors();
 	if (DEBUG(GRAPH2))

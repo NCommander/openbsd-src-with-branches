@@ -553,8 +553,7 @@ Make_Run(Lst targs)		/* the initial list of targets */
 	 * the keepgoing flag was given.
 	 */
 	while (!Job_Empty()) {
-		Job_CatchOutput();
-		Job_CatchChildren();
+		handle_running_jobs();
 		(void)MakeStartJobs();
 	}
 
