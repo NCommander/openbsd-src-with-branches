@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkext.c,v 1.5 2007/10/04 05:49:16 otto Exp $	*/
+/*	$OpenBSD: mkext.c,v 1.6 2007/10/27 13:55:00 ragge Exp $	*/
 /*
  * Generate defines for the needed hardops.
  */
@@ -305,7 +305,7 @@ mktables()
 				int opmtemp;
 				if ((opmtemp=mamask[op->op - OPSIMP])&SPFLG) {
 					if (i==NAME || i==ICON || i==TEMP ||
-					    i==OREG || i == REG) {
+					    i==OREG || i == REG || i == FCON) {
 						P((fc, "%td, ", op - table));
 						curalen++;
 					}
