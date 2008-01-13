@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.236 2008/01/10 10:15:48 tobias Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.237 2008/01/10 10:48:50 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -2658,7 +2658,7 @@ rcs_translate_tag(const char *revstr, RCSFILE *rfp)
 /*
  * rcs_rev_getlines()
  *
- * Get the entire contents of revision <rev> from the RCSFILE <rfp> and
+ * Get the entire contents of revision <frev> from the RCSFILE <rfp> and
  * return it as a pointer to a struct cvs_lines.
  */
 struct cvs_lines *
