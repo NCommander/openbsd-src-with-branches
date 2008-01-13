@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.206 2007/12/27 23:17:55 miod Exp $	*/
+/* $OpenBSD: machdep.c,v 1.207 2007/12/31 09:23:54 martin Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -166,7 +166,6 @@ int boothowto;					/* set in locore.S */
 int bootdev;					/* set in locore.S */
 int cputyp;					/* set in locore.S */
 int brdtyp;					/* set in locore.S */
-int cpumod;					/* set in mvme_bootstrap() */
 int cpuspeed = 25;				/* safe guess */
 
 vaddr_t first_addr;
