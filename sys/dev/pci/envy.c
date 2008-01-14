@@ -1,4 +1,4 @@
-/*	$OpenBSD: envy.c,v 1.3 2007/12/08 09:59:33 ratchov Exp $	*/
+/*	$OpenBSD: envy.c,v 1.4 2007/12/08 10:01:28 ratchov Exp $	*/
 /*
  * Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
  *
@@ -839,6 +839,9 @@ envy_query_devinfo(void *self, struct mixer_devinfo *dev)
 		AudioCinputs, AudioCoutputs, "source", AudioCmonitor 
 	};
 	/* XXX: define AudioCsource */
+
+	if (dev->index < 0)
+		return ENXIO;
 
 	dev->prev = dev->next = AUDIO_MIXER_LAST;
 	if (dev->index < ENVY_MIX_OUTSRC) {
