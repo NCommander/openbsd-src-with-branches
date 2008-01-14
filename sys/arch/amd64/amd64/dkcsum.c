@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkcsum.c,v 1.9 2006/01/22 00:39:59 miod Exp $	*/
+/*	$OpenBSD: dkcsum.c,v 1.10 2007/12/10 17:36:56 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
@@ -175,7 +175,7 @@ dkcsumattach(void)
 		 * out in the bootblocks.
 		 */
 
-		/* B_TYPE dependent hd unit counting bootblocks */ 
+		/* B_TYPE dependent hd unit counting bootblocks */
 		if ((B_TYPE(bootdev) == B_TYPE(hit->bsd_dev)) &&
 		    (B_UNIT(bootdev) == B_UNIT(hit->bsd_dev))) {
 			int type, ctrl, adap, part, unit;
