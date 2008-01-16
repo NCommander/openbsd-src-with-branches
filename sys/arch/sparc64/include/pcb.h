@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.6 2007/05/02 18:46:06 kettenis Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.7 2007/05/26 00:36:03 krw Exp $	*/
 /*	$NetBSD: pcb.h,v 1.7 2000/12/29 17:12:05 eeh Exp $ */
 
 /*
@@ -140,6 +140,7 @@ struct pcb {
 
 	/* the following MUST be aligned on a 64-bit boundary */
 	struct	rwindow64 pcb_rw[PCB_MAXWIN];	/* saved windows */
+	u_int64_t	pcb_rwsp[PCB_MAXWIN];
 };
 
 /*
