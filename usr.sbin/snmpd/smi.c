@@ -1,7 +1,7 @@
-/*	$OpenBSD: smi.c,v 1.3 2008/01/02 20:54:59 maja Exp $	*/
+/*	$OpenBSD: smi.c,v 1.4 2008/01/04 12:57:40 reyk Exp $	*/
 
 /*
- * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
