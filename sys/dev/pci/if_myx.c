@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.4 2007/05/31 22:09:09 reyk Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.5 2007/06/01 18:07:08 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -288,7 +288,7 @@ myx_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_capabilities |= IFCAP_CSUM_IPv4 | IFCAP_CSUM_TCPv4 |
 		    IFCAP_CSUM_UDPv4;
 #endif
-	ifp->if_baudrate = ULONG_MAX;	/* XXX fix if_baudrate */
+	ifp->if_baudrate = IF_Gbps(10);
 
 	ifmedia_init(&sc->sc_media, 0,
 	    myx_media_change, myx_media_status);
