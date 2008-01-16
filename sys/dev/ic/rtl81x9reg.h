@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9reg.h,v 1.40 2007/07/16 19:15:01 millert Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.41 2007/08/07 12:19:19 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -724,6 +724,7 @@ struct rl_softc {
 	struct arpcom		sc_arpcom;	/* interface info */
 	struct mii_data		sc_mii;		/* MII information */
 	u_int8_t		rl_type;
+	u_int32_t		sc_hwrev;
 	int			rl_eecmd_read;
 	int			rl_eewidth;
 	void			*sc_sdhook;	/* shutdownhook */
