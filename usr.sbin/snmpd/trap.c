@@ -184,7 +184,7 @@ trap_imsg(struct imsgbuf *ibuf, pid_t pid)
 	if (varbind != NULL)
 		len = ber_calc_len(varbind);
 	log_debug("trap_imsg: from pid %u len %d elements %d",
-	    pid, x, len);
+	    pid, len, x);
 	trap_send(&o, varbind);
 
 	ret = 0;
