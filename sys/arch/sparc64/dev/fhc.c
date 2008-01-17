@@ -1,4 +1,4 @@
-/*	$OpenBSD: fhc.c,v 1.13 2007/05/01 19:44:56 kettenis Exp $	*/
+/*	$OpenBSD: fhc.c,v 1.14 2007/09/17 01:33:33 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net)
@@ -136,7 +136,7 @@ fhc_print(void *args, const char *busname)
 	char *class;
 
 	if (busname != NULL) {
-		printf("%s at %s", fa->fa_name, busname);
+		printf("\"%s\" at %s", fa->fa_name, busname);
 		class = getpropstring(fa->fa_node, "device_type");
 		if (*class != '\0')
 			printf(" class %s", class);
