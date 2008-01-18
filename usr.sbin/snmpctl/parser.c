@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.5 2008/01/18 02:15:41 reyk Exp $	*/
+/*	$OpenBSD: parser.c,v 1.6 2008/01/18 13:18:20 reyk Exp $	*/
 
 /*
  * Copyright (c) 2008 Reyk Floeter <reyk@vantronix.net>
@@ -366,7 +366,7 @@ show_valid_args(const struct token table[])
 			fprintf(stderr, "  <oid-string>\n");
 			break;
 		case IPADDRVAL:
-			fprintf(stderr, "  <int32>\n");
+			fprintf(stderr, "  <ip-address>\n");
 			break;
 		case INT32VAL:
 			fprintf(stderr, "  <int32>\n");
