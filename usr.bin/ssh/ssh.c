@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.307 2007/11/03 02:00:32 dtucker Exp $ */
+/* $OpenBSD: ssh.c,v 1.308 2007/11/03 02:03:49 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1372,6 +1372,8 @@ control_client(const char *path)
 		flags |= SSHMUX_FLAG_X11_FWD;
 	if (options.forward_agent)
 		flags |= SSHMUX_FLAG_AGENT_FWD;
+
+	signal(SIGPIPE, SIG_IGN);
 
 	buffer_init(&m);
 
