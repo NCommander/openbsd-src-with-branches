@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.89 2007/11/27 17:21:52 tedu Exp $ */
+/* $OpenBSD: softraid.c,v 1.90 2008/01/05 07:33:37 brad Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -890,7 +890,6 @@ sr_ioctl_createraid(struct sr_softc *sc, struct bioc_createraid *bc, int user)
 		break;
 #endif
 	default:
-		printf("default %d\n", bc->bc_level);
 		goto unwind;
 	}
 
