@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.30 2007/09/11 19:53:58 damien Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.31 2007/10/11 18:33:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -104,6 +104,7 @@ static const struct uath_type {
 #define UATH_FLAG_PRE_FIRMWARE	(1 << 0)
 #define UATH_FLAG_ABG		(1 << 1)
 } uath_devs[] = {
+	UATH_DEV_UG(ACCTON,		SMCWUSBTG2),
 	UATH_DEV_UG(ATHEROS,		AR5523),
 	UATH_DEV_UG(ATHEROS2,		AR5523_1),
 	UATH_DEV_UG(ATHEROS2,		AR5523_2),
