@@ -1,6 +1,6 @@
-/*	$OpenBSD: isp_inline.h,v 1.12 2003/03/03 18:33:49 mjacob Exp $ */
+/*	$OpenBSD: isp_inline.h,v 1.13 2004/08/02 19:55:45 art Exp $ */
 /*
- * Qlogic Host Adapter Inline Functions
+ * QLogic Host Adapter Inline Functions
  *
  * Copyright (c) 1999, 2000, 2001 by Matthew Jacob
  * Feral Software
