@@ -1155,8 +1155,6 @@ server_init_dispatch_20(void)
 	dispatch_set(SSH2_MSG_CHANNEL_FAILURE, &server_input_keep_alive);
 	dispatch_set(SSH2_MSG_REQUEST_SUCCESS, &server_input_keep_alive);
 	dispatch_set(SSH2_MSG_REQUEST_FAILURE, &server_input_keep_alive);
-	dispatch_set(SSH2_MSG_IGNORE, &server_input_keep_alive);
-	dispatch_set(SSH2_MSG_UNIMPLEMENTED, &server_input_keep_alive);
 	/* rekeying */
 	dispatch_set(SSH2_MSG_KEXINIT, &kex_input_kexinit);
 }
