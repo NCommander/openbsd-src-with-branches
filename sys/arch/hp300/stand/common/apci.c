@@ -1,4 +1,4 @@
-/*	$OpenBSD: apci.c,v 1.7 2006/01/01 11:59:39 miod Exp $	*/
+/*	$OpenBSD: apci.c,v 1.8 2006/08/17 06:31:10 miod Exp $	*/
 /*	$NetBSD: apci.c,v 1.2 1997/10/04 17:20:15 thorpej Exp $	*/
 
 /*-
@@ -106,9 +106,9 @@ apciprobe(struct consdev *cp)
 	frodoregs = (volatile u_int8_t *)IIOV(FRODO_BASE);
 	if (badaddr((caddr_t)frodoregs) == 0 &&
 	    (frodoregs[FRODO_IISR] & FRODO_IISR_SERVICE) == 0)
-		cp->cn_pri = CN_REMOTE;
+		cp->cn_pri = CN_HIGHPRI;
 	else
-		cp->cn_pri = CN_NORMAL;
+		cp->cn_pri = CN_LOWPRI;
 }
 
 void

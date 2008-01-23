@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.53 2007/05/26 20:26:51 pedro Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.54 2007/11/04 13:43:39 martin Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -104,7 +104,7 @@ static struct consdev bootcons = {
 	bootcnpollc,
 	NULL,
 	makedev(14, 0), 
-	CN_NORMAL,
+	CN_LOWPRI,
 };
 
 /* 

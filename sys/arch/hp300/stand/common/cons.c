@@ -1,4 +1,4 @@
-/*	$OpenBSD: cons.c,v 1.3 2005/12/31 17:59:47 miod Exp $	*/
+/*	$OpenBSD: cons.c,v 1.4 2006/08/17 06:31:10 miod Exp $	*/
 /*	$NetBSD: cons.c,v 1.2 1997/05/12 07:44:53 thorpej Exp $ */
 
 /*
@@ -72,7 +72,7 @@ cninit()
 	noconsole = 1;
 	for (cp = constab; cp->cn_probe; cp++) {
 		(*cp->cn_probe)(cp);
-		if (cp->cn_pri > CN_DEAD &&
+		if (cp->cn_pri != CN_DEAD &&
 		    (cn_tab == NULL || cp->cn_pri > cn_tab->cn_pri))
 			cn_tab = cp;
 	}

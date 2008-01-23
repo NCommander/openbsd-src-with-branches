@@ -1,4 +1,4 @@
-/* $OpenBSD: siotty.c,v 1.4 2006/08/12 21:08:49 miod Exp $ */
+/* $OpenBSD: siotty.c,v 1.5 2007/02/14 01:12:16 jsg Exp $ */
 /* $NetBSD: siotty.c,v 1.9 2002/03/17 19:40:43 atatat Exp $ */
 
 /*-
@@ -602,7 +602,7 @@ struct consdev syscons = {
 	nullcnpollc,
 	NULL,
 	NODEV,
-	CN_REMOTE,
+	CN_HIGHPRI,
 };
 
 /* EXPORT */ void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.5 2006/01/01 11:59:39 miod Exp $	*/
+/*	$OpenBSD: dca.c,v 1.6 2006/08/17 06:31:10 miod Exp $	*/
 /*	$NetBSD: dca.c,v 1.10 1996/10/06 01:42:48 mycroft Exp $	*/
 
 /*
@@ -62,11 +62,11 @@ dcaprobe(struct consdev *cp)
 	switch (dca->dca_id) {
 	case DCAID0:
 	case DCAID1:
-		cp->cn_pri = CN_NORMAL;
+		cp->cn_pri = CN_LOWPRI;
 		break;
 	case DCAID0 | DCACON:
 	case DCAID1 | DCACON:
-		cp->cn_pri = CN_REMOTE;
+		cp->cn_pri = CN_HIGHPRI;
 		break;
 	default:
 		break;

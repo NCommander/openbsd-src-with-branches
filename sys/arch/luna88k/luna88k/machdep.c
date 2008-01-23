@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.54 2007/12/31 09:23:53 martin Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.52 2007/11/17 05:37:53 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -250,7 +250,7 @@ struct consdev romttycons = {
 	nullcnpollc,
 	NULL,
 	makedev(14, 0),
-	CN_NORMAL,
+	CN_LOWPRI,
 };
 
 /*
@@ -1083,7 +1083,7 @@ romttycnprobe(cp)
 	struct consdev *cp;
 {
 	cp->cn_dev = makedev(14, 0);
-	cp->cn_pri = CN_NORMAL;
+	cp->cn_pri = CN_LOWPRI;
 }
 
 void

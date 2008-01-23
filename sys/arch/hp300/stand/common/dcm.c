@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcm.c,v 1.4 2006/01/01 11:59:39 miod Exp $	*/
+/*	$OpenBSD: dcm.c,v 1.5 2006/08/17 06:31:10 miod Exp $	*/
 /*	$NetBSD: dcm.c,v 1.2 1997/04/14 05:58:32 scottr Exp $	*/
 
 /*
@@ -67,10 +67,10 @@ dcmprobe(struct consdev *cp)
 	dcm = dcmcnaddr;
 	switch (dcm->dcm_rsid) {
 	case DCMID:
-		cp->cn_pri = CN_NORMAL;
+		cp->cn_pri = CN_LOWPRI;
 		break;
 	case DCMID|DCMCON:
-		cp->cn_pri = CN_REMOTE;
+		cp->cn_pri = CN_HIGHPRI;
 		break;
 	default:
 		break;

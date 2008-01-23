@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.43 2006/01/09 20:57:00 miod Exp $	*/
+/*	$OpenBSD: zs.c,v 1.44 2007/10/22 14:46:46 jsing Exp $	*/
 /*	$NetBSD: zs.c,v 1.50 1997/10/18 00:00:40 gwr Exp $	*/
 
 /*-
@@ -829,7 +829,7 @@ zscnprobe(cn)
 	struct consdev *cn;
 {
 	cn->cn_dev = makedev(zs_major, zstty_unit);
-	cn->cn_pri = CN_REMOTE;
+	cn->cn_pri = CN_HIGHPRI;
 }
 
 void
@@ -908,7 +908,7 @@ promcnprobe(cn)
 	struct consdev *cn;
 {
 	cn->cn_dev = makedev(0, 0);
-	cn->cn_pri = CN_INTERNAL;
+	cn->cn_pri = CN_MIDPRI;
 }
 
 void

@@ -913,7 +913,7 @@ dartcnprobe(struct consdev *cp)
 		return;
 
 	cp->cn_dev = makedev(maj, CONS_PORT);
-	cp->cn_pri = CN_NORMAL;
+	cp->cn_pri = CN_LOWPRI;
 }
 
 void

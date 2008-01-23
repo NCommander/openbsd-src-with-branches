@@ -638,7 +638,7 @@ bioscnprobe(struct consdev *cn)
 	if (0 && bios_call(BOOTC_CHECK, NULL))
 		return;
 
-	cn->cn_pri = CN_NORMAL;
+	cn->cn_pri = CN_LOWPRI;
 	cn->cn_dev = makedev(48, 0);
 #endif
 }

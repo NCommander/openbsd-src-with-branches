@@ -250,7 +250,7 @@ void	(*wsdisplay_cons_kbd_pollc)(dev_t, int);
 
 struct consdev wsdisplay_cons = {
 	NULL, NULL, wsdisplay_getc_dummy, wsdisplay_cnputc,
-	    wsdisplay_pollc, NULL, NODEV, CN_NORMAL
+	    wsdisplay_pollc, NULL, NODEV, CN_LOWPRI
 };
 
 #ifndef WSDISPLAY_DEFAULTSCREENS

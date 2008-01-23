@@ -109,7 +109,7 @@ wscnprobe(struct consdev *cp)
 	return;
 
 found:
-	cp->cn_pri = CN_INTERNAL;
+	cp->cn_pri = CN_MIDPRI;
 	cp->cn_dev = makedev(major, 0);
 }
 

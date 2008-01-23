@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.42 2006/01/01 11:59:39 miod Exp $ */
+/*	$OpenBSD: cl.c,v 1.43 2006/06/11 20:46:50 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -939,7 +939,7 @@ clcnprobe(cp)
 		if (cdevsw[maj].d_open == clopen)
 			break;
 	cp->cn_dev = makedev (maj, 0);
-	cp->cn_pri = CN_NORMAL;
+	cp->cn_pri = CN_LOWPRI;
 }
 
 void

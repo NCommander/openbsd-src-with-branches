@@ -313,7 +313,7 @@ dzcnprobe(cndev)
 	default:
 		return;
 	}
-	cndev->cn_pri = diagcons != 0 ? CN_REMOTE : CN_NORMAL;
+	cndev->cn_pri = diagcons != 0 ? CN_HIGHPRI : CN_LOWPRI;
 	cndev->cn_dev = makedev(major, dz_can_have_kbd() ? 3 : diagcons);
 	dz_regs = iospace;
 	dz = (void *)dz_regs;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.2 2007/12/12 20:37:31 miod Exp $	*/
+/*	$OpenBSD: dart.c,v 1.1.1.1 2006/05/09 18:13:32 miod Exp $	*/
 
 /*
  * Mach Operating System
@@ -892,7 +892,7 @@ dartcnprobe(struct consdev *cp)
 		return;
 
 	cp->cn_dev = makedev(maj, CONS_PORT);
-	cp->cn_pri = CN_NORMAL;
+	cp->cn_pri = CN_LOWPRI;
 }
 
 void

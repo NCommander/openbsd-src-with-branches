@@ -1,4 +1,4 @@
-/*	$OpenBSD: itecons.c,v 1.8 2004/04/07 18:24:20 mickey Exp $	*/
+/*	$OpenBSD: itecons.c,v 1.9 2005/04/07 00:21:51 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -95,7 +95,7 @@ ite_probe(cn)
 		/* morse code with the LED's?!! */
 		cons_pzdev->pz_iodc_io = kbd_pzdev->pz_iodc_io = NULL;
 	} else {
-		cn->cn_pri = CN_INTERNAL;
+		cn->cn_pri = CN_MIDPRI;
 		cn->cn_dev = makedev(0, 0);
 	}
 }
