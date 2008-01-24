@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgtvar.h,v 1.11 2008/01/21 19:37:36 mglocker Exp $ */
+/*	$OpenBSD: if_upgtvar.h,v 1.12 2008/01/24 21:44:32 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -300,9 +300,9 @@ struct upgt_lmac_channel {
 	struct upgt_lmac_freq6		freq6;
 	uint8_t				settings;
 	uint8_t				unknown3;
-	uint8_t				freq3_1[4];	/* XXX wrong? */
+	uint8_t				freq3_1[4];
 	struct upgt_lmac_freq4		freq4[8];
-	uint8_t				freq3_2[4];	/* XXX wrong? */
+	uint8_t				freq3_2[4];
 	uint32_t			pad2;
 } __packed;
 
