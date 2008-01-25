@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_optimize.c,v 1.13 2006/10/31 14:17:45 mcbride Exp $ */
+/*	$OpenBSD: pfctl_optimize.c,v 1.14 2007/11/27 16:22:13 martynas Exp $ */
 
 /*
  * Copyright (c) 2004 Mike Frantzen <frantzen@openbsd.org>
@@ -1465,7 +1465,7 @@ superblock_inclusive(struct superblock *block, struct pf_opt_rule *por)
 			}
 
 			if (closest >= 0)
-				DEBUG("superblock break @ %d on %s+%xh",
+				DEBUG("superblock break @ %d on %s+%lxh",
 				    por->por_rule.nr,
 				    pf_rule_desc[closest].prf_name,
 				    i - pf_rule_desc[closest].prf_offset -
