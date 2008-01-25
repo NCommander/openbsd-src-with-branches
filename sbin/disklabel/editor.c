@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.163 2008/01/22 01:31:27 krw Exp $	*/
+/*	$OpenBSD: editor.c,v 1.164 2008/01/22 01:47:33 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.163 2008/01/22 01:31:27 krw Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.164 2008/01/22 01:47:33 krw Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -1151,9 +1151,6 @@ sort_partitions(struct disklabel *lp)
 		    DL_GETPSIZE(&lp->d_partitions[i]) != 0)
 			spp[npartitions++] = &lp->d_partitions[i];
 	}
-
-	if (npartitions == 0)
-		return(NULL);
 
 	/*
 	 * Sort the partitions based on starting offset.
