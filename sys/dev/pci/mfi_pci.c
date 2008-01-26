@@ -169,7 +169,7 @@ mfi_pci_attach(struct device *parent, struct device *self, void *aux)
 	printf(": %s\n", intrstr);
 
 	if (mfi_attach(sc)) {
-		printf("%s: can't attach", DEVNAME(sc));
+		printf("%s: can't attach\n", DEVNAME(sc));
 		pci_intr_disestablish(pa->pa_pc, sc->sc_ih);
 		sc->sc_ih = NULL;
 		bus_space_unmap(sc->sc_iot, sc->sc_ioh, size);
