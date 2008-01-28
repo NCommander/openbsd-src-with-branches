@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.60 2008/01/10 11:20:29 tobias Exp $	*/
+/*	$OpenBSD: tag.c,v 1.61 2008/01/10 11:25:27 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -88,6 +88,7 @@ cvs_tag(int argc, char **argv)
 			flags &= ~CR_RECURSE_DIRS;
 			break;
 		case 'R':
+			flags |= CR_RECURSE_DIRS;
 			break;
 		case 'r':
 			tag_oldname = optarg;

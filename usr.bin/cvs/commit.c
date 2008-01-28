@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.118 2008/01/13 11:11:08 tobias Exp $	*/
+/*	$OpenBSD: commit.c,v 1.119 2008/01/13 11:15:19 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -75,6 +75,7 @@ cvs_commit(int argc, char **argv)
 			logmsg = xstrdup(optarg);
 			break;
 		case 'R':
+			flags |= CR_RECURSE_DIRS;
 			break;
 		case 'r':
 			break;

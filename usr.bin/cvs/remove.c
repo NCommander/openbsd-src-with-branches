@@ -1,4 +1,4 @@
-/*	$OpenBSD: remove.c,v 1.66 2007/09/22 16:01:22 joris Exp $	*/
+/*	$OpenBSD: remove.c,v 1.67 2008/01/10 10:08:22 tobias Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -59,6 +59,7 @@ cvs_remove(int argc, char **argv)
 			flags &= ~CR_RECURSE_DIRS;
 			break;
 		case 'R':
+			flags |= CR_RECURSE_DIRS;
 			break;
 		default:
 			fatal("%s", cvs_cmd_remove.cmd_synopsis);
