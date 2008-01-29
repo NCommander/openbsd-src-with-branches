@@ -71,7 +71,9 @@ extern volatile sig_atomic_t got_SIGINT, got_SIGHUP, got_SIGQUIT,
     got_SIGTERM, got_SIGTSTP, got_SIGTTOU, got_SIGTTIN, got_SIGWINCH;
 
 extern void SigHandler(int);
-extern int run_gnode(GNode *, int);
+extern int run_gnode(GNode *);
+extern int run_prepared_gnode(GNode *, int);
+extern void expand_commands(GNode *);
 
 extern void setup_engine(void);
 

@@ -196,7 +196,8 @@ Targ_NewGNi(const char *name, const char *ename)
 	gn->fname = NULL;
 	gn->impliedsrc = NULL;
 	Lst_Init(&gn->commands);
-	gn->suffix =	NULL;
+	Lst_Init(&gn->expanded);
+	gn->suffix = NULL;
 
 #ifdef STATS_GN_CREATION
 	STAT_GN_COUNT++;
