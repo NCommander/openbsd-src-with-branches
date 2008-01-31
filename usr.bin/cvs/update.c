@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.114 2008/01/21 16:36:46 tobias Exp $	*/
+/*	$OpenBSD: update.c,v 1.115 2008/01/28 20:31:07 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -35,7 +35,7 @@ char *cvs_specified_tag = NULL;
 static void update_clear_conflict(struct cvs_file *);
 
 struct cvs_cmd cvs_cmd_update = {
-	CVS_OP_UPDATE, 0, "update",
+	CVS_OP_UPDATE, CVS_USE_WDIR, "update",
 	{ "up", "upd" },
 	"Bring work tree in sync with repository",
 	"[-ACdflPpR] [-D date | -r rev] [-I ign] [-j rev] [-k mode] "

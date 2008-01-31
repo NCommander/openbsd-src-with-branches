@@ -1,4 +1,4 @@
-/*	$OpenBSD: annotate.c,v 1.43 2007/10/09 12:59:53 tobias Exp $	*/
+/*	$OpenBSD: annotate.c,v 1.44 2008/01/28 20:31:07 tobias Exp $	*/
 /*
  * Copyright (c) 2007 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -34,7 +34,7 @@ extern char	*cvs_specified_tag;
 static int	 force_head = 0;
 
 struct cvs_cmd cvs_cmd_annotate = {
-	CVS_OP_ANNOTATE, 0, "annotate",
+	CVS_OP_ANNOTATE, CVS_USE_WDIR, "annotate",
 	{ "ann", "blame" },
 	"Show last revision where each line was modified",
 	"[-flR] [-D date | -r rev] [file ...]",
