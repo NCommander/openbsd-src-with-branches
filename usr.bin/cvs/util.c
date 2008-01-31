@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.126 2008/01/31 10:17:47 tobias Exp $	*/
+/*	$OpenBSD: util.c,v 1.127 2008/01/31 16:44:46 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -433,7 +433,7 @@ cvs_rmdir(const char *path)
 			}
 		}
 		switch (type) {
-		case CVS_DIR: 
+		case CVS_DIR:
 			if (cvs_rmdir(fpath) == -1)
 				goto done;
 			break;

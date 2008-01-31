@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.77 2008/01/29 12:01:52 tobias Exp $	*/
+/*	$OpenBSD: server.c,v 1.78 2008/01/31 10:15:05 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -658,7 +658,7 @@ cvs_server_log(char *data)
 	cvs_getlog(server_argc, server_argv);
 	cvs_server_send_response("ok");
 }
- 
+
 void
 cvs_server_rlog(char *data)
 {
