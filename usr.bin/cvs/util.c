@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.124 2008/01/10 10:09:27 tobias Exp $	*/
+/*	$OpenBSD: util.c,v 1.125 2008/01/21 16:36:46 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -627,7 +627,7 @@ cvs_mkpath(const char *path, char *tag)
 			if ((p = strchr(dp, '/')) != NULL)
 				*p = '\0';
 			ent = cvs_ent_open(rpath);
-			xsnprintf(entry, sizeof(entry), "D/%s/////", dp);
+			xsnprintf(entry, sizeof(entry), "D/%s////", dp);
 			cvs_ent_add(ent, entry);
 			cvs_ent_close(ent, ENT_SYNC);
 			if (p != NULL)
