@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.39 2007/02/22 02:42:50 ray Exp $
+#	$OpenBSD: Makefile,v 1.40 2007/03/15 13:05:23 bluhm Exp $
 
 # Regression tests by Niall O'Higgins <niallo@openbsd.org>.
 # ksh -> Makefile by Ray Lai <ray@cyth.net>.
@@ -66,6 +66,7 @@ LTESTS= ci-initial \
 	ci-filemodes \
 	rcs-iflag \
 	rlog-lflag \
+	rlog-rflag \
 	ci-nofile \
 	ci-revert \
 	ci-keywords \
