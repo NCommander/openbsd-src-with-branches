@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.140 2008/01/10 10:05:40 tobias Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.141 2008/01/28 21:32:00 tobias Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -270,8 +270,10 @@ main(int argc, char **argv)
 			    current_cvsroot->cr_dir);
 	}
 
-	if (cvs_cmdop != CVS_OP_INIT)
+	if (cvs_cmdop != CVS_OP_INIT) {
 		cvs_parse_configfile();
+		cvs_parse_modules();
+	}
 
 	umask(cvs_umask);
 
