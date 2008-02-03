@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.211 2008/01/31 10:15:05 tobias Exp $	*/
+/*	$OpenBSD: file.c,v 1.212 2008/01/31 21:56:34 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include <errno.h>
 #include <fcntl.h>
