@@ -64,6 +64,7 @@ LIBBASE=/usr/libdata/perl5
 PODS= \
     OpenBSD::Getopt \
     OpenBSD::IdCache \
+    OpenBSD::Intro \
     OpenBSD::Mtree \
     OpenBSD::PackageName \
     OpenBSD::PackingElement \
