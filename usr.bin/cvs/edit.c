@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.41 2008/01/28 20:31:07 tobias Exp $	*/
+/*	$OpenBSD: edit.c,v 1.42 2008/01/31 10:15:05 tobias Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -400,9 +400,8 @@ cvs_unedit_local(struct cvs_file *cf)
 		timebuf[strcspn(timebuf, "\n")] = '\0';
 
 		(void)xasprintf(&entry, "/%s/%s/%s/%s/%s",
-		    cf->file_name, rbuf, timebuf,
-		    (cf->file_ent->ce_tag) ? cf->file_ent->ce_tag : "",
-		    (cf->file_ent->ce_opts) ? cf->file_ent->ce_opts : "");
+		    cf->file_name, rbuf, timebuf, cf->file_ent->ce_opts ? : "",
+		    cf->file_ent->ce_tag ? : "");
 
 		cvs_ent_add(entlist, entry);
 
