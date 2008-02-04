@@ -1,4 +1,4 @@
-/*	$OpenBSD: annotate.c,v 1.50 2008/02/03 16:59:11 tobias Exp $	*/
+/*	$OpenBSD: annotate.c,v 1.51 2008/02/04 19:12:31 joris Exp $	*/
 /*
  * Copyright (c) 2007 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -63,7 +63,8 @@ cvs_annotate(int argc, char **argv)
 
 	flags = CR_RECURSE_DIRS;
 
-	while ((ch = getopt(argc, argv, cvs_cmd_annotate.cmd_opts)) != -1) {
+	while ((ch = getopt(argc, argv, cvs_cmdop == CVS_OP_ANNOTATE ?
+	    cvs_cmd_annotate.cmd_opts : cvs_cmd_rannotate.cmd_opts)) != -1) {
 		switch (ch) {
 		case 'D':
 			break;
