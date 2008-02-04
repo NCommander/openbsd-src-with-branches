@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.213 2008/02/03 15:08:04 tobias Exp $	*/
+/*	$OpenBSD: file.c,v 1.214 2008/02/03 22:50:28 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -576,7 +576,7 @@ walkrepo:
 		cr->leavedir(cf);
 
 	if (cvs_directory_tag != NULL && cmdp->cmd_flags & CVS_USE_WDIR) {
-		cvs_write_tagfile(cf->file_path, cvs_directory_tag, NULL, 0);
+		cvs_write_tagfile(cf->file_path, cvs_directory_tag, NULL);
 		xfree(cvs_directory_tag);
 		cvs_directory_tag = NULL;
 	}

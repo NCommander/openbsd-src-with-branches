@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.118 2008/02/03 15:20:10 tobias Exp $	*/
+/*	$OpenBSD: update.c,v 1.119 2008/02/04 15:07:33 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -193,7 +193,7 @@ cvs_update_enterdir(struct cvs_file *cf)
 	} else {
 		if (cvs_specified_tag != NULL)
 			cvs_write_tagfile(cf->file_path,
-				    cvs_specified_tag, NULL, 0);
+				    cvs_specified_tag, NULL);
 	}
 }
 
