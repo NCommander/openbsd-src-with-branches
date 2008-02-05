@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.93 2007/03/18 23:23:17 mpf Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.94 2007/06/01 00:52:38 henning Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -481,7 +481,6 @@ icmp6_input(mp, offp, proto)
 
 #if NCARP > 0
 	if (m->m_pkthdr.rcvif->if_type == IFT_CARP &&
-	    m->m_pkthdr.rcvif->if_flags & IFF_LINK0 &&
 	    icmp6->icmp6_type == ICMP6_ECHO_REQUEST &&
 	    carp_lsdrop(m, AF_INET6, ip6->ip6_src.s6_addr32,
 	    ip6->ip6_dst.s6_addr32))
