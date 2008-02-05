@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.81 2008/02/04 12:05:26 thib Exp $	*/
+/*	$OpenBSD: relay.c,v 1.82 2008/02/04 12:12:30 thib Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -738,7 +738,7 @@ relay_connected(int fd, short sig, void *arg)
 	}
 
 	DPRINTF("relay_connected: session %d: %ssuccessful",
-	    con->id, rlay->rl_proto->lateconnect ? "late connect " : "");
+	    con->se_id, rlay->rl_proto->lateconnect ? "late connect " : "");
 
 	switch (rlay->rl_proto->type) {
 	case RELAY_PROTO_HTTP:
