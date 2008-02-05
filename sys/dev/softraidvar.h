@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.40 2008/01/29 23:25:02 marco Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.41 2008/02/03 00:25:21 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -365,6 +365,8 @@ void			sr_put_wu(struct sr_workunit *);
 /* misc functions */
 int32_t			sr_validate_stripsize(u_int32_t);
 void			sr_save_metadata_callback(void *, void *);
+int			sr_validate_io(struct sr_workunit *, daddr64_t *,
+			    char *);
 
 /* discipline functions */
 int			sr_raid_inquiry(struct sr_workunit *);
