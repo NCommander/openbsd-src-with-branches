@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyio.c,v 1.30 2006/04/03 00:40:56 deraadt Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.31 2006/04/03 05:03:34 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -145,8 +145,11 @@ ttflush(void)
 		return;
 
 	while ((written = write(fileno(stdout), buf, nobuf)) != nobuf) {
-		if (written == -1)
+		if (written == -1) {
+			if (errno == EINTR)
+				continue;
 			panic("ttflush write failed");
+		}
 		buf += written;
 		nobuf -= written;
 	}
