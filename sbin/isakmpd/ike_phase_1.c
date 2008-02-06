@@ -1,4 +1,4 @@
-/* $OpenBSD: ike_phase_1.c,v 1.69 2007/05/07 18:19:56 cloder Exp $	 */
+/* $OpenBSD: ike_phase_1.c,v 1.70 2007/08/05 09:43:09 tom Exp $	 */
 /* $EOM: ike_phase_1.c,v 1.31 2000/12/11 23:47:56 niklas Exp $	 */
 
 /*
@@ -840,11 +840,13 @@ ike_phase_1_send_ID(struct message *msg)
 			if (!data) {
 				log_print("ike_phase_1_send_ID: section %s "
 				    "has no \"Address\" tag", my_id);
+				free(buf);
 				return -1;
 			}
 			if (text2sockaddr(data, NULL, &src, af, 0)) {
 				log_error("ike_phase_1_send_ID: "
 				    "text2sockaddr() failed");
+				free(buf);
 				return -1;
 			}
 			memcpy(buf + ISAKMP_ID_DATA_OFF,
@@ -859,11 +861,13 @@ ike_phase_1_send_ID(struct message *msg)
 			if (!data) {
 				log_print("ike_phase_1_send_ID: section %s "
 				    "has no \"Network\" tag", my_id);
+				free(buf);
 				return -1;
 			}
 			if (text2sockaddr(data, NULL, &src, af, 0)) {
 				log_error("ike_phase_1_send_ID: "
 				    "text2sockaddr() failed");
+				free(buf);
 				return -1;
 			}
 			memcpy(buf + ISAKMP_ID_DATA_OFF,
@@ -874,11 +878,13 @@ ike_phase_1_send_ID(struct message *msg)
 			if (!data) {
 				log_print("ike_phase_1_send_ID: section %s "
 				    "has no \"Netmask\" tag", my_id);
+				free(buf);
 				return -1;
 			}
 			if (text2sockaddr(data, NULL, &src, af, 1)) {
 				log_error("ike_phase_1_send_ID: "
 				    "text2sockaddr() failed");
+				free(buf);
 				return -1;
 			}
 			memcpy(buf + ISAKMP_ID_DATA_OFF +
@@ -894,6 +900,7 @@ ike_phase_1_send_ID(struct message *msg)
 			if (!data) {
 				log_print("ike_phase_1_send_ID: section %s "
 				    "has no \"Name\" tag", my_id);
+				free(buf);
 				return -1;
 			}
 			memcpy(buf + ISAKMP_ID_DATA_OFF, data,
