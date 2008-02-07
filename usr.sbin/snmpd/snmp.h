@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmp.h,v 1.5 2008/01/16 10:05:33 reyk Exp $	*/
+/*	$OpenBSD: snmp.h,v 1.6 2008/01/16 10:23:31 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -47,7 +47,8 @@ enum snmp_type {
 enum snmp_imsg_ctl {
 	IMSG_SNMP_TRAP		= 1000,	/* something that works everywhere */
 	IMSG_SNMP_ELEMENT,
-	IMSG_SNMP_END
+	IMSG_SNMP_END,
+	IMSG_SNMP_LOCK			/* enable restricted mode */
 };
 
 struct snmp_imsg_hdr {

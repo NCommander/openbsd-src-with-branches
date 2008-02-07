@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.16 2008/01/17 17:35:06 reyk Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.17 2008/01/18 02:09:30 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -132,6 +132,7 @@ struct ctl_conn {
 	TAILQ_ENTRY(ctl_conn)	 entry;
 	u_int8_t		 flags;
 #define CTL_CONN_NOTIFY		 0x01
+#define CTL_CONN_LOCKED		 0x02	/* restricted mode */
 	struct imsgbuf		 ibuf;
 
 };
