@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.39 2007/02/18 23:50:47 ray Exp $ */
+/*	$OpenBSD: arp.c,v 1.40 2007/08/24 13:12:16 claudio Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -133,6 +133,9 @@ main(int argc, char *argv[])
 	}
 	argc -= optind;
 	argv += optind;
+
+	if (argc == 0)
+		aflag = nflag = 1;
 
 	if (!func)
 		func = F_GET;
