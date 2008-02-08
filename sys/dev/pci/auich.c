@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.67 2007/10/23 19:59:27 jakemsr Exp $	*/
+/*	$OpenBSD: auich.c,v 1.68 2008/01/15 02:52:50 jakemsr Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -894,7 +894,9 @@ auich_set_params(v, setmode, usemode, play, rec)
 			return (error);
 
 		play->sample_rate = orate;
-		return (error);
+
+		if (error)
+			return (error);
 	}
 
 	if (setmode & AUMODE_RECORD) {
