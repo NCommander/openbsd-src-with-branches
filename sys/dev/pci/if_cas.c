@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cas.c,v 1.12 2007/11/26 17:15:32 kettenis Exp $	*/
+/*	$OpenBSD: if_cas.c,v 1.13 2008/01/17 21:27:02 kettenis Exp $	*/
 
 /*
  *
@@ -1742,7 +1742,7 @@ cas_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		break;
 
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 		break;
 	}
 
