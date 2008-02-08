@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.70 2007/09/30 11:33:14 kettenis Exp $	*/
+/*	$OpenBSD: gem.c,v 1.71 2008/01/11 22:50:18 kettenis Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -1480,7 +1480,7 @@ gem_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		break;
 
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 		break;
 	}
 
