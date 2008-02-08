@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.79 2006/08/14 12:40:25 dtucker Exp $ */
+/* $OpenBSD: servconf.h,v 1.80 2007/02/19 10:45:58 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -139,6 +139,8 @@ typedef struct {
 	int	permit_tun;
 
 	int	num_permitted_opens;
+
+	char   *chroot_directory;
 }       ServerOptions;
 
 void	 initialize_server_options(ServerOptions *);
