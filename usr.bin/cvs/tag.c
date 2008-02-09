@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.65 2008/02/04 21:25:32 tobias Exp $	*/
+/*	$OpenBSD: tag.c,v 1.66 2008/02/09 11:56:58 joris Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -318,7 +318,7 @@ tag_add(struct cvs_file *cf)
 			cvs_printf(" : NOT MOVING tag to version %s\n", revbuf);
 
 			return (-1);
-		} else if (runflags & T_FORCE_MOVE) {
+		} else {
 			sym = rcs_sym_get(cf->file_rcs, tag_name);
 			rcsnum_cpy(srev, sym->rs_num, 0);
 			cf->file_rcs->rf_flags &= ~RCS_SYNCED;
