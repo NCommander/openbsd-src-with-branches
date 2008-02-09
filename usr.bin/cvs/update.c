@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.124 2008/02/09 12:20:33 tobias Exp $	*/
+/*	$OpenBSD: update.c,v 1.125 2008/02/09 12:48:23 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -70,6 +70,7 @@ cvs_update(int argc, char **argv)
 				reset_tag = 1;
 			break;
 		case 'C':
+			break;
 		case 'D':
 			dateflag = optarg;
 			cvs_specified_date = cvs_date_parse(dateflag);
