@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.128 2008/02/04 22:36:40 joris Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.130 2008/02/07 07:50:00 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -45,6 +45,8 @@ static char *koptstr = NULL;
 
 static int nflag = 0;
 
+time_t cvs_specified_date;
+
 struct cvs_cmd cvs_cmd_checkout = {
 	CVS_OP_CHECKOUT, CVS_USE_WDIR, "checkout",
 	{ "co", "get" },
@@ -79,6 +81,9 @@ cvs_checkout(int argc, char **argv)
 		case 'c':
 			cvs_modules_list();
 			exit(0);
+		case 'D':
+			cvs_specified_date = cvs_date_parse(optarg);
+			break;
 		case 'd':
 			if (dflag != NULL)
 				fatal("-d specified two or more times");

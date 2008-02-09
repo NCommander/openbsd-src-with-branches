@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.153 2008/02/04 15:07:33 tobias Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.154 2008/02/04 18:23:58 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -303,6 +303,7 @@ extern char *cvs_rsh;
 extern char *cvs_tmpdir;
 extern char *import_repository;
 extern char *cvs_server_path;
+extern time_t cvs_specified_date;
 extern char *cvs_specified_tag;
 extern char *cvs_directory_tag;
 
