@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.153 2007/12/13 20:29:03 reyk Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.154 2007/12/14 18:34:26 deraadt Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)sysctl.c	8.5 (Berkeley) 5/9/95";
 #else
-static const char rcsid[] = "$OpenBSD: sysctl.c,v 1.153 2007/12/13 20:29:03 reyk Exp $";
+static const char rcsid[] = "$OpenBSD: sysctl.c,v 1.154 2007/12/14 18:34:26 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -467,8 +467,11 @@ parse(char *string, int flags)
 			break;
 		case HW_PHYSMEM:
 		case HW_USERMEM:
-			special |= UNSIGNED;
-			break;
+			/*
+			 * Don't print these; we'll print the 64-bit
+			 * variants instead.
+			 */
+			return;
 		}
 		break;
 

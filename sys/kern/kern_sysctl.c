@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.158 2007/10/10 15:53:53 art Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.159 2007/12/23 01:59:58 dlg Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -642,6 +642,12 @@ hw_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 			return (sysctl_rdstring(oldp, oldlenp, newp, hw_uuid));
 		else
 			return (EOPNOTSUPP);
+	case HW_PHYSMEM64:
+		return (sysctl_rdquad(oldp, oldlenp, newp,
+		    ptoa((psize_t)physmem)));
+	case HW_USERMEM64:
+		return (sysctl_rdquad(oldp, oldlenp, newp,
+		    ptoa((psize_t)physmem - uvmexp.wired)));
 	default:
 		return (EOPNOTSUPP);
 	}
