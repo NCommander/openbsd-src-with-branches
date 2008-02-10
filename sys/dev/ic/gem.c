@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.71 2008/01/11 22:50:18 kettenis Exp $	*/
+/*	$OpenBSD: gem.c,v 1.72 2008/02/08 15:03:36 thib Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -762,7 +762,7 @@ gem_init(struct ifnet *ifp)
 	v = gem_ringsize(GEM_NTXDESC /*XXX*/);
 	bus_space_write_4(t, h, GEM_TX_CONFIG,
 		v|GEM_TX_CONFIG_TXDMA_EN|
-		((0x400<<10)&GEM_TX_CONFIG_TXFIFO_TH));
+		((0x4ff<<10)&GEM_TX_CONFIG_TXFIFO_TH));
 	bus_space_write_4(t, h, GEM_TX_KICK, 0);
 
 	/* step 10. ERX Configuration */
