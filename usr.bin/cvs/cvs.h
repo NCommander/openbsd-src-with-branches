@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.159 2008/02/10 10:10:15 joris Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.160 2008/02/10 12:24:27 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -52,6 +52,8 @@
 
 #define CVS_REV_BUFSZ	32
 #define CVS_TIME_BUFSZ	64
+
+#define CVS_DATE_FMT	"%Y.%m.%d.%H.%M.%S"
 
 /* operations */
 #define CVS_OP_UNKNOWN		0
