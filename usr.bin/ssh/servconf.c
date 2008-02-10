@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.c,v 1.175 2008/01/01 09:27:33 dtucker Exp $ */
+/* $OpenBSD: servconf.c,v 1.176 2008/02/08 23:24:08 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1217,7 +1217,14 @@ parse_flag:
 
 	case sChrootDirectory:
 		charptr = &options->chroot_directory;
-		goto parse_filename;
+
+		arg = strdelim(&cp);
+		if (!arg || *arg == '\0')
+			fatal("%s line %d: missing file name.",
+			    filename, linenum);
+		if (*activep && *charptr == NULL)
+			*charptr = xstrdup(arg);
+		break;
 
 	case sDeprecated:
 		logit("%s line %d: Deprecated option %s",
