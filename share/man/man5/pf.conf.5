@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pf.conf.5,v 1.391 2008/02/01 07:26:41 mcbride Exp $
+.\"	$OpenBSD: pf.conf.5,v 1.392 2008/02/01 08:38:00 jmc Exp $
 .\"
 .\" Copyright (c) 2002, Daniel Hartmeier
 .\" All rights reserved.
@@ -2544,8 +2544,8 @@ anchor "external" on egress {
 .Ed
 .Pp
 Since the parser specification for anchor names is a string, any
-reference to an anchor name containing solidus
-.Pq Sq /
+reference to an anchor name containing
+.Sq /
 characters will require double quote
 .Pq Sq \&"
 characters around the anchor name.
