@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.103 2008/02/10 12:34:37 joris Exp $	*/
+/*	$OpenBSD: client.c,v 1.104 2008/02/10 14:08:52 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -134,7 +134,7 @@ client_get_supported_responses(void)
 	int i, first;
 
 	first = 0;
-	bp = cvs_buf_alloc(512, BUF_AUTOEXT);
+	bp = cvs_buf_alloc(512);
 	for (i = 0; cvs_responses[i].supported != -1; i++) {
 		if (cvs_responses[i].hdlr == NULL)
 			continue;
