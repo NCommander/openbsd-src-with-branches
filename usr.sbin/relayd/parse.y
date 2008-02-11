@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.103 2008/01/31 09:56:28 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.104 2008/02/11 10:42:50 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -687,7 +687,6 @@ proto		: proto_type PROTO STRING	{
 			p->id = last_proto_id++;
 			p->type = $1;
 			p->cache = RELAY_CACHESIZE;
-			p->type = RELAY_PROTO_TCP;
 			p->tcpflags = TCPFLAG_DEFAULT;
 			p->sslflags = SSLFLAG_DEFAULT;
 			p->tcpbacklog = RELAY_BACKLOG;
