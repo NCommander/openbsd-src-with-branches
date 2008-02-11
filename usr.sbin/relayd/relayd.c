@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.68 2008/01/31 09:56:28 reyk Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.69 2008/01/31 12:12:50 thib Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -550,6 +550,11 @@ purge_table(struct tablelist *head, struct table *table)
 void
 imsg_event_add(struct imsgbuf *ibuf)
 {
+	if (ibuf->handler == NULL) {
+		imsg_flush(ibuf);
+		return;
+	}
+
 	ibuf->events = EV_READ;
 	if (ibuf->w.queued)
 		ibuf->events |= EV_WRITE;
@@ -666,6 +671,9 @@ main_dispatch_hce(int fd, short event, void * ptr)
 			scr.retval = script_exec(env, &scr);
 			imsg_compose(ibuf_hce, IMSG_SCRIPT,
 			    0, 0, -1, &scr, sizeof(scr));
+			break;
+		case IMSG_SNMPSOCK:
+			(void)snmp_sendsock(ibuf);
 			break;
 		default:
 			log_debug("main_dispatch_hce: unexpected imsg %d",
