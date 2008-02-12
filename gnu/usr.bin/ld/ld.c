@@ -1,4 +1,4 @@
-/*	$OpenBSD: ld.c,v 1.31 2004/03/31 19:05:38 mickey Exp $	*/
+/*	$OpenBSD: ld.c,v 1.32 2005/09/30 20:27:52 deraadt Exp $	*/
 /*	$NetBSD: ld.c,v 1.52 1998/02/20 03:12:51 jonathan Exp $	*/
 
 /*-
@@ -2033,7 +2033,7 @@ printf("pass1: SO definition for %s, type %x in %s at %#x\n",
 	} END_EACH_SYMBOL;
 
 	if (setv_fill_count != set_sect_size/sizeof(long))
-		errx(1, "internal error: allocated set symbol space (%d) "
+		errx(1, "internal error: allocated set symbol space (%ld) "
 			"doesn't match actual (%d)",
 			set_sect_size/sizeof(long), setv_fill_count);
 }
