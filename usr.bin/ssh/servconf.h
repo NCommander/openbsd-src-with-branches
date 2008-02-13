@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.80 2007/02/19 10:45:58 dtucker Exp $ */
+/* $OpenBSD: servconf.h,v 1.81 2008/02/08 23:24:08 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -35,6 +35,9 @@
 #define	PERMIT_YES		3
 
 #define DEFAULT_AUTH_FAIL_MAX	6	/* Default for MaxAuthTries */
+
+/* Magic name for internal sftp-server */
+#define INTERNAL_SFTP_NAME	"internal-sftp"
 
 typedef struct {
 	u_int num_ports;
