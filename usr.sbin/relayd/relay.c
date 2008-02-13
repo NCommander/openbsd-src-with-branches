@@ -1,7 +1,7 @@
-/*	$OpenBSD: relay.c,v 1.82 2008/02/04 12:12:30 thib Exp $	*/
+/*	$OpenBSD: relay.c,v 1.83 2008/02/05 14:12:58 thib Exp $	*/
 
 /*
- * Copyright (c) 2006, 2007 Reyk Floeter <reyk@openbsd.org>
+ * Copyright (c) 2006, 2007, 2008 Reyk Floeter <reyk@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
