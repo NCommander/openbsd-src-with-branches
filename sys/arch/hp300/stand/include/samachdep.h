@@ -1,4 +1,4 @@
-/*	$OpenBSD: samachdep.h,v 1.4 2003/06/02 23:27:46 millert Exp $	*/
+/*	$OpenBSD: samachdep.h,v 1.5 2006/08/17 06:31:10 miod Exp $	*/
 /*	$NetBSD: samachdep.h,v 1.3 1997/05/12 07:54:45 thorpej Exp $	*/
 
 /*
@@ -45,6 +45,7 @@
 
 /* from cpu.h */
 #define	INTIOBASE	(0x00400000)
+#undef	IIOV
 #define IIOV(x)		(x)
 #define DIOBASE		(0x600000)
 #define	DIOCSIZE	(0x10000)
