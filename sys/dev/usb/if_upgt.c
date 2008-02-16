@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.32 2008/01/27 21:05:59 mglocker Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.33 2008/02/02 13:48:44 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -1818,9 +1818,6 @@ upgt_rx(struct upgt_softc *sc, uint8_t *data, int pkglen)
 
 	/* node is no longer needed */
 	ieee80211_release_node(ic, ni);
-
-	/* increment success incoming packet counter */
-	ifp->if_ipackets++;
 
 	splx(s);
 
