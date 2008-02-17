@@ -1,4 +1,4 @@
-/*	$OpenBSD: ebus.c,v 1.18 2007/09/18 00:46:41 krw Exp $	*/
+/*	$OpenBSD: ebus.c,v 1.19 2007/10/01 16:11:19 krw Exp $	*/
 /*	$NetBSD: ebus.c,v 1.24 2001/07/25 03:49:54 eeh Exp $	*/
 
 /*
@@ -284,7 +284,7 @@ ebus_print(void *aux, const char *p)
 		    ea->ea_regs[i].lo,
 		    ea->ea_regs[i].lo + ea->ea_regs[i].size - 1);
 	for (i = 0; i < ea->ea_nintrs; i++)
-		printf(" ipl %d", ea->ea_intrs[i]);
+		printf(" ivec 0x%x", ea->ea_intrs[i]);
 	return (UNCONF);
 }
 
