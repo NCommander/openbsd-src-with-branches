@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm78_isa.c,v 1.2 2007/07/01 21:48:57 cnst Exp $	*/
+/*	$OpenBSD: lm78_isa.c,v 1.3 2007/12/18 21:17:54 form Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Mark Kettenis
@@ -52,6 +52,12 @@ u_int8_t lm_isa_readreg(struct lm_softc *, int);
 void lm_isa_writereg(struct lm_softc *, int, int);
 
 struct cfattach lm_isa_ca = {
+	sizeof(struct lm_isa_softc),
+	lm_isa_match,
+	lm_isa_attach
+};
+
+struct cfattach lm_wbsio_ca = {
 	sizeof(struct lm_isa_softc),
 	lm_isa_match,
 	lm_isa_attach
