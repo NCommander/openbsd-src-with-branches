@@ -244,8 +244,7 @@ devopen(struct open_file *f, const char *fname, char **file)
 	 *  Scan the component list and find device and partition.
 	 */
 	while ((ncp = bios_get_path_component(cp, namebuf, &i)) != NULL) {
-		if ((strcmp(namebuf, "partition") == 0) ||
-		    (strcmp(namebuf, "partition") == 0)) {
+		if (strcmp(namebuf, "partition") == 0) {
 			partition = i;
 			if (USE_SGI_PARTITIONS)
 				ecp = ncp;
