@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.39 2007/10/25 16:24:18 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.40 2008/02/18 19:47:36 miod Exp $	*/
 /* tracked to 1.23 */
 
 /*
@@ -70,7 +70,6 @@
 #include <machine/trap.h>
 #include <machine/psl.h>
 #include <machine/cpu.h>
-#include <machine/pio.h>
 #include <machine/intr.h>
 #include <machine/autoconf.h>
 #include <machine/pmap.h>
