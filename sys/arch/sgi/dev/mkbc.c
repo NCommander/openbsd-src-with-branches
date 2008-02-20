@@ -1,4 +1,4 @@
-/*	$OpenBSD$  */
+/*	$OpenBSD: mkbc.c,v 1.4 2007/12/14 16:09:23 jsing Exp $  */
 
 /*
  * Copyright (c) 2006, 2007, Joel Sing
@@ -159,13 +159,7 @@ int	mkbc_poll_write(bus_space_tag_t, bus_space_handle_t, int);
 int
 mkbc_match(struct device *parent, void *cf, void *aux)
 {
-	struct confargs *ca = aux;
-
-	/* MACE PS/2 controller only on SGI O2 */
-	if (ca->ca_sys == SGI_O2)
-		return 1;
-
-	return 0;
+	return 1;
 }
 
 void
