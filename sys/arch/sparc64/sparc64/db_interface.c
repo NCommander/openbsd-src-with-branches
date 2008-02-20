@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.23 2007/05/02 18:46:07 kettenis Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.24 2007/10/27 22:20:16 martin Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.61 2001/07/31 06:55:47 eeh Exp $ */
 
 /*
@@ -58,6 +58,8 @@
 #include "fb.h"
 #include "esp_sbus.h"
 #endif
+
+#include "tda.h"
 
 db_regs_t	ddb_regs;	/* register state */
 
@@ -258,6 +260,10 @@ kdb_trap(type, tf)
 	extern int trap_trace_dis;
 
 	trap_trace_dis++;
+
+#if NTDA > 0
+	tda_full_blast();
+#endif
 
 	fb_unblank();
 
