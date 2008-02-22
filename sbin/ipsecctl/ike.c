@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike.c,v 1.61 2007/03/16 20:51:01 markus Exp $	*/
+/*	$OpenBSD: ike.c,v 1.62 2008/01/04 11:06:02 hshoexer Exp $	*/
 /*
  * Copyright (c) 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
@@ -231,6 +231,15 @@ ike_section_p2(struct ipsec_rule *r, FILE *fd)
 			case ENCXF_AES:
 				fprintf(fd, "AES");
 				break;
+			case ENCXF_AES_128:
+				fprintf(fd, "AES-128");
+				break;
+			case ENCXF_AES_192:
+				fprintf(fd, "AES-192");
+				break;
+			case ENCXF_AES_256:
+				fprintf(fd, "AES-256");
+				break;
 			case ENCXF_AESCTR:
 				fprintf(fd, "AESCTR");
 				break;
@@ -365,6 +374,15 @@ ike_section_p1(struct ipsec_rule *r, FILE *fd)
 			break;
 		case ENCXF_AES:
 			fprintf(fd, "AES");
+			break;
+		case ENCXF_AES_128:
+			fprintf(fd, "AES-128");
+			break;
+		case ENCXF_AES_192:
+			fprintf(fd, "AES-192");
+			break;
+		case ENCXF_AES_256:
+			fprintf(fd, "AES-256");
 			break;
 		case ENCXF_BLOWFISH:
 			fprintf(fd, "BLF");
