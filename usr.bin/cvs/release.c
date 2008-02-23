@@ -129,6 +129,10 @@ cvs_release_local(struct cvs_file *cf)
 		}
 	}
 
+	/* Skip the interactive part if -Q is specified. */
+	if (verbosity == 0)
+		goto delete;
+
 	saved_noexec = cvs_noexec;
 	cvs_noexec = 1;
 
@@ -166,6 +170,7 @@ cvs_release_local(struct cvs_file *cf)
 	/* change back to original working dir */
 	cvs_chdir(wdir, 0);
 
+delete:
 	if (dflag == 1) {
 		if (cvs_rmdir(cf->file_path) != 0)
 			fatal("cvs_release_local: cvs_rmdir failed");
