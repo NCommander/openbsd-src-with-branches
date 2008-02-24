@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.130 2007/12/23 18:26:13 henning Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.131 2008/01/23 08:18:11 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -1208,7 +1208,7 @@ show_rib_detail_msg(struct imsg *imsg, int nodescr)
 			printf("\n");
 			break;
 		case ATTR_EXT_COMMUNITIES:
-			printf("    Ext. communities:");
+			printf("    Ext. communities: ");
 			show_ext_community(data, alen);
 			printf("\n");
 			break;
