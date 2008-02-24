@@ -520,6 +520,51 @@ l2cap_recv_config_req(struct mbuf *m, struct hci_link *link)
 			break;
 
 		case L2CAP_OPT_QOS:
+			if (rp.result == L2CAP_UNKNOWN_OPTION)
+				break;
+
+			if (opt.length != L2CAP_OPT_QOS_SIZE)
+				goto reject;
+
+			m_copydata(m, 0, L2CAP_OPT_QOS_SIZE, (caddr_t)&val);
+			if (val.qos.service_type == L2CAP_QOS_NO_TRAFFIC ||
+			    val.qos.service_type == L2CAP_QOS_BEST_EFFORT)
+				/*
+				 * In accordance with the spec, we choose to
+				 * ignore the fields an provide no response.
+				 */
+				break;
+
+			if (len + sizeof(opt) + L2CAP_OPT_QOS_SIZE > sizeof(buf))
+				goto reject;
+
+			if (val.qos.service_type != L2CAP_QOS_GUARANTEED) {
+				/*
+				 * Instead of sending an "unacceptable
+				 * parameters" response, treat this as an
+				 * unknown option and include the option
+				 * value in the response.
+				 */
+				rp.result = L2CAP_UNKNOWN_OPTION;
+			} else {
+				/*
+				 * According to the spec, we must return
+				 * specific values for wild card parameters.
+				 * I don't know what to return without lying,
+				 * so return "unacceptable parameters" and
+				 * specify the preferred service type as
+				 * "Best Effort".
+				 */
+				rp.result = L2CAP_UNACCEPTABLE_PARAMS;
+				val.qos.service_type = L2CAP_QOS_BEST_EFFORT;
+			}
+
+			memcpy(buf + len, &opt, sizeof(opt));
+			len += sizeof(opt);
+			memcpy(buf + len, &val, L2CAP_OPT_QOS_SIZE);
+			len += L2CAP_OPT_QOS_SIZE;
+			break;
+
 		default:
 			/* ignore hints */
 			if (opt.type & L2CAP_OPT_HINT_BIT)
