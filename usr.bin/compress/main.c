@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.69 2007/04/03 20:25:35 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.70 2007/04/04 13:29:45 millert Exp $	*/
 
 #ifndef SMALL
 static const char copyright[] =
@@ -36,7 +36,7 @@ static const char license[] =
 #endif /* SMALL */
 
 #ifndef SMALL
-static const char main_rcsid[] = "$OpenBSD: main.c,v 1.69 2007/04/03 20:25:35 millert Exp $";
+static const char main_rcsid[] = "$OpenBSD: main.c,v 1.70 2007/04/04 13:29:45 millert Exp $";
 #endif
 
 #include <sys/param.h>
@@ -234,7 +234,7 @@ main(int argc, char *argv[])
 			break;
 		case 'l':
 			list++;
-			testmode++;
+			testmode = 1;
 			decomp++;
 			break;
 		case 'n':
