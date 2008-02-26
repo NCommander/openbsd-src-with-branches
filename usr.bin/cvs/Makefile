@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.41 2007/09/17 10:07:21 tobias Exp $
+#	$OpenBSD: Makefile,v 1.42 2008/02/02 19:32:28 joris Exp $
 
 PROG=	opencvs
-MAN=	cvs.1 cvs.5 cvsintro.7
+MAN=	cvsintro.7 # cvs.1 cvs.5
 CPPFLAGS+=-I${.CURDIR}
 
 SRCS=	cvs.c add.c admin.c annotate.c atomicio.c commit.c config.c \
