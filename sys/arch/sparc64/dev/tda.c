@@ -1,4 +1,4 @@
-/*	$OpenBSD: tda.c,v 1.2 2008/02/18 21:23:00 kettenis Exp $ */
+/*	$OpenBSD: tda.c,v 1.3 2008/02/20 09:44:47 robert Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -119,6 +119,11 @@ tda_attach(struct device *parent, struct device *self, void *aux)
 			break;
 	}
 	sc->sc_nsensors = i;
+
+	if (!sc->sc_nsensors) {
+		printf("%s: no temperature sensors found\n", DEVNAME(sc));
+		return;
+	}
 
 	if (sensor_task_register(sc, tda_adjust, 10) == NULL) {
 		printf("%s: unable to register update task\n", DEVNAME(sc));
