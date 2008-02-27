@@ -1,4 +1,4 @@
-/*	$OpenBSD: run.c,v 1.25 2004/12/30 01:52:48 millert Exp $	*/
+/*	$OpenBSD: run.c,v 1.26 2004/12/30 02:08:35 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -843,6 +843,8 @@ int format(char **pbuf, int *pbufsize, const char *s, Node *a)	/* printf-like co
 			if (isalpha((uschar)*s) && *s != 'l' && *s != 'h' && *s != 'L')
 				break;	/* the ansi panoply */
 			if (*s == '*') {
+				if (a == NULL)
+					FATAL("not enough args in printf(%s)", os);
 				x = execute(a);
 				a = a->nnext;
 				snprintf(t-1, fmt + fmtsz - (t-1), "%d", fmtwd=(int) getfval(x));
