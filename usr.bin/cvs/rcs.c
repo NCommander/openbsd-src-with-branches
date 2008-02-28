@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.251 2008/02/27 22:34:04 joris Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.252 2008/02/28 20:24:25 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1477,6 +1477,9 @@ rcs_kflag_get(const char *flags)
 	int fl;
 	size_t len;
 	const char *fp;
+
+	if (flags == NULL)
+		return 0;
 
 	fl = 0;
 	if (!(len = strlen(flags)))
