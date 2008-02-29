@@ -1,4 +1,4 @@
-/*	$OpenBSD: env.c,v 1.19 2007/09/02 15:19:38 deraadt Exp $	*/
+/*	$OpenBSD: env.c,v 1.20 2007/09/10 14:29:53 tobias Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -22,7 +22,7 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: env.c,v 1.19 2007/09/02 15:19:38 deraadt Exp $";
+static char const rcsid[] = "$OpenBSD: env.c,v 1.20 2007/09/10 14:29:53 tobias Exp $";
 #endif
 
 #include "cron.h"
@@ -123,7 +123,7 @@ enum env_state {
 	VALUEI,		/* First char of VALUE, may be quote */
 	VALUE,		/* Subsequent chars of VALUE */
 	FINI,		/* All done, skipping trailing whitespace */
-	ERROR,		/* Error */
+	ERROR		/* Error */
 };
 
 /* return	ERR = end of file
