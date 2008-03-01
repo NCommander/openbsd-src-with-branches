@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.253 2008/02/28 21:55:48 tobias Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.254 2008/03/01 20:03:56 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -2999,7 +2999,7 @@ rcs_rev_getbuf(RCSFILE *rfp, RCSNUM *rev, int mode)
 		}
 	}
 
-	for(lp = TAILQ_FIRST(&lines->l_lines); lp != NULL;) {
+	for (lp = TAILQ_FIRST(&lines->l_lines); lp != NULL;) {
 		nlp = TAILQ_NEXT(lp, l_list);
 
 		if (lp->l_line == NULL) {
@@ -3051,7 +3051,7 @@ rcs_rev_write_fd(RCSFILE *rfp, RCSNUM *rev, int fd, int mode)
 		}
 	}
 
-	for(lp = TAILQ_FIRST(&lines->l_lines); lp != NULL;) {
+	for (lp = TAILQ_FIRST(&lines->l_lines); lp != NULL;) {
 		nlp = TAILQ_NEXT(lp, l_list);
 
 		if (lp->l_line == NULL) {
