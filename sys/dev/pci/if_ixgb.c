@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.c,v 1.38 2007/10/01 15:34:48 krw Exp $ */
+/* $OpenBSD: if_ixgb.c,v 1.39 2008/02/19 18:47:18 brad Exp $ */
 
 #include <dev/pci/if_ixgb.h>
 
@@ -1496,7 +1496,7 @@ ixgb_get_buf(struct ixgb_softc *sc, int i,
 	error = bus_dmamap_load_mbuf(sc->rxtag, rx_buffer->map,
 	    mp, BUS_DMA_NOWAIT);
 	if (error) {
-		m_free(mp);
+		m_freem(mp);
 		return (error);
 	}
 	rx_buffer->m_head = mp;
