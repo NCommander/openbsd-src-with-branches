@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.73 2008/01/31 03:39:22 brad Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.74 2008/02/28 01:34:37 brad Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -375,7 +375,7 @@ brgphy_status(struct mii_softc *sc)
 			mii->mii_media_active |= IFM_100_TX | IFM_FDX;
 			break;
 		case BRGPHY_RES_100T4:
-			mii->mii_media_active |= IFM_100_T4;
+			mii->mii_media_active |= IFM_100_T4 | IFM_HDX;
 			break;
 		case BRGPHY_RES_100HD:
 			mii->mii_media_active |= IFM_100_TX | IFM_HDX;
