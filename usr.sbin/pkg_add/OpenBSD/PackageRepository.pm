@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.49 2007/08/23 09:09:49 espie Exp $
+# $OpenBSD: PackageRepository.pm,v 1.50 2008/02/06 20:22:19 bernd Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -492,7 +492,7 @@ sub try_until_success
 {
 	my ($self, $pkgname, $code) = @_;
 
-	for (my $retry = 5; $retry < 60; $retry *= 2) {
+	for (my $retry = 5; $retry <= 160; $retry *= 2) {
 		undef $self->{lasterror};
 		my $o = &$code;
 		if (defined $o) {
