@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.21 2003/09/28 23:19:43 krw Exp $
+#	$OpenBSD: install.md,v 1.22 2005/03/27 15:26:59 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -48,4 +48,7 @@ md_prep_disklabel() {
 }
 
 md_congrats() {
+}
+
+md_consoleinfo() {
 }

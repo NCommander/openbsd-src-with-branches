@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.1 2006/06/06 00:01:49 drahn Exp $
+#	$OpenBSD: install.md,v 1.2 2007/02/11 18:59:30 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -121,4 +121,7 @@ __EOT
 }
 
 md_congrats() {
+}
+
+md_consoleinfo() {
 }

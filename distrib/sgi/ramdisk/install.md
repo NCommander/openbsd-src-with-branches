@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.7 2006/03/17 09:22:43 otto Exp $
+#	$OpenBSD: install.md,v 1.8 2008/02/18 16:08:26 jsing Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -180,4 +180,7 @@ refer to the install document.
 
 To reboot the system, just enter 'reboot' at the shell prompt.
 __EOT
+}
+
+md_consoleinfo() {
 }

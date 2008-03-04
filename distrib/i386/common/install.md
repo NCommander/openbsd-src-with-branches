@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.28 2005/04/02 14:34:46 krw Exp $
+#	$OpenBSD: install.md,v 1.29 2007/02/11 18:59:30 krw Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -40,7 +40,6 @@
 #
 
 MDXAPERTURE=2
-MDSERIAL="pccom com tty0"
 ARCH=ARCH
 
 md_installboot() {
@@ -129,4 +128,17 @@ __EOT
 }
 
 md_congrats() {
+}
+
+md_consoleinfo () {
+	local _u _d=pccom
+
+	for _u in $(scan_dmesg "/^$_d\([0-9]\) .*/s//\1/p"); do
+		if [[ $_d$_u == $CONSOLE || -z $CONSOLE ]]; then
+			CDEV=$_d$_u
+			CPROM=com$_u
+			CTTY=tty0$_u
+			return
+		fi
+	done
 }
