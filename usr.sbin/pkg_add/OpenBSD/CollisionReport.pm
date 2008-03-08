@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: CollisionReport.pm,v 1.14 2007/06/09 11:16:54 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
@@ -27,7 +27,7 @@ sub collision_report($$)
 {
 	my ($list, $state) = @_;
 
-	if ($state->{forced}->{removecollisions}) {
+	if ($state->{defines}->{removecollisions}) {
 		for my $f (@$list) {
 			print "rm ", $f->fullname, "\n";
 			unlink($f->fullname);

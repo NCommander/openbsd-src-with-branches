@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: UpdateSet.pm,v 1.1 2007/06/25 12:21:08 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007 Marc Espie <espie@openbsd.org>
 #
@@ -62,7 +62,7 @@ sub setup_progressmeter
 sub check_root
 {
 	my $state = shift;
-	if ($< && !$state->{forced}->{nonroot}) {
+	if ($< && !$state->{defines}->{nonroot}) {
 		if ($state->{not}) {
 			Warn "$0 should be run as root\n";
 		} else {
