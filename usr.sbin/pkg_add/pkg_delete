@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: pkg_delete,v 1.110 2007/06/30 11:38:38 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -44,7 +44,7 @@ $opt_v = 0;
 
 try { 
 	getopts('vchixDdnf:F:qpS:L:B:I',
-	    {'v' => sub {++$opt_v;},
+	    {
 	     'h' => sub { Usage(); },
 	     'F' => sub { 
 			    for my $o (split /\,/o, shift) { 
