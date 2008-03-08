@@ -396,17 +396,17 @@ sub delete
 			unless (defined($self->{link}) or $self->{nochecksum} or $state->{quick}) {
 				if (!defined $self->{md5}) {
 					print "Problem: ", $self->fullname,
-					    " does not have an md5 checksum\n";
+					    " does not have a checksum\n";
 					print "NOT deleting: $realname\n";
-					$state->print("Couldn't delete $realname (no md5)\n");
+					$state->print("Couldn't delete $realname (no checksum)\n");
 					return;
 				}
 				my $md5 = OpenBSD::md5::fromfile($realname);
 				if ($md5 ne $self->{md5}) {
-					print "Problem: md5 doesn't match for ",
+					print "Problem: checksum doesn't match for ",
 						$self->fullname, "\n";
 					print "NOT deleting: $realname\n";
-					$state->print("Couldn't delete $realname (bad md5)\n");
+					$state->print("Couldn't delete $realname (bad checksum)\n");
 					$self->do_not_delete($state);
 					return;
 				}
@@ -505,7 +505,7 @@ sub delete
 	}
 
 	if (!defined $orig->{md5}) {
-		$state->print("Couldn't delete $realname (no md5)\n");
+		$state->print("Couldn't delete $realname (no checksum)\n");
 		return;
 	}
 
