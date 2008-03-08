@@ -283,7 +283,9 @@ symbolic links are resolved, and package installation stops at
 .Cm @endfake
 marker.
 .It Fl q
-Replace package quickly; do not bother with checksums before removing files.
+Replace package quickly; do not bother with checksums before removing normal 
+files.
+If used twice, it will not bother with checksums either for configuration files.
 .It Fl r
 Replace existing packages.
 .Nm
