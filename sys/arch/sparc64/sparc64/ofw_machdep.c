@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.22 2008/01/10 22:25:20 marco Exp $	*/
+/*	$OpenBSD: ofw_machdep.c,v 1.23 2008/01/10 22:46:48 deraadt Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.16 2001/07/20 00:07:14 eeh Exp $	*/
 
 /*
@@ -105,20 +105,23 @@ get_memory_handle()
  * Point prom to our trap table.  This stops the prom from mapping us.
  */
 int
-prom_set_trap_table(tba)
+prom_set_trap_table(tba, mmfsa)
 	vaddr_t tba;
+	paddr_t mmfsa;
 {
 	struct {
 		cell_t name;
 		cell_t nargs;
 		cell_t nreturns;
 		cell_t tba;
+		cell_t mmfsa; 
 	} args;
 
 	args.name = ADR2CELL("SUNW,set-trap-table");
-	args.nargs = 1;
+	args.nargs = 2;
 	args.nreturns = 0;
 	args.tba = ADR2CELL(tba);
+	args.mmfsa = ADR2CELL(mmfsa);
 	return openfirmware(&args);
 }
 

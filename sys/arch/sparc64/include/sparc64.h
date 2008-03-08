@@ -1,4 +1,4 @@
-/*	$OpenBSD: sparc64.h,v 1.6 2003/12/17 03:51:48 jason Exp $	*/
+/*	$OpenBSD: sparc64.h,v 1.7 2007/09/08 17:48:12 kettenis Exp $	*/
 /*	$NetBSD: sparc64.h,v 1.3 2000/10/20 05:47:03 mrg Exp $	*/
 
 /*
@@ -39,7 +39,7 @@ struct mem_region {
 	u_int64_t size;
 };
 
-int prom_set_trap_table(vaddr_t tba);
+int prom_set_trap_table(vaddr_t tba, paddr_t mmfsa);
 paddr_t prom_vtop(vaddr_t vaddr);
 vaddr_t prom_claim_virt(vaddr_t vaddr, int len);
 vaddr_t prom_alloc_virt(int len, int align);
