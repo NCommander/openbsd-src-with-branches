@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_refresh.c,v 1.13 2006/03/11 06:55:56 ray Exp $	*/
+/*	$OpenBSD: vs_refresh.c,v 1.14 2006/03/11 06:58:00 ray Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -695,6 +695,8 @@ done_cursor:
 		abort();
 #else
 	if (vip->sc_smap == NULL) {
+		if (F_ISSET(sp, SC_SCR_REFORMAT))
+			return (0);
 		F_SET(sp, SC_SCR_REFORMAT);
 		return (vs_paint(sp, flags));
 	}
