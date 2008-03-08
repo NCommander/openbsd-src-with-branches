@@ -40,7 +40,7 @@ int	dioclose(struct open_file *);
 #define	dioioctl	noioctl
 
 struct devsw devsw[] = {
-	{ "scsi",	diostrategy, dioopen, dioclose,	dioioctl }, /*0*/
+	{ "scsi",	diostrategy, dioopen, dioclose,	dioioctl }
 };
 
 int	ndevs = (sizeof(devsw)/sizeof(devsw[0]));

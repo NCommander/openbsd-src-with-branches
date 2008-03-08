@@ -38,7 +38,7 @@
 #include <machine/asm.h> 
 
 /*
- * Frame required for the debugger (if we have any)
+ * Frame required for the debugger (if we have any).
  */
 #define START_FRAME	((4 * 4) + 4 + 4)
 
