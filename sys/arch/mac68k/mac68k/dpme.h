@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpme.h,v 1.5 1998/02/14 07:01:07 gene Exp $	*/
+/*	$OpenBSD: dpme.h,v 1.6 1999/04/19 04:48:02 downsj Exp $	*/
 /*	$NetBSD: dpme.h,v 1.8 1997/11/30 04:46:59 briggs Exp $	*/
 
 /*
@@ -71,7 +71,7 @@ struct partmapentry {
 
 /*
  * "pmBootArgs" for APPLE_UNIX_SVR2 partition.
- * OpenBSD/Mac68k only uses Magic, Cluster, Type, and Flags.
+ * OpenBSD/mac68k only uses Magic, Cluster, Type, and Flags.
  */
 struct blockzeroblock {
 	u_int32_t       bzbMagic;
