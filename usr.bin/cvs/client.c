@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.108 2008/02/29 21:43:57 joris Exp $	*/
+/*	$OpenBSD: client.c,v 1.109 2008/03/08 20:52:36 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -457,7 +457,7 @@ cvs_client_sendfile(struct cvs_file *cf)
 	struct tm *datetm;
 	char rev[CVS_REV_BUFSZ], timebuf[CVS_TIME_BUFSZ], sticky[CVS_REV_BUFSZ];
 
-	if (cf->file_type != CVS_FILE)
+	if (cf->file_type != CVS_FILE || (cf->fd == -1 && cf->file_ent == NULL))
 		return;
 
 	cvs_client_senddir(cf->file_wd);
