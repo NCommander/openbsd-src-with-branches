@@ -1,4 +1,4 @@
-/*	$OpenBSD: fhc.c,v 1.14 2007/09/17 01:33:33 krw Exp $	*/
+/*	$OpenBSD: fhc.c,v 1.15 2008/01/17 22:53:18 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net)
@@ -95,6 +95,9 @@ fhc_attach(struct fhc_softc *sc)
 	node0 = firstchild(sc->sc_node);
 	for (node = node0; node; node = nextsibling(node)) {
 		struct fhc_attach_args fa;
+
+		if (!checkstatus(node))
+			continue;
 
 		bzero(&fa, sizeof(fa));
 
