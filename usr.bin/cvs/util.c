@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.140 2008/03/01 15:10:20 joris Exp $	*/
+/*	$OpenBSD: util.c,v 1.141 2008/03/08 22:15:30 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -534,7 +534,7 @@ cvs_mkadmin(const char *path, const char *root, const char *repo,
 	if (mkdir(buf, 0755) == -1 && errno != EEXIST)
 		fatal("cvs_mkadmin: %s: %s", buf, strerror(errno));
 
-	if (cvs_cmdop == CVS_OP_CHECKOUT) {
+	if (cvs_cmdop == CVS_OP_CHECKOUT || cvs_cmdop == CVS_OP_ADD) {
 		(void)xsnprintf(buf, sizeof(buf), "%s/%s",
 		    path, CVS_PATH_ROOTSPEC);
 
