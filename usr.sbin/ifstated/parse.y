@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.25 2007/11/12 23:59:41 mpf Exp $	*/
+/*	$OpenBSD: parse.y,v 1.26 2008/02/26 10:09:58 mpf Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride <mcbride@openbsd.org>
@@ -728,14 +728,15 @@ parse_config(char *filename, int opts)
 	conf->opts = opts;
 
 	yyparse();
-	errors = file->errors;
-	popfile();
 
 	/* Link states */
 	TAILQ_FOREACH(state, &conf->states, entries) {
 		link_states(state->init);
 		link_states(state->always);
 	}
+
+	errors = file->errors;
+	popfile();
 
 	if (start_state != NULL) {
 		TAILQ_FOREACH(state, &conf->states, entries) {
