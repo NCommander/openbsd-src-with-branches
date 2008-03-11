@@ -509,7 +509,7 @@ sub delete
 		return;
 	}
 
-	if ($state->{quick} >= 2) {
+	if ($state->{quick} && $state->{quick} >= 2) {
 		unless ($state->{extra}) {
 			$self->mark_dir($state);
 			$state->print("You should also $action $realname\n");
