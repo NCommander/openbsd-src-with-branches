@@ -1,4 +1,4 @@
-/*	$OpenBSD: amphy.c,v 1.15 2006/12/31 15:04:33 krw Exp $	*/
+/*	$OpenBSD: amphy.c,v 1.16 2008/03/02 16:04:08 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -213,7 +213,7 @@ amphy_status(struct mii_softc *sc)
 
 	if (bmcr & BMCR_AUTOEN) {
 		/*
-		 * The PAR status bits are only valid of autonegotiation
+		 * The PAR status bits are only valid if autonegotiation
 		 * has completed (or it's disabled).
 		 */
 		if ((bmsr & BMSR_ACOMP) == 0) {

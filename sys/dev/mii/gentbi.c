@@ -1,4 +1,4 @@
-/*	$OpenBSD: gentbi.c,v 1.2 2004/10/08 00:37:55 brad Exp $	*/
+/*	$OpenBSD: gentbi.c,v 1.3 2005/03/26 04:40:09 krw Exp $	*/
 /*	$NetBSD: gentbi.c,v 1.12 2004/04/11 15:40:56 thorpej Exp $	*/
 
 /*-
@@ -264,7 +264,7 @@ gentbi_status(struct mii_softc *sc)
 
 	if (bmcr & BMCR_AUTOEN) {
 		/*
-		 * The media status bits are only valid of autonegotiation
+		 * The media status bits are only valid if autonegotiation
 		 * has completed (or it's disabled).
 		 */
 		if ((bmsr & BMSR_ACOMP) == 0) {
