@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.70 2008/03/02 19:05:34 tobias Exp $	*/
+/*	$OpenBSD: tag.c,v 1.71 2008/03/09 03:14:52 joris Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -314,6 +314,7 @@ tag_add(struct cvs_file *cf)
 			return (-1);
 		}
 		(void)rcsnum_tostr(trev, trevbuf, sizeof(trevbuf));
+		rcsnum_free(trev);
 
 		if (!(runflags & T_FORCE_MOVE)) {
 			cvs_printf("W %s : %s ", cf->file_path, tag_name);
