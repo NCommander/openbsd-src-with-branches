@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.c,v 1.8 2008/03/12 13:09:12 claudio Exp $ */
+/*	$OpenBSD: ber.c,v 1.9 2008/03/12 14:30:11 claudio Exp $ */
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
@@ -735,8 +735,10 @@ ber_write_elements(struct ber *ber, struct ber_element *root)
  *	NULL, type mismatch or read error
  */
 struct ber_element *
-ber_read_elements(struct ber *ber, struct ber_element *root)
+ber_read_elements(struct ber *ber, struct ber_element *elm)
 {
+	struct ber_element *root = elm;
+
 	if (root == NULL) {
 		if ((root = ber_get_element(0)) == NULL)
 			return NULL;
@@ -744,8 +746,12 @@ ber_read_elements(struct ber *ber, struct ber_element *root)
 
 	DPRINTF("read ber elements, root %p\n", root);
 
-	if (ber_read_element(ber, root) == -1)
+	if (ber_read_element(ber, root) == -1) {
+		/* Cleanup if root was allocated by us */
+		if (elm == NULL)
+			ber_free_elements(root);
 		return NULL;
+	}
 
 	return root;
 }
