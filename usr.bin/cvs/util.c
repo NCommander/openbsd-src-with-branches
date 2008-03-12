@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.142 2008/03/09 01:58:00 joris Exp $	*/
+/*	$OpenBSD: util.c,v 1.139 2008/02/10 14:04:40 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -27,12 +27,9 @@
  */
 
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 
-#include <atomicio.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <md5.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +40,6 @@
 #include "remote.h"
 
 extern int print_stdout;
-extern int build_dirs;
 
 /* letter -> mode type map */
 static const int cvs_modetypes[26] = {
@@ -522,7 +518,6 @@ cvs_mkadmin(const char *path, const char *root, const char *repo,
     char *tag, char *date)
 {
 	FILE *fp;
-	int fd;
 	char buf[MAXPATHLEN];
 
 	if (cvs_server_active == 0)
@@ -535,8 +530,7 @@ cvs_mkadmin(const char *path, const char *root, const char *repo,
 	if (mkdir(buf, 0755) == -1 && errno != EEXIST)
 		fatal("cvs_mkadmin: %s: %s", buf, strerror(errno));
 
-	if (cvs_cmdop == CVS_OP_CHECKOUT || cvs_cmdop == CVS_OP_ADD ||
-	    (cvs_cmdop == CVS_OP_UPDATE && build_dirs == 1)) {
+	if (cvs_cmdop == CVS_OP_CHECKOUT) {
 		(void)xsnprintf(buf, sizeof(buf), "%s/%s",
 		    path, CVS_PATH_ROOTSPEC);
 
@@ -556,19 +550,6 @@ cvs_mkadmin(const char *path, const char *root, const char *repo,
 	(void)fclose(fp);
 
 	cvs_write_tagfile(path, tag, date);
-
-	(void)xsnprintf(buf, sizeof(buf), "%s/%s", path, CVS_PATH_ENTRIES);
-
-	if ((fd = open(buf, O_WRONLY|O_CREAT|O_EXCL, 0666 & ~cvs_umask))
-	    == -1) {
-		if (errno == EEXIST)
-			return;
-		fatal("cvs_mkadmin: %s: %s", buf, strerror(errno));
-	}
-
-	if (atomicio(vwrite, fd, "D\n", 2) != 2)
-		fatal("cvs_mkadmin: %s", strerror(errno));
-	close(fd);
 }
 
 void

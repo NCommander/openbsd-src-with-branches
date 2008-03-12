@@ -13,16 +13,27 @@ BEGIN {
     chdir 't' if -d 't';
     @INC = '.'; 
     push @INC, '../lib';
+    require Config;
+    if (($Config::Config{'extensions'} !~ m!\bData/Dumper\b!) ){
+	print "1..0 # Skip -- Perl configured without Data::Dumper module\n";
+	exit 0;
+    }
 }    
 
 use strict;
 use Tie::RefHash;
 use Data::Dumper;
-my $numtests = 34;
+my $numtests = 39;
 my $currtest = 1;
 print "1..$numtests\n";
 
 my $ref = []; my $ref1 = [];
+
+package Boustrophedon; # A class with overloaded "".
+sub new { my ($c, $s) = @_; bless \$s, $c }
+use overload '""' => sub { ${$_[0]} . reverse ${$_[0]} };
+package main;
+my $ox = Boustrophedon->new("foobar");
 
 # Test standard hash functionality, by performing the same operations
 # on a tied hash and on a normal hash, and checking that the results
@@ -93,6 +104,10 @@ test(not defined $h{$ref});
 test(not exists($h{$ref}));
 test((keys %h) == 0);
 test((values %h) == 0);
+$h{$ox} = "bellow"; # overloaded ""
+test(exists $h{$ox});
+test($h{$ox} eq "bellow");
+test(not exists $h{"foobarraboof"});
 undef $h;
 untie %h;
 
@@ -114,6 +129,14 @@ test((keys %h)[0] eq $ref);
 test((keys %{$h{$ref}}) == 1);
 test((keys %{$h{$ref}})[0] eq $ref1);
 
+{
+    # Tests that delete returns the deleted element [perl #32193]
+    my $ref = \(my $var = "oink");
+    tie my %oink, 'Tie::RefHash';
+    $oink{$ref} = "ding";
+    test($oink{$ref} eq "ding");
+    test(delete($oink{$ref}) eq "ding");
+}
 
 die "expected to run $numtests tests, but ran ", $currtest - 1
   if $currtest - 1 != $numtests;
@@ -302,4 +325,3 @@ END
 
     return @r;
 }
-

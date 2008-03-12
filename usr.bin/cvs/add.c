@@ -1,4 +1,4 @@
-/*	$OpenBSD: add.c,v 1.96 2008/03/08 20:26:34 joris Exp $	*/
+/*	$OpenBSD: add.c,v 1.94 2008/02/09 20:04:00 xsa Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -27,6 +27,7 @@
 
 extern char *__progname;
 
+void	cvs_add_local(struct cvs_file *);
 void	cvs_add_entry(struct cvs_file *);
 void	cvs_add_remote(struct cvs_file *);
 
@@ -89,7 +90,6 @@ cvs_add(int argc, char **argv)
 	if (current_cvsroot->cr_method != CVS_METHOD_LOCAL) {
 		cvs_client_connect_to_server();
 		cr.fileproc = cvs_add_remote;
-		flags = 0;
 
 		if (kflag)
 			cvs_client_send_request("Argument %s", kbuf);
@@ -145,8 +145,7 @@ cvs_add_local(struct cvs_file *cf)
 {
 	cvs_log(LP_TRACE, "cvs_add_local(%s)", cf->file_path);
 
-	if (cvs_cmdop != CVS_OP_CHECKOUT && cvs_cmdop != CVS_OP_UPDATE)
-		cvs_file_classify(cf, cvs_directory_tag);
+	cvs_file_classify(cf, cvs_directory_tag);
 
 	/* dont use `cvs add *' */
 	if (strcmp(cf->file_name, ".") == 0 ||

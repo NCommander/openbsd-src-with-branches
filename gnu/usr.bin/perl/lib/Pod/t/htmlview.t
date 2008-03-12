@@ -7,18 +7,18 @@ BEGIN {
    require "pod2html-lib.pl";
 }
 
-
 use strict;
 use Test::More tests => 1;
 
 convert_n_test("htmlview", "html rendering");
 
-
 __DATA__
+<?xml version="1.0" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>NAME</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <link rev="made" href="mailto:[PERLADMIN]" />
 </head>
 
@@ -32,11 +32,11 @@ __DATA__
 	<li><a href="#name">NAME</a></li>
 	<li><a href="#synopsis">SYNOPSIS</a></li>
 	<li><a href="#description">DESCRIPTION</a></li>
-	<li><a href="#methods_=>_other_stuff">METHODS =&gt; OTHER STUFF</a></li>
+	<li><a href="#methods____other_stuff">METHODS =&gt; OTHER STUFF</a></li>
 	<ul>
 
-		<li><a href="#new()"><code>new()</code></a></li>
-		<li><a href="#old()"><code>old()</code></a></li>
+		<li><a href="#new__"><code>new()</code></a></li>
+		<li><a href="#old__"><code>old()</code></a></li>
 	</ul>
 
 	<li><a href="#testing_for_and_begin">TESTING FOR AND BEGIN</a></li>
@@ -75,76 +75,79 @@ other <strong>cool </strong></em>&gt; stuff &gt;&gt;</p>
 <p>
 </p>
 <hr />
-<h1><a name="methods_=>_other_stuff">METHODS =&gt; OTHER STUFF</a></h1>
+<h1><a name="methods____other_stuff">METHODS =&gt; OTHER STUFF</a></h1>
 <p>Here is a list of methods</p>
 <p>
 </p>
-<h2><a name="new()"><code>new()</code></a></h2>
+<h2><a name="new__"><code>new()</code></a></h2>
 <p>Constructor method.  Accepts the following config options:</p>
 <dl>
-<dt><strong><a name="item_foo">foo</a></strong><br />
-</dt>
+<dt><strong><a name="item_foo">foo</a></strong>
+
 <dd>
-The foo item.
+<p>The foo item.</p>
 </dd>
-<p></p>
-<dt><strong><a name="item_bar">bar</a></strong><br />
-</dt>
+</li>
+<dt><strong><a name="item_bar">bar</a></strong>
+
 <dd>
-The bar item.
+<p>The bar item.</p>
 </dd>
 <p>This is a list within a list</p>
 <ul>
-<li></li>
-The wiz item.
-<p></p>
-<li></li>
-The waz item.
-<p></p></ul>
-<dt><strong><a name="item_baz">baz</a></strong><br />
-</dt>
+<li>
+<p>The wiz item.</p>
+</li>
+<li>
+<p>The waz item.</p>
+</li>
+</ul>
+<dt><strong><a name="item_baz">baz</a></strong>
+
 <dd>
-The baz item.
+<p>The baz item.</p>
 </dd>
-<p></p></dl>
+</li>
+</dl>
 <p>Title on the same line as the =item + * bullets</p>
 <ul>
-<li><strong><a name="item_black_cat"><code>Black</code> Cat</a></strong><br />
-</li>
-<li><strong><a name="item_sat_on_the">Sat <em>on</em>&nbsp;the</a></strong><br />
-</li>
-<li><strong><a name="item_mat%3c%21%3e">Mat&lt;!&gt;</a></strong><br />
-</li>
+<li><strong><a name="item_black_cat"><code>Black</code> Cat</a></strong>
+
+<li><strong><a name="item_sat_on_the">Sat <em>on</em>&nbsp;the</a></strong>
+
+<li><strong><a name="item_mat_3c_21_3e">Mat&lt;!&gt;</a></strong>
+
 </ul>
 <p>Title on the same line as the =item + numerical bullets</p>
 <ol>
-<li><strong><a name="item_cat">Cat</a></strong><br />
-</li>
-<li><strong><a name="item_sat">Sat</a></strong><br />
-</li>
-<li><strong><a name="item_mat">Mat</a></strong><br />
-</li>
+<li><strong><a name="item_cat">Cat</a></strong>
+
+<li><strong><a name="item_sat">Sat</a></strong>
+
+<li><strong><a name="item_mat">Mat</a></strong>
+
 </ol>
 <p>No bullets, no title</p>
 <dl>
-<dt></dt>
+<dt>
 <dd>
-Cat
+<p>Cat</p>
 </dd>
-<p></p>
-<dt></dt>
+</li>
+<dt>
 <dd>
-Sat
+<p>Sat</p>
 </dd>
-<p></p>
-<dt></dt>
+</li>
+<dt>
 <dd>
-Mat
+<p>Mat</p>
 </dd>
-<p></p></dl>
+</li>
+</dl>
 <p>
 </p>
-<h2><a name="old()"><code>old()</code></a></h2>
+<h2><a name="old__"><code>old()</code></a></h2>
 <p>Destructor method</p>
 <p>
 </p>
@@ -163,6 +166,8 @@ HTML
 <p>This is an href link1: <a href="http://example.com">http://example.com</a></p>
 <p>This is an href link2: <a href="http://example.com/foo/bar.html">http://example.com/foo/bar.html</a></p>
 <p>This is an email link: <a href="mailto:mailto:foo@bar.com">mailto:foo@bar.com</a></p>
+<pre>
+    This is a link in a verbatim block &lt;a href=&quot;<a href="http://perl.org">http://perl.org</a>&quot;&gt; Perl &lt;/a&gt;</pre>
 <p>
 </p>
 <hr />

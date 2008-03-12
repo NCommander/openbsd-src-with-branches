@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.260 2008/03/08 22:33:03 joris Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.255 2008/03/01 21:29:37 deraadt Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -241,7 +241,7 @@ RCSFILE *
 rcs_open(const char *path, int fd, int flags, ...)
 {
 	int mode;
-	mode_t fmode;
+	mode_t fmode, mask;
 	RCSFILE *rfp;
 	va_list vap;
 	struct rcs_delta *rdp;
@@ -257,7 +257,9 @@ rcs_open(const char *path, int fd, int flags, ...)
 		fmode = (mode_t)mode;
 	}
 
-	fmode &= ~cvs_umask;
+	mask = umask(0);
+	umask(mask);
+	fmode &= ~mask;
 
 	rfp = xcalloc(1, sizeof(*rfp));
 
@@ -1350,9 +1352,6 @@ rcs_findrev(RCSFILE *rfp, RCSNUM *rev)
 {
 	int isbrev;
 	struct rcs_delta *rdp;
-
-	if (rev == NULL)
-		return NULL;
 
 	isbrev = RCSNUM_ISBRANCHREV(rev);
 
@@ -2563,9 +2562,6 @@ rcs_get_revision(const char *revstr, RCSFILE *rfp)
 	rdp = NULL;
 
 	if (!strcmp(revstr, RCS_HEAD_BRANCH)) {
-		if (rfp->rf_head == NULL)
-			return NULL;
-
 		frev = rcsnum_alloc();
 		rcsnum_cpy(rfp->rf_head, frev, 0);
 		return (frev);
@@ -2626,6 +2622,14 @@ rcs_get_revision(const char *revstr, RCSFILE *rfp)
 		if ((rdp = rcs_findrev(rfp, brp->rb_num)) == NULL)
 			fatal("rcs_get_revision: could not fetch branch "
 			    "delta");
+		/* Find the latest delta on that branch */
+		for (;;) {
+			if (rdp->rd_next->rn_len == 0)
+				break;
+			if ((rdp = rcs_findrev(rfp, rdp->rd_next)) == NULL)
+				fatal("rcs_get_revision: could not fetch "
+				    "branch delta");
+		}
 		rcsnum_cpy(rdp->rd_num, frev, 0);
 		return (frev);
 	}
@@ -3068,7 +3072,7 @@ rcs_rev_write_stmp(RCSFILE *rfp,  RCSNUM *rev, char *template, int mode)
 	cvs_worklist_add(template, &temp_files);
 	rcs_rev_write_fd(rfp, rev, fd, mode);
 
-	if (lseek(fd, 0, SEEK_SET) < 0)
+	if (lseek(fd, SEEK_SET, 0) < 0)
 		fatal("rcs_rev_write_stmp: lseek: %s", strerror(errno));
 
 	return (fd);
@@ -3444,7 +3448,6 @@ RCSNUM *
 rcs_translate_tag(const char *revstr, RCSFILE *rfp)
 {
 	int follow;
-	time_t deltatime;
 	char branch[CVS_REV_BUFSZ];
 	RCSNUM *brev, *frev, *rev;
 	struct rcs_delta *rdp, *trdp;
@@ -3461,31 +3464,7 @@ rcs_translate_tag(const char *revstr, RCSFILE *rfp)
 	}
 
 	if ((rev = rcs_get_revision(revstr, rfp)) == NULL)
-		return (NULL);
-
-	if ((rdp = rcs_findrev(rfp, rev)) == NULL)
-		fatal("rcs_translate_tag: cannot find revision");
-
-	if (cvs_specified_date == -1) {
-		/* XXX */
-		if (rev->rn_len < 4) {
-			return (rev);
-		}
-
-		/* Find the latest delta on that branch */
-		rcsnum_free(rev);
-		for (;;) {
-			if (rdp->rd_next->rn_len == 0)
-				break;
-			if ((rdp = rcs_findrev(rfp, rdp->rd_next)) == NULL)
-				fatal("rcs_get_revision: could not fetch "
-				    "branch delta");
-		}
-
-		rev = rcsnum_alloc();
-		rcsnum_cpy(rdp->rd_num, rev, 0);
-		return (rev);
-	}
+		return NULL;
 
 	/* let's see if we must follow a branch */
 	if (!strcmp(revstr, RCS_HEAD_BRANCH))
@@ -3499,44 +3478,24 @@ rcs_translate_tag(const char *revstr, RCSFILE *rfp)
 			follow = 0;
 	}
 
-	if (frev != NULL)
-		rcsnum_tostr(frev, branch, sizeof(branch));
+	if ((rdp = rcs_findrev(rfp, rev)) == NULL)
+		fatal("rcs_translate_tag: cannot find revision");
+
+	if (cvs_specified_date == -1)
+		return rev;
 
 	if (frev != NULL) {
 		brev = rcsnum_revtobr(frev);
-		brev->rn_len = rev->rn_len - 1;
+		brev->rn_len = rev->rn_len;
 	}
 
 	rcsnum_free(rev);
 
 	do {
-		deltatime = timelocal(&(rdp->rd_date));
-
-		if (RCSNUM_ISBRANCHREV(rdp->rd_num)) {
-			if (deltatime > cvs_specified_date) {
-				trdp = TAILQ_PREV(rdp, rcs_dlist, rd_list);
-				if (trdp == NULL)
-					trdp = rdp;
-
-				if (trdp->rd_num->rn_len != rdp->rd_num->rn_len)
-					return (NULL);
-
-				rev = rcsnum_alloc();
-				rcsnum_cpy(trdp->rd_num, rev, 0);
-				return (rev);
-			}
-
-			if (rdp->rd_next->rn_len == 0) {
-				rev = rcsnum_alloc();
-				rcsnum_cpy(rdp->rd_num, rev, 0);
-				return (rev);
-			}
-		} else {
-			if (deltatime < cvs_specified_date) {
-				rev = rcsnum_alloc();
-				rcsnum_cpy(rdp->rd_num, rev, 0);
-				return (rev);
-			}
+		if (timelocal(&(rdp->rd_date)) < cvs_specified_date) {
+			rev = rcsnum_alloc();
+			rcsnum_cpy(rdp->rd_num, rev, 0);
+			return rev;
 		}
 
 		if (follow && rdp->rd_next->rn_len != 0) {
@@ -3551,6 +3510,6 @@ rcs_translate_tag(const char *revstr, RCSFILE *rfp)
 			follow = 0;
 	} while (follow);
 
-	return (NULL);
+	return NULL;
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff3.c,v 1.47 2008/03/08 20:26:34 joris Exp $	*/
+/*	$OpenBSD: diff3.c,v 1.44 2008/02/29 21:43:57 joris Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -72,7 +72,7 @@ static const char copyright[] =
 
 #ifndef lint
 static const char rcsid[] =
-    "$OpenBSD: diff3.c,v 1.47 2008/03/08 20:26:34 joris Exp $";
+    "$OpenBSD: diff3.c,v 1.44 2008/02/29 21:43:57 joris Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -115,8 +115,8 @@ struct diff {
 
 static size_t szchanges;
 
-static struct diff *d13 = NULL;
-static struct diff *d23 = NULL;
+static struct diff *d13;
+static struct diff *d23;
 
 /*
  * "de" is used to gather editing scripts.  These are later spewed out in
@@ -125,8 +125,8 @@ static struct diff *d23 = NULL;
  * look (!?).  Array overlap indicates which sections in "de" correspond to
  * lines that are different in all three files.
  */
-static struct diff *de = NULL;
-static char *overlap = NULL;
+static struct diff *de;
+static char *overlap;
 static int overlapcnt = 0;
 static FILE *fp[3];
 static int cline[3];		/* # of the last-read line in each file (0-2) */
@@ -159,8 +159,6 @@ static void increase(void);
 static int diff3_internal(int, char **, const char *, const char *);
 
 int diff3_conflicts = 0;
-RCSNUM *d3rev1 = NULL;
-RCSNUM *d3rev2 = NULL;
 
 static int fds[5];
 
@@ -178,9 +176,8 @@ cvs_merge_file(struct cvs_file *cf, int verbose)
 
 	overlapcnt = 0;
 	b1 = b2 = b3 = d1 = d2 = diffb = NULL;
-
-	rcsnum_tostr(d3rev1, r1, sizeof(r1));
-	rcsnum_tostr(d3rev2, r2, sizeof(r2));
+	rcsnum_tostr(cf->file_ent->ce_rev, r1, sizeof(r1));
+	rcsnum_tostr(cf->file_rcsrev, r2, sizeof(r2));
 
 	b1 = cvs_buf_load_fd(cf->fd);
 	d1 = cvs_buf_alloc(128);
@@ -194,10 +191,11 @@ cvs_merge_file(struct cvs_file *cf, int verbose)
 	fds[2] = cvs_buf_write_stmp(b1, path1, NULL);
 	if (verbose == 1)
 		cvs_printf("Retrieving revision %s\n", r1);
-	fds[3] = rcs_rev_write_stmp(cf->file_rcs, d3rev1, path2, 0);
+	fds[3] = rcs_rev_write_stmp(cf->file_rcs, cf->file_ent->ce_rev,
+	    path2, 0);
 	if (verbose == 1)
 		cvs_printf("Retrieving revision %s\n", r2);
-	fds[4] = rcs_rev_write_stmp(cf->file_rcs, d3rev2, path3, 0);
+	fds[4] = rcs_rev_write_stmp(cf->file_rcs, cf->file_rcsrev, path3, 0);
 
 	cvs_diffreg(path1, path3, fds[2], fds[4], d1);
 	cvs_diffreg(path2, path3, fds[3], fds[4], d2);
@@ -218,11 +216,11 @@ cvs_merge_file(struct cvs_file *cf, int verbose)
 	argv[argc++] = path2;
 	argv[argc++] = path3;
 
-	if (lseek(fds[2], 0, SEEK_SET) < 0)
+	if (lseek(fds[2], SEEK_SET, 0) < 0)
 		fatal("cvs_merge_file: lseek fds[2]: %s", strerror(errno));
-	if (lseek(fds[3], 0, SEEK_SET) < 0)
+	if (lseek(fds[3], SEEK_SET, 0) < 0)
 		fatal("cvs_merge_file: lseek fds[3]: %s", strerror(errno));
-	if (lseek(fds[4], 0, SEEK_SET) < 0)
+	if (lseek(fds[4], SEEK_SET, 0) < 0)
 		fatal("cvs_merge_file: lseek fds[4]: %s", strerror(errno));
 
 	diff3_conflicts = diff3_internal(argc, argv, cf->file_path, r2);
@@ -234,13 +232,11 @@ cvs_merge_file(struct cvs_file *cf, int verbose)
 	dlen = cvs_buf_len(b1);
 	data = cvs_buf_release(b1);
 
-	if (verbose == 1)
-		cvs_printf("Merging differences between %s and %s into `%s'\n",
-		    r1, r2, cf->file_path);
+	cvs_printf("Merging differences between %s and %s into `%s'\n",
+	    r1, r2, cf->file_path);
 
 	dlines = cvs_splitlines(data, dlen);
 	plines = cvs_splitlines(patch, plen);
-
 	ed_patch_lines(dlines, plines);
 	cvs_freelines(plines);
 
@@ -275,7 +271,11 @@ cvs_merge_file(struct cvs_file *cf, int verbose)
 	for (i = 0; i < 3; i++)
 		fclose(fp[i]);
 
-	cvs_worklist_run(&temp_files, cvs_worklist_unlink);
+	(void)unlink(path1);
+	(void)unlink(path2);
+	(void)unlink(path3);
+	(void)unlink(dp13);
+	(void)unlink(dp23);
 
 	xfree(path1);
 	xfree(path2);
@@ -290,6 +290,7 @@ diff3_internal(int argc, char **argv, const char *fmark, const char *rmark)
 	size_t m, n;
 	int i;
 
+	/* XXX */
 	eflag = 3;
 	oflag = 1;
 
@@ -298,21 +299,6 @@ diff3_internal(int argc, char **argv, const char *fmark, const char *rmark)
 
 	(void)xsnprintf(f1mark, sizeof(f1mark), "<<<<<<< %s", fmark);
 	(void)xsnprintf(f3mark, sizeof(f3mark), ">>>>>>> %s", rmark);
-
-	szchanges = 0;
-	memset(last, 0, sizeof(last));
-	memset(cline, 0, sizeof(cline));
-	if (d13 != NULL)
-		xfree(d13);
-	if (d23 != NULL)
-		xfree(d23);
-	if (overlap != NULL)
-		xfree(overlap);
-	if (de != NULL)
-		xfree(de);
-
-	overlap = NULL;
-	de = d13 = d23 = NULL;
 
 	increase();
 
@@ -347,21 +333,18 @@ ed_patch_lines(struct cvs_lines *dlines, struct cvs_lines *plines)
 		/* Skip blank lines */
 		if (lp->l_len < 2)
 			continue;
-
 		/* NUL-terminate line buffer for strtol() safety. */
 		tmp = lp->l_line[lp->l_len - 1];
 		lp->l_line[lp->l_len - 1] = '\0';
-
+		/* len - 1 is NUL terminator so we use len - 2 for 'op' */
 		op = lp->l_line[strlen(lp->l_line) - 1];
 		start = (int)strtol(lp->l_line, &ep, 10);
-
 		/* Restore the last byte of the buffer */
 		lp->l_line[lp->l_len - 1] = tmp;
-
 		if (op == 'a') {
 			if (start > dlines->l_nblines ||
 			    start < 0 || *ep != 'a')
-				fatal("ed_patch_lines %d", start);
+				fatal("ed_patch_lines");
 		} else if (op == 'c') {
 			if (start > dlines->l_nblines ||
 			    start < 0 || (*ep != ',' && *ep != 'c'))
@@ -375,8 +358,6 @@ ed_patch_lines(struct cvs_lines *dlines, struct cvs_lines *plines)
 			} else {
 				end = start;
 			}
-		} else {
-			fatal("invalid op %c found while merging", op);
 		}
 
 
@@ -416,9 +397,7 @@ ed_patch_lines(struct cvs_lines *dlines, struct cvs_lines *plines)
 				if (lp == NULL)
 					fatal("ed_patch_lines");
 
-				if (lp->l_len == 2 &&
-				    lp->l_line[0] == '.' &&
-				    lp->l_line[1] == '\n')
+				if (!memcmp(lp->l_line, ".", 1))
 					break;
 
 				TAILQ_REMOVE(&(plines->l_lines), lp, l_list);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.234 2008/03/09 03:14:52 joris Exp $	*/
+/*	$OpenBSD: file.c,v 1.225 2008/03/01 14:55:03 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -196,7 +196,7 @@ cvs_file_run(int argc, char **argv, struct cvs_recursion *cr)
 }
 
 struct cvs_filelist *
-cvs_file_get(const char *name, int user_supplied, struct cvs_flisthead *fl)
+cvs_file_get(const char *name, int check_dir_tag, struct cvs_flisthead *fl)
 {
 	const char *p;
 	struct cvs_filelist *l;
@@ -210,15 +210,14 @@ cvs_file_get(const char *name, int user_supplied, struct cvs_flisthead *fl)
 
 	l = (struct cvs_filelist *)xmalloc(sizeof(*l));
 	l->file_path = xstrdup(p);
-	l->user_supplied = user_supplied;
+	l->check_dir_tag = check_dir_tag;
 
 	TAILQ_INSERT_TAIL(fl, l, flist);
 	return (l);
 }
 
 struct cvs_file *
-cvs_file_get_cf(const char *d, const char *f, int fd,
-	int type, int user_supplied)
+cvs_file_get_cf(const char *d, const char *f, int fd, int type)
 {
 	struct cvs_file *cf;
 	char *p, rpath[MAXPATHLEN];
@@ -237,8 +236,6 @@ cvs_file_get_cf(const char *d, const char *f, int fd,
 	cf->repo_fd = -1;
 	cf->file_type = type;
 	cf->file_status = cf->file_flags = 0;
-	cf->user_supplied = user_supplied;
-	cf->in_attic = 0;
 	cf->file_ent = NULL;
 
 	if (current_cvsroot->cr_method != CVS_METHOD_LOCAL ||
@@ -331,38 +328,31 @@ cvs_file_walklist(struct cvs_flisthead *fl, struct cvs_recursion *cr)
 			}
 		}
 
-		cf = cvs_file_get_cf(d, f, fd, type, l->user_supplied);
+		cf = cvs_file_get_cf(d, f, fd, type);
 		if (cf->file_type == CVS_DIR) {
 			cvs_file_walkdir(cf, cr);
 		} else {
-			if (l->user_supplied) {
+			if (l->check_dir_tag) {
 				cvs_parse_tagfile(cf->file_wd,
 				    &cvs_directory_tag, NULL, NULL);
 
 				if (cvs_directory_tag == NULL &&
 				    cvs_specified_tag != NULL)
 					cvs_directory_tag = cvs_specified_tag;
-
-				if (current_cvsroot->cr_method ==
-				    CVS_METHOD_LOCAL) {
-					cvs_get_repository_path(cf->file_wd,
-					    repo, MAXPATHLEN);
-					cvs_repository_lock(repo,
-					    (cmdp->cmd_flags & CVS_LOCK_REPO));
-				}
 			}
 
 			if (cr->fileproc != NULL)
 				cr->fileproc(cf);
-
-			if (l->user_supplied && cmdp->cmd_flags & CVS_LOCK_REPO)
-				cvs_repository_unlock(repo);
 		}
 
 		cvs_file_free(cf);
 
 next:
 		nxt = TAILQ_NEXT(l, flist);
+		TAILQ_REMOVE(fl, l, flist);
+
+		xfree(l->file_path);
+		xfree(l);
 	}
 }
 
@@ -439,9 +429,6 @@ cvs_file_walkdir(struct cvs_file *cf, struct cvs_recursion *cr)
 	if (fstat(cf->fd, &st) == -1)
 		fatal("cvs_file_walkdir: %s %s", cf->file_path,
 		    strerror(errno));
-
-	if (st.st_size > SIZE_MAX)
-		fatal("cvs_file_walkdir: %s: file size too big", cf->file_name);
 
 	bufsize = st.st_size;
 	if (bufsize < st.st_blksize)
@@ -568,12 +555,10 @@ cvs_file_walkdir(struct cvs_file *cf, struct cvs_recursion *cr)
 	cvs_ent_close(entlist, ENT_NOSYNC);
 
 walkrepo:
-	if (current_cvsroot->cr_method == CVS_METHOD_LOCAL) {
-		cvs_get_repository_path(cf->file_path, repo, MAXPATHLEN);
-		cvs_repository_lock(repo, (cmdp->cmd_flags & CVS_LOCK_REPO));
-	}
-
 	if (cr->flags & CR_REPO) {
+		cvs_get_repository_path(cf->file_path, repo, MAXPATHLEN);
+		cvs_repository_lock(repo);
+
 		xsnprintf(fpath, sizeof(fpath), "%s/%s", cf->file_path,
 		    CVS_PATH_STATICENTRIES);
 
@@ -585,8 +570,7 @@ walkrepo:
 	cvs_file_walklist(&fl, cr);
 	cvs_file_freelist(&fl);
 
-	if (current_cvsroot->cr_method == CVS_METHOD_LOCAL &&
-	    (cmdp->cmd_flags & CVS_LOCK_REPO))
+	if (cr->flags & CR_REPO)
 		cvs_repository_unlock(repo);
 
 	cvs_file_walklist(&dl, cr);
@@ -655,11 +639,11 @@ cvs_file_classify(struct cvs_file *cf, const char *tag)
 		cf->file_ent = NULL;
 
 	if (cf->file_ent != NULL) {
-		if (cf->fd != -1 && cf->file_ent->ce_type == CVS_ENT_DIR &&
+		if (cf->file_ent->ce_type == CVS_ENT_DIR &&
 		    cf->file_type != CVS_DIR)
 			fatal("%s is supposed to be a directory, but it is not",
 			    cf->file_path);
-		if (cf->fd != -1 && cf->file_ent->ce_type == CVS_ENT_FILE &&
+		if (cf->file_ent->ce_type == CVS_ENT_FILE &&
 		    cf->file_type != CVS_FILE)
 			fatal("%s is supposed to be a file, but it is not",
 			    cf->file_path);
@@ -764,8 +748,7 @@ cvs_file_classify(struct cvs_file *cf, const char *tag)
 	}
 
 	if (ismodified == 1 && cf->fd != -1 && cf->file_rcs != NULL &&
-	    cf->file_ent != NULL && !RCSNUM_ISBRANCH(cf->file_ent->ce_rev) &&
-	    cf->file_ent->ce_status != CVS_ENT_ADDED) {
+	    cf->file_ent != NULL && !RCSNUM_ISBRANCH(cf->file_ent->ce_rev)) {
 		b1 = rcs_rev_getbuf(cf->file_rcs, cf->file_ent->ce_rev, 0);
 		b2 = cvs_buf_load_fd(cf->fd);
 
@@ -867,7 +850,8 @@ cvs_file_classify(struct cvs_file *cf, const char *tag)
 			if (cf->fd == -1 && server_has_file == 0) {
 				cvs_log(LP_NOTICE,
 				    "warning: %s's entry exists but"
-				    " is no longer in the repository,"
+				    " there is no longer a file"
+				    " in the repository,"
 				    " removing entry",
 				     cf->file_path);
 				cf->file_status = FILE_REMOVE_ENTRY;
@@ -982,7 +966,7 @@ cvs_file_cmp(const char *file1, const char *file2)
 	if (S_ISREG(stb1.st_mode)) {
 		void *p1, *p2;
 
-		if (stb1.st_size > SIZE_MAX) {
+		if (stb1.st_size > (off_t)SIZE_MAX) {
 			ret = 1;
 			goto out;
 		}
@@ -1039,7 +1023,7 @@ cvs_file_copy(const char *from, const char *to)
 		char *p;
 		int saved_errno;
 
-		if (st.st_size > SIZE_MAX) {
+		if (st.st_size > (off_t)SIZE_MAX) {
 			ret = -1;
 			goto out;
 		}

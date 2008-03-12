@@ -16,6 +16,11 @@ BEGIN {
         unshift (@INC, '../blib/lib');
     }
     unshift (@INC, '../blib/lib');
+    require Config;
+    if (($Config::Config{'extensions'} !~ /\bPOSIX\b/) ){
+        print "1..0 # Skip -- Perl configured without POSIX module\n";
+        exit 0;
+    }
     $| = 1;
     print "1..11\n";
 }
@@ -98,9 +103,9 @@ for (sort keys %translators) {
         close MASTER;
         close OUTPUT;
 
-        # EBCDIC platforms use a different character for ESC
+        # OS/390 is EBCDIC, which uses a different character for ESC
         # apparently.  Try to convert so that the test still works.
-        if (ord('A') eq 193 && $_ eq 'Pod::Text::Termcap') {
+        if ($^O eq 'os390' && $_ eq 'Pod::Text::Termcap') {
             $output =~ tr/\033/\047/;
         }
 

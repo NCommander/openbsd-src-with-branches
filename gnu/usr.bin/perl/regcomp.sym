@@ -22,8 +22,9 @@ NBOUNDL		NBOUND, no	Match "" at any word non-boundary
 GPOS		GPOS,   no	Matches where last m//g left off.
 
 # [Special] alternatives
-ANY		ANY,    no	Match any one character (except newline).
-SANY		ANY,    no	Match any one character.
+REG_ANY		REG_ANY,    no	Match any one character (except newline).
+SANY		REG_ANY,    no	Match any one character.
+CANY		REG_ANY,    no	Match any one byte.
 ANYOF		ANYOF,  sv	Match character in (or not in) this class.
 ALNUM		ALNUM,  no	Match any alphanumeric character
 ALNUML		ALNUM,  no	Match any alphanumeric char in locale
@@ -34,7 +35,10 @@ SPACEL		SPACE,  no	Match any whitespace char in locale
 NSPACE		NSPACE, no	Match any non-whitespace character
 NSPACEL		NSPACE, no	Match any non-whitespace char in locale
 DIGIT		DIGIT,  no	Match any numeric character
+DIGITL		DIGIT,  no	Match any numeric character in locale
 NDIGIT		NDIGIT, no	Match any non-numeric character
+NDIGITL		NDIGIT, no	Match any non-numeric character in locale
+CLUMP		CLUMP,  no	Match any combining character sequence
 
 # BRANCH	The set of branches constituting a single choice are hooked
 #		together with their "next" pointers, since precedence prevents

@@ -224,7 +224,7 @@ sub validate_depend
 	# nothing to do if new dependency just matches
 	return if $self->spec->filter($replacement);
 
-	if ($state->{defines}->{updatedepends}) {
+	if ($state->{forced}->{updatedepends}) {
 	    Warn "Forward dependency of $wanting on $toreplace doesn't match $replacement, forcing it\n";
 	    $state->{forcedupdates} = {} unless defined $state->{forcedupdates};
 	    $state->{forcedupdates}->{$wanting} = 1;
@@ -312,7 +312,7 @@ sub can_old_package_be_replaced
 		for my $i (@{$state->{journal}}) {
 			Warn "\t$i\n";
 		}
-		if ($state->{defines}->{update}) {
+		if ($state->{forced}->{update}) {
 			Warn "(forcing update)\n";
 			$state->{okay} = 1;
 		} elsif ($state->{interactive}) {
@@ -356,7 +356,7 @@ sub is_new_package_safe
 		for my $i (@{$state->{journal}}) {
 			Warn "\t$i\n";
 		}
-		if ($state->{defines}->{update}) {
+		if ($state->{forced}->{update}) {
 			Warn "(forcing update)\n";
 			$state->{okay} = 1;
 		} elsif ($state->{interactive}) {

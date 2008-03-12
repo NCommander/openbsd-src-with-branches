@@ -32,15 +32,6 @@
  */
 /*#define HAS_ALARM		/ **/
 
-/* HASATTRIBUTE:
- *	This symbol indicates the C compiler can check for function attributes,
- *	such as printf formats. This is normally only supported by GNU cc.
- */
-/*#define HASATTRIBUTE 	/ **/
-#ifndef HASATTRIBUTE
-#define __attribute__(_arg_)
-#endif
-
 /* HAS_BCMP:
  *	This symbol is defined if the bcmp() routine is available to
  *	compare blocks of memory.
@@ -370,7 +361,7 @@
  *	available to read directory entries. You may have to include
  *	<dirent.h>. See I_DIRENT.
  */
-/*#define HAS_READDIR		/ **/
+#define HAS_READDIR		/**/
 
 /* HAS_SEEKDIR:
  *	This symbol, if defined, indicates that the seekdir routine is
@@ -401,7 +392,7 @@
  *	to rename files.  Otherwise you should do the unlink(), link(), unlink()
  *	trick.
  */
-/*#define HAS_RENAME	/ **/
+#define HAS_RENAME	/**/
 
 /* HAS_RMDIR:
  *	This symbol, if defined, indicates that the rmdir routine is
@@ -672,7 +663,7 @@
  *	whether dirent is available or not. You should use this pseudo type to
  *	portably declare your directory entries.
  */
-/*#define I_DIRENT		/ **/
+#define I_DIRENT		/**/
 /*#define DIRNAMLEN	/ **/
 #define Direntry_t struct dirent
 
@@ -747,7 +738,7 @@
  *	This symbol, if defined, indicates that <stdlib.h> exists and should
  *	be included.
  */
-/*#define I_STDLIB		/ **/
+#define I_STDLIB		/**/
 
 /* I_STRING:
  *	This symbol, if defined, indicates to the C program that it should
@@ -878,47 +869,6 @@
  */
 /*#define I_VFORK	/ **/
 
-/* INTSIZE:
- *	This symbol contains the value of sizeof(int) so that the C
- *	preprocessor can make decisions based on it.
- */
-/* LONGSIZE:
- *	This symbol contains the value of sizeof(long) so that the C
- *	preprocessor can make decisions based on it.
- */
-/* SHORTSIZE:
- *	This symbol contains the value of sizeof(short) so that the C
- *	preprocessor can make decisions based on it.
- */
-#define INTSIZE 4		/**/
-#define LONGSIZE 4		/**/
-#define SHORTSIZE 2		/**/
-
-/* MULTIARCH:
- *	This symbol, if defined, signifies that the build
- *	process will produce some binary files that are going to be
- *	used in a cross-platform environment.  This is the case for
- *	example with the NeXT "fat" binaries that contain executables
- *	for several CPUs.
- */
-/*#define MULTIARCH		/ **/
-
-/* HAS_QUAD:
- *	This symbol, if defined, tells that there's a 64-bit integer type,
- *	Quad_t, and its unsigned counterpar, Uquad_t. QUADKIND will be one
- *	of QUAD_IS_INT, QUAD_IS_LONG, QUAD_IS_LONG_LONG, or QUAD_IS_INT64_T.
- */
-/*#define HAS_QUAD	/ **/
-#ifdef HAS_QUAD
-#   define Quad_t int64_t	/**/
-#   define Uquad_t uint64_t	/**/
-#   define QUADKIND 4	/**/
-#   define QUAD_IS_INT	1
-#   define QUAD_IS_LONG	2
-#   define QUAD_IS_LONG_LONG	3
-#   define QUAD_IS_INT64_T	4
-#endif
-
 /* HAS_ACCESSX:
  *	This symbol, if defined, indicates that the accessx routine is
  *	available to do extended access checks.
@@ -956,6 +906,27 @@
 #define OSNAME "unknown"		/**/
 #define OSVERS ""		/**/
 
+/* USE_CROSS_COMPILE:
+ *	This symbol, if defined, indicates that Perl is being cross-compiled.
+ */
+/* PERL_TARGETARCH:
+ *	This symbol, if defined, indicates the target architecture
+ *	Perl has been cross-compiled to.  Undefined if not a cross-compile.
+ */
+#ifndef USE_CROSS_COMPILE
+/*#define	USE_CROSS_COMPILE	/ **/
+#define	PERL_TARGETARCH	""	/**/
+#endif
+
+/* MULTIARCH:
+ *	This symbol, if defined, signifies that the build
+ *	process will produce some binary files that are going to be
+ *	used in a cross-platform environment.  This is the case for
+ *	example with the NeXT "fat" binaries that contain executables
+ *	for several CPUs.
+ */
+/*#define MULTIARCH		/ **/
+
 /* MEM_ALIGNBYTES:
  *	This symbol contains the number of bytes required to align a
  *	double, or a long double when applicable. Usual values are 2,
@@ -980,8 +951,8 @@
  *	This symbol contains the ~name expanded version of ARCHLIB, to be used
  *	in programs that are not prepared to deal with ~ expansion at run-time.
  */
-/*#define ARCHLIB "/usr/local/lib/perl5/5.7/unknown"		/ **/
-/*#define ARCHLIB_EXP "/usr/local/lib/perl5/5.7/unknown"		/ **/
+/*#define ARCHLIB "/usr/local/lib/perl5/5.9/unknown"		/ **/
+/*#define ARCHLIB_EXP "/usr/local/lib/perl5/5.9/unknown"		/ **/
 
 /* ARCHNAME:
  *	This symbol holds a string representing the architecture name.
@@ -1013,6 +984,22 @@
  */
 #define BIN "/usr/local/bin"	/**/
 #define BIN_EXP ""	/**/
+
+/* INTSIZE:
+ *	This symbol contains the value of sizeof(int) so that the C
+ *	preprocessor can make decisions based on it.
+ */
+/* LONGSIZE:
+ *	This symbol contains the value of sizeof(long) so that the C
+ *	preprocessor can make decisions based on it.
+ */
+/* SHORTSIZE:
+ *	This symbol contains the value of sizeof(short) so that the C
+ *	preprocessor can make decisions based on it.
+ */
+#define INTSIZE 4		/**/
+#define LONGSIZE 4		/**/
+#define SHORTSIZE 2		/**/
 
 /* BYTEORDER:
  *	This symbol holds the hexadecimal constant defined in byteorder,
@@ -1058,7 +1045,7 @@
 #endif /* NeXT */
 
 /* CAT2:
- *	This macro catenates 2 tokens together.
+ *	This macro concatenates 2 tokens together.
  */
 /* STRINGIFY:
  *	This macro surrounds its token with double quotes.
@@ -1078,7 +1065,7 @@
 #define STRINGIFY(a)	PeRl_StGiFy(a)
 #endif
 #if 42 != 1 && 42 != 42
-#   include "Bletch: How does this C preprocessor catenate tokens?"
+#   include "Bletch: How does this C preprocessor concatenate tokens?"
 #endif
 
 /* CPPSTDIN:
@@ -1937,6 +1924,18 @@
  */
 /*#define HAS_MADVISE		/ **/
 
+/* HAS_MALLOC_SIZE:
+ *	This symbol, if defined, indicates that the malloc_size
+ *	routine is available for use.
+ */
+/*#define HAS_MALLOC_SIZE		/ **/
+
+/* HAS_MALLOC_GOOD_SIZE:
+ *	This symbol, if defined, indicates that the malloc_good_size
+ *	routine is available for use.
+ */
+/*#define HAS_MALLOC_GOOD_SIZE	/ **/
+
 /* HAS_MEMCHR:
  *	This symbol, if defined, indicates that the memchr routine is available
  *	to locate characters within a C string.
@@ -1980,6 +1979,11 @@
  *	available to split a long double x into a fractional part f and
  *	an integer part i such that |f| < 1.0 and (f + i) = x.
  */
+/* HAS_MODFL_PROTO:
+ *	This symbol, if defined, indicates that the system provides
+ *	a prototype for the modfl() function.  Otherwise, it is up
+ *	to the program to supply one.
+ */
 /* HAS_MODFL_POW32_BUG:
  *	This symbol, if defined, indicates that the modfl routine is
  *	broken for long doubles >= pow(2, 32).
@@ -1988,6 +1992,7 @@
  *	release 2.2.2 is known to be okay.
  */
 /*#define HAS_MODFL		/ **/
+/*#define HAS_MODFL_PROTO		/ **/
 /*#define HAS_MODFL_POW32_BUG		/ **/
 
 /* HAS_MPROTECT:
@@ -2280,6 +2285,12 @@
 #define Siglongjmp(buf,retval) longjmp((buf),(retval))
 #endif
 
+/* USE_SITECUSTOMIZE:
+ *	This symbol, if defined, indicates that sitecustomize should
+ *	be used.
+ */
+/*#define	USE_SITECUSTOMIZE		/ **/
+
 /* HAS_SOCKET:
  *	This symbol, if defined, indicates that the BSD socket interface is
  *	supported.
@@ -2520,7 +2531,7 @@
  *	This symbol, if defined, indicates that the strtoul routine is
  *	available to provide conversion of strings to unsigned long.
  */
-/*#define HAS_STRTOUL	/ **/
+#define HAS_STRTOUL	/**/
 
 /* HAS_STRTOULL:
  *	This symbol, if defined, indicates that the strtoull routine is
@@ -2607,6 +2618,12 @@
  *	(effectively: whether either of them is NaN)
  */
 /*#define HAS_UNORDERED		/ **/
+
+/* HAS_UNSETENV:
+ *	This symbol, if defined, indicates that the unsetenv () routine is
+ *	available for use.
+ */
+/*#define HAS_UNSETENV		/ **/
 
 /* HAS_USTAT:
  *	This symbol, if defined, indicates that the ustat system call is
@@ -2958,10 +2975,15 @@
  *	This symbol, if defined, indicates to the C program that
  *	the struct tm has a tm_zone field.
  */
+/* HAS_TM_TM_GMTOFF:
+ *	This symbol, if defined, indicates to the C program that
+ *	the struct tm has a tm_gmtoff field.
+ */
 #define I_TIME		/**/
 /*#define I_SYS_TIME		/ **/
 /*#define I_SYS_TIME_KERNEL		/ **/
 /*#define HAS_TM_TM_ZONE		/ **/
+/*#define HAS_TM_TM_GMTOFF		/ **/
 
 /* I_USTAT:
  *	This symbol, if defined, indicates that <ustat.h> exists and
@@ -3029,6 +3051,11 @@
  */
 #define Malloc_t void *			/**/
 #define Free_t int			/**/
+
+/* PERL_MALLOC_WRAP:
+ *	This symbol, if defined, indicates that we'd like malloc wrap checks.
+ */
+/*#define PERL_MALLOC_WRAP		/ **/
 
 /* MYMALLOC:
  *	This symbol, if defined, indicates that we're using our own malloc.
@@ -3112,6 +3139,22 @@
  */
 /*#define PERL_OTHERLIBDIRS ""		/ **/
 
+/* HAS_QUAD:
+ *	This symbol, if defined, tells that there's a 64-bit integer type,
+ *	Quad_t, and its unsigned counterpar, Uquad_t. QUADKIND will be one
+ *	of QUAD_IS_INT, QUAD_IS_LONG, QUAD_IS_LONG_LONG, or QUAD_IS_INT64_T.
+ */
+/*#define HAS_QUAD	/ **/
+#ifdef HAS_QUAD
+#   define Quad_t int64_t	/**/
+#   define Uquad_t uint64_t	/**/
+#   define QUADKIND 4	/**/
+#   define QUAD_IS_INT	1
+#   define QUAD_IS_LONG	2
+#   define QUAD_IS_LONG_LONG	3
+#   define QUAD_IS_INT64_T	4
+#endif
+
 /* IVTYPE:
  *	This symbol defines the C type used for Perl's IV.
  */
@@ -3186,6 +3229,10 @@
  *	This symbol contains the number of bits a variable of type NVTYPE
  *	can preserve of a variable of type UVTYPE.
  */
+/* NV_ZERO_IS_ALLBITS_ZERO:
+ *	This symbol, if defined, indicates that a variable of type NVTYPE
+ *	stores 0.0 in memory as all bits zero.
+ */
 #define	IVTYPE		long		/**/
 #define	UVTYPE		unsigned long		/**/
 #define	I8TYPE		char		/**/
@@ -3214,6 +3261,20 @@
 #define	NVSIZE		8		/**/
 #undef	NV_PRESERVES_UV
 #define	NV_PRESERVES_UV_BITS	0
+#undef	NV_ZERO_IS_ALLBITS_ZERO
+#if UVSIZE == 8
+#   ifdef BYTEORDER
+#       if BYTEORDER == 0x1234
+#           undef BYTEORDER
+#           define BYTEORDER 0x12345678
+#       else
+#           if BYTEORDER == 0x4321
+#               undef BYTEORDER
+#               define BYTEORDER 0x87654321
+#           endif
+#       endif
+#   endif
+#endif
 
 /* IVdf:
  *	This symbol defines the format string used for printing a Perl IV
@@ -3273,8 +3334,8 @@
  *	This symbol contains the ~name expanded version of PRIVLIB, to be used
  *	in programs that are not prepared to deal with ~ expansion at run-time.
  */
-#define PRIVLIB "/usr/local/lib/perl5/5.7"		/**/
-#define PRIVLIB_EXP "/usr/local/lib/perl5/5.7"		/**/
+#define PRIVLIB "/usr/local/lib/perl5/5.9"		/**/
+#define PRIVLIB_EXP "/usr/local/lib/perl5/5.9"		/**/
 
 /* PTRSIZE:
  *	This symbol contains the size of a pointer, so that the C preprocessor
@@ -3338,7 +3399,9 @@
  *	etc., where nn is the actual signal number (e.g. NUM37).
  *	The signal number for sig_name[i] is stored in sig_num[i].
  *	The last element is 0 to terminate the list with a NULL.  This
- *	corresponds to the 0 at the end of the sig_num list.
+ *	corresponds to the 0 at the end of the sig_name_init list.
+ *	Note that this variable is initialized from the sig_name_init,
+ *	not from sig_name (which is unused).
  */
 /* SIG_NUM:
  *	This symbol contains a list of signal numbers, in the same order as the
@@ -3352,11 +3415,13 @@
  *	The signal number corresponding to sig_name[i] is sig_number[i].
  *	if (i < NSIG) then sig_number[i] == i.  
  *	The last element is 0, corresponding to the 0 at the end of
- *	the sig_name list.
+ *	the sig_name_init list.
+ *	Note that this variable is initialized from the sig_num_init,
+ *	not from sig_num (which is unused).
  */
 /* SIG_SIZE:
- *	This variable contains the number of elements of the sig_name
- *	and sig_num arrays, excluding the final NULL entry.
+ *	This variable contains the number of elements of the SIG_NAME
+ *	and SIG_NUM arrays, excluding the final NULL entry.
  */
 #define SIG_NAME 0		/**/
 #define SIG_NUM  0		/**/
@@ -3415,7 +3480,7 @@
  *	unsigned long, int, etc.  It may be necessary to include
  *	<sys/types.h> to get any typedef'ed information.
  */
-#define Size_t int	 /* length paramater for string functions */
+#define Size_t size_t	 /* length paramater for string functions */
 
 /* Sock_size_t:
  *	This symbol holds the type used for the size argument of
@@ -3635,40 +3700,34 @@
 #define M_VOID			/* Xenix strikes again */
 #endif
 
-/* PERL_XS_APIVERSION:
- *	This variable contains the version of the oldest perl binary
- *	compatible with the present perl.  perl.c:incpush() and
- *	lib/lib.pm will automatically search in  for older
- *	directories across major versions back to xs_apiversion.
- *	This is only useful if you have a perl library directory tree
- *	structured like the default one.
- *	See INSTALL for how this works.
- *	The versioned site_perl directory was introduced in 5.005,
- *	so that is the lowest possible value.
- *	Since this can depend on compile time options
- *	it is set by Configure.  Other non-default sources
- *	of potential incompatibility, such as multiplicity, threads,
- *	debugging, 64bits, sfio, etc., are not checked for currently,
- *	though in principle we could go snooping around in old
- *	Config.pm files.
+/* HASATTRIBUTE_FORMAT:
+ *	Can we handle GCC attribute for checking printf-style formats
  */
-/* PERL_PM_APIVERSION:
- *	This variable contains the version of the oldest perl
- *	compatible with the present perl.  (That is, pure perl modules
- *	written for pm_apiversion will still work for the current
- *	version).  perl.c:incpush() and lib/lib.pm will automatically
- *	search in  for older directories across major versions
- *	back to pm_apiversion.  This is only useful if you have a perl
- *	library directory tree structured like the default one.  The
- *	versioned site_perl library was introduced in 5.005, so that's
- *	the default setting for this variable.  It's hard to imagine
- *	it changing before Perl6.  It is included here for symmetry
- *	with xs_apiveprsion -- the searching algorithms will
- *	(presumably) be similar.
- *	See the INSTALL file for how this works.
+/* HASATTRIBUTE_MALLOC:
+ *	Can we handle GCC attribute for malloc-style functions.
  */
-#define PERL_XS_APIVERSION "5.008"
-#define PERL_PM_APIVERSION "5.005"
+/* HASATTRIBUTE_NONNULL:
+ *	Can we handle GCC attribute for nonnull function parms.
+ */
+/* HASATTRIBUTE_NORETURN:
+ *	Can we handle GCC attribute for functions that do not return
+ */
+/* HASATTRIBUTE_PURE:
+ *	Can we handle GCC attribute for pure functions
+ */
+/* HASATTRIBUTE_UNUSED:
+ *	Can we handle GCC attribute for unused variables and arguments
+ */
+/* HASATTRIBUTE_WARN_UNUSED_RESULT:
+ *	Can we handle GCC attribute for warning on unused results
+ */
+/*#define HASATTRIBUTE_FORMAT	/ **/
+/*#define HASATTRIBUTE_NORETURN	/ **/
+/*#define HASATTRIBUTE_MALLOC	/ **/
+/*#define HASATTRIBUTE_NONNULL	/ **/
+/*#define HASATTRIBUTE_PURE	/ **/
+/*#define HASATTRIBUTE_UNUSED	/ **/
+/*#define HASATTRIBUTE_WARN_UNUSED_RESULT	/ **/
 
 /* HAS_CRYPT:
  *	This symbol, if defined, indicates that the crypt routine is available
@@ -3754,17 +3813,17 @@
  */
 #define SH_PATH ""  /**/
 
-/* USE_CROSS_COMPILE:
- *	This symbol, if defined, indicates that Perl is being cross-compiled.
+/* HAS_AINTL:
+ *	This symbol, if defined, indicates that the aintl routine is
+ *	available.  If copysignl is also present we can emulate modfl.
  */
-/* PERL_TARGETARCH:
- *	This symbol, if defined, indicates the target architecture
- *	Perl has been cross-compiled to.  Undefined if not a cross-compile.
+/*#define HAS_AINTL		/ **/
+
+/* HAS_COPYSIGNL:
+ *	This symbol, if defined, indicates that the copysignl routine is
+ *	available.  If aintl is also present we can emulate modfl.
  */
-#ifndef USE_CROSS_COMPILE
-/*#define	USE_CROSS_COMPILE	/ **/
-#define	PERL_TARGETARCH	""	/**/
-#endif
+/*#define HAS_COPYSIGNL		/ **/
 
 /* HAS_DBMINIT_PROTO:
  *	This symbol, if defined, indicates that the system provides
@@ -3779,6 +3838,12 @@
  *	is available.
  */
 /*#define HAS_DIRFD		/ **/
+
+/* HAS_FAST_STDIO:
+ *	This symbol, if defined, indicates that the "fast stdio"
+ *	is available to manipulate the stdio buffers directly.
+ */
+/*#define HAS_FAST_STDIO		/ **/
 
 /* HAS_FLOCK_PROTO:
  *	This symbol, if defined, indicates that the system provides
@@ -3806,6 +3871,18 @@
  */
 /*#define HAS_FPCLASSL		/ **/
 
+/* HAS_ILOGBL:
+ *	This symbol, if defined, indicates that the ilogbl routine is
+ *	available.  If scalbnl is also present we can emulate frexpl.
+ */
+/*#define HAS_ILOGBL		/ **/
+
+/* LIBM_LIB_VERSION:
+ *	This symbol, if defined, indicates that libm exports _LIB_VERSION
+ *	and that math.h defines the enum to manipulate it.
+ */
+/*#define LIBM_LIB_VERSION		/ **/
+
 /* HAS_NL_LANGINFO:
  *	This symbol, if defined, indicates that the nl_langinfo routine is
  *	available to return local data.  You will also need <langinfo.h>
@@ -3826,6 +3903,19 @@
 #if defined(HAS_PROCSELFEXE) && !defined(PROCSELFEXE_PATH)
 #define PROCSELFEXE_PATH		/**/
 #endif
+
+/* HAS_PTHREAD_ATTR_SETSCOPE:
+ *	This symbol, if defined, indicates that the pthread_attr_setscope
+ *	system call is available to set the contention scope attribute of
+ *	a thread attribute object.
+ */
+/*#define HAS_PTHREAD_ATTR_SETSCOPE		/ **/
+
+/* HAS_SCALBNL:
+ *	This symbol, if defined, indicates that the scalbnl routine is
+ *	available.  If ilogbl is also present we can emulate frexpl.
+ */
+/*#define HAS_SCALBNL		/ **/
 
 /* HAS_SIGPROCMASK:
  *	This symbol, if defined, indicates that the sigprocmask
@@ -3870,6 +3960,18 @@
  */
 /*#define HAS_STRFTIME		/ **/
 
+/* HAS_STRLCAT:
+ *	This symbol, if defined, indicates that the strlcat () routine is
+ *	available to do string concatenation.
+ */
+/*#define HAS_STRLCAT		/ **/
+
+/* HAS_STRLCPY:
+ *	This symbol, if defined, indicates that the strlcpy () routine is
+ *	available to do string copying.
+ */
+/*#define HAS_STRLCPY		/ **/
+
 /* HAS_SYSCALL_PROTO:
  *	This symbol, if defined, indicates that the system provides
  *	a prototype for the syscall() function.  Otherwise, it is up
@@ -3912,6 +4014,21 @@
  *	should be included.
  */
 /*#define	I_LANGINFO		/ **/
+
+/* USE_FAST_STDIO:
+ *	This symbol, if defined, indicates that Perl should
+ *	be built to use 'fast stdio'.
+ *	Defaults to define in Perls 5.8 and earlier, to undef later.
+ */
+#ifndef USE_FAST_STDIO
+/*#define	USE_FAST_STDIO		/ **/
+#endif
+
+/* PERL_RELOCATABLE_INC:
+ *	This symbol, if defined, indicates that we'd like to relocate entries
+ *	in @INC at run time based on the location of the perl binary.
+ */
+#define PERL_RELOCATABLE_INC "" 		/**/
 
 /* HAS_CTERMID_R:
  *	This symbol, if defined, indicates that the ctermid_r routine
@@ -4136,7 +4253,7 @@
 
 /* HAS_PTHREAD_ATFORK:
  *	This symbol, if defined, indicates that the pthread_atfork routine
- *	is available setup fork handlers.
+ *	is available to setup fork handlers.
  */
 /*#define HAS_PTHREAD_ATFORK		/ **/
 

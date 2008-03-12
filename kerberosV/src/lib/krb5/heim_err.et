@@ -3,7 +3,7 @@
 #
 # This might look like a com_err file, but is not
 #
-id "$KTH: heim_err.et,v 1.10 2000/07/08 13:02:11 joda Exp $"
+id "$KTH: heim_err.et,v 1.13 2004/02/13 16:23:40 lha Exp $"
 
 error_table heim
 
@@ -16,6 +16,15 @@ error_code NOHOST,		"Host not found"
 error_code OPNOTSUPP,		"Operation not supported"
 error_code EOF,			"End of file"
 error_code BAD_MKEY,		"Failed to get the master key"
+error_code SERVICE_NOMATCH,	"Unacceptable service used"
+
+index 64
+prefix HEIM_PKINIT
+error_code NO_CERTIFICATE,	"Certificate missing"
+error_code NO_PRIVATE_KEY,	"Private key missing"
+error_code NO_VALID_CA,		"No valid certificate authority"
+error_code CERTIFICATE_INVALID,	"Certificate invalid"
+error_code PRIVATE_KEY_INVALID,	"Private key invalid"
 
 index 128
 prefix HEIM_EAI
@@ -32,5 +41,4 @@ error_code NONAME,		"nodename nor servname provided, or not known"
 error_code SERVICE,		"servname not supported for ai_socktype"
 error_code SOCKTYPE,		"ai_socktype not supported"
 error_code SYSTEM,		"system error returned in errno"
-
 end

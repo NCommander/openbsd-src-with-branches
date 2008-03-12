@@ -2,7 +2,7 @@
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
-        chdir 't' if -d 't';
+        chdir 't';
         @INC = '../lib';
     }
     else {
@@ -18,14 +18,12 @@ BEGIN {
         plan skip_all => 'Non-Unix platform';
     }
     else {
-        plan tests => 112;
+        plan tests => 110;
     }
 }
 
 BEGIN { use_ok( 'ExtUtils::MM_Unix' ); }
 
-use vars qw($VERSION);
-$VERSION = '0.02';
 use strict;
 use File::Spec;
 
@@ -34,7 +32,6 @@ my $class = 'ExtUtils::MM_Unix';
 # only one of the following can be true
 # test should be removed if MM_Unix ever stops handling other OS than Unix
 my $os =  ($ExtUtils::MM_Unix::Is_OS2 	|| 0)
-	+ ($ExtUtils::MM_Unix::Is_Mac 	|| 0)
 	+ ($ExtUtils::MM_Unix::Is_Win32 || 0) 
 	+ ($ExtUtils::MM_Unix::Is_Dos 	|| 0)
 	+ ($ExtUtils::MM_Unix::Is_VMS   || 0); 
@@ -74,19 +71,17 @@ foreach ( qw /
   const_loadlibs
   constants
   depend
-  dir_target
   dist
   dist_basics
   dist_ci
   dist_core
-  dist_dir
+  distdir
   dist_test
   dlsyms
   dynamic
   dynamic_bs
   dynamic_lib
   exescan
-  export_list
   extliblist
   find_perl
   fixin
@@ -103,7 +98,6 @@ foreach ( qw /
   makeaperl
   makefile
   manifypods
-  maybe_command_in_dirs
   needs_linking
   pasthru
   perldepend
@@ -129,7 +123,6 @@ foreach ( qw /
   xs_c
   xs_cpp
   xs_o
-  xsubpp_version 
   / )
   {
       can_ok($class, $_);
@@ -165,55 +158,41 @@ is ($t->has_link_code(),1); is ($t->{HAS_LINK_CODE},1);
 ###############################################################################
 # libscan
 
-is ($t->libscan('RCS'),'','libscan on RCS');
-is ($t->libscan('CVS'),'','libscan on CVS');
-is ($t->libscan('SCCS'),'','libscan on SCCS');
-is ($t->libscan('Fatty'),'Fatty','libscan on something not RCS, CVS or SCCS');
+is ($t->libscan('foo/RCS/bar'),     '', 'libscan on RCS');
+is ($t->libscan('CVS/bar/car'),     '', 'libscan on CVS');
+is ($t->libscan('SCCS'),            '', 'libscan on SCCS');
+is ($t->libscan('.svn/something'),  '', 'libscan on Subversion');
+is ($t->libscan('foo/b~r'),         'foo/b~r',    'libscan on file with ~');
+is ($t->libscan('foo/RCS.pm'),      'foo/RCS.pm', 'libscan on file with RCS');
+
+is ($t->libscan('Fatty'), 'Fatty', 'libscan on something not a VC file' );
 
 ###############################################################################
 # maybe_command
 
-is ($t->maybe_command('blargel'),undef,"'blargel' isn't a command");
+open(FILE, ">command"); print FILE "foo"; close FILE;
+ok (!$t->maybe_command('command') ,"non executable file isn't a command");
+chmod 0755, "command";
+ok ($t->maybe_command('command'),        "executable file is a command");
+unlink "command";
 
 ###############################################################################
 # nicetext (dummy method)
 
 is ($t->nicetext('LOTR'),'LOTR','nicetext');
 
-###############################################################################
-# parse_version
-
-my $self_name = $ENV{PERL_CORE} ? '../lib/ExtUtils/t/MM_Unix.t' 
-                                : 'MM_Unix.t';
-
-is( $t->parse_version($self_name), '0.02',  'parse_version on ourself');
-
-my %versions = (
-                '$VERSION = 0.0'    => 0.0,
-                '$VERSION = -1.0'   => -1.0,
-                '$VERSION = undef'  => 'undef',
-                '$wibble  = 1.0'    => 'undef',
-               );
-
-while( my($code, $expect) = each %versions ) {
-    open(FILE, ">VERSION.tmp") || die $!;
-    print FILE "$code\n";
-    close FILE;
-
-    is( $t->parse_version('VERSION.tmp'), $expect, $code );
-
-    unlink "VERSION.tmp";
-}
-
 
 ###############################################################################
 # perl_script (on unix any ordinary, readable file)
 
+my $self_name = $ENV{PERL_CORE} ? '../lib/ExtUtils/t/MM_Unix.t' 
+                                 : 'MM_Unix.t';
 is ($t->perl_script($self_name),$self_name, 'we pass as a perl_script()');
 
 ###############################################################################
 # perm_rw perm_rwx
 
+$t->init_PERM;
 is ($t->perm_rw(),'644', 'perm_rw() is 644');
 is ($t->perm_rwx(),'755', 'perm_rwx() is 755');
 
@@ -231,12 +210,13 @@ foreach (qw/ post_constants postamble post_initialize/)
 is ($t->replace_manpage_separator('Foo/Bar'),'Foo::Bar','manpage_separator'); 
 
 ###############################################################################
-# export_list, perl_archive, perl_archive_after
 
-foreach (qw/ export_list perl_archive perl_archive_after/)
-  {
-  is ($t->$_(),'',"$_() is empty string on Unix"); 
-  }
+$t->init_linker;
+foreach (qw/ EXPORT_LIST PERL_ARCHIVE PERL_ARCHIVE_AFTER /)
+{
+    ok( exists $t->{$_}, "$_ was defined" );
+    is( $t->{$_}, '', "$_ is empty on Unix"); 
+}
 
 
 {

@@ -41,6 +41,7 @@ int b_readlb(hfsvol *vol, unsigned long num, block *bp)
 #ifdef APPLE_HYB
   block *b;
   hce_mem *hce;
+  int off;
 
 #ifdef DEBUG
   fprintf(stderr,"b_readlb: start block = %d\n", vol->vstart + num);
@@ -102,6 +103,7 @@ int b_writelb(hfsvol *vol, unsigned long num, block *bp)
 #ifdef APPLE_HYB
   block *b;
   hce_mem *hce;
+  int off;
 
 #ifdef DEBUG
   fprintf(stderr,"b_writelb: start block = %d\n", vol->vstart + num);

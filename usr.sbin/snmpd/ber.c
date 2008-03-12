@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.c,v 1.8 2008/03/12 13:09:12 claudio Exp $ */
+/*	$OpenBSD: ber.c,v 1.5 2008/01/03 14:44:08 reyk Exp $ */
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
@@ -642,9 +642,6 @@ ber_scanf_elements(struct ber_element *ber, char *fmt, ...)
 			break;
 		case '{':
 		case '(':
-			if (ber->be_encoding != BER_TYPE_SEQUENCE &&
-			    ber->be_encoding != BER_TYPE_SET)
-				goto fail;
 			if (ber->be_sub == NULL || level >= _MAX_SEQ)
 				goto fail;
 			parent[++level] = ber;
@@ -943,7 +940,8 @@ get_id(struct ber *b, unsigned long *tag, int *class, int *cstruct)
 }
 
 /*
- * extract length of a ber object -- if length is unknown an error is returned.
+ * extract length of a ber object -- if length is unknown a length of -1 is
+ * returned.
  */
 static ssize_t
 get_len(struct ber *b, ssize_t *len)
@@ -978,11 +976,8 @@ get_len(struct ber *b, ssize_t *len)
 		return -1;
 	}
 
-	if (s == 0) {
-		/* invalid encoding */
-		errno = EINVAL;
-		return -1;
-	}
+	if (s == 0)
+		s = -1;
 
 	*len = s;
 	return r;
@@ -1107,10 +1102,6 @@ ber_readbuf(struct ber *b, void *buf, size_t nbytes)
 
 	sz = b->br_rend - b->br_rptr;
 	len = MIN(nbytes, sz);
-	if (len == 0) {
-		errno = ECANCELED;
-		return (-1);	/* end of buffer and parser wants more data */
-	}
 
 	bcopy(b->br_rptr, buf, len);
 	b->br_rptr += len;

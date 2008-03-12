@@ -13,40 +13,20 @@ BEGIN {
     }
 }
 
-use vars qw($skip);
+use Scalar::Util ();
+use Test::More  (grep { /weaken/ } @Scalar::Util::EXPORT_FAIL)
+			? (skip_all => 'weaken requires XS version')
+			: (tests => 22);
 
-BEGIN {
-  $|=1;
-  require Scalar::Util;
-  if (grep { /weaken/ } @Scalar::Util::EXPORT_FAIL) {
-    print("1..0\n");
-    $skip=1;
-  }
-
-  $DEBUG = 0;
-
-  if ($DEBUG && eval { require Devel::Peek } ) {
-    Devel::Peek->import('Dump');
-  }
-  else {
-    *Dump = sub {};
-  }
+if (0) {
+  require Devel::Peek;
+  Devel::Peek->import('Dump');
+}
+else {
+  *Dump = sub {};
 }
 
-eval <<'EOT' unless $skip;
-use Scalar::Util qw(weaken isweak);
-print "1..17\n";
-
-######################### End of black magic.
-
-$cnt = 0;
-
-sub ok {
-	++$cnt;
-	if($_[0]) { print "ok $cnt\n"; } else {print "not ok $cnt\n"; }
-}
-
-$| = 1;
+Scalar::Util->import(qw(weaken isweak));
 
 if(1) {
 
@@ -61,25 +41,25 @@ my ($y,$z);
 	$y = \$x;
 	$z = \$x;
 }
-print "# START:\n";
+print "# START\n";
 Dump($y); Dump($z);
 
-ok( $y ne "" and $z ne "" );
-weaken($y);
+ok( ref($y) and ref($z));
 
 print "# WEAK:\n";
+weaken($y);
 Dump($y); Dump($z);
 
-ok( $y ne "" and $z ne "" );
-undef($z);
+ok( ref($y) and ref($z));
 
 print "# UNDZ:\n";
+undef($z);
 Dump($y); Dump($z);
 
 ok( not (defined($y) and defined($z)) );
-undef($y);
 
 print "# UNDY:\n";
+undef($y);
 Dump($y); Dump($z);
 
 ok( not (defined($y) and defined($z)) );
@@ -87,16 +67,10 @@ ok( not (defined($y) and defined($z)) );
 print "# FIN:\n";
 Dump($y); Dump($z);
 
-# exit(0);
-
-# }
-# {
 
 # 
 # Case 2: one reference, which is weakened
 #
-
-# kill 5,$$;
 
 print "# CASE 2:\n";
 
@@ -105,7 +79,7 @@ print "# CASE 2:\n";
 	$y = \$x;
 }
 
-ok( $y ne "" );
+ok( ref($y) );
 print "# BW: \n";
 Dump($y);
 weaken($y);
@@ -116,13 +90,9 @@ ok( not defined $y  );
 print "# EXITBLOCK\n";
 }
 
-# exit(0);
-
 # 
 # Case 3: a circular structure
 #
-
-# kill 5, $$;
 
 $flag = 0;
 {
@@ -136,7 +106,7 @@ $flag = 0;
 	print "# 3: $y\n";
 	weaken($y->{Self});
 	print "# WKED\n";
-	ok( $y ne "" );
+	ok( ref($y) );
 	print "# VALS: HASH ",$y,"   SELF ",\$y->{Self},"  Y ",\$y, 
 		"    FLAG: ",\$y->{Flag},"\n";
 	print "# VPRINT\n";
@@ -184,7 +154,7 @@ Dump($y);
 undef($y);
 
 ok( not defined $y);
-ok($z ne "");
+ok( ref($z) );
 
 
 #
@@ -205,6 +175,25 @@ weaken($x->{Y} = \$a);
 ok(isweak($x->{Y}));
 ok(!isweak($x->{Z}));
 
+#
+# Case 7: test weaken on a read only ref
+#
+
+SKIP: {
+    # Doesn't work for older perls, see bug [perl #24506]
+    skip("Test does not work with perl < 5.8.3", 5) if $] < 5.008003;
+
+    $a = eval '\"hello"';
+    ok(ref($a)) or print "# didn't get a ref from eval\n";
+    $b = $a;
+    eval{weaken($b)};
+    # we didn't die
+    ok($@ eq "") or print "# died with $@\n";
+    ok(isweak($b));
+    ok($$b eq "hello") or print "# b is '$$b'\n";
+    $a="";
+    ok(not $b) or print "# b didn't go away\n";
+}
 
 package Dest;
 
@@ -212,4 +201,3 @@ sub DESTROY {
 	print "# INCFLAG\n";
 	${$_[0]{Flag}} ++;
 }
-EOT

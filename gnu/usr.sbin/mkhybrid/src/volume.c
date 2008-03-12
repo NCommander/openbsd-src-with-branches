@@ -15,8 +15,6 @@
 
 #include "config.h"
 #include "mkisofs.h"
-#include "volume.h"
-#include "write.h"
 #include <errno.h>
 
 static hfsvol *vol_save = 0;	/* used to "destroy" an HFS volume */
@@ -82,7 +80,7 @@ XClpSiz(int vlen)
 int
 get_vol_size(int vblen)
 {
-	int	drXTClpSiz, drAlBlkSiz;
+	int	drXTClpSiz, new_drXTClpSiz, drAlBlkSiz;
 	int	new_vblen;
 
 	/* try to estimate a "volume size" based on the code

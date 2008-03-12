@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995, 1996, 1997 Kungliga Tekniska Högskolan
+ * Copyright (c) 1995-2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: getdtablesize.c,v 1.10 1999/12/02 16:58:46 joda Exp $");
+RCSID("$KTH: getdtablesize.c,v 1.12 2005/04/12 11:28:45 lha Exp $");
 #endif
 
 #include "roken.h"
@@ -64,7 +64,8 @@ RCSID("$KTH: getdtablesize.c,v 1.10 1999/12/02 16:58:46 joda Exp $");
 #include <sys/sysctl.h>
 #endif
 
-int getdtablesize(void)
+int ROKEN_LIB_FUNCTION
+getdtablesize(void)
 {
   int files = -1;
 #if defined(HAVE_SYSCONF) && defined(_SC_OPEN_MAX)
@@ -82,7 +83,7 @@ int getdtablesize(void)
   mib[0] = CTL_KERN;
   mib[1] = KERN_MAXFILES;
   len = sizeof(files);
-  sysctl(&mib, 2, &files, sizeof(nfil), NULL, 0);
+  sysctl(&mib, 2, &files, sizeof(files), NULL, 0);
 #endif /* defined(HAVE_SYSCTL) */
 #endif /* !definded(HAVE_GETRLIMIT) */
 #endif /* !defined(HAVE_SYSCONF) */

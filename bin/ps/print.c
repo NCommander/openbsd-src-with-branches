@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.43 2007/11/06 10:22:29 chl Exp $	*/
+/*	$OpenBSD: print.c,v 1.42 2006/11/29 12:34:19 miod Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
 #else
-static char rcsid[] = "$OpenBSD: print.c,v 1.43 2007/11/06 10:22:29 chl Exp $";
+static char rcsid[] = "$OpenBSD: print.c,v 1.42 2006/11/29 12:34:19 miod Exp $";
 #endif
 #endif /* not lint */
 
@@ -64,7 +64,7 @@ static char rcsid[] = "$OpenBSD: print.c,v 1.43 2007/11/06 10:22:29 chl Exp $";
 #include "ps.h"
 
 extern kvm_t *kd;
-extern int needenv, needcomm, neednlist, commandonly;
+extern int needenv, needcomm, commandonly;
 
 static char *cmdpart(char *);
 
@@ -524,9 +524,12 @@ cputime(const struct kinfo_proc2 *kp, VARENT *ve)
 double
 getpcpu(const struct kinfo_proc2 *kp)
 {
+	static int failure;
 	double d;
 
-	if (fscale == 0)
+	if (!nlistread)
+		failure = donlist();
+	if (failure)
 		return (0.0);
 
 #define	fxtofl(fixpt)	((double)(fixpt) / fscale)
@@ -560,10 +563,13 @@ pcpu(const struct kinfo_proc2 *kp, VARENT *ve)
 double
 getpmem(const struct kinfo_proc2 *kp)
 {
+	static int failure;
 	double fracmem;
 	int szptudot;
 
-	if (mempages == 0)
+	if (!nlistread)
+		failure = donlist();
+	if (failure)
 		return (0.0);
 
 	if (kp->p_flag & P_SYSTEM)

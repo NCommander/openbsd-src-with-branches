@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1998 - 2005 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,7 +33,7 @@
 
 #include "gssapi_locl.h"
 
-RCSID("$KTH: display_status.c,v 1.5 1999/12/02 17:05:03 joda Exp $");
+RCSID("$KTH: display_status.c,v 1.12 2005/03/16 13:15:03 lha Exp $");
 
 static char *
 calling_error(OM_uint32 v)
@@ -91,6 +91,63 @@ routine_error(OM_uint32 v)
 	return msgs[v];
 }
 
+static char *
+supplementary_error(OM_uint32 v)
+{
+    static char *msgs[] = {
+	"normal completion",
+	"continuation call to routine required",
+	"duplicate per-message token detected",
+	"timed-out per-message token detected",
+	"reordered (early) per-message token detected",
+	"skipped predecessor token(s) detected"
+    };
+
+    v >>= GSS_C_SUPPLEMENTARY_OFFSET;
+
+    if (v >= sizeof(msgs)/sizeof(*msgs))
+	return "unknown routine error";
+    else
+	return msgs[v];
+}
+
+void
+gssapi_krb5_set_error_string (void)
+{
+    struct gssapi_thr_context *ctx = gssapi_get_thread_context(1);
+    char *e;
+
+    if (ctx == NULL)
+	return;
+    HEIMDAL_MUTEX_lock(&ctx->mutex);
+    if (ctx->error_string)
+	free(ctx->error_string);
+    e = krb5_get_error_string(gssapi_krb5_context);
+    if (e == NULL)
+	ctx->error_string = NULL;
+    else {
+	/* ignore failures, will use status code instead */
+	ctx->error_string = strdup(e); 
+	krb5_free_error_string(gssapi_krb5_context, e);
+    }
+    HEIMDAL_MUTEX_unlock(&ctx->mutex);
+}
+
+char *
+gssapi_krb5_get_error_string (void)
+{
+    struct gssapi_thr_context *ctx = gssapi_get_thread_context(0);
+    char *ret;
+
+    if (ctx == NULL)
+	return NULL;
+    HEIMDAL_MUTEX_lock(&ctx->mutex);
+    ret = ctx->error_string;
+    ctx->error_string = NULL;
+    HEIMDAL_MUTEX_unlock(&ctx->mutex);
+    return ret;
+}
+
 OM_uint32 gss_display_status
            (OM_uint32		*minor_status,
 	    OM_uint32		 status_value,
@@ -101,32 +158,48 @@ OM_uint32 gss_display_status
 {
   char *buf;
 
-  gssapi_krb5_init ();
+  GSSAPI_KRB5_INIT ();
 
-  *minor_status = 0;
+  status_string->length = 0;
+  status_string->value = NULL;
 
-  if (mech_type != GSS_C_NO_OID &&
-      mech_type != GSS_KRB5_MECHANISM)
-      return GSS_S_BAD_MECH;
+  if (gss_oid_equal(mech_type, GSS_C_NO_OID) == 0 &&
+      gss_oid_equal(mech_type, GSS_KRB5_MECHANISM) == 0) {
+      *minor_status = 0;
+      return GSS_C_GSS_CODE;
+  }
 
   if (status_type == GSS_C_GSS_CODE) {
-      asprintf (&buf, "%s %s",
-		calling_error(GSS_CALLING_ERROR(status_value)),
-		routine_error(GSS_ROUTINE_ERROR(status_value)));
-      if (buf == NULL) {
-	  *minor_status = ENOMEM;
-	  return GSS_S_FAILURE;
-      }
+      if (GSS_SUPPLEMENTARY_INFO(status_value))
+	  asprintf(&buf, "%s", 
+		   supplementary_error(GSS_SUPPLEMENTARY_INFO(status_value)));
+      else
+	  asprintf (&buf, "%s %s",
+		    calling_error(GSS_CALLING_ERROR(status_value)),
+		    routine_error(GSS_ROUTINE_ERROR(status_value)));
   } else if (status_type == GSS_C_MECH_CODE) {
-      buf = strdup(krb5_get_err_text (gssapi_krb5_context, status_value));
+      buf = gssapi_krb5_get_error_string ();
       if (buf == NULL) {
-	  *minor_status = ENOMEM;
-	  return GSS_S_FAILURE;
+	  const char *tmp = krb5_get_err_text (gssapi_krb5_context,
+					       status_value);
+	  if (tmp == NULL)
+	      asprintf(&buf, "unknown mech error-code %u",
+		       (unsigned)status_value);
+	  else
+	      buf = strdup(tmp);
       }
-  } else
+  } else {
+      *minor_status = EINVAL;
       return GSS_S_BAD_STATUS;
+  }
+
+  if (buf == NULL) {
+      *minor_status = ENOMEM;
+      return GSS_S_FAILURE;
+  }
 
   *message_context = 0;
+  *minor_status = 0;
 
   status_string->length = strlen(buf);
   status_string->value  = buf;

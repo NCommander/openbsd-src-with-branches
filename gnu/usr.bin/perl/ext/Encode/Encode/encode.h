@@ -76,7 +76,8 @@ struct encode_s
 /* See comment at top of file for deviousness */
 
 extern int do_encode(encpage_t *enc, const U8 *src, STRLEN *slen,
-                     U8 *dst, STRLEN dlen, STRLEN *dout, int approx);
+                     U8 *dst, STRLEN dlen, STRLEN *dout, int approx,
+		     const U8 *term, STRLEN tlen);
 
 extern void Encode_DefineEncoding(encode_t *enc);
 
@@ -86,6 +87,7 @@ extern void Encode_DefineEncoding(encode_t *enc);
 #define ENCODE_PARTIAL  2
 #define ENCODE_NOREP    3
 #define ENCODE_FALLBACK 4
+#define ENCODE_FOUND_TERM 5
 
 #define FBCHAR_UTF8		"\xEF\xBF\xBD"
 
@@ -96,13 +98,14 @@ extern void Encode_DefineEncoding(encode_t *enc);
 #define  ENCODE_PERLQQ         0x0100 /* perlqq fallback string */
 #define  ENCODE_HTMLCREF       0x0200 /* HTML character ref. fb mode */
 #define  ENCODE_XMLCREF        0x0400 /* XML  character ref. fb mode */
+#define  ENCODE_STOP_AT_PARTIAL 0x0800 /* stop at partial explicitly */
 
 #define  ENCODE_FB_DEFAULT     0x0000
 #define  ENCODE_FB_CROAK       0x0001
 #define  ENCODE_FB_QUIET       ENCODE_RETURN_ON_ERR
 #define  ENCODE_FB_WARN        (ENCODE_RETURN_ON_ERR|ENCODE_WARN_ON_ERR)
-#define  ENCODE_FB_PERLQQ      ENCODE_PERLQQ
-#define  ENCODE_FB_HTMLCREF    ENCODE_HTMLCREF
-#define  ENCODE_FB_XMLCREF     ENCODE_XMLCREF
+#define  ENCODE_FB_PERLQQ      (ENCODE_PERLQQ|ENCODE_LEAVE_SRC)
+#define  ENCODE_FB_HTMLCREF    (ENCODE_HTMLCREF|ENCODE_LEAVE_SRC)
+#define  ENCODE_FB_XMLCREF     (ENCODE_XMLCREF|ENCODE_LEAVE_SRC)
 
 #endif /* ENCODE_H */

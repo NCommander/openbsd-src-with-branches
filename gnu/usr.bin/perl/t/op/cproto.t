@@ -6,7 +6,9 @@ BEGIN {
     @INC = '../lib';
 }
 
-use Test::More tests => 234;
+BEGIN { require './test.pl'; }
+plan tests => 234;
+
 while (<DATA>) {
     chomp;
     my ($keyword, $proto) = split;
@@ -195,7 +197,7 @@ send (*$$;$)
 setgrent ()
 sethostent ($)
 setnetent ($)
-setpgrp undef
+setpgrp (;$$)
 setpriority ($$$)
 setprotoent ($)
 setpwent ()

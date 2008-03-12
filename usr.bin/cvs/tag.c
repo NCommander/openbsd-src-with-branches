@@ -1,4 +1,4 @@
-/*	$OpenBSD: tag.c,v 1.71 2008/03/09 03:14:52 joris Exp $	*/
+/*	$OpenBSD: tag.c,v 1.69 2008/03/01 21:29:37 deraadt Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  *
@@ -39,7 +39,7 @@ static char	*tag_name = NULL;
 static char	*tag_oldname = NULL;
 
 struct cvs_cmd cvs_cmd_rtag = {
-	CVS_OP_RTAG, CVS_LOCK_REPO, "rtag",
+	CVS_OP_RTAG, 0, "rtag",
 	{ "rt", "rfreeze" },
 	"Add a symbolic tag to a module",
 	"[-bcdFflR] [-D date | -r rev] tag modules ...",
@@ -49,7 +49,7 @@ struct cvs_cmd cvs_cmd_rtag = {
 };
 
 struct cvs_cmd cvs_cmd_tag = {
-	CVS_OP_TAG, CVS_USE_WDIR | CVS_LOCK_REPO, "tag",
+	CVS_OP_TAG, CVS_USE_WDIR, "tag",
 	{ "ta", "freeze" },
 	"Add a symbolic tag to checked out version of files",
 	"[-bcdFflR] [-D date | -r rev] tag [file ...]",
@@ -314,7 +314,6 @@ tag_add(struct cvs_file *cf)
 			return (-1);
 		}
 		(void)rcsnum_tostr(trev, trevbuf, sizeof(trevbuf));
-		rcsnum_free(trev);
 
 		if (!(runflags & T_FORCE_MOVE)) {
 			cvs_printf("W %s : %s ", cf->file_path, tag_name);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.44 2007/12/28 19:17:28 chl Exp $	*/
+/*	$OpenBSD: ps.c,v 1.43 2007/09/01 19:32:19 deraadt Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ps.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: ps.c,v 1.44 2007/12/28 19:17:28 chl Exp $";
+static char rcsid[] = "$OpenBSD: ps.c,v 1.43 2007/09/01 19:32:19 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -82,7 +82,7 @@ int	totwidth;		/* calculated width of requested variables */
 
 int	ncpu = 1;
 
-int	needcomm, needenv, neednlist, commandonly;
+int	needcomm, needenv, commandonly;
 
 enum sort { DEFAULT, SORTMEM, SORTCPU } sortby = DEFAULT;
 
@@ -295,10 +295,6 @@ main(int argc, char *argv[])
 	 * and adjusting header widths as appropriate.
 	 */
 	scanvars();
-
-	if (neednlist && !nlistread)
-		(void) donlist();
-
 	/*
 	 * get proc list
 	 */
@@ -407,8 +403,6 @@ scanvars(void)
 		totwidth += v->width + 1;	/* +1 for space */
 		if (v->flag & COMM)
 			needcomm = 1;
-		if (v->flag & NLIST)
-			neednlist = 1;
 	}
 	totwidth--;
 }

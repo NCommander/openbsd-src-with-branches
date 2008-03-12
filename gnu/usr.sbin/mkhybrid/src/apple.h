@@ -50,12 +50,17 @@ typedef struct {
 	unsigned short	fdflags;		/* finder flags */
 } afpmap;
 
+extern void hfs_init(char *, unsigned short, int, int, unsigned int);
+extern void clean_hfs(void);
+
 /* from "data.h" - libhfs routines */
 unsigned long d_toutime(unsigned long);
 long d_getl(unsigned char *);
 short d_getw(unsigned char *);
 
-#include "libfile/proto.h"
+/* for libfile routines */
+int init_magic(char *);
+char * get_magic_match(const char *);
 
 /****** TYPE_CAP ******/
 

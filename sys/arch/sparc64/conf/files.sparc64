@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sparc64,v 1.100 2008/03/09 17:34:30 kettenis Exp $
+#	$OpenBSD: files.sparc64,v 1.94 2008/02/12 10:12:14 robert Exp $
 #	$NetBSD: files.sparc64,v 1.50 2001/08/10 20:53:50 eeh Exp $
 
 # maxpartitions must be first item in files.${ARCH}
@@ -37,10 +37,6 @@ file	arch/sparc64/dev/clkbrd.c		clkbrd
 device	environ
 attach	environ at fhc
 file	arch/sparc64/dev/environ.c		environ
-
-device	vbus {}
-attach	vbus at mainbus
-file	arch/sparc64/dev/vbus.c			vbus
 
 # Sun HME Ethernet controllers
 device	hme: ether, ifnet, mii, ifmedia
@@ -96,11 +92,7 @@ device	pyro: pcibus
 attach	pyro at mainbus
 file	arch/sparc64/dev/pyro.c			pyro
 
-device	vpci: pcibus
-attach	vpci at mainbus
-file	arch/sparc64/dev/vpci.c			vpci
-
-file	arch/sparc64/dev/pci_machdep.c		psycho | schizo | pyro | vpci
+file	arch/sparc64/dev/pci_machdep.c		psycho | schizo | pyro
 
 attach	hme at pci with hme_pci
 file	dev/pci/if_hme_pci.c			hme_pci
@@ -109,9 +101,8 @@ device	vgafb: wsemuldisplaydev, rasops_bswap, rasops8, rasops16, rasops32
 attach	vgafb at pci
 file	arch/sparc64/dev/vgafb.c		vgafb
 
-# IOMMU is for both sbus and pci
-file	arch/sparc64/dev/iommu.c		sbus | psycho | schizo | pyro | vpci
-file	arch/sparc64/dev/viommu.c		vpci
+# IOMMU is for both
+file	arch/sparc64/dev/iommu.c		sbus | psycho
 
 device	ebus {[addr = -1]}: pcibus
 attach	ebus at pci
@@ -249,7 +240,6 @@ file	arch/sparc64/sparc64/cache.c
 file	arch/sparc64/sparc64/conf.c
 file	arch/sparc64/sparc64/disksubr.c
 file	arch/sparc64/sparc64/emul.c
-file	arch/sparc64/sparc64/hvcall.S		sun4v
 file	arch/sparc64/sparc64/in_cksum.S		inet
 file	arch/sparc64/sparc64/in4_cksum.c	inet
 file	arch/sparc64/sparc64/intr.c
@@ -335,13 +325,3 @@ include "dev/gpio/files.gpio"
 # Machine-independent 1-Wire drivers
 #
 include "dev/onewire/files.onewire"
-
-# Virtual console
-device	vcons
-attach	vcons at vbus
-file	arch/sparc64/dev/vcons.c		vcons needs-flag
-
-# Virtual rtc
-device	vrtc
-attach	vrtc at vbus
-file	arch/sparc64/dev/vrtc.c			vrtc
