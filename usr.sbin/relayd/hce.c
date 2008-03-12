@@ -1,4 +1,4 @@
-/*	$OpenBSD: hce.c,v 1.39 2008/01/31 09:33:39 reyk Exp $	*/
+/*	$OpenBSD: hce.c,v 1.40 2008/02/11 10:42:50 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -52,8 +52,6 @@ void	hce_disable_events(void);
 static struct relayd *env = NULL;
 struct imsgbuf		*ibuf_pfe;
 struct imsgbuf		*ibuf_main;
-int			 pipe_pfe;
-int			 pipe_parent;
 int			 running = 0;
 
 void
