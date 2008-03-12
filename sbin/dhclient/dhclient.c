@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.115 2007/09/02 15:19:23 deraadt Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.116 2007/10/16 20:19:26 sobrado Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -1807,7 +1807,7 @@ priv_script_go(void)
 
 	script_flush_env();
 
-	return (wstatus & 0xff);
+	return (WEXITSTATUS(wstatus));
 }
 
 void
