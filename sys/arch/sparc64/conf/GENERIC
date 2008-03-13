@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.195 2008/02/24 21:49:37 uwe Exp $
+#	$OpenBSD: GENERIC,v 1.196 2008/03/09 13:24:52 kettenis Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -283,6 +283,9 @@ rtc*	at ebus?
 clock0	at fhc?
 clkbrd*	at fhc?
 #environ* at fhc?
+
+## PROM clock -- if all else failse
+prtc0	at mainbus0
 
 ## Timer chip found on (some) sun4u systems.
 timer*	at mainbus0
