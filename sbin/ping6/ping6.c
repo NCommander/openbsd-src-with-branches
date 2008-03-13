@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping6.c,v 1.69 2006/12/15 06:07:39 itojun Exp $	*/
+/*	$OpenBSD: ping6.c,v 1.70 2007/12/30 13:38:47 sobrado Exp $	*/
 /*	$KAME: ping6.c,v 1.163 2002/10/25 02:19:06 itojun Exp $	*/
 
 /*
@@ -873,7 +873,10 @@ main(int argc, char *argv[])
 
 	for (;;) {
 		struct msghdr m;
-		u_char buf[1024];
+		union {
+			struct cmsghdr hdr;
+			u_char buf[sizeof(struct in6_pktinfo)];
+		} cmsgbuf;
 		struct iovec iov[2];
 
 		/* signal handling */
@@ -919,8 +922,8 @@ main(int argc, char *argv[])
 		iov[0].iov_len = packlen;
 		m.msg_iov = iov;
 		m.msg_iovlen = 1;
-		m.msg_control = (caddr_t)buf;
-		m.msg_controllen = sizeof(buf);
+		m.msg_control = (caddr_t)&cmsgbuf.buf;
+		m.msg_controllen = sizeof(cmsgbuf.buf);
 
 		cc = recvmsg(s, &m, 0);
 		if (cc < 0) {
