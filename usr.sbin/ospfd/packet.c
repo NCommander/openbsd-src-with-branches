@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.22 2006/11/17 08:55:31 claudio Exp $ */
+/*	$OpenBSD: packet.c,v 1.23 2008/03/13 01:49:53 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -140,7 +140,7 @@ recv_packet(int fd, short event, void *bula)
 	msg.msg_iov = &iov;
 	msg.msg_iovlen = 1;
 	msg.msg_control = &cmsgbuf.buf;
-	msg.msg_controllen = sizeof(cmsgbuf.buf);
+	msg.msg_controllen = CMSG_LEN(sizeof(struct sockaddr_dl));
 
 	if ((r = recvmsg(fd, &msg, 0)) == -1) {
 		if (errno != EAGAIN && errno != EINTR)
