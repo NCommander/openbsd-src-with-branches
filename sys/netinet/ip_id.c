@@ -59,7 +59,7 @@ ip_randomid(void)
 		 * doing this until the first packet being sent and now must
 		 * generate an ID.
 		 */
-		for (i = 0; i < sizeof(ip_shuffle)/sizeof(*ip_shuffle)-1; ++i) {
+		for (i = 0; i < sizeof(ip_shuffle)/sizeof(ip_shuffle[0]); ++i) {
 			i2 = arc4random_uniform(i + 1);
 			ip_shuffle[i] = ip_shuffle[i2];
 			ip_shuffle[i2] = i;
