@@ -1,4 +1,4 @@
-/* $OpenBSD: agp.c,v 1.15 2008/01/02 03:40:38 brad Exp $ */
+/* $OpenBSD: agp.c,v 1.16 2008/01/04 00:23:26 kettenis Exp $ */
 /*-
  * Copyright (c) 2000 Doug Rabson
  * All rights reserved.
@@ -109,6 +109,11 @@ agp_probe(struct device *parent, void *match, void *aux)
 {
 	struct agpbus_attach_args *aaa = aux;
 	struct pci_attach_args *pa = &aaa->apa_pci_args;
+
+	/* pci_args must be a pchb */
+	if (PCI_CLASS(pa->pa_class) != PCI_CLASS_BRIDGE || 
+	    PCI_SUBCLASS(pa->pa_class) != PCI_SUBCLASS_BRIDGE_HOST)
+		return (0);
 
 	if (agp_lookup(pa) == NULL)
 		return (0);
