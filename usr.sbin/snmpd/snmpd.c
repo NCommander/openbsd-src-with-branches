@@ -84,7 +84,8 @@ usage(void)
 {
 	extern char	*__progname;
 
-	fprintf(stderr, "%s [-dNnv] [-D macro=value] [-f file]\n", __progname);
+	fprintf(stderr, "usage: %s [-dNnv] [-D macro=value] [-f file]\n",
+	    __progname);
 	exit(1);
 }
 
