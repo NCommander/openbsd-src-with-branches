@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.29 2007/02/20 11:24:32 henning Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.30 2007/03/15 05:18:32 djm Exp $	*/
 
 /*
  * Copyright (c) 2003 Anil Madhavapeddy <anil@recoil.org>
@@ -753,11 +753,9 @@ sig_got_chld(int sig)
 
 	do {
 		pid = waitpid(WAIT_ANY, NULL, WNOHANG);
-	} while (pid == -1 && errno == EINTR);
-
-	if (pid == child_pid &&
-	    cur_state < STATE_QUIT)
-		cur_state = STATE_QUIT;
+		if (pid == child_pid && cur_state < STATE_QUIT)
+			cur_state = STATE_QUIT;
+	} while (pid > 0 || (pid == -1 && errno == EINTR));
 }
 
 /* Read all data or return 1 for error.  */
