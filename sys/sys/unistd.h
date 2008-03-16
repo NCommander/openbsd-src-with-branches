@@ -1,4 +1,4 @@
-/*	$OpenBSD: unistd.h,v 1.12 2004/05/07 18:39:19 millert Exp $	*/
+/*	$OpenBSD: unistd.h,v 1.13 2005/12/13 00:35:24 millert Exp $	*/
 /*	$NetBSD: unistd.h,v 1.10 1994/06/29 06:46:06 cgd Exp $	*/
 
 /*
@@ -138,6 +138,9 @@
 #define _SC_THREAD_PROCESS_SHARED
 #define _SC_THREAD_SAFE_FUNCTIONS
 #endif
+
+#define	_SC_PHYS_PAGES		500
+#define	_SC_AVPHYS_PAGES	501
 
 /* configurable system strings */
 #define	_CS_PATH		 1
