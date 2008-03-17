@@ -1,4 +1,4 @@
-/*	$OpenBSD: sasyncd.c,v 1.16 2006/12/26 00:58:11 msf Exp $	*/
+/*	$OpenBSD: sasyncd.c,v 1.17 2007/02/26 04:36:57 ray Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -134,8 +134,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "Usage: %s [-c config-file] [-d] [-v[v]]\n",
-	    __progname);
+	fprintf(stderr, "usage: %s [-dv] [-c config-file]\n", __progname);
 	exit(1);
 }
 
