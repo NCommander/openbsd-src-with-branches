@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.22 2008/03/15 23:50:54 dlg Exp $	*/
+/*	$OpenBSD: mib.c,v 1.23 2008/03/16 00:35:05 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -364,7 +364,7 @@ mib_hrmemory(struct oid *oid, struct ber_oid *o, struct ber_element **elm)
 	u_int64_t		 physmem;
 	size_t			 len = sizeof(physmem);
 
-	if (sysctl(mib, sizeof(mib), &physmem, &len, NULL, 0) == -1)
+	if (sysctl(mib, sizeofa(mib), &physmem, &len, NULL, 0) == -1)
 		return (-1);
 
 	ber = ber_add_integer(ber, physmem / 1024);
