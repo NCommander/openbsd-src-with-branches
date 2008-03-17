@@ -1,4 +1,4 @@
-/*	$OpenBSD: tetris.c,v 1.20 2004/07/10 07:26:24 deraadt Exp $	*/
+/*	$OpenBSD: tetris.c,v 1.21 2006/04/20 03:24:12 ray Exp $	*/
 /*	$NetBSD: tetris.c,v 1.2 1995/04/22 07:42:47 cgd Exp $	*/
 
 /*-
@@ -368,6 +368,6 @@ onintr(int signo)
 void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: tetris [-ps] [-k keys] [-l level]\n");
+	(void)fprintf(stderr, "usage: tetris [-cps] [-k keys] [-l level]\n");
 	exit(1);
 }

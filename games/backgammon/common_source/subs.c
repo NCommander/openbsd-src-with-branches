@@ -1,4 +1,4 @@
-/*	$OpenBSD: subs.c,v 1.15 2006/10/31 18:15:15 ray Exp $	*/
+/*	$OpenBSD: subs.c,v 1.16 2007/10/17 20:10:44 chl Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -33,7 +33,7 @@
 #if 0
 static char sccsid[] = "@(#)subs.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: subs.c,v 1.15 2006/10/31 18:15:15 ray Exp $";
+static char rcsid[] = "$OpenBSD: subs.c,v 1.16 2007/10/17 20:10:44 chl Exp $";
 #endif
 #endif /* not lint */
 
@@ -253,7 +253,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-bdnrw] [-s <file>]\n", __progname);
+	fprintf(stderr, "usage: %s [-bdnrw] [-s file]\n", __progname);
 	exit(1);
 }
 

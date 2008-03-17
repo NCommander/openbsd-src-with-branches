@@ -1,4 +1,4 @@
-/*	$OpenBSD: grdc.c,v 1.13 2004/11/29 08:52:28 jsg Exp $	*/
+/*	$OpenBSD: grdc.c,v 1.14 2004/11/29 09:32:47 jsg Exp $	*/
 /*
  *
  * Copyright 2002 Amos Shapir.  Public domain.
@@ -237,6 +237,6 @@ movto(int line, int col)
 void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: grdc [-s] [number_of_seconds]\n");
+	(void)fprintf(stderr, "usage: grdc [-s] [number]\n");
 	exit(1);
 }
