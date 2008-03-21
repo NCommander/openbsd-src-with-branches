@@ -1,11 +1,11 @@
-#	$OpenBSD: files.macppc,v 1.57 2007/10/14 17:29:04 kettenis Exp $
+#	$OpenBSD: files.macppc,v 1.58 2007/11/12 19:23:26 kettenis Exp $
 
 #
 # macppc-specific configuration info
 #
 maxpartitions 16
 
-maxusers 2 8 64
+maxusers 2 8 128
 
 file	arch/macppc/macppc/autoconf.c
 file	arch/macppc/macppc/clock.c
