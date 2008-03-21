@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.49 2007/01/13 21:03:23 miod Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.50 2007/03/06 19:13:13 miod Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -143,6 +143,12 @@ vgafbmatch(parent, vcf, aux)
 	    strcmp(name, "SUNW,Expert3D-Lite") == 0)
 		return (0);
 
+	/*
+	 * XXX Non-console devices do not get configured by the PROM,
+	 * XXX so do not attach them yet.
+	 */
+	if (!vgafb_is_console(node))
+		return (0);
 
 	if (PCI_CLASS(pa->pa_class) == PCI_CLASS_PREHISTORIC &&
 	    PCI_SUBCLASS(pa->pa_class) == PCI_SUBCLASS_PREHISTORIC_VGA)
