@@ -7,7 +7,7 @@
  *	OpenBSD: makemap.awk,v 1.7 2007/06/17 07:53:11 mbalmer Exp 
  * generated from:
  */
-/*	OpenBSD: wskbdmap_mfii.c,v 1.34 2006/12/05 21:27:07 otto Exp  */
+/*	OpenBSD: wskbdmap_mfii.c,v 1.35 2008/03/21 17:10:46 miod Exp  */
 /*	$NetBSD: wskbdmap_mfii.c,v 1.15 2000/05/19 16:40:04 drochner Exp $	*/
 
 /*
