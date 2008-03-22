@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.202 2007/07/03 00:56:23 ray Exp $	*/
+/*	$OpenBSD: ci.c,v 1.203 2007/09/06 19:38:47 niallo Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -347,6 +347,7 @@ checkin_diff_file(struct checkin_params *pb)
 	char rbuf[RCS_REV_BUFSZ];
 
 	b1 = b2 = b3 = NULL;
+	path1 = path2 = NULL;
 	rcsnum_tostr(pb->frev, rbuf, sizeof(rbuf));
 
 	if ((b1 = rcs_buf_load(pb->filename, BUF_AUTOEXT)) == NULL) {
