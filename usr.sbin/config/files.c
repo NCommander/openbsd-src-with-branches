@@ -1,4 +1,4 @@
-/*	$OpenBSD: files.c,v 1.14 2006/04/27 18:09:52 espie Exp $	*/
+/*	$OpenBSD: files.c,v 1.15 2007/11/25 08:26:59 deraadt Exp $	*/
 /*	$NetBSD: files.c,v 1.6 1996/03/17 13:18:17 cgd Exp $	*/
 
 /*
@@ -126,7 +126,7 @@ addfile(struct nvlist *nvpath, struct nvlist *optx, int flags, const char *rule,
 		 * Ensure all tailnames are identical, because .o
 		 * filenames must be identical too.
 		 */
-		if (tail1 && 
+		if (tail1 &&
 		    (dotp - tail != dotp1 - tail1 ||
 		    strncmp(tail1, tail, dotp - tail)))
 			error("different production from %s %s",
