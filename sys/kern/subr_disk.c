@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.67 2007/12/16 20:57:17 otto Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.68 2007/12/23 01:59:58 dlg Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -1063,9 +1063,6 @@ setroot(struct device *bootdv, int part, int exitflags)
 #if defined(NFSCLIENT)
 	extern char *nfsbootdevname;
 #endif
-
-	if (boothowto & RB_DFLTROOT)
-		return;
 
 #ifdef RAMDISK_HOOKS
 	bootdv = &fakerdrootdev;

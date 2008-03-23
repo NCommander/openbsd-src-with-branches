@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse_args.c,v 1.4 2003/06/04 16:36:15 deraadt Exp $ */
+/*	$OpenBSD: parse_args.c,v 1.5 2006/05/16 22:52:09 miod Exp $ */
 
 /*-
  * Copyright (c) 1995 Theo de Raadt
@@ -45,7 +45,6 @@ struct flags {
 	{ 'c', RB_CONFIG },
 	{ 'd', RB_KDB },
 	{ 'm', RB_MINIROOT },
-	{ 'r', RB_DFLTROOT },
 	{ 's', RB_SINGLE },
 	{ 'y', RB_NOSYM },
 };

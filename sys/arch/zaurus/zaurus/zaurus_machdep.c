@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_machdep.c,v 1.26 2007/04/10 16:43:37 miod Exp $	*/
+/*	$OpenBSD: zaurus_machdep.c,v 1.27 2007/05/19 15:49:06 miod Exp $	*/
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -656,9 +656,6 @@ initarm(void *arg)
 	/* XXX should really be done after setting up the console, but we
 	 * XXX need to parse the console selection flags right now. */
 	process_kernel_args((char *)0xa0200000 - MAX_BOOT_STRING - 1);
-#ifdef RAMDISK_HOOKS
-        boothowto |= RB_DFLTROOT;
-#endif /* RAMDISK_HOOKS */
 
 	/*
 	 * This test will work for now but has to be revised when support
