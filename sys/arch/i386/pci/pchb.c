@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.66 2008/01/04 00:23:25 kettenis Exp $ */
+/*	$OpenBSD: pchb.c,v 1.67 2008/03/16 19:00:28 oga Exp $ */
 /*	$NetBSD: pchb.c,v 1.65 2007/08/15 02:26:13 markd Exp $	*/
 
 /*
@@ -331,6 +331,7 @@ pchbattach(struct device *parent, struct device *self, void *aux)
 		case PCI_PRODUCT_INTEL_82G965_HB:
 		case PCI_PRODUCT_INTEL_82Q965_HB:
 		case PCI_PRODUCT_INTEL_82GM965_HB:
+		case PCI_PRODUCT_INTEL_82G33_HB:
 			has_agp = 1;
 			break;
 
