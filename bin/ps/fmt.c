@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmt.c,v 1.7 2004/01/08 18:18:35 millert Exp $	*/
+/*	$OpenBSD: fmt.c,v 1.8 2006/04/25 15:41:07 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -44,7 +44,6 @@
 #include <unistd.h>
 #include <vis.h>
 #include "ps.h"
-#include "extern.h"
 
 void
 fmt_puts(const char *s, int *leftp)
