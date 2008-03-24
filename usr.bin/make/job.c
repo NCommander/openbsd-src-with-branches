@@ -713,9 +713,11 @@ prepare_pipe(struct job_pipe *p, int *fd)
 		ofdn = howmany(largest_fd+1, NFDBITS);
 
 		if (fdn != ofdn) {
-			output_mask = erecalloc(output_mask, fdn, 
+			output_mask = emult_realloc(output_mask, fdn, 
 			    sizeof(fd_mask));
-			actual_mask = erecalloc(actual_mask, fdn, 
+			memset(((char *)output_mask) + ofdn * sizeof(fd_mask), 
+			    0, (fdn-ofdn) * sizeof(fd_mask));
+			actual_mask = emult_realloc(actual_mask, fdn, 
 			    sizeof(fd_mask));
 			mask_size = fdn * sizeof(fd_mask);
 		}

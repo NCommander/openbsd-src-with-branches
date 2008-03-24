@@ -43,7 +43,7 @@ extern void *emalloc(size_t);
 extern char *estrdup(const char *);
 extern void *erealloc(void *, size_t);
 extern void *ecalloc(size_t, size_t);
-extern void *erecalloc(void *, size_t, size_t);
+extern void *emult_realloc(void *, size_t, size_t);
 extern int eunlink(const char *);
 extern void esetenv(const char *, const char *);
 

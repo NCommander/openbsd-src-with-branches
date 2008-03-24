@@ -105,9 +105,16 @@ ecalloc(size_t s1, size_t s2)
 }
 
 void *
-erecalloc(void *ptr, size_t s1, size_t s2)
+emult_realloc(void *ptr, size_t s1, size_t s2)
 {
-	if ((ptr = recalloc(ptr, s1, s2)) == NULL)
+	size_t size;
+
+	if (s1 && SIZE_MAX / s1 < s2) {
+		errno = ENOMEM;
+		enocmem(s1, s2);
+	}
+	size = s1 * s2;
+	if ((ptr = realloc(ptr, size)) == NULL)
 		enocmem(s1, s2);
 	return ptr;
 }
