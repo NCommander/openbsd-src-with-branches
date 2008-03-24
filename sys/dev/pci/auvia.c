@@ -1,4 +1,4 @@
-/*	$OpenBSD: auvia.c,v 1.33 2005/05/06 01:45:22 miod Exp $ */
+/*	$OpenBSD: auvia.c,v 1.34 2008/01/15 02:52:50 jakemsr Exp $ */
 /*	$NetBSD: auvia.c,v 1.28 2002/11/04 16:38:49 kent Exp $	*/
 
 /*-
@@ -877,8 +877,7 @@ auvia_mappage(void *addr, void *mem, off_t off, int prot)
 int
 auvia_get_props(void *addr)
 {
-	return (AUDIO_PROP_MMAP |  AUDIO_PROP_INDEPENDENT |
-	    AUDIO_PROP_FULLDUPLEX);
+	return (AUDIO_PROP_MMAP | AUDIO_PROP_INDEPENDENT);
 }
 
 
