@@ -142,6 +142,7 @@ atascsi_detach(struct atascsi *as, int flags)
 	if (rv != 0)
 		return (rv);
 
+	free(as->as_ports, M_DEVBUF);
 	free(as, M_DEVBUF);
 
 	return (0);
