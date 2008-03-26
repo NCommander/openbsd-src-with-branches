@@ -1,4 +1,4 @@
-/* $OpenBSD: */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2008 Markus Friedl.  All rights reserved.
  *
