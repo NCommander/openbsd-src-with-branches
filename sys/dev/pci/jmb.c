@@ -74,7 +74,10 @@ struct jmb_softc {
 };
 
 struct cfattach jmb_ca = {
-	sizeof(struct jmb_softc), jmb_match, jmb_attach
+	sizeof(struct jmb_softc),
+	jmb_match,
+	jmb_attach,
+	config_detach_children
 };
 
 struct cfdriver jmb_cd = {
