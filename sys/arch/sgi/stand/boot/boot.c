@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.7 2005/08/01 19:58:13 kettenis Exp $ */
+/*	$OpenBSD: boot.c,v 1.9 2008/03/08 16:52:28 jsing Exp $ */
 
 /*
  * Copyright (c) 2004 Opsycon AB, www.opsycon.se.
@@ -113,8 +113,8 @@ main(int argc, char *argv[])
 		((void (*)())entry)(argc, argv);
 
 	/* We failed to load the kernel. */
-	printf("Boot FAILED!\n                ");
-	Bios_Restart();
+	printf("Boot FAILED!\n");
+	Bios_EnterInteractiveMode();
 }
 
 /*
