@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.77 2008/01/23 16:37:56 jsing Exp $	*/
+/*	$OpenBSD: bios.c,v 1.78 2008/03/02 18:01:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -480,8 +480,8 @@ bios_getopt()
 #include "com.h"
 #include "pccom.h"
 #if NCOM + NPCCOM > 0
-				extern int comdefaultrate; /* ic/com.c */
-				comdefaultrate = cdp->conspeed;
+				extern int comconsrate; /* isa/pccom.c */
+				comconsrate = cdp->conspeed;
 #endif
 #ifdef BIOS_DEBUG
 				printf(" console 0x%x:%d",

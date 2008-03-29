@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.67 2007/12/11 17:53:18 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.68 2008/03/17 23:17:24 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -1816,8 +1816,8 @@ getbootinfo(char *bootinfo, int bootinfo_size)
 				    (bios_consdev_t*)q->ba_arg;
 #include "com.h"
 #if NCOM > 0
-				extern int comdefaultrate; /* ic/com.c */
-				comdefaultrate = cdp->conspeed;
+				extern int comconsrate; /* ic/com.c */
+				comconsrate = cdp->conspeed;
 #endif
 #ifdef BOOTINFO_DEBUG
 				printf(" console 0x%x:%d",
