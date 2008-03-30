@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.16 2006/07/14 15:22:55 miod Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.17 2007/04/05 17:31:49 miod Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.17 1999/06/20 00:58:23 ragge Exp $	*/
 
 /* 
@@ -67,6 +67,7 @@ extern	label_t	*db_recover;
 void	kdbprinttrap(int, int);
 
 int	db_active = 0;
+db_regs_t	ddb_regs;	/* register state */
 
 extern int qdpolling;
 static	int splsave; /* IPL before entering debugger */
