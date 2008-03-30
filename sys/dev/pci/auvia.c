@@ -877,7 +877,16 @@ auvia_mappage(void *addr, void *mem, off_t off, int prot)
 int
 auvia_get_props(void *addr)
 {
-	return (AUDIO_PROP_MMAP | AUDIO_PROP_INDEPENDENT);
+	struct auvia_softc *sc = addr;
+	int props;
+
+	props = AUDIO_PROP_MMAP | AUDIO_PROP_INDEPENDENT; 
+
+	/* recording doesn't work correctly on 8233 based devices */
+	if (!(sc->sc_flags & AUVIA_FLAGS_VT8233))
+		props |= AUDIO_PROP_FULLDUPLEX;
+
+	return  props;
 }
 
 
