@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.3 2001/07/04 08:09:29 niklas Exp $	*/
+/*	$OpenBSD: clock.c,v 1.4 2006/05/16 22:52:26 miod Exp $	*/
 
 
 #include <sys/types.h>
@@ -7,17 +7,8 @@
 #include "stand.h"
 #include "libsa.h"
 
-/*
- * BCD to decimal and decimal to BCD.
- */
-#define FROMBCD(x)      (((x) >> 4) * 10 + ((x) & 0xf))
-#define TOBCD(x)        (((x) / 10 * 16) + ((x) % 10))
-
-#define SECDAY          (24 * 60 * 60)
-#define SECYR           (SECDAY * 365)
 #define LEAPYEAR(y)     (((y) & 3) == 0)
 #define YEAR0		68
-
 
 /*
  * This code is defunct after 2068.
