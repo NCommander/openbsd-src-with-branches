@@ -1,4 +1,4 @@
-/*	$Id: reader.c,v 1.200 2007/09/15 07:37:46 ragge Exp $	*/
+/*	$OpenBSD: reader.c,v 1.12 2007/12/16 19:24:03 ragge Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -86,6 +86,7 @@ int p2autooff, p2maxautooff;
 
 NODE *nodepole;
 FILE *prfil;
+static struct interpass prepole;
 
 void saveip(struct interpass *ip);
 void deljumps(void);
@@ -181,12 +182,8 @@ deluseless(NODE *p)
 	r = deluseless(p->n_right);
 	nfree(p);
 	if (l && r) {
-		/* Put left on queue first */
-		ip = tmpalloc(sizeof(*ip));
-		ip->type = IP_NODE;
-		ip->lineno = 0; /* XXX */
-		ip->ip_node = l;
-		pass2_compile(ip);
+		ip = ipnode(l);
+		DLIST_INSERT_AFTER(&prepole, ip, qelem);
 		return r;
 	} else if (l)
 		return l;
@@ -231,13 +228,21 @@ pass2_compile(struct interpass *ip)
 		if (xtemps == 0)
 			walkf(ip->ip_node, deltemp);
 	}
+	DLIST_INIT(&prepole, qelem);
 	DLIST_FOREACH(ip, &ipole, qelem) {
 		if (ip->type != IP_NODE)
 			continue;
 		canon(ip->ip_node);
 		walkf(ip->ip_node, cktree);
-		if ((ip->ip_node = deluseless(ip->ip_node)) == NULL)
+		if ((ip->ip_node = deluseless(ip->ip_node)) == NULL) {
 			DLIST_REMOVE(ip, qelem);
+		} else while (!DLIST_ISEMPTY(&prepole, qelem)) {
+			struct interpass *ipp;
+
+			ipp = DLIST_NEXT(&prepole, qelem);
+			DLIST_REMOVE(ipp, qelem);
+			DLIST_INSERT_BEFORE(ip, ipp, qelem);
+		}
 	}
 
 	optimize(&ipole);
@@ -250,7 +255,8 @@ pass2_compile(struct interpass *ip)
 void
 emit(struct interpass *ip)
 {
-	NODE *p;
+	NODE *p, *r;
+	struct optab *op;
 	int o;
 
 	switch (ip->type) {
@@ -265,12 +271,21 @@ emit(struct interpass *ip)
 		switch (p->n_op) {
 		case CBRANCH:
 			/* Only emit branch insn if RESCC */
-			if (table[TBLIDX(p->n_left->n_su)].rewrite & RESCC) {
+			/* careful when an OPLOG has been elided */
+			if (p->n_left->n_su == 0 && p->n_left->n_left != NULL) {
+				op = &table[TBLIDX(p->n_left->n_left->n_su)];
+				r = p->n_left;
+			} else {
+				op = &table[TBLIDX(p->n_left->n_su)];
+				r = p;
+			}
+			if (op->rewrite & RESCC) {
 				o = p->n_left->n_op;
-				gencode(p, FORCC);
+				gencode(r, FORCC);
 				cbgen(o, p->n_right->n_lval);
-			} else
-				gencode(p, FORCC);
+			} else {
+				gencode(r, FORCC);
+			}
 			break;
 		case FORCE:
 			gencode(p->n_left, INREGS);
@@ -385,6 +400,13 @@ again:	switch (o = p->n_op) {
 	case ULT:
 	case UGE:
 	case UGT:
+		p1 = p->n_left;
+		p2 = p->n_right;
+		if (p2->n_op == ICON && p2->n_lval == 0 &&
+		    optype(p1->n_op) == BITYPE) {
+			if (findops(p1, FORCC) == 0)
+				break;
+		}
 		rv = relops(p);
 		break;
 
@@ -414,6 +436,7 @@ again:	switch (o = p->n_op) {
 	case TEMP:
 	case NAME:
 	case ICON:
+	case FCON:
 	case OREG:
 		rv = findleaf(p, cookie);
 		break;
@@ -425,6 +448,7 @@ again:	switch (o = p->n_op) {
 			geninsn(p1->n_right, FOREFF);
 		geninsn(p1, FOREFF);
 		/* FALLTHROUGH */
+	case FLD:
 	case COMPL:
 	case UMINUS:
 	case PCONV:
@@ -435,6 +459,7 @@ again:	switch (o = p->n_op) {
 	case STARG:
 	case UCALL:
 	case USTCALL:
+	case ADDROF:
 		rv = finduni(p, cookie);
 		break;
 
@@ -442,7 +467,6 @@ again:	switch (o = p->n_op) {
 		p1 = p->n_left;
 		p2 = p->n_right;
 		p1->n_label = p2->n_lval;
-		o = p1->n_op;
 		geninsn(p1, FORCC);
 		p->n_su = 0;
 		break;
@@ -547,7 +571,8 @@ rewrite(NODE *p, int rewrite, int cookie)
 		tfree(r);
 	if (rewrite == 0)
 		return;
-	CDEBUG(("rewrite: %p, reg %s\n", p, rnames[DECRA(p->n_reg, 0)]));
+	CDEBUG(("rewrite: %p, reg %s\n", p,
+	    p->n_reg == -1? "<none>" : rnames[DECRA(p->n_reg, 0)]));
 	p->n_rval = DECRA(p->n_reg, 0);
 }
 
@@ -609,6 +634,10 @@ gencode(NODE *p, int cookie)
 		int lr = rspecial(q, NLEFT);
 
 		if (rr >= 0) {
+#ifdef PCC_DEBUG
+			if (optype(p->n_op) != BITYPE)
+				comperr("gencode: rspecial borked");
+#endif
 			if (r->n_op != REG)
 				comperr("gencode: rop != REG");
 			if (rr != r->n_rval)
@@ -676,6 +705,7 @@ gencode(NODE *p, int cookie)
 }
 
 int negrel[] = { NE, EQ, GT, GE, LT, LE, UGT, UGE, ULT, ULE } ;  /* negatives of relationals */
+size_t negrelsize = sizeof negrel / sizeof negrel[0];
 
 #ifdef PCC_DEBUG
 #undef	PRTABLE
@@ -703,7 +733,7 @@ e2print(NODE *p, int down, int *a, int *b)
 		break;
 
 	case TEMP:
-		fprintf(prfil, " " CONFMT, p->n_lval);
+		fprintf(prfil, " %d", regno(p));
 		break;
 
 	case ICON:
@@ -729,7 +759,8 @@ e2print(NODE *p, int down, int *a, int *b)
 		int gregn(struct regw *);
 		if (p->n_reg == -1)
 			fprintf(prfil, "REG <undef>");
-		else if (p->n_reg < 100000) /* XXX */
+		else if (0 <= p->n_reg &&
+		    p->n_reg < (ENCRD(MAXREGS) + ENCRA(MAXREGS,0))) /* XXX */
 			fprintf(prfil, "REG %s", rnames[DECRA(p->n_reg, 0)]);
 		else
 			fprintf(prfil, "TEMP %d", gregn(p->n_regw));
@@ -780,18 +811,27 @@ ffld(NODE *p, int down, int *down1, int *down2 )
 
 		/* make & mask part */
 
-		p->n_left->n_type = ty;
+		if (ISUNSIGNED(ty)) {
 
-		p->n_op = AND;
-		p->n_right = mklnode(ICON, (1 << s)-1, 0, ty);
+			p->n_left->n_type = ty;
+			p->n_op = AND;
+			p->n_right = mklnode(ICON, ((CONSZ)1 << s)-1, 0, ty);
 
-		/* now, if a shift is needed, do it */
-
-		if( o != 0 ){
-			shp = mkbinode(RS, p->n_left,
-			    mklnode(ICON, o, 0, INT), ty);
-			p->n_left = shp;
-			/* whew! */
+			/* now, if a shift is needed, do it */
+			if( o != 0 ){
+				shp = mkbinode(RS, p->n_left,
+				    mklnode(ICON, o, 0, INT), ty);
+				p->n_left = shp;
+				/* whew! */
+			}
+		} else {
+			/* must sign-extend, assume RS will do */
+			/* if not, arch must use rewfld() */
+			p->n_left->n_type = INT; /* Ok? */
+			p->n_op = RS;
+			p->n_right = mklnode(ICON, SZINT-s, 0, INT);
+			p->n_left = mkbinode(LS, p->n_left, 
+			    mklnode(ICON, SZINT-s-o, 0, INT), INT);
 		}
 	}
 }
@@ -809,12 +849,12 @@ deltemp(NODE *p)
 	if (p->n_op == TEMP) {
 		/* Check if already existing */
 		for (w = tmpsave; w; w = w->next)
-			if (w->tempno == p->n_lval)
+			if (w->tempno == regno(p))
 				break;
 		if (w == NULL) {
 			/* new on stack */
 			w = tmpalloc(sizeof(struct tmpsave));
-			w->tempno = p->n_lval;
+			w->tempno = regno(p);
 			w->tempaddr = BITOOR(freetemp(szty(p->n_type)));
 			w->next = tmpsave;
 			tmpsave = w;
@@ -822,7 +862,7 @@ deltemp(NODE *p)
 		p->n_op = OREG;
 		p->n_rval = FPREG;
 		p->n_lval = w->tempaddr;
-	} else if (p->n_op == ADDROF) {
+	} else if (p->n_op == ADDROF && p->n_left->n_op != NAME) {
 		/* TEMPs are already converted to OREGs */
 		if ((l = p->n_left)->n_op != OREG)
 			comperr("bad U&");
@@ -895,10 +935,10 @@ oregok(NODE *p, int sharp)
 		int i;
 		if( (r=base(ql))>=0 && (i=offset(qr, tlen(p)))>=0) {
 			makeor2(p, ql, r, i);
-			return;
+			return 1;
 		} else if((r=base(qr))>=0 && (i=offset(ql, tlen(p)))>=0) {
 			makeor2(p, qr, r, i);
-			return;
+			return 1;
 		}
 	}
 
@@ -971,9 +1011,7 @@ canon(p) NODE *p; {
 #ifndef FIELDOPS
 	fwalk(p, ffld, 0);	/* look for field operators */
 # endif
-#ifdef MYCANON
-	MYCANON(p);		/* your own canonicalization routine(s) */
-#endif
+	mycanon(p);		/* your own canonicalization routine(s) */
 
 }
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: proc_compare.c,v 1.9 2004/11/18 15:10:24 markus Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,12 +30,16 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)proc_compare.c	8.2 (Berkeley) 9/23/93";
+#else
+static char *rcsid = "$OpenBSD: proc_compare.c,v 1.9 2004/11/18 15:10:24 markus Exp $";
+#endif
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>
-#include <sys/proc.h>
+#include <sys/sysctl.h>
 
 #include "extern.h"
 
@@ -60,17 +62,16 @@ static char sccsid[] = "@(#)proc_compare.c	8.2 (Berkeley) 9/23/93";
  * TODO - consider whether pctcpu should be used.
  */
 
-#define ISRUN(p)	(((p)->p_stat == SRUN) || ((p)->p_stat == SIDL))
+#define ISRUN(p)	(((p)->p_stat == SRUN) || ((p)->p_stat == SIDL) || \
+			 ((p)->p_stat == SONPROC))
 #define TESTAB(a, b)    ((a)<<1 | (b))
 #define ONLYA   2
 #define ONLYB   1
 #define BOTH    3
 
 int
-proc_compare(p1, p2)
-	register struct proc *p1, *p2;
+proc_compare(const struct kinfo_proc2 *p1, const struct kinfo_proc2 *p2)
 {
-
 	if (p1 == NULL)
 		return (1);
 	/*
@@ -92,7 +93,7 @@ proc_compare(p1, p2)
 		return (p2->p_pid > p1->p_pid);	/* tie - return highest pid */
 	}
 	/*
- 	 * weed out zombies
+	 * weed out zombies
 	 */
 	switch (TESTAB(p1->p_stat == SZOMB, p2->p_stat == SZOMB)) {
 	case ONLYA:

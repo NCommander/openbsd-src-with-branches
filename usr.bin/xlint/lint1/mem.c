@@ -1,3 +1,4 @@
+/*	$OpenBSD: mem.c,v 1.3 2005/11/19 03:35:27 cloder Exp $	*/
 /*	$NetBSD: mem.c,v 1.2 1995/07/03 21:24:24 cgd Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: mem.c,v 1.2 1995/07/03 21:24:24 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mem.c,v 1.3 2005/11/19 03:35:27 cloder Exp $";
 #endif
 
 #include <stdlib.h>
@@ -42,50 +43,39 @@ static char rcsid[] = "$NetBSD: mem.c,v 1.2 1995/07/03 21:24:24 cgd Exp $";
 #include "lint.h"
 
 void *
-xmalloc(s)
-	size_t	s;
+xmalloc(size_t s)
 {
 	void	*p;
 
 	if ((p = malloc(s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (p);
 }
 
 void *
-xcalloc(n, s)
-	size_t	n, s;
+xcalloc(size_t n, size_t s)
 {
 	void	*p;
 
 	if ((p = calloc(n, s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (p);
 }
 
 void *
-xrealloc(p, s)
-	void	*p;
-	size_t	s;
+xrealloc(void *p, size_t s)
 {
 	if ((p = realloc(p, s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (p);
 }
 
 char *
-xstrdup(s)
-	const	char *s;
+xstrdup(const char *s)
 {
 	char	*s2;
 
 	if ((s2 = strdup(s)) == NULL)
-		nomem();
+		err(1, NULL);
 	return (s2);
-}
-
-void
-nomem()
-{
-	errx(1, "virtual memory exhausted");
 }

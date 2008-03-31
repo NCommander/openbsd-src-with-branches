@@ -1,3 +1,4 @@
+/*	$OpenBSD: sbusvar.h,v 1.11 2006/06/21 18:29:22 jason Exp $	*/
 /*	$NetBSD: sbusvar.h,v 1.11 2000/11/01 06:18:45 eeh Exp $ */
 
 /*-
@@ -44,12 +45,6 @@ struct sbus_softc;
 /*
  * S-bus variables.
  */
-struct sbusdev {
-	struct	device *sd_dev;		/* backpointer to generic */
-	struct	sbusdev *sd_bchain;	/* forward link in bus chain */
-	void	(*sd_reset) __P((struct device *));
-};
-
 
 /* Device register space description */
 struct sbus_reg {
@@ -64,7 +59,7 @@ struct sbus_intr {
 	u_int32_t	sbi_vec;	/* vector (always 0?) */
 };
 
-/* Address translation accross busses */
+/* Address translation across busses */
 struct sbus_range {
 	u_int32_t	cspace;		/* Client space */
 	u_int32_t	coffset;	/* Client offset */
@@ -74,7 +69,7 @@ struct sbus_range {
 };
 
 /*
- * Sbus driver attach arguments.
+ * SBus driver attach arguments.
  */
 struct sbus_attach_args {
 	int		sa_placeholder;	/* for obio attach args sharing */
@@ -82,13 +77,13 @@ struct sbus_attach_args {
 	bus_dma_tag_t	sa_dmatag;
 	char		*sa_name;	/* PROM node name */
 	int		sa_node;	/* PROM handle */
-	struct sbus_reg	*sa_reg;	/* Sbus register space for device */
-	int		sa_nreg;	/* Number of Sbus register spaces */
+	struct sbus_reg	*sa_reg;	/* SBus register space for device */
+	int		sa_nreg;	/* Number of SBus register spaces */
 #define sa_slot		sa_reg[0].sbr_slot
 #define sa_offset	sa_reg[0].sbr_offset
 #define sa_size		sa_reg[0].sbr_size
 
-	struct sbus_intr *sa_intr;	/* Sbus interrupts for device */
+	struct sbus_intr *sa_intr;	/* SBus interrupts for device */
 	int		sa_nintr;	/* Number of interrupts */
 #define sa_pri		sa_intr[0].sbi_pri
 
@@ -98,33 +93,27 @@ struct sbus_attach_args {
 	int		sa_frequency;	/* SBus clockrate */
 };
 
-/* sbus_attach_internal() is also used from obio.c */
-void	sbus_attach_common __P((struct sbus_softc *, char *, int, 
-				const char * const *));
-int	sbus_print __P((void *, const char *));
+int	sbus_print(void *, const char *);
 
-void	sbus_establish __P((struct sbusdev *, struct device *));
-
-int	sbus_setup_attach_args __P((
+int	sbus_setup_attach_args(
 		struct sbus_softc *,
 		bus_space_tag_t,
 		bus_dma_tag_t,
 		int,			/*node*/
-		struct sbus_attach_args *));
+		struct sbus_attach_args *);
 
-void	sbus_destroy_attach_args __P((struct sbus_attach_args *));
+void	sbus_destroy_attach_args(struct sbus_attach_args *);
 
-#define sbus_bus_map(t, bt, a, s, f, v, hp) \
-	bus_space_map2(t, bt, a, s, f, v, hp)
+#define sbus_bus_map(t, slot, offset, sz, flags, unused, hp) \
+	bus_space_map(t, BUS_ADDR(slot, offset), sz, flags, hp)
 
 #if notyet
-/* variables per Sbus */
+/* variables per SBus */
 struct sbus_softc {
 	struct	device sc_dev;		/* base device */
 	bus_space_tag_t	sc_bustag;
 	bus_dma_tag_t	sc_dmatag;
 	int	sc_clockfreq;		/* clock frequency (in Hz) */
-	struct	sbusdev *sc_sbdev;	/* list of all children */
 	struct	sbus_range *sc_range;
 	int	sc_nrange;
 	int	sc_burst;		/* burst transfer sizes supported */
@@ -147,10 +136,12 @@ struct sbus_softc {
 #define SBUS_BURST_64	0x40
 
 /* We use #defined(SUN4*) here while the ports are in flux */
-#if defined(SUN4) || defined(SUN4C) || defined(SUN4M)
+#if defined(__sparc__) && !defined(__sparc64__)
 #include <sparc/dev/sbusvar.h>
-#elif defined(SUN4U)
+#define	INTLEV(x)	(x)
+#elif defined(__sparc64__)
 #include <sparc64/dev/sbusvar.h>
+#include <sparc64/dev/iommureg.h>
 #endif
 
 #endif /* _SBUS_VAR_H */

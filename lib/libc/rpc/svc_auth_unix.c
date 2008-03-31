@@ -1,5 +1,4 @@
-/*	$NetBSD: svc_auth_unix.c,v 1.3 1995/02/25 03:01:58 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_auth_unix.c 1.28 88/02/08 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_auth_unix.c	2.3 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_auth_unix.c,v 1.3 1995/02/25 03:01:58 cgd Exp $";
-#endif
-
 /*
  * svc_auth_unix.c
  * Handles UNIX flavor authentication parameters on the service side of rpc.
@@ -48,27 +41,26 @@ static char *rcsid = "$NetBSD: svc_auth_unix.c,v 1.3 1995/02/25 03:01:58 cgd Exp
 
 #include <stdio.h>
 #include <rpc/rpc.h>
+#include <string.h>
 
 /*
  * Unix longhand authenticator
  */
 enum auth_stat
-_svcauth_unix(rqst, msg)
-	register struct svc_req *rqst;
-	register struct rpc_msg *msg;
+_svcauth_unix(struct svc_req *rqst, struct rpc_msg *msg)
 {
-	register enum auth_stat stat;
+	enum auth_stat stat;
 	XDR xdrs;
-	register struct authunix_parms *aup;
-	register int32_t *buf;
+	struct authunix_parms *aup;
+	int32_t *buf;
 	struct area {
 		struct authunix_parms area_aup;
 		char area_machname[MAX_MACHINE_NAME+1];
 		int area_gids[NGRPS];
 	} *area;
 	u_int auth_len;
-	int str_len, gid_len;
-	register int i;
+	u_int str_len, gid_len;
+	u_int i;
 
 	area = (struct area *) rqst->rq_clntcred;
 	aup = &area->area_aup;
@@ -84,7 +76,7 @@ _svcauth_unix(rqst, msg)
 			stat = AUTH_BADCRED;
 			goto done;
 		}
-		bcopy((caddr_t)buf, aup->aup_machname, (u_int)str_len);
+		memcpy(aup->aup_machname, (caddr_t)buf, (u_int)str_len);
 		aup->aup_machname[str_len] = 0;
 		str_len = RNDUP(str_len);
 		buf += str_len / sizeof (int32_t);
@@ -104,7 +96,7 @@ _svcauth_unix(rqst, msg)
 		 * timestamp, hostname len (0), uid, gid, and gids len (0).
 		 */
 		if ((5 + gid_len) * BYTES_PER_XDR_UNIT + str_len > auth_len) {
-			(void) printf("bad auth_len gid %d str %d auth %d\n",
+			(void) printf("bad auth_len gid %u str %u auth %u\n",
 			    gid_len, str_len, auth_len);
 			stat = AUTH_BADCRED;
 			goto done;
@@ -130,9 +122,7 @@ done:
  */
 /*ARGSUSED*/
 enum auth_stat 
-_svcauth_short(rqst, msg)
-	struct svc_req *rqst;
-	struct rpc_msg *msg;
+_svcauth_short(struct svc_req *rqst, struct rpc_msg *msg)
 {
 	return (AUTH_REJECTEDCRED);
 }

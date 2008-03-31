@@ -926,7 +926,7 @@ xfrin_connect_done(isc_task_t *task, isc_event_t *event) {
 	if (result == ISC_R_SUCCESS) {
 		isc_sockaddr_format(&sockaddr, sourcetext, sizeof(sourcetext));
 	} else
-		strcpy(sourcetext, "<UNKNOWN>");
+		strlcpy(sourcetext, "<UNKNOWN>", sizeof(sourcetext));
 	xfrin_log(xfr, ISC_LOG_INFO, "connected using %s", sourcetext);
 
 	dns_tcpmsg_init(xfr->mctx, xfr->socket, &xfr->tcpmsg);

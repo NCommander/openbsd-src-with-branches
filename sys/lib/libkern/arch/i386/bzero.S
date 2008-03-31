@@ -1,3 +1,5 @@
+/*	$OpenBSD: bzero.S,v 1.3 2007/05/25 20:32:29 krw Exp $	*/
+
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -5,10 +7,7 @@
 
 #include <machine/asm.h>
 
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: bzero.S,v 1.5 1995/10/07 09:27:02 mycroft Exp $")
-#endif
-
+#ifndef _KERNEL
 ENTRY(bzero)
 	pushl	%edi
 	movl	8(%esp),%edi
@@ -19,7 +18,7 @@ ENTRY(bzero)
 
 	/*
 	 * if the string is too short, it's really not worth the overhead
-	 * of aligning to word boundries, etc.  So we jump to a plain
+	 * of aligning to word boundaries, etc.  So we jump to a plain
 	 * unaligned set.
 	 */
 	cmpl	$16,%edx
@@ -44,3 +43,4 @@ L1:	movl	%edx,%ecx		/* zero remainder by bytes */
 
 	popl	%edi
 	ret
+#endif

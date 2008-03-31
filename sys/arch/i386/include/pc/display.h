@@ -1,3 +1,4 @@
+/*	$OpenBSD: display.h,v 1.4 1994/10/27 04:16:36 cgd Exp $	*/
 /*	$NetBSD: display.h,v 1.4 1994/10/27 04:16:36 cgd Exp $	*/
 
 /*

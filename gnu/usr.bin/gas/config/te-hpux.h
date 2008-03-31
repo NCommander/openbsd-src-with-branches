@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Special version of <a.out.h> for use under hp-ux.
    Copyright (C) 1988, 1992 Free Software Foundation, Inc.
 

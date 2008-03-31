@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: flt_rounds.c,v 1.1.1.1 2006/10/10 22:07:10 miod Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -30,8 +30,12 @@ static const int rndmap[] = {
 int
 __flt_rounds()
 {
+#if !defined(SOFTFLOAT)
 	register_t fpscr;
 
 	__asm__ __volatile__ ("sts fpscr, %0" : "=r" (fpscr));
 	return rndmap[fpscr & 0x03];
+#else
+	return rndmap[fpgetround()];
+#endif
 }

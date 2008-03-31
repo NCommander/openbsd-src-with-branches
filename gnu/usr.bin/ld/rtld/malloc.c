@@ -1,3 +1,5 @@
+/*	$OpenBSD: malloc.c,v 1.8 2002/12/11 23:24:39 millert Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +31,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 /*static char *sccsid = "from: @(#)malloc.c	5.11 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: malloc.c,v 1.3 1994/09/19 16:58:18 deraadt Exp $";
+static char *rcsid = "$OpenBSD: malloc.c,v 1.8 2002/12/11 23:24:39 millert Exp $";
 #endif /* LIBC_SCCS and not lint */
 
 /*
@@ -54,6 +52,7 @@ static char *rcsid = "$Id: malloc.c,v 1.3 1994/09/19 16:58:18 deraadt Exp $";
 #include <unistd.h>
 #include <sys/param.h>
 #include <sys/mman.h>
+
 #ifndef BSD
 #define MAP_COPY	MAP_PRIVATE
 #define MAP_FILE	0
@@ -64,17 +63,17 @@ static char *rcsid = "$Id: malloc.c,v 1.3 1994/09/19 16:58:18 deraadt Exp $";
 #define NEED_DEV_ZERO	1
 #endif
 
+#ifndef NULL
 #define	NULL 0
-
-static void morecore();
-static int findbucket();
+#endif
 
 /*
  * Pre-allocate mmap'ed pages
  */
 #define	NPOOLPAGES	(32*1024/pagesz)
 static caddr_t		pagepool_start, pagepool_end;
-static int		morepages();
+static int		morepages(int);
+extern void		xprintf(char *, ...);
 
 /*
  * The overhead on a block is at least 4 bytes.  When free, this space
@@ -111,6 +110,9 @@ union	overhead {
 #define	RSLOP		0
 #endif
 
+static void morecore(int);
+static int findbucket(union overhead *freep, int srchlen);
+
 /*
  * nextf[i] is the pointer to the next free block of size 2^(i+3).  The
  * smallest allocatable block is 8 bytes.  The overhead information
@@ -118,7 +120,6 @@ union	overhead {
  */
 #define	NBUCKETS 30
 static	union overhead *nextf[NBUCKETS];
-extern	char *sbrk();
 
 static	int pagesz;			/* page size */
 static	int pagebucket;			/* page size bucket */
@@ -148,12 +149,11 @@ botch(s)
 #endif
 
 void *
-malloc(nbytes)
-	size_t nbytes;
+malloc(size_t nbytes)
 {
-  	register union overhead *op;
-  	register int bucket, n;
-	register unsigned amt;
+	union overhead *op;
+	int bucket, n;
+	unsigned amt;
 
 	/*
 	 * First time malloc is called, setup page size and
@@ -164,10 +164,10 @@ malloc(nbytes)
 		if (morepages(NPOOLPAGES) == 0)
 			return NULL;
 		op = (union overhead *)(pagepool_start);
-  		n = n - sizeof (*op) - ((int)op & (n - 1));
+		n = n - sizeof (*op) - ((int)op & (n - 1));
 		if (n < 0)
 			n += pagesz;
-  		if (n) {
+		if (n) {
 			pagepool_start += n;
 		}
 		bucket = 0;
@@ -206,17 +206,17 @@ malloc(nbytes)
 	 * If nothing in hash bucket right now,
 	 * request more memory from the system.
 	 */
-  	if ((op = nextf[bucket]) == NULL) {
-  		morecore(bucket);
-  		if ((op = nextf[bucket]) == NULL)
-  			return (NULL);
+	if ((op = nextf[bucket]) == NULL) {
+		morecore(bucket);
+		if ((op = nextf[bucket]) == NULL)
+			return (NULL);
 	}
 	/* remove from linked list */
-  	nextf[bucket] = op->ov_next;
+	nextf[bucket] = op->ov_next;
 	op->ov_magic = MAGIC;
 	op->ov_index = bucket;
 #ifdef MSTATS
-  	nmalloc[bucket]++;
+	nmalloc[bucket]++;
 #endif
 #ifdef RCHECK
 	/*
@@ -225,22 +225,21 @@ malloc(nbytes)
 	 */
 	op->ov_size = (nbytes + RSLOP - 1) & ~(RSLOP - 1);
 	op->ov_rmagic = RMAGIC;
-  	*(u_short *)((caddr_t)(op + 1) + op->ov_size) = RMAGIC;
+	*(u_short *)((caddr_t)(op + 1) + op->ov_size) = RMAGIC;
 #endif
-  	return ((char *)(op + 1));
+	return ((char *)(op + 1));
 }
 
 /*
  * Allocate more memory to the indicated bucket.
  */
 static void
-morecore(bucket)
-	int bucket;
+morecore(int bucket)
 {
-  	register union overhead *op;
-	register int sz;		/* size of desired block */
-  	int amt;			/* amount to allocate */
-  	int nblks;			/* how many blocks we get */
+	union overhead *op;
+	int sz;				/* size of desired block */
+	int amt;			/* amount to allocate */
+	int nblks;			/* how many blocks we get */
 
 	/*
 	 * sbrk_size <= 0 only for big, FLUFFY, requests (about
@@ -255,7 +254,7 @@ morecore(bucket)
 #endif
 	if (sz < pagesz) {
 		amt = pagesz;
-  		nblks = amt / sz;
+		nblks = amt / sz;
 	} else {
 		amt = sz + pagesz;
 		nblks = 1;
@@ -270,39 +269,38 @@ morecore(bucket)
 	 * Add new memory allocated to that on
 	 * free list for this hash bucket.
 	 */
-  	nextf[bucket] = op;
-  	while (--nblks > 0) {
+	nextf[bucket] = op;
+	while (--nblks > 0) {
 		op->ov_next = (union overhead *)((caddr_t)op + sz);
 		op = (union overhead *)((caddr_t)op + sz);
-  	}
+	}
 }
 
 void
-free(cp)
-	void *cp;
+free(void *cp)
 {   
-  	register int size;
-	register union overhead *op;
+	int size;
+	union overhead *op;
 
-  	if (cp == NULL)
-  		return;
+	if (cp == NULL)
+		return;
 	op = (union overhead *)((caddr_t)cp - sizeof (union overhead));
 #ifdef DEBUG
-  	ASSERT(op->ov_magic == MAGIC);		/* make sure it was in use */
+	ASSERT(op->ov_magic == MAGIC);		/* make sure it was in use */
 #else
 	if (op->ov_magic != MAGIC)
 		return;				/* sanity */
 #endif
 #ifdef RCHECK
-  	ASSERT(op->ov_rmagic == RMAGIC);
+	ASSERT(op->ov_rmagic == RMAGIC);
 	ASSERT(*(u_short *)((caddr_t)(op + 1) + op->ov_size) == RMAGIC);
 #endif
-  	size = op->ov_index;
-  	ASSERT(size < NBUCKETS);
+	size = op->ov_index;
+	ASSERT(size < NBUCKETS);
 	op->ov_next = nextf[size];	/* also clobbers ov_magic */
-  	nextf[size] = op;
+	nextf[size] = op;
 #ifdef MSTATS
-  	nmalloc[size]--;
+	nmalloc[size]--;
 #endif
 }
 
@@ -320,18 +318,16 @@ free(cp)
 int realloc_srchlen = 4;	/* 4 should be plenty, -1 =>'s whole list */
 
 void *
-realloc(cp, nbytes)
-	void *cp; 
-	size_t nbytes;
+realloc(void *cp, size_t nbytes)
 {   
-  	register u_int onb;
-	register int i;
+	u_int onb;
+	int i;
 	union overhead *op;
-  	char *res;
+	char *res;
 	int was_alloced = 0;
 
-  	if (cp == NULL)
-  		return (malloc(nbytes));
+	if (cp == NULL)
+		return (malloc(nbytes));
 	op = (union overhead *)((caddr_t)cp - sizeof (union overhead));
 	if (op->ov_magic == MAGIC) {
 		was_alloced++;
@@ -378,11 +374,11 @@ realloc(cp, nbytes)
 		} else
 			free(cp);
 	}
-  	if ((res = malloc(nbytes)) == NULL)
-  		return (NULL);
-  	if (cp != res)		/* common optimization if "compacting" */
+	if ((res = malloc(nbytes)) == NULL)
+		return (NULL);
+	if (cp != res)		/* common optimization if "compacting" */
 		bcopy(cp, res, (nbytes < onb) ? nbytes : onb);
-  	return (res);
+	return (res);
 }
 
 /*
@@ -390,13 +386,11 @@ realloc(cp, nbytes)
  * header starts at ``freep''.  If srchlen is -1 search the whole list.
  * Return bucket number, or -1 if not found.
  */
-static
-findbucket(freep, srchlen)
-	union overhead *freep;
-	int srchlen;
+static int
+findbucket(union overhead *freep, int srchlen)
 {
-	register union overhead *p;
-	register int i, j;
+	union overhead *p;
+	int i, j;
 
 	for (i = 0; i < NBUCKETS; i++) {
 		j = 0;
@@ -417,35 +411,33 @@ findbucket(freep, srchlen)
  * for each size category, the second showing the number of mallocs -
  * frees for each size category.
  */
-mstats(s)
-	char *s;
+mstats(char *s)
 {
-  	register int i, j;
-  	register union overhead *p;
-  	int totfree = 0,
-  	totused = 0;
+	int i, j;
+	union overhead *p;
+	int totfree = 0,
+	totused = 0;
 
-  	fprintf(stderr, "Memory allocation statistics %s\nfree:\t", s);
-  	for (i = 0; i < NBUCKETS; i++) {
-  		for (j = 0, p = nextf[i]; p; p = p->ov_next, j++)
-  			;
-  		fprintf(stderr, " %d", j);
-  		totfree += j * (1 << (i + 3));
-  	}
-  	fprintf(stderr, "\nused:\t");
-  	for (i = 0; i < NBUCKETS; i++) {
-  		fprintf(stderr, " %d", nmalloc[i]);
-  		totused += nmalloc[i] * (1 << (i + 3));
-  	}
-  	fprintf(stderr, "\n\tTotal in use: %d, total free: %d\n",
+	fprintf(stderr, "Memory allocation statistics %s\nfree:\t", s);
+	for (i = 0; i < NBUCKETS; i++) {
+		for (j = 0, p = nextf[i]; p; p = p->ov_next, j++)
+			;
+		fprintf(stderr, " %d", j);
+		totfree += j * (1 << (i + 3));
+	}
+	fprintf(stderr, "\nused:\t");
+	for (i = 0; i < NBUCKETS; i++) {
+		fprintf(stderr, " %d", nmalloc[i]);
+		totused += nmalloc[i] * (1 << (i + 3));
+	}
+	fprintf(stderr, "\n\tTotal in use: %d, total free: %d\n",
 	    totused, totfree);
 }
 #endif
 
 
 static int
-morepages(n)
-int	n;
+morepages(int n)
 {
 	int	fd = -1;
 	int	offset;
@@ -467,7 +459,7 @@ int	n;
 
 	if ((pagepool_start = mmap(0, n * pagesz,
 			PROT_READ|PROT_WRITE,
-			MAP_ANON|MAP_COPY, fd, 0)) == (caddr_t)-1) {
+			MAP_ANON|MAP_COPY, fd, 0)) == (caddr_t)MAP_FAILED) {
 		xprintf("Cannot map anonymous memory");
 		return 0;
 	}

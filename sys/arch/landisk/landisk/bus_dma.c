@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bus_dma.c,v 1.3 2007/03/19 20:13:19 miod Exp $	*/
 /*	$NetBSD: bus_dma.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*
@@ -95,13 +95,12 @@ _bus_dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 	error = 0;
 	mapsize = sizeof(struct _bus_dmamap) +
 	    (sizeof(bus_dma_segment_t) * (nsegments - 1));
-	if ((mapstore = malloc(mapsize, M_DEVBUF,
-	    (flags & BUS_DMA_NOWAIT) ? M_NOWAIT : M_WAITOK)) == NULL)
+	if ((mapstore = malloc(mapsize, M_DEVBUF, (flags & BUS_DMA_NOWAIT) ?
+	    (M_NOWAIT | M_ZERO) : (M_WAITOK | M_ZERO))) == NULL)
 		return (ENOMEM);
 
 	DPRINTF(("bus_dmamap_create: dmamp = %p\n", mapstore));
 
-	memset(mapstore, 0, mapsize);
 	map = (bus_dmamap_t)mapstore;
 	map->_dm_size = size;
 	map->_dm_segcnt = nsegments;
@@ -444,6 +443,7 @@ _bus_dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t offset,
 
 	DPRINTF(("bus_dmamap_sync: t = %p, map = %p, offset = %ld, len = %ld, ops = %x\n", t, map, offset, len, ops));
 
+#ifdef DIAGNOSTIC
 	/*
 	 * Mixing PRE and POST operations is not allowed.
 	 */
@@ -451,7 +451,6 @@ _bus_dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t offset,
 	    (ops & (BUS_DMASYNC_POSTREAD|BUS_DMASYNC_POSTWRITE)) != 0)
 		panic("_bus_dmamap_sync: mix PRE and POST");
 
-#ifdef DIAGNOSTIC
 	if (offset >= map->dm_mapsize)
 		panic("_bus_dmamap_sync: bad offset");
 	if ((offset + len) > map->dm_mapsize)
@@ -496,21 +495,28 @@ _bus_dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t offset,
 
 		switch (ops) {
 		case BUS_DMASYNC_PREREAD|BUS_DMASYNC_PREWRITE:
-			sh_dcache_wbinv_range(naddr, minlen);
+			if (SH_HAS_WRITEBACK_CACHE)
+				sh_dcache_wbinv_range(naddr, minlen);
+			else
+				sh_dcache_inv_range(naddr, minlen);
 			break;
 
 		case BUS_DMASYNC_PREREAD:
-			if (((naddr | minlen) & (~(sh_cache_line_size - 1))) == 0) {
-				sh_dcache_inv_range(naddr, minlen);
-			} else {
+			if (SH_HAS_WRITEBACK_CACHE &&
+			    ((naddr | minlen) & (sh_cache_line_size - 1)) != 0)
 				sh_dcache_wbinv_range(naddr, minlen);
-			}
+			else
+				sh_dcache_inv_range(naddr, minlen);
 			break;
 
 		case BUS_DMASYNC_PREWRITE:
-			if (SH_HAS_WRITEBACK_CACHE) {
+			if (SH_HAS_WRITEBACK_CACHE)
 				sh_dcache_wb_range(naddr, minlen);
-			}
+			break;
+
+		case BUS_DMASYNC_POSTREAD:
+		case BUS_DMASYNC_POSTREAD|BUS_DMASYNC_POSTWRITE:
+			sh_dcache_inv_range(naddr, minlen);
 			break;
 		}
 		offset = 0;
@@ -538,6 +544,7 @@ _bus_dmamem_alloc(bus_dma_tag_t t, bus_size_t size, bus_size_t alignment,
 	/* Always round the size. */
 	size = round_page(size);
 
+	TAILQ_INIT(&mlist);
 	/*
 	 * Allocate the pages from the VM system.
 	 */

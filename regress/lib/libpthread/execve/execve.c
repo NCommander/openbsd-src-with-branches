@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_execve.c,v 1.5 2000/10/04 05:50:58 d Exp $	*/
+/*	$OpenBSD: execve.c,v 1.3 2003/07/31 21:48:04 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -46,7 +46,7 @@
 #include "test.h"
 
 extern char **environ;
-char *argv[] = {
+char *new_argv[] = {
 	"/bin/echo",
 	"This line should appear after the execve",
 	NULL
@@ -55,7 +55,7 @@ char *argv[] = {
 char * should_succeed = "This line should be displayed\n";
 
 int
-main()
+main(int argc, char *argv[])
 {
 	int fd;
 
@@ -66,8 +66,10 @@ main()
 		CHECKn(ttynm = ttyname(STDOUT_FILENO));
 		printf("tty is %s\n", ttynm);
 		CHECKe(fd = open(ttynm, O_RDWR));
-	} else
-		PANIC("stdout is not a tty: this test needs a tty");
+	} else {
+		printf("IGNORED: stdout is not a tty: this test needs a tty\n");
+		SUCCEED;
+	}
 
 	CHECKn(printf("This output is necessary to set the stdout fd to NONBLOCKING\n"));
 
@@ -75,6 +77,6 @@ main()
 	CHECKe(dup2(fd, STDOUT_FILENO));
 	CHECKe(write(STDOUT_FILENO, should_succeed,
 	    (size_t)strlen(should_succeed)));
-	CHECKe(execve(argv[0], argv, environ));
-	DIE(errno, "execve %s", argv[0]);
+	CHECKe(execve(new_argv[0], new_argv, environ));
+	DIE(errno, "execve %s", new_argv[0]);
 }

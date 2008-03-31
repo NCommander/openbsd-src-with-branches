@@ -70,7 +70,7 @@ isc_dir_open(isc_dir_t *dir, const char *dirname) {
 	if (strlen(dirname) + 3 > sizeof(dir->dirname))
 		/* XXXDCL ? */
 		return (ISC_R_NOSPACE);
-	strcpy(dir->dirname, dirname);
+	strlcpy(dir->dirname, dirname, sizeof(dir->dirname));
 
 	/*
 	 * Append path separator, if needed, and "*".
@@ -119,7 +119,7 @@ isc_dir_read(isc_dir_t *dir) {
 	if (sizeof(dir->entry.name) <= strlen(entry->d_name))
 	    return (ISC_R_UNEXPECTED);
 
-	strcpy(dir->entry.name, entry->d_name);
+	strlcpy(dir->entry.name, entry->d_name, sizeof(dir->entry.name));
 
 	/*
 	 * Some dirents have d_namlen, but it is not portable.

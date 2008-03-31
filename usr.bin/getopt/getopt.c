@@ -1,12 +1,20 @@
+/*	$OpenBSD: getopt.c,v 1.6 2003/07/10 00:06:51 david Exp $	*/
+
+/*
+ * This material, written by Henry Spencer, was released by him
+ * into the public domain and is thus not subject to any copyright.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: getopt.c,v 1.2 1993/08/02 17:54:29 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: getopt.c,v 1.6 2003/07/10 00:06:51 david Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-main(argc, argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
 	extern int optind;
 	extern char *optarg;
@@ -14,7 +22,7 @@ char *argv[];
 	int status = 0;
 
 	optind = 2;	/* Past the program name and the option letters. */
-	while ((c = getopt(argc, argv, argv[1])) != EOF)
+	while ((c = getopt(argc, argv, argv[1])) != -1)
 		switch (c) {
 		case '?':
 			status = 1;	/* getopt routine gave message */

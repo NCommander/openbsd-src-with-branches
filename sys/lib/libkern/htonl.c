@@ -1,29 +1,26 @@
-/*	$NetBSD: htonl.c,v 1.6 1995/10/07 09:26:26 mycroft Exp $	*/
-
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$NetBSD: htonl.c,v 1.6 1995/10/07 09:26:26 mycroft Exp $";
-#endif
+static char *rcsid = "$OpenBSD: htonl.c,v 1.5 2004/11/28 07:23:41 mickey Exp $";
+#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <machine/endian.h>
 
 #undef htonl
 
-unsigned long
-htonl(x)
-	unsigned long x;
-{
-	u_int32_t y = x;
+u_int32_t	htonl(u_int32_t);
 
+u_int32_t
+htonl(u_int32_t x)
+{
 #if BYTE_ORDER == LITTLE_ENDIAN
-	u_char *s = (u_char *)&y;
-	return s[0] << 24 | s[1] << 16 | s[2] << 8 | s[3];
+	u_char *s = (u_char *)&x;
+	return (u_int32_t)(s[0] << 24 | s[1] << 16 | s[2] << 8 | s[3]);
 #else
-	return y;
+	return x;
 #endif
 }

@@ -1,3 +1,5 @@
+/*	$OpenBSD: ruptime.c,v 1.13 2004/09/14 22:24:07 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1983 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +30,14 @@
  */
 
 #ifndef lint
-char copyright[] =
+const char copyright[] =
 "@(#) Copyright (c) 1983 The Regents of the University of California.\n\
  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
-/*static char sccsid[] = "from: @(#)ruptime.c	5.8 (Berkeley) 7/21/90";*/
-static char rcsid[] = "$Id: ruptime.c,v 1.4 1994/04/05 02:18:43 cgd Exp $";
+/*static const char sccsid[] = "from: @(#)ruptime.c	5.8 (Berkeley) 7/21/90";*/
+static const char rcsid[] = "$OpenBSD: ruptime.c,v 1.13 2004/09/14 22:24:07 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -47,9 +45,11 @@ static char rcsid[] = "$Id: ruptime.c,v 1.4 1994/04/05 02:18:43 cgd Exp $";
 #include <dirent.h>
 #include <protocols/rwhod.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <err.h>
 
 size_t	nhosts, hspace = 20;
 struct hs {
@@ -63,27 +63,29 @@ struct	whod awhod;
 
 time_t now;
 int rflg = 1;
-int hscmp(), ucmp(), lcmp(), tcmp();
+int	hscmp(const void *, const void *);
+int	ucmp(const void *, const void *);
+int	lcmp(const void *, const void *);
+int	tcmp(const void *, const void *);
+char	*interval(time_t, char *);
 
-main(argc, argv)
-	int argc;
-	char **argv;
+void morehosts(void);
+
+int
+main(int argc, char *argv[])
 {
-	extern char *optarg;
-	extern int optind;
-	register struct hs *hsp;
-	register struct whod *wd;
-	register struct whoent *we;
-	register DIR *dirp;
+	extern char *__progname;
+	struct hs *hsp;
+	struct whod *wd;
+	struct whoent *we;
+	DIR *dirp;
 	struct dirent *dp;
 	int aflg, cc, ch, f, i, maxloadav;
 	char buf[sizeof(struct whod)];
-	int (*cmp)() = hscmp;
-	time_t time();
-	char *interval();
+	int (*cmp)(const void *, const void *) = hscmp;
 
 	aflg = 0;
-	while ((ch = getopt(argc, argv, "alrut")) != EOF)
+	while ((ch = getopt(argc, argv, "alrut")) != -1)
 		switch((char)ch) {
 		case 'a':
 			aflg = 1;
@@ -101,24 +103,20 @@ main(argc, argv)
 			cmp = ucmp;
 			break;
 		default: 
-			(void)fprintf(stderr, "usage: ruptime [-alrut]\n");
+			fprintf(stderr, "usage: %s [-alrut]\n", __progname);
 			exit(1);
 		}
 
-	if (chdir(_PATH_RWHODIR) || (dirp = opendir(".")) == NULL) {
-		(void)fprintf(stderr, "ruptime: %s: %s.\n",
-		    _PATH_RWHODIR, strerror(errno));
-		exit(1);
-	}
+	if (chdir(_PATH_RWHODIR) || (dirp = opendir(".")) == NULL)
+		err(1, "%s", _PATH_RWHODIR);
 	morehosts();
 	hsp = hs;
 	maxloadav = -1;
-	while (dp = readdir(dirp)) {
+	while ((dp = readdir(dirp))) {
 		if (dp->d_ino == 0 || strncmp(dp->d_name, "whod.", 5))
 			continue;
 		if ((f = open(dp->d_name, O_RDONLY, 0)) < 0) {
-			(void)fprintf(stderr, "ruptime: %s: %s\n",
-			    dp->d_name, strerror(errno));
+			warn("%s", dp->d_name);
 			continue;
 		}
 		cc = read(f, buf, sizeof(struct whod));
@@ -144,10 +142,8 @@ main(argc, argv)
 		nhosts++;
 		hsp++;
 	}
-	if (!nhosts) {
-		(void)printf("ruptime: no hosts in %s.\n", _PATH_RWHODIR);
-		exit(1);
-	}
+	if (!nhosts)
+		errx(1, "no hosts in %s.", _PATH_RWHODIR);
 	(void)time(&now);
 	qsort((char *)hs, nhosts, sizeof (hs[0]), cmp);
 	for (i = 0; i < nhosts; i++) {
@@ -176,43 +172,41 @@ main(argc, argv)
 }
 
 char *
-interval(tval, updown)
-	time_t tval;
-	char *updown;
+interval(time_t tval, char *updown)
 {
 	static char resbuf[32];
 	int days, hours, minutes;
 
-	if (tval < 0 || tval > 365*24*60*60) {
-		(void)sprintf(resbuf, "   %s ??:??", updown);
+	if (tval < 0 || tval > 999*24*60*60) {
+		(void)snprintf(resbuf, sizeof resbuf, "%s     ??:??", updown);
 		return(resbuf);
 	}
 	minutes = (tval + 59) / 60;		/* round to minutes */
 	hours = minutes / 60; minutes %= 60;
 	days = hours / 24; hours %= 24;
 	if (days)
-		(void)sprintf(resbuf, "%s %2d+%02d:%02d",
+		(void)snprintf(resbuf, sizeof resbuf, "%s %3d+%02d:%02d",
 		    updown, days, hours, minutes);
 	else
-		(void)sprintf(resbuf, "%s    %2d:%02d",
+		(void)snprintf(resbuf, sizeof resbuf, "%s     %2d:%02d",
 		    updown, hours, minutes);
 	return(resbuf);
 }
 
 /* alphabetical comparison */
-hscmp(a1, a2)
-	void *a1, *a2;
+int
+hscmp(const void *a1, const void *a2)
 {
-	struct hs *h1 = a1, *h2 = a2;
+	const struct hs *h1 = a1, *h2 = a2;
 
 	return(rflg * strcmp(h1->hs_wd->wd_hostname, h2->hs_wd->wd_hostname));
 }
 
 /* load average comparison */
-lcmp(a1, a2)
-	void *a1, *a2;
+int
+lcmp(const void *a1, const void *a2)
 {
-	register struct hs *h1 = a1, *h2 = a2;
+	const struct hs *h1 = a1, *h2 = a2;
 
 	if (ISDOWN(h1))
 		if (ISDOWN(h2))
@@ -227,10 +221,10 @@ lcmp(a1, a2)
 }
 
 /* number of users comparison */
-ucmp(a1, a2)
-	void *a1, *a2;
+int
+ucmp(const void *a1, const void *a2)
 {
-	register struct hs *h1 = a1, *h2 = a2;
+	const struct hs *h1 = a1, *h2 = a2;
 
 	if (ISDOWN(h1))
 		if (ISDOWN(h2))
@@ -244,10 +238,10 @@ ucmp(a1, a2)
 }
 
 /* uptime comparison */
-tcmp(a1, a2)
-	void *a1, *a2;
+int
+tcmp(const void *a1, const void *a2)
 {
-	register struct hs *h1 = a1, *h2 = a2;
+	const struct hs *h1 = a1, *h2 = a2;
 
 	return(rflg * (
 		(ISDOWN(h2) ? h2->hs_wd->wd_recvtime - now
@@ -258,11 +252,10 @@ tcmp(a1, a2)
 	));
 }
 
-morehosts()
+void
+morehosts(void)
 {
 	hs = realloc((char *)hs, (hspace *= 2) * sizeof(*hs));
-	if (hs == NULL) {
-		(void)fprintf(stderr, "ruptime: %s.\n", strerror(ENOMEM));
-		exit(1);
-	}
+	if (hs == NULL)
+		err(1, "realloc");
 }

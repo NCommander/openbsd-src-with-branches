@@ -1,3 +1,5 @@
+/*	$OpenBSD: tblcmp.c,v 1.5 2001/11/19 19:02:14 mpech Exp $	*/
+
 /* tblcmp - table compression routines */
 
 /*-
@@ -11,29 +13,34 @@
  * to contract no. DE-AC03-76SF00098 between the United States
  * Department of Energy and the University of California.
  *
- * Redistribution and use in source and binary forms are permitted provided
- * that: (1) source distributions retain this entire copyright notice and
- * comment, and (2) distributions including binaries display the following
- * acknowledgement:  ``This product includes software developed by the
- * University of California, Berkeley and its contributors'' in the
- * documentation or other materials provided with the distribution and in
- * all advertising materials mentioning features or use of this software.
- * Neither the name of the University nor the names of its contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University nor the names of its contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE.
  */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/tblcmp.c,v 1.7 1995/05/05 05:35:43 jtc Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/tblcmp.c,v 1.5 2001/11/19 19:02:14 mpech Exp $ */
 
 #include "flexdef.h"
 
 
 /* declarations for functions that have forward references */
 
-void mkentry PROTO((register int*, int, int, int, int));
+void mkentry PROTO((int*, int, int, int, int));
 void mkprot PROTO((int[], int, int));
 void mktemplate PROTO((int[], int, int));
 void mv2front PROTO((int));
@@ -228,7 +235,7 @@ int state[], statenum, totaltrans, comstate, comfreq;
 void cmptmps()
 	{
 	int tmpstorage[CSIZE + 1];
-	register int *tmp = tmpstorage, i, j;
+	int *tmp = tmpstorage, i, j;
 	int totaltrans, trans;
 
 	peakpairs = numtemps * numecs + tblend;
@@ -300,7 +307,7 @@ void cmptmps()
 
 void expand_nxt_chk()
 	{
-	register int old_max = current_max_xpairs;
+	int old_max = current_max_xpairs;
 
 	current_max_xpairs += MAX_XPAIRS_INCREMENT;
 
@@ -339,9 +346,9 @@ int *state, numtrans;
 	/* Firstfree is the position of the first possible occurrence of two
 	 * consecutive unused records in the chk and nxt arrays.
 	 */
-	register int i;
-	register int *state_ptr, *chk_ptr;
-	register int *ptr_to_last_entry_in_state;
+	int i;
+	int *state_ptr, *chk_ptr;
+	int *ptr_to_last_entry_in_state;
 
 	/* If there are too many out-transitions, put the state at the end of
 	 * nxt and chk.
@@ -434,7 +441,7 @@ int *state, numtrans;
  */
 void inittbl()
 	{
-	register int i;
+	int i;
 
 	zero_out( (char *) chk, (size_t) (current_max_xpairs * sizeof( int )) );
 
@@ -515,10 +522,10 @@ void mkdeftbl()
  */
 
 void mkentry( state, numchars, statenum, deflink, totaltrans )
-register int *state;
+int *state;
 int numchars, statenum, deflink, totaltrans;
 	{
-	register int minec, maxec, i, baseaddr;
+	int minec, maxec, i, baseaddr;
 	int tblbase, tbllast;
 
 	if ( totaltrans == 0 )
@@ -792,8 +799,8 @@ int qelm;
 void place_state( state, statenum, transnum )
 int *state, statenum, transnum;
 	{
-	register int i;
-	register int *state_ptr;
+	int i;
+	int *state_ptr;
 	int position = find_table_space( state, transnum );
 
 	/* "base" is the table of start positions. */
@@ -867,8 +874,8 @@ int statenum, sym, nextstate, deflink;
 int tbldiff( state, pr, ext )
 int state[], pr, ext[];
 	{
-	register int i, *sp = state, *ep = ext, *protp;
-	register int numdiff = 0;
+	int i, *sp = state, *ep = ext, *protp;
+	int numdiff = 0;
 
 	protp = &protsave[numecs * (pr - 1)];
 

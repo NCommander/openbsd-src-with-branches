@@ -1,9 +1,8 @@
-/*	$NetBSD: getpwent.c,v 1.14 1995/07/28 05:43:01 phil Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
- * Portions Copyright (c) 1994, 1995, Jason Downs.  All rights reserved.
+ * Portions Copyright (c) 1994, 1995, 1996, Jason Downs.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,20 +29,11 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getpwent.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getpwent.c,v 1.14 1995/07/28 05:43:01 phil Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <fcntl.h>
 #include <db.h>
 #include <syslog.h>
 #include <pwd.h>
-#include <utmp.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -58,8 +44,9 @@ static char rcsid[] = "$NetBSD: getpwent.c,v 1.14 1995/07/28 05:43:01 phil Exp $
 #include <machine/param.h>
 #include <stdio.h>
 #include <rpc/rpc.h>
-#include <rpcsvc/yp_prot.h>
+#include <rpcsvc/yp.h>
 #include <rpcsvc/ypclnt.h>
+#include "ypinternal.h"
 #endif
 
 static struct passwd _pw_passwd;	/* password structure */
@@ -67,99 +54,120 @@ static DB *_pw_db;			/* password database */
 static int _pw_keynum;			/* key counter */
 static int _pw_stayopen;		/* keep fd's open */
 static int _pw_flags;			/* password flags */
-static int __hashpw __P((DBT *));
-static int __initdb __P((void));
-
-const char __yp_token[] = "__YP!";	/* Let pwd_mkdb pull this in. */
+static int __hashpw(DBT *);
+static int __initdb(void);
 
 #ifdef YP
 enum _ypmode { YPMODE_NONE, YPMODE_FULL, YPMODE_USER, YPMODE_NETGRP };
 static enum _ypmode __ypmode;
 
-static char     *__ypcurrent, *__ypdomain;
-static int      __ypcurrentlen;
+static char	*__ypcurrent, *__ypdomain;
+static int	__ypcurrentlen;
 static struct passwd *__ypproto = (struct passwd *)NULL;
 static int	__ypflags;
-static char	line[1024];
-static long	prbuf[1024 / sizeof(long)];
-static DB *__ypexclude = (DB *)NULL;
+static char	__ypline[1024];
+static long	__yppbuf[1024 / sizeof(long)];
+static int	__yp_override_passwd = 0;
 
-static int __has_yppw __P((void));
-static int __ypexclude_add __P((const char *));
-static int __ypexclude_is __P((const char *));
-static void __ypproto_set __P((void));
+static int __has_yppw(void);
+static int __has_ypmaster(void);
 
+static int __ypexclude_add(const char *);
+static int __ypexclude_is(const char *);
+static void __ypexclude_free(void);
+static void __ypproto_set(void);
+static int __ypparse(struct passwd *pw, char *s);
+
+/* macro for deciding which YP maps to use. */
+#define PASSWD_BYNAME \
+	__has_ypmaster() ? "master.passwd.byname" : "passwd.byname"
+#define PASSWD_BYUID \
+	__has_ypmaster() ? "master.passwd.byuid" : "passwd.byuid"
+
+struct _ypexclude {
+	const char *name;
+	struct _ypexclude *next;
+};
+static struct _ypexclude *__ypexclude = (struct _ypexclude *)NULL;
+
+/*
+ * Using DB for this just wastes too damn much memory.
+ */
 static int
-__ypexclude_add(name)
-const char *name;
+__ypexclude_add(const char *name)
 {
-	DBT key, data;
+	struct _ypexclude *new;
 
-	/* initialize the exclusion table if needed. */
-	if(__ypexclude == (DB *)NULL) {
-		__ypexclude = dbopen(NULL, O_RDWR, 600, DB_HASH, NULL);
-		if(__ypexclude == (DB *)NULL)
-			return(1);
+	if (name[0] == '\0')	/* skip */
+		return (0);
+
+	new = (struct _ypexclude *)malloc(sizeof(struct _ypexclude));
+	if (new == NULL)
+		return (1);
+	new->name = strdup(name);
+	if (new->name == (char *)NULL) {
+		free(new);
+		return (1);
 	}
 
-	/* set up the key */
-	key.data = (char *)name;
-	key.size = strlen(name);
+	new->next = __ypexclude;
+	__ypexclude = new;
 
-	/* data is nothing. */
-	data.data = NULL;
-	data.size = 0;
-
-	/* store it */
-	if((__ypexclude->put)(__ypexclude, &key, &data, 0) == -1)
-		return(1);
-	
-	return(0);
+	return (0);
 }
 
 static int
-__ypexclude_is(name)
-const char *name;
+__ypexclude_is(const char *name)
 {
-	DBT key, data;
+	struct _ypexclude *curr;
 
-	if(__ypexclude == (DB *)NULL)
-		return(0);	/* nothing excluded */
-
-	/* set up the key */
-	key.data = (char *)name;
-	key.size = strlen(name);
-
-	if((__ypexclude->get)(__ypexclude, &key, &data, 0) == 0)
-		return(1);	/* excluded */
-	
-	return(0);
+	for (curr = __ypexclude; curr != (struct _ypexclude *)NULL;
+	    curr = curr->next) {
+		if (strcmp(curr->name, name) == 0)
+			return (1);	/* excluded */
+	}
+	return (0);
 }
 
 static void
-__ypproto_set()
+__ypexclude_free(void)
 {
-	register char *ptr;
-	register struct passwd *pw = &_pw_passwd;
+	struct _ypexclude *curr, *next;
+
+	for (curr = __ypexclude; curr != (struct _ypexclude *)NULL;
+	    curr = next) {
+		next = curr->next;
+
+		free((void *)curr->name);
+		free(curr);
+	}
+	__ypexclude = (struct _ypexclude *)NULL;
+}
+
+static void
+__ypproto_set(void)
+{
+	char *ptr;
+	struct passwd *pw = &_pw_passwd;
 
 	/* make this the new prototype */
-	ptr = (char *)prbuf;
+	ptr = (char *)__yppbuf;
 
 	/* first allocate the struct. */
 	__ypproto = (struct passwd *)ptr;
 	ptr += sizeof(struct passwd);
 
 	/* name */
-	if(pw->pw_name && (pw->pw_name)[0]) {
+	if (pw->pw_name && (pw->pw_name)[0]) {
 		ptr = (char *)ALIGN(ptr);
 		bcopy(pw->pw_name, ptr, strlen(pw->pw_name) + 1);
 		__ypproto->pw_name = ptr;
 		ptr += (strlen(pw->pw_name) + 1);
 	} else
 		__ypproto->pw_name = (char *)NULL;
-	
+
 	/* password */
-	if(pw->pw_passwd && (pw->pw_passwd)[0]) {
+	if (pw->pw_passwd && (pw->pw_passwd)[0]) {
 		ptr = (char *)ALIGN(ptr);
 		bcopy(pw->pw_passwd, ptr, strlen(pw->pw_passwd) + 1);
 		__ypproto->pw_passwd = ptr;
@@ -180,16 +188,16 @@ __ypproto_set()
 	__ypproto->pw_class = "";
 
 	/* gecos */
-	if(pw->pw_gecos && (pw->pw_gecos)[0]) {
+	if (pw->pw_gecos && (pw->pw_gecos)[0]) {
 		ptr = (char *)ALIGN(ptr);
 		bcopy(pw->pw_gecos, ptr, strlen(pw->pw_gecos) + 1);
 		__ypproto->pw_gecos = ptr;
 		ptr += (strlen(pw->pw_gecos) + 1);
 	} else
 		__ypproto->pw_gecos = (char *)NULL;
-	
+
 	/* dir */
-	if(pw->pw_dir && (pw->pw_dir)[0]) {
+	if (pw->pw_dir && (pw->pw_dir)[0]) {
 		ptr = (char *)ALIGN(ptr);
 		bcopy(pw->pw_dir, ptr, strlen(pw->pw_dir) + 1);
 		__ypproto->pw_dir = ptr;
@@ -198,7 +206,7 @@ __ypproto_set()
 		__ypproto->pw_dir = (char *)NULL;
 
 	/* shell */
-	if(pw->pw_shell && (pw->pw_shell)[0]) {
+	if (pw->pw_shell && (pw->pw_shell)[0]) {
 		ptr = (char *)ALIGN(ptr);
 		bcopy(pw->pw_shell, ptr, strlen(pw->pw_shell) + 1);
 		__ypproto->pw_shell = ptr;
@@ -214,11 +222,18 @@ __ypproto_set()
 }
 
 static int
-__ypparse(pw, s)
-struct passwd *pw;
-char *s;
+__ypparse(struct passwd *pw, char *s)
 {
-	char *bp, *cp;
+	char *bp, *cp, *endp;
+	u_long ul;
+	int count = 0;
+
+	/* count the colons. */
+	bp = s;
+	while (*bp != '\0') {
+		if (*bp++ == ':')
+			count++;
+	}
 
 	/* since this is currently using strsep(), parse it first */
 	bp = s;
@@ -226,143 +241,170 @@ char *s;
 	pw->pw_passwd = strsep(&bp, ":\n");
 	if (!(cp = strsep(&bp, ":\n")))
 		return 1;
-	pw->pw_uid = atoi(cp);
+	ul = strtoul(cp, &endp, 10);
+	if (endp == cp || *endp != '\0' || ul >= UID_MAX)
+		return 1;
+	pw->pw_uid = (uid_t)ul;
 	if (!(cp = strsep(&bp, ":\n")))
 		return 1;
-	pw->pw_gid = atoi(cp);
-	pw->pw_change = 0;
-	pw->pw_class = "";
+	ul = strtoul(cp, &endp, 10);
+	if (endp == cp || *endp != '\0' || ul >= GID_MAX)
+		return 1;
+	pw->pw_gid = (gid_t)ul;
+	if (count == 9) {
+		long l;
+
+		/* If the ypserv gave us all the fields, use them. */
+		pw->pw_class = strsep(&bp, ":\n");
+		if (!(cp = strsep(&bp, ":\n")))
+			return 1;
+		l = strtol(cp, &endp, 10);
+		if (endp == cp || *endp != '\0' || l >= INT_MAX || l <= INT_MIN)
+			return 1;
+		pw->pw_change = (time_t)l;
+		if (!(cp = strsep(&bp, ":\n")))
+			return 1;
+		l = strtol(cp, &endp, 10);
+		if (endp == cp || *endp != '\0' || l >= INT_MAX || l <= INT_MIN)
+			return 1;
+		pw->pw_expire = (time_t)l;
+	} else {
+		/* ..else it is a normal ypserv. */
+		pw->pw_class = "";
+		pw->pw_change = 0;
+		pw->pw_expire = 0;
+	}
 	pw->pw_gecos = strsep(&bp, ":\n");
 	pw->pw_dir = strsep(&bp, ":\n");
 	pw->pw_shell = strsep(&bp, ":\n");
-	pw->pw_expire = 0;
 
 	/* now let the prototype override, if set. */
-	if(__ypproto != (struct passwd *)NULL) {
-#ifdef YP_OVERRIDE_PASSWD
-		if(__ypproto->pw_passwd != (char *)NULL)
+	if (__ypproto != (struct passwd *)NULL) {
+		if (__yp_override_passwd && __ypproto->pw_passwd != (char *)NULL)
 			pw->pw_passwd = __ypproto->pw_passwd;
-#endif
-		if(!(__ypflags & _PASSWORD_NOUID))
+		if (!(__ypflags & _PASSWORD_NOUID))
 			pw->pw_uid = __ypproto->pw_uid;
-		if(!(__ypflags & _PASSWORD_NOGID))
+		if (!(__ypflags & _PASSWORD_NOGID))
 			pw->pw_gid = __ypproto->pw_gid;
-		if(__ypproto->pw_gecos != (char *)NULL)
+		if (__ypproto->pw_gecos != (char *)NULL)
 			pw->pw_gecos = __ypproto->pw_gecos;
-		if(__ypproto->pw_dir != (char *)NULL)
+		if (__ypproto->pw_dir != (char *)NULL)
 			pw->pw_dir = __ypproto->pw_dir;
-		if(__ypproto->pw_shell != (char *)NULL)
+		if (__ypproto->pw_shell != (char *)NULL)
 			pw->pw_shell = __ypproto->pw_shell;
 	}
 	return 0;
 }
 #endif
 
+#ifdef YP
+static int __getpwent_has_yppw = -1;
+#endif
+
 struct passwd *
-getpwent()
+getpwent(void)
 {
 	DBT key;
 	char bf[sizeof(_pw_keynum) + 1];
 #ifdef YP
-	char *cp;
 	static char *name = (char *)NULL;
 	const char *user, *host, *dom;
-	int has_yppw;
 #endif
 
 	if (!_pw_db && !__initdb())
-		return((struct passwd *)NULL);
+		return ((struct passwd *)NULL);
 
 #ifdef YP
-	has_yppw = __has_yppw();
+	if (__getpwent_has_yppw == -1)
+		__getpwent_has_yppw = __has_yppw();
 
 again:
-	if(has_yppw && (__ypmode != YPMODE_NONE)) {
+	if (__getpwent_has_yppw && (__ypmode != YPMODE_NONE)) {
 		char *key, *data;
 		int keylen, datalen;
 		int r, s;
 
-		if(!__ypdomain) {
-			if( _yp_check(&__ypdomain) == 0) {
+		if (!__ypdomain) {
+			if (_yp_check(&__ypdomain) == 0) {
 				__ypmode = YPMODE_NONE;
 				goto again;
 			}
 		}
-		switch(__ypmode) {
+		switch (__ypmode) {
 		case YPMODE_FULL:
-			if(__ypcurrent) {
-				r = yp_next(__ypdomain, "passwd.byname",
-					__ypcurrent, __ypcurrentlen,
-					&key, &keylen, &data, &datalen);
+			if (__ypcurrent) {
+				r = yp_next(__ypdomain, (PASSWD_BYNAME),
+				    __ypcurrent, __ypcurrentlen,
+				    &key, &keylen, &data, &datalen);
 				free(__ypcurrent);
-				if(r != 0) {
+				if (r != 0) {
 					__ypcurrent = NULL;
 					__ypmode = YPMODE_NONE;
-					if(data)
+					if (data)
 						free(data);
 					data = NULL;
 					goto again;
 				}
 				__ypcurrent = key;
 				__ypcurrentlen = keylen;
-				bcopy(data, line, datalen);
+				bcopy(data, __ypline, datalen);
 				free(data);
 				data = NULL;
 			} else {
-				r = yp_first(__ypdomain, "passwd.byname",
-					&__ypcurrent, &__ypcurrentlen,
-					&data, &datalen);
-				if(r != 0) {
+				r = yp_first(__ypdomain, (PASSWD_BYNAME),
+				    &__ypcurrent, &__ypcurrentlen,
+				    &data, &datalen);
+				if (r != 0) {
 					__ypmode = YPMODE_NONE;
-					if(data)
+					if (data)
 						free(data);
 					goto again;
 				}
-				bcopy(data, line, datalen);
+				bcopy(data, __ypline, datalen);
 				free(data);
 				data = NULL;
 			}
 			break;
 		case YPMODE_NETGRP:
 			s = getnetgrent(&host, &user, &dom);
-			if(s == 0) {	/* end of group */
+			if (s == 0) {	/* end of group */
 				endnetgrent();
 				__ypmode = YPMODE_NONE;
 				goto again;
 			}
-			if(user && *user) {
-				r = yp_match(__ypdomain, "passwd.byname",
-					user, strlen(user),
-					&data, &datalen);
+			if (user && *user) {
+				r = yp_match(__ypdomain, (PASSWD_BYNAME),
+				    user, strlen(user),
+				    &data, &datalen);
 			} else
 				goto again;
-			if(r != 0) {
+			if (r != 0) {
 				/*
 				 * if the netgroup is invalid, keep looking
 				 * as there may be valid users later on.
 				 */
-				if(data)
+				if (data)
 					free(data);
 				goto again;
 			}
-			bcopy(data, line, datalen);
+			bcopy(data, __ypline, datalen);
 			free(data);
 			data = (char *)NULL;
 			break;
 		case YPMODE_USER:
-			if(name != (char *)NULL) {
-				r = yp_match(__ypdomain, "passwd.byname",
-					name, strlen(name),
-					&data, &datalen);
+			if (name != (char *)NULL) {
+				r = yp_match(__ypdomain, (PASSWD_BYNAME),
+				    name, strlen(name),
+				    &data, &datalen);
 				__ypmode = YPMODE_NONE;
 				free(name);
 				name = (char *)NULL;
-				if(r != 0) {
-					if(data)
+				if (r != 0) {
+					if (data)
 						free(data);
 					goto again;
 				}
-				bcopy(data, line, datalen);
+				bcopy(data, __ypline, datalen);
 				free(data);
 				data = (char *)NULL;
 			} else {		/* XXX */
@@ -370,10 +412,13 @@ again:
 				goto again;
 			}
 			break;
+		case YPMODE_NONE:
+			/* NOTREACHED */
+			break;
 		}
 
-		line[datalen] = '\0';
-		if (__ypparse(&_pw_passwd, line))
+		__ypline[datalen] = '\0';
+		if (__ypparse(&_pw_passwd, __ypline))
 			goto again;
 		return &_pw_passwd;
 	}
@@ -384,13 +429,13 @@ again:
 	bcopy((char *)&_pw_keynum, bf + 1, sizeof(_pw_keynum));
 	key.data = (u_char *)bf;
 	key.size = sizeof(_pw_keynum) + 1;
-	if(__hashpw(&key)) {
+	if (__hashpw(&key)) {
 #ifdef YP
 		/* if we don't have YP at all, don't bother. */
-		if(has_yppw) {
-			if(_pw_passwd.pw_name[0] == '+') {
+		if (__getpwent_has_yppw) {
+			if (_pw_passwd.pw_name[0] == '+') {
 				/* set the mode */
-				switch(_pw_passwd.pw_name[1]) {
+				switch (_pw_passwd.pw_name[1]) {
 				case '\0':
 					__ypmode = YPMODE_FULL;
 					break;
@@ -407,15 +452,15 @@ again:
 				/* save the prototype */
 				__ypproto_set();
 				goto again;
-			} else if(_pw_passwd.pw_name[0] == '-') {
+			} else if (_pw_passwd.pw_name[0] == '-') {
 				/* an attempted exclusion */
-				switch(_pw_passwd.pw_name[1]) {
+				switch (_pw_passwd.pw_name[1]) {
 				case '\0':
 					break;
 				case '@':
 					setnetgrent(_pw_passwd.pw_name + 2);
-					while(getnetgrent(&host, &user, &dom)) {
-						if(user && *user)
+					while (getnetgrent(&host, &user, &dom)) {
+						if (user && *user)
 							__ypexclude_add(user);
 					}
 					endnetgrent();
@@ -440,40 +485,90 @@ again:
  * about the token.
  */
 static int
-__has_yppw()
+__has_yppw(void)
 {
 	DBT key, data;
 	DBT pkey, pdata;
 	int len;
-	char bf[UT_NAMESIZE];
+	char bf[_PW_NAME_LEN + 1];
 
-	key.data = (u_char *)__yp_token;
-	key.size = strlen(__yp_token);
+	key.data = (u_char *)_PW_YPTOKEN;
+	key.size = strlen(_PW_YPTOKEN);
 
 	/* Pre-token database support. */
 	bf[0] = _PW_KEYBYNAME;
 	len = strlen("+");
-	bcopy("+", bf + 1, MIN(len, UT_NAMESIZE));
+	bcopy("+", bf + 1, MIN(len, _PW_NAME_LEN));
 	pkey.data = (u_char *)bf;
-	pkey.size = len + 1;
+	pkey.size = MIN(len, _PW_NAME_LEN) + 1;
 
-	if ((_pw_db->get)(_pw_db, &key, &data, 0)
-	    && (_pw_db->get)(_pw_db, &pkey, &pdata, 0))
-		return(0);	/* No YP. */
-	return(1);
+	if ((_pw_db->get)(_pw_db, &key, &data, 0) &&
+	    (_pw_db->get)(_pw_db, &pkey, &pdata, 0))
+		return (0);	/* No YP. */
+	return (1);
+}
+
+/*
+ * See if there's a FreeBSD-style master.passwd map set.  From the FreeBSD
+ * libc code.
+ */
+static int
+__has_ypmaster(void)
+{
+	int keylen, resultlen;
+	char *key, *result;
+	static int checked = -1;
+	static uid_t saved_uid, saved_euid;
+	uid_t uid = getuid(), euid = geteuid();
+
+	/*
+	 * Do not recheck IFF the saved UID and the saved
+	 * EUID are the same. In all other cases, recheck.
+	 */
+	if (checked != -1 && saved_uid == uid && saved_euid == euid)
+		return (checked);
+
+	if (euid != 0) {
+		saved_uid = uid;
+		saved_euid = euid;
+		checked = 0;
+		return (checked);
+	}
+
+	if (!__ypdomain) {
+		if (_yp_check(&__ypdomain) == 0) {
+			saved_uid = uid;
+			saved_euid = euid;
+			checked = 0;
+			return (checked);	/* No domain. */
+		}
+	}
+
+	if (yp_first(__ypdomain, "master.passwd.byname",
+	    &key, &keylen, &result, &resultlen)) {
+		saved_uid = uid;
+		saved_euid = euid;
+		checked = 0;
+		return (checked);
+	}
+	free (result);
+
+	saved_uid = uid;
+	saved_euid = euid;
+	checked = 1;
+	return (checked);
 }
 #endif
 
 struct passwd *
-getpwnam(name)
-	const char *name;
+getpwnam(const char *name)
 {
 	DBT key;
 	int len, rval;
-	char bf[UT_NAMESIZE + 1];
+	char bf[_PW_NAME_LEN + 1];
 
 	if (!_pw_db && !__initdb())
-		return((struct passwd *)NULL);
+		return ((struct passwd *)NULL);
 
 #ifdef YP
 	/*
@@ -485,35 +580,35 @@ getpwnam(name)
 		int s = -1;
 		const char *host, *user, *dom;
 
-		for(_pw_keynum=1; _pw_keynum; _pw_keynum++) {
+		for (_pw_keynum=1; _pw_keynum; _pw_keynum++) {
 			bf[0] = _PW_KEYBYNUM;
 			bcopy((char *)&_pw_keynum, bf + 1, sizeof(_pw_keynum));
 			key.data = (u_char *)bf;
 			key.size = sizeof(_pw_keynum) + 1;
-			if(__hashpw(&key) == 0)
+			if (__hashpw(&key) == 0)
 				break;
-			switch(_pw_passwd.pw_name[0]) {
+			switch (_pw_passwd.pw_name[0]) {
 			case '+':
-				if(!__ypdomain) {
-					if(_yp_check(&__ypdomain) == 0) {
+				if (!__ypdomain) {
+					if (_yp_check(&__ypdomain) == 0) {
 						continue;
 					}
 				}
 				/* save the prototype */
 				__ypproto_set();
 
-				switch(_pw_passwd.pw_name[1]) {
+				switch (_pw_passwd.pw_name[1]) {
 				case '\0':
-					if(__ypcurrent) {
+					if (__ypcurrent) {
 						free(__ypcurrent);
 						__ypcurrent = NULL;
 					}
 					r = yp_match(__ypdomain,
-						"passwd.byname",
+						(PASSWD_BYNAME),
 						name, strlen(name),
 						&__ypcurrent, &__ypcurrentlen);
-					if(r != 0) {
-						if(__ypcurrent)
+					if (r != 0) {
+						if (__ypcurrent)
 							free(__ypcurrent);
 						__ypcurrent = NULL;
 						continue;
@@ -521,28 +616,28 @@ getpwnam(name)
 					break;
 				case '@':
 pwnam_netgrp:
-					if(__ypcurrent) {
+					if (__ypcurrent) {
 						free(__ypcurrent);
 						__ypcurrent = NULL;
 					}
-					if(s == -1)	/* first time */
+					if (s == -1)	/* first time */
 						setnetgrent(_pw_passwd.pw_name + 2);
 					s = getnetgrent(&host, &user, &dom);
-					if(s == 0) {	/* end of group */
+					if (s == 0) {	/* end of group */
 						endnetgrent();
 						s = -1;
 						continue;
 					} else {
-						if(user && *user) {
+						if (user && *user) {
 							r = yp_match(__ypdomain,
-							    "passwd.byname",
+							    (PASSWD_BYNAME),
 							    user, strlen(user),
 							    &__ypcurrent,
 							    &__ypcurrentlen);
 						} else
 							goto pwnam_netgrp;
-						if(r != 0) {
-							if(__ypcurrent)
+						if (r != 0) {
+							if (__ypcurrent)
 							    free(__ypcurrent);
 							__ypcurrent = NULL;
 							/*
@@ -555,42 +650,42 @@ pwnam_netgrp:
 					}
 					break;
 				default:
-					if(__ypcurrent) {
+					if (__ypcurrent) {
 						free(__ypcurrent);
 						__ypcurrent = NULL;
 					}
 					user = _pw_passwd.pw_name + 1;
 					r = yp_match(__ypdomain,
-						"passwd.byname",
+						(PASSWD_BYNAME),
 						user, strlen(user),
 						&__ypcurrent,
 						&__ypcurrentlen);
-					if(r != 0) {
-						if(__ypcurrent)
+					if (r != 0) {
+						if (__ypcurrent)
 							free(__ypcurrent);
 						__ypcurrent = NULL;
 						continue;
 					}
 					break;
 				}
-				bcopy(__ypcurrent, line, __ypcurrentlen);
-				line[__ypcurrentlen] = '\0';
-				if(__ypparse(&_pw_passwd, line)
+				bcopy(__ypcurrent, __ypline, __ypcurrentlen);
+				__ypline[__ypcurrentlen] = '\0';
+				if (__ypparse(&_pw_passwd, __ypline)
 				   || __ypexclude_is(_pw_passwd.pw_name)) {
-					if(s == 1)	/* inside netgrp */
+					if (s == 1)	/* inside netgrp */
 						goto pwnam_netgrp;
 					continue;
 				}
 				break;
 			case '-':
 				/* attempted exclusion */
-				switch(_pw_passwd.pw_name[1]) {
+				switch (_pw_passwd.pw_name[1]) {
 				case '\0':
 					break;
 				case '@':
 					setnetgrent(_pw_passwd.pw_name + 2);
-					while(getnetgrent(&host, &user, &dom)) {
-						if(user && *user)
+					while (getnetgrent(&host, &user, &dom)) {
+						if (user && *user)
 							__ypexclude_add(user);
 					}
 					endnetgrent();
@@ -600,22 +695,17 @@ pwnam_netgrp:
 					break;
 				}
 				break;
-
-				continue;
 			}
-			if(strcmp(_pw_passwd.pw_name, name) == 0) {
+			if (strcmp(_pw_passwd.pw_name, name) == 0) {
 				if (!_pw_stayopen) {
 					(void)(_pw_db->close)(_pw_db);
 					_pw_db = (DB *)NULL;
 				}
-				if(__ypexclude != (DB *)NULL) {
-					(void)(__ypexclude->close)(__ypexclude);
-					__ypexclude = (DB *)NULL;
-				}
+				__ypexclude_free();
 				__ypproto = (struct passwd *)NULL;
 				return &_pw_passwd;
 			}
-			if(s == 1)	/* inside netgrp */
+			if (s == 1)	/* inside netgrp */
 				goto pwnam_netgrp;
 			continue;
 		}
@@ -623,10 +713,7 @@ pwnam_netgrp:
 			(void)(_pw_db->close)(_pw_db);
 			_pw_db = (DB *)NULL;
 		}
-		if(__ypexclude != (DB *)NULL) {
-			(void)(__ypexclude->close)(__ypexclude);
-			__ypexclude = (DB *)NULL;
-		}
+		__ypexclude_free();
 		__ypproto = (struct passwd *)NULL;
 		return (struct passwd *)NULL;
 	}
@@ -634,32 +721,32 @@ pwnam_netgrp:
 
 	bf[0] = _PW_KEYBYNAME;
 	len = strlen(name);
-	bcopy(name, bf + 1, MIN(len, UT_NAMESIZE));
-	key.data = (u_char *)bf;
-	key.size = len + 1;
-	rval = __hashpw(&key);
+	if (len > _PW_NAME_LEN)
+		rval = 0;
+	else {
+		bcopy(name, bf + 1, MIN(len, _PW_NAME_LEN));
+		key.data = (u_char *)bf;
+		key.size = MIN(len, _PW_NAME_LEN) + 1;
+		rval = __hashpw(&key);
+	}
 
 	if (!_pw_stayopen) {
 		(void)(_pw_db->close)(_pw_db);
 		_pw_db = (DB *)NULL;
 	}
-	return(rval ? &_pw_passwd : (struct passwd *)NULL);
+	return (rval ? &_pw_passwd : (struct passwd *)NULL);
 }
 
 struct passwd *
-#ifdef __STDC__
 getpwuid(uid_t uid)
-#else
-getpwuid(uid)
-	int uid;
-#endif
 {
 	DBT key;
 	char bf[sizeof(_pw_keynum) + 1];
-	int keyuid, rval;
+	uid_t keyuid;
+	int rval;
 
 	if (!_pw_db && !__initdb())
-		return((struct passwd *)NULL);
+		return ((struct passwd *)NULL);
 
 #ifdef YP
 	/*
@@ -672,35 +759,35 @@ getpwuid(uid)
 		int s = -1;
 		const char *host, *user, *dom;
 
-		sprintf(uidbuf, "%d", uid);
-		for(_pw_keynum=1; _pw_keynum; _pw_keynum++) {
+		snprintf(uidbuf, sizeof uidbuf, "%u", uid);
+		for (_pw_keynum=1; _pw_keynum; _pw_keynum++) {
 			bf[0] = _PW_KEYBYNUM;
 			bcopy((char *)&_pw_keynum, bf + 1, sizeof(_pw_keynum));
 			key.data = (u_char *)bf;
 			key.size = sizeof(_pw_keynum) + 1;
-			if(__hashpw(&key) == 0)
+			if (__hashpw(&key) == 0)
 				break;
-			switch(_pw_passwd.pw_name[0]) {
+			switch (_pw_passwd.pw_name[0]) {
 			case '+':
-				if(!__ypdomain) {
-					if(_yp_check(&__ypdomain) == 0) {
+				if (!__ypdomain) {
+					if (_yp_check(&__ypdomain) == 0) {
 						continue;
 					}
 				}
 				/* save the prototype */
 				__ypproto_set();
 
-				switch(_pw_passwd.pw_name[1]) {
+				switch (_pw_passwd.pw_name[1]) {
 				case '\0':
-					if(__ypcurrent) {
+					if (__ypcurrent) {
 						free(__ypcurrent);
 						__ypcurrent = NULL;
 					}
-					r = yp_match(__ypdomain, "passwd.byuid",
+					r = yp_match(__ypdomain, (PASSWD_BYUID),
 						uidbuf, strlen(uidbuf),
 						&__ypcurrent, &__ypcurrentlen);
-					if(r != 0) {
-						if(__ypcurrent)
+					if (r != 0) {
+						if (__ypcurrent)
 							free(__ypcurrent);
 						__ypcurrent = NULL;
 						continue;
@@ -708,32 +795,32 @@ getpwuid(uid)
 					break;
 				case '@':
 pwuid_netgrp:
-					if(__ypcurrent) {
+					if (__ypcurrent) {
 						free(__ypcurrent);
 						__ypcurrent = NULL;
 					}
-					if(s == -1)	/* first time */
+					if (s == -1)	/* first time */
 						setnetgrent(_pw_passwd.pw_name + 2);
 					s = getnetgrent(&host, &user, &dom);
-					if(s == 0) {	/* end of group */
+					if (s == 0) {	/* end of group */
 						endnetgrent();
 						s = -1;
 						continue;
 					} else {
-						if(user && *user) {
+						if (user && *user) {
 							r = yp_match(__ypdomain,
-							    "passwd.byname",
+							    (PASSWD_BYNAME),
 							    user, strlen(user),
 							    &__ypcurrent,
 							    &__ypcurrentlen);
 						} else
 							goto pwuid_netgrp;
-						if(r != 0) {
-							if(__ypcurrent)
+						if (r != 0) {
+							if (__ypcurrent)
 							    free(__ypcurrent);
 							__ypcurrent = NULL;
 							/*
-                                                         * just because this
+							 * just because this
 							 * user is bad, doesn't
 							 * mean they all are.
 							 */
@@ -742,42 +829,42 @@ pwuid_netgrp:
 					}
 					break;
 				default:
-					if(__ypcurrent) {
+					if (__ypcurrent) {
 						free(__ypcurrent);
 						__ypcurrent = NULL;
 					}
 					user = _pw_passwd.pw_name + 1;
 					r = yp_match(__ypdomain,
-						"passwd.byname",
+						(PASSWD_BYNAME),
 						user, strlen(user),
 						&__ypcurrent,
 						&__ypcurrentlen);
-					if(r != 0) {
-						if(__ypcurrent)
+					if (r != 0) {
+						if (__ypcurrent)
 							free(__ypcurrent);
 						__ypcurrent = NULL;
 						continue;
 					}
 					break;
 				}
-				bcopy(__ypcurrent, line, __ypcurrentlen);
-				line[__ypcurrentlen] = '\0';
-				if(__ypparse(&_pw_passwd, line)
+				bcopy(__ypcurrent, __ypline, __ypcurrentlen);
+				__ypline[__ypcurrentlen] = '\0';
+				if (__ypparse(&_pw_passwd, __ypline)
 				   || __ypexclude_is(_pw_passwd.pw_name)) {
-					if(s == 1)	/* inside netgroup */
+					if (s == 1)	/* inside netgroup */
 						goto pwuid_netgrp;
 					continue;
 				}
 				break;
 			case '-':
 				/* attempted exclusion */
-				switch(_pw_passwd.pw_name[1]) {
+				switch (_pw_passwd.pw_name[1]) {
 				case '\0':
 					break;
 				case '@':
 					setnetgrent(_pw_passwd.pw_name + 2);
-					while(getnetgrent(&host, &user, &dom)) {
-						if(user && *user)
+					while (getnetgrent(&host, &user, &dom)) {
+						if (user && *user)
 							__ypexclude_add(user);
 					}
 					endnetgrent();
@@ -787,22 +874,17 @@ pwuid_netgrp:
 					break;
 				}
 				break;
-
-				continue;
 			}
-			if( _pw_passwd.pw_uid == uid) {
+			if (_pw_passwd.pw_uid == uid) {
 				if (!_pw_stayopen) {
 					(void)(_pw_db->close)(_pw_db);
 					_pw_db = (DB *)NULL;
 				}
-				if (__ypexclude != (DB *)NULL) {
-					(void)(__ypexclude->close)(__ypexclude);
-					__ypexclude = (DB *)NULL;
-				}
+				__ypexclude_free();
 				__ypproto = NULL;
 				return &_pw_passwd;
 			}
-			if(s == 1)	/* inside netgroup */
+			if (s == 1)	/* inside netgroup */
 				goto pwuid_netgrp;
 			continue;
 		}
@@ -810,10 +892,7 @@ pwuid_netgrp:
 			(void)(_pw_db->close)(_pw_db);
 			_pw_db = (DB *)NULL;
 		}
-		if(__ypexclude != (DB *)NULL) {
-			(void)(__ypexclude->close)(__ypexclude);
-			__ypexclude = (DB *)NULL;
-		}
+		__ypexclude_free();
 		__ypproto = (struct passwd *)NULL;
 		return (struct passwd *)NULL;
 	}
@@ -830,37 +909,33 @@ pwuid_netgrp:
 		(void)(_pw_db->close)(_pw_db);
 		_pw_db = (DB *)NULL;
 	}
-	return(rval ? &_pw_passwd : (struct passwd *)NULL);
+	return (rval ? &_pw_passwd : (struct passwd *)NULL);
 }
 
 int
-setpassent(stayopen)
-	int stayopen;
+setpassent(int stayopen)
 {
 	_pw_keynum = 0;
 	_pw_stayopen = stayopen;
 #ifdef YP
 	__ypmode = YPMODE_NONE;
-	if(__ypcurrent)
+	if (__ypcurrent)
 		free(__ypcurrent);
 	__ypcurrent = NULL;
-	if(__ypexclude != (DB *)NULL) {
-		(void)(__ypexclude->close)(__ypexclude);
-		__ypexclude = (DB *)NULL;
-	}
+	__ypexclude_free();
 	__ypproto = (struct passwd *)NULL;
 #endif
-	return(1);
+	return (1);
 }
 
 void
-setpwent()
+setpwent(void)
 {
 	(void) setpassent(0);
 }
 
 void
-endpwent()
+endpwent(void)
 {
 	_pw_keynum = 0;
 	if (_pw_db) {
@@ -869,50 +944,57 @@ endpwent()
 	}
 #ifdef YP
 	__ypmode = YPMODE_NONE;
-	if(__ypcurrent)
+	if (__ypcurrent)
 		free(__ypcurrent);
 	__ypcurrent = NULL;
-	if(__ypexclude != (DB *)NULL) {
-		(void)(__ypexclude->close)(__ypexclude);
-		__ypexclude = (DB *)NULL;
-	}
+	__ypexclude_free();
 	__ypproto = (struct passwd *)NULL;
 #endif
 }
 
 static int
-__initdb()
+__initdb(void)
 {
 	static int warned;
-	char *p;
 
 #ifdef YP
 	__ypmode = YPMODE_NONE;
+	__getpwent_has_yppw = -1;
 #endif
-	p = (geteuid()) ? _PATH_MP_DB : _PATH_SMP_DB;
-	_pw_db = dbopen(p, O_RDONLY, 0, DB_HASH, NULL);
-	if (_pw_db)
-		return(1);
+	if ((_pw_db = dbopen(_PATH_SMP_DB, O_RDONLY, 0, DB_HASH, NULL)) ||
+	    (_pw_db = dbopen(_PATH_MP_DB, O_RDONLY, 0, DB_HASH, NULL)))
+		return (1);
 	if (!warned)
-		syslog(LOG_ERR, "%s: %m", p);
+		syslog(LOG_ERR, "%s: %m", _PATH_MP_DB);
 	warned = 1;
-	return(0);
+	return (0);
 }
 
 static int
-__hashpw(key)
-	DBT *key;
+__hashpw(DBT *key)
 {
-	register char *p, *t;
+	char *p, *t;
 	static u_int max;
 	static char *line;
 	DBT data;
 
 	if ((_pw_db->get)(_pw_db, key, &data, 0))
-		return(0);
+		return (0);
 	p = (char *)data.data;
-	if (data.size > max && !(line = realloc(line, (max += 1024))))
-		return(0);
+	if (data.size > max) {
+		char *nline;
+
+		max = data.size + 256;
+		nline = realloc(line, max);
+		if (nline == NULL) {
+			if (line)
+				free(line);
+			line = NULL;
+			max = 0;
+			return 0;
+		}
+		line = nline;
+	}
 
 	t = line;
 #define	EXPAND(e)	e = t; while ((*t++ = *p++));
@@ -938,5 +1020,5 @@ __hashpw(key)
 	} else
 		_pw_flags = _PASSWORD_NOUID|_PASSWORD_NOGID;	/* default */
 
-	return(1);
+	return (1);
 }

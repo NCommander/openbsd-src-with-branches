@@ -19,19 +19,22 @@
 /*
  *	Required includes
  */
-#include <stdlib.h>
-#include "HTUtils.h"
+
+#ifndef HTUTILS_H
+#include <HTUtils.h>
+#endif
 
 /*
  *	Constant defines
  */
-#ifdef _WINDOWS
+#ifdef exit
 #undef exit
 #endif /* _WINDOWS */
 
-#define exit LYexit
+#define exit(code) LYexit(code)
+
 #define atexit LYatexit
-#define ATEXITSIZE 32
+#define ATEXITSIZE 50
 
 /*
  *	Data structures
@@ -48,11 +51,8 @@
 /*
  *	Function declarations
  */
-extern void LYexit PARAMS((int status));
-#ifdef __STDC__
-extern int LYatexit(void (*function)(void));
-#else
-extern int LYatexit();
-#endif /* __STDC__ */
+extern void exit_immediately PARAMS((int status)) GCC_NORETURN;
+extern void LYexit PARAMS((int status)) GCC_NORETURN;
+extern int LYatexit PARAMS((void (*function)(void)));
 
 #endif /* __LYEXIT_H */

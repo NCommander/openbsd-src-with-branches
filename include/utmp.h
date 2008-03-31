@@ -1,3 +1,4 @@
+/*	$OpenBSD: utmp.h,v 1.4 2001/01/31 17:42:25 deraadt Exp $	*/
 /*	$NetBSD: utmp.h,v 1.6 1994/10/26 00:56:40 cgd Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,9 +44,14 @@
 #define	_PATH_WTMP	"/var/log/wtmp"
 #define	_PATH_LASTLOG	"/var/log/lastlog"
 
-#define	UT_NAMESIZE	8
+#define	UT_NAMESIZE	32
 #define	UT_LINESIZE	8
-#define	UT_HOSTSIZE	16
+#define	UT_HOSTSIZE	256
+
+/*
+ * Note that these are *not* C strings and thus are not
+ * guaranteed to be NUL-terminated.
+ */
 
 struct lastlog {
 	time_t	ll_time;
@@ -61,6 +63,22 @@ struct utmp {
 	char	ut_line[UT_LINESIZE];
 	char	ut_name[UT_NAMESIZE];
 	char	ut_host[UT_HOSTSIZE];
+	time_t	ut_time;
+};
+
+/*
+ * These should not be used for writing out new data, for reference only.
+ */
+struct old_lastlog {
+	time_t	ll_time;
+	char	ll_line[8];
+	char	ll_host[16];
+};
+
+struct old_utmp {
+	char	ut_line[8];
+	char	ut_name[8];
+	char	ut_host[16];
 	time_t	ut_time;
 };
 

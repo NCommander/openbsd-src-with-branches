@@ -1,11 +1,8 @@
-/*	$NetBSD: asm.h,v 1.3 1995/05/03 19:53:40 ragge Exp $	*/
-
-/*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * William Jolitz.
+/*	$OpenBSD: asm.h,v 1.7 2002/11/05 18:04:36 miod Exp $ */
+/*	$NetBSD: asm.h,v 1.9 1999/01/15 13:31:28 bouyer Exp $ */
+/*
+ * Copyright (c) 1982, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -15,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,42 +28,100 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)asm.h	5.5 (Berkeley) 5/7/91
- *      @(#)DEFS.h      5.3 (Berkeley) 6/1/90
+ *	@(#)DEFS.h	8.1 (Berkeley) 6/4/93
  */
 
 #ifndef _MACHINE_ASM_H_
 #define _MACHINE_ASM_H_
 
-#define R0      0x001
-#define R1      0x002
-#define R2      0x004
-#define R3      0x008
-#define R4      0x010
-#define R5      0x020
-#define R6      0x040
-#define R7      0x080
-#define R8      0x100
-#define R9      0x200
-#define R10     0x400
-#define R11     0x800
+#define R0	0x001
+#define R1	0x002
+#define R2	0x004
+#define R3	0x008
+#define R4	0x010
+#define R5	0x020
+#define R6	0x040
+#define R7 	0x080
+#define R8	0x100
+#define R9	0x200
+#define R10	0x400
+#define R11	0x800
+
+#ifdef __ELF__
+# define _C_LABEL(x)	x
+#else
+# ifdef __STDC__
+#  define _C_LABEL(x)	_ ## x
+# else
+#  define _C_LABEL(x)	_/**/x
+# endif
+#endif
+
+#define	_ASM_LABEL(x)	x
 
 #ifdef __STDC__
-# define _FUNC(x)       _ ## x ## :
-# define _GLOB(x)       .globl _ ## x
+# define __CONCAT(x,y)	x ## y
+# define __STRING(x)	#x
 #else
-# define _FUNC(x)       _/**/x:
-# define _GLOB(x)        .globl _/**/x
+# define __CONCAT(x,y)	x/**/y
+# define __STRING(x)	"x"
 #endif
 
-#ifdef PROF
-#define ENTRY(x,regs) \
-        _GLOB(x);.align 2;_FUNC(x);.word regs;jsb mcount;
-#else   
-#define ENTRY(x,regs) \
-        _GLOB(x);.align 2;_FUNC(x);.word regs;
+/* let kernels and others override entrypoint alignment */
+#ifndef _ALIGN_TEXT
+# ifdef __ELF__
+#  define _ALIGN_TEXT .align 4
+# else
+#  define _ALIGN_TEXT .align 2
+# endif
 #endif
 
-#define	ASMSTR		.asciz
+#define	_ENTRY(x, regs) \
+	.text; _ALIGN_TEXT; .globl x; .type x,@function; x: .word regs
 
-#endif /* !_MACHINE_ASM_H_ */
+#ifdef GPROF
+# ifdef __ELF__
+#  define _PROF_PROLOGUE	\
+	.data; 1:; .long 0; .text; moval 1b,r0; jsb _ASM_LABEL(__mcount)
+# else 
+#  define _PROF_PROLOGUE	\
+	.data; 1:; .long 0; .text; moval 1b,r0; jsb _ASM_LABEL(mcount)
+# endif
+#else
+# define _PROF_PROLOGUE
+#endif
+
+#define ENTRY(x, regs)		_ENTRY(_C_LABEL(x), regs); _PROF_PROLOGUE
+#define NENTRY(x, regs)		_ENTRY(_C_LABEL(x), regs)
+#define ASENTRY(x, regs)	_ENTRY(_ASM_LABEL(x), regs); _PROF_PROLOGUE
+
+#define ALTENTRY(x)		.globl _C_LABEL(x); _C_LABEL(x):
+#define RCSID(x)		.text; .asciz x
+
+#ifdef	__ELF__
+#define	WEAK_ALIAS(alias,sym)						\
+	.weak alias;							\
+	alias = sym
+#else
+#ifdef	__STDC__
+#define	WEAK_ALIAS(alias,sym)						\
+	.weak _##alias;							\
+	_##alias = _##sym
+#else
+#define	WEAK_ALIAS(alias,sym)						\
+	.weak _/**/alias;						\
+	_/**/alias = _/**/sym
+#endif
+#endif
+
+#ifdef __STDC__
+#define	WARN_REFERENCES(sym,msg)					\
+	.stabs msg ## ,30,0,0,0 ;					\
+	.stabs __STRING(_C_LABEL(sym)) ## ,1,0,0,0
+#else
+#define	WARN_REFERENCES(sym,msg)					\
+	.stabs msg,30,0,0,0 ;						\
+	.stabs __STRING(_C_LABEL(sym)),1,0,0,0
+#endif /* __STDC__ */
+
+#endif /* _MACHINE_ASM_H_ */

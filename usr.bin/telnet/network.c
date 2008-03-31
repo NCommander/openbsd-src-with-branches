@@ -1,3 +1,6 @@
+/*	$OpenBSD: network.c,v 1.7 2001/11/19 19:02:16 mpech Exp $	*/
+/*	$NetBSD: network.c,v 1.5 1996/02/28 21:04:06 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,24 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)network.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: network.c,v 1.3 1994/02/25 03:00:31 cgd Exp $";
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-
-#include <errno.h>
-
-#include <arpa/telnet.h>
-
-#include "ring.h"
-
-#include "defines.h"
-#include "externs.h"
-#include "fdset.h"
+#include "telnet_locl.h"
+#include <err.h>
 
 Ring		netoring, netiring;
 unsigned char	netobuf[2*BUFSIZ], netibuf[BUFSIZ];
@@ -79,23 +62,31 @@ init_network()
 stilloob()
 {
     static struct timeval timeout = { 0 };
-    fd_set	excepts;
+    fd_set *fdsp;
+    int fdsn;
     int value;
 
+    fdsn = howmany(net+1, NFDBITS) * sizeof(fd_mask);
+    if ((fdsp = (fd_set *)malloc(fdsn)) == NULL)
+	err(1, "malloc");
+
     do {
-	FD_ZERO(&excepts);
-	FD_SET(net, &excepts);
-	value = select(net+1, (fd_set *)0, (fd_set *)0, &excepts, &timeout);
+	memset(fdsp, 0, fdsn);
+	FD_SET(net, fdsp);
+	value = select(net+1, (fd_set *)0, (fd_set *)0, fdsp, &timeout);
     } while ((value == -1) && (errno == EINTR));
 
     if (value < 0) {
 	perror("select");
+	free(fdsp);
 	(void) quit();
 	/* NOTREACHED */
     }
-    if (FD_ISSET(net, &excepts)) {
+    if (FD_ISSET(net, fdsp)) {
+	free(fdsp);
 	return 1;
     } else {
+   	free(fdsp);
 	return 0;
     }
 }
@@ -127,8 +118,12 @@ setneturg()
     int
 netflush()
 {
-    register int n, n1;
+    int n, n1;
 
+#if    defined(ENCRYPTION)
+    if (encrypt_output)
+	ring_encrypt(&netoring, encrypt_output);
+#endif
     if ((n1 = n = ring_full_consecutive(&netoring)) > 0) {
 	if (!ring_at_mark(&netoring)) {
 	    n = send(net, (char *)netoring.consume, n, 0); /* normal write */

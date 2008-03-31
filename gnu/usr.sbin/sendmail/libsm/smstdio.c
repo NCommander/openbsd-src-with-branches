@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002, 2004 Sendmail, Inc. and its suppliers.
  *      All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -8,15 +8,18 @@
  */
 
 #include <sm/gen.h>
-SM_IDSTR(id, "@(#)$Sendmail: smstdio.c,v 1.27 2001/03/05 03:22:41 ca Exp $")
+SM_IDSTR(id, "@(#)$Sendmail: smstdio.c,v 1.34 2004/08/03 20:46:34 ca Exp $")
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include <sm/assert.h>
 #include <sm/io.h>
 #include <sm/string.h>
 #include "local.h"
+
+static void	setup __P((SM_FILE_T *));
 
 /*
 ** Overall:
@@ -67,6 +70,23 @@ sm_stdioopen(fp, info, flags, rpool)
 	  case SM_IO_APPENDRW:
 		stdiomode = "a+";
 		break;
+#if SM_IO_BINARY != 0
+	  case SM_IO_RDONLY_B:
+		stdiomode = "rb";
+		break;
+	  case SM_IO_WRONLY_B:
+		stdiomode = "wb";
+		break;
+	  case SM_IO_APPEND_B:
+		stdiomode = "ab";
+		break;
+	  case SM_IO_APPENDRW_B:
+		stdiomode = "a+b";
+		break;
+	  case SM_IO_RDWR_B:
+		stdiomode = "r+b";
+		break;
+#endif /* SM_IO_BINARY != 0 */
 	  case SM_IO_RDWR:
 	  default:
 		stdiomode = "r+";
@@ -264,6 +284,22 @@ sm_stdiogetinfo(fp, what, valp)
 {
 	switch (what)
 	{
+	  case SM_IO_WHAT_SIZE:
+	  {
+		  int fd;
+		  struct stat st;
+
+		  if (fp->f_cookie == NULL)
+			  setup(fp);
+		  fd = fileno((FILE *) fp->f_cookie);
+		  if (fd < 0)
+			  return -1;
+		  if (fstat(fd, &st) == 0)
+			  return st.st_size;
+		  else
+			  return -1;
+	  }
+
 	  case SM_IO_WHAT_MODE:
 	  default:
 		errno = EINVAL;

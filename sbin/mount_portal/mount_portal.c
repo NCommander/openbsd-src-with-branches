@@ -1,4 +1,5 @@
-/*	$NetBSD: mount_portal.c,v 1.6 1995/06/08 12:38:07 cgd Exp $	*/
+/*	$OpenBSD: mount_portal.c,v 1.26 2003/07/29 18:38:36 deraadt Exp $	*/
+/*	$NetBSD: mount_portal.c,v 1.8 1996/04/13 01:31:54 jtc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,9 +41,9 @@ char copyright[] =
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)mount_portal.c	8.4 (Berkeley) 3/27/94";
+static char sccsid[] = "@(#)mount_portal.c	8.6 (Berkeley) 4/26/95";
 #else
-static char rcsid[] = "$NetBSD: mount_portal.c,v 1.6 1995/06/08 12:38:07 cgd Exp $";
+static char rcsid[] = "$OpenBSD: mount_portal.c,v 1.26 2003/07/29 18:38:36 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -69,49 +66,63 @@ static char rcsid[] = "$NetBSD: mount_portal.c,v 1.6 1995/06/08 12:38:07 cgd Exp
 #include "pathnames.h"
 #include "portald.h"
 
-struct mntopt mopts[] = {
+const struct mntopt mopts[] = {
 	MOPT_STDOPTS,
 	{ NULL }
 };
 
-static void usage __P((void));
+extern char *__progname;	/* from crt0.o */
 
-static sig_atomic_t readcf;	/* Set when SIGHUP received */
+static char mountpt[MAXPATHLEN];	/* made available to signal handler */
+
+static void usage(void);
+
+static volatile sig_atomic_t readcf;	/* Set when SIGHUP received */
 
 static void
-sigchld(sig)
-	int sig;
+sigchld(int sig)
 {
+	int save_errno = errno;
+	struct syslog_data sdata = SYSLOG_DATA_INIT;
 	pid_t pid;
 
-	while ((pid = waitpid((pid_t) -1, (int *) 0, WNOHANG)) > 0)
+	while ((pid = waitpid((pid_t) -1, NULL, WNOHANG)) > 0)
 		;
 	if (pid < 0 && errno != ECHILD)
-		syslog(LOG_WARNING, "waitpid: %s", strerror(errno));
+		syslog_r(LOG_WARNING, &sdata, "waitpid: %m");
+	errno = save_errno;
 }
 
 static void
-sighup(sig)
-	int sig;
+sighup(int sig)
 {
 
 	readcf = 1;
 }
 
+static void
+sigterm(int sig)
+{
+	struct syslog_data sdata = SYSLOG_DATA_INIT;
+
+	if (unmount(mountpt, MNT_FORCE) < 0)
+		syslog_r(LOG_WARNING, &sdata,
+		    "sigterm: unmounting %s failed: %m", mountpt);
+	_exit(1);
+}
+
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct portal_args args;
 	struct sockaddr_un un;
 	char *conf;
-	char *mountpt;
 	int mntflags = 0;
 	char tag[32];
+	fd_set *fdsp;
+	int fdssize;
 
 	qelem q;
-	int rc;
 	int so;
 	int error = 0;
 
@@ -120,7 +131,7 @@ main(argc, argv)
 	 */
 	int ch;
 
-	while ((ch = getopt(argc, argv, "o:")) != EOF) {
+	while ((ch = getopt(argc, argv, "o:")) != -1) {
 		switch (ch) {
 		case 'o':
 			getmntopts(optarg, mopts, &mntflags);
@@ -141,65 +152,77 @@ main(argc, argv)
 	 * Get config file and mount point
 	 */
 	conf = argv[optind];
-	mountpt = argv[optind+1];
+	if (realpath(argv[optind+1], mountpt) == NULL)
+		err(1, "realpath %s", argv[optind+1]);
 
 	/*
 	 * Construct the listening socket
 	 */
 	un.sun_family = AF_UNIX;
-	if (sizeof(_PATH_TMPPORTAL) >= sizeof(un.sun_path)) {
-		fprintf(stderr, "mount_portal: portal socket name too long\n");
-		exit(1);
-	}
-	strcpy(un.sun_path, _PATH_TMPPORTAL);
-	mktemp(un.sun_path);
+	if (sizeof(_PATH_TMPPORTAL) >= sizeof(un.sun_path))
+		errx(1, "portal socket name too long");
+	(void)strlcpy(un.sun_path, _PATH_TMPPORTAL, sizeof un.sun_path);
+	so = mkstemp(un.sun_path);
+	if (so < 0)
+		err(1, "can't create portal socket name: %s", un.sun_path);
 	un.sun_len = strlen(un.sun_path);
+	(void)close(so);
 
 	so = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (so < 0) {
-		fprintf(stderr, "mount_portal: socket: %s\n", strerror(errno));
-		exit(1);
-	}
-	(void) unlink(un.sun_path);
-	if (bind(so, (struct sockaddr *) &un, sizeof(un)) < 0)
-		err(1, NULL);
-	(void) unlink(un.sun_path);
+	if (so < 0)
+		err(1, "socket(2)");
 
-	(void) listen(so, 5);
+	(void)unlink(un.sun_path);
+	/* XXX teeny race? */
+	if (bind(so, (struct sockaddr *) &un, sizeof(un)) < 0)
+		err(1, "bind(2)");
+
+	(void)listen(so, 5);
 
 	args.pa_socket = so;
-	sprintf(tag, "portal:%d", getpid());
-	args.pa_config = tag;
-
-	rc = mount(MOUNT_PORTAL, mountpt, mntflags, &args);
-	if (rc < 0)
-		err(1, NULL);
 
 	/*
-	 * Everything is ready to go - now is a good time to fork
+	 * Must fork before mount to get pid in name right.
 	 */
 	daemon(0, 0);
+
+	(void)snprintf(tag, sizeof(tag), "portal:%ld", (long)getpid());
+	args.pa_config = tag;
 
 	/*
 	 * Start logging (and change name)
 	 */
 	openlog("portald", LOG_CONS|LOG_PID, LOG_DAEMON);
 
+	if (mount(MOUNT_PORTAL, mountpt, mntflags, &args)) {
+		if (errno == EOPNOTSUPP)
+			syslog(LOG_ERR,
+			    "mount: Filesystem not supported by kernel");
+		else
+			syslog(LOG_ERR, "mount: %m");
+		exit(1);
+	}
+
 	q.q_forw = q.q_back = &q;
 	readcf = 1;
 
-	signal(SIGCHLD, sigchld);
-	signal(SIGHUP, sighup);
+	(void)signal(SIGCHLD, sigchld);
+	(void)signal(SIGHUP, sighup);
+	(void)signal(SIGTERM, sigterm);
+
+	fdssize = howmany(so+1, NFDBITS) * sizeof(fd_mask);
+	fdsp = (fd_set *)malloc(fdssize);
+	if (fdsp == NULL)
+		err(1, "malloc");
 
 	/*
 	 * Just loop waiting for new connections and activating them
 	 */
 	for (;;) {
 		struct sockaddr_un un2;
-		int len2 = sizeof(un2);
+		socklen_t salen = sizeof(un2);
 		int so2;
 		pid_t pid;
-		fd_set fdset;
 		int rc;
 
 		/*
@@ -210,25 +233,24 @@ main(argc, argv)
 			conf_read(&q, conf);
 			continue;
 		}
-	
+
 		/*
 		 * Accept a new connection
 		 * Will get EINTR if a signal has arrived, so just
 		 * ignore that error code
 		 */
-		FD_ZERO(&fdset);
-		FD_SET(so, &fdset);
-		rc = select(so+1, &fdset, (fd_set *)0, (fd_set *)0,
-		    (struct timeval *)0);
+		memset(fdsp, 0, fdssize);
+		FD_SET(so, fdsp);
+		rc = select(so+1, fdsp, NULL, NULL, NULL);
 		if (rc < 0) {
 			if (errno == EINTR)
 				continue;
-			syslog(LOG_ERR, "select: %s", strerror(errno));
+			syslog(LOG_ERR, "select: %m");
 			exit(1);
 		}
 		if (rc == 0)
 			break;
-		so2 = accept(so, (struct sockaddr *) &un2, &len2);
+		so2 = accept(so, (struct sockaddr *) &un2, &salen);
 		if (so2 < 0) {
 			/*
 			 * The unmount function does a shutdown on the socket
@@ -237,7 +259,7 @@ main(argc, argv)
 			if (errno == ECONNABORTED)
 				break;
 			if (errno != EINTR) {
-				syslog(LOG_ERR, "accept: %s", strerror(errno));
+				syslog(LOG_ERR, "accept: %m");
 				exit(1);
 			}
 			continue;
@@ -253,25 +275,26 @@ main(argc, argv)
 				sleep(1);
 				goto eagain;
 			}
-			syslog(LOG_ERR, "fork: %s", strerror(errno));
+			syslog(LOG_ERR, "fork: %m");
 			break;
 		case 0:
-			(void) close(so);
+			(void)close(so);
 			activate(&q, so2);
 			exit(0);
 		default:
-			(void) close(so2);
+			(void)close(so2);
 			break;
 		}
 	}
+	free(fdsp);
 	syslog(LOG_INFO, "%s unmounted", mountpt);
 	exit(0);
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-		"usage: mount_portal [-o options] config mount-point\n");
+		"usage: %s [-o options] config mount-point\n", __progname);
 	exit(1);
 }

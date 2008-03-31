@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq.h	8.1 (Berkeley) 6/6/93
- *	$Id: amq.h,v 1.2 1994/06/13 20:50:44 mycroft Exp $
+ *	$Id: amq.h,v 1.3 2002/08/05 07:24:26 pvalchev Exp $
  *
  */
 
@@ -46,7 +42,7 @@ typedef char *amq_string;
 bool_t xdr_amq_string();
 
 
-typedef long *time_type;
+typedef int *time_type;
 bool_t xdr_time_type();
 
 
@@ -132,11 +128,11 @@ bool_t xdr_amq_setopt();
 #define AMQ_PROGRAM ((u_long)300019)
 #define AMQ_VERSION ((u_long)1)
 #define AMQPROC_NULL ((u_long)0)
-extern voidp amqproc_null_1();
+extern void *amqproc_null_1();
 #define AMQPROC_MNTTREE ((u_long)1)
 extern amq_mount_tree_p *amqproc_mnttree_1();
 #define AMQPROC_UMNT ((u_long)2)
-extern voidp amqproc_umnt_1();
+extern void *amqproc_umnt_1();
 #define AMQPROC_STATS ((u_long)3)
 extern amq_mount_stats *amqproc_stats_1();
 #define AMQPROC_EXPORT ((u_long)4)

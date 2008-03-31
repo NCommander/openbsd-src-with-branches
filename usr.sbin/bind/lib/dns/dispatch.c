@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include <isc/entropy.h>
+#include <isc/shuffle.h>
 #include <isc/mem.h>
 #include <isc/mutex.h>
 #include <isc/print.h>
@@ -60,6 +61,7 @@ typedef struct dns_qid {
 	unsigned int	qid_nbuckets;	/*%< hash table size */
 	unsigned int	qid_increment;	/*%< id increment on collision */
 	isc_mutex_t	lock;
+	isc_shuffle_t	qid_shuffle;	/* state generator info */
 	dns_nsid_t      nsid;
 	dns_displist_t	*qid_table;	/*%< the table itself */
 } dns_qid_t;
@@ -169,7 +171,7 @@ static void destroy_disp(isc_task_t *task, isc_event_t *event);
 static void udp_recv(isc_task_t *, isc_event_t *);
 static void tcp_recv(isc_task_t *, isc_event_t *);
 static void startrecv(dns_dispatch_t *);
-static dns_messageid_t dns_randomid(dns_nsid_t *);
+static dns_messageid_t dns_randomid(dns_qid_t *);
 static isc_uint32_t dns_hash(dns_qid_t *, isc_sockaddr_t *, dns_messageid_t);
 static void free_buffer(dns_dispatch_t *disp, void *buf, unsigned int len);
 static void *allocate_udp_buffer(dns_dispatch_t *disp);
@@ -279,10 +281,10 @@ request_log(dns_dispatch_t *disp, dns_dispentry_t *resp,
  * Return an unpredictable message ID.
  */
 static dns_messageid_t
-dns_randomid(dns_nsid_t *nsid) {
-	isc_uint32_t id;
+dns_randomid(dns_qid_t *qid) {
+	isc_uint16_t id;
 
-	id = nsid_next(nsid);
+	id = isc_shuffle_generate16(&qid->qid_shuffle);
 
 	return ((dns_messageid_t)id);
 }
@@ -1441,6 +1443,9 @@ qid_allocate(dns_dispatchmgr_t *mgr, unsigned int buckets,
 	qid->qid_nbuckets = buckets;
 	qid->qid_increment = increment;
 	qid->magic = QID_MAGIC;
+
+	isc_shuffle_init(&qid->qid_shuffle);
+
 	*qidp = qid;
 	return (ISC_R_SUCCESS);
 }
@@ -1923,7 +1928,7 @@ dns_dispatch_addresponse(dns_dispatch_t *disp, isc_sockaddr_t *dest,
 	 */
 	qid = DNS_QID(disp);
 	LOCK(&qid->lock);
-	id = dns_randomid(&qid->nsid);
+	id = dns_randomid(qid);
 	bucket = dns_hash(qid, dest, id);
 	ok = ISC_FALSE;
 	for (i = 0; i < 64; i++) {

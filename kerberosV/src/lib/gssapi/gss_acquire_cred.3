@@ -417,15 +417,12 @@ GSS-API library (libgssapi, -lgssapi)
 .Fc
 .Sh DESCRIPTION
 Generic Security Service API (GSS-API) version 2, and its C binding,
-is described in
-.Li RFC2743
-and
-.Li RFC2744 .
-Version 1 (deprecated) of the C binding is described in
-.Li RFC1509 .
+are described in RFC 2743 and RFC 2744.
+Version 1 (deprecated) of the C binding is described in RFC 1509.
 .Pp
 Heimdals GSS-API implementation supports the following mechanisms
-.Bl -bullet
+.Pp
+.Bl -bullet -offset indent -compact
 .It
 .Li GSS_KRB5_MECHANISM
 .It
@@ -434,7 +431,8 @@ Heimdals GSS-API implementation supports the following mechanisms
 .Pp
 GSS-API have generic name types that all mechanism are supposed to
 implement (if possible):
-.Bl -bullet
+.Pp
+.Bl -bullet -offset indent -compact
 .It
 .Li GSS_C_NT_USER_NAME
 .It
@@ -451,7 +449,8 @@ implement (if possible):
 .Pp
 GSS-API implementations that supports Kerberos 5 have some additional
 name types:
-.Bl -bullet
+.Pp
+.Bl -bullet -offset indent -compact
 .It
 .Li GSS_KRB5_NT_PRINCIPAL_NAME
 .It

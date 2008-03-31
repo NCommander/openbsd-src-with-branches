@@ -1,6 +1,7 @@
-/*	$NetBSD: adbvar.h,v 1.2 1995/04/21 02:47:44 briggs Exp $	*/
+/*	$OpenBSD: adbvar.h,v 1.12 2006/01/18 23:21:16 miod Exp $	*/
+/*	$NetBSD: adbvar.h,v 1.22 2005/01/15 16:00:59 chs Exp $	*/
 
-/*-
+/*
  * Copyright (C) 1994	Bradley A. Grantham
  * All rights reserved.
  *
@@ -30,15 +31,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define ADB_MAXTRACE	(NBPG / sizeof(int) - 1)
-extern int adb_traceq[ADB_MAXTRACE];
-extern int adb_traceq_tail;
-extern int adb_traceq_len;
+extern int adbHardware;
 
-typedef struct adb_trace_xlate_s {
-	int     params;
-	char   *string;
-}       adb_trace_xlate_t;
+/* types of adb hardware that we (will eventually) support */
+#define ADB_HW_UNKNOWN		0	/* don't know */
+#define ADB_HW_II		1	/* Mac II series */
+#define ADB_HW_IISI		2	/* Mac IIsi series */
+#define ADB_HW_PB		3	/* PowerBook series */
+#define ADB_HW_CUDA		4	/* Machines with a Cuda chip */
+#define	ADB_HW_IOP		5	/* Machines with an IOP */
 
-extern adb_trace_xlate_t adb_trace_xlations[];
-void    adb_asmcomplete();
+int	adb_poweroff(void);
+int	adb_read_date_time(unsigned long *);
+int	adb_set_date_time(unsigned long);

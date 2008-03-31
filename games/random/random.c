@@ -1,3 +1,4 @@
+/*	$OpenBSD: random.c,v 1.9 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: random.c,v 1.3 1995/04/22 07:44:05 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,11 +43,13 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)random.c	8.5 (Berkeley) 4/5/94";
 #else
-static char rcsid[] = "$NetBSD: random.c,v 1.3 1995/04/22 07:44:05 cgd Exp $";
+static char rcsid[] = "$OpenBSD: random.c,v 1.9 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
 #include <sys/types.h>
+
+#include <dev/rndvar.h>
 
 #include <err.h>
 #include <errno.h>
@@ -60,21 +59,17 @@ static char rcsid[] = "$NetBSD: random.c,v 1.3 1995/04/22 07:44:05 cgd Exp $";
 #include <unistd.h>
 #include <limits.h>
 
-void usage __P((void));
+void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern int optind;
-	time_t now;
 	double denom;
 	int ch, random_exit, selected, unbuffer_output;
 	char *ep;
 
 	random_exit = unbuffer_output = 0;
-	while ((ch = getopt(argc, argv, "er")) != EOF)
+	while ((ch = getopt(argc, argv, "erh")) != -1)
 		switch (ch) {
 		case 'e':
 			random_exit = 1;
@@ -83,7 +78,7 @@ main(argc, argv)
 			unbuffer_output = 1;
 			break;
 		default:
-		case '?':
+		case '?': case 'h':
 			usage();
 			/* NOTREACHED */
 		}
@@ -108,12 +103,9 @@ main(argc, argv)
 		/* NOTREACHED */
 	}
 
-	(void)time(&now);
-	srandom((u_int)(now + getpid()));
-
 	/* Compute a random exit status between 0 and denom - 1. */
 	if (random_exit)
-		return ((denom * random()) / LONG_MAX);
+		return (arc4random() % (u_int32_t)denom);
 
 	/*
 	 * Act as a filter, randomly choosing lines of the standard input
@@ -128,7 +120,7 @@ main(argc, argv)
 	 * 0 (which has a 1 / denom chance of being true), we select the
 	 * line.
 	 */
-	selected = (int)(denom * random() / LONG_MAX) == 0;
+	selected = (int)(arc4random() % (u_int32_t)denom) == 0;
 	while ((ch = getchar()) != EOF) {
 		if (selected)
 			(void)putchar(ch);
@@ -138,7 +130,7 @@ main(argc, argv)
 				err(2, "stdout");
 
 			/* Now see if the next line is to be printed. */
-			selected = (int)(denom * random() / LONG_MAX) == 0;
+			selected = (int)(arc4random() % (u_int32_t)denom) == 0;
 		}
 	}
 	if (ferror(stdin))
@@ -147,7 +139,7 @@ main(argc, argv)
 }
 
 void
-usage()
+usage(void)
 {
 
 	(void)fprintf(stderr, "usage: random [-er] [denominator]\n");

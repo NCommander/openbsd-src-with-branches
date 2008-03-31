@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.h,v 1.11 2007/10/10 15:53:52 art Exp $	*/
 /*	$NetBSD: cpu.h,v 1.41 2006/01/21 04:24:12 uwe Exp $	*/
 
 /*-
@@ -51,11 +51,24 @@
 #ifdef _KERNEL
 
 /*
- * Can't swapout u-area, (__SWAP_BROKEN)
- * since we use P1 converted address for trapframe.
+ * Per-CPU information.
  */
-#define	cpu_swapin(p)			/* nothing */
-#define	cpu_swapout(p)			/* nothing */
+
+#include <sys/sched.h>
+struct cpu_info {
+	struct proc *ci_curproc;
+
+	struct schedstate_percpu ci_schedstate; /* scheduler state */
+};
+
+extern struct cpu_info cpu_info_store;
+#define	curcpu()	(&cpu_info_store)
+#define cpu_number()	0
+#define CPU_IS_PRIMARY(ci)	1
+#define CPU_INFO_ITERATOR	int
+#define CPU_INFO_FOREACH(cii, ci) \
+	for (cii = 0, ci = curcpu(); ci != NULL; ci = NULL)
+
 
 /*
  * Arguments to hardclock and gatherstats encapsulate the previous
@@ -68,7 +81,6 @@ struct clockframe {
 };
 
 #define	CLKF_USERMODE(cf)	(!KERNELMODE((cf)->ssr))
-#define	CLKF_BASEPRI(cf)	(((cf)->ssr & 0xf0) == 0)
 #define	CLKF_PC(cf)		((cf)->spc)
 #define	CLKF_INTR(cf)		0	/* XXX */
 
@@ -95,11 +107,7 @@ do {									\
  * buffer pages are invalid.  On the MIPS, request an ast to send us
  * through trap, marking the proc as needing a profiling tick.
  */
-#define	need_proftick(p)						\
-do {									\
-	(p)->p_flag |= P_OWEUPC;					\
-	aston(p);							\
-} while (/*CONSTCOND*/0)
+#define	need_proftick(p)	aston(p)
 
 /*
  * Notify the current process (p) that it has a signal pending,
@@ -111,10 +119,16 @@ do {									\
 
 extern int want_resched;		/* need_resched() was called */
 
+#define	cpu_wait(p)	((void)(p))
 /*
  * We need a machine-independent name for this.
  */
 #define	DELAY(x)		delay(x)
+
+#define	cpu_idle_enter()	do { /* nothing */ } while (0)
+#define	cpu_idle_cycle()	__asm volatile("sleep")
+#define	cpu_idle_leave()	do { /* nothing */ } while (0)
+
 #endif /* _KERNEL */
 
 /*
@@ -189,17 +203,6 @@ extern int want_resched;		/* need_resched() was called */
  */
 #include <machine/cputypes.h>
 
-/*
- * CTL_MACHDEP definitions.
- */
-#define	CPU_CONSDEV		1	/* dev_t: console terminal device */
-#define	CPU_MAXID		2	/* number of valid machdep ids */
-
-#define	CTL_MACHDEP_NAMES {						\
-	{ 0, 0 },							\
-	{ "console_device",	CTLTYPE_STRUCT },			\
-}
-
 #ifdef _KERNEL
 void sh_cpu_init(int, int);
 void sh_startup(void);
@@ -208,6 +211,12 @@ void _cpu_spin(uint32_t);	/* for delay loop. */
 void delay(int);
 struct pcb;
 void savectx(struct pcb *);
+struct fpreg;
+void fpu_save(struct fpreg *);
+void fpu_restore(struct fpreg *);
+u_int cpu_dump(int (*)(dev_t, daddr64_t, caddr_t, size_t), daddr64_t *);
+u_int cpu_dumpsize(void);
+void dumpconf(void);
 void dumpsys(void);
 #endif /* _KERNEL */
 #endif /* !_SH_CPU_H_ */

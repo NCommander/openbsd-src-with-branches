@@ -1,4 +1,4 @@
-/*	$NetBSD: frame.h,v 1.1 1996/09/30 16:34:25 ws Exp $	*/
+/*	$OpenBSD: frame.h,v 1.6 2005/08/02 21:02:49 drahn Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996 Wolfgang Solfrank.
@@ -30,33 +30,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef	_MACHINE_FRAME_H_
-#define	_MACHINE_FRAME_H_
+#ifndef	_POWERPC_FRAME_H_
+#define	_POWERPC_FRAME_H_
 
-#include <machine/types.h>
-
-/*
- * We have to save all registers on every trap, because
- *	1. user could attach this process every time
- *	2. we must be able to restore all user registers in case of fork
- * Actually, we do not save the fp registers on trap, since
- * these are not used by the kernel. They are saved only when switching
- * between processes using the FPU.
- *
- * Change ordering to cluster together these register_t's.		XXX
- */
-struct trapframe {
-	register_t fixreg[32];
-	register_t lr;
-	int cr;
-	int xer;
-	register_t ctr;
-	register_t srr0;
-	register_t srr1;
-	register_t dar;			/* dar & dsisr are only filled on a DSI trap */
-	int dsisr;
-	int exc;
-};
 /*
  * This is to ensure alignment of the stackpointer
  */
@@ -89,4 +65,15 @@ struct callframe {
 	register_t r31;
 };
 
-#endif	/* _MACHINE_FRAME_H_ */
+struct sigframe {
+	int sf_signum;
+	siginfo_t *sf_sip;
+	struct sigcontext sf_sc;
+	siginfo_t sf_si;
+};
+
+struct fpsig {
+	double f[14]; /* f0 - f13 are volatile */
+	double fpscr;
+};
+#endif	/* _POWERPC_FRAME_H_ */

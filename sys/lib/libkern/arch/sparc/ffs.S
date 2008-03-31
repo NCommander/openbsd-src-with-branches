@@ -1,3 +1,4 @@
+/*	$OpenBSD: ffs.S,v 1.4 2007/11/24 19:43:36 deraadt Exp $	*/
 /*	$NetBSD: ffs.S,v 1.2 1994/10/26 06:39:57 cgd Exp $	*/
 
 /*
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,15 +36,9 @@
  * Header: ffs.s,v 1.3 92/07/07 00:23:57 torek Exp
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#ifdef notdef
-	.asciz "@(#)ffs.s	8.1 (Berkeley) 6/4/93"
-#endif
-	.asciz "$NetBSD: ffs.S,v 1.2 1994/10/26 06:39:57 cgd Exp $"
-#endif  /* LIBC_SCCS and not lint */
-
 #include "DEFS.h"
 
+#ifndef _KERNEL
 /*
  * ffs returns the number of the rightmost bit set in its argument,
  * i.e., the lowest value such that (x & (ffs(x) - 1)) is nonzero.
@@ -115,3 +106,4 @@ ffstab:
 	.byte	5,1,2,1,3,1,2,1,4,1,2,1,3,1,2,1	/* d0-df */
 	.byte	6,1,2,1,3,1,2,1,4,1,2,1,3,1,2,1	/* e0-ef */
 	.byte	5,1,2,1,3,1,2,1,4,1,2,1,3,1,2,1	/* f0-ff */
+#endif

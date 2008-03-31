@@ -1,3 +1,4 @@
+.\"	$OpenBSD: protocols.5,v 1.10 2003/06/06 13:28:13 jmc Exp $
 .\"	$NetBSD: protocols.5,v 1.3 1994/11/30 19:31:27 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,18 +30,19 @@
 .\"
 .\"     @(#)protocols.5	8.1 (Berkeley) 6/5/93
 .\"
-.Dd June 5, 1993
+.Dd $Mdocdate$
 .Dt PROTOCOLS 5
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm protocols
-.Nd protocol name data base
+.Nd protocol name database
 .Sh DESCRIPTION
 The
-.Nm protocols
+.Nm
 file contains information regarding the known protocols used in the
 .Tn DARPA
-Internet.  For each protocol a single line should be present
+Internet.
+For each protocol, a single line should be present
 with the following information:
 .Bd -unfilled -offset indent
 official protocol name
@@ -52,28 +50,31 @@ protocol number
 aliases
 .Ed
 .Pp
-Items are separated by any number of blanks and/or
-tab characters.  A ``#'' indicates the beginning of
-a comment; characters up to the end of the line are
-not interpreted by routines which search the file.
+Items are separated by any number of blanks and/or tab characters.
 .Pp
-Protocol names may contain any printable
-character other than a field delimiter, newline,
-or comment character.
+A hash mark
+.Pq Ql #
+indicates the beginning of a comment; subsequent characters up to the
+end of the line are not interpreted by the routines which search the file.
+.Pp
+Protocol names may contain any printable character other than a
+field delimiter, newline, or comment character.
 .Sh FILES
 .Bl -tag -width /etc/protocols -compact
 .It Pa /etc/protocols
-The
-.Nm protocols
-file resides in
-.Pa /etc .
 .El
 .Sh SEE ALSO
 .Xr getprotoent 3
-.Sh BUGS
-A name server should be used instead of a static file.
 .Sh HISTORY
 The
 .Nm
 file format appeared in
 .Bx 4.2 .
+.Sh BUGS
+A name server should be used instead of a static file.
+Lines in
+.Pa /etc/protocols
+are limited to
+.Dv BUFSIZ
+characters (currently 1024).
+Longer lines will be ignored.

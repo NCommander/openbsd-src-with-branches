@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,32 +28,27 @@
  * SUCH DAMAGE.
  */
 
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)sbrk.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: sbrk.S,v 1.1 1995/04/17 12:24:05 ragge Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
-
 #include "SYS.h"
 
 
 	.globl	_end
 	.globl	minbrk
-	.globl	curbrk
+	.globl	__curbrk
 
 	.data
 minbrk: .long	_end
-curbrk:	.long	_end
+__curbrk:.long	_end
 	.text
 
-ENTRY(sbrk)
-	addl3	curbrk,4(ap),-(sp)
+ENTRY(sbrk, R3)
+	addl3	__curbrk,4(ap),-(sp)
 	pushl	$1
 	movl	ap,r3
 	movl	sp,ap
 	chmk	$ SYS_break
 	jcs 	err
-	movl	curbrk,r0
-	addl2	4(r3),curbrk
+	movl	__curbrk,r0
+	addl2	4(r3),__curbrk
 	ret
 err:
-	jmp	cerror
+	jmp	__cerror

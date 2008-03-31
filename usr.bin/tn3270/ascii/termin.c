@@ -1,3 +1,5 @@
+/*	$OpenBSD: termin.c,v 1.3 2001/11/19 19:02:16 mpech Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)termin.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: termin.c,v 1.2 1993/08/01 18:05:59 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: termin.c,v 1.3 2001/11/19 19:02:16 mpech Exp $";
 #endif /* not lint */
 
 /* this takes characters from the keyboard, and produces 3270 keystroke
@@ -104,7 +102,7 @@ void
 InitMapping()
 {
     extern state *InitControl();
-    register struct astosc *ptr;
+    struct astosc *ptr;
 
     if (!headOfControl) {
 	/* need to initialize */
@@ -162,7 +160,7 @@ TerminalIn()
 {
     /* send data from us to next link in stream */
     int work = 0;
-    register struct astosc *ptr;
+    struct astosc *ptr;
 
     while (!EmptyChar) {			/* send up the link */
 	if (*ourPHead == ' ') {
@@ -187,12 +185,12 @@ TerminalIn()
 
 int
 DataFromTerminal(buffer, count)
-register char	*buffer;		/* the data read in */
-register int	count;			/* how many bytes in this buffer */
+char	*buffer;		/* the data read in */
+int	count;			/* how many bytes in this buffer */
 {
-    register state *regControlPointer;
-    register char c;
-    register int result;
+    state *regControlPointer;
+    char c;
+    int result;
     int origCount;
     extern int bellwinup;
     static state *controlPointer;

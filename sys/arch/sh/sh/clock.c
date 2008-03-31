@@ -1,3 +1,4 @@
+/*	$OpenBSD: clock.c,v 1.4 2007/06/21 04:43:33 miod Exp $	*/
 /*	$NetBSD: clock.c,v 1.32 2006/09/05 11:09:36 uwe Exp $	*/
 
 /*-
@@ -62,7 +63,7 @@
  * OpenBSD/sh clock module
  *  + default 64Hz
  *  + use TMU channel 0 as clock interrupt source.
- *  + use TMU channel 1 and 2 as emulated software interrupt soruce.
+ *  + use TMU channel 1 and 2 as emulated software interrupt source.
  *  + If RTC module is active, TMU channel 0 input source is RTC output.
  *    (1.6384kHz)
  */
@@ -109,6 +110,7 @@ do {									\
 } while (/*CONSTCOND*/0)
 #define	TMU_ELAPSED(x)							\
 	(0xffffffff - _reg_read_4(SH_(TCNT ## x)))
+
 void
 sh_clock_init(int flags, struct rtc_ops *rtc)
 {
@@ -207,14 +209,15 @@ void
 microtime(struct timeval *tv)
 {
 	static struct timeval lasttime;
+	u_int32_t tcnt0;
 	int s;
 
 	s = splclock();
 	*tv = time;
+	tcnt0 = _reg_read_4(SH_(TCNT0));
 	splx(s);
 
-	tv->tv_usec += ((sh_clock.hz_cnt - _reg_read_4(SH_(TCNT0)))
-	    * 1000000) / sh_clock.tmuclk;
+	tv->tv_usec += ((sh_clock.hz_cnt - tcnt0) * 1000000) / sh_clock.tmuclk;
 	while (tv->tv_usec >= 1000000) {
 		tv->tv_usec -= 1000000;
 		tv->tv_sec++;
@@ -283,7 +286,8 @@ cpu_initclocks()
 	_reg_write_4(SH_(TCOR2), 0xffffffff);
 
 	/* Make sure to start RTC */
-	sh_clock.rtc.init(sh_clock.rtc._cookie);
+	if (sh_clock.rtc.init != NULL)
+		sh_clock.rtc.init(sh_clock.rtc._cookie);
 }
 
 void
@@ -349,9 +353,9 @@ resettodr()
 
 	sh_clock.rtc.set(sh_clock.rtc._cookie, &dt);
 #ifdef DEBUG
-        printf("%s: %d/%d/%d/%d/%d/%d(%d) rtc_offset %d\n", __FUNCTION__,
+        printf("%s: %d/%d/%d/%d/%d/%d(%d)\n", __FUNCTION__,
 	    dt.dt_year, dt.dt_mon, dt.dt_day, dt.dt_hour, dt.dt_min, dt.dt_sec,
-	    dt.dt_wday, rtc_offset);
+	    dt.dt_wday);
 #endif
 }
 

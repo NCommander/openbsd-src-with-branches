@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: iopctl.8,v 1.9 2007/05/31 19:19:44 jmc Exp $
 .\"	$NetBSD: iopctl.8,v 1.4 2001/03/20 13:07:51 ad Exp $
 .\"
 .\" Copyright (c) 2000 The NetBSD Foundation, Inc.
@@ -35,7 +35,7 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd October 1, 2000
+.Dd $Mdocdate: May 31 2007 $
 .Dt IOPCTL 8
 .Os
 .Sh NAME
@@ -43,7 +43,7 @@
 .Nd a program to control IOP devices
 .Sh SYNOPSIS
 .Nm iopctl
-.Op Fl f Ar ctldev
+.Op Fl f Ar device
 .Ar command
 .Op Ar tid
 .Sh DESCRIPTION
@@ -53,15 +53,16 @@ command can be used to interrogate and control I2O devices.
 .Pp
 The following options are available:
 .Bl -tag -width xxxxxxxxxxx
-.It Fl f Ar ctldev
-Specify the control device to use. The default is
+.It Fl f Ar device
+Specify the control device to use.
+The default is
 .Pa /dev/iop0 .
 .El
 .Pp
 The following commands are available:
 .Bl -tag -width indent
 .It reconfig
-Reconfigure the IOP: ask all bus ports to rescan their busses, and attach or
+Reconfigure the IOP: ask all bus ports to rescan their buses, and attach or
 detach devices to and from the system as necessary.
 .It showddmid Ar tid
 Retrieve and display the DDM (device driver module) identity parameter group
@@ -70,8 +71,8 @@ from the specified target.
 Retrieve and display the device identity parameter group from the specified
 target.
 .It showlct
-Display the driver's private copy of the logical configuration table.  This
-copy of the LCT matches the current device configuration, but is not
+Display the driver's private copy of the logical configuration table.
+This copy of the LCT matches the current device configuration, but is not
 necessarily the latest available version of the LCT.
 .It showstatus
 Display the current status of the IOP.
@@ -90,15 +91,6 @@ control device for IOP unit
 .Xr ioprbs 4 ,
 .Xr iopsp 4 ,
 .Xr sd 4
-.Sh AUTHOR
-The
-.Nm
-command was written by
-.An Andrew Doran Aq ad@netbsd.org ,
-and ported to
-.Ox
-by
-.An Michael Shalayeff Aq mickey@openbsd.org .
 .Sh HISTORY
 The
 .Nm
@@ -107,3 +99,13 @@ command first appeared in
 .Ox
 support was added in
 .Ox 3.0 .
+.Sh AUTHORS
+.An -nosplit
+The
+.Nm
+command was written by
+.An Andrew Doran Aq ad@netbsd.org ,
+and ported to
+.Ox
+by
+.An Michael Shalayeff Aq mickey@openbsd.org .

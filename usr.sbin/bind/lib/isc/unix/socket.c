@@ -51,6 +51,7 @@
 #include <isc/once.h>
 #include <isc/platform.h>
 #include <isc/print.h>
+#include <isc/privsep.h>
 #include <isc/region.h>
 #include <isc/socket.h>
 #include <isc/strerror.h>
@@ -221,6 +222,8 @@ struct isc_socketmgr {
 #ifndef ISC_PLATFORM_USETHREADS
 static isc_socketmgr_t *socketmgr = NULL;
 #endif /* ISC_PLATFORM_USETHREADS */
+
+static int privsep = 0;
 
 #define CLOSED		0	/* this one must be zero */
 #define MANAGED		1
@@ -3124,7 +3127,7 @@ isc_socket_permunix(isc_sockaddr_t *sockaddr, isc_uint32_t perm,
 
 	REQUIRE(sockaddr->type.sa.sa_family == AF_UNIX);
 	INSIST(strlen(sockaddr->type.sunix.sun_path) < sizeof(path));
-	strcpy(path, sockaddr->type.sunix.sun_path);
+	strlcpy(path, sockaddr->type.sunix.sun_path, sizeof(path));
 
 #ifdef NEED_SECURE_DIRECTORY
 	slash = strrchr(path, '/');
@@ -3132,9 +3135,9 @@ isc_socket_permunix(isc_sockaddr_t *sockaddr, isc_uint32_t perm,
 		if (slash != path)
 			*slash = '\0';
 		else
-			strcpy(path, "/");
+			strlcpy(path, "/", sizeof(path));
 	} else
-		strcpy(path, ".");
+		strlcpy(path, ".", sizeof(path));
 #endif
 	
 	if (chmod(path, perm) < 0) {
@@ -3193,10 +3196,12 @@ isc_socket_bind(isc_socket_t *sock, isc_sockaddr_t *sockaddr) {
 						ISC_MSG_FAILED, "failed"));
 		/* Press on... */
 	}
+	if ((privsep ?
+	    isc_priv_bind(sock->fd, &sockaddr->type.sa, sockaddr->length) :
+	    bind(sock->fd, &sockaddr->type.sa, sockaddr->length)) < 0) {
 #ifdef AF_UNIX
  bind_socket:
 #endif
-	if (bind(sock->fd, &sockaddr->type.sa, sockaddr->length) < 0) {
 		UNLOCK(&sock->lock);
 		switch (errno) {
 		case EACCES:
@@ -3224,6 +3229,12 @@ isc_socket_bind(isc_socket_t *sock, isc_sockaddr_t *sockaddr) {
 }
 
 isc_result_t
+isc_socket_privsep(int flag) {
+	privsep = flag;
+	return (ISC_R_SUCCESS);
+}
+
+isc_result_t
 isc_socket_filter(isc_socket_t *sock, const char *filter) {
 #ifdef SO_ACCEPTFILTER
 	char strbuf[ISC_STRERRORSIZE];
@@ -3237,7 +3248,7 @@ isc_socket_filter(isc_socket_t *sock, const char *filter) {
 
 #ifdef SO_ACCEPTFILTER
 	bzero(&afa, sizeof(afa));
-	strncpy(afa.af_name, filter, sizeof(afa.af_name));
+	strlcpy(afa.af_name, filter, sizeof(afa.af_name));
 	if (setsockopt(sock->fd, SOL_SOCKET, SO_ACCEPTFILTER,
 			 &afa, sizeof(afa)) == -1) {
 		isc__strerror(errno, strbuf, sizeof(strbuf));

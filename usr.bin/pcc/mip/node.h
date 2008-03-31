@@ -1,4 +1,4 @@
-/*	$Id: node.h,v 1.31 2007/07/22 12:50:56 ragge Exp $	*/
+/*	$OpenBSD: node.h,v 1.1.1.1 2007/09/15 18:12:36 otto Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
