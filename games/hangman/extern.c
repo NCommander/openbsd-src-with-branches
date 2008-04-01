@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp $	*/
+/*	$OpenBSD: extern.c,v 1.4 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: extern.c,v 1.3 1995/03/23 08:32:41 cgd Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)extern.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: extern.c,v 1.3 1999/09/25 20:51:53 pjanzen Exp $";
+static char rcsid[] = "$OpenBSD: extern.c,v 1.4 2003/06/03 03:01:40 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -75,3 +75,8 @@ const char *Dict_name = _PATH_DICT;
 FILE	*Dict = NULL;
 
 off_t	Dict_size;
+
+int	ksyms;
+int	ksymfd = -1;
+off_t	ksymoffs, ksymsize;
+

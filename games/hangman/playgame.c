@@ -1,4 +1,4 @@
-/*	$OpenBSD: playgame.c,v 1.5 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: playgame.c,v 1.6 2004/11/29 08:52:28 jsg Exp $	*/
 /*	$NetBSD: playgame.c,v 1.3 1995/03/23 08:32:53 cgd Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)playgame.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$OpenBSD: playgame.c,v 1.5 2003/06/03 03:01:40 millert Exp $";
+static char rcsid[] = "$OpenBSD: playgame.c,v 1.6 2004/11/29 08:52:28 jsg Exp $";
 #endif
 #endif /* not lint */
 
@@ -49,7 +49,10 @@ playgame(void)
 {
 	bool	*bp;
 
-	getword();
+	if (ksyms)
+		kgetword();
+	else
+		getword();
 	Errors = 0;
 	bp = Guessed;
 	while (bp < &Guessed[26])
