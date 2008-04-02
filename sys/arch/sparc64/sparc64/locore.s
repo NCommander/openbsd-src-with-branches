@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.128 2008/03/30 13:39:53 kettenis Exp $	*/
+/*	$OpenBSD: locore.s,v 1.129 2008/03/31 22:14:01 kettenis Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -121,7 +121,7 @@ _C_LABEL(sun4v_mp_patch):
 #ifdef SUN4V
 
 #define GET_CPUINFO_PA(ci) \
-	mov	8, ci				;\
+	mov	0x10, ci				;\
 	ldxa	[ci] ASI_SCRATCHPAD, ci
 
 #define GET_MMFSA(mmfsa) \
