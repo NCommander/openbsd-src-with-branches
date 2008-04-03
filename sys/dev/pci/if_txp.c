@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.83 2006/06/29 21:36:40 deraadt Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.84 2007/04/11 14:41:15 claudio Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -1869,15 +1869,15 @@ txp_ifmedia_sts(ifp, ifmr)
 		}
 
 		if (anlpar & ANLPAR_T4)
-			ifmr->ifm_active |= IFM_100_T4;
+			ifmr->ifm_active |= IFM_100_T4|IFM_HDX;
 		else if (anlpar & ANLPAR_TX_FD)
 			ifmr->ifm_active |= IFM_100_TX|IFM_FDX;
 		else if (anlpar & ANLPAR_TX)
-			ifmr->ifm_active |= IFM_100_TX;
+			ifmr->ifm_active |= IFM_100_TX|IFM_HDX;
 		else if (anlpar & ANLPAR_10_FD)
 			ifmr->ifm_active |= IFM_10_T|IFM_FDX;
 		else if (anlpar & ANLPAR_10)
-			ifmr->ifm_active |= IFM_10_T;
+			ifmr->ifm_active |= IFM_10_T|IFM_HDX;
 		else
 			ifmr->ifm_active |= IFM_NONE;
 	} else
