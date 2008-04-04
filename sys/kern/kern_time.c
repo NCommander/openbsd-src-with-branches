@@ -749,7 +749,7 @@ ratecheck(struct timeval *lasttime, const struct timeval *mininterval)
 	struct timeval tv, delta;
 	int rv = 0;
 
-	microuptime(&tv);
+	getmicrouptime(&tv);
 
 	timersub(&tv, lasttime, &delta);
 
