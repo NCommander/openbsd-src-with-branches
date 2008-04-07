@@ -458,6 +458,11 @@ handles items that may be shared by several packages.
 
 shared library specificities when handled as dependencies.
 
+=item OpenBSD::Subst
+
+conventions used for substituting variables during L<pkg_create(1)>, 
+and related algorithms.
+
 =item OpenBSD::Temp
 
 safe creation of temporary files as a light-weight module that also
