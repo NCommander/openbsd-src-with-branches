@@ -41,6 +41,7 @@ PACKAGES= \
     OpenBSD/Search.pm \
     OpenBSD/SharedItems.pm \
     OpenBSD/SharedLibs.pm \
+    OpenBSD/Subst.pm \
     OpenBSD/Temp.pm \
     OpenBSD/Update.pm \
     OpenBSD/UpdateSet.pm \
