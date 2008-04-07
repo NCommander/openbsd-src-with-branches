@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.4 2005/01/31 21:35:50 grange Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.5 2008/02/20 18:46:18 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -71,6 +71,8 @@ mbattach(struct device *parent, struct device *self, void *aux)
 
 	bzero(&nca, sizeof nca);
 	nca.ca_name = "cpu";
+	config_found(self, &nca, mbprint);
+	nca.ca_name = "clock";
 	config_found(self, &nca, mbprint);
 
 	switch (sys_config.system_type) {
