@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.38 2008/03/24 16:07:37 deraadt Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.39 2008/04/02 19:09:13 deraadt Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -792,8 +792,8 @@ morespace:
 fail:
 	/* Back out what we just did. */
 	for ( ; i > 0; i--) {
-		bcopy(rp, &fp, sizeof(fp));
 		rp++;
+		bcopy(rp, &fp, sizeof(fp));
 		fp->f_count--;
 		fp->f_msgcount--;
 		unp_rights--;
