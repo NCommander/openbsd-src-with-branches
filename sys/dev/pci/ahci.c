@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci.c,v 1.136 2007/11/28 16:01:34 dlg Exp $ */
+/*	$OpenBSD: ahci.c,v 1.137 2008/04/08 12:20:31 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -383,7 +383,7 @@ struct ahci_softc {
 	struct device		sc_dev;
 
 	void			*sc_ih;
-	pci_chipset_tag_t	*sc_pc;
+	pci_chipset_tag_t	sc_pc;
 
 	bus_space_tag_t		sc_iot;
 	bus_space_handle_t	sc_ioh;
