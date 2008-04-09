@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.107 2007/11/02 19:18:54 martin Exp $ */
+/*	$OpenBSD: machdep.c,v 1.109 2008/04/09 16:50:29 deraadt Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -525,8 +525,8 @@ boot(howto)
 		}
 	}
 
-	/* Disable interrupts. */
-	splhigh();
+	uvm_shutdown();
+	splhigh();			/* Disable interrupts. */
 
 	/* If rebooting and a dump is requested, do it. */
 	if (howto & RB_DUMP)

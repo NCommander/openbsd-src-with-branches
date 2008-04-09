@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.93 2007/12/28 20:41:56 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.95 2008/04/09 16:50:30 deraadt Exp $ */
 /* $NetBSD: machdep.c,v 1.108 2000/09/13 15:00:23 thorpej Exp $	 */
 
 /*
@@ -530,6 +530,8 @@ boot(howto)
 		 */
 		resettodr();
 	}
+
+	uvm_shutdown();
 	splhigh();		/* extreme priority */
 
 	/* If rebooting and a dump is requested, do it. */

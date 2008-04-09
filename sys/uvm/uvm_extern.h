@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_extern.h,v 1.67 2007/09/10 18:49:45 miod Exp $	*/
+/*	$OpenBSD: uvm_extern.h,v 1.69 2008/04/09 16:50:30 deraadt Exp $	*/
 /*	$NetBSD: uvm_extern.h,v 1.57 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -555,6 +555,7 @@ void			uvm_pagerealloc(struct vm_page *,
 void			uvm_page_physload(paddr_t, paddr_t,
 					       paddr_t, paddr_t, int);
 void			uvm_setpagesize(void);
+void			uvm_shutdown(void);
 
 /* uvm_pager.c */
 void			uvm_aio_biodone1(struct buf *);

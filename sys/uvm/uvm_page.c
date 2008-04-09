@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.63 2007/12/18 11:05:52 thib Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.65 2008/04/09 16:50:30 deraadt Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /* 
@@ -878,6 +878,11 @@ uvm_page_physdump()
 	printf("number of buckets = %d\n", uvm.page_nhash);
 }
 #endif
+
+void
+uvm_shutdown(void)
+{
+}
 
 /*
  * uvm_pagealloc_strat: allocate vm_page from a particular free list.
