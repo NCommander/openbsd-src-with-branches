@@ -1,4 +1,4 @@
-/* $OpenBSD: dl_prebind.c,v 1.7 2006/05/10 03:26:50 deraadt Exp $ */
+/* $OpenBSD: dl_prebind.c,v 1.8 2006/05/12 22:14:04 drahn Exp $ */
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
  *
@@ -261,7 +261,7 @@ prebind_symcache(elf_object_t *object, int plt)
 		DL_DEB(("symidx %d: obj %d %s sym %d %s flags %d %x\n",
 		    s->idx, s->obj_idx, tobj->load_name,
 		    s->sym_idx, str, SYM_SEARCH_ALL|SYM_WARNNOTFOUND|plt,
-		    object->load_addr + sym->st_value));
+		    object->obj_base + sym->st_value));
 #endif
 		_dl_symcache[s->idx].obj = tobj;
 		_dl_symcache[s->idx].sym = sym;
@@ -292,7 +292,7 @@ prebind_symcache(elf_object_t *object, int plt)
 			DL_DEB(("symidx %d: obj %d %s sym %d %s flags %d %x\n",
 			    f->sym, f->obj_idx, tobj->load_name,
 			    f->sym_idx, str, SYM_SEARCH_ALL|SYM_WARNNOTFOUND|plt,
-			    object->load_addr + sym->st_value));
+			    object->obj_base + sym->st_value));
 #endif
 			_dl_symcache[f->sym].obj = tobj;
 			_dl_symcache[f->sym].sym = sym;
@@ -328,7 +328,7 @@ prebind_symcache(elf_object_t *object, int plt)
 			DL_DEB(("symidx %d: obj %d %s sym %d %s flags %d %x\n",
 			    f->sym, f->obj_idx, tobj->load_name,
 			    f->sym_idx, str, SYM_SEARCH_ALL|SYM_WARNNOTFOUND|plt,
-			    object->load_addr + sym->st_value));
+			    object->obj_base + sym->st_value));
 #endif
 			_dl_symcache[f->sym].obj = tobj;
 			_dl_symcache[f->sym].sym = sym;
