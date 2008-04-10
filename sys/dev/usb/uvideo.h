@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: uvideo.h,v 1.2 2008/04/09 20:38:55 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -308,8 +308,9 @@ struct usb_video_frame_descriptor {
 	uDWord	dwMinBitRate;
 	uDWord	dwMaxBitRate;
 	uDWord	dwMaxVideoFrameBufferSize;
-	uWord	dwDefaultFrameInterval;
+	uDWord	dwDefaultFrameInterval;
 	uByte	bFrameIntervalType;
+	/* TODO add continous/discrete frame intervals (Table 3-3/3-4) */
 } __packed;
 
 /*
