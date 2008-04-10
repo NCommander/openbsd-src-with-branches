@@ -178,6 +178,7 @@ TAILQ_HEAD(ifnet_head, ifnet);		/* the actual queue head */
 struct ifnet {				/* and the entries */
 	void	*if_softc;		/* lower-level data for this if */
 	TAILQ_ENTRY(ifnet) if_list;	/* all struct ifnets are chained */
+	TAILQ_ENTRY(ifnet) if_txlist;	/* list of ifnets ready to tx */
 	TAILQ_HEAD(, ifaddr) if_addrlist; /* linked list of addresses per if */
 	TAILQ_HEAD(, ifg_list) if_groups; /* linked list of groups per if */
 	struct hook_desc_head *if_addrhooks; /* address change callbacks */
@@ -198,6 +199,7 @@ struct ifnet {				/* and the entries */
 	u_short	if_index;		/* numeric abbreviation for this if */
 	short	if_timer;		/* time 'til if_watchdog called */
 	short	if_flags;		/* up/down, broadcast, etc. */
+	int	if_xflags;		/* extra softnet flags */
 	struct	if_data if_data;	/* stats and other data about if */
 	u_int32_t if_hardmtu;		/* maximum MTU device supports */
 	int	if_capabilities;	/* interface capabilities */
@@ -264,6 +266,8 @@ struct ifnet {				/* and the entries */
 #define	IFF_CANTCHANGE \
 	(IFF_BROADCAST|IFF_POINTOPOINT|IFF_RUNNING|IFF_OACTIVE|\
 	    IFF_SIMPLEX|IFF_MULTICAST|IFF_ALLMULTI)
+
+#define IFXF_TXREADY	0x1		/* interface is ready to tx */
 
 /*
  * Some convenience macros used for setting ifi_baudrate.
@@ -775,6 +779,7 @@ int	if_addgroup(struct ifnet *, const char *);
 int	if_delgroup(struct ifnet *, const char *);
 void	if_group_routechange(struct sockaddr *, struct sockaddr *);
 struct	ifnet *ifunit(const char *);
+void	if_start(struct ifnet *);
 
 struct	ifaddr *ifa_ifwithaddr(struct sockaddr *);
 struct	ifaddr *ifa_ifwithaf(int);

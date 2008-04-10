@@ -54,6 +54,7 @@
  */
 #define	NETISR_RND	1
 #define	NETISR_IP	2		/* same as AF_INET */
+#define	NETISR_TX	3		/* for if_snd processing */
 #define	NETISR_ATALK	16		/* same as AF_APPLETALK */
 #define	NETISR_ARP	18		/* same as AF_LINK */
 #define	NETISR_IPV6	24		/* same as AF_INET6 */
@@ -69,6 +70,7 @@
 extern int	netisr;			/* scheduling bits for network */
 
 void	netrndintr(void);
+void	nettxintr(void);
 void	arpintr(void);
 void	ipintr(void);
 void	ip6intr(void);

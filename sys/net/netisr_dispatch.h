@@ -63,3 +63,4 @@
 #if NBLUETOOTH > 0
 	DONETISR(NETISR_BT,btintr);
 #endif
+	DONETISR(NETISR_TX,nettxintr);
