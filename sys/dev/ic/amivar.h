@@ -70,6 +70,7 @@ struct ami_ccb {
 	}			ccb_state;
 	int			ccb_flags;
 #define AMI_CCB_F_ERR			(1<<0)
+	int			ccb_status;
 	TAILQ_ENTRY(ami_ccb)	ccb_link;
 };
 
