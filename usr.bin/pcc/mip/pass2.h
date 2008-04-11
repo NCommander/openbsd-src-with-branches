@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass2.h,v 1.6 2007/11/16 09:00:12 otto Exp $	*/
+/*	$OpenBSD: pass2.h,v 1.7 2007/12/09 18:38:49 ragge Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -265,7 +265,7 @@ void myreader(struct interpass *pole);
 int oregok(NODE *p, int sharp);
 void myormake(NODE *);
 int *livecall(NODE *);
-
+void prtreg(FILE *, NODE *);
 char *prcook(int);
 
 void conput(FILE *, NODE *);

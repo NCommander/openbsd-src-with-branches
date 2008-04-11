@@ -1,4 +1,4 @@
-/*	$OpenBSD: optim.c,v 1.1 2007/10/07 17:58:51 otto Exp $	*/
+/*	$OpenBSD: optim.c,v 1.2 2007/11/18 17:39:55 ragge Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -42,8 +42,6 @@
 # define LCON(p) (p->n_left->n_op==ICON)
 # define LO(p) p->n_left->n_op
 # define LV(p) p->n_left->n_lval
-
-static int nncon(NODE *);
 
 int oflag = 0;
 

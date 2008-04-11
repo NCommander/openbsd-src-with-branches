@@ -1,4 +1,4 @@
-/*	$OpenBSD: match.c,v 1.7 2007/12/22 22:56:31 stefan Exp $	*/
+/*      $OpenBSD$   */
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.

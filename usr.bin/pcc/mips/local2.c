@@ -755,7 +755,7 @@ fldexpand(NODE *p, int cookie, char **cp)
                 break;
         case 'M':
         case 'N':
-                val = 1 << UPKFSZ(p->n_rval);
+                val = (CONSZ)1 << UPKFSZ(p->n_rval);
                 --val;
                 val <<= UPKFOFF(p->n_rval);
                 printf("0x%llx", (**cp == 'M' ? val : ~val)  & 0xffffffff);
@@ -928,7 +928,6 @@ adrput(FILE * io, NODE * p)
 		conput(io, p);
 		return;
 
-	case MOVE:
 	case REG:
 		if (GCLASS(p->n_rval) == CLASSB || GCLASS(p->n_rval) == CLASSC)
 			print_reg64name(io, p->n_rval, 0);
