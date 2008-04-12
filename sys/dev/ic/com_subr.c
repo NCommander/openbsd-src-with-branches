@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_subr.c,v 1.10 2007/03/20 17:37:34 deraadt Exp $	*/
+/*	$OpenBSD: com_subr.c,v 1.11 2007/10/22 14:11:44 fgsch Exp $	*/
 
 /*
  * Copyright (c) 1997 - 1999, Jason Downs.  All rights reserved.
@@ -150,7 +150,7 @@ com_attach_subr(sc)
 	bus_space_write_1(iot, ioh, com_ier, sc->sc_ier);
 
 #ifdef COM_CONSOLE
-	if (sc->sc_iobase == comconsaddr) {
+	if (sc->sc_iot == comconsiot && sc->sc_iobase == comconsaddr) {
 		comconsattached = 1;
 		delay(10000);			/* wait for output to finish */
 		SET(sc->sc_hwflags, COM_HW_CONSOLE);
