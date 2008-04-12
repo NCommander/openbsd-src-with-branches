@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi.c,v 1.112 2008/01/05 18:26:30 kettenis Exp $	*/
+/*	$OpenBSD: acpi.c,v 1.113 2008/01/21 12:43:09 jsg Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -106,7 +106,7 @@ struct cfdriver acpi_cd = {
 };
 
 struct acpi_softc *acpi_softc;
-int acpi_s5, acpi_evindex;
+int acpi_evindex;
 
 #define acpi_bus_space_map	_bus_space_map
 #define acpi_bus_space_unmap	_bus_space_unmap
