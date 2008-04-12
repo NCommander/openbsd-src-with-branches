@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.h,v 1.10 2001/11/10 18:42:32 art Exp $	*/
+/*	$OpenBSD: uvm_swap.h,v 1.11 2002/03/14 01:27:19 millert Exp $	*/
 /*	$NetBSD: uvm_swap.h,v 1.5 2000/01/11 06:57:51 chs Exp $	*/
 
 /*
@@ -46,6 +46,7 @@ void			uvm_swap_markbad(int, int);
 #ifdef UVM_SWAP_ENCRYPT
 void			uvm_swap_initcrypt_all(void);
 void			uvm_swap_freepages(struct vm_page **, int);
+void			uvm_swap_finicrypt_all(void);
 #endif
 
 #endif /* _KERNEL */
