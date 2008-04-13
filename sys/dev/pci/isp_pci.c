@@ -1,4 +1,4 @@
-/*	$OpenBSD: isp_pci.c,v 1.40 2007/09/22 16:03:23 krw Exp $	*/
+/*	$OpenBSD: isp_pci.c,v 1.41 2008/01/21 20:00:33 sobrado Exp $	*/
 /*
  * PCI specific probe and attach routines for QLogic ISP SCSI adapters.
  *
@@ -33,6 +33,8 @@
  * SUCH DAMAGE.
  *
  */
+
+#define ISP_DISABLE_12160_SUPPORT	/* XXX Doesn't quite work yet. */
 
 #include <dev/ic/isp_openbsd.h>
 
