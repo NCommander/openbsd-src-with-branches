@@ -1,4 +1,4 @@
-/*	$OpenBSD: message.c,v 1.8 2007/10/18 17:00:59 deraadt Exp $ */
+/*	$OpenBSD: message.c,v 1.9 2007/10/24 20:52:50 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -47,7 +47,7 @@ report_timer(int fd, short event, void *arg)
 
 	/* restart report timer */
 	timerclear(&tv);
-	tv.tv_sec = KEEPALIVE + arc4random() % OFFSET;
+	tv.tv_sec = KEEPALIVE + arc4random_uniform(OFFSET);
 	evtimer_add(&oeconf->report_timer, &tv);
 }
 
@@ -57,7 +57,7 @@ start_report_timer(void)
 	struct timeval	 tv;
 
 	timerclear(&tv);
-	tv.tv_sec = KEEPALIVE + arc4random() % OFFSET;
+	tv.tv_sec = KEEPALIVE + arc4random_uniform(OFFSET);
 	return (evtimer_add(&oeconf->report_timer, &tv));
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: day.c,v 1.19 2005/08/09 12:32:58 mickey Exp $	*/
+/*	$OpenBSD: day.c,v 1.20 2005/11/16 16:45:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -39,7 +39,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "@(#)calendar.c  8.3 (Berkeley) 3/25/94";
 #else
-static const char rcsid[] = "$OpenBSD: day.c,v 1.19 2005/08/09 12:32:58 mickey Exp $";
+static const char rcsid[] = "$OpenBSD: day.c,v 1.20 2005/11/16 16:45:11 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -301,7 +301,7 @@ isnow(char *endp, int bodun)
 
 	/* adjust bodun rate */
 	if (bodun && !bodun_always)
-		bodun = !(arc4random() % 3);
+		bodun = !arc4random_uniform(3);
 		
 	/* Easter or Easter depending days */
 	if (flags & F_SPECIAL)

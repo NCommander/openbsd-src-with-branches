@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsold.c,v 1.39 2006/11/07 07:20:16 ray Exp $	*/
+/*	$OpenBSD: rtsold.c,v 1.40 2008/01/05 17:03:09 chl Exp $	*/
 /*	$KAME: rtsold.c,v 1.75 2004/01/03 00:00:07 itojun Exp $	*/
 
 /*
@@ -577,7 +577,8 @@ rtsol_timer_update(struct ifinfo *ifinfo)
 			ifinfo->timer = tm_max;	/* stop timer(valid?) */
 		break;
 	case IFS_DELAY:
-		interval = arc4random() % (MAX_RTR_SOLICITATION_DELAY * MILLION);
+		interval = arc4random_uniform(MAX_RTR_SOLICITATION_DELAY *
+		    MILLION);
 		ifinfo->timer.tv_sec = interval / MILLION;
 		ifinfo->timer.tv_usec = interval % MILLION;
 		break;
