@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.6 2007/05/06 03:37:08 gwk Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.7 2007/05/25 16:22:11 art Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $ */
 
 /*-
@@ -103,6 +103,7 @@ void
 x86_64_ipi_halt(struct cpu_info *ci)
 {
 	disable_intr();
+	ci->ci_flags &= ~CPUF_RUNNING;
 
 	for(;;) {
 		__asm __volatile("hlt");
