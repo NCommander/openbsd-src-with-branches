@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcfiic_ebus.c,v 1.10 2007/10/24 20:13:19 kettenis Exp $ */
+/*	$OpenBSD: pcfiic_ebus.c,v 1.11 2007/10/28 10:50:11 kettenis Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -75,6 +75,7 @@ pcfiic_ebus_match(struct device *parent, void *match, void *aux)
 
 	if (strcmp(compat, "pcf8584") == 0 ||
 	    strcmp(compat, "i2cpcf,8584") == 0 ||
+	    strcmp(compat, "SUNW,i2c-pic16f747") == 0 ||
 	    strcmp(compat, "SUNW,bbc-i2c") == 0)
 		return (1);
 
