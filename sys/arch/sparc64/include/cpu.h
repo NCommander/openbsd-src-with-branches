@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.59 2008/03/31 22:14:01 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.60 2008/04/13 16:32:55 kettenis Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -124,6 +124,7 @@ struct cpu_info {
 	int			ci_want_resched;
 	int			ci_handled_intr_level;
 	void			*ci_intrpending[16][8];
+	u_int64_t		ci_tick;
 
 	/* DEBUG/DIAGNOSTIC stuff */
 	u_long			ci_spin_locks;	/* # of spin locks held */
