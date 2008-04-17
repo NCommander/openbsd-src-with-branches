@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uath.c,v 1.31 2007/10/11 18:33:14 deraadt Exp $	*/
+/*	$OpenBSD: if_uath.c,v 1.32 2008/01/21 12:57:31 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -369,6 +369,7 @@ uath_attach(struct device *parent, struct device *self, void *aux)
 
 	/* set device capabilities */
 	ic->ic_caps =
+	    IEEE80211_C_MONITOR |	/* monitor mode supported */
 	    IEEE80211_C_TXPMGT |	/* tx power management */
 	    IEEE80211_C_SHPREAMBLE |	/* short preamble supported */
 	    IEEE80211_C_SHSLOT |	/* short slot time supported */
