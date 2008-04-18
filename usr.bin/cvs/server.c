@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.83 2008/02/09 20:04:00 xsa Exp $	*/
+/*	$OpenBSD: server.c,v 1.84 2008/02/11 20:33:11 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -142,13 +142,15 @@ cvs_server(int argc, char **argv)
 void
 cvs_server_send_response(char *fmt, ...)
 {
+	int i;
 	va_list ap;
 	char *data;
 
 	va_start(ap, fmt);
-	if (vasprintf(&data, fmt, ap) == -1)
-		fatal("vasprintf: %s", strerror(errno));
+	i = vasprintf(&data, fmt, ap);
 	va_end(ap);
+	if (i == -1)
+		fatal("cvs_server_send_response: %s", strerror(errno));
 
 	cvs_log(LP_TRACE, "%s", data);
 	cvs_remote_output(data);
