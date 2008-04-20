@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.8 2006/08/12 17:54:38 krw Exp $	*/
+/*	$OpenBSD: param.h,v 1.9 2007/05/28 21:02:49 thib Exp $	*/
 
 /* 
  * Copyright (c) 1988-1994, The University of Utah and
@@ -92,11 +92,7 @@
 #define	dbtob(x)	((x) << DEV_BSHIFT)
 
 #ifndef _LOCORE
-#define	CONADDR	conaddr
-#define	CONUNIT	conunit
 #define	COM_FREQ	7372800
-extern hppa_hpa_t conaddr;
-extern int conunit;
 #endif
 
 #define	__SWAP_BROKEN
