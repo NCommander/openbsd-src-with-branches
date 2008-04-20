@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.9 2007/06/01 19:20:46 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.9 2007/06/01 19:25:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2005 Michael Shalayeff
@@ -67,6 +67,7 @@
 #endif
 
 void	dumpconf(void);
+void	print_devpath(const char *, struct pz_device *);
 
 void (*cold_hook)(int); /* see below */
 
