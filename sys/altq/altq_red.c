@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_red.c,v 1.13 2007/05/28 17:16:38 henning Exp $	*/
+/*	$OpenBSD: altq_red.c,v 1.14 2007/09/13 20:40:02 chl Exp $	*/
 /*	$KAME: altq_red.c,v 1.10 2002/04/03 05:38:51 kjc Exp $	*/
 
 /*
@@ -403,7 +403,7 @@ drop_early(int fp_len, int fp_probd, int count)
 	 * drop probability = (avg - TH_MIN) / d
 	 */
 
-	if ((random() % d) < fp_len) {
+	if (arc4random_uniform(d) < fp_len) {
 		/* drop or mark */
 		return (1);
 	}

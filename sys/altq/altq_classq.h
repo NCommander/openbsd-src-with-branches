@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_classq.h,v 1.2 2002/11/26 01:03:34 henning Exp $	*/
+/*	$OpenBSD: altq_classq.h,v 1.3 2003/01/07 00:29:28 cloder Exp $	*/
 /*	$KAME: altq_classq.h,v 1.4 2001/02/09 07:20:40 kjc Exp $	*/
 
 /*
@@ -155,7 +155,7 @@ _getq_random(class_queue_t *q)
 	else {
 		struct mbuf *prev = NULL;
 
-		n = random() % qlen(q) + 1;
+		n = arc4random_uniform(qlen(q)) + 1;
 		for (i = 0; i < n; i++) {
 			prev = m;
 			m = m->m_nextpkt;
