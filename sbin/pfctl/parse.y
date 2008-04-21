@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.535 2007/11/13 00:47:56 mpf Exp $	*/
+/*	$OpenBSD: parse.y,v 1.536 2008/02/01 06:58:45 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -702,14 +702,10 @@ anchorname	: STRING			{ $$ = $1; }
 		| /* empty */			{ $$ = NULL; }
 		;
 
-optnl		: optnl '\n'
-		|
-		;
-
-pfa_anchorlist	: pfrule optnl
-		| anchorrule optnl
-		| pfa_anchorlist pfrule optnl
-		| pfa_anchorlist anchorrule optnl
+pfa_anchorlist	: /* empty */
+		| pfa_anchorlist '\n'
+		| pfa_anchorlist pfrule '\n'
+		| pfa_anchorlist anchorrule '\n'
 		;
 
 pfa_anchor	: '{'
