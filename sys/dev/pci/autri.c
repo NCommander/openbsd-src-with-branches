@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.19 2007/05/25 21:27:15 krw Exp $	*/
+/*	$OpenBSD: autri.c,v 1.20 2007/05/26 00:36:03 krw Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -171,6 +171,7 @@ struct audio_hw_if autri_hw_if = {
 	autri_get_props,
 	autri_trigger_output,
 	autri_trigger_input,
+	NULL
 };
 
 #if NMIDI > 0

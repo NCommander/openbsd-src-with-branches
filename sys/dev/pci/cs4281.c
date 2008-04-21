@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4281.c,v 1.19 2005/11/29 05:42:17 tedu Exp $ */
+/*	$OpenBSD: cs4281.c,v 1.20 2007/10/22 03:16:35 fgsch Exp $ */
 /*	$Tera: cs4281.c,v 1.18 2000/12/27 14:24:45 tacha Exp $	*/
 
 /*
@@ -235,6 +235,7 @@ struct audio_hw_if cs4281_hw_if = {
 	cs4281_get_props,
 	cs4281_trigger_output,
 	cs4281_trigger_input,
+	NULL
 };
 
 #if NMIDI > 0

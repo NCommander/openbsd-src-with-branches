@@ -1,4 +1,4 @@
-/*	$OpenBSD: mavb.c,v 1.7 2007/05/20 14:17:05 miod Exp $	*/
+/*	$OpenBSD: mavb.c,v 1.8 2008/02/20 18:46:20 miod Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -194,7 +194,8 @@ struct audio_hw_if mavb_sa_hw_if = {
 	0,
 	mavb_get_props,
 	mavb_trigger_output,
-	mavb_trigger_input
+	mavb_trigger_input,
+	0
 };
 
 struct audio_device mavb_device = {

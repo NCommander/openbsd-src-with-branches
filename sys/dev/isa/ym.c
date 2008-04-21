@@ -1,4 +1,4 @@
-/* $OpenBSD: ym.c,v 1.12 2003/04/27 11:22:53 ho Exp $ */
+/* $OpenBSD: ym.c,v 1.13 2006/04/07 22:41:33 jsg Exp $ */
 
 
 /*
@@ -92,6 +92,7 @@ struct audio_hw_if ym_hw_if = {
 	ad1848_round,
 	ad1848_mappage,
 	ad1848_get_props,
+	NULL,
 	NULL,
 	NULL
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_audio.c,v 1.8 2005/08/18 13:23:02 robert Exp $	*/
+/*	$OpenBSD: zaurus_audio.c,v 1.9 2007/11/05 00:17:28 jakemsr Exp $	*/
 
 /*
  * Copyright (c) 2005 Christopher Pascoe <pascoe@openbsd.org>
@@ -158,7 +158,8 @@ struct audio_hw_if wm8750_hw_if = {
 	pxa2x0_i2s_mappage,
 	zaudio_get_props,
 	NULL /* zaudio_trigger_output */,
-	NULL /* zaudio_trigger_input */
+	NULL /* zaudio_trigger_input */,
+	NULL
 };
 
 static const unsigned short playback_registers[][2] = {

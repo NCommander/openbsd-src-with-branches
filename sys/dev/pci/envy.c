@@ -1,4 +1,4 @@
-/*	$OpenBSD: envy.c,v 1.6 2008/02/21 01:37:55 ratchov Exp $	*/
+/*	$OpenBSD: envy.c,v 1.7 2008/02/21 01:41:04 ratchov Exp $	*/
 /*
  * Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
  *
@@ -120,6 +120,7 @@ struct audio_hw_if envy_hw_if = {
 	envy_get_props,		/* get_props */
 	envy_trigger_output,	/* trigger_output */
 	envy_trigger_input,	/* trigger_input */
+	NULL
 };
 
 /*

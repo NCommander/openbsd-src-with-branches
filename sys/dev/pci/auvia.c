@@ -1,4 +1,4 @@
-/*	$OpenBSD: auvia.c,v 1.34 2008/01/15 02:52:50 jakemsr Exp $ */
+/*	$OpenBSD: auvia.c,v 1.36 2008/03/30 08:48:53 jakemsr Exp $ */
 /*	$NetBSD: auvia.c,v 1.28 2002/11/04 16:38:49 kent Exp $	*/
 
 /*-
@@ -210,7 +210,8 @@ struct audio_hw_if auvia_hw_if = {
 	auvia_mappage,
 	auvia_get_props,
 	auvia_trigger_output,
-	auvia_trigger_input
+	auvia_trigger_input,
+	NULL
 };
 
 int	auvia_attach_codec(void *, struct ac97_codec_if *);
