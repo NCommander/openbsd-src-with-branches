@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sparc64,v 1.103 2008/03/16 22:21:27 kettenis Exp $
+#	$OpenBSD: files.sparc64,v 1.104 2008/03/23 20:07:21 miod Exp $
 #	$NetBSD: files.sparc64,v 1.50 2001/08/10 20:53:50 eeh Exp $
 
 # maxpartitions must be first item in files.${ARCH}
@@ -356,3 +356,7 @@ file	arch/sparc64/dev/vcons.c		vcons needs-flag
 device	vrtc
 attach	vrtc at vbus
 file	arch/sparc64/dev/vrtc.c			vrtc
+
+device	mgiic: i2cbus
+attach	mgiic at mainbus
+file	arch/sparc64/dev/mgiic.c		mgiic
