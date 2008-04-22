@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2c_scan.c,v 1.124 2008/04/18 19:28:44 deraadt Exp $	*/
+/*	$OpenBSD: i2c_scan.c,v 1.125 2008/04/20 00:22:39 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt <deraadt@openbsd.org>
@@ -961,7 +961,9 @@ iic_scan(struct device *self, struct i2cbus_attach_args *iba)
 			for (addr = pl[j].start; addr <= pl[j].end; addr++) {
 				for (k = 0; k < sizeof(ignore_addrs); k++)
 					if (ignore_addrs[k] == addr)
-						continue;
+						break;
+				if (k < sizeof(ignore_addrs))
+					continue;
 
 				/* Perform RECEIVE BYTE command */
 				iic_acquire_bus(ic, 0);
