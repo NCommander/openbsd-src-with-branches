@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.67 2007/09/09 12:01:58 claudio Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.68 2007/09/15 16:43:51 henning Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -77,6 +77,10 @@
 #include <net/route.h>
 #include <net/raw_cb.h>
 
+#ifdef MPLS
+#include <netmpls/mpls.h>
+#endif /* MPLS */
+
 #include <sys/stdarg.h>
 
 struct sockaddr		route_dst = { 2, PF_ROUTE, };
@@ -151,6 +155,10 @@ route_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 			route_cb.ip_count++;
 		else if (af == AF_INET6)
 			route_cb.ip6_count++;
+#ifdef MPLS
+               else if (af == AF_MPLS)
+                       route_cb.mpls_count++;
+#endif /* MPLS */
 		rp->rcb_faddr = &route_src;
 		route_cb.any_count++;
 		soisconnected(so);

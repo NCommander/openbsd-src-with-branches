@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.h,v 1.46 2006/06/18 11:47:45 pascoe Exp $	*/
+/*	$OpenBSD: route.h,v 1.47 2007/09/03 15:24:49 claudio Exp $	*/
 /*	$NetBSD: route.h,v 1.9 1996/02/13 22:00:49 christos Exp $	*/
 
 /*
@@ -290,6 +290,7 @@ struct rt_addrinfo {
 struct route_cb {
 	int	ip_count;
 	int	ip6_count;
+	int     mpls_count;
 	int	any_count;
 };
 
