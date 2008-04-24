@@ -1,4 +1,4 @@
-/*	$OpenBSD: aapic.c,v 1.3 2007/01/15 23:19:05 jsg Exp $	*/
+/*	$OpenBSD: aapic.c,v 1.4 2008/04/24 17:44:54 thib Exp $	*/
 /* 	$NetBSD: aapic.c,v 1.3 2005/01/13 23:40:01 fvdl Exp $	*/
 
 /*
@@ -12,8 +12,6 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
-
-#include <arch/amd64/pci/amd8131reg.h>
 
 #include "ioapic.h"
 
