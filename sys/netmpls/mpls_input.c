@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.2 2008/04/23 11:22:23 norby Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.3 2008/04/23 12:59:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -49,7 +49,7 @@ mplsintr(void)
 	struct mbuf *m;
 	int s;
 
-	while (mplsintrq.ifq_head) {
+	for (;;) {
 		/* Get next datagram of input queue */
 		s = splnet();
 		IF_DEQUEUE(&mplsintrq, m);

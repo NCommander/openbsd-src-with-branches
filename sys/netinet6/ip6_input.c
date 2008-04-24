@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.81 2008/02/05 22:57:31 mpf Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.82 2008/02/24 23:31:30 mcbride Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -185,11 +185,11 @@ ip6intr()
 	int s;
 	struct mbuf *m;
 
-	while (ip6intrq.ifq_head) {
+	for (;;) {
 		s = splnet();
 		IF_DEQUEUE(&ip6intrq, m);
 		splx(s);
-		if (m == 0)
+		if (m == NULL)
 			return;
 		ip6_input(m);
 	}

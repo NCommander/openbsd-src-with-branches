@@ -1170,7 +1170,7 @@ bridgeintr(void)
 	int s;
 
 	LIST_FOREACH(sc, &bridge_list, sc_list) {
-		while (sc->sc_if.if_snd.ifq_head) {
+		for (;;) {
 			s = splnet();
 			IF_DEQUEUE(&sc->sc_if.if_snd, m);
 			splx(s);
