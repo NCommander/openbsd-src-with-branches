@@ -43,6 +43,10 @@ paddr_t	ip30_widget_short(int16_t, u_int);
 paddr_t	ip30_widget_long(int16_t, u_int);
 int	ip30_widget_id(int16_t, u_int, uint32_t *);
 
+extern bus_addr_t comconsaddr;
+extern bus_space_tag_t comconsiot;
+extern int comconsfreq;
+
 void
 ip30_setup()
 {
@@ -109,9 +113,10 @@ ip30_setup()
 	 */
 	xbow_build_bus_space(&sys_config.console_io, 0, 15, 1);
 	sys_config.console_io.bus_base += BRIDGE_PCI_MEM_SPACE_BASE;
-	sys_config.cons_ioaddr = 0x500000 + IOC3_UARTA_BASE;
-	sys_config.cons_baudclk = 22000000 / 3;
-	sys_config.cons_iot = &sys_config.console_io;
+
+	comconsaddr = 0x500000 + IOC3_UARTA_BASE;
+	comconsfreq = 22000000 / 3;
+	comconsiot = &sys_config.console_io;
 }
 
 /*
