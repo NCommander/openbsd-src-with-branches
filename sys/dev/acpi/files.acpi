@@ -66,3 +66,7 @@ device	acpidock
 attach	acpidock at acpi
 file	dev/acpi/acpidock.c		acpidock
 
+# ASUS ACPI Hotkeys
+device	acpiasus
+attach	acpiasus at acpi
+file	dev/acpi/acpiasus.c		acpiasus

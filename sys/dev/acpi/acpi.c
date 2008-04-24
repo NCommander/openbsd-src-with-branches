@@ -1853,6 +1853,8 @@ acpi_foundhid(struct aml_node *node, void *arg)
 	    !strcmp(dev, ACPI_DEV_PBD) ||
 	    !strcmp(dev, ACPI_DEV_SBD))
 		aaa.aaa_name = "acpibtn";
+	else if (!strcmp(dev, ACPI_DEV_ASUS))
+		aaa.aaa_name = "acpiasus";
 
 	if (aaa.aaa_name)
 		config_found(self, &aaa, acpi_print);
