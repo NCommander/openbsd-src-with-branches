@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.14 2007/05/10 17:59:23 deraadt Exp $	*/
+/*	$OpenBSD: intr.c,v 1.15 2007/09/17 15:34:38 chl Exp $	*/
 /*	$NetBSD: intr.c,v 1.3 2003/03/03 22:16:20 fvdl Exp $	*/
 
 /*
@@ -205,6 +205,14 @@ intr_allocate_slot_cpu(struct cpu_info *ci, struct pic *pic, int pin,
 	slot = -1;
 
 	simple_lock(&ci->ci_slock);
+	for (i = 0; i < start; i++) {
+		isp = ci->ci_isources[i];
+		if (isp != NULL && isp->is_pic == pic && isp->is_pin == pin) {
+			slot = i;
+			start = MAX_INTR_SOURCES;
+			break;
+		}
+	}
 	for (i = start; i < MAX_INTR_SOURCES ; i++) {
 		isp = ci->ci_isources[i];
 		if (isp != NULL && isp->is_pic == pic && isp->is_pin == pin) {
