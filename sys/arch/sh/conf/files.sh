@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sh,v 1.2 2007/05/01 18:59:40 miod Exp $
+#	$OpenBSD: files.sh,v 1.3 2007/11/25 18:25:29 deraadt Exp $
 #	$NetBSD: files.sh3,v 1.32 2005/12/11 12:18:58 christos Exp $
 
 file	arch/sh/sh/cache.c
@@ -31,7 +31,7 @@ file	netinet/in4_cksum.c		inet
 
 file	dev/cninit.c
 
-# quad support is neccessary for 32 bit architectures
+# quad support is necessary for 32 bit architectures
 file	lib/libkern/adddi3.c
 file	lib/libkern/anddi3.c
 file	lib/libkern/ashldi3.c
