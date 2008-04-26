@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.75 2008/03/02 16:05:26 brad Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.76 2008/04/20 01:32:43 brad Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -508,6 +508,10 @@ brgphy_reset(struct mii_softc *sc)
 		/* Set Jumbo frame settings in the PHY. */
 		if (bge_sc->bge_flags & BGE_JUMBO_CAP)
 			brgphy_jumbo_settings(sc);
+
+		/* Adjust output voltage */
+		if (sc->mii_model == MII_MODEL_BROADCOM2_BCM5906)
+			PHY_WRITE(sc, BRGPHY_MII_EPHY_PTEST, 0x12);
 
 		/* Enable Ethernet@Wirespeed */
 		if (!(bge_sc->bge_flags & BGE_NO_ETH_WIRE_SPEED))
