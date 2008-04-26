@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.31 2007/03/23 21:06:05 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.32 2007/12/04 22:36:39 kettenis Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -57,6 +57,7 @@ struct cpu_info {
 	volatile int ci_cpl;
 	volatile int ci_iactive;
 	volatile int ci_ipending;
+
 	int ci_intrdepth;
 	char *ci_intstk;
 #define CPUSAVE_LEN	8
@@ -64,6 +65,14 @@ struct cpu_info {
 	register_t ci_ddbsave[CPUSAVE_LEN];
 #define DISISAVE_LEN	4
 	register_t ci_disisave[DISISAVE_LEN];
+
+	volatile u_int64_t ci_nexttimerevent;
+	volatile u_int64_t ci_prevtb;
+	volatile u_int64_t ci_lasttb;
+	volatile u_int64_t ci_nextstatevent;
+	int ci_statspending;
+
+	u_long ci_randseed;
 };
 
 static __inline struct cpu_info *
