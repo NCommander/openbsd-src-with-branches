@@ -79,7 +79,7 @@ struct cfattach com_isapnp_ca = {
 #endif
 
 int com_isapnp_probe(struct device *, void *, void *);
-int com_isapnp_attach(struct device *, struct device *, void *);
+void com_isapnp_attach(struct device *, struct device *, void *);
 
 int
 com_isapnp_probe(struct device *parent, void *match, void *aux)
@@ -104,7 +104,7 @@ com_isapnp_probe(struct device *parent, void *match, void *aux)
 	return comprobe1(iot, ioh);
 }
 
-int
+void
 com_isapnp_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct com_softc *sc = (void *)self;
