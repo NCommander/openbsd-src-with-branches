@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpireg.h,v 1.12 2006/12/12 18:07:25 mk Exp $	*/
+/*	$OpenBSD: acpireg.h,v 1.13 2008/04/24 13:57:49 jsing Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -485,5 +485,6 @@ struct acpi_facs {
 #define ACPI_DEV_THZ	"THERMALZONE"	/* Thermal Zone */
 #define ACPI_DEV_FFB	"FIXEDBUTTON"	/* Fixed Feature Button */
 #define ACPI_DEV_ASUS	"ASUS010"	/* ASUS Hotkeys */
+#define ACPI_DEV_THINKPAD "IBM0068"	/* Thinkpad support */
 
 #endif	/* !_DEV_ACPI_ACPIREG_H_ */
