@@ -107,7 +107,7 @@ com_commulti_probe(struct device *parent, void *match, void *aux)
 }
 
 void
-com_commulti_attach(struct device *, struct device *, void *)
+com_commulti_attach(struct device *self, struct device *parent, void *aux)
 {
 	struct commulti_attach_args *ca = aux;
 	struct com_softc *sc = (void *)self;
