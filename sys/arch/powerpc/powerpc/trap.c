@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.78 2007/04/26 21:36:32 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.79 2007/10/27 22:31:17 kettenis Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -662,7 +662,7 @@ for (i = 0; i < errnum; i++) {
 
 	case EXC_AST|EXC_USER:
 		uvmexp.softs++;
-		ci->ci_astpending = 0;		/* we are about to do it */
+		p->p_md.md_astpending = 0;	/* we are about to do it */
 		if (p->p_flag & P_OWEUPC) {
 			KERNEL_PROC_LOCK(p);
 			ADDUPROF(p);
