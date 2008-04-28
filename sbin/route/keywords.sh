@@ -1,5 +1,5 @@
 #!/bin/sh
-# $OpenBSD: keywords.sh,v 1.18 2006/03/30 12:11:37 claudio Exp $
+# $OpenBSD: keywords.sh,v 1.19 2007/06/04 12:23:43 henning Exp $
 # $NetBSD: keywords.sh,v 1.2 1996/11/15 18:57:21 gwr Exp $
 # @(#)keywords	8.2 (Berkeley) 3/19/94
 #
@@ -27,6 +27,7 @@ iface
 interface
 ifa
 ifp
+in
 inet
 inet6
 jumbo
@@ -37,11 +38,13 @@ lock
 lockrest
 monitor
 mpath
+mpls
 mtu
 net
 netmask
 nojumbo
 nostatic
+out
 prefixlen
 proto1
 proto2
