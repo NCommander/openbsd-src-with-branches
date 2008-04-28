@@ -1,4 +1,4 @@
-/*	$OpenBSD: kate.c,v 1.1 2008/03/27 01:44:23 cnst Exp $	*/
+/*	$OpenBSD: kate.c,v 1.2 2008/03/27 04:52:03 cnst Exp $	*/
 
 /*
  * Copyright (c) 2008 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -103,7 +103,7 @@ kate_match(struct device *parent, void *match, void *aux)
 	int			i, j;
 
 	if (PCI_VENDOR(pa->pa_id) != PCI_VENDOR_AMD ||
-	    PCI_PRODUCT(pa->pa_id) != PCI_PRODUCT_AMD_AMD64_MISC)
+	    PCI_PRODUCT(pa->pa_id) != PCI_PRODUCT_AMD_AMD64_0F_MISC)
 		return 0;
 
 	/*
