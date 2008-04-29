@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.49 2008/04/29 00:26:11 drahn Exp $ */
+/*	$OpenBSD: cpu.c,v 1.50 2008/04/29 03:49:03 drahn Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -696,9 +696,6 @@ cpu_hatch(void)
 
 	/* Initialize curcpu(). */
 	ppc_mtsprg0((u_int)h->ci);
-
-	/* Set PIR . */
-	ppc_mtpir(curcpu()->ci_cpuid);
 
 	/*
 	 * Initialize BAT registers to unmapped to not generate
