@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_mm.h,v 1.3 2006/03/25 22:22:43 djm Exp $ */
+/* $OpenBSD: monitor_mm.h,v 1.4 2006/08/03 03:34:42 deraadt Exp $ */
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -41,9 +41,6 @@ struct mm_master {
 	size_t size;
 
 	struct mm_master *mmalloc;	/* Used to completely share */
-
-	int write;		/* used to writing to other party */
-	int read;		/* used for reading from other party */
 };
 
 RB_PROTOTYPE(mmtree, mm_share, next, mm_compare)
