@@ -37,10 +37,5 @@
 void
 consinit()
 {
-	static int initted;
-
-	if (initted)
-		return;
-	initted = 1;
-	cninit();
+	/* already done in machdep.c */
 }
