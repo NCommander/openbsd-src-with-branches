@@ -64,6 +64,7 @@ com_ioc_probe(struct device *parent, void *match, void *aux)
 	if (!(console && !comconsattached)) {
 		bus_space_map(iot, iaa->iaa_base, COM_NPORTS, 0, &ioh);
 		rv = comprobe1(iot, ioh);
+		bus_space_unmap(iot, ioh, COM_NPORTS);
 	} else
 		rv = 1;
 
