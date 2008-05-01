@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_machdep.c,v 1.20 2005/11/06 17:23:39 miod Exp $	*/
+/*	$OpenBSD: hpux_machdep.c,v 1.21 2007/11/02 19:18:54 martin Exp $	*/
 /*	$NetBSD: hpux_machdep.c,v 1.19 1998/02/16 20:58:30 thorpej Exp $	*/
 
 /*
@@ -419,7 +419,13 @@ hpux_sendsig(catcher, sig, mask, code, type, val)
 		       p->p_pid, sig, &oonstack, fp, &fp->hsf_sc, ft);
 #endif
 
-	kfp = (struct hpuxsigframe *)malloc((u_long)fsize, M_TEMP, M_WAITOK);
+	kfp = (struct hpuxsigframe *)malloc((u_long)fsize, M_TEMP,
+	    M_WAITOK | M_CANFAIL);
+	if (kfp == NULL) {
+		/* Better halt the process in its track than panicing */
+		sigexit(p, SIGILL);
+		/* NOTREACHED */
+	}
 
 	/*
 	 * Build the argument list for the signal handler.
