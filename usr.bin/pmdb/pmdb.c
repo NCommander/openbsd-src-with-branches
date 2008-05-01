@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmdb.c,v 1.20 2006/12/20 06:45:10 steven Exp $	*/
+/*	$OpenBSD: pmdb.c,v 1.21 2007/08/06 19:16:05 sobrado Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -185,6 +185,9 @@ main(int argc, char **argv)
 
 		if (ps.ps_state == TERMINATED)
 			break;
+
+		if (ps.ps_state == NONE || ps.ps_state == LOADED)
+			continue;
 
 		if (wait(&status) == 0)
 			err(1, "wait");
