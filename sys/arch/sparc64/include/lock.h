@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.h,v 1.2 2007/11/05 20:19:22 miod Exp $	*/
+/*	$OpenBSD: lock.h,v 1.3 2008/01/01 23:37:16 miod Exp $	*/
 
 /* public domain */
 
@@ -51,6 +51,6 @@ __cpu_simple_unlock(__cpu_simple_lock_t *l)
 	*l = __SIMPLELOCK_UNLOCKED;
 }
 
-#define	rw_cas_sparc64	(sparc64_casx(p, o, n) != o)
+#define	rw_cas(p, o, n)		(sparc64_casx(p, o, n) != o)
 
 #endif	/* _SPARC64_LOCK_H_ */
