@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.32 2008/04/21 20:40:55 rainer Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.33 2008/04/23 10:17:50 pyr Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -199,13 +199,17 @@ main(argc, argv)
 	/* get iflist block from kernel */
 	init_iflist();
 
+	if (conffile == NULL)
+		log_init(dflag);
+
 	while (argc--)
 		getconfig(*argv++);
 
 	if (inet_pton(AF_INET6, ALLNODES, &sin6_allnodes.sin6_addr) != 1)
 		fatal("inet_pton failed");
 
-	log_init(dflag);
+	if (conffile != NULL)
+		log_init(dflag);
 
 	if (!dflag)
 		daemon(1, 0);
