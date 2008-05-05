@@ -1477,6 +1477,21 @@ const struct puc_device_description puc_devices[] = {
 	    },
 	},
 
+	{   /* Dell DRAC 3 Virtual UART */
+	    {   PCI_VENDOR_DELL, PCI_PRODUCT_DELL_DRAC_3_VUART,	0, 0 },
+	    {   0xffff, 0xffff, 				0, 0 },
+	    {
+		{ PUC_PORT_TYPE_COM, 0x14, 0x0000, COM_FREQ * 128 },
+	    },
+	},
+	{   /* Dell DRAC 4 Virtual UART */
+	    {   PCI_VENDOR_DELL, PCI_PRODUCT_DELL_DRAC_4_VUART,	0, 0 },
+	    {   0xffff, 0xffff, 				0, 0 },
+	    {
+		{ PUC_PORT_TYPE_COM, 0x14, 0x0000, COM_FREQ * 128 },
+	    },
+	},
+
 	{   /* NULL, */
 
 	    {	0,	0,		0, 0	},
