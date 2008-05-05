@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.86 2008/03/20 22:24:46 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.87 2008/03/21 05:22:11 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1882,6 +1882,9 @@ relay_accept(int fd, short sig, void *arg)
 
 	if (relay_sessions >= RELAY_MAX_SESSIONS ||
 	    rlay->rl_conf.flags & F_DISABLE)
+		goto err;
+
+	if (fcntl(s, F_SETFL, O_NONBLOCK) == -1)
 		goto err;
 
 	if ((con = (struct session *)
