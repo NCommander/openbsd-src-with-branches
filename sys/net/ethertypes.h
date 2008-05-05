@@ -300,6 +300,7 @@
 #define	ETHERTYPE_LANPROBE	0x8888	/* HP LanProbe test? */
 #define	ETHERTYPE_PAE		0x888E	/* 802.1X Port Access Entity */
 #define	ETHERTYPE_AOE		0x88A2	/* ATA over Ethernet */
+#define	ETHERTYPE_LLDP		0x88CC	/* Link Layer Discovery Protocol */
 #define	ETHERTYPE_LOOPBACK	0x9000	/* Loopback */
 #define	ETHERTYPE_LBACK		ETHERTYPE_LOOPBACK	/* DEC MOP loopback */
 #define	ETHERTYPE_XNSSM		0x9001	/* 3Com (Formerly Bridge Communications), XNS Systems Management */
