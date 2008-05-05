@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.258 2007/09/27 22:24:05 mpf Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.259 2007/12/02 12:08:04 pascoe Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -713,7 +713,6 @@ struct pf_state_key {
 	RB_ENTRY(pf_state_key)	 entry_lan_ext;
 	RB_ENTRY(pf_state_key)	 entry_ext_gwy;
 	struct pf_statelist	 states;
-	u_short		 refcnt;	/* same size as if_index */	 
 };
 
 
