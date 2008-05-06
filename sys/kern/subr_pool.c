@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.57 2007/12/11 15:04:01 tedu Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.58 2007/12/11 15:04:58 tedu Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -385,8 +385,11 @@ pool_get(struct pool *pp, int flags)
 		mtx_leave(&pp->pr_mtx);
 		v = NULL;
 	}
-	if (v)
+	if (v) {
 		pp->pr_nget++;
+		if (flags & PR_ZERO)
+			memset(v, 0, pp->pr_size);
+	}
 	return (v);
 }
 
