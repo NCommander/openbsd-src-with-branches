@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.147 2007/11/25 15:56:17 tedu Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.148 2008/01/01 16:31:42 miod Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -446,9 +446,9 @@ main(void *framep)
 	/* Configure root/swap devices */
 	diskconf();
 
-	/* Mount the root file system. */
-	if (vfs_mountroot())
+	if (mountroot == NULL || ((*mountroot)() != 0))
 		panic("cannot mount root");
+
 	CIRCLEQ_FIRST(&mountlist)->mnt_flag |= MNT_ROOTFS;
 
 	/* Get the vnode for '/'.  Set p->p_fd->fd_cdir to reference it. */
