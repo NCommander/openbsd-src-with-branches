@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.90 2007/09/15 16:43:51 henning Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.91 2007/12/20 02:53:02 brad Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -551,6 +551,8 @@ tun_output(struct ifnet *ifp, struct mbuf *m0, struct sockaddr *dst,
 		return (ether_output(ifp, m0, dst, rt));
 
 	M_PREPEND(m0, sizeof(*af), M_DONTWAIT);
+	if (m0 == NULL)
+		return (ENOBUFS);
 	af = mtod(m0, u_int32_t *);
 	*af = htonl(dst->sa_family);
 
