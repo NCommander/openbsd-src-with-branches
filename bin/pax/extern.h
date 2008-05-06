@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.31 2005/04/28 06:58:07 otto Exp $	*/
+/*	$OpenBSD: extern.h,v 1.32 2006/11/17 08:38:04 otto Exp $	*/
 /*	$NetBSD: extern.h,v 1.5 1996/03/26 23:54:16 mrg Exp $	*/
 
 /*-
@@ -162,6 +162,7 @@ int set_crc(ARCHD *, int);
 int ftree_start(void);
 int ftree_add(char *, int);
 void ftree_sel(ARCHD *);
+void ftree_skipped_newer(ARCHD *);
 void ftree_chk(void);
 int next_file(ARCHD *);
 

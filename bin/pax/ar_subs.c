@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_subs.c,v 1.30 2006/07/21 22:56:58 ray Exp $	*/
+/*	$OpenBSD: ar_subs.c,v 1.31 2006/11/17 08:38:04 otto Exp $	*/
 /*	$NetBSD: ar_subs.c,v 1.5 1995/03/21 09:07:06 cgd Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
 #if 0
 static const char sccsid[] = "@(#)ar_subs.c	8.2 (Berkeley) 4/18/94";
 #else
-static const char rcsid[] = "$OpenBSD: ar_subs.c,v 1.30 2006/07/21 22:56:58 ray Exp $";
+static const char rcsid[] = "$OpenBSD: ar_subs.c,v 1.31 2006/11/17 08:38:04 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -441,8 +441,10 @@ wr_archive(ARCHD *arcn, int is_app)
 			 */
 			if ((res = chk_ftime(arcn)) < 0)
 				break;
-			if (res > 0)
+			if (res > 0) {
+				ftree_skipped_newer(arcn);
 				continue;
+			}
 		}
 
 		/*
@@ -853,6 +855,7 @@ copy(void)
 			*dest_pt = '\0';
 
 			if (res == 0) {
+				ftree_skipped_newer(arcn);
 				if (uflag && Dflag) {
 					if ((arcn->sb.st_mtime<=sb.st_mtime) &&
 					    (arcn->sb.st_ctime<=sb.st_ctime))

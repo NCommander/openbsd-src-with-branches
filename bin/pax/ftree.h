@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftree.h,v 1.3 1996/10/27 06:45:11 downsj Exp $	*/
+/*	$OpenBSD: ftree.h,v 1.4 2003/06/02 23:32:08 millert Exp $	*/
 /*	$NetBSD: ftree.h,v 1.3 1995/03/21 09:07:23 cgd Exp $	*/
 
 /*-
@@ -45,6 +45,7 @@
 typedef struct ftree {
 	char		*fname;		/* file tree name */
 	int		refcnt;		/* has tree had a selected file? */
+	int		newercnt;	/* skipped due to -u/-D */
 	int		chflg;		/* change directory flag */
 	struct ftree	*fow;		/* pointer to next entry on list */
 } FTREE;
