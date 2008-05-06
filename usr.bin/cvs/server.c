@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.85 2008/04/18 20:26:07 tobias Exp $	*/
+/*	$OpenBSD: server.c,v 1.86 2008/04/24 19:13:56 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -480,7 +480,7 @@ cvs_server_argumentx(char *data)
 	int idx;
 	size_t len;
 
-	if (server_argc < 0)
+	if (server_argc == 1)
 		fatal("Protocol Error: ArgumentX without previous argument");
 
 	idx = server_argc - 1;
