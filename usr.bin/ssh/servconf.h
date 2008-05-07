@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.81 2008/02/08 23:24:08 djm Exp $ */
+/* $OpenBSD: servconf.h,v 1.82 2008/02/13 22:38:17 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -101,6 +101,7 @@ typedef struct {
 	int     use_login;	/* If true, login(1) is used */
 	int     compression;	/* If true, compression is allowed */
 	int	allow_tcp_forwarding;
+	int	allow_agent_forwarding;
 	u_int num_allow_users;
 	char   *allow_users[MAX_ALLOW_USERS];
 	u_int num_deny_users;
