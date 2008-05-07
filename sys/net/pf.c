@@ -3812,22 +3812,6 @@ pf_test_state_tcp(struct pf_state **state, int direction, struct pfi_kif *kif,
 		return (PF_DROP);
 	}
 
-	if (((th->th_flags & (TH_SYN|TH_ACK)) == TH_SYN) &&
-	    dst->state >= TCPS_FIN_WAIT_2 &&
-	    src->state >= TCPS_FIN_WAIT_2) {
-		if (pf_status.debug >= PF_DEBUG_MISC) {
-			printf("pf: state reuse ");
-			pf_print_state(*state);
-			pf_print_flags(th->th_flags);
-			printf("\n");
-		}
-		/* XXX make sure it's the same direction ?? */
-		(*state)->src.state = (*state)->dst.state = TCPS_CLOSED;
-		pf_unlink_state(*state);
-		*state = NULL;
-		return (PF_DROP);
-	}
-
 	if (src->wscale && dst->wscale && !(th->th_flags & TH_SYN)) {
 		sws = src->wscale & PF_WSCALE_MASK;
 		dws = dst->wscale & PF_WSCALE_MASK;
