@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls.h,v 1.5 2008/05/06 13:33:50 pyr Exp $	*/
+/*	$OpenBSD: mpls.h,v 1.6 2008/05/07 06:53:42 pyr Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -148,6 +148,9 @@ struct mpe_softc {
 };
 
 #define MPE_HDRLEN	sizeof(struct shim_hdr)
+#define MPE_MTU		1500
+#define MPE_MTU_MIN	256
+#define MPE_MTU_MAX	8192
 
 extern int mpls_raw_usrreq(struct socket *, int, struct mbuf *,
 			struct mbuf *, struct mbuf *);
