@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.34 2007/10/29 16:51:02 krw Exp $ */
+/*	$OpenBSD: dhcpd.h,v 1.35 2008/01/18 20:14:03 krw Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -721,3 +721,4 @@ void pf_kill_state(int, struct in_addr);
 size_t atomicio(ssize_t (*)(int, void *, size_t), int, void *, size_t);
 #define vwrite (ssize_t (*)(int, void *, size_t))write
 void pfmsg(char, struct lease *);
+extern struct syslog_data sdata;
