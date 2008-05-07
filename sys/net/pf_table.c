@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_table.c,v 1.71 2007/09/01 18:49:27 henning Exp $	*/
+/*	$OpenBSD: pf_table.c,v 1.72 2007/12/20 20:07:41 reyk Exp $	*/
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -988,9 +988,9 @@ pfr_route_kentry(struct pfr_ktable *kt, struct pfr_kentry *ke)
 	s = splsoftnet();
 	if (KENTRY_NETWORK(ke)) {
 		pfr_prepare_network(&mask, ke->pfrke_af, ke->pfrke_net);
-		rn = rn_addroute(&ke->pfrke_sa, &mask, head, ke->pfrke_node);
+		rn = rn_addroute(&ke->pfrke_sa, &mask, head, ke->pfrke_node, 0);
 	} else
-		rn = rn_addroute(&ke->pfrke_sa, NULL, head, ke->pfrke_node);
+		rn = rn_addroute(&ke->pfrke_sa, NULL, head, ke->pfrke_node, 0);
 	splx(s);
 
 	return (rn == NULL ? -1 : 0);
