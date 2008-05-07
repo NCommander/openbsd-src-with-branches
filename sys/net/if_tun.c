@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.91 2007/12/20 02:53:02 brad Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.92 2008/05/06 07:18:09 krw Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -857,6 +857,9 @@ tunwrite(dev_t dev, struct uio *uio, int ioflag)
 #endif
 
 	if (tp->tun_flags & TUN_LAYER2) {
+		/* quirk to not add randomness from a virtual device */
+		atomic_setbits_int(&netisr, (1 << NETISR_RND_DONE));
+
 		ether_input_mbuf(ifp, top);
 		ifp->if_ipackets++; /* ibytes are counted in ether_input */
 		return (0);
