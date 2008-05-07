@@ -308,8 +308,7 @@ gif_output(ifp, m, dst, rt)
 		splx(s);
 		return (error);
 	}
-	if ((ifp->if_flags & IFF_OACTIVE) == 0)
-		(*ifp->if_start)(ifp);
+	if_start(ifp);
 	splx(s);
 	return (error);
 

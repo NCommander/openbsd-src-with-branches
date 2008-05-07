@@ -257,8 +257,7 @@ vlan_start(struct ifnet *ifp)
 		}
 
 		ifp->if_opackets++;
-		if ((p->if_flags & (IFF_RUNNING|IFF_OACTIVE)) == IFF_RUNNING)
-			p->if_start(p);
+		if_start(p);
 	}
 	ifp->if_flags &= ~IFF_OACTIVE;
 

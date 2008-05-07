@@ -933,8 +933,7 @@ trunk_enqueue(struct ifnet *ifp, struct mbuf *m)
 	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
 	if (error)
 		return (error);
-	if ((ifp->if_flags & IFF_OACTIVE) == 0)
-		(*ifp->if_start)(ifp);
+	if_start(ifp);
 
 	ifp->if_obytes += m->m_pkthdr.len;
 	if (m->m_flags & M_MCAST)
