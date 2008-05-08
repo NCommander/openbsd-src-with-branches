@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_attr.c,v 1.74 2007/05/11 11:27:59 claudio Exp $ */
+/*	$OpenBSD: rde_attr.c,v 1.75 2007/05/22 14:03:31 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -915,7 +915,7 @@ aspath_match(struct aspath *a, enum as_spec type, u_int32_t as)
 		/* just check the final (rightmost) AS */
 		if (type == AS_SOURCE) {
 			/* not yet in the final segment */
-		       	if (!final)
+			if (!final)
 				continue;
 
 			if (as == aspath_extract(seg, seg_len - 1))
