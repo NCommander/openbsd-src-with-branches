@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.112 2008/05/06 12:58:00 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.113 2008/05/07 01:49:29 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1062,6 +1062,7 @@ relay		: RELAY STRING	{
 			r->rl_proto = NULL;
 			r->rl_conf.proto = EMPTY_ID;
 			r->rl_conf.dsttable = EMPTY_ID;
+			r->rl_conf.dstmode = RELAY_DSTMODE_DEFAULT;
 			r->rl_conf.dstretry = 0;
 			if (last_relay_id == INT_MAX) {
 				yyerror("too many relays defined");
