@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.93 2007/09/21 08:15:29 djm Exp $ */
+/* $OpenBSD: monitor.c,v 1.94 2007/10/29 04:08:08 dtucker Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -30,6 +30,7 @@
 #include <sys/socket.h>
 #include <sys/tree.h>
 #include <sys/param.h>
+#include <sys/queue.h>
 
 #include <openssl/dh.h>
 

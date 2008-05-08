@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.234 2008/04/18 22:01:33 djm Exp $ */
+/* $OpenBSD: session.c,v 1.235 2008/05/07 05:49:37 pyr Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/param.h>
+#include <sys/queue.h>
 
 #include <errno.h>
 #include <grp.h>

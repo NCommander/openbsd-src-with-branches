@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.c,v 1.177 2008/02/10 10:54:28 djm Exp $ */
+/* $OpenBSD: servconf.c,v 1.178 2008/05/07 05:49:37 pyr Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -12,6 +12,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/queue.h>
 
 #include <netdb.h>
 #include <pwd.h>
