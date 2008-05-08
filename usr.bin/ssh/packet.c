@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.150 2008/01/23 01:56:54 dtucker Exp $ */
+/* $OpenBSD: packet.c,v 1.151 2008/02/22 20:44:02 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1321,6 +1321,12 @@ void *
 packet_get_string(u_int *length_ptr)
 {
 	return buffer_get_string(&incoming_packet, length_ptr);
+}
+
+void *
+packet_get_string_ptr(u_int *length_ptr)
+{
+	return buffer_get_string_ptr(&incoming_packet, length_ptr);
 }
 
 /*

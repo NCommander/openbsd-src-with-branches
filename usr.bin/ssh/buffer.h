@@ -1,4 +1,4 @@
-/* $OpenBSD: buffer.h,v 1.15 2006/04/16 00:48:52 djm Exp $ */
+/* $OpenBSD: buffer.h,v 1.16 2006/08/03 03:34:41 deraadt Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -66,6 +66,7 @@ int     buffer_get_char(Buffer *);
 void    buffer_put_char(Buffer *, int);
 
 void   *buffer_get_string(Buffer *, u_int *);
+void   *buffer_get_string_ptr(Buffer *, u_int *);
 void    buffer_put_string(Buffer *, const void *, u_int);
 void	buffer_put_cstring(Buffer *, const char *);
 
