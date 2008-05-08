@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.94 2007/10/29 04:08:08 dtucker Exp $ */
+/* $OpenBSD: monitor.c,v 1.95 2008/05/08 12:02:23 djm Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -1000,7 +1000,7 @@ mm_session_close(Session *s)
 		debug3("%s: tty %s ptyfd %d", __func__, s->tty, s->ptyfd);
 		session_pty_cleanup2(s);
 	}
-	s->used = 0;
+	session_unused(s->self);
 }
 
 int

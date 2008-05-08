@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.82 2008/02/13 22:38:17 djm Exp $ */
+/* $OpenBSD: servconf.h,v 1.83 2008/05/07 05:49:37 pyr Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -35,6 +35,7 @@
 #define	PERMIT_YES		3
 
 #define DEFAULT_AUTH_FAIL_MAX	6	/* Default for MaxAuthTries */
+#define DEFAULT_SESSIONS_MAX	10	/* Default for MaxSessions */
 
 /* Magic name for internal sftp-server */
 #define INTERNAL_SFTP_NAME	"internal-sftp"
@@ -123,6 +124,7 @@ typedef struct {
 	int	max_startups_rate;
 	int	max_startups;
 	int	max_authtries;
+	int	max_sessions;
 	char   *banner;			/* SSH-2 banner message */
 	int	use_dns;
 	int	client_alive_interval;	/*
