@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.c,v 1.34 2007/12/30 13:38:47 sobrado Exp $ */
+/*	$OpenBSD: dhcpd.c,v 1.35 2008/05/07 12:19:20 beck Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -60,7 +60,6 @@ int pfpipe[2];
 int gotpipe = 0;
 int syncrecv;
 int syncsend;
-int syncfd = -1;
 pid_t pfproc_pid = -1;
 u_short sync_port;
 char *path_dhcpd_conf = _PATH_DHCPD_CONF;
