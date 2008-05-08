@@ -120,7 +120,7 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 			PROGRESS(("%s%lu", first ? "" : "+",
 			    (u_long)phdr[i].p_filesz));
 
-			if (lseek(fd, (off_t)phdr[i].p_offset, SEEK_SET) == -1)  {
+			if (lseek(fd, (off_t)phdr[i].p_offset, SEEK_SET) == -1) {
 				WARN(("lseek text"));
 				FREE(phdr, sz);
 				return 1;
@@ -131,11 +131,12 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 				FREE(phdr, sz);
 				return 1;
 			}
-			first = 0;
 
+			first = 0;
 		}
-		if ((IS_TEXT(phdr[i]) && (flags & (LOAD_TEXT|COUNT_TEXT))) ||
-		    (IS_DATA(phdr[i]) && (flags & (LOAD_DATA|COUNT_TEXT)))) {
+
+		if ((IS_TEXT(phdr[i]) && (flags & (LOAD_TEXT | COUNT_TEXT))) ||
+		    (IS_DATA(phdr[i]) && (flags & (LOAD_DATA | COUNT_TEXT)))) {
 			pos = phdr[i].p_paddr;
 			if (minp > pos)
 				minp = pos;
@@ -144,7 +145,7 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 				maxp = pos;
 		}
 
-		/* Zero out bss. */
+		/* Zero out BSS. */
 		if (IS_BSS(phdr[i]) && (flags & LOAD_BSS)) {
 			PROGRESS(("+%lu",
 			    (u_long)(phdr[i].p_memsz - phdr[i].p_filesz)));
@@ -163,10 +164,10 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 	 * Copy the ELF and section headers.
 	 */
 	elfp = maxp = roundup(maxp, sizeof(Elf_Addr));
-	if (flags & (LOAD_HDR|COUNT_HDR))
+	if (flags & (LOAD_HDR | COUNT_HDR))
 		maxp += sizeof(Elf_Ehdr);
 
-	if (flags & (LOAD_SYM|COUNT_SYM)) {
+	if (flags & (LOAD_SYM | COUNT_SYM)) {
 		if (lseek(fd, (off_t)elf->e_shoff, SEEK_SET) == -1)  {
 			WARN(("lseek section headers"));
 			return 1;
@@ -184,7 +185,7 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 		maxp += roundup(sz, sizeof(Elf_Addr));
 
 		/*
-		 * Now load the symbol sections themselves.  Make sure the
+		 * Now load the symbol sections themselves. Make sure the
 		 * sections are aligned. Don't bother with string tables if
 		 * there are no symbol sections.
 		 */
@@ -246,5 +247,6 @@ ELFNAME(exec)(int fd, Elf_Ehdr *elf, u_long *marks, int flags)
 	marks[MARK_NSYM] = 1;	/* XXX: Kernel needs >= 0 */
 	marks[MARK_SYM] = LOADADDR(elfp);
 	marks[MARK_END] = LOADADDR(maxp);
+
 	return 0;
 }
