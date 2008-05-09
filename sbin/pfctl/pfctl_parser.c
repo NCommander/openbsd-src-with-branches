@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.236 2008/05/07 06:23:30 markus Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.237 2008/05/09 02:44:55 markus Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -996,7 +996,7 @@ print_rule(struct pf_rule *r, const char *anchor_call, int verbose)
 				printf("?");
 			else
 				printf("%s", buf);
-			printf(" %u", ntohs(r->divert.port));
+			printf(" port %u", ntohs(r->divert.port));
 		}
 	}
 	if (!anchor_call[0] && (r->action == PF_NAT ||
