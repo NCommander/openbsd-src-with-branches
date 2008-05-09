@@ -1,4 +1,4 @@
-/*	$OpenBSD: altq_subr.c,v 1.24 2007/12/11 00:30:14 mikeb Exp $	*/
+/*	$OpenBSD: altq_subr.c,v 1.25 2008/05/08 15:22:02 chl Exp $	*/
 /*	$KAME: altq_subr.c,v 1.11 2002/01/11 08:11:49 kjc Exp $	*/
 
 /*
@@ -317,7 +317,7 @@ tbr_timeout(arg)
 			continue;
 		active++;
 		if (!IFQ_IS_EMPTY(&ifp->if_snd) && ifp->if_start != NULL)
-			(*ifp->if_start)(ifp);
+			if_start(ifp);
 	}
 	splx(s);
 	if (active > 0)
