@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.58 2006/12/09 01:12:28 itojun Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.59 2007/02/22 20:23:07 millert Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -247,7 +247,8 @@ struct inpcb *
 	 in_pcbhashlookup(struct inpcbtable *, struct in_addr,
 			       u_int, struct in_addr, u_int);
 struct inpcb *
-	 in_pcblookup_listen(struct inpcbtable *, struct in_addr, u_int, int);
+	 in_pcblookup_listen(struct inpcbtable *, struct in_addr, u_int, int,
+	    struct mbuf *);
 #ifdef INET6
 struct inpcb *
 	 in6_pcbhashlookup(struct inpcbtable *, struct in6_addr *,
