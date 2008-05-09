@@ -1,10 +1,10 @@
-#       $OpenBSD: Makefile,v 1.4 2003/09/23 08:52:04 markus Exp $
+#       $OpenBSD: Makefile,v 1.5 2008/05/04 21:14:32 brad Exp $
 
 PROG=	eventtest
 LDADD=	-levent
 DPADD=	${LIBEVENT}
 
-CFLAGS+= -I${.CURDIR}/../../../../lib/libevent
+CFLAGS+= -I${.CURDIR}/../../../lib/libevent
 
 REGRESS_TARGETS=	eventtest-select eventtest-kqueue eventtest-poll
 .PHONY: ${REGRESS_TARGETS}
