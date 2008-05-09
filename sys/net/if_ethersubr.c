@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.118 2008/04/23 10:55:14 norby Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.119 2008/05/07 05:51:12 mpf Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -334,7 +334,7 @@ ether_output(ifp0, m0, dst, rt0)
 #ifdef MPLS
        case AF_MPLS:
 		if (rt)
-			dst = (struct sockaddr *)rt->rt_gateway;
+			dst = rt_key(rt);
 		else
 			senderr(EHOSTUNREACH);
 
