@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.191 2008/05/09 04:55:56 djm Exp $ */
+/* $OpenBSD: clientloop.c,v 1.192 2008/05/09 14:18:44 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1652,6 +1652,9 @@ client_input_channel_req(int type, u_int32_t seq, void *ctxt)
 		error("client_input_channel_req: request for channel -1");
 	} else if ((c = channel_lookup(id)) == NULL) {
 		error("client_input_channel_req: channel %d: unknown channel", id);
+	} else if (strcmp(rtype, "eow@openssh.com") == 0) {
+		packet_check_eom();
+		chan_rcvd_eow(c);
 	} else if (strcmp(rtype, "exit-status") == 0) {
 		exitval = packet_get_int();
 		if (id == session_ident) {
