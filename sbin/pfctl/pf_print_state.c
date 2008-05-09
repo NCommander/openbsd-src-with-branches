@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_print_state.c,v 1.44 2007/03/01 17:20:53 deraadt Exp $	*/
+/*	$OpenBSD: pf_print_state.c,v 1.46 2007/08/30 09:28:49 dhartmei Exp $	*/
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -308,7 +308,7 @@ print_state(struct pfsync_state *s, int opts)
 	}
 	if (opts & PF_OPT_VERBOSE2) {
 		printf("   id: %016llx creatorid: %08x%s\n",
-		    pf_state_counter_from_pfsync(s->id), ntohl(s->creatorid),
+		    betoh64(*(u_int64_t *)(s->id)), ntohl(s->creatorid),
 		    ((s->sync_flags & PFSTATE_NOSYNC) ? " (no-sync)" : ""));
 	}
 }
