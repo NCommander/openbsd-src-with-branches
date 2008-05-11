@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.261 2008/03/09 19:41:13 tobias Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.262 2008/03/13 17:01:25 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -1143,6 +1143,8 @@ rcs_delta_stats(struct rcs_delta *rdp, int *ladded, int *lremoved)
 		else
 			fatal("unknown RCS patch operation '%c'", op);
 	}
+
+	cvs_freelines(plines);
 
 	*ladded = added;
 	*lremoved = removed;
