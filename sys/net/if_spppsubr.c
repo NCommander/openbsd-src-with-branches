@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.65 2007/12/04 19:49:52 claudio Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.66 2008/05/11 02:28:16 canacar Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -4549,7 +4549,8 @@ sppp_keepalive(void *dummy)
 
 				/* Close connection immediately, completition of this
 				 * will summon the magic needed to reestablish it. */
-				sp->pp_tlf(sp);
+				if (sp->pp_tlf)
+					sp->pp_tlf(sp);
 				continue;
 			}
 		}
