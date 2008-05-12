@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.55 2007/10/20 13:29:44 pyr Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.56 2007/10/25 12:06:30 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -169,6 +169,11 @@ main(int argc, char *argv[])
 			/* NOTREACHED */
 		}
 	}
+
+	argc -= optind;
+	argv += optind;
+	if (argc > 0)
+		usage();
 
 	mib[0] = CTL_NET;
 	mib[1] = PF_INET;

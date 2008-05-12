@@ -1,4 +1,4 @@
-/*	$OpenBSD: hotplugd.c,v 1.5 2006/04/05 08:22:21 grange Exp $	*/
+/*	$OpenBSD: hotplugd.c,v 1.7 2006/05/28 16:44:52 mk Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -71,6 +71,11 @@ main(int argc, char *argv[])
 			usage();
 			/* NOTREACHED */
 		}
+
+	argc -= optind;
+	argv += optind;
+	if (argc > 0)
+		usage();
 
 	if ((devfd = open(device, O_RDONLY)) == -1)
 		err(1, "%s", device);

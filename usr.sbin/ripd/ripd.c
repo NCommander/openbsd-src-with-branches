@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripd.c,v 1.7 2007/10/24 19:05:06 claudio Exp $ */
+/*	$OpenBSD: ripd.c,v 1.8 2007/10/24 20:23:09 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -157,6 +157,11 @@ main(int argc, char *argv[])
 			/* NOTREACHED */
 		}
 	}
+
+	argc -= optind;
+	argv += optind;
+	if (argc > 0)
+		usage();
 
 	mib[0] = CTL_NET;
 	mib[1] = PF_INET;

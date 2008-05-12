@@ -1,4 +1,4 @@
-/*	$OpenBSD: watchdogd.c,v 1.10 2006/12/23 10:37:33 mbalmer Exp $ */
+/*	$OpenBSD: watchdogd.c,v 1.11 2007/01/02 22:46:37 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2005 Marc Balmer <mbalmer@openbsd.org>
@@ -85,6 +85,11 @@ main(int argc, char *argv[])
 			usage();
 		}
 	}
+
+	argc -= optind;
+	argv += optind;
+	if (argc > 0)
+		usage();
 
 	if (interval == 0 && (interval = period / 3) == 0)
 		interval = 1;

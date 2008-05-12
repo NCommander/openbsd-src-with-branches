@@ -1,4 +1,4 @@
-/* $OpenBSD: isakmpd.c,v 1.95 2006/09/01 00:24:06 mpf Exp $	 */
+/* $OpenBSD: isakmpd.c,v 1.96 2007/04/02 08:08:32 moritz Exp $	 */
 /* $EOM: isakmpd.c,v 1.54 2000/10/05 09:28:22 niklas Exp $	 */
 
 /*
@@ -233,6 +233,9 @@ parse_args(int argc, char *argv[])
 	}
 	argc -= optind;
 	argv += optind;
+
+	if (argc > 0)	
+		usage();
 
 	if (do_packetlog && !pcap_file)
 		pcap_file = PCAP_FILE_DEFAULT;

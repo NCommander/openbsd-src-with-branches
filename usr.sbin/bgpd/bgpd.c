@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.143 2007/01/26 17:40:48 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.144 2007/05/11 11:27:59 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -168,6 +168,11 @@ main(int argc, char *argv[])
 			/* NOTREACHED */
 		}
 	}
+
+	argc -= optind;
+	argv += optind;
+	if (argc > 0)
+		usage();
 
 	if (parse_config(conffile, &conf, &mrt_l, &peer_l, &net_l, rules_l)) {
 		free(rules_l);
