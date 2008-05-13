@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpt_pci.c,v 1.4 2002/03/14 01:26:58 millert Exp $	*/
+/*	$OpenBSD: dpt_pci.c,v 1.5 2005/08/09 04:10:11 mickey Exp $	*/
 /*	$NetBSD: dpt_pci.c,v 1.2 1999/09/29 17:33:02 ad Exp $	*/
 
 /*
@@ -31,11 +31,6 @@
 /*
  * PCI front-end for DPT EATA SCSI driver.
  */
-
-#include <sys/cdefs.h>
-#ifdef __NetBSD__
-__KERNEL_RCSID(0, "$NetBSD: dpt_pci.c,v 1.2 1999/09/29 17:33:02 ad Exp $");
-#endif /* __NetBSD__ */
 
 #include <sys/param.h>
 #include <sys/systm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_ihash.c,v 1.2 2003/05/20 03:23:11 mickey Exp $	*/
+/*	$OpenBSD: ntfs_ihash.c,v 1.3 2003/06/02 23:28:20 millert Exp $	*/
 /*	$NetBSD: ntfs_ihash.c,v 1.1 2002/12/23 17:38:32 jdolecek Exp $	*/
 
 /*
@@ -32,11 +32,6 @@
  *	@(#)ufs_ihash.c	8.7 (Berkeley) 5/17/95
  * Id: ntfs_ihash.c,v 1.5 1999/05/12 09:42:58 semenu Exp
  */
-
-#include <sys/cdefs.h>
-#ifdef __KERNEL_RCSID
-__KERNEL_RCSID(0, "$NetBSD: ntfs_ihash.c,v 1.1 2002/12/23 17:38:32 jdolecek Exp $");
-#endif
 
 #include <sys/param.h>
 #include <sys/systm.h>

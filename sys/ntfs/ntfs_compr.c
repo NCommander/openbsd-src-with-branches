@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_compr.c,v 1.1 2003/05/20 03:03:27 tedu Exp $	*/
+/*	$OpenBSD: ntfs_compr.c,v 1.2 2003/05/20 03:23:11 mickey Exp $	*/
 /*	$NetBSD: ntfs_compr.c,v 1.1 2002/12/23 17:38:31 jdolecek Exp $	*/
 
 /*-
@@ -28,11 +28,6 @@
  *
  *	Id: ntfs_compr.c,v 1.4 1999/05/12 09:42:54 semenu Exp
  */
-
-#include <sys/cdefs.h>
-#ifdef __KERNEL_RCSID
-__KERNEL_RCSID(0, "$NetBSD: ntfs_compr.c,v 1.1 2002/12/23 17:38:31 jdolecek Exp $");
-#endif
 
 #include <sys/param.h>
 #include <sys/systm.h>
