@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfprintf.c,v 1.43 2007/11/28 19:06:19 deraadt Exp $	*/
+/*	$OpenBSD: vfprintf.c,v 1.44 2008/05/05 21:50:45 chl Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -813,6 +813,7 @@ number:			if ((dprec = prec) >= 0)
 done:
 	FLUSH();
 error:
+	va_end(orgap);
 	if (__sferror(fp))
 		ret = -1;
 	goto finish;
