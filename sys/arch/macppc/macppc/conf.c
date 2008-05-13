@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.33 2007/11/12 19:23:26 kettenis Exp $ */
+/*	$OpenBSD: conf.c,v 1.34 2008/04/08 14:31:54 claudio Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -284,17 +284,17 @@ int chrtoblktbl[] = {
 	/*  6 */	NODEV,
 	/*  7 */	NODEV,
 	/*  8 */	2,
-	/*  9 */	NODEV,
+	/*  9 */	3,
 	/* 10 */	NODEV,
 	/* 11 */	0,
 	/* 12 */	NODEV,
-	/* 13 */	4,
+	/* 13 */	NODEV,
 	/* 14 */	NODEV,
 	/* 15 */	NODEV,
 	/* 16 */	NODEV,
 	/* 17 */	17,
-	/* 18 */	NODEV,
-	/* 19 */	NODEV,
+	/* 18 */	16,
+	/* 19 */	14,
 	/* 20 */	NODEV,
 	/* 21 */	NODEV,
 	/* 22 */	NODEV,
