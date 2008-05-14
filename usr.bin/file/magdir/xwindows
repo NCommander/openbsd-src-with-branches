@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # xwindows:  file(1) magic for various X/Window system file formats.

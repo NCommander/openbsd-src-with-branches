@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #------------------------------------------------------------------------------
 # bFLT: file(1) magic for BFLT uclinux binary files
 #
