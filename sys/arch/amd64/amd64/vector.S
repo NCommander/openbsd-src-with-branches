@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.10 2007/06/01 21:01:51 art Exp $	*/
+/*	$OpenBSD: vector.S,v 1.11 2008/04/28 18:09:00 kettenis Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -774,7 +774,6 @@ _C_LABEL(ioapic_level_stubs):
 #endif
 
 	.data
-
 /*
  * Soft interrupt handlers
  */
@@ -782,6 +781,7 @@ _C_LABEL(ioapic_level_stubs):
 _C_LABEL(netisr):
 	.word	0
 
+	.text
 IDTVEC(softtty)
 	movl	$IPL_SOFTTTY, CPUVAR(ILEVEL)
 	sti
