@@ -1,4 +1,4 @@
-/* $OpenBSD: amltypes.h,v 1.25 2007/02/06 18:56:31 jordan Exp $ */
+/* $OpenBSD: amltypes.h,v 1.26 2008/05/13 09:05:06 jordan Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -275,6 +275,7 @@ struct aml_value {
 			u_int8_t	iospace;
 			u_int64_t	iobase;
 			u_int32_t	iolen;
+			int		flag;
 		} vopregion;
 		struct {
 			int		flags;
