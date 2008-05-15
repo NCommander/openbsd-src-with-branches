@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxa2x0.c,v 1.11 2005/11/11 23:59:58 deraadt Exp $ */
+/*	$OpenBSD: pxa2x0.c,v 1.12 2008/01/03 17:59:32 kettenis Exp $ */
 /*	$NetBSD: pxa2x0.c,v 1.5 2003/12/12 16:42:44 thorpej Exp $ */
 
 /*
@@ -93,11 +93,6 @@
  * SUCH DAMAGE.
  *
  */
-
-#include <sys/cdefs.h>
-/*
-__KERNEL_RCSID(0, "$NetBSD: pxa2x0.c,v 1.5 2003/12/12 16:42:44 thorpej Exp $");
-*/
 
 #include "pxaintc.h"
 #include "pxagpio.h"

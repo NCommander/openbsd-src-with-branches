@@ -1,4 +1,4 @@
-/*	$OpenBSD: in4_cksum.c,v 1.1 2005/05/02 03:22:10 brad Exp $	*/
+/*	$OpenBSD: in4_cksum.c,v 1.2 2007/04/10 17:47:55 miod Exp $	*/
 /*	$NetBSD: in4_cksum.c,v 1.5 2003/10/13 14:22:20 agc Exp $ */
 
 /*
@@ -78,11 +78,6 @@
  *
  *	@(#)in_cksum.c	8.1 (Berkeley) 6/11/93
  */
-
-#if 0
-#include <sys/cdefs.h>
-__KERNEL_RCSID(0, "$NetBSD: in4_cksum.c,v 1.5 2003/10/13 14:22:20 agc Exp $");
-#endif
 
 #include <sys/param.h>
 #include <sys/systm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bi.c,v 1.6 2002/08/09 20:26:44 jsyn Exp $ */
+/*	$OpenBSD: bi.c,v 1.7 2004/07/07 23:10:43 deraadt Exp $ */
 /*	$NetBSD: bi.c,v 1.17 2001/11/13 12:51:34 lukem Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -40,9 +40,6 @@
  * TODO
  *   handle BIbus errors more gracefully.
  */
-
-#include <sys/cdefs.h>
-__KERNEL_RCSID(0, "$NetBSD: bi.c,v 1.17 2001/11/13 12:51:34 lukem Exp $");
 
 #include <sys/param.h>
 #include <sys/systm.h>
