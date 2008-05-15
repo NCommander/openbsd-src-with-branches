@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 #include <stdio.h>
 
 /* generate a table of 256 values, where certain characters are

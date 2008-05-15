@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /* we need some of the portability definitions... for strchr */
 #include "httpd.h"
 
