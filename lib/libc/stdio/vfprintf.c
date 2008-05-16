@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfprintf.c,v 1.45 2008/05/13 18:52:25 millert Exp $	*/
+/*	$OpenBSD: vfprintf.c,v 1.46 2008/05/16 14:28:53 millert Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -73,7 +73,7 @@ union arg {
 	long			*plongarg;
 	long long		*plonglongarg;
 	ptrdiff_t		*pptrdiffarg;
-	size_t			*pssizearg;
+	ssize_t			*pssizearg;
 	intmax_t		*pintmaxarg;
 #ifdef FLOATING_POINT
 	double			doublearg;
