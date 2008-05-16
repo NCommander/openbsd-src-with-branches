@@ -275,7 +275,6 @@ struct aml_value {
 			u_int8_t	iospace;
 			u_int64_t	iobase;
 			u_int32_t	iolen;
-			int		flag;
 		} vopregion;
 		struct {
 			int		flags;

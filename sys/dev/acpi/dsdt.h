@@ -54,7 +54,6 @@ const char		*aml_args(int);
 const char		*aml_mnem(int, uint8_t *);
 int64_t			aml_val2int(struct aml_value *);
 struct aml_node		*aml_searchname(struct aml_node *, const void *);
-struct aml_node		*aml_searchrel(struct aml_node *, const void *);
 struct aml_node		*aml_createname(struct aml_node *, const void *,
 			    struct aml_value *);
 

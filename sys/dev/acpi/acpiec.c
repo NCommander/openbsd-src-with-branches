@@ -279,7 +279,7 @@ acpiec_attach(struct device *parent, struct device *self, void *aux)
 	struct acpi_attach_args *aa = aux;
 
 	sc->sc_acpi = (struct acpi_softc *)parent;
-	sc->sc_devnode = aa->aaa_node;
+	sc->sc_devnode = aa->aaa_node->child;
 
 	if (sc->sc_acpi->sc_ec != NULL) {
 		printf(": Only single EC is supported\n");
