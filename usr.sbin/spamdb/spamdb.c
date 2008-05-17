@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamdb.c,v 1.22 2007/02/27 16:22:11 otto Exp $	*/
+/*	$OpenBSD: spamdb.c,v 1.23 2007/05/31 20:00:16 cnst Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -106,6 +106,9 @@ dbupdate(DB *db, char *ip, int add, int type)
 			case SPAMTRAP:
 				gd.expire = 0;
 				gd.pcount = -2;
+				/* ensure address is of the form user@host */
+				if (strchr(ip, '@') == NULL)
+					errx(-1, "not an email address: %s", ip);
 				/* ensure address is lower case*/
 				for (i = 0; ip[i] != '\0'; i++)
 					if (isupper(ip[i]))
