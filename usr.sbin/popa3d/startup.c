@@ -1,4 +1,4 @@
-/* $OpenBSD: startup.c,v 1.5 2004/07/17 20:54:24 brad Exp $ */
+/* $OpenBSD: startup.c,v 1.6 2004/07/20 17:07:34 millert Exp $ */
 
 /*
  * Command line option parsing.
@@ -36,7 +36,7 @@ int af = PF_UNSPEC;
 
 static void usage(void)
 {
-	fprintf(stderr, "Usage: %s [-46DV]\n", progname);
+	fprintf(stderr, "usage: %s [-46DV]\n", progname);
 	exit(1);
 }
 

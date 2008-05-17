@@ -1,4 +1,4 @@
-/*	$OpenBSD: faithd.c,v 1.27 2003/09/02 23:35:24 itojun Exp $	*/
+/*	$OpenBSD: faithd.c,v 1.28 2003/10/16 05:27:33 itojun Exp $	*/
 /*	$KAME: faithd.c,v 1.58 2002/09/08 01:12:30 itojun Exp $	*/
 
 /*
@@ -882,7 +882,8 @@ update_myaddrs()
 static void
 usage()
 {
-	fprintf(stderr, "usage: %s [-dp] [-f conf] service [serverpath [serverargs]]\n",
+	fprintf(stderr,
+	    "usage: %s [-dp] [-f configfile] service [serverpath [serverargs]]\n",
 	    faithdname);
 	exit(0);
 }

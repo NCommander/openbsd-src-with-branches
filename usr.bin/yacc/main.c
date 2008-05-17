@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.19 2005/04/04 13:46:06 robert Exp $	*/
+/*	$OpenBSD: main.c,v 1.20 2005/06/08 03:18:59 pvalchev Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1996/03/19 03:21:38 jtc Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	5.5 (Berkeley) 5/24/93";
 #else
-static char rcsid[] = "$OpenBSD: main.c,v 1.19 2005/04/04 13:46:06 robert Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.20 2005/06/08 03:18:59 pvalchev Exp $";
 #endif
 #endif /* not lint */
 
@@ -164,7 +164,7 @@ set_signals(void)
 void
 usage(void)
 {
-    fprintf(stderr, "usage: %s [-dlrtv] [-b file_prefix] [-o outputfile] [-p symbol_prefix] filename\n", __progname);
+    fprintf(stderr, "usage: %s [-dlrtv] [-b file_prefix] [-o output_file] [-p symbol_prefix] file\n", __progname);
     exit(1);
 }
 

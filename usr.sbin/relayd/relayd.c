@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.74 2008/05/06 09:52:47 pyr Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.75 2008/05/12 19:15:02 pyr Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -114,7 +114,8 @@ usage(void)
 {
 	extern char	*__progname;
 
-	fprintf(stderr, "%s [-dnv] [-D macro=value] [-f file]\n", __progname);
+	fprintf(stderr, "usage: %s [-dnv] [-D macro=value] [-f file]\n",
+	    __progname);
 	exit(1);
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: netgroup_mkdb.c,v 1.12 2005/05/16 03:12:59 deraadt Exp $	*/
+/*	$OpenBSD: netgroup_mkdb.c,v 1.13 2007/03/05 20:29:14 millert Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -31,7 +31,7 @@
  * SUCH DAMAGE.
  */
 #ifndef lint
-static char *rcsid = "$OpenBSD: netgroup_mkdb.c,v 1.12 2005/05/16 03:12:59 deraadt Exp $";
+static char *rcsid = "$OpenBSD: netgroup_mkdb.c,v 1.13 2007/03/05 20:29:14 millert Exp $";
 #endif
 
 #include <sys/types.h>
@@ -706,6 +706,6 @@ usage(void)
 {
 	extern const char *__progname;
 
-	fprintf(stderr, "usage: %s [-o db] file\n", __progname);
+	fprintf(stderr, "usage: %s [-o database] file\n", __progname);
 	exit(1);
 }

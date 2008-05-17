@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.46 2006/01/23 17:29:22 millert Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.47 2006/04/02 00:50:42 deraadt Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -28,15 +28,14 @@ char    copyright[] =
 #endif				/* not lint */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: rarpd.c,v 1.46 2006/01/23 17:29:22 millert Exp $";
+static char rcsid[] = "$OpenBSD: rarpd.c,v 1.47 2006/04/02 00:50:42 deraadt Exp $";
 #endif
 
 
 /*
  * rarpd - Reverse ARP Daemon
  *
- * Usage:	rarpd -a [-d] [-f] [-l] [-t]
- *		rarpd [-d] [-f] [-l] [-t] interface
+ * usage:	rarpd [-adflt] interface
  */
 
 #include <stdio.h>
@@ -258,8 +257,7 @@ init_all(void)
 void
 usage(void)
 {
-	(void) fprintf(stderr, "usage: rarpd -a [-dflt]\n");
-	(void) fprintf(stderr, "       rarpd [-dflt] interface\n");
+	(void) fprintf(stderr, "usage: rarpd [-adflt] interface\n");
 	exit(1);
 }
 
