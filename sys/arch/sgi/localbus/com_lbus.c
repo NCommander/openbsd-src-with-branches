@@ -84,10 +84,10 @@ com_macebus_attach(struct device *parent, struct device *self, void *aux)
 
 	/* If it's in use as the console, then it's there. */
 	if (ca->ca_baseaddr == comconsaddr && !comconsattached) {
-		sc->sc_ioh = comconsioh;
 		if (comcnattach(sc->sc_iot, sc->sc_iobase, TTYDEF_SPEED,
 		    sc->sc_frequency, (TTYDEF_CFLAG & ~(CSIZE | PARENB)) | CS8))
 			panic("failed to setup serial console!");
+		sc->sc_ioh = comconsioh;
 	} else {
 		if (bus_space_map(sc->sc_iot, ca->ca_baseaddr, COM_NPORTS, 0,
 		    &sc->sc_ioh)) {
