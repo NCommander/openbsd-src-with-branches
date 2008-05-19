@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.32 2008/05/04 18:22:28 xsa Exp $
+#	$OpenBSD: Makefile,v 1.1 2008/05/14 21:08:09 miod Exp $
 
 # TODO: ipic mainbus obio sociic socpcic
-MAN=	autoconf.4 intro.4 mem.4
+MAN=	autoconf.4 intro.4 mem.4 obio.4
 MLINKS= mem.4 kmem.4
 
 MANSUBDIR=socppc
