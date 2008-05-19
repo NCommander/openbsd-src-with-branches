@@ -1,4 +1,4 @@
-/* $OpenBSD: sshpty.h,v 1.9 2006/07/06 16:03:53 stevesk Exp $ */
+/* $OpenBSD: sshpty.h,v 1.10 2006/08/03 03:34:42 deraadt Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -16,7 +16,7 @@
 
 #include <termios.h>
 
-struct termios get_saved_tio(void);
+struct termios *get_saved_tio(void);
 void	 leave_raw_mode(void);
 void	 enter_raw_mode(void);
 
