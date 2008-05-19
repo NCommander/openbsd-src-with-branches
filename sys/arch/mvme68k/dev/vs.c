@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs.c,v 1.21 2007/10/03 10:52:11 krw Exp $ */
+/*	$OpenBSD: vs.c,v 1.22 2007/10/06 02:18:38 krw Exp $ */
 
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
@@ -360,7 +360,7 @@ vs_scsicmd(xs)
 		cqep->cqe_WORK_QUEUE = slp->target + 1;
 	}
    
-	MALLOC(m328_cmd, M328_CMD*, sizeof(M328_CMD), M_DEVBUF, M_WAITOK);
+	m328_cmd = (M328_CMD*)malloc(sizeof(M328_CMD), M_DEVBUF, M_WAITOK);
    
 	m328_cmd->xs = xs;
 	if (xs->datalen) {
