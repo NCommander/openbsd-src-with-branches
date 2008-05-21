@@ -1,4 +1,4 @@
-/* $OpenBSD: apicvec.s,v 1.13 2008/04/26 14:33:27 kettenis Exp $ */
+/* $OpenBSD: apicvec.s,v 1.14 2008/05/07 20:42:02 kettenis Exp $ */
 /* $NetBSD: apicvec.s,v 1.1.2.2 2000/02/21 21:54:01 sommerfeld Exp $ */
 
 /*-
@@ -230,7 +230,9 @@ XINTR(softtty):
 #ifdef MULTIPROCESSOR
 	call	_C_LABEL(i386_softintlock)
 #endif
-	call	_C_LABEL(comsoft)
+	pushl	$I386_SOFTINTR_SOFTTTY
+	call	_C_LABEL(softintr_dispatch)
+	addl	$4,%esp
 #ifdef MULTIPROCESSOR
 	call	_C_LABEL(i386_softintunlock)
 #endif
