@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.165 2007/09/15 16:43:51 henning Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.168 2008/05/07 13:45:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -600,9 +600,10 @@ bridge_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			break;
 		}
 		sc->sc_brttimeout = bparam->ifbrp_ctime;
-		timeout_del(&sc->sc_brtimeout);
 		if (bparam->ifbrp_ctime != 0)
 			timeout_add(&sc->sc_brtimeout, sc->sc_brttimeout * hz);
+		else
+			timeout_del(&sc->sc_brtimeout);
 		break;
 	case SIOCBRDGGTO:
 		bparam->ifbrp_ctime = sc->sc_brttimeout;
