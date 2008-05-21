@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: Ovfork.S,v 1.6 2005/08/07 16:40:16 espie Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -59,6 +59,6 @@ here:
 	jmp	(r2)
 
 err:
-	movl	r0,_errno
+	movl	r0,_C_LABEL(errno)
 	mnegl	$1,r0
 	jmp	(r2)

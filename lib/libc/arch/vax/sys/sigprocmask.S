@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: sigprocmask.S,v 1.7 2005/08/07 16:40:16 espie Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +31,7 @@
 #include "SYS.h"
 
 err:
-	jmp	__cerror
+	jmp	_C_LABEL(_cerror)
 
 SYSENTRY(sigprocmask)
 	tstl	8(ap)			# check new sigset pointer

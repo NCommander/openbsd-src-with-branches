@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: syscall.S,v 1.7 2005/08/07 16:40:16 espie Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -42,4 +42,4 @@ SYSENTRY(syscall)
 	jcs	1f
 	ret
 1:
-	jmp	__cerror
+	jmp	_C_LABEL(_cerror)
