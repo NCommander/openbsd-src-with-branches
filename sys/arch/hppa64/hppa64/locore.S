@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.6 2007/05/26 00:36:03 krw Exp $	*/
+/*	$OpenBSD: locore.S,v 1.7 2008/04/20 17:11:24 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -1457,7 +1457,7 @@ LEAF_ENTRY(longjmp)
 	ldd,ma	8(%arg0), %r27
 
 	bv	%r0(%rp)
-	copy	%arg1, %ret0
+	ldi	1, %ret0
 EXIT(longjmp)
 
 /*
