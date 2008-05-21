@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.69 2008/03/30 12:30:02 kettenis Exp $
+#	$OpenBSD: RAMDISK,v 1.70 2008/04/02 22:32:43 kettenis Exp $
 
 # Machine architecture; required by config(8)
 machine		sparc64
@@ -9,6 +9,7 @@ maxusers	2
 option		RAMDISK_HOOKS
 option		MINIROOTSIZE=6144
 
+option		SUN4US
 option		SUN4V
 
 option		PCIVERBOSE

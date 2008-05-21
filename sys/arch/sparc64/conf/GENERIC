@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.200 2008/04/19 01:18:39 djm Exp $
+#	$OpenBSD: GENERIC,v 1.201 2008/05/14 18:47:10 brad Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -13,6 +13,7 @@ machine		sparc64
 include		"../../../conf/GENERIC"
 maxusers	64			# estimated number of users
 
+option		SUN4US
 option		SUN4V
 
 option		PCIVERBOSE
