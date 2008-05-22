@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.199 2008/03/21 18:44:13 deraadt Exp $
+#	$OpenBSD: GENERIC,v 1.200 2008/04/07 01:35:20 deraadt Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -440,7 +440,6 @@ lofn*	at pci?				# Hi/fn 6500 crypto card
 nofn*	at pci?				# Hi/fn 7814/7851/7854 crypto card
 ubsec*	at pci?				# Bluesteel Networks 5xxx crypto card
 safe*	at pci?				# SafeNet SafeXcel 1141/1741
-#ises*	at pci?				# Pijnenburg PCC-ISES
 
 # 1-Wire devices
 option ONEWIREVERBOSE
