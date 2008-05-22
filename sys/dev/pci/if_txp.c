@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.84 2007/04/11 14:41:15 claudio Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.85 2008/04/03 21:43:21 brad Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -445,7 +445,6 @@ txp_download_fw(sc)
 	WRITE_REG(sc, TXP_IMR, imr);
 
 	free(buf, M_DEVBUF);
-	printf("loaded firmware, ");
 	return (0);
 fail:
 	free(buf, M_DEVBUF);
