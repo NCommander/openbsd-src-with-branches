@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss.c,v 1.59 2007/09/16 01:30:24 krw Exp $	*/
+/*	$OpenBSD: ss.c,v 1.60 2007/11/27 16:22:14 martynas Exp $	*/
 /*	$NetBSD: ss.c,v 1.10 1996/05/05 19:52:55 christos Exp $	*/
 
 /*
@@ -97,9 +97,6 @@ struct quirkdata {
 	 */
 	void	(*special_minphys)(struct ss_softc *, struct buf *);
 
-	/*
-	 *
-	 */
 	int	(*compute_sizes)(void);
 };
 
