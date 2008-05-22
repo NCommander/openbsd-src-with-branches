@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.96 2007/11/19 17:47:47 millert Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.97 2007/11/27 16:22:13 martynas Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -621,7 +621,7 @@ killpg1(struct proc *cp, int signum, int pgid, int all)
 		/* 
 		 * broadcast
 		 */
-		for (p = LIST_FIRST(&allproc); p; p = LIST_NEXT(p, p_list)) {
+		LIST_FOREACH(p, &allproc, p_list) {
 			if (p->p_pid <= 1 || p->p_flag & P_SYSTEM || 
 			    p == cp || !cansignal(cp, pc, p, signum))
 				continue;
