@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.71 2007/11/26 09:28:33 martynas Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.72 2008/02/07 16:04:01 thib Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1464,8 +1464,7 @@ vr_stop(struct vr_softc *sc)
 	ifp = &sc->arpcom.ac_if;
 	ifp->if_timer = 0;
 
-	if (timeout_pending(&sc->sc_to))
-		timeout_del(&sc->sc_to);
+	timeout_del(&sc->sc_to);
 
 	ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vge.c,v 1.35 2007/12/11 02:36:02 brad Exp $	*/
+/*	$OpenBSD: if_vge.c,v 1.36 2008/05/13 01:40:39 brad Exp $	*/
 /*	$FreeBSD: if_vge.c,v 1.3 2004/09/11 22:13:25 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -1810,8 +1810,8 @@ vge_stop(struct vge_softc *sc)
 
 	ifp = &sc->arpcom.ac_if;
 	ifp->if_timer = 0;
-	if (timeout_pending(&sc->timer_handle))
-		timeout_del(&sc->timer_handle);
+
+	timeout_del(&sc->timer_handle);
 
 	ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);
 
