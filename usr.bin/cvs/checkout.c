@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.142 2008/03/08 20:26:34 joris Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.143 2008/03/09 03:14:52 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -112,7 +112,7 @@ cvs_checkout(int argc, char **argv)
 			kflag = rcs_kflag_get(koptstr);
 			if (RCS_KWEXP_INVAL(kflag)) {
 				cvs_log(LP_ERR,
-				    "invalid RCS keyword expension mode");
+				    "invalid RCS keyword expansion mode");
 				fatal("%s", cvs_cmd_add.cmd_synopsis);
 			}
 			break;
@@ -170,7 +170,7 @@ cvs_export(int argc, char **argv)
 			kflag = rcs_kflag_get(koptstr);
 			if (RCS_KWEXP_INVAL(kflag)) {
 				cvs_log(LP_ERR,
-				    "invalid RCS keyword expension mode");
+				    "invalid RCS keyword expansion mode");
 				fatal("%s", cvs_cmd_add.cmd_synopsis);
 			}
 			break;
