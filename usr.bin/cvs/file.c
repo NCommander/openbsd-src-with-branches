@@ -891,7 +891,7 @@ cvs_file_classify(struct cvs_file *cf, const char *tag)
 			}
 		} else if (cf->file_rcsrev == NULL) {
 			cf->file_status = FILE_UNLINK;
-		} else{
+		} else {
 			if (cf->fd == -1 && server_has_file == 0) {
 				if (cvs_cmdop != CVS_OP_REMOVE) {
 					cvs_log(LP_NOTICE,
