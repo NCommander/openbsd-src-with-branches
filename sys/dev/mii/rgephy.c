@@ -1,4 +1,4 @@
-/*	$OpenBSD: rgephy.c,v 1.24 2007/01/21 22:37:56 kettenis Exp $	*/
+/*	$OpenBSD: rgephy.c,v 1.25 2007/10/10 12:14:26 jsg Exp $	*/
 /*
  * Copyright (c) 2003
  *	Bill Paul <wpaul@windriver.com>.  All rights reserved.
@@ -353,7 +353,7 @@ rgephy_status(struct mii_softc *sc)
 			mii->mii_media_active |= IFM_1000_T;
 		else if (RGEPHY_SR_SPEED(bmsr) == RGEPHY_SR_SPEED_100MBPS)
 			mii->mii_media_active |= IFM_100_TX;
-		else if (bmsr & RL_GMEDIASTAT_10MBPS)
+		else if (RGEPHY_SR_SPEED(bmsr) == RGEPHY_SR_SPEED_10MBPS)
 			mii->mii_media_active |= IFM_10_T;
 
 		if (bmsr & RGEPHY_SR_FDX)
