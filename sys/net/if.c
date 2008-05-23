@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.169 2008/04/10 23:15:45 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.170 2008/05/07 05:51:12 mpf Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1421,7 +1421,7 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 #if !defined(COMPAT_43) && !defined(COMPAT_LINUX) && !defined(COMPAT_SVR4)
 		error = ((*so->so_proto->pr_usrreq)(so, PRU_CONTROL,
 			(struct mbuf *) cmd, (struct mbuf *) data,
-			(struct mbuf *) ifp));
+			(struct mbuf *) ifp, p));
 #else
 	    {
 		u_long ocmd = cmd;
@@ -1461,7 +1461,7 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 		}
 		error = ((*so->so_proto->pr_usrreq)(so, PRU_CONTROL,
 		    (struct mbuf *) cmd, (struct mbuf *) data,
-		    (struct mbuf *) ifp));
+		    (struct mbuf *) ifp, p));
 		switch (ocmd) {
 
 		case OSIOCGIFADDR:

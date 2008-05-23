@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_var.h,v 1.36 2006/05/29 20:42:27 claudio Exp $	*/
+/*	$OpenBSD: ip_var.h,v 1.37 2007/09/18 18:56:02 markus Exp $	*/
 /*	$NetBSD: ip_var.h,v 1.16 1996/02/13 23:43:20 christos Exp $	*/
 
 /*
@@ -192,6 +192,6 @@ void	 rip_init(void);
 void	 rip_input(struct mbuf *, ...);
 int	 rip_output(struct mbuf *, ...);
 int	 rip_usrreq(struct socket *,
-	    int, struct mbuf *, struct mbuf *, struct mbuf *);
+	    int, struct mbuf *, struct mbuf *, struct mbuf *, struct proc *);
 #endif /* _KERNEL */
 #endif /* _NETINET_IP_VAR_H_ */

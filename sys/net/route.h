@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.h,v 1.48 2008/04/23 10:55:14 norby Exp $	*/
+/*	$OpenBSD: route.h,v 1.49 2008/05/07 05:14:21 claudio Exp $	*/
 /*	$NetBSD: route.h,v 1.9 1996/02/13 22:00:49 christos Exp $	*/
 
 /*
@@ -369,7 +369,7 @@ int	 rtable_add(u_int);
 int	 rtable_exists(u_int);
 int	 route_output(struct mbuf *, ...);
 int	 route_usrreq(struct socket *, int, struct mbuf *,
-			   struct mbuf *, struct mbuf *);
+			   struct mbuf *, struct mbuf *, struct proc *);
 void	 rt_ifmsg(struct ifnet *);
 void	 rt_ifannouncemsg(struct ifnet *, int);
 void	 rt_maskedcopy(struct sockaddr *,
