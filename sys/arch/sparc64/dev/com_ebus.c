@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_ebus.c,v 1.15 2008/02/10 16:31:30 kettenis Exp $	*/
+/*	$OpenBSD: com_ebus.c,v 1.16 2008/03/01 15:59:04 kettenis Exp $	*/
 /*	$NetBSD: com_ebus.c,v 1.6 2001/07/24 19:27:10 eeh Exp $	*/
 
 /*
@@ -87,6 +87,7 @@ com_ebus_match(struct device *parent, void *match, void *aux)
 				sizeof(compat)) == i) {
 			if (strcmp(compat, "su16552") == 0 ||
 			    strcmp(compat, "su16550") == 0 ||
+			    strcmp(compat, "FJSV,su") == 0 ||
 			    strcmp(compat, "su") == 0) {
 				return (1);
 			}
