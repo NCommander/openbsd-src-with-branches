@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: videovar.h,v 1.1 2008/04/09 19:49:55 robert Exp $	*/
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
  *
@@ -24,6 +24,9 @@ struct video_softc {
 	struct device	*sc_dev;	/* hardware device struct */
 	struct video_hw_if *hw_if;	/* hardware interface */
 	char		sc_dying;	/* device detached */
+
+	int		 sc_fsize;
+	uint8_t		*sc_fbuffer;
 };
 
 #endif /* _SYS_DEV_VIDEOVAR_H */

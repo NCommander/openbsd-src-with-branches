@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: video_if.h,v 1.1 2008/04/09 19:49:55 robert Exp $	*/
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
  *
@@ -26,7 +26,8 @@
 
 struct video_hw_if {
 	/* open hardware */
-	int	(*open)(void *, int);	
+	int	(*open)(void *, int, int *, uint8_t *, void (*)(void *),
+		    void *);
 
 	/* close hardware */
 	int	(*close)(void *);
