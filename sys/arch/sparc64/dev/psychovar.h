@@ -1,4 +1,4 @@
-/*	$OpenBSD: psychovar.h,v 1.5 2003/02/17 01:29:20 henric Exp $	*/
+/*	$OpenBSD: psychovar.h,v 1.6 2003/05/16 06:59:12 henric Exp $	*/
 /*	$NetBSD: psychovar.h,v 1.6 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*
@@ -115,6 +115,7 @@ struct psycho_softc {
 	int				sc_mode;	/* (whatareya?) */
 #define	PSYCHO_MODE_SABRE	1	/* i'm a sabre (yob) */
 #define	PSYCHO_MODE_PSYCHO	2	/* i'm a psycho (w*nker) */
+#define	PSYCHO_MODE_CMU_CH	3	/* i'm a CMU-CH (castrate) */
 
 	struct iommu_state		*sc_is;
 };
