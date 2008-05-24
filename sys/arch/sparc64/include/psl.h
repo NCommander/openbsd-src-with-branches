@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.22 2006/12/14 15:10:32 kettenis Exp $	*/
+/*	$OpenBSD: psl.h,v 1.23 2007/05/16 19:37:06 thib Exp $	*/
 /*	$NetBSD: psl.h,v 1.20 2001/04/13 23:30:05 thorpej Exp $ */
 
 /*
@@ -192,6 +192,10 @@
 #define IMPL_SPARC64		0x01 /* SPARC64 */
 #define IMPL_SPARC64_II		0x02 /* SPARC64-II */
 #define IMPL_SPARC64_III	0x03 /* SPARC64-III */
+#define IMPL_SPARC64_IV		0x04 /* SPARC64-IV */
+#define IMPL_ZEUS		0x05 /* SPARC64-V */
+#define IMPL_OLYMPUS_C		0x06 /* SPARC64-VI */
+#define IMPL_JUPITER		0x07 /* SPARC64-VII */
 #define IMPL_SPITFIRE		0x10 /* UltraSPARC */
 #define IMPL_BLACKBIRD		0x11 /* UltraSPARC-II */
 #define IMPL_SABRE		0x12 /* UltraSPARC-IIi */
