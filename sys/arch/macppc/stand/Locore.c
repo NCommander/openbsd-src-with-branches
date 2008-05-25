@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.13 2007/06/23 18:51:45 drahn Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.14 2008/01/23 16:37:57 jsing Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 1997/04/16 20:29:11 thorpej Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 */
 
 #define ENABLE_DECREMENTER_WORKAROUND
+void patch_dec_intr();
 
 static int (*openfirmware)(void *);
 
@@ -114,7 +115,7 @@ __asm (	"	.globl handle_decr_intr\n"
 	"handle_decr_intr:\n"
 	"	rfi\n");
 
-
+void
 patch_dec_intr()
 {
 	int time;
