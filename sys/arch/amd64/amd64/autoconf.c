@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.24 2007/12/27 18:04:27 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.25 2008/03/19 05:47:47 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -89,8 +89,6 @@
 #endif
 
 int	cold = 1;	/* if 1, still working on cold-start */
-struct device *booted_device;
-int booted_partition;
 extern dev_t bootdev;
 
 /*
