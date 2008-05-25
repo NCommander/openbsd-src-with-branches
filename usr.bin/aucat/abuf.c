@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: abuf.c,v 1.1 2008/05/23 07:15:46 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -68,6 +68,7 @@ abuf_new(unsigned nfr, unsigned bpf)
 	buf->start = 0;
 	buf->rproc = NULL;
 	buf->wproc = NULL;
+	buf->data = (unsigned char *)buf + sizeof(*buf);
 	return buf;
 }
 
