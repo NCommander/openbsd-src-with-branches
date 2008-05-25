@@ -1,4 +1,4 @@
-/*	$OpenBSD: mod_auth.c,v 1.11 2003/08/21 13:11:36 henning Exp $ */
+/*	$OpenBSD: mod_auth.c,v 1.12 2004/12/02 19:42:47 henning Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -246,7 +246,7 @@ static int check_user_access(request_rec *r)
     char *user = r->connection->user;
     int m = r->method_number;
     int method_restricted = 0;
-    register int x;
+    int x;
     const char *t, *w;
     table *grpstatus;
     const array_header *reqs_arr = ap_requires(r);
