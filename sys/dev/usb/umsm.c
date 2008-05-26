@@ -1,4 +1,4 @@
-/*	$OpenBSD: umsm.c,v 1.24 2008/05/09 13:31:47 jsg Exp $	*/
+/*	$OpenBSD: umsm.c,v 1.25 2008/05/12 12:24:43 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -193,8 +193,8 @@ umsm_attach(struct device *parent, struct device *self, void *aux)
 			 */
 			printf("%s: umass only mode. need to reattach\n", 
 				sc->sc_dev.dv_xname);
-			return;
 		}
+		return;
 	}
 
 	uca.bulkin = uca.bulkout = -1;
