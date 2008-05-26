@@ -1,4 +1,4 @@
-/*	$OpenBSD: mktemp.c,v 1.12 2003/06/10 22:20:48 deraadt Exp $	*/
+/*	$OpenBSD: mktemp.c,v 1.13 2003/06/17 21:56:25 millert Exp $	*/
 
 /*
  * Copyright (c) 1996, 1997, 2001 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint                                                              
-static const char rcsid[] = "$OpenBSD: mktemp.c,v 1.12 2003/06/10 22:20:48 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: mktemp.c,v 1.13 2003/06/17 21:56:25 millert Exp $";
 #endif /* not lint */                                                        
 
 #include <paths.h>
@@ -129,6 +129,6 @@ usage(void)
 	extern char *__progname;
 
 	(void)fprintf(stderr,
-	    "Usage: %s [-dqtu] [-p prefix] [template]\n", __progname);
+	    "usage: %s [-dqtu] [-p directory] [template]\n", __progname);
 	exit(1);
 }
