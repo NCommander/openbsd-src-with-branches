@@ -645,8 +645,8 @@ sub _list
 	open(my $fh, '-|', "$cmd") or return;
 	while(<$fh>) {
 		chomp;
-		next if m/^d.*\s+\S/;
-		next unless m/([^\s]+)\.tgz\s*$/;
+		next if m/^\d\d\d\s+\S/;
+		next unless m/(\S+)\.tgz\s*$/;
 		push(@$l, $1);
 	}
 	close($fh);
@@ -658,7 +658,7 @@ sub get_ftp_list
 	my ($self, $error) = @_;
 
 	my $fullname = $self->url;
-	return $self->_list("echo 'nlist *.tgz'| ".OpenBSD::Paths->ftp
+	return $self->_list("echo 'nlist'| ".OpenBSD::Paths->ftp
 	    ." $fullname 2>$error");
 }
 
