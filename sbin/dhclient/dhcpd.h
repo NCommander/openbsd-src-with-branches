@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.65 2007/02/25 16:27:20 stevesk Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.66 2008/05/09 05:19:14 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -255,6 +255,7 @@ void got_one(void);
 void add_timeout(time_t, void (*)(void));
 void cancel_timeout(void (*)(void));
 int interface_link_status(char *);
+int interface_status(char *);
 int interface_link_forceup(char *);
 void interface_link_forcedown(char *);
 
