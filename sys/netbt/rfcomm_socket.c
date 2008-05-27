@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfcomm_socket.c,v 1.1 2007/06/01 02:46:12 uwe Exp $	*/
+/*	$OpenBSD: rfcomm_socket.c,v 1.2 2008/02/24 21:34:48 uwe Exp $	*/
 /*	$NetBSD: rfcomm_socket.c,v 1.8 2007/10/15 18:04:34 plunky Exp $	*/
 
 /*-
@@ -101,7 +101,7 @@ int rfcomm_recvspace = 4096;
  */
 int
 rfcomm_usrreq(struct socket *up, int req, struct mbuf *m,
-		struct mbuf *nam, struct mbuf *ctl)
+    struct mbuf *nam, struct mbuf *ctl, struct proc *p)
 {
 	struct rfcomm_dlc *pcb = up->so_pcb;
 	struct sockaddr_bt *sa;
