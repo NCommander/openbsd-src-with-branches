@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_boot.c,v 1.21 2008/05/09 15:50:51 claudio Exp $ */
+/*	$OpenBSD: nfs_boot.c,v 1.22 2008/05/20 12:43:57 claudio Exp $ */
 /*	$NetBSD: nfs_boot.c,v 1.26 1996/05/07 02:51:25 thorpej Exp $	*/
 
 /*
@@ -175,7 +175,7 @@ nfs_boot_init(nd, procp)
 	 * Do RARP for the interface address.
 	 */
 	if ((error = revarpwhoami(&my_ip, ifp)) != 0)
-		panic("revarp failed, error=%d", error);
+		panic("reverse arp not answered by rarpd(8) or dhcpd(8)");
 	printf("nfs_boot: client_addr=%s\n", inet_ntoa(my_ip));
 
 	/*
