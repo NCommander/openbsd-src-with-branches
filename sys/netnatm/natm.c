@@ -1,4 +1,4 @@
-/*	$OpenBSD: natm.c,v 1.8 2007/09/12 18:45:14 mk Exp $	*/
+/*	$OpenBSD: natm.c,v 1.9 2007/12/09 21:36:40 hshoexer Exp $	*/
 
 /*
  *
@@ -67,17 +67,8 @@ u_long natm0_recvspace = 16*1024;
  * user requests
  */
 
-#if defined(__NetBSD__)
-int natm_usrreq(so, req, m, nam, control)
-#elif defined(__OpenBSD__) || defined(__FreeBSD__)
-int natm_usrreq(so, req, m, nam, control)
-#endif
-struct socket *so;
-int req;
-struct mbuf *m, *nam, *control;
-#if defined(__NetBSD__)
-struct proc *p;
-#endif
+int natm_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
+    struct mbuf *control, struct proc *p)
 {
   int error = 0, s, s2;
   struct natmpcb *npcb;
