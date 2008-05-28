@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.2 2008/05/11 19:58:24 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.3 2008/05/16 18:57:01 kettenis Exp $
 
-NOMAN=
+MAN=	boot.8
+MLINKS=	boot.8 boot.conf.5
 
 .if ${MACHINE} == "socppc"
 PROG=		boot
