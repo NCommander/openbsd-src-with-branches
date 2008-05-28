@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.4 2006/07/29 15:01:49 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.5 2007/11/25 18:25:30 deraadt Exp $
 
-NOMAN=
+MAN=	boot.8
+MLINKS=	boot.8 boot.conf.5
 
 .if ${MACHINE} == "armish"
 PROG=		boot
