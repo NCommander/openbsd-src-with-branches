@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.427 2008/05/07 20:42:02 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.428 2008/05/21 18:49:47 kettenis Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -3577,6 +3577,9 @@ bus_space_unmap(bus_space_tag_t t, bus_space_handle_t bsh, bus_size_t size)
 		(void) pmap_extract(pmap_kernel(), va, &bpa);
 		bpa += (bsh & PGOFSET);
 
+		pmap_kremove(va, endva - va);
+		pmap_update(pmap_kernel());
+
 		/*
 		 * Free the kernel virtual mapping.
 		 */
@@ -3620,6 +3623,9 @@ _bus_space_unmap(bus_space_tag_t t, bus_space_handle_t bsh, bus_size_t size,
 
 		(void) pmap_extract(pmap_kernel(), va, &bpa);
 		bpa += (bsh & PGOFSET);
+
+		pmap_kremove(va, endva - va);
+		pmap_update(pmap_kernel());
 
 		/*
 		 * Free the kernel virtual mapping.
