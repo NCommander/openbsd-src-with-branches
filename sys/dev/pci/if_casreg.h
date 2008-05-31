@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_casreg.h,v 1.8 2007/11/26 15:55:59 kettenis Exp $	*/
+/*	$OpenBSD: if_casreg.h,v 1.9 2007/11/27 16:22:13 martynas Exp $	*/
 
 /*
  *
@@ -149,6 +149,7 @@
 #define	CAS_TX_MAXBURST4	0x208c
 
 #define CAS_TX_KICK		CAS_TX_KICK3
+#define CAS_TX_COMPLETION	CAS_TX_COMPLETION3
 #define CAS_TX_RING_PTR_LO	CAS_TX_RING_PTR_LO3
 #define CAS_TX_RING_PTR_HI	CAS_TX_RING_PTR_HI3
 
