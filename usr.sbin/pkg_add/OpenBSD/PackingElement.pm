@@ -531,6 +531,12 @@ our @ISA=qw(OpenBSD::PackingElement::FileBase);
 sub keyword() { "ltlib" }
 __PACKAGE__->register_with_factory;
 
+package OpenBSD::PackingElement::Binary;
+our @ISA=qw(OpenBSD::PackingElement::FileBase);
+
+sub keyword() { "bin" }
+__PACKAGE__->register_with_factory;
+
 # Comment is very special
 package OpenBSD::PackingElement::Comment;
 our @ISA=qw(OpenBSD::PackingElement::Meta);
