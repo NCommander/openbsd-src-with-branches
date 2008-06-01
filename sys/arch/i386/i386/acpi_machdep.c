@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.11 2007/12/05 19:17:13 deraadt Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.12 2008/02/05 22:00:54 marco Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -169,6 +169,7 @@ havebase:
 	return (1);
 }
 
+#ifndef SMALL_KERNEL
 void
 acpi_attach_machdep(struct acpi_softc *sc)
 {
@@ -182,3 +183,4 @@ acpi_attach_machdep(struct acpi_softc *sc)
 	acpiapm_kqfilter = acpikqfilter;
 	cpuresetfn = acpi_reset;
 }
+#endif /* SMALL_KERNEL */
