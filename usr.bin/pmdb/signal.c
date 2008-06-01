@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.c,v 1.3 2002/06/26 13:21:25 todd Exp $	*/
+/*	$OpenBSD: signal.c,v 1.4 2003/09/22 21:39:40 miod Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -135,7 +135,7 @@ cmd_signal_ignore(int argc, char **argv, void *arg)
 
 	return 0;
 usage:
-	fprintf(stderr, "Usage: signal <ignore|stop> <signum|signame>\n");
+	fprintf(stderr, "usage: signal ignore|stop signum|signame\n");
 	return 0;
 }
 
