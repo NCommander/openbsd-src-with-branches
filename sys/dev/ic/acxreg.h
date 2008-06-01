@@ -1,4 +1,4 @@
-/*	$OpenBSD: acxreg.h,v 1.10 2007/02/28 09:26:26 claudio Exp $ */
+/*	$OpenBSD: acxreg.h,v 1.11 2007/03/29 12:37:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -474,6 +474,7 @@ struct bss_join_hdr {
 /*
  * non-data frame tx rate
  */
+#define ACX_NDATA_TXRATE_1		10	/* 1Mbits/s */
 #define ACX_NDATA_TXRATE_2		20	/* 2Mbits/s */
 
 /*
