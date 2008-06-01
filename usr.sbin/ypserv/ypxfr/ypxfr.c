@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypxfr.c,v 1.34 2006/04/03 05:01:24 deraadt Exp $ */
+/*	$OpenBSD: ypxfr.c,v 1.35 2006/09/25 05:59:28 otto Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: ypxfr.c,v 1.34 2006/04/03 05:01:24 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ypxfr.c,v 1.35 2006/09/25 05:59:28 otto Exp $";
 #endif
 
 #include <sys/types.h>
@@ -336,8 +336,10 @@ send_reply(CLIENT *client, u_long status, u_long tid)
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: ypxfr [-cf] [-d domain] [-h host] [-s domain] "
-	    "[-C tid prog ipadd port] mapname\n");
+	fprintf(stderr,
+	    "usage: ypxfr [-cf] [-C tid prog ipadd port] [-d domain] "
+	    "[-h host] [-s domain]\n"
+	    "             mapname\n");
 	exit(1);
 }
 
