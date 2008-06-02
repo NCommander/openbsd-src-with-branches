@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.11 2007/09/16 18:07:40 otto Exp $	*/
+/*	$OpenBSD: read.c,v 1.12 2007/09/29 12:31:28 otto Exp $	*/
 /*	$NetBSD: read.c,v 1.4 1994/11/23 07:42:07 jtc Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)read.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: read.c,v 1.11 2007/09/16 18:07:40 otto Exp $";
+static char rcsid[] = "$OpenBSD: read.c,v 1.12 2007/09/29 12:31:28 otto Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -199,6 +199,7 @@ lines(FILE *fp, off_t off)
 	if (cnt) {
 		lines[recno].l = sp;
 		lines[recno].len = cnt;
+		sp = NULL;
 		if (++recno == off) {
 			wrap = 1;
 			recno = 0;
