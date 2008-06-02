@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.23 2008/06/02 17:08:11 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.24 2008/06/02 17:08:51 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -150,7 +150,7 @@ usage(void)
 	    "usage: %s [-qu] [-C min:max] [-c min:max] [-d level] "
 	    "[-E enc] [-e enc]\n"
 	    "\t[-f device] [-H fmt] [-h fmt] [-i file] [-o file] [-R rate]\n"
-	    "\t[-r rate]\n",
+	    "\t[-r rate] [-X policy] [-x policy]\n",
 	    __progname);
 }
 
