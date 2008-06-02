@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.18 2008/05/26 08:32:11 jmc Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.19 2008/06/02 17:04:32 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -644,7 +644,6 @@ main(int argc, char **argv)
 	if (!quiet_flag)
 		fprintf(stderr, "starting device...\n");
 	dev_start(dev->fd);
-	dev->state &= ~(FILE_RFLOW | FILE_WFLOW);
 	while (!quit_flag) {
 		if (!file_poll())
 			break;
