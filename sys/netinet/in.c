@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.50 2007/09/17 09:33:57 markus Exp $	*/
+/*	$OpenBSD: in.c,v 1.51 2007/10/01 16:39:30 krw Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -811,7 +811,7 @@ in_addprefix(target, flags)
 #endif
 		/*
 		 * if we got a matching prefix route inserted by other
-		 * interface adderss, we don't need to bother
+		 * interface address, we don't need to bother
 		 */
 		return 0;
 	}

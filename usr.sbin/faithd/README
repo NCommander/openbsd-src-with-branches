@@ -1,7 +1,7 @@
 Configuring FAITH IPv6-to-IPv4 TCP relay
 
 Kazu Yamamoto and Jun-ichiro itojun Hagino
-$OpenBSD: README,v 1.10 2004/02/25 09:51:32 jmc Exp $
+$OpenBSD: README,v 1.11 2008/05/08 16:51:30 sobrado Exp $
 $KAME: README,v 1.9 2002/05/09 14:10:06 itojun Exp $
 
 
@@ -42,7 +42,7 @@ Setup
 =====
 
 The following example assumes:
-- You have assigned 3ffe:0501:ffff:0000:: as FAITH adderss prefix.
+- You have assigned 3ffe:0501:ffff:0000:: as FAITH address prefix.
 - You are willing to provide IPv6-to IPv4 TCP relay for telnet.
 
 <<On the translating router on which faithd runs>>
