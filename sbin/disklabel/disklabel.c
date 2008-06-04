@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.126 2008/04/07 23:27:21 krw Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.127 2008/04/07 23:37:14 krw Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -39,7 +39,7 @@ static const char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.126 2008/04/07 23:27:21 krw Exp $";
+static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.127 2008/04/07 23:37:14 krw Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -388,12 +388,14 @@ writelabel(int f, char *boot, struct disklabel *lp)
 	int writeable;
 	off_t sectoffset = 0;
 
+#if NUMBOOT > 0
+	setbootflag(lp);
+#endif
 	lp->d_magic = DISKMAGIC;
 	lp->d_magic2 = DISKMAGIC;
 	lp->d_checksum = 0;
 	lp->d_checksum = dkcksum(lp);
 #if NUMBOOT > 0
-	setbootflag(lp);
 	if (installboot) {
 #ifdef DOSLABEL
 		struct partition *pp = &lp->d_partitions[2];
