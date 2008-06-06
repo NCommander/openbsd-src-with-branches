@@ -322,6 +322,7 @@ sub destate
 	my ($self, $state) = @_;
 	$self->SUPER::destate($state);
 	$state->{lastfile} = $self;
+	$state->{lastchecksummable} = $self;
 	$self->compute_modes($state);
 	if (defined $state->{nochecksum}) {
 		$self->{nochecksum} = 1;
@@ -576,7 +577,7 @@ sub add
 {
 	my ($class, $plist, $args) = @_;
 
-	$plist->{state}->{lastfile}->add_md5(pack('H*', $args));
+	$plist->{state}->{lastchecksummable}->add_md5(pack('H*', $args));
 	return;
 }
 
@@ -802,6 +803,26 @@ our @ISA=qw(OpenBSD::PackingElement::Depend);
 sub category() { "wantlib" }
 sub keyword() { "wantlib" }
 __PACKAGE__->register_with_factory;
+
+sub destate
+{
+	my ($self, $state) = @_;
+	$state->{lastchecksummable} = $self;
+}
+
+sub write
+{
+	my ($self, $fh) = @_;
+	$self->SUPER::write($fh);
+	if (defined $self->{md5}) {
+		print $fh "\@md5 ", unpack('H*', $self->{md5}), "\n";
+	}
+}
+
+sub add_md5
+{
+	&OpenBSD::PackingElement::FileBase::add_md5;
+}
 
 package OpenBSD::PackingElement::PkgPath;
 our @ISA=qw(OpenBSD::PackingElement::Meta);
