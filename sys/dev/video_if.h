@@ -1,4 +1,4 @@
-/*	$OpenBSD: video_if.h,v 1.5 2008/05/30 06:37:38 mglocker Exp $	*/
+/*	$OpenBSD: video_if.h,v 1.6 2008/06/05 20:50:28 mglocker Exp $	*/
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
  *
@@ -23,7 +23,7 @@
  */
 
 #define VIDEOUNIT(x)	(minor(x))
-#define VIDEO_BUF_SIZE	65536
+#define VIDEO_BUF_SIZE	131072
 
 struct video_hw_if {
 	/* open hardware */
