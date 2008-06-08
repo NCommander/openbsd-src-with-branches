@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.59 2008/05/23 08:49:27 brad Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.60 2008/05/29 05:36:48 brad Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -146,7 +146,8 @@ void	nswaph(u_int32_t *p, int wcount);
 /****************************************************************************/
 /* BNX Driver Version                                                       */
 /****************************************************************************/
-char bnx_driver_version[] = "v0.9.6";
+
+#define BNX_DRIVER_VERSION	"v0.9.6"
 
 /****************************************************************************/
 /* BNX Debug Options                                                        */
