@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISKC,v 1.86 2008/05/21 18:49:47 kettenis Exp $
+#	$OpenBSD: RAMDISKC,v 1.87 2008/05/23 14:04:18 brad Exp $
 
 machine		i386		# architecture, used by config; REQUIRED
 
@@ -21,7 +21,6 @@ option		FFS		# UFS
 
 option		CD9660		# ISO 9660 + Rock Ridge file system
 option		MSDOSFS		# MS-DOS file system
-option		FIFO		# FIFOs; RECOMMENDED
 
 option		INET		# IP + ICMP + TCP + UDP
 
