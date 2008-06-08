@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.67 2008/05/11 02:55:45 brad Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.68 2008/05/17 04:50:54 canacar Exp $	*/
 /*
  * Synchronous PPP/Cisco link level subroutines.
  * Keepalive protocol implemented in both Cisco and PPP modes.
@@ -1181,7 +1181,7 @@ sppp_cisco_input(struct sppp *sp, struct mbuf *m)
 			/* Local and remote sequence numbers are equal.
 			 * Probably, the line is in loopback mode. */
 			if (sp->pp_loopcnt >= LOOPALIVECNT) {
-				printf (SPP_FMT "loopback\n",
+				log(LOG_INFO, SPP_FMT "loopback\n",
 					SPP_ARGS(ifp));
 				sp->pp_loopcnt = 0;
 				if (ifp->if_flags & IFF_UP) {
@@ -1680,7 +1680,7 @@ sppp_cp_input(const struct cp *cp, struct sppp *sp, struct mbuf *m)
 
 		if (nmagic == sp->lcp.magic) {
 			/* Line loopback mode detected. */
-			printf(SPP_FMT "loopback\n", SPP_ARGS(ifp));
+			log(LOG_INFO, SPP_FMT "loopback\n", SPP_ARGS(ifp));
 			/* Shut down the PPP link. */
  			lcp.Close(sp);
 			break;
@@ -4540,7 +4540,7 @@ sppp_keepalive(void *dummy)
 			if_down (ifp);
 			sppp_qflush (&sp->pp_cpq);
 			if (! (sp->pp_flags & PP_CISCO)) {
-				printf (SPP_FMT "LCP keepalive timeout\n",
+				log(LOG_INFO, SPP_FMT "LCP keepalive timeout\n",
 				    SPP_ARGS(ifp));
 				sp->pp_alivecnt = 0;
 
