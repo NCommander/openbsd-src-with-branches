@@ -1,4 +1,4 @@
-/* $OpenBSD: prebind_delete.c,v 1.7 2006/06/26 23:26:12 drahn Exp $ */
+/* $OpenBSD: prebind_delete.c,v 1.8 2006/07/28 21:38:05 drahn Exp $ */
 
 /*
  * Copyright (c) 2006 Dale Rahn <drahn@dalerahn.com>
@@ -258,6 +258,7 @@ prebind_newfile(int infd, char *name, struct stat *st, off_t orig_size)
 		}
 	}
 	free(buf);
+	close (infd);
 
 	/* now back track, and delete the header */
 	if (prebind_remove_load_section(outfd, newname) == -1)
