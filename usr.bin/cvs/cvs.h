@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.164 2008/03/09 03:14:52 joris Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.165 2008/05/28 17:12:00 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -392,8 +392,8 @@ struct cvsroot	*cvsroot_get(const char *);
 
 /* logmsg.c */
 char *	cvs_logmsg_read(const char *path);
-char *	cvs_logmsg_create(struct cvs_flisthead *, struct cvs_flisthead *,
-	struct cvs_flisthead *);
+char *	cvs_logmsg_create(char *, struct cvs_flisthead *,
+	    struct cvs_flisthead *, struct cvs_flisthead *);
 
 /* misc stuff */
 void	cvs_update_local(struct cvs_file *);
