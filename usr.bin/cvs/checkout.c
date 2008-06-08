@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.143 2008/03/09 03:14:52 joris Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.144 2008/05/22 15:45:01 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -268,8 +268,6 @@ checkout_check_repository(int argc, char **argv)
 
 		return;
 	}
-
-	cvs_directory_tag = cvs_specified_tag;
 
 	for (i = 0; i < argc; i++) {
 		mc = cvs_module_lookup(argv[i]);
