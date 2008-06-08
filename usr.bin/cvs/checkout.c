@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.144 2008/05/22 15:45:01 tobias Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.145 2008/06/08 03:03:07 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -563,9 +563,7 @@ cvs_checkout_file(struct cvs_file *cf, RCSNUM *rnum, char *tag, int co_flags)
 		if (!(co_flags & CO_REMOVE)) {
 			cvs_remote_output(entry);
 			xfree(entry);
-		}
 
-		if (!(co_flags & CO_REMOVE)) {
 			if (!(co_flags & CO_MERGE)) {
 				(void)xsnprintf(template, MAXPATHLEN,
 				    "%s/checkout.XXXXXXXXXX", cvs_tmpdir);
