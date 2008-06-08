@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_etreg.h,v 1.1 2007/10/30 12:31:07 jsg Exp $	*/
+/*	$OpenBSD: if_etreg.h,v 1.2 2007/11/26 10:39:55 claudio Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -490,6 +490,7 @@ struct et_softc {
 	struct resource		*sc_mem_res;
 	bus_space_tag_t		sc_mem_bt;
 	bus_space_handle_t	sc_mem_bh;
+	bus_size_t		sc_mem_size;
 	bus_dma_tag_t		sc_dmat;
 	pci_chipset_tag_t	sc_pct;
 	pcitag_t		sc_pcitag;
