@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.75 2008/05/23 15:39:43 jasper Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.76 2008/06/02 11:46:19 jsg Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -1815,6 +1815,7 @@ getbootinfo(char *bootinfo, int bootinfo_size)
 				int unit = minor(cdp->consdev);
 				if (major(cdp->consdev) == 8 && unit >= 0 &&
 				    unit < (sizeof(ports)/sizeof(ports[0]))) {
+					comconsunit = unit;
 					comconsaddr = ports[unit];
 					comconsrate = cdp->conspeed;
 

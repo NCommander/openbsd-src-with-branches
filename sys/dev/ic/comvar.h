@@ -1,4 +1,4 @@
-/*	$OpenBSD: comvar.h,v 1.43 2007/05/08 21:28:11 deraadt Exp $	*/
+/*	$OpenBSD: comvar.h,v 1.44 2008/04/30 13:59:32 dlg Exp $	*/
 /*	$NetBSD: comvar.h,v 1.5 1996/05/05 19:50:47 christos Exp $	*/
 
 /*
@@ -181,4 +181,5 @@ extern int comconsinit;
 extern int comconsattached;
 extern bus_space_tag_t comconsiot;
 extern bus_space_handle_t comconsioh;
+extern int comconsunit;
 extern tcflag_t comconscflag;

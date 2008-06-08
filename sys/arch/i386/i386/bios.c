@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.79 2008/03/29 15:26:47 krw Exp $	*/
+/*	$OpenBSD: bios.c,v 1.80 2008/05/21 18:49:47 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -490,14 +490,13 @@ bios_getopt()
 				int unit = minor(cdp->consdev);
 				if (major(cdp->consdev) == 8 && unit >= 0 &&
 				    unit < (sizeof(ports)/sizeof(ports[0]))) {
+					comconsunit = unit;
 					comconsaddr = ports[unit];
 					comconsrate = cdp->conspeed;
 
 					/* Probe the serial port this time. */
 					cninit();
 				}
-				extern int comconsrate; /* isa/pccom.c */
-				comconsrate = cdp->conspeed;
 #endif
 #ifdef BIOS_DEBUG
 				printf(" console 0x%x:%d",
