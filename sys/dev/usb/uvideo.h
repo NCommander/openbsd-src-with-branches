@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.h,v 1.12 2008/06/07 22:14:58 mglocker Exp $ */
+/*	$OpenBSD: uvideo.h,v 1.13 2008/06/09 19:57:45 robert Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -401,6 +401,7 @@ struct uvideo_softc {
 	q_mmap					 sc_mmap_q;
 	int					 sc_mmap_count;
 	int					 sc_mmap_cur;
+	int					 sc_mmap_flag;
 
 	struct vnode				*sc_vp;
 	struct usb_task				 sc_task_write;
