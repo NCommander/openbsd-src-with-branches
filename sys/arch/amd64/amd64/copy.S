@@ -1,4 +1,4 @@
-/*	$OpenBSD: copy.S,v 1.2 2005/03/16 07:08:38 tedu Exp $	*/
+/*	$OpenBSD: copy.S,v 1.3 2007/05/29 23:03:20 tom Exp $	*/
 /*	$NetBSD: copy.S,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*
@@ -49,30 +49,6 @@
  *
  * I wonder if it's worthwhile to make these use SSE2 registers.
  */
-
-/*
- * XXXfvdl appears only to be used by pccons.
- *
- * fillw(short pattern, caddr_t addr, size_t len);
- * Write len copies of pattern at addr.
- * appears to be used by pccons.
- */
-ENTRY(fillw)
-	movl	%edi,%eax
-	movq	%rsi,%rdi
-	movw	%ax,%cx
-	rorl	$16,%eax
-	movw	%cx,%ax
-	cld
-	movq	%rdx,%rcx
-	shrq	%rcx
-	rep
-	stosl
-	movq	%rdx,%rcx
-	andq	$1,%rcx
-	rep
-	stosw
-	ret
 
 ENTRY(kcopy)
 	movq	CPUVAR(CURPCB),%rax
