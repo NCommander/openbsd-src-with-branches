@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.c,v 1.48 2007/09/13 21:26:41 hshoexer Exp $	*/
+/*	$OpenBSD: cryptosoft.c,v 1.49 2007/09/15 11:00:51 hshoexer Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -105,7 +105,7 @@ swcr_encdec(struct cryptodesc *crd, struct swcr_data *sw, caddr_t buf,
 		if (crd->crd_flags & CRD_F_IV_EXPLICIT)
 			bcopy(crd->crd_iv, iv, ivlen);
 		else
-			arc4random_bytes(iv, ivlen);
+			arc4random_buf(iv, ivlen);
 
 		/* Do we need to write the IV */
 		if (!(crd->crd_flags & CRD_F_IV_PRESENT)) {
