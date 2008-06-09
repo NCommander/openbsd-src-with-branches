@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.h,v 1.9 2002/05/29 14:34:05 itojun Exp $	*/
+/*	$OpenBSD: rtadvd.h,v 1.10 2008/04/23 10:17:50 pyr Exp $	*/
 /*	$KAME: rtadvd.h,v 1.20 2002/05/29 10:13:10 itojun Exp $	*/
 
 /*
@@ -29,6 +29,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#define RTADVD_USER     "_rtadvd"
 
 #define ALLNODES "ff02::1"
 #define ALLROUTERS_LINK "ff02::2"
