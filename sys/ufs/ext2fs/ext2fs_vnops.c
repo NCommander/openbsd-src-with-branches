@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vnops.c,v 1.49 2007/09/23 20:15:07 millert Exp $	*/
+/*	$OpenBSD: ext2fs_vnops.c,v 1.50 2008/05/08 17:45:45 thib Exp $	*/
 /*	$NetBSD: ext2fs_vnops.c,v 1.1 1997/06/11 09:34:09 bouyer Exp $	*/
 
 /*
@@ -155,8 +155,8 @@ ext2fs_access(void *v)
 	if ((mode & VWRITE) && (ip->i_e2fs_flags & EXT2_IMMUTABLE))
 		return (EPERM);
 
-	return (vaccess(ip->i_e2fs_mode, ip->i_e2fs_uid, ip->i_e2fs_gid, mode,
-			ap->a_cred));
+	return (vaccess(vp->v_type, ip->i_e2fs_mode, ip->i_e2fs_uid,
+			ip->i_e2fs_gid, mode, ap->a_cred));
 }
 
 /* ARGSUSED */

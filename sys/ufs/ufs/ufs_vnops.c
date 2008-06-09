@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.85 2008/01/05 19:49:26 otto Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.86 2008/01/17 11:31:56 fgsch Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -252,8 +252,8 @@ ufs_access(void *v)
 	if ((mode & VWRITE) && (DIP(ip, flags) & IMMUTABLE))
 		return (EPERM);
 
-	return (vaccess(DIP(ip, mode), DIP(ip, uid), DIP(ip, gid), mode,
-	    ap->a_cred));
+	return (vaccess(vp->v_type, DIP(ip, mode), DIP(ip, uid), DIP(ip, gid),
+	    mode, ap->a_cred));
 }
 
 /* ARGSUSED */
