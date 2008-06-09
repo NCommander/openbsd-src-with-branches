@@ -1,4 +1,4 @@
-/*	$OpenBSD: getlog.c,v 1.86 2008/02/09 14:25:02 joris Exp $	*/
+/*	$OpenBSD: getlog.c,v 1.87 2008/03/02 19:05:34 tobias Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
@@ -196,9 +196,6 @@ cvs_log_local(struct cvs_file *cf)
 	cvs_file_classify(cf, cvs_directory_tag);
 
 	if (cf->file_status == FILE_UNKNOWN) {
-		if (verbosity > 0 && cvs_cmdop != CVS_OP_RLOG)
-			cvs_log(LP_ERR, "nothing known about %s",
-			    cf->file_path);
 		return;
 	} else if (cf->file_status == FILE_ADDED) {
 		if (verbosity > 0)
