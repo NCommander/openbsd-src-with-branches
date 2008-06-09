@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldattach.c,v 1.5 2008/02/28 11:22:12 mbalmer Exp $	*/
+/*	$OpenBSD: ldattach.c,v 1.6 2008/06/09 21:06:10 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -17,8 +17,9 @@
  */
 
 /*
- * A replacement for slattach(8) and nmeaattach(8) that can be used from
- * the commandline or from init(8) (using entries in /etc/ttys).
+ * Attach a line disciplines to a tty(4) device either from the commandline
+ * or from init(8) (using entries in /etc/ttys).  Optionally pass the data
+ * received on the tty(4) device to the master device of a pty(4) pair.
  */
 
 #include <sys/types.h>
