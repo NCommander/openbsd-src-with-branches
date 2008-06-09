@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.147 2008/06/08 16:32:34 tobias Exp $	*/
+/*	$OpenBSD: update.c,v 1.148 2008/06/09 22:31:24 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -475,7 +475,6 @@ cvs_update_local(struct cvs_file *cf)
 static void
 update_clear_conflict(struct cvs_file *cf)
 {
-	time_t now;
 	CVSENTRIES *entlist;
 	char *entry, revbuf[CVS_REV_BUFSZ];
 	char sticky[CVS_ENT_MAXLINELEN], opt[4];
