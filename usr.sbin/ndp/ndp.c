@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.40 2008/05/05 13:53:48 markus Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.41 2008/05/17 23:31:52 sobrado Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -874,7 +874,7 @@ rtmsg(int cmd)
 	}
 #define NEXTADDR(w, s) \
 	if (rtm->rtm_addrs & (w)) { \
-		bcopy((char *)&s, cp, sizeof(s)); cp += sizeof(s);}
+		bcopy((char *)&s, cp, sizeof(s)); cp += ROUNDUP(sizeof(s));}
 
 	NEXTADDR(RTA_DST, sin_m);
 	NEXTADDR(RTA_GATEWAY, sdl_m);
