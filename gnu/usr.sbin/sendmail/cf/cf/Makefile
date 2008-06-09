@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 2004/12/16 00:21:29 millert Exp $
+#	$OpenBSD: Makefile,v 1.22 2006/03/22 18:43:53 millert Exp $
 #
 #  Makefile for configuration files.
 #
@@ -35,7 +35,9 @@ ALL=	submit.cf clientproto.cf tcpproto.cf openbsd-localhost.cf \
 
 all: $(ALL)
 
-clean cleandir:
+cleandir: clean
+
+clean:
 	$(RM) $(ALL) *.core
 
 depend:
