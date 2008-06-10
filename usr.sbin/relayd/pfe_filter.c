@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.27 2008/05/16 14:47:58 pyr Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.28 2008/06/10 22:02:28 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -366,10 +366,10 @@ sync_ruleset(struct relayd *env, struct rdr *rdr, int enable)
 			/* Use sloppy state handling for half connections */
 			rio.rule.keep_state = PF_STATE_NORMAL;
 			rio.rule.rule_flag = PFRULE_STATESLOPPY;
-			rio.rule.timeout[PFTM_TCP_CLOSING] =
-			    rdr->conf.timeout.tv_sec;
 		}
 
+		rio.rule.timeout[PFTM_TCP_ESTABLISHED] =
+		    rdr->conf.timeout.tv_sec;
 		rio.ticket = env->sc_pf->pfte[rs].ticket;
 		if (ioctl(env->sc_pf->dev, DIOCBEGINADDRS, &pio) == -1)
 			fatal("sync_ruleset: cannot initialise address pool");
