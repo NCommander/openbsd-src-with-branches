@@ -1,4 +1,4 @@
-/*	$OpenBSD: ct.c,v 1.17 2007/03/13 19:44:53 miod Exp $	*/
+/*	$OpenBSD: ct.c,v 1.18 2007/06/06 17:15:11 deraadt Exp $	*/
 /*	$NetBSD: ct.c,v 1.21 1997/04/02 22:37:23 scottr Exp $	*/
 
 /*
@@ -431,7 +431,7 @@ ctcommand(dev, cmd, cnt)
 	}
 
 	while (cnt-- > 0) {
-		bp->b_flags = B_BUSY;
+		bp->b_flags = B_BUSY | B_RAW;
 		if (cmd == MTBSF) {
 			sc->sc_blkno = sc->sc_eofs[sc->sc_eofp];
 			sc->sc_eofp--;
