@@ -24,31 +24,29 @@
 #define CVS_TRIGGER_TAGINFO		6
 
 struct trigger_line {
-             char *line;
-             TAILQ_ENTRY(trigger_line) flist;
+	char *line;
+	TAILQ_ENTRY(trigger_line) flist;
 };
 
 TAILQ_HEAD(trigger_list, trigger_line);
 
 struct file_info {
-	char *file_path;
-	char *file_wd;
-	char *crevstr;
-	char *nrevstr;
-	char *tag_new;
-	char *tag_old;
-	char *tag_op;
-	char  tag_type;
+	char	*file_path;
+	char	*file_wd;
+	char	*crevstr;
+	char	*nrevstr;
+	char	*tag_new;
+	char	*tag_old;
+	char	*tag_op;
+	char	 tag_type;
 	TAILQ_ENTRY(file_info) flist;
 };
 
 TAILQ_HEAD(file_info_list, file_info);
 
-
-
-int cvs_trigger_handle(int, char *, char *,struct trigger_list *,
-    struct file_info_list *);
-struct trigger_list * cvs_trigger_getlines(char *, char *);
-void cvs_trigger_freelist(struct trigger_list *);
-void cvs_trigger_freeinfo(struct file_info_list *);
-void cvs_trigger_loginfo_header(BUF *, char *);
+int			 cvs_trigger_handle(int, char *, char *,
+			     struct trigger_list *, struct file_info_list *);
+struct trigger_list	*cvs_trigger_getlines(char *, char *);
+void			 cvs_trigger_freelist(struct trigger_list *);
+void			 cvs_trigger_freeinfo(struct file_info_list *);
+void			 cvs_trigger_loginfo_header(BUF *, char *);
