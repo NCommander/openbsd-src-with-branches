@@ -82,8 +82,6 @@
 #define CD_FRAMES	75
 #define CD_SECS		60
 
-#define CD_LOCKED	0x0800
-
 struct cd_toc {
 	struct ioc_toc_header header;
 	struct cd_toc_entry entries[MAXTRACK+1]; /* One extra for the */
