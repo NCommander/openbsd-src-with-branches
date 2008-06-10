@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.27 2007/05/28 17:52:17 kjell Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.28 2008/06/10 00:19:31 kjell Exp $	*/
 
 /* This file is in the public domain */
 
@@ -42,6 +42,7 @@ static struct funmap functnames[] = {
 #endif /* !NO_MACRO */
 	{capword, "capitalize-word",},
 	{changedir, "cd",},
+	{clearmark, "clear-mark",},
 	{copyregion, "copy-region-as-kill",},
 #ifdef	REGEX
 	{cntmatchlines, "count-matches",},

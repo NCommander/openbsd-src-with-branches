@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.99 2007/02/21 23:33:12 deanna Exp $	*/
+/*	$OpenBSD: def.h,v 1.100 2007/05/28 17:52:17 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -476,6 +476,7 @@ int		 back1page(int, int);
 int		 pagenext(int, int);
 void		 isetmark(void);
 int		 setmark(int, int);
+int		 clearmark(int, int);
 int		 swapmark(int, int);
 int		 gotoline(int, int);
 
