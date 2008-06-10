@@ -1,4 +1,4 @@
-/*	$OpenBSD: rm.c,v 1.20 2006/03/21 20:28:52 otto Exp $	*/
+/*	$OpenBSD: rm.c,v 1.21 2007/06/06 00:08:57 ray Exp $	*/
 /*	$NetBSD: rm.c,v 1.19 1995/09/07 06:48:50 jtc Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)rm.c	8.8 (Berkeley) 4/27/95";
 #else
-static char rcsid[] = "$OpenBSD: rm.c,v 1.20 2006/03/21 20:28:52 otto Exp $";
+static char rcsid[] = "$OpenBSD: rm.c,v 1.21 2007/06/06 00:08:57 ray Exp $";
 #endif
 #endif /* not lint */
 
@@ -361,7 +361,8 @@ check(char *path, char *name, struct stat *sp)
 		 * because their permissions are meaningless.  Check stdin_ok
 		 * first because we may not have stat'ed the file.
 		 */
-		if (!stdin_ok || S_ISLNK(sp->st_mode) || !access(name, W_OK))
+		if (!stdin_ok || S_ISLNK(sp->st_mode) || !access(name, W_OK) ||
+		    errno != EACCES)
 			return (1);
 		strmode(sp->st_mode, modep);
 		(void)fprintf(stderr, "override %s%s%s/%s for %s? ",
