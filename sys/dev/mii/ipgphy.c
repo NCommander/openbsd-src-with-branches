@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipgphy.c,v 1.7 2006/12/31 15:04:33 krw Exp $	*/
+/*	$OpenBSD: ipgphy.c,v 1.8 2008/06/07 19:39:25 brad Exp $	*/
 
 /*-
  * Copyright (c) 2006, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -44,10 +44,8 @@
 #include <net/if.h>
 #include <net/if_media.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
