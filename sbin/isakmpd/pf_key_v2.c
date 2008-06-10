@@ -1,4 +1,4 @@
-/* $OpenBSD: pf_key_v2.c,v 1.181 2007/05/27 18:31:30 claudio Exp $  */
+/* $OpenBSD: pf_key_v2.c,v 1.182 2007/09/02 15:19:24 deraadt Exp $  */
 /* $EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	 */
 
 /*
@@ -69,10 +69,10 @@
 #include "udp_encap.h"
 
 #define IN6_IS_ADDR_FULL(a)						\
-	((*(u_int32_t *)(void *)(&(a)->s6_addr[0]) == 0xffff) &&	\
-	(*(u_int32_t *)(void *)(&(a)->s6_addr[4]) == 0xffff) &&		\
-	(*(u_int32_t *)(void *)(&(a)->s6_addr[8]) == 0xffff) &&		\
-	(*(u_int32_t *)(void *)(&(a)->s6_addr[12]) == 0xffff))
+	((*(u_int32_t *)(void *)(&(a)->s6_addr[0]) == 0xffffffff) &&	\
+	(*(u_int32_t *)(void *)(&(a)->s6_addr[4]) == 0xffffffff) &&	\
+	(*(u_int32_t *)(void *)(&(a)->s6_addr[8]) == 0xffffffff) &&	\
+	(*(u_int32_t *)(void *)(&(a)->s6_addr[12]) == 0xffffffff))
 
 #define ADDRESS_MAX sizeof "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"
 
