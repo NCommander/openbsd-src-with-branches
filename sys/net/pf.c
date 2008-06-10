@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.587 2008/06/10 21:14:39 reyk Exp $ */
+/*	$OpenBSD: pf.c,v 1.588 2008/06/10 22:39:31 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -4013,6 +4013,15 @@ pf_tcp_track_sloppy(struct pf_state_peer *src, struct pf_state_peer *dst,
 				REASON_SET(reason, PFRES_SRCLIMIT);
 				return (PF_DROP);
 			}
+		} else if (src->state == TCPS_CLOSING &&
+		    dst->state == TCPS_ESTABLISHED &&
+		    dst->seqlo == 0) {
+			/*
+			 * Handle the closing of half connections where we
+			 * don't see the full bidirectional FIN/ACK+ACK
+			 * handshake.
+			 */
+			dst->state = TCPS_CLOSING;
 		}
 	}
 	if (th->th_flags & TH_RST)
