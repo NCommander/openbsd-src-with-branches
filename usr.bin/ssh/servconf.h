@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.83 2008/05/07 05:49:37 pyr Exp $ */
+/* $OpenBSD: servconf.h,v 1.84 2008/05/08 12:21:16 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -159,5 +159,6 @@ void	 parse_server_config(ServerOptions *, const char *, Buffer *,
 void	 parse_server_match_config(ServerOptions *, const char *, const char *,
 	     const char *);
 void	 copy_set_server_options(ServerOptions *, ServerOptions *, int);
+void	 dump_config(ServerOptions *);
 
 #endif				/* SERVCONF_H */
