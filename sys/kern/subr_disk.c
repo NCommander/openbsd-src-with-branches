@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.73 2008/04/07 23:10:24 krw Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.74 2008/05/23 00:51:33 krw Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -399,7 +399,7 @@ readdoslabel(struct buf *bp, void (*strat)(struct buf *),
 		/* read boot record */
 		bp->b_blkno = part_blkno;
 		bp->b_bcount = lp->d_secsize;
-		bp->b_flags = B_BUSY | B_READ;
+		bp->b_flags = B_BUSY | B_READ | B_RAW;
 		(*strat)(bp);
 		if (biowait(bp)) {
 /*wrong*/		if (partoffp)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.58 2008/04/22 19:18:24 blambert Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.59 2008/05/02 13:26:27 thib Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -748,7 +748,8 @@ nfssvc_iod(p)
 			    (B_BUSY|B_DELWRI|B_NEEDCOMMIT|B_NOCACHE))!=B_DELWRI)
 			    continue;
 			bremfree(nbp);
-			nbp->b_flags |= (B_BUSY|B_ASYNC);
+			nbp->b_flags |= B_ASYNC;
+			buf_acquire(nbp);
 			break;
 		    }
 		    /*
