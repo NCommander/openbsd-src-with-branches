@@ -1,4 +1,4 @@
-/*	$OpenBSD: trigger.c,v 1.1 2008/06/10 01:00:35 joris Exp $	*/
+/*	$OpenBSD: trigger.c,v 1.2 2008/06/10 02:07:58 joris Exp $	*/
 /*
  * Copyright (c) 2008 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2008 Jonathan Armani <dbd@asystant.net>
@@ -21,6 +21,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <libgen.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
