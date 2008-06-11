@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.272 2008/06/10 19:32:14 henning Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.273 2008/06/10 20:55:02 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -723,6 +723,7 @@ struct pf_state_key {
 
 	RB_ENTRY(pf_state_key)	 entry;
 	struct pf_statelisthead	 states;
+	struct pf_state_key	*reverse;
 };
 
 /* keep synced with struct pf_state, used in RB_FIND */

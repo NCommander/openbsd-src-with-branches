@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.96 2007/11/28 14:04:26 deraadt Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.97 2008/05/09 02:44:54 markus Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -76,6 +76,7 @@ struct m_hdr {
 /* pf stuff */
 struct pkthdr_pf {
 	void		*hdr;		/* saved hdr pos in mbuf, for ECN */
+	void		*statekey;	/* pf stackside statekey */
 	u_int		 rtableid;	/* alternate routing table id */
 	u_int32_t	 qid;		/* queue id */
 	u_int16_t	 tag;		/* tag id */
