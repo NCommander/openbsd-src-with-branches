@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.16 2007/11/16 16:16:07 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.17 2008/04/13 11:35:55 thib Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -386,12 +386,6 @@ cpu_init(struct cpu_info *ci)
 
 	lcr0(rcr0() | CR0_WP);
 	lcr4(rcr4() | CR4_DEFAULT);
-
-#ifdef MTRR
-	if ((ci->ci_flags & CPUF_AP) == 0)
-		i686_mtrr_init_first();
-	mtrr_init_cpu(ci);
-#endif
 
 #ifdef MULTIPROCESSOR
 	ci->ci_flags |= CPUF_RUNNING;
