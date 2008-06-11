@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.10 2008/06/10 02:55:39 weingart Exp $ */
+/*	$OpenBSD: mem.c,v 1.11 2008/06/11 09:22:38 phessler Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -63,7 +63,9 @@
 
 #include <uvm/uvm_extern.h>
 
+#if NMTRR > 0
 #include "mtrr.h"
+#endif
 
 caddr_t zeropage;
 extern int start, end, etext;
