@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.100 2007/05/28 17:52:17 kjell Exp $	*/
+/*	$OpenBSD: def.h,v 1.101 2008/06/10 23:23:53 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -489,6 +489,9 @@ int		 newline(int, int);
 int		 deblank(int, int);
 int		 justone(int, int);
 int		 delwhite(int, int);
+int		 delleadwhite(int, int);
+int		 deltrailwhite(int, int);
+int		 lfindent(int, int);
 int		 indent(int, int);
 int		 forwdel(int, int);
 int		 backdel(int, int);
