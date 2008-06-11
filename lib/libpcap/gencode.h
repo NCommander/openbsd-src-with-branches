@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.h,v 1.13 2006/07/18 11:52:12 dlg Exp $	*/
+/*	$OpenBSD: gencode.h,v 1.14 2007/01/02 18:31:21 reyk Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996
@@ -20,7 +20,7 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) $Header: /cvs/src/lib/libpcap/gencode.h,v 1.13 2006/07/18 11:52:12 dlg Exp $ (LBL)
+ * @(#) $Header: /cvs/src/lib/libpcap/gencode.h,v 1.14 2007/01/02 18:31:21 reyk Exp $ (LBL)
  */
 
 /* Address qualifiers. */
@@ -179,6 +179,8 @@ struct block *gen_byteop(int, int, int);
 struct block *gen_broadcast(int);
 struct block *gen_multicast(int);
 struct block *gen_inbound(int);
+
+struct block *gen_vlan(int);
 
 struct block *gen_pf_ifname(char *);
 struct block *gen_pf_rnr(int);
