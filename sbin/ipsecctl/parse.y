@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.132 2007/11/12 23:59:41 mpf Exp $	*/
+/*	$OpenBSD: parse.y,v 1.134 2008/04/11 00:05:51 reyk Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2336,12 +2336,10 @@ create_flow(u_int8_t dir, u_int8_t proto, struct ipsec_hosts *hosts,
 		goto errout;
 	}
 
-	if (type == TYPE_DENY || type == TYPE_BYPASS) {
-		r->flowtype = type;
-		return (r);
-	}
-
 	r->flowtype = type;
+	if (type == TYPE_DENY || type == TYPE_BYPASS)
+		return (r);
+
 	r->local = peers->src;
 	if (peers->dst == NULL) {
 		/* Set peer to remote host.  Must be a host address. */
