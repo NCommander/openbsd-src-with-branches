@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp6_output.c,v 1.13 2006/12/09 01:12:28 itojun Exp $	*/
+/*	$OpenBSD: udp6_output.c,v 1.14 2007/06/01 00:52:39 henning Exp $	*/
 /*	$KAME: udp6_output.c,v 1.21 2001/02/07 11:51:54 itojun Exp $	*/
 
 /*
@@ -112,10 +112,8 @@
 #define udp6s_opackets	udps_opackets
 
 int
-udp6_output(in6p, m, addr6, control)
-	struct in6pcb *in6p;
-	struct mbuf *m;
-	struct mbuf *addr6, *control;
+udp6_output(struct in6pcb *in6p, struct mbuf *m, struct mbuf *addr6, 
+	struct mbuf *control)
 {
 	u_int32_t ulen = m->m_pkthdr.len;
 	u_int32_t plen = sizeof(struct udphdr) + ulen;
