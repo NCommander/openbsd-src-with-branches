@@ -173,8 +173,6 @@ ufs_bmaparray(struct vnode *vp, daddr64_t bn, daddr64_t *bnp, struct indir *ap,
 		else {
 			bp->b_blkno = blkptrtodb(ump, daddr);
 			bp->b_flags |= B_READ;
-			bcstats.pendingreads++;
-			bcstats.numreads++;
 			VOP_STRATEGY(bp);
 			curproc->p_stats->p_ru.ru_inblock++;	/* XXX */
 			if ((error = biowait(bp)) != 0) {

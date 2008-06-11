@@ -1965,7 +1965,7 @@ fdformat(dev, finfo, p)
 	if (bp == NULL)
 		return (ENOBUFS);
 
-	bp->b_flags = B_BUSY | B_PHYS | B_FORMAT | B_RAW;
+	bp->b_flags = B_BUSY | B_PHYS | B_FORMAT;
 	bp->b_proc = p;
 	bp->b_dev = dev;
 

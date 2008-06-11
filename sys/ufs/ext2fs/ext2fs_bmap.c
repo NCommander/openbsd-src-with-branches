@@ -190,7 +190,6 @@ ext2fs_bmaparray(struct vnode *vp, int32_t bn, daddr64_t *bnp,
 			bp->b_flags |= B_READ;
 			VOP_STRATEGY(bp);
 			curproc->p_stats->p_ru.ru_inblock++;	/* XXX */
-			bcstats.pendingreads++;
 			if ((error = biowait(bp)) != 0) {
 				brelse(bp);
 				return (error);

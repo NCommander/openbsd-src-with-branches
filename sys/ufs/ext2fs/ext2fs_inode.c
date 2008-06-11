@@ -466,8 +466,6 @@ ext2fs_indirtrunc(struct inode *ip, int32_t lbn, int32_t dbn, int32_t lastbn, in
 	bp = getblk(vp, lbn, (int)fs->e2fs_bsize, 0, 0);
 	if (!(bp->b_flags & (B_DONE | B_DELWRI))) {
 		curproc->p_stats->p_ru.ru_inblock++;	/* pay for read */
-		bcstats.pendingreads++;
-		bcstats.numreads++;
 		bp->b_flags |= B_READ;
 		if (bp->b_bcount > bp->b_bufsize)
 			panic("ext2fs_indirtrunc: bad buffer size");

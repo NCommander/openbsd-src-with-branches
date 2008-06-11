@@ -211,6 +211,7 @@ ufsdirhash_build(struct inode *ip)
 			if (UFS_BUFATOFF(ip, (off_t)pos, NULL, &bp) != 0)
 				goto fail;
 		}
+
 		/* Add this entry to the hash. */
 		ep = (struct direct *)((char *)bp->b_data + (pos & bmask));
 		if (ep->d_reclen == 0 || ep->d_reclen >

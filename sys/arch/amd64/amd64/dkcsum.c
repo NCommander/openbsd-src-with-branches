@@ -106,7 +106,7 @@ dkcsumattach(void)
 		/* Read blocks to cksum.  XXX maybe a d_read should be used. */
 		bp->b_blkno = 0;
 		bp->b_bcount = bios_cksumlen * DEV_BSIZE;
-		bp->b_flags = B_BUSY | B_READ | B_RAW;
+		bp->b_flags = B_BUSY | B_READ;
 		bp->b_cylinder = 0;
 		(*bdsw->d_strategy)(bp);
 		if ((error = biowait(bp))) {

@@ -707,7 +707,6 @@ file kern/uipc_socket2.c
 file kern/uipc_syscalls.c
 file kern/uipc_usrreq.c
 file kern/vfs_bio.c
-file kern/vfs_biomem.c
 file kern/vfs_cache.c
 file kern/vfs_cluster.c
 file kern/vfs_conf.c

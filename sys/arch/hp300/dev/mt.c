@@ -407,7 +407,7 @@ mtcommand(dev, cmd, cnt)
 	bp->b_cmd = cmd;
 	bp->b_dev = dev;
 	do {
-		bp->b_flags = B_BUSY | B_CMD | B_RAW;
+		bp->b_flags = B_BUSY | B_CMD;
 		mtstrategy(bp);
 		biowait(bp);
 		if (bp->b_flags & B_ERROR) {

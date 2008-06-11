@@ -379,7 +379,7 @@ tscommand (dev, cmd, count)
 		tsleep ((caddr_t)bp, PRIBIO, "tscommand", 0);
 		/* check MOT-flag !!! */
 	}
-	bp->b_flags = B_BUSY | B_READ | B_RAW;
+	bp->b_flags = B_BUSY | B_READ;
 
 	splx(s);
 
