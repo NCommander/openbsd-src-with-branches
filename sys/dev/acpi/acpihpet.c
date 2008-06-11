@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpihpet.c,v 1.4 2007/02/20 23:54:46 marco Exp $	*/
+/* $OpenBSD: acpihpet.c,v 1.5 2007/11/18 17:27:50 marco Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *

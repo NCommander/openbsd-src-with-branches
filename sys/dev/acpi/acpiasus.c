@@ -1,7 +1,6 @@
-/* $OpenBSD: acpiasus.c,v 1.2 2008/05/14 05:24:36 jordan Exp $ */
+/* $OpenBSD: acpiasus.c,v 1.4 2008/06/01 17:59:55 marco Exp $ */
 /* $NetBSD: asus_acpi.c,v 1.2.2.2 2008/04/03 12:42:37 mjf Exp $ */
-
-/*-
+/*
  * Copyright (c) 2007, 2008 Jared D. McNeill <jmcneill@invisible.ca>
  * All rights reserved.
  *

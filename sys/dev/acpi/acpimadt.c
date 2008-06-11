@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpimadt.c,v 1.17 2007/12/07 19:06:02 fgsch Exp $	*/
+/* $OpenBSD: acpimadt.c,v 1.18 2008/02/06 21:28:26 kettenis Exp $ */
 /*
  * Copyright (c) 2006 Mark Kettenis <kettenis@openbsd.org>
  *
