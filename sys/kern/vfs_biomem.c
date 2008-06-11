@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
  *
