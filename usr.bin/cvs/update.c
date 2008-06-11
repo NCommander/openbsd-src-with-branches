@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.148 2008/06/09 22:31:24 tobias Exp $	*/
+/*	$OpenBSD: update.c,v 1.149 2008/06/09 23:54:27 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -295,7 +295,8 @@ cvs_update_leavedir(struct cvs_file *cf)
 
 	xfree(buf);
 
-	if (isempty == 1 && prune_dirs == 1) {
+	if ((isempty == 1 && prune_dirs == 1) || (cvs_server_active == 1 &&
+	    cvs_cmdop == CVS_OP_CHECKOUT)) {
 		/* XXX */
 		cvs_rmdir(cf->file_path);
 
