@@ -882,6 +882,9 @@ pf_find_state(struct pfi_kif *kif, struct pf_state_key_cmp *key, u_int dir,
 			    m->m_pkthdr.pf.statekey)->reverse = sk;
 	}
 
+	if (dir == PF_OUT && m)
+		m->m_pkthdr.pf.statekey = NULL;
+
 	/* list is sorted, if-bound states before floating ones */
 	TAILQ_FOREACH(si, &sk->states, entry)
 		if ((si->s->kif == pfi_all || si->s->kif == kif) &&
