@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.45 2007/06/01 07:13:47 thib Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.46 2007/06/01 23:47:57 deraadt Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -45,6 +45,7 @@
 #include <sys/mount.h>
 #include <sys/kernel.h>
 #include <sys/namei.h>
+#include <sys/queue.h>
 
 #include <uvm/uvm_extern.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_serv.c,v 1.50 2008/04/22 18:53:34 thib Exp $	*/
+/*	$OpenBSD: nfs_serv.c,v 1.51 2008/05/27 19:06:28 blambert Exp $	*/
 /*     $NetBSD: nfs_serv.c,v 1.34 1997/05/12 23:37:12 fvdl Exp $       */
 
 /*
@@ -69,6 +69,7 @@
 #include <sys/stat.h>
 #include <sys/kernel.h>
 #include <sys/pool.h>
+#include <sys/queue.h>
 #include <ufs/ufs/dir.h>
 
 #include <uvm/uvm_extern.h>
