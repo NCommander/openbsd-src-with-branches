@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_input.c,v 1.84 2007/05/28 17:16:39 henning Exp $	*/
+/*	$OpenBSD: ipsec_input.c,v 1.85 2007/12/14 18:33:41 deraadt Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -412,7 +412,7 @@ ipsec_common_input_cb(struct mbuf *m, struct tdb *tdbp, int skip, int protoff,
 
 #ifdef INET6
 	/* Fix IPv6 header */
-	if (af == INET6)
+	if (af == AF_INET6)
 	{
 		if (m->m_len < sizeof(struct ip6_hdr) &&
 		    (m = m_pullup(m, sizeof(struct ip6_hdr))) == NULL) {
@@ -427,8 +427,7 @@ ipsec_common_input_cb(struct mbuf *m, struct tdb *tdbp, int skip, int protoff,
 		}
 
 		ip6 = mtod(m, struct ip6_hdr *);
-		ip6->ip6_plen = htons(m->m_pkthdr.len -
-		    sizeof(struct ip6_hdr));
+		ip6->ip6_plen = htons(m->m_pkthdr.len - skip);
 
 		/* Save protocol */
 		m_copydata(m, protoff, 1, (unsigned char *) &prot);
