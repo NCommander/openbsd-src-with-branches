@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.62 2007/11/25 23:37:01 marco Exp $ */
+/*	$OpenBSD: ipmi.c,v 1.63 2008/02/16 05:20:31 cnst Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave
@@ -1156,7 +1156,8 @@ get_sdr(struct ipmi_softc *sc, u_int16_t recid, u_int16_t *nxtrec)
 
 		if (get_sdr_partial(sc, recid, resid, offset, len,
 		    psdr + offset, NULL)) {
-			printf(": get chunk: %d,%d fails\n", offset, len);
+			printf("%s: get chunk: %d,%d fails\n", DEVNAME(sc),
+			    offset, len);
 			free(psdr, M_DEVBUF);
 			return (1);
 		}
