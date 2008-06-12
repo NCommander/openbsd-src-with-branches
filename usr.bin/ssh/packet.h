@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.46 2008/02/22 20:44:02 dtucker Exp $ */
+/* $OpenBSD: packet.h,v 1.47 2008/05/08 06:59:01 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -21,6 +21,7 @@
 #include <openssl/bn.h>
 
 void     packet_set_connection(int, int);
+void     packet_set_timeout(int, int);
 void     packet_set_nonblocking(void);
 int      packet_get_connection_in(void);
 int      packet_get_connection_out(void);
