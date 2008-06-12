@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs.h,v 1.29 2008/04/22 18:31:12 blambert Exp $	*/
+/*	$OpenBSD: nfs.h,v 1.30 2008/06/08 18:23:03 thib Exp $	*/
 /*	$NetBSD: nfs.h,v 1.10.4.1 1996/05/27 11:23:56 fvdl Exp $	*/
 
 /*
@@ -198,6 +198,7 @@ struct nfsstats {
 	uint64_t	srvcache_idemdonehits;
 	uint64_t	srvcache_nonidemdonehits;
 	uint64_t	srvcache_misses;
+	uint64_t	forcedsync;
 	uint64_t	srvnqnfs_leases;
 	uint64_t	srvnqnfs_maxleases;
 	uint64_t	srvnqnfs_getleases;

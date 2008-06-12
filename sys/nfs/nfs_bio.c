@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.48 2008/06/12 06:44:16 thib Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.49 2008/06/12 16:04:37 art Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -548,7 +548,8 @@ nfs_asyncio(bp)
 	int i;
 
 	if (nfs_numasync == 0)
-		return (EIO);
+		goto out;
+
 	for (i = 0; i < NFS_MAXASYNCDAEMON; i++) {
 	    if (nfs_iodwant[i]) {
 		if ((bp->b_flags & B_READ) == 0) {
@@ -562,6 +563,8 @@ nfs_asyncio(bp)
 	    }
 	}
 
+out:
+	nfsstats.forcedsync++;
 	return (EIO);
 }
 
