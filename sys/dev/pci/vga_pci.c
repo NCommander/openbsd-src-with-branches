@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_pci.c,v 1.31 2008/05/06 19:19:02 oga Exp $ */
+/* $OpenBSD: vga_pci.c,v 1.32 2008/06/03 17:14:21 brad Exp $ */
 /* $NetBSD: vga_pci.c,v 1.3 1998/06/08 06:55:58 thorpej Exp $ */
 
 /*
@@ -404,8 +404,13 @@ vga_pci_bar_init(struct vga_pci_softc *dev, struct pci_attach_args *pa)
 			dev->bars[i] = NULL;
 		}
 
-		addr+=4;
-		++i;
+		if (type == PCI_MAPREG_MEM_TYPE_64BIT) {
+			addr += 8;
+			i += 2;
+		} else {
+			addr+=4;
+			++i;
+		}
 	}
 }
 
