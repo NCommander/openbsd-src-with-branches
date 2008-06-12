@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.56 2007/02/20 04:39:45 cloder Exp $	*/
+/*	$OpenBSD: main.c,v 1.57 2008/05/29 19:58:15 sobrado Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -75,12 +75,14 @@ main(int argc, char **argv)
 		extern void grep_init(void);
 		extern void theo_init(void);
 		extern void mail_init(void);
+		extern void cmode_init(void);
 		extern void dired_init(void);
 
 		dired_init();
 		grep_init();
 		theo_init();
 		mail_init();
+		cmode_init();
 	}
 
 	if (init_fcn_name &&
