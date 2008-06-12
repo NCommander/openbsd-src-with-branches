@@ -1,4 +1,5 @@
-/*      $NetBSD: n_floor.c,v 1.1 1995/10/10 23:36:48 ragge Exp $ */
+/*	$OpenBSD$	*/
+/*	$NetBSD: n_floor.c,v 1.1 1995/10/10 23:36:48 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
