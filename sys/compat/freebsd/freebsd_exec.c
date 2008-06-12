@@ -1,4 +1,4 @@
-/*	$OpenBSD: freebsd_exec.c,v 1.16 2004/04/15 00:22:42 tedu Exp $	*/
+/*	$OpenBSD: freebsd_exec.c,v 1.17 2006/01/19 17:54:50 mickey Exp $	*/
 /*	$NetBSD: freebsd_exec.c,v 1.2 1996/05/18 16:02:08 christos Exp $	*/
 
 /*
@@ -165,6 +165,9 @@ freebsd_elf_probe(p, epp, itp, pos, os)
 	char *bp, *brand;
 	int error;
 	size_t len;
+
+	if (!(emul_freebsd_elf.e_flags & EMUL_ENABLED))
+		return (ENOEXEC);
 
 	/*
 	 * Older FreeBSD ELF binaries use a brand; newer ones use EI_OSABI
