@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.62 2008/06/04 21:12:50 deraadt Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.63 2008/06/07 17:19:28 miod Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -75,11 +75,11 @@ struct ELFNAME(probe_entry) {
 #ifdef COMPAT_FREEBSD
 	{ freebsd_elf_probe },
 #endif
-#ifdef COMPAT_SVR4
-	{ svr4_elf_probe },
-#endif
 #ifdef COMPAT_LINUX
 	{ linux_elf_probe },
+#endif
+#ifdef COMPAT_SVR4
+	{ svr4_elf_probe },
 #endif
 	{ NULL }
 };
