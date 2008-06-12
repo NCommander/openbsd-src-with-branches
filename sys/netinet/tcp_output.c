@@ -205,8 +205,7 @@ tcp_sack_adjust(struct tcpcb *tp)
  * Tcp output routine: figure out what should be sent and send it.
  */
 int
-tcp_output(tp)
-	struct tcpcb *tp;
+tcp_output(struct tcpcb *tp)
 {
 	struct socket *so = tp->t_inpcb->inp_socket;
 	long len, win, txmaxseg;
