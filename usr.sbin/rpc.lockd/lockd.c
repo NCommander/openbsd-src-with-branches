@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockd.c,v 1.8 2008/05/17 23:31:52 sobrado Exp $	*/
+/*	$OpenBSD: lockd.c,v 1.9 2008/06/13 21:32:26 sturm Exp $	*/
 
 /*
  * Copyright (c) 1995
@@ -186,5 +186,5 @@ sigalarm_handler(int s)
 static void
 usage()
 {
-	errx(1, "usage: rpc.lockd [-d <debuglevel>] [-g <grace period>]");
+	errx(1, "usage: rpc.lockd [-d [debug_level]] [-g grace_period]");
 }
