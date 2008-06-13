@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.h,v 1.7 2008/02/08 23:24:07 djm Exp $ */
+/* $OpenBSD: sftp.h,v 1.8 2008/04/18 12:32:11 djm Exp $ */
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -98,4 +98,4 @@
 struct passwd;
 
 int	sftp_server_main(int, char **, struct passwd *);
-void	sftp_server_cleanup_exit(int) __dead;
+void	sftp_server_cleanup_exit(int) __attribute__((noreturn));
