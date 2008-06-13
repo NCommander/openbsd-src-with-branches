@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: z8530var.h,v 1.5 2002/03/17 19:40:45 atatat Exp $	*/
 
 /*
