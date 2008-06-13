@@ -1,5 +1,5 @@
 /*	$NetBSD: spec.c,v 1.6 1995/03/07 21:12:12 cgd Exp $	*/
-/*	$OpenBSD: spec.c,v 1.22 2004/08/01 18:32:20 deraadt Exp $	*/
+/*	$OpenBSD: spec.c,v 1.23 2005/08/10 00:42:09 millert Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -34,7 +34,7 @@
 #if 0
 static const char sccsid[] = "@(#)spec.c	8.1 (Berkeley) 6/6/93";
 #else
-static const char rcsid[] = "$OpenBSD: spec.c,v 1.22 2004/08/01 18:32:20 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: spec.c,v 1.23 2005/08/10 00:42:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -65,8 +65,9 @@ spec(void)
 	char *buf, *tbuf = NULL;
 	size_t len;
 
-	centry = last = root = NULL;
+	last = root = NULL;
 	bzero(&ginfo, sizeof(ginfo));
+	centry = &ginfo;
 	c_cur = c_next = 0;
 	for (lineno = 1; (buf = fgetln(stdin, &len));
 	    ++lineno, c_cur = c_next, c_next = 0) {
@@ -91,10 +92,10 @@ spec(void)
 
 		/* See if next line is continuation line. */
 		if (buf[len - 1] == '\\') {
+			c_next = 1;
 			if (--len == 0)
 				continue;
 			buf[len] = '\0';
-			c_next = 1;
 		}
 
 #ifdef DEBUG
