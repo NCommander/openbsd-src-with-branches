@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.33 2008/06/11 01:27:31 robert Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.34 2008/06/12 22:16:16 robert Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -43,9 +43,6 @@
 #include <dev/usb/uvideo.h>
 
 #include <dev/video_if.h>
-
-#undef UVIDEO_DEBUG
-#undef UVIDEO_DUMP
 
 #ifdef UVIDEO_DEBUG
 int uvideo_debug = 1;
