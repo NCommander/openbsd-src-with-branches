@@ -1,4 +1,4 @@
-/*      $OpenBSD: athvar.h,v 1.19 2007/04/13 14:44:41 reyk Exp $  */
+/*      $OpenBSD: athvar.h,v 1.20 2007/06/06 21:41:32 reyk Exp $  */
 /*	$NetBSD: athvar.h,v 1.10 2004/08/10 01:03:53 dyoung Exp $	*/
 
 /*-
@@ -43,6 +43,8 @@
 
 #include <net80211/ieee80211_radiotap.h>
 #include <dev/ic/ar5xxx.h>
+
+#include "bpfilter.h"
 
 #ifdef notyet
 #include "gpio.h"
