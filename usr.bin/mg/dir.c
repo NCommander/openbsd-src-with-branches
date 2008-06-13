@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.17 2006/05/02 17:10:25 kjell Exp $	*/
+/*	$OpenBSD: dir.c,v 1.18 2007/05/28 17:52:17 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -24,7 +24,8 @@ dirinit(void)
 		ewprintf("Can't get current directory!");
 		chdir("/");
 	}
-	(void)strlcat(mgcwd, "/", sizeof(mgcwd));
+	if (!(mgcwd[0] == '/' && mgcwd [1] == '\0'))
+		(void)strlcat(mgcwd, "/", sizeof(mgcwd));
 }
 
 /*
