@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.196 2008/05/06 12:13:57 markus Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.197 2008/05/06 13:33:50 pyr Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -3580,7 +3580,7 @@ pfsync_status(void)
 
 	if (preq.pfsyncr_syncdev[0] != '\0') {
 		printf("\tpfsync: syncdev: %s ", preq.pfsyncr_syncdev);
-		if (preq.pfsyncr_syncpeer.s_addr != INADDR_PFSYNC_GROUP)
+		if (preq.pfsyncr_syncpeer.s_addr != htonl(INADDR_PFSYNC_GROUP))
 			printf("syncpeer: %s ",
 			    inet_ntoa(preq.pfsyncr_syncpeer));
 		printf("maxupd: %d\n", preq.pfsyncr_maxupdates);
