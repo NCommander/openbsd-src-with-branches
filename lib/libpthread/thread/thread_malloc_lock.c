@@ -1,4 +1,4 @@
-/* $OpenBSD: thread_malloc_lock.c,v 1.5 2006/02/22 07:16:32 otto Exp $ */
+/* $OpenBSD: thread_malloc_lock.c,v 1.6 2008/01/01 00:43:39 kurt Exp $ */
 /* Public Domain <marc@snafu.org> */
 
 #include <pthread.h>
@@ -18,11 +18,6 @@ void
 _thread_malloc_unlock()
 {
 	_SPINUNLOCK(&malloc_lock);
-}
-
-void
-_thread_malloc_init()
-{
 }
 
 void
