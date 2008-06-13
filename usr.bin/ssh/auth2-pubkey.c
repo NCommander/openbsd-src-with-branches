@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-pubkey.c,v 1.15 2006/08/03 03:34:41 deraadt Exp $ */
+/* $OpenBSD: auth2-pubkey.c,v 1.16 2008/06/13 04:40:22 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -31,6 +31,7 @@
 #include <pwd.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 #include "xmalloc.h"
 #include "ssh.h"
