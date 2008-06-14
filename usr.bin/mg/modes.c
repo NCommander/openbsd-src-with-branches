@@ -1,4 +1,4 @@
-/*	$OpenBSD: modes.c,v 1.16 2005/12/13 07:20:13 kjell Exp $	*/
+/*	$OpenBSD: modes.c,v 1.17 2008/06/11 23:23:55 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -69,15 +69,6 @@ int
 fillmode(int f, int n)
 {
 	return (changemode(f, n, "fill"));
-}
-
-/*
- * Fake the GNU "blink-matching-paren" variable.
- */
-int
-blinkparen(int f, int n)
-{
-	return (changemode(f, n, "blink"));
 }
 
 #ifdef NOTAB
