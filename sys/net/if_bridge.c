@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.168 2008/05/07 13:45:35 dlg Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.169 2008/05/21 21:12:07 mk Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -1470,7 +1470,7 @@ bridge_input(struct ifnet *ifp, struct ether_header *eh, struct mbuf *m)
 		if (bcmp(ac->ac_enaddr, eh->ether_dhost, ETHER_ADDR_LEN) == 0
 #if NCARP > 0
 		    || (ifl->ifp->if_carp && carp_ourether(ifl->ifp->if_carp,
-			eh, IFT_ETHER, 0) != NULL)
+			eh, 0) != NULL)
 #endif
 		    ) {
 			if (srcifl->bif_flags & IFBIF_LEARNING)
@@ -1493,7 +1493,7 @@ bridge_input(struct ifnet *ifp, struct ether_header *eh, struct mbuf *m)
 		if (bcmp(ac->ac_enaddr, eh->ether_shost, ETHER_ADDR_LEN) == 0
 #if NCARP > 0
 		    || (ifl->ifp->if_carp && carp_ourether(ifl->ifp->if_carp,
-			eh, IFT_ETHER, 1) != NULL)
+			eh, 1) != NULL)
 #endif
 		    ) {
 			m_freem(m);
