@@ -88,6 +88,8 @@
 #include <netinet/in_var.h>
 #include <netinet/ip_icmp.h>
 
+#include "pf.h"
+
 struct inpcbtable rawcbtable;
 
 /*
