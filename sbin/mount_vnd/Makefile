@@ -1,9 +1,11 @@
-# $OpenBSD: Makefile,v 1.4 2007/05/27 21:56:57 bluhm Exp $
+# $OpenBSD: Makefile,v 1.5 2007/09/05 07:12:35 grunk Exp $
 
 PROG=	mount_vnd
 SRCS=	mount_vnd.c pkcs5_pbkdf2.c
 LDADD=	-lutil -lcrypto
 DPADD=	${LIBUTIL}
+
+CDIAGFLAGS+=	-Wall
 
 LINKS=	${BINDIR}/mount_vnd ${BINDIR}/vnconfig
 MLINKS=	mount_vnd.8 vnconfig.8
