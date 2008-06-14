@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.32 2008/05/21 21:10:50 mk Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.33 2008/06/13 19:08:19 henning Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -63,10 +63,6 @@ __FBSDID("$FreeBSD: /repoman/r/ncvs/src/sys/net/bridgestp.c,v 1.25 2006/11/03 03
 #include <netinet/in_var.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
-#endif
-
-#if NBPFILTER > 0
-#include <net/bpf.h>
 #endif
 
 #include <net/if_bridge.h>
