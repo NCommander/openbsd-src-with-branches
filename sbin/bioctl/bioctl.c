@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.64 2008/06/12 16:08:48 jmc Exp $       */
+/* $OpenBSD: bioctl.c,v 1.65 2008/06/13 21:03:40 hshoexer Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -673,8 +673,11 @@ bio_createraid(u_int16_t level, char *dev_list)
 
 	rv = ioctl(devh, BIOCCREATERAID, &create);
 	memset(&kdfinfo, 0, sizeof(kdfinfo));
-	if (rv == -1)
+	if (rv == -1) {
+		if (errno == EPERM)
+			errx(1, "Incorrect passphrase");
 		err(1, "BIOCCREATERAID");
+	}
 
 	free(dt);
 }
