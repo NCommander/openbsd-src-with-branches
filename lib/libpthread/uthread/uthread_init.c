@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_init.c,v 1.40 2007/07/20 22:34:40 kettenis Exp $	*/
+/*	$OpenBSD: uthread_init.c,v 1.41 2008/01/01 00:43:39 kurt Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -130,7 +130,6 @@ static void *references[] = {
 	&write,
 	&writev,
 	/* libc thread-safe helper functions */
-	&_thread_malloc_init,
 	&_thread_malloc_lock,
 	&_thread_malloc_unlock,
 	&_thread_atexit_lock,
