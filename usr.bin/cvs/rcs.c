@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.270 2008/06/12 07:16:14 joris Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.271 2008/06/12 17:06:17 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -3542,7 +3542,7 @@ rcs_translate_tag(const char *revstr, RCSFILE *rfp)
 			if (rdp->rd_next->rn_len == 0)
 				break;
 			if ((rdp = rcs_findrev(rfp, rdp->rd_next)) == NULL)
-				fatal("rcs_get_revision: could not fetch "
+				fatal("rcs_translate_tag: could not fetch "
 				    "branch delta");
 		}
 
