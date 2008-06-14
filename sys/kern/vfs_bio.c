@@ -773,6 +773,17 @@ brelse(struct buf *bp)
 		 * pool.
 		 */
 		if (bp->b_data == NULL && bp->b_pobj == NULL) {
+			/*
+			 * Wake up any processes waiting for _this_ buffer to
+			 * become free. They are not allowed to grab it
+			 * since it will be freed. But the only sleeper is
+			 * getblk and it's restarting the operation after
+			 * sleep.
+			 */
+			if (ISSET(bp->b_flags, B_WANTED)) {
+				CLR(bp->b_flags, B_WANTED);
+				wakeup(bp);
+			}
 			buf_put(bp);
 			splx(s);
 			return;
