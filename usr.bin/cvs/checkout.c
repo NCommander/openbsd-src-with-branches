@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.153 2008/06/14 03:19:15 joris Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.154 2008/06/14 03:58:29 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -469,6 +469,8 @@ cvs_checkout_file(struct cvs_file *cf, RCSNUM *rnum, char *tag, int co_flags)
 
 	if (!(co_flags & CO_REMOVE))
 		rcsnum_tostr(rnum, rev, sizeof(rev));
+	else
+		rev[0] = '\0';
 
 	cvs_log(LP_TRACE, "cvs_checkout_file(%s, %s, %d) -> %s",
 	    cf->file_path, rev, co_flags,

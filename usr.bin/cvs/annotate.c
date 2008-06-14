@@ -1,4 +1,4 @@
-/*	$OpenBSD: annotate.c,v 1.58 2008/06/09 16:34:22 tobias Exp $	*/
+/*	$OpenBSD: annotate.c,v 1.59 2008/06/14 03:58:29 tobias Exp $	*/
 /*
  * Copyright (c) 2007 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -163,7 +163,7 @@ cvs_annotate_local(struct cvs_file *cf)
 
 	cvs_file_classify(cf, cvs_directory_tag);
 
-	if (cf->file_rcs == NULL)
+	if (cf->file_rcs == NULL || cf->file_rcs->rf_head == NULL)
 		return;
 
 	if (cvs_specified_tag != NULL) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: admin.c,v 1.60 2008/06/11 01:43:35 joris Exp $	*/
+/*	$OpenBSD: admin.c,v 1.61 2008/06/13 17:15:13 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
@@ -364,10 +364,14 @@ cvs_admin_local(struct cvs_file *cf)
 				xfree(state);
 				return;
 			}
-		} else {
+		} else if (cf->file_rcs->rf_head != NULL) {
 			state = xstrdup(statestr);
 			logrev = rcsnum_alloc();
 			rcsnum_cpy(cf->file_rcs->rf_head, logrev, 0);
+		} else {
+			cvs_log(LP_ERR, "head revision missing");
+			cvs_argv_destroy(sargv);
+			return;
 		}
 
 		if (rcs_state_check(state) < 0) {
