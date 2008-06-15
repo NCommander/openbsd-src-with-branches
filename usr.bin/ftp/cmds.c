@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmds.c,v 1.57 2007/09/11 15:47:17 gilles Exp $	*/
+/*	$OpenBSD: cmds.c,v 1.58 2008/05/13 02:09:38 ray Exp $	*/
 /*	$NetBSD: cmds.c,v 1.27 1997/08/18 10:20:15 lukem Exp $	*/
 
 /*
@@ -60,7 +60,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static const char rcsid[] = "$OpenBSD: cmds.c,v 1.57 2007/09/11 15:47:17 gilles Exp $";
+static const char rcsid[] = "$OpenBSD: cmds.c,v 1.58 2008/05/13 02:09:38 ray Exp $";
 #endif /* not lint and not SMALL */
 
 /*
@@ -1259,8 +1259,10 @@ user(int argc, char *argv[])
 		if (argc < 4) {
 			(void)fputs("Account: ", ttyout);
 			(void)fflush(ttyout);
-			if (fgets(acctname, sizeof(acctname), stdin) == NULL)
+			if (fgets(acctname, sizeof(acctname), stdin) == NULL) {
+				clearerr(stdin);
 				goto fail;
+			}
 
 			acctname[strcspn(acctname, "\n")] = '\0';
 
