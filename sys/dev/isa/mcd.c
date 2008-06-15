@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcd.c,v 1.48 2007/06/18 20:55:52 deraadt Exp $ */
+/*	$OpenBSD: mcd.c,v 1.49 2007/06/20 18:15:46 deraadt Exp $ */
 /*	$NetBSD: mcd.c,v 1.60 1998/01/14 12:14:41 drochner Exp $	*/
 
 /*
@@ -507,8 +507,7 @@ mcdstrategy(bp)
 	 * Do bounds checking, adjust transfer. if error, process.
 	 * If end of partition, just return.
 	 */
-	if (DISKPART(bp->b_dev) != RAW_PART &&
-	    bounds_check_with_label(bp, sc->sc_dk.dk_label,
+	if (bounds_check_with_label(bp, sc->sc_dk.dk_label,
 	    (sc->flags & (MCDF_WLABEL|MCDF_LABELLING)) != 0) <= 0)
 		goto done;
 	

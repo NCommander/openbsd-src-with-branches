@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.68 2007/12/05 23:11:34 jsg Exp $ */
+/*	$OpenBSD: wd.c,v 1.69 2008/02/07 12:58:30 sthen Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -481,8 +481,7 @@ wdstrategy(struct buf *bp)
 	 * Do bounds checking, adjust transfer. if error, process.
 	 * If end of partition, just return.
 	 */
-	if (DISKPART(bp->b_dev) != RAW_PART &&
-	    bounds_check_with_label(bp, wd->sc_dk.dk_label,
+	if (bounds_check_with_label(bp, wd->sc_dk.dk_label,
 	    (wd->sc_flags & (WDF_WLABEL|WDF_LABELLING)) != 0) <= 0)
 		goto done;
 	/* Queue transfer on drive, activate drive and controller if idle. */
