@@ -91,6 +91,9 @@ sub delete_installed
 
 sub installed_stems
 {
+	if (!defined $list) {
+		_init_list();
+	}
 	return $stemlist;
 }
 
