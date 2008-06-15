@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.74 2007/06/13 13:52:26 pyr Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.75 2007/11/26 12:39:00 martynas Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static const char rcsid[] = "$OpenBSD: fetch.c,v 1.74 2007/06/13 13:52:26 pyr Exp $";
+static const char rcsid[] = "$OpenBSD: fetch.c,v 1.75 2007/11/26 12:39:00 martynas Exp $";
 #endif /* not lint and not SMALL */
 
 /*
@@ -984,7 +984,8 @@ bad_ftp_url:
 		if (debug)
 			fprintf(ttyout,
 			    "user %s:%s host %s port %s dir %s file %s\n",
-			    username, pass, host, portnum, dir, file);
+			    username, pass ? "XXXX" : NULL, host, portnum,
+			    dir, file);
 
 		/*
 		 * Set up the connection.
