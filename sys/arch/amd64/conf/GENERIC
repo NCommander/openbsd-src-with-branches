@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.233 2008/06/11 09:22:39 phessler Exp $
+#	$OpenBSD: GENERIC,v 1.234 2008/06/12 19:45:05 robert Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -50,7 +50,7 @@ acpiprt*	at acpi?
 acpitz*		at acpi?
 acpithinkpad*	at acpi?
 
-ipmi0	at mainbus? disable	# IPMI
+ipmi0	at mainbus?		# IPMI
 
 option		PCIVERBOSE
 option		USBVERBOSE
