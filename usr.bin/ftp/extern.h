@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.30 2007/06/13 13:52:26 pyr Exp $	*/
+/*	$OpenBSD: extern.h,v 1.31 2007/06/16 08:58:33 espie Exp $	*/
 /*	$NetBSD: extern.h,v 1.17 1997/08/18 10:20:19 lukem Exp $	*/
 
 /*
@@ -82,7 +82,7 @@ int	command(const char *, ...);
 unsigned char complete(EditLine *, int);
 void	controlediting(void);
 #endif /* !SMALL */
-int	confirm(const char *, const char *);
+int	confirm(const char *, const char *, int);
 FILE   *dataconn(const char *);
 void	deletecmd(int, char **);
 void	disconnect(int, char **);
