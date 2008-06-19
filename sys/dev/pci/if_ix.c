@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.5 2008/06/08 21:15:34 reyk Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.6 2008/06/09 07:07:16 djm Exp $	*/
 
 /******************************************************************************
 
@@ -1229,6 +1229,8 @@ ixgbe_identify_hardware(struct ix_softc *sc)
 		break;
 	case PCI_PRODUCT_INTEL_82598AT_DUAL:
 	case PCI_PRODUCT_INTEL_82598AT:
+		sc->optics = IFM_10G_T;
+		break;
 	default:
 		sc->optics = IFM_AUTO;
 		break;
