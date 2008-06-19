@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
  *
