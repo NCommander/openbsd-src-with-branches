@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.6 2003/06/03 02:56:06 millert Exp $	*/
+/*	$OpenBSD: util.c,v 1.7 2003/07/01 01:01:28 avsm Exp $	*/
 /*	$NetBSD: util.c,v 1.4 1995/03/26 04:55:35 glass Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)util.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: util.c,v 1.6 2003/06/03 02:56:06 millert Exp $";
+static char rcsid[] = "$OpenBSD: util.c,v 1.7 2003/07/01 01:01:28 avsm Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,7 +67,6 @@ ttoa(char *buf, size_t len, time_t tval)
 int
 atot(char *p, time_t *store)
 {
-	static struct tm *lt;
 	struct tm tm;
 	time_t tval;
 	char *t;
@@ -75,11 +74,6 @@ atot(char *p, time_t *store)
 	if (!*p) {
 		*store = 0;
 		return (0);
-	}
-	if (!lt) {
-		unsetenv("TZ");
-		(void)time(&tval);
-		lt = localtime(&tval);
 	}
 	(void) memset(&tm, 0, sizeof(tm));
 	for (t = p; (t = strchr(t, ',')) != NULL; t++)
