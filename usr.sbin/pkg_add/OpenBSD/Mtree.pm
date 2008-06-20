@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Mtree.pm,v 1.3 2007/04/15 10:17:29 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2004-2005 Marc Espie <espie@openbsd.org>
 #
@@ -36,6 +36,8 @@ sub parse_fh
 		if ($_ eq '..') {
 			$basedir =~ s|/[^/]*$||o;
 			next;
+		} elsif (m/^\//) {
+			$basedir = $_;
 		} else {
 			$basedir.="/$_";
 		}
