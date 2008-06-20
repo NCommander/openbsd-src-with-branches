@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_sem.c,v 1.1 2002/01/18 22:07:27 fgsch Exp $	*/
+/*	$OpenBSD: uthread_sem.c,v 1.2 2007/05/18 19:28:50 kurt Exp $	*/
 /*
  * Copyright (C) 2000 Jason Evans <jasone@freebsd.org>.
  * All rights reserved.
@@ -38,7 +38,9 @@
 #include "pthread_private.h"
 
 #define _SEM_CHECK_VALIDITY(sem)		\
-	if ((*(sem))->magic != SEM_MAGIC) {	\
+	if ((sem) == NULL ||			\
+	    *(sem) == NULL ||			\
+	    (*(sem))->magic != SEM_MAGIC) {	\
 		errno = EINVAL;			\
 		retval = -1;			\
 		goto RETURN;			\
