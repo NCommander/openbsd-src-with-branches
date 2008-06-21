@@ -401,6 +401,9 @@ sub really_add
 		$plist->get(DISPLAY)->prepare($state);
 	}
 	$set->{solver}->adjust_old_dependencies($state);
+	if ($state->{repairdependencies}) {
+		$set->{solver}->repair_dependencies($state);
+	}
 }
 
 sub install_set
@@ -470,6 +473,13 @@ sub install_set
 			return ();
 		}
 	}
+#	if (!$set->{solver}->solve_tags($state)) {
+#		$location->close_now;
+#		if (!$defines{libdepends}) {
+#			$bad++;
+#			return ();
+#		}
+#	}
 	really_add($set, $state);
 	$location->wipe_info;
 	delete $handle->{plist};
