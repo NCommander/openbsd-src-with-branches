@@ -20,7 +20,7 @@ use warnings;
 
 package OpenBSD::Error;
 our @ISA=qw(Exporter);
-our @EXPORT=qw(System VSystem Copy Fatal Warn Usage set_usage 
+our @EXPORT=qw(System VSystem Copy Unlink Fatal Warn Usage set_usage 
     try throw catch catchall rethrow);
 
 our ($FileName, $Line, $FullMessage);
@@ -116,6 +116,18 @@ sub Copy
 	my $r = File::Copy::copy(@_);
 	if (!$r) {
 		print "copy(", join(',', @_),") failed: $!\n";
+	}
+	return $r;
+}
+
+sub Unlink
+{
+	my $verbose = shift;
+	my $r = unlink @_;
+	if ($r != @_) {
+		print "rm @_ failed: removed only $r targets, $!\n";
+	} elsif ($verbose) {
+		print "rm @_\n";
 	}
 	return $r;
 }
