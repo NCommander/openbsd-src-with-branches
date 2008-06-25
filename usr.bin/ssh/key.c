@@ -1,4 +1,4 @@
-/* $OpenBSD: key.c,v 1.75 2008/06/12 06:32:59 grunk Exp $ */
+/* $OpenBSD: key.c,v 1.76 2008/06/12 22:03:36 grunk Exp $ */
 /*
  * read_bignum():
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -374,11 +374,11 @@ key_fingerprint_randomart(u_char *dgst_raw, u_int dgst_raw_len, const Key *k)
 	field[x][y] = len;
 
 	/* fill in retval */
-	snprintf(retval, 10, "+--[%4s]", key_type(k));
+	snprintf(retval, FLDSIZE_X, "+--[%4s %4u]", key_type(k), key_size(k));
 	p = strchr(retval, '\0');
 
 	/* output upper border */
-	for (i = 0; i < FLDSIZE_X - 8; i++)
+	for (i = p - retval - 1; i < FLDSIZE_X; i++)
 		*p++ = '-';
 	*p++ = '+';
 	*p++ = '\n';
