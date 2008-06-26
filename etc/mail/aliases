@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: aliases,v 1.24 2008/01/31 14:18:03 reyk Exp $
+#	$OpenBSD: aliases,v 1.25 2008/06/16 03:45:50 david Exp $
 #
 #  Aliases in this file will NOT be expanded in the header from
 #  Mail, but WILL be visible over networks or from /usr/libexec/mail.local.
@@ -51,6 +51,7 @@ _syslogd: /dev/null
 _tcpdump: /dev/null
 _tftpd: /dev/null
 _x11:   /dev/null
+_ypldap: /dev/null
 bin:	/dev/null
 named:	/dev/null
 nobody:	/dev/null
