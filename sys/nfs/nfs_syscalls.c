@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.65 2008/06/13 22:19:35 blambert Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.66 2008/06/14 19:33:58 beck Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -426,6 +426,8 @@ nfssvc_nfsd(nsd, argp, p)
 			nfsstats.srvrpccnt[nd->nd_procnum]++;
 			nfsrv_updatecache(nd, TRUE, mreq);
 			nd->nd_mrep = (struct mbuf *)0;
+
+			/* FALLTHROUGH */
 		    case RC_REPLY:
 			m = mreq;
 			siz = 0;
