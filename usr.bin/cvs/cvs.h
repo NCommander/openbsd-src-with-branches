@@ -38,8 +38,8 @@
 #include "util.h"
 #include "xmalloc.h"
 
-#define CVS_VERSION_MINOR	"0"
-#define CVS_VERSION_MAJOR	"1"
+#define CVS_VERSION_MAJOR	"4"
+#define CVS_VERSION_MINOR	"4"
 #define CVS_VERSION_PORT
 
 #define CVS_VERSION		\
