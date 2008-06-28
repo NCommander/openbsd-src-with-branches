@@ -3,7 +3,7 @@
 CFLAGS+=	-I${.CURDIR}/..
 
 CDIAGFLAGS=	-Wall
-CDIAGFLAGS+=	-Werror
+#CDIAGFLAGS+=	-Werror
 CDIAGFLAGS+=	-Wpointer-arith
 CDIAGFLAGS+=	-Wno-uninitialized
 CDIAGFLAGS+=	-Wstrict-prototypes
@@ -13,7 +13,7 @@ CDIAGFLAGS+=	-Wsign-compare
 CDIAGFLAGS+=	-Wbounded
 CDIAGFLAGS+=	-Wshadow
 
-DEBUG=-g
+#DEBUG=-g
 
 #CFLAGS+=	-DSMARTCARD
 #LDADD+=	-lsectok
