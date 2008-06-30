@@ -1,12 +1,10 @@
-#	$OpenBSD$
+#	$OpenBSD: putty-ciphers.sh,v 1.1 2007/12/21 04:13:53 djm Exp $
 #	Placed in the Public Domain.
 
 tid="putty ciphers"
 
 DATA=/bin/ls
 COPY=${OBJ}/copy
-
-set -e
 
 if test "x$REGRESS_INTEROP_PUTTY" != "xyes" ; then
 	fatal "putty interop tests not enabled"
