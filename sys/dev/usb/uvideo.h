@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.h,v 1.14 2008/06/09 20:51:31 mglocker Exp $ */
+/*	$OpenBSD: uvideo.h,v 1.15 2008/06/26 21:00:27 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -351,7 +351,7 @@ struct uvideo_sample_buffer {
 	uint8_t		*buf;
 };
 
-#define UVIDEO_MAX_BUFFERS	256
+#define UVIDEO_MAX_BUFFERS	32
 struct uvideo_mmap {
 	SIMPLEQ_ENTRY(uvideo_mmap)	q_frames;
 	/*
