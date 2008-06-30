@@ -1,4 +1,4 @@
-/*	$OpenBSD: logwtmp.c,v 1.8 2003/12/10 22:57:12 deraadt Exp $	*/
+/*	$OpenBSD: logwtmp.c,v 1.9 2004/11/28 20:24:51 deraadt Exp $	*/
 /*	$NetBSD: logwtmp.c,v 1.4 1995/04/11 02:44:58 cgd Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
 static const char sccsid[] = "@(#)logwtmp.c	8.1 (Berkeley) 6/4/93";
 #else
 static const char rcsid[] =
-    "$OpenBSD: logwtmp.c,v 1.8 2003/12/10 22:57:12 deraadt Exp $";
+    "$OpenBSD: logwtmp.c,v 1.9 2004/11/28 20:24:51 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,6 +51,8 @@ static const char rcsid[] =
 #include <string.h>
 
 #include <netinet/in.h>
+
+#include "monitor.h"
 #include "extern.h"
 
 static int fd = -1;
