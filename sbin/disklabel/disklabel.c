@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.129 2008/06/25 15:26:43 reyk Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.130 2008/06/25 18:31:07 otto Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -39,7 +39,7 @@ static const char copyright[] =
 #endif /* not lint */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.129 2008/06/25 15:26:43 reyk Exp $";
+static const char rcsid[] = "$OpenBSD: disklabel.c,v 1.130 2008/06/25 18:31:07 otto Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -605,7 +605,7 @@ findopenbsd(int f, off_t mbroff, struct dos_partition **first, int *n)
 struct dos_partition *
 readmbr(int f)
 {
-	struct dos_partition *dp, *first;
+	struct dos_partition *dp, *first = NULL;
 	int part, n = 8;
 
 	dp = findopenbsd(f, DOSBBSECTOR, &first, &n);
