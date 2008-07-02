@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.h,v 1.87 2008/06/12 06:58:40 deraadt Exp $	*/
+/*	$OpenBSD: mount.h,v 1.88 2008/06/13 01:59:45 rainer Exp $	*/
 /*	$NetBSD: mount.h,v 1.48 1996/02/18 11:55:47 fvdl Exp $	*/
 
 /*
@@ -504,6 +504,7 @@ struct bcachestats {
 };
 #ifdef _KERNEL
 extern struct bcachestats bcstats;
+#define BUFPAGES_DEFICIT (bufpages - bcstats.numbufpages)
 #endif
 
 /*
