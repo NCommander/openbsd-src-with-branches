@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.14 2008/02/26 10:09:58 mpf Exp $ */
+/*	$OpenBSD: parse.y,v 1.15 2008/02/27 15:36:42 mpf Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -843,6 +843,11 @@ struct iface *
 conf_get_if(struct kif *kif)
 {
 	struct iface	*i;
+
+	if (kif->ifindex >= MAXVIFS) {
+		yyerror("interface %s index too large", kif->ifname);
+		return (NULL);
+	}
 
 	LIST_FOREACH(i, &conf->iface_list, entry)
 		if (i->ifindex == kif->ifindex) {
