@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-pubkey.c,v 1.17 2008/06/13 14:18:51 dtucker Exp $ */
+/* $OpenBSD: auth2-pubkey.c,v 1.18 2008/07/02 12:03:51 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -190,7 +190,6 @@ user_key_allowed2(struct passwd *pw, Key *key, char *file)
 	f = auth_openkeyfile(file, pw, options.strict_modes);
 
 	if (!f) {
-		xfree(file);
 		restore_uid();
 		return 0;
 	}
