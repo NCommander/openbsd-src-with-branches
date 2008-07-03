@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.547 2008/06/10 04:28:54 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.548 2008/06/10 20:55:02 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -3579,9 +3579,11 @@ label		: LABEL STRING			{
 
 qname		: QUEUE STRING				{
 			$$.qname = $2;
+			$$.pqname = NULL;
 		}
 		| QUEUE '(' STRING ')'			{
 			$$.qname = $3;
+			$$.pqname = NULL;
 		}
 		| QUEUE '(' STRING comma STRING ')'	{
 			$$.qname = $3;
