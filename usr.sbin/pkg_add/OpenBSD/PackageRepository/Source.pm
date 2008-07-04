@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Source.pm,v 1.6 2007/06/16 09:29:37 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
@@ -26,12 +26,6 @@ use OpenBSD::Paths;
 sub urlscheme
 {
 	return 'src';
-}
-
-sub _new
-{
-	my ($class, $baseurl) = @_;
-	bless { baseurl => $baseurl }, $class;
 }
 
 sub build_package
