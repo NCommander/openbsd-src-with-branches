@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.604 2008/07/03 15:46:23 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.605 2008/07/04 00:09:31 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -685,8 +685,8 @@ pf_state_key_attach(struct pf_state_key *sk, struct pf_state *s, int idx)
 			}
 		pool_put(&pf_state_key_pl, sk);
 		s->key[idx] = cur;
-	}
-	s->key[idx] = sk;
+	} else
+		s->key[idx] = sk;
 
 	if ((si = pool_get(&pf_state_item_pl, PR_NOWAIT)) == NULL) {
 		pf_state_key_detach(s, idx);
