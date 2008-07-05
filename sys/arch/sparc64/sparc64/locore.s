@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.141 2008/06/01 12:13:47 kettenis Exp $	*/
+/*	$OpenBSD: locore.s,v 1.142 2008/06/01 21:29:48 kettenis Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -4973,7 +4973,6 @@ tmpstack:
 ENTRY(cpu_mp_startup)
 	mov	%o0, %g2
 
-	wrpr	%g0, 0, %cleanwin
 	wrpr	%g0, 13, %pil
 	wrpr	%g0, PSTATE_INTR|PSTATE_PEF, %pstate
 	wr	%g0, FPRS_FEF, %fprs		! Turn on FPU
