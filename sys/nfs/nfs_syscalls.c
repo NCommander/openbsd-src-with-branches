@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.68 2008/07/05 12:51:04 thib Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.69 2008/07/06 13:33:54 thib Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -290,10 +290,9 @@ nfssvc_nfsd(nsd, argp, p)
 	u_quad_t cur_usec;
 	struct timeval tv;
 
-#ifndef nolint
 	cacherep = RC_DOIT;
 	writes_todo = 0;
-#endif
+
 	s = splsoftnet();
 	if (nfsd == NULL) {
 		nsd->nsd_nfsd = nfsd = malloc(sizeof(struct nfsd), M_NFSD,
