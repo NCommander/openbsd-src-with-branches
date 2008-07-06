@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC.MP,v 1.1 2007/10/17 21:31:13 kettenis Exp $
+#	$OpenBSD: GENERIC.MP,v 1.2 2008/06/10 00:02:09 kettenis Exp $
 
 include "arch/sparc64/conf/GENERIC"
 
@@ -6,4 +6,5 @@ option	MULTIPROCESSOR
 #option	MP_LOCKDEBUG
 
 cpu*	at mainbus?
+cpu*	at ssm?
 cpu*	at cmp?
