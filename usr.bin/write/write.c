@@ -1,4 +1,4 @@
-/*	$OpenBSD: write.c,v 1.23 2005/07/04 01:54:11 djm Exp $	*/
+/*	$OpenBSD: write.c,v 1.24 2006/10/04 21:13:42 deraadt Exp $	*/
 /*	$NetBSD: write.c,v 1.5 1995/08/31 21:48:32 jtc Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)write.c	8.2 (Berkeley) 4/27/95";
 #endif
-static char *rcsid = "$OpenBSD: write.c,v 1.23 2005/07/04 01:54:11 djm Exp $";
+static char *rcsid = "$OpenBSD: write.c,v 1.24 2006/10/04 21:13:42 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -117,7 +117,7 @@ main(int argc, char *argv[])
 		do_write(argv[2], mytty, myuid);
 		break;
 	default:
-		(void)fprintf(stderr, "usage: write user [tty]\n");
+		(void)fprintf(stderr, "usage: write user [ttyname]\n");
 		exit(1);
 	}
 	done(0);
