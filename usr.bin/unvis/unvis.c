@@ -1,4 +1,4 @@
-/*	$OpenBSD: unvis.c,v 1.6 2003/06/03 02:56:21 millert Exp $	*/
+/*	$OpenBSD: unvis.c,v 1.7 2003/06/10 22:20:53 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -39,7 +39,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)unvis.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$OpenBSD: unvis.c,v 1.6 2003/06/03 02:56:21 millert Exp $";
+static char rcsid[] = "$OpenBSD: unvis.c,v 1.7 2003/06/10 22:20:53 deraadt Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -59,7 +59,7 @@ main(int argc, char *argv[])
 		switch((char)ch) {
 		case '?':
 		default:
-			(void) fprintf(stderr, "usage: unvis [file...]\n");
+			(void) fprintf(stderr, "usage: unvis [file ...]\n");
 			exit(1);
 		}
 	argc -= optind;
