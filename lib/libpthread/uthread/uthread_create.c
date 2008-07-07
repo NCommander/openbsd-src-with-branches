@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthread_create.c,v 1.20 2004/02/16 22:51:11 brad Exp $	*/
+/*	$OpenBSD: uthread_create.c,v 1.21 2005/01/23 19:23:47 kettenis Exp $	*/
 /*
  * Copyright (c) 1995-1998 John Birrell <jb@cimlogic.com.au>
  * All rights reserved.
@@ -84,17 +84,13 @@ pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		} else {
 			pattr = *attr;
 		}
-		/* Check if a stack was specified in the thread attributes: */
-		if ((stack = pattr->stackaddr_attr) != NULL) {
-		}
+
 		/* Allocate a stack: */
-		else {
-			stack = _thread_stack_alloc(pattr->stackaddr_attr,
-			    pattr->stacksize_attr);
-			if (stack == NULL) {
-				ret = EAGAIN;
-				free(new_thread);
-			}
+		stack = _thread_stack_alloc(pattr->stackaddr_attr,
+		    pattr->stacksize_attr);
+		if (stack == NULL) {
+			ret = EAGAIN;
+			free(new_thread);
 		}
 
 		/* Check for errors: */
