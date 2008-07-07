@@ -1337,7 +1337,8 @@ vic_alloc_mbuf(struct vic_softc *sc, bus_dmamap_t map)
 		m_freem(m);
 		return (NULL);
 	}
-	m->m_len = m->m_pkthdr.len = MCLBYTES;
+	m->m_data += ETHER_ALIGN;
+	m->m_len = m->m_pkthdr.len = MCLBYTES - ETHER_ALIGN;
 
 	if (bus_dmamap_load_mbuf(sc->sc_dmat, map, m, BUS_DMA_NOWAIT) != 0) {
 		printf("%s: could not load mbuf DMA map", DEVNAME(sc));
