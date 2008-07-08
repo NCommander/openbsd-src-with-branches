@@ -1,4 +1,4 @@
-/*	$OpenBSD: complete.c,v 1.19 2006/06/23 20:35:25 steven Exp $	*/
+/*	$OpenBSD: complete.c,v 1.20 2008/06/26 05:42:20 ray Exp $	*/
 /*	$NetBSD: complete.c,v 1.10 1997/08/18 10:20:18 lukem Exp $	*/
 
 /*-
@@ -32,7 +32,7 @@
 
 #ifndef SMALL
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: complete.c,v 1.19 2006/06/23 20:35:25 steven Exp $";
+static const char rcsid[] = "$OpenBSD: complete.c,v 1.20 2008/06/26 05:42:20 ray Exp $";
 #endif /* not lint */
 
 /*
@@ -234,8 +234,10 @@ complete_remote(char *word, int list)
 
 		mflag = 1;
 		emesg = NULL;
+#ifndef SMALL
 		if (debug)
 			(void)putc('\n', ttyout);
+#endif /* !SMALL */
 		while ((cp = remglob(dummyargv, 0, &emesg)) != NULL) {
 			char *tcp;
 
