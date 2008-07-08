@@ -441,6 +441,10 @@ file dev/radio.c			radio	needs-flag
 device	ipmi
 file	dev/ipmi.c			ipmi	needs-flag
 
+# VMware Tools
+device	vmt
+file	dev/vmt.c			vmt	needs-flag
+
 # Software RAID
 device	softraid: scsi
 attach	softraid at root

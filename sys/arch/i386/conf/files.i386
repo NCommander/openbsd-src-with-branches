@@ -430,6 +430,9 @@ file	arch/i386/i386/acpi_machdep.c		acpi
 #
 attach	ipmi at mainbus
 
+# VMware Tools
+attach	vmt at mainbus
+
 # Dell Embedded Systems Management
 device	esm
 attach	esm at mainbus
