@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.103 2008/06/11 18:21:20 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.104 2008/07/09 10:50:34 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -275,6 +275,7 @@ struct ctl_natlook {
 	in_port_t		 rsport;
 	in_port_t		 rdport;
 	int			 in;
+	int			 proto;
 };
 
 struct ctl_bindany {
