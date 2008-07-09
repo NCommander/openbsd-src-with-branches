@@ -15,7 +15,7 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $OpenBSD: shuffle.c,v 1.2 2008/03/02 22:39:12 djm Exp $ */
+/* $OpenBSD: shuffle.c,v 1.3 2008/03/15 04:57:50 djm Exp $ */
 
 #include <config.h>
 
@@ -31,7 +31,6 @@
 void
 isc_shuffle_init(isc_shuffle_t *shuffle)
 {
-	isc_uint16_t r;
 	int i, i2;
 
 	REQUIRE(VALID_SHUFFLE(shuffle));
