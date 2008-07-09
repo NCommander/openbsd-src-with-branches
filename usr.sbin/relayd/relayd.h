@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.102 2008/05/08 02:27:58 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.103 2008/06/11 18:21:20 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -558,7 +558,7 @@ struct protocol {
 	struct proto_tree	 response_tree;
 
 	int			(*cmp)(struct session *, struct session *);
-	void			*(*validate)(struct relay *,
+	void			*(*validate)(struct session *, struct relay *,
 				    struct sockaddr_storage *,
 				    u_int8_t *, size_t);
 	int			(*request)(struct session *);
