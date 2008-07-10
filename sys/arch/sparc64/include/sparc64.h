@@ -55,6 +55,7 @@ int prom_dtlb_load(int index, u_int64_t data, vaddr_t vaddr);
 void prom_start_cpu(int cpu, void *func, long arg);
 void prom_start_cpu_by_cpuid(int cpu, void *func, long arg);
 const char *prom_serengeti_set_console_input(const char *);
+time_t prom_opl_get_tod(void);
 
 /*
  * Debug

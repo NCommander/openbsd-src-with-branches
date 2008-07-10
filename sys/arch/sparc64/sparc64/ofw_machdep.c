@@ -762,6 +762,27 @@ prom_serengeti_set_console_input(const char *new)
 	return (const char *)args.old;
 }
 
+time_t
+prom_opl_get_tod(void)
+{
+	static struct {
+		cell_t  name;
+		cell_t  nargs;
+		cell_t  nreturns;
+		cell_t  stick;
+		cell_t  time;
+	} args;
+
+	args.name = ADR2CELL("FJSV,get-tod");
+	args.nargs = 0;
+	args.nreturns = 2;
+
+	if (openfirmware(&args) == -1)
+		return (time_t)-1;
+
+	return (time_t)args.time;
+}
+
 #ifdef DEBUG
 int ofmapintrdebug = 0;
 #define	DPRINTF(x)	do { if (ofmapintrdebug) printf x; } while (0)
