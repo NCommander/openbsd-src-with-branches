@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.c,v 1.61 2008/05/08 12:02:23 djm Exp $ */
+/* $OpenBSD: monitor_wrap.c,v 1.62 2008/05/08 12:21:16 djm Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -561,7 +561,7 @@ mm_send_keystate(struct monitor *monitor)
 	u_char *blob, *p;
 	u_int bloblen, plen;
 	u_int32_t seqnr, packets;
-	u_int64_t blocks;
+	u_int64_t blocks, bytes;
 
 	buffer_init(&m);
 
@@ -610,14 +610,16 @@ mm_send_keystate(struct monitor *monitor)
 	buffer_put_string(&m, blob, bloblen);
 	xfree(blob);
 
-	packet_get_state(MODE_OUT, &seqnr, &blocks, &packets);
+	packet_get_state(MODE_OUT, &seqnr, &blocks, &packets, &bytes);
 	buffer_put_int(&m, seqnr);
 	buffer_put_int64(&m, blocks);
 	buffer_put_int(&m, packets);
-	packet_get_state(MODE_IN, &seqnr, &blocks, &packets);
+	buffer_put_int64(&m, bytes);
+	packet_get_state(MODE_IN, &seqnr, &blocks, &packets, &bytes);
 	buffer_put_int(&m, seqnr);
 	buffer_put_int64(&m, blocks);
 	buffer_put_int(&m, packets);
+	buffer_put_int64(&m, bytes);
 
 	debug3("%s: New keys have been sent", __func__);
  skip:

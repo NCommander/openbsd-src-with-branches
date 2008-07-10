@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.47 2008/05/08 06:59:01 markus Exp $ */
+/* $OpenBSD: packet.h,v 1.48 2008/06/12 20:38:28 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -68,8 +68,8 @@ int	 packet_get_keyiv_len(int);
 void	 packet_get_keyiv(int, u_char *, u_int);
 int	 packet_get_keycontext(int, u_char *);
 void	 packet_set_keycontext(int, u_char *);
-void	 packet_get_state(int, u_int32_t *, u_int64_t *, u_int32_t *);
-void	 packet_set_state(int, u_int32_t, u_int64_t, u_int32_t);
+void	 packet_get_state(int, u_int32_t *, u_int64_t *, u_int32_t *, u_int64_t *);
+void	 packet_set_state(int, u_int32_t, u_int64_t, u_int32_t, u_int64_t);
 int	 packet_get_ssh1_cipher(void);
 void	 packet_set_iv(int, u_char *);
 
