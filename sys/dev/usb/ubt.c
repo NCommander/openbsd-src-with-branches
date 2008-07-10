@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubt.c,v 1.11 2008/02/24 21:34:48 uwe Exp $	*/
+/*	$OpenBSD: ubt.c,v 1.12 2008/06/26 05:42:18 ray Exp $	*/
 /*	$NetBSD: ubt.c,v 1.30 2007/12/16 19:01:37 christos Exp $	*/
 
 /*-
@@ -290,8 +290,7 @@ static void ubt_abortdealloc(struct ubt_softc *);
  * to the ubt_ignore list.
  */
 static const struct usb_devno ubt_ignore[] = {
-	{ USB_VENDOR_BROADCOM, USB_PRODUCT_BROADCOM_BCM2033NF },
-	{ 0, 0 }	/* end of list */
+	{ USB_VENDOR_BROADCOM, USB_PRODUCT_BROADCOM_BCM2033NF }
 };
 
 int
