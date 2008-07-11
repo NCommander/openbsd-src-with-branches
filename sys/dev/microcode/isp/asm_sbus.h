@@ -1,6 +1,6 @@
-/*	$OpenBSD: asm_sbus.h,v 1.5 1999/11/22 13:13:08 mjacob Exp $ */
+/*	$OpenBSD: asm_sbus.h,v 1.6 2000/10/16 00:33:09 mjacob Exp $ */
 /*
- * Copyright (C) 1995, 1996, 1997, 1998, 1999 Qlogic, Inc.
+ * Copyright (C) 1995, 1996, 1997, 1998, 1999 QLogic, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms are permitted provided
