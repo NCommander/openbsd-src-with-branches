@@ -1,4 +1,4 @@
-/*	$OpenBSD: grey.c,v 1.40 2007/08/16 04:42:16 ray Exp $	*/
+/*	$OpenBSD: grey.c,v 1.41 2007/11/03 19:16:07 beck Exp $	*/
 
 /*
  * Copyright (c) 2004-2006 Bob Beck.  All rights reserved.
@@ -1190,6 +1190,7 @@ greywatcher(void)
 		close(pfdev);
 		setproctitle("(%s update)", PATH_SPAMD_DB);
 		greyreader();
+		syslog_r(LOG_ERR, &sdata, "greyreader failed (%m)");
 		/* NOTREACHED */
 		_exit(1);
 	}
