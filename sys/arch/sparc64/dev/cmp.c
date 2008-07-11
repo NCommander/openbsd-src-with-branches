@@ -67,8 +67,6 @@ cmp_attach(struct device *parent, struct device *self, void *aux)
 		bzero(&nma, sizeof(nma));
 		nma.ma_node = node;
 		nma.ma_name = buf;
-		getprop(node, "reg", sizeof(*nma.ma_reg),
-		    &nma.ma_nreg, (void **)&nma.ma_reg);
 		config_found(self, &nma, cmp_print);
 	}
 }
