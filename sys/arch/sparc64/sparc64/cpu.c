@@ -241,7 +241,10 @@ cpu_attach(parent, dev, aux)
 	vers = IU_VERS(ver);
 
 	/* tell them what we have */
-	node = ma->ma_node;
+	if (strncmp(parent->dv_xname, "core", 4) == 0)
+		node = OF_parent(ma->ma_node);
+	else
+		node = ma->ma_node;
 
 	/*
 	 * Allocate cpu_info structure if needed.

@@ -153,13 +153,17 @@ device	eeprom
 attach	eeprom at sbus, ebus
 file	arch/sparc64/sparc64/clock.c
 
-device	cpu
-attach	cpu at mainbus
-file	arch/sparc64/sparc64/cpu.c
-
-device	cmp: mainbus
+device	cmp {}
 attach	cmp at mainbus
 file	arch/sparc64/dev/cmp.c			cmp
+
+device	core {}
+attach	core at cmp
+file	arch/sparc64/dev/core.c			core
+
+device	cpu
+attach	cpu at mainbus, cmp, core
+file	arch/sparc64/sparc64/cpu.c
 
 device	auxio
 attach	auxio at ebus with auxio_ebus
