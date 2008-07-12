@@ -8522,6 +8522,10 @@ const struct usb_known_vendor usb_known_vendors[] = {
 	    "OnSpec",
 	},
 	{
+	    USB_VENDOR_ACERLABS2,
+	    "Acer",
+	},
+	{
 	    USB_VENDOR_ZINWELL,
 	    "Zinwell",
 	},
