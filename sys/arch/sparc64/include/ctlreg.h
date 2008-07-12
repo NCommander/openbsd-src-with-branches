@@ -246,10 +246,17 @@
  * The following are 4u control registers
  */
 
+/* Get the CPU's UPA port ID */
+#define	UPA_CR_MID(x)		(((x) >> 17) & 0x1f)
+#define	CPU_UPAID		UPA_CR_MID(ldxa(0, ASI_MID_REG))
 
-/* Get the CPU's UPAID */
-#define	UPA_CR_MID(x)	(((x)>>17)&0x1f)	
-#define	CPU_UPAID	UPA_CR_MID(ldxa(0, ASI_MID_REG))
+/* Get the CPU's Fireplane agent ID */
+#define FIREPLANE_CR_AID(x)	(((x) >> 17) & 0x3ff)
+#define CPU_FIREPLANEID		FIREPLANE_CR_AID(ldxa(0, ASI_MID_REG))
+
+/* Get the CPU's Jupiter Bus interrupt target ID */
+#define JUPITER_CR_ITID(x)	((x) & 0x3ff)
+#define CPU_JUPITERID		JUPITER_CR_ITID(ldxa(0, ASI_MID_REG))
 
 /*
  * [4u] MMU and Cache Control Register (MCCR)
