@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.32 2007/08/02 11:05:54 fgsch Exp $	*/
+/*	$OpenBSD: misc.c,v 1.33 2008/03/21 12:51:19 millert Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -77,7 +77,7 @@ str_save(const char *s, Area *ap)
 		return NULL;
 	len = strlen(s)+1;
 	p = alloc(len, ap);
-	strlcpy(p, s, len+1);
+	strlcpy(p, s, len);
 	return (p);
 }
 
