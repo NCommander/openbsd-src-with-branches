@@ -110,6 +110,8 @@ struct iommu_state {
 	int64_t			is_cr;		/* Control register value */
 	struct mutex		is_mtx;
 	struct extent		*is_dvmamap;	/* DVMA map for this instance */
+	int			is_flags;
+#define IOMMU_FLUSH_CACHE	0x00000001
 
 	struct strbuf_ctl	*is_sb[2];	/* Streaming buffers if any */
 

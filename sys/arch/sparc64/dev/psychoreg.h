@@ -85,7 +85,7 @@ struct psychoreg {
 
 	struct iommureg psy_iommu;							/* 1fe.0000.0200,0210 */
 
-	u_int64_t	pad3[317];
+	u_int64_t	pad3[256];
 
 	u_int64_t	pcia_slot0_int;		/* PCI bus a slot 0 irq map reg */	/* 1fe.0000.0c00 */
 	u_int64_t	pcia_slot1_int;		/* PCI bus a slot 1 irq map reg */	/* 1fe.0000.0c08 */
