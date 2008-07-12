@@ -8,3 +8,4 @@ option	MULTIPROCESSOR
 cpu*	at mainbus?
 cpu*	at ssm?
 cpu*	at cmp?
+cpu*	at core?
