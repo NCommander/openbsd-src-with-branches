@@ -986,7 +986,7 @@ data_access_error(tf, type, afva, afsr, sfva, sfsr)
 	printf("data error type %x sfsr=%lx sfva=%lx afsr=%lx afva=%lx tf=%p\n",
 		type, sfsr, sfva, afsr, afva, tf);
 
-	if (afsr == 0) {
+	if (afsr == 0 && sfsr == 0) {
 		printf("data_access_error: no fault\n");
 		goto out;	/* No fault. Why were we called? */
 	}
