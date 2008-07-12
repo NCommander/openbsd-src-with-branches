@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: vmt.c,v 1.1 2008/07/08 05:22:00 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -18,7 +18,7 @@
  */
 
 #if !defined(__i386__)
-#error vmware(4) is only supported on i386
+#error vmt(4) is only supported on i386
 #endif
 
 #include <dev/vmtvar.h>
