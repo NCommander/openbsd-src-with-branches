@@ -1,4 +1,4 @@
-/*	$OpenBSD: api_up1000.c,v 1.7 2004/07/18 02:29:11 deraadt Exp $	*/
+/*	$OpenBSD: api_up1000.c,v 1.8 2006/11/28 16:56:50 dlg Exp $	*/
 /* $NetBSD: api_up1000.c,v 1.4 2000/06/20 03:48:53 matt Exp $ */
 
 /*
@@ -131,7 +131,7 @@ api_up1000_cons_init()
 		/* display console ... */
 		/* XXX */
 		(void) pckbc_cnattach(&icp->ic_iot, IO_KBD, KBCMDP,
-		    PCKBC_KBD_SLOT);
+		    PCKBC_KBD_SLOT, 0);
 
 		if (CTB_TURBOSLOT_TYPE(ctb->ctb_turboslot) ==
 		    CTB_TURBOSLOT_TYPE_ISA)
