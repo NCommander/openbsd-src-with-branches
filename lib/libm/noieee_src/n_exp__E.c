@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_exp__E.c,v 1.5 2008/06/12 22:43:36 martynas Exp $	*/
+/*	$OpenBSD: n_exp__E.c,v 1.6 2008/06/21 08:26:19 martynas Exp $	*/
 /*	$NetBSD: n_exp__E.c,v 1.1 1995/10/10 23:36:45 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -129,7 +129,11 @@ __exp__E(double x, double c)
 	/* end of |x| > small */
 
 	else {
-	    if(x!=zero) one+small;	/* raise the inexact flag */
-	    return(copysign(zero,x));
+	    if(x != zero) {
+		if (one + small >= 1.0)	/* raise the inexact flag */
+			return(copysign(zero,x));
+	    }
+	    else
+		return(copysign(zero,x));
 	}
 }
