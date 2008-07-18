@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.15 2007/11/26 17:15:29 art Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.16 2008/05/22 14:07:14 thib Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -414,6 +414,8 @@ mi_switch(void)
 	} else {
 		p->p_stat = SONPROC;
 	}
+
+	clear_resched(curcpu());
 
 	SCHED_ASSERT_LOCKED();
 

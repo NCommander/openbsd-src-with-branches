@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.17 2007/05/29 21:09:43 robert Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.18 2007/08/14 15:18:07 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.34 2003/06/23 11:01:08 martin Exp $	*/
 
 /*
@@ -256,6 +256,7 @@ extern int astpending;
  */
 extern int want_resched;	/* resched() was called */
 #define	need_resched(ci)	(want_resched = 1, setsoftast())
+#define clear_resched(ci) 	want_resched = 0
 
 /*
  * Give a profiling tick to the current process when the user profiling

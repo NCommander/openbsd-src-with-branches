@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.33 2007/12/15 19:34:33 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.34 2008/01/13 20:20:29 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -241,6 +241,7 @@ do {									\
 	if (ci->ci_curproc != NULL)					\
 		aston(ci->ci_curproc);					\
 } while (0)
+#define clear_resched(ci) 	(ci)->ci_want_resched = 0
 
 /*
  * Give a profiling tick to the current process when the user profiling

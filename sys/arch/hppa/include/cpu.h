@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.52 2007/10/10 15:53:51 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.53 2008/07/14 13:39:06 miod Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -151,6 +151,7 @@ extern register_t kpsw;
 
 #define	signotify(p)		(setsoftast())
 #define	need_resched(ci)	(want_resched = 1, setsoftast())
+#define clear_resched(ci) 	want_resched = 0
 #define	need_proftick(p)	setsoftast()
 #define	PROC_PC(p)		((p)->p_md.md_regs->tf_iioq_head)
 
