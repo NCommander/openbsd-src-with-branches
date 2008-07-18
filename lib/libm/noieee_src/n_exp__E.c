@@ -1,4 +1,4 @@
-/*	$OpenBSD: n_exp__E.c,v 1.6 2008/06/21 08:26:19 martynas Exp $	*/
+/*	$OpenBSD: n_exp__E.c,v 1.7 2008/07/17 15:36:28 martynas Exp $	*/
 /*	$NetBSD: n_exp__E.c,v 1.1 1995/10/10 23:36:45 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -136,4 +136,6 @@ __exp__E(double x, double c)
 	    else
 		return(copysign(zero,x));
 	}
+
+	/* NOTREACHED */
 }
