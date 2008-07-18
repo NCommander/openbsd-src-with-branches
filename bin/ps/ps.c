@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.44 2007/12/28 19:17:28 chl Exp $	*/
+/*	$OpenBSD: ps.c,v 1.45 2008/03/08 19:20:12 millert Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)ps.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: ps.c,v 1.44 2007/12/28 19:17:28 chl Exp $";
+static char rcsid[] = "$OpenBSD: ps.c,v 1.45 2008/03/08 19:20:12 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -135,7 +135,7 @@ main(int argc, char *argv[])
 	memf = nlistf = swapf = NULL;
 	while ((ch = getopt(argc, argv,
 	    "acCeghjkLlM:mN:O:o:p:rSTt:U:uvW:wx")) != -1)
-		switch((char)ch) {
+		switch (ch) {
 		case 'a':
 			all = 1;
 			break;
