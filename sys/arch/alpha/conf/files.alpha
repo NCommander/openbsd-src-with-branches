@@ -1,4 +1,4 @@
-#	$OpenBSD: files.alpha,v 1.85 2008/03/21 18:44:13 deraadt Exp $
+#	$OpenBSD: files.alpha,v 1.86 2008/05/20 08:03:53 kettenis Exp $
 #	$NetBSD: files.alpha,v 1.32 1996/11/25 04:03:21 cgd Exp $
 #
 # alpha-specific configuration info
@@ -163,6 +163,8 @@ major	{fd = 4}
 #
 
 include	"dev/eisa/files.eisa"
+
+file	arch/alpha/eisa/eisa_machdep.c		eisa
 
 
 #
