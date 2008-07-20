@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.60 2008/06/25 17:43:09 thib Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.61 2008/07/19 22:41:58 marco Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -21,9 +21,9 @@
 
 #include <crypto/md5.h>
 
-#define SR_UUID_MAX		4
+#define SR_UUID_MAX		16
 struct sr_uuid {
-	u_int32_t		sui_id[SR_UUID_MAX];
+	u_int8_t		sui_id[SR_UUID_MAX];
 } __packed;
 
 #define SR_META_SIZE		64	/* save space at chunk beginning */
