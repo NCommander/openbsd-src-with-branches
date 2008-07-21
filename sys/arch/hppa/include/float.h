@@ -1,4 +1,4 @@
-/*	$OpenBSD: float.h,v 1.7 2004/05/21 22:54:15 todd Exp $	*/
+/*	$OpenBSD: float.h,v 1.8 2007/07/16 21:20:03 jason Exp $	*/
 
 /*
  * Copyright (c) 1989 Regents of the University of California.
@@ -42,6 +42,7 @@ __END_DECLS
 
 #define	FLT_RADIX	2
 #define	FLT_ROUNDS	__flt_rounds()
+#define FLT_EVAL_METHOD	0		/* no promotions */
 
 #define	FLT_MANT_DIG	24
 #define	FLT_EPSILON	1.19209290E-07F
