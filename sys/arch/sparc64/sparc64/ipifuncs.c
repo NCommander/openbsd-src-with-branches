@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.9 2008/04/10 19:25:42 kettenis Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.10 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.8 2006/10/07 18:11:36 rjs Exp $ */
 
 /*-
@@ -241,7 +241,7 @@ smp_signotify(struct proc *p)
 		return;
 
 	if (CPU_ISSUN4V)
-		sun4v_send_ipi(ci->ci_itid, ipi_softint, 1 << IPL_NONE, 0UL);
+		sun4v_send_ipi(ci->ci_itid, ipi_softint, 1 << IPL_SOFTINT, 0);
 	else
-		sun4u_send_ipi(ci->ci_itid, ipi_softint, 1 << IPL_NONE, 0UL);
+		sun4u_send_ipi(ci->ci_itid, ipi_softint, 1 << IPL_SOFTINT, 0);
 }
