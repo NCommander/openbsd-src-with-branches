@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_amrr.c,v 1.2 2006/11/26 19:46:28 deraadt Exp $	*/
+/*	$OpenBSD: ieee80211_amrr.c,v 1.3 2007/06/16 13:17:05 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -31,6 +31,7 @@
 #endif
 
 #include <net80211/ieee80211_var.h>
+#include <net80211/ieee80211_priv.h>
 #include <net80211/ieee80211_amrr.h>
 
 #define is_success(amn)	\
