@@ -1,4 +1,4 @@
-/*	$OpenBSD: atwvar.h,v 1.13 2007/06/07 20:20:15 damien Exp $	*/
+/*	$OpenBSD: atwvar.h,v 1.14 2008/06/27 06:03:08 ray Exp $	*/
 /*	$NetBSD: atwvar.h,v 1.13 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*
@@ -197,7 +197,7 @@ struct atw_softc {
 					enum ieee80211_state, int);
 	void			(*sc_recv_mgmt)(struct ieee80211com *,
 				    struct mbuf *, struct ieee80211_node *,
-				    int, int, u_int32_t);
+				    struct ieee80211_rxinfo *, int);
 	struct ieee80211_node	*(*sc_node_alloc)(struct ieee80211com *);
 	void			(*sc_node_free)(struct ieee80211com *,
 					struct ieee80211_node *);

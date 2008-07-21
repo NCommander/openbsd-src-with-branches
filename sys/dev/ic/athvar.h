@@ -1,4 +1,4 @@
-/*      $OpenBSD: athvar.h,v 1.21 2008/06/13 07:31:57 jsg Exp $  */
+/*      $OpenBSD: athvar.h,v 1.22 2008/06/14 02:28:14 jsing Exp $  */
 /*	$NetBSD: athvar.h,v 1.10 2004/08/10 01:03:53 dyoung Exp $	*/
 
 /*-
@@ -214,7 +214,7 @@ struct ath_softc {
 					const struct ieee80211_node *);
 	void			(*sc_recv_mgmt)(struct ieee80211com *,
 				    struct mbuf *, struct ieee80211_node *,
-				    int, int, u_int32_t);
+				    struct ieee80211_rxinfo *, int);
 #ifdef __FreeBSD__
 	device_t		sc_dev;
 #endif
