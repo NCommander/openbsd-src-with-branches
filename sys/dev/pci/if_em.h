@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
 
 /* $FreeBSD: if_em.h,v 1.26 2004/09/01 23:22:41 pdeuskar Exp $ */
-/* $OpenBSD: if_em.h,v 1.35 2007/05/30 06:29:17 ckuethe Exp $ */
+/* $OpenBSD: if_em.h,v 1.36 2007/10/21 03:49:54 brad Exp $ */
 
 #ifndef _EM_H_DEFINED_
 #define _EM_H_DEFINED_
@@ -197,7 +197,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define EM_TX_OP_THRESHOLD		(sc->num_tx_desc / 32)
 
 /*
- * This parameter controls whether or not autonegotation is enabled.
+ * This parameter controls whether or not autonegotiation is enabled.
  *              0 - Disable autonegotiation
  *              1 - Enable  autonegotiation
  */
