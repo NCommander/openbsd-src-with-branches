@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.86 2008/06/29 20:05:22 krw Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.87 2008/07/20 01:53:43 krw Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -652,6 +652,8 @@ vndiodone(struct buf *bp)
 		    vbp->vb_buf.b_error);
 
 		pbp->b_flags |= B_ERROR;
+		/* XXX does this matter here? */
+		(&vbp->vb_buf)->b_flags |= B_RAW;
 		pbp->b_error = biowait(&vbp->vb_buf);
 	}
 	pbp->b_resid -= vbp->vb_buf.b_bcount;
