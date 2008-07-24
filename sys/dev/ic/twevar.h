@@ -1,4 +1,4 @@
-/*	$OpenBSD: twevar.h,v 1.6 2003/06/02 19:24:22 mickey Exp $	*/
+/*	$OpenBSD: twevar.h,v 1.7 2005/09/15 05:33:39 krw Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -52,7 +52,6 @@ struct twe_softc {
 	struct device	sc_dev;
 	void		*sc_ih;
 	struct scsi_link sc_link;
-	struct lock	sc_lock;
 	struct proc	*sc_thread;
 	int		sc_thread_on;
 
