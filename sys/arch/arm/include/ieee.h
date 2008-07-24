@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee.h,v 1.2 2004/01/21 17:13:20 drahn Exp $	*/
+/*	$OpenBSD: ieee.h,v 1.1 2004/02/01 05:09:49 drahn Exp $	*/
 /*	$NetBSD: ieee.h,v 1.2 2001/02/21 17:43:50 bjh21 Exp $	*/
 
 /*
@@ -104,7 +104,7 @@
 
 struct ieee_single {
 	u_int	sng_frac:23;
-	u_int	sng_exponent:8;
+	u_int	sng_exp:8;
 	u_int	sng_sign:1;
 };
 
