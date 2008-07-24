@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.h,v 1.22 2008/07/18 18:49:11 mglocker Exp $ */
+/*	$OpenBSD: uvideo.h,v 1.23 2008/07/19 11:30:55 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -160,7 +160,7 @@ struct usb_video_header_desc {
 	uByte	bDescriptorSubtype;
 	uWord	bcdUVC;
 	uWord	wTotalLength;
-	uDWord	dwClockFrequency; /* XXX deprecated */
+	uDWord	dwClockFrequency;
 	uByte	bInCollection;
 };
 
@@ -205,7 +205,7 @@ struct usb_video_camera_terminal_desc {
 	uWord	wObjectiveFocalLengthMax;
 	uWord	wOcularFocalLength;
 	uByte	bControlSize;
-	uByte	*bmControls; /* XXX */	
+	uByte	*bmControls;
 };
 
 /* Table 3-9: VC Extension Unit Descriptor */
