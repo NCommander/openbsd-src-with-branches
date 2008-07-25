@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vnops.c,v 1.96 2008/07/23 16:24:43 beck Exp $	*/
+/*	$OpenBSD: nfs_vnops.c,v 1.97 2008/07/23 17:40:29 deraadt Exp $	*/
 /*	$NetBSD: nfs_vnops.c,v 1.62.4.1 1996/07/08 20:26:52 jtc Exp $	*/
 
 /*
@@ -2991,8 +2991,6 @@ nfs_writebp(bp, force)
 	if (retv) {
 		if (force)
 			bp->b_flags |= B_WRITEINPROG;
-		bcstats.pendingwrites++;
-		bcstats.numwrites++;
 		VOP_STRATEGY(bp);
 	}
 
