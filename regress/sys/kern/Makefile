@@ -1,7 +1,9 @@
-#	$OpenBSD: Makefile,v 1.52 2006/10/23 15:18:47 espie Exp $
+#	$OpenBSD: Makefile,v 1.53 2007/04/29 20:13:16 art Exp $
 
 SUBDIR+= __syscall accept dup2 dup2_self exec_self execve exit extent
-SUBDIR+= fcntl_dup getpeereid getrusage gettimeofday itimer 
+SUBDIR+= fcntl_dup
+SUBDIR+= flock
+SUBDIR+= getpeereid getrusage gettimeofday itimer 
 SUBDIR+= kqueue mbuf minherit
 SUBDIR+= mmap mmap2 mmap3 mmap-fail
 #SUBDIR+= mquery
