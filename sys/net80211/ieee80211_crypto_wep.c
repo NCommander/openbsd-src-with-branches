@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.1 2008/04/16 18:32:15 damien Exp $	*/
+/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.2 2008/04/18 09:16:14 djm Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -24,9 +24,6 @@
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/endian.h>
-#include <sys/errno.h>
-#include <sys/proc.h>
-#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
