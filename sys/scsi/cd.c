@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.141 2008/06/21 21:11:34 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.142 2008/06/22 16:32:05 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -574,7 +574,7 @@ cdstart(void *v)
 		dp->b_actf = bp->b_actf;
 
 		/*
-		 * If the deivce has become invalid, abort all the
+		 * If the device has become invalid, abort all the
 		 * reads and writes until all files have been closed and
 		 * re-opened
 		 */
