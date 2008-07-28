@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_var.h,v 1.40 2008/07/21 19:27:26 damien Exp $	*/
+/*	$OpenBSD: ieee80211_var.h,v 1.41 2008/07/27 18:24:01 damien Exp $	*/
 /*	$NetBSD: ieee80211_var.h,v 1.7 2004/05/06 03:07:10 dyoung Exp $	*/
 
 /*-
@@ -243,6 +243,7 @@ struct ieee80211com {
 	u_int16_t		ic_nonerpsta;	/* # non-ERP stations */
 	u_int16_t		ic_longslotsta;	/* # long slot time stations */
 	u_int16_t		ic_rsnsta;	/* # RSN stations */
+	u_int16_t		ic_pssta;	/* # ps mode stations */
 	int			ic_mgt_timer;	/* mgmt timeout */
 	int			ic_inact_timer;	/* inactivity timer wait */
 	int			ic_des_esslen;
