@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.103 2008/04/16 18:32:15 damien Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.104 2008/07/21 18:43:19 damien Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -492,7 +492,7 @@ ural_alloc_rx_list(struct ural_softc *sc)
 
 	return 0;
 
-fail:	ural_free_tx_list(sc);
+fail:	ural_free_rx_list(sc);
 	return error;
 }
 
