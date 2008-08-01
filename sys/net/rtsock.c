@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.73 2008/06/13 21:49:57 claudio Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.74 2008/07/28 19:38:07 claudio Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -267,6 +267,9 @@ route_output(struct mbuf *m, ...)
 		prio = RTP_STATIC;
 	else
 		prio = RTP_DEFAULT;
+
+	/* XXX hack for 4.4-release */
+	prio = RTP_DEFAULT;
 
 	bzero(&info, sizeof(info));
 	info.rti_addrs = rtm->rtm_addrs;
