@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyscall.c,v 1.1.1.1 1995/10/18 08:44:21 deraadt Exp $	*/
+/*	$OpenBSD: newsyscall.c,v 1.2 2000/03/02 14:46:38 todd Exp $	*/
 /*
  * Makefile for newsyscall
  *
@@ -54,7 +54,7 @@ extern int	mycall();
  * have 0 arguments to our system call.
  */
 static struct sysent newent = {
-	0, 0,	mycall			/* # of args, args size, fn. pointer */
+	0, 0, 0, mycall		/* # of args, args size, flags, fn. pointer */
 };
 
 MOD_SYSCALL( "newsyscall", -1, &newent)

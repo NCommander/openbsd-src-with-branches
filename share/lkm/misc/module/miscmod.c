@@ -1,4 +1,4 @@
-/*	$OpenBSD: miscmod.c,v 1.2 1999/02/14 04:44:51 fgsch Exp $	*/
+/*	$OpenBSD: miscmod.c,v 1.3 2000/03/02 14:46:36 todd Exp $	*/
 /*
  * Makefile for miscmod
  *
@@ -55,7 +55,7 @@ extern int	misccall();
  * have 0 arguments to our system call.
  */
 static struct sysent newent = {
-	0, 0,	misccall		/* # of args, args size, fn pointer*/
+	0, 0, 0, misccall	/* # of args, args size, flags, fn pointer*/
 };
 
 /*
