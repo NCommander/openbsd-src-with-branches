@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripd.c,v 1.8 2007/10/24 20:23:09 claudio Exp $ */
+/*	$OpenBSD: ripd.c,v 1.9 2008/05/12 19:15:02 pyr Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -531,6 +531,7 @@ ripd_redistribute_default(int type)
 		return;
 
 	bzero(&kr, sizeof(kr));
+	kr.metric = 1;	/* default metric */
 	main_imsg_compose_rde(type, 0, &kr, sizeof(struct kroute));
 }
 
