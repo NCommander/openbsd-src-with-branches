@@ -1,4 +1,4 @@
-dnl	$OpenBSD: install,v 1.24 2007/03/01 19:24:45 miod Exp $
+dnl	$OpenBSD: install,v 1.25 2008/03/10 21:38:28 miod Exp $
 OpenBSDInstallPrelude
 
 Before you begin, you should decide if OpenBSD is to be installed
@@ -149,5 +149,13 @@ OpenBSDDISKInstall(,,{:- or MS-DOS-:})
 OpenBSDCommonFS
 
 OpenBSDCommonURL
+
+OpenBSDInstallWrapup
+
+OpenBSDInstallAperture
+
+OpenBSDInstallConsole
+
+OpenBSDInstallWrapupPart2
 
 OpenBSDCongratulations
