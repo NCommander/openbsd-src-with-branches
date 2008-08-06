@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_trunk.c,v 1.46 2008/06/15 06:56:09 mpf Exp $	*/
+/*	$OpenBSD: if_trunk.c,v 1.47 2008/07/30 10:15:35 mpf Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -599,11 +599,13 @@ trunk_port2req(struct trunk_port *tp, struct trunk_reqport *rp)
 	case TRUNK_PROTO_ROUNDROBIN:
 	case TRUNK_PROTO_LOADBALANCE:
 	case TRUNK_PROTO_BROADCAST:
+		rp->rp_flags = tp->tp_flags;
 		if (TRUNK_PORTACTIVE(tp))
 			rp->rp_flags |= TRUNK_PORT_ACTIVE;
 		break;
 
 	case TRUNK_PROTO_LACP:
+		rp->rp_flags = 0;
 		/* LACP has a different definition of active */
 		if (lacp_isactive(tp))
 			rp->rp_flags |= TRUNK_PORT_ACTIVE;
