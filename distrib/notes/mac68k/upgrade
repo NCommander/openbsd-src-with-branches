@@ -1,2 +1,2 @@
-dnl	$OpenBSD$
-OpenBSDUpgrade({:- the bsd.rd kernel-:})
+dnl	$OpenBSD: upgrade,v 1.15 2004/12/03 20:42:05 miod Exp $
+OpenBSDUpgrade({:-the bsd.rd kernel-:})
