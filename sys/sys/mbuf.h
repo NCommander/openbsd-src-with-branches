@@ -48,7 +48,7 @@
 #define	MHLEN		(MLEN - sizeof(struct pkthdr))	/* data len w/pkthdr */
 
 /* smallest amount to put in cluster */
-#define	MINCLSIZE	(MHLEN + 1)
+#define	MINCLSIZE	(MHLEN + MLEN + 1)
 #define	M_MAXCOMPRESS	(MHLEN / 2)	/* max amount to copy for compression */
 
 /* Packet tags structure */
