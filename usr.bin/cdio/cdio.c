@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdio.c,v 1.63 2008/06/30 23:35:39 av Exp $	*/
+/*	$OpenBSD: cdio.c,v 1.64 2008/07/23 21:33:32 av Exp $	*/
 
 /*  Copyright (c) 1995 Serge V. Vakulenko
  * All rights reserved.
@@ -165,7 +165,6 @@ int		setvol(int, int);
 int		read_toc_entrys(int);
 int		play_msf(int, int, int, int, int, int);
 int		play_track(int, int, int, int);
-int		get_vol(int *, int *);
 int		status(int *, int *, int *, int *);
 int		is_wave(int);
 __dead void	tao(int argc, char **argv);
