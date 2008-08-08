@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.40 2007/11/09 11:32:57 jsing Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.41 2008/01/14 19:02:11 otto Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -226,6 +226,11 @@ struct	__partitionv0 {		/* the partition table */
 					(d)->d_secperunith = x >> 32; \
 					(d)->d_secperunit = x; \
 				} while (0)
+
+#define DL_BLKSPERSEC(d)	((d)->d_secsize / DEV_BSIZE)
+#define DL_SECTOBLK(d, n)	((n) * DL_BLKSPERSEC(d))
+#define DL_BLKTOSEC(d, n)	(((n) * DEV_BSIZE) / (d)->d_secsize)
+#define DL_BLKOFFSET(d, n)	(((n) * DEV_BSIZE) % (d)->d_secsize)
 
 /* d_type values: */
 #define	DTYPE_SMD		1		/* SMD, XSMD; VAX hp/up */
