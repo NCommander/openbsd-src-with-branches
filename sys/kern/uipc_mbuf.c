@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.89 2008/05/06 02:16:26 krw Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.90 2008/06/11 02:46:34 henning Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -715,8 +715,10 @@ m_pullup2(struct mbuf *n, int len)
 		if (m == NULL)
 			goto bad;
 		MCLGET(m, M_DONTWAIT);
-		if ((m->m_flags & M_EXT) == 0)
+		if ((m->m_flags & M_EXT) == 0) {
+			m_free(m);
 			goto bad;
+		}
 		m->m_len = 0;
 		if (n->m_flags & M_PKTHDR) {
 			/* Too many adverse side effects. */
