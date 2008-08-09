@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_pic.c,v 1.27 2008/06/26 05:42:09 ray Exp $	*/
+/*	$OpenBSD: sio_pic.c,v 1.28 2008/07/29 18:39:45 miod Exp $	*/
 /* $NetBSD: sio_pic.c,v 1.28 2000/06/06 03:10:13 thorpej Exp $ */
 
 /*-
@@ -625,8 +625,10 @@ static void
 specific_eoi(irq)
 	int irq;
 {
-	if (irq > 7)
+	if (irq > 7) {
 		bus_space_write_1(sio_iot,
-		    sio_ioh_icu2, 0, 0x20 | (irq & 0x07));	/* XXX */
-	bus_space_write_1(sio_iot, sio_ioh_icu1, 0, 0x20 | (irq > 7 ? 2 : irq));
+		    sio_ioh_icu2, 0, 0x60 | (irq & 0x07));	/* XXX */
+		irq = 2;
+	}
+	bus_space_write_1(sio_iot, sio_ioh_icu1, 0, 0x60 | irq);
 }
