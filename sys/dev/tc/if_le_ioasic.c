@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_ioasic.c,v 1.13 2007/06/18 21:24:43 jasper Exp $	*/
+/*	$OpenBSD: if_le_ioasic.c,v 1.14 2007/11/06 18:20:07 miod Exp $	*/
 /*	$NetBSD: if_le_ioasic.c,v 1.18 2001/11/13 06:26:10 lukem Exp $	*/
 
 /*
@@ -164,7 +164,7 @@ le_ioasic_attach(struct device *parent, struct device *self, void *aux)
 	        + IOASIC_SLOT_2_START);
 
 	ioasic_intr_establish(parent, d->iada_cookie, IPL_NET,
-	    am7990_intr, sc);
+	    am7990_intr, sc, self->dv_xname);
 	return;
 
  bad:
