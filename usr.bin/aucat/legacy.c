@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: legacy.c,v 1.1 2008/05/23 07:15:46 ratchov Exp $	*/
 /*
  * Copyright (c) 1997 Kenneth Stailey.  All rights reserved.
  *
@@ -28,7 +28,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/audioio.h>
+
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 #include <err.h>
 
