@@ -1,4 +1,4 @@
-/*	$OpenBSD: abuf.h,v 1.5 2008/08/14 09:39:16 ratchov Exp $	*/
+/*	$OpenBSD: abuf.h,v 1.6 2008/08/14 09:44:15 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -49,6 +49,7 @@ struct abuf {
 	unsigned start;		/* offset where data starts */
 	unsigned used;		/* valid data */
 	unsigned len;		/* size of the ring */
+	unsigned abspos;	/* frame number of the start position */
 	unsigned silence;	/* silence to insert on next write */
 	unsigned drop;		/* frames to drop on next read */
 	struct aproc *rproc;	/* reader */
