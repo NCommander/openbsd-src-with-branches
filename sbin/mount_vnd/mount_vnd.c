@@ -338,12 +338,13 @@ usage(void)
 
 	if (run_mount_vnd)
 		(void)fprintf(stderr,
-		    "usage: %s [-k] [-K rounds] [-o options] "
-		    "[-S saltfile] image vnd_dev\n", __progname);
+		    "usage: mount_vnd [-k] [-K rounds] [-o options] "
+		    "[-S saltfile] [-s secsize]\n"
+		    "\t\t image vnd_dev\n");
 	else
 		(void)fprintf(stderr,
-		    "usage: %s [-ckluv] [-K rounds] [-S saltfile] vnd_dev "
-		    "image\n", __progname);
+		    "usage: %s [-ckluv] [-K rounds] [-S saltfile] "
+		    "[-s secsize] vnd_dev image\n", __progname);
 
 	exit(1);
 }
