@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz_ibus.c,v 1.22 2006/08/03 18:45:40 miod Exp $	*/
+/*	$OpenBSD: dz_ibus.c,v 1.24 2008/01/23 16:37:57 jsing Exp $	*/
 /*	$NetBSD: dz_ibus.c,v 1.15 1999/08/27 17:50:42 ragge Exp $ */
 /*
  * Copyright (c) 1998 Ludd, University of Lule}, Sweden.
@@ -329,6 +329,8 @@ dzcninit(cndev)
 	dz->csr = 0;    /* Disable scanning until initting is done */
 	dz->tcr = (1 << minor(cndev->cn_dev));    /* Turn on xmitter */
 	dz->csr = DZ_CSR_MSE; /* Turn scanning back on */
+	dz->rbuf = DZ_LPR_RX_ENABLE | (DZ_LPR_B9600 << 8) |
+	    DZ_LPR_8_BIT_CHAR | minor(cndev->cn_dev) /* line */;
 }
 
 void
