@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.44 2008/06/14 10:55:20 mk Exp $ */
+/*	$OpenBSD: pmap.c,v 1.45 2008/08/14 11:41:30 martin Exp $ */
 /*	$NetBSD: pmap.c,v 1.74 1999/11/13 21:32:25 matt Exp $	   */
 /*
  * Copyright (c) 1994, 1998, 1999 Ludd, University of Lule}, Sweden.
@@ -211,8 +211,8 @@ pmap_bootstrap()
 	avail_start = scb_init(avail_start);
 	bcopy((caddr_t)proc0paddr + REDZONEADDR, 0, sizeof(struct rpb));
 
-	if (dep_call->cpu_steal_pages)
-		(*dep_call->cpu_steal_pages)();
+	if (dep_call->cpu_init)
+		(*dep_call->cpu_init)();
 
 	avail_start = ROUND_PAGE(avail_start);
 	virtual_avail = ROUND_PAGE(virtual_avail);
