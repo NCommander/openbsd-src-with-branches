@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.73 2006/03/23 08:01:02 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.74 2006/03/24 08:03:44 espie Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -408,7 +408,7 @@ macro(void)
 				}
 			}
 		} else if (t == EOF) {
-			if (sp > -1) {
+			if (sp > -1 && ilevel <= 0) {
 				warnx( "unexpected end of input, unclosed parenthesis:");
 				dump_stack(paren, PARLEV);
 				exit(1);
