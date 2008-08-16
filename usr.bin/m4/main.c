@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.74 2006/03/24 08:03:44 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.75 2008/08/16 12:19:49 espie Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -428,8 +428,9 @@ macro(void)
 		case LPAREN:
 			if (PARLEV > 0)
 				chrsave(t);
-			while (isspace(l = gpbc()))
-				;		/* skip blank, tab, nl.. */
+			while (isspace(l = gpbc())) /* skip blank, tab, nl.. */
+				if (PARLEV > 0)
+					chrsave(l);
 			pushback(l);
 			record(paren, PARLEV++);
 			break;
