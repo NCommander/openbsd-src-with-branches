@@ -1,4 +1,4 @@
-/*	$OpenBSD: local.c,v 1.4 2007/11/17 12:00:37 ragge Exp $	*/
+/*	$OpenBSD: local.c,v 1.5 2008/01/12 17:30:42 ragge Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -503,3 +503,7 @@ fixdef(struct symtab *sp)
 {
 }
 
+void
+pass1_lastchance(struct interpass *ip)
+{
+}

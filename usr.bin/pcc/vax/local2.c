@@ -1,4 +1,4 @@
-/*	$OpenBSD: local2.c,v 1.5 2007/12/09 18:56:17 ragge Exp $	*/
+/*	$OpenBSD: local2.c,v 1.6 2007/12/22 22:56:31 stefan Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -1022,4 +1022,13 @@ special(NODE *p, int shape)
 void
 mflags(char *str)
 {
+}
+/*
+ * Do something target-dependent for xasm arguments.
+ * Supposed to find target-specific constraints and rewrite them.
+ */
+int
+myxasm(struct interpass *ip, NODE *p)
+{
+	return 0;
 }

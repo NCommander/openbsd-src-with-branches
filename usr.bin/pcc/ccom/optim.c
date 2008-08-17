@@ -1,4 +1,4 @@
-/*	$OpenBSD: optim.c,v 1.2 2007/11/18 17:39:55 ragge Exp $	*/
+/*	$OpenBSD: optim.c,v 1.3 2008/04/11 20:45:52 stefan Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -135,7 +135,8 @@ again:	o = p->n_op;
 		goto setuleft;
 
 	case RS:
-		if (LO(p) == RS && RCON(p->n_left) && RCON(p)) {
+		if (LO(p) == RS && RCON(p->n_left) && RCON(p) &&
+		    (RV(p) + RV(p->n_left)) < p->n_sue->suesize) {
 			/* two right-shift  by constants */
 			RV(p) += RV(p->n_left);
 			p->n_left = zapleft(p->n_left);

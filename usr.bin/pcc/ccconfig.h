@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccconfig.h,v 1.3 2007/10/22 13:40:08 otto Exp $	*/
+/*	$OpenBSD: ccconfig.h,v 1.4 2008/04/11 20:45:51 stefan Exp $	*/
 
 /*
  * Copyright (c) 2004 Anders Magnusson (ragge@ludd.luth.se).
@@ -64,4 +64,5 @@
 }
 #define MAXCPPMDARGS 8
 
+#define ELFABI
 #define	STABS
