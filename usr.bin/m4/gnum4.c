@@ -1,4 +1,4 @@
-/* $OpenBSD: gnum4.c,v 1.36 2006/03/24 08:03:44 espie Exp $ */
+/* $OpenBSD: gnum4.c,v 1.35 2006/03/23 08:04:54 espie Exp $ */
 
 /*
  * Copyright (c) 1999 Marc Espie

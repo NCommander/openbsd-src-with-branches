@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.18 2006/04/10 14:38:59 jaredy Exp $	*/
+/*	$OpenBSD: tree.c,v 1.17 2005/03/30 17:16:37 deraadt Exp $	*/
 
 /*
  * command tree climbing
@@ -706,5 +706,4 @@ iofree(struct ioword **iow, Area *ap)
 			afree((void*)p->heredoc, ap);
 		afree((void*)p, ap);
 	}
-	afree(iow, ap);
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_udp.c,v 1.16 2008/07/23 10:05:18 reyk Exp $	*/
+/*	$OpenBSD: relay_udp.c,v 1.15 2008/07/09 17:24:14 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -257,13 +257,7 @@ relay_udp_server(int fd, short sig, void *arg)
 	con->se_in.dir = RELAY_DIR_REQUEST;
 	con->se_out.dir = RELAY_DIR_RESPONSE;
 	con->se_retry = rlay->rl_conf.dstretry;
-
-	if (gettimeofday(&con->se_tv_start, NULL) == -1) {
-		free(con);
-		free(priv);
-		return;
-	}
-
+	gettimeofday(&con->se_tv_start, NULL);
 	bcopy(&con->se_tv_start, &con->se_tv_last, sizeof(con->se_tv_last));
 	bcopy(&ss, &con->se_in.ss, sizeof(con->se_in.ss));
 	con->se_out.port = rlay->rl_conf.dstport;
@@ -472,7 +466,7 @@ relay_dns_request(struct session *con)
 	if (debug)
 		relay_dns_log(con, buf, len);
 
-	if (gettimeofday(&con->se_tv_start, NULL) == -1)
+	if (gettimeofday(&con->se_tv_start, NULL))
 		return (-1);
 
 	if (rlay->rl_dsttable != NULL) {

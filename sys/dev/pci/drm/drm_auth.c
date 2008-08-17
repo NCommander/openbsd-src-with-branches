@@ -70,10 +70,7 @@ drm_add_magic(struct drm_device *dev, struct drm_file *priv, drm_magic_t magic)
 
 	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
 
-	DRM_UNLOCK();
-	entry = drm_alloc(sizeof(*entry), DRM_MEM_MAGIC);
-	DRM_LOCK();
-	if (entry == NULL)
+	if ((entry = drm_alloc(sizeof(*entry), DRM_MEM_MAGIC)) == NULL)
 		return (ENOMEM);
 	entry->magic = magic;
 	entry->priv = priv;
@@ -100,9 +97,7 @@ drm_remove_magic(struct drm_device *dev, drm_magic_t magic)
 	if ((pt = SPLAY_FIND(drm_magic_tree, &dev->magiclist, &key)) == NULL)
 		return (EINVAL);
 	SPLAY_REMOVE(drm_magic_tree, &dev->magiclist, pt);
-	DRM_UNLOCK();
 	drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
-	DRM_LOCK();
 	return (0);
 }
 
@@ -117,14 +112,24 @@ drm_remove_magic(struct drm_device *dev, drm_magic_t magic)
 int
 drm_getmagic(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_auth_t	*auth = data;
+	static drm_magic_t	 sequence = 0;
+	drm_auth_t		*auth = data;
 
 	/* Find unique magic */
 	if (file_priv->magic) {
 		auth->magic = file_priv->magic;
 	} else {
 		DRM_LOCK();
-		file_priv->magic = auth->magic = dev->magicid++;
+		do {
+			int old = sequence;
+
+			auth->magic = ++old;
+
+			if (!atomic_cmpset_int(&sequence, old, auth->magic))
+				continue;
+		} while (drm_find_file(dev, auth->magic));
+
+		file_priv->magic = auth->magic;
 		drm_add_magic(dev, file_priv, auth->magic);
 		DRM_UNLOCK();
 	}

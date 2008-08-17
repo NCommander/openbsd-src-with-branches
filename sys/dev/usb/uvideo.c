@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.81 2008/08/13 20:29:34 mglocker Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.74 2008/08/02 20:08:49 mglocker Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -149,8 +149,6 @@ void		uvideo_debug_file_write_frame(void *);
  */
 int		uvideo_querycap(void *, struct v4l2_capability *);
 int		uvideo_enum_fmt(void *, struct v4l2_fmtdesc *);
-int		uvideo_enum_fsizes(void *, struct v4l2_frmsizeenum *);
-int		uvideo_enum_fivals(void *, struct v4l2_frmivalenum *);
 int		uvideo_s_fmt(void *, struct v4l2_format *);
 int		uvideo_g_fmt(void *, struct v4l2_format *);
 int		uvideo_enum_input(void *, struct v4l2_input *);
@@ -187,8 +185,6 @@ struct video_hw_if uvideo_hw_if = {
 	uvideo_close,		/* close */
 	uvideo_querycap,	/* VIDIOC_QUERYCAP */
 	uvideo_enum_fmt,	/* VIDIOC_ENUM_FMT */
-	uvideo_enum_fsizes,	/* VIDIOC_ENUM_FRAMESIZES */
-	uvideo_enum_fivals,	/* VIDIOC_ENUM_FRAMEINTERVALS */
 	uvideo_s_fmt,		/* VIDIOC_S_FMT */
 	uvideo_g_fmt,		/* VIDIOC_G_FMT */
 	uvideo_enum_input,	/* VIDIOC_ENUMINPUT */
@@ -211,6 +207,9 @@ struct video_hw_if uvideo_hw_if = {
  * they are.  They report UICLASS_VENDOR in the bInterfaceClass
  * instead of UICLASS_VIDEO.  Give those devices a chance to attach
  * by looking up their USB ID.
+ *
+ * If the device also doesn't set UDCLASS_VIDEO you need to add an
+ * entry in usb_quirks.c, too, so the ehci disown works.
  */
 static const struct usb_devno uvideo_quirk_devs [] = {
 	{ USB_VENDOR_LOGITECH,	USB_PRODUCT_LOGITECH_QUICKCAMOEM_1 }
@@ -327,6 +326,12 @@ uvideo_attach(struct device *parent, struct device *self, void *aux)
 	usbd_status error;
 
 	sc->sc_udev = uaa->device;
+
+	if (uaa->device->bus->usbrev == USBREV_2_0) {
+		printf("%s: ehci(4) does not support isochronous transfers "
+		    "yet, disable it.\n", DEVNAME(sc));
+		return; 
+	}
 
 	/* get the config descriptor */
 	cdesc = usbd_get_config_descriptor(sc->sc_udev);
@@ -916,10 +921,11 @@ uvideo_vs_set_alt(struct uvideo_softc *sc, usbd_interface_handle ifaceh,
 		i++;
 
 		/* save endpoint with requested bandwidth */
-		if (UGETW(ed->wMaxPacketSize) >= max_packet_size) {
+		if (UGETW(ed->wMaxPacketSize) == max_packet_size) {
 			sc->sc_vs_curr->endpoint = ed->bEndpointAddress;
 			sc->sc_vs_curr->curalt = id->bAlternateSetting;
-			sc->sc_vs_curr->max_packet_size = max_packet_size;
+			sc->sc_vs_curr->max_packet_size =
+			    UGETW(ed->wMaxPacketSize);
 			DPRINTF(1, "%s: set alternate iface to ", DEVNAME(sc));
 			DPRINTF(1, "bAlternateSetting=0x%02x\n",
 			    id->bAlternateSetting);
@@ -1027,9 +1033,12 @@ uvideo_vs_negotiation(struct uvideo_softc *sc, int commit)
 
 	/* get probe */
 	bzero(probe_data, sizeof(probe_data));
-	error = uvideo_vs_get_probe(sc, probe_data, GET_CUR);
-	if (error != USBD_NORMAL_COMPLETION)
-		return (error);
+	error = uvideo_vs_get_probe(sc, probe_data, GET_DEF);
+	if (error != USBD_NORMAL_COMPLETION) {
+		error = uvideo_vs_get_probe(sc, probe_data, GET_CUR);
+		if (error != USBD_NORMAL_COMPLETION)
+			return (error);
+	}
 
 	/* set probe */
 	pc->bFormatIndex = sc->sc_fmtgrp_cur->format->bFormatIndex;
@@ -1125,8 +1134,10 @@ uvideo_vs_get_probe(struct uvideo_softc *sc, uint8_t *probe_data,
 
 	err = usbd_do_request(sc->sc_udev, &req, probe_data);
 	if (err) {
-		printf("%s: could not GET probe request: %s\n",
-		    DEVNAME(sc), usbd_errstr(err));
+		if (request != GET_DEF) {
+			printf("%s: could not GET probe request: %s\n",
+			    DEVNAME(sc), usbd_errstr(err));
+		}
 		return (USBD_INVAL);
 	}
 	DPRINTF(1, "%s: GET probe request successfully\n", DEVNAME(sc));
@@ -1330,14 +1341,14 @@ uvideo_vs_open(struct uvideo_softc *sc)
 void
 uvideo_vs_close(struct uvideo_softc *sc)
 {
-	/* switch back to default interface (turns off cam LED) */
-	(void)usbd_set_interface(sc->sc_vs_curr->ifaceh, 0);
-
 	if (sc->sc_vs_curr->pipeh) {
 		usbd_abort_pipe(sc->sc_vs_curr->pipeh);
 		usbd_close_pipe(sc->sc_vs_curr->pipeh);
 		sc->sc_vs_curr->pipeh = NULL;
 	}
+
+	/* switch back to default interface (turns off cam LED) */
+	(void)usbd_set_interface(sc->sc_vs_curr->ifaceh, 0);
 }
 
 usbd_status
@@ -1400,7 +1411,6 @@ uvideo_vs_cb(usbd_xfer_handle xfer, usbd_private_handle priv,
 	struct uvideo_softc *sc = vs->sc;
 	int len, i, frame_size;
 	uint8_t *frame;
-	usbd_status error;
 
 	DPRINTF(2, "%s: %s\n", DEVNAME(sc), __func__);
 
@@ -1423,9 +1433,7 @@ uvideo_vs_cb(usbd_xfer_handle xfer, usbd_private_handle priv,
 			/* frame is empty */
 			continue;
 
-		error = uvideo_vs_decode_stream_header(sc, frame, frame_size);
-		if (error == USBD_CANCELLED)
-			break;
+		(void)uvideo_vs_decode_stream_header(sc, frame, frame_size);
 	}
 
 skip:	/* setup new transfer */
@@ -1455,11 +1463,6 @@ uvideo_vs_decode_stream_header(struct uvideo_softc *sc, uint8_t *frame,
 	if (header_len == frame_size && !(header_flags & UVIDEO_STREAM_EOF)) {
 		/* stream header without payload and no EOF */
 		return (USBD_INVAL);
-	}
-	if (header_flags & UVIDEO_STREAM_ERR) {
-		/* stream error, skip xfer */
-		DPRINTF(1, "%s: %s: stream error!\n", DEVNAME(sc), __func__);
-		return (USBD_CANCELLED);
 	}
 
 	DPRINTF(2, "%s: frame_size = %d\n", DEVNAME(sc), frame_size);
@@ -2158,64 +2161,6 @@ uvideo_enum_fmt(void *v, struct v4l2_fmtdesc *fmtdesc)
 	}
 
 	return (0);
-}
-
-int
-uvideo_enum_fsizes(void *v, struct v4l2_frmsizeenum *fsizes)
-{
-	struct uvideo_softc *sc = v;
-	int i, idx, found = 0;
-
-	for (idx = 0; idx < sc->sc_fmtgrp_num; idx++) {
-		if (sc->sc_fmtgrp[idx].pixelformat == fsizes->pixel_format) {
-			found = 1;
-			break;
-		}
-	}
-	if (found == 0)
-		return (EINVAL);
-
-	i = fsizes->index + 1;
-	if (i > sc->sc_fmtgrp[idx].frame_num)
-		/* no more frames left */
-		return (EINVAL);
-
-	if (sc->sc_fmtgrp[idx].frame[i]->bFrameIntervalType == 0) {
-		/* TODO */
-		fsizes->type = V4L2_FRMSIZE_TYPE_CONTINUOUS;
-		fsizes->stepwise.min_width = 0;
-		fsizes->stepwise.min_height = 0;
-		fsizes->stepwise.max_width = 0;
-		fsizes->stepwise.max_height = 0;
-	} else {
-		fsizes->type = V4L2_FRMSIZE_TYPE_DISCRETE;
-		fsizes->discrete.width =
-		    UGETW(sc->sc_fmtgrp[idx].frame[i]->wWidth);
-		fsizes->discrete.height =
-		    UGETW(sc->sc_fmtgrp[idx].frame[i]->wHeight);
-	}
-
-	return (0);
-}
-
-int
-uvideo_enum_fivals(void *v, struct v4l2_frmivalenum *fivals)
-{
-	struct uvideo_softc *sc = v;
-	int idx, found = 0;
-
-	for (idx = 0; idx < sc->sc_fmtgrp_num; idx++) {
-		if (sc->sc_fmtgrp[idx].pixelformat == fivals->pixel_format) {
-			found = 1;
-			break;
-		}
-	}
-	if (found == 0)
-		return (EINVAL);
-
-	/* TODO */
-
-	return (EINVAL);
 }
 
 int

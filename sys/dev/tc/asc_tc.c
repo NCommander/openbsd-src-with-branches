@@ -1,4 +1,4 @@
-/* $OpenBSD: asc_tc.c,v 1.8 2008/06/26 05:42:18 ray Exp $ */
+/* $OpenBSD: asc_tc.c,v 1.7 2003/02/11 19:20:28 mickey Exp $ */
 /* $NetBSD: asc_tc.c,v 1.19 2001/11/15 09:48:19 lukem Exp $ */
 
 /*-
@@ -137,8 +137,7 @@ asc_tc_attach(parent, self, aux)
 	}
 	asc->sc_base = (caddr_t)ta->ta_addr;	/* XXX XXX XXX */
 
-	tc_intr_establish(parent, ta->ta_cookie, IPL_BIO, ncr53c9x_intr, sc,
-	    self->dv_xname);
+	tc_intr_establish(parent, ta->ta_cookie, IPL_BIO, ncr53c9x_intr, sc);
 	
 	sc->sc_id = 7;
 	sc->sc_freq = (ta->ta_busspeed) ? 25000000 : 12500000;

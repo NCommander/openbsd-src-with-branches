@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.87 2008/06/09 23:38:37 millert Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.86 2008/01/17 11:31:56 fgsch Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -129,6 +129,7 @@ ufs_create(void *v)
 /*
  * Mknod vnode call
  */
+/* ARGSUSED */
 int
 ufs_mknod(void *v)
 {
@@ -169,6 +170,7 @@ ufs_mknod(void *v)
  *
  * Nothing to do.
  */
+/* ARGSUSED */
 int
 ufs_open(void *v)
 {
@@ -193,6 +195,7 @@ ufs_open(void *v)
  *
  * Update the times on the inode.
  */
+/* ARGSUSED */
 int
 ufs_close(void *v)
 {
@@ -253,6 +256,7 @@ ufs_access(void *v)
 	    mode, ap->a_cred));
 }
 
+/* ARGSUSED */
 int
 ufs_getattr(void *v)
 {
@@ -533,6 +537,7 @@ ufs_ioctl(void *v)
 	return (ENOTTY);
 }
 
+/* ARGSUSED */
 int
 ufs_poll(void *v)
 {
@@ -1955,6 +1960,7 @@ filt_ufsdetach(struct knote *kn)
 	SLIST_REMOVE(&vp->v_selectinfo.si_note, kn, knote, kn_selnext);
 }
 
+/*ARGSUSED*/
 int
 filt_ufsread(struct knote *kn, long hint)
 {

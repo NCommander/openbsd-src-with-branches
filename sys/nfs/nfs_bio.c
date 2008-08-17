@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.54 2008/08/08 20:44:38 blambert Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.52 2008/07/23 16:24:43 beck Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -56,6 +56,7 @@
 #include <nfs/nfsnode.h>
 #include <nfs/nfs_var.h>
 
+extern struct proc *nfs_iodwant[NFS_MAXASYNCDAEMON];
 extern int nfs_numasync;
 extern struct nfsstats nfsstats;
 struct nfs_bufqhead nfs_bufq;
@@ -122,7 +123,7 @@ nfs_bioread(vp, uio, ioflag, cred)
 		if (error)
 			return (error);
 		if (np->n_mtime != vattr.va_mtime.tv_sec) {
-			error = nfs_vinvalbuf(vp, V_SAVE, cred, p);
+			error = nfs_vinvalbuf(vp, V_SAVE, cred, p, 1);
 			if (error)
 				return (error);
 			np->n_mtime = vattr.va_mtime.tv_sec;
@@ -306,7 +307,7 @@ nfs_write(v)
 	if (ioflag & (IO_APPEND | IO_SYNC)) {
 		if (np->n_flag & NMODIFIED) {
 			np->n_attrstamp = 0;
-			error = nfs_vinvalbuf(vp, V_SAVE, cred, p);
+			error = nfs_vinvalbuf(vp, V_SAVE, cred, p, 1);
 			if (error)
 				return (error);
 		}
@@ -481,45 +482,57 @@ nfs_getcacheblk(vp, bn, size, p)
  * doing the flush, just wait for completion.
  */
 int
-nfs_vinvalbuf(struct vnode *vp, int flags, struct ucred *cred, struct proc *p)
+nfs_vinvalbuf(vp, flags, cred, p, intrflg)
+	struct vnode *vp;
+	int flags;
+	struct ucred *cred;
+	struct proc *p;
+	int intrflg;
 {
-	struct nfsmount		*nmp= VFSTONFS(vp->v_mount);
-	struct nfsnode		*np = VTONFS(vp);
-	int			 error, sintr, stimeo;
+	struct nfsnode *np = VTONFS(vp);
+	struct nfsmount *nmp = VFSTONFS(vp->v_mount);
+	int error = 0, slpflag, slptimeo;
 
-	error = sintr = stimeo = 0;
-
-	if (ISSET(nmp->nm_flag, NFSMNT_INT)) {
-		sintr = PCATCH;
-		stimeo = 2 * hz;
+	if ((nmp->nm_flag & NFSMNT_INT) == 0)
+		intrflg = 0;
+	if (intrflg) {
+		slpflag = PCATCH;
+		slptimeo = 2 * hz;
+	} else {
+		slpflag = 0;
+		slptimeo = 0;
 	}
-
-	/* First wait for any other process doing a flush to complete. */
+	/*
+	 * First wait for any other process doing a flush to complete.
+	 */
 	while (np->n_flag & NFLUSHINPROG) {
 		np->n_flag |= NFLUSHWANT;
-		error = tsleep(&np->n_flag, PRIBIO|sintr, "nfsvinval", stimeo);
-		if (error && sintr && nfs_sigintr(nmp, NULL, p))
+		error = tsleep((caddr_t)&np->n_flag, PRIBIO + 2, "nfsvinval",
+			slptimeo);
+		if (error && intrflg && nfs_sigintr(nmp, (struct nfsreq *)0, p))
 			return (EINTR);
 	}
 
-	/* Now, flush as required. */
+	/*
+	 * Now, flush as required.
+	 */
 	np->n_flag |= NFLUSHINPROG;
-	error = vinvalbuf(vp, flags, cred, p, sintr, 0);
+	error = vinvalbuf(vp, flags, cred, p, slpflag, 0);
 	while (error) {
-		if (sintr && nfs_sigintr(nmp, NULL, p)) {
+		if (intrflg && nfs_sigintr(nmp, (struct nfsreq *)0, p)) {
 			np->n_flag &= ~NFLUSHINPROG;
 			if (np->n_flag & NFLUSHWANT) {
 				np->n_flag &= ~NFLUSHWANT;
-				wakeup(&np->n_flag);
+				wakeup((caddr_t)&np->n_flag);
 			}
 			return (EINTR);
 		}
-		error = vinvalbuf(vp, flags, cred, p, 0, stimeo);
+		error = vinvalbuf(vp, flags, cred, p, 0, slptimeo);
 	}
 	np->n_flag &= ~(NMODIFIED | NFLUSHINPROG);
 	if (np->n_flag & NFLUSHWANT) {
 		np->n_flag &= ~NFLUSHWANT;
-		wakeup(&np->n_flag);
+		wakeup((caddr_t)&np->n_flag);
 	}
 	return (0);
 }

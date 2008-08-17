@@ -1,5 +1,5 @@
 /* Alias analysis for GNU C
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GNU CC.
@@ -746,10 +746,55 @@ find_base_term (x)
     case PLUS:
     case MINUS:
       {
-	rtx tmp = find_base_term (XEXP (x, 0));
-	if (tmp)
-	  return tmp;
-	return find_base_term (XEXP (x, 1));
+	rtx tmp1 = XEXP (x, 0);
+	rtx tmp2 = XEXP (x, 1);
+
+	/* This is a litle bit tricky since we have to determine which of
+	   the two operands represents the real base address.  Otherwise this
+	   routine may return the index register instead of the base register.
+
+	   That may cause us to believe no aliasing was possible, when in
+	   fact aliasing is possible.
+
+	   We use a few simple tests to guess the base register.  Additional
+	   tests can certainly be added.  For example, if one of the operands
+	   is a shift or multiply, then it must be the index register and the
+	   other operand is the base register.  */
+	
+	/* If either operand is known to be a pointer, then use it
+	   to determine the base term.  */
+	if (REG_P (tmp1) && REGNO_POINTER_FLAG (REGNO (tmp1)))
+	  return find_base_term (tmp1);
+
+	if (REG_P (tmp2) && REGNO_POINTER_FLAG (REGNO (tmp2)))
+	  return find_base_term (tmp2);
+
+	/* Neither operand was known to be a pointer.  Go ahead and find the
+	   base term for both operands.  */
+	tmp1 = find_base_term (tmp1);
+	tmp2 = find_base_term (tmp2);
+
+	/* If either base term is named object or a special address
+	   (like an argument or stack reference), then use it for the
+	   base term.  */
+	if (tmp1
+	    && (GET_CODE (tmp1) == SYMBOL_REF
+		|| GET_CODE (tmp1) == LABEL_REF
+		|| (GET_CODE (tmp1) == ADDRESS
+		    && GET_MODE (tmp1) != VOIDmode)))
+	  return tmp1;
+
+	if (tmp2
+	    && (GET_CODE (tmp2) == SYMBOL_REF
+		|| GET_CODE (tmp2) == LABEL_REF
+		|| (GET_CODE (tmp2) == ADDRESS
+		    && GET_MODE (tmp2) != VOIDmode)))
+	  return tmp2;
+
+	/* We could not determine which of the two operands was the
+	   base register and which was the index.  So we can determine
+	   nothing from the base alias check.  */
+	return 0;
       }
 
     case AND:
@@ -1410,15 +1455,6 @@ init_alias_analysis ()
       new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
 	= gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
 #endif
-      if (struct_value_incoming_rtx
-	  && GET_CODE (struct_value_incoming_rtx) == REG)
-	new_reg_base_value[REGNO (struct_value_incoming_rtx)]
-	  = gen_rtx_ADDRESS (Pmode, struct_value_incoming_rtx);
-
-      if (static_chain_rtx
-	  && GET_CODE (static_chain_rtx) == REG)
-	new_reg_base_value[REGNO (static_chain_rtx)]
-	  = gen_rtx_ADDRESS (Pmode, static_chain_rtx);
 
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.11 2008/08/10 18:20:07 miod Exp $ */
+/*	$OpenBSD: autoconf.c,v 1.9 2003/08/15 23:16:30 deraadt Exp $ */
 /*	$NetBSD: autoconf.c,v 1.19 2002/06/01 15:33:22 ragge Exp $ */
 /*
  * Copyright (c) 1994, 1998 Ludd, University of Lule}, Sweden.
@@ -49,7 +49,6 @@ void autoconf(void);
 void findcpu(void);
 void consinit(void);
 void scbinit(void);
-void clkstart(void);
 int getsecs(void);
 void scb_stray(void *);
 void longjmp(int *);
@@ -69,9 +68,8 @@ autoconf(void)
 	int fromnet = (bootregs[12] != -1);
 
 	findcpu(); /* Configures CPU variables */
-	scbinit(); /* Setup interrupts */
 	consinit(); /* Allow us to print out things */
-	clkstart(); /* Fix interval clock etc */
+	scbinit(); /* Fix interval clock etc */
 
 #ifdef DEV_DEBUG
 	printf("Register contents:\n");
@@ -138,17 +136,14 @@ struct ivec_dsp **scb;
 struct ivec_dsp *scb_vec;
 extern struct ivec_dsp idsptch;
 extern int jbuf[10];
-extern int mcheck_silent;
 
 static void
 mcheck(void *arg)
 {
 	int off, *mfp = (int *)&arg;
 
-	if (!mcheck_silent) {
-		off = (mfp[7]/4 + 8);
-		printf("Machine check, pc=%x, psl=%x\n", mfp[off], mfp[off+1]);
-	}
+	off = (mfp[7]/4 + 8);
+	printf("Machine check, pc=%x, psl=%x\n", mfp[off], mfp[off+1]);
 	longjmp(jbuf);
 }
 
@@ -180,24 +175,12 @@ scbinit(void)
 		scb_vec[i].pushlarg = (void *) (i * 4);
 		scb_vec[i].ev = NULL;
 	}
-	scb_vec[4/4].hoppaddr = mcheck;
-}
-
-void
-clkstart(void)
-{
 	scb_vec[0xc0/4].hoppaddr = rtimer;
+	scb_vec[4/4].hoppaddr = mcheck;
+
 	if (vax_boardtype != VAX_BTYP_VXT)
 		mtpr(-10000, PR_NICR);		/* Load in count register */
 	mtpr(0x800000d1, PR_ICCS);	/* Start clock and enable interrupt */
-
-	if (vax_boardtype == VAX_BTYP_60) {
-		extern int ka60_ioslot;
-
-		/* enable M-Bus clock in IOCSR */
-		*(unsigned int *)(0x30800000 + (ka60_ioslot << 25)) |=
-		    0x20000000;	/* CLKIEN */
-	}
 
 	mtpr(20, PR_IPL);
 }

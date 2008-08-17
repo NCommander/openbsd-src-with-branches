@@ -1,4 +1,4 @@
-/*	$OpenBSD: bog.c,v 1.18 2008/03/24 12:01:54 millert Exp $	*/
+/*	$OpenBSD: bog.c,v 1.17 2008/03/20 12:02:27 millert Exp $	*/
 /*	$NetBSD: bog.c,v 1.5 1995/04/24 12:22:32 cgd Exp $	*/
 
 /*-
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)bog.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$OpenBSD: bog.c,v 1.18 2008/03/24 12:01:54 millert Exp $";
+static char rcsid[] = "$OpenBSD: bog.c,v 1.17 2008/03/20 12:02:27 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -681,7 +681,7 @@ compar(const void *p, const void *q)
 }
 
 /*
- * Allocate and initialize data structures.
+ * Allocate and initialize datga structures.
  */
 static void
 init(void)

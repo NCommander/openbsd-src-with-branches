@@ -1,4 +1,4 @@
-/*	$OpenBSD: abuf.c,v 1.5 2008/08/14 09:46:36 ratchov Exp $	*/
+/*	$OpenBSD: abuf.c,v 1.1 2008/05/23 07:15:46 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -26,6 +26,12 @@
  *
  * TODO:
  *
+ *	(easy) create abuf_wcommitblk(), abuf_rdiscardblk() instead of tweeking
+ *	the fifo pointers by hand. But first, find shorter function names...
+ *
+ *	(easy) dont initialize aproc-specific stuff in abuf_new(), let the
+ *	aproc xxx_new() routines do it
+ *
  *	(hard) make abuf_fill() a boolean depending on whether
  *	eof is reached. So the caller can do:
  *
@@ -36,7 +42,6 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "conf.h"
 #include "aproc.h"
@@ -61,9 +66,6 @@ abuf_new(unsigned nfr, unsigned bpf)
 	buf->len = len;
 	buf->used = 0;
 	buf->start = 0;
-	buf->abspos = 0;
-	buf->silence = 0;
-	buf->drop = 0;
 	buf->rproc = NULL;
 	buf->wproc = NULL;
 	buf->data = (unsigned char *)buf + sizeof(*buf);
@@ -97,35 +99,11 @@ abuf_rgetblk(struct abuf *buf, unsigned *rsize, unsigned ofs)
 
 	start = buf->start + ofs;
 	used = buf->used - ofs;
-	if (start >= buf->len)
-		start -= buf->len;
 	count = buf->len - start;
 	if (count > used)
 		count = used;
 	*rsize = count;
 	return buf->data + start;
-}
-
-/*
- * Discard the block at the start postion
- */
-void
-abuf_rdiscard(struct abuf *buf, unsigned count)
-{
-	buf->used -= count;
-	buf->start += count;
-	if (buf->start >= buf->len)
-		buf->start -= buf->len;
-	buf->abspos += count;
-}
-
-/*
- * Commit the data written at the end postion
- */
-void
-abuf_wcommit(struct abuf *buf, unsigned count)
-{
-	buf->used += count;
 }
 
 /*
@@ -158,70 +136,20 @@ abuf_wgetblk(struct abuf *buf, unsigned *rsize, unsigned ofs)
 }
 
 /*
- * flush buffer either by dropping samples or by calling the aproc
- * call-back to consume data. Return 0 if blocked, 1 otherwise
- */
-int
-abuf_flush_do(struct abuf *buf)
-{
-	struct aproc *p;
-	unsigned count;
-
-	if (buf->drop > 0) {
-		count = buf->drop;
-		if (count > buf->used)
-			count = buf->used;
-		abuf_rdiscard(buf, count);
-		buf->drop -= count;
-		DPRINTF("abuf_flush_do: drop = %u\n", buf->drop);
-	} else {
-		p = buf->rproc;
-		if (p == NULL || !p->ops->in(p, buf))
-			return 0;
-	}
-	return 1;
-}
-
-/*
  * Notify the read end of the buffer that there is input available
  * and that data can be processed again.
  */
 void
 abuf_flush(struct abuf *buf)
 {
+	struct aproc *p = buf->rproc;
+
 	for (;;) {
 		if (!ABUF_ROK(buf))
 			break;
-		if (!abuf_flush_do(buf))
+		if (p == NULL || !p->ops->in(p, buf))
 			break;
 	}
-}
-
-/*
- * fill the buffer either by generating silence or by calling the aproc
- * call-back to provide data. Return 0 if blocked, 1 otherwise
- */
-int
-abuf_fill_do(struct abuf *buf)
-{
-	struct aproc *p;
-	unsigned char *data;
-	unsigned count;
-
-	if (buf->silence > 0) {
-		data = abuf_wgetblk(buf, &count, 0);
-		if (count >= buf->silence)
-			count = buf->silence;
-		memset(data, 0, count);
-		abuf_wcommit(buf, count);
-		buf->silence -= count;
-		DPRINTF("abuf_fill_do: silence = %u\n", buf->silence);
-	} else {
-		p = buf->wproc;
-		if (p == NULL || !p->ops->out(p, buf))
-			return 0;
-	}
-	return 1;
 }
 
 /*
@@ -235,10 +163,12 @@ abuf_fill_do(struct abuf *buf)
 void
 abuf_fill(struct abuf *buf)
 {
+	struct aproc *p = buf->wproc;
+
 	for (;;) {
 		if (!ABUF_WOK(buf))
 			break;
-		if (!abuf_fill_do(buf))
+		if (p == NULL || !p->ops->out(p, buf))
 			break;
 	}
 }
@@ -266,10 +196,12 @@ abuf_run(struct abuf *buf)
 			abuf_del(buf);
 			return;
 		}
-		if (ABUF_WOK(buf) && canfill) {
-			canfill = abuf_fill_do(buf);
+		if (ABUF_WOK(buf) && canfill && buf->wproc) {
+			p = buf->wproc;
+			canfill = p->ops->out(p, buf);
 		} else if (ABUF_ROK(buf) && canflush) {
-			canflush = abuf_flush_do(buf);
+			p = buf->rproc;
+			canflush = p->ops->in(p, buf);
 		} else
 			break; /* can neither read nor write */
 	}

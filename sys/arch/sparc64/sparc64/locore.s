@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.152 2008/08/10 14:13:05 kettenis Exp $	*/
+/*	$OpenBSD: locore.s,v 1.148 2008/07/25 14:53:38 kettenis Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -4282,13 +4282,12 @@ _C_LABEL(sparc_interrupt):
 	 * If this is a %tick softint, clear it then call interrupt_vector.
 	 */
 	rd	SOFTINT, %g1
-	set	(TICK_INT|STICK_INT), %g2
-	andcc	%g2, %g1, %g2
+	btst	1, %g1
 	bz,pt	%icc, 0f
-	 GET_CPUINFO_VA(%g7)
-	wr	%g2, 0, CLEAR_SOFTINT
+	 set	_C_LABEL(intrlev), %g3
+	wr	%g0, 1, CLEAR_SOFTINT
 	ba,pt	%icc, setup_sparcintr
-	 add	%g7, CI_TICKINTR, %g5
+	 ldx	[%g3 + 8], %g5	! intrlev[1] is reserved for %tick intr.
 0:
 	INTR_SETUP -CC64FSZ-TF_SIZE-8
 
@@ -8919,78 +8918,6 @@ ENTRY(tickcmpr_set)
 	retl
 	 nop
 
-ENTRY(sys_tickcmpr_set)
-	ba	1f
-	 mov	8, %o2			! Initial step size
-	.align	64
-1:	wr	%o0, 0, %sys_tick_cmpr
-	rd	%sys_tick_cmpr, %g0
-
-	rd	%sys_tick, %o1		! Read current %sys_tick
-	sllx	%o1, 1, %o1
-	srlx	%o1, 1, %o1
-
-	cmp	%o0, %o1		! Make sure the value we wrote to
-	bg,pt	%xcc, 2f		!   %sys_tick_cmpr was in the future.
-	 add	%o0, %o2, %o0		! If not, add the step size, double
-	ba,pt	%xcc, 1b		!   the step size and try again.
-	 sllx	%o2, 1, %o2
-2:
-	retl
-	 nop
-
-/*
- * Support for the STICK logic found on the integrated PCI host bridge
- * of Hummingbird (UltraSPARC-IIe).  The chip designers made the
- * brilliant decision to split the 64-bit counters into two 64-bit
- * aligned 32-bit registers, making atomic access impossible.  This
- * means we have to check for wraparound in various places.  Sigh.
- */
-
-#define STICK_CMP_LOW	0x1fe0000f060
-#define STICK_CMP_HIGH	0x1fe0000f068
-#define STICK_REG_LOW	0x1fe0000f070
-#define STICK_REG_HIGH	0x1fe0000f078
-
-ENTRY(stick)
-	setx	STICK_REG_LOW, %o1, %o3
-0:
-	ldxa	[%o3] ASI_PHYS_NON_CACHED, %o0
-	add	%o3, (STICK_REG_HIGH - STICK_REG_LOW), %o4
-	ldxa	[%o4] ASI_PHYS_NON_CACHED, %o1
-	ldxa	[%o3] ASI_PHYS_NON_CACHED, %o2
-	cmp	%o2, %o0		! Check for wraparound
-	blu,pn	%icc, 0b
-	 sllx	%o1, 33, %o1		! Clear the MSB
-	srlx	%o1, 1, %o1
-	retl
-	 or	%o2, %o1, %o0
-
-ENTRY(stickcmpr_set)
-	setx	STICK_CMP_HIGH, %o1, %o3
-	mov	8, %o2			! Initial step size
-1:
-	srlx	%o0, 32, %o1
-	stxa	%o1, [%o3] ASI_PHYS_NON_CACHED
-	add	%o3, (STICK_CMP_LOW - STICK_CMP_HIGH), %o4
-	stxa	%o0, [%o4] ASI_PHYS_NON_CACHED
-
-	add	%o3, (STICK_REG_LOW - STICK_CMP_HIGH), %o4
-	ldxa	[%o4] ASI_PHYS_NON_CACHED, %o1
-	add	%o3, (STICK_REG_HIGH - STICK_CMP_HIGH), %o4
-	ldxa	[%o4] ASI_PHYS_NON_CACHED, %o5
-	sllx	%o5, 32, %o5
-	or	%o1, %o5, %o1
-
-	cmp	%o0, %o1		! Make sure the value we wrote
-	bg,pt	%xcc, 2f		!   was in the future
-	 add	%o0, %o2, %o0		! If not, add the step size, double
-	ba,pt	%xcc, 1b		!   the step size and try again.
-	 sllx	%o2, 1, %o2
-2:
-	retl
-	 nop
-
 #define MICROPERSEC	(1000000)
 	.data
 	.align	16
@@ -9039,6 +8966,20 @@ ENTRY(delay)			! %o0 = n
 	brgz,pt	%o0, 1b						! Done?
 	 rdpr	%tick, %o2					! Get new tick
 
+	retl
+	 nop
+
+	/*
+	 * If something's wrong with the standard setup do this stupid loop
+	 * calibrated for a 143MHz processor.
+	 */
+Lstupid_delay:
+	set	142857143/MICROPERSEC, %o1
+Lstupid_loop:
+	brnz,pt	%o1, Lstupid_loop
+	 dec	%o1
+	brnz,pt	%o0, Lstupid_delay
+	 dec	%o0
 	retl
 	 nop
 

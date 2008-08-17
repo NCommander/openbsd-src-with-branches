@@ -64,7 +64,9 @@ drm_dma_takedown(struct drm_device *dev)
 	for (i = 0; i <= DRM_MAX_ORDER; i++) {
 		if (dma->bufs[i].seg_count) {
 			DRM_DEBUG("order %d: buf_count = %d,"
-			    " seg_count = %d\n", i, dma->bufs[i].buf_count,
+			    " seg_count = %d\n",
+			    i,
+			    dma->bufs[i].buf_count,
 			    dma->bufs[i].seg_count);
 			for (j = 0; j < dma->bufs[i].seg_count; j++) {
 				drm_pci_free(dev, dma->bufs[i].seglist[j]);
@@ -103,8 +105,7 @@ drm_dma_takedown(struct drm_device *dev)
 void
 drm_free_buffer(struct drm_device *dev, drm_buf_t *buf)
 {
-	if (buf == NULL)
-		return;
+	if (!buf) return;
 
 	buf->pending = 0;
 	buf->file_priv= NULL;
@@ -117,8 +118,7 @@ drm_reclaim_buffers(struct drm_device *dev, struct drm_file *file_priv)
 	drm_device_dma_t *dma = dev->dma;
 	int i;
 
-	if (dma == NULL)
-		return;
+	if (!dma) return;
 	for (i = 0; i < dma->buf_count; i++) {
 		if (dma->buflist[i]->file_priv == file_priv) {
 			switch (dma->buflist[i]->list) {

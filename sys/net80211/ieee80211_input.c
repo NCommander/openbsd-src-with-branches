@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_input.c,v 1.98 2008/08/13 17:44:45 damien Exp $	*/
+/*	$OpenBSD: ieee80211_input.c,v 1.88 2008/08/02 08:20:16 damien Exp $	*/
 
 /*-
  * Copyright (c) 2001 Atsushi Onoe
@@ -62,8 +62,6 @@
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_priv.h>
 
-void	ieee80211_deliver_data(struct ieee80211com *, struct mbuf *,
-	    struct ieee80211_node *);
 int	ieee80211_parse_edca_params_body(struct ieee80211com *,
 	    const u_int8_t *);
 int	ieee80211_parse_edca_params(struct ieee80211com *, const u_int8_t *);
@@ -133,9 +131,12 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 {
 	struct ieee80211com *ic = (void *)ifp;
 	struct ieee80211_frame *wh;
+	struct ether_header *eh;
+	struct mbuf *m1;
+	int error, hdrlen, len;
+	u_int8_t dir, type, subtype;
 	u_int16_t *orxseq, nrxseq;
-	u_int8_t dir, type, subtype, tid;
-	int hdrlen;
+	int tid;
 
 #ifdef DIAGNOSTIC
 	if (ni == NULL)
@@ -367,7 +368,70 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 			ic->ic_stats.is_rx_decap++;
 			goto err;
 		}
-		ieee80211_deliver_data(ic, m, ni);
+		eh = mtod(m, struct ether_header *);
+
+		if ((ic->ic_flags & IEEE80211_F_RSNON) &&
+		    !ni->ni_port_valid &&
+		    eh->ether_type != htons(ETHERTYPE_PAE)) {
+			DPRINTF(("port not valid: %s\n",
+			    ether_sprintf(wh->i_addr2)));
+			ic->ic_stats.is_rx_unauth++;
+			goto err;
+		}
+		ifp->if_ipackets++;
+
+		/*
+		 * Perform as a bridge within the AP.  XXX we do not bridge
+		 * 802.1X frames as suggested in C.1.1 of IEEE Std 802.1X.
+		 */
+		m1 = NULL;
+		if (ic->ic_opmode == IEEE80211_M_HOSTAP &&
+		    !(ic->ic_flags & IEEE80211_F_NOBRIDGE) &&
+		    eh->ether_type != htons(ETHERTYPE_PAE)) {
+			if (ETHER_IS_MULTICAST(eh->ether_dhost)) {
+				m1 = m_copym(m, 0, M_COPYALL, M_DONTWAIT);
+				if (m1 == NULL)
+					ifp->if_oerrors++;
+				else
+					m1->m_flags |= M_MCAST;
+			} else {
+				struct ieee80211_node *ni;
+				ni = ieee80211_find_node(ic, eh->ether_dhost);
+				if (ni != NULL) {
+					if (ni->ni_associd != 0) {
+						m1 = m;
+						m = NULL;
+					}
+				}
+			}
+			if (m1 != NULL) {
+				len = m1->m_pkthdr.len;
+				IFQ_ENQUEUE(&ifp->if_snd, m1, NULL, error);
+				if (error)
+					ifp->if_oerrors++;
+				else {
+					if (m != NULL)
+						ifp->if_omcasts++;
+					ifp->if_obytes += len;
+				}
+			}
+		}
+		if (m != NULL) {
+#if NBPFILTER > 0
+			/*
+			 * If we forward frame into transmitter of the AP,
+			 * we don't need to duplicate for DLT_EN10MB.
+			 */
+			if (ifp->if_bpf && m1 == NULL)
+				bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
+#endif
+			if ((ic->ic_flags & IEEE80211_F_RSNON) &&
+			    eh->ether_type == htons(ETHERTYPE_PAE)) {
+				(*ic->ic_recv_eapol)(ic, m, ni);
+				m_freem(m);
+			} else
+				ether_input_mbuf(ifp, m);
+		}
 		return;
 
 	case IEEE80211_FC0_TYPE_MGT:
@@ -388,30 +452,6 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 				ic->ic_stats.is_rx_mgtdiscard++;
 				goto out;
 			}
-		}
-
-		if (ni->ni_flags & IEEE80211_NODE_RXMGMTPROT) {
-			/* MMPDU protection is on for Rx */
-			if (subtype == IEEE80211_FC0_SUBTYPE_DISASSOC ||
-			    subtype == IEEE80211_FC0_SUBTYPE_DEAUTH ||
-			    subtype == IEEE80211_FC0_SUBTYPE_ACTION) {
-				if (!IEEE80211_IS_MULTICAST(wh->i_addr1) &&
-				    !(wh->i_fc[1] & IEEE80211_FC1_PROTECTED)) {
-					/* unicast mgmt not encrypted */
-					goto out;
-				}
-				/* do software decryption */
-				m = ieee80211_decrypt(ic, m, ni);
-				if (m == NULL) {
-					/* XXX stats */
-					goto out;
-				}
-				wh = mtod(m, struct ieee80211_frame *);
-			}
-		} else if ((ic->ic_flags & IEEE80211_F_RSNON) &&
-		    (wh->i_fc[1] & IEEE80211_FC1_PROTECTED)) {
-			/* encrypted but MMPDU Rx protection off for TA */
-			goto out;
 		}
 
 		if (ifp->if_flags & IFF_DEBUG) {
@@ -467,12 +507,6 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 		case IEEE80211_FC0_SUBTYPE_PS_POLL:
 			ieee80211_recv_pspoll(ic, m, ni);
 			break;
-		case IEEE80211_FC0_SUBTYPE_BAR:
-			/* NYI */
-			break;
-		case IEEE80211_FC0_SUBTYPE_BA:
-			/* NYI */
-			break;
 		}
 		goto out;
 
@@ -493,93 +527,19 @@ ieee80211_input(struct ifnet *ifp, struct mbuf *m, struct ieee80211_node *ni,
 	}
 }
 
-void
-ieee80211_deliver_data(struct ieee80211com *ic, struct mbuf *m,
-    struct ieee80211_node *ni)
-{
-	struct ifnet *ifp = &ic->ic_if;
-	struct ieee80211_node *ni1;
-	struct ether_header *eh;
-	struct mbuf *m1;
-	int error, len;
-
-	eh = mtod(m, struct ether_header *);
-
-	if ((ic->ic_flags & IEEE80211_F_RSNON) && !ni->ni_port_valid &&
-	    eh->ether_type != htons(ETHERTYPE_PAE)) {
-		DPRINTF(("port not valid: %s\n",
-		    ether_sprintf(eh->ether_dhost)));
-		ic->ic_stats.is_rx_unauth++;
-		m_freem(m);
-		return;
-	}
-	ifp->if_ipackets++;
-
-	/*
-	 * Perform as a bridge within the AP.  Notice that we do not
-	 * bridge EAPOL frames as suggested in C.1.1 of IEEE Std 802.1X.
-	 */
-	m1 = NULL;
-	if (ic->ic_opmode == IEEE80211_M_HOSTAP &&
-	    !(ic->ic_flags & IEEE80211_F_NOBRIDGE) &&
-	    eh->ether_type != htons(ETHERTYPE_PAE)) {
-		if (ETHER_IS_MULTICAST(eh->ether_dhost)) {
-			m1 = m_copym(m, 0, M_COPYALL, M_DONTWAIT);
-			if (m1 == NULL)
-				ifp->if_oerrors++;
-			else
-				m1->m_flags |= M_MCAST;
-		} else {
-			ni1 = ieee80211_find_node(ic, eh->ether_dhost);
-			if (ni1 != NULL &&
-			    ni1->ni_state == IEEE80211_STA_ASSOC) {
-				m1 = m;
-				m = NULL;
-			}
-		}
-		if (m1 != NULL) {
-			len = m1->m_pkthdr.len;
-			IFQ_ENQUEUE(&ifp->if_snd, m1, NULL, error);
-			if (error)
-				ifp->if_oerrors++;
-			else {
-				if (m != NULL)
-					ifp->if_omcasts++;
-				ifp->if_obytes += len;
-				if_start(ifp);
-			}
-		}
-	}
-	if (m != NULL) {
-#if NBPFILTER > 0
-		/*
-		 * If we forward frame into transmitter of the AP,
-		 * we don't need to duplicate for DLT_EN10MB.
-		 */
-		if (ifp->if_bpf && m1 == NULL)
-			bpf_mtap(ifp->if_bpf, m, BPF_DIRECTION_IN);
-#endif
-		if ((ic->ic_flags & IEEE80211_F_RSNON) &&
-		    eh->ether_type == htons(ETHERTYPE_PAE))
-			ieee80211_eapol_key_input(ic, m, ni);
-		else
-			ether_input_mbuf(ifp, m);
-	}
-}
-
 struct mbuf *
 ieee80211_decap(struct ifnet *ifp, struct mbuf *m, int hdrlen)
 {
-	struct ieee80211_qosframe_addr4 wh;	/* largest 802.11 header */
+	struct ieee80211_frame wh;
 	struct ether_header *eh;
 	struct llc *llc;
 
-	if (m->m_len < hdrlen + LLC_SNAPFRAMELEN) {
-		m = m_pullup(m, hdrlen + LLC_SNAPFRAMELEN);
+	if (m->m_len < hdrlen + sizeof(*llc)) {
+		m = m_pullup(m, hdrlen + sizeof(*llc));
 		if (m == NULL)
 			return NULL;
 	}
-	memcpy(&wh, mtod(m, caddr_t), hdrlen);
+	memcpy(&wh, mtod(m, caddr_t), sizeof(wh));
 	llc = (struct llc *)(mtod(m, caddr_t) + hdrlen);
 	if (llc->llc_dsap == LLC_SNAP_LSAP &&
 	    llc->llc_ssap == LLC_SNAP_LSAP &&
@@ -587,7 +547,7 @@ ieee80211_decap(struct ifnet *ifp, struct mbuf *m, int hdrlen)
 	    llc->llc_snap.org_code[0] == 0 &&
 	    llc->llc_snap.org_code[1] == 0 &&
 	    llc->llc_snap.org_code[2] == 0) {
-		m_adj(m, hdrlen + LLC_SNAPFRAMELEN - sizeof(*eh));
+		m_adj(m, hdrlen + sizeof(*llc) - sizeof(*eh));
 		llc = NULL;
 	} else {
 		m_adj(m, hdrlen - sizeof(*eh));
@@ -607,9 +567,10 @@ ieee80211_decap(struct ifnet *ifp, struct mbuf *m, int hdrlen)
 		IEEE80211_ADDR_COPY(eh->ether_shost, wh.i_addr3);
 		break;
 	case IEEE80211_FC1_DIR_DSTODS:
-		IEEE80211_ADDR_COPY(eh->ether_dhost, wh.i_addr3);
-		IEEE80211_ADDR_COPY(eh->ether_shost, wh.i_addr4);
-		break;
+		/* not yet supported */
+		DPRINTF(("discard DS to DS frame\n"));
+		m_freem(m);
+		return NULL;
 	}
 	if (!ALIGNED_POINTER(mtod(m, caddr_t) + sizeof(*eh), u_int32_t)) {
 		struct mbuf *n, *n0, **np;
@@ -729,9 +690,11 @@ ieee80211_parse_wmm_params(struct ieee80211com *ic, const u_int8_t *frm)
 enum ieee80211_cipher
 ieee80211_parse_rsn_cipher(const u_int8_t selector[4])
 {
-	if (memcmp(selector, MICROSOFT_OUI, 3) == 0) {	/* WPA */
+	/* from IEEE Std 802.11i-2004 - Table 20da */
+	if (memcmp(selector, MICROSOFT_OUI, 3) == 0 ||	/* WPA */
+	    memcmp(selector, IEEE80211_OUI, 3) == 0) {	/* RSN */
 		switch (selector[3]) {
-		case 0:	/* use group data cipher suite */
+		case 0:	/* use group cipher suite */
 			return IEEE80211_CIPHER_USEGROUP;
 		case 1:	/* WEP-40 */
 			return IEEE80211_CIPHER_WEP40;
@@ -741,22 +704,6 @@ ieee80211_parse_rsn_cipher(const u_int8_t selector[4])
 			return IEEE80211_CIPHER_CCMP;
 		case 5:	/* WEP-104 */
 			return IEEE80211_CIPHER_WEP104;
-		}
-	} else if (memcmp(selector, IEEE80211_OUI, 3) == 0) {	/* RSN */
-		/* from IEEE Std 802.11 - Table 20da */
-		switch (selector[3]) {
-		case 0:	/* use group data cipher suite */
-			return IEEE80211_CIPHER_USEGROUP;
-		case 1:	/* WEP-40 */
-			return IEEE80211_CIPHER_WEP40;
-		case 2:	/* TKIP */
-			return IEEE80211_CIPHER_TKIP;
-		case 4:	/* CCMP (RSNA default) */
-			return IEEE80211_CIPHER_CCMP;
-		case 5:	/* WEP-104 */
-			return IEEE80211_CIPHER_WEP104;
-		case 6:	/* AES-128-CMAC */
-			return IEEE80211_CIPHER_AES128_CMAC;
 		}
 	}
 	return IEEE80211_CIPHER_NONE;	/* ignore unknown ciphers */
@@ -765,28 +712,14 @@ ieee80211_parse_rsn_cipher(const u_int8_t selector[4])
 enum ieee80211_akm
 ieee80211_parse_rsn_akm(const u_int8_t selector[4])
 {
-	if (memcmp(selector, MICROSOFT_OUI, 3) == 0) {	/* WPA */
+	/* from IEEE Std 802.11i-2004 - Table 20dc */
+	if (memcmp(selector, MICROSOFT_OUI, 3) == 0 ||	/* WPA */
+	    memcmp(selector, IEEE80211_OUI, 3) == 0) {	/* RSN */
 		switch (selector[3]) {
 		case 1:	/* IEEE 802.1X (RSNA default) */
-			return IEEE80211_AKM_8021X;
+			return IEEE80211_AKM_IEEE8021X;
 		case 2:	/* PSK */
 			return IEEE80211_AKM_PSK;
-		}
-	} else if (memcmp(selector, IEEE80211_OUI, 3) == 0) {	/* RSN */
-		/* from IEEE Std 802.11i-2004 - Table 20dc */
-		switch (selector[3]) {
-		case 1:	/* IEEE 802.1X (RSNA default) */
-			return IEEE80211_AKM_8021X;
-		case 2:	/* PSK */
-			return IEEE80211_AKM_PSK;
-		case 3:	/* Fast BSS Transition IEEE 802.1X */
-			return IEEE80211_AKM_FBT_8021X;
-		case 4:	/* Fast BSS Transition PSK */
-			return IEEE80211_AKM_FBT_PSK;
-		case 5:	/* IEEE 802.1X with SHA256 KDF */
-			return IEEE80211_AKM_SHA256_8021X;
-		case 6:	/* PSK with SHA256 KDF */
-			return IEEE80211_AKM_SHA256_PSK;
 		}
 	}
 	return IEEE80211_AKM_NONE;	/* ignore unknown AKMs */
@@ -815,15 +748,13 @@ ieee80211_parse_rsn_body(struct ieee80211com *ic, const u_int8_t *frm,
 	rsn->rsn_groupcipher = IEEE80211_CIPHER_CCMP;
 	rsn->rsn_nciphers = 1;
 	rsn->rsn_ciphers = IEEE80211_CIPHER_CCMP;
-	/* if Group Management Cipher Suite missing, defaut to AES-128-CMAC */
-	rsn->rsn_groupmgmtcipher = IEEE80211_CIPHER_AES128_CMAC;
 	/* if AKM Suite missing, default to 802.1X */
 	rsn->rsn_nakms = 1;
-	rsn->rsn_akms = IEEE80211_AKM_8021X;
+	rsn->rsn_akms = IEEE80211_AKM_IEEE8021X;
 	/* if RSN capabilities missing, default to 0 */
 	rsn->rsn_caps = 0;
 
-	/* read Group Data Cipher Suite field */
+	/* read Group Cipher Suite field */
 	if (frm + 4 > efrm)
 		return 0;
 	rsn->rsn_groupcipher = ieee80211_parse_rsn_cipher(frm);
@@ -886,11 +817,6 @@ ieee80211_parse_rsn_body(struct ieee80211com *ic, const u_int8_t *frm,
 		/* ignore PMKIDs for now */
 		frm += IEEE80211_PMKID_LEN;
 	}
-
-	/* read Group Management Cipher Suite field */
-	if (frm + 4 > efrm)
-		return 0;
-	rsn->rsn_groupmgmtcipher = ieee80211_parse_rsn_cipher(frm);
 
 	return IEEE80211_STATUS_SUCCESS;
 }
@@ -1003,7 +929,7 @@ ieee80211_recv_probe_resp(struct ieee80211com *ic, struct mbuf *m0,
 	while (frm + 2 <= efrm) {
 		if (frm + 2 + frm[1] > efrm) {
 			ic->ic_stats.is_rx_elem_toosmall++;
-			break;
+			return;
 		}
 		switch (frm[0]) {
 		case IEEE80211_ELEMID_SSID:
@@ -1221,7 +1147,6 @@ ieee80211_recv_probe_resp(struct ieee80211com *ic, struct mbuf *m0,
 			ni->ni_rsnakms = rsn.rsn_akms;
 			ni->ni_rsnciphers = rsn.rsn_ciphers;
 			ni->ni_rsngroupcipher = rsn.rsn_groupcipher;
-			ni->ni_rsngroupmgmtcipher = rsn.rsn_groupmgmtcipher;
 			ni->ni_rsncaps = rsn.rsn_caps;
 		} else
 			ni->ni_rsnprotos = IEEE80211_PROTO_NONE;
@@ -1293,7 +1218,7 @@ ieee80211_recv_probe_req(struct ieee80211com *ic, struct mbuf *m0,
 	while (frm + 2 <= efrm) {
 		if (frm + 2 + frm[1] > efrm) {
 			ic->ic_stats.is_rx_elem_toosmall++;
-			break;
+			return;
 		}
 		switch (frm[0]) {
 		case IEEE80211_ELEMID_SSID:
@@ -1447,7 +1372,7 @@ ieee80211_recv_assoc_req(struct ieee80211com *ic, struct mbuf *m0,
 	while (frm + 2 <= efrm) {
 		if (frm + 2 + frm[1] > efrm) {
 			ic->ic_stats.is_rx_elem_toosmall++;
-			break;
+			return;
 		}
 		switch (frm[0]) {
 		case IEEE80211_ELEMID_SSID:
@@ -1575,27 +1500,6 @@ ieee80211_recv_assoc_req(struct ieee80211com *ic, struct mbuf *m0,
 			status = IEEE80211_STATUS_BAD_GROUP_CIPHER;
 			goto end;
 		}
-
-		if (!(rsn.rsn_caps & IEEE80211_RSNCAP_MFPC) &&
-		    (ic->ic_bss->ni_rsncaps & IEEE80211_RSNCAP_MFPR)) {
-			status = IEEE80211_REASON_MFP_POLICY;	/* XXX */
-			goto end;
-		}
-		if ((ic->ic_bss->ni_rsncaps & IEEE80211_RSNCAP_MFPC) &&
-		    (rsn.rsn_caps & (IEEE80211_RSNCAP_MFPC |
-		     IEEE80211_RSNCAP_MFPR)) == IEEE80211_RSNCAP_MFPR) {
-			/* STA advertises an invalid setting */
-			status = IEEE80211_REASON_MFP_POLICY;	/* XXX */
-			goto end;
-		}
-		if ((rsn.rsn_caps & IEEE80211_RSNCAP_MFPC) &&
-		    rsn.rsn_groupmgmtcipher !=
-		    ic->ic_bss->ni_rsngroupmgmtcipher) {
-			/* XXX satus not reason?! */
-			status = IEEE80211_REASON_BAD_GROUP_MGMT_CIPHER;
-			goto end;
-		}
-
 		/*
 		 * Disallow new associations using TKIP if countermeasures
 		 * are active.
@@ -1615,7 +1519,6 @@ ieee80211_recv_assoc_req(struct ieee80211com *ic, struct mbuf *m0,
 		ni->ni_rsnakms = rsn.rsn_akms;
 		ni->ni_rsnciphers = rsn.rsn_ciphers;
 		ni->ni_rsngroupcipher = ic->ic_bss->ni_rsngroupcipher;
-		ni->ni_rsngroupmgmtcipher = ic->ic_bss->ni_rsngroupmgmtcipher;
 		ni->ni_rsncaps = rsn.rsn_caps;
 	} else
 		ni->ni_rsnprotos = IEEE80211_PROTO_NONE;
@@ -1691,7 +1594,7 @@ ieee80211_recv_assoc_resp(struct ieee80211com *ic, struct mbuf *m0,
 	while (frm + 2 <= efrm) {
 		if (frm + 2 + frm[1] > efrm) {
 			ic->ic_stats.is_rx_elem_toosmall++;
-			break;
+			return;
 		}
 		switch (frm[0]) {
 		case IEEE80211_ELEMID_RATES:
@@ -1770,9 +1673,7 @@ ieee80211_recv_assoc_resp(struct ieee80211com *ic, struct mbuf *m0,
 	 */
 	if (ic->ic_flags & IEEE80211_F_RSNON) {
 		/* XXX ic->ic_mgt_timer = 5; */
-	} else if (ic->ic_flags & IEEE80211_F_WEPON)
-		ni->ni_flags |= IEEE80211_NODE_TXRXPROT;
-
+	}
 	ieee80211_new_state(ic, IEEE80211_S_RUN,
 	    IEEE80211_FC0_SUBTYPE_ASSOC_RESP);
 }
@@ -1869,58 +1770,13 @@ ieee80211_recv_disassoc(struct ieee80211com *ic, struct mbuf *m0,
 
 /*-
  * Action frame format:
- * [1] Category
  * [1] Action
  */
 void
 ieee80211_recv_action(struct ieee80211com *ic, struct mbuf *m0,
     struct ieee80211_node *ni)
 {
-	const struct ieee80211_frame *wh;
-	const u_int8_t *frm;
-
-	if (m0->m_len < sizeof(*wh) + 2) {
-		DPRINTF(("frame too short\n"));
-		return;
-	}
-	wh = mtod(m0, struct ieee80211_frame *);
-	frm = (const u_int8_t *)&wh[1];
-
-	switch (frm[0]) {
-	case IEEE80211_CATEG_BA:
-		switch (frm[1]) {
-		case IEEE80211_ACTION_ADDBA_REQ:
-			/* NYI */
-			break;
-		case IEEE80211_ACTION_ADDBA_RESP:
-			/* NYI */
-			break;
-		case IEEE80211_ACTION_DELBA:
-			/* NYI */
-			break;
-		}
-		break;
-	case IEEE80211_CATEG_HT:
-		switch (frm[1]) {
-		case IEEE80211_ACTION_NOTIFYCW:
-			/* NYI */
-			break;
-		}
-		break;
-	case IEEE80211_CATEG_SALT:
-		switch (frm[1]) {
-		case IEEE80211_ACTION_SALT_REQ:
-			/* NYI */
-			break;
-		case IEEE80211_ACTION_SALT_RESP:
-			/* NYI */
-			break;
-		}
-		break;
-	default:
-		DPRINTF(("action frame category %d not handled\n", categ));
-		break;
-	}
+	/* TBD */
 }
 
 void
@@ -1969,9 +1825,6 @@ ieee80211_recv_mgmt(struct ieee80211com *ic, struct mbuf *m0,
 	}
 }
 
-/*
- * Process an incoming PS-Poll control frame (see 11.2).
- */
 void
 ieee80211_recv_pspoll(struct ieee80211com *ic, struct mbuf *m,
     struct ieee80211_node *ni)

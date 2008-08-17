@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.45 2008/08/14 11:41:30 martin Exp $ */
+/*	$OpenBSD: pmap.c,v 1.43 2008/06/09 20:31:49 miod Exp $ */
 /*	$NetBSD: pmap.c,v 1.74 1999/11/13 21:32:25 matt Exp $	   */
 /*
  * Copyright (c) 1994, 1998, 1999 Ludd, University of Lule}, Sweden.
@@ -211,8 +211,8 @@ pmap_bootstrap()
 	avail_start = scb_init(avail_start);
 	bcopy((caddr_t)proc0paddr + REDZONEADDR, 0, sizeof(struct rpb));
 
-	if (dep_call->cpu_init)
-		(*dep_call->cpu_init)();
+	if (dep_call->cpu_steal_pages)
+		(*dep_call->cpu_steal_pages)();
 
 	avail_start = ROUND_PAGE(avail_start);
 	virtual_avail = ROUND_PAGE(virtual_avail);
@@ -291,7 +291,7 @@ pmap_steal_memory(size, vstartp, vendp)
 		    size, vstartp, vendp);
 #endif
 	size = round_page(size);
-	npgs = atop(size);
+	npgs = btoc(size);
 
 #ifdef DIAGNOSTIC
 	if (uvm.page_init_done == TRUE)
@@ -390,9 +390,9 @@ pmap_create()
 	    (u_long *)&pmap->pm_p0br);
 	if (res)
 		panic("pmap_create");
-	pmap->pm_p0lr = vax_atop(MAXTSIZ + MAXDSIZ + BRKSIZ) | AST_PCB;
+	pmap->pm_p0lr = vax_btoc(MAXTSIZ + MAXDSIZ + BRKSIZ) | AST_PCB;
 	(vaddr_t)pmap->pm_p1br = (vaddr_t)pmap->pm_p0br + bytesiz - 0x800000;
-	pmap->pm_p1lr = vax_atop(0x40000000 - MAXSSIZ);
+	pmap->pm_p1lr = vax_btoc(0x40000000 - MAXSSIZ);
 	pmap->pm_stack = USRSTACK;
 
 #ifdef PMAPDEBUG

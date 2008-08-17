@@ -1,4 +1,5 @@
-/*	$OpenBSD: mmc.c,v 1.24 2008/08/08 07:26:40 fgsch Exp $	*/
+/* $OpenBSD: mmc.c,v 1.22 2008/06/30 23:35:39 av Exp $ */
+
 /*
  * Copyright (c) 2006 Michael Coulter <mjc@openbsd.org>
  *
@@ -34,46 +35,11 @@ extern int mediacap;
 extern char *cdname;
 
 #define SCSI_GET_CONFIGURATION		0x46
+#define SCSI_SET_SPEED			0xbb
 
 #define MMC_FEATURE_CDRW_CAV		0x27
 #define MMC_FEATURE_CD_TAO		0x2d
 #define MMC_FEATURE_CDRW_WRITE		0x37
-
-int
-get_media_type(void)
-{
-	scsireq_t scr;
-	char buf[32];
-	u_char disctype;
-	int rv, error;
-
-	rv = MEDIATYPE_UNKNOWN;
-	memset(buf, 0, sizeof(buf));
-	memset(&scr, 0, sizeof(scr));
-
-	scr.cmd[0] = READ_TOC;
-	scr.cmd[1] = 0x2;	/* MSF */
-	scr.cmd[2] = 0x4;	/* ATIP */
-	scr.cmd[8] = 0x20;
-
-	scr.flags = SCCMD_ESCAPE | SCCMD_READ;
-	scr.databuf = buf;
-	scr.datalen = sizeof(buf);
-	scr.cmdlen = 10;
-	scr.timeout = 120000;
-	scr.senselen = SENSEBUFLEN;
-
-	error = ioctl(fd, SCIOCCOMMAND, &scr);
-	if (error != -1 && scr.retsts == 0 && scr.datalen_used > 7) {
-		disctype = (buf[6] >> 6) & 0x1;
-		if (disctype == 0)
-			rv = MEDIATYPE_CDR;
-		else if (disctype == 1)
-			rv = MEDIATYPE_CDRW;
-	}
-
-	return (rv);
-}
 
 int
 get_media_capabilities(int *cap)
@@ -136,7 +102,7 @@ set_speed(int wspeed)
 	int r;
 
 	memset(&scr, 0, sizeof(scr));
-	scr.cmd[0] = SET_CD_SPEED;
+	scr.cmd[0] = SCSI_SET_SPEED;
 	scr.cmd[1] = (mediacap & MEDIACAP_CDRW_CAV) != 0;
 	*(u_int16_t *)(scr.cmd + 2) = htobe16(DRIVE_SPEED_OPTIMAL);
 	*(u_int16_t *)(scr.cmd + 4) = htobe16(wspeed);
@@ -459,7 +425,7 @@ get_nwa(int *nwa)
 	bzero(&scr, sizeof(scr));
 	scr.timeout = 4000;
 	scr.senselen = SENSEBUFLEN;
-	scr.cmd[0] = READ_TRACK_INFO;
+	scr.cmd[0] = 0x52; /* READ TRACK INFO */
 	scr.cmd[1] = 0x01;
 	scr.cmd[5] = 0xff; /* Invisible Track */
 	scr.cmd[7] = 0x00;

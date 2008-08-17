@@ -57,7 +57,7 @@ drm_alloc(size_t size, int area)
 void *
 drm_calloc(size_t nmemb, size_t size, int area)
 {
-	if (nmemb == 0 || SIZE_MAX / nmemb < size)
+	if (SIZE_MAX / nmemb < size)
 		return (NULL);
 	else
 		return malloc(size * nmemb, M_DRM, M_NOWAIT | M_ZERO);
@@ -109,7 +109,7 @@ drm_ioremap(struct drm_device *dev, drm_local_map_t *map)
 		}
 		goto done;
 	} else {
-		for (i = 0; i < DRM_MAX_PCI_RESOURCE; ++i) {
+		for (i = 0 ; i < DRM_MAX_PCI_RESOURCE; ++i) {
 			bar = vga_pci_bar_info(dev->vga_softc, i);
 			if (bar == NULL)
 				continue;

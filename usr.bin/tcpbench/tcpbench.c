@@ -700,22 +700,20 @@ clientloop(kvm_t *kvmh, u_long ktcbtab, const char *host, const char *port,
 			err(1, "poll");
 		}
 		for (i = 0; i < nconn; i++) {
-			if (pfd[i].revents & POLLOUT) {
+			if (pfd[i].revents & POLLOUT)
 				if ((n = write(pfd[i].fd, buf, Bflag)) == -1) {
 					if (errno == EINTR || errno == EAGAIN)
 						continue;
 					err(1, "write");
 				}
-				if (n == 0) {
-					warnx("Remote end closed connection");
-					done = -1;
-					break;
-				}
-				if (vflag >= 3)
-					fprintf(stderr, "write: %zd bytes\n",
-					    n);
-				stats_update(&sc, n);
+			if (n == 0) {
+				warnx("Remote end closed connection");
+				done = -1;
+				break;
 			}
+			if (vflag >= 3)
+				fprintf(stderr, "write: %zd bytes\n", n);
+			stats_update(&sc, n);
 		}
 	}
 	stats_finish(&sc);
@@ -797,7 +795,8 @@ main(int argc, char **argv)
 				    errstr, optarg);
 			break;
 		case 'v':
-			vflag++;
+			if (vflag < 2)
+				vflag++;
 			break;
 		case 'n':
 			nconn = strtonum(optarg, 0, 65535, &errstr);

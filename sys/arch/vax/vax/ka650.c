@@ -1,4 +1,4 @@
-/*	$OpenBSD: ka650.c,v 1.15 2008/08/15 22:38:23 miod Exp $	*/
+/*	$OpenBSD: ka650.c,v 1.12 2003/06/02 23:27:59 millert Exp $	*/
 /*	$NetBSD: ka650.c,v 1.25 2001/04/27 15:02:37 ragge Exp $	*/
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -69,7 +69,7 @@ static	void    uvaxIII_memerr(void);
 static	int     uvaxIII_mchk(caddr_t);
 
 struct	cpu_dep	ka650_calls = {
-	NULL,
+	0, /* No special page stealing anymore */
 	uvaxIII_mchk,
 	uvaxIII_memerr,
 	uvaxIII_conf,
@@ -106,9 +106,9 @@ uvaxIII_conf()
 	    syssub == VAX_SIE_KA655 ? 5 : 0,
 	    (vax_cpudata & 0xff), GETFRMREV(vax_siedata));
 	ka650setcache(CACHEON);
-	if (ptoa(physmem) > ka650merr_ptr->merr_qbmbr) {
+	if (ctob(physmem) > ka650merr_ptr->merr_qbmbr) {
 		printf("physmem(0x%x) > qbmbr(0x%x)\n",
-		    ptoa(physmem), (int)ka650merr_ptr->merr_qbmbr);
+		    ctob(physmem), (int)ka650merr_ptr->merr_qbmbr);
 		panic("qbus map unprotected");
 	}
 	if (mfpr(PR_TODR) == 0)
@@ -185,7 +185,7 @@ uvaxIII_mchk(cmcf)
 
 	printf("machine check %x", type);
 	if (type >= 0x80 && type <= 0x83)
-		type -= 0x80 - 11;
+		type -= (0x80 + 11);
 	if (type < NMC650 && mc650[type])
 		printf(": %s", mc650[type]);
 	printf("\n\tvap %x istate1 %x istate2 %x pc %x psl %x\n",

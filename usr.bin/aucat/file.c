@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.2 2008/08/14 09:48:50 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -31,35 +31,16 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include "conf.h"
 #include "file.h"
 #include "aproc.h"
 #include "abuf.h"
-#include "dev.h"
 
 #define MAXFDS 100
 
 struct filelist file_list;
-
-void
-file_dprint(int n, struct file *f)
-{
-	if (debug_level >= n) {
-		fprintf(stderr, "%s <", f->name);
-		if (f->state & FILE_ROK)
-			fprintf(stderr, "ROK");
-		if (f->state & FILE_WOK)
-			fprintf(stderr, "WOK");
-		if (f->state & FILE_EOF)
-			fprintf(stderr, "EOF");
-		if (f->state & FILE_HUP)
-			fprintf(stderr, "HUP");
-		fprintf(stderr, ">");
-	}
-}
 
 struct file *
 file_new(int fd, char *name)
@@ -93,14 +74,7 @@ file_new(int fd, char *name)
 void
 file_del(struct file *f)
 {
-	DPRINTF("file_del: ");
-	file_dprint(1, f);
-	DPRINTF("\n");
-
-	if (f->hdr == HDR_WAV)
-		wav_writehdr(f->fd, &f->hpar);
-	close(f->fd);
-	free(f);
+	DPRINTF("file_del: %s|%x\n", f->name, f->state);
 }
 
 int
@@ -113,7 +87,6 @@ file_poll(void)
 	struct pollfd pfds[MAXFDS];
 	struct pollfd *pfd;
 	struct file *f, *fnext;
-	struct aproc *p;
 
 	nfds = 0;
 #ifdef DEBUG
@@ -166,8 +139,7 @@ file_poll(void)
 			f->state |= FILE_ROK;
 			DPRINTFN(3, "file_poll: %s rok\n", f->name);
 			while (f->state & FILE_ROK) {
-				p = f->rproc;
-				if (!p || !p->ops->in(p, NULL))
+				if (!f->rproc->ops->in(f->rproc, NULL))
 					break;
 			}
 		}
@@ -176,8 +148,7 @@ file_poll(void)
 			f->state |= FILE_WOK;
 			DPRINTFN(3, "file_poll: %s wok\n", f->name);
 			while (f->state & FILE_WOK) {
-				p = f->wproc;
-				if (!p || !p->ops->out(p, NULL))
+				if (!f->wproc->ops->out(f->wproc, NULL))
 					break;
 			}
 		}
@@ -185,16 +156,12 @@ file_poll(void)
 	LIST_FOREACH(f, &file_list, entry) {
 		if (f->state & FILE_EOF) {
 			DPRINTFN(2, "file_poll: %s: eof\n", f->name);
-			p = f->rproc;
-			if (p)
-				p->ops->eof(p, NULL);
+			f->rproc->ops->eof(f->rproc, NULL);
 			f->state &= ~FILE_EOF;
 		}
 		if (f->state & FILE_HUP) {
 			DPRINTFN(2, "file_poll: %s hup\n", f->name);
-			p = f->wproc;
-			if (p)
-				p->ops->hup(p, NULL);
+			f->wproc->ops->hup(f->wproc, NULL);
 			f->state &= ~FILE_HUP;
 		}
 	}
@@ -202,8 +169,8 @@ file_poll(void)
 		fnext = LIST_NEXT(f, entry);
 		if (f->rproc == NULL && f->wproc == NULL) {
 			LIST_REMOVE(f, entry);
-			DPRINTF("file_poll: %s: removed\n", f->name);
-			file_del(f);
+			DPRINTF("file_poll: %s: deleted\n", f->name);
+			free(f);
 		}
 	}
 	if (LIST_EMPTY(&file_list)) {

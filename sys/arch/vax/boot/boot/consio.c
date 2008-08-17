@@ -1,4 +1,4 @@
-/*	$OpenBSD: consio.c,v 1.8 2008/08/10 18:20:07 miod Exp $ */
+/*	$OpenBSD: consio.c,v 1.6 2006/08/24 20:29:38 miod Exp $ */
 /*	$NetBSD: consio.c,v 1.13 2002/05/24 21:40:59 ragge Exp $ */
 /*
  * Copyright (c) 1994, 1998 Ludd, University of Lule}, Sweden.
@@ -32,7 +32,9 @@
 
  /* All bugs are subject to removal without further notice */
 		
-#include <sys/param.h>
+
+
+#include "sys/param.h"
 
 #include "../vax/gencons.h"
 
@@ -49,72 +51,45 @@ static void (*put_fp)(int)  = NULL;
 static int (*get_fp)(void) = NULL;
 static int (*test_fp)(void) = NULL;
 
-/*
- * I/O using mtpr/mfpr
- */
+void pr_putchar(int c);	/* putchar() using mtpr/mfpr */
+int pr_getchar(void);
+int pr_testchar(void);
 
-void	pr_putchar(int c);
-int	pr_getchar(void);
-int	pr_testchar(void);
+void rom_putchar(int c);	/* putchar() using ROM routines */
+int rom_getchar(void);
+int rom_testchar(void);
 
-/*
- * I/O using ROM routines
- */
-
-void	rom_putchar(int c);
-int	rom_getchar(void);
-int	rom_testchar(void);
-
-int	rom_putc;		/* ROM-address of put-routine */
-int	rom_getc;		/* ROM-address of get-routine */
-
-/*
- * I/O using the KA630 ROM console routines
- */
+int rom_putc;		/* ROM-address of put-routine */
+int rom_getc;		/* ROM-address of get-routine */
 
 /* Pointer to KA630 console page, initialized by ka630_consinit */
 unsigned char	*ka630_conspage;
-void	ka630_consinit(void);
 
-void	ka630_rom_putchar(int c);
-int	ka630_rom_getchar(void);
-int	ka630_rom_testchar(void);
+/* Function that initializes things for KA630 ROM console I/O */
+void ka630_consinit(void);
 
-/*
- * I/O using the KA53 ROM console routines
- */
+/* Functions that use KA630 ROM for console I/O */
+void ka630_rom_putchar(int c);
+int ka630_rom_getchar(void);
+int ka630_rom_testchar(void);
 
+/* Also added such a thing for KA53 - MK-991208 */
 unsigned char  *ka53_conspage;
-void	ka53_consinit(void);
+void ka53_consinit(void);
 
-void	ka53_rom_putchar(int c);
-int	ka53_rom_getchar(void);
-int	ka53_rom_testchar(void);
+void ka53_rom_putchar(int c);
+int ka53_rom_getchar(void);
+int ka53_rom_testchar(void);
 
-/*
- * I/O using the VXT2000 serial ports
- */
+void vxt_putchar(int c);
+int vxt_getchar(void);
+int vxt_testchar(void);
 
-void	vxt_putchar(int c);
-int	vxt_getchar(void);
-int	vxt_testchar(void);
-
-/*
- * I/O using the KA60 ROM console routines
- */
-
-unsigned char  *ka60_conspage;
-void	ka60_consinit(void);
-
-void	ka60_rom_putchar(int c);
-int	ka60_rom_getchar(void);
-int	ka60_rom_testchar(void);
-
-void	putchar(int);
-int	getchar(void);
-int	testkey(void);
-void	consinit(void);
-void	_rtt(void);
+void putchar(int);
+int getchar(void);
+int testkey(void);
+void consinit(void);
+void _rtt(void);
 
 void
 putchar(int c)
@@ -133,7 +108,7 @@ getchar(void)
 		c = (*get_fp)() & 0177;
 	while (c == 17 || c == 19);		/* ignore XON/XOFF */
 	if (c < 96 && c > 64)
-		c += 32;			/* force lowercase */
+		c += 32;
 	return c;
 }
 
@@ -201,14 +176,11 @@ consinit(void)
 		ka53_consinit();
 		break;
 
-	case VAX_BTYP_60:
-		ka60_consinit();
-		break;
-
 #ifdef notdef
 	case VAX_BTYP_630:
 	case VAX_BTYP_650:
 	case VAX_BTYP_9CC:
+	case VAX_BTYP_60:
 		put_fp = pr_putchar;
 		get_fp = pr_getchar;
 		break
@@ -267,7 +239,7 @@ pr_testchar(void)
 }
 
 /*
- * void ka630_consinit (void)  ==> initialize KA630 ROM console I/O
+ * void ka630_rom_getchar (void)  ==> initialize KA630 ROM console I/O
  */
 void ka630_consinit(void)
 {
@@ -370,46 +342,4 @@ vxt_testchar(void)
 			return 0;
 		return vxtregs[CH_DATA];
 	}
-}
-
-int ka60_ioslot = -1;
-
-/*
- * void ka60_consinit (void)  ==> initialize KA60 ROM console I/O
- */
-void ka60_consinit(void)
-{
-	extern int jbuf[10];
-	extern int mcheck_silent;
-	extern int setjmp(int *);
-
-	int mid, modaddr, modtype;
-
-	mcheck_silent = 1;
-	for (mid = 0; mid < 8; mid++) {
-		modaddr = 0x31fffffc + (mid << 25);
-		if (setjmp(jbuf)) {
-			/* this slot is empty */
-			continue;
-		}
-		modtype = *(int *)modaddr;
-		if ((modtype & 0xff) == 0x04) {
-			ka60_ioslot = mid;
-			break;
-		}
-	}
-	mcheck_silent = 0;
-
-	if (ka60_ioslot < 0) {
-		/*
-		 * This shouldn't happen. Try mid #5 (slot #4) as a
-		 * supposedly sane default.
-		 */
-		ka60_ioslot = 5;
-	}
-
-	ka60_conspage = (char *) *(unsigned int *)0x20140514;
-	put_fp = ka60_rom_putchar;
-	get_fp = ka60_rom_getchar;
-	test_fp = ka60_rom_testchar;
 }

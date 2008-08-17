@@ -36,9 +36,9 @@
 #include "drm.h"
 
 irqreturn_t	drm_irq_handler_wrap(DRM_IRQ_ARGS);
-void		drm_locked_task(void *, void *);
-void		drm_update_vblank_count(struct drm_device *, int);
 void		vblank_disable(void *);
+void		drm_update_vblank_count(struct drm_device *, int);
+void		drm_locked_task(void *context, void *pending);
 
 int
 drm_irq_by_busid(struct drm_device *dev, void *data, struct drm_file *file_priv)
@@ -53,8 +53,8 @@ drm_irq_by_busid(struct drm_device *dev, void *data, struct drm_file *file_priv)
 
 	irq->irq = dev->irq;
 
-	DRM_DEBUG("%d:%d:%d => IRQ %d\n", irq->busnum, irq->devnum,
-	    irq->funcnum, irq->irq);
+	DRM_DEBUG("%d:%d:%d => IRQ %d\n",
+		  irq->busnum, irq->devnum, irq->funcnum, irq->irq);
 
 	return 0;
 }
@@ -82,7 +82,7 @@ drm_irq_install(struct drm_device *dev)
 	if (dev->irq == 0 || dev->dev_private == NULL)
 		return EINVAL;
 
-	DRM_DEBUG("irq=%d\n", dev->irq);
+	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
 	DRM_LOCK();
 	if (dev->irq_enabled) {
@@ -91,27 +91,30 @@ drm_irq_install(struct drm_device *dev)
 	}
 	dev->irq_enabled = 1;
 
+	dev->context_flag = 0;
+
 	mtx_init(&dev->irq_lock, IPL_BIO);
 
-	/* Before installing handler */
+				/* Before installing handler */
 	dev->driver.irq_preinstall(dev);
 	DRM_UNLOCK();
 
-	/* Install handler */
+				/* Install handler */
 	if (pci_intr_map(&dev->pa, &ih) != 0) {
 		retcode = ENOENT;
 		goto err;
 	}
 	istr = pci_intr_string(dev->pa.pa_pc, ih);
 	dev->irqh = pci_intr_establish(dev->pa.pa_pc, ih, IPL_BIO,
-	    drm_irq_handler_wrap, dev, dev->device.dv_xname);
+	    drm_irq_handler_wrap, dev,
+	    dev->device.dv_xname);
 	if (!dev->irqh) {
 		retcode = ENOENT;
 		goto err;
 	}
 	DRM_DEBUG("%s: interrupting at %s\n", dev->device.dv_xname, istr);
 
-	/* After installing handler */
+				/* After installing handler */
 	DRM_LOCK();
 	dev->driver.irq_postinstall(dev);
 	DRM_UNLOCK();
@@ -134,7 +137,7 @@ drm_irq_uninstall(struct drm_device *dev)
 
 	dev->irq_enabled = 0;
 
-	DRM_DEBUG("irq=%d\n", dev->irq);
+	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
 	dev->driver.irq_uninstall(dev);
 
@@ -152,7 +155,7 @@ drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	drm_control_t *ctl = data;
 	int err;
 
-	switch (ctl->func) {
+	switch ( ctl->func ) {
 	case DRM_INST_HANDLER:
 		/* Handle drivers whose DRM used to require IRQ setup but the
 		 * no longer does.
@@ -347,8 +350,7 @@ drm_modeset_ctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
 		goto out;
 	}
 
-	/*
-	 * If interrupts are enabled/disabled between calls to this ioctl then
+	/* If interrupts are enabled/disabled between calls to this ioctl then
 	 * it can get nasty. So just grab a reference so that the interrupts
 	 * keep going through the modeset
 	 */
@@ -466,14 +468,14 @@ void
 drm_vbl_send_signals(struct drm_device *dev, int crtc)
 {
 	drm_vbl_sig_t *vbl_sig;
-	unsigned int vbl_seq = atomic_read(&dev->vbl_received);
+	unsigned int vbl_seq = atomic_read( &dev->vbl_received );
 	struct proc *p;
 
 	vbl_sig = TAILQ_FIRST(&dev->vbl_sig_list);
 	while (vbl_sig != NULL) {
 		drm_vbl_sig_t *next = TAILQ_NEXT(vbl_sig, link);
 
-		if ((vbl_seq - vbl_sig->sequence) <= (1<<23)) {
+		if ( ( vbl_seq - vbl_sig->sequence ) <= (1<<23) ) {
 			p = pfind(vbl_sig->pid);
 			if (p != NULL)
 				psignal(p, vbl_sig->signo);
@@ -503,7 +505,7 @@ drm_locked_task(void *context, void *pending)
 
 	DRM_LOCK(); /* XXX drm_lock_take() should do its own locking */
 	if (dev->locked_task_call == NULL ||
-	    drm_lock_take(&dev->lock, DRM_KERNEL_CONTEXT) == 0) {
+	    drm_lock_take(&dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT) == 0) {
 		DRM_UNLOCK();
 		DRM_SPINUNLOCK(&dev->tsk_lock);
 		return;
@@ -517,7 +519,7 @@ drm_locked_task(void *context, void *pending)
 
 	dev->locked_task_call(dev);
 
-	drm_lock_free(&dev->lock, DRM_KERNEL_CONTEXT);
+	drm_lock_free(dev, &dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT);
 
 	dev->locked_task_call = NULL;
 

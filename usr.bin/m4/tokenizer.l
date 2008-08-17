@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD: tokenizer.l,v 1.3 2006/01/20 23:10:19 espie Exp $ */
+/* $OpenBSD: tokenizer.l,v 1.2 2004/05/12 21:28:35 espie Exp $ */
 /*
  * Copyright (c) 2004 Marc Espie <espie@cvs.openbsd.org>
  *

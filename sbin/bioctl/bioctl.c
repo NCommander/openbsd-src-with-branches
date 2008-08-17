@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.73 2008/08/11 17:22:54 marco Exp $       */
+/* $OpenBSD: bioctl.c,v 1.71 2008/06/15 18:52:58 jmc Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom

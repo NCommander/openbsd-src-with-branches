@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.72 2008/07/30 07:43:01 reyk Exp $  */
+/*      $OpenBSD: ath.c,v 1.71 2008/07/29 00:18:25 reyk Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -2086,6 +2086,9 @@ ath_rx_proc(void *arg, int npending)
 
 	ath_hal_set_rx_signal(ah);		/* rx signal state monitoring */
 	ath_hal_start_rx(ah);			/* in case of RXEOL */
+
+	if ((ifp->if_flags & IFF_OACTIVE) == 0 && !IFQ_IS_EMPTY(&ifp->if_snd))
+		ath_start(ifp);
 #undef PA2DESC
 }
 

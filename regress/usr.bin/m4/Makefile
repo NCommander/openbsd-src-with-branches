@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2008/08/16 09:57:12 espie Exp $
+#	$OpenBSD: Makefile,v 1.22 2005/09/06 15:33:21 espie Exp $
 
 FIBOMAX=25
 M4=m4
@@ -9,9 +9,9 @@ CLEANFILES+= ff_after_dnl.m4 strangequotes.m4 fibo.out
 REGRESS_TARGETS= test-ff_after_dnl test-m4wrap test-m4wrap2 \
     test-m4wrap3 test-gm4wrap3 test-fibo \
     test-patterns trip test-strangequotes test-redef test-quotes \
-    test-weird test-args test-args2 test-esyscmd test-eval test-gnupatterns \
+    test-weird test-args test-esyscmd test-eval test-gnupatterns \
     test-gnupatterns2 test-comments test-synch1 test-synch1bis \
-    test-gnuformat test-includes
+    test-gnuformat
 
 test-ff_after_dnl: ff_after_dnl.m4
 	${M4} ff_after_dnl.m4 | diff - ${.CURDIR}/ff_after_dnl.out
@@ -68,15 +68,8 @@ test-redef:
 test-weird:
 	test `${M4} ${.CURDIR}/weird,name.m4 | wc -c` == 0
 
-test-args2:
-	${M4} ${.CURDIR}/args2.m4 | diff - ${.CURDIR}/args2.out
-
 test-args:
 	${M4} ${.CURDIR}/args.m4 | diff - ${.CURDIR}/args.out
-
-test-includes:
-	${M4} -I${.CURDIR} ${.CURDIR}/includes.m4 | \
-	    diff - ${.CURDIR}/includes.out
 
 test-esyscmd:
 	${M4} ${.CURDIR}/esyscmd.m4 | diff -u - ${.CURDIR}/esyscmd.out

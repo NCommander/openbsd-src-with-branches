@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.42 2008/08/12 19:21:04 damien Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.37 2008/07/28 19:42:13 damien Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -305,6 +305,7 @@ ieee80211_create_ibss(struct ieee80211com* ic, struct ieee80211_channel *chan)
 		ni->ni_capinfo |= IEEE80211_CAPINFO_PRIVACY;
 	if (ic->ic_flags & IEEE80211_F_RSNON) {
 		struct ieee80211_key *k;
+		u_int8_t gtk[IEEE80211_PMK_LEN];
 
 		/* initialize 256-bit global key counter to a random value */
 		arc4random_buf(ic->ic_globalcnt, EAPOL_KEY_NONCE_LEN);
@@ -313,35 +314,15 @@ ieee80211_create_ibss(struct ieee80211com* ic, struct ieee80211_channel *chan)
 		ni->ni_rsnakms = ic->ic_rsnakms;
 		ni->ni_rsnciphers = ic->ic_rsnciphers;
 		ni->ni_rsngroupcipher = ic->ic_rsngroupcipher;
-		ni->ni_rsngroupmgmtcipher = ic->ic_rsngroupmgmtcipher;
 		ni->ni_rsncaps = 0;
-		if (ic->ic_caps & IEEE80211_C_MFP) {
-			ni->ni_rsncaps |= IEEE80211_RSNCAP_MFPC;
-			if (ic->ic_flags & IEEE80211_F_MFPR)
-				ni->ni_rsncaps |= IEEE80211_RSNCAP_MFPR;
-		}
 
 		ic->ic_def_txkey = 1;
 		k = &ic->ic_nw_keys[ic->ic_def_txkey];
-		memset(k, 0, sizeof(*k));
-		k->k_id = ic->ic_def_txkey;
-		k->k_cipher = ni->ni_rsngroupcipher;
-		k->k_flags = IEEE80211_KEY_GROUP | IEEE80211_KEY_TX;
-		k->k_len = ieee80211_cipher_keylen(k->k_cipher);
-		arc4random_buf(k->k_key, k->k_len);
+		arc4random_buf(gtk, sizeof(gtk));
+		ieee80211_map_gtk(gtk, ni->ni_rsngroupcipher,
+		    ic->ic_def_txkey, 1, 0, k);
 		(*ic->ic_set_key)(ic, ni, k);	/* XXX */
 
-		if (ic->ic_caps & IEEE80211_C_MFP) {
-			ic->ic_igtk_kid = 4;
-			k = &ic->ic_nw_keys[ic->ic_igtk_kid];
-			memset(k, 0, sizeof(*k));
-			k->k_id = ic->ic_igtk_kid;
-			k->k_cipher = ni->ni_rsngroupmgmtcipher;
-			k->k_flags = IEEE80211_KEY_IGTK | IEEE80211_KEY_TX;
-			k->k_len = 16;
-			arc4random_buf(k->k_key, k->k_len);
-			(*ic->ic_set_key)(ic, ni, k);	/* XXX */
-		}
 		/*
 		 * In HostAP mode, multicast traffic is sent using ic_bss
 		 * as the Tx node, so mark our node as valid so we can send
@@ -350,7 +331,7 @@ ieee80211_create_ibss(struct ieee80211com* ic, struct ieee80211_channel *chan)
 		ni->ni_port_valid = 1;
 		ni->ni_flags |= IEEE80211_NODE_TXPROT;
 
-		/* schedule a GTK/IGTK rekeying after 3600s */
+		/* schedule a GTK rekeying after 3600s */
 		timeout_add(&ic->ic_rsn_timeout, 3600 * hz);
 	}
 	if (ic->ic_phytype == IEEE80211_T_FH) {
@@ -412,22 +393,6 @@ ieee80211_match_bss(struct ieee80211com *ic, struct ieee80211_node *ni)
 		    !(ic->ic_flags & IEEE80211_F_PSK))
 			fail |= 0x40;
 		if ((ni->ni_rsnciphers & ic->ic_rsnciphers) == 0)
-			fail |= 0x40;
-
-		/* we only support AES-128-CMAC as the IGTK cipher */
-		if ((ni->ni_rsncaps & IEEE80211_RSNCAP_MFPC) &&
-		    ni->ni_rsngroupmgmtcipher != IEEE80211_CIPHER_AES128_CMAC)
-			fail |= 0x40;
-
-		/* we do not support MFP but AP requires it */
-		if (!(ic->ic_caps & IEEE80211_C_MFP) &&
-		    (ni->ni_rsncaps & IEEE80211_RSNCAP_MFPR))
-			fail |= 0x40;
-
-		/* we require MFP but AP does not support it */
-		if ((ic->ic_caps & IEEE80211_C_MFP) &&
-		    (ic->ic_flags & IEEE80211_F_MFPR) &&
-		    !(ni->ni_rsncaps & IEEE80211_RSNCAP_MFPC))
 			fail |= 0x40;
 	}
 
@@ -590,7 +555,7 @@ ieee80211_end_scan(struct ifnet *ifp)
 		    (ic->ic_flags & IEEE80211_F_PSK))
 			ni->ni_rsnakms = IEEE80211_AKM_PSK;
 		else
-			ni->ni_rsnakms = IEEE80211_AKM_8021X;
+			ni->ni_rsnakms = IEEE80211_AKM_IEEE8021X;
 
 		/* prefer CCMP over TKIP if the AP supports it */
 		ni->ni_rsnciphers &= ic->ic_rsnciphers;
@@ -600,11 +565,6 @@ ieee80211_end_scan(struct ifnet *ifp)
 			ni->ni_rsnciphers = IEEE80211_CIPHER_TKIP;
 
 		ni->ni_rsncipher = ni->ni_rsnciphers;
-
-		/* use MFP if we both support it */
-		if ((ic->ic_caps & IEEE80211_C_MFP) &&
-		    (ni->ni_rsncaps & IEEE80211_RSNCAP_MFPC))
-			ni->ni_flags |= IEEE80211_NODE_MFP;
 
 	} else if (ic->ic_flags & IEEE80211_F_WEPON)
 		ni->ni_rsncipher = IEEE80211_CIPHER_USEGROUP;

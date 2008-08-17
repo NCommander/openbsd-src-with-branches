@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.103 2008/08/11 08:07:14 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.94 2008/07/16 15:02:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -376,22 +376,20 @@ relay_protodebug(struct relay *rlay)
  show:
 	i = 0;
 	RB_FOREACH(proot, proto_tree, tree) {
-#if DEBUG > 1
-		i = 0;
-#endif
 		PROTONODE_FOREACH(pn, proot, entry) {
-#if DEBUG > 1
-			i = 0;
-#endif
+#ifndef DEBUG
 			if (++i > 100)
 				break;
+#endif
 			relay_nodedebug(name, pn);
 		}
+#ifndef DEBUG
 		/* Limit the number of displayed lines */
 		if (++i > 100) {
 			fprintf(stderr, "\t\t...\n");
 			break;
 		}
+#endif
 	}
 	if (tree == &proto->request_tree) {
 		name = "response";
@@ -520,7 +518,7 @@ relay_statistics(int fd, short events, void *arg)
 	 */
 
 	timerclear(&tv);
-	if (gettimeofday(&tv_now, NULL) == -1)
+	if (gettimeofday(&tv_now, NULL))
 		fatal("relay_init: gettimeofday");
 
 	TAILQ_FOREACH(rlay, env->sc_relays, rl_entry) {
@@ -847,7 +845,7 @@ relay_write(struct bufferevent *bev, void *arg)
 {
 	struct ctl_relay_event	*cre = (struct ctl_relay_event *)arg;
 	struct session		*con = (struct session *)cre->con;
-	if (gettimeofday(&con->se_tv_last, NULL) == -1)
+	if (gettimeofday(&con->se_tv_last, NULL))
 		con->se_done = 1;
 	if (con->se_done)
 		relay_close(con, "last write (done)");
@@ -878,8 +876,8 @@ relay_read(struct bufferevent *bev, void *arg)
 	struct session		*con = (struct session *)cre->con;
 	struct evbuffer		*src = EVBUFFER_INPUT(bev);
 
-	if (gettimeofday(&con->se_tv_last, NULL) == -1)
-		goto fail;
+	if (gettimeofday(&con->se_tv_last, NULL))
+		goto done;
 	if (!EVBUFFER_LENGTH(src))
 		return;
 	if (relay_bufferevent_write_buffer(cre->dst, src) == -1)
@@ -1001,11 +999,6 @@ relay_expand_http(struct ctl_relay_event *cre, char *val, char *buf, size_t len)
 			    ntohs(rlay->rl_conf.port));
 			if (expand_string(buf, len,
 			    "$SERVER_PORT", ibuf) != 0)
-				return (NULL);
-		}
-		if (strstr(val, "$SERVER_NAME") != NULL) {
-			if (expand_string(buf, len,
-			    "$SERVER_NAME", RELAYD_SERVERNAME) != 0)
 				return (NULL);
 		}
 	}
@@ -1145,8 +1138,8 @@ relay_read_httpcontent(struct bufferevent *bev, void *arg)
 	struct evbuffer		*src = EVBUFFER_INPUT(bev);
 	size_t			 size;
 
-	if (gettimeofday(&con->se_tv_last, NULL) == -1)
-		goto fail;
+	if (gettimeofday(&con->se_tv_last, NULL))
+		goto done;
 	size = EVBUFFER_LENGTH(src);
 	DPRINTF("relay_read_httpcontent: size %d, to read %d",
 	    size, cre->toread);
@@ -1161,7 +1154,7 @@ relay_read_httpcontent(struct bufferevent *bev, void *arg)
 	    size, cre->toread);
 	if (con->se_done)
 		goto done;
-	if (bev->readcb != relay_read_httpcontent)
+	if (EVBUFFER_LENGTH(src) && bev->readcb != relay_read_httpcontent)
 		bev->readcb(bev, arg);
 	bufferevent_enable(bev, EV_READ);
 	return;
@@ -1182,8 +1175,8 @@ relay_read_httpchunks(struct bufferevent *bev, void *arg)
 	long			 lval;
 	size_t			 size;
 
-	if (gettimeofday(&con->se_tv_last, NULL) == -1)
-		goto fail;
+	if (gettimeofday(&con->se_tv_last, NULL))
+		goto done;
 	size = EVBUFFER_LENGTH(src);
 	DPRINTF("relay_read_httpchunks: size %d, to read %d",
 	    size, cre->toread);
@@ -1193,14 +1186,11 @@ relay_read_httpchunks(struct bufferevent *bev, void *arg)
 	if (!cre->toread) {
 		line = evbuffer_readline(src);
 		if (line == NULL) {
-			/* Ignore empty line, continue */
-			bufferevent_enable(bev, EV_READ);
+			relay_close(con, "invalid chunk");
 			return;
 		}
-		if (!strlen(line)) {
-			free(line);
+		if (!strlen(line))
 			goto next;
-		}
 
 		/* Read prepended chunk size in hex, ingore the trailer */
 		if (sscanf(line, "%lx", &lval) != 1) {
@@ -1210,10 +1200,8 @@ relay_read_httpchunks(struct bufferevent *bev, void *arg)
 		}
 
 		if (relay_bufferevent_print(cre->dst, line) == -1 ||
-		    relay_bufferevent_print(cre->dst, "\r\n") == -1) {
-			free(line);
+		    relay_bufferevent_print(cre->dst, "\r\n") == -1)
 			goto fail;
-		}
 		free(line);
 
 		/* Last chunk is 0 bytes followed by an empty newline */
@@ -1281,16 +1269,12 @@ relay_read_http(struct bufferevent *bev, void *arg)
 	const char		*errstr;
 	size_t			 size;
 
-	if (gettimeofday(&con->se_tv_last, NULL) == -1)
-		goto fail;
+	if (gettimeofday(&con->se_tv_last, NULL))
+		goto done;
 	size = EVBUFFER_LENGTH(src);
 	DPRINTF("relay_read_http: size %d, to read %d", size, cre->toread);
-	if (!size) {
-		if (cre->dir == RELAY_DIR_RESPONSE)
-			return;
-		cre->toread = 0;
-		goto done;
-	}
+	if (!size)
+		return;
 
 	pk.type = NODE_TYPE_HEADER;
 
@@ -1349,7 +1333,9 @@ relay_read_http(struct bufferevent *bev, void *arg)
 			if (cre->dir == RELAY_DIR_RESPONSE) {
 				cre->method = HTTP_METHOD_RESPONSE;
 				goto lookup;
-			} else if (strcmp("HEAD", pk.key) == 0)
+			} else if (strcmp("GET", pk.key) == 0)
+				cre->method = HTTP_METHOD_GET;
+			else if (strcmp("HEAD", pk.key) == 0)
 				cre->method = HTTP_METHOD_HEAD;
 			else if (strcmp("POST", pk.key) == 0)
 				cre->method = HTTP_METHOD_POST;
@@ -1363,10 +1349,6 @@ relay_read_http(struct bufferevent *bev, void *arg)
 				cre->method = HTTP_METHOD_TRACE;
 			else if (strcmp("CONNECT", pk.key) == 0)
 				cre->method = HTTP_METHOD_CONNECT;
-			else {
-				/* Use GET method as the default */
-				cre->method = HTTP_METHOD_GET;
-			}
 
 			/*
 			 * Decode the path and query
@@ -1502,9 +1484,6 @@ relay_read_http(struct bufferevent *bev, void *arg)
 		}
 
 		switch (cre->method) {
-		case HTTP_METHOD_NONE:
-			relay_close_http(con, 406, "no method", 0);
-			return;
 		case HTTP_METHOD_CONNECT:
 			/* Data stream */
 			bev->readcb = relay_read;
@@ -1517,10 +1496,7 @@ relay_read_http(struct bufferevent *bev, void *arg)
 				bev->readcb = relay_read_httpcontent;
 				break;
 			}
-
-			/* Single-pass HTTP response */
-			bev->readcb = relay_read;
-			break;
+			/* FALLTHROUGH */
 		default:
 			/* HTTP handler */
 			bev->readcb = relay_read_http;
@@ -1535,14 +1511,12 @@ relay_read_http(struct bufferevent *bev, void *arg)
 		/* Write empty newline and switch to relay mode */
 		if (relay_bufferevent_print(cre->dst, "\r\n") == -1)
 			goto fail;
-
 		cre->line = 0;
 		cre->method = 0;
 		cre->done = 0;
 		cre->chunked = 0;
 
- done:
-		if (cre->dir == RELAY_DIR_REQUEST && !cre->toread &&
+		if (cre->dir == RELAY_DIR_REQUEST &&
 		    proto->lateconnect && cre->dst->bev == NULL) {
 			if (rlay->rl_conf.fwdmode == FWD_TRANS) {
 				relay_bindanyreq(con, 0, IPPROTO_TCP);
@@ -1553,13 +1527,14 @@ relay_read_http(struct bufferevent *bev, void *arg)
 			return;
 		}
 	}
-	if (con->se_done) {
-		relay_close(con, "last http read (done)");
-		return;
-	}
+	if (con->se_done)
+		goto done;
 	if (EVBUFFER_LENGTH(src) && bev->readcb != relay_read_http)
 		bev->readcb(bev, arg);
 	bufferevent_enable(bev, EV_READ);
+	return;
+ done:
+	relay_close(con, "last http read (done)");
 	return;
  fail:
 	relay_close_http(con, 500, strerror(errno), 0);
@@ -1951,7 +1926,7 @@ relay_accept(int fd, short sig, void *arg)
 	con->se_out.dir = RELAY_DIR_RESPONSE;
 	con->se_retry = rlay->rl_conf.dstretry;
 	con->se_bnds = -1;
-	if (gettimeofday(&con->se_tv_start, NULL) == -1)
+	if (gettimeofday(&con->se_tv_start, NULL))
 		goto err;
 	bcopy(&con->se_tv_start, &con->se_tv_last, sizeof(con->se_tv_last));
 	bcopy(&ss, &con->se_in.ss, sizeof(con->se_in.ss));
@@ -2213,7 +2188,7 @@ relay_connect(struct session *con)
 	struct relay	*rlay = (struct relay *)con->se_relay;
 	int		 bnds = -1, ret;
 
-	if (gettimeofday(&con->se_tv_start, NULL) == -1)
+	if (gettimeofday(&con->se_tv_start, NULL))
 		return (-1);
 
 	if (rlay->rl_dsttable != NULL) {

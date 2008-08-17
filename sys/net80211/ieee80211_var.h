@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_var.h,v 1.45 2008/08/12 18:30:56 damien Exp $	*/
+/*	$OpenBSD: ieee80211_var.h,v 1.41 2008/07/27 18:24:01 damien Exp $	*/
 /*	$NetBSD: ieee80211_var.h,v 1.7 2004/05/06 03:07:10 dyoung Exp $	*/
 
 /*-
@@ -155,7 +155,6 @@ struct ieee80211_rsnparams {
 	u_int16_t		rsn_nciphers;
 	u_int32_t		rsn_ciphers;
 	enum ieee80211_cipher	rsn_groupcipher;
-	enum ieee80211_cipher	rsn_groupmgmtcipher;
 	u_int16_t		rsn_caps;
 };
 
@@ -171,8 +170,6 @@ struct ieee80211_rxinfo {
 #define	IEEE80211_SCAN_REQUEST	0x2
 #define	IEEE80211_SCAN_RESUME	0x4
 
-#define IEEE80211_GROUP_NKID	6
-
 struct ieee80211com {
 	struct arpcom		ic_ac;
 	LIST_ENTRY(ieee80211com) ic_list;	/* chain of all ieee80211com */
@@ -181,6 +178,8 @@ struct ieee80211com {
 				    struct ieee80211_rxinfo *, int);
 	int			(*ic_send_mgmt)(struct ieee80211com *,
 				    struct ieee80211_node *, int, int);
+	void			(*ic_recv_eapol)(struct ieee80211com *,
+				    struct mbuf *, struct ieee80211_node *);
 	int			(*ic_newstate)(struct ieee80211com *,
 				    enum ieee80211_state, int);
 	void			(*ic_newassoc)(struct ieee80211com *,
@@ -235,6 +234,10 @@ struct ieee80211com {
 	int			ic_nnodes;	/* length of ic_nnodes */
 	int			ic_max_nnodes;	/* max length of ic_nnodes */
 	u_int16_t		ic_lintval;	/* listen interval */
+	u_int16_t		ic_holdover;	/* PM hold over duration */
+	u_int16_t		ic_txmin;	/* min tx retry count */
+	u_int16_t		ic_txmax;	/* max tx retry count */
+	u_int16_t		ic_txlifetime;	/* tx lifetime */
 	int16_t			ic_txpower;	/* tx power setting (dBm) */
 	u_int16_t		ic_bmisstimeout;/* beacon miss threshold (ms) */
 	u_int16_t		ic_nonerpsta;	/* # non-ERP stations */
@@ -247,10 +250,9 @@ struct ieee80211com {
 	u_int8_t		ic_des_essid[IEEE80211_NWID_LEN];
 	struct ieee80211_channel *ic_des_chan;	/* desired channel */
 	u_int8_t		ic_des_bssid[IEEE80211_ADDR_LEN];
-	struct ieee80211_key	ic_nw_keys[IEEE80211_GROUP_NKID];
-	int			ic_def_txkey;	/* group data key index */
+	struct ieee80211_key	ic_nw_keys[IEEE80211_WEP_NKID];
+	int			ic_def_txkey;	/* default tx key index */
 #define ic_wep_txkey	ic_def_txkey
-	int			ic_igtk_kid;	/* IGTK key index */
 	u_int32_t		ic_iv;		/* initial vector for wep */
 	struct ieee80211_stats	ic_stats;	/* statistics */
 	struct timeval		ic_last_merge_print;	/* for rate-limiting
@@ -269,7 +271,6 @@ struct ieee80211com {
 	u_int			ic_rsnakms;
 	u_int			ic_rsnciphers;
 	enum ieee80211_cipher	ic_rsngroupcipher;
-	enum ieee80211_cipher	ic_rsngroupmgmtcipher;
 
 	u_int8_t		*ic_tim_bitmap;
 	u_int			ic_tim_len;
@@ -307,7 +308,6 @@ extern struct ieee80211com_head ieee80211com_head;
 #define	IEEE80211_F_RSNON	0x00200000	/* CONF: RSN enabled */
 #define	IEEE80211_F_PSK		0x00400000	/* CONF: pre-shared key set */
 #define IEEE80211_F_COUNTERM	0x00800000	/* STATUS: countermeasures */
-#define IEEE80211_F_MFPR	0x01000000	/* CONF: MFP requested */
 #define IEEE80211_F_USERMASK	0xf0000000	/* CONF: ioctl flag mask */
 
 /* ic_caps */
@@ -324,7 +324,6 @@ extern struct ieee80211com_head ieee80211com_head;
 #define IEEE80211_C_SCANALL	0x00000400	/* CAPABILITY: scan all chan */
 #define IEEE80211_C_QOS		0x00000800	/* CAPABILITY: QoS avail */
 #define IEEE80211_C_RSN		0x00001000	/* CAPABILITY: RSN avail */
-#define IEEE80211_C_MFP		0x00002000	/* CAPABILITY: MFP avail */
 
 /* flags for ieee80211_fix_rate() */
 #define	IEEE80211_F_DOSORT	0x00000001	/* sort rate list */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 1998, 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2001, 2004 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -33,14 +33,14 @@
 
 #include "krb5_locl.h"
 
-RCSID("$KTH: get_default_realm.c,v 1.8 1999/12/02 17:05:09 joda Exp $");
+RCSID("$KTH: get_default_realm.c,v 1.13 2004/05/25 21:27:17 lha Exp $");
 
 /*
  * Return a NULL-terminated list of default realms in `realms'.
  * Free this memory with krb5_free_host_realm.
  */
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_get_default_realms (krb5_context context,
 			 krb5_realm **realms)
 {
@@ -56,25 +56,29 @@ krb5_get_default_realms (krb5_context context,
 }
 
 /*
- * Return the first default realm.  For compatability.
+ * Return the first default realm.  For compatibility.
  */
 
-krb5_error_code
+krb5_error_code KRB5_LIB_FUNCTION
 krb5_get_default_realm(krb5_context context,
 		       krb5_realm *realm)
 {
+    krb5_error_code ret;
     char *res;
 
     if (context->default_realms == NULL
 	|| context->default_realms[0] == NULL) {
-	krb5_error_code ret = krb5_set_default_realm (context, NULL);
+	krb5_clear_error_string(context);
+	ret = krb5_set_default_realm (context, NULL);
 	if (ret)
-	    return KRB5_CONFIG_NODEFREALM;
+	    return ret;
     }
 
     res = strdup (context->default_realms[0]);
-    if (res == NULL)
+    if (res == NULL) {
+	krb5_set_error_string(context, "malloc: out of memory");
 	return ENOMEM;
+    }
     *realm = res;
     return 0;
 }

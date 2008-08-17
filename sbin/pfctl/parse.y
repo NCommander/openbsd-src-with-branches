@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.549 2008/07/03 16:09:34 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.548 2008/06/10 20:55:02 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1245,7 +1245,6 @@ antispoof	: ANTISPOOF logquick antispoof_ifspc af antispoof_opts {
 					r.action = PF_DROP;
 					r.direction = PF_IN;
 					r.log = $2.log;
-					r.logif = $2.logif;
 					r.quick = $2.quick;
 					r.af = $4;
 					if (rule_label(&r, $5.label))

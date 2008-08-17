@@ -1,6 +1,7 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3246,7 +3247,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			insn = get_last_insn ();
 			if (insn != last
 			    && (set = single_set (insn)) != 0
-			    && SET_DEST (set) == quotient)
+			    && SET_DEST (set) == quotient
+			    && abs_d < ((unsigned HOST_WIDE_INT) 1
+					<< (HOST_BITS_PER_WIDE_INT - 1)))
 			  set_unique_reg_note (insn, 
 			  		       REG_EQUAL,
 					       gen_rtx_DIV (compute_mode,
@@ -4192,9 +4195,11 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	 comparison and then the scc insn.
 
 	 compare_from_rtx may call emit_queue, which would be deleted below
-	 if the scc insn fails.  So call it ourselves before setting LAST.  */
+	 if the scc insn fails.  So call it ourselves before setting LAST.
+	 Likewise for do_pending_stack_adjust.  */
 
       emit_queue ();
+      do_pending_stack_adjust ();
       last = get_last_insn ();
 
       comparison

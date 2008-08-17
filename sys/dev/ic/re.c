@@ -1,4 +1,4 @@
-/*	$OpenBSD: re.c,v 1.86 2008/08/11 22:42:19 brad Exp $	*/
+/*	$OpenBSD: re.c,v 1.84 2008/07/15 13:21:17 jsg Exp $	*/
 /*	$FreeBSD: if_re.c,v 1.31 2004/09/04 07:54:05 ru Exp $	*/
 /*
  * Copyright (c) 1997, 1998-2003
@@ -668,7 +668,7 @@ re_diag(struct rl_softc *sc)
 	sc->rl_testmode = 1;
 	re_reset(sc);
 	re_init(ifp);
-	sc->rl_flags |= RL_FLAG_LINK;
+	sc->rl_link = 1;
 	if (sc->sc_hwrev == RL_HWREV_8139CPLUS)
 		phyaddr = 0;
 	else
@@ -782,8 +782,9 @@ re_diag(struct rl_softc *sc)
 
 done:
 	/* Turn interface off, release resources */
+
 	sc->rl_testmode = 0;
-	sc->rl_flags &= ~RL_FLAG_LINK;
+	sc->rl_link = 0;
 	ifp->if_flags &= ~IFF_PROMISC;
 	re_stop(ifp, 1);
 	if (m0 != NULL)
@@ -1066,8 +1067,11 @@ re_attach(struct rl_softc *sc, const char *intrstr)
 	IFQ_SET_MAXLEN(&ifp->if_snd, RL_TX_QLEN);
 	IFQ_SET_READY(&ifp->if_snd);
 
-	ifp->if_capabilities = IFCAP_VLAN_MTU | IFCAP_CSUM_IPv4 |
-			       IFCAP_CSUM_TCPv4 | IFCAP_CSUM_UDPv4;
+	
+	ifp->if_capabilities = IFCAP_VLAN_MTU;
+	if ((sc->rl_flags & RL_FLAG_DESCV2) == 0)
+		ifp->if_capabilities |= IFCAP_CSUM_IPv4 |
+		    IFCAP_CSUM_TCPv4 | IFCAP_CSUM_UDPv4;
 
 #if NVLAN > 0
 	ifp->if_capabilities |= IFCAP_VLAN_HWTAGGING;
@@ -1288,7 +1292,7 @@ re_rxeof(struct rl_softc *sc)
 	int		i, total_len;
 	struct rl_desc	*cur_rx;
 	struct rl_rxsoft *rxs;
-	u_int32_t	rxstat, rxvlan;
+	u_int32_t	rxstat;
 
 	ifp = &sc->sc_arpcom.ac_if;
 
@@ -1297,7 +1301,6 @@ re_rxeof(struct rl_softc *sc)
 		RL_RXDESCSYNC(sc, i,
 		    BUS_DMASYNC_POSTREAD|BUS_DMASYNC_POSTWRITE);
 		rxstat = letoh32(cur_rx->rl_cmdstat);
-		rxvlan = letoh32(cur_rx->rl_vlanctl);
 		RL_RXDESCSYNC(sc, i, BUS_DMASYNC_PREREAD);
 		if ((rxstat & RL_RDESC_STAT_OWN) != 0)
 			break;
@@ -1410,19 +1413,7 @@ re_rxeof(struct rl_softc *sc)
 		/* Do RX checksumming */
 
 		if (sc->rl_flags & RL_FLAG_DESCV2) {
-			/* Check IP header checksum */
-			if ((rxstat & RL_RDESC_STAT_PROTOID) &&
-			    !(rxstat & RL_RDESC_STAT_IPSUMBAD) &&
-			    (rxvlan & RL_RDESC_IPV4))
-				m->m_pkthdr.csum_flags |= M_IPV4_CSUM_IN_OK;
-
-			/* Check TCP/UDP checksum */
-			if (((rxstat & RL_RDESC_STAT_TCP) &&
-			    !(rxstat & RL_RDESC_STAT_TCPSUMBAD)) ||
-			    ((rxstat & RL_RDESC_STAT_UDP) &&
-			    !(rxstat & RL_RDESC_STAT_UDPSUMBAD)))
-				m->m_pkthdr.csum_flags |= M_TCP_CSUM_IN_OK |
-				    M_UDP_CSUM_IN_OK;
+			/* XXX V2 CSUM */
 		} else {
 			/* Check IP header checksum */
 			if ((rxstat & RL_RDESC_STAT_PROTOID) &&
@@ -1532,13 +1523,13 @@ re_tick(void *xsc)
 	s = splnet();
 
 	mii_tick(mii);
-	if (sc->rl_flags & RL_FLAG_LINK) {
+	if (sc->rl_link) {
 		if (!(mii->mii_media_status & IFM_ACTIVE))
-			sc->rl_flags &= ~RL_FLAG_LINK;
+			sc->rl_link = 0;
 	} else {
 		if (mii->mii_media_status & IFM_ACTIVE &&
 		    IFM_SUBTYPE(mii->mii_media_active) != IFM_NONE) {
-			sc->rl_flags |= RL_FLAG_LINK;
+			sc->rl_link = 1;
 			if (!IFQ_IS_EMPTY(&ifp->if_snd))
 				re_start(ifp);
 		}
@@ -1609,7 +1600,7 @@ re_encap(struct rl_softc *sc, struct mbuf *m, int *idx)
 	bus_dmamap_t	map;
 	int		error, seg, nsegs, uidx, startidx, curidx, lastidx, pad;
 	struct rl_desc	*d;
-	u_int32_t	cmdstat, vlanctl = 0, csum_flags = 0;
+	u_int32_t	cmdstat, vlanctl, rl_flags = 0;
 	struct rl_txq	*txq;
 #if NVLAN > 0
 	struct ifvlan	*ifv = NULL;
@@ -1637,19 +1628,11 @@ re_encap(struct rl_softc *sc, struct mbuf *m, int *idx)
 
 	if ((m->m_pkthdr.csum_flags &
 	    (M_IPV4_CSUM_OUT|M_TCPV4_CSUM_OUT|M_UDPV4_CSUM_OUT)) != 0) {
-		if (sc->rl_flags & RL_FLAG_DESCV2) {
-			vlanctl |= RL_TDESC_CMD_IPCSUMV2;
-			if (m->m_pkthdr.csum_flags & M_TCPV4_CSUM_OUT)
-				vlanctl |= RL_TDESC_CMD_TCPCSUMV2;
-			if (m->m_pkthdr.csum_flags & M_UDPV4_CSUM_OUT)
-				vlanctl |= RL_TDESC_CMD_UDPCSUMV2;
-		} else {
-			csum_flags |= RL_TDESC_CMD_IPCSUM;
-			if (m->m_pkthdr.csum_flags & M_TCPV4_CSUM_OUT)
-				csum_flags |= RL_TDESC_CMD_TCPCSUM;
-			if (m->m_pkthdr.csum_flags & M_UDPV4_CSUM_OUT)
-				csum_flags |= RL_TDESC_CMD_UDPCSUM;
-		}
+		rl_flags |= RL_TDESC_CMD_IPCSUM;
+		if (m->m_pkthdr.csum_flags & M_TCPV4_CSUM_OUT)
+			rl_flags |= RL_TDESC_CMD_TCPCSUM;
+		if (m->m_pkthdr.csum_flags & M_UDPV4_CSUM_OUT)
+			rl_flags |= RL_TDESC_CMD_UDPCSUM;
 	}
 
 	txq = &sc->rl_ldata.rl_txq[*idx];
@@ -1665,9 +1648,8 @@ re_encap(struct rl_softc *sc, struct mbuf *m, int *idx)
 
 	nsegs = map->dm_nsegs;
 	pad = 0;
-	if ((sc->rl_flags & RL_FLAG_DESCV2) == 0 &&
-	    m->m_pkthdr.len <= RL_IP4CSUMTX_PADLEN &&
-	    (csum_flags & RL_TDESC_CMD_IPCSUM) != 0) {
+	if (m->m_pkthdr.len <= RL_IP4CSUMTX_PADLEN &&
+	    (rl_flags & RL_TDESC_CMD_IPCSUM) != 0) {
 		pad = 1;
 		nsegs++;
 	}
@@ -1689,9 +1671,10 @@ re_encap(struct rl_softc *sc, struct mbuf *m, int *idx)
 	 * appear in all descriptors of a multi-descriptor
 	 * transmission attempt.
 	 */
+	vlanctl = 0;
 #if NVLAN > 0
 	if (ifv != NULL)
-		vlanctl |= swap16(ifv->ifv_tag) | RL_TDESC_VLANCTL_TAG;
+		vlanctl = swap16(ifv->ifv_tag) | RL_TDESC_VLANCTL_TAG;
 #endif
 
 	/*
@@ -1730,7 +1713,7 @@ re_encap(struct rl_softc *sc, struct mbuf *m, int *idx)
 
 		d->rl_vlanctl = htole32(vlanctl);
 		re_set_bufaddr(d, map->dm_segs[seg].ds_addr);
-		cmdstat = csum_flags | map->dm_segs[seg].ds_len;
+		cmdstat = rl_flags | map->dm_segs[seg].ds_len;
 		if (seg == 0)
 			cmdstat |= RL_TDESC_CMD_SOF;
 		else
@@ -1752,7 +1735,7 @@ re_encap(struct rl_softc *sc, struct mbuf *m, int *idx)
 		d->rl_vlanctl = htole32(vlanctl);
 		paddaddr = RL_TXPADDADDR(sc);
 		re_set_bufaddr(d, paddaddr);
-		cmdstat = csum_flags |
+		cmdstat = rl_flags |
 		    RL_TDESC_CMD_OWN | RL_TDESC_CMD_EOF |
 		    (RL_IP4CSUMTX_PADLEN + 1 - m->m_pkthdr.len);
 		if (curidx == (RL_TX_DESC_CNT(sc) - 1))
@@ -1801,9 +1784,7 @@ re_start(struct ifnet *ifp)
 
 	sc = ifp->if_softc;
 
-	if (ifp->if_flags & IFF_OACTIVE)
-		return;
-	if ((sc->rl_flags & RL_FLAG_LINK) == 0)
+	if (!sc->rl_link || ifp->if_flags & IFF_OACTIVE)
 		return;
 
 	idx = sc->rl_ldata.rl_txq_prodidx;
@@ -2031,7 +2012,7 @@ re_init(struct ifnet *ifp)
 
 	splx(s);
 
-	sc->rl_flags &= ~RL_FLAG_LINK;
+	sc->rl_link = 0;
 
 	timeout_add(&sc->timer_handle, hz);
 
@@ -2175,7 +2156,7 @@ re_stop(struct ifnet *ifp, int disable)
 	sc = ifp->if_softc;
 
 	ifp->if_timer = 0;
-	sc->rl_flags &= ~RL_FLAG_LINK;
+	sc->rl_link = 0;
 
 	timeout_del(&sc->timer_handle);
 	ifp->if_flags &= ~(IFF_RUNNING | IFF_OACTIVE);

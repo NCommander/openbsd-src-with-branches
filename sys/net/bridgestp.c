@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.34 2008/06/14 19:13:42 jsing Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.33 2008/06/13 19:08:19 henning Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -371,7 +371,7 @@ bstp_transmit_tcn(struct bstp_state *bs, struct bstp_port *bp)
 	struct ifnet *ifp = bp->bp_ifp;
 	struct ether_header *eh;
 	struct mbuf *m;
-	int s, len, error;
+	int s,error;
 
 	if (ifp == NULL || (ifp->if_flags & IFF_RUNNING) == 0)
 		return;
@@ -397,13 +397,9 @@ bstp_transmit_tcn(struct bstp_state *bs, struct bstp_port *bp)
 
 	s = splnet();
 	bp->bp_txcount++;
-	len = m->m_pkthdr.len;
 	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
-	if (error == 0) {
-		ifp->if_obytes += len;
-		ifp->if_omcasts++;
+	if (error == 0)
 		if_start(ifp);
-	}
 	splx(s);
 }
 
@@ -486,7 +482,7 @@ bstp_send_bpdu(struct bstp_state *bs, struct bstp_port *bp,
 	struct ifnet *ifp = bp->bp_ifp;
 	struct mbuf *m;
 	struct ether_header *eh;
-	int s, len, error;
+	int s, error;
 
 	s = splnet();
 	if (ifp == NULL || (ifp->if_flags & IFF_RUNNING) == 0)
@@ -534,13 +530,9 @@ bstp_send_bpdu(struct bstp_state *bs, struct bstp_port *bp,
 	m->m_len = m->m_pkthdr.len;
 
 	bp->bp_txcount++;
-	len = m->m_pkthdr.len;
 	IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
-	if (error == 0) {
-		ifp->if_obytes += len;
-		ifp->if_omcasts++;
+	if (error == 0)
 		if_start(ifp);
-	}
  done:
 	splx(s);
 }

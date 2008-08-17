@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.79 2008/06/25 15:26:43 reyk Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.78 2008/06/12 06:58:39 deraadt Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -378,7 +378,6 @@ readdoslabel(struct buf *bp, void (*strat)(struct buf *),
 	daddr64_t part_blkno = DOSBBSECTOR;
 	int dospartoff = 0, i, ourpart = -1;
 	int wander = 1, n = 0, loop = 0;
-	int offset;
 
 	if (lp->d_secpercyl == 0)
 		return ("invalid label, d_secpercyl == 0");
@@ -398,8 +397,7 @@ readdoslabel(struct buf *bp, void (*strat)(struct buf *),
 			part_blkno = extoff;
 
 		/* read boot record */
-		bp->b_blkno = DL_BLKTOSEC(lp, part_blkno) * DL_BLKSPERSEC(lp);
-		offset = DL_BLKOFFSET(lp, part_blkno) + DOSPARTOFF;
+		bp->b_blkno = part_blkno;
 		bp->b_bcount = lp->d_secsize;
 		bp->b_flags = B_BUSY | B_READ | B_RAW;
 		(*strat)(bp);
@@ -409,7 +407,7 @@ readdoslabel(struct buf *bp, void (*strat)(struct buf *),
 			return ("dos partition I/O error");
 		}
 
-		bcopy(bp->b_data + offset, dp, sizeof(dp));
+		bcopy(bp->b_data + DOSPARTOFF, dp, sizeof(dp));
 
 		if (ourpart == -1) {
 			/* Search for our MBR partition */
@@ -550,9 +548,7 @@ notfat:
 	if (spoofonly)
 		return (NULL);
 
-	bp->b_blkno = DL_BLKTOSEC(lp, dospartoff + DOS_LABELSECTOR) *
-	    DL_BLKSPERSEC(lp);
-	offset = DL_BLKOFFSET(lp, dospartoff + DOS_LABELSECTOR);
+	bp->b_blkno = dospartoff + DOS_LABELSECTOR;
 	bp->b_bcount = lp->d_secsize;
 	bp->b_flags = B_BUSY | B_READ | B_RAW;
 	(*strat)(bp);
@@ -560,7 +556,7 @@ notfat:
 		return ("disk label I/O error");
 
 	/* sub-MBR disklabels are always at a LABELOFFSET of 0 */
-	return checkdisklabel(bp->b_data + offset, lp);
+	return checkdisklabel(bp->b_data, lp);
 }
 
 /*
@@ -624,6 +620,7 @@ setdisklabel(struct disklabel *olp, struct disklabel *nlp, u_int openmask)
 int
 bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
 {
+#define blockpersec(count, lp) ((count) * (((lp)->d_secsize) / DEV_BSIZE))
 	struct partition *p = &lp->d_partitions[DISKPART(bp->b_dev)];
 	daddr64_t sz = howmany(bp->b_bcount, DEV_BSIZE);
 
@@ -635,8 +632,8 @@ bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
 		panic("bounds_check_with_label %lld %lld\n", bp->b_blkno, sz);
 
 	/* beyond partition? */
-	if (bp->b_blkno + sz > DL_SECTOBLK(lp, DL_GETPSIZE(p))) {
-		sz = DL_SECTOBLK(lp, DL_GETPSIZE(p)) - bp->b_blkno;
+	if (bp->b_blkno + sz > blockpersec(DL_GETPSIZE(p), lp)) {
+		sz = blockpersec(DL_GETPSIZE(p), lp) - bp->b_blkno;
 		if (sz == 0) {
 			/* If exactly at end of disk, return EOF. */
 			bp->b_resid = bp->b_bcount;
@@ -651,8 +648,8 @@ bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
 	}
 
 	/* calculate cylinder for disksort to order transfers with */
-	bp->b_cylinder = (bp->b_blkno + DL_SECTOBLK(lp, DL_GETPOFFSET(p))) /
-	    DL_SECTOBLK(lp, lp->d_secpercyl);
+	bp->b_cylinder = (bp->b_blkno + blockpersec(DL_GETPOFFSET(p), lp)) /
+	    blockpersec(lp->d_secpercyl, lp);
 	return (1);
 
 bad:

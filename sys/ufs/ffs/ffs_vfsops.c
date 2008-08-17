@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.115 2008/08/08 09:02:25 thib Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.113 2008/03/16 19:42:57 otto Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -554,7 +554,7 @@ ffs_reload(struct mount *mountp, struct ucred *cred, struct proc *p)
 
 	fs = VFSTOUFS(mountp)->um_fs;
 
-	error = bread(devvp, (daddr64_t)(fs->fs_sblockloc / DEV_BSIZE), SBSIZE,
+	error = bread(devvp, (daddr64_t)(fs->fs_sblockloc / size), SBSIZE,
 	    NOCRED, &bp);
 	if (error) {
 		brelse(bp);
@@ -716,7 +716,7 @@ ffs_mountfs(struct vnode *devvp, struct mount *mp, struct proc *p)
 			bp = NULL;
 		}
 
-		error = bread(devvp, sbtry[i] / DEV_BSIZE, SBSIZE, cred, &bp);
+		error = bread(devvp, sbtry[i] / size, SBSIZE, cred, &bp);
 		if (error)
 			goto out;
 
@@ -1107,9 +1107,8 @@ ffs_statfs(struct mount *mp, struct statfs *sbp, struct proc *p)
 	sbp->f_iosize = fs->fs_bsize;
 	sbp->f_blocks = fs->fs_dsize;
 	sbp->f_bfree = fs->fs_cstotal.cs_nbfree * fs->fs_frag +
-	    fs->fs_cstotal.cs_nffree;
-	sbp->f_bavail = sbp->f_bfree -
-	    ((int64_t)fs->fs_dsize * fs->fs_minfree / 100);
+		fs->fs_cstotal.cs_nffree;
+	sbp->f_bavail = sbp->f_bfree - ((int64_t)fs->fs_dsize * fs->fs_minfree / 100);
 	sbp->f_files = fs->fs_ncg * fs->fs_ipg - ROOTINO;
 	sbp->f_ffree = fs->fs_cstotal.cs_nifree;
 	sbp->f_favail = sbp->f_ffree;

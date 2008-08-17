@@ -1,3 +1,65 @@
+2005-08-21  Russ Allbery  <rra@stanford.edu>
+
+	* ANSIColor.pm: Version 1.10 released.
+
+	* ANSIColor.pm (colored): Fix the $EACHLINE support to work
+	properly with a line consisting solely of "0".  Remove Zenin's
+	now-defunct e-mail address from the documentation.
+	* test.pl: Test 0 and the empty string in combination with
+	$EACHLINE.
+
+	* tests/ansicolor: Add terminal test file from Joe Smith.
+	* tests/vt100-torture: Likewise.
+	* tests/README: Add an explanation of the test files.
+
+2004-12-03  Russ Allbery  <rra@stanford.edu>
+
+	* ANSIColor.pm: Version 1.09 released.
+
+	* ANSIColor.pm: Add compatibility information for Mac OS X
+	Terminal from Daniel Lindsley.
+
+2004-02-20  Russ Allbery  <rra@stanford.edu>
+
+	* test.pl: Always use eq, not ==, for string comparisons.
+
+2004-02-19  Russ Allbery  <rra@stanford.edu>
+
+	* ANSIColor.pm: Version 1.08 released.
+
+	* ANSIColor.pm: Add DARK to %EXPORT_TAGS and add CYAN and WHITE to
+	the list of documented constants.
+	* test.pl: Add a test for DARK.  Redo the leading comment.
+
+2003-03-25  Russ Allbery  <rra@stanford.edu>
+
+	* ANSIColor.pm: Version 1.07 released.
+
+	* ANSIColor.pm: Add PuTTY, Windows telnet, and Cygwin OpenSSH
+	information to the terminal emulators table, and update the URL to
+	the ECMA standard.
+
+2002-12-09  Russ Allbery  <rra@stanford.edu>
+
+	* ANSIColor.pm: Version 1.06 released to synchronize the version
+	on CPAN with the version in Perl core.
+
+	* ANSIColor.pm: Fix typo in L<> link in documentation.
+
+2002-06-28  Russ Allbery  <rra@stanford.edu>
+
+	* ANSIColor.pm: Version 1.05 released.
+
+	* ANSIColor.pm: Update the formatting style, add a pointer to the
+	module web site, use L<> for URLs, and use naked <>s where
+	permissible rather than E<lt> and E<gt>.  Renamed LICENSE to
+	COPYRIGHT AND LICENSE.
+
+2002-02-14  Russ Allbery  <rra@stanford.edu>
+
+	* ANSIColor.pm: Added a mention of the specific Windows consoles
+	that don't work with this module.
+
 2001-07-10  Russ Allbery  <rra@stanford.edu>
 
 	* ANSIColor.pm: Version 1.04 released.

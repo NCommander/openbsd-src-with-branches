@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.8 2008/07/20 13:46:16 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.7 2008/07/20 13:40:27 krw Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -116,7 +116,6 @@ readsgilabel(struct buf *bp, void (*strat)(struct buf *),
 	char *msg = NULL;
 	int i, *p, cs = 0;
 	int fsoffs = 0;
-	int offset;
 
 	bp->b_blkno = 0;
 	bp->b_bcount = lp->d_secsize;
@@ -139,7 +138,7 @@ readsgilabel(struct buf *bp, void (*strat)(struct buf *),
 		msg = "no BSD partition";
 		goto done;
 	}
-	fsoffs = dlp->partitions[0].first * (dlp->dp.dp_secbytes / DEV_BSIZE);
+	fsoffs = dlp->partitions[0].first;
 
 	if (spoofonly)
 		goto finished;
@@ -154,7 +153,6 @@ readsgilabel(struct buf *bp, void (*strat)(struct buf *),
 	}
 
 	/* Set up partitions i-l if there is no BSD label. */
-	DL_SETDSIZE(lp, (DL_GETDSIZE(lp)*lp->d_secsize) / dlp->dp.dp_secbytes);
 	lp->d_secsize = dlp->dp.dp_secbytes;
 	lp->d_nsectors = dlp->dp.dp_secs;
 	lp->d_ntracks = dlp->dp.dp_trks0;
@@ -189,8 +187,7 @@ finished:
 	if (spoofonly)
 		goto done;
 
-	bp->b_blkno = DL_BLKTOSEC(lp, fsoffs + LABELSECTOR) * DL_BLKSPERSEC(lp);
-	offset = DL_BLKOFFSET(lp, fsoffs + LABELSECTOR) + LABELOFFSET;
+	bp->b_blkno = fsoffs + LABELSECTOR;
 	bp->b_bcount = lp->d_secsize;
 	bp->b_flags = B_BUSY | B_READ | B_RAW;
 	(*strat)(bp);
@@ -199,7 +196,7 @@ finished:
 		goto done;
 	}
 
-	return checkdisklabel(bp->b_data + offset, lp);
+	return checkdisklabel(bp->b_data + LABELOFFSET, lp);
 
 done:
 	return (msg);
@@ -212,7 +209,6 @@ int
 writedisklabel(dev_t dev, void (*strat)(struct buf *), struct disklabel *lp)
 {
 	int error = EIO, partoff = -1;
-	int offset;
 	struct buf *bp = NULL;
 	struct disklabel *dlp;
 
@@ -225,15 +221,14 @@ writedisklabel(dev_t dev, void (*strat)(struct buf *), struct disklabel *lp)
 		goto done;
 
 	/* Read it in, slap the new label in, and write it back out */
-	bp->b_blkno = DL_BLKTOSEC(lp, partoff+LABELSECTOR) * DL_BLKSPERSEC(lp);
-	offset = DL_BLKOFFSET(lp, partoff + LABELSECTOR) + LABELOFFSET;
+	bp->b_blkno = partoff + LABELSECTOR;
 	bp->b_bcount = lp->d_secsize;
 	bp->b_flags = B_BUSY | B_READ | B_RAW;
 	(*strat)(bp);
 	if ((error = biowait(bp)) != 0)
 		goto done;
 
-	dlp = (struct disklabel *)(bp->b_data + offset);
+	dlp = (struct disklabel *)(bp->b_data + LABELOFFSET);
 	*dlp = *lp;
 	bp->b_flags = B_BUSY | B_WRITE | B_RAW;
 	(*strat)(bp);

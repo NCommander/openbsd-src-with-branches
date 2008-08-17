@@ -1,4 +1,4 @@
-/*	$OpenBSD: htpasswd.c,v 1.17 2008/05/23 12:12:01 mbalmer Exp $ */
+/*	$OpenBSD$ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -100,7 +100,6 @@
 #define ALG_APSHA 3 
 #define ALG_APBLF 4
 
-#define INTR_MSG "\nInterrupted.\n"
 
 #define ERR_FILEPERM 1
 #define ERR_SYNTAX 2
@@ -248,11 +247,11 @@ usage(void)
 static void
 interrupted(void)
 {
-	write(STDERR_FILENO, INTR_MSG, sizeof(INTR_MSG) - 1);
+	fprintf(stderr, "Interrupted.\n");
 	if (tempfilename[0] != '\0')
 		unlink(tempfilename);
 
-	_exit(ERR_INTERRUPTED);
+	exit(ERR_INTERRUPTED);
 }
 
 /*

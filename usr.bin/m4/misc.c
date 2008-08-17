@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.37 2007/05/05 03:42:49 ray Exp $	*/
+/*	$OpenBSD: misc.c,v 1.36 2006/12/12 21:16:18 jmc Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/09/28 05:37:41 tls Exp $	*/
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_proto.c,v 1.32 2008/08/12 19:50:39 damien Exp $	*/
+/*	$OpenBSD: ieee80211_proto.c,v 1.27 2008/07/26 12:56:06 damien Exp $	*/
 /*	$NetBSD: ieee80211_proto.c,v 1.8 2004/04/30 23:58:20 dyoung Exp $	*/
 
 /*-
@@ -114,6 +114,9 @@ ieee80211_proto_attach(struct ifnet *ifp)
 	/* initialize management frame handlers */
 	ic->ic_recv_mgmt = ieee80211_recv_mgmt;
 	ic->ic_send_mgmt = ieee80211_send_mgmt;
+
+	/* initialize EAPOL frame handler */
+	ic->ic_recv_eapol = ieee80211_recv_eapol;
 }
 
 void
@@ -150,7 +153,6 @@ ieee80211_print_essid(const u_int8_t *essid, int len)
 	}
 }
 
-#ifdef IEEE80211_DEBUG
 void
 ieee80211_dump_pkt(const u_int8_t *buf, int len, int rate, int rssi)
 {
@@ -210,7 +212,6 @@ ieee80211_dump_pkt(const u_int8_t *buf, int len, int rate, int rssi)
 		printf("\n");
 	}
 }
-#endif
 
 int
 ieee80211_fix_rate(struct ieee80211com *ic, struct ieee80211_node *ni,
@@ -385,30 +386,15 @@ ieee80211_node_gtk_rekey(void *arg, struct ieee80211_node *ni)
 void
 ieee80211_setkeys(struct ieee80211com *ic)
 {
-	struct ieee80211_key *k;
+	u_int8_t gtk[IEEE80211_PMK_LEN];
 	u_int8_t kid;
 
 	/* Swap(GM, GN) */
 	kid = (ic->ic_def_txkey == 1) ? 2 : 1;
-	k = &ic->ic_nw_keys[kid];
-	memset(k, 0, sizeof(*k));
-	k->k_id = kid;
-	k->k_cipher = ic->ic_bss->ni_rsngroupcipher;
-	k->k_flags = IEEE80211_KEY_GROUP | IEEE80211_KEY_TX;
-	k->k_len = ieee80211_cipher_keylen(k->k_cipher);
-	arc4random_buf(k->k_key, k->k_len);
 
-	if (ic->ic_caps & IEEE80211_C_MFP) {
-		/* Swap(GM_igtk, GN_igtk) */
-		kid = (ic->ic_igtk_kid == 4) ? 5 : 4;
-		k = &ic->ic_nw_keys[kid];
-		memset(k, 0, sizeof(*k));
-		k->k_id = kid;
-		k->k_cipher = ic->ic_bss->ni_rsngroupmgmtcipher;
-		k->k_flags = IEEE80211_KEY_IGTK | IEEE80211_KEY_TX;
-		k->k_len = 16;
-		arc4random_buf(k->k_key, k->k_len);
-	}
+	arc4random_buf(gtk, sizeof(gtk));
+	ieee80211_map_gtk(gtk, ic->ic_bss->ni_rsngroupcipher, kid, 1, 0,
+	    &ic->ic_nw_keys[kid]);
 
 	ic->ic_rsn_keydonesta = 0;
 	ieee80211_iterate_nodes(ic, ieee80211_node_gtk_rekey, ic);
@@ -426,14 +412,6 @@ ieee80211_setkeysdone(struct ieee80211com *ic)
 	kid = (ic->ic_def_txkey == 1) ? 2 : 1;
 	if ((*ic->ic_set_key)(ic, ic->ic_bss, &ic->ic_nw_keys[kid]) == 0)
 		ic->ic_def_txkey = kid;
-
-	if (ic->ic_caps & IEEE80211_C_MFP) {
-		/* install IGTK */
-		kid = (ic->ic_igtk_kid == 4) ? 5 : 4;
-		if ((*ic->ic_set_key)(ic, ic->ic_bss,
-		    &ic->ic_nw_keys[kid]) == 0)
-			ic->ic_igtk_kid = kid;
-	}
 }
 
 /*
@@ -519,7 +497,6 @@ ieee80211_auth_open(struct ieee80211com *ic, const struct ieee80211_frame *wh,
 		}
 		if (ic->ic_flags & IEEE80211_F_RSNON) {
 			/* XXX not here! */
-			ic->ic_bss->ni_flags &= ~IEEE80211_NODE_TXRXPROT;
 			ic->ic_bss->ni_port_valid = 0;
 			ic->ic_bss->ni_replaycnt_ok = 0;
 			(*ic->ic_delete_key)(ic, ic->ic_bss,

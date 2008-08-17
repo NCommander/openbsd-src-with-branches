@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.4 2008/08/12 16:14:45 henning Exp $	*/
+/*	$OpenBSD: ieee80211_crypto_wep.c,v 1.2 2008/04/18 09:16:14 djm Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -16,17 +16,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * This code implements Wired Equivalent Privacy (WEP) defined in
- * IEEE Std 802.11-2007 section 8.2.1.
- */
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>
+#include <sys/sockio.h>
 #include <sys/endian.h>
 
 #include <net/if.h>
@@ -148,7 +144,7 @@ ieee80211_wep_encrypt(struct ieee80211com *ic, struct mbuf *m0,
 				goto nospace;
 			n = n->m_next;
 			n->m_len = MLEN;
-			if (left >= MINCLSIZE - IEEE80211_WEP_CRCLEN) {
+			if (left > MLEN - IEEE80211_WEP_CRCLEN) {
 				MCLGET(n, M_DONTWAIT);
 				if (n->m_flags & M_EXT)
 					n->m_len = n->m_ext.ext_size;
@@ -263,7 +259,7 @@ ieee80211_wep_decrypt(struct ieee80211com *ic, struct mbuf *m0,
 				goto nospace;
 			n = n->m_next;
 			n->m_len = MLEN;
-			if (left >= MINCLSIZE) {
+			if (left > MLEN) {
 				MCLGET(n, M_DONTWAIT);
 				if (n->m_flags & M_EXT)
 					n->m_len = n->m_ext.ext_size;

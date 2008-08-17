@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9reg.h,v 1.50 2008/08/11 22:42:19 brad Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.48 2008/07/13 05:24:05 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -78,11 +78,7 @@
 #define RL_EECMD	0x0050		/* EEPROM command register */
 #define RL_CFG0		0x0051		/* config register #0 */
 #define RL_CFG1		0x0052		/* config register #1 */
-#define RL_CFG2		0x0053		/* config register #2 */
-#define RL_CFG3		0x0054		/* config register #3 */
-#define RL_CFG4		0x0055		/* config register #4 */
-#define RL_CFG5		0x0056		/* config register #5 */
-					/* 0057 reserved */
+					/* 0053-0057 reserved */
 #define RL_MEDIASTAT	0x0058		/* media status register (8139) */
 					/* 0059-005A reserved */
 #define RL_MII		0x005A		/* 8129 chip only */
@@ -379,48 +375,14 @@
  * Config 1 register
  */
 #define RL_CFG1_PWRDWN		0x01
-#define RL_CFG1_PME		0x01
 #define RL_CFG1_SLEEP		0x02
-#define RL_CFG1_VPDEN		0x02
 #define RL_CFG1_IOMAP		0x04
 #define RL_CFG1_MEMMAP		0x08
 #define RL_CFG1_RSVD		0x10
-#define RL_CFG1_LWACT		0x10
 #define RL_CFG1_DRVLOAD		0x20
 #define RL_CFG1_LED0		0x40
 #define RL_CFG1_FULLDUPLEX	0x40	/* 8129 only */
 #define RL_CFG1_LED1		0x80
-
-/*
- * Config 2 register
- */
-#define RL_CFG2_PCI33MHZ	0x00
-#define RL_CFG2_PCI66MHZ	0x01
-#define RL_CFG2_PCI64BIT	0x08
-#define RL_CFG2_AUXPWR		0x10
-
-/*
- * Config 3 register
- */
-#define RL_CFG3_GRANTSEL	0x80
-#define RL_CFG3_WOL_MAGIC	0x20
-#define RL_CFG3_WOL_LINK	0x10
-#define RL_CFG3_FAST_B2B	0x01
-
-/*
- * Config 4 register
- */
-#define RL_CFG4_LWPTN		0x04
-#define RL_CFG4_LWPME		0x10
-
-/*
- * Config 5 register
- */
-#define RL_CFG5_WOL_BCAST	0x40
-#define RL_CFG5_WOL_MCAST	0x20
-#define RL_CFG5_WOL_UCAST	0x10
-#define RL_CFG5_WOL_LANWAKE	0x02
-#define RL_CFG5_PME_STS		0x01
 
 /*
  * 8139C+ register definitions
@@ -566,10 +528,6 @@ struct rl_desc {
 
 #define RL_TDESC_VLANCTL_TAG	0x00020000	/* Insert VLAN tag */
 #define RL_TDESC_VLANCTL_DATA	0x0000FFFF	/* TAG data */
-/* RTL8168C/RTL8168CP/RTL8111C/RTL8111CP */
-#define	RL_TDESC_CMD_IPCSUMV2	0x20000000
-#define	RL_TDESC_CMD_TCPCSUMV2	0x40000000
-#define	RL_TDESC_CMD_UDPCSUMV2	0x80000000
 
 /*
  * Error bits are valid only on the last descriptor of a frame
@@ -607,8 +565,6 @@ struct rl_desc {
 #define RL_RDESC_STAT_RUNT	0x00080000	/* runt packet received */
 #define RL_RDESC_STAT_CRCERR	0x00040000	/* CRC error */
 #define RL_RDESC_STAT_PROTOID	0x00030000	/* Protocol type */
-#define	RL_RDESC_STAT_UDP	0x00020000	/* UDP, 8168C/CP, 8111C/CP */
-#define	RL_RDESC_STAT_TCP	0x00010000	/* TCP, 8168C/CP, 8111C/CP */
 #define RL_RDESC_STAT_IPSUMBAD	0x00008000	/* IP header checksum bad */
 #define RL_RDESC_STAT_UDPSUMBAD	0x00004000	/* UDP checksum bad */
 #define RL_RDESC_STAT_TCPSUMBAD	0x00002000	/* TCP checksum bad */
@@ -620,9 +576,6 @@ struct rl_desc {
 #define RL_RDESC_VLANCTL_TAG	0x00010000	/* VLAN tag available
 						   (rl_vlandata valid)*/
 #define RL_RDESC_VLANCTL_DATA	0x0000FFFF	/* TAG data */
-/* RTL8168C/RTL8168CP/RTL8111C/RTL8111CP */
-#define	RL_RDESC_IPV6		0x80000000
-#define	RL_RDESC_IPV4		0x40000000
 
 #define RL_PROTOID_NONIP	0x00000000
 #define RL_PROTOID_TCPIP	0x00010000
@@ -814,6 +767,7 @@ struct rl_softc {
 #define	RL_FLAG_DESCV2		0x0040
 #define	RL_FLAG_MACSTAT		0x0080
 #define	RL_FLAG_LINK		0x8000
+	int			rl_link;
 };
 
 /*
