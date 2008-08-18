@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scanner.l,v 1.9 2008/04/11 20:45:52 stefan Exp $   */
+/*	$OpenBSD: scanner.l,v 1.10 2008/08/17 18:40:13 ragge Exp $   */
 
 /*
  * Copyright (c) 2004 Anders Magnusson. All rights reserved.
@@ -313,6 +313,14 @@ L?\"(\\.|[^\\"])*\"	{ PRTOUT(STRING); }
 			}
 
 .			{
+				if (contr) {
+					while (input() != '\n')
+						;
+					unput('\n');
+					BEGIN 0;
+					contr = 0;
+					goto yy;
+				}
 				if (YYSTATE || slow)
 					return yytext[0];
 				if (yytext[0] == 6) { /* PRAGS */
@@ -327,6 +335,7 @@ L?\"(\\.|[^\\"])*\"	{ PRTOUT(STRING); }
 				} else {
 					PRTOUT(yytext[0]);
 				}
+				yy:;
 			}
 
 %%
