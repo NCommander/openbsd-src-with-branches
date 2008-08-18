@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.53 2008/04/08 14:31:54 claudio Exp $ */
+/*	$OpenBSD: conf.c,v 1.54 2008/05/14 20:49:48 miod Exp $ */
 /*	$NetBSD: conf.c,v 1.44 1999/10/27 16:38:54 ragge Exp $	*/
 
 /*-
@@ -163,7 +163,7 @@ struct	consdev constab[]={
 #else
 #define NGEN	0
 #endif
-#if VAX410 || VAX43 || VAX46 || VAX48 || VAX49 || VAX53
+#if VAX410 || VAX43 || VAX46 || VAX48 || VAX49 || VAX53 || VAX60
 #if NDZ > 0
 	cons_init(dz),	/* DZ11-like serial console on VAXstations */
 #endif

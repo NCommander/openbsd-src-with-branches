@@ -1,4 +1,4 @@
-/*	$OpenBSD: rpb.h,v 1.9 2002/03/15 01:20:04 millert Exp $ */
+/*	$OpenBSD: rpb.h,v 1.10 2002/06/11 09:36:24 hugh Exp $ */
 /*	$NetBSD: rpb.h,v 1.6 1998/07/01 09:37:11 ragge Exp $ */
 /*
  * Copyright (c) 1995 Ludd, University of Lule}, Sweden.
@@ -113,6 +113,7 @@ struct rpb {		/* size		description */
 #define	BDEV_NK		35
 #define	BDEV_RD		36	/* ST506/MFM disk on HDC9224 */
 #define	BDEV_ST		37	/* SCSI tape on NCR5380 */
+#define	BDEV_SDS	39	/* SCSI disk on SII */
 #define	BDEV_SD		42	/* SCSI disk on NCR5380 */
 #define BDEV_SDN	46	/* SCSI disk on NCR5394 */
 #define	BDEV_CNSL	64
