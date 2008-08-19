@@ -1,4 +1,4 @@
-/* 	$OpenBSD: compat_dir.c,v 1.3 2002/03/14 01:26:49 millert Exp $	*/
+/* 	$OpenBSD: compat_dir.c,v 1.4 2003/08/14 16:55:24 fgsch Exp $	*/
 
 /*
  * Copyright (c) 2000 Constantine Sapuntzakis
@@ -76,8 +76,10 @@ readdir_with_callback(fp, off, nbytes, appendfunc, arg)
 	buflen = max(buflen, va.va_blocksize);
 	buf = malloc(buflen, M_TEMP, M_WAITOK);
 	error = vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, curproc);
-	if (error)
-		goto out;
+	if (error) {
+		free(buf, M_TEMP);
+		return (error);
+	}
 
 again:
 	aiov.iov_base = buf;
