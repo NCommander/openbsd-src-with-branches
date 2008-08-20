@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops.c,v 1.17 2006/12/02 18:02:53 miod Exp $	*/
+/*	$OpenBSD: rasops.c,v 1.18 2008/06/26 05:42:17 ray Exp $	*/
 /*	$NetBSD: rasops.c,v 1.35 2001/02/02 06:01:01 marcus Exp $	*/
 
 /*-
@@ -735,14 +735,14 @@ rasops_init_devcmap(ri)
 	int c;
 #endif
 
-	switch (ri->ri_depth) {
-#if NRASOPS1 > 0
-	case 1:
+	if (ri->ri_depth == 1 || (ri->ri_flg & RI_FORCEMONO) != 0) {
 		ri->ri_devcmap[0] = 0;
 		for (i = 1; i < 16; i++)
 			ri->ri_devcmap[i] = 0xffffffff;
 		return;
-#endif
+	}
+
+	switch (ri->ri_depth) {
 #if NRASOPS2 > 0
 	case 2:
 		for (i = 1; i < 15; i++)
