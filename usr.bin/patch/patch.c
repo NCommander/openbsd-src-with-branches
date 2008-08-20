@@ -1,4 +1,4 @@
-/*	$OpenBSD: patch.c,v 1.44 2006/03/11 19:41:30 otto Exp $	*/
+/*	$OpenBSD: patch.c,v 1.45 2007/04/18 21:52:24 sobrado Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: patch.c,v 1.44 2006/03/11 19:41:30 otto Exp $";
+static const char rcsid[] = "$OpenBSD: patch.c,v 1.45 2007/04/18 21:52:24 sobrado Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -631,13 +631,7 @@ locate_hunk(LINENUM fuzz)
 		    || diff_type == UNI_DIFF)) {
 			say("Empty context always matches.\n");
 		}
-		if (diff_type == CONTEXT_DIFF
-		    || diff_type == NEW_CONTEXT_DIFF
-		    || diff_type == UNI_DIFF) {
-			if (fuzz == 0)
-				return (input_lines == 0 ? first_guess : 0);
-		} else
-			return (first_guess);
+		return (first_guess);
 	}
 	if (max_neg_offset >= first_guess)	/* do not try lines < 0 */
 		max_neg_offset = first_guess - 1;
