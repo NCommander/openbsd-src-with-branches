@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2004/06/29 04:07:49 millert Exp $
+#	$OpenBSD: Makefile,v 1.26 2005/01/12 18:15:46 millert Exp $
 
 PROG=	sendmail
 
@@ -23,6 +23,9 @@ LDFLAGS+=-L/usr/local/lib
 
 # Compile with milter support.
 ENVDEF+= -DMILTER
+
+# Compile with milter support.
+ENVDEF+= -DSOCKETMAP
 
 # Since we have random PIDs we need to be careful to avoid filename collisions
 ENVDEF+= -DFAST_PID_RECYCLE
