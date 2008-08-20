@@ -1,4 +1,4 @@
-/*	$OpenBSD: dz_ibus.c,v 1.24 2008/01/23 16:37:57 jsing Exp $	*/
+/*	$OpenBSD: dzcons.c,v 1.1 2008/08/18 23:04:28 miod Exp $	*/
 /*	$NetBSD: dz_ibus.c,v 1.15 1999/08/27 17:50:42 ragge Exp $ */
 /*
  * Copyright (c) 1998 Ludd, University of Lule}, Sweden.
@@ -213,17 +213,17 @@ void
 dzcninit(cndev)
 	struct	consdev *cndev;
 {
-	dzcninit_internal(minor(cndev->cn_dev));
+	dzcninit_internal(minor(cndev->cn_dev), 0);
 }
 
 void
-dzcninit_internal(int line)
+dzcninit_internal(int line, int iskbd)
 {
 	int speed;
 
 	dz = (void *)dz_console_regs;
 
-	speed = line == 0 ? DZ_LPR_B4800 : DZ_LPR_B9600;
+	speed = iskbd ? DZ_LPR_B4800 : DZ_LPR_B9600;
 
 	dz->csr = 0;		/* Disable scanning until initting is done */
 	dz->tcr = 1 << line;	/* Turn on xmitter */
