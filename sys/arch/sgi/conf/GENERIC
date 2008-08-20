@@ -22,6 +22,7 @@ option		ARCBIOS		# We use arcbios for FW communication.
 option	WSDISPLAY_COMPAT_RAWKBD	# Provide raw scancodes; needed for X11
 
 option		PCIVERBOSE
+option		USER_PCICONF	# User-space PCI configuration
 
 #option		UVMHIST		# Enable uvm history logging
 
