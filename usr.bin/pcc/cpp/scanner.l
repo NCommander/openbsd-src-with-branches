@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: scanner.l,v 1.10 2008/08/17 18:40:13 ragge Exp $   */
+/*	$OpenBSD: scanner.l,v 1.11 2008/08/18 20:54:10 ragge Exp $   */
 
 /*
  * Copyright (c) 2004 Anders Magnusson. All rights reserved.
@@ -790,6 +790,10 @@ storepb(void)
 				getcmnt();
 				stringbuf = g;
 				continue;
+			} else if (c == '/') {
+				while ((c = input()) && c != '\n')
+					;
+				break;
 			}
 			unput(c);
 			c = '/';
