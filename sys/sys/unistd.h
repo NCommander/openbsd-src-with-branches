@@ -1,4 +1,4 @@
-/*	$OpenBSD: unistd.h,v 1.14 2008/03/16 19:56:27 kettenis Exp $	*/
+/*	$OpenBSD: unistd.h,v 1.15 2008/06/25 14:54:44 millert Exp $	*/
 /*	$NetBSD: unistd.h,v 1.10 1994/06/29 06:46:06 cgd Exp $	*/
 
 /*
@@ -38,9 +38,10 @@
 #include <sys/cdefs.h>
 
 /* compile-time symbolic constants */
-#define	_POSIX_JOB_CONTROL	/* implementation supports job control */
-
-#define	_POSIX_SAVED_IDS	/* saved set-user-ID and set-group-ID */
+				/* implementation supports job control */
+#define	_POSIX_JOB_CONTROL	1
+				/* saved set-user-ID and set-group-ID */
+#define	_POSIX_SAVED_IDS	1
 
 #define	_POSIX_VERSION		199009L
 #define	_POSIX2_VERSION		199212L
