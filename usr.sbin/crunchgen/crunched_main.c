@@ -1,4 +1,4 @@
-/* $OpenBSD: crunched_main.c,v 1.4 2002/06/09 05:53:53 todd Exp $	 */
+/* $OpenBSD: crunched_main.c,v 1.5 2003/01/27 19:41:30 deraadt Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
