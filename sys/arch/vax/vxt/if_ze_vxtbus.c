@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ze_vxtbus.c,v 1.1 2006/08/27 16:55:41 miod Exp $	*/
+/*	$OpenBSD: if_ze_vxtbus.c,v 1.2 2006/08/30 19:28:13 miod Exp $	*/
 /*
  * Copyright (c) 1999 Ludd, University of Lule}, Sweden. All rights reserved.
  *
@@ -36,6 +36,8 @@
 
 #include <net/if.h>
 #include <net/if_dl.h>
+#include <net/if_media.h>
+
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
