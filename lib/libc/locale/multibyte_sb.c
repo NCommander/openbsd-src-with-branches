@@ -1,4 +1,4 @@
-/*	$OpenBSD: multibyte_sb.c,v 1.5 2005/08/11 20:51:56 espie Exp $	*/
+/*	$OpenBSD: multibyte_sb.c,v 1.6 2005/12/10 02:01:51 deraadt Exp $	*/
 /*	$NetBSD: multibyte_sb.c,v 1.4 2003/08/07 16:43:04 agc Exp $	*/
 
 /*
@@ -132,7 +132,8 @@ mbstowcs(wchar_t *pwcs, const char *s, size_t n)
 {
 
 	/* pwcs may be NULL */
-	/* s may be NULL */
+	if (pwcs == NULL)
+		return strlen(s);
 
 	return mbsrtowcs(pwcs, &s, n, NULL);
 }
