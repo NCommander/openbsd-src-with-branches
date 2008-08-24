@@ -1,5 +1,5 @@
 :
-#	$OpenBSD: ksh.kshrc,v 1.11 2002/12/08 22:40:45 marc Exp $
+#	$OpenBSD: ksh.kshrc,v 1.12 2005/02/07 06:08:10 david Exp $
 #
 # NAME:
 #	ksh.kshrc - global initialization for ksh
@@ -141,7 +141,6 @@ case "$-" in
 	alias p='ps -l'
 	alias j=jobs
 	alias o='fg %-'
-	alias ls='ls -gCF'
 
 # add your favourite aliases here
 	OS=${OS:-`uname -s`}
