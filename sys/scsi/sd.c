@@ -225,9 +225,9 @@ sdattach(struct device *parent, struct device *self, void *aux)
 	printf("%s: ", sd->sc_dev.dv_xname);
 	switch (result) {
 	case SDGP_RESULT_OK:
-		printf("%lldMB, %lu cyl, %lu head, %lu sec, %lu bytes/sec, %lld sec total",
-		    dp->disksize / (1048576 / dp->blksize), dp->cyls,
-		    dp->heads, dp->sectors, dp->blksize, dp->disksize);
+		printf("%lldMB, %lu bytes/sec, %lld sec total",
+		    dp->disksize / (1048576 / dp->blksize), dp->blksize,
+		    dp->disksize);
 		break;
 
 	case SDGP_RESULT_OFFLINE:
