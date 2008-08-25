@@ -75,16 +75,15 @@ OpenBSDInstallPart4
 
 OpenBSDInstallPart5(sd0)
 
-dnl OpenBSDInstallNet({:-CD-ROM, NFS, -:})
-OpenBSDInstallNet({:-NFS -:})
+OpenBSDInstallNet({:-CD-ROM, NFS -:})
 
 OpenBSDFTPInstall
 
 OpenBSDHTTPInstall
 
 OpenBSDTAPEInstall
-dnl
-dnl OpenBSDCDROMInstall
+
+OpenBSDCDROMInstall
 
 OpenBSDNFSInstall
 
