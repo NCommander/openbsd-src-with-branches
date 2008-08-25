@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.4 2007/10/17 21:32:38 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 2008/03/04 05:37:51 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
 .include "${TOP}/Makefile.inc"
 
 CDROM=		install${REV}.iso
-RELXDIR=	/home/relx-${MACHINE}
+RELXDIR?=	/home/relx-${MACHINE}
 RELDIR?=	/home/rel-${MACHINE}
 
 BASE=		${RELDIR}/base${OSrev}.tgz ${RELDIR}/comp${OSrev}.tgz \
