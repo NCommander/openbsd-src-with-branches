@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.72 2008/07/30 07:43:01 reyk Exp $  */
+/*      $OpenBSD: ath.c,v 1.73 2008/08/14 16:02:24 damien Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -1535,8 +1535,8 @@ ath_beacon_config(struct ath_softc *sc)
 			intval |= HAL_BEACON_RESET_TSF;
 		if (ic->ic_opmode == IEEE80211_M_IBSS) {
 			/*
-			 * In IBSS mode enable the beacon timers but ony
-			 * enable SWBA interrupts if we need to moanually
+			 * In IBSS mode enable the beacon timers but only
+			 * enable SWBA interrupts if we need to manually
 			 * prepare beacon frames. Otherwise we use a
 			 * self-linked tx descriptor and let the hardware
 			 * deal with things.
