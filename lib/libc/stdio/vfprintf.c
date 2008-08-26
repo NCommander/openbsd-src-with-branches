@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfprintf.c,v 1.47 2008/05/16 20:42:52 millert Exp $	*/
+/*	$OpenBSD: vfprintf.c,v 1.48 2008/07/10 18:18:55 martynas Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -543,11 +543,13 @@ reswitch:	switch (ch) {
 					sign = '-';
 				cp = "Inf";
 				size = 3;
+				flags &= ~ZEROPAD;
 				break;
 			}
 			if (isnan(_double)) {
 				cp = "NaN";
 				size = 3;
+				flags &= ~ZEROPAD;
 				break;
 			}
 
