@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_cscope.c,v 1.13 2007/03/20 03:56:13 tedu Exp $	*/
+/*	$OpenBSD: ex_cscope.c,v 1.14 2007/09/11 15:47:17 gilles Exp $	*/
 
 /*-
  * Copyright (c) 1994, 1996
@@ -246,6 +246,10 @@ cscope_add(sp, cmdp, dname)
 		dbname = CSCOPE_DBFILE;
 	} else if ((dbname = strrchr(dname, '/')) != NULL)
 		*dbname++ = '\0';
+	else {
+		dbname = dname;
+		dname = ".";
+	}
 
 	/* Allocate a cscope connection structure and initialize its fields. */
 	len = strlen(dname);
