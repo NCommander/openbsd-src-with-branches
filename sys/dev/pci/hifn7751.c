@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.154 2007/10/01 15:34:48 krw Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.155 2008/06/09 07:07:16 djm Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -589,7 +589,7 @@ struct pci2id {
 	}, {
 		/*
 		 * Other vendors share this PCI ID as well, such as
-		 * http://www.powercrypt.com, and obviously they also
+		 * powercrypt, and obviously they also
 		 * use the same key.
 		 */
 		PCI_VENDOR_HIFN,
