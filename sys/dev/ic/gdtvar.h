@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdtvar.h,v 1.13 2007/04/28 00:34:25 deraadt Exp $	*/
+/*	$OpenBSD: gdtvar.h,v 1.14 2007/11/11 14:03:35 krw Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Niklas Hallqvist.  All rights reserved.
@@ -37,9 +37,6 @@ struct gdt_dummy {
 	void *cookie;
 	int x;
 };
-
-/* XXX Is this pragma necessary?  */
-#pragma pack(1)
 
 #define GDT_SCRATCH_SZ 4096
 
@@ -197,8 +194,6 @@ typedef struct gdt_statist {
 	u_int16_t sg_count_act;
 	u_int16_t sg_count_max;
 } gdt_statist_t;
-
-#pragma pack()
 
 #ifdef _KERNEL
 
