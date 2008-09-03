@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypldap.c,v 1.2 2008/06/26 15:13:17 pyr Exp $ */
+/*	$OpenBSD: ypldap.c,v 1.3 2008/07/02 17:36:15 pyr Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -378,6 +378,7 @@ main(int argc, char *argv[])
 		case 'n':
 			debug = 2;
 			opts |= YPLDAP_OPT_NOACTION;
+			break;
 		case 'f':
 			conffile = optarg;
 			break;
