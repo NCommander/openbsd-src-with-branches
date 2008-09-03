@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.35 2007/09/13 09:19:56 chl Exp $	*/
+/*	$OpenBSD: tape.c,v 1.36 2007/09/25 09:55:33 chl Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -39,7 +39,7 @@
 #if 0
 static char sccsid[] = "@(#)tape.c	8.6 (Berkeley) 9/13/94";
 #else
-static const char rcsid[] = "$OpenBSD: tape.c,v 1.35 2007/09/13 09:19:56 chl Exp $";
+static const char rcsid[] = "$OpenBSD: tape.c,v 1.36 2007/09/25 09:55:33 chl Exp $";
 #endif
 #endif /* not lint */
 
@@ -144,7 +144,8 @@ setinput(char *source)
 	if (bflag)
 		newtapebuf(ntrec);
 	else
-		newtapebuf(NTREC > HIGHDENSITYTREC ? NTREC : HIGHDENSITYTREC);
+		/* Max out buffer size, let findtapeblksize() set ntrec. */
+		newtapebuf(MAXBSIZE / TP_BSIZE);
 	terminal = stdin;
 
 #ifdef RRESTORE
