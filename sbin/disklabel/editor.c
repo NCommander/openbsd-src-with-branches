@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.169 2008/08/10 02:03:06 krw Exp $	*/
+/*	$OpenBSD: editor.c,v 1.170 2008/08/10 11:22:40 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.169 2008/08/10 02:03:06 krw Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.170 2008/08/10 11:22:40 sobrado Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -1428,6 +1428,7 @@ editor_help(char *arg)
 "and offset in sectors (a sector is usually 512 bytes).  The 'p' command\n"
 "takes an optional units argument.  Possible values are 'b' for bytes, 'c'\n"
 "for cylinders, 'k' for kilobytes, 'm' for megabytes, and 'g' for gigabytes.\n");
+		break;
 	case 'l':
 	puts(
 "The 'l' command prints the header of the disk label.  By default, it prints\n"
