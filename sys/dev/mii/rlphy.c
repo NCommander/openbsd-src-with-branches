@@ -1,4 +1,4 @@
-/*	$OpenBSD: rlphy.c,v 1.27 2007/01/27 20:55:14 miod Exp $	*/
+/*	$OpenBSD: rlphy.c,v 1.28 2008/06/10 21:15:14 brad Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Jason L. Wright (jason@thought.net)
@@ -260,10 +260,10 @@ rlphy_status(struct mii_softc *sc)
 
 		if ((anlpar = PHY_READ(sc, MII_ANAR) &
 		    PHY_READ(sc, MII_ANLPAR))) {
-			if (anlpar & ANLPAR_T4)
-				mii->mii_media_active |= IFM_100_T4|IFM_HDX;
-			else if (anlpar & ANLPAR_TX_FD)
+			if (anlpar & ANLPAR_TX_FD)
 				mii->mii_media_active |= IFM_100_TX|IFM_FDX;
+			else if (anlpar & ANLPAR_T4)
+				mii->mii_media_active |= IFM_100_T4|IFM_HDX;
 			else if (anlpar & ANLPAR_TX)
 				mii->mii_media_active |= IFM_100_TX|IFM_HDX;
 			else if (anlpar & ANLPAR_10_FD)
