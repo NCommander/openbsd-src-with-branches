@@ -1,4 +1,4 @@
-/*	$OpenBSD: sockio.h,v 1.39 2007/06/14 18:31:50 reyk Exp $	*/
+/*	$OpenBSD: sockio.h,v 1.40 2008/05/06 13:33:50 pyr Exp $	*/
 /*	$NetBSD: sockio.h,v 1.5 1995/08/23 00:40:47 thorpej Exp $	*/
 
 /*-
@@ -172,5 +172,8 @@
 
 #define	SIOCSETPFSYNC	_IOW('i', 247, struct ifreq)
 #define	SIOCGETPFSYNC	_IOWR('i', 248, struct ifreq)
+
+#define	SIOCSETPFLOW	_IOW('i', 249, struct ifreq)
+#define	SIOCGETPFLOW	_IOWR('i', 250, struct ifreq)
 
 #endif /* !_SYS_SOCKIO_H_ */
