@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.550 2008/08/07 18:29:32 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.551 2008/09/09 13:56:38 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -553,7 +553,7 @@ optimizer	: string	{
 			else if (!strcmp($1, "profile"))
 				$$ = PF_OPTIMIZE_BASIC | PF_OPTIMIZE_PROFILE;
 			else {
-				yyerror("unknown ruleset-optimization %s", $$);
+				yyerror("unknown ruleset-optimization %s", $1);
 				YYERROR;
 			}
 		}
