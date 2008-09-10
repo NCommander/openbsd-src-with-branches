@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.4 2007/02/22 08:34:18 henning Exp $ */
+/*	$OpenBSD: carp.c,v 1.5 2007/04/23 14:52:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Henning Brauer <henning@openbsd.org>
@@ -72,8 +72,11 @@ carp_demote_init(char *group, int force)
 		}
 
 		/* only demote if this group already is demoted */
-		if ((level = carp_demote_get(group)) == -1)
+		if ((level = carp_demote_get(group)) == -1) {
+			free(c->group);
+			free(c);
 			return (-1);
+		}
 		if (level > 0 || force)
 			c->do_demote = 1;
 
