@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ef_isapnp.c,v 1.20 2005/11/21 18:16:40 millert Exp $	*/
+/*	$OpenBSD: if_ef_isapnp.c,v 1.21 2006/03/25 22:41:44 djm Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -471,7 +471,7 @@ efinit(sc)
 
 	splx(s);
 
-	timeout_add(&sc->sc_tick_tmo, hz);
+	timeout_add_sec(&sc->sc_tick_tmo, 1);
 
 	efstart(ifp);
 }
@@ -1009,5 +1009,5 @@ ef_tick(v)
 	s = splnet();
 	mii_tick(&sc->sc_mii);
 	splx(s);
-	timeout_add(&sc->sc_tick_tmo, hz);
+	timeout_add_sec(&sc->sc_tick_tmo, 1);
 }

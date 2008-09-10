@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sensors.c,v 1.20 2007/06/24 05:34:35 dlg Exp $	*/
+/*	$OpenBSD: kern_sensors.c,v 1.21 2007/07/03 03:22:34 cnst Exp $	*/
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -255,6 +255,6 @@ sensor_task_work(void *xst, void *arg)
 		wakeup(st);
 	} else {
 		st->state = ST_TICKING;
-		timeout_add(&st->timeout, hz * st->period);
+		timeout_add_sec(&st->timeout, st->period);
 	}
 }

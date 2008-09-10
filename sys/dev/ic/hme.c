@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.48 2007/11/18 02:28:25 brad Exp $	*/
+/*	$OpenBSD: hme.c,v 1.49 2008/06/26 05:42:15 ray Exp $	*/
 /*	$NetBSD: hme.c,v 1.21 2001/07/07 15:59:37 thorpej Exp $	*/
 
 /*-
@@ -342,7 +342,7 @@ hme_tick(arg)
 	mii_tick(&sc->sc_mii);
 	splx(s);
 
-	timeout_add(&sc->sc_tick_ch, hz);
+	timeout_add_sec(&sc->sc_tick_ch, 1);
 }
 
 void
@@ -615,7 +615,7 @@ hme_init(sc)
 	mii_mediachg(&sc->sc_mii);
 
 	/* Start the one second timer. */
-	timeout_add(&sc->sc_tick_ch, hz);
+	timeout_add_sec(&sc->sc_tick_ch, 1);
 
 	ifp->if_flags |= IFF_RUNNING;
 	ifp->if_flags &= ~IFF_OACTIVE;

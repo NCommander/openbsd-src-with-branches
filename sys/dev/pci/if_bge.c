@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.241 2008/08/26 19:43:05 kettenis Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.242 2008/09/08 08:10:54 brad Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -2709,7 +2709,7 @@ bge_tick(void *xsc)
 			mii_tick(mii);
 	}       
 
-	timeout_add(&sc->bge_timeout, hz);
+	timeout_add_sec(&sc->bge_timeout, 1);
 
 	splx(s);
 }
@@ -3152,7 +3152,7 @@ bge_init(void *xsc)
 
 	splx(s);
 
-	timeout_add(&sc->bge_timeout, hz);
+	timeout_add_sec(&sc->bge_timeout, 1);
 }
 
 /*

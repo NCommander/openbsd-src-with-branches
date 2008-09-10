@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_art.c,v 1.14 2007/09/17 17:34:22 brad Exp $ */
+/*	$OpenBSD: if_art.c,v 1.15 2008/05/13 01:37:26 brad Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
@@ -177,7 +177,7 @@ art_softc_attach(struct device *parent, struct device *self, void *aux)
 	    sc->art_channel->cc_ifp->if_linkstatehooks, 0, art_linkstate, sc);
 
 	/* Schedule the timeout one second from now. */
-	timeout_add(&sc->art_onesec, hz);
+	timeout_add_sec(&sc->art_onesec, 1);
 }
 
 /* interface ioctl */
@@ -416,7 +416,7 @@ art_onesec(void *arg)
 	/*
 	 * Schedule another timeout one second from now.
 	 */
-	timeout_add(&ac->art_onesec, hz);
+	timeout_add_sec(&ac->art_onesec, 1);
 }
 
 void
