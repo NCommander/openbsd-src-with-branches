@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.85 2008/09/05 14:17:50 art Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.86 2008/09/05 14:38:15 oga Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -446,10 +446,10 @@ sys_thrwakeup(struct proc *p, void *v, register_t *retval)
 	int n = SCARG(uap, n);
 	struct proc *q;
 	int found = 0;
-	
+
 	TAILQ_FOREACH(q, &p->p_p->ps_threads, p_thr_link) {
 		if (q->p_thrslpid == ident) {
-			wakeup(&q->p_thrslpid);
+			wakeup_one(&q->p_thrslpid);
 			q->p_thrslpid = 0;
 			if (++found == n)
 				return (0);
