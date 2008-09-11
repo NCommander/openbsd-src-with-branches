@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.49 2008/04/07 11:02:24 espie Exp $
+# $OpenBSD: Makefile,v 1.50 2008/09/02 04:19:46 drahn Exp $
 
 .include <bsd.own.mk>
 
@@ -116,7 +116,7 @@ stamp-mansrc.build:
 	@cd ${.CURDIR} && exec ${MAKE} mansrc.build
 	@touch $@
 
-CLEANFILES= ${PACKAGES} ${MANSRCALL} ${MANALL} stamp-mansrc.build
+CLEANFILES= ${MANSRCALL} ${MANALL} stamp-mansrc.build
 
 realinstall: 
 .for i in ${PACKAGEDIRS}
