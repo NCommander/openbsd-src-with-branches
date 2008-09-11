@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bwi_pci.c,v 1.7 2008/05/23 08:49:27 brad Exp $ */
+/*	$OpenBSD: if_bwi_pci.c,v 1.8 2008/08/28 15:19:03 brad Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -86,7 +86,6 @@ const struct pci_matchid bwi_pci_devices[] = {
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM4312 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM4318 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM4319 },
-	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM4322 },
 	{ PCI_VENDOR_BROADCOM, PCI_PRODUCT_BROADCOM_BCM43XG }
 };
 
