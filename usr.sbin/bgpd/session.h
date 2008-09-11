@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.97 2008/05/08 07:43:03 henning Exp $ */
+/*	$OpenBSD: session.h,v 1.98 2008/05/08 09:53:12 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -171,6 +171,7 @@ enum Timer {
 	Timer_Hold,
 	Timer_IdleHold,
 	Timer_IdleHoldReset,
+	Timer_CarpUndemote,
 	Timer_Max
 };
 
