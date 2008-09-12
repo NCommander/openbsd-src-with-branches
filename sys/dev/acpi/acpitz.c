@@ -1,4 +1,4 @@
-/* $OpenBSD: acpitz.c,v 1.26 2008/06/01 17:59:55 marco Exp $ */
+/* $OpenBSD: acpitz.c,v 1.27 2008/09/11 12:45:20 miod Exp $ */
 /*
  * Copyright (c) 2006 Can Erkin Acar <canacar@openbsd.org>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -248,7 +248,8 @@ acpitz_setfan(struct acpitz_softc *sc, int i, char *method)
 			if (ref->type == AML_OBJTYPE_OBJREF) {
 				ref = ref->v_objref.ref;
 			}
-			if (ref->type != AML_OBJTYPE_DEVICE) {
+			if (ref->type != AML_OBJTYPE_DEVICE &&
+			    ref->type != AML_OBJTYPE_POWERRSRC) {
 				printf("%s: %s[%d.%d] _PRO not a package\n",
 				    DEVNAME(sc), name, x, y);
 				continue;
