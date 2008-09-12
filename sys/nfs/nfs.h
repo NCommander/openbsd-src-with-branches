@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs.h,v 1.33 2008/07/05 17:34:26 thib Exp $	*/
+/*	$OpenBSD: nfs.h,v 1.34 2008/08/31 16:58:01 thib Exp $	*/
 /*	$NetBSD: nfs.h,v 1.10.4.1 1996/05/27 11:23:56 fvdl Exp $	*/
 
 /*
@@ -80,7 +80,6 @@
 /*
  * Oddballs
  */
-#define	NMOD(a)		((a) % nfs_asyncdaemons)
 #define NFS_CMPFH(n, f, s) \
 	((n)->n_fhsize == (s) && !bcmp((caddr_t)(n)->n_fhp, (caddr_t)(f), (s)))
 #define NFS_ISV3(v)	(VFSTONFS((v)->v_mount)->nm_flag & NFSMNT_NFSV3)
