@@ -1,4 +1,4 @@
-/*	$OpenBSD: adw.c,v 1.32 2007/11/05 20:50:20 krw Exp $ */
+/*	$OpenBSD: adw.c,v 1.33 2008/06/26 05:42:15 ray Exp $ */
 /* $NetBSD: adw.c,v 1.23 2000/05/27 18:24:50 dante Exp $	 */
 
 /*
@@ -816,20 +816,10 @@ adw_build_req(xs, ccb, flags)
 		/*
                  * Map the DMA transfer.
                  */
-#ifdef TFS
-		if (xs->flags & SCSI_DATA_UIO) {
-			error = bus_dmamap_load_uio(dmat,
-				ccb->dmamap_xfer, (struct uio *) xs->data,
-				(flags & SCSI_NOSLEEP) ?
-				BUS_DMA_NOWAIT : BUS_DMA_WAITOK);
-		} else
-#endif		/* TFS */
-		{
-			error = bus_dmamap_load(dmat,
-			      ccb->dmamap_xfer, xs->data, xs->datalen, NULL,
-				(flags & SCSI_NOSLEEP) ?
-				BUS_DMA_NOWAIT : BUS_DMA_WAITOK);
-		}
+		error = bus_dmamap_load(dmat,
+		      ccb->dmamap_xfer, xs->data, xs->datalen, NULL,
+			(flags & SCSI_NOSLEEP) ?
+			BUS_DMA_NOWAIT : BUS_DMA_WAITOK);
 
 		if (error) {
 			if (error == EFBIG) {

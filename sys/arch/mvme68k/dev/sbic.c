@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.18 2007/05/28 22:17:21 pyr Exp $ */
+/*	$OpenBSD: sbic.c,v 1.19 2007/05/29 13:56:14 pyr Exp $ */
 /*	$NetBSD: sbic.c,v 1.2 1996/04/23 16:32:54 chuck Exp $	*/
 
 /*
@@ -363,9 +363,6 @@ sbic_scsicmd(xs)
     struct sbic_acb     *acb;
     int                 flags = xs->flags,
                         s;
-
-    if ( flags & SCSI_DATA_UIO )
-        panic("sbic: scsi data uio requested");
 
     if ( dev->sc_nexus && (flags & SCSI_POLL) )
         panic("sbic_scsicmd: busy");
