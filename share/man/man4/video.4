@@ -1,4 +1,4 @@
-.\" $OpenBSD: video.4,v 1.3 2008/06/28 17:59:11 jmc Exp $
+.\" $OpenBSD: video.4,v 1.4 2008/06/28 19:35:42 mglocker Exp $
 .\"
 .\" Copyright (c) 2008 Marcus Glocker <mglocker@openbsd.org>
 .\"
@@ -239,7 +239,7 @@ system call.
 Read video data from the device via the
 .Xr read 2
 system call.
-The video stream will be started autoamtically with the first
+The video stream will be started automatically with the first
 read, which means there is no need to issue a VIDIOC_STREAMON command.
 The read will always return a consistent video frame, if no error occurs.
 .It
