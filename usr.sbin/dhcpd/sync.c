@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.5 2008/05/11 08:50:54 beck Exp $	*/
+/*	$OpenBSD: sync.c,v 1.6 2008/05/30 05:58:20 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Bob Beck <beck@openbsd.org>
@@ -218,7 +218,7 @@ sync_init(const char *iface, const char *baddr, u_short port)
 		goto fail;
 	}
 	if (setsockopt(syncfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
-	    sizeof(ttl)) < 0) {
+	    sizeof(ttl)) == -1) {
 		fprintf(stderr, "failed to set multicast ttl to "
 		    "%u: %s\n", ttl, strerror(errno));
 		setsockopt(syncfd, IPPROTO_IP,
