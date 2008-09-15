@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.69 2008/05/08 07:10:51 claudio Exp $	*/
+/*	$OpenBSD: show.c,v 1.70 2008/05/25 17:57:42 deraadt Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -308,7 +308,7 @@ p_rtentry(struct rt_msghdr *rtm)
 	else
 		printf("%5s ", "-");
 	putchar((rtm->rtm_rmx.rmx_locks & RTV_MTU) ? 'L' : ' ');
-	printf("  %2d %.16s", rtm->rtm_priority,
+	printf("  %2d %.16s", rtm->rtm_priority & RTP_MASK,
 	    if_indextoname(rtm->rtm_index, ifbuf));
 	putchar('\n');
 }
