@@ -1,8 +1,8 @@
-/*	$OpenBSD: ehci.c,v 1.90 2008/09/10 14:01:23 blambert Exp $ */
+/*	$OpenBSD: ehci.c,v 1.91 2008/09/15 11:31:06 mglocker Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
- * Copyright (c) 2004,2005 The NetBSD Foundation, Inc.
+ * Copyright (c) 2004-2008 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
  * This code is derived from software contributed to The NetBSD Foundation
