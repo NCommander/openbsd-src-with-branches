@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbios.c,v 1.11 2007/11/16 16:16:07 deraadt Exp $	*/
+/*	$OpenBSD: mpbios.c,v 1.12 2008/06/26 05:42:09 ray Exp $	*/
 /*	$NetBSD: mpbios.c,v 1.7 2003/05/15 16:32:50 fvdl Exp $	*/
 
 /*-
@@ -675,7 +675,9 @@ mpbios_cpu(const u_int8_t *ent, struct device *self)
 
 	caa.caa_name   = "cpu";
 	caa.cpu_number = entry->apic_id;
+#ifdef MULTIPROCESSOR
 	caa.cpu_func = &mp_cpu_funcs;
+#endif
 
 	config_found_sm(self, &caa, mp_print, mp_match);
 }
