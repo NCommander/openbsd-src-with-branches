@@ -1,4 +1,4 @@
-/*	$OpenBSD: power.c,v 1.4 2007/12/27 03:00:51 jsing Exp $	*/
+/*	$OpenBSD: power.c,v 1.6 2008/02/21 11:42:23 jsing Exp $	*/
 
 /*
  * Copyright (c) 2007 Jasper Lievisse Adriaanse <jasper@openbsd.org>
@@ -16,24 +16,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/conf.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>
 
 #include <dev/ic/ds1687reg.h>
 
-#include <machine/bus.h>
 #include <machine/autoconf.h>
 
-#include <mips64/archtype.h>
-#include <mips64/dev/clockvar.h>
-
-#include <sgi/localbus/crimebus.h>
 #include <sgi/localbus/macebus.h>
 
 /*
