@@ -1,4 +1,4 @@
-/*	$OpenBSD: ptrace.h,v 1.9 2005/09/14 20:55:59 kettenis Exp $	*/
+/*	$OpenBSD: ptrace.h,v 1.10 2005/12/11 21:30:31 miod Exp $	*/
 /*	$NetBSD: ptrace.h,v 1.21 1996/02/09 18:25:26 christos Exp $	*/
 
 /*-
@@ -60,6 +60,7 @@ struct ptrace_io_desc {
 #define PIOD_WRITE_D	2	/* Write to D space */
 #define PIOD_READ_I	3	/* Read from I space */
 #define PIOD_WRITE_I	4	/* Write to I space */
+#define PIOD_READ_AUXV	5	/* Read from aux array */
 
 #define PT_SET_EVENT_MASK	12
 #define PT_GET_EVENT_MASK	13
