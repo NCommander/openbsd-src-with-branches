@@ -67,7 +67,6 @@ struct sys_rec {
 
 	/* Serial console configuration. */
 	struct mips_bus_space console_io;
-	struct mips_bus_space *cons_iot;
 };
 
 extern struct sys_rec sys_config;
