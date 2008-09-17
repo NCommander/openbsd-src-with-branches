@@ -1,4 +1,4 @@
-/*	$OpenBSD: xmphy.c,v 1.16 2006/10/07 23:44:51 brad Exp $	*/
+/*	$OpenBSD: xmphy.c,v 1.17 2006/12/31 15:04:33 krw Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -182,9 +182,6 @@ xmphy_service(struct mii_softc *sc, struct mii_data *mii, int cmd)
 				PHY_WRITE(sc, XMPHY_MII_BMCR, 0);
 			}
 			break;
-		case IFM_100_T4:
-		case IFM_100_TX:
-		case IFM_10_T:
 		default:
 			return (EINVAL);
 		}
