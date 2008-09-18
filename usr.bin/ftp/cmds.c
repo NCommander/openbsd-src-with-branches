@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmds.c,v 1.64 2008/08/22 08:52:35 sobrado Exp $	*/
+/*	$OpenBSD: cmds.c,v 1.65 2008/09/08 19:31:16 martynas Exp $	*/
 /*	$NetBSD: cmds.c,v 1.27 1997/08/18 10:20:15 lukem Exp $	*/
 
 /*
@@ -60,7 +60,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static const char rcsid[] = "$OpenBSD: cmds.c,v 1.64 2008/08/22 08:52:35 sobrado Exp $";
+static const char rcsid[] = "$OpenBSD: cmds.c,v 1.65 2008/09/08 19:31:16 martynas Exp $";
 #endif /* not lint and not SMALL */
 
 /*
@@ -654,6 +654,7 @@ mget(int argc, char *argv[])
 	static int restartit = 0;
 #ifndef SMALL
 	extern char *optarg;
+	const char *errstr;
 	int i = 1;
 	char type = NULL, *dummyargv[] = {argv[0], ".", NULL};
 	FILE *ftemp = NULL;
@@ -663,7 +664,6 @@ mget(int argc, char *argv[])
 	optind = optreset = 1;
 
 #ifndef SMALL
-	const char *errstr;
 
 	if (depth)
 		depth++;
