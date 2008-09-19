@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootxx.c,v 1.6 2006/05/16 22:52:09 miod Exp $ */
+/*	$OpenBSD: bootxx.c,v 1.7 2008/04/02 21:53:17 miod Exp $ */
 
 /*
  * Copyright (c) 1994 Paul Kranenburg
@@ -65,8 +65,6 @@ size_t     	block_size = 512;	/* default */
 int     	block_count = MAXBLOCKNUM;	/* length of table */
 daddr_t 	block_table[MAXBLOCKNUM] = { 0 };
 
-extern		char *version;
-
 void	bugexec(void (*)());
 int	copyboot(struct open_file *, char *);
 
@@ -77,7 +75,8 @@ main()
 	char *addr;
 	int error;
 
-	printf("\nbootxx: first level bootstrap program [%s]\n", version);
+	board_setup();
+
 #ifdef DEBUG
 	printf("boot device: ctrl=%d, dev=%d\n",
 		bugargs.ctrl_lun, bugargs.dev_lun);
