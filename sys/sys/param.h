@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.74 2008/03/10 17:15:33 deraadt Exp $	*/
+/*	$OpenBSD: param.h,v 1.75 2008/07/02 00:13:32 deraadt Exp $	*/
 /*	$NetBSD: param.h,v 1.23 1996/03/17 01:02:29 thorpej Exp $	*/
 
 /*-
@@ -67,7 +67,7 @@
 #include <sys/syslimits.h>
 
 #define	MAXCOMLEN	16		/* max command name remembered */
-#define	MAXINTERP	64		/* max interpreter file name length */
+#define	MAXINTERP	128		/* max interpreter file name length */
 #define	MAXLOGNAME	LOGIN_NAME_MAX	/* max login name length w/ NUL */
 #define	MAXUPRC		CHILD_MAX	/* max simultaneous processes */
 #define	NCARGS		ARG_MAX		/* max bytes for an exec function */
