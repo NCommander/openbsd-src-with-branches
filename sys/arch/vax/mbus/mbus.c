@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mbus.c,v 1.1 2008/08/18 23:19:25 miod Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -229,6 +229,7 @@ mbus_print(void *aux, const char *pnp)
 		    "ECC memory" : "Memory";
 		break;
 	default:
+		descr = NULL;
 		rc = UNSUPP;
 		break;
 	}
