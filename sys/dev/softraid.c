@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.118 2008/07/20 21:57:51 djm Exp $ */
+/* $OpenBSD: softraid.c,v 1.119 2008/07/21 14:49:40 marco Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -923,13 +923,13 @@ sr_boot_assembly(struct sr_softc *sc)
 			continue;
 
 		no_dev = 0;
+		m1 = (struct sr_metadata *)&mle->sml_metadata;
 		bzero(dt, BIOC_CRMAXLEN);
 		SLIST_FOREACH(mle2, &mlh, sml_link) {
 			/* chunk used already? */
 			if (mle2->sml_used)
 				continue;
 
-			m1 = (struct sr_metadata *)&mle->sml_metadata;
 			m2 = (struct sr_metadata *)&mle2->sml_metadata;
 
 			/* are we the same volume? */
