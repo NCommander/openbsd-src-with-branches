@@ -1,4 +1,4 @@
-/* $OpenBSD: auixp.c,v 1.19 2008/05/25 23:59:33 jakemsr Exp $ */
+/* $OpenBSD: auixp.c,v 1.20 2008/09/17 06:14:09 brad Exp $ */
 /* $NetBSD: auixp.c,v 1.9 2005/06/27 21:13:09 thorpej Exp $ */
 
 /*
@@ -370,12 +370,10 @@ auixp_set_params(void *hdl, int setmode, int usemode,
     struct audio_params *play, struct audio_params *rec)
 {
 	struct auixp_codec *co;
-	struct auixp_softc *sc;
 	int error;
 	u_int temprate;
 
 	co = (struct auixp_codec *) hdl;
-	sc = co->sc;
 	if (setmode & AUMODE_PLAY) {
 		play->factor = 1;
 		play->sw_code = NULL;
