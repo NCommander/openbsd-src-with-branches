@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti.c,v 1.85 2008/06/07 19:03:13 brad Exp $	*/
+/*	$OpenBSD: if_ti.c,v 1.86 2008/09/18 15:16:30 naddy Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1851,7 +1851,6 @@ ti_rxeof(struct ti_softc *sc)
 		if ((cur_rx->ti_ip_cksum ^ 0xffff) == 0)
 			sumflags |= M_IPV4_CSUM_IN_OK;
 		m->m_pkthdr.csum_flags = sumflags;
-		sumflags = 0;
 
 		ether_input_mbuf(ifp, m);
 	}

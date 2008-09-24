@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.42 2007/05/28 23:39:07 ckuethe Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.43 2007/09/19 03:50:25 brad Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -1221,7 +1221,7 @@ xge_alloc_txmem(struct xge_softc *sc)
 	/* setup transmit array pointers */
 	txp = (struct txd *)kva;
 	txdp = seg.ds_addr;
-	for (txp = (struct txd *)kva, i = 0; i < NTXDESCS; i++) {
+	for (i = 0; i < NTXDESCS; i++) {
 		sc->sc_txd[i] = txp;
 		sc->sc_txdp[i] = txdp;
 		txp += NTXFRAGS;
