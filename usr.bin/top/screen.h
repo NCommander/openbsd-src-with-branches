@@ -1,4 +1,4 @@
-/*	$OpenBSD: screen.h,v 1.4 2002/07/15 17:20:36 deraadt Exp $	*/
+/*	$OpenBSD: screen.h,v 1.5 2007/05/29 00:56:56 otto Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -53,4 +53,3 @@ extern void end_screen(void);
 extern void reinit_screen(void);
 extern void get_screensize(void);
 extern void go_home(void);
-extern int putstdout(int);

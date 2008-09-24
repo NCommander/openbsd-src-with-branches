@@ -1,4 +1,4 @@
-/* $OpenBSD: screen.c,v 1.17 2007/05/29 00:56:56 otto Exp $	 */
+/* $OpenBSD: screen.c,v 1.18 2007/06/10 19:10:06 otto Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -213,16 +213,4 @@ go_home(void)
 		move(0, 0);
 		refresh();
 	}
-}
-
-/* This has to be defined as a subroutine for tputs (instead of a macro) */
-int
-putstdout(int ch)
-{
-	int ret;
-
-	ret = putchar(ch);
-	if (ret == EOF)
-		exit(1);
-	return (ret);
 }
