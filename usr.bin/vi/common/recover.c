@@ -1,4 +1,4 @@
-/*	$OpenBSD: recover.c,v 1.12 2007/09/11 15:47:17 gilles Exp $	*/
+/*	$OpenBSD: recover.c,v 1.13 2007/09/14 14:29:20 chl Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -582,7 +582,7 @@ rcv_list(sp)
 next:		(void)fclose(fp);
 	}
 	if (found == 0)
-		(void)printf("vi: no files to recover.\n");
+		(void)printf("%s: No files to recover\n", sp->gp->progname);
 	(void)closedir(dirp);
 	return (0);
 }
