@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.60 2008/05/22 19:23:04 mk Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.61 2008/07/20 18:58:07 kettenis Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -1864,7 +1864,6 @@ pccbb_pcmcia_io_alloc(pch, start, size, align, pcihp)
 		bus_size_t size_tmp = size;
 		int shifts = 0;
 
-		mask = 1;
 		while (size_tmp) {
 			++shifts;
 			size_tmp >>= 1;
