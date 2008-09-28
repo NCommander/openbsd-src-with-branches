@@ -30,6 +30,8 @@
  * SUCH DAMAGE.
  */
 
+#include "pf.h"
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/socket.h>
@@ -52,6 +54,10 @@
 
 #include "gif.h"
 #include "bridge.h"
+
+#if NPF > 0
+#include <net/pfvar.h>
+#endif
 
 int
 in_gif_output(ifp, family, m)
@@ -121,6 +127,9 @@ in_gif_output(ifp, family, m)
 
 	m = mp;
 
+#if NPF > 0
+	pf_pkt_addr_changed(m);
+#endif
 	return ip_output(m, (void *)NULL, (void *)NULL, 0, (void *)NULL,
 	    (void *)NULL);
 }
