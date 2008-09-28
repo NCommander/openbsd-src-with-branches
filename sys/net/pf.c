@@ -1294,6 +1294,12 @@ pf_print_state_parts(struct pf_state *s,
 	dir = s ? s->direction : 0;
 
 	switch (proto) {
+	case IPPROTO_IPV4:
+		printf("IPv4");
+		break;
+	case IPPROTO_IPV6:
+		printf("IPv6");
+		break;
 	case IPPROTO_TCP:
 		printf("TCP");
 		break;
@@ -1304,7 +1310,7 @@ pf_print_state_parts(struct pf_state *s,
 		printf("ICMP");
 		break;
 	case IPPROTO_ICMPV6:
-		printf("ICMPV6");
+		printf("ICMPv6");
 		break;
 	default:
 		printf("%u", skw->proto);
