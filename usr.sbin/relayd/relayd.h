@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.109 2008/07/22 23:17:37 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.101 2008/05/07 01:49:29 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -309,9 +309,14 @@ struct ctl_stats {
 	u_int32_t		 last_day;
 };
 
+struct portrange {
+	in_port_t		 val[2];
+	u_int8_t		 op;
+};
+
 struct address {
 	struct sockaddr_storage	 ss;
-	in_port_t		 port;
+	struct portrange	 port;
 	char			 ifname[IFNAMSIZ];
 	TAILQ_ENTRY(address)	 entry;
 };
@@ -337,6 +342,7 @@ TAILQ_HEAD(addresslist, address);
 #define F_RETURN		0x00020000
 #define F_TRAP			0x00040000
 #define F_NEEDPF		0x00080000
+#define F_PORT			0x00100000
 
 enum forwardmode {
 	FWD_NORMAL		= 0,
