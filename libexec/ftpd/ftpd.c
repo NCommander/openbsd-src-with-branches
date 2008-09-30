@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.183 2008/06/30 12:03:51 ragge Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.184 2008/09/12 16:12:08 moritz Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -70,7 +70,7 @@ static const char copyright[] =
 static const char sccsid[] = "@(#)ftpd.c	8.4 (Berkeley) 4/16/94";
 #else
 static const char rcsid[] =
-    "$OpenBSD: ftpd.c,v 1.183 2008/06/30 12:03:51 ragge Exp $";
+    "$OpenBSD: ftpd.c,v 1.184 2008/09/12 16:12:08 moritz Exp $";
 #endif
 #endif /* not lint */
 
@@ -824,10 +824,7 @@ user(char *name)
 	dochroot = (lc && login_getcapbool(lc, "ftp-chroot", 0)) ||
 	    checkuser(_PATH_FTPCHROOT, name);
 	if (anon_only && !dochroot) {
-		if (anon_ok)
-			reply(530, "Sorry, only anonymous ftp allowed.");
-		else
-			reply(530, "User %s access denied.", name);
+		reply(530, "User %s access denied.", name);
 		return;
 	}
 	if (pw) {
