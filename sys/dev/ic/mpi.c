@@ -50,7 +50,9 @@ uint32_t	mpi_debug = 0
 #endif
 
 struct cfdriver mpi_cd = {
-	NULL, "mpi", DV_DULL
+	NULL,
+	"mpi",
+	DV_DULL
 };
 
 int			mpi_scsi_cmd(struct scsi_xfer *);
@@ -60,11 +62,18 @@ int			mpi_scsi_ioctl(struct scsi_link *, u_long, caddr_t,
 			    int, struct proc *);
 
 struct scsi_adapter mpi_switch = {
-	mpi_scsi_cmd, mpi_minphys, NULL, NULL, mpi_scsi_ioctl
+	mpi_scsi_cmd,
+	mpi_minphys,
+	NULL,
+	NULL,
+	mpi_scsi_ioctl
 };
 
 struct scsi_device mpi_dev = {
-	NULL, NULL, NULL, NULL
+	NULL,
+	NULL,
+	NULL,
+	NULL
 };
 
 struct mpi_dmamem	*mpi_dmamem_alloc(struct mpi_softc *, size_t);
