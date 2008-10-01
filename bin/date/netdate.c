@@ -1,4 +1,4 @@
-/*	$OpenBSD: netdate.c,v 1.15 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: netdate.c,v 1.16 2006/04/25 15:41:07 deraadt Exp $	*/
 /*	$NetBSD: netdate.c,v 1.10 1995/09/07 06:21:06 jtc Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)netdate.c	8.2 (Berkeley) 4/28/95";
 #else
-static char rcsid[] = "$OpenBSD: netdate.c,v 1.15 2003/06/02 23:32:07 millert Exp $";
+static char rcsid[] = "$OpenBSD: netdate.c,v 1.16 2006/04/25 15:41:07 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -104,7 +104,7 @@ netsettime(time_t tval)
 	sin.sin_len = sizeof(struct sockaddr_in);
 	sin.sin_family = AF_INET;
 	if (bindresvport(s, &sin) < 0) {
-		warnx("all ports in use");
+		warn("bindresvport");
 		goto bad;
 	}
 	msg.tsp_type = TSP_SETDATE;
