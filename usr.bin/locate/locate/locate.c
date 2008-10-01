@@ -1,5 +1,5 @@
 /*
- *	$OpenBSD: locate.c,v 1.20 2008/07/26 09:48:00 pyr Exp $
+ *	$OpenBSD: locate.c,v 1.21 2008/07/26 10:57:09 jmc Exp $
  *
  * Copyright (c) 1995 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
  * Copyright (c) 1989, 1993
@@ -32,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      $Id: locate.c,v 1.20 2008/07/26 09:48:00 pyr Exp $
+ *      $Id: locate.c,v 1.21 2008/07/26 10:57:09 jmc Exp $
  */
 
 #ifndef lint
@@ -46,7 +46,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)locate.c    8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: locate.c,v 1.20 2008/07/26 09:48:00 pyr Exp $";
+static char rcsid[] = "$OpenBSD: locate.c,v 1.21 2008/07/26 10:57:09 jmc Exp $";
 #endif
 #endif /* not lint */
 
@@ -329,7 +329,7 @@ cputime(void)
 {
 	struct rusage rus;
 
-	getrusage(0, &rus);
+	getrusage(RUSAGE_SELF, &rus);
 	return(rus.ru_utime.tv_sec * 1000 + rus.ru_utime.tv_usec / 1000);
 }
 #endif /* DEBUG */
