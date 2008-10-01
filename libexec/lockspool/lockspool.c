@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockspool.c,v 1.12 2006/01/02 16:23:26 millert Exp $	*/
+/*	$OpenBSD: lockspool.c,v 1.13 2006/03/31 00:37:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt <deraadt@theos.com>
@@ -27,7 +27,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: lockspool.c,v 1.12 2006/01/02 16:23:26 millert Exp $";
+static const char rcsid[] = "$OpenBSD: lockspool.c,v 1.13 2006/03/31 00:37:26 deraadt Exp $";
 #endif /* not lint */
 
 #include <signal.h>
@@ -64,21 +64,12 @@ main(int argc, char *argv[])
 	signal(SIGPIPE, unhold);
 
 	if (argc == 2)
-		from = argv[1];
+		pw = getpwnam(argv[1]);
 	else
-		from = getlogin();
-
-	if (from) {
-		pw = getpwnam(from);
-		if (pw == NULL)
-			exit (1);
-	} else {
 		pw = getpwuid(getuid());
-		if (pw)
-			from = pw->pw_name;
-		else
-			exit (1);
-	}
+	if (pw == NULL)
+		exit (1);
+	from = pw->pw_name;
 
 	holdfd = getlock(from, pw);
 	if (holdfd == -1) {
