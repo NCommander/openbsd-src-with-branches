@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.76 2008/09/10 14:01:23 blambert Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.77 2008/09/24 08:41:29 mpf Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1333,11 +1333,6 @@ vr_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 
 	s = splnet();
 
-	if ((error = ether_ioctl(ifp, &sc->arpcom, command, data)) > 0) {
-		splx(s);
-		return error;
-	}
-
 	switch(command) {
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
@@ -1402,12 +1397,10 @@ vr_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		error = ifmedia_ioctl(ifp, ifr, &sc->sc_mii.mii_media, command);
 		break;
 	default:
-		error = ENOTTY;
-		break;
+		error = ether_ioctl(ifp, &sc->arpcom, command, data);
 	}
 
 	splx(s);
-
 	return(error);
 }
 

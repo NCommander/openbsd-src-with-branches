@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.49 2008/06/26 05:42:15 ray Exp $	*/
+/*	$OpenBSD: hme.c,v 1.50 2008/09/10 14:01:22 blambert Exp $	*/
 /*	$NetBSD: hme.c,v 1.21 2001/07/07 15:59:37 thorpej Exp $	*/
 
 /*-
@@ -1212,13 +1212,7 @@ hme_ioctl(ifp, cmd, data)
 
 	s = splnet();
 
-	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
-		splx(s);
-		return (error);
-	}
-
 	switch (cmd) {
-
 	case SIOCSIFADDR:
 		switch (ifa->ifa_addr->sa_family) {
 #ifdef INET
@@ -1298,8 +1292,7 @@ hme_ioctl(ifp, cmd, data)
 		break;
 
 	default:
-		error = ENOTTY;
-		break;
+		error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data);
 	}
 
 	sc->sc_if_flags = ifp->if_flags;

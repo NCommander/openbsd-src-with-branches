@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_aue.c,v 1.71 2008/03/18 12:24:19 jsg Exp $ */
+/*	$OpenBSD: if_aue.c,v 1.72 2008/09/10 14:01:23 blambert Exp $ */
 /*	$NetBSD: if_aue.c,v 1.82 2003/03/05 17:37:36 shiba Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -1579,12 +1579,10 @@ aue_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		error = ifmedia_ioctl(ifp, ifr, &mii->mii_media, command);
 		break;
 	default:
-		error = EINVAL;
-		break;
+		error = ether_ioctl(ifp, &sc->arpcom, command, data);
 	}
 
 	splx(s);
-
 	return (error);
 }
 

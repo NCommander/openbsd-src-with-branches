@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.38 2007/05/26 00:36:03 krw Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.39 2008/09/10 14:01:23 blambert Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1619,11 +1619,6 @@ int wb_ioctl(ifp, command, data)
 
 	s = splnet();
 
-	if ((error = ether_ioctl(ifp, &sc->arpcom, command, data)) > 0) {
-		splx(s);
-		return (error);
-	}
-
 	switch(command) {
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
@@ -1668,12 +1663,10 @@ int wb_ioctl(ifp, command, data)
 		error = ifmedia_ioctl(ifp, ifr, &sc->sc_mii.mii_media, command);
 		break;
 	default:
-		error = ENOTTY;
-		break;
+		error = ether_ioctl(ifp, &sc->arpcom, command, data);
 	}
 
 	splx(s);
-
 	return(error);
 }
 

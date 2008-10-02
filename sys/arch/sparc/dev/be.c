@@ -1,4 +1,4 @@
-/*	$OpenBSD: be.c,v 1.39 2006/03/25 22:41:41 djm Exp $	*/
+/*	$OpenBSD: be.c,v 1.40 2006/05/27 23:59:07 jason Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt and Jason L. Wright.
@@ -636,13 +636,9 @@ beioctl(ifp, cmd, data)
 		error = ifmedia_ioctl(ifp, ifr, &sc->sc_ifmedia, cmd);
 		break;
 	default:
-		if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
-			splx(s);
-			return error;
-		}
-		error = ENOTTY;
-		break;
+		error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data);
 	}
+
 	splx(s);
 	return error;
 }

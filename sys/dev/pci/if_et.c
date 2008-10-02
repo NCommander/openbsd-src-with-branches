@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_et.c,v 1.12 2008/07/11 09:29:02 kevlo Exp $	*/
+/*	$OpenBSD: if_et.c,v 1.13 2008/09/10 14:01:22 blambert Exp $	*/
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
  * 
@@ -1038,11 +1038,6 @@ et_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 
 	s = splnet();
 
-	if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
-		splx(s);
-		return error;
-	}
-
 	switch (cmd) {
 	case SIOCSIFADDR:
 		ifp->if_flags |= IFF_UP;
@@ -1097,11 +1092,10 @@ et_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		error = ifmedia_ioctl(ifp, ifr, &sc->sc_miibus.mii_media, cmd);
 		break;
 	default:
-		error = ENOTTY;
+		error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data);
 	}
 
 	splx(s);
-
 	return error;
 }
 

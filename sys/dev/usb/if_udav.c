@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_udav.c,v 1.40 2007/11/23 15:43:02 mbalmer Exp $ */
+/*	$OpenBSD: if_udav.c,v 1.41 2008/09/10 14:01:23 blambert Exp $ */
 /*	$NetBSD: if_udav.c,v 1.3 2004/04/23 17:25:25 itojun Exp $	*/
 /*	$nabe: if_udav.c,v 1.3 2003/08/21 16:57:19 nabe Exp $	*/
 /*
@@ -1273,12 +1273,10 @@ udav_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		}
 		break;
 	default:
-		error = EINVAL;
-		break;
+		error = ether_ioctl(ifp, &sc->sc_ac, cmd, data);
 	}
 
 	splx(s);
-
 	return (error);
 }
 
