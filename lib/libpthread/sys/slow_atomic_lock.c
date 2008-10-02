@@ -1,4 +1,5 @@
-/*	$OpenBSD: slow_atomic_lock.c,v 1.2 1998/11/21 14:02:10 d Exp $	*/
+/*	$OpenBSD: slow_atomic_lock.c,v 1.3 1998/12/21 07:38:43 d Exp $	*/
+/* David Leonard, <d@csee.uq.edu.au>. Public domain. */
 
 #include <pthread.h>
 #include "pthread_private.h"

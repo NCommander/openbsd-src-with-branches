@@ -1,4 +1,6 @@
-/*	$OpenBSD: uthread_vfork.c,v 1.3 2007/11/20 19:35:37 deraadt Exp $	*/
+/*	$OpenBSD: uthread_vfork.c,v 1.4 2008/04/04 19:30:41 kurt Exp $	*/
+/* David Leonard, <d@csee.uq.edu.au>. Public domain. */
+
 #include <unistd.h>
 #ifdef _THREAD_SAFE
 #include <pthread.h>
