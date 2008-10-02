@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.h,v 1.19 2004/01/12 02:21:21 drahn Exp $ */
+/*	$OpenBSD: syscall.h,v 1.20 2006/05/03 16:10:52 drahn Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -38,10 +38,10 @@
 static off_t	_dl_lseek(int, off_t, int);
 
 #ifndef _dl_MAX_ERRNO
-#define _dl_MAX_ERRNO 4096
+#define _dl_MAX_ERRNO 512L
 #endif
-#define _dl_check_error(__res) \
-	((int) __res < 0 && (int) __res >= -_dl_MAX_ERRNO)
+#define _dl_mmap_error(__res) \
+    ((long)__res < 0 && (long)__res >= -_dl_MAX_ERRNO)
 
 /*
  *  Inlined system call functions that can be used before

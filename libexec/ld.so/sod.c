@@ -1,4 +1,4 @@
-/*	$OpenBSD: sod.c,v 1.21 2004/05/18 16:50:31 mickey Exp $	*/
+/*	$OpenBSD: sod.c,v 1.22 2004/10/17 03:56:49 drahn Exp $	*/
 
 /*
  * Copyright (c) 1993 Paul Kranenburg
@@ -156,7 +156,7 @@ _dl_maphints(void)
 
 	hsize = (long)sb.st_size;
 	addr = (void *)_dl_mmap(0, hsize, PROT_READ, MAP_PRIVATE, hfd, 0);
-	if (addr == MAP_FAILED)
+	if (_dl_mmap_error(addr))
 		goto bad_hints;
 
 	hheader = (struct hints_header *)addr;
@@ -178,7 +178,7 @@ _dl_maphints(void)
 	return;
 
 bad_hints:
-	if (addr != MAP_FAILED)
+	if (!_dl_mmap_error(addr))
 		_dl_munmap(addr, hsize);
 	if (hfd != -1)
 		_dl_close(hfd);
