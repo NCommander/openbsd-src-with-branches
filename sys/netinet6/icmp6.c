@@ -2113,6 +2113,9 @@ icmp6_reflect(struct mbuf *m, size_t off)
 	 * Note that only echo and node information replies are affected,
 	 * since the length of ICMP6 errors is limited to the minimum MTU.
 	 */
+#if NPF > 0
+	pf_pkt_addr_changed(m);
+#endif
 	if (ip6_output(m, NULL, NULL, IPV6_MINMTU, NULL, &outif, NULL) != 0 &&
 	    outif)
 		icmp6_ifstat_inc(outif, ifs6_out_error);
