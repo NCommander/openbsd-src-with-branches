@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: datalink.c,v 1.46 2005/07/17 20:24:45 brad Exp $
+ *	$OpenBSD: datalink.c,v 1.47 2005/07/18 22:51:03 brad Exp $
  */
 
 #include <sys/param.h>
@@ -1158,7 +1158,13 @@ int
 datalink_SetReconnect(struct cmdargs const *arg)
 {
   if (arg->argc == arg->argn+2) {
-    arg->cx->cfg.reconnect.timeout = atoi(arg->argv[arg->argn]);
+    if (strncasecmp(arg->argv[arg->argn], "random", 6) == 0 &&
+       (arg->argv[arg->argn][6] == '\0')) {
+      arg->cx->cfg.reconnect.timeout = -1;
+      randinit();
+    } else {
+      arg->cx->cfg.reconnect.timeout = atoi(arg->argv[arg->argn]);
+    }
     arg->cx->cfg.reconnect.max = atoi(arg->argv[arg->argn+1]);
     return 0;
   }
