@@ -1,4 +1,4 @@
-/*	$OpenBSD: quiz.c,v 1.17 2006/11/02 18:19:30 ray Exp $	*/
+/*	$OpenBSD: quiz.c,v 1.18 2008/03/17 09:17:56 sobrado Exp $	*/
 /*	$NetBSD: quiz.c,v 1.9 1995/04/22 10:16:58 cgd Exp $	*/
 
 /*-
@@ -44,7 +44,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)quiz.c	8.3 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$OpenBSD: quiz.c,v 1.17 2006/11/02 18:19:30 ray Exp $";
+static char rcsid[] = "$OpenBSD: quiz.c,v 1.18 2008/03/17 09:17:56 sobrado Exp $";
 #endif
 #endif /* not lint */
 
@@ -345,6 +345,8 @@ appdstr(char *s, const char *tp, size_t len)
 
 	while ((ch = *mp++ = *tp++) && ch != '\n')
 		;
+	if (*(mp - 2) == '\\')
+		mp--;
 	*mp = '\0';
 
 	free(s);
