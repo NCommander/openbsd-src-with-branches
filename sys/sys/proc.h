@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.103 2008/05/05 15:37:41 thib Exp $	*/
+/*	$OpenBSD: proc.h,v 1.104 2008/09/19 12:24:55 art Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -185,6 +185,7 @@ struct proc {
 	int	p_dupfd;	 /* Sideways return value from filedescopen. XXX */
 
 	long 	p_thrslpid;	/* for thrsleep syscall */
+	int	p_sigwait;	/* signal handled by sigwait() */
 
 
 	/* scheduling */
