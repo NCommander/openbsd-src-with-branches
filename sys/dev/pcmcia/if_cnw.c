@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cnw.c,v 1.16 2006/03/25 22:41:46 djm Exp $	*/
+/*	$OpenBSD: if_cnw.c,v 1.17 2008/06/26 05:42:17 ray Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -777,7 +777,6 @@ cnw_ioctl(ifp, cmd, data)
 	s = splnet();
 
 	switch (cmd) {
-
 	case SIOCSIFADDR:
 		if (!(ifp->if_flags & IFF_RUNNING) &&
 		    (error = cnw_enable(sc)) != 0)
@@ -809,7 +808,7 @@ cnw_ioctl(ifp, cmd, data)
 		break;
 
 	default:
-		error = EINVAL;
+		error = ENOTTY;
 		break;
 	}
 
