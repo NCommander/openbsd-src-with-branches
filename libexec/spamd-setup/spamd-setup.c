@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd-setup.c,v 1.33 2007/09/02 15:19:20 deraadt Exp $ */
+/*	$OpenBSD: spamd-setup.c,v 1.34 2008/10/03 14:25:10 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Bob Beck.  All rights reserved.
@@ -780,7 +780,7 @@ __dead void
 usage(void)
 {
 
-	fprintf(stderr, "usage: %s [-bdDn]\n", __progname);
+	fprintf(stderr, "usage: %s [-bDdn]\n", __progname);
 	exit(1);
 }
 
