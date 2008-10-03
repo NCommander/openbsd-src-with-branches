@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_url.c,v 1.50 2007/11/23 15:43:02 mbalmer Exp $ */
+/*	$OpenBSD: if_url.c,v 1.51 2008/09/10 14:01:23 blambert Exp $ */
 /*	$NetBSD: if_url.c,v 1.6 2002/09/29 10:19:21 martin Exp $	*/
 /*
  * Copyright (c) 2001, 2002
@@ -1157,12 +1157,10 @@ url_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		error = ifmedia_ioctl(ifp, ifr, &mii->mii_media, cmd);
 		break;
 	default:
-		error = EINVAL;
-		break;
+		error = ether_ioctl(ifp, &sc->sc_ac, cmd, data);
 	}
 
 	splx(s);
-
 	return (error);
 }
 
