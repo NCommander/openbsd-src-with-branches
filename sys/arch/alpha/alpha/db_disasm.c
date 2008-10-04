@@ -1,4 +1,4 @@
-/* $OpenBSD: db_disasm.c,v 1.20 2007/09/01 11:54:00 miod Exp $ */
+/* $OpenBSD: db_disasm.c,v 1.21 2007/11/05 19:23:22 miod Exp $ */
 /* $NetBSD: db_disasm.c,v 1.8 2000/05/25 19:57:30 jhawk Exp $ */
 
 /* 
@@ -491,7 +491,7 @@ static const struct tbl anyf_tbl[] = {
 	{ "fcmovgt",	0x02f},
 	{ "cvtql",	0x030},
 	{ "cvtql/v",	0x130},
-	{ "cvtql/sv",	0x330},
+	{ "cvtql/sv",	0x530},
 	{ 0, 0},
 };
 
