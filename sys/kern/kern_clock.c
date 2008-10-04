@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_clock.c,v 1.65 2007/10/10 15:53:53 art Exp $	*/
+/*	$OpenBSD: kern_clock.c,v 1.66 2008/03/15 21:21:09 miod Exp $	*/
 /*	$NetBSD: kern_clock.c,v 1.34 1996/06/09 04:51:03 briggs Exp $	*/
 
 /*-
@@ -166,6 +166,11 @@ initclocks(void)
 	if (profhz == 0)
 		profhz = i;
 	psratio = profhz / i;
+
+	/* For very large HZ, ensure that division by 0 does not occur later */
+	if (tickadj == 0)
+		tickadj = 1;
+
 #ifdef __HAVE_TIMECOUNTER
 	inittimecounter();
 #endif
