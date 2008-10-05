@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_malloc.c,v 1.74 2008/02/21 10:40:48 kettenis Exp $	*/
+/*	$OpenBSD: kern_malloc.c,v 1.75 2008/09/29 12:34:18 art Exp $	*/
 
 /*
  * Copyright (c) 2008 Michael Shalayeff
@@ -164,7 +164,7 @@ malloc_page_free(struct pool *pp, void *v)
 	pg = PHYS_TO_VM_PAGE(pa);
 	if (pg == NULL)
 		panic("malloc_page_free: no page");
-	pg->wire_count = 1;
+	pg->wire_count = 0;
 	uvm_km_putpage(v);
 }
 
