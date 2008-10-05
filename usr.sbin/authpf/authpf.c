@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.106 2008/02/01 07:08:03 mcbride Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.107 2008/02/14 01:49:17 mcbride Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2007 Bob Beck (beck@openbsd.org).
@@ -93,7 +93,7 @@ main(int argc, char *argv[])
 
 	config = fopen(PATH_CONFFILE, "r");
 	if (config == NULL) {
-		syslog(LOG_ERR, "can not open %s (%m)", PATH_CONFFILE);
+		syslog(LOG_ERR, "cannot open %s (%m)", PATH_CONFFILE);
 		exit(1);
 	}
 
