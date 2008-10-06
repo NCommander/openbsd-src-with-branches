@@ -68,7 +68,7 @@ sub collision_report($$)
 		}
 		return;
 	}
-	my %todo = map {($_->fullname, $_->{md5})} @$list;
+	my %todo = map {($_->fullname, $_->{d})} @$list;
 	my $clueless_bat;
 	my $clueless_bat2;
 	my $found = 0;
@@ -90,16 +90,16 @@ sub collision_report($$)
 		}
 	}
 	if (%todo) {
-		require OpenBSD::md5;
 		my $destdir = $state->{destdir};
 
 		for my $item (sort keys %todo) {
 		    if (defined $todo{$item}) {
-			    my $md5 = OpenBSD::md5::fromfile($destdir.$item);
-			    if ($md5 eq $todo{$item}) {
-				print "\t$item (same md5)\n";
+			    my $old = $todo{$item};
+			    my $d = $old->new($destdir.$item);
+			    if ($d->equals($old)) {
+				print "\t$item (same checksum)\n";
 			    } else {
-				print "\t$item (different md5)\n";
+				print "\t$item (different checksum)\n";
 			    }
 		    } else {
 			    print "\t$item\n";

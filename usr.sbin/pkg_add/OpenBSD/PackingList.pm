@@ -275,7 +275,7 @@ MAINLOOP:
 		if (m/^\@shared\b/o) {
 			&$cont($_);
 			while(<$fh>) {
-				redo MAINLOOP unless m/^\@(?:md5|size|symlink|link)\b/o;
+				redo MAINLOOP unless m/^\@(?:sha|md5|size|symlink|link)\b/o;
 				    m/^\@size\b/o || m/^\@symlink\b/o || 
 				    m/^\@link\b/o;
 				&$cont($_);
