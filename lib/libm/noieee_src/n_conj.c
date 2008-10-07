@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_cabs.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD: s_conj.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -18,8 +18,8 @@
 #include <complex.h>
 #include <math.h>
 
-double
-cabs(double complex z)
+double complex
+conj(double complex z)
 {
-	return hypot(__real__ z, __imag__ z);
+	return ~z;
 }
