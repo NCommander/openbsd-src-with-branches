@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.bsd-wrapper,v 1.76 2008/09/29 17:35:56 millert Exp $
+# $OpenBSD: Makefile.bsd-wrapper,v 1.77 2008/09/30 13:41:16 millert Exp $
 #
 # Build wrapper for Perl 5.10.0
 #
@@ -17,11 +17,6 @@ TARGET_MACHINE_ARCH?=	$(MACHINE_ARCH)
 CFLAGS+= -fno-strict-aliasing
 .if ${USE_GCC3:L} == "yes"
 CFLAGS+= -fno-delete-null-pointer-checks
-.endif
-
-# Perl expects alpha-style fp from an alpha...
-.if (${MACHINE_ARCH} == "alpha")
-CFLAGS+= -mno-ieee
 .endif
 
 CONFIGURE_ARGS= -dsE -Dopenbsd_distribution=defined
