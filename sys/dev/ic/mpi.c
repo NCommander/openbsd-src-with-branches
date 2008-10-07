@@ -1405,10 +1405,8 @@ mpi_scsi_probe(struct scsi_link *link)
 	    address, &ehdr) != 0)
 		return (EIO);
 
-	if (mpi_ecfg_page(sc, address, &ehdr, 1, &pg0, sizeof(pg0)) != 0) {
-		/* the device probably doesnt exist if the page fetch fails */
-		return (ENXIO);
-	}
+	if (mpi_ecfg_page(sc, address, &ehdr, 1, &pg0, sizeof(pg0)) != 0)
+		return (0);
 
 	DPRINTF(MPI_D_MISC, "%s: mpi_scsi_probe sas dev pg 0 for target %d:\n",
 	    DEVNAME(sc), link->target);
