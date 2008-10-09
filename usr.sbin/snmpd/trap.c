@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.11 2008/02/08 12:36:47 reyk Exp $	*/
+/*	$OpenBSD: trap.c,v 1.12 2008/03/18 16:57:58 reyk Exp $	*/
 
 /*
  * Copyright (c) 2008 Reyk Floeter <reyk@vantronix.net>
@@ -284,6 +284,7 @@ trap_send(struct ber_oid *oid, struct ber_element *elm)
 	if (elm != NULL)
 		ber_unlink_elements(c);
 	ber_free_elements(trap);
+	ber_free(&ber);
 
 	return (ret);
 }
