@@ -143,7 +143,6 @@ struct process {
 	struct	plimit *ps_limit;	/* Process limits. */
 
 	TAILQ_HEAD(,proc) ps_threads;	/* Threads in this process. */
-	int	ps_refcnt;		/* Number of references. */
 };
 #else
 struct process;

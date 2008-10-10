@@ -590,7 +590,7 @@ proc_zap(struct proc *p)
 	 * Remove us from our process list, possibly killing the process
 	 * in the process (pun intended).
 	 */
-	if (--p->p_p->ps_refcnt == 0) {
+	if ((p->p_flag & P_THREAD) == 0) {
 		KASSERT(TAILQ_EMPTY(&p->p_p->ps_threads));
 		limfree(p->p_p->ps_limit);
 		if (--p->p_p->ps_cred->p_refcnt == 0) {
