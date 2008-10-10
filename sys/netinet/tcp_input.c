@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.220 2008/07/03 15:46:24 henning Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.221 2008/09/09 15:26:12 mpf Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -594,10 +594,12 @@ tcp_input(struct mbuf *m, ...)
 	/*
 	 * Locate pcb for segment.
 	 */
+/*
 #if NPF > 0
 	if (m->m_pkthdr.pf.statekey)
 		inp = ((struct pf_state_key *)m->m_pkthdr.pf.statekey)->inp;
 #endif
+*/
 findpcb:
 	if (inp == NULL) {
 		switch (af) {
