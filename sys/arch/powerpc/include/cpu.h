@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.38 2008/07/18 23:43:31 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.39 2008/09/16 04:20:42 drahn Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -129,6 +129,8 @@ void	cpu_boot_secondary_processors(void);
 	for (cii = 0, ci = curcpu(); ci != NULL; ci = NULL)
 
 #endif
+
+#define MAXCPUS	PPC_MAXPROCS
 
 extern struct cpu_info cpu_info[PPC_MAXPROCS];
 

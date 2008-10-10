@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.34 2008/01/13 20:20:29 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.35 2008/07/18 23:43:31 art Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -136,6 +136,7 @@ extern struct cpu_info m88k_cpus[MAX_CPUS];
 	for ((cii) = 0; (cii) < MAX_CPUS; (cii)++) \
 		if (((ci) = &m88k_cpus[cii])->ci_flags & CIF_ALIVE)
 #define	CPU_INFO_UNIT(ci)	((ci)->ci_cpuid)
+#define MAXCPUS	MAX_CPUS
 
 #if defined(MULTIPROCESSOR)
 
