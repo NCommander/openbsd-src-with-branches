@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.45 2008/08/06 05:24:44 gwk Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.46 2008/08/08 01:05:20 krw Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -315,7 +315,7 @@ acpicpu_attach(struct device *parent, struct device *self, void *aux)
 #endif
 		if (sc->sc_pss_len == 0) {
 			/* this should never happen */
-			printf("%s: invalid _PSS length\n");
+			printf("%s: invalid _PSS length\n", DEVNAME(sc));
 			sc->sc_flags |= FLAGS_NOPSS;
 		}
 
