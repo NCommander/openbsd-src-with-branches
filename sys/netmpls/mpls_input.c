@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.12 2008/05/10 01:56:32 claudio Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.13 2008/05/23 16:06:29 thib Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -128,7 +128,32 @@ mpls_input(struct mbuf *m)
 		    smpls->smpls_in_ifindex);
 #endif
 
-		rt = rtalloc1(smplstosa(smpls),1, 0);
+		if (ntohl(smpls->smpls_in_label) < MPLS_LABEL_RESERVED_MAX) {
+
+			hasbos = MPLS_BOS_ISSET(shim->shim_label);
+			m = mpls_shim_pop(m);
+			shim = mtod(m, struct shim_hdr *);
+
+			switch (ntohl(smpls->smpls_in_label)) { 
+
+			case MPLS_LABEL_IPV4NULL:
+				if (hasbos) {
+					mpe_input(m, NULL, smpls, ttl);
+					goto done;
+				} else
+					continue;
+
+			case MPLS_LABEL_IPV6NULL:
+				if (hasbos) {
+					mpe_input6(m, NULL, smpls, ttl);
+					goto done;
+				} else
+					continue;
+			}
+			/* Other cases are not handled for now */
+		}
+
+		rt = rtalloc1(smplstosa(smpls), 1, 0);
 
 		if (rt == NULL) {
 			/* no entry for this label */
