@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.103 2008/07/18 23:43:31 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.104 2008/09/28 20:32:17 brad Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -86,6 +86,7 @@ struct cpu_info {
 	u_long ci_spin_locks;		/* # of spin locks held */
 	u_long ci_simple_locks;		/* # of simple locks held */
 #endif
+	u_int32_t ci_randseed;
 
 	/*
 	 * Private members.

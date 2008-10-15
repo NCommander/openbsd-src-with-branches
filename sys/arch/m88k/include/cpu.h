@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.36 2008/10/10 08:05:45 art Exp $ */
+/*	$OpenBSD: cpu.h,v 1.37 2008/10/10 08:36:28 art Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -110,6 +110,7 @@ struct cpu_info {
 #define	CI_DDB_PAUSE	3
 
 	int	ci_softintr;			/* pending soft interrupts */
+	u_int32_t ci_randseed;
 
 #ifdef MULTIPROCESSOR
 

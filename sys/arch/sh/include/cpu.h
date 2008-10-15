@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.16 2008/10/10 08:05:45 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.17 2008/10/10 08:36:28 art Exp $	*/
 /*	$NetBSD: cpu.h,v 1.41 2006/01/21 04:24:12 uwe Exp $	*/
 
 /*-
@@ -59,6 +59,7 @@ struct cpu_info {
 	struct proc *ci_curproc;
 
 	struct schedstate_percpu ci_schedstate; /* scheduler state */
+	u_int32_t ci_randseed;
 };
 
 extern struct cpu_info cpu_info_store;

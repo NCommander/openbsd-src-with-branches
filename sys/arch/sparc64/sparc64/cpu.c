@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.48 2008/08/11 19:53:33 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.49 2008/08/17 15:55:55 kettenis Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -701,6 +701,7 @@ cpu_boot_secondary_processors(void)
 	for (ci = cpus; ci != NULL; ci = ci->ci_next) {
 		if (ci->ci_upaid == cpu_myid())
 			continue;
+		ci->ci_randseed = random();
 
 		if (CPU_ISSUN4V)
 			cpuid = ci->ci_upaid;

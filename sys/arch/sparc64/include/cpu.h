@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.67 2008/10/09 08:43:43 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.68 2008/10/10 08:05:45 art Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -119,6 +119,7 @@ struct cpu_info {
 	int			ci_itid;
 #endif
 	int			ci_node;
+	u_int32_t 		ci_randseed;
 	struct schedstate_percpu ci_schedstate; /* scheduler state */
 
 	int			ci_want_resched;
