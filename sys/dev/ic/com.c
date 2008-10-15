@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.127 2008/04/25 11:30:22 dlg Exp $	*/
+/*	$OpenBSD: com.c,v 1.128 2008/06/08 13:55:06 kettenis Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -503,7 +503,7 @@ comclose(dev_t dev, int flag, int mode, struct proc *p)
 		/* tty device is waiting for carrier; drop dtr then re-raise */
 		CLR(sc->sc_mcr, MCR_DTR | MCR_RTS);
 		bus_space_write_1(iot, ioh, com_mcr, sc->sc_mcr);
-		timeout_add(&sc->sc_dtr_tmo, hz * 2);
+		timeout_add_sec(&sc->sc_dtr_tmo, 2);
 	} else {
 		/* no one else waiting; turn off the uart */
 		compwroff(sc);
@@ -1161,7 +1161,7 @@ comintr(void *arg)
 				if (p >= sc->sc_ibufend) {
 					sc->sc_floods++;
 					if (sc->sc_errors++ == 0)
-						timeout_add(&sc->sc_diag_tmo, 60 * hz);
+						timeout_add_sec(&sc->sc_diag_tmo, 60);
 				} else {
 					*p++ = data;
 					*p++ = lsr;

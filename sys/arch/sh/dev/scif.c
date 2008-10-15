@@ -1,4 +1,4 @@
-/*	$OpenBSD: scif.c,v 1.5 2008/01/23 16:37:58 jsing Exp $	*/
+/*	$OpenBSD: scif.c,v 1.6 2008/06/27 06:03:08 ray Exp $	*/
 /*	$NetBSD: scif.c,v 1.47 2006/07/23 22:06:06 ad Exp $ */
 
 /*-
@@ -980,7 +980,7 @@ scif_rxsoft(struct scif_softc *sc, struct tty *tp)
 	if (cc == scif_rbuf_size) {
 		sc->sc_floods++;
 		if (sc->sc_errors++ == 0)
-			timeout_add(&sc->sc_diag_tmo, 60 * hz);
+			timeout_add_sec(&sc->sc_diag_tmo, 60);
 	}
 
 	while (cc) {
