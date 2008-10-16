@@ -1,4 +1,4 @@
-/* $OpenBSD: if_pppoe.c,v 1.27 2008/10/01 16:51:48 mk Exp $ */
+/* $OpenBSD: if_pppoe.c,v 1.28 2008/10/11 20:34:10 miod Exp $ */
 /* $NetBSD: if_pppoe.c,v 1.51 2003/11/28 08:56:48 keihan Exp $ */
 
 /*
@@ -310,11 +310,9 @@ pppoe_find_softc_by_session(u_int session, struct ifnet *rcvif)
 
 	LIST_FOREACH(sc, &pppoe_softc_list, sc_list) {
 		if (sc->sc_state == PPPOE_STATE_SESSION
-		    && sc->sc_session == session) {
-			if (sc->sc_eth_if == rcvif)
-				return (sc);
-			else
-				return (NULL);
+		    && sc->sc_session == session
+		    && sc->sc_eth_if == rcvif) {
+			return (sc);
 		}
 	}
 	return (NULL);
