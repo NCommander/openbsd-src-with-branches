@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.h,v 1.39 2007/05/16 09:24:07 dlg Exp $	*/
+/*	$OpenBSD: if_ether.h,v 1.40 2008/04/18 09:16:14 djm Exp $	*/
 /*	$NetBSD: if_ether.h,v 1.22 1996/05/11 13:00:00 mycroft Exp $	*/
 
 /*
@@ -87,11 +87,6 @@ struct	ether_header {
  */
 #define	ETHER_CRC_POLY_LE	0xedb88320
 #define	ETHER_CRC_POLY_BE	0x04c11db6
-
-/*
- * Ethernet-specific mbuf flags.
- */
-#define M_HASFCS	M_LINK0	/* FCS included at end of frame */
 
 #ifdef _KERNEL
 /*
