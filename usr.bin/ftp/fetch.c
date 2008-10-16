@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.80 2008/07/08 21:07:57 martynas Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.81 2008/09/26 11:11:59 espie Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -31,7 +31,7 @@
  */
 
 #if !defined(lint) && !defined(SMALL)
-static const char rcsid[] = "$OpenBSD: fetch.c,v 1.80 2008/07/08 21:07:57 martynas Exp $";
+static const char rcsid[] = "$OpenBSD: fetch.c,v 1.81 2008/09/26 11:11:59 espie Exp $";
 #endif /* not lint and not SMALL */
 
 /*
@@ -261,11 +261,13 @@ url_get(const char *origline, const char *proxyenv, const char *outfile)
 		else
 			filesize = st.st_size;
 
-		/* Open the output file.  */
+		/* Open the output file */
 		if (strcmp(savefile, "-") != 0) {
 #ifndef SMALL
 			if (resume)
-				out = open(savefile, O_APPEND | O_WRONLY);
+				out = open(savefile, O_CREAT | O_WRONLY |
+					O_APPEND, 0666);
+
 			else
 #endif /* !SMALL */
 				out = open(savefile, O_CREAT | O_WRONLY |
