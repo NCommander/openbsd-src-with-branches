@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.26 2008/02/26 10:09:58 mpf Exp $	*/
+/*	$OpenBSD: parse.y,v 1.27 2008/03/10 07:40:01 mpf Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride <mcbride@openbsd.org>
@@ -480,11 +480,13 @@ findeol(void)
 	int	c;
 
 	parsebuf = NULL;
-	pushback_index = 0;
 
 	/* skip to either EOF or the first real EOL */
 	while (1) {
-		c = lgetc(0);
+		if (pushback_index)
+			c = pushback_buffer[--pushback_index];
+		else
+			c = lgetc(0);
 		if (c == '\n') {
 			file->lineno++;
 			break;
