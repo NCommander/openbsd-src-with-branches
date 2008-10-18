@@ -126,7 +126,6 @@ uvm_init()
 	 */
 
 	kmeminit();
-	uvm_km_page_init();
 
 	/*
 	 * step 7: init all pagers and the pager_map.
@@ -149,6 +148,8 @@ uvm_init()
 	uvm_page_rehash();
 	uao_create(VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS,
 	    UAO_FLAG_KERNSWAP);
+
+	uvm_km_page_init();
 
 	/*
 	 * reserve some unmapped space for malloc/pool use after free usage

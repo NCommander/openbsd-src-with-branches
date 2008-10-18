@@ -212,8 +212,8 @@
  * Constraints: PAGE_SIZE <= MAXALLOCSAVE <= 2 ** (MINBUCKET + 14), and
  * MAXALLOCSIZE must be a power of two.
  */
-#define MINBUCKET	(sizeof(long) == 4? 4 : 5)
-#define MAXALLOCSAVE	(PAGE_SIZE)
+#define MINBUCKET	4		/* 4 => min allocation of 16 bytes */
+#define MAXALLOCSAVE	(2 * PAGE_SIZE)
 
 /*
  * Scale factor for scaled integers used to count %cpu time and load avgs.
