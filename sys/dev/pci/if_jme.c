@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jme.c,v 1.7 2008/10/20 19:36:54 brad Exp $	*/
+/*	$OpenBSD: if_jme.c,v 1.8 2008/10/20 19:39:37 brad Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -1142,7 +1142,6 @@ jme_encap(struct jme_softc *sc, struct mbuf **m_head)
 	if (m->m_flags & M_VLANTAG) {
 		cflags |= (m->m_pkthdr.ether_vtag & JME_TD_VLAN_MASK);
 		cflags |= JME_TD_VLAN_TAG;
-		printf("%s: VLAN tag\n", sc->sc_dev.dv_xname);
 	}
 #endif
 
