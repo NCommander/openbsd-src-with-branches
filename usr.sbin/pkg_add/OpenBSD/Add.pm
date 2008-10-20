@@ -585,7 +585,7 @@ sub install
 	my $destdir = $state->{destdir};
 	# go append to /etc/shells if needed
 	open(my $shells, '<', $destdir.OpenBSD::Paths->shells) or return;
-	local $_;
+	my $_;
 	while(<$shells>) {
 		s/^\#.*//o;
 		return if $_ =~ m/^\Q$fullname\E\s*$/;

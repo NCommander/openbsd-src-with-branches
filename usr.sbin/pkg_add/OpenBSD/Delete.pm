@@ -560,7 +560,7 @@ sub delete
 		my $fullname = $self->fullname;
 		my @l=();
 		if (open(my $shells, '<', $destdir.OpenBSD::Paths->shells)) {
-			local $_;
+			my $_;
 			while(<$shells>) {
 				push(@l, $_);
 				s/^\#.*//o;

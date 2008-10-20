@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: SharedLibs.pm,v 1.30 2007/09/28 14:42:12 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
 #
@@ -49,7 +49,7 @@ sub init_path($)
 	}
 	open my $fh, "-|", @ldconfig, "-r";
 	if (defined $fh) {
-		local $_;
+		my $_;
 		while (<$fh>) {
 			if (m/^\s*search directories:\s*(.*?)\s*$/o) {
 				for my $d (split(/\:/o, $1)) {

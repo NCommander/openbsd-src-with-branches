@@ -40,13 +40,16 @@ if (defined $ENV{PKG_PATH}) {
 	$pkgpath->add(OpenBSD::PackageRepository->new("./"));
 }
 
+# rebuild PKG_PATH
+#$ENV{PKG_PATH} = $pkgpath->print_without_src;
+
 sub path_parse
 {
 	use File::Basename;
 	use OpenBSD::Paths;
 	my $pkg_db = $ENV{"PKG_DBDIR"} || OpenBSD::Paths->pkgdb;
 
-	my ($pkgname, $path) = fileparse($_);
+	my ($pkgname, $path) = fileparse(shift);
 	my $repo;
 
 	if ($path eq $pkg_db.'/') {
@@ -60,9 +63,7 @@ sub path_parse
 
 sub find
 {
-	my $class = shift;
-	local $_ = shift;
-	my $arch = shift;
+	my ($class, $_, $arch) = @_;
 
 	if ($_ eq '-') {
 		my $repository = OpenBSD::PackageRepository::Local::Pipe->_new('./');
@@ -88,10 +89,7 @@ sub find
 
 sub grabPlist
 {
-	my $class = shift;
-	local $_ = shift;
-	my $arch = shift;
-	my $code = shift;
+	my ($class, $_, $arch, $code) = @_;
 
 	if ($_ eq '-') {
 		my $repository = OpenBSD::PackageRepository::Local::Pipe->_new('./');

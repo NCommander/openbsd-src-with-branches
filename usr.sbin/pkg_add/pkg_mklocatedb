@@ -146,7 +146,7 @@ if ($opt_p) {
 		my $plist = OpenBSD::PackingList->read($in,
 		    sub {
 			my ($fh, $cont) = @_;
-			local $_;
+			my $_;
 			while (<$fh>) {
 				return if m/^\=\=\=\> /o;
 				next unless m/^\@(?:cwd|name|info|man|file|lib|shell|comment\s+subdir\=)\b/o || !m/^\@/o;

@@ -26,7 +26,7 @@ use File::Spec;
 sub parse_fh
 {
 	my ($mtree, $basedir, $fh) = @_;
-	local $_;
+	my $_;
 	while(<$fh>) {
 		chomp;
 		s/^\s*//o;
