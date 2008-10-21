@@ -240,7 +240,7 @@ sub dienow
 	my ($error, $handler) = @_;
 	if ($error) {
 		if ($error =~ m/^(Expected:\s+)?(.*?)(?:\s+at\s+(.*)\s+line\s+(\d+)\.?)?$/o) {
-			my $_ = $2;
+			local $_ = $2;
 			$FileName = $3;
 			$Line = $4;
 			$FullMessage = $error;
