@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.17 2008/10/05 16:57:36 kettenis Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.18 2008/10/21 21:31:10 brad Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -320,7 +320,7 @@ ioapic_attach(struct device *parent, struct device *self, void *aux)
 #if 0
 	/* output of this was boring. */
 	if (mp_verbose)
-		for (i=0; i<sc->sc_apic_sz; i++)
+		for (i = 0; i < sc->sc_apic_sz; i++)
 			ioapic_print_redir(sc, "boot", i);
 #endif
 }
