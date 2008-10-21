@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.16 2008/06/26 05:42:10 ray Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.17 2008/10/05 16:57:36 kettenis Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.7 2003/07/14 22:32:40 lukem Exp $	*/
 
 /*-
@@ -298,7 +298,7 @@ ioapic_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_pins = malloc(sizeof(struct ioapic_pin) * sc->sc_apic_sz,
 	    M_DEVBUF, M_WAITOK);
 
-	for (i=0; i<sc->sc_apic_sz; i++) {
+	for (i = 0; i < sc->sc_apic_sz; i++) {
 		sc->sc_pins[i].ip_handler = NULL;
 		sc->sc_pins[i].ip_next = NULL;
 		sc->sc_pins[i].ip_map = NULL;
@@ -541,7 +541,7 @@ ioapic_enable(void)
 		if (mp_verbose)
 			printf("%s: enabling\n", sc->sc_dev.dv_xname);
 
-		for (p=0; p<sc->sc_apic_sz; p++) {
+		for (p = 0; p < sc->sc_apic_sz; p++) {
 			maxlevel = 0;	 /* magic */
 			minlevel = 0xff; /* magic */
 				
