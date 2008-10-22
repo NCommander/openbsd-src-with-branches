@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.29 2006/11/24 13:52:14 reyk Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.30 2007/09/13 21:00:14 hshoexer Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -680,7 +680,7 @@ import_address(struct sockaddr *sa, struct sadb_address *sadb_address)
 			break;
 #endif /* INET */
 
-#if INET6
+#ifdef INET6
 		case AF_INET6:
 			salen = sizeof(struct sockaddr_in6);
 			break;
