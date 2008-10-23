@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.2 2008/07/12 23:17:33 ckuethe Exp $ */
+/*	$OpenBSD: vmt.c,v 1.3 2008/09/10 14:01:23 blambert Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -202,7 +202,7 @@ vmt_attach(struct device *parent, struct device *self, void *aux)
 
 	len = snprintf(sc->sc_rpc_buf, VMT_RPC_BUFLEN, "tools.set.version %u ",
 	    VM_VERSION_UNMANAGED);
-#if DIAGNOSTIC
+#ifdef DIAGNOSTIC
 	if (len > VMT_RPC_BUFLEN)
 		panic("vmt rpc buffer is too small");
 #endif
@@ -295,7 +295,7 @@ vmt_tick(void *xarg)
 
 		len = snprintf(sc->sc_rpc_buf, VMT_RPC_BUFLEN,
 		    "info-set guestinfo.ip %s ", "192.168.1.1");
-#if DIAGNOSTIC
+#ifdef DIAGNOSTIC
 		if (len > VMT_RPC_BUFLEN)
 			panic("vmt rpc buffer is too small");
 #endif
