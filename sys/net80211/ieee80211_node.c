@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.46 2008/09/27 15:16:09 damien Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.47 2008/10/15 19:12:18 blambert Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -178,6 +178,8 @@ ieee80211_node_detach(struct ifnet *ifp)
 		free(ic->ic_aid_bitmap, M_DEVBUF);
 	if (ic->ic_tim_bitmap != NULL)
 		free(ic->ic_tim_bitmap, M_DEVBUF);
+
+	timeout_del(&ic->ic_rsn_timeout);
 }
 
 /*
