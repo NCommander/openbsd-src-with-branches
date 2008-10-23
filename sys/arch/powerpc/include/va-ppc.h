@@ -1,4 +1,4 @@
-/*	$OpenBSD: va-ppc.h,v 1.12 2006/01/06 18:53:05 millert Exp $	*/
+/*	$OpenBSD: va-ppc.h,v 1.13 2006/04/09 03:07:53 deraadt Exp $	*/
 /* GNU C varargs support for the PowerPC with either the V.4 or Windows NT calling sequences */
 
 #include <sys/cdefs.h>
@@ -209,10 +209,6 @@ __extension__ ({ \
            (struct __va_list_tag *)__builtin_alloca(sizeof(__gnuc_va_list)); \
         *(dest) = *(src);\
   })
-
-#if __ISO_C_VISIBLE >= 1999
-#define va_copy(dest, src)	__va_copy(dest, src)
-#endif
 
 #endif /* __VA_PPC_H__ */
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

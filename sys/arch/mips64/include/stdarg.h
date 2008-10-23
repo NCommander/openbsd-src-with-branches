@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdarg.h,v 1.5 2006/01/06 18:53:05 millert Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.6 2006/05/14 21:11:07 robert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -243,8 +243,5 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 /* Copy __gnuc_va_list into another variable of this type.  */
 #define __va_copy(dest, src) (dest) = (src)
-#if __ISO_C_VISIBLE >= 1999
-#define va_copy __va_copy
-#endif
 
 #endif /* !_MIPS_STDARG_H_ */
