@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukphy_subr.c,v 1.8 2008/06/26 05:42:17 ray Exp $	*/
+/*	$OpenBSD: ukphy_subr.c,v 1.9 2008/09/08 07:38:33 brad Exp $	*/
 /*	$NetBSD: ukphy_subr.c,v 1.2 1998/11/05 04:08:02 thorpej Exp $	*/
 
 /*-
@@ -113,6 +113,9 @@ ukphy_status(struct mii_softc *phy)
 			mii->mii_media_active |= IFM_10_T|IFM_HDX;
 		else
 			mii->mii_media_active |= IFM_NONE;
+
+		if (mii->mii_media_active & IFM_FDX)
+			mii->mii_media_active |= mii_phy_flowstatus(phy);
 
 		if ((IFM_SUBTYPE(mii->mii_media_active) == IFM_1000_T) &&
 		    (gtsr & GTSR_MS_RES))
