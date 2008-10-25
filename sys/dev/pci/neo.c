@@ -1,4 +1,4 @@
-/*      $OpenBSD: neo.c,v 1.21 2008/04/21 00:32:43 jakemsr Exp $       */
+/*      $OpenBSD: neo.c,v 1.22 2008/05/29 02:10:01 jakemsr Exp $       */
 
 /*
  * Copyright (c) 1999 Cameron Grant <gandalf@vilnya.demon.co.uk>
@@ -861,8 +861,6 @@ neo_set_params(addr, setmode, usemode, play, rec)
 		for (x = 0; x < 8; x++)
 			if (p->sample_rate < (samplerates[x] + samplerates[x + 1]) / 2)
 				break;
-
-		if (x == 8) return (EINVAL);
 
 		p->sample_rate = samplerates[x];
 		nm_loadcoeff(sc, mode, x);
