@@ -192,6 +192,5 @@ workq_thread(void *arg)
 	splx(s);
 	wakeup(&wq->wq_running);
 
-	KERNEL_PROC_LOCK(curproc);
 	kthread_exit(0);
 }
