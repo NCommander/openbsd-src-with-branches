@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi_pci.c,v 1.19 2008/05/26 12:48:28 kettenis Exp $ */
+/*	$OpenBSD: mpi_pci.c,v 1.20 2008/05/27 21:52:28 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -17,11 +17,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "bio.h"
+
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
+#include <sys/rwlock.h>
 
 #include <machine/bus.h>
 
