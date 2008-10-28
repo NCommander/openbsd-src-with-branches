@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.98 2008/10/07 12:34:30 dlg Exp $ */
+/*	$OpenBSD: mpi.c,v 1.99 2008/10/28 11:00:40 marco Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 David Gwynne <dlg@openbsd.org>
@@ -2683,7 +2683,7 @@ mpi_ioctl_vol(struct mpi_softc *sc, struct bioc_vol *bv)
 	if (id > sc->sc_vol_page->active_vols)
 		return (EINVAL); /* XXX deal with hot spares */
 
-	len = sizeof(rpg0) + sc->sc_vol_page->max_physdisks * sizeof(physdisk);
+	len = sizeof *rpg0 + sc->sc_vol_page->max_physdisks * sizeof *physdisk;
 	rpg0 = malloc(len, M_TEMP, M_WAITOK | M_CANFAIL);
 	if (rpg0 == NULL) {
 		printf("%s: can't get memory for RAID page 0, "
