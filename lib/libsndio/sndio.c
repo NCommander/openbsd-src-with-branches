@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsio.c,v 1.1 2008/10/26 08:49:44 ratchov Exp $	*/
+/*	$OpenBSD: sndio.c,v 1.1 2008/10/27 00:26:33 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -29,12 +29,11 @@
 
 #define SIO_PAR_MAGIC	0x83b905a4
 
-int
+void
 sio_initpar(struct sio_par *par)
 {
 	memset(par, 0xff, sizeof(struct sio_par));
 	par->__magic = SIO_PAR_MAGIC;	   
-	return 1;
 }
 
 /*

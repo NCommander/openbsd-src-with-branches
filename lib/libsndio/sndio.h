@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsio.h,v 1.1 2008/10/26 08:49:44 ratchov Exp $	*/
+/*	$OpenBSD: sndio.h,v 1.1 2008/10/27 00:26:33 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -114,7 +114,7 @@ struct sio_cap {
 
 int sio_strtoenc(struct sio_par *, char *);
 int sio_enctostr(struct sio_par *, char *);
-int sio_initpar(struct sio_par *);
+void sio_initpar(struct sio_par *);
 
 struct sio_hdl *sio_open_aucat(char *, unsigned, int);
 struct sio_hdl *sio_open_sun(char *, unsigned, int);
