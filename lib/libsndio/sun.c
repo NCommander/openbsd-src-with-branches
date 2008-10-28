@@ -1,4 +1,4 @@
-/*	$OpenBSD: sun.c,v 1.1 2008/10/26 08:49:44 ratchov Exp $	*/
+/*	$OpenBSD: sun.c,v 1.1 2008/10/27 00:26:33 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -461,7 +461,7 @@ sio_open_sun(char *path, unsigned mode, int nbio)
 	if (mode == (SIO_PLAY | SIO_REC)) {
 		fullduplex = 1;
 		if (ioctl(fd, AUDIO_SETFD, &fullduplex) < 0) {
-			fprintf(stderr, "%s: can't set full-duplex", path);
+			fprintf(stderr, "%s: can't set full-duplex\n", path);
 			goto bad_close;
 		}
 	}
