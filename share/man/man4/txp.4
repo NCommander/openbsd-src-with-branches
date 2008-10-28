@@ -1,4 +1,4 @@
-.\"     $OpenBSD: txp.4,v 1.21 2008/04/20 05:47:05 brad Exp $
+.\"     $OpenBSD: txp.4,v 1.22 2008/04/20 10:33:55 jmc Exp $
 .\"
 .\" Copyright (c) 2001 Jason L. Wright (jason@thought.net)
 .\" All rights reserved.
@@ -53,8 +53,8 @@ Fast Ethernet chipset, including the following:
 .Pp
 The
 .Nm
-driver supports VLAN tag insertion, IPv4 receive IP/TCP/UDP
-checksum offloading and transmit IP checksum offloading.
+driver supports IPv4 receive IP/TCP/UDP checksum offload, IPv4
+transmit IP checksum offload, and VLAN tag insertion and stripping.
 .Pp
 The
 .Nm
