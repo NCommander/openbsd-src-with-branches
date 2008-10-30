@@ -26,7 +26,7 @@ struct workq;
 #define WQ_MPSAFE	(1<<1)
 
 typedef void (*workq_fn)(void *, void *);
-struct workq	*workq_create(const char * /* name */, int /* nthreads */);
+struct workq	*workq_create(const char *, int, int);
 int		workq_add_task(struct workq *, int /* flags */, workq_fn,
 		    void *, void *);
 void		workq_destroy(struct workq *);

@@ -630,7 +630,7 @@ crypto_getreq(int num)
 void
 init_crypto()
 {
-	crypto_workq = workq_create("crypto", 1);
+	crypto_workq = workq_create("crypto", 1, IPL_HIGH);
 }
 
 /*
