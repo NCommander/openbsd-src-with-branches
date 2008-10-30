@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.98 2008/09/29 02:27:38 jakemsr Exp $	*/
+/*	$OpenBSD: audio.c,v 1.99 2008/10/25 22:30:43 jakemsr Exp $	*/
 /*	$NetBSD: audio.c,v 1.119 1999/11/09 16:50:47 augustss Exp $	*/
 
 /*
@@ -2738,7 +2738,7 @@ audiosetinfo(struct audio_softc *sc, struct audio_info *ai)
 		if (!indep) {
 			if (setmode == AUMODE_RECORD)
 				pp = rp;
-			else if (setmode == AUMODE_PLAY)
+			else
 				rp = pp;
 		}
 		error = hw->set_params(sc->hw_hdl, setmode,
