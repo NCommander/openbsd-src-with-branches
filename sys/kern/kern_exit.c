@@ -225,12 +225,8 @@ exit1(struct proc *p, int rv, int flags)
 	 * release trace file
 	 */
 	p->p_traceflag = 0;	/* don't trace the vrele() */
-	if (p->p_tracep) {
-		struct vnode *vp = p->p_tracep;
-		if (ktrsettracevnode(p, NULL) == 1)
-			vrele(vp);
-	}
-		
+	if (p->p_tracep)
+		ktrsettracevnode(p, NULL);
 #endif
 #if NSYSTRACE > 0
 	if (ISSET(p->p_flag, P_SYSTRACE))
