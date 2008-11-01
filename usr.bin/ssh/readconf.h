@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.73 2008/06/11 21:01:35 grunk Exp $ */
+/* $OpenBSD: readconf.h,v 1.74 2008/06/26 11:46:31 grunk Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -133,7 +133,7 @@ typedef struct {
 void     initialize_options(Options *);
 void     fill_default_options(Options *);
 int	 read_config_file(const char *, const char *, Options *, int);
-int	 parse_forward(Forward *, const char *);
+int	 parse_forward(Forward *, const char *, int);
 
 int
 process_config_line(Options *, const char *, char *, const char *, int, int *);
