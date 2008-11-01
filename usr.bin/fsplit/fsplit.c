@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsplit.c,v 1.15 2003/06/26 21:42:11 deraadt Exp $	*/
+/*	$OpenBSD: fsplit.c,v 1.16 2007/09/02 15:19:32 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -40,7 +40,7 @@ static char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)fsplit.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$OpenBSD: fsplit.c,v 1.15 2003/06/26 21:42:11 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: fsplit.c,v 1.16 2007/09/02 15:19:32 deraadt Exp $";
 #endif				/* not lint */
 
 #include <ctype.h>
@@ -219,7 +219,7 @@ main(int argc, char *argv[])
 void
 badparms(void)
 {
-	fprintf(stderr, "usage:  fsplit [-e efile] ... [file]\n");
+	fprintf(stderr, "usage: fsplit [-e efile] ... [file]\n");
 	exit(1);
 }
 
