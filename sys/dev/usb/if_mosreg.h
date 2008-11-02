@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2008 Johann Christian Rode <jcrode@gmx.net>
  *
