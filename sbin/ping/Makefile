@@ -1,9 +1,9 @@
-#	$NetBSD: Makefile,v 1.7 1995/03/18 14:59:13 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/5/93
+#	$OpenBSD: Makefile,v 1.4 2002/05/12 17:14:02 deraadt Exp $
 
 PROG=	ping
 MAN=	ping.8
 BINOWN=	root
 BINMODE=4555
+LDSTATIC=${STATIC}
 
 .include <bsd.prog.mk>

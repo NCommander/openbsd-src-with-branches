@@ -1,3 +1,4 @@
+/*	$OpenBSD: md.h,v 1.6 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,18 +12,16 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/*
- * @(#)md.h: $Revision: 1.8.88.1 $ $Date: 93/12/07 15:06:33 $
- * $Locker:  $
- * 
- */
+/* @(#)md.h: Revision: 1.8.88.1 Date: 93/12/07 15:06:33 */
+
+#include <sys/cdefs.h>
 
 /*****************************************************************
  * Muliply/Divide SFU Internal State                             *
  *****************************************************************/
 struct mdsfu_register {
-    int rslt_hi, 
-	rslt_lo, 
+    int rslt_hi,
+	rslt_lo,
 	ovflow;
     };
 
@@ -31,20 +30,13 @@ struct mdsfu_register {
 #define overflow result->ovflow
 
 /*
- * Types
- */
-typedef int VOID;
-typedef int boolean;
-
-
-/*
  *  Constants
  */
 
 #undef FALSE
 #define FALSE 0
 
-#undef TRUE 
+#undef TRUE
 #define TRUE (!FALSE)
 
 #undef NIL
@@ -57,6 +49,8 @@ typedef int boolean;
 #define BIT30 0x2
 #define BIT31 0x1
 
+	/* Simply copy the arguments to the emulated copies of the registers */
+#define	mdrr(reg1,reg2,result)	{result_hi = reg1;result_lo = reg2;}
 
 /*
  *  Structures
@@ -66,3 +60,22 @@ struct md_state {
 	int resulthi,	/* high word of result */
 	    resultlo;	/* low word of result */
 };
+
+void divsfm(int, int, struct mdsfu_register *);
+void divsfr(int, int, struct mdsfu_register *);
+void divsim(int, int, struct mdsfu_register *);
+void divsir(int, int, struct mdsfu_register *);
+
+void divu(int, int, int, struct mdsfu_register *);
+void divufr(unsigned int, unsigned int, struct mdsfu_register *);
+void divuir(unsigned int, unsigned int, struct mdsfu_register *);
+
+void mpyaccs(int, int, struct mdsfu_register *);
+void mpyaccu(unsigned int, unsigned int, struct mdsfu_register *);
+void mpys(int, int, struct mdsfu_register *);
+void mpyscv(int, int, struct mdsfu_register *);
+void mpyu(unsigned int, unsigned int, struct mdsfu_register *);
+void mpyucv(unsigned int, unsigned int, struct mdsfu_register *);
+
+int s_xmpy(int *, int *, struct mdsfu_register *);
+int u_xmpy(int *, int *, struct mdsfu_register *);

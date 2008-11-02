@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: intr.h,v 1.4 2007/06/21 04:37:54 miod Exp $	*/
 /*	$NetBSD: intr.h,v 1.22 2006/01/24 23:51:42 uwe Exp $	*/
 
 /*-
@@ -13,13 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -74,7 +67,9 @@ struct intc_intrhand {
 	int	ih_level;	/* SR.I[0:3] value */
 	int	ih_evtcode;	/* INTEVT or INTEVT2(SH7709/SH7709A) */
 	int	ih_idx;		/* evtcode -> intrhand mapping */
+	int	ih_irq;
 	struct evcount ih_count;
+	const char *ih_name;
 };
 
 /* from 0x200 by 0x20 -> from 0 by 1 */
@@ -107,7 +102,6 @@ struct sh_soft_intrhand {
 
 struct sh_soft_intr {
 	TAILQ_HEAD(, sh_soft_intrhand) softintr_q;
-	struct evcnt softintr_evcnt;
 	struct simplelock softintr_slock;
 	unsigned long softintr_ipl;
 };

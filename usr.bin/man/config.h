@@ -1,3 +1,4 @@
+/*	$OpenBSD: config.h,v 1.4 2003/06/04 16:08:08 deraadt Exp $	*/
 /*	$NetBSD: config.h,v 1.2 1995/09/28 06:05:28 tls Exp $	*/
 
 /*-
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,7 +50,6 @@ typedef struct _entry {
 TAILQ_HEAD(_head, _tag);
 extern struct _head head;
 
-TAG	*addlist __P((char *));
-void	 config __P((char *));
-void	 debug __P((char *));
-TAG	*getlist __P((char *));
+TAG	*addlist(char *);
+void	 config(char *);
+TAG	*getlist(char *);

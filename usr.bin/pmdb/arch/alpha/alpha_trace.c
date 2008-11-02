@@ -1,4 +1,4 @@
-/*	$PMDB: alpha_trace.c,v 1.5 2002/03/10 10:52:16 art Exp $	*/
+/*	$OpenBSD: alpha_trace.c,v 1.6 2003/06/03 21:09:02 deraadt Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -25,8 +25,8 @@
  */
 
 /*
- * Copyright (c) 1997 Niklas Hallqvist.  All rights reserverd.
- * Copyright (c) 1997 Theo de Raadt.  All rights reserverd.
+ * Copyright (c) 1997 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 1997 Theo de Raadt.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,12 +36,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Niklas Hallqvist and
- *	Theo de Raadt.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -172,11 +166,11 @@ inst_load(int ins)
 	return (0);
 }
 
-static __inline int sext __P((u_int));
-static __inline int rega __P((u_int));
-static __inline int regb __P((u_int));
-static __inline int regc __P((u_int));
-static __inline int disp __P((u_int));
+static __inline int sext(u_int);
+static __inline int rega(u_int);
+static __inline int regb(u_int);
+static __inline int regc(u_int);
+static __inline int disp(u_int);
 
 static __inline int
 sext(x)
@@ -247,8 +241,8 @@ md_getframe(struct pstate *ps, int framec, struct md_frame *fram)
 
 	bzero(slot, sizeof(slot));
 
-	if (ptrace(PT_GETREGS, ps->ps_pid, (caddr_t)&regs, 0) != 0)
-		return -1;
+	if (process_getregs(ps, &regs))
+		return (-1);
 
 	for (i = 0; i < 32; i++)
 		slot[i] = -1;
@@ -272,7 +266,7 @@ md_getframe(struct pstate *ps, int framec, struct md_frame *fram)
 
 		framesize = 0;
 		for (i = sizeof (int); i <= offset; i += sizeof (int)) {
-			if (read_from_pid(ps->ps_pid, pc - i, &inst, sizeof(inst)) < 0)
+			if (process_read(ps, pc - i, &inst, sizeof(inst)) < 0)
 				return -1;
 	
 			/*
@@ -324,7 +318,7 @@ md_getframe(struct pstate *ps, int framec, struct md_frame *fram)
 			if (slot[R_RA] == -1)
 				ra = regs.r_regs[R_RA];
 			else
-				if (read_from_pid(ps->ps_pid, (off_t)slot[R_RA],
+				if (process_read(ps, (off_t)slot[R_RA],
 				    &ra, sizeof(ra)) < 0)
 					return -1;
 		} else {

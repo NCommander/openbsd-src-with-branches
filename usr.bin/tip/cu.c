@@ -1,4 +1,5 @@
-/*	$NetBSD: cu.c,v 1.3 1994/12/08 09:30:48 jtc Exp $	*/
+/*	$OpenBSD: cu.c,v 1.22 2007/05/15 19:42:05 moritz Exp $	*/
+/*	$NetBSD: cu.c,v 1.5 1997/02/11 09:24:05 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,78 +34,133 @@
 #if 0
 static char sccsid[] = "@(#)cu.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: cu.c,v 1.3 1994/12/08 09:30:48 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: cu.c,v 1.22 2007/05/15 19:42:05 moritz Exp $";
 #endif /* not lint */
+
+#include <err.h>
+#include <paths.h>
 
 #include "tip.h"
 
-void	cleanup();
+static void	cuusage(void);
 
 /*
  * Botch the interface to look like cu's
  */
-cumain(argc, argv)
-	char *argv[];
+void
+cumain(int argc, char *argv[])
 {
-	register int i;
+	int ch, i, parity;
+	const char *errstr;
 	static char sbuf[12];
 
-	if (argc < 2) {
-		printf("usage: cu telno [-t] [-s speed] [-a acu] [-l line] [-#]\n");
-		exit(8);
-	}
-	CU = DV = NOSTR;
+	if (argc < 2)
+		cuusage();
+	CU = DV = NULL;
 	BR = DEFBR;
-	for (; argc > 1; argv++, argc--) {
-		if (argv[1][0] != '-')
-			PN = argv[1];
-		else switch (argv[1][1]) {
+	parity = 0;	/* none */
 
-		case 't':
-			HW = 1, DU = -1;
-			--argc;
-			continue;
+	/*
+	 * Convert obsolecent -### speed to modern -s### syntax which
+	 * getopt() can handle.
+	 */
+	for (i = 1; i < argc; i++) {
+		if (argv[i][0] == '-') {
+			switch (argv[i][1]) {
+			case '0': case '1': case '2': case '3': case '4':
+			case '5': case '6': case '7': case '8': case '9':
+				ch = snprintf(sbuf, sizeof(sbuf), "-s%s",
+				    &argv[i][1]);
+				if (ch <= 0 || ch >= sizeof(sbuf)) {
+					errx(3, "invalid speed: %s",
+					    &argv[i][1]);
+				}
+				argv[i] = sbuf;
+				break;
+			case '-':
+				/* if we get "--" stop processing args */
+				if (argv[i][2] == '\0')
+					goto getopt;
+				break;
+			}
+		}
+	}
 
+getopt:
+	while ((ch = getopt(argc, argv, "a:l:s:htoe")) != -1) {
+		switch (ch) {
 		case 'a':
-			CU = argv[2]; ++argv; --argc;
+			if (optarg[0] == '\0')
+				errx(3, "invalid acu: \"\"");
+			CU = optarg;
 			break;
-
-		case 's':
-			if (argc < 3 || speed(atoi(argv[2])) == 0) {
-				fprintf(stderr, "cu: unsupported speed %s\n",
-					argv[2]);
+		case 'l':
+			if (DV != NULL) {
+				fprintf(stderr,
+				    "%s: cannot specify multiple -l options\n",
+				    __progname);
 				exit(3);
 			}
-			BR = atoi(argv[2]); ++argv; --argc;
+			if (strchr(optarg, '/'))
+				DV = optarg;
+			else
+				if (asprintf(&DV, "%s%s", _PATH_DEV, optarg) == -1)
+					err(3, "asprintf");
 			break;
-
-		case 'l':
-			DV = argv[2]; ++argv; --argc;
+		case 's':
+			BR = (int)strtonum(optarg, 0, INT_MAX, &errstr);
+			if (errstr)
+				errx(3, "speed is %s: %s", errstr, optarg);
 			break;
-
-		case '0': case '1': case '2': case '3': case '4':
-		case '5': case '6': case '7': case '8': case '9':
-			if (CU)
-				CU[strlen(CU)-1] = argv[1][1];
-			if (DV)
-				DV[strlen(DV)-1] = argv[1][1];
+		case 'h':
+			setboolean(value(LECHO), TRUE);
+			HD = TRUE;
 			break;
-
+		case 't':
+			HW = 1, DU = -1;
+			break;
+		case 'o':
+			if (parity != 0)
+				parity = 0;	/* -e -o */
+			else
+				parity = 1;	/* odd */
+			break;
+		case 'e':
+			if (parity != 0)
+				parity = 0;	/* -o -e */
+			else
+				parity = -1;	/* even */
+			break;
 		default:
-			printf("Bad flag %s", argv[1]);
+			cuusage();
 			break;
 		}
 	}
+	argc -= optind;
+	argv += optind;
+
+	switch (argc) {
+	case 1:
+		PN = argv[0];
+		break;
+	case 0:
+		break;
+	default:
+		cuusage();
+		break;
+	}
+
 	signal(SIGINT, cleanup);
 	signal(SIGQUIT, cleanup);
 	signal(SIGHUP, cleanup);
 	signal(SIGTERM, cleanup);
+	signal(SIGCHLD, SIG_DFL);
 
 	/*
 	 * The "cu" host name is used to define the
 	 * attributes of the generic dialer.
 	 */
-	(void)sprintf(sbuf, "cu%d", BR);
+	(void)snprintf(sbuf, sizeof(sbuf), "cu%ld", BR);
 	if ((i = hunt(sbuf)) == 0) {
 		printf("all ports busy\n");
 		exit(3);
@@ -122,16 +174,44 @@ cumain(argc, argv)
 	loginit();
 	user_uid();
 	vinit();
-	setparity("none");
-	boolean(value(VERBOSE)) = 0;
-	if (HW)
-		ttysetup(speed(BR));
-	if (connect()) {
+	switch (parity) {
+	case -1:
+		setparity("even");
+		break;
+	case 1:
+		setparity("odd");
+		break;
+	default:
+		setparity("none");
+		break;
+	}
+	setboolean(value(VERBOSE), FALSE);
+	if (HW && ttysetup(BR)) {
+		fprintf(stderr, "%s: unsupported speed %ld\n",
+		    __progname, BR);
+		daemon_uid();
+		(void)uu_unlock(uucplock);
+		exit(3);
+	}
+	if (con()) {
 		printf("Connect failed\n");
 		daemon_uid();
 		(void)uu_unlock(uucplock);
 		exit(1);
 	}
-	if (!HW)
-		ttysetup(speed(BR));
+	if (!HW && ttysetup(BR)) {
+		fprintf(stderr, "%s: unsupported speed %ld\n",
+		    __progname, BR);
+		daemon_uid();
+		(void)uu_unlock(uucplock);
+		exit(3);
+	}
+}
+
+static void
+cuusage(void)
+{
+	fprintf(stderr, "usage: cu [-ehot] [-a acu] [-l line] "
+	    "[-s speed | -speed] [phone-number]\n");
+	exit(8);
 }

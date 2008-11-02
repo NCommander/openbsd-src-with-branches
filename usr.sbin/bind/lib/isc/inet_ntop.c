@@ -90,12 +90,12 @@ inet_ntop4(const unsigned char *src, char *dst, size_t size)
 	static const char *fmt = "%u.%u.%u.%u";
 	char tmp[sizeof("255.255.255.255")];
 
-	if ((size_t)sprintf(tmp, fmt, src[0], src[1], src[2], src[3]) >= size)
+	if ((size_t)snprintf(tmp, sizeof(tmp), fmt, src[0], src[1], src[2], src[3]) >= size)
 	{
 		errno = ENOSPC;
 		return (NULL);
 	}
-	strcpy(dst, tmp);
+	strlcpy(dst, tmp, size);
 
 	return (dst);
 }
@@ -177,7 +177,8 @@ inet_ntop6(const unsigned char *src, char *dst, size_t size)
 			tp += strlen(tp);
 			break;
 		}
-		tp += sprintf(tp, "%x", words[i]);
+		snprintf(tp, tmp + sizeof tmp - tp, "%x", words[i]);
+		tp += strlen(tp);
 	}
 	/* Was it a trailing run of 0x00's? */
 	if (best.base != -1 && (best.base + best.len) ==
@@ -192,7 +193,7 @@ inet_ntop6(const unsigned char *src, char *dst, size_t size)
 		errno = ENOSPC;
 		return (NULL);
 	}
-	strcpy(dst, tmp);
+	strlcpy(dst, tmp, size);
 	return (dst);
 }
 #endif /* AF_INET6 */

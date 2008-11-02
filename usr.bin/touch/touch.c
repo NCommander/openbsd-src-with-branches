@@ -1,3 +1,4 @@
+/*	$OpenBSD: touch.c,v 1.16 2007/06/18 11:20:58 millert Exp $	*/
 /*	$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,23 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)touch.c	8.2 (Berkeley) 4/28/95";
-#endif
-static char rcsid[] = "$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include <ctype.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -58,32 +43,30 @@ static char rcsid[] = "$NetBSD: touch.c,v 1.11 1995/08/31 22:10:06 jtc Exp $";
 #include <string.h>
 #include <locale.h>
 #include <time.h>
+#include <tzfile.h>
 #include <unistd.h>
 
-int	rw __P((char *, struct stat *, int));
-void	stime_arg1 __P((char *, struct timeval *));
-void	stime_arg2 __P((char *, int, struct timeval *));
-void	stime_file __P((char *, struct timeval *));
-void	usage __P((void));
+void		stime_arg1(char *, struct timeval *);
+void		stime_arg2(char *, int, struct timeval *);
+void		stime_file(char *, struct timeval *);
+__dead void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	struct stat sb;
-	struct timeval tv[2];
-	int aflag, cflag, fflag, mflag, ch, fd, len, rval, timeset;
-	char *p;
+	struct stat	 sb;
+	struct timeval	 tv[2];
+	int		 aflag, cflag, mflag, ch, fd, len, rval, timeset;
+	char		*p;
 
-	setlocale(LC_ALL, "");
+	(void)setlocale(LC_ALL, "");
 
-	aflag = cflag = fflag = mflag = timeset = 0;
+	aflag = cflag = mflag = timeset = 0;
 	if (gettimeofday(&tv[0], NULL))
 		err(1, "gettimeofday");
 
-	while ((ch = getopt(argc, argv, "acfmr:t:")) != EOF)
-		switch(ch) {
+	while ((ch = getopt(argc, argv, "acfmr:t:")) != -1)
+		switch (ch) {
 		case 'a':
 			aflag = 1;
 			break;
@@ -91,7 +74,6 @@ main(argc, argv)
 			cflag = 1;
 			break;
 		case 'f':
-			fflag = 1;
 			break;
 		case 'm':
 			mflag = 1;
@@ -104,7 +86,6 @@ main(argc, argv)
 			timeset = 1;
 			stime_arg1(optarg, tv);
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -137,7 +118,7 @@ main(argc, argv)
 
 	for (rval = 0; *argv; ++argv) {
 		/* See if the file exists. */
-		if (stat(*argv, &sb))
+		if (stat(*argv, &sb)) {
 			if (!cflag) {
 				/* Create the file. */
 				fd = open(*argv,
@@ -153,6 +134,7 @@ main(argc, argv)
 					continue;
 			} else
 				continue;
+		}
 
 		if (!aflag)
 			TIMESPEC_TO_TIMEVAL(&tv[0], &sb.st_atimespec);
@@ -178,71 +160,80 @@ main(argc, argv)
 		 if (!utimes(*argv, NULL))
 			continue;
 
-		/* Try reading/writing. */
-		if (rw(*argv, &sb, fflag))
-			rval = 1;
+		rval = 1;
+		warn("%s", *argv);
 	}
 	exit(rval);
 }
 
-#define	ATOI2(ar)	((ar)[0] - '0') * 10 + ((ar)[1] - '0'); (ar) += 2;
+#define	ATOI2(s)	((s) += 2, ((s)[-2] - '0') * 10 + ((s)[-1] - '0'))
 
 void
-stime_arg1(arg, tvp)
-	char *arg;
-	struct timeval *tvp;
+stime_arg1(char *arg, struct timeval *tvp)
 {
-	struct tm *t;
-	time_t tmptime;
-	int yearset;
-	char *p;
+	struct tm	*lt;
+	time_t		 tmptime;
+	int		 yearset;
+	char		*dot, *p;
 					/* Start with the current time. */
 	tmptime = tvp[0].tv_sec;
-	if ((t = localtime(&tmptime)) == NULL)
+	if ((lt = localtime(&tmptime)) == NULL)
 		err(1, "localtime");
 					/* [[CC]YY]MMDDhhmm[.SS] */
-	if ((p = strchr(arg, '.')) == NULL)
-		t->tm_sec = 0;		/* Seconds defaults to 0. */
-	else {
-		if (strlen(p + 1) != 2)
+	for (p = arg, dot = NULL; *p != '\0'; p++) {
+		if (*p == '.' && dot == NULL)
+			dot = p;
+		else if (!isdigit((unsigned char)*p))
 			goto terr;
-		*p++ = '\0';
-		t->tm_sec = ATOI2(p);
 	}
-		
+	if (dot == NULL)
+		lt->tm_sec = 0;		/* Seconds defaults to 0. */
+	else {
+		*dot++ = '\0';
+		if (strlen(dot) != 2)
+			goto terr;
+		lt->tm_sec = ATOI2(dot);
+		if (lt->tm_sec > 61)	/* Could be leap second. */
+			goto terr;
+	}
+
 	yearset = 0;
-	switch(strlen(arg)) {
+	switch (strlen(arg)) {
 	case 12:			/* CCYYMMDDhhmm */
-		t->tm_year = ATOI2(arg);
-		t->tm_year *= 100;
+		lt->tm_year = ATOI2(arg) * 100 - TM_YEAR_BASE;
 		yearset = 1;
-		/* FALLTHOUGH */
+		/* FALLTHROUGH */
 	case 10:			/* YYMMDDhhmm */
 		if (yearset) {
 			yearset = ATOI2(arg);
-			t->tm_year += yearset;
+			lt->tm_year += yearset;
 		} else {
 			yearset = ATOI2(arg);
-			if (yearset < 69)
-				t->tm_year = yearset + 2000;
-			else
-				t->tm_year = yearset + 1900;
+			/* Preserve current century. */
+			lt->tm_year = ((lt->tm_year / 100) * 100) + yearset;
 		}
-		t->tm_year -= 1900;	/* Convert to UNIX time. */
 		/* FALLTHROUGH */
 	case 8:				/* MMDDhhmm */
-		t->tm_mon = ATOI2(arg);
-		--t->tm_mon;		/* Convert from 01-12 to 00-11 */
-		t->tm_mday = ATOI2(arg);
-		t->tm_hour = ATOI2(arg);
-		t->tm_min = ATOI2(arg);
+		lt->tm_mon = ATOI2(arg);
+		if (lt->tm_mon > 12 || lt->tm_mon == 0)
+			goto terr;
+		--lt->tm_mon;		/* Convert from 01-12 to 00-11 */
+		lt->tm_mday = ATOI2(arg);
+		if (lt->tm_mday > 31 || lt->tm_mday == 0)
+			goto terr;
+		lt->tm_hour = ATOI2(arg);
+		if (lt->tm_hour > 23)
+			goto terr;
+		lt->tm_min = ATOI2(arg);
+		if (lt->tm_min > 59)
+			goto terr;
 		break;
 	default:
 		goto terr;
 	}
 
-	t->tm_isdst = -1;		/* Figure out DST. */
-	tvp[0].tv_sec = tvp[1].tv_sec = mktime(t);
+	lt->tm_isdst = -1;		/* Figure out DST. */
+	tvp[0].tv_sec = tvp[1].tv_sec = mktime(lt);
 	if (tvp[0].tv_sec == -1)
 terr:		errx(1,
 	"out of range or illegal time specification: [[CC]YY]MMDDhhmm[.SS]");
@@ -251,41 +242,47 @@ terr:		errx(1,
 }
 
 void
-stime_arg2(arg, year, tvp)
-	char *arg;
-	int year;
-	struct timeval *tvp;
+stime_arg2(char *arg, int year, struct timeval *tvp)
 {
-	struct tm *t;
-	time_t tmptime;
+	struct tm	*lt;
+	time_t		 tmptime;
 					/* Start with the current time. */
 	tmptime = tvp[0].tv_sec;
-	if ((t = localtime(&tmptime)) == NULL)
+	if ((lt = localtime(&tmptime)) == NULL)
 		err(1, "localtime");
 
-	t->tm_mon = ATOI2(arg);		/* MMDDhhmm[yy] */
-	--t->tm_mon;			/* Convert from 01-12 to 00-11 */
-	t->tm_mday = ATOI2(arg);
-	t->tm_hour = ATOI2(arg);
-	t->tm_min = ATOI2(arg);
-	if (year)
-		t->tm_year = ATOI2(arg);
+	lt->tm_mon = ATOI2(arg);	/* MMDDhhmm[YY] */
+	if (lt->tm_mon > 12 || lt->tm_mon == 0)
+		goto terr;
+	--lt->tm_mon;			/* Convert from 01-12 to 00-11 */
+	lt->tm_mday = ATOI2(arg);
+	if (lt->tm_mday > 31 || lt->tm_mday == 0)
+		goto terr;
+	lt->tm_hour = ATOI2(arg);
+	if (lt->tm_hour > 23)
+		goto terr;
+	lt->tm_min = ATOI2(arg);
+	if (lt->tm_min > 59)
+		goto terr;
+	if (year) {
+		year = ATOI2(arg);	/* Preserve current century. */
+		lt->tm_year = ((lt->tm_year / 100) * 100) + year;
+	}
+	lt->tm_sec = 0;
 
-	t->tm_isdst = -1;		/* Figure out DST. */
-	tvp[0].tv_sec = tvp[1].tv_sec = mktime(t);
+	lt->tm_isdst = -1;		/* Figure out DST. */
+	tvp[0].tv_sec = tvp[1].tv_sec = mktime(lt);
 	if (tvp[0].tv_sec == -1)
-		errx(1,
-	"out of range or illegal time specification: MMDDhhmm[yy]");
+terr:		errx(1,
+	"out of range or illegal time specification: MMDDhhmm[YY]");
 
 	tvp[0].tv_usec = tvp[1].tv_usec = 0;
 }
 
 void
-stime_file(fname, tvp)
-	char *fname;
-	struct timeval *tvp;
+stime_file(char *fname, struct timeval *tvp)
 {
-	struct stat sb;
+	struct stat	sb;
 
 	if (stat(fname, &sb))
 		err(1, "%s", fname);
@@ -293,62 +290,13 @@ stime_file(fname, tvp)
 	TIMESPEC_TO_TIMEVAL(tvp + 1, &sb.st_mtimespec);
 }
 
-int
-rw(fname, sbp, force)
-	char *fname;
-	struct stat *sbp;
-	int force;
-{
-	int fd, needed_chmod, rval;
-	u_char byte;
-
-	/* Try regular files and directories. */
-	if (!S_ISREG(sbp->st_mode) && !S_ISDIR(sbp->st_mode)) {
-		warnx("%s: %s", fname, strerror(EFTYPE));
-		return (1);
-	}
-
-	needed_chmod = rval = 0;
-	if ((fd = open(fname, O_RDWR, 0)) == -1) {
-		if (!force || chmod(fname, DEFFILEMODE))
-			goto err;
-		if ((fd = open(fname, O_RDWR, 0)) == -1)
-			goto err;
-		needed_chmod = 1;
-	}
-
-	if (sbp->st_size != 0) {
-		if (read(fd, &byte, sizeof(byte)) != sizeof(byte))
-			goto err;
-		if (lseek(fd, (off_t)0, SEEK_SET) == -1)
-			goto err;
-		if (write(fd, &byte, sizeof(byte)) != sizeof(byte))
-			goto err;
-	} else {
-		if (write(fd, &byte, sizeof(byte)) != sizeof(byte)) {
-err:			rval = 1;
-			warn("%s", fname);
-		} else if (ftruncate(fd, (off_t)0)) {
-			rval = 1;
-			warn("%s: file modified", fname);
-		}
-	}
-
-	if (close(fd) && rval != 1) {
-		rval = 1;
-		warn("%s", fname);
-	}
-	if (needed_chmod && chmod(fname, sbp->st_mode) && rval != 1) {
-		rval = 1;
-		warn("%s: permissions modified", fname);
-	}
-	return (rval);
-}
-
 __dead void
-usage()
+usage(void)
 {
+	extern char	*__progname;
+
 	(void)fprintf(stderr,
-	    "usage: touch [-acfm] [-r file] [-t time] file ...\n");
+	    "usage: %s [-acm] [-r file] [-t [[CC]YY]MMDDhhmm[.SS]] file ...\n",
+	    __progname);
 	exit(1);
 }

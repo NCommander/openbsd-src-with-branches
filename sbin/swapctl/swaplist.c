@@ -1,3 +1,4 @@
+/*	$OpenBSD: swaplist.c,v 1.6 2007/07/16 21:05:46 millert Exp $	*/
 /*	$NetBSD: swaplist.c,v 1.8 1998/10/08 10:00:31 mrg Exp $	*/
 
 /*
@@ -29,48 +30,36 @@
  */
 
 #include <sys/param.h>
-#include <sys/stat.h>
 #include <sys/swap.h>
 
-#include <unistd.h>
 #include <err.h>
-#include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
-
-#define	dbtoqb(b) dbtob((int64_t)(b))
-
-/*
- * NOTE:  This file is separate from swapctl.c so that pstat can grab it.
- */
+#include <unistd.h>
 
 #include "swapctl.h"
 
+#define	dbtoqb(b) dbtob((int64_t)(b))
+
 void
-list_swap(pri, kflag, pflag, tflag, dolong)
-	int	pri;
-	int	kflag;
-	int	pflag;
-	int	tflag;
-	int	dolong;
+list_swap(int pri, int kflag, int pflag, int dolong)
 {
 	struct	swapent *sep, *fsep;
 	long	blocksize;
 	char	*header;
 	size_t	l;
 	int	hlen, totalsize, size, totalinuse, inuse, ncounted, pathmax;
-	int	rnswap, nswap = swapctl(SWAP_NSWAP, 0, 0), i;
+	int	rnswap, nswap, i;
 
-	if (nswap < 1) {
-		puts("no swap devices configured");
-		exit(0);
-	}
+	nswap = swapctl(SWAP_NSWAP, 0, 0);
+	if (nswap < 1)
+		errx(1, "no swap devices configured");
 
-	fsep = sep = (struct swapent *)malloc(nswap * sizeof(*sep));
+	fsep = sep = (struct swapent *)calloc(nswap, sizeof(*sep));
 	if (sep == NULL)
-		err(1, "malloc");
+		err(1, "calloc");
 	rnswap = swapctl(SWAP_STATS, (void *)sep, nswap);
 	if (rnswap < 0)
 		err(1, "SWAP_STATS");
@@ -79,7 +68,7 @@ list_swap(pri, kflag, pflag, tflag, dolong)
 		    rnswap, nswap);
 
 	pathmax = 11;
-	if (dolong && tflag == 0) {
+	if (dolong) {
 		if (kflag) {
 			header = "1K-blocks";
 			blocksize = 1024;
@@ -104,7 +93,7 @@ list_swap(pri, kflag, pflag, tflag, dolong)
 		totalsize += size;
 		totalinuse += inuse;
 
-		if (dolong && tflag == 0) {
+		if (dolong) {
 			(void)printf("%-*s %*ld ", pathmax, sep->se_path, hlen,
 			    (long)(dbtoqb(size) / blocksize));
 
@@ -115,13 +104,9 @@ list_swap(pri, kflag, pflag, tflag, dolong)
 			    sep->se_priority);
 		}
 	}
-	if (tflag)
-		(void)printf("%dM/%dM swap space\n",
-		    (int)(dbtoqb(totalinuse) / (1024 * 1024)),
-		    (int)(dbtoqb(totalsize) / (1024 * 1024)));
-	else if (dolong == 0)
-		    printf("total: %ldk bytes allocated = %ldk used,"
-			   "%ldk available\n",
+	if (dolong == 0)
+		printf("total: %ldk bytes allocated = %ldk used, "
+		   "%ldk available\n",
 		    (long)(dbtoqb(totalsize) / 1024),
 		    (long)(dbtoqb(totalinuse) / 1024),
 		    (long)(dbtoqb(totalsize - totalinuse) / 1024));
@@ -133,5 +118,5 @@ list_swap(pri, kflag, pflag, tflag, dolong)
 		    (long)(dbtoqb(totalsize - totalinuse) / blocksize),
 		    (double)(totalinuse) / (double)totalsize * 100.0);
 	if (fsep)
-		(void)free(fsep);
+		free(fsep);
 }

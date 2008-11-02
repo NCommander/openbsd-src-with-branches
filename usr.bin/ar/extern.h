@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.3 2002/02/16 21:27:43 millert Exp $	*/
 /*	$NetBSD: extern.h,v 1.4 1995/03/25 06:39:46 glass Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,20 +32,20 @@
  *	@(#)extern.h	8.3 (Berkeley) 4/2/94
  */
 
-int	append __P((char **));
-void	badfmt __P((void));
-int	compare __P((char *));
-int	contents __P((char **));
-int	delete __P((char **));
-void	error __P((char *));
-int	extract __P((char **));
-char   *files __P((char **argv));
-int	move __P((char **));
-void	orphans __P((char **argv));
-int	print __P((char **));
-int	replace __P((char **));
-char   *rname __P((char *));
-int	tmp __P((void));
+int	append(char **);
+void	badfmt(void);
+int	compare(char *);
+int	contents(char **);
+int	delete(char **);
+void	error(char *);
+int	extract(char **);
+char   *files(char **argv);
+int	move(char **);
+void	orphans(char **argv);
+int	print(char **);
+int	replace(char **);
+char   *rname(char *);
+int	tmp(void);
 
 extern char *archive;
 extern char *posarg, *posname;		/* positioning file name */

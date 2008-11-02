@@ -1,4 +1,5 @@
-/*      $NetBSD: n_cabs.c,v 1.1 1995/10/10 23:36:39 ragge Exp $ */
+/*	$OpenBSD: n_cabs.c,v 1.9 2008/06/25 17:49:31 martynas Exp $	*/
+/*	$NetBSD: n_cabs.c,v 1.1 1995/10/10 23:36:39 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,13 +36,13 @@ static char sccsid[] = "@(#)cabs.c	8.1 (Berkeley) 6/4/93";
 /* HYPOT(X,Y)
  * RETURN THE SQUARE ROOT OF X^2 + Y^2  WHERE Z=X+iY
  * DOUBLE PRECISION (VAX D format 56 bits, IEEE DOUBLE 53 BITS)
- * CODED IN C BY K.C. NG, 11/28/84; 
+ * CODED IN C BY K.C. NG, 11/28/84;
  * REVISED BY K.C. NG, 7/12/85.
  *
  * Required system supported functions :
  *	copysign(x,y)
  *	finite(x)
- *	scalb(x,N)
+ *	scalbn(x,N)
  *	sqrt(x)
  *
  * Method :
@@ -53,16 +50,16 @@ static char sccsid[] = "@(#)cabs.c	8.1 (Berkeley) 6/4/93";
  *	   y if y > x (hence x is never smaller than y).
  *	2. Hypot(x,y) is computed by:
  *	   Case I, x/y > 2
- *		
+ *
  *				       y
  *		hypot = x + -----------------------------
  *			 		    2
  *			    sqrt ( 1 + [x/y]  )  +  x/y
  *
- *	   Case II, x/y <= 2 
+ *	   Case II, x/y <= 2
  *				                   y
  *		hypot = x + --------------------------------------------------
- *				          		     2 
+ *				          		     2
  *				     			[x/y]   -  2
  *			   (sqrt(2)+1) + (x-y)/y + -----------------------------
  *			 		    			  2
@@ -88,6 +85,8 @@ static char sccsid[] = "@(#)cabs.c	8.1 (Berkeley) 6/4/93";
  * from decimal to binary accurately enough to produce the hexadecimal values
  * shown.
  */
+
+#include "math.h"
 #include "mathimpl.h"
 
 vc(r2p1hi, 2.4142135623730950345E0   ,8279,411a,ef32,99fc,   2, .9A827999FCEF32)
@@ -105,10 +104,9 @@ ic(sqrt2,  1.4142135623730951455E0   ,   0, 1.6A09E667F3BCD)
 #endif
 
 double
-hypot(x,y)
-double x, y;
+hypot(double x, double y)
 {
-	static const double zero=0, one=1, 
+	static const double zero=0, one=1,
 		      small=1.0E-18;	/* fl(1+small)==1 */
 	static const ibig=30;	/* fl(1+2**(2*ibig))==1 */
 	double t,r;
@@ -116,17 +114,18 @@ double x, y;
 
 	if(finite(x))
 	    if(finite(y))
-	    {	
+	    {
 		x=copysign(x,one);
 		y=copysign(y,one);
-		if(y > x) 
+		if(y > x)
 		    { t=x; x=y; y=t; }
 		if(x == zero) return(zero);
 		if(y == zero) return(x);
 		exp= logb(x);
-		if(exp-(int)logb(y) > ibig ) 	
-			/* raise inexact flag and return |x| */
-		   { one+small; return(x); }
+		if (exp - (int)logb(y) > ibig) {
+			if (one + small >= 1.0)	/* raise inexact flag */
+				return(x);	/* return |x| */
+		}
 
 	    /* start computing sqrt(x^2 + y^2) */
 		r=x-y;
@@ -143,19 +142,18 @@ double x, y;
 
 	    }
 
-	    else if(y==y)   	   /* y is +-INF */
+	    else if(isinf(y))		/* y is +-INF */
 		     return(copysign(y,one));
-	    else 
-		     return(y);	   /* y is NaN and x is finite */
+	    else
+		     return(y);		/* y is NaN and x is finite */
 
-	else if(x==x) 		   /* x is +-INF */
+	else if(isinf(x))		/* x is +-INF */
 	         return (copysign(x,one));
 	else if(finite(y))
-	         return(x);		   /* x is NaN, y is finite */
-#if !defined(vax)&&!defined(tahoe)
-	else if(y!=y) return(y);  /* x and y is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
-	else return(copysign(y,one));   /* y is INF */
+	         return(x);		/* x is NaN, y is finite */
+	else if (isnan(y))
+		return (y);
+	else return(copysign(y,one));	/* y is INF */
 }
 
 /* CABS(Z)
@@ -174,23 +172,21 @@ double x, y;
 struct complex { double x, y; };
 
 double
-cabs(z)
-struct complex z;
+cabs(struct complex z)
 {
 	return hypot(z.x,z.y);
 }
 
 double
-z_abs(z)
-struct complex *z;
+z_abs(struct complex *z)
 {
 	return hypot(z->x,z->y);
 }
 
 /* A faster but less accurate version of cabs(x,y) */
 #if 0
-double hypot(x,y)
-double x, y;
+double
+hypot(double x, double y)
 {
 	static const double zero=0, one=1;
 		      small=1.0E-18;	/* fl(1+small)==1 */
@@ -200,32 +196,33 @@ double x, y;
 
 	if(finite(x))
 	    if(finite(y))
-	    {	
+	    {
 		x=copysign(x,one);
 		y=copysign(y,one);
-		if(y > x) 
+		if(y > x)
 		    { temp=x; x=y; y=temp; }
 		if(x == zero) return(zero);
 		if(y == zero) return(x);
 		exp= logb(x);
-		x=scalb(x,-exp);
-		if(exp-(int)logb(y) > ibig ) 
-			/* raise inexact flag and return |x| */
-		   { one+small; return(scalb(x,exp)); }
-		else y=scalb(y,-exp);
-		return(scalb(sqrt(x*x+y*y),exp));
+		x=scalbn(x,-exp);
+		if (exp - (int)logb(y) > ibig) {
+			if (one + small >= 1.0)		/* raise inexact flag */
+				return(scalbn(x,exp));	/* return |x| */
+		}
+		else y=scalbn(y,-exp);
+		return(scalbn(sqrt(x*x+y*y),exp));
 	    }
 
-	    else if(y==y)   	   /* y is +-INF */
+	    else if(isinf(y))		/* y is +-INF */
 		     return(copysign(y,one));
-	    else 
-		     return(y);	   /* y is NaN and x is finite */
+	    else
+		     return(y);		/* y is NaN and x is finite */
 
-	else if(x==x) 		   /* x is +-INF */
+	else if(isinf(x))		/* x is +-INF */
 	         return (copysign(x,one));
 	else if(finite(y))
-	         return(x);		   /* x is NaN, y is finite */
-	else if(y!=y) return(y);  	/* x and y is NaN */
-	else return(copysign(y,one));   /* y is INF */
+	         return(x);		/* x is NaN, y is finite */
+	else if(isnan(y)) return(y);	/* x and y is NaN */
+	else return(copysign(y,one));	/* y is INF */
 }
 #endif

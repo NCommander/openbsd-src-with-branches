@@ -1,3 +1,4 @@
+/*	$OpenBSD: make_level.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: make_level.c,v 1.3 1995/04/22 10:08:56 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,22 +34,22 @@
 #if 0
 static char sccsid[] = "@(#)make_level.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: make_level.c,v 1.3 1995/04/22 10:08:56 cgd Exp $";
+static char rcsid[] = "$OpenBSD: make_level.c,v 1.5 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
-# include	"robots.h"
+#include	"robots.h"
 
 /*
  * make_level:
  *	Make the current level
  */
-make_level()
+void
+make_level(void)
 {
-	register int	i;
-	register COORD	*cp;
-	register WINDOW	*wp;
-	register int	x, *endp;
+	int	i;
+	COORD	*cp;
+	int	x;
 
 	reset_count();
 	for (i = 1; i < Y_FIELDSIZE; i++)
@@ -69,7 +66,7 @@ make_level()
 		cp->y = -1;
 	My_pos.y = -1;
 
-	bzero(Field, sizeof Field);
+	memset(Field, 0, sizeof Field);
 	Min.y = Y_FIELDSIZE;
 	Min.x = X_FIELDSIZE;
 	Max.y = 0;

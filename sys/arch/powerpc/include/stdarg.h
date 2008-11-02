@@ -1,3 +1,4 @@
+/*	$OpenBSD: stdarg.h,v 1.5 2003/06/02 23:27:53 millert Exp $	*/
 /*	$NetBSD: stdarg.h,v 1.1 1996/09/30 16:34:35 ws Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,16 +32,16 @@
  *	@(#)stdarg.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef _PPC_STDARG_H_
-#define	_PPC_STDARG_H_
+#ifndef _POWERPC_STDARG_H_
+#define	_POWERPC_STDARG_H_
 
-#include <machine/ansi.h>
+#include <machine/_types.h>
 
 #ifndef	_STDARG_H
 #define	_STDARG_H
 #endif
 #include <machine/va-ppc.h>
 
-typedef _BSD_VA_LIST_	va_list;
+typedef __va_list	va_list;
 
-#endif /* !_PPC_STDARG_H_ */
+#endif /* !_POWERPC_STDARG_H_ */

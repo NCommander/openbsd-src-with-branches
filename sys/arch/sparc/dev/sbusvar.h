@@ -1,4 +1,5 @@
-/*	$NetBSD: sbusvar.h,v 1.2 1994/11/20 20:52:27 deraadt Exp $ */
+/*	$OpenBSD: sbusvar.h,v 1.8 2006/06/02 20:00:54 miod Exp $	*/
+/*	$NetBSD: sbusvar.h,v 1.4 1996/04/22 02:35:05 abrown Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,27 +44,24 @@
 /*
  * S-bus variables.
  */
-struct sbusdev {
-	struct	device *sd_dev;		/* backpointer to generic */
-	struct	sbusdev *sd_bchain;	/* forward link in bus chain */
-	void	(*sd_reset) __P((struct device *));
-};
 
 /*
- * Sbus driver attach arguments.
+ * SBus driver attach arguments.
  */
 struct sbus_attach_args {
 	struct	romaux sa_ra;		/* name, node, addr, etc */
-	int	sa_slot;		/* Sbus slot number */
+	int	sa_slot;		/* SBus slot number */
 	int	sa_offset;		/* offset within slot */
 };
 
-/* variables per Sbus */
+/* variables per SBus */
 struct sbus_softc {
 	struct	device sc_dev;		/* base device */
 	int	sc_clockfreq;		/* clock frequency (in Hz) */
-	struct	sbusdev *sc_sbdev;	/* list of all children */
+	struct	rom_range *sc_range;
+	int	sc_nrange;
+	int	sc_burst;		/* burst transfer sizes supported */
 };
 
-int	sbusdev_match __P((struct cfdata *, void *));
-void	sbus_establish __P((struct sbusdev *, struct device *));
+void	sbus_translate(struct device *, struct confargs *);
+int	sbus_testdma(struct sbus_softc *, struct confargs *);

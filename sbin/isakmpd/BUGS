@@ -1,4 +1,5 @@
-$Id: BUGS,v 1.21 1998/10/14 14:09:48 niklas Exp $
+$OpenBSD: BUGS,v 1.14 2002/06/09 08:13:06 todd Exp $
+$EOM: BUGS,v 1.38 2000/02/18 08:47:35 niklas Exp $
 
 Until we have a bug-tracking system setup, we might just add bugs to this
 file:
@@ -15,12 +16,12 @@ file:
 * When we establish a phase 2 exchange we seem to get the wrong IV set,
   according to SSH's logs. [fixed]
 
-* If a phase 1 SA negotiation exists with a cause that is to be sent in
+* If a phase 1 SA negotiation terminates with a cause that is to be sent in
   a NOTIFY to the peer, we get multiple free calls on the cleanup of the
-  informational exchange.
+  informational exchange. [fixed]
 
 * IKE mandates that a HASH should be added to informational exchanges in
-  phase 2.
+  phase 2. [fixed]
 
 * Message_send requires an exchange to exist, and potentially it tries to
   encrypt a message multiple times when retransmitting. [fixed]
@@ -48,3 +49,52 @@ file:
 * If the first proposal is turned down, the initiator gets confused.
 
 * Renegotiation after a failed phase 1 fails.
+
+* Phase 1 rekey event removal seems to be done twice. [fixed]
+
+* PF_ENCAP expirations does not find the proper phase 2 SA to remove. [fixed]
+
+* ISAKMP SA expirations should have a soft/hard timeout just like IPsec ones.
+  The soft one should put a watchdog on the SA, and start a renegotiation as
+  soon as something used the SA.  Hard ones should just clean it up, no
+  renegotiation at all. [fixed]
+
+* ISAKMP SAs does not get removed after rekeying. [fixed]
+
+* On-demand PF_ENCAP SAs does not get reestablished. [fixed]
+
+* Rekeying is now done automatically on expirations, it should not.  The
+  SAs should be brought up on-demand just like the first time.
+
+* Notifications regarding exchange errors seems to not have the right SPI,
+  at least not in phase 1, in NO_PROPOSAL_CHOSEN.
+
+* Outgoing informational exchanges when we use INVALID_PAYLOAD_TYPE
+  cause a DOI error.
+
+* In Linux select(2) of named pipes seems broken as they will return as
+  readable even when nothing is there after one read has succeeded.
+
+* I have seen INITIAL-CONTACT sent on the second Main Mode.
+
+* When ID mismatches occur, coredumps may follow, investigate!
+
+* ESP+AH does not work properly
+
+* Looping QM seen (due to lost sendpackets from other participant?)
+
+* Teardown from UI does not remove exchanges.
+
+* Wrong error message when policy check fails.
+
+* Retransmit of QM (packet 1) after INFO/PAYLOAD_MALFORMED was received.
+
+* SIGSEGV after sa_enter: sa added to sa list, trigged by DELETE notify (Linux)
+
+* Passive connections, undefined local&remote IDs will cause IKE peer IDs
+  to be used.
+
+* host route support in KLIPS does not work properly
+
+* When not having compiled in support for a certain crypto algorithm and
+  the config file still tells us to propose it, we segfault.

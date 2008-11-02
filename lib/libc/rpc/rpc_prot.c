@@ -1,5 +1,4 @@
-/*	$NetBSD: rpc_prot.c,v 1.3 1995/04/29 05:26:35 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)rpc_prot.c 1.36 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)rpc_prot.c	2.3 88/08/07 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: rpc_prot.c,v 1.3 1995/04/29 05:26:35 cgd Exp $";
-#endif
-
 /*
  * rpc_prot.c
  *
@@ -61,14 +54,12 @@ struct opaque_auth _null_auth;
  * (see auth.h)
  */
 bool_t
-xdr_opaque_auth(xdrs, ap)
-	register XDR *xdrs;
-	register struct opaque_auth *ap;
+xdr_opaque_auth(XDR *xdrs, struct opaque_auth *ap)
 {
 
 	if (xdr_enum(xdrs, &(ap->oa_flavor)))
 		return (xdr_bytes(xdrs, &ap->oa_base,
-			&ap->oa_length, MAX_AUTH_BYTES));
+		    &ap->oa_length, MAX_AUTH_BYTES));
 	return (FALSE);
 }
 
@@ -76,9 +67,7 @@ xdr_opaque_auth(xdrs, ap)
  * XDR a DES block
  */
 bool_t
-xdr_des_block(xdrs, blkp)
-	register XDR *xdrs;
-	register des_block *blkp;
+xdr_des_block(XDR *xdrs, des_block *blkp)
 {
 	return (xdr_opaque(xdrs, (caddr_t)blkp, sizeof(des_block)));
 }
@@ -89,9 +78,7 @@ xdr_des_block(xdrs, blkp)
  * XDR the MSG_ACCEPTED part of a reply message union
  */
 bool_t 
-xdr_accepted_reply(xdrs, ar)
-	register XDR *xdrs;   
-	register struct accepted_reply *ar;
+xdr_accepted_reply(XDR *xdrs, struct accepted_reply *ar)
 {
 
 	/* personalized union, rather than calling xdr_union */
@@ -99,38 +86,35 @@ xdr_accepted_reply(xdrs, ar)
 		return (FALSE);
 	if (! xdr_enum(xdrs, (enum_t *)&(ar->ar_stat)))
 		return (FALSE);
-	switch (ar->ar_stat) {
 
+	switch (ar->ar_stat) {
 	case SUCCESS:
 		return ((*(ar->ar_results.proc))(xdrs, ar->ar_results.where));
-
 	case PROG_MISMATCH:
-		if (! xdr_u_int32_t(xdrs, &(ar->ar_vers.low)))
+		if (!xdr_u_int32_t(xdrs, &(ar->ar_vers.low)))
 			return (FALSE);
 		return (xdr_u_int32_t(xdrs, &(ar->ar_vers.high)));
+	default:
+		return (TRUE);  /* TRUE => open ended set of problems */
 	}
-	return (TRUE);  /* TRUE => open ended set of problems */
 }
 
 /*
  * XDR the MSG_DENIED part of a reply message union
  */
 bool_t 
-xdr_rejected_reply(xdrs, rr)
-	register XDR *xdrs;
-	register struct rejected_reply *rr;
+xdr_rejected_reply(XDR *xdrs, struct rejected_reply *rr)
 {
 
 	/* personalized union, rather than calling xdr_union */
 	if (! xdr_enum(xdrs, (enum_t *)&(rr->rj_stat)))
 		return (FALSE);
-	switch (rr->rj_stat) {
 
+	switch (rr->rj_stat) {
 	case RPC_MISMATCH:
-		if (! xdr_u_int32_t(xdrs, &(rr->rj_vers.low)))
+		if (!xdr_u_int32_t(xdrs, &(rr->rj_vers.low)))
 			return (FALSE);
 		return (xdr_u_int32_t(xdrs, &(rr->rj_vers.high)));
-
 	case AUTH_ERROR:
 		return (xdr_enum(xdrs, (enum_t *)&(rr->rj_why)));
 	}
@@ -140,22 +124,19 @@ xdr_rejected_reply(xdrs, rr)
 static struct xdr_discrim reply_dscrm[3] = {
 	{ (int)MSG_ACCEPTED, xdr_accepted_reply },
 	{ (int)MSG_DENIED, xdr_rejected_reply },
-	{ __dontcare__, NULL_xdrproc_t } };
+	{ __dontcare__, NULL } };
 
 /*
  * XDR a reply message
  */
 bool_t
-xdr_replymsg(xdrs, rmsg)
-	register XDR *xdrs;
-	register struct rpc_msg *rmsg;
+xdr_replymsg(XDR *xdrs, struct rpc_msg *rmsg)
 {
-	if (
-	    xdr_u_int32_t(xdrs, &(rmsg->rm_xid)) && 
+	if (xdr_u_int32_t(xdrs, &(rmsg->rm_xid)) && 
 	    xdr_enum(xdrs, (enum_t *)&(rmsg->rm_direction)) &&
-	    (rmsg->rm_direction == REPLY) )
+	    rmsg->rm_direction == REPLY)
 		return (xdr_union(xdrs, (enum_t *)&(rmsg->rm_reply.rp_stat),
-		   (caddr_t)&(rmsg->rm_reply.ru), reply_dscrm, NULL_xdrproc_t));
+		   (caddr_t)&(rmsg->rm_reply.ru), reply_dscrm, NULL));
 	return (FALSE);
 }
 
@@ -166,29 +147,24 @@ xdr_replymsg(xdrs, rmsg)
  * The rm_xid is not really static, but the user can easily munge on the fly.
  */
 bool_t
-xdr_callhdr(xdrs, cmsg)
-	register XDR *xdrs;
-	register struct rpc_msg *cmsg;
+xdr_callhdr(XDR *xdrs, struct rpc_msg *cmsg)
 {
 
 	cmsg->rm_direction = CALL;
 	cmsg->rm_call.cb_rpcvers = RPC_MSG_VERSION;
-	if (
-	    (xdrs->x_op == XDR_ENCODE) &&
+	if (xdrs->x_op == XDR_ENCODE &&
 	    xdr_u_int32_t(xdrs, &(cmsg->rm_xid)) &&
 	    xdr_enum(xdrs, (enum_t *)&(cmsg->rm_direction)) &&
 	    xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_rpcvers)) &&
-	    xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_prog)) )
-	    return (xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_vers)));
+	    xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_prog)))
+		return (xdr_u_int32_t(xdrs, &(cmsg->rm_call.cb_vers)));
 	return (FALSE);
 }
 
 /* ************************** Client utility routine ************* */
 
 static void
-accepted(acpt_stat, error)
-	register enum accept_stat acpt_stat;
-	register struct rpc_err *error;
+accepted(enum accept_stat acpt_stat, struct rpc_err *error)
 {
 
 	switch (acpt_stat) {
@@ -224,14 +200,12 @@ accepted(acpt_stat, error)
 }
 
 static void 
-rejected(rjct_stat, error)
-	register enum reject_stat rjct_stat;
-	register struct rpc_err *error;
+rejected(enum reject_stat rjct_stat, struct rpc_err *error)
 {
 
 	switch (rjct_stat) {
 
-	case RPC_VERSMISMATCH:
+	case RPC_MISMATCH:
 		error->re_status = RPC_VERSMISMATCH;
 		return;
 
@@ -249,9 +223,7 @@ rejected(rjct_stat, error)
  * given a reply message, fills in the error
  */
 void
-_seterr_reply(msg, error)
-	register struct rpc_msg *msg;
-	register struct rpc_err *error;
+_seterr_reply(struct rpc_msg *msg, struct rpc_err *error)
 {
 
 	/* optimized for normal, SUCCESSful case */

@@ -1,0 +1,9 @@
+# $OpenBSD$
+# verify that curly targets work correctly
+
+.PHONY: a b c d all
+
+all: a b c d
+
+{a,b,c,d}:
+	@echo "Building $@"

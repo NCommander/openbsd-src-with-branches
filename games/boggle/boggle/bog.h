@@ -1,3 +1,4 @@
+/*	$OpenBSD: bog.h,v 1.3 2003/06/03 03:01:39 millert Exp $	*/
 /*	$NetBSD: bog.h,v 1.2 1995/03/21 12:14:32 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,29 +50,15 @@
  */
 #define MAXWORDLEN		40	/* Maximum word length */
 #define MAXPWORDS		200	/* Maximum number of player's words */
-#define MAXMWORDS		200	/* Maximum number of machine's words */
+#define MAXMWORDS		400	/* Maximum number of machine's words */
 #define MAXPSPACE		2000	/* Space for player's words */
 #define MAXMSPACE		4000	/* Space for machines's words */
 
 #define MAXCOLS			20
 
-/*
- * The following determine the screen layout
- */
-#define PROMPT_COL		20
-#define PROMPT_LINE		2
-
-#define BOARD_COL		0
-#define BOARD_LINE		0
-
-#define SCORE_COL		20
-#define SCORE_LINE		0
-
-#define LIST_COL		0
-#define LIST_LINE		10
-
-#define TIMER_COL		20
-#define TIMER_LINE		2
+#define SEVENBIT(c)		((c) & 0x7f)
+#define HISET(c)		((c) & 0x80)
+#define SETHI(c)		((c) | 0x80)
 
 /*
  * Internal dictionary index

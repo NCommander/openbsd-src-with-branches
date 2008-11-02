@@ -1,6 +1,6 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vmevar.h,v 1.2 2006/05/21 12:22:02 miod Exp $	*/
 /*
- * Copyright (c) 2006, Miodrag Vallat
+ * Copyright (c) 2006, 2007, Miodrag Vallat
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,10 +32,7 @@ typedef	u_int32_t vme_addr_t;
 /*
  * Attachment information for VME devices.
  *
- * The driver is supposed to know in which space it lives if it got an
- * unspecified address (this is to simplify kernel configuration files).
- *
- * Drivers are also supposed to do their interrupt vector allocation
+ * Drivers are supposed to do their interrupt vector allocation
  * themselves.
  */
 struct	vme_attach_args {
@@ -47,11 +44,32 @@ struct	vme_attach_args {
 	u_int		vaa_ipl;
 };
 
-int	vmeintr_allocate(u_int, int, u_int *);
-#define	VMEINTR_ANY		0x00
+/*
+ * There are 256 possible vectors for VME devices.
+ * One or more vectors may be allocated by vmeintr_allocate(), and then
+ * each vector is setup with vmeintr_establish(). Nothing is done to
+ * prevent the vector to be used in-between, so make sure no interrupt
+ * can occur between the vector allocation and the interrupt handler
+ * registration.
+ */
+#define	NVMEINTR	256
+extern intrhand_t vmeintr_handlers[NVMEINTR];
+
+int	vmeintr_allocate(u_int, int, int, u_int *);
+#define	VMEINTR_ANY		0x00	/* any vector will do */
 #define	VMEINTR_CONTIGUOUS	0x01	/* allocate a contiguous range */
+#define	VMEINTR_SHARED		0x00	/* sharing is ok */
+#define	VMEINTR_EXCLUSIVE	0x02	/* do not share this vector */
+void	vmeintr_disestablish(u_int, struct intrhand *);
 int	vmeintr_establish(u_int, struct intrhand *, const char *);
 
+/*
+ * VME device drivers need to obtain their bus_space_tag_t with
+ * vmebus_get_bst(), specifying the address and data width to use for
+ * bus accesses.
+ * Resources associated to the tag can be released with vmebus_release_bst()
+ * when bus accesses are no longer necessary.
+ */
 int	vmebus_get_bst(struct device *, u_int, u_int, bus_space_tag_t *);
 #define	VME_A32			0x04	/* 100..000 */
 #define	VME_A24			0x03	/* 011..000 */

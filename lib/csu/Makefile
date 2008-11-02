@@ -1,5 +1,9 @@
-#	$Id: Makefile,v 1.5 1994/01/10 14:09:16 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.13 2004/09/10 12:07:26 pefo Exp $
 
-SUBDIR=	${MACHINE_ARCH} c++
+.if make(obj)
+SUBDIR= alpha arm hppa i386 m68k m88k powerpc sh sparc sparc64 vax amd64 mips64
+.else
+SUBDIR= ${MACHINE_ARCH}
+.endif
 
 .include <bsd.subdir.mk>

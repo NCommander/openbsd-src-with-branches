@@ -1,43 +1,36 @@
-#	$NetBSD: Makefile,v 1.6 1995/06/27 15:57:13 gwr Exp $
+#	$OpenBSD: Makefile,v 1.20 2007/12/28 18:56:09 miod Exp $
 
 LIB=sa
+
+CLEANFILES+=SRT0.o
 
 NOPIC=nopic
 NOPROFILE=noprofile
 
 # Logically src/sys
 S=${.CURDIR}/../../../..
-DIR_SA=$S/lib/libsa
-DIR_KERN=$S/lib/libkern
 
-SRC_net= nfs.c rpc.c net.c ether.c arp.c in_cksum.c netif.c \
-	 bootparam.c rarp.c
+SRCS+=	bugdev.c clock.c parse_args.c exec_mvme.c
 
+.PATH:  $S/lib/libsa
+SRCS+=	alloc.c memcpy.c exit.c getfile.c gets.c globals.c printf.c \
+	strerror.c memset.c memcmp.c strncpy.c strcmp.c strlen.c \
+	snprintf.c close.c closeall.c dev.c dkcksum.c lseek.c open.c \
+	nullfs.c read.c fstat.c ufs.c cread.c
+SRCS+=	arp.c ether.c in_cksum.c net.c netif.c rpc.c nfs.c rarp.c bootparam.c
 
-SRC_sa = alloc.c bcopy.c close.c getfile.c open.c \
-	 printf.c read.c strerror.c ufs.c globals.c lseek.c
-
-SRC_kern= ashrdi3.c bcmp.c bzero.c strcmp.c strlen.c
-
-SRC_sun3= exec_sun.c
-
-SRC_here= clock.c devopen.c dvma.c \
-	 gets.c panic.c \
-	 promboot.c promcons.c bug.c
-
-SRCS= ${SRC_net} ${SRC_sa} ${SRC_kern} ${SRC_sun3} ${SRC_here}
+.PATH:	${S}/lib/libkern
+SRCS+=	ashrdi3.c muldi3.c
 
 # DBG= -DDEBUG -DNETIF_DEBUG -DNFS_DEBUG -DRPC_DEBUG \
 # 	-DNET_DEBUG -DRARP_DEBUG -DETHER_DEBUG
 
-DEFS= -DCOMPAT_UFS
-INCL= -I. -I${S}/lib/libsa -I${S}
-COPTS= #-fno-defer-pop
-CFLAGS= -O ${COPTS} ${DEFS} ${DBG} ${INCL}
+#DEFS= -DCOMPAT_UFS
+DEFS= -D__INTERNAL_LIBSA_CREAD
+INCL= -I${.CURDIR} -I${.CURDIR}/../libbug -I${S}/lib/libsa -I${S}
+CFLAGS+= ${XCFLAGS} -O2 ${COPTS} ${DEFS} ${DBG} ${INCL}
 
-.PATH:  ${DIR_SA} ${DIR_KERN} ../../sun3
-
-all: libsa.a SRT0.o SRT1.o
+all: libsa.a SRT0.o
 
 install:
 

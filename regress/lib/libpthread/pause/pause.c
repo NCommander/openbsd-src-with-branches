@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_pause.c,v 1.3 2000/01/06 06:55:13 d Exp $	*/
+/*	$OpenBSD: pause.c,v 1.1.1.1 2001/08/15 14:37:12 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -48,7 +48,12 @@ void
 handler(sig) 
 	int sig;
 {
-	printf("%s\n", strsignal(sig));
+	int save_errno = errno;
+	char buf[8192];
+
+	snprintf(buf, sizeof buf, "%s\n", strsignal(sig));
+	write(STDOUT_FILENO, buf, strlen(buf));
+	errno = save_errno;
 }
 
 int

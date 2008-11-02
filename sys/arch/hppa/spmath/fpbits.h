@@ -1,3 +1,4 @@
+/*	$OpenBSD: fpbits.h,v 1.5 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,11 +12,7 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/*
- * @(#)fpbits.h: $Revision: 1.6.88.1 $ $Date: 93/12/07 15:06:21 $
- * $Locker:  $
- * 
- */
+/* @(#)fpbits.h: Revision: 1.6.88.1 Date: 93/12/07 15:06:21 */
 
 /*
  *  These macros are designed to be portable to all machines that have
@@ -41,10 +38,10 @@
  * function "DeclBitfR" except its use is restricted to occur within a larger
  * enclosing structure or union definition.  This declaration is an unnamed
  * structure with the argument, name, as the member name and the argument,
- * uname, as the element name. 
+ * uname, as the element name.
  *----------------------------------------------------------------------- */
-#define Bitfield_extract(start, length, object) 	\
-    ((object) >> (HOSTWDSZ - (start) - (length)) & 	\
+#define Bitfield_extract(start, length, object)		\
+    ((object) >> (HOSTWDSZ - (start) - (length)) &	\
     ((unsigned)-1 >> (HOSTWDSZ - (length))))
 
 #define Bitfield_signed_extract(start, length, object) \
@@ -54,5 +51,5 @@
     ((object) & (((unsigned)-1 >> (HOSTWDSZ-len)) << (HOSTWDSZ-start-len)))
 
 #define Bitfield_deposit(value,start,len,object)  object = \
-    ((object) & ~(((unsigned)-1 >> (HOSTWDSZ-len)) << (HOSTWDSZ-start-len))) | \
-    (((value) & ((unsigned)-1 >> (HOSTWDSZ-len))) << (HOSTWDSZ-start-len))
+    ((object) & ~(((unsigned)-1 >> (HOSTWDSZ-(len))) << (HOSTWDSZ-(start)-(len)))) | \
+    (((value) & ((unsigned)-1 >> (HOSTWDSZ-(len)))) << (HOSTWDSZ-(start)-(len)))

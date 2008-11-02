@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)xutil.c	8.1 (Berkeley) 6/6/93
- *	$Id: xutil.c,v 1.4 1994/06/13 20:48:13 mycroft Exp $
+ *	$Id: xutil.c,v 1.10 2003/03/11 04:45:54 david Exp $
  */
 
 #include "config.h"
@@ -46,6 +42,11 @@
 #ifdef HAS_STRERROR
 #include <string.h>
 #endif
+
+#include <unistd.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 
 FILE *logfp = stderr;		/* Log errors to stderr initially */
 #ifdef HAS_SYSLOG
@@ -73,10 +74,10 @@ struct opt_tab xlog_opt[] = {
 	{ 0, 0 }
 };
 
-voidp xmalloc(len)
-int len;
+void *
+xmalloc(int len)
 {
-	voidp p;
+	void *p;
 	int retries = 600;
 
 	/*
@@ -86,7 +87,7 @@ int len;
 		len = 1;
 
 	do {
-		p = (voidp) malloc((unsigned) len);
+		p = (void *)malloc((unsigned) len);
 		if (p) {
 #if defined(DEBUG) && defined(DEBUG_MEM)
 			Debug(D_MEM) plog(XLOG_DEBUG, "Allocated size %d; block %#x", len, p);
@@ -107,9 +108,8 @@ int len;
 	return 0;
 }
 
-voidp xrealloc(ptr, len)
-voidp ptr;
-int len;
+void *
+xrealloc(void *ptr, int len)
 {
 #if defined(DEBUG) && defined(DEBUG_MEM)
 	Debug(D_MEM) plog(XLOG_DEBUG, "Reallocated size %d; block %#x", len, ptr);
@@ -119,9 +119,9 @@ int len;
 		len = 1;
 
 	if (ptr)
-		ptr = (voidp) realloc(ptr, (unsigned) len);
+		ptr = (void *)realloc(ptr, (unsigned) len);
 	else
-		ptr = (voidp) xmalloc((unsigned) len);
+		ptr = (void *)xmalloc((unsigned) len);
 
 	if (!ptr) {
 		plog(XLOG_FATAL, "Out of memory in realloc");
@@ -132,10 +132,7 @@ int len;
 }
 
 #if defined(DEBUG) && defined(DEBUG_MEM)
-xfree(f, l, p)
-char *f;
-int l;
-voidp p;
+xfree(char *f, int l, void *p)
 {
 	Debug(D_MEM) plog(XLOG_DEBUG, "Free in %s:%d: block %#x", f, l, p);
 #undef free
@@ -145,14 +142,16 @@ voidp p;
 #ifdef DEBUG_MEM
 static int mem_bytes;
 static int orig_mem_bytes;
-static void checkup_mem(P_void)
+
+static void
+checkup_mem(void)
 {
-extern struct mallinfo __mallinfo;
+	extern struct mallinfo __mallinfo;
 	if (mem_bytes != __mallinfo.uordbytes) {
 		if (orig_mem_bytes == 0)
 			mem_bytes = orig_mem_bytes = __mallinfo.uordbytes;
 		else {
-			fprintf(logfp, "%s[%d]: ", progname, mypid);
+			fprintf(logfp, "%s[%ld]: ", __progname, (long)mypid);
 			if (mem_bytes < __mallinfo.uordbytes) {
 				fprintf(logfp, "ALLOC: %d bytes",
 					__mallinfo.uordbytes - mem_bytes);
@@ -170,22 +169,22 @@ extern struct mallinfo __mallinfo;
 #endif /* DEBUG_MEM */
 
 /*
- * Take a log format string and expand occurences of %m
- * with the current error code take from errno.
+ * Take a log format string and expand occurrences of %m
+ * with the current error code taken from errno.  Make sure
+ * 'e' never gets longer than maxlen characters.
  */
-INLINE
-static void expand_error(f, e)
-char *f;
-char *e;
+INLINE static void
+expand_error(char *f, char *e, int maxlen)
 {
 #ifndef HAS_STRERROR
 	extern int sys_nerr;
 	extern char *sys_errlist[];
 #endif
-	char *p;
+	char *p, *q;
 	int error = errno;
+	int len = 0;
 
-	for (p = f; *e = *p; e++, p++) {
+	for (p = f, q = e; (*q = *p) && len < maxlen; len++, q++, p++) {
 		if (p[0] == '%' && p[1] == 'm') {
 			char *errstr;
 #ifdef HAS_STRERROR
@@ -197,23 +196,26 @@ char *e;
 				errstr = sys_errlist[error];
 #endif
 			if (errstr)
-				strcpy(e, errstr);
+				strlcpy(q, errstr, maxlen - (q - e));
 			else
-				sprintf(e, "Error %d", error);
-			e += strlen(e) - 1;
+				snprintf(q, maxlen - (q - e),
+				    "Error %d", error);
+			len += strlen(q) - 1;
+			q += strlen(q) - 1;
 			p++;
 		}
 	}
+	e[maxlen-1] = '\0';		/* null terminate, to be sure */
 }
 
 /*
  * Output the time of day and hostname to the logfile
  */
-static void show_time_host_and_name(lvl)
-int lvl;
+static void
+show_time_host_and_name(int lvl)
 {
-static time_t last_t = 0;
-static char *last_ctime = 0;
+	static time_t last_t = 0;
+	static char *last_ctime = 0;
 	time_t t = clocktime();
 	char *sev;
 	extern char *ctime();
@@ -229,7 +231,7 @@ extern char **gargv;
 
 	switch (lvl) {
 	case XLOG_FATAL:	sev = "fatal:"; break;
-	case XLOG_ERROR: 	sev = "error:"; break;
+	case XLOG_ERROR:	sev = "error:"; break;
 	case XLOG_USER:		sev = "user: "; break;
 	case XLOG_WARNING:	sev = "warn: "; break;
 	case XLOG_INFO:		sev = "info: "; break;
@@ -238,36 +240,27 @@ extern char **gargv;
 	case XLOG_STATS:	sev = "stats:"; break;
 	default:		sev = "hmm:  "; break;
 	}
-	fprintf(logfp, "%15.15s %s %s[%d]/%s ",
+	fprintf(logfp, "%15.15s %s %s[%ld]/%s ",
 		last_ctime+4, hostname,
 #if defined(DEBUG) && defined(PARANOID)
 		gargv[0],
 #else
-		progname,
+		__progname,
 #endif /* defined(DEBUG) && defined(PARANOID) */
-		mypid,
+		(long)mypid,
 		sev);
 }
 
-#ifdef DEBUG
 /*VARARGS1*/
-void dplog(fmt, j,s,_,p,e,n,d,r,y)
-char *fmt;
-char *j, *s, *_, *p, *e, *n, *d, *r, *y;
-{
-	plog(XLOG_DEBUG, fmt, j,s,_,p,e,n,d,r,y);
-}
-
-#endif /* DEBUG */
-/*VARARGS1*/
-void plog(lvl, fmt, j,s,_,p,e,n,d,r,y)
-int lvl;
-char *fmt;
-char *j, *s, *_, *p, *e, *n, *d, *r, *y;
+void
+plog(int lvl, char *fmt, ...)
 {
 	char msg[1024];
 	char efmt[1024];
-	char *ptr = msg;
+	char *ptr;
+	va_list ap;
+
+	va_start(ap, fmt);
 
 	if (!(xlog_level & lvl))
 		return;
@@ -276,16 +269,21 @@ char *j, *s, *_, *p, *e, *n, *d, *r, *y;
 	checkup_mem();
 #endif /* DEBUG_MEM */
 
-	expand_error(fmt, efmt);
-	sprintf(ptr, efmt, j,s,_,p,e,n,d,r,y);
-	ptr += strlen(ptr);
+	expand_error(fmt, efmt, sizeof(efmt));
+	/*
+	 * XXX: msg is 1024 bytes long.  It is possible to write into it
+	 * more than 1024 bytes, if efmt is already large, and vargs expand
+	 * as well.
+	 */
+	vsnprintf(msg, sizeof(msg), efmt, ap);
+	ptr = msg + strlen(msg);
 	if (ptr[-1] == '\n')
 		*--ptr  = '\0';
 #ifdef HAS_SYSLOG
 	if (syslogging) {
 		switch(lvl) {	/* from mike <mcooper@usc.edu> */
 		case XLOG_FATAL:	lvl = LOG_CRIT; break;
-		case XLOG_ERROR: 	lvl = LOG_ERR; break;
+		case XLOG_ERROR:	lvl = LOG_ERR; break;
 		case XLOG_USER:		lvl = LOG_WARNING; break;
 		case XLOG_WARNING:	lvl = LOG_WARNING; break;
 		case XLOG_INFO:		lvl = LOG_INFO; break;
@@ -299,27 +297,25 @@ char *j, *s, *_, *p, *e, *n, *d, *r, *y;
 	}
 #endif /* HAS_SYSLOG */
 
-	*ptr++ = '\n';
-	*ptr = '\0';
-
 	/*
 	 * Mimic syslog header
 	 */
+	va_end(ap);
 	show_time_host_and_name(lvl);
 	fwrite(msg, ptr - msg, 1, logfp);
+	fputc('\n', logfp);
 	fflush(logfp);
 }
 
-void show_opts P((int ch, struct opt_tab *opts));
-void show_opts(ch, opts)
-int ch;
-struct opt_tab *opts;
+void
+show_opts(int ch, struct opt_tab *opts)
 {
 	/*
 	 * Display current debug options
 	 */
 	int i;
 	int s = '{';
+
 	fprintf(stderr, "\t[-%c {no}", ch);
 	for (i = 0; opts[i].opt; i++) {
 		fprintf(stderr, "%c%s", s, opts[i].opt);
@@ -328,11 +324,8 @@ struct opt_tab *opts;
 	fputs("}]\n", stderr);
 }
 
-int cmdoption P((char *s, struct opt_tab *optb, int *flags));
-int cmdoption(s, optb, flags)
-char *s;
-struct opt_tab *optb;
-int *flags;
+int
+cmdoption(char *s, struct opt_tab *optb, int *flags)
 {
 	char *p = s;
 	int errs = 0;
@@ -398,8 +391,8 @@ int *flags;
 /*
  * Switch on/off logging options
  */
-int switch_option(opt)
-char *opt;
+int
+switch_option(char *opt)
 {
 	int xl = xlog_level;
 	int rc = cmdoption(opt, xlog_opt, &xl);
@@ -422,9 +415,8 @@ char *opt;
 /*
  * Change current logfile
  */
-int switch_to_logfile P((char *logfile));
-int switch_to_logfile(logfile)
-char *logfile;
+int
+switch_to_logfile(char *logfile)
 {
 	FILE *new_logfp = stderr;
 
@@ -439,11 +431,11 @@ char *logfile;
 			syslogging = 1;
 			new_logfp = stderr;
 #if defined(LOG_CONS) && defined(LOG_NOWAIT)
-			openlog(progname, LOG_PID|LOG_CONS|LOG_NOWAIT,
+			openlog(__progname, LOG_PID|LOG_CONS|LOG_NOWAIT,
 				LOG_DAEMON);
 #else
 			/* 4.2 compat mode - XXX */
-			openlog(progname, LOG_PID);
+			openlog(__progname, LOG_PID);
 #endif /* LOG_CONS && LOG_NOWAIT */
 #else
 			plog(XLOG_WARNING, "syslog option not supported, logging unchanged");
@@ -474,7 +466,8 @@ char *logfile;
 time_t clock_valid = 0;
 time_t xclock_valid = 0;
 #ifndef clocktime
-time_t clocktime(P_void)
+time_t
+clocktime(void)
 {
 	time_t now = time(&clock_valid);
 	if (xclock_valid > now) {

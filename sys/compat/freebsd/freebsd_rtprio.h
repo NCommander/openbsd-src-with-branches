@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1994, Henrik Vestergaard Draboel
  * All rights reserved.
@@ -53,7 +55,7 @@
 #define FREEBSD_RTP_LOOKUP		0
 #define FREEBSD_RTP_SET			1
 
-#ifndef LOCORE
+#ifndef _LOCORE
 struct freebsd_rtprio {
 	u_short type;
 	u_short prio;

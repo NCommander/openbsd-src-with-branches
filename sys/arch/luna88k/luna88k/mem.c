@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.19 2003/10/05 20:27:47 miod Exp $ */
+/*	$OpenBSD: mem.c,v 1.4 2007/09/22 16:21:32 krw Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -41,21 +41,18 @@
  */
 
 #include <sys/param.h>
-#include <sys/conf.h>
 #include <sys/buf.h>
 #include <sys/systm.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
 
 #include <machine/board.h>
+#include <machine/conf.h>
 
 #include <uvm/uvm_extern.h>
 
-caddr_t zeropage;
-
-#define	mmread	mmrw
-#define	mmwrite	mmrw
-cdev_decl(mm);
+caddr_t zpage;
+extern vaddr_t last_addr;
 
 /*ARGSUSED*/
 int
@@ -127,7 +124,7 @@ mmrw(dev, uio, flags)
 		case 0:
 			/* move one page at a time */
 			v = uio->uio_offset;
-			if (v > MAXPHYSMEM) {
+			if (v > last_addr) {
 				error = EFAULT;
 				goto unlock;
 			}
@@ -158,14 +155,11 @@ mmrw(dev, uio, flags)
 				 * and EFAULT for writes.
 				 */
 				if (uio->uio_rw == UIO_READ) {
-					if (zeropage == NULL) {
-						zeropage = (caddr_t)
-						    malloc(PAGE_SIZE, M_TEMP,
-						    M_WAITOK);
-						bzero(zeropage, PAGE_SIZE);
-					}
+					if (zpage == NULL)
+						zpage = malloc(PAGE_SIZE,
+						    M_TEMP, M_WAITOK | M_ZERO);
 					c = min(c, NBPG - (int)v);
-					v = (vaddr_t)zeropage;
+					v = (vaddr_t)zpage;
 				} else
 #endif
 					return (EFAULT);
@@ -187,13 +181,11 @@ mmrw(dev, uio, flags)
 				c = iov->iov_len;
 				break;
 			}
-			if (zeropage == NULL) {
-				zeropage = (caddr_t)
-				    malloc(PAGE_SIZE, M_TEMP, M_WAITOK);
-				bzero(zeropage, PAGE_SIZE);
-			}
+			if (zpage == NULL)
+				zpage = malloc(PAGE_SIZE, M_TEMP,
+				    M_WAITOK | M_ZERO);
 			c = min(iov->iov_len, PAGE_SIZE);
-			error = uiomove(zeropage, c, uio);
+			error = uiomove(zpage, c, uio);
 			continue;
 
 		default:

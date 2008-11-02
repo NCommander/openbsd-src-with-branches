@@ -1,3 +1,4 @@
+/*	$OpenBSD: auth_unix.h,v 1.3 2002/02/16 21:27:18 millert Exp $	*/
 /*	$NetBSD: auth_unix.h,v 1.4 1994/10/26 00:56:56 cgd Exp $	*/
 
 /*
@@ -59,16 +60,16 @@
  * Unix style credentials.
  */
 struct authunix_parms {
-	u_long	 aup_time;
-	char	*aup_machname;
-	int	 aup_uid;
-	int	 aup_gid;
-	u_int	 aup_len;
-	int	*aup_gids;
+	unsigned long	 aup_time;
+	char		*aup_machname;
+	int	 	 aup_uid;
+	int	 	 aup_gid;
+	unsigned int	 aup_len;
+	int		*aup_gids;
 };
 
 __BEGIN_DECLS
-extern bool_t xdr_authunix_parms __P((XDR *, struct authunix_parms *));
+extern bool_t xdr_authunix_parms(XDR *, struct authunix_parms *);
 __END_DECLS
 
 /* 

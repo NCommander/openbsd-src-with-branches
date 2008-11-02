@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.47 2006/04/17 13:30:02 miod Exp $	*/
+/*	$OpenBSD: dart.c,v 1.1.1.1 2006/05/09 18:13:32 miod Exp $	*/
 
 /*
  * Mach Operating System
@@ -40,9 +40,9 @@
 
 #include <dev/cons.h>
 
-#include <machine/av400.h>
-#include <aviion/dev/sysconreg.h>
+#include <machine/avcommon.h>
 #include <aviion/dev/dartreg.h>
+#define	SPKRDIS	0x10	/* disable speaker on OP3 */
 #include <aviion/dev/dartvar.h>
 
 #ifdef	DDB
@@ -175,12 +175,7 @@ dart_common_attach(struct dartsoftc *sc)
 	dart_write(sc, DART_ACR, BDSET2 | CCLK16 | IPDCDIB | IPDCDIA);
 #endif
 	dart_write(sc, DART_IMR, sc->sc_sv_reg->sv_imr);
-#if 0
-	dart_write(sc, DART_OPCR, OPSET);
-#endif
-#if 0
-	dart_write(sc, DART_IVR, SYSCON_VECT + SYSCV_SCC);
-#endif
+	dart_write(sc, DART_OPCR, OPSET | SPKRDIS);
 
 	sc->sc_dart[A_PORT].tty = sc->sc_dart[B_PORT].tty = NULL;
 	sc->sc_dart[A_PORT].dart_swflags = sc->sc_dart[B_PORT].dart_swflags = 0;
@@ -196,7 +191,7 @@ const struct dart_s {
 	int dspeed;
 } dart_speeds[] = {
 	{ B0,		0	},	/* 0 baud, special HUP condition */
-        { B50,		NOBAUD	},	/* 50 baud, not implemented */
+	{ B50,		NOBAUD	},	/* 50 baud, not implemented */
 	{ B75,		BD75	},	/* 75 baud */
 	{ B110,		BD110	},	/* 110 baud */
 	{ B134,		BD134	},	/* 134.5 baud */
@@ -870,9 +865,9 @@ dartintr(void *arg)
 #define	dart_cnwrite(reg, val)	dart_write(sc, (reg), (val))
 #else
 #define	dart_cnread(reg) \
-	*(volatile u_int8_t *)(DART_BASE + 3 + ((reg) << 2))
+	*(volatile u_int8_t *)(CONSOLE_DART_BASE + 3 + ((reg) << 2))
 #define	dart_cnwrite(reg, val) \
-	*(volatile u_int8_t *)(DART_BASE + 3 + ((reg) << 2)) = (val)
+	*(volatile u_int8_t *)(CONSOLE_DART_BASE + 3 + ((reg) << 2)) = (val)
 #endif
 
 void
@@ -880,7 +875,7 @@ dartcnprobe(struct consdev *cp)
 {
 	int maj;
 
-	if (badaddr(DART_BASE, 4) != 0)
+	if (badaddr(CONSOLE_DART_BASE, 4) != 0)
 		return;
 
 #ifdef USE_PROM_CONSOLE
@@ -897,7 +892,7 @@ dartcnprobe(struct consdev *cp)
 		return;
 
 	cp->cn_dev = makedev(maj, CONS_PORT);
-	cp->cn_pri = CN_NORMAL;
+	cp->cn_pri = CN_LOWPRI;
 }
 
 void

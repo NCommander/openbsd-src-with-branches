@@ -1,11 +1,8 @@
-#	$NetBSD: Makefile,v 1.7 1994/12/22 01:16:19 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.9 2000/09/03 18:41:17 espie Exp $
 
 PROG=	lock
 BINOWN= root
-BINMODE=4555
-CFLAGS+=-DSKEY
-LDADD+= -lcrypt -lskey
-DPADD+= ${LIBCRYPT} ${LIBSKEY}
+BINGRP= auth
+BINMODE=2555
 
 .include <bsd.prog.mk>

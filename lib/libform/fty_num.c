@@ -1,3 +1,5 @@
+/*	$OpenBSD: fty_num.c,v 1.6 2001/01/22 18:02:17 millert Exp $	*/
+
 
 /*
  * THIS CODE IS SPECIFICALLY EXEMPTED FROM THE NCURSES PACKAGE COPYRIGHT.
@@ -5,9 +7,19 @@
  * If you develop a field type that might be of general use, please send
  * it back to the ncurses maintainers for inclusion in the next version.
  */
+/***************************************************************************
+*                                                                          *
+*  Author : Juergen Pfeifer, juergen.pfeifer@gmx.net                       *
+*                                                                          *
+***************************************************************************/
 
 #include "form.priv.h"
+
+MODULE_ID("$From: fty_num.c,v 1.14 2000/12/09 23:46:12 tom Exp $")
+
+#if HAVE_LOCALE_H
 #include <locale.h>
+#endif
 
 typedef struct {
   int    precision;
@@ -33,7 +45,11 @@ static void *Make_Numeric_Type(va_list * ap)
       argn->precision = va_arg(*ap,int);
       argn->low       = va_arg(*ap,double);
       argn->high      = va_arg(*ap,double);
+#if HAVE_LOCALE_H
       argn->L         = localeconv();
+#else
+      argn->L         = NULL;
+#endif
     }
   return (void *)argn;
 }
@@ -48,16 +64,16 @@ static void *Make_Numeric_Type(va_list * ap)
 +--------------------------------------------------------------------------*/
 static void *Copy_Numeric_Type(const void * argp)
 {
-  numericARG *ap  = (numericARG *)argp;
-  numericARG *new = (numericARG *)0;
+  const numericARG *ap = (const numericARG *)argp;
+  numericARG *result = (numericARG *)0;
 
   if (argp)
     {
-      new = (numericARG *)malloc(sizeof(numericARG));
-      if (new)
-	*new  = *ap;
+      result = (numericARG *)malloc(sizeof(numericARG));
+      if (result)
+	*result  = *ap;
     }
-  return (void *)new;
+  return (void *)result;
 }
 
 /*---------------------------------------------------------------------------
@@ -86,7 +102,7 @@ static void Free_Numeric_Type(void * argp)
 +--------------------------------------------------------------------------*/
 static bool Check_Numeric_Field(FIELD * field, const void * argp)
 {
-  numericARG *argn    = (numericARG *)argp;
+  const numericARG *argn = (const numericARG *)argp;
   double low          = argn->low;
   double high         = argn->high;
   int prec            = argn->precision;
@@ -106,7 +122,11 @@ static bool Check_Numeric_Field(FIELD * field, const void * argp)
 	  if (!isdigit(*bp)) break;
 	  bp++;
 	}
-      if (*bp==((L && L->decimal_point) ? *(L->decimal_point) : '.'))
+      if (*bp==(
+#if HAVE_LOCALE_H
+		(L && L->decimal_point) ? *(L->decimal_point) :
+#endif
+		'.'))
 	{
 	  bp++;
 	  while(*bp)
@@ -123,7 +143,7 @@ static bool Check_Numeric_Field(FIELD * field, const void * argp)
 	    {
 	      if (val<low || val>high) return FALSE;
 	    }
-	  sprintf(buf,"%.*f",prec,val);
+	  snprintf(buf, sizeof(buf), "%.*f",(prec>0?prec:0),val);
 	  set_field_buffer(field,0,buf);
 	  return TRUE;
 	}
@@ -144,14 +164,18 @@ static bool Check_Numeric_Field(FIELD * field, const void * argp)
 +--------------------------------------------------------------------------*/
 static bool Check_Numeric_Character(int c, const void * argp)
 {
-  numericARG *argn = (numericARG *)argp;
+  const numericARG *argn = (const numericARG *)argp;
   struct lconv* L  = argn->L;  
 
   return (isdigit(c)  || 
 	  c == '+'    || 
 	  c == '-'    || 
-	  c == ((L && L->decimal_point) ? *(L->decimal_point) : '.')
-	 ) ? TRUE : FALSE;
+	  c == (
+#if HAVE_LOCALE_H
+		(L && L->decimal_point) ? *(L->decimal_point) :
+#endif
+		'.')
+	  ) ? TRUE : FALSE;
 }
 
 static FIELDTYPE typeNUMERIC = {
@@ -168,6 +192,6 @@ static FIELDTYPE typeNUMERIC = {
   NULL
 };
 
-FIELDTYPE* TYPE_NUMERIC = &typeNUMERIC;
+NCURSES_EXPORT_VAR(FIELDTYPE*) TYPE_NUMERIC = &typeNUMERIC;
 
 /* fty_num.c ends here */

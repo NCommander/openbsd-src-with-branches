@@ -1,4 +1,4 @@
-/*	$NetBSD: sys_machdep.c,v 1.8 1995/04/22 20:25:54 christos Exp $ */
+/*	$OpenBSD: sys_machdep.c,v 1.18 2005/08/01 11:54:25 miod Exp $ */
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,233 +37,36 @@
 #include <sys/file.h>
 #include <sys/time.h>
 #include <sys/proc.h>
+#include <sys/signalvar.h>
 #include <sys/uio.h>
 #include <sys/kernel.h>
 #include <sys/mtio.h>
 #include <sys/buf.h>
-#include <sys/trace.h>
+#include <sys/mount.h>
 
-#include <vm/vm.h>
+#include <sys/syscallargs.h>
 
-#ifdef TRACE
-int	nvualarm;
-
-vtrace(p, uap, retval)
-	struct proc *p;
-	register struct vtrace_args /* {
-		syscallarg(int) request;
-		syscallarg(int) value;
-	} */ *uap;
-	register_t *retval;
-{
-	int vdoualarm();
-
-	switch (SCARG(uap, request)) {
-
-	case VTR_DISABLE:		/* disable a trace point */
-	case VTR_ENABLE:		/* enable a trace point */
-		if (SCARG(uap, value) < 0 || SCARG(uap, value) >= TR_NFLAGS)
-			return (EINVAL);
-		*retval = traceflags[SCARG(uap, value)];
-		traceflags[SCARG(uap, value)] = SCARG(uap, request);
-		break;
-
-	case VTR_VALUE:		/* return a trace point setting */
-		if (SCARG(uap, value) < 0 || SCARG(uap, value) >= TR_NFLAGS)
-			return (EINVAL);
-		*retval = traceflags[SCARG(uap, value)];
-		break;
-
-	case VTR_UALARM:	/* set a real-time ualarm, less than 1 min */
-		if (SCARG(uap, value) <= 0 || SCARG(uap, value) > 60 * hz ||
-		    nvualarm > 5)
-			return (EINVAL);
-		nvualarm++;
-		timeout(vdoualarm, (void *)p->p_pid, SCARG(uap, value));
-		break;
-
-	case VTR_STAMP:
-		trace(TR_STAMP, SCARG(uap, value), p->p_pid);
-		break;
-	}
-	return (0);
-}
-
-vdoualarm(arg)
-	void *arg;
-{
-	register int pid = (int)arg;
-	register struct proc *p;
-
-	p = pfind(pid);
-	if (p)
-		psignal(p, 16);
-	nvualarm--;
-}
-#endif
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
-
-/* XXX should be in an include file somewhere */
-#define CC_PURGE	1
-#define CC_FLUSH	2
-#define CC_IPURGE	4
-#define CC_EXTPURGE	0x80000000
-/* XXX end should be */
-
-/*
- * Note that what we do here for a 68040 is different than HP-UX.
- *
- * In 'pux they either act on a line (len == 16), a page (len == NBPG)
- * or the whole cache (len == anything else).
- *
- * In BSD we attempt to be more optimal when acting on "odd" sizes.
- * For lengths up to 1024 we do all affected lines, up to 2*NBPG we
- * do pages, above that we do the entire cache.
- */
-/*ARGSUSED1*/
-cachectl(req, addr, len)
-	int req;
-	caddr_t	addr;
-	int len;
-{
-	int error = 0;
-
-#if defined(M68040)
-	if (mmutype == MMU_68040) {
-		register int inc = 0;
-		int pa = 0, doall = 0;
-		caddr_t end;
-#ifdef COMPAT_HPUX
-		extern struct emul emul_hpux;
-
-		if ((curproc->p_emul == &emul_hpux) &&
-		    len != 16 && len != NBPG)
-			doall = 1;
-#endif
-
-		if (addr == 0 ||
-		    (req & ~CC_EXTPURGE) != CC_PURGE && len > 2*NBPG)
-			doall = 1;
-
-		if (!doall) {
-			end = addr + len;
-			if (len <= 1024) {
-				addr = (caddr_t)((int)addr & ~0xF);
-				inc = 16;
-			} else {
-				addr = (caddr_t)((int)addr & ~PGOFSET);
-				inc = NBPG;
-			}
-		}
-		do {
-			/*
-			 * Convert to physical address if needed.
-			 * If translation fails, we perform operation on
-			 * entire cache (XXX is this a rational thing to do?)
-			 */
-			if (!doall &&
-			    (pa == 0 || ((int)addr & PGOFSET) == 0)) {
-				pa = pmap_extract(&curproc->p_vmspace->vm_pmap,
-						  (vm_offset_t)addr);
-				if (pa == 0)
-					doall = 1;
-			}
-			switch (req) {
-			case CC_EXTPURGE|CC_IPURGE:
-			case CC_IPURGE:
-				if (doall) {
-					DCFA();
-					ICPA();
-				} else if (inc == 16) {
-					DCFL(pa);
-					ICPL(pa);
-				} else if (inc == NBPG) {
-					DCFP(pa);
-					ICPP(pa);
-				}
-				break;
-
-			case CC_EXTPURGE|CC_PURGE:
-			case CC_PURGE:
-				if (doall)
-					DCFA(); /* note: flush not purge */
-				else if (inc == 16)
-					DCPL(pa);
-				else if (inc == NBPG)
-					DCPP(pa);
-				break;
-
-			case CC_EXTPURGE|CC_FLUSH:
-			case CC_FLUSH:
-				if (doall)
-					DCFA();
-				else if (inc == 16)
-					DCFL(pa);
-				else if (inc == NBPG)
-					DCFP(pa);
-				break;
-
-			default:
-				error = EINVAL;
-				break;
-			}
-			if (doall)
-				break;
-			pa += inc;
-			addr += inc;
-		} while (addr < end);
-		return(error);
-	}
-#endif
-	switch (req) {
-	case CC_EXTPURGE|CC_PURGE:
-	case CC_EXTPURGE|CC_FLUSH:
-	case CC_PURGE:
-	case CC_FLUSH:
-		DCIU();
-		break;
-	case CC_EXTPURGE|CC_IPURGE:
-		DCIU();
-		/* fall into... */
-	case CC_IPURGE:
-		ICIA();
-		break;
-	default:
-		error = EINVAL;
-		break;
-	}
-	return(error);
-}
-
-int
-sysarch(p, uap, retval)
-	struct proc *p;
-	struct sysarch_args /* {
-		syscallarg(int) op;
-		syscallarg(char *) parms;
-	} */ *uap;
-	register_t *retval;
-{
-	return ENOSYS;
-}
 
 /*
  * DMA cache control
  */
 /*ARGSUSED1*/
+void
 dma_cachectl(addr, len)
-	caddr_t	addr;
+	caddr_t  addr;
 	int len;
 {
-#ifdef M68040
-	if (mmutype == MMU_68040) {
+#if defined(M68040) || defined(M68060)
+	if (mmutype <= MMU_68040) {
 		register int inc = 0;
 		int pa = 0;
 		caddr_t end;
 
 		end = addr + len;
-		if (len <= 1024) {
+		if (len <= 1024 || mmutype == MMU_68060) { /* always line push line for 060 */
 			addr = (caddr_t)((int)addr & ~0xF);
 			inc = 16;
 		} else {
@@ -279,7 +78,7 @@ dma_cachectl(addr, len)
 			 * Convert to physical address.
 			 */
 			if (pa == 0 || ((int)addr & PGOFSET) == 0) {
-				pa = kvtop ((vm_offset_t)addr);
+				pa = kvtop((vaddr_t)addr);
 			}
 			if (inc == 16) {
 				DCFL(pa);
@@ -293,5 +92,20 @@ dma_cachectl(addr, len)
 		} while (addr < end);
 	}
 #endif	/* M68040 */
-	return(0);
+}
+
+int
+sys_sysarch(p, v, retval)
+	struct proc *p;
+	void *v;
+	register_t *retval;
+{
+#if 0
+	struct sys_sysarch_args /* {
+		syscallarg(int) op;
+		syscallarg(char *) parms;
+	} */ *uap = v;
+#endif
+
+	return ENOSYS;
 }

@@ -48,38 +48,38 @@ typedef unsigned int hashval_t;
 /* Callback function pointer types.  */
 
 /* Calculate hash of a table entry.  */
-typedef hashval_t (*htab_hash) (const void *);
+typedef hashval_t (*htab_hash) PARAMS ((const void *));
 
 /* Compare a table entry with a possible entry.  The entry already in
    the table always comes first, so the second element can be of a
    different type (but in this case htab_find and htab_find_slot
    cannot be used; instead the variants that accept a hash value
    must be used).  */
-typedef int (*htab_eq) (const void *, const void *);
+typedef int (*htab_eq) PARAMS ((const void *, const void *));
 
 /* Cleanup function called whenever a live element is removed from
    the hash table.  */
-typedef void (*htab_del) (void *);
+typedef void (*htab_del) PARAMS ((void *));
   
 /* Function called by htab_traverse for each live element.  The first
    arg is the slot of the element (which can be passed to htab_clear_slot
    if desired), the second arg is the auxiliary pointer handed to
    htab_traverse.  Return 1 to continue scan, 0 to stop.  */
-typedef int (*htab_trav) (void **, void *);
+typedef int (*htab_trav) PARAMS ((void **, void *));
 
 /* Memory-allocation function, with the same functionality as calloc().
    Iff it returns NULL, the hash table implementation will pass an error
    code back to the user, so if your code doesn't handle errors,
    best if you use xcalloc instead.  */
-typedef void *(*htab_alloc) (size_t, size_t);
+typedef PTR (*htab_alloc) PARAMS ((size_t, size_t));
 
 /* We also need a free() routine.  */
-typedef void (*htab_free) (void *);
+typedef void (*htab_free) PARAMS ((PTR));
 
 /* Memory allocation and deallocation; variants which take an extra
    argument.  */
-typedef void *(*htab_alloc_with_arg) (void *, size_t, size_t);
-typedef void (*htab_free_with_arg) (void *, void *);
+typedef PTR (*htab_alloc_with_arg) PARAMS ((void *, size_t, size_t));
+typedef void (*htab_free_with_arg) PARAMS ((void *, void *));
 
 /* This macro defines reserved value for empty table entry.  */
 
@@ -108,7 +108,7 @@ struct htab GTY(())
   htab_del del_f;
 
   /* Table itself.  */
-  void ** GTY ((use_param, length ("%h.size"))) entries;
+  PTR * GTY ((use_param (""), length ("%h.size"))) entries;
 
   /* Current size (in entries) of the hash table.  */
   size_t size;
@@ -132,7 +132,7 @@ struct htab GTY(())
   htab_free free_f;
 
   /* Alternate allocate/free functions, which take an extra argument.  */
-  void * GTY((skip)) alloc_arg;
+  PTR GTY((skip (""))) alloc_arg;
   htab_alloc_with_arg alloc_with_arg_f;
   htab_free_with_arg free_with_arg_f;
 
@@ -198,6 +198,66 @@ extern hashval_t htab_hash_string (const void *);
 extern hashval_t iterative_hash (const void *, size_t, hashval_t);
 /* Shorthand for hashing something with an intrinsic size.  */
 #define iterative_hash_object(OB,INIT) iterative_hash (&OB, sizeof (OB), INIT)
+
+/* XXX Old hash table functions, kept for compatibility */
+
+/* The hash table element is represented by the following type. */
+
+typedef const void *hash_table_entry_t;
+
+/* Hash tables are of the following type.  The structure
+   (implementation) of this type is not needed for using the hash
+   tables.  All work with hash table should be executed only through
+   functions mentioned below. */
+
+typedef struct
+{
+  /* Current size (in entries) of the hash table */
+  size_t size;
+  /* Current number of elements including also deleted elements */
+  size_t number_of_elements;
+  /* Current number of deleted elements in the table */
+  size_t number_of_deleted_elements;
+  /* The following member is used for debugging. Its value is number
+     of all calls of `find_hash_table_entry' for the hash table. */
+  int searches;
+  /* The following member is used for debugging.  Its value is number
+     of collisions fixed for time of work with the hash table. */
+  int collisions;
+  /* Pointer to function for evaluation of hash value (any unsigned value).
+     This function has one parameter of type hash_table_entry_t. */
+  unsigned (*hash_function) (hash_table_entry_t);
+  /* Pointer to function for test on equality of hash table elements (two
+     parameter of type hash_table_entry_t. */
+  int (*eq_function) (hash_table_entry_t, hash_table_entry_t);
+  /* Table itself */
+  hash_table_entry_t *entries;
+} *hash_table_t;
+
+
+/* The prototypes of the package functions. */
+
+extern hash_table_t create_hash_table
+  (size_t, unsigned (*) (hash_table_entry_t),
+	   int (*) (hash_table_entry_t, hash_table_entry_t));
+
+extern void delete_hash_table (hash_table_t);
+
+extern void empty_hash_table (hash_table_t);
+
+extern hash_table_entry_t *find_hash_table_entry
+  (hash_table_t, hash_table_entry_t, int);
+
+extern void remove_element_from_hash_table_entry (hash_table_t,
+							  hash_table_entry_t);
+
+extern size_t hash_table_size (hash_table_t);
+
+extern size_t hash_table_elements_number (hash_table_t);
+
+extern int hash_table_collisions (hash_table_t);
+
+extern int all_hash_table_collisions (void);
 
 #ifdef __cplusplus
 }

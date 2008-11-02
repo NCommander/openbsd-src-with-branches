@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_file.c,v 1.13 2005/10/12 07:24:28 otto Exp $ */
+/*	$NetBSD: kvm_file.c,v 1.5 1996/03/18 22:33:18 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,11 +31,15 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+#if 0
 static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
+#else
+static char *rcsid = "$OpenBSD: kvm_file.c,v 1.13 2005/10/12 07:24:28 otto Exp $";
+#endif
 #endif /* LIBC_SCCS and not lint */
 
 /*
- * File list interface for kvm.  pstat, fstat and netstat are 
+ * File list interface for kvm.  pstat, fstat and netstat are
  * users of this code, so we've factored it out into a separate module.
  * Thus, we keep this grunge out of the other kvm applications (i.e.,
  * most other applications are interested only in open/close/read/nlist).
@@ -55,14 +58,10 @@ static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #include <nlist.h>
 #include <kvm.h>
 
-#include <vm/vm.h>
-#include <vm/vm_param.h>
-#include <vm/swap_pager.h>
-
 #include <sys/sysctl.h>
 
 #include <limits.h>
-#include <ndbm.h>
+#include <db.h>
 #include <paths.h>
 
 #include "kvm_private.h"
@@ -70,37 +69,36 @@ static char sccsid[] = "@(#)kvm_file.c	8.1 (Berkeley) 6/4/93";
 #define KREAD(kd, addr, obj) \
 	(kvm_read(kd, addr, obj, sizeof(*obj)) != sizeof(*obj))
 
+static int kvm_deadfiles(kvm_t *kd, int op, int arg, long filehead_o,
+    int nfiles);
+
 /*
  * Get file structures.
  */
-static
-kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
-	kvm_t *kd;
-	int op, arg, nfiles;
-	long filehead_o;
+static int
+kvm_deadfiles(kvm_t *kd, int op, int arg, long filehead_o, int kvm_nfiles)
 {
-	int buflen = kd->arglen, needed = buflen, error, n = 0;
-	struct file *fp, file;
-	struct filelist filehead;
-	register char *where = kd->argspc;
-	char *start = where;
+	int buflen = kd->arglen, n = 0;
+	char *where = kd->argspc;
+	struct file *fp;
+	struct filelist kvm_filehead;
 
 	/*
 	 * first copyout filehead
 	 */
-	if (buflen > sizeof (filehead)) {
-		if (KREAD(kd, filehead_o, &filehead)) {
+	if (buflen > sizeof (kvm_filehead)) {
+		if (KREAD(kd, filehead_o, &kvm_filehead)) {
 			_kvm_err(kd, kd->program, "can't read filehead");
 			return (0);
 		}
-		buflen -= sizeof (filehead);
-		where += sizeof (filehead);
-		*(struct filelist *)kd->argspc = filehead;
+		buflen -= sizeof(kvm_filehead);
+		where += sizeof(kvm_filehead);
+		*(struct filelist *)kd->argspc = kvm_filehead;
 	}
 	/*
 	 * followed by an array of file structures
 	 */
-	for (fp = filehead.lh_first; fp != 0; fp = fp->f_list.le_next) {
+	LIST_FOREACH(fp, &kvm_filehead, f_list) {
 		if (buflen > sizeof (struct file)) {
 			if (KREAD(kd, (long)fp, ((struct file *)where))) {
 				_kvm_err(kd, kd->program, "can't read kfp");
@@ -112,23 +110,20 @@ kvm_deadfiles(kd, op, arg, filehead_o, nfiles)
 			n++;
 		}
 	}
-	if (n != nfiles) {
-		_kvm_err(kd, kd->program, "inconsistant nfiles");
+	if (n != kvm_nfiles) {
+		_kvm_err(kd, kd->program, "inconsistent nfiles");
 		return (0);
 	}
-	return (nfiles);
+	return (kvm_nfiles);
 }
 
 char *
-kvm_getfiles(kd, op, arg, cnt)
-	kvm_t *kd;
-	int op, arg;
-	int *cnt;
+kvm_getfiles(kvm_t *kd, int op, int arg, int *cnt)
 {
-	size_t size;
-	int mib[2], st, nfiles;
+	struct filelist kvm_filehead;
 	struct file *fp, *fplim;
-	struct filelist filehead;
+	int mib[2], st, kvm_nfiles;
+	size_t size;
 
 	if (ISALIVE(kd)) {
 		size = 0;
@@ -136,7 +131,7 @@ kvm_getfiles(kd, op, arg, cnt)
 		mib[1] = KERN_FILE;
 		st = sysctl(mib, 2, NULL, &size, NULL, 0);
 		if (st == -1) {
-			_kvm_syserr(kd, kd->program, "kvm_getprocs");
+			_kvm_syserr(kd, kd->program, "kvm_getfiles");
 			return (0);
 		}
 		if (kd->argspc == 0)
@@ -147,16 +142,16 @@ kvm_getfiles(kd, op, arg, cnt)
 			return (0);
 		kd->arglen = size;
 		st = sysctl(mib, 2, kd->argspc, &size, NULL, 0);
-		if (st == -1 || size < sizeof(filehead)) {
+		if (st == -1 || size < sizeof(kvm_filehead)) {
 			_kvm_syserr(kd, kd->program, "kvm_getfiles");
 			return (0);
 		}
-		filehead = *(struct filelist *)kd->argspc;
-		fp = (struct file *)(kd->argspc + sizeof (filehead));
+		kvm_filehead = *(struct filelist *)kd->argspc;
+		fp = (struct file *)(kd->argspc + sizeof(kvm_filehead));
 		fplim = (struct file *)(kd->argspc + size);
-		for (nfiles = 0; filehead.lh_first && (fp < fplim);
-		    nfiles++, fp++)
-			filehead.lh_first = fp->f_list.le_next;
+		for (kvm_nfiles = 0; LIST_FIRST(&kvm_filehead) && (fp < fplim);
+		    kvm_nfiles++, fp++)
+			LIST_FIRST(&kvm_filehead) = LIST_NEXT(fp, f_list);
 	} else {
 		struct nlist nl[3], *p;
 
@@ -171,11 +166,11 @@ kvm_getfiles(kd, op, arg, cnt)
 				 "%s: no such symbol", p->n_name);
 			return (0);
 		}
-		if (KREAD(kd, nl[0].n_value, &nfiles)) {
+		if (KREAD(kd, nl[0].n_value, &kvm_nfiles)) {
 			_kvm_err(kd, kd->program, "can't read nfiles");
 			return (0);
 		}
-		size = sizeof(filehead) + (nfiles + 10) * sizeof(struct file);
+		size = sizeof(kvm_filehead) + (kvm_nfiles + 10) * sizeof(struct file);
 		if (kd->argspc == 0)
 			kd->argspc = (char *)_kvm_malloc(kd, size);
 		else if (kd->arglen < size)
@@ -183,10 +178,10 @@ kvm_getfiles(kd, op, arg, cnt)
 		if (kd->argspc == 0)
 			return (0);
 		kd->arglen = size;
-		nfiles = kvm_deadfiles(kd, op, arg, nl[1].n_value, nfiles);
-		if (nfiles == 0)
+		kvm_nfiles = kvm_deadfiles(kd, op, arg, nl[1].n_value, kvm_nfiles);
+		if (kvm_nfiles == 0)
 			return (0);
 	}
-	*cnt = nfiles;
+	*cnt = kvm_nfiles;
 	return (kd->argspc);
 }

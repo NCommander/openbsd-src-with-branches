@@ -1,4 +1,4 @@
-/*	$PMDB: break.c,v 1.7 2002/03/12 11:28:28 art Exp $	*/
+/*	$OpenBSD: break.c,v 1.7 2002/11/27 22:36:24 pvalchev Exp $	*/
 /*
  * Copyright (c) 2002 Artur Grabowski <art@openbsd.org>
  * All rights reserved. 
@@ -64,10 +64,10 @@ bkpt_find_at_pc(struct pstate *ps, reg pc)
 {
 	struct breakpoint *bkpt;
 
-	TAILQ_FOREACH(bkpt, &ps->ps_bkpts, bkpt_list)
+	TAILQ_FOREACH(bkpt, &ps->ps_bkpts, bkpt_list) {
 		if (bkpt->bkpt_pc == pc)
 			break;
-
+	}
 	return (bkpt);
 }
 
@@ -79,14 +79,13 @@ bkpt_enable(struct pstate *ps, struct breakpoint *bkpt)
 {
 	reg pc = bkpt->bkpt_pc;
 
-	if (read_from_pid(ps->ps_pid, pc, &bkpt->bkpt_old, BREAKPOINT_LEN)) {
+	if (process_read(ps, pc, &bkpt->bkpt_old, BREAKPOINT_LEN) < 0) {
 		warn("Can't read process contents at 0x%lx", pc);
 		return (-1);
 	}
-	if (write_to_pid(ps->ps_pid, pc, &bkpt_insn, BREAKPOINT_LEN)) {
+	if (process_write(ps, pc, &bkpt_insn, BREAKPOINT_LEN) < 0) {
 		warn("Can't write breakpoint at 0x%lx, attempting backout.", pc);
-		if (write_to_pid(ps->ps_pid, pc, &bkpt->bkpt_old,
-		    BREAKPOINT_LEN))
+		if (process_write(ps, pc, &bkpt->bkpt_old, BREAKPOINT_LEN) < 0)
 			warn("Backout failed, process unstable");
 		return (-1);
 	}
@@ -109,6 +108,7 @@ bkpt_add_cb(struct pstate *ps, reg pc, int (*fun)(struct pstate *, void *),
 		TAILQ_INSERT_TAIL(&ps->ps_bkpts, bkpt, bkpt_list);
 		bkpt->bkpt_pc = pc;
 		if (bkpt_enable(ps, bkpt)) {
+			TAILQ_REMOVE(&ps->ps_bkpts, bkpt, bkpt_list);
 			free(bkpt);
 			return (-1);
 		}
@@ -130,8 +130,7 @@ bkpt_delete(struct pstate *ps, struct breakpoint *bkpt)
 {
 	TAILQ_REMOVE(&ps->ps_bkpts, bkpt, bkpt_list);
 
-	if (write_to_pid(ps->ps_pid, bkpt->bkpt_pc, &bkpt->bkpt_old,
-	    BREAKPOINT_LEN))
+	if (process_write(ps, bkpt->bkpt_pc, &bkpt->bkpt_old, BREAKPOINT_LEN))
 		warn("Breakpoint removal failed, process unstable");
 
 	free(bkpt);		
@@ -187,8 +186,11 @@ bkpt_check(struct pstate *ps)
 	 * of the callbacks require a stop.
 	 */
 	rg = alloca(sizeof(*rg) * md_def.nregs);
+	if (rg == NULL)
+		err(1, "bkpt_check: Can't allocate stack space.");
+
 	if (md_getregs(ps, rg))
-		err(1, "bkpt_check: Can't get registers.");
+		err(1, "bkpt_check: Can't get registers");
 
 	pc = rg[md_def.pcoff];
 	pc -= BREAKPOINT_DECR_PC;
@@ -215,7 +217,7 @@ bkpt_check(struct pstate *ps)
 			sstep_set(ps, sstep_bkpt_readd, (void *)bkpt->bkpt_pc);
 			break;
 		default:
-			errx(1, "unkonwn bkpt_fun return, internal error");
+			errx(1, "unknown bkpt_fun return, internal error");
 		}
 	}
 

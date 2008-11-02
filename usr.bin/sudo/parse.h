@@ -1,37 +1,20 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
- * All rights reserved.
+ * Copyright (c) 1996, 1998-2000, 2004, 2007
+ *	Todd C. Miller <Todd.Miller@courtesan.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * 4. Products derived from this software may not be called "Sudo" nor
- *    may "Sudo" appear in their names without specific prior written
- *    permission from the author.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * $Sudo: parse.h,v 1.5 1999/09/08 08:06:15 millert Exp $
+ * $Sudo: parse.h,v 1.14.2.2 2008/02/09 14:44:48 millert Exp $
  */
 
 #ifndef _SUDO_PARSE_H
@@ -50,6 +33,10 @@ struct matchstack {
 	int host;
 	int runas;
 	int nopass;
+	int noexec;
+	int setenv;
+	char *role;
+	char *type;
 };
 
 /*
@@ -61,11 +48,22 @@ struct sudo_command {
     char *args;
 };
 
+/*
+ * SELinux-specific container struct.
+ * Currently just contains a role and type.
+ */
+struct selinux_info {
+    char *role;
+    char *type;
+};
+
 #define user_matches	(match[top-1].user)
 #define cmnd_matches	(match[top-1].cmnd)
 #define host_matches	(match[top-1].host)
 #define runas_matches	(match[top-1].runas)
 #define no_passwd	(match[top-1].nopass)
+#define no_execve	(match[top-1].noexec)
+#define setenv_ok	(match[top-1].setenv)
 
 /*
  * Structure containing command matches if "sudo -l" is used.
@@ -77,7 +75,15 @@ struct command_match {
     char *cmnd;
     size_t cmnd_len;
     size_t cmnd_size;
+    char *role;
+    size_t role_len;
+    size_t role_size;
+    char *type;
+    size_t type_len;
+    size_t type_size;
     int nopasswd;
+    int noexecve;
+    int setenv;
 };
 
 /*
@@ -108,8 +114,10 @@ extern int top;
  * Prototypes
  */
 int addr_matches	__P((char *));
-int command_matches	__P((char *, char *, char *, char *));
-int netgr_matches	__P((char *, char *, char *));
-int usergr_matches	__P((char *, char *));
+int command_matches	__P((char *, char *));
+int hostname_matches	__P((char *, char *, char *));
+int netgr_matches	__P((char *, char *, char *, char *));
+int userpw_matches	__P((char *, char *, struct passwd *));
+int usergr_matches	__P((char *, char *, struct passwd *));
 
 #endif /* _SUDO_PARSE_H */

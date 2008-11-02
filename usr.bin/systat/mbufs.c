@@ -1,3 +1,4 @@
+/*	$OpenBSD: mbufs.c,v 1.17 2007/02/25 18:21:24 deraadt Exp $	*/
 /*	$NetBSD: mbufs.c,v 1.2 1995/01/20 08:52:02 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,25 +30,24 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mbufs.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: mbufs.c,v 1.2 1995/01/20 08:52:02 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/mbuf.h>
+#include <sys/sysctl.h>
 
 #include <stdlib.h>
 #include <string.h>
-#include <nlist.h>
+#include <err.h>
 #include <paths.h>
 #include "systat.h"
-#include "extern.h"
 
-static struct mbstat *mb;
+
+void print_mb(void);
+int read_mb(void);
+int select_mb(void);
+static void showmbuf(int);
+
+static struct mbstat mb;
 
 char *mtnames[] = {
 	"free",
@@ -70,99 +66,128 @@ char *mtnames[] = {
 	"ifaddrs",
 };
 
+#define NUM_TYPES (sizeof(mb.m_mtypes) / sizeof(mb.m_mtypes[0]))
 #define	NNAMES	(sizeof (mtnames) / sizeof (mtnames[0]))
 
-WINDOW *
-openmbufs()
-{
-	return (subwin(stdscr, LINES-5-1, 0, 5, 0));
-}
+int mb_index[NUM_TYPES];
+int mbuf_cnt = 0;
 
-void
-closembufs(w)
-	WINDOW *w;
-{
-	if (w == NULL)
-		return;
-	wclear(w);
-	wrefresh(w);
-	delwin(w);
-}
 
-void
-labelmbufs()
-{
-	wmove(wnd, 0, 0); wclrtoeol(wnd);
-	mvwaddstr(wnd, 0, 10,
-	    "/0   /5   /10  /15  /20  /25  /30  /35  /40  /45  /50  /55  /60");
-}
-
-void
-showmbufs()
-{
-	register int i, j, max, index;
-	char buf[10];
-
-	if (mb == 0)
-		return;
-	for (j = 0; j < wnd->maxy; j++) {
-		max = 0, index = -1; 
-		for (i = 0; i < wnd->maxy; i++)
-			if (mb->m_mtypes[i] > max) {
-				max = mb->m_mtypes[i];
-				index = i;
-			}
-		if (max == 0)
-			break;
-		if (j > NNAMES)
-			mvwprintw(wnd, 1+j, 0, "%10d", index);
-		else
-			mvwprintw(wnd, 1+j, 0, "%-10.10s", mtnames[index]);
-		wmove(wnd, 1 + j, 10);
-		if (max > 60) {
-			sprintf(buf, " %d", max);
-			max = 60;
-			while (max--)
-				waddch(wnd, 'X');
-			waddstr(wnd, buf);
-		} else {
-			while (max--)
-				waddch(wnd, 'X');
-			wclrtoeol(wnd);
-		}
-		mb->m_mtypes[index] = 0;
-	}
-	wmove(wnd, 1+j, 0); wclrtobot(wnd);
-}
-
-static struct nlist namelist[] = {
-#define	X_MBSTAT	0
-	{ "_mbstat" },
-	{ "" }
+field_def fields_mb[] = {
+	{"TYPE", 6, 16, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"VALUE", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"", 40, 80, 1, FLD_ALIGN_BAR, -1, 0, 0, 60},
 };
 
+#define FIELD_ADDR(x) (&fields_mb[x])
+
+#define FLD_MB_NAME	FIELD_ADDR(0)
+#define FLD_MB_VALUE	FIELD_ADDR(1)
+#define FLD_MB_BAR	FIELD_ADDR(2)
+
+/* Define views */
+field_def *view_mb_0[] = {
+	FLD_MB_NAME, FLD_MB_VALUE, FLD_MB_BAR, NULL
+};
+
+
+/* Define view managers */
+struct view_manager mbuf_mgr = {
+	"Mbufs", select_mb, read_mb, NULL, print_header,
+	print_mb, keyboard_callback, NULL, NULL
+};
+
+field_view views_mb[] = {
+	{view_mb_0, "mbufs", '4', &mbuf_mgr},
+	{NULL, NULL, 0, NULL}
+};
+
+
 int
-initmbufs()
+select_mb(void)
 {
-	if (namelist[X_MBSTAT].n_type == 0) {
-		if (kvm_nlist(kd, namelist)) {
-			nlisterr(namelist);
-			return(0);
-		}
-		if (namelist[X_MBSTAT].n_type == 0) {
-			error("namelist on %s failed", _PATH_UNIX);
-			return(0);
-		}
+	int i, w = 50;
+
+	read_mb();
+	for (i = 0; i < NUM_TYPES; i++)
+		if (w < (5 * mb.m_mtypes[i] / 4))
+			w = 5 * mb.m_mtypes[i] / 4;
+
+	w -= w % 10;
+	FLD_MB_BAR->arg = w;
+
+	return (0);
+}
+
+int
+read_mb(void)
+{
+	int mib[2], i;
+	size_t size = sizeof (mb);
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_MBSTAT;
+
+	if (sysctl(mib, 2, &mb, &size, NULL, 0) < 0) {
+		error("sysctl(KERN_MBSTAT) failed");
+		return 1;
 	}
-	if (mb == 0)
-		mb = (struct mbstat *)calloc(1, sizeof (*mb));
+
+	mbuf_cnt = 0;
+	memset(mb_index, 0, sizeof(mb_index));
+
+	for (i = 0; i < NUM_TYPES; i++) {
+		if (mb.m_mtypes[i])
+			mb_index[mbuf_cnt++] = i;
+	}
+
+	num_disp = mbuf_cnt;
+
+	return 0;
+}
+
+
+void
+print_mb(void)
+{
+	int n, count = 0;
+
+	for (n = dispstart; n < num_disp; n++) {
+		showmbuf(n);
+		count++;
+		if (maxprint > 0 && count >= maxprint)
+			break;
+	}
+}
+
+int
+initmembufs(void)
+{
+	field_view *v;
+
+	for (v = views_mb; v->name != NULL; v++)
+		add_view(v);
+
 	return(1);
 }
 
-void
-fetchmbufs()
+
+static void
+showmbuf(int m)
 {
-	if (namelist[X_MBSTAT].n_type == 0)
-		return;
-	NREAD(X_MBSTAT, mb, sizeof (*mb));
+	int i;
+
+	i = mb_index[m];
+
+	if (i < NNAMES)
+		print_fld_str(FLD_MB_NAME, mtnames[i]);
+	else
+		print_fld_uint(FLD_MB_NAME, i);
+
+	print_fld_uint(FLD_MB_VALUE, mb.m_mtypes[i]);
+	print_fld_bar(FLD_MB_BAR, mb.m_mtypes[i]);
+
+	end_line();
 }
+
+

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* tc-i960.h - Basic 80960 instruction formats.
    Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    

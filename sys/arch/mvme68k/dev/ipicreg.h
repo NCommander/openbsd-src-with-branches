@@ -1,4 +1,4 @@
-/*	$NetBSD$ */
+/*	$OpenBSD: ipicreg.h,v 1.6 2004/07/30 22:29:45 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -12,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by Theo de Raadt
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -109,6 +104,8 @@ struct ipicsoftc {
 	struct device	sc_dev;
 	struct ipicreg	*sc_ipic;
 
-	caddr_t		sc_ipspace;
+	vaddr_t		sc_ipspace;
 	int		sc_nip;
 };
+
+int ipicintr_establish(int, struct intrhand *, const char *);

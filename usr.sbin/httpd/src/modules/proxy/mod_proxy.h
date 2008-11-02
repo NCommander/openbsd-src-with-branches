@@ -203,6 +203,8 @@ typedef struct {
     char recv_buffer_size_set;
     size_t io_buffer_size;
     char io_buffer_size_set;
+    int preserve_host;
+    int preserve_host_set;
 } proxy_server_conf;
 
 struct hdr_entry {
@@ -256,7 +258,7 @@ typedef struct {
 
 struct per_thread_data {
     struct hostent hpbuf;
-    u_long ipaddr;
+    in_addr_t ipaddr;
     char *charpbuf[2];
 };
 /* Function prototypes */
@@ -302,7 +304,7 @@ void ap_proxy_write_headers(cache_req *c, const char *respline, table *t);
 int ap_proxy_liststr(const char *list, const char *key, char **val);
 void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength);
 int ap_proxy_hex2sec(const char *x);
-void ap_proxy_sec2hex(int t, char *y);
+int ap_proxy_sec2hex(int t, char *y, int len);
 cache_req *ap_proxy_cache_error(cache_req *r);
 int ap_proxyerror(request_rec *r, int statuscode, const char *message);
 const char *ap_proxy_host2addr(const char *host, struct hostent *reqhp);
@@ -310,7 +312,7 @@ int ap_proxy_is_ipaddr(struct dirconn_entry *This, pool *p);
 int ap_proxy_is_domainname(struct dirconn_entry *This, pool *p);
 int ap_proxy_is_hostname(struct dirconn_entry *This, pool *p);
 int ap_proxy_is_word(struct dirconn_entry *This, pool *p);
-int ap_proxy_doconnect(int sock, struct sockaddr_in *addr, request_rec *r);
+int ap_proxy_doconnect(int sock, struct sockaddr *addr, request_rec *r);
 int ap_proxy_garbage_init(server_rec *, pool *);
 /* This function is called by ap_table_do() for all header lines */
 int ap_proxy_send_hdr_line(void *p, const char *key, const char *value);

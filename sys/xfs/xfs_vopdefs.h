@@ -20,12 +20,10 @@ NNPFS_VOP_DEF(setattr);
 NNPFS_VOP_DEF(read);
 #define HAVE_VOP_WRITE 1
 NNPFS_VOP_DEF(write);
-#define HAVE_VOP_LEASE 1
-NNPFS_VOP_DEF(lease);
 #define HAVE_VOP_IOCTL 1
 NNPFS_VOP_DEF(ioctl);
-#define HAVE_VOP_SELECT 1
-NNPFS_VOP_DEF(select);
+#define HAVE_VOP_POLL 1
+NNPFS_VOP_DEF(poll);
 #define HAVE_VOP_KQFILTER 1
 NNPFS_VOP_DEF(kqfilter);
 #define HAVE_VOP_REVOKE 1
@@ -68,12 +66,6 @@ NNPFS_VOP_DEF(pathconf);
 NNPFS_VOP_DEF(advlock);
 #define HAVE_VOP_REALLOCBLKS 1
 NNPFS_VOP_DEF(reallocblks);
-#define HAVE_VOP_WHITEOUT 1
-NNPFS_VOP_DEF(whiteout);
-#define HAVE_VOP_GETEXTATTR 1
-NNPFS_VOP_DEF(getextattr);
-#define HAVE_VOP_SETEXTATTR 1
-NNPFS_VOP_DEF(setextattr);
 #define HAVE_VOP_STRATEGY 1
 NNPFS_VOP_DEF(strategy);
 #define HAVE_VOP_BWRITE 1

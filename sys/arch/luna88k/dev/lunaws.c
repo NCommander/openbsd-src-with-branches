@@ -1,3 +1,4 @@
+/*	$OpenBSD: lunaws.c,v 1.5 2007/04/10 22:37:17 miod Exp $	*/
 /* $NetBSD: lunaws.c,v 1.6 2002/03/17 19:40:42 atatat Exp $ */
 
 /*-
@@ -15,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -130,7 +124,7 @@ const struct cfattach ws_ca = {
 	sizeof(struct ws_softc), wsmatch, wsattach
 };
 
-const struct cfdriver ws_cd = {
+struct cfdriver ws_cd = {
         NULL, "ws", DV_TTY
 };
 
@@ -270,7 +264,8 @@ wsintr(chan)
 				sc->dy = (signed char)code;
 				if (sc->sc_wsmousedev != NULL)
 					wsmouse_input(sc->sc_wsmousedev,
-					    sc->buttons, sc->dx, sc->dy, 0, 0);
+					    sc->buttons, sc->dx, sc->dy, 0, 0,
+					    WSMOUSE_INPUT_DELTA);
 				sc->sc_msreport = 0;
 			}
 #else
@@ -488,7 +483,7 @@ omkbd_ioctl(v, cmd, data, flag, p)
 
 	switch (cmd) {
 	case WSKBDIO_GTYPE:
-		*(int *)data = 0;	/* XXX for now */
+		*(int *)data = WSKBD_TYPE_LUNA;
 		return 0;
 	case WSKBDIO_SETLEDS:
 	case WSKBDIO_GETLEDS:
@@ -526,7 +521,7 @@ omms_ioctl(v, cmd, data, flag, p)
 
 	switch (cmd) {
 	case WSMOUSEIO_GTYPE:
-		*(u_int *)data = 0;	/* XXX for now*/
+		*(u_int *)data = WSMOUSE_TYPE_LUNA;
 		return 0;
 	}
 

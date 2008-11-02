@@ -141,6 +141,10 @@ static int for_lint = 0;
 
 static int put_out_comments = 0;
 
+/* Nonzero means pass comments inside macros */
+
+static int pass_through_comments = 0;
+
 /* Nonzero means don't process the ANSI trigraph sequences.  */
 
 static int no_trigraphs = 0;
@@ -1677,6 +1681,8 @@ main (argc, argv)
 
       case 'C':
 	put_out_comments = 1;
+	if (argv[i][2] == 'C')
+	  pass_through_comments = 1;
 	break;
 
       case 'E':			/* -E comes from cc -E; ignore it.  */
@@ -3777,7 +3783,8 @@ handle_directive (ip, op)
       limit = ip->buf + ip->length;
       unterminated = 0;
       already_output = 0;
-      keep_comments = traditional && kt->type == T_DEFINE;
+      keep_comments = (traditional || pass_through_comments) 
+      	&& kt->type == T_DEFINE;
       /* #import is defined only in Objective C, or when on the NeXT.  */
       if (kt->type == T_IMPORT
 	  && !(objc || lookup ((U_CHAR *) "__NeXT__", -1, -1)))
@@ -7129,10 +7136,10 @@ do_pragma ()
   close (1);
   if (open ("/dev/tty", O_WRONLY, 0666) != 1)
     goto nope;
-  execl ("/usr/games/hack", "#pragma", 0);
-  execl ("/usr/games/rogue", "#pragma", 0);
-  execl ("/usr/new/emacs", "-f", "hanoi", "9", "-kill", 0);
-  execl ("/usr/local/emacs", "-f", "hanoi", "9", "-kill", 0);
+  execl ("/usr/games/hack", "#pragma", (char *)NULL);
+  execl ("/usr/games/rogue", "#pragma", (char *)NULL);
+  execl ("/usr/new/emacs", "-f", "hanoi", "9", "-kill", (char *)NULL);
+  execl ("/usr/local/emacs", "-f", "hanoi", "9", "-kill", (char *)NULL);
 nope:
   fatal ("You are in a maze of twisty compiler features, all different");
 }

@@ -57,13 +57,12 @@ read_words (const char *filename, char ***ret_w)
     while (fgets (buf, sizeof(buf), f) != NULL) {
 	size_t len;
 
-	if (buf[strlen (buf) - 1] == '\n')
-	    buf[strlen (buf) - 1] = '\0';
+	buf[strcspn(buf, "\r\n")] = '\0';
+	len = strlen(buf);
 	if (n >= alloc) {
 	    alloc = max(alloc + 16, alloc * 2);
 	    w = erealloc (w, alloc * sizeof(char **));
 	}
-	len = strlen(buf);
 	if (wptr + len + 1 >= wend) {
 	    wptr = wbuf = emalloc (WORDBUF_SIZE);
 	    wend = wbuf + WORDBUF_SIZE;
@@ -160,7 +159,6 @@ main(int argc, char **argv)
     int n = NUSERS;
     const char *filename = WORDS_FILENAME;
 
-    setprogname(argv[0]);
     if(getarg(args, sizeof(args) / sizeof(args[0]), argc, argv, &optind))
 	usage(1);
     if (help_flag)

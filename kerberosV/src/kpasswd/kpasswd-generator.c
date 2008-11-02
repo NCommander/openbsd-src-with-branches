@@ -48,8 +48,7 @@ read_words (const char *filename, char ***ret_w)
 	err (1, "cannot open %s", filename);
     alloc = n = 0;
     while (fgets (buf, sizeof(buf), f) != NULL) {
-	if (buf[strlen (buf) - 1] == '\n')
-	    buf[strlen (buf) - 1] = '\0';
+	buf[strcspn(buf, "\r\n")] = '\0';
 	if (n >= alloc) {
 	    alloc += 16;
 	    w = erealloc (w, alloc * sizeof(char **));
@@ -178,7 +177,6 @@ main(int argc, char **argv)
     int nreq;
     char *end;
 
-    setprogname(argv[0]);
     if(getarg(args, sizeof(args) / sizeof(args[0]), argc, argv, &optind))
 	usage(1);
     if (help_flag)

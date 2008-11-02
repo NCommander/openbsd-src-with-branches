@@ -1,3 +1,4 @@
+/*	$OpenBSD: mathimpl.h,v 1.7 2008/06/12 22:43:36 martynas Exp $	*/
 /*	$NetBSD: mathimpl.h,v 1.1 1995/10/10 23:36:31 ragge Exp $	*/
 /*
  * Copyright (c) 1988, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,19 +32,14 @@
  */
 
 #include <sys/cdefs.h>
-#include <math.h>
 
-#if defined(vax)||defined(tahoe)
+#if defined(__vax__)
 
-/* Deal with different ways to concatenate in cpp */
-#  ifdef __STDC__
-#    define	cat3(a,b,c) a ## b ## c
-#  else
-#    define	cat3(a,b,c) a/**/b/**/c
-#  endif
+/* Deal with concatenation in cpp */
+#  define	cat3(a,b,c) a ## b ## c
 
-/* Deal with vax/tahoe byte order issues */
-#  ifdef vax
+/* Deal with vax byte order issues */
+#  ifdef __vax__
 #    define	cat3t(a,b,c) cat3(a,b,c)
 #  else
 #    define	cat3t(a,b,c) cat3(a,c,b)
@@ -60,7 +52,7 @@
     *
     * Args are the name to define, the decimal floating point value,
     * four 16-bit chunks of the float value in hex
-    * (because the vax and tahoe differ in float format!), the power
+    * (because the vax differ in float format!), the power
     * of 2 of the hex-float exponent, and the hex-float mantissa.
     * Most of these arguments are not used at compile time; they are
     * used in a post-check to make sure the constants were compiled
@@ -76,7 +68,7 @@
 
 #  define ic(name, value, bexp, xval) ;
 
-#else	/* vax or tahoe */
+#else	/* defined(__vax__) */
 
    /* Hooray, we have an IEEE machine */
 #  undef vccast
@@ -85,7 +77,7 @@
 #  define ic(name, value, bexp, xval) \
 	const static double name = value;
 
-#endif	/* defined(vax)||defined(tahoe) */
+#endif	/* defined(__vax__) */
 
 
 /*
@@ -95,5 +87,5 @@ extern double	__exp__E();
 extern double	__log__L();
 
 struct Double {double a, b;};
-double __exp__D __P((double, double));
-struct Double __log__D __P((double));
+double __exp__D(double, double);
+struct Double __log__D(double);

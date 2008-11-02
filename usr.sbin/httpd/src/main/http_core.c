@@ -1,3 +1,5 @@
+/* $OpenBSD: http_core.c,v 1.24 2008/05/15 06:05:43 mbalmer Exp $ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -57,7 +59,6 @@
  */
 
 #define CORE_PRIVATE
-#define ADD_EBCDICCONVERT_DEBUG_HEADER 0
 #include "httpd.h"
 #include "http_config.h"
 #include "http_core.h"
@@ -72,7 +73,6 @@
 #include "scoreboard.h"
 #include "fnmatch.h"
 
-#ifdef USE_MMAP_FILES
 #include <sys/mman.h>
 
 /* mmap support for static files based on ideas from John Heidemann's
@@ -85,12 +85,7 @@
  * the benefit for small files.  It shouldn't be set lower than 1.
  */
 #ifndef MMAP_THRESHOLD
-#ifdef SUNOS4
-#define MMAP_THRESHOLD		(8*1024)
-#else
 #define MMAP_THRESHOLD		1
-#endif
-#endif
 #endif
 #ifndef MMAP_LIMIT
 #define MMAP_LIMIT              (4*1024*1024)
@@ -109,327 +104,269 @@
  * the http_conf_globals.
  */
 
-static void *create_core_dir_config(pool *a, char *dir)
+static void *
+create_core_dir_config(pool *a, char *dir)
 {
-    core_dir_config *conf;
+	core_dir_config *conf;
 
-    conf = (core_dir_config *)ap_pcalloc(a, sizeof(core_dir_config));
-    if (!dir || dir[strlen(dir) - 1] == '/') {
-        conf->d = dir;
-    }
-    else if (strncmp(dir, "proxy:", 6) == 0) {
-        conf->d = ap_pstrdup(a, dir);
-    }
-    else {
-        conf->d = ap_pstrcat(a, dir, "/", NULL);
-    }
-    conf->d_is_fnmatch = conf->d ? (ap_is_fnmatch(conf->d) != 0) : 0;
-    conf->d_components = conf->d ? ap_count_dirs(conf->d) : 0;
+	conf = (core_dir_config *)ap_pcalloc(a, sizeof(core_dir_config));
+	if (!dir || dir[strlen(dir) - 1] == '/')
+		conf->d = dir;
+	else if (strncmp(dir, "proxy:", 6) == 0)
+		conf->d = ap_pstrdup(a, dir);
+	else
+		conf->d = ap_pstrcat(a, dir, "/", NULL);
 
-    conf->opts = dir ? OPT_UNSET : OPT_UNSET|OPT_ALL;
-    conf->opts_add = conf->opts_remove = OPT_NONE;
-    conf->override = dir ? OR_UNSET : OR_UNSET|OR_ALL;
+	conf->d_is_fnmatch = conf->d ? (ap_is_fnmatch(conf->d) != 0) : 0;
+	conf->d_components = conf->d ? ap_count_dirs(conf->d) : 0;
 
-    conf->content_md5 = 2;
+	conf->opts = dir ? OPT_UNSET : OPT_UNSET|OPT_ALL;
+	conf->opts_add = conf->opts_remove = OPT_NONE;
+	conf->override = dir ? OR_UNSET : OR_UNSET|OR_ALL;
 
-    conf->use_canonical_name = USE_CANONICAL_NAME_UNSET;
+	conf->content_md5 = 2;
 
-    conf->hostname_lookups = HOSTNAME_LOOKUP_UNSET;
-    conf->do_rfc1413 = DEFAULT_RFC1413 | 2; /* set bit 1 to indicate default */
-    conf->satisfy = SATISFY_NOSPEC;
+	conf->use_canonical_name = USE_CANONICAL_NAME_UNSET;
 
-#ifdef RLIMIT_CPU
-    conf->limit_cpu = NULL;
-#endif
-#if defined(RLIMIT_DATA) || defined(RLIMIT_VMEM) || defined(RLIMIT_AS)
-    conf->limit_mem = NULL;
-#endif
-#ifdef RLIMIT_NPROC
-    conf->limit_nproc = NULL;
-#endif
+	conf->hostname_lookups = HOSTNAME_LOOKUP_UNSET;
+	conf->do_rfc1413 = DEFAULT_RFC1413 | 2; /* set bit 1 to indicate
+						 * default
+						 */
+	conf->satisfy = SATISFY_NOSPEC;
 
-    conf->limit_req_body = 0;
-    conf->sec = ap_make_array(a, 2, sizeof(void *));
-#ifdef WIN32
-    conf->script_interpreter_source = INTERPRETER_SOURCE_UNSET;
-#endif
+	conf->limit_cpu = NULL;
+	conf->limit_mem = NULL;
+	conf->limit_nproc = NULL;
+	conf->limit_nofile = NULL;
 
-    conf->server_signature = srv_sig_unset;
+	conf->limit_req_body = 0;
+	conf->sec = ap_make_array(a, 2, sizeof(void *));
 
-    conf->add_default_charset = ADD_DEFAULT_CHARSET_UNSET;
-    conf->add_default_charset_name = DEFAULT_ADD_DEFAULT_CHARSET_NAME;
+	conf->server_signature = srv_sig_unset;
 
-#ifdef CHARSET_EBCDIC
-    conf->ebcdicconversion_by_ext_in = ap_make_table(a, 4);
-    conf->ebcdicconversion_by_ext_out = ap_make_table(a, 4);
-    conf->ebcdicconversion_by_type_in = ap_make_table(a, 4);
-    conf->ebcdicconversion_by_type_out = ap_make_table(a, 4);
-    conf->x_ascii_magic_kludge = 0;
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-    conf->ebcdicconversion_debug_header = 0;
-#endif
-#endif /* CHARSET_EBCDIC */
+	conf->add_default_charset = ADD_DEFAULT_CHARSET_UNSET;
+	conf->add_default_charset_name = DEFAULT_ADD_DEFAULT_CHARSET_NAME;
 
-    /*
-     * Flag for use of inodes in ETags.
-     */
-    conf->etag_bits = ETAG_UNSET;
-    conf->etag_add = ETAG_UNSET;
-    conf->etag_remove = ETAG_UNSET;
+	/* Flag for use of inodes in ETags. */
+	conf->etag_bits = ETAG_UNSET;
+	conf->etag_add = ETAG_UNSET;
+	conf->etag_remove = ETAG_UNSET;
 
-    return (void *)conf;
+	return (void *)conf;
 }
 
-static void *merge_core_dir_configs(pool *a, void *basev, void *newv)
+static void *
+merge_core_dir_configs(pool *a, void *basev, void *newv)
 {
-    core_dir_config *base = (core_dir_config *)basev;
-    core_dir_config *new = (core_dir_config *)newv;
-    core_dir_config *conf;
-    int i;
-  
-    conf = (core_dir_config *)ap_palloc(a, sizeof(core_dir_config));
-    memcpy((char *)conf, (const char *)base, sizeof(core_dir_config));
-    if (base->response_code_strings) {
-	conf->response_code_strings =
-	    ap_palloc(a, sizeof(*conf->response_code_strings)
-		      * RESPONSE_CODES);
-	memcpy(conf->response_code_strings, base->response_code_strings,
-	       sizeof(*conf->response_code_strings) * RESPONSE_CODES);
-    }
-    
-    conf->d = new->d;
-    conf->d_is_fnmatch = new->d_is_fnmatch;
-    conf->d_components = new->d_components;
-    conf->r = new->r;
+	core_dir_config *base = (core_dir_config *)basev;
+	core_dir_config *new = (core_dir_config *)newv;
+	core_dir_config *conf;
+	int i;
 
-    if (new->opts & OPT_UNSET) {
-	/* there was no explicit setting of new->opts, so we merge
-	 * preserve the invariant (opts_add & opts_remove) == 0
-	 */
-	conf->opts_add = (conf->opts_add & ~new->opts_remove) | new->opts_add;
-	conf->opts_remove = (conf->opts_remove & ~new->opts_add)
-	                    | new->opts_remove;
-	conf->opts = (conf->opts & ~conf->opts_remove) | conf->opts_add;
-        if ((base->opts & OPT_INCNOEXEC) && (new->opts & OPT_INCLUDES)) {
-            conf->opts = (conf->opts & ~OPT_INCNOEXEC) | OPT_INCLUDES;
+	conf = (core_dir_config *)ap_palloc(a, sizeof(core_dir_config));
+	memcpy((char *)conf, (const char *)base, sizeof(core_dir_config));
+	if (base->response_code_strings) {
+		conf->response_code_strings =
+		ap_palloc(a, sizeof(*conf->response_code_strings)
+		    * RESPONSE_CODES);
+		memcpy(conf->response_code_strings, base->response_code_strings,
+		    sizeof(*conf->response_code_strings) * RESPONSE_CODES);
 	}
-    }
-    else {
-	/* otherwise we just copy, because an explicit opts setting
-	 * overrides all earlier +/- modifiers
-	 */
-	conf->opts = new->opts;
-	conf->opts_add = new->opts_add;
-	conf->opts_remove = new->opts_remove;
-    }
 
-    if (!(new->override & OR_UNSET)) {
-        conf->override = new->override;
-    }
-    if (new->ap_default_type) {
-        conf->ap_default_type = new->ap_default_type;
-    }
-    
-    if (new->ap_auth_type) {
-        conf->ap_auth_type = new->ap_auth_type;
-    }
-    if (new->ap_auth_name) {
-        conf->ap_auth_name = new->ap_auth_name;
-    }
-    if (new->ap_requires) {
-        conf->ap_requires = new->ap_requires;
-    }
+	conf->d = new->d;
+	conf->d_is_fnmatch = new->d_is_fnmatch;
+	conf->d_components = new->d_components;
+	conf->r = new->r;
 
-    if (new->response_code_strings) {
-	if (conf->response_code_strings == NULL) {
-	    conf->response_code_strings = ap_palloc(a,
-		sizeof(*conf->response_code_strings) * RESPONSE_CODES);
-	    memcpy(conf->response_code_strings, new->response_code_strings,
-		   sizeof(*conf->response_code_strings) * RESPONSE_CODES);
+	if (new->opts & OPT_UNSET) {
+		/* there was no explicit setting of new->opts, so we merge
+		* preserve the invariant (opts_add & opts_remove) == 0
+		*/
+		conf->opts_add = (conf->opts_add & ~new->opts_remove) |
+		    new->opts_add;
+		conf->opts_remove = (conf->opts_remove & ~new->opts_add) |
+		    new->opts_remove;
+		conf->opts = (conf->opts & ~conf->opts_remove) | conf->opts_add;
+		if ((base->opts & OPT_INCNOEXEC) && (new->opts & OPT_INCLUDES))
+			conf->opts = (conf->opts & ~OPT_INCNOEXEC) |
+			    OPT_INCLUDES;
+	} else {
+		/* otherwise we just copy, because an explicit opts setting
+		* overrides all earlier +/- modifiers
+		*/
+		conf->opts = new->opts;
+		conf->opts_add = new->opts_add;
+		conf->opts_remove = new->opts_remove;
 	}
-	else {
-	    for (i = 0; i < RESPONSE_CODES; ++i) {
-	        if (new->response_code_strings[i] != NULL) {
-		    conf->response_code_strings[i]
-		        = new->response_code_strings[i];
+
+	if (!(new->override & OR_UNSET))
+		conf->override = new->override;
+	if (new->ap_default_type)
+		conf->ap_default_type = new->ap_default_type;
+	if (new->ap_auth_type)
+		conf->ap_auth_type = new->ap_auth_type;
+	if (new->ap_auth_name)
+		conf->ap_auth_name = new->ap_auth_name;
+	if (new->ap_auth_nonce)
+		conf->ap_auth_nonce = new->ap_auth_nonce;
+	if (new->ap_requires)
+		conf->ap_requires = new->ap_requires;
+
+	if (new->response_code_strings) {
+		if (conf->response_code_strings == NULL) {
+			conf->response_code_strings = ap_palloc(a,
+			    sizeof(*conf->response_code_strings) *
+			    RESPONSE_CODES);
+			memcpy(conf->response_code_strings,
+			    new->response_code_strings,
+			    sizeof(*conf->response_code_strings) *
+			    RESPONSE_CODES);
+		} else {
+			for (i = 0; i < RESPONSE_CODES; ++i) {
+				if (new->response_code_strings[i] != NULL)
+					conf->response_code_strings[i]
+					    = new->response_code_strings[i];
+			}
 		}
-	    }
 	}
-    }
-    if (new->hostname_lookups != HOSTNAME_LOOKUP_UNSET) {
-	conf->hostname_lookups = new->hostname_lookups;
-    }
-    if ((new->do_rfc1413 & 2) == 0) {
-        conf->do_rfc1413 = new->do_rfc1413;
-    }
-    if ((new->content_md5 & 2) == 0) {
-        conf->content_md5 = new->content_md5;
-    }
-    if (new->use_canonical_name != USE_CANONICAL_NAME_UNSET) {
-	conf->use_canonical_name = new->use_canonical_name;
-    }
+	if (new->hostname_lookups != HOSTNAME_LOOKUP_UNSET)
+		conf->hostname_lookups = new->hostname_lookups;
+	if ((new->do_rfc1413 & 2) == 0)
+		conf->do_rfc1413 = new->do_rfc1413;
+	if ((new->content_md5 & 2) == 0)
+		conf->content_md5 = new->content_md5;
+	if (new->use_canonical_name != USE_CANONICAL_NAME_UNSET)
+		conf->use_canonical_name = new->use_canonical_name;
 
-#ifdef RLIMIT_CPU
-    if (new->limit_cpu) {
-        conf->limit_cpu = new->limit_cpu;
-    }
-#endif
-#if defined(RLIMIT_DATA) || defined(RLIMIT_VMEM) || defined(RLIMIT_AS)
-    if (new->limit_mem) {
-        conf->limit_mem = new->limit_mem;
-    }
-#endif
-#ifdef RLIMIT_NPROC    
-    if (new->limit_nproc) {
-        conf->limit_nproc = new->limit_nproc;
-    }
-#endif
+	if (new->limit_cpu)
+		conf->limit_cpu = new->limit_cpu;
+	if (new->limit_mem)
+		conf->limit_mem = new->limit_mem;
+	if (new->limit_nproc)
+		conf->limit_nproc = new->limit_nproc;
+	if (new->limit_nofile)
+		conf->limit_nofile = new->limit_nofile;
 
-    if (new->limit_req_body) {
-        conf->limit_req_body = new->limit_req_body;
-    }
-    conf->sec = ap_append_arrays(a, base->sec, new->sec);
+	if (new->limit_req_body)
+		conf->limit_req_body = new->limit_req_body;
 
-    if (new->satisfy != SATISFY_NOSPEC) {
-        conf->satisfy = new->satisfy;
-    }
+	conf->sec = ap_append_arrays(a, base->sec, new->sec);
 
-#ifdef WIN32
-    if (new->script_interpreter_source != INTERPRETER_SOURCE_UNSET) {
-        conf->script_interpreter_source = new->script_interpreter_source;
-    }
-#endif
+	if (new->satisfy != SATISFY_NOSPEC)
+		conf->satisfy = new->satisfy;
 
-    if (new->server_signature != srv_sig_unset) {
-	conf->server_signature = new->server_signature;
-    }
+	if (new->server_signature != srv_sig_unset)
+		conf->server_signature = new->server_signature;
 
-    if (new->add_default_charset != ADD_DEFAULT_CHARSET_UNSET) {
-	conf->add_default_charset = new->add_default_charset;
-	if (new->add_default_charset_name) {
-	    conf->add_default_charset_name = new->add_default_charset_name;
+	if (new->add_default_charset != ADD_DEFAULT_CHARSET_UNSET) {
+		conf->add_default_charset = new->add_default_charset;
+		if (new->add_default_charset_name)
+			conf->add_default_charset_name =
+			    new->add_default_charset_name;
 	}
-    }
 
-#ifdef CHARSET_EBCDIC
-    conf->ebcdicconversion_by_ext_in = ap_overlay_tables(a, new->ebcdicconversion_by_ext_in,
-                                               base->ebcdicconversion_by_ext_in);
-    conf->ebcdicconversion_by_ext_out = ap_overlay_tables(a, new->ebcdicconversion_by_ext_out,
-                                               base->ebcdicconversion_by_ext_out);
-    conf->ebcdicconversion_by_type_in = ap_overlay_tables(a, new->ebcdicconversion_by_type_in,
-                                                base->ebcdicconversion_by_type_in);
-    conf->ebcdicconversion_by_type_out = ap_overlay_tables(a, new->ebcdicconversion_by_type_out,
-                                                base->ebcdicconversion_by_type_out);
-    conf->x_ascii_magic_kludge = new->x_ascii_magic_kludge ? new->x_ascii_magic_kludge : base->x_ascii_magic_kludge;
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-    conf->ebcdicconversion_debug_header = new->ebcdicconversion_debug_header ? new->ebcdicconversion_debug_header : base->ebcdicconversion_debug_header;
-#endif
-#endif /* CHARSET_EBCDIC */
+	/* Now merge the setting of the FileETag directive. */
+	if (new->etag_bits == ETAG_UNSET) {
+		conf->etag_add =
+		    (conf->etag_add & (~ new->etag_remove)) | new->etag_add;
+		conf->etag_remove =
+		    (conf->opts_remove & (~ new->etag_add)) | new->etag_remove;
+		conf->etag_bits =
+		    (conf->etag_bits & (~ conf->etag_remove)) | conf->etag_add;
+	} else {
+		conf->etag_bits = new->etag_bits;
+		conf->etag_add = new->etag_add;
+		conf->etag_remove = new->etag_remove;
+	}
+	if (conf->etag_bits != ETAG_NONE)
+		conf->etag_bits &= (~ ETAG_NONE);
 
-    /*
-     * Now merge the setting of the FileETag directive.
-     */
-    if (new->etag_bits == ETAG_UNSET) {
-        conf->etag_add =
-            (conf->etag_add & (~ new->etag_remove)) | new->etag_add;
-        conf->etag_remove =
-            (conf->opts_remove & (~ new->etag_add)) | new->etag_remove;
-        conf->etag_bits =
-            (conf->etag_bits & (~ conf->etag_remove)) | conf->etag_add;
-    }
-    else {
-        conf->etag_bits = new->etag_bits;
-        conf->etag_add = new->etag_add;
-        conf->etag_remove = new->etag_remove;
-    }
-    if (conf->etag_bits != ETAG_NONE) {
-        conf->etag_bits &= (~ ETAG_NONE);
-    }
+	if (new->cgi_command_args != AP_FLAG_UNSET)
+		conf->cgi_command_args = new->cgi_command_args;
+	ap_server_strip_chroot(conf->d, 0);
 
-    if (new->cgi_command_args != AP_FLAG_UNSET) {
-        conf->cgi_command_args = new->cgi_command_args;
-    }
-
-    return (void*)conf;
+	return (void*)conf;
 }
 
-static void *create_core_server_config(pool *a, server_rec *s)
+static void *
+create_core_server_config(pool *a, server_rec *s)
 {
-    core_server_config *conf;
-    int is_virtual = s->is_virtual;
-  
-    conf = (core_server_config *)ap_pcalloc(a, sizeof(core_server_config));
+	core_server_config *conf;
+	int is_virtual = s->is_virtual;
+
+	conf = (core_server_config *)ap_pcalloc(a, sizeof(core_server_config));
 #ifdef GPROF
-    conf->gprof_dir = NULL;
+	conf->gprof_dir = NULL;
 #endif
-    conf->access_name = is_virtual ? NULL : DEFAULT_ACCESS_FNAME;
-    conf->ap_document_root = is_virtual ? NULL : DOCUMENT_LOCATION;
-    conf->sec = ap_make_array(a, 40, sizeof(void *));
-    conf->sec_url = ap_make_array(a, 40, sizeof(void *));
+	conf->access_name = is_virtual ? NULL : DEFAULT_ACCESS_FNAME;
+	conf->ap_document_root = is_virtual ? NULL : DOCUMENT_LOCATION;
+	conf->sec = ap_make_array(a, 40, sizeof(void *));
+	conf->sec_url = ap_make_array(a, 40, sizeof(void *));
 
-    /* recursion stopper */
-    conf->redirect_limit = 0;
-    conf->subreq_limit = 0;
-    conf->recursion_limit_set = 0;
+	/* recursion stopper */
+	conf->redirect_limit = 0;
+	conf->subreq_limit = 0;
+	conf->recursion_limit_set = 0;
 
-    return (void *)conf;
+	return (void *)conf;
 }
 
-static void *merge_core_server_configs(pool *p, void *basev, void *virtv)
+static void *
+merge_core_server_configs(pool *p, void *basev, void *virtv)
 {
-    core_server_config *base = (core_server_config *)basev;
-    core_server_config *virt = (core_server_config *)virtv;
-    core_server_config *conf;
+	core_server_config *base = (core_server_config *)basev;
+	core_server_config *virt = (core_server_config *)virtv;
+	core_server_config *conf;
 
-    conf = (core_server_config *)ap_pcalloc(p, sizeof(core_server_config));
-    *conf = *virt;
-    if (!conf->access_name) {
-        conf->access_name = base->access_name;
-    }
-    if (!conf->ap_document_root) {
-        conf->ap_document_root = base->ap_document_root;
-    }
-    conf->sec = ap_append_arrays(p, base->sec, virt->sec);
-    conf->sec_url = ap_append_arrays(p, base->sec_url, virt->sec_url);
+	conf = (core_server_config *)ap_pcalloc(p, sizeof(core_server_config));
+	*conf = *virt;
+	if (!conf->access_name)
+		conf->access_name = base->access_name;
+	if (!conf->ap_document_root)
+		conf->ap_document_root = base->ap_document_root;
 
-    conf->redirect_limit = virt->recursion_limit_set
-                           ? virt->redirect_limit
-                           : base->redirect_limit;
+	conf->sec = ap_append_arrays(p, base->sec, virt->sec);
+	conf->sec_url = ap_append_arrays(p, base->sec_url, virt->sec_url);
 
-    conf->subreq_limit = virt->recursion_limit_set
-                         ? virt->subreq_limit
-                         : base->subreq_limit;
+	conf->redirect_limit = virt->recursion_limit_set
+	    ? virt->redirect_limit : base->redirect_limit;
 
-    return conf;
+	conf->subreq_limit = virt->recursion_limit_set
+	    ? virt->subreq_limit : base->subreq_limit;
+
+	return conf;
 }
 
 /* Add per-directory configuration entry (for <directory> section);
  * these are part of the core server config.
  */
 
-CORE_EXPORT(void) ap_add_per_dir_conf(server_rec *s, void *dir_config)
+CORE_EXPORT(void)
+ap_add_per_dir_conf(server_rec *s, void *dir_config)
 {
-    core_server_config *sconf = ap_get_module_config(s->module_config,
-						     &core_module);
-    void **new_space = (void **)ap_push_array(sconf->sec);
-    
-    *new_space = dir_config;
+	core_server_config *sconf = ap_get_module_config(s->module_config,
+	    &core_module);
+	void **new_space = (void **)ap_push_array(sconf->sec);
+
+	*new_space = dir_config;
 }
 
-CORE_EXPORT(void) ap_add_per_url_conf(server_rec *s, void *url_config)
+CORE_EXPORT(void)
+ap_add_per_url_conf(server_rec *s, void *url_config)
 {
-    core_server_config *sconf = ap_get_module_config(s->module_config,
-						     &core_module);
-    void **new_space = (void **)ap_push_array(sconf->sec_url);
-    
-    *new_space = url_config;
+	core_server_config *sconf = ap_get_module_config(s->module_config,
+	    &core_module);
+	void **new_space = (void **)ap_push_array(sconf->sec_url);
+
+	*new_space = url_config;
 }
 
-CORE_EXPORT(void) ap_add_file_conf(core_dir_config *conf, void *url_config)
+CORE_EXPORT(void)
+ap_add_file_conf(core_dir_config *conf, void *url_config)
 {
-    void **new_space = (void **)ap_push_array(conf->sec);
-    
-    *new_space = url_config;
+	void **new_space = (void **)ap_push_array(conf->sec);
+
+	*new_space = url_config;
 }
 
 /* core_reorder_directories reorders the directory sections such that the
@@ -440,24 +377,8 @@ CORE_EXPORT(void) ap_add_file_conf(core_dir_config *conf, void *url_config)
  * See directory_walk().
  */
 
-#if defined(HAVE_DRIVE_LETTERS)
-#define IS_SPECIAL(entry_core)	\
-    ((entry_core)->r != NULL \
-	|| ((entry_core)->d[0] != '/' && (entry_core)->d[1] != ':'))
-#elif defined(NETWARE)
-/* XXX: Fairly certain this is correct... '/' must prefix the path
- *      or else in the case xyz:/ or abc/xyz:/, '/' must follow the ':'.
- *      If there is no leading '/' or embedded ':/', then we are special.
- */
-#define IS_SPECIAL(entry_core)	\
-    ((entry_core)->r != NULL \
-	|| ((entry_core)->d[0] != '/' \
-            && strchr((entry_core)->d, ':') \
-            && *(strchr((entry_core)->d, ':') + 1) != '/'))
-#else
 #define IS_SPECIAL(entry_core)	\
     ((entry_core)->r != NULL || (entry_core)->d[0] != '/')
-#endif
 
 /* We need to do a stable sort, qsort isn't stable.  So to make it stable
  * we'll be maintaining the original index into the list, and using it
@@ -465,73 +386,69 @@ CORE_EXPORT(void) ap_add_file_conf(core_dir_config *conf, void *url_config)
  * components (where a "special" section has infinite components).
  */
 struct reorder_sort_rec {
-    void *elt;
-    int orig_index;
+	void	*elt;
+	int	 orig_index;
 };
 
-static int reorder_sorter(const void *va, const void *vb)
+static int
+reorder_sorter(const void *va, const void *vb)
 {
-    const struct reorder_sort_rec *a = va;
-    const struct reorder_sort_rec *b = vb;
-    core_dir_config *core_a;
-    core_dir_config *core_b;
+	const struct reorder_sort_rec *a = va;
+	const struct reorder_sort_rec *b = vb;
+	core_dir_config *core_a;
+	core_dir_config *core_b;
 
-    core_a = (core_dir_config *)ap_get_module_config(a->elt, &core_module);
-    core_b = (core_dir_config *)ap_get_module_config(b->elt, &core_module);
-    if (IS_SPECIAL(core_a)) {
-	if (!IS_SPECIAL(core_b)) {
-	    return 1;
+	core_a = (core_dir_config *)ap_get_module_config(a->elt, &core_module);
+	core_b = (core_dir_config *)ap_get_module_config(b->elt, &core_module);
+	if (IS_SPECIAL(core_a)) {
+		if (!IS_SPECIAL(core_b))
+			return 1;
+	} else if (IS_SPECIAL(core_b))
+		return -1;
+	else {
+		/* we know they're both not special */
+		if (core_a->d_components < core_b->d_components)
+			return -1;
+		else if (core_a->d_components > core_b->d_components)
+			return 1;
 	}
-    }
-    else if (IS_SPECIAL(core_b)) {
-	return -1;
-    }
-    else {
-	/* we know they're both not special */
-	if (core_a->d_components < core_b->d_components) {
-	    return -1;
-	}
-	else if (core_a->d_components > core_b->d_components) {
-	    return 1;
-	}
-    }
-    /* Either they're both special, or they're both not special and have the
-     * same number of components.  In any event, we now have to compare
-     * the minor key. */
-    return a->orig_index - b->orig_index;
+	/* Either they're both special, or they're both not special and have the
+	* same number of components.  In any event, we now have to compare
+	* the minor key. */
+	return a->orig_index - b->orig_index;
 }
 
-CORE_EXPORT(void) ap_core_reorder_directories(pool *p, server_rec *s)
+CORE_EXPORT(void)
+ap_core_reorder_directories(pool *p, server_rec *s)
 {
-    core_server_config *sconf;
-    array_header *sec;
-    struct reorder_sort_rec *sortbin;
-    int nelts;
-    void **elts;
-    int i;
-    pool *tmp;
+	core_server_config *sconf;
+	array_header *sec;
+	struct reorder_sort_rec *sortbin;
+	int nelts;
+	void **elts;
+	int i;
+	pool *tmp;
 
-    sconf = ap_get_module_config(s->module_config, &core_module);
-    sec = sconf->sec;
-    nelts = sec->nelts;
-    elts = (void **)sec->elts;
+	sconf = ap_get_module_config(s->module_config, &core_module);
+	sec = sconf->sec;
+	nelts = sec->nelts;
+	elts = (void **)sec->elts;
 
-    /* we have to allocate tmp space to do a stable sort */
-    tmp = ap_make_sub_pool(p);
-    sortbin = ap_palloc(tmp, sec->nelts * sizeof(*sortbin));
-    for (i = 0; i < nelts; ++i) {
-	sortbin[i].orig_index = i;
-	sortbin[i].elt = elts[i];
-    }
+	/* we have to allocate tmp space to do a stable sort */
+	tmp = ap_make_sub_pool(p);
+	sortbin = ap_palloc(tmp, sec->nelts * sizeof(*sortbin));
+	for (i = 0; i < nelts; ++i) {
+		sortbin[i].orig_index = i;
+		sortbin[i].elt = elts[i];
+	}
 
-    qsort(sortbin, nelts, sizeof(*sortbin), reorder_sorter);
+	qsort(sortbin, nelts, sizeof(*sortbin), reorder_sorter);
 
-    /* and now copy back to the original array */
-    for (i = 0; i < nelts; ++i) {
-      elts[i] = sortbin[i].elt;
-    }
+	/* and now copy back to the original array */
+	for (i = 0; i < nelts; ++i)
+		elts[i] = sortbin[i].elt;
 
-    ap_destroy_pool(tmp);
+	ap_destroy_pool(tmp);
 }
 
 /*****************************************************************
@@ -542,96 +459,131 @@ CORE_EXPORT(void) ap_core_reorder_directories(pool *p, server_rec *s)
  * here...
  */
 
-API_EXPORT(int) ap_allow_options(request_rec *r)
+API_EXPORT(int)
+ap_allow_options(request_rec *r)
 {
-    core_dir_config *conf = 
-      (core_dir_config *)ap_get_module_config(r->per_dir_config, &core_module); 
+	core_dir_config *conf = 
+	    (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module); 
 
-    return conf->opts; 
+	return conf->opts; 
 } 
 
-API_EXPORT(int) ap_allow_overrides(request_rec *r) 
+API_EXPORT(int)
+ap_allow_overrides(request_rec *r) 
 { 
-    core_dir_config *conf;
-    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						   &core_module); 
+	core_dir_config *conf;
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module); 
 
-    return conf->override; 
+	return conf->override; 
 } 
 
-API_EXPORT(const char *) ap_auth_type(request_rec *r)
+API_EXPORT(const char *)
+ap_auth_type(request_rec *r)
 {
-    core_dir_config *conf;
+	core_dir_config *conf;
 
-    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						   &core_module); 
-    return conf->ap_auth_type;
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module); 
+	return conf->ap_auth_type;
 }
 
-API_EXPORT(const char *) ap_auth_name(request_rec *r)
+API_EXPORT(const char *)
+ap_auth_name(request_rec *r)
 {
-    core_dir_config *conf;
+	core_dir_config *conf;
 
-    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						   &core_module); 
-    return conf->ap_auth_name;
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module); 
+	return conf->ap_auth_name;
 }
 
-API_EXPORT(const char *) ap_default_type(request_rec *r)
+API_EXPORT(const char *)
+ap_auth_nonce(request_rec *r)
 {
-    core_dir_config *conf;
+	core_dir_config *conf;
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module);
+	if (conf->ap_auth_nonce)
+		return conf->ap_auth_nonce;
 
-    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						   &core_module); 
-    return conf->ap_default_type 
-               ? conf->ap_default_type 
-               : DEFAULT_CONTENT_TYPE;
+	/* Ideally we'd want to mix in some per-directory style
+	 * information; as we are likely to want to detect replay
+	 * across those boundaries and some randomness. But that
+	 * is harder due to the adhoc nature of .htaccess memory
+	 * structures, restarts and forks.
+	 *
+	 * But then again - you should use AuthDigestRealmSeed in your config
+	 * file if you care. So the adhoc value should do.
+	 */
+	return ap_psprintf(r->pool,"%pp%pp%pp%pp%pp",
+	    (void *)&(r->connection->local_host),
+	    (void *)ap_user_name,
+	    (void *)ap_listeners,
+	    (void *)ap_server_argv0,
+	    (void *)ap_pid_fname);
 }
 
-API_EXPORT(const char *) ap_document_root(request_rec *r) /* Don't use this! */
+API_EXPORT(const char *)
+ap_default_type(request_rec *r)
 {
-    core_server_config *conf;
+	core_dir_config *conf;
 
-    conf = (core_server_config *)ap_get_module_config(r->server->module_config,
-						      &core_module); 
-    return conf->ap_document_root;
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module); 
+	return conf->ap_default_type 
+	    ? conf->ap_default_type : DEFAULT_CONTENT_TYPE;
 }
 
-API_EXPORT(const array_header *) ap_requires(request_rec *r)
+API_EXPORT(const char *)
+ap_document_root(request_rec *r) /* Don't use this! */
 {
-    core_dir_config *conf;
+	core_server_config *conf;
 
-    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						   &core_module); 
-    return conf->ap_requires;
+	conf =
+	    (core_server_config *)ap_get_module_config(r->server->module_config,
+	    &core_module); 
+	return conf->ap_document_root;
 }
 
-API_EXPORT(int) ap_satisfies(request_rec *r)
+API_EXPORT(const array_header *)
+ap_requires(request_rec *r)
 {
-    core_dir_config *conf;
+	core_dir_config *conf;
 
-    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						   &core_module);
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module); 
+	return conf->ap_requires;
+}
 
-    return conf->satisfy;
+API_EXPORT(int)
+ap_satisfies(request_rec *r)
+{
+	core_dir_config *conf;
+
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module);
+
+	return conf->satisfy;
 }
 
 /* Should probably just get rid of this... the only code that cares is
  * part of the core anyway (and in fact, it isn't publicised to other
  * modules).
  */
-
-API_EXPORT(char *) ap_response_code_string(request_rec *r, int error_index)
+API_EXPORT(char *)
+ap_response_code_string(request_rec *r, int error_index)
 {
-    core_dir_config *conf;
+	core_dir_config *conf;
 
-    conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						   &core_module); 
+	conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module); 
 
-    if (conf->response_code_strings == NULL) {
-	return NULL;
-    }
-    return conf->response_code_strings[error_index];
+	if (conf->response_code_strings == NULL)
+		return NULL;
+
+	return conf->response_code_strings[error_index];
 }
 
 
@@ -649,127 +601,136 @@ API_EXPORT(char *) ap_response_code_string(request_rec *r, int error_index)
  *       a setting of NULL would allow another reverse lookup,
  *       depending on the flags given to ap_get_remote_host().
  */
-static ap_inline void do_double_reverse (conn_rec *conn)
+static ap_inline void
+do_double_reverse(conn_rec *conn)
 {
-    struct hostent *hptr;
+	struct addrinfo hints, *res, *res0;
+	char hostbuf1[128], hostbuf2[128]; /* INET6_ADDRSTRLEN(=46) is enough */
+	int ok = 0;
 
-    if (conn->double_reverse) {
-	/* already done */
-	return;
-    }
-    if (conn->remote_host == NULL || conn->remote_host[0] == '\0') {
-	/* single reverse failed, so don't bother */
-	conn->double_reverse = -1;
-        conn->remote_host = ""; /* prevent another lookup */
-	return;
-    }
-    hptr = gethostbyname(conn->remote_host);
-    if (hptr) {
-	char **haddr;
-
-	for (haddr = hptr->h_addr_list; *haddr; haddr++) {
-	    if (((struct in_addr *)(*haddr))->s_addr
-		== conn->remote_addr.sin_addr.s_addr) {
-		conn->double_reverse = 1;
+	if (conn->double_reverse)
+		/* already done */
 		return;
-	    }
+
+	if (conn->remote_host == NULL || conn->remote_host[0] == '\0') {
+		/* single reverse failed, so don't bother */
+		conn->double_reverse = -1;
+		conn->remote_host = ""; /* prevent another lookup */
+		return;
 	}
-    }
-    conn->double_reverse = -1;
-    /* invalidate possible reverse-resolved hostname if forward lookup fails */
-    conn->remote_host = "";
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	if (getaddrinfo(conn->remote_host, NULL, &hints, &res0)) {
+		conn->double_reverse = -1;
+		return;
+	}
+	for (res = res0; res; res = res->ai_next) {
+		if (res->ai_addr->sa_family != conn->remote_addr.ss_family ||
+		    !(res->ai_family == AF_INET 
+		    || res->ai_family == AF_INET6))
+			continue;
+#ifndef HAVE_SOCKADDR_LEN
+		if (res->ai_addrlen !=
+		    SA_LEN((struct sockaddr *)&conn->remote_addr))
+#else
+		if (res->ai_addr->sa_len != conn->remote_addr.ss_len)
+#endif
+			continue;
+		if (getnameinfo(res->ai_addr, res->ai_addrlen,
+		    hostbuf1, sizeof(hostbuf1), NULL, 0, NI_NUMERICHOST))
+			continue;
+		if (getnameinfo(((struct sockaddr *)&conn->remote_addr),
+		    res->ai_addrlen, hostbuf2, sizeof(hostbuf2), NULL, 0,
+		    NI_NUMERICHOST))
+			continue;
+		if (strcmp(hostbuf1, hostbuf2) == 0){
+			ok = 1;
+			break;
+		}
+	}
+	conn->double_reverse = ok ? 1 : -1;
+	freeaddrinfo(res0);
 }
 
-API_EXPORT(const char *) ap_get_remote_host(conn_rec *conn, void *dir_config,
-					    int type)
+API_EXPORT(const char *)
+ap_get_remote_host(conn_rec *conn, void *dir_config, int type)
 {
-    struct in_addr *iaddr;
-    struct hostent *hptr;
-    int hostname_lookups;
-    int old_stat = SERVER_DEAD;	/* we shouldn't ever be in this state */
+	int hostname_lookups;
+	int old_stat = SERVER_DEAD;	/* we shouldn't ever be in this state */
+	char hostnamebuf[MAXHOSTNAMELEN];
 
-    /* If we haven't checked the host name, and we want to */
-    if (dir_config) {
-	hostname_lookups =
-	    ((core_dir_config *)ap_get_module_config(dir_config, &core_module))
-		->hostname_lookups;
-	if (hostname_lookups == HOSTNAME_LOOKUP_UNSET) {
-	    hostname_lookups = HOSTNAME_LOOKUP_OFF;
-	}
-    }
-    else {
-	/* the default */
-	hostname_lookups = HOSTNAME_LOOKUP_OFF;
-    }
+	/* If we haven't checked the host name, and we want to */
+	if (dir_config) {
+		hostname_lookups =
+		    ((core_dir_config *)ap_get_module_config(dir_config,
+		    &core_module))->hostname_lookups;
+		if (hostname_lookups == HOSTNAME_LOOKUP_UNSET)
+			hostname_lookups = HOSTNAME_LOOKUP_OFF;
 
-    if (type != REMOTE_NOLOOKUP
-	&& conn->remote_host == NULL
-	&& (type == REMOTE_DOUBLE_REV
+	} else
+		/* the default */
+		hostname_lookups = HOSTNAME_LOOKUP_OFF;
+
+	if (type != REMOTE_NOLOOKUP && conn->remote_host == NULL
+	    && (type == REMOTE_DOUBLE_REV
 	    || hostname_lookups != HOSTNAME_LOOKUP_OFF)) {
-	old_stat = ap_update_child_status(conn->child_num, SERVER_BUSY_DNS,
-					  (request_rec*)NULL);
-	iaddr = &(conn->remote_addr.sin_addr);
-	hptr = gethostbyaddr((char *)iaddr, sizeof(struct in_addr), AF_INET);
-	if (hptr != NULL) {
-	    conn->remote_host = ap_pstrdup(conn->pool, (void *)hptr->h_name);
-	    ap_str_tolower(conn->remote_host);
-	   
-	    if (hostname_lookups == HOSTNAME_LOOKUP_DOUBLE) {
-		do_double_reverse(conn);
-	    }
-	}
-	/* if failed, set it to the NULL string to indicate error */
-	if (conn->remote_host == NULL) {
-	    conn->remote_host = "";
-	}
-    }
-    if (type == REMOTE_DOUBLE_REV) {
-	do_double_reverse(conn);
-	if (conn->double_reverse == -1) {
-	    return NULL;
-	}
-    }
-    if (old_stat != SERVER_DEAD) {
-	(void)ap_update_child_status(conn->child_num, old_stat,
-				     (request_rec*)NULL);
-    }
+		old_stat = ap_update_child_status(conn->child_num,
+		    SERVER_BUSY_DNS, (request_rec*)NULL);
+		if (!getnameinfo((struct sockaddr *)&conn->remote_addr,
+		    conn->remote_addr.ss_len,
+		    hostnamebuf, sizeof(hostnamebuf), NULL, 0, 0)) {
+			conn->remote_host = ap_pstrdup(conn->pool,
+			    (void *)hostnamebuf);
+			ap_str_tolower(conn->remote_host);
 
-/*
- * Return the desired information; either the remote DNS name, if found,
- * or either NULL (if the hostname was requested) or the IP address
- * (if any identifier was requested).
- */
-    if (conn->remote_host != NULL && conn->remote_host[0] != '\0') {
-	return conn->remote_host;
-    }
-    else {
-	if (type == REMOTE_HOST || type == REMOTE_DOUBLE_REV) {
-	    return NULL;
+			if (hostname_lookups == HOSTNAME_LOOKUP_DOUBLE)
+				do_double_reverse(conn);
+		}
+		/* if failed, set it to the NULL string to indicate error */
+		if (conn->remote_host == NULL)
+			conn->remote_host = "";
 	}
+	if (type == REMOTE_DOUBLE_REV) {
+		do_double_reverse(conn);
+		if (conn->double_reverse == -1)
+			return NULL;
+	}
+	if (old_stat != SERVER_DEAD)
+		(void)ap_update_child_status(conn->child_num, old_stat,
+		    (request_rec*)NULL);
+
+	/*
+	 * Return the desired information; either the remote DNS name, if found,
+	 * or either NULL (if the hostname was requested) or the IP address
+	 * (if any identifier was requested).
+	 */
+	if (conn->remote_host != NULL && conn->remote_host[0] != '\0')
+		return conn->remote_host;
 	else {
-	    return conn->remote_ip;
+		if (type == REMOTE_HOST || type == REMOTE_DOUBLE_REV)
+			return NULL;
+		else
+			return conn->remote_ip;
 	}
-    }
 }
 
-API_EXPORT(const char *) ap_get_remote_logname(request_rec *r)
+API_EXPORT(const char *)
+ap_get_remote_logname(request_rec *r)
 {
-    core_dir_config *dir_conf;
+	core_dir_config *dir_conf;
 
-    if (r->connection->remote_logname != NULL) {
-	return r->connection->remote_logname;
-    }
+	if (r->connection->remote_logname != NULL)
+		return r->connection->remote_logname;
 
-/* If we haven't checked the identity, and we want to */
-    dir_conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						       &core_module);
+	/* If we haven't checked the identity, and we want to */
+	dir_conf = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module);
 
-    if (dir_conf->do_rfc1413 & 1) {
-	return ap_rfc1413(r->connection, r->server);
-    }
-    else {
-	return NULL;
-    }
+	if (dir_conf->do_rfc1413 & 1)
+		return ap_rfc1413(r->connection, r->server);
+	else
+		return NULL;
 }
 
 /* There are two options regarding what the "name" of a server is.  The
@@ -785,302 +746,86 @@ API_EXPORT(const char *) ap_get_remote_logname(request_rec *r)
  * The assumption is that DNS lookups are sufficiently quick...
  * -- fanf 1998-10-03
  */
-API_EXPORT(const char *) ap_get_server_name(request_rec *r)
+API_EXPORT(const char *)
+ap_get_server_name(request_rec *r)
 {
-    conn_rec *conn = r->connection;
-    core_dir_config *d;
+	conn_rec *conn = r->connection;
+	core_dir_config *d;
+	char hbuf[MAXHOSTNAMELEN];
 
-    d = (core_dir_config *)ap_get_module_config(r->per_dir_config,
-						&core_module);
+	d = (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module);
 
-    if (d->use_canonical_name == USE_CANONICAL_NAME_OFF) {
-        return r->hostname ? r->hostname : r->server->server_hostname;
-    }
-    if (d->use_canonical_name == USE_CANONICAL_NAME_DNS) {
-        if (conn->local_host == NULL) {
-	    struct in_addr *iaddr;
-	    struct hostent *hptr;
-            int old_stat;
-	    old_stat = ap_update_child_status(conn->child_num,
-					      SERVER_BUSY_DNS, r);
-	    iaddr = &(conn->local_addr.sin_addr);
-	    hptr = gethostbyaddr((char *)iaddr, sizeof(struct in_addr),
-				 AF_INET);
-	    if (hptr != NULL) {
-	        conn->local_host = ap_pstrdup(conn->pool,
-					      (void *)hptr->h_name);
-		ap_str_tolower(conn->local_host);
-	    }
-	    else {
-	        conn->local_host = ap_pstrdup(conn->pool,
-					      r->server->server_hostname);
-	    }
-	    (void) ap_update_child_status(conn->child_num, old_stat, r);
+	if (d->use_canonical_name == USE_CANONICAL_NAME_OFF)
+		return r->hostname ? r->hostname : r->server->server_hostname;
+
+	if (d->use_canonical_name == USE_CANONICAL_NAME_DNS) {
+		if (conn->local_host == NULL) {
+			int old_stat;
+			old_stat = ap_update_child_status(conn->child_num,
+			    SERVER_BUSY_DNS, r);
+			if (getnameinfo((struct sockaddr *)&conn->local_addr,
+			    conn->local_addr.ss_len,
+			    hbuf, sizeof(hbuf), NULL, 0, 0) == 0)
+				conn->local_host = ap_pstrdup(conn->pool, hbuf);
+			else
+				conn->local_host = ap_pstrdup(conn->pool,
+				    r->server->server_hostname);
+			ap_str_tolower(conn->local_host);
+			(void)ap_update_child_status(conn->child_num, old_stat,
+			    r);
+		}
+		return conn->local_host;
 	}
-	return conn->local_host;
-    }
-    /* default */
-    return r->server->server_hostname;
+	/* default */
+	return r->server->server_hostname;
 }
 
-API_EXPORT(unsigned) ap_get_server_port(const request_rec *r)
+API_EXPORT(unsigned)
+ap_get_server_port(const request_rec *r)
 {
-    unsigned port;
-    core_dir_config *d =
-      (core_dir_config *)ap_get_module_config(r->per_dir_config, &core_module);
-    
-    port = r->server->port ? r->server->port : ap_default_port(r);
+	unsigned port;
+	core_dir_config *d =
+	    (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module);
 
-    if (d->use_canonical_name == USE_CANONICAL_NAME_OFF
-	|| d->use_canonical_name == USE_CANONICAL_NAME_DNS) {
-        return r->hostname ? ntohs(r->connection->local_addr.sin_port)
-			   : port;
-    }
-    /* default */
-    return port;
+	port = r->server->port ? r->server->port : ap_default_port(r);
+
+	if (d->use_canonical_name == USE_CANONICAL_NAME_OFF
+	    || d->use_canonical_name == USE_CANONICAL_NAME_DNS) {
+		return r->hostname
+		    ? ntohs(((struct sockaddr_in *)
+		    &r->connection->local_addr)->sin_port)
+		    : port;
+	}
+	return r->hostname
+	    ? ntohs(((struct sockaddr_in *)
+	    &r->connection->local_addr)->sin_port)
+	    : port;
 }
 
-API_EXPORT(char *) ap_construct_url(pool *p, const char *uri,
-				    request_rec *r)
+API_EXPORT(char *)
+ap_construct_url(pool *p, const char *uri, request_rec *r)
 {
-    unsigned port = ap_get_server_port(r);
-    const char *host = ap_get_server_name(r);
+	unsigned port = ap_get_server_port(r);
+	const char *host = ap_get_server_name(r);
 
-    if (ap_is_default_port(port, r)) {
-	return ap_pstrcat(p, ap_http_method(r), "://", host, uri, NULL);
-    }
-    return ap_psprintf(p, "%s://%s:%u%s", ap_http_method(r), host, port, uri);
+	if (ap_is_default_port(port, r))
+		return ap_pstrcat(p, ap_http_method(r), "://", host, uri, NULL);
+	return ap_psprintf(p, "%s://%s:%u%s", ap_http_method(r), host, port,
+	    uri);
 }
 
-API_EXPORT(unsigned long) ap_get_limit_req_body(const request_rec *r)
+API_EXPORT(unsigned long)
+ap_get_limit_req_body(const request_rec *r)
 {
-    core_dir_config *d =
-      (core_dir_config *)ap_get_module_config(r->per_dir_config, &core_module);
-    
-    return d->limit_req_body;
+	core_dir_config *d =
+	    (core_dir_config *)ap_get_module_config(r->per_dir_config,
+	    &core_module);
+
+	return d->limit_req_body;
 }
 
-#ifdef WIN32
-static char* get_interpreter_from_win32_registry(pool *p, const char* ext) 
-{
-    char extension_path[] = "SOFTWARE\\Classes\\";
-    char executable_path[] = "\\SHELL\\OPEN\\COMMAND";
-
-    HKEY hkeyOpen;
-    DWORD type;
-    int size;
-    int result;
-    char *keyName;
-    char *buffer;
-    char *s;
-
-    if (!ext)
-        return NULL;
-    /* 
-     * Future optimization:
-     * When the registry is successfully searched, store the interpreter
-     * string in a table to make subsequent look-ups faster
-     */
-
-    /* Open the key associated with the script extension */
-    keyName = ap_pstrcat(p, extension_path, ext, NULL);
-
-    result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyName, 0, KEY_QUERY_VALUE, 
-                          &hkeyOpen);
-
-    if (result != ERROR_SUCCESS) 
-        return NULL;
-
-    /* Read to NULL buffer to find value size */
-    size = 0;
-    result = RegQueryValueEx(hkeyOpen, "", NULL, &type, NULL, &size);
-
-    if (result == ERROR_SUCCESS) {
-        buffer = ap_palloc(p, size);
-        result = RegQueryValueEx(hkeyOpen, "", NULL, &type, buffer, &size);
-    }
-
-    RegCloseKey(hkeyOpen);
-
-    if (result != ERROR_SUCCESS)
-        return NULL;
-
-    /* Open the key associated with the interpreter path */
-    keyName = ap_pstrcat(p, extension_path, buffer, executable_path, NULL);
-
-    result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyName, 0, KEY_QUERY_VALUE, 
-                          &hkeyOpen);
-
-    if (result != ERROR_SUCCESS)
-        return NULL;
-
-    /* Read to NULL buffer to find value size */
-    size = 0;
-    result = RegQueryValueEx(hkeyOpen, "", 0, &type, NULL, &size);
-
-    if (result == ERROR_SUCCESS) {
-        buffer = ap_palloc(p, size);
-        result = RegQueryValueEx(hkeyOpen, "", 0, &type, buffer, &size);
-    }
-
-    RegCloseKey(hkeyOpen);
-
-    if (result != ERROR_SUCCESS)
-        return NULL;
-
-    /*
-     * The command entry may contain embedded %envvar% entries,
-     * e.g. %winsysdir%\somecommand.exe %1
-     *
-     * Resolve them here
-     */
-    size = ExpandEnvironmentStrings(buffer, NULL, 0);
-    if (size) {
-        s = ap_palloc(p, size);
-        if (ExpandEnvironmentStrings(buffer, s, size))
-            buffer = s;
-    }
-
-    /*
-     * The canonical way shell command entries are entered in the Win32 
-     * registry is as follows:
-     *   shell [options] "%1" [options] [%*]
-     * where
-     *   shell - full path name to interpreter or shell to run.
-     *           E.g., c:\usr\local\ntreskit\perl\bin\perl.exe
-     *   options - optional switches
-     *              E.g., /C or -w
-     *   "%1" - Place holder for file to run the shell against. 
-     *          Quoted for if long path names are accepted.
-     *          Not quoted if only short paths are acceptd
-     *
-     *   %* - additional arguments
-     *
-     * Effective in v. 1.3.15, the responsibility is the consumer's
-     * to make these substitutions.
-     */
-
-    return buffer;
-}
-
-API_EXPORT (file_type_e) ap_get_win32_interpreter(const  request_rec *r, 
-                                                  char** interpreter )
-{
-    HANDLE hFile;
-    DWORD nBytesRead;
-    BOOLEAN bResult;
-    char buffer[1024];
-    core_dir_config *d;
-    int i;
-    file_type_e fileType = eFileTypeUNKNOWN;
-    char *ext = NULL;
-    char *exename = NULL;
-
-    d = (core_dir_config *)ap_get_module_config(r->per_dir_config, 
-                                                &core_module);
-
-    /* Find the file extension */
-    exename = strrchr(r->filename, '/');
-    if (!exename) {
-        exename = strrchr(r->filename, '\\');
-    }
-    if (!exename) {
-        exename = r->filename;
-    }
-    else {
-        exename++;
-    }
-    ext = strrchr(exename, '.');
-
-    if (ext && (!strcasecmp(ext,".bat") || !strcasecmp(ext,".cmd"))) 
-    {
-        char *p, *shellcmd = getenv("COMSPEC");
-        if (!shellcmd)
-            return eFileTypeUNKNOWN;
-        p = strchr(shellcmd, '\0');
-        if ((p - shellcmd >= 11) && !strcasecmp(p - 11, "command.com")) 
-        {
-            /* Command.com doesn't like long paths, doesn't do .cmd
-             */
-            if (!strcasecmp(ext,".cmd"))
-                return eFileTypeUNKNOWN;
-            *interpreter = ap_pstrcat(r->pool, "\"", shellcmd, "\" /C %1", NULL);
-            return eCommandShell16;
-        }
-        else {
-            /* Assume any other likes long paths, and knows .cmd,
-             * but the entire /c arg should be double quoted, e.g.
-             * "c:\path\cmd.exe" /c ""prog" "arg" "arg""
-             */
-            *interpreter = ap_pstrcat(r->pool, "\"", shellcmd, "\" /C \"\"%1\" %*\"", NULL);
-            return eCommandShell32;
-        }
-    }
-
-    /* If the file has an extension and it is not .com and not .exe and
-     * we've been instructed to search the registry, then do it!
-     */
-    if (ext && strcasecmp(ext,".exe") && strcasecmp(ext,".com") &&
-        d->script_interpreter_source == INTERPRETER_SOURCE_REGISTRY) {
-         /* Check the registry */
-        *interpreter = get_interpreter_from_win32_registry(r->pool, ext);
-        if (*interpreter)
-            return eFileTypeSCRIPT;
-        else {
-            ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_INFO, r->server,
-             "ScriptInterpreterSource config directive set to \"registry\".\n\t"
-             "Registry was searched but interpreter not found. Trying the shebang line.");
-        }
-    }        
-
-    /* Need to peek into the file figure out what it really is... */
-    hFile = CreateFile(r->filename, GENERIC_READ, FILE_SHARE_READ, NULL,
-                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        return eFileTypeUNKNOWN;
-    }
-    bResult = ReadFile(hFile, (void*) &buffer, sizeof(buffer) - 1, 
-                       &nBytesRead, NULL);
-    if (!bResult || (nBytesRead == 0)) {
-        ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
-                      "ReadFile(%s) failed", r->filename);
-        CloseHandle(hFile);
-        return eFileTypeUNKNOWN;
-    }
-    CloseHandle(hFile);
-    buffer[nBytesRead] = '\0';
-
-    /* Script or executable, that is the question... */
-    if ((buffer[0] == '#') && (buffer[1] == '!')) {
-        /* Assuming file is a script since it starts with a shebang */
-        fileType = eFileTypeSCRIPT;
-        for (i = 2; i < (sizeof(buffer) - 1); i++) {
-            if ((buffer[i] == '\r')
-                || (buffer[i] == '\n')) {
-                break;
-            }
-        }
-        buffer[i] = '\0';
-        for (i = 2; buffer[i] == ' ' ; ++i)
-            ;
-        *interpreter = ap_pstrdup(r->pool, buffer + i ); 
-    }
-    else {
-        /* Not a script, is it an executable? */
-        IMAGE_DOS_HEADER *hdr = (IMAGE_DOS_HEADER*)buffer;    
-        if ((nBytesRead >= sizeof(IMAGE_DOS_HEADER)) && (hdr->e_magic == IMAGE_DOS_SIGNATURE)) {
-            if (hdr->e_lfarlc < 0x40)
-                fileType = eFileTypeEXE16;
-            else
-                fileType = eFileTypeEXE32;
-        }
-        else
-            fileType = eFileTypeUNKNOWN;
-    }
-
-    return fileType;
-}
-#endif
 
 /*****************************************************************
  *
@@ -1218,7 +963,7 @@ static const char *set_document_root(cmd_parms *cmd, void *dummy, char *arg)
 	    return "DocumentRoot must be a directory";
 	}
     }
-    
+    ap_server_strip_chroot(arg, 1);
     conf->ap_document_root = arg;
     return NULL;
 }
@@ -1229,6 +974,7 @@ API_EXPORT(void) ap_custom_response(request_rec *r, int status, char *string)
 	ap_get_module_config(r->per_dir_config, &core_module);
     int idx;
 
+    ap_server_strip_chroot(conf->d, 0);
     if(conf->response_code_strings == NULL) {
         conf->response_code_strings = 
 	    ap_pcalloc(r->pool,
@@ -1512,11 +1258,7 @@ static const char *missing_endsection(cmd_parms *cmd, int nest)
  * people don't get bitten by wrong-cased regex matches
  */
 
-#ifdef WIN32
-#define USE_ICASE REG_ICASE
-#else
 #define USE_ICASE 0
-#endif
 
 static const char *end_nested_section(cmd_parms *cmd, void *dummy)
 {
@@ -1571,6 +1313,7 @@ static const char *dirsection(cmd_parms *cmd, void *dummy, const char *arg)
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 1);
     cmd->override = OR_ALL|ACCESS_CONF;
 
     if (thiscmd->cmd_data) { /* <DirectoryMatch> */
@@ -1578,20 +1321,9 @@ static const char *dirsection(cmd_parms *cmd, void *dummy, const char *arg)
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 1);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED|USE_ICASE);
     }
-#if defined(HAVE_DRIVE_LETTERS) || defined(NETWARE)
-    else if (strcmp(cmd->path, "/") == 0) {
-        /* Treat 'default' path / as an inalienable root */
-        cmd->path = ap_pstrdup(cmd->pool, cmd->path);
-    }
-#endif
-#if defined(HAVE_UNC_PATHS)
-    else if (strcmp(cmd->path, "//") == 0) {
-        /* Treat UNC path // as an inalienable root */
-        cmd->path = ap_pstrdup(cmd->pool, cmd->path);
-    }
-#endif
     else {
 	/* Ensure that the pathname is canonical */
 	cmd->path = ap_os_canonical_filename(cmd->pool, cmd->path);
@@ -1652,6 +1384,7 @@ static const char *urlsection(cmd_parms *cmd, void *dummy, const char *arg)
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 0);
     cmd->override = OR_ALL|ACCESS_CONF;
 
     if (thiscmd->cmd_data) { /* <LocationMatch> */
@@ -1659,6 +1392,7 @@ static const char *urlsection(cmd_parms *cmd, void *dummy, const char *arg)
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 0);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED);
     }
 
@@ -1720,6 +1454,7 @@ static const char *filesection(cmd_parms *cmd, core_dir_config *c,
     *endp = '\0';
 
     cmd->path = ap_getword_conf(cmd->pool, &arg);
+    ap_server_strip_chroot(cmd->path, 1);
     /* Only if not an .htaccess file */
     if (!old_path) {
 	cmd->override = OR_ALL|ACCESS_CONF;
@@ -1730,6 +1465,7 @@ static const char *filesection(cmd_parms *cmd, core_dir_config *c,
     }
     else if (!strcmp(cmd->path, "~")) {
 	cmd->path = ap_getword_conf(cmd->pool, &arg);
+	ap_server_strip_chroot(cmd->path, 1);
 	r = ap_pregcomp(cmd->pool, cmd->path, REG_EXTENDED|USE_ICASE);
     }
     else {
@@ -2093,23 +1829,34 @@ static const char *set_send_buffer_size(cmd_parms *cmd, void *dummy, char *arg)
 
 static const char *set_user(cmd_parms *cmd, void *dummy, char *arg)
 {
-#ifdef WIN32
-    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_NOTICE, cmd->server,
-		 "User directive has no affect on Win32");
-    cmd->server->server_uid = ap_user_id = 1;
-#else
     const char *err = ap_check_cmd_context(cmd, NOT_IN_DIR_LOC_FILE|NOT_IN_LIMIT);
     if (err != NULL) {
         return err;
     }
 
+    /*
+     * This is, again, tricky. on restarts, we cannot use uname2id.
+     * keep the old settings for the main server.
+     * barf out on user directives in <VirtualHost> sections.
+     */ 
+
     if (!cmd->server->is_virtual) {
-	ap_user_name = arg;
-	cmd->server->server_uid = ap_user_id = ap_uname2id(arg);
+	if (!ap_server_is_chrooted()) {
+	    ap_user_name = arg;
+	    ap_user_id = ap_uname2id(arg);
+	}
+	cmd->server->server_uid = ap_user_id;
     }
     else {
         if (ap_suexec_enabled) {
-	    cmd->server->server_uid = ap_uname2id(arg);
+	    if (ap_server_is_chrooted()) {
+		fprintf(stderr, "cannot look up uids once chrooted. Thus, User "
+		    "directives inside <VirtualHost> and restarts aren't "
+		    "possible together. Please stop httpd and start a new "
+		    "one\n");
+		exit(1);
+	    } else
+		cmd->server->server_uid = ap_uname2id(arg);
 	}
 	else {
 	    cmd->server->server_uid = ap_user_id;
@@ -2118,7 +1865,7 @@ static const char *set_user(cmd_parms *cmd, void *dummy, char *arg)
 		    "requires SUEXEC wrapper.\n");
 	}
     }
-#if !defined (BIG_SECURITY_HOLE) && !defined (OS2)
+#if !defined (BIG_SECURITY_HOLE)
     if (cmd->server->server_uid == 0) {
 	fprintf(stderr,
 		"Error:\tApache has not been designed to serve pages while\n"
@@ -2133,7 +1880,6 @@ static const char *set_user(cmd_parms *cmd, void *dummy, char *arg)
 	exit (1);
     }
 #endif
-#endif /* WIN32 */
 
     return NULL;
 }
@@ -2146,11 +1892,21 @@ static const char *set_group(cmd_parms *cmd, void *dummy, char *arg)
     }
 
     if (!cmd->server->is_virtual) {
-	cmd->server->server_gid = ap_group_id = ap_gname2id(arg);
+	if (!ap_server_is_chrooted()) {
+	    ap_group_id = ap_gname2id(arg);
+	}
+	cmd->server->server_gid = ap_group_id;
     }
     else {
         if (ap_suexec_enabled) {
-	    cmd->server->server_gid = ap_gname2id(arg);
+	    if (ap_server_is_chrooted()) {
+		fprintf(stderr, "cannot look up gids once chrooted. Thus, Group"
+		    " directives inside <VirtualHost> and restarts aren't "
+		    "possible together. Please stop httpd and start a new "
+		    "one\n");
+		exit(1);
+	    } else
+		cmd->server->server_gid = ap_gname2id(arg);
 	}
 	else {
 	    cmd->server->server_gid = ap_group_id;
@@ -2173,14 +1929,26 @@ static const char *set_server_root(cmd_parms *cmd, void *dummy, char *arg)
 
     arg = ap_os_canonical_filename(cmd->pool, arg);
 
-    if (!ap_is_directory(arg)) {
-        return "ServerRoot must be a valid directory";
+    /*
+     * This is a bit tricky. On startup we are not chrooted here.
+     * On restarts (graceful or not) we are (unless we're in unsecure mode).
+     * if we would strip off the chroot prefix, nothing (not even "/")
+     * would last.
+     * it's pointless to test wether ServerRoot is a directory if we are
+     * already chrooted into that. 
+     * Of course it's impossible to change ServerRoot without a full restart.
+     * should we abort with an error if ap_server_root != arg?
+     */
+
+    if (!ap_server_is_chrooted()) {
+	if (!ap_is_directory(arg)) {
+	    return "ServerRoot must be a valid directory";
+	}
+	/* ServerRoot is never '/' terminated */
+	while (strlen(ap_server_root) > 1 && ap_server_root[strlen(ap_server_root)-1] == '/')
+	    ap_server_root[strlen(ap_server_root)-1] = '\0';
+	ap_cpystrn(ap_server_root, arg, sizeof(ap_server_root));
     }
-    /* ServerRoot is never '/' terminated */
-    while (strlen(ap_server_root) > 1 && ap_server_root[strlen(ap_server_root)-1] == '/')
-        ap_server_root[strlen(ap_server_root)-1] = '\0';
-    ap_cpystrn(ap_server_root, arg,
-	       sizeof(ap_server_root));
     return NULL;
 }
 
@@ -2355,18 +2123,12 @@ static const char *set_use_canonical_name(cmd_parms *cmd, core_dir_config *d,
 
 static const char *set_daemons_to_start(cmd_parms *cmd, void *dummy, char *arg) 
 {
-#ifdef WIN32
-    fprintf(stderr, "WARNING: StartServers has no effect on Win32\n");
-#elif defined(NETWARE)
-    fprintf(stderr, "WARNING: StartServers has no effect on NetWare\n");
-#else
     const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
     if (err != NULL) {
         return err;
     }
 
     ap_daemons_to_start = atoi(arg);
-#endif
     return NULL;
 }
 
@@ -2422,6 +2184,61 @@ static const char *set_server_limit (cmd_parms *cmd, void *dummy, char *arg)
     return NULL;
 }
 
+static const char *set_child_rl_cpu(cmd_parms *cmd, void *dummy, char *arg) 
+{
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+
+    ap_max_cpu_per_child = atoi(arg);
+    return NULL;
+}
+
+static const char *set_child_rl_data(cmd_parms *cmd, void *dummy, char *arg) 
+{
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+
+    ap_max_data_per_child = atoi(arg);
+    return NULL;
+}
+
+static const char *set_child_rl_nofile(cmd_parms *cmd, void *dummy, char *arg) 
+{
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+
+    ap_max_nofile_per_child = atoi(arg);
+    return NULL;
+}
+
+static const char *set_child_rl_rss(cmd_parms *cmd, void *dummy, char *arg) 
+{
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+
+    ap_max_rss_per_child = atoi(arg);
+    return NULL;
+}
+
+static const char *set_child_rl_stack(cmd_parms *cmd, void *dummy, char *arg) 
+{
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+
+    ap_max_stack_per_child = atoi(arg);
+    return NULL;
+}
+
 static const char *set_max_requests(cmd_parms *cmd, void *dummy, char *arg) 
 {
     const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
@@ -2468,7 +2285,6 @@ static const char *set_excess_requests(cmd_parms *cmd, void *dummy, char *arg)
 }
 
 
-#if defined(RLIMIT_CPU) || defined(RLIMIT_DATA) || defined(RLIMIT_VMEM) || defined(RLIMIT_NPROC) || defined(RLIMIT_AS)
 static void set_rlimit(cmd_parms *cmd, struct rlimit **plimit, const char *arg,
                        const char * arg2, int type)
 {
@@ -2522,74 +2338,59 @@ static void set_rlimit(cmd_parms *cmd, struct rlimit **plimit, const char *arg,
 	}
     }
 }
-#endif
 
-#if !defined (RLIMIT_CPU) || !(defined (RLIMIT_DATA) || defined (RLIMIT_VMEM) || defined(RLIMIT_AS)) || !defined (RLIMIT_NPROC)
-static const char *no_set_limit(cmd_parms *cmd, core_dir_config *conf,
-				char *arg, char *arg2)
-{
-    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_ERR, cmd->server,
-		"%s not supported on this platform", cmd->cmd->name);
-    return NULL;
-}
-#endif
-
-#ifdef RLIMIT_CPU
 static const char *set_limit_cpu(cmd_parms *cmd, core_dir_config *conf, 
 				 char *arg, char *arg2)
 {
     set_rlimit(cmd, &conf->limit_cpu, arg, arg2, RLIMIT_CPU);
     return NULL;
 }
-#endif
 
-#if defined (RLIMIT_DATA) || defined (RLIMIT_VMEM) || defined(RLIMIT_AS)
 static const char *set_limit_mem(cmd_parms *cmd, core_dir_config *conf, 
 				 char *arg, char * arg2)
 {
-#if defined(RLIMIT_AS)
-    set_rlimit(cmd, &conf->limit_mem, arg, arg2 ,RLIMIT_AS);
-#elif defined(RLIMIT_DATA)
     set_rlimit(cmd, &conf->limit_mem, arg, arg2, RLIMIT_DATA);
-#elif defined(RLIMIT_VMEM)
-    set_rlimit(cmd, &conf->limit_mem, arg, arg2, RLIMIT_VMEM);
-#endif
     return NULL;
 }
-#endif
 
-#ifdef RLIMIT_NPROC
 static const char *set_limit_nproc(cmd_parms *cmd, core_dir_config *conf,  
 				   char *arg, char * arg2)
 {
     set_rlimit(cmd, &conf->limit_nproc, arg, arg2, RLIMIT_NPROC);
     return NULL;
 }
-#endif
+
+static const char *set_limit_nofile(cmd_parms *cmd, core_dir_config *conf,  
+				   char *arg, char * arg2)
+{
+    set_rlimit(cmd, &conf->limit_nofile, arg, arg2, RLIMIT_NOFILE);
+    return NULL;
+}
 
 static const char *set_bind_address(cmd_parms *cmd, void *dummy, char *arg) 
 {
+    struct addrinfo hints, *res;
+    struct sockaddr *sa;
+    size_t sa_len;
+    int error;
     const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
     if (err != NULL) {
         return err;
     }
 
-    ap_bind_address.s_addr = ap_get_virthost_addr(arg, NULL);
-    return NULL;
-}
+    if (strcmp(arg, "*") == 0)
+      arg = NULL;
 
-#ifdef NETWARE
-static const char *set_threadstacksize(cmd_parms *cmd, void *dummy, char *stacksize)
-{
-    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
-    if (err != NULL) {
-        return err;
-    }
-    
-    ap_thread_stack_size = atoi(stacksize);    
-    return NULL;
-}
+    sa = ap_get_virthost_addr(arg, NULL);
+#ifdef HAVE_SOCKADDR_LEN
+    sa_len = sa->sa_len;
+#else
+    sa_len = SA_LEN(sa);
 #endif
+    memcpy(&ap_bind_address, &sa, sa_len);
+    return NULL;
+}
+
 
 /* Though the AcceptFilter functionality is not available across
  * all platforms - we still allow the config directive to appear
@@ -2600,54 +2401,81 @@ static const char *set_threadstacksize(cmd_parms *cmd, void *dummy, char *stacks
  */
 static const char *set_acceptfilter(cmd_parms *cmd, void *dummy, int flag)
 {
-#ifdef SO_ACCEPTFILTER
-    ap_acceptfilter = flag;
-#endif
     return NULL;
 }
 
-static const char *set_listener(cmd_parms *cmd, void *dummy, char *ips)
+static const char *set_listener(cmd_parms *cmd, void *dummy, char *h, char *p)
 {
     listen_rec *new;
-    char *ports, *endptr;
-    long port;
+    char *host, *port, *endptr;
+    struct addrinfo hints, *res;
+    int error;
     
     const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
     if (err != NULL) {
         return err;
     }
 
-    ports = strchr(ips, ':');
-    if (ports != NULL) {
-	if (ports == ips) {
+    host = port = NULL;
+    if (!p) {
+      port = strrchr(h, ':');
+      if (port != NULL) {
+	if (port == h) {
 	    return "Missing IP address";
 	}
-	else if (ports[1] == '\0') {
+	else if (port[1] == '\0') {
 	    return "Address must end in :<port-number>";
 	}
-	*(ports++) = '\0';
-    }
-    else {
-	ports = ips;
+	*(port++) = '\0';
+	if (*h)
+	    host = h;
+      } else {
+	host = NULL;
+	port = h;
+      }
+    } else {
+      host = h;
+      port = p;
     }
 
-    new=ap_pcalloc(cmd->pool, sizeof(listen_rec));
-    new->local_addr.sin_family = AF_INET;
-    if (ports == ips) { /* no address */
-	new->local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    /* strip [] for ipv6 before calling getaddrinfo */
+    if (host && host[0] == '[') {
+      if (strlen(host) < 2 || host[strlen(host) - 1] != ']')
+        return "Malformed IPv6 Address in :<host>";
+      host[strlen(host) - 1] = 0;
+      host++;
     }
-    else {
-	new->local_addr.sin_addr.s_addr = ap_get_virthost_addr(ips, NULL);
+
+    if (host && strcmp(host, "*") == 0)
+      host = NULL;
+
+    new = ap_pcalloc(cmd->pool, sizeof(listen_rec));
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = host ? PF_UNSPEC : ap_default_family;
+    hints.ai_flags = AI_PASSIVE;
+    hints.ai_socktype = SOCK_STREAM;
+    error = getaddrinfo(host, port, &hints, &res);
+    if (error || !res) {
+      fprintf(stderr, "could not resolve ");
+      if (host)
+	fprintf(stderr, "host \"%s\" ", host);
+      if (port)
+        fprintf(stderr, "port \"%s\" ", port);
+      fprintf(stderr, "--- %s\n", gai_strerror(error));
+      exit(1);
     }
-    errno = 0; /* clear errno before calling strtol */
-    port = ap_strtol(ports, &endptr, 10);
-    if (errno /* some sort of error */
-       || (endptr && *endptr) /* make sure no trailing characters */
-       || port < 1 || port > 65535) /* underflow/overflow */
-    {
-	return "Missing, invalid, or non-numeric port";
+    if (res->ai_next) {
+	if (host)
+	  fprintf(stderr, "host \"%s\" ", host);
+	if (port)
+	  fprintf(stderr, "port \"%s\" ", port);
+	fprintf(stderr, "resolved to multiple addresses, ambiguous.\n");
+	exit(1);
     }
-    new->local_addr.sin_port = htons((unsigned short)port);
+
+    memcpy(&new->local_addr, res->ai_addr, res->ai_addrlen);
+
     new->fd = -1;
     new->used = 0;
     new->next = ap_listeners;
@@ -2763,14 +2591,14 @@ API_EXPORT(const char *) ap_psignature(const char *prefix, request_rec *r)
 	return ap_pstrcat(r->pool, prefix, "<ADDRESS>" SERVER_BASEVERSION
 			  " Server at <A HREF=\"mailto:",
 			  r->server->server_admin, "\">",
-			  ap_escape_html(r->pool, ap_get_server_name(r)), 
-			  "</A> Port ", sport,
+			  ap_escape_html(r->pool, ap_get_server_name(r)),
+                          "</A> Port ", sport,
 			  "</ADDRESS>\n", NULL);
     }
     return ap_pstrcat(r->pool, prefix, "<ADDRESS>" SERVER_BASEVERSION
-		      " Server at ", 
-		      ap_escape_html(r->pool, ap_get_server_name(r)), 
-		      " Port ", sport,
+		      " Server at ",
+                      ap_escape_html(r->pool, ap_get_server_name(r)),
+                      " Port ", sport,
 		      "</ADDRESS>\n", NULL);
 }
 
@@ -2786,17 +2614,27 @@ static const char *set_authname(cmd_parms *cmd, void *mconfig, char *word1)
     return NULL;
 }
 
-#ifdef _OSD_POSIX /* BS2000 Logon Passwd file */
-static const char *set_bs2000_account(cmd_parms *cmd, void *dummy, char *name)
+/*
+ * Load an authorisation nonce into our location configuration, and
+ * force it to be in the 0-9/A-Z realm.
+ */
+static const char *set_authnonce (cmd_parms *cmd, void *mconfig, char *word1)
 {
-    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
-    if (err != NULL) {
-        return err;
-    }
+    core_dir_config *aconfig = (core_dir_config *)mconfig;
+    size_t i;
 
-    return os_set_account(cmd->pool, name);
+    aconfig->ap_auth_nonce = ap_escape_quotes(cmd->pool, word1);
+
+    if (strlen(aconfig->ap_auth_nonce) > 510)
+       return "AuthDigestRealmSeed length limited to 510 chars for browser compatibility";
+
+    for(i=0;i<strlen(aconfig->ap_auth_nonce );i++)
+       if (!ap_isalnum(aconfig->ap_auth_nonce [i]))
+         return "AuthDigestRealmSeed limited to 0-9 and A-Z range for browser compatibility";
+
+    return NULL;
 }
-#endif /*_OSD_POSIX*/
+
 
 static const char *set_protocol_req_check(cmd_parms *cmd,
                                               core_dir_config *d, int arg) 
@@ -2938,22 +2776,6 @@ static const char *set_limit_req_body(cmd_parms *cmd, core_dir_config *conf,
     return NULL;
 }
 
-#ifdef WIN32
-static const char *set_interpreter_source(cmd_parms *cmd, core_dir_config *d,
-                                                char *arg)
-{
-    if (!strcasecmp(arg, "registry")) {
-        d->script_interpreter_source = INTERPRETER_SOURCE_REGISTRY;
-    } else if (!strcasecmp(arg, "script")) {
-        d->script_interpreter_source = INTERPRETER_SOURCE_SHEBANG;
-    } else {
-        return ap_pstrcat(cmd->temp_pool, "ScriptInterpreterSource \"", arg, 
-                          "\" must be \"registry\" or \"script\"",
-                          NULL);
-    }
-    return NULL;
-}
-#endif
 
 static const char *set_cgi_command_args(cmd_parms *cmd,
                                               void *mconfig,
@@ -2963,122 +2785,6 @@ static const char *set_cgi_command_args(cmd_parms *cmd,
     cfg->cgi_command_args = arg ? AP_FLAG_ON : AP_FLAG_OFF;
     return NULL;
 }
-
-#ifdef CHARSET_EBCDIC
-
-typedef struct {
-  char conv_out[2];
-  char conv_in[2];
-} parsed_conf_t;
-
-/* Check for conversion syntax:  { On | Off } [ = { In | Out | InOut } ] */
-static parsed_conf_t *
-parse_on_off_in_out(pool *p, char *arg)
-{
-    static parsed_conf_t ret = { { conv_Unset, '\0' }, { conv_Unset, '\0' } };
-    char *onoff = ap_getword_nc(p, &arg, '=');
-    int in = 0, out = 0, inout = 0;
-    char conv_val;
-
-    /* Check for valid syntax:  { On | Off } [ = { In | Out | InOut } ] */
-    if (strcasecmp(onoff, "On") == 0)
-        conv_val = conv_On;
-    else if (strcasecmp(onoff, "Off") == 0)
-        conv_val = conv_Off;
-    else
-        return NULL;
-
-    /* Check the syntax, and at the same time assign the test results */
-    if (!(inout = (*arg == '\0')) &&
-        !(in = (strcasecmp(arg, "In") == 0)) &&
-        !(out = (strcasecmp(arg, "Out") == 0)) &&
-        !(inout = (strcasecmp(arg, "InOut") == 0))) {
-        /* Invalid string, not conforming to syntax! */
-        return NULL;
-    }
-
-    ret.conv_in[0]  = (in || inout)  ? conv_val : conv_Unset;
-    ret.conv_out[0] = (out || inout) ? conv_val : conv_Unset;
-
-    return &ret;
-}
-
-
-/* Handle the EBCDICConvert directive:
- *   EBCDICConvert {On|Off}[={In|Out|InOut}] ext ...
- */
-static const char *
-add_conversion_by_ext(cmd_parms *cmd, core_dir_config *m,
-		      char *onoff, char *ext)
-{
-    parsed_conf_t *onoff_code = parse_on_off_in_out(cmd->pool, onoff);
-
-    if (onoff_code == NULL)
-        return "Invalid syntax: use EBCDICConvert {On|Off}[={In|Out|InOut}] ext [...]";
-
-    if (*ext == '.')
-        ++ext;
-
-    if (*onoff_code->conv_in != conv_Unset)
-	ap_table_addn(m->ebcdicconversion_by_ext_in, ext,
-		      ap_pstrndup(cmd->pool, onoff_code->conv_in, 1));
-    if (*onoff_code->conv_out != conv_Unset)
-	ap_table_addn(m->ebcdicconversion_by_ext_out, ext,
-		      ap_pstrndup(cmd->pool, onoff_code->conv_out, 1));
-
-    return NULL;
-}
-
-
-/* Handle the EBCDICConvertByType directive:
- *   EBCDICConvertByType {On|Off}[={In|Out|InOut}] mimetype ...
- */
-static const char *
-add_conversion_by_type(cmd_parms *cmd, core_dir_config *m,
-		       char *onoff, char *type)
-{
-    parsed_conf_t *onoff_code = parse_on_off_in_out(cmd->pool, onoff);
-
-    if (onoff_code == NULL)
-        return "Invalid syntax: use EBCDICConvertByType {On|Off}[={In|Out|InOut}] mimetype [...]";
-
-    if (*onoff_code->conv_in != conv_Unset)
-	ap_table_addn(m->ebcdicconversion_by_type_in, type,
-		      ap_pstrndup(cmd->pool, onoff_code->conv_in, 1));
-    if (*onoff_code->conv_out != conv_Unset)
-	ap_table_addn(m->ebcdicconversion_by_type_out, type,
-		      ap_pstrndup(cmd->pool, onoff_code->conv_out, 1));
-
-    return NULL;
-}
-
-
-/* Handle the EBCDICKludge directive:
- *   EBCDICKludge {On|Off}
- */
-#ifdef LEGACY_KLUDGE
-static const char *
-set_x_ascii_kludge(cmd_parms *cmd, core_dir_config *m, int arg)
-{
-    m->x_ascii_magic_kludge = arg;
-
-    return NULL;
-}
-#endif
-
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-/* Handle the EBCDICDebugHeader directive:
- *   EBCDICDebugHeader {On|Off}
- */
-static const char *
-set_debug_header(cmd_parms *cmd, core_dir_config *m, int arg)
-{
-    m->ebcdicconversion_debug_header = arg;
-
-    return NULL;
-}
-#endif
-#endif /* CHARSET_EBCDIC */
 
 /*
  * Note what data should be used when forming file ETag values.
@@ -3400,6 +3106,9 @@ static const command_rec core_cmds[] = {
   "An HTTP authorization type (e.g., \"Basic\")" },
 { "AuthName", set_authname, NULL, OR_AUTHCFG, TAKE1,
   "The authentication realm (e.g. \"Members Only\")" },
+{ "AuthDigestRealmSeed", set_authnonce, NULL, OR_AUTHCFG, TAKE1,
+  "An authentication token which should be different for each logical realm. "\
+  "A random value or the servers IP may be a good choise.\n" },
 { "Require", require, NULL, OR_AUTHCFG, RAW_ARGS,
   "Selects which authenticated users or groups may access a protected space" },
 { "Satisfy", satisfy, NULL, OR_AUTHCFG, TAKE1,
@@ -3497,34 +3206,31 @@ static const command_rec core_cmds[] = {
   "Maximum number of children alive at the same time" },
 { "MaxRequestsPerChild", set_max_requests, NULL, RSRC_CONF, TAKE1,
   "Maximum number of requests a particular child serves before dying." },
+{ "MaxCPUPerChild", set_child_rl_cpu, NULL, RSRC_CONF, TAKE1,
+  "Maximum amount of CPU time a child can use (rlimit)." },
+{ "MaxDATAPerChild", set_child_rl_data, NULL, RSRC_CONF, TAKE1,
+  "Maximum size of the data segment for a child process (rlimit)." },
+{ "MaxNOFILEPerChild", set_child_rl_nofile, NULL, RSRC_CONF, TAKE1,
+  "Maximum number of open file descriptors a child can have (rlimit)." },
+{ "MaxRSSPerChild", set_child_rl_rss, NULL, RSRC_CONF, TAKE1,
+  "Maximum amount of physical memory a child can use (rlimit)." },
+{ "MaxSTACKPerChild", set_child_rl_stack, NULL, RSRC_CONF, TAKE1,
+  "Maximum amount of stack space a child can use (rlimit)." },
 { "RLimitCPU",
-#ifdef RLIMIT_CPU
   set_limit_cpu, (void*)XtOffsetOf(core_dir_config, limit_cpu),
-#else
-  no_set_limit, NULL,
-#endif
   OR_ALL, TAKE12, "Soft/hard limits for max CPU usage in seconds" },
 { "RLimitMEM",
-#if defined (RLIMIT_DATA) || defined (RLIMIT_VMEM) || defined (RLIMIT_AS)
   set_limit_mem, (void*)XtOffsetOf(core_dir_config, limit_mem),
-#else
-  no_set_limit, NULL,
-#endif
   OR_ALL, TAKE12, "Soft/hard limits for max memory usage per process" },
 { "RLimitNPROC",
-#ifdef RLIMIT_NPROC
   set_limit_nproc, (void*)XtOffsetOf(core_dir_config, limit_nproc),
-#else
-  no_set_limit, NULL,
-#endif
    OR_ALL, TAKE12, "soft/hard limits for max number of processes per uid" },
+{ "RLimitNOFILE",
+  set_limit_nofile, (void*)XtOffsetOf(core_dir_config, limit_nofile),
+   OR_ALL, TAKE12, "soft/hard limits for max number of files per process" },
 { "BindAddress", set_bind_address, NULL, RSRC_CONF, TAKE1,
   "'*', a numeric IP address, or the name of a host with a unique IP address"},
-#ifdef NETWARE
-{ "ThreadStackSize", set_threadstacksize, NULL, RSRC_CONF, TAKE1,
-  "Stack size each created thread will use."},
-#endif
-{ "Listen", set_listener, NULL, RSRC_CONF, TAKE1,
+{ "Listen", set_listener, NULL, RSRC_CONF, TAKE12,
   "A port number or a numeric IP address and a port number"},
 { "SendBufferSize", set_send_buffer_size, NULL, RSRC_CONF, TAKE1,
   "Send buffer size in bytes"},
@@ -3541,16 +3247,10 @@ static const command_rec core_cmds[] = {
   "Maximum length of the queue of pending connections, as used by listen(2)" },
 { "AcceptFilter", set_acceptfilter, NULL, RSRC_CONF, FLAG,
   "Switch AcceptFiltering on/off (default is "
-#ifdef AP_ACCEPTFILTER_OFF
-	"off"
-#else
 	"on"
-#endif
 	")."
-#ifndef SO_ACCEPTFILTER
 	"This feature is currently not compiled in; so this directive "
 	"is ignored."
-#endif
    },
 { "CoreDumpDirectory", set_coredumpdir, NULL, RSRC_CONF, TAKE1,
   "The location of the directory Apache changes to before dumping core" },
@@ -3558,16 +3258,8 @@ static const command_rec core_cmds[] = {
   "Name of the config file to be included" },
 { "LogLevel", set_loglevel, NULL, RSRC_CONF, TAKE1,
   "Level of verbosity in error logging" },
-{ "NameVirtualHost", ap_set_name_virtual_host, NULL, RSRC_CONF, TAKE1,
+{ "NameVirtualHost", ap_set_name_virtual_host, NULL, RSRC_CONF, TAKE12,
   "A numeric IP address:port, or the name of a host" },
-#ifdef _OSD_POSIX
-{ "BS2000Account", set_bs2000_account, NULL, RSRC_CONF, TAKE1,
-  "Name of server User's bs2000 logon account name" },
-#endif
-#ifdef WIN32
-{ "ScriptInterpreterSource", set_interpreter_source, NULL, OR_FILEINFO, TAKE1,
-  "Where to find interpreter to run Win32 scripts - Registry or Script (shebang line)" },
-#endif
 { "CGICommandArgs", set_cgi_command_args, NULL, OR_OPTIONS, FLAG,
   "Allow or Disallow CGI requests to pass args on the command line" },
 { "ServerTokens", set_serv_tokens, NULL, RSRC_CONF, TAKE1,
@@ -3588,51 +3280,10 @@ static const command_rec core_cmds[] = {
   "Enable the setting of SysV shared memory scoreboard uid/gid to User/Group" },
 { "AcceptMutex", set_accept_mutex, NULL, RSRC_CONF, TAKE1,
   "Serialized Accept Mutex; the methods " 
-#ifdef HAVE_USLOCK_SERIALIZED_ACCEPT
-    "'uslock' "                           
-#endif
-#ifdef HAVE_PTHREAD_SERIALIZED_ACCEPT
-    "'pthread' "
-#endif
-#ifdef HAVE_SYSVSEM_SERIALIZED_ACCEPT
     "'sysvsem' "
-#endif
-#ifdef HAVE_FCNTL_SERIALIZED_ACCEPT
-    "'fcntl' "
-#endif
-#ifdef HAVE_FLOCK_SERIALIZED_ACCEPT
     "'flock' "
-#endif
-#ifdef HAVE_OS2SEM_SERIALIZED_ACCEPT
-    "'os2sem' "
-#endif
-#ifdef HAVE_TPF_CORE_SERIALIZED_ACCEPT
-    "'tpfcore' "
-#endif
-#ifdef HAVE_BEOS_SERIALIZED_ACCEPT
-    "'beos_sem' "
-#endif
-#ifdef HAVE_NONE_SERIALIZED_ACCEPT
-    "'none' "
-#endif
     "are compiled in"
 },
-
-/* EBCDIC Conversion directives: */
-#ifdef CHARSET_EBCDIC
-{ "EBCDICConvert", add_conversion_by_ext, NULL, OR_FILEINFO, ITERATE2,
-    "{On|Off}[={In|Out|InOut}] followed by one or more file extensions" },
-{ "EBCDICConvertByType", add_conversion_by_type, NULL, OR_FILEINFO, ITERATE2,
-    "{On|Off}[={In|Out|InOut}] followed by one or more MIME types" },
-#ifdef LEGACY_KLUDGE
-{ "EBCDICKludge", set_x_ascii_kludge, NULL, OR_FILEINFO, FLAG,
-    "'On': enable or default='Off': disable the old text/x-ascii-mimetype kludge" },
-#endif
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-{ "EBCDICDebugHeader", set_debug_header, NULL, OR_FILEINFO, FLAG,
-    "'On': enable or default='Off': disable the EBCDIC Debugging MIME Header" },
-#endif
-#endif /* CHARSET_EBCDIC */
 
 { "FileETag", set_etag_bits, NULL, OR_FILEINFO, RAW_ARGS,
   "Specify components used to construct a file's ETag"},
@@ -3692,260 +3343,6 @@ static int core_translate(request_rec *r)
 
 static int do_nothing(request_rec *r) { return OK; }
 
-#ifdef CHARSET_EBCDIC
-struct do_mime_match_parms {
-    request_rec *request;     /* [In] current request_rec */
-    int direction;            /* [In] determine conversion for: dir_In|dir_Out */
-    const char *content_type; /* [In] Content-Type (dir_In: from MIME Header, else r->content_type) */
-    int match_found;          /* [Out] nonzero if a match was found */
-    int conv;                 /* [Out] conversion setting if match was found */
-};
-
-
-/* This routine is called for each mime type configured by the
- * EBCDICConvertByType directive.
- */
-static int
-do_mime_match(void *rec, const char *key, const char *val)
-{
-    int conv = (val[0] == conv_On);
-    const char *content_type;
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-    request_rec *r = ((struct do_mime_match_parms *) rec)->request;
-#endif
-
-    ((struct do_mime_match_parms *) rec)->match_found = 0;
-    ((struct do_mime_match_parms *) rec)->conv = conv_Unset;
-
-    content_type = ((struct do_mime_match_parms *) rec)->content_type;
-
-    /* If no type set: no need to continue */
-    if (content_type == NULL)
-        return 0;
-
-    /* If the MIME type matches, set the conversion flag appropriately */
-    if ((ap_is_matchexp(key) && ap_strcasecmp_match(content_type, key) == 0)
-        || (strcasecmp(key, content_type) == 0)) {
-
-        ((struct do_mime_match_parms *) rec)->match_found = 1;
-        ((struct do_mime_match_parms *) rec)->conv = conv;
-
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-	ap_table_setn(r->headers_out,
-               ((((struct do_mime_match_parms *) rec)->direction) == dir_In)
-		      ? "X-EBCDIC-Debug-In" : "X-EBCDIC-Debug-Out",
-                       ap_psprintf(r->pool, "EBCDICConversionByType %s %s",
-                                   conv ? "On" : "Off",
-                                   key));
-#endif
-
-        /* the mime type scan stops at the first  match. */
-        return 0;
-    }
-
-    return 1;
-}
-
-static void
-ap_checkconv_dir(request_rec *r, const char **pType, int dir)
-{
-    core_dir_config *conf =
-    (core_dir_config *) ap_get_module_config(r->per_dir_config, &core_module);
-    table *conv_by_ext, *conv_by_type;
-    const char *type, *conversion;
-    char *ext;
-    int conv_valid = 0, conv;
-
-    conv_by_ext  = (dir == dir_In) ? conf->ebcdicconversion_by_ext_in  : conf->ebcdicconversion_by_ext_out;
-    conv_by_type = (dir == dir_In) ? conf->ebcdicconversion_by_type_in : conf->ebcdicconversion_by_type_out;
-
-    type = (*pType == NULL) ? ap_default_type(r) : *pType;
-
-    /* Pseudo "loop" which is executed once only, with break's at individual steps */
-    do {
-        /* Step 0: directories result in redirections or in directory listings.
-	 * Both are EBCDIC text documents.
-	 * @@@ Should we check for the handler instead?
-	 */
-        if (S_ISDIR(r->finfo.st_mode) && dir == dir_Out) {
-            conv = conv_valid = 1;
-            break;
-        }
-
-        /* 1st step: check the binding on file extension. This allows us to
-         * override the conversion default based on a specific name.
-         * For instance, the following would allow some HTML files
-         * to be converted (.html) and others passed unconverted (.ahtml):
-         *     AddType text/html .html .ahtml
-         *     EBCDICConvert Off .ahtml
-         * For uploads, this assumes that the destination file name
-	 * has the correct extension. That may not be true for, e.g.,
-	 * Netscape Communicator roaming profile uploads!
-         */
-        if (r->filename && !ap_is_empty_table(conv_by_ext)) {
-            const char *fn = strrchr(r->filename, '/');
-
-            if (fn == NULL)
-                fn = r->filename;
-
-            /* Parse filename extension */
-            if ((ext = strrchr(fn, '.')) != NULL) {
-                ++ext;
-
-                /* Check for Content-Type */
-                if ((conversion = ap_table_get(conv_by_ext, ext)) != NULL) {
-
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-		    if (conf->ebcdicconversion_debug_header)
-		        ap_table_setn(r->headers_out,
-				      (dir == dir_In) ? "X-EBCDIC-Debug-In" : "X-EBCDIC-Debug-Out",
-				      ap_psprintf(r->pool, "EBCDICConversion %s .%s",
-						  (conversion[0] == conv_On) ? "On" : "Off",
-						  ext));
-#endif
-
-                    conv = (conversion[0] == conv_On);
-                    conv_valid = 1;
-                    break;
-                }
-            }
-        }
-
-
-        /* 2nd step: test for the old "legacy kludge", that is, a default
-         * conversion=on for text/?* message/?* multipart/?* and the possibility
-         * to override the text/?* conversion with a definition like
-         *    AddType text/x-ascii-plain .atxt
-         *    AddType text/x-ascii-html  .ahtml
-         * where the "x-ascii-" would be removed and the conversion switched
-         * off.
-         * This step must be performed prior to testing wildcard MIME types
-         * like text/?* by the EBCDICConvertByType directive.
-         */
-#ifdef LEGACY_KLUDGE
-        /* This fallback is only used when enabled (default=off) */
-        if (conf->x_ascii_magic_kludge) {
-            char *magic;
-
-            /* If the mime type of a document is set to
-             * "text/x-ascii-anything", it gets changed to
-             * "text/anything" here and the conversion is forced to off
-             * ("binary" or ASCII documents).
-             */
-            if (*pType != NULL
-                && (magic = strstr(*pType, "/x-ascii-")) != NULL) {
-
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-		if (conf->ebcdicconversion_debug_header)
-		    ap_table_setn(r->headers_out,
-				  (dir == dir_In) ? "X-EBCDIC-Debug-In" : "X-EBCDIC-Debug-Out",
-				  ap_psprintf(r->pool, "EBCDICKludge On (and type is: %s, thus no conversion)",
-					      *pType));
-#endif
-
-                /* the mime type scan stops at the first  match. */
-                magic[1] = '\0';        /* overwrite 'x' */
-
-                /* Fix MIME type: strip out the magic "x-ascii-" substring */
-                *pType = ap_pstrcat(r->pool, *pType, &magic[9], NULL);
-
-                magic[1] = 'x'; /* restore 'x' in old string (just in case) */
-
-                /* Switch conversion to BINARY */
-                conv = 0;       /* do NOT convert this document */
-                conv_valid = 1;
-                break;
-            }
-        }
-#endif /*LEGACY_KLUDGE */
-
-
-        /* 3rd step: check whether a generic conversion was defined for a MIME type,
-         * like in
-         *    EBCDICConvertByType  On  model/vrml application/postscript text/?*
-         */
-        if (!ap_is_empty_table(conv_by_type)) {
-            struct do_mime_match_parms do_par;
-
-            do_par.request = r;
-            do_par.direction = dir;
-	    do_par.content_type = type;
-
-            ap_table_do(do_mime_match, (void *) &do_par, conv_by_type, NULL);
-
-            if ((conv_valid = do_par.match_found) != 0) {
-                conv = do_par.conv;
-                break;
-            }
-        }
-        else /* If no conversion by type was configured, use the default: */
-        {
-            /*
-             * As a final step, mime types starting with "text/", "message/" or
-             * "multipart/" imply a conversion, while all the rest is
-             * delivered unconverted (i.e., binary, e.g. application/octet-stream).
-             */
-
-            /* If no content type is set then treat it as text (conversion=on) */
-            conv =
-                (type == NULL) ||
-                (strncasecmp(type, "text/", 5) == 0) ||
-                (strncasecmp(type, "message/", 8) == 0) ||
-                (strncasecmp(type, "multipart/", 10) == 0) ||
-                (strcasecmp(type, "application/x-www-form-urlencoded") == 0);
-
-#if ADD_EBCDICCONVERT_DEBUG_HEADER
-		if (conf->ebcdicconversion_debug_header)
-		    ap_table_setn(r->headers_out,
-				  (dir == dir_In) ? "X-EBCDIC-Debug-In" : "X-EBCDIC-Debug-Out",
-				  ap_psprintf(r->pool,
-					      "No EBCDICConversion configured (and type is: %s, "
-					      "=> guessed conversion = %s)",
-					      type, conv ? "On" : "Off"));
-#endif
-            conv_valid = 1;
-            break;
-        }
-    } while (0);
-
-    if (conv_valid) {
-        if (dir == dir_In)
-            r->ebcdic.conv_in = conv;
-        else
-            r->ebcdic.conv_out = conv;
-    }
-}
-
-/* This function determines the conversion for uploads (PUT/POST): */
-API_EXPORT(int)
-ap_checkconv_in(request_rec *r)
-{
-    const char *typep;
-
-    /* If nothing is being sent as input anyway, we don't bother about conversion */
-    /* (see ap_should_client_block())*/
-    if (r->read_length || (!r->read_chunked && (r->remaining <= 0)))
-        return r->ebcdic.conv_in;
-
-    typep = ap_table_get(r->headers_in, "Content-Type");
-    ap_checkconv_dir(r, &typep, dir_In);
-
-    return r->ebcdic.conv_in;
-}
-
-
-/* Backward compatibility function */
-API_EXPORT(int)
-ap_checkconv(request_rec *r)
-{
-    ap_checkconv_dir(r, &r->content_type, dir_Out);
-    return r->ebcdic.conv_out;
-}
-
-#endif /* CHARSET_EBCDIC */
-
-
-#ifdef USE_MMAP_FILES
 struct mmap_rec {
     void *mm;
     size_t length;
@@ -3961,7 +3358,6 @@ static void mmap_cleanup(void *mmv)
                      (long) mmd->length, (long) mmd->mm);
     }
 }
-#endif
 
 /*
  * Default handler for MIME types without other handlers.  Only GET
@@ -3977,9 +3373,7 @@ static int default_handler(request_rec *r)
       (core_dir_config *)ap_get_module_config(r->per_dir_config, &core_module);
     int rangestatus, errstatus;
     FILE *f;
-#ifdef USE_MMAP_FILES
     caddr_t mm;
-#endif
 
     /* This handler has no use for a request body (yet), but we still
      * need to read and discard it if the client sent one.
@@ -4014,12 +3408,7 @@ static int default_handler(request_rec *r)
         return METHOD_NOT_ALLOWED;
     }
 	
-#if defined(OS2) || defined(WIN32) || defined(NETWARE) || defined(CYGWIN)
-    /* Need binary mode for OS/2 */
-    f = ap_pfopen(r->pool, r->filename, "rb");
-#else
     f = ap_pfopen(r->pool, r->filename, "r");
-#endif
 
     if (f == NULL) {
         ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
@@ -4036,7 +3425,6 @@ static int default_handler(request_rec *r)
         return errstatus;
     }
 
-#ifdef USE_MMAP_FILES
     ap_block_alarms();
     if ((r->finfo.st_size >= MMAP_THRESHOLD)
 	&& (r->finfo.st_size < MMAP_LIMIT)
@@ -4056,19 +3444,11 @@ static int default_handler(request_rec *r)
 
     if (mm == (caddr_t)-1) {
 	ap_unblock_alarms();
-#endif
 
-#ifdef CHARSET_EBCDIC
-	if (d->content_md5 & 1) {
-	    ap_table_setn(r->headers_out, "Content-MD5",
-			  ap_md5digest(r->pool, f, r->ebcdic.conv_out));
-	}
-#else
 	if (d->content_md5 & 1) {
 	    ap_table_setn(r->headers_out, "Content-MD5",
 			  ap_md5digest(r->pool, f));
 	}
-#endif /* CHARSET_EBCDIC */
 
 	rangestatus = ap_set_byterange(r);
 
@@ -4097,7 +3477,6 @@ static int default_handler(request_rec *r)
 	    }
 	}
 
-#ifdef USE_MMAP_FILES
     }
     else {
 	struct mmap_rec *mmd;
@@ -4132,7 +3511,6 @@ static int default_handler(request_rec *r)
 	    }
 	}
     }
-#endif
 
     ap_pfclose(r->pool, f);
     return OK;

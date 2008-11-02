@@ -1,5 +1,5 @@
 #
-# $Id$
+# $Id: tr_eucjp.t,v 1.2 2003/12/03 03:02:49 millert Exp $
 #
 # This script is written intentionally in EUC-JP
 # -- dankogai

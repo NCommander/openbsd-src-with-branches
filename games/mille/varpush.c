@@ -1,3 +1,4 @@
+/*	$OpenBSD: varpush.c,v 1.5 2002/02/16 21:27:10 millert Exp $	*/
 /*	$NetBSD: varpush.c,v 1.4 1995/03/24 05:02:35 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)varpush.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: varpush.c,v 1.4 1995/03/24 05:02:35 cgd Exp $";
+static char rcsid[] = "$OpenBSD: varpush.c,v 1.5 2002/02/16 21:27:10 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -48,51 +45,63 @@ static char rcsid[] = "$NetBSD: varpush.c,v 1.4 1995/03/24 05:02:35 cgd Exp $";
  * @(#)varpush.c	1.1 (Berkeley) 4/1/82
  */
 
-int	read(), write();
-
 /*
  *	push variables around via the routine func() on the file
  * channel file.  func() is either read or write.
  */
+bool
 varpush(file, func)
-reg int	file;
-reg int	(*func)(); {
-
+	int	file;
+	ssize_t	(*func)(int, const struct iovec *, int);
+{
 	int	temp;
+	const struct iovec vec[] = {
+		{ (void *) &Debug, sizeof Debug },
+		{ (void *) &Finished, sizeof Finished },
+		{ (void *) &Order, sizeof Order },
+		{ (void *) &End, sizeof End },
+		{ (void *) &On_exit, sizeof On_exit },
+		{ (void *) &Handstart, sizeof Handstart },
+		{ (void *) &Numgos, sizeof Numgos },
+		{ (void *) Numseen, sizeof Numseen },
+		{ (void *) &Play, sizeof Play },
+		{ (void *) &Window, sizeof Window },
+		{ (void *) Deck, sizeof Deck },
+		{ (void *) &Discard, sizeof Discard },
+		{ (void *) Player, sizeof Player }
+	};
 
-	(*func)(file, (char *) &Debug, sizeof Debug);
-	(*func)(file, (char *) &Finished, sizeof Finished);
-	(*func)(file, (char *) &Order, sizeof Order);
-	(*func)(file, (char *) &End, sizeof End);
-	(*func)(file, (char *) &On_exit, sizeof On_exit);
-	(*func)(file, (char *) &Handstart, sizeof Handstart);
-	(*func)(file, (char *) &Numgos, sizeof Numgos);
-	(*func)(file, (char *)  Numseen, sizeof Numseen);
-	(*func)(file, (char *) &Play, sizeof Play);
-	(*func)(file, (char *) &Window, sizeof Window);
-	(*func)(file, (char *)  Deck, sizeof Deck);
-	(*func)(file, (char *) &Discard, sizeof Discard);
-	(*func)(file, (char *)  Player, sizeof Player);
-	if (func == read) {
-		read(file, (char *) &temp, sizeof temp);
+	if (((func)(file, vec, sizeof(vec) / sizeof(vec[0]))) < 0) {
+		error(strerror(errno));
+		return FALSE;
+	}
+
+	if (func == readv) {
+		if ((read(file, (void *) &temp, sizeof temp)) < 0) {
+			error(strerror(errno));
+			return FALSE;
+		}
 		Topcard = &Deck[temp];
 #ifdef DEBUG
 		if (Debug) {
 			char	buf[80];
 over:
 			printf("Debug file:");
-			gets(buf);
+			fgets(buf, sizeof(buf), stdin);
 			if ((outf = fopen(buf, "w")) == NULL) {
-				perror(buf);
+				warn("%s", buf);
 				goto over;
 			}
 			if (strcmp(buf, _PATH_DEVNULL) != 0)
 				setbuf(outf, (char *)NULL);
 		}
 #endif
-	}
-	else {
+	} else {
 		temp = Topcard - Deck;
-		write(file, (char *) &temp, sizeof temp);
+		if ((write(file, (void *) &temp, sizeof temp)) < 0) {
+			error(strerror(errno));
+			return FALSE;
+		}
 	}
+	return TRUE;
 }

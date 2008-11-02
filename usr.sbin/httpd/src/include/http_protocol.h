@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -74,8 +76,8 @@ API_EXPORT(request_rec *) ap_read_request(conn_rec *c);
 
 /* Send a single HTTP header field */
 
-API_EXPORT_NONSTD(int) ap_send_header_field(request_rec *r, const char *fieldname,
-                      const char *fieldval);
+API_EXPORT_NONSTD(int) ap_send_header_field(request_rec *r,
+    const char *fieldname, const char *fieldval);
 
 /* Send the minimal part of an HTTP response header... but modules should be
  * very careful about using this, and should prefer ap_send_http_header().
@@ -151,7 +153,7 @@ API_EXPORT(int) ap_rwrite(const void *buf, int nbyte, request_rec *r);
 API_EXPORT_NONSTD(int) ap_rvputs(request_rec *r,...);
 API_EXPORT(int) ap_vrprintf(request_rec *r, const char *fmt, va_list vlist);
 API_EXPORT_NONSTD(int) ap_rprintf(request_rec *r, const char *fmt,...)
-				__attribute__((format(printf,2,3)));
+    __attribute__((format(printf,2,3)));
 API_EXPORT(int) ap_rflush(request_rec *r);
 
 /*
@@ -205,7 +207,8 @@ API_EXPORT(int) ap_get_basic_auth_pw(request_rec *r, const char **pw);
  * Also, a wrapup function to keep the internal accounting straight.
  */
 
-API_EXPORT(void) ap_set_sub_req_protocol(request_rec *rnew, const request_rec *r);
+API_EXPORT(void) ap_set_sub_req_protocol(request_rec *rnew,
+    const request_rec *r);
 API_EXPORT(void) ap_finalize_sub_req_protocol(request_rec *sub_r);
 
 /* This is also useful for putting sub_reqs and internal_redirects together */
@@ -221,6 +224,7 @@ API_EXPORT(int) ap_getline(char *s, int n, BUFF *in, int fold);
 
 API_EXPORT(long) ap_get_chunk_size(char *b);
 
+API_EXPORT(void) ap_init_etag(pool *pconf);
 
 #ifdef __cplusplus
 }

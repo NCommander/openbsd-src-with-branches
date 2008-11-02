@@ -3912,7 +3912,7 @@ extern char *__cxa_demangle (const char *, char *, size_t *, int *);
    OUTPUT_BUFFER may instead be NULL; in that case, the demangled name
    is placed in a region of memory allocated with malloc.
 
-   If LENGTH is non-NULL, the length of the buffer conaining the
+   If LENGTH is non-NULL, the length of the buffer containing the
    demangled name, is placed in *LENGTH.
 
    The return value is a pointer to the start of the NUL-terminated

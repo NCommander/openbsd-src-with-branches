@@ -1,4 +1,4 @@
-/*	$Id: optim2.c,v 1.44 2006/06/20 06:02:44 ragge Exp $	*/
+/*	$OpenBSD: optim2.c,v 1.6 2007/12/09 18:41:21 ragge Exp $	*/
 /*
  * Copyright (c) 2004 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -40,6 +40,8 @@
 #endif
 
 #define	BDEBUG(x)	if (b2debug) printf x
+
+#define	mktemp(n, t)	mklnode(TEMP, 0, n, t)
 
 static int dfsnum;
 
@@ -106,7 +108,7 @@ setargs(int tval, struct addrof *w)
 #endif
 		if (p->n_right->n_op != OREG)
 			continue; /* arg in register */
-		if (tval != p->n_left->n_lval)
+		if (tval != regno(p->n_left))
 			continue; /* wrong assign */
 		w->oregoff = p->n_right->n_lval;
 		tfree(p);
@@ -123,14 +125,16 @@ static void
 findaddrof(NODE *p)
 {
 	struct addrof *w;
+	int tnr;
 
 	if (p->n_op != ADDROF)
 		return;
-	if (getoff(p->n_left->n_lval))
+	tnr = regno(p->n_left);
+	if (getoff(tnr))
 		return;
 	w = tmpalloc(sizeof(struct addrof));
-	w->tempnum = p->n_left->n_lval;
-	if (setargs(p->n_left->n_lval, w) == 0)
+	w->tempnum = tnr;
+	if (setargs(tnr, w) == 0)
 		w->oregoff = BITOOR(freetemp(szty(p->n_left->n_type)));
 	w->next = otlink;
 	otlink = w;
@@ -149,12 +153,12 @@ cvtaddrof(NODE *p)
 	if (p->n_op != ADDROF && p->n_op != TEMP)
 		return;
 	if (p->n_op == TEMP) {
-		n = getoff(p->n_lval);
+		n = getoff(regno(p));
 		if (n == 0)
 			return;
 		p->n_op = OREG;
 		p->n_lval = n;
-		p->n_rval = FPREG;
+		regno(p) = FPREG;
 	} else {
 		l = p->n_left;
 		l->n_type = p->n_type;
@@ -235,9 +239,7 @@ optimize(struct interpass *ipole)
 		comperr("register error");
 #endif
 
-#ifdef MYOPTIM
-	myoptim((struct interpass *)ipp);
-#endif
+	myoptim(ipole);
 }
 
 /*
@@ -247,9 +249,12 @@ optimize(struct interpass *ipole)
 void
 deljumps(struct interpass *ipole)
 {
-	struct interpass *ip, *n, *ip2;
+	struct interpass *ip, *n, *ip2, *start;
 	int gotone,low, high;
-	int *lblary, sz, o, i;
+	int *lblary, *jmpary, sz, o, i, j, lab1, lab2;
+	int del;
+	extern int negrel[];
+	extern size_t negrelsize;
 
 	low = ipp->ip_lblnum;
 	high = epp->ip_lblnum;
@@ -260,18 +265,64 @@ deljumps(struct interpass *ipole)
 
 	sz = (high-low) * sizeof(int);
 	lblary = tmpalloc(sz);
+	jmpary = tmpalloc(sz);
+
+	/*
+	 * XXX: Find the first two labels. They may not be deleted,
+	 * because the register allocator expects them to be there.
+	 * These will not be coalesced with any other label.
+	 */
+	lab1 = lab2 = -1;
+	start = NULL;
+	DLIST_FOREACH(ip, ipole, qelem) {
+		if (ip->type != IP_DEFLAB)
+			continue;
+		if (lab1 < 0)
+			lab1 = ip->ip_lbl;
+		else if (lab2 < 0) {
+			lab2 = ip->ip_lbl;
+			start = ip;
+		} else	/* lab1 >= 0 && lab2 >= 0, we're done. */
+			break;
+	}
+	if (lab1 < 0 || lab2 < 0)
+		comperr("deljumps");
 
 again:	gotone = 0;
 	memset(lblary, 0, sz);
+	lblary[lab1 - low] = lblary[lab2 - low] = 1;
+	memset(jmpary, 0, sz);
 
 	/* refcount and coalesce all labels */
 	DLIST_FOREACH(ip, ipole, qelem) {
-		if (ip->type == IP_DEFLAB) {
+		if (ip->type == IP_DEFLAB && ip->ip_lbl != lab1 &&
+		    ip->ip_lbl != lab2) {
 			n = DLIST_NEXT(ip, qelem);
+
+			/*
+			 * Find unconditional jumps directly following a
+			 * label. Jumps jumping to themselves are not
+			 * taken into account.
+			 */
+			if (n->type == IP_NODE && n->ip_node->n_op == GOTO) {
+				i = n->ip_node->n_left->n_lval;
+				if (i != ip->ip_lbl)
+					jmpary[ip->ip_lbl - low] = i;
+			}
+
 			while (n->type == IP_DEFLAB) {
-				if (n->type == IP_DEFLAB &&
-				    lblary[n->ip_lbl-low] >= 0)
-					lblary[n->ip_lbl-low] = -ip->ip_lbl;
+				if (n->ip_lbl != lab1 && n->ip_lbl != lab2 &&
+				    lblary[n->ip_lbl-low] >= 0) {
+					/*
+					 * If the label is used, mark the
+					 * label to be coalesced with as
+					 * used, too.
+					 */
+					if (lblary[n->ip_lbl - low] > 0 &&
+					    lblary[ip->ip_lbl - low] == 0)
+						lblary[ip->ip_lbl - low] = 1;
+					lblary[n->ip_lbl - low] = -ip->ip_lbl;
+				}
 				n = DLIST_NEXT(n, qelem);
 			}
 		}
@@ -284,7 +335,15 @@ again:	gotone = 0;
 			i = ip->ip_node->n_right->n_lval;
 		else
 			continue;
-		lblary[i-low] |= 1;
+
+		/*
+		 * Mark destination label i as used, if it is not already.
+		 * If i is to be merged with label j, mark j as used, too.
+		 */
+		if (lblary[i - low] == 0)
+			lblary[i-low] = 1;
+		else if ((j = lblary[i - low]) < 0 && lblary[-j - low] == 0)
+			lblary[-j - low] = 1;
 	}
 
 	/* delete coalesced/unused labels and rename gotos */
@@ -295,22 +354,33 @@ again:	gotone = 0;
 				DLIST_REMOVE(n, qelem);
 				gotone = 1;
 			}
-			continue;
 		}
-		if (n->type != IP_NODE)
+		if (ip->type != IP_NODE)
 			continue;
-		o = n->ip_node->n_op;
+		o = ip->ip_node->n_op;
 		if (o == GOTO)
-			i = n->ip_node->n_left->n_lval;
+			i = ip->ip_node->n_left->n_lval;
 		else if (o == CBRANCH)
-			i = n->ip_node->n_right->n_lval;
+			i = ip->ip_node->n_right->n_lval;
 		else
 			continue;
+
+		/* Simplify (un-)conditional jumps to unconditional jumps. */
+		if (jmpary[i - low] > 0) {
+			gotone = 1;
+			i = jmpary[i - low];
+			if (o == GOTO)
+				ip->ip_node->n_left->n_lval = i;
+			else
+				ip->ip_node->n_right->n_lval = i;
+		}
+
+		/* Fixup for coalesced labels. */
 		if (lblary[i-low] < 0) {
 			if (o == GOTO)
-				n->ip_node->n_left->n_lval = -lblary[i-low];
+				ip->ip_node->n_left->n_lval = -lblary[i-low];
 			else
-				n->ip_node->n_right->n_lval = -lblary[i-low];
+				ip->ip_node->n_right->n_lval = -lblary[i-low];
 		}
 	}
 
@@ -332,11 +402,59 @@ again:	gotone = 0;
 
 		if (ip2->type != IP_DEFLAB)
 			continue;
-		if (ip2->ip_lbl == i) {
+		if (ip2->ip_lbl == i && i != lab1 && i != lab2) {
 			tfree(n->ip_node);
 			DLIST_REMOVE(n, qelem);
 			gotone = 1;
 		}
+	}
+
+	/*
+	 * Transform cbranch cond, 1; goto 2; 1: ... into
+	 * cbranch !cond, 2; 1: ...
+	 */
+	DLIST_FOREACH(ip, ipole, qelem) {
+		n = DLIST_NEXT(ip, qelem);
+		ip2 = DLIST_NEXT(n, qelem);
+		if (ip->type != IP_NODE || ip->ip_node->n_op != CBRANCH)
+			continue;
+		if (n->type != IP_NODE || n->ip_node->n_op != GOTO)
+			continue;
+		if (ip2->type != IP_DEFLAB)
+			continue;
+		i = ip->ip_node->n_right->n_lval;
+		j = n->ip_node->n_left->n_lval;
+		if (j == lab1 || j == lab2)
+			continue;
+		if (i != ip2->ip_lbl || i == lab1 || i == lab2)
+			continue;
+		ip->ip_node->n_right->n_lval = j;
+		i = ip->ip_node->n_left->n_op;
+		if (i < EQ || i - EQ >= negrelsize)
+			comperr("deljumps: unexpected op");
+		ip->ip_node->n_left->n_op = negrel[i - EQ];
+		tfree(n->ip_node);
+		DLIST_REMOVE(n, qelem);
+		gotone = 1;
+	}
+
+	/* Delete everything after a goto up to the next label. */
+	for (ip = start, del = 0; ip != DLIST_ENDMARK(ipole);
+	     ip = DLIST_NEXT(ip, qelem)) {
+loop:
+		if ((n = DLIST_NEXT(ip, qelem)) == DLIST_ENDMARK(ipole))
+			break;
+		if (n->type != IP_NODE) {
+			del = 0;
+			continue;
+		}
+		if (del) {
+			tfree(n->ip_node);
+			DLIST_REMOVE(n, qelem);
+			gotone = 1;
+			goto loop;
+		} else if (n->ip_node->n_op == GOTO)
+			del = 1;
 	}
 
 	if (gotone)
@@ -483,7 +601,8 @@ cfg_build(struct labelinfo *labinfo)
 		pnode->bblock = bb;
 
 		if ((bb->last->type == IP_NODE) && 
-		    (bb->last->ip_node->n_op == GOTO)) {
+		    (bb->last->ip_node->n_op == GOTO) &&
+		    (bb->last->ip_node->n_left->n_op == ICON))  {
 			if (bb->last->ip_node->n_left->n_lval - labinfo->low > 
 			    labinfo->size) {
 				comperr("Label out of range: %d, base %d", 
@@ -774,12 +893,12 @@ placePhiFunctions(struct bblockinfo *bbinfo)
 				SLIST_FOREACH(cnode, &n->bb->parents, cfgelem) 
 					k++;
 				/* Construct phi(...) */
-				p = mklnode(TEMP, i, 0, ntype);
+				p = mktemp(i, ntype);
 				for (l = 0; l < k-1; l++)
 					p = mkbinode(PHI, p,
-					    mklnode(TEMP, i, 0, ntype), ntype);
+					    mktemp(i, ntype), ntype);
 				ip = ipnode(mkbinode(ASSIGN,
-				    mklnode(TEMP, i, 0, ntype), p, ntype));
+				    mktemp(i, ntype), p, ntype));
 				/* Insert phi at top of basic block */
 				DLIST_INSERT_BEFORE(((struct interpass*)&n->bb->first), ip, qelem);
 				n->bb->first = ip;

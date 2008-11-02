@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2004 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -46,7 +46,7 @@
 # if NAMED_BIND
 #  include "sm_resolve.h"
 
-SM_RCSID("$Sendmail: sm_resolve.c,v 8.22 2001/09/01 00:06:02 gshapiro Exp $")
+SM_RCSID("$Sendmail: sm_resolve.c,v 8.36 2008/02/11 23:04:16 ca Exp $")
 
 static struct stot
 {
@@ -69,6 +69,8 @@ static struct stot
 	{	"SRV",		T_SRV		},
 	{	NULL,		0		}
 };
+
+static DNS_REPLY_T *parse_dns_reply __P((unsigned char *, int));
 
 /*
 **  DNS_STRING_TO_TYPE -- convert resource record name into type
@@ -166,23 +168,24 @@ parse_dns_reply(data, len)
 	int len;
 {
 	unsigned char *p;
+	unsigned short ans_cnt, ui;
 	int status;
 	size_t l;
 	char host[MAXHOSTNAMELEN];
 	DNS_REPLY_T *r;
 	RESOURCE_RECORD_T **rr;
 
-	r = (DNS_REPLY_T *) xalloc(sizeof(*r));
-	memset(r, 0, sizeof(*r));
+	r = (DNS_REPLY_T *) sm_malloc(sizeof(*r));
 	if (r == NULL)
 		return NULL;
+	memset(r, 0, sizeof(*r));
 
 	p = data;
 
 	/* doesn't work on Crays? */
-	memcpy(&r->dns_r_h, p, sizeof(HEADER));
-	p += sizeof(HEADER);
-	status = dn_expand(data, data + len, p, host, sizeof host);
+	memcpy(&r->dns_r_h, p, sizeof(r->dns_r_h));
+	p += sizeof(r->dns_r_h);
+	status = dn_expand(data, data + len, p, host, sizeof(host));
 	if (status < 0)
 	{
 		dns_free_data(r);
@@ -194,31 +197,51 @@ parse_dns_reply(data, len)
 		dns_free_data(r);
 		return NULL;
 	}
+
+	ans_cnt = ntohs((unsigned short) r->dns_r_h.ancount);
+
 	p += status;
 	GETSHORT(r->dns_r_q.dns_q_type, p);
 	GETSHORT(r->dns_r_q.dns_q_class, p);
 	rr = &r->dns_r_head;
-	while (p < data + len)
+	ui = 0;
+	while (p < data + len && ui < ans_cnt)
 	{
-		int type, class, ttl, size;
+		int type, class, ttl, size, txtlen;
 
-		status = dn_expand(data, data + len, p, host, sizeof host);
+		status = dn_expand(data, data + len, p, host, sizeof(host));
 		if (status < 0)
 		{
 			dns_free_data(r);
 			return NULL;
 		}
+		++ui;
 		p += status;
 		GETSHORT(type, p);
 		GETSHORT(class, p);
 		GETLONG(ttl, p);
 		GETSHORT(size, p);
-		*rr = (RESOURCE_RECORD_T *) xalloc(sizeof(RESOURCE_RECORD_T));
+		if (p + size > data + len)
+		{
+			/*
+			**  announced size of data exceeds length of
+			**  data paket: someone is cheating.
+			*/
+
+			if (LogLevel > 5)
+				sm_syslog(LOG_WARNING, NOQID,
+					  "ERROR: DNS RDLENGTH=%d > data len=%d",
+					  size, len - (p - data));
+			dns_free_data(r);
+			return NULL;
+		}
+		*rr = (RESOURCE_RECORD_T *) sm_malloc(sizeof(**rr));
 		if (*rr == NULL)
 		{
 			dns_free_data(r);
 			return NULL;
 		}
+		memset(*rr, 0, sizeof(**rr));
 		(*rr)->rr_domain = sm_strdup(host);
 		if ((*rr)->rr_domain == NULL)
 		{
@@ -235,7 +258,7 @@ parse_dns_reply(data, len)
 		  case T_CNAME:
 		  case T_PTR:
 			status = dn_expand(data, data + len, p, host,
-					   sizeof host);
+					   sizeof(host));
 			if (status < 0)
 			{
 				dns_free_data(r);
@@ -252,7 +275,7 @@ parse_dns_reply(data, len)
 		  case T_MX:
 		  case T_AFSDB:
 			status = dn_expand(data, data + len, p + 2, host,
-					   sizeof host);
+					   sizeof(host));
 			if (status < 0)
 			{
 				dns_free_data(r);
@@ -260,7 +283,7 @@ parse_dns_reply(data, len)
 			}
 			l = strlen(host) + 1;
 			(*rr)->rr_u.rr_mx = (MX_RECORD_T *)
-				xalloc(sizeof(MX_RECORD_T) + l);
+				sm_malloc(sizeof(*((*rr)->rr_u.rr_mx)) + l);
 			if ((*rr)->rr_u.rr_mx == NULL)
 			{
 				dns_free_data(r);
@@ -273,7 +296,7 @@ parse_dns_reply(data, len)
 
 		  case T_SRV:
 			status = dn_expand(data, data + len, p + 6, host,
-					   sizeof host);
+					   sizeof(host));
 			if (status < 0)
 			{
 				dns_free_data(r);
@@ -281,7 +304,7 @@ parse_dns_reply(data, len)
 			}
 			l = strlen(host) + 1;
 			(*rr)->rr_u.rr_srv = (SRV_RECORDT_T*)
-				xalloc(sizeof(SRV_RECORDT_T) + l);
+				sm_malloc(sizeof(*((*rr)->rr_u.rr_srv)) + l);
 			if ((*rr)->rr_u.rr_srv == NULL)
 			{
 				dns_free_data(r);
@@ -295,24 +318,46 @@ parse_dns_reply(data, len)
 			break;
 
 		  case T_TXT:
-			(*rr)->rr_u.rr_txt = (char *) xalloc(size + 1);
+
+			/*
+			**  The TXT record contains the length as
+			**  leading byte, hence the value is restricted
+			**  to 255, which is less than the maximum value
+			**  of RDLENGTH (size). Nevertheless, txtlen
+			**  must be less than size because the latter
+			**  specifies the length of the entire TXT
+			**  record.
+			*/
+
+			txtlen = *p;
+			if (txtlen >= size)
+			{
+				if (LogLevel > 5)
+					sm_syslog(LOG_WARNING, NOQID,
+						  "ERROR: DNS TXT record size=%d <= text len=%d",
+						  size, txtlen);
+				dns_free_data(r);
+				return NULL;
+			}
+			(*rr)->rr_u.rr_txt = (char *) sm_malloc(txtlen + 1);
 			if ((*rr)->rr_u.rr_txt == NULL)
 			{
 				dns_free_data(r);
 				return NULL;
 			}
-			(void) strncpy((*rr)->rr_u.rr_txt, (char*) p + 1, *p);
-			(*rr)->rr_u.rr_txt[*p] = 0;
+			(void) sm_strlcpy((*rr)->rr_u.rr_txt, (char*) p + 1,
+					  txtlen + 1);
 			break;
 
 		  default:
-			(*rr)->rr_u.rr_data = (unsigned char*) xalloc(size);
-			if (size != 0 && (*rr)->rr_u.rr_data == NULL)
+			(*rr)->rr_u.rr_data = (unsigned char*) sm_malloc(size);
+			if ((*rr)->rr_u.rr_data == NULL)
 			{
 				dns_free_data(r);
 				return NULL;
 			}
 			(void) memcpy((*rr)->rr_u.rr_data, p, size);
+			break;
 		}
 		p += size;
 		rr = &(*rr)->rr_next;
@@ -370,7 +415,7 @@ dns_lookup_int(domain, rr_class, rr_type, retrans, retry)
 	}
 	errno = 0;
 	SM_SET_H_ERRNO(0);
-	len = res_search(domain, rr_class, rr_type, reply, sizeof reply);
+	len = res_search(domain, rr_class, rr_type, reply, sizeof(reply));
 	if (tTd(8, 16))
 	{
 		_res.options = old_options;

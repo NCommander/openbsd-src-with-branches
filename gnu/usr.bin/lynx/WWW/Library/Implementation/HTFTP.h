@@ -1,42 +1,39 @@
 /*                                                               FTP access module for libwww
                                    FTP ACCESS FUNCTIONS
-                                             
+
    This isn't really  a valid protocol module -- it is lumped together with HTFile . That
    could be changed easily.
-   
-   Author: Tim Berners-Lee. Public Domain. Please mail changes to timbl@info.cern.ch
-   
+
+   Author: Tim Berners-Lee.  Public Domain.  Please mail changes to timbl@info.cern.ch
+
  */
 #ifndef HTFTP_H
 #define HTFTP_H
 
-#ifndef HTUTILS_H
-#include "HTUtils.h"
-#endif /* HTUTILS_H */
-#include "HTAnchor.h"
-#include "HTStream.h"
-#include "HTParse.h"
+#include <HTAnchor.h>
+#include <HTStream.h>
+#include <HTParse.h>
 
-#define FILE_BY_NAME 0 
+#define FILE_BY_NAME 0
 #define FILE_BY_TYPE 1
 #define FILE_BY_SIZE 2
 #define FILE_BY_DATE 3
-extern BOOLEAN HTfileSortMethod;  /* specifies the method of sorting */
+extern int HTfileSortMethod;  /* specifies the method of sorting */
 
 
-/* PUBLIC						 HTMake_VMS_name()
+/* PUBLIC						 HTVMS_name()
 **		CONVERTS WWW name into a VMS name
 ** ON ENTRY:
 **	nn		Node Name (optional)
 **	fn		WWW file name
 **
 ** ON EXIT:
-**	returns 	vms file specification
+**	returns		vms file specification
 **
 ** Bug:	Returns pointer to static -- non-reentrant
 */
-PUBLIC char * HTMake_VMS_name PARAMS((
-	CONST char * nn, 
+PUBLIC char * HTVMS_name PARAMS((
+	CONST char * nn,
 	CONST char * fn));
 
 
@@ -45,9 +42,9 @@ PUBLIC char * HTMake_VMS_name PARAMS((
 Retrieve File from Server
 
   ON EXIT,
-  
+
   returns                 Socket number for file if good.<0 if bad.
-                         
+
  */
 extern int HTFTPLoad PARAMS
 ((
@@ -71,7 +68,3 @@ Return Host Name
 extern CONST char * HTHostName NOPARAMS;
 
 #endif
-
-/*
-
-   end  */

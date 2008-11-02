@@ -1,8 +1,9 @@
+/*	$OpenBSD: mopa.out.c,v 1.7 2006/04/17 16:23:01 deraadt Exp $ */
 
 /* mopa.out - Convert a Unix format kernel into something that
- * can be transfered via MOP.
+ * can be transferred via MOP.
  *
- * This code was written while refering to the NetBSD/vax boot
+ * This code was written while referring to the NetBSD/vax boot
  * loader. Therefore anything that can be booted by the Vax
  * should be convertable with this program.
  *
@@ -46,8 +47,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$Id: mopa.out.c,v 1.5 1996/08/16 22:44:58 moj Exp $";
+#ifndef lint
+static const char rcsid[] = "$OpenBSD: mopa.out.c,v 1.7 2006/04/17 16:23:01 deraadt Exp $";
 #endif
 
 #include "os.h"
@@ -100,10 +101,10 @@ main (int argc, char **argv)
 		    &dl.aout,
 		    &dl.a_text,&dl.a_text_fill,
 		    &dl.a_data,&dl.a_data_fill,
-		    &dl.a_bss ,&dl.a_bss_fill );
+		    &dl.a_bss ,&dl.a_bss_fill, 0);
 
 	if (dl.aout == -1) {
-		fprintf(stderr,"s%: not an a.out file\n",argv[1]);
+		fprintf(stderr,"%s: not an a.out file\n",argv[1]);
 		return (3);
         }
 
@@ -151,4 +152,5 @@ main (int argc, char **argv)
 	}
 	
 	fclose (out);
+	exit(0);
 }

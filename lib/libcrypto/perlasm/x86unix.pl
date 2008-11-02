@@ -15,6 +15,12 @@ sub main'asm_get_output { return(@out); }
 sub main'get_labels { return(@labels); }
 sub main'external_label { push(@labels,@_); }
 
+if ($main'openbsd)
+	{
+	$com_start='/*';
+	$com_end='*/';
+	}
+
 if ($main'cpp)
 	{
 	$align="ALIGN";
@@ -173,7 +179,9 @@ sub main'not	{ &out1("notl",@_); }
 sub main'call	{ &out1("call",($_[0]=~/^\.L/?'':$under).$_[0]); }
 sub main'ret	{ &out0("ret"); }
 sub main'nop	{ &out0("nop"); }
+sub main'test   { &out2("testl",@_); }
 sub main'movz	{ &out2("movzbl",@_); }
+sub main'neg    { &out1("negl",@_); }
 
 # The bswapl instruction is new for the 486. Emulate if i386.
 sub main'bswap
@@ -277,6 +285,9 @@ sub main'file
 	{
 	local($file)=@_;
 
+	if ($main'openbsd)
+		{ push(@out,"#include <machine/asm.h>\n"); return; }
+
 	local($tmp)=<<"EOF";
 	.file	"$file.s"
 	.version	"01.01"
@@ -292,6 +303,9 @@ sub main'function_begin
 	&main'external_label($func);
 	$func=$under.$func;
 
+	if ($main'openbsd)
+		{ push (@out, "\nENTRY($func)\n"); goto skip; }
+
 	local($tmp)=<<"EOF";
 .text
 	.align $align
@@ -304,6 +318,7 @@ EOF
 		{ $tmp=push(@out,"\t.def\t$func;\t.scl\t2;\t.type\t32;\t.endef\n"); }
 	else	{ $tmp=push(@out,"\t.type\t$func,\@function\n"); }
 	push(@out,"$func:\n");
+skip:
 	$tmp=<<"EOF";
 	pushl	%ebp
 	pushl	%ebx
@@ -322,6 +337,9 @@ sub main'function_begin_B
 	&main'external_label($func);
 	$func=$under.$func;
 
+	if ($main'openbsd)
+		{ push(@out, "\nENTRY($func)\n"); goto skip; }
+
 	local($tmp)=<<"EOF";
 .text
 	.align $align
@@ -334,6 +352,7 @@ EOF
 		{ $tmp=push(@out,"\t.def\t$func;\t.scl\t2;\t.type\t32;\t.endef\n"); }
 	else	{ push(@out,"\t.type	$func,\@function\n"); }
 	push(@out,"$func:\n");
+skip:
 	$stack=4;
 	}
 
@@ -430,7 +449,8 @@ sub main'swtmp
 
 sub main'comment
 	{
-	if ($main'elf)	# GNU and SVR4 as'es use different comment delimiters,
+	if (!$main'openbsd && $main'elf)
+			# GNU and SVR4 as'es use different comment delimiters,
 		{	# so we just skip comments...
 		push(@out,"\n");
 		return;
@@ -443,6 +463,12 @@ sub main'comment
 			{ push(@out,"\t$com_start $_ $com_end\n"); }
 		}
 	}
+
+sub main'public_label
+        {
+        $label{$_[0]}="${under}${_[0]}" if (!defined($label{$_[0]}));
+        push(@out,".globl\t$label{$_[0]}\n");
+        }
 
 sub main'label
 	{
@@ -461,7 +487,10 @@ sub main'set_label
 		$label{$_[0]}=".${label}${_[0]}";
 		$label++;
 		}
-	push(@out,".align $align\n") if ($_[1] != 0);
+	if ($main'openbsd)
+		{ push(@out,"_ALIGN_TEXT\n") if ($_[1] != 0); }
+	else
+		{ push(@out,".align $align\n") if ($_[1] != 0); }
 	push(@out,"$label{$_[0]}:\n");
 	}
 
@@ -477,7 +506,7 @@ sub main'file_end
 
 sub main'data_word
 	{
-	push(@out,"\t.long $_[0]\n");
+	push(@out,"\t.long\t".join(',',@_)."\n");
 	}
 
 # debug output functions: puts, putx, printf
@@ -569,6 +598,16 @@ sub main'picmeup
 #endif
 ___
 		push(@out,$tmp);
+		}
+	elsif ($main'openbsd)
+		{
+		push(@out, "#ifdef PIC\n");
+		push(@out, "\tPIC_PROLOGUE\n");
+		&main'mov($dst,"PIC_GOT($sym)");
+		push(@out, "\tPIC_EPILOGUE\n");
+		push(@out, "#else\n");
+		&main'lea($dst,&main'DWP($sym));
+		push(@out, "#endif\n");
 		}
 	elsif ($main'pic && ($main'elf || $main'aout))
 		{

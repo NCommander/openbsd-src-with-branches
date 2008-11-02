@@ -49,7 +49,7 @@ proc libstdc++-v3-init { args } {
     global original_ld_library_path
     global tool_root_dir
 
-    set blddir [lookfor_file [get_multilibs] libstdc++-v3]
+    set blddir [lookfor_file [get_multilibs] libstdc++]
 
     # By default, we assume we want to run program images.
     global dg-do-what-default
@@ -86,7 +86,7 @@ proc libstdc++-v3-init { args } {
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     set ld_library_path ""
     append ld_library_path ":${gccdir}"
-    set compiler ${gccdir}/g++
+    set compiler g++
     if { [is_remote host] == 0 && [which $compiler] != 0 } {
       foreach i "[exec $compiler --print-multi-lib]" {
 	set mldir ""

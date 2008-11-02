@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: n_cabs.S,v 1.1 1995/10/10 23:40:26 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,6 +31,8 @@
  *	@(#)cabs.s	8.1 (Berkeley) 6/4/93
  */
 
+#include <machine/asm.h>
+
 /*
  * double precision complex absolute value
  * CABS by W. Kahan, 9/7/80.
@@ -43,24 +42,16 @@
  * output is in r0:r1 (error less than 0.86 ulps)
  */
 
-	.text
-	.align	1
-	.globl  _cabs
-	.globl  _hypot
-	.globl	_z_abs
-	.globl	libm$cdabs_r6
-	.globl	libm$dsqrt_r5
-
 /*	entry for c functions cabs and hypot */
-_cabs:
-_hypot:
-	.word	0x807c		# save r2-r6, enable floating overflow
+	.text
+	_ALIGN_TEXT
+ALTENTRY(hypot)
+ENTRY(cabs, 0x8000|R2|R3|R4|R5|R6)	# enable floating overflow
 	movq	4(ap),r0	# r0:1 = x
 	movq	12(ap),r2	# r2:3 = y
 	jmp	cabs2
 /*	entry for Fortran use, call by:   d = abs(z) */
-_z_abs:
-	.word	0x807c		# save r2-r6, enable floating overflow
+ENTRY(z_abs, 0x8000|R2|R3|R4|R5|R6)	# enable floating overflow
 	movl	4(ap),r2	# indirect addressing is necessary here
 	movq	(r2)+,r0	# r0:1 = x
 	movq	(r2),r2		# r2:3 = y
@@ -84,7 +75,8 @@ cont:
 return:
 	ret
 
-libm$cdabs_r6:			# ENTRY POINT for cdsqrt
+#if 0	/* apparently not used */
+_ALTENTRY(__libm_cdabs_r6)	# ENTRY POINT for cdsqrt
 				# calculates a scaled (factor in r6)
 				# complex absolute value
 
@@ -103,6 +95,7 @@ cdreserved:
 	movq	r0,(r4)+	# copy u and v as is and return
 	movq	r2,(r4)		# (again addressing is indirect)
 	ret
+#endif
 
 regs_set:
 	bicw2	$0x8000,r0	# r0:r1 = dabs(x)
@@ -128,6 +121,6 @@ ordered:
 	addl2	r5,r4
 	cvtld	r4,r2
 	addd2	r2,r0		# r0:1 = scaled x^2 + y^2
-	jmp	libm$dsqrt_r5	# r0:1 = dsqrt(x^2+y^2)/2^r6
+	jmp	__libm_dsqrt_r5	# r0:1 = dsqrt(x^2+y^2)/2^r6
 retsb:
 	rsb			# error < 0.86 ulp

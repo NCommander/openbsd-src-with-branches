@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fabs.c,v 1.3 2007/03/02 06:11:54 miod Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -16,11 +16,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#if !defined(__SH4__) || defined(__SH4_NOFPU__)
+#include <sys/types.h>
+#include <machine/ieee.h>
+#endif /* !defined(__SH4__) || defined(__SH4_NOFPU__) */
+
 #include <math.h>
 
 double
-fabs(double x)
+fabs(double d)
 {
-	__asm__ __volatile__("fabs %0" : "=f"(x));
-	return (x);
+#if defined(__SH4__) && !defined(__SH4_NOFPU__)
+	__asm__ __volatile__("fabs %0" : "=f"(d));
+#else
+	struct ieee_double *p = (struct ieee_double *)&d;
+
+	p->dbl_sign = 0;
+#endif
+	return (d);
 }

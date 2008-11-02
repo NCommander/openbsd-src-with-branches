@@ -56,8 +56,8 @@
  * [including the GNU Public Licence.]
  */
 
-#ifndef HEADER_NEW_DES_H
-#define HEADER_NEW_DES_H
+#ifndef HEADER_DES_H
+#define HEADER_DES_H
 
 #ifdef OPENSSL_NO_DES
 #error DES is disabled.
@@ -70,6 +70,8 @@
 # undef OPENSSL_EXTERN
 # define OPENSSL_EXTERN OPENSSL_EXPORT
 #endif
+
+#define des_SPtrans DES_SPtrans
 
 #ifdef  __cplusplus
 extern "C" {

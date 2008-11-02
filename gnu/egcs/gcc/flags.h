@@ -132,10 +132,21 @@ extern unsigned id_clash_len;
 extern int warn_larger_than;
 extern unsigned larger_than_size;
 
+/* Nonzero means warn about any function whose stack usage is larger
+   than N bytes.  The value N is in `stack_larger_than_size'.  */
+ 
+extern int warn_stack_larger_than;
+extern unsigned stack_larger_than_size;
+
 /* Warn if a function returns an aggregate,
    since there are often incompatible calling conventions for doing this.  */
 
 extern int warn_aggregate_return;
+
+/* Nonzero means warn about any automatic declaration whose size is not
+   constant.  */
+
+extern int warn_variable_decl;
 
 /* Nonzero if generating code to do profiling.  */
 
@@ -538,3 +549,12 @@ extern enum graph_dump_types graph_dump_format;
    string identifying the compiler.  */
 
 extern int flag_no_ident;
+
+/* Nonzero means use propolice as a stack protection method */
+
+extern int flag_propolice_protection;
+extern int flag_stack_protection;
+
+/* Warn when not issuing stack smashing protection for some reason */
+
+extern int warn_stack_protector;

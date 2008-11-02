@@ -3,7 +3,7 @@ MAN=	tcpbench.1
 CDIAGFLAGS=     -Wall
 #CDIAGFLAGS+=   -Werror
 CDIAGFLAGS+=    -Wpointer-arith
-CDIAGFLAGS+=    -Wno-uninitialized
+CDIAGFLAGS+=    -Wuninitialized
 CDIAGFLAGS+=    -Wstrict-prototypes
 CDIAGFLAGS+=    -Wmissing-prototypes
 CDIAGFLAGS+=    -Wunused
@@ -21,4 +21,3 @@ LDADD=-lkvm
 #BINMODE=2555
 
 .include <bsd.prog.mk>
-

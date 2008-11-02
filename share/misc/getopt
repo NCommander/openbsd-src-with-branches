@@ -1,38 +1,47 @@
+/*	$OpenBSD: getopt,v 1.7 2002/07/22 20:13:14 pvalchev Exp $	*/
 /*
  * Main/getopt(3) fragment.
  *
  *	from: @(#)getopt	5.3 (Berkeley) 3/28/94
- *	$Id: getopt,v 1.3 1994/03/29 02:05:36 cgd Exp $
  */
 
-#include <sys/types.h>
-
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-void usage __P((void));
+__dead void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	int ch;
+	int bflag, ch;
+	char *file;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	bflag = 0;
+	file = NULL;
+	while ((ch = getopt(argc, argv, "bf:")) != -1)
 		switch (ch) {
-		case '':
+		case 'b':
+			bflag = 1;
 			break;
-		case '?':
+		case 'f':
+			file = optarg;
+			break;
 		default:
 			usage();
+			/* NOTREACHED */
 		}
 	argc -= optind;
 	argv += optind;
+
+	return (0);
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: program [-abc] [-f file]\n");
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s [-b] [-f file]\n", __progname);
 	exit(1);
 }

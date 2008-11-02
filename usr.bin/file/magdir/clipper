@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # clipper:  file(1) magic for Intergraph (formerly Fairchild) Clipper.

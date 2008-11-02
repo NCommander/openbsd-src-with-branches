@@ -23,7 +23,6 @@
 
 #include "less.h"
 #include <signal.h>
-#include <setjmp.h>
 #if HAVE_TIME_H
 #include <time.h>
 #endif
@@ -40,31 +39,10 @@
 #define	time_type	long
 #endif
 
-/*
- * BSD setjmp() saves (and longjmp() restores) the signal mask.
- * This costs a system call or two per setjmp(), so if possible we clear the
- * signal mask with sigsetmask(), and use _setjmp()/_longjmp() instead.
- * On other systems, setjmp() doesn't affect the signal mask and so
- * _setjmp() does not exist; we just use setjmp().
- */
-#if HAVE__SETJMP && HAVE_SIGSETMASK
-#define SET_JUMP	_setjmp
-#define LONG_JUMP	_longjmp
-#else
-#define SET_JUMP	setjmp
-#define LONG_JUMP	longjmp
-#endif
-
-public int reading;
-
-static jmp_buf read_label;
-
 extern int sigs;
 
 /*
  * Like read() system call, but is deliberately interruptible.
- * A call to intread() from a signal handler will interrupt
- * any pending iread().
  */
 	public int
 iread(fd, buf, len)
@@ -90,32 +68,8 @@ iread(fd, buf, len)
 	}
 #endif
 #endif
-	if (SET_JUMP(read_label))
-	{
-		/*
-		 * We jumped here from intread.
-		 */
-		reading = 0;
-#if HAVE_SIGPROCMASK
-		{
-		  sigset_t mask;
-		  sigemptyset(&mask);
-		  sigprocmask(SIG_SETMASK, &mask, NULL);
-		}
-#else
-#if HAVE_SIGSETMASK
-		sigsetmask(0);
-#else
-#ifdef _OSK
-		sigmask(~0);
-#endif
-#endif
-#endif
-		return (READ_INTR);
-	}
 
 	flush();
-	reading = 1;
 #if MSDOS_COMPILER==DJGPPC
 	if (isatty(fd))
 	{
@@ -154,19 +108,9 @@ iread(fd, buf, len)
 		}
 	}
 #endif
-	reading = 0;
 	if (n < 0)
-		return (-1);
+		return (errno == EINTR ? READ_INTR : -1);
 	return (n);
-}
-
-/*
- * Interrupt a pending iread().
- */
-	public void
-intread()
-{
-	LONG_JUMP(read_label, 1);
 }
 
 /*
@@ -199,7 +143,7 @@ strerror(err)
   
 	if (err < sys_nerr)
 		return sys_errlist[err];
-	sprintf(buf, "Error %d", err);
+	snprintf(buf, sizeof(buf), "Error %d", err);
 	return buf;
 #else
 	return ("cannot open");
@@ -216,6 +160,7 @@ errno_message(filename)
 {
 	register char *p;
 	register char *m;
+	size_t len;
 #if HAVE_ERRNO
 #if MUST_DEFINE_ERRNO
 	extern int errno;
@@ -224,8 +169,9 @@ errno_message(filename)
 #else
 	p = "cannot open";
 #endif
-	m = (char *) ecalloc(strlen(filename) + strlen(p) + 3, sizeof(char));
-	sprintf(m, "%s: %s", filename, p);
+	len = strlen(filename) + strlen(p) + 3;
+	m = (char *) ecalloc(len, sizeof(char));
+	snprintf(m, len, "%s: %s", filename, p);
 	return (m);
 }
 

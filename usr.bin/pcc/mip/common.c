@@ -1,4 +1,4 @@
-/*	$Id: common.c,v 1.67 2007/09/09 17:42:33 ragge Exp $	*/
+/*	$OpenBSD: common.c,v 1.8 2007/11/17 12:00:37 ragge Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -75,9 +75,18 @@ int nerrors = 0;  /* number of errors */
 char *ftitle;
 int lineno;
 
+int warniserr = 0;
+
 #ifndef WHERE
 #define	WHERE(ch) fprintf(stderr, "%s, line %d: ", ftitle, lineno);
 #endif
+
+static void
+incerr(void)
+{
+	if (++nerrors > 30)
+		cerror("too many errors");
+}
 
 /*
  * nonfatal error message
@@ -90,13 +99,11 @@ uerror(char *s, ...)
 	va_list ap;
 
 	va_start(ap, s);
-	++nerrors;
 	WHERE('u');
 	vfprintf(stderr, s, ap);
 	fprintf(stderr, "\n");
-	if (nerrors > 30)
-		cerror("too many errors");
 	va_end(ap);
+	incerr();
 }
 
 /*
@@ -136,6 +143,9 @@ werror(char *s, ...)
 	fprintf(stderr, "warning: ");
 	vfprintf(stderr, s, ap);
 	fprintf(stderr, "\n");
+	va_end(ap);
+	if (warniserr)
+		incerr();
 }
 
 #ifndef MKEXT
@@ -189,7 +199,6 @@ tcopy(NODE *p)
 
 	return(q);
 }
-
 
 /*
  * ensure that all nodes have been freed
@@ -316,7 +325,6 @@ struct dopest {
 	{ REG, "REG", LTYPE, },
 	{ OREG, "OREG", LTYPE, },
 	{ TEMP, "TEMP", LTYPE, },
-	{ MOVE, "MOVE", UTYPE, },
 	{ ICON, "ICON", LTYPE, },
 	{ FCON, "FCON", LTYPE, },
 	{ CCODES, "CCODES", LTYPE, },
@@ -327,7 +335,8 @@ struct dopest {
 	{ UFORTCALL, "UFCALL", UTYPE|CALLFLG, },
 	{ COMPL, "~", UTYPE, },
 	{ FORCE, "FORCE", UTYPE, },
-/*	{ INIT, "INIT", UTYPE, }, */
+	{ XARG, "XARG", UTYPE, },
+	{ XASM, "XASM", BITYPE, },
 	{ SCONV, "SCONV", UTYPE, },
 	{ PCONV, "PCONV", UTYPE, },
 	{ PLUS, "+", BITYPE|FLOFLG|SIMPFLG|COMMFLG, },
@@ -460,8 +469,8 @@ struct b {
 	} a2;
 };
 
-#define ALIGNMENT ((int)&((struct b *)0)->a2)
-#define	ROUNDUP(x) ((x) + (sizeof(ALIGNMENT)-1)) & ~(sizeof(ALIGNMENT)-1)
+#define ALIGNMENT ((long)&((struct b *)0)->a2)
+#define	ROUNDUP(x) (((x) + ((ALIGNMENT)-1)) & ~((ALIGNMENT)-1))
 
 static char *allocpole;
 static int allocleft;
@@ -474,7 +483,7 @@ permalloc(int size)
 {
 	void *rv;
 
-//printf("permalloc: allocpole %p allocleft %d size %d ", allocpole, allocleft, size);
+//fprintf(stderr, "permalloc: allocpole %p allocleft %d size %d ", allocpole, allocleft, size);
 	if (size > MEMCHUNKSZ)
 		cerror("permalloc");
 	if (size <= 0)
@@ -489,7 +498,7 @@ permalloc(int size)
 	}
 	size = ROUNDUP(size);
 	rv = &allocpole[MEMCHUNKSZ-allocleft];
-//printf("rv %p\n", rv);
+//fprintf(stderr, "rv %p\n", rv);
 	allocleft -= size;
 	permallocsize += size;
 	return rv;
@@ -513,24 +522,30 @@ tmpalloc(int size)
 {
 	void *rv;
 
-	if (size > MEMCHUNKSZ) {
-		return malloc(size);
-	//	cerror("tmpalloc %d", size);
+	if (size > MEMCHUNKSZ/2) {
+		size += ROUNDUP(sizeof(char *));
+		if ((rv = malloc(size)) == NULL)
+			cerror("tmpalloc: out of memory");
+		/* link in before current chunk XXX */
+		*(char **)rv = *(char **)tmppole;
+		*(char **)tmppole = rv;
+		tmpallocsize += size;
+		return (char *)rv + ROUNDUP(sizeof(char *));
 	}
 	if (size <= 0)
 		cerror("tmpalloc2");
-//printf("tmpalloc: tmppole %p tmpleft %d size %d ", tmppole, tmpleft, size);
+//fprintf(stderr, "tmpalloc: tmppole %p tmpleft %d size %d ", tmppole, tmpleft, size);
 	size = ROUNDUP(size);
 	if (tmpleft < size) {
 		if ((tmppole = malloc(MEMCHUNKSZ)) == NULL)
 			cerror("tmpalloc: out of memory");
 //fprintf(stderr, "allocating tmp\n");
-		tmpleft = MEMCHUNKSZ - (ROUNDUP(sizeof(char *)));
+		tmpleft = MEMCHUNKSZ - ROUNDUP(sizeof(char *));
 		*(char **)tmppole = tmplink;
 		tmplink = tmppole;
 	}
 	rv = TMPOLE;
-//printf("rv %p\n", rv);
+//fprintf(stderr,"rv %p\n", rv);
 	tmpleft -= size;
 	tmpallocsize += size;
 	return rv;
@@ -594,7 +609,7 @@ tmpfree()
 	if (f == NULL)
 		return;
 	if (*(char **)f == NULL) {
-		tmpleft = MEMCHUNKSZ - (ROUNDUP(sizeof(char *)));
+		tmpleft = MEMCHUNKSZ - ROUNDUP(sizeof(char *));
 		return;
 	}
 	while (f != NULL) {

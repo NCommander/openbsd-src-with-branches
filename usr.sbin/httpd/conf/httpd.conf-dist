@@ -167,12 +167,28 @@ MaxClients 150
 MaxRequestsPerChild 0
 
 #
+# MaxFOOPerChild: these directives set the current and hard rlimits for
+# the child processes. Attempts to exceed them will cause the the OS to
+# take appropriate action. See the setrlimit(2) and signal(3).
+#
+MaxCPUPerChild 0
+MaxDATAPerChild 0
+MaxNOFILEPerChild 0
+MaxRSSPerChild 0
+MaxSTACKPerChild 0
+
+#
 # Listen: Allows you to bind Apache to specific IP addresses and/or
 # ports, instead of the default. See also the <VirtualHost>
 # directive.
 #
 #Listen 3000
 #Listen 12.34.56.78:80
+
+# Listen can take two arguments.
+# (this is an extension for supporting IPv6 addresses)
+#Listen :: 80
+#Listen 0.0.0.0 80
 
 #
 # BindAddress: You can support virtual hosts with this option. This directive
@@ -556,19 +572,6 @@ ServerSignature On
         Allow from all
     </Directory>
 
-    # This Alias will project the on-line documentation tree under /manual/
-    # even if you change the DocumentRoot. Comment it if you don't want to 
-    # provide access to the on-line documentation.
-    #
-    Alias /manual/ "@@ServerRoot@@/htdocs/manual/"
-
-    <Directory "@@ServerRoot@@/htdocs/manual">
-        Options Indexes FollowSymlinks MultiViews
-        AllowOverride None
-        Order allow,deny
-        Allow from all
-    </Directory>
-
     #
     # ScriptAlias: This controls which directories contain server scripts.
     # ScriptAliases are essentially the same as Aliases, except that
@@ -934,7 +937,7 @@ ServerSignature On
 #
 # Use name-based virtual hosting.
 #
-#NameVirtualHost *:80
+#NameVirtualHost 0.0.0.0:80
 
 #
 # VirtualHost example:
@@ -942,7 +945,7 @@ ServerSignature On
 # The first VirtualHost section is used for requests without a known
 # server name.
 #
-#<VirtualHost *:80>
+#<VirtualHost 0.0.0.0:80>
 #    ServerAdmin webmaster@dummy-host.example.com
 #    DocumentRoot /www/docs/dummy-host.example.com
 #    ServerName dummy-host.example.com
@@ -976,7 +979,6 @@ AddType application/x-pkcs7-crl    .crl
 #   terminal dialog) has to provide the pass phrase on stdout.
 SSLPassPhraseDialog  builtin
 
-#   Inter-Process Session Cache:
 #   Configure the SSL Session Cache: First the mechanism 
 #   to use and second the expiring timeout (in seconds).
 #SSLSessionCache        none
@@ -1146,7 +1148,7 @@ SSLCertificateKeyFile @@ServerRoot@@/conf/ssl.key/server.key
 #     This enables optimized SSL connection renegotiation handling when SSL
 #     directives are used in per-directory context. 
 #SSLOptions +FakeBasicAuth +ExportCertData +CompatEnvVars +StrictRequire
-<Files ~ "\.(cgi|shtml|phtml|php3?)$">
+<Files ~ "\.(cgi|shtml|phtml|php3|php?)$">
     SSLOptions +StdEnvVars
 </Files>
 <Directory "@@ServerRoot@@/cgi-bin">

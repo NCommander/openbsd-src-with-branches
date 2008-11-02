@@ -1,22 +1,45 @@
+/*	$OpenBSD: fsm.h,v 1.4 2002/02/16 21:28:07 millert Exp $	*/
+
 /*
  * fsm.h - {Link, IP} Control Protocol Finite State Machine definitions.
  *
- * Copyright (c) 1989 Carnegie Mellon University.
- * All rights reserved.
+ * Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.
  *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * advertising materials, and other materials related to such
- * distribution and use acknowledge that the software was developed
- * by Carnegie Mellon University.  The name of the
- * University may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * $Id: fsm.h,v 1.5 1995/07/04 23:47:40 paulus Exp $
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The name "Carnegie Mellon University" must not be used to
+ *    endorse or promote products derived from this software without
+ *    prior written permission. For permission or any legal
+ *    details, please contact
+ *      Office of Technology Transfer
+ *      Carnegie Mellon University
+ *      5000 Forbes Avenue
+ *      Pittsburgh, PA  15213-3890
+ *      (412) 268-4387, fax: (412) 268-7395
+ *      tech-transfer@andrew.cmu.edu
+ *
+ * 4. Redistributions of any form whatsoever must retain the following
+ *    acknowledgment:
+ *    "This product includes software developed by Computing Services
+ *     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+ *
+ * CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+ * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+ * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 /*
@@ -38,27 +61,8 @@
 
 
 /*
- * Each FSM is described by a fsm_callbacks and a fsm structure.
+ * Each FSM is described by an fsm structure and fsm callbacks.
  */
-typedef struct fsm_callbacks {
-    void (*resetci)();		/* Reset our Configuration Information */
-    int  (*cilen)();		/* Length of our Configuration Information */
-    void (*addci)();		/* Add our Configuration Information */
-    int  (*ackci)();		/* ACK our Configuration Information */
-    int  (*nakci)();		/* NAK our Configuration Information */
-    int  (*rejci)();		/* Reject our Configuration Information */
-    int  (*reqci)();		/* Request peer's Configuration Information */
-    void (*up)();		/* Called when fsm reaches OPENED state */
-    void (*down)();		/* Called when fsm leaves OPENED state */
-    void (*starting)();		/* Called when we want the lower layer */
-    void (*finished)();		/* Called when we don't want the lower layer */
-    void (*protreject)();	/* Called when Protocol-Reject received */
-    void (*retransmit)();	/* Retransmission is necessary */
-    int  (*extcode)();		/* Called when unknown code received */
-    char *proto_name;		/* String name for protocol (for messages) */
-} fsm_callbacks;
-
-
 typedef struct fsm {
     int unit;			/* Interface unit number */
     int protocol;		/* Data Link Layer Protocol field value */
@@ -73,8 +77,43 @@ typedef struct fsm {
     int maxtermtransmits;	/* Maximum Terminate-Request transmissions */
     int nakloops;		/* Number of nak loops since last ack */
     int maxnakloops;		/* Maximum number of nak loops tolerated */
-    fsm_callbacks *callbacks;	/* Callback routines */
+    struct fsm_callbacks *callbacks;	/* Callback routines */
+    char *term_reason;		/* Reason for closing protocol */
+    int term_reason_len;	/* Length of term_reason */
 } fsm;
+
+
+typedef struct fsm_callbacks {
+    void (*resetci)		/* Reset our Configuration Information */
+(fsm *);
+    int  (*cilen)		/* Length of our Configuration Information */
+(fsm *);
+    void (*addci) 		/* Add our Configuration Information */
+(fsm *, u_char *, int *);
+    int  (*ackci)		/* ACK our Configuration Information */
+(fsm *, u_char *, int);
+    int  (*nakci)		/* NAK our Configuration Information */
+(fsm *, u_char *, int);
+    int  (*rejci)		/* Reject our Configuration Information */
+(fsm *, u_char *, int);
+    int  (*reqci)		/* Request peer's Configuration Information */
+(fsm *, u_char *, int *, int);
+    void (*up)			/* Called when fsm reaches OPENED state */
+(fsm *);
+    void (*down)		/* Called when fsm leaves OPENED state */
+(fsm *);
+    void (*starting)		/* Called when we want the lower layer */
+(fsm *);
+    void (*finished)		/* Called when we don't want the lower layer */
+(fsm *);
+    void (*protreject)		/* Called when Protocol-Reject received */
+(int);
+    void (*retransmit)		/* Retransmission is necessary */
+(fsm *);
+    int  (*extcode)		/* Called when unknown code received */
+(fsm *, int, int, u_char *, int);
+    char *proto_name;		/* String name for protocol (for messages) */
+} fsm_callbacks;
 
 
 /*
@@ -112,14 +151,14 @@ typedef struct fsm {
 /*
  * Prototypes
  */
-void fsm_init __P((fsm *));
-void fsm_lowerup __P((fsm *));
-void fsm_lowerdown __P((fsm *));
-void fsm_open __P((fsm *));
-void fsm_close __P((fsm *));
-void fsm_input __P((fsm *, u_char *, int));
-void fsm_protreject __P((fsm *));
-void fsm_sdata __P((fsm *, int, int, u_char *, int));
+void fsm_init(fsm *);
+void fsm_lowerup(fsm *);
+void fsm_lowerdown(fsm *);
+void fsm_open(fsm *);
+void fsm_close(fsm *, char *);
+void fsm_input(fsm *, u_char *, int);
+void fsm_protreject(fsm *);
+void fsm_sdata(fsm *, int, int, u_char *, int);
 
 
 /*

@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,10 +12,7 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/*
- * @(#)hppa.h: $Revision: 2.7.88.1 $ $Date: 93/12/07 15:06:26 $
- * $Locker:  $
- */
+/* @(#)hppa.h: Revision: 2.7.88.1 Date: 93/12/07 15:06:26 */
 
 /* amount is assumed to be a constant between 0 and 32 (non-inclusive) */
 #define Shiftdouble(left,right,amount,dest)			\
@@ -26,7 +24,7 @@
     /* unsigned int left, right;  int amount, dest; */		\
     if (amount == 0) dest = right;				\
     else dest = ((((unsigned) left)&0x7fffffff) << (32-(amount))) |	\
-          ((unsigned) right >> (amount))
+	((unsigned) right >> (amount))
 
 /* amount must be between 0 and 32 (non-inclusive) */
 #define Variable_shift_double(left,right,amount,dest)		\

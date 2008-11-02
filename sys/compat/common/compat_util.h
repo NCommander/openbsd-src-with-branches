@@ -1,3 +1,4 @@
+/*	$OpenBSD: compat_util.h,v 1.6 2001/11/06 19:53:17 miod Exp $	*/
 /*	$NetBSD: compat_util.h,v 1.1 1995/06/24 20:16:05 christos Exp $	*/
 
 /*
@@ -32,35 +33,26 @@
 #ifndef	_COMPAT_UTIL_H_
 #define	_COMPAT_UTIL_H_
 
-#include <machine/vmparam.h>
+#include <uvm/uvm_extern.h>
 #include <sys/exec.h>
-#include <sys/cdefs.h>
-#include <sys/proc.h>
 
-static __inline caddr_t	stackgap_init __P((struct emul *));
-static __inline void *stackgap_alloc __P((caddr_t *, size_t));
+struct emul;
+/* struct proc; */
 
-static __inline caddr_t
-stackgap_init(e)
-	struct emul *e;
-{
-#define szsigcode ((caddr_t)(e->e_esigcode - e->e_sigcode))
-	return STACKGAPBASE;
-}
+caddr_t stackgap_init(struct emul *);
+void    *stackgap_alloc(caddr_t *, size_t);
 
+struct emul_flags_xtab {
+        unsigned long omask;
+        unsigned long oval;
+        unsigned long nval;
+};
 
-static __inline void *
-stackgap_alloc(sgp, sz)
-	caddr_t	*sgp;
-	size_t   sz;
-{
-	void	*p = (void *) *sgp;
-	*sgp += ALIGN(sz);
-	return p;
-}
+int emul_find(struct proc *, caddr_t *, const char *, char *,
+		   char **, int);
 
-int emul_find __P((struct proc *, caddr_t *, const char *, char *,
-		   char **, int));
+unsigned long emul_flags_translate(const struct emul_flags_xtab *tab,
+		   unsigned long in, unsigned long *leftover);
 
 #define CHECK_ALT_EXIST(p, sgp, root, path) \
     emul_find(p, sgp, root, path, &(path), 0)

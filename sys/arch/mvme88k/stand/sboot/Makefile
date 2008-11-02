@@ -1,10 +1,10 @@
-#	$Id: Makefile,v 1.2 1995/11/07 08:51:06 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2000/03/03 00:54:54 todd Exp $
 
 S=	${.CURDIR}/../../../..
 INCL?= -I${.CURDIR} -I${.CURDIR}/../libsa -I${S}/lib/libsa -I${S}
 COPTS?= ${DEFS} ${INCL}
 
-.include "${S}/arch/${MACHINE}/stand/libsa/Makefile.inc"
+.include "${S}/arch/mvme88k/stand/libsa/Makefile.inc"
 
 SRCS=   sboot.c clock.c etherfun.c if_le.c
 
@@ -15,11 +15,13 @@ MDEC_DIR?=/usr/mdec
 all:	sboot rboot
 
 sboot.tmp:	XSRT0.o oc_cksum.o ${OBJS} ${LIBSA}
-	ld -N -s -static -T 0x4000 XSRT0.o ${OBJS} oc_cksum.o -o sboot.tmp ${LIBSA}
+	ld -N -s -static -T 0x4000 XSRT0.o ${OBJS} oc_cksum.o \
+	    -o sboot.tmp ${LIBSA} `cc -print-libgcc-file-name`
 
 rboot.tmp:	XBUG.o XSRT0.o oc_cksum.o ${OBJS} ${LIBSA}
-	ld -N -s -static -Ttext 0xffa00000 -Tdata 0x4000 XBUG.o XSRT0.o \
-	    ${OBJS} oc_cksum.o -o rboot.tmp ${LIBSA}
+	ld -N -s -static -Ttext 0xffa00000 -Tdata 0x4000 \
+	    XBUG.o XSRT0.o ${OBJS} oc_cksum.o -o rboot.tmp ${LIBSA} \
+	    `cc -print-libgcc-file-name`
 
 srec:	srec.c
 	${CC} ${.CURDIR}/srec.c -o srec
@@ -31,9 +33,9 @@ rboot: rboot.tmp srec
 	dd ibs=32 skip=1 if=rboot.tmp | ${.OBJDIR}/srec 4 0x4000 rboot > rboot
 
 install:
-	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 	    sboot ${DESTDIR}${MDEC_DIR}/sboot
-	install ${COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
 	    rboot ${DESTDIR}${MDEC_DIR}/rboot
 
 .include <bsd.prog.mk>

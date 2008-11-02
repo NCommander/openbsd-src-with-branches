@@ -1,16 +1,11 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.4 2005/09/19 01:20:58 kurt Exp $
 
-.include <bsd.obj.mk>
+LIB=		bb
+SRCS=		bb.c
+LDADD+=		-Wl,-E
+LDADD+=		-Wl,-rpath,$(CC_OBJDIR)
+LDADD+=		-L$(CC_OBJDIR) -lcc
 
-CC_DIR=${.CURDIR}/../libcc
+regress: all
 
-CC_OBJDIR!=	if [ -d $(CC_DIR)/${__objdir} ]; then \
-			echo "$(CC_DIR)/${__objdir}"; \
-		else \
-			echo "$(CC_DIR)"; \
-		fi
-
-LIB=bb
-SRCS= bb.c
-LDADD=		-Wl,-E -Wl,-rpath,$(CC_OBJDIR) -L$(CC_OBJDIR) -lcc
 .include <bsd.lib.mk>
