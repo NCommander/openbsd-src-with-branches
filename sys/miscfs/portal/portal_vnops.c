@@ -1,4 +1,4 @@
-/*	$OpenBSD: portal_vnops.c,v 1.26 2008/04/24 17:39:45 thib Exp $	*/
+/*	$OpenBSD: portal_vnops.c,v 1.27 2008/05/08 17:45:45 thib Exp $	*/
 /*	$NetBSD: portal_vnops.c,v 1.17 1996/02/13 13:12:57 mycroft Exp $	*/
 
 /*
@@ -418,6 +418,10 @@ portal_open(void *v)
 	 * than a single mbuf in it.  What to do?
 	 */
 	cmsg = mtod(cm, struct cmsghdr *);
+	if (cmsg->cmsg_len < CMSG_LEN(0)) {
+		error = EMSGSIZE;
+		goto bad;
+	}
 	newfds = (cmsg->cmsg_len - sizeof(*cmsg)) / sizeof (int);
 	if (newfds == 0) {
 		error = ECONNREFUSED;
@@ -429,7 +433,7 @@ portal_open(void *v)
 	 * integer file descriptors.  The fds were allocated by the action
 	 * of receiving the control message.
 	 */
-	ip = (int *)(cmsg + 1);
+	ip = (int *)CMSG_DATA(cmsg);
 	fd = *ip++;
 	if (newfds > 1) {
 		/*
