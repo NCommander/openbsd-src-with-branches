@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm_i2c.c,v 1.10 2006/01/26 22:07:14 kettenis Exp $	*/
+/*	$OpenBSD: lm78_i2c.c,v 1.1 2006/01/28 11:18:41 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -49,6 +49,7 @@ lm_i2c_match(struct device *parent, void *match, void *aux)
 	struct i2c_attach_args *ia = aux;
 
 	if (strcmp(ia->ia_name, "as99127f") == 0 ||
+	    strcmp(ia->ia_name, "w83627dhg") == 0 ||
 	    strcmp(ia->ia_name, "w83627hf") == 0 ||
 	    strcmp(ia->ia_name, "w83781d") == 0 ||
 	    strcmp(ia->ia_name, "w83782d") == 0 ||
