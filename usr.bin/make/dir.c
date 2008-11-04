@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: dir.c,v 1.53 2007/09/17 09:28:36 espie Exp $ */
+/*	$OpenBSD$ */
 /*	$NetBSD: dir.c,v 1.14 1997/03/29 16:51:26 christos Exp $	*/
 
 /*
@@ -345,6 +345,12 @@ create_PathEntry(const char *name, const char *ename)
 	}
 	p->refCount++;
 	return p;
+}
+
+char *
+PathEntry_name(struct PathEntry *p)
+{
+	return p->name;
 }
 
 /* Side Effects: cache the current directory */

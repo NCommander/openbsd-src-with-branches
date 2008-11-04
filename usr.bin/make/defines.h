@@ -91,6 +91,7 @@ extern int debug;
 #define DEBUG_LOUD	0x0800
 #define DEBUG_JOBBANNER	0x1000
 #define DEBUG_PARALLEL	0x2000
+#define DEBUG_NAME_MATCHING	0x4000
 
 #define CONCAT(a,b)	a##b
 

@@ -108,19 +108,6 @@ Punt(char *fmt, ...)
 	va_end(ap);
 	(void)fprintf(stderr, "\n");
 
-	DieHorribly();
-}
-
-/*-
- * DieHorribly --
- *	Exit without giving a message.
- *
- * Side Effects:
- *	A big one...
- */
-void
-DieHorribly(void)
-{
 	Job_AbortAll();
 	if (DEBUG(GRAPH2))
 		Targ_PrintGraph(2);

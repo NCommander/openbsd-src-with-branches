@@ -2,7 +2,7 @@
 #define DIR_H
 
 /*	$OpenPackages$ */
-/*	$OpenBSD: dir.h,v 1.22 2007/09/17 09:28:36 espie Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: dir.h,v 1.4 1996/11/06 17:59:05 christos Exp $ */
 
 /*
@@ -152,4 +152,5 @@ extern struct PathEntry *dot;
 /* Handles wildcard expansion on a given directory. */
 extern  void Dir_MatchFilesi(const char *, const char *, struct PathEntry *,
     Lst);
+extern char *PathEntry_name(struct PathEntry *);
 #endif /* DIR_H */
