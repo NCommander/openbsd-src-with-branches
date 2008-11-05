@@ -118,7 +118,10 @@ SLIST_HEAD(klist, knote);
 
 #ifdef _KERNEL
 
-#define KNOTE(list, hint)	if ((list) != NULL) knote(list, hint)
+#define KNOTE(list, hint)	do { \
+					if ((list) != NULL) \
+						knote(list, hint); \
+				} while (0)
 
 /*
  * Flag indicating hint is a signal.  Used by EVFILT_SIGNAL, and also
