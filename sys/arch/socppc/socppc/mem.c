@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mem.c,v 1.1 2008/05/10 12:02:21 kettenis Exp $	*/
 /*	$NetBSD: mem.c,v 1.1 1996/09/30 16:34:50 ws Exp $ */
 
 /*
@@ -89,7 +89,7 @@ mmclose(dev_t dev, int flag, int mode, struct proc *p)
 {
 #ifdef xAPERTURE
 	if (minor(dev) == 4)
-		ap_open_count--;
+		ap_open_count = 0;
 #endif
 	return 0;
 }

@@ -1,4 +1,4 @@
-/* $OpenBSD: mem.c,v 1.21 2006/04/13 14:41:08 brad Exp $ */
+/* $OpenBSD: mem.c,v 1.22 2007/09/22 16:21:32 krw Exp $ */
 /* $NetBSD: mem.c,v 1.26 2000/03/29 03:48:20 simonb Exp $ */
 
 /*
@@ -109,7 +109,7 @@ mmclose(dev, flag, mode, p)
 
 #ifdef APERTURE
 	if (minor(dev) == 4) {
-		ap_open_count--;
+		ap_open_count = 0;
 		ap_open_pid = -1;
 	}
 #endif

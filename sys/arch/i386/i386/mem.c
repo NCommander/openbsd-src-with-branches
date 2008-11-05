@@ -1,5 +1,5 @@
 /*	$NetBSD: mem.c,v 1.31 1996/05/03 19:42:19 christos Exp $	*/
-/*	$OpenBSD: mem.c,v 1.33 2007/09/01 15:14:44 martin Exp $ */
+/*	$OpenBSD: mem.c,v 1.34 2007/09/07 15:00:19 art Exp $ */
 /*
  * Copyright (c) 1988 University of Utah.
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -108,7 +108,7 @@ mmclose(dev_t dev, int flag, int mode, struct proc *p)
 {
 #ifdef APERTURE
 	if (minor(dev) == 4)
-		ap_open_count--;
+		ap_open_count = 0;
 #endif
 	return (0);
 }
