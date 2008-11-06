@@ -1,4 +1,4 @@
-/*	$OpenBSD: fs.h,v 1.33 2008/01/05 19:49:26 otto Exp $	*/
+/*	$OpenBSD: fs.h,v 1.34 2008/11/02 08:53:06 otto Exp $	*/
 /*	$NetBSD: fs.h,v 1.6 1995/04/12 21:21:02 mycroft Exp $	*/
 
 /*
@@ -580,8 +580,8 @@ struct ocg {
  * to 2^31 pages to prevent overflow of a 32-bit unsigned int.  The buffer
  * cache has its own checks but a little added paranoia never hurts.
  */
-#define FS_KERNMAXFILESIZE(fs)	((u_int64_t)0x80000000 * \
-    MIN(PAGE_SIZE, (fs)->fs_bsize) - 1)
+#define FS_KERNMAXFILESIZE(pgsiz, fs)	((u_int64_t)0x80000000 * \
+    MIN((pgsiz), (fs)->fs_bsize) - 1)
 
 extern const int inside[], around[];
 extern const u_char *fragtbl[];
