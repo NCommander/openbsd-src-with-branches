@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.124 2008/06/11 04:42:09 marco Exp $ */
+/* $OpenBSD: acpi.c,v 1.125 2008/07/02 03:14:54 fgsch Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -1951,6 +1951,23 @@ acpi_foundec(struct aml_node *node, void *arg)
 	aml_freevalue(&res);
 
 	return 0;
+}
+
+int
+acpi_matchhids(struct acpi_attach_args *aa, const char *hids[],
+    const char *driver)
+{
+	int i;
+
+	if (aa->aaa_dev == NULL || aa->aaa_node == NULL)
+		return (0);
+	for (i = 0; hids[i]; i++) {
+		if (!strcmp(aa->aaa_dev, hids[i])) {
+			dnprintf(5, "driver %s matches %s\n", driver, hids[i]);
+			return (1);
+		}
+	}
+	return (0);
 }
 
 int
