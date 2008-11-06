@@ -1,4 +1,4 @@
-/*	$OpenBSD: local_passwd.c,v 1.37 2005/05/01 18:47:06 deraadt Exp $	*/
+/*	$OpenBSD: local_passwd.c,v 1.38 2008/04/27 10:01:53 jsing Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -31,7 +31,7 @@
 
 #ifndef lint
 /*static const char sccsid[] = "from: @(#)local_passwd.c	5.5 (Berkeley) 5/6/91";*/
-static const char rcsid[] = "$OpenBSD: local_passwd.c,v 1.37 2005/05/01 18:47:06 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: local_passwd.c,v 1.38 2008/04/27 10:01:53 jsing Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -57,6 +57,7 @@ extern int pwd_gensalt(char *, int, login_cap_t *, char);
 extern int pwd_check(login_cap_t *, char *);
 extern int pwd_gettries(login_cap_t *);
 
+int local_passwd(char *, int);
 char *getnewpasswd(struct passwd *, login_cap_t *, int);
 void kbintr(int);
 
