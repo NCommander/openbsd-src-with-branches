@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.77 2008/10/30 17:09:13 deraadt Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.79 2008/10/31 17:17:01 deraadt Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -177,7 +177,6 @@ exit1(struct proc *p, int rv, int flags)
 
 	/*
 	 * Close open files and release open-file table.
-	 * This may block!
 	 */
 	fdfree(p);
 
