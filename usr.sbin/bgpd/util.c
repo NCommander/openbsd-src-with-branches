@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.3 2007/05/11 11:27:59 claudio Exp $ */
+/*	$OpenBSD: util.c,v 1.4 2008/03/17 20:40:04 henning Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -143,7 +143,7 @@ aspath_snprint(char *buf, size_t size, void *data, u_int16_t len)
 			UPDATE();
 		}
 	}
-	/* ensure that we have a valid C-string especially for emtpy as path */
+	/* ensure that we have a valid C-string especially for empty as path */
 	if (size > 0)
 		*buf = '\0';
 
