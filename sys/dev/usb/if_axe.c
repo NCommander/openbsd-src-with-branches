@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.88 2008/10/02 20:21:14 brad Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.89 2008/11/02 10:46:10 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Jonathan Gray <jsg@openbsd.org>
@@ -707,6 +707,8 @@ axe_attach(struct device *parent, struct device *self, void *aux)
 /*	ifp->if_snd.ifq_maxlen = IFQ_MAXLEN;*/
 
 	IFQ_SET_READY(&ifp->if_snd);
+
+	ifp->if_capabilities = IFCAP_VLAN_MTU;
 
 	/* Initialize MII/media info. */
 	mii = &sc->axe_mii;
