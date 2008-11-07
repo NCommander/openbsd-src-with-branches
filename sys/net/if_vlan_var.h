@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan_var.h,v 1.17 2006/01/05 14:57:24 norby Exp $	*/
+/*	$OpenBSD: if_vlan_var.h,v 1.18 2006/02/09 00:05:55 reyk Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -77,7 +77,7 @@ struct	ether_vlan_header {
 
 #define	EVL_VLID_MASK	0x0FFF
 #define	EVL_VLANOFTAG(tag) ((tag) & EVL_VLID_MASK)
-#define	EVL_PRIOFTAG(tag) (((tag) >> 13) & 7)
+#define	EVL_PRIOFTAG(tag) (((tag) >> EVL_PRIO_BITS) & 7)
 #define	EVL_ENCAPLEN	4	/* length in octets of encapsulation */
 #define	EVL_PRIO_MAX	7
 #define	EVL_PRIO_BITS	13
