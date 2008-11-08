@@ -218,7 +218,7 @@ do {									\
 		(tp)->t_flags |= TF_DELACK;				\
 		TCP_RESTART_DELACK(tp);					\
 	}								\
-} while (/*CONSTCOND*/0)
+} while (/* CONSTCOND */ 0)
 
 #define	TCP_CLEAR_DELACK(tp)						\
 do {									\
@@ -226,7 +226,7 @@ do {									\
 		(tp)->t_flags &= ~TF_DELACK;				\
 		timeout_del(&(tp)->t_delack_to);			\
 	}								\
-} while (/*CONSTCOND*/0)
+} while (/* CONSTCOND */ 0)
 
 /*
  * Handy way of passing around TCP option info.

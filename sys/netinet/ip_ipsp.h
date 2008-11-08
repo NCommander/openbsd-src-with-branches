@@ -484,19 +484,20 @@ extern struct xformsw xformsw[], *xformswNXFORMSW;
 
 /* Traverse spi chain and get attributes */
 
-#define	SPI_CHAIN_ATTRIB(have, TDB_DIR, TDBP) do {\
-	int s = spltdb(); \
-	struct tdb *tmptdb = (TDBP); \
-	\
-	(have) = 0; \
-	while (tmptdb && tmptdb->tdb_xform) { \
-	        if (tmptdb == NULL || tmptdb->tdb_flags & TDBF_INVALID) \
-			break; \
-		(have) |= TDB_ATTRIB(tmptdb); \
-		tmptdb = tmptdb->TDB_DIR; \
-	} \
-	splx(s); \
-} while (0)
+#define	SPI_CHAIN_ATTRIB(have, TDB_DIR, TDBP)				\
+do {									\
+	int s = spltdb();						\
+	struct tdb *tmptdb = (TDBP);					\
+									\
+	(have) = 0;							\
+	while (tmptdb && tmptdb->tdb_xform) {				\
+	        if (tmptdb == NULL || tmptdb->tdb_flags & TDBF_INVALID)	\
+			break;						\
+		(have) |= TDB_ATTRIB(tmptdb);				\
+		tmptdb = tmptdb->TDB_DIR;				\
+	}								\
+	splx(s);							\
+} while (/* CONSTCOND */ 0)
 
 /* Misc. */
 extern char *inet_ntoa4(struct in_addr);

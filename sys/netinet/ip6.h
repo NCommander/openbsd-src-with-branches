@@ -274,7 +274,7 @@ struct ip6_frag {
  * IP6_EXTHDR_GET0 does the same, except that it aligns the structure at the
  * very top of mbuf.  GET0 is likely to make memory copy than GET.
  */
-#define IP6_EXTHDR_GET(val, typ, m, off, len) \
+#define IP6_EXTHDR_GET(val, typ, m, off, len)				\
 do {									\
 	struct mbuf *t;							\
 	int tmp;							\
@@ -291,9 +291,9 @@ do {									\
 			(m) = NULL;					\
 		}							\
 	}								\
-} while (0)
+} while (/* CONSTCOND */ 0)
 
-#define IP6_EXTHDR_GET0(val, typ, m, off, len) \
+#define IP6_EXTHDR_GET0(val, typ, m, off, len)				\
 do {									\
 	struct mbuf *t;							\
 	if ((off) == 0 && (m)->m_len >= len)				\
@@ -309,6 +309,6 @@ do {									\
 			(m) = NULL;					\
 		}							\
 	}								\
-} while (0)
+} while (/* CONSTCOND */ 0)
 #endif /* _KERNEL */
 #endif /* _NETINET_IP6_H_ */
