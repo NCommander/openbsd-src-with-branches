@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.h,v 1.3 2008/10/26 08:49:43 ratchov Exp $	*/
+/*	$OpenBSD: dev.h,v 1.4 2008/11/07 21:01:15 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -37,6 +37,7 @@ void dev_sync(struct abuf *, struct abuf *);
 void dev_attach(char *,
     struct abuf *, struct aparams *, unsigned,
     struct abuf *, struct aparams *, unsigned);
+void dev_clear(void);
 
 extern struct devops *devops, devops_sun, devops_aucat;
 
