@@ -1,4 +1,4 @@
-/*	$OpenBSD: sndio.c,v 1.2 2008/10/28 23:00:08 jsg Exp $	*/
+/*	$OpenBSD: sndio.c,v 1.3 2008/11/07 21:01:15 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -451,6 +451,8 @@ sio_revents(struct sio_hdl *hdl, struct pollfd *pfd)
 #endif
 	if (hdl->eof)
 		return POLLHUP;
+	if (!hdl->started)
+		return 0;
 	hdl->pollcnt++;
 	revents = hdl->ops->revents(hdl, pfd);
 #ifdef DEBUG
