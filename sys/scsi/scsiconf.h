@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.94 2008/07/22 01:01:31 dlg Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.95 2008/09/12 11:14:04 miod Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -106,6 +106,7 @@ struct devid {
  */
 
 struct buf;
+struct proc;
 struct scsi_xfer;
 struct scsi_link;
 struct scsibus_softc;
