@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.h,v 1.30 2008/08/26 21:52:48 mglocker Exp $ */
+/*	$OpenBSD: uvideo.h,v 1.31 2008/08/27 17:31:48 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -431,6 +431,8 @@ struct uvideo_vs_iface {
 	int			 curalt;
 	uint32_t		 max_packet_size;
 	int			 iface;
+	int			 bulk_endpoint;
+	int			 bulk_running;
 };
 
 struct uvideo_frame_buffer {
