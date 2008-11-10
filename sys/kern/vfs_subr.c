@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.173 2008/07/05 12:48:03 thib Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.174 2008/11/01 20:34:09 deraadt Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -1660,7 +1660,7 @@ vfs_shutdown(void)
 
 /*
  * perform sync() operation and wait for buffers to flush.
- * assumtions: called w/ scheduler disabled and physical io enabled
+ * assumptions: called w/ scheduler disabled and physical io enabled
  * for now called at spl0() XXX
  */
 int
