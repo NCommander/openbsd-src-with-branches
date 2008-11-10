@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm87.c,v 1.18 2007/03/22 16:55:31 deraadt Exp $	*/
+/*	$OpenBSD: lm87.c,v 1.19 2007/06/24 05:34:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -141,7 +141,8 @@ lmenv_attach(struct device *parent, struct device *self, void *aux)
 			printf(", cannot read Channel register\n");
 			return;
 		}
-	}
+	} else
+		channel = 0;
 
 	cmd = LM87_CONFIG1;
 	if (iic_exec(sc->sc_tag, I2C_OP_READ_WITH_STOP,
