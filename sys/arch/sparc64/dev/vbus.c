@@ -1,4 +1,4 @@
-/*	$OpenBSD: vbus.c,v 1.1 2008/03/08 19:18:27 kettenis Exp $	*/
+/*	$OpenBSD: vbus.c,v 1.2 2008/10/12 09:17:22 kettenis Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -40,7 +40,7 @@ void	vbus_attach(struct device *, struct device *, void *);
 int	vbus_print(void *, const char *);
 
 struct cfattach vbus_ca = {
-	sizeof(struct device), vbus_match, vbus_attach
+	sizeof(struct vbus_softc), vbus_match, vbus_attach
 };
 
 struct cfdriver vbus_cd = {
