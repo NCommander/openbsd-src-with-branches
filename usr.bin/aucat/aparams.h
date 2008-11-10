@@ -1,4 +1,4 @@
-/*	$OpenBSD: aparams.h,v 1.2 2008/10/26 08:49:43 ratchov Exp $	*/
+/*	$OpenBSD: aparams.h,v 1.3 2008/11/03 22:25:13 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -68,6 +68,11 @@ struct aparams {
 #define ADATA_UNIT		(1 << ADATA_SHIFT)
 #define ADATA_MAX		(ADATA_UNIT - 1)
 #define ADATA_MUL(x,y)		(((x) * (y)) >> ADATA_SHIFT)
+
+#define MIDI_MAXCTL		127
+#define MIDI_TO_ADATA(m)	(aparams_ctltovol[m])
+
+extern int aparams_ctltovol[128];
 
 void aparams_init(struct aparams *, unsigned, unsigned, unsigned);
 void aparams_print(struct aparams *);
