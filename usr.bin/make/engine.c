@@ -78,7 +78,7 @@ bool
 Job_CheckCommands(GNode *gn)
 {
 	/* Alter our type to tell if errors should be ignored or things
-	 * should not be printed so CompatRunCommand knows what to do.
+	 * should not be printed so setup_and_run_command knows what to do.
 	 */
 	if (Targ_Ignore(gn))
 		gn->type |= OP_IGNORE;
