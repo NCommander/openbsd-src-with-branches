@@ -466,7 +466,7 @@ setup_signal(int sig)
 	}
 }
 
-void
+static void
 setup_all_signals()
 {
 	/*
