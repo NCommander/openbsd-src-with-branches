@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.3 2008/08/14 09:58:55 ratchov Exp $	*/
+/*	$OpenBSD: sock.h,v 1.1 2008/10/26 08:49:44 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -50,6 +50,7 @@ struct sock {
 	unsigned bufsz;			/* total buffer size */
 	unsigned round;			/* block size */
 	unsigned xrun;			/* one of AMSG_IGNORE, ... */
+	unsigned vol;
 };
 
 struct sock *sock_new(struct fileops *, int fd, char *);
