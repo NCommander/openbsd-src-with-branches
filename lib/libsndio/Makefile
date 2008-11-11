@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2008/10/26 13:55:03 ratchov Exp $
+#	$OpenBSD: Makefile,v 1.1 2008/10/27 00:26:33 ratchov Exp $
 
 LIB=	sndio
 MAN=	sio_open.3
@@ -20,6 +20,8 @@ MLINKS = \
 	sio_open.3 sio_pollfd.3 \
 	sio_open.3 sio_revents.3 \
 	sio_open.3 sio_eof.3 \
+	sio_open.3 sio_setvol.3 \
+	sio_open.3 sio_onvol.3 \
 	sio_open.3 sio_initpar.3
 
 includes:
