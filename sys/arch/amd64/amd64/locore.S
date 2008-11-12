@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.28 2008/08/13 16:01:08 weingart Exp $	*/
+/*	$OpenBSD: locore.S,v 1.29 2008/10/24 06:32:17 deraadt Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -637,6 +637,12 @@ longmode_hi:
 
 /*
  * Signal trampoline; copied to top of user stack.
+ *
+ * Note, the "system call" to sigreturn() needs to be an 'int $0x80' one
+ * so that the kernel returns using 'iretq' method.  This way if a process
+ * was interrupted (by tick) as opposed to in the kernel when a signal was
+ * being delivered, the process will be completely restored, including the
+ * userland %rcx register, which the 'sysret' instruction can not restore.
  */
 NENTRY(sigcode)
 	call	*%rax
