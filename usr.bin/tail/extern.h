@@ -40,7 +40,6 @@ enum STYLE { NOTSET = 0, FBYTES, FLINES, RBYTES, RLINES, REVERSE };
 
 void forward(FILE *, enum STYLE, off_t, struct stat *);
 void reverse(FILE *, enum STYLE, off_t, struct stat *);
-void follow(char **, int, enum STYLE, off_t);
 
 int bytes(FILE *, off_t);
 int lines(FILE *, off_t);

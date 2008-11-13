@@ -132,6 +132,10 @@ main(int argc, char *argv[])
 		}
 	argc -= optind;
 	argv += optind;
+
+	if (fflag && argc > 1)
+		errx(1, "-f option only appropriate for a single file");
+
 	/*
 	 * If displaying in reverse, don't permit follow option, and convert
 	 * style values.
@@ -158,33 +162,27 @@ main(int argc, char *argv[])
 			style = RLINES;
 		}
 	}
-	
-	if (*argv) {
-		if (fflag) {
-			follow(argv, argc, style, off);
-		}
-		else {	
-			for (first = 1; (fname = *argv++);) {
-				if ((fp = fopen(fname, "r")) == NULL ||
-				    fstat(fileno(fp), &sb)) {
-					ierr();
-					continue;
-				}
-				if (argc > 1) {
-					(void)printf("%s==> %s <==\n",
-					    first ? "" : "\n", fname);
-					first = 0;
-					(void)fflush(stdout);
-				}
 
-				if (rflag)
-					reverse(fp, style, off, &sb);
-				else
-					forward(fp, style, off, &sb);
-				(void)fclose(fp);
+	if (*argv)
+		for (first = 1; (fname = *argv++);) {
+			if ((fp = fopen(fname, "r")) == NULL ||
+			    fstat(fileno(fp), &sb)) {
+				ierr();
+				continue;
 			}
+			if (argc > 1) {
+				(void)printf("%s==> %s <==\n",
+				    first ? "" : "\n", fname);
+				first = 0;
+				(void)fflush(stdout);
+			}
+
+			if (rflag)
+				reverse(fp, style, off, &sb);
+			else
+				forward(fp, style, off, &sb);
+			(void)fclose(fp);
 		}
-	}
 	else {
 		fname = "stdin";
 		is_stdin = 1;
