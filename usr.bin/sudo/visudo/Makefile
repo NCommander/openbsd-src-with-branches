@@ -1,9 +1,11 @@
-#	$OpenBSD: Makefile,v 1.1 2004/01/15 21:32:03 millert Exp $
+#	$OpenBSD: Makefile,v 1.2 2007/07/26 16:10:16 millert Exp $
 
 .PATH:		${.CURDIR}/..
 
 PROG=	visudo
+SRCS=	pwutil.c visudo.c
 BINDIR=	/usr/sbin
+CPPFLAGS+=	-I..
 
 POD2MAN=/usr/bin/pod2man
 MAN=	visudo.8
