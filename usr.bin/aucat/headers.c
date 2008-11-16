@@ -1,4 +1,4 @@
-/*	$OpenBSD: headers.c,v 1.1 2008/05/23 07:15:46 ratchov Exp $	*/
+/*	$OpenBSD: headers.c,v 1.2 2008/10/26 08:49:44 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -97,11 +97,13 @@ wav_readfmt(int fd, unsigned csize, struct aparams *par)
 	par->msb = 1;
 	par->cmax = cmax;
 	par->rate = rate;
+#ifdef DEBUG
 	if (debug_level > 0) {
 		fprintf(stderr, "wav_readfmt: using ");
 		aparams_print(par);
 		fprintf(stderr, "\n");
 	}
+#endif
 	return 1;
 }
 
