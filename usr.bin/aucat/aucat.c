@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.43 2008/11/17 07:04:13 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.44 2008/11/17 07:36:43 jmc Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -113,7 +113,7 @@ usage(void)
 	fprintf(stderr,
 	    "usage: %s [-lu] [-b nsamples] [-C min:max] [-c min:max] [-e enc] "
 	    "[-f device]\n"
-	    "\t[-h fmt] [-i file] [-m mode] [-o file] [-r rate] [-s file]\n"
+	    "\t[-h fmt] [-i file] [-m mode] [-o file] [-r rate] [-s socket]\n"
 	    "\t[-v volume] [-x policy]\n",
 	    __progname);
 }
