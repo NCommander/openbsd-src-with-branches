@@ -1,4 +1,4 @@
-/*	$OpenBSD: sndio.c,v 1.5 2008/11/09 15:32:50 ratchov Exp $	*/
+/*	$OpenBSD: sndio.c,v 1.6 2008/11/11 19:39:35 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -164,6 +164,8 @@ sio_open(char *str, unsigned mode, int nbio)
 
 	if ((mode & (SIO_PLAY | SIO_REC)) == 0)
 		return NULL;
+	if (str == NULL)
+		str = getenv("AUDIODEVICE");
 	hdl = sio_open_aucat(str, mode, nbio);
 	if (hdl != NULL)
 		return hdl;

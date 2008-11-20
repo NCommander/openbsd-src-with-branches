@@ -1,4 +1,4 @@
-/*	$OpenBSD: sun.c,v 1.5 2008/11/11 19:39:35 ratchov Exp $	*/
+/*	$OpenBSD: sun.c,v 1.6 2008/11/20 08:32:03 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -453,11 +453,8 @@ sio_open_sun(char *path, unsigned mode, int nbio)
 		return NULL;
 	sio_create(&hdl->sa, &sun_ops, mode, nbio);
 
-	if (path == NULL) {
-		path = getenv("AUDIODEVICE");
-		if (path == NULL)
-			path = SIO_SUN_PATH;
-	}
+	if (path == NULL)
+		path = SIO_SUN_PATH;
 	if (mode == (SIO_PLAY | SIO_REC))
 		flags = O_RDWR;
 	else 
