@@ -877,6 +877,8 @@ dumpsys()
 
 }
 
+int imask[IPL_NUM];
+
 /*
  * this is a hack interface to allow zs to work better until
  * a true soft interrupt mechanism is created.
