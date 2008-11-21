@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ray.c,v 1.34 2006/08/18 08:17:07 jsg Exp $	*/
+/*	$OpenBSD: if_ray.c,v 1.35 2008/10/02 20:21:14 brad Exp $	*/
 /*	$NetBSD: if_ray.c,v 1.21 2000/07/05 02:35:54 onoe Exp $	*/
 
 /*
@@ -353,9 +353,11 @@ int ray_user_update_params(struct ray_softc *,
     struct ray_param_req *);
 
 #define	ray_read_region(sc,off,p,c) \
-	bus_space_read_region_1((sc)->sc_memt, (sc)->sc_memh, (off), (p), (c))
+	bus_space_read_region_1((sc)->sc_memt, (sc)->sc_memh, (off),	\
+	    (u_int8_t *)(p), (c))
 #define	ray_write_region(sc,off,p,c) \
-	bus_space_write_region_1((sc)->sc_memt, (sc)->sc_memh, (off), (p), (c))
+	bus_space_write_region_1((sc)->sc_memt, (sc)->sc_memh, (off),	\
+	    (u_int8_t *)(p), (c))
 
 #ifdef RAY_DO_SIGLEV
 void ray_update_siglev(struct ray_softc *, u_int8_t *, u_int8_t);
