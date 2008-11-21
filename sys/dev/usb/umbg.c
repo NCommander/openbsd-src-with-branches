@@ -1,4 +1,4 @@
-/*	$OpenBSD: umbg.c,v 1.6 2007/11/23 16:34:47 mbalmer Exp $ */
+/*	$OpenBSD: umbg.c,v 1.7 2008/09/10 14:01:23 blambert Exp $ */
 
 /*
  * Copyright (c) 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -145,16 +145,16 @@ void umbg_task(void *);
 int umbg_read(struct umbg_softc *, u_int8_t cmd, char *buf, size_t len,
     struct timespec *tstamp);
 
-struct cfdriver umbg_cd = { 
-	NULL, "umbg", DV_DULL 
-}; 
+struct cfdriver umbg_cd = {
+	NULL, "umbg", DV_DULL
+};
 
-const struct cfattach umbg_ca = { 
-	sizeof(struct umbg_softc), 
-	umbg_match, 
-	umbg_attach, 
-	umbg_detach, 
-	umbg_activate, 
+const struct cfattach umbg_ca = {
+	sizeof(struct umbg_softc),
+	umbg_match,
+	umbg_attach,
+	umbg_detach,
+	umbg_activate
 };
 
 int
