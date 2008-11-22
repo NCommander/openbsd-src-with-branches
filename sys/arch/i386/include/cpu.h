@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.104 2008/09/28 20:32:17 brad Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.105 2008/10/15 23:23:47 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -205,6 +205,8 @@ extern struct cpu_info	*cpu_info[MAXCPUS];
 extern void cpu_boot_secondary_processors(void);
 extern void cpu_init_idle_pcbs(void);
 
+void cpu_unidle(struct cpu_info *);
+
 #else /* MULTIPROCESSOR */
 
 #define MAXCPUS			1
@@ -213,6 +215,8 @@ extern void cpu_init_idle_pcbs(void);
 #define	curcpu()		(&cpu_info_primary)
 
 #define CPU_IS_PRIMARY(ci)	1
+
+#define cpu_unidle(ci)
 
 #endif
 
