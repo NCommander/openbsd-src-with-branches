@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.47 2007/05/29 18:18:20 tom Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.48 2007/09/10 18:49:45 miod Exp $	*/
 /*	$NetBSD: pmap.h,v 1.44 2000/04/24 17:18:18 thorpej Exp $	*/
 
 /*
@@ -347,6 +347,7 @@ extern int pmap_pg_g;			/* do we support PG_G? */
  */
 
 #define	pmap_kernel()			(&kernel_pmap_store)
+#define	pmap_wired_count(pmap)		((pmap)->pm_stats.wired_count)
 #define	pmap_resident_count(pmap)	((pmap)->pm_stats.resident_count)
 #define	pmap_update(pm)			/* nada */
 
