@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfxga.c,v 1.15 2007/09/09 01:00:35 fgsch Exp $	*/
+/*	$OpenBSD: cfxga.c,v 1.16 2007/09/11 13:39:33 gilles Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, Matthieu Herrb and Miodrag Vallat
@@ -306,7 +306,7 @@ out:
 	cfxga_remove_function(pf);
 
 	/*
-	 * Be sure to return a value greater than pccom's if we match,
+	 * Be sure to return a value greater than com's if we match,
 	 * otherwise it can win due to the way config(8) will order devices...
 	 */
 	return (id == PRODUCT_S1D13806 ? 10 : 0);
