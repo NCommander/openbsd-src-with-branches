@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.100 2008/09/16 04:20:42 drahn Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.102 2008/11/21 17:35:52 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -1022,11 +1022,17 @@ void
 signotify(struct proc *p)
 {
 	aston(p);
-#ifdef MULTIPROCESSOR
-	if (p->p_cpu != curcpu() && p->p_cpu != NULL)
-		ppc_send_ipi(p->p_cpu, PPC_IPI_NOP);
-#endif
+	cpu_unidle(p->p_cpu);
 }
+
+#ifdef MULTIPROCESSOR
+void
+cpu_unidle(struct cpu_info *ci)
+{
+	if (ci != curcpu())
+		ppc_send_ipi(ci, PPC_IPI_NOP);
+}
+#endif
 
 /*
  * set system type from string
