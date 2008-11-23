@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.45 2008/11/17 09:40:09 jmc Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.46 2008/11/20 10:10:01 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -414,8 +414,8 @@ main(int argc, char **argv)
 	argv += optind;
 
 	if (!devpath) {
-		dipar = ipar;
-		dopar = opar;
+		dopar = ipar;
+		dipar = opar;
 	}
 
 	if (!l_flag && SLIST_EMPTY(&ifiles) &&
