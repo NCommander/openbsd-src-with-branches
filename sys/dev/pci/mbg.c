@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbg.c,v 1.25 2008/09/10 14:01:23 blambert Exp $ */
+/*	$OpenBSD: mbg.c,v 1.26 2008/11/22 15:05:24 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006, 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -168,7 +168,7 @@ int
 mbg_probe(struct device *parent, void *match, void *aux)
 {
 	return pci_matchbyid((struct pci_attach_args *)aux, mbg_devices,
-	    sizeof(mbg_devices) / sizeof(mbg_devices[0]));
+	    nitems(mbg_devices));
 }
 
 void
