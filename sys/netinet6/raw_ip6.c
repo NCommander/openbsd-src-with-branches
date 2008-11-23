@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.36 2008/06/11 19:00:50 mcbride Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.37 2008/09/17 05:43:15 chl Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -437,10 +437,9 @@ rip6_output(struct mbuf *m, ...)
 			goto bad;
 		}
 		ip6->ip6_src = *in6a;
-		if (in6p->in6p_route.ro_rt) {
-			/* what if oifp contradicts ? */
-			oifp = ifindex2ifnet[in6p->in6p_route.ro_rt->rt_ifp->if_index];
-		}
+		if (in6p->in6p_route.ro_rt &&
+		    in6p->in6p_route.ro_rt->rt_flags & RTF_UP)
+			oifp = in6p->in6p_route.ro_rt->rt_ifp;
 	}
 
 	ip6->ip6_flow = in6p->in6p_flowinfo & IPV6_FLOWINFO_MASK;
