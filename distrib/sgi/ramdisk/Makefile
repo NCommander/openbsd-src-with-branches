@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2007/06/17 00:28:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2008/01/11 10:16:40 espie Exp $
 
 REV=		${OSrev}
 
@@ -75,7 +75,7 @@ install:
 	cp ${BSD_RD} ${DESTDIR}/snapshot/
 
 ${CBIN}.mk ${CBIN}.cache ${CBIN}.c: ${CRUNCHCONF}
-	crunchgen -E -D ${.CURDIR}/../../.. -L ${DESTDIR}/usr/lib ${.ALLSRC}
+	crunchgen -M -E -D ${.CURDIR}/../../.. -L ${DESTDIR}/usr/lib ${.ALLSRC}
 
 ${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
 	${MAKE} -f ${CBIN}.mk all
