@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.209 2008/06/29 08:42:15 mcbride Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.210 2008/10/23 22:22:44 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1164,7 +1164,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 
 		if (rule->overload_tblname[0]) {
 			if ((rule->overload_tbl = pfr_attach_table(ruleset,
-			    rule->overload_tblname)) == NULL)
+			    rule->overload_tblname, 0)) == NULL)
 				error = EINVAL;
 			else
 				rule->overload_tbl->pfrkt_flags |=
@@ -1401,7 +1401,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 
 			if (newrule->overload_tblname[0]) {
 				if ((newrule->overload_tbl = pfr_attach_table(
-				    ruleset, newrule->overload_tblname)) ==
+				    ruleset, newrule->overload_tblname, 0)) ==
 				    NULL)
 					error = EINVAL;
 				else
