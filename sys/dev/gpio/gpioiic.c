@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpioiic.c,v 1.6 2006/01/20 21:39:09 grange Exp $	*/
+/*	$OpenBSD: gpioiic.c,v 1.7 2007/06/05 08:37:20 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -90,6 +90,10 @@ int
 gpioiic_match(struct device *parent, void *match, void *aux)
 {
 	struct cfdata *cf = match;
+	struct gpio_attach_args *ga = aux;
+
+	if (ga->ga_offset == -1)
+		return 0;
 
 	return (strcmp(cf->cf_driver->cd_name, "gpioiic") == 0);
 }
