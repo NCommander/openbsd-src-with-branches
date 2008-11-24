@@ -1,4 +1,4 @@
-/*	$OpenBSD: btdev.h,v 1.3 2007/09/01 17:06:26 xsa Exp $	*/
+/*	$OpenBSD: btdev.h,v 1.4 2008/02/24 21:46:19 uwe Exp $	*/
 /*	$NetBSD: btdev.h,v 1.1 2006/06/19 15:44:45 gdamore Exp $	*/
 
 /*-
@@ -74,6 +74,7 @@ struct btdev_attach_args {
 #define bd_hf		bdd.bdd_hf
 
 /* btdev type */
+#define BTDEV_NONE		0x0000
 #define BTDEV_HID		0x0001
 #define BTDEV_HSET		0x0002
 #define BTDEV_HF		0x0003
