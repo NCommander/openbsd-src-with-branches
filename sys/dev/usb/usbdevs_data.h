@@ -4970,6 +4970,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "PL2303 Serial",
 	},
 	{
+	    USB_VENDOR_OPENMOKO, USB_PRODUCT_OPENMOKO_N1793D,
+	    "Neo1973 Debug",
+	},
+	{
 	    USB_VENDOR_RAINBOW, USB_PRODUCT_RAINBOW_IKEY2000,
 	    "i-Key 2000",
 	},
@@ -8352,6 +8356,10 @@ const struct usb_known_vendor usb_known_vendors[] = {
 	{
 	    USB_VENDOR_RADIOSHACK,
 	    "Radio Shack",
+	},
+	{
+	    USB_VENDOR_OPENMOKO,
+	    "OpenMoko",
 	},
 	{
 	    USB_VENDOR_HUAWEI3COM,
