@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: cond.c,v 1.38 2007/09/17 09:28:36 espie Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: cond.c,v 1.7 1996/11/06 17:59:02 christos Exp $	*/
 
 /*
@@ -347,7 +347,7 @@ CondCvtArg(const char *str, double *value)
 			if (isdigit(*str))
 				x  = *str - '0';
 			else if (isxdigit(*str))
-				x = 10 + *str - isupper(*str) ? 'A' : 'a';
+				x = 10 + *str - (isupper(*str) ? 'A' : 'a');
 			else
 				return false;
 			i = (i << 4) + x;
