@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.10 2007/06/19 16:45:15 reyk Exp $ */
+/*	$OpenBSD: printconf.c,v 1.11 2007/09/30 13:28:09 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -160,6 +160,8 @@ print_config(struct ospfd_conf *conf)
 
 	LIST_FOREACH(area, &conf->area_list, entry) {
 		printf("area %s {\n", inet_ntoa(area->id));
+		if (area->stub)
+			printf("\tstub\n");
 		if (*area->demote_group)
 			printf("\tdemote %s %d\n", area->demote_group,
 			area->demote_level);

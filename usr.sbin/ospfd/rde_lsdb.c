@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_lsdb.c,v 1.39 2007/10/16 21:03:31 claudio Exp $ */
+/*	$OpenBSD: rde_lsdb.c,v 1.40 2008/02/11 12:37:37 norby Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -517,7 +517,7 @@ lsa_snap(struct area *area, u_int32_t peerid)
 				rde_imsg_compose_ospfe(IMSG_DB_SNAPSHOT, peerid,
 				    0, &v->lsa->hdr, sizeof(struct lsa_hdr));
 		}
-		if (tree != &area->lsa_tree)
+		if (tree != &area->lsa_tree || area->stub)
 			break;
 		tree = &asext_tree;
 	} while (1);

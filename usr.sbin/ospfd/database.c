@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.21 2007/10/11 12:19:31 claudio Exp $ */
+/*	$OpenBSD: database.c,v 1.22 2008/02/11 12:37:37 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -235,16 +235,15 @@ recv_db_description(struct nbr *nbr, char *buf, u_int16_t len)
 			}
 			nbr->dd_seq_num++;
 
+			/* event negotiation done */
+			nbr_fsm(nbr, NBR_EVT_NEG_DONE);
+
 			/* this packet may already have data so pass it on */
 			if (len > 0) {
 				nbr->dd_pending++;
 				ospfe_imsg_compose_rde(IMSG_DD, nbr->peerid,
 				    0, buf, len);
 			}
-
-			/* event negotiation done */
-			nbr_fsm(nbr, NBR_EVT_NEG_DONE);
-
 		} else {
 			/* ignore packet */
 			log_debug("recv_db_description: packet ignored in "

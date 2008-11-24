@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.70 2007/09/25 11:25:41 claudio Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.71 2007/10/11 12:19:31 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -130,6 +130,7 @@ enum imsg_type {
 	IMSG_NETWORK_DEL,
 	IMSG_DD,
 	IMSG_DD_END,
+	IMSG_DD_BADLSA,
 	IMSG_DB_SNAPSHOT,
 	IMSG_DB_END,
 	IMSG_LS_REQ,
