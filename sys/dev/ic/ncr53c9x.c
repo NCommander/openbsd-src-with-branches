@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9x.c,v 1.38 2008/08/31 17:21:57 miod Exp $	*/
+/*	$OpenBSD: ncr53c9x.c,v 1.39 2008/09/10 14:01:22 blambert Exp $	*/
 /*     $NetBSD: ncr53c9x.c,v 1.56 2000/11/30 14:41:46 thorpej Exp $    */
 
 /*
@@ -824,7 +824,7 @@ ncr53c9x_scsi_cmd(xs)
 	}
 
 	if ((ecb = ncr53c9x_get_ecb(sc, flags)) == NULL)
-		return (TRY_AGAIN_LATER);
+		return (NO_CCB);
 
 	/* Initialize ecb */
 	ecb->xs = xs;

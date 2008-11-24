@@ -1,4 +1,4 @@
-/*	$OpenBSD: bha.c,v 1.12 2008/06/26 05:42:15 ray Exp $	*/
+/*	$OpenBSD: bha.c,v 1.13 2008/09/12 11:14:04 miod Exp $	*/
 /*	$NetBSD: bha.c,v 1.27 1998/11/19 21:53:00 thorpej Exp $	*/
 
 #undef BHADEBUG
@@ -1395,7 +1395,7 @@ bha_scsi_cmd(xs)
 		 */
 		if (dontqueue) {
 			splx(s);
-			return (TRY_AGAIN_LATER);
+			return (NO_CCB);
 		}
 
 		/*

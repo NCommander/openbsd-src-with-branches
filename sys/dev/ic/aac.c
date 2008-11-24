@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.36 2007/09/02 12:12:12 martin Exp $	*/
+/*	$OpenBSD: aac.c,v 1.37 2007/10/01 04:03:51 krw Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -2638,7 +2638,7 @@ aac_scsi_cmd(struct scsi_xfer *xs)
 			 * in a little while.
 			 */
 			splx(s);
-			return (TRY_AGAIN_LATER);
+			return (NO_CCB);
 		}
 
 		/* fill out the command */

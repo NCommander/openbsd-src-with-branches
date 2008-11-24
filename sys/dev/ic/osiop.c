@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop.c,v 1.33 2008/05/27 21:08:48 kettenis Exp $	*/
+/*	$OpenBSD: osiop.c,v 1.34 2008/09/12 11:14:04 miod Exp $	*/
 /*	$NetBSD: osiop.c,v 1.9 2002/04/05 18:27:54 bouyer Exp $	*/
 
 /*
@@ -397,7 +397,7 @@ osiop_scsicmd(xs)
 		panic("osiop_scsipi_request");
 #endif
 		splx(s);
-		return (TRY_AGAIN_LATER);
+		return (NO_CCB);
 	}
 
 	acb->flags = 0;

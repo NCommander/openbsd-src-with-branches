@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt_common.c,v 1.41 2007/10/17 03:21:16 fgsch Exp $	*/
+/*	$OpenBSD: gdt_common.c,v 1.42 2007/11/11 14:03:35 krw Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000, 2003 Niklas Hallqvist.  All rights reserved.
@@ -714,7 +714,7 @@ gdt_scsi_cmd(struct scsi_xfer *xs)
 			 */
 			if (ccb == NULL) {
 				splx(s);
-				return (TRY_AGAIN_LATER);
+				return (NO_CCB);
 			}
 
 			ccb->gc_blockno = blockno;
