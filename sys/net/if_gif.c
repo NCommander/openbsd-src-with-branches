@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.47 2007/12/20 02:53:02 brad Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.50 2008/09/28 16:14:39 jsing Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -164,10 +164,6 @@ gif_start(struct ifnet *ifp)
 #endif
 			return;
 
-	s = splnet();
-	ifp->if_flags |= IFF_OACTIVE;
-	splx(s);
-
 	while (1) {
 		s = splnet();
 		IFQ_DEQUEUE(&ifp->if_snd, m);
@@ -255,8 +251,6 @@ gif_start(struct ifnet *ifp)
 			break;
 		}
 	}
-
-	ifp->if_flags &= ~IFF_OACTIVE;
 }
 
 int
