@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.119 2008/07/16 16:32:08 miod Exp $
+#	$OpenBSD: GENERIC,v 1.120 2008/08/18 21:55:01 kettenis Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -183,6 +183,10 @@ onewire* at uow?
 #btms*	at bthidev?
 #wskbd*	at btkbd? mux 1
 #wsmouse* at btms? mux 0
+
+# Bluetooth audio support
+#btsco*	at bthub?
+#audio*	at btsco?
 
 sti0	at mainbus0 irq 11	# [H]CRX-{8,24,48}[Z] graphics
 sti0	at phantomas0 irq 11	# builtin graphics on BC*
