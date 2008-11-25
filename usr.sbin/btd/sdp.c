@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sdp.c,v 1.1 2008/11/24 23:34:42 uwe Exp $	*/
 /*	$NetBSD: sdp.c,v 1.5 2008/04/20 19:34:23 plunky Exp $	*/
 
 /*-
@@ -61,7 +61,6 @@
 #include <dev/usb/usb.h>
 #include <dev/usb/usbhid.h>
 
-#include <bluetooth.h>
 #include <err.h>
 #include <errno.h>
 #include <sdp.h>

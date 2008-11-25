@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntp.c,v 1.108 2008/10/02 14:00:21 henning Exp $ */
+/*	$OpenBSD: bt.c,v 1.1 2008/11/24 23:34:41 uwe Exp $ */
 
 /*
  * Copyright (c) 2008 Uwe Stuehler <uwe@openbsd.org>
@@ -24,7 +24,6 @@
 
 #include <dev/bluetooth/btdev.h>
 
-#include <bluetooth.h>
 #include <errno.h>
 #include <event.h>
 #include <fcntl.h>
