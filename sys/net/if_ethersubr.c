@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.128 2008/11/23 23:44:01 tedu Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.129 2008/11/24 12:57:37 dlg Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -519,7 +519,7 @@ ether_input(ifp0, eh, m)
 	struct ether_header *eh_tmp;
 #endif
 
-	m_cluncount(m);
+	m_cluncount(m, 1);
 
 	if (eh == NULL) {
 		eh = mtod(m, struct ether_header *);
