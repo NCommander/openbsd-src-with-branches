@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockd_lock.c,v 1.2 2008/06/13 21:34:24 sturm Exp $	*/
+/*	$OpenBSD: lockd_lock.c,v 1.4 2008/06/15 04:48:03 sturm Exp $	*/
 
 /*
  * Copyright (c) 2000 Manuel Bouyer.
@@ -115,7 +115,7 @@ struct file_lock {
 #define LKST_LOCKED	1 /* lock is locked */
 #define LKST_WAITING	2 /* file is already locked by another host */
 #define LKST_PROCESSING	3 /* child is trying to acquire the lock */
-#define LKST_DYING	4 /* must dies when we get news from the child */
+#define LKST_DYING	4 /* must die when we get news from the child */
 
 static struct file_lock *lalloc(void);
 void lfree(struct file_lock *);
