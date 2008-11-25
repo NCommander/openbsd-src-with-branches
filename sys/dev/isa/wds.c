@@ -1,4 +1,4 @@
-/*	$OpenBSD: wds.c,v 1.24 2007/11/05 17:12:41 krw Exp $	*/
+/*	$OpenBSD: wds.c,v 1.25 2008/09/12 11:14:04 miod Exp $	*/
 /*	$NetBSD: wds.c,v 1.13 1996/11/03 16:20:31 mycroft Exp $	*/
 
 #undef	WDSDIAG
@@ -1076,7 +1076,7 @@ wds_scsi_cmd(xs)
 		mflags = ISADMA_MAP_BOUNCE | ISADMA_MAP_WAITOK;
 #endif
 	if ((scb = wds_get_scb(sc, flags, NEEDBUFFER(sc))) == NULL) {
-		return TRY_AGAIN_LATER;
+		return (NO_CCB);
 	}
 	scb->xs = xs;
 	scb->timeout = xs->timeout;
