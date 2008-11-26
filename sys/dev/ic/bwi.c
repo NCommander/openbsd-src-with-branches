@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.81 2008/08/27 10:03:47 damien Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.82 2008/10/15 19:12:19 blambert Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -98,6 +98,8 @@ int bwi_debug = 1;
 #define IEEE80211_CW_MIN_1	15	/* OFDM aCWmin, ERP aCWmin(1) */
 
 #define __unused __attribute__((__unused__))
+
+extern int ticks;
 
 /* XXX end porting goop */
 

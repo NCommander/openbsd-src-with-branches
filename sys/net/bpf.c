@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.69 2008/09/17 20:10:37 chl Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.70 2008/11/09 15:08:26 naddy Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -67,6 +67,9 @@
 #define BPF_BUFSIZE 32768
 
 #define PRINET  26			/* interruptible */
+
+/* from kern/kern_clock.c; incremented each clock tick. */
+extern int ticks;
 
 /*
  * The default read buffer size is patchable.

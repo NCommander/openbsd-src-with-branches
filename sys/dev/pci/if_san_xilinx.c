@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_xilinx.c,v 1.22 2008/09/10 14:01:22 blambert Exp $	*/
+/*	$OpenBSD: if_san_xilinx.c,v 1.23 2008/09/18 15:16:30 naddy Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -191,6 +191,8 @@ typedef struct {
 
 extern void disable_irq(unsigned int);
 extern void enable_irq(unsigned int);
+
+extern int ticks;
 
 /**SECTOIN**************************************************
  *
