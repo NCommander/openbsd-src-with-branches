@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.103 2008/11/25 19:09:34 claudio Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.104 2008/11/26 21:39:57 deraadt Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -374,8 +374,11 @@ m_defrag(struct mbuf *m, int how)
 {
 	struct mbuf *m0;
 
+	if (m->m_next == NULL)
+		return;
+
 #ifdef DIAGNOSTIC
-	if (!(m->m_flags & M_PKTHDR) || m->m_next == NULL)
+	if (!(m->m_flags & M_PKTHDR))
 		panic("m_defrag: no packet hdr or not a chain");
 #endif
 
