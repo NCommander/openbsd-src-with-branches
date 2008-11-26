@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.97 2008/11/24 14:26:54 deraadt Exp $	*/
+/*	$OpenBSD: if.h,v 1.98 2008/11/25 12:47:00 deraadt Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -153,7 +153,7 @@ struct	mclstat {
 		u_short	mcl_alive;
 		u_short mcl_hwm;
 		u_short mcl_size;
-		u_short mcl_pad;
+		u_short mcl_lwm;
 	}	mclpool[MCLPOOLS];
 };
 
