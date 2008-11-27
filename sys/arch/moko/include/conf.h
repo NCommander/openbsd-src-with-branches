@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.6 2005/01/22 04:04:32 uwe Exp $	*/
+/*	$OpenBSD: conf.h,v 1.1 2008/11/26 14:47:50 drahn Exp $	*/
 /*	$NetBSD: conf.h,v 1.8 2002/02/10 12:26:03 chris Exp $	*/
 
 #ifndef _MOKO_CONF_H
@@ -13,6 +13,7 @@
 //#define CONF_HAVE_APM
 #define	CONF_HAVE_USB
 #define	CONF_HAVE_WSCONS
+#define	CONF_HAVE_SSCOM
 
 #include <arm/conf.h>
 
