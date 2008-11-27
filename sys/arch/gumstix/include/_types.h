@@ -1,7 +1,7 @@
-/* 	$OpenBSD: _types.h,v 1.4 2008/01/03 17:59:32 kettenis Exp $	*/
+/* 	$OpenBSD: _types.h,v 1.1 2008/11/26 14:18:11 drahn Exp $	*/
 
-#ifndef _ZAURUS__TYPES_H_
-#define	_ZAURUS__TYPES_H_
+#ifndef _GUMSTIX__TYPES_H_
+#define	_GUMSTIX__TYPES_H_
 
 #include <arm/_types.h>
 
