@@ -1,4 +1,4 @@
-/*	$OpenBSD: envy.c,v 1.9 2008/04/30 17:31:26 ratchov Exp $	*/
+/*	$OpenBSD: envy.c,v 1.10 2008/10/25 22:30:43 jakemsr Exp $	*/
 /*
  * Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
  *
@@ -397,7 +397,7 @@ envy_lineout_setsrc(struct envy_softc *sc, int out, int src) {
 		sel = ENVY_MT_OUTSRC_MON;
 	}
 	shift = (out  & 1) ? (out & ~1) + 8 : out;
-	mask = ENVY_MT_INSEL_MASK << shift;
+	mask = ENVY_MT_OUTSRC_MASK << shift;
 	reg = bus_space_read_2(sc->mt_iot, sc->mt_ioh, ENVY_MT_OUTSRC);
 	reg = (reg & ~mask) | (sel << shift);
 	bus_space_write_2(sc->mt_iot, sc->mt_ioh, ENVY_MT_OUTSRC, reg);
