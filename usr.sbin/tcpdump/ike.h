@@ -1,4 +1,4 @@
-/* $OpenBSD: ike.h,v 1.19 2006/08/24 12:13:16 hshoexer Exp $ */
+/* $OpenBSD: ike.h,v 1.20 2007/03/16 14:49:15 tom Exp $ */
 
 /*
  * Copyright (c) 2001 Håkan Olsson.  All rights reserved.
@@ -539,7 +539,7 @@ static const struct vendor_id
 		{
 			0x09, 0x00, 0x26, 0x89, 0xdf, 0xd6, 0xb7, 0x12
 		},
-		"draft-ietf-ipsra-isakmp-xauth-06.txt"
+		"draft-ietf-ipsec-isakmp-xauth-06.txt"
 	},
 	{
 		16,
