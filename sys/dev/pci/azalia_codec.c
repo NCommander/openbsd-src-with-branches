@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia_codec.c,v 1.77 2008/11/30 04:01:53 jakemsr Exp $	*/
+/*	$OpenBSD: azalia_codec.c,v 1.78 2008/11/30 21:58:43 jakemsr Exp $	*/
 /*	$NetBSD: azalia_codec.c,v 1.8 2006/05/10 11:17:27 kent Exp $	*/
 
 /*-
@@ -687,9 +687,8 @@ azalia_generic_mixer_init(codec_t *this)
 					l++;
 				}
 				d->un.s.num_mem = l;
-				if (l == 0)
-					continue;
-				this->nmixers++;
+				if (l != 0)
+					this->nmixers++;
 			}
 		}
 
