@@ -1,4 +1,4 @@
-vers(a, {-$OpenBSD: MAKEDEV.common,v 1.39 2008/07/14 16:22:23 miod Exp $-})dnl
+vers(a, {-$OpenBSD: MAKEDEV.common,v 1.40 2008/10/10 20:15:23 deraadt Exp $-})dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
 dnl
@@ -156,7 +156,7 @@ twrget(all, lpt, lpa, 0, 1, 2)dnl
 target(all, joy, 0, 1)dnl
 twrget(all, rnd, random)dnl
 target(all, uk, 0)dnl
-twrget(all, au, audio, 0)dnl
+twrget(all, au, audio, 0, 1, 2)dnl
 twrget(all, vi, video, 0)dnl
 twrget(all, speak, speaker)dnl
 target(all, asc, 0)dnl
