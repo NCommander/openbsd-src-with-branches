@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpioctl.c,v 1.11 2008/11/26 15:02:43 mbalmer Exp $	*/
+/*	$OpenBSD: gpioctl.c,v 1.12 2008/11/29 09:19:25 mbalmer Exp $	*/
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
@@ -95,7 +95,7 @@ main(int argc, char *argv[])
 	dev = argv[0];
 
 	if (strncmp(_PATH_DEV, dev, sizeof(_PATH_DEV) - 1)) {
-		(void)snprintf(devn, sizeof(devn), "%s/%s", _PATH_DEV, dev);
+		(void)snprintf(devn, sizeof(devn), "%s%s", _PATH_DEV, dev);
 		dev = devn;
 	}
 
