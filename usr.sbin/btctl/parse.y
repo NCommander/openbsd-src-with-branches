@@ -111,6 +111,7 @@ ruleset		: /* empty */
 main		: INTERFACE address name_opt disabled_opt {
 			btctl_interface_stmt stmt;
 
+			bzero(&stmt, sizeof(stmt));
 			bdaddr_copy(&stmt.addr, &$2);
 
 			strbufcpy("interface name", $3, stmt.name);
@@ -134,6 +135,7 @@ main		: INTERFACE address name_opt disabled_opt {
 		| ATTACH address type_opt pin_opt {
 			btctl_attach_stmt stmt;
 
+			bzero(&stmt, sizeof(stmt));
 			bdaddr_copy(&stmt.addr, &$2);
 
 			stmt.type = $3;
