@@ -51,8 +51,6 @@ sdmmc_mem_enable(struct sdmmc_softc *sc)
 	u_int32_t host_ocr;
 	u_int32_t card_ocr;
 
-	SDMMC_ASSERT_LOCKED(sc);
-
 	/* Set host mode to SD "combo" card or SD memory-only. */
 	SET(sc->sc_flags, SMF_SD_MODE|SMF_MEM_MODE);
 
@@ -115,8 +113,6 @@ sdmmc_mem_scan(struct sdmmc_softc *sc)
 	u_int16_t next_rca;
 	int error;
 	int i;
-
-	SDMMC_ASSERT_LOCKED(sc);
 
 	/*
 	 * CMD2 is a broadcast command understood by SD cards and MMC
@@ -335,7 +331,7 @@ sdmmc_mem_send_op_cond(struct sdmmc_softc *sc, u_int32_t ocr,
 	int error;
 	int i;
 
-	SDMMC_ASSERT_LOCKED(sc);
+	SDMMC_LOCK(sc);
 
 	/*
 	 * If we change the OCR value, retry the command until the OCR
@@ -365,6 +361,7 @@ sdmmc_mem_send_op_cond(struct sdmmc_softc *sc, u_int32_t ocr,
 	if (error == 0 && ocrp != NULL)
 		*ocrp = MMC_R3(cmd.c_resp);
 
+	SDMMC_UNLOCK(sc);
 	return error;
 }
 
@@ -376,8 +373,6 @@ int
 sdmmc_mem_set_blocklen(struct sdmmc_softc *sc, struct sdmmc_function *sf)
 {
 	struct sdmmc_command cmd;
-
-	SDMMC_ASSERT_LOCKED(sc);
 
 	bzero(&cmd, sizeof cmd);
 	cmd.c_opcode = MMC_SET_BLOCKLEN;

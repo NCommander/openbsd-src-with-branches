@@ -133,8 +133,6 @@ sdmmc_io_scan(struct sdmmc_softc *sc)
 	struct sdmmc_function *sf0, *sf;
 	int i;
 
-	SDMMC_ASSERT_LOCKED(sc);
-
 	sf0 = sdmmc_function_alloc(sc);
 	sf0->number = 0;
 	if (sdmmc_set_relative_addr(sc, sf0) != 0) {
@@ -536,7 +534,7 @@ sdmmc_io_send_op_cond(struct sdmmc_softc *sc, u_int32_t ocr, u_int32_t *ocrp)
 	int error;
 	int i;
 
-	SDMMC_ASSERT_LOCKED(sc);
+	SDMMC_LOCK(sc);
 
 	/*
 	 * If we change the OCR value, retry the command until the OCR
@@ -561,6 +559,7 @@ sdmmc_io_send_op_cond(struct sdmmc_softc *sc, u_int32_t ocr, u_int32_t *ocrp)
 	if (error == 0 && ocrp != NULL)
 		*ocrp = MMC_R4(cmd.c_resp);
 
+	SDMMC_UNLOCK(sc);
 	return error;
 }
 

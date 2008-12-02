@@ -187,12 +187,6 @@ struct sdmmc_attach_args {
 
 #define SDMMC_LOCK(sc)	 lockmgr(&(sc)->sc_lock, LK_EXCLUSIVE, NULL)
 #define SDMMC_UNLOCK(sc) lockmgr(&(sc)->sc_lock, LK_RELEASE, NULL)
-#ifdef DIAGNOSTIC
-#define	SDMMC_ASSERT_LOCKED(sc) \
-	KASSERT(lockstatus(&((sc))->sc_lock) == LK_EXCLUSIVE)
-#else
-#define	SDMMC_ASSERT_LOCKED(sc)
-#endif /* DIAGNOSTIC */
 
 void	sdmmc_add_task(struct sdmmc_softc *, struct sdmmc_task *);
 void	sdmmc_del_task(struct sdmmc_task *);

@@ -99,9 +99,10 @@ sdmmc_scsi_attach(struct sdmmc_softc *sc)
 	struct sdmmc_scsi_softc *scbus;
 	struct sdmmc_function *sf;
 
-	scbus = malloc(sizeof(*scbus), M_DEVBUF, M_WAITOK | M_ZERO);
+	scbus = (struct sdmmc_scsi_softc *)malloc(sizeof *scbus,
+	    M_DEVBUF, M_WAITOK | M_ZERO);
 
-	scbus->sc_tgt = malloc(sizeof(*scbus->sc_tgt) *
+	scbus->sc_tgt = (struct sdmmc_scsi_target *)malloc(sizeof(*scbus->sc_tgt) *
 	    (SDMMC_SCSIID_MAX+1), M_DEVBUF, M_WAITOK | M_ZERO);
 
 	/*
