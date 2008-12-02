@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2007/04/13 17:34:40 millert Exp $
+#	$OpenBSD: Makefile,v 1.8 2007/06/17 00:28:21 deraadt Exp $
 
 REV=	${OSrev}
 
@@ -64,7 +64,7 @@ rd_teardown:
 	-vnconfig -u ${VND}
 
 rdsetroot:	${TOP}/../common/elfrdsetroot.c
-	${HOSTCC} -DDEBUG -o rdsetroot ${TOP}/../common/elfrdsetroot.c
+	${HOSTCC} -o rdsetroot ${TOP}/../common/elfrdsetroot.c
 
 unconfig:
 	-umount -f ${MOUNT_POINT}
