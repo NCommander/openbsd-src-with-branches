@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.18 2007/06/17 00:28:21 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.19 2008/01/11 10:16:40 espie Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -70,7 +70,7 @@ bsd.gz:	bsd.rd
 
 bsd.rd: bsd ${IMAGE} ${RDSETROOT}
 	cp bsd bsd.rd
-	${.OBJDIR}/${RDSETROOT} bsd.rd < ${IMAGE}
+	${.OBJDIR}/${RDSETROOT} bsd.rd ${IMAGE}
 
 bsd:
 	cd ${.CURDIR}/../../../sys/arch/alpha/conf && config ${RAMDISK}

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2007/06/17 00:28:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 2008/12/02 01:01:07 deraadt Exp $
 
 REV=	${OSrev}
 
@@ -42,7 +42,7 @@ ${BSD_RD}: ${CBIN} ${IMAGE} bsd rdsetroot
 	awk 'BEGIN { printf("%c", 192); }' < /dev/null | dd of=${BSD_RD} bs=1 count=1 seek=95 conv=notrunc 2>/dev/null;
 	awk 'BEGIN { printf("%c", 192); }' < /dev/null | dd of=${BSD_RD} bs=1 count=1 seek=127 conv=notrunc 2>/dev/null;
 	awk 'BEGIN { printf("%c", 192); }' < /dev/null | dd of=${BSD_RD} bs=1 count=1 seek=159 conv=notrunc 2>/dev/null;
-	${.OBJDIR}/rdsetroot ${BSD_RD} < ${IMAGE}
+	${.OBJDIR}/rdsetroot ${BSD_RD} ${IMAGE}
 	dd if=/dev/zero of=${BSD_RD} bs=1 count=1 seek=95 conv=notrunc 2>/dev/null;
 	dd if=/dev/zero of=${BSD_RD} bs=1 count=1 seek=127 conv=notrunc 2>/dev/null;
 	dd if=/dev/zero of=${BSD_RD} bs=1 count=1 seek=159 conv=notrunc 2>/dev/null;
