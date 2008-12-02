@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.203 2008/11/01 17:40:33 stevesk Exp $ */
+/* $OpenBSD: clientloop.c,v 1.204 2008/11/05 03:23:09 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1834,7 +1834,7 @@ client_input_channel_req(int type, u_int32_t seq, void *ctxt)
 	if (reply) {
 		packet_start(success ?
 		    SSH2_MSG_CHANNEL_SUCCESS : SSH2_MSG_CHANNEL_FAILURE);
-		packet_put_int(id);
+		packet_put_int(c->remote_id);
 		packet_send();
 	}
 	xfree(rtype);
