@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.9 2003/06/03 03:01:39 millert Exp $	*/
+/*	$OpenBSD: io.c,v 1.10 2004/07/10 07:26:23 deraadt Exp $	*/
 /*	$NetBSD: io.c,v 1.9 1997/07/09 06:25:47 phil Exp $	*/
 
 /*-
@@ -158,7 +158,7 @@ prhand(CARD h[], int n, WINDOW *win, bool blank)
 
 /*
  * infrom:
- *	reads a card, supposedly in hand, accepting unambigous brief
+ *	reads a card, supposedly in hand, accepting unambiguous brief
  *	input, returns the index of the card found...
  */
 int
