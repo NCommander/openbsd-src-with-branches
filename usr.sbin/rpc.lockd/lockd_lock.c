@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockd_lock.c,v 1.4 2008/06/15 04:48:03 sturm Exp $	*/
+/*	$OpenBSD: lockd_lock.c,v 1.5 2008/11/25 00:00:52 jmc Exp $	*/
 
 /*
  * Copyright (c) 2000 Manuel Bouyer.
@@ -503,7 +503,7 @@ sigchild_handler(int sig)
 
 /*
  *
- * try to acquire the lock described by fl. Eventually fock a child to do a
+ * try to acquire the lock described by fl. Eventually fork a child to do a
  * blocking lock if allowed and required.
  */
 
