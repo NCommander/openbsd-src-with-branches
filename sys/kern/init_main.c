@@ -98,6 +98,7 @@
 extern void nfs_init(void);
 #endif
 
+#include "vscsi.h"
 #include "softraid.h"
 
 const char	copyright[] =
@@ -440,6 +441,9 @@ main(void *framep)
 
 	dostartuphooks();
 
+#if NVSCSI > 0
+	config_rootfound("vscsi", NULL);
+#endif
 #if NSOFTRAID > 0
 	config_rootfound("softraid", NULL);
 #endif
