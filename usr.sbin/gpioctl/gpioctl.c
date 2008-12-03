@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpioctl.c,v 1.12 2008/11/29 09:19:25 mbalmer Exp $	*/
+/*	$OpenBSD: gpioctl.c,v 1.13 2008/11/30 10:58:44 mbalmer Exp $	*/
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
@@ -42,7 +42,6 @@ int quiet = 0;
 void	getinfo(void);
 void	pinread(int, char *);
 void	pinwrite(int, char *, int);
-void	pinctl(int, char *, char *[], int);
 void	pinset(int pin, char *name, int flags, char *alias);
 void	unset(int pin, char *name);
 void	devattach(char *, int, u_int32_t);
