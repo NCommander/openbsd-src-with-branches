@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.h,v 1.6 2006/03/01 21:51:39 deraadt Exp $	*/
+/*	$OpenBSD: isa_machdep.h,v 1.7 2008/06/26 05:42:09 ray Exp $	*/
 /*	$NetBSD: isa_machdep.h,v 1.2 2003/05/09 23:51:28 fvdl Exp $	*/
 
 /*-
@@ -124,7 +124,7 @@ void	isa_reinit_irq(void);
  * BY PORTABLE CODE.
  */
 
-extern struct x86_bus_dma_tag isa_bus_dma_tag;
+extern struct bus_dma_tag isa_bus_dma_tag;
 
 /*
  * Cookie used by ISA dma.  A pointer to one of these it stashed in
