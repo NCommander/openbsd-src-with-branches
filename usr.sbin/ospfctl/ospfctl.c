@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.40 2007/10/14 01:28:08 deraadt Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.41 2007/10/15 02:16:35 deraadt Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -76,7 +76,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s <command> [arg [...]]\n", __progname);
+	fprintf(stderr, "usage: %s command [argument ...]\n", __progname);
 	exit(1);
 }
 
