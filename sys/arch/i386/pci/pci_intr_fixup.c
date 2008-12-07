@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_intr_fixup.c,v 1.60 2008/05/17 18:35:12 jcs Exp $	*/
+/*	$OpenBSD: pci_intr_fixup.c,v 1.61 2008/06/26 05:42:11 ray Exp $	*/
 /*	$NetBSD: pci_intr_fixup.c,v 1.10 2000/08/10 21:18:27 soda Exp $	*/
 
 /*
@@ -662,7 +662,6 @@ pci_intr_header_fixup(pci_chipset_tag_t pc, pcitag_t tag,
 
 	irq = ihp->line & APIC_INT_LINE_MASK;
 	ihp->link = NULL;
-	ihp->tag = tag;
 	pci_decompose_tag(pc, tag, &bus, &device, &function);
 
 	if ((pir = pciintr_pir_lookup(bus, device)) == NULL ||
