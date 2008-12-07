@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensors.c,v 1.12 2007/07/29 04:51:59 cnst Exp $	*/
+/*	$OpenBSD: sensors.c,v 1.13 2008/06/12 22:26:01 canacar Exp $	*/
 
 /*
  * Copyright (c) 2007 Deanna Phillips <deanna@openbsd.org>
@@ -333,7 +333,7 @@ fmttime(double in)
 	}
 
 	snprintf(outbuf, LEN, 
-	    tiny ? "%s%lf %s" : "%s%.3lf %s", 
+	    tiny ? "%s%f %s" : "%s%.3f %s", 
 	    signbit == -1 ? "-" : "", in, unit);
 
 	return outbuf;
