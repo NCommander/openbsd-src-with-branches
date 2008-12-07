@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.16 2008/07/02 08:52:30 norby Exp $ */
+/*	$OpenBSD: parse.y,v 1.17 2008/10/17 14:32:47 henning Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -739,7 +739,6 @@ parse_config(char *filename, int opts)
 	gettimeofday(&now, NULL);
 	conf->gen_id = now.tv_sec;
 	conf->opts = opts;
-	RB_INIT(&conf->src_list);
 
 	yyparse();
 	errors = file->errors;
