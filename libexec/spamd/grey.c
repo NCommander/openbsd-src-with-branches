@@ -1,4 +1,4 @@
-/*	$OpenBSD: grey.c,v 1.43 2008/07/11 14:53:32 reyk Exp $	*/
+/*	$OpenBSD: grey.c,v 1.44 2008/08/26 22:49:09 jsg Exp $	*/
 
 /*
  * Copyright (c) 2004-2006 Bob Beck.  All rights reserved.
@@ -697,7 +697,7 @@ twupdate(char *dbname, char *what, char *ip, char *source, char *expires)
 
 	now = time(NULL);
 	/* expiry times have to be in the future */
-	expire = strtonum(expires, now, UINT_MAX, NULL);
+	expire = strtonum(expires, now, INT_MAX, NULL);
 	if (expire == 0)
 		return(-1);
 
