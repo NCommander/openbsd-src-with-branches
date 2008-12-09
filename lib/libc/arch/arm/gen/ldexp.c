@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldexp.c,v 1.2 2004/02/01 05:40:52 drahn Exp $	*/
+/*	$OpenBSD: ldexp.c,v 1.3 2008/06/26 05:42:04 ray Exp $	*/
 /*	$NetBSD: ldexp.c,v 1.2 2001/11/08 22:45:45 bjh21 Exp $	*/
 
 /*-
@@ -31,7 +31,6 @@
  */
 
 #include <sys/cdefs.h>
-
 #include <sys/types.h>
 #include <machine/ieee.h>
 #include <errno.h>
@@ -143,3 +142,5 @@ ldexp(val, expo)
 		return (u.v);
 	}
 }
+
+__weak_alias(ldexpl, ldexp);

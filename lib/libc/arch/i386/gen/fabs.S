@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: fabs.S,v 1.5 2005/08/07 11:30:38 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,6 +33,7 @@
 
 #include <machine/asm.h>
 
+WEAK_ALIAS(fabsl, fabs)
 ENTRY(fabs)
 	fldl	4(%esp)
 	fabs

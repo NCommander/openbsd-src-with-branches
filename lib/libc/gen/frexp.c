@@ -1,4 +1,4 @@
-/*	$OpenBSD: frexp.c,v 1.1 2005/02/01 15:12:28 millert Exp $	*/
+/*	$OpenBSD: frexp.c,v 1.2 2005/08/08 08:05:34 espie Exp $	*/
 
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.ORG>
@@ -29,7 +29,9 @@
  */
 
 #include <sys/types.h>
+#include <machine/cdefs.h>
 #include <machine/ieee.h>
+#include <float.h>
 #include <math.h>
 
 double
@@ -64,3 +66,9 @@ frexp(double v, int *ex)
 	}
 	return (u.v);
 }
+
+#if LDBL_MANT_DIG == 53
+#ifdef __weak_alias
+__weak_alias(frexpl, frexp);
+#endif /* __weak_alias */
+#endif /* LDBL_MANT_DIG == 53 */
