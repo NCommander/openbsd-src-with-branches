@@ -1,4 +1,4 @@
-/*	$OpenBSD: isnanl.c,v 1.1 2008/09/07 20:36:08 martynas Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -20,11 +20,9 @@
 #include <math.h>
 
 int
-__isnanl(long double e)
+__signbitl(long double e)
 {
 	struct ieee_ext *p = (struct ieee_ext *)&e;
 
-	return (p->ext_exp == EXT_EXP_INFNAN &&
-	    (p->ext_frach != 0 || p->ext_frachm != 0 ||
-	     p->ext_fraclm != 0 || p->ext_fracl != 0));
+	return p->ext_sign;
 }

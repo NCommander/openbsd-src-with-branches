@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: isnormall.c,v 1.1 2008/09/07 20:36:08 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -17,6 +17,7 @@
 
 #include <sys/types.h>
 #include <machine/ieee.h>
+#include <math.h>
 
 int
 __isnormall(long double e)

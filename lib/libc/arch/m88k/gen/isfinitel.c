@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: isfinitel.c,v 1.1 2008/09/07 20:36:07 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Martynas Venckus <martynas@openbsd.org>
  *
@@ -17,6 +17,7 @@
 
 #include <sys/types.h>
 #include <machine/ieee.h>
+#include <math.h>
 
 int
 __isfinitel(long double e)
