@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.288 2008/11/11 03:55:11 stevesk Exp $ */
+/* $OpenBSD: channels.c,v 1.289 2008/12/02 19:09:38 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2763,14 +2763,16 @@ channel_print_adm_permitted_opens(void)
 {
 	int i;
 
+	printf("permitopen");
 	if (num_adm_permitted_opens == 0) {
-		printf(" any");
+		printf(" any\n");
 		return;
 	}
 	for (i = 0; i < num_adm_permitted_opens; i++)
 		if (permitted_adm_opens[i].host_to_connect != NULL)
 			printf(" %s:%d", permitted_adm_opens[i].host_to_connect,
 			    permitted_adm_opens[i].port_to_connect);
+	printf("\n");
 }
 
 /* Try to start non-blocking connect to next host in cctx list */
