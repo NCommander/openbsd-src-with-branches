@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_fmin.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD: s_fmin.c,v 1.2 2008/09/11 19:18:12 martynas Exp $	*/
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -25,6 +25,8 @@
  * SUCH DAMAGE.
  */
 
+#include <machine/cdefs.h>
+#include <float.h>
 #include <math.h>
 
 double
@@ -45,3 +47,9 @@ fmin(double x, double y)
 
 	return (x < y ? x : y);
 }
+
+#if LDBL_MANT_DIG == 53
+#ifdef __weak_alias
+__weak_alias(fminl, fmin);
+#endif /* __weak_alias */
+#endif /* LDBL_MANT_DIG == 53 */

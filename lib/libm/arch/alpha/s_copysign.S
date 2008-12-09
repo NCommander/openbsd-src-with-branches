@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_copysign.S,v 1.1 2002/01/30 15:09:42 naddy Exp $	*/
+/*	$OpenBSD: s_copysign.S,v 1.2 2008/06/26 05:42:05 ray Exp $	*/
 /*	$NetBSD: s_copysign.S,v 1.4 1999/07/02 15:37:34 simonb Exp $	*/
 
 /*-
@@ -31,6 +31,9 @@
  */
 
 #include <machine/asm.h>
+
+.weak copysignl
+	copysignl = copysign
 
 LEAF(copysign, 2)
 	cpys	fa1, fa0, fv0
