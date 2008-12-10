@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_nan.c,v 1.4 2008/09/07 20:36:09 martynas Exp $	*/
+/*	$OpenBSD: s_nan.c,v 1.5 2008/12/09 20:00:35 martynas Exp $	*/
 /*-
  * Copyright (c) 2007 David Schultz
  * All rights reserved.
@@ -27,7 +27,7 @@
  * $FreeBSD: src/lib/msun/src/s_nan.c,v 1.2 2007/12/18 23:46:32 das Exp $
  */
 
-#include <machine/cdefs.h>
+#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/endian.h>
 #include <ctype.h>
