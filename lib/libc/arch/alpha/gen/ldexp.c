@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldexp.c,v 1.4 2005/08/07 16:40:13 espie Exp $	*/
+/*	$OpenBSD: ldexp.c,v 1.5 2008/12/09 20:32:06 martynas Exp $	*/
 /*	$NetBSD: ldexp.c,v 1.1 1995/02/10 17:50:24 cgd Exp $	*/
 
 /*
@@ -29,7 +29,7 @@
  */
 
 #include <sys/types.h>
-#include <machine/cdefs.h>
+#include <sys/cdefs.h>
 #include <machine/ieee.h>
 #include <errno.h>
 #include <math.h>

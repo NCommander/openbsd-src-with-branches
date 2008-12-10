@@ -1,4 +1,4 @@
-/*	$OpenBSD: fabs.c,v 1.2 2002/06/17 19:15:46 deraadt Exp $	*/
+/*	$OpenBSD: fabs.c,v 1.3 2008/12/09 20:21:06 martynas Exp $	*/
 
 /*
  * Copyright (c) 2002 Theo de Raadt
@@ -25,7 +25,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/cdefs.h>
+#include <sys/cdefs.h>
 #include <math.h>
 
 double

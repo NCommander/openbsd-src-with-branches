@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldexp.c,v 1.1.1.1 2006/10/10 22:07:10 miod Exp $	*/
+/*	$OpenBSD: ldexp.c,v 1.2 2008/12/09 20:32:06 martynas Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +35,7 @@
  */
 
 #include <sys/types.h>
-#include <machine/cdefs.h>
+#include <sys/cdefs.h>
 #include <machine/ieee.h>
 #include <errno.h>
 
