@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.59 2008/10/20 10:25:16 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -280,11 +280,32 @@ sub parse_fullurl
 	return $class->parse_local_url($r);
 }
 
+# wrapper around copy, that sometimes does not copy
+sub may_copy
+{
+	my ($self, $object, $destdir) = @_;
+	my $src = $self->relative_url($object->{name});
+	require File::Spec;
+	my (undef, undef, $base) = File::Spec->splitpath($src);
+	my $dest = File::Spec->catfile($destdir, $base);
+	if (File::Spec->canonpath($dest) eq File::Spec->canonpath($src)) {
+	    	return;
+	}
+	if (-f $dest) {
+		my ($ddev, $dino) = (stat $dest)[0,1];
+		my ($sdev, $sino) = (stat $src)[0, 1];
+		if ($ddev == $sdev and $sino == $dino) {
+			return;
+		}
+	}
+	Copy($src, $destdir);
+}
+
 sub open_pipe
 {
 	my ($self, $object) = @_;
 	if (defined $ENV{'PKG_CACHE'}) {
-		Copy($self->relative_url($object->{name}), $ENV{'PKG_CACHE'});
+		$self->may_copy($object, $ENV{'PKG_CACHE'});
 	}
 	my $pid = open(my $fh, "-|");
 	if (!defined $pid) {
