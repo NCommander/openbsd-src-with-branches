@@ -1,4 +1,4 @@
-/*	$OpenBSD: isnan.c,v 1.2 2008/12/09 19:52:34 martynas Exp $	*/
+/*	$OpenBSD: isnan.c,v 1.3 2008/12/10 01:15:02 martynas Exp $	*/
 /*
  * Copyright (c) Martynas Venckus <martynas@openbsd.org>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <sys/cdefs.h>
-#include <math.h>
 
 /* ARGSUSED */
 int
