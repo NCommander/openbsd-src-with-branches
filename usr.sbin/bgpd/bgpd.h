@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.221 2007/12/23 18:26:13 henning Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.222 2008/01/23 08:11:32 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -424,6 +424,7 @@ struct kroute {
 	u_int16_t	labelid;
 	u_short		ifindex;
 	u_int8_t	prefixlen;
+	u_int8_t	priority;
 };
 
 struct kroute6 {
@@ -433,6 +434,7 @@ struct kroute6 {
 	u_int16_t	labelid;
 	u_short		ifindex;
 	u_int8_t	prefixlen;
+	u_int8_t	priority;
 };
 
 struct kroute_nexthop {
