@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_ioctl.c,v 1.26 2008/10/02 20:21:15 brad Exp $	*/
+/*	$OpenBSD: ieee80211_ioctl.c,v 1.27 2008/12/03 17:24:45 damien Exp $	*/
 /*	$NetBSD: ieee80211_ioctl.c,v 1.15 2004/05/06 02:58:16 dyoung Exp $	*/
 
 /*-
@@ -594,8 +594,8 @@ ieee80211_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			error = EINVAL;
 			break;
 		}
-		if (!(IEEE80211_TXPOWER_MIN < txpower->i_val &&
-			txpower->i_val < IEEE80211_TXPOWER_MAX)) {
+		if (!(IEEE80211_TXPOWER_MIN <= txpower->i_val &&
+			txpower->i_val <= IEEE80211_TXPOWER_MAX)) {
 			error = EINVAL;
 			break;
 		}
