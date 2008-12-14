@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.32 2008/08/29 12:14:53 damien Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.33 2008/09/27 15:16:09 damien Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -274,6 +274,7 @@ extern	int ieee80211_match_bss(struct ieee80211com *,
 		struct ieee80211_node *);
 extern	void ieee80211_create_ibss(struct ieee80211com* ,
 		struct ieee80211_channel *);
+extern	void ieee80211_notify_dtim(struct ieee80211com *);
 
 extern	int ieee80211_node_cmp(const struct ieee80211_node *,
 		const struct ieee80211_node *);
