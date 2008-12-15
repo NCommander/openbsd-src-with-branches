@@ -411,7 +411,7 @@ unless ($opt_c || $opt_M || $opt_U || $opt_d || $opt_f || $opt_I || $opt_i ||
 	if (@ARGV == 0) {
 		$opt_I = $opt_a = 1;
 	} else {
-		$opt_c = $opt_d = $opt_R = 1;
+		$opt_c = $opt_d = $opt_M = $opt_R = 1;
 	}
 }
 
