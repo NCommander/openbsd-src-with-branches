@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.121 2008/12/12 20:26:30 claudio Exp $	*/
+/*	$OpenBSD: route.c,v 1.122 2008/12/15 16:14:57 michele Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -1242,21 +1242,21 @@ char *
 priorityname(u_int8_t prio)
 {
 	switch (prio & RTP_MASK) {
-	case 0:
+	case RTP_NONE:
 		return ("none");
-	case 4:
+	case RTP_CONNECTED:
 		return ("connected");
-	case 8:
+	case RTP_STATIC:
 		return ("static");
-	case 16:
+	case RTP_OSPF:
 		return ("ospf");
-	case 20:
+	case RTP_ISIS:
 		return ("is-is");
-	case 24:
+	case RTP_RIP:
 		return ("rip");
-	case 32:
+	case RTP_BGP:
 		return ("bgp");
-	case 48:
+	case RTP_DEFAULT:
 		return ("default");
 	default:
 		return ("");
