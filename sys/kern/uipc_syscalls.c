@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.67 2008/04/06 19:42:16 stefan Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.68 2008/05/23 15:51:12 thib Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -523,7 +523,7 @@ sendit(struct proc *p, int s, struct msghdr *mp, int flags, register_t *retsize)
 		    error == EINTR || error == EWOULDBLOCK))
 			error = 0;
 		if (error == EPIPE)
-			psignal(p, SIGPIPE);
+			ptsignal(p, SIGPIPE, STHREAD);
 	}
 	if (error == 0) {
 		*retsize = len - auio.uio_resid;
