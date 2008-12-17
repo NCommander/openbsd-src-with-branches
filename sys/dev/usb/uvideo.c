@@ -2537,15 +2537,15 @@ uvideo_enum_fsizes(void *v, struct v4l2_frmsizeenum *fsizes)
 	if (sc->sc_fmtgrp[idx].frame[i]->bFrameIntervalType == 0) {
 		/* TODO */
 		fsizes->type = V4L2_FRMSIZE_TYPE_CONTINUOUS;
-		fsizes->size.stepwise.min_width = 0;
-		fsizes->size.stepwise.min_height = 0;
-		fsizes->size.stepwise.max_width = 0;
-		fsizes->size.stepwise.max_height = 0;
+		fsizes->stepwise.min_width = 0;
+		fsizes->stepwise.min_height = 0;
+		fsizes->stepwise.max_width = 0;
+		fsizes->stepwise.max_height = 0;
 	} else {
 		fsizes->type = V4L2_FRMSIZE_TYPE_DISCRETE;
-		fsizes->size.discrete.width =
+		fsizes->discrete.width =
 		    UGETW(sc->sc_fmtgrp[idx].frame[i]->wWidth);
-		fsizes->size.discrete.height =
+		fsizes->discrete.height =
 		    UGETW(sc->sc_fmtgrp[idx].frame[i]->wHeight);
 	}
 
