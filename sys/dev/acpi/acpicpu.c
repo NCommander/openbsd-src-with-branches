@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.48 2008/11/22 16:03:31 gwk Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.49 2008/12/22 06:37:36 gwk Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -636,7 +636,7 @@ acpicpu_setperf_ppc_change(struct acpicpu_pss *pss, int npss) {
 	sc = acpicpu_sc[0];
 
 	if (sc != NULL)
-		acpicpu_setperf(sc->sc_level);
+		cpu_setperf(sc->sc_level);
 }
 
 void
