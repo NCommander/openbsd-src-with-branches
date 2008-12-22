@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rum.c,v 1.79 2008/10/15 19:12:18 blambert Exp $	*/
+/*	$OpenBSD: if_rum.c,v 1.80 2008/12/10 18:10:14 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2005-2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -2121,6 +2121,10 @@ rum_stop(struct ifnet *ifp, int disable)
 	rum_write(sc, RT2573_MAC_CSR1, 3);
 	rum_write(sc, RT2573_MAC_CSR1, 0);
 
+	if (sc->amrr_xfer != NULL) {
+		usbd_free_xfer(sc->amrr_xfer);
+		sc->amrr_xfer = NULL;
+	}
 	if (sc->sc_rx_pipeh != NULL) {
 		usbd_abort_pipe(sc->sc_rx_pipeh);
 		usbd_close_pipe(sc->sc_rx_pipeh);
