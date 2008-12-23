@@ -2644,7 +2644,7 @@ em_rxeof(struct em_softc *sc, int count)
 
 	i = sc->next_rx_desc_to_check;
 
-	while (count != 0 && sc->rx_ndescs > 1) {
+	while (count != 0 && sc->rx_ndescs > 0) {
 		m = NULL;
 
 		desc = &sc->rx_desc_base[i];
