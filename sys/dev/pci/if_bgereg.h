@@ -2477,6 +2477,7 @@ struct bge_softc {
 	int			bge_if_flags;
 	int			bge_txcnt;
 	struct timeout		bge_timeout;
+	struct timeout		bge_rxtimeout;
 	void			*sc_powerhook;
 	void			*sc_shutdownhook;
 	u_int32_t		bge_rx_discards;
