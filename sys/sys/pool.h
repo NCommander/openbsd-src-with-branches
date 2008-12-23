@@ -160,6 +160,7 @@ int		pool_prime(struct pool *, int);
 void		pool_printit(struct pool *, const char *,
 		    int (*)(const char *, ...));
 int		pool_chk(struct pool *, const char *);
+void		pool_walk(struct pool *, void (*)(void *));
 #endif
 #endif /* _KERNEL */
 
