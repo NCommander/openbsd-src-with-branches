@@ -614,7 +614,8 @@ struct ip_mreq {
 #define	IPCTL_STATS		33	/* IP statistics */
 #define	IPCTL_MRTPROTO		34	/* type of multicast */
 #define	IPCTL_MRTSTATS		35
-#define	IPCTL_MAXID		36
+#define	IPCTL_ARPQUEUED		36
+#define	IPCTL_MAXID		37
 
 #define	IPCTL_NAMES { \
 	{ 0, 0 }, \
@@ -653,6 +654,7 @@ struct ip_mreq {
 	{ "stats", CTLTYPE_STRUCT }, \
 	{ "mrtproto", CTLTYPE_INT }, \
 	{ "mrtstats", CTLTYPE_STRUCT }, \
+	{ "arpqueued", CTLTYPE_INT }, \
 }
 #define	IPCTL_VARS { \
 	NULL, \
@@ -690,7 +692,8 @@ struct ip_mreq {
 	&ipmultipath, \
 	NULL, \
 	NULL, \
-	NULL \
+	NULL, \
+	&la_hold_total \
 }
 
 /* INET6 stuff */

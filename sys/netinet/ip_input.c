@@ -127,6 +127,7 @@ extern int ipport_lastauto;
 extern int ipport_hifirstauto;
 extern int ipport_hilastauto;
 extern struct baddynamicports baddynamicports;
+extern int la_hold_total;
 
 int *ipctl_vars[IPCTL_MAXID] = IPCTL_VARS;
 
