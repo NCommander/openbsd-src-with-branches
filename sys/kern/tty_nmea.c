@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_nmea.c,v 1.30 2008/07/22 06:06:47 mbalmer Exp $ */
+/*	$OpenBSD: tty_nmea.c,v 1.31 2008/09/10 14:01:23 blambert Exp $ */
 
 /*
  * Copyright (c) 2006, 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -379,7 +379,7 @@ nmea_gprmc(struct nmea *np, struct tty *tp, char *fld[], int fldcnt)
 	}
 
 	/*
-	 * If tty timestamping is requested, but not PPS signal is present, set
+	 * If tty timestamping is requested, but no PPS signal is present, set
 	 * the sensor state to CRITICAL.
 	 */
 	if (np->no_pps)
