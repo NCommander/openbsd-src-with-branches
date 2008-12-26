@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.23 2007/04/10 17:47:54 miod Exp $	*/
+/*	$OpenBSD: dma.c,v 1.24 2007/05/29 09:54:07 sobrado Exp $	*/
 /*	$NetBSD: dma.c,v 1.46 1997/08/27 11:24:16 bouyer Exp $ */
 
 /*
@@ -93,7 +93,7 @@ dmaprint(aux, name)
 	struct confargs *ca = aux;
 
 	if (name)
-		printf("[%s at %s]", ca->ca_ra.ra_name, name);
+		printf("%s at %s", ca->ca_ra.ra_name, name);
 	printf(" offset 0x%x", ca->ca_offset);
 	return (UNCONF);
 }
