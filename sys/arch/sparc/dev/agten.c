@@ -1,4 +1,4 @@
-/*	$OpenBSD: agten.c,v 1.10 2006/06/02 20:00:54 miod Exp $	*/
+/*	$OpenBSD: agten.c,v 1.11 2008/12/25 23:56:29 miod Exp $	*/
 /*
  * Copyright (c) 2002, 2003, Miodrag Vallat.
  * All rights reserved.
@@ -204,12 +204,11 @@ agtenattach(struct device *parent, struct device *self, void *args)
 	sc->sc_sunfb.sf_ro.ri_bits = (void *)sc->sc_i128_fb;
 	
 	sc->sc_sunfb.sf_ro.ri_hw = sc;
-	fbwscons_init(&sc->sc_sunfb, isconsole ? 0 : RI_CLEAR);
+	fbwscons_init(&sc->sc_sunfb, isconsole);
 	fbwscons_setcolormap(&sc->sc_sunfb, agten_setcolor);
 
-	if (isconsole) {
+	if (isconsole)
 		fbwscons_console_init(&sc->sc_sunfb, -1);
-	}
 
 	fbwscons_attach(&sc->sc_sunfb, &agten_accessops, isconsole);
 }
