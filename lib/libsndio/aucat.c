@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.7 2008/12/17 10:00:50 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.8 2008/12/21 10:03:25 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -564,7 +564,7 @@ aucat_revents(struct sio_hdl *sh, struct pollfd *pfd)
 	}
 	if (hdl->sa.eof)
 		return POLLHUP;
-	return revents & hdl->events;
+	return revents & (hdl->events | POLLHUP);
 }
 
 int
