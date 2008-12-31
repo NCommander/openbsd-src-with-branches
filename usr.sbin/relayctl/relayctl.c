@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayctl.c,v 1.34 2008/07/19 12:10:07 reyk Exp $	*/
+/*	$OpenBSD: relayctl.c,v 1.35 2008/12/05 16:37:56 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -89,7 +89,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s <command> [arg [...]]\n", __progname);
+	fprintf(stderr, "usage: %s command [argument ...]\n", __progname);
 	exit(1);
 }
 
