@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.h,v 1.34 2009/01/02 20:18:18 jakemsr Exp $	*/
+/*	$OpenBSD: azalia.h,v 1.35 2009/01/02 20:37:57 jakemsr Exp $	*/
 /*	$NetBSD: azalia.h,v 1.6 2006/01/16 14:15:26 kent Exp $	*/
 
 /*-
@@ -662,7 +662,7 @@ typedef struct codec_t {
 	u_int rate;
 } codec_t;
 
-
 int	azalia_codec_init_vtbl(codec_t *);
 int	azalia_codec_construct_format(codec_t *, int, int);
 int	azalia_widget_enabled(const codec_t *, nid_t);
+int	azalia_codec_gpio_quirks(codec_t *);

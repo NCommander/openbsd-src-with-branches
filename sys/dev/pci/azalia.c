@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.c,v 1.105 2009/01/02 00:25:33 jakemsr Exp $	*/
+/*	$OpenBSD: azalia.c,v 1.106 2009/01/02 20:18:18 jakemsr Exp $	*/
 /*	$NetBSD: azalia.c,v 1.20 2006/05/07 08:31:44 kent Exp $	*/
 
 /*-
@@ -1308,6 +1308,10 @@ azalia_codec_init(codec_t *this)
 		return err;
 
 	err = azalia_codec_init_volgroups(this);
+	if (err)
+		return err;
+
+	err = azalia_codec_gpio_quirks(this);
 	if (err)
 		return err;
 
