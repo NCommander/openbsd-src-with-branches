@@ -1,4 +1,4 @@
-/*	$OpenBSD: pyro.c,v 1.14 2008/07/12 13:08:04 kettenis Exp $	*/
+/*	$OpenBSD: pyro.c,v 1.15 2008/12/21 19:40:41 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -392,8 +392,6 @@ pyro_alloc_dma_tag(struct pyro_pbm *pbm)
 	dt->_dmamap_sync	= iommu_dvmamap_sync;
 	dt->_dmamem_alloc	= iommu_dvmamem_alloc;
 	dt->_dmamem_free	= iommu_dvmamem_free;
-	dt->_dmamem_map		= iommu_dvmamem_map;
-	dt->_dmamem_unmap	= iommu_dvmamem_unmap;
 	return (dt);
 }
 
