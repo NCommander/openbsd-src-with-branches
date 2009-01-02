@@ -1,4 +1,4 @@
-/*	$OpenBSD: add.c,v 1.104 2008/06/14 04:34:07 tobias Exp $	*/
+/*	$OpenBSD: add.c,v 1.105 2008/06/15 04:38:52 tobias Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -558,8 +558,8 @@ add_entry(struct cvs_file *cf)
 
 	if (cvs_server_active) {
 		cvs_server_send_response("Checked-in %s/", cf->file_wd);
-		cvs_server_send_response(cf->file_path);
-		cvs_server_send_response(entry);
+		cvs_server_send_response("%s", cf->file_path);
+		cvs_server_send_response("%s", entry);
 	} else {
 		entlist = cvs_ent_open(cf->file_wd);
 		cvs_ent_add(entlist, entry);
