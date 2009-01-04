@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia_codec.c,v 1.106 2009/01/02 22:32:25 jakemsr Exp $	*/
+/*	$OpenBSD: azalia_codec.c,v 1.107 2009/01/03 19:17:45 jakemsr Exp $	*/
 /*	$NetBSD: azalia_codec.c,v 1.8 2006/05/10 11:17:27 kent Exp $	*/
 
 /*-
@@ -581,7 +581,9 @@ azalia_generic_mixer_init(codec_t *this)
 			continue;
 
 		/* selector */
-		if (w->type != COP_AWTYPE_AUDIO_MIXER && w->nconnections > 0 &&
+		if (w->nconnections > 0 &&
+		    !(w->type == COP_AWTYPE_AUDIO_MIXER &&
+		    (w->widgetcap & COP_AWCAP_INAMP)) &&
 		    !(w->nconnections == 1 &&
 		    azalia_widget_enabled(this, w->connections[0]) &&
 		    strcmp(w->name, this->w[w->connections[0]].name) == 0) &&
