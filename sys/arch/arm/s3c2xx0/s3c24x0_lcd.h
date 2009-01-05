@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* $NetBSD: s3c24x0_lcd.h,v 1.4 2007/03/04 05:59:38 christos Exp $ */
 
 /*

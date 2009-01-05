@@ -1,4 +1,4 @@
-/* $OpenBSD */
+/* $OpenBSD$ */
 /* $NetBSD: s3c24x0reg.h,v 1.8 2005/12/11 12:16:51 christos Exp $ */
 
 /*
