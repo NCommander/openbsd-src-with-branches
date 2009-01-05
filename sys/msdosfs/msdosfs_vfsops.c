@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vfsops.c,v 1.49 2007/11/15 19:11:52 deraadt Exp $	*/
+/*	$OpenBSD: msdosfs_vfsops.c,v 1.50 2007/11/26 00:30:44 krw Exp $	*/
 /*	$NetBSD: msdosfs_vfsops.c,v 1.48 1997/10/18 02:54:57 briggs Exp $	*/
 
 /*-
@@ -478,7 +478,8 @@ msdosfs_mountfs(devvp, mp, p, argp)
 		    && !bcmp(fp->fsisig2, "rrAa", 4)
 		    && !bcmp(fp->fsisig3, "\0\0\125\252", 4)
 		    && !bcmp(fp->fsisig4, "\0\0\125\252", 4))
-		        pmp->pm_nxtfree = getulong(fp->fsinxtfree);
+		        /* Valid FSInfo. */
+			;
 		else
 		        pmp->pm_fsinfo = 0;
 		brelse(bp);
