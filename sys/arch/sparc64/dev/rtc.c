@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtc.c,v 1.5 2008/04/15 20:57:32 kettenis Exp $	*/
+/*	$OpenBSD: rtc.c,v 1.6 2008/04/16 18:33:42 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -199,7 +199,7 @@ rtc_attach(struct device *parent, struct device *self, void *aux)
 		sc->sc_ih = bus_intr_establish(sc->sc_iot, ea->ea_intrs[0],
 		    IPL_BIO, 0, rtc_intr, sc, self->dv_xname);
 		if (sc->sc_ih == NULL) {
-			printf("%s: can't establush interrupt\n",
+			printf("%s: can't establish interrupt\n",
 			    self->dv_xname);
 		}
 	}
