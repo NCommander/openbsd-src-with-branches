@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_spf.c,v 1.65 2007/10/01 08:35:12 norby Exp $ */
+/*	$OpenBSD: rde_spf.c,v 1.66 2008/02/11 12:37:37 norby Exp $ */
 
 /*
  * Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -45,7 +45,6 @@ void		 rt_nexthop_add(struct rt_node *, struct v_nexthead *,
 void		 rt_update(struct in_addr, u_int8_t, struct v_nexthead *,
 		     u_int32_t, u_int32_t, struct in_addr, struct in_addr,
 		     enum path_type, enum dst_type, u_int8_t, u_int32_t);
-struct rt_node	*rt_lookup(enum dst_type, in_addr_t);
 void		 rt_invalidate(struct area *);
 int		 linked(struct vertex *, struct vertex *);
 
@@ -573,8 +572,10 @@ spf_timer(int fd, short event, void *arg)
 				rde_send_change_kroute(r);
 		}
 
-		LIST_FOREACH(area, &conf->area_list, entry)
+		LIST_FOREACH(area, &conf->area_list, entry) {
+			lsa_generate_stub_sums(area);
 			lsa_remove_invalid_sums(area);
+		}
 
 		start_spf_holdtimer(conf);
 		break;
