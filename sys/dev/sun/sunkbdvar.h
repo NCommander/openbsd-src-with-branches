@@ -1,4 +1,4 @@
-/*	$OpenBSD: sunkbdvar.h,v 1.10 2005/11/11 16:44:51 miod Exp $	*/
+/*	$OpenBSD: sunkbdvar.h,v 1.11 2009/01/11 15:53:58 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -30,6 +30,8 @@
  * Materiel Command, USAF, under agreement number F30602-01-2-0537.
  *
  */
+
+#define	SUNKBD_MAX_INPUT_SIZE	64
 
 struct sunkbd_softc {
 	struct device	sc_dev;
