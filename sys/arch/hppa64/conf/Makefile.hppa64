@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.hppa64,v 1.6 2007/11/25 18:25:28 deraadt Exp $
+#	$OpenBSD: Makefile.hppa64,v 1.7 2008/04/12 21:04:16 miod Exp $
 
 # Makefile for OpenBSD
 #
@@ -152,7 +152,8 @@ SRCS=	${HPPA}/hppa64/locore.S \
 	fi
 	sh $S/kern/genassym.sh ${MKDEP} -f assym.dep ${CFLAGS} \
 	    ${CPPFLAGS} < ${HPPA}/hppa64/genassym.cf
-	@sed -e 's/.*\.o:.* /assym.h: /' < assym.dep >> .depend
+	@sed -e 's/.*\.o: /assym.h: /' -e 's/\/tmp\/genassym_c.[^ ]*//' \
+	    < assym.dep >> .depend
 	@rm -f assym.dep
 
 # depend on root or device configuration
