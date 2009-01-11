@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.129 2008/10/15 19:12:19 blambert Exp $	*/
+/*	$OpenBSD: com.c,v 1.130 2008/11/23 17:59:00 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -1048,7 +1048,7 @@ comsoft(void *arg)
 		if (ISSET(*ibufp, LSR_OE)) {
 			sc->sc_overflows++;
 			if (sc->sc_errors++ == 0)
-				timeout_add(&sc->sc_diag_tmo, 60 * hz);
+				timeout_add_sec(&sc->sc_diag_tmo, 60);
 		}
 		/* This is ugly, but fast. */
 		c |= lsrmap[(*ibufp++ & (LSR_BI|LSR_FE|LSR_PE)) >> 2];

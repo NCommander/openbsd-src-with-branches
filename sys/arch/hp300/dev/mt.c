@@ -1,4 +1,4 @@
-/*	$OpenBSD: mt.c,v 1.19 2008/06/10 20:50:22 beck Exp $	*/
+/*	$OpenBSD: mt.c,v 1.21 2008/06/12 06:58:33 deraadt Exp $	*/
 /*	$NetBSD: mt.c,v 1.8 1997/03/31 07:37:29 scottr Exp $	*/
 
 /*
@@ -656,7 +656,7 @@ mtstart(arg)
 				    sc->sc_dev.dv_xname);
 				goto fatalerror;
 			}
-			timeout_add(&sc->sc_intr_to, 4 * hz);
+			timeout_add_sec(&sc->sc_intr_to, 4);
 			hpibawait(sc->sc_hpibno);
 			return;
 
