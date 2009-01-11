@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.441 2008/12/04 15:24:18 oga Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.442 2008/12/18 14:17:28 kurt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -2023,8 +2023,14 @@ p3_get_bus_clock(struct cpu_info *ci)
 		msr = rdmsr(MSR_FSB_FREQ);
 		bus = (msr >> 0) & 0x7;
 		switch (bus) {
+		case 5:
+			bus_clock = BUS100;
+			break;
 		case 1:
 			bus_clock = BUS133;
+			break;
+		case 3:
+			bus_clock = BUS166;
 			break;
 		default:
 			printf("%s: unknown Atom FSB_FREQ value %d",
