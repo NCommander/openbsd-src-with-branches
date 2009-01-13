@@ -701,7 +701,7 @@ parse_config(struct env *x_conf, const char *filename, int opts)
 
 	errors = 0;
 
-	if ((file = pushfile(filename, 0)) == NULL) {
+	if ((file = pushfile(filename, 1)) == NULL) {
 		return (-1);
 	}
 	topfile = file;
