@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.47 2008/11/22 10:32:20 deraadt Exp $
+#	$OpenBSD: RAMDISK,v 1.48 2008/12/22 16:35:28 deraadt Exp $
 
 machine		amd64		# architecture, used by config; REQUIRED
 
@@ -44,6 +44,8 @@ acpi0		at bios?
 acpiprt*	at acpi?
 acpimadt0	at acpi?
 #acpitz*	at acpi?
+
+mpbios0		at bios0
 
 cpu0	at mainbus0
 ioapic*	at mainbus?

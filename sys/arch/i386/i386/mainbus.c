@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.40 2008/01/13 22:29:01 kettenis Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.42 2008/07/08 05:22:00 dlg Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 #include "isa.h"
 #include "apm.h"
 #include "bios.h"
-#include "mpbios.h"
 #include "acpi.h"
 #include "ipmi.h"
 #include "esm.h"
@@ -59,7 +58,6 @@
 
 #include <machine/cpuvar.h>
 #include <machine/i82093var.h>
-#include <machine/mpbiosvar.h>
 
 #if NBIOS > 0
 #include <machine/biosvar.h>
@@ -170,11 +168,6 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 		mba.mba_busname = "vmware";
 		config_found(self, &mba.mba_busname, mainbus_print);
 	}
-#endif
-
-#if NMPBIOS > 0
-	if (mpbios_probe(self))
-		mpbios_scan(self);
 #endif
 
 	if ((cpu_info_primary.ci_flags & CPUF_PRESENT) == 0) {
