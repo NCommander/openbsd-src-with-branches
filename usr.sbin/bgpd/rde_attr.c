@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_attr.c,v 1.75 2007/05/22 14:03:31 claudio Exp $ */
+/*	$OpenBSD: rde_attr.c,v 1.76 2008/05/08 09:51:46 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -588,7 +588,7 @@ aspath_merge(struct rde_aspath *a, struct attr *attr)
 
 	ascnt = aspath_count(attr->data, attr->len);
 	if (ascnt > a->aspath->ascnt) {
-		/* ASPATH is shorter then NEW_ASPATH no way to merge */
+		/* ASPATH is shorter then AS4_PATH no way to merge */
 		attr_free(a, attr);
 		return;
 	}
