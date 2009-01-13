@@ -6,8 +6,8 @@
 #include <wchar.h>
 #include <wctype.h>
 
-#define FUNCNAME	wcstod
-typedef double		float_type;
-#define STRTOD_FUNC	strtod
+#define FUNCNAME	wcstof
+typedef float		float_type;
+#define STRTOD_FUNC	strtof
 
 #include "_wcstod.h"
