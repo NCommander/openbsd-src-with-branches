@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_krb5.c,v 1.23 2005/11/13 00:27:56 deraadt Exp $	*/
+/*	$OpenBSD: login_krb5.c,v 1.24 2008/04/24 14:04:19 todd Exp $	*/
 
 /*-
  * Copyright (c) 2001, 2002 Hans Insulander <hin@openbsd.org>.
@@ -214,9 +214,9 @@ krb5_login(char *username, char *invokinguser, char *password, int login,
 		break;
 	}
 
-	krb5_free_context(context);
 	krb5_free_principal(context, princ);
 	krb5_cc_close(context, ccache);
+	krb5_free_context(context);
 
 	return (return_code);
 }
