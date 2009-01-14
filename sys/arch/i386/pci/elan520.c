@@ -1,4 +1,4 @@
-/*	$OpenBSD: elan520.c,v 1.14 2007/11/28 17:05:09 tedu Exp $	*/
+/*	$OpenBSD: elan520.c,v 1.15 2008/06/26 05:42:11 ray Exp $	*/
 /*	$NetBSD: elan520.c,v 1.4 2002/10/02 05:47:15 thorpej Exp $	*/
 
 /*-
@@ -90,8 +90,6 @@ struct cfattach elansc_ca = {
 struct cfdriver elansc_cd = {
 	NULL, "elansc", DV_DULL
 };
-
-static int cpuspeed;
 
 int
 elansc_match(struct device *parent, void *match, void *aux)
