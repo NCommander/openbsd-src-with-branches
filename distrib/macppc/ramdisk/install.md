@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.33 2008/03/04 00:36:38 krw Exp $
+#	$OpenBSD: install.md,v 1.34 2008/06/26 05:42:03 ray Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -188,7 +188,7 @@ md_consoleinfo() {
 	for _u in $(scan_dmesg "/^$_d\([0-9]\) .*/s//\1/p"); do
 		if [[ $_d$_u == $CONSOLE || -z $CONSOLE ]]; then
 			CDEV=$_d$_u
-			: ${CSPEED:=56700}
+			: ${CSPEED:=57600}
 			set -- a b c d e f g h i j
 			shift $_u
 			CTTY=tty$1
