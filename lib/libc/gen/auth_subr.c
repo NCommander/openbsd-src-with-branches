@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_subr.c,v 1.34 2008/03/15 16:19:02 deraadt Exp $	*/
+/*	$OpenBSD: auth_subr.c,v 1.35 2008/03/24 16:10:59 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000-2002,2004 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -628,11 +628,11 @@ auth_setpwd(auth_session_t *as, struct passwd *pwd)
 		if (as->name == NULL)
 			return (0);
 		if ((pwd = getpwnam(as->name)) == NULL) {
-			instance = strpbrk(as->name, "./");
-			if (instance++ == NULL)
+			instance = strchr(as->name, '/');
+			if (instance == NULL)
 				return (as->pwd ? 0 : 1);
-			if (strcmp(instance, "root") == 0)
-				pwd = getpwnam(instance);
+			if (strcmp(instance, "/root") == 0)
+				pwd = getpwnam(instance + 1);
 			if (pwd == NULL)
 				return (as->pwd ? 0 : 1);
 		}
