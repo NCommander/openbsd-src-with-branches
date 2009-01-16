@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsk.c,v 1.1 2009/01/12 20:11:13 kettenis Exp $	*/
+/*	$OpenBSD: vdsk.c,v 1.2 2009/01/12 23:05:07 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -1052,7 +1052,6 @@ vdsk_scsi_done(struct scsi_xfer *xs, int error)
 int
 vdsk_dev_probe(struct scsi_link *link)
 {
-	KASSERT(link->scsibus == 0);
 	KASSERT(link->lun == 0);
 
 	if (link->target == 0)
