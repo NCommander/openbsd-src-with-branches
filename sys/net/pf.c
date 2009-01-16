@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.626 2008/11/21 18:01:30 claudio Exp $ */
+/*	$OpenBSD: pf.c,v 1.627 2008/11/24 13:22:09 mikeb Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3400,6 +3400,11 @@ pf_test_rule(struct pf_rule **rm, struct pf_state **sm, int direction,
 		    bip_sum, hdrlen);
 		if (action != PF_PASS)
 			return (action);
+	} else {
+		if (sk != NULL)
+			pool_put(&pf_state_key_pl, sk);
+		if (nk != NULL)
+			pool_put(&pf_state_key_pl, nk);
 	}
 
 	/* copy back packet headers if we performed NAT operations */
