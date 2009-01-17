@@ -1,4 +1,4 @@
-/* $OpenBSD: alpha_cpu.h,v 1.7 2002/05/10 10:14:48 art Exp $ */
+/* $OpenBSD: alpha_cpu.h,v 1.8 2002/11/26 01:35:23 art Exp $ */
 /* $NetBSD: alpha_cpu.h,v 1.43 2001/12/18 04:18:22 thorpej Exp $ */
 
 /*
@@ -184,6 +184,7 @@ struct alpha_logout_area {
 #define	ALPHA_PROC_ERROR	0x630	/* Processor correctable error	*/
 #define	ALPHA_SYS_MCHECK	0x660	/* System machine check		*/
 #define	ALPHA_PROC_MCHECK	0x670	/* Processor machine check	*/
+#define	ALPHA_ENV_MCHECK	0x680	/* Environmental machine check */
 
 /*
  * Virtual Memory Management definitions [OSF/1 PALcode Specific]
