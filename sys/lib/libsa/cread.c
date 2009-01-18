@@ -1,4 +1,4 @@
-/*	$OpenBSD: cread.c,v 1.11 2003/08/11 06:23:09 deraadt Exp $	*/
+/*	$OpenBSD: cread.c,v 1.12 2004/04/02 04:39:51 deraadt Exp $	*/
 /*	$NetBSD: cread.c,v 1.2 1997/02/04 18:38:20 thorpej Exp $	*/
 
 /*
@@ -250,11 +250,12 @@ close(int fd)
 		return(oclose(fd));
 
 	s = ss[fd];
+	if (s != NULL) {
+		inflateEnd(&(s->stream));
 
-	inflateEnd(&(s->stream));
-
-	free(s->inbuf, Z_BUFSIZE);
-	free(s, sizeof(struct sd));
+		free(s->inbuf, Z_BUFSIZE);
+		free(s, sizeof(struct sd));
+	}
 
 	return(oclose(fd));
 }
