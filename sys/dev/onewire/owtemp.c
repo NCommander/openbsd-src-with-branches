@@ -1,7 +1,7 @@
-/*	$OpenBSD: owtemp.c,v 1.11 2008/12/26 18:17:25 todd Exp $	*/
+/*	$OpenBSD: owtemp.c,v 1.12 2009/01/17 20:30:27 grange Exp $	*/
 
 /*
- * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
+ * Copyright (c) 2006, 2009 Alexander Yurchenko <grange@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
