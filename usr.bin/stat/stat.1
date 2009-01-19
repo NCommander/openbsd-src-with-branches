@@ -1,4 +1,4 @@
-.\"	$OpenBSD: stat.1,v 1.16 2008/10/06 13:41:33 todd Exp $
+.\"	$OpenBSD: stat.1,v 1.17 2008/11/08 08:24:10 jmc Exp $
 .\"	$NetBSD: stat.1,v 1.11 2003/05/08 13:07:10 wiz Exp $
 .\"
 .\" Copyright (c) 2002 The NetBSD Foundation, Inc.
@@ -28,7 +28,7 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: October 6 2008 $
+.Dd $Mdocdate: November 8 2008 $
 .Dt STAT 1
 .Os
 .Sh NAME
@@ -379,8 +379,7 @@ and
 which default to
 .Cm S .
 .Pp
-.Nm
-exits 0 on success, and \*(Gt0 if an error occurred.
+.Ex -std stat
 .Sh EXAMPLES
 Given a symbolic link ``foo'' that points from /tmp/foo to /, you would use
 .Nm
