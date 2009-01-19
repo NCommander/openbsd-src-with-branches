@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_aout.c,v 1.7 2003/06/28 04:55:07 deraadt Exp $ */
+/*	$OpenBSD: exec_aout.c,v 1.8 2003/09/26 17:00:27 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -25,7 +25,7 @@
  */
 
 #ifndef LINT
-static char rcsid[] = "$OpenBSD: exec_aout.c,v 1.7 2003/06/28 04:55:07 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: exec_aout.c,v 1.8 2003/09/26 17:00:27 deraadt Exp $";
 #endif
 
 #include <err.h>
@@ -76,7 +76,7 @@ aout_adjust(caddr_t x)
 		aout_computeadj();
 
 	if (aout_datashift != 0 &&
-	    (unsigned long)x >= N_DATADDR(aout_ex))
+	    (unsigned long)x >= N_DATADDR(aout_ex) - N_TXTADDR(aout_ex))
 		x -= aout_datashift;
 
 	return (x + aout_adjvalue);
