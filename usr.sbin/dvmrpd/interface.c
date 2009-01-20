@@ -643,6 +643,7 @@ if_to_ctl(struct iface *iface)
 	ictl.ifindex = iface->ifindex;
 	ictl.state = iface->state;
 	ictl.mtu = iface->mtu;
+	ictl.nbr_cnt = iface->nbr_cnt;
 	ictl.adj_cnt = iface->adj_cnt;
 
 	ictl.gen_id = iface->gen_id;

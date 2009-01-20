@@ -234,6 +234,7 @@ struct iface {
 	int			 fd;
 	int			 state;
 	int			 mtu;
+	int			 nbr_cnt;
 	int			 adj_cnt;
 
 	u_int16_t		 flags;
@@ -322,6 +323,7 @@ struct ctl_iface {
 	unsigned int		 ifindex;
 	int			 state;
 	int			 mtu;
+	int			 nbr_cnt;
 	int			 adj_cnt;
 
 	u_int16_t		 flags;

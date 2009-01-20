@@ -96,7 +96,6 @@ void		 mfc_delete(struct mfc *);
 void		 rt_init(void);
 int		 rt_compare(struct rt_node *, struct rt_node *);
 struct rt_node	*rt_find(in_addr_t, u_int8_t);
-struct rt_node	*rt_matchorigin(in_addr_t);
 struct rt_node	*rr_new_rt(struct route_report *, u_int32_t, int);
 int		 rt_insert(struct rt_node *);
 void		 rt_update(struct rt_node *);
