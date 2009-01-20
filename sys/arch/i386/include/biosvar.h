@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.49 2007/12/05 19:17:13 deraadt Exp $	*/
+/*	$OpenBSD: biosvar.h,v 1.50 2008/09/01 17:30:56 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -33,6 +33,9 @@
 #define	BOOTARG_OFF	(NBPG*2)
 #define	BOOTARG_LEN	(NBPG*1)
 #define	BOOTBIOS_ADDR	(0x7c00)
+
+	/* physical page for ptp 0 need for various tramps */
+#define PTP0_PA		(NBPG*3)	
 
 	/* BIOS configure flags */
 #define	BIOSF_BIOS32	0x0001
