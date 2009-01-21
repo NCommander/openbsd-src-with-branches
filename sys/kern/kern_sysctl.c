@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.164 2008/10/31 17:15:30 deraadt Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.167 2008/10/31 17:18:24 deraadt Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -332,7 +332,7 @@ kern_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 		hostid = inthostid;
 		return (error);
 	case KERN_CLOCKRATE:
-		return (sysctl_clockrate(oldp, oldlenp));
+		return (sysctl_clockrate(oldp, oldlenp, newp));
 	case KERN_BOOTTIME:
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &boottime,
 		    sizeof(struct timeval)));
