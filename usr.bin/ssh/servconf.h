@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.85 2008/06/10 04:50:25 dtucker Exp $ */
+/* $OpenBSD: servconf.h,v 1.86 2008/11/04 08:22:13 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -41,9 +41,9 @@
 #define INTERNAL_SFTP_NAME	"internal-sftp"
 
 typedef struct {
-	u_int num_ports;
-	u_int ports_from_cmdline;
-	u_short ports[MAX_PORTS];	/* Port number to listen on. */
+	u_int	num_ports;
+	u_int	ports_from_cmdline;
+	int	ports[MAX_PORTS];	/* Port number to listen on. */
 	char   *listen_addr;		/* Address on which the server listens. */
 	struct addrinfo *listen_addrs;	/* Addresses on which the server listens. */
 	int     address_family;		/* Address family used by the server. */

@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.364 2008/07/10 18:08:11 markus Exp $ */
+/* $OpenBSD: sshd.c,v 1.365 2008/10/30 19:31:16 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1273,7 +1273,7 @@ main(int ac, char **av)
 				exit(1);
 			}
 			options.ports[options.num_ports++] = a2port(optarg);
-			if (options.ports[options.num_ports-1] == 0) {
+			if (options.ports[options.num_ports-1] <= 0) {
 				fprintf(stderr, "Bad port number.\n");
 				exit(1);
 			}
