@@ -1,4 +1,4 @@
-.\"	$OpenBSD: aucat.1,v 1.42 2009/01/10 20:02:28 ratchov Exp $
+.\"	$OpenBSD: aucat.1,v 1.43 2009/01/10 22:13:07 jmc Exp $
 .\"
 .\" Copyright (c) 2006 Alexandre Ratchov <alex@caoua.org>
 .\"
@@ -163,7 +163,10 @@ then the stream is closed permanently.
 If
 .Nm
 is sent
-.Dv SIGINT ,
+.Dv SIGHUP ,
+.Dv SIGINT
+or
+.Dv SIGTERM ,
 it terminates recording to files.
 If sent
 .Dv SIGUSR1
