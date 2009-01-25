@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.52 2009/01/23 17:38:15 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.53 2009/01/23 17:52:13 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -320,10 +320,7 @@ main(int argc, char **argv)
 	unsigned bufsz, mode;
 	char *devpath, *dbgenv;
 	const char *errstr;
-	extern char *malloc_options;
 	unsigned volctl;
-
-	malloc_options = "FGJ";
 
 	dbgenv = getenv("AUCAT_DEBUG");
 	if (dbgenv) {
