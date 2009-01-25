@@ -1,6 +1,6 @@
 define(MACHINE,mvme88k)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.20 2008/06/13 21:07:28 todd Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.21 2008/06/14 23:09:06 todd Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -136,6 +136,6 @@ _DEV(xfs, 51)
 dnl
 divert(__mddivert)dnl
 dnl
-_std(1, 2, 43, 3, 6)
+_std(1, 2, 43, 6)
 	;;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.46 2007/05/28 22:26:03 todd Exp $	*/
+/*	$OpenBSD: conf.c,v 1.47 2008/04/08 14:31:54 claudio Exp $	*/
 /*	$NetBSD: conf.c,v 1.40 1996/04/11 19:20:03 thorpej Exp $ */
 
 /*
@@ -138,7 +138,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 4 */
 	cdev_notdef(),			/* 5 */
 	cdev_notdef(),			/* 6 */
-	cdev_swap_init(1,sw),		/* 7: /dev/drum (swap pseudo-device) */
+	cdev_notdef(),			/* 7 was /dev/drum */
 	cdev_notdef(),			/* 8 */
 	cdev_disk_init(NXY,xy),		/* 9: SMD disk */
 	cdev_notdef(),			/* 10 */

@@ -1,6 +1,6 @@
 define(MACHINE,alpha)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.38 2008/06/14 23:09:05 todd Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.39 2008/06/28 21:46:04 mglocker Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -92,7 +92,7 @@ ramdisk)
 	_recurse st0 cd0 ttyC0 rd0 bio
 	;;
 
-_std(1, 2, 39, 3, 6)
+_std(1, 2, 39, 6)
 	M xf86		c 2 4 600
 	;;
 

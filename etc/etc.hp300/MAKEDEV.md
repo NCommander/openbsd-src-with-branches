@@ -1,6 +1,6 @@
 define(MACHINE,hp300)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.32 2008/06/13 21:07:28 todd Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.33 2008/06/14 23:09:05 todd Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -101,7 +101,7 @@ ramdisk)
 	_recurse bpf0 bpf1 tun0 tun1 lkm
 	;;
 
-_std(1, 2, 36, 3, 6)
+_std(1, 2, 36, 6)
 	;;
 
 dca*)
