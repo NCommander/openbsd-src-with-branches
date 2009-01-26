@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.34 2008/12/14 10:17:24 damien Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.35 2009/01/26 19:09:41 damien Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -207,8 +207,10 @@ struct ieee80211_node {
 	struct timeout		ni_sa_query_to;
 	int			ni_sa_query_count;
 
+#ifdef notyet
 	/* HT-immediate Block Ack */
 	struct ieee80211_ba	ni_ba[IEEE80211_NUM_TID];
+#endif
 
 	/* others */
 	u_int16_t		ni_associd;	/* assoc response */
