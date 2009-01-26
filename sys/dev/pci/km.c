@@ -1,4 +1,4 @@
-/*	$OpenBSD: km.c,v 1.2 2008/08/29 03:38:31 cnst Exp $	*/
+/*	$OpenBSD: km.c,v 1.3 2008/08/30 01:10:13 brad Exp $	*/
 
 /*
  * Copyright (c) 2008 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -97,7 +97,7 @@ km_attach(struct device *parent, struct device *self, void *aux)
 	sensor_attach(&sc->sc_sensordev, &sc->sc_sensor);
 
 	if (sensor_task_register(sc, km_refresh, 5) == NULL) {
-		printf(": unable to register the update task\n");
+		printf(": unable to register update task\n");
 		return;
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: w83793g.c,v 1.3 2007/10/17 16:38:51 cnst Exp $	*/
+/*	$OpenBSD: w83793g.c,v 1.4 2007/10/18 19:21:52 cnst Exp $	*/
 
 /*
  * Copyright (c) 2007 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -135,7 +135,7 @@ wbng_attach(struct device *parent, struct device *self, void *aux)
 		sensor_attach(&sc->sc_sensordev, &sc->sc_sensors[i]);
 
 	if (sensor_task_register(sc, wbng_refresh, 5) == NULL) {
-		printf(", unable to register the update task\n");
+		printf(", unable to register update task\n");
 		return;
 	}
 
