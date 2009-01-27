@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.75 2008/05/08 07:18:47 claudio Exp $	*/
+/*	$OpenBSD: main.c,v 1.76 2008/09/16 15:48:13 gollo Exp $	*/
 /*	$NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $	*/
 
 /*
@@ -464,13 +464,13 @@ kread(u_long addr, void *buf, int size)
 }
 
 char *
-plural(int n)
+plural(u_int64_t n)
 {
 	return (n != 1 ? "s" : "");
 }
 
 char *
-plurales(int n)
+plurales(u_int64_t n)
 {
 	return (n != 1 ? "es" : "");
 }
