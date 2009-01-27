@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.13 2008/12/30 21:31:54 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.14 2009/01/03 00:23:50 stsp Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -264,10 +264,9 @@ rde_dispatch_imsg(int fd, short event, void *bula)
 				fatalx("invalid size of OE request");
 			memcpy(&rn, imsg.data, sizeof(rn));
 
-			if (rde_nbr_find(imsg.hdr.peerid))
+			if (rde_nbr_new(imsg.hdr.peerid, &rn) == NULL)
 				fatalx("rde_dispatch_imsg: "
 				    "neighbor already exists");
-			rde_nbr_new(imsg.hdr.peerid, &rn);
 			break;
 		case IMSG_NEIGHBOR_DOWN:
 			rde_nbr_del(rde_nbr_find(imsg.hdr.peerid));
