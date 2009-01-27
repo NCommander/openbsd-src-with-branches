@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.85 2008/12/10 20:37:48 brad Exp $	*/
+/*	$OpenBSD: gem.c,v 1.86 2008/12/14 21:31:50 kettenis Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -229,7 +229,7 @@ gem_config(struct gem_softc *sc)
 	IFQ_SET_READY(&ifp->if_snd);
 
 	/* Hardware reads RX descriptors in multiples of four. */
-	m_clsetlwm(ifp, MCLBYTES, 4);
+	m_clsetwms(ifp, MCLBYTES, 4, GEM_NRXDESC - 4);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU;
 

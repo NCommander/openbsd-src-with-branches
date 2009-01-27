@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.101 2008/12/11 16:45:45 deraadt Exp $	*/
+/*	$OpenBSD: if.h,v 1.102 2008/12/12 22:07:33 claudio Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -109,7 +109,7 @@ struct if_clonereq {
 struct mclpool {
 	u_short	mcl_alive;
 	u_short mcl_hwm;
-	u_short mcl_size;
+	u_short mcl_cwm;
 	u_short mcl_lwm;
 };
 
