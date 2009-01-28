@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtual.c,v 1.28 2007/04/16 13:01:39 moritz Exp $	*/
+/*	$OpenBSD: virtual.c,v 1.29 2008/10/21 13:32:56 markus Exp $	*/
 
 /*
  * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
@@ -156,7 +156,7 @@ virtual_get_default(sa_family_t af)
  *
  * At the same time, we try to determine whether existing interfaces have
  * been rendered invalid; we do this by marking all virtual transports before
- * we call virtual_bind_if () through if_map (), and then releasing those
+ * we call virtual_bind_if() through if_map(), and then releasing those
  * transports that have not been unmarked.
  */
 void
