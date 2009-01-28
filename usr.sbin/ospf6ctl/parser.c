@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.4 2007/12/13 08:57:32 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.5 2008/12/30 21:33:52 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -99,6 +99,7 @@ static const struct token t_show_db[] = {
 	{KEYWORD,	"link",			SHOW_DBLINK,	NULL},
 	{KEYWORD,	"network",		SHOW_DBNET,	NULL},
 	{KEYWORD,	"router",		SHOW_DBRTR,	NULL},
+	{KEYWORD,	"intra",		SHOW_DBINTRA,	NULL},
 	{KEYWORD,	"self-originated",	SHOW_DBSELF,	NULL},
 	{KEYWORD,	"summary",		SHOW_DBSUM,	NULL},
 	{ENDTOKEN,	"",			NONE,		NULL}
