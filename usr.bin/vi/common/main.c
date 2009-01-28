@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.15 2008/06/12 21:22:48 sobrado Exp $	*/
+/*	$OpenBSD: main.c,v 1.16 2009/01/28 13:02:22 sobrado Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -127,11 +127,11 @@ editor(gp, argc, argv)
 
 	static const char *optstr[3] = {
 #ifdef DEBUG
-		"c:D:eFlRrSsT:t:vw:",
+		"c:D:FlRrSsT:t:vw:",
 		"c:D:eFlRrST:t:w:",
 		"c:D:eFlrST:t:w:"
 #else
-		"c:eFlRrSst:vw:",
+		"c:FlRrSst:vw:",
 		"c:eFlRrSt:w:",
 		"c:eFlrSt:w:"
 #endif
