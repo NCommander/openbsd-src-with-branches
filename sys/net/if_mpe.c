@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.13 2008/11/01 16:37:55 michele Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.14 2008/11/06 20:53:10 michele Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -168,7 +168,7 @@ mpestart(struct ifnet *ifp)
 			continue;
 		}
 		m->m_pkthdr.rcvif = ifp;
-		mpls_output(m);
+		mpls_output(m, NULL);
 	}
 }
 
