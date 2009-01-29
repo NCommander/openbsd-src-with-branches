@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-bgp.c,v 1.9 2007/06/14 17:42:06 claudio Exp $	*/
+/*	$OpenBSD: print-bgp.c,v 1.10 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1999 WIDE Project.
@@ -31,7 +31,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-     "@(#) $Id$";
+     "@(#) $Id: print-bgp.c,v 1.10 2007/10/07 16:41:05 deraadt Exp $";
 #endif
 
 #include <sys/param.h>
@@ -649,7 +649,7 @@ bgp_update_print(const u_char *dat, int length)
 			i += wpfx;
 			printf(" %s", buf);
 		}
-		printf(")\n");
+		printf(")");
 #endif
 	}
 	p += 2 + len;
