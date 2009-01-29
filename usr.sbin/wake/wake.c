@@ -1,4 +1,4 @@
-/*	$OpenBSD: wake.c,v 1.3 2009/01/28 22:28:38 michele Exp $ */
+/*	$OpenBSD: wake.c,v 1.4 2009/01/29 10:43:36 michele Exp $ */
 
 /*
  * Copyright (C) 2006-2008 Marc Balmer.
@@ -107,21 +107,14 @@ get_bpf(void)
 		asprintf(&path, BPF_PATH_FORMAT, i);
 		if (path == NULL)
 			return -1;
+
 		fd = open(path, O_RDWR);
-		if (fd != -1) {
-			free(path);
-			return fd;
-		}
-		switch (errno) {
-		case EBUSY:
-			free(path);
-			continue;
-		case ENOENT:
-			free(path);
-			return -1;
-		}
 		free(path);
-		return -1;
+		if (fd != -1)
+			return fd;
+		if (errno == EBUSY)
+			continue;
+		break;
 	}
 	return -1;
 }
