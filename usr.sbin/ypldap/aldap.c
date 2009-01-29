@@ -1,5 +1,5 @@
-/*	$Id: aldap.c,v 1.17 2009/01/27 16:17:49 aschrijver Exp $ */
-/*	$OpenBSD: aldap.c,v 1.17 2009/01/27 16:17:49 aschrijver Exp $ */
+/*	$Id: aldap.c,v 1.18 2009/01/28 00:53:29 aschrijver Exp $ */
+/*	$OpenBSD: aldap.c,v 1.18 2009/01/28 00:53:29 aschrijver Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -78,6 +78,11 @@ aldap_bind(struct aldap *ldap, char *binddn, char *bindcred)
 {
 	struct ber_element *root = NULL, *elm;
 	int error;
+
+	if (binddn == NULL)
+		binddn = "";
+	if (bindcred == NULL)
+		bindcred = "";
 
 	if ((root = ber_add_sequence(NULL)) == NULL)
 		goto fail;
