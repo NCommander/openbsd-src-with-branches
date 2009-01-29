@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6ctl.c,v 1.20 2009/01/28 22:51:26 stsp Exp $ */
+/*	$OpenBSD: ospf6ctl.c,v 1.21 2009/01/29 16:34:32 stsp Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -880,6 +880,9 @@ show_db_msg_detail(struct imsg *imsg)
 			off += sizeof(struct lsa_prefix)
 			    + LSA_PREFIXSIZE(prefix->prefixlen);
 		}
+
+		printf("\n");
+		lasttype = lsa->hdr.type;
 		break;
 	case IMSG_CTL_SHOW_DB_SUM:
 		lsa = imsg->data;
