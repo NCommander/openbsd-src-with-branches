@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6ctl.c,v 1.19 2009/01/28 17:34:15 stsp Exp $ */
+/*	$OpenBSD: ospf6ctl.c,v 1.20 2009/01/28 22:51:26 stsp Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -769,7 +769,8 @@ show_db_msg_detail(struct imsg *imsg)
 			printf("    Prefix Length: %d, Options: %x\n",
 			    prefix->prefixlen, prefix->options);
 
-			off += sizeof(struct lsa_prefix);
+			off += sizeof(struct lsa_prefix)
+			    + LSA_PREFIXSIZE(prefix->prefixlen);
 		}
 
 		printf("\n");
@@ -876,7 +877,8 @@ show_db_msg_detail(struct imsg *imsg)
 			printf("    Prefix Length: %d, Options: %x\n",
 			    prefix->prefixlen, prefix->options);
 
-			off += sizeof(struct lsa_prefix);
+			off += sizeof(struct lsa_prefix)
+			    + LSA_PREFIXSIZE(prefix->prefixlen);
 		}
 		break;
 	case IMSG_CTL_SHOW_DB_SUM:
