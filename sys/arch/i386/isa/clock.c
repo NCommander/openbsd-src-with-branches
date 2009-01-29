@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.40 2007/08/01 13:18:18 martin Exp $	*/
+/*	$OpenBSD: clock.c,v 1.41 2007/11/28 17:05:09 tedu Exp $	*/
 /*	$NetBSD: clock.c,v 1.39 1996/05/12 23:11:54 mycroft Exp $	*/
 
 /*-
@@ -235,6 +235,14 @@ rtcintr(void *arg)
 	struct clockframe *frame = arg;		/* not strictly necessary */
 	u_int stat = 0;
 
+	if (stathz == 0) {
+		extern int psratio;
+
+		stathz = 128;
+		profhz = 1024;
+		psratio = profhz / stathz;
+	}
+
 	/* 
 	 * If rtcintr is 'late', next intr may happen immediately. 
 	 * Get them all. (Also, see comment in cpu_initclocks().)
@@ -393,8 +401,6 @@ void
 i8254_initclocks(void)
 {
 	static struct timeout rtcdrain_timeout;
-	stathz = 128;
-	profhz = 1024;
 
 	/*
 	 * XXX If you're doing strange things with multiple clocks, you might
