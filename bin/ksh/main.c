@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.43 2007/05/31 20:47:44 otto Exp $	*/
+/*	$OpenBSD: main.c,v 1.44 2008/07/05 07:25:18 djm Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -566,7 +566,7 @@ shell(Source *volatile s, volatile int toplevel)
 		}
 
 		if (t && (!Flag(FNOEXEC) || (s->flags & SF_TTY)))
-			exstat = execute(t, 0);
+			exstat = execute(t, 0, NULL);
 
 		if (t != NULL && t->type != TEOF && interactive && really_exit)
 			really_exit = 0;

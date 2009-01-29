@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.31 2007/08/02 10:50:25 fgsch Exp $	*/
+/*	$OpenBSD: eval.c,v 1.33 2007/08/02 11:05:54 fgsch Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -868,7 +868,7 @@ comsub(Expand *xp, char *cp)
 			ksh_dup2(pv[1], 1, false);
 			close(pv[1]);
 		}
-		execute(t, XFORK|XXCOM|XPIPEO);
+		execute(t, XFORK|XXCOM|XPIPEO, NULL);
 		restfd(1, ofd1);
 		startlast();
 		xp->split = 1;	/* waitlast() */
