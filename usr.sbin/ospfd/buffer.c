@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.8 2006/02/10 18:30:47 claudio Exp $ */
+/*	$OpenBSD: buffer.c,v 1.9 2008/10/03 15:20:29 eric Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -119,6 +119,12 @@ buf_seek(struct buf *buf, size_t pos, size_t len)
 		return (NULL);
 
 	return (buf->buf + pos);
+}
+
+size_t
+buf_left(struct buf *buf)
+{
+	return (buf->max - buf->wpos);
 }
 
 int
