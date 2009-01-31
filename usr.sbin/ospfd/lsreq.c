@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsreq.c,v 1.13 2006/03/09 13:34:19 claudio Exp $ */
+/*	$OpenBSD: lsreq.c,v 1.14 2006/03/13 09:36:06 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -80,7 +80,7 @@ send_ls_req(struct nbr *nbr)
 	if (auth_gen(buf, nbr->iface))
 		goto fail;
 
-	ret = send_packet(nbr->iface, buf->buf, buf->wpos, &dst);
+	ret = send_packet(nbr->iface, buf, &dst);
 
 	buf_free(buf);
 	return (ret);
