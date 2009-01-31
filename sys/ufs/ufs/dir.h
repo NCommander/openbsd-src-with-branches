@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.h,v 1.9 2003/12/28 17:20:16 tedu Exp $	*/
+/*	$OpenBSD: dir.h,v 1.10 2005/06/18 18:09:43 millert Exp $	*/
 /*	$NetBSD: dir.h,v 1.8 1996/03/09 19:42:41 scottr Exp $	*/
 
 /*
@@ -109,7 +109,7 @@ struct	direct {
  * null byte (dp->d_namlen+1), rounded up to a 4 byte boundary.
  */
 #define DIRECTSIZ(namlen)						\
-	(((int)&((struct direct *)0)->d_name +				\
+	((offsetof(struct direct, d_name) +				\
 	  ((namlen)+1)*sizeof(((struct direct *)0)->d_name[0]) + 3) & ~3)
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #define DIRSIZ(oldfmt, dp) \
