@@ -1,4 +1,4 @@
-/* $OpenBSD: tc_dma.c,v 1.2 2006/04/04 21:20:40 brad Exp $ */
+/* $OpenBSD: tc_dma.c,v 1.3 2008/06/26 05:42:09 ray Exp $ */
 /* $NetBSD: tc_dma.c,v 1.10 2001/07/19 06:40:02 thorpej Exp $ */
 
 /*-
@@ -47,7 +47,6 @@ struct alpha_bus_dma_tag tc_dmat_direct = {
 	NULL,				/* _next_window */
 	0,				/* _boundary */
 	NULL,				/* _sgmap */
-	0,				/* _pfthresh */
 	NULL,				/* _get_tag */
 	_bus_dmamap_create,
 	_bus_dmamap_destroy,
