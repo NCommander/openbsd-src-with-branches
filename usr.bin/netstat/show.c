@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.17 2009/01/08 12:52:36 michele Exp $	*/
+/*	$OpenBSD: show.c,v 1.18 2009/01/26 17:28:09 claudio Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -297,7 +297,7 @@ p_rtentry(struct rt_msghdr *rtm)
 		return;
 
 	p_sockaddr(sa, mask, rtm->rtm_flags, WID_DST(sa->sa_family));
-	p_sockaddr_mpls(sa, rti_info[RTAX_SRC], rtm->rtm_flags,
+	p_sockaddr_mpls(sa, rti_info[RTAX_SRC], rtm->rtm_mpls,
 	    WID_DST(sa->sa_family));
 
 	p_sockaddr(rti_info[RTAX_GATEWAY], NULL, RTF_HOST,
