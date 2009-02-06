@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5212.c,v 1.48 2008/09/13 13:35:06 reyk Exp $	*/
+/*	$OpenBSD: ar5212.c,v 1.49 2009/01/15 07:55:22 grange Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -2827,7 +2827,7 @@ ar5k_ar5212_get_capabilities(struct ath_hal *hal)
 	 * If the EEPROM is not reporting any mode, we try 11b.
 	 * This might fix a few broken devices with invalid EEPROM.
 	 */
-	if (a == b == g == 0)
+	if (!a && !b && !g)
 		b = 1;
 
 	/*
