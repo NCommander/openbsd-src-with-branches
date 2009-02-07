@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.108 2008/10/14 21:36:27 deraadt Exp $	*/
+/*	$OpenBSD: inet.c,v 1.109 2009/02/02 17:19:13 mbalmer Exp $	*/
 /*	$NetBSD: inet.c,v 1.14 1995/10/03 21:42:37 thorpej Exp $	*/
 
 /*
@@ -75,6 +75,7 @@
 #include <rpc/pmap_clnt.h>
 
 #include <arpa/inet.h>
+#include <err.h>
 #include <limits.h>
 #include <netdb.h>
 #include <stdio.h>
