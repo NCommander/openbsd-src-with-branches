@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdio.c,v 1.67 2008/08/30 10:41:38 fgsch Exp $	*/
+/*	$OpenBSD: cdio.c,v 1.68 2008/10/29 00:07:07 deraadt Exp $	*/
 
 /*  Copyright (c) 1995 Serge V. Vakulenko
  * All rights reserved.
@@ -111,7 +111,7 @@
 struct cmdtab {
 	int command;
 	char *name;
-	unsigned int min;
+	int min;
 	char *args;
 } cmdtab[] = {
 { CMD_CLOSE,    "close",        1, "" },
@@ -139,8 +139,8 @@ struct cmdtab {
 { CMD_CDID,	"cdid",		3, "" },
 { CMD_QUIT,	"exit",		2, "" },
 { CMD_BLANK,	"blank",	1, "" },
-{ CMD_CDRIP,	"cdrip",	1, "[[track1-trackN] ...]" },
-{ CMD_CDPLAY,	"cdplay",	1, "[[track1-trackN] ...]" },
+{ CMD_CDRIP,	"cdrip",	3, "[[track1-trackN] ...]" },
+{ CMD_CDPLAY,	"cdplay",	3, "[[track1-trackN] ...]" },
 { 0, 0, 0, 0}
 };
 
@@ -196,7 +196,7 @@ help(void)
 {
 	struct cmdtab *c;
 	char *s, n;
-	u_int i;
+	int i;
 
 	for (c = cmdtab; c->name; ++c) {
 		if (!c->args)
