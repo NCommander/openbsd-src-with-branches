@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.h,v 1.8 2004/08/03 09:22:03 otto Exp $	*/
+/*	$OpenBSD: disk.h,v 1.9 2007/04/26 22:42:11 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -44,9 +44,7 @@ typedef struct _disk_t {
 
 /* Prototypes */
 int DISK_open(char *, int);
-int DISK_close(int);
 int DISK_getmetrics(disk_t *, DISK_metrics *);
 int DISK_printmetrics(disk_t *, char *);
 
 #endif /* _DISK_H */
-
