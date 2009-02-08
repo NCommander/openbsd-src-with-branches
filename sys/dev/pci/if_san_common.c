@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_san_common.c,v 1.11 2005/11/08 20:23:42 canacar Exp $	*/
+/*	$OpenBSD: if_san_common.c,v 1.12 2007/10/01 15:34:48 krw Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -260,7 +260,6 @@ release_hw(sdla_t *card)
 static int
 wan_ioctl(struct ifnet *ifp, int cmd, struct ifreq *ifr)
 {
-	sdla_t			*card;
 	wanpipe_common_t	*common = WAN_IFP_TO_COMMON(ifp);
 	int			err;
 
@@ -276,7 +275,7 @@ wan_ioctl(struct ifnet *ifp, int cmd, struct ifreq *ifr)
 		break;
 
 	case SIOC_WANPIPE_DUMP:
-		err = wan_ioctl_dump(card, ifr->ifr_data);
+		err = wan_ioctl_dump(common->card, ifr->ifr_data);
 		break;
 
 	default:
