@@ -1,4 +1,4 @@
-/*	$OpenBSD: ips.c,v 1.31 2009/01/09 21:47:08 grange Exp $	*/
+/*	$OpenBSD: ips.c,v 1.32 2009/02/08 08:54:10 grange Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Alexander Yurchenko <grange@openbsd.org>
@@ -776,7 +776,7 @@ ips_done(struct ips_softc *sc, struct ips_ccb *ccb)
 	}
 
 	if (ccb->c_stat) {
-		printf("%s: ", sc->sc_dev.dv_xname);
+		sc_print_addr(xs->sc_link);
 		if (ccb->c_stat == 1) {
 			printf("recovered error\n");
 		} else {
