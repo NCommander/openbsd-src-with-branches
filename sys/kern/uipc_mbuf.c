@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.116 2009/01/27 09:17:51 dlg Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.117 2009/02/04 20:02:11 claudio Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -739,8 +739,6 @@ m_copyback(struct mbuf *m0, int off, int len, const void *_cp)
 		m = m->m_next;
 	}
 	while (len > 0) {
-		if (M_READONLY(m))
-			panic("m_copyback called on a readonly cluster");
 		/* extend last packet to be filled fully */
 		if (m->m_next == NULL && (len > m->m_len - off))
 			m->m_len += min(len - (m->m_len - off),
