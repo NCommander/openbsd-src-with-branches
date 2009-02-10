@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.18 2009/01/29 12:16:09 stsp Exp $ */
+/*	$OpenBSD: rde.c,v 1.19 2009/02/03 14:02:01 stsp Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -687,7 +687,7 @@ rde_dispatch_parent(int fd, short event, void *bula)
 		case IMSG_IFDELETE:
 			if (imsg.hdr.len != IMSG_HEADER_SIZE +
 			    sizeof(ifindex))
-				fatalx("IFINFO imsg with wrong len");
+				fatalx("IFDELETE imsg with wrong len");
 
 			memcpy(&ifindex, imsg.data, sizeof(ifindex));
 			iface = if_find(ifindex);
