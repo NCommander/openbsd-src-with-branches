@@ -1,4 +1,4 @@
-/*	$OpenBSD: fts.c,v 1.40 2007/11/06 10:14:53 chl Exp $	*/
+/*	$OpenBSD: fts.c,v 1.41 2008/12/27 12:30:13 pedro Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -632,6 +632,14 @@ fts_build(FTS *sp, int type)
 	}
 	len++;
 	maxlen = sp->fts_pathlen - len;
+
+	if (cur->fts_level == SHRT_MAX) {
+		(void)closedir(dirp);
+		cur->fts_info = FTS_ERR;
+		SET(FTS_STOP);
+		errno = ENAMETOOLONG;
+		return (NULL);
+	}
 
 	level = cur->fts_level + 1;
 
