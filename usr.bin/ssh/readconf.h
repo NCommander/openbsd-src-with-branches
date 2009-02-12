@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.76 2008/11/04 08:22:13 djm Exp $ */
+/* $OpenBSD: readconf.h,v 1.77 2009/01/22 10:02:34 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -134,7 +134,7 @@ typedef struct {
 void     initialize_options(Options *);
 void     fill_default_options(Options *);
 int	 read_config_file(const char *, const char *, Options *, int);
-int	 parse_forward(Forward *, const char *, int);
+int	 parse_forward(Forward *, const char *, int, int);
 
 int
 process_config_line(Options *, const char *, char *, const char *, int, int *);
