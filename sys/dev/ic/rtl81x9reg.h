@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9reg.h,v 1.58 2008/11/08 06:52:49 brad Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.59 2008/11/30 06:01:45 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -827,6 +827,7 @@ struct rl_softc {
 #define	RL_FLAG_MACSTAT		0x0100
 #define	RL_FLAG_HWIM		0x0200
 #define	RL_FLAG_TIMERINTR	0x0400
+#define	RL_FLAG_MACLDPS		0x0800
 #define	RL_FLAG_LINK		0x8000
 
 	u_int16_t		rl_intrs;
