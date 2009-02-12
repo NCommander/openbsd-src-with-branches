@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.11 2008/07/21 10:07:14 kettenis Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.12 2008/11/22 18:12:32 art Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.8 2006/10/07 18:11:36 rjs Exp $ */
 
 /*-
@@ -30,6 +30,8 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/ctlreg.h>
