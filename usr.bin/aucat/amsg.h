@@ -1,4 +1,4 @@
-/*	$OpenBSD: amsg.h,v 1.3 2008/12/17 07:19:27 ratchov Exp $	*/
+/*	$OpenBSD: amsg.h,v 1.4 2009/01/23 17:38:15 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -14,8 +14,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef SOCKET_H
-#define SOCKET_H
+#ifndef AMSG_H
+#define AMSG_H
 
 #include <stdint.h>
 
@@ -94,4 +94,4 @@ struct amsg {
  */
 #define AMSG_ISSET(x) (((x) & (1 << (8 * sizeof(x) - 1))) == 0)
 
-#endif /* !defined(SOCKET_H) */
+#endif /* !defined(AMSG_H) */
