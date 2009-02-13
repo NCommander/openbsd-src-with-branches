@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.65 2009/02/01 00:52:19 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.66 2009/02/08 21:40:13 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -186,6 +186,17 @@ interrupt(u_int type, struct trapframe *frame)
 	md_interrupt_func(type, frame);
 	ci->ci_intrdepth--;
 }
+
+#ifdef M88110
+/*
+ * Handle non-maskable interrupts.
+ */
+void
+nmi(struct trapframe *frame)
+{
+	md_nmi_func(frame);
+}
+#endif
 
 /*
  * Handle asynchronous software traps.
