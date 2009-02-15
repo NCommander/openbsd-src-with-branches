@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.282 2008/11/09 08:51:43 tobias Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.283 2009/01/02 00:11:01 canacar Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -400,6 +400,8 @@ rcs_write(RCSFILE *rfp)
 		(void)unlink(fn);
 		fatal("fdopen %s: %s", fn, strerror(saved_errno));
 	}
+
+	cvs_worklist_add(fn, &temp_files);
 
 	if (rfp->rf_head != NULL)
 		rcsnum_tostr(rfp->rf_head, numbuf, sizeof(numbuf));
