@@ -1,4 +1,4 @@
-.\" $OpenBSD: ural.4,v 1.8 2008/08/29 09:03:48 damien Exp $
+.\" $OpenBSD: ural.4,v 1.9 2008/08/29 09:44:16 damien Exp $
 .\"
 .\" Copyright (c) 2005-2007
 .\"	Damien Bergamini <damien.bergamini@free.fr>
@@ -152,7 +152,7 @@ using WPA-PSK with passphrase
 .Dq my_passphrase :
 .Bd -literal -offset indent
 # ifconfig ural0 nwid my_net wpa wpapsk \e
-	$(wpa-psk my_net my_passphrase)
+	`wpa-psk my_net my_passphrase`
 .Ed
 .Pp
 Return ural0 to its default settings:
