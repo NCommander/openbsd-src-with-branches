@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcscp.c,v 1.14 2006/04/30 00:35:40 brad Exp $	*/
+/*	$OpenBSD: pcscp.c,v 1.15 2008/06/26 05:42:17 ray Exp $	*/
 /*	$NetBSD: pcscp.c,v 1.26 2003/10/19 10:25:42 tsutsui Exp $	*/
 
 /*-
@@ -121,7 +121,7 @@ int	pcscp_dma_isactive(struct ncr53c9x_softc *);
 
 struct scsi_adapter pcscp_adapter = {
 	ncr53c9x_scsi_cmd,	/* cmd */
-	minphys,		/* minphys */
+	scsi_minphys,		/* scsi_minphys */
 	0,			/* open */
 	0,			/* close */
 };

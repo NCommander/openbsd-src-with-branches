@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc_vsbus.c,v 1.8 2007/08/01 16:32:30 miod Exp $	*/
+/*	$OpenBSD: asc_vsbus.c,v 1.9 2008/06/26 05:42:14 ray Exp $	*/
 /*	$NetBSD: asc_vsbus.c,v 1.22 2001/02/04 20:36:32 ragge Exp $	*/
 
 /*-
@@ -107,7 +107,7 @@ struct cfdriver asc_cd = {
 
 struct scsi_adapter	asc_vsbus_ops = {
 	ncr53c9x_scsi_cmd,	
-	minphys,
+	scsi_minphys,
 	NULL,
 	NULL
 };

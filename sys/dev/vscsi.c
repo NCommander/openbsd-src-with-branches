@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: vscsi.c,v 1.1 2008/12/03 23:39:32 dlg Exp $ */
 
 /*
  * Copyright (c) 2008 David Gwynne <dlg@openbsd.org>
@@ -101,7 +101,7 @@ int		vscsi_probe(struct scsi_link *);
 
 struct scsi_adapter vscsi_switch = {
 	vscsi_cmd,
-	minphys,
+	scsi_minphys,
 	vscsi_probe,
 	NULL
 };

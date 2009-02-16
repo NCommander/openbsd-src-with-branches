@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpt.c,v 1.18 2008/11/24 00:31:35 krw Exp $	*/
+/*	$OpenBSD: dpt.c,v 1.19 2008/11/26 22:03:11 krw Exp $	*/
 /*	$NetBSD: dpt.c,v 1.12 1999/10/23 16:26:33 ad Exp $	*/
 
 /*-
@@ -639,10 +639,8 @@ dpt_readcfg(sc)
  * Adjust the size of each I/O before it passes to the SCSI layer.
  */
 void
-dpt_minphys(bp)
-	struct buf *bp;
+dpt_minphys(struct buf *bp, struct scsi_link *sl)
 {
-
 	if (bp->b_bcount > DPT_MAX_XFER)
 		bp->b_bcount = DPT_MAX_XFER;
 	minphys(bp);

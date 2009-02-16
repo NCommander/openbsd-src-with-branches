@@ -1,4 +1,4 @@
-/*	$OpenBSD: twe.c,v 1.28 2007/10/20 16:10:09 krw Exp $	*/
+/*	$OpenBSD: twe.c,v 1.29 2008/07/24 19:03:08 thib Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff.  All rights reserved.
@@ -746,8 +746,7 @@ twe_done(sc, ccb)
 }
 
 void
-tweminphys(bp)
-	struct buf *bp;
+tweminphys(struct buf *bp, struct scsi_link *sl)
 {
 	if (bp->b_bcount > TWE_MAXFER)
 		bp->b_bcount = TWE_MAXFER;

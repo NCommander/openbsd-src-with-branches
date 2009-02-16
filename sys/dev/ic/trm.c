@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.10 2008/11/24 00:31:35 krw Exp $
+/*	$OpenBSD: trm.c,v 1.11 2009/01/21 21:54:00 grange Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -61,7 +61,7 @@
 
 /* #define TRM_DEBUG0 */
 
-void	trm_minphys(struct buf *);
+void	trm_minphys(struct buf *, struct scsi_link *);
 
 void	trm_initSRB(struct trm_scsi_req_q *);
 
@@ -2367,7 +2367,7 @@ trm_linkSRB(struct trm_softc *sc)
  * ------------------------------------------------------------
  */
 void
-trm_minphys(struct buf *bp)
+trm_minphys(struct buf *bp, struct scsi_link *sl)
 {
 	if (bp->b_bcount > (TRM_MAX_SG_LISTENTRY-1) * (long) NBPG) {
 		bp->b_bcount = (TRM_MAX_SG_LISTENTRY-1) * (long) NBPG;

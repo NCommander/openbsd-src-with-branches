@@ -1,4 +1,4 @@
-/*	$OpenBSD: dptvar.h,v 1.2 2002/03/14 01:26:54 millert Exp $	*/
+/*	$OpenBSD: dptvar.h,v 1.3 2008/11/26 22:03:11 krw Exp $	*/
 /*	$NetBSD: dptvar.h,v 1.5 1999/10/23 16:26:32 ad Exp $	*/
 
 /*
@@ -96,7 +96,7 @@ int	dpt_readcfg(struct dpt_softc *);
 void	dpt_init(struct dpt_softc *, const char *);
 void	dpt_shutdown(void *);
 void	dpt_timeout(void *);
-void	dpt_minphys(struct buf *);
+void	dpt_minphys(struct buf *, struct scsi_link *);
 #ifdef __NetBSD__
 int	dpt_scsi_cmd(struct scsipi_xfer *);
 #endif /* __NetBSD__ */

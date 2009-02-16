@@ -1,4 +1,4 @@
-/*	$OpenBSD: ips.c,v 1.44 2009/02/11 11:42:17 grange Exp $	*/
+/*	$OpenBSD: ips.c,v 1.45 2009/02/13 19:26:41 grange Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007, 2009 Alexander Yurchenko <grange@openbsd.org>
@@ -321,7 +321,7 @@ struct cfdriver ips_cd = {
 
 static struct scsi_adapter ips_scsi_adapter = {
 	ips_scsi_cmd,
-	minphys,
+	scsi_minphys,
 	NULL,
 	NULL,
 	NULL

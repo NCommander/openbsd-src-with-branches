@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.20 2008/09/12 11:14:02 miod Exp $ */
+/*	$OpenBSD: sbic.c,v 1.21 2008/11/25 17:52:02 krw Exp $ */
 /*	$NetBSD: sbic.c,v 1.2 1996/04/23 16:32:54 chuck Exp $	*/
 
 /*
@@ -150,21 +150,6 @@ void    sbictimeout(struct sbic_softc *dev);
 #else
 #define QPRINTF(a)  /* */
 #endif
-
-
-/*
- * default minphys routine for sbic based controllers
- */
-void
-sbic_minphys(bp)
-    struct buf *bp;
-{
-    /*
-     * No max transfer at this level.
-     */
-    minphys(bp);
-}
-
 
 /*
  * Save DMA pointers.  Take into account partial transfer. Shut down DMA.
