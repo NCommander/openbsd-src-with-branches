@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.39 2008/11/22 18:12:32 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.40 2009/02/13 20:47:05 andreas Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -98,6 +98,8 @@ struct cpu_info {
 	u_int32_t	ci_feature_flags;
 	u_int32_t	ci_feature_eflags;
 	u_int32_t	ci_signature;
+	u_int32_t	ci_family;
+	u_int32_t	ci_model;
 	u_int64_t	ci_tsc_freq;
 
 	struct cpu_functions *ci_func;
