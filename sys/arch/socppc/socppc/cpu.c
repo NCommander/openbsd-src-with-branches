@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.c,v 1.1 2008/05/10 12:02:21 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -34,7 +34,7 @@ extern u_int32_t	hid0_idle;
 
 struct cpu_info cpu_info[PPC_MAXPROCS] = { { NULL } }; /* XXX */
 
-char *cpu_model = "8347";
+char cpu_model[] = "8347";
 char machine[] = MACHINE;	/* cpu architecture */
 
 int	cpu_match(struct device *, void *, void *);
