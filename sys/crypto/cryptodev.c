@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.c,v 1.68 2008/06/09 16:07:00 djm Exp $	*/
+/*	$OpenBSD: cryptodev.c,v 1.69 2009/02/17 18:38:31 oga Exp $	*/
 
 /*
  * Copyright (c) 2001 Theo de Raadt
@@ -308,7 +308,7 @@ cryptodev_op(struct csession *cse, struct crypt_op *cop, struct proc *p)
 {
 	struct cryptop *crp = NULL;
 	struct cryptodesc *crde = NULL, *crda = NULL;
-	int i, s, error;
+	int s, error;
 	u_int32_t hid;
 
 	if (cop->len > 64*1024-4)
