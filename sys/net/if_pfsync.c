@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.102 2008/12/21 23:41:26 dlg Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.103 2009/02/16 00:31:25 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1117,6 +1117,8 @@ pfsync_in_del(struct pfsync_pkt *pkt, struct mbuf *m, int offset, int count)
 
 	s = splsoftnet();
 	for (i = 0; i < count; i++) {
+		sp = &sa[i];
+
 		bcopy(sp->id, &id_key.id, sizeof(id_key.id));
 		id_key.creatorid = sp->creatorid;
 
