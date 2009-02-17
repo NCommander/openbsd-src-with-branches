@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.113 2008/11/22 18:12:32 art Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.114 2008/12/30 16:05:45 kettenis Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -1529,10 +1529,6 @@ _bus_dmamem_map(t, t0, segs, nsegs, size, kvap, flags)
 	*kvap = (caddr_t)va;
 
 	cbit = 0;
-#if 0
-	if (flags & BUS_DMA_COHERENT)
-		cbit |= PMAP_NVC;
-#endif
 	if (flags & BUS_DMA_NOCACHE)
 		cbit |= PMAP_NC;
 
