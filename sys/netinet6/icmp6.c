@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.100 2008/09/12 12:53:55 henning Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.102 2008/10/02 14:11:06 jsing Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -863,18 +863,18 @@ icmp6_input(struct mbuf **mp, int *offp, int proto)
 			/* ICMPv6 informational: MUST not deliver */
 			break;
 		}
-	deliver:
+deliver:
 		if (icmp6_notify_error(m, off, icmp6len, code)) {
 			/* In this case, m should've been freed. */
 			return (IPPROTO_DONE);
 		}
 		break;
 
-	badcode:
+badcode:
 		icmp6stat.icp6s_badcode++;
 		break;
 
-	badlen:
+badlen:
 		icmp6stat.icp6s_badlen++;
 		break;
 	}
