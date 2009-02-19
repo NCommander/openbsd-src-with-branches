@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_socket.c,v 1.36 2007/06/06 09:59:21 henning Exp $	*/
+/*	$OpenBSD: linux_socket.c,v 1.37 2008/06/10 16:40:49 matthieu Exp $	*/
 /*	$NetBSD: linux_socket.c,v 1.14 1996/04/05 00:01:50 christos Exp $	*/
 
 /*
@@ -32,8 +32,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/domain.h>
 #include <sys/param.h>
+#include <sys/domain.h>
 #include <sys/kernel.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
