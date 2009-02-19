@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.c,v 1.29 2008/08/09 21:06:05 kettenis Exp $	*/
+/*	$OpenBSD: ofw_machdep.c,v 1.30 2008/12/30 00:54:24 kettenis Exp $	*/
 /*	$NetBSD: ofw_machdep.c,v 1.16 2001/07/20 00:07:14 eeh Exp $	*/
 
 /*
@@ -822,7 +822,7 @@ prom_sun4v_soft_state_supported(void)
 		cell_t  nreturns;
 	} args;
 
-	args.name = ADR2CELL("SUNW,set-sun4v-api-version");
+	args.name = ADR2CELL("SUNW,soft-state-supported");
 	args.nargs = 0;
 	args.nreturns = 0;
 
