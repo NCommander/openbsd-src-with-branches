@@ -1,4 +1,4 @@
-/*	$OpenBSD: root.c,v 1.44 2007/10/05 19:28:23 gilles Exp $	*/
+/*	$OpenBSD: root.c,v 1.45 2008/06/20 23:00:13 tobias Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -69,8 +69,6 @@ cvsroot_parse(const char *str)
 
 	root = xcalloc(1, sizeof(*root));
 	root->cr_method = CVS_METHOD_NONE;
-	CVS_RSTVR(root);
-
 	root->cr_str = xstrdup(str);
 	root->cr_buf = xstrdup(str);
 
