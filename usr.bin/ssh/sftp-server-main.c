@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: sftp-server-main.c,v 1.3 2008/03/26 23:44:41 djm Exp $ */
 /*
  * Copyright (c) 2008 Markus Friedl.  All rights reserved.
  *
@@ -40,7 +40,8 @@ main(int argc, char **argv)
 	sanitise_stdfd();
 
 	if ((user_pw = getpwuid(getuid())) == NULL) {
-		fprintf(stderr, "No user found for uid %lu", (u_long)getuid());
+		fprintf(stderr, "No user found for uid %lu\n",
+		    (u_long)getuid());
 		return 1;
 	}
 

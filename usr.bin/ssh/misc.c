@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.c,v 1.69 2008/06/13 01:38:23 dtucker Exp $ */
+/* $OpenBSD: misc.c,v 1.70 2009/01/22 10:02:34 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2005,2006 Damien Miller.  All rights reserved.
@@ -694,7 +694,8 @@ sanitise_stdfd(void)
 	int nullfd, dupfd;
 
 	if ((nullfd = dupfd = open(_PATH_DEVNULL, O_RDWR)) == -1) {
-		fprintf(stderr, "Couldn't open /dev/null: %s", strerror(errno));
+		fprintf(stderr, "Couldn't open /dev/null: %s\n",
+		    strerror(errno));
 		exit(1);
 	}
 	while (++dupfd <= 2) {
@@ -702,7 +703,7 @@ sanitise_stdfd(void)
 		if (fcntl(dupfd, F_GETFL, 0) >= 0)
 			continue;
 		if (dup2(nullfd, dupfd) == -1) {
-			fprintf(stderr, "dup2: %s", strerror(errno));
+			fprintf(stderr, "dup2: %s\n", strerror(errno));
 			exit(1);
 		}
 	}
