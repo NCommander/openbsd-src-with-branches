@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.49 2008/06/13 17:15:13 joris Exp $	*/
+/*	$OpenBSD: file.h,v 1.50 2009/02/21 12:47:19 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -73,6 +73,7 @@ struct cvs_file {
 #define FILE_HAS_TAG		0x01
 #define FILE_USER_SUPPLIED	0x02
 #define FILE_INSIDE_ATTIC	0x04
+#define FILE_ON_DISK		0x08
 
 struct cvs_filelist {
 	char	*file_path;
