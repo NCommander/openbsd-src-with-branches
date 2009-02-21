@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.157 2009/01/28 17:40:13 pyr Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.158 2009/02/21 13:44:18 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -494,7 +494,7 @@ cvs_checkout_file(struct cvs_file *cf, RCSNUM *rnum, char *tag, int co_flags)
 		(void)unlink(cf->file_path);
 
 		if (!(co_flags & CO_MERGE)) {
-			if (cf->fd != -1) {
+			if (cf->file_flags & FILE_ON_DISK) {
 				exists = 1;
 				(void)close(cf->fd);
 			}
@@ -506,6 +506,7 @@ cvs_checkout_file(struct cvs_file *cf, RCSNUM *rnum, char *tag, int co_flags)
 				    strerror(errno));
 
 			rcs_rev_write_fd(cf->file_rcs, rnum, cf->fd, 0);
+			cf->file_flags |= FILE_ON_DISK;
 		} else {
 			cvs_merge_file(cf, (cvs_join_rev1 == NULL));
 		}
