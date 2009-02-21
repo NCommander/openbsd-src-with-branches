@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.284 2009/02/15 13:40:33 joris Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.285 2009/02/18 20:08:24 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -3618,7 +3618,7 @@ rcs_translate_tag(const char *revstr, RCSFILE *rfp)
 	rcsnum_free(rev);
 
 	do {
-		deltatime = timelocal(&(rdp->rd_date));
+		deltatime = timegm(&(rdp->rd_date));
 
 		if (RCSNUM_ISBRANCHREV(rdp->rd_num)) {
 			if (deltatime > cdate) {
