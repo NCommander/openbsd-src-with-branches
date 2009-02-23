@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.147 2008/06/21 15:39:15 joris Exp $	*/
+/*	$OpenBSD: util.c,v 1.148 2009/02/21 13:39:59 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2005, 2006 Joris Vink <joris@openbsd.org>
@@ -677,14 +677,6 @@ cvs_mkpath(const char *path, char *tag)
 
 			if (p != NULL)
 				*p = '/';
-		}
-
-		if (cvs_server_active == 1 && strcmp(rpath, ".")) {
-			if (tag != NULL) {
-				(void)xsnprintf(sticky, sizeof(sticky),
-				    "T%s", tag);
-				cvs_server_set_sticky(rpath, sticky);
-			}
 		}
 	}
 
