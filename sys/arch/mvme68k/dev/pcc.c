@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcc.c,v 1.15 2005/11/24 22:43:16 miod Exp $ */
+/*	$OpenBSD: pcc.c,v 1.16 2009/02/17 22:28:40 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -227,7 +227,7 @@ pccspeed(pcc)
 	 * memory board effects and such, it is rather unlikely that
 	 * we will find a nice formula.
 	 */
-	if (cnt > 230000)
+	if (cnt > 280000)
 		speed = 50;
 	else if (cnt > 210000)
 		speed = 33;
