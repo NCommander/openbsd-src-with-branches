@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.15 2007/05/15 13:46:22 martin Exp $	*/
+/*	$OpenBSD: intr.h,v 1.16 2007/12/02 22:31:26 miod Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -65,8 +65,8 @@ u_int8_t allocate_sir(void (*proc)(void *), void *arg);
 #define IPL_SOFTCLOCK	1
 #define IPL_BIO		2
 #define IPL_NET		3
-#define IPL_TTY		3
-#define	IPL_VM		3
+#define IPL_TTY		5
+#define	IPL_VM		5
 #define IPL_CLOCK	5
 #define IPL_STATCLOCK	5
 #define IPL_HIGH	7
@@ -76,8 +76,8 @@ u_int8_t allocate_sir(void (*proc)(void *), void *arg);
 #define	splsoftnet()		splsoft()
 #define	splbio()		_splraise(PSL_S | PSL_IPL2)
 #define	splnet()		_splraise(PSL_S | PSL_IPL3)
-#define	spltty()		_splraise(PSL_S | PSL_IPL3)
-#define	splvm()			_splraise(PSL_S | PSL_IPL3)
+#define	spltty()		_splraise(PSL_S | PSL_IPL5)
+#define	splvm()			_splraise(PSL_S | PSL_IPL5)
 #define	splclock()		_splraise(PSL_S | PSL_IPL5)
 #define	splstatclock()		_splraise(PSL_S | PSL_IPL5)
 #define	splhigh()		_spl(PSL_S | PSL_IPL7)
