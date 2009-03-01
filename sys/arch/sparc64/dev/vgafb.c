@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.55 2008/12/27 17:23:01 miod Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.56 2008/12/29 22:07:35 miod Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -438,7 +438,7 @@ vgafb_mapregs(sc, pa)
 				 * or mmio, we guess that memory is
 				 * the larger of the two.
 				 */
-				if (sc->sc_mem_size > bs) {
+				if (sc->sc_mem_size >= bs) {
 					/* this is the mmio */
 					sc->sc_mmio_addr = ba;
 					/* ATI driver maps 0x80000 mmio, grr */
