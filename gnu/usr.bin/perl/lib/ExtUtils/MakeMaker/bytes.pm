@@ -1,7 +1,9 @@
 package ExtUtils::MakeMaker::bytes;
 
+use strict;
+
 use vars qw($VERSION);
-$VERSION = 0.01;
+$VERSION = 6.42;
 
 my $Have_Bytes = eval q{require bytes; 1;};
 
@@ -19,7 +21,7 @@ sub import {
 
 =head1 NAME
 
-ExtUtils::MakeMaker::bytes - Version agnostic bytes.pm
+ExtUtils::MakeMaker::bytes - Version-agnostic bytes.pm
 
 =head1 SYNOPSIS
 

@@ -26,19 +26,17 @@ if ($@) {
   exit 0;
 }
 
+if (! -w $ENV{TMP}) {
+  print "1..0\n";
+  exit 0;
+}
+
 print "1..4\n";
 
-
-if (eval {require File::Spec::Functions}) {
- File::Spec::Functions->import();
-} else {
-  *catfile = sub { join '/', @_ };
-}
-$tmpdir = $ENV{TMP} || $ENV{TMPDIR} ||  '/tmp';  
-$file = catfile($tmpdir, "md$$");
-1 while unlink $file, "$file.dir", "$file.pag";
+$file = "md$$";
+1 while unlink $file, "$file.dir", "$file.pag", "$file.db";
 tryout('Memoize::NDBM_File', $file, 1);  # Test 1..4
-1 while unlink $file, "$file.dir", "$file.pag";
+1 while unlink $file, "$file.dir", "$file.pag", "$file.db";
 
 sub tryout {
   my ($tiepack, $file, $testno) = @_;

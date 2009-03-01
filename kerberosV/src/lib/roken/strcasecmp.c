@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: strcasecmp.c,v 1.9 1999/12/02 16:58:52 joda Exp $");
+RCSID("$KTH: strcasecmp.c,v 1.11 2005/04/12 11:29:07 lha Exp $");
 #endif
 
 #include <string.h>
@@ -43,16 +43,16 @@ RCSID("$KTH: strcasecmp.c,v 1.9 1999/12/02 16:58:52 joda Exp $");
 
 #ifndef HAVE_STRCASECMP
 
-int
+int ROKEN_LIB_FUNCTION
 strcasecmp(const char *s1, const char *s2)
 {
-    while(toupper(*s1) == toupper(*s2)) {
+    while(toupper((unsigned char)*s1) == toupper((unsigned char)*s2)) {
 	if(*s1 == '\0')
 	    return 0;
 	s1++;
 	s2++;
     }
-    return toupper(*s1) - toupper(*s2);
+    return toupper((unsigned char)*s1) - toupper((unsigned char)*s2);
 }
 
 #endif

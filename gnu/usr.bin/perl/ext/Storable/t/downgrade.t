@@ -60,8 +60,8 @@ if ($] > 5.007002) {
   plan tests => 67;
 }
 
-$UTF8_CROAK = qr/^Cannot retrieve UTF8 data in non-UTF8 perl/;
-$RESTRICTED_CROAK = qr/^Cannot retrieve restricted hash/;
+$UTF8_CROAK = "/^Cannot retrieve UTF8 data in non-UTF8 perl/";
+$RESTRICTED_CROAK = "/^Cannot retrieve restricted hash/";
 
 my %tests;
 {
@@ -121,11 +121,11 @@ sub test_locked_hash {
   my @keys = keys %$hash;
   my ($key, $value) = each %$hash;
   eval {$hash->{$key} = reverse $value};
-  like( $@, qr/^Modification of a read-only value attempted/,
+  like( $@, "/^Modification of a read-only value attempted/",
         'trying to change a locked key' );
   is ($hash->{$key}, $value, "hash should not change?");
   eval {$hash->{use} = 'perl'};
-  like( $@, qr/^Attempt to access disallowed key 'use' in a restricted hash/,
+  like( $@, "/^Attempt to access disallowed key 'use' in a restricted hash/",
         'trying to add another key' );
   ok (eq_array([keys %$hash], \@keys), "Still the same keys?");
 }
@@ -139,7 +139,7 @@ sub test_restricted_hash {
         'trying to change a restricted key' );
   is ($hash->{$key}, reverse ($value), "hash should change");
   eval {$hash->{use} = 'perl'};
-  like( $@, qr/^Attempt to access disallowed key 'use' in a restricted hash/,
+  like( $@, "/^Attempt to access disallowed key 'use' in a restricted hash/",
         'trying to add another key' );
   ok (eq_array([keys %$hash], \@keys), "Still the same keys?");
 }
@@ -217,11 +217,12 @@ if ($] >= 5.006) {
 if ($] > 5.007002) {
   print "# We have utf8 hashes, so test that the utf8 hashes in <DATA> are valid\n";
   my $hash = thaw_hash ('Hash with utf8 keys', \%U_HASH);
+  my $a_circumflex = (ord ('A') == 193 ? "\x47" : "\xe5");
   for (keys %$hash) {
     my $l = 0 + /^\w+$/;
     my $r = 0 + $hash->{$_} =~ /^\w+$/;
     cmp_ok ($l, '==', $r, sprintf "key length %d", length $_);
-    cmp_ok ($l, '==', $_ eq "ch\xe5teau" ? 0 : 1);
+    cmp_ok ($l, '==', $_ eq "ch${a_circumflex}teau" ? 0 : 1);
   }
   if (eval "use Hash::Util; 1") {
     print "# We have Hash::Util, so test that the restricted utf8 hash is valid\n";
@@ -230,7 +231,7 @@ if ($] > 5.007002) {
       my $l = 0 + /^\w+$/;
       my $r = 0 + $hash->{$_} =~ /^\w+$/;
       cmp_ok ($l, '==', $r, sprintf "key length %d", length $_);
-      cmp_ok ($l, '==', $_ eq "ch\xe5teau" ? 0 : 1);
+      cmp_ok ($l, '==', $_ eq "ch${a_circumflex}teau" ? 0 : 1);
     }
     test_locked_hash ($hash);
   } else {
@@ -391,7 +392,7 @@ begin 301 Locked hash
 end
 
 begin 301 Locked hash placeholder
-C!049`0````(.%`````69I).%H@H%F:23A:(`````!)>%F9,`
+C!049`0````(.%`````69I).%H@H%F:23A:($````!)>%F9,`
 
 end
 

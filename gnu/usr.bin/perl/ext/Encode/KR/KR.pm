@@ -1,14 +1,15 @@
 package Encode::KR;
 BEGIN {
-    if (ord("A") == 193) {
-	die "Encode::KR not supported on EBCDIC\n";
+    if ( ord("A") == 193 ) {
+        die "Encode::KR not supported on EBCDIC\n";
     }
 }
-our $VERSION = do { my @r = (q$Revision: 1.22 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
-
+use strict;
+use warnings;
 use Encode;
+our $VERSION = do { my @r = ( q$Revision: 2.2 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 use XSLoader;
-XSLoader::load(__PACKAGE__,$VERSION);
+XSLoader::load( __PACKAGE__, $VERSION );
 
 use Encode::KR::2022_KR;
 
@@ -34,7 +35,7 @@ are as follows.
   Canonical   Alias		Description
   --------------------------------------------------------------------
   euc-kr      /\beuc.*kr$/i	EUC (Extended Unix Character)
-	      /\bkr.*euc$/i
+          /\bkr.*euc$/i
   ksc5601-raw			Korean standard code set (as is)
   cp949	      /(?:x-)?uhc$/i
               /(?:x-)?windows-949$/i
@@ -46,7 +47,7 @@ are as follows.
                                              Annex 3 of KS X 1001:1998
   iso-2022-kr                   iso-2022-kr                  [RFC1557]
   --------------------------------------------------------------------
-  
+
 To find how to use this module in detail, see L<Encode>.
 
 =head1 BUGS

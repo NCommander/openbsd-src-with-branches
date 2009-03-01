@@ -1,9 +1,9 @@
 package ExtUtils::MM;
 
 use strict;
-use Config;
+use ExtUtils::MakeMaker::Config;
 use vars qw(@ISA $VERSION);
-$VERSION = 0.04;
+$VERSION = '6.42';
 
 require ExtUtils::Liblist;
 require ExtUtils::MakeMaker;
@@ -43,26 +43,36 @@ away.
     sub DESTROY {}
 }
 
-my %Is = ();
-$Is{VMS}    = 1 if $^O eq 'VMS';
-$Is{OS2}    = 1 if $^O eq 'os2';
-$Is{MacOS}  = 1 if $^O eq 'MacOS';
-if( $^O eq 'MSWin32' ) {
-    Win32::IsWin95() ? $Is{Win95} = 1 : $Is{Win32} = 1;
+sub _is_win95 {
+    # miniperl might not have the Win32 functions available and we need
+    # to run in miniperl.
+    return defined &Win32::IsWin95 ? Win32::IsWin95() 
+                                   : ! defined $ENV{SYSTEMROOT}; 
 }
-$Is{UWIN}   = 1 if $^O eq 'uwin';
-$Is{Cygwin} = 1 if $^O eq 'cygwin';
-$Is{NW5}    = 1 if $Config{osname} eq 'NetWare';  # intentional
-$Is{BeOS}   = 1 if $^O =~ /beos/i;    # XXX should this be that loose?
-$Is{DOS}    = 1 if $^O eq 'dos';
 
-$Is{Unix}   = 1 if !keys %Is;
-
+my %Is = ();
+$Is{VMS}    = $^O eq 'VMS';
+$Is{OS2}    = $^O eq 'os2';
+$Is{MacOS}  = $^O eq 'MacOS';
+if( $^O eq 'MSWin32' ) {
+    _is_win95() ? $Is{Win95} = 1 : $Is{Win32} = 1;
+}
+$Is{UWIN}   = $^O =~ /^uwin(-nt)?$/;
+$Is{Cygwin} = $^O eq 'cygwin';
+$Is{NW5}    = $Config{osname} eq 'NetWare';  # intentional
+$Is{BeOS}   = $^O =~ /beos/i;    # XXX should this be that loose?
+$Is{DOS}    = $^O eq 'dos';
 if( $Is{NW5} ) {
     $^O = 'NetWare';
     delete $Is{Win32};
 }
+$Is{VOS}    = $^O eq 'vos';
+$Is{QNX}    = $^O eq 'qnx';
+$Is{AIX}    = $^O eq 'aix';
 
+$Is{Unix}   = !grep { $_ } values %Is;
+
+map { delete $Is{$_} unless $Is{$_} } keys %Is;
 _assert( keys %Is == 1 );
 my($OS) = keys %Is;
 

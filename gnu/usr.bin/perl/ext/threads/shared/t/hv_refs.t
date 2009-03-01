@@ -1,39 +1,45 @@
+use strict;
 use warnings;
 
 BEGIN {
-#    chdir 't' if -d 't';
-#    push @INC ,'../lib';
-    require Config; import Config;
-    unless ($Config{'useithreads'}) {
-        print "1..0 # Skip: no useithreads\n";
-        exit 0;
+    if ($ENV{'PERL_CORE'}){
+        chdir 't';
+        unshift @INC, '../lib';
+    }
+    use Config;
+    if (! $Config{'useithreads'}) {
+        print("1..0 # Skip: Perl not compiled with 'useithreads'\n");
+        exit(0);
     }
 }
 
+use ExtUtils::testlib;
 
 sub ok {
     my ($id, $ok, $name) = @_;
 
-    $name = '' unless defined $name;
     # You have to do it this way or VMS will get confused.
-    print $ok ? "ok $id - $name\n" : "not ok $id - $name\n";
+    if ($ok) {
+        print("ok $id - $name\n");
+    } else {
+        print("not ok $id - $name\n");
+        printf("# Failed test at line %d\n", (caller)[2]);
+    }
 
-    printf "# Failed test at line %d\n", (caller)[2] unless $ok;
-
-    return $ok;
+    return ($ok);
 }
 
-sub skip {
-    my ($id, $ok, $name) = @_;
-    print "ok $id # skip _thrcnt - $name \n";
-}
+BEGIN {
+    $| = 1;
+    print("1..20\n");   ### Number of tests that will be run ###
+};
 
-use ExtUtils::testlib;
-use strict;
-BEGIN { print "1..13\n" };
 use threads;
-use threads::shared qw(:DEFAULT _refcnt _id);
-ok(1,1,"loaded");
+use threads::shared;
+ok(1, 1, 'Loaded');
+
+### Start of Testing ###
+
 my $foo;
 share($foo);
 my %foo;
@@ -57,9 +63,9 @@ my $gg = $foo{test};
 $$gg = "test";
 ok(7, ${$foo{test}} eq "test", "Check reference");
 my $gg2 = delete($foo{test});
-ok(8, _id($$gg) == _id($$gg2),
+ok(8, threads::shared::_id($$gg) == threads::shared::_id($$gg2),
        sprintf("Check we get the same thing (%x vs %x)",
-       _id($$gg),_id($$gg2)));
+       threads::shared::_id($$gg),threads::shared::_id($$gg2)));
 ok(9, $$gg eq $$gg2, "And check the values are the same");
 ok(10, keys %foo == 0, "And make sure we realy have deleted the values");
 {
@@ -75,3 +81,33 @@ ok(10, keys %foo == 0, "And make sure we realy have deleted the values");
     ok(13, $hash1{hash}->{hash}->{thread} eq "yes", "Check hash created in another thread");
 }
 
+{
+    my $h = {a=>14};
+    my $r = \$h->{a};
+    share($r);
+    if ($] > 5.008) {
+        eval { lock($r); };
+        ok(14, !$@, "lock on helems ref: $@");
+        eval { lock($h->{a}); };
+        ok(15, !$@, "lock on helems: $@");
+    } else {
+        ok(14, 1, "skipped.  < 5.8");
+        ok(15, 1, "skipped.  < 5.8");
+    }
+}
+{
+    my $object : shared = &share({});
+    threads->create(sub {
+                     bless $object, 'test1';
+                 })->join;
+    ok(16, ref($object) eq 'test1', "blessing does work");
+    my %test = (object => $object);
+    ok(17, ref($test{object}) eq 'test1', "and some more work");
+    bless $object, 'test2';
+    ok(18, ref($test{object}) eq 'test2', "reblessing works!");
+}
+
+ok(19, is_shared($foo), "Check for sharing");
+ok(20, is_shared(%foo), "Check for sharing");
+
+# EOF

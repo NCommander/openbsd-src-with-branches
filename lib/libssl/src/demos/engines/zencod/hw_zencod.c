@@ -366,7 +366,7 @@ static int bind_helper ( ENGINE *e )
 /* As this is only ever called once, there's no need for locking
  * (indeed - the lock will already be held by our caller!!!)
  */
-ENGINE *ENGINE_zencod ( void )
+static ENGINE *ENGINE_zencod ( void )
 {
 
 	ENGINE *eng = ENGINE_new () ;
@@ -383,6 +383,9 @@ ENGINE *ENGINE_zencod ( void )
 }
 
 
+#ifdef ENGINE_DYNAMIC_SUPPORT
+static
+#endif
 void ENGINE_load_zencod ( void )
 {
 	/* Copied from eng_[openssl|dyn].c */
@@ -1230,7 +1233,7 @@ static const EVP_MD engine_sha1_md =
 	SHA_CBLOCK,
 	/* sizeof ( EVP_MD * ) + sizeof ( SHA_CTX ) */
 	sizeof ( ZEN_MD_DATA )
-	/* sizeof ( MD_CTX_DATA )	The message digest data stucture ... */
+	/* sizeof ( MD_CTX_DATA )	The message digest data structure ... */
 } ;
 
 /* The one for MD5 ... */
@@ -1251,7 +1254,7 @@ static const EVP_MD engine_md5_md =
 	MD5_CBLOCK,
 	/* sizeof ( EVP_MD * ) + sizeof ( MD5_CTX ) */
 	sizeof ( ZEN_MD_DATA )
-	/* sizeof ( MD_CTX_DATA )	The message digest data stucture ... */
+	/* sizeof ( MD_CTX_DATA )	The message digest data structure ... */
 } ;
 
 

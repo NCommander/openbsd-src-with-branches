@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. BUGS).
 @set copyrights-bugs 1995-1999
 
-@set last-update-bugs 1999-05-06
+@set last-update-bugs 1999-06-29
 
 @include root.texi
 
@@ -79,7 +79,7 @@ An online, ``live'' version of this document
 (derived directly from the mainline, development version
 of @code{g77} within @code{egcs})
 is available via
-@uref{http://egcs.cygnus.com/onlinedocs/g77_bugs.html}.
+@uref{http://www.gnu.org/software/gcc/onlinedocs/g77_bugs.html}.
 Follow the ``Known Bugs'' link.
 
 @ifset DOC-G77

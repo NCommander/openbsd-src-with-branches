@@ -48,7 +48,7 @@ static intOpq xst_anintopq;
 /* T_ARRAY - allocate some memory */
 intArray * intArrayPtr( int nelem ) {
     intArray * array;
-    New(0, array, nelem, intArray);
+    Newx(array, nelem, intArray);
     return array;
 }
 
@@ -802,10 +802,11 @@ T_STDIO_close( f )
  CODE:
   /* Get the FILE* */
   stream = PerlIO_findFILE( f );  
-  RETVAL = xsfclose( stream );
   /* Release the FILE* from the PerlIO system so that we do
      not close the file twice */
   PerlIO_releaseFILE(f,stream);
+  /* Must release the file before closing it */
+  RETVAL = xsfclose( stream );
  OUTPUT:
   RETVAL
 

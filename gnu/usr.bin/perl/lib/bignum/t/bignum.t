@@ -10,10 +10,10 @@ BEGIN
   $| = 1;
   chdir 't' if -d 't';
   unshift @INC, '../lib';
-  plan tests => 21;
+  plan tests => 35;
   }
 
-use bignum;
+use bignum qw/oct hex/;
 
 ###############################################################################
 # general tests
@@ -46,20 +46,40 @@ ok (1/3, '0.3333333333333333333333333333333333333333');
 ###############################################################################
 # accurarcy and precision
 
-# this might change!
+ok_undef (bignum->accuracy());
+ok (bignum->accuracy(12),12);
+ok (bignum->accuracy(),12);
 
-ok_undef ($Math::BigInt::accuracy);
-ok_undef ($Math::BigInt::precision);
-ok_undef ($Math::BigFloat::accuracy);
-ok_undef ($Math::BigFloat::precision);
-bignum->accuracy(5);
-ok ($Math::BigInt::accuracy,5);
-ok ($Math::BigFloat::accuracy,5);
-bignum->precision(-2);
-ok_undef ($Math::BigInt::accuracy);
-ok_undef ($Math::BigFloat::accuracy);
-ok ($Math::BigInt::precision,-2);
-ok ($Math::BigFloat::precision,-2);
+ok_undef (bignum->precision());
+ok (bignum->precision(12),12);
+ok (bignum->precision(),12);
+
+ok (bignum->round_mode(),'even');
+ok (bignum->round_mode('odd'),'odd');
+ok (bignum->round_mode(),'odd');
+
+###############################################################################
+# hex() and oct()
+
+my $c = 'Math::BigInt';
+
+ok (ref(hex(1)), $c);
+ok (ref(hex(0x1)), $c);
+ok (ref(hex("af")), $c);
+ok (hex("af"), Math::BigInt->new(0xaf));
+ok (ref(hex("0x1")), $c);
+
+ok (ref(oct("0x1")), $c);
+ok (ref(oct("01")), $c);
+ok (ref(oct("0b01")), $c);
+ok (ref(oct("1")), $c);
+ok (ref(oct(" 1")), $c);
+ok (ref(oct(" 0x1")), $c);
+
+ok (ref(oct(0x1)), $c);
+ok (ref(oct(01)), $c);
+ok (ref(oct(0b01)), $c);
+ok (ref(oct(1)), $c);
 
 ###############################################################################
 ###############################################################################

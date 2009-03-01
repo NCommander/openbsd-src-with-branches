@@ -14,16 +14,23 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 13;
+use Test::More tests => 28;
 
 use TieOut;
 use MakeMaker::Test::Utils;
+use MakeMaker::Test::Setup::BFD;
 
 use ExtUtils::MakeMaker;
 
 chdir 't';
 
 perl_lib();
+
+ok( setup_recurs(), 'setup' );
+END {
+    ok( chdir File::Spec->updir );
+    ok( teardown_recurs(), 'teardown' );
+}
 
 ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
   diag("chdir failed: $!");
@@ -46,7 +53,7 @@ ok( chdir 'Big-Dummy', "chdir'd to Big-Dummy" ) ||
     };
 
     is( $warnings, <<VERIFY );
-WARNING: MAN3PODS takes a hash reference not a string/number.
+WARNING: MAN3PODS takes a HASH reference not a string/number.
          Please inform the author.
 VERIFY
 
@@ -60,7 +67,7 @@ VERIFY
     };
 
     is( $warnings, <<VERIFY );
-WARNING: AUTHOR takes a string/number not a code reference.
+WARNING: AUTHOR takes a string/number not a CODE reference.
          Please inform the author.
 VERIFY
 
@@ -98,7 +105,7 @@ VERIFY
     };
 
     # We'll get warnings about the bogus libs, that's ok.
-    like( $warnings, qr{^WARNING: LIBS takes a array reference or string/number not a hash reference}m );
+    like( $warnings, qr{^WARNING: LIBS takes a ARRAY reference or string/number not a HASH reference}m );
 
 
     $warnings = '';
@@ -113,4 +120,75 @@ VERIFY
 
     is( $mm->{WIBBLE}, 'something' );
     is_deeply( $mm->{wump}, { foo => 42 } );
+
+
+    # Test VERSION
+    $warnings = '';
+    eval {
+        $mm = WriteMakefile(
+        NAME       => 'Big::Dummy',
+        VERSION    => [1,2,3],
+        );
+    };
+    like( $warnings, qr{^WARNING: VERSION takes a version object or string/number} );
+
+    $warnings = '';
+    eval {
+        $mm = WriteMakefile(
+        NAME       => 'Big::Dummy',
+        VERSION    => 1.002_003,
+        );
+    };
+    is( $warnings, '' );
+    is( $mm->{VERSION}, '1.002003' );
+
+    $warnings = '';
+    eval {
+        $mm = WriteMakefile(
+        NAME       => 'Big::Dummy',
+        VERSION    => '1.002_003',
+        );
+    };
+    is( $warnings, '' );
+    is( $mm->{VERSION}, '1.002_003' );
+
+
+    $warnings = '';
+    eval {
+        $mm = WriteMakefile(
+        NAME       => 'Big::Dummy',
+        VERSION    => bless {}, "Some::Class",
+        );
+    };
+    like( $warnings, '/^WARNING: VERSION takes a version object or string/number not a Some::Class object/' );
+
+
+    SKIP: {
+        skip("Can't test version objects",6) unless eval { require version };
+        version->import;
+
+        my $version = version->new("1.2.3");
+        $warnings = '';
+        eval {
+            $mm = WriteMakefile(
+            NAME       => 'Big::Dummy',
+            VERSION    => $version,
+            );
+        };
+        is( $warnings, '' );
+        isa_ok( $mm->{VERSION}, 'version' );
+        is( $mm->{VERSION}, $version );
+
+        $warnings = '';
+        $version = qv('1.2.3');
+        eval {
+            $mm = WriteMakefile(
+            NAME       => 'Big::Dummy',
+            VERSION    => $version,
+            );
+        };
+        is( $warnings, '' );
+        isa_ok( $mm->{VERSION}, 'version' );
+        is( $mm->{VERSION}, $version );
+    }
 }

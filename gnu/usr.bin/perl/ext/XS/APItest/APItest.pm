@@ -13,12 +13,63 @@ use base qw/ DynaLoader Exporter /;
 
 # Export everything since these functions are only used by a test script
 our @EXPORT = qw( print_double print_int print_long
-		  print_float print_long_double have_long_double
+		  print_float print_long_double have_long_double print_flush
+		  mpushp mpushn mpushi mpushu
+		  mxpushp mxpushn mxpushi mxpushu
+		  call_sv call_pv call_method eval_sv eval_pv require_pv
+		  G_SCALAR G_ARRAY G_VOID G_DISCARD G_EVAL G_NOARGS
+		  G_KEEPERR G_NODEBUG G_METHOD
+		  apitest_exception mycroak strtab
+		  my_cxt_getint my_cxt_getsv my_cxt_setint my_cxt_setsv
+		  sv_setsv_cow_hashkey_core sv_setsv_cow_hashkey_notcore
 );
 
-our $VERSION = '0.01';
+# from cop.h 
+sub G_SCALAR()	{   0 }
+sub G_ARRAY()	{   1 }
+sub G_VOID()	{ 128 }
+sub G_DISCARD()	{   2 }
+sub G_EVAL()	{   4 }
+sub G_NOARGS()	{   8 }
+sub G_KEEPERR()	{  16 }
+sub G_NODEBUG()	{  32 }
+sub G_METHOD()	{  64 }
 
-bootstrap XS::APItest $VERSION;
+our $VERSION = '0.12';
+
+use vars '$WARNINGS_ON_BOOTSTRAP';
+use vars map "\$${_}_called_PP", qw(BEGIN UNITCHECK CHECK INIT END);
+
+# Do these here to verify that XS code and Perl code get called at the same
+# times
+BEGIN {
+    $BEGIN_called_PP++;
+}
+UNITCHECK {
+    $UNITCHECK_called_PP++;
+}
+{
+    # Need $W false by default, as some tests run under -w, and under -w we
+    # can get warnings about "Too late to run CHECK" block (and INIT block)
+    no warnings 'void';
+    CHECK {
+	$CHECK_called_PP++;
+    }
+    INIT {
+	$INIT_called_PP++;
+    }
+}
+END {
+    $END_called_PP++;
+}
+
+if ($WARNINGS_ON_BOOTSTRAP) {
+    bootstrap XS::APItest $VERSION;
+} else {
+    # More CHECK and INIT blocks that could warn:
+    local $^W;
+    bootstrap XS::APItest $VERSION;
+}
 
 1;
 __END__
@@ -131,6 +182,30 @@ correctly by C<printf>.
 
 Output is sent to STDOUT.
 
+=item B<call_sv>, B<call_pv>, B<call_method>
+
+These exercise the C calls of the same names. Everything after the flags
+arg is passed as the the args to the called function. They return whatever
+the C function itself pushed onto the stack, plus the return value from
+the function; for example
+
+    call_sv( sub { @_, 'c' }, G_ARRAY,  'a', 'b'); # returns 'a', 'b', 'c', 3
+    call_sv( sub { @_ },      G_SCALAR, 'a', 'b'); # returns 'b', 1
+
+=item B<eval_sv>
+
+Evaluates the passed SV. Result handling is done the same as for
+C<call_sv()> etc.
+
+=item B<eval_pv>
+
+Exercises the C function of the same name in scalar context. Returns the
+same SV that the C function returns.
+
+=item B<require_pv>
+
+Exercises the C function of the same name. Returns nothing.
+
 =back
 
 =head1 SEE ALSO
@@ -145,7 +220,7 @@ Hugo van der Sanden E<lt>hv@crypt.compulink.co.ukE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2002 Tim Jenness, Christian Soeller, Hugo van der Sanden.
+Copyright (C) 2002,2004 Tim Jenness, Christian Soeller, Hugo van der Sanden.
 All Rights Reserved.
 
 This library is free software; you can redistribute it and/or modify

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999 Kungliga Tekniska Högskolan
+ * Copyright (c) 1999 - 2001 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden).
  * All rights reserved.
  * 
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-RCSID("$KTH: getnameinfo.c,v 1.2 1999/12/03 04:10:07 assar Exp $");
+RCSID("$KTH: getnameinfo.c,v 1.5 2005/04/12 11:28:47 lha Exp $");
 #endif
 
 #include "roken.h"
@@ -56,7 +56,7 @@ doit (int af,
 						addrlen,
 						af);
 	    if (he != NULL) {
-		strlcpy (host, he->h_name, hostlen);
+		strlcpy (host, hostent_find_fqdn(he), hostlen);
 		if (flags & NI_NOFQDN) {
 		    char *dot = strchr (host, '.');
 		    if (dot != NULL)
@@ -64,7 +64,7 @@ doit (int af,
 		}
 	    } else if (flags & NI_NAMEREQD) {
 		return EAI_NONAME;
-	    } else if (inet_ntop (AF_INET, addr, host, hostlen) == NULL)
+	    } else if (inet_ntop (af, addr, host, hostlen) == NULL)
 		return EAI_SYSTEM;
 	}
     }
@@ -94,7 +94,7 @@ doit (int af,
  *
  */
 
-int
+int ROKEN_LIB_FUNCTION
 getnameinfo(const struct sockaddr *sa, socklen_t salen,
 	    char *host, size_t hostlen,
 	    char *serv, size_t servlen,

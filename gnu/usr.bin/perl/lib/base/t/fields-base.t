@@ -1,8 +1,16 @@
 #!/usr/bin/perl -w
 
-my $Has_PH;
+BEGIN {
+   if( $ENV{PERL_CORE} ) {
+        chdir 't' if -d 't';
+        @INC = qw(../lib);
+    }
+}
+
+my ($Has_PH, $Field);
 BEGIN { 
     $Has_PH = $] < 5.009;
+    $Field = $Has_PH ? "pseudo-hash field" : "class field";
 }
 
 my $W;
@@ -20,7 +28,7 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 25;
+use Test::More tests => 29;
 
 BEGIN { use_ok('base'); }
 
@@ -63,8 +71,8 @@ use base qw(M B2);
 # Test that multiple inheritance fails.
 package D6;
 eval { 'base'->import(qw(B2 M B3)); };
-::like($@, qr/can't multiply inherit %FIELDS/i, 
-                                        'No multiple field inheritance');
+::like($@, qr/can't multiply inherit fields/i, 
+    'No multiple field inheritance');
 
 package Foo::Bar;
 use base 'B1';
@@ -156,17 +164,25 @@ my D3 $obj2 = $obj1;
 $obj2->{b1} = "D3";
 
 # We should get compile time failures field name typos
-eval q(my D3 $obj3 = $obj2; $obj3->{notthere} = "");
-if( $Has_PH ) {
+eval q(return; my D3 $obj3 = $obj2; $obj3->{notthere} = "");
+like $@, 
+    qr/^No such $Field "notthere" in variable \$obj3 of type D3/,
+    "Compile failure of undeclared fields (helem)";
+
+SKIP: {
+    # Slices
+    # We should get compile time failures field name typos
+    skip "Doesn't work before 5.9", 2 if $] < 5.009;
+    eval q(return; my D3 $obj3 = $obj2; my $k; @$obj3{$k,'notthere'} = ());
     like $@, 
-      qr/^No such pseudo-hash field "notthere" in variable \$obj3 of type D3/;
-}
-else {
-    like $@, 
-      qr/^Attempt to access disallowed key 'notthere' in a restricted hash/;
+	qr/^No such $Field "notthere" in variable \$obj3 of type D3/,
+	"Compile failure of undeclared fields (hslice)";
+    eval q(return; my D3 $obj3 = $obj2; my $k; @{$obj3}{$k,'notthere'} = ());
+    like 
+	$@, qr/^No such $Field "notthere" in variable \$obj3 of type D3/,
+	"Compile failure of undeclared fields (hslice (block form))";
 }
 
-# Slices
 @$obj1{"_b1", "b1"} = (17, 29);
 is( $obj1->{_b1}, 17 );
 is( $obj1->{b1},  29 );
@@ -191,6 +207,74 @@ eval {
     require base;
     'base'->import(qw(E1 E2));
 };
-::like( $@, qr/Can't multiply inherit %FIELDS/i, 'Again, no multi inherit' );
+::like( $@, qr/Can't multiply inherit fields/i, 'Again, no multi inherit' );
 
 
+# Test that a package with no fields can inherit from a package with
+# fields, and that pseudohash messages don't show up
+
+package B9;
+use fields qw(b1);
+
+sub _mk_obj { fields::new($_[0])->{'b1'} };
+
+package D9;
+use base qw(B9);
+
+package main;
+
+{
+    my $w = 0;
+    local $SIG{__WARN__} = sub { $w++ };
+    
+    B9->_mk_obj();
+    # used tp emit a warning that pseudohashes are deprecated, because
+    # %FIELDS wasn't blessed.
+    D9->_mk_obj();
+    
+    is ($w, 0, "pseudohash warnings in derived class with no fields of it's own");	
+}
+
+# [perl #31078] an intermediate class with no additional fields caused
+# hidden fields in base class to get stomped on
+
+{
+    package X;
+    use fields qw(X1 _X2);
+    sub new {
+	my X $self = shift;
+	$self = fields::new($self) unless ref $self;
+	$self->{X1} = "x1";
+	$self->{_X2} = "_x2";
+	return $self;
+    }
+    sub get_X2 { my X $self = shift; $self->{_X2} }
+
+    package Y;
+    use base qw(X);
+
+    sub new {
+	my Y $self = shift;
+	$self = fields::new($self) unless ref $self;
+	$self->SUPER::new();
+	return $self;
+    }
+
+
+    package Z;
+    use base qw(Y);
+    use fields qw(Z1);
+
+    sub new {
+	my Z $self = shift;
+	$self = fields::new($self) unless ref $self;
+	$self->SUPER::new();
+	$self->{Z1} = 'z1';
+	return $self;
+    }
+
+    package main;
+
+	my Z $c = Z->new();
+	is($c->get_X2, '_x2', "empty intermediate class");
+}

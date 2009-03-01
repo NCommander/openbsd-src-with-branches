@@ -33,20 +33,20 @@ $Config{'startperl'}
         if \$running_under_some_shell;
 !GROK!THIS!
 
+print OUT "\n# perlivp $^V\n";
+
 # In the following, perl variables are not expanded during extraction.
 
 print OUT <<'!NO!SUBS!';
-
-# perlivp V 0.02
-
 
 sub usage {
     warn "@_\n" if @_;
     print << "    EOUSAGE";
 Usage:
 
-    $0 [-p] [-v] | [-h]
+    $0 [-a] [-p] [-v] | [-h]
 
+    -a Run all tests (default is to skip .ph tests)
     -p Print a preface before each test telling what it will test.
     -v Verbose mode in which extra information about test results
        is printed.  Test failures always print out some extra information
@@ -66,7 +66,7 @@ while ($ARGV[0] =~ /^-/) {
         usage() if '?' =~ /\Q$flag/;
         usage() if 'h' =~ /\Q$flag/;
         usage() if 'H' =~ /\Q$flag/;
-        usage("unknown flag: `$flag'") unless 'HhPpVv' =~ /\Q$flag/;
+        usage("unknown flag: `$flag'") unless 'HhPpVva' =~ /\Q$flag/;
         warn "$0: `$flag' flag already set\n" if $opt{$flag}++;
     } 
     shift;
@@ -85,8 +85,6 @@ my $tests_total = 0;
 # Unixes it is the basename rather than the full path to the perl binary.
 my $perlpath = '';
 if (defined($Config{'perlpath'})) { $perlpath = $Config{'perlpath'}; }
-# Of course some platforms are distinct...
-if ($^O eq 'VMS') { $perlpath = $^X; }
 
 # The useithreads Config variable plays a role in whether or not
 # threads and threads/shared work when C<use>d.  They apparently always
@@ -121,11 +119,11 @@ print "## Checking Perl version via variable `\$]'.\n" if $opt{'p'};
 !NO!SUBS!
 
 print OUT <<"!GROK!THIS!";
-my \$ivp_VERSION = $];
+my \$ivp_VERSION = "$]";
 
 !GROK!THIS!
 print OUT <<'!NO!SUBS!';
-if ($ivp_VERSION == $]) {
+if ($ivp_VERSION eq $]) {
     print "## Perl version `$]' appears installed as expected.\n" if $opt{'v'};
     print "ok 2\n";
     $pass__total++;
@@ -210,7 +208,12 @@ if (defined($Config{'extensions'})) {
             next if ($_ eq 'threads');
             next if ($_ eq 'threads/shared');
         }
-        next if ($_ eq 'Devel/DProf'); 
+	# that's a distribution name, not a module name
+	next if /^IO_Compress_(?:Zlib|Base)$/;
+        next if $_ eq 'Devel/DProf'; 
+	# test modules
+	next if $_ eq 'XS/APItest';
+	next if $_ eq 'XS/Typemap';
            # VMS$ perl  -e "eval ""require \""Devel/DProf.pm\"";"" print $@"
            # \NT> perl  -e "eval \"require 'Devel/DProf.pm'\"; print $@"
            # DProf: run perl with -d to use DProf.
@@ -284,6 +287,12 @@ for (@modules) {
     $version = undef;
     @missing = ();
     @missing = $installed -> validate($_);
+
+    # .bs files are optional
+    @missing = grep { ! /\.bs$/ } @missing;
+    # man files are often compressed
+    @missing = grep { ! ( -s "$_.gz" || -s "$_.bz2" ) } @missing;
+
     if ($#missing >= 0) {
         print "# file",+($#missing == 0) ? '' : 's'," missing from installation:\n";
         print '# ',join(' ',@missing),"\n";
@@ -305,6 +314,7 @@ else {
 $tests_total++;
 
 
+if ($opt{'a'}) {
 print "## Checking installations of *.h -> *.ph header files.\n" if $opt{'p'};
 my $ph_there = 0;
 my $var = undef;
@@ -354,6 +364,10 @@ else {
     $error_total++;
 }
 $tests_total++;
+}
+else {
+    print "##  Skip checking of *.ph header files.\n" if $opt{'p'};
+}
 
 # Final report (rather than feed ousrselves to Test::Harness::runtests()
 # we simply format some output on our own to keep things simple and
@@ -372,11 +386,11 @@ if ($error_total == 0 && $tests_total) {
 
 =head1 NAME
 
-B<perlivp> - Perl Installation Verification Procedure
+perlivp - Perl Installation Verification Procedure
 
 =head1 SYNOPSIS
 
-B<perlivp> [B<-p>] [B<-v>] [B<-h>]
+B<perlivp> [B<-a>] [B<-p>] [B<-v>] [B<-h>]
 
 =head1 DESCRIPTION
 
@@ -401,6 +415,11 @@ etc.
 =item B<-h> help
 
 Prints out a brief help message.
+
+=item B<-a> run all tests
+
+Normally tests for optional features are skipped.  With -a all tests
+are executed.
 
 =item B<-p> print preface
 

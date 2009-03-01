@@ -1,15 +1,19 @@
 #!./perl -w
 
-# Tests for the command-line switches
+# Tests for the command-line switches:
+# -0, -c, -l, -s, -m, -M, -V, -v, -h, -i, -E and all unknown
+# Some switches have their own tests, see MANIFEST.
 
 BEGIN {
     chdir 't' if -d 't';
     @INC = '../lib';
 }
 
-require "./test.pl";
+BEGIN { require "./test.pl"; }
 
-plan(tests => 19);
+plan(tests => 61);
+
+use Config;
 
 # due to a bug in VMS's piping which makes it impossible for runperl()
 # to emulate echo -n (ie. stdin always winds up with a newline), these 
@@ -64,6 +68,12 @@ $r = runperl(
 );
 is( $r, 'abc-def--ghi-jkl-mno--pq-/', '-0777 (slurp mode)' );
 
+$r = runperl(
+    switches	=> [ '-066' ],
+    prog	=> 'BEGIN { print qq{($/)} } print qq{[$/]}',
+);
+is( $r, "(\066)[\066]", '$/ set at compile-time' );
+
 # Tests for -c
 
 my $filename = 'swctest.tmp';
@@ -115,21 +125,36 @@ $r = runperl(
 );
 is( $r, '21-', '-s switch parsing' );
 
-# Bug ID 20011106.084
 $filename = 'swstest.tmp';
 SKIP: {
     open my $f, ">$filename" or skip( "Can't write temp file $filename: $!" );
     print $f <<'SWTEST';
 #!perl -s
-print $x
+BEGIN { print $x,$y; exit }
 SWTEST
     close $f or die "Could not close: $!";
     $r = runperl(
-	switches    => [ '-s' ],
+	progfile    => $filename,
+	args	    => [ '-x=foo -y' ],
+    );
+    is( $r, 'foo1', '-s on the shebang line' );
+    push @tmpfiles, $filename;
+}
+
+# Bug ID 20011106.084
+$filename = 'swsntest.tmp';
+SKIP: {
+    open my $f, ">$filename" or skip( "Can't write temp file $filename: $!" );
+    print $f <<'SWTEST';
+#!perl -sn
+BEGIN { print $x; exit }
+SWTEST
+    close $f or die "Could not close: $!";
+    $r = runperl(
 	progfile    => $filename,
 	args	    => [ '-x=foo' ],
     );
-    is( $r, 'foo', '-s on the shebang line' );
+    is( $r, 'foo', '-sn on the shebang line' );
     push @tmpfiles, $filename;
 }
 
@@ -177,9 +202,13 @@ SWTESTPM
     local $TODO = '';   # these ones should work on VMS
 
     # basic perl -V should generate significant output.
-    # we don't test actual format since it could change
+    # we don't test actual format too much since it could change
     like( runperl( switches => ['-V'] ), qr/(\n.*){20}/,
           '-V generates 20+ lines' );
+
+    like( runperl( switches => ['-V'] ),
+	  qr/\ASummary of my perl5 .*configuration:/,
+          '-V looks okay' );
 
     # lookup a known config var
     chomp( $r=runperl( switches => ['-V:osname'] ) );
@@ -200,3 +229,92 @@ SWTESTPM
     # make sure each line we got matches the re
     ok( !( grep !/^i\D+size=/, split /^/, $r ), '-V:re correct' );
 }
+
+# Tests for -v
+
+{
+    local $TODO = '';   # these ones should work on VMS
+
+    my $v = sprintf "%vd", $^V;
+    like( runperl( switches => ['-v'] ),
+	  qr/This is perl, v$v (?:DEVEL\d+ )?built for \Q$Config{archname}\E.+Copyright.+Larry Wall.+Artistic License.+GNU General Public License/s,
+          '-v looks okay' );
+
+}
+
+# Tests for -h
+
+{
+    local $TODO = '';   # these ones should work on VMS
+
+    like( runperl( switches => ['-h'] ),
+	  qr/Usage: .+(?i:perl(?:$Config{_exe})?).+switches.+programfile.+arguments/,
+          '-h looks okay' );
+
+}
+
+# Tests for switches which do not exist
+
+foreach my $switch (split //, "ABbGgHJjKkLNOoQqRrYyZz123456789_")
+{
+    local $TODO = '';   # these ones should work on VMS
+
+    like( runperl( switches => ["-$switch"], stderr => 1,
+		   prog => 'die "oops"' ),
+	  qr/\QUnrecognized switch: -$switch  (-h will show valid options)./,
+          "-$switch correctly unknown" );
+
+}
+
+# Tests for -i
+
+{
+    local $TODO = '';   # these ones should work on VMS
+
+    sub do_i_unlink { 1 while unlink("file", "file.bak") }
+
+    open(FILE, ">file") or die "$0: Failed to create 'file': $!";
+    print FILE <<__EOF__;
+foo yada dada
+bada foo bing
+king kong foo
+__EOF__
+    close FILE;
+
+    END { do_i_unlink() }
+
+    runperl( switches => ['-pi.bak'], prog => 's/foo/bar/', args => ['file'] );
+
+    open(FILE, "file") or die "$0: Failed to open 'file': $!";
+    chomp(my @file = <FILE>);
+    close FILE;
+
+    open(BAK, "file.bak") or die "$0: Failed to open 'file': $!";
+    chomp(my @bak = <BAK>);
+    close BAK;
+
+    is(join(":", @file),
+       "bar yada dada:bada bar bing:king kong bar",
+       "-i new file");
+    is(join(":", @bak),
+       "foo yada dada:bada foo bing:king kong foo",
+       "-i backup file");
+}
+
+# Tests for -E
+
+$r = runperl(
+    switches	=> [ '-E', '"say q(Hello, world!)"']
+);
+is( $r, "Hello, world!\n", "-E say" );
+
+
+$r = runperl(
+    switches	=> [ '-E', '"undef ~~ undef and say q(Hello, world!)"']
+);
+is( $r, "Hello, world!\n", "-E ~~" );
+
+$r = runperl(
+    switches	=> [ '-E', '"given(undef) {when(undef) { say q(Hello, world!)"}}']
+);
+is( $r, "Hello, world!\n", "-E given" );

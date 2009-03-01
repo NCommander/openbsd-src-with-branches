@@ -16,7 +16,7 @@ use Test::More;
 
 BEGIN {
 	if ($^O =~ /NetWare/i) {
-		plan tests => 40;
+		plan tests => 39;
 	} else {
 		plan skip_all => 'This is not NW5';
 	}
@@ -172,18 +172,19 @@ delete $ENV{PATH} unless $had_path;
           'clean() Makefile target' );
 }
 
-# perl_archive()
+
+# init_linker
 {
     my $libperl = $Config{libperl} || 'libperl.a';
-    is( $MM->perl_archive(), File::Spec->catfile('$(PERL_INC)', $libperl ),
-	    'perl_archive() should respect libperl setting' );
+    my $export  = '$(BASEEXT).def';
+    my $after   = '';
+    $MM->init_linker;
+
+    is( $MM->{PERL_ARCHIVE},        $libperl,   'PERL_ARCHIVE' );
+    is( $MM->{PERL_ARCHIVE_AFTER},  $after,     'PERL_ARCHIVE_AFTER' );
+    is( $MM->{EXPORT_LIST},         $export,    'EXPORT_LIST' );
 }
 
-# export_list
-{
-    my $mm_w32 = bless { BASEEXT => 'someext' }, 'MM';
-    is( $mm_w32->export_list(), 'someext.def', 'export_list()' );
-}
 
 # canonpath()
 {
@@ -253,32 +254,9 @@ unlink "${script_name}$script_ext" if -f "${script_name}$script_ext";
           'tool_autosplit()' );
 }
 
-# tools_other()
-{
-    ( my $mm_w32 = bless { }, 'MM' )->init_others();
-        
-    my $bin_sh = ( $Config{make} =~ /^dmake/i 
-               ? "" : ($Config{sh} || 'cmd /c') . "\n" );
-    $bin_sh = "SHELL = $bin_sh" if $bin_sh;
-
-    my $tools = join "\n", map "$_ = $mm_w32->{ $_ }"
-    	=> qw(CHMOD CP LD MV NOOP RM_F RM_RF TEST_F TOUCH UMASK_NULL DEV_NULL);
-
-    like( $mm_w32->tools_other(),
-          qr/^\Q$bin_sh$tools/m,
-          'tools_other()' );
-};
 
 # xs_o() should look into that
 # top_targets() should look into that
-
-# manifypods()
-{
-    my $mm_w32 = bless { NOECHO    => '' }, 'MM';
-    like( $mm_w32->manifypods(),
-          qr/^\nmanifypods :\n\t\$\Q(NOOP)\E\n$/,
-          'manifypods() Makefile target' );
-}
 
 # dist_ci() should look into that
 # dist_core() should look into that

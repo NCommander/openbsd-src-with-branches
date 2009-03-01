@@ -1,167 +1,153 @@
-#!./perl
+#!./perl -T
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
+    if ($ENV{PERL_CORE}) {
+        chdir 't' if -d 't';
+        @INC = '../lib';
+    }
 }
 
 use warnings;
-use vars qw{ @warnings };
+use vars qw{ @warnings $fagwoosh $putt $kloong};
 BEGIN {				# ...and save 'em for later
     $SIG{'__WARN__'} = sub { push @warnings, @_ }
 }
-END { print @warnings }
+END { print STDERR @warnings }
 
-######################### We start with some black magic to print on failure.
-
-BEGIN { $| = 1; print "1..82\n"; }
-END {print "not ok 1\n" unless $loaded;}
-use constant 1.01;
-$loaded = 1;
-#print "# Version: $constant::VERSION\n";
-print "ok 1\n";
-
-######################### End of black magic.
 
 use strict;
+use Test::More tests => 97;
+my $TB = Test::More->builder;
 
-sub test ($$;$) {
-    my($num, $bool, $diag) = @_;
-    if ($bool) {
-	print "ok $num\n";
-	return;
-    }
-    print "not ok $num\n";
-    return unless defined $diag;
-    $diag =~ s/\Z\n?/\n/;			# unchomp
-    print map "# $num : $_", split m/^/m, $diag;
-}
+BEGIN { use_ok('constant'); }
 
 use constant PI		=> 4 * atan2 1, 1;
 
-test 2, substr(PI, 0, 7) eq '3.14159';
-test 3, defined PI;
+ok defined PI,                          'basic scalar constant';
+is substr(PI, 0, 7), '3.14159',         '    in substr()';
 
 sub deg2rad { PI * $_[0] / 180 }
 
 my $ninety = deg2rad 90;
 
-test 4, $ninety > 1.5707;
-test 5, $ninety < 1.5708;
+cmp_ok abs($ninety - 1.5707), '<', 0.0001, '    in math expression';
 
 use constant UNDEF1	=> undef;	# the right way
 use constant UNDEF2	=>	;	# the weird way
 use constant 'UNDEF3'		;	# the 'short' way
 use constant EMPTY	=> ( )  ;	# the right way for lists
 
-test 6, not defined UNDEF1;
-test 7, not defined UNDEF2;
-test 8, not defined UNDEF3;
+is UNDEF1, undef,       'right way to declare an undef';
+is UNDEF2, undef,       '    weird way';
+is UNDEF3, undef,       '    short way';
+
+# XXX Why is this way different than the other ones?
 my @undef = UNDEF1;
-test 9, @undef == 1;
-test 10, not defined $undef[0];
+is @undef, 1;
+is $undef[0], undef;
+
 @undef = UNDEF2;
-test 11, @undef == 0;
+is @undef, 0;
 @undef = UNDEF3;
-test 12, @undef == 0;
+is @undef, 0;
 @undef = EMPTY;
-test 13, @undef == 0;
+is @undef, 0;
 
 use constant COUNTDOWN	=> scalar reverse 1, 2, 3, 4, 5;
 use constant COUNTLIST	=> reverse 1, 2, 3, 4, 5;
 use constant COUNTLAST	=> (COUNTLIST)[-1];
 
-test 14, COUNTDOWN eq '54321';
+is COUNTDOWN, '54321';
 my @cl = COUNTLIST;
-test 15, @cl == 5;
-test 16, COUNTDOWN eq join '', @cl;
-test 17, COUNTLAST == 1;
-test 18, (COUNTLIST)[1] == 4;
+is @cl, 5;
+is COUNTDOWN, join '', @cl;
+is COUNTLAST, 1;
+is((COUNTLIST)[1], 4);
 
 use constant ABC	=> 'ABC';
-test 19, "abc${\( ABC )}abc" eq "abcABCabc";
+is "abc${\( ABC )}abc", "abcABCabc";
 
 use constant DEF	=> 'D', 'E', chr ord 'F';
-test 20, "d e f @{[ DEF ]} d e f" eq "d e f D E F d e f";
+is "d e f @{[ DEF ]} d e f", "d e f D E F d e f";
 
 use constant SINGLE	=> "'";
 use constant DOUBLE	=> '"';
 use constant BACK	=> '\\';
 my $tt = BACK . SINGLE . DOUBLE ;
-test 21, $tt eq q(\\'");
+is $tt, q(\\'");
 
 use constant MESS	=> q('"'\\"'"\\);
-test 22, MESS eq q('"'\\"'"\\);
-test 23, length(MESS) == 8;
+is MESS, q('"'\\"'"\\);
+is length(MESS), 8;
 
 use constant TRAILING	=> '12 cats';
 {
-    no warnings 'numeric';
-    test 24, TRAILING == 12;
+    local $^W;
+    cmp_ok TRAILING, '==', 12;
 }
-test 25, TRAILING eq '12 cats';
+is TRAILING, '12 cats';
 
 use constant LEADING	=> " \t1234";
-test 26, LEADING == 1234;
-test 27, LEADING eq " \t1234";
+cmp_ok LEADING, '==', 1234;
+is LEADING, " \t1234";
 
 use constant ZERO1	=> 0;
 use constant ZERO2	=> 0.0;
 use constant ZERO3	=> '0.0';
-test 28, ZERO1 eq '0';
-test 29, ZERO2 eq '0';
-test 30, ZERO3 eq '0.0';
+is ZERO1, '0';
+is ZERO2, '0';
+is ZERO3, '0.0';
 
 {
     package Other;
     use constant PI	=> 3.141;
 }
 
-test 31, (PI > 3.1415 and PI < 3.1416);
-test 32, Other::PI == 3.141;
+cmp_ok(abs(PI - 3.1416), '<', 0.0001);
+is Other::PI, 3.141;
 
 use constant E2BIG => $! = 7;
-test 33, E2BIG == 7;
+cmp_ok E2BIG, '==', 7;
 # This is something like "Arg list too long", but the actual message
 # text may vary, so we can't test much better than this.
-test 34, length(E2BIG) > 6;
-test 35, 1; # Skipped: used to assume " ", false in ja_JP.eucJP on Linux
+cmp_ok length(E2BIG), '>', 6;
 
-test 36, @warnings == 0, join "\n", "unexpected warning", @warnings;
+is @warnings, 0 or diag join "\n", "unexpected warning", @warnings;
 @warnings = ();		# just in case
 undef &PI;
-test 37, @warnings &&
-    ($warnings[0] =~ /Constant sub.* undefined/),
-    shift @warnings;
+ok @warnings && ($warnings[0] =~ /Constant sub.* undefined/) or
+  diag join "\n", "unexpected warning", @warnings;
+shift @warnings;
 
-test 38, @warnings == 0, "unexpected warning";
-test 39, 1;
+is @warnings, 0, "unexpected warning";
 
-use constant CSCALAR	=> \"ok 40\n";
-use constant CHASH	=> { foo => "ok 41\n" };
-use constant CARRAY	=> [ undef, "ok 42\n" ];
-use constant CPHASH	=> [ { foo => 1 }, "ok 43\n" ];
+my $curr_test = $TB->current_test;
+use constant CSCALAR	=> \"ok 37\n";
+use constant CHASH	=> { foo => "ok 38\n" };
+use constant CARRAY	=> [ undef, "ok 39\n" ];
 use constant CCODE	=> sub { "ok $_[0]\n" };
 
-print ${+CSCALAR};
-print CHASH->{foo};
-print CARRAY->[1];
-print CPHASH->{foo};
-eval q{ CPHASH->{bar} };
-test 44, scalar($@ =~ /^No such pseudo-hash field/);
-print CCODE->(45);
+my $output = $TB->output ;
+print $output ${+CSCALAR};
+print $output CHASH->{foo};
+print $output CARRAY->[1];
+print $output CCODE->($curr_test+4);
+
+$TB->current_test($curr_test+4);
+
 eval q{ CCODE->{foo} };
-test 46, scalar($@ =~ /^Constant is not a HASH/);
+ok scalar($@ =~ /^Constant is not a HASH/);
+
 
 # Allow leading underscore
 use constant _PRIVATE => 47;
-test 47, _PRIVATE == 47;
+is _PRIVATE, 47;
 
 # Disallow doubled leading underscore
 eval q{
     use constant __DISALLOWED => "Oops";
 };
-test 48, $@ =~ /begins with '__'/;
+like $@, qr/begins with '__'/;
 
 # Check on declared() and %declared. This sub should be EXACTLY the
 # same as the one quoted in the docs!
@@ -174,27 +160,28 @@ sub declared ($) {
     $constant::declared{$full_name};
 }
 
-test 49, declared 'PI';
-test 50, $constant::declared{'main::PI'};
+ok declared 'PI';
+ok $constant::declared{'main::PI'};
 
-test 51, !declared 'PIE';
-test 52, !$constant::declared{'main::PIE'};
+ok !declared 'PIE';
+ok !$constant::declared{'main::PIE'};
 
 {
     package Other;
     use constant IN_OTHER_PACK => 42;
-    ::test 53, ::declared 'IN_OTHER_PACK';
-    ::test 54, $constant::declared{'Other::IN_OTHER_PACK'};
-    ::test 55, ::declared 'main::PI';
-    ::test 56, $constant::declared{'main::PI'};
+    ::ok ::declared 'IN_OTHER_PACK';
+    ::ok $constant::declared{'Other::IN_OTHER_PACK'};
+    ::ok ::declared 'main::PI';
+    ::ok $constant::declared{'main::PI'};
 }
 
-test 57, declared 'Other::IN_OTHER_PACK';
-test 58, $constant::declared{'Other::IN_OTHER_PACK'};
+ok declared 'Other::IN_OTHER_PACK';
+ok $constant::declared{'Other::IN_OTHER_PACK'};
 
 @warnings = ();
 eval q{
     no warnings;
+    #local $^W if $] < 5.006;
     use warnings 'constant';
     use constant 'BEGIN' => 1 ;
     use constant 'INIT' => 1 ;
@@ -210,24 +197,66 @@ eval q{
     use constant 'ENV' => 1 ;
     use constant 'INC' => 1 ;
     use constant 'SIG' => 1 ;
+    use constant 'UNITCHECK' => 1;
 };
 
-test 59, @warnings == 15 ;
-test 60, (shift @warnings) =~ /^Constant name 'BEGIN' is a Perl keyword at/;
-shift @warnings; #Constant subroutine BEGIN redefined at
-test 61, (shift @warnings) =~ /^Constant name 'INIT' is a Perl keyword at/;
-test 62, (shift @warnings) =~ /^Constant name 'CHECK' is a Perl keyword at/;
-test 63, (shift @warnings) =~ /^Constant name 'END' is a Perl keyword at/;
-test 64, (shift @warnings) =~ /^Constant name 'DESTROY' is a Perl keyword at/;
-test 65, (shift @warnings) =~ /^Constant name 'AUTOLOAD' is a Perl keyword at/;
-test 66, (shift @warnings) =~ /^Constant name 'STDIN' is forced into package main:: a/;
-test 67, (shift @warnings) =~ /^Constant name 'STDOUT' is forced into package main:: at/;
-test 68, (shift @warnings) =~ /^Constant name 'STDERR' is forced into package main:: at/;
-test 69, (shift @warnings) =~ /^Constant name 'ARGV' is forced into package main:: at/;
-test 70, (shift @warnings) =~ /^Constant name 'ARGVOUT' is forced into package main:: at/;
-test 71, (shift @warnings) =~ /^Constant name 'ENV' is forced into package main:: at/;
-test 72, (shift @warnings) =~ /^Constant name 'INC' is forced into package main:: at/;
-test 73, (shift @warnings) =~ /^Constant name 'SIG' is forced into package main:: at/;
+my @Expected_Warnings = 
+  (
+   qr/^Constant name 'BEGIN' is a Perl keyword at/,
+   qr/^Constant subroutine BEGIN redefined at/,
+   qr/^Constant name 'INIT' is a Perl keyword at/,
+   qr/^Constant name 'CHECK' is a Perl keyword at/,
+   qr/^Constant name 'END' is a Perl keyword at/,
+   qr/^Constant name 'DESTROY' is a Perl keyword at/,
+   qr/^Constant name 'AUTOLOAD' is a Perl keyword at/,
+   qr/^Constant name 'STDIN' is forced into package main:: a/,
+   qr/^Constant name 'STDOUT' is forced into package main:: at/,
+   qr/^Constant name 'STDERR' is forced into package main:: at/,
+   qr/^Constant name 'ARGV' is forced into package main:: at/,
+   qr/^Constant name 'ARGVOUT' is forced into package main:: at/,
+   qr/^Constant name 'ENV' is forced into package main:: at/,
+   qr/^Constant name 'INC' is forced into package main:: at/,
+   qr/^Constant name 'SIG' is forced into package main:: at/,
+   qr/^Constant name 'UNITCHECK' is a Perl keyword at/,
+);
+
+unless ($] > 5.009) {
+    # Remove the UNITCHECK warning
+    pop @Expected_Warnings;
+    # But keep the count the same
+    push @Expected_Warnings, qr/^$/;
+    push @warnings, "";
+}
+
+# when run under "make test"
+if (@warnings == 16) {
+    push @warnings, "";
+    push @Expected_Warnings, qr/^$/;
+}
+# when run directly: perl -wT -Ilib t/constant.t
+elsif (@warnings == 17) {
+    splice @Expected_Warnings, 1, 0, 
+        qr/^Prototype mismatch: sub main::BEGIN \(\) vs none at/;
+}
+# when run directly under 5.6.2: perl -wT -Ilib t/constant.t
+elsif (@warnings == 15) {
+    splice @Expected_Warnings, 1, 1;
+    push @warnings, "", "";
+    push @Expected_Warnings, qr/^$/, qr/^$/;
+}
+else {
+    my $rule = " -" x 20;
+    diag "/!\\ unexpected case: ", scalar @warnings, " warnings\n$rule\n";
+    diag map { "  $_" } @warnings;
+    diag $rule, $/;
+}
+
+is @warnings, 17;
+
+for my $idx (0..$#warnings) {
+    like $warnings[$idx], $Expected_Warnings[$idx];
+}
+
 @warnings = ();
 
 
@@ -237,15 +266,92 @@ use constant {
 	AGES   => { John => 33, Jane => 28, Sally => 3 },
 	RFAM   => [ [ qw( John Jane Sally ) ] ],
 	SPIT   => sub { shift },
-	PHFAM  => [ { John => 1, Jane => 2, Sally => 3 }, 33, 28, 3 ],
 };
 
-test 74, @{+FAMILY} == THREE;
-test 75, @{+FAMILY} == @{RFAM->[0]};
-test 76, FAMILY->[2] eq RFAM->[0]->[2];
-test 77, AGES->{FAMILY->[1]} == 28;
-test 78, PHFAM->{John} == AGES->{John};
-test 79, PHFAM->[3] == AGES->{FAMILY->[2]};
-test 80, @{+PHFAM} == SPIT->(THREE+1);
-test 81, THREE**3 eq SPIT->(@{+FAMILY}**3);
-test 82, AGES->{FAMILY->[THREE-1]} == PHFAM->[THREE];
+is @{+FAMILY}, THREE;
+is @{+FAMILY}, @{RFAM->[0]};
+is FAMILY->[2], RFAM->[0]->[2];
+is AGES->{FAMILY->[1]}, 28;
+is THREE**3, SPIT->(@{+FAMILY}**3);
+
+# Allow name of digits/underscores only if it begins with underscore
+{
+    use warnings FATAL => 'constant';
+    eval q{
+        use constant _1_2_3 => 'allowed';
+    };
+    ok( $@ eq '' );
+}
+
+sub slotch ();
+
+{
+    my @warnings;
+    local $SIG{'__WARN__'} = sub { push @warnings, @_ };
+    eval 'use constant slotch => 3; 1' or die $@;
+
+    is ("@warnings", "", "No warnings if a prototype exists");
+
+    my $value = eval 'slotch';
+    is ($@, '');
+    is ($value, 3);
+}
+
+sub zit;
+
+{
+    my @warnings;
+    local $SIG{'__WARN__'} = sub { push @warnings, @_ };
+    eval 'use constant zit => 4; 1' or die $@;
+
+    # empty prototypes are reported differently in different versions
+    my $no_proto = $] < 5.008 ? "" : ": none";
+
+    is(scalar @warnings, 1, "1 warning");
+    like ($warnings[0], qr/^Prototype mismatch: sub main::zit$no_proto vs \(\)/,
+	  "about the prototype mismatch");
+
+    my $value = eval 'zit';
+    is ($@, '');
+    is ($value, 4);
+}
+
+$fagwoosh = 'geronimo';
+$putt = 'leutwein';
+$kloong = 'schlozhauer';
+
+{
+    my @warnings;
+    local $SIG{'__WARN__'} = sub { push @warnings, @_ };
+    eval 'use constant fagwoosh => 5; 1' or die $@;
+
+    is ("@warnings", "", "No warnings if the typeglob exists already");
+
+    my $value = eval 'fagwoosh';
+    is ($@, '');
+    is ($value, 5);
+
+    my @value = eval 'fagwoosh';
+    is ($@, '');
+    is_deeply (\@value, [5]);
+
+    eval 'use constant putt => 6, 7; 1' or die $@;
+
+    is ("@warnings", "", "No warnings if the typeglob exists already");
+
+    @value = eval 'putt';
+    is ($@, '');
+    is_deeply (\@value, [6, 7]);
+
+    eval 'use constant "klong"; 1' or die $@;
+
+    is ("@warnings", "", "No warnings if the typeglob exists already");
+
+    $value = eval 'klong';
+    is ($@, '');
+    is ($value, undef);
+
+    @value = eval 'klong';
+    is ($@, '');
+    is_deeply (\@value, []);
+}

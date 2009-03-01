@@ -1,7 +1,7 @@
 #
 # Locale::Language - ISO two letter codes for language identification (ISO 639)
 #
-# $Id: Language.pm,v 2.2 2002/07/10 16:33:27 neilb Exp $
+# $Id: Language.pm,v 2.7 2004/06/10 21:19:34 neilb Exp $
 #
 
 package Locale::Language;
@@ -14,7 +14,7 @@ require Exporter;
 #	Public Global Variables
 #-----------------------------------------------------------------------
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION      = sprintf("%d.%02d", q$Revision: 2.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION      = sprintf("%d.%02d", q$Revision: 2.7 $ =~ /(\d+)\.(\d+)/);
 @ISA          = qw(Exporter);
 @EXPORT       = qw(&code2language &language2code
                    &all_language_codes &all_language_names );
@@ -104,8 +104,9 @@ sub all_language_names
 # initialisation code - stuff the DATA into the CODES hash
 #=======================================================================
 {
-    my $code;
-    my $language;
+    my    $code;
+    my    $language;
+    local $_;
 
 
     while (<DATA>)
@@ -231,7 +232,7 @@ mt:Maltese
 my:Burmese
 
 na:Nauru
-nb:Norwegian Bokmål
+nb:Norwegian Bokmal
 nd:Ndebele, North
 ne:Nepali
 ng:Ndonga
@@ -300,7 +301,7 @@ ur:Urdu
 uz:Uzbek
 
 vi:Vietnamese
-vo:Volapük
+vo:Volapuk
 
 wo:Wolof
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.77 2009/02/24 12:07:47 gilles Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.75 2009/02/22 11:59:12 jacekm Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@openbsd.org>
@@ -653,8 +653,7 @@ struct s_parent {
 };
 
 struct s_queue {
-	size_t		inserts_local;
-	size_t		inserts_remote;
+	size_t		inserts;
 };
 
 struct s_runner {

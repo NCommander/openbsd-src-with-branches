@@ -1,14 +1,16 @@
 package Encode::JP;
 BEGIN {
-    if (ord("A") == 193) {
-	die "Encode::JP not supported on EBCDIC\n";
+    if ( ord("A") == 193 ) {
+        die "Encode::JP not supported on EBCDIC\n";
     }
 }
+use strict;
+use warnings;
 use Encode;
-our $VERSION = do { my @r = (q$Revision: 1.25 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+our $VERSION = do { my @r = ( q$Revision: 2.3 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 
 use XSLoader;
-XSLoader::load(__PACKAGE__,$VERSION);
+XSLoader::load( __PACKAGE__, $VERSION );
 
 use Encode::JP::JIS7;
 
@@ -34,18 +36,18 @@ supported are as follows.
   --------------------------------------------------------------------
   euc-jp      /\beuc.*jp$/i	EUC (Extended Unix Character)
               /\bjp.*euc/i   
-	      /\bujis$/i
+          /\bujis$/i
   shiftjis    /\bshift.*jis$/i	Shift JIS (aka MS Kanji)
-	      /\bsjis$/i
+          /\bsjis$/i
   7bit-jis    /\bjis$/i		7bit JIS
   iso-2022-jp			ISO-2022-JP                  [RFC1468]
-				= 7bit JIS with all Halfwidth Kana 
-				  converted to Fullwidth
+                = 7bit JIS with all Halfwidth Kana 
+                  converted to Fullwidth
   iso-2022-jp-1			ISO-2022-JP-1                [RFC2237]
                                 = ISO-2022-JP with JIS X 0212-1990
-				  support.  See below
+                  support.  See below
   MacJapanese	                Shift JIS + Apple vendor mappings
-  cp932                         Code Page 932	
+  cp932       /\bwindows-31j$/i Code Page 932
                                 = Shift JIS + MS/IBM vendor mappings
   jis0201-raw                   JIS0201, raw format
   jis0208-raw                   JIS0201, raw format

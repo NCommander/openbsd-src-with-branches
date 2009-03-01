@@ -4,7 +4,7 @@ use strict;
 use vars qw($VERSION);
 use Carp;
 
-$VERSION = '2.09';
+$VERSION = '2.13';
 
 
 # LOAD FILTERING MODULE...
@@ -48,7 +48,7 @@ sub filter
 	local $Switch::file = (caller)[1];
 
 	my $status = 1;
-	$status = filter_read(10_000);
+	$status = filter_read(1_000_000);
 	return $status if $status<0;
     	$_ = filter_blocks($_,$offset);
 	$_ = "# line $offset\n" . $_ if $offset; undef $offset;
@@ -73,7 +73,7 @@ sub is_block
 }
 
 
-my $EOP = qr/\n\n|\Z/;
+my $EOP = qr/\n|\Z/;
 my $CUT = qr/\n=cut.*$EOP/;
 my $pod_or_DATA = qr/ ^=(?:head[1-4]|item) .*? $CUT
                     | ^=pod .*? $CUT
@@ -87,10 +87,9 @@ sub filter_blocks
 {
 	my ($source, $line) = @_;
 	return $source unless $Perl5 && $source =~ /case|switch/
-			   || $Perl6 && $source =~ /when|given/;
+			   || $Perl6 && $source =~ /when|given|default/;
 	pos $source = 0;
 	my $text = "";
-	$DB::single = 1;
 	component: while (pos $source < length $source)
 	{
 		if ($source =~ m/(\G\s*use\s+Switch\b)/gc)
@@ -101,7 +100,19 @@ sub filter_blocks
 		my @pos = Text::Balanced::_match_quotelike(\$source,qr/\s*/,1,0);
 		if (defined $pos[0])
 		{
-			$text .= " " . substr($source,$pos[2],$pos[18]-$pos[2]);
+			my $pre = substr($source,$pos[0],$pos[1]); # matched prefix
+                        my $iEol;
+                        if( substr($source,$pos[4],$pos[5]) eq '/' && # 1st delimiter
+                            substr($source,$pos[2],$pos[3]) eq '' && # no op like 'm'
+                            index( substr($source,$pos[16],$pos[17]), 'x' ) == -1 && # no //x
+                            ($iEol = index( $source, "\n", $pos[4] )) > 0         &&
+                            $iEol < $pos[8] ){ # embedded newlines
+                            # If this is a pattern, it isn't compatible with Switch. Backup past 1st '/'.
+                            pos( $source ) = $pos[6];
+			    $text .= $pre . substr($source,$pos[2],$pos[6]-$pos[2]);
+			} else {
+			    $text .= $pre . substr($source,$pos[2],$pos[18]-$pos[2]);
+			}
 			next component;
 		}
 		if ($source =~ m/\G\s*($pod_or_DATA)/gc) {
@@ -110,7 +121,8 @@ sub filter_blocks
 		@pos = Text::Balanced::_match_variable(\$source,qr/\s*/);
 		if (defined $pos[0])
 		{
-			$text .= " " . substr($source,$pos[0],$pos[4]-$pos[0]);
+			$text .= " " if $pos[0] < $pos[2];
+			$text .= substr($source,$pos[0],$pos[4]-$pos[0]);
 			next component;
 		}
 
@@ -120,7 +132,6 @@ sub filter_blocks
 		{
 			my $keyword = $3;
 			my $arg = $4;
-			# print  STDERR "[$arg]\n";
 			$text .= $1.$2.'S_W_I_T_C_H: while (1) ';
 			unless ($arg) {
 				@pos = Text::Balanced::_match_codeblock(\$source,qr/\s*/,qr/\(/,qr/\)/,qr/[[{(<]/,qr/[]})>]/,undef) 
@@ -143,14 +154,22 @@ sub filter_blocks
 			next component;
 		}
 		elsif ($Perl5 && $source =~ m/\G(\s*)(case\b)(?!\s*=>)/gc
-		    || $Perl6 && $source =~ m/\G(\s*)(when\b)(?!\s*=>)/gc)
+		    || $Perl6 && $source =~ m/\G(\s*)(when\b)(?!\s*=>)/gc
+		    || $Perl6 && $source =~ m/\G(\s*)(default\b)(?=\s*\{)/gc)
 		{
 			my $keyword = $2;
-			$text .= $1."if (Switch::case";
-			if (@pos = Text::Balanced::_match_codeblock(\$source,qr/\s*/,qr/\{/,qr/\}/,qr/\{/,qr/\}/,undef)) {
+			$text .= $1 . ($keyword eq "default"
+					? "if (1)"
+					: "if (Switch::case");
+
+			if ($keyword eq "default") {
+				# Nothing to do
+			}
+			elsif (@pos = Text::Balanced::_match_codeblock(\$source,qr/\s*/,qr/\{/,qr/\}/,qr/\{/,qr/\}/,undef)) {
 				my $code = substr($source,$pos[0],$pos[4]-$pos[0]);
-				$text .= " sub" if is_block $code;
-				$text .= " " . filter_blocks($code,line(substr($source,0,$pos[0]),$line)) . ")";
+				$text .= " " if $pos[0] < $pos[2];
+				$text .= "sub " if is_block $code;
+				$text .= filter_blocks($code,line(substr($source,0,$pos[0]),$line)) . ")";
 			}
 			elsif (@pos = Text::Balanced::_match_codeblock(\$source,qr/\s*/,qr/[[(]/,qr/[])]/,qr/[[({]/,qr/[])}]/,undef)) {
 				my $code = filter_blocks(substr($source,$pos[0],$pos[4]-$pos[0]),line(substr($source,0,$pos[0]),$line));
@@ -158,13 +177,15 @@ sub filter_blocks
 				$code =~ s {^\s*[(]\s*m\b} { ( qr}	||
 				$code =~ s {^\s*[(]\s*/}   { ( qr/}	||
 				$code =~ s {^\s*[(]\s*qw}  { ( \\qw};
-				$text .= " $code)";
+				$text .= " " if $pos[0] < $pos[2];
+				$text .= "$code)";
 			}
 			elsif ($Perl6 && do{@pos = Text::Balanced::_match_variable(\$source,qr/\s*/)}) {
 				my $code = filter_blocks(substr($source,$pos[0],$pos[4]-$pos[0]),line(substr($source,0,$pos[0]),$line));
 				$code =~ s {^\s*%}  { \%}	||
 				$code =~ s {^\s*@}  { \@};
-				$text .= " $code)";
+				$text .= " " if $pos[0] < $pos[2];
+				$text .= "$code)";
 			}
 			elsif ( @pos = Text::Balanced::_match_quotelike(\$source,qr/\s*/,1,0)) {
 				my $code = substr($source,$pos[2],$pos[18]-$pos[2]);
@@ -172,7 +193,8 @@ sub filter_blocks
 				$code =~ s {^\s*m}  { qr}	||
 				$code =~ s {^\s*/}  { qr/}	||
 				$code =~ s {^\s*qw} { \\qw};
-				$text .= " $code)";
+				$text .= " " if $pos[0] < $pos[2];
+				$text .= "$code)";
 			}
 			elsif ($Perl5 && $source =~ m/\G\s*(([^\$\@{])[^\$\@{]*)(?=\s*{)/gc
 			   ||  $Perl6 && $source =~ m/\G\s*([^;{]*)()/gc) {
@@ -491,26 +513,25 @@ Switch - A switch statement for Perl
 
 =head1 VERSION
 
-This document describes version 2.09 of Switch,
-released June 12, 2002.
+This document describes version 2.11 of Switch,
+released Nov 22, 2006.
 
 =head1 SYNOPSIS
 
-	use Switch;
+    use Switch;
 
-	switch ($val) {
-
-		case 1		{ print "number 1" }
-		case "a"	{ print "string a" }
-		case [1..10,42]	{ print "number in list" }
-		case (@array)	{ print "number in list" }
-		case /\w+/	{ print "pattern" }
-		case qr/\w+/	{ print "pattern" }
-		case (%hash)	{ print "entry in hash" }
-		case (\%hash)	{ print "entry in hash" }
-		case (\&sub)	{ print "arg to subroutine" }
-		else		{ print "previous case not true" }
-	}
+    switch ($val) {
+	case 1		{ print "number 1" }
+	case "a"	{ print "string a" }
+	case [1..10,42]	{ print "number in list" }
+	case (@array)	{ print "number in list" }
+	case /\w+/	{ print "pattern" }
+	case qr/\w+/	{ print "pattern" }
+	case (%hash)	{ print "entry in hash" }
+	case (\%hash)	{ print "entry in hash" }
+	case (\&sub)	{ print "arg to subroutine" }
+	else		{ print "previous case not true" }
+    }
 
 =head1 BACKGROUND
 
@@ -580,14 +601,11 @@ the existence of a series of keys (C<match if exists $s-E<gt>{$c}>),
 one could test for the existence of a single key in a series of hashes
 (C<match if exists $c-E<gt>{$s}>).
 
-As L<perltodo> observes, a Perl case mechanism must support all these
-"ways to do it".
-
-
 =head1 DESCRIPTION
 
 The Switch.pm module implements a generalized case mechanism that covers
-the numerous possible combinations of switch and case values described above.
+most (but not all) of the numerous possible combinations of switch and case
+values described above.
 
 The module augments the standard Perl syntax with two new control
 statements: C<switch> and C<case>. The C<switch> statement takes a
@@ -627,23 +645,14 @@ mechanism:
         %special = ( woohoo => 1,  d'oh => 1 );
 
         while (<>) {
+	    chomp;
             switch ($_) {
-
                 case (%special) { print "homer\n"; }      # if $special{$_}
-                case /a-z/i     { print "alpha\n"; }      # if $_ =~ /a-z/i
+                case /[a-z]/i   { print "alpha\n"; }      # if $_ =~ /a-z/i
                 case [1..9]     { print "small num\n"; }  # if $_ in [1..9]
-
-                case { $_[0] >= 10 } {                    # if $_ >= 10
-                    my $age = <>;
-                    switch (sub{ $_[0] < $age } ) {
-
-                        case 20  { print "teens\n"; }     # if 20 < $age
-                        case 30  { print "twenties\n"; }  # if 30 < $age
-                        else     { print "history\n"; }
-                    }
-                }
-
+                case { $_[0] >= 10 } { print "big num\n"; } # if $_ >= 10
                 print "must be punctuation\n" case /\W/;  # if $_ ~= /\W/
+	    }
         }
 
 Note that C<switch>es can be nested within C<case> (or any other) blocks,
@@ -658,7 +667,7 @@ useful for aggregating integral cases:
         {
                 switch ($_[0]) { case 0            { return 'zero' }
                                  case [2,4,6,8]    { return 'even' }
-                                 case [1,3,4,7,9]  { return 'odd' }
+                                 case [1,3,5,7,9]  { return 'odd' }
                                  case /[A-F]/i     { return 'hex' }
                                }
         }
@@ -670,7 +679,7 @@ Fall-though (trying another case after one has already succeeded)
 is usually a Bad Idea in a switch statement. However, this
 is Perl, not a police state, so there I<is> a way to do it, if you must.
 
-If a C<case> block executes an untargetted C<next>, control is
+If a C<case> block executes an untargeted C<next>, control is
 immediately transferred to the statement I<after> the C<case> statement
 (i.e. usually another case), rather than out of the surrounding
 C<switch> block.
@@ -687,7 +696,7 @@ For example:
 
 If $val held the number C<1>, the above C<switch> block would call the
 first three C<handle_...> subroutines, jumping to the next case test
-each time it encountered a C<next>. After the thrid C<case> block
+each time it encountered a C<next>. After the third C<case> block
 was executed, control would jump to the end of the enclosing
 C<switch> block.
 
@@ -702,7 +711,7 @@ For example:
                 case /\d/   { handle_dig_any(); }
         }
 
-If an untargetted C<last> statement is executed in a case block, this
+If an untargeted C<last> statement is executed in a case block, this
 immediately transfers control out of the enclosing C<switch> block
 (in other words, there is an implicit C<last> at the end of each
 normal C<case> block). Thus the previous example could also have been
@@ -756,6 +765,7 @@ importing it with the argument C<"Perl6">.  For example:
                 when [0..9]  { handle_num_any(); last }
                 when /\d/    { handle_dig_any(); }
                 when /.*/    { handle_str_any(); }
+                default      { handle anything else; }
         }
 
 Note that scalars still need to be parenthesized, since they would be
@@ -775,16 +785,18 @@ be tested against a series of conditions. For example:
 
         sub beverage {
             switch (shift) {
-
-                case sub { $_[0] < 10 }  { return 'milk' }
-                case sub { $_[0] < 20 }  { return 'coke' }
-                case sub { $_[0] < 30 }  { return 'beer' }
-                case sub { $_[0] < 40 }  { return 'wine' }
-                case sub { $_[0] < 50 }  { return 'malt' }
-                case sub { $_[0] < 60 }  { return 'Moet' }
-                else                     { return 'milk' }
+                case { $_[0] < 10 } { return 'milk' }
+                case { $_[0] < 20 } { return 'coke' }
+                case { $_[0] < 30 } { return 'beer' }
+                case { $_[0] < 40 } { return 'wine' }
+                case { $_[0] < 50 } { return 'malt' }
+                case { $_[0] < 60 } { return 'Moet' }
+                else                { return 'milk' }
             }
         }
+
+(This is equivalent to writing C<case (sub { $_[0] < 10 })>, etc.; C<$_[0]>
+is the argument to the anonymous subroutine.)
 
 The need to specify each condition as a subroutine block is tiresome. To
 overcome this, when importing Switch.pm, a special "placeholder"
@@ -794,11 +806,11 @@ higher-order function. That is, the expression:
 
         use Switch '__';
 
-        __ < 2 + __
+        __ < 2
 
 is equivalent to:
 
-        sub { $_[0] < 2 + $_[1] }
+        sub { $_[0] < 2 }
 
 With C<__>, the previous ugly case statements can be rewritten:
 
@@ -838,21 +850,34 @@ and requires both these modules to be installed.
 
 =head1 AUTHOR
 
-Damian Conway (damian@conway.org)
+Damian Conway (damian@conway.org). The maintainer of this module is now Rafael
+Garcia-Suarez (rgarciasuarez@gmail.com).
 
 =head1 BUGS
 
 There are undoubtedly serious bugs lurking somewhere in code this funky :-)
 Bug reports and other feedback are most welcome.
 
-=head1 LIMITATION
+=head1 LIMITATIONS
 
-Due to the heuristic nature of Switch.pm's source parsing, the presence
+Due to the heuristic nature of Switch.pm's source parsing, the presence of
+regexes with embedded newlines that are specified with raw C</.../>
+delimiters and don't have a modifier C<//x> are indistinguishable from
+code chunks beginning with the division operator C</>. As a workaround
+you must use C<m/.../> or C<m?...?> for such patterns. Also, the presence
 of regexes specified with raw C<?...?> delimiters may cause mysterious
 errors. The workaround is to use C<m?...?> instead.
 
+Due to the way source filters work in Perl, you can't use Switch inside
+an string C<eval>.
+
+If your source file is longer then 1 million characters and you have a
+switch statement that crosses the 1 million (or 2 million, etc.)
+character boundary you will get mysterious errors. The workaround is to
+use smaller source files.
+
 =head1 COPYRIGHT
 
-    Copyright (c) 1997-2001, Damian Conway. All Rights Reserved.
+    Copyright (c) 1997-2006, Damian Conway. All Rights Reserved.
     This module is free software. It may be used, redistributed
         and/or modified under the same terms as Perl itself.

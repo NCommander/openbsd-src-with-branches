@@ -1,3 +1,6 @@
+Ama|char*|savepvs|const char* s
+Ama|SV*|newSVpvs|const char* s
+Ama|SV*|newSVpvs_share|const char* s
 Am|bool|isALNUM|char ch
 Am|bool|isALPHA|char ch
 Am|bool|isDIGIT|char ch
@@ -13,27 +16,18 @@ Am|bool|strNE|char* s1|char* s2
 Am|bool|strnEQ|char* s1|char* s2|STRLEN len
 Am|bool|strnNE|char* s1|char* s2|STRLEN len
 Am|bool|SvIOK_notUV|SV* sv
-Am|bool|SvIOKp|SV* sv
-Am|bool|SvIOK|SV* sv
 Am|bool|SvIOK_UV|SV* sv
 Am|bool|SvIsCOW_shared_hash|SV* sv
 Am|bool|SvIsCOW|SV* sv
-Am|bool|SvNIOKp|SV* sv
-Am|bool|SvNIOK|SV* sv
-Am|bool|SvNOKp|SV* sv
-Am|bool|SvNOK|SV* sv
-Am|bool|SvOK|SV* sv
-Am|bool|SvOOK|SV* sv
-Am|bool|SvPOKp|SV* sv
-Am|bool|SvPOK|SV* sv
-Am|bool|SvROK|SV* sv
+Am|bool|SvRXOK|SV* sv
 Am|bool|SvTAINTED|SV* sv
 Am|bool|SvTRUE|SV* sv
-Am|bool|SvUTF8|SV* sv
+Am|bool|SvUOK|SV* sv
 Am|bool|SvVOK|SV* sv
 Am|char*|HePV|HE* he|STRLEN len
 Am|char*|HvNAME|HV* stash
 Am|char*|SvEND|SV* sv
+Am|char*|SvGAMAGIC|SV* sv
 Am|char *|SvGROW|SV* sv|STRLEN len
 Am|char*|SvPVbyte_force|SV* sv|STRLEN len
 Am|char*|SvPVbyte_nolen|SV* sv
@@ -55,6 +49,7 @@ Am|char*|SvPVx|SV* sv|STRLEN len
 Am|char|toLOWER|char ch
 Am|char|toUPPER|char ch
 Am|HV*|CvSTASH|CV* cv
+Am|HV*|gv_stashpvs|const char* name|I32 create
 Am|HV*|SvSTASH|SV* sv
 Am|int|AvFILL|AV* av
 Am|IV|SvIV_nomg|SV* sv
@@ -84,17 +79,24 @@ Am|NV|SvNVx|SV* sv
 Am|NV|SvNVX|SV* sv
 Amn|(whatever)|RETVAL
 Amn|(whatever)|THIS
+Am|REGEXP *|SvRX|SV *sv
 Ams||dAX
+Ams||dAXMARK
 Ams||dITEMS
 Ams||dMARK
+Ams||dMULTICALL
 Ams||dORIGMARK
 Ams||dSP
 Ams||dUNDERBAR
+Ams||dXCPT
 Ams||dXSARGS
 Ams||dXSI32
 Ams||ENTER
 Ams||FREETMPS
 Ams||LEAVE
+Ams||MULTICALL
+Ams||POP_MULTICALL
+Ams||PUSH_MULTICALL
 Ams||PUTBACK
 Ams||SAVETMPS
 Ams||SPAGAIN
@@ -106,19 +108,36 @@ Am|SV*|HeSVKEY_force|HE* he
 Am|SV*|HeSVKEY|HE* he
 Am|SV*|HeSVKEY_set|HE* he|SV* sv
 Am|SV*|HeVAL|HE* he
+Am|SV**|hv_fetchs|HV* tb|const char* key|I32 lval
+Am|SV**|hv_stores|HV* tb|const char* key|NULLOK SV* val
 Am|SV*|newRV_inc|SV* sv
-Am|SV*|NEWSV|int id|STRLEN len
 Am|SV*|ST|int ix
+Am|SV*|SvREFCNT_inc_NN|SV* sv
+Am|SV*|SvREFCNT_inc_simple_NN|SV* sv
+Am|SV*|SvREFCNT_inc_simple|SV* sv
 Am|SV*|SvREFCNT_inc|SV* sv
 Am|SV*|SvRV|SV* sv
 Am|svtype|SvTYPE|SV* sv
+Ams||XCPT_RETHROW
 Ams||XSRETURN_EMPTY
 Ams||XSRETURN_NO
 Ams||XSRETURN_UNDEF
 Ams||XSRETURN_YES
 Ams||XS_VERSION_BOOTCHECK
 Am|U32|HeHASH|HE* he
+Am|U32|SvIOKp|SV* sv
+Am|U32|SvIOK|SV* sv
+Am|U32|SvNIOKp|SV* sv
+Am|U32|SvNIOK|SV* sv
+Am|U32|SvNOKp|SV* sv
+Am|U32|SvNOK|SV* sv
+Am|U32|SvOK|SV* sv
+Am|U32|SvOOK|SV* sv
+Am|U32|SvPOKp|SV* sv
+Am|U32|SvPOK|SV* sv
 Am|U32|SvREFCNT|SV* sv
+Am|U32|SvROK|SV* sv
+Am|U32|SvUTF8|SV* sv
 AmU||G_ARRAY
 AmU||G_DISCARD
 AmU||G_EVAL
@@ -129,7 +148,7 @@ AmU||HEf_SVKEY
 AmU||MARK
 AmU||newXSproto|char* name|XSUBADDR_t f|char* filename|const char *proto
 AmU||Nullav
-AmU||Nullch 
+AmU||Nullch
 AmU||Nullcv
 AmU||Nullhv
 AmU||Nullsv
@@ -148,6 +167,9 @@ Am|UV|SvUV_nomg|SV* sv
 Am|UV|SvUV|SV* sv
 Am|UV|SvUVx|SV* sv
 Am|UV|SvUVX|SV* sv
+AmU||XCPT_CATCH
+AmU||XCPT_TRY_END
+AmU||XCPT_TRY_START
 AmU||XS
 AmU||XS_VERSION
 Am|void *|CopyD|void* src|void* dest|int nitems|type
@@ -164,10 +186,13 @@ Am|void|mXPUSHi|IV iv
 Am|void|mXPUSHn|NV nv
 Am|void|mXPUSHp|char* str|STRLEN len
 Am|void|mXPUSHu|UV uv
-Am|void|Newc|int id|void* ptr|int nitems|type|cast
-Am|void|New|int id|void* ptr|int nitems|type
-Am|void|Newz|int id|void* ptr|int nitems|type
+Am|void|Newxc|void* ptr|int nitems|type|cast
+Am|void|Newx|void* ptr|int nitems|type
+Am|void|Newxz|void* ptr|int nitems|type
+Am|void|PoisonFree|void* dest|int nitems|type
+Am|void|PoisonNew|void* dest|int nitems|type
 Am|void|Poison|void* dest|int nitems|type
+Am|void|PoisonWith|void* dest|int nitems|type|U8 byte
 Am|void|PUSHi|IV iv
 Am|void|PUSHMARK|SP
 Am|void|PUSHmortal
@@ -180,6 +205,7 @@ Am|void|Renew|void* ptr|int nitems|type
 Am|void|Safefree|void* ptr
 Am|void|StructCopy|type src|type dest|type
 Am|void|sv_catpvn_nomg|SV* sv|const char* ptr|STRLEN len
+Am|void|sv_catpvs|SV* sv|const char* s
 Am|void|sv_catsv_nomg|SV* dsv|SV* ssv
 Am|void|SvCUR_set|SV* sv|STRLEN len
 Am|void|SvGETMAGIC|SV* sv
@@ -187,33 +213,45 @@ Am|void|SvIOK_off|SV* sv
 Am|void|SvIOK_only|SV* sv
 Am|void|SvIOK_only_UV|SV* sv
 Am|void|SvIOK_on|SV* sv
+Am|void|SvIV_set|SV* sv|IV val
+Am|void|SvLEN_set|SV* sv|STRLEN len
 Am|void|SvLOCK|SV* sv
+Am|void|SvMAGIC_set|SV* sv|MAGIC* val
 Am|void|SvNIOK_off|SV* sv
 Am|void|SvNOK_off|SV* sv
 Am|void|SvNOK_only|SV* sv
 Am|void|SvNOK_on|SV* sv
+Am|void|SvNV_set|SV* sv|NV val
 Am|void|SvPOK_off|SV* sv
 Am|void|SvPOK_only|SV* sv
 Am|void|SvPOK_only_UTF8|SV* sv
 Am|void|SvPOK_on|SV* sv
+Am|void|SvPV_set|SV* sv|char* val
 Am|void|SvREFCNT_dec|SV* sv
+Am|void|SvREFCNT_inc_simple_void_NN|SV* sv
+Am|void|SvREFCNT_inc_simple_void|SV* sv
+Am|void|SvREFCNT_inc_void_NN|SV* sv
+Am|void|SvREFCNT_inc_void|SV* sv
 Am|void|SvROK_off|SV* sv
 Am|void|SvROK_on|SV* sv
+Am|void|SvRV_set|SV* sv|SV* val
 Am|void|SvSetMagicSV_nosteal|SV* dsv|SV* ssv
 Am|void|SvSETMAGIC|SV* sv
 Am|void|SvSetMagicSV|SV* dsb|SV* ssv
+Am|void|sv_setpvs|SV* sv|const char* s
 Am|void|sv_setsv_nomg|SV* dsv|SV* ssv
 Am|void|SvSetSV_nosteal|SV* dsv|SV* ssv
 Am|void|SvSetSV|SV* dsb|SV* ssv
 Am|void|SvSHARE|SV* sv
+Am|void|SvSTASH_set|SV* sv|HV* val
 Am|void|SvTAINTED_off|SV* sv
 Am|void|SvTAINTED_on|SV* sv
 Am|void|SvTAINT|SV* sv
 Am|void|SvUNLOCK|SV* sv
-Am|void|SvUOK|SV* sv
 Am|void|SvUPGRADE|SV* sv|svtype type
 Am|void|SvUTF8_off|SV *sv
 Am|void|SvUTF8_on|SV *sv
+Am|void|SvUV_set|SV* sv|UV val
 Am|void|XPUSHi|IV iv
 Am|void|XPUSHmortal
 Am|void|XPUSHn|NV nv
@@ -247,6 +285,7 @@ mn|SV*|PL_ofs_sv
 mn|SV*|PL_rs
 ms||djSP
 m|STRLEN|PAD_COMPNAME_GEN|PADOFFSET po
+m|STRLEN|PAD_COMPNAME_GEN_set|PADOFFSET po|int gen
 m|SV *|CX_CURPAD_SV|struct context|PADOFFSET po
 m|SV *|PAD_BASE_SV	|PADLIST padlist|PADOFFSET po
 m|SV *|PAD_SETSV	|PADOFFSET po|SV* sv

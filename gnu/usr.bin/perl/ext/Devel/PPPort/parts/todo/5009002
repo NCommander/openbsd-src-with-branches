@@ -1,4 +1,9 @@
 5.009002
-SvPVbyte_force                 # E
+SvPVbyte_force                 # U
 find_rundefsvoffset            # U
-vnormal                        # E
+gv_fetchpvn_flags              # U
+gv_fetchsv                     # U
+op_refcnt_lock                 # U
+op_refcnt_unlock               # U
+savesvpv                       # U
+vnormal                        # U

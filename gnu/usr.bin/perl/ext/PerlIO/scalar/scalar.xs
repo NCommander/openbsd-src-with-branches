@@ -24,7 +24,15 @@ PerlIOScalar_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
      */
     if (arg) {
 	if (SvROK(arg)) {
+	    if (SvREADONLY(SvRV(arg)) && mode && *mode != 'r') {
+		if (ckWARN(WARN_LAYER))
+		    Perl_warner(aTHX_ packWARN(WARN_LAYER), PL_no_modify);
+		SETERRNO(EINVAL, SS_IVCHAN);
+		return -1;
+	    }
 	    s->var = SvREFCNT_inc(SvRV(arg));
+	    if (!SvPOK(s->var) && SvTYPE(SvRV(arg)) > SVt_NULL)
+		(void)SvPV_nolen(s->var);
 	}
 	else {
 	    s->var =
@@ -35,10 +43,10 @@ PerlIOScalar_pushed(pTHX_ PerlIO * f, const char *mode, SV * arg,
     else {
 	s->var = newSVpvn("", 0);
     }
-    sv_upgrade(s->var, SVt_PV);
+    SvUPGRADE(s->var, SVt_PV);
     code = PerlIOBase_pushed(aTHX_ f, mode, Nullsv, tab);
-    if ((PerlIOBase(f)->flags) & PERLIO_F_TRUNCATE)
-	SvCUR(s->var) = 0;
+    if (!SvOK(s->var) || (PerlIOBase(f)->flags) & PERLIO_F_TRUNCATE)
+	SvCUR_set(s->var, 0);
     if ((PerlIOBase(f)->flags) & PERLIO_F_APPEND)
 	s->posn = SvCUR(s->var);
     else
@@ -75,20 +83,36 @@ IV
 PerlIOScalar_seek(pTHX_ PerlIO * f, Off_t offset, int whence)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
+    STRLEN oldcur = SvCUR(s->var);
+    STRLEN newlen;
     switch (whence) {
-    case 0:
+    case SEEK_SET:
 	s->posn = offset;
 	break;
-    case 1:
+    case SEEK_CUR:
 	s->posn = offset + s->posn;
 	break;
-    case 2:
+    case SEEK_END:
 	s->posn = offset + SvCUR(s->var);
 	break;
     }
-    if ((STRLEN) s->posn > SvCUR(s->var)) {
-	(void) SvGROW(s->var, (STRLEN) s->posn);
+    if (s->posn < 0) {
+        if (ckWARN(WARN_LAYER))
+	    Perl_warner(aTHX_ packWARN(WARN_LAYER), "Offset outside string");
+	SETERRNO(EINVAL, SS_IVCHAN);
+	return -1;
     }
+    newlen = (STRLEN) s->posn;
+    if (newlen > oldcur) {
+	(void) SvGROW(s->var, newlen);
+	Zero(SvPVX(s->var) + oldcur, newlen - oldcur, char);
+	/* No SvCUR_set(), though.  This is just a seek, not a write. */
+    }
+    else if (!SvPVX(s->var)) {
+	/* ensure there's always a character buffer */
+	(void)SvGROW(s->var,1);
+    }
+    SvPOK_on(s->var);
     return 0;
 }
 
@@ -103,10 +127,9 @@ SSize_t
 PerlIOScalar_unread(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 {
     PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
-    char *dst = SvGROW(s->var, s->posn + count);
+    char *dst = SvGROW(s->var, (STRLEN)s->posn + count);
+    s->posn -= count;
     Move(vbuf, dst + s->posn, count, char);
-    s->posn += count;
-    SvCUR_set(s->var, s->posn);
     SvPOK_on(s->var);
     return count;
 }
@@ -126,7 +149,7 @@ PerlIOScalar_write(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 	}
 	else {
 	    if ((s->posn + count) > SvCUR(sv))
-		dst = SvGROW(sv, s->posn + count);
+		dst = SvGROW(sv, (STRLEN)s->posn + count);
 	    else
 		dst = SvPV_nolen(sv);
 	    offset = s->posn;
@@ -134,7 +157,7 @@ PerlIOScalar_write(pTHX_ PerlIO * f, const void *vbuf, Size_t count)
 	}
 	Move(vbuf, dst + offset, count, char);
 	if ((STRLEN) s->posn > SvCUR(sv))
-	    SvCUR_set(sv, s->posn);
+	    SvCUR_set(sv, (STRLEN)s->posn);
 	SvPOK_on(s->var);
 	return count;
     }
@@ -180,7 +203,7 @@ PerlIOScalar_get_cnt(pTHX_ PerlIO * f)
     if (PerlIOBase(f)->flags & PERLIO_F_CANREAD) {
 	PerlIOScalar *s = PerlIOSelf(f, PerlIOScalar);
 	if (SvCUR(s->var) > (STRLEN) s->posn)
-	    return SvCUR(s->var) - s->posn;
+	    return SvCUR(s->var) - (STRLEN)s->posn;
 	else
 	    return 0;
     }
@@ -214,7 +237,7 @@ PerlIOScalar_open(pTHX_ PerlIO_funcs * self, PerlIO_list_t * layers, IV n,
 	if (!f) {
 	    f = PerlIO_allocate(aTHX);
 	}
-	if (f = PerlIO_push(aTHX_ f, self, mode, arg)) {
+	if ( (f = PerlIO_push(aTHX_ f, self, mode, arg)) ) {
 	    PerlIOBase(f)->flags |= PERLIO_F_OPEN;
 	}
 	return f;
@@ -252,7 +275,7 @@ PerlIOScalar_dup(pTHX_ PerlIO * f, PerlIO * o, CLONE_PARAMS * param,
     return f;
 }
 
-PerlIO_funcs PerlIO_scalar = {
+PERLIO_FUNCS_DECL(PerlIO_scalar) = {
     sizeof(PerlIO_funcs),
     "scalar",
     sizeof(PerlIOScalar),
@@ -293,7 +316,7 @@ PROTOTYPES: ENABLE
 BOOT:
 {
 #ifdef PERLIO_LAYERS
- PerlIO_define_layer(aTHX_ &PerlIO_scalar);
+ PerlIO_define_layer(aTHX_ PERLIO_FUNCS_CAST(&PerlIO_scalar));
 #endif
 }
 
