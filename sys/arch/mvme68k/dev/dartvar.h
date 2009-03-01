@@ -51,6 +51,7 @@ struct dartsoftc {
 
 	int			sc_console;
 	int			sc_vec;
+	uint			sc_stride;
 
 	struct dart_sv_reg	*sc_sv_reg;
 	struct dart_sv_reg	sc_sv_reg_storage;
