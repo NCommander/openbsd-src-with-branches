@@ -393,7 +393,7 @@ m_clget(struct mbuf *m, int how, struct ifnet *ifp, u_int pktlen)
 	pi = m_clpool(pktlen);
 #ifdef DIAGNOSTIC
 	if (pi == -1)
-		panic("m_clget: request for %d sized cluster", pktlen);
+		panic("m_clget: request for %u byte cluster", pktlen);
 #endif
 
 	if (ifp != NULL && m_cldrop(ifp, pi))
