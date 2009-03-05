@@ -381,7 +381,7 @@ sub is_signed
 }
 
 our @unique_categories =
-    (qw(name no-default-conflict manual-installation extrainfo localbase arch));
+    (qw(name digital-signature no-default-conflict manual-installation extrainfo localbase arch));
 
 our @list_categories =
     (qw(conflict pkgpath incompatibility updateset depend 
