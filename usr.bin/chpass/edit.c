@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.30 2007/03/20 03:50:38 tedu Exp $	*/
+/*	$OpenBSD: edit.c,v 1.31 2007/11/17 16:47:21 millert Exp $	*/
 /*	$NetBSD: edit.c,v 1.6 1996/05/15 21:50:45 jtc Exp $	*/
 
 /*-
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)edit.c	8.3 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: edit.c,v 1.30 2007/03/20 03:50:38 tedu Exp $";
+static char rcsid[] = "$OpenBSD: edit.c,v 1.31 2007/11/17 16:47:21 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -110,7 +110,7 @@ display(char *tempname, int fd, struct passwd *pw)
 		    *pw->pw_shell ? pw->pw_shell : _PATH_BSHELL);
 	}
 	/* Only admin can change "restricted" shells. */
-	else if (ok_shell(pw->pw_shell))
+	else if (ok_shell(pw->pw_shell, NULL))
 		/*
 		 * Make shell a restricted field.  Ugly with a
 		 * necklace, but there's not much else to do.
