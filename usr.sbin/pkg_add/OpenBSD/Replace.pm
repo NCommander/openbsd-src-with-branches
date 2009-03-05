@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Replace.pm,v 1.46 2008/10/07 06:29:36 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2004-2006 Marc Espie <espie@openbsd.org>
 #
@@ -125,6 +125,7 @@ sub extract
 		$file->{destdir} = '';
 		$file->{name} = $tempname;
 		$file->create;
+		$self->may_check_digest($file, $state);
 	}
 }
 

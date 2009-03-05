@@ -408,6 +408,8 @@ sub install
 			return;
 		} else {
 			$file->create;
+			$self->may_check_digest($file, $state);
+
 		}
 	}
 	$self->set_modes($destdir.$fullname);
