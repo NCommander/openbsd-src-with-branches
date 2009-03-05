@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_exec.c,v 1.2 2005/12/30 19:46:55 miod Exp $	*/
+/*	$OpenBSD: hpux_exec.c,v 1.3 2007/11/02 19:18:54 martin Exp $	*/
 /*	$NetBSD: hpux_exec.c,v 1.8 1997/03/16 10:14:44 thorpej Exp $	*/
 
 /*
@@ -46,6 +46,7 @@
 #include <sys/vnode.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/core.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -89,6 +90,7 @@ struct emul emul_hpux = {
 	copyargs,
 	hpux_setregs,
 	NULL,
+	coredump_trad,
 	sigcode,
 	esigcode,
 };

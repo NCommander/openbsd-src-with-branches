@@ -1,4 +1,4 @@
-/*	$OpenBSD: process_machdep.c,v 1.10 2005/12/31 23:50:39 kettenis Exp $	*/
+/*	$OpenBSD: process_machdep.c,v 1.11 2007/10/31 22:46:52 kettenis Exp $	*/
 /*	$NetBSD: process_machdep.c,v 1.10 2000/09/26 22:05:50 eeh Exp $ */
 
 /*
@@ -231,10 +231,10 @@ process_write_fpregs(p, regs)
 	return 0;
 }
 
+#endif	/* PTRACE */
+
 register_t
 process_get_wcookie(struct proc *p)
 {
 	return p->p_addr->u_pcb.pcb_wcookie;
 }
-
-#endif	/* PTRACE */

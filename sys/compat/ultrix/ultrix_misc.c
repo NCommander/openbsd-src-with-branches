@@ -1,4 +1,4 @@
-/*	$OpenBSD: ultrix_misc.c,v 1.29 2003/06/02 23:28:01 millert Exp $	*/
+/*	$OpenBSD: ultrix_misc.c,v 1.30 2007/06/06 17:15:13 deraadt Exp $	*/
 /*	$NetBSD: ultrix_misc.c,v 1.23 1996/04/07 17:23:04 jonathan Exp $	*/
 
 /*
@@ -89,6 +89,7 @@
 /*#include <sys/stat.h>*/
 /*#include <sys/ioctl.h>*/
 #include <sys/kernel.h>
+#include <sys/core.h>
 #include <sys/exec.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
@@ -161,6 +162,7 @@ struct emul emul_ultrix = {
 	copyargs,
 	ULTRIX_EXEC_SETREGS,
 	NULL,
+	coredump_trad,
 	sigcode,
 	esigcode,
 };
