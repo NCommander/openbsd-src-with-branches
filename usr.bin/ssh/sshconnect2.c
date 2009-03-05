@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.169 2008/11/01 04:50:08 djm Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.170 2008/11/04 08:22:13 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -62,6 +62,7 @@
 #include "msg.h"
 #include "pathnames.h"
 #include "uidswap.h"
+#include "schnorr.h"
 #include "jpake.h"
 
 #ifdef GSSAPI
