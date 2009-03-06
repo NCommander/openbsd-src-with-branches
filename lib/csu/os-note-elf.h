@@ -1,4 +1,4 @@
-/*	$OpenBSD: os-note-elf.h,v 1.3 2003/03/31 19:12:35 rohee Exp $	*/
+/*	$OpenBSD: os-note-elf.h,v 1.4 2003/11/22 00:50:48 avsm Exp $	*/
 /*
  * Contents:
  *
@@ -16,4 +16,4 @@ __asm("	.section \".note.openbsd.ident\", \"a\"\n"
 "	.long	1\n"
 "	.ascii \"OpenBSD\\0\"\n"
 "	.long	0\n"
-"	.p2align 2");
+"	.previous\n");
