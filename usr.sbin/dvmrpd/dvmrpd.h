@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpd.h,v 1.13 2009/01/20 01:35:34 todd Exp $ */
+/*	$OpenBSD: dvmrpd.h,v 1.14 2009/03/06 18:39:13 michele Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -109,8 +109,6 @@ enum imsg_type {
 	IMSG_FULL_ROUTE_REPORT_END,
 	IMSG_MFC_ADD,
 	IMSG_MFC_DEL,
-	IMSG_NEIGHBOR_UP,
-	IMSG_NEIGHBOR_DOWN,
 	IMSG_GROUP_ADD,
 	IMSG_GROUP_DEL,
 	IMSG_FLASH_UPDATE,
