@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.1 2008/05/10 12:02:21 kettenis Exp $	*/
+/*	$OpenBSD: dma.c,v 1.2 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -421,7 +421,7 @@ _dmamem_alloc(bus_dma_tag_t t, bus_size_t size, bus_size_t alignment,
     int flags)
 {
 	return (_dmamem_alloc_range(t, size, alignment, boundary,
-	    segs, nsegs, rsegs, flags, 0, 0xf0000000));
+	    segs, nsegs, rsegs, flags, 0, -1));
 }
 
 /*
