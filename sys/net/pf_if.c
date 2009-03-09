@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.54 2008/06/14 16:55:28 mk Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.55 2008/11/24 13:22:09 mikeb Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -714,7 +714,7 @@ pfi_set_flags(const char *name, int flags)
 	RB_FOREACH(p, pfi_ifhead, &pfi_ifs) {
 		if (pfi_skip_if(name, p))
 			continue;
-		p->pfik_flags |= flags;
+		p->pfik_flags_new = p->pfik_flags | flags;
 	}
 	splx(s);
 	return (0);
@@ -730,10 +730,22 @@ pfi_clear_flags(const char *name, int flags)
 	RB_FOREACH(p, pfi_ifhead, &pfi_ifs) {
 		if (pfi_skip_if(name, p))
 			continue;
-		p->pfik_flags &= ~flags;
+		p->pfik_flags_new = p->pfik_flags & ~flags;
 	}
 	splx(s);
 	return (0);
+}
+
+void
+pfi_xcommit(void)
+{
+	struct pfi_kif	*p;
+	int		 s;
+
+	s = splsoftnet();
+	RB_FOREACH(p, pfi_ifhead, &pfi_ifs)
+		p->pfik_flags = p->pfik_flags_new;
+	splx(s);
 }
 
 /* from pf_print_state.c */
