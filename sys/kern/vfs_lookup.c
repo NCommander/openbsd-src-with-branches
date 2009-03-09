@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.37 2007/09/08 01:45:58 hshoexer Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.38 2008/03/04 15:30:18 deraadt Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -184,7 +184,7 @@ namei(struct nameidata *ndp)
 			return (error);
 		}
 		/*
-		 * Check for symbolic link
+		 * If not a symbolic link, return search result.
 		 */
 		if ((cnp->cn_flags & ISSYMLINK) == 0) {
 			if ((cnp->cn_flags & (SAVENAME | SAVESTART)) == 0)
