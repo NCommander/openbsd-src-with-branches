@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.14 2009/02/05 01:15:20 oga Exp $	*/
+/*	$OpenBSD: bus_dma.c,v 1.15 2009/03/07 15:34:34 miod Exp $	*/
 /*	$NetBSD: bus_dma.c,v 1.3 2003/05/07 21:33:58 fvdl Exp $	*/
 
 /*-
@@ -95,7 +95,6 @@
 #include <sys/mbuf.h>
 #include <sys/proc.h>
 
-#define _BUS_DMA_PRIVATE
 #include <machine/bus.h>
 
 #include <dev/isa/isareg.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.22 2008/04/28 06:17:47 brad Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.23 2008/12/03 15:46:06 oga Exp $	*/
 
 /*
  * Copyright (c) 2005 Jason L. Wright (jason@thought.net)
@@ -38,7 +38,6 @@
 
 #include <uvm/uvm_extern.h>
 
-#define _BUS_DMA_PRIVATE
 #include <machine/bus.h>
 
 #include <machine/pio.h>
