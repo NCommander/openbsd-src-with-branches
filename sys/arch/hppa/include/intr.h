@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.23 2007/05/16 19:37:06 thib Exp $	*/
+/*	$OpenBSD: intr.h,v 1.24 2008/04/27 14:36:38 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -70,8 +70,10 @@ void splassert_check(int, const char *);
 		splassert_check(__wantipl, __func__);	\
 	}						\
 } while (0)
+#define splsoftassert(__wantipl) splassert(__wantipl)
 #else
-#define	splassert(__wantipl)	do { /* nada */ } while (0)
+#define	splassert(__wantipl)		do { /* nada */ } while (0)
+#define	splsoftassert(__wantipl)	do { /* nada */ } while (0)
 #endif /* DIAGNOSTIC */
 
 void	cpu_intr_init(void);

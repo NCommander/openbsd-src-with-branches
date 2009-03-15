@@ -1,4 +1,4 @@
-/*	$OpenBSD: armish_intr.h,v 1.3 2007/05/15 05:26:44 miod Exp $ */
+/*	$OpenBSD: armish_intr.h,v 1.4 2007/05/19 15:47:18 miod Exp $ */
 /*	$NetBSD: i80321_intr.h,v 1.4 2003/07/05 06:53:08 dogcow Exp $ */
 
 /*
@@ -108,8 +108,10 @@ void i80321_splassert_check(int, const char *);
 		i80321_splassert_check(__wantipl, __func__);	\
 	}							\
 } while (0)
+#define	splsoftassert(wantipl) splassert(wantipl)
 #else
 #define	splassert(wantipl)	do { /* nothing */ } while (0)
+#define	splsoftassert(wantipl)	do { /* nothing */ } while (0)
 #endif
 
 #endif /* ! _LOCORE */
