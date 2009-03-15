@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.30 2007/06/01 19:25:10 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.31 2008/07/21 04:35:54 todd Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.38 1996/12/18 05:46:09 scottr Exp $	*/
 
 /*
@@ -110,6 +110,9 @@ findbootdev()
 void
 cpu_configure()
 {
+	/* this couldn't be done in intr_init() because this uses malloc() */
+	softintr_init();
+
 	startrtclock();
 
 	if (config_rootfound("mainbus", "mainbus") == NULL)

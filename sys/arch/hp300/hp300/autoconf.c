@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.44 2007/09/08 09:28:49 martin Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.45 2008/07/21 04:35:54 todd Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.45 1999/04/10 17:31:02 kleink Exp $	*/
 
 /*
@@ -226,6 +226,9 @@ mainbussearch(parent, match, aux)
 void
 cpu_configure()
 {
+	/* this couldn't be done in intr_init() because this uses malloc() */
+	softintr_init();
+
 	/*
 	 * Initialize the dev_data_lists.
 	 */

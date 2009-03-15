@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530sc.h,v 1.5 2003/06/02 23:27:49 millert Exp $	*/
+/*	$OpenBSD: z8530sc.h,v 1.6 2004/11/25 18:32:10 miod Exp $	*/
 /*	$NetBSD: z8530sc.h,v 1.5 1996/12/17 20:42:42 gwr Exp $	*/
 
 /*
@@ -117,7 +117,7 @@ struct zsc_attach_args {
 #define ZS_HWFLAG_RAW		8	/* advise raw mode */
 
 int  zsc_intr_hard(void *);
-int  zsc_intr_soft(void *);
+void zsc_intr_soft(void *);
 
 void zs_abort(struct zs_chanstate *);
 void zs_break(struct zs_chanstate *, int);
