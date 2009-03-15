@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpuvar.h,v 1.15 2008/10/10 08:36:28 art Exp $	*/
+/*	$OpenBSD: cpuvar.h,v 1.16 2008/10/15 23:23:50 deraadt Exp $	*/
 /*	$NetBSD: cpuvar.h,v 1.4 1997/07/06 21:14:25 pk Exp $ */
 
 /*
@@ -88,7 +88,7 @@ struct cpu_info {
 #define CPU_INFO_ITERATOR	int
 #define CPU_INFO_FOREACH(cii, ci) \
 	for (cii = 0, ci = curcpu(); ci != NULL; ci = ci->ci_next)
-#define CPU_INFO_UNIT(ci)	((ci)->ci_softc->dv.dv_unit)
+#define CPU_INFO_UNIT(ci) ((ci)->ci_softc ? (ci)->ci_softc->dv.dv_unit : 0)
 #define MAXCPUS	1
 #define cpu_unidle(ci)
 
