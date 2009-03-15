@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.7 2007/12/12 20:36:40 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.8 2008/07/21 04:35:54 todd Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -80,6 +80,8 @@ cpu_configure()
 {
 	printf("bootpath: '%s' dev %u unit %u part %u\n",
 	    bootargs, bootdev, bootunit, bootpart);
+
+	softintr_init();
 
 	if (config_rootfound("mainbus", "mainbus") == 0)
 		panic("no mainbus found");
