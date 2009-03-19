@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.252 2009/02/21 14:50:53 joris Exp $	*/
+/*	$OpenBSD: file.c,v 1.253 2009/02/21 18:26:47 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -929,6 +929,11 @@ cvs_file_classify(struct cvs_file *cf, const char *tag)
 				}
 			}
 		}
+		break;
+	case CVS_ENT_UNKNOWN:
+		if (cvs_server_active != 1)
+			fatal("server-side questionable in local mode?");
+		cf->file_status = FILE_UNKNOWN;
 		break;
 	default:
 		break;
