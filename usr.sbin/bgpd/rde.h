@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.103 2008/11/21 17:41:22 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.104 2009/01/13 21:35:16 sthen Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -290,6 +290,8 @@ int		 rde_as4byte(struct rde_peer *);
 
 /* rde_attr.c */
 int		 attr_write(void *, u_int16_t, u_int8_t, u_int8_t, void *,
+		     u_int16_t);
+int		 attr_writebuf(struct buf *, u_int8_t, u_int8_t, void *,
 		     u_int16_t);
 void		 attr_init(u_int32_t);
 void		 attr_shutdown(void);
