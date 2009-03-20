@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.30 2008/07/21 04:35:54 todd Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.31 2008/08/18 23:19:29 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.45 1999/10/23 14:56:05 ragge Exp $	*/
 
 /*
@@ -77,6 +77,8 @@ int booted_partition;	/* defaults to 0 (aka 'a' partition) */
 void
 cpu_configure()
 {
+	softintr_init();
+
 	if (config_rootfound("mainbus", NULL) == NULL)
 		panic("mainbus not configured");
 
