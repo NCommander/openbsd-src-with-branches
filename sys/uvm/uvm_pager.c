@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pager.c,v 1.45 2008/11/24 19:55:33 thib Exp $	*/
+/*	$OpenBSD: uvm_pager.c,v 1.46 2009/01/27 19:21:03 ariane Exp $	*/
 /*	$NetBSD: uvm_pager.c,v 1.36 2000/11/27 18:26:41 chs Exp $	*/
 
 /*
@@ -98,7 +98,7 @@ void	uvm_pseg_release(vaddr_t);
  */
 
 void
-uvm_pager_init()
+uvm_pager_init(void)
 {
 	int lcv;
 

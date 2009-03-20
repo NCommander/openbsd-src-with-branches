@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pglist.c,v 1.23 2008/06/27 17:25:47 miod Exp $	*/
+/*	$OpenBSD: uvm_pglist.c,v 1.24 2008/10/01 20:00:32 miod Exp $	*/
 /*	$NetBSD: uvm_pglist.c,v 1.13 2001/02/18 21:19:08 chs Exp $	*/
 
 /*-
@@ -183,11 +183,8 @@ out:
  */
 
 int
-uvm_pglistalloc(size, low, high, alignment, boundary, rlist, nsegs, waitok)
-	psize_t size;
-	paddr_t low, high, alignment, boundary;
-	struct pglist *rlist;
-	int nsegs, waitok;
+uvm_pglistalloc(psize_t size, paddr_t low, paddr_t high, paddr_t alignment,
+    paddr_t boundary, struct pglist *rlist, int nsegs, int waitok)
 {
 	int psi;
 	struct vm_page *pgs;
