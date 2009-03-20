@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.17 2008/03/30 22:19:33 deraadt Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.18 2008/07/21 04:35:54 todd Exp $	*/
 /*
  * Copyright (c) 1996 Per Fogelstrom
  * Copyright (c) 1995 Theo de Raadt
@@ -95,6 +95,9 @@ void
 cpu_configure(void)
 {
 	(void)splhigh();	/* Set mask to what we intend. */
+
+	softintr_init();
+
 	if (config_rootfound("mainbus", "mainbus") == 0) {
 		panic("no mainbus found");
 	}
