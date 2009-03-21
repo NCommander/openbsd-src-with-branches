@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiprt.c,v 1.32 2009/03/11 20:37:46 jordan Exp $ */
+/* $OpenBSD: acpiprt.c,v 1.33 2009/03/11 21:54:15 jordan Exp $ */
 /*
  * Copyright (c) 2006 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -485,12 +485,6 @@ acpiprt_route_interrupt(int bus, int dev, int pin)
 		return;
 	}
 	aml_parse_resource(res.length, res.v_buffer, acpiprt_getirq, &irq);
-
-	/* Only re-route interrupts when necessary. */
-	if ((sta & STA_ENABLED) && irq == newirq) {
-		aml_freevalue(&res);
-		return;
-	}
 
 	crs = (union acpi_resource *)res.v_buffer;
 	switch (AML_CRSTYPE(crs)) {
