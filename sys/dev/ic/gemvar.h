@@ -1,4 +1,4 @@
-/*	$OpenBSD: gemvar.h,v 1.19 2008/11/07 18:03:52 brad Exp $	*/
+/*	$OpenBSD: gemvar.h,v 1.20 2008/12/14 21:31:50 kettenis Exp $	*/
 /*	$NetBSD: gemvar.h,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -193,6 +193,10 @@ struct gem_softc {
 	u_int32_t		sc_setup_fsls;	/* FS|LS on setup descriptor */
 
 	int			sc_rxfifosize;
+
+	u_int32_t		sc_rx_fifo_wr_ptr;
+	u_int32_t		sc_rx_fifo_rd_ptr;
+	struct timeout		sc_rx_watchdog;
 
 	/* ========== */
 	int			sc_inited;
