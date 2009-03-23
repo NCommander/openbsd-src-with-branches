@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.158 2008/06/28 13:58:23 djm Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.159 2008/06/28 14:05:15 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1094,7 +1094,7 @@ main(int ac, char **av)
 	if (ac == 0 && !c_flag && !s_flag) {
 		shell = getenv("SHELL");
 		if (shell != NULL &&
-		    strncmp(shell + strlen(shell) - 3, "csh", 3) == 0)
+		    strncmp(shell + MAX(strlen(shell) - 3, 0), "csh", 3) == 0)
 			c_flag = 1;
 	}
 	if (k_flag) {
