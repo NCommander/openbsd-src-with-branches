@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_msk.c,v 1.69 2009/02/22 16:40:13 kettenis Exp $	*/
+/*	$OpenBSD: if_msk.c,v 1.70 2009/03/16 12:47:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -1672,8 +1672,10 @@ msk_rxeof(struct sk_if_softc *sc_if, u_int16_t len, u_int32_t rxstat)
 	MSK_CDRXSYNC(sc_if, cur, BUS_DMASYNC_POSTREAD|BUS_DMASYNC_POSTWRITE);
 
 	cur_rx = &sc_if->sk_cdata.sk_rx_chain[cur];
-	dmamap = sc_if->sk_cdata.sk_rx_jumbo_map;
+	if (cur_rx->sk_mbuf == NULL)
+		return;
 
+	dmamap = sc_if->sk_cdata.sk_rx_jumbo_map;
 	bus_dmamap_sync(sc_if->sk_softc->sc_dmatag, dmamap, 0,
 	    dmamap->dm_mapsize, BUS_DMASYNC_POSTREAD);
 
