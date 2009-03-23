@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.86 2008/09/05 14:38:15 oga Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.87 2008/09/10 12:30:40 blambert Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -381,7 +381,6 @@ wakeup_n(void *ident, int n)
 				 * resched_proc().
 				 */
 				setrunqueue(p);
-				KASSERT(p->p_cpu != NULL);
 				need_resched(p->p_cpu);
 				/* END INLINE EXPANSION */
 

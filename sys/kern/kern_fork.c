@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.100 2008/11/09 05:13:55 deraadt Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.101 2008/11/11 02:13:14 tedu Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -259,8 +259,6 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	 */
 	timeout_set(&p2->p_sleep_to, endtsleep, p2);
 	timeout_set(&p2->p_realit_to, realitexpire, p2);
-
-	p2->p_cpu = p1->p_cpu;
 
 	/*
 	 * Duplicate sub-structures as needed.
