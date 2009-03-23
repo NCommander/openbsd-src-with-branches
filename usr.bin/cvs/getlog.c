@@ -116,8 +116,6 @@ cvs_getlog(int argc, char **argv)
 		}
 	}
 
-	cvs_printf("dates: %s\n", logdate);
-
 	argc -= optind;
 	argv += optind;
 
