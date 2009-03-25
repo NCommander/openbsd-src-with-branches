@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm.h,v 1.24 2008/06/09 20:30:23 miod Exp $	*/
+/*	$OpenBSD: uvm.h,v 1.25 2009/01/27 22:14:13 miod Exp $	*/
 /*	$NetBSD: uvm.h,v 1.24 2000/11/27 08:40:02 chs Exp $	*/
 
 /*
@@ -167,16 +167,6 @@ do {									\
 #else
 #define UVM_PAGE_OWN(PG, TAG) /* nothing */
 #endif /* UVM_PAGE_TRKOWN */
-
-/*
- * pull in inlines
- */
-
-#include <uvm/uvm_amap_i.h>
-#include <uvm/uvm_fault_i.h>
-#include <uvm/uvm_map_i.h>
-#include <uvm/uvm_page_i.h>
-#include <uvm/uvm_pager_i.h>
 
 #endif /* _KERNEL */
 
