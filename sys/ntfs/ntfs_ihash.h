@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_ihash.h,v 1.2 2003/05/20 03:23:11 mickey Exp $	*/
+/*	$OpenBSD: ntfs_ihash.h,v 1.3 2003/05/20 03:36:42 tedu Exp $	*/
 /*	$NetBSD: ntfs_ihash.h,v 1.1 2002/12/23 17:38:32 jdolecek Exp $	*/
 
 /*-
@@ -29,7 +29,7 @@
  *	Id: ntfs_ihash.h,v 1.3 1999/05/12 09:42:59 semenu Exp
  */
 
-extern struct lock ntfs_hashlock;
+extern struct rwlock ntfs_hashlock;
 void ntfs_nthashinit(void);
 void ntfs_nthashreinit(void);
 void ntfs_nthashdone(void);
