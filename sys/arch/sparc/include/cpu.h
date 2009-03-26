@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.29 2007/05/08 07:23:18 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.30 2008/07/18 23:43:31 art Exp $	*/
 /*	$NetBSD: cpu.h,v 1.24 1997/03/15 22:25:15 pk Exp $ */
 
 /*
@@ -71,12 +71,6 @@
 #include <machine/reg.h>
 #include <sparc/sparc/intreg.h>
 #include <sparc/sparc/cpuvar.h>
-
-/*
- * definitions of cpu-dependent requirements
- * referenced in generic code
- */
-#define cpu_wait(p)	/* nothing */
 
 /*
  * Arguments to hardclock, softclock and gatherstats encapsulate the

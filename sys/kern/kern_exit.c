@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.81 2008/12/11 16:31:47 deraadt Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.82 2008/12/16 07:57:28 guenther Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -398,14 +398,6 @@ reaper(void)
 		mtx_leave(&deadproc_mutex);
 
 		KERNEL_PROC_LOCK(curproc);
-
-		/*
-		 * Give machine-dependent code a chance to free any
-		 * resources it couldn't free while still running on
-		 * that process's context.  This must be done before
-		 * uvm_exit(), in case these resources are in the PCB.
-		 */
-		cpu_wait(p);
 
 		/*
 		 * Free the VM resources we're still holding on to.

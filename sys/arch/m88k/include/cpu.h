@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.45 2009/03/04 19:39:02 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.46 2009/03/15 20:39:53 miod Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -219,7 +219,6 @@ void	set_cpu_number(cpuid_t);
  * referenced in generic code
  */
 #define	cpu_exec(p)		do { /* nothing */ } while (0)
-#define	cpu_wait(p)		do { /* nothing */ } while (0)
 
 #define	cpu_idle_enter()	do { /* nothing */ } while (0)
 #define	cpu_idle_cycle()	do { /* nothing */ } while (0)
