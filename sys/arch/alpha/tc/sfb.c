@@ -1,4 +1,4 @@
-/*	$OpenBSD: sfb.c,v 1.17 2006/07/12 15:36:04 martin Exp $	*/
+/*	$OpenBSD: sfb.c,v 1.18 2006/11/29 12:13:51 miod Exp $	*/
 /*	$NetBSD: sfb.c,v 1.7 1996/12/05 01:39:44 cgd Exp $	*/
 
 /*
@@ -252,7 +252,7 @@ sfbattach(parent, self, aux)
 		sfb_getdevconfig(ta->ta_addr, sc->sc_dc);
 	}
 	if (sc->sc_dc->dc_vaddr == NULL) {
-		printf(": couldn't map memory space; punt!\n");
+		printf(": can't map mem space\n");
 		return;
 	}
 	printf(": %d x %d, %dbpp\n", sc->sc_dc->dc_wid, sc->sc_dc->dc_ht,

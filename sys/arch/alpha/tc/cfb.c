@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfb.c,v 1.19 2007/11/06 18:20:05 miod Exp $	*/
+/*	$OpenBSD: cfb.c,v 1.20 2008/08/09 16:42:29 miod Exp $	*/
 /*	$NetBSD: cfb.c,v 1.7 1996/12/05 01:39:39 cgd Exp $	*/
 
 /*
@@ -212,7 +212,7 @@ cfbattach(parent, self, aux)
 		cfb_getdevconfig(ta->ta_addr, sc->sc_dc);
 	}
 	if (sc->sc_dc->dc_vaddr == NULL) {
-		printf(": couldn't map memory space; punt!\n");
+		printf(": can't map mem space\n");
 		return;
 	}
 	printf(": %d x %d, %dbpp\n", sc->sc_dc->dc_wid, sc->sc_dc->dc_ht,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_art.c,v 1.15 2008/05/13 01:37:26 brad Exp $ */
+/*	$OpenBSD: if_art.c,v 1.16 2008/09/10 14:01:22 blambert Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
@@ -84,7 +84,7 @@ art_softc_attach(struct device *parent, struct device *self, void *aux)
 
 	if (ebus_attach_device(&sc->art_ebus, psc, ma->ma_base,
 	    ma->ma_size) != 0) {
-		printf(": could not map framer\n");
+		printf(": can't map framer\n");
 		return;
 	}
 

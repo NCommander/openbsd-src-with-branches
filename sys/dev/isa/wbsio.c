@@ -1,4 +1,4 @@
-/*	$OpenBSD: wbsio.c,v 1.3 2008/04/07 18:45:26 kettenis Exp $	*/
+/*	$OpenBSD: wbsio.c,v 1.4 2008/04/08 18:48:43 kettenis Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -161,7 +161,7 @@ wbsio_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_iot = ia->ia_iot;
 	if (bus_space_map(sc->sc_iot, ia->ipa_io[0].base,
 	    WBSIO_IOSIZE, 0, &sc->sc_ioh)) {
-		printf(": can't map I/O space\n");
+		printf(": can't map i/o space\n");
 		return;
 	}
 

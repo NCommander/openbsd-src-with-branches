@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvram.c,v 1.30 2007/12/20 05:19:38 miod Exp $ */
+/*	$OpenBSD: nvram.c,v 1.31 2009/03/09 19:51:16 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -123,7 +123,7 @@ nvramattach(parent, self, args)
 
 	if (bus_space_map(sc->sc_iot, sc->sc_base, round_page(maplen),
 	    BUS_SPACE_MAP_LINEAR, &ioh) != 0) {
-		printf(": can't map memory!\n");
+		printf(": can't map mem space\n");
 		return;
 	}
 

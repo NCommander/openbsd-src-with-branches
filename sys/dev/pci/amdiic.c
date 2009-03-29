@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdiic.c,v 1.5 2006/09/28 18:19:14 grange Exp $	*/
+/*	$OpenBSD: amdiic.c,v 1.6 2007/05/03 09:36:26 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
@@ -146,7 +146,7 @@ amdiic_attach(struct device *parent, struct device *self, void *aux)
 	/* Map I/O space */
 	if (pci_mapreg_map(pa, AMD8111_SMB_BASE, PCI_MAPREG_TYPE_IO, 0,
 	    &sc->sc_iot, &sc->sc_ioh, NULL, &iosize, 0)) {
-		printf(": can't map I/O space\n");
+		printf(": can't map i/o space\n");
 		return;
 	}
 

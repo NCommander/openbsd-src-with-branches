@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_isa.c,v 1.18 2004/01/09 21:32:24 brad Exp $	*/
+/*	$OpenBSD: if_le_isa.c,v 1.19 2007/06/17 21:20:47 jasper Exp $	*/
 /*	$NetBSD: if_le_isa.c,v 1.2 1996/05/12 23:52:56 mycroft Exp $	*/
 
 /*-
@@ -303,7 +303,7 @@ le_isa_attach(struct device *parent, struct device *self,
 	bus_space_handle_t ioh;
 
 	if (bus_space_map(iot, ia->ia_iobase, ia->ia_iosize, 0, &ioh))
-		panic("%s: could not map I/O-ports", sc->sc_dev.dv_xname);
+		panic("%s: can't map I/O-ports", sc->sc_dev.dv_xname);
 	lesc->sc_iot = iot;
 	lesc->sc_ioh = ioh;
 

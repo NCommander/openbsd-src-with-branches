@@ -1,4 +1,4 @@
-/*	$OpenBSD: esm.c,v 1.47 2007/09/07 15:00:19 art Exp $ */
+/*	$OpenBSD: esm.c,v 1.48 2008/09/10 14:01:22 blambert Exp $ */
 
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -230,7 +230,7 @@ esm_attach(struct device *parent, struct device *self, void *aux)
 	TAILQ_INIT(&sc->sc_sensors);
 
 	if (bus_space_map(sc->sc_iot, ESM2_BASE_PORT, 8, 0, &sc->sc_ioh) != 0) {
-		printf(": unable to map memory\n");
+		printf(": can't map mem space\n");
 		return;
 	}
 

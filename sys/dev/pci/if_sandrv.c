@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sandrv.c,v 1.12 2007/10/01 15:34:48 krw Exp $	*/
+/*	$OpenBSD: if_sandrv.c,v 1.13 2009/01/20 20:03:45 grange Exp $	*/
 
 /*-
  * Copyright (c) 2001-2004 Sangoma Technologies (SAN)
@@ -488,7 +488,7 @@ sdla_pci_probe(int atype, struct pci_attach_args *pa)
 
 	/* Map and establish the interrupt */
 	if (pci_intr_map(pa, &ih)) {
-		printf(": couldn't map interrupt\n");
+		printf(": can't map interrupt\n");
 		return (EINVAL);
 	}
 	intrstr = pci_intr_string(pa->pa_pc, ih);
@@ -1147,7 +1147,7 @@ sdla_detect_aft(sdlahw_t *hw)
 	bus_space_map(hw->hwcard->memt, hw->mem_base_addr, XILINX_PCI_MEM_SIZE,
 	    0, &hw->dpmbase);
 	if (!hw->dpmbase) {
-		printf("%s: couldn't map memory\n", hw->devname);
+		printf("%s: can't map mem space\n", hw->devname);
 		return (EINVAL);
 	}
 	hw->status |= SDLA_MEM_MAPPED;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_eisa.c,v 1.17 2004/08/01 01:36:23 krw Exp $	*/
+/*	$OpenBSD: ahc_eisa.c,v 1.18 2007/04/10 17:47:55 miod Exp $	*/
 /*	$NetBSD: ahc_eisa.c,v 1.10 1996/10/21 22:30:58 thorpej Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: ahc_eisa.c,v 1.17 2004/08/01 01:36:23 krw Exp $
+ *	$Id: ahc_eisa.c,v 1.18 2007/04/10 17:47:55 miod Exp $
  */
 
 #include "eisa.h"
@@ -162,7 +162,7 @@ void *aux;
 
 	if (bus_space_map(iot, EISA_SLOT_ADDR(ea->ea_slot) +
 			  AHC_EISA_SLOT_OFFSET, AHC_EISA_IOSIZE, 0, &ioh))
-		panic("ahc_eisa_attach: could not map I/O addresses");
+		panic("ahc_eisa_attach: can't map i/o addresses");
 	if ((irq = ahc_eisa_irq(iot, ioh)) < 0)
 		panic("ahc_eisa_attach: ahc_eisa_irq failed!");
 

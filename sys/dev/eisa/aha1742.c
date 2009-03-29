@@ -1,4 +1,4 @@
-/*	$OpenBSD: aha1742.c,v 1.30 2009/01/21 21:53:59 grange Exp $	*/
+/*	$OpenBSD: aha1742.c,v 1.31 2009/02/16 21:19:06 miod Exp $	*/
 /*	$NetBSD: aha1742.c,v 1.61 1996/05/12 23:40:01 mycroft Exp $	*/
 
 /*
@@ -494,7 +494,7 @@ ahbattach(parent, self, aux)
 
 	if (bus_space_map(iot, EISA_SLOT_ADDR(ea->ea_slot), EISA_SLOT_SIZE, 0,
 	    &ioh))
-		panic("ahbattach: could not map I/O addresses");
+		panic("ahbattach: can't map i/o addresses");
 	sc->sc_ioh = ioh;
 	if (ahb_find(iot, ioh, sc))
 		panic("ahbattach: ahb_find failed!");

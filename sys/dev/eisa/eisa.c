@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisa.c,v 1.11 2003/04/27 11:22:52 ho Exp $	*/
+/*	$OpenBSD: eisa.c,v 1.12 2007/06/25 14:13:40 tom Exp $	*/
 /*	$NetBSD: eisa.c,v 1.15 1996/10/21 22:31:01 thorpej Exp $	*/
 
 /*
@@ -153,7 +153,7 @@ eisaattach(parent, self, aux)
 		 * about it.
 		 */
 		if (bus_space_map(iot, slotaddr, EISA_SLOT_SIZE, 0, &slotioh)) {
-			printf("%s: can't map I/O space for slot %d\n",
+			printf("%s: can't map i/o space for slot %d\n",
 			    self->dv_xname, slot);
 			continue;
 		}

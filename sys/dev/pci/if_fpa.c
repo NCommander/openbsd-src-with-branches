@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fpa.c,v 1.23 2004/05/12 06:35:11 tedu Exp $	*/
+/*	$OpenBSD: if_fpa.c,v 1.24 2005/09/11 18:17:08 mickey Exp $	*/
 /*	$NetBSD: if_fpa.c,v 1.15 1996/10/21 22:56:40 thorpej Exp $	*/
 
 /*-
@@ -129,13 +129,13 @@ pdq_pci_attach(parent, self, aux)
 #ifdef PDQ_IOMAPPED
 	if (pci_mapreg_map(pa, DEFPA_CBIO, PCI_MAPREG_TYPE_IO, 0,
 	    &sc->sc_csrtag, &sc->sc_csrhandle, NULL, &csrsize, 0)) {
-		printf(": can't map I/O space!\n");
+		printf(": can't map i/o space\n");
 		return;
 	}
 #else
 	if (pci_mapreg_map(pa, DEFPA_CBMA, PCI_MAPREG_TYPE_MEM, 0,
 	    &sc->sc_csrtag, &sc->sc_csrhandle, NULL, &csrsize, 0)) {
-		printf(": can't map memory space!\n");
+		printf(": can't map mem space\n");
 		return;
 	}
 #endif

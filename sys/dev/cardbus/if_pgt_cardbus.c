@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pgt_cardbus.c,v 1.6 2006/11/10 20:20:04 damien Exp $ */
+/*	$OpenBSD: if_pgt_cardbus.c,v 1.7 2006/11/11 10:28:20 maja Exp $ */
 
 /*
  * Copyright (c) 2006 Marcus Glocker <mglocker@openbsd.org>
@@ -121,7 +121,7 @@ pgt_cardbus_attach(struct device *parent, struct device *self, void *aux)
 	    PCI_MAPREG_TYPE_MEM | PCI_MAPREG_MEM_TYPE_32BIT, 0,
 	    &sc->sc_iotag, &sc->sc_iohandle, &base, &csc->sc_mapsize);
 	if (error != 0) {
-		printf(": could not map memory space\n");
+		printf(": can't map mem space\n");
 		return;
 	}
 	csc->sc_bar0_val = base | CARDBUS_MAPREG_TYPE_MEM;
