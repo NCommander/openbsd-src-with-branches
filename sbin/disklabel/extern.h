@@ -16,10 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* Display options. */
-#define	SHOW_PHYSINFO	0x1
-#define	SHOW_PARTINFO	0x2
-
 u_short	dkcksum(struct disklabel *);
 int	checklabel(struct disklabel *);
 double	scale(u_int64_t, char, struct disklabel *);
