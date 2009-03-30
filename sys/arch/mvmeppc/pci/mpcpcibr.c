@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibr.c,v 1.17 2005/11/07 02:19:46 brad Exp $ */
+/*	$OpenBSD: mpcpcibr.c,v 1.18 2006/12/14 17:36:12 kettenis Exp $ */
 
 /*
  * Copyright (c) 2001 Steve Murphree, Jr.
@@ -232,6 +232,8 @@ mpcpcibrattach(parent, self, aux)
 
 	printf(": revision 0x%x\n", 
 	    mpc_cfg_read_1(lcp, RAVEN_PCI_REVID));
+
+	bzero(&pba, sizeof(pba));
 	pba.pba_dmat = &pci_bus_dma_tag;
 
 	pba.pba_busname = "pci";
