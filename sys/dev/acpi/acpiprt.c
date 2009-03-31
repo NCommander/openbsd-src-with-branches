@@ -486,6 +486,12 @@ acpiprt_route_interrupt(int bus, int dev, int pin)
 	}
 	aml_parse_resource(res.length, res.v_buffer, acpiprt_getirq, &irq);
 
+	/* Only re-route interrupts when necessary. */
+	if ((sta & STA_ENABLED) && irq == newirq) {
+		aml_freevalue(&res);
+		return;
+	}
+
 	crs = (union acpi_resource *)res.v_buffer;
 	switch (AML_CRSTYPE(crs)) {
 	case SR_IRQ:
