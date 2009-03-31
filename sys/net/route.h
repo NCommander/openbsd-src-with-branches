@@ -301,7 +301,7 @@ struct rt_omsghdr {
 #define ROUTE_MSGFILTER	1	/* bitmask to specifiy which types should be
 				   sent to the client. */
 
-#define ROUTE_SETFILTER(x, m)	(x) |= (1 << (m))
+#define ROUTE_FILTER(m)	(1 << (m))
 
 struct rt_addrinfo {
 	int	rti_addrs;
