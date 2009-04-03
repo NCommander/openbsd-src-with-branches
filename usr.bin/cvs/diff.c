@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.149 2009/04/02 21:13:50 joris Exp $	*/
+/*	$OpenBSD: diff.c,v 1.150 2009/04/03 08:18:44 joris Exp $	*/
 /*
  * Copyright (c) 2008 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
@@ -410,6 +410,11 @@ cvs_diff_local(struct cvs_file *cf)
 
 	switch (cvs_cmdop) {
 	case CVS_OP_DIFF:
+		if (cf->file_status == FILE_UPTODATE) {
+			if (diff_rev2 == NULL &&
+			    !rcsnum_cmp(diff_rev1, cf->file_rcsrev, 0))
+				goto cleanup;
+		}
 		break;
 	case CVS_OP_RDIFF:
 		if (diff_rev1 == NULL && diff_rev2 == NULL)
