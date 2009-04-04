@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.100 2009/02/15 15:03:58 kettenis Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.101 2009/02/19 11:12:42 kettenis Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -661,8 +661,6 @@ sun4v_soft_state_init(void)
 
 	if (prom_set_sun4v_api_version(HSVC_GROUP_SOFT_STATE, 1, 0, &minor))
 		return;
-
-	prom_printf("minor %lld\r\n", minor);
 
 	prom_sun4v_soft_state_supported();
 	sun4v_soft_state_initialized = 1;
