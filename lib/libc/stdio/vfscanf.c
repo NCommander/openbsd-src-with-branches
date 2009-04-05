@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfscanf.c,v 1.20 2006/01/13 17:56:18 millert Exp $ */
+/*	$OpenBSD: vfscanf.c,v 1.21 2006/01/13 21:33:28 millert Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -240,6 +240,7 @@ literal:
 		case 'G':
 		case 'e': 
 		case 'f': 
+		case 'F': 
 		case 'g':
 			c = CT_FLOAT;
 			break;
