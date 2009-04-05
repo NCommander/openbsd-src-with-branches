@@ -1,4 +1,4 @@
-/*	$OpenBSD: fabs.c,v 1.5 2008/12/09 20:21:06 martynas Exp $	*/
+/*	$OpenBSD: fabs.c,v 1.6 2008/12/10 01:15:02 martynas Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -28,7 +28,7 @@ double
 fabs(double d)
 {
 #if defined(__SH4__) && !defined(__SH4_NOFPU__)
-	__asm__ __volatile__("fabs %0" : "=f"(d));
+	__asm__ __volatile__("fabs %0" : "+f" (d));
 #else
 	struct ieee_double *p = (struct ieee_double *)&d;
 
