@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ruleset.c,v 1.2 2008/12/18 15:31:37 dhill Exp $ */
+/*	$OpenBSD: pf_ruleset.c,v 1.3 2009/01/06 21:57:51 thib Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -102,11 +102,8 @@ int
 pf_get_ruleset_number(u_int8_t action)
 {
 	switch (action) {
-	case PF_SCRUB:
-	case PF_NOSCRUB:
-		return (PF_RULESET_SCRUB);
-		break;
 	case PF_PASS:
+	case PF_MATCH:
 	case PF_DROP:
 		return (PF_RULESET_FILTER);
 		break;
