@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.75 2009/01/31 11:44:49 claudio Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.76 2009/03/04 12:51:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -408,6 +408,7 @@ struct ospfd_conf {
 	u_int8_t		rfc1583compat;
 	u_int8_t		border;
 	u_int8_t		redistribute;
+	char			*csock;
 };
 
 /* kroute */
