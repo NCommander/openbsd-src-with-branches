@@ -1,7 +1,8 @@
-/*	$OpenBSD: pf_norm.c,v 1.115 2009/01/31 20:06:55 henning Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.116 2009/04/06 12:05:55 henning Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
+ * Copyright 2009 Henning Brauer <henning@openbsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
