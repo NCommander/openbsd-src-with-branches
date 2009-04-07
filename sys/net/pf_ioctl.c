@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.215 2009/03/09 13:53:10 mcbride Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.216 2009/04/06 12:05:55 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -209,6 +209,7 @@ pfattach(int num)
 	pf_normalize_init();
 	bzero(&pf_status, sizeof(pf_status));
 	pf_status.debug = PF_DEBUG_URGENT;
+	pf_status.reass = PF_REASS_ENABLED;
 
 	/* XXX do our best to avoid a conflict */
 	pf_status.hostid = arc4random();
