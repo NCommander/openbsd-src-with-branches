@@ -1,4 +1,5 @@
-/*	$NetBSD: biz31.c,v 1.3 1994/12/08 09:31:33 jtc Exp $	*/
+/*	$OpenBSD: biz31.c,v 1.9 2003/06/03 02:56:18 millert Exp $	*/
+/*	$NetBSD: biz31.c,v 1.5 1997/02/11 09:24:14 mrg Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)biz31.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: biz31.c,v 1.3 1994/12/08 09:31:33 jtc Exp $";
+static char rcsid[] = "$OpenBSD: biz31.c,v 1.9 2003/06/03 02:56:18 millert Exp $";
 #endif /* not lint */
 
 #include "tip.h"
@@ -45,7 +42,14 @@ static char rcsid[] = "$NetBSD: biz31.c,v 1.3 1994/12/08 09:31:33 jtc Exp $";
 #define MAXRETRY	3		/* sync up retry count */
 #define DISCONNECT_CMD	"\21\25\11\24"	/* disconnection string */
 
-static	void sigALRM();
+static int	biz_dialer(char *, char *);
+static int	bizsync(int);
+static int	echo(char *);
+static void	sigALRM(int);
+static int	detect(char *);
+static int	flush(char *);
+static int	bizsync(int);
+
 static	int timeout = 0;
 static	jmp_buf timeoutbuf;
 
@@ -55,10 +59,9 @@ static	jmp_buf timeoutbuf;
  *	pulse dialing (mod = "w")
  */
 static int
-biz_dialer(num, mod)
-	char *num, *mod;
+biz_dialer(char *num, char *mod)
 {
-	register int connected = 0;
+	int connected = 0;
 
 	if (!bizsync(FD)) {
 		logent(value(HOST), "", "biz", "out of sync");
@@ -90,7 +93,7 @@ biz_dialer(num, mod)
 	if (timeout) {
 		char line[80];
 
-		sprintf(line, "%d second dial timeout",
+		(void)snprintf(line, sizeof line, "%ld second dial timeout",
 			number(value(DIALTIMEOUT)));
 		logent(value(HOST), num, "biz", line);
 	}
@@ -104,37 +107,34 @@ biz_dialer(num, mod)
 	return (connected);
 }
 
-biz31w_dialer(num, acu)
-	char *num, *acu;
+int
+biz31w_dialer(char *num, char *acu)
 {
-
 	return (biz_dialer(num, "w"));
 }
 
-biz31f_dialer(num, acu)
-	char *num, *acu;
+int
+biz31f_dialer(char *num, char *acu)
 {
-
 	return (biz_dialer(num, "f"));
 }
 
-biz31_disconnect()
+void
+biz31_disconnect(void)
 {
-
-	write(FD, DISCONNECT_CMD, 4);
+	write(FD, DISCONNECT_CMD, sizeof(DISCONNECT_CMD)-1);
 	sleep(2);
-	ioctl(FD, TIOCFLUSH);
+	tcflush(FD, TCIOFLUSH);
 }
 
-biz31_abort()
+void
+biz31_abort(void)
 {
-
 	write(FD, "\33", 1);
 }
 
 static int
-echo(s)
-	register char *s;
+echo(char *s)
 {
 	char c;
 
@@ -156,17 +156,16 @@ echo(s)
 	}
 }
 
+/*ARGSUSED*/
 static void
-sigALRM()
+sigALRM(int signo)
 {
-
 	timeout = 1;
 	longjmp(timeoutbuf, 1);
 }
 
 static int
-detect(s)
-	register char *s;
+detect(char *s)
 {
 	sig_t f;
 	char c;
@@ -190,8 +189,7 @@ detect(s)
 }
 
 static int
-flush(s)
-	register char *s;
+flush(char *s)
 {
 	sig_t f;
 	char c;
@@ -214,7 +212,7 @@ flush(s)
  *  call there are gory ways to simulate this.
  */
 static int
-bizsync(fd)
+bizsync(int fd)
 {
 #ifdef FIOCAPACITY
 	struct capacity b;
@@ -226,12 +224,12 @@ bizsync(fd)
 #	define chars(b)	(b)
 #	define IOCTL	FIONREAD
 #endif
-	register int already = 0;
+	int already = 0;
 	char buf[10];
 
 retry:
 	if (ioctl(fd, IOCTL, (caddr_t)&b) >= 0 && chars(b) > 0)
-		ioctl(fd, TIOCFLUSH);
+		tcflush(FD, TCIOFLUSH);
 	write(fd, "\rp>\r", 4);
 	sleep(1);
 	if (ioctl(fd, IOCTL, (caddr_t)&b) >= 0) {

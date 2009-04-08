@@ -1,4 +1,5 @@
-/*	$NetBSD: main.c,v 1.4 1995/09/28 10:34:27 tls Exp $	*/
+/*	$OpenBSD: main.c,v 1.9 2003/06/10 22:20:54 deraadt Exp $	*/
+/*	$NetBSD: main.c,v 1.6 1996/02/08 20:45:01 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,13 +43,15 @@ char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.4 1995/09/28 10:34:27 tls Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.9 2003/06/10 22:20:54 deraadt Exp $";
 #endif
 #endif /* not lint */
 
 #include "defs.h"
 #include <paths.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "string.h"
 #include "char.h"
 #include "local.h"
@@ -60,10 +59,9 @@ static char rcsid[] = "$NetBSD: main.c,v 1.4 1995/09/28 10:34:27 tls Exp $";
 #define next(a) (*++*(a) ? *(a) : (*++(a) ? *(a) : (char *)(long)usage()))
 
 /*ARGSUSED*/
-main(argc, argv)
-char **argv;
+main(int argc, char *argv[])
 {
-	register char *p;
+	char *p;
 	char fflag = 0;
 	char dflag = 0;
 	char xflag = 0;
@@ -71,7 +69,7 @@ char **argv;
 	char tflag = 0;
 
 	escapec = ESCAPEC;	
-	if (p = rindex(*argv, '/'))
+	if (p = strrchr(*argv, '/'))
 		p++;
 	else
 		p = *argv;
@@ -117,7 +115,7 @@ char **argv;
 		(void) fprintf(stderr, "Out of memory.\n");
 		exit(1);
 	}
-	if (p = rindex(default_shellfile, '/'))
+	if (p = strrchr(default_shellfile, '/'))
 		p++;
 	else
 		p = default_shellfile;
@@ -155,24 +153,23 @@ char **argv;
 	if (debug || xflag)
 		(void) wwsettty(0, &wwnewtty);
 
-	if ((cmdwin = wwopen(wwbaud > 2400 ? WWO_REVERSE : 0, 1, wwncol,
-			     0, 0, 0)) == 0) {
+	if ((cmdwin = wwopen(WWT_INTERNAL, wwbaud > 2400 ? WWO_REVERSE : 0, 1,
+			     wwncol, 0, 0, 0)) == 0) {
 		wwflush();
 		(void) fprintf(stderr, "%s.\r\n", wwerror());
 		goto bad;
 	}
-	cmdwin->ww_mapnl = 1;
-	cmdwin->ww_nointr = 1;
-	cmdwin->ww_noupdate = 1;
-	cmdwin->ww_unctrl = 1;
-	if ((framewin = wwopen(WWO_GLASS|WWO_FRAME, wwnrow, wwncol, 0, 0, 0))
-	    == 0) {
+	SET(cmdwin->ww_wflags,
+	    WWW_MAPNL | WWW_NOINTR | WWW_NOUPDATE | WWW_UNCTRL);
+	if ((framewin = wwopen(WWT_INTERNAL, WWO_GLASS|WWO_FRAME, wwnrow,
+			       wwncol, 0, 0, 0)) == 0) {
 		wwflush();
 		(void) fprintf(stderr, "%s.\r\n", wwerror());
 		goto bad;
 	}
 	wwadd(framewin, &wwhead);
-	if ((boxwin = wwopen(WWO_GLASS, wwnrow, wwncol, 0, 0, 0)) == 0) {
+	if ((boxwin = wwopen(WWT_INTERNAL, WWO_GLASS, wwnrow, wwncol, 0, 0, 0))
+	    == 0) {
 		wwflush();
 		(void) fprintf(stderr, "%s.\r\n", wwerror());
 		goto bad;
@@ -200,9 +197,9 @@ bad:
 	return 0;
 }
 
-usage()
+usage(void)
 {
-	(void) fprintf(stderr, "Usage: window [-e escape-char] [-c command] [-t] [-f] [-d]\n");
+	fprintf(stderr, "Usage: window [-dft] [-c command] [-e escape-char]\n");
 	exit(1);
 	return 0;			/* for lint */
 }

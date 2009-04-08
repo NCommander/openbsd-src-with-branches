@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /* ====================================================================
  * The Apache Software License, Version 1.1
  *
@@ -71,7 +73,9 @@
 extern "C" {
 #endif
 
-#define SHA_DIGESTSIZE 20
+#include <sha1.h>
+
+#define SHA_DIGESTSIZE SHA1_DIGEST_LENGTH
 
 /*
  * Define the Magic String prefix that identifies a password as being
@@ -80,24 +84,18 @@ extern "C" {
 #define AP_SHA1PW_ID "{SHA}"
 #define AP_SHA1PW_IDLEN 5
 
-typedef unsigned long AP_LONG;     /* a 32-bit quantity */
+typedef u_int32_t AP_LONG;         /* a 32-bit quantity */
 
-typedef struct {
-    AP_LONG digest[5];             /* message digest */
-    AP_LONG count_lo, count_hi;    /* 64-bit bit count */
-    AP_LONG data[16];              /* SHA data buffer */
-    int local;                     /* unprocessed amount in data */
-} AP_SHA1_CTX;
+#define AP_SHA1_CTX SHA1_CTX
 
 API_EXPORT(void) ap_sha1_base64(const char *clear, int len, char *out);
 API_EXPORT(void) ap_SHA1Init(AP_SHA1_CTX *context);
 API_EXPORT(void) ap_SHA1Update(AP_SHA1_CTX *context, const char *input,
-			       unsigned int inputLen);
+    unsigned int inputLen);
 API_EXPORT(void) ap_SHA1Update_binary(AP_SHA1_CTX *context,
-				      const unsigned char *input,
-				      unsigned int inputLen);
+    const unsigned char *input, unsigned int inputLen);
 API_EXPORT(void) ap_SHA1Final(unsigned char digest[SHA_DIGESTSIZE],
-                              AP_SHA1_CTX *context);
+    AP_SHA1_CTX *context);
 
 #ifdef __cplusplus
 }

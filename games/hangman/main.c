@@ -1,3 +1,4 @@
+/*	$OpenBSD: main.c,v 1.9 2004/11/29 08:52:28 jsg Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/03/23 08:32:50 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,20 +40,47 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: main.c,v 1.3 1995/03/23 08:32:50 cgd Exp $";
+static char rcsid[] = "$OpenBSD: main.c,v 1.9 2004/11/29 08:52:28 jsg Exp $";
 #endif
 #endif /* not lint */
 
 # include	"hangman.h"
+#include <paths.h>
+
+void	usage();
 
 /*
  * This game written by Ken Arnold.
  */
-main()
+int
+main(int argc, char *argv[])
 {
-	void die();
+	int ch;
+
+	while ((ch = getopt(argc, argv, "d:hk")) != -1) {
+		switch (ch) {
+		case 'd':
+			if (ksyms)
+				usage();
+			else
+				Dict_name = optarg;
+			break;
+		case 'k':
+			ksyms = 1;
+			Dict_name = _PATH_KSYMS;
+			break;
+		case 'h':
+		case '?':
+		default:
+			usage();
+		}
+	}
 
 	initscr();
+	if (COLS < 50 || LINES < 14) {
+		endwin();
+		errx(1, "screen too small (must be at least 50x14)");
+	}
 	signal(SIGINT, die);
 	setup();
 	for (;;) {
@@ -72,10 +96,17 @@ main()
  *	Die properly.
  */
 void
-die()
+die(int dummy)
 {
 	mvcur(0, COLS - 1, LINES - 1, 0);
 	endwin();
 	putchar('\n');
 	exit(0);
+}
+
+__dead void
+usage()
+{
+	(void)fprintf(stderr, "usage: hangman [-k] [-d wordlist]\n");
+	exit(1);
 }

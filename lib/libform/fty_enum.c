@@ -1,3 +1,5 @@
+/*	$OpenBSD: fty_enum.c,v 1.8 2000/10/22 18:27:24 millert Exp $	*/
+
 
 /*
  * THIS CODE IS SPECIFICALLY EXEMPTED FROM THE NCURSES PACKAGE COPYRIGHT.
@@ -5,8 +7,15 @@
  * If you develop a field type that might be of general use, please send
  * it back to the ncurses maintainers for inclusion in the next version.
  */
+/***************************************************************************
+*                                                                          *
+*  Author : Juergen Pfeifer, juergen.pfeifer@gmx.net                       *
+*                                                                          *
+***************************************************************************/
 
 #include "form.priv.h"
+
+MODULE_ID("$From: fty_enum.c,v 1.15 2000/12/09 23:46:12 tom Exp $")
 
 typedef struct {
   char **kwds;
@@ -26,20 +35,21 @@ typedef struct {
 static void *Make_Enum_Type(va_list * ap)
 {
   enumARG *argp = (enumARG *)malloc(sizeof(enumARG));
-  char **kp;
-  int cnt=0;
 
   if (argp)
     {
+      int cnt = 0;
+      char **kp = (char **)0;
       int ccase, cunique;
+
       argp->kwds        = va_arg(*ap,char **);
       ccase             = va_arg(*ap,int);
       cunique           = va_arg(*ap,int);
       argp->checkcase   = ccase   ? TRUE : FALSE;
       argp->checkunique = cunique ? TRUE : FALSE;
-    
+
       kp = argp->kwds;
-      while( (*kp++) ) cnt++;
+      while( kp && (*kp++) ) cnt++;
       argp->count = cnt;
     }
   return (void *)argp;
@@ -55,16 +65,17 @@ static void *Make_Enum_Type(va_list * ap)
 +--------------------------------------------------------------------------*/
 static void *Copy_Enum_Type(const void * argp)
 {
-  enumARG *ap  = (enumARG *)argp;
-  enumARG *new = (enumARG *)0;
+  enumARG *result = (enumARG *)0;
 
   if (argp)
     {
-      new = (enumARG *)malloc(sizeof(enumARG));
-      if (new)
-	*new = *ap;
+      const enumARG *ap = (const enumARG *)argp;
+
+      result = (enumARG *)malloc(sizeof(enumARG));
+      if (result)
+	*result = *ap;
     }
-  return (void *)new;
+  return (void *)result;
 }
 
 /*---------------------------------------------------------------------------
@@ -120,9 +131,8 @@ static int Compare(const unsigned char *s, const unsigned char *buf,
 	} 
       else 
 	{
-	  while(toupper(*s)==toupper(*buf))
+	  while(toupper(*s++)==toupper(*buf))
 	    {
-	      s++;
 	      if (*buf++=='\0') return EXACT;
 	    }
 	}
@@ -152,21 +162,21 @@ static int Compare(const unsigned char *s, const unsigned char *buf,
 +--------------------------------------------------------------------------*/
 static bool Check_Enum_Field(FIELD * field, const void  * argp)
 {
-  char **kwds       = ((enumARG *)argp)->kwds;
-  bool ccase        = ((enumARG *)argp)->checkcase;
-  bool unique       = ((enumARG *)argp)->checkunique;
+  char **kwds       = ((const enumARG *)argp)->kwds;
+  bool ccase        = ((const enumARG *)argp)->checkcase;
+  bool unique       = ((const enumARG *)argp)->checkunique;
   unsigned char *bp = (unsigned char *)field_buffer(field,0);
   char *s, *t, *p;
   int res;
   
-  while( (s=(*kwds++)) )
+  while( kwds && (s=(*kwds++)) )
     {
       if ((res=Compare((unsigned char *)s,bp,ccase))!=NOMATCH)
 	{
-	  t=s;
+	  p=t=s; /* t is at least a partial match */
 	  if ((unique && res!=EXACT)) 
 	    {
-	      while( (p = *kwds++) )
+	      while( kwds && (p = *kwds++) )
 		{
 		  if ((res=Compare((unsigned char *)p,bp,ccase))!=NOMATCH)
 		    {
@@ -174,16 +184,19 @@ static bool Check_Enum_Field(FIELD * field, const void  * argp)
 			{
 			  t = p;
 			  break;
-			}	
-		      t = (char *)0;
+			}
+		      else
+			t = (char *)0;
 		    }
 		}
-	    }
+	    }	  
 	  if (t)
 	    {
 	      set_field_buffer(field,0,t);
 	      return TRUE;
 	    }
+	  if (!p)
+	    break;
 	}
     }
   return FALSE;
@@ -203,24 +216,26 @@ static const char *dummy[] = { (char *)0 };
 +--------------------------------------------------------------------------*/
 static bool Next_Enum(FIELD * field, const void * argp)
 {
-  enumARG *args     = (enumARG *)argp;
+  const enumARG *args = (const enumARG *)argp;
   char **kwds       = args->kwds;
   bool ccase        = args->checkcase;
   int cnt           = args->count;
   unsigned char *bp = (unsigned char *)field_buffer(field,0);
 
-  while(cnt--)
-    {
-      if (Compare((unsigned char *)(*kwds++),bp,ccase)==EXACT) 
-	break;
-    }
-  if (cnt<=0)
-    kwds = args->kwds;
-  if ((cnt>=0) || (Compare((unsigned char *)dummy,bp,ccase)==EXACT))
-    {
-      set_field_buffer(field,0,*kwds);
-      return TRUE;
-    }
+  if (kwds) {
+    while(cnt--)
+      {
+	if (Compare((unsigned char *)(*kwds++),bp,ccase)==EXACT) 
+	  break;
+      }
+    if (cnt<=0)
+      kwds = args->kwds;
+    if ((cnt>=0) || (Compare((const unsigned char *)dummy,bp,ccase)==EXACT))
+      {
+	set_field_buffer(field,0,*kwds);
+	return TRUE;
+      }
+  }
   return FALSE;
 }
 
@@ -237,26 +252,28 @@ static bool Next_Enum(FIELD * field, const void * argp)
 +--------------------------------------------------------------------------*/
 static bool Previous_Enum(FIELD * field, const void * argp)
 {
-  enumARG *args = (enumARG *)argp;
+  const enumARG *args = (const enumARG *)argp;
   int cnt       = args->count;
   char **kwds   = &args->kwds[cnt-1];
   bool ccase    = args->checkcase;
   unsigned char *bp = (unsigned char *)field_buffer(field,0);
 
-  while(cnt--)
-    {
-      if (Compare((unsigned char *)(*kwds--),bp,ccase)==EXACT) 
-	break;
-    }
-
-  if (cnt<=0)
-    kwds  = &args->kwds[args->count-1];
-
-  if ((cnt>=0) || (Compare((unsigned char *)dummy,bp,ccase)==EXACT))
-    {
-      set_field_buffer(field,0,*kwds);
-      return TRUE;
-    }
+  if (kwds) {
+    while(cnt--)
+      {
+	if (Compare((unsigned char *)(*kwds--),bp,ccase)==EXACT) 
+	  break;
+      }
+    
+    if (cnt<=0)
+      kwds  = &args->kwds[args->count-1];
+    
+    if ((cnt>=0) || (Compare((const unsigned char *)dummy,bp,ccase)==EXACT))
+      {
+	set_field_buffer(field,0,*kwds);
+	return TRUE;
+      }
+  }
   return FALSE;
 }
 
@@ -275,6 +292,6 @@ static FIELDTYPE typeENUM = {
   Previous_Enum
 };
 
-FIELDTYPE* TYPE_ENUM = &typeENUM;
+NCURSES_EXPORT_VAR(FIELDTYPE*) TYPE_ENUM = &typeENUM;
 
 /* fty_enum.c ends here */

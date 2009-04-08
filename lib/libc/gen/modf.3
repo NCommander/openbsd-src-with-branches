@@ -1,4 +1,4 @@
-.\"	$NetBSD: modf.3,v 1.3 1995/02/27 04:35:19 cgd Exp $
+.\"	$OpenBSD: modf.3,v 1.6 2007/05/31 19:19:28 jmc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,18 +31,19 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)modf.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: May 31 2007 $
 .Dt MODF 3
 .Os
 .Sh NAME
-.Nm modf
+.Nm modf ,
+.Nm modff
 .Nd extract signed integral and fractional values from floating-point number
 .Sh SYNOPSIS
 .Fd #include <math.h>
 .Ft double
 .Fn modf "double value" "double *iptr"
+.Ft float
+.Fn modff "float value" "float *iptr"
 .Sh DESCRIPTION
 The
 .Fn modf
@@ -54,14 +51,20 @@ function breaks the argument
 .Fa value
 into integral and fractional parts, each of which has the
 same sign as the argument.
-It stores the integral part as a 
-.Em double
+It stores the integral part as a
+.Li double
 in the object pointed to by
 .Fa iptr .
+The
+.Fn modff
+function is a single precision version of
+.Fn modf .
 .Sh RETURN VALUES
 The
 .Fn modf
-function returns the signed fractional part of
+and
+.Fn modff
+functions return the signed fractional part of
 .Fa value .
 .Sh SEE ALSO
 .Xr frexp 3 ,

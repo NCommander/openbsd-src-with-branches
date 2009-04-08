@@ -1,3 +1,4 @@
+/*	$OpenBSD: dumpgame.c,v 1.7 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: dumpgame.c,v 1.4 1995/04/24 12:25:54 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,14 +34,18 @@
 #if 0
 static char sccsid[] = "@(#)dumpgame.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: dumpgame.c,v 1.4 1995/04/24 12:25:54 cgd Exp $";
+static char rcsid[] = "$OpenBSD: dumpgame.c,v 1.7 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include <stdio.h>
+#include <err.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "trek.h"
 
 /***  THIS CONSTANT MUST CHANGE AS THE DATA SPACES CHANGE ***/
-# define	VERSION		2
+# define	VERSION		3
 
 struct dump
 {
@@ -55,17 +56,19 @@ struct dump
 
 struct dump	Dump_template[] =
 {
-	(char *)&Ship,		sizeof (Ship),
-	(char *)&Now,		sizeof (Now),
-	(char *)&Param,		sizeof (Param),
-	(char *)&Etc,		sizeof (Etc),
-	(char *)&Game,		sizeof (Game),
-	(char *)Sect,		sizeof (Sect),
-	(char *)Quad,		sizeof (Quad),
-	(char *)&Move,		sizeof (Move),
-	(char *)Event,		sizeof (Event),
-	0
+	{ (char *)&Ship,	sizeof (Ship) },
+	{ (char *)&Now,		sizeof (Now) },
+	{ (char *)&Param,	sizeof (Param) },
+	{ (char *)&Etc,		sizeof (Etc) },
+	{ (char *)&Game,	sizeof (Game) },
+	{ (char *)Sect,		sizeof (Sect) },
+	{ (char *)Quad,		sizeof (Quad) },
+	{ (char *)&Move,	sizeof (Move) },
+	{ (char *)Event,	sizeof (Event) },
+	{ NULL,			0 }
 };
+
+static int readdump(int);
 
 /*
 **  DUMP GAME
@@ -77,15 +80,20 @@ struct dump	Dump_template[] =
 **	output change.
 */
 
-dumpgame()
+void
+dumpgame(v)
+	int v;
 {
-	int			version;
-	register int		fd;
-	register struct dump	*d;
-	register int		i;
+	int		version;
+	int		fd;
+	struct dump	*d;
+	int		i;
 
 	if ((fd = creat("trek.dump", 0644)) < 0)
-		return (printf("cannot dump\n"));
+	{
+		warn("cannot open `trek.dump'");
+		return;
+	}
 	version = VERSION;
 	write(fd, &version, sizeof version);
 
@@ -112,18 +120,19 @@ dumpgame()
 **	Return value is zero for success, one for failure.
 */
 
+int
 restartgame()
 {
-	register int	fd;
-	int		version;
+	int	fd, version;
 
-	if ((fd = open("trek.dump", 0)) < 0 ||
+	if ((fd = open("trek.dump", O_RDONLY)) == -1 ||
 	    read(fd, &version, sizeof version) != sizeof version ||
 	    version != VERSION ||
 	    readdump(fd))
 	{
 		printf("cannot restart\n");
-		close(fd);
+		if (fd != -1)
+			close(fd);
 		return (1);
 	}
 
@@ -141,13 +150,13 @@ restartgame()
 **	Returns zero for success, one for failure.
 */
 
+static int
 readdump(fd1)
-int	fd1;
+	int	fd1;
 {
-	register int		fd;
-	register struct dump	*d;
-	register int		i;
-	long			junk;
+	int		fd, i;
+	struct dump	*d;
+	long		junk;
 
 	fd = fd1;
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: move.c,v 1.6 2004/01/21 19:12:13 espie Exp $	*/
 /*	$NetBSD: move.c,v 1.3 1995/04/22 10:27:47 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)move.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: move.c,v 1.3 1995/04/22 10:27:47 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: move.c,v 1.6 2004/01/21 19:12:13 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,22 +57,15 @@ static char rcsid[] = "$NetBSD: move.c,v 1.3 1995/04/22 10:27:47 cgd Exp $";
 
 short m_moves = 0;
 boolean jump = 0;
-char *you_can_move_again = "you can move again";
+const char *you_can_move_again = "you can move again";
 
-extern short cur_room, halluc, blind, levitate;
-extern short cur_level, max_level;
-extern short bear_trap, haste_self, confused;
-extern short e_rings, regeneration, auto_search;
-extern char hunger_str[];
-extern boolean being_held, interrupted, r_teleport, passgo;
-
-one_move_rogue(dirch, pickup)
-short dirch, pickup;
+int
+one_move_rogue(short dirch, short pickup)
 {
 	short row, col;
 	object *obj;
 	char desc[DCOLS];
-	short n, status, d;
+	short status, d;
 
 	row = rogue.row;
 	col = rogue.col;
@@ -92,9 +82,9 @@ short dirch, pickup;
 	if (being_held || bear_trap) {
 		if (!(dungeon[row][col] & MONSTER)) {
 			if (being_held) {
-				message("you are being held", 1);
+				messagef(1, "you are being held");
 			} else {
-				message("you are still stuck in the bear trap", 0);
+				messagef(0, "you are still stuck in the bear trap");
 				(void) reg_move();
 			}
 			return(MOVE_FAILED);
@@ -141,10 +131,11 @@ short dirch, pickup;
 			return(STOPPED_ON_SOMETHING);
 		}
 		if (pickup && !levitate) {
-			if (obj = pick_up(row, col, &status)) {
-				get_desc(obj, desc);
+			if ((obj = pick_up(row, col, &status))) {
+				get_desc(obj, desc, sizeof(desc));
 				if (obj->what_is == GOLD) {
 					free_object(obj);
+					messagef(1, "%s", desc);
 					goto NOT_IN_PACK;
 				}
 			} else if (!status) {
@@ -155,17 +146,12 @@ short dirch, pickup;
 		} else {
 MOVE_ON:
 			obj = object_at(&level_objects, row, col);
-			(void) strcpy(desc, "moved onto ");
-			get_desc(obj, desc+11);
+			get_desc(obj, desc, sizeof(desc));
+			messagef(1, "moved onto %s", desc);
 			goto NOT_IN_PACK;
 		}
-		n = strlen(desc);
-		desc[n] = '(';
-		desc[n+1] = obj->ichar;
-		desc[n+2] = ')';
-		desc[n+3] = 0;
+		messagef(1, "%s(%c)", desc, obj->ichar);
 NOT_IN_PACK:
-		message(desc, 1);
 		(void) reg_move();
 		return(STOPPED_ON_SOMETHING);
 	}
@@ -182,8 +168,8 @@ MVED:	if (reg_move()) {			/* fainted from hunger */
 	return((confused ? STOPPED_ON_SOMETHING : MOVED));
 }
 
-multiple_move_rogue(dirch)
-short dirch;
+void
+multiple_move_rogue(short dirch)
 {
 	short row, col;
 	short m;
@@ -229,8 +215,8 @@ short dirch;
 	}
 }
 
-is_passable(row, col)
-register row, col;
+boolean
+is_passable(short row, short col)
 {
 	if ((row < MIN_ROW) || (row > (DROWS - 2)) || (col < 0) ||
 		(col > (DCOLS-1))) {
@@ -242,8 +228,8 @@ register row, col;
 	return(dungeon[row][col] & (FLOOR | TUNNEL | DOOR | STAIRS | TRAP));
 }
 
-next_to_something(drow, dcol)
-register drow, dcol;
+boolean
+next_to_something(short drow, short dcol)
 {
 	short i, j, i_end, j_end, row, col;
 	short pass_count = 0;
@@ -303,7 +289,8 @@ register drow, dcol;
 	return(0);
 }
 
-can_move(row1, col1, row2, col2) 
+boolean
+can_move(short row1, short col1, short row2, short col2) 
 {
 	if (!is_passable(row2, col2)) {
 		return(0);
@@ -319,15 +306,16 @@ can_move(row1, col1, row2, col2)
 	return(1);
 }
 
-move_onto()
+void
+move_onto(void)
 {
 	short ch, d;
 	boolean first_miss = 1;
 
 	while (!is_direction(ch = rgetchar(), &d)) {
-		sound_bell();
+		beep();
 		if (first_miss) {
-			message("direction? ", 0);
+			messagef(0, "direction? ");
 			first_miss = 0;
 		}
 	}
@@ -338,9 +326,7 @@ move_onto()
 }
 
 boolean
-is_direction(c, d)
-short c;
-short *d;
+is_direction(short c, short *d)
 {
 	switch(c) {
 	case 'h':
@@ -376,26 +362,25 @@ short *d;
 }
 
 boolean
-check_hunger(msg_only)
-boolean msg_only;
+check_hunger(boolean msg_only)
 {
-	register short i, n;
+	short i, n;
 	boolean fainted = 0;
 
 	if (rogue.moves_left == HUNGRY) {
-		(void) strcpy(hunger_str, "hungry");
-		message(hunger_str, 0);
+		(void) strlcpy(hunger_str, "hungry", HUNGER_STR_LEN);
+		messagef(0, "%s", hunger_str);
 		print_stats(STAT_HUNGER);
 	}
 	if (rogue.moves_left == WEAK) {
-		(void) strcpy(hunger_str, "weak");
-		message(hunger_str, 1);
+		(void) strlcpy(hunger_str, "weak", HUNGER_STR_LEN);
+		messagef(1, "%s", hunger_str);
 		print_stats(STAT_HUNGER);
 	}
 	if (rogue.moves_left <= FAINT) {
 		if (rogue.moves_left == FAINT) {
-			(void) strcpy(hunger_str, "faint");
-			message(hunger_str, 1);
+			(void) strlcpy(hunger_str, "faint", HUNGER_STR_LEN);
+			messagef(1, "%s", hunger_str);
 			print_stats(STAT_HUNGER);
 		}
 		n = get_rand(0, (FAINT - rogue.moves_left));
@@ -404,13 +389,13 @@ boolean msg_only;
 			if (rand_percent(40)) {
 				rogue.moves_left++;
 			}
-			message("you faint", 1);
+			messagef(1, "you faint");
 			for (i = 0; i < n; i++) {
 				if (coin_toss()) {
 					mv_mons();
 				}
 			}
-			message(you_can_move_again, 1);
+			messagef(1, "%s", you_can_move_again);
 		}
 	}
 	if (msg_only) {
@@ -445,7 +430,7 @@ boolean msg_only;
 }
 
 boolean
-reg_move()
+reg_move(void)
 {
 	boolean fainted;
 
@@ -483,7 +468,7 @@ reg_move()
 	}
 	if (levitate) {
 		if (!(--levitate)) {
-			message("you float gently to the ground", 1);
+			messagef(1, "you float gently to the ground");
 			if (dungeon[rogue.row][rogue.col] & TRAP) {
 				trap_player(rogue.row, rogue.col);
 			}
@@ -491,7 +476,7 @@ reg_move()
 	}
 	if (haste_self) {
 		if (!(--haste_self)) {
-			message("you feel yourself slowing down", 0);
+			messagef(0, "you feel yourself slowing down");
 		}
 	}
 	heal();
@@ -501,7 +486,8 @@ reg_move()
 	return(fainted);
 }
 
-rest(count)
+void
+rest(int count)
 {
 	int i;
 
@@ -515,7 +501,8 @@ rest(count)
 	}
 }
 
-gr_dir()
+char
+gr_dir(void)
 {
 	short d;
 
@@ -550,7 +537,8 @@ gr_dir()
 	return(d);
 }
 
-heal()
+void
+heal(void)
 {
 	static short heal_exp = -1, n, c = 0;
 	static boolean alt;
@@ -604,7 +592,7 @@ heal()
 	if (++c >= n) {
 		c = 0;
 		rogue.hp_current++;
-		if (alt = !alt) {
+		if ((alt = !alt)) {
 			rogue.hp_current++;
 		}
 		if ((rogue.hp_current += regeneration) > rogue.hp_max) {
@@ -614,9 +602,8 @@ heal()
 	}
 }
 
-static boolean
-can_turn(nrow, ncol)
-short nrow, ncol;
+boolean
+can_turn(short nrow, short ncol)
 {
 	if ((dungeon[nrow][ncol] & TUNNEL) && is_passable(nrow, ncol)) {
 		return(1);
@@ -624,12 +611,11 @@ short nrow, ncol;
 	return(0);
 }
 
-turn_passage(dir, fast)
-short dir;
-boolean fast;
+void
+turn_passage(short dir, boolean fast)
 {
 	short crow = rogue.row, ccol = rogue.col, turns = 0;
-	short ndir;
+	short ndir = 0;
 
 	if ((dir != 'h') && can_turn(crow, ccol + 1)) {
 		turns++;

@@ -1,3 +1,4 @@
+#	$OpenBSD: diff,v 1.2 2004/06/03 03:14:19 tedu Exp $
 
 #------------------------------------------------------------------------------
 # diff:  file(1) magic for diff(1) output
@@ -6,3 +7,5 @@
 0	string		***\ 		'diff' output text
 0	string		Only\ in\ 	'diff' output text
 0	string		Common\ subdirectories:\ 	'diff' output text
+
+0	string		Index:		RCS/CVS diff output text

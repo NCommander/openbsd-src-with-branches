@@ -1,3 +1,4 @@
+/*	$OpenBSD: list.c,v 1.5 2003/11/08 19:17:27 jmc Exp $	*/
 /*	$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -49,21 +46,24 @@
 #if 0
 static char sccsid[] = "@(#)list.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $";
+static char rcsid[] = "$OpenBSD: list.c,v 1.5 2003/11/08 19:17:27 jmc Exp $";
 #endif
 #endif /* not lint */
 
 #include "include.h"
 
 PLANE	*
-newplane()
+newplane(void)
 {
-	return ((PLANE *) calloc(1, sizeof (PLANE)));
+	PLANE *p;
+	
+	if ((p = (PLANE *) calloc(1, sizeof (PLANE))) == NULL)
+		loser(NULL, "Out of memory");
+	return (p);
 }
 
-append(l, p)
-	LIST	*l;
-	PLANE	*p;
+void
+append(LIST *l, PLANE *p)
 {
 	PLANE 	*q = NULL, *r = NULL;
 
@@ -99,12 +99,11 @@ append(l, p)
 	}
 }
 
-delete(l, p)
-	LIST	*l;
-	PLANE	*p;
+void
+delete(LIST *l, PLANE *p)
 {
 	if (l->head == NULL)
-		loser(p, "deleted a non-existant plane! Get help!");
+		loser(p, "deleted a non-existent plane! Get help!");
 	
 	if (l->head == p && l->tail == p)
 		l->head = l->tail = NULL;

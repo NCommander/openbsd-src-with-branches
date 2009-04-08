@@ -1,4 +1,5 @@
-/*	$NetBSD: disksubr.c,v 1.6 1995/05/08 19:10:53 ragge Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.57 2008/06/12 06:58:38 deraadt Exp $	*/
+/*	$NetBSD: disksubr.c,v 1.21 1999/06/30 18:48:06 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,263 +28,179 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)ufs_disksubr.c	7.16 (Berkeley) 5/4/91
  */
 
-#include "param.h"
-#include "systm.h"
-#include "buf.h"
-#include "dkbad.h"
-#include "disklabel.h"
-#include "syslog.h"
-#include "machine/macros.h"
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/buf.h>
+#include <sys/disklabel.h>
+#include <sys/syslog.h>
+#include <sys/proc.h>
+#include <sys/user.h>
+#include <sys/disk.h>
 
-/* XXX encoding of disk minor numbers, should be elsewhere... */
-#define dkunit(dev)		(minor(dev) >> 3)
-#define dkpart(dev)		(minor(dev) & 7)
-#define dkminor(unit, part)	(((unit) << 3) | (part))
+#include <uvm/uvm_extern.h>
 
-#define	b_cylin	b_resid
+#include <machine/macros.h>
+#include <machine/pte.h>
+#include <machine/pcb.h>
+#include <machine/cpu.h>
 
-#define		RAW_PART	3
+#include <vax/mscp/mscp.h> /* For disk encoding scheme */
 
-/*
- * Determine the size of the transfer, and make sure it is
- * within the boundaries of the partition. Adjust transfer
- * if needed, and signal errors or early completion.
- */
-int
-bounds_check_with_label(struct buf *bp, struct disklabel *lp, int wlabel)
-{
-	struct partition *p = lp->d_partitions + dkpart(bp->b_dev);
-	int labelsect = lp->d_partitions[0].p_offset;
-	int maxsz = p->p_size,
-		sz = (bp->b_bcount + DEV_BSIZE - 1) >> DEV_BSHIFT;
-
-	/* overwriting disk label ? */
-	/* XXX should also protect bootstrap in first 8K */
-        if (bp->b_blkno + p->p_offset <= LABELSECTOR + labelsect &&
-#if LABELSECTOR != 0
-            bp->b_blkno + p->p_offset + sz > LABELSECTOR + labelsect &&
-#endif
-            (bp->b_flags & B_READ) == 0 && wlabel == 0) {
-                bp->b_error = EROFS;
-                goto bad;
-        }
-
-#if	defined(DOSBBSECTOR) && defined(notyet)
-	/* overwriting master boot record? */
-        if (bp->b_blkno + p->p_offset <= DOSBBSECTOR &&
-            (bp->b_flags & B_READ) == 0 && wlabel == 0) {
-                bp->b_error = EROFS;
-                goto bad;
-        }
-#endif
-
-	/* beyond partition? */
-        if (bp->b_blkno < 0 || bp->b_blkno + sz > maxsz) {
-                /* if exactly at end of disk, return an EOF */
-                if (bp->b_blkno == maxsz) {
-                        bp->b_resid = bp->b_bcount;
-                        return(0);
-                }
-                /* or truncate if part of it fits */
-                sz = maxsz - bp->b_blkno;
-                if (sz <= 0) {
-			bp->b_error = EINVAL;
-                        goto bad;
-		}
-                bp->b_bcount = sz << DEV_BSHIFT;
-        }
-
-	/* calculate cylinder for disksort to order transfers with */
-        bp->b_cylin = (bp->b_blkno + p->p_offset) / lp->d_secpercyl;
-	return(1);
-
-bad:
-	bp->b_flags |= B_ERROR;
-	return(-1);
-}
-
-/* NYFIL */
-
-/* encoding of disk minor numbers, should be elsewhere... */
-#define dkunit(dev)		(minor(dev) >> 3)
-#define dkpart(dev)		(minor(dev) & 7)
-#define dkminor(unit, part)	(((unit) << 3) | (part))
-
-/*
- * Check new disk label for sensibility
- * before setting it.
- */
-setdisklabel(olp, nlp, openmask, osdep)
-	register struct disklabel *olp, *nlp;
-	u_long openmask;
-	struct cpu_disklabel *osdep;
-{
-	return cpu_setdisklabel(olp, nlp, openmask, osdep);
-}
-
-
-/*
- * Write disk label back to device after modification.
- */
-writedisklabel(dev, strat, lp, osdep)
-	dev_t dev;
-	void (*strat)();
-	register struct disklabel *lp;
-	struct cpu_disklabel *osdep;
-{
-	return cpu_writedisklabel(dev, strat, lp, osdep);
-}
-/*
- *	from: @(#)ufs_disksubr.c	7.16 (Berkeley) 5/4/91
- */
+#include "mba.h"
 
 /*
  * Attempt to read a disk label from a device
- * using the indicated stategy routine.
+ * using the indicated strategy routine.
  * The label must be partly set up before this:
  * secpercyl and anything required in the strategy routine
  * (e.g., sector size) must be filled in before calling us.
  * Returns null on success and an error string on failure.
  */
 char *
-readdisklabel(dev, strat, lp, osdep)
-	dev_t dev;
-	void (*strat)();
-	register struct disklabel *lp;
-	struct cpu_disklabel *osdep;
+readdisklabel(dev_t dev, void (*strat)(struct buf *),
+    struct disklabel *lp, int spoofonly)
 {
-	register struct buf *bp;
-	struct disklabel *dlp;
-	char *msg = NULL;
+	struct buf *bp = NULL;
+	char *msg;
 
-	if (lp->d_secperunit == 0)
-		lp->d_secperunit = 0x1fffffff;
-	lp->d_npartitions = 1;
-	if (lp->d_partitions[0].p_size == 0)
-		lp->d_partitions[0].p_size = 0x1fffffff;
-	lp->d_partitions[0].p_offset = 0;
+	if ((msg = initdisklabel(lp)))
+		goto done;
 
 	bp = geteblk((int)lp->d_secsize);
 	bp->b_dev = dev;
+
+	if (spoofonly)
+		goto done;
+
 	bp->b_blkno = LABELSECTOR;
 	bp->b_bcount = lp->d_secsize;
-	bp->b_flags = B_BUSY | B_READ;
-	bp->b_cylin = LABELSECTOR / lp->d_secpercyl;
+	bp->b_flags = B_BUSY | B_READ | B_RAW;
 	(*strat)(bp);
 	if (biowait(bp)) {
 		msg = "I/O error";
-	} else for (dlp = (struct disklabel *)bp->b_un.b_addr;
-	    dlp <= (struct disklabel *)(bp->b_un.b_addr+DEV_BSIZE-sizeof(*dlp));
-	    dlp = (struct disklabel *)((char *)dlp + sizeof(long))) {
-		if (dlp->d_magic != DISKMAGIC || dlp->d_magic2 != DISKMAGIC) {
-			if (msg == NULL)
-				msg = "no disk label";
-		} else if (dlp->d_npartitions > MAXPARTITIONS ||
-			   dkcksum(dlp) != 0)
-			msg = "disk label corrupted";
-		else {
-			*lp = *dlp;
-			msg = NULL;
-			break;
-		}
+		goto done;
 	}
-	bp->b_flags = B_INVAL | B_AGE;
-	brelse(bp);
+
+	msg = checkdisklabel(bp->b_data + LABELOFFSET, lp);
+	if (msg == NULL)
+		goto done;
+
+#if defined(CD9660)
+	if (iso_disklabelspoof(dev, strat, lp) == 0) {
+		msg = NULL;
+		goto done;
+	}
+#endif
+#if defined(UDF)
+	if (udf_disklabelspoof(dev, strat, lp) == 0) {
+		msg = NULL;
+		goto done;
+	}
+#endif
+
+done:
+	if (bp) {
+		bp->b_flags |= B_INVAL;
+		brelse(bp);
+	}
 	return (msg);
 }
 
 /*
- * Check new disk label for sensibility
- * before setting it.
- */
-cpu_setdisklabel(olp, nlp, openmask, osdep)
-	register struct disklabel *olp, *nlp;
-	u_long openmask;
-	struct cpu_disklabel *osdep;
-{
-	register i;
-	register struct partition *opp, *npp;
-
-	if (nlp->d_magic != DISKMAGIC || nlp->d_magic2 != DISKMAGIC ||
-	    dkcksum(nlp) != 0)
-		return (EINVAL);
-	while ((i = ffs((long)openmask)) != 0) {
-		i--;
-		openmask &= ~(1 << i);
-		if (nlp->d_npartitions <= i)
-			return (EBUSY);
-		opp = &olp->d_partitions[i];
-		npp = &nlp->d_partitions[i];
-		if (npp->p_offset != opp->p_offset || npp->p_size < opp->p_size)
-			return (EBUSY);
-		/*
-		 * Copy internally-set partition information
-		 * if new label doesn't include it.		XXX
-		 */
-		if (npp->p_fstype == FS_UNUSED && opp->p_fstype != FS_UNUSED) {
-			npp->p_fstype = opp->p_fstype;
-			npp->p_fsize = opp->p_fsize;
-			npp->p_frag = opp->p_frag;
-			npp->p_cpg = opp->p_cpg;
-		}
-	}
- 	nlp->d_checksum = 0;
- 	nlp->d_checksum = dkcksum(nlp);
-	*olp = *nlp;
-	return (0);
-}
-
-/* encoding of disk minor numbers, should be elsewhere... */
-#define dkunit(dev)		(minor(dev) >> 3)
-#define dkminor(unit, part)	(((unit) << 3) | (part))
-
-/*
  * Write disk label back to device after modification.
+ * Always allow writing of disk label; even if the disk is unlabeled.
  */
-cpu_writedisklabel(dev, strat, lp, osdep)
-	dev_t dev;
-	int (*strat)();
-	register struct disklabel *lp;
-	struct cpu_disklabel *osdep;
+int
+writedisklabel(dev_t dev, void (*strat)(struct buf *), struct disklabel *lp)
 {
-	struct buf *bp;
+	struct buf *bp = NULL;
 	struct disklabel *dlp;
-	int labelpart;
 	int error = 0;
 
-	labelpart = dkpart(dev);
-	if (lp->d_partitions[labelpart].p_offset != 0) {
-		if (lp->d_partitions[0].p_offset != 0)
-			return (EXDEV);			/* not quite right */
-		labelpart = 0;
-	}
 	bp = geteblk((int)lp->d_secsize);
-	bp->b_dev = makedev(major(dev), dkminor(dkunit(dev), labelpart));
+	bp->b_dev = dev;
+
+	/* Read it in, slap the new label in, and write it back out */
 	bp->b_blkno = LABELSECTOR;
 	bp->b_bcount = lp->d_secsize;
-	bp->b_flags = B_READ;
+	bp->b_flags = B_BUSY | B_READ | B_RAW;
 	(*strat)(bp);
-	if (error = biowait(bp))
+	if ((error = biowait(bp)) != 0)
 		goto done;
-	for (dlp = (struct disklabel *)bp->b_un.b_addr;
-	    dlp <= (struct disklabel *)
-	      (bp->b_un.b_addr + lp->d_secsize - sizeof(*dlp));
-	    dlp = (struct disklabel *)((char *)dlp + sizeof(long))) {
-		if (dlp->d_magic == DISKMAGIC && dlp->d_magic2 == DISKMAGIC &&
-		    dkcksum(dlp) == 0) {
-			*dlp = *lp;
-			bp->b_flags = B_WRITE;
-			(*strat)(bp);
-			error = biowait(bp);
-			goto done;
-		}
-	}
-	error = ESRCH;
+
+	dlp = (struct disklabel *)(bp->b_data + LABELOFFSET);
+	*dlp = *lp;
+	bp->b_flags = B_BUSY | B_WRITE | B_RAW;
+	(*strat)(bp);
+	error = biowait(bp);
+
 done:
-	brelse(bp);
+	if (bp) {
+		bp->b_flags |= B_INVAL;
+		brelse(bp);
+	}
 	return (error);
 }
+
+/*
+ * Print out the name of the device; ex. TK50, RA80. DEC uses a common
+ * disk type encoding scheme for most of its disks.
+ */
+void
+disk_printtype(int unit, int type)
+{
+	printf(" drive %d: %c%c", unit, (int)MSCP_MID_CHAR(2, type),
+	    (int)MSCP_MID_CHAR(1, type));
+	if (MSCP_MID_ECH(0, type))
+		printf("%c", (int)MSCP_MID_CHAR(0, type));
+	printf("%d\n", MSCP_MID_NUM(type));
+}
+
+#if NMBA > 0
+/*
+ * Be sure that the pages we want to do DMA to is actually there
+ * by faking page-faults if necessary. If given a map-register address,
+ * also map it in.
+ */
+void
+disk_reallymapin(struct buf *bp, pt_entry_t *map, int reg, int flag)
+{
+	struct proc *p;
+	volatile pt_entry_t *io;
+	pt_entry_t *pte;
+	struct pcb *pcb;
+	int pfnum, npf, o;
+	caddr_t addr;
+
+	o = (int)bp->b_data & VAX_PGOFSET;
+	npf = vax_atop(bp->b_bcount + o) + 1;
+	addr = bp->b_data;
+	p = bp->b_proc;
+
+	/*
+	 * Get a pointer to the pte pointing out the first virtual address.
+	 * Use different ways in kernel and user space.
+	 */
+	if ((bp->b_flags & B_PHYS) == 0) {
+		pte = kvtopte(addr);
+		p = &proc0;
+	} else {
+		pcb = &p->p_addr->u_pcb;
+		pte = uvtopte(addr, pcb);
+	}
+
+	if (map) {
+		io = &map[reg];
+		while (--npf > 0) {
+			pfnum = (*pte & PG_FRAME);
+			if (pfnum == 0)
+				panic("mapin zero entry");
+			pte++;
+			*(int *)io++ = pfnum | flag;
+		}
+		*(int *)io = 0;
+	}
+}
+#endif

@@ -1,3 +1,4 @@
+/*	$OpenBSD: tee.c,v 1.5 2003/06/03 02:56:17 millert Exp $	*/
 /*	$NetBSD: tee.c,v 1.5 1994/12/09 01:43:39 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tee.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: tee.c,v 1.5 1994/12/09 01:43:39 jtc Exp $";
+static char rcsid[] = "$OpenBSD: tee.c,v 1.5 2003/06/03 02:56:17 millert Exp $";
 #endif
 
 #include <sys/types.h>
@@ -65,16 +62,14 @@ typedef struct _list {
 } LIST;
 LIST *head;
 
-void add __P((int, char *));
+void add(int, char *);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register LIST *p;
-	register int n, fd, rval, wval;
-	register char *bp;
+	LIST *p;
+	int n, fd, rval, wval;
+	char *bp;
 	int append, ch, exitval;
 	char *buf;
 #define	BSIZE (8 * 1024)
@@ -140,9 +135,7 @@ main(argc, argv)
 }
 
 void
-add(fd, name)
-	int fd;
-	char *name;
+add(int fd, char *name)
 {
 	LIST *p;
 

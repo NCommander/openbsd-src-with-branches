@@ -151,9 +151,7 @@
 
 #include "httpd.h"
 #include "http_config.h"
-#ifndef NETWARE
 #include <sys/types.h>
-#endif
 #include <sys/stat.h>
 #include "util_script.h"
 #include "http_log.h"
@@ -240,7 +238,7 @@ static int scan_meta_file(request_rec *r, FILE *f)
     table *tmp_headers;
 
     tmp_headers = ap_make_table(r->pool, 5);
-    while (fgets(w, MAX_STRING_LEN - 1, f) != NULL) {
+    while (fgets(w, sizeof(w), f) != NULL) {
 
 	/* Delete terminal (CR?)LF */
 
@@ -265,7 +263,7 @@ static int scan_meta_file(request_rec *r, FILE *f)
 	}
 
 	*l++ = '\0';
-	while (*l && ap_isspace(*l))
+	while (ap_isspace(*l))
 	    ++l;
 
 	if (!strcasecmp(w, "Content-type")) {

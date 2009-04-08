@@ -57,7 +57,7 @@ xfs_alloc(u_int size, xfs_malloc_type type)
     NNPFSDEB(XDEBMEM, ("xfs_alloc: xfs_allocs - xfs_frees %d\n", 
 		     xfs_allocs - xfs_frees));
 
-    MALLOC(ret, void *, size, type, M_WAITOK);
+    ret = malloc(size, type, M_WAITOK);
     return ret;
 }
 
@@ -65,7 +65,7 @@ void
 xfs_free(void *ptr, u_int size, xfs_malloc_type type)
 {
     xfs_frees++;
-    FREE(ptr, type);
+    free(ptr, type);
 }
 
 #endif /* NNPFS_DEBUG */
@@ -74,7 +74,11 @@ int
 xfs_suser(d_thread_t *p)
 {
 #if defined(HAVE_TWO_ARGUMENT_SUSER)
+#ifdef __OpenBSD__
+    return suser (p, SUSER_NOACCT);
+#else
     return suser (xfs_proc_to_cred(p), NULL);
+#endif
 #else
     return suser (p);
 #endif

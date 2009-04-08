@@ -1,9 +1,10 @@
-/*	$Id: version.c,v 1.2 1995/11/07 08:51:04 deraadt Exp $ */
+/*	$OpenBSD: version.c,v 1.6 2008/09/19 20:18:03 miod Exp $ */
 
 /*
- *	NOTE ANY CHANGES YOU MAKE TO THE BOOTBLOCKS HERE.
- *
- *	1.1
+ *	1.7	allocation area changed to fix netboot buffers overwriting stack
+ *	1.6	perform MVME197 busswitch initialization
+ *	1.5	rewritten crt code, self-relocatable
+ *	1.4	kernel loaded with loadfile, a.out and ELF formats
+ *	1.3	rewritten startup code and general cleanup
  */
-
-char *version = "$Revision: 1.2 $";
+char *version = "1.7";

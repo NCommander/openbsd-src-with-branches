@@ -1,4 +1,5 @@
-/*	$NetBSD: dcmreg.h,v 1.4 1994/10/26 07:23:37 cgd Exp $	*/
+/*	$OpenBSD: dcmreg.h,v 1.4 2003/06/02 23:27:44 millert Exp $	*/
+/*	$NetBSD: dcmreg.h,v 1.5 1996/02/24 00:55:05 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -143,10 +140,10 @@ struct	dcmpreg {
 #define	DCMRS		0x80	/* software reset, write */
 
 /* interrupt control */
-#define	DCMIPL(x)	((((x) >> 4) & 3) + 3)	/* interupt level, read */
-#define	IC_IR		0x40	/* interupt request, read */
-#define	IC_IE		0x80	/* interupt enable, write */
-#define	IC_ID		0x00	/* interupt disable, write */
+#define	DCMIPL(x)	((((x) >> 4) & 3) + 3)	/* interrupt level, read */
+#define	IC_IR		0x40	/* interrupt request, read */
+#define	IC_IE		0x80	/* interrupt enable, write */
+#define	IC_ID		0x00	/* interrupt disable, write */
 
 
 /* Semaphore control */
@@ -250,8 +247,7 @@ struct	dcmpreg {
 #define RX_MASK		0xff
 
 /*
- * WARNING: Serial console is assumed to be the lowest select-code card
- * and that card must be logical unit 0 in the kernel.  Also, CONUNIT must
- * be 1, the port affected by the REMOTE/LOCAL switch.
+ * DCM console caveat: only port 1 is affected by the remote switch, and
+ * thus the only supported console port on a given DCM card.
  */
-#define CONUNIT	(1)
+#define DCMCONSPORT	1

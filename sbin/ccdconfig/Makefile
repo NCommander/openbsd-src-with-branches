@@ -1,12 +1,13 @@
-#	$NetBSD: Makefile,v 1.1 1995/08/17 16:37:17 thorpej Exp $
+#	$OpenBSD: Makefile,v 1.5 2002/06/17 18:01:06 deraadt Exp $
 
 PROG=	ccdconfig
 MAN=	ccdconfig.8
 
-BINGRP=	kmem
-BINMODE=2555
+# Only permit root to use -g
+#BINGRP= kmem
+#BINMODE=2555
 
-DPADD=	${LIBKVM}
-LDADD=	-lkvm
+DPADD=	${LIBKVM} ${LIBUTIL}
+LDADD=	-lkvm -lutil
 
 .include <bsd.prog.mk>

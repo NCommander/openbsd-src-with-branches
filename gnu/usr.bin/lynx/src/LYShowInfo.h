@@ -1,16 +1,14 @@
-
 #ifndef LYSHOWINFO_H
 #define LYSHOWINFO_H
 
 #ifndef LYSTRUCTS_H
-#include "LYStructs.h"
+#include <LYStructs.h>
 #endif /* LYSTRUCTS_H */
 
-extern int showinfo PARAMS((document *doc, int size_of_file, document *newdoc,
+extern BOOL LYVersionIsRelease NOPARAMS;
+extern char *LYVersionStatus NOPARAMS;
+extern char *LYVersionDate NOPARAMS;
+extern int LYShowInfo PARAMS((DocInfo *doc, int size_of_file, DocInfo *newdoc,
 							char *owner_address));
 
-#define SHOWINFO_TITLE "Information about the current document"
-
-
 #endif /* LYSHOWINFO_H */
-

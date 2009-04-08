@@ -1,3 +1,4 @@
+/*	$OpenBSD: char.c,v 1.4 1999/11/14 17:34:24 millert Exp $	*/
 /*	$NetBSD: char.c,v 1.3 1995/09/28 10:34:00 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)char.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: char.c,v 1.3 1995/09/28 10:34:00 tls Exp $";
+static char rcsid[] = "$OpenBSD: char.c,v 1.4 1999/11/14 17:34:24 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -118,39 +115,4 @@ char _cmap[] = {
 	_C|_U,		_C|_U,		_C|_U,		_C|_U,
 	_C|_U,		_C|_U,		_C|_U,		_C|_U,
 	_C|_U,		_C|_U,		_C|_U,		_C|_U
-};
-
-char *_unctrl[] = {
-	"^@",	"^A",	"^B",	"^C",	"^D",	"^E",	"^F",	"^G",
-	"^H",	"^I",	"^J",	"^K",	"^L",	"^M",	"^N",	"^O",
-	"^P",	"^Q",	"^R",	"^S",	"^T",	"^U",	"^V",	"^W",
-	"^X",	"^Y",	"^Z",	"^[",	"^\\",	"^]",	"^^",	"^_",
-	" ",	"!",	"\"",	"#",	"$",	"%",	"&",	"'",
-	"(",	")",	"*",	"+",	",",	"-",	".",	"/",
-	"0",	"1",	"2",	"3",	"4",	"5",	"6",	"7",
-	"8",	"9",	":",	";",	"<",	"=",	">",	"?",
-	"@",	"A",	"B",	"C",	"D",	"E",	"F",	"G",
-	"H",	"I",	"J",	"K",	"L",	"M",	"N",	"O",
-	"P",	"Q",	"R",	"S",	"T",	"U",	"V",	"W",
-	"X",	"Y",	"Z",	"[",	"\\",	"]",	"^",	"_",
-	"`",	"a",	"b",	"c",	"d",	"e",	"f",	"g",
-	"h",	"i",	"j",	"k",	"l",	"m",	"n",	"o",
-	"p",	"q",	"r",	"s",	"t",	"u",	"v",	"w",
-	"x",	"y",	"z",	"{",	"|",	"}",	"~",	"^?",
-	"\\200","\\201","\\202","\\203","\\204","\\205","\\206","\\207",
-	"\\210","\\211","\\212","\\213","\\214","\\215","\\216","\\217",
-	"\\220","\\221","\\222","\\223","\\224","\\225","\\226","\\227",
-	"\\230","\\231","\\232","\\233","\\234","\\235","\\236","\\237",
-	"\\240","\\241","\\242","\\243","\\244","\\245","\\246","\\247",
-	"\\250","\\251","\\252","\\253","\\254","\\255","\\256","\\257",
-	"\\260","\\261","\\262","\\263","\\264","\\265","\\266","\\267",
-	"\\270","\\271","\\272","\\273","\\274","\\275","\\276","\\277",
-	"\\300","\\301","\\302","\\303","\\304","\\305","\\306","\\307",
-	"\\310","\\311","\\312","\\313","\\314","\\315","\\316","\\317",
-	"\\320","\\321","\\322","\\323","\\324","\\325","\\326","\\327",
-	"\\330","\\331","\\332","\\333","\\334","\\335","\\336","\\337",
-	"\\340","\\341","\\342","\\343","\\344","\\345","\\346","\\347",
-	"\\350","\\351","\\352","\\353","\\354","\\355","\\356","\\357",
-	"\\360","\\361","\\362","\\363","\\364","\\365","\\366","\\367",
-	"\\370","\\371","\\372","\\373","\\374","\\375","\\376","\\377"
 };

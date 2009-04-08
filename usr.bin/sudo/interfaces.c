@@ -1,39 +1,26 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
- * All rights reserved.
+ * Copyright (c) 1996, 1998-2005, 2007-2008
+ *	Todd C. Miller <Todd.Miller@courtesan.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * 4. Products derived from this software may not be called "Sudo" nor
- *    may "Sudo" appear in their names without specific prior written
- *    permission from the author.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
 /*
- * Supress a warning w/ gcc on Digital UN*X.
+ * Suppress a warning w/ gcc on Digital UN*X.
  * The system headers should really do this....
  */
 #if defined(__osf__) && !defined(__cplusplus)
@@ -41,57 +28,148 @@ struct mbuf;
 struct rtentry;
 #endif
 
-#include "config.h"
+#include <config.h>
 
-#include <stdio.h>
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#include <netdb.h>
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #if defined(HAVE_SYS_SOCKIO_H) && !defined(SIOCGIFCONF)
-#include <sys/sockio.h>
+# include <sys/sockio.h>
 #endif
+#include <stdio.h>
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+#endif /* STDC_HEADERS */
+#ifdef HAVE_STRING_H
+# if defined(HAVE_MEMORY_H) && !defined(STDC_HEADERS)
+#  include <memory.h>
+# endif
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif /* HAVE_STRING_H */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
+#include <netdb.h>
+#include <errno.h>
 #ifdef _ISC
-#include <sys/stream.h>
-#include <sys/sioctl.h>
-#include <sys/stropts.h>
-#include <net/errno.h>
-#define STRSET(cmd, param, len)	{strioctl.ic_cmd=(cmd);\
+# include <sys/stream.h>
+# include <sys/sioctl.h>
+# include <sys/stropts.h>
+# define STRSET(cmd, param, len) {strioctl.ic_cmd=(cmd);\
 				 strioctl.ic_dp=(param);\
 				 strioctl.ic_timout=0;\
 				 strioctl.ic_len=(len);}
 #endif /* _ISC */
 #ifdef _MIPS
-#include <net/soioctl.h>
+# include <net/soioctl.h>
 #endif /* _MIPS */
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#ifdef HAVE_GETIFADDRS
+# include <ifaddrs.h>
+#endif
 
 #include "sudo.h"
 #include "interfaces.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: interfaces.c,v 1.59 1999/08/12 16:24:09 millert Exp $";
+__unused static const char rcsid[] = "$Sudo: interfaces.c,v 1.84 2008/11/09 14:13:12 millert Exp $";
 #endif /* lint */
 
 
-#if defined(SIOCGIFCONF) && !defined(STUB_LOAD_INTERFACES)
+#ifdef HAVE_GETIFADDRS
+
+/*
+ * Allocate and fill in the interfaces global variable with the
+ * machine's ip addresses and netmasks.
+ */
+void
+load_interfaces()
+{
+    struct ifaddrs *ifa, *ifaddrs;
+    struct sockaddr_in *sin;
+#ifdef HAVE_IN6_ADDR
+    struct sockaddr_in6 *sin6;
+#endif
+    int i;
+
+    if (getifaddrs(&ifaddrs))
+	return;
+
+    /* Allocate space for the interfaces list. */
+    for (ifa = ifaddrs; ifa != NULL; ifa = ifa -> ifa_next) {
+	/* Skip interfaces marked "down" and "loopback". */
+	if (ifa->ifa_addr == NULL || !ISSET(ifa->ifa_flags, IFF_UP) ||
+	    ISSET(ifa->ifa_flags, IFF_LOOPBACK))
+	    continue;
+
+	switch(ifa->ifa_addr->sa_family) {
+	    case AF_INET:
+#ifdef HAVE_IN6_ADDR
+	    case AF_INET6:
+#endif
+		num_interfaces++;
+		break;
+	}
+    }
+    if (num_interfaces == 0)
+	return;
+    interfaces =
+	(struct interface *) emalloc2(num_interfaces, sizeof(struct interface));
+
+    /* Store the ip addr / netmask pairs. */
+    for (ifa = ifaddrs, i = 0; ifa != NULL; ifa = ifa -> ifa_next) {
+	/* Skip interfaces marked "down" and "loopback". */
+	if (ifa->ifa_addr == NULL || !ISSET(ifa->ifa_flags, IFF_UP) ||
+	    ISSET(ifa->ifa_flags, IFF_LOOPBACK))
+		continue;
+
+	switch(ifa->ifa_addr->sa_family) {
+	    case AF_INET:
+		sin = (struct sockaddr_in *)ifa->ifa_addr;
+		memcpy(&interfaces[i].addr, &sin->sin_addr,
+		    sizeof(struct in_addr));
+		sin = (struct sockaddr_in *)ifa->ifa_netmask;
+		memcpy(&interfaces[i].netmask, &sin->sin_addr,
+		    sizeof(struct in_addr));
+		interfaces[i].family = AF_INET;
+		i++;
+		break;
+#ifdef HAVE_IN6_ADDR
+	    case AF_INET6:
+		sin6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+		memcpy(&interfaces[i].addr, &sin6->sin6_addr,
+		    sizeof(struct in6_addr));
+		sin6 = (struct sockaddr_in6 *)ifa->ifa_netmask;
+		memcpy(&interfaces[i].netmask, &sin6->sin6_addr,
+		    sizeof(struct in6_addr));
+		interfaces[i].family = AF_INET6;
+		i++;
+		break;
+#endif /* HAVE_IN6_ADDR */
+	}
+    }
+#ifdef HAVE_FREEIFADDRS
+    freeifaddrs(ifaddrs);
+#else
+    efree(ifaddrs);
+#endif
+}
+
+#elif defined(SIOCGIFCONF) && !defined(STUB_LOAD_INTERFACES)
+
 /*
  * Allocate and fill in the interfaces global variable with the
  * machine's ip addresses and netmasks.
@@ -110,14 +188,11 @@ load_interfaces()
 #endif /* _ISC */
 
     sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-	(void) fprintf(stderr, "%s: cannot open socket: %s\n",
-	    Argv[0], strerror(errno));
-	exit(1);
-    }
+    if (sock < 0)
+	error(1, "cannot open socket");
 
     /*
-     * Get interface configuration or return (leaving num_interfaces 0)
+     * Get interface configuration or return (leaving num_interfaces == 0)
      */
     for (;;) {
 	ifconf_buf = erealloc(ifconf_buf, len);
@@ -125,14 +200,14 @@ load_interfaces()
 	ifconf->ifc_len = len - sizeof(struct ifconf);
 	ifconf->ifc_buf = (caddr_t) (ifconf_buf + sizeof(struct ifconf));
 
-	/* Networking may not be installed in kernel... */
 #ifdef _ISC
 	STRSET(SIOCGIFCONF, (caddr_t) ifconf, len);
 	if (ioctl(sock, I_STR, (caddr_t) &strioctl) < 0) {
 #else
-	if (ioctl(sock, SIOCGIFCONF, (caddr_t) ifconf) < 0) {
+	/* Note that some kernels return EINVAL if the buffer is too small */
+	if (ioctl(sock, SIOCGIFCONF, (caddr_t) ifconf) < 0 && errno != EINVAL) {
 #endif /* _ISC */
-	    free(ifconf_buf);
+	    efree(ifconf_buf);
 	    (void) close(sock);
 	    return;
 	}
@@ -144,8 +219,9 @@ load_interfaces()
     }
 
     /* Allocate space for the maximum number of interfaces that could exist. */
-    n = ifconf->ifc_len / sizeof(struct ifreq);
-    interfaces = (struct interface *) emalloc(sizeof(struct interface) * n);
+    if ((n = ifconf->ifc_len / sizeof(struct ifreq)) == 0)
+	return;
+    interfaces = (struct interface *) emalloc2(n, sizeof(struct interface));
 
     /* For each interface, store the ip address and netmask. */
     for (i = 0; i < ifconf->ifc_len; ) {
@@ -169,24 +245,25 @@ load_interfaces()
 		continue;
 
 #ifdef SIOCGIFFLAGS
-	memset(&ifr_tmp, 0, sizeof(ifr_tmp));
+	zero_bytes(&ifr_tmp, sizeof(ifr_tmp));
 	strncpy(ifr_tmp.ifr_name, ifr->ifr_name, sizeof(ifr_tmp.ifr_name) - 1);
 	if (ioctl(sock, SIOCGIFFLAGS, (caddr_t) &ifr_tmp) < 0)
 #endif
 	    ifr_tmp = *ifr;
 	
 	/* Skip interfaces marked "down" and "loopback". */
-	if (!(ifr_tmp.ifr_flags & IFF_UP) || (ifr_tmp.ifr_flags & IFF_LOOPBACK))
+	if (!ISSET(ifr_tmp.ifr_flags, IFF_UP) ||
+	    ISSET(ifr_tmp.ifr_flags, IFF_LOOPBACK))
 		continue;
 
 	sin = (struct sockaddr_in *) &ifr->ifr_addr;
-	interfaces[num_interfaces].addr.s_addr = sin->sin_addr.s_addr;
+	interfaces[num_interfaces].addr.ip4.s_addr = sin->sin_addr.s_addr;
 
 	/* Stash the name of the interface we saved. */
 	previfname = ifr->ifr_name;
 
 	/* Get the netmask. */
-	(void) memset(&ifr_tmp, 0, sizeof(ifr_tmp));
+	zero_bytes(&ifr_tmp, sizeof(ifr_tmp));
 	strncpy(ifr_tmp.ifr_name, ifr->ifr_name, sizeof(ifr_tmp.ifr_name) - 1);
 #ifdef SIOCGIFNETMASK
 #ifdef _ISC
@@ -197,32 +274,33 @@ load_interfaces()
 #endif /* _ISC */
 	    sin = (struct sockaddr_in *) &ifr_tmp.ifr_addr;
 
-	    interfaces[num_interfaces].netmask.s_addr = sin->sin_addr.s_addr;
+	    interfaces[num_interfaces].netmask.ip4.s_addr = sin->sin_addr.s_addr;
 	} else {
 #else
 	{
 #endif /* SIOCGIFNETMASK */
-	    if (IN_CLASSC(interfaces[num_interfaces].addr.s_addr))
-		interfaces[num_interfaces].netmask.s_addr = htonl(IN_CLASSC_NET);
-	    else if (IN_CLASSB(interfaces[num_interfaces].addr.s_addr))
-		interfaces[num_interfaces].netmask.s_addr = htonl(IN_CLASSB_NET);
+	    if (IN_CLASSC(interfaces[num_interfaces].addr.ip4.s_addr))
+		interfaces[num_interfaces].netmask.ip4.s_addr = htonl(IN_CLASSC_NET);
+	    else if (IN_CLASSB(interfaces[num_interfaces].addr.ip4.s_addr))
+		interfaces[num_interfaces].netmask.ip4.s_addr = htonl(IN_CLASSB_NET);
 	    else
-		interfaces[num_interfaces].netmask.s_addr = htonl(IN_CLASSA_NET);
+		interfaces[num_interfaces].netmask.ip4.s_addr = htonl(IN_CLASSA_NET);
 	}
 
 	/* Only now can we be sure it was a good/interesting interface. */
+	interfaces[num_interfaces].family = AF_INET;
 	num_interfaces++;
     }
 
     /* If the expected size < real size, realloc the array. */
     if (n != num_interfaces) {
 	if (num_interfaces != 0)
-	    interfaces = (struct interface *) erealloc(interfaces,
-		sizeof(struct interface) * num_interfaces);
+	    interfaces = (struct interface *) erealloc3(interfaces,
+		num_interfaces, sizeof(struct interface));
 	else
-	    free(interfaces);
+	    efree(interfaces);
     }
-    free(ifconf_buf);
+    efree(ifconf_buf);
     (void) close(sock);
 }
 
@@ -238,3 +316,31 @@ load_interfaces()
 }
 
 #endif /* SIOCGIFCONF && !STUB_LOAD_INTERFACES */
+
+void
+dump_interfaces()
+{
+    int i;
+#ifdef HAVE_IN6_ADDR
+    char addrbuf[INET6_ADDRSTRLEN], maskbuf[INET6_ADDRSTRLEN];
+#endif
+
+    puts("Local IP address and netmask pairs:");
+    for (i = 0; i < num_interfaces; i++) {
+	switch(interfaces[i].family) {
+	    case AF_INET:
+		printf("\t%s / ", inet_ntoa(interfaces[i].addr.ip4));
+		puts(inet_ntoa(interfaces[i].netmask.ip4));
+		break;
+#ifdef HAVE_IN6_ADDR
+	    case AF_INET6:
+		inet_ntop(AF_INET6, &interfaces[i].addr.ip6,
+		    addrbuf, sizeof(addrbuf));
+		inet_ntop(AF_INET6, &interfaces[i].netmask.ip6,
+		    maskbuf, sizeof(maskbuf));
+		printf("\t%s / %s\n", addrbuf, maskbuf);
+		break;
+#endif /* HAVE_IN6_ADDR */
+	}
+    }
+}

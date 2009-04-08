@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.5 1995/05/01 14:14:11 mycroft Exp $	*/
+/*	$OpenBSD: signal.h,v 1.5 2005/12/14 21:46:30 millert Exp $	*/
+/*	$NetBSD: signal.h,v 1.6 1996/01/08 13:51:43 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,14 +35,18 @@
 #ifndef _I386_SIGNAL_H_
 #define _I386_SIGNAL_H_
 
+#include <sys/cdefs.h>
+
 typedef int sig_atomic_t;
 
-#ifndef _ANSI_SOURCE
+#if __BSD_VISIBLE
 /*
  * Get the "code" values
  */
 #include <machine/trap.h>
+#endif
 
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 420
 /*
  * Information pushed on stack when a signal is delivered.
  * This is used by the kernel to restore state following
@@ -65,6 +66,7 @@ struct	sigcontext {
 	int	sc_edx;
 	int	sc_ecx;
 	int	sc_eax;
+	/* XXX */
 	int	sc_eip;
 	int	sc_cs;
 	int	sc_eflags;
@@ -73,6 +75,9 @@ struct	sigcontext {
 
 	int	sc_onstack;		/* sigstack state to restore */
 	int	sc_mask;		/* signal mask to restore */
+
+	int	sc_trapno;		/* XXX should be above */
+	int	sc_err;
 };
 
 #define sc_sp sc_esp
@@ -80,5 +85,5 @@ struct	sigcontext {
 #define sc_pc sc_eip
 #define sc_ps sc_eflags
 
-#endif	/* !_ANSI_SOURCE */
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
 #endif	/* !_I386_SIGNAL_H_ */

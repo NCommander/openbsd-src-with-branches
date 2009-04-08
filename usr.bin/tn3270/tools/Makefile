@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.3 1993/08/02 17:56:20 mycroft Exp $
+#	$OpenBSD$
 
 SUBDIR = mkhits mkastosc mkastods mkdstoas mkdctype
 

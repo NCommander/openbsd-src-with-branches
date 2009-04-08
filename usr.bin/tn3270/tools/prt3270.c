@@ -1,3 +1,5 @@
+/*	$OpenBSD: prt3270.c,v 1.5 2003/06/03 02:56:19 millert Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)prt3270.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: prt3270.c,v 1.2 1993/08/01 18:04:50 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: prt3270.c,v 1.5 2003/06/03 02:56:19 millert Exp $";
 #endif /* not lint */
 
 #if defined(unix)
@@ -159,7 +157,7 @@ int i;
 {
     char place[40];
 
-    sprintf(place, "%02x", i);
+    snprintf(place, sizeof place, "%02x", i);
     putstr(place);
 }
 
@@ -170,7 +168,7 @@ int i;
 {
     char place[40];
 
-    sprintf(place, "%d", i);
+    snprintf(place, sizeof place, "%d", i);
     putstr(place);
 }
 
@@ -180,7 +178,7 @@ int i;
 {
     char place[40];
 
-    sprintf(place, "%x", i);
+    snprintf(place, sizeof place, "%x", i);
     putstr(place);
 }
 
@@ -250,13 +248,13 @@ int	i;
 /* returns the number of characters consumed */
 int
 DataFromNetwork(buffer, count, control)
-register unsigned char	*buffer;		/* what the data is */
-register int	count;				/* and how much there is */
+unsigned char	*buffer;			/* what the data is */
+int	count;					/* and how much there is */
 int	control;				/* this buffer ended block? */
 {
     int origCount;
-    register int c;
-    register int i;
+    int c;
+    int i;
     static int Command;
     static int Wcc;
     static int	LastWasTerminated = 1;	/* was "control" = 1 last time? */
@@ -520,7 +518,7 @@ int	c;
 {
     if (!isascii(c)) {
 	fflush(stdout);
-	fprintf(stderr, "Non-hex digit 0x%x.\n");
+	fprintf(stderr, "Non-hex digit 0x%x.\n", c);
 	fflush(stderr);
 	return 0;
     } else {

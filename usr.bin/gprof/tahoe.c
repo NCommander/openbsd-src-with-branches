@@ -1,3 +1,4 @@
+/*	$OpenBSD: tahoe.c,v 1.5 2003/06/03 02:56:08 millert Exp $	*/
 /*	$NetBSD: tahoe.c,v 1.5 1995/04/19 07:16:27 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)tahoe.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: tahoe.c,v 1.5 1995/04/19 07:16:27 cgd Exp $";
+static char rcsid[] = "$OpenBSD: tahoe.c,v 1.5 2003/06/03 02:56:08 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -68,8 +65,7 @@ nltype	indirectchild = {
     };
 
 operandenum
-operandmode( modep )
-    unsigned char	*modep;
+operandmode(unsigned char *modep)
 {
     long	usesreg = ((long)*modep) & 0xf;
     
@@ -108,8 +104,7 @@ operandmode( modep )
 }
 
 char *
-operandname( mode )
-    operandenum	mode;
+operandname(operandenum mode)
 {
     
     switch ( mode ) {
@@ -160,8 +155,7 @@ operandname( mode )
 }
 
 long
-operandlength( modep )
-    unsigned char	*modep;
+operandlength(unsigned char *modep)
 {
     
     switch ( operandmode( modep ) ) {
@@ -196,8 +190,7 @@ operandlength( modep )
 }
 
 unsigned long
-reladdr( modep )
-    char	*modep;
+reladdr(char *modep)
 {
     operandenum	mode = operandmode( modep );
     char	*cp;
@@ -210,7 +203,7 @@ reladdr( modep )
     cp += 1;			/* skip over the mode */
     switch ( mode ) {
 	default:
-	    fprintf( stderr , "[reladdr] not relative address\n" );
+	    warnx("[reladdr] not relative address");
 	    return (unsigned long) modep;
 	case byterel:
 	    return (unsigned long) ( cp + sizeof *cp + *cp );
@@ -225,10 +218,8 @@ reladdr( modep )
     }
 }
 
-findcall( parentp , p_lowpc , p_highpc )
-    nltype		*parentp;
-    unsigned long	p_lowpc;
-    unsigned long	p_highpc;
+void
+findcall(nltype *parentp, unsigned long p_lowpc, unsigned long p_highpc)
 {
     unsigned char	*instructp;
     long		length;
@@ -251,7 +242,7 @@ findcall( parentp , p_lowpc , p_highpc )
 	    printf( "[findcall] %s: 0x%x to 0x%x\n" ,
 		    parentp -> name , p_lowpc , p_highpc );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
     for (   instructp = textspace + p_lowpc ;
 	    instructp < textspace + p_highpc ;
 	    instructp += length ) {
@@ -265,7 +256,7 @@ findcall( parentp , p_lowpc , p_highpc )
 		if ( debug & CALLDEBUG ) {
 		    printf( "[findcall]\t0x%x:callf" , instructp - textspace );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    firstmode = operandmode( instructp+length );
 	    switch ( firstmode ) {
 		case literal:
@@ -281,7 +272,7 @@ findcall( parentp , p_lowpc , p_highpc )
 		    printf( "\tfirst operand is %s", operandname( firstmode ) );
 		    printf( "\tsecond operand is %s\n" , operandname( mode ) );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    switch ( mode ) {
 		case regdef:
 		case bytedispdef:
@@ -320,7 +311,7 @@ findcall( parentp , p_lowpc , p_highpc )
 				printf( " childp->value 0x%x\n" ,
 					childp -> value );
 			    }
-#			endif DEBUG
+#			endif /* DEBUG */
 			if ( childp -> value == destpc ) {
 				/*
 				 *	a hit
@@ -346,7 +337,7 @@ findcall( parentp , p_lowpc , p_highpc )
 			if ( debug & CALLDEBUG ) {
 			    printf( "[findcall]\tbut it's a botch\n" );
 			}
-#		    endif DEBUG
+#		    endif /* DEBUG */
 		    length = 1;
 		    continue;
 	    }

@@ -1,26 +1,27 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: test.h,v 1.4 2002/02/17 19:42:27 millert Exp $	*/
 
 #ifndef _h_test_
 #define _h_test_
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>
 
-int	_thread_sys_write __P((int, const char*, size_t));
-__dead void _thread_sys__exit __P((int)) __attribute__((__noreturn__));
+int	_thread_sys_write(int, const char*, size_t);
+__dead void _thread_sys__exit(int) __attribute__((__noreturn__));
 
-static __dead void __vpanic __P((const char *, const char *, const char *, 
-	int, const char *, va_list)) __attribute__((__noreturn__));
-static __dead void __panic __P((const char *, const char *, const char *,
-	int, const char *, ...)) __attribute__((__noreturn__));
+static __dead void __vpanic(const char *, const char *, const char *, 
+	int, const char *, va_list) __attribute__((__noreturn__));
+static __dead void __panic(const char *, const char *, const char *,
+	int, const char *, ...) __attribute__((__noreturn__));
 
 #if defined(__OpenBSD__) || defined(__FreeBSD__)
 #include <pthread.h>
 #include <pthread_np.h>
-void	_thread_dump_info __P((void));
+void	_thread_dump_info(void);
 #define SET_NAME(x)	pthread_set_name_np(pthread_self(), x)
 #define DUMP_INFO()	_thread_dump_info()
 #else
@@ -120,4 +121,4 @@ __panic(type, errstr, filenm, lineno, fmt)
 #define OK		(0)
 #define NOTOK		(-1)
 
-#endif _h_test_
+#endif /* _h_test_ */

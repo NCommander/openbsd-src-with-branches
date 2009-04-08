@@ -1,3 +1,5 @@
+/*	$OpenBSD: modstat.c,v 1.21 2003/06/10 22:20:48 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1993 Terrence R. Lambert.
  * All rights reserved.
@@ -29,53 +31,60 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: modstat.c,v 1.6 1995/06/27 00:18:19 jtc Exp $
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <err.h>
-#include <string.h>
-#include <a.out.h>
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/lkm.h>
-#include <sys/file.h>
+
+#include <a.out.h>
+#include <err.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "pathnames.h"
 
-void
-usage()
-{
-
-	fprintf(stderr, "usage:\n");
-	fprintf(stderr, "modstat [-i <module id>] [-n <module name>]\n");
-	exit(1);
-}
+#define POINTERSIZE	((int)(2 * sizeof(void*)))
 
 static char *type_names[] = {
 	"SYSCALL",
 	"VFS",
 	"DEV",
-	"STRMOD",
 	"EXEC",
 	"MISC"
 };
 
-int
-dostat(devfd, modnum, modname)
-	int devfd;
-	int modnum;
-	char *modname;
+static void
+usage(void)
 {
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s [-i id] [-n name]\n", __progname);
+	exit(1);
+}
+
+static int
+dostat(int devfd, int modnum, char *modname)
+{
+	char name[MAXLKMNAME];
 	struct lmc_stat	sbuf;
 
-	if (modname != NULL)
-		strcpy(sbuf.name, modname);
-
+	bzero(&name, sizeof name);
+	bzero(&sbuf, sizeof sbuf);
 	sbuf.id = modnum;
+	sbuf.name = name;
+
+	if (modname != NULL) {
+		if (strlen(modname) >= sizeof(name))
+			return 4;
+		strlcpy(sbuf.name, modname, sizeof(name));
+	}
 
 	if (ioctl(devfd, LMSTAT, &sbuf) == -1) {
 		switch (errno) {
@@ -89,56 +98,36 @@ dostat(devfd, modnum, modname)
 		}
 	}
 
-	/*
-	 * Decode this stat buffer...
-	 */
-	printf("%-7s %3d %3d %08x %04x %8x %3d %s\n",
-	    type_names[sbuf.type],
-	    sbuf.id,		/* module id */
-	    sbuf.offset,	/* offset into modtype struct */
-	    sbuf.area,		/* address module loaded at */
-	    sbuf.size,		/* size in pages(K) */
-	    sbuf.private,	/* kernel address of private area */
-	    sbuf.ver,		/* Version; always 1 for now */
-	    sbuf.name		/* name from private area */
-	);
+	/* Decode this stat buffer... */
+	printf("%-7s %3d %3ld %0*lx %04lx %0*lx %3ld %s\n",
+	    type_names[sbuf.type], sbuf.id, sbuf.offset, POINTERSIZE,
+	    (long)sbuf.area, (long)sbuf.size, POINTERSIZE,
+	    (long)sbuf.private, (long)sbuf.ver, sbuf.name);
 
-	/*
-	 * Done (success).
-	 */
 	return 0;
 }
 
-int devfd;
-
-void
-cleanup()
-{
-
-	close(devfd);
-}
-
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	int c;
-	int modnum = -1;
+	int c, modnum = -1;
 	char *modname = NULL;
+	char *endptr;
+	int devfd;
+	gid_t gid;
 
-	while ((c = getopt(argc, argv, "i:n:")) != EOF) {
+	while ((c = getopt(argc, argv, "i:n:")) != -1) {
 		switch (c) {
 		case 'i':
-			modnum = atoi(optarg);
-			break;	/* number */
+			modnum = (int)strtol(optarg, &endptr, 0);
+			if (modnum < 0 || modnum > INT_MAX || *endptr != '\0')
+				errx(1, "%s: not a valid number", optarg);
+			break;
 		case 'n':
 			modname = optarg;
-			break;	/* name */
-		case '?':
-			usage();
+			break;
 		default:
-			printf("default!\n");
+			usage();
 			break;
 		}
 	}
@@ -152,27 +141,25 @@ main(argc, argv)
 	 * Open the virtual device device driver for exclusive use (needed
 	 * to ioctl() to retrive the loaded module(s) status).
 	 */
-	if ((devfd = open(_PATH_LKM, O_RDONLY, 0)) == -1)
-		err(2, _PATH_LKM);
+	if ((devfd = open(_PATH_LKM, O_RDONLY)) == -1)
+		err(2, "%s", _PATH_LKM);
 
-	atexit(cleanup);
+	gid = getgid();
+	if (setresgid(gid, gid, gid) == -1)
+		err(1, "setresgid");
 
-	printf("Type    Id  Off Loadaddr Size Info     Rev Module Name\n");
+	printf("Type     Id Off %-*s Size %-*s Rev Module Name\n",
+	    POINTERSIZE, "Loadaddr", POINTERSIZE, "Info");
 
-	/*
-	 * Oneshot?
-	 */
 	if (modnum != -1 || modname != NULL) {
 		if (dostat(devfd, modnum, modname))
 			exit(3);
 		exit(0);
 	}
 
-	/*
-	 * Start at 0 and work up until "EINVAL".
-	 */
- 	for (modnum = 0; dostat(devfd, modnum, NULL) < 2; modnum++)
- 		;
+	/* Start at 0 and work up until we receive EINVAL. */
+	for (modnum = 0; dostat(devfd, modnum, NULL) < 2; modnum++)
+		;
 
 	exit(0);
 }

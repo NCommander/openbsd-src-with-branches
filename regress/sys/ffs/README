@@ -1,0 +1,4 @@
+$OpenBSD$
+
+These tests must be run as root, on a system with free svnd0 and svnd1 slots.
+It is also advised that /mnt be unmounted, and clean.

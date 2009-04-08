@@ -1,4 +1,5 @@
 #!/bin/sh
+# $OpenBSD: Configure,v 1.27 2007/02/14 20:11:09 millert Exp $
 ## ====================================================================
 ## The Apache Software License, Version 1.1
 ##
@@ -84,6 +85,7 @@ awkfile=$tmpfile.4
 tmpconfig=$tmpfile.5
 SUBDIRS="ap main"
 APLIBDIRS=""
+SHELL=/bin/sh
 
 ####################################################################
 ## Now handle any arguments, which, for now, is -file
@@ -207,7 +209,7 @@ fi
 ## then fold in the modules that were included in Configuration
 ##
 echo "Creating Makefile"
-./helpers/mfhead . $file > Makefile
+${SHELL} helpers/mfhead . $file > Makefile
 
 ####################################################################
 ## Now we create a stub file, called Makefile.config, which
@@ -227,17 +229,18 @@ awk >Makefile.config <$tmpfile '
 ####################################################################
 ## Extract the rules.
 ##
-RULE_WANTHSREGEX=`./helpers/CutRule WANTHSREGEX $file`
-RULE_STATUS=`./helpers/CutRule STATUS $file`
-RULE_SOCKS4=`./helpers/CutRule SOCKS4 $file`
-RULE_SOCKS5=`./helpers/CutRule SOCKS5 $file`
-RULE_IRIXNIS=`./helpers/CutRule IRIXNIS $file`
-RULE_IRIXN32=`./helpers/CutRule IRIXN32 $file`
-RULE_PARANOID=`./helpers/CutRule PARANOID $file`
-RULE_EXPAT=`./helpers/CutRule EXPAT $file`
-RULE_CYGWIN_WINSOCK=`./helpers/CutRule CYGWIN_WINSOCK $file` 
-RULE_SHARED_CORE=`./helpers/CutRule SHARED_CORE $file`
-RULE_SHARED_CHAIN=`./helpers/CutRule SHARED_CHAIN $file`
+RULE_WANTHSREGEX=`${SHELL} helpers/CutRule WANTHSREGEX $file`
+RULE_STATUS=`${SHELL} helpers/CutRule STATUS $file`
+RULE_SOCKS4=`${SHELL} helpers/CutRule SOCKS4 $file`
+RULE_SOCKS5=`${SHELL} helpers/CutRule SOCKS5 $file`
+RULE_IRIXNIS=`${SHELL} helpers/CutRule IRIXNIS $file`
+RULE_IRIXN32=`${SHELL} helpers/CutRule IRIXN32 $file`
+RULE_PARANOID=`${SHELL} helpers/CutRule PARANOID $file`
+RULE_EXPAT=`${SHELL} helpers/CutRule EXPAT $file`
+RULE_CYGWIN_WINSOCK=`${SHELL} helpers/CutRule CYGWIN_WINSOCK $file` 
+RULE_SHARED_CORE=`${SHELL} helpers/CutRule SHARED_CORE $file`
+RULE_SHARED_CHAIN=`${SHELL} helpers/CutRule SHARED_CHAIN $file`
+RULE_INET6=`${SHELL} helpers/CutRule INET6 $file`
 
 ####################################################################
 ## Rule SHARED_CORE implies required DSO support
@@ -272,8 +275,8 @@ CAT="cat"
 ## As more PLATFORMs are added to Configuration.tmpl, be sure to
 ## add the required lines below.
 ##
-PLAT=`./helpers/GuessOS`
 SHELL="/bin/sh"
+PLAT=`${SHELL} helpers/GuessOS`
 OSDIR="os/unix"
 
 case "$PLAT" in
@@ -949,7 +952,7 @@ if [ "x$TCC" = "x" ]; then
 	for compilers in "gcc" "cc" "acc" "c89"
 	do
 	    lookedfor="$lookedfor $compilers"
-	    if ./helpers/PrintPath -s $compilers; then
+	    if ${SHELL} helpers/PrintPath -s $compilers; then
 		COMPILER="$compilers"
 		break
 	    fi
@@ -983,9 +986,9 @@ fi
 ##
 TCPP=`egrep '^CPP=' Makefile.config | tail -1 | awk -F= '{print $2}'`
 if [ "x$TCPP" != "x" ]; then
-    CPP=`CPP="$TCPP"; export CPP CC; ./helpers/findcpp.sh`
+    CPP=`CPP="$TCPP"; export CPP CC; ${SHELL} ./helpers/findcpp.sh`
 else
-    CPP=`export CC; ./helpers/findcpp.sh`
+    CPP=`export CC; ${SHELL} ./helpers/findcpp.sh`
 fi
 if [ "x$TCPP" = "x" ]; then
     echo "CPP=$CPP" >> Makefile.config
@@ -996,7 +999,7 @@ echo " + setting C pre-processor to $CPP"
 ## Now check for existance of non-standard system header files
 ## and start generation of the ap_config_auto.h header
 ##
-AP_CONFIG_AUTO_H="include/ap_config_auto.h"
+AP_CONFIG_AUTO_H="include/ap_config_auto.h.new"
 echo "/*" >$AP_CONFIG_AUTO_H
 echo " *  ap_config_auto.h -- Automatically determined configuration stuff" >>$AP_CONFIG_AUTO_H
 echo " *  THIS FILE WAS AUTOMATICALLY GENERATED - DO NOT EDIT!" >>$AP_CONFIG_AUTO_H
@@ -1020,7 +1023,7 @@ for header in $CHECK_FOR_HEADERS; do
     echo "" >>$AP_CONFIG_AUTO_H
     echo "/* check: #include <$header> */" >>$AP_CONFIG_AUTO_H
     name="`echo $header | sed -e 's:/:_:g' -e 's:\.:_:g' | $uppercase`"
-    ./helpers/checkheader.sh $header
+    ${SHELL} ./helpers/checkheader.sh $header
     if [ $? -eq 0 ]; then
 	echo "#ifndef HAVE_${name}" >>$AP_CONFIG_AUTO_H
 	echo "#define HAVE_${name} 1" >>$AP_CONFIG_AUTO_H
@@ -1038,7 +1041,7 @@ done
 # to decide whether the Processor Binding can be used or not
 case "$PLAT" in
     *-ibm-aix*)
-	CPP=$CPP ./helpers/checkheader.sh sys/processor.h
+	CPP=$CPP ${SHELL} helpers/checkheader.sh sys/processor.h
 	if [ $? -eq 0 ]; then
 	    CFLAGS="$CFLAGS -DAIX_BIND_PROCESSOR"
 	fi
@@ -1143,7 +1146,7 @@ if [ "x$using_shlib" = "x1" ] ; then
 		*)
 		   LD_SHLIB="gcc"
 		   LDFLAGS_SHLIB="-shared \$(CFLAGS_SHLIB)"
-		   if [ "x`echo __ELF__ | $CC -E - | grep __ELF__`" = "x" ]; then
+		   if [ -z "`echo __ELF__ | ${CC} -E - | grep __ELF__`" ]; then
 		     LDFLAGS_SHLIB_EXPORT="-Wl,-E"
 		   fi
 		;;
@@ -1605,7 +1608,7 @@ if [ "x$RANLIB" = "x" ]; then
     if [ "x$TRANLIB" != "x" ]; then
 	RANLIB=$TRANLIB
     else
-	if ./helpers/PrintPath -s ranlib; then
+	if ${SHELL} helpers/PrintPath -s ranlib; then
 	    RANLIB="ranlib"
 	else
 	    RANLIB="true"
@@ -1621,7 +1624,7 @@ fi
 case "$PLAT" in
     *-linux*)
 	# newer systems using glibc 2.x need -lcrypt
-	if ./helpers/TestCompile lib crypt; then
+	if ${SHELL} helpers/TestCompile lib crypt; then
 	    LIBS="$LIBS -lcrypt"
 	fi
 	;;
@@ -1629,11 +1632,11 @@ case "$PLAT" in
     *-dg-dgux*)
 	# R4.11MU02 requires -lsocket -lnsl ... no idea if it's earlier or
 	# later than what we already knew about.  PR#732
-	if ./helpers/TestCompile lib nsl; then
+	if ${SHELL} helpers/TestCompile lib nsl; then
 	    LIBS="$LIBS -lnsl"
 	    TLIB='-lnsl'
 	fi
-	if TLIB=$TLIB ./helpers/TestCompile lib socket; then
+	if TLIB=$TLIB ${SHELL} helpers/TestCompile lib socket; then
 	    LIBS="-lsocket $LIBS"
 	fi
 	;;
@@ -1651,34 +1654,34 @@ case "$PLAT" in
 	# -lnsl may be available (or may be not).
 	# In standard SVR4 systems, -lsocket relies on some symbols
 	# from -lnsl, so the test for -lnsl must appear first.
-	if ./helpers/TestCompile lib nsl; then
+	if ${SHELL} helpers/TestCompile lib nsl; then
 	    LIBS="$LIBS -lnsl"
 	    TLIB='-lnsl'
 	fi
-	if TLIB=$TLIB ./helpers/TestCompile lib socket; then
+	if TLIB=$TLIB ${SHELL} helpers/TestCompile lib socket; then
 	    LIBS="-lsocket $LIBS"
 	fi
 	# Auto-detect presence of libdl for dynamic loading
-	if ./helpers/TestCompile lib dl; then
-	    if ./helpers/TestCompile func dlopen; then
+	if ${SHELL} ./helpers/TestCompile lib dl; then
+	    if ${SHELL} ./helpers/TestCompile func dlopen; then
 		LIBS="$LIBS -ldl"
 		TLIB='-ldl'
-	    fi
+    	   fi
 	fi
 	# Test for the presence of the "union semun":
 	if TCADDINCL='#include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/sem.h>' ./helpers/TestCompile sizeof "union semun"; then
+#include <sys/sem.h>' ${SHELL} helpers/TestCompile sizeof "union semun"; then
             : Okay, union semun is defined
 	else
 	    CFLAGS="$CFLAGS -DNEED_UNION_SEMUN"
 	fi
 	# Test for the presence of the _rini_struct typedef:
-	if TCADDINCL='#include <pwd.h>' ./helpers/TestCompile sizeof _rini_struct; then
+	if TCADDINCL='#include <pwd.h>' ${SHELL} ./helpers/TestCompile sizeof _rini_struct; then
 	    CFLAGS="$CFLAGS -DHAVE_RINI_STRUCT"
 	fi
 	# Test whether initgroups() must be emulated:
-	if ./helpers/TestCompile func initgroups; then
+	if ${SHELL} helpers/TestCompile func initgroups; then
 	    :
 	else
 	    CFLAGS="$CFLAGS -DNEED_INITGROUPS"
@@ -1723,6 +1726,62 @@ if [ "x$RULE_SOCKS5" = "xyes" ]; then
 	    ;;
     esac
 fi
+
+# INET6 support.
+if [ "$RULE_INET6" = "yes" ]; then
+    echo " + enabling INET6 support"
+    CFLAGS="$CFLAGS -DINET6"
+    CFLAGS="$CFLAGS -Dss_family=__ss_family -Dss_len=__ss_len"
+    IPV6_STACKTYPE=KAME
+fi
+
+echo '#include <sys/types.h>' >testfunc.c
+echo '#include <sys/socket.h>' >>testfunc.c
+echo 'int testfunc(){ struct sockaddr sa; int i = sa.sa_len; };' >>testfunc.c
+rm -f testfunc.o
+eval "${MAKE-make} -f Makefile.config testfunc.o >/dev/null 2>/dev/null"
+if [ -f testfunc.o ]; then
+    echo " + you have sa_len in struct sockaddr."
+    CFLAGS="$CFLAGS -DHAVE_SOCKADDR_LEN"
+else
+    echo " + you don't have sa_len in struct sockaddr."
+fi
+rm -f testfunc.c testfunc.o
+
+echo '#include <sys/types.h>' >testfunc.c
+echo '#include <sys/socket.h>' >>testfunc.c
+echo 'struct sockaddr_storage sockaddr_storage;' >>testfunc.c
+rm -f testfunc.o
+eval "${MAKE-make} -f Makefile.config testfunc.o >/dev/null 2>/dev/null"
+if [ -f testfunc.o ]; then
+    echo " + assuming you have struct sockaddr_storage"
+else
+    CFLAGS="$CFLAGS -DNEED_SOCKADDR_STORAGE"
+    echo " + you need struct sockaddr_storage"
+fi
+rm -f testfunc.c testfunc.o
+
+echo '#include <sys/types.h>' >testfunc.c
+echo '#include <sys/socket.h>' >>testfunc.c
+echo 'int testfunc(){ socklen_t t; }' >>testfunc.c
+rm -f testfunc.o
+eval "${MAKE-make} -f Makefile.config testfunc.o >/dev/null 2>/dev/null"
+if [ ! -f testfunc.o ]; then
+    CFLAGS="$CFLAGS -Dsocklen_t=int"
+fi
+rm -f testfunc.c testfunc.o
+
+echo '#include <sys/types.h>' >testfunc.c
+echo '#include <sys/socket.h>' >>testfunc.c
+echo 'struct sockaddr_in sin;' >>testfunc.c
+echo 'int main(){ int i = sin.sin_len; }' >>testfunc.c
+rm -f testfunc.o
+eval "${MAKE-make} -f Makefile.config testfunc.o >/dev/null 2>/dev/null"
+if [ -f testfunc.o ]; then
+    CFLAGS="$CFLAGS -DSIN_LEN"
+fi
+rm -f testfunc.c testfunc.o
+
 
 ####################################################################
 ## Find out what modules we want and try and configure things for them
@@ -1895,7 +1954,7 @@ fi
 ## Extended API (EAPI) support:
 ##
 if [ "x$RULE_EAPI" = "x" ]; then
-    RULE_EAPI=`./helpers/CutRule EAPI $file`
+    RULE_EAPI=`${SHELL} helpers/CutRule EAPI $file`
 fi
 if [ "x$RULE_EAPI" = "xyes" ]; then
     echo " + enabling Extended API (EAPI)"
@@ -1972,7 +2031,7 @@ if [ "x$RULE_EXPAT" = "xdefault" ]; then
 fi
 
 if [ "x$RULE_EXPAT" = "xyes" ]; then
-    if ./helpers/TestCompile lib expat; then
+    if ${SHELL} ./helpers/TestCompile lib expat; then
         echo " + using system Expat"
         LIBS="$LIBS -lexpat"
     else
@@ -2000,7 +2059,7 @@ if [ "x$using_shlib" = "x1" ] ; then
 	#   to our DSO files, i.e. PIC libraries and shared libraries
 	extra_ldflags="`grep EXTRA_LDFLAGS= Makefile.config`"
 	extra_libs="`grep EXTRA_LIBS= Makefile.config`"
-	eval "`./helpers/slo.sh $LDFLAGS $LIBS $extra_ldflags $extra_libs`"
+	eval "`${SHELL} helpers/slo.sh $LDFLAGS $LIBS $extra_ldflags $extra_libs`"
 	LIBS_SHLIB="$SLO_DIRS_PIC $SLO_LIBS_PIC $SLO_DIRS_DSO $SLO_LIBS_DSO"
     fi
 fi
@@ -2043,14 +2102,6 @@ if [ "x$using_shlib" = "x1" ] ; then
 	    SHLIB_SUFFIX_LIST="$V $V.$R $V.$R.$P"
 	fi
     fi
-fi
-
-####################################################################
-## Don't force DL emulation, if not necessary. Currently only used
-## by os/unix/os.c. 
-##
-if [ "x$using_shlib" != "x1" ] ; then
-    CFLAGS="$CFLAGS -DNO_DL_NEEDED"
 fi
 
 ####################################################################
@@ -2276,19 +2327,19 @@ if [ "x$using_shlib" = "x1" ] ; then
 	    esac
 	    ;;
 	*-hp-hpux*)
-	    if ./helpers/TestCompile func shl_load; then
+	    if ${SHELL} helpers/TestCompile func shl_load; then
 		:
 	    else
-		if ./helpers/TestCompile lib dld; then
+		if ${SHELL} helpers/TestCompile lib dld; then
 		    DL_LIB="-ldld"
 		fi
 	    fi
 	    ;;
 	* )
-	    if ./helpers/TestCompile func dlopen; then
+	    if ${SHELL} helpers/TestCompile func dlopen; then
 		:
 	    else
-		if ./helpers/TestCompile lib dl; then
+		if ${SHELL} helpers/TestCompile lib dl; then
 		    DL_LIB="-ldl"
 		fi
 	    fi
@@ -2303,35 +2354,15 @@ fi
 ####################################################################
 ## More building ap_config_auto.h
 ##
-## We check the sizeof various data types
-##
-echo " + checking sizeof various data types"
-AP_TYPE_QUAD=`./helpers/TestCompile -r sizeof 'long long'`
-if [ "x$AP_TYPE_QUAD" = "x" ]; then
-    AP_TYPE_QUAD="unknown_quad"
-    AP_LONGEST_LONG="long"
-else
-    AP_LONGEST_LONG="long long"
-fi
-
-echo "" >>$AP_CONFIG_AUTO_H
-echo "/* determine: longest possible integer type */" >>$AP_CONFIG_AUTO_H
-echo "#ifndef AP_LONGEST_LONG" >>$AP_CONFIG_AUTO_H
-echo "#define AP_LONGEST_LONG $AP_LONGEST_LONG" >>$AP_CONFIG_AUTO_H
-echo "#endif" >>$AP_CONFIG_AUTO_H
-
-####################################################################
-## More building ap_config_auto.h
-##
 ## Check for availability of isinf() and isnan()
 ##
-if ./helpers/TestCompile func isinf ; then
+if ${SHELL} ./helpers/TestCompile func isinf ; then
     echo "" >>$AP_CONFIG_AUTO_H
     echo "/* determine: isinf() found in libc */ " >>$AP_CONFIG_AUTO_H
     echo "#ifndef HAVE_ISINF" >>$AP_CONFIG_AUTO_H
     echo "#define HAVE_ISINF 1" >>$AP_CONFIG_AUTO_H
     echo "#endif" >>$AP_CONFIG_AUTO_H
-elif ./helpers/TestCompile lib m isinf ; then
+elif ${SHELL} ./helpers/TestCompile lib m isinf ; then
     echo "" >>$AP_CONFIG_AUTO_H
     echo "/* determine: isinf() found in libm */ " >>$AP_CONFIG_AUTO_H
     echo "#ifndef HAVE_ISINF" >>$AP_CONFIG_AUTO_H
@@ -2341,13 +2372,13 @@ elif ./helpers/TestCompile lib m isinf ; then
     ADDED_LM="yes"
 fi
 
-if ./helpers/TestCompile func isnan ; then
+if ${SHELL} ./helpers/TestCompile func isnan ; then
     echo "" >>$AP_CONFIG_AUTO_H
     echo "/* determine: isnan() found in libc */ " >>$AP_CONFIG_AUTO_H
     echo "#ifndef HAVE_ISNAN" >>$AP_CONFIG_AUTO_H
     echo "#define HAVE_ISNAN 1" >>$AP_CONFIG_AUTO_H
     echo "#endif" >>$AP_CONFIG_AUTO_H
-elif ./helpers/TestCompile lib m isnan ; then
+elif ${SHELL} ./helpers/TestCompile lib m isnan ; then
     echo "" >>$AP_CONFIG_AUTO_H
     echo "/* determine: isnan() found in libm */ " >>$AP_CONFIG_AUTO_H
     echo "#ifndef HAVE_ISNAN" >>$AP_CONFIG_AUTO_H
@@ -2358,69 +2389,14 @@ elif ./helpers/TestCompile lib m isnan ; then
     fi
 fi
 
-## We check for the endianess of the machine
-##
-AP_BYTE_ORDER=`./helpers/TestCompile -r byteorder`
-if [ "x$AP_BYTE_ORDER" = "x21" ]; then
-    AP_BYTE_ORDER="21" # big endian
-else
-    AP_BYTE_ORDER="12" # little endian
-fi
-
-echo "" >>$AP_CONFIG_AUTO_H
-echo "/* determine: byte order of machine (12: little endian, 21: big endian) */" >>$AP_CONFIG_AUTO_H
-echo "#ifndef AP_BYTE_ORDER" >>$AP_CONFIG_AUTO_H
-echo "#define AP_BYTE_ORDER $AP_BYTE_ORDER" >>$AP_CONFIG_AUTO_H
-echo "#endif" >>$AP_CONFIG_AUTO_H
-
 ##
 ## Now compare the sizes of off_t to long
 ##
-AP_TYPE_OFF_T=`./helpers/TestCompile -r sizeof off_t`
-if [ "x$AP_TYPE_OFF_T" = "x" ]; then
-    AP_TYPE_OFF_T="unknown_off_t"
-fi
-
-AP_TYPE_LONG=`./helpers/TestCompile -r sizeof long`
-if [ "x$AP_TYPE_LONG" = "x" ]; then
-    AP_TYPE_LONG="unknown_long"
-fi
-
-if [ "x$AP_TYPE_OFF_T" != "x$AP_TYPE_LONG" ]; then
-    echo "" >>$AP_CONFIG_AUTO_H
-    echo "/* determine: is off_t a quad */" >>$AP_CONFIG_AUTO_H
-    echo "#ifndef AP_OFF_T_IS_QUAD" >>$AP_CONFIG_AUTO_H
-    echo "#define AP_OFF_T_IS_QUAD 1" >>$AP_CONFIG_AUTO_H
-    echo "#endif" >>$AP_CONFIG_AUTO_H
-else
-    echo "" >>$AP_CONFIG_AUTO_H
-    echo "/* determine: is off_t a quad */" >>$AP_CONFIG_AUTO_H
-    echo "#ifdef AP_OFF_T_IS_QUAD" >>$AP_CONFIG_AUTO_H
-    echo "#undef AP_OFF_T_IS_QUAD" >>$AP_CONFIG_AUTO_H
-    echo "#endif" >>$AP_CONFIG_AUTO_H
-fi
-
-##
-## Now see of void * is as big as a quad (long long)
-##
-AP_TYPE_VOID_P=`./helpers/TestCompile -r sizeof 'void *'`
-if [ "x$AP_TYPE_VOID_P" = "x" ]; then
-    AP_TYPE_VOID_P="unknown_void_p"
-fi
-
-if [ "x$AP_TYPE_VOID_P" = "x$AP_TYPE_QUAD" ]; then
-    echo "" >>$AP_CONFIG_AUTO_H
-    echo "/* determine: is void * a quad */" >>$AP_CONFIG_AUTO_H
-    echo "#ifndef AP_VOID_P_IS_QUAD" >>$AP_CONFIG_AUTO_H
-    echo "#define AP_VOID_P_IS_QUAD 1" >>$AP_CONFIG_AUTO_H
-    echo "#endif" >>$AP_CONFIG_AUTO_H
-else
-    echo "" >>$AP_CONFIG_AUTO_H
-    echo "/* determine: is void * a quad */" >>$AP_CONFIG_AUTO_H
-    echo "#ifdef AP_VOID_P_IS_QUAD" >>$AP_CONFIG_AUTO_H
-    echo "#undef AP_VOID_P_IS_QUAD" >>$AP_CONFIG_AUTO_H
-    echo "#endif" >>$AP_CONFIG_AUTO_H
-fi
+echo "" >>$AP_CONFIG_AUTO_H
+echo "/* sizeof(off_t) == sizeof(quad_t) on OpenBSD */" >>$AP_CONFIG_AUTO_H
+echo "#ifndef AP_OFF_T_IS_QUAD" >>$AP_CONFIG_AUTO_H
+echo "#define AP_OFF_T_IS_QUAD 1" >>$AP_CONFIG_AUTO_H
+echo "#endif" >>$AP_CONFIG_AUTO_H
 
 ####################################################################
 ## Finish building ap_config_auto.h
@@ -2477,7 +2453,7 @@ if [ "x$OS" = "xTPF" ] ; then
     :
 else
    echo " + doing sanity check on compiler and options"
-   if ./helpers/TestCompile $vflag sanity; then
+   if ${SHELL} ./helpers/TestCompile $vflag sanity; then
       :
    else
       if [ "x$vflag" = "x-v" ] ; then
@@ -2491,7 +2467,7 @@ else
       echo "** Apache requires an ANSI C Compiler, such as gcc. "
       echo ""
       echo "======== Error Output for sanity check ========"
-      (./helpers/TestCompile -v sanity) 2>&1
+      (${SHELL} ./helpers/TestCompile -v sanity) 2>&1
       echo "============= End of Error Report ============="
       echo ""
       echo " Aborting!"
@@ -2512,15 +2488,15 @@ sed -e "s#@@Configuration@@#$file#" "Makefile.tmpl" >>Makefile
 MAKEDIRS="support $SUBDIRS"
 for dir in $MAKEDIRS ; do
 	echo Creating Makefile in $dir
-	./helpers/mfhead $dir $file > $dir/Makefile
+	${SHELL} helpers/mfhead $dir $file > $dir/Makefile
 	$CAT Makefile.config $dir/Makefile.tmpl |\
-	sed -e "s:^SRCDIR=.*:SRCDIR=`./helpers/fp2rp $dir`:" >> $dir/Makefile
+	sed -e "s:^SRCDIR=.*:SRCDIR=`${SHELL} helpers/fp2rp $dir`:" >> $dir/Makefile
 done
 
 ####################################################################
 ## Now create the lib/Makefile
 ##
-./helpers/mfhead modules $file > lib/Makefile
+${SHELL} helpers/mfhead modules $file > lib/Makefile
 $CAT Makefile.config | sed -e 's:^SRCDIR=.*:SRCDIR=..:' >> lib/Makefile
 
 $CAT << EOF >> lib/Makefile
@@ -2546,15 +2522,15 @@ EOF
 
 for dir in $APLIBDIRS ; do
 	echo Creating Makefile in lib/$dir
-	./helpers/mfhead lib/$dir $file > lib/$dir/Makefile
+	${SHELL} helpers/mfhead lib/$dir $file > lib/$dir/Makefile
 	$CAT Makefile.config lib/$dir/Makefile.tmpl |\
-	sed -e "s:^SRCDIR=.*:SRCDIR=`./helpers/fp2rp lib/$dir`:" >> lib/$dir/Makefile
+	sed -e "s:^SRCDIR=.*:SRCDIR=`${SHELL} helpers/fp2rp lib/$dir`:" >> lib/$dir/Makefile
 done
 
 ####################################################################
 ## Now create the modules/Makefile
 ##
-./helpers/mfhead modules $file > modules/Makefile
+${SHELL} helpers/mfhead modules $file > modules/Makefile
 $CAT Makefile.config | sed -e 's:^SRCDIR=.*:SRCDIR=..:' >> modules/Makefile
 
 $CAT << EOF >> modules/Makefile
@@ -2583,9 +2559,9 @@ EOF
 for moddir in $AUTODIRS ; do
 	echo "Creating Makefile in $moddir"
 
-    ./helpers/mfhead $moddir $file > $moddir/Makefile
+    ${SHELL} helpers/mfhead $moddir $file > $moddir/Makefile
 	$CAT Makefile.config |\
-	sed -e "s:^SRCDIR=.*:SRCDIR=`./helpers/fp2rp $moddir`:" >> $moddir/Makefile
+	sed -e "s:^SRCDIR=.*:SRCDIR=`${SHELL} helpers/fp2rp $moddir`:" >> $moddir/Makefile
 	$CAT << 'EOF' >> $moddir/Makefile
 ##
 ##  Default Makefile options from Configure script

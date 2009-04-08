@@ -1,5 +1,4 @@
-/*	$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $	*/
-
+/*	$OpenBSD: getgrouplist.c,v 1.14 2008/08/22 00:59:34 deraadt Exp $ */
 /*
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,48 +28,55 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getgrouplist.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * get credential
  */
 #include <sys/types.h>
+#include <sys/limits.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <grp.h>
+#include <pwd.h>
+
+#include <rpc/rpc.h>
+#include <rpcsvc/yp.h>
+#include <rpcsvc/ypclnt.h>
 
 int
-getgrouplist(uname, agroup, groups, grpcnt)
-	const char *uname;
-	int agroup;
-	register int *groups;
-	int *grpcnt;
+getgrouplist(const char *uname, gid_t agroup, gid_t *groups, int *grpcnt)
 {
-	register struct group *grp;
-	register struct passwd *pw;
-	register int i, ngroups;
-	int ret, maxgroups;
-
-	ret = 0;
-	ngroups = 0;
-	maxgroups = *grpcnt;
+	int i, ngroups = 0, ret = 0, maxgroups = *grpcnt, bail;
+	int needyp = 0, foundyp = 0;
+	extern struct group *_getgrent_yp(int *);
+	struct group *grp;
 
 	/*
 	 * install primary group
 	 */
+	if (ngroups >= maxgroups) {
+		*grpcnt = ngroups;
+		return (-1);
+	}
 	groups[ngroups++] = agroup;
 
 	/*
 	 * Scan the group file to find additional groups.
 	 */
 	setgrent();
-	while (grp = getgrent()) {
+	while ((grp = _getgrent_yp(&foundyp)) || foundyp) {
+		if (foundyp) {
+			needyp = 1;
+			foundyp = 0;
+			continue;
+		}
 		if (grp->gr_gid == agroup)
+			continue;
+		for (bail = 0, i = 0; bail == 0 && i < ngroups; i++)
+			if (groups[i] == grp->gr_gid)
+				bail = 1;
+		if (bail)
 			continue;
 		for (i = 0; grp->gr_mem[i]; i++) {
 			if (!strcmp(grp->gr_mem[i], uname)) {
@@ -87,6 +89,76 @@ getgrouplist(uname, agroup, groups, grpcnt)
 			}
 		}
 	}
+
+#ifdef YP
+	/*
+	 * If we were told that there is a YP marker, look there now.
+	 */
+	if (needyp) {
+		char buf[1024], *ypdata = NULL, *key, *p;
+		const char *errstr = NULL;
+		static char *__ypdomain;
+		struct passwd pwstore;
+		int r, ypdatalen;
+		gid_t gid;
+		uid_t uid;
+	
+		if (!__ypdomain) {
+			if (_yp_check(&__ypdomain) == 0) {
+				goto ypout;
+			}
+		}
+
+		if (getpwnam_r(uname, &pwstore, buf, sizeof buf, NULL))
+			goto ypout;
+
+		asprintf(&key, "unix.%u@%s", pwstore.pw_uid, __ypdomain);
+		if (key == NULL)
+			goto ypout;
+		r = yp_match(__ypdomain, "netid.byname", key,
+		    (int)strlen(key), &ypdata, &ypdatalen);
+		free(key);
+		if (r != 0)
+			goto ypout;
+
+		/* Parse the "uid:gid[,gid,gid[,...]]" string. */
+		p = strchr(ypdata, ':');
+		if (!p)
+			goto ypout;
+		*p++ = '\0';
+		uid = (uid_t)strtonum(ypdata, 0, UID_MAX, &errstr);
+		if (errstr || uid != pwstore.pw_uid)
+			goto ypout;
+		while (p && *p) {
+			char *start = p;
+
+			p = strchr(start, ',');
+			if (p)
+				*p++ = '\0';
+			gid = (uid_t)strtonum(start, 0, GID_MAX, &errstr);
+			if (errstr)
+				goto ypout;
+
+			/* Add new groups to the group list */
+			for (i = 0; i < ngroups; i++) {
+				if (groups[i] == gid)
+					break;
+			}
+			if (i == ngroups) {
+				if (ngroups >= maxgroups) {
+					ret = -1;
+					goto ypout;
+				}
+				groups[ngroups++] = gid;
+			}
+		}
+ypout:
+		if (ypdata)
+			free(ypdata);
+		goto out;
+	}
+#endif /* YP */
+
 out:
 	endgrent();
 	*grpcnt = ngroups;

@@ -1,4 +1,4 @@
-/*      $NetBSD: n_exp.c,v 1.1 1995/10/10 23:36:44 ragge Exp $ */
+/*	$OpenBSD: n_exp.c,v 1.7 2008/06/12 22:20:56 martynas Exp $	*/
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,21 +35,21 @@ static char sccsid[] = "@(#)exp.c	8.1 (Berkeley) 6/4/93";
 /* EXP(X)
  * RETURN THE EXPONENTIAL OF X
  * DOUBLE PRECISION (IEEE 53 bits, VAX D FORMAT 56 BITS)
- * CODED IN C BY K.C. NG, 1/19/85; 
+ * CODED IN C BY K.C. NG, 1/19/85;
  * REVISED BY K.C. NG on 2/6/85, 2/15/85, 3/7/85, 3/24/85, 4/16/85, 6/14/86.
  *
  * Required system supported functions:
- *	scalb(x,n)	
- *	copysign(x,y)	
+ *	scalbn(x,n)
+ *	copysign(x,y)
  *	finite(x)
  *
  * Method:
- *	1. Argument Reduction: given the input x, find r and integer k such 
+ *	1. Argument Reduction: given the input x, find r and integer k such
  *	   that
- *	                   x = k*ln2 + r,  |r| <= 0.5*ln2 .  
+ *	                   x = k*ln2 + r,  |r| <= 0.5*ln2 .
  *	   r will be represented as r := z+c for better accuracy.
  *
- *	2. Compute exp(r) by 
+ *	2. Compute exp(r) by
  *
  *		exp(r) = 1 + r + r*R1/(2-R1),
  *	   where
@@ -78,6 +74,7 @@ static char sccsid[] = "@(#)exp.c	8.1 (Berkeley) 6/4/93";
  * shown.
  */
 
+#include "math.h"
 #include "mathimpl.h"
 
 vc(ln2hi,  6.9314718055829871446E-1  ,7217,4031,0000,f7d0,   0, .B17217F7D00000)
@@ -115,15 +112,15 @@ ic(lnhuge, 7.1602103751842355450E2,    9,  1.6602B15B7ECF2)
 ic(lntiny,-7.5137154372698068983E2,    9, -1.77AF8EBEAE354)
 ic(invln2, 1.4426950408889633870E0,    0,  1.71547652B82FE)
 
-double exp(x)
-double x;
+double
+exp(double x)
 {
-	double  z,hi,lo,c;
+	double z, hi, lo, c;
 	int k;
 
-#if !defined(vax)&&!defined(tahoe)
-	if(x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+	if (isnan(x))
+		return (x);
+
 	if( x <= lnhuge ) {
 		if( x >= lntiny ) {
 
@@ -139,36 +136,36 @@ double x;
 		    /* return 2^k*[1+x+x*c/(2+c)]  */
 			z=x*x;
 			c= x - z*(p1+z*(p2+z*(p3+z*(p4+z*p5))));
-			return  scalb(1.0+(hi-(lo-(x*c)/(2.0-c))),k);
+			return  scalbn(1.0+(hi-(lo-(x*c)/(2.0-c))),k);
 
 		}
 		/* end of x > lntiny */
 
-		else 
+		else
 		     /* exp(-big#) underflows to zero */
-		     if(finite(x))  return(scalb(1.0,-5000));
+		     if(finite(x))  return(scalbn(1.0,-5000));
 
 		     /* exp(-INF) is zero */
 		     else return(0.0);
 	}
 	/* end of x < lnhuge */
 
-	else 
+	else
 	/* exp(INF) is INF, exp(+big#) overflows to INF */
-	    return( finite(x) ?  scalb(1.0,5000)  : x);
+	    return( finite(x) ?  scalbn(1.0,5000)  : x);
 }
 
 /* returns exp(r = x + c) for |c| < |x| with no overlap.  */
 
-double __exp__D(x, c)
-double x, c;
+double
+__exp__D(double x, double c)
 {
-	double  z,hi,lo, t;
+	double z, hi, lo;
 	int k;
 
-#if !defined(vax)&&!defined(tahoe)
-	if (x!=x) return(x);	/* x is NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
+	if (isnan(x))
+		return (x);
+
 	if ( x <= lnhuge ) {
 		if ( x >= lntiny ) {
 
@@ -185,20 +182,20 @@ double x, c;
 			c= x - z*(p1+z*(p2+z*(p3+z*(p4+z*p5))));
 			c = (x*c)/(2.0-c);
 
-			return  scalb(1.+(hi-(lo - c)), k);
+			return  scalbn(1.+(hi-(lo - c)), k);
 		}
 		/* end of x > lntiny */
 
-		else 
+		else
 		     /* exp(-big#) underflows to zero */
-		     if(finite(x))  return(scalb(1.0,-5000));
+		     if(finite(x))  return(scalbn(1.0,-5000));
 
 		     /* exp(-INF) is zero */
 		     else return(0.0);
 	}
 	/* end of x < lnhuge */
 
-	else 
+	else
 	/* exp(INF) is INF, exp(+big#) overflows to INF */
-	    return( finite(x) ?  scalb(1.0,5000)  : x);
+	    return( finite(x) ?  scalbn(1.0,5000)  : x);
 }

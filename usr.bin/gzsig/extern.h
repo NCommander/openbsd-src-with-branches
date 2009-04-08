@@ -28,7 +28,7 @@
  *   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  *   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: extern.h,v 1.2 2005/04/01 16:47:31 dugsong Exp $
+ * $Vendor: extern.h,v 1.2 2005/04/01 16:47:31 dugsong Exp $
  */
 
 #ifndef EXTERN_H
@@ -41,5 +41,7 @@ int     sign_passwd_cb(char *buf, int size, int rwflag, void *u);
 
 void	sign_usage(void);
 void	verify_usage(void);
+
+extern char *__progname;		/* from crt0.o */
 
 #endif /* EXTERN_H */

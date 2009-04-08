@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* ho-sysv.h  System V specific header file.
    Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
    

@@ -218,7 +218,7 @@ static int   ssl_ext_mp_handler(request_rec *, void *, char *, char *, int, char
 static int   ssl_ext_mp_set_destport(request_rec *);
 static char *ssl_ext_mp_new_connection(request_rec *, BUFF *, char *);
 static void  ssl_ext_mp_close_connection(void *);
-static int   ssl_ext_mp_write_host_header(request_rec *, BUFF *, char *, int, char *);
+static int   ssl_ext_mp_write_host_header(request_rec *, BUFF *, char *, char *, char *);
 #ifdef SSL_EXPERIMENTAL_PROXY
 static void  ssl_ext_mp_init(server_rec *, pool *);
 static int   ssl_ext_mp_verify_cb(int, X509_STORE_CTX *);
@@ -441,7 +441,8 @@ static int ssl_ext_mp_set_destport(request_rec *r)
         return DEFAULT_HTTP_PORT;
 }
 
-static char *ssl_ext_mp_new_connection(request_rec *r, BUFF *fb, char *peer)
+static char *ssl_ext_mp_new_connection(request_rec *r, BUFF *fb,
+    char *peer)
 {
 #ifndef SSL_EXPERIMENTAL_PROXY
     SSL_CTX *ssl_ctx;
@@ -524,7 +525,7 @@ static char *ssl_ext_mp_new_connection(request_rec *r, BUFF *fb, char *peer)
 #endif
         errmsg = ap_psprintf(r->pool, "SSL proxy connect failed (%s): peer %s: %s",
                              cpVHostID, peer, ERR_reason_error_string(ERR_get_error()));
-        ssl_log(r->server, SSL_LOG_ERROR, errmsg);
+        ssl_log(r->server, SSL_LOG_ERROR, "%s", errmsg);
         SSL_free(ssl);
         ap_ctx_set(fb->ctx, "ssl", NULL);
         return errmsg;
@@ -559,12 +560,15 @@ static void ssl_ext_mp_close_connection(void *_fb)
 }
 
 static int ssl_ext_mp_write_host_header(
-    request_rec *r, BUFF *fb, char *host, int port, char *portstr)
+    request_rec *r, BUFF *fb, char *host, char *port, char *portstr)
 {
+    char defport[16];
+
     if (ap_ctx_get(r->ctx, "ssl::proxy::enabled") == PFALSE)
         return DECLINED;
 
-    if (portstr != NULL && port != DEFAULT_HTTPS_PORT) {
+    ap_snprintf(defport, sizeof(defport), "%d", DEFAULT_HTTPS_PORT);
+    if (portstr != NULL && strcmp(portstr, defport)) {
         ap_bvputs(fb, "Host: ", host, ":", portstr, "\r\n", NULL);
         return OK;
     }

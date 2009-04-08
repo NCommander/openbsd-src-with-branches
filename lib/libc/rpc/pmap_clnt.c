@@ -1,5 +1,4 @@
-/*	$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)pmap_clnt.c 1.37 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)pmap_clnt.c	2.2 88/08/01 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $";
-#endif
-
 /*
  * pmap_clnt.c
  * Client interface to pmap rpc service.
@@ -42,6 +35,8 @@ static char *rcsid = "$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $";
  * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
+#include <unistd.h>
+#include <errno.h>
 #include <rpc/rpc.h>
 #include <rpc/pmap_prot.h>
 #include <rpc/pmap_clnt.h>
@@ -49,30 +44,26 @@ static char *rcsid = "$NetBSD: pmap_clnt.c,v 1.2 1995/02/25 03:01:47 cgd Exp $";
 static struct timeval timeout = { 5, 0 };
 static struct timeval tottimeout = { 60, 0 };
 
-void clnt_perror();
-
-
 /*
  * Set a mapping between program,version and port.
  * Calls the pmap service remotely to do the mapping.
  */
 bool_t
-pmap_set(program, version, protocol, port)
-	u_long program;
-	u_long version;
-	int protocol;
-	u_short port;
+pmap_set(u_long program, u_long version, u_int protocol, int iport)
 {
 	struct sockaddr_in myaddress;
-	int socket = -1;
-	register CLIENT *client;
+	int sock = -1;
+	CLIENT *client;
 	struct pmap parms;
 	bool_t rslt;
+	u_short port = iport;
 
-	get_myaddress(&myaddress);
+	if (get_myaddress(&myaddress) != 0)
+		return (FALSE);
+	myaddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	client = clntudp_bufcreate(&myaddress, PMAPPROG, PMAPVERS,
-	    timeout, &socket, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
-	if (client == (CLIENT *)NULL)
+	    timeout, &sock, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
+	if (client == NULL)
 		return (FALSE);
 	parms.pm_prog = program;
 	parms.pm_vers = version;
@@ -80,11 +71,15 @@ pmap_set(program, version, protocol, port)
 	parms.pm_port = port;
 	if (CLNT_CALL(client, PMAPPROC_SET, xdr_pmap, &parms, xdr_bool, &rslt,
 	    tottimeout) != RPC_SUCCESS) {
+		int save_errno = errno;
+
 		clnt_perror(client, "Cannot register service");
+		errno = save_errno;
 		return (FALSE);
 	}
 	CLNT_DESTROY(client);
-	(void)close(socket);
+	if (sock != -1)
+		(void)close(sock);
 	return (rslt);
 }
 
@@ -93,20 +88,20 @@ pmap_set(program, version, protocol, port)
  * Calls the pmap service remotely to do the un-mapping.
  */
 bool_t
-pmap_unset(program, version)
-	u_long program;
-	u_long version;
+pmap_unset(u_long program, u_long version)
 {
 	struct sockaddr_in myaddress;
-	int socket = -1;
-	register CLIENT *client;
+	int sock = -1;
+	CLIENT *client;
 	struct pmap parms;
 	bool_t rslt;
 
-	get_myaddress(&myaddress);
+	if (get_myaddress(&myaddress) != 0)
+		return (FALSE);
+	myaddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	client = clntudp_bufcreate(&myaddress, PMAPPROG, PMAPVERS,
-	    timeout, &socket, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
-	if (client == (CLIENT *)NULL)
+	    timeout, &sock, RPCSMALLMSGSIZE, RPCSMALLMSGSIZE);
+	if (client == NULL)
 		return (FALSE);
 	parms.pm_prog = program;
 	parms.pm_vers = version;
@@ -114,6 +109,7 @@ pmap_unset(program, version)
 	CLNT_CALL(client, PMAPPROC_UNSET, xdr_pmap, &parms, xdr_bool, &rslt,
 	    tottimeout);
 	CLNT_DESTROY(client);
-	(void)close(socket);
+	if (sock != -1)
+		(void)close(sock);
 	return (rslt);
 }

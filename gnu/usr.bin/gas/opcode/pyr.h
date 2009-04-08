@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* pyramid.opcode.h -- gdb initial attempt. */
 
 /* pyramid opcode table: wot to do with this

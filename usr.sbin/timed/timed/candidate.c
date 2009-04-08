@@ -1,3 +1,5 @@
+/*	$OpenBSD: candidate.c,v 1.5 2002/06/18 00:40:30 ericj Exp $	*/
+
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,10 +32,6 @@
 #ifndef lint
 static char sccsid[] = "@(#)candidate.c	5.1 (Berkeley) 5/11/93";
 #endif /* not lint */
-
-#ifdef sgi
-#ident "$Revision: 1.4 $"
-#endif
 
 #include "globals.h"
 
@@ -80,7 +74,7 @@ again:
 		fprintf(fd, "This machine is a candidate time master\n");
 	msg.tsp_type = TSP_ELECTION;
 	msg.tsp_vers = TSPVERSION;
-	(void)strcpy(msg.tsp_name, hostname);
+	strlcpy(msg.tsp_name, hostname, sizeof msg.tsp_name);
 	bytenetorder(&msg);
 	if (sendto(sock, (char *)&msg, sizeof(struct tsp), 0,
 		   (struct sockaddr*)&net->dest_addr,
@@ -123,7 +117,7 @@ again:
 		case TSP_REFUSE:
 			/*
 			 * Collision: change value of election timer
-			 * using exponential backoff. 
+			 * using exponential backoff.
 			 *
 			 *  Fooey.
 			 * An exponential backoff on a delay starting at
@@ -139,7 +133,7 @@ again:
 			/* no master for another round */
 			htp = addmach(resp->tsp_name,&from,fromnet);
 			msg.tsp_type = TSP_REFUSE;
-			(void)strcpy(msg.tsp_name, hostname);
+			strlcpy(msg.tsp_name, hostname, sizeof msg.tsp_name);
 			answer = acksend(&msg, &htp->addr, htp->name,
 					 TSP_ACK, 0, htp->noanswer);
 			if (!answer) {

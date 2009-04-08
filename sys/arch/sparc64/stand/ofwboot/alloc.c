@@ -1,3 +1,4 @@
+/*	$OpenBSD: alloc.c,v 1.3 2002/03/14 03:16:01 millert Exp $	*/
 /*	$NetBSD: alloc.c,v 1.1 2000/08/20 14:58:37 mrg Exp $	*/
 
 /*
@@ -111,15 +112,14 @@ alloc(size)
 
 #ifdef ALLOC_FIRST_FIT
 	/* scan freelist */
-	for (f = freelist.lh_first; f != NULL && f->size < size;
-	    f = f->list.le_next)
-		/* noop */ ;
+	LIST_FOREACH(f, &freelist, list)
+		if (f->size >= size)
+			break;
 	bestf = f;
 	failed = (bestf == (struct fl *)0);
 #else
 	/* scan freelist */
-	f = freelist.lh_first;
-	while (f != NULL) {
+	LIST_FOREACH(f, &freelist, list) {
 		if (f->size >= size) {
 			if (f->size == size)	/* exact match */
 				goto found;
@@ -130,7 +130,6 @@ alloc(size)
 				bestsize = f->size;
 			}
 		}
-		f = f->list.le_next;
 	}
 
 	/* no match in freelist if bestsize unchanged */
@@ -177,7 +176,7 @@ free(ptr, size)
 	void *ptr;
 	unsigned size;	/* only for consistenct check */
 {
-	register struct ml *a = (struct ml *)((char*)ptr - OVERHEAD);
+	register struct ml *a = (struct ml *)((char *)ptr - OVERHEAD);
 
 #ifdef ALLOC_TRACE
 	printf("free(%lx, %u) (origsize %u)\n", (u_long)ptr, size, a->size);
@@ -200,13 +199,13 @@ freeall()
 	struct ml *m;
 
 	/* Release chunks on freelist... */
-	while ((m = freelist.lh_first) != NULL) {
+	while ((m = TAILQ_FIRST(&freelist)) != NULL)) {
 		LIST_REMOVE(m, list);
 		OF_release(m, m->size);
 	}
 
 	/* ...and allocated list. */
-	while ((m = allocatedlist.lh_first) != NULL) {
+	while ((m = TAILQ_FIRST(&allocatedlist)) != NULL)) {
 		LIST_REMOVE(m, list);
 		OF_release(m, m->size);
 	}

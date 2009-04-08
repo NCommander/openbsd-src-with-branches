@@ -8,29 +8,34 @@
 #define HTML_H
 
 #ifndef HTUTILS_H
-#include "HTUtils.h"
+#include <HTUtils.h>
 #endif /* HTUTILS_H */
-#include "UCDefs.h"
-#include "UCAux.h"
-#include "HTAnchor.h"
-#include "HTMLDTD.h"
 
-#ifdef SHORT_NAMES
-#define HTMLPresentation        HTMLPren
-#define HTMLPresent             HTMLPres
-#endif /* SHORT_NAMES */
+#include <UCDefs.h>
+#include <UCAux.h>
+#include <HTAnchor.h>
+#include <HTMLDTD.h>
 
 /* #define ATTR_CS_IN (me->T.output_utf8 ? me->UCLYhndl : 0) */
 #define ATTR_CS_IN me->tag_charset
 
 #define TRANSLATE_AND_UNESCAPE_ENTITIES(s, p, h) \
-	LYUCFullyTranslateString(s, ATTR_CS_IN, current_char_set, YES, p, h, st_HTML)
+	LYUCTranslateHTMLString(s, ATTR_CS_IN, current_char_set, YES, p, h, st_HTML)
 
 #define TRANSLATE_AND_UNESCAPE_ENTITIES5(s,cs_from,cs_to,p,h) \
-	LYUCFullyTranslateString(s, cs_from, cs_to, YES, p, h, st_HTML)
+	LYUCTranslateHTMLString(s, cs_from, cs_to, YES, p, h, st_HTML)
 
 #define TRANSLATE_AND_UNESCAPE_ENTITIES6(s,cs_from,cs_to,spcls,p,h) \
-	LYUCFullyTranslateString(s, cs_from, cs_to, spcls, p, h, st_HTML)
+	LYUCTranslateHTMLString(s, cs_from, cs_to, spcls, p, h, st_HTML)
+
+#define TRANSLATE_HTML(s,p,h) \
+	LYUCFullyTranslateString(s, me->UCLYhndl, current_char_set, NO, YES, p, h, NO, st_HTML)
+
+#define TRANSLATE_HTML5(s,cs_from,cs_to,p,h) \
+	LYUCFullyTranslateString(s, cs_from, cs_to, NO, YES, p, h, NO, st_HTML)
+
+#define TRANSLATE_HTML7(s,cs_from,cs_to,spcls,p,h,Back) \
+	LYUCFullyTranslateString(s, cs_from, cs_to, NO, spcls, p, h, Back, st_HTML)
 
 /*
  *  Strings from attributes which should be converted to some kind
@@ -38,9 +43,9 @@
  *  esp. URLs (incl. #fragments) and HTML NAME and ID stuff.
  */
 #define TRANSLATE_AND_UNESCAPE_TO_STD(s) \
-	LYUCFullyTranslateString(s, ATTR_CS_IN, ATTR_CS_IN, NO, NO, YES, st_URL)
+	LYUCTranslateHTMLString(s, ATTR_CS_IN, ATTR_CS_IN, NO, NO, YES, st_URL)
 #define UNESCAPE_FIELDNAME_TO_STD(s) \
-	LYUCFullyTranslateString(s, ATTR_CS_IN, ATTR_CS_IN, NO, NO, YES, st_HTML)
+	LYUCTranslateHTMLString(s, ATTR_CS_IN, ATTR_CS_IN, NO, NO, YES, st_HTML)
 
 extern CONST HTStructuredClass HTMLPresentation;
 
@@ -61,9 +66,9 @@ typedef struct _stack_element {
 #define MAX_NESTING 800		/* Should be checked by parser */
 
 struct _HTStructured {
-    CONST HTStructuredClass * 	isa;
-    HTParentAnchor * 		node_anchor;
-    HText * 			text;
+    CONST HTStructuredClass *	isa;
+    HTParentAnchor *		node_anchor;
+    HText *			text;
 
     HTStream*			target;			/* Output stream */
     HTStreamClass		targetClass;		/* Output routines */
@@ -73,7 +78,7 @@ struct _HTStructured {
     char *			base_href;	/* current HTML_BASE href */
     char *			map_address;	/* current HTML_MAP address */
 
-    HTChunk 			title;		/* Grow by 128 */
+    HTChunk			title;		/* Grow by 128 */
     HTChunk			object;		/* Grow by 128 */
     BOOL			object_started;
     BOOL			object_declare;
@@ -88,6 +93,8 @@ struct _HTStructured {
     char *			object_codebase;
     char *			object_codetype;
     char *			object_name;
+    int				objects_mixed_open,
+				objects_figged_open;
     HTChunk			option;		/* Grow by 128 */
     BOOL			first_option;	/* First OPTION in SELECT? */
     char *			LastOptionValue;
@@ -97,8 +104,8 @@ struct _HTStructured {
     char *			textarea_name;
     int				textarea_name_cs;
     char *			textarea_accept_cs;
-    char *			textarea_cols;
-    int 			textarea_rows;
+    int				textarea_cols;
+    int				textarea_rows;
     int				textarea_disabled;
     char *			textarea_id;
     HTChunk			math;		/* Grow by 128 */
@@ -109,10 +116,10 @@ struct _HTStructured {
      *  Used for nested lists. - FM
      */
     int		List_Nesting_Level;	/* counter for list nesting level */
-    int 	OL_Counter[12];		/* counter for ordered lists */
-    char 	OL_Type[12];		/* types for ordered lists */
-    int 	Last_OL_Count;		/* last count in ordered lists */
-    char 	Last_OL_Type;		/* last type in ordered lists */
+    int		OL_Counter[12];		/* counter for ordered lists */
+    char	OL_Type[12];		/* types for ordered lists */
+    int		Last_OL_Count;		/* last count in ordered lists */
+    char	Last_OL_Type;		/* last type in ordered lists */
 
     int				Division_Level;
     short			DivisionAlignments[MAX_NESTING];
@@ -132,8 +139,8 @@ struct _HTStructured {
     HTStyle *			old_style;
     int				current_default_alignment;
     BOOL			in_word;  /* Have just had a non-white char */
-    stack_element 	stack[MAX_NESTING];
-    stack_element 	*sp;		/* Style stack pointer */
+    stack_element	stack[MAX_NESTING];
+    stack_element	*sp;		/* Style stack pointer */
     BOOL		stack_overrun;	/* Was MAX_NESTING exceeded? */
     int			skip_stack; /* flag to skip next style stack operation */
 
@@ -165,6 +172,7 @@ struct _HTStructured {
 
     BOOL		needBoldH;
 
+    char *		xinclude; /* if no include strin address passed */
     /*
     **  UCI and UCLYhndl give the UCInfo and charset registered for
     **  the HTML parser in the node_anchor's UCStages structure.  It
@@ -204,12 +212,11 @@ struct _HTStructured {
     */
     UCTransParams	T;
 
-    int 		tag_charset; /* charset for attribute values etc. */
+    int			tag_charset; /* charset for attribute values etc. */
 };
 
-extern  HTStyle *styles[HTML_ELEMENTS+31]; /* adding 24 nested list styles  */
-					   /* and 3 header alignment styles */
-					   /* and 3 div alignment styles    */
+extern  HTStyle *LYstyles PARAMS((int style_number));
+extern	BOOL LYBadHTML PARAMS((HTStructured *me)); 
 
 /*
  *	Semi-Private functions. - FM
@@ -278,4 +285,3 @@ extern int HTLoadError PARAMS((
 	CONST char *	message));
 
 #endif /* HTML_H */
-

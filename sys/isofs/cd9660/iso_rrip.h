@@ -1,3 +1,4 @@
+/*	$OpenBSD: iso_rrip.h,v 1.4 2003/06/02 23:28:05 millert Exp $	*/
 /*	$NetBSD: iso_rrip.h,v 1.3 1994/06/29 06:32:02 cgd Exp $	*/
 
 /*-
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -62,7 +59,7 @@
 typedef struct {
 	struct iso_node	*inop;
 	int		fields;		/* interesting fields in this analysis */
-	daddr_t		iso_ce_blk;	/* block of continuation area */
+	daddr64_t	iso_ce_blk;	/* block of continuation area */
 	off_t		iso_ce_off;	/* offset of continuation area */
 	int		iso_ce_len;	/* length of continuation area */
 	struct iso_mnt	*imp;		/* mount structure */
@@ -73,13 +70,13 @@ typedef struct {
 	int		cont;		/* continuation of above */
 } ISO_RRIP_ANALYZE;
 
-int cd9660_rrip_analyze __P((struct iso_directory_record *isodir,
-			    struct iso_node *inop, struct iso_mnt *imp));
-int cd9660_rrip_getname __P((struct iso_directory_record *isodir,
+int cd9660_rrip_analyze(struct iso_directory_record *isodir,
+			    struct iso_node *inop, struct iso_mnt *imp);
+int cd9660_rrip_getname(struct iso_directory_record *isodir,
 			    char *outbuf, u_short *outlen,
-			    ino_t *inump, struct iso_mnt *imp));
-int cd9660_rrip_getsymname __P((struct iso_directory_record *isodir,
+			    ino_t *inump, struct iso_mnt *imp);
+int cd9660_rrip_getsymname(struct iso_directory_record *isodir,
 			       char *outbuf, u_short *outlen,
-			       struct iso_mnt *imp));
-int cd9660_rrip_offset __P((struct iso_directory_record *isodir,
-			   struct iso_mnt *imp));
+			       struct iso_mnt *imp);
+int cd9660_rrip_offset(struct iso_directory_record *isodir,
+			   struct iso_mnt *imp);

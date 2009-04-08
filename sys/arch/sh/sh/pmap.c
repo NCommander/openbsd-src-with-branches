@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmap.c,v 1.10 2008/09/12 12:27:27 blambert Exp $	*/
 /*	$NetBSD: pmap.c,v 1.55 2006/08/07 23:19:36 tsutsui Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -72,13 +65,14 @@ STATIC struct pool __pmap_pmap_pool;
 struct pv_entry {
 	struct pmap *pv_pmap;
 	vaddr_t pv_va;
+	vm_prot_t pv_prot;
 	SLIST_ENTRY(pv_entry) pv_link;
 };
 #define	__pmap_pv_alloc()	pool_get(&__pmap_pv_pool, PR_NOWAIT)
 #define	__pmap_pv_free(pv)	pool_put(&__pmap_pv_pool, (pv))
-STATIC void __pmap_pv_enter(pmap_t, struct vm_page *, vaddr_t);
+STATIC void __pmap_pv_enter(pmap_t, struct vm_page *, vaddr_t, vm_prot_t);
 STATIC void __pmap_pv_remove(pmap_t, struct vm_page *, vaddr_t);
-STATIC void *__pmap_pv_page_alloc(struct pool *, int);
+STATIC void *__pmap_pv_page_alloc(struct pool *, int, int *);
 STATIC void __pmap_pv_page_free(struct pool *, void *);
 STATIC struct pool __pmap_pv_pool;
 STATIC struct pool_allocator pmap_pv_page_allocator = {
@@ -141,9 +135,9 @@ pmap_steal_memory(vsize_t size, vaddr_t *vstart, vaddr_t *vend)
 	KDASSERT(i != vm_nphysseg);
 
 	/* Steal pages */
-	pa = ptoa(bank->avail_start);
-	bank->avail_start += npage;
-	bank->start += npage;
+	bank->avail_end -= npage;
+	bank->end -= npage;
+	pa = ptoa(bank->avail_end);
 
 	/* GC memory bank */
 	if (bank->avail_start == bank->end) {
@@ -156,6 +150,11 @@ pmap_steal_memory(vsize_t size, vaddr_t *vstart, vaddr_t *vend)
 
 	va = SH3_PHYS_TO_P1SEG(pa);
 	memset((caddr_t)va, 0, size);
+
+	if (vstart)
+		*vstart = VM_MIN_KERNEL_ADDRESS;
+	if (vend)
+		*vend = VM_MAX_KERNEL_ADDRESS;
 
 	return (va);
 }
@@ -201,13 +200,6 @@ pmap_growkernel(vaddr_t maxkvaddr)
 }
 
 void
-pmap_virtual_space(vaddr_t *start, vaddr_t *end)
-{
-	*start = VM_MIN_KERNEL_ADDRESS;
-	*end = VM_MAX_KERNEL_ADDRESS;
-}
-
-void
 pmap_init()
 {
 	/* Initialize pmap module */
@@ -223,8 +215,7 @@ pmap_create()
 {
 	pmap_t pmap;
 
-	pmap = pool_get(&__pmap_pmap_pool, PR_WAITOK);
-	memset(pmap, 0, sizeof(struct pmap));
+	pmap = pool_get(&__pmap_pmap_pool, PR_WAITOK|PR_ZERO);
 	pmap->pm_asid = -1;
 	pmap->pm_refcnt = 1;
 	/* Allocate page table page holder (512 slot) */
@@ -340,7 +331,7 @@ pmap_enter(pmap_t pmap, vaddr_t va, paddr_t pa, vm_prot_t prot, int flags)
 			return (0);
 
 		/* Add to physical-virtual map list of this page */
-		__pmap_pv_enter(pmap, pg, va);
+		__pmap_pv_enter(pmap, pg, va, prot);
 
 	} else {	/* bus-space (always uncached map) */
 		if (kva) {
@@ -435,19 +426,31 @@ __pmap_map_change(pmap_t pmap, vaddr_t va, paddr_t pa, vm_prot_t prot,
  *	Assume pre-existed mapping is already removed.
  */
 void
-__pmap_pv_enter(pmap_t pmap, struct vm_page *pg, vaddr_t va)
+__pmap_pv_enter(pmap_t pmap, struct vm_page *pg, vaddr_t va, vm_prot_t prot)
 {
 	struct vm_page_md *pvh;
 	struct pv_entry *pv;
 	int s;
+	int have_writeable = 0;
 
 	s = splvm();
 	if (SH_HAS_VIRTUAL_ALIAS) {
 		/* Remove all other mapping on this physical page */
 		pvh = &pg->mdpage;
-		while ((pv = SLIST_FIRST(&pvh->pvh_head)) != NULL) {
-			pmap_remove(pv->pv_pmap, pv->pv_va,
-			    pv->pv_va + PAGE_SIZE);
+		if (prot & VM_PROT_WRITE)
+			have_writeable = 1;
+		else {
+			SLIST_FOREACH(pv, &pvh->pvh_head, pv_link) {
+				if (pv->pv_prot & VM_PROT_WRITE) {
+					have_writeable = 1;
+					break;
+				}
+			}
+		}
+		if (have_writeable != 0) {
+			while ((pv = SLIST_FIRST(&pvh->pvh_head)) != NULL)
+				pmap_remove(pv->pv_pmap, pv->pv_va,
+				    pv->pv_va + PAGE_SIZE);
 		}
 	}
 
@@ -456,6 +459,7 @@ __pmap_pv_enter(pmap_t pmap, struct vm_page *pg, vaddr_t va)
 	pv = __pmap_pv_alloc();
 	pv->pv_pmap = pmap;
 	pv->pv_va = va;
+	pv->pv_prot = prot;
 
 	SLIST_INSERT_HEAD(&pvh->pvh_head, pv, pv_link);
 	splx(s);
@@ -606,14 +610,34 @@ void
 pmap_protect(pmap_t pmap, vaddr_t sva, vaddr_t eva, vm_prot_t prot)
 {
 	boolean_t kernel = pmap == pmap_kernel();
-	pt_entry_t *pte, entry;
+	pt_entry_t *pte, entry, protbits;
 	vaddr_t va;
+	paddr_t pa;
+	struct vm_page *pg;
+	struct vm_page_md *pvh;
+	struct pv_entry *pv, *head;
 
 	sva = trunc_page(sva);
 
 	if ((prot & VM_PROT_READ) == VM_PROT_NONE) {
 		pmap_remove(pmap, sva, eva);
 		return;
+	}
+
+	switch (prot) {
+	default:
+		panic("pmap_protect: invalid protection mode %x", prot);
+		/* NOTREACHED */
+	case VM_PROT_READ:
+		/* FALLTHROUGH */
+	case VM_PROT_READ | VM_PROT_EXECUTE:
+		protbits = kernel ? PG_PR_KRO : PG_PR_URO;
+		break;
+	case VM_PROT_READ | VM_PROT_WRITE:
+		/* FALLTHROUGH */
+	case VM_PROT_ALL:
+		protbits = kernel ? PG_PR_KRW : PG_PR_URW;
+		break;
 	}
 
 	for (va = sva; va < eva; va += PAGE_SIZE) {
@@ -629,26 +653,38 @@ pmap_protect(pmap_t pmap, vaddr_t sva, vaddr_t eva, vm_prot_t prot)
 				sh_dcache_wbinv_range_index(va, PAGE_SIZE);
 		}
 
-		entry &= ~PG_PR_MASK;
-		switch (prot) {
-		default:
-			panic("pmap_protect: invalid protection mode %x", prot);
-			/* NOTREACHED */
-		case VM_PROT_READ:
-			/* FALLTHROUGH */
-		case VM_PROT_READ | VM_PROT_EXECUTE:
-			entry |= kernel ? PG_PR_KRO : PG_PR_URO;
-			break;
-		case VM_PROT_READ | VM_PROT_WRITE:
-			/* FALLTHROUGH */
-		case VM_PROT_ALL:
-			entry |= kernel ? PG_PR_KRW : PG_PR_URW;
-			break;
-		}
+		entry = (entry & ~PG_PR_MASK) | protbits;
 		*pte = entry;
 
 		if (pmap->pm_asid != -1)
 			sh_tlb_update(pmap->pm_asid, va, entry);
+
+		pa = entry & PG_PPN;
+		pg = PHYS_TO_VM_PAGE(pa);
+		if (pg == NULL)
+			continue;
+		pvh = &pg->mdpage;
+
+		while ((pv = SLIST_FIRST(&pvh->pvh_head)) != NULL) {
+			if (pv->pv_pmap == pmap && pv->pv_va == va) {
+				break;
+			}
+			pmap_remove(pv->pv_pmap, pv->pv_va,
+			    pv->pv_va + PAGE_SIZE);
+		}
+		/* the matching pv is first in the list */
+		SLIST_FOREACH(pv, &pvh->pvh_head, pv_link) {
+			if (pv->pv_pmap == pmap && pv->pv_va == va) {
+				pv->pv_prot = prot;
+				break;
+			}
+		}
+		/* remove the rest of the elements */
+		head = SLIST_FIRST(&pvh->pvh_head);
+		if (head != NULL)
+			while((pv = SLIST_NEXT(head, pv_link))!= NULL)
+				pmap_remove(pv->pv_pmap, pv->pv_va,
+				    pv->pv_va + PAGE_SIZE);
 	}
 }
 
@@ -841,16 +877,37 @@ pmap_clear_modify(struct vm_page *pg)
 	return (TRUE);
 }
 
+#ifdef SH4
+/*
+ * pmap_prefer(vaddr_t foff, vaddr_t *vap)
+ *
+ * Find first virtual address >= *vap that doesn't cause
+ * a virtual cache alias against vaddr_t foff.
+ */
+void
+pmap_prefer(vaddr_t foff, vaddr_t *vap)
+{
+	vaddr_t va;
+
+	if (SH_HAS_VIRTUAL_ALIAS) {
+		va = *vap;
+
+		*vap = va + ((foff - va) & sh_cache_prefer_mask);
+	}
+}
+#endif /* SH4 */
+
 /*
  * pv_entry pool allocator:
- *	void *__pmap_pv_page_alloc(struct pool *pool, int flags):
+ *	void *__pmap_pv_page_alloc(struct pool *pool, int flags, int *slowdown):
  *	void __pmap_pv_page_free(struct pool *pool, void *v):
  */
 void *
-__pmap_pv_page_alloc(struct pool *pool, int flags)
+__pmap_pv_page_alloc(struct pool *pool, int flags, int *slowdown)
 {
 	struct vm_page *pg;
 
+	*slowdown = 0;
 	pg = uvm_pagealloc(NULL, 0, NULL, UVM_PGA_USERESERVE);
 	if (pg == NULL)
 		return (NULL);
@@ -921,9 +978,11 @@ __pmap_pte_lookup(pmap_t pmap, vaddr_t va)
 pt_entry_t *
 __pmap_kpte_lookup(vaddr_t va)
 {
-	return (__pmap_kernel.pm_ptp
-	    [__PMAP_PTP_INDEX(va - VM_MIN_KERNEL_ADDRESS)] +
-	    __PMAP_PTP_OFSET(va));
+	pt_entry_t *ptp;
+
+	ptp =
+	    __pmap_kernel.pm_ptp[__PMAP_PTP_INDEX(va - VM_MIN_KERNEL_ADDRESS)];
+	return (ptp ? ptp + __PMAP_PTP_OFSET(va) : NULL);
 }
 
 /*
@@ -970,7 +1029,7 @@ __pmap_pte_load(pmap_t pmap, vaddr_t va, int flags)
 
 /*
  * int __pmap_asid_alloc(void):
- *	Allocate new ASID. if all ASID is used, steal from other process.
+ *	Allocate new ASID. if all ASID are used, steal from other process.
  */
 int
 __pmap_asid_alloc()

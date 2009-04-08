@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 
 #ifdef __cplusplus
 extern "C" {

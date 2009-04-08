@@ -88,7 +88,7 @@ xfs_mount_common_sys(struct mount *mp,
 	mp->mnt_flag & MNT_DELEXPORT) {
 
 	NNPFSDEB(XDEBVFOPS, 
-	       ("xfs_mount: ignoreing MNT_UPDATE or MNT_DELEXPORT\n"));
+	       ("xfs_mount: ignoring MNT_UPDATE or MNT_DELEXPORT\n"));
 	return 0;
     }
 #endif
@@ -140,7 +140,7 @@ xfs_mount_common_sys(struct mount *mp,
 
     nnfs_init_head(&xfs[minor(dev)].nodehead);
 
-    VFS_TO_NNPFS(mp) = &xfs[minor(dev)];
+    VFS_ASSIGN(mp, &xfs[minor(dev)]);
 #if defined(HAVE_KERNEL_VFS_GETNEWFSID)
 #if defined(HAVE_TWO_ARGUMENT_VFS_GETNEWFSID)
     vfs_getnewfsid(mp, MOUNT_AFS);
@@ -165,12 +165,10 @@ xfs_mount_common_sys(struct mount *mp,
     mp->mnt_stat.f_fsid.val[0] = dev;
     mp->mnt_stat.f_fsid.val[1] = MOUNT_NNPFS;
 	
-    MALLOC(mp->m_stat.f_mntonname, char *, strlen(path) + 1, 
-	   M_PATHNAME, M_WAITOK);
+    mp->m_stat.f_mntonname = malloc(strlen(path) + 1, M_PATHNAME, M_WAITOK);
     strcpy(mp->m_stat.f_mntonname, path);
 
-    MALLOC(mp->m_stat.f_mntfromname, char *, sizeof("arla"),
-	   M_PATHNAME, M_WAITOK);
+    mp->m_stat.f_mntfromname = malloc(sizeof("arla"), M_PATHNAME, M_WAITOK);
     strcpy(mp->m_stat.f_mntfromname, "arla");
 #else /* __osf__ */
     strncpy(mp->mnt_stat.f_mntonname,
@@ -178,7 +176,7 @@ xfs_mount_common_sys(struct mount *mp,
 	    sizeof(mp->mnt_stat.f_mntonname));
 
     strncpy(mp->mnt_stat.f_mntfromname,
-	    "arla",
+	    data,
 	    sizeof(mp->mnt_stat.f_mntfromname));
 
     strncpy(mp->mnt_stat.f_fstypename,
@@ -196,19 +194,34 @@ xfs_mount_common(struct mount *mp,
 		 struct nameidata *ndp,
 		 d_thread_t *p)
 {
-    char path[MAXPATHLEN];
-    char data[MAXPATHLEN];
+    char *path = NULL;
+    char *data = NULL;
     size_t count;
-    int error;
+    int error = 0;
+
+    data = malloc(MAXPATHLEN, M_TEMP, M_WAITOK);
+    if (data == NULL) {
+        error = ENOMEM;
+	goto done;
+    }
+    path = malloc(MAXPATHLEN, M_TEMP, M_WAITOK);
+    if (path == NULL) {
+        error = ENOMEM;
+	goto done;
+    }
 
     error = copyinstr(user_path, path, MAXPATHLEN, &count);
     if (error)
-	return error;
+        goto done;      
 
     error = copyinstr(user_data, data, MAXPATHLEN, &count);
     if (error)
-	return error;
-    return xfs_mount_common_sys (mp, path, data, ndp, p);
+	goto done;
+    error = xfs_mount_common_sys (mp, path, data, ndp, p);
+done:
+    free(data, M_TEMP);
+    free(path, M_TEMP);		   	
+    return(error);	
 }
 
 #ifdef HAVE_KERNEL_DOFORCE

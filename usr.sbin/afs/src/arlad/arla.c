@@ -178,7 +178,7 @@ read_conffile(const char *fname,
 	    else if (p->type == CONF_PARAM_INT64)
 		    *((int64_t *)partial_param->val) = val;
 	    else
-		    abort();
+		    errx(-1, "Unknown conf_param p->type");
 	    break;
 
 	case CONF_PARAM_STR:
@@ -198,11 +198,8 @@ read_conffile(const char *fname,
 			 fname, lineno, v);
 	    break;
 	default:
-	    abort();
+	    errx(-1, "read_conffile: Unknown type"); 
 	}
-
-
-
     }
     fclose(fp);
 }
@@ -278,6 +275,7 @@ int fake_stat = 0;
 
 int num_workers = 16;
 char *cache_dir;
+struct passwd *pw;
 int fake_mp;
 int fork_flag = 1;
 
@@ -385,12 +383,17 @@ arla_init (void)
     if (conn_rxkad_level < 0)
 	errx (1, "bad rxkad level `%s'", rxkad_level_string);
 #endif
+    pw = getpwnam("_afs");
+    if (pw == NULL)
+	errx (1, "Unable to find user '_afs'");	
 
     if (cache_dir == NULL)
 	cache_dir = get_default_cache_dir();
 
     if (mkdir (cache_dir, 0777) < 0 && errno != EEXIST)
 	arla_err (1, ADEBERROR, errno, "mkdir %s", cache_dir);
+    if (pw && chown(cache_dir, pw->pw_uid, pw->pw_gid) == -1)
+	arla_err (1, ADEBERROR, errno, "chown %s", cache_dir);
     if (chdir (cache_dir) < 0)
 	arla_err (1, ADEBERROR, errno, "chdir %s", cache_dir);
 

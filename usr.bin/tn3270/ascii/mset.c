@@ -1,3 +1,5 @@
+/*	$OpenBSD: mset.c,v 1.5 2003/06/03 02:56:19 millert Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)mset.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: mset.c,v 1.2 1993/08/01 18:06:00 mycroft Exp $";
+static char rcsid[] = "$OpenBSD: mset.c,v 1.5 2003/06/03 02:56:19 millert Exp $";
 #endif /* not lint */
 
 /*
@@ -50,6 +48,7 @@ static char rcsid[] = "$Id: mset.c,v 1.2 1993/08/01 18:06:00 mycroft Exp $";
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #if	defined(unix)
 #include <strings.h>
 #else	/* defined(unix) */
@@ -112,10 +111,10 @@ struct regstate *regptr, *sptr;
 
 static struct regstate *
 doRegister(regptr)
-register struct regstate *regptr;
+struct regstate *regptr;
 {
     static struct regstate *pivot = regstates;
-    register struct regstate *sptr = pivot;
+    struct regstate *sptr = pivot;
     int check;
 
     if (pivot == regstates) {		/* first time called */
@@ -177,11 +176,11 @@ static char savename[20] = " ";  /* for deciding if name is new */
 
 static void
 printString(string, begin, tc_name)
-register char *string;
+char *string;
 char *begin, *tc_name;
 {
-    register char *st1, *st2;
-    register int pchar;
+    char *st1, *st2;
+    int pchar;
     static char suffix = 'A';
     int new = strcmp(savename, tc_name);
     char delim = new ? ';' : '|';
@@ -219,7 +218,7 @@ char *begin, *tc_name;
     else {
 	printf("'");
     }
-    (void) strcpy(savename, tc_name);
+    (void) strlcpy(savename, tc_name, sizeof savename);
     while (st1 != string) {
 	if (toshell && numbchars >= 1016) { /* leave room for ctrl and delim */
 	   numbchars = 0;

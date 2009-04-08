@@ -41,12 +41,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* Layout of source language data types.  */
 
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
    i386.md for an explanation of the expression this outputs.  */
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
+  fprintf (FILE, "\t.long __GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
 
 /* Assembler format: sections.  */
 

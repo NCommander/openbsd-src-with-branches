@@ -39,6 +39,8 @@ RCSID("$KTH: print_version.c,v 1.9 2005/04/12 11:29:00 lha Exp $");
 
 #include "print_version.h"
 
+extern char *__progname;
+
 void ROKEN_LIB_FUNCTION
 print_version(const char *progname)
 {
@@ -49,7 +51,7 @@ print_version(const char *progname)
     int i;
     
     if(progname == NULL)
-	progname = getprogname();
+	progname = __progname;
     
     if(num_args == 0)
 	msg = "no version information";
@@ -67,8 +69,8 @@ print_version(const char *progname)
 	msg[0] = '\0';
 	for(i = 0; i < num_args; i++) {
 	    if(i > 0)
-		strcat(msg, ", ");
-	    strcat(msg, arg[i]);
+		strlcat(msg, ", ", len+1);
+	    strlcat(msg, arg[i], len+1);
 	}
     }
     fprintf(stderr, "%s (%s)\n", progname, msg);

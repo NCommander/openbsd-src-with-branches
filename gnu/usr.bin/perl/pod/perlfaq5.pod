@@ -1,6 +1,6 @@
 =head1 NAME
 
-perlfaq5 - Files and Formats ($Revision: 10126 $)
+perlfaq5 - Files and Formats
 
 =head1 DESCRIPTION
 

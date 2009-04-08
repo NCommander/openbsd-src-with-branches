@@ -1,3 +1,4 @@
+/*	$OpenBSD: err.h,v 1.9 2003/06/02 19:34:12 millert Exp $	*/
 /*	$NetBSD: err.h,v 1.11 1994/10/26 00:55:52 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,28 +40,51 @@
  * places (<machine/varargs.h> and <machine/stdarg.h>), so if we include one
  * of them here we may collide with the utility's includes.  It's unreasonable
  * for utilities to have to include one of them to include err.h, so we get
- * _BSD_VA_LIST_ from <machine/ansi.h> and use it.
+ * __va_list from <machine/_types.h> and use it.
  */
-#include <machine/ansi.h>
 #include <sys/cdefs.h>
+#include <machine/_types.h>
 
 __BEGIN_DECLS
-__dead void	err __P((int, const char *, ...))
-			__attribute__((noreturn, format (printf, 2, 3)));
-__dead void	verr __P((int, const char *, _BSD_VA_LIST_))
-			__attribute__((noreturn, format (printf, 2, 0)));
-__dead void	errx __P((int, const char *, ...))
-			__attribute__((noreturn, format (printf, 2, 3)));
-__dead void	verrx __P((int, const char *, _BSD_VA_LIST_))
-			__attribute__((noreturn, format (printf, 2, 0)));
-void		warn __P((const char *, ...))
-			__attribute__((format (printf, 1, 2)));
-void		vwarn __P((const char *, _BSD_VA_LIST_))
-			__attribute__((format (printf, 1, 0)));
-void		warnx __P((const char *, ...))
-			__attribute__((format (printf, 1, 2)));
-void		vwarnx __P((const char *, _BSD_VA_LIST_))
-			__attribute__((format (printf, 1, 0)));
+
+__dead void	err(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	verr(int, const char *, __va_list)
+			__attribute__((__format__ (printf, 2, 0)));
+__dead void	errx(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	verrx(int, const char *, __va_list)
+			__attribute__((__format__ (printf, 2, 0)));
+void		warn(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		vwarn(const char *, __va_list)
+			__attribute__((__format__ (printf, 1, 0)));
+void		warnx(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		vwarnx(const char *, __va_list)
+			__attribute__((__format__ (printf, 1, 0)));
+
+/*
+ * The _* versions are for use in library functions so user-defined
+ * versions of err*,warn* do not get used.
+ */
+__dead void	_err(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	_verr(int, const char *, __va_list)
+			__attribute__((__format__ (printf, 2, 0)));
+__dead void	_errx(int, const char *, ...)
+			__attribute__((__format__ (printf, 2, 3)));
+__dead void	_verrx(int, const char *, __va_list)
+			__attribute__((__format__ (printf, 2, 0)));
+void		_warn(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		_vwarn(const char *, __va_list)
+			__attribute__((__format__ (printf, 1, 0)));
+void		_warnx(const char *, ...)
+			__attribute__((__format__ (printf, 1, 2)));
+void		_vwarnx(const char *, __va_list)
+			__attribute__((__format__ (printf, 1, 0)));
+
 __END_DECLS
 
 #endif /* !_ERR_H_ */

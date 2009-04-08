@@ -1,7 +1,7 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: ossaudio.c,v 1.5 1998/03/23 00:39:18 augustss Exp $	*/
+/*	$OpenBSD: ossaudio.c,v 1.15 2008/04/04 05:03:19 jakemsr Exp $	*/
+/*	$NetBSD: ossaudio.c,v 1.14 2001/05/10 01:53:48 augustss Exp $	*/
 
-/*
+/*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
@@ -13,13 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -43,6 +36,7 @@
  * With some preprocessor magic it could be the same file.
  */
 
+#include <stdarg.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -55,8 +49,8 @@
 
 #define GET_DEV(com) ((com) & 0xff)
 
-#define TO_OSSVOL(x) ((x) * 100 / 255)
-#define FROM_OSSVOL(x) ((x) * 255 / 100)
+#define TO_OSSVOL(x)	(((x) * 100 + 127) / 255)
+#define FROM_OSSVOL(x)	((((x) > 100 ? 100 : (x)) * 255 + 50) / 100)
 
 static struct audiodevinfo *getdevinfo(int);
 
@@ -64,12 +58,21 @@ static void setblocksize(int, struct audio_info *);
 
 static int audio_ioctl(int, unsigned long, void *);
 static int mixer_ioctl(int, unsigned long, void *);
+static int opaque_to_enum(struct audiodevinfo *di, audio_mixer_name_t *label, int opq);
+static int enum_to_ord(struct audiodevinfo *di, int enm);
+static int enum_to_mask(struct audiodevinfo *di, int enm);
 
 #define INTARG (*(int*)argp)
 
 int
-_oss_ioctl(int fd, unsigned long com, void *argp)
+_oss_ioctl(int fd, unsigned long com, ...)
 {
+	va_list ap;
+	void *argp;
+
+	va_start(ap, com);
+	argp = va_arg(ap, void *);
+	va_end(ap);
 	if (IOCGROUP(com) == 'P')
 		return audio_ioctl(fd, com, argp);
 	else if (IOCGROUP(com) == 'M')
@@ -81,54 +84,61 @@ _oss_ioctl(int fd, unsigned long com, void *argp)
 static int
 audio_ioctl(int fd, unsigned long com, void *argp)
 {
-	       
+
 	struct audio_info tmpinfo;
 	struct audio_offset tmpoffs;
 	struct audio_buf_info bufinfo;
 	struct count_info cntinfo;
 	struct audio_encoding tmpenc;
+	struct audio_bufinfo tmpab;
+	u_long ldat;
 	u_int u;
 	int idat, idata;
-	int retval;
+	int tempret, retval = 0, rerr = 0;
 
 	switch (com) {
 	case SNDCTL_DSP_RESET:
 		retval = ioctl(fd, AUDIO_FLUSH, 0);
-		if (retval < 0)
-			return retval;
+		rerr = errno;
 		break;
 	case SNDCTL_DSP_SYNC:
-	case SNDCTL_DSP_POST:
 		retval = ioctl(fd, AUDIO_DRAIN, 0);
-		if (retval < 0)
-			return retval;
+		rerr = errno;
+		break;
+	case SNDCTL_DSP_POST:
+		/* This call is merely advisory, and may be a nop. */
 		break;
 	case SNDCTL_DSP_SPEED:
 		AUDIO_INITINFO(&tmpinfo);
 		tmpinfo.play.sample_rate =
 		tmpinfo.record.sample_rate = INTARG;
-		(void) ioctl(fd, AUDIO_SETINFO, &tmpinfo);
-		/* fall into ... */
+		retval = ioctl(fd, AUDIO_SETINFO, &tmpinfo);
+		rerr = errno;
+		/* FALLTHRU */
 	case SOUND_PCM_READ_RATE:
-		retval = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
-		if (retval < 0)
-			return retval;
+		tempret = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
+		if (retval >= 0) {
+			retval = tempret;
+			rerr = errno;
+		}
 		INTARG = tmpinfo.play.sample_rate;
 		break;
 	case SNDCTL_DSP_STEREO:
 		AUDIO_INITINFO(&tmpinfo);
 		tmpinfo.play.channels =
 		tmpinfo.record.channels = INTARG ? 2 : 1;
-		(void) ioctl(fd, AUDIO_SETINFO, &tmpinfo);
-		retval = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
-		if (retval < 0)
-			return retval;
+		retval = ioctl(fd, AUDIO_SETINFO, &tmpinfo);
+		rerr = errno;
+		tempret = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
+		if (retval >= 0) {
+			retval = tempret;
+			rerr = errno;
+		}
 		INTARG = tmpinfo.play.channels - 1;
 		break;
 	case SNDCTL_DSP_GETBLKSIZE:
 		retval = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
-		if (retval < 0)
-			return retval;
+		rerr = errno;
 		setblocksize(fd, &tmpinfo);
 		INTARG = tmpinfo.blocksize;
 		break;
@@ -184,14 +194,19 @@ audio_ioctl(int fd, unsigned long com, void *argp)
 			tmpinfo.record.encoding = AUDIO_ENCODING_ULINEAR_BE;
 			break;
 		default:
-			return EINVAL;
+			retval = -1;
+			rerr = EINVAL;
+			break;
 		}
-		(void) ioctl(fd, AUDIO_SETINFO, &tmpinfo);
-		/* fall into ... */
+		if (retval == -1) {
+			break;
+		} else {
+			retval = ioctl(fd, AUDIO_SETINFO, &tmpinfo);
+			rerr = errno;
+		}
+		/* FALLTHRU */
 	case SOUND_PCM_READ_BITS:
-		retval = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
-		if (retval < 0)
-			return retval;
+		(void) ioctl(fd, AUDIO_GETINFO, &tmpinfo);
 		switch (tmpinfo.play.encoding) {
 		case AUDIO_ENCODING_ULAW:
 			idat = AFMT_MU_LAW;
@@ -226,6 +241,9 @@ audio_ioctl(int fd, unsigned long com, void *argp)
 		case AUDIO_ENCODING_ADPCM:
 			idat = AFMT_IMA_ADPCM;
 			break;
+		default:
+			idat = AFMT_MU_LAW;  /* XXX default encoding */
+			break;
 		}
 		INTARG = idat;
 		break;
@@ -233,18 +251,22 @@ audio_ioctl(int fd, unsigned long com, void *argp)
 		AUDIO_INITINFO(&tmpinfo);
 		tmpinfo.play.channels =
 		tmpinfo.record.channels = INTARG;
-		(void) ioctl(fd, AUDIO_SETINFO, &tmpinfo);
-		/* fall into ... */
+		retval = ioctl(fd, AUDIO_SETINFO, &tmpinfo);
+		rerr = errno;
+		/* FALLTHRU */
 	case SOUND_PCM_READ_CHANNELS:
-		retval = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
-		if (retval < 0)
-			return retval;
+		tempret = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
+		if (retval >= 0) {
+			retval = tempret;
+			rerr = errno;
+		}
 		INTARG = tmpinfo.play.channels;
 		break;
 	case SOUND_PCM_WRITE_FILTER:
 	case SOUND_PCM_READ_FILTER:
-		errno = EINVAL;
-		return -1; /* XXX unimplemented */
+		rerr = EINVAL;
+		retval = -1; /* XXX unimplemented */
+		break;
 	case SNDCTL_DSP_SUBDIVIDE:
 		retval = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
 		if (retval < 0)
@@ -267,25 +289,26 @@ audio_ioctl(int fd, unsigned long com, void *argp)
 		if ((idat & 0xffff) < 4 || (idat & 0xffff) > 17)
 			return EINVAL;
 		tmpinfo.blocksize = 1 << (idat & 0xffff);
-		tmpinfo.hiwat = (idat >> 16) & 0x7fff;
+		tmpinfo.hiwat = ((unsigned)idat >> 16) & 0x7fff;
 		if (tmpinfo.hiwat == 0)	/* 0 means set to max */
 			tmpinfo.hiwat = 65536;
-		(void) ioctl(fd, AUDIO_SETINFO, &tmpinfo);
-		retval = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
-		if (retval < 0)
-			return retval;
+		retval = ioctl(fd, AUDIO_SETINFO, &tmpinfo);
+		rerr = errno;
+		tempret = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
+		if (retval >= 0) {
+			retval = tempret;
+			rerr = errno;
+		}
 		u = tmpinfo.blocksize;
-		for(idat = 0; u; idat++, u >>= 1)
+		for(idat = 0; u > 1; idat++, u >>= 1)
 			;
 		idat |= (tmpinfo.hiwat & 0x7fff) << 16;
 		INTARG = idat;
 		break;
 	case SNDCTL_DSP_GETFMTS:
-		for(idat = 0, tmpenc.index = 0; 
-		    ioctl(fd, AUDIO_GETENC, &tmpenc) == 0; 
+		for(idat = 0, tmpenc.index = 0;
+		    ioctl(fd, AUDIO_GETENC, &tmpenc) == 0;
 		    tmpenc.index++) {
-			if (tmpenc.flags & AUDIO_ENCODINGFLAG_EMULATED)
-				continue; /* Don't report emulated modes */
 			switch(tmpenc.encoding) {
 			case AUDIO_ENCODING_ULAW:
 				idat |= AFMT_MU_LAW;
@@ -333,68 +356,67 @@ audio_ioctl(int fd, unsigned long com, void *argp)
 		INTARG = idat;
 		break;
 	case SNDCTL_DSP_GETOSPACE:
+		retval = ioctl(fd, AUDIO_GETPRINFO, &tmpab);
+		rerr = errno;
+		bufinfo.fragsize = tmpab.blksize;
+		bufinfo.fragstotal = tmpab.hiwat;
+		bufinfo.bytes = tmpab.hiwat * tmpab.blksize - tmpab.seek;
+		if (tmpab.blksize != 0)
+			bufinfo.fragments = bufinfo.bytes / tmpab.blksize;
+		else
+			bufinfo.fragments = 0;
+		*(struct audio_buf_info *)argp = bufinfo;
+		break;
 	case SNDCTL_DSP_GETISPACE:
-		retval = ioctl(fd, AUDIO_GETINFO, (caddr_t)&tmpinfo);
-		if (retval < 0)
-			return retval;
-		setblocksize(fd, &tmpinfo);
-		bufinfo.fragsize = tmpinfo.blocksize;
-		bufinfo.fragments = /* XXX */
-		bufinfo.fragstotal = tmpinfo.play.buffer_size / bufinfo.fragsize;
-		bufinfo.bytes = tmpinfo.play.buffer_size;
+		retval = ioctl(fd, AUDIO_GETRRINFO, &tmpab);
+		rerr = errno;
+		bufinfo.fragsize = tmpab.blksize;
+		bufinfo.fragstotal = tmpab.hiwat;
+		bufinfo.bytes = tmpab.seek;
+		if (tmpab.blksize != 0 )
+			bufinfo.fragments = bufinfo.bytes / tmpab.blksize;
+		else
+			bufinfo.fragments = 0;
 		*(struct audio_buf_info *)argp = bufinfo;
 		break;
 	case SNDCTL_DSP_NONBLOCK:
 		idat = 1;
 		retval = ioctl(fd, FIONBIO, &idat);
-		if (retval < 0)
-			return retval;
+		rerr = errno;
 		break;
 	case SNDCTL_DSP_GETCAPS:
-		retval = ioctl(fd, AUDIO_GETPROPS, (caddr_t)&idata);
-		if (retval < 0)
-			return retval;
-		idat = DSP_CAP_TRIGGER; /* pretend we have trigger */
+		retval = ioctl(fd, AUDIO_GETPROPS, &idata);
+		rerr = errno;
+		idat = DSP_CAP_TRIGGER;
 		if (idata & AUDIO_PROP_FULLDUPLEX)
 			idat |= DSP_CAP_DUPLEX;
 		if (idata & AUDIO_PROP_MMAP)
 			idat |= DSP_CAP_MMAP;
 		INTARG = idat;
 		break;
-#if 0
+	case SNDCTL_DSP_SETTRIGGER:
+		idat = INTARG;
+		AUDIO_INITINFO(&tmpinfo);
+		if (idat & PCM_ENABLE_OUTPUT)
+			tmpinfo.play.pause = 0;
+		if (idat & PCM_ENABLE_INPUT)
+			tmpinfo.record.pause = 0;
+		retval = ioctl(fd, AUDIO_SETINFO, &tmpinfo);
+		rerr = errno;
+		/* FALLTHRU */
 	case SNDCTL_DSP_GETTRIGGER:
-		retval = ioctl(fd, AUDIO_GETINFO, (caddr_t)&tmpinfo);
-		if (retval < 0)
-			return retval;
+		tempret = ioctl(fd, AUDIO_GETINFO, &tmpinfo);
+		if (retval >= 0) {
+			retval = tempret;
+			rerr = errno;
+		}
 		idat = (tmpinfo.play.pause ? 0 : PCM_ENABLE_OUTPUT) |
 		       (tmpinfo.record.pause ? 0 : PCM_ENABLE_INPUT);
-		retval = copyout(&idat, SCARG(uap, data), sizeof idat);
-		if (retval < 0)
-			return retval;
+		INTARG = idat;
 		break;
-	case SNDCTL_DSP_SETTRIGGER:
-		AUDIO_INITINFO(&tmpinfo);
-		retval = copyin(SCARG(uap, data), &idat, sizeof idat);
-		if (retval < 0)
-			return retval;
-		tmpinfo.play.pause = (idat & PCM_ENABLE_OUTPUT) == 0;
-		tmpinfo.record.pause = (idat & PCM_ENABLE_INPUT) == 0;
-		(void) ioctl(fd, AUDIO_SETINFO, (caddr_t)&tmpinfo);
-		retval = copyout(&idat, SCARG(uap, data), sizeof idat);
-		if (retval < 0)
-			return retval;
-		break;
-#else
-	case SNDCTL_DSP_GETTRIGGER:
-	case SNDCTL_DSP_SETTRIGGER:
-		/* XXX Do nothing for now. */
-		INTARG = PCM_ENABLE_OUTPUT;
-		break;
-#endif
 	case SNDCTL_DSP_GETIPTR:
 		retval = ioctl(fd, AUDIO_GETIOFFS, &tmpoffs);
-		if (retval < 0)
-			return retval;
+		rerr = errno;
 		cntinfo.bytes = tmpoffs.samples;
 		cntinfo.blocks = tmpoffs.deltablks;
 		cntinfo.ptr = tmpoffs.offset;
@@ -402,42 +424,99 @@ audio_ioctl(int fd, unsigned long com, void *argp)
 		break;
 	case SNDCTL_DSP_GETOPTR:
 		retval = ioctl(fd, AUDIO_GETOOFFS, &tmpoffs);
-		if (retval < 0)
-			return retval;
+		rerr = errno;
 		cntinfo.bytes = tmpoffs.samples;
 		cntinfo.blocks = tmpoffs.deltablks;
 		cntinfo.ptr = tmpoffs.offset;
 		*(struct count_info *)argp = cntinfo;
 		break;
+	case SNDCTL_DSP_SETDUPLEX:
+		idat = 1;
+		retval = ioctl(fd, AUDIO_SETFD, &idat);
+		rerr = errno;
+		break;
+	case SNDCTL_DSP_GETODELAY:
+		retval = ioctl(fd, AUDIO_WSEEK, &ldat);
+		INTARG = (int)ldat;
+		break;
 	case SNDCTL_DSP_MAPINBUF:
 	case SNDCTL_DSP_MAPOUTBUF:
 	case SNDCTL_DSP_SETSYNCRO:
-	case SNDCTL_DSP_SETDUPLEX:
 	case SNDCTL_DSP_PROFILE:
-		errno = EINVAL;
-		return -1; /* XXX unimplemented */
+		rerr = EINVAL;
+		retval = -1; /* XXX unimplemented */
+		break;
 	default:
-		errno = EINVAL;
-		return -1;
+		rerr = EINVAL;
+		retval = -1;
+		break;
 	}
-
-	return 0;
+	errno = rerr;
+	return retval;
 }
 
 
-/* If the NetBSD mixer device should have more than 32 devices
+/* If the NetBSD mixer device should have more than NETBSD_MAXDEVS devices
  * some will not be available to Linux */
-#define NETBSD_MAXDEVS 32
+#define NETBSD_MAXDEVS 64
 struct audiodevinfo {
 	int done;
 	dev_t dev;
-	int16_t devmap[SOUND_MIXER_NRDEVICES], 
+	ino_t ino;
+	int16_t devmap[SOUND_MIXER_NRDEVICES],
 	        rdevmap[NETBSD_MAXDEVS];
+	char names[NETBSD_MAXDEVS][MAX_AUDIO_DEV_LEN];
+	int enum2opaque[NETBSD_MAXDEVS];
         u_long devmask, recmask, stereomask;
-	u_long caps, source;
+	u_long caps, recsource;
 };
 
-/* 
+static int
+opaque_to_enum(struct audiodevinfo *di, audio_mixer_name_t *label, int opq)
+{
+	int i, o;
+
+	for (i = 0; i < NETBSD_MAXDEVS; i++) {
+		o = di->enum2opaque[i];
+		if (o == opq)
+			break;
+		if (o == -1 && label != NULL &&
+		    !strncmp(di->names[i], label->name, sizeof di->names[i])) {
+			di->enum2opaque[i] = opq;
+			break;
+		}
+	}
+	if (i >= NETBSD_MAXDEVS)
+		i = -1;
+	/*printf("opq_to_enum %s %d -> %d\n", label->name, opq, i);*/
+	return (i);
+}
+
+static int
+enum_to_ord(struct audiodevinfo *di, int enm)
+{
+	if (enm >= NETBSD_MAXDEVS)
+		return (-1);
+
+	/*printf("enum_to_ord %d -> %d\n", enm, di->enum2opaque[enm]);*/
+	return (di->enum2opaque[enm]);
+}
+
+static int
+enum_to_mask(struct audiodevinfo *di, int enm)
+{
+	int m;
+	if (enm >= NETBSD_MAXDEVS)
+		return (0);
+
+	m = di->enum2opaque[enm];
+	if (m == -1)
+		m = 0;
+	/*printf("enum_to_mask %d -> %d\n", enm, di->enum2opaque[enm]);*/
+	return (m);
+}
+
+/*
  * Collect the audio device information to allow faster
  * emulation of the Linux mixer ioctls.  Cache the information
  * to eliminate the overhead of repeating all the ioctls needed
@@ -446,8 +525,8 @@ struct audiodevinfo {
 static struct audiodevinfo *
 getdevinfo(int fd)
 {
-	mixer_devinfo_t mi;
-	int i;
+	mixer_devinfo_t mi, cl;
+	int i, j, e;
 	static struct {
 		char *name;
 		int code;
@@ -456,6 +535,7 @@ getdevinfo(int fd)
 		{ AudioNline,		SOUND_MIXER_LINE },
 		{ AudioNcd,		SOUND_MIXER_CD },
 		{ AudioNdac,		SOUND_MIXER_PCM },
+		{ AudioNaux,		SOUND_MIXER_LINE1 },
 		{ AudioNrecord,		SOUND_MIXER_IMIX },
 		{ AudioNmaster,		SOUND_MIXER_VOLUME },
 		{ AudioNtreble,		SOUND_MIXER_TREBLE },
@@ -482,20 +562,24 @@ getdevinfo(int fd)
 	 */
 	if (fstat(fd, &sb) < 0)
 		return 0;
-	if (di->done && di->dev == sb.st_dev)
+	if (di->done && (di->dev == sb.st_dev && di->ino == sb.st_ino))
 		return di;
 
 	di->done = 1;
 	di->dev = sb.st_dev;
+	di->ino = sb.st_ino;
 	di->devmask = 0;
 	di->recmask = 0;
 	di->stereomask = 0;
-	di->source = -1;
+	di->recsource = ~0;
 	di->caps = 0;
 	for(i = 0; i < SOUND_MIXER_NRDEVICES; i++)
 		di->devmap[i] = -1;
-	for(i = 0; i < NETBSD_MAXDEVS; i++)
+	for(i = 0; i < NETBSD_MAXDEVS; i++) {
 		di->rdevmap[i] = -1;
+		di->names[i][0] = '\0';
+		di->enum2opaque[i] = -1;
+	}
 	for(i = 0; i < NETBSD_MAXDEVS; i++) {
 		mi.index = i;
 		if (ioctl(fd, AUDIO_MIXER_DEVINFO, &mi) < 0)
@@ -511,29 +595,43 @@ getdevinfo(int fd)
 				di->devmask |= 1 << dp->code;
 				if (mi.un.v.num_channels == 2)
 					di->stereomask |= 1 << dp->code;
+				strncpy(di->names[i], mi.label.name,
+					sizeof di->names[i]);
 			}
 			break;
+		}
+	}
+	for(i = 0; i < NETBSD_MAXDEVS; i++) {
+		mi.index = i;
+		if (ioctl(fd, AUDIO_MIXER_DEVINFO, &mi) < 0)
+			break;
+		if (strcmp(mi.label.name, AudioNsource) != 0)
+			continue;
+		cl.index = mi.mixer_class;
+		if (ioctl(fd, AUDIO_MIXER_DEVINFO, &cl) < 0)
+			break;
+		if ((cl.type != AUDIO_MIXER_CLASS) ||
+		    (strcmp(cl.label.name, AudioCrecord) != 0))
+			continue;
+		di->recsource = i;
+		switch(mi.type) {
 		case AUDIO_MIXER_ENUM:
-			if (strcmp(mi.label.name, AudioNsource) == 0) {
-				int j;
-				di->source = i;
-				for(j = 0; j < mi.un.e.num_mem; j++)
-					di->recmask |= 1 << di->rdevmap[mi.un.e.member[j].ord];
-				di->caps = SOUND_CAP_EXCL_INPUT;
+			for(j = 0; j < mi.un.e.num_mem; j++) {
+				e = opaque_to_enum(di,
+						   &mi.un.e.member[j].label,
+						   mi.un.e.member[j].ord);
+				if (e >= 0)
+					di->recmask |= 1 << di->rdevmap[e];
 			}
+			di->caps = SOUND_CAP_EXCL_INPUT;
 			break;
 		case AUDIO_MIXER_SET:
-			if (strcmp(mi.label.name, AudioNsource) == 0) {
-				int j;
-				di->source = i;
-				for(j = 0; j < mi.un.s.num_mem; j++) {
-					int k, mask = mi.un.s.member[j].mask;
-					if (mask) {
-						for(k = 0; !(mask & 1); mask >>= 1, k++)
-							;
-						di->recmask |= 1 << di->rdevmap[k];
-					}
-				}
+			for(j = 0; j < mi.un.s.num_mem; j++) {
+				e = opaque_to_enum(di,
+						   &mi.un.s.member[j].label,
+						   mi.un.s.member[j].mask);
+				if (e >= 0)
+					di->recmask |= 1 << di->rdevmap[e];
 			}
 			break;
 		}
@@ -543,40 +641,55 @@ getdevinfo(int fd)
 
 int
 mixer_ioctl(int fd, unsigned long com, void *argp)
-{	       
+{
 	struct audiodevinfo *di;
+	struct mixer_info *omi;
+	struct audio_device adev;
 	mixer_ctrl_t mc;
-	int idat;
+	int idat = 0;
 	int i;
 	int retval;
-	int l, r, n;
+	int l, r, n, error, e;
 
 	di = getdevinfo(fd);
 	if (di == 0)
 		return -1;
 
 	switch (com) {
+	case OSS_GETVERSION:
+		idat = SOUND_VERSION;
+		break;
+	case SOUND_MIXER_INFO:
+	case SOUND_OLD_MIXER_INFO:
+		error = ioctl(fd, AUDIO_GETDEV, &adev);
+		if (error)
+			return (error);
+		omi = argp;
+		if (com == SOUND_MIXER_INFO)
+			omi->modify_counter = 1;
+		strncpy(omi->id, adev.name, sizeof omi->id);
+		strncpy(omi->name, adev.name, sizeof omi->name);
+		return 0;
 	case SOUND_MIXER_READ_RECSRC:
-		if (di->source == -1)
+		if (di->recsource == -1)
 			return EINVAL;
-		mc.dev = di->source;
+		mc.dev = di->recsource;
 		if (di->caps & SOUND_CAP_EXCL_INPUT) {
 			mc.type = AUDIO_MIXER_ENUM;
 			retval = ioctl(fd, AUDIO_MIXER_READ, &mc);
 			if (retval < 0)
 				return retval;
-			idat = 1 << di->rdevmap[mc.un.ord];
+			e = opaque_to_enum(di, NULL, mc.un.ord);
+			if (e >= 0)
+				idat = 1 << di->rdevmap[e];
 		} else {
-			int k;
-			unsigned int mask;
 			mc.type = AUDIO_MIXER_SET;
 			retval = ioctl(fd, AUDIO_MIXER_READ, &mc);
 			if (retval < 0)
 				return retval;
-			idat = 0;
-			for(mask = mc.un.mask, k = 0; mask; mask >>= 1, k++)
-				if (mask & 1)
-					idat |= 1 << di->rdevmap[k];
+			e = opaque_to_enum(di, NULL, mc.un.mask);
+			if (e >= 0)
+				idat = 1 << di->rdevmap[e];
 		}
 		break;
 	case SOUND_MIXER_READ_DEVMASK:
@@ -593,9 +706,9 @@ mixer_ioctl(int fd, unsigned long com, void *argp)
 		break;
 	case SOUND_MIXER_WRITE_RECSRC:
 	case SOUND_MIXER_WRITE_R_RECSRC:
-		if (di->source == -1)
+		if (di->recsource == -1)
 			return EINVAL;
-		mc.dev = di->source;
+		mc.dev = di->recsource;
 		idat = INTARG;
 		if (di->caps & SOUND_CAP_EXCL_INPUT) {
 			mc.type = AUDIO_MIXER_ENUM;
@@ -605,7 +718,7 @@ mixer_ioctl(int fd, unsigned long com, void *argp)
 			if (i >= SOUND_MIXER_NRDEVICES ||
 			    di->devmap[i] == -1)
 				return EINVAL;
-			mc.un.ord = di->devmap[i];
+			mc.un.ord = enum_to_ord(di, di->devmap[i]);
 		} else {
 			mc.type = AUDIO_MIXER_SET;
 			mc.un.mask = 0;
@@ -613,7 +726,7 @@ mixer_ioctl(int fd, unsigned long com, void *argp)
 				if (idat & (1 << i)) {
 					if (di->devmap[i] == -1)
 						return EINVAL;
-					mc.un.mask |= 1 << di->devmap[i];
+					mc.un.mask |= enum_to_mask(di, di->devmap[i]);
 				}
 			}
 		}
@@ -681,7 +794,7 @@ mixer_ioctl(int fd, unsigned long com, void *argp)
  * Check that the blocksize is a power of 2 as OSS wants.
  * If not, set it to be.
  */
-static void 
+static void
 setblocksize(int fd, struct audio_info *info)
 {
 	struct audio_info set;
@@ -696,4 +809,3 @@ setblocksize(int fd, struct audio_info *info)
 		ioctl(fd, AUDIO_GETINFO, info);
 	}
 }
-

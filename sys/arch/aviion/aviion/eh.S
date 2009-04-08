@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: eh.S,v 1.4 2007/12/13 18:51:01 miod Exp $	*/
 /*
  * Copyright (c) 2006, Miodrag Vallat
  *
@@ -24,7 +24,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/av400.h>
 #include <machine/m8820x.h>
 
 /*
@@ -32,22 +31,12 @@
  */
 
 #define	PFSR_SAVE \
-	br.n	_ASM_LABEL(pfsr_av400); \
-	 or.u	TMP2, r0,   hi16(_C_LABEL(cmmu_shift))
+	NOP;	/* will be changed to	br.n pfsr_handler + 4 */ \
+	NOP	/* will be changed to	 first instruction of pfsr_handler */
 
 #include <m88k/m88k/eh_common.S>
 
-	text
-
-ASLOCAL(pfsr_av400)
-#if 0	/* done in delay slot from PFSR_SAVE */
-	or.u	TMP2, r0,   hi16(_C_LABEL(cmmu_shift))
-#endif
-	ld	TMP2, TMP2, lo16(_C_LABEL(cmmu_shift))
-	cmp	TMP3, TMP2, 2
-	bb1	lt,   TMP2, _ASM_LABEL(pfsr_av400_straight)
-
-ASLOCAL(pfsr_av400_double)
+ENTRY(pfsr_av400_double)
 	/*
 	 * 4 CMMUs per CPU. Almost as simple as the 2 CMMUs per CPU
 	 * situation...
@@ -56,39 +45,38 @@ ASLOCAL(pfsr_av400_double)
 	 * exceptions, we have to reset the fault status registers
 	 * after reading them.
 	 */
-
 	ld	TMP2, TMP,  CI_PFSR_I0
-	ld	TMP2, TMP2, r0
-	extu	TMP3, TMP2, 3<16>
-	bcnd.n	ne0,  TMP3, 1f
-	 st	r0,   TMP2, r0
-	ld	TMP2, TMP,  CI_PFSR_I1
-	ld	TMP2, TMP2, r0
+	ld	TMP3, TMP2, r0
+	extu	TMP3, TMP3, 3<16>
+	bcnd	ne0,  TMP3, 1f
 	st	r0,   TMP2, r0
+	ld	TMP2, TMP,  CI_PFSR_I1
 1:
-	st	TMP2, r31,  REG_OFF(EF_IPFSR)
+	ld	TMP3, TMP2, r0
+	st	r0,   TMP2, r0
+	st	TMP3, r31,  EF_IPFSR
 
 	ld	TMP2, TMP,  CI_PFSR_D0
-	ld	TMP2, TMP2, r0
-	extu	TMP3, TMP2, 3<16>
-	bcnd.n	ne0,  TMP3, 2f
-	 st	r0,   TMP2, r0
-	ld	TMP2, TMP,  CI_PFSR_D1
-	ld	TMP2, TMP2, r0
+	ld	TMP3, TMP2, r0
+	extu	TMP3, TMP3, 3<16>
+	bcnd	ne0,  TMP3, 2f
 	st	r0,   TMP2, r0
+	ld	TMP2, TMP,  CI_PFSR_D1
 2:
+	ld	TMP3, TMP2, r0
+	st	r0,   TMP2, r0
 	br.n	_ASM_LABEL(pfsr_done)
-	 st	TMP2, r31,  REG_OFF(EF_DPFSR)
+	 st	TMP3, r31,  EF_DPFSR
 
-ASLOCAL(pfsr_av400_straight)
+ENTRY(pfsr_av400_straight)
 	/*
 	 * We have the simple 2 CMMUs per CPU mapping. Pick our couple;
 	 * no need to reset fault status registers in this case.
 	 */
 	ld	TMP2, TMP,  CI_PFSR_I0
 	ld	TMP3, TMP2, r0
-	st	TMP3, r31,  REG_OFF(EF_IPFSR)
+	st	TMP3, r31,  EF_IPFSR
 	ld	TMP2, TMP,  CI_PFSR_D0
 	ld	TMP3, TMP2, r0
 	br.n	_ASM_LABEL(pfsr_done)
-	 st	TMP3, r31,  REG_OFF(EF_DPFSR)
+	 st	TMP3, r31,  EF_DPFSR

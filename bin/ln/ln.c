@@ -1,3 +1,4 @@
+/*	$OpenBSD: ln.c,v 1.16 2007/09/16 18:13:57 sobrado Exp $	*/
 /*	$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,16 +31,16 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1987, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
 #if 0
-static char sccsid[] = "@(#)ln.c	8.2 (Berkeley) 3/31/94";
+static const char sccsid[] = "@(#)ln.c	8.2 (Berkeley) 3/31/94";
 #else
-static char rcsid[] = "$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: ln.c,v 1.16 2007/09/16 18:13:57 sobrado Exp $";
 #endif
 #endif /* not lint */
 
@@ -52,6 +49,7 @@ static char rcsid[] = "$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $";
 
 #include <err.h>
 #include <errno.h>
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,23 +57,22 @@ static char rcsid[] = "$NetBSD: ln.c,v 1.10 1995/03/21 09:06:10 cgd Exp $";
 
 int	dirflag;			/* Undocumented directory flag. */
 int	fflag;				/* Unlink existing files. */
+int	hflag;				/* Check new name for symlink first. */
 int	sflag;				/* Symbolic, not hard, link. */
 					/* System link call. */
-int (*linkf) __P((const char *, const char *));
+int (*linkf)(const char *, const char *);
 
-int	linkit __P((char *, char *, int));
-void	usage __P((void));
+int	linkit(char *, char *, int);
+void	usage(void) __dead;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct stat sb;
 	int ch, exitval;
 	char *sourcedir;
 
-	while ((ch = getopt(argc, argv, "Ffs")) != -1)
+	while ((ch = getopt(argc, argv, "Ffhns")) != -1)
 		switch (ch) {
 		case 'F':
 			dirflag = 1;	/* XXX: deliberately undocumented. */
@@ -83,10 +80,13 @@ main(argc, argv)
 		case 'f':
 			fflag = 1;
 			break;
+		case 'h':
+		case 'n':
+			hflag = 1;
+			break;
 		case 's':
 			sflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -115,13 +115,20 @@ main(argc, argv)
 	exit(exitval);
 }
 
+ /*
+  * Nomenclature warning!
+  *
+  * In this source "target" and "source" are used the opposite way they
+  * are used in the ln(1) manual.  Here "target" is the existing file and
+  * "source" specifies the to-be-created link to "target".
+  */
 int
-linkit(target, source, isdir)
-	char *target, *source;
-	int isdir;
+linkit(char *target, char *source, int isdir)
 {
 	struct stat sb;
 	char *p, path[MAXPATHLEN];
+	int (*statf)(const char *, struct stat *);
+	int exists, n;
 
 	if (!sflag) {
 		/* If target doesn't exist, quit now. */
@@ -131,26 +138,59 @@ linkit(target, source, isdir)
 		}
 		/* Only symbolic links to directories, unless -F option used. */
 		if (!dirflag && S_ISDIR(sb.st_mode)) {
-			warnx("%s: is a directory", target);
+			errno = EISDIR;
+			warn("%s", target);
 			return (1);
 		}
 	}
 
+	statf = hflag ? lstat : stat;
+
 	/* If the source is a directory, append the target's name. */
-	if (isdir || !stat(source, &sb) && S_ISDIR(sb.st_mode)) {
-		if ((p = strrchr(target, '/')) == NULL)
-			p = target;
-		else
-			++p;
-		(void)snprintf(path, sizeof(path), "%s/%s", source, p);
+	if (isdir || (!statf(source, &sb) && S_ISDIR(sb.st_mode))) {
+		if ((p = basename(target)) == NULL) {
+			warn("%s", target);
+			return (1);
+		}
+		n = snprintf(path, sizeof(path), "%s/%s", source, p);
+		if (n < 0 || n >= sizeof(path)) {
+			errno = ENAMETOOLONG;
+			warn("%s/%s", source, p);
+			return (1);
+		}
 		source = path;
 	}
 
+	exists = (lstat(source, &sb) == 0);
+	/*
+	 * If doing hard links and the source (destination) exists and it
+	 * actually is the same file like the target (existing file), we
+	 * complain that the files are identical.  If -f is specified, we
+	 * accept the job as already done and return with success.
+	 */
+	if (exists && !sflag) {
+		struct stat tsb;
+
+		if (stat(target, &tsb) != 0) {
+			warn("%s: disappeared", target);
+			return (1);
+		}
+
+		if (tsb.st_dev == sb.st_dev && tsb.st_ino == sb.st_ino) {
+			if (fflag)
+				return (0);
+			else {
+				warnx("%s and %s are identical (nothing done).",
+				    target, source);
+				return (1);
+			}
+		}
+	}
 	/*
 	 * If the file exists, and -f was specified, unlink it.
 	 * Attempt the link.
 	 */
-	if (fflag && unlink(source) < 0 && errno != ENOENT ||
+	if ((fflag && unlink(source) < 0 && errno != ENOENT) ||
 	    (*linkf)(target, source)) {
 		warn("%s", source);
 		return (1);
@@ -160,10 +200,13 @@ linkit(target, source, isdir)
 }
 
 void
-usage()
+usage(void)
 {
+	extern char *__progname;
 
 	(void)fprintf(stderr,
-	    "usage:\tln [-fs] file1 file2\n\tln [-fs] file ... directory\n");
+	    "usage: %s [-fhns] source [target]\n"
+	    "       %s [-fs] source ... [directory]\n",
+	    __progname, __progname);
 	exit(1);
 }

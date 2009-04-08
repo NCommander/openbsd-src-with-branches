@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.30 2004/02/10 01:31:21 millert Exp $	*/
+/*	$OpenBSD: conf.c,v 1.6 2008/05/14 20:49:48 miod Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -48,6 +48,7 @@
 #include "ksyms.h"
 #include "nvram.h"
 #include "pf.h"
+#include "bio.h"
 #include "pty.h"
 #include "rd.h"
 #include "sd.h"
@@ -92,11 +93,11 @@ struct cdevsw	cdevsw[] =
 	cdev_cn_init(1,cn),		/* 0: virtual console */
 	cdev_ctty_init(1,ctty),		/* 1: controlling terminal */
 	cdev_mm_init(1,mm),		/* 2: /dev/{null,mem,kmem,...} */
-	cdev_swap_init(1,sw),		/* 3: /dev/drum (swap pseudo-device) */
+	cdev_notdef(),			/* 3 was /dev/drum */
 	cdev_tty_init(NPTY,pts),	/* 4: pseudo-tty slave */
 	cdev_ptc_init(NPTY,ptc),	/* 5: pseudo-tty master */
 	cdev_log_init(1,log),		/* 6: /dev/klog */
-	cdev_notdef(),			/* 7: /dev/sramX */
+	cdev_notdef(),			/* 7 */
 	cdev_disk_init(NSD,sd),		/* 8: SCSI disk */
 	cdev_disk_init(NCD,cd),		/* 9: SCSI CD-ROM */
 	cdev_mm_init(NNVRAM,nvram),	/* 10: /dev/nvramX */
@@ -111,8 +112,8 @@ struct cdevsw	cdevsw[] =
 	cdev_disk_init(NVND,vnd),	/* 19: vnode disk */
 	cdev_tape_init(NST,st),		/* 20: SCSI tape */
 	cdev_fd_init(1,filedesc),	/* 21: file descriptor pseudo-dev */
-	cdev_bpftun_init(NBPFILTER,bpf),/* 22: berkeley packet filter */
-	cdev_bpftun_init(NTUN,tun),	/* 23: network tunnel */
+	cdev_bpf_init(NBPFILTER,bpf),	/* 22: berkeley packet filter */
+	cdev_tun_init(NTUN,tun),	/* 23: network tunnel */
 	cdev_lkm_init(NLKM,lkm),	/* 24: loadable module driver */
 	cdev_notdef(),			/* 25 */
 	cdev_notdef(),			/* 26: XD disk */
@@ -138,7 +139,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 46 */
 	cdev_notdef(),			/* 47 */
 	cdev_notdef(),			/* 48 */
-	cdev_notdef(),			/* 49 */
+	cdev_bio_init(NBIO,bio),	/* 49: ioctl tunnel */
 	cdev_systrace_init(NSYSTRACE,systrace),	/* 50 system call tracing */
 #ifdef XFS
 	cdev_xfs_init(NXFS,xfs_dev),	/* 51: xfs communication device */
@@ -201,8 +202,8 @@ int chrtoblktbl[] = {
 	/*  5 */	NODEV,
 	/*  6 */	NODEV,
 	/*  7 */	NODEV,
-	/*  8 */	4,	/* SCSI disk */
-	/*  9 */	6,	/* SCSI CD-ROM */
+	/*  8 */	4,	/* sd */
+	/*  9 */	6,	/* cd */
 	/* 10 */	NODEV,
 	/* 11 */	NODEV,
 	/* 12 */	NODEV,
@@ -210,16 +211,10 @@ int chrtoblktbl[] = {
 	/* 14 */	NODEV,
 	/* 15 */	NODEV,
 	/* 16 */	NODEV,
-	/* 17 */	NODEV,
-	/* 18 */	7,	/* ram disk */
-	/* 19 */	8,	/* vnode disk */
-	/* 20 */	NODEV,
-	/* 21 */	NODEV,
-	/* 22 */	NODEV,
-	/* 23 */	NODEV,
-	/* 24 */	NODEV,
-	/* 25 */	NODEV,
-	/* 26 */	10,	/* XD disk */
+	/* 17 */	9,	/* ccd */
+	/* 18 */	7,	/* rd */
+	/* 19 */	8,	/* vnd */
+	/* 20 */	5,	/* st */
 };
 int nchrtoblktbl = sizeof(chrtoblktbl) / sizeof(chrtoblktbl[0]);
 

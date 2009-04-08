@@ -1,3 +1,5 @@
+.\"	$OpenBSD: fsinterface.ms,v 1.4 2003/06/02 23:30:09 millert Exp $
+.\"
 .\" Copyright (c) 1986 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -250,7 +248,7 @@ otherwise, the inode describes the next directory to be searched.
 The inode returned may be used in various ways by the caller;
 it may be examined, the file may be read or written,
 types and access may be checked, and fields may be modified.
-Modified inodes are automatically written back the the filesystem
+Modified inodes are automatically written back to the filesystem
 on disk when the last reference is released with \fIiput\fP.
 Although the details are considerably different,
 the same general scheme is used in the faster filesystem in 4.2BSD
@@ -988,7 +986,7 @@ A file offset of type \fIoff_t\fP.
 .IP offp
 A pointer to file offset of type \fIoff_t\fP.
 .IP whence
-One of L_SET, L_INCR, or L_XTND.
+One of SEEK_SET, SEEK_CUR, or SEEK_END.
 .IP fhp
 A pointer to a file handle buffer.
 .sp

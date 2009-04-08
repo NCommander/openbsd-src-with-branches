@@ -1,8 +1,9 @@
-/*	$NetBSD: db_write_cmd.c,v 1.5 1994/10/09 08:56:30 mycroft Exp $	*/
+/*	$OpenBSD: db_write_cmd.c,v 1.9 2007/09/13 17:14:17 miod Exp $	*/
+/*	$NetBSD: db_write_cmd.c,v 1.6 1996/02/05 01:57:25 christos Exp $	*/
 
 /* 
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
  * 
  * Permission to use, copy, modify and distribute this software and its
@@ -11,7 +12,7 @@
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
  * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
  * 
@@ -22,8 +23,8 @@
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
  * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub,  Carnegie Mellon University
  *	Date:	7/90
@@ -32,31 +33,31 @@
 #include <sys/param.h>
 #include <sys/proc.h>
 
+#include <uvm/uvm_extern.h>
+
 #include <machine/db_machdep.h>
 
 #include <ddb/db_lex.h>
 #include <ddb/db_access.h>
 #include <ddb/db_command.h>
 #include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_output.h>
 
 /*
  * Write to file.
  */
 /*ARGSUSED*/
 void
-db_write_cmd(address, have_addr, count, modif)
-	db_expr_t	address;
-	boolean_t	have_addr;
-	db_expr_t	count;
-	char *		modif;
+db_write_cmd(db_expr_t	address, boolean_t have_addr, db_expr_t count,
+    char *modif)
 {
-	register
 	db_addr_t	addr;
-	register
 	db_expr_t	old_value;
 	db_expr_t	new_value;
-	register int	size;
+	int		size;
 	boolean_t	wrote_one = FALSE;
+	char		tmpfmt[28];
 
 	addr = (db_addr_t) address;
 
@@ -72,14 +73,18 @@ db_write_cmd(address, have_addr, count, modif)
 		size = 4;
 		break;
 	    default:
+		size = -1;
 		db_error("Unknown size\n");
 		/*NOTREACHED*/
 	}
 
 	while (db_expression(&new_value)) {
 	    old_value = db_get_value(addr, size, FALSE);
-	    db_printsym(addr, DB_STGY_ANY);
-	    db_printf("\t\t%#8n\t=\t%#8n\n", old_value, new_value);
+	    db_printsym(addr, DB_STGY_ANY, db_printf);
+	    db_printf("\t\t%s\t", db_format(tmpfmt, sizeof tmpfmt,
+	      old_value, DB_FORMAT_N, 0, 8));
+	    db_printf("=\t%s\n",  db_format(tmpfmt, sizeof tmpfmt,
+	      new_value, DB_FORMAT_N, 0, 8));
 	    db_put_value(addr, size, new_value);
 	    addr += size;
 

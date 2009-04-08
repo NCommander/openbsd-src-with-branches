@@ -1,4 +1,5 @@
-/*      $NetBSD: n_floor.c,v 1.1 1995/10/10 23:36:48 ragge Exp $ */
+/*	$OpenBSD: n_floor.c,v 1.9 2008/12/09 20:00:35 martynas Exp $	*/
+/*	$NetBSD: n_floor.c,v 1.1 1995/10/10 23:36:48 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,6 +33,9 @@
 static char sccsid[] = "@(#)floor.c	8.1 (Berkeley) 6/4/93";
 #endif /* not lint */
 
+#include <sys/cdefs.h>
+#include <math.h>
+
 #include "mathimpl.h"
 
 vc(L, 4503599627370496.0E0 ,0000,5c00,0000,0000, 55, 1.0) /* 2**55 */
@@ -54,16 +54,11 @@ ic(L, 4503599627370496.0E0, 52, 1.0)			  /* 2**52 */
  *	customary for IEEE 754.  No other signal can be emitted.
  */
 double
-floor(x)
-double x;
+floor(double x)
 {
 	volatile double y;
 
-	if (
-#if !defined(vax)&&!defined(tahoe)
-		x != x ||	/* NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
-		x >= L)		/* already an even integer */
+	if (isnan(x) ||	x >= L)		/* already an even integer */
 		return x;
 	else if (x < (double)0)
 		return -ceil(-x);
@@ -75,16 +70,11 @@ double x;
 }
 
 double
-ceil(x)
-double x;
+ceil(double x)
 {
 	volatile double y;
 
-	if (
-#if !defined(vax)&&!defined(tahoe)
-		x != x ||	/* NaN */
-#endif	/* !defined(vax)&&!defined(tahoe) */
-		x >= L)		/* already an even integer */
+	if (isnan(x) ||	x >= L)		/* already an even integer */
 		return x;
 	else if (x < (double)0)
 		return -floor(-x);
@@ -95,7 +85,6 @@ double x;
 	}
 }
 
-#ifndef ns32000			/* rint() is in ./NATIONAL/support.s */
 /*
  * algorithm for rint(x) in pseudo-pascal form ...
  *
@@ -107,7 +96,7 @@ double x;
  * 	  = 2**52; for IEEE 754 Double
  * real	s,t;
  * begin
- * 	if x != x then return x;		... NaN
+ * 	if isnan(x) then return x;		... NaN
  * 	if |x| >= L then return x;		... already an integer
  * 	s := copysign(L,x);
  * 	t := x + s;				... = (x+s) rounded to integer
@@ -118,21 +107,23 @@ double x;
  *	customary for IEEE 754.  No other signal can be emitted.
  */
 double
-rint(x)
-double x;
+rint(double x)
 {
 	double s;
 	volatile double t;
 	const double one = 1.0;
 
-#if !defined(vax)&&!defined(tahoe)
-	if (x != x)				/* NaN */
+	if (isnan(x))
 		return (x);
-#endif	/* !defined(vax)&&!defined(tahoe) */
-	if (copysign(x,one) >= L)		/* already an integer */
-	    return (x);
+
+	if (copysign(x, one) >= L)	/* already an integer */
+		return (x);
+
 	s = copysign(L,x);
 	t = x + s;				/* x+s rounded to integer */
 	return (t - s);
 }
-#endif	/* not national */
+
+#ifdef __weak_alias    
+__weak_alias(rintl, rint);
+#endif /* __weak_alias */

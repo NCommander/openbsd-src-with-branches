@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: siotty.c,v 1.6 2008/01/23 16:37:56 jsing Exp $ */
 /* $NetBSD: siotty.c,v 1.9 2002/03/17 19:40:43 atatat Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -65,7 +58,7 @@ static const u_int8_t ch0_regs[6] = {
 	WR5_TX8BIT | WR5_TXENBL | WR5_DTR | WR5_RTS, /* Tx */
 };
 
-static struct speedtab siospeedtab[] = {
+static const struct speedtab siospeedtab[] = {
 	{ 2400,	WR4_BAUD24, },
 	{ 4800,	WR4_BAUD48, },
 	{ 9600,	WR4_BAUD96, },
@@ -93,7 +86,7 @@ const struct cfattach siotty_ca = {
 	sizeof(struct siotty_softc), siotty_match, siotty_attach
 };
 
-const struct cfdriver siotty_cd = {
+struct cfdriver siotty_cd = {
         NULL, "siotty", DV_TTY
 };
 
@@ -323,7 +316,7 @@ siomctl(sc, control, op)
 	switch (op) {
 	case DMSET:
 		wr5 &= ~(WR5_BREAK|WR5_DTR|WR5_RTS);
-		/* FALLTHRU */
+		/* FALLTHROUGH */
 	case DMBIS:
 		wr5 |= val;
 		break;
@@ -537,6 +530,9 @@ sioioctl(dev, cmd, data, flag, p)
 		siomctl(sc, *(int *)data, DMBIC);
 		break;
 	case TIOCSFLAGS: /* Instruct how serial port behaves */
+		error = suser(p, 0);
+		if (error != 0)
+			return EPERM;
 		sc->sc_flags = *(int *)data;
 		break;
 	case TIOCGFLAGS: /* Return current serial port state */
@@ -599,7 +595,7 @@ struct consdev syscons = {
 	nullcnpollc,
 	NULL,
 	NODEV,
-	CN_REMOTE,
+	CN_HIGHPRI,
 };
 
 /* EXPORT */ void

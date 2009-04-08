@@ -1,0 +1,18 @@
+dnl	$OpenBSD$
+Installation is supported from several media types, including:
+
+	CD-ROM
+	FFS partitions (for upgrades only)
+dnl	DOS (FAT) partitions
+dnl	EXT2 partitions
+	FTP
+	HTTP
+
+Although you can access the distribution sets directly from the CD-ROM or
+from one of the FTP mirrors over the internet, you may wish to transfer
+the sets to a local FTP server, or copy them to a partition on the target
+system's disk (for upgrades only).
+
+OpenBSDXferShortPrelude
+
+OpenBSDXferFFS

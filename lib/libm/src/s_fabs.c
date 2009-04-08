@@ -18,18 +18,23 @@ static char rcsid[] = "$NetBSD: s_fabs.c,v 1.7 1995/05/10 20:47:13 jtc Exp $";
  * fabs(x) returns the absolute value of x.
  */
 
-#include "math.h"
+#include <sys/cdefs.h>
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
-	double fabs(double x)
-#else
-	double fabs(x)
-	double x;
-#endif
+double
+fabs(double x)
 {
 	u_int32_t high;
 	GET_HIGH_WORD(high,x);
 	SET_HIGH_WORD(x,high&0x7fffffff);
         return x;
 }
+
+#if LDBL_MANT_DIG == 53
+#ifdef __weak_alias
+__weak_alias(fabsl, fabs);
+#endif /* __weak_alias */
+#endif /* LDBL_MANT_DIG == 53 */

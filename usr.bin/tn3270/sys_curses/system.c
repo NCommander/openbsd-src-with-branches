@@ -1,3 +1,5 @@
+/*	$OpenBSD: system.c,v 1.16 2003/10/22 23:05:11 tedu Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,7 +31,7 @@
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)system.c	4.5 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: system.c,v 1.3 1994/04/10 07:20:35 cgd Exp $";
+static char rcsid[] = "$OpenBSD: system.c,v 1.16 2003/10/22 23:05:11 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -56,13 +54,14 @@ static char rcsid[] = "$Id: system.c,v 1.3 1994/04/10 07:20:35 cgd Exp $";
 #include <sys/wait.h>
 
 #include <errno.h>
-extern int errno;
 
 #include <netdb.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <pwd.h>
+#include <unistd.h>
 
 #include "../general/general.h"
 #include "../ctlr/api.h"
@@ -84,7 +83,7 @@ extern int errno;
 
 #endif
 
-static int shell_pid = 0;
+static pid_t shell_pid = 0;
 static char key[50];			/* Actual key */
 static char *keyname;			/* Name of file with key in it */
 
@@ -212,7 +211,8 @@ doassociate()
 	if ((pwent = getpwuid((int)geteuid())) == 0) {
 	    return -1;
 	}
-	sprintf(promptbuf, "Enter password for user %s:", pwent->pw_name);
+	snprintf(promptbuf, sizeof promptbuf,
+		"Enter password for user %s:", pwent->pw_name);
 	if (api_exch_outcommand(EXCH_CMD_SEND_AUTH) == -1) {
 	    return -1;
 	}
@@ -471,7 +471,7 @@ doconnect()
 	FD_SET(serversock, &fdset);
 	if ((i = select(serversock+1, &fdset,
 		    (fd_set *)0, (fd_set *)0, (struct timeval *)0)) < 0) {
-	    if (errno = EINTR) {
+	    if (errno == EINTR) {
 		continue;
 	    } else {
 		perror("in select waiting for API connection");
@@ -589,8 +589,9 @@ shell_continue()
 static void
 child_died(code)
 {
+    int save_errno = errno;
     union wait status;
-    register int pid;
+    pid_t pid;
 
     while ((pid = wait3((int *)&status, WNOHANG, (struct rusage *)0)) > 0) {
 	if (pid == shell_pid) {
@@ -613,6 +614,7 @@ child_died(code)
 	}
     }
     signal(SIGCHLD, child_died);
+    errno = save_errno;
 }
 
 
@@ -630,25 +632,21 @@ char	*argv[];
 {
     int length;
     struct sockaddr_in server;
-    char sockNAME[100];
+    char sockNAME[200+MAXHOSTNAMELEN];
     static char **whereAPI = 0;
     int fd;
     struct timeval tv;
     long ikey;
-    extern long random();
-    extern char *mktemp();
-    extern char *strcpy();
 
-    /* First, create verification file. */
-    do {
-	keyname = mktemp(strdup("/tmp/apiXXXXXX"));
-	fd = open(keyname, O_RDWR|O_CREAT|O_EXCL, IREAD|IWRITE);
-    } while ((fd == -1) && (errno == EEXIST));
-
-    if (fd == -1) {
+    if ((keyname = strdup("/tmp/apiXXXXXXXXXX")) == NULL)
+	    err(1, "strdup");
+    if ((fd = mkstemp(keyname)) == -1) {
 	perror("open");
+	free(keyname);
 	return 0;
     }
+    if ((keyname = strdup(sockNAME)) == NULL)
+	    err(1, "strdup");
 
     /* Now, get seed for random */
 
@@ -660,7 +658,7 @@ char	*argv[];
     do {
 	ikey = random();
     } while (ikey == 0);
-    sprintf(key, "%lu\n", (unsigned long) ikey);
+    snprintf(key, sizeof key, "%lu\n", (unsigned long) ikey);
     if (write(fd, key, strlen(key)) != strlen(key)) {
 	perror("write");
 	return 0;
@@ -692,14 +690,16 @@ char	*argv[];
     }
     listen(serversock, 1);
     /* Get name to advertise in address list */
-    strcpy(sockNAME, "API3270=");
+    strlcpy(sockNAME, "API3270=", sizeof sockNAME);
     gethostname(sockNAME+strlen(sockNAME), sizeof sockNAME-strlen(sockNAME));
     if (strlen(sockNAME) > (sizeof sockNAME-(10+strlen(keyname)))) {
 	fprintf(stderr, "Local hostname too large; using 'localhost'.\n");
-	strcpy(sockNAME, "localhost");
+	strlcpy(sockNAME, "localhost", sizeof sockNAME);
     }
-    sprintf(sockNAME+strlen(sockNAME), ":%u", ntohs(server.sin_port));
-    sprintf(sockNAME+strlen(sockNAME), ":%s", keyname);
+    snprintf(sockNAME+strlen(sockNAME), sizeof(sockNAME) - strlen(sockNAME),
+	":%u", ntohs(server.sin_port));
+    snprintf(sockNAME+strlen(sockNAME), sizeof(sockNAME) - strlen(sockNAME),
+	":%s", keyname);
 
     if (whereAPI == 0) {
 	char **ptr, **nextenv;
@@ -730,7 +730,7 @@ char	*argv[];
 	    state = UNCONNECTED;
 	}
     } else {				/* New process */
-	register int i;
+	int i;
 
 	for (i = 3; i < 30; i++) {
 	    (void) close(i);
@@ -740,13 +740,13 @@ char	*argv[];
 	    extern char *getenv();
 
 	    cmdname = getenv("SHELL");
-	    execlp(cmdname, cmdname, 0);
+	    execlp(cmdname, cmdname, (char *)NULL);
 	    perror("Exec'ing new shell...\n");
-	    exit(1);
+	    _exit(1);
 	} else {
 	    execvp(argv[1], &argv[1]);
 	    perror("Exec'ing command.\n");
-	    exit(1);
+	    _exit(1);
 	}
 	/*NOTREACHED*/
     }

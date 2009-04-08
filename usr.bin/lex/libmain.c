@@ -1,17 +1,20 @@
+/*	$OpenBSD: libmain.c,v 1.5 2002/02/16 21:27:47 millert Exp $	*/
+
 /* libmain - flex run-time support library "main" function */
 
-/* $Header: /a/cvsroot/src/usr.bin/lex/libmain.c,v 1.3 1995/06/05 19:44:52 pk Exp $ */
+/* $Header: /cvs/src/usr.bin/lex/libmain.c,v 1.5 2002/02/16 21:27:47 millert Exp $ */
 
 #include <sys/cdefs.h>
 
-int yylex __P((void));
-int main __P((int, char **, char **));
+int yylex(void);
+int main(int, char **);
 
+/* ARGSUSED */
 int
-main( argc, argv, envp )
-int argc;
-char *argv[];
-char *envp[];
-	{
-	return yylex();
-	}
+main(int argc, char *argv[])
+{
+	while (yylex() != 0)
+		;
+
+	return 0;
+}

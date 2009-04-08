@@ -1,5 +1,4 @@
-/*	$NetBSD: readdir.c,v 1.5 1995/02/25 08:51:35 cgd Exp $	*/
-
+/*	$OpenBSD: readdir.c,v 1.13 2008/04/04 21:26:07 okan Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,49 +28,81 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)readdir.c	8.3 (Berkeley) 9/29/94";
-#else
-static char rcsid[] = "$NetBSD: readdir.c,v 1.5 1995/02/25 08:51:35 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
 #include <dirent.h>
+#include <string.h>
+#include <errno.h>
+#include "thread_private.h"
 
 /*
  * get next entry in a directory.
  */
-struct dirent *
-readdir(dirp)
-	register DIR *dirp;
+int
+_readdir_unlocked(DIR *dirp, struct dirent **result, int skipdeleted)
 {
-	register struct dirent *dp;
+	struct dirent *dp;
 
+	*result = NULL;
 	for (;;) {
-		if (dirp->dd_loc >= dirp->dd_size) {
-			if (dirp->dd_flags & __DTF_READALL)
-				return (NULL);
+		if (dirp->dd_loc >= dirp->dd_size)
 			dirp->dd_loc = 0;
-		}
-		if (dirp->dd_loc == 0 && !(dirp->dd_flags & __DTF_READALL)) {
+		if (dirp->dd_loc == 0) {
 			dirp->dd_size = getdirentries(dirp->dd_fd,
 			    dirp->dd_buf, dirp->dd_len, &dirp->dd_seek);
-			if (dirp->dd_size <= 0)
-				return (NULL);
+			if (dirp->dd_size == 0)
+				return (0);
+			if (dirp->dd_size < 0)
+				return (-1);
 		}
 		dp = (struct dirent *)(dirp->dd_buf + dirp->dd_loc);
 		if ((long)dp & 03)	/* bogus pointer check */
-			return (NULL);
+			return (-1);
 		if (dp->d_reclen <= 0 ||
 		    dp->d_reclen > dirp->dd_len + 1 - dirp->dd_loc)
-			return (NULL);
+			return (-1);
 		dirp->dd_loc += dp->d_reclen;
-		if (dp->d_ino == 0)
+		/*
+		 * When called from seekdir(), we let it decide on
+		 * the end condition to avoid overshooting: the next
+		 * readdir call should produce the next non-deleted entry,
+		 * and we already advanced dd_loc.
+		 */
+		if (dp->d_ino == 0 && skipdeleted)
 			continue;
-		if (dp->d_type == DT_WHT && (dirp->dd_flags & DTF_HIDEW))
-			continue;
-		return (dp);
+		*result = dp;
+		return (0);
 	}
+}
+
+struct dirent *
+readdir(DIR *dirp)
+{
+	struct dirent *dp;
+
+	_MUTEX_LOCK(&dirp->dd_lock);
+	_readdir_unlocked(dirp, &dp, 1);
+	_MUTEX_UNLOCK(&dirp->dd_lock);
+
+	return (dp);
+}
+
+int
+readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result)
+{
+	struct dirent *dp;
+
+	_MUTEX_LOCK(&dirp->dd_lock);
+	if (_readdir_unlocked(dirp, &dp, 1) != 0) {
+		_MUTEX_UNLOCK(&dirp->dd_lock);
+		return errno;
+	}
+	if (dp != NULL)
+		memcpy(entry, dp,
+		    sizeof (struct dirent) - MAXNAMLEN + dp->d_namlen);
+	_MUTEX_UNLOCK(&dirp->dd_lock);
+	if (dp != NULL)
+		*result = entry;
+	else
+		*result = NULL;
+	return 0;
 }

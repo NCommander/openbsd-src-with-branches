@@ -1,4 +1,5 @@
-/*	$NetBSD: wwdelete.c,v 1.3 1995/09/28 10:35:23 tls Exp $	*/
+/*	$OpenBSD: wwdelete.c,v 1.5 2001/11/19 19:02:18 mpech Exp $	*/
+/*	$NetBSD: wwdelete.c,v 1.4 1996/02/08 21:49:01 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)wwdelete.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: wwdelete.c,v 1.3 1995/09/28 10:35:23 tls Exp $";
+static char rcsid[] = "$OpenBSD: wwdelete.c,v 1.5 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,15 +47,15 @@ static char rcsid[] = "$NetBSD: wwdelete.c,v 1.3 1995/09/28 10:35:23 tls Exp $";
  * Pull w free from the cover list.
  */
 wwdelete(w)
-register struct ww *w;
+struct ww *w;
 {
-	register i;
+	int i;
 
 	for (i = w->ww_i.t; i < w->ww_i.b; i++) {
-		register j;
-		register char *smap = wwsmap[i];
-		register union ww_char *ns = wwns[i];
-		register int nchanged = 0;
+		int j;
+		unsigned char *smap = wwsmap[i];
+		union ww_char *ns = wwns[i];
+		int nchanged = 0;
 
 		for (j = w->ww_i.l; j < w->ww_i.r; j++)
 			if (smap[j] == w->ww_index) {
@@ -71,7 +68,7 @@ register struct ww *w;
 	}
 
 	{
-		register struct ww *wp;
+		struct ww *wp;
 
 		for (wp = w->ww_forw; wp != &wwhead; wp = wp->ww_forw)
 			wp->ww_order--;
@@ -87,7 +84,7 @@ register struct ww *w;
 }
 
 wwdelete1(w, t, b, l, r)
-register struct ww *w;
+struct ww *w;
 {
 	int i;
 	int tt, bb, ll, rr;
@@ -105,11 +102,11 @@ again:
 		goto again;
 	}
 	for (i = tt; i < bb; i++) {
-		register j;
-		register char *smap = wwsmap[i];
-		register union ww_char *ns = wwns[i];
-		register char *win = w->ww_win[i];
-		register union ww_char *buf = w->ww_buf[i];
+		int j;
+		unsigned char *smap = wwsmap[i];
+		union ww_char *ns = wwns[i];
+		char *win = w->ww_win[i];
+		union ww_char *buf = w->ww_buf[i];
 		int nvis = w->ww_nvis[i];
 		int nchanged = 0;
 

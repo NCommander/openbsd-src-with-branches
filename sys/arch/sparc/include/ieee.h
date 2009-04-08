@@ -1,3 +1,4 @@
+/*	$OpenBSD: ieee.h,v 1.4 2008/09/07 20:36:07 martynas Exp $	*/
 /*	$NetBSD: ieee.h,v 1.2 1994/11/20 20:53:10 deraadt Exp $ */
 
 /*
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -82,6 +79,8 @@
 #define	SNG_FRACBITS	23
 
 #define	DBL_EXPBITS	11
+#define	DBL_FRACHBITS	20
+#define	DBL_FRACLBITS	32
 #define	DBL_FRACBITS	52
 
 #ifdef notyet
@@ -90,7 +89,20 @@
 #endif
 
 #define	EXT_EXPBITS	15
+#define	EXT_FRACHBITS	16
+#define	EXT_FRACHMBITS	32
+#define	EXT_FRACLMBITS	32
+#define	EXT_FRACLBITS	32
 #define	EXT_FRACBITS	112
+
+#define	EXT_IMPLICIT_NBIT
+
+#define	EXT_TO_ARRAY32(p, a) do {		\
+	(a)[0] = (uint32_t)(p)->ext_fracl;	\
+	(a)[1] = (uint32_t)(p)->ext_fraclm;	\
+	(a)[2] = (uint32_t)(p)->ext_frachm;	\
+	(a)[3] = (uint32_t)(p)->ext_frach;	\
+} while(0)
 
 struct ieee_single {
 	u_int	sng_sign:1;

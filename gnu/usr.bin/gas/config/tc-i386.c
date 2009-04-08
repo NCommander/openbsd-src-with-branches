@@ -1,3 +1,5 @@
+/*	$OpenBSD: tc-i386.c,v 1.9 2001/09/17 15:41:24 espie Exp $	*/
+
 /* i386.c -- Assemble code for the Intel 80386
    Copyright (C) 1989, 1991, 1992 Free Software Foundation.
    
@@ -25,13 +27,23 @@
   */
 
 #ifndef lint
-static char rcsid[] = "$Id: tc-i386.c,v 1.8 1994/05/25 13:52:48 pk Exp $";
+static char rcsid[] = "$OpenBSD: tc-i386.c,v 1.9 2001/09/17 15:41:24 espie Exp $";
 #endif
 
 #include "as.h"
 
 #include "obstack.h"
 #include "opcode/i386.h"
+
+/* real name for the assembler, translate from C _GLOBAL_OFFSET_TABLE_ */
+#define GLOBAL_OFFSET_TABLE_NAME "__GLOBAL_OFFSET_TABLE_"
+
+/* one more argument for fix_new */
+#ifdef PIC
+#define OPT_ARGS(x,y) x,y
+#else
+#define OPT_ARGS(x,y)  NO_RELOC
+#endif
 
 /* 'md_assemble ()' gathers together information and puts it into a
    i386_insn. */
@@ -481,6 +493,7 @@ struct type_name {
 	{ Imm1, "i1" }, { Control, "control reg" }, {Test, "test reg"},
 	{ FloatReg, "FReg"}, {FloatAcc, "FAcc"},
 	{ JumpAbsolute, "Jump Absolute"},
+	{ RegMMX, "rMMX" },
 	{ 0, "" }
 };
 
@@ -930,13 +943,13 @@ char *line;
 					   implicit registers do not count. */
 					if (i.reg_operands == 2) {
 						unsigned int source, dest;
-						source = (i.types[0] & (Reg|SReg2|SReg3|Control|Debug|Test)) ? 0 : 1;
+						source = (i.types[0] & (Reg|RegMMX|SReg2|SReg3|Control|Debug|Test)) ? 0 : 1;
 						dest = source + 1;
 						i.rm.mode = 3;
 						/* We must be careful to make sure that all segment/control/test/
 						   debug registers go into the i.rm.reg field (despite the whether
 						   they are source or destination operands). */
-						if (i.regs[dest]->reg_type & (SReg2|SReg3|Control|Debug|Test)) {
+						if (i.regs[dest]->reg_type & (RegMMX|SReg2|SReg3|Control|Debug|Test)) {
 							i.rm.reg = i.regs[dest]->reg_num;
 							i.rm.regmem = i.regs[source]->reg_num;
 						} else {
@@ -1052,8 +1065,8 @@ char *line;
 						   into the i.rm.reg field. */
 						if (i.reg_operands) {
 							unsigned int o =
-							    (i.types[0] & (Reg|SReg2|SReg3|Control|Debug|Test)) ? 0 :
-								(i.types[1] & (Reg|SReg2|SReg3|Control|Debug|Test)) ? 1 : 2;
+							    (i.types[0] & (Reg|RegMMX|SReg2|SReg3|Control|Debug|Test)) ? 0 :
+								(i.types[1] & (Reg|RegMMX|SReg2|SReg3|Control|Debug|Test)) ? 1 : 2;
 							/* If there is an extension opcode to put here, the register number
 							   must be put into the regmem field. */
 							if (t->extension_opcode != None)
@@ -1167,7 +1180,8 @@ char *line;
 			default:
 				fix_new (frag_now, p - frag_now->fr_literal, size,
 					 i.disps[0]->X_add_symbol, i.disps[0]->X_subtract_symbol,
-					 i.disps[0]->X_add_number, 1, i.disp_reloc[0], i.disps[0]->X_got_symbol);
+					 i.disps[0]->X_add_number, 1, 
+					 OPT_ARGS(i.disp_reloc[0], i.disps[0]->X_got_symbol) );
 				break;
 			}
 		} else if (t->opcode_modifier & JumpInterSegment) {
@@ -1179,7 +1193,8 @@ char *line;
 			    fix_new (frag_now, p + 1 -  frag_now->fr_literal, 4,
 				     i.imms[1]->X_add_symbol,
 				     i.imms[1]->X_subtract_symbol,
-				     i.imms[1]->X_add_number, 0, NO_RELOC, i.imms[1]->X_got_symbol);
+				     i.imms[1]->X_add_number, 0, 
+					  OPT_ARGS(NO_RELOC, i.imms[1]->X_got_symbol));
 			if (i.imms[0]->X_seg != SEG_ABSOLUTE)
 			    as_bad("can't handle non absolute segment in long call/jmp");
 			md_number_to_chars (p + 5, i.imms[0]->X_add_number, 2);
@@ -1197,28 +1212,38 @@ char *line;
 			/* First the prefix bytes. */
 			for (q = i.prefix; q < i.prefix + i.prefixes; q++) {
 				p =  frag_more (1);
+#ifdef PIC
 				nopbytes += 1;
+#endif
 				md_number_to_chars (p, (unsigned int) *q, 1);
 			}
 			
 			/* Now the opcode; be careful about word order here! */
 			if (fits_in_unsigned_byte(t->base_opcode)) {
+#ifdef PIC
 				nopbytes += 1;
+#endif
 				FRAG_APPEND_1_CHAR (t->base_opcode);
 			} else if (fits_in_unsigned_word(t->base_opcode)) {
 				p =  frag_more (2);
+#ifdef PIC
 				nopbytes += 2;
+#endif
 				/* put out high byte first: can't use md_number_to_chars! */
 				*p++ = (t->base_opcode >> 8) & 0xff;
 				*p = t->base_opcode & 0xff;
 			} else {			/* opcode is either 3 or 4 bytes */
 				if (t->base_opcode & 0xff000000) {
 					p = frag_more (4);
+#ifdef PIC
 					nopbytes += 4;
+#endif
 					*p++ = (t->base_opcode >> 24) & 0xff;
 				} else {
 					p = frag_more (3);
+#ifdef PIC
 					nopbytes += 3;
+#endif
 				}
 				*p++ = (t->base_opcode >> 16) & 0xff;
 				*p++ = (t->base_opcode >>  8) & 0xff;
@@ -1228,14 +1253,18 @@ char *line;
 			/* Now the modrm byte and base index byte (if present). */
 			if (t->opcode_modifier & Modrm) {
 				p =  frag_more (1);
+#ifdef PIC
 				nopbytes += 1;
+#endif
 				/* md_number_to_chars (p, i.rm, 1); */
 				md_number_to_chars (p, (i.rm.regmem<<0 | i.rm.reg<<3 | i.rm.mode<<6), 1);
 				/* If i.rm.regmem == ESP (4) && i.rm.mode != Mode 3 (Register mode)
 				   ==> need second modrm byte. */
 				if (i.rm.regmem == ESCAPE_TO_TWO_BYTE_ADDRESSING && i.rm.mode != 3) {
 					p =  frag_more (1);
+#ifdef PIC
 					nopbytes += 1;
+#endif
 					/* md_number_to_chars (p, i.bi, 1); */
 					md_number_to_chars (p,(i.bi.base<<0 | i.bi.index<<3 | i.bi.scale<<6), 1);
 				}
@@ -1264,7 +1293,9 @@ char *line;
 							p =  frag_more (4);
 							fixP = fix_new (frag_now, p -  frag_now->fr_literal, 4,
 								 i.disps[n]->X_add_symbol, i.disps[n]->X_subtract_symbol,
-								 i.disps[n]->X_add_number, 0, i.disp_reloc[n], i.disps[n]->X_got_symbol);
+								 i.disps[n]->X_add_number, 0, 
+								 OPT_ARGS(i.disp_reloc[n], i.disps[n]->X_got_symbol)
+								 );
 #ifdef PIC
 							if (i.disps[n]->X_got_symbol) {
 								fixP->fx_pcrel_adjust = nopbytes;
@@ -1306,7 +1337,8 @@ char *line;
 							p = frag_more (size);
 							fixP = fix_new (frag_now, p - frag_now->fr_literal, size,
 								 i.imms[n]->X_add_symbol, i.imms[n]->X_subtract_symbol,
-								 i.imms[n]->X_add_number, 0, NO_RELOC, i.imms[n]->X_got_symbol);
+								 i.imms[n]->X_add_number, 0, 
+								 OPT_ARGS(NO_RELOC, i.imms[n]->X_got_symbol));
 #ifdef PIC
 							if (i.imms[n]->X_got_symbol) {
 								fixP->fx_pcrel_adjust = nopbytes;
@@ -1335,6 +1367,7 @@ static int i386_operand (operand_string)
 char *operand_string;
 {
 	register char *op_string = operand_string;
+	char *tmpbuf = 0;
 	
 	/* Address of '\0' at end of operand_string. */
 	char * end_of_operand_string = operand_string + strlen(operand_string);
@@ -1430,7 +1463,7 @@ char *operand_string;
 			break;
 		default:
 		seg_unimplemented:
-			as_bad("Unimplemented segment type %d in parse_operand", exp_seg);
+			as_bad("Unimplemented segment type %d in parse_operand(%s)", exp_seg, operand_string);
 			return 0;
 		}
 		/* shorten this type of this operand if the instruction wants
@@ -1592,7 +1625,9 @@ char *operand_string;
 			char *save_input_line_pointer;
 			exp = &disp_expressions[i.disp_operands];
 			i.disps[this_operand] = exp;
+#ifdef PIC
 			i.disp_reloc[this_operand] = NO_RELOC;
+#endif
 			i.disp_operands++;
 			save_input_line_pointer = input_line_pointer;
 			input_line_pointer = displacement_string_start;
@@ -1606,9 +1641,9 @@ char *operand_string;
 			 * into a temporary buffer...
 			 */
 			register char *cp;
-			if (flagseen['k'] &&
+			if (picmode &&
 				(cp = strchr(input_line_pointer,'@'))) {
-				char tmpbuf[BUFSIZ];
+				tmpbuf= xmalloc(strlen(input_line_pointer));
 
 				if (strncmp(cp+1, "PLT", 3) == 0) {
 					i.disp_reloc[this_operand] = RELOC_JMP_TBL;
@@ -1643,12 +1678,18 @@ char *operand_string;
 			    as_bad("Ignoring junk '%s' after expression",input_line_pointer);
 			RESTORE_END_STRING (displacement_string_end);
 			input_line_pointer = save_input_line_pointer;
+			free(tmpbuf);
+			tmpbuf = 0;
 			switch (exp_seg) {
 			case SEG_ABSENT:
 				/* missing expr becomes absolute 0 */
 				as_bad("missing or invalid displacement '%s' taken as 0",
 				       operand_string);
-				if (i.disp_reloc[this_operand] != NO_RELOC || !found_base_index_form || !i.base_reg) {
+				if (
+#ifdef PIC
+				i.disp_reloc[this_operand] != NO_RELOC || 
+#endif
+				!found_base_index_form || !i.base_reg) {
 					i.types[this_operand] |= (Disp|Abs);
 					exp->X_seg = SEG_ABSOLUTE;
 					exp->X_add_number = 0;
@@ -1663,7 +1704,11 @@ char *operand_string;
 				}
 				break;
 			case SEG_ABSOLUTE:
-				if (i.disp_reloc[this_operand] != NO_RELOC || !found_base_index_form || !i.base_reg || exp->X_add_symbol || exp->X_subtract_symbol || exp->X_add_number != 0)
+				if (
+#ifdef PIC
+				i.disp_reloc[this_operand] != NO_RELOC || 
+#endif
+				!found_base_index_form || !i.base_reg || exp->X_add_symbol || exp->X_subtract_symbol || exp->X_add_number != 0)
 					i.types[this_operand] |= SMALLEST_DISP_TYPE (exp->X_add_number);
 				else {
 #ifdef DEBUGxxx
@@ -1675,7 +1720,11 @@ char *operand_string;
 				break;
 			case SEG_TEXT: case SEG_DATA: case SEG_BSS:
 			case SEG_UNKNOWN:	/* must be 32 bit displacement (i.e. address) */
-				if (i.disp_reloc[this_operand] != NO_RELOC || !found_base_index_form || !i.base_reg || exp->X_add_symbol || exp->X_subtract_symbol || exp->X_add_number != 0)
+				if (
+#ifdef PIC
+					i.disp_reloc[this_operand] != NO_RELOC || 
+#endif
+					!found_base_index_form || !i.base_reg || exp->X_add_symbol || exp->X_subtract_symbol || exp->X_add_number != 0)
 					i.types[this_operand] |= Disp32;
 				else {
 #ifdef DEBUGxxx
@@ -1755,14 +1804,13 @@ register segT	segment;
 				 fragP->fr_symbol,
 				 (symbolS *) 0,
 				 fragP->fr_offset, 1,
-#ifdef PIC
 /* XXX - oops, the JMP_TBL relocation info should have percolated through
  * here, define a field in frag to this?
  */
-	(flagseen['k'] && S_GET_SEGMENT(fragP->fr_symbol) == SEG_UNKNOWN)?
-			RELOC_JMP_TBL :
-#endif
-				 NO_RELOC, (symbolS *)0);
+ 			
+				 OPT_ARGS( \
+				 (picmode && S_GET_SEGMENT(fragP->fr_symbol) == SEG_UNKNOWN)? \
+				 RELOC_JMP_TBL : NO_RELOC, (symbolS *)0));
 			break;
 			
 		default:
@@ -1775,11 +1823,9 @@ register segT	segment;
 				 fragP->fr_symbol,
 				 (symbolS *) 0,
 				 fragP->fr_offset, 1,
-#ifdef PIC
-/*XXX*/	(flagseen['k'] && S_GET_SEGMENT(fragP->fr_symbol) == SEG_UNKNOWN)?
-			RELOC_JMP_TBL :
-#endif
-				NO_RELOC, (symbolS *)0);
+				 OPT_ARGS( \
+/*XXX*/	(picmode && S_GET_SEGMENT(fragP->fr_symbol) == SEG_UNKNOWN)? \
+			RELOC_JMP_TBL : NO_RELOC, (symbolS *)0));
 			break;
 		}
 		frag_wane (fragP);
@@ -1871,7 +1917,7 @@ register fragS *	fragP;
 
 int md_short_jump_size = 2;	/* size of byte displacement jmp */
 int md_long_jump_size  = 5;	/* size of dword displacement jmp */
-int md_reloc_size = 8;		/* Size of relocation record */
+const int md_reloc_size = 8;		/* Size of relocation record */
 
 void md_create_short_jump(ptr, from_addr, to_addr, frag, to_symbol)
 char	*ptr;
@@ -1899,7 +1945,8 @@ symbolS	*to_symbol;
 		md_number_to_chars (ptr, 0xe9, 1); /* opcode for long jmp */
 		md_number_to_chars (ptr + 1, offset, 4);
 		fix_new (frag, (ptr+1) - frag->fr_literal, 4,
-			 to_symbol, (symbolS *) 0, (long) 0, 0, NO_RELOC, (symbolS *)0);
+			 to_symbol, (symbolS *) 0, (long) 0, 0, 
+			 OPT_ARGS(NO_RELOC, (symbolS *)0));
 	} else {
 		offset = to_addr - (from_addr + 5);
 		md_number_to_chars(ptr, (long) 0xe9, 1);
@@ -1913,8 +1960,10 @@ char **argP;
 int *cntP;
 char ***vecP;
 {
+	switch (**argP) {
 #ifdef PIC
-	if (argP && *argP && **argP == 'k') {
+	case 'k':
+	case 'K':
 #if 00
 		char *tmp = xmalloc(3+1+strlen(operand_special_chars));
 		strcpy(tmp, operand_special_chars);
@@ -1930,9 +1979,13 @@ char ***vecP;
 		lex_type['['] = 0;
 
 		/* Predefine GOT symbol */
-		GOT_symbol = symbol_find_or_make("__GLOBAL_OFFSET_TABLE_");
-	}
+		GOT_symbol = symbol_find_or_make(GLOBAL_OFFSET_TABLE_NAME);
+		break;
 #endif
+
+	default:
+		return 0;
+	}
 	return 1;
 }
 
@@ -2065,7 +2118,7 @@ relax_addressT segment_address_in_file;
 	case NO_RELOC:
 		break;
 	case RELOC_32:
-		if (!flagseen['k'] || !S_IS_EXTERNAL(fixP->fx_addsy))
+		if (!picmode || !S_IS_EXTERNAL(fixP->fx_addsy))
 			break;
 		r_symbolnum = fixP->fx_addsy->sy_number;
 		extrn_bit = 1;
@@ -2206,16 +2259,6 @@ symbolS *
     md_undefined_symbol (name)
 char *name;
 {
-#ifdef PIC
-	/* HACK:
-	 * Sun's ld expects __GLOBAL_OFFSET_TABLE_,
-	 * gcc generates _GLOBAL_OFFSET_TABLE_
-	 * should probably fix ld - new SVR4 style??
-	 */
-	if (*name == '_' && *(name+1) == 'G' &&
-				strcmp(name, "_GLOBAL_OFFSET_TABLE_") == 0)
-		return symbol_find("__GLOBAL_OFFSET_TABLE_");
-#endif
 	return 0;
 }
 

@@ -18,9 +18,13 @@ sub main'asm_init
 	($type,$fn,$i386)=@_;
 	$filename=$fn;
 
-	$elf=$cpp=$coff=$aout=$win32=$netware=$mwerks=0;
+	$elf=$cpp=$coff=$aout=$win32=$netware=$mwerks=$openbsd=0;
 	if (	($type eq "elf"))
 		{ $elf=1; require "x86unix.pl"; }
+	elsif (	($type eq "openbsd-elf"))
+		{ $openbsd=$elf=1; require "x86unix.pl"; }
+	elsif (	($type eq "openbsd-a.out"))
+		{ $openbsd=1; require "x86unix.pl"; }
 	elsif (	($type eq "a.out"))
 		{ $aout=1; require "x86unix.pl"; }
 	elsif (	($type eq "coff" or $type eq "gaswin"))
@@ -44,6 +48,8 @@ Pick one target type from
 	coff	- GAS/COFF such as Win32 targets
 	win32	- Windows 95/Windows NT
 	win32n	- Windows 95/Windows NT NASM format
+	openbsd-elf	- OpenBSD elf
+	openbsd-a.out	- OpenBSD a.out
 	nw-nasm - NetWare NASM format
 	nw-mwasm- NetWare Metrowerks Assembler
 EOF

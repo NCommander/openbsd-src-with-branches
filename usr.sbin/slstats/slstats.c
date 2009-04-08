@@ -1,35 +1,43 @@
+/*	$OpenBSD: slstats.c,v 1.19 2004/09/21 21:17:02 jaredy Exp $	*/
+/*	$NetBSD: slstats.c,v 1.6.6.1 1996/06/07 01:42:30 thorpej Exp $	*/
+
 /*
  * print serial line IP statistics:
- *	slstats [-i interval] [-v] [interface] [system] [core]
+ *	slstats [-i interval] [-v] [interface]
+ *
+ * Contributed by Van Jacobson (van@ee.lbl.gov), Dec 31, 1989.
  *
  * Copyright (c) 1989, 1990, 1991, 1992 Regents of the University of
  * California. All rights reserved.
  *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * advertising materials, and other materials related to such
- * distribution and use acknowledge that the software was developed
- * by the University of California, Berkeley.  The name of the
- * University may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
  *
- *	Van Jacobson (van@ee.lbl.gov), Dec 31, 1989:
- *	- Initial distribution.
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  */
 
 #ifndef lint
-/*static char rcsid[] =
-    "@(#) $Header: /a/cvsroot/src/usr.sbin/slstats/slstats.c,v 1.6 1994/11/13 11:20:52 glass Exp $ (LBL)";*/
-static char rcsid[] = "$Id: slstats.c,v 1.6 1994/11/13 11:20:52 glass Exp $";
+static char rcsid[] = "$OpenBSD: slstats.c,v 1.19 2004/09/21 21:17:02 jaredy Exp $";
 #endif
-
-#include <stdio.h>
-#include <paths.h>
-#include <nlist.h>
 
 #define INET
 
@@ -37,9 +45,9 @@ static char rcsid[] = "$Id: slstats.c,v 1.6 1994/11/13 11:20:52 glass Exp $";
 #include <sys/mbuf.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 #include <sys/file.h>
-#include <errno.h>
-#include <signal.h>
+
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
@@ -49,82 +57,104 @@ static char rcsid[] = "$Id: slstats.c,v 1.6 1994/11/13 11:20:52 glass Exp $";
 #include <net/slcompress.h>
 #include <net/if_slvar.h>
 
-struct nlist nl[] = {
-#define N_SOFTC 0
-	{ "_sl_softc" },
-	"",
-};
+#include <ctype.h>
+#include <err.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <paths.h>
+#include <string.h>
+#include <unistd.h>
 
-char	*system = _PATH_UNIX;
-char	*kmemf = _PATH_KMEM;
+extern	char *__progname;	/* from crt0.o */
 
-int	kflag;
 int	vflag;
-unsigned interval = 5;
-int	unit;
+u_int	interval = 5;
+int	s;
+char    interface[IFNAMSIZ];
 
-extern	char *malloc();
-extern	off_t lseek();
+void	catchalarm(int);
+void	intpr(void);
+void	usage(void);
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+int
+main(int argc, char *argv[])
 {
-	--argc; ++argv;
-	while (argc > 0) {
-		if (strcmp(argv[0], "-v") == 0) {
-			++vflag;
-			++argv, --argc;
-			continue;
-		}
-		if (strcmp(argv[0], "-i") == 0 && argv[1] &&
-		    isdigit(argv[1][0])) {
-			interval = atoi(argv[1]);
+	struct ifreq ifr;
+	int ch, unit;
+
+	(void)strlcpy(interface, "sl0", sizeof(interface));
+
+	while ((ch = getopt(argc, argv, "i:v")) != -1) {
+		switch (ch) {
+		case 'i':
+			interval = atoi(optarg);
 			if (interval <= 0)
 				usage();
-			++argv, --argc;
-			++argv, --argc;
-			continue;
-		}
-		if (isdigit(argv[0][0])) {
-			unit = atoi(argv[0]);
-			if (unit < 0)
-				usage();
-			++argv, --argc;
-			continue;
-		}
-		if (kflag)
+			break;
+		case 'v':
+			++vflag;
+			break;
+		default:
 			usage();
-
-		system = *argv;
-		++argv, --argc;
-		if (argc > 0) {
-			kmemf = *argv++;
-			--argc;
-			kflag++;
+			/* NOTREACHED */
 		}
 	}
-	if (kopen(system, kmemf, "slstats") < 0)
-		exit(1);
-	if (knlist(system, nl, "slstats") < 0)
-		exit(1);
+	argc -= optind;
+	argv += optind;
+
+	if (argc > 1)
+		usage();
+
+	if (argc > 0)
+		(void)strlcpy(interface, argv[0], sizeof(interface));
+
+	if (sscanf(interface, "sl%d", &unit) != 1 || unit < 0)
+		errx(1, "invalid interface '%s' specified", interface);
+
+	s = socket(AF_INET, SOCK_DGRAM, 0);
+	if (s < 0)
+		err(1, "couldn't create IP socket");
+	(void)strlcpy(ifr.ifr_name, interface, sizeof(ifr.ifr_name));
+	if (ioctl(s, SIOCGIFFLAGS, &ifr) < 0)
+		errx(1, "nonexistent interface '%s' specified", interface);
+
 	intpr();
 	exit(0);
 }
 
-#define V(offset) ((line % 20)? sc->offset - osc->offset : sc->offset)
-#define AMT (sizeof(*sc) - 2 * sizeof(sc->sc_comp.tstate))
+#define V(offset) ((line % 20)? cur.offset - old.offset : cur.offset)
 
-usage()
+void
+usage(void)
 {
-	static char umsg[] =
-		"usage: slstats [-i interval] [-v] [unit] [system] [core]\n";
 
-	fprintf(stderr, umsg);
+	fprintf(stderr, "usage: %s [-v] [-i interval] [interface]\n",
+	    __progname);
 	exit(1);
 }
 
-u_char	signalled;			/* set if alarm goes off "early" */
+volatile sig_atomic_t	signalled; 	/* set if alarm goes off "early" */
+
+static void
+get_sl_stats(struct sl_stats *curp)
+{
+	struct ifslstatsreq req;
+
+	memset(&req, 0, sizeof(req));
+	(void)strlcpy(req.ifr_name, interface, sizeof(req.ifr_name));
+
+	if (ioctl(s, SIOCGSLSTATS, &req) < 0) {
+		if (errno == ENOTTY)
+			errx(1, "kernel support missing");
+		else
+			err(1, "couldn't get slip statistics");
+	}
+	*curp = req.stats;
+}
 
 /*
  * Print a running summary of interface statistics.
@@ -132,72 +162,62 @@ u_char	signalled;			/* set if alarm goes off "early" */
  * collected over that interval.  Assumes that interval is non-zero.
  * First line printed at top of screen is always cumulative.
  */
-intpr()
+void
+intpr(void)
 {
-	register int line = 0;
-	int oldmask;
-	void catchalarm();
-	struct sl_softc *sc, *osc;
-	off_t addr;
+	struct sl_stats cur, old;
+	sigset_t mask, oldmask;
+	int line = 0;
 
-	addr = nl[N_SOFTC].n_value + unit * sizeof(struct sl_softc);
-	sc = (struct sl_softc *)malloc(AMT);
-	osc = (struct sl_softc *)malloc(AMT);
-	bzero((char *)osc, AMT);
-
+	bzero(&old, sizeof(old));
 	while (1) {
-		if (kread(addr, (char *)sc, AMT) < 0)
-			perror("kmem read");
-		(void)signal(SIGALRM, catchalarm);
+		get_sl_stats(&cur);
+
+		(void)signal(SIGALRM, (void (*)(int))catchalarm);
 		signalled = 0;
 		(void)alarm(interval);
 
 		if ((line % 20) == 0) {
 			printf("%8.8s %6.6s %6.6s %6.6s %6.6s",
-				"IN", "PACK", "COMP", "UNCOMP", "ERR");
+			    "IN", "PACK", "COMP", "UNCOMP", "ERR");
 			if (vflag)
 				printf(" %6.6s %6.6s", "TOSS", "IP");
 			printf(" | %8.8s %6.6s %6.6s %6.6s %6.6s",
-				"OUT", "PACK", "COMP", "UNCOMP", "IP");
+			    "OUT", "PACK", "COMP", "UNCOMP", "IP");
 			if (vflag)
 				printf(" %6.6s %6.6s", "SEARCH", "MISS");
 			putchar('\n');
 		}
-		printf("%8u %6d %6u %6u %6u",
-			V(sc_if.if_ibytes),
-			V(sc_if.if_ipackets),
-			V(sc_comp.sls_compressedin),
-			V(sc_comp.sls_uncompressedin),
-			V(sc_comp.sls_errorin));
+		printf("%8u %6d %6u %6u %6u", V(sl.sl_ibytes),
+		    V(sl.sl_ipackets), V(vj.vjs_compressedin),
+		    V(vj.vjs_uncompressedin), V(vj.vjs_errorin));
 		if (vflag)
-			printf(" %6u %6u",
-				V(sc_comp.sls_tossed),
-				V(sc_if.if_ipackets) -
-				  V(sc_comp.sls_compressedin) -
-				  V(sc_comp.sls_uncompressedin) -
-				  V(sc_comp.sls_errorin));
-		printf(" | %8u %6d %6u %6u %6u",
-			V(sc_if.if_obytes),
-			V(sc_if.if_opackets),
-			V(sc_comp.sls_compressed),
-			V(sc_comp.sls_packets) - V(sc_comp.sls_compressed),
-			V(sc_if.if_opackets) - V(sc_comp.sls_packets));
+			printf(" %6u %6u", V(vj.vjs_tossed),
+			    V(sl.sl_ipackets) - V(vj.vjs_compressedin) -
+			    V(vj.vjs_uncompressedin) - V(vj.vjs_errorin));
+		printf(" | %8u %6d %6u %6u %6u", V(sl.sl_obytes),
+		    V(sl.sl_opackets), V(vj.vjs_compressed),
+		    V(vj.vjs_packets) - V(vj.vjs_compressed),
+		    V(sl.sl_opackets) - V(vj.vjs_packets));
 		if (vflag)
-			printf(" %6u %6u",
-				V(sc_comp.sls_searches),
-				V(sc_comp.sls_misses));
+			printf(" %6u %6u", V(vj.vjs_searches),
+			    V(vj.vjs_misses));
 
 		putchar('\n');
 		fflush(stdout);
 		line++;
-		oldmask = sigblock(sigmask(SIGALRM));
-		if (! signalled) {
-			sigpause(0);
+
+		sigemptyset(&mask);
+		sigaddset(&mask, SIGALRM);
+		sigprocmask(SIG_BLOCK, &mask, &oldmask);
+		if (!signalled) {
+			sigemptyset(&mask);
+			sigsuspend(&mask);
 		}
-		sigsetmask(oldmask);
+		sigprocmask(SIG_BLOCK, &oldmask, NULL);
 		signalled = 0;
 		(void)alarm(interval);
-		bcopy((char *)sc, (char *)osc, AMT);
+		old = cur;
 	}
 }
 
@@ -205,57 +225,9 @@ intpr()
  * Called if an interval expires before sidewaysintpr has completed a loop.
  * Sets a flag to not wait for the alarm.
  */
+/* ARGSUSED */
 void
-catchalarm()
+catchalarm(int signo)
 {
 	signalled = 1;
-}
-
-#include <kvm.h>
-#include <fcntl.h>
-
-kvm_t *kd;
-
-kopen(system, kmemf, errstr)
-	char *system;
-	char *kmemf;
-	char *errstr;
-{
-	if (strcmp(system, _PATH_UNIX) == 0 &&
-	    strcmp(kmemf, _PATH_KMEM) == 0) {
-		system = 0;
-		kmemf = 0;
-	}
-	kd = kvm_open(system, kmemf, NULL, O_RDONLY, "slstats");
-	if (kd == NULL) 
-		return -1;
-	return 0;
-}
-
-int
-knlist(system, nl, errstr)
-	char *system;
-	struct nlist *nl;
-	char *errstr;
-{
-	if (kd == 0)
-		/* kopen() must be called first */
-		abort();
-		
-	if (kvm_nlist(kd, nl) < 0 || nl[0].n_type == 0) {
-		fprintf(stderr, "%s: %s: no namelist\n", errstr, system);
-		return -1;
-	}
-	return 0;
-}
-
-int
-kread(addr, buf, size)
-	off_t addr;
-	char *buf;
-	int size;
-{
-	if (kvm_read(kd, (u_long)addr, buf, size) != size)
-		return -1;
-	return 0;
 }

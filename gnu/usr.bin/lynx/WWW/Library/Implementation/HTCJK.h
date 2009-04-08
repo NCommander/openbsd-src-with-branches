@@ -11,13 +11,17 @@
 #ifndef HTCJK_H
 #define HTCJK_H
 
+#ifndef HTUTILS_H
+#include <HTUtils.h>
+#endif
+
 /*
 **	STATUS CHANGE CODES
 */
 #ifdef ESC
 #undef ESC
 #endif /* ESC */
-#define ESC		'\033'
+#define ESC		CH_ESC  /* S/390 -- gil -- 0098 */
 #define TO_2BCODE	'$'
 #define TO_1BCODE	'('
 
@@ -33,19 +37,25 @@
 #define IS_SJIS_HI1(hi) ((0x81<=hi)&&(hi<=0x9F))	/* 1st lev. */
 #define IS_SJIS_HI2(hi) ((0xE0<=hi)&&(hi<=0xEF))	/* 2nd lev. */
 #define IS_SJIS(hi,lo,in_sjis) (!IS_SJIS_LO(lo)?0:IS_SJIS_HI1(hi)?(in_sjis=1):in_sjis&&IS_SJIS_HI2(hi))
+#define IS_SJIS_2BYTE(hi,lo) (IS_SJIS_LO(lo)&&(IS_SJIS_HI1(hi)||IS_SJIS_HI2(hi)))
+#define IS_SJIS_X0201KANA(lo) ((0xA1<=lo)&&(lo<=0xDF))
 
-#define IS_EUC_LOS(lo)	((0x21<=lo)&&(lo<=0x7E))	/* standard */
 #define IS_EUC_LOX(lo)	((0xA1<=lo)&&(lo<=0xFE))	/* extended */
 #define IS_EUC_HI(hi)	((0xA1<=hi)&&(hi<=0xFE))
-#define IS_EUC(hi,lo) IS_EUC_HI(hi) && (IS_EUC_LOS(lo) || IS_EUC_LOX(lo))
+#define IS_EUC_X0201KANA(hi,lo) ((hi==0x8E)&&(0xA1<=lo)&&(lo<=0xDF))
+#define IS_EUC(hi,lo) ((IS_EUC_HI(hi) && IS_EUC_LOX(lo))||IS_EUC_X0201KANA(hi,lo))
+
+#define IS_JAPANESE_2BYTE(hi,lo) (IS_SJIS_2BYTE(hi,lo) || IS_EUC(hi,lo))
 
 #define IS_BIG5_LOS(lo)	((0x40<=lo)&&(lo<=0x7E))	/* standard */
 #define IS_BIG5_LOX(lo)	((0xA1<=lo)&&(lo<=0xFE))	/* extended */
 #define IS_BIG5_HI(hi)	((0xA1<=hi)&&(hi<=0xFE))
-#define IS_BIG5(hi,lo) IS_BIG5_HI(hi) && (IS_BIG5_LOS(lo) || IS_BIG5_LOX(lo))
+#define IS_BIG5(hi,lo) (IS_BIG5_HI(hi) && (IS_BIG5_LOS(lo) || IS_BIG5_LOX(lo)))
 
-typedef enum _HTkcode {NOKANJI, EUC, SJIS, JIS} HTkcode;
-typedef enum _HTCJKlang {NOCJK, JAPANESE, CHINESE, KOREAN, TAIPEI} HTCJKlang;
+typedef enum {NOKANJI, EUC, SJIS, JIS} HTkcode;
+typedef enum {NOCJK, JAPANESE, CHINESE, KOREAN, TAIPEI} HTCJKlang;
+
+extern HTCJKlang HTCJK;
 
 /*
 **  Function prototypes.
@@ -96,15 +106,17 @@ extern unsigned char * EUC_TO_JIS PARAMS((
 	CONST char *		toA));
 
 extern unsigned char * TO_EUC PARAMS((
-	unsigned char *		jis,
+	CONST unsigned char *	jis,
 	unsigned char *		euc));
 
 extern void TO_SJIS PARAMS((
-	unsigned char *		any,
+	CONST unsigned char *	any,
 	unsigned char *		sjis));
 
 extern void TO_JIS PARAMS((
-	unsigned char *		any,
+	CONST unsigned char *	any,
 	unsigned char *		jis));
+
+extern char *str_kcode PARAMS((HTkcode code));
 
 #endif /* HTCJK_H */

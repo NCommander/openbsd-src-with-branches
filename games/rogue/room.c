@@ -1,3 +1,4 @@
+/*	$OpenBSD: room.c,v 1.8 2004/01/21 19:12:13 espie Exp $	*/
 /*	$NetBSD: room.c,v 1.3 1995/04/22 10:28:17 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)room.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: room.c,v 1.3 1995/04/22 10:28:17 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: room.c,v 1.8 2004/01/21 19:12:13 espie Exp $";
 #endif
 #endif /* not lint */
 
@@ -61,50 +58,46 @@ static char rcsid[] = "$NetBSD: room.c,v 1.3 1995/04/22 10:28:17 cgd Exp $";
 room rooms[MAXROOMS];
 boolean rooms_visited[MAXROOMS];
 
-extern short blind;
-extern boolean detect_monster, jump, passgo, no_skull, ask_quit;
-extern char *nick_name, *fruit, *save_file, *press_space;
-
 #define NOPTS 7
 
-struct option {
-	char *prompt;
+const struct option {
+	const char *prompt;
 	boolean is_bool;
 	char **strval;
 	boolean *bval;
 } options[NOPTS] = {
 	{
 		"Show position only at end of run (\"jump\"): ",
-		1, (char **) 0, &jump
+		1, (char **) NULL, &jump
 	},
 	{
 		"Follow turnings in passageways (\"passgo\"): ",
-		1, (char **) 0, &passgo
+		1, (char **) NULL, &passgo
 	},
 	{
 		"Don't print skull when killed (\"noskull\" or \"notombstone\"): ",
-		1, (char **) 0, &no_skull
+		1, (char **) NULL, &no_skull
 	},
 	{
 		"Ask player before saying 'Okay, bye-bye!' (\"askquit\"): ",
-		1, (char **) 0, &ask_quit
+		1, (char **) NULL, &ask_quit
 	},
 	{
 		"Name (\"name\"): ",
-		0, &nick_name
+		0, &nick_name, (boolean *) NULL
 	},
 	{
 		"Fruit (\"fruit\"): ",
-		0, &fruit
+		0, &fruit, (boolean *) NULL
 	},
 	{
 		"Save file (\"file\"): ",
-		0, &save_file
+		0, &save_file, (boolean *) NULL
 	}
 };
 
-light_up_room(rn)
-int rn;
+void
+light_up_room(int rn)
 {
 	short i, j;
 
@@ -116,7 +109,7 @@ int rn;
 				if (dungeon[i][j] & MONSTER) {
 					object *monster;
 
-					if (monster = object_at(&level_monsters, i, j)) {
+					if ((monster = object_at(&level_monsters, i, j))) {
 						dungeon[monster->row][monster->col] &= (~MONSTER);
 						monster->trail_char =
 							get_dungeon_char(monster->row, monster->col);
@@ -130,7 +123,8 @@ int rn;
 	}
 }
 
-light_passage(row, col)
+void
+light_passage(short row, short col)
 {
 	short i, j, i_end, j_end;
 
@@ -149,8 +143,8 @@ light_passage(row, col)
 	}
 }
 
-darken_room(rn)
-short rn;
+void
+darken_room(short rn)
 {
 	short i, j;
 
@@ -173,10 +167,10 @@ short rn;
 	}
 }
 
-get_dungeon_char(row, col)
-register row, col;
+char
+get_dungeon_char(short row, short col)
 {
-	register unsigned short mask = dungeon[row][col];
+	unsigned short mask = dungeon[row][col];
 
 	if (mask & MONSTER) {
 		return(gmc_row_col(row, col));
@@ -221,8 +215,8 @@ register row, col;
 	return(' ');
 }
 
-get_mask_char(mask)
-register unsigned short mask;
+char
+get_mask_char(unsigned short mask)
 {
 		switch(mask) {
 		case SCROL:
@@ -248,9 +242,8 @@ register unsigned short mask;
 		}
 }
 
-gr_row_col(row, col, mask)
-short *row, *col;
-unsigned short mask;
+void
+gr_row_col(short *row, short *col, unsigned short mask)
 {
 	short rn;
 	short r, c;
@@ -269,7 +262,8 @@ unsigned short mask;
 	*col = c;
 }
 
-gr_room()
+short
+gr_room(void)
 {
 	short i;
 
@@ -280,7 +274,8 @@ gr_room()
 	return(i);
 }
 
-party_objects(rn)
+short
+party_objects(int rn)
 {
 	short i, j, nf = 0;
 	object *obj;
@@ -312,8 +307,8 @@ party_objects(rn)
 	return(nf);
 }
 
-get_room_number(row, col)
-register row, col;
+short
+get_room_number(short row, short col)
 {
 	short i;
 
@@ -326,10 +321,12 @@ register row, col;
 	return(NO_ROOM);
 }
 
-is_all_connected()
+boolean
+is_all_connected(void)
 {
 	short i, starting_room;
 
+	starting_room = 0;
 	for (i = 0; i < MAXROOMS; i++) {
 		rooms_visited[i] = 0;
 		if (rooms[i].is_room & (R_ROOM | R_MAZE)) {
@@ -347,8 +344,8 @@ is_all_connected()
 	return(1);
 }
 
-visit_rooms(rn)
-int rn;
+void
+visit_rooms(int rn)
 {
 	short i;
 	short oth_rn;
@@ -363,7 +360,8 @@ int rn;
 	}
 }
 
-draw_magic_map()
+void
+draw_magic_map(void)
 {
 	short i, j, ch, och;
 	unsigned short mask = (HORWALL | VERTWALL | DOOR | TUNNEL | TRAP | STAIRS |
@@ -399,7 +397,8 @@ draw_magic_map()
 					if (s & MONSTER) {
 						object *monster;
 
-						if (monster = object_at(&level_monsters, i, j)) {
+						if ((monster = object_at(&level_monsters, i, j)))
+						{
 							monster->trail_char = ch;
 						}
 					}
@@ -409,10 +408,8 @@ draw_magic_map()
 	}
 }
 
-dr_course(monster, entering, row, col)
-object *monster;
-boolean entering;
-short row, col;
+void
+dr_course(object *monster, boolean entering, short row, short col)
 {
 	short i, j, k, rn;
 	short r, rr;
@@ -483,8 +480,8 @@ short row, col;
 	}
 }
 
-get_oth_room(rn, row, col)
-short rn, *row, *col;
+boolean
+get_oth_room(short rn, short *row, short *col)
 {
 	short d = -1;
 
@@ -505,7 +502,8 @@ short rn, *row, *col;
 	return(0);
 }
 
-edit_opts()
+void
+edit_opts(void)
 {
 	char save[NOPTS+1][DCOLS];
 	short i, j;
@@ -548,7 +546,7 @@ CH:
 			if (i > 0) {
 				opt_go(--i);
 			} else {
-				sound_bell();
+				beep();
 			}
 			break;
 		case 't':
@@ -563,18 +561,19 @@ CH:
 			}
 		default:
 			if (options[i].is_bool) {
-				sound_bell();
+				beep();
 				break;
 			}
 			j = 0;
-			if ((ch == '\010') || ((ch >= ' ') && (ch <= '~'))) {
+			if ((ch == '\b') || ((ch >= ' ') && (ch <= '~'))) {
 				opt_erase(i);
 				do {
 					if ((ch >= ' ') && (ch <= '~') && (j < MAX_OPT_LEN)) {
 						buf[j++] = ch;
 						buf[j] = '\0';
 						addch(ch);
-					} else if ((ch == '\010') && (j > 0)) {
+					} else if ((ch == '\b' || ch == erasechar()) &&
+					    (j > 0)) {
 						buf[--j] = '\0';
 						move(i, j + strlen(options[i].prompt));
 						addch(' ');
@@ -584,12 +583,17 @@ CH:
 					ch = rgetchar();
 				} while ((ch != '\012') && (ch != '\015') && (ch != '\033'));
 				if (j != 0) {
-					(void) strcpy(*(options[i].strval), buf);
+					/* We rely on the option string being
+					 * allocated to hold MAX_OPT_LEN+2
+					 * bytes. This is arranged in init.c.
+					 */
+					(void) strlcpy(*(options[i].strval),
+					    buf, MAX_OPT_LEN+2);
 				}
 				opt_show(i);
 				goto CH;
 			} else {
-				sound_bell();
+				beep();
 			}
 			break;
 		}
@@ -603,11 +607,11 @@ CH:
 	}
 }
 
-opt_show(i)
-int i;
+void
+opt_show(int i)
 {
-	char *s;
-	struct option *opt = &options[i];
+	const char *s;
+	const struct option *opt = &options[i];
 
 	opt_erase(i);
 
@@ -619,25 +623,25 @@ int i;
 	addstr(s);
 }
 
-opt_erase(i)
-int i;
+void
+opt_erase(int i)
 {
-	struct option *opt = &options[i];
+	const struct option *opt = &options[i];
 
 	mvaddstr(i, 0, opt->prompt);
 	clrtoeol();
 }
 
-opt_go(i)
-int i;
+void
+opt_go(int i)
 {
 	move(i, strlen(options[i].prompt));
 }
 
-do_shell()
+void
+do_shell(void)
 {
-#ifdef UNIX
-	char *sh;
+	const char *sh;
 
 	md_ignore_signals();
 	if (!(sh = md_getenv("SHELL"))) {
@@ -651,5 +655,4 @@ do_shell()
 	start_window();
 	wrefresh(curscr);
 	md_heed_signals();
-#endif
 }

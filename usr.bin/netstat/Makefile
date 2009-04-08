@@ -1,10 +1,8 @@
-#	$NetBSD: Makefile,v 1.11 1995/10/03 21:42:34 thorpej Exp $
-#	from: @(#)Makefile	8.1 (Berkeley) 6/12/93
+#	$OpenBSD: Makefile,v 1.18 2007/06/04 12:20:24 henning Exp $
 
 PROG=	netstat
-SRCS=	if.c inet.c iso.c main.c mbuf.c mroute.c ns.c route.c \
-	tp_astring.c unix.c
-.PATH:	${.CURDIR}/../../sys/netiso
+SRCS=	if.c inet.c inet6.c main.c mbuf.c mroute.c route.c \
+	unix.c atalk.c mroute6.c net80211.c show.c
 BINGRP=	kmem
 BINMODE=2555
 LDADD=	-lkvm

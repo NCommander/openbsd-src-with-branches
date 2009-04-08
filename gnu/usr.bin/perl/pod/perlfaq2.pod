@@ -1,6 +1,6 @@
 =head1 NAME
 
-perlfaq2 - Obtaining and Learning about Perl ($Revision: 10144 $)
+perlfaq2 - Obtaining and Learning about Perl
 
 =head1 DESCRIPTION
 

@@ -1,68 +1,72 @@
 /*
- * Copyright (c) 1999 Todd C. Miller <Todd.Miller@courtesan.com>
- * All rights reserved.
+ * Copyright (c) 1999-2005, 2007-2008 Todd C. Miller <Todd.Miller@courtesan.com>
  *
- * This code is derived from software contributed by Frank Cusack
- * <fcusack@fcusack.com>.
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * 4. Products derived from this software may not be called "Sudo" nor
- *    may "Sudo" appear in their names without specific prior written
- *    permission from the author.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
-#include "config.h"
+#include <config.h>
 
+#include <sys/types.h>
+#include <sys/param.h>
 #include <stdio.h>
 #ifdef STDC_HEADERS
-#include <stdlib.h>
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
 #endif /* STDC_HEADERS */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#include <sys/param.h>
-#include <sys/types.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
 #include <pwd.h>
 #include <krb5.h>
+#ifdef HAVE_HEIMDAL
+#include <com_err.h>
+#endif
 
 #include "sudo.h"
 #include "sudo_auth.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: kerb5.c,v 1.10 1999/10/13 02:34:55 millert Exp $";
+__unused static const char rcsid[] = "$Sudo: kerb5.c,v 1.36 2008/11/09 14:13:13 millert Exp $";
 #endif /* lint */
 
-static int verify_krb_v5_tgt __P((krb5_context, krb5_ccache, char *));
+#ifdef HAVE_HEIMDAL
+# define extract_name(c, p)		krb5_principal_get_comp_string(c, p, 1)
+# define krb5_free_data_contents(c, d)	krb5_data_free(d)
+#else
+# define extract_name(c, p)		(krb5_princ_component(c, p, 1)->data)
+#endif
+
+#ifndef HAVE_KRB5_VERIFY_USER
+static int verify_krb_v5_tgt __P((krb5_context, krb5_creds *, char *));
+#endif
 static struct _sudo_krb5_data {
     krb5_context	sudo_context;
     krb5_principal	princ;
@@ -70,7 +74,23 @@ static struct _sudo_krb5_data {
 } sudo_krb5_data = { NULL, NULL, NULL };
 typedef struct _sudo_krb5_data *sudo_krb5_datap;
 
-extern krb5_cc_ops krb5_mcc_ops;
+#ifndef HAVE_KRB5_GET_INIT_CREDS_OPT_ALLOC
+static krb5_error_code
+krb5_get_init_creds_opt_alloc(context, opts)
+    krb5_context		context;
+    krb5_get_init_creds_opt   **opts;
+{
+    *opts = emalloc(sizeof(krb5_get_init_creds_opt));
+    return 0;
+}
+
+static void
+krb5_get_init_creds_opt_free(opts)
+    krb5_get_init_creds_opt *opts;
+{
+    free(opts);
+}
+#endif
 
 int
 kerb5_init(pw, promptp, auth)
@@ -85,19 +105,20 @@ kerb5_init(pw, promptp, auth)
     char		cache_name[64];
     char		*pname;
 
-    auth->data = (VOID *) &sudo_krb5_data; /* Stash all our data here */
+    auth->data = (void *) &sudo_krb5_data; /* Stash all our data here */
 
-    if (error = krb5_init_context(&(sudo_krb5_data.sudo_context))) {
-	log_error(NO_EXIT|NO_MAIL, 
-		  "%s: unable to initialize context: %s", auth->name,
-		  error_message(error));
+#ifdef HAVE_KRB5_INIT_SECURE_CONTEXT
+    error = krb5_init_secure_context(&(sudo_krb5_data.sudo_context));
+#else
+    error = krb5_init_context(&(sudo_krb5_data.sudo_context));
+#endif
+    if (error)
 	return(AUTH_FAILURE);
-    }
     sudo_context = sudo_krb5_data.sudo_context;
 
-    if (error = krb5_parse_name(sudo_context, pw->pw_name,
-	&(sudo_krb5_data.princ))) {
-	log_error(NO_EXIT|NO_MAIL, 
+    if ((error = krb5_parse_name(sudo_context, pw->pw_name,
+	&(sudo_krb5_data.princ)))) {
+	log_error(NO_EXIT|NO_MAIL,
 		  "%s: unable to parse '%s': %s", auth->name, pw->pw_name,
 		  error_message(error));
 	return(AUTH_FAILURE);
@@ -109,7 +130,7 @@ kerb5_init(pw, promptp, auth)
      * The API does not currently provide this unless the auth is standalone.
      */
 #if 1
-    if (error = krb5_unparse_name(sudo_context, princ, &pname)) {
+    if ((error = krb5_unparse_name(sudo_context, princ, &pname))) {
 	log_error(NO_EXIT|NO_MAIL,
 		  "%s: unable to unparse princ ('%s'): %s", auth->name,
 		  pw->pw_name, error_message(error));
@@ -123,37 +144,21 @@ kerb5_init(pw, promptp, auth)
     free(pname);
 #endif
 
-    /* For CNS compatibility */
-    if (error = krb5_cc_register(sudo_context, &krb5_mcc_ops, FALSE)) {
-	if (error != KRB5_CC_TYPE_EXISTS) {
-	    log_error(NO_EXIT|NO_MAIL, 
-		      "%s: unable to use Memory ccache: %s", auth->name,
-		      error_message(error));
-	    return(AUTH_FAILURE);
-	}
-    }
-
     (void) snprintf(cache_name, sizeof(cache_name), "MEMORY:sudocc_%ld",
 		    (long) getpid());
-    if (error = krb5_cc_resolve(sudo_context, cache_name,
-	&(sudo_krb5_data.ccache))) {
-	log_error(NO_EXIT|NO_MAIL, 
+    if ((error = krb5_cc_resolve(sudo_context, cache_name,
+	&(sudo_krb5_data.ccache)))) {
+	log_error(NO_EXIT|NO_MAIL,
 		  "%s: unable to resolve ccache: %s", auth->name,
 		  error_message(error));
 	return(AUTH_FAILURE);
     }
     ccache = sudo_krb5_data.ccache;
 
-    if (error = krb5_cc_initialize(sudo_context, ccache, princ)) {
-	log_error(NO_EXIT|NO_MAIL, 
-		  "%s: unable to initialize ccache: %s", auth->name,
-		  error_message(error));
-	return(AUTH_FAILURE);
-    }
-
     return(AUTH_SUCCESS);
 }
 
+#ifdef HAVE_KRB5_VERIFY_USER
 int
 kerb5_verify(pw, pass, auth)
     struct passwd *pw;
@@ -163,43 +168,87 @@ kerb5_verify(pw, pass, auth)
     krb5_context	sudo_context;
     krb5_principal	princ;
     krb5_ccache		ccache;
-    krb5_creds		creds;
     krb5_error_code	error;
-    krb5_get_init_creds_opt opts;
-    char		cache_name[64];
 
     sudo_context = ((sudo_krb5_datap) auth->data)->sudo_context;
     princ = ((sudo_krb5_datap) auth->data)->princ;
     ccache = ((sudo_krb5_datap) auth->data)->ccache;
 
-    /* Initialize options to defaults */
-    krb5_get_init_creds_opt_init(&opts);
-
-    /* Note that we always obtain a new TGT to verify the user */
-    if (error = krb5_get_init_creds_password(sudo_context, &creds, princ,
-					     pass, krb5_prompter_posix,
-					     NULL, 0, NULL, &opts)) {
-	if (error == KRB5KRB_AP_ERR_BAD_INTEGRITY) /* Bad password */
-	    return(AUTH_FAILURE);
-	/* Some other error */
-	log_error(NO_EXIT|NO_MAIL, 
-		  "%s: unable to get credentials: %s", auth->name,
-		  error_message(error));
-	return(AUTH_FAILURE);
-    }
-
-    /* Stash the TGT so we can verify it. */
-    if (error = krb5_cc_store_cred(sudo_context, ccache, &creds)) {
-	log_error(NO_EXIT|NO_MAIL, 
-		  "%s: unable to store credentials: %s", auth->name,
-		  error_message(error));
-    } else {
-	error = verify_krb_v5_tgt(sudo_context, ccache, auth->name);
-    }
-
-    krb5_free_cred_contents(sudo_context, &creds);
+    error = krb5_verify_user(sudo_context, princ, ccache, pass, 1, NULL);
     return (error ? AUTH_FAILURE : AUTH_SUCCESS);
 }
+#else
+int
+kerb5_verify(pw, pass, auth)
+    struct passwd *pw;
+    char *pass;
+    sudo_auth *auth;
+{
+    krb5_context	sudo_context;
+    krb5_principal	princ;
+    krb5_creds		credbuf, *creds = NULL;
+    krb5_ccache		ccache;
+    krb5_error_code	error;
+    krb5_get_init_creds_opt *opts = NULL;
+
+    sudo_context = ((sudo_krb5_datap) auth->data)->sudo_context;
+    princ = ((sudo_krb5_datap) auth->data)->princ;
+    ccache = ((sudo_krb5_datap) auth->data)->ccache;
+
+    /* Set default flags based on the local config file. */
+    error = krb5_get_init_creds_opt_alloc(sudo_context, &opts);
+    if (error) {
+	log_error(NO_EXIT|NO_MAIL,
+		  "%s: unable to allocate options: %s", auth->name,
+		  error_message(error));
+	goto done;
+    }
+#ifdef HAVE_HEIMDAL
+    krb5_get_init_creds_opt_set_default_flags(sudo_context, NULL,
+	krb5_principal_get_realm(sudo_context, princ), opts);
+#endif
+
+    /* Note that we always obtain a new TGT to verify the user */
+    if ((error = krb5_get_init_creds_password(sudo_context, &credbuf, princ,
+					     pass, krb5_prompter_posix,
+					     NULL, 0, NULL, opts))) {
+	/* Don't print error if just a bad password */
+	if (error != KRB5KRB_AP_ERR_BAD_INTEGRITY)
+	    log_error(NO_EXIT|NO_MAIL,
+		      "%s: unable to get credentials: %s", auth->name,
+		      error_message(error));
+	goto done;
+    }
+    creds = &credbuf;
+
+    /* Verify the TGT to prevent spoof attacks. */
+    if ((error = verify_krb_v5_tgt(sudo_context, creds, auth->name)))
+	goto done;
+
+    /* Store cred in cred cache. */
+    if ((error = krb5_cc_initialize(sudo_context, ccache, princ))) {
+	log_error(NO_EXIT|NO_MAIL,
+		  "%s: unable to initialize ccache: %s", auth->name,
+		  error_message(error));
+    } else if ((error = krb5_cc_store_cred(sudo_context, ccache, creds))) {
+	log_error(NO_EXIT|NO_MAIL,
+		  "%s: unable to store cred in ccache: %s", auth->name,
+		  error_message(error));
+    }
+
+done:
+    if (opts) {
+#ifdef HAVE_KRB5_GET_INIT_CREDS_OPT_FREE_TWO_ARGS
+	krb5_get_init_creds_opt_free(sudo_context, opts);
+#else
+	krb5_get_init_creds_opt_free(opts);
+#endif
+    }
+    if (creds)
+	krb5_free_cred_contents(sudo_context, creds);
+    return (error ? AUTH_FAILURE : AUTH_SUCCESS);
+}
+#endif
 
 int
 kerb5_cleanup(pw, auth)
@@ -225,88 +274,49 @@ kerb5_cleanup(pw, auth)
     return(AUTH_SUCCESS);
 }
 
+#ifndef HAVE_KRB5_VERIFY_USER
 /*
- * This routine with some modification is from the MIT V5B6 appl/bsd/login.c
- *
  * Verify the Kerberos ticket-granting ticket just retrieved for the
  * user.  If the Kerberos server doesn't respond, assume the user is
  * trying to fake us out (since we DID just get a TGT from what is
- * supposedly our KDC). If the host/<host> service is unknown (i.e.,
- * the local keytab doesn't have it), return success but log the error.
- *
- * This needs to run as root (to read the host service ticket).
+ * supposedly our KDC).
  *
  * Returns 0 for successful authentication, non-zero for failure.
  */
 static int
-verify_krb_v5_tgt(sudo_context, ccache, auth_name)
+verify_krb_v5_tgt(sudo_context, cred, auth_name)
     krb5_context	sudo_context;
-    krb5_ccache		ccache;
+    krb5_creds		*cred;
     char		*auth_name; /* For error reporting */
 {
-    char		phost[BUFSIZ];
     krb5_error_code	error;
-    krb5_principal	princ;
-    krb5_data		packet;
-    krb5_keyblock	*keyblock = 0;
-    krb5_auth_context	auth_context = NULL;
-
-    packet.data = 0;
+    krb5_principal	server;
+    krb5_verify_init_creds_opt vopt;
 
     /*
      * Get the server principal for the local host.
      * (Use defaults of "host" and canonicalized local name.)
      */
-    if (error = krb5_sname_to_principal(sudo_context, NULL, NULL,
-					KRB5_NT_SRV_HST, &princ)) {
-	log_error(NO_EXIT|NO_MAIL, 
+    if ((error = krb5_sname_to_principal(sudo_context, NULL, NULL,
+					KRB5_NT_SRV_HST, &server))) {
+	log_error(NO_EXIT|NO_MAIL,
 		  "%s: unable to get host principal: %s", auth_name,
 		  error_message(error));
 	return(-1);
     }
 
-    /* Extract the name directly. Yow. */
-    strncpy(phost, krb5_princ_component(sudo_context, princ, 1)->data,
-	    sizeof(phost) - 1);
-    phost[sizeof(phost) - 1] = '\0';
+    /* Initialize verify opts and set secure mode */
+    krb5_verify_init_creds_opt_init(&vopt);
+    krb5_verify_init_creds_opt_set_ap_req_nofail(&vopt, 1);
 
-    /*
-     * Do we have host/<host> keys?
-     * (use default keytab, kvno IGNORE_VNO to get the first match,
-     * and enctype is currently ignored anyhow.)
-     */
-    if (error = krb5_kt_read_service_key(sudo_context, NULL, princ, 0,
-					 ENCTYPE_DES_CBC_MD5, &keyblock)) {
-	/* Keytab or service key does not exist. */
-	log_error(NO_EXIT,
-		  "%s: host service key not found: %s", auth_name,
-		  error_message(error));
-	error = 0;
-	goto cleanup;
-    }
-    if (keyblock)
-	krb5_free_keyblock(sudo_context, keyblock);
-
-    /* Talk to the kdc and construct the ticket. */
-    error = krb5_mk_req(sudo_context, &auth_context, 0, "host", phost,
-			NULL, ccache, &packet);
-    if (auth_context) {
-	krb5_auth_con_free(sudo_context, auth_context);
-	auth_context = NULL;	/* setup for rd_req */
-    }
-
-    /* Try to use the ticket. */
-    if (!error)
-	error = krb5_rd_req(sudo_context, &auth_context, &packet, princ,
-			    NULL, NULL, NULL);
-cleanup:
-    if (packet.data)
-	krb5_free_data_contents(sudo_context, &packet);
-    krb5_free_principal(sudo_context, princ);
-
+    /* verify the Kerberos ticket-granting ticket we just retrieved */
+    error = krb5_verify_init_creds(sudo_context, cred, server, NULL,
+				   NULL, &vopt);
+    krb5_free_principal(sudo_context, server);
     if (error)
-	log_error(NO_EXIT|NO_MAIL, 
+	log_error(NO_EXIT|NO_MAIL,
 		  "%s: Cannot verify TGT! Possible attack!: %s", auth_name,
 		  error_message(error));
     return(error);
 }
+#endif

@@ -1,4 +1,4 @@
-/*	$NetBSD: cclass.h,v 1.3 1995/02/27 13:28:29 cgd Exp $	*/
+/*	$OpenBSD: cclass.h,v 1.4 1997/08/24 22:15:12 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
@@ -16,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,28 +41,28 @@ static struct cclass {
 	char *chars;
 	char *multis;
 } cclasses[] = {
-	"alnum",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\
-0123456789",				"",
-	"alpha",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-					"",
-	"blank",	" \t",		"",
-	"cntrl",	"\007\b\t\n\v\f\r\1\2\3\4\5\6\16\17\20\21\22\23\24\
-\25\26\27\30\31\32\33\34\35\36\37\177",	"",
-	"digit",	"0123456789",	"",
-	"graph",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\
+	{ "alnum",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\
+0123456789",				""} ,
+	{ "alpha",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+					""} ,
+	{ "blank",	" \t",		""} ,
+	{ "cntrl",	"\007\b\t\n\v\f\r\1\2\3\4\5\6\16\17\20\21\22\23\24\
+\25\26\27\30\31\32\33\34\35\36\37\177",	""} ,
+	{ "digit",	"0123456789",	""} ,
+	{ "graph",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\
 0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
-					"",
-	"lower",	"abcdefghijklmnopqrstuvwxyz",
-					"",
-	"print",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\
+					""} ,
+	{ "lower",	"abcdefghijklmnopqrstuvwxyz",
+					""} ,
+	{ "print",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\
 0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ ",
-					"",
-	"punct",	"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
-					"",
-	"space",	"\t\n\v\f\r ",	"",
-	"upper",	"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-					"",
-	"xdigit",	"0123456789ABCDEFabcdef",
-					"",
-	NULL,		0,		""
+					""} ,
+	{ "punct",	"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+					""} ,
+	{ "space",	"\t\n\v\f\r ",	""} ,
+	{ "upper",	"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+					""} ,
+	{ "xdigit",	"0123456789ABCDEFabcdef",
+					""} ,
+	{ NULL,		0,		"" }
 };

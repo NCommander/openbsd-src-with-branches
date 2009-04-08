@@ -1,4 +1,5 @@
-/*	$NetBSD: db_machdep.h,v 1.12 1994/10/26 07:50:44 cgd Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.9 2005/01/04 21:14:35 espie Exp $	*/
+/*	$NetBSD: db_machdep.h,v 1.20 1997/06/26 01:26:58 thorpej Exp $	*/
 
 /* 
  * Mach Operating System
@@ -32,54 +33,36 @@
 #ifndef	_M68K_DB_MACHDEP_H_
 #define	_M68K_DB_MACHDEP_H_
 
-#include <vm/vm_prot.h>
-#include <vm/vm_param.h>
-#include <vm/vm_inherit.h>
-#include <vm/lock.h>
+#include <sys/types.h>
+
+/*
+ * XXX - Would rather not pull in vm headers, but need boolean_t,
+ * at least until boolean_t moves to <sys/types.h> or someplace.
+ */
+#include <uvm/uvm_param.h>
+
+#include <machine/frame.h>
 #include <machine/psl.h>
 #include <machine/trap.h>
 
-typedef	vm_offset_t	db_addr_t;	/* address - unsigned */
-typedef	int		db_expr_t;	/* expression - signed */
-struct mc68020_saved_state {
-	int		d0;		/* data registers */
-	int		d1;
-	int		d2;
-	int		d3;
-	int		d4;
-	int		d5;
-	int		d6;
-	int		d7;
-	int		a0;		/* address registers */
-	int		a1;
-	int		a2;
-	int		a3;
-	int		a4;
-	int		a5;
-	int		a6;
-	int		sp;		/* stack pointer */
-	short		empty;
-	short		stackadj;
-	unsigned short	sr;		/* status register */
-	unsigned int	pc;		/* program counter - UNALIGNED!!! */
-	unsigned short	stkfmt	: 4;	/* rte stack frame format */
-	unsigned short	vector	: 12;	/* vector number */
-};
-typedef struct mc68020_saved_state db_regs_t;
-db_regs_t	ddb_regs;		/* register state */
+typedef	vaddr_t		db_addr_t;	/* address - unsigned */
+typedef	long		db_expr_t;	/* expression - signed */
+typedef struct trapframe db_regs_t;
+
+extern db_regs_t	ddb_regs;	/* register state */
 #define DDB_REGS	(&ddb_regs)
 
-#define	PC_REGS(regs)	((db_addr_t)(regs)->pc)
+#define	PC_REGS(regs)	((db_addr_t)(regs)->tf_pc)
+#define	SET_PC_REGS(regs, value)	(regs)->tf_pc = (unsigned int)(value)
 
 #define	BKPT_INST	0x4e4f		/* breakpoint instruction */
 #define	BKPT_SIZE	(2)		/* size of breakpoint inst */
 #define	BKPT_SET(inst)	(BKPT_INST)
 
-#define	FIXUP_PC_AFTER_BREAK	ddb_regs.pc -= 2;
+#define	FIXUP_PC_AFTER_BREAK(regs)	((regs)->tf_pc -= BKPT_SIZE)
 
-#define SR_T1 0x8000
-#define	db_clear_single_step(regs)	((regs)->sr &= ~SR_T1)
-#define	db_set_single_step(regs)	((regs)->sr |=  SR_T1)
+#define	db_clear_single_step(regs)	((regs)->tf_sr &= ~PSL_T)
+#define	db_set_single_step(regs)	((regs)->tf_sr |=  PSL_T)
 
 #define	IS_BREAKPOINT_TRAP(type, code)	((type) == T_BREAKPOINT)
 #ifdef T_WATCHPOINT
@@ -103,5 +86,27 @@ db_regs_t	ddb_regs;		/* register state */
 				 ((ins)&M_BSR) == I_BSR)
 #define inst_load(ins)		0
 #define inst_store(ins)		0
+
+/*
+ * Things needed by kgdb:
+ */
+typedef long kgdb_reg_t;
+#define KGDB_NUMREGS	(16+2)
+#define KGDB_BUFLEN	512
+
+#ifdef _KERNEL
+
+#define KGDB_ENTER	__asm __volatile("trap  #15")
+
+void	Debugger(void);	/* XXX */
+void	kdb_kintr(db_regs_t *);
+int 	kdb_trap(int, db_regs_t *);
+
+#endif /* _KERNEL */
+
+/*
+ * We use a.out symbols in DDB.
+ */
+#define	DB_AOUT_SYMBOLS
 
 #endif	/* _M68K_DB_MACHDEP_H_ */

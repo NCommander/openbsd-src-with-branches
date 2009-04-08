@@ -137,7 +137,7 @@
 
 
 static const EVP_CIPHER *ssl_cipher_methods[SSL_ENC_NUM_IDX]={
-	NULL,NULL,NULL,NULL,NULL,NULL,
+	NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
 	};
 
 #define SSL_COMP_NULL_IDX	0
@@ -389,7 +389,7 @@ int ssl_cipher_get_evp(const SSL_SESSION *s, const EVP_CIPHER **enc,
 		break;
 		}
 
-	if ((i < 0) || (i > SSL_ENC_NUM_IDX))
+	if ((i < 0) || (i >= SSL_ENC_NUM_IDX))
 		*enc=NULL;
 	else
 		{
@@ -411,7 +411,7 @@ int ssl_cipher_get_evp(const SSL_SESSION *s, const EVP_CIPHER **enc,
 		i= -1;
 		break;
 		}
-	if ((i < 0) || (i > SSL_MD_NUM_IDX))
+	if ((i < 0) || (i >= SSL_MD_NUM_IDX))
 		*md=NULL;
 	else
 		*md=ssl_digest_methods[i];

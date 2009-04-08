@@ -1,4 +1,5 @@
-/*	$NetBSD: netstat.h,v 1.5 1995/10/03 21:42:45 thorpej Exp $	*/
+/*	$OpenBSD: netstat.h,v 1.48 2008/09/16 15:48:13 gollo Exp $	*/
+/*	$NetBSD: netstat.h,v 1.6 1996/05/07 02:55:05 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,75 +34,109 @@
 
 #include <sys/cdefs.h>
 
+/* What is the max length of a pointer printed with %p (including 0x)? */
+#define PLEN	(LONG_BIT / 4 + 2)
+
 int	Aflag;		/* show addresses of protocol control block */
 int	aflag;		/* show all sockets (including servers) */
+int	bflag;		/* show bytes instead of packets */
 int	dflag;		/* show i/f dropped packets */
+int	Fflag;		/* show routes whose gateways are in specified AF */
 int	gflag;		/* show group (multicast) routing or stats */
 int	iflag;		/* show interfaces */
+int	lflag;		/* show routing table with use and ref */
 int	mflag;		/* show memory stats */
 int	nflag;		/* show addresses numerically */
 int	pflag;		/* show given protocol */
+int	Pflag;		/* show given PCB */
+int	qflag;		/* only display non-zero values for output */
 int	rflag;		/* show routing tables (or routing stats) */
 int	sflag;		/* show protocol statistics */
 int	tflag;		/* show i/f watchdog timers */
+int	vflag;		/* be verbose */
+int	Wflag;		/* show net80211 protocol statistics */
 
 int	interval;	/* repeat interval for i/f stats */
 
 char	*interface;	/* desired i/f for stats, or NULL for all i/fs */
-int	unit;		/* unit number for above */
 
 int	af;		/* address family */
 
-char	*prog;		/* program name */
+extern	char *__progname; /* program name, from crt0.o */
 
 
-int	kread __P((u_long addr, char *buf, int size));
-char	*plural __P((int));
-char	*plurales __P((int));
+int	kread(u_long addr, void *buf, int size);
+char	*plural(u_int64_t);
+char	*plurales(u_int64_t);
 
-void	protopr __P((u_long, char *));
-void	tcp_stats __P((u_long, char *));
-void	udp_stats __P((u_long, char *));
-void	ip_stats __P((u_long, char *));
-void	icmp_stats __P((u_long, char *));
-void	igmp_stats __P((u_long, char *));
-void	protopr __P((u_long, char *));
+void	protopr(u_long, char *);
+void	ip6protopr(u_long, char *);
+void	tcp_stats(char *);
+void	udp_stats(char *);
+void	ip_stats(char *);
+void	icmp_stats(char *);
+void	igmp_stats(char *);
+void	pim_stats(char *);
+void	ah_stats(char *);
+void	esp_stats(char *);
+void	ipip_stats(char *);
+void	carp_stats (char *);
+void	pfsync_stats (char *);
+void	pflow_stats (char *);
+void	etherip_stats(char *);
+void	ipcomp_stats(char *);
 
-void	mbpr(u_long);
+void	protopr(u_long, char *);
 
-void	hostpr __P((u_long, u_long));
-void	impstats __P((u_long, u_long));
+void	net80211_ifstats(char *);
 
-void	intpr __P((int, u_long));
+void	tcp_dump(u_long);
 
-void	pr_rthdr __P(());
-void	pr_family __P((int));
-void	rt_stats __P((u_long));
-char	*ns_phost __P((struct sockaddr *));
-void	upHex __P((char *));
+void	mbpr(void);
 
-char	*routename __P((u_int32_t));
-char	*netname __P((u_int32_t, u_int32_t));
-char	*ns_print __P((struct sockaddr *));
-void	routepr __P((u_long));
+void	hostpr(u_long, u_long);
+void	impstats(u_long, u_long);
 
-void	nsprotopr __P((u_long, char *));
-void	spp_stats __P((u_long, char *));
-void	idp_stats __P((u_long, char *));
-void	nserr_stats __P((u_long, char *));
+void	rt_stats(void);
+void	pr_rthdr(int, int);
+void	pr_encaphdr(void);
+void	pr_family(int);
 
-void	intpr __P((int, u_long));
+struct in6_addr;
+struct sockaddr_in6;
+void	ip6protopr(u_long, char *);
+void	ip6_stats(char *);
+void	ip6_ifstats(char *);
+void	icmp6_stats(char *);
+void	icmp6_ifstats(char *);
+void	pim6_stats(char *);
+void	rip6_stats(char *);
+void	mroute6pr(u_long, u_long);
+void	mrt6_stats(void);
+char	*routename6(struct sockaddr_in6 *);
+char	*netname6(struct sockaddr_in6 *, struct sockaddr_in6 *);
 
-void	unixpr __P((u_long));
+void	p_rttables(int, u_int);
+void	p_flags(int, char *);
+void	p_addr(struct sockaddr *, struct sockaddr *, int);
+void	p_gwaddr(struct sockaddr *, int);
+void	p_sockaddr(struct sockaddr *, struct sockaddr *, int, int);
+char	*routename(struct sockaddr *);
+char	*routename4(in_addr_t);
+char	*netname(struct sockaddr *, struct sockaddr *);
+char	*netname4(in_addr_t, in_addr_t);
+void	routepr(u_long, u_long, u_long, u_long);
 
-void	esis_stats __P((u_long, char *));
-void	clnp_stats __P((u_long, char *));
-void	cltp_stats __P((u_long, char *));
-void	iso_protopr __P((u_long, char *));
-void	iso_protopr1 __P((u_long, int));
-void	tp_protopr __P((u_long, char *));
-void	tp_inproto __P((u_long));
-void	tp_stats __P((caddr_t, caddr_t));
+void	nsprotopr(u_long, char *);
 
-void	mroutepr __P((u_long, u_long, u_long, u_long));
-void	mrt_stats __P((u_long, u_long));
+void	intpr(int);
+
+void	unixpr(u_long);
+
+void	mroutepr(u_long, u_long, u_long);
+void	mrt_stats(void);
+
+void	atalkprotopr(u_long, char *);
+void	ddp_stats(char *);
+char	*atalk_print(const struct sockaddr *, int);
+char	*atalk_print2(const struct sockaddr *, const struct sockaddr *, int);

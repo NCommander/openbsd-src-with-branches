@@ -35,6 +35,8 @@
 
 RCSID("$KTH: appdefault.c,v 1.10 2005/01/05 05:40:59 lukeh Exp $");
 
+extern char *__progname;
+
 void KRB5_LIB_FUNCTION
 krb5_appdefault_boolean(krb5_context context, const char *appname, 
 			krb5_const_realm realm, const char *option,
@@ -42,7 +44,7 @@ krb5_appdefault_boolean(krb5_context context, const char *appname,
 {
     
     if(appname == NULL)
-	appname = getprogname();
+	appname = __progname;
 
     def_val = krb5_config_get_bool_default(context, NULL, def_val, 
 					   "libdefaults", option, NULL);
@@ -83,7 +85,7 @@ krb5_appdefault_string(krb5_context context, const char *appname,
 		       const char *def_val, char **ret_val)
 {
     if(appname == NULL)
-	appname = getprogname();
+	appname = __progname;
 
     def_val = krb5_config_get_string_default(context, NULL, def_val, 
 					     "libdefaults", option, NULL);

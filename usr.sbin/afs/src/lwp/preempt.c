@@ -34,7 +34,7 @@
 
 RCSID("$arla: preempt.c,v 1.9 2002/06/02 11:59:54 lha Exp $");
 
-char PRE_Block = 0;		/* used in lwp.c and process.s */
+sig_atomic_t PRE_Block = 0;		/* used in lwp.c and process.s */
 
 #ifdef HAVE_GETITIMER
 
@@ -134,7 +134,7 @@ PRE_EndPreempt(void)
         (sigaction(SIGALRM, &sa, (struct sigaction *)0) == -1))
         return(LWP_ESYSTEM);
 #else
-    vec.sv_handler = SIG_DFL;;
+    vec.sv_handler = SIG_DFL;
     vec.sv_mask = vec.sv_onstack = 0;
 
     if ((setitimer(ITIMER_REAL, &itv, (struct itimerval *) 0) == -1) ||

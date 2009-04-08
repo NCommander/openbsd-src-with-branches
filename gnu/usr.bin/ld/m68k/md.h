@@ -1,10 +1,15 @@
+/* * $OpenBSD: md.h,v 1.7 2002/09/20 19:54:11 deraadt Exp $*/
 /*
- * $Id: md.h,v 1.4 1995/01/17 06:44:40 mycroft Exp $
  *	- m68k dependent definitions
  */
 
-#if defined(CROSS_LINKER) && defined(XHOST) && XHOST==i386
+#if defined(CROSS_LINKER) 
+#include <sys/endian.h>
+
+#if BYTE_ORDER != BIG_ENDIAN
 #define NEED_SWAP
+#endif
+
 #endif
 
 #define	MAX_ALIGNMENT		(sizeof (long))
@@ -86,13 +91,13 @@ typedef struct jmpslot {
 #define get_byte(p)	( ((unsigned char *)(p))[0] )
 
 #define get_short(p)	( ( ((unsigned char *)(p))[0] << 8) | \
-			  ( ((unsigned char *)(p))[1]     )   \
+			  ( ((unsigned char *)(p))[1]	  )   \
 			)
 
 #define get_long(p)	( ( ((unsigned char *)(p))[0] << 24) | \
 			  ( ((unsigned char *)(p))[1] << 16) | \
 			  ( ((unsigned char *)(p))[2] << 8 ) | \
-			  ( ((unsigned char *)(p))[3]      )   \
+			  ( ((unsigned char *)(p))[3]	   )   \
 			)
 
 #define put_byte(p, v)	{ ((unsigned char *)(p))[0] = ((unsigned long)(v)); }
@@ -100,7 +105,7 @@ typedef struct jmpslot {
 #define put_short(p, v)	{ ((unsigned char *)(p))[0] =			\
 				((((unsigned long)(v)) >> 8) & 0xff); 	\
 			  ((unsigned char *)(p))[1] =			\
-				((((unsigned long)(v))     ) & 0xff); }
+				((((unsigned long)(v))	   ) & 0xff); }
 
 #define put_long(p, v)	{ ((unsigned char *)(p))[0] =			\
 				((((unsigned long)(v)) >> 24) & 0xff); 	\
@@ -109,17 +114,17 @@ typedef struct jmpslot {
 			  ((unsigned char *)(p))[2] =			\
 				((((unsigned long)(v)) >>  8) & 0xff); 	\
 			  ((unsigned char *)(p))[3] =			\
-				((((unsigned long)(v))      ) & 0xff); }
+				((((unsigned long)(v))	    ) & 0xff); }
 
 #ifdef NEED_SWAP
 
 /* Define IO byte swapping routines */
 
-void	md_swapin_exec_hdr __P((struct exec *));
-void	md_swapout_exec_hdr __P((struct exec *));
-void	md_swapin_reloc __P((struct relocation_info *, int));
-void	md_swapout_reloc __P((struct relocation_info *, int));
-void	md_swapout_jmpslot __P((jmpslot_t *, int));
+void	md_swapin_exec_hdr(struct exec *);
+void	md_swapout_exec_hdr(struct exec *);
+void	md_swapin_reloc(struct relocation_info *, int);
+void	md_swapout_reloc(struct relocation_info *, int);
+void	md_swapout_jmpslot(jmpslot_t *, int);
 
 #define md_swapin_symbols(s,n)			swap_symbols(s,n)
 #define md_swapout_symbols(s,n)			swap_symbols(s,n)
@@ -133,15 +138,15 @@ void	md_swapout_jmpslot __P((jmpslot_t *, int));
 #define md_swapout_so_debug(d)			swap_so_debug(d)
 #define md_swapin_rrs_hash(f,n)			swap_rrs_hash(f,n)
 #define md_swapout_rrs_hash(f,n)		swap_rrs_hash(f,n)
-#define md_swapin_sod(l,n)			swapin_link_object(l,n)
-#define md_swapout_sod(l,n)			swapout_link_object(l,n)
+#define md_swapin_sod(l,n)			swapin_sod(l,n)
+#define md_swapout_sod(l,n)			swapout_sod(l,n)
 #define md_swapout_got(g,n)			swap_longs((long*)(g),n)
 #define md_swapin_ranlib_hdr(h,n)		swap_ranlib_hdr(h,n)
 #define md_swapout_ranlib_hdr(h,n)		swap_ranlib_hdr(h,n)
 
 #define md_swap_short(x) ( (((x) >> 8) & 0xff) | (((x) & 0xff) << 8) )
 
-#define md_swap_long(x) ( (((x) >> 24) & 0xff    ) | (((x) >> 8 ) & 0xff00   ) | \
+#define md_swap_long(x) ( (((x) >> 24) & 0xff	 ) | (((x) >> 8 ) & 0xff00   ) | \
 			(((x) << 8 ) & 0xff0000) | (((x) << 24) & 0xff000000))
 
 #else	/* We need not swap, but must pay attention to alignment: */

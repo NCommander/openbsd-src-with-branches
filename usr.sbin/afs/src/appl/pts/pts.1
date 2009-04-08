@@ -30,7 +30,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"	$arla: pts.1,v 1.8 2003/06/06 12:53:49 hin Exp $
-.\"     $OpenBSD: pts.1,v 1.5 2000/04/15 2:15:18 aaron Exp $
+.\"     $OpenBSD: pts.1,v 1.9 2003/09/04 22:14:43 jmc Exp $
 .\"
 .Dd March 25, 2000
 .Dt PTS 1
@@ -67,7 +67,7 @@ change owner of user or group
 .It Cm creategroup
 create a new group
 .It Cm cg
-short hand for
+shorthand for
 .Nm creategroup
 .It Cm createuser
 create a new user
@@ -80,10 +80,10 @@ examine a user or a group
 .It Cm help
 get help on
 .Nm
-.It Cm ?
+.It Cm \&?
 shorthand for help
 .It Cm listmax
-print largest uid and gid
+print largest afs user and group
 .It Cm listowned
 list groups owned by a user or group, or orphaned groups
 .It Cm membership
@@ -206,7 +206,7 @@ Print verbose information about a user or a group.
 .Pp
 .Ic pts help
 or
-.Ic pts ?
+.Ic pts ?\&
 .Bd -filled -offset indent -compact
 Print help about
 .Nm
@@ -279,7 +279,7 @@ Not yet implemented.
 .Ed
 .Sh SEE ALSO
 .Xr fs 1 ,
-.Xr arlad 8 ,
+.Xr afsd 8 ,
 .Xr vos 8
 .Sh STANDARDS
 The Arla authors are trying to mimic the behaviour of the original AFS

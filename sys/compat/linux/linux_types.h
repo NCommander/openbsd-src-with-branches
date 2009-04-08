@@ -1,4 +1,5 @@
-/*	$NetBSD: linux_types.h,v 1.4 1995/08/21 03:42:11 mycroft Exp $	*/
+/*	$OpenBSD: linux_types.h,v 1.7 2002/12/16 16:27:41 fgsch Exp $	*/
+/*	$NetBSD: linux_types.h,v 1.5 1996/05/20 01:59:28 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1995 Frank van der Linden
@@ -41,12 +42,15 @@ typedef struct {
 typedef unsigned short linux_uid_t;
 typedef unsigned short linux_gid_t;
 typedef unsigned short linux_dev_t;
+typedef unsigned long long linux_ino64_t;
 typedef unsigned long linux_ino_t;
 typedef unsigned short linux_mode_t;
 typedef unsigned short linux_nlink_t;
 typedef long linux_time_t;
 typedef long linux_clock_t;
+typedef long long linux_off64_t;
 typedef long linux_off_t;
+typedef u_int64_t linux_loff_t;
 typedef int linux_pid_t;
 
 struct linux_statfs {
@@ -146,6 +150,51 @@ struct linux_tms {
 struct linux_utimbuf {
 	linux_time_t l_actime;
 	linux_time_t l_modtime;
+};
+
+struct linux___sysctl {
+	int          *name;
+	int           namelen;
+	void         *old;
+	size_t       *oldlenp;
+	void         *new;
+	size_t        newlen;
+	unsigned long __unused0[4];
+};
+
+/* This matches struct stat64 in glibc2.1, hence the absolutely
+ * insane amounts of padding around dev_t's.
+ */
+struct linux_stat64 {
+	unsigned long long lst_dev;
+	unsigned int	__pad1;
+
+#define LINUX_STAT64_HAS_BROKEN_ST_INO	1
+	unsigned int	__lst_ino;
+	unsigned int	lst_mode;
+	unsigned int	lst_nlink;
+
+	unsigned int	lst_uid;
+	unsigned int	lst_gid;
+
+	unsigned long long lst_rdev;
+	unsigned int	__pad2;
+
+	long long	lst_size;
+	unsigned int	lst_blksize;
+
+	unsigned long long lst_blocks;	/* Number 512-byte blocks allocated. */
+
+	unsigned int	lst_atime;
+	unsigned int	__unused1;
+
+	unsigned int	lst_mtime;
+	unsigned int	__unused2;
+
+	unsigned int	lst_ctime;
+	unsigned int	__unused3;	/* will be high 32 bits of ctime someday */
+
+	unsigned long long lst_ino;
 };
 
 #endif /* !_LINUX_TYPES_H */

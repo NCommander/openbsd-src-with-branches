@@ -1,4 +1,5 @@
-/*	$NetBSD: db_interface.c,v 1.16 1995/06/09 20:03:05 leo Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.12 2002/03/14 01:26:35 millert Exp $	*/
+/*	$NetBSD: db_interface.c,v 1.24 1997/02/18 22:27:32 gwr Exp $	*/
 
 /* 
  * Mach Operating System
@@ -27,30 +28,39 @@
  */
 
 /*
- * Interface to new debugger.
+ * Interface to the "ddb" kernel debugger.
  */
 #include <sys/param.h>
 #include <sys/proc.h>
 #include <sys/reboot.h>
 #include <sys/systm.h> /* just for boothowto --eichin */
-#include <setjmp.h>
 
-#include <vm/vm.h>
+#include <uvm/uvm_extern.h>
+
+#include <dev/cons.h>
 
 #include <machine/trap.h>
 #include <machine/db_machdep.h>
 
-short	exframesize[];
-extern jmp_buf	*db_recover;
+#include <ddb/db_command.h>
+#include <ddb/db_var.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
+
+
+extern label_t	*db_recover;
 
 int	db_active = 0;
-int ddb_regs_ssp;	/* system stack pointer */
+db_regs_t	ddb_regs;
+
+static void kdbprinttrap(int, int);
 
 /*
  * Received keyboard interrupt sequence.
  */
+void
 kdb_kintr(regs)
-	register struct mc68020_saved_state *regs;
+	register db_regs_t *regs;
 {
 	if (db_active == 0 && (boothowto & RB_KDB)) {
 		printf("\n\nkernel: keyboard interrupt\n");
@@ -62,11 +72,11 @@ kdb_kintr(regs)
  * kdb_trap - field a TRACE or BPT trap
  * Return non-zero if we "handled" the trap.
  */
+int
 kdb_trap(type, regs)
 	int	type;
-	register struct mc68020_saved_state *regs;
+	register db_regs_t *regs;
 {
-	int fsize;
 
 	switch (type) {
 	case T_TRACE:		/* single-step */
@@ -76,24 +86,29 @@ kdb_trap(type, regs)
 	case -1:
 		break;
 	default:
+		if (!db_panic)
+			return (0);
+
 		kdbprinttrap(type, 0);
 		if (db_recover != 0) {
 			/* This will longjmp back to db_command_loop */
 			db_error("Caught exception in ddb.\n");
 			/*NOTREACHED*/
 		}
+		/*
+		 * Tell caller "We did NOT handle the trap."
+		 * Caller should panic or whatever.
+		 */
 		return (0);
 	}
 
-	/* XXX - Should switch to kdb's own stack here. */
+	/*
+	 * We'd like to be on a separate debug stack here, but
+	 * that's easier to do in locore.s before we get here.
+	 * See sun3/locore.s:T_TRACE for stack switch code.
+	 */
 
 	ddb_regs = *regs;
-
-	/* Get System Stack Pointer (SSP) */
-	ddb_regs_ssp = (int)(&regs[1]);
-	fsize = exframesize[regs->stkfmt];
-	if (fsize > 0)
-		ddb_regs_ssp += fsize;
 
 	db_active++;
 	cnpollc(TRUE);	/* set polling mode, unblank video */
@@ -103,8 +118,6 @@ kdb_trap(type, regs)
 	cnpollc(FALSE);	/* resume interrupt mode */
 	db_active--;
 
-	/* Can't easily honor change in ssp.  Oh well. */
-
 	*regs = ddb_regs;
 
 	/*
@@ -112,16 +125,12 @@ kdb_trap(type, regs)
 	 * But lock out interrupts to prevent TRACE_KDB from setting the
 	 * trace bit in the current SR (and trapping while exiting KDB).
 	 */
-	(void) spl7();
-#if 0
-	if (!USERMODE(regs->sr) && (regs->sr & SR_T1) && (current_thread())) {
-		current_thread()->pcb->pcb_flag |= TRACE_KDB;
-	}
-	if ((regs->sr & SR_T1) && (current_thread())) {
-		current_thread()->pcb->flag |= TRACE_KDB;
-	}
-#endif
+	(void) splhigh();
 
+	/*
+	 * Tell caller "We HAVE handled the trap."
+	 * Caller will return to locore and rte.
+	 */
 	return(1);
 }
 
@@ -131,6 +140,7 @@ extern int trap_types;
 /*
  * Print trap reason.
  */
+static void
 kdbprinttrap(type, code)
 	int	type, code;
 {
@@ -142,53 +152,9 @@ kdbprinttrap(type, code)
 	printf(" trap\n");
 }
 
-int
+void
 Debugger()
 {
-	asm ("trap #15");
+	__asm ("trap #15");
 }
 
-#if !defined(sun3) && !defined(amiga) && !defined(atari)
-
-/*
- * Read bytes from kernel address space for debugger.
- * XXX - Each port should provide one of these...
- * (See arch/sun3/sun3/db_machdep.c for example.)
- */
-void
-db_read_bytes(addr, size, data)
-	vm_offset_t	addr;
-	register int	size;
-	register char	*data;
-{
-	register char	*src;
-
-	src = (char *)addr;
-	while (--size >= 0)
-		*data++ = *src++;
-}
-
-/*
- * Write bytes to kernel address space for debugger.
- * XXX - Each port should provide one of these...
- * (See arch/sun3/sun3/db_machdep.c for example.)
- */
-void
-db_write_bytes(addr, size, data)
-	vm_offset_t	addr;
-	register int	size;
-	register char	*data;
-{
-	register char	*dst;
-
-	int		oldmap0 = 0;
-	int		oldmap1 = 0;
-	vm_offset_t	addr1;
-	extern char	etext;
-
-	dst = (char *)addr;
-	while (--size >= 0)
-		*dst++ = *data++;
-
-}
-#endif	/* !defined(sun3) && !defined(amiga) && !defined(atari) */

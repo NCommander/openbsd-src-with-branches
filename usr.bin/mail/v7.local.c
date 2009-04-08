@@ -1,3 +1,6 @@
+/*	$OpenBSD: v7.local.c,v 1.13 2001/11/21 15:26:39 millert Exp $	*/
+/*	$NetBSD: v7.local.c,v 1.8 1997/05/13 06:15:58 mikel Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +31,11 @@
  */
 
 #ifndef lint
-static char sccsid[] = "from: @(#)v7.local.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: v7.local.c,v 1.6 1994/06/29 05:09:48 deraadt Exp $";
+#if 0
+static const char sccsid[] = "@(#)v7.local.c	8.1 (Berkeley) 6/6/93";
+#else
+static const char rcsid[] = "$OpenBSD: v7.local.c,v 1.13 2001/11/21 15:26:39 millert Exp $";
+#endif
 #endif /* not lint */
 
 /*
@@ -54,37 +56,50 @@ static char rcsid[] = "$Id: v7.local.c,v 1.6 1994/06/29 05:09:48 deraadt Exp $";
  * mail is queued).
  */
 void
-findmail(user, buf)
-	char *user, *buf;
+findmail(char *user, char *buf, int buflen)
 {
 	char *mbox;
+	struct stat sb;
 
-	if (!(mbox = getenv("MAIL")))
-		(void)sprintf(buf, "%s/%s", _PATH_MAILDIR, user);
+	/* Ignore $MAIL if it is not owned by the invoking user */
+	if ((mbox = getenv("MAIL")) && stat(mbox, &sb) == 0 &&
+	    sb.st_uid != getuid() && sb.st_uid != geteuid())
+		mbox = NULL;
+
+	if (mbox)
+		(void)strlcpy(buf, mbox, buflen);
 	else
-		(void)strcpy(buf, mbox);
+		(void)snprintf(buf, buflen, "%s/%s", _PATH_MAILDIR, user);
 }
 
 /*
  * Get rid of the queued mail.
  */
 void
-demail()
+demail(void)
 {
 
-	if (value("keep") != NOSTR || rm(mailname) < 0)
-		close(creat(mailname, 0600));
+	if (value("keep") != NULL || rm(mailname) < 0)
+		(void)close(creat(mailname, 0600));
 }
 
 /*
  * Discover user login name.
  */
 char *
-username()
+username(void)
 {
 	char *np;
+	uid_t uid;
 
-	if ((np = getenv("USER")) != NOSTR)
-		return np;
-	return getname(getuid());
+	if ((np = getenv("USER")) != NULL)
+		return(np);
+	if ((np = getenv("LOGNAME")) != NULL)
+		return(np);
+	if ((np = getname(uid = getuid())) != NULL)
+		return(np);
+	if ((np = getlogin()) != NULL)
+		return(np);
+	printf("Cannot associate a name with uid %u\n", (unsigned)uid);
+	return(NULL);
 }

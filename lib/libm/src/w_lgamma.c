@@ -17,7 +17,7 @@ static char rcsid[] = "$NetBSD: w_lgamma.c,v 1.6 1995/05/10 20:49:24 jtc Exp $";
 /* double lgamma(double x)
  * Return the logarithm of the Gamma function of x.
  *
- * Method: call __ieee754_lgamma_r
+ * Method: call lgamma_r
  */
 
 #include "math.h"
@@ -25,25 +25,8 @@ static char rcsid[] = "$NetBSD: w_lgamma.c,v 1.6 1995/05/10 20:49:24 jtc Exp $";
 
 extern int signgam;
 
-#ifdef __STDC__
-	double lgamma(double x)
-#else
-	double lgamma(x)
-	double x;
-#endif
+double
+lgamma(double x)
 {
-#ifdef _IEEE_LIBM
-	return __ieee754_lgamma_r(x,&signgam);
-#else
-        double y;
-        y = __ieee754_lgamma_r(x,&signgam);
-        if(_LIB_VERSION == _IEEE_) return y;
-        if(!finite(y)&&finite(x)) {
-            if(floor(x)==x&&x<=0.0)
-                return __kernel_standard(x,x,15); /* lgamma pole */
-            else
-                return __kernel_standard(x,x,14); /* lgamma overflow */
-        } else
-            return y;
-#endif
-}             
+	return lgamma_r(x,&signgam);
+}

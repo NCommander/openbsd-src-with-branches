@@ -23,6 +23,7 @@ configpm		Produces lib/Config.pm
 Configure		Portability tool
 configure.com		Configure-equivalent for VMS
 configure.gnu		Crude emulation of GNU configure
+config.over		Site-specific overrides for Configure defaults
 cop.h			Control operator header
 Copying			The GNU General Public License
 Cross/build-arm-n770-sh	Cross-compilation

@@ -1,4 +1,5 @@
-#	@(#)Makefile	1.8 (Berkeley) 6/8/93
+#	$OpenBSD: Makefile,v 1.2 2001/02/03 08:14:57 niklas Exp $
+
 
 DIR=	papers/kernmalloc
 SRCS=	kernmalloc.t appendix.t
@@ -7,5 +8,9 @@ MACROS=	-ms
 paper.ps: ${SRCS} alloc.fig usage.tbl
 	${SOELIM} ${SRCS} | ${TBL} | ${PIC} | ${EQN} | ${GRIND} | \
 	    ${ROFF} > ${.TARGET}
+
+paper.txt: ${SRCS} alloc.fig usage.tbl
+	${SOELIM} ${SRCS} | ${TBL} | ${PIC} | ${EQN} | ${GRIND} | \
+	    ${ROFF} -Tascii > ${.TARGET}
 
 .include <bsd.doc.mk>

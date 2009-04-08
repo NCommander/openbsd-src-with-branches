@@ -1,6 +1,6 @@
 =head1 NAME
 
-perlfaq9 - Networking ($Revision: 8539 $)
+perlfaq9 - Networking
 
 =head1 DESCRIPTION
 

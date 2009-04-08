@@ -1,5 +1,4 @@
-/*	$NetBSD: svc_auth.c,v 1.2 1995/02/25 03:01:57 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,12 +28,6 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_auth.c 1.19 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_auth.c	2.1 88/08/07 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_auth.c,v 1.2 1995/02/25 03:01:57 cgd Exp $";
-#endif
-
 /*
  * svc_auth_nodes.c, Server-side rpc authenticator interface,
  * *WITHOUT* DES authentication.
@@ -54,21 +47,24 @@ static char *rcsid = "$NetBSD: svc_auth.c,v 1.2 1995/02/25 03:01:57 cgd Exp $";
  * 
  *	enum auth_stat
  *	flavorx_auth(rqst, msg)
- *		register struct svc_req *rqst; 
- *		register struct rpc_msg *msg;
+ *		struct svc_req *rqst; 
+ *		struct rpc_msg *msg;
  *
  */
 
-enum auth_stat _svcauth_null();		/* no authentication */
-enum auth_stat _svcauth_unix();		/* unix style (uid, gids) */
-enum auth_stat _svcauth_short();	/* short hand unix style */
+/* no authentication */
+enum auth_stat _svcauth_null(void);
+/* unix style (uid, gids) */
+enum auth_stat _svcauth_unix(struct svc_req *rqst, struct rpc_msg *msg);
+/* short hand unix style */
+enum auth_stat _svcauth_short(struct svc_req *rqst, struct rpc_msg *msg);
 
 static struct {
 	enum auth_stat (*authenticator)();
 } svcauthsw[] = {
-	_svcauth_null,			/* AUTH_NULL */
-	_svcauth_unix,			/* AUTH_UNIX */
-	_svcauth_short,			/* AUTH_SHORT */
+	{ _svcauth_null },		/* AUTH_NULL */
+	{ _svcauth_unix },		/* AUTH_UNIX */
+	{ _svcauth_short }		/* AUTH_SHORT */
 };
 #define	AUTH_MAX	2		/* HIGHEST AUTH NUMBER */
 
@@ -92,11 +88,9 @@ static struct {
  * invalid.
  */
 enum auth_stat
-_authenticate(rqst, msg)
-	register struct svc_req *rqst;
-	struct rpc_msg *msg;
+_authenticate(struct svc_req *rqst, struct rpc_msg *msg)
 {
-	register int cred_flavor;
+	int cred_flavor;
 
 	rqst->rq_cred = msg->rm_call.cb_cred;
 	rqst->rq_xprt->xp_verf.oa_flavor = _null_auth.oa_flavor;
@@ -110,7 +104,7 @@ _authenticate(rqst, msg)
 }
 
 enum auth_stat
-_svcauth_null(/*rqst, msg*/)
+_svcauth_null(void)
 	/*struct svc_req *rqst;
 	struct rpc_msg *msg;*/
 {

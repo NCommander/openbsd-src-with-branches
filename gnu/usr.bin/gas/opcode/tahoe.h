@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* tahoe-opcode.h - tahoe-specific
  * Not part of GAS yet
  *

@@ -116,8 +116,10 @@ expand_cell_name(const char *cell)
     const char *c;
     const char **fn, *files[] = { _PATH_CELLSERVDB,
 				  _PATH_ARLA_CELLSERVDB,
+#if 0
 				  _PATH_OPENAFS_DEBIAN_CELLSERVDB,
 				  _PATH_ARLA_DEBIAN_CELLSERVDB,
+#endif
 				  NULL };
     for(fn = files; *fn; fn++) {
 	f = fopen(*fn, "r");
@@ -277,8 +279,6 @@ main(int argc, char **argv)
     int failed = 0;
     struct cell_list *p;
     
-    setprogname(argv[0]);
-
     if(getarg(args, num_args, argc, argv, &optind))
 	usage(1);
     if(help_flag)

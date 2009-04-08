@@ -538,9 +538,9 @@ CCDLFLAGS		= `echo $ccdlflags|sed -e 's@-bE:.*/perl\.exp@-bE:perl.exp@'`
 LIBPERL_NONSHR		= libperl_nonshr$(LIB_EXT)
 MINIPERL_NONSHR		= miniperl_nonshr$(EXE_EXT)
 
-$(LIBPERL_NONSHR): $(obj)
-	$(RMS) $(LIBPERL_NONSHR)
-	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
+#$(LIBPERL_NONSHR): $(obj)
+#	$(RMS) $(LIBPERL_NONSHR)
+#	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
 
 $(MINIPERL_NONSHR): $(LIBPERL_NONSHR) miniperlmain$(OBJ_EXT) opmini$(OBJ_EXT)
 	$(CC) $(LDFLAGS) -o $(MINIPERL_NONSHR) miniperlmain$(OBJ_EXT) \
@@ -587,34 +587,34 @@ Makefile: $Makefile_s
 !GROK!THIS!
 else
 	$spitshell >>Makefile <<'!NO!SUBS!'
-$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
-!NO!SUBS!
-	case "$useshrplib" in
-	true)
-		$spitshell >>Makefile <<'!NO!SUBS!'
-	rm -f $@
-	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
-!NO!SUBS!
-		case "$osname" in
-		aix)
-			$spitshell >>Makefile <<'!NO!SUBS!'
-	rm -f libperl$(OBJ_EXT)
-	mv $@ libperl$(OBJ_EXT)
-	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
-!NO!SUBS!
-			;;
-		esac
-		;;
-	*)
-		$spitshell >>Makefile <<'!NO!SUBS!'
-	rm -f $(LIBPERL)
-	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
-	@$(ranlib) $(LIBPERL)
-!NO!SUBS!
-		;;
-	esac
-	$spitshell >>Makefile <<'!NO!SUBS!'
-
+#$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
+#!NO!SUBS!
+#	case "$useshrplib" in
+#	true)
+#		$spitshell >>Makefile <<'!NO!SUBS!'
+#	rm -f $@
+#	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
+#!NO!SUBS!
+#		case "$osname" in
+#		aix)
+#			$spitshell >>Makefile <<'!NO!SUBS!'
+#	rm -f libperl$(OBJ_EXT)
+#	mv $@ libperl$(OBJ_EXT)
+#	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
+#!NO!SUBS!
+#			;;
+#		esac
+#		;;
+#	*)
+#		$spitshell >>Makefile <<'!NO!SUBS!'
+#	rm -f $(LIBPERL)
+#	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
+#	@$(ranlib) $(LIBPERL)
+#!NO!SUBS!
+#		;;
+#	esac
+#	$spitshell >>Makefile <<'!NO!SUBS!'
+#
 # How to build executables.
 
 # The $& notation tells Sequent machines that it can do a parallel make,

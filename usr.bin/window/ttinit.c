@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttinit.c,v 1.9 2001/11/19 19:02:18 mpech Exp $	*/
 /*	$NetBSD: ttinit.c,v 1.3 1995/09/28 10:34:50 tls Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,10 +37,12 @@
 #if 0
 static char sccsid[] = "@(#)ttinit.c	8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$NetBSD: ttinit.c,v 1.3 1995/09/28 10:34:50 tls Exp $";
+static char rcsid[] = "$OpenBSD: ttinit.c,v 1.9 2001/11/19 19:02:18 mpech Exp $";
 #endif
 #endif /* not lint */
 
+#include <stdlib.h>
+#include <string.h>
 #include "ww.h"
 #include "tt.h"
 
@@ -73,9 +72,9 @@ struct tt_tab tt_tab[] = {
 ttinit()
 {
 	int i;
-	register struct tt_tab *tp;
-	register char *p, *q;
-	register char *t;
+	struct tt_tab *tp;
+	char *p, *q;
+	char *t;
 
 	tt_strp = tt_strings;
 
@@ -83,7 +82,7 @@ ttinit()
 	 * Set output buffer size to about 1 second of output time.
 	 */
 	i = MIN(wwbaud/10, 512);
-	if ((tt_ob = malloc((unsigned) i)) == 0) {
+	if ((tt_ob = malloc(i)) == 0) {
 		wwerrno = WWE_NOMEM;
 		return -1;
 	}
@@ -91,21 +90,29 @@ ttinit()
 	tt_obe = tt_ob + i;
 
 	/*
-	 * Use the standard name of the terminal (i.e. the second
-	 * name in termcap).
+	 * Use the standard name of the terminal (i.e. the first
+	 * non-two letter name in termcap).
 	 */
-	for (p = wwtermcap; *p && *p != '|' && *p != ':'; p++)
-		;
-	if (*p == '|')
-		p++;
+#ifdef NCURSES_VERSION
+	wwterm = strdup(_nc_first_name(cur_term->type.term_names));
+#elif !defined(TERMINFO)
+	if ((p = strchr(wwtermcap, '|')) && (int)(p - wwtermcap) == 2) {
+		/* Skip the two-character short name. */
+		for (p = wwtermcap; *p && *p != '|' && *p != ':'; p++)
+			;
+		if (*p == '|')
+			p++;
+	} else
+		p = wwtermcap;
 	for (q = p; *q && *q != '|' && *q != ':'; q++)
 		;
-	if (q != p && (t = malloc((unsigned) (q - p + 1))) != 0) {
+	if (q != p && (t = malloc(q - p + 1)) != 0) {
 		wwterm = t;
 		while (p < q)
 			*t++ = *p++;
 		*t = 0;
 	}
+#endif
 	for (tp = tt_tab; tp->tt_name != 0; tp++)
 		if (strncmp(tp->tt_name, wwterm, tp->tt_len) == 0)
 			break;

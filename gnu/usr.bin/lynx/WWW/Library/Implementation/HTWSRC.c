@@ -8,24 +8,19 @@
 **	3 June 93	Bug fix: Won't crash if no description
 */
 
-#include "HTUtils.h"
-#include "tcp.h"
+#include <HTUtils.h>
 
-#include "HTWSRC.h"
+#include <HTWSRC.h>
+#include <LYUtils.h>
 
+#include <HTML.h>
+#include <HTParse.h>
 
-#include "HTML.h"
-#include "HTParse.h"
-
-#include "LYLeaks.h"
-
-#define FREE(x) if (x) {free(x); x = NULL;}
+#include <LYLeaks.h>
 
 #define BIG 10000		/* Arbitrary limit to value length */
 #define PARAM_MAX BIG
 #define CACHE_PERIOD (7*86400)	/* Time to keep .src file in seconds */
-
-#define HEX_ESCAPE '%'
 
 struct _HTStructured {
 	CONST HTStructuredClass *	isa;
@@ -97,7 +92,7 @@ struct _HTStream {
 	CONST HTStreamClass *	isa;
 	HTStructured *		target;
 	char *			par_value[PAR_COUNT];
-	enum tokenstate 	state;
+	enum tokenstate		state;
 	char			param[BIG+1];
 	int			param_number;
 	int			param_count;
@@ -113,10 +108,10 @@ PUBLIC CONST char * hex = "0123456789ABCDEF";
 
 PUBLIC char from_hex ARGS1(char, c)
 {
-    return		  (c>='0')&&(c<='9') ? c-'0'
+    return  (char) (      (c>='0')&&(c<='9') ? c-'0'
 			: (c>='A')&&(c<='F') ? c-'A'+10
 			: (c>='a')&&(c<='f') ? c-'a'+10
-			:		       0;
+			:		       0);
 }
 
 
@@ -162,9 +157,8 @@ PRIVATE void WSRCParser_put_character ARGS2(HTStream*, me, char, c)
 		}
 	    }
 	    if (!par_name[me->param_number]) {	/* Unknown field */
-		if (TRACE) fprintf(stderr,
-		    "HTWSRC: Unknown field `%s' in source file\n",
-		    me->param);
+		CTRACE((tfp, "HTWSRC: Unknown field `%s' in source file\n",
+			    me->param));
 		me->param_number = PAR_UNKNOWN;
 		me->state = before_value;	/* Could be better ignore */
 		return;
@@ -248,28 +242,32 @@ PRIVATE void WSRCParser_put_character ARGS2(HTStream*, me, char, c)
 PRIVATE BOOL write_cache ARGS1(HTStream *, me)
 {
     FILE * fp;
-    char cache_file_name[256];
+    char * cache_file_name = NULL;
     char * www_database;
+    int result = NO;
+
     if (!me->par_value[PAR_DATABASE_NAME]
 	|| !me->par_value[PAR_IP_NAME]
 	) return NO;
 
     www_database = HTEscape(me->par_value[PAR_DATABASE_NAME], URL_XALPHAS);
-    sprintf(cache_file_name, "%sWSRC-%s:%s:%.100s.txt",
+    HTSprintf0(&cache_file_name, "%sWSRC-%s:%s:%.100s.txt",
 	CACHE_FILE_PREFIX,
 	me->par_value[PAR_IP_NAME],
 	me->par_value[PAR_TCP_PORT] ? me->par_value[PAR_TCP_PORT] : "210",
 	www_database);
-    FREE(www_database);
-    fp = fopen(cache_file_name, "w");
-    if (!fp) return NO;
 
-    if (me->par_value[PAR_DESCRIPTION])
-	fputs(me->par_value[PAR_DESCRIPTION], fp);
-    else
-	fputs("Description not available\n", fp);
-    fclose(fp);
-    return YES;
+    if ((fp = fopen(cache_file_name, TXT_W)) != 0) {
+	result = YES;
+	if (me->par_value[PAR_DESCRIPTION])
+	    fputs(me->par_value[PAR_DESCRIPTION], fp);
+	else
+	    fputs("Description not available\n", fp);
+	fclose(fp);
+    }
+    FREE(www_database);
+    FREE(cache_file_name);
+    return result;
 }
 #endif
 
@@ -286,7 +284,7 @@ PRIVATE void give_parameter ARGS2(HTStream *, me, int, p)
 	PUTS(me->par_value[p]);
 	PUTS("; ");
     } else {
-	PUTS(" NOT GIVEN in source file; ");
+	PUTS(gettext(" NOT GIVEN in source file; "));
     }
 }
 
@@ -307,19 +305,19 @@ PRIVATE void WSRC_gen_html ARGS2(HTStream *, me, BOOL, source_file)
 	}
 
 	START(HTML_HEAD);
-	PUTS("\n");
+	PUTC('\n');
 	START(HTML_TITLE);
 	PUTS(shortname);
-	PUTS(source_file ? " WAIS source file" : " index");
+	PUTS(source_file ? gettext(" WAIS source file") : INDEX_SEGMENT);
 	END(HTML_TITLE);
-	PUTS("\n");
+	PUTC('\n');
 	END(HTML_HEAD);
 
 	START(HTML_H1);
 	PUTS(shortname);
-	PUTS(source_file ? " description" : " index");
+	PUTS(source_file ? gettext(" description") : INDEX_SEGMENT);
 	END(HTML_H1);
-	PUTS("\n");
+	PUTC('\n');
 	FREE(shortname);
     }
 
@@ -327,29 +325,31 @@ PRIVATE void WSRC_gen_html ARGS2(HTStream *, me, BOOL, source_file)
 
     if (source_file) {
 	START(HTML_DT);
-	PUTS("Access links");
+	PUTS(gettext("Access links"));
 	MAYBE_END(HTML_DT);
 	START(HTML_DD);
 	if (me->par_value[PAR_IP_NAME] &&
 	    me->par_value[PAR_DATABASE_NAME]) {
 
-	    char WSRC_address[256];
+	    char * WSRC_address = NULL;
 	    char * www_database;
 	    www_database = HTEscape(me->par_value[PAR_DATABASE_NAME],
 		URL_XALPHAS);
-	    sprintf(WSRC_address, "wais://%s%s%s/%s",
+	    HTSprintf0(&WSRC_address, "%s//%s%s%s/%s",
+		STR_WAIS_URL,
 		me->par_value[PAR_IP_NAME],
 		me->par_value[PAR_TCP_PORT] ? ":" : "",
 		me->par_value[PAR_TCP_PORT] ? me->par_value[PAR_TCP_PORT] :"",
 		www_database);
 
 	    HTStartAnchor(me->target, NULL, WSRC_address);
-	    PUTS("Direct access");
+	    PUTS(gettext("Direct access"));
 	    END(HTML_A);
 	    /** Proxy will be used if defined, so let user know that - FM **/
-	    PUTS(" (or via proxy server, if defined)");
+	    PUTS(gettext(" (or via proxy server, if defined)"));
 
 	    FREE(www_database);
+	    FREE(WSRC_address);
 
 	} else {
 	    give_parameter(me, PAR_IP_NAME);
@@ -361,7 +361,7 @@ PRIVATE void WSRC_gen_html ARGS2(HTStream *, me, BOOL, source_file)
 
     if (me->par_value[PAR_MAINTAINER]) {
 	START(HTML_DT);
-	PUTS("Maintainer");
+	PUTS(gettext("Maintainer"));
 	MAYBE_END(HTML_DT);
 	START(HTML_DD);
 	PUTS(me->par_value[PAR_MAINTAINER]);
@@ -369,7 +369,7 @@ PRIVATE void WSRC_gen_html ARGS2(HTStream *, me, BOOL, source_file)
     }
     if (me->par_value[PAR_IP_NAME]) {
 	START(HTML_DT);
-	PUTS("Host");
+	PUTS(gettext("Host"));
 	MAYBE_END(HTML_DT);
 	START(HTML_DD);
 	PUTS(me->par_value[PAR_IP_NAME]);
@@ -431,7 +431,7 @@ PRIVATE void WSRCParser_abort ARGS2(HTStream *, me, HTError, e GCC_UNUSED)
 }
 
 
-/*		Stream subclass 	-- method routines
+/*		Stream subclass		-- method routines
 **		---------------
 */
 

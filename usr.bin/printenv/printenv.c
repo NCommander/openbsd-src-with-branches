@@ -1,3 +1,5 @@
+/*	$OpenBSD: printenv.c,v 1.4 2003/06/03 02:56:14 millert Exp $	*/
+
 /*
  * Copyright (c) 1987 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)printenv.c	5.4 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: printenv.c,v 1.4 1993/12/31 19:28:15 jtc Exp $";
+static char rcsid[] = "$OpenBSD: printenv.c,v 1.4 2003/06/03 02:56:14 millert Exp $";
 #endif /* not lint */
 
 #include <stdio.h>
@@ -53,13 +51,11 @@ static char rcsid[] = "$Id: printenv.c,v 1.4 1993/12/31 19:28:15 jtc Exp $";
  * February, 1979
  */
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	extern char **environ;
-	register char *cp, **ep;
-	register int len;
+	char *cp, **ep;
+	int len;
 
 	if (argc < 2) {
 		for (ep = environ; *ep; ep++)

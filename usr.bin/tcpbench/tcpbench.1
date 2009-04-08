@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: tcpbench.1,v 1.4 2008/06/12 23:00:51 jmc Exp $
 .\"
 .\" Copyright (c) 2008 Damien Miller <djm@mindrot.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: June 12 2008 $
 .Os
 .Dt TCPBENCH 1
 .Sh NAME
@@ -25,19 +25,20 @@
 .Fl l
 .Nm
 .Op Fl v
+.Op Fl B Ar buf
 .Op Fl k Ar kvars
+.Op Fl n Ar connections
 .Op Fl p Ar port
 .Op Fl r Ar rate
-.Op Fl B Ar buf
 .Op Fl S Ar space
 .Ar hostname
 .Nm
 .Fl s
 .Op Fl v
+.Op Fl B Ar buf
 .Op Fl k Ar kvars
 .Op Fl p Ar port
 .Op Fl r Ar rate
-.Op Fl B Ar buf
 .Op Fl S Ar space
 .Sh DESCRIPTION
 .Nm
@@ -66,32 +67,37 @@ option.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl B
-Specify the size of the internal write buffer used by
+.It Fl B Ar buf
+Specify the size of the internal read/write buffer used by
 .Nm .
-.It Fl l
-List the name of kernel variables available for monitoring and exit.
+The default is 262144 bytes.
 .It Fl k Ar kvars
-Specify one or more kernel variables to monitor; multiple variables must be 
+Specify one or more kernel variables to monitor; multiple variables must be
 separated with commas.
 The default is not to monitor any variables.
+Using this option requires read access to
+.Pa /dev/kmem .
+.It Fl l
+List the name of kernel variables available for monitoring and exit.
+.It Fl n Ar connections
+Use the given number of TCP connections (default: 1).
 .It Fl p Ar port
 Specify the port used for the TCP test stream (default: 12345).
+.It Fl r Ar rate
+Specify the statistics reporting rate in milliseconds (default: 1000).
+.It Fl S Ar space
+Set the size of the socket buffer used for the TCP test stream.
+On the client this option will resize the send buffer;
+on the server it will resize the receive buffer.
 .It Fl s
 Place
 .Nm
 in server mode, where it will listen on all interfaces for incoming
 connections.
-.It Fl r Ar rate
-Specify the statistics reporting rate in milliseconds (default: 1000).
-.It Fl S Ar space
-Set the size of the socket buffer used for the TCP test stream.
-On the client this option will resize the send buffer, on the server
-it will resize the receive buffer.
 .It Fl v
 Display verbose output.
 If specified more than once, increase the detail of information displayed.
 .El
 .Sh SEE ALSO
-.Xr netstat 1
+.Xr netstat 1 ,
 .Xr pstat 8

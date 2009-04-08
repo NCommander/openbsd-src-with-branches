@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* ho-ansi.h  Host-specific header file for generic ansi environments.
    Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
    

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: cdefs.h,v 1.14 2001/06/07 20:04:53 ca Exp $
+ *	$Sendmail: cdefs.h,v 1.16 2003/12/05 22:45:25 ca Exp $
  */
 
 /*
@@ -43,7 +43,9 @@
 #   define	__END_DECLS
 #  endif /* defined(__cplusplus) */
 #  if defined(__STDC__) || defined(__cplusplus)
-#   define	__P(protos)	protos
+#   ifndef __P
+#    define	__P(protos)	protos
+#   endif /* __P */
 #   define	__CONCAT(x,y)	x ## y
 #   define	__STRING(x)	#x
 #  else /* defined(__STDC__) || defined(__cplusplus) */
@@ -65,11 +67,14 @@
 #  if __GNUC__ >= 2
 #   if __GNUC__ == 2 && __GNUC_MINOR__ < 5
 #    define SM_DEAD(proto) volatile proto
+#    define SM_DEAD_D volatile
 #   else /* __GNUC__ == 2 && __GNUC_MINOR__ < 5 */
 #    define SM_DEAD(proto) proto __attribute__((__noreturn__))
+#    define SM_DEAD_D
 #   endif /* __GNUC__ == 2 && __GNUC_MINOR__ < 5 */
 #  else /* __GNUC__ >= 2 */
 #   define SM_DEAD(proto) proto
+#   define SM_DEAD_D
 #  endif /* __GNUC__ >= 2 */
 # endif /* SM_DEAD */
 

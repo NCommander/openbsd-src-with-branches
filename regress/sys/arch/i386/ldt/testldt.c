@@ -1,7 +1,10 @@
+/*	$OpenBSD: testldt.c,v 1.7 2003/08/02 01:24:36 david Exp $	*/
 /*	$NetBSD: testldt.c,v 1.4 1995/04/20 22:42:38 cgd Exp $	*/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <machine/segments.h>
@@ -12,12 +15,14 @@ extern int i386_set_ldt(int, union descriptor *, int);
 int verbose = 0;
 struct sigaction segv_act;
 
-inline void set_fs(unsigned long val)
+static inline void
+set_fs(unsigned long val)
 {
 	__asm__ __volatile__("mov %0,%%fs"::"r" ((unsigned short) val));
 }
 
-inline unsigned char get_fs_byte(const char * addr)
+static inline unsigned char
+get_fs_byte(const char * addr)
 {
 	unsigned register char _v;
 
@@ -25,7 +30,8 @@ inline unsigned char get_fs_byte(const char * addr)
 	return _v;
 }
 
-inline unsigned short get_cs(void)
+static inline unsigned short
+get_cs(void)
 {
 	unsigned register short _v;
 
@@ -33,7 +39,7 @@ inline unsigned short get_cs(void)
 	return _v;
 }
 
-int
+static int
 check_desc(unsigned int desc)
 {
 	desc = LSEL(desc, SEL_UPL);
@@ -41,15 +47,15 @@ check_desc(unsigned int desc)
 	return(get_fs_byte((char *) 0));
 }
 
-void
-gated_call()
+static void
+gated_call(void)
 {
 	printf("Called from call gate...");
 	__asm__ __volatile__("popl %ebp");
 	__asm__ __volatile__(".byte 0xcb");
 }
 
-struct segment_descriptor *
+static struct segment_descriptor *
 make_sd(unsigned base, unsigned limit, int type, int dpl, int seg32, int inpgs)
 {
 	static struct segment_descriptor d;
@@ -68,7 +74,7 @@ make_sd(unsigned base, unsigned limit, int type, int dpl, int seg32, int inpgs)
 	return (&d);
 }
 
-struct gate_descriptor *
+static struct gate_descriptor *
 make_gd(unsigned offset, unsigned int sel, unsigned stkcpy, int type, int dpl)
 {
 	static struct gate_descriptor d;
@@ -84,7 +90,7 @@ make_gd(unsigned offset, unsigned int sel, unsigned stkcpy, int type, int dpl)
 	return(&d);
 }
 
-void
+static void
 print_ldt(union descriptor *dp)
 {
 	unsigned long base_addr, limit, offset, selector, stack_copy;
@@ -136,7 +142,7 @@ print_ldt(union descriptor *dp)
 static void busfault(int signal, int code, struct sigcontext *sc)
 {
 	fprintf(stderr, "\nbus fault - investigate.\n");
-	exit(1);
+	_exit(1);
 }
 
 static void usage(int status)
@@ -161,7 +167,7 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
-	while ((ch = getopt(argc, argv, "v")) != EOF) {
+	while ((ch = getopt(argc, argv, "v")) != -1) {
 		switch (ch) {
 		case 'v':
 		    verbose++;
@@ -197,7 +203,7 @@ main(int argc, char *argv[])
 	data = (void *) mmap( (char *)0x005f0000, 0x0fff,
 			     PROT_EXEC | PROT_READ | PROT_WRITE,
 			     MAP_FIXED | MAP_PRIVATE | MAP_ANON, -1, 0);
-	if (data == NULL) {
+	if (data == MAP_FAILED) {
 		perror("mmap");
 		exit(1);
 	}

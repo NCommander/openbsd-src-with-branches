@@ -1,7 +1,6 @@
-#	$NetBSD: Makefile.inc,v 1.4 1995/02/27 13:24:22 cgd Exp $
-#       @(#)Makefile.inc	8.1 (Berkeley) 6/4/93
+#	$OpenBSD: Makefile.inc,v 1.3 1996/08/19 08:20:54 tholo Exp $
 
-.PATH: ${.CURDIR}/db/recno
+.PATH: ${LIBCSRCDIR}/db/recno
 
 SRCS+=	rec_close.c rec_delete.c rec_get.c rec_open.c rec_put.c rec_search.c \
 	rec_seq.c rec_utils.c

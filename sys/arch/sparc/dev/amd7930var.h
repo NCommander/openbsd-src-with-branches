@@ -1,4 +1,5 @@
-/*	$NetBSD: amd7930var.h,v 1.2 1995/05/04 19:43:32 pk Exp $ */
+/*	$OpenBSD: amd7930var.h,v 1.6 2003/06/02 23:27:53 millert Exp $	*/
+/*	$NetBSD: amd7930var.h,v 1.3 1996/02/01 22:32:25 mycroft Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,15 +41,19 @@
  *	@(#)bsd_audiovar.h	8.1 (Berkeley) 6/11/93
  */
 
-#ifndef LOCORE
+#ifndef _LOCORE
 
 /* XXX I think these defines should go into some other header file */
 #define SUNAUDIO_MIC_PORT	0
 #define SUNAUDIO_SPEAKER	1
 #define SUNAUDIO_HEADPHONES	2
 #define SUNAUDIO_MONITOR	3
-#define SUNAUDIO_INPUT_CLASS	4
-#define SUNAUDIO_OUTPUT_CLASS	5
+#define SUNAUDIO_SOURCE		4
+#define SUNAUDIO_OUTPUT		5
+#define SUNAUDIO_INPUT_CLASS	6
+#define SUNAUDIO_OUTPUT_CLASS	7
+#define SUNAUDIO_RECORD_CLASS	8
+#define SUNAUDIO_MONITOR_CLASS	9
 
 struct auio {
 	volatile struct amd7930 *au_amd;/* chip registers */
@@ -61,7 +62,8 @@ struct auio {
 	u_char	*au_rend;		/* end of record data */
 	u_char	*au_pdata;		/* play data */
 	u_char	*au_pend;		/* end of play data */
-	struct	evcnt au_intrcnt;	/* statistics */
+
+	struct	intrhand au_ih;
 };
 
 /*
@@ -80,4 +82,4 @@ struct mapreg {
         u_char  mr_mmr2;
 };
 
-#endif /* !LOCORE */
+#endif /* !_LOCORE */

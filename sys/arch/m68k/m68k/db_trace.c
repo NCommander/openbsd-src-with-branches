@@ -1,4 +1,5 @@
-/*	$NetBSD: db_trace.c,v 1.12 1995/05/24 20:23:34 gwr Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.16 2002/03/14 03:15:54 millert Exp $	*/
+/*	$NetBSD: db_trace.c,v 1.20 1997/02/05 05:10:25 scottr Exp $	*/
 
 /* 
  * Mach Operating System
@@ -28,61 +29,67 @@
 
 #include <sys/param.h>
 #include <sys/proc.h>
-#include <setjmp.h>
+#include <sys/systm.h>
 
 #include <machine/db_machdep.h>
 
+#include <ddb/db_interface.h>
+#include <ddb/db_output.h>
 #include <ddb/db_access.h>
 #include <ddb/db_sym.h>
 #include <ddb/db_variables.h>
 
-jmp_buf	*db_recover;
+extern label_t	*db_recover;
 
 /*
  * Register list
  */
 static int db_var_short(struct db_variable *, db_expr_t *, int);
-extern int ddb_regs_ssp;
+
 struct db_variable db_regs[] = {
-	{ "d0",	(int *)&ddb_regs.d0,	FCN_NULL },
-	{ "d1",	(int *)&ddb_regs.d1,	FCN_NULL },
-	{ "d2",	(int *)&ddb_regs.d2,	FCN_NULL },
-	{ "d3",	(int *)&ddb_regs.d3,	FCN_NULL },
-	{ "d4",	(int *)&ddb_regs.d4,	FCN_NULL },
-	{ "d5",	(int *)&ddb_regs.d5,	FCN_NULL },
-	{ "d6",	(int *)&ddb_regs.d6,	FCN_NULL },
-	{ "d7",	(int *)&ddb_regs.d7,	FCN_NULL },
-	{ "a0",	(int *)&ddb_regs.a0,	FCN_NULL },
-	{ "a1",	(int *)&ddb_regs.a1,	FCN_NULL },
-	{ "a2",	(int *)&ddb_regs.a2,	FCN_NULL },
-	{ "a3",	(int *)&ddb_regs.a3,	FCN_NULL },
-	{ "a4",	(int *)&ddb_regs.a4,	FCN_NULL },
-	{ "a5",	(int *)&ddb_regs.a5,	FCN_NULL },
-	{ "a6",	(int *)&ddb_regs.a6,	FCN_NULL },
-	{ "ssp",&ddb_regs_ssp,  	FCN_NULL },
-	{ "usp",(int *)&ddb_regs.sp,	FCN_NULL },
-	{ "pc",	(int *)&ddb_regs.pc,	FCN_NULL },
-	{ "sr",	(int *)&ddb_regs.sr,	db_var_short }
+	/* D0-D7 */
+	{ "d0",	(long *)&ddb_regs.tf_regs[0],	FCN_NULL },
+	{ "d1",	(long *)&ddb_regs.tf_regs[1],	FCN_NULL },
+	{ "d2",	(long *)&ddb_regs.tf_regs[2],	FCN_NULL },
+	{ "d3",	(long *)&ddb_regs.tf_regs[3],	FCN_NULL },
+	{ "d4",	(long *)&ddb_regs.tf_regs[4],	FCN_NULL },
+	{ "d5",	(long *)&ddb_regs.tf_regs[5],	FCN_NULL },
+	{ "d6",	(long *)&ddb_regs.tf_regs[6],	FCN_NULL },
+	{ "d7",	(long *)&ddb_regs.tf_regs[7],	FCN_NULL },
+	/* A0-A7 */
+	{ "a0",	(long *)&ddb_regs.tf_regs[8+0],	FCN_NULL },
+	{ "a1",	(long *)&ddb_regs.tf_regs[8+1],	FCN_NULL },
+	{ "a2",	(long *)&ddb_regs.tf_regs[8+2],	FCN_NULL },
+	{ "a3",	(long *)&ddb_regs.tf_regs[8+3],	FCN_NULL },
+	{ "a4",	(long *)&ddb_regs.tf_regs[8+4],	FCN_NULL },
+	{ "a5",	(long *)&ddb_regs.tf_regs[8+5],	FCN_NULL },
+	{ "a6",	(long *)&ddb_regs.tf_regs[8+6],	FCN_NULL },
+	{ "sp",	(long *)&ddb_regs.tf_regs[8+7],	FCN_NULL },
+	/* misc. */
+	{ "pc",	(long *)&ddb_regs.tf_pc, 	FCN_NULL },
+	{ "sr",	(long *)&ddb_regs.tf_sr,	db_var_short }
 };
 struct db_variable *db_eregs = db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
 
-static int db_var_short(varp, valp, op)
+static int
+db_var_short(varp, valp, op)
     struct db_variable *varp;
     db_expr_t *valp;
     int op;
 {
     if (op == DB_VAR_GET)
-	*valp = (db_expr_t) *((short*)varp->valuep);
+	*valp = (db_expr_t) *((short *)varp->valuep);
     else
-	*((short*)varp->valuep) = (short) *valp;
+	*((short *)varp->valuep) = (short) *valp;
+    return(0);
 }
 
 #define	MAXINT	0x7fffffff
 
 #if 0
-#define	INKERNEL(va)	(((vm_offset_t)(va)) >= VM_MIN_KERNEL_ADDRESS && \
-			 (((vm_offset_t)(va)) < (USRSTACK - MAXSSIZ) || \
-			  ((vm_offset_t)(va)) >= USRSTACK))
+#define	INKERNEL(va)	(((vaddr_t)(va)) >= VM_MIN_KERNEL_ADDRESS && \
+			 (((vaddr_t)(va)) < (USRSTACK - MAXSSIZ) || \
+			  ((vaddr_t)(va)) >= USRSTACK))
 #else
 /* XXX - Slight hack... */
 extern int curpcb;
@@ -92,6 +99,8 @@ extern int curpcb;
 
 #define	get(addr, space) \
 		(db_get_value((db_addr_t)(addr), sizeof(int), FALSE))
+#define	get16(addr, space) \
+		(db_get_value((db_addr_t)(addr), sizeof(u_short), FALSE))
 
 #define	NREGISTERS	16
 
@@ -105,32 +114,32 @@ struct stackpos {
 	 int	k_regloc[NREGISTERS];
 };
 
+static void findentry(struct stackpos *);
+static void findregs(struct stackpos *, db_addr_t);
+static int  nextframe(struct stackpos *, int);
+static void stacktop(db_regs_t *, struct stackpos *);
+
+
 #define FR_SAVFP	0
 #define FR_SAVPC	4
 #define K_CALLTRAMP	1	/* for k_flags: caller is __sigtramp */
 #define K_SIGTRAMP	2	/* for k_flags: this is   __sigtramp */
 
+static void
 stacktop(regs, sp)
-	register struct mc68020_saved_state *regs;
-	register struct stackpos *sp;
+	db_regs_t *regs;
+	struct stackpos *sp;
 {
-	sp->k_regloc[0]  = (int) &regs->d0;
-	sp->k_regloc[1]  = (int) &regs->d1;
-	sp->k_regloc[2]  = (int) &regs->d2;
-	sp->k_regloc[3]  = (int) &regs->d3;
-	sp->k_regloc[4]  = (int) &regs->d4;
-	sp->k_regloc[5]  = (int) &regs->d5;
-	sp->k_regloc[6]  = (int) &regs->d6;
-	sp->k_regloc[7]  = (int) &regs->d7;
-	sp->k_regloc[8]  = (int) &regs->a0;
-	sp->k_regloc[9]  = (int) &regs->a1;
-	sp->k_regloc[10] = (int) &regs->a2;
-	sp->k_regloc[11] = (int) &regs->a3;
-	sp->k_regloc[12] = (int) &regs->a4;
-	sp->k_regloc[13] = (int) &regs->a5;
+	int i;
 
-	sp->k_fp = get(&regs->a6, 0);
-	sp->k_pc = get(&regs->pc, 0);
+	/* Note: leave out a6, a7 */
+	for (i = 0; i < (8+6); i++) {
+		sp->k_regloc[i] = (int) &regs->tf_regs[i];
+	}
+
+	sp->k_fp = get(&regs->tf_regs[8+6], 0);
+	/* skip sp (a7) */
+	sp->k_pc = get(&regs->tf_pc, 0);
 	sp->k_flags = 0;
 
 	findentry(sp);
@@ -163,9 +172,7 @@ stacktop(regs, sp)
 #define JSRPC	0x4eba0000	/* jsr PC@( )    */
 #define LONGBIT 0x00010000
 #define BSR	0x61000000	/* bsr x	 */
-#ifdef	mc68020
 #define BSRL	0x61ff0000	/* bsrl x	 */
-#endif	mc68020
 #define BYTE3	0x0000ff00
 #define LOBYTE	0x000000ff
 #define ADQMSK	0xf1ff0000
@@ -175,14 +182,14 @@ stacktop(regs, sp)
 struct nlist *	trampsym = 0;
 struct nlist *	funcsym = 0;
 
+static int
 nextframe(sp, kerneltrace)
-	register struct stackpos *sp;
+	struct stackpos *sp;
 	int kerneltrace;
 {
-	int		val, regp, i;
+	int		i;
 	db_addr_t	addr;
 	db_addr_t	calladdr;
-	register int	instruc;
 	db_addr_t	oldfp = sp->k_fp;
 
 	/*
@@ -215,7 +222,7 @@ nextframe(sp, kerneltrace)
 		    addr, sp->k_caller);
 #endif
 		errflg = 0;
-#endif	0
+#endif /* 0 */
 	} else {
 		if (addr == MAXINT) {
 			/* we don't know what registers are involved here--
@@ -251,8 +258,9 @@ nextframe(sp, kerneltrace)
 	return (sp->k_fp);
 }
 
+static void
 findentry(sp)
-	register struct stackpos *sp;
+	struct stackpos *sp;
 { 
 	/* 
 	 * Set the k_nargs and k_entry fields in the stackpos structure.  This
@@ -260,13 +268,15 @@ findentry(sp)
 	 * an addq or addl or addw to sp just after we return to pop off our
 	 * arguments.  Find that instruction and extract the value.
 	 */
-	register	instruc;
-	register	val;
-	db_addr_t	addr, calladdr, nextword;
-	jmp_buf		db_jmpbuf;
-	jmp_buf		*savejmp = db_recover;
+	int		instruc;
+	int		val;
+	db_addr_t	addr, nextword;
+	label_t		db_jmpbuf;
+	label_t		*savejmp;
 
-	if (setjmp(*(db_recover = &db_jmpbuf))) {
+	savejmp = db_recover;
+	db_recover = &db_jmpbuf;
+	if (setjmp(&db_jmpbuf)) {
 		/* oops -- we touched something we ought not to have */
 		/* cannot trace caller of "start" */
 		sp->k_entry = MAXINT;
@@ -293,12 +303,10 @@ findentry(sp)
 		/* longword offset here */
 		sp->k_caller = addr - 6;
 		sp->k_entry  = nextword;
-#ifdef	mc68020
 	} else if ((instruc & HIWORD) == BSRL) {
 		/* longword self-relative offset */
 		sp->k_caller = addr - 6;
 		sp->k_entry  = nextword + (addr - 4);
-#endif	mc68020
 	} else {
 		instruc = nextword;
 		if ((instruc & HIWORD) == JSR) {
@@ -358,7 +366,7 @@ findentry(sp)
 				else
 				db_printf("Non-tramp jsr a0@\n");
 #endif
-#endif	0
+#endif /* 0 */
 			}
 		}
 	}
@@ -393,13 +401,15 @@ findentry(sp)
  * Look at the procedure prolog of the current called procedure.
  * Figure out which registers we saved, and where they are
  */
+static void
 findregs(sp, addr)
-	register struct stackpos *sp;
-	register db_addr_t addr;
+	struct stackpos *sp;
+	db_addr_t addr;
 {
-	register long instruc, val, i;
+	long instruc, val, i;
 	int  regp;
 
+	regp = 0;
 	instruc = get(addr, ISP);
 	if ((instruc & HIWORD) == LINKLA6) {
 		instruc = get(addr + 2, ISP);
@@ -456,22 +466,24 @@ findregs(sp, addr)
  *	Frame tracing.
  */
 void
-db_stack_trace_cmd(addr, have_addr, count, modif)
+db_stack_trace_print(addr, have_addr, count, modif, pr)
 	db_expr_t	addr;
 	int		have_addr;
 	db_expr_t	count;
 	char		*modif;
+	int		(*pr)(const char *, ...);
 {
-	int i, val, nargs, spa;
+	int i, nargs;
+	long val;
 	db_addr_t	regp;
 	char *		name;
 	struct stackpos pos;
 	boolean_t	kernel_only = TRUE;
-	boolean_t	trace_thread = FALSE;
+	int		fault_pc = 0;
 
 	{
-		register char *cp = modif;
-		register char c;
+		char *cp = modif;
+		char c;
 
 		while ((c = *cp++) != 0)
 			if (c == 'u')
@@ -489,12 +501,12 @@ db_stack_trace_cmd(addr, have_addr, count, modif)
 		/*
 		 * Only have user register state.
 		 */
-		register pcb_t	t_pcb;
-		register struct mc68020_saved_state *user_regs;
+		pcb_t	t_pcb;
+		db_regs_t *user_regs;
 		
 		t_pcb = (pcb_t) get(&th->pcb, 0);
-		user_regs = (struct mc68020_saved_state *)
-		get(&t_pcb->user_regs, 0);
+		user_regs = (db_regs_t *)
+			get(&t_pcb->user_regs, 0);
 		
 		stacktop(user_regs, &pos);
 
@@ -523,34 +535,76 @@ db_stack_trace_cmd(addr, have_addr, count, modif)
 			pos.k_pc = 0;
 		} else {
 			db_find_sym_and_offset(pos.k_pc, &name, &val);
-			if (name == 0)
+			if (name == 0) {
+				val = MAXINT;
 				name = "?";
+			}
 		}
-		db_printf("%s", name);
+
+		/*
+		 * Since faultstkadj doesn't set up a valid stack frame,
+		 * we would assume it was the source of the fault. To
+		 * get around this we peek at the fourth argument of
+		 * "trap()" (the stack frame at the time of the fault)
+		 * to determine the _real_ value of PC when things wen
+		 * wrong.
+		 *
+		 * NOTE: If the argument list for 'trap()' ever changes,
+		 * we lose.
+		 */
+		if (strcmp("_trap", name) == 0) {
+			int tfp;
+
+			/* Point to 'trap()'s 4th argument (frame structure) */
+			tfp = pos.k_fp + FR_SAVFP + 4 + (4 * 4);
+
+			/* Determine if fault was from kernel or user mode */
+			regp = tfp + offsetof(struct frame, f_sr);
+			if (!USERMODE(get16(regp, DSP))) {
+				/*
+				 * Definitely a kernel mode fault,
+				 * so get the PC at the time of the fault.
+				 */
+				regp = tfp + offsetof(struct frame, f_pc);
+				fault_pc = get(regp, DSP);
+			}
+		} else
+		if (fault_pc) {
+			if (strcmp("faultstkadj", name) == 0) {
+				db_find_sym_and_offset(fault_pc, &name, &val);
+				if (name == 0) {
+					val = MAXINT;
+					name = "?";
+				}
+			}
+			fault_pc = 0;
+		}
+
+		(*pr)("%s", name);
 		if (pos.k_entry != MAXINT && name) {
 			char *	entry_name;
-			int	e_val;
+			long	e_val;
 
 			db_find_sym_and_offset(pos.k_entry, &entry_name,
 			    &e_val);
 			if (entry_name != 0 && entry_name != name &&
 			    e_val != val) {
-				db_printf("(?)\n%s", entry_name);
+				(*pr)("(?)\n%s", entry_name);
 			}
 		}
-		db_printf("(");
+		(*pr)("(");
 		regp = pos.k_fp + FR_SAVFP + 4;
 		if ((nargs = pos.k_nargs)) {
 			while (nargs--) {
-				db_printf("%x", get(regp += 4, DSP));
+				(*pr)("%lx", get(regp += 4, DSP));
 				if (nargs)
-					db_printf(",");
+					(*pr)(",");
 			}
 		}
 		if (val == MAXINT)
-			db_printf(") at %x\n", pos.k_pc);
+			(*pr)(") at %x\n", pos.k_pc);
 		else
-			db_printf(") + %x\n", val);
+			(*pr)(") + %lx\n", val);
 
 		/*
 		 * Stop tracing if frame ptr no longer points into kernel

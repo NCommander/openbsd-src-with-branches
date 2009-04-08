@@ -143,26 +143,27 @@ f77.all.cross: g77-cross$(exeext)
 f77.start.encap: g77$(exeext)
 f77.rest.encap:
 
-f77.info: $(srcdir)/f/g77.info
+f77.info: f/g77.info
 f77.dvi: f/g77.dvi
-f77.generated-manpages: $(srcdir)/f/g77.1
+f77.generated-manpages: f/g77.1
 
 # g77 documentation.
-$(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
-		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
+		$(srcdir)/f/news.texi  f/intdoc.texi \
 		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
 		$(srcdir)/doc/include/gpl.texi \
 		$(srcdir)/doc/include/funding.texi \
 		$(srcdir)/doc/include/gcc-common.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(srcdir)/f/g77.info-*; \
-	  cd $(srcdir)/f && $(MAKEINFO) -I../doc/include -o g77.info g77.texi; \
+	  rm -f f/g77.info-*; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	  cd f && $(MAKEINFO) -I$$s/doc/include -I$$s/f -o g77.info $$s/f/g77.texi; \
 	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
-		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
+		$(srcdir)/f/news.texi  f/intdoc.texi \
 		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
 		$(srcdir)/doc/include/gpl.texi \
 		$(srcdir)/doc/include/funding.texi \
@@ -170,10 +171,10 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	cd f && $(TEXI2DVI) -I $$s/doc/include $$s/f/g77.texi
 
-$(srcdir)/f/g77.1: $(srcdir)/f/invoke.texi
+f/g77.1: $(srcdir)/f/invoke.texi
 	-$(TEXI2POD) < $(srcdir)/f/invoke.texi > f/g77.pod; \
 	($(POD2MAN) --section=1 f/g77.pod > f/g77.1.T$$$$ && \
-	    mv -f f/g77.1.T$$$$ $(srcdir)/f/g77.1) || \
+	    mv -f f/g77.1.T$$$$ f/g77.1) || \
 	    (rm -f f/g77.1.T$$$$ && exit 1); \
 	rm -f f/g77.pod; \
 
@@ -207,9 +208,9 @@ $(srcdir)/f/g77.1: $(srcdir)/f/invoke.texi
 
 INTDOC_DEPS = $(srcdir)/f/intdoc.c $(srcdir)/f/intrin.h $(srcdir)/f/intrin.def
 
-$(srcdir)/f/intdoc.texi: $(INTDOC_DEPS) $(srcdir)/f/intdoc.in
+f/intdoc.texi: $(INTDOC_DEPS) $(srcdir)/f/intdoc.in
 	$(MAKE) f/intdoc$(build_exeext)
-	f/intdoc$(build_exeext) > $(srcdir)/f/intdoc.texi
+	f/intdoc$(build_exeext) > $@
 
 f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 hconfig.h $(SYSTEM_H) \
 	$(HOST_LIBDEPS)
@@ -224,16 +225,15 @@ f/ansify$(build_exeext): f/ansify.c hconfig.h $(SYSTEM_H)
 	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
 	  	$(srcdir)/f/ansify.c -o f/ansify$(build_exeext)
 
-$(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
+f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
 	  --no-validate -I../doc/include -o BUGS bugs0.texi
 
-$(srcdir)/f/NEWS: f/news0.texi f/news.texi f/root.texi
+f/NEWS: f/news0.texi f/news.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
 	  --no-validate -I../doc/include -o NEWS news0.texi
 
-f77.rebuilt: f/g77.info $(srcdir)/f/BUGS \
-  $(srcdir)/f/NEWS 
+f77.rebuilt: f/g77.info f/BUGS f/NEWS 
 
 #
 # Install hooks:
@@ -268,15 +268,15 @@ f77.install-common: installdirs
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
 f77.install-info: f77.info installdirs
-	if [ -f $(srcdir)/f/g77.info ] ; then \
+	if [ -f f/g77.info ] ; then \
 	  rm -f $(DESTDIR)$(infodir)/g77.info*; \
-	  for f in $(srcdir)/f/g77.info*; do \
+	  for f in f/g77.info*; do \
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
 	  done; \
 	  chmod a-x $(DESTDIR)$(infodir)/g77.info*; \
 	else true; fi
-	@if [ -f $(srcdir)/f/g77.info ] ; then \
+	@if [ -f f/g77.info ] ; then \
 	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	    echo " install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info"; \
 	    install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info || : ; \

@@ -1,6 +1,22 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vm_machdep.c,v 1.9 2007/05/27 20:59:26 miod Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.53 2006/08/31 16:49:21 matt Exp $	*/
 
+/*
+ * Copyright (c) 2007 Miodrag Vallat.
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice, this permission notice, and the disclaimer below
+ * appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 /*-
  * Copyright (c) 2002 The NetBSD Foundation, Inc. All rights reserved.
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -36,7 +52,6 @@
  *
  *	@(#)vm_machdep.c	7.3 (Berkeley) 5/13/91
  */
-
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
  * Copyright (c) 1989, 1990 William Jolitz
@@ -133,6 +148,8 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, size_t stacksize,
 
 	KDASSERT(p1 == curproc || p1 == &proc0);
 
+	bzero(&p2->p_md, sizeof(p2->p_md));
+
 	/* Copy flags */
 	p2->p_md.md_flags = p1->p_md.md_flags;
 
@@ -201,8 +218,8 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, size_t stacksize,
 
 	/* Setup switch frame */
 	sf = &pcb->pcb_sf;
-	sf->sf_r11 = (int)arg;		/* proc_trampoline hook func */
-	sf->sf_r12 = (int)func;		/* proc_trampoline hook func's arg */
+	sf->sf_r11 = (int)arg;		/* proc_trampoline hook func's arg */
+	sf->sf_r12 = (int)func;		/* proc_trampoline hook func */
 	sf->sf_r15 = spbase + USPACE - PAGE_SIZE;/* current stack pointer */
 	sf->sf_r7_bank = sf->sf_r15;	/* stack top */
 	sf->sf_r6_bank = (vaddr_t)tf;	/* current frame pointer */
@@ -213,6 +230,19 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, size_t stacksize,
 	 * kernel thread begin to run without restoring trapframe.
 	 */
 	sf->sf_sr = PSL_MD;		/* kernel mode, interrupt enable */
+
+#ifdef SH4
+	if (CPU_IS_SH4) {
+		/*
+		 * Propagate floating point registers to the new process
+		 * (they are not in the trapframe).
+		 */
+		if (p1 == curproc)
+			fpu_save(&p1->p_md.md_pcb->pcb_fp);
+		bcopy(&p1->p_md.md_pcb->pcb_fp, &pcb->pcb_fp,
+		    sizeof(struct fpreg));
+	}
+#endif
 }
 
 /*
@@ -220,6 +250,7 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, size_t stacksize,
  */
 struct md_core {
 	struct reg intreg;
+	struct fpreg fpreg;
 };
 
 int
@@ -239,6 +270,18 @@ cpu_coredump(struct proc *p, struct vnode *vp, struct ucred *cred,
 	error = process_read_regs(p, &md_core.intreg);
 	if (error)
 		return error;
+
+#ifdef SH4
+	if (CPU_IS_SH4) {
+		error = process_read_fpregs(p, &md_core.fpreg);
+		if (error)
+			return error;
+	}
+#endif
+#ifdef SH3
+	if (CPU_IS_SH3)
+		bzero(&md_core.fpreg, sizeof(md_core.fpreg));
+#endif
 
 	CORE_SETMAGIC(cseg, CORESEGMAGIC, MID_MACHINE, CORE_CPU);
 	cseg.c_addr = 0;
@@ -261,40 +304,6 @@ cpu_coredump(struct proc *p, struct vnode *vp, struct ucred *cred,
 }
 
 /*
- * Move pages from one kernel virtual address to another.
- * Both addresses are assumed to reside in the Sysmap,
- * and size must be a multiple of PAGE_SIZE.
- */
-
-void
-pagemove(caddr_t from, caddr_t to, size_t size)
-{
-	paddr_t pa;
-	boolean_t rv;
-
-#ifdef DEBUG
-	if (size % PAGE_SIZE)
-		panic("pagemove: size=%08lx", (u_long) size);
-#endif
-
-	while (size > 0) {
-		rv = pmap_extract(pmap_kernel(), (vaddr_t) from, &pa);
-#ifdef DEBUG
-		if (rv == FALSE)
-			panic("pagemove 2");
-		if (pmap_extract(pmap_kernel(), (vaddr_t) to, NULL) == TRUE)
-			panic("pagemove 3");
-#endif
-		pmap_kremove((vaddr_t) from, PAGE_SIZE);
-		pmap_kenter_pa((vaddr_t) to, pa, VM_PROT_READ|VM_PROT_WRITE);
-		from += PAGE_SIZE;
-		to += PAGE_SIZE;
-		size -= PAGE_SIZE;
-	}
-	pmap_update(pmap_kernel());
-}
-
-/*
  * Map an IO request into kernel virtual address space.
  * All requests are (re)mapped into kernel VA space via the phys_map
  * (a name with only slightly more meaning than "kernel_map")
@@ -313,7 +322,7 @@ vmapbuf(struct buf *bp, vsize_t len)
 	faddr = trunc_page((vaddr_t)bp->b_data);
 	off = (vaddr_t)bp->b_data - faddr;
 	len = round_page(off + len);
-	taddr = uvm_km_valloc_wait(phys_map, len);
+	taddr = uvm_km_valloc_prefer_wait(phys_map, len, faddr);
 	bp->b_data = (caddr_t)(taddr + off);
 	/*
 	 * The region is locked, so we expect that pmap_pte() will return

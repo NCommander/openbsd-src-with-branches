@@ -515,8 +515,7 @@ testclass(char *typetext) {
 
 static void
 safecpy(char *dest, char *src, int size) {
-	strncpy(dest, src, size);
-	dest[size-1] = 0;
+	strlcpy(dest, src, size);
 }
 
 static isc_result_t
@@ -717,8 +716,8 @@ get_next_command(void) {
 	buf = isc_mem_allocate(mctx, COMMSIZE);
 	if (buf == NULL)
 		fatal("memory allocation failure");
-	fputs("> ", stderr);
-	fflush(stderr);
+	fputs("> ", stdout);
+	fflush(stdout);
 	isc_app_block();
 	ptr = fgets(buf, COMMSIZE, stdin);
 	isc_app_unblock();

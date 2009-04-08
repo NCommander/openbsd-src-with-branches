@@ -15,7 +15,7 @@
 #include <sm/debug.h>
 #include <sm/string.h>
 
-SM_RCSID("@(#)$Sendmail: trace.c,v 8.35 2001/08/17 16:02:27 ca Exp $")
+SM_RCSID("@(#)$Sendmail: trace.c,v 8.38 2002/12/05 17:28:35 ca Exp $")
 
 static char	*tTnewflag __P((char *));
 static char	*tToldflag __P((char *));
@@ -204,7 +204,7 @@ void
 tTflag(s)
 	register char *s;
 {
-	if (*s == '\0')
+	if (s == NULL || *s == '\0')
 		s = DefFlags;
 
 	for (;;)

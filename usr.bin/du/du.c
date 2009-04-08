@@ -1,4 +1,5 @@
-/*	$NetBSD: du.c,v 1.10 1995/09/28 06:19:56 perry Exp $	*/
+/*	$OpenBSD: du.c,v 1.18 2005/04/17 12:27:23 jmc Exp $	*/
+/*	$NetBSD: du.c,v 1.11 1996/10/18 07:20:35 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1989, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
@@ -46,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)du.c	8.5 (Berkeley) 5/4/95";
 #else
-static char rcsid[] = "$NetBSD: du.c,v 1.10 1995/09/28 06:19:56 perry Exp $";
+static const char rcsid[] = "$OpenBSD: du.c,v 1.18 2005/04/17 12:27:23 jmc Exp $";
 #endif
 #endif /* not lint */
 
@@ -60,49 +57,60 @@ static char rcsid[] = "$NetBSD: du.c,v 1.10 1995/09/28 06:19:56 perry Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/tree.h>
 #include <unistd.h>
+#include <util.h>
 
-int	 linkchk __P((FTSENT *));
-void	 usage __P((void));
+
+int	 linkchk(FTSENT *);
+void	 prtout(quad_t, char *, int);
+void	 usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	FTS *fts;
 	FTSENT *p;
 	long blocksize;
+	quad_t totalblocks;
 	int ftsoptions, listdirs, listfiles;
-	int Hflag, Lflag, Pflag, aflag, ch, kflag, notused, rval, sflag;
+	int Hflag, Lflag, aflag, cflag, hflag, kflag, sflag;
+	int ch, notused, rval;
 	char **save;
 
 	save = argv;
-	Hflag = Lflag = Pflag = aflag = kflag = sflag = 0;
+	Hflag = Lflag = aflag = cflag = hflag = kflag = sflag = 0;
+	totalblocks = 0;
 	ftsoptions = FTS_PHYSICAL;
-	while ((ch = getopt(argc, argv, "HLPaksx")) != EOF)
+	while ((ch = getopt(argc, argv, "HLPachksxr")) != -1)
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
-			Lflag = Pflag = 0;
+			Lflag = 0;
 			break;
 		case 'L':
 			Lflag = 1;
-			Hflag = Pflag = 0;
+			Hflag = 0;
 			break;
 		case 'P':
-			Pflag = 1;
 			Hflag = Lflag = 0;
 			break;
 		case 'a':
 			aflag = 1;
 			break;
+		case 'c':
+			cflag = 1;
+			break;
+		case 'h':
+			hflag = 1;
+			break;
 		case 'k':
-			blocksize = 1024;
 			kflag = 1;
 			break;
 		case 's':
 			sflag = 1;
+			break;
+		case 'r':
 			break;
 		case 'x':
 			ftsoptions |= FTS_XDEV;
@@ -150,12 +158,16 @@ main(argc, argv)
 		argv[1] = NULL;
 	}
 
-	if (!kflag)
+	if (hflag)
+		blocksize = 512;
+	else if (kflag)
+		blocksize = 1024;
+	else
 		(void)getbsize(&notused, &blocksize);
 	blocksize /= 512;
 
 	if ((fts = fts_open(argv, ftsoptions, NULL)) == NULL)
-		err(1, NULL);
+		err(1, "fts_open");
 
 	for (rval = 0; (p = fts_read(fts)) != NULL;)
 		switch (p->fts_info) {
@@ -164,15 +176,16 @@ main(argc, argv)
 		case FTS_DP:
 			p->fts_parent->fts_number += 
 			    p->fts_number += p->fts_statp->st_blocks;
+			if (cflag)
+				totalblocks += p->fts_statp->st_blocks;
 			/*
 			 * If listing each directory, or not listing files
 			 * or directories and this is post-order of the
 			 * root of a traversal, display the total.
 			 */
-			if (listdirs || !listfiles && !p->fts_level)
-				(void)printf("%ld\t%s\n",
-				    howmany(p->fts_number, blocksize),
-				    p->fts_path);
+			if (listdirs || (!listfiles && !p->fts_level))
+				prtout((quad_t)howmany(p->fts_number, blocksize),
+				    p->fts_path, hflag);
 			break;
 		case FTS_DC:			/* Ignore. */
 			break;
@@ -190,52 +203,127 @@ main(argc, argv)
 			 * the root of a traversal, display the total.
 			 */
 			if (listfiles || !p->fts_level)
-				(void)printf("%qd\t%s\n",
-				    howmany(p->fts_statp->st_blocks, blocksize),
-				    p->fts_path);
+				prtout(howmany(p->fts_statp->st_blocks, blocksize),
+				    p->fts_path, hflag);
 			p->fts_parent->fts_number += p->fts_statp->st_blocks;
+			if (cflag)
+				totalblocks += p->fts_statp->st_blocks;
 		}
 	if (errno)
 		err(1, "fts_read");
-	exit(0);
+	if (cflag) {
+		prtout((quad_t)howmany(totalblocks, blocksize), "total", hflag);
+	}
+	exit(rval);
 }
 
-typedef struct _ID {
-	dev_t	dev;
-	ino_t	inode;
-} ID;
+
+struct links_entry {
+	RB_ENTRY(links_entry) entry;
+	struct links_entry *fnext;
+	int	 links;
+	dev_t	 dev;
+	ino_t	 ino;
+};
 
 int
-linkchk(p)
-	FTSENT *p;
+links_cmp(struct links_entry *e1, struct links_entry *e2)
 {
-	static ID *files;
-	static int maxfiles, nfiles;
-	ID *fp, *start;
-	ino_t ino;
-	dev_t dev;
+	if (e1->dev == e2->dev) {
+		if (e1->ino == e2->ino)
+			return (0);
+		else
+			return (e1->ino < e2->ino ? -1 : 1);
+	}
+	else
+		return (e1->dev < e2->dev ? -1 : 1);
+}
 
-	ino = p->fts_statp->st_ino;
-	dev = p->fts_statp->st_dev;
-	if ((start = files) != NULL)
-		for (fp = start + nfiles - 1; fp >= start; --fp)
-			if (ino == fp->inode && dev == fp->dev)
-				return (1);
+RB_HEAD(ltree, links_entry) links = RB_INITIALIZER(&links);
 
-	if (nfiles == maxfiles && (files = realloc((char *)files,
-	    (u_int)(sizeof(ID) * (maxfiles += 128)))) == NULL)
-		err(1, "");
-	files[nfiles].inode = ino;
-	files[nfiles].dev = dev;
-	++nfiles;
+RB_GENERATE(ltree, links_entry, entry, links_cmp);
+
+
+int
+linkchk(FTSENT *p)
+{
+	static struct links_entry *free_list = NULL;
+	static int stop_allocating = 0;
+	struct links_entry ltmp, *le;
+	struct stat *st;
+
+	st = p->fts_statp;
+
+	ltmp.ino = st->st_ino;
+	ltmp.dev = st->st_dev;
+
+	le = RB_FIND(ltree, &links, &ltmp);
+	if (le != NULL) {
+		/*
+		 * Save memory by releasing an entry when we've seen
+		 * all of it's links.
+		 */
+		if (--le->links <= 0) {
+			RB_REMOVE(ltree, &links, le);
+			/* Recycle this node through the free list */
+			if (stop_allocating) {
+				free(le);
+			} else {
+				le->fnext = free_list;
+				free_list = le;
+			}
+		}
+		return (1);
+	}
+
+	if (stop_allocating)
+		return (0);
+
+	/* Add this entry to the links cache. */
+	if (free_list != NULL) {
+		/* Pull a node from the free list if we can. */
+		le = free_list;
+		free_list = le->fnext;
+	} else
+		/* Malloc one if we have to. */
+		le = malloc(sizeof(struct links_entry));
+
+	if (le == NULL) {
+		stop_allocating = 1;
+		warnx("No more memory for tracking hard links");
+		return (0);
+	}
+
+	le->dev = st->st_dev;
+	le->ino = st->st_ino;
+	le->links = st->st_nlink - 1;
+	le->fnext = NULL;
+
+	RB_INSERT(ltree, &links, le);
+
 	return (0);
 }
 
 void
-usage()
+prtout(quad_t size, char *path, int hflag)
+{
+	if (!hflag)
+		(void)printf("%lld\t%s\n", (long long)size, path);
+	else {
+		char buf[FMT_SCALED_STRSIZE];
+
+		if (fmt_scaled(size * 512, buf) == 0)
+			(void)printf("%s\t%s\n", buf, path);
+		else
+			(void)printf("%lld\t%s\n", (long long)size, path);
+	}
+}
+
+void
+usage(void)
 {
 
 	(void)fprintf(stderr,
-		"usage: du [-H | -L | -P] [-a | -s] [-kx] [file ...]\n");
+		"usage: du [-a | -s] [-chkrx] [-H | -L | -P] [file ...]\n");
 	exit(1);
 }

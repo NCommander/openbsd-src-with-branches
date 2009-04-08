@@ -1,3 +1,4 @@
+/*	$OpenBSD: extract.c,v 1.6 2003/06/12 20:58:08 deraadt Exp $	*/
 /*	$NetBSD: extract.c,v 1.5 1995/03/26 03:27:53 glass Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)extract.c	8.3 (Berkeley) 4/2/94";
 #else 
-static char rcsid[] = "$NetBSD: extract.c,v 1.5 1995/03/26 03:27:53 glass Exp $";
+static char rcsid[] = "$OpenBSD: extract.c,v 1.6 2003/06/12 20:58:08 deraadt Exp $";
 #endif
 #endif /* not lint */
 
@@ -67,8 +64,7 @@ static char rcsid[] = "$NetBSD: extract.c,v 1.5 1995/03/26 03:27:53 glass Exp $"
  *	archive.
  */
 int
-extract(argv)
-	char **argv;
+extract(char **argv)
 {
 	char *file;
 	int afd, all, eval, tfd;
@@ -95,11 +91,22 @@ extract(argv)
 		    sb.st_mtime > chdr.date)
 			continue;
 
-		if ((tfd = open(file, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR)) < 0) {
-			warn("%s", file);
-			skip_arobj(afd);
-			eval = 1;
-			continue;
+		if (options & AR_CC) {
+			/* -C means do not overwrite existing files */
+			if ((tfd = open(file, O_WRONLY|O_CREAT|O_EXCL,
+			    S_IWUSR)) < 0) {
+				skip_arobj(afd);
+				eval = 1;
+				continue;
+			}
+		} else {
+			if ((tfd = open(file, O_WRONLY|O_CREAT|O_TRUNC,
+			    S_IWUSR)) < 0) {
+				warn("%s", file);
+				skip_arobj(afd);
+				eval = 1;
+				continue;
+			}
 		}
 
 		if (options & AR_V)
@@ -109,13 +116,13 @@ extract(argv)
 		cf.wname = file;
 		copy_ar(&cf, chdr.size);
 
-		if (fchmod(tfd, (short)chdr.mode)) {
+		if (fchmod(tfd, (mode_t)chdr.mode)) {
 			warn("chmod: %s", file);
 			eval = 1;
 		}
 		if (options & AR_O) {
 			tv[0].tv_sec = tv[1].tv_sec = chdr.date;
-			if (utimes(file, tv)) {
+			if (futimes(tfd, tv)) {
 				warn("utimes: %s", file);
 				eval = 1;
 			}

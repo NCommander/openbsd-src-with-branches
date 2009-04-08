@@ -1,7 +1,9 @@
+/*	$OpenBSD: dmavar.h,v 1.3 1996/04/28 11:24:43 deraadt Exp $ */
+
 /*
  * Copyright (c) 1982, 1990 The Regents of the University of California.
  * All rights reserved.
- *   
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -10,14 +12,10 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *   This product includes software developed by the University of
- *   California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- *   
+ *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,18 +28,16 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *   @(#)dmavar.h   7.2 (Berkeley) 11/4/90
- *   $Id: dmavar.h,v 1.1 1995/03/18 18:58:28 rahn Exp $
+ *  @(#)dmavar.h    7.2 (Berkeley) 11/4/90
  */
 
-/* dmago flags */   
-#define   DMAGO_READ     0x08 /* transfer is a read */
-#define   DMAGO_NOINT    0x80 /* don't interrupt on completion */ 
+/* dmago flags */
+#define DMAGO_READ  0x08    /* transfer is a read */
+#define DMAGO_NOINT 0x80    /* don't interrupt on completion */
 
-#ifdef KERNEL
-typedef void (*dmafree_t) __P((void *dev));
-typedef int  (*dmago_t)   __P((void *dev, char *, int, int));
-typedef int  (*dmanext_t) __P((void *dev));
-typedef void (*dmastop_t) __P((void *dev)); 
+#ifdef _KERNEL
+typedef void (*dmafree_t) (void *dev);
+typedef int  (*dmago_t)   (void *dev, char *, int, int);
+typedef int  (*dmanext_t) (void *dev);
+typedef void (*dmastop_t) (void *dev);
 #endif
-

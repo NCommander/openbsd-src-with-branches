@@ -767,7 +767,7 @@ FILE *cvs_temp_file (filename)
     if (fd == -1) fp = NULL;
     else if ((fp = CVS_FDOPEN (fd, "w+")) == NULL)
     {
-	/* attempt to close and unlink the file since mkstemp returned sucessfully and
+	/* attempt to close and unlink the file since mkstemp returned successfully and
 	 * we believe it's been created and opened
 	 */
  	int save_errno = errno;
@@ -965,8 +965,14 @@ expand_wild (argc, argv, pargc, pargv)
     char ***pargv;
 {
     int i;
+    if (size_overflow_p (xtimes (argc, sizeof (char *)))) {
+	*pargc = 0;
+	*pargv = NULL;
+	error (0, 0, "expand_wild: too many arguments");
+	return;
+    }
     *pargc = argc;
-    *pargv = (char **) xmalloc (argc * sizeof (char *));
+    *pargv = xmalloc (xtimes (argc, sizeof (char *)));
     for (i = 0; i < argc; ++i)
 	(*pargv)[i] = xstrdup (argv[i]);
 }

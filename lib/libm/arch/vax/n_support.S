@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_support.S,v 1.15 2008/12/09 20:21:07 martynas Exp $	*/
 /*	$NetBSD: n_support.S,v 1.1 1995/10/10 23:40:30 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,30 +30,29 @@
  *
  *	@(#)support.s	8.1 (Berkeley) 6/4/93
  */
-	.data
-	.align	2
-_sccsid:
-.asciz	"@(#)support.s	1.3 (Berkeley) 8/21/85; 8.1 (ucb.elefunt) 6/4/93"
+
+#include <machine/asm.h>
+#include <sys/errno.h>
 
 /*
  * copysign(x,y),
+ * copysignf(x,y),
  * logb(x),
- * scalb(x,N),
- * finite(x),
- * drem(x,y),
+ * logbf(x),
+ * scalbn(x,N),
+ * remainder(x,y),
  * Coded in vax assembly language by K.C. Ng,  3/14/85.
  * Revised by K.C. Ng on 4/9/85.
+ * Float versions by M.V. on 11/19/08.
  */
 
 /*
- * double copysign(x,y)
- * double x,y;
+ * double
+ * copysign(double x, double y)
  */
-	.globl	_copysign
-	.text
-	.align	1
-_copysign:
-	.word	0x4
+
+WEAK_ALIAS(copysignl,copysign)
+ENTRY(copysign, R2)
 	movq	4(ap),r0		# load x into r0
 	bicw3	$0x807f,r0,r2		# mask off the exponent of x
 	beql	Lz			# if zero or reserved op then return x
@@ -66,14 +62,26 @@ _copysign:
 Lz:	ret
 
 /*
- * double logb(x)
- * double x;
+ * float
+ * copysignf(float x, float y)
  */
-	.globl	_logb
-	.text
-	.align	1
-_logb:
-	.word	0x0
+
+ENTRY(copysignf, R2)
+	movl	4(ap),r0		# load x into r0
+	bicw3	$0x807f,r0,r2		# mask off the exponent of x
+	beql	Fz			# if zero or reserved op then return x
+	bicw3	$0x7fff,8(ap),r2	# copy the sign bit of y into r2
+	bicw2	$0x8000,r0		# replace x by |x|
+	bisw2	r2,r0			# copy the sign bit of y to x
+Fz:	ret
+
+/*
+ * double
+ * logb(double x)
+ */
+
+WEAK_ALIAS(logbl,logb)
+ENTRY(logb, 0)
 	bicl3	$0xffff807f,4(ap),r0	# mask off the exponent of x
 	beql    Ln
 	ashl	$-7,r0,r0		# get the bias exponent
@@ -86,37 +94,33 @@ Ln:	movq	4(ap),r0		# r0:1 = x (zero or reserved op)
 1:	ret
 
 /*
- * long finite(x)
- * double x;
+ * float
+ * logbf(float x)
  */
-	.globl	_finite
-	.text
-	.align	1
-_finite:
-	.word	0x0000
-	bicw3	$0x7f,4(ap),r0		# mask off the mantissa
-	cmpw	r0,$0x8000		# to see if x is the reserved op
-	beql	1f			# if so, return FALSE (0)
-	movl	$1,r0			# else return TRUE (1)
+
+ENTRY(logbf, 0)
+	bicl3	$0xffff807f,4(ap),r0	# mask off the exponent of x
+	beql    Fn
+	ashl	$-7,r0,r0		# get the bias exponent
+	subl2	$129,r0			# get the unbias exponent
+	cvtlf	r0,r0			# return the answer in float
 	ret
-1:	clrl	r0
-	ret
+Fn:	movl	4(ap),r0		# r0:1 = x (zero or reserved op)
+	bneq	1f			# simply return if reserved op
+	movl 	$0x0000d000,r0		# -2147483647.0
+1:	ret
 
 /*
- * double scalb(x,N)
- * double x; double N;
+ * double
+ * scalbn(double x, int N)
  */
-	.globl	_scalb
-	.set	ERANGE,34
-	.text
-	.align	1
-_scalb:
-	.word	0x3c
+
+WEAK_ALIAS(scalbnl,scalbn)
+ENTRY(scalbn, R2|R3)
 	movq	4(ap),r0
 	bicl3	$0xffff807f,r0,r3
 	beql	ret1			# 0 or reserved operand
-	movq	12(ap),r4
-	cvtdl	r4, r2
+	movl	12(ap),r2
 	cmpl	r2,$0x12c
 	bgeq	ovfl
 	cmpl	r2,$-0x12c
@@ -129,7 +133,7 @@ _scalb:
 	addl2	r2,r0
 	ret
 ovfl:	pushl	$ERANGE
-	calls	$1,_infnan		# if it returns
+	calls	$1,_C_LABEL(infnan)	# if it returns
 	bicw3	$0x7fff,4(ap),r2	# get the sign of input arg
 	bisw2	r2,r0			# re-attach the sign to r0/1
 	ret
@@ -137,17 +141,14 @@ unfl:	movq	$0,r0
 ret1:	ret
 
 /*
- * DREM(X,Y)
+ * REMAINDER(X,Y)
  * RETURN X REM Y =X-N*Y, N=[X/Y] ROUNDED (ROUNDED TO EVEN IN THE HALF WAY CASE)
  * DOUBLE PRECISION (VAX D format 56 bits)
  * CODED IN VAX ASSEMBLY LANGUAGE BY K.C. NG, 4/8/85.
  */
-	.globl	_drem
-	.set	EDOM,33
-	.text
-	.align	1
-_drem:
-	.word	0xffc
+
+ALTENTRY(drem)
+ENTRY(remainder, R2|R3|R4|R5|R6|R7|R8|R9|R10|R11)
 	subl2	$12,sp	
 	movq	4(ap),r0		#r0=x
 	movq	12(ap),r2		#r2=y
@@ -219,11 +220,11 @@ E2:
 	movw	$0,r8			#clear r8
 	movq	$0,r0			#x underflow to zero
 C5:
-	bisw2	r8,r0			/* put r8 into x's exponent field */
+	bisw2	r8,r0			#put r8 into exponent field of x
 	ret
 Rop:					#Reserved operand
 	pushl	$EDOM
-	calls	$1,_infnan		#generate reserved op fault
+	calls	$1,_C_LABEL(infnan)	#generate reserved op fault
 	ret
 Ret:
 	movq	$0x8000,r0		#propagate reserved op

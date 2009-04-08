@@ -1,4 +1,4 @@
-/*	$Id: common.c,v 1.67 2007/09/09 17:42:33 ragge Exp $	*/
+/*	$OpenBSD: common.c,v 1.9 2008/04/11 20:45:52 stefan Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -75,9 +75,18 @@ int nerrors = 0;  /* number of errors */
 char *ftitle;
 int lineno;
 
+int warniserr = 0;
+
 #ifndef WHERE
 #define	WHERE(ch) fprintf(stderr, "%s, line %d: ", ftitle, lineno);
 #endif
+
+static void
+incerr(void)
+{
+	if (++nerrors > 30)
+		cerror("too many errors");
+}
 
 /*
  * nonfatal error message
@@ -90,13 +99,11 @@ uerror(char *s, ...)
 	va_list ap;
 
 	va_start(ap, s);
-	++nerrors;
 	WHERE('u');
 	vfprintf(stderr, s, ap);
 	fprintf(stderr, "\n");
-	if (nerrors > 30)
-		cerror("too many errors");
 	va_end(ap);
+	incerr();
 }
 
 /*
@@ -136,12 +143,16 @@ werror(char *s, ...)
 	fprintf(stderr, "warning: ");
 	vfprintf(stderr, s, ap);
 	fprintf(stderr, "\n");
+	va_end(ap);
+	if (warniserr)
+		incerr();
 }
 
 #ifndef MKEXT
 static NODE *freelink;
 static int usednodes;
 
+#ifndef LANG_F77
 NODE *
 talloc()
 {
@@ -168,6 +179,7 @@ talloc()
 		printf("alloc node %p from memory\n", p);
 	return p;
 }
+#endif
 
 /*
  * make a fresh copy of p
@@ -190,7 +202,7 @@ tcopy(NODE *p)
 	return(q);
 }
 
-
+#ifndef LANG_F77
 /*
  * ensure that all nodes have been freed
  */
@@ -205,6 +217,7 @@ tcheck()
 	if ((usednodes - inlnodecnt) != 0)
 		cerror("usednodes == %d, inlnodecnt %d", usednodes, inlnodecnt);
 }
+#endif
 
 /*
  * free the tree p
@@ -223,7 +236,9 @@ tfree(NODE *p)
 NODE *
 nfree(NODE *p)
 {
+#ifndef LANG_F77
 	extern int inlnodecnt, recovernodes;
+#endif
 	NODE *l;
 #ifdef PCC_DEBUG_NODES
 	NODE *q;
@@ -250,10 +265,18 @@ nfree(NODE *p)
 	p->next = freelink;
 	freelink = p;
 	usednodes--;
+#ifndef LANG_F77
 	if (recovernodes)
 		inlnodecnt--;
+#endif
 	return l;
 }
+#endif
+
+#ifdef LANG_F77
+#define OPTYPE(x) optype(x)
+#else
+#define OPTYPE(x) coptype(x)
 #endif
 
 #ifdef MKEXT
@@ -274,7 +297,7 @@ fwalk(NODE *t, void (*f)(NODE *, int, int *, int *), int down)
 
 	(*f)(t, down, &down1, &down2);
 
-	switch (coptype( t->n_op )) {
+	switch (OPTYPE( t->n_op )) {
 
 	case BITYPE:
 		fwalk( t->n_left, f, down1 );
@@ -295,7 +318,8 @@ walkf(NODE *t, void (*f)(NODE *))
 {
 	int opty;
 
-	opty = coptype(t->n_op);
+
+	opty = OPTYPE(t->n_op);
 
 	if (opty != LTYPE)
 		walkf( t->n_left, f );
@@ -316,7 +340,6 @@ struct dopest {
 	{ REG, "REG", LTYPE, },
 	{ OREG, "OREG", LTYPE, },
 	{ TEMP, "TEMP", LTYPE, },
-	{ MOVE, "MOVE", UTYPE, },
 	{ ICON, "ICON", LTYPE, },
 	{ FCON, "FCON", LTYPE, },
 	{ CCODES, "CCODES", LTYPE, },
@@ -327,7 +350,8 @@ struct dopest {
 	{ UFORTCALL, "UFCALL", UTYPE|CALLFLG, },
 	{ COMPL, "~", UTYPE, },
 	{ FORCE, "FORCE", UTYPE, },
-/*	{ INIT, "INIT", UTYPE, }, */
+	{ XARG, "XARG", UTYPE, },
+	{ XASM, "XASM", BITYPE, },
 	{ SCONV, "SCONV", UTYPE, },
 	{ PCONV, "PCONV", UTYPE, },
 	{ PLUS, "+", BITYPE|FLOFLG|SIMPFLG|COMMFLG, },
@@ -410,6 +434,9 @@ tprint(FILE *fp, TWORD t, TWORD q)
 		"void",
 		"signed", /* pass1 */
 		"bool", /* pass1 */
+		"fcomplex", /* pass1 */
+		"dcomplex", /* pass1 */
+		"lcomplex", /* pass1 */
 		"?", "?"
 		};
 
@@ -460,8 +487,8 @@ struct b {
 	} a2;
 };
 
-#define ALIGNMENT ((int)&((struct b *)0)->a2)
-#define	ROUNDUP(x) ((x) + (sizeof(ALIGNMENT)-1)) & ~(sizeof(ALIGNMENT)-1)
+#define ALIGNMENT ((long)&((struct b *)0)->a2)
+#define	ROUNDUP(x) (((x) + ((ALIGNMENT)-1)) & ~((ALIGNMENT)-1))
 
 static char *allocpole;
 static int allocleft;
@@ -474,7 +501,7 @@ permalloc(int size)
 {
 	void *rv;
 
-//printf("permalloc: allocpole %p allocleft %d size %d ", allocpole, allocleft, size);
+//fprintf(stderr, "permalloc: allocpole %p allocleft %d size %d ", allocpole, allocleft, size);
 	if (size > MEMCHUNKSZ)
 		cerror("permalloc");
 	if (size <= 0)
@@ -489,7 +516,7 @@ permalloc(int size)
 	}
 	size = ROUNDUP(size);
 	rv = &allocpole[MEMCHUNKSZ-allocleft];
-//printf("rv %p\n", rv);
+//fprintf(stderr, "rv %p\n", rv);
 	allocleft -= size;
 	permallocsize += size;
 	return rv;
@@ -513,24 +540,30 @@ tmpalloc(int size)
 {
 	void *rv;
 
-	if (size > MEMCHUNKSZ) {
-		return malloc(size);
-	//	cerror("tmpalloc %d", size);
+	if (size > MEMCHUNKSZ/2) {
+		size += ROUNDUP(sizeof(char *));
+		if ((rv = malloc(size)) == NULL)
+			cerror("tmpalloc: out of memory");
+		/* link in before current chunk XXX */
+		*(char **)rv = *(char **)tmppole;
+		*(char **)tmppole = rv;
+		tmpallocsize += size;
+		return (char *)rv + ROUNDUP(sizeof(char *));
 	}
 	if (size <= 0)
 		cerror("tmpalloc2");
-//printf("tmpalloc: tmppole %p tmpleft %d size %d ", tmppole, tmpleft, size);
+//fprintf(stderr, "tmpalloc: tmppole %p tmpleft %d size %d ", tmppole, tmpleft, size);
 	size = ROUNDUP(size);
 	if (tmpleft < size) {
 		if ((tmppole = malloc(MEMCHUNKSZ)) == NULL)
 			cerror("tmpalloc: out of memory");
 //fprintf(stderr, "allocating tmp\n");
-		tmpleft = MEMCHUNKSZ - (ROUNDUP(sizeof(char *)));
+		tmpleft = MEMCHUNKSZ - ROUNDUP(sizeof(char *));
 		*(char **)tmppole = tmplink;
 		tmplink = tmppole;
 	}
 	rv = TMPOLE;
-//printf("rv %p\n", rv);
+//fprintf(stderr,"rv %p\n", rv);
 	tmpleft -= size;
 	tmpallocsize += size;
 	return rv;
@@ -585,6 +618,18 @@ tmpvsprintf(char *fmt, va_list ap)
 	return tmp;
 }
 
+/*
+ * Duplicate a string onto the temporary heap.
+ */
+char *
+tmpstrdup(char *str)
+{
+	int len;
+
+	len = strlen(str) + 1;
+	return memcpy(tmpalloc(len), str, len);
+}
+
 void
 tmpfree()
 {
@@ -594,7 +639,7 @@ tmpfree()
 	if (f == NULL)
 		return;
 	if (*(char **)f == NULL) {
-		tmpleft = MEMCHUNKSZ - (ROUNDUP(sizeof(char *)));
+		tmpleft = MEMCHUNKSZ - ROUNDUP(sizeof(char *));
 		return;
 	}
 	while (f != NULL) {
@@ -628,4 +673,49 @@ newstring(char *s, int len)
 	while (len--)
 		*c++ = *s++;
 	return u;
+}
+
+/*
+ * Do a preorder walk of the CM list p and apply function f on each element.
+ */
+void
+flist(NODE *p, void (*f)(NODE *, void *), void *arg)
+{
+	if (p->n_op == CM) {
+		(*f)(p->n_right, arg);
+		flist(p->n_left, f, arg);
+	} else
+		(*f)(p, arg);
+}
+
+/*
+ * The same as flist but postorder.
+ */
+void
+listf(NODE *p, void (*f)(NODE *))
+{
+	if (p->n_op == CM) {
+		listf(p->n_left, f);
+		(*f)(p->n_right);
+	} else
+		(*f)(p);
+}
+
+/*
+ * Get list argument number n from list, or NIL if out of list.
+ */
+NODE *
+listarg(NODE *p, int n, int *cnt)
+{
+	NODE *r;
+
+	if (p->n_op == CM) {
+		r = listarg(p->n_left, n, cnt);
+		if (n == ++(*cnt))
+			r = p->n_right;
+	} else {
+		*cnt = 0;
+		r = n == 0 ? p : NIL;
+	}
+	return r;
 }

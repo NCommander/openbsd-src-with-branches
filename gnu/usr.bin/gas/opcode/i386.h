@@ -1,3 +1,4 @@
+/* $OpenBSD: i386.h,v 1.8 2002/07/16 03:58:25 fgsch Exp $ */
 /* i386-opcode.h -- Intel 80386 opcode table
    Copyright (C) 1989, 1991, Free Software Foundation.
 
@@ -17,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GAS; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    
-/* $Id: i386.h,v 1.3 1995/02/05 12:57:30 mycroft Exp $ */
 
 static const template i386_optab[] = {
 
@@ -27,7 +27,7 @@ static const template i386_optab[] = {
 { "mov", 2, 0x88, _, DW|Modrm, Reg, Reg|Mem, 0 },
 { "mov", 2, 0xb0, _, ShortFormW, Imm, Reg, 0 },
 { "mov", 2, 0xc6, _,  W|Modrm,  Imm, Reg|Mem, 0 },
-{ "mov", 2, 0x8c, _, D|Modrm,  SReg3|SReg2, Reg16|Mem16, 0 },
+{ "mov", 2, 0x8c, _, D|Modrm,  SReg3|SReg2, WordReg|WordMem, 0 },
 /* move to/from control debug registers */
 { "mov", 2, 0x0f20, _, D|Modrm, Control, Reg32, 0},
 { "mov", 2, 0x0f21, _, D|Modrm, Debug, Reg32, 0},
@@ -245,6 +245,7 @@ static const template i386_optab[] = {
 
 {"shld", 3, 0x0fa4, _, Modrm, Imm8, WordReg, WordReg|Mem},
 {"shld", 3, 0x0fa5, _, Modrm, ShiftCount, WordReg, WordReg|Mem},
+{"shld", 2, 0x0fa5, _, Modrm, WordReg, WordReg|Mem, 0},
 
 {"shr", 2, 0xd0, 5, W|Modrm, Imm1, Reg|Mem, 0},
 {"shr", 2, 0xc0, 5, W|Modrm, Imm8, Reg|Mem, 0},
@@ -253,6 +254,7 @@ static const template i386_optab[] = {
 
 {"shrd", 3, 0x0fac, _, Modrm, Imm8, WordReg, WordReg|Mem},
 {"shrd", 3, 0x0fad, _, Modrm, ShiftCount, WordReg, WordReg|Mem},
+{"shrd", 2, 0x0fad, _, Modrm, WordReg, WordReg|Mem, 0},
 
 {"sar", 2, 0xd0, 7, W|Modrm, Imm1, Reg|Mem, 0},
 {"sar", 2, 0xc0, 7, W|Modrm, Imm8, Reg|Mem, 0},
@@ -264,7 +266,7 @@ static const template i386_optab[] = {
 {"call", 1, 0xe8, _, JumpDword, Disp32, 0, 0},
 {"call", 1, 0xff, 2, Modrm, Reg|Mem|JumpAbsolute, 0, 0},
 #define CALL_FAR_IMMEDIATE 0x9a
-{"lcall", 2, 0x9a, _, JumpInterSegment, Imm16, Abs32, 0},
+{"lcall", 2, 0x9a, _, JumpInterSegment, Imm16, Imm32, 0},
 {"lcall", 1, 0xff, 3, Modrm, Mem, 0, 0},
 
 #define JUMP_PC_RELATIVE 0xeb
@@ -497,6 +499,7 @@ static const template i386_optab[] = {
 
 /* exchange %st<n> with %st0 */
 {"fxch", 1, 0xd9c8, _, ShortForm, FloatReg, 0, 0},
+{"fxch",   0, 0xd9c9, _, 0,			0, 0, 0},	     /* alias for fxch %st(1) */
 
 /* comparison (without pop) */
 {"fcom", 1, 0xd8d0, _, ShortForm, FloatReg, 0, 0},
@@ -732,6 +735,121 @@ static const template i386_optab[] = {
 /* Pentium extensions */
 {"cpuid", 0, 0x0fa2, _, NoModrm, 0, 0, 0},
 
+/* Pentium extensions */
+{"wrmsr", 0, 0x0f30, _, NoModrm, 0, 0, 0},
+{"rdtsc", 0, 0x0f31, _, NoModrm, 0, 0, 0}, 
+{"rdmsr", 0, 0x0f32, _, NoModrm, 0, 0, 0}, 
+{"cmpxchg8b", 1, 0x0fc7, 1, Modrm, Mem, 0, 0},
+  
+/* Pentium Pro extensions */
+{"rdpmc", 0, 0x0f33, _, NoModrm, 0, 0, 0},
+
+{"cmovo",  2, 0x0f40, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovno", 2, 0x0f41, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovb",  2, 0x0f42, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovae", 2, 0x0f43, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmove",  2, 0x0f44, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovne", 2, 0x0f45, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovbe", 2, 0x0f46, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmova",  2, 0x0f47, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovs",  2, 0x0f48, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovns", 2, 0x0f49, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovp",  2, 0x0f4a, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovnp", 2, 0x0f4b, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovl",  2, 0x0f4c, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovge", 2, 0x0f4d, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovle", 2, 0x0f4e, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+{"cmovg",  2, 0x0f4f, _, Modrm|ReverseRegRegmem, WordReg|WordMem, WordReg, 0},
+
+{"fcmovb", 2, 0xdac0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmove", 2, 0xdac8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovbe",2, 0xdad0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovu", 2, 0xdad8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovnb", 2, 0xdbc0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovne", 2, 0xdbc8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovnbe",2, 0xdbd0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcmovnu", 2, 0xdbd8, _, ShortForm, FloatReg, FloatAcc, 0},
+
+{"fcomi",  2, 0xdbf0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fucomi", 2, 0xdbe8, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fcomip", 2, 0xdff0, _, ShortForm, FloatReg, FloatAcc, 0},
+{"fucomip",2, 0xdfe8, _, ShortForm, FloatReg, FloatAcc, 0},
+
+/* MMX extensions */
+
+/* arithmetic */
+{"paddb",   2, 0x0ffc, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"paddw",   2, 0x0ffd, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"paddd",   2, 0x0ffe, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"paddsb",  2, 0x0fec, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"paddsw",  2, 0x0fed, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"paddusb", 2, 0x0fdc, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"paddusw", 2, 0x0fdd, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pmaddwd", 2, 0x0ff5, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pmulhw",  2, 0x0fe5, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pmullw",  2, 0x0fd5, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psllw",   2, 0x0ff1, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psllw",   2, 0x0f71, 6, Modrm, Imm8, RegMMX, 0},
+{"pslld",   2, 0x0ff2, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pslld",   2, 0x0f72, 6, Modrm, Imm8, RegMMX, 0},
+{"psllq",   2, 0x0ff3, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psllq",   2, 0x0f73, 6, Modrm, Imm8, RegMMX, 0},
+{"psraw",   2, 0x0fe1, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psraw",   2, 0x0f71, 4, Modrm, Imm8, RegMMX, 0},
+{"psrad",   2, 0x0fe2, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psrad",   2, 0x0f72, 4, Modrm, Imm8, RegMMX, 0},
+{"psrlw",   2, 0x0fd1, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psrlw",   2, 0x0f71, 2, Modrm, Imm8, RegMMX, 0},
+{"psrld",   2, 0x0fd2, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psrld",   2, 0x0f72, 2, Modrm, Imm8, RegMMX, 0},
+{"psrlq",   2, 0x0fd3, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psrlq",   2, 0x0f73, 2, Modrm, Imm8, RegMMX, 0},
+{"psubb",   2, 0x0ff8, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psubw",   2, 0x0ff9, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psubd",   2, 0x0ffa, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psubsb",  2, 0x0fe8, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psubsw",  2, 0x0fe9, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psubusb", 2, 0x0fd8, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"psubusw", 2, 0x0fd9, _, Modrm, RegMMX|Mem, RegMMX, 0},
+
+/* compare */
+{"pcmpeqb", 2, 0x0f74, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pcmpeqw", 2, 0x0f75, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pcmpeqd", 2, 0x0f76, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pcmpgtb", 2, 0x0f64, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pcmpgtw", 2, 0x0f65, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pcmpgtd", 2, 0x0f66, _, Modrm, RegMMX|Mem, RegMMX, 0},
+
+/* data movement */
+{"movd", 2, 0x0f6e, _, Modrm, Reg|Mem, RegMMX, 0},
+{"movd", 2, 0x0f7e, _, Modrm, RegMMX, Reg|Mem, 0},
+{"movq", 2, 0x0f6f, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"movq", 2, 0x0f7f, _, Modrm, RegMMX, RegMMX|Mem, 0},
+
+/* logical */
+{"pand",  2, 0x0fdb, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pandn", 2, 0x0fdf, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"por",   2, 0x0feb, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"pxor",  2, 0x0fef, _, Modrm, RegMMX|Mem, RegMMX, 0},
+
+/* shuffle */
+{"packsswb",  2, 0x0f63, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"packssdw",  2, 0x0f6b, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"packuswb",  2, 0x0f67, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"punpckhbw", 2, 0x0f68, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"punpckhwd", 2, 0x0f69, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"punpckhdq", 2, 0x0f6a, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"punpcklbw", 2, 0x0f60, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"punpcklwd", 2, 0x0f61, _, Modrm, RegMMX|Mem, RegMMX, 0},
+{"punpckldq", 2, 0x0f62, _, Modrm, RegMMX|Mem, RegMMX, 0},
+
+/* state management */
+{"emms", 0, 0x0f77, _, 0, 0, 0, 0},
+
+/* SSE extensions */
+
+{"pshufw", 3, 0x0f70, _, Modrm, Imm8, RegMMX|Mem, RegMMX},
+
 {"", 0, 0, 0, 0, 0, 0, 0}	/* sentinal */
 };
 #undef _
@@ -757,6 +875,7 @@ static const reg_entry i386_regtab[] = {
   {"ds", SReg2, 3}, {"fs", SReg3, 4}, {"gs", SReg3, 5},
   /* control registers */
   {"cr0", Control, 0},   {"cr2", Control, 2},   {"cr3", Control, 3},
+  {"cr4", Control, 4},
   /* debug registers */
   {"db0", Debug, 0},   {"db1", Debug, 1},   {"db2", Debug, 2},
   {"db3", Debug, 3},   {"db6", Debug, 6},   {"db7", Debug, 7},
@@ -769,7 +888,11 @@ static const reg_entry i386_regtab[] = {
   {"st", FloatReg|FloatAcc, 0},
   {"st(1)", FloatReg, 1}, {"st(2)", FloatReg, 2}, 
   {"st(3)", FloatReg, 3}, {"st(4)", FloatReg, 4}, {"st(5)", FloatReg, 5}, 
-  {"st(6)", FloatReg, 6}, {"st(7)", FloatReg, 7}
+  {"st(6)", FloatReg, 6}, {"st(7)", FloatReg, 7},
+  /* mmx registers */
+  {"mm0", RegMMX, 0}, {"mm1", RegMMX, 1}, {"mm2", RegMMX, 2},
+  {"mm3", RegMMX, 3}, {"mm4", RegMMX, 4}, {"mm5", RegMMX, 5},
+  {"mm6", RegMMX, 6}, {"mm7", RegMMX, 7}
 };
 
 #define MAX_REG_NAME_SIZE 8	/* for parsing register names from input */

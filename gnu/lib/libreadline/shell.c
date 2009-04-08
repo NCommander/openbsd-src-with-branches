@@ -123,19 +123,19 @@ sh_set_lines_and_columns (lines, cols)
   char *b;
 
 #if defined (HAVE_PUTENV)
-  b = (char *)xmalloc (INT_STRLEN_BOUND (int) + sizeof ("LINES=") + 1);
-  sprintf (b, "LINES=%d", lines);
+  if (asprintf (&b, "LINES=%d", lines) == -1)
+	  memory_error_and_abort("asprintf");
   putenv (b);
-  b = (char *)xmalloc (INT_STRLEN_BOUND (int) + sizeof ("COLUMNS=") + 1);
-  sprintf (b, "COLUMNS=%d", cols);
+  if (asprintf (&b, "COLUMNS=%d", cols) == -1)
+	  memory_error_and_abort("asprintf");
   putenv (b);
 #else /* !HAVE_PUTENV */
 #  if defined (HAVE_SETENV)
-  b = (char *)xmalloc (INT_STRLEN_BOUND (int) + 1);
-  sprintf (b, "%d", lines);
+  if (asprintf(&b, "%d", lines) == -1)
+	  memory_error_and_abort("asprintf");
   setenv ("LINES", b, 1);
-  b = (char *)xmalloc (INT_STRLEN_BOUND (int) + 1);
-  sprintf (b, "%d", cols);
+  if (asprintf (&b, "%d", cols) == -1)
+	  memory_error_and_abort("asprintf");
   setenv ("COLUMNS", b, 1);
 #  endif /* HAVE_SETENV */
 #endif /* !HAVE_PUTENV */
