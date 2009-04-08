@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: abi.h,v 1.2 2003/09/14 21:26:14 fvdl Exp $	*/
 
 /*
