@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.8 2009/04/04 14:07:22 dlg Exp $	*/
+/*	$OpenBSD: bus_dma.c,v 1.18 2009/04/04 13:48:55 dlg Exp $	*/
 /*-
  * Copyright (c) 1996, 1997 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -285,9 +285,9 @@ _bus_dmamap_load_raw(bus_dma_tag_t t, bus_dmamap_t map, bus_dma_segment_t *segs,
 
 	bmask  = ~(map->_dm_boundary - 1);
 
-	for (i = 0; i < nsegs; i++) {
+	for (i = 0; i < nsegs && size > 0; i++) {
 		paddr = segs[i].ds_addr;
-		plen = segs[i].ds_len;
+		plen = MIN(segs[i].ds_len, size);
 
 		while (plen > 0) {
 			/*
@@ -330,9 +330,11 @@ _bus_dmamap_load_raw(bus_dma_tag_t t, bus_dmamap_t map, bus_dma_segment_t *segs,
 				}
 			}
 
-			lastaddr = paddr + sgsize;
 			paddr += sgsize;
 			plen -= sgsize;
+			size -= sgsize;
+
+			lastaddr = paddr;
 		}
 	}
 
