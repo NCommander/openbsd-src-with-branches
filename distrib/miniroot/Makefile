@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.28 2007/06/17 00:28:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.29 2008/01/11 10:16:40 espie Exp $
 
 REV=		${OSrev}
 
@@ -41,7 +41,7 @@ all:
 bsd:
 	cd ${.CURDIR}/../../sys/arch/${MACHINE}/conf && config GENERIC
 	cd ${.CURDIR}/../../sys/arch/${MACHINE}/compile/GENERIC && \
-	    ${MAKE} clean && ${MAKE}
+	    ${MAKE} clean && ${MAKE} depend && ${MAKE}
 	cp ${.CURDIR}/../../sys/arch/${MACHINE}/compile/GENERIC/bsd bsd
 
 all: ${CBIN} bsd
