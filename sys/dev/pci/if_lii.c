@@ -1105,10 +1105,10 @@ lii_iff(struct lii_softc *sc)
 	ifp->if_flags &= ~IFF_ALLMULTI;
 
 	if (ifp->if_flags & IFF_PROMISC) {
-		ifp ->if_flags |= IFF_ALLMULTI;
+		ifp->if_flags |= IFF_ALLMULTI;
 		val |= MACC_PROMISC_EN;
 	} else if (ac->ac_multirangecnt > 0) {
-		ifp ->if_flags |= IFF_ALLMULTI;
+		ifp->if_flags |= IFF_ALLMULTI;
 		val |= MACC_ALLMULTI_EN;
 	} else {
 		/* Clear multicast hash table. */
