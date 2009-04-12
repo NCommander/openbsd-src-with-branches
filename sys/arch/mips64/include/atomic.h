@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.2 2007/02/19 17:18:43 deraadt Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.3 2007/03/23 21:07:36 miod Exp $	*/
 
 /* Public Domain */
 
@@ -18,7 +18,7 @@ atomic_setbits_int(__volatile unsigned int *uip, unsigned int v)
 	"	sc	%0,	0(%1)\n"
 	"	beqz	%0,	1b\n"
 	"	 nop\n" :
-		"+r"(tmp) :
+		"=&r"(tmp) :
 		"r"(uip), "r"(v) : "memory");
 }
 
@@ -33,7 +33,7 @@ atomic_clearbits_int(__volatile unsigned int *uip, unsigned int v)
 	"	sc	%0,	0(%1)\n"
 	"	beqz	%0,	1b\n"
 	"	 nop\n" :
-		"+r"(tmp) :
+		"=&r"(tmp) :
 		"r"(uip), "r"(~v) : "memory");
 }
 
