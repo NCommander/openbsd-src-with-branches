@@ -46,7 +46,7 @@ ${IMAGE}: rd_setup do_files rd_teardown
 bsd:
 	cd ${.TOP}/../../sys/arch/sgi/conf && config RAMDISK
 	cd ${.TOP}/../../sys/arch/sgi/compile/RAMDISK && \
-	    ${MAKE} clean && ${MAKE}
+	    ${MAKE} clean && ${MAKE} depend && ${MAKE}
 	cp ${.TOP}/../../sys/arch/sgi/compile/RAMDISK/bsd bsd
 
 rd_setup: 
