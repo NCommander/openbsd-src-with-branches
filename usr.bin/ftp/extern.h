@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.34 2008/06/25 21:15:19 martynas Exp $	*/
+/*	$OpenBSD: extern.h,v 1.35 2008/07/08 21:07:57 martynas Exp $	*/
 /*	$NetBSD: extern.h,v 1.17 1997/08/18 10:20:19 lukem Exp $	*/
 
 /*
@@ -210,6 +210,7 @@ extern struct	cmd cmdtab[];
 extern FILE    *cout;
 extern int	data;
 extern char    *home;
+extern char    *title;
 extern jmp_buf	jabort;
 extern int	family;
 extern int	proxy;
