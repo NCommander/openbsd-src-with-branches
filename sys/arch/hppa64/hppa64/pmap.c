@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.5 2007/04/13 18:57:49 art Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.6 2008/04/27 17:48:10 martin Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -622,7 +622,7 @@ pmap_create()
 
 	TAILQ_INIT(&pmap->pm_pglist);
 	if (uvm_pglistalloc(2 * PAGE_SIZE, 0, VM_MIN_KERNEL_ADDRESS,
-	    PAGE_SIZE, 2 * PAGE_SIZE, &pmap->pm_pglist, 1, 1))
+	    PAGE_SIZE, 2 * PAGE_SIZE, &pmap->pm_pglist, 1, UVM_PLA_WAITOK))
 		panic("pmap_create: no pages");
 
 	pg = TAILQ_FIRST(&pmap->pm_pglist);

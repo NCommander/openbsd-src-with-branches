@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_syscon.c,v 1.5 2008/06/26 05:42:10 ray Exp $	*/
+/*	$OpenBSD: if_le_syscon.c,v 1.6 2009/03/29 21:53:52 sthen Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -149,7 +149,7 @@ le_syscon_attach(parent, self, aux)
 	for (;;) {
 		TAILQ_INIT(&pglist);
 		rc = uvm_pglistalloc(ptoa(etherpages), 0, 1 << 24,
-		    0, 0, &pglist, 1, 0);
+		    0, 0, &pglist, 1, UVM_PLA_NOWAIT);
 		if (rc == 0)
 			break;
 

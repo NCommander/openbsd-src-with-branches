@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.c,v 1.21 2006/08/17 22:22:08 mk Exp $ */
+/* $OpenBSD: cpu.c,v 1.22 2008/06/26 05:42:08 ray Exp $ */
 /* $NetBSD: cpu.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*-
@@ -335,7 +335,7 @@ recognized:
 	 */
 	TAILQ_INIT(&mlist);
 	error = uvm_pglistalloc(USPACE, avail_start, avail_end, 0, 0,
-	    &mlist, 1, 1);
+	    &mlist, 1, UVM_PLA_WAITOK);
 	if (error != 0) {
 		if (ma->ma_slot == hwrpb->rpb_primary_cpu_id) {
 			panic("cpu_attach: unable to allocate idle stack for"
