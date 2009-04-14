@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.639 2009/03/15 19:40:41 miod Exp $ */
+/*	$OpenBSD: pf.c,v 1.641 2009/04/11 23:42:05 jsing Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5639,10 +5639,12 @@ done:
 		if (log == PF_LOG_FORCE || lr->log & PF_LOG_ALL)
 			PFLOG_PACKET(kif, h, m, AF_INET, dir, reason, lr, a,
 			    ruleset, &pd);
-		SLIST_FOREACH(ri, &s->match_rules, entry)
-			if (ri->r->log & PF_LOG_ALL)
-				PFLOG_PACKET(kif, h, m, AF_INET, dir, reason,
-				    ri->r, a, ruleset, &pd);
+		if (s) {
+			SLIST_FOREACH(ri, &s->match_rules, entry)
+				if (ri->r->log & PF_LOG_ALL)
+					PFLOG_PACKET(kif, h, m, AF_INET, dir,
+					    reason, ri->r, a, ruleset, &pd);
+		}
 	}
 
 	kif->pfik_bytes[0][dir == PF_OUT][action != PF_PASS] += pd.tot_len;
