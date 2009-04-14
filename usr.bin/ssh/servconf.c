@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.c,v 1.193 2008/12/09 03:20:42 stevesk Exp $ */
+/* $OpenBSD: servconf.c,v 1.194 2009/01/22 10:02:34 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1333,7 +1333,7 @@ parse_server_match_config(ServerOptions *options, const char *user,
 /*
  * Copy any supported values that are set.
  *
- * If the preauth flag is set, we do not bother copying the the string or
+ * If the preauth flag is set, we do not bother copying the string or
  * array values that are not used pre-authentication, because any that we
  * do use must be explictly sent in mm_getpwnamallow().
  */
