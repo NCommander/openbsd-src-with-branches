@@ -387,6 +387,7 @@ sub may_check_digest
 sub check_digest
 {
 	my ($self, $file, $state) = @_;
+	return if $self->{link} or $self->{symlink};
 	if (!defined $self->{d}) {
 		$state->fatal($self->fullname, " does not have a signature");
 	}
@@ -1646,6 +1647,12 @@ sub new
 		$class;
 }
 
+sub new_x509
+{
+	my ($class) = @_;
+	bless { key => 'x509', timestamp => time, b64sig => '' }, $class;
+}
+ 
 
 sub stringize
 {

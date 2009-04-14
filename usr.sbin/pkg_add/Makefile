@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.50 2008/09/02 04:19:46 drahn Exp $
+# $OpenBSD$
 
 .include <bsd.own.mk>
 
@@ -49,6 +49,7 @@ PACKAGES= \
     OpenBSD/Ustar.pm \
     OpenBSD/Vstat.pm \
     OpenBSD/md5.pm \
+    OpenBSD/x509.pm
 
 PACKAGEDIRS=OpenBSD  OpenBSD/PackageRepository
 

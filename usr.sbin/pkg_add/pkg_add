@@ -291,6 +291,22 @@ sub really_add
 	my $pkgname = $handle->{pkgname};
 	my $errors = 0;
 	$state->set_name_from_handle($handle);
+	if ($plist->is_signed) {
+		if ($state->{defines}->{nosig}) {
+			print STDERR "NOT CHECKING DIGITAL SIGNATURE FOR ",
+				$plist->pkgname, "\n";
+			$state->{check_digest} = 0;
+		} else {
+			require OpenBSD::x509;
+
+			if (!OpenBSD::x509::check_signature($plist, $state)) {
+				Fatal "fatal issues in ", $set->print;
+			}
+			$state->{check_digest} = 1;
+		}
+	} else {
+		$state->{check_digest} = 0;
+	}
 
 	$set->setup_header($state);
 

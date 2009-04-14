@@ -377,7 +377,8 @@ sub localbase
 
 sub is_signed
 {
-	return 0;
+	my $self = shift;
+	return defined $self->{'digital-signature'};
 }
 
 our @unique_categories =

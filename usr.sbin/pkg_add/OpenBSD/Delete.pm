@@ -98,6 +98,14 @@ sub delete_package
 	if ($plist->pkgname ne $pkgname) {
 		Fatal "Package $pkgname real name does not match";
 	}
+	if ($plist->is_signed) {
+		if (!$state->{quick}) {
+			require OpenBSD::x509;
+			if (!OpenBSD::x509::check_signature($plist, $state)) {
+				Fatal "Package $pkgname is corrupted";
+			}
+		}
+	}
 
 	$state->{problems} = 0;
 	validate_plist($plist, $state);

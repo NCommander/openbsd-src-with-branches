@@ -71,6 +71,26 @@ option
 Details of packing-list internals are documented in
 .Xr pkg_create 1 .
 .Pp
+If a package is digitally signed:
+.Bl -bullet
+.It 
+.Nm
+checks that its packing-list is not corrupted and matches the cryptographic
+signature stored within.
+.It 
+.Nm
+verifies that the signature was emitted by a valid user certificate, signed
+by one of the authorities in
+.Pa /etc/ssl/pkgca.pem
+.It
+.Nm
+verifies that each file matches its sha256 checksum right after extraction,
+before doing anything with it.
+.It
+.Nm
+verifies that any dangerous mode or owner is registered in the packing-list.
+.El
+.Pp
 In normal mode,
 the package names given on the command lines are names of new packages that
 .Nm
@@ -223,6 +243,9 @@ update when using
 .Fl u .
 .It Ar nonroot
 install even if not running as root.
+.It Ar nosig
+do not check digital signatures.
+Still displays a very prominent message if a signature is found.
 .It Ar pkgpath
 with
 .Fl u ,
