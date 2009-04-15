@@ -1,6 +1,11 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2009/04/06 20:30:40 kristaps Exp $
 
-CFLAGS+=-W -Wall -Wstrict-prototypes -Wno-unused-parameter
+.include <bsd.own.mk>
+
+CFLAGS+=-W -Wall -Wstrict-prototypes
+.if ${USE_GCC3:L} != "no"
+CFLAGS+=-Wno-unused-parameter
+.endif
 
 SRCS=	mdoc_macro.c mdoc.c mdoc_hash.c mdoc_strings.c \
 	mdoc_argv.c mdoc_validate.c mdoc_action.c lib.c att.c \
