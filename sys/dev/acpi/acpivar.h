@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.45 2009/01/20 20:21:03 mlarkin Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.46 2009/02/19 21:02:05 marco Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -223,6 +223,12 @@ struct acpi_table {
 	int	offset;
 	size_t	size;
 	void	*table;
+};
+
+struct acpi_dev_rank {
+	struct device	*dev;
+	int		rank;
+	TAILQ_ENTRY(acpi_dev_rank) link;
 };
 
 #define	ACPI_IOC_GETFACS	_IOR('A', 0, struct acpi_facs)
