@@ -1,8 +1,9 @@
-/*	$OpenBSD: rdsetroot.c,v 1.18 2008/12/02 03:20:38 deraadt Exp $	*/
+/*	$OpenBSD: rdsetroot.c,v 1.19 2008/12/09 18:57:42 deraadt Exp $	*/
 /*	$NetBSD: rdsetroot.c,v 1.2 1995/10/13 16:38:39 gwr Exp $	*/
 
 /*
  * Copyright (c) 1994 Gordon W. Ross
+ * Copyright (c) 1997 Per Fogelstrom. (ELF modifications)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
