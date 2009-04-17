@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2005/08/01 19:58:13 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.5 2008/02/18 16:08:26 jsing Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -41,8 +41,10 @@ ${CDROM}:
 	dd if=${.OBJDIR}/${FFS} of=${.OBJDIR}/${CDROM} bs=512 \
 	    seek=`cat ${.OBJDIR}/volhdr | grep 'Volume Header' | awk '{print $$3}'`
 
+.ifdef RELEASEDIR
 install:
-	cp ${CDROM} ${DESTDIR}/snapshot
+	cp ${CDROM} ${RELEASEDIR}
+.endif
 
 unconfig:
 	-umount /mnt

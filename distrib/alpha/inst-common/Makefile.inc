@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile.inc,v 1.7 2004/11/05 21:22:37 miod Exp $
+#	$OpenBSD: Makefile.inc,v 1.8 2008/01/11 10:16:40 espie Exp $
 #
 
 # TOP is assumed to be defined by Makefile including this one.
@@ -29,7 +29,7 @@ do_files:
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
 	    REV=${REV} TARGDIR=${MOUNT_POINT} UTILS=${UTILS}\
-	    sh ${UTILS}/runlist.sh ${LISTS}
+	    RELEASEDIR=${RELEASEDIR} sh ${UTILS}/runlist.sh ${LISTS}
 	rm ${MOUNT_POINT}/${CBIN}
 
 clean cleandir:

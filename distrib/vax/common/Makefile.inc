@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 2007/04/13 17:34:40 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 2008/01/11 10:16:40 espie Exp $
 
 # TOP is assumed to be defined by Makefile including this one.
 
@@ -27,7 +27,7 @@ all: ${CBIN} bootroot
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
 	    TARGDIR=${MOUNT_POINT} UTILS=${UTILS} \
-	    sh ${UTILS}/runlist.sh ${LISTS}
+	    RELEASEDIR=${RELEASEDIR} sh ${UTILS}/runlist.sh ${LISTS}
 	rm ${MOUNT_POINT}/${CBIN}
 	@echo ""
 	@df -i ${MOUNT_POINT}

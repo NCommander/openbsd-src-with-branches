@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 2007/08/01 21:23:23 miod Exp $
+#	$OpenBSD: Makefile,v 1.31 2008/05/15 21:01:14 miod Exp $
 
 NOPROG=
 NOMAN=
@@ -27,11 +27,13 @@ $(TARG): $(DEP)
 	m4 -DOSREV=$(OSREV) -DOSrev=$(OSrev) -DINCLUDE=$(.CURDIR)/$M \
 	-DMACHINE=$M -Uunix $(SRC) > $@
 
-beforeinstall:
-	cp ${TARG} ${DESTDIR}/snapshot/
-
 .else
 all:
+.endif
+
+.ifdef RELEASEDIR
+beforeinstall:
+	cp ${TARG} ${RELEASEDIR}
 .endif
 
 clean:

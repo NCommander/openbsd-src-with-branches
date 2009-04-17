@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2007/08/14 18:57:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 2007/10/18 18:16:20 deraadt Exp $
 
 SUBDIR=ramdisk
 
@@ -7,7 +7,6 @@ SUBDIR+= iso
 .endif
 
 unconfig:
-	cd ramdisk_cd; ${MAKE} unconfig
-	cd ramdiskA; ${MAKE} unconfig
+	cd ramdisk; ${MAKE} unconfig
 
 .include <bsd.subdir.mk>

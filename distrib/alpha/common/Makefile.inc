@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.19 2008/01/11 10:16:40 espie Exp $
+#	$OpenBSD: Makefile.inc,v 1.20 2008/12/02 03:20:57 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -104,5 +104,8 @@ unconfig:
 	-umount ${MOUNT_POINT}
 	-vnconfig -u ${VND}
 
+.ifdef RELEASEDIR
 beforeinstall:
-	cp ${FLOPPY} ${DESTDIR}/snapshot
+	cp ${FLOPPY} ${RELEASEDIR}
+.endif
+

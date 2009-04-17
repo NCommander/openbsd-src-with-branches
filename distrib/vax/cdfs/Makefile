@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2005/03/11 15:40:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2008/02/25 19:52:05 deraadt Exp $
 
 TOP=    ${.CURDIR}/..
 
@@ -9,8 +9,10 @@ CDROM=	cd${REV}.iso
 
 # The floppy image works fine as a CD image, too
 
+.ifdef RELEASEDIR
 install:
-	cp ${DESTDIR}/snapshot/${FLOPPY} ${DESTDIR}/snapshot/${CDROM}
+	cp ${RELEASEDIR}/${FLOPPY} ${RELEASEDIR}/${CDROM}
+.endif
 
 .include <bsd.obj.mk>
 .include <bsd.subdir.mk>
