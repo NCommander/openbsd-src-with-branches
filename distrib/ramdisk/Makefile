@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.34 2009/04/12 16:12:53 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.35 2009/04/17 03:58:54 deraadt Exp $
 
 REV=		${OSrev}
 
@@ -17,7 +17,7 @@ VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 DISKTYPE=	rdroot
 PID!=		echo $$$$
-REALIMAGE!=	echo /tmp/image.${PID}
+REALIMAGE!=	echo /var/tmp/image.${PID}
 IMAGE?=		ramdisk${REV}.fs
 IMAGESIZE?=	8192 # 4MB in 512 byte blocks
 NEWFS_WILL_FAIL?=false

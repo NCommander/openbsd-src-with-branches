@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2009/04/12 16:12:53 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.17 2009/04/17 03:58:54 deraadt Exp $
 
 CBIN=		instbin
 ARCHDIR=	${.CURDIR}/..
@@ -16,7 +16,7 @@ VND_DEV=	/dev/${VND}a
 VND_RDEV=	/dev/r${VND}a
 DISKTYPE=	rdroot
 PID!=		echo $$$$
-REALIMAGE!=	echo /tmp/image.${PID}
+REALIMAGE!=	echo /var/tmp/image.${PID}
 IMAGE?=		ramdisk${REV}.fs
 IMAGESIZE?=	4608 # 2.25MB in 512 byte blocks
 NEWFS_WILL_FAIL?=false
