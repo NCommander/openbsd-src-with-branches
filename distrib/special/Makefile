@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.16 2007/02/14 23:38:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.17 2007/11/26 15:36:38 deraadt Exp $
 
-SUBDIR=	dd ftp pppd rsh dhclient init disknames dmesg grep kbd newfs less \
-	more gzip ccdconfig ifconfig libstubs
+SUBDIR=	dd ftp pppd rsh dhclient init disknames dmesg grep kbd \
+	newfs less more gzip ccdconfig ifconfig sha256 libstubs
 
 install:
 
