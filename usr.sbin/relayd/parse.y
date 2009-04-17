@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.130 2009/04/01 15:07:38 reyk Exp $	*/
+/*	$OpenBSD: parse.y,v 1.131 2009/04/02 14:30:51 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -205,7 +205,8 @@ hostname	: /* empty */		{
 				fatal("calloc");
 		}
 		| HOST STRING	{
-			if (asprintf(&$$, "Host: %s\r\n", $2) == -1)
+			if (asprintf(&$$, "Host: %s\r\nConnection: close\r\n",
+			    $2) == -1)
 				fatal("asprintf");
 		}
 		;
