@@ -478,6 +478,11 @@ sub copy_old_stuff
 	$self->add_object($plist);
 }
 
+package OpenBSD::PackingElement::DigitalSignature;
+sub copy_old_stuff
+{
+}
+
 package OpenBSD::PackingElement::FDESC;
 sub copy_old_stuff
 {
