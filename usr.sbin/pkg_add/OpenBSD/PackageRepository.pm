@@ -229,7 +229,7 @@ sub open
 sub find
 {
 	my ($repository, $name, $arch) = @_;
-	my $self = OpenBSD::PackageLocation->new($repository, $name, $arch);
+	my $self = $repository->new_location($name, $arch);
 
 	if ($self->contents) {
 		return $self;
@@ -239,7 +239,7 @@ sub find
 sub grabPlist
 {
 	my ($repository, $name, $arch, $code) = @_;
-	my $self = OpenBSD::PackageLocation->new($repository, $name, $arch);
+	my $self = $repository->new_location($name, $arch);
 
 	return $self->grabPlist($code);
 }

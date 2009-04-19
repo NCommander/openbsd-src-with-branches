@@ -21,7 +21,7 @@ sub match_locations
 	my ($self, $o) = @_;
 	require OpenBSD::PackageLocation;
 	
-	my @l = map {OpenBSD::PackageLocation->new($o, $_)} $self->match($o);
+	my @l = map {$o->new_location($_)} $self->match($o);
 	return \@l;
 }
 
