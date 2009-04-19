@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.157 2009/02/13 19:58:27 deraadt Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.158 2009/03/05 19:52:24 kettenis Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -125,6 +125,7 @@ struct	vnode *rootvp, *swapdev_vp;
 int	boothowto;
 struct	timeval boottime;
 int	ncpus =  1;
+int	ncpusfound = 1;			/* number of cpus we find */
 __volatile int start_init_exec;		/* semaphore for start_init() */
 
 #if !defined(NO_PROPOLICE)
