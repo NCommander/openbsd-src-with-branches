@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.5 2008/06/26 05:42:12 ray Exp $	*/
+/*	$OpenBSD: intr.h,v 1.6 2009/03/25 21:40:56 miod Exp $	*/
 /*	$NetBSD: intr.h,v 1.22 2006/01/24 23:51:42 uwe Exp $	*/
 
 /*-
@@ -35,6 +35,7 @@
 #include <sys/device.h>
 #include <sys/evcount.h>
 #include <sys/lock.h>
+#include <sys/mutex.h>
 #include <sys/queue.h>
 #include <sh/psl.h>
 
@@ -101,8 +102,10 @@ struct sh_soft_intrhand {
 };
 
 struct sh_soft_intr {
-	TAILQ_HEAD(, sh_soft_intrhand) softintr_q;
-	unsigned long softintr_ipl;
+	TAILQ_HEAD(, sh_soft_intrhand)
+			softintr_q;
+	unsigned long	softintr_ipl;
+	struct mutex	softintr_lock;
 };
 
 void	 softintr_disestablish(void *);
