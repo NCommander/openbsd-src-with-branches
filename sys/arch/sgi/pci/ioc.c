@@ -556,8 +556,8 @@ ioc_intr_ethernet(void *v)
 {
 	struct ioc_softc *sc = (struct ioc_softc *)v;
 
-	/* this interrupt source is not shared between several devices. */
-	return ioc_intr_dispatch(sc, IOCDEV_EF);
+	/* This interrupt source is not shared between several devices. */
+	return ioc_intr_dispatch(sc, IOCDEV_EF - 1);
 }
 
 int
