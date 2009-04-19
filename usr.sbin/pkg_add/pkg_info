@@ -72,11 +72,10 @@ sub find_pkg_in
 
 	if (OpenBSD::PackageName::is_stem($pkgname)) {
 		require OpenBSD::Search;
-		my @l = sort ($repo->match(OpenBSD::Search::Stem->new($pkgname)));
-		if (@l != 0) {
-			for my $p (@l) {
-				my $pkg = $repo->find($p);
-				&$code($p, $pkg);
+		my $l = $repo->match_locations(OpenBSD::Search::Stem->new($pkgname));
+		if (@$l != 0) {
+			for my $pkg (sort {$a->name cmp $b->name} @$l) {
+				&$code($pkg->name, $pkg);
 				$pkg->close_now;
 				$pkg->wipe_info;
 			}
@@ -213,7 +212,7 @@ sub find_by_path
 			    $plist->pkgname);
 			if ($plist->has('pkgpath')) {
 				for my $p (@{$plist->{pkgpath}}) {
-					add_to_path_info($p->{name}, 
+					add_to_path_info($p->name, 
 					    $plist->pkgname);
 				}
 			}

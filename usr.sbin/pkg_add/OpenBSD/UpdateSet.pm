@@ -154,7 +154,7 @@ sub from_location
 {
 	my ($class, $location) = @_;
 	my $handle = $class->new;
-	$handle->{pkgname} = $location->{name};
+	$handle->{pkgname} = $location->name;
 	$handle->{location} = $location;
 	$handle->{tweaked} = 0;
 	return $handle;

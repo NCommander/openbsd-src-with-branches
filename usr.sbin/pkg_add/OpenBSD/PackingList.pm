@@ -45,6 +45,18 @@ sub set_cwd
 	$self->{cwd} = \$p;
 }
 
+package OpenBSD::PackingList::hashpath;
+sub match
+{
+	my ($a, $b) = @_;
+	for my $i (keys %$a) {
+		if ($b->{$i}) {
+			return 1;
+		} 
+	}
+	return 0;
+}
+
 package OpenBSD::PackingList;
 
 use OpenBSD::PackingElement;
@@ -352,7 +364,7 @@ sub set_pkgname
 {
 	my ($self, $name) = @_;
 	if (defined $self->{name}) {
-		$self->{name}->{name} = $name;
+		$self->{name}->set_name($name);
 	} else {
 		OpenBSD::PackingElement::Name->add($self, $name);
 	}
@@ -361,7 +373,7 @@ sub set_pkgname
 sub pkgname
 {
 	my $self = shift;
-	return $self->{name}->{name};
+	return $self->{name}->name;
 }
 
 sub localbase
@@ -369,7 +381,7 @@ sub localbase
 	my $self = shift;
 
 	if (defined $self->{localbase}) {
-		return $self->{localbase}->{name};
+		return $self->{localbase}->name;
 	} else {
 		return '/usr/local';
 	}
@@ -379,6 +391,30 @@ sub is_signed
 {
 	my $self = shift;
 	return defined $self->{'digital-signature'};
+}
+
+sub pkgpath
+{
+	my $self = shift;
+	if (!defined $self->{_hashpath}) {
+		my $h = $self->{_hashpath} = 
+		    bless {}, "OpenBSD::PackingList::hashpath";
+		if (defined $self->{extrainfo}) {
+			$h->{$self->{extrainfo}->{subdir}} = 1;
+		}
+		if (defined $self->{pkgpath}) {
+			for my $i (@{$self->{pkgpath}}) {
+				$h->{$i->name} = 1;
+			}
+		}
+	}
+	return $self->{_hashpath};
+}
+
+sub match_pkgpath
+{
+	my ($self, $plist2) = @_;
+	return $self->pkgpath->match($plist2->pkgpath);
 }
 
 our @unique_categories =

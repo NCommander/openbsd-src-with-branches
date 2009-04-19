@@ -103,7 +103,7 @@ sub extract
 	$self->SUPER::extract($state);
 
 	# figure out a safe directory where to put the temp file
-	my $d = dirname($file->{destdir}.$file->{name});
+	my $d = dirname($file->{destdir}.$file->name);
 	# we go back up until we find an existing directory.
 	# hopefully this will be on the same file system.
 	while (!-d $d && -e _ || defined $state->{noshadow}->{$d}) {
@@ -123,7 +123,7 @@ sub extract
 
 		# XXX don't apply destdir twice
 		$file->{destdir} = '';
-		$file->{name} = $tempname;
+		$file->set_name($tempname);
 		$file->create;
 		$self->may_check_digest($file, $state);
 	}
@@ -158,7 +158,7 @@ package OpenBSD::PackingElement::ScriptFile;
 sub update_issue
 { 
 	my ($self, $installing) = @_;
-	return $self->{name}." script";
+	return $self->name." script";
 }
 
 package OpenBSD::PackingElement::FINSTALL;
