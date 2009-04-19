@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.60 2008/05/18 07:36:10 jsing Exp $ */
+/*	$OpenBSD: machdep.c,v 1.61 2008/12/30 05:33:17 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -245,6 +245,13 @@ mips_init(int argc, void *argv, caddr_t boot_esym)
 		ip27_setup();
 
 		break;
+
+	case SGI_O300:
+		bios_printf("Found SGI-IP35, setting up.\n");
+		strlcpy(cpu_model, "SGI-Origin300 (IP35)", sizeof(cpu_model));
+		ip27_setup();
+
+		break;
 #endif
 
 #if defined(TGT_OCTANE)
@@ -444,9 +451,10 @@ mips_init(int argc, void *argv, caddr_t boot_esym)
 
 #if defined(TGT_ORIGIN200) || defined(TGT_ORIGIN2000)
 	/*
-	 * If an IP27 system set up Node 0's HUB.
+	 * If an IP27 or IP35 system set up Node 0's HUB.
 	 */
-	if (sys_config.system_type == SGI_O200) {
+	if (sys_config.system_type == SGI_O200 ||
+	    sys_config.system_type == SGI_O300) {
 		IP27_LHUB_S(PI_REGION_PRESENT, 1);
 		IP27_LHUB_S(PI_CALIAS_SIZE, PI_CALIAS_SIZE_0);
 	}
