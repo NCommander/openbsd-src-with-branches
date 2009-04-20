@@ -148,8 +148,10 @@ sub tweak_plist_status
 
 sub tag_user_packages
 {
-	for my $pkgname (@_) {
-		$user_tagged->{extract_pkgname($pkgname)} = 1;
+	for my $set (@_) {
+		for my $handle ($set->newer) {
+			$user_tagged->{$handle->{pkgname}} = 1;
+		}
 	}
 }
 
