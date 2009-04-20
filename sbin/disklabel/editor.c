@@ -317,8 +317,7 @@ editor(struct disklabel *lp, int f)
 			 * didn't change the label read from disk, there is no
 			 * need to do anything before exiting.
 			 */
-			if (!aflag && !dflag &&
-			    memcmp(lp, &label, sizeof(label)) == 0) {
+			if (!dflag && memcmp(lp, &label, sizeof(label)) == 0) {
 				puts("No label changes.");
 				return(1);
 			}
