@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.15 2007/12/05 19:17:14 deraadt Exp $	*/
+/*	$OpenBSD: bios.c,v 1.16 2009/01/13 13:53:50 kettenis Exp $	*/
 /*
  * Copyright (c) 2006 Gordon Willem Klok <gklok@cogeco.ca>
  *
@@ -158,9 +158,6 @@ bios_attach(struct device *parent, struct device *self, void *aux)
 	printf("\n");
 
 #if NACPI > 0
-#if NPCI > 0
-	if (pci_mode != 0)
-#endif
 	{
 		struct bios_attach_args ba;
 
