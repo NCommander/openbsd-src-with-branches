@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2006/07/27 02:53:55 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 2009/04/17 03:58:53 deraadt Exp $
 
 kernels: bsd bootblocks
 	cp ${.CURDIR}/../sys/arch/aviion/compile/GENERIC/bsd \
@@ -12,6 +12,6 @@ bsd:
 bootblocks:
 	cp ${DESTDIR}/usr/mdec/* ${RELEASEDIR}/
 
-MDEXT=	
+MDEXT=	bsd bsd.rd	# bootblocks?
 
 .PHONY: bsd bootblocks
