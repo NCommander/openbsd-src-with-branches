@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2008/10/27 00:26:33 ratchov Exp $
+#	$OpenBSD: Makefile,v 1.2 2008/11/11 19:39:35 ratchov Exp $
 
 LIB=	sndio
 MAN=	sio_open.3
@@ -23,10 +23,5 @@ MLINKS = \
 	sio_open.3 sio_setvol.3 \
 	sio_open.3 sio_onvol.3 \
 	sio_open.3 sio_initpar.3
-
-includes:
-	@cd ${.CURDIR}; cmp -s sndio.h ${DESTDIR}/usr/include/sndio.h || \
-		${INSTALL} ${INSTALL_COPY} -o $(BINOWN) -g $(BINGRP) \
-		-m 444 sndio.h ${DESTDIR}/usr/include
 
 .include <bsd.lib.mk>
