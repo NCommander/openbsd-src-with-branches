@@ -333,6 +333,11 @@ pool_init(struct pool *pp, size_t size, u_int align, u_int ioff, int flags,
 	if (pool_serial == 0)
 		panic("pool_init: too much uptime");
 
+        /* constructor, destructor, and arg */
+	pp->pr_ctor = NULL;
+	pp->pr_dtor = NULL;
+	pp->pr_arg = NULL;
+
 	/*
 	 * Decide whether to put the page header off page to avoid
 	 * wasting too large a part of the page. Off-page page headers
