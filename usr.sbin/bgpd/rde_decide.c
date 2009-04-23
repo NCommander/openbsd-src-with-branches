@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_decide.c,v 1.50 2008/05/02 13:53:19 claudio Exp $ */
+/*	$OpenBSD: rde_decide.c,v 1.51 2008/05/08 09:51:46 henning Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -201,9 +201,16 @@ prefix_cmp(struct prefix *p1, struct prefix *p2)
 		    &p2->aspath->peer->remote_addr,
 		    sizeof(p1->aspath->peer->remote_addr)));
 
+	/* 12. for announced prefixes prefer dynamic routes */
+	if ((p1->flags & F_ANN_DYNAMIC) != (p2->flags & F_ANN_DYNAMIC)) {
+		if (p1->flags & F_ANN_DYNAMIC)
+			return (1);
+		else
+			return (-1);
+	}
+
 	fatalx("Uh, oh a politician in the decision process");
 	/* NOTREACHED */
-	return (0);
 }
 
 /*
