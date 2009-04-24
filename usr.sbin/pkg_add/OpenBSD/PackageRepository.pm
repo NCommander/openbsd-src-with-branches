@@ -546,7 +546,7 @@ sub finish_and_close
 {
 	my ($self, $object) = @_;
 	if (defined $object->{cache_dir}) {
-		while (defined $object->intNext) {
+		while (defined $object->_next) {
 		}
 	}
 	$self->SUPER::finish_and_close($object);
