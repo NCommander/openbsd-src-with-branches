@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.555 2009/02/19 17:08:42 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.556 2009/04/06 12:05:55 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -1033,10 +1033,6 @@ scrub_opts	:	{
 			}
 		    scrub_opts_l
 			{ $$ = scrub_opts; }
-		| /* empty */ {
-			bzero(&scrub_opts, sizeof scrub_opts);
-			$$ = scrub_opts;
-		}
 		;
 
 scrub_opts_l	: scrub_opts_l comma scrub_opt
