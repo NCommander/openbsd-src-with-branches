@@ -47,6 +47,7 @@ struct envy_ak {
 struct envy_softc {
 	struct device		dev;
 	struct device	       *audio;
+	int			isht;		/* is a Envy24HT ? */
 	struct envy_buf		ibuf, obuf;
 	pcitag_t		pci_tag;
 	pci_chipset_tag_t	pci_pc;
