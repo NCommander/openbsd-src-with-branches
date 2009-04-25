@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mutex.c,v 1.1 2007/02/03 20:08:49 miod Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -56,6 +56,17 @@ mtx_enter(struct mutex *mtx)
 
 	MUTEX_ASSERT_UNLOCKED(mtx);
 	mtx->mtx_lock = 1;
+}
+
+int
+mtx_enter_try(struct mutex *mtx)
+{
+	if (mtx->mtx_wantipl != IPL_NONE)
+		mtx->mtx_oldipl = _splraise(mtx->mtx_wantipl);
+	MUTEX_ASSERT_UNLOCKED(mtx);
+	mtx->mtx_lock = 1;
+
+	return 1;
 }
 
 void
