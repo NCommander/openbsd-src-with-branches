@@ -714,7 +714,6 @@ JobExec(Job *job)
 	int fds[4];
 	int *fdout = fds;
 	int *fderr = fds+2;
-	int result;
 	int i;
 
 	if (DEBUG(JOB)) {
@@ -778,18 +777,9 @@ JobExec(Job *job)
 			if (!(nJobs == 1 && no_jobs_left()))
 				usleep(random() % random_delay);
 
-		/* most cases won't return, but will exit directly */
-		result = run_prepared_gnode(job->node, 1);
-		switch(result) {
-		case MADE:
-			exit(0);
-		case ERROR:
-			exit(1);
-		default:
-			fprintf(stderr, 
-			    "Could not run gnode, returned %d\n", result);
-			exit(1);
-		}
+		/* this exits directly */
+		run_gnode_parallel(job->node);
+		/*NOTREACHED*/
 	} else {
 		supervise_jobs = true;
 		job->pid = cpid;
@@ -1405,7 +1395,7 @@ JobInterrupt(int runINTERRUPT,	/* Non-zero if commands for the .INTERRUPT
 int
 Job_Finish(void)
 {
-	if (end_node != NULL && !Lst_IsEmpty(&end_node->commands)) {
+	if ((end_node->type & OP_DUMMY) == 0) {
 		if (errors) {
 			Error("Errors reported so .END ignored");
 		} else {
