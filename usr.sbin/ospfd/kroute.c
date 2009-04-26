@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.66 2009/01/08 19:27:56 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.67 2009/01/16 20:50:13 gollo Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -472,7 +472,7 @@ kr_redist_eval(struct kroute *kr, struct rroute *rr)
 	if (kr->nexthop.s_addr == htonl(INADDR_LOOPBACK))
 		goto dont_redistribute;
 
-	/* Should we redistrubute this route? */
+	/* Should we redistribute this route? */
 	if (!ospf_redistribute(kr, &metric))
 		goto dont_redistribute;
 
