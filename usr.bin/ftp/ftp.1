@@ -42,7 +42,6 @@
 .Op Fl k Ar seconds
 .Op Fl P Ar port
 .Op Fl r Ar seconds
-.Op Fl T Ar title
 .Op Ar host Op Ar port
 .Nm ftp
 .Op Fl C
@@ -210,10 +209,6 @@ if the server does not support passive connections.
 .It Fl r Ar seconds
 Retry to connect if failed, pausing for number of
 .Ar seconds .
-.It Fl T Ar title
-Set a filename
-.Ar title
-which will appear in the transfer progress bar.
 .It Fl t
 Enables packet tracing.
 .It Fl V
