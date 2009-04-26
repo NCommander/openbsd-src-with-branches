@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.195 2009/04/26 01:23:40 krw Exp $	*/
+/*	$OpenBSD: editor.c,v 1.196 2009/04/26 19:49:50 otto Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.195 2009/04/26 01:23:40 krw Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.196 2009/04/26 19:49:50 otto Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -88,19 +88,19 @@ const struct space_allocation alloc_big[] = {
 };
 
 const struct space_allocation alloc_medium[] = {
-	{ MEG(1024),      MEG(2048),  25, "/"		},
+	{  MEG(800),      MEG(2048),  15, "/"		},
 	{   MEG(80),       MEG(256),  10, "swap"	},
-	{ MEG(1024), MEG(1024*1024),  25, "/usr"	},
-	{  MEG(512), MEG(1024*1024),  40, "/home"	}
+	{  MEG(900), MEG(1024*1024),  10, "/usr"	},
+	{  MEG(512), MEG(1024*1024),  65, "/home"	}
 };
 
 const struct space_allocation alloc_small[] = {
-	{  MEG(700),      MEG(4096),   95, "/"		},
-	{    MEG(1),       MEG(256),    5, "swap"	}
+	{  MEG(700),      MEG(4096),  95, "/"		},
+	{    MEG(1),       MEG(256),   5, "swap"	}
 };
 
 const struct space_allocation alloc_stupid[] = {
-	{  MEG(1),      MEG(2048),   100, "/"		}
+	{    MEG(1),      MEG(2048), 100, "/"		}
 };
 
 const struct { const struct space_allocation *table; int sz; } alloc_table[] = {
