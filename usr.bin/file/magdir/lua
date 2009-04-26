@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 #------------------------------------------------------------------------------
 # lua:  file(1) magic for Lua scripting language
 # URL:  http://www.lua.org/

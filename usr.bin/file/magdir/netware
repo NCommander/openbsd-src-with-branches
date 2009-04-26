@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # netware:  file(1) magic for NetWare Loadable Modules (NLMs)

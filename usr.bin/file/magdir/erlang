@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # erlang:  file(1) magic for Erlang JAM and BEAM files

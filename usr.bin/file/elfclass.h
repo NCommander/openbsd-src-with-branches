@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) Christos Zoulas 2008.
  * All Rights Reserved.

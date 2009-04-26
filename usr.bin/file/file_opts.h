@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Table of command-line options
  *

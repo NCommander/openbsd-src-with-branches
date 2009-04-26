@@ -1,3 +1,4 @@
+#	$OpenBSD$
 
 #------------------------------------------------------------------------------
 # This is Aaron's attempt at a MAGIC file for Xilinx .bit files.
