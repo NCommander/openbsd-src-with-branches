@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.3 2008/09/10 14:01:23 blambert Exp $ */
+/*	$OpenBSD: vmt.c,v 1.4 2008/10/23 22:22:43 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -240,8 +240,6 @@ vmt_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_sensor.type = SENSOR_TIMEDELTA;
 	sc->sc_sensor.status = SENSOR_S_UNKNOWN;
-	sc->sc_sensor.value = 0LL;
-	sc->sc_sensor.flags = 0;
 
 	sensor_attach(&sc->sc_sensordev, &sc->sc_sensor);
 	sensordev_install(&sc->sc_sensordev);
