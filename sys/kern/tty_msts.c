@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_msts.c,v 1.11 2009/01/12 15:54:13 stevesk Exp $ */
+/*	$OpenBSD: tty_msts.c,v 1.12 2009/01/12 16:45:38 stevesk Exp $ */
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -110,7 +110,6 @@ mstsopen(dev_t dev, struct tty *tp)
 	np->signal.type = SENSOR_PERCENT;
 	np->signal.status = SENSOR_S_UNKNOWN;
 	np->signal.value = 100000LL;
-	np->signal.flags = 0;
 	strlcpy(np->signal.desc, "Signal", sizeof(np->signal.desc));
 	sensor_attach(&np->timedev, &np->signal);
 
