@@ -234,8 +234,6 @@ lapic_boot_init(paddr_t lapic_base)
 	idt_vec_set(LAPIC_IPI_INVLPG, Xipi_invlpg);
 	idt_allocmap[LAPIC_IPI_INVLRANGE] = 1;
 	idt_vec_set(LAPIC_IPI_INVLRANGE, Xipi_invlrange);
-	idt_allocmap[LAPIC_IPI_RELOADCR3] = 1;
-	idt_vec_set(LAPIC_IPI_RELOADCR3, Xipi_reloadcr3);
 #endif
 	idt_allocmap[LAPIC_SPURIOUS_VECTOR] = 1;
 	idt_vec_set(LAPIC_SPURIOUS_VECTOR, Xintrspurious);

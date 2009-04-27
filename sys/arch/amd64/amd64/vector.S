@@ -347,23 +347,6 @@ IDTVEC(ipi_invlrange)
 	popq	%rax
 	iretq
 
-IDTVEC(ipi_reloadcr3)
-	pushq	%rax
-
-	ioapic_asm_ack()
-
-	movq	CPUVAR(CURPCB), %rax
-	movq	PCB_PMAP(%rax), %rax
-	movq	%rax, CPUVAR(CURPMAP)
-	movq	PM_PDIRPA(%rax), %rax
-	movq	%rax, %cr3
-
-	lock
-	decq	tlb_shoot_wait
-
-	popq	%rax
-	iretq
-
 #endif /* MULTIPROCESSOR */
 	
 	/*
