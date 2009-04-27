@@ -1,4 +1,4 @@
-/*	$OpenBSD: domacro.c,v 1.13 2006/05/16 23:43:16 ray Exp $	*/
+/*	$OpenBSD: domacro.c,v 1.14 2008/08/22 08:52:35 sobrado Exp $	*/
 /*	$NetBSD: domacro.c,v 1.10 1997/07/20 09:45:45 lukem Exp $	*/
 
 /*
@@ -29,10 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if !defined(lint) && !defined(SMALL)
-static const char rcsid[] = "$OpenBSD: domacro.c,v 1.13 2006/05/16 23:43:16 ray Exp $";
-#endif /* not lint and not SMALL */
 
 #include <ctype.h>
 #include <signal.h>
