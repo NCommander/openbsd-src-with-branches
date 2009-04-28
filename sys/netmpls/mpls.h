@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls.h,v 1.19 2009/02/03 16:42:54 michele Exp $	*/
+/*	$OpenBSD: mpls.h,v 1.20 2009/04/17 12:10:08 michele Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -100,6 +100,7 @@ struct rt_mpls {
 	u_int8_t	mpls_exp;
 };
 
+#define MPLS_OP_LOCAL		0x0
 #define MPLS_OP_POP		0x1
 #define MPLS_OP_PUSH		0x2
 #define MPLS_OP_SWAP		0x4
