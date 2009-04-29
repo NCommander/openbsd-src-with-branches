@@ -1,4 +1,4 @@
-/*	$OpenBSD: part.c,v 1.48 2009/03/24 15:10:03 todd Exp $	*/
+/*	$OpenBSD: part.c,v 1.49 2009/04/01 15:00:55 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -291,13 +291,13 @@ PRT_print(int num, prt_t *partn, char *units)
 		size = ((double)partn->ns * unit_types[SECTORS].conversion) /
 		    unit_types[i].conversion;
 		printf("%c%1d: %.2X %6u %3u %3u - %6u %3u %3u [%12u:%12.0f%s] %s\n",
-			(partn->flag == 0x80)?'*':' ',
-			num, partn->id,
-			partn->scyl, partn->shead, partn->ssect,
-			partn->ecyl, partn->ehead, partn->esect,
-			partn->bs, size,
-			unit_types[i].abbr,
-			PRT_ascii_id(partn->id));
+		    (partn->flag == 0x80)?'*':' ',
+		    num, partn->id,
+		    partn->scyl, partn->shead, partn->ssect,
+		    partn->ecyl, partn->ehead, partn->esect,
+		    partn->bs, size,
+		    unit_types[i].abbr,
+		    PRT_ascii_id(partn->id));
 	}
 }
 
