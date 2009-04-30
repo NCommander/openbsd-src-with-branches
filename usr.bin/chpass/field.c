@@ -1,4 +1,4 @@
-/*	$OpenBSD: field.c,v 1.9 2006/03/31 00:29:13 deraadt Exp $	*/
+/*	$OpenBSD: field.c,v 1.10 2009/03/05 20:53:13 millert Exp $	*/
 /*	$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)field.c	8.4 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$OpenBSD: field.c,v 1.9 2006/03/31 00:29:13 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: field.c,v 1.10 2009/03/05 20:53:13 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -228,7 +228,8 @@ p_shell(char *p, struct passwd *pw, ENTRY *ep)
 		if (uid) {
 			warnx("%s: non-standard shell", p);
 			return (1);
-		}
+		} else
+			t = strdup(p);
 	}
 	if (!(pw->pw_shell = t)) {
 		warnx("can't save entry");
