@@ -110,6 +110,9 @@ struct smbios_entry smbios_entry;
 void		*bios_smpinfo;
 #endif
 bios_bootmac_t	*bios_bootmac;
+#ifdef DDB
+extern int	db_console;
+#endif
 
 void		smbios_info(char*);
 
@@ -450,6 +453,7 @@ void
 bios_getopt()
 {
 	bootarg_t *q;
+	bios_ddb_t *bios_ddb;
 
 #ifdef BIOS_DEBUG
 	printf("bootargv:");
@@ -527,6 +531,12 @@ bios_getopt()
 		case BOOTARG_BOOTMAC:
 			bios_bootmac = (bios_bootmac_t *)q->ba_arg;
 			break;
+
+		case BOOTARG_DDB:
+			bios_ddb = (bios_ddb_t *)q->ba_arg;
+#ifdef DDB
+			db_console = bios_ddb->db_console;
+#endif
 
 		default:
 #ifdef BIOS_DEBUG

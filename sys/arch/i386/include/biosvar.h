@@ -204,6 +204,11 @@ typedef struct _bios_bootmac {
 	char	mac[6];
 } __packed bios_bootmac_t;
 
+#define BOOTARG_DDB 8
+typedef struct _bios_ddb {
+	int	db_console;
+} __packed bios_ddb_t;
+
 #if defined(_KERNEL) || defined (_STANDALONE)
 
 #ifdef _LOCORE
