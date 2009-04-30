@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.81 2009/03/29 21:53:52 sthen Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.82 2009/04/28 12:54:31 mpf Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1301,7 +1301,7 @@ vr_init(void *xsc)
 	CSR_WRITE_2(sc, VR_IMR, VR_INTRS);
 
 	/* Restore state of BMCR */
-	sc->vr_link = 0;
+	sc->vr_link = 1;
 	mii_mediachg(mii);
 
 	ifp->if_flags |= IFF_RUNNING;
