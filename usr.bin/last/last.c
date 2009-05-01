@@ -1,4 +1,4 @@
-/*	$OpenBSD: last.c,v 1.33 2005/11/14 15:38:05 deraadt Exp $	*/
+/*	$OpenBSD: last.c,v 1.34 2006/10/27 07:16:25 jmc Exp $	*/
 /*	$NetBSD: last.c,v 1.6 1994/12/24 16:49:02 cgd Exp $	*/
 
 /*
@@ -40,12 +40,13 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)last.c	8.2 (Berkeley) 4/2/94";
 #endif
-static char rcsid[] = "$OpenBSD: last.c,v 1.33 2005/11/14 15:38:05 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: last.c,v 1.34 2006/10/27 07:16:25 jmc Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
 
+#include <ctype.h>
 #include <err.h>
 #include <fcntl.h>
 #include <paths.h>
