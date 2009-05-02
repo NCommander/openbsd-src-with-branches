@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.56 2009/04/05 21:57:41 oga Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.57 2009/04/14 16:01:04 oga Exp $	*/
 /*	$NetBSD: iommu.c,v 1.47 2002/02/08 20:03:45 eeh Exp $	*/
 
 /*
@@ -830,18 +830,8 @@ iommu_dvmamap_load(bus_dma_tag_t t, bus_dma_tag_t t0, bus_dmamap_t map,
 #endif
 	}
 #endif
-	if (err) {
-		/* XXX keep enough state and just call unload here? */
-		iommu_iomap_unload_map(is, ims);
-		iommu_iomap_clear_pages(ims);
-		map->dm_mapsize = 0;
-		map->dm_nsegs = 0;
-		mtx_enter(&is->is_mtx);
-		err = extent_free(is->is_dvmamap, dvmaddr, sgsize, EX_NOWAIT);
-		map->_dm_dvmastart = 0;
-		map->_dm_dvmasize = 0;
-		mtx_leave(&is->is_mtx);
-	}
+	if (err)
+		iommu_dvmamap_unload(t, t0, map);
 
 	return (err);
 }
@@ -1050,18 +1040,8 @@ iommu_dvmamap_load_raw(bus_dma_tag_t t, bus_dma_tag_t t0, bus_dmamap_t map,
 #endif
 	}
 #endif
-	if (err) {
-		/* XXX keep enough state and just call unload here? */
-		iommu_iomap_unload_map(is, ims);
-		iommu_iomap_clear_pages(ims);
-		map->dm_mapsize = 0;
-		map->dm_nsegs = 0;
-		mtx_enter(&is->is_mtx);
-		err = extent_free(is->is_dvmamap, dvmaddr, sgsize, EX_NOWAIT);
-		map->_dm_dvmastart = 0;
-		map->_dm_dvmasize = 0;
-		mtx_leave(&is->is_mtx);
-	}
+	if (err)
+		iommu_dvmamap_unload(t, t0, map);
 
 	return (err);
 }
