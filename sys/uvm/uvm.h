@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm.h,v 1.30 2009/04/14 20:12:05 oga Exp $	*/
+/*	$OpenBSD: uvm.h,v 1.31 2009/04/28 16:06:07 miod Exp $	*/
 /*	$NetBSD: uvm.h,v 1.24 2000/11/27 08:40:02 chs Exp $	*/
 
 /*
@@ -87,13 +87,11 @@ struct uvm {
 	boolean_t page_idle_zero;	/* TRUE if we should try to zero
 					   pages in the idle loop */
 
-		/* page daemon trigger */
-	int pagedaemon;			/* daemon sleeps on this */
-	struct proc *pagedaemon_proc;	/* daemon's pid */
+	/* page daemon's pid, we sleep on the pointer to this. */
+	struct proc *pagedaemon_proc;
 
-		/* aiodone daemon trigger */
-	int aiodoned;			/* daemon sleeps on this */
-	struct proc *aiodoned_proc;	/* daemon's pid */
+	/* aiodone daemon's pid, we sleep on the pointer to this. */
+	struct proc *aiodoned_proc;
 	struct mutex aiodoned_lock;
 
 		/* page hash */
