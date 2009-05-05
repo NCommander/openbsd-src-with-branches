@@ -1,4 +1,4 @@
-/*	$OpenBSD: ruserpass.c,v 1.26 2008/06/25 21:15:19 martynas Exp $	*/
+/*	$OpenBSD: ruserpass.c,v 1.27 2009/04/27 21:37:13 deraadt Exp $	*/
 /*	$NetBSD: ruserpass.c,v 1.14 1997/07/20 09:46:01 lukem Exp $	*/
 
 /*
@@ -312,4 +312,6 @@ token(void)
 			return (t->tval);
 	return (ID);
 }
+
 #endif /* !SMALL */
+

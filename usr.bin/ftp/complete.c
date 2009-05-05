@@ -1,4 +1,4 @@
-/*	$OpenBSD: complete.c,v 1.21 2008/07/08 21:07:57 martynas Exp $	*/
+/*	$OpenBSD: complete.c,v 1.22 2009/04/27 21:37:13 deraadt Exp $	*/
 /*	$NetBSD: complete.c,v 1.10 1997/08/18 10:20:18 lukem Exp $	*/
 
 /*-
@@ -231,10 +231,8 @@ complete_remote(char *word, int list)
 
 		mflag = 1;
 		emesg = NULL;
-#ifndef SMALL
 		if (debug)
 			(void)putc('\n', ttyout);
-#endif /* !SMALL */
 		while ((cp = remglob(dummyargv, 0, &emesg)) != NULL) {
 			char *tcp;
 
@@ -350,3 +348,4 @@ complete(EditLine *el, int ch)
 }
 
 #endif /* !SMALL */
+

@@ -1,4 +1,4 @@
-/*	$OpenBSD: stringlist.h,v 1.1 1997/02/03 01:05:45 millert Exp $	*/
+/*	$OpenBSD: stringlist.h,v 1.2 2002/02/16 21:27:46 millert Exp $	*/
 /*	$NetBSD: stringlist.h,v 1.2 1997/01/17 06:11:36 lukem Exp $	*/
 
 /*
@@ -32,6 +32,8 @@
  * SUCH DAMAGE.
  */
 
+#ifndef SMALL
+
 #ifndef _STRINGLIST_H
 #define _STRINGLIST_H 
 
@@ -55,3 +57,6 @@ char		*sl_find(StringList *, char *);
 __END_DECLS
 
 #endif /* _STRINGLIST_H */
+
+#endif /* !SMALL */
+
