@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.h,v 1.7 2001/07/26 19:37:13 art Exp $	*/
+/*	$OpenBSD: uvm_aobj.h,v 1.8 2002/03/14 01:27:18 millert Exp $	*/
 /*	$NetBSD: uvm_aobj.h,v 1.10 2000/01/11 06:57:49 chs Exp $	*/
 
 /*
@@ -55,8 +55,6 @@
 #define UAO_FLAG_KERNSWAP	0x2	/* enable kernel swap */
 
 /* internal flags */
-#define UAO_FLAG_KILLME		0x4	/* aobj should die when last released
-					 * page is no longer PG_BUSY ... */
 #define UAO_FLAG_NOSWAP		0x8	/* aobj can't swap (kernel obj only!) */
 
 #ifdef _KERNEL
