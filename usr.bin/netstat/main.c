@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.77 2009/01/27 13:49:21 claudio Exp $	*/
+/*	$OpenBSD: main.c,v 1.78 2009/02/21 20:07:49 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $	*/
 
 /*
@@ -377,7 +377,8 @@ main(int argc, char *argv[])
 			rt_stats();
 		else if (Aflag || nlistf != NULL || memf != NULL)
 			routepr(nl[N_RTREE].n_value, nl[N_RTMASK].n_value,
-			    nl[N_AF2RTAFIDX].n_value, nl[N_RTBLIDMAX].n_value);
+			    nl[N_AF2RTAFIDX].n_value, nl[N_RTBLIDMAX].n_value,
+			    tableid);
 		else
 			p_rttables(af, tableid);
 		exit(0);
