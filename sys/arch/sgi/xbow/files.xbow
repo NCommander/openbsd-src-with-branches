@@ -1,4 +1,4 @@
-#	$OpenBSD: files.xbow,v 1.1 2008/04/07 22:47:40 miod Exp $
+#	$OpenBSD: files.xbow,v 1.2 2009/04/13 21:17:54 miod Exp $
 
 # IP30 and IP27 planar XBow bus
 define	xbow {[vendor = -1], [product = -1]}
@@ -10,11 +10,6 @@ file	arch/sgi/xbow/xbow.c			xbow
 device	xheart {} : onewirebus
 attach	xheart at xbow
 file	arch/sgi/xbow/xheart.c			xheart
-
-# IP27 Hub
-device	xhub {}
-attach	xhub at xbow
-file	arch/sgi/xbow/xhub.c			xhub
 
 # PCI Bridge
 device	xbridge {} : pcibus
