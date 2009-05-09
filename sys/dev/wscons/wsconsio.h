@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.49 2008/12/29 22:25:16 miod Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.50 2009/03/12 19:10:22 kettenis Exp $ */
 /* $NetBSD: wsconsio.h,v 1.74 2005/04/28 07:15:44 martin Exp $ */
 
 /*
@@ -303,6 +303,7 @@ struct wsmouse_calibcoords {
 #define		WSDISPLAY_TYPE_LEGSS	55	/* DEC LEGSS (VS35x0) */
 #define		WSDISPLAY_TYPE_IFB	56	/* Sun Expert3D{,-Lite} */
 #define		WSDISPLAY_TYPE_RAPTOR	57	/* Tech Source Raptor */
+#define		WSDISPLAY_TYPE_DL	58	/* DisplayLink DL-120/DL-160 */
 
 /* Basic display information.  Not applicable to all display types. */
 struct wsdisplay_fbinfo {
