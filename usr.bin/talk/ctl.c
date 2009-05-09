@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctl.c,v 1.8 2003/06/10 22:20:52 deraadt Exp $	*/
+/*	$OpenBSD: ctl.c,v 1.9 2004/03/02 21:04:42 tedu Exp $	*/
 /*	$NetBSD: ctl.c,v 1.3 1994/12/09 02:14:10 jtc Exp $	*/
 
 /*
@@ -34,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)ctl.c	8.1 (Berkeley) 6/6/93";
 #endif
-static const char rcsid[] = "$OpenBSD: ctl.c,v 1.8 2003/06/10 22:20:52 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ctl.c,v 1.9 2004/03/02 21:04:42 tedu Exp $";
 #endif /* not lint */
 
 /*
@@ -98,17 +98,4 @@ open_ctl(void)
 	if (getsockname(ctl_sockt,
 	    (struct sockaddr *)&ctl_addr, &length) == -1)
 		quit("Bad address for ctl socket", 1);
-}
-
-/* print_addr is a debug print routine */
-void
-print_addr(struct sockaddr_in addr)
-{
-	int i;
-
-	printf("addr = %s, port = %o, family = %o zero = ",
-		inet_ntoa(addr.sin_addr), addr.sin_port, addr.sin_family);
-	for (i = 0; i < 8; i++)
-		printf("%o ", (int)addr.sin_zero[i]);
-	putchar('\n');
 }
