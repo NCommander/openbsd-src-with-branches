@@ -640,7 +640,15 @@ parse_do_targets(Lst paths, int *op, const char *line)
 		if (*cp == '\0') {
 			/* Ending a dependency line without an operator is a
 			 * Bozo no-no */
-			Parse_Error(PARSE_FATAL, "Need an operator");
+			/* Deeper check for cvs conflicts */
+			if (gtargets.n > 0 &&
+			    (strcmp(gtargets.a[0]->name, "<<<<<<<") == 0 ||
+			    strcmp(gtargets.a[0]->name, ">>>>>>>") == 0)) {
+			    	Parse_Error(PARSE_FATAL, 
+    "Need an operator (likely from a cvs update conflict)");
+			} else {
+				Parse_Error(PARSE_FATAL, "Need an operator");
+			}
 			return NULL;
 		}
 		/*
