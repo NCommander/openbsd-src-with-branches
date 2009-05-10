@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: udl.h,v 1.1 2009/05/09 19:23:07 mglocker Exp $ */
 
 /*
  * Copyright (c) 2009 Marcus Glocker <mglocker@openbsd.org>
@@ -87,7 +87,9 @@ struct udl_softc {
 #define UDL_REG_ADDR_START8		0x26
 #define UDL_REG_ADDR_STRIDE8		0x29
 
-#define UDL_REG_BLANK_SCREEN		0x1f
+#define UDL_REG_SCREEN			0x1f
+ #define UDL_REG_SCREEN_ON		0x00
+ #define UDL_REG_SCREEN_OFF		0x01
 #define UDL_REG_SYNC			0xff
 
 /*
