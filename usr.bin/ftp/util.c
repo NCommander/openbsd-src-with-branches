@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.61 2009/04/27 22:51:51 martynas Exp $	*/
+/*	$OpenBSD: util.c,v 1.62 2009/05/05 19:35:30 martynas Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1997/08/18 10:20:27 lukem Exp $	*/
 
 /*-
@@ -308,7 +308,7 @@ tryagain:
 	}
 	if ((n != COMPLETE) ||
 	    (!aflag && acctname != NULL && command("ACCT %s", acctname) != COMPLETE)) {
-		warnx("Login failed.");
+		warnx("Login %s failed.", user);
 		if (retry || !anonftp)
 			return (0);
 		else
