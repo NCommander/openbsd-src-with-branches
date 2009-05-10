@@ -374,7 +374,7 @@ MakeStartJobs(void)
 {
 	GNode	*gn;
 
-	while (!Job_Full() && (gn = Array_Pop(&toBeMade)) != NULL) {
+	while (can_start_job() && (gn = Array_Pop(&toBeMade)) != NULL) {
 		if (try_to_make_node(gn))
 			return true;
 	}

@@ -273,7 +273,7 @@ Compat_Run(Lst targs)		/* List of target nodes to re-create */
 	GNode	  *gn = NULL;	/* Current root target */
 	int 	  errors;   	/* Number of targets not remade due to errors */
 
-	setup_engine();
+	setup_engine(0);
 	/* If the user has defined a .BEGIN target, execute the commands
 	 * attached to it.  */
 	if (!queryFlag) {

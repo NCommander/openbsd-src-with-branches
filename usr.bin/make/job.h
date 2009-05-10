@@ -48,7 +48,7 @@
 
 extern void Job_Make(GNode *);
 extern void Job_Init(int);
-extern bool Job_Full(void);
+extern bool can_start_job(void);
 extern bool Job_Empty(void);
 extern int Job_Finish(void);
 #ifdef CLEANUP
@@ -60,5 +60,6 @@ extern void Job_Wait(void);
 extern void Job_AbortAll(void);
 extern void print_errors(void);
 extern void handle_running_jobs(void);
+extern void parallel_handler(int);
 
 #endif /* _JOB_H_ */
