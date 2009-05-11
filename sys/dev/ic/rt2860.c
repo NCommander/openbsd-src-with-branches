@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2860.c,v 1.32 2009/01/26 19:18:52 damien Exp $	*/
+/*	$OpenBSD: rt2860.c,v 1.33 2009/03/29 21:53:52 sthen Exp $	*/
 
 /*-
  * Copyright (c) 2007, 2008
@@ -2101,7 +2101,7 @@ rt2860_set_macaddr(struct rt2860_softc *sc, const uint8_t *addr)
 	RAL_WRITE(sc, RT2860_MAC_ADDR_DW0,
 	    addr[0] | addr[1] << 8 | addr[2] << 16 | addr[3] << 24);
 	RAL_WRITE(sc, RT2860_MAC_ADDR_DW1,
-	    addr[4] | addr[5] << 8);
+	    addr[4] | addr[5] << 8 | 0xff << 16);
 }
 
 void
