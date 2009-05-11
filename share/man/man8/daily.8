@@ -219,6 +219,16 @@ Determines whether to run
 with the no-write flag.
 .It Ev ROOTBACKUP
 Determines whether to make a backup of the root file system.
+.It Ev VERBOSESTATUS
+If set to 0,
+.Xr df 1 ,
+.Xr dump 8 ,
+.Xr netstat 1 ,
+and
+.Xr ruptime 1
+are skipped.
+Consequently, if none of the other commands produce any output,
+no mail will be sent to root.
 .El
 .Pp
 The following variables can be set in
