@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.10 2009/04/12 01:35:01 krw Exp $
+#	$OpenBSD: install.md,v 1.11 2009/04/12 12:56:01 krw Exp $
 #
 # machine dependent section of installation/upgrade script.
 #
@@ -32,6 +32,14 @@ md_prep_disklabel() {
 			return
 		done
 	fi
+	cat <<__EOT
+You will now create a OpenBSD disklabel on the disk.  The disklabel defines
+how OpenBSD splits up the disk into OpenBSD partitions in which filesystems
+and swap space are created.  You must provide each filesystem's mountpoint
+in this program.
+
+__EOT
+
 	disklabel -f $_f -E $_disk
 }
 
