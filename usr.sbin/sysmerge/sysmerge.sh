@@ -1,6 +1,6 @@
 #!/bin/sh -
 #
-# $OpenBSD: sysmerge.sh,v 1.39 2009/04/28 08:25:27 ajacoutot Exp $
+# $OpenBSD: sysmerge.sh,v 1.40 2009/05/11 20:25:55 ajacoutot Exp $
 #
 # This script is based on the FreeBSD mergemaster script, written by
 # Douglas Barton <DougB@FreeBSD.org>
@@ -57,7 +57,7 @@ error_rm_wrkdir() {
 }
 
 usage() {
-	echo "usage: ${0##*/} [-ab] [-S etcXX.tgz] [-s src | etcXX.tgz] [-X xetcXX.tgz] [-x xetcXX.tgz]" >&2
+	echo "usage: ${0##*/} [-ab] [-s src | etcXX.tgz] [-x xetcXX.tgz]" >&2
 }
 
 trap "restore_bak; clean_src; rm -rf ${WRKDIR}; exit 1" 1 2 3 13 15
