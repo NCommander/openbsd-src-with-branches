@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.47 2007/10/16 20:19:27 sobrado Exp $	*/
+/*	$OpenBSD: mount.c,v 1.48 2007/11/17 17:18:32 krw Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)mount.c	8.19 (Berkeley) 4/19/94";
 #else
-static char rcsid[] = "$OpenBSD: mount.c,v 1.47 2007/10/16 20:19:27 sobrado Exp $";
+static char rcsid[] = "$OpenBSD: mount.c,v 1.48 2007/11/17 17:18:32 krw Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,9 +51,7 @@ static char rcsid[] = "$OpenBSD: mount.c,v 1.47 2007/10/16 20:19:27 sobrado Exp 
 
 #include <nfs/rpcv2.h>
 #include <nfs/nfsproto.h>
-#define _KERNEL
 #include <nfs/nfs.h>
-#undef _KERNEL
 
 #include <err.h>
 #include <errno.h>
