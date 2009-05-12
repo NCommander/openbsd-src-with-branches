@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vrreg.h,v 1.24 2009/05/10 12:23:56 sthen Exp $	*/
+/*	$OpenBSD: if_vrreg.h,v 1.25 2009/05/11 07:41:52 sthen Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -478,7 +478,6 @@ struct vr_softc {
 	struct timeout		sc_to;
 	bus_dmamap_t		sc_listmap;	/* descriptor list map */
 	bus_dma_segment_t	sc_listseg;
-	int			sc_if_flags;
 	int			sc_rxbufs;
 	int			vr_link;
 	int			vr_quirks;
