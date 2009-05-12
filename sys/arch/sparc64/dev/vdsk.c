@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsk.c,v 1.10 2009/02/20 17:55:28 kettenis Exp $	*/
+/*	$OpenBSD: vdsk.c,v 1.11 2009/05/10 12:59:12 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -53,7 +53,7 @@ struct vd_attr_info {
 	uint64_t		operations;
 	uint64_t		vdisk_size;
 	uint64_t		max_xfer_sz;
-	uint64_t		reserved2[2];
+	uint64_t		_reserved2[2];
 };
 
 #define VD_DISK_TYPE_SLICE	0x01
