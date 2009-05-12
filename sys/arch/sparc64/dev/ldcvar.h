@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldcvar.h,v 1.1 2009/01/10 17:13:28 kettenis Exp $	*/
+/*	$OpenBSD: ldcvar.h,v 1.2 2009/01/12 19:34:08 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -32,6 +32,9 @@ void	ldc_queue_free(bus_dma_tag_t, struct ldc_queue *);
 /*
  * LDC virtual link layer protocol.
  */
+
+#define LDC_VERSION_MAJOR	1
+#define LDC_VERSION_MINOR	0
 
 struct ldc_pkt {
 	uint8_t		type;
