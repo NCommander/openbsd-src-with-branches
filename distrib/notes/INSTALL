@@ -1,5 +1,6 @@
-dnl	$OpenBSD: INSTALL,v 1.41 2005/03/18 13:29:44 miod Exp $
+dnl	$OpenBSD: INSTALL,v 1.42 2008/08/05 22:53:51 miod Exp $
 include(INCLUDE/../m4.common)dnl
+includeit(features)dnl
 INSTALLATION NOTES for OpenBSD/MACHINE OSREV
 
 
