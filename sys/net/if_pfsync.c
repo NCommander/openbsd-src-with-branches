@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.120 2009/04/04 13:09:29 dlg Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.121 2009/04/15 05:11:49 david Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1901,9 +1901,11 @@ pfsync_update_state(struct pf_state *st)
 	case PFSYNC_S_INS:
 		/* we're already handling it */
 
-		st->sync_updates++;
-		if (st->sync_updates >= sc->sc_maxupdates)
-			sync = 1;
+		if (st->key[PF_SK_WIRE]->proto == IPPROTO_TCP) {
+			st->sync_updates++;
+			if (st->sync_updates >= sc->sc_maxupdates)
+				sync = 1;
+		}
 		break;
 
 	case PFSYNC_S_IACK:
