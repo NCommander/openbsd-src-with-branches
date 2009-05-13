@@ -1,4 +1,4 @@
-/* $OpenBSD: disksubr.c,v 1.37 2008/06/29 20:05:22 krw Exp $ */
+/* $OpenBSD: disksubr.c,v 1.38 2009/01/22 01:06:28 krw Exp $ */
 /* $NetBSD: disksubr.c,v 1.12 2002/02/19 17:09:44 wiz Exp $ */
 
 /*
@@ -113,6 +113,7 @@ readdisklabel(dev_t dev, void (*strat)(struct buf *),
 
 	if ((msg = initdisklabel(lp)))
 		goto done;
+	lp->d_flags |= D_VENDOR;
 
 	/* get a buffer and initialize it */
 	bp = geteblk((int)lp->d_secsize);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.78 2009/04/07 03:11:59 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.79 2009/04/10 06:32:47 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.16 1996/04/28 20:25:59 thorpej Exp $ */
 
 /*
@@ -76,6 +76,7 @@ readdisklabel(dev_t dev, void (*strat)(struct buf *),
 
 	if ((msg = initdisklabel(lp)))
 		goto done;
+	lp->d_flags |= D_VENDOR;
 
 	/*
 	 * On sparc64 we check for a CD label first, because our
