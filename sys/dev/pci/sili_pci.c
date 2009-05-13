@@ -1,4 +1,4 @@
-/*	$OpenBSD: sili_pci.c,v 1.8 2007/11/23 18:18:58 dlg Exp $ */
+/*	$OpenBSD: sili_pci.c,v 1.9 2008/11/23 12:46:51 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -68,6 +68,7 @@ static const struct sili_device sili_devices[] = {
 	{ PCI_VENDOR_CMDTECH,	PCI_PRODUCT_CMDTECH_3132, 2 },
 	{ PCI_VENDOR_CMDTECH,	PCI_PRODUCT_CMDTECH_3531, 1 },
 	{ PCI_VENDOR_CMDTECH,	PCI_PRODUCT_CMDTECH_AAR_1220SA, 2 },
+	{ PCI_VENDOR_CMDTECH,	PCI_PRODUCT_CMDTECH_AAR_1225SA, 2 },
 	{ PCI_VENDOR_INTEL,	PCI_PRODUCT_INTEL_3124, 4 }
 };
 
