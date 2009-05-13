@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2005/10/12 18:54:56 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.11 2007/02/04 13:17:35 millert Exp $
 
 .include <bsd.own.mk>
 
@@ -21,7 +21,8 @@ MDOCDIR=	${DESTDIR}${DOCDIR}/html/milter
 SRCS=		main.c engine.c listener.c worker.c handler.c comm.c smfi.c \
 		signal.c sm_gethost.c monitor.c errstring.c strl.c
 CPPFLAGS+=	-D_FFR_MILTER_ROOT_UNSAFE -ULDAPMAP -pthread \
-		-Dsm_snprintf=snprintf
+		-Dsm_snprintf=snprintf \
+		-DSM_CONF_POLL
 .PATH:		${.CURDIR}/../libsm
 
 includes:
