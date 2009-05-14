@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.557 2009/04/25 19:29:54 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.558 2009/04/26 12:30:20 sthen Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -5651,7 +5651,7 @@ parse_config(char *filename, struct pfctl *xpf)
 	returnicmp6default =
 	    (ICMP6_DST_UNREACH << 8) | ICMP6_DST_UNREACH_NOPORT;
 	blockpolicy = PFRULE_DROP;
-	require_order = 1;
+	require_order = 0;
 
 	if ((file = pushfile(filename, 0)) == NULL) {
 		warn("cannot open the main config file!");
