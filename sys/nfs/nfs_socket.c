@@ -316,7 +316,7 @@ nfs_reconnect(rep)
 	while ((error = nfs_connect(nmp, rep)) != 0) {
 		if (error == EINTR || error == ERESTART)
 			return (EINTR);
-		(void) tsleep((caddr_t)&lbolt, PSOCK, "nfscon", 0);
+		(void) tsleep((caddr_t)&lbolt, PSOCK, "nfsrecon", 0);
 	}
 
 	/*
