@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2008/07/02 01:11:11 deraadt Exp $
+# $OpenBSD: Makefile,v 1.7 2008/07/02 02:26:26 deraadt Exp $
 
 NOPROG=
 NOMAN=
@@ -12,7 +12,7 @@ CC=${HOSTCC}
     (${MACHINE} == "sparc64") || (${MACHINE} == "zaurus") || \
     (${MACHINE} == "landisk")
 
-FIRM=	rum-rt2573 run-rt2870
+FIRM=	rum-rt2573 run-rt2870 run-rt3071
 
 PROG=	build
 
