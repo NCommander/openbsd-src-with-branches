@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2009/04/17 03:58:54 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.7 2009/05/14 18:58:16 miod Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -13,7 +13,8 @@ all: ${CDROM}
 ${CDROM}:
 	-rm -rf ${.OBJDIR}/cd-dir
 	mkdir -p ${.OBJDIR}/cd-dir/
-	cp ${DESTDIR}/usr/mdec/boot-IP32 ${.OBJDIR}/boot-IP32
+	cp ${DESTDIR}/usr/mdec/boot32 ${.OBJDIR}/boot32
+	cp ${DESTDIR}/usr/mdec/boot64 ${.OBJDIR}/boot64
 	gzip -9f < ${.OBJDIR}/../ramdisk/${BSDRD} > ${.OBJDIR}/bsd
 	dd if=/dev/zero of=${.OBJDIR}/${FFS} bs=1m count=8
 	vnconfig -v -c svnd0 ${.OBJDIR}/${FFS}
