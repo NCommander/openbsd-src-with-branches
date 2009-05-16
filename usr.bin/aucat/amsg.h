@@ -1,4 +1,4 @@
-/*	$OpenBSD: amsg.h,v 1.5 2009/02/13 20:48:49 ratchov Exp $	*/
+/*	$OpenBSD: amsg.h,v 1.6 2009/05/16 11:15:26 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -43,7 +43,7 @@ struct amsg {
 	uint32_t __pad;
 	union {
 		struct amsg_par {
-			uint8_t mode;		/* AMSG_PLAY or AMSG_REC */
+			uint8_t legacy_mode;	/* compat for old libs */
 #define AMSG_IGNORE	0			/* loose sync */
 #define AMSG_SYNC	1			/* resync after xrun */
 #define AMSG_ERROR	2			/* kill the stream */
