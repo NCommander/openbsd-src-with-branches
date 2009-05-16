@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# $Id$
 
 # A test to make sure the new Test::Harness was installed properly.
 
@@ -8,7 +9,7 @@ plan tests => 1;
 my $TH_Version = 2.03;
 
 require Test::Harness;
-unless( cmp_ok( $Test::Harness::VERSION, '>', $TH_Version, "T::H version" ) ) {
+unless( cmp_ok( eval $Test::Harness::VERSION, '>=', $TH_Version, "T::H version" ) ) {
     diag <<INSTRUCTIONS;
 
 Test::Simple/More/Builder has features which depend on a version of
