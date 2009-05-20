@@ -46,6 +46,7 @@ _ripd: /dev/null
 _rstatd: /dev/null
 _rtadvd: /dev/null
 _rusersd: /dev/null
+_rwalld: /dev/null
 _smtpd: /dev/null
 _snmpd: /dev/null
 _spamd: /dev/null
