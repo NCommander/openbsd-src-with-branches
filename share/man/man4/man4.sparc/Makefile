@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.41 2004/09/28 19:35:48 jason Exp $
+#	$OpenBSD: Makefile,v 1.42 2005/03/09 18:58:52 miod Exp $
 #	from: @(#)Makefile	8.2 (Berkeley) 2/16/94
 
 MAN=	agten.4 audioamd.4 audiocs.4 autoconf.4 auxreg.4 be.4 bpp.4 bwtwo.4 \
@@ -12,7 +12,7 @@ MLINKS=	clock.4 oclock.4 \
 	le.4 lebuffer.4 le.4 ledma.4 \
 	mem.4 kmem.4 \
 	pninek.4 btcham.4 \
-	zs.4 zskbd.4 zs.4 zstty.4
+	zs.4 zskbd.4 zs.4 zsms.4 zs.4 zstty.4
 
 MANSUBDIR=sparc
 
