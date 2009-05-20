@@ -166,10 +166,7 @@ main(int argc, char *argv[])
 	/* runs as _identd if possible, fallback to "nobody" */
 	if (getuid() == 0) {
 		if ((pwd = getpwnam(DEFAULT_UID)) == NULL)
-			pwd = getpwnam("nobody");
-		if (pwd == NULL)
-			error("no such user: neither %s nor nobody",
-			    DEFAULT_UID);
+			error("no such user %s", DEFAULT_UID);
 		set_uid = pwd->pw_uid;
 		set_gid = pwd->pw_gid;
 	}

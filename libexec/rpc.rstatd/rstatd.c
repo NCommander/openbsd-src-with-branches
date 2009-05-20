@@ -77,9 +77,10 @@ main(int argc, char *argv[])
 
 	openlog("rpc.rstatd", LOG_NDELAY|LOG_CONS|LOG_PID, LOG_DAEMON);
 
-	pw = getpwnam("_rstatd");
-	if (!pw)
-		pw = getpwnam("nobody");
+	if ((pw = getpwnam("_rstatd")) == NULL) {
+		syslog(LOG_ERR, "no such user _rstatd");
+		exit(1);
+	}
 	if (chroot("/var/empty") == -1) {
 		syslog(LOG_ERR, "cannot chdir to /var/empty.");
 		exit(1);

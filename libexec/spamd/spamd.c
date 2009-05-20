@@ -1228,9 +1228,8 @@ main(int argc, char *argv[])
 			err(1, "sync init");
 	}
 
-	pw = getpwnam("_spamd");
-	if (!pw)
-		pw = getpwnam("nobody");
+	if ((pw = getpwnam("_spamd")) == NULL)
+		errx(1, "no such user _spamd");
 
 	if (debug == 0) {
 		if (daemon(1, 1) == -1)

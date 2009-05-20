@@ -349,11 +349,8 @@ main(int argc, char *argv[])
 	if ((nullfd = open(_PATH_DEVNULL, O_RDWR, 0)) == -1)
 		error("cannot open %s: %m", _PATH_DEVNULL);
 
-	if ((pw = getpwnam("_dhcp")) == NULL) {
-		warning("no such user: _dhcp, falling back to \"nobody\"");
-		if ((pw = getpwnam("nobody")) == NULL)
-			error("no such user: nobody");
-	}
+	if ((pw = getpwnam("_dhcp")) == NULL)
+			error("no such user: _dhcp");
 
 	if (pipe(pipe_fd) == -1)
 		error("pipe");

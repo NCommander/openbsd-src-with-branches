@@ -243,13 +243,16 @@ main(int argc, char *argv[])
 	pml->pml_next = pmaplist;
 	pmaplist = pml;
 
-	pw = getpwnam("_portmap");
-	if (!pw)
-		pw = getpwnam("nobody");
+
+	if ((pw = getpwnam("_portmap")) == NULL) {
+		syslog(LOG_ERR, "no such user _portmap");
+		exit(1);
+	}
 	if (chroot("/var/empty") == -1) {
 		syslog(LOG_ERR, "cannot chdir to /var/empty.");
 		exit(1);
 	}
+
 	chdir("/");
 	if (pw) {
 		if (setgroups(1, &pw->pw_gid) == -1 ||

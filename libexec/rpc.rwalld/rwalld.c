@@ -72,20 +72,17 @@ main(int argc, char *argv[])
 	struct sockaddr_storage from;
 	SVCXPRT *transp;
 
-	if (geteuid() == 0) {
-		struct passwd *pw = getpwnam("nobody");
-
-		if (pw) {
-			setgroups(1, &pw->pw_gid);
-			setegid(pw->pw_gid);
-			setgid(pw->pw_gid);
-			seteuid(pw->pw_uid);
-			setuid(pw->pw_uid);
-		} else {
-			seteuid(getuid());
-			setuid(getuid());
-		}
+	struct passwd *pw = getpwnam("_rwalld");
+	if (pw == NULL) {
+		syslog(LOG_ERR, "no such user _rwalld");
+		exit(1);
 	}
+
+	setgroups(1, &pw->pw_gid);
+	setegid(pw->pw_gid);
+	setgid(pw->pw_gid);
+	seteuid(pw->pw_uid);
+	setuid(pw->pw_uid);
 
 	/*
 	 * See if inetd started us
