@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.12 2008/02/20 18:46:20 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.16 2008/09/17 01:30:58 jsing Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -88,5 +88,7 @@ void	enaddr_aton(const char *, u_int8_t *);
 void	ip27_setup(void);
 void	ip30_setup(void);
 void	ip32_setup(void);
+
+extern char osloadpartition[256];
 
 #endif /* _MACHINE_AUTOCONF_H_ */
