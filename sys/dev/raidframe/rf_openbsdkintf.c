@@ -1,4 +1,4 @@
-/* $OpenBSD: rf_openbsdkintf.c,v 1.49 2008/06/26 05:42:17 ray Exp $	*/
+/* $OpenBSD: rf_openbsdkintf.c,v 1.50 2008/07/23 16:24:43 beck Exp $	*/
 /* $NetBSD: rf_netbsdkintf.c,v 1.109 2001/07/27 03:30:07 oster Exp $	*/
 
 /*-
@@ -2090,7 +2090,7 @@ raidgetdefaultlabel(RF_Raid_t *raidPtr, struct raid_softc *rs,
 	DL_SETPOFFSET(&lp->d_partitions[RAW_PART], 0);
 	DL_SETPSIZE(&lp->d_partitions[RAW_PART], raidPtr->totalSectors);
 	lp->d_partitions[RAW_PART].p_fstype = FS_UNUSED;
-	lp->d_npartitions = RAW_PART + 1;
+	lp->d_npartitions = MAXPARTITIONS;
 
 	lp->d_magic = DISKMAGIC;
 	lp->d_magic2 = DISKMAGIC;

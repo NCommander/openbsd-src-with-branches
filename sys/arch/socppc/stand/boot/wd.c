@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.1 2008/05/10 20:06:27 kettenis Exp $	*/
+/*	$OpenBSD: wd.c,v 1.2 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: wd.c,v 1.5 2005/12/11 12:17:06 christos Exp $	*/
 
 /*-
@@ -154,7 +154,7 @@ wdgetdefaultlabel(wd, lp)
 	lp->d_partitions[RAW_PART].p_offset = 0;
 	lp->d_partitions[RAW_PART].p_size = lp->d_secperunit;
 	lp->d_partitions[RAW_PART].p_fstype = FS_UNUSED;
-	lp->d_npartitions = MAXPARTITIONS;	/* RAW_PART + 1 ??? */
+	lp->d_npartitions = MAXPARTITIONS;
 
 	lp->d_magic = DISKMAGIC;
 	lp->d_magic2 = DISKMAGIC;
