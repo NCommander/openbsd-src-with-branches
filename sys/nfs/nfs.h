@@ -107,14 +107,6 @@
 #define	B_INVAFTERWRITE	B_INVAL
 
 /*
- * The IO_METASYNC flag should be implemented for local file systems.
- * (Until then, it is nothin at all.)
- */
-#ifndef IO_METASYNC
-#define IO_METASYNC	0
-#endif
-
-/*
  * Structures for the nfssvc(2) syscall. Not that anyone but nfsd and mount_nfs
  * should ever try and use it.
  */
