@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.107 2009/05/17 12:25:15 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.108 2009/05/17 14:45:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -273,6 +273,7 @@ struct rib {
 	LIST_HEAD(, rib_context)	ctxts;
 	enum rib_state		state;
 	u_int16_t		id;
+	u_char			noevaluate;
 };
 
 struct prefix {
