@@ -1,4 +1,4 @@
-/*	$OpenBSD: mach.c,v 1.9 2008/03/20 12:02:27 millert Exp $	*/
+/*	$OpenBSD: mach.c,v 1.10 2008/03/26 20:12:59 millert Exp $	*/
 /*	$NetBSD: mach.c,v 1.5 1995/04/28 22:28:48 mycroft Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 #if 0
 static char sccsid[] = "@(#)mach.c	8.1 (Berkeley) 6/11/93";
 #else
-static char rcsid[] = "$OpenBSD: mach.c,v 1.9 2008/03/20 12:02:27 millert Exp $";
+static char rcsid[] = "$OpenBSD: mach.c,v 1.10 2008/03/26 20:12:59 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -174,11 +174,11 @@ results(void)
 	denom2 = tnpwords + tnmwords;
  
 	move(SCORE_LINE, SCORE_COL);
-	printw("Score: %d out of %d\n", npwords, nmwords);
+	printw("Score: %d out of %d\n", npwords, denom1);
 	move(SCORE_LINE + 1, SCORE_COL);
 	printw("Percentage: %0.2f%% (%0.2f%% over %d game%s)\n",
-	denom1 ? (100.0 * npwords) / (double) (npwords + nmwords) : 0.0,
-	denom2 ? (100.0 * tnpwords) / (double) (tnpwords + tnmwords) : 0.0,
+	denom1 ? (100.0 * npwords)  / (double) denom1 : 0.0,
+	denom2 ? (100.0 * tnpwords) / (double) denom2 : 0.0,
 	ngames, ngames > 1 ? "s" : "");
 	move(TIMER_LINE, TIMER_COL);
 	wclrtoeol(stdscr);
