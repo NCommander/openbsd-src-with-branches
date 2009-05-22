@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.7 2007/10/18 04:32:27 miod Exp $ */
+/*	$OpenBSD: locore.S,v 1.8 2008/03/30 20:14:14 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -29,7 +29,6 @@
 #include <sys/syscall.h>
 
 #include <machine/param.h>
-#include <machine/psl.h>
 #include <machine/asm.h>
 #include <machine/cpu.h>
 #include <machine/regnum.h>

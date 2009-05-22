@@ -1,4 +1,4 @@
-/*      $OpenBSD: param.h,v 1.18 2008/05/04 09:57:47 martin Exp $ */
+/*      $OpenBSD: param.h,v 1.19 2009/05/06 20:02:44 miod Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -41,11 +41,7 @@
 #define _MIPS_PARAM_H_
 
 #ifdef _KERNEL
-#ifdef _LOCORE
-#include <machine/psl.h>
-#else
 #include <machine/cpu.h>
-#endif
 #endif
 
 /*

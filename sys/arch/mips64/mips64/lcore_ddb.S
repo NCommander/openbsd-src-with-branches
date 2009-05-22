@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcore_ddb.S,v 1.7 2004/09/27 19:16:06 pefo Exp $ */
+/*	$OpenBSD: lcore_ddb.S,v 1.8 2005/12/20 07:06:26 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -29,7 +29,6 @@
 #include <sys/syscall.h>
 
 #include <machine/param.h>
-#include <machine/psl.h>
 #include <machine/asm.h>
 #include <machine/cpu.h>
 #include <machine/regnum.h>
