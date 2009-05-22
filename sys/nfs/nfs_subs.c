@@ -64,7 +64,6 @@
 #include <nfs/xdr_subs.h>
 #include <nfs/nfsm_subs.h>
 #include <nfs/nfsmount.h>
-#include <nfs/nfsrtt.h>
 #include <nfs/nfs_var.h>
 
 #include <miscfs/specfs/specdev.h>
@@ -514,8 +513,6 @@ static short *nfsrv_v3errmap[] = {
 	nfsv3err_commit,
 };
 
-extern struct nfsrtt nfsrtt;
-
 struct pool nfsreqpl;
 
 /*
@@ -913,7 +910,6 @@ nfs_init()
 {
 	static struct timeout nfs_timer_to;
 
-	nfsrtt.pos = 0;
 	rpc_vers = txdr_unsigned(RPC_VER2);
 	rpc_call = txdr_unsigned(RPC_CALL);
 	rpc_reply = txdr_unsigned(RPC_REPLY);

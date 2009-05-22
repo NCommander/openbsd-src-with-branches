@@ -345,7 +345,6 @@ struct nfsrv_descript {
 	int			nd_len;		/* Length of this write */
 	int			nd_repstat;	/* Reply status */
 	u_int32_t		nd_retxid;	/* Reply xid */
-	struct timeval		nd_starttime;	/* Time RPC initiated */
 	fhandle_t		nd_fh;		/* File handle */
 	struct ucred		nd_cr;		/* Credentials */
 };
