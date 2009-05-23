@@ -1,4 +1,4 @@
-/*	$OpenBSD: safereg.h,v 1.3 2003/08/14 18:53:36 jason Exp $	*/
+/*	$OpenBSD: safereg.h,v 1.4 2003/08/20 16:28:35 jason Exp $	*/
 
 /*-
  * Copyright (c) 2003 Sam Leffler, Errno Consulting
@@ -37,11 +37,6 @@
  */
 
 #define SAFE_BAR		0x10	/* DMA base address register */
-
-#define	PCI_VENDOR_SAFENET	0x16ae		/* SafeNet, Inc. */
-
-/* SafeNet */
-#define	PCI_PRODUCT_SAFEXCEL	0x1141		/* 1141 */
 
 #define	SAFE_PE_CSR		0x0000	/* Packet Enginge Ctrl/Status */
 #define	SAFE_PE_SRC		0x0004	/* Packet Engine Source */
