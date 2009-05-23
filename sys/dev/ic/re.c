@@ -1,4 +1,4 @@
-/*	$OpenBSD: re.c,v 1.103 2008/11/30 06:01:45 brad Exp $	*/
+/*	$OpenBSD: re.c,v 1.104 2009/02/12 11:55:29 martynas Exp $	*/
 /*	$FreeBSD: if_re.c,v 1.31 2004/09/04 07:54:05 ru Exp $	*/
 /*
  * Copyright (c) 1997, 1998-2003
@@ -2293,7 +2293,7 @@ re_config_imtype(struct rl_softc *sc, int imtype)
 	switch (imtype) {
 	case RL_IMTYPE_HW:
 		KASSERT(sc->rl_flags & RL_FLAG_HWIM);
-		/* FALL THROUGH */
+		/* FALLTHROUGH */
 	case RL_IMTYPE_NONE:
 		sc->rl_intrs = RL_INTRS_CPLUS;
 		sc->rl_rx_ack = RL_ISR_RX_OK | RL_ISR_FIFO_OFLOW |
