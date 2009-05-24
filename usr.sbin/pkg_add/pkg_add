@@ -509,12 +509,18 @@ sub find_truelocations
 		    	print "Can't resolve $pkgname\n";
 			$bad = 1;
 		    } elsif (@$l > 1) {
-		    	my %h = map {($_->name, $_)} @$l;
-			$h{'<None>'} = undef;
-		    	my $result = OpenBSD::Interactive::ask_list("Ambiguous choose package for $pkgname", $state->{interactive}, sort keys %h);
-			if (defined $h{$result}) {
-				push(@$new, OpenBSD::UpdateSet->from_location($h{$result}));
+			my %h = map {($_->name, $_)} @$l;
+		    	if ($state->{interactive}) {
+				$h{'<None>'} = undef;
+				my $result = OpenBSD::Interactive::ask_list("Ambiguous: choose package for $pkgname", $state->{interactive}, sort keys %h);
+				if (defined $h{$result}) {
+					push(@$new, OpenBSD::UpdateSet->from_location($h{$result}));
+				} else {
+					$bad = 1;
+				}
 			} else {
+				print "Ambiguous: $pkgname could be ", 
+				    join(' ', keys %h), "\n";
 				$bad = 1;
 			}
 		    } else {
