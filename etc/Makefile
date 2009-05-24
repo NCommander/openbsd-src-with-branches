@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.276 2009/05/09 16:29:54 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.277 2009/05/15 16:26:53 deraadt Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -74,7 +74,7 @@ distribution-etc-root-var: distrib-dirs
 	    chmod 644 ${DESTDIR}/etc/login.conf
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 664 ${BIN2} ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 hosts.equiv ${DESTDIR}/etc
-	${INSTALL} -c -o root -g wheel -m 600 crontab ${DESTDIR}/var/cron/tabs/root
+	${INSTALL} -c -o root -g crontab -m 600 crontab ${DESTDIR}/var/cron/tabs/root
 	${INSTALL} -c -o root -g wheel -m 600 master.passwd ${DESTDIR}/etc
 	pwd_mkdb -p -d ${DESTDIR}/etc /etc/master.passwd
 	${INSTALL} -c -o root -g wheel -m 600 bgpd.conf ${DESTDIR}/etc
