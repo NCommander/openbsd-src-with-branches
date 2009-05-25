@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.294 2009/01/22 09:49:57 djm Exp $ */
+/* $OpenBSD: channels.c,v 1.295 2009/02/12 03:00:56 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2409,7 +2409,7 @@ channel_input_status_confirm(int type, u_int32_t seq, void *ctxt)
 	int id;
 
 	/* Reset keepalive timeout */
-	keep_alive_timeouts = 0;
+	packet_set_alive_timeouts(0);
 
 	id = packet_get_int();
 	packet_check_eom();
