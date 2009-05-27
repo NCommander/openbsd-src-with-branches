@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.211 2008/07/01 07:24:22 dtucker Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.212 2008/10/14 18:11:33 stevesk Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -404,7 +404,7 @@ ssh_connect(const char *host, struct sockaddr_storage * hostaddr,
  * Waits for the server identification string, and sends our own
  * identification string.
  */
-static void
+void
 ssh_exchange_identification(int timeout_ms)
 {
 	char buf[256], remote_version[256];	/* must be same size! */
