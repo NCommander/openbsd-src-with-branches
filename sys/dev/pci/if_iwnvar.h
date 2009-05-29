@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwnvar.h,v 1.10 2009/05/12 19:10:57 damien Exp $	*/
+/*	$OpenBSD: if_iwnvar.h,v 1.11 2009/05/20 16:31:50 damien Exp $	*/
 
 /*-
  * Copyright (c) 2007, 2008
@@ -180,6 +180,7 @@ struct iwn_hal {
 #endif
 	const struct	iwn_sensitivity_limits *limits;
 	int		ntxqs;
+	int		ndmachnls;
 	uint8_t		broadcast_id;
 	int		rxonsz;
 	int		schedsz;
