@@ -1236,13 +1236,8 @@ install_url() {
 
 	install_files "$_url_base" "$_file_list"
 
-	# Tell the FTP server what location we used... so it can perform magic
-	if [[ -s $SERVERLIST ]]; then
-		eval _url_base=$_url_type://\$_${_url_type}_server_ip/\$_${_url_type}_server_dir
-		ftp $FTPOPTS -a -o - \
-			"http://129.128.5.191/cgi-bin/ftpinstall.cgi?install=$_url_base" \
-			>/dev/null 2>&1 &
-	fi
+	# Remember where we installed from
+	eval installedfrom=$_url_type://\$_${_url_type}_server_ip/\$_${_url_type}_server_dir
 }
 
 install_mounted_fs() {
