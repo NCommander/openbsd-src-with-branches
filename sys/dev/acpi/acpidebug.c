@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidebug.c,v 1.21 2008/06/06 20:10:21 marco Exp $ */
+/* $OpenBSD: acpidebug.c,v 1.22 2008/06/12 20:36:50 jordan Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@openbsd.org>
  *
@@ -100,7 +100,7 @@ db_aml_showvalue(struct aml_value *value)
 	if (value->node)
 		db_printf("[%s] ", aml_nodename(value->node));
 
-	switch (value->type & ~AML_STATIC) {
+	switch (value->type) {
 	case AML_OBJTYPE_OBJREF:
 		db_printf("refof: %x {\n", value->v_objref.index);
 		db_aml_showvalue(value->v_objref.ref);
@@ -110,8 +110,7 @@ db_aml_showvalue(struct aml_value *value)
 		db_printf("nameref: %s\n", value->v_nameref);
 		break;
 	case AML_OBJTYPE_INTEGER:
-		db_printf("integer: %llx %s\n", value->v_integer,
-		    (value->type & AML_STATIC) ? "(static)" : "");
+		db_printf("integer: %llx\n", value->v_integer);
 		break;
 	case AML_OBJTYPE_STRING:
 		db_printf("string: %s\n", value->v_string);
@@ -194,8 +193,6 @@ db_aml_objtype(struct aml_value *val)
 		return "nil";
 
 	switch (val->type) {
-	case AML_OBJTYPE_INTEGER+AML_STATIC:
-		return "staticint";
 	case AML_OBJTYPE_INTEGER:
 		return "integer";
 	case AML_OBJTYPE_STRING:
