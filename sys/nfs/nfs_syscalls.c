@@ -106,9 +106,6 @@ int (*nfsrv3_procs[NFS_NPROCS])(struct nfsrv_descript *,
 	nfsrv_fsinfo,
 	nfsrv_pathconf,
 	nfsrv_commit,
-	nfsrv_noop,
-	nfsrv_noop,
-	nfsrv_noop,
 	nfsrv_noop
 };
 #endif

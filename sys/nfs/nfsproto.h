@@ -169,9 +169,8 @@
 #define	NFSPROC_FSINFO		19
 #define	NFSPROC_PATHCONF	20
 #define	NFSPROC_COMMIT		21
-
-#define NFSPROC_NOOP		25
-#define	NFS_NPROCS		26
+#define NFSPROC_NOOP		22
+#define	NFS_NPROCS		23
 
 /* Actual Version 2 procedure numbers */
 #define	NFSV2PROC_NULL		0

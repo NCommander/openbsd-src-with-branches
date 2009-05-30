@@ -76,8 +76,7 @@ u_long nfsrvhash;
 int nonidempotent[NFS_NPROCS] = {
 	0, 0, 1, 0, 0, 0, 0, 1,
 	1, 1, 1, 1, 1, 1, 1, 1,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0
+	0, 0, 0, 0, 0, 0, 0
 };
 
 /* True iff the rpc reply is an nfs status ONLY! */

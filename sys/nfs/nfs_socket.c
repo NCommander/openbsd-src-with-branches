@@ -107,7 +107,6 @@ extern int nfs_ticks;
  */
 static int proct[NFS_NPROCS] = {
 	0, 1, 0, 2, 1, 3, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0,
-	0, 0, 0,
 };
 
 /*
