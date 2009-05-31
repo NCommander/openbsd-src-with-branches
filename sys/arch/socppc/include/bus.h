@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.1 2008/05/10 12:02:21 kettenis Exp $	*/
+/*	$OpenBSD: bus.h,v 1.2 2009/04/20 00:42:06 oga Exp $	*/
 
 /*
  * Copyright (c) 1997 Per Fogelstrom.  All rights reserved.
@@ -454,7 +454,6 @@ bus_space_copy_4(void *v, bus_space_handle_t h1, bus_space_handle_t h2,
 #define	BUS_DMA_WAITOK		0x000	/* safe to sleep (pseudo-flag) */
 #define	BUS_DMA_NOWAIT		0x001	/* not safe to sleep */
 #define	BUS_DMA_ALLOCNOW	0x002	/* perform resource allocation now */
-#define	BUS_DMAMEM_NOSYNC	0x004
 #define	BUS_DMA_COHERENT	0x008	/* hint: map memory DMA coherent */
 #define	BUS_DMA_BUS1		0x010	/* placeholders for bus functions... */
 #define	BUS_DMA_BUS2		0x020
