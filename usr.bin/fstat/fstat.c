@@ -63,12 +63,10 @@ static char *rcsid = "$OpenBSD: fstat.c,v 1.61 2008/04/08 14:46:45 thib Exp $";
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #undef _KERNEL
-#define NFS
 #include <nfs/nfsproto.h>
 #include <nfs/rpcv2.h>
 #include <nfs/nfs.h>
 #include <nfs/nfsnode.h>
-#undef NFS
 
 #include <xfs/xfs_config.h>
 #include <xfs/xfs_node.h>

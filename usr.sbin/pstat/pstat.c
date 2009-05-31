@@ -53,9 +53,7 @@ static char *rcsid = "$OpenBSD: pstat.c,v 1.75 2008/10/07 02:28:33 deraadt Exp $
 #include <sys/file.h>
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
-#define NFS
 #include <sys/mount.h>
-#undef NFS
 #undef _KERNEL
 #include <sys/stat.h>
 #include <nfs/nfsproto.h>
