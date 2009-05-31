@@ -1,4 +1,4 @@
-# $OpenBSD: list.local,v 1.12 2009/04/17 03:55:20 deraadt Exp $
+# $OpenBSD: list.local,v 1.13 2009/05/15 16:15:46 damien Exp $
 
 # add local links; use bin/sh since instbin has already been unlinked
 LINK	instbin					bin/sha256
@@ -29,3 +29,4 @@ SCRIPT	${DESTDIR}/sbin/dhclient-script 	sbin/dhclient-script
 SPECIAL chmod 755 sbin/dhclient-script
 
 HASH	var/hash
+TZ
