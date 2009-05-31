@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_altq.h,v 1.10 2005/10/17 08:43:35 henning Exp $	*/
+/*	$OpenBSD: if_altq.h,v 1.11 2007/11/18 12:51:48 mpf Exp $	*/
 /*	$KAME: if_altq.h,v 1.6 2001/01/29 19:59:09 itojun Exp $	*/
 
 /*
@@ -28,12 +28,6 @@
  */
 #ifndef _ALTQ_IF_ALTQ_H_
 #define	_ALTQ_IF_ALTQ_H_
-
-#ifdef KERNEL
-#ifndef _KERNEL
-#define	_KERNEL
-#endif
-#endif
 
 struct altq_pktattr; struct tb_regulator; struct top_cdnr;
 
