@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.12 2009/03/28 15:38:58 michele Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.13 2009/05/31 17:00:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -361,7 +361,6 @@ main_dispatch_ospfe(int fd, short event, void *bula)
 	if (event & EV_WRITE) {
 		if (msgbuf_write(&ibuf->w) == -1)
 			fatal("msgbuf_write");
-		imsg_event_add(ibuf);
 	}
 
 	for (;;) {
@@ -428,7 +427,6 @@ main_dispatch_rde(int fd, short event, void *bula)
 	if (event & EV_WRITE) {
 		if (msgbuf_write(&ibuf->w) == -1)
 			fatal("msgbuf_write");
-		imsg_event_add(ibuf);
 	}
 
 	for (;;) {

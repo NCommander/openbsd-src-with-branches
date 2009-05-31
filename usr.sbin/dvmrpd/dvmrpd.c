@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpd.c,v 1.6 2008/05/12 19:15:02 pyr Exp $ */
+/*	$OpenBSD: dvmrpd.c,v 1.7 2009/05/31 17:13:04 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -363,7 +363,6 @@ main_dispatch_dvmrpe(int fd, short event, void *bula)
 	if (event & EV_WRITE) {
 		if (msgbuf_write(&ibuf->w) == -1)
 			fatal("msgbuf_write");
-		imsg_event_add(ibuf);
 	}
 
 	for (;;) {
@@ -411,7 +410,6 @@ main_dispatch_rde(int fd, short event, void *bula)
 	if (event & EV_WRITE) {
 		if (msgbuf_write(&ibuf->w) == -1)
 			fatal("msgbuf_write");
-		imsg_event_add(ibuf);
 	}
 
 	for (;;) {

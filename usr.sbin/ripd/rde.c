@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.9 2007/10/24 20:38:03 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.10 2009/05/31 17:06:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -196,7 +196,6 @@ rde_dispatch_imsg(int fd, short event, void *bula)
 	if (event & EV_WRITE) {
 		if (msgbuf_write(&ibuf->w) == -1)
 			fatal("msgbuf_write");
-		imsg_event_add(ibuf);
 	}
 
 	for (;;) {
@@ -291,7 +290,6 @@ rde_dispatch_parent(int fd, short event, void *bula)
 	if (event & EV_WRITE) {
 		if (msgbuf_write(&ibuf->w) == -1)
 			fatal("msgbuf_write");
-		imsg_event_add(ibuf);
 	}
 
 	for (;;) {
