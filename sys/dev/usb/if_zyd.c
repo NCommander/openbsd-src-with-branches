@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.72 2008/10/15 19:12:18 blambert Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.73 2009/03/27 11:40:56 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -127,6 +127,7 @@ static const struct zyd_type {
 	ZYD_ZD1211B_DEV(BELKIN,		F5D7050C),
 	ZYD_ZD1211B_DEV(BELKIN,		ZD1211B),
 	ZYD_ZD1211B_DEV(CISCOLINKSYS,	WUSBF54G),
+	ZYD_ZD1211B_DEV(CYBERTAN,	ZD1211B),
 	ZYD_ZD1211B_DEV(FIBERLINE,	WL430U),
 	ZYD_ZD1211B_DEV(MELCO,		KG54L),
 	ZYD_ZD1211B_DEV(PHILIPS,	SNU5600),
