@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpd.c,v 1.7 2009/05/31 17:13:04 claudio Exp $ */
+/*	$OpenBSD: dvmrpd.c,v 1.8 2009/05/31 20:31:35 jacekm Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -193,8 +193,6 @@ main(int argc, char *argv[])
 	/* check for dvmrpd user */
 	if (getpwnam(DVMRPD_USER) == NULL)
 		errx(1, "unknown user %s", DVMRPD_USER);
-
-	endpwent();
 
 	/* start logging */
 	log_init(1);

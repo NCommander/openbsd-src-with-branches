@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.17 2009/05/31 17:13:04 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.18 2009/05/31 20:31:35 jacekm Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -103,8 +103,6 @@ rde(struct dvmrpd_conf *xconf, int pipe_parent2rde[2], int pipe_dvmrpe2rde[2],
 	    setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) ||
 	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 		fatal("can't drop privileges");
-
-	endpwent();
 
 	event_init();
 
