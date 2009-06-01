@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.71 2008/12/01 23:48:47 todd Exp $
+#	$OpenBSD: GENERIC,v 1.72 2009/02/10 18:35:44 damien Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -215,6 +215,10 @@ sbt*	at sdmmc?			# SDIO Bluetooth
 bthub*	at sbt?
 ubt*	at uhub?			# USB Bluetooth
 bthub*	at ubt?
+
+# USB Video
+uvideo* at uhub?
+video*  at uvideo?
 
 bthidev* at bthub?			# Bluetooth HID support
 btkbd*	at bthidev?
