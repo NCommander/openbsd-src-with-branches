@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.41 2009/05/30 21:57:17 krw Exp $
+#	$OpenBSD: install.md,v 1.42 2009/05/31 17:49:53 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -170,7 +170,7 @@ __EOT
 	if [[ $_disk == $ROOTDISK ]]; then
 		while :; do
 			echo "The auto-allocated layout for $_disk is:"
-			disklabel -A $_disk | egrep "^#  |^  [a-p]:"
+			disklabel -h -A $_disk | egrep "^#  |^  [a-p]:"
 			ask "Use (A)uto layout, (E)dit auto layout, or create (C)ustom layout?" a
 			case $resp in
 			a*|A*)	_op=-w ; AUTOROOT=y ;;
