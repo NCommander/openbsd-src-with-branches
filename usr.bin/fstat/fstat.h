@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.h,v 1.3 2003/06/03 02:56:08 millert Exp $	*/
+/*	$OpenBSD: fstat.h,v 1.4 2006/03/26 17:47:11 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -35,8 +35,6 @@ struct  filestat {
 	mode_t		mode;
 	dev_t		rdev;
 	u_int64_t	size;
-	u_int64_t	xfers;
-	u_int64_t	kbytes;
 };
 
 /*
