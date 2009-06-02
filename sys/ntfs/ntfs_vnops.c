@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.12 2007/12/09 21:28:53 hshoexer Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.13 2008/05/13 02:24:08 brad Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -320,7 +320,7 @@ ntfs_strategy(ap)
 	struct fnode *fp = VTOF(vp);
 	struct ntnode *ip = FTONT(fp);
 	struct ntfsmount *ntmp = ip->i_mp;
-	int error;
+	int error, s;
 
 #ifdef __FreeBSD__
 	dprintf(("ntfs_strategy: offset: %d, blkno: %d, lblkno: %d\n",
@@ -384,7 +384,9 @@ ntfs_strategy(ap)
 			}
 		}
 	}
+	s = splbio();
 	biodone(bp);
+	splx(s);
 	return (error);
 }
 
