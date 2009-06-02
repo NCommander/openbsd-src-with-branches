@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.125 2008/09/03 12:51:39 henning Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.126 2008/10/13 14:02:20 henning Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -954,7 +954,7 @@ udp_output(struct mbuf *m, ...)
 	 * for UDP and IP headers.
 	 */
 	M_PREPEND(m, sizeof(struct udpiphdr), M_DONTWAIT);
-	if (m == 0) {
+	if (m == NULL) {
 		error = ENOBUFS;
 		goto bail;
 	}
