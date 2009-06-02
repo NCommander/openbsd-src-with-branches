@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.13 2008/05/22 08:35:08 gilles Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.14 2008/10/03 15:20:29 eric Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -94,7 +94,7 @@ buf_realloc(struct buf *buf, size_t len)
 }
 
 int
-buf_add(struct buf *buf, void *data, size_t len)
+buf_add(struct buf *buf, const void *data, size_t len)
 {
 	if (buf->wpos + len > buf->size)
 		if (buf_realloc(buf, len) == -1)
