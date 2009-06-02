@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.41 2009/05/09 20:34:25 mglocker Exp $ */
+/*	$OpenBSD: util.c,v 1.42 2009/05/20 18:22:30 miod Exp $ */
 /*	$NetBSD: util.c,v 1.8 2000/03/14 08:11:53 sato Exp $ */
 
 /*-
@@ -145,7 +145,8 @@ static const struct nameint dpytype_tab[] = {
 	{ WSDISPLAY_TYPE_LEGSS,		"dec-legss" },
 	{ WSDISPLAY_TYPE_IFB,		"ifb" },
 	{ WSDISPLAY_TYPE_RAPTOR,	"raptor" },
-	{ WSDISPLAY_TYPE_DL,		"displaylink" }
+	{ WSDISPLAY_TYPE_DL,		"displaylink" },
+	{ WSDISPLAY_TYPE_MACHFB,	"mach64" }
 };
 
 static const struct nameint kbdenc_tab[] = {
