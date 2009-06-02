@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.13 2006/11/10 17:29:31 grunk Exp $
+#	$OpenBSD: Makefile.inc,v 1.14 2008/06/13 23:39:26 deraadt Exp $
 
 # librpc sources
 .PATH:	${LIBCSRCDIR}/arch/${MACHINE}/rpc ${LIBCSRCDIR}/rpc
@@ -77,6 +77,7 @@ MLINKS+=	bindresvport.3 bindresvport_sa.3 \
 		rpc.3 svcraw_create.3 \
 		rpc.3 svctcp_create.3 \
 		rpc.3 svcudp_bufcreate.3 \
+		rpc.3 svcudp_create.3 \
 		rpc.3 xdr_accepted_reply.3 \
 		rpc.3 xdr_authunix_parms.3 \
 		rpc.3 xdr_callhdr.3 \
