@@ -1,4 +1,4 @@
-/*	$OpenBSD: atwvar.h,v 1.14 2008/06/27 06:03:08 ray Exp $	*/
+/*	$OpenBSD: atwvar.h,v 1.15 2008/07/21 18:43:19 damien Exp $	*/
 /*	$NetBSD: atwvar.h,v 1.13 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*
@@ -209,6 +209,7 @@ struct atw_softc {
 
 	bus_space_tag_t		sc_st;		/* bus space tag */
 	bus_space_handle_t	sc_sh;		/* bus space handle */
+	bus_size_t		sc_mapsize;	/* mapping size */
 	bus_dma_tag_t		sc_dmat;	/* bus dma tag */
 	void			*sc_sdhook;	/* shutdown hook */
 	void			*sc_powerhook;	/* power management hook */
