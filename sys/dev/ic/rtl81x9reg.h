@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9reg.h,v 1.59 2008/11/30 06:01:45 brad Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.60 2009/02/12 11:55:29 martynas Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -996,3 +996,4 @@ struct rl_softc {
 extern int rl_attach(struct rl_softc *);
 extern int rl_intr(void *);
 extern void rl_setmulti(struct rl_softc *);
+int rl_detach(struct rl_softc *);
