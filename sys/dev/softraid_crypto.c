@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_crypto.c,v 1.33 2009/05/11 14:06:21 jsing Exp $ */
+/* $OpenBSD: softraid_crypto.c,v 1.34 2009/06/02 11:38:51 deraadt Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Hans-Joerg Hoexer <hshoexer@openbsd.org>
@@ -570,7 +570,7 @@ sr_crypto_rw2(struct sr_workunit *wu, struct cryptop *crp)
 		goto bad;
 	}
 
-	ccb->ccb_buf.b_flags = B_CALL;
+	ccb->ccb_buf.b_flags = B_CALL | B_PHYS;
 	ccb->ccb_buf.b_iodone = sr_crypto_intr;
 	ccb->ccb_buf.b_blkno = blk;
 	ccb->ccb_buf.b_bcount = xs->datalen;

@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid0.c,v 1.13 2009/05/11 14:06:21 jsing Exp $ */
+/* $OpenBSD: softraid_raid0.c,v 1.14 2009/06/02 11:38:51 deraadt Exp $ */
 /*
  * Copyright (c) 2008 Marco Peereboom <marco@peereboom.us>
  *
@@ -289,7 +289,7 @@ sr_raid0_rw(struct sr_workunit *wu)
 		    strip_no, chunk, stripoffs, chunkoffs, physoffs, length,
 		    leftover, data);
 
-		ccb->ccb_buf.b_flags = B_CALL;
+		ccb->ccb_buf.b_flags = B_CALL | B_PHYS;
 		ccb->ccb_buf.b_iodone = sr_raid0_intr;
 		ccb->ccb_buf.b_blkno = physoffs >> DEV_BSHIFT;
 		ccb->ccb_buf.b_bcount = length;
