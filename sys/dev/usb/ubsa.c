@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsa.c,v 1.44 2009/02/18 17:15:21 deraadt Exp $ 	*/
+/*	$OpenBSD: ubsa.c,v 1.45 2009/02/24 13:23:03 yuo Exp $ 	*/
 /*	$NetBSD: ubsa.c,v 1.5 2002/11/25 00:51:33 fvdl Exp $	*/
 /*-
  * Copyright (c) 2002, Alexander Kabaev <kan.FreeBSD.org>.
@@ -717,7 +717,7 @@ ubsa_intr(usbd_xfer_handle xfer, usbd_private_handle priv, usbd_status status)
 		if (cdcbuf->bNotification == UCDC_N_SERIAL_STATE)
 			printf("%s:notify serial state, len=%d, data=0x%02x\n",
 			    sc->sc_dev.dv_xname,
-			    cdcbuf->wLength, cdcbuf->data[0]);
+			    UGETW(cdcbuf->wLength), cdcbuf->data[0]);
 	}
 #endif
 

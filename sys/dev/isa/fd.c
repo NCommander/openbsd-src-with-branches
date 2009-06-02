@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.74 2008/06/12 06:58:39 deraadt Exp $	*/
+/*	$OpenBSD: fd.c,v 1.75 2008/10/15 19:12:18 blambert Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -781,7 +781,7 @@ loop:
 		{int block;
 		 block = (fd->sc_cylin * type->heads + head) * type->sectrac + sec;
 		 if (block != fd->sc_blkno) {
-			 printf("fdintr: block %d != blkno %d\n", block, fd->sc_blkno);
+			 printf("fdintr: block %d != blkno %llu\n", block, fd->sc_blkno);
 #ifdef DDB
 			 Debugger();
 #endif

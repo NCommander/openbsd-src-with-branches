@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci_cardbus.c,v 1.10 2008/02/25 23:10:16 brad Exp $ */
+/*	$OpenBSD: ehci_cardbus.c,v 1.11 2008/06/26 05:42:14 ray Exp $ */
 /*	$NetBSD: ehci_cardbus.c,v 1.6.6.3 2004/09/21 13:27:25 skrll Exp $	*/
 
 /*
@@ -109,7 +109,7 @@ ehci_cardbus_attach(struct device *parent, struct device *self, void *aux)
 	/* Map I/O registers */
 	if (Cardbus_mapreg_map(ct, CARDBUS_CBMEM, CARDBUS_MAPREG_TYPE_MEM, 0,
 			   &sc->sc.iot, &sc->sc.ioh, NULL, &sc->sc.sc_size)) {
-		printf(": can't map mem space\n", devname);
+		printf(": can't map mem space\n");
 		return;
 	}
 
