@@ -230,7 +230,6 @@ struct nfsreq {
 	struct vnode	*r_vp;
 	u_int32_t	r_xid;
 	int		r_flags;	/* flags on request, see below */
-	int		r_retry;	/* max retransmission count */
 	int		r_rexmit;	/* current retrans count */
 	int		r_timer;	/* tick counter on reply */
 	int		r_procnum;	/* NFS procedure number */
