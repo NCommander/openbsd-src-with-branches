@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.42 2009/04/23 07:42:02 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.44 2009/05/28 09:05:33 art Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -276,6 +276,9 @@ void	x86_64_bufinit(void);
 void	x86_64_init_pcb_tss_ldt(struct cpu_info *);
 void	cpu_proc_fork(struct proc *, struct proc *);
 int	amd64_pa_used(paddr_t);
+extern void (*cpu_idle_enter_fcn)(void);
+extern void (*cpu_idle_cycle_fcn)(void);
+extern void (*cpu_idle_leave_fcn)(void);
 
 struct region_descriptor;
 void	lgdt(struct region_descriptor *);
