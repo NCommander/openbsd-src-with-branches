@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pgt_pci.c,v 1.9 2006/11/18 20:44:40 grange Exp $  */
+/*	$OpenBSD: if_pgt_pci.c,v 1.10 2009/03/29 21:53:52 sthen Exp $  */
 
 /*
  * Copyright (c) 2006 Marcus Glocker <mglocker@openbsd.org>
@@ -74,7 +74,8 @@ struct cfattach pgt_pci_ca = {
 
 const struct pci_matchid pgt_pci_devices[] = {
 	{ PCI_VENDOR_INTERSIL, PCI_PRODUCT_INTERSIL_ISL3877 },
-	{ PCI_VENDOR_INTERSIL, PCI_PRODUCT_INTERSIL_ISL3890 }
+	{ PCI_VENDOR_INTERSIL, PCI_PRODUCT_INTERSIL_ISL3890 },
+	{ PCI_VENDOR_3COM, PCI_PRODUCT_3COM_3CRWE154G72 }
 };
 
 int
