@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_gif.c,v 1.34 2008/09/28 15:25:32 jsing Exp $	*/
+/*	$OpenBSD: in_gif.c,v 1.35 2008/09/28 16:14:40 jsing Exp $	*/
 /*	$KAME: in_gif.c,v 1.50 2001/01/22 07:27:16 itojun Exp $	*/
 
 /*
@@ -153,7 +153,6 @@ in_gif_input(struct mbuf *m, ...)
 	ip = mtod(m, struct ip *);
 
 	/* this code will be soon improved. */
-#define	satosin(sa)	((struct sockaddr_in *)(sa))
 	LIST_FOREACH(sc, &gif_softc_list, gif_list) {
 		if (sc->gif_psrc == NULL || sc->gif_pdst == NULL ||
 		    sc->gif_psrc->sa_family != AF_INET ||
