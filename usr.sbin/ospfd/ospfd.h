@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.76 2009/03/04 12:51:01 claudio Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.77 2009/04/07 14:57:33 reyk Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -51,10 +51,12 @@
 
 #define	F_OSPFD_INSERTED	0x0001
 #define	F_KERNEL		0x0002
-#define	F_CONNECTED		0x0008
-#define	F_DOWN			0x0010
-#define	F_STATIC		0x0020
-#define	F_DYNAMIC		0x0040
+#define	F_CONNECTED		0x0004
+#define	F_STATIC		0x0008
+#define	F_DYNAMIC		0x0010
+#define	F_DOWN			0x0020
+#define	F_REJECT		0x0040
+#define	F_BLACKHOLE		0x0080
 #define	F_REDISTRIBUTED		0x0100
 
 /* buffer */
