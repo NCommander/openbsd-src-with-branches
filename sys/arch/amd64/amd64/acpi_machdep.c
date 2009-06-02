@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.17 2009/05/31 03:42:38 mlarkin Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.18 2009/06/01 19:59:18 mlarkin Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -200,6 +200,11 @@ acpi_sleep_machdep(struct acpi_softc *sc, int state)
 		printf("%s: acpi_sleep_machdep: no FACS\n", DEVNAME(sc));
 		return (ENXIO);
 	}
+
+#ifdef DIAGNOSTIC
+	if (curproc != &proc0)
+		panic("acpi_sleep_machdep: sleeping in non-kernel proc");
+#endif
 
 	if (rcr3() != pmap_kernel()->pm_pdirpa) {
 		pmap_activate(curproc);
