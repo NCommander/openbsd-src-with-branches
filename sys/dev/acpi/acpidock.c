@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidock.c,v 1.33 2009/06/02 23:03:34 jordan Exp $ */
+/* $OpenBSD: acpidock.c,v 1.34 2009/06/02 23:56:12 jordan Exp $ */
 /*
  * Copyright (c) 2006,2007 Michael Knudsen <mk@openbsd.org>
  *
@@ -255,7 +255,8 @@ acpidock_notify(struct aml_node *node, int notify_type, void *arg)
 	return (0);
 }
 
-int acpidock_walkchildren(struct aml_node *node, void *arg)
+int
+acpidock_walkchildren(struct aml_node *node, void *arg)
 {
 	struct acpidock_softc	*sc = arg;
 	struct aml_nodelist	*n;
