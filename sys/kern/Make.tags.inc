@@ -30,5 +30,5 @@ COMM=	$S/altq/*.[ch] \
 	$S/scsi/*.[ch] \
 	$S/ufs/*/*.[ch] \
 	$S/uvm/*.[ch] \
-	$S/xfs/*.[ch] \
+	$S/nnpfs/*.[ch] \
 	$S/sys/*.[ch]
