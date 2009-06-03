@@ -28,7 +28,7 @@ ${.CURDIR}/MAKEDEV: ${MAKEDEVSRC}
 		-e 's/^[0-9,]*c[0-9,]*$$//' \
 		-e '/^$$/d' \
 		diffout1 > diffout2; \
-	    if ! [ -s diffout2 ]; then \
+	    if [ -s diffout2 ]; then \
 		echo "    m4 -I.. -I. ../MAKEDEV.mi > MAKEDEV"; \
 		cp MAKEDEV.tmp ${.CURDIR}/MAKEDEV || true; \
 		${NOCLEAN} rm MAKEDEV.tmp; \
