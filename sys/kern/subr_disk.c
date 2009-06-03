@@ -965,63 +965,6 @@ dk_mountroot(void)
 	return (*mountrootfn)();
 }
 
-struct bufq *
-bufq_default_alloc(void)
-{
-	struct bufq_default *bq;
-
-	bq = malloc(sizeof(*bq), M_DEVBUF, M_NOWAIT|M_ZERO);
-	if (bq == NULL)
-		panic("bufq_default_alloc: no memory");
-
-	bq->bufq.bufq_free = bufq_default_free;
-	bq->bufq.bufq_add = bufq_default_add;
-	bq->bufq.bufq_get = bufq_default_get;
-
-	return ((struct bufq *)bq);
-}
-
-void
-bufq_default_free(struct bufq *bq)
-{
-	free(bq, M_DEVBUF);
-}
-
-void
-bufq_default_add(struct bufq *bq, struct buf *bp)
-{
-	struct bufq_default *bufq = (struct bufq_default *)bq;
-	struct proc *p = bp->b_proc;
-	struct buf *head;
-
-	if (p == NULL || p->p_nice < NZERO)
-		head = &bufq->bufq_head[0];
-	else if (p->p_nice == NZERO)
-		head = &bufq->bufq_head[1];
-	else
-		head = &bufq->bufq_head[2];
-
-	disksort(head, bp);
-}
-
-struct buf *
-bufq_default_get(struct bufq *bq)
-{
-	struct bufq_default *bufq = (struct bufq_default *)bq;
-	struct buf *bp, *head;
-	int i;
-
-	for (i = 0; i < 3; i++) {
-		head = &bufq->bufq_head[i];
-		if ((bp = head->b_actf))
-			break;
-	}
-	if (bp == NULL)
-		return (NULL);
-	head->b_actf = bp->b_actf;
-	return (bp);
-}
-
 struct device *
 getdisk(char *str, int len, int defpart, dev_t *devp)
 {
