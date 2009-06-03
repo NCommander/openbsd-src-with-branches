@@ -505,8 +505,8 @@
 /* syscall: "getpgid" ret: "pid_t" args: "pid_t" */
 #define	SYS_getpgid	207
 
-/* syscall: "xfspioctl" ret: "int" args: "int" "char *" "int" "struct ViceIoctl *" "int" */
-#define	SYS_xfspioctl	208
+/* syscall: "nnpfspioctl" ret: "int" args: "int" "char *" "int" "struct ViceIoctl *" "int" */
+#define	SYS_nnpfspioctl	208
 
 				/* 220 is compat_23 semctl23 */
 

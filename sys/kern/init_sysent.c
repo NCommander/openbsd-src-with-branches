@@ -14,7 +14,7 @@
 #include <sys/syscallargs.h>
 #include <sys/poll.h>
 #include <sys/event.h>
-#include <xfs/xfs_pioctl.h>
+#include <nnpfs/nnpfs_pioctl.h>
 
 #ifdef COMPAT_43
 #define compat_43(func) __CONCAT(compat_43_,func)
@@ -523,8 +523,8 @@ struct sysent sysent[] = {
 	    sys_futimes },			/* 206 = futimes */
 	{ 1, s(struct sys_getpgid_args), 0,
 	    sys_getpgid },			/* 207 = getpgid */
-	{ 5, s(struct sys_xfspioctl_args), 0,
-	    sys_xfspioctl },			/* 208 = xfspioctl */
+	{ 5, s(struct sys_nnpfspioctl_args), 0,
+	    sys_nnpfspioctl },			/* 208 = nnpfspioctl */
 	{ 0, 0, 0,
 	    sys_nosys },			/* 209 = unimplemented */
 #ifdef LKM

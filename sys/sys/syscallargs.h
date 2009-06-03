@@ -899,7 +899,7 @@ struct sys_getpgid_args {
 	syscallarg(pid_t) pid;
 };
 
-struct sys_xfspioctl_args {
+struct sys_nnpfspioctl_args {
 	syscallarg(int) operation;
 	syscallarg(char *) a_pathP;
 	syscallarg(int) a_opcode;
@@ -1463,7 +1463,7 @@ int	sys_mlock(struct proc *, void *, register_t *);
 int	sys_munlock(struct proc *, void *, register_t *);
 int	sys_futimes(struct proc *, void *, register_t *);
 int	sys_getpgid(struct proc *, void *, register_t *);
-int	sys_xfspioctl(struct proc *, void *, register_t *);
+int	sys_nnpfspioctl(struct proc *, void *, register_t *);
 #ifdef LKM
 int	sys_lkmnosys(struct proc *, void *, register_t *);
 int	sys_lkmnosys(struct proc *, void *, register_t *);

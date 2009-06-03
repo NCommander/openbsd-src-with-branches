@@ -251,7 +251,7 @@ char *syscallnames[] = {
 	"#205 (unimplemented sys_undelete)",		/* 205 = unimplemented sys_undelete */
 	"futimes",			/* 206 = futimes */
 	"getpgid",			/* 207 = getpgid */
-	"xfspioctl",			/* 208 = xfspioctl */
+	"nnpfspioctl",			/* 208 = nnpfspioctl */
 	"#209 (unimplemented)",		/* 209 = unimplemented */
 #ifdef LKM
 	"lkmnosys",			/* 210 = lkmnosys */
