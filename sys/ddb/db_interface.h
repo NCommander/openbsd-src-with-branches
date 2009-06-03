@@ -61,6 +61,10 @@ struct nfsreq;
 void db_show_all_nfsreqs(db_expr_t, int, db_expr_t, char *);
 void db_nfsreq_print(struct nfsreq *, int, int (*)(const char *, ...));
 
+/* kern/kern_bufq.c */
+struct bufq;
+void db_bufq_print(struct bufq *, int, int (*)(const char *, ...));
+
 /* ufs/ffs/ffs_softdep.c */
 struct worklist;
 void worklist_print(struct worklist *, int, int (*)(const char *, ...));

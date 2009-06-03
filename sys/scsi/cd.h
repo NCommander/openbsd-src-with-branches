@@ -293,7 +293,6 @@ struct cd_softc {
 #ifdef CDDA
 	struct cd_parms orig_params;    /* filled in when CD-DA mode starts */
 #endif
-	struct buf buf_queue;
 	struct timeout sc_timeout;
 	void *sc_cdpwrhook;		/* our power hook */
 };

@@ -54,6 +54,7 @@
 #include <sys/mutex.h>
 
 struct buf;
+struct bufq;
 struct disklabel;
 
 #define DS_DISKNAMELEN	16
@@ -101,6 +102,7 @@ struct disk {
 	int		dk_byteshift;	/* shift to convert bytes to blks */
 
 	struct	dkdriver *dk_driver;	/* pointer to driver */
+	struct	bufq	 *dk_bufq;
 
 	/*
 	 * Disk label information.  Storage for the in-core disk label

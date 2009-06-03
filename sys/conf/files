@@ -655,6 +655,7 @@ file kern/exec_subr.c
 file kern/init_main.c
 file kern/init_sysent.c
 file kern/kern_acct.c			accounting
+file kern/kern_bufq.c
 file kern/kern_clock.c
 file kern/kern_descrip.c
 file kern/kern_event.c
