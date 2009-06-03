@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.3 2008/06/15 01:56:59 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.4 2008/06/16 08:18:39 todd Exp $
 
 M=${.CURDIR:C/^.*\/etc\.([^\/]*)$/\1/}
 
@@ -28,7 +28,7 @@ ${.CURDIR}/MAKEDEV: ${MAKEDEVSRC}
 		-e 's/^[0-9,]*c[0-9,]*$$//' \
 		-e '/^$$/d' \
 		diffout1 > diffout2; \
-	    if [ -s diffout2 ]; then \
+	    if ! [ -s diffout2 ]; then \
 		echo "    m4 -I.. -I. ../MAKEDEV.mi > MAKEDEV"; \
 		cp MAKEDEV.tmp ${.CURDIR}/MAKEDEV || true; \
 		${NOCLEAN} rm MAKEDEV.tmp; \
