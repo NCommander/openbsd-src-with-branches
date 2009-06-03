@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstab.c,v 1.16 2007/09/27 14:07:23 blambert Exp $ */
+/*	$OpenBSD: fstab.c,v 1.17 2009/04/29 19:06:07 deraadt Exp $ */
 /*
  * Copyright (c) 1980, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -146,6 +146,7 @@ fstabscan(void)
 			return(1);
 
 bad:		/* We silently ignore all bogus lines */
+		;
 	}
 	/* NOTREACHED */
 }
