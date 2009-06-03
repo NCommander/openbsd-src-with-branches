@@ -1,4 +1,4 @@
-/*	$OpenBSD: du.c,v 1.18 2005/04/17 12:27:23 jmc Exp $	*/
+/*	$OpenBSD: du.c,v 1.19 2006/01/25 06:20:03 tedu Exp $	*/
 /*	$NetBSD: du.c,v 1.11 1996/10/18 07:20:35 thorpej Exp $	*/
 
 /*
@@ -43,7 +43,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)du.c	8.5 (Berkeley) 5/4/95";
 #else
-static const char rcsid[] = "$OpenBSD: du.c,v 1.18 2005/04/17 12:27:23 jmc Exp $";
+static const char rcsid[] = "$OpenBSD: du.c,v 1.19 2006/01/25 06:20:03 tedu Exp $";
 #endif
 #endif /* not lint */
 
@@ -103,9 +103,11 @@ main(int argc, char *argv[])
 			break;
 		case 'h':
 			hflag = 1;
+			kflag = 0;
 			break;
 		case 'k':
 			kflag = 1;
+			hflag = 0;
 			break;
 		case 's':
 			sflag = 1;
