@@ -54,6 +54,7 @@ sub initiate
 		next if m/^$/o;
 		print $wrfh $_;
 	}
+	seek(DATA, 0, 0);
 }
 	
 	
