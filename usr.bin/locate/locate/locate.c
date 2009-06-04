@@ -1,5 +1,5 @@
 /*
- *	$OpenBSD: locate.c,v 1.21 2008/07/26 10:57:09 jmc Exp $
+ *	$OpenBSD: locate.c,v 1.22 2008/10/01 00:55:10 kevlo Exp $
  *
  * Copyright (c) 1995 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
  * Copyright (c) 1989, 1993
@@ -32,7 +32,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      $Id: locate.c,v 1.21 2008/07/26 10:57:09 jmc Exp $
+ *      $Id: locate.c,v 1.22 2008/10/01 00:55:10 kevlo Exp $
  */
 
 #ifndef lint
@@ -46,7 +46,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)locate.c    8.1 (Berkeley) 6/6/93";
 #else
-static char rcsid[] = "$OpenBSD: locate.c,v 1.21 2008/07/26 10:57:09 jmc Exp $";
+static char rcsid[] = "$OpenBSD: locate.c,v 1.22 2008/10/01 00:55:10 kevlo Exp $";
 #endif
 #endif /* not lint */
 
@@ -344,6 +344,14 @@ usage(void)
 	exit(1);
 }
 
+void
+sane_count(int count)
+{
+	if (count < 0 || count >= MAXPATHLEN) {
+		fprintf(stderr, "locate: corrupted database\n");
+		exit(1);
+	}
+}
 
 /* load fastfind functions */
 
