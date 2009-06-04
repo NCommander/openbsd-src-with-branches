@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.103 2009/01/27 09:17:51 dlg Exp $	*/
+/*	$OpenBSD: if.h,v 1.104 2009/06/03 20:35:37 beck Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -281,6 +281,10 @@ struct ifnet {				/* and the entries */
 	    IFF_SIMPLEX|IFF_MULTICAST|IFF_ALLMULTI)
 
 #define IFXF_TXREADY	0x1		/* interface is ready to tx */
+#define	IFXF_NOINET6	0x2		/* don't do inet6 */
+
+#define	IFXF_CANTCHANGE \
+	(IFXF_TXREADY)
 
 /*
  * Some convenience macros used for setting ifi_baudrate.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sockio.h,v 1.42 2008/12/12 22:07:33 claudio Exp $	*/
+/*	$OpenBSD: sockio.h,v 1.43 2009/02/15 22:15:12 gollo Exp $	*/
 /*	$NetBSD: sockio.h,v 1.5 1995/08/23 00:40:47 thorpej Exp $	*/
 
 /*-
@@ -169,6 +169,9 @@
 
 #define SIOCSIFPRIORITY	 _IOW('i', 155, struct ifreq)	/* set if priority */
 #define SIOCGIFPRIORITY	_IOWR('i', 156, struct ifreq)	/* get if priority */
+
+#define	SIOCSIFXFLAGS	 _IOW('i', 157, struct ifreq)	/* set ifnet xflags */
+#define	SIOCGIFXFLAGS	_IOWR('i', 158, struct ifreq)	/* get ifnet xflags */
 
 #define	SIOCSVH		_IOWR('i', 245, struct ifreq)	/* set carp param */
 #define	SIOCGVH		_IOWR('i', 246, struct ifreq)	/* get carp param */
