@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.64 2007/11/27 13:19:16 otto Exp $	*/
+/*	$OpenBSD: top.c,v 1.65 2007/11/29 10:06:30 otto Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -190,6 +190,8 @@ parseargs(int ac, char **av)
 		case 'd':	/* number of displays to show */
 			if ((i = atoiwi(optarg)) != Invalid && i != 0) {
 				displays = i;
+				if (displays == 1)
+					interactive = No;
 				break;
 			}
 			new_message(MT_delayed,
