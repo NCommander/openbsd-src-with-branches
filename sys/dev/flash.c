@@ -1,4 +1,4 @@
-/*	$OpenBSD: flash.c,v 1.8 2007/06/20 18:15:46 deraadt Exp $	*/
+/*	$OpenBSD: flash.c,v 1.10 2009/06/03 22:09:30 thib Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@openbsd.org>
@@ -877,7 +877,7 @@ flashsize(dev_t dev)
 void
 flashstart(struct flash_softc *sc)
 {
-	struct buf *dp, *bp;
+	struct buf *bp;
 
 	while (1) {
 		/* Remove the next buffer from the queue or stop. */
