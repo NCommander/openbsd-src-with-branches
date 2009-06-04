@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.29 2009/05/31 17:49:53 deraadt Exp $
+#       $OpenBSD: install.md,v 1.30 2009/06/02 16:23:45 krw Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -32,7 +32,6 @@
 #
 
 MDXAPERTURE=1
-ARCH=ARCH
 
 md_installboot() {
 	local _rawdev=/dev/r${1}c

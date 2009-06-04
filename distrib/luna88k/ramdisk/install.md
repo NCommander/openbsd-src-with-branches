@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.10 2009/05/11 17:13:07 deraadt Exp $
+#       $OpenBSD: install.md,v 1.11 2009/06/02 16:23:45 krw Exp $
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
 #
@@ -33,7 +33,6 @@
 
 MDTERM=vt100
 MDROOTFSOPT="-f 1024 -b 8192"
-ARCH=ARCH
 
 md_installboot() {
 }
