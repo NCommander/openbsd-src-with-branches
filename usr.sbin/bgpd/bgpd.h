@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.231 2009/05/17 12:25:15 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.232 2009/05/27 04:18:21 reyk Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -721,6 +721,15 @@ struct rde_memstats {
 	int64_t		attr_data;
 	int64_t		attr_dcnt;
 };
+
+struct rde_rib {
+	SIMPLEQ_ENTRY(rde_rib)	entry;
+	char			name[PEER_DESCR_LEN];
+	u_int16_t		id;
+	u_int16_t		flags;
+};
+SIMPLEQ_HEAD(rib_names, rde_rib);
+extern struct rib_names ribnames;
 
 /* Address Family Numbers as per RFC 1700 */
 #define	AFI_IPv4	1
