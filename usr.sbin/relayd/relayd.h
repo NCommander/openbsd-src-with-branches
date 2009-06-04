@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.121 2009/06/04 14:12:16 reyk Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.122 2009/06/04 20:31:37 eric Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -852,3 +852,12 @@ void	 snmp_hosttrap(struct table *, struct host *);
 /* shuffle.c */
 void		shuffle_init(struct shuffle *);
 u_int16_t	shuffle_generate16(struct shuffle *);
+
+/* log.c */
+void	log_init(int);
+void	log_warn(const char *, ...);
+void	log_warnx(const char *, ...);
+void	log_info(const char *, ...);
+void	log_debug(const char *, ...);
+__dead void fatal(const char *);
+__dead void fatalx(const char *);
