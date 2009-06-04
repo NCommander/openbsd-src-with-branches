@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.89 2009/04/14 09:13:25 art Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.90 2009/06/02 23:05:31 guenther Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -165,9 +165,12 @@ msleep(const volatile void *ident, struct mutex *mtx, int priority,
 	error1 = sleep_finish_timeout(&sls);
 	error = sleep_finish_signal(&sls);
 
-	if (mtx && (priority & PNORELOCK) == 0) {
-		mtx_enter(mtx);
-		MUTEX_OLDIPL(mtx) = spl; /* put the ipl back */
+	if (mtx) {
+		if ((priority & PNORELOCK) == 0) {
+			mtx_enter(mtx);
+			MUTEX_OLDIPL(mtx) = spl; /* put the ipl back */
+		} else
+			splx(spl);
 	}
 	/* Signal errors are higher priority than timeouts. */
 	if (error == 0 && error1 != 0)
