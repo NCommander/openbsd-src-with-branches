@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2008, 2009	Thordur I. Bjornsson <thib@openbsd.org>
  * Copyright (c) 2004		Ted Unangst <tedu@openbsd.org>
