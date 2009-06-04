@@ -1,4 +1,4 @@
-/*	$OpenBSD: brgphy.c,v 1.84 2008/11/08 03:03:50 brad Exp $	*/
+/*	$OpenBSD: brgphy.c,v 1.85 2009/05/21 23:04:20 sthen Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -666,7 +666,7 @@ brgphy_reset(struct mii_softc *sc)
 				brgphy_crc_bug(sc);
 
 			/* Set Jumbo frame settings in the PHY. */
-			if (bge_sc->bge_flags & BGE_JUMBO_CAP)
+			if (bge_sc->bge_flags & BGE_JUMBO_CAPABLE)
 				brgphy_jumbo_settings(sc);
 
 			/* Adjust output voltage */
