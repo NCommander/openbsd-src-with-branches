@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-rotate-window.c,v 1.1 2009/06/01 22:58:49 nicm Exp $ */
+/* $OpenBSD: cmd-rotate-window.c,v 1.2 2009/06/03 07:51:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -72,7 +72,7 @@ cmd_rotate_window_exec(struct cmd *self, struct cmd_ctx *ctx)
 		TAILQ_INSERT_HEAD(&w->panes, wp, entry);
 
 		xoff = wp->xoff; yoff = wp->yoff;
-		sx = wp->sx; sy = wp->sy;	
+		sx = wp->sx; sy = wp->sy;
 		flags = w->flags;
 		TAILQ_FOREACH(wp, &w->panes, entry) {
 			if ((wp2 = TAILQ_NEXT(wp, entry)) == NULL)

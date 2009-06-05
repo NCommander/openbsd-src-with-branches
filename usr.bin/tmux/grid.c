@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: grid.c,v 1.1 2009/06/01 22:58:49 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -493,5 +493,3 @@ grid_move_cells(struct grid *gd, u_int dx, u_int px, u_int py, u_int nx)
 		grid_put_cell(gd, xx, py, &grid_default_cell);
 	}
 }
-
-
