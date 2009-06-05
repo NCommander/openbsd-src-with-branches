@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jme.c,v 1.17 2009/02/25 13:10:38 jsg Exp $	*/
+/*	$OpenBSD: if_jme.c,v 1.18 2009/03/29 21:53:52 sthen Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -1689,9 +1689,11 @@ jme_rxpkt(struct jme_softc *sc)
 			m->m_data += JME_RX_PAD_BYTES;
 
 			/* Set checksum information. */
-			if (flags & JME_RD_IPV4) {
-				if (flags & JME_RD_IPCSUM)
-					m->m_pkthdr.csum_flags |= M_IPV4_CSUM_IN_OK;
+			if (flags & (JME_RD_IPV4|JME_RD_IPV6)) {
+				if ((flags & JME_RD_IPV4) &&
+				    (flags & JME_RD_IPCSUM))
+					m->m_pkthdr.csum_flags |=
+					    M_IPV4_CSUM_IN_OK;
 				if ((flags & JME_RD_MORE_FRAG) == 0 &&
 				    ((flags & (JME_RD_TCP | JME_RD_TCPCSUM)) ==
 				     (JME_RD_TCP | JME_RD_TCPCSUM) ||
