@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.20 2009/06/04 22:42:15 eric Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.21 2009/06/04 23:33:49 pyr Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -216,7 +216,6 @@ imsg_close(struct imsgbuf *ibuf, struct buf *msg)
 	hdr = (struct imsg_hdr *)msg->buf;
 	hdr->len = (u_int16_t)msg->wpos;
 	buf_close(&ibuf->w, msg);
-	imsg_event_add(ibuf);
 }
 
 void
