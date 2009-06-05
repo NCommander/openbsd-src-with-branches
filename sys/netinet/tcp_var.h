@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.88 2008/05/23 15:51:12 thib Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.90 2008/11/08 12:54:58 dlg Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -520,6 +520,7 @@ struct	tcpstat {
 struct tcp_ident_mapping {
 	struct sockaddr_storage faddr, laddr;
 	int euid, ruid;
+	u_int rdomain;
 };
 
 #ifdef _KERNEL
