@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff3.c,v 1.47 2008/03/08 20:26:34 joris Exp $	*/
+/*	$OpenBSD: diff3.c,v 1.48 2008/03/09 01:52:55 joris Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -72,7 +72,7 @@ static const char copyright[] =
 
 #ifndef lint
 static const char rcsid[] =
-    "$OpenBSD: diff3.c,v 1.47 2008/03/08 20:26:34 joris Exp $";
+    "$OpenBSD: diff3.c,v 1.48 2008/03/09 01:52:55 joris Exp $";
 #endif /* not lint */
 
 #include <ctype.h>
@@ -199,8 +199,8 @@ cvs_merge_file(struct cvs_file *cf, int verbose)
 		cvs_printf("Retrieving revision %s\n", r2);
 	fds[4] = rcs_rev_write_stmp(cf->file_rcs, d3rev2, path3, 0);
 
-	cvs_diffreg(path1, path3, fds[2], fds[4], d1);
-	cvs_diffreg(path2, path3, fds[3], fds[4], d2);
+	cvs_diffreg(path1, path3, fds[2], fds[4], d1, D_FORCEASCII);
+	cvs_diffreg(path2, path3, fds[3], fds[4], d2, D_FORCEASCII);
 
 	(void)xasprintf(&dp13, "%s/d13.XXXXXXXXXX", cvs_tmpdir);
 	fds[0] = cvs_buf_write_stmp(d1, dp13, NULL);
