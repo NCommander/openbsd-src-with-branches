@@ -1,4 +1,4 @@
-/*	$OpenBSD: group.c,v 1.1 2006/06/01 14:12:20 norby Exp $ */
+/*	$OpenBSD: group.c,v 1.2 2009/03/06 18:39:13 michele Exp $ */
 
 /*
  * Copyright (c) 2006 Esben Norby <norby@openbsd.org>
@@ -453,8 +453,8 @@ group_list_dump(struct iface *iface, struct ctl_conn *c)
 
 	TAILQ_FOREACH(ge, &iface->group_list, entry) {
 		gctl = group_to_ctl(ge);
-		imsg_compose(&c->ibuf, IMSG_CTL_SHOW_IGMP, 0, 0, gctl,
-		    sizeof(struct ctl_group));
+		imsg_compose_event(&c->iev, IMSG_CTL_SHOW_IGMP, 0, 0,
+		    -1, gctl, sizeof(struct ctl_group));
 	}
 }
 
