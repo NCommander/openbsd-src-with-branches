@@ -121,7 +121,7 @@ sub process_package
 		if ($state->{defines}->{pkgpath}) {
 			$state->progress->clear;
 			print "Directly updating $pkgname -> ", $l->[0]->name, "\n";
-			$self->add2updates($l->[0]->name);
+			$self->add2updates($l->[0]);
 			return;
 		}
 		if (defined $found && $found eq  $l->[0] && 
