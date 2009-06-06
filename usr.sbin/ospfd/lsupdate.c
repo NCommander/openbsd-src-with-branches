@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsupdate.c,v 1.36 2009/03/13 03:58:26 claudio Exp $ */
+/*	$OpenBSD: lsupdate.c,v 1.37 2009/06/05 19:33:59 pyr Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -33,7 +33,7 @@
 #include "rde.h"
 
 extern struct ospfd_conf	*oeconf;
-extern struct imsgbuf		*ibuf_rde;
+extern struct imsgev		*iev_rde;
 
 struct buf *prepare_ls_update(struct iface *);
 int	add_ls_update(struct buf *, struct iface *, void *, u_int16_t,
@@ -270,7 +270,7 @@ recv_ls_update(struct nbr *nbr, char *buf, u_int16_t len)
 				    "neighbor ID %s", inet_ntoa(nbr->id));
 				return;
 			}
-			imsg_compose_event(ibuf_rde, IMSG_LS_UPD, nbr->peerid, 0,
+			imsg_compose_event(iev_rde, IMSG_LS_UPD, nbr->peerid, 0,
 			    -1, buf, ntohs(lsa.len));
 			buf += ntohs(lsa.len);
 			len -= ntohs(lsa.len);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.46 2009/04/07 14:57:33 reyk Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.47 2009/06/05 21:19:11 pyr Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -125,7 +125,7 @@ main(int argc, char *argv[])
 
 	if ((ibuf = malloc(sizeof(struct imsgbuf))) == NULL)
 		err(1, NULL);
-	imsg_init(ibuf, ctl_sock, NULL);
+	imsg_init(ibuf, ctl_sock);
 	done = 0;
 
 	/* process user request */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.13 2009/06/05 19:33:58 pyr Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.20 2009/06/05 21:15:47 pyr Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
