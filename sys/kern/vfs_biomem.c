@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_biomem.c,v 1.5 2009/04/22 13:12:26 art Exp $ */
+/*	$OpenBSD: vfs_biomem.c,v 1.6 2009/06/02 23:00:19 oga Exp $ */
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
  *
@@ -80,10 +80,12 @@ buf_acquire(struct buf *bp)
 	KASSERT((bp->b_flags & B_BUSY) == 0);
 
 	s = splbio();
+
 	/*
 	 * Busy before waiting for kvm.
 	 */
 	SET(bp->b_flags, B_BUSY);
+	bremfree(bp);
 	buf_map(bp);
 
 	splx(s);
