@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_pcivar.h,v 1.10 2008/05/06 19:19:02 oga Exp $ */
+/* $OpenBSD: vga_pcivar.h,v 1.11 2008/06/12 00:54:38 oga Exp $ */
 /* $NetBSD: vga_pcivar.h,v 1.1 1998/03/22 15:16:19 drochner Exp $ */
 
 /*
@@ -57,6 +57,9 @@ struct vga_pci_softc {
 
 	struct pci_attach_args pa;
 	struct vga_pci_bar *bars[VGA_PCI_MAX_BARS];
+#ifdef VGA_POST
+	struct vga_post *sc_posth;
+#endif
 #ifdef VESAFB
 	int sc_width;
 	int sc_height;
