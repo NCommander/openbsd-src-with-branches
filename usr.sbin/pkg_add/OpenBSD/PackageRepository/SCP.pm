@@ -45,7 +45,7 @@ sub initiate
 	$self->{cmdfh} = $wrfh;
 	$self->{getfh} = $rdfh;
 	$wrfh->autoflush(1);
-	local $_;
+	my $_;
 
 	while(<DATA>) {
 		# compress script a bit
@@ -73,7 +73,7 @@ sub grab_object
 	my $getfh = $self->{getfh};
 
 	print $cmdfh "ABORT\n";
-	local $_;
+	my $_;
 	while (<$getfh>) {
 		last if m/^ABORTED/o;
 	}
@@ -133,7 +133,7 @@ sub list
 		my $path = $self->{path};
 		my $l = [];
 		print $cmdfh "LIST $path\n";
-		local $_;
+		my $_;
 		$_ = <$getfh>;
 		if (!defined $_) {
 			die "Could not initiate SSH session\n";
