@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.68 2009/05/27 04:18:21 reyk Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.69 2009/06/05 20:26:38 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -423,9 +423,11 @@ print_rule(struct peer *peer_l, struct filter_rule *r)
 		printf("deny ");
 	else
 		printf("match ");
-
 	if (r->quick)
 		printf("quick ");
+
+	if (r->rib[0])
+		printf("rib %s ", r->rib);
 
 	if (r->dir == DIR_IN)
 		printf("from ");
