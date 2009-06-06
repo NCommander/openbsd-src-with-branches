@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.81 2009/06/05 19:33:59 pyr Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.82 2009/06/06 07:31:26 eric Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -29,7 +29,7 @@
 #include <netinet/in.h>
 #include <event.h>
 
-#include "imsg.h"
+#include <imsg.h>
 #include "ospf.h"
 
 #define CONF_FILE		"/etc/ospfd.conf"
