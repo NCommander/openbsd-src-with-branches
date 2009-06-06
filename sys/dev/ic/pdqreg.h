@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdqreg.h,v 1.8 2001/04/06 04:42:06 csapuntz Exp $	*/
+/*	$OpenBSD: pdqreg.h,v 1.9 2002/06/02 22:50:00 deraadt Exp $	*/
 /*	$NetBSD: pdqreg.h,v 1.6 1996/08/28 16:01:29 cgd Exp $	*/
 
 /*-
@@ -54,11 +54,9 @@
 #define	PDQ_ASSERT(e)	((void)0)
 #else
 #ifdef __STDC__
-#define	PDQ_ASSERT(e)	((e) ? (void)0 :				\
-			    __assert("PDQ ", __FILE__, __LINE__, #e))
+#define	PDQ_ASSERT(e)	KASSERT(e)
 #else
-#define	PDQ_ASSERT(e)	((e) ? (void)0 :				\
-			    __assert("PDQ ", __FILE__, __LINE__, "e"))
+#define	PDQ_ASSERT(e)	KASSERT(e)
 #endif
 #endif
 #endif /* __NetBSD__ || __OpenBSD__ */
