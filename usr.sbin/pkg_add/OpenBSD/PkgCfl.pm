@@ -115,10 +115,14 @@ sub find_all
 
 	my $l = OpenBSD::PkgCfl->make_conflict_list($plist);
 	$plist->{conflicts} = $l;
+	my @first = $l->conflicts_with(installed_packages());
+	# XXX optimization
+	if (@first > 0 && !$state->{allow_replacing}) {
+		return @first;
+	}
 
 	my @conflicts = find($pkgname, $state);
-	push(@conflicts, $l->conflicts_with(installed_packages()));
-	return @conflicts;
+	return (@conflicts, @first);
 }
 
 1;
