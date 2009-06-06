@@ -294,6 +294,7 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 	pcb->pcb_cr0 = rcr0();
 	pcb->pcb_cr3 = pcb->pcb_pmap->pm_pdirpa;
 #endif
+	ci->ci_curpmap = pmap_kernel();
 
 	/* further PCB init done later. */
 

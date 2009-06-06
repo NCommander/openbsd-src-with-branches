@@ -80,6 +80,8 @@ struct cpu_info {
 	struct pcb *ci_idle_pcb;
 	int ci_idle_tss_sel;
 
+	struct pmap *ci_curpmap;
+
 	struct intrsource *ci_isources[MAX_INTR_SOURCES];
 	u_int32_t	ci_ipending;
 	int		ci_ilevel;
