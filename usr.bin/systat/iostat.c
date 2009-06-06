@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.34 2008/12/01 18:03:06 naddy Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.35 2008/12/07 02:56:06 canacar Exp $	*/
 /*	$NetBSD: iostat.c,v 1.5 1996/05/10 23:16:35 thorpej Exp $	*/
 
 /*
@@ -216,13 +216,6 @@ showdrive(int dn)
 
 	end_line();
 }
-
-
-#define ENDLINE do {					\
-		count++;				\
- 		if (maxprint > 0 && count >= maxprint)	\
-			return;				\
-	} while(0)
 
 void
 showbcache(void)
