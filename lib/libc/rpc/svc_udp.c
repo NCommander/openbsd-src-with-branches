@@ -1,4 +1,4 @@
-/*	$OpenBSD: svc_udp.c,v 1.16 2005/08/08 08:05:35 espie Exp $ */
+/*	$OpenBSD: svc_udp.c,v 1.17 2009/06/06 03:28:34 deraadt Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -347,7 +347,7 @@ svcudp_enablecache(SVCXPRT *transp, u_long size)
 	}
 	uc->uc_size = size;
 	uc->uc_nextvictim = 0;
-	if (size && sizeof(cache_ptr) * SPARSENESS > SIZE_MAX / size ||
+	if (size > SIZE_MAX / (sizeof(cache_ptr) * SPARSENESS) ||
 	    (uc->uc_entries = calloc(sizeof(cache_ptr) * SPARSENESS, size)) == NULL) {
 		CACHE_PERROR("enablecache: could not allocate cache data");
 		free(uc);
