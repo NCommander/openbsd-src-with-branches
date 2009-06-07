@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdiff.c,v 1.23 2007/09/02 15:19:34 deraadt Exp $ */
+/*	$OpenBSD: sdiff.c,v 1.24 2009/06/07 12:39:40 ray Exp $ */
 
 /*
  * Written by Raymond Lai <ray@cyth.net>.
@@ -109,8 +109,10 @@ mktmpcpy(const char *source_file)
 			err(2, "error getting file status from %s", source_file);
 
 		/* Regular file. */
-		if (S_ISREG(sb.st_mode))
+		if (S_ISREG(sb.st_mode)) {
+			close(ifd);
 			return (NULL);
+		}
 	} else {
 		/* If ``-'' does not exist the user meant stdin. */
 		if (errno == ENOENT && strcmp(source_file, "-") == 0)
