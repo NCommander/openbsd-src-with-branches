@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.17 2007/05/11 02:47:52 ray Exp $ */
+/*	$OpenBSD: edit.c,v 1.18 2007/10/17 20:02:33 deraadt Exp $ */
 
 /*
  * Written by Raymond Lai <ray@cyth.net>.
@@ -188,7 +188,7 @@ RIGHT:
 			break;
 
 		/* Write data we just read. */
-		nwritten = fwrite(buf, sizeof(*buf), nread, outfile);
+		nwritten = fwrite(buf, sizeof(*buf), nread, outfp);
 		if (nwritten != nread) {
 			warnx("error writing to output file");
 			cleanup(filename);
