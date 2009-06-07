@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmp.c,v 1.5 2009/06/05 23:39:51 pyr Exp $	*/
+/*	$OpenBSD: snmp.c,v 1.6 2009/06/06 05:30:45 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Reyk Floeter <reyk@openbsd.org>
@@ -130,7 +130,7 @@ snmp_getsock(struct imsgev *iev)
 			done = 1;
 			switch (imsg.hdr.type) {
 			case IMSG_SNMPSOCK:
-				s = imsg_get_fd(&iev->ibuf);
+				s = imsg.fd;
 				break;
 			default:
 				break;
