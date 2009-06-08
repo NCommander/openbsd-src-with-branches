@@ -1,4 +1,4 @@
-/*	$OpenBSD: est.c,v 1.30 2007/06/07 11:20:58 dim Exp $ */
+/*	$OpenBSD: est.c,v 1.31 2009/06/06 23:21:43 gwk Exp $ */
 /*
  * Copyright (c) 2003 Michael Eriksson.
  * All rights reserved.
@@ -1165,6 +1165,9 @@ est_init(const char *cpu_device, int vendor)
 	}
 
 	if (est_fqlist == NULL)
+		return;
+
+	if (est_fqlist->n < 2)
 		return;
 
 	printf("%s: Enhanced SpeedStep %d MHz", cpu_device, cpuspeed);
