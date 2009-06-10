@@ -81,7 +81,7 @@ sub compute_checksum
 	my $name = $self->fullname;
 	my $fname = $name;
 	if (defined $base) {
-		$fname = "$base/$fname";
+		$fname = $base.$fname;
 	}
 
 	if (-l $fname) {
