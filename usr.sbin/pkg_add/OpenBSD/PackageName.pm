@@ -212,7 +212,7 @@ sub compare
 	for (my $i = 0; ; $i++) {
 		if (!defined $a->{deweys}->[$i]) {
 			if (!defined $b->{deweys}->[$i]) {
-				return 0;
+				last;
 			} else {
 				return -1;
 			}
