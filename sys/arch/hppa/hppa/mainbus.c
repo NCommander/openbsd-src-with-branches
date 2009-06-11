@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.73 2009/04/14 16:01:04 oga Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.74 2009/04/20 00:42:06 oga Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -977,6 +977,9 @@ mbus_dmamem_free(void *v, bus_dma_segment_t *segs, int nsegs)
 			if (!pg)
 				panic("mbus_dmamem_free: no page for pa");
 			TAILQ_INSERT_TAIL(&pglist, pg, pageq);
+			pdcache(HPPA_SID_KERNEL, pa, PAGE_SIZE);
+			pdtlb(HPPA_SID_KERNEL, pa);
+			pitlb(HPPA_SID_KERNEL, pa);
 		}
 	uvm_pglistfree(&pglist);
 }
