@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.193 2009/06/04 06:34:38 ray Exp $	*/
+/*	$OpenBSD: ami.c,v 1.194 2009/06/11 07:47:41 chl Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -2510,7 +2510,7 @@ int
 ami_create_sensors(struct ami_softc *sc)
 {
 	struct device *dev;
-	struct scsibus_softc *ssc;
+	struct scsibus_softc *ssc = NULL;
 	int i;
 
 	TAILQ_FOREACH(dev, &alldevs, dv_list) {
