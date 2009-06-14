@@ -1713,11 +1713,10 @@ cpu_dump_mempagecnt(void)
 int
 amd64_pa_used(paddr_t addr)
 {
-	struct vm_page	*pg;
-	bios_memmap_t	*bmp;
+	bios_memmap_t *bmp;
 
 	/* Kernel manages these */
-	if ((pg = PHYS_TO_VM_PAGE(addr)) && (pg->pg_flags & PG_DEV) == 0)
+	if (PHYS_TO_VM_PAGE(addr))
 		return 1;
 
 	/* Kernel is loaded here */
