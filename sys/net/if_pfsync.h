@@ -159,7 +159,8 @@ struct pfsync_upd_c {
 	u_int32_t			creatorid;
 	u_int32_t			expire;
 	u_int8_t			timeout;
-	u_int8_t			_pad[3];
+	u_int8_t			state_flags;
+	u_int8_t			_pad[2];
 } __packed;
 
 /*
@@ -263,7 +264,7 @@ struct pfsyncreq {
 	char		 pfsyncr_syncdev[IFNAMSIZ];
 	struct in_addr	 pfsyncr_syncpeer;
 	int		 pfsyncr_maxupdates;
-	int		 pfsyncr_authlevel;
+	int		 pfsyncr_defer;
 };
 
 #ifdef _KERNEL
