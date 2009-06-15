@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.93 2009/06/03 21:30:19 beck Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.95 2009/06/14 03:04:07 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -399,6 +399,12 @@ setup_buffers()
 	 */
 	if (bufpages == 0)
 		bufpages = physmem * bufcachepercent / 100;
+
+	/* Restrict to at most 25% filled kvm */
+	if (bufpages >
+	    (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) / PAGE_SIZE / 4) 
+		bufpages = (VM_MAX_KERNEL_ADDRESS-VM_MIN_KERNEL_ADDRESS) /
+		    PAGE_SIZE / 4;
 }
 
 /*
