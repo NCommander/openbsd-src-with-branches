@@ -358,7 +358,11 @@ uvm_swap_allocpages(struct vm_page **pps, int npages)
 	boolean_t fail;
 
 	/* Estimate if we will succeed */
+	uvm_lock_fpageq();
+
 	fail = uvmexp.free - npages < uvmexp.reserve_kernel;
+
+	uvm_unlock_fpageq();
 
 	if (fail)
 		return FALSE;

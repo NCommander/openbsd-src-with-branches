@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.47 2009/06/06 23:35:08 art Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.44 2009/05/08 13:50:15 ariane Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.23 2000/08/20 10:24:14 bjh21 Exp $	*/
 
 /* 
@@ -820,20 +820,35 @@ uvmpd_scan_inactive(struct pglist *pglst)
 			atomic_clearbits_int(&p->pg_flags, PG_BUSY|PG_WANTED);
 			UVM_PAGE_OWN(p, NULL);
 
-			/* released during I/O? Can only happen for anons */
+			/* released during I/O? */
 			if (p->pg_flags & PG_RELEASED) {
-				KASSERT(anon != NULL);
-				/* remove page so we can get nextpg */
-				anon->an_page = NULL;
+				if (anon) {
+					/* remove page so we can get nextpg */
+					anon->an_page = NULL;
 
-				simple_unlock(&anon->an_lock);
-				uvm_anfree(anon);	/* kills anon */
-				pmap_page_protect(p, VM_PROT_NONE);
-				anon = NULL;
-				uvm_lock_pageq();
-				nextpg = TAILQ_NEXT(p, pageq);
-				/* free released page */
-				uvm_pagefree(p);
+					simple_unlock(&anon->an_lock);
+					uvm_anfree(anon);	/* kills anon */
+					pmap_page_protect(p, VM_PROT_NONE);
+					anon = NULL;
+					uvm_lock_pageq();
+					nextpg = TAILQ_NEXT(p, pageq);
+					/* free released page */
+					uvm_pagefree(p);
+
+				} else {
+
+					/*
+					 * pgo_releasepg nukes the page and
+					 * gets "nextpg" for us.  it returns
+					 * with the page queues locked (when
+					 * given nextpg ptr).
+					 */
+
+					if (!uobj->pgops->pgo_releasepg(p,
+					    &nextpg))
+						/* uobj died after release */
+						uobj = NULL;
+				}
 			} else {	/* page was not released during I/O */
 				uvm_lock_pageq();
 				nextpg = TAILQ_NEXT(p, pageq);
@@ -1042,6 +1057,7 @@ uvmpd_scan(void)
 		 */
 
 		if (inactive_shortage > 0) {
+			pmap_page_protect(p, VM_PROT_NONE);
 			/* no need to check wire_count as pg is "active" */
 			uvm_pagedeactivate(p);
 			uvmexp.pddeact++;

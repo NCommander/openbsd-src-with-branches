@@ -109,6 +109,8 @@ struct uvm_pagerops {
 	struct vm_page **	(*pgo_mk_pcluster)(struct uvm_object *,
 				 struct vm_page **, int *, struct vm_page *,
 				 int, voff_t, voff_t);
+						/* release page */
+	boolean_t		(*pgo_releasepg)(struct vm_page *, struct vm_page **);
 };
 
 /* pager flags [mostly for flush] */

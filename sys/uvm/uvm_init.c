@@ -148,6 +148,7 @@ uvm_init(void)
 	 * of kernel objects.
 	 */
 
+	uvm_page_rehash();
 	uao_create(VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS,
 	    UAO_FLAG_KERNSWAP);
 

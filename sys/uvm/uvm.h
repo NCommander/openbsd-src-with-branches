@@ -121,6 +121,12 @@ struct uvm {
 	struct proc *aiodoned_proc;
 	struct mutex aiodoned_lock;
 
+		/* page hash */
+	struct pglist *page_hash;	/* page hash table (vp/off->page) */
+	int page_nhash;			/* number of buckets */
+	int page_hashmask;		/* hash mask */
+	struct mutex hashlock;		/* lock on page_hash array */
+
 	/* static kernel map entry pool */
 	vm_map_entry_t kentry_free;	/* free page pool */
 	simple_lock_data_t kentry_lock;
