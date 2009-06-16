@@ -112,13 +112,6 @@
 #define	VM_FREELIST_LOW	1
 #define	VM_FREELIST_HIGH	2
 
-/* reserve ISA-DMA and 32-bit DMA memory */
-#define UVM_IO_RANGES							\
-	{								\
-		{ 0, 0x00ffffffUL },					\
-		{ 0, 0xffffffffUL },					\
-	}
-
 #define __HAVE_VM_PAGE_MD
 struct pv_entry;
 struct vm_page_md {
