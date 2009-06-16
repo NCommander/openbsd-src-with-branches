@@ -55,6 +55,8 @@
 #define UAO_FLAG_KERNSWAP	0x2	/* enable kernel swap */
 
 /* internal flags */
+#define UAO_FLAG_KILLME		0x4	/* aobj should die when last released
+					 * page is no longer PG_BUSY ... */
 #define UAO_FLAG_NOSWAP		0x8	/* aobj can't swap (kernel obj only!) */
 
 #ifdef _KERNEL
