@@ -76,7 +76,7 @@ static fixpt_t cexp[3] = {
  * prototypes
  */
 
-void uvm_loadav(struct loadavg *);
+static void uvm_loadav(struct loadavg *);
 
 /*
  * uvm_meter: calculate load average and wake up the swapper (if needed)
@@ -94,7 +94,7 @@ uvm_meter(void)
  * uvm_loadav: compute a tenex style load average of a quantity on
  * 1, 5, and 15 minute intervals.
  */
-void
+static void
 uvm_loadav(struct loadavg *avg)
 {
 	CPU_INFO_ITERATOR cii;

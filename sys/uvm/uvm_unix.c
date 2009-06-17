@@ -147,8 +147,6 @@ uvm_grow(struct proc *p, vaddr_t sp)
 		vm->vm_ssize += si;
 }
 
-#ifndef SMALL_KERNEL
-
 /*
  * uvm_coredump: dump core!
  */
@@ -322,5 +320,3 @@ uvm_coredump_walkmap(struct proc *p, void *iocookie,
 
 	return (0);
 }
-
-#endif	/* !SMALL_KERNEL */
