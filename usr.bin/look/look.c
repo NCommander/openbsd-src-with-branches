@@ -1,4 +1,4 @@
-/*	$OpenBSD: look.c,v 1.10 2003/06/10 22:20:47 deraadt Exp $	*/
+/*	$OpenBSD: look.c,v 1.11 2005/06/25 17:00:35 niallo Exp $	*/
 /*	$NetBSD: look.c,v 1.7 1995/08/31 22:41:02 jtc Exp $	*/
 
 /*-
@@ -43,7 +43,7 @@ static char copyright[] =
 #if 0
 static char sccsid[] = "@(#)look.c	8.2 (Berkeley) 5/4/95";
 #endif
-static char rcsid[] = "$OpenBSD: look.c,v 1.10 2003/06/10 22:20:47 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: look.c,v 1.11 2005/06/25 17:00:35 niallo Exp $";
 #endif /* not lint */
 
 /*
@@ -321,6 +321,7 @@ compare(char *s1, char *s2, char *back)
 void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: look [-df] [-t char] string [file]\n");
+	(void)fprintf(stderr,
+	    "usage: look [-df] [-t termchar] string [file]\n");
 	exit(2);
 }
