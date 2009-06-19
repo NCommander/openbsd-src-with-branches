@@ -1,4 +1,4 @@
-/*	$OpenBSD: strip.c,v 1.23 2004/10/09 20:36:05 mickey Exp $	*/
+/*	$OpenBSD: strip.c,v 1.24 2007/09/02 15:19:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -37,7 +37,7 @@ char copyright[] =
 
 #ifndef lint
 /*static char sccsid[] = "from: @(#)strip.c	5.8 (Berkeley) 11/6/91";*/
-static char rcsid[] = "$OpenBSD: strip.c,v 1.23 2004/10/09 20:36:05 mickey Exp $";
+static char rcsid[] = "$OpenBSD: strip.c,v 1.24 2007/09/02 15:19:34 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -133,8 +133,10 @@ main(int argc, char *argv[])
 			(void)close(fd);
 			ERROR(EFTYPE);
 		}
-		/* since we're dealing with an mmap there, we have to convert once
-		   for dealing with data in memory, and a second time for out
+		/*
+		 * Since we're dealing with an mmap there, we have to convert
+		 * once for dealing with data in memory, and a second time
+		 * for out.
 		 */
 		fix_header_order(ep);
 		newsize = 0;
