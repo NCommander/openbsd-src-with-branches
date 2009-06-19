@@ -1,4 +1,4 @@
-#	$OpenBSD: install.sub,v 1.585 2009/06/12 03:25:24 krw Exp $
+#	$OpenBSD: install.sub,v 1.586 2009/06/12 08:25:57 halex Exp $
 #	$NetBSD: install.sub,v 1.5.2.8 1996/09/02 23:25:02 pk Exp $
 #
 # Copyright (c) 1997-2009 Todd Miller, Theo de Raadt, Ken Westerback
@@ -504,6 +504,8 @@ makedev() {
 # $2 - symbolic name
 addhostent() {
 	local _addr=$1 _name=$2 _delim="."
+
+	[[ -z $_addr || -z $_name ]] && return
 
 	[[ $_addr == *:* ]] && _delim=":"
 
