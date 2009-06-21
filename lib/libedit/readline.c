@@ -1,4 +1,4 @@
-/*	$OpenBSD: readline.c,v 1.4 2008/06/26 05:42:05 ray Exp $ */
+/*	$OpenBSD: readline.c,v 1.5 2008/11/09 12:34:46 tobias Exp $ */
 /*	$NetBSD: readline.c,v 1.43 2003/11/03 03:22:55 christos Exp $	*/
 
 /*-
@@ -32,7 +32,7 @@
 
 #include "config.h"
 #if !defined(lint) && !defined(SCCSID)
-static const char rcsid[] = "$OpenBSD";
+static const char rcsid[] = "$OpenBSD$";
 #endif /* not lint && not SCCSID */
 
 #include <sys/types.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD */
+/*	$OpenBSD$	*/
 
 /* ====================================================================
  * The Apache Software License, Version 1.1

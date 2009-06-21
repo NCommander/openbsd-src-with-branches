@@ -1,4 +1,4 @@
-/* $OpenBSD */
+/* $OpenBSD$ */
 /* $NetBSD: pci_eb64plus.h,v 1.2 2000/06/05 21:47:26 thorpej Exp $ */
 
 /*

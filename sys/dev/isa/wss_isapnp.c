@@ -1,4 +1,4 @@
-/*	$OpenBSD; wss_isapnp.c,v1.0 1999/1/5 14:08:57 mike Exp $	*/ 
+/*	$OpenBSD$	*/
 /*	$NetBSD: wss_isapnp.c,v 1.5 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*

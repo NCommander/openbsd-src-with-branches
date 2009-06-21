@@ -1,4 +1,4 @@
-/*	$OpenBSD	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: tunefs.c,v 1.33 2005/01/19 20:46:16 xtraeme Exp $	*/
 
 /*
@@ -40,7 +40,7 @@ static const char copyright[] =
 #if 0
 static char sccsid[] = "@(#)tunefs.c	8.3 (Berkeley) 5/3/95";
 #else
-static const char rcsid[] = "$OpenBSD";
+static const char rcsid[] = "$OpenBSD$";
 #endif
 #endif /* not lint */
 

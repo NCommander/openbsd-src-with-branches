@@ -1,4 +1,4 @@
-/*	$OpenBSD $*/
+/*	$OpenBSD$	*/
 
 /*
  * logresolve 1.1
