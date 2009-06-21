@@ -1,4 +1,4 @@
-/* $OpenBSD: kexdhs.c,v 1.8 2006/10/31 16:33:12 markus Exp $ */
+/* $OpenBSD: kexdhs.c,v 1.9 2006/11/06 21:25:28 markus Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -134,7 +134,9 @@ kexdh_server(Kex *kex)
 	}
 
 	/* sign H */
-	PRIVSEP(key_sign(server_host_key, &signature, &slen, hash, hashlen));
+	if (PRIVSEP(key_sign(server_host_key, &signature, &slen, hash,
+	    hashlen)) < 0)
+		fatal("kexdh_server: key_sign failed");
 
 	/* destroy_sensitive_data(); */
 
