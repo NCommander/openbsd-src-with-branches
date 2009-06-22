@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2.c,v 1.119 2008/07/04 23:30:16 djm Exp $ */
+/* $OpenBSD: auth2.c,v 1.120 2008/11/04 08:22:12 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -30,8 +30,8 @@
 
 #include <fcntl.h>
 #include <pwd.h>
-#include <string.h>
 #include <stdarg.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "atomicio.h"

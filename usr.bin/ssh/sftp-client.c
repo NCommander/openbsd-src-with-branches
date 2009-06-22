@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-client.c,v 1.85 2008/06/12 20:47:04 djm Exp $ */
+/* $OpenBSD: sftp-client.c,v 1.86 2008/06/26 06:10:09 djm Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -31,10 +31,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdarg.h>
 
 #include "xmalloc.h"
 #include "buffer.h"

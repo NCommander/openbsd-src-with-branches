@@ -1,4 +1,4 @@
-/* $OpenBSD: gss-genr.c,v 1.18 2007/06/12 08:20:00 djm Exp $ */
+/* $OpenBSD: gss-genr.c,v 1.19 2007/06/12 11:56:15 dtucker Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Simon Wilkinson. All rights reserved.
@@ -28,8 +28,8 @@
 
 #include <sys/param.h>
 
-#include <string.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "xmalloc.h"
 #include "buffer.h"
