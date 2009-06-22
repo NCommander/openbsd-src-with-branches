@@ -248,6 +248,7 @@ m_inithdr(struct mbuf *m)
 	m->m_data = m->m_pktdat;
 	m->m_flags = M_PKTHDR;
 	m->m_pkthdr.rcvif = NULL;
+	m->m_pkthdr.rdomain = 0;
 	SLIST_INIT(&m->m_pkthdr.tags);
 	m->m_pkthdr.csum_flags = 0;
 	m->m_pkthdr.ether_vtag = 0;
