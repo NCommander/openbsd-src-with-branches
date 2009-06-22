@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.89 2009/06/06 12:31:17 rainer Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.90 2009/06/20 10:39:52 blambert Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -161,7 +161,6 @@ route_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 	} else
 		error = raw_usrreq(so, req, m, nam, control, p);
 
-	rp = sotorawcb(so);
 	if (req == PRU_ATTACH && rp) {
 		int af = rp->rcb_proto.sp_protocol;
 		if (error) {
