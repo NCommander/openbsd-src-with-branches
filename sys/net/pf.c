@@ -5915,6 +5915,13 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0,
 		} else if (s == NULL)
 			action = pf_test_rule(&r, &s, dir, kif,
 			    m, off, h, &pd, &a, &ruleset, &ip6intrq);
+
+		if (s) {
+			if (s->max_mss)
+				pf_normalize_mss(m, off, &pd, s->max_mss);
+		} else if (r->max_mss)
+			pf_normalize_mss(m, off, &pd, r->max_mss);
+
 		break;
 	}
 
