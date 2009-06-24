@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_private.h,v 1.13 2009/06/20 19:50:05 millert Exp $ */
+/*	$OpenBSD: kvm_private.h,v 1.14 2009/06/20 20:20:43 millert Exp $ */
 /*	$NetBSD: kvm_private.h,v 1.7 1996/05/05 04:32:15 gwr Exp $	*/
 
 /*-
@@ -106,3 +106,4 @@ ssize_t	 _kvm_pread(kvm_t *, int, void *, size_t, off_t);
 ssize_t	 _kvm_pwrite(kvm_t *, int, const void *, size_t, off_t);
 int	 _kvm_stat_cd9660(kvm_t *, struct kinfo_file2 *, struct vnode *);
 int	 _kvm_stat_udf(kvm_t *, struct kinfo_file2 *, struct vnode *);
+int	 _kvm_stat_ntfs(kvm_t *, struct kinfo_file2 *, struct vnode *);
