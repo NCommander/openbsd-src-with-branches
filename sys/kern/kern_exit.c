@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.83 2009/03/26 17:24:33 oga Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.84 2009/04/03 04:22:49 guenther Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -304,10 +304,6 @@ exit1(struct proc *p, int rv, int flags)
 			wakeup(pp);
 	}
 
-	if (p->p_exitsig != 0)
-		psignal(p->p_pptr, P_EXITSIG(p));
-	wakeup(p->p_pptr);
-
 	/*
 	 * Release the process's signal state.
 	 */
@@ -408,8 +404,9 @@ reaper(void)
 		if ((p->p_flag & P_NOZOMBIE) == 0) {
 			p->p_stat = SZOMB;
 
+			if (P_EXITSIG(p) != 0)
+				psignal(p->p_pptr, P_EXITSIG(p));
 			/* Wake up the parent so it can get exit status. */
-			psignal(p->p_pptr, SIGCHLD);
 			wakeup(p->p_pptr);
 		} else {
 			/* Noone will wait for us. Just zap the process now */
