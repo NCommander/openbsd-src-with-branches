@@ -1,6 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2009/06/01 22:58:49 nicm Exp $
-
-.PATH:	${.CURDIR}/..
+# $OpenBSD: Makefile,v 1.2 2009/06/24 22:49:56 nicm Exp $
 
 PROG=	tmux
 SRCS=	arg.c attributes.c buffer-poll.c buffer.c cfg.c client-fn.c \
@@ -42,7 +40,5 @@ CFLAGS+= -Wundef -Wbad-function-cast -Winline -Wcast-align
 
 LDADD=  -lutil -lncurses
 DPADD=  ${LIBUTIL}
-
-MAN=	tmux.1
 
 .include <bsd.prog.mk>
