@@ -163,7 +163,10 @@ sr_raid1_set_chunk_state(struct sr_discipline *sd, int c, int new_state)
 	case BIOC_SDREBUILD:
 		switch (new_state) {
 		case BIOC_SDONLINE:
+			break;
 		case BIOC_SDOFFLINE:
+			/* Abort rebuild since the rebuild chunk disappeared. */
+			sd->sd_reb_abort = 1;
 			break;
 		default:
 			goto die;
