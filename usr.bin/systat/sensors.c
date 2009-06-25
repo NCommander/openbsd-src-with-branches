@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensors.c,v 1.14 2008/12/07 02:56:06 canacar Exp $	*/
+/*	$OpenBSD: sensors.c,v 1.15 2009/06/25 20:39:02 okan Exp $	*/
 
 /*
  * Copyright (c) 2007 Deanna Phillips <deanna@openbsd.org>
@@ -59,8 +59,8 @@ int select_sn(void);
 
 const char *drvstat[] = {
 	NULL,
-	"empty", "ready", "powerup", "online", "idle", "active",
-	"rebuild", "powerdown", "fail", "pfail"
+	"empty", "ready", "powering up", "online", "idle", "active",
+	"rebuilding", "powering down", "failed", "degraded"
 };
 
 
