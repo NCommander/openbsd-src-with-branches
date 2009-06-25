@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.7 2006/09/16 11:35:18 mpf Exp $	*/
+/*	$OpenBSD: carp.c,v 1.8 2006/11/28 19:21:15 reyk Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -225,6 +225,7 @@ int
 carp_init(void)
 {
 	cfgstate.route_socket = -1;
+	unsigned int rtfilter;
 
 	if (cfgstate.lockedstate != INIT) {
 		cfgstate.runstate = cfgstate.lockedstate;
@@ -249,6 +250,11 @@ carp_init(void)
 		fprintf(stderr, "No routing socket\n");
 		return -1;
 	}
+
+	rtfilter = ROUTE_FILTER(RTM_IFINFO);
+	if (setsockopt(cfgstate.route_socket, PF_ROUTE, ROUTE_MSGFILTER,
+	    &rtfilter, sizeof(rtfilter)) == -1)         /* not fatal */
+		log_msg(2, "carp_init: setsockopt");
 
 	cfgstate.runstate = carp_get_state(cfgstate.carp_ifname);
 	if (cfgstate.runstate == FAIL) {
