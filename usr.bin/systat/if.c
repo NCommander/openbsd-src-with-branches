@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.12 2008/06/12 22:26:01 canacar Exp $ */
+/*	$OpenBSD: if.c,v 1.13 2009/04/03 20:29:21 deraadt Exp $ */
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
  *
@@ -221,8 +221,9 @@ fetchifstat(void)
 	lim = buf + need;
 	for (next = buf; next < lim; next += ifm.ifm_msglen) {
 		bcopy(next, &ifm, sizeof ifm);
-		if (ifm.ifm_type != RTM_IFINFO ||
-		   !(ifm.ifm_addrs & RTA_IFP))
+		if (ifm.ifm_version != RTM_VERSION ||
+		    ifm.ifm_type != RTM_IFINFO ||
+		    !(ifm.ifm_addrs & RTA_IFP))
 			continue;
 		if (ifm.ifm_index >= nifs) {
 			if ((newstats = realloc(ifstats, (ifm.ifm_index + 4)
