@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.46 2009/06/05 00:13:35 claudio Exp $ */
+/*	$OpenBSD: arp.c,v 1.47 2009/06/05 03:54:42 chris Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -603,7 +603,8 @@ doit:
 
 	do {
 		l = read(s, (char *)&m_rtmsg, sizeof(m_rtmsg));
-	} while (l > 0 && (rtm->rtm_seq != seq || rtm->rtm_pid != pid));
+	} while (l > 0 && (rtm->rtm_version != RTM_VERSION ||
+	    rtm->rtm_seq != seq || rtm->rtm_pid != pid));
 
 	if (l < 0)
 		warn("read from routing socket");
