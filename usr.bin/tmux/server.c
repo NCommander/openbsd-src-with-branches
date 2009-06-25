@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.2 2009/06/24 17:36:15 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.3 2009/06/24 22:49:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -288,7 +288,7 @@ server_main(int srv_fd)
 			xtimeout = POLL_TIMEOUT;
 
 		/* Do the poll. */
-		if ((nfds = poll(pfds, nfds, xtimeout)) == -1) {
+		if (poll(pfds, nfds, xtimeout) == -1) {
 			if (errno == EAGAIN || errno == EINTR)
 				continue;
 			fatal("poll failed");
