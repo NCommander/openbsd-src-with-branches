@@ -2827,6 +2827,7 @@ again:
 			if ((bp->b_flags & (B_BUSY | B_DELWRI | B_NEEDCOMMIT))
 				!= (B_DELWRI | B_NEEDCOMMIT))
 				continue;
+			bremfree(bp);
 			bp->b_flags |= B_WRITEINPROG;
 			buf_acquire(bp);
 			/*
@@ -2905,6 +2906,7 @@ loop:
 			panic("nfs_fsync: not dirty");
 		if ((passone || !commit) && (bp->b_flags & B_NEEDCOMMIT))
 			continue;
+		bremfree(bp);
 		if (passone || !commit) {
 			bp->b_flags |= B_ASYNC;
 		} else {

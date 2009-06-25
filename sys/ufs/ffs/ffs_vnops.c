@@ -448,6 +448,7 @@ loop:
 			continue;
 		}
 
+		bremfree(bp);
 		buf_acquire(bp);
 		bp->b_flags |= B_SCANNED;
 		splx(s);

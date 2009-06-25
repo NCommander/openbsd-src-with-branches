@@ -80,12 +80,10 @@ buf_acquire(struct buf *bp)
 	KASSERT((bp->b_flags & B_BUSY) == 0);
 
 	s = splbio();
-
 	/*
 	 * Busy before waiting for kvm.
 	 */
 	SET(bp->b_flags, B_BUSY);
-	bremfree(bp);
 	buf_map(bp);
 
 	splx(s);

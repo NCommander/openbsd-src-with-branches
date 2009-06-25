@@ -812,6 +812,7 @@ start:
 		if (!ISSET(bp->b_flags, B_INVAL)) {
 			bcstats.cachehits++;
 			SET(bp->b_flags, B_CACHE);
+			bremfree(bp);
 			buf_acquire(bp);
 			splx(s);
 			return (bp);
@@ -973,6 +974,7 @@ buf_daemon(struct proc *p)
 			if (bcstats.numdirtypages < lodirtypages)
 				break;
 
+			bremfree(bp);
 			buf_acquire(bp);
 			splx(s);
 

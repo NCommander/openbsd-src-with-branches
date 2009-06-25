@@ -1687,6 +1687,7 @@ vfs_syncwait(int verbose)
 			 */
 			if (bp->b_flags & B_DELWRI) {
 				s = splbio();
+				bremfree(bp);
 				buf_acquire(bp);
 				splx(s);
 				nbusy++;
@@ -1857,6 +1858,7 @@ loop:
 				}
 				break;
 			}
+			bremfree(bp);
 			buf_acquire(bp);
 			/*
 			 * XXX Since there are no node locks for NFS, I believe
@@ -1894,6 +1896,7 @@ loop:
 			continue;
 		if ((bp->b_flags & B_DELWRI) == 0)
 			panic("vflushbuf: not dirty");
+		bremfree(bp);
 		buf_acquire(bp);
 		splx(s);
 		/*

@@ -4700,6 +4700,7 @@ softdep_fsync_mountdev(vp, waitfor)
 		    wk->wk_type != D_BMSAFEMAP) {
 			continue;
 		}
+		bremfree(bp);
 		buf_acquire(bp);
 		FREE_LOCK(&lk);
 		(void) bawrite(bp);
@@ -5607,6 +5608,7 @@ getdirtybuf(bp, waitfor)
 	}
 	if ((bp->b_flags & B_DELWRI) == 0)
 		return (0);
+	bremfree(bp);
 	buf_acquire(bp);
 	return (1);
 }
