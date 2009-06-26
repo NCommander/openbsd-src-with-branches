@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs.c,v 1.2 2009/06/19 12:11:34 jasper Exp $	*/
+/*	$OpenBSD: nfs.c,v 1.3 2009/06/26 06:39:47 jasper Exp $	*/
 
 /*
  * Copyright (c) 2009 Jasper Lievisse Adriaanse <jasper@openbsd.org>
@@ -436,7 +436,8 @@ print_server(void)
 	  nfsstats.srvrpccnt[NFSPROC_COMMIT]);
 	end_line();
 
-	/* The following end_line() creates two seperate blocks on the screen */
+	/* This creates an empty space on screen to separate the two blocks */
+	print_fld_str(FLD_NFS_S_RPC_COUNTS, "");
 	end_line();
 
 	print_fld_str(FLD_NFS_S_RPC_COUNTS, "Ret-Failed");
