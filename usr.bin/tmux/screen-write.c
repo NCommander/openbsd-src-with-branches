@@ -1,4 +1,4 @@
-/* $OpenBSD: screen-write.c,v 1.6 2009/06/03 23:37:30 nicm Exp $ */
+/* $OpenBSD: screen-write.c,v 1.7 2009/06/05 03:13:16 ray Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -164,7 +164,7 @@ screen_write_vnputs(struct screen_write_ctx *ctx, ssize_t maxlen,
 			gc->flags &= ~GRID_FLAG_UTF8;
 
 		} else {
-			if (maxlen > 0 && size > (size_t) maxlen)
+			if (maxlen > 0 && size + 1 > (size_t) maxlen)
 				break;
 
 			size++;
