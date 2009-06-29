@@ -1,4 +1,4 @@
-/*	$OpenBSD: isp_pci.c,v 1.48 2009/06/24 11:38:40 deraadt Exp $	*/
+/*	$OpenBSD: isp_pci.c,v 1.49 2009/06/28 01:35:27 krw Exp $	*/
 /* $FreeBSD: src/sys/dev/isp/isp_pci.c,v 1.148 2007/06/26 23:08:57 mjacob Exp $*/
 /*-
  * Copyright (c) 1997-2006 by Matthew Jacob
@@ -212,7 +212,8 @@ static struct ispmdvec mdvec_2400 = {
 	isp_pci_dmateardown,
 	isp_pci_reset0,
 	isp_pci_reset1,
-	NULL
+	NULL,
+	ISP_2400_RISC_CODE
 };
 
 #ifndef	PCIM_CMD_INVEN
