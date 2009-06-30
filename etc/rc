@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.325 2009/05/31 20:57:12 halex Exp $
+#	$OpenBSD: rc,v 1.326 2009/06/03 14:45:39 jj Exp $
 
 # System startup script run by init on autoboot
 # or after single-user.
@@ -331,6 +331,10 @@ dmesg >/var/run/dmesg.boot
 
 echo 'starting system logger'
 rm -f /dev/log
+if [ X"${httpd_flags}" != X"-u" ]; then
+	rm -f /var/www/dev/log
+	syslogd_flags="${syslogd_flags} -a /var/www/dev/log"
+fi
 if [ X"${named_flags}" != X"NO" ]; then
 	rm -f /var/named/dev/log
 	syslogd_flags="${syslogd_flags} -a /var/named/dev/log"
