@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: cmd-paste-buffer.c,v 1.1 2009/06/01 22:58:49 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -63,7 +63,7 @@ cmd_paste_buffer_exec(struct cmd *self, struct cmd_ctx *ctx)
 		}
 	}
 
-	if (pb != NULL)
+	if (pb != NULL && *pb->data != '\0')
 		buffer_write(w->active->out, pb->data, strlen(pb->data));
 
 	/* Delete the buffer if -d. */
