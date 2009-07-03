@@ -10,7 +10,7 @@ CC=${HOSTCC}
     (${MACHINE} == "hppa64") || (${MACHINE} == "i386") || \
     (${MACHINE} == "sgi") || (${MACHINE} == "sparc64")
 
-FIRM=	bnx
+FIRM=	bnx-b06 bnx-b09 bnx-rv2p bnx-xi-rv2p bnx-xi90-rv2p
 
 PROG=	build
 
