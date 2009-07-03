@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: PackingList.pm,v 1.89 2009/06/25 07:41:04 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -368,7 +368,11 @@ sub set_pkgname
 sub pkgname
 {
 	my $self = shift;
-	return $self->{name}->name;
+	if (defined $self->{name}) {
+		return $self->{name}->name;
+	} else {
+		return undef;
+	}
 }
 
 sub localbase
