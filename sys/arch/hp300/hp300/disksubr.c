@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.44 2008/06/12 06:58:33 deraadt Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.45 2009/06/04 21:13:01 deraadt Exp $	*/
 /*	$NetBSD: disksubr.c,v 1.9 1997/04/01 03:12:13 scottr Exp $	*/
 
 /*
@@ -62,6 +62,8 @@ readdisklabel(dev_t dev, void (*strat)(struct buf *),
 	bp = geteblk((int)lp->d_secsize);
 	bp->b_dev = dev;
 
+	DL_SETBSTART(lp, lp->d_secpercyl);
+
 	/* don't read the on-disk label if we are in spoofed-only mode */
 	if (spoofonly)
 		goto done;
@@ -75,7 +77,8 @@ readdisklabel(dev_t dev, void (*strat)(struct buf *),
 		goto done;
 	}
 
-	msg = checkdisklabel(bp->b_data + LABELOFFSET, lp, 0, DL_GETDSIZE(lp));
+	msg = checkdisklabel(bp->b_data + LABELOFFSET, lp,
+	    DL_GETBSTART(lp), DL_GETDSIZE(lp));
 	if (msg == NULL)
 		goto done;
 
