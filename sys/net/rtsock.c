@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.91 2009/06/22 19:01:56 blambert Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.92 2009/06/26 10:14:24 blambert Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -738,8 +738,13 @@ flush:
 	if (rtm) {
 		if (error)
 			rtm->rtm_errno = error;
-		else 
+		else { 
+#ifdef MPLS
+			if (rt && rt->rt_flags & RTF_MPLS)
+				rtm->rtm_flags |= RTF_MPLS;
+#endif
 			rtm->rtm_flags |= RTF_DONE;
+		}
 	}
 	if (rt)
 		rtfree(rt);
