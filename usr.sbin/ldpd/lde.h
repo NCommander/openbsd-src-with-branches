@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde.h,v 1.2 2009/06/05 22:34:45 michele Exp $ */
+/*	$OpenBSD: lde.h,v 1.3 2009/06/19 17:10:09 michele Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -122,7 +122,7 @@ int		 route_start_timeout(struct rt_node *);
 void		 route_start_garbage(struct rt_node *);
 void		 rt_dump(pid_t);
 void		 rt_snap(u_int32_t);
-void		 lde_insert(struct kroute *);
+void		 lde_kernel_insert(struct kroute *);
 void		 lde_check_mapping(struct map *, struct lde_nbr *);
 void		 lde_check_request(struct map *, struct lde_nbr *);
 
