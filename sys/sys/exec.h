@@ -204,7 +204,7 @@ void	new_vmcmd(struct exec_vmcmd_set *evsp,
 	vcp->ev_len = (len); \
 	vcp->ev_addr = (addr); \
 	if ((vcp->ev_vp = (vp)) != NULLVP) \
-		VREF(vp); \
+		vref(vp); \
 	vcp->ev_offset = (offset); \
 	vcp->ev_prot = (prot); \
 	vcp->ev_flags = (flags); \

@@ -279,8 +279,8 @@ vfs_getcwd_common(struct vnode *lvp, struct vnode *rvp, char **bpp, char *bufp,
 			rvp = rootvnode;
 	}
 
-	VREF(rvp);
-	VREF(lvp);
+	vref(rvp);
+	vref(lvp);
 
 	error = vn_lock(lvp, LK_EXCLUSIVE | LK_RETRY, p);
 	if (error) {
@@ -333,7 +333,7 @@ vfs_getcwd_common(struct vnode *lvp, struct vnode *rvp, char **bpp, char *bufp,
 				goto out;
 			}
 
-			VREF(lvp);
+			vref(lvp);
 
 			error = vn_lock(lvp, LK_EXCLUSIVE | LK_RETRY, p);
 			if (error) {

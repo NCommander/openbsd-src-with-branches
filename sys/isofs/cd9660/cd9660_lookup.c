@@ -398,7 +398,7 @@ found:
 		*vpp = tdp;
 	} else if (dp->i_number == dp->i_ino) {
 		brelse(bp);
-		VREF(vdp);	/* we want ourself, ie "." */
+		vref(vdp);	/* we want ourself, ie "." */
 		*vpp = vdp;
 	} else {
 		error = cd9660_vget_internal(vdp->v_mount, dp->i_ino, &tdp,

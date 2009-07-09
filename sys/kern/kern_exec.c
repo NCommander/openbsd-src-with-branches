@@ -464,7 +464,7 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 	/* record proc's vnode, for use by procfs and others */
 	if (p->p_textvp)
 		vrele(p->p_textvp);
-	VREF(pack.ep_vp);
+	vref(pack.ep_vp);
 	p->p_textvp = pack.ep_vp;
 
 	atomic_setbits_int(&p->p_flag, P_EXEC);

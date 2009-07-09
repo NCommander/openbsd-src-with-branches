@@ -440,7 +440,7 @@ ntfs_ntlookup(
 	ip->i_mp = ntmp;
 
 	LIST_INIT(&ip->i_fnlist);
-	VREF(ip->i_devvp);
+	vref(ip->i_devvp);
 
 	/* init lock and lock the newborn ntnode */
 	rw_init(&ip->i_lock, "ntnode");
@@ -1019,7 +1019,7 @@ ntfs_ntlookupfile(
 			     (attrname && fp->f_attrname &&
 			      !strcmp(attrname, fp->f_attrname))))
 			{
-				VREF(vp);
+				vref(vp);
 				*vpp = vp;
 				error = 0;
 				goto fail;

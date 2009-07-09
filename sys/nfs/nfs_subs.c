@@ -1284,7 +1284,7 @@ nfs_namei(ndp, fhp, len, slp, nam, mdp, dposp, retdirp, p)
 		error = ENOTDIR;
 		goto out;
 	}
-	VREF(dp);
+	vref(dp);
 	*retdirp = dp;
 	ndp->ni_startdir = dp;
 	if (rdonly)

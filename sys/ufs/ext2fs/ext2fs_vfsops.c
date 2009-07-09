@@ -914,7 +914,7 @@ ext2fs_vget(struct mount *mp, ino_t ino, struct vnode **vpp)
 	/*
 	 * Finish inode initialization now that aliasing has been resolved.
 	 */
-	VREF(ip->i_devvp);
+	vref(ip->i_devvp);
 	/*
 	 * Set up a generation number for this inode if it does not
 	 * already have one. This should only happen on old filesystems.

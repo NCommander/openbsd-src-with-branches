@@ -596,7 +596,7 @@ ntfs_mountfs(devvp, mp, argsp, p)
 			if(error)
 				goto out1;
 			ntmp->ntm_sysvn[pi[i]]->v_flag |= VSYSTEM;
-			VREF(ntmp->ntm_sysvn[pi[i]]);
+			vref(ntmp->ntm_sysvn[pi[i]]);
 			vput(ntmp->ntm_sysvn[pi[i]]);
 		}
 	}

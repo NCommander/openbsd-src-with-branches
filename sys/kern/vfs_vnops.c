@@ -438,7 +438,7 @@ vn_ioctl(struct file *fp, u_long com, caddr_t data, struct proc *p)
 			if (p->p_session->s_ttyvp)
 				vrele(p->p_session->s_ttyvp);
 			p->p_session->s_ttyvp = vp;
-			VREF(vp);
+			vref(vp);
 		}
 		return (error);
 	}

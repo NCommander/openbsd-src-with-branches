@@ -856,10 +856,10 @@ fdinit(struct proc *p)
 		struct filedesc *fdp = p->p_fd;
 
 		newfdp->fd_fd.fd_cdir = fdp->fd_cdir;
-		VREF(newfdp->fd_fd.fd_cdir);
+		vref(newfdp->fd_fd.fd_cdir);
 		newfdp->fd_fd.fd_rdir = fdp->fd_rdir;
 		if (newfdp->fd_fd.fd_rdir)
-			VREF(newfdp->fd_fd.fd_rdir);
+			vref(newfdp->fd_fd.fd_rdir);
 	}
 	rw_init(&newfdp->fd_fd.fd_lock, "fdlock");
 
@@ -902,9 +902,9 @@ fdcopy(struct proc *p)
 	newfdp = pool_get(&fdesc_pool, PR_WAITOK);
 	bcopy(fdp, newfdp, sizeof(struct filedesc));
 	if (newfdp->fd_cdir)
-		VREF(newfdp->fd_cdir);
+		vref(newfdp->fd_cdir);
 	if (newfdp->fd_rdir)
-		VREF(newfdp->fd_rdir);
+		vref(newfdp->fd_rdir);
 	newfdp->fd_refcnt = 1;
 
 	/*

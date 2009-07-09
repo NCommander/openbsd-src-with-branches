@@ -1006,7 +1006,7 @@ udf_lookup(void *v)
 	 * If dvp is what's being looked up, then return it.
 	 */
 	if (ap->a_cnp->cn_namelen == 1 && ap->a_cnp->cn_nameptr[0] == '.') {
-		VREF(dvp);
+		vref(dvp);
 		*vpp = dvp;
 		return (0);
 	}

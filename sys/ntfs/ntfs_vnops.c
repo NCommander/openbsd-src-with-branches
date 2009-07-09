@@ -734,7 +734,7 @@ ntfs_lookup(ap)
 		dprintf(("ntfs_lookup: faking . directory in %d\n",
 			dip->i_number));
 
-		VREF(dvp);
+		vref(dvp);
 		*ap->a_vpp = dvp;
 		error = 0;
 	} else if (cnp->cn_flags & ISDOTDOT) {

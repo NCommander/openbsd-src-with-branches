@@ -484,7 +484,7 @@ found:
 		else
 			dp->i_count = dp->i_offset - prevoff;
 		if (dp->i_number == dp->i_ino) {
-			VREF(vdp);
+			vref(vdp);
 			*vpp = vdp;
 			return (0);
 		}
@@ -579,7 +579,7 @@ found:
 		}
 		*vpp = tdp;
 	} else if (dp->i_number == dp->i_ino) {
-		VREF(vdp);	/* we want ourself, ie "." */
+		vref(vdp);	/* we want ourself, ie "." */
 		*vpp = vdp;
 	} else {
 		error = VFS_VGET(vdp->v_mount, dp->i_ino, &tdp);

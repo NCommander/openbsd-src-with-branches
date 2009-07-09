@@ -657,7 +657,7 @@ procfs_lookup(void *v)
 
 	if (cnp->cn_namelen == 1 && *pname == '.') {
 		*vpp = dvp;
-		VREF(dvp);
+		vref(dvp);
 		return (0);
 	}
 
@@ -749,7 +749,7 @@ procfs_lookup(void *v)
 		if (pt->pt_pfstype == Pfile) {
 			fvp = p->p_textvp;
 			/* We already checked that it exists. */
-			VREF(fvp);
+			vref(fvp);
 			vn_lock(fvp, LK_EXCLUSIVE | LK_RETRY, curp);
 			if (wantpunlock) {
 				VOP_UNLOCK(dvp, 0, curp);

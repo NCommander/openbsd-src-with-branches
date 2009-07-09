@@ -1186,9 +1186,9 @@ systrace_getcwd(struct fsystrace *fst, struct str_process *strp)
 	fst->fd_rdir = myfdp->fd_rdir;
 
 	if ((myfdp->fd_cdir = fdp->fd_cdir) != NULL)
-		VREF(myfdp->fd_cdir);
+		vref(myfdp->fd_cdir);
 	if ((myfdp->fd_rdir = fdp->fd_rdir) != NULL)
-		VREF(myfdp->fd_rdir);
+		vref(myfdp->fd_rdir);
 
 	return (0);
 }
