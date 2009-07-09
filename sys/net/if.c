@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.195 2009/06/05 03:10:28 halex Exp $	*/
+/*	$OpenBSD: if.c,v 1.196 2009/06/06 12:31:17 rainer Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -307,7 +307,7 @@ if_attachsetup(struct ifnet *ifp)
 void
 if_alloc_sadl(struct ifnet *ifp)
 {
-	unsigned socksize, ifasize;
+	unsigned int socksize, ifasize;
 	int namelen, masklen;
 	struct sockaddr_dl *sdl;
 	struct ifaddr *ifa;
