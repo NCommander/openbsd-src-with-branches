@@ -219,7 +219,7 @@ retry:
 	 * Directory entry was not in cache, have to create a vnode and
 	 * copy it from the passed disk buffer.
 	 */
-	/* getnewvnode() does a vref() on the vnode */
+	/* getnewvnode() does a VREF() on the vnode */
 	error = getnewvnode(VT_MSDOSFS, pmp->pm_mountp,
 			    msdosfs_vnodeop_p, &nvp);
 	if (error) {
@@ -329,7 +329,7 @@ retry:
 		}
 	} else
 		nvp->v_type = VREG;
-	vref(ldep->de_devvp);
+	VREF(ldep->de_devvp);
 	*depp = ldep;
 	return (0);
 }

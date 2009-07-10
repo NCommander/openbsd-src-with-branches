@@ -1,4 +1,4 @@
-/*	$Id: mdoc_action.c,v 1.9 2009/06/27 12:43:11 schwarze Exp $ */
+/*	$Id: mdoc_action.c,v 1.8 2009/06/23 23:02:54 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009 Kristaps Dzonsons <kristaps@kth.se>
  *
@@ -33,7 +33,6 @@ enum	mwarn {
 enum	merr {
 	ETOOLONG,
 	EMALLOC,
-	EUTSNAME,
 	ENUMFMT
 };
 
@@ -268,9 +267,6 @@ perr(struct mdoc *m, int line, int pos, enum merr type)
 	case (ETOOLONG):
 		p = "argument text too long";
 		break;
-	case (EUTSNAME):
-		p = "utsname";
-		break;
 	case (EMALLOC):
 		p = "memory exhausted";
 		break;
@@ -504,7 +500,7 @@ post_os(POST_ARGS)
 
 	if (0 == buf[0]) {
 		if (-1 == uname(&utsname))
-			return(verr(m, EUTSNAME));
+			return(mdoc_err(m, "utsname"));
 		if (strlcat(buf, utsname.sysname, 64) >= 64)
 			return(verr(m, ETOOLONG));
 		if (strlcat(buf, " ", 64) >= 64)

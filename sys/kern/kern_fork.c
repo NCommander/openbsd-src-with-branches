@@ -286,7 +286,7 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	/* bump references to the text vnode (for procfs) */
 	p2->p_textvp = p1->p_textvp;
 	if (p2->p_textvp)
-		vref(p2->p_textvp);
+		VREF(p2->p_textvp);
 
 	if (flags & FORK_CLEANFILES)
 		p2->p_fd = fdinit(p1);
@@ -332,7 +332,7 @@ fork1(struct proc *p1, int exitsig, int flags, void *stack, size_t stacksize,
 	if (p1->p_traceflag & KTRFAC_INHERIT) {
 		p2->p_traceflag = p1->p_traceflag;
 		if ((p2->p_tracep = p1->p_tracep) != NULL)
-			vref(p2->p_tracep);
+			VREF(p2->p_tracep);
 	}
 #endif
 

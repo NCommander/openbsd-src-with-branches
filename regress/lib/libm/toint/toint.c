@@ -1,4 +1,4 @@
-/*	$OpenBSD: toint.c,v 1.5 2004/04/02 20:37:42 mickey Exp $	*/
+/*	$OpenBSD: toint.c,v 1.4 2003/09/02 23:52:17 david Exp $	*/
 
 /*	Written by Michael Shalayeff, 2003, Public domain.	*/
 
@@ -41,6 +41,12 @@ main(int argc, char *argv[])
 
 	if (toint(8.6) != 9)
 		exit(1);
+
+	i = toint(INT_MAX);
+	if (i != INT_MIN) {
+		printf("%d != %d\n", i, INT_MIN);
+		exit(1);
+	}
 
 	exit(0);
 }

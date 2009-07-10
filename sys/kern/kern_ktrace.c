@@ -71,7 +71,7 @@ ktrsettracevnode(struct proc *p, struct vnode *newvp)
 		return;
 
 	if (newvp != NULL)
-		vref(newvp);
+		VREF(newvp);
 
 	vp = p->p_tracep;
 	p->p_tracep = newvp;

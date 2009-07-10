@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdtemp.c,v 1.9 2009/07/10 00:07:37 cnst Exp $	*/
+/*	$OpenBSD: sdtemp.c,v 1.6 2008/11/13 17:57:15 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Theo de Raadt
@@ -23,8 +23,9 @@
 
 #include <dev/i2c/i2cvar.h>
 
-/* JEDEC JC-42.4 registers */
+/* JDEC JC-42.4 registers */
 #define JC_TEMP			0x05
+#define JC_TEMP_SIGN		0x10
 
 /* Sensors */
 #define JCTEMP_TEMP		0
@@ -61,8 +62,7 @@ sdtemp_match(struct device *parent, void *match, void *aux)
 	    strcmp(ia->ia_name, "mcp9805") == 0 ||
 	    strcmp(ia->ia_name, "mcp98242") == 0 ||
 	    strcmp(ia->ia_name, "adt7408") == 0 ||
-	    strcmp(ia->ia_name, "stts424e02") == 0 ||
-	    strcmp(ia->ia_name, "cat34ts02") == 0)
+	    strcmp(ia->ia_name, "stts424e02") == 0)
 		return (1);
 	return (0);
 }
@@ -107,9 +107,9 @@ sdtemp_refresh(void *arg)
 	cmd = JC_TEMP;
 	if (iic_exec(sc->sc_tag, I2C_OP_READ_WITH_STOP, sc->sc_addr,
 	    &cmd, sizeof cmd, &data, sizeof data, 0) == 0) {
-		sdata = betoh16(data) & 0x1fff;
-		if (sdata & 0x1000)
-			sdata = -0x2000;
+		sdata = betoh16(data) & 0x0fff;
+		if (betoh16(data) & JC_TEMP_SIGN)
+			sdata = -sdata;
 		sc->sc_sensor[JCTEMP_TEMP].value =
 		    273150000 + 62500 * sdata;
 		sc->sc_sensor[JCTEMP_TEMP].flags &= ~SENSOR_FINVALID;

@@ -170,7 +170,7 @@ portal_lookup(void *v)
 
 	if (cnp->cn_namelen == 1 && *pname == '.') {
 		*vpp = dvp;
-		vref(dvp);
+		VREF(dvp);
 		return (0);
 	}
 

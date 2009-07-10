@@ -206,7 +206,7 @@ portal_root(struct mount *mp, struct vnode **vpp)
 	 * Return locked reference to root.
 	 */
 	vp = VFSTOPORTAL(mp)->pm_root;
-	vref(vp);
+	VREF(vp);
 	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
 	*vpp = vp;
 	return (0);

@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.3 2009/07/07 21:23:22 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.1 2009/06/01 22:58:49 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -42,7 +42,6 @@ const struct cmd_entry *cmd_table[] = {
 	&cmd_down_pane_entry,
 	&cmd_find_window_entry,
 	&cmd_has_session_entry,
-	&cmd_if_shell_entry,
 	&cmd_kill_pane_entry,
 	&cmd_kill_server_entry,
 	&cmd_kill_session_entry,
@@ -106,7 +105,7 @@ cmd_parse(int argc, char **argv, char **cause)
 	const struct cmd_entry **entryp, *entry;
 	struct cmd	        *cmd;
 	char			 s[BUFSIZ];
-	int			 opt, ambiguous = 0;
+	int			 opt;
 
 	*cause = NULL;
 	if (argc == 0) {
@@ -118,7 +117,6 @@ cmd_parse(int argc, char **argv, char **cause)
 	for (entryp = cmd_table; *entryp != NULL; entryp++) {
 		if ((*entryp)->alias != NULL &&
 		    strcmp((*entryp)->alias, argv[0]) == 0) {
-			ambiguous = 0;
 			entry = *entryp;
 			break;
 		}
@@ -126,15 +124,13 @@ cmd_parse(int argc, char **argv, char **cause)
 		if (strncmp((*entryp)->name, argv[0], strlen(argv[0])) != 0)
 			continue;
 		if (entry != NULL)
-			ambiguous = 1;
+			goto ambiguous;
 		entry = *entryp;
 
 		/* Bail now if an exact match. */
 		if (strcmp(entry->name, argv[0]) == 0)
 			break;
 	}
-	if (ambiguous)
-		goto ambiguous;
 	if (entry == NULL) {
 		xasprintf(cause, "unknown command: %s", argv[0]);
 		return (NULL);

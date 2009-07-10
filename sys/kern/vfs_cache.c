@@ -165,7 +165,7 @@ cache_lookup(struct vnode *dvp, struct vnode **vpp, struct componentname *cnp)
 	vp = ncp->nc_vp;
 	vpid = vp->v_id;
 	if (vp == dvp) {	/* lookup on "." */
-		vref(dvp);
+		VREF(dvp);
 		error = 0;
 	} else if (cnp->cn_flags & ISDOTDOT) {
 		VOP_UNLOCK(dvp, 0, p);

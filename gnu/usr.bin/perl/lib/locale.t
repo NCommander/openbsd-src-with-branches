@@ -43,13 +43,21 @@ eval {
 
 # Visual C's CRT goes silly on strings of the form "en_US.ISO8859-1"
 # and mingw32 uses said silly CRT
-$have_setlocale = 0 if (($^O eq 'MSWin32' || $^O eq 'NetWare') && $Config{cc} =~ /^(cl|gcc)/i);
+# This doesn't seem to be an issue any more, at least on Windows XP,
+# so re-enable the tests for Windows XP onwards.
+my $winxp = ($^O eq 'MSWin32' && defined &Win32::GetOSVersion &&
+		join('.', (Win32::GetOSVersion())[1..2]) >= 5.1);
+$have_setlocale = 0 if ((($^O eq 'MSWin32' && !$winxp) || $^O eq 'NetWare') &&
+		$Config{cc} =~ /^(cl|gcc)/i);
+
+# UWIN seems to loop after test 98, just skip for now
+$have_setlocale = 0 if ($^O =~ /^uwin/);
 
 my $last = $have_setlocale ? &last : &last_without_setlocale;
 
 print "1..$last\n";
 
-use vars qw(&LC_ALL);
+sub LC_ALL ();
 
 $a = 'abc %';
 
@@ -379,6 +387,10 @@ delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 
 if (-x "/usr/bin/locale" && open(LOCALES, "/usr/bin/locale -a 2>/dev/null|")) {
     while (<LOCALES>) {
+	# It seems that /usr/bin/locale steadfastly outputs 8 bit data, which
+	# ain't great when we're running this testPERL_UNICODE= so that utf8
+	# locales will cause all IO hadles to default to (assume) utf8
+	next unless utf8::valid($_);
         chomp;
 	trylocale($_);
     }
@@ -387,6 +399,17 @@ if (-x "/usr/bin/locale" && open(LOCALES, "/usr/bin/locale -a 2>/dev/null|")) {
 # The SYS$I18N_LOCALE logical name search list was not present on 
 # VAX VMS V5.5-12, but was on AXP && VAX VMS V6.2 as well as later versions.
     opendir(LOCALES, "SYS\$I18N_LOCALE:");
+    while ($_ = readdir(LOCALES)) {
+        chomp;
+        trylocale($_);
+    }
+    close(LOCALES);
+} elsif ($^O eq 'openbsd' && -e '/usr/share/locale') {
+
+   # OpenBSD doesn't have a locale executable, so reading /usr/share/locale
+   # is much easier and faster than the last resort method.
+
+    opendir(LOCALES, '/usr/share/locale');
     while ($_ = readdir(LOCALES)) {
         chomp;
         trylocale($_);
@@ -429,6 +452,16 @@ if (-x "/usr/bin/locale" && open(LOCALES, "/usr/bin/locale -a 2>/dev/null|")) {
 }
 
 setlocale(LC_ALL, "C");
+
+if ($^O eq 'darwin') {
+    # Darwin 8/Mac OS X 10.4 and 10.5 have bad Basque locales: perl bug #35895,
+    # Apple bug ID# 4139653. It also has a problem in Byelorussian.
+    (my $v) = $Config{osvers} =~ /^(\d+)/;
+    if ($v >= 8 and $v < 10) {
+	debug "# Skipping eu_ES, be_BY locales -- buggy in Darwin\n";
+	@Locale = grep ! m/^(eu_ES|be_BY.CP1131$)/, @Locale;
+    }
+}
 
 @Locale = sort @Locale;
 
@@ -523,7 +556,17 @@ foreach $Locale (@Locale) {
     
 	my $word = join('', @Neoalpha);
 
-	if ($Locale =~ /utf-?8/i) {
+	my $badutf8;
+	{
+	    local $SIG{__WARN__} = sub {
+		$badutf8 = $_[0] =~ /Malformed UTF-8/;
+	    };
+	    $Locale =~ /utf-?8/i;
+	}
+
+	if ($badutf8) {
+	    debug "# Locale name contains bad UTF-8, skipping test 99 for locale '$Locale'\n";
+	} elsif ($Locale =~ /utf-?8/i) {
 	    debug "# unknown whether locale and Unicode have the same \\w, skipping test 99 for locale '$Locale'\n";
 	    push @{$Okay{99}}, $Locale;
 	} else {

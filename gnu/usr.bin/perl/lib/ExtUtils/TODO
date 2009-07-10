@@ -1,3 +1,6 @@
+This TODO list is out of date.  See http://rt.cpan.org for the real list.
+
+
 Rethink MM_Win32 tests.
 
 Investigate one method per make target.
@@ -19,8 +22,6 @@ Fix appending of .. when DIRS contains directories not immediately
 below the cwd.
 
 Fill in the IMPORTS docs.
-
-Document "make install UNINST=1"
 
 Remove tar -I Sun-ism from instmodsh.
 
@@ -45,8 +46,6 @@ Test ExtUtils::Command::MM
 Finish ExtUtils::MakeMaker::Tutorial
 
 Add 'how to install additional files' to ExtUtils::MakeMaker::FAQ.
-
-Fix NORECUSE bug continuing to set DIR
 
 Give typemap location its own macro.
 

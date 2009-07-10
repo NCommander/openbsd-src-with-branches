@@ -1,12 +1,12 @@
-#include this file into another for subclass testing
+# include this file into another for subclass testing
 
 # This file is nearly identical to bigintpm.t, except that certain results
 # are _requird_ to be different due to "upgrading" or "promoting" to BigFloat.
 # The reverse is not true, any unmarked results can be either BigInt or
 # BigFloat, depending on how good the internal optimization is (e.g. it
-# is usually desirable to have 2 ** 2 return an BigInt, not an BigFloat).
+# is usually desirable to have 2 ** 2 return a BigInt, not a BigFloat).
 
-# Results that are required to be BigFloat are marked with an "^" at the end.
+# Results that are required to be BigFloat are marked with C<^> at the end.
 
 # Please note that the testcount goes up by two for each extra result marked
 # with ^, since then we test whether it has the proper class and that it left
@@ -52,7 +52,7 @@ my ($f,$z,$a,$exp,@a,$m,$e,$round_mode,$expected_class);
 
 while (<DATA>) 
   {
-  chomp;
+  $_ =~ s/[\n\r]//g;	# remove newlines
   next if /^#/;	# skip comments
   if (s/^&//) 
     {
@@ -114,9 +114,11 @@ while (<DATA>)
       }
     if ($f eq "bcmp")
       {
-      $try .= '$x <=> $y;';
+      $try .= '$x->bcmp($y);';
       } elsif ($f eq "bround") {
       $try .= "$round_mode; \$x->bround(\$y);";
+      } elsif ($f eq "broot") {
+      $try .= "\$x->broot(\$y);";
       } elsif ($f eq "bacmp"){
       $try .= '$x->bacmp($y);';
       } elsif ($f eq "badd"){
@@ -212,6 +214,12 @@ while (<DATA>)
   } # endwhile data tests
 close DATA;
 
+my $warn = ''; $SIG{__WARN__} = sub { $warn = shift; };
+
+# these should not warn
+$warn = ''; eval "\$z = 3.17 <= \$y"; ok ($z, 1); ok ($warn, '');
+$warn = ''; eval "\$z = \$y >= 3.17"; ok ($z, 1); ok ($warn, '');
+
 # all tests done
 
 1;
@@ -287,7 +295,7 @@ __DATA__
 -inf:1
 NaNneg:0
 &is_positive
-0:1
+0:0
 -1:0
 1:1
 +inf:1
@@ -477,7 +485,7 @@ E1:NaN
 E23:NaN
 1.23E1:12.3^
 1.23E-1:0.123^
-# bug with two E's in number beeing valid
+# bug with two E's in number being valid
 1e2e3:NaN
 1e2r:NaN
 1e2.0:NaN
@@ -1237,7 +1245,7 @@ abc:NaN,NaN
 &bfac
 -1:NaN
 NaNfac:NaN
-+inf:NaN
++inf:inf
 -inf:NaN
 0:1
 1:1
@@ -1255,8 +1263,8 @@ abc:12:NaN
 0:0:1
 0:1:0
 0:2:0
-0:-1:NaN
-0:-2:NaN
+0:-1:inf
+0:-2:inf
 1:0:1
 1:1:1
 1:2:1
@@ -1269,12 +1277,16 @@ abc:12:NaN
 2:2:4
 2:3:8
 3:3:27
-2:-1:NaN
--2:-1:NaN
-2:-2:NaN
--2:-2:NaN
+2:-1:0.5^
+-2:-1:-0.5^
+2:-2:0.25^
+# Y is even => result positive
+-2:-2:0.25^
+# Y is odd => result negative
+-2:-3:-0.125^
 +inf:1234500012:inf
--inf:1234500012:-inf
+-inf:1234500012:inf
+-inf:1234500013:-inf
 +inf:-12345000123:inf
 -inf:-12345000123:-inf
 # 1 ** -x => 1 / (1 ** x)
@@ -1289,6 +1301,14 @@ abc:12:NaN
 -1:-2:1
 -1:-3:-1
 -1:-4:1
+-2:2:4
+-2:3:-8
+-2:4:16
+-2:5:-32
+-3:2:9
+-3:3:-27
+-3:4:81
+-3:5:-243
 10:2:100
 10:3:1000
 10:4:10000
@@ -1309,6 +1329,11 @@ abc:12:NaN
 10000000000000000:17
 -123:3
 215960156869840440586892398248:30
+# broot always upgrades
+&broot
+144:2:12^
+123:2:11.09053650640941716205160010260993291846^
+# bsqrt always upgrades
 &bsqrt
 145:12.04159457879229548012824103037860805243^
 144:12^
@@ -1333,7 +1358,8 @@ abc:12:NaN
 -2:NaN
 -123:NaN
 Nan:NaN
-+inf:NaN
++inf:inf
+-inf:NaN
 &bround
 $round_mode('trunc')
 0:12:0

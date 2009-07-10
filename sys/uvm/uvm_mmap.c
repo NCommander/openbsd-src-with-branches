@@ -1138,7 +1138,7 @@ uvm_mmap(vm_map_t map, vaddr_t *addr, vsize_t size, vm_prot_t prot,
 			}
 #else
 			/* XXX for now, attach doesn't gain a ref */
-			vref(vp);
+			VREF(vp);
 #endif
 		} else {
 			uobj = udv_attach((void *) &vp->v_rdev,

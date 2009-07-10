@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.53 2009/06/05 00:05:22 claudio Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.52 2008/09/16 21:33:37 chl Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -1380,7 +1380,7 @@ ip_mforward(struct mbuf *m, struct ifnet *ifp)
 
 #ifdef RSVP_ISI
 	if (imo && ((vifi = imo->imo_multicast_vif) < numvifs)) {
-		if (ip->ip_ttl < MAXTTL) {
+		if (ip->ip_ttl < 255) {
 			/* compensate for -1 in *_send routines */
 			ip->ip_ttl++;
 		}

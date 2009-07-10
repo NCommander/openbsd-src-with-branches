@@ -603,7 +603,7 @@ sunos_sys_fchroot(p, v, retval)
 		FRELE(fp);
 		return (error);
 	}
-	vref(vp);
+	VREF(vp);
 	if (fdp->fd_rdir != NULL)
 		vrele(fdp->fd_rdir);
 	fdp->fd_rdir = vp;

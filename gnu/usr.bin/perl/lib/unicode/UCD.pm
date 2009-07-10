@@ -3,7 +3,9 @@ package Unicode::UCD;
 use strict;
 use warnings;
 
-our $VERSION = '0.2';
+our $VERSION = '0.25';
+
+use Storable qw(dclone);
 
 require Exporter;
 
@@ -13,8 +15,10 @@ our @EXPORT_OK = qw(charinfo
 		    charblock charscript
 		    charblocks charscripts
 		    charinrange
+		    general_categories bidi_types
 		    compexcl
-		    casefold casespec);
+		    casefold casespec
+		    namedseq);
 
 use Carp;
 
@@ -31,20 +35,27 @@ Unicode::UCD - Unicode character database
     my $charblock  = charblock($codepoint);
 
     use Unicode::UCD 'charscript';
-    my $charscript = charblock($codepoint);
+    my $charscript = charscript($codepoint);
 
     use Unicode::UCD 'charblocks';
     my $charblocks = charblocks();
 
     use Unicode::UCD 'charscripts';
-    my %charscripts = charscripts();
+    my $charscripts = charscripts();
 
     use Unicode::UCD qw(charscript charinrange);
     my $range = charscript($script);
     print "looks like $script\n" if charinrange($range, $codepoint);
 
+    use Unicode::UCD qw(general_categories bidi_types);
+    my $categories = general_categories();
+    my $types = bidi_types();
+
     use Unicode::UCD 'compexcl';
     my $compexcl = compexcl($codepoint);
+
+    use Unicode::UCD 'namedseq';
+    my $namedseq = namedseq($named_sequence_name);
 
     my $unicode_version = Unicode::UCD::UnicodeVersion();
 
@@ -62,6 +73,7 @@ my $VERSIONFH;
 my $COMPEXCLFH;
 my $CASEFOLDFH;
 my $CASESPECFH;
+my $NAMEDSEQFH;
 
 sub openunicode {
     my ($rfh, @path) = @_;
@@ -95,7 +107,7 @@ as defined by the Unicode standard:
     name             name of the character IN UPPER CASE
     category         general category of the character
     combining        classes used in the Canonical Ordering Algorithm
-    bidi             bidirectional category
+    bidi             bidirectional type
     decomposition    character decomposition mapping
     decimal          if decimal digit this is the integer numeric value
     digit            if digit this is the numeric value
@@ -123,12 +135,13 @@ you will need also the compexcl(), casefold(), and casespec() functions.
 
 =cut
 
+# NB: This function is duplicated in charnames.pm
 sub _getcode {
     my $arg = shift;
 
-    if ($arg =~ /^\d+$/) {
+    if ($arg =~ /^[1-9]\d*$/) {
 	return $arg;
-    } elsif ($arg =~ /^(?:U\+|0x)?([[:xdigit:]]+)$/) {
+    } elsif ($arg =~ /^(?:[Uu]\+|0[xX])?([[:xdigit:]]+)$/) {
 	return hex($1);
     }
 
@@ -209,6 +222,7 @@ sub charinfo {
 	use Search::Dict 1.02;
 	if (look($UNICODEFH, "$hexk;", { xfrm => sub { $_[0] =~ /^([^;]+);(.+)/; sprintf "%06X;$2", hex($1) } } ) >= 0) {
 	    my $line = <$UNICODEFH>;
+	    return unless defined $line;
 	    chomp $line;
 	    my %prop;
 	    @prop{qw(
@@ -283,9 +297,9 @@ See also L</Blocks versus Scripts>.
 If supplied with an argument that can't be a code point, charblock() tries
 to do the opposite and interpret the argument as a character block. The
 return value is a I<range>: an anonymous list of lists that contain
-I<start-of-range>, I<end-of-range> code point pairs. You can test whether a
-code point is in a range using the L</charinrange> function. If the
-argument is not a known charater block, C<undef> is returned.
+I<start-of-range>, I<end-of-range> code point pairs. You can test whether
+a code point is in a range using the L</charinrange> function. If the
+argument is not a known character block, C<undef> is returned.
 
 =cut
 
@@ -295,6 +309,7 @@ my %BLOCKS;
 sub _charblocks {
     unless (@BLOCKS) {
 	if (openunicode(\$BLOCKSFH, "Blocks.txt")) {
+	    local $_;
 	    while (<$BLOCKSFH>) {
 		if (/^([0-9A-F]+)\.\.([0-9A-F]+);\s+(.+)/) {
 		    my ($lo, $hi) = (hex($1), hex($2));
@@ -319,7 +334,7 @@ sub charblock {
 	_search(\@BLOCKS, 0, $#BLOCKS, $code);
     } else {
 	if (exists $BLOCKS{$arg}) {
-	    return $BLOCKS{$arg};
+	    return dclone $BLOCKS{$arg};
 	} else {
 	    return;
 	}
@@ -346,7 +361,7 @@ to do the opposite and interpret the argument as a character script. The
 return value is a I<range>: an anonymous list of lists that contain
 I<start-of-range>, I<end-of-range> code point pairs. You can test whether a
 code point is in a range using the L</charinrange> function. If the
-argument is not a known charater script, C<undef> is returned.
+argument is not a known character script, C<undef> is returned.
 
 =cut
 
@@ -356,6 +371,7 @@ my %SCRIPTS;
 sub _charscripts {
     unless (@SCRIPTS) {
 	if (openunicode(\$SCRIPTSFH, "Scripts.txt")) {
+	    local $_;
 	    while (<$SCRIPTSFH>) {
 		if (/^([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s+;\s+(\w+)/) {
 		    my ($lo, $hi) = (hex($1), $2 ? hex($2) : hex($1));
@@ -383,7 +399,7 @@ sub charscript {
 	_search(\@SCRIPTS, 0, $#SCRIPTS, $code);
     } else {
 	if (exists $SCRIPTS{$arg}) {
-	    return $SCRIPTS{$arg};
+	    return dclone $SCRIPTS{$arg};
 	} else {
 	    return;
 	}
@@ -405,17 +421,18 @@ See also L</Blocks versus Scripts>.
 
 sub charblocks {
     _charblocks() unless %BLOCKS;
-    return \%BLOCKS;
+    return dclone \%BLOCKS;
 }
 
 =head2 charscripts
 
     use Unicode::UCD 'charscripts';
 
-    my %charscripts = charscripts();
+    my $charscripts = charscripts();
 
-charscripts() returns a hash with the known script names as the keys,
-and the code point ranges (see L</charscript>) as the values.
+charscripts() returns a reference to a hash with the known script
+names as the keys, and the code point ranges (see L</charscript>) as
+the values.
 
 See also L</Blocks versus Scripts>.
 
@@ -423,7 +440,7 @@ See also L</Blocks versus Scripts>.
 
 sub charscripts {
     _charscripts() unless %SCRIPTS;
-    return \%SCRIPTS;
+    return dclone \%SCRIPTS;
 }
 
 =head2 Blocks versus Scripts
@@ -455,9 +472,12 @@ any of the 256 code points in the Tibetan block).
 
 A I<code point argument> is either a decimal or a hexadecimal scalar
 designating a Unicode character, or C<U+> followed by hexadecimals
-designating a Unicode character.  Note that Unicode is B<not> limited
-to 16 bits (the number of Unicode characters is open-ended, in theory
-unlimited): you may have more than 4 hexdigits.
+designating a Unicode character.  In other words, if you want a code
+point to be interpreted as a hexadecimal number, you must prefix it
+with either C<0x> or C<U+>, because a string like e.g. C<123> will
+be interpreted as a decimal code point.  Also note that Unicode is
+B<not> limited to 16 bits (the number of Unicode characters is
+open-ended, in theory unlimited): you may have more than 4 hexdigits.
 
 =head2 charinrange
 
@@ -470,6 +490,112 @@ by L</charblocks> and L</charscripts> by using charinrange():
 
     $range = charscript('Hiragana');
     print "looks like hiragana\n" if charinrange($range, $codepoint);
+
+=cut
+
+my %GENERAL_CATEGORIES =
+ (
+    'L'  =>         'Letter',
+    'LC' =>         'CasedLetter',
+    'Lu' =>         'UppercaseLetter',
+    'Ll' =>         'LowercaseLetter',
+    'Lt' =>         'TitlecaseLetter',
+    'Lm' =>         'ModifierLetter',
+    'Lo' =>         'OtherLetter',
+    'M'  =>         'Mark',
+    'Mn' =>         'NonspacingMark',
+    'Mc' =>         'SpacingMark',
+    'Me' =>         'EnclosingMark',
+    'N'  =>         'Number',
+    'Nd' =>         'DecimalNumber',
+    'Nl' =>         'LetterNumber',
+    'No' =>         'OtherNumber',
+    'P'  =>         'Punctuation',
+    'Pc' =>         'ConnectorPunctuation',
+    'Pd' =>         'DashPunctuation',
+    'Ps' =>         'OpenPunctuation',
+    'Pe' =>         'ClosePunctuation',
+    'Pi' =>         'InitialPunctuation',
+    'Pf' =>         'FinalPunctuation',
+    'Po' =>         'OtherPunctuation',
+    'S'  =>         'Symbol',
+    'Sm' =>         'MathSymbol',
+    'Sc' =>         'CurrencySymbol',
+    'Sk' =>         'ModifierSymbol',
+    'So' =>         'OtherSymbol',
+    'Z'  =>         'Separator',
+    'Zs' =>         'SpaceSeparator',
+    'Zl' =>         'LineSeparator',
+    'Zp' =>         'ParagraphSeparator',
+    'C'  =>         'Other',
+    'Cc' =>         'Control',
+    'Cf' =>         'Format',
+    'Cs' =>         'Surrogate',
+    'Co' =>         'PrivateUse',
+    'Cn' =>         'Unassigned',
+ );
+
+sub general_categories {
+    return dclone \%GENERAL_CATEGORIES;
+}
+
+=head2 general_categories
+
+    use Unicode::UCD 'general_categories';
+
+    my $categories = general_categories();
+
+The general_categories() returns a reference to a hash which has short
+general category names (such as C<Lu>, C<Nd>, C<Zs>, C<S>) as keys and long
+names (such as C<UppercaseLetter>, C<DecimalNumber>, C<SpaceSeparator>,
+C<Symbol>) as values.  The hash is reversible in case you need to go
+from the long names to the short names.  The general category is the
+one returned from charinfo() under the C<category> key.
+
+=cut
+
+my %BIDI_TYPES =
+ (
+   'L'   => 'Left-to-Right',
+   'LRE' => 'Left-to-Right Embedding',
+   'LRO' => 'Left-to-Right Override',
+   'R'   => 'Right-to-Left',
+   'AL'  => 'Right-to-Left Arabic',
+   'RLE' => 'Right-to-Left Embedding',
+   'RLO' => 'Right-to-Left Override',
+   'PDF' => 'Pop Directional Format',
+   'EN'  => 'European Number',
+   'ES'  => 'European Number Separator',
+   'ET'  => 'European Number Terminator',
+   'AN'  => 'Arabic Number',
+   'CS'  => 'Common Number Separator',
+   'NSM' => 'Non-Spacing Mark',
+   'BN'  => 'Boundary Neutral',
+   'B'   => 'Paragraph Separator',
+   'S'   => 'Segment Separator',
+   'WS'  => 'Whitespace',
+   'ON'  => 'Other Neutrals',
+ ); 
+
+sub bidi_types {
+    return dclone \%BIDI_TYPES;
+}
+
+=head2 bidi_types
+
+    use Unicode::UCD 'bidi_types';
+
+    my $categories = bidi_types();
+
+The bidi_types() returns a reference to a hash which has the short
+bidi (bidirectional) type names (such as C<L>, C<R>) as keys and long
+names (such as C<Left-to-Right>, C<Right-to-Left>) as values.  The
+hash is reversible in case you need to go from the long names to the
+short names.  The bidi type is the one returned from charinfo()
+under the C<bidi> key.  For the exact meaning of the various bidi classes
+the Unicode TR9 is recommended reading:
+http://www.unicode.org/reports/tr9/tr9-17.html
+(as of Unicode 5.0.0)
 
 =cut
 
@@ -493,6 +619,7 @@ my %COMPEXCL;
 sub _compexcl {
     unless (%COMPEXCL) {
 	if (openunicode(\$COMPEXCLFH, "CompositionExclusions.txt")) {
+	    local $_;
 	    while (<$COMPEXCLFH>) {
 		if (/^([0-9A-F]+)\s+\#\s+/) {
 		    my $code = hex($1);
@@ -519,7 +646,7 @@ sub compexcl {
 
     use Unicode::UCD 'casefold';
 
-    my %casefold = casefold("09dc");
+    my $casefold = casefold("00DF");
 
 The casefold() returns the locale-independent case folding of the
 character specified by a B<code point argument>.
@@ -563,6 +690,7 @@ my %CASEFOLD;
 sub _casefold {
     unless (%CASEFOLD) {
 	if (openunicode(\$CASEFOLDFH, "CaseFolding.txt")) {
+	    local $_;
 	    while (<$CASEFOLDFH>) {
 		if (/^([0-9A-F]+); ([CFSI]); ([0-9A-F]+(?: [0-9A-F]+)*);/) {
 		    my $code = hex($1);
@@ -591,7 +719,7 @@ sub casefold {
 
     use Unicode::UCD 'casespec';
 
-    my %casespec = casespec("09dc");
+    my $casespec = casespec("FB00");
 
 The casespec() returns the potentially locale-dependent case mapping
 of the character specified by a B<code point argument>.  The mapping
@@ -614,7 +742,7 @@ more I<locales> or I<contexts>, separated by spaces (other than as
 used to separate elements, spaces are to be ignored).  A condition
 list overrides the normal behavior if all of the listed conditions are
 true.  Case distinctions in the condition list are not significant.
-Conditions preceded by "NON_" represent the negation of the condition
+Conditions preceded by "NON_" represent the negation of the condition.
 
 Note that when there are multiple case folding definitions for a
 single code point because of different locales, the value returned by
@@ -643,6 +771,7 @@ my %CASESPEC;
 sub _casespec {
     unless (%CASESPEC) {
 	if (openunicode(\$CASESPECFH, "SpecialCasing.txt")) {
+	    local $_;
 	    while (<$CASESPECFH>) {
 		if (/^([0-9A-F]+); ([0-9A-F]+(?: [0-9A-F]+)*)?; ([0-9A-F]+(?: [0-9A-F]+)*)?; ([0-9A-F]+(?: [0-9A-F]+)*)?; (\w+(?: \w+)*)?/) {
 		    my ($hexcode, $lower, $title, $upper, $condition) =
@@ -701,7 +830,64 @@ sub casespec {
 
     _casespec() unless %CASESPEC;
 
-    return $CASESPEC{$code};
+    return ref $CASESPEC{$code} ? dclone $CASESPEC{$code} : $CASESPEC{$code};
+}
+
+=head2 namedseq()
+
+    use Unicode::UCD 'namedseq';
+
+    my $namedseq = namedseq("KATAKANA LETTER AINU P");
+    my @namedseq = namedseq("KATAKANA LETTER AINU P");
+    my %namedseq = namedseq();
+
+If used with a single argument in a scalar context, returns the string
+consisting of the code points of the named sequence, or C<undef> if no
+named sequence by that name exists.  If used with a single argument in
+a list context, returns list of the code points.  If used with no
+arguments in a list context, returns a hash with the names of the
+named sequences as the keys and the named sequences as strings as
+the values.  Otherwise, returns C<undef> or empty list depending
+on the context.
+
+(New from Unicode 4.1.0)
+
+=cut
+
+my %NAMEDSEQ;
+
+sub _namedseq {
+    unless (%NAMEDSEQ) {
+	if (openunicode(\$NAMEDSEQFH, "NamedSequences.txt")) {
+	    local $_;
+	    while (<$NAMEDSEQFH>) {
+		if (/^(.+)\s*;\s*([0-9A-F]+(?: [0-9A-F]+)*)$/) {
+		    my ($n, $s) = ($1, $2);
+		    my @s = map { chr(hex($_)) } split(' ', $s);
+		    $NAMEDSEQ{$n} = join("", @s);
+		}
+	    }
+	    close($NAMEDSEQFH);
+	}
+    }
+}
+
+sub namedseq {
+    _namedseq() unless %NAMEDSEQ;
+    my $wantarray = wantarray();
+    if (defined $wantarray) {
+	if ($wantarray) {
+	    if (@_ == 0) {
+		return %NAMEDSEQ;
+	    } elsif (@_ == 1) {
+		my $s = $NAMEDSEQ{ $_[0] };
+		return defined $s ? map { ord($_) } split('', $s) : ();
+	    }
+	} elsif (@_ == 1) {
+	    return $NAMEDSEQ{ $_[0] };
+	}
+    }
+    return;
 }
 
 =head2 Unicode::UCD::UnicodeVersion

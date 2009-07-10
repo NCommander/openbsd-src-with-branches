@@ -1,3 +1,26 @@
+BEGIN {
+    chdir 't' if -d 't';
+
+    @INC = qw(. ../lib);
+    require 'test.pl';
+}
+
+require Config; import Config;
+
+$TEST_COUNT = 11;
+
+if ($Config{'extensions'} !~ /\bIPC\/SysV\b/) {
+    skip_all('IPC::SysV was not built');
+}
+elsif ($Config{'d_sem'} ne 'define') {
+    skip_all('$Config{d_sem} undefined');
+}
+elsif ($Config{'d_msg'} ne 'define') {
+    skip_all('$Config{d_msg} undefined');
+}
+else {
+    plan( tests => $TEST_COUNT );
+}
 
 use IPC::SysV qw(
 	SETALL
@@ -12,40 +35,48 @@ use IPC::SysV qw(
 );
 use IPC::Semaphore;
 
-print "1..10\n";
+SKIP: {
 
-$sem = new IPC::Semaphore(IPC_PRIVATE, 10, S_IRWXU | S_IRWXG | S_IRWXO | IPC_CREAT)
-	|| die "semget: ",$!+0," $!\n";
+my $sem =
+    IPC::Semaphore->new(IPC_PRIVATE, 10, S_IRWXU | S_IRWXG | S_IRWXO | IPC_CREAT);
+if (!$sem) {
+    if ($! eq 'No space left on device') {
+        # "normal" error
+        skip( "cannot proceed: IPC::Semaphore->new() said: $!", $TEST_COUNT);
+    }
+    else {
+        # unexpected error
+        die "IPC::Semaphore->new(): ",$!+0," $!\n";
+    }
+}
 
-print "ok 1\n";
+pass('acquired a semaphore');
 
-my $st = $sem->stat || print "not ";
-print "ok 2\n";
+ok(my $st = $sem->stat,'stat it');
 
-$sem->setall( (0) x 10) || print "not ";
-print "ok 3\n";
+ok($sem->setall( (0) x 10),'set all');
 
 my @sem = $sem->getall;
-print "not " unless join("",@sem) eq "0000000000";
-print "ok 4\n";
+cmp_ok(join("",@sem),'eq',"0000000000",'get all');
 
 $sem[2] = 1;
-$sem->setall( @sem ) || print "not ";
-print "ok 5\n";
+ok($sem->setall( @sem ),'set after change');
 
 @sem = $sem->getall;
-print "not " unless join("",@sem) eq "0010000000";
-print "ok 6\n";
+cmp_ok(join("",@sem),'eq',"0010000000",'get again');
 
 my $ncnt = $sem->getncnt(0);
-print "not " if $sem->getncnt(0) || !defined($ncnt);
-print "ok 7\n";
+ok(!$sem->getncnt(0),'procs waiting now');
+ok(defined($ncnt),'prev procs waiting');
 
-$sem->op(2,-1,IPC_NOWAIT) || print "not ";
-print "ok 8\n";
+ok($sem->op(2,-1,IPC_NOWAIT),'op nowait');
 
-print "not " if $sem->getncnt(0);
-print "ok 9\n";
+ok(!$sem->getncnt(0),'no procs waiting');
 
-$sem->remove || print "not ";
-print "ok 10\n";
+END {
+    if ($sem) {
+        ok($sem->remove,'release');
+    }
+}
+
+} # SKIP

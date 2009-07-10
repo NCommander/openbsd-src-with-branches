@@ -3,9 +3,6 @@
 #include "XSUB.h"
 
 #include <sys/types.h>
-#ifdef __linux__
-#   include <asm/page.h>
-#endif
 #if defined(HAS_MSG) || defined(HAS_SEM) || defined(HAS_SHM)
 #ifndef HAS_SEM
 #   include <sys/ipc.h>
@@ -19,18 +16,23 @@
 #       endif
 #      include <sys/shm.h>
 #      ifndef HAS_SHMAT_PROTOTYPE
-           extern Shmat_t shmat _((int, char *, int));
+           extern Shmat_t shmat (int, char *, int);
 #      endif
-#      if defined(__sparc__) && (defined(__NetBSD__) || defined(__OpenBSD__))
+#      if defined(HAS_SYSCONF) && defined(_SC_PAGESIZE)
+#          undef  SHMLBA /* not static: determined at boot time */
+#          define SHMLBA sysconf(_SC_PAGESIZE)
+#      elif defined(HAS_GETPAGESIZE)
 #          undef  SHMLBA /* not static: determined at boot time */
 #          define SHMLBA getpagesize()
+#      elif defined(__linux__)
+#          include <asm/page.h>          
 #      endif
 #   endif
 #endif
 
 /* Required to get 'struct pte' for SHMLBA on ULTRIX. */
 #if defined(__ultrix) || defined(__ultrix__) || defined(ultrix)
-#   include <machine/pte.h>
+#include <machine/pte.h>
 #endif
 
 /* Required in BSDI to get PAGE_SIZE definition for SHMLBA.
@@ -42,9 +44,9 @@
 
 #ifndef S_IRWXU
 #   ifdef S_IRUSR
-#       define S_IRWXU (S_IRUSR|S_IWUSR|S_IWUSR)
-#       define S_IRWXG (S_IRGRP|S_IWGRP|S_IWGRP)
-#       define S_IRWXO (S_IROTH|S_IWOTH|S_IWOTH)
+#       define S_IRWXU (S_IRUSR|S_IWUSR|S_IXUSR)
+#       define S_IRWXG (S_IRGRP|S_IWGRP|S_IXGRP)
+#       define S_IRWXO (S_IROTH|S_IWOTH|S_IXOTH)
 #   else
 #       define S_IRWXU 0700
 #       define S_IRWXG 0070
@@ -69,7 +71,7 @@ PPCODE:
     sv = *av_fetch(list,1,TRUE); ds.msg_perm.gid = SvIV(sv);
     sv = *av_fetch(list,4,TRUE); ds.msg_perm.mode = SvIV(sv);
     sv = *av_fetch(list,6,TRUE); ds.msg_qbytes = SvIV(sv);
-    ST(0) = sv_2mortal(newSVpv((char *)&ds,sizeof(ds)));
+    ST(0) = sv_2mortal(newSVpvn((char *)&ds,sizeof(ds)));
     XSRETURN(1);
 #else
     croak("System V msgxxx is not implemented on this machine");
@@ -163,29 +165,28 @@ PPCODE:
 {
 #ifdef HAS_SEM
     SV **sv_ptr;
-    SV *sv;
     struct semid_ds ds;
     AV *list = (AV*)SvRV(obj);
     if(!sv_isa(obj, "IPC::Semaphore::stat"))
 	croak("method %s not called a %s object",
 		"pack","IPC::Semaphore::stat");
-    if((sv_ptr = av_fetch(list,0,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,0,TRUE)) && *sv_ptr)
 	ds.sem_perm.uid = SvIV(*sv_ptr);
-    if((sv_ptr = av_fetch(list,1,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,1,TRUE)) && *sv_ptr)
 	ds.sem_perm.gid = SvIV(*sv_ptr);
-    if((sv_ptr = av_fetch(list,2,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,2,TRUE)) && *sv_ptr)
 	ds.sem_perm.cuid = SvIV(*sv_ptr);
-    if((sv_ptr = av_fetch(list,3,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,3,TRUE)) && *sv_ptr)
 	ds.sem_perm.cgid = SvIV(*sv_ptr);
-    if((sv_ptr = av_fetch(list,4,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,4,TRUE)) && *sv_ptr)
 	ds.sem_perm.mode = SvIV(*sv_ptr);
-    if((sv_ptr = av_fetch(list,5,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,5,TRUE)) && *sv_ptr)
 	ds.sem_ctime = SvIV(*sv_ptr);
-    if((sv_ptr = av_fetch(list,6,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,6,TRUE)) && *sv_ptr)
 	ds.sem_otime = SvIV(*sv_ptr);
-    if((sv_ptr = av_fetch(list,7,TRUE)) && (sv = *sv_ptr))
+    if((sv_ptr = av_fetch(list,7,TRUE)) && *sv_ptr)
 	ds.sem_nsems = SvIV(*sv_ptr);
-    ST(0) = sv_2mortal(newSVpv((char *)&ds,sizeof(ds)));
+    ST(0) = sv_2mortal(newSVpvn((char *)&ds,sizeof(ds)));
     XSRETURN(1);
 #else
     croak("System V semxxx is not implemented on this machine");
@@ -194,7 +195,7 @@ PPCODE:
 
 MODULE=IPC::SysV	PACKAGE=IPC::SysV
 
-int
+void
 ftok(path, id)
         char *          path
         int             id
@@ -203,10 +204,10 @@ ftok(path, id)
         key_t k = ftok(path, id);
         ST(0) = k == (key_t) -1 ? &PL_sv_undef : sv_2mortal(newSViv(k));
 #else
-        DIE(no_func, "ftok");
+	Perl_die(aTHX_ PL_no_func, "ftok"); return;
 #endif
 
-int
+void
 SHMLBA()
     CODE:
 #ifdef SHMLBA
@@ -217,7 +218,7 @@ SHMLBA()
 
 BOOT:
 {
-    HV *stash = gv_stashpvn("IPC::SysV", 9, TRUE);
+    HV *stash = gv_stashpvn("IPC::SysV", 9, GV_ADD);
     /*
      * constant subs for IPC::SysV
      */
@@ -247,7 +248,7 @@ BOOT:
         {"IPC_EXCL", IPC_EXCL},
 #endif
 #ifdef IPC_GETACL
-        {"IPC_GETACL", IPC_EXCL},
+        {"IPC_GETACL", IPC_GETACL},
 #endif
 #ifdef IPC_LOCKED
         {"IPC_LOCKED", IPC_LOCKED},
@@ -436,7 +437,7 @@ BOOT:
     char *name;
     int i;
 
-    for(i = 0 ; name = IPC__SysV__const[i].n ; i++) {
+    for(i = 0 ; (name = IPC__SysV__const[i].n) ; i++) {
 	newCONSTSUB(stash,name, newSViv(IPC__SysV__const[i].v));
     }
 }

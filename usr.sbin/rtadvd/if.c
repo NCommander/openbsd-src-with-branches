@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.19 2009/06/05 22:40:24 chris Exp $	*/
+/*	$OpenBSD: if.c,v 1.18 2008/04/21 20:40:55 rainer Exp $	*/
 /*	$KAME: if.c,v 1.17 2001/01/21 15:27:30 itojun Exp $	*/
 
 /*
@@ -243,10 +243,9 @@ get_next_msg(char *buf, char *lim, int ifindex, size_t *lenp, int filter)
 			    buf, lim, rtm);
 			break;
 		}
-		if (rtm->rtm_version != RTM_VERSION)
+		if (FILTER_MATCH(rtm->rtm_type, filter) == 0) {
 			continue;
-		if (FILTER_MATCH(rtm->rtm_type, filter) == 0)
-			continue;
+		}
 
 		switch (rtm->rtm_type) {
 		case RTM_GET:
@@ -498,8 +497,6 @@ parse_iflist(struct if_msghdr ***ifmlist_p, char *buf, size_t bufsize)
 			    buf, lim, ifm);
 			return;
 		}
-		if (ifm->ifm_version != RTM_VERSION)
-			continue;
 
 		if (ifm->ifm_type == RTM_IFINFO) {
 			(*ifmlist_p)[ifm->ifm_index] = ifm;

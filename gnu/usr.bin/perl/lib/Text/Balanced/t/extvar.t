@@ -13,7 +13,7 @@ BEGIN {
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..181\n"; }
+BEGIN { $| = 1; print "1..183\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Text::Balanced qw ( extract_variable );
 $loaded = 1;
@@ -39,7 +39,7 @@ while (defined($str = <DATA>))
 
 	my @res;
 	$var = eval "\@res = $cmd";
-	debug "\t list got: [" . join("|",@res) . "]\n";
+	debug "\t list got: [" . join("|",map {defined $_ ? $_ : '<undef>'} @res) . "]\n";
 	debug "\t list left: [$str]\n";
 	print "not " if (substr($str,pos($str)||0,1) eq ';')==$neg;
 	print "ok ", $count++;
@@ -65,6 +65,7 @@ $a->;
 $a (1..3) { print $a };
 
 # USING: extract_variable($str);
+$::obj;
 $obj->nextval;
 *var;
 *$var;

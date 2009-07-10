@@ -15,7 +15,7 @@ BEGIN {
 use strict;
 use Config;
 
-use Test::More tests => 25;
+use Test::More tests => 26;
 use MakeMaker::Test::Utils;
 use MakeMaker::Test::Setup::Recurs;
 
@@ -57,8 +57,8 @@ ok( -e File::Spec->catfile('prj2',$makefile), 'sub Makefile written' );
 
 my $make = make_run();
 
-run("$make");
-is( $?, 0, 'recursive make exited normally' );
+my $make_out = run("$make");
+is( $?, 0, 'recursive make exited normally' ) || diag $make_out;
 
 ok( chdir File::Spec->updir );
 ok( teardown_recurs(), 'cleaning out recurs' );
@@ -111,3 +111,12 @@ ok( open(MAKEFILE, $submakefile) ) || diag("Can't open $submakefile: $!");
         'prepend .. not stomping WriteMakefile args' ) 
 }
 close MAKEFILE;
+
+
+{
+    # Quiet "make test" failure noise
+    close *STDERR;
+
+    my $test_out = run("$make test");
+    isnt $?, 0, 'test failure in a subdir causes make to fail';
+}

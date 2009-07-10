@@ -577,7 +577,7 @@ udf_vget(struct mount *mp, ino_t ino, struct vnode **vpp)
 	up->u_dev = ump->um_dev;
 	up->u_ump = ump;
 	vp->v_data = up;
-	vref(ump->um_devvp);
+	VREF(ump->um_devvp);
 
 	lockinit(&up->u_lock, PINOD, "unode", 0, 0);
 

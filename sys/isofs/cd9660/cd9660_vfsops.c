@@ -847,7 +847,7 @@ retry:
 
 	ip->i_mnt = imp;
 	ip->i_devvp = imp->im_devvp;
-	vref(ip->i_devvp);
+	VREF(ip->i_devvp);
 
 	if (relocated) {
 		/*

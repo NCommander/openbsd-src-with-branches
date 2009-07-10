@@ -175,7 +175,7 @@ common_fhtovp(struct mount * mp,
         if (vp->v_usecount <= 0) 
 	    nnpfs_do_vget(vp, 0, curproc);
 	else
-	    vref(vp);
+	    VREF(vp);
 	error = 0;
     }
 

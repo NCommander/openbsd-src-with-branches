@@ -1,4 +1,4 @@
-/* $OpenBSD: server-msg.c,v 1.4 2009/07/07 12:34:47 nicm Exp $ */
+/* $OpenBSD: server-msg.c,v 1.2 2009/06/04 21:43:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -189,7 +189,6 @@ server_msg_fn_identify(struct hdr *hdr, struct client *c)
 #define MSG "protocol version mismatch"
 		server_write_client(c, MSG_ERROR, MSG, (sizeof MSG) - 1);
 #undef MSG
-		server_write_client(c, MSG_EXIT, NULL, 0);
 		return (0);
 	}
 
@@ -211,9 +210,7 @@ server_msg_fn_identify(struct hdr *hdr, struct client *c)
 		c->tty.term_flags |= TERM_88COLOURS;
 	if (data.flags & IDENTIFY_HASDEFAULTS)
 		c->tty.term_flags |= TERM_HASDEFAULTS;
-
-	if (term != NULL)
-		xfree(term);
+	xfree(term);
 
 	c->flags |= CLIENT_TERMINAL;
 

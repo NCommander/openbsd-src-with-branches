@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 - 2000 Kungliga Tekniska Högskolan
+ * Copyright (c) 1997 - 2000, 2002 Kungliga Tekniska Högskolan
  * (Royal Institute of Technology, Stockholm, Sweden). 
  * All rights reserved. 
  *
@@ -32,8 +32,9 @@
  */
 
 #include "krb5_locl.h"
+#include "store-int.h"
 
-RCSID("$KTH: store_mem.c,v 1.10 2000/05/19 14:39:02 assar Exp $");
+RCSID("$KTH: store_mem.c,v 1.12 2004/05/25 21:44:17 lha Exp $");
 
 typedef struct mem_storage{
     unsigned char *base;
@@ -86,7 +87,7 @@ mem_seek(krb5_storage *sp, off_t offset, int whence)
     return s->ptr - s->base;
 }
 
-krb5_storage *
+krb5_storage * KRB5_LIB_FUNCTION
 krb5_storage_from_mem(void *buf, size_t len)
 {
     krb5_storage *sp = malloc(sizeof(krb5_storage));
@@ -100,6 +101,7 @@ krb5_storage_from_mem(void *buf, size_t len)
     }
     sp->data = s;
     sp->flags = 0;
+    sp->eof_code = HEIM_ERR_EOF;
     s->base = buf;
     s->size = len;
     s->ptr = buf;
@@ -110,7 +112,7 @@ krb5_storage_from_mem(void *buf, size_t len)
     return sp;
 }
 
-krb5_storage *
+krb5_storage * KRB5_LIB_FUNCTION
 krb5_storage_from_data(krb5_data *data)
 {
 	return krb5_storage_from_mem(data->data, data->length);

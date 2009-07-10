@@ -463,7 +463,7 @@ main(void *framep)
 	if (VFS_ROOT(CIRCLEQ_FIRST(&mountlist), &rootvnode))
 		panic("cannot find root vnode");
 	p->p_fd->fd_cdir = rootvnode;
-	vref(p->p_fd->fd_cdir);
+	VREF(p->p_fd->fd_cdir);
 	VOP_UNLOCK(rootvnode, 0, p);
 	p->p_fd->fd_rdir = NULL;
 
@@ -473,7 +473,7 @@ main(void *framep)
 	 * share proc0's CWD info.
 	 */
 	initproc->p_fd->fd_cdir = rootvnode;
-	vref(initproc->p_fd->fd_cdir);
+	VREF(initproc->p_fd->fd_cdir);
 	initproc->p_fd->fd_rdir = NULL;
 
 	/*

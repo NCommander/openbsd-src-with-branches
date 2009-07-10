@@ -6,13 +6,16 @@ BEGIN {
     unless(grep /blib/, @INC) {
 	chdir 't' if -d 't';
 	@INC = '../lib';
+	require './test.pl';
     }
     $SIG{__WARN__} = sub { push @WARN, @_ };
 }
 
+require File::Spec;
+
 $| = 1;
 
-print "1..46\n";
+print "1..78\n";
 
 use charnames ':full';
 
@@ -58,7 +61,7 @@ else { # EBCDIC where UTF-EBCDIC may be used (this may be 1047 specific since
 }
 
 sub to_bytes {
-    pack"a*", shift;
+    unpack"U0a*", shift;
 }
 
 {
@@ -95,7 +98,7 @@ sub to_bytes {
 {
    use charnames qw(:full);
    use utf8;
-   
+
     my $x = "\x{221b}";
     my $named = "\N{CUBE ROOT}";
 
@@ -119,7 +122,7 @@ sub to_bytes {
 }
 
 {
-  # 20001114.001	
+  # 20001114.001
 
   no utf8; # naked Latin-1
 
@@ -264,3 +267,303 @@ print "ok 45\n";
 
 print "not " if grep { /you asked for U+110000/ } @WARN;
 print "ok 46\n";
+
+
+# ---- Alias extensions
+
+my $tmpfile = "tmp0000";
+my $alifile = File::Spec->catfile(File::Spec->updir, qw(lib unicore xyzzy_alias.pl));
+my $i = 0;
+1 while -e ++$tmpfile;
+END { if ($tmpfile) { 1 while unlink $tmpfile; } }
+
+my @prgs;
+{   local $/ = undef;
+    @prgs = split "\n########\n", <DATA>;
+    }
+
+my $i = 46;
+for (@prgs) {
+    my ($code, $exp) = ((split m/\nEXPECT\n/), '$');
+    my ($prog, $fil) = ((split m/\nFILE\n/, $code), "");
+    open my $tmp, "> $tmpfile" or die "Could not open $tmpfile: $!";
+    print $tmp $prog, "\n";
+    close $tmp or die "Could not close $tmpfile: $!";
+    if ($fil) {
+	$fil .= "\n";
+	open my $ali, "> $alifile" or die "Could not open $alifile: $!";
+	print $ali $fil;
+	close $ali or die "Could not close $alifile: $!";
+	}
+    my $res = runperl( switches => $switch, 
+                       progfile => $tmpfile,
+                       stderr => 1 );
+    my $status = $?;
+    $res =~ s/[\r\n]+$//;
+    $res =~ s/tmp\d+/-/g;			# fake $prog from STDIN
+    $res =~ s/\n%[A-Z]+-[SIWEF]-.*$//		# clip off DCL status msg
+	if $^O eq "VMS";
+    $exp =~ s/[\r\n]+$//;
+    if ($^O eq "MacOS") {
+	$exp =~ s{(\./)?abc\.pm}{:abc.pm}g;
+	$exp =~ s{./abc}        {:abc}g;
+	}
+    my $pfx = ($res =~ s/^PREFIX\n//);
+    my $rexp = qr{^$exp};
+    if ($res =~ s/^SKIPPED\n//) {
+	print "$results\n";
+	}
+    elsif (($pfx and $res !~ /^\Q$expected/) or
+	  (!$pfx and $res !~ $rexp)) {
+        print STDERR
+	    "PROG:\n$prog\n",
+	    "FILE:\n$fil",
+	    "EXPECTED:\n$exp\n",
+	    "GOT:\n$res\n";
+        print "not ";
+	}
+    print "ok ", ++$i, "\n";
+    1 while unlink $tmpfile;
+    $fil or next;
+    1 while unlink $alifile;
+    }
+
+# [perl #30409] charnames.pm clobbers default variable
+$_ = 'foobar';
+eval "use charnames ':full';";
+print "not " unless $_ eq 'foobar';
+print "ok 74\n";
+
+# Unicode slowdown noted by Phil Pennock, traced to a bug fix in index
+# SADAHIRO Tomoyuki's suggestion is to ensure that the UTF-8ness of both
+# arguments are indentical before calling index.
+# To do this can take advantage of the fact that unicore/Name.pl is 7 bit
+# (or at least should be). So assert that that it's true here.
+
+my $names = do "unicore/Name.pl";
+print defined $names ? "ok 75\n" : "not ok 75\n";
+if (ord('A') == 65) { # as on ASCII or UTF-8 machines
+  my $non_ascii = $names =~ tr/\0-\177//c;
+  print $non_ascii ? "not ok 76 # $non_ascii\n" : "ok 76\n";
+} else {
+  print "ok 76\n";
+}
+
+# Verify that charnames propagate to eval("")
+my $evaltry = eval q[ "Eval: \N{LEFT-POINTING DOUBLE ANGLE QUOTATION MARK}" ];
+if ($@) {
+    print "# $@not ok 77\nnot ok 78\n";
+} else {
+    print "ok 77\n";
+    print "not " unless $evaltry eq "Eval: \N{LEFT-POINTING DOUBLE ANGLE QUOTATION MARK}";
+    print "ok 78\n";
+}
+
+__END__
+# unsupported pragma
+use charnames ":scoobydoo";
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+unsupported special ':scoobydoo' in charnames at
+########
+# wrong type of alias (missing colon)
+use charnames "alias";
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+Unknown charname 'e_ACUTE' at
+########
+# alias without an argument
+use charnames ":alias";
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+:alias needs an argument in charnames at
+########
+# reversed sequence
+use charnames ":alias" => ":full";
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+:alias cannot use existing pragma :full \(reversed order\?\) at
+########
+# alias with hashref but no :full
+use charnames ":alias" => { e_ACUTE => "LATIN SMALL LETTER E WITH ACUTE" };
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+Unknown charname 'LATIN SMALL LETTER E WITH ACUTE' at
+########
+# alias with hashref but with :short
+use charnames ":short", ":alias" => { e_ACUTE => "LATIN SMALL LETTER E WITH ACUTE" };
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+Unknown charname 'LATIN SMALL LETTER E WITH ACUTE' at
+########
+# alias with hashref to :full OK
+use charnames ":full", ":alias" => { e_ACUTE => "LATIN SMALL LETTER E WITH ACUTE" };
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+$
+########
+# alias with hashref to :short but using :full
+use charnames ":full", ":alias" => { e_ACUTE => "LATIN:e WITH ACUTE" };
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+Unknown charname 'LATIN:e WITH ACUTE' at
+########
+# alias with hashref to :short OK
+use charnames ":short", ":alias" => { e_ACUTE => "LATIN:e WITH ACUTE" };
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+$
+########
+# alias with bad hashref
+use charnames ":short", ":alias" => "e_ACUTE";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+unicore/e_ACUTE_alias.pl cannot be used as alias file for charnames at
+########
+# alias with arrayref
+use charnames ":short", ":alias" => [ e_ACUTE => "LATIN:e WITH ACUTE" ];
+"Here: \N{e_ACUTE}!\n";
+EXPECT
+Only HASH reference supported as argument to :alias at
+########
+# alias with bad hashref
+use charnames ":short", ":alias" => { e_ACUTE => "LATIN:e WITH ACUTE", "a_ACUTE" };
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+Use of uninitialized value
+########
+# alias with hashref two aliases
+use charnames ":short", ":alias" => {
+    e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "",
+    };
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+Unknown charname '' at
+########
+# alias with hashref two aliases
+use charnames ":short", ":alias" => {
+    e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "LATIN:a WITH ACUTE",
+    };
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+$
+########
+# alias with hashref using mixed aliasses
+use charnames ":short", ":alias" => {
+    e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "LATIN SMALL LETTER A WITH ACUT",
+    };
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+Unknown charname 'LATIN SMALL LETTER A WITH ACUT' at
+########
+# alias with hashref using mixed aliasses
+use charnames ":short", ":alias" => {
+    e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "LATIN SMALL LETTER A WITH ACUTE",
+    };
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+Unknown charname 'LATIN SMALL LETTER A WITH ACUTE' at
+########
+# alias with hashref using mixed aliasses
+use charnames ":full", ":alias" => {
+    e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "LATIN SMALL LETTER A WITH ACUTE",
+    };
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+Unknown charname 'LATIN:e WITH ACUTE' at
+########
+# alias with nonexisting file
+use charnames ":full", ":alias" => "xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+unicore/xyzzy_alias.pl cannot be used as alias file for charnames at
+########
+# alias with bad file name
+use charnames ":full", ":alias" => "xy 7-";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+Charnames alias files can only have identifier characters at
+########
+# alias with non_absolute (existing) file name (which it should /not/ use)
+use charnames ":full", ":alias" => "perl";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+EXPECT
+unicore/perl_alias.pl cannot be used as alias file for charnames at
+########
+# alias with bad file
+use charnames ":full", ":alias" => "xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+FILE
+#!perl
+0;
+EXPECT
+unicore/xyzzy_alias.pl did not return a \(valid\) list of alias pairs at
+########
+# alias with file with empty list
+use charnames ":full", ":alias" => "xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+FILE
+#!perl
+();
+EXPECT
+Unknown charname 'e_ACUTE' at
+########
+# alias with file OK but file has :short aliasses
+use charnames ":full", ":alias" => "xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+FILE
+#!perl
+(   e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "LATIN:a WITH ACUTE",
+    );
+EXPECT
+Unknown charname 'LATIN:e WITH ACUTE' at
+########
+# alias with :short and file OK
+use charnames ":short", ":alias" => "xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+FILE
+#!perl
+(   e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "LATIN:a WITH ACUTE",
+    );
+EXPECT
+$
+########
+# alias with :short and file OK has :long aliasses
+use charnames ":short", ":alias" => "xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+FILE
+#!perl
+(   e_ACUTE => "LATIN SMALL LETTER E WITH ACUTE",
+    a_ACUTE => "LATIN SMALL LETTER A WITH ACUTE",
+    );
+EXPECT
+Unknown charname 'LATIN SMALL LETTER E WITH ACUTE' at
+########
+# alias with file implicit :full but file has :short aliasses
+use charnames ":alias" => ":xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+FILE
+#!perl
+(   e_ACUTE => "LATIN:e WITH ACUTE",
+    a_ACUTE => "LATIN:a WITH ACUTE",
+    );
+EXPECT
+Unknown charname 'LATIN:e WITH ACUTE' at
+########
+# alias with file implicit :full and file has :long aliasses
+use charnames ":alias" => ":xyzzy";
+"Here: \N{e_ACUTE}\N{a_ACUTE}!\n";
+FILE
+#!perl
+(   e_ACUTE => "LATIN SMALL LETTER E WITH ACUTE",
+    a_ACUTE => "LATIN SMALL LETTER A WITH ACUTE",
+    );
+EXPECT
+$

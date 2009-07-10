@@ -1,6 +1,6 @@
-@c $KTH: misc.texi,v 1.5 2001/01/28 22:11:23 assar Exp $
+@c $KTH: misc.texi,v 1.14 2003/05/04 13:32:37 lha Exp $
 
-@node Things in search for a better place, Kerberos 4 issues, Setting up a realm, Top
+@node Things in search for a better place, Kerberos 4 issues, Applications, Top
 @chapter Things in search for a better place
 
 @section Making things work on Ciscos
@@ -37,7 +37,7 @@ says that people with `admin' instances should be given `enabled' shells
 when logging in.
 
 The numbers after the principal on the `srvtab' line are principal type,
-timestamp (in seconds since 1970), key version number (4), keytype (1 ==
+time stamp (in seconds since 1970), key version number (4), keytype (1 ==
 des), key length (always 8 with des), and then the key.
 
 To make the Heimdal KDC produce tickets that the Cisco can decode you

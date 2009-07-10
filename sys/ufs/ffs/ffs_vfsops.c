@@ -1257,7 +1257,7 @@ retry:
 	ip = pool_get(&ffs_ino_pool, PR_WAITOK|PR_ZERO);
 	lockinit(&ip->i_lock, PINOD, "inode", 0, 0);
 	ip->i_ump = ump;
-	vref(ip->i_devvp);
+	VREF(ip->i_devvp);
 	vp->v_data = ip;
 	ip->i_vnode = vp;
 	ip->i_fs = fs = ump->um_fs;

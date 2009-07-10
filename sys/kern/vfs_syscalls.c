@@ -335,14 +335,14 @@ again:
 		fdp = p->p_fd;
 		if (fdp->fd_cdir == olddp) {
 			vp = fdp->fd_cdir;
-			vref(newdp);
+			VREF(newdp);
 			fdp->fd_cdir = newdp;
 			if (vrele(vp))
 				goto again;
 		}
 		if (fdp->fd_rdir == olddp) {
 			vp = fdp->fd_rdir;
-			vref(newdp);
+			VREF(newdp);
 			fdp->fd_rdir = newdp;
 			if (vrele(vp))
 				goto again;
@@ -350,7 +350,7 @@ again:
 	}
 	if (rootvnode == olddp) {
 		vrele(rootvnode);
-		vref(newdp);
+		VREF(newdp);
 		rootvnode = newdp;
 	}
 	vput(newdp);
@@ -698,7 +698,7 @@ sys_fchdir(struct proc *p, void *v, register_t *retval)
 	if ((error = getvnode(fdp, SCARG(uap, fd), &fp)) != 0)
 		return (error);
 	vp = (struct vnode *)fp->f_data;
-	vref(vp);
+	VREF(vp);
 	FRELE(fp);
 	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
 	if (vp->v_type != VDIR)
@@ -776,7 +776,7 @@ sys_chroot(struct proc *p, void *v, register_t *retval)
 		 */
 		vrele(fdp->fd_rdir);
 		vrele(fdp->fd_cdir);
-		vref(nd.ni_vp);
+		VREF(nd.ni_vp);
 		fdp->fd_cdir = nd.ni_vp;
 	}
 	fdp->fd_rdir = nd.ni_vp;

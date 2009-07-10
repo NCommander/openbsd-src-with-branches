@@ -1,4 +1,4 @@
-/*	$Id: mdoc_validate.c,v 1.14 2009/07/06 22:33:58 schwarze Exp $ */
+/*	$Id: mdoc_validate.c,v 1.12 2009/06/23 23:02:54 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009 Kristaps Dzonsons <kristaps@kth.se>
  *
@@ -23,7 +23,6 @@
 #include <string.h>
 
 #include "libmdoc.h"
-#include "libmandoc.h"
 
 /* FIXME: .Bl -diag can't have non-text children in HEAD. */
 /* TODO: ignoring Pp (it's superfluous in some invocations). */
@@ -56,6 +55,7 @@ enum	mwarn {
 	WNOWIDTH,
 	WMISSWIDTH,
 	WESCAPE,
+	WDEPCOL,
 	WWRONGMSEC,
 	WSECOOO,
 	WSECREP,
@@ -464,6 +464,10 @@ pwarn(struct mdoc *m, int line, int pos, enum mwarn type)
 		p = "prologue macros out-of-order";
 		c = WARN_COMPAT;
 		break;
+	case (WDEPCOL):
+		p = "deprecated column argument syntax";
+		c = WARN_COMPAT;
+		break;
 	case (WNOWIDTH):
 		p = "superfluous width argument";
 		break;
@@ -699,9 +703,9 @@ check_argv(struct mdoc *m, const struct mdoc_node *n,
 static int
 check_text(struct mdoc *mdoc, int line, int pos, const char *p)
 {
-	int		 c;
+	size_t		 c;
 
-	for ( ; *p; p++, pos++) {
+	for ( ; *p; p++) {
 		if ('\t' == *p) {
 			if ( ! (MDOC_LITERAL & mdoc->flags))
 				if ( ! warn_print(mdoc, line, pos))
@@ -713,10 +717,9 @@ check_text(struct mdoc *mdoc, int line, int pos, const char *p)
 		if ('\\' != *p)
 			continue;
 
-		c = mandoc_special(p);
+		c = mdoc_isescape(p);
 		if (c) {
-			p += c - 1;
-			pos += c - 1;
+			p += (int)c - 1;
 			continue;
 		}
 		if ( ! (MDOC_IGN_ESCAPE & mdoc->pflags))

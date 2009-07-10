@@ -1,4 +1,4 @@
-/*	$Id: mdoc_term.c,v 1.21 2009/07/06 23:37:27 schwarze Exp $ */
+/*	$Id: mdoc_term.c,v 1.18 2009/06/27 12:43:11 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009 Kristaps Dzonsons <kristaps@kth.se>
  *
@@ -527,6 +527,10 @@ arg_width(const struct mdoc_argv *arg, int pos)
 
 	assert(pos < (int)arg->sz && pos >= 0);
 	assert(arg->value[pos]);
+	if (0 == strcmp(arg->value[pos], "indent"))
+		return(INDENT);
+	if (0 == strcmp(arg->value[pos], "indent-two"))
+		return(INDENT * 2);
 
 	if (0 == (len = (int)strlen(arg->value[pos])))
 		return(0);
@@ -599,7 +603,7 @@ arg_offset(const struct mdoc_argv *arg)
 	if (0 == strcmp(*arg->value, "indent"))
 		return(INDENT + 1);
 	if (0 == strcmp(*arg->value, "indent-two"))
-		return((INDENT + 1) * 2);
+		return(INDENT * 2);
 
 	/* FIXME: needs to support field-widths (10n, etc.). */
 
@@ -752,7 +756,7 @@ termp_it_pre(DECL_ARGS)
 		if (vals[0] >= 0) 
 			width = arg_width(&bl->args->argv[vals[0]], 0);
 		if (vals[1] >= 0) 
-			offset += arg_offset(&bl->args->argv[vals[1]]);
+			offset = arg_offset(&bl->args->argv[vals[1]]);
 		break;
 	}
 

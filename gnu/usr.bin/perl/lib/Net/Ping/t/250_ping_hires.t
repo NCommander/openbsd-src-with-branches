@@ -23,7 +23,7 @@ BEGIN {
   }
 }
 
-use Test;
+use Test qw(plan ok $TESTERR);
 use Net::Ping;
 plan tests => 8;
 
@@ -57,5 +57,8 @@ my ($ret, $duration) = $p -> ping("localhost");
 ok $ret;
 
 # It is extremely likely that the duration contains a decimal
-# point if Time::HiRes is functioning properly.
-ok $duration =~ /\./;
+# point if Time::HiRes is functioning properly, except when it
+# is fast enough to be "0", or slow enough to be exactly "1".
+if (! ok($duration =~ /\.|^[01]$/)) {
+    print($TESTERR "# duration=[$duration]\n");
+}

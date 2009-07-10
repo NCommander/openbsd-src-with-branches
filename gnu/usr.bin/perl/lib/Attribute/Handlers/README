@@ -1,5 +1,5 @@
 ==============================================================================
-                Release of version 0.77 of Attribute::Handlers
+                Release of version 0.79 of Attribute::Handlers
 ==============================================================================
 
 
@@ -44,40 +44,26 @@ AUTHOR
     Damian Conway (damian@conway.org)
 
 COPYRIGHT
-             Copyright (c) 2001, Damian Conway. All Rights Reserved.
+             Copyright (c) 2001-2007, Damian Conway. All Rights Reserved.
            This module is free software. It may be used, redistributed
                and/or modified under the same terms as Perl itself.
 
 
 ==============================================================================
 
-0.77	Sat Jun  8 22:58:56 CEST 2002
+0.79
 
-	- Since Attribute::Handlers now is core, I will refer to changes
-	with their patch number, please read  Porting/repository.pod from
-	your a perl tarball for more information.
-
-	- Brought up to date with perl 5.8RC1 version 
-	will be 5.8 if no more changes come in
-
-	- [#13686] This changes the behaviour of lexical attributes.
-	Prior to this lexical attributes were done at a compile time, 
-	and they would loose their attribute on the next run over them.
-	Now perl 5.8 calls the attribute handler runtime whenever it hits my.
-
-	- [#14448] Fixes cases with too high refcounts on lexical attributes
-
-	- [#15945] Do not warn about too late CHECK and INIT block if
-	A::H is pulled in using a require.
-
+	- The version released with Perl 5.10.0
+	- All interpreted attributes are now passed as array references,
+	  eventually nested.
+	- Don't AUTOLOAD DESTROY (Jerry D Hedden, cpan bug #1911)
+	- A::H is now able to report caller's file and line number
+	  (David Feldman)
 
 ==============================================================================
 
 AVAILABILITY
 
 Attribute::Handlers has been uploaded to the CPAN
-and is also available from:
-
-	http://www.csse.monash.edu.au/~damian/CPAN/Attribute-Handlers.tar.gz
 
 ==============================================================================

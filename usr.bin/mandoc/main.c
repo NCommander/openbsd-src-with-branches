@@ -1,4 +1,4 @@
-/*	$Id: main.c,v 1.10 2009/07/07 00:16:21 schwarze Exp $ */
+/*	$Id: main.c,v 1.7 2009/06/21 20:10:31 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009 Kristaps Dzonsons <kristaps@kth.se>
  *
@@ -119,19 +119,19 @@ main(int argc, char *argv[])
 		switch (c) {
 		case ('f'):
 			if ( ! foptions(&curp.fflags, optarg))
-				return(EXIT_FAILURE);
+				return(0);
 			break;
 		case ('m'):
 			if ( ! moptions(&curp.inttype, optarg))
-				return(EXIT_FAILURE);
+				return(0);
 			break;
 		case ('T'):
 			if ( ! toptions(&curp.outtype, optarg))
-				return(EXIT_FAILURE);
+				return(0);
 			break;
 		case ('W'):
 			if ( ! woptions(&curp.wflags, optarg))
-				return(EXIT_FAILURE);
+				return(0);
 			break;
 		case ('V'):
 			version();
@@ -219,14 +219,12 @@ man_init(struct curparse *curp)
 
 	/* Defaults from mandoc.1. */
 
-	pflags = MAN_IGN_MACRO | MAN_IGN_ESCAPE | MAN_IGN_CHARS;
+	pflags = MAN_IGN_MACRO | MAN_IGN_CHARS;
 
 	if (curp->fflags & NO_IGN_MACRO)
 		pflags &= ~MAN_IGN_MACRO;
 	if (curp->fflags & NO_IGN_CHARS)
 		pflags &= ~MAN_IGN_CHARS;
-	if (curp->fflags & NO_IGN_ESCAPE)
-		pflags &= ~MAN_IGN_ESCAPE;
 
 	if (NULL == (man = man_alloc(curp, pflags, &mancb)))
 		warnx("memory exhausted");
@@ -307,7 +305,7 @@ fdesc(struct buf *blk, struct buf *ln, struct curparse *curp)
 	 */
 
 	if (-1 == fstat(curp->fd, &st))
-		warn("%s", curp->file);
+		warnx("%s", curp->file);
 	else if ((size_t)st.st_blksize > sz)
 		sz = st.st_blksize;
 
@@ -541,7 +539,7 @@ toptions(enum outt *tflags, char *arg)
 static int
 foptions(int *fflags, char *arg)
 {
-	char		*v, *o;
+	char		*v;
 	char		*toks[6];
 
 	toks[0] = "ign-scope";
@@ -551,8 +549,7 @@ foptions(int *fflags, char *arg)
 	toks[4] = "strict";
 	toks[5] = NULL;
 
-	while (*arg) {
-		o = arg;
+	while (*arg) 
 		switch (getsubopt(&arg, toks, &v)) {
 		case (0):
 			*fflags |= IGN_SCOPE;
@@ -571,10 +568,9 @@ foptions(int *fflags, char *arg)
 			 	   NO_IGN_MACRO | NO_IGN_CHARS;
 			break;
 		default:
-			warnx("bad argument: -f%s", o);
+			warnx("bad argument: -f%s", arg);
 			return(0);
 		}
-	}
 
 	return(1);
 }
@@ -583,7 +579,7 @@ foptions(int *fflags, char *arg)
 static int
 woptions(int *wflags, char *arg)
 {
-	char		*v, *o;
+	char		*v;
 	char		*toks[5]; 
 
 	toks[0] = "all";
@@ -592,8 +588,7 @@ woptions(int *wflags, char *arg)
 	toks[3] = "error";
 	toks[4] = NULL;
 
-	while (*arg) {
-		o = arg;
+	while (*arg) 
 		switch (getsubopt(&arg, toks, &v)) {
 		case (0):
 			*wflags |= WARN_WALL;
@@ -608,10 +603,9 @@ woptions(int *wflags, char *arg)
 			*wflags |= WARN_WERR;
 			break;
 		default:
-			warnx("bad argument: -W%s", o);
+			warnx("bad argument: -W%s", arg);
 			return(0);
 		}
-	}
 
 	return(1);
 }

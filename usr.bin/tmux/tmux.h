@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.18 2009/07/09 00:29:32 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.14 2009/06/25 22:08:15 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -945,8 +945,8 @@ extern volatile sig_atomic_t sigcont;
 extern volatile sig_atomic_t sigchld;
 extern volatile sig_atomic_t sigusr1;
 extern volatile sig_atomic_t sigusr2;
-extern struct options global_s_options;
-extern struct options global_w_options;
+extern struct options global_options;
+extern struct options global_window_options;
 extern char	*cfg_file;
 extern int	 server_locked;
 extern char	*server_password;
@@ -1101,7 +1101,6 @@ extern const struct cmd_entry cmd_detach_client_entry;
 extern const struct cmd_entry cmd_down_pane_entry;
 extern const struct cmd_entry cmd_find_window_entry;
 extern const struct cmd_entry cmd_has_session_entry;
-extern const struct cmd_entry cmd_if_shell_entry;
 extern const struct cmd_entry cmd_kill_pane_entry;
 extern const struct cmd_entry cmd_kill_server_entry;
 extern const struct cmd_entry cmd_kill_session_entry;
@@ -1338,9 +1337,11 @@ void	 grid_view_clear(struct grid *, u_int, u_int, u_int, u_int);
 void	 grid_view_scroll_region_up(struct grid *, u_int, u_int);
 void	 grid_view_scroll_region_down(struct grid *, u_int, u_int);
 void	 grid_view_insert_lines(struct grid *, u_int, u_int);
-void	 grid_view_insert_lines_region(struct grid *, u_int, u_int, u_int);
+void	 grid_view_insert_lines_region(
+    	     struct grid *, u_int, u_int, u_int, u_int);
 void	 grid_view_delete_lines(struct grid *, u_int, u_int);
-void	 grid_view_delete_lines_region(struct grid *, u_int, u_int, u_int);
+void	 grid_view_delete_lines_region(
+    	     struct grid *, u_int, u_int, u_int, u_int);
 void	 grid_view_insert_cells(struct grid *, u_int, u_int, u_int);
 void	 grid_view_delete_cells(struct grid *, u_int, u_int, u_int);
 char	*grid_view_string_cells(struct grid *, u_int, u_int, u_int);
@@ -1407,7 +1408,6 @@ int	 screen_check_selection(struct screen *, u_int, u_int);
 
 /* window.c */
 extern struct windows windows;
-const char	*window_default_command(void);
 int		 window_cmp(struct window *, struct window *);
 int		 winlink_cmp(struct winlink *, struct winlink *);
 RB_PROTOTYPE(windows, window, entry, window_cmp);
