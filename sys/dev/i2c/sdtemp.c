@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdtemp.c,v 1.6 2008/11/13 17:57:15 deraadt Exp $	*/
+/*	$OpenBSD: sdtemp.c,v 1.7 2009/04/22 01:09:23 cnst Exp $	*/
 
 /*
  * Copyright (c) 2008 Theo de Raadt
@@ -23,9 +23,9 @@
 
 #include <dev/i2c/i2cvar.h>
 
-/* JDEC JC-42.4 registers */
+/* JEDEC JC-42.4 registers */
 #define JC_TEMP			0x05
-#define JC_TEMP_SIGN		0x10
+#define  JC_TEMP_SIGN		0x1000
 
 /* Sensors */
 #define JCTEMP_TEMP		0
