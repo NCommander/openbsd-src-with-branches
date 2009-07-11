@@ -1126,7 +1126,10 @@ sr_boot_assembly(struct sr_softc *sc)
 		bc.bc_dev_list_len = vol->sbv_chunk_no * sizeof(dev_t);
 		bc.bc_dev_list = devs;
 		bc.bc_flags = BIOC_SCDEVT;
+
+		rw_enter_write(&sc->sc_lock);
 		sr_ioctl_createraid(sc, &bc, 0);
+		rw_exit_write(&sc->sc_lock);
 
 		rv++;
 	}
