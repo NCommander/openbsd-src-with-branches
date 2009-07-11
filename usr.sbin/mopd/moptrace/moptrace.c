@@ -1,4 +1,4 @@
-/*	$OpenBSD: moptrace.c,v 1.8 2003/12/01 00:56:51 avsm Exp $ */
+/*	$OpenBSD: moptrace.c,v 1.9 2006/04/16 11:48:19 maja Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -25,14 +25,13 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$OpenBSD: moptrace.c,v 1.8 2003/12/01 00:56:51 avsm Exp $";
+static const char rcsid[] = "$OpenBSD: moptrace.c,v 1.9 2006/04/16 11:48:19 maja Exp $";
 #endif
 
 /*
  * moptrace - MOP Trace Utility
  *
- * Usage:	moptrace -a [ -d ] [ -3 | -4 ]
- *		moptrace [ -d ] [ -3 | -4 ] interface
+ * Usage:	moptrace [-3 | -4] [-ad] interface
  */
 
 #include "os.h"
@@ -111,9 +110,7 @@ main(int argc, char *argv[])
 void
 Usage()
 {
-	fprintf(stderr, "usage: %s -a [ -d ] [ -3 | -4 ]\n", __progname);
-	fprintf(stderr, "       %s [ -d ] [ -3 | -4 ] interface\n",
-	    __progname);
+	fprintf(stderr, "usage: %s [-3 | -4] [-ad] interface\n", __progname);
 	exit(1);
 }
 
