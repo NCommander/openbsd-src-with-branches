@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.67 2009/06/15 04:19:59 miod Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.68 2009/07/08 16:04:00 millert Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -53,7 +53,7 @@ static const char copyright[] =
 
 #ifndef lint
 /*static const char sccsid[] = "from: @(#)fstat.c	8.1 (Berkeley) 6/6/93";*/
-static const char rcsid[] = "$OpenBSD: fstat.c,v 1.67 2009/06/15 04:19:59 miod Exp $";
+static const char rcsid[] = "$OpenBSD: fstat.c,v 1.68 2009/07/08 16:04:00 millert Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -210,10 +210,16 @@ main(int argc, char *argv[])
 			if (uflg++)
 				usage();
 			if (!fuser) {
-				if (!(passwd = getpwnam(optarg)))
-					errx(1, "%s: unknown uid", optarg);
+				if (!(passwd = getpwnam(optarg))) {
+					arg = strtonum(optarg, 0, UID_MAX, 
+					    &errstr);
+					if (errstr != NULL) {
+						errx(1, "%s: unknown uid",
+						    optarg);
+					}
+				} else
+					arg = passwd->pw_uid;
 				what = KERN_FILE_BYUID;
-				arg = passwd->pw_uid;
 			}
 			break;
 		case 'v':
