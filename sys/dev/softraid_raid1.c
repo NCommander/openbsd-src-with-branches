@@ -323,6 +323,10 @@ die:
 	}
 
 	sd->sd_vol_status = new_state;
+
+	/* If we have just become degraded, look for a hotspare. */
+	if (new_state == BIOC_SVDEGRADED)
+		workq_add_task(NULL, 0, sr_hotspare_rebuild_callback, sd, NULL);
 }
 
 int
