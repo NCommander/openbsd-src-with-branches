@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC-IP30,v 1.8 2009/06/24 11:38:40 deraadt Exp $
+#	$OpenBSD: GENERIC-IP30,v 1.9 2009/06/24 17:27:40 miod Exp $
 #
 # THIS KERNEL IS FOR Octane and Octane 2 (IP30) SYSTEMS ONLY.
 #
@@ -126,6 +126,9 @@ video*		at uvideo?
 
 udl*		at uhub?
 wsdisplay*	at udl?
+
+ppb*		at pci?		# PCI-PCI bridges
+pci*		at ppb?
 
 #### NICs
 dc*		at pci?		# 21143, "tulip" clone ethernet
