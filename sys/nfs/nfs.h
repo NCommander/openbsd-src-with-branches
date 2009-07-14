@@ -96,8 +96,8 @@
 #define	B_INVAFTERWRITE	B_INVAL
 
 /*
- * Structures for the nfssvc(2) syscall. Not that anyone but nfsd and mount_nfs
- * should ever try and use it.
+ * Structures for the nfssvc(2) syscall.
+ * Not that anyone besides nfsd(8) should ever use it.
  */
 struct nfsd_args {
 	int	sock;		/* Socket to serve */
