@@ -1,4 +1,4 @@
-/*	$OpenBSD: arcbios.c,v 1.20 2009/05/15 22:56:08 miod Exp $	*/
+/*	$OpenBSD: arcbios.c,v 1.21 2009/05/16 16:40:31 miod Exp $	*/
 /*-
  * Copyright (c) 1996 M. Warner Losh.  All rights reserved.
  * Copyright (c) 1996-2004 Opsycon AB.  All rights reserved.
@@ -201,6 +201,7 @@ bios_printf(const char *fmt, ...)
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
 	bios_putstring(buf);
+	va_end(ap);
 }
 
 /*
