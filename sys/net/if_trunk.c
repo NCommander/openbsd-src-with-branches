@@ -197,7 +197,7 @@ trunk_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_flags = IFF_SIMPLEX | IFF_BROADCAST | IFF_MULTICAST;
 	ifp->if_capabilities = trunk_capabilities(tr);
 
-	IFQ_SET_MAXLEN(&ifp->if_snd, 1);
+	IFQ_SET_MAXLEN(&ifp->if_snd, ifqmaxlen);
 	IFQ_SET_READY(&ifp->if_snd);
 
 	snprintf(ifp->if_xname, sizeof(ifp->if_xname), "%s%d",
