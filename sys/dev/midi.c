@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.15 2006/11/01 03:37:23 tedu Exp $	*/
+/*	$OpenBSD: midi.c,v 1.16 2006/12/21 02:28:47 krw Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -540,14 +540,13 @@ mididetach(struct device *self, int flags)
 	}
 	
 	/* locate the major number */
-        for (maj = 0; maj < nchrdev; maj++)
-                if (cdevsw[maj].d_open == midiopen)
-                        break;
-
-        /* Nuke the vnodes for any open instances (calls close). */
-        mn = self->dv_unit;
-        vdevgone(maj, mn, mn, VCHR);
-
+        for (maj = 0; maj < nchrdev; maj++) {
+                if (cdevsw[maj].d_open == midiopen) {
+        		/* Nuke the vnodes for any open instances (calls close). */
+        		mn = self->dv_unit;
+        		vdevgone(maj, mn, mn, VCHR);
+		}
+	}
 	return 0;
 }
 
