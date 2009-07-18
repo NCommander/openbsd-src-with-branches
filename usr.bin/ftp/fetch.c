@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.90 2009/06/13 20:01:10 martynas Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.91 2009/06/29 09:58:40 halex Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -1229,7 +1229,7 @@ ftp_printf(FILE *fp, SSL *ssl, const char *fmt, ...)
 		ret = SSL_vprintf((SSL*)ssl, fmt, ap);
 #endif /* !SMALL */
 	else
-		ret = NULL;
+		ret = 0;
 
 	va_end(ap);
 	return (ret);
