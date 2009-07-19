@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.129 2009/06/06 04:02:42 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.130 2009/06/12 20:07:35 stevesk Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -803,10 +803,7 @@ dhcpoffer(struct iaddr client_addr, struct option_data *options)
 
 	/* If this is the lease we asked for, put it at the head of the
 	   list, and don't mess with the arp request timeout. */
-	if (lease->address.len == client->requested_address.len &&
-	    !memcmp(lease->address.iabuf,
-	    client->requested_address.iabuf,
-	    client->requested_address.len)) {
+	if (addr_eq(lease->address, client->requested_address)) {
 		lease->next = client->offered_leases;
 		client->offered_leases = lease;
 	} else {
