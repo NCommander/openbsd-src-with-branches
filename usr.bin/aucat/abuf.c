@@ -1,4 +1,4 @@
-/*	$OpenBSD: abuf.c,v 1.10 2009/01/23 17:38:15 ratchov Exp $	*/
+/*	$OpenBSD: abuf.c,v 1.11 2009/02/13 20:48:49 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -55,6 +55,7 @@ abuf_dprn(int n, struct abuf *buf, char *fmt, ...)
 	    buf->rproc ? buf->rproc->name : "none");
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);
+	va_end(ap);
 }
 #define ABUF_DPRN(n, buf, ...) abuf_dprn((n), (buf), __VA_ARGS__)
 #define ABUF_DPR(buf, ...) abuf_dprn(1, (buf), __VA_ARGS__)
