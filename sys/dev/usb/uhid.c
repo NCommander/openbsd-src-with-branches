@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhid.c,v 1.41 2007/06/14 10:11:15 mbalmer Exp $ */
+/*	$OpenBSD: uhid.c,v 1.42 2008/06/26 05:42:18 ray Exp $ */
 /*	$NetBSD: uhid.c,v 1.57 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -261,10 +261,8 @@ uhidopen(dev_t dev, int flag, int mode, struct proc *p)
 	if (error)
 		return (error);
 
-	if (clalloc(&sc->sc_q, UHID_BSIZE, 0) == -1) {
-		uhidev_close(&sc->sc_hdev);
-		return (ENOMEM);
-	}
+	clalloc(&sc->sc_q, UHID_BSIZE, 0);
+
 	sc->sc_obuf = malloc(sc->sc_osize, M_USBDEV, M_WAITOK);
 	sc->sc_state &= ~UHID_IMMED;
 	sc->sc_async = NULL;
