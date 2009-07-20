@@ -541,7 +541,7 @@ nfs_decode_args(nmp, argp, nargp)
 	if (nmp->nm_so && adjsock) {
 		nfs_disconnect(nmp);
 		if (nmp->nm_sotype == SOCK_DGRAM)
-			while (nfs_connect(nmp, (struct nfsreq *)0)) {
+			while (nfs_connect(nmp, NULL)) {
 				printf("nfs_args: retrying connect\n");
 				(void) tsleep((caddr_t)&lbolt,
 					      PSOCK, "nfscon", 0);
@@ -703,7 +703,7 @@ mountnfs(argp, mp, nam, pth, hst)
 	 * the first request, in case the server is not responding.
 	 */
 	if (nmp->nm_sotype == SOCK_DGRAM &&
-	    (error = nfs_connect(nmp, (struct nfsreq *)0)))
+	    (error = nfs_connect(nmp, NULL)))
 		goto bad;
 
 	/*

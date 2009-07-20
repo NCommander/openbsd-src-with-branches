@@ -167,9 +167,9 @@ nfs_inactive(v)
 
 	if (ap->a_vp->v_type != VDIR) {
 		sp = np->n_sillyrename;
-		np->n_sillyrename = (struct sillyrename *)0;
+		np->n_sillyrename = NULL;
 	} else
-		sp = (struct sillyrename *)0;
+		sp = NULL;
 	if (sp) {
 		/*
 		 * Remove the silly file that was rename'd earlier
