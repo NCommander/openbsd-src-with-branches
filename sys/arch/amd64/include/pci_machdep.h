@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.10 2009/04/11 17:13:33 kettenis Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.11 2009/04/21 19:18:09 kettenis Exp $	*/
 /*	$NetBSD: pci_machdep.h,v 1.1 2003/02/26 21:26:11 fvdl Exp $	*/
 
 /*
@@ -53,7 +53,7 @@ typedef struct {
 	int line, pin;
 } pci_intr_handle_t;
 
-#define	pci_intr_line(ih)	((ih.line) & 0xff)
+#define	pci_intr_line(pc,ih)	((ih.line) & 0xff)
 
 /*
  * amd64-specific PCI variables and functions.

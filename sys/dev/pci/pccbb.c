@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.63 2008/10/15 19:12:18 blambert Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.64 2009/06/03 04:32:10 jsg Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -481,7 +481,7 @@ pccbbattach(struct device *parent, struct device *self, void *aux)
 	}
 	intrstr = pci_intr_string(pc, ih);
 	/* must do this after intr is mapped and established */
-	sc->sc_intrline = pci_intr_line(ih);
+	sc->sc_intrline = pci_intr_line(pc, ih);
 
 	/*
 	 * XXX pccbbintr should be called under the priority lower
