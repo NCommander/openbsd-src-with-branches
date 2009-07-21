@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-previous-window.c,v 1.2 2009/06/03 15:58:40 nicm Exp $ */
+/* $OpenBSD: cmd-previous-window.c,v 1.3 2009/07/13 23:11:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -48,7 +48,7 @@ cmd_previous_window_init(struct cmd *self, int key)
 	cmd_target_init(self, key);
 	data = self->data;
 
-	if (key == KEYC_ADDESC('p'))
+	if (key == ('p' | KEYC_ESCAPE))
 		data->chflags |= CMD_CHFLAG('a');
 }
 
