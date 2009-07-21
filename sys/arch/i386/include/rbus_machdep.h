@@ -1,4 +1,4 @@
-/*	$OpenBSD: rbus_machdep.h,v 1.5 2007/12/09 16:53:36 kettenis Exp $	*/
+/*	$OpenBSD: rbus_machdep.h,v 1.6 2008/07/02 03:00:00 fgsch Exp $	*/
 /*	$NetBSD: rbus_machdep.h,v 1.2 1999/10/15 06:43:05 haya Exp $	*/
 
 /*
@@ -36,11 +36,11 @@
 
 struct pci_attach_args;		/* XXX */
 
-#define md_space_map(bt, physaddr, size, flags, bshp) \
-	_bus_space_map((bt), (physaddr), (size), (flags), (bshp))
+#define md_space_map(rbt, physaddr, size, flags, bshp) \
+	_bus_space_map((rbt)->rb_bt, (physaddr), (size), (flags), (bshp))
 
-#define md_space_unmap(bt, bsh, size, adrp) \
-	_bus_space_unmap((bt), (bsh), (size), (adrp))
+#define md_space_unmap(rbt, bsh, size, adrp) \
+	_bus_space_unmap((rbt)->rb_bt, (bsh), (size), (adrp))
 
 rbus_tag_t	rbus_pccbb_parent_io(struct device *,
 		    struct pci_attach_args *);
