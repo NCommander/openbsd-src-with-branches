@@ -420,9 +420,6 @@ again:
 		} else 
 			bp->b_flags &= ~B_NEEDCOMMIT;
 
-		/*
-		 * If the lease is non-cachable or IO_SYNC do bwrite().
-		 */
 		if (ioflag & IO_SYNC) {
 			bp->b_proc = p;
 			error = VOP_BWRITE(bp);
