@@ -1,4 +1,4 @@
-/*	$OpenBSD: nsgphy.c,v 1.20 2008/05/30 05:08:29 brad Exp $	*/
+/*	$OpenBSD: nsgphy.c,v 1.21 2008/10/24 17:11:37 brad Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 2001
@@ -34,9 +34,10 @@
  */
 
 /*
- * Driver for the National Semiconductor DP83891 and DP83861
+ * Driver for the National Semiconductor DP83861, DP83865 and DP83891
  * 10/100/1000 PHYs.
  * Datasheet available at: http://www.national.com/ds/DP/DP83861.pdf
+ * and at: http://www.national.com/ds/DP/DP83865.pdf
  *
  * The DP83891 is the older NatSemi gigE PHY which isn't being sold
  * anymore. The DP83861 is its replacement, which is an 'enhanced'
