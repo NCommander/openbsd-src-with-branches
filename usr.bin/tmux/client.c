@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.4 2009/07/22 21:58:56 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.5 2009/07/23 20:24:27 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -134,14 +134,12 @@ int
 client_main(struct client_ctx *cctx)
 {
 	struct pollfd	 pfd;
-	char		*error;
 	int		 xtimeout; /* Yay for ncurses namespace! */
 
 	siginit();
 
 	logfile("client");
 
-	error = NULL;
 	while (!sigterm) {
 		if (sigchld) {
 			waitpid(WAIT_ANY, NULL, WNOHANG);
