@@ -1,4 +1,4 @@
-/* $OpenBSD: mode-key.c,v 1.2 2009/07/12 16:15:34 nicm Exp $ */
+/* $OpenBSD: mode-key.c,v 1.3 2009/07/21 17:57:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -153,6 +153,7 @@ mode_key_lookup_emacs(struct mode_key_data *mdata, int key)
 	case '\010':
 	case '\177':
 		return (MODEKEYCMD_BACKSPACE);
+	case '\004':
 	case KEYC_DC:
 		return (MODEKEYCMD_DELETE);
 	case '\011':
