@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.2 2002/05/10 00:09:17 nate Exp $	*/
+/*	$OpenBSD: parse.c,v 1.3 2004/06/04 00:47:32 deraadt Exp $	*/
 /*	$NetBSD: parse.c,v 1.2 2001/12/29 20:44:22 augustss Exp $	*/
 
 /*
@@ -318,7 +318,7 @@ hid_get_item_raw(hid_data_t s, hid_item_t *h)
 				c->logical_maximum = dval;
 				break;
 			case 3:
-				c->physical_maximum = dval;
+				c->physical_minimum = dval;
 				break;
 			case 4:
 				c->physical_maximum = dval;
