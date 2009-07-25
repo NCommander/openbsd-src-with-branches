@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.6 2009/01/23 17:38:15 ratchov Exp $	*/
+/*	$OpenBSD: file.h,v 1.7 2009/07/25 08:44:27 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -21,9 +21,7 @@
 #include <sys/types.h>
 
 struct file;
-struct aparams;
 struct aproc;
-struct abuf;
 struct pollfd;
 
 struct timo {

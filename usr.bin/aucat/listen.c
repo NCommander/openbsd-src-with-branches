@@ -1,4 +1,4 @@
-/*	$OpenBSD: listen.c,v 1.8 2009/02/04 20:35:14 ratchov Exp $	*/
+/*	$OpenBSD: listen.c,v 1.9 2009/07/25 08:44:27 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -29,8 +29,8 @@
 #include <unistd.h>
 
 #include "conf.h"
-#include "sock.h"
 #include "listen.h"
+#include "sock.h"
 
 struct fileops listen_ops = {
 	"listen",
@@ -138,7 +138,7 @@ listen_close(struct file *file)
 {
 	struct listen *f = (struct listen *)file;
 
-	(void)unlink(f->path);
+	unlink(f->path);
 	free(f->path);
-	(void)close(f->fd);
+	close(f->fd);
 }

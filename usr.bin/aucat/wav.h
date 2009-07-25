@@ -1,4 +1,4 @@
-/*	$OpenBSD: wav.h,v 1.2 2009/04/11 10:24:21 jakemsr Exp $	*/
+/*	$OpenBSD: wav.h,v 1.3 2009/04/22 10:57:33 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -19,8 +19,8 @@
 
 #include <sys/types.h>
 
-#include "pipe.h"
 #include "aparams.h"
+#include "pipe.h"
 
 struct wav {
 	struct pipe pipe;

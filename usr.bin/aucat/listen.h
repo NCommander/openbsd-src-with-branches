@@ -1,4 +1,4 @@
-/*	$OpenBSD: listen.h,v 1.3 2008/11/16 18:34:56 ratchov Exp $	*/
+/*	$OpenBSD: listen.h,v 1.4 2009/07/25 08:44:27 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -19,8 +19,8 @@
 
 #include <sys/types.h>
 
-#include "file.h"
 #include "aparams.h"
+#include "file.h"
 
 struct listen {
 	struct file file;

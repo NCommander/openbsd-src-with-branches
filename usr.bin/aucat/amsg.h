@@ -1,4 +1,4 @@
-/*	$OpenBSD: amsg.h,v 1.7 2009/05/16 12:20:31 ratchov Exp $	*/
+/*	$OpenBSD: amsg.h,v 1.8 2009/07/25 08:44:27 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -96,14 +96,14 @@ struct amsg {
 };
 
 /*
- * initialize an amsg structure: fill all fields with 0xff, so the read
- * can test which fields were set
+ * Initialize an amsg structure: fill all fields with 0xff, so the read
+ * can test which fields were set.
  */
 #define AMSG_INIT(m) do { memset((m), 0xff, sizeof(struct amsg)); } while (0)
 
 /*
- * since the structure is memset to 0xff, the MSB can be used to check
- * if any filed was set
+ * Since the structure is memset to 0xff, the MSB can be used to check
+ * if any field was set.
  */
 #define AMSG_ISSET(x) (((x) & (1 << (8 * sizeof(x) - 1))) == 0)
 
