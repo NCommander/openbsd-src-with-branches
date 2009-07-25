@@ -1,4 +1,4 @@
-/*	$OpenBSD: listen.h,v 1.3 2008/11/16 18:34:56 ratchov Exp $	*/
+/*	$OpenBSD: aproc.h,v 1.16 2009/01/23 17:38:15 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -14,25 +14,11 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef LISTEN_H
-#define LISTEN_H
+#ifndef MIDI_H
+#define MIDI_H
 
-#include <sys/types.h>
+struct aproc *thru_new(char *);
 
-#include "file.h"
-#include "aparams.h"
+extern struct aproc *thrubox;
 
-struct listen {
-	struct file file;
-	char *path;
-	int fd;
-};
-
-struct listen *listen_new(struct fileops *, char *);
-int listen_nfds(struct file *);
-int listen_pollfd(struct file *, struct pollfd *, int);
-int listen_revents(struct file *, struct pollfd *);
-void listen_close(struct file *);
-extern struct fileops listen_ops;
-
-#endif /* !defined(LISTEN_H) */
+#endif /* !defined(MIDI_H) */
