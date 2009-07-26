@@ -1,4 +1,4 @@
-/* $OpenBSD: key-string.c,v 1.3 2009/07/21 17:57:29 nicm Exp $ */
+/* $OpenBSD: key-string.c,v 1.4 2009/07/24 14:57:22 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -57,7 +57,7 @@ struct {
 	{ "PPage",	KEYC_PPAGE },
 	{ "Tab",	'\011' },
 	{ "BTab",	KEYC_BTAB },
-	{ "BSpace",	'\177' },
+	{ "BSpace",	KEYC_BSPACE },
 
 	/* Arrow keys. */
 	{ "Up",		KEYC_UP },

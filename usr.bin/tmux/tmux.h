@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.54 2009/07/24 14:52:47 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.55 2009/07/26 12:58:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -120,6 +120,9 @@ struct buffer {
 enum key_code {
 	/* Mouse key. */
 	KEYC_MOUSE = 0x1000,
+
+	/* Backspace key. */
+	KEYC_BSPACE,
 
 	/* Function keys. */
 	KEYC_F1,
