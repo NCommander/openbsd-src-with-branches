@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_machdep.c,v 1.30 2008/11/25 14:55:44 drahn Exp $	*/
+/*	$OpenBSD: zaurus_machdep.c,v 1.31 2008/11/26 01:29:00 kevlo Exp $	*/
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -434,7 +434,7 @@ static vaddr_t section_free = ZAURUS_VBASE_FREE;
 
 static int
 bootstrap_bs_map(void *t, bus_addr_t bpa, bus_size_t size,
-    int cacheable, bus_space_handle_t *bshp)
+    int flags, bus_space_handle_t *bshp)
 {
 	u_long startpa;
 	vaddr_t va;
