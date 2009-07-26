@@ -2680,7 +2680,7 @@ icmp6_ctloutput(int op, struct socket *so, int level, int optname,
 			break;
 		}
 		if (m)
-			(void)m_freem(m);
+			m_freem(m);
 		break;
 
 	case PRCO_GETOPT:

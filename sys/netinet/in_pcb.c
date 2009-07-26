@@ -480,7 +480,7 @@ in_pcbdetach(v)
 	so->so_pcb = 0;
 	sofree(so);
 	if (inp->inp_options)
-		(void)m_freem(inp->inp_options);
+		m_freem(inp->inp_options);
 	if (inp->inp_route.ro_rt)
 		rtfree(inp->inp_route.ro_rt);
 #ifdef INET6
