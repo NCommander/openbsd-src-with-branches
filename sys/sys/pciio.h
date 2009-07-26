@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciio.h,v 1.2 2001/06/26 20:44:14 jason Exp $	*/
+/*	$OpenBSD: pciio.h,v 1.3 2009/07/14 18:20:02 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1997, Stefan Esser <se@FreeBSD.ORG>
@@ -47,9 +47,16 @@ struct pci_io {
 	int		pi_width;	/* width (in bytes) of read or write */
 	u_int32_t	pi_data;	/* data to write or result of read */
 };
-	
+
+struct pci_rom {
+	struct pcisel	pr_sel;
+	int		pr_romlen;
+	char		*pr_rom;
+};
+
 
 #define	PCIOCREAD	_IOWR('p', 2, struct pci_io)
 #define	PCIOCWRITE	_IOWR('p', 3, struct pci_io)
+#define	PCIOCGETROM	_IOWR('p', 5, struct pci_rom)
 
 #endif /* !_SYS_PCIIO_H_ */
