@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-paste-buffer.c,v 1.3 2009/07/11 19:14:56 nicm Exp $ */
+/* $OpenBSD: cmd-paste-buffer.c,v 1.4 2009/07/13 23:11:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -36,8 +36,6 @@ const struct cmd_entry cmd_paste_buffer_entry = {
 	cmd_buffer_init,
 	cmd_buffer_parse,
 	cmd_paste_buffer_exec,
-	cmd_buffer_send,
-	cmd_buffer_recv,
 	cmd_buffer_free,
 	cmd_buffer_print
 };

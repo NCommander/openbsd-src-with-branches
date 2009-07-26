@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-keys.c,v 1.3 2009/07/21 22:41:00 nicm Exp $ */
+/* $OpenBSD: cmd-list-keys.c,v 1.4 2009/07/24 14:52:47 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -35,8 +35,6 @@ const struct cmd_entry cmd_list_keys_entry = {
 	NULL,
 	NULL,
 	cmd_list_keys_exec,
-	NULL,
-	NULL,
 	NULL,
 	NULL
 };

@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: cmd-display-message.c,v 1.1 2009/07/17 18:45:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -35,8 +35,6 @@ const struct cmd_entry cmd_display_message_entry = {
 	cmd_target_init,
 	cmd_target_parse,
 	cmd_display_message_exec,
-	cmd_target_send,
-	cmd_target_recv,
 	cmd_target_free,
 	cmd_target_print
 };
