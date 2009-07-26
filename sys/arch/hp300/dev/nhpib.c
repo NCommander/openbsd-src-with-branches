@@ -1,4 +1,4 @@
-/*	$OpenBSD: nhpib.c,v 1.15 2005/01/15 21:13:08 miod Exp $	*/
+/*	$OpenBSD: nhpib.c,v 1.16 2005/11/13 18:52:15 miod Exp $	*/
 /*	$NetBSD: nhpib.c,v 1.17 1997/05/05 21:06:41 thorpej Exp $	*/
 
 /*
@@ -433,7 +433,7 @@ nhpibdone(hs)
 	if (hs->sc_flags & HPIBF_READ) {
 		if ((hs->sc_flags & HPIBF_TIMO) &&
 		    (hd->hpib_ids & IDS_IR) == 0)
-			timeout_add(&sc->sc_read_to, hz >> 2);
+			timeout_add_msec(&sc->sc_read_to, 1000 >> 2);
 	} else {
 		if (hs->sc_count == 1) {
 			(void) nhpibwait(hd, MIS_BO);
