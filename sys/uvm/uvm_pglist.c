@@ -409,7 +409,7 @@ uvm_pglistfree(struct pglist *list)
 #endif
 		atomic_clearbits_int(&m->pg_flags, PQ_MASK);
 		atomic_setbits_int(&m->pg_flags, PQ_FREE);
-		TAILQ_INSERT_HEAD(&uvm.page_free[
+		TAILQ_INSERT_TAIL(&uvm.page_free[
 		    uvm_page_lookup_freelist(m)].pgfl_queues[PGFL_UNKNOWN],
 		    m, pageq);
 		uvmexp.free++;

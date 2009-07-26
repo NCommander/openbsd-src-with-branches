@@ -1199,7 +1199,7 @@ uvm_pagefree(struct vm_page *pg)
 	atomic_clearbits_int(&pg->pg_flags, PG_ZERO);
 
 	uvm_lock_fpageq();
-	TAILQ_INSERT_HEAD(&uvm.page_free[
+	TAILQ_INSERT_TAIL(&uvm.page_free[
 	    uvm_page_lookup_freelist(pg)].pgfl_queues[PGFL_UNKNOWN], pg, pageq);
 	atomic_clearbits_int(&pg->pg_flags, PQ_MASK);
 	atomic_setbits_int(&pg->pg_flags, PQ_FREE);
