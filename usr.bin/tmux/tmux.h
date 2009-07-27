@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.55 2009/07/26 12:58:44 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.56 2009/07/26 21:42:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -365,6 +365,7 @@ enum mode_key_cmd {
 	MODEKEYCMD_COMPLETE,
 	MODEKEYCMD_COPYSELECTION,
 	MODEKEYCMD_DELETE,
+	MODEKEYCMD_DELETETOENDOFLINE,
 	MODEKEYCMD_DOWN,
 	MODEKEYCMD_ENDOFLINE,
 	MODEKEYCMD_LEFT,
