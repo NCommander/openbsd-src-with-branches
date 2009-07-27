@@ -1,4 +1,4 @@
-/* $OpenBSD: window-scroll.c,v 1.2 2009/07/27 18:51:46 nicm Exp $ */
+/* $OpenBSD: window-scroll.c,v 1.3 2009/07/27 19:29:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -132,7 +132,7 @@ window_scroll_key(struct window_pane *wp, unused struct client *c, int key)
 	struct screen			*s = &data->screen;
 
 	switch (mode_key_lookup(&data->mdata, key)) {
-	case MODEKEYCOPY_QUIT:
+	case MODEKEYCOPY_CANCEL:
 		window_pane_reset_mode(wp);
 		break;
 	case MODEKEYCOPY_LEFT:
