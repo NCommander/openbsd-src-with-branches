@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_stge.c,v 1.46 2009/07/21 17:27:46 sthen Exp $	*/
+/*	$OpenBSD: if_stge.c,v 1.47 2009/07/26 11:58:20 kettenis Exp $	*/
 /*	$NetBSD: if_stge.c,v 1.27 2005/05/16 21:35:32 bouyer Exp $	*/
 
 /*-
@@ -1324,7 +1324,8 @@ stge_init(struct ifnet *ifp)
 		/* Tx Poll Now bug work-around. */
 		CSR_WRITE_2(sc, STGE_DebugCtrl,
 		    CSR_READ_2(sc, STGE_DebugCtrl) | 0x0010);
-		/* XXX ? from linux */
+
+		/* Rx Poll Now bug work-around. */
 		CSR_WRITE_2(sc, STGE_DebugCtrl,
 		    CSR_READ_2(sc, STGE_DebugCtrl) | 0x0020);
 	}
