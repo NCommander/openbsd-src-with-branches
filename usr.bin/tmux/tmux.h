@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.59 2009/07/27 19:29:35 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.60 2009/07/27 20:36:13 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -663,7 +663,7 @@ struct window {
 	struct window_pane *active;
 	struct window_panes panes;
 
-	u_int		 layout;
+	int		 lastlayout;
 	struct layout_cell *layout_root;
 
 	u_int		 sx;
