@@ -102,6 +102,7 @@ tmake_file=@dep_tmake_file@
 # Directory where sources are, from where we are.
 srcdir = @srcdir@
 VPATH = @srcdir@
+LIBIBERTY_INCLUDES=$(srcdir)/../../include
 
 # Additional system libraries to link with.
 CLIB=
@@ -161,7 +162,7 @@ SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
 # How to link with both our special library facilities
 # and the system's installed libraries.
 LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) \
-  $(INTLLIBS) $(CLIB)
+  $(INTLLIBS) $(CLIB) $(LIBIBERTY)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -215,8 +216,8 @@ RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
 TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
 	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
 CXX_TREE_H = $(TREE_H) cp-tree.h cp-tree.def
-PARSE_H = $(srcdir)/parse.h
-PARSE_C = $(srcdir)/parse.c
+PARSE_H = parse.h
+PARSE_C = parse.c
 EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 
 parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
@@ -229,24 +230,24 @@ CONFLICTS = expect 30 shift/reduce conflicts and 42 reduce/reduce conflicts.
 $(PARSE_H) : $(PARSE_C)
 $(PARSE_C) : $(srcdir)/parse.y
 	@echo $(CONFLICTS)
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
-	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
+	$(BISON) $(BISONFLAGS) -d -o parse.c $(srcdir)/parse.y
+	grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
 #$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
 #stamp-parse: $(srcdir)/parse.y
 #	@echo $(CONFLICTS)
 #	$(BISON) $(BISONFLAGS) -d $(srcdir)/parse.y
 #	grep '^#define[ 	]*YYEMPTY' y.tab.c >>y.tab.h
-#	$(srcdir)/../move-if-change y.tab.c $(PARSE_C)
-#	$(srcdir)/../move-if-change y.tab.h $(PARSE_H)
+#	$(SHELL) $(srcdir)/../move-if-change y.tab.c $(PARSE_C)
+#	$(SHELL) $(srcdir)/../move-if-change y.tab.h $(PARSE_H)
 #	cp $(PARSE_C) y.tab.c
 #	touch stamp-parse
 
 # We used to try to protect people from having to rerun gperf.  But,
 # the C front-end already requires this if c-parse.gperf is changed,
 # so we should be consistent.
-$(srcdir)/hash.h: $(srcdir)/gxx.gperf
-	gperf -L C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word \
-		'-k1,4,7,$$' $(srcdir)/gxx.gperf >$(srcdir)/hash.h
+#$(srcdir)/hash.h: $(srcdir)/gxx.gperf
+#	gperf -L C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word \
+#		'-k1,4,7,$$' $(srcdir)/gxx.gperf >$(srcdir)/hash.h
 
 spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) $(PARSE_H) $(srcdir)/../flags.h \
   lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
@@ -262,14 +263,14 @@ decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(EXPR_H) $(srcdir)/../except.h \
   $(srcdir)/../output.h $(srcdir)/../except.h $(srcdir)/../system.h \
   $(srcdir)/../toplev.h $(srcdir)/../dwarf2out.h $(srcdir)/../dwarfout.h \
-  $(srcdir)/../../include/splay-tree.h $(srcdir)/../varray.h
+  $(LIBIBERTY_INCLUDES)/splay-tree.h $(srcdir)/../varray.h
 typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
 class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h \
-  $(srcdir)/../../include/splay-tree.h
+  $(LIBIBERTY_INCLUDES)/splay-tree.h
 call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \

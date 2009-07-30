@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.2 2008/09/26 16:22:15 drahn Exp $
 #	from: @(#)Makefile	8.1 (Berkeley) 6/1/93
 
 CFLAGS+=	-DLIBC_SCCS
@@ -9,14 +9,11 @@ ELFDIR=		${.CURDIR}/../common_elf
 .PATH:		${ELFDIR}
 CFLAGS+=	-I${ELFDIR} -I${.CURDIR}
 
-#PICFLAG?=-fpic
-PICFLAG=
-
 all: ${OBJS}
 
 crt0.o: crt0.c
-	@echo ${COMPILE.c} -DCRT0 ${.CURDIR}/crt0.c -o ${.TARGET}
-	@${COMPILE.c} -DCRT0 ${.CURDIR}/crt0.c -o ${.TARGET}.o
+	@echo ${COMPILE.c} -DCRT0 -fpie -DPIC ${.CURDIR}/crt0.c -o ${.TARGET}
+	@${COMPILE.c} -DCRT0 -fpie -DPIC ${.CURDIR}/crt0.c -o ${.TARGET}.o
 	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 
@@ -27,8 +24,8 @@ gcrt0.o: crt0.c
 	@rm -f ${.TARGET}.o
 
 crtbegin.o: crtbegin.c
-	@echo ${COMPILE.c} ${ELFDIR}/crtbegin.c -o ${.TARGET}
-	@${COMPILE.c} ${ELFDIR}/crtbegin.c -o ${.TARGET}.o
+	@echo ${COMPILE.c} -fpie -DPIC ${ELFDIR}/crtbegin.c -o ${.TARGET}
+	@${COMPILE.c} -fpie -DPIC ${ELFDIR}/crtbegin.c -o ${.TARGET}.o
 	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 
@@ -39,8 +36,8 @@ crtbeginS.o: crtbeginS.c
 	@rm -f ${.TARGET}.o
 
 crtend.o: crtend.c
-	@echo ${COMPILE.c} ${ELFDIR}/crtend.c -o ${.TARGET}
-	@${COMPILE.c} ${ELFDIR}/crtend.c -o ${.TARGET}.o
+	@echo ${COMPILE.c} -fpie -DPIC ${ELFDIR}/crtend.c -o ${.TARGET}
+	@${COMPILE.c} -fpie -DPIC ${ELFDIR}/crtend.c -o ${.TARGET}.o
 	@${LD} -x -r -o ${.TARGET} ${.TARGET}.o
 	@rm -f ${.TARGET}.o
 

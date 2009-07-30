@@ -1,4 +1,5 @@
-/*	$NetBSD: ioctl.h,v 1.19 1995/10/10 01:27:09 mycroft Exp $	*/
+/*	$OpenBSD: ioctl.h,v 1.7 2002/03/14 01:27:14 millert Exp $	*/
+/*	$NetBSD: ioctl.h,v 1.20 1996/01/30 18:21:47 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1990, 1993, 1994
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -61,6 +58,7 @@ struct ttysize {
 
 #include <sys/ioccom.h>
 
+#include <sys/dkio.h>
 #include <sys/filio.h>
 #include <sys/sockio.h>
 
@@ -69,19 +67,20 @@ struct ttysize {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	ioctl __P((int, unsigned long, ...));
+int	ioctl(int, unsigned long, ...);
 __END_DECLS
 #endif /* !_KERNEL */
 #endif /* !_SYS_IOCTL_H_ */
 
 /*
  * Keep outside _SYS_IOCTL_H_
- * Compatability with old terminal driver
+ * Compatibility with old terminal driver
  *
  * Source level -> #define USE_OLD_TTY
  * Kernel level -> options COMPAT_43 or COMPAT_SUNOS or ...
  */
 #if defined(USE_OLD_TTY) || defined(COMPAT_43) || defined(COMPAT_SUNOS) || \
-    defined(COMPAT_SVR4) || defined(COMPAT_FREEBSD)
+    defined(COMPAT_SVR4) || defined(COMPAT_FREEBSD) || defined(COMPAT_OSF1) || \
+    defined(COMPAT_LINUX)
 #include <sys/ioctl_compat.h>
 #endif

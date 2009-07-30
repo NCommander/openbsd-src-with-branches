@@ -1895,6 +1895,10 @@ S_parse_body(pTHX_ char **env, XSINIT_t xsinit)
 			}
 		    }
 #endif
+#ifdef __OpenBSD__
+		    Perl_sv_catpvf(aTHX_ opts_prog,
+				   "\"  Built under OpenBSD\\n\"");
+#else
 		    Perl_sv_catpvf(aTHX_ opts_prog,
 				   "\"  Built under %s\\n",OSNAME);
 #ifdef __DATE__
@@ -1906,6 +1910,7 @@ S_parse_body(pTHX_ char **env, XSINIT_t xsinit)
 		    Perl_sv_catpvf(aTHX_ opts_prog,"  Compiled on %s\\n\"",
 				   __DATE__);
 #  endif
+#endif
 #endif
 		    sv_catpvs(opts_prog, "; $\"=\"\\n    \"; "
 			     "@env = map { \"$_=\\\"$ENV{$_}\\\"\" } "

@@ -1,3 +1,5 @@
+/*	$OpenBSD: isinf.c,v 1.10 2008/12/12 18:53:06 martynas Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,21 +29,30 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/* static char sccsid[] = "@(#)isinf.c	8.1 (Berkeley) 6/4/93"; */
-static char rcsid[] = "$NetBSD: isinf.c,v 1.1 1995/04/17 12:23:43 ragge Exp $";
-#endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
 
 /* ARGSUSED */
-isnan(d)
-	double d;
+int
+__isinf(double d)
 {
 	return(0);
 }
 
 /* ARGSUSED */
-isinf(d)
-	double d;
+int
+__isinff(float f)
 {
 	return(0);
 }
+
+#ifdef __weak_alias
+__weak_alias(__isinfl, __isinf);
+#endif /* __weak_alias */
+
+/*
+ * 3BSD compatibility aliases.
+ */
+#ifdef __weak_alias
+__weak_alias(isinf, __isinf);
+__weak_alias(isinff, __isinff);
+#endif /* __weak_alias */

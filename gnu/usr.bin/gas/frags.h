@@ -1,3 +1,5 @@
+/*	$OpenBSD: frags.h,v 1.1.1.1 1995/10/18 08:38:58 deraadt Exp $	*/
+
 /* frags.h - Header file for the frag concept.
 
    Copyright (C) 1987, 1992 Free Software Foundation, Inc.
@@ -17,10 +19,6 @@
    You should have received a copy of the GNU General Public License
    along with GAS; see the file COPYING.  If not, write to
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-/*
- * $Id: frags.h,v 1.3 1993/10/02 20:57:32 pk Exp $
- */
-
 
 extern struct obstack	frags;
 /* Frags ONLY live in this obstack. */

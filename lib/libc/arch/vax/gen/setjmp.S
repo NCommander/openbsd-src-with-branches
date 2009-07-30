@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-	/* .asciz "@(#)setjmp.s	8.1 (Berkeley) 6/4/93" */
-	.asciz "$NetBSD: setjmp.S,v 1.1 1995/04/17 12:23:46 ragge Exp $"
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * C library -- setjmp, longjmp
  *
@@ -47,17 +39,17 @@
  * and a struct sigcontext, see <signal.h>
  */
 
-#include "DEFS.h"
+#include "SYS.h"
 
 ENTRY(setjmp, R6)
 	movl	4(ap),r6		# construct sigcontext
 	subl2	$12,sp			# space for current struct sigstack
 	pushl	sp			# get current values
 	pushl	$0			# no new values
-	calls	$4,_sigaltstack		# pop args plus signal stack value
+	calls	$4,_C_LABEL(sigaltstack)# pop args plus signal stack value
 	movl	(sp)+,(r6)+		# save onsigstack status of caller
 	pushl	$0
-	calls	$1,_sigblock		# get signal mask
+	calls	$1,_C_LABEL(sigblock)	# get signal mask
 	movl	r0,(r6)+		# save signal mask of caller
 	movl	(ap),r0
 	moval	4(ap)[r0],(r6)+		# save sp of caller
@@ -69,7 +61,7 @@ ENTRY(setjmp, R6)
 	clrl	r0
 	ret
 
-ENTRY(longjmp, 0)
+ENTRY(longjmp, R2)
 	movl	8(ap),r0		# return(v)
 	movl	4(ap),r1		# fetch buffer
 	tstl	12(r1)
@@ -90,8 +82,8 @@ loop:
 
 done:
 	pushl	r1			# pointer to sigcontext
-	calls	$1,_sigreturn		# restore previous context
+	calls	$1,_C_LABEL(sigreturn)	# restore previous context
 					# we should never return
 botch:
-	calls	$0,_longjmperror
+	calls	$0,_C_LABEL(longjmperror)
 	halt

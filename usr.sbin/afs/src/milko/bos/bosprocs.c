@@ -84,7 +84,7 @@ BOZO_GetStatus(struct rx_call *call,
 {
     bosdebug ("BOZO_GetStatus: %s\n", instance);
 
-    strcpy (statdescr, "foo");
+    snprintf(statdescr, BOZE_BSSIZE, "foo");
     *inStat = 0;
     return 0;
 }

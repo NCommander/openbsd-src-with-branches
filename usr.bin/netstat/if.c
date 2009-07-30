@@ -1,4 +1,5 @@
-/*	$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $	*/
+/*	$OpenBSD: if.c,v 1.59 2009/01/26 20:30:26 claudio Exp $	*/
+/*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,215 +30,318 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "from: @(#)if.c	8.2 (Berkeley) 2/21/94";
-#else
-static char *rcsid = "$NetBSD: if.c,v 1.13 1995/10/03 21:42:36 thorpej Exp $";
-#endif
-#endif /* not lint */
-
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
+#include <net/if_types.h>
+#include <net/route.h>
 #include <netinet/in.h>
 #include <netinet/in_var.h>
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#include <netiso/iso.h>
-#include <netiso/iso_var.h>
+#include <netinet/if_ether.h>
 #include <arpa/inet.h>
 
+#include <err.h>
+#include <limits.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "netstat.h"
 
-#define	YES	1
-#define	NO	0
-
-static void sidewaysintpr __P((u_int, u_long));
-static void catchalarm __P((int));
+static void print_addr(struct sockaddr *, struct sockaddr **, struct if_data *);
+static void sidewaysintpr(u_int);
+static void catchalarm(int);
+static void get_rtaddrs(int, struct sockaddr *, struct sockaddr **);
+static void fetchifs(void);
 
 /*
  * Print a description of the network interfaces.
+ * NOTE: ifnetaddr is the location of the kernel global "ifnet",
+ * which is a TAILQ_HEAD.
  */
 void
-intpr(interval, ifnetaddr)
-	int interval;
-	u_long ifnetaddr;
+intpr(int interval)
 {
-	struct ifnet ifnet;
-	union {
-		struct ifaddr ifa;
-		struct in_ifaddr in;
-		struct ns_ifaddr ns;
-		struct iso_ifaddr iso;
-	} ifaddr;
-	u_long ifaddraddr;
-	struct sockaddr *sa;
-	char name[16];
+	struct if_msghdr ifm;
+	int mib[6] = { CTL_NET, AF_ROUTE, 0, 0, NET_RT_IFLIST, 0 };
+	char name[IFNAMSIZ + 1];	/* + 1 for the '*' */
+	char *buf, *next, *lim, *cp;
+	struct rt_msghdr *rtm;
+	struct ifa_msghdr *ifam;
+	struct if_data *ifd;
+	struct sockaddr *sa, *rti_info[RTAX_MAX];
+	struct sockaddr_dl *sdl;
+	u_int64_t total = 0;
+	size_t len;
 
-	if (ifnetaddr == 0) {
-		printf("ifnet: symbol not defined\n");
-		return;
-	}
 	if (interval) {
-		sidewaysintpr((unsigned)interval, ifnetaddr);
+		sidewaysintpr((unsigned)interval);
 		return;
 	}
-	if (kread(ifnetaddr, (char *)&ifnetaddr, sizeof ifnetaddr))
-		return;
-	printf("%-5.5s %-5.5s %-11.11s %-15.15s %10.10s %5.5s %8.8s %5.5s",
-		"Name", "Mtu", "Network", "Address", "Ipkts", "Ierrs",
-		"Opkts", "Oerrs");
-	printf(" %5s", "Coll");
+
+	if (sysctl(mib, 6, NULL, &len, NULL, 0) == -1)
+		err(1, "sysctl");
+	if ((buf = malloc(len)) == NULL)
+		err(1, NULL);
+	if (sysctl(mib, 6, buf, &len, NULL, 0) == -1)
+		err(1, "sysctl");
+
+	printf("%-7.7s %-5.5s %-11.11s %-17.17s ",
+	    "Name", "Mtu", "Network", "Address");
+	if (bflag)
+		printf("%10.10s %10.10s", "Ibytes", "Obytes");
+	else
+		printf("%8.8s %5.5s %8.8s %5.5s %5.5s",
+		    "Ipkts", "Ierrs", "Opkts", "Oerrs", "Colls");
 	if (tflag)
 		printf(" %s", "Time");
 	if (dflag)
 		printf(" %s", "Drop");
 	putchar('\n');
-	ifaddraddr = 0;
-	while (ifnetaddr || ifaddraddr) {
-		struct sockaddr_in *sin;
-		register char *cp;
-		int n, m;
 
-		if (ifaddraddr == 0) {
-			if (kread(ifnetaddr, (char *)&ifnet, sizeof ifnet) ||
-			    kread((u_long)ifnet.if_name, name, 16))
-				return;
-			name[15] = '\0';
-			ifnetaddr = (u_long)ifnet.if_list.tqe_next;
-			if (interface != 0 && (strcmp(name, interface) != 0 ||
-			    unit != ifnet.if_unit))
+	lim = buf + len;
+	for (next = buf; next < lim; next += rtm->rtm_msglen) {
+		rtm = (struct rt_msghdr *)next;
+		if (rtm->rtm_version != RTM_VERSION)
+			continue;
+		switch (rtm->rtm_type) {
+		case RTM_IFINFO:
+			total = 0;
+			bcopy(next, &ifm, sizeof ifm);
+			ifd = &ifm.ifm_data;
+
+			sa = (struct sockaddr *)(next + rtm->rtm_hdrlen);
+			get_rtaddrs(ifm.ifm_addrs, sa, rti_info);
+
+			sdl = (struct sockaddr_dl *)rti_info[RTAX_IFP];
+			if (sdl == NULL || sdl->sdl_family != AF_LINK)
 				continue;
-			cp = index(name, '\0');
-			cp += sprintf(cp, "%d", ifnet.if_unit);
-			if ((ifnet.if_flags & IFF_UP) == 0)
+			bzero(name, sizeof(name));
+			if (sdl->sdl_nlen >= IFNAMSIZ)
+				memcpy(name, sdl->sdl_data, IFNAMSIZ - 1);
+			else if (sdl->sdl_nlen > 0) 
+				memcpy(name, sdl->sdl_data, sdl->sdl_nlen);
+
+			if (interface != 0 && strcmp(name, interface) != 0)
+				continue;
+
+			/* mark inactive interfaces with a '*' */
+			cp = strchr(name, '\0');
+			if ((ifm.ifm_flags & IFF_UP) == 0)
 				*cp++ = '*';
 			*cp = '\0';
-			ifaddraddr = (u_long)ifnet.if_addrlist.tqh_first;
-		}
-		printf("%-5.5s %-5d ", name, ifnet.if_mtu);
-		if (ifaddraddr == 0) {
-			printf("%-11.11s ", "none");
-			printf("%-15.15s ", "none");
-		} else {
-			if (kread(ifaddraddr, (char *)&ifaddr, sizeof ifaddr)) {
-				ifaddraddr = 0;
+
+			if (qflag) {
+				total = ifd->ifi_ibytes + ifd->ifi_obytes +
+				    ifd->ifi_ipackets + ifd->ifi_ierrors +
+				    ifd->ifi_opackets + ifd->ifi_oerrors +
+				    ifd->ifi_collisions;
+				if (tflag)
+					total += 0; // XXX ifnet.if_timer;
+				if (dflag)
+					total += 0; // XXX ifnet.if_snd.ifq_drops;
+				if (total == 0)
+					continue;
+			}
+
+			printf("%-7s %-5ld ", name, ifd->ifi_mtu);
+			print_addr(rti_info[RTAX_IFP], rti_info, ifd);
+			break;
+		case RTM_NEWADDR:
+			if (qflag && total == 0)
 				continue;
-			}
-#define CP(x) ((char *)(x))
-			cp = (CP(ifaddr.ifa.ifa_addr) - CP(ifaddraddr)) +
-				CP(&ifaddr); sa = (struct sockaddr *)cp;
-			switch (sa->sa_family) {
-			case AF_UNSPEC:
-				printf("%-11.11s ", "none");
-				printf("%-17.17s ", "none");
-				break;
-			case AF_INET:
-				sin = (struct sockaddr_in *)sa;
-#ifdef notdef
-				/* can't use inet_makeaddr because kernel
-				 * keeps nets unshifted.
-				 */
-				in = inet_makeaddr(ifaddr.in.ia_subnet,
-					INADDR_ANY);
-				printf("%-11.11s ", netname(in.s_addr,
-				    ifaddr.in.ia_subnetmask));
-#else
-				printf("%-11.11s ",
-				    netname(ifaddr.in.ia_subnet,
-				    ifaddr.in.ia_subnetmask));
-#endif
-				printf("%-17.17s ",
-				    routename(sin->sin_addr.s_addr));
+			if (interface != 0 && strcmp(name, interface) != 0)
+				continue;
 
-				if (aflag) {
-					u_long multiaddr;
-					struct in_multi inm;
-		
-					multiaddr = (u_long)ifaddr.in.ia_multiaddrs.lh_first;
-					while (multiaddr != 0) {
-						kread(multiaddr, (char *)&inm,
-						    sizeof inm);
-						printf("\n%23s %-15.15s ", "",
-						    routename(inm.inm_addr.s_addr));
-						multiaddr = (u_long)inm.inm_list.le_next;
-					}
-				}
+			ifam = (struct ifa_msghdr *)next;
+			if ((ifam->ifam_addrs & (RTA_NETMASK | RTA_IFA |
+			    RTA_BRD)) == 0)
 				break;
-			case AF_NS:
-				{
-				struct sockaddr_ns *sns =
-					(struct sockaddr_ns *)sa;
-				u_long net;
-				char netnum[8];
 
-				*(union ns_net *) &net = sns->sns_addr.x_net;
-		sprintf(netnum, "%lxH", ntohl(net));
-				upHex(netnum);
-				printf("ns:%-8s ", netnum);
-				printf("%-17s ",
-				    ns_phost((struct sockaddr *)sns));
-				}
-				break;
-			case AF_LINK:
-				{
-				struct sockaddr_dl *sdl =
-					(struct sockaddr_dl *)sa;
-				    cp = (char *)LLADDR(sdl);
-				    n = sdl->sdl_alen;
-				}
-				m = printf("%-11.11s ", "<Link>");
-				goto hexprint;
-			default:
-				m = printf("(%d)", sa->sa_family);
-				for (cp = sa->sa_len + (char *)sa;
-					--cp > sa->sa_data && (*cp == 0);) {}
-				n = cp - sa->sa_data + 1;
-				cp = sa->sa_data;
-			hexprint:
-				while (--n >= 0)
-					m += printf("%x%c", *cp++ & 0xff,
-						    n > 0 ? '.' : ' ');
-				m = 30 - m;
-				while (m-- > 0)
-					putchar(' ');
-				break;
-			}
-			ifaddraddr = (u_long)ifaddr.ifa.ifa_list.tqe_next;
+			sa = (struct sockaddr *)(next + rtm->rtm_hdrlen);
+			get_rtaddrs(ifam->ifam_addrs, sa, rti_info);
+
+			printf("%-7s %-5ld ", name, ifd->ifi_mtu);
+			print_addr(rti_info[RTAX_IFA], rti_info, ifd);
+			break;
 		}
-		printf("%8d %5d %8d %5d %5d",
-		    ifnet.if_ipackets, ifnet.if_ierrors,
-		    ifnet.if_opackets, ifnet.if_oerrors,
-		    ifnet.if_collisions);
-		if (tflag)
-			printf(" %3d", ifnet.if_timer);
-		if (dflag)
-			printf(" %3d", ifnet.if_snd.ifq_drops);
-		putchar('\n');
 	}
+	free(buf);
 }
 
-#define	MAXIF	10
-struct	iftot {
-	char	ift_name[16];		/* interface name */
-	int	ift_ip;			/* input packets */
-	int	ift_ie;			/* input errors */
-	int	ift_op;			/* output packets */
-	int	ift_oe;			/* output errors */
-	int	ift_co;			/* collisions */
-	int	ift_dr;			/* drops */
-} iftot[MAXIF];
+static void
+print_addr(struct sockaddr *sa, struct sockaddr **rtinfo, struct if_data *ifd)
+{
+	struct sockaddr_dl *sdl;
+	struct sockaddr_in *sin;
+	struct sockaddr_in6 *sin6;
+	char *cp;
+	int m, n;
 
-u_char	signalled;			/* set if alarm goes off "early" */
+	switch (sa->sa_family) {
+	case AF_UNSPEC:
+		printf("%-11.11s ", "none");
+		printf("%-17.17s ", "none");
+		break;
+	case AF_INET:
+		sin = (struct sockaddr_in *)sa;
+		cp = netname4(sin->sin_addr.s_addr,
+		    ((struct sockaddr_in *)rtinfo[RTAX_NETMASK])->sin_addr.s_addr);
+		if (vflag)
+			n = strlen(cp) < 11 ? 11 : strlen(cp);
+		else
+			n = 11;
+		printf("%-*.*s ", n, n, cp);
+		cp = routename4(sin->sin_addr.s_addr);
+		if (vflag)
+			n = strlen(cp) < 17 ? 17 : strlen(cp);
+		else
+			n = 17;
+		printf("%-*.*s ", n, n, cp);
+
+#if 0
+		if (aflag) {
+			u_long multiaddr;
+			struct in_multi inm;
+
+			multiaddr = (u_long)LIST_FIRST(&ifaddr.in.ia_multiaddrs);
+			while (multiaddr != 0) {
+				kread(multiaddr, &inm, sizeof inm);
+				printf("\n%25s %-17.17s ", "",
+				    routename4(inm.inm_addr.s_addr));
+				multiaddr = (u_long)LIST_NEXT(&inm, inm_list);
+			}
+		}
+#endif
+		break;
+	case AF_INET6:
+		sin6 = (struct sockaddr_in6 *)sa;
+#ifdef __KAME__
+		if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr)) {
+			sin6->sin6_scope_id =
+			    ntohs(*(u_int16_t *)
+			    &sin6->sin6_addr.s6_addr[2]);
+			sin6->sin6_addr.s6_addr[2] = 0;
+			sin6->sin6_addr.s6_addr[3] = 0;
+		}
+#endif
+		cp = netname6(sin6,
+		    (struct sockaddr_in6 *)rtinfo[RTAX_NETMASK]);
+		if (vflag)
+			n = strlen(cp) < 11 ? 11 : strlen(cp);
+		else
+			n = 11;
+		printf("%-*.*s ", n, n, cp);
+		cp = routename6(sin6);
+		if (vflag)
+			n = strlen(cp) < 17 ? 17 : strlen(cp);
+		else
+			n = 17;
+		printf("%-*.*s ", n, n, cp);
+#if 0
+		if (aflag) {
+			u_long multiaddr;
+			struct in6_multi inm;
+			struct sockaddr_in6 m6;
+
+			multiaddr = (u_long)LIST_FIRST(&ifaddr.in6.ia6_multiaddrs);
+			while (multiaddr != 0) {
+				kread(multiaddr, &inm, sizeof inm);
+				memset(&m6, 0, sizeof(m6));
+				m6.sin6_len = sizeof(struct sockaddr_in6);
+				m6.sin6_family = AF_INET6;
+				m6.sin6_addr = inm.in6m_addr;
+#ifdef __KAME__
+				if (IN6_IS_ADDR_MC_LINKLOCAL(&m6.sin6_addr) ||
+				    IN6_IS_ADDR_MC_INTFACELOCAL(&m6.sin6_addr)) {
+					m6.sin6_scope_id =
+					    ntohs(*(u_int16_t *)
+					    &m6.sin6_addr.s6_addr[2]);
+					m6.sin6_addr.s6_addr[2] = 0;
+					m6.sin6_addr.s6_addr[3] = 0;
+				}
+#endif
+				cp = routename6(&m6);
+				if (vflag)
+					n = strlen(cp) < 17 ? 17 : strlen(cp);
+				else
+					n = 17;
+				printf("\n%25s %-*.*s ", "",
+				    n, n, cp);
+				multiaddr = (u_long)LIST_NEXT(&inm, in6m_entry);
+			}
+		}
+#endif
+		break;
+	case AF_APPLETALK:
+		printf("atlk:%-12s",atalk_print(sa,0x10) );
+		printf("%-12s ",atalk_print(sa,0x0b) );
+		break;
+	case AF_LINK:
+		sdl = (struct sockaddr_dl *)sa;
+		m = printf("%-11.11s ", "<Link>");
+		if (sdl->sdl_type == IFT_ETHER ||
+		    sdl->sdl_type == IFT_CARP ||
+		    sdl->sdl_type == IFT_FDDI ||
+		    sdl->sdl_type == IFT_ISO88025)
+			printf("%-17.17s ",
+			    ether_ntoa((struct ether_addr *)LLADDR(sdl)));
+		else {
+			cp = (char *)LLADDR(sdl);
+			n = sdl->sdl_alen;
+			goto hexprint;
+		}
+		break;
+	default:
+		m = printf("(%d)", sa->sa_family);
+		for (cp = sa->sa_len + (char *)sa;
+			--cp > sa->sa_data && (*cp == 0);) {}
+		n = cp - sa->sa_data + 1;
+		cp = sa->sa_data;
+hexprint:
+		while (--n >= 0)
+			m += printf("%x%c", *cp++ & 0xff,
+				    n > 0 ? '.' : ' ');
+		m = 30 - m;
+		while (m-- > 0)
+			putchar(' ');
+		break;
+	}
+	if (bflag)
+		printf("%10llu %10llu",
+		    ifd->ifi_ibytes, ifd->ifi_obytes);
+	else
+		printf("%8llu %5llu %8llu %5llu %5llu",
+		    ifd->ifi_ipackets, ifd->ifi_ierrors,
+		    ifd->ifi_opackets, ifd->ifi_oerrors,
+		    ifd->ifi_collisions);
+	if (tflag)
+		printf(" %4d", 0 /* XXX ifnet.if_timer */);
+	if (dflag)
+		printf(" %4d", 0 /* XXX ifnet.if_snd.ifq_drops */);
+	putchar('\n');
+}
+
+struct	iftot {
+	char	ift_name[IFNAMSIZ];	/* interface name */
+	u_int64_t ift_ip;		/* input packets */
+	u_int64_t ift_ib;		/* input bytes */
+	u_int64_t ift_ie;		/* input errors */
+	u_int64_t ift_op;		/* output packets */
+	u_int64_t ift_ob;		/* output bytes */
+	u_int64_t ift_oe;		/* output errors */
+	u_int64_t ift_co;		/* collisions */
+	u_int64_t ift_dr;		/* drops */
+} ip_cur, ip_old, sum_cur, sum_old;
+
+volatile sig_atomic_t signalled;	/* set if alarm goes off "early" */
 
 /*
  * Print a running summary of interface statistics.
@@ -250,132 +350,111 @@ u_char	signalled;			/* set if alarm goes off "early" */
  * First line printed at top of screen is always cumulative.
  */
 static void
-sidewaysintpr(interval, off)
-	unsigned interval;
-	u_long off;
+sidewaysintpr(unsigned int interval)
 {
 	struct ifnet ifnet;
-	u_long firstifnet;
-	register struct iftot *ip, *total;
-	register int line;
-	struct iftot *lastif, *sum, *interesting;
-	int oldmask;
+	sigset_t emptyset;
+	int line;
 
-	if (kread(off, (char *)&firstifnet, sizeof (u_long)))
-		return;
-	lastif = iftot;
-	sum = iftot + MAXIF - 1;
-	total = sum - 1;
-	interesting = iftot;
-	for (off = firstifnet, ip = iftot; off;) {
-		char *cp;
-
-		if (kread(off, (char *)&ifnet, sizeof ifnet))
-			break;
-		ip->ift_name[0] = '(';
-		if (kread((u_long)ifnet.if_name, ip->ift_name + 1, 15))
-			break;
-		if (interface && strcmp(ip->ift_name + 1, interface) == 0 &&
-		    unit == ifnet.if_unit)
-			interesting = ip;
-		ip->ift_name[15] = '\0';
-		cp = index(ip->ift_name, '\0');
-		sprintf(cp, "%d)", ifnet.if_unit);
-		ip++;
-		if (ip >= iftot + MAXIF - 2)
-			break;
-		off = (u_long)ifnet.if_list.tqe_next;
+	fetchifs();
+	if (ip_cur.ift_name[0] == '\0') {
+		fprintf(stderr, "%s: %s: unknown interface\n",
+		    __progname, interface);
+		exit(1);
 	}
-	lastif = ip;
 
 	(void)signal(SIGALRM, catchalarm);
-	signalled = NO;
+	signalled = 0;
 	(void)alarm(interval);
 banner:
-	printf("   input    %-6.6s    output       ", interesting->ift_name);
-	if (lastif - iftot > 0) {
-		if (dflag)
-			printf("      ");
-		printf("     input   (Total)    output");
-	}
-	for (ip = iftot; ip < iftot + MAXIF; ip++) {
-		ip->ift_ip = 0;
-		ip->ift_ie = 0;
-		ip->ift_op = 0;
-		ip->ift_oe = 0;
-		ip->ift_co = 0;
-		ip->ift_dr = 0;
-	}
-	putchar('\n');
-	printf("%8.8s %5.5s %8.8s %5.5s %5.5s ",
-		"packets", "errs", "packets", "errs", "colls");
+	if (bflag)
+		printf("%7.7s in %8.8s %6.6s out %5.5s",
+		    ip_cur.ift_name, " ",
+		    ip_cur.ift_name, " ");
+	else
+		printf("%5.5s in %5.5s%5.5s out %5.5s %5.5s",
+		    ip_cur.ift_name, " ",
+		    ip_cur.ift_name, " ", " ");
 	if (dflag)
-		printf("%5.5s ", "drops");
-	if (lastif - iftot > 0)
-		printf(" %8.8s %5.5s %8.8s %5.5s %5.5s",
-			"packets", "errs", "packets", "errs", "colls");
+		printf(" %5.5s", " ");
+
+	if (bflag)
+		printf("  %7.7s in %8.8s %6.6s out %5.5s",
+		    "total", " ", "total", " ");
+	else
+		printf("  %5.5s in %5.5s%5.5s out %5.5s %5.5s",
+		    "total", " ", "total", " ", " ");
+	if (dflag)
+		printf(" %5.5s", " ");
+	putchar('\n');
+	if (bflag)
+		printf("%10.10s %8.8s %10.10s %5.5s",
+		    "bytes", " ", "bytes", " ");
+	else
+		printf("%8.8s %5.5s %8.8s %5.5s %5.5s",
+		    "packets", "errs", "packets", "errs", "colls");
+	if (dflag)
+		printf(" %5.5s", "drops");
+
+	if (bflag)
+		printf("  %10.10s %8.8s %10.10s %5.5s",
+		    "bytes", " ", "bytes", " ");
+	else
+		printf("  %8.8s %5.5s %8.8s %5.5s %5.5s",
+		    "packets", "errs", "packets", "errs", "colls");
 	if (dflag)
 		printf(" %5.5s", "drops");
 	putchar('\n');
 	fflush(stdout);
 	line = 0;
+	bzero(&ip_old, sizeof(ip_old));
+	bzero(&sum_old, sizeof(sum_old));
 loop:
-	sum->ift_ip = 0;
-	sum->ift_ie = 0;
-	sum->ift_op = 0;
-	sum->ift_oe = 0;
-	sum->ift_co = 0;
-	sum->ift_dr = 0;
-	for (off = firstifnet, ip = iftot; off && ip < lastif; ip++) {
-		if (kread(off, (char *)&ifnet, sizeof ifnet)) {
-			off = 0;
-			continue;
-		}
-		if (ip == interesting) {
-			printf("%8d %5d %8d %5d %5d",
-				ifnet.if_ipackets - ip->ift_ip,
-				ifnet.if_ierrors - ip->ift_ie,
-				ifnet.if_opackets - ip->ift_op,
-				ifnet.if_oerrors - ip->ift_oe,
-				ifnet.if_collisions - ip->ift_co);
-			if (dflag)
-				printf(" %5d",
-				    ifnet.if_snd.ifq_drops - ip->ift_dr);
-		}
-		ip->ift_ip = ifnet.if_ipackets;
-		ip->ift_ie = ifnet.if_ierrors;
-		ip->ift_op = ifnet.if_opackets;
-		ip->ift_oe = ifnet.if_oerrors;
-		ip->ift_co = ifnet.if_collisions;
-		ip->ift_dr = ifnet.if_snd.ifq_drops;
-		sum->ift_ip += ip->ift_ip;
-		sum->ift_ie += ip->ift_ie;
-		sum->ift_op += ip->ift_op;
-		sum->ift_oe += ip->ift_oe;
-		sum->ift_co += ip->ift_co;
-		sum->ift_dr += ip->ift_dr;
-		off = (u_long)ifnet.if_list.tqe_next;
-	}
-	if (lastif - iftot > 0) {
-		printf("  %8d %5d %8d %5d %5d",
-			sum->ift_ip - total->ift_ip,
-			sum->ift_ie - total->ift_ie,
-			sum->ift_op - total->ift_op,
-			sum->ift_oe - total->ift_oe,
-			sum->ift_co - total->ift_co);
-		if (dflag)
-			printf(" %5d", sum->ift_dr - total->ift_dr);
-	}
-	*total = *sum;
+	bzero(&sum_cur, sizeof(sum_cur));
+
+	fetchifs();
+
+	if (bflag)
+		printf("%10llu %8.8s %10llu %5.5s",
+		    ip_cur.ift_ib - ip_old.ift_ib, " ",
+		    ip_cur.ift_ob - ip_old.ift_ob, " ");
+	else
+		printf("%8llu %5llu %8llu %5llu %5llu",
+		    ip_cur.ift_ip - ip_old.ift_ip,
+		    ip_cur.ift_ie - ip_old.ift_ie,
+		    ip_cur.ift_op - ip_old.ift_op,
+		    ip_cur.ift_oe - ip_old.ift_oe,
+		    ip_cur.ift_co - ip_old.ift_co);
+	if (dflag)
+		printf(" %5llu",
+		    /* XXX ifnet.if_snd.ifq_drops - ip->ift_dr); */
+		    0);
+
+	ip_old = ip_cur;
+
+	if (bflag)
+		printf("  %10llu %8.8s %10llu %5.5s",
+		    sum_cur.ift_ib - sum_old.ift_ib, " ",
+		    sum_cur.ift_ob - sum_old.ift_ob, " ");
+	else
+		printf("  %8llu %5llu %8llu %5llu %5llu",
+		    sum_cur.ift_ip - sum_old.ift_ip,
+		    sum_cur.ift_ie - sum_old.ift_ie,
+		    sum_cur.ift_op - sum_old.ift_op,
+		    sum_cur.ift_oe - sum_old.ift_oe,
+		    sum_cur.ift_co - sum_old.ift_co);
+	if (dflag)
+		printf(" %5llu", sum_cur.ift_dr - sum_old.ift_dr);
+
+	sum_old = sum_cur;
+
 	putchar('\n');
 	fflush(stdout);
 	line++;
-	oldmask = sigblock(sigmask(SIGALRM));
-	if (! signalled) {
-		sigpause(0);
-	}
-	sigsetmask(oldmask);
-	signalled = NO;
+	sigemptyset(&emptyset);
+	if (!signalled)
+		sigsuspend(&emptyset);
+	signalled = 0;
 	(void)alarm(interval);
 	if (line == 21)
 		goto banner;
@@ -387,9 +466,107 @@ loop:
  * Called if an interval expires before sidewaysintpr has completed a loop.
  * Sets a flag to not wait for the alarm.
  */
+/* ARGSUSED */
 static void
-catchalarm(signo)
-	int signo;
+catchalarm(int signo)
 {
-	signalled = YES;
+	signalled = 1;
+}
+
+static void
+get_rtaddrs(int addrs, struct sockaddr *sa, struct sockaddr **rti_info)
+{   
+	int i;
+
+	for (i = 0; i < RTAX_MAX; i++) {
+		if (addrs & (1 << i)) {
+			rti_info[i] = sa;
+			sa = (struct sockaddr *)((char *)(sa) +
+			    roundup(sa->sa_len, sizeof(long)));
+		} else 
+			rti_info[i] = NULL;
+	}
+}
+
+static void
+fetchifs(void)
+{
+	struct if_msghdr ifm;
+	int mib[6] = { CTL_NET, AF_ROUTE, 0, 0, NET_RT_IFLIST, 0 };
+	struct rt_msghdr *rtm;
+	struct if_data *ifd;
+	struct sockaddr *sa, *rti_info[RTAX_MAX];
+	struct sockaddr_dl *sdl;
+	char *buf, *next, *lim;
+	char name[IFNAMSIZ];
+	size_t len;
+
+	if (sysctl(mib, 6, NULL, &len, NULL, 0) == -1)
+		err(1, "sysctl");
+	if ((buf = malloc(len)) == NULL)
+		err(1, NULL);
+	if (sysctl(mib, 6, buf, &len, NULL, 0) == -1)
+		err(1, "sysctl");
+
+	lim = buf + len;
+	for (next = buf; next < lim; next += rtm->rtm_msglen) {
+		rtm = (struct rt_msghdr *)next;
+		if (rtm->rtm_version != RTM_VERSION)
+			continue;
+		switch (rtm->rtm_type) {
+		case RTM_IFINFO:
+			bcopy(next, &ifm, sizeof ifm);
+			ifd = &ifm.ifm_data;
+
+			sa = (struct sockaddr *)(next + rtm->rtm_hdrlen);
+			get_rtaddrs(ifm.ifm_addrs, sa, rti_info);
+
+			sdl = (struct sockaddr_dl *)rti_info[RTAX_IFP];
+			if (sdl == NULL || sdl->sdl_family != AF_LINK)
+				continue;
+			bzero(name, sizeof(name));
+			if (sdl->sdl_nlen >= IFNAMSIZ)
+				memcpy(name, sdl->sdl_data, IFNAMSIZ - 1);
+			else if (sdl->sdl_nlen > 0) 
+				memcpy(name, sdl->sdl_data, sdl->sdl_nlen);
+
+			if (interface != NULL && !strcmp(name, interface)) {
+				strlcpy(ip_cur.ift_name, name,
+				    sizeof(ip_cur.ift_name));
+				ip_cur.ift_ip = ifd->ifi_ipackets;
+				ip_cur.ift_ib = ifd->ifi_ibytes;
+				ip_cur.ift_ie = ifd->ifi_ierrors;
+				ip_cur.ift_op = ifd->ifi_opackets;
+				ip_cur.ift_ob = ifd->ifi_obytes;
+				ip_cur.ift_oe = ifd->ifi_oerrors;
+				ip_cur.ift_co = ifd->ifi_collisions;
+				ip_cur.ift_dr = 0;
+				    /* XXX ifnet.if_snd.ifq_drops */
+			}
+
+			sum_cur.ift_ip += ifd->ifi_ipackets;
+			sum_cur.ift_ib += ifd->ifi_ibytes;
+			sum_cur.ift_ie += ifd->ifi_ierrors;
+			sum_cur.ift_op += ifd->ifi_opackets;
+			sum_cur.ift_ob += ifd->ifi_obytes;
+			sum_cur.ift_oe += ifd->ifi_oerrors;
+			sum_cur.ift_co += ifd->ifi_collisions;
+			sum_cur.ift_dr += 0; /* XXX ifnet.if_snd.ifq_drops */
+			break;
+		}
+	}
+	if (interface == NULL) {
+		strlcpy(ip_cur.ift_name, name,
+		    sizeof(ip_cur.ift_name));
+		ip_cur.ift_ip = ifd->ifi_ipackets;
+		ip_cur.ift_ib = ifd->ifi_ibytes;
+		ip_cur.ift_ie = ifd->ifi_ierrors;
+		ip_cur.ift_op = ifd->ifi_opackets;
+		ip_cur.ift_ob = ifd->ifi_obytes;
+		ip_cur.ift_oe = ifd->ifi_oerrors;
+		ip_cur.ift_co = ifd->ifi_collisions;
+		ip_cur.ift_dr = 0;
+		    /* XXX ifnet.if_snd.ifq_drops */
+	}
+	free(buf);
 }

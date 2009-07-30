@@ -1,5 +1,4 @@
-/*	$NetBSD: sysconf.c,v 1.3 1995/03/04 01:56:09 cgd Exp $	*/
-
+/*	$OpenBSD: sysconf.c,v 1.9 2008/03/16 19:56:27 kettenis Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,20 +31,15 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sysconf.c	8.2 (Berkeley) 3/20/94";
-#else
-static char rcsid[] = "$NetBSD: sysconf.c,v 1.3 1995/03/04 01:56:09 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/param.h>
+#include <sys/sem.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/vmmeter.h>
 
 #include <errno.h>
+#include <pwd.h>
 #include <unistd.h>
 
 /*
@@ -65,15 +55,14 @@ static char rcsid[] = "$NetBSD: sysconf.c,v 1.3 1995/03/04 01:56:09 cgd Exp $";
  * less useful than returning up-to-date values, however.
  */
 long
-sysconf(name)
-	int name;
+sysconf(int name)
 {
-	struct clockinfo clk;
 	struct rlimit rl;
 	size_t len;
-	int mib[2], value;
+	int mib[3], value, namelen;
 
 	len = sizeof(value);
+	namelen = 2;
 
 	switch (name) {
 /* 1003.1 */
@@ -111,6 +100,29 @@ sysconf(name)
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_POSIX1;
 		break;
+
+/* 1003.1b */
+	case _SC_PAGESIZE:
+		mib[0] = CTL_HW;
+		mib[1] = HW_PAGESIZE;
+		break;
+	case _SC_FSYNC:
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_FSYNC;
+		goto yesno;
+
+/* 1003.1c */
+	case _SC_LOGIN_NAME_MAX:
+		return (LOGIN_NAME_MAX);
+
+	case _SC_THREAD_SAFE_FUNCTIONS:
+		return (_POSIX_THREAD_SAFE_FUNCTIONS);
+
+	case _SC_GETGR_R_SIZE_MAX:
+		return (_PW_BUF_LEN);
+
+	case _SC_GETPW_R_SIZE_MAX:
+		return (_PW_BUF_LEN);
 
 /* 1003.2 */
 	case _SC_BC_BASE_MAX:
@@ -180,15 +192,55 @@ sysconf(name)
 	case _SC_2_UPE:
 		mib[0] = CTL_USER;
 		mib[1] = USER_POSIX2_UPE;
-yesno:		if (sysctl(mib, 2, &value, &len, NULL, 0) == -1)
+		goto yesno;
+
+/* XPG 4.2 */
+	case _SC_XOPEN_SHM:
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_SYSVSHM;
+
+yesno:		if (sysctl(mib, namelen, &value, &len, NULL, 0) == -1)
 			return (-1);
 		if (value == 0)
 			return (-1);
 		return (value);
 		break;
+	case _SC_SEM_NSEMS_MAX:
+	case _SC_SEM_VALUE_MAX:
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_SEMINFO;
+		mib[2] = name = _SC_SEM_NSEMS_MAX ?
+		    KERN_SEMINFO_SEMMNS : KERN_SEMINFO_SEMVMX;
+		namelen = 3;
+		break;
+
+/* Extensions */
+	case _SC_PHYS_PAGES:
+	{
+		int64_t physmem;
+
+		mib[0] = CTL_HW;
+		mib[1] = HW_PHYSMEM64;
+		len = sizeof(physmem);
+		if (sysctl(mib, namelen, &physmem, &len, NULL, 0) == -1)
+			return (-1);
+		return (physmem / getpagesize());
+	}
+	case _SC_AVPHYS_PAGES:
+	{
+		struct vmtotal vmtotal;
+
+		mib[0] = CTL_VM;
+		mib[1] = VM_METER;
+		len = sizeof(vmtotal);
+		if (sysctl(mib, namelen, &vmtotal, &len, NULL, 0) == -1)
+			return (-1);
+		return (vmtotal.t_free);
+	}
+
 	default:
 		errno = EINVAL;
 		return (-1);
 	}
-	return (sysctl(mib, 2, &value, &len, NULL, 0) == -1 ? -1 : value); 
+	return (sysctl(mib, namelen, &value, &len, NULL, 0) == -1 ? -1 : value); 
 }

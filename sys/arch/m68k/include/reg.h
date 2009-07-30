@@ -1,4 +1,5 @@
-/*	$NetBSD: reg.h,v 1.11 1995/03/26 17:08:38 briggs Exp $	*/
+/*	$OpenBSD: reg.h,v 1.6 2003/06/02 23:27:48 millert Exp $	*/
+/*	$NetBSD: reg.h,v 1.12 1996/12/17 19:24:31 gwr Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@
 #define _M68K_REG_H_
 
 /*
- * Register set accessible via /proc/$pid/reg and ptrace()
+ * Register set accessible via ptrace()
  */
 struct reg {
 	int	r_regs[16];	/* D0-D7/A0-A7 */
@@ -61,12 +58,12 @@ struct fpreg {
 	int	r_fpiar;
 };
 
-/* XXXX this is historical (but it can't be deprecated quite yet) */
+#ifdef _KERNEL
+
+/* XXX this is historical (but it can't be deprecated quite yet) */
 
 /*
- * Location of the users' stored
- * registers relative to D0.
- * Usage is u.u_ar0[XX].
+ * Location of the users' stored registers relative to D0.
  */
 #define	D0	(0)
 #define	D1	(1)
@@ -89,14 +86,6 @@ struct fpreg {
 #define	PS	(16)
 #define	PC	(17)
 
-#ifdef _KERNEL
-/*
- * Due to a mental lapse somewhere down the line, wait returns its values
- * in strange registers.  Kludge it up here so we don't have to in the
- * machine-independent code.
- */
-#define	R0	D1
-#define	R1	A0
 #endif
 
 #endif /* !_M68K_REG_H_ */

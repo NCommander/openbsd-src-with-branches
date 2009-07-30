@@ -1,5 +1,4 @@
-/*	$NetBSD: xdr_float.c,v 1.9 1995/06/05 11:48:26 pk Exp $	*/
-
+/*	$OpenBSD: xdr_float.c,v 1.16 2006/10/10 22:03:21 miod Exp $ */
 /*
  * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
  * unrestricted use provided that this legend is included on all tape
@@ -29,14 +28,8 @@
  * Mountain View, California  94043
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)xdr_float.c 1.12 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)xdr_float.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr_float.c,v 1.9 1995/06/05 11:48:26 pk Exp $";
-#endif
-
 /*
- * xdr_float.c, Generic XDR routines impelmentation.
+ * xdr_float.c, Generic XDR routines implementation.
  *
  * Copyright (C) 1984, Sun Microsystems, Inc.
  *
@@ -56,13 +49,7 @@ static char *rcsid = "$NetBSD: xdr_float.c,v 1.9 1995/06/05 11:48:26 pk Exp $";
  * This routine works on machines with IEEE754 FP and Vaxen.
  */
 
-#if defined(__m68k__) || defined(__sparc__) || defined(__i386__) || \
-    defined(__mips__) || defined(__ns32k__) || defined(__alpha__)
-#include <machine/endian.h>
-#define IEEEFP
-#endif
-
-#ifdef vax
+#ifdef __vax__
 
 /* What IEEE single precision floating point looks like on a Vax */
 struct	ieee_single {
@@ -91,12 +78,14 @@ static struct sgl_limits {
 	{{ 0x0, 0x0, 0x0, 0x0 },	/* Min Vax */
 	{ 0x0, 0x0, 0x0 }}		/* Min IEEE */
 };
-#endif /* vax */
+
+#else
+#include <machine/endian.h>
+#define IEEEFP
+#endif
 
 bool_t
-xdr_float(xdrs, fp)
-	register XDR *xdrs;
-	register float *fp;
+xdr_float(XDR *xdrs, float *fp)
 {
 #ifdef IEEEFP
 	bool_t rv;
@@ -164,7 +153,7 @@ xdr_float(xdrs, fp)
 	return (FALSE);
 }
 
-#ifdef vax
+#ifdef __vax__
 /* What IEEE double precision floating point looks like on a Vax */
 struct	ieee_double {
 	unsigned int	mantissa1 : 20;
@@ -197,23 +186,21 @@ static struct dbl_limits {
 	{ 0x0, 0x0, 0x0, 0x0 }}				/* Min IEEE */
 };
 
-#endif /* vax */
+#endif /* __vax__ */
 
 
 bool_t
-xdr_double(xdrs, dp)
-	register XDR *xdrs;
-	double *dp;
+xdr_double(XDR *xdrs, double *dp)
 {
 #ifdef IEEEFP
-	register int32_t *i32p;
+	int32_t *i32p;
 	bool_t rv;
 	long tmpl;
 #else
-	register long *lp;
+	long *lp;
 	struct	ieee_double id;
 	struct	vax_double vd;
-	register struct dbl_limits *lim;
+	struct dbl_limits *lim;
 	int i;
 #endif
 

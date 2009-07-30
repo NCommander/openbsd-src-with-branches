@@ -1,58 +1,158 @@
-Host name		Services Provided
----- ----		-------- --------
-ftp.iastate.edu		Anonymous FTP, AFS
+dnl	$OpenBSD: mirrors,v 1.68 2007/03/06 22:26:43 grunk Exp $
+This is a list of currently known FTP servers at the time of the OSREV release.
+For a more recent list, please refer to
 
-	Anon-FTP path: pub/netbsd/NetBSD-1.0
-	AFS path: /afs/iastate.edu/public/ftp/pub/netbsd/NetBSD-1.0
+	http://www.OpenBSD.org/ftp.html
 
-ftp.eecs.umich.edu	Anonymous FTP
+Main server in Canada:
+    ftp://ftp.OpenBSD.org/pub/OpenBSD (Alberta)
 
-	Anon-FTP path: BSD/NetBSD/NetBSD-1.0
+2nd level mirrors:
+    ftp://spargel.kd85.com/pub/OpenBSD (Vienna)
+    ftp://openbsd.informatik.uni-erlangen.de/pub/OpenBSD (Erlangen)
+    ftp://ftp.stacken.kth.se/pub/OpenBSD (Stockholm)
+    ftp://ftp5.usa.openbsd.org/pub/OpenBSD (Redwood City, CA)
+    ftp://ftp3.usa.openbsd.org/pub/OpenBSD (Boulder, CO)
+    ftp://rt.fm/pub/OpenBSD (Lake in the Hills, IL)
 
-gatekeeper.dec.com	Anonymous FTP
+Argentina:
+    ftp://ftp.openbsd.md5.com.ar/pub/OpenBSD (Buenos Aires)
 
-	Anon-FTP path: pub/BSD/NetBSD/NetBSD-1.0
+Australia:
+    ftp://ftp.it.net.au/mirrors/OpenBSD (Perth)
 
-wipux2.wifo.uni-mannheim.de	Anonymous FTP, SUP
+Austria:
+    ftp://playboy.wu-wien.ac.at/pub/OpenBSD (Vienna)
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
-	SUP: get the file pub/misc/sup/supfile.example via
-		anonymous FTP and read it as an example.
+Belgium:
+    ftp://ftp.scarlet.be/pub/openbsd (Brussels)
+    ftp://ftp.belnet.be/packages/openbsd (Brussels)
 
-ftp.demon.co.uk		Anonymous FTP, possibly SUP
+Brazil:
+    ftp://ftp.das.ufsc.br/pub/OpenBSD (Florianopolis, Santa Catarina)
 
-	Anon-FTP path: pub/BSD/NetBSD/NetBSD-1.0
-	SUP: contact peter@demon.net for SUP server status/information
+Bulgaria:
+    ftp://ftp.bg.openbsd.org/pub/OpenBSD (Plovdiv)
 
-ftp.uni-regensburg.de	Anonymous FTP
+Canada:
+    ftp://mirror.arcticnetwork.ca/pub/OpenBSD (Calgary)
+    ftp://ftp.ca.openbsd.org/pub/OpenBSD (Edmonton)
+    ftp://gulus.usherbrooke.ca/pub/distro/OpenBSD (Quebec)
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+China:
+    ftp://ftp.freebsdchina.org/pub/OpenBSD (Shanghai)
 
-ftp.unit.no		Anonymous FTP
+Denmark:
+    ftp://mirrors.dotsrc.org/openbsd (Aalborg)
+    ftp://ftp.dkuug.dk/pub/OpenBSD (Copenhagen)
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+Estonia:
+    ftp://ftp.aso.ee/pub/OpenBSD (Tallinn)
 
-ftp.stacken.kth.se	Anonymous FTP
+Finland:
+    ftp://mirrors.nic.funet.fi/pub/OpenBSD (Espoo)
+    ftp://ftp.jyu.fi/pub/OpenBSD (Jyvaskyla)
 
-	Anon-FTP path: pub/OS/NetBSD/NetBSD-1.0
+France:
+    ftp://ftp.arcane-networks.fr/pub/OpenBSD (Paris)
+    ftp://ftp.crans.org/pub/OpenBSD (Paris)
+    ftp://ftp.irisa.fr/pub/OpenBSD (Rennes)
 
-flick.lerc.nasa.gov	Anonymous FTP
+Germany:
+    ftp://openbsd.ftp.fu-berlin.de/pub/OpenBSD (Berlin)
+    ftp://ftp.spline.de/pub/OpenBSD (Berlin)
+    ftp://ftp.freenet.de/pub/ftp.openbsd.org/pub/OpenBSD (Duesseldorf)
+    ftp://ftp-stud.fht-esslingen.de/pub/OpenBSD (Esslingen)
+    ftp://mirror.roothell.org/pub/OpenBSD (Nuremberg)
+    ftp://ftp.bytemine.net/pub/OpenBSD (Oldenburg)
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+Greece:
+    ftp://filoktitis.noc.uoa.gr/pub/OpenBSD (Athens)
+    ftp://ftp.physics.auth.gr/pub/mirrors/OpenBSD/OpenBSD (Thessaloniki)
+    ftp://ftp.duth.gr/pub/OpenBSD (Thrace)
+    ftp://ftp.cc.uoc.gr/mirrors/OpenBSD (Heraklion)
 
-coombs.anu.edu.au	Anonymous FTP
+Hungary:
+    ftp://ftp.fsn.hu/pub/OpenBSD (Budapest)
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
+Ireland:
+    ftp://ftp.esat.net/pub/OpenBSD (Dublin)
+    ftp://ftp.heanet.ie/pub/OpenBSD (Dublin)
 
-ftp.funet.fi		Anonymous FTP
+Israel:
+    ftp://mirror.inter.net.il/pub/OpenBSD (Petach Tiqwa)
 
-	Anon-FTP path: pub/unix/NetBSD/NetBSD-1.0
+Italy:
+    ftp://ftp.unina.it/pub/OpenBSD (Napoli)
 
-ftp.netbsd.org		Anonymous FTP, SUP
+Japan:
+    ftp://ftp.jaist.ac.jp/pub/OpenBSD (Ishikawa)
+    ftp://ftp.nara.wide.ad.jp/pub/OpenBSD (Nara)
+    ftp://ftp.jp.openbsd.org/pub/OpenBSD (Tokyo)
+    ftp://ftp.kddlabs.co.jp/OpenBSD (Tokyo)
 
-	Anon-FTP path: pub/NetBSD/NetBSD-1.0
-	SUP: get the file pub/sup/README.sup via anonymous FTP from
-		ftp.netbsd.org, and read it for instructions.
+Korea:
+    ftp://ftp.kaist.ac.kr/pub/OpenBSD (Daejeon)
 
-If you wish to become a distribution site for NetBSD, contact Chris
-Demetriou <cgd@NetBSD.ORG>.
+Latvia:
+    ftp://ftp.secure.lv/pub/OpenBSD (Riga)
+    ftp://ftp.bsd.lv/pub/OpenBSD (Riga)
+
+The Netherlands:
+    ftp://ftp.calyx.nl/pub/OpenBSD (Amsterdam)
+    ftp://ftp.nluug.nl/pub/OpenBSD (Utrecht)
+    ftp://mirror.hostfuss.com/pub/OpenBSD (Amsterdam)
+
+Norway:
+    ftp://ftp.inet.no/pub/OpenBSD (Oslo)
+    ftp://ftp.uninett.no/pub/OpenBSD (Oslo)
+    ftp://jane.tihlde.org/pub/OpenBSD (Trondheim)
+
+Poland:
+    ftp://ftp.task.gda.pl/pub/OpenBSD (Gdansk)
+
+Portugal:
+    ftp://ftp.fmed.uc.pt/pub/OpenBSD (Coimbra)
+
+Russia:
+    ftp://ftp.chg.ru/pub/OpenBSD (Chernogolovka-Moscow)
+    ftp://ftp.gamma.ru/pub/OpenBSD (Moscow)
+
+Slovenia:
+    ftp://ftp.obsd.si/pub/OpenBSD (Ljubljana)
+
+Spain:
+    ftp://ftp.rediris.es/mirror/OpenBSD (Madrid)
+    ftp://ftp.udc.es/pub/OpenBSD (A Coruna)
+
+Sweden:
+    ftp://ftp.su.se/pub/OpenBSD (Stockholm)
+    ftp://ftp.btradianz.se/pub/OpenBSD (Stockholm)
+
+Switzerland:
+    ftp://mirror.switch.ch/pub/OpenBSD (Zurich)
+
+Turkey:
+    ftp://ftp.enderunix.org/pub/OpenBSD (Istanbul)
+
+Ukraine:
+    ftp://gaia.colocall.net/pub/OpenBSD (Kiev)
+
+United Kingdom:
+    ftp://ftp.public-internet.co.uk/pub/OpenBSD (London)
+    ftp://ftp.mirrorservice.org/pub/OpenBSD (Kent)
+
+USA:
+    ftp://mirror.planetunix.net/pub/OpenBSD (Chicago, IL)
+    ftp://osmirrors.cerias.purdue.edu/pub/OpenBSD (West Lafayette, IN)
+    ftp://mirror.iawnet.sandia.gov/pub/OpenBSD (Albuquerque, NM)
+    ftp://ftp.cse.buffalo.edu/pub/OpenBSD (Buffalo, NY)
+    ftp://mirrors.24-7-solutions.net/pub/OpenBSD (New York, NY)
+    ftp://openbsd.mirrors.pair.com (Pittsburgh, PA)
+    ftp://carroll.cac.psu.edu/pub/OpenBSD (PA)
+    ftp://openbsd.mirrors.tds.net/pub/OpenBSD (Madison, WI)
+
+
+Additionally, the file ftp://ftp.OpenBSD.org/pub/OpenBSD/ftplist
+contains a list which is continually updated.  If you wish to become a
+distribution site for OpenBSD, contact <www@OpenBSD.org>.

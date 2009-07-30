@@ -1,8 +1,9 @@
-/*	$Id: version.c,v 1.3 1995/12/06 10:54:56 deraadt Exp $ */
+/*	$OpenBSD: version.c,v 1.5 2008/04/02 21:53:17 miod Exp $ */
 
 /*
- * make a random change to this file when you want the bootblock
- * revision to increase. like change this x to a y, or something.
+ *	1.6	allocation area changed to fix netboot buffers overwriting stack
+ *	1.5	rewritten crt code, self-relocatable
+ *	1.4	kernel loaded with loadfile, a.out and ELF formats
+ *	1.3	rewritten startup code and general cleanup
  */
-
-char *version = "$Revision: 1.3 $";
+char *version = "1.6";

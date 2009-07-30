@@ -1,7 +1,16 @@
-#	from: @(#)Makefile	5.25.1.1 (Berkeley) 5/7/91
-#	$Id: Makefile,v 1.16 1995/03/12 20:49:52 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.54 2008/10/26 08:49:43 ratchov Exp $
+#	$NetBSD: Makefile,v 1.20.4.1 1996/06/14 17:22:38 cgd Exp $
 
-SUBDIR=	csu libarch libc libcompat libcrypt libcurses libedit libkvm libl \
-	libm libpcap libresolv librpcsvc libskey libtelnet libterm libutil liby
+SUBDIR=	csu libarch libc libcompat libcurses \
+	libdes libedit libevent libexpat \
+	libform libkeynote libkvm libl libm libmenu \
+	libocurses libossaudio libpanel libpcap libpthread librpcsvc \
+	libskey libsectok libsndio libssl libusbhid libutil libwrap liby libz
+
+.include <bsd.own.mk>
+
+.if (${KERBEROS5:L} == "yes")
+SUBDIR+=libgssapi libkadm5srv libkadm5clnt libkrb5
+.endif
 
 .include <bsd.subdir.mk>

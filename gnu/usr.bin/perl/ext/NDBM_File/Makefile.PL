@@ -9,7 +9,7 @@ if($Config{i_gdbm} && $Config{i_gdbm} eq 'define') {
 
 WriteMakefile(
     NAME	=> 'NDBM_File',
-    LIBS => ["-L/usr/local/lib -lndbm", "-ldbm -lucb"],
+    #LIBS => ["-L/usr/local/lib -lndbm", "-ldbm -lucb"],
     DEFINE => $define,
     MAN3PODS 	=> {}, 	# Pods will be built by installman.
     XSPROTOARG => '-noprototypes', 		# XXX remove later?

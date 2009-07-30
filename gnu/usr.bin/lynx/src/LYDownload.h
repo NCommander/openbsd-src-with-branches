@@ -1,15 +1,21 @@
-
 #ifndef LYDOWNLOAD_H
 #define LYDOWNLOAD_H
 
 #ifndef LYSTRUCTS_H
-#include "LYStructs.h"
+#include <LYStructs.h>
 #endif /* LYSTRUCTS_H */
 
-extern void LYDownload PARAMS((char *line));
-extern int LYdownload_options PARAMS((char **newfile, char *data_file));
+#ifdef __cplusplus
+extern "C" {
+#endif
+    extern void LYDownload(char *line);
+    extern int LYdownload_options(char **newfile, char *data_file);
 
-#define DOWNLOAD_OPTIONS_TITLE "Lynx Download Options"
+#ifdef VMS
+    extern BOOLEAN LYDidRename;
+#endif
 
-#endif /* LYDOWNLOAD_H */
-
+#ifdef __cplusplus
+}
+#endif
+#endif				/* LYDOWNLOAD_H */

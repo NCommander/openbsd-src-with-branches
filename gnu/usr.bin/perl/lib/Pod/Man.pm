@@ -756,6 +756,8 @@ sub start_document {
     $$self{SHIFTWAIT} = 0;      # Whether there is a shift waiting.
     $$self{SHIFTS}    = [];     # Stack of .RS shifts.
     $$self{PENDING}   = [[]];   # Pending output.
+    $$self{EXCLUDE}   = 0;
+    $$self{VERBATIM}  = 0;
 }
 
 # Handle the end of the document.  This does nothing but print out a final
@@ -1276,7 +1278,7 @@ sub parse_from_filehandle {
 # unclear.
 @ESCAPES{0xA0 .. 0xFF} = (
     "\\ ", undef, undef, undef,            undef, undef, undef, undef,
-    undef, undef, undef, undef,            undef, "\\%", undef, undef,
+    undef, "\\(co", undef, undef,            undef, "\\%", undef, undef,
 
     undef, undef, undef, undef,            undef, undef, undef, undef,
     undef, undef, undef, undef,            undef, undef, undef, undef,

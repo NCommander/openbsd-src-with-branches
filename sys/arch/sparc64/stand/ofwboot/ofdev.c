@@ -1,3 +1,4 @@
+/*	$OpenBSD: ofdev.c,v 1.9 2007/05/29 06:28:15 otto Exp $	*/
 /*	$NetBSD: ofdev.c,v 1.1 2000/08/20 14:58:41 mrg Exp $	*/
 
 /*
@@ -79,7 +80,7 @@ filename(str, ppart)
 		/* ...look whether there is a device with this name */
 		dhandle = OF_finddevice(str);
 #ifdef NOTDEF_DEBUG
-		printf("filename: OF_finddevice(%s) sez %x\n",
+		printf("filename: OF_finddevice(%s) says %x\n",
 		       str, dhandle);
 #endif
 		*cp = savec;
@@ -177,7 +178,7 @@ devclose(of)
 static struct devsw devsw[1] = {
 	"OpenFirmware",
 	strategy,
-	(int (*)__P((struct open_file *, ...)))nodev,
+	(int (*)(struct open_file *, ...))nodev,
 	devclose,
 	noioctl
 };
@@ -208,7 +209,6 @@ static struct of_dev ofdev = {
 };
 
 char opened_name[256];
-int floppyboot;
 
 static u_long
 get_long(p)
@@ -285,7 +285,7 @@ disklabel_sun_to_bsd(cp, lp)
 	lp->d_rpm          = sl->sl_rpm;
 	lp->d_interleave   = sl->sl_interleave;
 
-	lp->d_npartitions = 8;
+	lp->d_npartitions = MAXPARTITIONS;
 	/* These are as defined in <ufs/ffs/fs.h> */
 	lp->d_bbsize = 8192;	/* XXX */
 	lp->d_sbsize = 8192;	/* XXX */
@@ -307,8 +307,8 @@ disklabel_sun_to_bsd(cp, lp)
 				 * The sun label does not store the FFS fields,
 				 * so just set them with default values here.
 				 */
-				npp->p_fsize = 1024;
-				npp->p_frag = 8;
+				npp->p_fragblock =
+				    DISKLABELV1_FFS_FRAGBLOCK(1024, 8);
 				npp->p_cpg = 16;
 			}
 		}
@@ -343,10 +343,10 @@ search_label(devp, off, buf, lp, off0)
 	struct sun_disklabel *slp;
 	int error;
 	
-	/* minimal requirements for archtypal disk label */
+	/* minimal requirements for archetypal disk label */
 	if (lp->d_secperunit == 0)
 		lp->d_secperunit = 0x1fffffff;
-	lp->d_npartitions = 1;
+	lp->d_npartitions = MAXPARTITIONS;
 	if (lp->d_partitions[0].p_size == 0)
 		lp->d_partitions[0].p_size = 0x1fffffff;
 	lp->d_partitions[0].p_offset = 0;
@@ -399,17 +399,17 @@ devopen(of, name, file)
 #ifdef NOTDEF_DEBUG
 	printf("devopen: you want %s\n", name);
 #endif
-	strcpy(fname, name);
+	strlcpy(fname, name, sizeof fname);
 	cp = filename(fname, &partition);
 	if (cp) {
-		strcpy(buf, cp);
+		strlcpy(buf, cp, sizeof buf);
 		*cp = 0;
 	}
 	if (!cp || !*buf)
-		strcpy(buf, DEFAULT_KERNEL);
+		strlcpy(buf, DEFAULT_KERNEL, sizeof buf);
 	if (!*fname)
-		strcpy(fname, bootdev);
-	strcpy(opened_name, fname);
+		strlcpy(fname, bootdev, sizeof fname);
+	strlcpy(opened_name, fname, sizeof opened_name);
 	if (partition) {
 		cp = opened_name + strlen(opened_name);
 		*cp++ = ':';
@@ -417,8 +417,8 @@ devopen(of, name, file)
 		*cp = 0;
 	}
 	if (*buf != '/')
-		strcat(opened_name, "/");
-	strcat(opened_name, buf);
+		strlcat(opened_name, "/", sizeof opened_name);
+	strlcat(opened_name, buf, sizeof opened_name);
 	*file = opened_name + strlen(fname) + 1;
 #ifdef NOTDEF_DEBUG
 	printf("devopen: trying %s\n", fname);
@@ -433,7 +433,6 @@ devopen(of, name, file)
 #ifdef NOTDEF_DEBUG
 	printf("devopen: %s is called %s\n", fname, buf);
 #endif
-	floppyboot = !strcmp(buf, "floppy");
 	if (OF_getprop(handle, "device_type", buf, sizeof buf) < 0)
 		return ENXIO;
 #ifdef NOTDEF_DEBUG
@@ -464,11 +463,13 @@ devopen(of, name, file)
 			     LABELSECTOR, DEV_BSIZE, buf, &read) != 0
 		    || read != DEV_BSIZE
 		    || (errmsg = getdisklabel(buf, &label))) {
-			if (errmsg) printf("devopen: getdisklabel sez %s\n", errmsg);
+#ifdef NOTDEF_DEBUG
+			if (errmsg) printf("devopen: getdisklabel says %s\n", errmsg);
+#endif
 			/* Else try MBR partitions */
 			errmsg = search_label(&ofdev, 0, buf, &label, 0);
 			if (errmsg) { 
-				printf("devopen: search_label sez %s\n", errmsg);
+				printf("devopen: search_label says %s\n", errmsg);
 				error = ERDLAB;
 			}
 			if (error && error != ERDLAB)

@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,21 +32,8 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)config.h	8.1 (Berkeley) 6/6/93
- *	$Id: config.h,v 1.3 1994/06/13 20:50:35 mycroft Exp $
+ *	$Id: config.h,v 1.6 2004/05/31 10:38:20 otto Exp $
  */
-
-/*
- * Get this in now so that OS_HDR can use it
- */
-#ifdef __STDC__
-#define	P(x) x
-#define	P_void void
-#define	Const const
-#else
-#define P(x) ()
-#define P_void /* as nothing */
-#define Const /* as nothing */
-#endif /* __STDC__ */
 
 #ifdef __GNUC__
 #define INLINE /* __inline */
@@ -64,25 +47,17 @@
 #include "os-defaults.h"
 #include OS_HDR
 
-#ifdef VOIDP
-typedef void *voidp;
-#else
-typedef char *voidp;
-#endif /* VOIDP */
-
+#include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/errno.h>
-extern int errno;
 #include <sys/time.h>
 
 #define clocktime() (clock_valid ? clock_valid : time(&clock_valid))
-extern time_t time P((time_t *));
 extern time_t clock_valid;	/* Clock needs recalculating */
 
-extern char *progname;		/* "amd"|"mmd" */
+extern char *__progname;
 extern char hostname[];		/* "kiska" */
-extern int mypid;		/* Current process id */
+extern pid_t mypid;		/* Current process id */
 
 #ifdef HAS_SYSLOG
 extern int syslogging;		/* Really using syslog */
@@ -126,15 +101,12 @@ struct opt_tab {
 
 extern struct opt_tab xlog_opt[];
 
-extern int cmdoption P((char*, struct opt_tab*, int*));
-extern void going_down P((int));
+extern int cmdoption(char *, struct opt_tab *, int *);
+extern void going_down(int);
 #ifdef DEBUG
-extern void dplog ();
-/*extern void dplog P((char*, ...));*/
+#define dplog(fmt, args...) plog(XLOG_DEBUG, fmt, ## args)
 #endif /* DEBUG */
-extern void plog ();
-/*extern void plog P((int, char*, ...));*/
-extern void show_opts P((int ch, struct opt_tab*));
-extern char* strchr P((const char*, int)); /* C */
-extern voidp xmalloc P((int));
-extern voidp xrealloc P((voidp, int));
+extern void plog(int, char *, ...);
+extern void show_opts(int ch, struct opt_tab *);
+extern void *xmalloc(int);
+extern void *xrealloc(void *, int);

@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.14 2008/10/09 10:58:32 millert Exp $	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -14,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +34,11 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1992, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
 /* from: static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/3/94"; */
-static char *rcsid = "$Id: main.c,v 1.7 1995/02/23 17:25:23 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: main.c,v 1.14 2008/10/09 10:58:32 millert Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -51,6 +46,7 @@ static char *rcsid = "$Id: main.c,v 1.7 1995/02/23 17:25:23 jtc Exp $";
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <regex.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -100,18 +96,16 @@ char *fname;			/* File name. */
 u_long linenum;
 int lastline;			/* TRUE on the last line of the last file */
 
-static void add_compunit __P((enum e_cut, char *));
-static void add_file __P((char *));
+static void add_compunit(enum e_cut, char *);
+static void add_file(char *);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int c, fflag;
 
 	fflag = 0;
-	while ((c = getopt(argc, argv, "ae:f:n")) != EOF)
+	while ((c = getopt(argc, argv, "ae:f:nu")) != -1)
 		switch (c) {
 		case 'a':
 			aflag = 1;
@@ -127,10 +121,14 @@ main(argc, argv)
 		case 'n':
 			nflag = 1;
 			break;
+		case 'u':
+			setlinebuf(stdout);
+			break;
 		default:
 		case '?':
 			(void)fprintf(stderr,
-"usage:\tsed script [-an] [file ...]\n\tsed [-an] [-e script] ... [-f script_file] ... [file ...]\n");
+			    "usage: sed [-anu] command [file ...]\n"
+			    "       sed [-anu] [-e command] [-f command_file] [file ...]\n");
 			exit(1);
 		}
 	argc -= optind;
@@ -162,15 +160,17 @@ main(argc, argv)
  * together.  Empty strings and files are ignored.
  */
 char *
-cu_fgets(buf, n)
-	char *buf;
-	int n;
+cu_fgets(char **outbuf, size_t *outsize)
 {
 	static enum {ST_EOF, ST_FILE, ST_STRING} state = ST_EOF;
 	static FILE *f;		/* Current open file */
 	static char *s;		/* Current pointer inside string */
 	static char string_ident[30];
+	size_t len;
 	char *p;
+
+	if (*outbuf == NULL)
+		*outsize = 0;
 
 again:
 	switch (state) {
@@ -189,20 +189,27 @@ again:
 		case CU_STRING:
 			if ((snprintf(string_ident,
 			    sizeof(string_ident), "\"%s\"", script->s)) >=
-			    sizeof(string_ident) - 1)
-				(void)strcpy(string_ident +
-				    sizeof(string_ident) - 6, " ...\"");
+			    sizeof(string_ident))
+				strlcpy(string_ident +
+				    sizeof(string_ident) - 6, " ...\"", 5);
 			fname = string_ident;
 			s = script->s;
 			state = ST_STRING;
 			goto again;
 		}
 	case ST_FILE:
-		if ((p = fgets(buf, n, f)) != NULL) {
+		if ((p = fgetln(f, &len)) != NULL) {
 			linenum++;
-			if (linenum == 1 && buf[0] == '#' && buf[1] == 'n')
+			if (len >= *outsize) {
+				free(*outbuf);
+				*outsize = ROUNDLEN(len + 1);
+				*outbuf = xmalloc(*outsize);
+			}
+			memcpy(*outbuf, p, len);
+			(*outbuf)[len] = '\0';
+			if (linenum == 1 && p[0] == '#' && p[1] == 'n')
 				nflag = 1;
-			return (p);
+			return (*outbuf);
 		}
 		script = script->next;
 		(void)fclose(f);
@@ -211,12 +218,15 @@ again:
 	case ST_STRING:
 		if (linenum == 0 && s[0] == '#' && s[1] == 'n')
 			nflag = 1;
-		p = buf;
+		p = *outbuf;
+		len = *outsize;
 		for (;;) {
-			if (n-- <= 1) {
-				*p = '\0';
-				linenum++;
-				return (buf);
+			if (len <= 1) {
+				*outbuf = xrealloc(*outbuf,
+				    *outsize + _POSIX2_LINE_MAX);
+				p = *outbuf + *outsize - len;
+				len += _POSIX2_LINE_MAX;
+				*outsize += _POSIX2_LINE_MAX;
 			}
 			switch (*s) {
 			case '\0':
@@ -228,16 +238,17 @@ again:
 					script = script->next;
 					*p = '\0';
 					linenum++;
-					return (buf);
+					return (*outbuf);
 				}
 			case '\n':
 				*p++ = '\n';
 				*p = '\0';
 				s++;
 				linenum++;
-				return (buf);
+				return (*outbuf);
 			default:
 				*p++ = *s++;
+				len--;
 			}
 		}
 	}
@@ -249,13 +260,12 @@ again:
  * Set len to the length of the line.
  */
 int
-mf_fgets(sp, spflag)
-	SPACE *sp;
-	enum e_spflag spflag;
+mf_fgets(SPACE *sp, enum e_spflag spflag)
 {
 	static FILE *f;		/* Current open file */
 	size_t len;
-	char c, *p;
+	char *p;
+	int c;
 
 	if (f == NULL)
 		/* Advance to first non-empty file */
@@ -322,9 +332,7 @@ mf_fgets(sp, spflag)
  * Add a compilation unit to the linked list
  */
 static void
-add_compunit(type, s)
-	enum e_cut type;
-	char *s;
+add_compunit(enum e_cut type, char *s)
 {
 	struct s_compunit *cu;
 
@@ -340,8 +348,7 @@ add_compunit(type, s)
  * Add a file to the linked list
  */
 static void
-add_file(s)
-	char *s;
+add_file(char *s)
 {
 	struct s_flist *fp;
 

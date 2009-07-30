@@ -1,4 +1,5 @@
-/*	$NetBSD: limits.h,v 1.5 1995/05/28 18:38:30 ragge Exp $	*/
+/*	$OpenBSD: limits.h,v 1.12 2005/12/14 21:46:31 millert Exp $	*/
+/*	$NetBSD: limits.h,v 1.9 2000/03/07 19:33:01 kleink Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,51 +32,27 @@
  *      @(#)limits.h    7.2 (Berkeley) 6/28/90
  */
 
-#define CHAR_BIT        8               /* number of bits in a char */
-/* #define CLK_TCK         60              /* ticks per second */
+#ifndef _MACHINE_LIMITS_H_
+#define _MACHINE_LIMITS_H_
+
+#include <sys/cdefs.h>
+
 #define MB_LEN_MAX      1               /* no multibyte characters */
 
-#define SCHAR_MIN       (-0x7f-1)       /* min value for a signed char */
-#define SCHAR_MAX       0x7f            /* max value for a signed char */
-
-#define UCHAR_MAX       0xff            /* max value for an unsigned char */
-#define CHAR_MAX        0x7f            /* max value for a char */
-#define CHAR_MIN        (-0x7f-1)       /* min value for a char */
-
-#define USHRT_MAX       0xffff          /* max value for an unsigned short */
-#define SHRT_MAX        0x7fff          /* max value for a short */
-#define SHRT_MIN        (-0x7fff-1)     /* min value for a short */
-
-#define UINT_MAX        0xffffffffU     /* max value for an unsigned int */
-#define INT_MAX         0x7fffffff      /* max value for an int */
-#define INT_MIN         (-0x7fffffff-1) /* min value for an int */
-
-#define ULONG_MAX       0xffffffffUL    /* max value for an unsigned long */
-#define LONG_MAX        0x7fffffffL     /* max value for a long */
-#define LONG_MIN        (-0x7fffffffL-1)/* min value for a long */
-
-#if !defined(_ANSI_SOURCE)
+#if __POSIX_VISIBLE || __XPG_VISIBLE
+#ifndef	SIZE_MAX
+#define	SIZE_MAX	UINT_MAX	/* max value for a size_t */
+#endif
 #define SSIZE_MAX       INT_MAX         /* max value for a ssize_t */
+#endif
 
-#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
-#define SIZE_T_MAX      UINT_MAX        /* max value for a size_t */
+#if __BSD_VISIBLE
+#define SIZE_T_MAX      UINT_MAX        /* max value for a size_t (historic) */
 
 #define UQUAD_MAX       0xffffffffffffffffULL           /* max unsigned quad */
 #define QUAD_MAX        0x7fffffffffffffffLL            /* max signed quad */
 #define QUAD_MIN        (-0x7fffffffffffffffLL-1)       /* min signed quad */
 
-#endif /* !_POSIX_SOURCE && !_XOPEN_SOURCE */
-#endif /* !_ANSI_SOURCE */
+#endif /* __BSD_VISIBLE */
 
-#if (!defined(_ANSI_SOURCE)&&!defined(_POSIX_SOURCE)) || defined(_XOPEN_SOURCE)
-#define LONG_BIT	32
-#define WORD_BIT	32
-
-#define DBL_DIG         16
-#define DBL_MAX         1.701411834604692294E+38
-#define DBL_MIN         2.938735877055718770E-39
-
-#define FLT_DIG         6
-#define FLT_MAX         1.70141173E+38F
-#define FLT_MIN         2.93873588E-39F
-#endif
+#endif /* _MACHINE_LIMITS_H_ */

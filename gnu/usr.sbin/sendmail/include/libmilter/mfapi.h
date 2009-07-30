@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1999-2004, 2006, 2008 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -7,7 +7,7 @@
  * the sendmail distribution.
  *
  *
- *	$Sendmail: mfapi.h,v 8.28 2001/07/19 21:20:29 gshapiro Exp $
+ *	$Sendmail: mfapi.h,v 8.78 2008/02/27 22:30:34 ca Exp $
  */
 
 /*
@@ -17,12 +17,26 @@
 #ifndef _LIBMILTER_MFAPI_H
 # define _LIBMILTER_MFAPI_H	1
 
+#ifndef SMFI_VERSION
+# define SMFI_VERSION	0x01000001	/* libmilter version number */
+#endif /* ! SMFI_VERSION */
+
+#define SM_LM_VRS_MAJOR(v)	(((v) & 0x7f000000) >> 24)
+#define SM_LM_VRS_MINOR(v)	(((v) & 0x007fff00) >> 8)
+#define SM_LM_VRS_PLVL(v)	((v) & 0x0000007f)
+
+# include <sys/types.h>
 # include <sys/socket.h>
-# include "libmilter/mfdef.h"
+
+#include "libmilter/mfdef.h"
 
 # define LIBMILTER_API		extern
 
-# include <sys/types.h>
+
+/* Only need to export C interface if used by C++ source code */
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 #ifndef _SOCK_ADDR
 # define _SOCK_ADDR	struct sockaddr
@@ -30,11 +44,14 @@
 
 /*
 **  libmilter functions return one of the following to indicate
-**  success/failure:
+**  success/failure(/continue):
 */
 
 #define MI_SUCCESS	0
 #define MI_FAILURE	(-1)
+#if _FFR_WORKERS_POOL
+# define MI_CONTINUE	1
+#endif /* _FFR_WORKERS_POOL */
 
 /* "forward" declarations */
 typedef struct smfi_str SMFICTX;
@@ -50,15 +67,37 @@ typedef struct smfiDesc	*smfiDesc_ptr;
 
 typedef int	sfsistat;
 
-/*
-**  structure describing one milter
-*/
-
 #if defined(__linux__) && defined(__GNUC__) && defined(__cplusplus) && __GNUC_MINOR__ >= 8
 # define SM__P(X)	__PMT(X)
 #else /* __linux__ && __GNUC__ && __cplusplus && _GNUC_MINOR__ >= 8 */
 # define SM__P(X)	__P(X)
 #endif /* __linux__ && __GNUC__ && __cplusplus && _GNUC_MINOR__ >= 8 */
+
+/* Some platforms don't define __P -- do it for them here: */
+#ifndef __P
+# ifdef __STDC__
+#  define __P(X) X
+# else /* __STDC__ */
+#  define __P(X) ()
+# endif /* __STDC__ */
+#endif /* __P */
+
+#if SM_CONF_STDBOOL_H
+# include <stdbool.h>
+#else /* SM_CONF_STDBOOL_H */
+# ifndef __cplusplus
+#  ifndef bool
+#   ifndef __bool_true_false_are_defined
+typedef int	bool;
+#    define __bool_true_false_are_defined	1
+#   endif /* ! __bool_true_false_are_defined */
+#  endif /* bool */
+# endif /* ! __cplusplus */
+#endif /* SM_CONF_STDBOOL_H */
+
+/*
+**  structure describing one milter
+*/
 
 struct smfiDesc
 {
@@ -95,16 +134,39 @@ struct smfiDesc
 
 	/* connection cleanup */
 	sfsistat	(*xxfi_close) SM__P((SMFICTX *));
+
+	/* any unrecognized or unimplemented command filter */
+	sfsistat	(*xxfi_unknown) SM__P((SMFICTX *, const char *));
+
+	/* SMTP DATA command filter */
+	sfsistat	(*xxfi_data) SM__P((SMFICTX *));
+
+	/* negotiation callback */
+	sfsistat	(*xxfi_negotiate) SM__P((SMFICTX *,
+					unsigned long, unsigned long,
+					unsigned long, unsigned long,
+					unsigned long *, unsigned long *,
+					unsigned long *, unsigned long *));
+
+#if 0
+	/* signal handler callback, not yet implemented. */
+	int		(*xxfi_signal) SM__P((int));
+#endif
+
 };
 
+LIBMILTER_API int smfi_opensocket __P((bool));
 LIBMILTER_API int smfi_register __P((struct smfiDesc));
 LIBMILTER_API int smfi_main __P((void));
+LIBMILTER_API int smfi_setbacklog __P((int));
 LIBMILTER_API int smfi_setdbg __P((int));
 LIBMILTER_API int smfi_settimeout __P((int));
 LIBMILTER_API int smfi_setconn __P((char *));
 LIBMILTER_API int smfi_stop __P((void));
-
-#define SMFI_VERSION	2		/* version number */
+#if _FFR_MAXDATASIZE
+LIBMILTER_API size_t smfi_setmaxdatasize __P((size_t));
+#endif /* _FFR_MAXDATASIZE */
+LIBMILTER_API int smfi_version __P((unsigned int *, unsigned int *, unsigned int *));
 
 /*
 **  What the filter might do -- values to be ORed together for
@@ -118,6 +180,34 @@ LIBMILTER_API int smfi_stop __P((void));
 #define SMFIF_ADDRCPT	0x00000004L	/* filter may add recipients */
 #define SMFIF_DELRCPT	0x00000008L	/* filter may delete recipients */
 #define SMFIF_CHGHDRS	0x00000010L	/* filter may change/delete headers */
+#define SMFIF_QUARANTINE 0x00000020L	/* filter may quarantine envelope */
+
+/* filter may change "from" (envelope sender) */
+#define SMFIF_CHGFROM	0x00000040L
+#define SMFIF_ADDRCPT_PAR	0x00000080L	/* add recipients incl. args */
+
+/* filter can send set of symbols (macros) that it wants */
+#define SMFIF_SETSYMLIST	0x00000100L
+
+
+/*
+**  Macro "places";
+**  Notes:
+**  - must be coordinated with libmilter/engine.c and sendmail/milter.c
+**  - the order MUST NOT be changed as it would break compatibility between
+**	different versions. It's ok to append new entries however
+**	(hence the list is not sorted by the SMT protocol steps).
+*/
+
+#define SMFIM_FIRST	0	/* Do NOT use, internal marker only */
+#define SMFIM_CONNECT	0	/* connect */
+#define SMFIM_HELO	1	/* HELO/EHLO */
+#define SMFIM_ENVFROM	2	/* MAIL From */
+#define SMFIM_ENVRCPT	3	/* RCPT To */
+#define SMFIM_DATA	4	/* DATA */
+#define SMFIM_EOM	5	/* end of message (final dot) */
+#define SMFIM_EOH	6	/* end of header */
+#define SMFIM_LAST	6	/* Do NOT use, internal marker only */
 
 /*
 **  Continue processing message/connection.
@@ -162,6 +252,21 @@ LIBMILTER_API int smfi_stop __P((void));
 */
 
 #define SMFIS_TEMPFAIL	4
+
+/*
+**  Do not send a reply to the MTA
+*/
+
+#define SMFIS_NOREPLY	7
+
+/*
+**  Skip over rest of same callbacks, e.g., body.
+*/
+
+#define SMFIS_SKIP	8
+
+/* xxfi_negotiate: use all existing protocol options/actions */
+#define SMFIS_ALL_OPTS	10
 
 #if 0
 /*
@@ -211,6 +316,16 @@ extern sfsistat	xxfi_envrcpt __P((SMFICTX *, char **));
 **	char **argv; Null-terminated SMTP command arguments;
 **		argv[0] is guaranteed to be the recipient address.
 **		Later arguments are the ESMTP arguments.
+*/
+
+/* unknown command filter */
+
+extern sfsistat	*xxfi_unknown __P((SMFICTX *, const char *));
+
+/*
+**  xxfi_unknown(ctx, arg) Invoked when SMTP command is not recognized or not
+**  implemented.
+**	const char *arg; Null-terminated SMTP command
 */
 
 /* header filter */
@@ -295,6 +410,13 @@ LIBMILTER_API char * smfi_getsymval __P((SMFICTX *, char *));
 LIBMILTER_API int smfi_setreply __P((SMFICTX *, char *, char *, char *));
 
 /*
+**  Alternatively, smfi_setmlreply can be called if a multi-line SMTP reply
+**  is needed.
+*/
+
+LIBMILTER_API int smfi_setmlreply __P((SMFICTX *, const char *, const char *, ...));
+
+/*
 **  Set the specific reply code to be used in response to the active
 **  command. If not specified, a generic reply code is used.
 **
@@ -316,10 +438,9 @@ LIBMILTER_API int smfi_setreply __P((SMFICTX *, char *, char *, char *));
 LIBMILTER_API int smfi_addheader __P((SMFICTX *, char *, char *));
 
 /*
-**  Add a header to the message. This header is not passed to other
-**  filters. It is not checked for standards compliance; the mail filter
-**  must ensure that no protocols are violated as a result of adding this
-**  header.
+**  Add a header to the message. It is not checked for standards
+**  compliance; the mail filter must ensure that no protocols are violated
+**  as a result of adding this header.
 **
 **	SMFICTX *ctx; Opaque context structure
 **	char *headerf; Header field name
@@ -339,6 +460,30 @@ LIBMILTER_API int smfi_chgheader __P((SMFICTX *, char *, int, char *));
 **	char *headerv; New header field value (empty for delete header)
 */
 
+LIBMILTER_API int smfi_insheader __P((SMFICTX *, int, char *, char *));
+
+/*
+**  Insert a header into the message.  It is not checked for standards
+**  compliance; the mail filter must ensure that no protocols are violated
+**  as a result of adding this header.
+**
+**	SMFICTX *ctx; Opaque context structure
+**  	int idx; index into the header list where the insertion should happen
+**	char *headerh; Header field name
+**	char *headerv; Header field value
+*/
+
+LIBMILTER_API int smfi_chgfrom __P((SMFICTX *, char *, char *));
+
+/*
+**  Modify envelope sender address
+**
+**	SMFICTX *ctx; Opaque context structure
+**	char *mail; New envelope sender address
+**	char *args; ESMTP arguments
+*/
+
+
 LIBMILTER_API int smfi_addrcpt __P((SMFICTX *, char *));
 
 /*
@@ -348,7 +493,27 @@ LIBMILTER_API int smfi_addrcpt __P((SMFICTX *, char *));
 **	char *rcpt; Recipient to be added
 */
 
+LIBMILTER_API int smfi_addrcpt_par __P((SMFICTX *, char *, char *));
+
+/*
+**  Add a recipient to the envelope
+**
+**	SMFICTX *ctx; Opaque context structure
+**	char *rcpt; Recipient to be added
+**	char *args; ESMTP arguments
+*/
+
+
 LIBMILTER_API int smfi_delrcpt __P((SMFICTX *, char *));
+
+/*
+**  Send a "no-op" up to the MTA to tell it we're still alive, so long
+**  milter-side operations don't time out.
+**
+**	SMFICTX *ctx; Opaque context structure
+*/
+
+LIBMILTER_API int smfi_progress __P((SMFICTX *));
 
 /*
 **  Delete a recipient from the envelope
@@ -376,6 +541,14 @@ LIBMILTER_API int smfi_replacebody __P((SMFICTX *, unsigned char *, int));
 **  xxfi_abort is called. This can be used to reset state.
 */
 
+/*
+**  Quarantine an envelope
+**
+**	SMFICTX *ctx; Opaque context structure
+**	char *reason: explanation
+*/
+
+LIBMILTER_API int smfi_quarantine __P((SMFICTX *ctx, char *reason));
 
 /*
 **  Connection-private data (specific to an SMTP connection) can be
@@ -394,5 +567,29 @@ LIBMILTER_API int smfi_setpriv __P((SMFICTX *, void *));
 
 LIBMILTER_API void *smfi_getpriv __P((SMFICTX *));
 
+/*
+**  Get the private data pointer
+**
+**	SMFICTX *ctx; Opaque context structure
+**	void *privatedata; Pointer to private data area
+*/
 
-#endif /* !_LIBMILTER_MFAPI_H */
+LIBMILTER_API int smfi_setsymlist __P((SMFICTX *, int, char *));
+
+/*
+**  Set list of symbols (macros) to receive
+**
+**	SMFICTX *ctx; Opaque context structure
+**	int where; where in the SMTP dialogue should the macros be sent
+**	char *macros; list of macros (space separated)
+*/
+
+#if _FFR_THREAD_MONITOR
+LIBMILTER_API int smfi_set_max_exec_time __P((unsigned int));
+#endif /* _FFR_THREAD_MONITOR */
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* ! _LIBMILTER_MFAPI_H */

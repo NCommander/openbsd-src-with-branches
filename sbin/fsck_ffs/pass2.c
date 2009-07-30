@@ -1,4 +1,5 @@
-/*	$NetBSD: pass2.c,v 1.12 1995/03/18 14:55:52 cgd Exp $	*/
+/*	$OpenBSD: pass2.c,v 1.27 2007/06/25 19:59:55 otto Exp $	*/
+/*	$NetBSD: pass2.c,v 1.17 1996/09/27 22:45:15 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)pass2.c	8.6 (Berkeley) 10/27/94";
 #else
-static char rcsid[] = "$NetBSD: pass2.c,v 1.12 1995/03/18 14:55:52 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: pass2.c,v 1.27 2007/06/25 19:59:55 otto Exp $";
 #endif
 #endif /* not lint */
 
@@ -50,29 +47,54 @@ static char rcsid[] = "$NetBSD: pass2.c,v 1.12 1995/03/18 14:55:52 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "fsck.h"
+#include "fsutil.h"
 #include "extern.h"
 
-#define MINDIRSIZE	(sizeof (struct dirtemplate))
+#define MINDIRSIZE	(sizeof(struct dirtemplate))
 
-int	pass2check(), blksort();
+static int pass2check(struct inodesc *);
+static int blksort(const void *, const void *);
+
+static int info_max;
+static int info_pos;
+
+static int
+pass2_info1(char *buf, size_t buflen)
+{
+	return (snprintf(buf, buflen, "phase 2, directory %d/%d",
+	    info_pos, info_max) > 0);
+}
+
+static int
+pass2_info2(char *buf, size_t buflen)
+{
+	if (snprintf(buf, buflen, "phase 2, parent directory %d/%d",
+	    info_pos, info_max) > 0)
+		return (strlen(buf));
+	return (0);
+}
 
 void
-pass2()
+pass2(void)
 {
-	register struct dinode *dp;
-	register struct inoinfo **inpp, *inp;
+	union dinode *dp;
+	struct inoinfo **inpp, *inp, *pinp;
 	struct inoinfo **inpend;
 	struct inodesc curino;
-	struct dinode dino;
+	union dinode dino;
 	char pathbuf[MAXPATHLEN + 1];
+	int i;
 
-	switch (statemap[ROOTINO]) {
+	switch (GET_ISTATE(ROOTINO)) {
 
 	case USTATE:
 		pfatal("ROOT INODE UNALLOCATED");
-		if (reply("ALLOCATE") == 0)
-			errexit("");
+		if (reply("ALLOCATE") == 0) {
+			ckfini(0);
+			errexit("%s", "");
+		}
 		if (allocdir(ROOTINO, ROOTINO, 0755) != ROOTINO)
 			errexit("CANNOT ALLOCATE ROOT INODE\n");
 		break;
@@ -85,8 +107,10 @@ pass2()
 				errexit("CANNOT ALLOCATE ROOT INODE\n");
 			break;
 		}
-		if (reply("CONTINUE") == 0)
-			errexit("");
+		if (reply("CONTINUE") == 0) {
+			ckfini(0);
+			errexit("%s", "");
+		}
 		break;
 
 	case FSTATE:
@@ -98,11 +122,13 @@ pass2()
 				errexit("CANNOT ALLOCATE ROOT INODE\n");
 			break;
 		}
-		if (reply("FIX") == 0)
-			errexit("");
+		if (reply("FIX") == 0) {
+			ckfini(0);
+			errexit("%s", "");
+		}
 		dp = ginode(ROOTINO);
-		dp->di_mode &= ~IFMT;
-		dp->di_mode |= IFDIR;
+		DIP_SET(dp, di_mode, DIP(dp, di_mode) & ~IFMT);
+		DIP_SET(dp, di_mode, DIP(dp, di_mode) | IFDIR);
 		inodirty();
 		break;
 
@@ -110,27 +136,26 @@ pass2()
 		break;
 
 	default:
-		errexit("BAD STATE %d FOR ROOT INODE", statemap[ROOTINO]);
+		errexit("BAD STATE %d FOR ROOT INODE\n", GET_ISTATE(ROOTINO));
 	}
-	statemap[ROOTINO] = DFOUND;
-	if (newinofmt) {
-		statemap[WINO] = FSTATE;
-		typemap[WINO] = DT_WHT;
-	}
+	SET_ISTATE(ROOTINO, DFOUND);
 	/*
 	 * Sort the directory list into disk block order.
 	 */
-	qsort((char *)inpsort, (size_t)inplast, sizeof *inpsort, blksort);
+	qsort(inpsort, (size_t)inplast, sizeof *inpsort, blksort);
 	/*
 	 * Check the integrity of each directory.
 	 */
 	memset(&curino, 0, sizeof(struct inodesc));
 	curino.id_type = DATA;
 	curino.id_func = pass2check;
-	dp = &dino;
 	inpend = &inpsort[inplast];
+	info_pos = 0;
+	info_max = inpend - inpsort;
+	info_fn = pass2_info1;
 	for (inpp = inpsort; inpp < inpend; inpp++) {
 		inp = *inpp;
+		info_pos ++;
 		if (inp->i_isize == 0)
 			continue;
 		if (inp->i_isize < MINDIRSIZE) {
@@ -138,28 +163,40 @@ pass2()
 			inp->i_isize = roundup(MINDIRSIZE, DIRBLKSIZ);
 			if (reply("FIX") == 1) {
 				dp = ginode(inp->i_number);
-				dp->di_size = inp->i_isize;
+				DIP_SET(dp, di_size, inp->i_isize);
 				inodirty();
-				dp = &dino;
 			}
 		} else if ((inp->i_isize & (DIRBLKSIZ - 1)) != 0) {
-			getpathname(pathbuf, inp->i_number, inp->i_number);
-			pwarn("DIRECTORY %s: LENGTH %d NOT MULTIPLE OF %d",
-				pathbuf, inp->i_isize, DIRBLKSIZ);
+			getpathname(pathbuf, sizeof pathbuf,
+			    inp->i_number, inp->i_number);
+			if (usedsoftdep)
+			        pfatal("%s %s: LENGTH %ld NOT MULTIPLE of %d",
+				       "DIRECTORY", pathbuf, (long)inp->i_isize,
+				       DIRBLKSIZ);
+			else
+				pwarn("%s %s: LENGTH %ld NOT MULTIPLE OF %d",
+				      "DIRECTORY", pathbuf, (long)inp->i_isize,
+				      DIRBLKSIZ);
 			if (preen)
 				printf(" (ADJUSTED)\n");
 			inp->i_isize = roundup(inp->i_isize, DIRBLKSIZ);
 			if (preen || reply("ADJUST") == 1) {
 				dp = ginode(inp->i_number);
-				dp->di_size = roundup(inp->i_isize, DIRBLKSIZ);
+				DIP_SET(dp, di_size, inp->i_isize);
 				inodirty();
-				dp = &dino;
 			}
 		}
-		memset(&dino, 0, sizeof(struct dinode));
-		dino.di_mode = IFDIR;
-		dp->di_size = inp->i_isize;
-		memcpy(&dp->di_db[0], &inp->i_blks[0], (size_t)inp->i_numblks);
+		memset(&dino, 0, sizeof(union dinode));
+		dp = &dino;
+		DIP_SET(dp, di_mode, IFDIR);
+		DIP_SET(dp, di_size, inp->i_isize);
+		for (i = 0;
+		     i < (inp->i_numblks<NDADDR ? inp->i_numblks : NDADDR);
+		     i++)
+			DIP_SET(dp, di_db[i], inp->i_blks[i]);
+		if (inp->i_numblks > NDADDR)
+			for (i = 0; i < NIADDR; i++)
+				DIP_SET(dp, di_ib[i], inp->i_blks[NDADDR + i]);
 		curino.id_number = inp->i_number;
 		curino.id_parent = inp->i_parent;
 		(void)ckinode(dp, &curino);
@@ -168,13 +205,13 @@ pass2()
 	 * Now that the parents of all directories have been found,
 	 * make another pass to verify the value of `..'
 	 */
+	info_pos = 0;
+	info_fn = pass2_info2;
 	for (inpp = inpsort; inpp < inpend; inpp++) {
 		inp = *inpp;
+		info_pos++;
 		if (inp->i_parent == 0 || inp->i_isize == 0)
 			continue;
-		if (statemap[inp->i_parent] == DFOUND &&
-		    statemap[inp->i_number] == DSTATE)
-			statemap[inp->i_number] = DFOUND;
 		if (inp->i_dotdot == inp->i_parent ||
 		    inp->i_dotdot == (ino_t)-1)
 			continue;
@@ -196,20 +233,34 @@ pass2()
 		inp->i_dotdot = inp->i_parent;
 		(void)changeino(inp->i_number, "..", inp->i_parent);
 	}
+	info_fn = NULL;
+	/*
+	 * Create a list of children for each directory.
+	 */
+	inpend = &inpsort[inplast];
+	for (inpp = inpsort; inpp < inpend; inpp++) {
+		inp = *inpp;
+		if (inp->i_parent == 0 ||
+		    inp->i_number == ROOTINO)
+			continue;
+		pinp = getinoinfo(inp->i_parent);
+		inp->i_parentp = pinp;
+		inp->i_sibling = pinp->i_child;
+		pinp->i_child = inp;
+	}
 	/*
 	 * Mark all the directories that can be found from the root.
 	 */
-	propagate();
+	propagate(ROOTINO);
 }
 
-int
-pass2check(idesc)
-	struct inodesc *idesc;
+static int
+pass2check(struct inodesc *idesc)
 {
-	register struct direct *dirp = idesc->id_dirp;
-	register struct inoinfo *inp;
+	struct direct *dirp = idesc->id_dirp;
+	struct inoinfo *inp;
 	int n, entrysize, ret = 0;
-	struct dinode *dp;
+	union dinode *dp;
 	char *errmsg;
 	struct direct proto;
 	char namebuf[MAXPATHLEN + 1];
@@ -219,10 +270,10 @@ pass2check(idesc)
 	 * If converting, set directory entry type.
 	 */
 	if (doinglevel2 && dirp->d_ino > 0 && dirp->d_ino < maxino) {
-		dirp->d_type = typemap[dirp->d_ino];
+		dirp->d_type = GET_ITYPE(dirp->d_ino);
 		ret |= ALTERED;
 	}
-	/* 
+	/*
 	 * check for "."
 	 */
 	if (idesc->id_entryno != 0)
@@ -249,7 +300,7 @@ pass2check(idesc)
 	else
 		proto.d_type = 0;
 	proto.d_namlen = 1;
-	(void)strcpy(proto.d_name, ".");
+	(void)strlcpy(proto.d_name, ".", sizeof proto.d_name);
 #	if BYTE_ORDER == LITTLE_ENDIAN
 		if (!newinofmt) {
 			u_char tmp;
@@ -292,7 +343,7 @@ chk1:
 	else
 		proto.d_type = 0;
 	proto.d_namlen = 2;
-	(void)strcpy(proto.d_name, "..");
+	(void)strlcpy(proto.d_name, "..", sizeof proto.d_name);
 #	if BYTE_ORDER == LITTLE_ENDIAN
 		if (!newinofmt) {
 			u_char tmp;
@@ -329,11 +380,11 @@ chk1:
 		fileerror(inp->i_parent, idesc->id_number, "MISSING '..'");
 		pfatal("CANNOT FIX, SECOND ENTRY IN DIRECTORY CONTAINS %s\n",
 			dirp->d_name);
-		inp->i_dotdot = (ino_t)-1;
+		inp->i_dotdot = -1;
 	} else if (dirp->d_reclen < entrysize) {
 		fileerror(inp->i_parent, idesc->id_number, "MISSING '..'");
 		pfatal("CANNOT FIX, INSUFFICIENT SPACE TO ADD '..'\n");
-		inp->i_dotdot = (ino_t)-1;
+		inp->i_dotdot = -1;
 	} else if (inp->i_parent != 0) {
 		/*
 		 * We know the parent, so fix now.
@@ -375,17 +426,9 @@ chk2:
 	if (dirp->d_ino > maxino) {
 		fileerror(idesc->id_number, dirp->d_ino, "I OUT OF RANGE");
 		n = reply("REMOVE");
-	} else if (newinofmt &&
-		   ((dirp->d_ino == WINO && dirp->d_type != DT_WHT) ||
-		    (dirp->d_ino != WINO && dirp->d_type == DT_WHT))) {
-		fileerror(idesc->id_number, dirp->d_ino, "BAD WHITEOUT ENTRY");
-		dirp->d_ino = WINO;
-		dirp->d_type = DT_WHT;
-		if (reply("FIX") == 1)
-			ret |= ALTERED;
 	} else {
 again:
-		switch (statemap[dirp->d_ino]) {
+		switch (GET_ISTATE(dirp->d_ino)) {
 		case USTATE:
 			if (idesc->id_entryno <= 2)
 				break;
@@ -397,9 +440,9 @@ again:
 		case FCLEAR:
 			if (idesc->id_entryno <= 2)
 				break;
-			if (statemap[dirp->d_ino] == FCLEAR)
+			if (GET_ISTATE(dirp->d_ino) == FCLEAR)
 				errmsg = "DUP/BAD";
-			else if (!preen)
+			else if (!preen && !usedsoftdep)
 				errmsg = "ZERO LENGTH DIRECTORY";
 			else {
 				n = 1;
@@ -409,39 +452,40 @@ again:
 			if ((n = reply("REMOVE")) == 1)
 				break;
 			dp = ginode(dirp->d_ino);
-			statemap[dirp->d_ino] =
-			    (dp->di_mode & IFMT) == IFDIR ? DSTATE : FSTATE;
-			lncntp[dirp->d_ino] = dp->di_nlink;
+			SET_ISTATE(dirp->d_ino, (DIP(dp, di_mode) & IFMT) ==
+			    IFDIR ? DSTATE : FSTATE);
+			lncntp[dirp->d_ino] = DIP(dp, di_nlink);
 			goto again;
 
 		case DSTATE:
-			if (statemap[idesc->id_number] == DFOUND)
-				statemap[dirp->d_ino] = DFOUND;
-			/* fall through */
-
 		case DFOUND:
 			inp = getinoinfo(dirp->d_ino);
 			if (inp->i_parent != 0 && idesc->id_entryno > 2) {
-				getpathname(pathbuf, idesc->id_number,
-				    idesc->id_number);
-				getpathname(namebuf, dirp->d_ino, dirp->d_ino);
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
+				getpathname(namebuf, sizeof namebuf,
+				    dirp->d_ino, dirp->d_ino);
 				pwarn("%s %s %s\n", pathbuf,
 				    "IS AN EXTRANEOUS HARD LINK TO DIRECTORY",
 				    namebuf);
-				if (preen)
-					printf(" (IGNORED)\n");
-				else if ((n = reply("REMOVE")) == 1)
+				if (preen) {
+					printf (" (REMOVED)\n");
+					n = 1;
+					break;
+				}
+				if ((n = reply("REMOVE")) == 1)
 					break;
 			}
 			if (idesc->id_entryno > 2)
 				inp->i_parent = idesc->id_number;
-			/* fall through */
+			/* FALLTHROUGH */
 
 		case FSTATE:
-			if (newinofmt && dirp->d_type != typemap[dirp->d_ino]) {
+			if (newinofmt && dirp->d_type !=
+			    GET_ITYPE(dirp->d_ino)) {
 				fileerror(idesc->id_number, dirp->d_ino,
 				    "BAD TYPE VALUE");
-				dirp->d_type = typemap[dirp->d_ino];
+				dirp->d_type = GET_ITYPE(dirp->d_ino);
 				if (reply("FIX") == 1)
 					ret |= ALTERED;
 			}
@@ -449,8 +493,8 @@ again:
 			break;
 
 		default:
-			errexit("BAD STATE %d FOR INODE I=%d",
-			    statemap[dirp->d_ino], dirp->d_ino);
+			errexit("BAD STATE %d FOR INODE I=%d\n",
+			    GET_ISTATE(dirp->d_ino), dirp->d_ino);
 		}
 	}
 	if (n == 0)
@@ -462,10 +506,17 @@ again:
 /*
  * Routine to sort disk blocks.
  */
-int
-blksort(inpp1, inpp2)
-	struct inoinfo **inpp1, **inpp2;
+static int
+blksort(const void *inpp1, const void *inpp2)
 {
+	daddr64_t d;
 
-	return ((*inpp1)->i_blks[0] - (*inpp2)->i_blks[0]);
+	d = (* (struct inoinfo **) inpp1)->i_blks[0] -
+	    (* (struct inoinfo **) inpp2)->i_blks[0];
+	if (d < 0)
+		return (-1);
+	else if (d > 0)
+		return (1);
+	else
+		return (0);
 }

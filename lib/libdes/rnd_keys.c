@@ -1,4 +1,4 @@
-/*	$Id: rnd_keys.c,v 1.1.1.1 1995/12/14 06:52:43 tholo Exp $	*/
+/*	$OpenBSD: rnd_keys.c,v 1.1.1.1 1997/06/29 10:24:52 provos Exp $	*/
 
 /* Copyright (C) 1993 Eric Young - see COPYING for more details */
 #include "des_locl.h"

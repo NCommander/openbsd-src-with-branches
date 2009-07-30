@@ -74,7 +74,6 @@ static struct per_thread_data *get_per_thread_data(void);
 int ap_proxy_hex2c(const char *x)
 {
     int i;
-#ifndef CHARSET_EBCDIC
     int ch;
 
     ch = x[0];
@@ -94,14 +93,10 @@ int ap_proxy_hex2c(const char *x)
     else
         i += ch - ('a' - 10);
     return i;
-#else                           /* CHARSET_EBCDIC */
-    return (1 == sscanf(x, "%2x", &i)) ? os_toebcdic[i & 0xFF] : 0;
-#endif                          /* CHARSET_EBCDIC */
 }
 
 void ap_proxy_c2hex(int ch, char *x)
 {
-#ifndef CHARSET_EBCDIC
     int i;
 
     x[0] = '%';
@@ -116,14 +111,6 @@ void ap_proxy_c2hex(int ch, char *x)
         x[2] = ('A' - 10) + i;
     else
         x[2] = '0' + i;
-#else                           /* CHARSET_EBCDIC */
-    static const char ntoa[] = {"0123456789ABCDEF"};
-    ch = os_toascii[ch & 0xFF];
-    x[0] = '%';
-    x[1] = ntoa[(ch >> 4) & 0x0F];
-    x[2] = ntoa[ch & 0x0F];
-    x[3] = '\0';
-#endif                          /* CHARSET_EBCDIC */
 }
 
 /*
@@ -219,6 +206,7 @@ char *
     int i;
     char *strp, *host, *url = *urlp;
     char *user = NULL, *password = NULL;
+    char *t = NULL, *u = NULL, *v = NULL;
 
     if (url[0] != '/' || url[1] != '/')
         return "Malformed URL";
@@ -257,39 +245,57 @@ char *
         *passwordp = password;
     }
 
-    strp = strrchr(host, ':');
-    if (strp != NULL) {
-        *(strp++) = '\0';
+    v = host;
+    if (*host == '['){
+	u = strrchr(host, ']');
+	if (u){
+	    host++;
+	    *u = '\0';
+	    v = u + 1;
+	}
+    }
+    t = strrchr(v, ':');
+    if (t){
+	*t = '\0';
+	strp = t + 1;
+    }
+    if (strp){
+	for (i=0; strp[i] != '\0'; i++)
+	    if (!ap_isdigit(strp[i]))
+		break;
 
-        for (i = 0; strp[i] != '\0'; i++)
-            if (!ap_isdigit(strp[i]))
-                break;
-
-        /* if (i == 0) the no port was given; keep default */
-        if (strp[i] != '\0') {
-            return "Bad port number in URL";
-        }
+	/* if (i == 0) the no port was given; keep default */
+	if (strp[i] != '\0') {
+	    return "Bad port number in URL";
+	}
         else if (i > 0) {
-            *port = atoi(strp);
-            if (*port > 65535)
-                return "Port number in URL > 65535";
-        }
+	    *port = atoi(strp);
+	    if (*port > 65535)
+		return "Port number in URL > 65535";
+	}
     }
     ap_str_tolower(host);       /* DNS names are case-insensitive */
     if (*host == '\0')
         return "Missing host in URL";
 /* check hostname syntax */
     for (i = 0; host[i] != '\0'; i++)
-        if (!ap_isdigit(host[i]) && host[i] != '.')
-            break;
+	if (!ap_isxdigit(host[i]) && host[i] != '.' && host[i] != ':')
+	    break;
     /* must be an IP address */
-#if defined(WIN32) || defined(NETWARE) || defined(TPF) || defined(BEOS)
-    if (host[i] == '\0' && (inet_addr(host) == -1))
+    if (host[i] == '\0') {
+	struct addrinfo hints, *res0;
+	int gai;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_flags = AI_NUMERICHOST;
+	if (gai = getaddrinfo(host, NULL, &hints, &res0)) {
+#if 0
+	    return gai_strerror(gai);
 #else
-    if (host[i] == '\0' && (ap_inet_addr(host) == -1 || inet_network(host) == -1))
+	    return "Bad IP address in URL";
 #endif
-    {
-        return "Bad IP address in URL";
+	}
+	freeaddrinfo(res0);
     }
 
 /*    if (strchr(host,'.') == NULL && domain != NULL)
@@ -471,12 +477,6 @@ long int ap_proxy_send_fb(BUFF *f, request_rec *r, cache_req *c, off_t len, int 
     if (c != NULL)
         c->written = 0;
 
-#ifdef CHARSET_EBCDIC
-    /* The cache copy is ASCII, not EBCDIC, even for text/html) */
-    ap_bsetflag(f, B_ASCII2EBCDIC | B_EBCDIC2ASCII, 0);
-    ap_bsetflag(con->client, B_ASCII2EBCDIC | B_EBCDIC2ASCII, 0);
-#endif
-
     /*
      * Since we are reading from one buffer and writing to another, it is
      * unsafe to do a soft_timeout here, at least until the proxy has its own
@@ -485,11 +485,6 @@ long int ap_proxy_send_fb(BUFF *f, request_rec *r, cache_req *c, off_t len, int 
 
     ap_kill_timeout(r);
 
-#if defined(WIN32) || defined(TPF) || defined(NETWARE)
-    /* works fine under win32, so leave it */
-    ap_hard_timeout("proxy send body", r);
-    alternate_timeouts = 0;
-#else
     /*
      * CHECKME! Since hard_timeout won't work in unix on sends with partial
      * cache completion, we have to alternate between hard_timeout for reads,
@@ -503,7 +498,6 @@ long int ap_proxy_send_fb(BUFF *f, request_rec *r, cache_req *c, off_t len, int 
         ap_hard_timeout("proxy send body", r);
         alternate_timeouts = 0;
     }
-#endif
 
     /*
      * Loop and ap_bread() while we can successfully read and write, or
@@ -782,59 +776,6 @@ int ap_proxy_liststr(const char *list, const char *key, char **val)
     return 0;
 }
 
-#ifdef CASE_BLIND_FILESYSTEM
-
-/*
- * On some platforms, the file system is NOT case sensitive. So, a == A
- * need to map to smaller set of characters
- */
-void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength)
-{
-    AP_MD5_CTX context;
-    unsigned char digest[16];
-    char tmp[26];
-    int i, k, d;
-    unsigned int x;
-    static const char enc_table[32] = "abcdefghijklmnopqrstuvwxyz012345";
-
-    ap_MD5Init(&context);
-    ap_MD5Update(&context, (const unsigned char *)it, strlen(it));
-    ap_MD5Final(digest, &context);
-
-/* encode 128 bits as 26 characters, using a modified uuencoding */
-/* the encoding is 5 bytes -> 8 characters
- * i.e. 128 bits is 3 x 5 bytes + 1 byte -> 3 * 8 characters + 2 characters
- */
-    for (i = 0, k = 0; i < 15; i += 5) {
-        x = (digest[i] << 24) | (digest[i + 1] << 16) | (digest[i + 2] << 8) | digest[i + 3];
-        tmp[k++] = enc_table[x >> 27];
-        tmp[k++] = enc_table[(x >> 22) & 0x1f];
-        tmp[k++] = enc_table[(x >> 17) & 0x1f];
-        tmp[k++] = enc_table[(x >> 12) & 0x1f];
-        tmp[k++] = enc_table[(x >> 7) & 0x1f];
-        tmp[k++] = enc_table[(x >> 2) & 0x1f];
-        x = ((x & 0x3) << 8) | digest[i + 4];
-        tmp[k++] = enc_table[x >> 5];
-        tmp[k++] = enc_table[x & 0x1f];
-    }
-/* one byte left */
-    x = digest[15];
-    tmp[k++] = enc_table[x >> 3];       /* use up 5 bits */
-    tmp[k++] = enc_table[x & 0x7];
-    /* now split into directory levels */
-
-    for (i = k = d = 0; d < ndepth; ++d) {
-        memcpy(&val[i], &tmp[k], nlength);
-        k += nlength;
-        val[i + nlength] = '/';
-        i += nlength + 1;
-    }
-    memcpy(&val[i], &tmp[k], 26 - k);
-    val[i + 26 - k] = '\0';
-}
-
-#else
-
 void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength)
 {
     AP_MD5_CTX context;
@@ -842,17 +783,8 @@ void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength)
     char tmp[22];
     int i, k, d;
     unsigned int x;
-#if defined(MPE) || (defined(AIX) && defined(__ps2__))
-    /*
-     * Believe it or not, AIX 1.x does not allow you to name a file '@', so
-     * hack around it in the encoding.
-     */
-    static const char enc_table[64] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_%";
-#else
     static const char enc_table[64] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_@";
-#endif
 
     ap_MD5Init(&context);
     ap_MD5Update(&context, (const unsigned char *)it, strlen(it));
@@ -885,8 +817,6 @@ void ap_proxy_hash(const char *it, char *val, int ndepth, int nlength)
     val[i + 22 - k] = '\0';
 }
 
-#endif                          /* CASE_BLIND_FILESYSTEM */
-
 /*
  * Converts 16 hex digits to a time integer
  */
@@ -915,15 +845,19 @@ int ap_proxy_hex2sec(const char *x)
 /*
  * Converts a time integer to 16 hex digits
  */
-void ap_proxy_sec2hex(int t, char *y)
+int ap_proxy_sec2hex(int t, char *y, int len)
 {
     int i, ch;
     unsigned int j = t;
 
     if (-1 == t) {
-        strcpy(y, "FFFFFFFFFFFFFFFF");
-        return;
+        if (strlcpy(y, "FFFFFFFFFFFFFFFF", len) > len)
+		return (-1);
+        return (0);
     }
+
+    if (len < 17)
+	return (-1);
 
     for (i = 15; i >= 0; i--) {
         ch = j & 0xF;
@@ -934,6 +868,7 @@ void ap_proxy_sec2hex(int t, char *y)
             y[i] = ch + '0';
     }
     y[16] = '\0';
+    return (0);
 }
 
 
@@ -1240,13 +1175,6 @@ int ap_proxy_is_domainname(struct dirconn_entry *This, pool *p)
     for (i = 0; ap_isalnum(addr[i]) || addr[i] == '-' || addr[i] == '.'; ++i)
         continue;
 
-#if 0
-    if (addr[i] == ':') {
-        fprintf(stderr, "@@@@ handle optional port in proxy_is_domainname()\n");
-        /* @@@@ handle optional port */
-    }
-#endif
-
     if (addr[i] != '\0')
         return 0;
 
@@ -1293,13 +1221,6 @@ int ap_proxy_is_hostname(struct dirconn_entry *This, pool *p)
     /* rfc1035 says DNS names must consist of "[-a-zA-Z0-9]" and '.' */
     for (i = 0; ap_isalnum(addr[i]) || addr[i] == '-' || addr[i] == '.'; ++i);
 
-#if 0
-    if (addr[i] == ':') {
-        fprintf(stderr, "@@@@ handle optional port in proxy_is_hostname()\n");
-        /* @@@@ handle optional port */
-    }
-#endif
-
     if (addr[i] != '\0' || ap_proxy_host2addr(addr, &host) != NULL)
         return 0;
 
@@ -1327,15 +1248,6 @@ static int proxy_match_hostname(struct dirconn_entry *This, request_rec *r)
     h2_len = strlen(host2);
     h1_len = strlen(host);
 
-#if 0
-    unsigned long *ip_list;
-
-    /* Try to deal with multiple IP addr's for a host */
-    for (ip_list = *This->hostentry->h_addr_list; *ip_list != 0UL; ++ip_list)
-        if (*ip_list == ? ? ? ? ? ? ? ? ? ? ? ? ?)
-            return 1;
-#endif
-
     /* Ignore trailing dots in host2 comparison: */
     while (h2_len > 0 && host2[h2_len - 1] == '.')
         --h2_len;
@@ -1359,22 +1271,41 @@ static int proxy_match_word(struct dirconn_entry *This, request_rec *r)
     return host != NULL && strstr(host, This->name) != NULL;
 }
 
-int ap_proxy_doconnect(int sock, struct sockaddr_in *addr, request_rec *r)
+int ap_proxy_doconnect(int sock, struct sockaddr *addr, request_rec *r)
 {
     int i;
+    int salen;
+    char hbuf[NI_MAXHOST], pbuf[NI_MAXSERV];
+#ifdef NI_WITHSCOPEID
+    const int niflags = NI_NUMERICHOST | NI_NUMERICSERV | NI_WITHSCOPEID;
+#else
+    const int niflags = NI_NUMERICHOST | NI_NUMERICSERV;
+#endif
 
     ap_hard_timeout("proxy connect", r);
+#ifdef HAVE_SOCKADDR_LEN
+    salen = addr->sa_len;
+#else
+    switch (addr->sa_family) {
+    case AF_INET6:
+	salen = sizeof(struct sockaddr_in6);
+	break;
+    default:
+	salen = sizeof(struct sockaddr_in);
+	break;
+    }
+#endif
     do {
-        i = connect(sock, (struct sockaddr *)addr, sizeof(struct sockaddr_in));
-#if defined(WIN32) || defined(NETWARE)
-        if (i == SOCKET_ERROR)
-            errno = WSAGetLastError();
-#endif                          /* WIN32 */
+	i = connect(sock,  addr, salen);
     } while (i == -1 && errno == EINTR);
     if (i == -1) {
+	if (getnameinfo(addr, salen, hbuf, sizeof(hbuf), pbuf, sizeof(pbuf),
+		niflags) != 0) {
+	    strcpy(hbuf, "?");
+	    strcpy(pbuf, "?");
+	}
         ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
-                      "proxy connect to %s port %d failed",
-                      inet_ntoa(addr->sin_addr), ntohs(addr->sin_port));
+                      "proxy connect to %s port %s failed", hbuf, pbuf);
     }
     ap_kill_timeout(r);
 
@@ -1488,7 +1419,7 @@ void ap_proxy_clear_connection(pool *p, table *headers)
             name = next;
             while (*next && !ap_isspace(*next) && (*next != ','))
                 ++next;
-            while (*next && (ap_isspace(*next) || (*next == ','))) {
+            while (ap_isspace(*next) || (*next == ',')) {
                 *next = '\0';
                 ++next;
             }
@@ -1639,45 +1570,8 @@ int ap_proxy_read_response_line(BUFF *f, request_rec *r, char *buffer, int size,
 
 }
 
-
-#if defined WIN32
-
-static DWORD tls_index;
-
-BOOL WINAPI DllMain(HINSTANCE dllhandle, DWORD reason, LPVOID reserved)
-{
-    LPVOID memptr;
-
-    switch (reason) {
-    case DLL_PROCESS_ATTACH:
-        tls_index = TlsAlloc();
-    case DLL_THREAD_ATTACH:     /* intentional no break */
-        TlsSetValue(tls_index, malloc(sizeof(struct per_thread_data)));
-        break;
-    case DLL_THREAD_DETACH:
-        memptr = TlsGetValue(tls_index);
-        if (memptr) {
-            free(memptr);
-            TlsSetValue(tls_index, 0);
-        }
-        break;
-    }
-
-    return TRUE;
-}
-
-#endif
-
 static struct per_thread_data *get_per_thread_data(void)
 {
-#if defined(WIN32)
-
-    return (struct per_thread_data *)TlsGetValue(tls_index);
-
-#else
-
     static APACHE_TLS struct per_thread_data sptd;
     return &sptd;
-
-#endif
 }

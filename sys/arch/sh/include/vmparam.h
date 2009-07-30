@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: vmparam.h,v 1.6 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.17 2006/03/04 01:55:03 uwe Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -42,16 +35,20 @@
 #include <sys/queue.h>
 
 /* Virtual address map. */
-#define	VM_MIN_ADDRESS		((vaddr_t)0)
+#define	VM_MIN_ADDRESS		((vaddr_t)PAGE_SIZE)
 #define	VM_MAXUSER_ADDRESS	((vaddr_t)0x7ffff000)
 #define	VM_MAX_ADDRESS		((vaddr_t)0x7ffff000)
 #define	VM_MIN_KERNEL_ADDRESS	((vaddr_t)0xc0000000)
 #define	VM_MAX_KERNEL_ADDRESS	((vaddr_t)0xe0000000)
 
+/* map PIE below 4MB (non-pie link address) to avoid mmap pressure */
+#define VM_PIE_MIN_ADDR		PAGE_SIZE
+#define VM_PIE_MAX_ADDR		0x400000UL
+
 /* top of stack */
 #define	USRSTACK		VM_MAXUSER_ADDRESS
 
-/* Virtual memory resoruce limit. */
+/* Virtual memory resource limit. */
 #define	MAXTSIZ			(64 * 1024 * 1024)	/* max text size */
 #ifndef MAXDSIZ
 #define	MAXDSIZ			(512 * 1024 * 1024)	/* max data size */

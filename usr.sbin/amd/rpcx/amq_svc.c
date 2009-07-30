@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,18 +32,22 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq_svc.c	8.1 (Berkeley) 6/6/93
- *	$Id: amq_svc.c,v 1.3 1994/06/13 20:50:50 mycroft Exp $
+ *	$Id: amq_svc.c,v 1.6 2003/06/02 23:36:52 millert Exp $
  *
  */
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <syslog.h>
 
 #include "am.h"
 #include "amq.h"
 extern bool_t xdr_amq_mount_info_qelem();
 
 void
-amq_program_1(rqstp, transp)
-	struct svc_req *rqstp;
-	SVCXPRT *transp;
+amq_program_1(struct svc_req *rqstp, SVCXPRT *transp)
 {
 	union {
 		amq_string amqproc_mnttree_1_arg;
@@ -58,6 +58,17 @@ amq_program_1(rqstp, transp)
 	char *result;
 	bool_t (*xdr_argument)(), (*xdr_result)();
 	char *(*local)();
+	extern SVCXPRT *lamqp;
+
+	if (transp != lamqp) {
+		struct sockaddr_in *fromsin = svc_getcaller(transp);
+
+		syslog(LOG_WARNING,
+		    "non-local amq attempt (might be from %s)",
+		    inet_ntoa(fromsin->sin_addr));
+		svcerr_noproc(transp);
+		return;
+	}
 
 	switch (rqstp->rq_proc) {
 	case AMQPROC_NULL:
@@ -119,7 +130,7 @@ amq_program_1(rqstp, transp)
 		return;
 	}
 	bzero((char *)&argument, sizeof(argument));
-	if (!svc_getargs(transp, xdr_argument, &argument)) {
+	if (!svc_getargs(transp, xdr_argument, (char *)&argument)) {
 		svcerr_decode(transp);
 		return;
 	}
@@ -127,9 +138,8 @@ amq_program_1(rqstp, transp)
 	if (result != NULL && !svc_sendreply(transp, xdr_result, result)) {
 		svcerr_systemerr(transp);
 	}
-	if (!svc_freeargs(transp, xdr_argument, &argument)) {
+	if (!svc_freeargs(transp, xdr_argument, (char *)&argument)) {
 		plog(XLOG_FATAL, "unable to free rpc arguments in amqprog_1");
 		going_down(1);
 	}
 }
-

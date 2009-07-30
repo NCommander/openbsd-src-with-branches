@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "typeclass.h"
 #include "defaults.h"
 #include "toplev.h"
+#include "protector.h"
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -1469,7 +1470,7 @@ move_by_pieces (to, from, len, align)
 
       if (USE_LOAD_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_from)
 	{
-	  data.from_addr = copy_addr_to_reg (plus_constant (from_addr, len));
+	  data.from_addr = copy_addr_to_reg (plus_constant (from_addr, len-GET_MODE_SIZE (mode)));
 	  data.autinc_from = 1;
 	  data.explicit_inc_from = -1;
 	}
@@ -1483,7 +1484,7 @@ move_by_pieces (to, from, len, align)
 	data.from_addr = copy_addr_to_reg (from_addr);
       if (USE_STORE_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_to)
 	{
-	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
+	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len-GET_MODE_SIZE (mode)));
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
 	}
@@ -1601,9 +1602,9 @@ move_by_pieces_1 (genfun, mode, data)
       MEM_IN_STRUCT_P (from1) = data->from_struct;
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
-	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
+	if (data->explicit_inc_to-- < -1) emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
       if (HAVE_PRE_DECREMENT && data->explicit_inc_from < 0)
-	emit_insn (gen_add2_insn (data->from_addr, GEN_INT (-size)));
+	if (data->explicit_inc_from-- < -1) emit_insn (gen_add2_insn (data->from_addr, GEN_INT (-size)));
 
       emit_insn ((*genfun) (to1, from1));
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
@@ -2314,7 +2315,7 @@ clear_by_pieces (to, len, align)
 
       if (USE_STORE_PRE_DECREMENT (mode) && data.reverse && ! data.autinc_to)
 	{
-	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
+	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len-GET_MODE_SIZE (mode)));
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
 	}
@@ -2384,7 +2385,7 @@ clear_by_pieces_1 (genfun, mode, data)
       MEM_IN_STRUCT_P (to1) = data->to_struct;
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
-	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
+	if (data->explicit_inc_to-- < -1) emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
 
       emit_insn ((*genfun) (to1, const0_rtx));
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
@@ -5161,7 +5162,9 @@ force_operand (value, target)
 	  && GET_CODE (XEXP (value, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (value, 0), 0)) == REG
 	  && REGNO (XEXP (XEXP (value, 0), 0)) >= FIRST_VIRTUAL_REGISTER
-	  && REGNO (XEXP (XEXP (value, 0), 0)) <= LAST_VIRTUAL_REGISTER)
+	  && REGNO (XEXP (XEXP (value, 0), 0)) <= LAST_VIRTUAL_REGISTER
+	  && (!flag_propolice_protection
+	      || XEXP (XEXP (value, 0), 0) != virtual_stack_vars_rtx))
 	{
 	  rtx temp = expand_binop (GET_MODE (value), binoptab,
 				   XEXP (XEXP (value, 0), 0), op2,
@@ -5559,6 +5562,8 @@ check_max_integer_computation_mode (exp)
     }
 }
 #endif
+extern int flag_trampolines;
+extern int warn_trampolines;
 
 
 /* expand_expr: generate code for computing expression EXP.
@@ -7076,7 +7081,8 @@ expand_expr (exp, target, tmode, modifier)
       /* If adding to a sum including a constant,
 	 associate it to put the constant outside.  */
       if (GET_CODE (op1) == PLUS
-	  && CONSTANT_P (XEXP (op1, 1)))
+	  && CONSTANT_P (XEXP (op1, 1))
+	  && !(flag_propolice_protection && (contains_fp (op0) || contains_fp (op1))))
 	{
 	  rtx constant_term = const0_rtx;
 
@@ -8055,6 +8061,15 @@ expand_expr (exp, target, tmode, modifier)
 	  && ! DECL_NO_STATIC_CHAIN (TREE_OPERAND (exp, 0))
 	  && ! TREE_STATIC (exp))
 	{
+	  if (!flag_trampolines)
+	    {
+	      error_with_decl(exp, "trampoline code generation is not allowed without -ftrampolines");
+	      return const0_rtx;
+	    }
+	  if (warn_trampolines)
+	    {
+	      warning_with_decl(exp, "local function address taken, needing trampoline generation");
+	    }
 	  op0 = trampoline_address (TREE_OPERAND (exp, 0));
 	  op0 = force_operand (op0, target);
 	}

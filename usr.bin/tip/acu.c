@@ -1,4 +1,5 @@
-/*	$NetBSD: acu.c,v 1.3 1994/12/08 09:30:39 jtc Exp $	*/
+/*	$OpenBSD: acu.c,v 1.15 2007/05/15 19:42:05 moritz Exp $	*/
+/*	$NetBSD: acu.c,v 1.4 1996/12/29 10:34:03 cgd Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,15 +34,15 @@
 #if 0
 static char sccsid[] = "@(#)acu.c	8.1 (Berkeley) 6/6/93";
 #endif
-static char rcsid[] = "$NetBSD: acu.c,v 1.3 1994/12/08 09:30:39 jtc Exp $";
+static const char rcsid[] = "$OpenBSD: acu.c,v 1.15 2007/05/15 19:42:05 moritz Exp $";
 #endif /* not lint */
 
 #include "tip.h"
 
-static acu_t *acu = NOACU;
+static acu_t *acu = NULL;
 static int conflag;
-static void acuabort();
-static acu_t *acutype();
+static void acuabort(int);
+static acu_t *acutype(char *);
 static jmp_buf jmpbuf;
 /*
  * Establish connection for tip
@@ -54,7 +51,7 @@ static jmp_buf jmpbuf;
  * The phone numbers are in PN, and the call unit is in CU.
  *
  * If the PN is an '@', then we consult the PHONES file for
- *   the phone numbers.  This file is /etc/phones, unless overriden
+ *   the phone numbers.  This file is /etc/phones, unless overridden
  *   by an exported shell variable.
  *
  * The data base files must be in the format:
@@ -64,18 +61,18 @@ static jmp_buf jmpbuf;
  *   found in the file).
  */
 char *
-connect()
+con(void)
 {
-	register char *cp = PN;
+	char *cp = PN;
 	char *phnum, string[256];
-	FILE *fd;
-	int tried = 0;
+	FILE *fp;
+	volatile int tried = 0;
 
 	if (!DU) {		/* regular connect message */
-		if (CM != NOSTR)
-			pwrite(FD, CM, size(CM));
+		if (CM != NULL)
+			parwrite(FD, CM, size(CM));
 		logent(value(HOST), "", DV, "call completed");
-		return (NOSTR);
+		return (NULL);
 	}
 	/*
 	 * @ =>'s use data base in PHONES environment variable
@@ -88,114 +85,108 @@ connect()
 		signal(SIGQUIT, SIG_IGN);
 		printf("\ncall aborted\n");
 		logent(value(HOST), "", "", "call aborted");
-		if (acu != NOACU) {
-			boolean(value(VERBOSE)) = FALSE;
+		if (acu != NULL) {
+			setboolean(value(VERBOSE), FALSE);
 			if (conflag)
-				disconnect(NOSTR);
+				disconnect(NULL);
 			else
 				(*acu->acu_abort)();
 		}
 		return ("interrupt");
 	}
-	if ((acu = acutype(AT)) == NOACU)
+	if ((acu = acutype(AT)) == NULL)
 		return ("unknown ACU type");
 	if (*cp != '@') {
 		while (*cp) {
-			for (phnum = cp; *cp && *cp != ','; cp++)
-				;
-			if (*cp)
+			phnum = cp;
+			cp += strcspn(cp, ",");
+			if (*cp != '\0')
 				*cp++ = '\0';
-			
-			if (conflag = (*acu->acu_dialer)(phnum, CU)) {
-				if (CM != NOSTR)
-					pwrite(FD, CM, size(CM));
-				logent(value(HOST), phnum, acu->acu_name,
-					"call completed");
-				return (NOSTR);
-			} else
-				logent(value(HOST), phnum, acu->acu_name,
-					"call failed");
+
+			if (strlen(phnum) == 0)
+				continue;
+
+			conflag = (*acu->acu_dialer)(phnum, CU);
+			if (conflag)
+				break;
+
+			logent(value(HOST), phnum, acu->acu_name, "call failed");
 			tried++;
 		}
 	} else {
-		if ((fd = fopen(PH, "r")) == NOFILE) {
+		if ((fp = fopen(PH, "r")) == NULL) {
 			printf("%s: ", PH);
 			return ("can't open phone number file");
 		}
-		while (fgets(string, sizeof(string), fd) != NOSTR) {
-			for (cp = string; !any(*cp, " \t\n"); cp++)
-				;
-			if (*cp == '\n') {
-				fclose(fd);
-				return ("unrecognizable host name");
-			}
-			*cp++ = '\0';
-			if (strcmp(string, value(HOST)))
-				continue;
-			while (any(*cp, " \t"))
-				cp++;
-			if (*cp == '\n') {
-				fclose(fd);
-				return ("missing phone number");
-			}
-			for (phnum = cp; *cp && *cp != ',' && *cp != '\n'; cp++)
-				;
-			if (*cp)
+		while (fgets(string, sizeof(string), fp) != NULL) {
+			cp = &string[strcspn(string, " \t\n")];
+			if (*cp != '\0')
 				*cp++ = '\0';
-			
-			if (conflag = (*acu->acu_dialer)(phnum, CU)) {
-				fclose(fd);
-				if (CM != NOSTR)
-					pwrite(FD, CM, size(CM));
-				logent(value(HOST), phnum, acu->acu_name,
-					"call completed");
-				return (NOSTR);
-			} else
-				logent(value(HOST), phnum, acu->acu_name,
-					"call failed");
+
+			if (strcmp(string, value(HOST)) != 0)
+				continue;
+
+			cp += strspn(cp, " \t\n");
+			phnum = cp;
+			*(cp + strcspn(cp, ",\n")) = '\0';
+
+			if (strlen(phnum) == 0)
+				continue;
+
+			conflag = (*acu->acu_dialer)(phnum, CU);
+			if (conflag)
+				break;
+
+			logent(value(HOST), phnum, acu->acu_name, "call failed");
 			tried++;
 		}
-		fclose(fd);
+		fclose(fp);
 	}
-	if (!tried)
+	if (conflag) {
+		if (CM != NULL)
+			parwrite(FD, CM, size(CM));
+		logent(value(HOST), phnum, acu->acu_name, "call completed");
+		return (NULL);
+	} else if (!tried) {
 		logent(value(HOST), "", acu->acu_name, "missing phone number");
-	else
+		return ("missing phone number");
+	} else {
 		(*acu->acu_abort)();
-	return (tried ? "call failed" : "missing phone number");
+		return ("call failed");
+	}
 }
 
-disconnect(reason)
-	char *reason;
+void
+disconnect(char *reason)
 {
 	if (!conflag) {
 		logent(value(HOST), "", DV, "call terminated");
 		return;
 	}
-	if (reason == NOSTR) {
+	if (reason == NULL) {
 		logent(value(HOST), "", acu->acu_name, "call terminated");
 		if (boolean(value(VERBOSE)))
 			printf("\r\ndisconnecting...");
-	} else 
+	} else
 		logent(value(HOST), "", acu->acu_name, reason);
 	(*acu->acu_disconnect)();
 }
 
 static void
-acuabort(s)
+acuabort(int s)
 {
 	signal(s, SIG_IGN);
 	longjmp(jmpbuf, 1);
 }
 
 static acu_t *
-acutype(s)
-	register char *s;
+acutype(char *s)
 {
-	register acu_t *p;
+	acu_t *p;
 	extern acu_t acutable[];
 
 	for (p = acutable; p->acu_name != '\0'; p++)
 		if (!strcmp(s, p->acu_name))
 			return (p);
-	return (NOACU);
+	return (NULL);
 }

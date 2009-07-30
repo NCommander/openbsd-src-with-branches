@@ -1,4 +1,4 @@
-/*	$Id: pass2.h,v 1.98 2006/12/22 06:23:09 ragge Exp $	*/
+/*	$OpenBSD: pass2.h,v 1.8 2008/04/11 20:45:52 stefan Exp $	*/
 /*
  * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
  *
@@ -222,7 +222,6 @@ extern	int p2autooff, p2maxautooff;
 extern	NODE
 	*talloc(void),
 	*eread(void),
-	*tcopy(NODE *),
 	*mklnode(int, CONSZ, int, TWORD),
 	*mkbinode(int, NODE *, NODE *, TWORD),
 	*mkunode(int, NODE *, int, TWORD),
@@ -230,17 +229,12 @@ extern	NODE
 
 void eoftn(struct interpass_prolog *);
 void prologue(struct interpass_prolog *);
-void setlocc(int locctr);
 void e2print(NODE *p, int down, int *a, int *b);
 void myoptim(struct interpass *);
 void cbgen(int op, int label);
-struct optab *nxtmatch(struct optab *);
-int chkmatch(NODE *, int, int, int);
 int match(NODE *p, int cookie);
-int nmatch(NODE *p, int what);
-#ifndef special
+int acceptable(struct optab *);
 int special(NODE *, int);
-#endif
 int setasg(NODE *, int);
 int setuni(NODE *, int);
 int sucomp(NODE *);
@@ -252,7 +246,6 @@ void comperr(char *str, ...);
 void genregs(NODE *p);
 void ngenregs(struct interpass *);
 NODE *store(NODE *);
-void gencall(NODE *, NODE *prev);
 struct interpass *ipnode(NODE *);
 void deflab(int);
 void rmove(int, int, TWORD);
@@ -271,8 +264,16 @@ void lastcall(NODE *);
 void myreader(struct interpass *pole);
 int oregok(NODE *p, int sharp);
 void myormake(NODE *);
-
+int *livecall(NODE *);
+void prtreg(FILE *, NODE *);
 char *prcook(int);
+int myxasm(struct interpass *ip, NODE *p);
+int xasmcode(char *s);
+int freetemp(int k);
+int rewfld(NODE *p);
+void canon(NODE *);
+void mycanon(NODE *);
+void oreg2(NODE *p);
 
 void conput(FILE *, NODE *);
 
@@ -290,6 +291,15 @@ extern int regK[];
 #define	CLASSD	4
 #define	CLASSE	5
 
+/* used when parsing xasm codes */
+#define	XASMVAL(x)	((x) & 0377)	/* get val from codeword */
+#define	XASMASG		0x100	/* = */
+#define	XASMCONSTR	0x200	/* & */
+#define	XASMINOUT	0x400	/* + */
+#define XASMALL		(XASMASG|XASMCONSTR|XASMINOUT)
+#define	XASMISINP(cw)	(((cw) & XASMASG) == 0)		/* input operand */
+#define	XASMISOUT(cw)	((cw) & (XASMASG|XASMINOUT))	/* output operand */
+
 /* routines to handle double indirection */
 #ifdef R2REGS
 void makeor2(NODE *p, NODE *q, int, int);
@@ -299,8 +309,8 @@ int offset(NODE *p, int);
 
 extern	int lineno;
 extern	int fldshf, fldsz;
-extern	int lflag, x2debug, udebug, e2debug, odebug, mdebug;
-extern	int rdebug, radebug, t2debug, s2debug, b2debug, c2debug;
+extern	int lflag, x2debug, udebug, e2debug, odebug;
+extern	int rdebug, t2debug, s2debug, b2debug, c2debug;
 extern	int kflag;
 #ifdef FORT
 extern	int Oflag;
@@ -360,6 +370,9 @@ extern	char *opst[];	/* a vector containing names for ops */
 #define	TBREGS	0
 #endif
 #define	REGBIT(x) (1 << (x))
+#ifndef PERMTYPE
+#define	PERMTYPE(a)	(INT)
+#endif
 
 void emit(struct interpass *);
 void optimize(struct interpass *);
@@ -386,12 +399,12 @@ struct basicblock {
 
 struct labelinfo {
 	struct basicblock **arr;
-	unsigned int size;
+	int size;
 	unsigned int low;
 };
 
 struct bblockinfo {
-	unsigned int size;
+	int size;
 	struct basicblock **arr;
 };
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: setlogin.S,v 1.3 1996/11/13 22:05:14 niklas Exp $	*/
 /*	$NetBSD: setlogin.S,v 1.1 1995/02/10 17:50:39 cgd Exp $	*/
 
 /*

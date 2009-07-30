@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2006 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -13,13 +13,19 @@
 
 #include <sendmail.h>
 
-SM_RCSID("@(#)$Sendmail: parseaddr.c,v 8.340 2001/09/04 22:43:04 ca Exp $")
+SM_RCSID("@(#)$Sendmail: parseaddr.c,v 8.403 2008/02/08 02:27:35 ca Exp $")
+
+#include <sm/sendmail.h>
+#include "map.h"
 
 static void	allocaddr __P((ADDRESS *, int, char *, ENVELOPE *));
 static int	callsubr __P((char**, int, ENVELOPE *));
 static char	*map_lookup __P((STAB *, char *, char **, int *, ENVELOPE *));
 static ADDRESS	*buildaddr __P((char **, ADDRESS *, int, ENVELOPE *));
-static bool	hasctrlchar __P((register char *, bool));
+static bool	hasctrlchar __P((register char *, bool, bool));
+
+/* replacement for illegal characters in addresses */
+#define BAD_CHAR_REPLACEMENT	'?'
 
 /*
 **  PARSEADDR -- Parse an address
@@ -87,7 +93,8 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 	if (delimptr == NULL)
 		delimptr = &delimptrbuf;
 
-	pvp = prescan(addr, delim, pvpbuf, sizeof pvpbuf, delimptr, NULL);
+	pvp = prescan(addr, delim, pvpbuf, sizeof(pvpbuf), delimptr,
+			ExtTokenTab, false);
 	if (pvp == NULL)
 	{
 		if (tTd(20, 1))
@@ -138,11 +145,18 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 
 	a = buildaddr(pvp, a, flags, e);
 
-	if (hasctrlchar(a->q_user, isrcpt))
+	if (hasctrlchar(a->q_user, isrcpt, true))
 	{
 		if (tTd(20, 1))
 			sm_dprintf("parseaddr-->bad q_user\n");
-		return NULL;
+
+		/*
+		**  Just mark the address as bad so DSNs work.
+		**  hasctrlchar() has to make sure that the address
+		**  has been sanitized, e.g., shortened.
+		*/
+
+		a->q_state = QS_BADADDR;
 	}
 
 	/*
@@ -152,7 +166,11 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 
 	allocaddr(a, flags, addr, e);
 	if (QS_IS_BADADDR(a->q_state))
+	{
+		/* weed out bad characters in the printable address too */
+		(void) hasctrlchar(a->q_paddr, isrcpt, false);
 		return a;
+	}
 
 	/*
 	**  Select a queue directory for recipient addresses.
@@ -162,7 +180,7 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 	*/
 
 	if ((a->q_qgrp == NOAQGRP || a->q_qgrp == ENVQGRP) &&
-	    !bitset(RF_SENDERADDR|RF_HEADERADDR, flags) &&
+	    !bitset(RF_SENDERADDR|RF_HEADERADDR|RF_RM_ADDR, flags) &&
 	    OpMode != MD_INITALIAS)
 	{
 		int r;
@@ -199,7 +217,7 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 		if (e->e_sendmode == SM_DEFER)
 			msg = "Deferring message until queue run";
 		if (tTd(20, 1))
-			sm_dprintf("parseaddr: queuing message\n");
+			sm_dprintf("parseaddr: queueing message\n");
 		message(msg);
 		if (e->e_message == NULL && e->e_sendmode != SM_DEFER)
 			e->e_message = sm_rpool_strdup_x(e->e_rpool, msg);
@@ -214,12 +232,12 @@ parseaddr(addr, a, flags, delim, delimptr, e, isrcpt)
 	if (tTd(20, 1))
 	{
 		sm_dprintf("parseaddr-->");
-		printaddr(a, false);
+		printaddr(sm_debug_file(), a, false);
 	}
 
 	return a;
 }
-/*
+/*
 **  INVALIDADDR -- check for address containing characters used for macros
 **
 **	Parameters:
@@ -242,6 +260,7 @@ invalidaddr(addr, delimptr, isrcpt)
 {
 	bool result = false;
 	char savedelim = '\0';
+	char *b = addr;
 	int len = 0;
 
 	if (delimptr != NULL)
@@ -253,16 +272,20 @@ invalidaddr(addr, delimptr, isrcpt)
 	}
 	for (; *addr != '\0'; addr++)
 	{
-		if ((*addr & 0340) == 0200)
+		if (!EightBitAddrOK && (*addr & 0340) == 0200)
 		{
 			setstat(EX_USAGE);
 			result = true;
-			break;
+			*addr = BAD_CHAR_REPLACEMENT;
 		}
 		if (++len > MAXNAME - 1)
 		{
-			usrerr("553 5.1.0 Address too long (%d bytes max)",
-			       MAXNAME - 1);
+			char saved = *addr;
+
+			*addr = '\0';
+			usrerr("553 5.1.0 Address \"%s\" too long (%d bytes max)",
+			       b, MAXNAME - 1);
+			*addr = saved;
 			result = true;
 			goto delim;
 		}
@@ -270,16 +293,18 @@ invalidaddr(addr, delimptr, isrcpt)
 	if (result)
 	{
 		if (isrcpt)
-			usrerr("501 5.1.3 Syntax error in mailbox address");
+			usrerr("501 5.1.3 8-bit character in mailbox address \"%s\"",
+			       b);
 		else
-			usrerr("501 5.1.7 Syntax error in mailbox address");
+			usrerr("501 5.1.7 8-bit character in mailbox address \"%s\"",
+			       b);
 	}
 delim:
 	if (delimptr != NULL && savedelim != '\0')
 		*delimptr = savedelim;	/* restore old character at delimptr */
 	return result;
 }
-/*
+/*
 **  HASCTRLCHAR -- check for address containing meta-characters
 **
 **  Checks that the address contains no meta-characters, and contains
@@ -290,6 +315,8 @@ delim:
 **		addr -- the address to check.
 **		isrcpt -- true if the address is for a recipient; false
 **			indicates a from.
+**		complain -- true if an error should issued if the address
+**			is invalid and should be "repaired".
 **
 **	Returns:
 **		true -- if the address has any "wierd" characters or
@@ -298,22 +325,35 @@ delim:
 */
 
 static bool
-hasctrlchar(addr, isrcpt)
+hasctrlchar(addr, isrcpt, complain)
 	register char *addr;
-	bool isrcpt;
+	bool isrcpt, complain;
 {
-	bool result = false;
-	int len = 0;
 	bool quoted = false;
+	int len = 0;
+	char *result = NULL;
+	char *b = addr;
 
 	if (addr == NULL)
 		return false;
 	for (; *addr != '\0'; addr++)
 	{
-		if (!quoted && (*addr < 32 || *addr == 127))
+		if (++len > MAXNAME - 1)
 		{
-			result = true;	/* a non-printable */
-			break;
+			if (complain)
+			{
+				(void) shorten_rfc822_string(b, MAXNAME - 1);
+				usrerr("553 5.1.0 Address \"%s\" too long (%d bytes max)",
+				       b, MAXNAME - 1);
+				return true;
+			}
+			result = "too long";
+		}
+		if (!EightBitAddrOK && !quoted && (*addr < 32 || *addr == 127))
+		{
+			result = "non-printable character";
+			*addr = BAD_CHAR_REPLACEMENT;
+			continue;
 		}
 		if (*addr == '"')
 			quoted = !quoted;
@@ -322,35 +362,33 @@ hasctrlchar(addr, isrcpt)
 			/* XXX Generic problem: no '\0' in strings. */
 			if (*++addr == '\0')
 			{
-				result = true;
+				result = "trailing \\ character";
+				*--addr = BAD_CHAR_REPLACEMENT;
 				break;
 			}
 		}
-		if ((*addr & 0340) == 0200)
+		if (!EightBitAddrOK && (*addr & 0340) == 0200)
 		{
 			setstat(EX_USAGE);
-			result = true;
-			break;
-		}
-		if (++len > MAXNAME - 1)
-		{
-			usrerr("553 5.1.0 Address too long (%d bytes max)",
-			       MAXNAME - 1);
-			return true;
+			result = "8-bit character";
+			*addr = BAD_CHAR_REPLACEMENT;
+			continue;
 		}
 	}
 	if (quoted)
-		result = true; /* unbalanced quote */
-	if (result)
+		result = "unbalanced quote"; /* unbalanced quote */
+	if (result != NULL && complain)
 	{
 		if (isrcpt)
-			usrerr("501 5.1.3 Syntax error in mailbox address");
+			usrerr("501 5.1.3 Syntax error in mailbox address \"%s\" (%s)",
+			       b, result);
 		else
-			usrerr("501 5.1.7 Syntax error in mailbox address");
+			usrerr("501 5.1.7 Syntax error in mailbox address \"%s\" (%s)",
+			       b, result);
 	}
-	return result;
+	return result != NULL;
 }
-/*
+/*
 **  ALLOCADDR -- do local allocations of address on demand.
 **
 **	Also lowercases the host name if requested.
@@ -397,7 +435,8 @@ allocaddr(a, flags, paddr, e)
 		a->q_paddr = sm_rpool_strdup_x(e->e_rpool, a->q_user);
 	a->q_qgrp = NOAQGRP;
 }
-/*
+
+/*
 **  PRESCAN -- Prescan name and make it canonical
 **
 **	Scans a name and turns it into a set of tokens.  This process
@@ -426,6 +465,7 @@ allocaddr(a, flags, paddr, e)
 **			terminating delimiter.
 **		toktab -- if set, a token table to use for parsing.
 **			If NULL, use the default table.
+**		ignore -- if true, ignore unbalanced addresses
 **
 **	Returns:
 **		A pointer to a vector of tokens.
@@ -456,11 +496,51 @@ static short StateTab[NSTATES][NSTATES] =
 	/*QST*/	{	QST,	QST,	OPR,	QST,	QST,	QST	},
 	/*SPC*/	{	OPR,	ATM,	QST,	SPC|M,	ONE,	ILL|MB	},
 	/*ONE*/	{	OPR,	OPR,	OPR,	OPR,	OPR,	ILL|MB	},
-	/*ILL*/	{	OPR|B,	ATM|B,	QST|B,	SPC|MB,	ONE|B,	ILL|M	},
+	/*ILL*/	{	OPR|B,	ATM|B,	QST|B,	SPC|MB,	ONE|B,	ILL|M	}
 };
 
-/* token type table -- it gets modified with $o characters */
-static unsigned char	TokTypeTab[256] =
+/* these all get modified with the OperatorChars */
+
+/* token type table for external strings */
+unsigned char	ExtTokenTab[256] =
+{
+    /*	nul soh stx etx eot enq ack bel  bs  ht  nl  vt  np  cr  so  si   */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,SPC,SPC,SPC,SPC,SPC,ATM,ATM,
+    /*	dle dc1 dc2 dc3 dc4 nak syn etb  can em  sub esc fs  gs  rs  us   */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*  sp  !   "   #   $   %   &   '    (   )   *   +   ,   -   .   /    */
+	SPC,ATM,QST,ATM,ATM,ATM,ATM,ATM, SPC,SPC,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*	0   1   2   3   4   5   6   7    8   9   :   ;   <   =   >   ?    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*	@   A   B   C   D   E   F   G    H   I   J   K   L   M   N   O    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*  P   Q   R   S   T   U   V   W    X   Y   Z   [   \   ]   ^   _    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*	`   a   b   c   d   e   f   g    h   i   j   k   l   m   n   o    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*  p   q   r   s   t   u   v   w    x   y   z   {   |   }   ~   del  */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+
+    /*	nul soh stx etx eot enq ack bel  bs  ht  nl  vt  np  cr  so  si   */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*	dle dc1 dc2 dc3 dc4 nak syn etb  can em  sub esc fs  gs  rs  us   */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*  sp  !   "   #   $   %   &   '    (   )   *   +   ,   -   .   /    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*	0   1   2   3   4   5   6   7    8   9   :   ;   <   =   >   ?    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*	@   A   B   C   D   E   F   G    H   I   J   K   L   M   N   O    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*  P   Q   R   S   T   U   V   W    X   Y   Z   [   \   ]   ^   _    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*	`   a   b   c   d   e   f   g    h   i   j   k   l   m   n   o    */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+    /*  p   q   r   s   t   u   v   w    x   y   z   {   |   }   ~   del  */
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM
+};
+
+/* token type table for internal strings */
+unsigned char	IntTokenTab[256] =
 {
     /*	nul soh stx etx eot enq ack bel  bs  ht  nl  vt  np  cr  so  si   */
 	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,SPC,SPC,SPC,SPC,SPC,ATM,ATM,
@@ -494,7 +574,7 @@ static unsigned char	TokTypeTab[256] =
     /*	`   a   b   c   d   e   f   g    h   i   j   k   l   m   n   o    */
 	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
     /*  p   q   r   s   t   u   v   w    x   y   z   {   |   }   ~   del  */
-	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ONE
 };
 
 /* token type table for MIME parsing */
@@ -532,7 +612,7 @@ unsigned char	MimeTokenTab[256] =
     /*	`   a   b   c   d   e   f   g    h   i   j   k   l   m   n   o    */
 	ILL,ILL,ILL,ILL,ILL,ILL,ILL,ILL, ILL,ILL,ILL,ILL,ILL,ILL,ILL,ILL,
     /*  p   q   r   s   t   u   v   w    x   y   z   {   |   }   ~   del  */
-	ILL,ILL,ILL,ILL,ILL,ILL,ILL,ILL, ILL,ILL,ILL,ILL,ILL,ILL,ILL,ILL,
+	ILL,ILL,ILL,ILL,ILL,ILL,ILL,ILL, ILL,ILL,ILL,ILL,ILL,ILL,ILL,ONE
 };
 
 /* token type table: don't strip comments */
@@ -570,20 +650,21 @@ unsigned char	TokTypeNoC[256] =
     /*	`   a   b   c   d   e   f   g    h   i   j   k   l   m   n   o    */
 	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
     /*  p   q   r   s   t   u   v   w    x   y   z   {   |   }   ~   del  */
-	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM,
+	ATM,ATM,ATM,ATM,ATM,ATM,ATM,ATM, ATM,ATM,ATM,ATM,ATM,ATM,ATM,ONE
 };
 
 
-#define NOCHAR		-1	/* signal nothing in lookahead token */
+#define NOCHAR		(-1)	/* signal nothing in lookahead token */
 
 char **
-prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
+prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab, ignore)
 	char *addr;
 	int delim;
 	char pvpbuf[];
 	int pvpbsize;
 	char **delimptr;
 	unsigned char *toktab;
+	bool ignore;
 {
 	register char *p;
 	register char *q;
@@ -599,7 +680,6 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 	char *saveto = CurEnv->e_to;
 	static char *av[MAXATOM + 1];
 	static bool firsttime = true;
-	extern int errno;
 
 	if (firsttime)
 	{
@@ -614,19 +694,21 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 			if (OperatorChars == NULL)
 				OperatorChars = ".:@[]";
 		}
-		expand(OperatorChars, obuf, sizeof obuf - sizeof DELIMCHARS,
+		expand(OperatorChars, obuf, sizeof(obuf) - sizeof(DELIMCHARS),
 		       CurEnv);
-		(void) sm_strlcat(obuf, DELIMCHARS, sizeof obuf);
+		(void) sm_strlcat(obuf, DELIMCHARS, sizeof(obuf));
 		for (p = obuf; *p != '\0'; p++)
 		{
-			if (TokTypeTab[*p & 0xff] == ATM)
-				TokTypeTab[*p & 0xff] = OPR;
+			if (IntTokenTab[*p & 0xff] == ATM)
+				IntTokenTab[*p & 0xff] = OPR;
+			if (ExtTokenTab[*p & 0xff] == ATM)
+				ExtTokenTab[*p & 0xff] = OPR;
 			if (TokTypeNoC[*p & 0xff] == ATM)
 				TokTypeNoC[*p & 0xff] = OPR;
 		}
 	}
 	if (toktab == NULL)
-		toktab = TokTypeTab;
+		toktab = ExtTokenTab;
 
 	/* make sure error messages don't have garbage on them */
 	errno = 0;
@@ -644,7 +726,7 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 	if (tTd(22, 11))
 	{
 		sm_dprintf("prescan: ");
-		xputs(p);
+		xputs(sm_debug_file(), p);
 		sm_dprintf("\n");
 	}
 
@@ -660,26 +742,38 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 				/* see if there is room */
 				if (q >= &pvpbuf[pvpbsize - 5])
 				{
+	addrtoolong:
 					usrerr("553 5.1.1 Address too long");
 					if (strlen(addr) > MAXNAME)
 						addr[MAXNAME] = '\0';
 	returnnull:
 					if (delimptr != NULL)
+					{
+						if (p > addr)
+							--p;
 						*delimptr = p;
+					}
 					CurEnv->e_to = saveto;
 					return NULL;
 				}
 
 				/* squirrel it away */
+#if !ALLOW_255
+				if ((char) c == (char) -1 && !tTd(82, 101) &&
+				    !EightBitAddrOK)
+					c &= 0x7f;
+#endif /* !ALLOW_255 */
 				*q++ = c;
 			}
 
 			/* read a new input character */
-			c = *p++;
+			c = (*p++) & 0x00ff;
 			if (c == '\0')
 			{
 				/* diagnose and patch up bad syntax */
-				if (state == QST)
+				if (ignore)
+					break;
+				else if (state == QST)
 				{
 					usrerr("553 Unbalanced '\"'");
 					c = '"';
@@ -705,7 +799,7 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 					break;
 
 				/* special case for better error management */
-				if (delim == ',' && !route_syntax)
+				if (delim == ',' && !route_syntax && !ignore)
 				{
 					usrerr("553 Unbalanced '<'");
 					c = '>';
@@ -730,6 +824,9 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 				}
 				else if (c != '!' || state == QST)
 				{
+					/* see if there is room */
+					if (q >= &pvpbuf[pvpbsize - 5])
+						goto addrtoolong;
 					*q++ = '\\';
 					continue;
 				}
@@ -753,8 +850,11 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 			{
 				if (cmntcnt <= 0)
 				{
-					usrerr("553 Unbalanced ')'");
-					c = NOCHAR;
+					if (!ignore)
+					{
+						usrerr("553 Unbalanced ')'");
+						c = NOCHAR;
+					}
 				}
 				else
 					cmntcnt--;
@@ -777,8 +877,11 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 			{
 				if (anglecnt <= 0)
 				{
-					usrerr("553 Unbalanced '>'");
-					c = NOCHAR;
+					if (!ignore)
+					{
+						usrerr("553 Unbalanced '>'");
+						c = NOCHAR;
+					}
 				}
 				else
 					anglecnt--;
@@ -803,7 +906,8 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 				if (isascii(c) && isprint(c))
 					usrerr("553 Illegal character %c", c);
 				else
-					usrerr("553 Illegal character 0x%02x", c);
+					usrerr("553 Illegal character 0x%02x",
+					       c & 0x0ff);
 			}
 			if (bitset(M, newstate))
 				c = NOCHAR;
@@ -814,11 +918,14 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 		/* new token */
 		if (tok != q)
 		{
+			/* see if there is room */
+			if (q >= &pvpbuf[pvpbsize - 5])
+				goto addrtoolong;
 			*q++ = '\0';
 			if (tTd(22, 36))
 			{
 				sm_dprintf("tok=");
-				xputs(tok);
+				xputs(sm_debug_file(), tok);
 				sm_dprintf("\n");
 			}
 			if (avp >= &av[MAXATOM])
@@ -835,13 +942,16 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 		}
 	} while (c != '\0' && (c != delim || anglecnt > 0));
 	*avp = NULL;
-	p--;
 	if (delimptr != NULL)
+	{
+		if (p > addr)
+			p--;
 		*delimptr = p;
+	}
 	if (tTd(22, 12))
 	{
 		sm_dprintf("prescan==>");
-		printav(av);
+		printav(sm_debug_file(), av);
 	}
 	CurEnv->e_to = saveto;
 	if (av[0] == NULL)
@@ -852,7 +962,7 @@ prescan(addr, delim, pvpbuf, pvpbsize, delimptr, toktab)
 	}
 	return av;
 }
-/*
+/*
 **  REWRITE -- apply rewrite rules to token vector.
 **
 **	This routine is an ordered production system.  Each rewrite
@@ -920,6 +1030,11 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 	char buf[MAXLINE];
 	char name[6];
 
+	/*
+	**  mlp will not exceed mlist[] because readcf enforces
+	**	the upper limit of entries when reading rulesets.
+	*/
+
 	if (ruleset < 0 || ruleset >= MAXRWSETS)
 	{
 		syserr("554 5.3.5 rewrite: illegal ruleset number %d", ruleset);
@@ -928,7 +1043,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 	rulename = RuleSetNames[ruleset];
 	if (rulename == NULL)
 	{
-		(void) sm_snprintf(name, sizeof name, "%d", ruleset);
+		(void) sm_snprintf(name, sizeof(name), "%d", ruleset);
 		rulename = name;
 	}
 	if (OpMode == MD_TEST)
@@ -939,12 +1054,12 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 	{
 		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
 				     "%s%-16.16s   input:", prefix, rulename);
-		printav(pvp);
+		printav(smioout, pvp);
 	}
 	else if (tTd(21, 1))
 	{
 		sm_dprintf("%s%-16.16s   input:", prefix, rulename);
-		printav(pvp);
+		printav(sm_debug_file(), pvp);
 	}
 	if (reclevel++ > MaxRuleRecursion)
 	{
@@ -953,6 +1068,8 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 		return EX_CONFIG;
 	}
 	if (pvp == NULL)
+		return EX_USAGE;
+	if (maxatom <= 0)
 		return EX_USAGE;
 
 	/*
@@ -977,7 +1094,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				       rwr->r_line);
 			else
 				sm_dprintf("-----trying rule:");
-			printav(rwr->r_lhs);
+			printav(sm_debug_file(), rwr->r_lhs);
 		}
 
 		/* try to match on this rule */
@@ -991,7 +1108,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 			if (tTd(21, 1))
 			{
 				sm_dprintf("workspace: ");
-				printav(pvp);
+				printav(sm_debug_file(), pvp);
 			}
 			break;
 		}
@@ -1002,9 +1119,9 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 			if (tTd(21, 35))
 			{
 				sm_dprintf("ADVANCE rp=");
-				xputs(rp);
+				xputs(sm_debug_file(), rp);
 				sm_dprintf(", ap=");
-				xputs(ap);
+				xputs(sm_debug_file(), ap);
 				sm_dprintf("\n");
 			}
 			if (rp == NULL)
@@ -1012,14 +1129,15 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				/* end-of-pattern before end-of-address */
 				goto backup;
 			}
-			if (ap == NULL && (*rp & 0377) != MATCHZANY &&
-			    (*rp & 0377) != MATCHZERO)
+			if (ap == NULL &&
+			    (rp[0] & 0377) != MATCHZANY &&
+			    (rp[0] & 0377) != MATCHZERO)
 			{
 				/* end-of-input with patterns left */
 				goto backup;
 			}
 
-			switch (*rp & 0377)
+			switch (rp[0] & 0377)
 			{
 			  case MATCHCLASS:
 				/* match any phrase in a class */
@@ -1031,15 +1149,15 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 					goto backup;
 				mlp->match_last = avp++;
 				cataddr(mlp->match_first, mlp->match_last,
-					buf, sizeof buf, '\0');
+					buf, sizeof(buf), '\0', true);
 				if (!wordinclass(buf, rp[1]))
 				{
 					if (tTd(21, 36))
 					{
 						sm_dprintf("EXTEND  rp=");
-						xputs(rp);
+						xputs(sm_debug_file(), rp);
 						sm_dprintf(", ap=");
-						xputs(ap);
+						xputs(sm_debug_file(), ap);
 						sm_dprintf("\n");
 					}
 					goto extendclass;
@@ -1089,7 +1207,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				ap = macvalue(rp[1], e);
 				mlp->match_first = avp;
 				if (tTd(21, 2))
-					sm_dprintf("rewrite: LHS $&%s => \"%s\"\n",
+					sm_dprintf("rewrite: LHS $&{%s} => \"%s\"\n",
 						macname(rp[1]),
 						ap == NULL ? "(NULL)" : ap);
 
@@ -1135,9 +1253,9 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				if (tTd(21, 36))
 				{
 					sm_dprintf("BACKUP  rp=");
-					xputs(rp);
+					xputs(sm_debug_file(), rp);
 					sm_dprintf(", ap=");
-					xputs(ap);
+					xputs(sm_debug_file(), ap);
 					sm_dprintf("\n");
 				}
 
@@ -1146,8 +1264,9 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 					/* run off the end -- back up again */
 					continue;
 				}
-				if ((*rp & 0377) == MATCHANY ||
-				    (*rp & 0377) == MATCHZANY)
+
+				if ((rp[0] & 0377) == MATCHANY ||
+				    (rp[0] & 0377) == MATCHZANY)
 				{
 					/* extend binding and continue */
 					mlp->match_last = avp++;
@@ -1155,7 +1274,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 					mlp++;
 					break;
 				}
-				if ((*rp & 0377) == MATCHCLASS)
+				if ((rp[0] & 0377) == MATCHCLASS)
 				{
 					/* extend binding and try again */
 					mlp->match_last = avp;
@@ -1188,20 +1307,20 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 		if (tTd(21, 12))
 		{
 			sm_dprintf("-----rule matches:");
-			printav(rvp);
+			printav(sm_debug_file(), rvp);
 		}
 
 		rp = *rvp;
 		if (rp != NULL)
 		{
-			if ((*rp & 0377) == CANONUSER)
+			if ((rp[0] & 0377) == CANONUSER)
 			{
 				rvp++;
 				rwr = rwr->r_next;
 				ruleno++;
 				loopcount = 0;
 			}
-			else if ((*rp & 0377) == CANONHOST)
+			else if ((rp[0] & 0377) == CANONHOST)
 			{
 				rvp++;
 				rwr = NULL;
@@ -1215,7 +1334,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 			register char **pp;
 
 			rp = *rvp;
-			if ((*rp & 0377) == MATCHREPL)
+			if ((rp[0] & 0377) == MATCHREPL)
 			{
 				/* substitute from LHS */
 				m = &mlist[rp[1] - '1'];
@@ -1241,16 +1360,7 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				while (pp <= m->match_last)
 				{
 					if (avp >= &npvp[maxatom])
-					{
-						syserr("554 5.3.0 rewrite: expansion too long");
-						if (LogLevel > 9)
-							sm_syslog(LOG_ERR,
-								e->e_id,
-								"rewrite: expansion too long, ruleset=%s, ruleno=%d",
-								rulename,
-								ruleno);
-						return EX_DATAERR;
-					}
+						goto toolong;
 					*avp++ = *pp++;
 				}
 			}
@@ -1267,23 +1377,23 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 							rulename, ruleno);
 					return EX_DATAERR;
 				}
-				if ((*rp & 0377) != MACRODEXPAND)
+				if ((rp[0] & 0377) != MACRODEXPAND)
 				{
-					/* vanilla replacement */
+					/* vanilla replacement from RHS */
 					*avp++ = rp;
 				}
 				else
 				{
-					/* $&x replacement */
+					/* $&{x} replacement */
 					char *mval = macvalue(rp[1], e);
 					char **xpvp;
-					int trsize = 0;
+					size_t trsize = 0;
 					static size_t pvpb1_size = 0;
 					static char **pvpb1 = NULL;
 					char pvpbuf[PSBUFSIZE];
 
 					if (tTd(21, 2))
-						sm_dprintf("rewrite: RHS $&%s => \"%s\"\n",
+						sm_dprintf("rewrite: RHS $&{%s} => \"%s\"\n",
 							macname(rp[1]),
 							mval == NULL ? "(NULL)" : mval);
 					if (mval == NULL || *mval == '\0')
@@ -1291,8 +1401,8 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 
 					/* save the remainder of the input */
 					for (xpvp = pvp; *xpvp != NULL; xpvp++)
-						trsize += sizeof *xpvp;
-					if ((size_t) trsize > pvpb1_size)
+						trsize += sizeof(*xpvp);
+					if (trsize > pvpb1_size)
 					{
 						if (pvpb1 != NULL)
 							sm_free(pvpb1);
@@ -1307,8 +1417,8 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 
 					/* scan the new replacement */
 					xpvp = prescan(mval, '\0', pvpbuf,
-						       sizeof pvpbuf, NULL,
-						       NULL);
+						       sizeof(pvpbuf), NULL,
+						       NULL, false);
 					if (xpvp == NULL)
 					{
 						/* prescan pre-printed error */
@@ -1347,22 +1457,39 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 		{
 			char **hbrvp;
 			char **xpvp;
-			int trsize;
+			size_t trsize;
 			char *replac;
 			int endtoken;
+			bool external;
 			STAB *map;
 			char *mapname;
 			char **key_rvp;
 			char **arg_rvp;
 			char **default_rvp;
-			char cbuf[MAXNAME + 1];
+			char cbuf[MAXKEY];
 			char *pvpb1[MAXATOM + 1];
-			char *argvect[10];
+			char *argvect[MAX_MAP_ARGS];
 			char pvpbuf[PSBUFSIZE];
 			char *nullpvp[1];
 
-			if ((**rvp & 0377) != HOSTBEGIN &&
-			    (**rvp & 0377) != LOOKUPBEGIN)
+			hbrvp = rvp;
+			if ((rvp[0][0] & 0377) == HOSTBEGIN)
+			{
+				endtoken = HOSTEND;
+				mapname = "host";
+			}
+			else if ((rvp[0][0] & 0377) == LOOKUPBEGIN)
+			{
+				endtoken = LOOKUPEND;
+				mapname = *++rvp;
+				if (mapname == NULL)
+				{
+					syserr("554 5.3.0 rewrite: missing mapname");
+					/* NOTREACHED */
+					SM_ASSERT(0);
+				}
+			}
+			else
 				continue;
 
 			/*
@@ -1371,32 +1498,30 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 			**	This could be optimized fairly easily.
 			*/
 
-			hbrvp = rvp;
-			if ((**rvp & 0377) == HOSTBEGIN)
-			{
-				endtoken = HOSTEND;
-				mapname = "host";
-			}
-			else
-			{
-				endtoken = LOOKUPEND;
-				mapname = *++rvp;
-			}
 			map = stab(mapname, ST_MAP, ST_FIND);
 			if (map == NULL)
-				syserr("554 5.3.0 rewrite: map %s not found", mapname);
+				syserr("554 5.3.0 rewrite: map %s not found",
+					mapname);
 
 			/* extract the match part */
 			key_rvp = ++rvp;
+			if (key_rvp == NULL)
+			{
+				syserr("554 5.3.0 rewrite: missing key for map %s",
+					mapname);
+				/* NOTREACHED */
+				SM_ASSERT(0);
+			}
 			default_rvp = NULL;
 			arg_rvp = argvect;
 			xpvp = NULL;
 			replac = pvpbuf;
-			while (*rvp != NULL && (**rvp & 0377) != endtoken)
+			while (*rvp != NULL && ((rvp[0][0] & 0377) != endtoken))
 			{
-				int nodetype = **rvp & 0377;
+				int nodetype = rvp[0][0] & 0377;
 
-				if (nodetype != CANONHOST && nodetype != CANONUSER)
+				if (nodetype != CANONHOST &&
+				    nodetype != CANONUSER)
 				{
 					rvp++;
 					continue;
@@ -1407,9 +1532,11 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 				if (xpvp != NULL)
 				{
 					cataddr(xpvp, NULL, replac,
-						&pvpbuf[sizeof pvpbuf] - replac,
-						'\0');
-					*++arg_rvp = replac;
+						&pvpbuf[sizeof(pvpbuf)] - replac,
+						'\0', false);
+					if (arg_rvp <
+					    &argvect[MAX_MAP_ARGS - 1])
+						*++arg_rvp = replac;
 					replac += strlen(replac) + 1;
 					xpvp = NULL;
 				}
@@ -1429,27 +1556,34 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 			if (xpvp != NULL)
 			{
 				cataddr(xpvp, NULL, replac,
-					&pvpbuf[sizeof pvpbuf] - replac,
-					'\0');
-				*++arg_rvp = replac;
+					&pvpbuf[sizeof(pvpbuf)] - replac,
+					'\0', false);
+				if (arg_rvp < &argvect[MAX_MAP_ARGS - 1])
+					*++arg_rvp = replac;
 			}
-			*++arg_rvp = NULL;
+			if (arg_rvp >= &argvect[MAX_MAP_ARGS - 1])
+				argvect[MAX_MAP_ARGS - 1] = NULL;
+			else
+				*++arg_rvp = NULL;
 
 			/* save the remainder of the input string */
-			trsize = (int) (avp - rvp + 1) * sizeof *rvp;
+			trsize = (avp - rvp + 1) * sizeof(*rvp);
 			memmove((char *) pvpb1, (char *) rvp, trsize);
 
 			/* look it up */
-			cataddr(key_rvp, NULL, cbuf, sizeof cbuf,
-				map == NULL ? '\0' : map->s_map.map_spacesub);
+			cataddr(key_rvp, NULL, cbuf, sizeof(cbuf),
+				map == NULL ? '\0' : map->s_map.map_spacesub,
+				true);
 			argvect[0] = cbuf;
 			replac = map_lookup(map, cbuf, argvect, &rstat, e);
+			external = replac != NULL;
 
 			/* if no replacement, use default */
 			if (replac == NULL && default_rvp != NULL)
 			{
 				/* create the default */
-				cataddr(default_rvp, NULL, cbuf, sizeof cbuf, '\0');
+				cataddr(default_rvp, NULL, cbuf, sizeof(cbuf),
+					'\0', false);
 				replac = cbuf;
 			}
 
@@ -1467,7 +1601,9 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 			{
 				/* scan the new replacement */
 				xpvp = prescan(replac, '\0', pvpbuf,
-					       sizeof pvpbuf, NULL, NULL);
+					       sizeof(pvpbuf), NULL,
+					       external ? NULL : IntTokenTab,
+					       false);
 				if (xpvp == NULL)
 				{
 					/* prescan already printed error */
@@ -1502,12 +1638,12 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 		for (avp = npvp; *avp++ != NULL;)
 			continue;
 		memmove((char *) pvp, (char *) npvp,
-		      (int) (avp - npvp) * sizeof *avp);
+		      (int) (avp - npvp) * sizeof(*avp));
 
 		if (tTd(21, 4))
 		{
 			sm_dprintf("rewritten as:");
-			printav(pvp);
+			printav(sm_debug_file(), pvp);
 		}
 	}
 
@@ -1515,16 +1651,16 @@ rewrite(pvp, ruleset, reclevel, e, maxatom)
 	{
 		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
 				     "%s%-16.16s returns:", prefix, rulename);
-		printav(pvp);
+		printav(smioout, pvp);
 	}
 	else if (tTd(21, 1))
 	{
 		sm_dprintf("%s%-16.16s returns:", prefix, rulename);
-		printav(pvp);
+		printav(sm_debug_file(), pvp);
 	}
 	return rstat;
 }
-/*
+/*
 **  CALLSUBR -- call subroutines in rewrite vector
 **
 **	Parameters:
@@ -1566,7 +1702,7 @@ callsubr(pvp, reclevel, e)
 
 	for (avp = pvp, j = 0; *avp != NULL; avp++, j++)
 	{
-		if ((**avp & 0377) == CALLSUBR && avp[1] != NULL)
+		if ((avp[0][0] & 0377) == CALLSUBR && avp[1] != NULL)
 		{
 			stripquotes(avp[1]);
 			subr = strtorwset(avp[1], NULL, ST_FIND);
@@ -1622,7 +1758,7 @@ callsubr(pvp, reclevel, e)
 
 		/*
 		**  Now we need to call the ruleset specified for
-		**  the subroutine. we can do this inplace since
+		**  the subroutine. We can do this in place since
 		**  we call the "last" subroutine first.
 		*/
 
@@ -1635,7 +1771,7 @@ callsubr(pvp, reclevel, e)
 	}
 	return rstat;
 }
-/*
+/*
 **  MAP_LOOKUP -- do lookup in map
 **
 **	Parameters:
@@ -1685,7 +1821,8 @@ map_lookup(smap, key, argvect, pstat, e)
 
 	if (tTd(60, 1))
 	{
-		sm_dprintf("map_lookup(%s, %s", smap->s_name, key);
+		sm_dprintf("map_lookup(%s, ", smap->s_name);
+		xputs(sm_debug_file(), key);
 		if (tTd(60, 5))
 		{
 			int i;
@@ -1712,7 +1849,7 @@ map_lookup(smap, key, argvect, pstat, e)
 		{
 			char mbuf[320];
 
-			(void) sm_snprintf(mbuf, sizeof mbuf,
+			(void) sm_snprintf(mbuf, sizeof(mbuf),
 				"%.80s map: lookup (%s): deferred",
 				smap->s_name,
 				shortenstring(key, MAXSHORTSTR));
@@ -1740,7 +1877,7 @@ map_lookup(smap, key, argvect, pstat, e)
 	}
 	return replac;
 }
-/*
+/*
 **  INITERRMAILERS -- initialize error and discard mailers
 **
 **	Parameters:
@@ -1776,7 +1913,7 @@ initerrmailers()
 		errormailer.m_argv = errorargv;
 	}
 }
-/*
+/*
 **  BUILDADDR -- build address from token vector.
 **
 **	Parameters:
@@ -1819,6 +1956,8 @@ buildaddr(tv, a, flags, e)
 	int flags;
 	register ENVELOPE *e;
 {
+	bool tempfail = false;
+	int maxatom;
 	struct mailer **mp;
 	register struct mailer *m;
 	register char *p;
@@ -1830,12 +1969,13 @@ buildaddr(tv, a, flags, e)
 	if (tTd(24, 5))
 	{
 		sm_dprintf("buildaddr, flags=%x, tv=", flags);
-		printav(tv);
+		printav(sm_debug_file(), tv);
 	}
 
+	maxatom = MAXATOM;
 	if (a == NULL)
-		a = (ADDRESS *) sm_rpool_malloc_x(e->e_rpool, sizeof *a);
-	memset((char *) a, '\0', sizeof *a);
+		a = (ADDRESS *) sm_rpool_malloc_x(e->e_rpool, sizeof(*a));
+	memset((char *) a, '\0', sizeof(*a));
 	hbuf[0] = '\0';
 
 	/* set up default error return flags */
@@ -1846,7 +1986,18 @@ buildaddr(tv, a, flags, e)
 	{
 		syserr("554 5.3.5 buildaddr: no mailer in parsed address");
 badaddr:
-		if (ExitStat == EX_TEMPFAIL)
+		/*
+		**  ExitStat may have been set by an earlier map open
+		**  failure (to a permanent error (EX_OSERR) in syserr())
+		**  so we also need to check if this particular $#error
+		**  return wanted a 4XX failure.
+		**
+		**  XXX the real fix is probably to set ExitStat correctly,
+		**  i.e., to EX_TEMPFAIL if the map open is just a temporary
+		**  error.
+		*/
+
+		if (ExitStat == EX_TEMPFAIL || tempfail)
 			a->q_state = QS_QUEUEUP;
 		else
 		{
@@ -1856,14 +2007,22 @@ badaddr:
 		return a;
 	}
 	mname = *++tv;
+	--maxatom;
 
 	/* extract host and user portions */
 	if (*++tv != NULL && (**tv & 0377) == CANONHOST)
+	{
 		hostp = ++tv;
+		--maxatom;
+	}
 	else
 		hostp = NULL;
+	--maxatom;
 	while (*tv != NULL && (**tv & 0377) != CANONUSER)
+	{
 		tv++;
+		--maxatom;
+	}
 	if (*tv == NULL)
 	{
 		syserr("554 5.3.5 buildaddr: no user");
@@ -1872,8 +2031,9 @@ badaddr:
 	if (tv == hostp)
 		hostp = NULL;
 	else if (hostp != NULL)
-		cataddr(hostp, tv - 1, hbuf, sizeof hbuf, '\0');
-	cataddr(++tv, NULL, ubuf, sizeof ubuf, ' ');
+		cataddr(hostp, tv - 1, hbuf, sizeof(hbuf), '\0', false);
+	cataddr(++tv, NULL, ubuf, sizeof(ubuf), ' ', false);
+	--maxatom;
 
 	/* save away the host name */
 	if (sm_strcasecmp(mname, "error") == 0)
@@ -1927,7 +2087,7 @@ badaddr:
 				off = 4;
 				ubuf[3] = '\0';
 			}
-			(void) sm_strlcpyn(fmt, sizeof fmt, 2, ubuf, " %s");
+			(void) sm_strlcpyn(fmt, sizeof(fmt), 2, ubuf, " %s");
 			if (off > 4)
 				usrerr(fmt, ubuf + off);
 			else if (isenhsc(hbuf, '\0') > 0)
@@ -1935,6 +2095,8 @@ badaddr:
 			else
 				usrerr(fmt, ubuf + off);
 			/* XXX ubuf[off - 1] = ' '; */
+			if (ubuf[0] == '4')
+				tempfail = true;
 		}
 		else
 		{
@@ -1974,6 +2136,7 @@ badaddr:
 	{
 		p++;
 		tv++;
+		--maxatom;
 		a->q_flags |= QNOTREMOTE;
 	}
 
@@ -2004,14 +2167,14 @@ badaddr:
 	    !bitset(RF_SENDERADDR|RF_HEADERADDR, flags))
 	{
 		/* sender addresses done later */
-		(void) REWRITE(tv, 2, e);
+		(void) rewrite(tv, 2, 0, e, maxatom);
 		if (m->m_re_rwset > 0)
-		       (void) REWRITE(tv, m->m_re_rwset, e);
+		       (void) rewrite(tv, m->m_re_rwset, 0, e, maxatom);
 	}
-	(void) REWRITE(tv, 4, e);
+	(void) rewrite(tv, 4, 0, e, maxatom);
 
 	/* save the result for the command line/RCPT argument */
-	cataddr(tv, NULL, ubuf, sizeof ubuf, '\0');
+	cataddr(tv, NULL, ubuf, sizeof(ubuf), '\0', true);
 	a->q_user = sm_rpool_strdup_x(e->e_rpool, ubuf);
 
 	/*
@@ -2026,11 +2189,12 @@ badaddr:
 	if (tTd(24, 6))
 	{
 		sm_dprintf("buildaddr => ");
-		printaddr(a, false);
+		printaddr(sm_debug_file(), a, false);
 	}
 	return a;
 }
-/*
+
+/*
 **  CATADDR -- concatenate pieces of addresses (putting in <LWSP> subs)
 **
 **	Parameters:
@@ -2041,26 +2205,49 @@ badaddr:
 **		sz -- size of buf.
 **		spacesub -- the space separator character; if '\0',
 **			use SpaceSub.
+**		external -- convert to external form?
+**			(no metacharacters; METAQUOTEs removed, see below)
 **
 **	Returns:
 **		none.
 **
 **	Side Effects:
 **		Destroys buf.
+**
+**	Notes:
+**	There are two formats for strings: internal and external.
+**	The external format is just an eight-bit clean string (no
+**	null bytes, everything else OK).  The internal format can
+**	include sendmail metacharacters.  The special character
+**	METAQUOTE essentially quotes the character following, stripping
+**	it of all special semantics.
+**
+**	The cataddr routine needs to be aware of whether it is producing
+**	an internal or external form as output (it only takes internal
+**	form as input).
+**
+**	The parseaddr routine has a similar issue on input, but that
+**	is flagged on the basis of which token table is passed in.
 */
 
 void
-cataddr(pvp, evp, buf, sz, spacesub)
+cataddr(pvp, evp, buf, sz, spacesub, external)
 	char **pvp;
 	char **evp;
 	char *buf;
 	register int sz;
 	int spacesub;
+	bool external;
 {
-	bool oatomtok = false;
-	bool natomtok = false;
-	register int i;
-	register char *p;
+	bool oatomtok, natomtok;
+	char *p;
+
+	oatomtok = natomtok = false;
+	if (tTd(59, 14))
+	{
+		sm_dprintf("cataddr(%d) <==", external);
+		printav(sm_debug_file(), pvp);
+	}
 
 	if (sz <= 0)
 		return;
@@ -2077,24 +2264,64 @@ cataddr(pvp, evp, buf, sz, spacesub)
 	sz -= 2;
 	while (*pvp != NULL && sz > 0)
 	{
-		natomtok = (TokTypeTab[**pvp & 0xff] == ATM);
+		char *q;
+
+		natomtok = (IntTokenTab[**pvp & 0xff] == ATM);
 		if (oatomtok && natomtok)
 		{
 			*p++ = spacesub;
 			if (--sz <= 0)
 				break;
 		}
-		if ((i = sm_strlcpy(p, *pvp, sz)) >= sz)
+		for (q = *pvp; *q != '\0'; )
+		{
+			int c;
+
+			if (--sz <= 0)
+				break;
+			*p++ = c = *q++;
+
+			/*
+			**  If the current character (c) is METAQUOTE and we
+			**  want the "external" form and the next character
+			**  is not NUL, then overwrite METAQUOTE with that
+			**  character (i.e., METAQUOTE ch is changed to
+			**  ch).  p[-1] is used because p is advanced (above).
+			*/
+
+			if ((c & 0377) == METAQUOTE && external && *q != '\0')
+				p[-1] = *q++;
+		}
+		if (sz <= 0)
 			break;
 		oatomtok = natomtok;
-		p += i;
-		sz -= i;
 		if (pvp++ == evp)
 			break;
 	}
+
+#if 0
+	/*
+	**  Silently truncate long strings: even though this doesn't
+	**  seem like a good idea it is necessary because header checks
+	**  send the whole header value to rscheck() and hence rewrite().
+	**  The latter however sometimes uses a "short" buffer (e.g.,
+	**  cbuf[MAXNAME + 1]) to call cataddr() which then triggers this
+	**  error function.  One possible fix to the problem is to pass
+	**  flags to rscheck() and rewrite() to distinguish the various
+	**  calls and only trigger the error if necessary.  For now just
+	**  undo the change from 8.13.0.
+	*/
+
+	if (sz <= 0)
+		usrerr("cataddr: string too long");
+#endif
 	*p = '\0';
+
+	if (tTd(59, 14))
+		sm_dprintf("  cataddr => %s\n", str2prt(buf));
 }
-/*
+
+/*
 **  SAMEADDR -- Determine if two addresses are the same
 **
 **	This is not just a straight comparison -- if the mailer doesn't
@@ -2153,7 +2380,7 @@ sameaddr(a, b)
 
 	return true;
 }
-/*
+/*
 **  PRINTADDR -- print address (for debugging)
 **
 **	Parameters:
@@ -2195,7 +2422,8 @@ static struct qflags	AddressFlags[] =
 };
 
 void
-printaddr(a, follow)
+printaddr(fp, a, follow)
+	SM_FILE_T *fp;
 	register ADDRESS *a;
 	bool follow;
 {
@@ -2206,14 +2434,14 @@ printaddr(a, follow)
 
 	if (a == NULL)
 	{
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "[NULL]\n");
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "[NULL]\n");
 		return;
 	}
 
 	while (a != NULL)
 	{
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%p=", a);
-		(void) sm_io_flush(smioout, SM_TIME_DEFAULT);
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%p=", a);
+		(void) sm_io_flush(fp, SM_TIME_DEFAULT);
 
 		/* find the mailer -- carefully */
 		m = a->q_mailer;
@@ -2224,100 +2452,100 @@ printaddr(a, follow)
 			m->m_name = "NULL";
 		}
 
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     "%s:\n\tmailer %d (%s), host `%s'\n",
 				     a->q_paddr == NULL ? "<null>" : a->q_paddr,
 				     m->m_mno, m->m_name,
 				     a->q_host == NULL ? "<null>" : a->q_host);
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     "\tuser `%s', ruser `%s'\n",
 				     a->q_user,
 				     a->q_ruser == NULL ? "<null>" : a->q_ruser);
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "\tstate=");
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "\tstate=");
 		switch (a->q_state)
 		{
 		  case QS_OK:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "OK");
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "OK");
 			break;
 
 		  case QS_DONTSEND:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "DONTSEND");
 			break;
 
 		  case QS_BADADDR:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "BADADDR");
 			break;
 
 		  case QS_QUEUEUP:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "QUEUEUP");
 			break;
 
 		  case QS_RETRY:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "RETRY");
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "RETRY");
 			break;
 
 		  case QS_SENT:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "SENT");
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "SENT");
 			break;
 
 		  case QS_VERIFIED:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "VERIFIED");
 			break;
 
 		  case QS_EXPANDED:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "EXPANDED");
 			break;
 
 		  case QS_SENDER:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "SENDER");
 			break;
 
 		  case QS_CLONED:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "CLONED");
 			break;
 
 		  case QS_DISCARDED:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "DISCARDED");
 			break;
 
 		  case QS_REPLACED:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "REPLACED");
 			break;
 
 		  case QS_REMOVED:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "REMOVED");
 			break;
 
 		  case QS_DUPLICATE:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "DUPLICATE");
 			break;
 
 		  case QS_INCLUDED:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "INCLUDED");
 			break;
 
 		  default:
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 					     "%d", a->q_state);
 			break;
 		}
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     ", next=%p, alias %p, uid %d, gid %d\n",
 				     a->q_next, a->q_alias,
 				     (int) a->q_uid, (int) a->q_gid);
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "\tflags=%lx<",
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "\tflags=%lx<",
 				     a->q_flags);
 		firstone = true;
 		for (qfp = AddressFlags; qfp->qf_name != NULL; qfp++)
@@ -2325,30 +2553,30 @@ printaddr(a, follow)
 			if (!bitset(qfp->qf_bit, a->q_flags))
 				continue;
 			if (!firstone)
-				(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+				(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 						     ",");
 			firstone = false;
-			(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, "%s",
+			(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, "%s",
 					     qfp->qf_name);
 		}
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT, ">\n");
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT, ">\n");
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     "\towner=%s, home=\"%s\", fullname=\"%s\"\n",
 				     a->q_owner == NULL ? "(none)" : a->q_owner,
 				     a->q_home == NULL ? "(none)" : a->q_home,
 				     a->q_fullname == NULL ? "(none)" : a->q_fullname);
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     "\torcpt=\"%s\", statmta=%s, status=%s\n",
 				     a->q_orcpt == NULL ? "(none)" : a->q_orcpt,
 				     a->q_statmta == NULL ? "(none)" : a->q_statmta,
 				     a->q_status == NULL ? "(none)" : a->q_status);
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     "\tfinalrcpt=\"%s\"\n",
 				     a->q_finalrcpt == NULL ? "(none)" : a->q_finalrcpt);
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     "\trstatus=\"%s\"\n",
 				     a->q_rstatus == NULL ? "(none)" : a->q_rstatus);
-		(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+		(void) sm_io_fprintf(fp, SM_TIME_DEFAULT,
 				     "\tstatdate=%s\n",
 				     a->q_statdate == 0 ? "(none)" : ctime(&a->q_statdate));
 
@@ -2357,7 +2585,7 @@ printaddr(a, follow)
 		a = a->q_next;
 	}
 }
-/*
+/*
 **  EMPTYADDR -- return true if this address is empty (``<>'')
 **
 **	Parameters:
@@ -2376,13 +2604,12 @@ emptyaddr(a)
 	return a->q_paddr == NULL || strcmp(a->q_paddr, "<>") == 0 ||
 	       a->q_user == NULL || strcmp(a->q_user, "<>") == 0;
 }
-/*
+/*
 **  REMOTENAME -- return the name relative to the current mailer
 **
 **	Parameters:
 **		name -- the name to translate.
-**		m -- the mailer that we want to do rewriting relative
-**			to.
+**		m -- the mailer that we want to do rewriting relative to.
 **		flags -- fine tune operations.
 **		pstat -- pointer to status word.
 **		e -- the current envelope.
@@ -2417,7 +2644,11 @@ remotename(name, m, flags, pstat, e)
 	char addrtype[4];
 
 	if (tTd(12, 1))
-		sm_dprintf("remotename(%s)\n", name);
+	{
+		sm_dprintf("remotename(");
+		xputs(sm_debug_file(), name);
+		sm_dprintf(")\n");
+	}
 
 	/* don't do anything if we are tagging it as special */
 	if (bitset(RF_SENDERADDR, flags))
@@ -2447,7 +2678,7 @@ remotename(name, m, flags, pstat, e)
 	if (bitset(RF_CANONICAL, flags) || bitnset(M_NOCOMMENT, m->m_flags))
 		fancy = "\201g";
 	else
-		fancy = crackaddr(name);
+		fancy = crackaddr(name, e);
 
 	/*
 	**  Turn the name into canonical form.
@@ -2457,7 +2688,7 @@ remotename(name, m, flags, pstat, e)
 	**	domain will be appended.
 	*/
 
-	pvp = prescan(name, '\0', pvpbuf, sizeof pvpbuf, NULL, NULL);
+	pvp = prescan(name, '\0', pvpbuf, sizeof(pvpbuf), NULL, NULL, false);
 	if (pvp == NULL)
 		return name;
 	if (REWRITE(pvp, 3, e) == EX_TEMPFAIL)
@@ -2531,25 +2762,29 @@ remotename(name, m, flags, pstat, e)
 	**  Now restore the comment information we had at the beginning.
 	*/
 
-	cataddr(pvp, NULL, lbuf, sizeof lbuf, '\0');
+	cataddr(pvp, NULL, lbuf, sizeof(lbuf), '\0', false);
 	oldg = macget(&e->e_macro, 'g');
 	macset(&e->e_macro, 'g', lbuf);
 
 	SM_TRY
 		/* need to make sure route-addrs have <angle brackets> */
 		if (bitset(RF_CANONICAL, flags) && lbuf[0] == '@')
-			expand("<\201g>", buf, sizeof buf, e);
+			expand("<\201g>", buf, sizeof(buf), e);
 		else
-			expand(fancy, buf, sizeof buf, e);
+			expand(fancy, buf, sizeof(buf), e);
 	SM_FINALLY
 		macset(&e->e_macro, 'g', oldg);
 	SM_END_TRY
 
 	if (tTd(12, 1))
-		sm_dprintf("remotename => `%s'\n", buf);
+	{
+		sm_dprintf("remotename => `");
+		xputs(sm_debug_file(), buf);
+		sm_dprintf("'\n");
+	}
 	return buf;
 }
-/*
+/*
 **  MAPLOCALUSER -- run local username through ruleset 5 for final redirection
 **
 **	Parameters:
@@ -2576,16 +2811,16 @@ maplocaluser(a, sendq, aliaslevel, e)
 	ENVELOPE *e;
 {
 	register char **pvp;
-	register ADDRESS *a1 = NULL;
-	auto char *delimptr;
+	register ADDRESS *SM_NONVOLATILE a1 = NULL;
 	char pvpbuf[PSBUFSIZE];
 
 	if (tTd(29, 1))
 	{
 		sm_dprintf("maplocaluser: ");
-		printaddr(a, false);
+		printaddr(sm_debug_file(), a, false);
 	}
-	pvp = prescan(a->q_user, '\0', pvpbuf, sizeof pvpbuf, &delimptr, NULL);
+	pvp = prescan(a->q_user, '\0', pvpbuf, sizeof(pvpbuf), NULL, NULL,
+			false);
 	if (pvp == NULL)
 	{
 		if (tTd(29, 9))
@@ -2647,13 +2882,13 @@ maplocaluser(a, sendq, aliaslevel, e)
 	if (tTd(29, 5))
 	{
 		sm_dprintf("maplocaluser: QS_REPLACED ");
-		printaddr(a, false);
+		printaddr(sm_debug_file(), a, false);
 	}
 	a1->q_alias = a;
 	allocaddr(a1, RF_COPYALL, sm_rpool_strdup_x(e->e_rpool, a->q_paddr), e);
 	(void) recipient(a1, sendq, aliaslevel, e);
 }
-/*
+/*
 **  DEQUOTE_INIT -- initialize dequote map
 **
 **	Parameters:
@@ -2704,7 +2939,7 @@ dequote_init(map, args)
 
 	return true;
 }
-/*
+/*
 **  DEQUOTE_MAP -- unquote an address
 **
 **	Parameters:
@@ -2802,7 +3037,7 @@ dequote_map(map, name, av, statp)
 	*q++ = '\0';
 	return map_rewrite(map, name, strlen(name), NULL);
 }
-/*
+/*
 **  RSCHECK -- check string(s) for validity using rewriting sets
 **
 **	Parameters:
@@ -2810,11 +3045,12 @@ dequote_map(map, name, av, statp)
 **		p1 -- the first string to check.
 **		p2 -- the second string to check -- may be null.
 **		e -- the current envelope.
-**		rmcomm -- remove comments?
-**		cnt -- count rejections (statistics)?
+**		flags -- control some behavior, see RSF_ in sendmail.h
 **		logl -- logging level.
 **		host -- NULL or relay host.
 **		logid -- id for sm_syslog.
+**		addr -- if not NULL and ruleset returns $#error:
+**				store mailer triple here.
 **
 **	Returns:
 **		EX_OK -- if the rwset doesn't resolve to $#error
@@ -2822,26 +3058,28 @@ dequote_map(map, name, av, statp)
 */
 
 int
-rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
+rscheck(rwset, p1, p2, e, flags, logl, host, logid, addr)
 	char *rwset;
 	char *p1;
 	char *p2;
 	ENVELOPE *e;
-	bool rmcomm, cnt;
+	int flags;
 	int logl;
 	char *host;
 	char *logid;
+	ADDRESS *addr;
 {
 	char *volatile buf;
-	int bufsize;
+	size_t bufsize;
 	int saveexitstat;
 	int volatile rstat = EX_OK;
 	char **pvp;
 	int rsno;
 	bool volatile discard = false;
-	auto ADDRESS a1;
 	bool saveQuickAbort = QuickAbort;
 	bool saveSuprErrs = SuprErrs;
+	bool quarantine = false;
+	char ubuf[BUFSIZ * 2];
 	char buf0[MAXLINE];
 	char pvpbuf[PSBUFSIZE];
 	extern char MsgBuf[];
@@ -2857,24 +3095,24 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 	if (p2 != NULL)
 	{
 		bufsize = strlen(p1) + strlen(p2) + 2;
-		if (bufsize > sizeof buf0)
+		if (bufsize > sizeof(buf0))
 			buf = sm_malloc_x(bufsize);
 		else
 		{
 			buf = buf0;
-			bufsize = sizeof buf0;
+			bufsize = sizeof(buf0);
 		}
 		(void) sm_snprintf(buf, bufsize, "%s%c%s", p1, CONDELSE, p2);
 	}
 	else
 	{
 		bufsize = strlen(p1) + 1;
-		if (bufsize > sizeof buf0)
+		if (bufsize > sizeof(buf0))
 			buf = sm_malloc_x(bufsize);
 		else
 		{
 			buf = buf0;
-			bufsize = sizeof buf0;
+			bufsize = sizeof(buf0);
 		}
 		(void) sm_strlcpy(buf, p1, bufsize);
 	}
@@ -2882,8 +3120,10 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 	{
 		SuprErrs = true;
 		QuickAbort = false;
-		pvp = prescan(buf, '\0', pvpbuf, sizeof pvpbuf, NULL,
-			      rmcomm ? NULL : TokTypeNoC);
+		pvp = prescan(buf, '\0', pvpbuf, sizeof(pvpbuf), NULL,
+			      bitset(RSF_RMCOMM, flags) ?
+					IntTokenTab : TokTypeNoC,
+			      bitset(RSF_RMCOMM, flags) ? false : true);
 		SuprErrs = saveSuprErrs;
 		if (pvp == NULL)
 		{
@@ -2896,7 +3136,11 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 	*/
 			goto finis;
 		}
+		if (bitset(RSF_UNSTRUCTURED, flags))
+			SuprErrs = true;
 		(void) REWRITE(pvp, rsno, e);
+		if (bitset(RSF_UNSTRUCTURED, flags))
+			SuprErrs = saveSuprErrs;
 		if (pvp[0] == NULL || (pvp[0][0] & 0377) != CANONNET ||
 		    pvp[1] == NULL || (strcmp(pvp[1], "error") != 0 &&
 				       strcmp(pvp[1], "discard") != 0))
@@ -2911,8 +3155,29 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 			e->e_flags |= EF_DISCARD;
 			discard = true;
 		}
+		else if (strcmp(pvp[1], "error") == 0 &&
+			 pvp[2] != NULL && (pvp[2][0] & 0377) == CANONHOST &&
+			 pvp[3] != NULL && strcmp(pvp[3], "quarantine") == 0)
+		{
+			if (pvp[4] == NULL ||
+			    (pvp[4][0] & 0377) != CANONUSER ||
+			    pvp[5] == NULL)
+				e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool,
+								 rwset);
+			else
+			{
+				cataddr(&(pvp[5]), NULL, ubuf,
+					sizeof(ubuf), ' ', true);
+				e->e_quarmsg = sm_rpool_strdup_x(e->e_rpool,
+								 ubuf);
+			}
+			macdefine(&e->e_macro, A_PERM,
+				  macid("{quarantine}"), e->e_quarmsg);
+			quarantine = true;
+		}
 		else
 		{
+			auto ADDRESS a1;
 			int savelogusrerrs = LogUsrErrs;
 			static bool logged = false;
 
@@ -2920,13 +3185,19 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 			saveexitstat = ExitStat;
 			LogUsrErrs = false;
 			(void) buildaddr(pvp, &a1, 0, e);
+			if (addr != NULL)
+			{
+				addr->q_mailer = a1.q_mailer;
+				addr->q_user = a1.q_user;
+				addr->q_host = a1.q_host;
+			}
 			LogUsrErrs = savelogusrerrs;
 			rstat = ExitStat;
 			ExitStat = saveexitstat;
 			if (!logged)
 			{
-				if (cnt)
-					markstats(e, &a1, true);
+				if (bitset(RSF_COUNT, flags))
+					markstats(e, &a1, STATS_REJECT);
 				logged = true;
 			}
 		}
@@ -2961,6 +3232,10 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 				sm_syslog(LOG_NOTICE, logid,
 					  "ruleset=%s, arg1=%s%s, discard",
 					  rwset, p1, lbuf);
+			else if (quarantine)
+				sm_syslog(LOG_NOTICE, logid,
+					  "ruleset=%s, arg1=%s%s, quarantine=%s",
+					  rwset, p1, lbuf, ubuf);
 			else
 				sm_syslog(LOG_NOTICE, logid,
 					  "ruleset=%s, arg1=%s%s, reject=%s",
@@ -2979,11 +3254,14 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 	SM_END_TRY
 
 	setstat(rstat);
+
+	/* rulesets don't set errno */
+	errno = 0;
 	if (rstat != EX_OK && QuickAbort)
 		sm_exc_raisenew_x(&EtypeQuickAbort, 2);
 	return rstat;
 }
-/*
+/*
 **  RSCAP -- call rewriting set to return capabilities
 **
 **	Parameters:
@@ -2993,6 +3271,7 @@ rscheck(rwset, p1, p2, e, rmcomm, cnt, logl, host, logid)
 **		e -- the current envelope.
 **		pvp -- pointer to token vector.
 **		pvpbuf -- buffer space.
+**		size -- size of buffer space.
 **
 **	Returns:
 **		EX_UNAVAILABLE -- ruleset doesn't exist.
@@ -3012,7 +3291,7 @@ rscap(rwset, p1, p2, e, pvp, pvpbuf, size)
 	int size;
 {
 	char *volatile buf;
-	int bufsize;
+	size_t bufsize;
 	int volatile rstat = EX_OK;
 	int rsno;
 	bool saveQuickAbort = QuickAbort;
@@ -3024,8 +3303,7 @@ rscap(rwset, p1, p2, e, pvp, pvpbuf, size)
 		sm_dprintf("rscap(%s, %s, %s)\n", rwset, p1,
 			p2 == NULL ? "(NULL)" : p2);
 
-	if (pvp != NULL)
-		*pvp = NULL;
+	SM_REQUIRE(pvp != NULL);
 	rsno = strtorwset(rwset, NULL, ST_FIND);
 	if (rsno < 0)
 		return EX_UNAVAILABLE;
@@ -3033,24 +3311,24 @@ rscap(rwset, p1, p2, e, pvp, pvpbuf, size)
 	if (p2 != NULL)
 	{
 		bufsize = strlen(p1) + strlen(p2) + 2;
-		if (bufsize > sizeof buf0)
+		if (bufsize > sizeof(buf0))
 			buf = sm_malloc_x(bufsize);
 		else
 		{
 			buf = buf0;
-			bufsize = sizeof buf0;
+			bufsize = sizeof(buf0);
 		}
 		(void) sm_snprintf(buf, bufsize, "%s%c%s", p1, CONDELSE, p2);
 	}
 	else
 	{
 		bufsize = strlen(p1) + 1;
-		if (bufsize > sizeof buf0)
+		if (bufsize > sizeof(buf0))
 			buf = sm_malloc_x(bufsize);
 		else
 		{
 			buf = buf0;
-			bufsize = sizeof buf0;
+			bufsize = sizeof(buf0);
 		}
 		(void) sm_strlcpy(buf, p1, bufsize);
 	}
@@ -3058,9 +3336,10 @@ rscap(rwset, p1, p2, e, pvp, pvpbuf, size)
 	{
 		SuprErrs = true;
 		QuickAbort = false;
-		*pvp = prescan(buf, '\0', pvpbuf, size, NULL, NULL);
+		*pvp = prescan(buf, '\0', pvpbuf, size, NULL, IntTokenTab,
+				false);
 		if (*pvp != NULL)
-			rstat = REWRITE(*pvp, rsno, e);
+			rstat = rewrite(*pvp, rsno, 0, e, size);
 		else
 		{
 			if (tTd(48, 2))

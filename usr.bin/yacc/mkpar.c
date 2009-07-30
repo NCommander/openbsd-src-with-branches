@@ -1,11 +1,51 @@
+/*	$OpenBSD: mkpar.c,v 1.12 2004/08/08 20:13:13 deraadt Exp $	*/
+/*	$NetBSD: mkpar.c,v 1.4 1996/03/19 03:21:39 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef lint
-static char rcsid[] = "$Id: mkpar.c,v 1.3 1993/08/02 17:56:42 mycroft Exp $";
+#if 0
+static char sccsid[] = "@(#)mkpar.c	5.3 (Berkeley) 1/20/91";
+#else
+static char rcsid[] = "$NetBSD: mkpar.c,v 1.4 1996/03/19 03:21:39 jtc Exp $";
+#endif
 #endif /* not lint */
 
 #include "defs.h"
 
 action **parser;
 int SRtotal;
+int SRexpect = 0;
 int RRtotal;
 short *SRconflicts;
 short *RRconflicts;
@@ -22,10 +62,20 @@ extern action *get_shifts();
 extern action *add_reductions();
 extern action *add_reduce();
 
+int sole_reduction(int);
+void free_action_row(action *);
 
-make_parser()
+void find_final_state(void);
+void unused_rules(void);
+void remove_conflicts(void);
+void total_conflicts(void);
+void defreds(void);
+
+
+void
+make_parser(void)
 {
-    register int i;
+    int i;
 
     parser = NEW2(nstates, action *);
     for (i = 0; i < nstates; i++)
@@ -40,10 +90,9 @@ make_parser()
 
 
 action *
-parse_actions(stateno)
-register int stateno;
+parse_actions(int stateno)
 {
-    register action *actions;
+    action *actions;
 
     actions = get_shifts(stateno);
     actions = add_reductions(stateno, actions);
@@ -52,14 +101,13 @@ register int stateno;
 
 
 action *
-get_shifts(stateno)
-int stateno;
+get_shifts(int stateno)
 {
-    register action *actions, *temp;
-    register shifts *sp;
-    register short *to_state;
-    register int i, k;
-    register int symbol;
+    action *actions, *temp;
+    shifts *sp;
+    short *to_state;
+    int i, k;
+    int symbol;
 
     actions = 0;
     sp = shift_table[stateno];
@@ -87,13 +135,11 @@ int stateno;
 }
 
 action *
-add_reductions(stateno, actions)
-int stateno;
-register action *actions;
+add_reductions(int stateno, action *actions)
 {
-    register int i, j, m, n;
-    register int ruleno, tokensetsize;
-    register unsigned *rowp;
+    int i, j, m, n;
+    int ruleno, tokensetsize;
+    unsigned *rowp;
 
     tokensetsize = WORDSIZE(ntokens);
     m = lookaheads[stateno];
@@ -113,11 +159,9 @@ register action *actions;
 
 
 action *
-add_reduce(actions, ruleno, symbol)
-register action *actions;
-register int ruleno, symbol;
+add_reduce(action *actions, int ruleno, int symbol)
 {
-    register action *temp, *prev, *next;
+    action *temp, *prev, *next;
 
     prev = 0;
     for (next = actions; next && next->symbol < symbol; next = next->next)
@@ -153,11 +197,12 @@ register int ruleno, symbol;
 }
 
 
-find_final_state()
+void
+find_final_state(void)
 {
-    register int goal, i;
-    register short *to_state;
-    register shifts *p;
+    int goal, i;
+    short *to_state;
+    shifts *p;
 
     p = shift_table[0];
     to_state = p->shift;
@@ -170,10 +215,11 @@ find_final_state()
 }
 
 
-unused_rules()
+void
+unused_rules(void)
 {
-    register int i;
-    register action *p;
+    int i;
+    action *p;
 
     rules_used = (short *) MALLOC(nrules*sizeof(short));
     if (rules_used == 0) no_space();
@@ -194,19 +240,22 @@ unused_rules()
     for (i = 3; i < nrules; ++i)
 	if (!rules_used[i]) ++nunused;
 
-    if (nunused)
+    if (nunused) {
 	if (nunused == 1)
-	    fprintf(stderr, "%s: 1 rule never reduced\n", myname);
+	    fprintf(stderr, "%s: 1 rule never reduced\n", __progname);
 	else
-	    fprintf(stderr, "%s: %d rules never reduced\n", myname, nunused);
+	    fprintf(stderr, "%s: %d rules never reduced\n", __progname,
+		    nunused);
+    }
 }
 
 
-remove_conflicts()
+void
+remove_conflicts(void)
 {
-    register int i;
-    register int symbol;
-    register action *p, *pref;
+    int i;
+    int symbol;
+    action *p, *pref = NULL;
 
     SRtotal = 0;
     RRtotal = 0;
@@ -277,35 +326,37 @@ remove_conflicts()
 }
 
 
-total_conflicts()
+void
+total_conflicts(void)
 {
-    fprintf(stderr, "%s: ", myname);
-    if (SRtotal == 1)
-	fprintf(stderr, "1 shift/reduce conflict");
-    else if (SRtotal > 1)
-	fprintf(stderr, "%d shift/reduce conflicts", SRtotal);
-
-    if (SRtotal && RRtotal)
-	fprintf(stderr, ", ");
+    /* Warn if s/r != expect or if any r/r */
+    if ((SRtotal != SRexpect) || RRtotal)
+    {
+        if (SRtotal == 1)
+            fprintf(stderr, "%s: %s finds 1 shift/reduce conflict\n",
+		    input_file_name, __progname);
+        else if (SRtotal > 1)
+            fprintf(stderr, "%s: %s finds %d shift/reduce conflicts\n",
+		    input_file_name, __progname, SRtotal);
+    }
 
     if (RRtotal == 1)
-	fprintf(stderr, "1 reduce/reduce conflict");
+        fprintf(stderr, "%s: %s finds 1 reduce/reduce conflict\n",
+		input_file_name, __progname);
     else if (RRtotal > 1)
-	fprintf(stderr, "%d reduce/reduce conflicts", RRtotal);
-
-    fprintf(stderr, ".\n");
+	fprintf(stderr, "%s: %s finds %d reduce/reduce conflicts\n",
+		input_file_name, __progname, RRtotal);
 }
 
 
 int
-sole_reduction(stateno)
-int stateno;
+sole_reduction(int stateno)
 {
-    register int count, ruleno;
-    register action *p;
+    int count, ruleno;
+    action *p;
 
     count = 0;
-    ruleno = 0; 
+    ruleno = 0;
     for (p = parser[stateno]; p; p = p->next)
     {
 	if (p->action_code == SHIFT && p->suppressed == 0)
@@ -326,19 +377,20 @@ int stateno;
 }
 
 
-defreds()
+void
+defreds(void)
 {
-    register int i;
+    int i;
 
     defred = NEW2(nstates, short);
     for (i = 0; i < nstates; i++)
 	defred[i] = sole_reduction(i);
 }
- 
-free_action_row(p)
-register action *p;
+
+void
+free_action_row(action *p)
 {
-  register action *q;
+  action *q;
 
   while (p)
     {
@@ -348,13 +400,13 @@ register action *p;
     }
 }
 
-free_parser()
+void
+free_parser(void)
 {
-  register int i;
+  int i;
 
   for (i = 0; i < nstates; i++)
     free_action_row(parser[i]);
 
   FREE(parser);
 }
-

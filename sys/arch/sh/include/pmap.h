@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmap.h,v 1.4 2007/12/15 17:24:06 deraadt Exp $	*/
 /*	$NetBSD: pmap.h,v 1.28 2006/04/10 23:12:11 uwe Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -49,6 +42,8 @@
 #include <sys/queue.h>
 #include <sh/pte.h>
 
+#ifdef _KERNEL
+
 #define	PMAP_STEAL_MEMORY
 #define	PMAP_GROWKERNEL
 
@@ -64,6 +59,7 @@ extern struct pmap __pmap_kernel;
 void pmap_bootstrap(void);
 void pmap_proc_iflush(struct proc *, vaddr_t, size_t);
 #define	pmap_unuse_final(p)		do { /* nothing */ } while (0)
+#define	pmap_remove_holes(map)		do { /* nothing */ } while (0)
 #define	pmap_kernel()			(&__pmap_kernel)
 #define	pmap_deactivate(pmap)		do { /* nothing */ } while (0)
 #define	pmap_update(pmap)		do { /* nothing */ } while (0)
@@ -80,6 +76,15 @@ pmap_remove_all(struct pmap *pmap)
 	/* Nothing. */
 }
 
+/*
+ * pmap_prefer() helps to avoid virtual cache aliases on SH4 CPUs
+ * which have the virtually-indexed cache.
+ */
+#ifdef SH4
+#define	PMAP_PREFER(pa, va)		pmap_prefer((pa), (va))
+void pmap_prefer(vaddr_t, vaddr_t *);
+#endif /* SH4 */
+
 #define	__HAVE_PMAP_DIRECT
 #define	pmap_map_direct(pg)		SH3_PHYS_TO_P1SEG(VM_PAGE_TO_PHYS(pg))
 #define	pmap_unmap_direct(va)		PHYS_TO_VM_PAGE(SH3_P1SEG_TO_PHYS((va)))
@@ -88,4 +93,6 @@ pmap_remove_all(struct pmap *pmap)
 pt_entry_t *__pmap_pte_lookup(pmap_t, vaddr_t);
 pt_entry_t *__pmap_kpte_lookup(vaddr_t);
 boolean_t __pmap_pte_load(pmap_t, vaddr_t, int);
+
+#endif /* !_KERNEL */
 #endif /* !_SH_PMAP_H_ */

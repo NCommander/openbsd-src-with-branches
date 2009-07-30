@@ -1,3 +1,5 @@
+/*	$OpenBSD: bcopy.S,v 1.4 2003/06/02 20:18:30 millert Exp $	*/
+
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -12,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,10 +32,6 @@
  */
 
 #include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: bcopy.S,v 1.5 1995/04/28 22:57:57 jtc Exp $")
-#endif
 
 	/*
 	 * (ov)bcopy (src,dst,cnt)
@@ -58,24 +52,23 @@ ENTRY(bcopy)
 #if defined(MEMCOPY) || defined(MEMMOVE)
 	movl	12(%esp),%edi
 	movl	16(%esp),%esi
+	movl	%edi, %eax
 #else
 	movl	12(%esp),%esi
 	movl	16(%esp),%edi
 #endif
 	movl	20(%esp),%ecx
+	movl	%ecx,%edx
 	cmpl	%esi,%edi	/* potentially overlapping? */
 	jnb	1f
 	cld			/* nope, copy forwards. */
 	shrl	$2,%ecx		/* copy by words */
 	rep
 	movsl
-	movl	20(%esp),%ecx
+	movl	%edx,%ecx
 	andl	$3,%ecx		/* any bytes left? */
 	rep
 	movsb
-#if defined(MEMCOPY) || defined(MEMMOVE)
-	movl	12(%esp),%eax
-#endif
 	popl	%edi
 	popl	%esi
 	ret
@@ -88,15 +81,12 @@ ENTRY(bcopy)
 	decl	%esi
 	rep
 	movsb
-	movl	20(%esp),%ecx	/* copy remainder by words */
+	movl	%edx,%ecx
 	shrl	$2,%ecx
 	subl	$3,%esi
 	subl	$3,%edi
 	rep
 	movsl
-#if defined(MEMCOPY) || defined(MEMMOVE)
-	movl	12(%esp),%eax
-#endif
 	popl	%edi
 	popl	%esi
 	cld

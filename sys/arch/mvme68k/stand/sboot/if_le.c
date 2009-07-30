@@ -1,6 +1,29 @@
-/*	$NetBSD: le_poll.c,v 1.3 1994/10/26 09:11:48 cgd Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.6 2003/06/04 16:36:14 deraadt Exp $ */
 
 /*
+ * Copyright (c) 1995 Theo de Raadt
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  * Copyright (c) 1993 Adam Glass
  * All rights reserved.
  *
@@ -32,6 +55,7 @@
  */
 
 #include <sys/cdefs.h>
+#include <stand.h>
 #include "sboot.h"
 #include "if_lereg.h"
 
@@ -42,10 +66,8 @@ struct {
 	int     next_tmd;
 }       le_softc;
 
-void 
-le_error(str, ler1)
-	char   *str;
-	struct lereg1 *ler1;
+static void
+le_error(char *str, struct lereg1 *ler1)
 {
 	/* ler1->ler1_rap = LE_CSRO done in caller */
 	if (ler1->ler1_rdp & LE_C0_BABL) {
@@ -64,9 +86,8 @@ le_error(str, ler1)
 	}
 }
 
-void 
-le_reset(myea)
-	u_char *myea;
+static void
+le_reset(u_char *myea)
 {
 	struct lereg1 *ler1 = le_softc.sc_r1;
 	struct lereg2 *ler2 = le_softc.sc_r2;
@@ -85,7 +106,6 @@ le_reset(myea)
 	ler2->ler2_padr[3] = myea[2];
 	ler2->ler2_padr[4] = myea[5];
 	ler2->ler2_padr[5] = myea[4];
-
 
 	ler2->ler2_ladrf0 = 0;
 	ler2->ler2_ladrf1 = 0;
@@ -141,10 +161,8 @@ le_reset(myea)
 	ler1->ler1_rdp = LE_C0_STRT;
 }
 
-int 
-le_poll(pkt, len)
-	void   *pkt;
-	int     len;
+static int
+le_poll(void *pkt, int len)
 {
 	struct lereg1 *ler1 = le_softc.sc_r1;
 	struct lereg2 *ler2 = le_softc.sc_r2;
@@ -194,10 +212,8 @@ cleanup:
 	return length;
 }
 
-int 
-le_put(pkt, len)
-	u_char *pkt;
-	size_t  len;
+int
+le_put(u_char *pkt, size_t len)
 {
 	struct lereg1 *ler1 = le_softc.sc_r1;
 	struct lereg2 *ler2 = le_softc.sc_r2;
@@ -254,19 +270,16 @@ le_put(pkt, len)
 	return len;
 }
 
-int 
-le_get(pkt, len, timeout)
-	u_char *pkt;
-	size_t  len;
-	u_long  timeout;
+int
+le_get(u_char *pkt, size_t len, u_long timeout)
 {
 	int     cc;
 	int     now, then;
-	int     stopat = time() + timeout;
+	int     stopat = ttime() + timeout;
 	then = 0;
 
 	cc = 0;
-	while ((now = time()) < stopat && !cc) {
+	while ((now = ttime()) < stopat && !cc) {
 		cc = le_poll(pkt, len);
 		if (then != now) {
 #ifdef LE_DEBUG
@@ -289,13 +302,14 @@ le_get(pkt, len, timeout)
 	return cc;
 }
 
-void 
-le_init()
+void
+le_init(void)
 {
 	caddr_t addr;
 	int    *ea = (int *) LANCE_ADDR;
 	u_long *eram = (u_long *) ERAM_ADDR;
 	u_long  e = *ea;
+
 	if ((e & 0x2fffff00) == 0x2fffff00) {
 		printf("ERROR: ethernet address not set!  Use LSAD.\n");
 		callrom();
@@ -317,8 +331,8 @@ le_init()
 	le_reset(myea);
 }
 
-void 
-le_end()
+void
+le_end(void)
 {
 	struct lereg1 *ler1 = le_softc.sc_r1;
 

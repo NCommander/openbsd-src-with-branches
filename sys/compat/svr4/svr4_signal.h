@@ -1,4 +1,5 @@
-/*	$NetBSD: svr4_signal.h,v 1.13 1995/08/14 02:22:20 mycroft Exp $	 */
+/*	$OpenBSD: svr4_signal.h,v 1.4 1997/06/02 09:42:17 deraadt Exp $	 */
+/*	$NetBSD: svr4_signal.h,v 1.14 1995/10/14 20:24:41 christos Exp $	 */
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -76,13 +77,14 @@
 #define	SVR4_SIGIGNORE_MASK	0x0800
 #define	SVR4_SIGPAUSE_MASK	0x1000
 
-#define SVR4_SIGNO(x)		((x) & SVR4_SIGNO_MASK)
-#define SVR4_SIGCALL(x)		((x) & ~SVR4_SIGNO_MASK)
+typedef void (*svr4_sig_t)(int, svr4_siginfo_t *, void *);
+#define	SVR4_SIG_DFL	(svr4_sig_t)	 0
+#define	SVR4_SIG_ERR	(svr4_sig_t)	-1
+#define	SVR4_SIG_IGN	(svr4_sig_t)	 1
+#define	SVR4_SIG_HOLD	(svr4_sig_t)	 2
 
-#define	SVR4_SIG_DFL		(void(*)())0
-#define	SVR4_SIG_ERR		(void(*)())-1
-#define	SVR4_SIG_IGN		(void(*)())1
-#define	SVR4_SIG_HOLD		(void(*)())2
+#define SVR4_SIGNO(a)	((a) & SVR4_SIGNO_MASK)
+#define SVR4_SIGCALL(a) ((a) & ~SVR4_SIGNO_MASK)
 
 #define SVR4_SIG_BLOCK		1
 #define SVR4_SIG_UNBLOCK	2
@@ -91,11 +93,10 @@
 typedef struct {
         u_long bits[4];
 } svr4_sigset_t;
-typedef void    (*svr4_sig_t) __P((int));
 
 struct svr4_sigaction {
 	int		sa_flags;
-	svr4_sig_t	sa_handler;
+	svr4_sig_t	sa__handler;
 	svr4_sigset_t	sa_mask;
 	int 		sa_reserved[2];
 };
@@ -120,9 +121,9 @@ struct svr4_sigaltstack {
 #define SVR4_SS_DISABLE		0x00000002
 
 extern int bsd_to_svr4_sig[];
-void bsd_to_svr4_sigaltstack __P((const struct sigaltstack *, struct svr4_sigaltstack *));
-void bsd_to_svr4_sigset __P((const sigset_t *, svr4_sigset_t *));
-void svr4_to_bsd_sigaltstack __P((const struct svr4_sigaltstack *, struct sigaltstack *));
-void svr4_to_bsd_sigset __P((const svr4_sigset_t *, sigset_t *));
+void bsd_to_svr4_sigaltstack(const struct sigaltstack *, struct svr4_sigaltstack *);
+void bsd_to_svr4_sigset(const sigset_t *, svr4_sigset_t *);
+void svr4_to_bsd_sigaltstack(const struct svr4_sigaltstack *, struct sigaltstack *);
+void svr4_to_bsd_sigset(const svr4_sigset_t *, sigset_t *);
 
 #endif /* !_SVR4_SIGNAL_H_ */

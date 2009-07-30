@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_cbrt.S,v 1.3 2008/05/21 20:37:10 miod Exp $	*/
 /*	$NetBSD: n_cbrt.S,v 1.1 1995/10/10 23:40:26 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,6 +31,8 @@
  *	@(#)cbrt.s	8.1 (Berkeley) 6/4/93
  */
 
+#include <machine/asm.h>
+
 /*
  * double cbrt(double arg)
  * W. Kahan, 10/13/80. revised 1/13/84 for keeping sign symmetry
@@ -41,31 +40,19 @@
  * Revised and tested by K.C. Ng, 5/2/85  
  * Max error less than 0.667 ulps (unit in the last places)
  */
-
-	.globl	_cbrt
-	.globl	_d_cbrt
-	.globl  _dcbrt_
 	.text
-	.align	1
-
-_cbrt:
-_d_cbrt:
-	.word	0x00fc		# save r2 to r7
+	_ALIGN_TEXT
+ENTRY(cbrt, R2|R3|R4|R5|R6|R7)
 	movq	4(ap),r0	# r0 = argument x
-	jmp 	dcbrt2
-_dcbrt_:
-	.word	0x00fc		# save r2 to r7
-	movq	*4(ap),r0	# r0 = argument x
-
-dcbrt2:	bicw3	$0x807f,r0,r2	# biased exponent of x
-	jeql	return		# dcbrt(0)=0  dcbrt(res)=res. operand
+	bicw3	$0x807f,r0,r2	# biased exponent of x
+	jeql	return		# cbrt(0)=0  cbrt(res)=res. operand
 	bicw3	$0x7fff,r0,ap	# ap has sign(x)
 	xorw2	ap,r0		# r0 is abs(x)
 	movl	r0,r2		# r2 has abs(x)
 	rotl	$16,r2,r2	# r2 = |x| with bits unscrambled
-	divl2	$3,r2		# rough dcbrt with bias/3
+	divl2	$3,r2		# rough cbrt with bias/3
 	addl2	B,r2		# restore bias, diminish fraction
-	rotl	$16,r2,r2	# r2=|q|=|dcbrt| to 5 bits
+	rotl	$16,r2,r2	# r2=|q|=|cbrt| to 5 bits
 	mulf3	r2,r2,r3	# r3 =qq
 	divf2	r0,r3		# r3 = qq/x
 	mulf2	r2,r3
@@ -91,11 +78,10 @@ return:
 	ret			# error less than 0.667 ulps
 
 .data
-.align	2
+	.align 2
 B :	.long		 721142941		# (86-0.03306235651)*(2^23)
 C :	.float		0f0.5428571429		# 19/35
 D :	.float		0f-0.7053061224		# -864/1225
 E :	.float		0f1.414285714		# 99/70
 F :	.float		0f1.607142857		# 45/28
 G :	.float		0f0.3571428571		# 5/14
-

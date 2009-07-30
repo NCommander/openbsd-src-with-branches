@@ -207,6 +207,8 @@ do_editor (dir, messagep, repository, changes)
 	    (*messagep)[strlen (*messagep) - 1] != '\n')
 	    (void) fprintf (fp, "\n");
     }
+    else
+	(void) fprintf (fp, "\n");
 
     if (repository != NULL)
 	/* tack templates on if necessary */
@@ -588,6 +590,15 @@ title_proc (p, closure)
 				  strlen (str_list) + strlen (p->key) + 5);
 		    (void) strcat (str_list, p->key);
 		    break;
+		case 't':
+		    str_list =
+			xrealloc (str_list,
+				  (strlen (str_list)
+				   + (li->tag ? strlen (li->tag) : 0)
+				   + 10)
+				  );
+		    (void) strcat (str_list, (li->tag ? li->tag : ""));
+		    break;
 		case 'V':
 		    str_list =
 			xrealloc (str_list,
@@ -667,6 +678,7 @@ logfile_write (repository, filter, message, logfp, changes)
        `}' as separators.  The format characters are:
 
          s = file name
+         t = tag name
 	 V = old version number (pre-checkin)
 	 v = new version number (post-checkin)
 
@@ -676,6 +688,7 @@ logfile_write (repository, filter, message, logfp, changes)
 	 %s
 	 %{s}
 	 %{sVv}
+	 %{Vvts}
 
        There's no reason that more items couldn't be added (like
        modification date or file status [added, modified, updated,

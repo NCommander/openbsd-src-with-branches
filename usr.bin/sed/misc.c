@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.7 2006/10/09 00:23:57 tedu Exp $	*/
+
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -14,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: misc.c,v 1.4 1994/02/03 23:44:54 cgd Exp $";
+static const char rcsid[] = "$OpenBSD: misc.c,v 1.7 2006/10/09 00:23:57 tedu Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -47,6 +45,7 @@ static char *rcsid = "$Id: misc.c,v 1.4 1994/02/03 23:44:54 cgd Exp $";
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "defs.h"
 #include "extern.h"
@@ -55,8 +54,7 @@ static char *rcsid = "$Id: misc.c,v 1.4 1994/02/03 23:44:54 cgd Exp $";
  * malloc with result test
  */
 void *
-xmalloc(size)
-	u_int size;
+xmalloc(size_t size)
 {
 	void *p;
 
@@ -69,12 +67,8 @@ xmalloc(size)
  * realloc with result test
  */
 void *
-xrealloc(p, size)
-	void *p;
-	u_int size;
+xrealloc(void *p, size_t size)
 {
-	if (p == NULL)			/* Compatibility hack. */
-		return (xmalloc(size));
 
 	if ((p = realloc(p, size)) == NULL)
 		err(FATAL, "%s", strerror(errno));
@@ -87,45 +81,27 @@ xrealloc(p, size)
  * the buffer).
  */
 char *
-strregerror(errcode, preg)
-	int errcode;
-	regex_t *preg;
+strregerror(int errcode, regex_t *preg)
 {
 	static char *oe;
 	size_t s;
 
-	if (oe != NULL)
-		free(oe);
+	free(oe);
 	s = regerror(errcode, preg, "", 0);
 	oe = xmalloc(s);
 	(void)regerror(errcode, preg, oe, s);
 	return (oe);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 /*
  * Error reporting function
  */
 void
-#if __STDC__
 err(int severity, const char *fmt, ...)
-#else
-err(severity, fmt, va_alist)
-	int severity;
-	char *fmt;
-        va_dcl
-#endif
 {
 	va_list ap;
-#if __STDC__
+
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	(void)fprintf(stderr, "sed: ");
 	switch (severity) {
 	case WARNING:

@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mtab.c	8.1 (Berkeley) 6/6/93
- *	$Id: mtab.c,v 1.3 1994/06/13 20:47:42 mycroft Exp $
+ *	$Id: mtab.c,v 1.4 2002/08/05 07:24:26 pvalchev Exp $
  */
 
 #include "am.h"
@@ -44,40 +40,37 @@
 /*
  * Firewall /etc/mtab entries
  */
-void mnt_free P((struct mntent *mp));
-void mnt_free(mp)
-struct mntent *mp;
+void
+mnt_free(struct mntent *mp)
 {
 	free(mp->mnt_fsname);
 	free(mp->mnt_dir);
 	free(mp->mnt_type);
 	free(mp->mnt_opts);
-	free((voidp) mp);
+	free((void *)mp);
 }
 
 /*
  * Discard memory allocated for mount list
  */
-void discard_mntlist P((mntlist *mp));
-void discard_mntlist(mp)
-mntlist *mp;
+void
+discard_mntlist(mntlist *mp)
 {
 	mntlist *mp2;
 
-	while (mp2 = mp) {
+	while ((mp2 = mp)) {
 		mp = mp->mnext;
 		if (mp2->mnt)
 			mnt_free(mp2->mnt);
-		free((voidp) mp2);
+		free((void *)mp2);
 	}
 }
 
 /*
  * Throw away a mount list
  */
-void free_mntlist P((mntlist *mp));
-void free_mntlist(mp)
-mntlist *mp;
+void
+free_mntlist(mntlist *mp)
 {
 	discard_mntlist(mp);
 	unlock_mntlist();
@@ -88,10 +81,8 @@ mntlist *mp;
  * numeric option in the mount options (such as port=%d).
  * Returns 0 if the option is not specified.
  */
-int hasmntval P((struct mntent *mnt, char *opt));
-int hasmntval(mnt, opt)
-struct mntent *mnt;
-char *opt;
+int
+hasmntval(struct mntent *mnt, char *opt)
 {
 	char *str = hasmntopt(mnt, opt);
 	if (str) {

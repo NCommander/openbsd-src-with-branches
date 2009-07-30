@@ -1,4 +1,69 @@
-/*	$NetBSD: igmp.c,v 1.14 1995/08/12 23:59:31 mycroft Exp $	*/
+/*	$OpenBSD: igmp.c,v 1.25 2007/12/13 20:47:57 millert Exp $	*/
+/*	$NetBSD: igmp.c,v 1.15 1996/02/13 23:41:25 christos Exp $	*/
+
+/*
+ * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the project nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE PROJECT OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1988 Stephen Deering.
+ * Copyright (c) 1992, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Stephen Deering of Stanford University.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *	@(#)igmp.c	8.2 (Berkeley) 5/3/95
+ */
 
 /*
  * Internet Group Management Protocol (IGMP) routines.
@@ -14,6 +79,7 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/protosw.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -25,13 +91,21 @@
 #include <netinet/ip_var.h>
 #include <netinet/igmp.h>
 #include <netinet/igmp_var.h>
+#include <dev/rndvar.h>
+
+#include <sys/stdarg.h>
 
 #define IP_MULTICASTOPTS	0
 
+int *igmpctl_vars[IGMPCTL_MAXID] = IGMPCTL_VARS;
+
 int		igmp_timers_are_running;
 static struct router_info *rti_head;
+struct igmpstat igmpstat;
 
-void igmp_sendpkt __P((struct in_multi *, int));
+void igmp_sendpkt(struct in_multi *, int, in_addr_t);
+int rti_fill(struct in_multi *);
+struct router_info * rti_find(struct ifnet *);
 
 void
 igmp_init()
@@ -44,14 +118,15 @@ igmp_init()
 	rti_head = 0;
 }
 
-static int
+/* Return -1 for error. */
+int
 rti_fill(inm)
 	struct in_multi *inm;
 {
-	register struct router_info *rti;
+	struct router_info *rti;
 
 	for (rti = rti_head; rti != 0; rti = rti->rti_next) {
-		if (rti->rti_ifp == inm->inm_ifp) {
+		if (rti->rti_ifp == inm->inm_ia->ia_ifp) {
 			inm->inm_rti = rti;
 			if (rti->rti_type == IGMP_v1_ROUTER)
 				return (IGMP_v1_HOST_MEMBERSHIP_REPORT);
@@ -62,7 +137,9 @@ rti_fill(inm)
 
 	rti = (struct router_info *)malloc(sizeof(struct router_info),
 					   M_MRTABLE, M_NOWAIT);
-	rti->rti_ifp = inm->inm_ifp;
+	if (rti == NULL)
+		return (-1);
+	rti->rti_ifp = inm->inm_ia->ia_ifp;
 	rti->rti_type = IGMP_v2_ROUTER;
 	rti->rti_next = rti_head;
 	rti_head = rti;
@@ -70,11 +147,11 @@ rti_fill(inm)
 	return (IGMP_v2_HOST_MEMBERSHIP_REPORT);
 }
 
-static struct router_info *
+struct router_info *
 rti_find(ifp)
 	struct ifnet *ifp;
 {
-	register struct router_info *rti;
+	struct router_info *rti;
 
 	for (rti = rti_head; rti != 0; rti = rti->rti_next) {
 		if (rti->rti_ifp == ifp)
@@ -83,6 +160,8 @@ rti_find(ifp)
 
 	rti = (struct router_info *)malloc(sizeof(struct router_info),
 					   M_MRTABLE, M_NOWAIT);
+	if (rti == NULL)
+		return (NULL);
 	rti->rti_ifp = ifp;
 	rti->rti_type = IGMP_v2_ROUTER;
 	rti->rti_next = rti_head;
@@ -91,24 +170,44 @@ rti_find(ifp)
 }
 
 void
-igmp_input(m, iphlen)
-	register struct mbuf *m;
-	register int iphlen;
+rti_delete(ifp)
+	struct ifnet *ifp;
 {
-	register struct ifnet *ifp = m->m_pkthdr.rcvif;
-	register struct ip *ip = mtod(m, struct ip *);
-	register struct igmp *igmp;
-	register int igmplen;
-	register int minlen;
+	struct router_info *rti, **prti = &rti_head;
+
+	for (rti = rti_head; rti != 0; rti = rti->rti_next) {
+		if (rti->rti_ifp == ifp) {
+			*prti = rti->rti_next;
+			free(rti, M_MRTABLE);
+			break;
+		}
+		prti = &rti->rti_next;
+	}
+}
+
+void
+igmp_input(struct mbuf *m, ...)
+{
+	int iphlen;
+	struct ifnet *ifp = m->m_pkthdr.rcvif;
+	struct ip *ip = mtod(m, struct ip *);
+	struct igmp *igmp;
+	int igmplen;
+	int minlen;
 	struct in_multi *inm;
 	struct in_multistep step;
 	struct router_info *rti;
-	register struct in_ifaddr *ia;
+	struct in_ifaddr *ia;
 	int timer;
+	va_list ap;
+
+	va_start(ap, m);
+	iphlen = va_arg(ap, int);
+	va_end(ap);
 
 	++igmpstat.igps_rcv_total;
 
-	igmplen = ip->ip_len;
+	igmplen = ntohs(ip->ip_len) - iphlen;
 
 	/*
 	 * Validate lengths
@@ -120,7 +219,7 @@ igmp_input(m, iphlen)
 	}
 	minlen = iphlen + IGMP_MINLEN;
 	if ((m->m_flags & M_EXT || m->m_len < minlen) &&
-	    (m = m_pullup(m, minlen)) == 0) {
+	    (m = m_pullup(m, minlen)) == NULL) {
 		++igmpstat.igps_rcv_tooshort;
 		return;
 	}
@@ -150,6 +249,10 @@ igmp_input(m, iphlen)
 
 		if (igmp->igmp_code == 0) {
 			rti = rti_find(ifp);
+			if (rti == NULL) {
+				m_freem(m);
+				return;
+			}
 			rti->rti_type = IGMP_v1_ROUTER;
 			rti->rti_age = 0;
 
@@ -167,7 +270,7 @@ igmp_input(m, iphlen)
 			 */
 			IN_FIRST_MULTI(step, inm);
 			while (inm != NULL) {
-				if (inm->inm_ifp == ifp &&
+				if (inm->inm_ia->ia_ifp == ifp &&
 				    inm->inm_timer == 0 &&
 				    !IN_LOCAL_GROUP(inm->inm_addr.s_addr)) {
 					inm->inm_state = IGMP_DELAYING_MEMBER;
@@ -185,6 +288,8 @@ igmp_input(m, iphlen)
 			}
 
 			timer = igmp->igmp_code * PR_FASTHZ / IGMP_TIMER_SCALE;
+			if (timer == 0)
+				timer = 1;
 
 			/*
 			 * Start the timers in all of our membership records
@@ -196,7 +301,7 @@ igmp_input(m, iphlen)
 			 */
 			IN_FIRST_MULTI(step, inm);
 			while (inm != NULL) {
-				if (inm->inm_ifp == ifp &&
+				if (inm->inm_ia->ia_ifp == ifp &&
 				    !IN_LOCAL_GROUP(inm->inm_addr.s_addr) &&
 				    (ip->ip_dst.s_addr == INADDR_ALLHOSTS_GROUP ||
 				     ip->ip_dst.s_addr == inm->inm_addr.s_addr)) {
@@ -358,13 +463,17 @@ void
 igmp_joingroup(inm)
 	struct in_multi *inm;
 {
-	int s = splsoftnet();
+	int i, s = splsoftnet();
 
 	inm->inm_state = IGMP_IDLE_MEMBER;
 
 	if (!IN_LOCAL_GROUP(inm->inm_addr.s_addr) &&
-	    (inm->inm_ifp->if_flags & IFF_LOOPBACK) == 0) {
-		igmp_sendpkt(inm, rti_fill(inm));
+	    (inm->inm_ia->ia_ifp->if_flags & IFF_LOOPBACK) == 0) {
+		if ((i = rti_fill(inm)) == -1) {
+			splx(s);
+			return;
+		}
+		igmp_sendpkt(inm, i, 0);
 		inm->inm_state = IGMP_DELAYING_MEMBER;
 		inm->inm_timer = IGMP_RANDOM_DELAY(
 		    IGMP_MAX_HOST_REPORT_DELAY * PR_FASTHZ);
@@ -383,9 +492,10 @@ igmp_leavegroup(inm)
 	case IGMP_DELAYING_MEMBER:
 	case IGMP_IDLE_MEMBER:
 		if (!IN_LOCAL_GROUP(inm->inm_addr.s_addr) &&
-		    (inm->inm_ifp->if_flags & IFF_LOOPBACK) == 0)
+		    (inm->inm_ia->ia_ifp->if_flags & IFF_LOOPBACK) == 0)
 			if (inm->inm_rti->rti_type != IGMP_v1_ROUTER)
-				igmp_sendpkt(inm, IGMP_HOST_LEAVE_MESSAGE);
+				igmp_sendpkt(inm, IGMP_HOST_LEAVE_MESSAGE,
+				    INADDR_ALLROUTERS_GROUP);
 		break;
 	case IGMP_LAZY_MEMBER:
 	case IGMP_AWAKENING_MEMBER:
@@ -397,7 +507,7 @@ igmp_leavegroup(inm)
 void
 igmp_fasttimo()
 {
-	register struct in_multi *inm;
+	struct in_multi *inm;
 	struct in_multistep step;
 	int s;
 
@@ -418,10 +528,10 @@ igmp_fasttimo()
 			if (inm->inm_state == IGMP_DELAYING_MEMBER) {
 				if (inm->inm_rti->rti_type == IGMP_v1_ROUTER)
 					igmp_sendpkt(inm,
-					    IGMP_v1_HOST_MEMBERSHIP_REPORT);
+					    IGMP_v1_HOST_MEMBERSHIP_REPORT, 0);
 				else
 					igmp_sendpkt(inm,
-					    IGMP_v2_HOST_MEMBERSHIP_REPORT);
+					    IGMP_v2_HOST_MEMBERSHIP_REPORT, 0);
 				inm->inm_state = IGMP_IDLE_MEMBER;
 			}
 		} else {
@@ -435,7 +545,7 @@ igmp_fasttimo()
 void
 igmp_slowtimo()
 {
-	register struct router_info *rti;
+	struct router_info *rti;
 	int s;
 
 	s = splsoftnet();
@@ -449,9 +559,10 @@ igmp_slowtimo()
 }
 
 void
-igmp_sendpkt(inm, type)
+igmp_sendpkt(inm, type, addr)
 	struct in_multi *inm;
 	int type;
+	in_addr_t addr;
 {
 	struct mbuf *m;
 	struct igmp *igmp;
@@ -474,11 +585,15 @@ igmp_sendpkt(inm, type)
 
 	ip = mtod(m, struct ip *);
 	ip->ip_tos = 0;
-	ip->ip_len = sizeof(struct ip) + IGMP_MINLEN;
+	ip->ip_len = htons(sizeof(struct ip) + IGMP_MINLEN);
 	ip->ip_off = 0;
 	ip->ip_p = IPPROTO_IGMP;
 	ip->ip_src.s_addr = INADDR_ANY;
-	ip->ip_dst = inm->inm_addr;
+	if (addr) {
+		ip->ip_dst.s_addr = addr;
+	} else {
+		ip->ip_dst = inm->inm_addr;
+	}
 
 	m->m_data += sizeof(struct ip);
 	m->m_len -= sizeof(struct ip);
@@ -491,14 +606,14 @@ igmp_sendpkt(inm, type)
 	m->m_data -= sizeof(struct ip);
 	m->m_len += sizeof(struct ip);
 
-	imo.imo_multicast_ifp = inm->inm_ifp;
+	imo.imo_multicast_ifp = inm->inm_ia->ia_ifp;
 	imo.imo_multicast_ttl = 1;
 #ifdef RSVP_ISI
 	imo.imo_multicast_vif = -1;
 #endif
 	/*
 	 * Request loopback of the report if we are acting as a multicast
-	 * router, so that the process-level routing demon can hear it.
+	 * router, so that the process-level routing daemon can hear it.
 	 */
 #ifdef MROUTING
 	imo.imo_multicast_loop = (ip_mrouter != NULL);
@@ -507,7 +622,33 @@ igmp_sendpkt(inm, type)
 #endif /* MROUTING */
 
 	ip_output(m, (struct mbuf *)0, (struct route *)0, IP_MULTICASTOPTS,
-	    &imo);
+	    &imo, (void *)NULL);
 
 	++igmpstat.igps_snd_reports;
+}
+
+/*
+ * Sysctl for igmp variables.
+ */
+int
+igmp_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
+    void *newp, size_t newlen)
+{
+	/* All sysctl names at this level are terminal. */
+	if (namelen != 1)
+		return (ENOTDIR);
+
+	switch (name[0]) {
+	case IGMPCTL_STATS:
+		if (newp != NULL)
+			return (EPERM);
+		return (sysctl_struct(oldp, oldlenp, newp, newlen,
+		    &igmpstat, sizeof(igmpstat)));
+	default:
+		if (name[0] < IGMPCTL_MAXID)
+			return (sysctl_int_arr(igmpctl_vars, name, namelen,
+			    oldp, oldlenp, newp, newlen));
+		return (ENOPROTOOPT);
+	}
+	/* NOTREACHED */
 }

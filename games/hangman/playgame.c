@@ -1,3 +1,4 @@
+/*	$OpenBSD: playgame.c,v 1.6 2004/11/29 08:52:28 jsg Exp $	*/
 /*	$NetBSD: playgame.c,v 1.3 1995/03/23 08:32:53 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,26 +34,30 @@
 #if 0
 static char sccsid[] = "@(#)playgame.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: playgame.c,v 1.3 1995/03/23 08:32:53 cgd Exp $";
+static char rcsid[] = "$OpenBSD: playgame.c,v 1.6 2004/11/29 08:52:28 jsg Exp $";
 #endif
 #endif /* not lint */
 
-# include	"hangman.h"
+#include	"hangman.h"
 
 /*
  * playgame:
  *	play a game
  */
-playgame()
+void
+playgame(void)
 {
-	register bool	*bp;
+	bool	*bp;
 
-	getword();
+	if (ksyms)
+		kgetword();
+	else
+		getword();
 	Errors = 0;
 	bp = Guessed;
 	while (bp < &Guessed[26])
 		*bp++ = FALSE;
-	while (Errors < MAXERRS && index(Known, '-') != NULL) {
+	while (Errors < MAXERRS && strchr(Known, '-') != NULL) {
 		prword();
 		prdata();
 		prman();

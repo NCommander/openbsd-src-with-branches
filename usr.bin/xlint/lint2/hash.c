@@ -1,3 +1,4 @@
+/*	$OpenBSD: hash.c,v 1.4 2002/02/16 21:27:59 millert Exp $	*/
 /*	$NetBSD: hash.c,v 1.2 1995/07/03 21:24:47 cgd Exp $	*/
 
 /*
@@ -32,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$NetBSD: hash.c,v 1.2 1995/07/03 21:24:47 cgd Exp $";
+static char rcsid[] = "$OpenBSD: hash.c,v 1.4 2002/02/16 21:27:59 millert Exp $";
 #endif
 
 #include <stddef.h>
@@ -44,13 +45,13 @@ static char rcsid[] = "$NetBSD: hash.c,v 1.2 1995/07/03 21:24:47 cgd Exp $";
 /* pointer to hash table, initialized in inithash() */
 static	hte_t	**htab;
 
-static	int	hash __P((const char *));
+static	int	hash(const char *);
 
 /*
  * Initialize hash table.
  */
 void
-inithash()
+inithash(void)
 {
 	htab = xcalloc(HSHSIZ2, sizeof (hte_t *));
 }
@@ -59,8 +60,7 @@ inithash()
  * Compute hash value from a string.
  */
 static int
-hash(s)
-	const	char *s;
+hash(const char *s)
 {
 	u_int	v;
 	const	u_char *us;
@@ -78,9 +78,7 @@ hash(s)
  * given name exists and mknew is set, create a new one.
  */
 hte_t *
-hsearch(s, mknew)
-	const	char *s;
-	int	mknew;
+hsearch(const char *s, int mknew)
 {
 	int	h;
 	hte_t	*hte;
@@ -96,6 +94,7 @@ hsearch(s, mknew)
 
 	/* create a new hte */
 	hte = xalloc(sizeof (hte_t));
+	memset(hte, 0, sizeof (hte_t));
 	hte->h_name = xstrdup(s);
 	hte->h_lsym = &hte->h_syms;
 	hte->h_lcall = &hte->h_calls;
@@ -110,8 +109,7 @@ hsearch(s, mknew)
  * Call function f for each name in the hash table.
  */
 void
-forall(f)
-	void	(*f) __P((hte_t *));
+forall(void (*f)(hte_t *))
 {
 	int	i;
 	hte_t	*hte;

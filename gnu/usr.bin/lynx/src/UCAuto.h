@@ -1,7 +1,14 @@
-
 #ifndef UCAUTO_H
 #define UCAUTO_H
 
-extern void UCChangeTerminalCodepage PARAMS((int newcs, LYUCcharset *p));
+#include <UCDefs.h>
 
-#endif /* UCAUTO_H */
+#ifdef __cplusplus
+extern "C" {
+#endif
+    extern void UCChangeTerminalCodepage(int newcs, LYUCcharset *p);
+
+#ifdef __cplusplus
+}
+#endif
+#endif				/* UCAUTO_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004-2007  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 2004-2008  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 1999-2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -15,7 +15,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: server.c,v 1.419.18.57.10.1 2008/05/22 21:28:04 each Exp $ */
+/* $ISC: server.c,v 1.419.18.57.10.3 2008/07/23 12:04:32 marka Exp $ */
 
 /*! \file */
 
@@ -2696,27 +2696,29 @@ static isc_result_t
 load_configuration(const char *filename, ns_server_t *server,
 		   isc_boolean_t first_time)
 {
-	isc_result_t result;
-	isc_interval_t interval;
-	cfg_parser_t *parser = NULL;
+	cfg_aclconfctx_t aclconfctx;
 	cfg_obj_t *config;
-	const cfg_obj_t *options;
-	const cfg_obj_t *views;
-	const cfg_obj_t *obj;
-	const cfg_obj_t *v4ports, *v6ports;
-	const cfg_obj_t *maps[3];
-	const cfg_obj_t *builtin_views;
+	cfg_parser_t *parser = NULL;
 	const cfg_listelt_t *element;
+	const cfg_obj_t *builtin_views;
+	const cfg_obj_t *maps[3];
+	const cfg_obj_t *obj;
+	const cfg_obj_t *options;
+	const cfg_obj_t *v4ports, *v6ports;
+	const cfg_obj_t *views;
 	dns_view_t *view = NULL;
 	dns_view_t *view_next;
-	dns_viewlist_t viewlist;
 	dns_viewlist_t tmpviewlist;
-	cfg_aclconfctx_t aclconfctx;
-	isc_uint32_t interface_interval;
-	isc_uint32_t heartbeat_interval;
-	isc_uint32_t udpsize;
+	dns_viewlist_t viewlist;
 	in_port_t listen_port;
 	int i;
+	isc_interval_t interval;
+	isc_resourcevalue_t files;
+	isc_result_t result;
+	isc_uint32_t heartbeat_interval;
+	isc_uint32_t interface_interval;
+	isc_uint32_t reserved;
+	isc_uint32_t udpsize;
 
 	cfg_aclconfctx_init(&aclconfctx);
 	ISC_LIST_INIT(viewlist);
@@ -2796,6 +2798,43 @@ load_configuration(const char *filename, ns_server_t *server,
 	 */
 	set_limits(maps);
 
+	/*
+	 * Sanity check on "files" limit.
+	 */
+	result = isc_resource_curlimit(isc_resource_openfiles, &files);
+	if (result == ISC_R_SUCCESS && files < FD_SETSIZE) {
+		isc_log_write(ns_g_lctx, NS_LOGCATEGORY_GENERAL,
+			      NS_LOGMODULE_SERVER, ISC_LOG_WARNING,
+			      "the 'files' limit (%" ISC_PRINT_QUADFORMAT "u) "
+			      "is less than FD_SETSIZE (%d), increase "
+			      "'files' in named.conf or recompile with a "
+			      "smaller FD_SETSIZE.", files, FD_SETSIZE);
+		if (files > FD_SETSIZE)
+			files = FD_SETSIZE;
+	} else
+		files = FD_SETSIZE;
+
+	/*
+	 * Set the number of socket reserved for TCP, stdio etc.
+	 */
+	obj = NULL;
+	result = ns_config_get(maps, "reserved-sockets", &obj);
+	INSIST(result == ISC_R_SUCCESS);
+	reserved = cfg_obj_asuint32(obj);
+	if (files < 128U)			/* Prevent underflow. */
+		reserved = 0;
+	else if (reserved > files - 128U)	/* Mimimum UDP space. */
+		reserved = files - 128;
+	if (reserved < 128U)			/* Mimimum TCP/stdio space. */
+		reserved = 128;
+	if (reserved + 128U > files) {
+		isc_log_write(ns_g_lctx, NS_LOGCATEGORY_GENERAL,
+                              NS_LOGMODULE_SERVER, ISC_LOG_WARNING,
+			      "less than 128 UDP sockets available after "
+			      "applying 'reserved-sockets' and 'files'");
+	}
+	isc__socketmgr_setreserved(ns_g_socketmgr, reserved);
+	
 	/*
 	 * Configure various server options.
 	 */
@@ -2943,7 +2982,7 @@ load_configuration(const char *filename, ns_server_t *server,
 			 * Not specified, use default.
 			 */
 			CHECK(ns_listenlist_default(ns_g_mctx, listen_port,
-						    ISC_FALSE, &listenon));
+						    ISC_TRUE, &listenon));
 		}
 		if (listenon != NULL) {
 			ns_interfacemgr_setlistenon6(server->interfacemgr,
@@ -3110,15 +3149,6 @@ load_configuration(const char *filename, ns_server_t *server,
 			const char *randomdev = cfg_obj_asstring(obj);
 			result = isc_entropy_createfilesource(ns_g_entropy,
 							      randomdev);
-			if (result != ISC_R_SUCCESS)
-				isc_log_write(ns_g_lctx,
-					      NS_LOGCATEGORY_GENERAL,
-					      NS_LOGMODULE_SERVER,
-					      ISC_LOG_INFO,
-					      "could not open entropy source "
-					      "%s: %s",
-					      randomdev,
-					      isc_result_totext(result));
 #ifdef PATH_RANDOMDEV
 			if (ns_g_fallbackentropy != NULL) {
 				if (result != ISC_R_SUCCESS) {
@@ -3134,16 +3164,27 @@ load_configuration(const char *filename, ns_server_t *server,
 							   &ns_g_entropy);
 				}
 				isc_entropy_detach(&ns_g_fallbackentropy);
-			}
+			} else
 #endif
+			if (result != ISC_R_SUCCESS)
+				isc_log_write(ns_g_lctx,
+					      NS_LOGCATEGORY_GENERAL,
+					      NS_LOGMODULE_SERVER,
+					      ISC_LOG_INFO,
+					      "could not open entropy source "
+					      "%s: %s",
+					      randomdev,
+					      isc_result_totext(result));
 		}
 	}
 
 	/*
-	 * Relinquish root privileges.
+	 * Relinquish root privileges. Not used due to privsep
 	 */
+#if 0
 	if (first_time)
 		ns_os_changeuser();
+#endif
 
 	/*
 	 * Configure the logging system.
@@ -3228,16 +3269,17 @@ load_configuration(const char *filename, ns_server_t *server,
 		}
 	}
 
-	obj = NULL;
-	if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
-		if (cfg_obj_isvoid(obj))
-			ns_os_writepidfile(NULL, first_time);
-		else
+	if (ns_g_pidfile != NULL) {
+		ns_os_writepidfile(ns_g_pidfile, first_time);
+	} else {
+		obj = NULL;
+		if (ns_config_get(maps, "pid-file", &obj) == ISC_R_SUCCESS)
 			ns_os_writepidfile(cfg_obj_asstring(obj), first_time);
-	else if (ns_g_lwresdonly)
-		ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
-	else
-		ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+		else if (ns_g_lwresdonly)
+			ns_os_writepidfile(lwresd_g_defaultpidfile, first_time);
+		else
+			ns_os_writepidfile(ns_g_defaultpidfile, first_time);
+	}
 	
 	obj = NULL;
 	if (options != NULL &&
@@ -4714,7 +4756,7 @@ ns_server_flushname(ns_server_t *server, char *args) {
 isc_result_t
 ns_server_status(ns_server_t *server, isc_buffer_t *text) {
 	int zonecount, xferrunning, xferdeferred, soaqueries;
-	unsigned int n;
+	int n;
 
 	zonecount = dns_zonemgr_getcount(server->zonemgr, DNS_ZONESTATE_ANY);
 	xferrunning = dns_zonemgr_getcount(server->zonemgr,
@@ -4739,9 +4781,12 @@ ns_server_status(ns_server_t *server, isc_buffer_t *text) {
 		     server->recursionquota.used, server->recursionquota.soft,
 		     server->recursionquota.max,
 		     server->tcpquota.used, server->tcpquota.max);
-	if (n >= isc_buffer_availablelength(text))
+	if (n == -1)
+		return (ISC_R_FAILURE);
+	else if ((unsigned int)n >= isc_buffer_availablelength(text))
 		return (ISC_R_NOSPACE);
-	isc_buffer_add(text, n);
+
+	isc_buffer_add(text, (unsigned int)n);
 	return (ISC_R_SUCCESS);
 }
 

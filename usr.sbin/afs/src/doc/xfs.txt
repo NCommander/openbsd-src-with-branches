@@ -50,7 +50,7 @@ Are passed through the xfs device somehow.
 Each message is prepended by a header including the 32-bit fields
 `size'', ``opcode'', ``sequence_num'', ``pad1'' (in that
 order). ``Size'' is the size of the WHOLE message.  ``Opcode'' is the
-opcode (described bellow). ``sequence_num'' is a messages specific field
+opcode (described below). ``sequence_num'' is a messages specific field
 that is used for replying the the sender of the message (if so is
 needed).
 

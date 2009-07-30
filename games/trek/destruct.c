@@ -1,3 +1,4 @@
+/*	$OpenBSD: destruct.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: destruct.c,v 1.3 1995/04/22 10:58:44 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,11 +34,15 @@
 #if 0
 static char sccsid[] = "@(#)destruct.c	8.1 (Berkeley) 5/31/93";
 #else
-static char rcsid[] = "$NetBSD: destruct.c,v 1.3 1995/04/22 10:58:44 cgd Exp $";
+static char rcsid[] = "$OpenBSD: destruct.c,v 1.5 2003/06/03 03:01:41 millert Exp $";
 #endif
 #endif /* not lint */
 
-# include	"trek.h"
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include "trek.h"
+#include "getpar.h"
 
 /*
 **  Self Destruct Sequence
@@ -55,22 +56,27 @@ static char rcsid[] = "$NetBSD: destruct.c,v 1.3 1995/04/22 10:58:44 cgd Exp $";
 **	possible to win the game by destructing if you take the last
 **	Klingon with you.
 **
-**	By the way, the \032 in the message is a ^Z, which is because
-**	the terminal in my office is an ADM-3, which uses that char-
-**	acter to clear the screen.  I also stick in a \014 (form feed)
-**	because that clears some other screens.
-**
-**	Uses trace flag 41
+**	There used to be a \032 in the message (^Z), which is because
+**	the terminal in Allman's office was an ADM-3, which uses that char-
+**	acter to clear the screen.  There was also a \014 (form feed)
+**	because that clears some other screens.  Now there is nothing.
+**	Presumably the most general screen clear today would be
+**	ESC [2J
 */
 
-destruct()
+void
+destruct(v)
+	int v;
 {
-	char		checkpass[15];
-	register int	i, j;
-	double		zap;
+	char	checkpass[15];
+	int	i, j;
+	double	zap;
 
 	if (damaged(COMPUTER))
-		return (out(COMPUTER));
+	{
+		out(COMPUTER);
+		return;
+	}
 	printf("\n\07 --- WORKING ---\07\n");
 	sleep(3);
 	/* output the count 10 9 8 7 6 */
@@ -85,8 +91,11 @@ destruct()
 	skiptonl(0);
 	getstrpar("Enter password verification", checkpass, 14, 0);
 	sleep(2);
-	if (!sequal(checkpass, Game.passwd))
-		return (printf("Self destruct sequence aborted\n"));
+	if (strcmp(checkpass, Game.passwd) != 0)
+	{
+		printf("Self destruct sequence aborted\n");
+		return;
+	}
 	printf("Password verified; self destruct sequence continues:\n");
 	sleep(2);
 	/* output count 5 4 3 2 1 0 */
@@ -98,7 +107,8 @@ destruct()
 		printf("%d\n", i);
 	}
 	sleep(2);
-	printf("\032\014***** %s destroyed *****\n", Ship.shipname);
+	/* printf("\032\014***** %s destroyed *****\n", Ship.shipname); */
+	printf("\n\n\n\n***** %s destroyed *****\n", Ship.shipname);
 	Game.killed = 1;
 	/* let's see what we can blow up!!!! */
 	zap = 20.0 * Ship.energy;

@@ -6,7 +6,9 @@
 
 #include <string.h>
 
-int chkop[MAXOP];
+#define FMTdPTR "%td"
+
+int chkop[DSIZE];
 
 void mktables(void);
 
@@ -67,7 +69,44 @@ int regclassmap[NUMCLASS][MAXREGS];
 static void
 compl(struct optab *q, char *str)
 {
-	printf("table entry %td, op %s: %s\n", q - table, opst[q->op], str);
+	int op = q->op;
+	char *s;
+
+	if (op < OPSIMP) {
+		s = opst[op];
+	} else
+		switch (op) {
+		default:	s = "Special op";	break;
+		case OPSIMP:	s = "OPLSIMP";	break;
+		case OPCOMM:	s = "OPCOMM";	break;
+		case OPMUL:	s = "OPMUL";	break;
+		case OPDIV:	s = "OPDIV";	break;
+		case OPUNARY:	s = "OPUNARY";	break;
+		case OPLEAF:	s = "OPLEAF";	break;
+		case OPANY:	s = "OPANY";	break;
+		case OPLOG:	s = "OPLOG";	break;
+		case OPFLOAT:	s = "OPFLOAT";	break;
+		case OPSHFT:	s = "OPSHFT";	break;
+		case OPLTYPE:	s = "OPLTYPE";	break;
+		}
+
+	printf("table entry " FMTdPTR ", op %s: %s\n", q - table, s, str);
+}
+
+static int
+getrcl(struct optab *q)
+{
+	int v = q->needs & (NACOUNT|NBCOUNT|NCCOUNT|NDCOUNT);
+	int r = q->rewrite & RESC1 ? 1 : q->rewrite & RESC2 ? 2 : 3;
+	int i = 0;
+
+#define INCK(c) while (v & c##COUNT) { \
+	v -= c##REG, i++; if (i == r) return I##c##REG; }
+	INCK(NA)
+	INCK(NB)
+	INCK(NC)
+	INCK(ND)
+	return 0;
 }
 
 int
@@ -118,11 +157,14 @@ main(int argc, char *argv[])
 	}
 	fprintf(fh, "#define NUMBITS %d\n", bitsz);
 	fprintf(fh, "#define BITSET(arr, bit) "
-	     "(arr[bit/NUMBITS] |= (1 << (bit & (NUMBITS-1))))\n");
+	     "(arr[bit/NUMBITS] |= ((%s)1 << (bit & (NUMBITS-1))))\n",
+	     bitary);
 	fprintf(fh, "#define BITCLEAR(arr, bit) "
-	     "(arr[bit/NUMBITS] &= ~(1 << (bit & (NUMBITS-1))))\n");
+	     "(arr[bit/NUMBITS] &= ~((%s)1 << (bit & (NUMBITS-1))))\n",
+	     bitary);
 	fprintf(fh, "#define TESTBIT(arr, bit) "
-	     "(arr[bit/NUMBITS] & (1 << (bit & (NUMBITS-1))))\n");
+	     "(arr[bit/NUMBITS] & ((%s)1 << (bit & (NUMBITS-1))))\n",
+	     bitary);
 	fprintf(fh, "typedef %s bittype;\n", bitary);
 
 	/* register class definitions, used by graph-coloring */
@@ -139,12 +181,20 @@ main(int argc, char *argv[])
 				rval++;
 			}
 #undef F
-			if ((q->visit & INREGS) && q->rewrite != RDEST) {
+			if ((q->visit & INREGS) && !(q->rewrite & RDEST)) {
 				compl(q, "ASSIGN reclaim must be RDEST");
 				rval++;
 			}
 		}
-		if (q->rewrite & (RESC1|RESC2|RESC1) && q->visit & FOREFF)
+		/* check that reclaim is not the wrong class */
+		if ((q->rewrite & (RESC1|RESC2|RESC3)) && 
+		    !(q->needs & REWRITE)) {
+			if ((q->visit & getrcl(q)) == 0) {
+				compl(q, "wrong RESCx class");
+				rval++;
+			}
+		}
+		if (q->rewrite & (RESC1|RESC2|RESC3) && q->visit & FOREFF)
 			compl(q, "FOREFF may cause reclaim of wrong class");
 	}
 
@@ -163,14 +213,27 @@ main(int argc, char *argv[])
 			fprintf(fc, "%d, ", i), j++;
 	fprintf(fc, "-1 };\n");
 	fprintf(fh, "#define NPERMREG %d\n", j+1);
+	fprintf(fc, "bittype validregs[] = {\n");
+	for (j = 0; j < MAXREGS; j += bitsz) {
+		int cbit = 0;
+		for (i = 0; i < bitsz; i++) {
+			if (i+j == MAXREGS)
+				break;
+			if (rstatus[i+j] & INREGS)
+				cbit |= (1 << i);
+		}
+		fprintf(fc, "\t0x%08x,\n", cbit);
+	}
+	fprintf(fc, "};\n");
+	fprintf(fh, "extern bittype validregs[];\n");
 
 	/*
 	 * The register allocator uses bitmasks of registers for each class.
 	 */
 	areg = breg = creg = dreg = 0;
 	for (i = 0; i < MAXREGS; i++) {
-		regclassmap[0][i] = regclassmap[1][i] = regclassmap[2][i] = 
-		    regclassmap[3][i] = -1;
+		for (j = 0; j < NUMCLASS; j++)
+			regclassmap[j][i] = -1;
 		if (rstatus[i] & SAREG) regclassmap[0][i] = areg++;
 		if (rstatus[i] & SBREG) regclassmap[1][i] = breg++;
 		if (rstatus[i] & SCREG) regclassmap[2][i] = creg++;
@@ -208,7 +271,11 @@ main(int argc, char *argv[])
 			if (rstatus[r] & SDREG)
 				bd |= (1 << regclassmap[3][r]);
 		}
-		fprintf(fc, "\t{ 0x%x,0x%x,0x%x,0x%x },\n", ba, bb, bc, bd);
+		fprintf(fc, "\t{ 0x%x", ba);
+		if (NUMCLASS > 1) fprintf(fc, ",0x%x", bb);
+		if (NUMCLASS > 2) fprintf(fc, ",0x%x", bc);
+		if (NUMCLASS > 3) fprintf(fc, ",0x%x", bd);
+		fprintf(fc, " },\n");
 	}
 	fprintf(fc, "};\n");
 
@@ -221,6 +288,11 @@ main(int argc, char *argv[])
 	if (breg > mx) mx = breg;
 	if (creg > mx) mx = creg;
 	if (dreg > mx) mx = dreg;
+	if (mx > (int)(sizeof(int)*8)-1) {
+		printf("too many regs in a class, use two classes instead\n");
+		printf("%d > %zu\n", mx, (sizeof(int)*8)-1);
+		rval++;
+	}
 	fprintf(fc, "static int rmap[NUMCLASS][%d] = {\n", mx);
 	for (j = 0; j < NUMCLASS; j++) {
 		int cl = (1 << (j+1));
@@ -286,19 +358,20 @@ mktables()
 		for (op = table; op->op != FREE; op++) {
 			if (op->op < OPSIMP) {
 				if (op->op == i) {
-					P((fc, "%td, ", op - table));
+					P((fc, FMTdPTR ", ", op - table));
 					curalen++;
 				}
 			} else {
 				int opmtemp;
 				if ((opmtemp=mamask[op->op - OPSIMP])&SPFLG) {
 					if (i==NAME || i==ICON || i==TEMP ||
-					    i==OREG || i == REG) {
-						P((fc, "%td, ", op - table));
+					    i==OREG || i == REG || i == FCON) {
+						P((fc, FMTdPTR ", ",
+						    op - table));
 						curalen++;
 					}
 				} else if ((dope[i]&(opmtemp|ASGFLG))==opmtemp){
-					P((fc, "%td, ", op - table));
+					P((fc, FMTdPTR ", ", op - table));
 					curalen++;
 				}
 			}

@@ -20,15 +20,14 @@ static char rcsid[] = "$NetBSD: s_copysign.c,v 1.8 1995/05/10 20:46:57 jtc Exp $
  * with the sign bit of y.
  */
 
-#include "math.h"
+#include <sys/cdefs.h>
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
-	double copysign(double x, double y)
-#else
-	double copysign(x,y)
-	double x,y;
-#endif
+double
+copysign(double x, double y)
 {
 	u_int32_t hx,hy;
 	GET_HIGH_WORD(hx,x);
@@ -36,3 +35,9 @@ static char rcsid[] = "$NetBSD: s_copysign.c,v 1.8 1995/05/10 20:46:57 jtc Exp $
 	SET_HIGH_WORD(x,(hx&0x7fffffff)|(hy&0x80000000));
         return x;
 }
+
+#if LDBL_MANT_DIG == 53
+#ifdef __weak_alias
+__weak_alias(copysignl, copysign);
+#endif /* __weak_alias */
+#endif /* LDBL_MANT_DIG == 53 */

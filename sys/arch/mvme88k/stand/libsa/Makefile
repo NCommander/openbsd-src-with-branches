@@ -1,49 +1,49 @@
-#	$Id: Makefile,v 1.1 1996/02/03 01:43:48 build Exp build $
+#	$OpenBSD: Makefile,v 1.12 2008/04/02 21:53:18 miod Exp $
 
 LIB=sa
-
-CLEANFILES+=SRT0.o SRT1.o
 
 NOPIC=nopic
 NOPROFILE=noprofile
 
 # Logically src/sys
 S=${.CURDIR}/../../../..
-DIR_SA=$S/lib/libsa
-DIR_KERN=$S/lib/libkern
 
-SRC_net= nfs.c rpc.c net.c ether.c arp.c in_cksum.c netif.c \
-	 bootparam.c rarp.c
+SRCS=	board.c bugdev.c clock.c parse_args.c exec_mvme.c
 
+.PATH:	${S}/lib/libsa
+SRCS+=	alloc.c memcpy.c exit.c getfile.c gets.c globals.c \
+	printf.c strerror.c memset.c memcmp.c strncpy.c strcmp.c strlen.c \
+	strlcpy.c strlcat.c snprintf.c \
+	close.c closeall.c dev.c dkcksum.c \
+	lseek.c open.c nullfs.c read.c fstat.c \
+	ufs.c cread.c
+SRCS+=	arp.c ether.c in_cksum.c net.c netif.c rpc.c nfs.c \
+	rarp.c bootparam.c
+SRCS+=	loadfile.c
 
-#SRC_sa = alloc.c bcopy.c memcpy.c close.c getfile.c open.c \
-#	 printf.c read.c strerror.c ufs.c globals.c lseek.c \
-#	 closeall.c dev.c dkcksum.c nullfs.c fstat.c
-
-SRC_sa = alloc.c bcopy.c close.c getfile.c open.c \
-	 printf.c read.c strerror.c ufs.c globals.c lseek.c \
-	 dev.c
-
-SRC_kern= ashrdi3.c bcmp.c bzero.c strcmp.c strlen.c
-
-SRC_here= clock.c devopen.c dvma.c \
-	 gets.c panic.c \
-	 promboot.c promcons.c
-
-SRCS= ${SRC_net} ${SRC_sa} ${SRC_kern} ${SRC_here}
+.PATH:	${S}/lib/libkern/arch/m88k ${S}/lib/libkern
+SRCS+=	ashrdi3.c bzero.c __main.c
 
 # DBG= -DDEBUG -DNETIF_DEBUG -DNFS_DEBUG -DRPC_DEBUG \
 # 	-DNET_DEBUG -DRARP_DEBUG -DETHER_DEBUG
 
 #DEFS= -DCOMPAT_UFS
-INCL= -I. -I${S}/lib/libsa -I${S}
-COPTS= #-fno-defer-pop
-CFLAGS= ${COPTS} ${DEFS} ${DBG} ${INCL}
+DEFS= -D__INTERNAL_LIBSA_CREAD -D_STANDALONE
+#DEFS+=-DNETIF_DEBUG
+INCL= -I${.CURDIR} -I${.CURDIR}/../libbug -I${S}/lib/libsa -I${S} -I.
+CFLAGS+= ${XCFLAGS} ${COPTS} ${DEFS} ${DBG} ${INCL}
 
-.PATH:  ${DIR_SA} ${DIR_KERN} ../../sun3
-
-all: libsa.a SRT0.o SRT1.o
+all: libsa.a
 
 install:
 
 .include <bsd.lib.mk>
+
+.if !make(obj)
+.BEGIN:
+	@([ -h dev ] || ln -s ${.CURDIR}/../../../${MACHINE}/dev dev)
+	@([ -h machine ] || ln -s ${.CURDIR}/../../../${MACHINE}/include machine)
+	@([ -h m88k ] || ln -s ${.CURDIR}/../../../m88k/include m88k)
+.NOPATH: dev machine m88k
+CLEANFILES+=	dev machine m88k
+.endif

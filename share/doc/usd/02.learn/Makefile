@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1.1.1 1998/09/20 23:11:04 ian Exp $
 #	@(#) This version did not come via Berkeley, but direct from Bell Labs.
 
 DIR=	usd/02.learn
@@ -8,5 +8,8 @@ MACROS=	-ms
 
 paper.ps: ${SRCS}
 	${TBL} ${SRCS} | ${ROFF} > ${.TARGET}
+
+paper.txt: ${SRCS}
+	${TBL} ${SRCS} | ${ROFF} -Tascii > ${.TARGET}
 
 .include <bsd.doc.mk>

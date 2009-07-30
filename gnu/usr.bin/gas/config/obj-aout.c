@@ -1,3 +1,5 @@
+/*	$OpenBSD: obj-aout.c,v 1.3 1998/02/15 18:49:22 niklas Exp $	*/
+
 /* a.out object file format
    Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
    
@@ -206,7 +208,7 @@ symbolS *symbolP;
 {
 	md_number_to_chars((char *)&(S_GET_OFFSET(symbolP)), S_GET_OFFSET(symbolP), sizeof(S_GET_OFFSET(symbolP)));
 	md_number_to_chars((char *)&(S_GET_DESC(symbolP)), S_GET_DESC(symbolP), sizeof(S_GET_DESC(symbolP)));
-	md_number_to_chars((char *)&(S_GET_VALUE(symbolP)), S_GET_VALUE(symbolP), sizeof(S_GET_VALUE(symbolP)));
+	md_number_to_chars((char *)&(symbolP->sy_symbol.n_value), S_GET_VALUE(symbolP), sizeof(symbolP->sy_symbol.n_value));
 	
 	append(where, (char *)&symbolP->sy_symbol, sizeof(obj_symbol_type));
 } /* obj_symbol_to_chars() */
@@ -466,23 +468,6 @@ object_headers *headers;
 	symbolS **symbolPP;
 	int symbol_number = 0;
 	
-	/* JF deal with forward references first... */
-	for (symbolP = symbol_rootP; symbolP; symbolP = symbol_next(symbolP)) {
-		if (symbolP->sy_forward && symbolP->sy_forward != symbolP) {
-			S_SET_SEGMENT(symbolP,
-				      S_GET_SEGMENT(symbolP->sy_forward));
-			S_SET_VALUE(symbolP, S_GET_VALUE(symbolP)
-				    + S_GET_VALUE(symbolP->sy_forward)
-				    + symbolP->sy_forward->sy_frag->fr_address);
-			
-			symbolP->sy_aux |= symbolP->sy_forward->sy_aux;
-			symbolP->sy_sizexp = symbolP->sy_forward->sy_sizexp;
-			if (S_IS_EXTERNAL(symbolP->sy_forward))
-				S_SET_EXTERNAL(symbolP);
-		} /* if it has a forward reference */
-		symbolP->sy_forward=0;
-	} /* walk the symbol chain */
-	
 	tc_crawl_symbol_chain(headers);
 	
 	symbolPP = &symbol_rootP;	/*->last symbol chain link. */
@@ -491,7 +476,7 @@ object_headers *headers;
 			S_SET_SEGMENT(symbolP, SEG_TEXT);
 		} /* if pushing data into text */
 		
-		S_SET_VALUE(symbolP, S_GET_VALUE(symbolP) + symbolP->sy_frag->fr_address);
+		resolve_symbol_value (symbolP);
 		
 		/* OK, here is how we decide which symbols go out into the
 		   brave new symtab.  Symbols that do are:
@@ -522,12 +507,12 @@ object_headers *headers;
 			|| (S_GET_NAME(symbolP)[0] != '\001' &&
 				(flagseen['L'] || ! S_LOCAL_NAME(symbolP))
 #ifdef PIC
-				|| (flagseen['k'] && symbolP->sy_forceout)
+				|| (picmode && symbolP->sy_forceout)
 #endif
 			   )
 			)
 #ifdef PIC
-		     && (!flagseen['k'] ||
+		     && (!picmode ||
 				symbolP != GOT_symbol || got_referenced != 0
 			)
 #endif
@@ -551,7 +536,7 @@ object_headers *headers;
 			 * some its terms may not have had their final values
 			 * set. We defer this until `obj_emit_symbols()'
 			 */
-			if (flagseen['k'] &&
+			if (picmode &&
 				S_GET_TYPE(symbolP) != N_SIZE &&
 #ifndef GRACE_PERIOD_EXPIRED
 				/*Can be enabled when no more old ld's around*/
@@ -585,7 +570,7 @@ object_headers *headers;
 		} else {
 			if ((S_IS_EXTERNAL(symbolP) || !S_IS_DEFINED(symbolP))
 #ifdef PIC
-			     && (!flagseen['k'] ||
+			     && (!picmode ||
 				symbolP != GOT_symbol || got_referenced != 0
 				)
 #endif

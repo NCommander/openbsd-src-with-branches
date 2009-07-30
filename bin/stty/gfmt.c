@@ -1,4 +1,5 @@
-/*	$NetBSD: gfmt.c,v 1.9 1995/03/21 09:11:19 cgd Exp $	*/
+/*	$OpenBSD: gfmt.c,v 1.5 2003/06/02 23:32:09 millert Exp $	*/
+/*	$NetBSD: gfmt.c,v 1.10 1996/05/07 18:20:08 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,7 +34,7 @@
 #if 0
 static char sccsid[] = "@(#)gfmt.c	8.6 (Berkeley) 4/2/94";
 #else
-static char rcsid[] = "$NetBSD: gfmt.c,v 1.9 1995/03/21 09:11:19 cgd Exp $";
+static char rcsid[] = "$OpenBSD: gfmt.c,v 1.5 2003/06/02 23:32:09 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -51,8 +48,7 @@ static char rcsid[] = "$NetBSD: gfmt.c,v 1.9 1995/03/21 09:11:19 cgd Exp $";
 #include "extern.h"
 
 static void
-gerr(s)
-	char *s;
+gerr(char *s)
 {
 	if (s)
 		errx(1, "illegal gfmt1 option -- %s", s);
@@ -61,12 +57,9 @@ gerr(s)
 }
 
 void
-gprint(tp, wp, ldisc)
-	struct termios *tp;
-	struct winsize *wp;
-	int ldisc;
+gprint(struct termios *tp, struct winsize *wp, int ldisc)
 {
-	struct cchar *cp;
+	const struct cchar *cp;
 
 	(void)printf("gfmt1:cflag=%x:iflag=%x:lflag=%x:oflag=%x:",
 	    tp->c_cflag, tp->c_iflag, tp->c_lflag, tp->c_oflag);
@@ -76,11 +69,9 @@ gprint(tp, wp, ldisc)
 }
 
 void
-gread(tp, s) 
-	struct termios *tp;
-	char *s;
+gread(struct termios *tp, char *s)
 {
-	struct cchar *cp;
+	const struct cchar *cp;
 	char *ep, *p;
 	long tmp;
 

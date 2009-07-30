@@ -1,3 +1,5 @@
+/*	$OpenBSD: ufs_ops.c,v 1.5 2002/08/05 07:24:26 pvalchev Exp $	*/
+
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
  * Copyright (c) 1990 Imperial College of Science, Technology & Medicine
@@ -15,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +34,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ufs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: ufs_ops.c,v 1.5 1994/06/13 20:48:06 mycroft Exp $
  */
 
 #include "am.h"
@@ -52,8 +49,6 @@ typedef nfs_fh fhandle_t;
 #include UFS_HDR
 #endif /* UFS_HDR */
 
-#include <sys/mount.h>
-
 /*
  * UN*X file system
  */
@@ -61,9 +56,8 @@ typedef nfs_fh fhandle_t;
 /*
  * UFS needs local filesystem and device.
  */
-static char *ufs_match P((am_opts *fo));
-static char *ufs_match(fo)
-am_opts *fo;
+static char *
+ufs_match(am_opts *fo)
 {
 	if (!fo->opt_dev) {
 		plog(XLOG_USER, "ufs: no device specified");
@@ -81,10 +75,8 @@ am_opts *fo;
 	return strdup(fo->opt_dev);
 }
 
-static mount_ufs(dir, fs_name, opts)
-char *dir;
-char *fs_name;
-char *opts;
+static int
+mount_ufs(char *dir, char *fs_name, char *opts)
 {
 	struct ufs_args ufs_args;
 	struct mntent mnt;
@@ -95,7 +87,7 @@ char *opts;
 	 */
 	MTYPE_TYPE type = MOUNT_TYPE_UFS;
 
-	bzero((voidp) &ufs_args, sizeof(ufs_args));	/* Paranoid */
+	bzero((void *)&ufs_args, sizeof(ufs_args));	/* Paranoid */
 
 	/*
 	 * Fill in the mount structure
@@ -124,8 +116,8 @@ char *opts;
 }
 
 /*ARGSUSED*/
-static int ufs_fmount(mf)
-mntfs *mf;
+static int
+ufs_fmount(mntfs *mf)
 {
 	int error;
 
@@ -139,8 +131,8 @@ mntfs *mf;
 	return 0;
 }
 
-static int ufs_fumount(mf)
-mntfs *mf;
+static int
+ufs_fumount(mntfs *mf)
 {
 	return UMOUNT_FS(mf->mf_mount);
 }

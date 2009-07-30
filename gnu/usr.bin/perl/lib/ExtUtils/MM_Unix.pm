@@ -292,7 +292,7 @@ sub const_cccmd {
     return '' unless $self->needs_linking();
     return $self->{CONST_CCCMD} =
 	q{CCCMD = $(CC) -c $(PASTHRU_INC) $(INC) \\
-	$(CCFLAGS) $(OPTIMIZE) \\
+	$(CCFLAGS) $(OPTIMIZE) $(COPTS) \\
 	$(PERLTYPE) $(MPOLLUTE) $(DEFINE_VERSION) \\
 	$(XS_DEFINE_VERSION)};
 }
@@ -3641,7 +3641,7 @@ sub top_targets {
 pure_all :: config pm_to_blib subdirs linkext
 	$(NOECHO) $(NOOP)
 
-subdirs :: $(MYEXTLIB)
+subdirs ::
 	$(NOECHO) $(NOOP)
 
 config :: $(FIRST_MAKEFILE) blibdirs

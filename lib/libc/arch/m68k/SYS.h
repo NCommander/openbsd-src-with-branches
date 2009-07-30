@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,29 +30,76 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)SYS.h	5.5 (Berkeley) 5/7/91
- *	$Id: SYS.h,v 1.4 1994/08/04 05:02:31 chopps Exp $
+ *	$OpenBSD: SYS.h,v 1.15 2002/11/18 19:14:54 miod Exp $
  */
 
 #include <sys/syscall.h>
 #include <machine/asm.h>
 
+#define _IMMEDIATE_	#
+
 #ifdef __STDC__
+# define	__ENTRY(p,x)	ENTRY(p##x)
+# define	__DO_SYSCALL(x)					\
+				movl _IMMEDIATE_ SYS_##x, d0;	\
+				trap _IMMEDIATE_ 0
+# define	__LABEL2(p,x)	_C_LABEL(p##x)
+#else
+# define	__ENTRY(p,x)	ENTRY(p/**/x)
+# define	__DO_SYSCALL(x)					\
+				movl _IMMEDIATE_ SYS_/**/x, d0;	\
+				trap _IMMEDIATE_ 0
+# define	__LABEL2(p,x)	_C_LABEL(p/**/x)
+#endif
 
-#define	SYSCALL(x)	.even; err: jra cerror; ENTRY(x); \
-			movl \#SYS_ ## x,d0; trap \#0; jcs err
-#define	RSYSCALL(x)	SYSCALL(x); rts
-#define	PSEUDO(x,y)	ENTRY(x); movl \#SYS_ ## y,d0; trap \#0; rts
+/* perform a syscall */
 
-#else /* !__STDC__ */
+#define		__SYSCALL_NOERROR(p,x,y)			\
+			__ENTRY(p,x);				\
+			__ALIAS(p,x);				\
+				__DO_SYSCALL(y)
 
-#define	SYSCALL(x)	.even; err: jra cerror; ENTRY(x); \
-			movl #SYS_/**/x,d0; trap #0; jcs err
-#define	RSYSCALL(x)	SYSCALL(x); rts
-#define	PSEUDO(x,y)	ENTRY(x); movl #SYS_/**/y,d0; trap #0; rts
+/* perform a syscall, set errno */
 
-#endif /* !__STDC__ */
+#define		__SYSCALL(p,x,y)				\
+				.even;				\
+			err:	jra	__cerror;		\
+			__SYSCALL_NOERROR(p,x,y);		\
+				jcs err
+
+/* perform a syscall, return */
+
+#define		__PSEUDO_NOERROR(p,x,y)				\
+			__SYSCALL_NOERROR(p,x,y);		\
+				rts
+
+/* perform a syscall, set errno, return */
+
+#define		__PSEUDO(p,x,y)					\
+			__SYSCALL(p,x,y);			\
+				rts
+
+
+#ifdef	__STDC__
+#define		__ALIAS(prefix,name)				\
+			WEAK_ALIAS(name,prefix##name);
+#else
+#define		__ALIAS(prefix,name)				\
+			WEAK_ALIAS(name,prefix/**/name);
+#endif
+
+/*
+ * System calls entry points are really named _thread_sys_{syscall},
+ * and weakly aliased to the name {syscall}. This allows the thread
+ * library to replace system calls at link time.
+ */
+# define SYSCALL(x)     	__SYSCALL(_thread_sys_,x,x)
+# define RSYSCALL(x)    	__PSEUDO(_thread_sys_,x,x)
+# define PSEUDO(x,y)    	__PSEUDO(_thread_sys_,x,y)
+# define PSEUDO_NOERROR(x,y)	__PSEUDO_NOERROR(_thread_sys_,x,y)
+# define SYSENTRY(x)    	__ENTRY(_thread_sys_,x);	\
+				__ALIAS(_thread_sys_,x)
 
 #define	ASMSTR		.asciz
 
-	.globl	cerror
+	.globl	__cerror

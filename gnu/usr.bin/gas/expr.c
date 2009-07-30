@@ -1,3 +1,5 @@
+/*	$OpenBSD: expr.c,v 1.6 1998/11/16 00:52:32 jason Exp $	*/
+
 /* expr.c -operands, expressions-
    Copyright (C) 1987, 1990, 1991, 1992 Free Software Foundation, Inc.
    
@@ -25,7 +27,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: expr.c,v 1.3 1993/10/02 20:57:26 pk Exp $";
+static char rcsid[] = "$OpenBSD: expr.c,v 1.6 1998/11/16 00:52:32 jason Exp $";
 #endif
 
 #include <ctype.h>
@@ -126,7 +128,7 @@ register expressionS *	expressionP;
 		/* likewise for the b's.  xoxorich. */
 		if ((c == 'f' || c == 'b' || c == 'B')
 		    && (!*input_line_pointer ||
-			(!strchr("+-.0123456789",*input_line_pointer) &&
+			(!strchr("+-.0123456789iInN",*input_line_pointer) &&
 			 !strchr(EXP_CHARS,*input_line_pointer)))) {
 		    maxdig = radix = 10;
 		    too_many_digits = 11;
@@ -521,6 +523,7 @@ register expressionS *expressionP;
 	    || (expressionP->X_subtract_symbol
 		&& expressionP->X_add_symbol
 		&& expressionP->X_subtract_symbol->sy_frag == expressionP->X_add_symbol->sy_frag
+		&& SEG_NORMAL (S_GET_SEGMENT (expressionP->X_add_symbol))
 		&& S_GET_VALUE(expressionP->X_subtract_symbol) == S_GET_VALUE(expressionP->X_add_symbol))) {
 	    expressionP->X_subtract_symbol	= NULL;
 	    expressionP->X_add_symbol		= NULL;
@@ -736,11 +739,13 @@ segT expr(rank, resultP)
 {
 	expressionS		right;
 	register operatorT	op_left;
-	register char c_left;	/* 1st operator character. */
+	register u_char c_left;	/* 1st operator character. */
 	register operatorT	op_right;
-	register char c_right;
+	register u_char c_right;
 	
+#ifndef	__CHAR_UNSIGNED__
 	know(rank >= 0);
+#endif
 	(void) operand(resultP);
 	know(*input_line_pointer != ' '); /* Operand() gobbles spaces. */
 	c_left = *input_line_pointer; /* Potential operator character. */
@@ -842,7 +847,9 @@ segT expr(rank, resultP)
  * expression is given the segment of right expression (always a DIFFERENCE,
  * which should get resolved by fixup_segment())
  */
-				if (resultP->X_got_symbol) {
+				if (resultP->X_got_symbol &&
+				    right.X_add_symbol != NULL &&
+				    right.X_subtract_symbol != NULL) {
 					resultP->X_add_symbol = right.X_add_symbol;
 					resultP->X_subtract_symbol = right.X_subtract_symbol;
 					seg1 = S_GET_SEGMENT(right.X_add_symbol);

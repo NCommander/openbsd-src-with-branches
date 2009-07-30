@@ -1,56 +1,52 @@
 /*
- * Copyright (c) 1996, 1998, 1999 Todd C. Miller <Todd.Miller@courtesan.com>
- * All rights reserved.
+ * Copyright (c) 1996, 1998-2005 Todd C. Miller <Todd.Miller@courtesan.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * 4. Products derived from this software may not be called "Sudo" nor
- *    may "Sudo" appear in their names without specific prior written
- *    permission from the author.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Sponsored in part by the Defense Advanced Research Projects
+ * Agency (DARPA) and Air Force Research Laboratory, Air Force
+ * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
 
-#include "config.h"
+#include <config.h>
 
-#include <stdio.h>
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-#endif /* STDC_HEADERS */
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif /* HAVE_STRING_H */
-#ifdef HAVE_STRINGS_H
-# include <strings.h>
-#endif /* HAVE_STRINGS_H */
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
+#include <stdio.h>
+#ifdef STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+#endif /* STDC_HEADERS */
+#ifdef HAVE_STRING_H
+# if defined(HAVE_MEMORY_H) && !defined(STDC_HEADERS)
+#  include <memory.h>
+# endif
+# include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif /* HAVE_STRING_H */
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif /* HAVE_UNISTD_H */
 #include <pwd.h>
+#include <grp.h>
 #ifdef HAVE_GETSPNAM
 # include <shadow.h>
 #endif /* HAVE_GETSPNAM */
@@ -75,80 +71,49 @@
 #include "sudo.h"
 
 #ifndef lint
-static const char rcsid[] = "$Sudo: getspwuid.c,v 1.55 1999/10/07 21:20:57 millert Exp $";
+__unused static const char rcsid[] = "$Sudo: getspwuid.c,v 1.78 2005/02/12 22:56:06 millert Exp $";
 #endif /* lint */
 
-#ifndef STDC_HEADERS
-extern char *getenv     __P((const char *));
-#endif /* !STDC_HEADERS */
-
 /*
- * Global variables (yuck)
+ * Exported for auth/secureware.c
  */
 #if defined(HAVE_GETPRPWNAM) && defined(__alpha)
 int crypt_type = INT_MAX;
 #endif /* HAVE_GETPRPWNAM && __alpha */
 
-
 /*
- * Local functions not visible outside getspwuid.c
+ * Return a copy of the encrypted password for the user described by pw.
+ * If shadow passwords are in use, look in the shadow file.
  */
-static char *sudo_getshell	__P((struct passwd *));
-static char *sudo_getepw	__P((struct passwd *));
-
-
-/*
- * Return the user's shell based on either the SHELL
- * environment variable or the passwd(5) entry (in that order).
- */
-static char *
-sudo_getshell(pw)
-    struct passwd *pw;
-{
-    char *pw_shell;
-
-    if ((pw_shell = getenv("SHELL")) == NULL)
-	pw_shell = pw->pw_shell;
-
-#ifdef _PATH_BSHELL
-    /* empty string "" means bourne shell */
-    if (*pw_shell == '\0')
-	pw_shell = _PATH_BSHELL;
-#endif /* _PATH_BSHELL */
-
-    return(pw_shell);
-}
-
-/*
- * Return the encrypted password for the user described by pw.  If shadow
- * passwords are in use, look in the shadow file.
- */
-static char *
+char *
 sudo_getepw(pw)
-    struct passwd *pw;
+    const struct passwd *pw;
 {
+    char *epw;
 
     /* If there is a function to check for shadow enabled, use it... */
 #ifdef HAVE_ISCOMSEC
     if (!iscomsec())
-	return(pw->pw_passwd);
+	return(estrdup(pw->pw_passwd));
 #endif /* HAVE_ISCOMSEC */
 #ifdef HAVE_ISSECURE
     if (!issecure())
-	return(pw->pw_passwd);
+	return(estrdup(pw->pw_passwd));
 #endif /* HAVE_ISSECURE */
 
+    epw = NULL;
 #ifdef HAVE_GETPRPWNAM
     {
 	struct pr_passwd *spw;
 
-	spw = getprpwnam(pw->pw_name);
-	if (spw != NULL && spw->ufld.fd_encrypt != NULL) {
+	if ((spw = getprpwnam(pw->pw_name)) && spw->ufld.fd_encrypt) {
 # ifdef __alpha
 	    crypt_type = spw->ufld.fd_oldcrypt;
 # endif /* __alpha */
-	    return(spw->ufld.fd_encrypt);
+	    epw = estrdup(spw->ufld.fd_encrypt);
 	}
+	if (epw)
+	    return(epw);
     }
 #endif /* HAVE_GETPRPWNAM */
 #ifdef HAVE_GETSPNAM
@@ -156,7 +121,9 @@ sudo_getepw(pw)
 	struct spwd *spw;
 
 	if ((spw = getspnam(pw->pw_name)) && spw->sp_pwdp)
-	    return(spw->sp_pwdp);
+	    epw = estrdup(spw->sp_pwdp);
+	if (epw)
+	    return(epw);
     }
 #endif /* HAVE_GETSPNAM */
 #ifdef HAVE_GETSPWUID
@@ -164,7 +131,9 @@ sudo_getepw(pw)
 	struct s_passwd *spw;
 
 	if ((spw = getspwuid(pw->pw_uid)) && spw->pw_passwd)
-	    return(spw->pw_passwd);
+	    epw = estrdup(spw->pw_passwd);
+	if (epw)
+	    return(epw);
     }
 #endif /* HAVE_GETSPWUID */
 #ifdef HAVE_GETPWANAM
@@ -172,7 +141,9 @@ sudo_getepw(pw)
 	struct passwd_adjunct *spw;
 
 	if ((spw = getpwanam(pw->pw_name)) && spw->pwa_passwd)
-	    return(spw->pwa_passwd);
+	    epw = estrdup(spw->pwa_passwd);
+	if (epw)
+	    return(epw);
     }
 #endif /* HAVE_GETPWANAM */
 #ifdef HAVE_GETAUTHUID
@@ -180,42 +151,52 @@ sudo_getepw(pw)
 	AUTHORIZATION *spw;
 
 	if ((spw = getauthuid(pw->pw_uid)) && spw->a_password)
-	    return(spw->a_password);
+	    epw = estrdup(spw->a_password);
+	if (epw)
+	    return(epw);
     }
 #endif /* HAVE_GETAUTHUID */
 
     /* Fall back on normal password. */
-    return(pw->pw_passwd);
+    return(estrdup(pw->pw_passwd));
 }
 
-/*
- * Dynamically allocate space for a struct password and the constituent parts
- * that we care about.  Fills in pw_passwd from shadow file if necessary.
- */
-struct passwd *
-sudo_getpwuid(uid)
-    uid_t uid;
+void
+sudo_setspent()
 {
-    struct passwd *pw, *local_pw;
+#ifdef HAVE_GETPRPWNAM
+    setprpwent();
+#endif
+#ifdef HAVE_GETSPNAM
+    setspent();
+#endif
+#ifdef HAVE_GETSPWUID
+    setspwent();
+#endif
+#ifdef HAVE_GETPWANAM
+    setpwaent();
+#endif
+#ifdef HAVE_GETAUTHUID
+    setauthent();
+#endif
+}
 
-    if ((pw = getpwuid(uid)) == NULL)
-	return(NULL);
-
-    /* Allocate space for a local copy of pw. */
-    local_pw = (struct passwd *) emalloc(sizeof(struct passwd));
-
-    /*
-     * Copy the struct passwd and the interesting strings...
-     */
-    (void) memcpy(local_pw, pw, sizeof(struct passwd));
-    local_pw->pw_name = estrdup(pw->pw_name);
-    local_pw->pw_dir = estrdup(pw->pw_dir);
-
-    /* pw_shell is a special case since we overide with $SHELL */
-    local_pw->pw_shell = estrdup(sudo_getshell(pw));
-
-    /* pw_passwd gets a shadow password if applicable */
-    local_pw->pw_passwd = estrdup(sudo_getepw(pw));
-
-    return(local_pw);
+void
+sudo_endspent()
+{
+#ifdef HAVE_GETPRPWNAM
+    endprpwent();
+#endif
+#ifdef HAVE_GETSPNAM
+    endspent();
+#endif
+#ifdef HAVE_GETSPWUID
+    endspwent();
+#endif
+#ifdef HAVE_GETPWANAM
+    endpwaent();
+#endif
+#ifdef HAVE_GETAUTHUID
+    endauthent();
+#endif
 }

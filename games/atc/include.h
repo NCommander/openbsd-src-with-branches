@@ -1,3 +1,4 @@
+/*	$OpenBSD: include.h,v 1.5 2001/02/04 02:15:28 pjanzen Exp $	*/
 /*	$NetBSD: include.h,v 1.5 1995/04/27 21:22:23 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,40 +44,28 @@
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
 
+#include <sys/types.h>
+#include <sys/file.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/utsname.h>
+#include <sys/wait.h>
+
+#include <ctype.h>
+#include <curses.h>
+#include <err.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <math.h>
+#include <pwd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <pwd.h>
 #include <termios.h>
-
-#ifdef BSD
-#include <sys/time.h>
-#include <sys/file.h>
-#endif
-
-#ifdef SYSV
-#include <fcntl.h>
 #include <unistd.h>
-#include <sys/utsname.h>
-#endif
-
-#include <signal.h>
-#include <math.h>
-
-#include <curses.h>
-
-#ifdef SYSV
-#define	index	strchr
-#define	rindex	strrchr
-#define bcopy(a,b,c)	memcpy((b), (a), (c))
-#define	bzero(a,b)	memset((a), '\0', (b))
-#define	srandom	srand
-#define	random	rand
-#endif
 
 #include "def.h"
 #include "struct.h"
 #include "extern.h"
-#include "tunable.h"

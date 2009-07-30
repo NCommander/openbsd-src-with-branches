@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: signal.h,v 1.7 2005/12/18 15:42:53 millert Exp $	*/
 /*	$NetBSD: signal.h,v 1.10 2001/05/09 19:50:49 kleink Exp $ */
 
 /*
@@ -22,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,17 +41,15 @@
  *	@(#)signal.h	8.1 (Berkeley) 6/11/93
  */
 
-#ifndef	_SPARC_SIGNAL_H_
-#define _SPARC_SIGNAL_H_
+#ifndef	_SPARC64_SIGNAL_H_
+#define _SPARC64_SIGNAL_H_
 
 #ifndef _LOCORE
+#include <sys/cdefs.h>
+
 typedef int sig_atomic_t;
-#endif
 
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_C_SOURCE) && \
-    !defined(_XOPEN_SOURCE)
-#ifndef _LOCORE
-
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 420
 /*
  * Information pushed on stack when a signal is delivered.
  * This is used by the kernel to restore state following
@@ -65,23 +59,6 @@ typedef int sig_atomic_t;
  *
  * All machines must have an sc_onstack and sc_mask.
  */
-#if defined(__LIBC12_SOURCE__) || defined(_KERNEL)
-struct sigcontext13 {
-	int	sc_onstack;		/* sigstack state to restore */
-	int	sc_mask;		/* signal mask to restore (old style) */
-	/* begin machine dependent portion */
-	long	sc_sp;			/* %sp to restore */
-	long	sc_pc;			/* pc to restore */
-	long	sc_npc;			/* npc to restore */
-#ifdef __arch64__
-	long	sc_tstate;		/* tstate to restore */
-#else
-	long	sc_psr;			/* psr portion to restore */
-#endif
-	long	sc_g1;			/* %g1 to restore */
-	long	sc_o0;			/* %o0 to restore */
-};
-#endif /* __LIBC12_SOURCE__ || _KERNEL */
 struct sigcontext {
 	int		sc_onstack;	/* sigstack state to restore */
 	int		__sc_mask13;	/* signal mask to restore (old style) */
@@ -89,25 +66,15 @@ struct sigcontext {
 	long		sc_sp;		/* %sp to restore */
 	long		sc_pc;		/* pc to restore */
 	long		sc_npc;		/* npc to restore */
-#ifdef __arch64__
 	long		sc_tstate;	/* tstate to restore */
-#else
-	long		sc_psr;		/* psr portion to restore */
-#endif
 	long		sc_g1;		/* %g1 to restore */
 	long		sc_o0;		/* %o0 to restore */
 	int		sc_mask;	/* signal mask to restore (new style) */
 };
-#else /* _LOCORE */
-/* XXXXX These values don't work for _LP64 */
-#define	SC_SP_OFFSET	8
-#define	SC_PC_OFFSET	12
-#define	SC_NPC_OFFSET	16
-#define	SC_PSR_OFFSET	20
-#define	SC_G1_OFFSET	24
-#define	SC_O0_OFFSET	28
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
 #endif /* _LOCORE */
 
+#if defined(_LOCORE) || __BSD_VISIBLE
 /*
  * `Code' arguments to signal handlers.  The names, and the funny numbering.
  * are defined so as to match up with what SunOS uses; I have no idea why
@@ -120,6 +87,6 @@ struct sigcontext {
 #define	FPE_FLTUND_TRAP		0xcc	/* underflow */
 #define	FPE_FLTOPERR_TRAP	0xd0	/* operand error */
 #define	FPE_FLTOVF_TRAP		0xd4	/* overflow */
+#endif
 
-#endif	/* !_ANSI_SOURCE && !_POSIX_C_SOURCE && !_XOPEN_SOURCE */
-#endif	/* !_SPARC_SIGNAL_H_ */
+#endif	/* !_SPARC64_SIGNAL_H_ */

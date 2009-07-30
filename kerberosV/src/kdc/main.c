@@ -38,7 +38,7 @@
 
 RCSID("$KTH: main.c,v 1.31 2005/06/14 00:13:11 lha Exp $");
 
-sig_atomic_t exit_flag = 0;
+volatile sig_atomic_t exit_flag = 0;
 krb5_context context;
 
 extern int detach_from_console;
@@ -53,7 +53,6 @@ int
 main(int argc, char **argv)
 {
     krb5_error_code ret;
-    setprogname(argv[0]);
     
     ret = krb5_init_context(&context);
     if (ret == KRB5_CONFIG_BADFORMAT)

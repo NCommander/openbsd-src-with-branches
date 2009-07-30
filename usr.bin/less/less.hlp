@@ -1,5 +1,5 @@
 
-                   SSUUMMMMAARRYY OOFF LLEESSSS CCOOMMMMAANNDDSS
+                     SSUUMMMMAARRYY OOFF CCOOMMMMAANNDDSS
 
       Commands marked with * may be preceded by a number, _N.
       Notes in parentheses indicate the behavior if _N is given.
@@ -105,7 +105,7 @@
         Most options may be changed either on the command line,
         or from within less by using the - or -- command.
         Options may be given in one of two forms: either a single
-        character preceded by a -, or a name preceeded by --.
+        character preceded by a -, or a name preceded by --.
 
   -?  ........  --help
                   Display help (from command line).

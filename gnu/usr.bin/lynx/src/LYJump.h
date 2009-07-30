@@ -1,29 +1,35 @@
-
 #ifndef LYJUMP_H
 #define LYJUMP_H
 
-typedef struct _JumpDatum {
-    char *key;
-    char *url;
-} JumpDatum;
+#include <HTList.h>
 
-struct JumpTable { 
-    int key;
-    int nel;
-    char *msg;
-    char *file;
-    char *shortcut;
-    HTList *history;
-    JumpDatum *table;
-    struct JumpTable *next;
-    char *mp;
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
+    typedef struct _JumpDatum {
+	char *key;
+	char *url;
+    } JumpDatum;
 
-extern struct JumpTable *JThead;
-extern void LYJumpTable_free NOPARAMS;
-extern void LYAddJumpShortcut PARAMS((HTList *the_history, char *shortcut));
-extern BOOL LYJumpInit PARAMS((char *config));
-extern char *LYJump PARAMS((int key));
+    struct JumpTable {
+	int key;
+	int nel;
+	char *msg;
+	char *file;
+	char *shortcut;
+	HTList *history;
+	JumpDatum *table;
+	struct JumpTable *next;
+	char *mp;
+    };
 
-#endif /* LYJUMP_H */
+    extern struct JumpTable *JThead;
+    extern void LYJumpTable_free(void);
+    extern void LYAddJumpShortcut(HTList *the_history, char *shortcut);
+    extern BOOL LYJumpInit(char *config);
+    extern char *LYJump(int key);
 
+#ifdef __cplusplus
+}
+#endif
+#endif				/* LYJUMP_H */

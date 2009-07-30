@@ -343,7 +343,7 @@ v201   7/27/94	Check for no memcpy; add casts to calloc;
 		look for regcmp in libgen.a.
 		(thanks to Kaveh Ghazi).
 v202   7/28/94	Fix bug in edit_next/edit_prev with 
-		non-existant files.
+		non-existent files.
 v203   8/2/94	Fix a variety of configuration bugs on
 		various systems. (thanks to Sakai
 		Kiyotaka, Harald Koenig, Bjorn Brox,
@@ -644,6 +644,8 @@ v379 11/23/02	Add -L option; fix bug with ctrl-K in lesskey files;
 		fix minor man page problems; change to autoconf 2.54.
 v380 11/24/02	Make LINENUM same as POSITION.
 v381 11/28/02	Make -N use 7 columns for line number if possible.
+-----------------------------------------------------------------
+v382   2/3/04	Remove copyrighted code.
 */
 
-char version[] = "381";
+char version[] = "382";
