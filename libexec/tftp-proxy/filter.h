@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.h,v 1.3 2005/06/07 14:12:07 camield Exp $ */
+/*	$OpenBSD: filter.h,v 1.1 2005/12/28 19:07:07 jcs Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -20,8 +20,6 @@
 
 int add_filter(u_int32_t, u_int8_t, struct sockaddr *, struct sockaddr *,
     u_int16_t, u_int8_t);
-int add_nat(u_int32_t, struct sockaddr *, struct sockaddr *, u_int16_t,
-    struct sockaddr *, u_int16_t, u_int16_t, u_int8_t);
 int add_rdr(u_int32_t, struct sockaddr *, struct sockaddr *, u_int16_t,
     struct sockaddr *, u_int16_t, u_int8_t);
 int do_commit(void);
