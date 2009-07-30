@@ -1,4 +1,4 @@
-/* $OpenBSD: client-fn.c,v 1.2 2009/07/26 12:58:44 nicm Exp $ */
+/* $OpenBSD: client-fn.c,v 1.3 2009/07/29 14:17:26 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "tmux.h"
 
@@ -73,4 +74,24 @@ client_write_server(
 
 	if (buf != NULL && len > 0)
 		buffer_write(cctx->srv_out, buf, len);
+}
+
+void
+client_suspend(void)
+{
+	struct sigaction	 act;
+
+	memset(&act, 0, sizeof act);
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_RESTART;
+
+	act.sa_handler = SIG_DFL;
+	if (sigaction(SIGTSTP, &act, NULL) != 0)
+		fatal("sigaction failed");
+
+	act.sa_handler = sighandler;
+	if (sigaction(SIGCONT, &act, NULL) != 0)
+		fatal("sigaction failed");
+
+	kill(getpid(), SIGTSTP);
 }
