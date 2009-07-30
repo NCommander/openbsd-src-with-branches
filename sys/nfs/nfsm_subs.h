@@ -141,7 +141,7 @@
 	(v) = ttvp;							\
 }
 
-#define nfsm_postop_attr(v, f) {					\
+#define nfsm_postop_attr(v, f) { if (mrep != NULL) {			\
 	struct vnode *ttvp = (v);					\
 	nfsm_dissect(tl, u_int32_t *, NFSX_UNSIGNED);			\
 	if (((f) = fxdr_unsigned(int, *tl)) != 0) {			\
@@ -154,13 +154,13 @@
 		}							\
 		(v) = ttvp;						\
 	}								\
-}
+} }
 
 /* Used as (f) for nfsm_wcc_data() */
 #define NFSV3_WCCRATTR	0
 #define NFSV3_WCCCHK	1
 
-#define nfsm_wcc_data(v, f) do {					\
+#define nfsm_wcc_data(v, f) do { if (mrep != NULL) {			\
 	struct timespec	 _mtime;					\
 	int		 ttattrf, ttretf = 0;				\
 									\
@@ -179,7 +179,7 @@
 	} else {							\
 		(f) = ttattrf;						\
 	}								\
-} while (0)
+} } while (0)
 
 #define nfsm_strsiz(s,m) {						\
 	nfsm_dissect(tl,u_int32_t *,NFSX_UNSIGNED);			\
