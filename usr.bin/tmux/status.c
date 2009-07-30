@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.20 2009/07/27 19:29:35 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.21 2009/07/28 07:03:32 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -801,6 +801,7 @@ status_prompt_key(struct client *c, int key)
  		memcpy(first, s, strlen(s));
 
 		c->prompt_index = (first - c->prompt_buffer) + strlen(s);
+		xfree(s);
 
 		c->flags |= CLIENT_STATUS;
 		break;
