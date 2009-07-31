@@ -242,10 +242,10 @@ sr_raidp_set_vol_state(struct sr_discipline *sd)
 
 	if (states[BIOC_SDONLINE] == nd)
 		new_state = BIOC_SVONLINE;
+	else if (states[BIOC_SDONLINE] == nd - 1)
+		new_state = BIOC_SVDEGRADED;
 	else if (states[BIOC_SDONLINE] < nd - 1)
 		new_state = BIOC_SVOFFLINE;
-	else if (states[BIOC_SDOFFLINE] == nd - 1)
-		new_state = BIOC_SVDEGRADED;
 	else if (states[BIOC_SDSCRUB] != 0)
 		new_state = BIOC_SVSCRUB;
 	else if (states[BIOC_SDREBUILD] != 0)
