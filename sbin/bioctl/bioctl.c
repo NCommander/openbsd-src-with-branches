@@ -562,10 +562,12 @@ bio_setstate(char *arg, int status, char *devicename)
 	bs.bs_cookie = bl.bl_cookie;
 	bs.bs_status = status;
 
-	/* make sure user supplied a sd device */
-	bs.bs_volid = bio_getvolbyname(devicename);
-	if (bs.bs_volid == -1)
-		errx(1, "invalid device %s", devicename);
+	if (status != BIOC_SSHOTSPARE) {
+		/* make sure user supplied a sd device */
+		bs.bs_volid = bio_getvolbyname(devicename);
+		if (bs.bs_volid == -1)
+			errx(1, "invalid device %s", devicename);
+	}
 
 	rv = ioctl(devh, BIOCSETSTATE, &bs);
 	if (rv == -1)
