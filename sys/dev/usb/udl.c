@@ -1,4 +1,4 @@
-/*	$OpenBSD: udl.c,v 1.19 2009/06/06 16:56:56 yuo Exp $ */
+/*	$OpenBSD: udl.c,v 1.20 2009/07/23 18:28:28 maja Exp $ */
 
 /*
  * Copyright (c) 2009 Marcus Glocker <mglocker@openbsd.org>
@@ -332,7 +332,7 @@ udl_activate(struct device *self, enum devact act)
 {
 	switch (act) {
 	case DVACT_ACTIVATE:
-		return (EOPNOTSUPP);
+		break;
 	case DVACT_DEACTIVATE:
 		break;
 	}

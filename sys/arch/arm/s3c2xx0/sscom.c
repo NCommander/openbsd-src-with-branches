@@ -1,4 +1,4 @@
-/*	$OpenBSD: sscom.c,v 1.8 2008/12/30 16:32:29 drahn Exp $ */
+/*	$OpenBSD: sscom.c,v 1.9 2009/01/02 19:42:54 drahn Exp $ */
 /*	$NetBSD: sscom.c,v 1.29 2008/06/11 22:37:21 cegger Exp $ */
 
 /*
@@ -551,7 +551,7 @@ sscom_activate(struct device *self, enum devact act)
 	SSCOM_LOCK(sc);
 	switch (act) {
 	case DVACT_ACTIVATE:
-		rv = EOPNOTSUPP;
+		rv = 0;
 		break;
 
 	case DVACT_DEACTIVATE:
