@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.h,v 1.4 2009/06/06 18:31:42 pyr Exp $ */
+/*	$OpenBSD: ldpd.h,v 1.5 2009/07/13 19:04:26 michele Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -359,10 +359,11 @@ struct ctl_rt {
 	struct in_addr		 lspace;
 	struct in_addr		 adv_rtr;
 	time_t			 uptime;
-	u_int8_t		 flags;
-	u_int8_t		 prefixlen;
 	u_int32_t		 local_label;
 	u_int32_t		 remote_label;
+	u_int8_t		 flags;
+	u_int8_t		 prefixlen;
+	u_int8_t		 connected;
 };
 
 struct ctl_sum {
