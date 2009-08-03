@@ -1,4 +1,4 @@
-/* $OpenBSD: tty-term.c,v 1.4 2009/08/02 20:47:35 matthieu Exp $ */
+/* $OpenBSD: tty-term.c,v 1.5 2009/08/03 14:10:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -196,7 +196,8 @@ tty_term_override(struct tty_term *term, const char *overrides)
 				case TTYCODE_NONE:
 					break;
 				case TTYCODE_STRING:
-					xfree(code->value.string);
+					if (code->type == TTYCODE_STRING)
+						xfree(code->value.string);
 					code->value.string = xstrdup(val);
 					code->type = ent->type;
 					break;
