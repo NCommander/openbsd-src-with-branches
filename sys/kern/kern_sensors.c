@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sensors.c,v 1.21 2007/07/03 03:22:34 cnst Exp $	*/
+/*	$OpenBSD: kern_sensors.c,v 1.22 2008/09/10 14:01:23 blambert Exp $	*/
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -232,7 +232,7 @@ sensor_task_tick(void *arg)
 
 	/* try to schedule the task */
 	if (workq_add_task(NULL, 0, sensor_task_work, st, NULL) != 0)
-		timeout_add(&st->timeout, hz/2);
+		timeout_add_msec(&st->timeout, 500);
 
 	st->state = ST_WORKQ;
 }
