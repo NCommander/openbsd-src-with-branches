@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.24 2009/07/30 07:04:50 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.25 2009/08/03 14:10:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -332,7 +332,8 @@ main(int argc, char **argv)
 			if ((s = getenv("LC_CTYPE")) == NULL)
 				s = getenv("LANG");
 		}
-		if (s != NULL && strcasestr(s, "UTF-8") != NULL)
+		if (s != NULL && (strcasestr(s, "UTF-8") != NULL ||
+		    strcasestr(s, "UTF8") != NULL))
 			flags |= IDENTIFY_UTF8;
 	}
 
