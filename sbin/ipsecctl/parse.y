@@ -1495,9 +1495,19 @@ parsekeyfile(char *filename)
 int
 get_id_type(char *string)
 {
-	if (string && strchr(string, '@'))
+	struct in6_addr ia;
+
+	if (string == NULL)
+		return (ID_UNKNOWN);
+
+	if (inet_pton(AF_INET, string, &ia) == 1)
+		return (ID_IPV4);
+	else if (inet_pton(AF_INET6, string, &ia) == 1)
+		return (ID_IPV6);
+	else if (strchr(string, '@'))
 		return (ID_UFQDN);
-	return (ID_FQDN);
+	else
+		return (ID_FQDN);
 }
 
 struct ipsec_addr_wrap *
