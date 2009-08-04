@@ -42,6 +42,7 @@ struct nfsnode;
 struct sillyrename;
 struct componentname;
 struct nfs_diskless;
+struct nfsm_info;
 
 /* nfs_bio.c */
 int nfs_bioread(struct vnode *, struct uio *, int, struct ucred *);
@@ -184,11 +185,7 @@ int nfs_send(struct socket *, struct mbuf *, struct mbuf *,
 		  struct nfsreq *);
 int nfs_receive(struct nfsreq *, struct mbuf **, struct mbuf **);
 int nfs_reply(struct nfsreq *);
-int nfs_request(struct vnode *, struct mbuf *, int, struct proc *,
-		     struct ucred *, struct mbuf **, struct mbuf **,
-		     caddr_t *);
-int nfs_request1(struct nfsreq *, struct ucred *, struct mbuf **,
-		    struct mbuf **, caddr_t *);
+int nfs_request(struct vnode *, int, struct nfsm_info *);
 int nfs_rephead(int, struct nfsrv_descript *, struct nfssvc_sock *, int,
 		struct mbuf **, struct mbuf **);
 void nfs_timer(void *);
