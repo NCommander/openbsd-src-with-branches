@@ -509,7 +509,6 @@ forwardmode	: FORWARD		{ $$ = FWD_NORMAL; }
 		;
 
 table		: '<' STRING '>'	{
-			conf->sc_flags |= F_NEEDPF;
 			if (strlen($2) >= TABLE_NAME_SIZE) {
 				yyerror("invalid table name");
 				free($2);
