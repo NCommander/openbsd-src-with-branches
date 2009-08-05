@@ -923,6 +923,18 @@ relay_findbyname(struct relayd *env, const char *name)
 	return (NULL);
 }
 
+struct relay *
+relay_findbyaddr(struct relayd *env, struct relay_config *rc)
+{
+	struct relay	*rlay;
+
+	TAILQ_FOREACH(rlay, env->sc_relays, rl_entry)
+		if (bcmp(&rlay->rl_conf.ss, &rc->ss, sizeof(rc->ss)) == 0 &&
+		    rlay->rl_conf.port == rc->port)
+			return (rlay);
+	return (NULL);
+}
+
 void
 event_again(struct event *ev, int fd, short event,
     void (*fn)(int, short, void *),
