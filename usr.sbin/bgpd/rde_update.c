@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.67 2009/03/26 13:59:30 henning Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.68 2009/06/06 01:10:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -270,6 +270,8 @@ up_test_update(struct rde_peer *peer, struct prefix *p)
 		/* Do not send routes back to sender */
 		return (0);
 
+	if (p->aspath->flags & F_ATTR_PARSE_ERR)
+		fatalx("try to send out a botched path");
 	if (p->aspath->flags & F_ATTR_LOOP)
 		fatalx("try to send out a looped path");
 
