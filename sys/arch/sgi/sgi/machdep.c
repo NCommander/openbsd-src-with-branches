@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.75 2009/07/22 21:29:05 miod Exp $ */
+/*	$OpenBSD: machdep.c,v 1.76 2009/08/02 16:28:39 beck Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -1137,6 +1137,8 @@ atoi(const char *s, int b, const char **o)
 	return val;
 }
 
+#ifdef	RM7K_PERFCNTR
+
 /*
  * RM7000 Performance counter support.
  */
@@ -1205,6 +1207,8 @@ rm7k_watchintr(trapframe)
 {
 	return(0);
 }
+
+#endif	/* RM7K_PERFCNTR */
 
 #ifdef DEBUG
 /*
