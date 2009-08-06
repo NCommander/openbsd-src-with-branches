@@ -383,7 +383,12 @@ extern struct cpu_info cpu_info_primary;
 #define	cpu_number()	0
 
 #include <machine/frame.h>
+
+#endif	/* _LOCORE */
+
 #include <machine/intr.h>
+
+#ifndef _LOCORE
 
 /*
  * Arguments to hardclock encapsulate the previous machine state in
