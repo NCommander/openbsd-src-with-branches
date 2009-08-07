@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.218 2009/06/11 02:59:08 krw Exp $	*/
+/*	$OpenBSD: editor.c,v 1.219 2009/06/26 14:25:36 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -17,7 +17,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: editor.c,v 1.218 2009/06/11 02:59:08 krw Exp $";
+static char rcsid[] = "$OpenBSD: editor.c,v 1.219 2009/06/26 14:25:36 deraadt Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -117,7 +117,6 @@ const struct {
 };
 
 void	edit_parms(struct disklabel *);
-void	editor_allocspace(struct disklabel *);
 void	editor_add(struct disklabel *, char *);
 void	editor_change(struct disklabel *, char *);
 u_int64_t editor_countfree(struct disklabel *);
@@ -137,7 +136,6 @@ struct diskchunk *free_chunks(struct disklabel *);
 void	mpcopy(char **, char **);
 int	micmp(const void *, const void *);
 int	mpequal(char **, char **);
-void	mpsave(struct disklabel *);
 int	get_bsize(struct disklabel *, int);
 int	get_fsize(struct disklabel *, int);
 int	get_fstype(struct disklabel *, int);
