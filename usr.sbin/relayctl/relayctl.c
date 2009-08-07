@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayctl.c,v 1.36 2008/12/31 15:22:27 sobrado Exp $	*/
+/*	$OpenBSD: relayctl.c,v 1.37 2009/06/05 23:39:51 pyr Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -382,7 +382,7 @@ show_summary_msg(struct imsg *imsg, int type)
 int
 show_session_msg(struct imsg *imsg)
 {
-	struct session		*con;
+	struct rsession		*con;
 	char			 a[128], b[128];
 	struct timeval		 tv_now;
 
