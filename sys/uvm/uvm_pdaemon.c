@@ -212,6 +212,7 @@ uvm_pageout(void *arg)
 	 */
 
 	for (;;) {
+		int scanned = 0;
 		uvm_lock_fpageq();
 		UVMHIST_LOG(pdhist,"  <<SLEEPING>>",0,0,0,0);
 		msleep(&uvm.pagedaemon, &uvm.fpageqlock, PVM | PNORELOCK,
@@ -241,12 +242,17 @@ uvm_pageout(void *arg)
 		/*
 		 * get pages from the buffer cache, or scan if needed
 		 */
-		if (uvmexp.inactive < uvmexp.inactarg)
-			uvmpd_scan();
-		else if ((uvmexp.free - BUFPAGES_DEFICIT) < uvmexp.freetarg) {
-			if (bufbackoff() == -1)
+		if ((uvmexp.free - BUFPAGES_DEFICIT) < uvmexp.freetarg) {
+			if (bufbackoff() == -1) {
 				uvmpd_scan();
+				scanned = 1;
+			} else
+				scanned = 0;
 		}
+
+		if (!scanned && (uvmexp.inactive < uvmexp.inactarg))
+			uvmpd_scan();
+
 
 		/*
 		 * if there's any free memory to be had,
