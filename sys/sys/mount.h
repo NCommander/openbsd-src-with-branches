@@ -504,9 +504,8 @@ struct bcachestats {
 	int64_t cachehits;		/* total reads found in cache */
 };
 #ifdef _KERNEL
-#define BACKPAGES 100
 extern struct bcachestats bcstats;
-extern long buflowpages, bufhighpages;
+extern long buflowpages, bufhighpages, bufbackpages;
 #define BUFPAGES_DEFICIT (((buflowpages - bcstats.numbufpages) < 0) ? 0 \
     : buflowpages - bcstats.numbufpages)
 extern int bufcachepercent;
