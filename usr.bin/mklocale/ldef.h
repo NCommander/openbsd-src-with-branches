@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: ldef.h,v 1.4 2003/08/07 11:15:14 agc Exp $	*/
 
 /*-
