@@ -113,6 +113,8 @@ isp_attach(struct ispsoftc *isp)
 	if (IS_FC(isp)) {
 		lptr->adapter_buswidth = MAX_FC_TARG;
 		lptr->adapter_target = MAX_FC_TARG; /* i.e. ignore. */
+		lptr->node_wwn = ISP_NODEWWN(isp);
+		lptr->port_wwn = ISP_PORTWWN(isp);
 	} else {
 		sdparam *sdp = isp->isp_param;
 		lptr->adapter_buswidth = MAX_TARGETS;
