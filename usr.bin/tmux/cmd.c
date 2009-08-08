@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.11 2009/07/29 17:03:16 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.12 2009/07/30 13:45:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -84,10 +84,12 @@ const struct cmd_entry *cmd_table[] = {
 	&cmd_send_prefix_entry,
 	&cmd_server_info_entry,
 	&cmd_set_buffer_entry,
+	&cmd_set_environment_entry,
 	&cmd_set_option_entry,
 	&cmd_set_password_entry,
 	&cmd_set_window_option_entry,
 	&cmd_show_buffer_entry,
+	&cmd_show_environment_entry,
 	&cmd_show_options_entry,
 	&cmd_show_window_options_entry,
 	&cmd_source_file_entry,
