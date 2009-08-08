@@ -165,6 +165,11 @@ scsibusattach(struct device *parent, struct device *self, void *aux)
 	printf(": %d targets", sb->sc_buswidth);
 	if (sb->adapter_link->adapter_target < sb->sc_buswidth)
 		printf(", initiator %d", sb->adapter_link->adapter_target);
+	if (sb->adapter_link->port_wwn != 0x0 &&
+	    sb->adapter_link->node_wwn != 0x0) {
+		printf(", WWPN %016llx, WWNN %016llx",
+		    sb->adapter_link->port_wwn, sb->adapter_link->node_wwn);
+	}
 	printf("\n");
 
 	/* Initialize shared data. */
