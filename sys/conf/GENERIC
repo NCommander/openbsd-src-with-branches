@@ -64,6 +64,9 @@ option		PPP_DEFLATE
 option		MROUTING	# Multicast router
 #option		PIM		# Protocol Independent Multicast
 
+#mpath0		at root		# SCSI Multipathing
+#scsibus*	at mpath?
+
 softraid0	at root		# Software RAID
 scsibus*	at softraid?
 

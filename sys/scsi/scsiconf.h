@@ -557,5 +557,11 @@ int	scsi_detach_lun(struct scsibus_softc *, int, int, int);
 extern const u_int8_t version_to_spc[];
 #define SCSISPC(x)(version_to_spc[(x) & SID_ANSII])
 
+/*
+ * Entrypoints for multipathing
+ */
+int	mpath_path_attach(struct scsi_link *);
+int	mpath_path_detach(struct scsi_link *, int);
+
 #endif /* _KERNEL */
 #endif /* SCSI_SCSICONF_H */

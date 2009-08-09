@@ -99,6 +99,7 @@
 extern void nfs_init(void);
 #endif
 
+#include "mpath.h"
 #include "vscsi.h"
 #include "softraid.h"
 
@@ -444,6 +445,9 @@ main(void *framep)
 
 	dostartuphooks();
 
+#if NMPATH > 0
+	config_rootfound("mpath", NULL);
+#endif
 #if NVSCSI > 0
 	config_rootfound("vscsi", NULL);
 #endif
