@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_aoe.c,v 1.7 2009/06/03 17:39:26 ckuethe Exp $ */
+/* $OpenBSD: softraid_aoe.c,v 1.8 2009/07/24 14:13:28 blambert Exp $ */
 /*
  * Copyright (c) 2008 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2008 Marco Peereboom <marco@openbsd.org>
@@ -745,10 +745,13 @@ resleep:
 			buf.b_error = 0;
 			buf.b_proc = curproc;
 			buf.b_dev = sd->sd_vol.sv_chunks[0]->src_dev_mm;
+			buf.b_vp = sd->sd_vol.sv_chunks[0]->src_vn;
+			if ((buf.b_flags & B_READ) == 0)
+				buf.b_vp->v_numoutput++;
 			LIST_INIT(&buf.b_dep);
 
 			s = splbio();
-			bdevsw_lookup(buf.b_dev)->d_strategy(&buf);
+			VOP_STRATEGY(&buf);
 			biowait(&buf);
 			splx(s);
 
@@ -808,10 +811,13 @@ resleep:
 			buf.b_error = 0;
 			buf.b_proc = curproc;
 			buf.b_dev = sd->sd_vol.sv_chunks[0]->src_dev_mm;
+			buf.b_vp = sd->sd_vol.sv_chunks[0]->src_vn;
+			if ((buf.b_flags & B_READ) == 0)
+				buf.b_vp->v_numoutput++;
 			LIST_INIT(&buf.b_dep);
 
 			s = splbio();
-			bdevsw_lookup(buf.b_dev)->d_strategy(&buf);
+			VOP_STRATEGY(&buf);
 			biowait(&buf);
 			splx(s);
 
