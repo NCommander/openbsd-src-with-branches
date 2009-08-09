@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.66 2008/05/08 17:45:45 thib Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.67 2008/06/09 23:38:37 millert Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -370,7 +370,7 @@ msdosfs_setattr(v)
 	 * Directories must not ever get their attributes modified
 	 */
 	if (ap->a_vp->v_type == VDIR)
-		return EISDIR;
+		return (0);
 
 	if (vap->va_size != VNOVAL) {
 		error = detrunc(dep, (uint32_t)vap->va_size, 0, cred, ap->a_p);
