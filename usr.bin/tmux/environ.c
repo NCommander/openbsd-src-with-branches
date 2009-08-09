@@ -1,4 +1,4 @@
-/* $OpenBSD: environ.c,v 1.1 2009/08/08 21:52:43 nicm Exp $ */
+/* $OpenBSD: environ.c,v 1.2 2009/08/08 21:54:26 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -28,8 +28,6 @@
  */
 
 RB_GENERATE(environ, environ_entry, entry, environ_cmp);
-
-void	environ_set1(struct environ *, char *, char *);
 
 int
 environ_cmp(struct environ_entry *envent1, struct environ_entry *envent2)
