@@ -225,6 +225,7 @@ struct nfsm_info {
 		m_freem(info.nmi_mrep);					\
 		info.nmi_mrep = NULL;					\
 	}								\
+	*mrq = info.nmi_mreq;						\
 	if (error && (!(nfsd->nd_flag & ND_NFSV3) || error == EBADRPC))	\
 		return(0);						\
 }
