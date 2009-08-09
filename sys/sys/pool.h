@@ -103,7 +103,7 @@ struct pool {
 
 	int			pr_ipl;
 
-	SPLAY_HEAD(phtree, pool_item_header) pr_phtree;
+	RB_HEAD(phtree, pool_item_header) pr_phtree;
 
 	int		pr_maxcolor;	/* Cache colouring */
 	int		pr_curcolor;
