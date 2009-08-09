@@ -1,4 +1,4 @@
-/*	$OpenBSD: arm32_machdep.c,v 1.28 2008/03/23 17:05:41 deraadt Exp $	*/
+/*	$OpenBSD: arm32_machdep.c,v 1.29 2008/05/04 09:57:46 martin Exp $	*/
 /*	$NetBSD: arm32_machdep.c,v 1.42 2003/12/30 12:33:15 pk Exp $	*/
 
 /*
@@ -451,13 +451,6 @@ allocsys(caddr_t v)
 
 #define	valloc(name, type, num) \
 	    v = (caddr_t)(((name) = (type *)v) + (num))
-
-#ifdef SYSVMSG
-	valloc(msgpool, char, msginfo.msgmax);
-	valloc(msgmaps, struct msgmap, msginfo.msgseg);
-	valloc(msghdrs, struct msg, msginfo.msgtql);
-	valloc(msqids, struct msqid_ds, msginfo.msgmni);
-#endif
 
 	return v;
 }
