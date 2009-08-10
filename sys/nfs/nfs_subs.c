@@ -1790,48 +1790,6 @@ nfsrv_errmap(nd, err)
 }
 
 /*
- * Sort the group list in increasing numerical order.
- * (Insertion sort by Chris Torek, who was grossed out by the bubble sort
- *  that used to be here.)
- */
-void
-nfsrvw_sort(list, num)
-        gid_t *list;
-        int num;
-{
-	int i, j;
-	gid_t v;
-
-	/* Insertion sort. */
-	for (i = 1; i < num; i++) {
-		v = list[i];
-		/* find correct slot for value v, moving others up */
-		for (j = i; --j >= 0 && v < list[j];)
-			list[j + 1] = list[j];
-		list[j + 1] = v;
-	}
-}
-
-/*
- * copy credentials making sure that the result can be compared with bcmp().
- */
-void
-nfsrv_setcred(incred, outcred)
-	struct ucred *incred, *outcred;
-{
-	int i;
-
-	bzero((caddr_t)outcred, sizeof (struct ucred));
-	outcred->cr_ref = 1;
-	outcred->cr_uid = incred->cr_uid;
-	outcred->cr_gid = incred->cr_gid;
-	outcred->cr_ngroups = incred->cr_ngroups;
-	for (i = 0; i < incred->cr_ngroups; i++)
-		outcred->cr_groups[i] = incred->cr_groups[i];
-	nfsrvw_sort(outcred->cr_groups, outcred->cr_ngroups);
-}
-
-/*
  * If full is non zero, set all fields, otherwise just set mode and time fields
  */
 void
