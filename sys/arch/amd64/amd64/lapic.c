@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.20 2009/06/06 23:45:35 guenther Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.21 2009/06/09 02:56:38 krw Exp $	*/
 /* $NetBSD: lapic.c,v 1.2 2003/05/08 01:04:35 fvdl Exp $ */
 
 /*-
@@ -481,7 +481,7 @@ x86_ipi(int vec, int target, int dl)
 {
 	int result, s;
 
-	s = splclock();
+	s = splhigh();
 
 	i82489_icr_wait();
 
