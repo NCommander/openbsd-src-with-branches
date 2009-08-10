@@ -230,7 +230,7 @@ soclose(struct socket *so)
 				goto drop;
 			while (so->so_state & SS_ISCONNECTED) {
 				error = tsleep(&so->so_timeo,
-				    PSOCK | PCATCH, netcls,
+				    PSOCK | PCATCH, "netcls",
 				    so->so_linger * hz);
 				if (error)
 					break;

@@ -227,9 +227,6 @@ struct socket {
 extern u_long sb_max;
 struct	socket *sonewconn(struct socket *head, int connstatus);
 
-/* strings for sleep message: */
-extern	const char netio[], netcon[], netcls[];
-
 extern struct pool	socket_pool;
 
 struct mbuf;

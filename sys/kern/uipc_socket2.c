@@ -50,12 +50,6 @@
  * Primitive routines for operating on sockets and socket buffers
  */
 
-/* strings for sleep message: */
-const char	netcon[] = "netcon";
-const char	netcls[] = "netcls";
-const char	netio[] = "netio";
-const char	netlck[] = "netlck";
-
 u_long	sb_max = SB_MAX;		/* patchable */
 
 extern struct pool mclpools[];
@@ -283,7 +277,7 @@ sbwait(struct sockbuf *sb)
 
 	sb->sb_flags |= SB_WAIT;
 	return (tsleep(&sb->sb_cc,
-	    (sb->sb_flags & SB_NOINTR) ? PSOCK : PSOCK | PCATCH, netio,
+	    (sb->sb_flags & SB_NOINTR) ? PSOCK : PSOCK | PCATCH, "netio",
 	    sb->sb_timeo));
 }
 
@@ -300,7 +294,7 @@ sb_lock(struct sockbuf *sb)
 		sb->sb_flags |= SB_WANT;
 		error = tsleep(&sb->sb_flags,
 		    (sb->sb_flags & SB_NOINTR) ?
-		    PSOCK : PSOCK|PCATCH, netlck, 0);
+		    PSOCK : PSOCK|PCATCH, "netlck", 0);
 		if (error)
 			return (error);
 	}

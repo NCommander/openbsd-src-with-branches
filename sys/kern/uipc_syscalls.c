@@ -176,7 +176,7 @@ sys_accept(struct proc *p, void *v, register_t *retval)
 			head->so_error = ECONNABORTED;
 			break;
 		}
-		error = tsleep(&head->so_timeo, PSOCK | PCATCH, netcon, 0);
+		error = tsleep(&head->so_timeo, PSOCK | PCATCH, "netcon", 0);
 		if (error) {
 			goto bad;
 		}
@@ -287,7 +287,7 @@ sys_connect(struct proc *p, void *v, register_t *retval)
 	s = splsoftnet();
 	while ((so->so_state & SS_ISCONNECTING) && so->so_error == 0) {
 		error = tsleep(&so->so_timeo, PSOCK | PCATCH,
-		    netcon, 0);
+		    "netcon2", 0);
 		if (error)
 			break;
 	}
