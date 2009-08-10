@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.6 2009/06/25 17:01:32 deraadt Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.7 2009/06/28 22:20:20 jsg Exp $	*/
 
 /******************************************************************************
 
@@ -237,7 +237,6 @@ struct ix_softc {
 	struct ixgbe_hw	hw;
 	struct ixgbe_osdep	 osdep;
 	void			*powerhook;
-	void			*shutdownhook;
 
 	struct resource	*pci_mem;
 	struct resource	*msix_mem;
