@@ -70,7 +70,7 @@ struct sillyrename {
  *     be well aligned and, therefore, tightly packed.
  */
 struct nfsnode {
-	LIST_ENTRY(nfsnode)	n_hash;		/* Hash chain */
+	RB_ENTRY(nfsnode)	n_entry;	/* filehandle/node tree. */
 	u_quad_t		n_size;		/* Current size of file */
 	struct vattr		n_vattr;	/* Vnode attribute cache */
 	time_t			n_attrstamp;	/* Attr. cache timestamp */

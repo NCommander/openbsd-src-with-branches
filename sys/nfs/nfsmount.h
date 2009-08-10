@@ -45,6 +45,8 @@
  * Holds NFS specific information for mount.
  */
 struct	nfsmount {
+	RB_HEAD(nfs_nodetree, nfsnode)
+		nm_ntree;		/* filehandle/node tree */
 	int	nm_flag;		/* Flags for soft/hard... */
 	struct	mount *nm_mountp;	/* Vfs structure for this filesystem */
 	int	nm_numgrps;		/* Max. size of groupslist */

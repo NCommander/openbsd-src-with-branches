@@ -698,6 +698,8 @@ mountnfs(argp, mp, nam, pth, hst)
 	nmp->nm_nam = nam;
 	nfs_decode_args(nmp, argp, &mp->mnt_stat.mount_info.nfs_args);
 
+	RB_INIT(&nmp->nm_ntree);
+
 	/* Set up the sockets and per-host congestion */
 	nmp->nm_sotype = argp->sotype;
 	nmp->nm_soproto = argp->proto;
