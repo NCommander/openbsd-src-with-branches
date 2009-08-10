@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_auereg.h,v 1.12 2007/06/06 19:25:49 mk Exp $ */
+/*	$OpenBSD: if_auereg.h,v 1.13 2007/06/10 10:15:35 mbalmer Exp $ */
 /*	$NetBSD: if_auereg.h,v 1.16 2001/10/10 02:14:17 augustss Exp $	*/
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -257,8 +257,6 @@ struct aue_softc {
 	struct usb_task		aue_stop_task;
 
 	struct rwlock		aue_mii_lock;
-
-	void			*sc_sdhook;
 };
 
 #define AUE_TIMEOUT		1000
