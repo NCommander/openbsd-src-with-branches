@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_xxx.c,v 1.10 2005/11/28 00:14:29 jsg Exp $	*/
+/*	$OpenBSD: kern_xxx.c,v 1.11 2009/04/03 09:30:15 art Exp $	*/
 /*	$NetBSD: kern_xxx.c,v 1.32 1996/04/22 01:38:41 christos Exp $	*/
 
 /*
@@ -42,6 +42,8 @@
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
+#include <net/if.h>
+
 /* ARGSUSED */
 int
 sys_reboot(struct proc *p, void *v, register_t *retval)
@@ -65,6 +67,8 @@ sys_reboot(struct proc *p, void *v, register_t *retval)
 			break;
 		}
 	}
+
+	if_downall();
 
 	boot(SCARG(uap, opt));
 
