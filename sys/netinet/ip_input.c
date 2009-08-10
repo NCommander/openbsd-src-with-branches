@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.167 2009/08/10 11:48:02 henning Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.168 2009/08/10 13:20:08 henning Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1426,7 +1426,7 @@ ip_forward(m, srcrt)
 	int error, type = 0, code = 0, destmtu = 0, len;
 	u_int rtableid = 0;
 	n_long dest;
-	struct mbuf mfake, *mcopy;
+	struct mbuf mfake, *mcopy = NULL;
 
 	dest = 0;
 #ifdef DIAGNOSTIC
