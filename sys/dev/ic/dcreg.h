@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcreg.h,v 1.43 2008/07/21 04:12:21 kevlo Exp $ */
+/*	$OpenBSD: dcreg.h,v 1.44 2008/09/03 19:29:48 brad Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -723,7 +723,6 @@ struct dc_softc {
 	bus_space_handle_t	dc_bhandle;	/* bus space handle */
 	bus_space_tag_t		dc_btag;	/* bus space tag */
 	void			*dc_intrhand;
-	void			*sc_dhook;
 	void			*sc_pwrhook;
 	u_int8_t		dc_type;
 	u_int8_t		dc_pmode;
