@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.79 2009/08/09 10:40:17 blambert Exp $ */
+/*	$OpenBSD: machdep.c,v 1.80 2009/08/11 18:46:32 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -716,13 +716,6 @@ cpu_startup()
 	    ptoa(physmem)/1024/1024);
 	printf("rsvd mem = %u (%uMB)\n", ptoa(rsvdmem),
 	    ptoa(rsvdmem)/1024/1024);
-
-	/*
-	 * Determine how many buffers to allocate.
-	 * We allocate bufcachepercent% of memory for buffer space.
-	 */
-	if (bufpages == 0)
-		bufpages = physmem * bufcachepercent / 100;
 
 	/*
 	 * Allocate a submap for exec arguments. This map effectively
