@@ -142,15 +142,11 @@ loop:
 }
 
 int
-nfs_inactive(v)
-	void *v;
+nfs_inactive(void *v)
 {
-	struct vop_inactive_args *ap = v;
-	struct nfsnode *np;
-	struct sillyrename *sp;
-	struct proc *p = curproc;	/* XXX */
-
-	np = VTONFS(ap->a_vp);
+	struct vop_inactive_args	*ap = v;
+	struct nfsnode			*np = VTONFS(ap->a_vp);
+	struct sillyrename		*sp;
 
 #ifdef DIAGNOSTIC
 	if (prtactive && ap->a_vp->v_usecount != 0)
@@ -166,7 +162,7 @@ nfs_inactive(v)
 		/*
 		 * Remove the silly file that was rename'd earlier
 		 */
-		nfs_vinvalbuf(ap->a_vp, 0, sp->s_cred, p);
+		nfs_vinvalbuf(ap->a_vp, 0, sp->s_cred, curproc);
 		nfs_removeit(sp);
 		crfree(sp->s_cred);
 		vrele(sp->s_dvp);
