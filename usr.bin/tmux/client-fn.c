@@ -1,4 +1,4 @@
-/* $OpenBSD: client-fn.c,v 1.3 2009/07/29 14:17:26 nicm Exp $ */
+/* $OpenBSD: client-fn.c,v 1.4 2009/07/30 16:32:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -66,14 +66,7 @@ void
 client_write_server(
     struct client_ctx *cctx, enum msgtype type, void *buf, size_t len)
 {
-	struct hdr	hdr;
-
-	hdr.type = type;
-	hdr.size = len;
-	buffer_write(cctx->srv_out, &hdr, sizeof hdr);
-
-	if (buf != NULL && len > 0)
-		buffer_write(cctx->srv_out, buf, len);
+	imsg_compose(&cctx->ibuf, type, PROTOCOL_VERSION, -1, -1, buf, len);
 }
 
 void
