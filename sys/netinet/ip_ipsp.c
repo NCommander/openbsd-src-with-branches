@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.176 2009/06/02 11:05:09 oga Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.177 2009/06/02 21:28:36 blambert Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -496,7 +496,7 @@ tdb_hashstats(void)
 	db_printf("tdb cnt\t\tbucket cnt\n");
 	for (i = 0; i < NBUCKETS; i++)
 		if (buckets[i] > 0)
-			db_printf("%d%c\t\t%d\n", i, i == NBUCKETS - 1 ?
+			db_printf("%d%s\t\t%d\n", i, i == NBUCKETS - 1 ?
 			    "+" : "", buckets[i]);
 }
 #endif	/* DDB */
