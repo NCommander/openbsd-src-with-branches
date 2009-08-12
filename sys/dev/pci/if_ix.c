@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.25 2009/08/09 11:40:56 deraadt Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.26 2009/08/10 19:41:05 deraadt Exp $	*/
 
 /******************************************************************************
 
@@ -2631,10 +2631,12 @@ ixgbe_rxeof(struct rx_ring *rxr, int count)
 			    rxr->last_rx_desc_filled);
 		}
 
-		m_cluncount(m, 1);
 		rxr->rx_ndescs--;
+		if (m_cluncount(m) == 0)
+			accept_frame = 1;
+		else
+			accept_frame = 0;
 
-		accept_frame = 1;
 		prev_len_adj = 0;
 		desc_len = letoh16(rxdesc->wb.upper.length);
 
