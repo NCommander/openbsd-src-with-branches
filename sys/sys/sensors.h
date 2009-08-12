@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensors.h,v 1.23 2007/03/22 16:55:31 deraadt Exp $	*/
+/*	$OpenBSD: sensors.h,v 1.24 2007/06/24 05:34:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexander Yurchenko <grange@openbsd.org>
@@ -36,7 +36,7 @@ enum sensor_type {
 	SENSOR_VOLTS_DC,		/* voltage (muV DC) */
 	SENSOR_VOLTS_AC,		/* voltage (muV AC) */
 	SENSOR_OHMS,			/* resistance */
-	SENSOR_WATTS,			/* power */
+	SENSOR_WATTS,			/* power (muW) */
 	SENSOR_AMPS,			/* current (muA) */
 	SENSOR_WATTHOUR,		/* power capacity */
 	SENSOR_AMPHOUR,			/* power capacity */
