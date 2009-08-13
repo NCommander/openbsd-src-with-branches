@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbd.c,v 1.17 2009/05/03 13:02:35 miod Exp $ */
+/* $OpenBSD: pckbd.c,v 1.18 2009/08/13 21:15:03 pirofti Exp $ */
 /* $NetBSD: pckbd.c,v 1.24 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-
@@ -413,9 +413,11 @@ pckbd_activate(struct device *self, enum devact act)
 	case DVACT_ACTIVATE:
 		if (!cold)
 			pckbd_enable(self, 1);
+		break;
 	case DVACT_DEACTIVATE:
 		if (!cold)
 			pckbd_enable(self, 0);
+		break;
 	}
 	return (0);
 }
