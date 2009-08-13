@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.144 2009/05/06 18:21:23 stevesk Exp $
+#	$OpenBSD: GENERIC,v 1.146 2009/08/09 12:47:23 dlg Exp $
 #
 #	Machine-independent option; used by all architectures for their
 #	GENERIC kernel
@@ -69,6 +69,9 @@ option		MROUTING	# Multicast router
 
 softraid0	at root		# Software RAID
 scsibus*	at softraid?
+
+vscsi0		at root		# Userland backed Virtual SCSI
+scsibus*	at vscsi?
 
 pseudo-device	pf		# packet filter
 pseudo-device	pflog		# pf log if
