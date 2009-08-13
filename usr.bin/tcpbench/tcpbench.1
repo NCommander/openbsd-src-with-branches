@@ -1,4 +1,4 @@
-.\" $OpenBSD: tcpbench.1,v 1.5 2008/06/26 07:05:56 jmc Exp $
+.\" $OpenBSD: tcpbench.1,v 1.6 2009/08/13 14:19:43 claudio Exp $
 .\"
 .\" Copyright (c) 2008 Damien Miller <djm@mindrot.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: June 26 2008 $
+.Dd $Mdocdate: August 13 2009 $
 .Os
 .Dt TCPBENCH 1
 .Sh NAME
@@ -34,6 +34,7 @@
 .Op Fl V Ar rdomain
 .Ar hostname
 .Nm
+.Bk -words
 .Fl s
 .Op Fl v
 .Op Fl B Ar buf
@@ -42,6 +43,7 @@
 .Op Fl r Ar rate
 .Op Fl S Ar space
 .Op Fl V Ar rdomain
+.Ek
 .Sh DESCRIPTION
 .Nm
 is a small tool that performs throughput benchmarking and concurrent
