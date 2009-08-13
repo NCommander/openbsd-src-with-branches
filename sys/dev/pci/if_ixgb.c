@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_ixgb.c,v 1.53 2009/06/24 13:36:56 deraadt Exp $ */
+/* $OpenBSD: if_ixgb.c,v 1.54 2009/08/10 19:41:05 deraadt Exp $ */
 
 #include <dev/pci/if_ixgb.h>
 
@@ -125,7 +125,7 @@ struct cfattach ixgb_ca = {
 };
 
 struct cfdriver ixgb_cd = {
-	0, "ixgb", DV_IFNET
+	NULL, "ixgb", DV_IFNET
 };
 
 /* some defines for controlling descriptor fetches in h/w */

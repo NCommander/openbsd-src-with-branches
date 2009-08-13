@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nge.c,v 1.66 2008/11/09 15:08:26 naddy Exp $	*/
+/*	$OpenBSD: if_nge.c,v 1.67 2008/11/28 02:44:18 brad Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -2239,5 +2239,5 @@ struct cfattach nge_ca = {
 };
 
 struct cfdriver nge_cd = {
-	0, "nge", DV_IFNET
+	NULL, "nge", DV_IFNET
 };

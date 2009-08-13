@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pcn.c,v 1.20 2008/10/02 20:21:14 brad Exp $	*/
+/*	$OpenBSD: if_pcn.c,v 1.21 2008/11/28 02:44:18 brad Exp $	*/
 /*	$NetBSD: if_pcn.c,v 1.26 2005/05/07 09:15:44 is Exp $	*/
 
 /*
@@ -489,7 +489,7 @@ const struct pci_matchid pcn_devices[] = {
 };
 
 struct cfdriver pcn_cd = {
-	0, "pcn", DV_IFNET
+	NULL, "pcn", DV_IFNET
 };
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc_obsd.c,v 1.18 2005/11/06 23:27:33 brad Exp $ */
+/*	$OpenBSD: if_lmc_obsd.c,v 1.19 2005/11/07 00:29:21 brad Exp $ */
 /*	$NetBSD: if_lmc_nbsd.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -153,7 +153,7 @@ struct cfattach lmc_ca = {
 };
 
 struct cfdriver lmc_cd = {
-	0, "lmc", DV_IFNET
+	NULL, "lmc", DV_IFNET
 };
 
 static void

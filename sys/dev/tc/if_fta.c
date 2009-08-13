@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_fta.c,v 1.14 2007/11/06 18:20:07 miod Exp $	*/
+/*	$OpenBSD: if_fta.c,v 1.15 2008/08/09 16:42:30 miod Exp $	*/
 /*	$NetBSD: if_fta.c,v 1.7 1996/10/22 21:37:26 cgd Exp $	*/
 
 /*-
@@ -128,5 +128,5 @@ struct cfattach fta_ca = {
 };
 
 struct cfdriver fta_cd = {
-	0, "fta", DV_IFNET
+	NULL, "fta", DV_IFNET
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.99 2008/11/28 02:44:18 brad Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.100 2009/03/24 11:12:10 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -133,7 +133,7 @@ struct cfattach txp_ca = {
 };
 
 struct cfdriver txp_cd = {
-	0, "txp", DV_IFNET
+	NULL, "txp", DV_IFNET
 };
 
 const struct pci_matchid txp_devices[] = {
