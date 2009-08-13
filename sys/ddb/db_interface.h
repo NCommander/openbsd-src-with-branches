@@ -46,11 +46,10 @@ void db_show_all_procs(db_expr_t, int, db_expr_t, char *);
 void db_show_callout(db_expr_t, int, db_expr_t, char *);
 
 struct mount;
-struct vnode;
 
 /* kern/vfs_subr.c */
 void vfs_buf_print(struct buf *, int, int (*)(const char *, ...));
-void vfs_vnode_print(struct vnode *, int, int (*)(const char *, ...));
+void vfs_vnode_print(void *, int, int (*)(const char *, ...));
 void vfs_mount_print(struct mount *, int, int (*)(const char *, ...));
 
 /* kern/subr_pool.c */

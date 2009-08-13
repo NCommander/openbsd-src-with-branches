@@ -1293,7 +1293,8 @@ pool_chk(struct pool *pp, const char *label)
 }
 
 void
-pool_walk(struct pool *pp, void (*func)(void *))
+pool_walk(struct pool *pp, int full, int (*pr)(const char *, ...),
+    void (*func)(void *, int, int (*)(const char *, ...)))
 {
 	struct pool_item_header *ph;
 	struct pool_item *pi;
@@ -1305,7 +1306,7 @@ pool_walk(struct pool *pp, void (*func)(void *))
 		n = ph->ph_nmissing;
 
 		while (n--) {
-			func(cp);
+			func(cp, full, pr);
 			cp += pp->pr_size;
 		}
 	}
@@ -1320,7 +1321,7 @@ pool_walk(struct pool *pp, void (*func)(void *))
 					break;
 			}
 			if (cp != (caddr_t)pi) {
-				func(cp);
+				func(cp, full, pr);
 				n--;
 			}
 

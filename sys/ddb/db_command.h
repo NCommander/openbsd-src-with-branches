@@ -43,6 +43,7 @@ void db_map_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_malloc_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_mount_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_show_all_mounts(db_expr_t, int, db_expr_t, char *);
+void db_show_all_vnodes(db_expr_t, int, db_expr_t, char *);
 void db_object_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_page_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_extent_print_cmd(db_expr_t, int, db_expr_t, char *);

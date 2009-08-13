@@ -2188,8 +2188,9 @@ const char *vtypes[] = { VTYPE_NAMES };
 const char *vtags[] = { VTAG_NAMES };
 
 void
-vfs_vnode_print(struct vnode *vp, int full, int (*pr)(const char *, ...))
+vfs_vnode_print(void *v, int full, int (*pr)(const char *, ...))
 {
+	struct vnode *vp = v;
 
 #define	NENTS(n)	(sizeof n / sizeof(n[0]))
 	(*pr)("tag %s(%d) type %s(%d) mount %p typedata %p\n",
@@ -2307,4 +2308,3 @@ copy_statfs_info(struct statfs *sbp, const struct mount *mp)
 	bcopy(&mp->mnt_stat.mount_info.ufs_args, &sbp->mount_info.ufs_args,
 	    sizeof(struct ufs_args));
 }
-
