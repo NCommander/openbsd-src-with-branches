@@ -1,4 +1,4 @@
-#	$OpenBSD: sftp-glob.sh,v 1.2 2007/10/24 03:32:35 djm Exp $
+#	$OpenBSD: sftp-glob.sh,v 1.3 2007/10/26 05:30:01 djm Exp $
 #	Placed in the Public Domain.
 
 tid="sftp glob"
@@ -10,7 +10,7 @@ sftp_ls() {
 	unexpected=$4
 	verbose "$tid: $errtag"
 	printf "ls -l %s" "${target}" | \
-		${SFTP} -b - -P ${SFTPSERVER} 2>/dev/null | \
+		${SFTP} -b - -D ${SFTPSERVER} 2>/dev/null | \
 		grep -v "^sftp>" > ${RESULTS}
 	if [ $? -ne 0 ]; then
 		fail "$errtag failed"
