@@ -469,7 +469,7 @@ struct db_command db_show_all_cmds[] = {
 	{ "callout",	db_show_callout,	0, NULL },
 	{ "pools",	db_show_all_pools,	0, NULL },
 	{ "mounts",	db_show_all_mounts,	0, NULL },
-	{ "vnodes,",	db_show_all_vnodes,	0, NULL },
+	{ "vnodes",	db_show_all_vnodes,	0, NULL },
 #ifdef NFSCLIENT
 	{ "nfsreq",	db_show_all_nfsreqs,	0, NULL },
 #endif
