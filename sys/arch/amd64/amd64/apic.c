@@ -1,4 +1,4 @@
-/*	$OpenBSD: apic.c,v 1.3 2007/01/15 23:19:05 jsg Exp $	*/
+/*	$OpenBSD: apic.c,v 1.4 2008/06/26 05:42:09 ray Exp $	*/
 /* $NetBSD: apic.c,v 1.1 2003/02/26 21:26:11 fvdl Exp $ */
 
 /*-
@@ -32,9 +32,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/systm.h>
-#include <sys/lock.h>		/* XXX */
 
 #include <machine/i82489reg.h>
 #include <machine/i82489var.h>

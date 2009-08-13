@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbios_intr_fixup.c,v 1.3 2006/07/17 21:56:39 deraadt Exp $	*/
+/*	$OpenBSD: mpbios_intr_fixup.c,v 1.4 2008/09/17 16:54:32 brad Exp $	*/
 
 /*
  * Copyright (c) 2006 Mark Kettenis
@@ -156,7 +156,7 @@ mpbios_pin_fixup(int bus, int dev, int rawpin, int pin)
 			if (mp_verbose) {
 
 				printf("%s: int%d attached to %s",
-				    mip->ioapic->sc_dev.dv_xname,
+				    mip->ioapic->sc_pic.pic_name,
 				    pin, mpb->mb_name);
 
 				if (mpb->mb_idx != -1)
