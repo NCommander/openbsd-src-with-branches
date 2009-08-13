@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.132 2009/06/02 06:33:04 yuo Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.133 2009/08/13 19:49:31 dlg Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -774,9 +774,11 @@ scsi_done(struct scsi_xfer *xs)
 	struct buf				*bp;
 	int					error;
 
+	SC_DEBUG(sc_link, SDEV_DB2, ("scsi_done\n"));
+
 	splassert(IPL_BIO);
 
-	SC_DEBUG(sc_link, SDEV_DB2, ("scsi_done\n"));
+	xs->flags |= ITSDONE;
 
 	/*
  	 * If it's a user level request, bypass all usual completion processing,
