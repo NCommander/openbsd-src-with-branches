@@ -52,6 +52,7 @@ void db_proc_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_uvmexp_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_vnode_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_nfsreq_print_cmd(db_expr_t, int, db_expr_t, char *);
+void db_nfsnode_print_cmd(db_expr_t, int, db_expr_t, char *);
 void db_machine_commands_install(struct db_command *);
 void db_help_cmd(db_expr_t, int, db_expr_t, char *);
 void db_command_loop(void);

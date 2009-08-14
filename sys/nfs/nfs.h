@@ -339,6 +339,7 @@ struct nfsrv_descript {
 #define ND_NFSV3	0x08
 
 extern struct pool nfsreqpl;
+extern struct pool nfs_node_pool;
 extern TAILQ_HEAD(nfsdhead, nfsd) nfsd_head;
 extern int nfsd_head_flag;
 #define	NFSD_CHECKSLP	0x01
