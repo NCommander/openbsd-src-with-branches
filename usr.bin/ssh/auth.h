@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.h,v 1.61 2008/07/02 12:03:51 dtucker Exp $ */
+/* $OpenBSD: auth.h,v 1.62 2008/11/04 08:22:12 djm Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -168,5 +168,4 @@ struct passwd *fakepw(void);
 
 #define AUTH_FAIL_MSG "Too many authentication failures for %.100s"
 
-#define SKEY_PROMPT "\nS/Key Password: "
 #endif
