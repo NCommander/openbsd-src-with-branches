@@ -706,7 +706,7 @@ setup_and_run_command(char *cmd, GNode *gn, int dont_fork)
 			}
 			return !status;
 		} else
-			Fatal("error in wait: %d", stat);
+			Fatal("error in wait: %s", strerror(errno));
 			/*NOTREACHED*/
 	}
 	return 0;
@@ -795,9 +795,8 @@ run_gnode_parallel(GNode *gn)
 	case ERROR:
 		exit(1);
 	default:
-		fprintf(stderr, 
-		    "Could not run gnode, returned %d\n", 
-			gn->built_status);
+		fprintf(stderr, "Could not run gnode, returned %d\n", 
+		    gn->built_status);
 		exit(1);
 	}
 }
