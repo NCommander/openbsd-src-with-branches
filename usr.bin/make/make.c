@@ -246,7 +246,7 @@ Make_Update(GNode *cgn)	/* the child node */
 		 * on this one.
 		 */
 		if (noExecute || is_out_of_date(Dir_MTime(cgn)))
-			cgn->mtime = now;
+			ts_set_from_now(cgn->mtime);
 		if (DEBUG(MAKE))
 			printf("update time: %s\n", time_to_string(cgn->mtime));
 	}

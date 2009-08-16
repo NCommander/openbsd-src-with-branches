@@ -754,6 +754,9 @@ Dir_MTime(GNode *gn)
 	unsigned int slot;
 	TIMESTAMP	  mtime;
 
+	if (gn->type & OP_PHONY)
+		return gn->mtime;
+
 	if (gn->type & OP_ARCHV)
 		return Arch_MTime(gn);
 

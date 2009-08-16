@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: timestamp.c,v 1.2 2004/04/07 13:11:36 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -42,13 +42,14 @@ set_times(const char *f)
 #ifdef USE_TIMESPEC
     struct timeval tv[2];
 
-    TIMESPEC_TO_TIMEVAL(&tv[0], &now);
-    TIMESPEC_TO_TIMEVAL(&tv[1], &now);
+    gettimeofday(&tv[0], NULL);
+    tv[1] = tv[0];
     return utimes(f, tv);
 #else
     struct utimbuf times;
 
-    times.actime = times.modtime = now;
+    time(&times.actime);
+    times.modtime = times.actime;
     return utime(f, &times);
 #endif
 }
