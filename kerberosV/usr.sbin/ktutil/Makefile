@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.13 2007/10/18 18:20:20 deraadt Exp $
+# $OpenBSD: Makefile,v 1.14 2008/01/29 00:29:34 espie Exp $
 
 KRBDEPTH=../..
 .include <${.CURDIR}/../../Makefile.inc>
@@ -42,9 +42,9 @@ ktutil-commands.c ktutil-commands.h:	ktutil-commands.in $(SLC)
 
 CFLAGS+=-I${KRB5SRC}/lib/krb5 -I${KRB5SRC}/lib/kadm5 -I.
 
-DPADD+=	${LIBREADLINE} ${LIBCURSES} ${LIBKADM5CLNT} ${LIBKRB5} \
+DPADD+=	${LIBEDIT} ${LIBCURSES} ${LIBKADM5CLNT} ${LIBKRB5} \
 	${LIBCRYPTO} ${LIBDES}
-LDADD+=	-lreadline -lcurses -lkadm5clnt -lkrb5 \
+LDADD+=	-ledit -lcurses -lkadm5clnt -lkrb5 \
 	-lcrypto -ldes
 
 CLEANFILES+=	ktutil-commands.c slc slc-lex.o \
