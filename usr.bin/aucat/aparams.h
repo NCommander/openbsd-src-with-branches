@@ -1,4 +1,4 @@
-/*	$OpenBSD: aparams.h,v 1.5 2008/11/20 10:10:01 ratchov Exp $	*/
+/*	$OpenBSD: aparams.h,v 1.6 2009/07/25 10:52:18 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -73,6 +73,7 @@ struct aparams {
 #define MIDI_TO_ADATA(m)	(aparams_ctltovol[m])
 
 extern int aparams_ctltovol[128];
+extern struct aparams aparams_none;
 
 void aparams_init(struct aparams *, unsigned, unsigned, unsigned);
 void aparams_print(struct aparams *);
