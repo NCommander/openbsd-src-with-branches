@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.h,v 1.11 2009/06/03 22:09:30 thib Exp $	*/
+/*	$OpenBSD: db_interface.h,v 1.14 2009/08/14 21:16:13 thib Exp $	*/
 /*	$NetBSD: db_interface.h,v 1.1 1996/02/05 01:57:03 christos Exp $	*/
 
 /*
@@ -48,7 +48,7 @@ void db_show_callout(db_expr_t, int, db_expr_t, char *);
 struct mount;
 
 /* kern/vfs_subr.c */
-void vfs_buf_print(struct buf *, int, int (*)(const char *, ...));
+void vfs_buf_print(void *, int, int (*)(const char *, ...));
 void vfs_vnode_print(void *, int, int (*)(const char *, ...));
 void vfs_mount_print(struct mount *, int, int (*)(const char *, ...));
 

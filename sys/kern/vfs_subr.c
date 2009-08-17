@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.180 2009/08/02 16:28:40 beck Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.182 2009/08/13 13:49:20 thib Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -2162,8 +2162,9 @@ vn_isdisk(struct vnode *vp, int *errp)
 #include <ddb/db_output.h>
 
 void
-vfs_buf_print(struct buf *bp, int full, int (*pr)(const char *, ...))
+vfs_buf_print(void *b, int full, int (*pr)(const char *, ...))
 {
+	struct buf *bp = b;
 
 	(*pr)("  vp %p lblkno 0x%llx blkno 0x%llx dev 0x%x\n"
 	      "  proc %p error %d flags %b\n",
