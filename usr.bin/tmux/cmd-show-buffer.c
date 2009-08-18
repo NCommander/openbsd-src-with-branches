@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-show-buffer.c,v 1.3 2009/07/26 12:58:44 nicm Exp $ */
+/* $OpenBSD: cmd-show-buffer.c,v 1.4 2009/08/18 13:08:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -94,7 +94,7 @@ cmd_show_buffer_exec(struct cmd *self, struct cmd_ctx *ctx)
 	
 	if (len != 0) {
 		buf[len] = '\0';
-		ctx->print(ctx, buf);
+		ctx->print(ctx, "%s", buf);
 	}
 	xfree(buf);
 
