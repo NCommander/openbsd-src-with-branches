@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sgi,v 1.30 2009/07/21 21:25:17 miod Exp $
+#	$OpenBSD: files.sgi,v 1.31 2009/08/13 15:13:11 jasper Exp $
 #
 # maxpartitions must be first item in files.${ARCH}
 #
@@ -103,9 +103,17 @@ device	ioc: onewirebus
 attach	ioc at pci
 file	arch/sgi/pci/ioc.c			ioc
 
-# IOC3 serial ports
+# IOC4
+define	iof {[base = -1]}
+device	iof
+attach	iof at pci
+file	arch/sgi/pci/iof.c			iof
+
+# IOC3/4 serial ports
 attach	com at ioc with com_ioc
 file	arch/sgi/dev/com_ioc.c			com_ioc
+attach	com at iof with com_iof
+file	arch/sgi/dev/com_iof.c			com_iof
 
 # DS1687 Time-Of-Day calendar device
 device	dsrtc
