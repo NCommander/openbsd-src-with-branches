@@ -44,6 +44,11 @@ struct componentname;
 struct nfs_diskless;
 struct nfsm_info;
 
+/* nfs_aiod.c */
+void	nfs_aiod(void *);
+int	nfs_set_naiod(int);
+void	nfs_init_aiod(void);
+
 /* nfs_bio.c */
 int nfs_bioread(struct vnode *, struct uio *, int, struct ucred *);
 int nfs_write(void *);
@@ -256,9 +261,6 @@ int nfssvc_nfsd(struct nfsd *);
 void nfsrv_zapsock(struct nfssvc_sock *);
 void nfsrv_slpderef(struct nfssvc_sock *);
 void nfsrv_init(int);
-void nfssvc_iod(void *);
-void start_nfsio(void *);
-void nfs_getset_niothreads(int);
 
 /* nfs_kq.c */
 int  nfs_kqfilter(void *);

@@ -935,7 +935,9 @@ nfs_vfs_init(struct vfsconf *vfsp)
 {
 	extern struct pool nfs_node_pool;
 
-	TAILQ_INIT(&nfs_bufq);
+	LIST_INIT(&nfs_aiods_all);
+	LIST_INIT(&nfs_aiods_idle);
+	mtx_init(&nfs_aiodl_mtx, IPL_BIO);
 
 	pool_init(&nfs_node_pool, sizeof(struct nfsnode), 0, 0, 0,
 	    "nfsnodepl", NULL);
