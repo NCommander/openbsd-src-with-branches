@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.25 2009/06/10 18:05:31 miod Exp $ */
+/*	$OpenBSD: intr.h,v 1.26 2009/06/12 19:52:15 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -198,7 +198,7 @@ struct intrhand {
 	void	*ih_arg;
 	int	ih_level;
 	int	ih_irq;
-	char	*ih_what;
+	const char	*ih_what;
 	void	*frame;
 	struct evcount ih_count;
 };

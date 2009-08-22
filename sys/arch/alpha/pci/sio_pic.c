@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio_pic.c,v 1.28 2008/07/29 18:39:45 miod Exp $	*/
+/*	$OpenBSD: sio_pic.c,v 1.29 2008/08/09 16:41:21 miod Exp $	*/
 /* $NetBSD: sio_pic.c,v 1.28 2000/06/06 03:10:13 thorpej Exp $ */
 
 /*-
@@ -447,7 +447,7 @@ sio_intr_establish(v, irq, type, level, fn, arg, name)
         int type;
         int level;
         int (*fn)(void *);
-	char *name;
+	const char *name;
 {
 	void *cookie;
 

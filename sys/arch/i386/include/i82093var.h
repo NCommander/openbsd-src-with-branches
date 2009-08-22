@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82093var.h,v 1.7 2008/10/05 16:57:36 kettenis Exp $	*/
+/*	$OpenBSD: i82093var.h,v 1.8 2009/08/13 13:24:48 kettenis Exp $	*/
 /* $NetBSD: i82093var.h,v 1.1 2003/02/26 21:26:10 fvdl Exp $ */
 
 /*-
@@ -80,7 +80,8 @@ struct ioapic_softc {
 #define APIC_IRQ_APIC(x) ((x & APIC_INT_APIC_MASK) >> APIC_INT_APIC_SHIFT)
 #define APIC_IRQ_PIN(x) ((x & APIC_INT_PIN_MASK) >> APIC_INT_PIN_SHIFT)
 
-void   *apic_intr_establish(int, int, int, int (*)(void *), void *, char *); 
+void   *apic_intr_establish(int, int, int, int (*)(void *), void *,
+    const char *); 
 void	apic_intr_disestablish(void *);
 
 void	ioapic_print_redir(struct ioapic_softc *, char *, int);

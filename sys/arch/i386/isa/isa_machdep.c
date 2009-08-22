@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.66 2008/12/11 17:07:14 oga Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.67 2009/03/10 15:03:17 oga Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.22 1997/06/12 23:57:32 thorpej Exp $	*/
 
 /*-
@@ -463,7 +463,7 @@ isa_intr_check(isa_chipset_tag_t ic, int irq, int type)
  */
 void *
 isa_intr_establish(isa_chipset_tag_t ic, int irq, int type, int level,
-    int (*ih_fun)(void *), void *ih_arg, char *ih_what)
+    int (*ih_fun)(void *), void *ih_arg, const char *ih_what)
 {
 	struct intrhand **p, *q, *ih;
 	static struct intrhand fakehand = {fakeintr};

@@ -1,4 +1,4 @@
-/*	$OpenBSD: i80321var.h,v 1.2 2006/05/29 17:27:31 drahn Exp $	*/
+/*	$OpenBSD: i80321var.h,v 1.3 2006/06/15 21:35:30 drahn Exp $	*/
 /*	$NetBSD: i80321var.h,v 1.10 2005/12/15 01:44:00 briggs Exp $	*/
 
 /*
@@ -57,7 +57,7 @@ struct intrhand {
 	int ih_ipl;			/* IPL_* */
 	int ih_irq;			/* IRQ number */
 	struct evcount  	ih_count;
-	char *ih_name;
+	const char *ih_name;
 };
 
 struct intrq {
