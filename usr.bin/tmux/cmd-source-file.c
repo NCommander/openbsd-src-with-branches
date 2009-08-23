@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-source-file.c,v 1.2 2009/07/13 23:11:35 nicm Exp $ */
+/* $OpenBSD: cmd-source-file.c,v 1.3 2009/07/26 12:58:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Tiago Cunha <me@tiagocunha.org>
@@ -90,7 +90,7 @@ cmd_source_file_exec(struct cmd *self, struct cmd_ctx *ctx)
 	struct cmd_source_file_data	*data = self->data;
 	char				*cause;
 
-	if (load_cfg(data->path, &cause) != 0) {
+	if (load_cfg(data->path, ctx, &cause) != 0) {
 		ctx->error(ctx, "%s", cause);
 		xfree(cause);
 		return (-1);
