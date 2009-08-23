@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.73 2009/08/19 10:39:50 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.74 2009/08/19 16:10:26 jmc Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
 .\"
@@ -1343,7 +1343,7 @@ was given to the
 .Ic set-environment
 command).
 The default is
-.Ev DISPLAY .
+"DISPLAY WINDOWID SSH_ASKPASS SSH_AUTH_SOCK SSH_AGENT_PID SSH_CONNECTION".
 .It Xo Ic visual-activity
 .Op Ic on | off
 .Xc
