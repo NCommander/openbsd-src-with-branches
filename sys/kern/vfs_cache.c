@@ -68,7 +68,6 @@
 /*
  * Structures associated with name caching.
  */
-u_long	nchash;				/* size of hash table - 1 */
 long	numcache;			/* total number of cache entries allocated */
 long	numneg;				/* number of negative cache entries */
 
