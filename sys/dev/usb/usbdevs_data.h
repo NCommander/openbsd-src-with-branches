@@ -4766,6 +4766,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "U720",
 	},
 	{
+	    USB_VENDOR_NOVATEL, USB_PRODUCT_NOVATEL_EU870D,
+	    "EU870D",
+	},
+	{
 	    USB_VENDOR_NOVATEL, USB_PRODUCT_NOVATEL_U727,
 	    "U727",
 	},
