@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.55 2008/11/24 13:22:09 mikeb Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.56 2009/03/09 13:53:10 mcbride Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -529,7 +529,7 @@ pfi_address_add(struct sockaddr *sa, int af, int net)
 			    "(%d/%d)\n", pfi_buffer_cnt, PFI_BUFFER_MAX);
 			return;
 		}
-		memcpy(pfi_buffer, p, pfi_buffer_cnt * sizeof(*pfi_buffer));
+		memcpy(p, pfi_buffer, pfi_buffer_cnt * sizeof(*pfi_buffer));
 		/* no need to zero buffer */
 		free(pfi_buffer, PFI_MTYPE);
 		pfi_buffer = p;
