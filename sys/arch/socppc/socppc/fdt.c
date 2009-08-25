@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2009 Dariusz Swiderski <sfires@sfires.net>
