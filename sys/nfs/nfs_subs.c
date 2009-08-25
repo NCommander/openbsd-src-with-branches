@@ -895,8 +895,6 @@ nfs_adv(mdp, dposp, offs, left)
 void
 nfs_init()
 {
-	static struct timeout nfs_timer_to;
-
 	rpc_vers = txdr_unsigned(RPC_VER2);
 	rpc_call = txdr_unsigned(RPC_CALL);
 	rpc_reply = txdr_unsigned(RPC_REPLY);
@@ -919,14 +917,6 @@ nfs_init()
 
 	pool_init(&nfsreqpl, sizeof(struct nfsreq), 0, 0, 0, "nfsreqpl",
 	    &pool_allocator_nointr);
-
-	/*
-	 * Initialize reply list and start timer
-	 */
-	TAILQ_INIT(&nfs_reqq);
-
-	timeout_set(&nfs_timer_to, nfs_timer, &nfs_timer_to);
-	nfs_timer(&nfs_timer_to);
 }
 
 #ifdef NFSCLIENT

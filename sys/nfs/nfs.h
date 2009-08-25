@@ -223,11 +223,6 @@ struct nfsreq {
 	struct proc	*r_procp;	/* Proc that did I/O system call */
 };
 
-/*
- * Queue head for nfsreq's
- */
-extern TAILQ_HEAD(nfsreqhead, nfsreq) nfs_reqq;
-
 /* Flag values for r_flags */
 #define R_TIMING	0x01		/* timing request (in mntp) */
 #define R_SENT		0x02		/* request has been sent */
