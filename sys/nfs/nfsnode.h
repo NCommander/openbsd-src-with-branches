@@ -143,6 +143,7 @@ struct nfs_aiod {
 	LIST_ENTRY(nfs_aiod)	 nad_idle;
 	struct nfsmount		*nad_mnt;
 	int			 nad_exiting;
+	int			 nad_worked; /* Was removed from idle list. */
 };
 
 LIST_HEAD(nfs_aiodhead, nfs_aiod);
