@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.23 2009/07/25 11:15:56 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.24 2009/07/26 12:38:20 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -152,6 +152,12 @@ aucat_runmsg(struct aucat_hdl *hdl)
 	case AMSG_MOVE:
 		hdl->maxwrite += hdl->rmsg.u.ts.delta * (int)hdl->wbpf;
 		sio_onmove_cb(&hdl->sio, hdl->rmsg.u.ts.delta);
+		hdl->rstate = STATE_MSG;
+		hdl->rtodo = sizeof(struct amsg);
+		break;
+	case AMSG_SETVOL:
+		hdl->curvol = hdl->reqvol = hdl->rmsg.u.vol.ctl;
+		sio_onvol_cb(&hdl->sio, hdl->curvol);
 		hdl->rstate = STATE_MSG;
 		hdl->rtodo = sizeof(struct amsg);
 		break;
