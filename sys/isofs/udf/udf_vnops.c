@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vnops.c,v 1.37 2009/08/13 15:00:14 jasper Exp $	*/
+/*	$OpenBSD: udf_vnops.c,v 1.38 2009/08/14 22:23:45 krw Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -1073,7 +1073,6 @@ lookloop:
 		if (fid->file_char & UDF_FILE_CHAR_DEL)
 			continue;
 
-printf("name: '%s', file_char: %u\n", nameptr, fid->file_char);
 		if ((fid->l_fi == 0) && (fid->file_char & UDF_FILE_CHAR_PAR)) {
 			if (flags & ISDOTDOT) {
 				id = udf_getid(&fid->icb);
