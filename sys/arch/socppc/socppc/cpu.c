@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.1 2008/05/10 12:02:21 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.2 2009/02/17 21:35:56 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -110,6 +110,6 @@ ppc_check_procid()
 	for (p = &nop32_start; p->s; p++) {
 		for (inst = p->s; inst < p->e; inst++)
 			*inst = nop_inst;
-		syncicache(p->s, (p->e - p->s) * sizeof(p->e));
+		syncicache(p->s, (p->e - p->s) * sizeof(*p->e));
 	}
 }
