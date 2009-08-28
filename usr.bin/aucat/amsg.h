@@ -1,4 +1,4 @@
-/*	$OpenBSD: amsg.h,v 1.8 2009/07/25 08:44:27 ratchov Exp $	*/
+/*	$OpenBSD: amsg.h,v 1.9 2009/07/25 10:52:18 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -39,6 +39,7 @@ struct amsg {
 #define AMSG_GETCAP	7	/* get capabilities */
 #define AMSG_SETVOL	8	/* set volume */
 #define AMSG_HELLO	9	/* say hello, check versions and so ... */
+#define AMSG_BYE	10	/* ask server to drop connection */
 	uint32_t cmd;
 	uint32_t __pad;
 	union {
