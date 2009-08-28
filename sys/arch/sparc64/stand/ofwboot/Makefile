@@ -21,7 +21,7 @@ SRCS+=		strlcpy.c strcmp.c strlcat.c strlen.c
 
 CWARNFLAGS+=	-Wno-main
 AFLAGS+=	-Wa,-Av9a
-AFLAGS+=	-x assembler-with-cpp -traditional-cpp -D_LOCORE -D__ELF__
+AFLAGS+=	-x assembler-with-cpp -D_LOCORE -D__ELF__
 CFLAGS+=	${COPTS}
 CPPFLAGS+=	-D_STANDALONE -DSUN4U -nostdinc
 #CPPFLAGS+=	-DNETIF_DEBUG 
