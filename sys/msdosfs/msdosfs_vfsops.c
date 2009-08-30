@@ -588,9 +588,10 @@ msdosfs_unmount(struct mount *mp, int mntflags,struct proc *p)
 #ifdef MSDOSFS_DEBUG
 	vprint("msdosfs_umount(): just before calling VOP_CLOSE()\n", vp);
 #endif
+	vn_lock(vp, LK_EXCLUSIVE | LK_RETRY, p);
 	error = VOP_CLOSE(vp,
 	   pmp->pm_flags & MSDOSFSMNT_RONLY ? FREAD : FREAD|FWRITE, NOCRED, p);
-	vrele(vp);
+	vput(vp);
 	free(pmp->pm_inusemap, M_MSDOSFSFAT);
 	free(pmp, M_MSDOSFSMNT);
 	mp->mnt_data = (qaddr_t)0;
