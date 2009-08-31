@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.232 2009/07/20 14:56:20 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.233 2009/08/03 13:14:07 claudio Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -211,8 +211,12 @@ grammar		: /* empty */
 		;
 
 asnumber	: NUMBER			{
-			if ($1 < 0 || $1 >= ASNUM_MAX) {
-				yyerror("AS too big: max %u", ASNUM_MAX - 1);
+			/*
+			 * Accroding to iana 65535 and 4294967295 are reserved
+			 * but enforcing this is not duty of the parser.
+			 */
+			if ($1 < 0 || $1 > UINT_MAX) {
+				yyerror("AS too big: max %u", UINT_MAX);
 				YYERROR;
 			}
 		}
