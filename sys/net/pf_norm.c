@@ -536,7 +536,7 @@ pf_normalize_ip(struct mbuf **m0, int dir, struct pfi_kif *kif, u_short *reason,
 		goto drop;
 
 	/* Clear IP_DF if we're in no-df mode */
-	if (!(pf_status.reass & PF_REASS_NODF) && h->ip_off & htons(IP_DF)) {
+	if (pf_status.reass & PF_REASS_NODF && h->ip_off & htons(IP_DF)) {
 		u_int16_t ip_off = h->ip_off;
 
 		h->ip_off &= htons(~IP_DF);
