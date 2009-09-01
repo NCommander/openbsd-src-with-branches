@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.10 2006/11/22 21:35:56 stevesk Exp $	*/
+/*	$OpenBSD: parse.c,v 1.11 2007/02/26 00:49:53 stevesk Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -211,6 +211,9 @@ parse_hardware_param(FILE *cfile, struct hardware *hardware)
 		break;
 	case TOK_FDDI:
 		hardware->htype = HTYPE_FDDI;
+		break;
+	case TOK_IPSEC_TUNNEL:
+		hardware->htype = HTYPE_IPSEC_TUNNEL;
 		break;
 	default:
 		parse_warn("expecting a network hardware type");
