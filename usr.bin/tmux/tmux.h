@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.92 2009/08/31 20:46:19 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.93 2009/09/01 13:09:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -379,6 +379,7 @@ enum mode_key_cmd {
 	MODEKEYEDIT_STARTOFLINE,
 	MODEKEYEDIT_SWITCHMODE,
 	MODEKEYEDIT_SWITCHMODEAPPEND,
+	MODEKEYEDIT_TRANSPOSECHARS,
 	
 	/* Menu (choice) keys. */
 	MODEKEYCHOICE_CANCEL,
