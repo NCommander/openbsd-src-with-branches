@@ -184,6 +184,8 @@ extern u_int32_t nfs_true, nfs_false;
 extern u_int32_t nfs_xdrneg1;
 extern struct nfsstats nfsstats;
 extern nfstype nfsv3_type[9];
+int nfs_numasync = 0;
+
 
 void
 nfs_cache_enter(struct vnode *dvp, struct vnode *vp, struct componentname *cnp)

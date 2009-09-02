@@ -907,7 +907,7 @@ file netnatm/natm_pcb.c			natm
 file netnatm/natm_proto.c		natm
 file netnatm/natm.c			natm
 file nfs/krpc_subr.c			nfsclient
-file nfs/nfs_aiod.c			nfsclient
+#file nfs/nfs_aiod.c			nfsclient
 file nfs/nfs_bio.c			nfsclient
 file nfs/nfs_boot.c			nfsclient
 file nfs/nfs_debug.c			nfsclient & ddb
