@@ -341,8 +341,8 @@ pool_init(struct pool *pp, size_t size, u_int align, u_int ioff, int flags,
 	/*
 	 * Decide whether to put the page header off page to avoid
 	 * wasting too large a part of the page. Off-page page headers
-	 * go on a hash table, so we can match a returned item
-	 * with its header based on the page address.
+	 * go into an RB tree, so we can match a returned item with
+	 * its header based on the page address.
 	 * We use 1/16 of the page size as the threshold (XXX: tune)
 	 */
 	if (pp->pr_size < palloc->pa_pagesz/16 && pp->pr_size < PAGE_SIZE) {
