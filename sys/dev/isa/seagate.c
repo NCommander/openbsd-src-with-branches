@@ -1,4 +1,4 @@
-/*	$OpenBSD: seagate.c,v 1.27 2009/02/16 21:19:07 miod Exp $	*/
+/*	$OpenBSD: seagate.c,v 1.28 2009/08/09 12:59:37 jsg Exp $	*/
 
 /*
  * ST01/02, Future Domain TMC-885, TMC-950 SCSI driver
@@ -561,6 +561,9 @@ sea_scsi_cmd(struct scsi_xfer *xs)
 		 */
 		printf("%s: resetting\n", sea->sc_dev.dv_xname);
 		xs->error = XS_DRIVER_STUFFUP;
+		s = splbio();
+		scsi_done(xs);
+		splx(s);
 		return COMPLETE;
 	}
 
