@@ -1,4 +1,4 @@
-/*	$OpenBSD: hp.c,v 1.18 2007/06/07 05:22:32 deraadt Exp $ */
+/*	$OpenBSD: hp.c,v 1.19 2007/09/01 12:45:42 miod Exp $ */
 /*	$NetBSD: hp.c,v 1.22 2000/02/12 16:09:33 ragge Exp $ */
 /*
  * Copyright (c) 1996 Ludd, University of Lule}, Sweden.
@@ -338,19 +338,18 @@ hpioctl(dev, cmd, addr, flag, p)
 		    &lp->d_partitions[DISKPART(dev)];
 		break;
 
+	case	DIOCWDINFO:
 	case	DIOCSDINFO:
 		if ((flag & FWRITE) == 0)
 			return EBADF;
 
-		return setdisklabel(lp, (struct disklabel *)addr, 0, 0);
-
-	case	DIOCWDINFO:
-		if ((flag & FWRITE) == 0)
-			error = EBADF;
-		else {
-			sc->sc_wlabel = 1;
-			error = writedisklabel(dev, hpstrategy, lp, 0);
-			sc->sc_wlabel = 0;
+		error = setdisklabel(lp, (struct disklabel *)addr, 0);
+		if (error == 0) {
+			if (cmd == DIOCWDINFO) {
+				sc->sc_wlabel = 1;
+				error = writedisklabel(dev, hpstrategy, lp, 0);
+				sc->sc_wlabel = 0;
+			}
 		}
 		return error;
 	case	DIOCWLABEL:
