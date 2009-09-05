@@ -1,4 +1,4 @@
-/*	$OpenBSD: xd.c,v 1.45 2009/08/13 15:23:12 deraadt Exp $	*/
+/*	$OpenBSD: xd.c,v 1.46 2009/09/05 00:48:39 krw Exp $	*/
 /*	$NetBSD: xd.c,v 1.37 1997/07/29 09:58:16 fair Exp $	*/
 
 /*
@@ -873,7 +873,7 @@ xdioctl(dev, command, addr, flag, p)
 			if (xd->state == XD_DRIVE_NOLABEL)
 				xd->state = XD_DRIVE_ONLINE;
 
-			if (cmd == DIOCWDINFO) {
+			if (command == DIOCWDINFO) {
 				/*
 				 * Simulate opening partition 0 so write
 				 * succeeds.
