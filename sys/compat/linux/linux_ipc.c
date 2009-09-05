@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_ipc.c,v 1.9 2003/10/12 23:44:39 millert Exp $	*/
+/*	$OpenBSD: linux_ipc.c,v 1.10 2007/05/29 10:44:29 sturm Exp $	*/
 /*	$NetBSD: linux_ipc.c,v 1.10 1996/04/05 00:01:44 christos Exp $	*/
 
 /*
@@ -328,7 +328,7 @@ linux_semctl(p, v, retval)
 		return sys___semctl(p, &bsa, retval);
 	case LINUX_IPC_STAT:
 		sg = stackgap_init(p->p_emul);
-		unptr = stackgap_alloc(&sg, sizeof (union semun *));
+		unptr = stackgap_alloc(&sg, sizeof (union semun));
 		dsp = stackgap_alloc(&sg, sizeof (struct semid_ds));
 		if ((error = copyout((caddr_t)&dsp, unptr, sizeof dsp)))
 			return error;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_misc.c,v 1.61 2007/09/01 15:14:44 martin Exp $	*/
+/*	$OpenBSD: linux_misc.c,v 1.62 2008/06/26 05:42:14 ray Exp $	*/
 /*	$NetBSD: linux_misc.c,v 1.27 1996/05/20 01:59:21 fvdl Exp $	*/
 
 /*-
@@ -153,7 +153,7 @@ linux_sys_wait4(p, v, retval)
 
 	if (SCARG(uap, status) != NULL) {
 		sg = stackgap_init(p->p_emul);
-		status = (int *) stackgap_alloc(&sg, sizeof status);
+		status = (int *) stackgap_alloc(&sg, sizeof *status);
 	} else
 		status = NULL;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_socket.c,v 1.37 2008/06/10 16:40:49 matthieu Exp $	*/
+/*	$OpenBSD: linux_socket.c,v 1.38 2009/02/19 19:04:34 deraadt Exp $	*/
 /*	$NetBSD: linux_socket.c,v 1.14 1996/04/05 00:01:50 christos Exp $	*/
 
 /*
@@ -312,7 +312,7 @@ linux_connect(p, v, retval)
 #endif
 
 		status = stackgap_alloc(&sg, sizeof stat);
-		statusl = stackgap_alloc(&sg, sizeof statusl);
+		statusl = stackgap_alloc(&sg, sizeof statl);
 
 		if ((error = copyout(&statl, statusl, sizeof statl)))
 			return error;
