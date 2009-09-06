@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_srt.c,v 1.22 2009/04/16 20:11:12 michele Exp $ */
+/*	$OpenBSD: rde_srt.c,v 1.23 2009/05/20 16:10:04 michele Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -52,7 +52,6 @@ void	 srt_current_forwarder(struct rt_node *, struct iface *,
 
 /* Downstream neighbors */
 void		 srt_add_ds(struct rt_node *, u_int32_t, u_int32_t);
-struct ds_nbr	*srt_find_ds(struct rt_node *, u_int32_t);
 void		 srt_delete_ds(struct rt_node *, struct ds_nbr *,
 		    struct iface *);
 
