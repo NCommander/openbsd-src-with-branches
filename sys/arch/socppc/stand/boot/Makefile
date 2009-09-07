@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2008/05/28 21:40:55 miod Exp $
+#	$OpenBSD: Makefile,v 1.5 2008/06/09 15:01:56 deraadt Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -17,12 +17,12 @@ CPPFLAGS+= 	-nostdinc -I../.. -I. -I${.CURDIR} -I${S}
 CPPFLAGS+=	-DCONADDR=0xe0004500UL -DCONSPEED=115200
 CPPFLAGS+=	-DNS16550_FREQ=266000000
 
-COPTS+=		-ffreestanding -fno-stack-protector -ffixed-r29
+COPTS+=		-ffreestanding -fno-stack-protector -ffixed-r29 -msoft-float
 
 SRCS=		start.S 
 SRCS+=		boot.c cmd.c vars.c
 SRCS+=		conf.c devopen.c exec.c machdep.c dev_socppc.c time.c
-SRCS+=		clock.c ns16550.c wd.c wdc.c pciide.c
+SRCS+=		clock.c ns16550.c wd.c wdc.c pciide.c wdc_obio.c fdt.c
 SRCS+=		ctime.c strtol.c
 
 .PATH:	${S}/lib/libkern/arch/powerpc ${S}/lib/libkern
