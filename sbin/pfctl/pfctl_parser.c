@@ -1015,8 +1015,6 @@ print_rule(struct pf_rule *r, const char *anchor_call, int verbose)
 			printf(" port %u", ntohs(r->divert.port));
 		}
 	}
-	if (r->divert_packet.port)
-		printf(" divert-packet port %u", ntohs(r->divert_packet.port));
 	if (!anchor_call[0] && !TAILQ_EMPTY(&r->nat.list)) {
 		printf (" nat-to ");
 		print_pool(&r->nat, r->nat.proxy_port[0],

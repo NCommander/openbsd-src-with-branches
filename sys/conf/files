@@ -826,7 +826,6 @@ file netinet/igmp.c			inet
 file netinet/in.c			inet
 file netinet/in_pcb.c			inet
 file netinet/in_proto.c			inet
-file netinet/ip_divert.c		inet
 file netinet/ip_icmp.c			inet
 file netinet/ip_id.c			inet
 file netinet/ip_input.c			inet

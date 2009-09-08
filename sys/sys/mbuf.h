@@ -90,7 +90,6 @@ struct pkthdr_pf {
 #define	PF_TAG_FRAGCACHE		0x02
 #define	PF_TAG_TRANSLATE_LOCALHOST	0x04
 #define	PF_TAG_DIVERTED			0x08
-#define	PF_TAG_DIVERTED_PACKET		0x10
 
 /* record/packet header in first mbuf of chain; valid if M_PKTHDR set */
 struct	pkthdr {

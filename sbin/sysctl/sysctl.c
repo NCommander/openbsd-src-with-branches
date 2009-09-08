@@ -82,7 +82,6 @@ static const char rcsid[] = "$OpenBSD: sysctl.c,v 1.162 2009/08/12 12:26:51 kett
 #include <netinet/ip_gre.h>
 #include <netinet/ip_ipcomp.h>
 #include <netinet/ip_carp.h>
-#include <netinet/ip_divert.h>
 
 #include <net/pfvar.h>
 #include <net/if_pfsync.h>
@@ -1323,7 +1322,6 @@ struct ctlname mobileipname[] = MOBILEIPCTL_NAMES;
 struct ctlname ipcompname[] = IPCOMPCTL_NAMES;
 struct ctlname carpname[] = CARPCTL_NAMES;
 struct ctlname pfsyncname[] = PFSYNCCTL_NAMES;
-struct ctlname divertname[] = DIVERTCTL_NAMES;
 struct ctlname bpfname[] = CTL_NET_BPF_NAMES;
 struct ctlname ifqname[] = CTL_IFQ_NAMES;
 struct list inetlist = { inetname, IPPROTO_MAXID };
@@ -1569,7 +1567,7 @@ struct list inetvars[] = {
 	{ 0, 0 },
 	{ 0, 0 },
 	{ 0, 0 },
-	{ divertname, DIVERTCTL_MAXID },
+	{ 0, 0 },
 	{ 0, 0 },
 	{ 0, 0 },
 	{ 0, 0 },
