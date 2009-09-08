@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.47 2007/12/14 18:33:40 deraadt Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.48 2008/05/06 08:47:35 markus Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -116,6 +116,7 @@
 #include <netinet/ip_var.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/in_pcb.h>
+#include <netinet/ip_divert.h>
 
 #ifdef INET6
 #ifndef INET
@@ -286,6 +287,11 @@ struct protosw inetsw[] = {
   0,		0,		0,		0,		pfsync_sysctl
 },
 #endif /* NPFSYNC > 0 */
+{ SOCK_RAW,	&inetdomain,	IPPROTO_DIVERT,	PR_ATOMIC|PR_ADDR,
+  divert_input,	0,		0,		0,
+  divert_usrreq,
+  divert_init,	0,		0,		0,		divert_sysctl
+},
 /* raw wildcard */
 { SOCK_RAW,	&inetdomain,	0,		PR_ATOMIC|PR_ADDR,
   rip_input,	rip_output,	0,		rip_ctloutput,
