@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_machdep.c,v 1.32 2009/07/26 18:48:55 miod Exp $	*/
+/*	$OpenBSD: palm_machdep.c,v 1.1 2009/09/05 01:22:11 marex Exp $	*/
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -625,7 +625,7 @@ initarm(void *arg)
 	 */
 	/* XXX should really be done after setting up the console, but we
 	 * XXX need to parse the console selection flags right now. */
-	process_kernel_args((int *)0x5c000000);
+	process_kernel_args((int *)0x40f00008);
 
 	/*
 	 * This test will work for now but has to be revised when support
@@ -1104,6 +1104,7 @@ inline void
 process_kernel_args(int *args)
 {
 	if (args[0] == 917 ||	/* Palm T5 */
+	    args[0] == 918 ||	/* Palm TC */
 	    args[0] == 885 ||	/* Palm TX */
 	    args[0] == 835 ||	/* Palm LD */
 	    args[0] == 904)	/* Palm Z72 */
