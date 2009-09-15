@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.55 2009/08/22 02:54:50 mk Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.56 2009/09/13 10:16:37 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1995 Per Fogelstrom
@@ -415,6 +415,8 @@ openpic_calc_mask()
 	for (i = IPL_NONE; i <= IPL_HIGH; i++) {
 		if (i > IPL_NONE)
 			imask[i] |= SINT_MASK;
+		if (i >= IPL_CLOCK)
+			imask[i] |= SPL_CLOCK;
 	}
 	imask[IPL_HIGH] = 0xffffffff;
 }
