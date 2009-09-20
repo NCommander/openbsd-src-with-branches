@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-unlink-window.c,v 1.4 2009/07/26 12:58:44 nicm Exp $ */
+/* $OpenBSD: cmd-unlink-window.c,v 1.5 2009/09/20 17:27:18 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -43,9 +43,6 @@ cmd_unlink_window_exec(struct cmd *self, struct cmd_ctx *ctx)
 	struct cmd_target_data	*data = self->data;
 	struct winlink		*wl;
 	struct session		*s;
-	struct client		*c;
-	u_int			 i;
-	int			 destroyed;
 
 	if ((wl = cmd_find_window(ctx, data->target, &s)) == NULL)
 		return (-1);
