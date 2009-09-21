@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.107 2009/09/20 19:15:02 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.108 2009/09/21 06:55:06 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -545,10 +545,9 @@ struct options_entry {
 		OPTIONS_STRING,
 		OPTIONS_NUMBER,
 	} type;
-	union {
-		char	*string;
-		long long number;
-	} value;
+
+	char		*str;
+	long long	 num;
 
 	SPLAY_ENTRY(options_entry) entry;
 };
