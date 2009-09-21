@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-window.c,v 1.5 2009/07/26 12:58:44 nicm Exp $ */
+/* $OpenBSD: cmd-new-window.c,v 1.6 2009/08/13 20:11:58 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -70,7 +70,7 @@ cmd_new_window_parse(struct cmd *self, int argc, char **argv, char **cause)
 	struct cmd_new_window_data	*data;
 	int				 opt;
 
-	self->entry->init(self, 0);
+	self->entry->init(self, KEYC_NONE);
 	data = self->data;
 
 	while ((opt = getopt(argc, argv, "dkt:n:")) != -1) {

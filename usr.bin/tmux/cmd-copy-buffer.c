@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-copy-buffer.c,v 1.3 2009/07/26 12:58:44 nicm Exp $ */
+/* $OpenBSD: cmd-copy-buffer.c,v 1.4 2009/09/07 18:50:45 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -70,7 +70,7 @@ cmd_copy_buffer_parse(struct cmd *self, int argc, char **argv, char **cause)
 	const char			*errstr;
 	int				 n, opt;
 
-	self->entry->init(self, 0);
+	self->entry->init(self, KEYC_NONE);
 	data = self->data;
 
 	while ((opt = getopt(argc, argv, "a:b:s:t:")) != -1) {
