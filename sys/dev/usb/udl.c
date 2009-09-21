@@ -1,4 +1,4 @@
-/*	$OpenBSD: udl.c,v 1.48 2009/09/20 10:56:02 mglocker Exp $ */
+/*	$OpenBSD: udl.c,v 1.49 2009/09/20 11:24:02 mglocker Exp $ */
 
 /*
  * Copyright (c) 2009 Marcus Glocker <mglocker@openbsd.org>
@@ -45,6 +45,7 @@
 #include <dev/rasops/rasops.h>
 
 #include <dev/usb/udl.h>
+#include <dev/usb/udlio.h>
 
 /*
  * Defines.
