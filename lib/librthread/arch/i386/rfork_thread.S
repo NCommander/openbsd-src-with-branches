@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfork_thread.S,v 1.1 2005/12/03 18:16:19 tedu Exp $ */
+/*	$OpenBSD: rfork_thread.S,v 1.2 2005/12/25 00:45:29 tedu Exp $ */
 /*-
  * Copyright (c) 2000 Peter Wemm <peter@FreeBSD.org>
  * All rights reserved.
@@ -112,4 +112,11 @@ ENTRY(rfork_thread)
 	popl	%esi
 	movl	%ebp, %esp
 	popl	%ebp
+#ifdef PIC
+	PIC_PROLOGUE
+	movl	PIC_GOT(CERROR), %ecx
+	PIC_EPILOGUE
+	jmp	*%ecx
+#else
 	jmp	CERROR
+#endif
