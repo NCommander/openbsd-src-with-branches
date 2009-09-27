@@ -1,4 +1,4 @@
-/*	$OpenBSD: aparams.h,v 1.6 2009/07/25 10:52:18 ratchov Exp $	*/
+/*	$OpenBSD: aparams.h,v 1.7 2009/08/17 15:07:49 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -76,8 +76,7 @@ extern int aparams_ctltovol[128];
 extern struct aparams aparams_none;
 
 void aparams_init(struct aparams *, unsigned, unsigned, unsigned);
-void aparams_print(struct aparams *);
-void aparams_print2(struct aparams *, struct aparams *);
+void aparams_dbg(struct aparams *);
 int aparams_eqrate(struct aparams *, struct aparams *);
 int aparams_eqenc(struct aparams *, struct aparams *);
 int aparams_eq(struct aparams *, struct aparams *);

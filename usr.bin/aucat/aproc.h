@@ -1,4 +1,4 @@
-/*	$OpenBSD: aproc.h,v 1.21 2009/08/26 08:28:21 ratchov Exp $	*/
+/*	$OpenBSD: aproc.h,v 1.22 2009/08/27 06:31:13 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -184,6 +184,7 @@ struct aproc {
 
 struct aproc *aproc_new(struct aproc_ops *, char *);
 void aproc_del(struct aproc *);
+void aproc_dbg(struct aproc *);
 void aproc_setin(struct aproc *, struct abuf *);
 void aproc_setout(struct aproc *, struct abuf *);
 int aproc_depend(struct aproc *, struct aproc *);
