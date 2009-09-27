@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.47 2009/06/05 03:54:42 chris Exp $ */
+/*	$OpenBSD: arp.c,v 1.48 2009/06/25 15:43:18 claudio Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -532,8 +532,8 @@ usage(void)
 {
 	fprintf(stderr, "usage: arp [-adn] [-V rdomain] hostname\n");
 	fprintf(stderr, "       arp [-F] [-f file] [-V rdomain] "
-	    "-s hostname ether_addr "
-	    "[temp | permanent] [pub]\n");
+	    "-s hostname ether_addr\n"
+	    "           [temp | permanent] [pub]\n");
 	exit(1);
 }
 
