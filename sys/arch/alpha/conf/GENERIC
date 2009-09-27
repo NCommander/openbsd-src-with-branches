@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.207 2009/01/06 23:03:16 jasper Exp $
+#	$OpenBSD: GENERIC,v 1.208 2009/02/10 18:35:44 damien Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -277,7 +277,7 @@ vga*	at pci?				# PCI VGA graphics
 tga*	at pci?				# DEC ZLXp-E[123] graphics
 
 # Media Independent Interface (mii) drivers
-eephy*	at mii?				# Marvell PHYs for Intel GigE
+eephy*	at mii?				# Marvell PHYs
 exphy*	at mii?				# 3Com internal PHYs
 inphy*	at mii?				# Intel 82555 PHYs
 iophy*	at mii?				# Intel 82553 PHYs
