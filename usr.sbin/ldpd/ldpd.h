@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.h,v 1.5 2009/07/13 19:04:26 michele Exp $ */
+/*	$OpenBSD: ldpd.h,v 1.6 2009/08/02 16:19:17 michele Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -80,7 +80,6 @@ enum imsg_type {
 	IMSG_KLABEL_INSERT,
 	IMSG_KLABEL_CHANGE,
 	IMSG_KLABEL_DELETE,
-	IMSG_KROUTE_GET,
 	IMSG_IFINFO,
 	IMSG_LABEL_MAPPING,
 	IMSG_LABEL_MAPPING_FULL,
