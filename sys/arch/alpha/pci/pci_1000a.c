@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_1000a.c,v 1.10 2008/07/22 18:47:24 miod Exp $ */
+/* $OpenBSD: pci_1000a.c,v 1.11 2009/08/22 02:54:50 mk Exp $ */
 /* $NetBSD: pci_1000a.c,v 1.14 2001/07/27 00:25:20 thorpej Exp $ */
 
 /*
@@ -295,8 +295,7 @@ dec_1000a_intr_disestablish(ccv, cookie)
  
 	s = splhigh();
 
-	alpha_shared_intr_disestablish(dec_1000a_pci_intr, cookie,
-	    "dec_1000a irq");
+	alpha_shared_intr_disestablish(dec_1000a_pci_intr, cookie);
 	if (alpha_shared_intr_isactive(dec_1000a_pci_intr, irq) == 0) {
 		dec_1000a_disable_intr(irq);
 		alpha_shared_intr_set_dfltsharetype(dec_1000a_pci_intr, irq,
