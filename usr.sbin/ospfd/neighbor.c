@@ -211,11 +211,6 @@ nbr_fsm(struct nbr *nbr, enum nbr_event event)
 
 			gettimeofday(&now, NULL);
 			nbr->uptime = now.tv_sec;
-
-			/* demote P2P links if the neighbor resets */
-			if (nbr->iface->type == IF_TYPE_POINTOPOINT)
-				ospfe_demote_iface(nbr->iface,
-				    !(old_state & NBR_STA_FULL));
 		}
 
 		/* bidirectional communication lost */

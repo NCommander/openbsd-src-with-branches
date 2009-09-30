@@ -139,9 +139,11 @@ if_fsm(struct iface *iface, enum iface_event event)
 	if (iface->state != old_state)
 		orig_rtr_lsa(iface->area);
 
-	if (old_state & IF_STA_MULTI && (iface->state & IF_STA_MULTI) == 0)
+	if (old_state & (IF_STA_MULTI | IF_STA_POINTTOPOINT) &&
+	    (iface->state & (IF_STA_MULTI | IF_STA_POINTTOPOINT)) == 0)
 		ospfe_demote_iface(iface, 0);
-	if ((old_state & IF_STA_MULTI) == 0 && iface->state & IF_STA_MULTI)
+	if ((old_state & (IF_STA_MULTI | IF_STA_POINTTOPOINT)) == 0 &&
+	    iface->state & (IF_STA_MULTI | IF_STA_POINTTOPOINT))
 		ospfe_demote_iface(iface, 1);
 
 	log_debug("if_fsm: event %s resulted in action %s and changing "
