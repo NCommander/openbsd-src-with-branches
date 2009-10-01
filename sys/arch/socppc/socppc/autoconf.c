@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.2 2008/05/14 22:34:14 kettenis Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.3 2008/07/21 04:35:54 todd Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -35,6 +35,8 @@ void
 cpu_configure(void)
 {
 	splhigh();
+
+	softintr_init();
 
 	if (config_rootfound("mainbus", "mainbus") == 0)
 		panic("no mainbus found");
