@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwd_mkdb.c,v 1.39 2008/03/17 20:30:16 sobrado Exp $	*/
+/*	$OpenBSD: pwd_mkdb.c,v 1.40 2008/06/25 14:51:27 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -41,7 +41,7 @@ static const char copyright[] =
 #if 0
 static const char sccsid[] = "from: @(#)pwd_mkdb.c	8.5 (Berkeley) 4/20/94";
 #else
-static const char rcsid[] = "$OpenBSD: pwd_mkdb.c,v 1.39 2008/03/17 20:30:16 sobrado Exp $";
+static const char rcsid[] = "$OpenBSD: pwd_mkdb.c,v 1.40 2008/06/25 14:51:27 millert Exp $";
 #endif
 #endif /* not lint */
 
@@ -257,7 +257,7 @@ main(int argc, char **argv)
 
 	/*
 	 * Open file for old password file.  Minor trickiness -- don't want to
-	 * chance the file already existing, since someone (stupidly) might
+	 * change the file already existing, since someone (stupidly) might
 	 * still be using this for permission checking.  So, open it first and
 	 * fdopen the resulting fd.  The resulting file should be readable by
 	 * everyone.
