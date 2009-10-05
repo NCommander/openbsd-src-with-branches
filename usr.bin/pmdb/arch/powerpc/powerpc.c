@@ -1,4 +1,4 @@
-/*      $OpenBSD: powerpc.c,v 1.2 2002/07/22 01:20:50 art Exp $       */
+/*      $OpenBSD: powerpc.c,v 1.3 2002/07/22 02:54:23 art Exp $       */
 /*
  * Copyright (c) 2002 Dale Rahn <drahn@openbsd.org>
  * All rights reserved.
@@ -25,11 +25,14 @@
  */
  
 
-#include <stddef.h>
 #include <sys/param.h>
 #include <sys/ptrace.h>
 #include <machine/reg.h>
 #include <machine/frame.h>
+
+#include <stddef.h>
+#include <string.h>
+
 #include "pmdb.h"
 
 static const char *md_reg_names[] = {
