@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.117 2009/09/23 14:42:48 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.118 2009/09/24 14:17:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -922,6 +922,7 @@ struct tty_ctx {
 /* Client connection. */
 struct client {
 	struct imsgbuf	 ibuf;
+	struct timeval	 tv;
 
 	struct environ	 environ;
 

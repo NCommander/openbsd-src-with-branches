@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.42 2009/09/23 08:21:57 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.43 2009/09/24 07:02:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -90,6 +90,9 @@ server_create_client(int fd)
 	c = xcalloc(1, sizeof *c);
 	c->references = 0;
 	imsg_init(&c->ibuf, fd);
+	
+	if (gettimeofday(&c->tv, NULL) != 0)
+		fatal("gettimeofday failed");
 
 	ARRAY_INIT(&c->prompt_hdata);
 
