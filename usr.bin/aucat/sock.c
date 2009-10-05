@@ -1,4 +1,4 @@
-/*	$OpenBSD: sock.c,v 1.28 2009/08/28 06:37:06 ratchov Exp $	*/
+/*	$OpenBSD: sock.c,v 1.29 2009/09/27 11:51:20 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -51,6 +51,7 @@ struct fileops sock_ops = {
 	pipe_pollfd,
 	pipe_revents
 };
+
 
 void
 rsock_done(struct aproc *p)
