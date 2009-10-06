@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.245 2009/01/22 09:46:01 djm Exp $ */
+/* $OpenBSD: session.c,v 1.246 2009/04/17 19:23:06 stevesk Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1402,6 +1402,8 @@ do_child(Session *s, const char *command)
 		__progname = argv[0];
 		exit(sftp_server_main(i, argv, s->pw));
 	}
+
+	fflush(NULL);
 
 	if (options.use_login) {
 		launch_login(pw, hostname);
