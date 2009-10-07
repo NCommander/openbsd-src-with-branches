@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.36 2009/09/15 04:54:31 syuu Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.37 2009/09/30 06:22:00 syuu Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -374,6 +374,8 @@ struct cpu_info {
 	int		 ci_want_resched;	/* need_resched() invoked */
 	cpuid_t          ci_cpuid;              /* our CPU ID */
 	u_int32_t	 ci_randseed;		/* per cpu random seed */
+	intrmask_t       ci_cpl;
+	intrmask_t       ci_ipending;
 #ifdef MULTIPROCESSOR
 	u_long           ci_flags;		/* flags; see below */
 #endif

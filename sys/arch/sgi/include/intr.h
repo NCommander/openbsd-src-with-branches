@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.27 2009/08/22 02:54:51 mk Exp $ */
+/*	$OpenBSD: intr.h,v 1.28 2009/09/15 04:54:31 syuu Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -157,9 +157,6 @@ void	splinit(void);
 typedef u_int32_t intrmask_t;		/* Type of var holding interrupt mask */
 
 #define	INTMASKSIZE	(sizeof(intrmask_t) * 8)
-
-extern volatile intrmask_t cpl;
-extern volatile intrmask_t ipending;
 
 extern intrmask_t imask[NIPLS];
 
