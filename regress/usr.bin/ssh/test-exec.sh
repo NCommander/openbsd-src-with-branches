@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.34 2008/06/10 15:28:49 dtucker Exp $
+#	$OpenBSD: test-exec.sh,v 1.35 2008/06/28 13:57:25 djm Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -162,6 +162,7 @@ trap fatal 3 2
 # create server config
 cat << EOF > $OBJ/sshd_config
 	Port			$PORT
+	Protocol		2,1
 	AddressFamily		inet
 	ListenAddress		127.0.0.1
 	#ListenAddress		::1
@@ -187,6 +188,7 @@ echo 'StrictModes no' >> $OBJ/sshd_proxy
 # create client config
 cat << EOF > $OBJ/ssh_config
 Host *
+	Protocol		2,1
 	Hostname		127.0.0.1
 	HostKeyAlias		localhost-with-alias
 	Port			$PORT
