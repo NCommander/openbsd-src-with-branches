@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.176 2009/02/12 03:00:56 djm Exp $ */
+/* $OpenBSD: readconf.c,v 1.177 2009/06/27 09:35:06 andreas Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1137,7 +1137,7 @@ fill_default_options(Options * options)
 	/* options->macs, default set in myproposals.h */
 	/* options->hostkeyalgorithms, default set in myproposals.h */
 	if (options->protocol == SSH_PROTO_UNKNOWN)
-		options->protocol = SSH_PROTO_1|SSH_PROTO_2;
+		options->protocol = SSH_PROTO_2;
 	if (options->num_identity_files == 0) {
 		if (options->protocol & SSH_PROTO_1) {
 			len = 2 + strlen(_PATH_SSH_CLIENT_IDENTITY) + 1;
