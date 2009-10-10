@@ -171,12 +171,14 @@ sub add_newer
 {
 	my ($self, @handles) = @_;
 	push(@{$self->{newer}}, @handles);
+	return $self;
 }
 
 sub add_older
 {
 	my ($self, @handles) = @_;
 	push(@{$self->{older}}, @handles);
+	return $self;
 }
 
 sub newer
