@@ -124,7 +124,7 @@ sub find_in_new_source
 
 sub find_elsewhere
 {
-	my ($self, $state, $solver, $obj) = @_;
+	my ($self, $solver, $state, $obj) = @_;
 
 	for my $dep (@{$solver->{plist}->{depend}}) {
 		my $r = $solver->find_old_lib($state, 
