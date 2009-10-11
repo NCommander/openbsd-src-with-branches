@@ -280,6 +280,7 @@ our @ISA = qw(OpenBSD::PkgSpec::SubPattern);
 sub add_version_constraints
 {
 	my ($class, $constraints, $vspec) = @_;
+	return if $vspec eq '*'; # XXX
 	my $v = OpenBSD::PkgSpec::versionspec->new($vspec);
 	die "not a good exact spec" if $$v->{op} ne '=';
 	$$v->{pnum} = -1;

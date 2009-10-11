@@ -100,6 +100,12 @@ sub new
 {
 	my ($class, $stem) = @_;
 
+	my $flavors;
+
+	if ($stem =~ m/^(.*)\-\-(.*)/) {
+		# XXX
+		return OpenBSD::Search::Exact->new("$1-*-$2");
+    	}
 	return bless {stem => $stem}, $class;
 }
 
