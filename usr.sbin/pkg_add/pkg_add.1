@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pkg_add.1,v 1.77 2009/05/09 11:17:32 sthen Exp $
+.\"	$OpenBSD$
 .\"
 .\" Documentation and design originally from FreeBSD. All the code has
 .\" been rewritten since. We keep the documentation's notice:
@@ -15,7 +15,7 @@
 .\" Jordan K. Hubbard
 .\"
 .\"
-.Dd $Mdocdate: May 9 2009 $
+.Dd $Mdocdate$
 .Dt PKG_ADD 1
 .Os
 .Sh NAME
@@ -146,6 +146,18 @@ will error out, unless it is invoked in interactive mode
 option
 .Fl i
 .Pc .
+.Pp
+To avoid ambiguities,
+.Nm
+supports
+.Sq stems with flavors ,
+that is, a stem separated from flavors with a double dash.
+For instance, the previous ambiguity could be resolved by using
+.Li pkg_add screen--
+(matches only the normal flavor)
+or
+.Li pkg_add screen--static
+(matches only the static flavor).
 .Pp
 If the environment variable
 .Ev PKG_CACHE
