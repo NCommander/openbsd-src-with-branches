@@ -217,7 +217,7 @@ sub setup_header
 
 	my $header = $state->deptree_header($pkgname).$pkgname;
 	if ($set->older) {
-		$header.=" (replacing ". join(', ', (map {$_->{pkgname}} $set->older)). ")";
+		$header.=" (replacing ". join(', ', $set->older_names). ")";
 	}
 	if (!$state->progress->set_header($header)) {
 	    print $state->{not} ? "Pretending to add " : "Adding ";
