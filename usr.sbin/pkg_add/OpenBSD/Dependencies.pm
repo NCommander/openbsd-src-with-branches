@@ -198,7 +198,7 @@ sub new
 {
 	my ($class, $set) = @_;
 	bless {set => $set, plist => $set->handle->{plist}, 
-	    to_install => {}, deplist => [], to_register => {} }, $class;
+	    to_install => {}, to_update => {}, deplist => [], to_register => {} }, $class;
 }
 
 sub dependencies
@@ -230,9 +230,12 @@ sub add_todo
 	require OpenBSD::PackageName;
 
 	for my $set (@extra) {
-		my $fullname = $set->handle->{pkgname};
-		$self->{to_install}->
-		    {OpenBSD::PackageName::url2pkgname($fullname)} = $set;
+		for my $n ($set->newer) {
+			$self->{to_install}->{OpenBSD::PackageName::url2pkgname($n->{pkgname})} = $set;
+		}
+		for my $n ($set->older) {
+			$self->{to_update}->{OpenBSD::PackageName::url2pkgname($n->{pkgname})} = $set;
+		}
 	}
 }
 
