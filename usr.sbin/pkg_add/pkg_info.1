@@ -24,7 +24,7 @@
 .Sh SYNOPSIS
 .Nm pkg_info
 .Bk -words
-.Op Fl AacCDdfIiKkLMPqRrSstUv
+.Op Fl AacCDdfIiKkLmMPqRrSstUv
 .Op Fl E Ar filename
 .Op Fl e Ar pkg-name
 .Op Fl l Ar str
@@ -138,6 +138,9 @@ lot of different information fields at once for a package, but don't
 necessarily want the output intermingled in such a way that they can't
 organize it.
 This lets you add a special token to the start of each field.
+.It Fl m
+Only show packages tagged as manual installations. It should omit anything
+installed automatically as a dependency.
 .It Fl M
 Show the install-message file (if any) for each package.
 .It Fl P
