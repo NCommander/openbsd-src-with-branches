@@ -448,7 +448,7 @@ sub really_add
 				$errors++;
 			}
 		};
-		$state->progress->next;
+		$state->progress->clear;
 		if ($state->{interrupted} || $errors) {
 			Fatal partial_install("Installation of $pkgname failed",
 			    $set, $state);
@@ -473,6 +473,7 @@ sub really_add
 				delete $state->{updatedepends}->{$oldname};
 			}
 			OpenBSD::PkgCfl::unregister($o->{plist}, $state);
+			$state->progress->clear;
 		}
 		# Here there should be code to handle old libs
 

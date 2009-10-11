@@ -115,6 +115,7 @@ sub delete_package
 	OpenBSD::Vstat::synchronize();
 
 	delete_plist($plist, $state);
+	$state->progress->next;
 }
 
 sub unregister_dependencies
@@ -147,7 +148,6 @@ sub delete_plist
 	$plist->register_manpage($state);
 	manpages_unindex($state);
 	$plist->delete_and_progress($state, \$donesize, $totsize);
-	$state->progress->next;
 	if ($plist->has(UNDISPLAY)) {
 		$plist->get(UNDISPLAY)->prepare($state);
 	}
