@@ -79,6 +79,13 @@ sub separate_element
 	$c2->{$self} = 1;
 }
 
+package OpenBSD::PackingElement::DigitalSignature;
+sub separate_element
+{
+	my ($self, $libs, $c1, $c2) = @_;
+	$c2->{$self} = 1;
+}
+
 package OpenBSD::PackingElement::State;
 
 sub separate_element
