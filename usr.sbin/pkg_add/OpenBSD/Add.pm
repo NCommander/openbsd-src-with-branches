@@ -149,8 +149,8 @@ sub tweak_plist_status
 sub tag_user_packages
 {
 	for my $set (@_) {
-		for my $handle ($set->newer) {
-			$user_tagged->{$handle->{pkgname}} = 1;
+		for my $n ($set->newer_names) {
+			$user_tagged->{OpenBSD::PackageName::url2pkgname($n)} = 1;
 		}
 	}
 }
