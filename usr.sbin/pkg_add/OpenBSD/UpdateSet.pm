@@ -164,7 +164,7 @@ package OpenBSD::UpdateSet;
 sub new
 {
 	my $class = shift;
-	return bless {newer => [], older => []}, $class;
+	return bless {newer => [], older => {}}, $class;
 }
 
 sub add_newer
@@ -176,8 +176,10 @@ sub add_newer
 
 sub add_older
 {
-	my ($self, @handles) = @_;
-	push(@{$self->{older}}, @handles);
+	my $self = shift;
+	for my $h (@_) {
+		$self->{older}->{$h->{pkgname}} = $h;
+	}
 	return $self;
 }
 
@@ -190,7 +192,19 @@ sub newer
 sub older
 {
 	my $self = shift;
-	return @{$self->{older}};
+	return values %{$self->{older}};
+}
+
+sub older_names
+{
+	my $self = shift;
+	return keys %{$self->{older}};
+}
+
+sub newer_names
+{
+	my $self =shift;
+	return map {$_->{pkgname}} $self->newer;
 }
 
 sub older_to_do
@@ -213,13 +227,26 @@ sub print
 {
 	my $self = shift;
 	my @l = ();
-	if (defined $self->{newer}) {
-		push(@l, "installing", map {$_->{pkgname}} $self->newer);
+	if ($self->newer > 0) {
+		push(@l, "installing", $self->newer_names);
 	}
-	if (defined $self->{older} && @{$self->{older}} > 0) {
-		push(@l, "deinstalling", map {$_->{pkgname}} $self->older);
+	if ($self->older > 0) {
+		push(@l, "deinstalling", $self->older_names);
 	}
 	return join(' ', @l);
+}
+
+sub short_print
+{
+	my $self = shift;
+	my @l = ();
+	if ($self->older > 0) {
+		push(@l, join(' ',$self->older_names));
+	}
+	if ($self->newer > 0) {
+		push(@l, join(' ', $self->newer_names));
+	}
+	return join(' -> ', @l);
 }
 
 sub validate_plists
