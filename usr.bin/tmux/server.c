@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.54 2009/10/11 08:58:05 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.55 2009/10/11 10:04:27 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1050,8 +1050,9 @@ server_handle_client(struct client *c)
 	 * tty_region/tty_reset/tty_update_mode already take care of not
 	 * resetting things that are already in their default state.
 	 */
+	tty_region_absolute(&c->tty, 0, c->tty.sy - 1);
+
 	status = options_get_number(oo, "status");
-	tty_region(&c->tty, 0, c->tty.sy - 1, 0);
 	if (!window_pane_visible(wp) || wp->yoff + s->cy >= c->tty.sy - status)
 		tty_cursor(&c->tty, 0, 0, 0, 0);
 	else
