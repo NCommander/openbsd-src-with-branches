@@ -291,7 +291,11 @@ sub solve_dependency
 		}
 	}
 
-	$v = find_candidate($dep->spec, installed_packages());
+	my @l = installed_packages();
+	for my $o ($self->{set}->older_names) {
+		@l = grep {$_ ne $o} @l;
+	}
+	$v = find_candidate($dep->spec, @l);
 	if ($v) {
 		return $v;
 	}
