@@ -284,7 +284,7 @@ struct scsi_vpd_serial {
 
 struct scsi_vpd_devid_hdr {
 	u_int8_t pi_code;
-#define VPD_DEVID_PI(_f)	(((_f) >> 4) & 0xf0)
+#define VPD_DEVID_PI(_f)	(((_f) >> 4) & 0x0f)
 #define VPD_DEVID_CODE(_f)	(((_f) >> 0) & 0x0f)
 #define VPD_DEVID_CODE_BINARY		0x1
 #define VPD_DEVID_CODE_ASCII		0x2
