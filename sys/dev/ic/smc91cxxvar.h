@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxxvar.h,v 1.6 2006/02/24 01:48:27 brad Exp $	*/
+/*	$OpenBSD: smc91cxxvar.h,v 1.7 2008/06/26 05:42:16 ray Exp $	*/
 /*	$NetBSD: smc91cxxvar.h,v 1.4 1997/10/15 05:56:13 explorer Exp $	*/
 
 /*-
@@ -65,5 +65,5 @@ void	smc91cxx_init(struct smc91cxx_softc *);
 void	smc91cxx_stop(struct smc91cxx_softc *);
 int	smc91cxx_enable(struct smc91cxx_softc *);
 void	smc91cxx_disable(struct smc91cxx_softc *);
-int	smc91cxx_activate(struct device *, enum devact);
+int	smc91cxx_activate(struct device *, int);
 int	smc91cxx_detach(struct device *, int);

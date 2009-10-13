@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhcivar.h,v 1.19 2007/06/15 11:41:48 mbalmer Exp $ */
+/*	$OpenBSD: uhcivar.h,v 1.20 2008/06/26 05:42:18 ray Exp $ */
 /*	$NetBSD: uhcivar.h,v 1.36 2002/12/31 00:39:11 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhcivar.h,v 1.14 1999/11/17 22:33:42 n_hibma Exp $	*/
 
@@ -183,4 +183,4 @@ usbd_status	uhci_init(uhci_softc_t *);
 usbd_status	uhci_run(uhci_softc_t *, int run);
 int		uhci_intr(void *);
 int		uhci_detach(uhci_softc_t *, int);
-int		uhci_activate(struct device *, enum devact);
+int		uhci_activate(struct device *, int);

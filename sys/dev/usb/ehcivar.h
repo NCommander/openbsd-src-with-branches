@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehcivar.h,v 1.16 2008/08/09 22:59:20 mglocker Exp $ */
+/*	$OpenBSD: ehcivar.h,v 1.17 2008/10/30 08:11:13 mglocker Exp $ */
 /*	$NetBSD: ehcivar.h,v 1.19 2005/04/29 15:04:29 augustss Exp $	*/
 
 /*
@@ -181,5 +181,5 @@ typedef struct ehci_softc {
 usbd_status	ehci_init(ehci_softc_t *);
 int		ehci_intr(void *);
 int		ehci_detach(ehci_softc_t *, int);
-int		ehci_activate(struct device *, enum devact);
+int		ehci_activate(struct device *, int);
 void		ehci_shutdown(void *);

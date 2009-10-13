@@ -1,4 +1,4 @@
-/*	$OpenBSD: ums.c,v 1.29 2008/06/26 05:42:19 ray Exp $ */
+/*	$OpenBSD: ums.c,v 1.30 2009/07/26 13:10:41 miod Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -117,7 +117,7 @@ const struct wsmouse_accessops ums_accessops = {
 int ums_match(struct device *, void *, void *); 
 void ums_attach(struct device *, struct device *, void *); 
 int ums_detach(struct device *, int); 
-int ums_activate(struct device *, enum devact); 
+int ums_activate(struct device *, int); 
 
 struct cfdriver ums_cd = { 
 	NULL, "ums", DV_DULL 
@@ -352,7 +352,7 @@ ums_attach(struct device *parent, struct device *self, void *aux)
 }
 
 int
-ums_activate(struct device *self, enum devact act)
+ums_activate(struct device *self, int act)
 {
 	struct ums_softc *sc = (struct ums_softc *)self;
 	int rv = 0;

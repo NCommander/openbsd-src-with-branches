@@ -1,4 +1,4 @@
-/*	$OpenBSD: mii_physubr.c,v 1.37 2009/07/31 11:38:26 blambert Exp $	*/
+/*	$OpenBSD: mii_physubr.c,v 1.38 2009/08/02 10:38:34 miod Exp $	*/
 /*	$NetBSD: mii_physubr.c,v 1.20 2001/04/13 23:30:09 thorpej Exp $	*/
 
 /*-
@@ -482,7 +482,7 @@ mii_phy_delete_media(struct mii_softc *sc)
 }
 
 int
-mii_phy_activate(struct device *self, enum devact act)
+mii_phy_activate(struct device *self, int act)
 {
 	int rv = 0;
 

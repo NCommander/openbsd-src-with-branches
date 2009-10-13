@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.45 2009/01/21 21:54:00 grange Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.46 2009/07/31 11:01:48 blambert Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -296,7 +296,7 @@ struct wskbd_mapdata ukbd_keymapdata = {
 int ukbd_match(struct device *, void *, void *); 
 void ukbd_attach(struct device *, struct device *, void *); 
 int ukbd_detach(struct device *, int); 
-int ukbd_activate(struct device *, enum devact); 
+int ukbd_activate(struct device *, int); 
 
 struct cfdriver ukbd_cd = { 
 	NULL, "ukbd", DV_DULL 
@@ -444,7 +444,7 @@ ukbd_enable(void *v, int on)
 }
 
 int
-ukbd_activate(struct device *self, enum devact act)
+ukbd_activate(struct device *self, int act)
 {
 	struct ukbd_softc *sc = (struct ukbd_softc *)self;
 	int rv = 0;

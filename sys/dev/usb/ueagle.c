@@ -1,4 +1,4 @@
-/*	$OpenBSD: ueagle.c,v 1.22 2007/09/07 19:05:05 damien Exp $	*/
+/*	$OpenBSD: ueagle.c,v 1.23 2007/10/11 18:33:15 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2003-2006
@@ -127,7 +127,7 @@ void		ueagle_stop(struct ifnet *, int);
 int ueagle_match(struct device *, void *, void *); 
 void ueagle_attach(struct device *, struct device *, void *); 
 int ueagle_detach(struct device *, int); 
-int ueagle_activate(struct device *, enum devact); 
+int ueagle_activate(struct device *, int); 
 
 struct cfdriver ueagle_cd = { 
 	NULL, "ueagle", DV_DULL 
@@ -1460,7 +1460,7 @@ ueagle_stop(struct ifnet *ifp, int disable)
 }
 
 int
-ueagle_activate(struct device *self, enum devact act)
+ueagle_activate(struct device *self, int act)
 {
 	struct ueagle_softc *sc = (struct ueagle_softc *)self;
 

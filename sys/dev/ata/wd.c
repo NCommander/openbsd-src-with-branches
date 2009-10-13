@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.75 2009/06/17 01:30:30 thib Exp $ */
+/*	$OpenBSD: wd.c,v 1.76 2009/08/13 15:23:12 deraadt Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -156,7 +156,7 @@ struct wd_softc {
 int	wdprobe(struct device *, void *, void *);
 void	wdattach(struct device *, struct device *, void *);
 int	wddetach(struct device *, int);
-int	wdactivate(struct device *, enum devact);
+int	wdactivate(struct device *, int);
 int	wdprint(void *, char *);
 
 struct cfattach wd_ca = {
@@ -375,7 +375,7 @@ wdattach(struct device *parent, struct device *self, void *aux)
 }
 
 int
-wdactivate(struct device *self, enum devact act)
+wdactivate(struct device *self, int act)
 {
 	int rv = 0;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.36 2008/10/03 01:31:24 brad Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.37 2009/02/09 19:14:31 chl Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -115,7 +115,7 @@ int xedebug = XEDEBUG_DEF;
 int	xe_pcmcia_match(struct device *, void *, void *);
 void	xe_pcmcia_attach(struct device *, struct device *, void *);
 int	xe_pcmcia_detach(struct device *, int);
-int	xe_pcmcia_activate(struct device *, enum devact);
+int	xe_pcmcia_activate(struct device *, int);
 
 /*
  * In case this chipset ever turns up out of pcmcia attachments (very
@@ -462,7 +462,7 @@ xe_pcmcia_detach(dev, flags)
 int
 xe_pcmcia_activate(dev, act)
 	struct device *dev;
-	enum devact act;
+	int act;
 {
 	struct xe_pcmcia_softc *sc = (struct xe_pcmcia_softc *)dev;
 	struct ifnet *ifp = &sc->sc_xe.sc_arpcom.ac_if;

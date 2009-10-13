@@ -1,4 +1,4 @@
-/*	$OpenBSD: owsbm.c,v 1.5 2008/10/25 00:27:09 deraadt Exp $	*/
+/*	$OpenBSD: owsbm.c,v 1.6 2009/01/26 15:07:49 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Aaron Linville <aaron@linville.org>
@@ -77,7 +77,7 @@ struct owsbm_softc {
 int	owsbm_match(struct device *, void *, void *);
 void	owsbm_attach(struct device *, struct device *, void *);
 int	owsbm_detach(struct device *, int);
-int	owsbm_activate(struct device *, enum devact);
+int	owsbm_activate(struct device *, int);
 
 void	owsbm_update(void *);
 
@@ -163,7 +163,7 @@ owsbm_detach(struct device *self, int flags)
 }
 
 int
-owsbm_activate(struct device *self, enum devact act)
+owsbm_activate(struct device *self, int act)
 {
 	return (0);
 }

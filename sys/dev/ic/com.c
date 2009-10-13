@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.130 2008/11/23 17:59:00 deraadt Exp $	*/
+/*	$OpenBSD: com.c,v 1.131 2009/01/11 16:54:59 blambert Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -234,7 +234,7 @@ com_detach(struct device *self, int flags)
 }
 
 int
-com_activate(struct device *self, enum devact act)
+com_activate(struct device *self, int act)
 {
 	struct com_softc *sc = (struct com_softc *)self;
 	int s, rv = 0;
