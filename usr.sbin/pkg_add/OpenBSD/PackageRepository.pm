@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.66 2009/05/11 19:51:27 sthen Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -693,6 +693,12 @@ sub list
 		my $error = OpenBSD::Temp->file;
 		$self->{list} = $self->obtain_list($error);
 		$self->parse_problems($error);
+		if ($self->{no_such_dir}) {
+			print STDERR $self->{path}, 
+			    ": Directory does not exist on ", $self->{host}, 
+			    "\n";
+		    	$self->{lasterror} = 404;
+		}
 	}
 	return $self->{list};
 }
@@ -758,6 +764,9 @@ sub _list
 	while(<$fh>) {
 		chomp;
 		next if m/^\d\d\d\s+\S/;
+		if (m/No such file or directory|Failed to change directory/i) {
+			$self->{no_such_dir} = 1;
+		}
 		next unless m/^(?:\.\/)?(\S+)\.tgz\s*$/;
 		push(@$l, $1);
 	}
