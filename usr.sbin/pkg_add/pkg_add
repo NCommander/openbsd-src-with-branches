@@ -854,7 +854,7 @@ if ($opt_l || $opt_z) {
 		print "Cannot find updates for ", join(', ', map {$_->short_print} @cantupdate[1..50]);
 		print " and more" if @cantupdate > 50;
 		print "\n";
-		if (@todo == 0) {
+		if (@todo2 == 0) {
 			print "No updates found\n";
 			exit(1);
 		}
