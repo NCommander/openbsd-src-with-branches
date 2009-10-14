@@ -1,4 +1,4 @@
-/*	$OpenBSD: midiplay.c,v 1.9 2007/09/02 15:19:33 deraadt Exp $	*/
+/*	$OpenBSD: midiplay.c,v 1.10 2008/06/26 05:42:21 ray Exp $	*/
 /*	$NetBSD: midiplay.c,v 1.8 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -125,8 +125,9 @@ u_char sample[] = {
 void
 usage(void)
 {
-	printf("Usage: %s [-lmqvx] [-d devno] [-f file] [-t tempo] "
-	    "[file ...]\n", __progname);
+	printf("usage: "
+	       "%s [-glmqvx] [-d devno] [-f file] [-t tempo] [file ...]\n",
+	       __progname);
 	exit(1);
 }
 
