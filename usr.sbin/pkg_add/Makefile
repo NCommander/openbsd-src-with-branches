@@ -18,6 +18,7 @@ PACKAGES= \
     OpenBSD/Dependencies.pm \
     OpenBSD/Error.pm \
     OpenBSD/Getopt.pm \
+    OpenBSD/Handle.pm \
     OpenBSD/IdCache.pm \
     OpenBSD/Interactive.pm \
     OpenBSD/Mtree.pm \
