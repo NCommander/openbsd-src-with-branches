@@ -34,7 +34,7 @@ sub new
 sub add_updateset
 {
 	my ($self, $set, $handle, $location) = @_;
- 
+
 	my $n = OpenBSD::Handle->from_location($location);
 	$set->add_newer($n);
 }
@@ -48,7 +48,7 @@ sub process_handle
 		print "Update to $pkgname already found\n";
 		return 0;
 	}
- 
+
 	if ($pkgname =~ m/^(?:\.libs\d*|partial)\-/o) {
 		$state->progress->clear;
 		print "Not updating $pkgname, remember to clean it\n";
@@ -114,7 +114,7 @@ sub process_handle
 			$self->add_updateset($set, $h, $l->[0]);
 			return 1;
 		}
-		if (defined $found && $found eq $l->[0] && 
+		if (defined $found && $found eq $l->[0] &&
 		    !$plist->uses_old_libs && !$state->{defines}->{installed}) {
 				my $msg = "No need to update $pkgname";
 				$state->progress->message($msg);
