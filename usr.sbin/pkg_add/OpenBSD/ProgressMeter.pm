@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ProgressMeter.pm,v 1.10 2007/04/15 10:17:29 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2004-2007 Marc Espie <espie@openbsd.org>
 #
@@ -128,6 +128,12 @@ sub clear
 	my $self = shift;
 	return unless $isatty;
 	print STDERR ' 'x length($lastdisplay), "\r";
+}
+
+sub print
+{
+	shift->clear;
+	print STDERR @_;
 }
 
 sub next

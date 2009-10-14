@@ -71,6 +71,31 @@ sub check_root
 	}
 }
 
+sub choose_location
+{
+	my ($state, $name, $list) = @_;
+	if (@$list == 0) {
+		$state->progress->print("Can't find $name\n");
+		return undef;
+	} elsif (@$list == 1) {
+		return $list->[0];
+	}
+
+	my %h = map {($_->name, $_)} @$list;
+	if ($state->{interactive}) {
+		require OpenBSD::Interactive;
+
+		$h{'<None>'} = undef;
+		$state->progress->clear;
+		my $result = OpenBSD::Interactive::ask_list("Ambiguous: choose package for $name", 1, sort keys %h);
+		return $h{$result};
+	} else {
+		$state->progress->print("Ambiguous: $name could be ", 
+		    join(' ', keys %h), "\n");
+		return undef;
+	}
+}
+
 package OpenBSD::StubProgress;
 sub clear {}
 
@@ -81,6 +106,12 @@ sub message {}
 sub next {}
 
 sub set_header {}
+
+sub print
+{
+	shift;
+	print STDERR @_;
+}
 
 # fairly non-descriptive name. Used to store various package information
 # during installs and updates.
