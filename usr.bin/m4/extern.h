@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.47 2008/08/16 12:23:50 espie Exp $	*/
+/*	$OpenBSD: extern.h,v 1.48 2008/08/21 20:59:14 espie Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1996/01/13 23:25:24 pk Exp $	*/
 
 /*-
@@ -173,4 +173,5 @@ extern char scommt[MAXCCHARS+1];/* start character for comment */
 extern int  synch_lines;	/* line synchronisation directives */
 
 extern int mimic_gnu;		/* behaves like gnu-m4 */
+extern int prefix_builtins;	/* prefix builtin macros with m4_ */
 
