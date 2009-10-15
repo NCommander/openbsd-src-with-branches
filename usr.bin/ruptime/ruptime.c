@@ -1,4 +1,4 @@
-/*	$OpenBSD: ruptime.c,v 1.13 2004/09/14 22:24:07 deraadt Exp $	*/
+/*	$OpenBSD: ruptime.c,v 1.14 2004/10/10 03:50:40 mickey Exp $	*/
 
 /*
  * Copyright (c) 1983 The Regents of the University of California.
@@ -37,7 +37,7 @@ const char copyright[] =
 
 #ifndef lint
 /*static const char sccsid[] = "from: @(#)ruptime.c	5.8 (Berkeley) 7/21/90";*/
-static const char rcsid[] = "$OpenBSD: ruptime.c,v 1.13 2004/09/14 22:24:07 deraadt Exp $";
+static const char rcsid[] = "$OpenBSD: ruptime.c,v 1.14 2004/10/10 03:50:40 mickey Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -103,7 +103,7 @@ main(int argc, char *argv[])
 			cmp = ucmp;
 			break;
 		default: 
-			fprintf(stderr, "usage: %s [-alrut]\n", __progname);
+			fprintf(stderr, "usage: %s [-alrtu]\n", __progname);
 			exit(1);
 		}
 
