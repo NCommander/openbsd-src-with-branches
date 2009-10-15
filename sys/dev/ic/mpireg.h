@@ -1170,6 +1170,20 @@ struct mpi_cfg_manufacturing_pg0 {
 	char			board_tracer_number[16];
 } __packed;
 
+struct mpi_cfg_ioc_pg1 {
+	struct mpi_cfg_hdr	config_header;
+
+	u_int32_t		flags;
+#define MPI_CFG_IOC_1_REPLY_COALESCING			(1<<0)
+#define MPI_CFG_IOC_1_CTX_REPLY_DISABLE			(1<<4)
+
+	u_int32_t		coalescing_timeout;
+
+	u_int8_t		coalescing_depth;
+	u_int8_t		pci_slot_num;
+	u_int8_t		_reserved[2];
+} __packed;
+
 struct mpi_cfg_ioc_pg2 {
 	struct mpi_cfg_hdr	config_header;
 
