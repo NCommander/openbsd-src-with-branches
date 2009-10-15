@@ -243,6 +243,15 @@ sub find_dep_in_repositories
 	}
 }
 
+sub find_dep_in_self
+{
+	my ($self, $state, $dep) = @_;
+
+	return find_candidate($dep->spec, 
+	    map {$_->pkgname} $self->{set}->newer);
+
+}
+
 sub find_dep_in_stuff_to_install
 {
 	my ($self, $state, $dep) = @_;
@@ -257,6 +266,11 @@ sub solve_dependency
 	my $v;
 
 	if ($state->{allow_replacing}) {
+		
+		$v = $self->find_dep_in_self($state, $dep);
+		if ($v) {
+			return $v;
+		}
 		$v = $self->find_dep_in_stuff_to_install($state, $dep);
 		if ($v) {
 			push(@{$self->{deplist}}, $state->{tracker}->{to_install}->{$v});
