@@ -131,7 +131,7 @@ sub add_older
 {
 	my $self = shift;
 	for my $h (@_) {
-		$self->{older}->{$h->{pkgname}} = $h;
+		$self->{older}->{$h->pkgname} = $h;
 	}
 	return $self;
 }
@@ -157,7 +157,7 @@ sub older_names
 sub newer_names
 {
 	my $self =shift;
-	return map {$_->{pkgname}} $self->newer;
+	return map {$_->pkgname} $self->newer;
 }
 
 sub older_to_do
@@ -169,7 +169,7 @@ sub older_to_do
 	require OpenBSD::PackageInfo;
 	my @l = ();
 	for my $h ($self->older) {
-		if (OpenBSD::PackageInfo::is_installed($h->{pkgname})) {
+		if (OpenBSD::PackageInfo::is_installed($h->pkgname)) {
 			push(@l, $h);
 		}
 	}

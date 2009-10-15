@@ -432,7 +432,7 @@ sub save_old_libraries
 
 	for my $o ($set->older) {
 
-		my $oldname = $o->{pkgname};
+		my $oldname = $o->pkgname;
 		my $libs = {};
 		my $p = {};
 
