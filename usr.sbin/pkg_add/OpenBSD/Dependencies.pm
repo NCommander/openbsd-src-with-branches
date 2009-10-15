@@ -302,7 +302,7 @@ sub solve_dependency
 
 sub solve_depends
 {
-	my ($self, $state, @extra) = @_;
+	my ($self, $state) = @_;
 
 	for my $package ($self->{set}->newer) {
 		for my $dep (@{$package->{plist}->{depend}}) {

@@ -470,7 +470,7 @@ sub install_set
 	}
 	if (!defined $set->{solver}) {
 		$set->{solver} = OpenBSD::Dependencies::Solver->new($set);
-		my @deps = $set->{solver}->solve_depends($state, @todo);
+		my @deps = $set->{solver}->solve_depends($state);
 		if ($state->{verbose}) {
 			$set->{solver}->dump;
 		}
