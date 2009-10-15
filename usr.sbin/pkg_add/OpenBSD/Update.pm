@@ -42,7 +42,7 @@ sub add_updateset
 sub process_handle
 {
 	my ($self, $set, $h, $state) = @_;
-	my $pkgname = $h->{pkgname};
+	my $pkgname = $h->pkgname;
 	if (defined $h->{update}) {
 		$state->progress->clear;
 		print "Update to $pkgname already found\n";
