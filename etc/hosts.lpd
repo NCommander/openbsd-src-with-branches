@@ -1,3 +1,0 @@
-#	$OpenBSD: hosts.lpd,v 1.2 1996/07/20 00:28:28 deraadt Exp $
-# As described in lpd(8), place one legal access hostname per line.
-# See hosts.equiv(5) for syntax and examples.
