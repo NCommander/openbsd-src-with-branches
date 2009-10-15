@@ -45,6 +45,7 @@ PACKAGES= \
     OpenBSD/SharedLibs.pm \
     OpenBSD/Subst.pm \
     OpenBSD/Temp.pm \
+    OpenBSD/Tracker.pm \
     OpenBSD/Update.pm \
     OpenBSD/UpdateSet.pm \
     OpenBSD/Ustar.pm \
