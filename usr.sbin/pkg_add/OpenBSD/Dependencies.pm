@@ -345,7 +345,7 @@ sub dump
 	    print "Dependencies for ", $self->{set}->short_print, 
 	    	" resolve to: ", join(', ',  $self->dependencies);
 	    print " (todo: ", 
-	    	join(',', (map {$_->handle->pkgname} @{$self->{deplist}})), 
+	    	join(',', (map {$_->short_print} @{$self->{deplist}})), 
 		")" 
 	    	if @{$self->{deplist}} > 0;
 	    print "\n";
@@ -385,7 +385,7 @@ sub adjust_old_dependencies
 {
 	my ($self, $state) = @_;
 	for my $pkg ($self->{set}->newer) {
-		my $pkgname = $self->{set}->handle->pkgname;
+		my $pkgname = $pkg->pkgname;
 		for my $o ($self->{set}->older) {
 			next unless defined $o->{wantlist};
 			require OpenBSD::Replace;
@@ -415,7 +415,7 @@ sub repair_dependencies
 {
 	my ($self, $state) = @_;
 	for my $p ($self->{set}->newer) {
-		my $pkgname = $self->{set}->handle->pkgname;
+		my $pkgname = $p->pkgname;
 		for my $pkg (installed_packages(1)) {
 			my $plist = OpenBSD::PackingList->from_installation(
 			    $pkg, \&OpenBSD::PackingList::DependOnly);
