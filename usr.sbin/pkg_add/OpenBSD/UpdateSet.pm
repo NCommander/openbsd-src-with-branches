@@ -267,6 +267,28 @@ sub from_location
 	return $set;
 }
 
+# Merge several updatesets together
+sub merge
+{
+	my ($self, $tracker, @sets) = @_;
+	# Apparently simple, just add the missing parts
+	for my $set (@sets) {
+		for my $p ($set->newer) {
+			$self->add_newer($p);
+		}
+		for my $p ($set->older) {
+			$self->add_older($p);
+		}
+		# BUT XXX tell the tracker we killed the set
+		$tracker->remove_set($set);
+		# ... and mark it as already done
+		$set->{finished} = 1;
+	}
+	# then regen tracker info for $self
+	$tracker->add_set($self);
+	return $self;
+}
+
 package OpenBSD::PackingList;
 sub compute_size
 {
