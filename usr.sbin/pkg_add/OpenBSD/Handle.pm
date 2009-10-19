@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Handle.pm,v 1.3 2009/10/15 11:18:48 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007-2009 Marc Espie <espie@openbsd.org>
 #
@@ -52,6 +52,16 @@ sub pkgname
 	}
 
 	return $self->{pkgname};
+}
+
+sub location
+{
+	return shift->{location};
+}
+
+sub plist
+{
+	return shift->{plist};
 }
 
 sub set_error
