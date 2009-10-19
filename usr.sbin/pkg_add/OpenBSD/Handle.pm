@@ -29,6 +29,21 @@ use constant {
 	NOT_FOUND => 4
 };
 
+sub cleanup
+{
+	my ($self, $error) = @_;
+	$self->{error} //= $error;
+	if (defined $self->location) {
+		if ($self->{error} == ALREADY_INSTALLED) {
+			$self->location->close_now;
+		} elsif ($self->{error} == CANT_INSTALL) {
+			$self->location->close_with_client_error;
+		}
+		$self->location->wipe_info;
+	}
+	delete $self->{plist};
+}
+
 sub new
 {
 	my $class = shift;
