@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbhidaction.c,v 1.10 2008/06/26 05:42:21 ray Exp $ */
+/*	$OpenBSD: usbhidaction.c,v 1.11 2009/10/14 20:36:56 guenther Exp $ */
 /*      $NetBSD: usbhidaction.c,v 1.7 2002/01/18 14:38:59 augustss Exp $ */
 
 /*
@@ -209,8 +209,8 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "Usage: %s [-div] -c config-file -f device "
-		"arg ...\n", __progname);
+	fprintf(stderr, "usage: %s [-div] -c config-file -f device arg ...\n",
+	    __progname);
 	exit(1);
 }
 
