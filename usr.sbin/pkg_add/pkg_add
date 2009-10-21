@@ -781,6 +781,12 @@ if ($bad) {
 }
 
 
+my $handler = sub { my $sig = shift; die "Caught SIG$sig"; };
+local $SIG{'INT'} = $handler;
+local $SIG{'QUIT'} = $handler;
+local $SIG{'HUP'} = $handler;
+local $SIG{'KILL'} = $handler;
+local $SIG{'TERM'} = $handler;
 
 # This is the actual very small loop that adds all packages
 eval {
