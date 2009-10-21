@@ -1,4 +1,4 @@
-/*	$OpenBSD: sprintf.c,v 1.12 2005/08/08 08:05:36 espie Exp $ */
+/*	$OpenBSD: sprintf.c,v 1.13 2005/10/10 12:00:52 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -56,7 +56,7 @@ sprintf(char *str, const char *fmt, ...)
 	f._bf._base = f._p = (unsigned char *)str;
 	f._bf._size = f._w = INT_MAX;
 	va_start(ap, fmt);
-	ret = vfprintf(&f, fmt, ap);
+	ret = __vfprintf(&f, fmt, ap);
 	va_end(ap);
 	*f._p = '\0';
 	return (ret);

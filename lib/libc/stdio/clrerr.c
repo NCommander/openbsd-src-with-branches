@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: clrerr.c,v 1.6 2005/08/08 08:05:36 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,12 +32,13 @@
  */
 
 #include <stdio.h>
+#include "local.h"
 #undef	clearerr
 
 void
 clearerr(FILE *fp)
 {
-	flockfile(fp);
+	FLOCKFILE(fp);
 	__sclearerr(fp);
-	funlockfile(fp);
+	FUNLOCKFILE(fp);
 }
