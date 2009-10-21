@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.28 2009/09/15 04:54:31 syuu Exp $ */
+/*	$OpenBSD: intr.h,v 1.29 2009/10/07 08:35:47 syuu Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -217,7 +217,6 @@ void set_intr(int, intrmask_t, intrmask_t(*)(intrmask_t, struct trap_frame *));
 
 #ifdef IMASK_EXTERNAL
 void hw_setintrmask(intrmask_t);
-extern void *hwmask_addr;
 #endif
 
 u_int32_t updateimask(intrmask_t);
