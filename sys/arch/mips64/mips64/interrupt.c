@@ -1,4 +1,4 @@
-/*	$OpenBSD: interrupt.c,v 1.41 2009/08/06 21:05:49 miod Exp $ */
+/*	$OpenBSD: interrupt.c,v 1.42 2009/10/07 08:35:47 syuu Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -265,9 +265,6 @@ splinit()
 	sr = updateimask(0);
 	sr |= SR_INT_ENAB;
 	setsr(sr);
-#ifdef IMASK_EXTERNAL
-	hw_setintrmask(0);
-#endif
 }
 
 int
