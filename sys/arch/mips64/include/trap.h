@@ -1,4 +1,4 @@
-/*      $OpenBSD: trap.h,v 1.8 2007/05/20 14:34:21 miod Exp $	*/
+/*      $OpenBSD: trap.h,v 1.9 2008/04/07 22:37:16 miod Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -91,7 +91,7 @@ struct trapdebug {              /* trap history buffer for debugging */
         u_long   ra;
         u_long   sp;
         u_int   code;
-	u_int	cpl;
+	u_int	ipl;
 };
 
 #define	trapdebug_enter(x, cd) {	\
@@ -102,7 +102,7 @@ struct trapdebug {              /* trap history buffer for debugging */
 	trp->pc = x->pc;		\
 	trp->sp = x->sp;		\
 	trp->ra = x->ra;		\
-	trp->cpl = x->cpl;		\
+	trp->ipl = x->ipl;		\
 	trp->code = cd;				\
 	if (++trp == &trapdebug[TRAPSIZE])	\
 		trp = trapdebug;		\

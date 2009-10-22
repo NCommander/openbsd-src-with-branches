@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip30_machdep.c,v 1.11 2009/10/16 00:15:49 miod Exp $	*/
+/*	$OpenBSD: ip30_machdep.c,v 1.12 2009/10/22 20:05:28 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -197,15 +197,4 @@ ip30_widget_id(int16_t nasid, u_int widget, uint32_t *wid)
 		*wid = *(uint32_t *)(wpa + (WIDGET_ID | 4));
 
 	return 0;
-}
-
-void
-hw_setintrmask(uint32_t m)
-{
-	extern uint64_t heart_intem;
-
-	paddr_t heart;
-	heart = PHYS_TO_XKPHYS(HEART_PIU_BASE, CCA_NC);
-	*(volatile uint64_t *)(heart + HEART_IMR(0)) =
-	    heart_intem & ~((uint64_t)m);
 }
