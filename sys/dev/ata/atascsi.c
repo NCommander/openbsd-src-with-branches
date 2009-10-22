@@ -85,8 +85,6 @@ void		atascsi_atapi_cmd_done(struct ata_xfer *);
 
 int		atascsi_done(struct scsi_xfer *, int);
 
-int		ata_running = 0;
-
 int		ata_exec(struct atascsi *, struct ata_xfer *);
 
 struct ata_xfer	*ata_get_xfer(struct ata_port *);
