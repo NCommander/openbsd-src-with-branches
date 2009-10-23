@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile.c,v 1.28 2008/10/16 16:34:32 millert Exp $	*/
+/*	$OpenBSD: compile.c,v 1.29 2009/08/07 03:30:56 djm Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -35,7 +35,7 @@
 
 #ifndef lint
 /* from: static char sccsid[] = "@(#)compile.c	8.2 (Berkeley) 4/28/95"; */
-static const char rcsid[] = "$OpenBSD: compile.c,v 1.28 2008/10/16 16:34:32 millert Exp $";
+static const char rcsid[] = "$OpenBSD: compile.c,v 1.29 2009/08/07 03:30:56 djm Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -675,7 +675,6 @@ compile_text(void)
 			text = xrealloc(text, asize);
 		}
 		op = s = text + size;
-		EATSPACE();
 		for (esc_nl = 0; *p != '\0'; p++) {
 			if (*p == '\\' && p[1] != '\0' && *++p == '\n')
 				esc_nl = 1;
