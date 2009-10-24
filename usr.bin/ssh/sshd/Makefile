@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.68 2008/11/04 08:22:13 djm Exp $
+#	$OpenBSD: Makefile,v 1.69 2009/05/28 16:50:16 andreas Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -16,7 +16,7 @@ SRCS=	sshd.c auth-rhosts.c auth-passwd.c auth-rsa.c auth-rh-rsa.c \
 	auth2-none.c auth2-passwd.c auth2-pubkey.c \
 	monitor_mm.c monitor.c monitor_wrap.c \
 	kexdhs.c kexgexs.c sftp-server.c sftp-common.c auth2-jpake.c \
-	roaming_common.c
+	roaming_common.c roaming_serv.c
 
 .include <bsd.own.mk> # for KERBEROS and AFS
 
