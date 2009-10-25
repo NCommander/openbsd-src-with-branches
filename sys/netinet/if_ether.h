@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.h,v 1.43 2008/10/31 21:08:33 claudio Exp $	*/
+/*	$OpenBSD: if_ether.h,v 1.44 2008/11/08 12:54:58 dlg Exp $	*/
 /*	$NetBSD: if_ether.h,v 1.22 1996/05/11 13:00:00 mycroft Exp $	*/
 
 /*
@@ -166,7 +166,6 @@ struct llinfo_arp {
 	struct	mbuf *la_hold_tail;
 	int	la_hold_count;		/* number of packets queued */
 	long	la_asked;		/* last time we QUERIED for this addr */
-#define la_timer la_rt->rt_rmx.rmx_expire /* deletion time in seconds */
 };
 #define MAX_HOLD_QUEUE 10
 #define MAX_HOLD_TOTAL 100
