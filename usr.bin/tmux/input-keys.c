@@ -1,4 +1,4 @@
-/* $OpenBSD: input-keys.c,v 1.10 2009/10/26 14:27:13 nicm Exp $ */
+/* $OpenBSD: input-keys.c,v 1.11 2009/10/26 14:30:57 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -172,6 +172,18 @@ input_key(struct window_pane *wp, int key)
 			buffer_write8(wp->out, '\033');
 		buffer_write8(wp->out, (uint8_t) (key & ~KEYC_ESCAPE));
 		return;
+	}
+
+	/* 
+	 * Then try to look this up as an xterm key, if the flag to output them
+	 * is set.
+	 */
+	if (options_get_number(&wp->window->options, "xterm-keys")) {
+		if ((out = xterm_keys_lookup(key)) != NULL) {
+			buffer_write(wp->out, out, strlen(out));
+			xfree(out);
+			return;
+		}
 	}
 
 	/* Otherwise look the key up in the table. */
