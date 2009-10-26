@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.60 2009/10/22 19:41:51 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.61 2009/10/26 21:38:18 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -667,12 +667,12 @@ void
 server_lock_sessions(void)
 {
         struct session  *s;
-        u_int            i;
+	u_int		 i;
 	int		 timeout;
-        time_t           t;
+	time_t		 t;
 
-        t = time(NULL);
-        for (i = 0; i < ARRAY_LENGTH(&sessions); i++) {
+	t = time(NULL);
+	for (i = 0; i < ARRAY_LENGTH(&sessions); i++) {
 		if ((s = ARRAY_ITEM(&sessions, i)) == NULL)
 			continue;
 
