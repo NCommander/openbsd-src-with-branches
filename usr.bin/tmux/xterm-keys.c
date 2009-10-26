@@ -1,4 +1,4 @@
-/* $OpenBSD: input-keys.c,v 1.4 2009/10/11 07:01:10 nicm Exp $ */
+/* $OpenBSD: xterm-keys.c,v 1.1 2009/10/26 17:46:33 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -146,7 +146,6 @@ xterm_keys_find(const char *buf, size_t len, size_t *size)
 	if (i == nitems(xterm_keys_table))
 		return (KEYC_NONE);
 	*size = strlen(entry->template);
-	log_debug("XXX %x %x", entry->key, xterm_keys_modifiers(entry->template, buf, len));
 	return (entry->key | xterm_keys_modifiers(entry->template, buf, len));
 }
 
