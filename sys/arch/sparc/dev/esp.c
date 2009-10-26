@@ -1,4 +1,4 @@
-/*	$OpenBSD: esp.c,v 1.26 2009/02/16 21:19:06 miod Exp $	*/
+/*	$OpenBSD: esp.c,v 1.27 2009/03/29 21:53:52 sthen Exp $	*/
 /*	$NetBSD: esp.c,v 1.69 1997/08/27 11:24:18 bouyer Exp $	*/
 
 /*
@@ -355,7 +355,7 @@ espattach(parent, self, aux)
 			    mapiodev(ca->ca_ra.ra_reg, 0, ca->ca_ra.ra_len);
 		}
 
-		dmachild = strncmp(parent->dv_xname, "dma", 3) == 0;
+		dmachild = strcmp(parent->dv_cfdata->cf_driver->cd_name, "dma") == 0;
 		if (dmachild) {
 			esc->sc_dma = (struct dma_softc *)parent;
 			esc->sc_dma->sc_esp = esc;
