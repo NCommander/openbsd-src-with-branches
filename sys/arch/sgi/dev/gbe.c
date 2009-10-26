@@ -1,4 +1,4 @@
-/*	$OpenBSD: gbe.c,v 1.7 2009/02/24 14:37:29 jsing Exp $ */
+/*	$OpenBSD: gbe.c,v 1.8 2009/09/05 14:09:35 miod Exp $ */
 
 /*
  * Copyright (c) 2007, 2008, 2009 Joel Sing <jsing@openbsd.org>
@@ -34,7 +34,7 @@
 #include <mips64/archtype.h>
 
 #include <sgi/localbus/crimebus.h>
-#include <sgi/localbus/macebus.h>
+#include <sgi/localbus/macebusvar.h>
 
 #include <dev/wscons/wsconsio.h>
 #include <dev/wscons/wsdisplayvar.h>

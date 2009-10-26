@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.2 2007/12/31 12:46:14 jsing Exp $ */
+/*	$OpenBSD: wscons_machdep.c,v 1.3 2008/01/23 16:37:56 jsing Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -40,7 +40,7 @@
 #include <mips64/archtype.h>
 
 #include <sgi/localbus/crimebus.h>
-#include <sgi/localbus/macebus.h>
+#include <sgi/localbus/macebusvar.h>
 
 #include <sgi/dev/gbereg.h>
 #include <sgi/dev/mkbcreg.h>

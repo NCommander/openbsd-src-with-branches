@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sgi,v 1.33 2009/10/07 20:39:43 miod Exp $
+#	$OpenBSD: files.sgi,v 1.34 2009/10/21 20:48:45 miod Exp $
 #
 # maxpartitions must be first item in files.${ARCH}
 #
@@ -55,7 +55,7 @@ attach	clock at mainbus
 #
 #	O2 MACE localbus autoconfiguration devices
 #
-define	macebus {[base = -1], [irq = -1]}
+define	macebus {[base = -1]}
 device	macebus
 attach	macebus at mainbus
 file	arch/sgi/localbus/macebus.c		macebus
