@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.30 2009/10/22 21:41:30 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.31 2009/10/24 09:35:16 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -506,8 +506,9 @@ aucat_read(struct sio_hdl *sh, void *buf, size_t len)
 				return 0;
 			break;
 		case STATE_IDLE:
-			DPRINTF("aucat_read: unexpected idle\n");
-			break;
+			DPRINTF("aucat_read: unexpected idle state\n");
+			hdl->sio.eof = 1;
+			return 0;
 		}
 	}
 	if (len > hdl->rtodo)
