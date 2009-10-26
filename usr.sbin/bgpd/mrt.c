@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.63 2009/06/29 12:22:16 claudio Exp $ */
+/*	$OpenBSD: mrt.c,v 1.64 2009/07/12 15:36:41 jsg Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -387,7 +387,7 @@ mrt_dump_upcall(struct rib_entry *re, void *ptr)
 }
 
 void
-mrt_dump_done(void *ptr)
+mrt_done(void *ptr)
 {
 	struct mrt		*mrtbuf = ptr;
 
@@ -541,6 +541,7 @@ mrt_write(struct mrt *mrt)
 	if ((r = buf_write(&mrt->wbuf)) < 0) {
 		log_warn("mrt dump aborted, mrt_write");
 		mrt_clean(mrt);
+		mrt_done(mrt);
 	}
 }
 
