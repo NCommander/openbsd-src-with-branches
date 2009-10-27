@@ -370,9 +370,6 @@ sub prepare_for_addition
 	if ($s->{ro}) {
 		$s->report_ro($state, $fname);
 	}
-	if ($state->{defines}->{kitchensink} && $state->{not}) {
-		return;
-	}
 	if ($s->avail < 0) {
 		$s->report_overflow($state, $fname);
 	}
@@ -491,9 +488,6 @@ sub prepare_for_addition
 	return unless defined $s;
 	if ($s->{ro}) {
 		$s->report_ro($state, $fname);
-	}
-	if ($state->{defines}->{kitchensink} && $state->{not}) {
-		return;
 	}
 	if ($s->avail < 0) {
 		$s->report_overflow($state, $fname);
@@ -682,9 +676,6 @@ sub prepare_for_addition
 	}
 	if ($s->{noexec} && $self->exec_on_delete) {
 		$s->report_noexec($state, $fname);
-	}
-	if ($state->{defines}->{kitchensink} && $state->{not}) {
-		return;
 	}
 	if ($s->avail < 0) {
 		$s->report_overflow($state, $fname);
