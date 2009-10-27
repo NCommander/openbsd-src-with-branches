@@ -469,8 +469,7 @@ sub install_set
 			return ();
 		}
 		if ($handle->has_error) {
-			if ($handle->has_error(OpenBSD::Handle::BAD_PACKAGE) &&
-			    !$handle->{tweaked}) {
+			if (!$handle->{tweaked}) {
 				$state->set_name_from_handle($handle);
 				$state->fatal("Fatal error");
 			} else {
