@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.71 2009/10/10 12:43:09 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.72 2009/10/10 13:55:37 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -118,7 +118,7 @@ opt_xrun(void)
 		return XRUN_SYNC;
 	if (strcmp("error", optarg) == 0)
 		return XRUN_ERROR;
-	errx(1, "%s: underrun/overrun policy", optarg);
+	errx(1, "%s: bad underrun/overrun policy", optarg);
 }
 
 int
