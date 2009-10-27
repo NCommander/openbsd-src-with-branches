@@ -1,4 +1,4 @@
-/*	$OpenBSD: netgroup_mkdb.c,v 1.13 2007/03/05 20:29:14 millert Exp $	*/
+/*	$OpenBSD: netgroup_mkdb.c,v 1.14 2008/05/17 23:31:52 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -30,9 +30,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#ifndef lint
-static char *rcsid = "$OpenBSD: netgroup_mkdb.c,v 1.13 2007/03/05 20:29:14 millert Exp $";
-#endif
 
 #include <sys/types.h>
 #include <sys/param.h>

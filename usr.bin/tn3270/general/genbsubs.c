@@ -1,4 +1,4 @@
-/*	$OpenBSD: genbsubs.c,v 1.3 2001/11/19 19:02:17 mpech Exp $	*/
+/*	$OpenBSD: genbsubs.c,v 1.4 2003/06/03 02:56:19 millert Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -28,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)genbsubs.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: genbsubs.c,v 1.3 2001/11/19 19:02:17 mpech Exp $";
-#endif /* not lint */
 
 /* The output of bunequal is the offset of the byte which didn't match;
  * if all the bytes match, then we return n.

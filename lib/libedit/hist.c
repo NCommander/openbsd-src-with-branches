@@ -1,4 +1,4 @@
-/*	$OpenBSD: hist.c,v 1.6 2003/10/31 08:42:24 otto Exp $	*/
+/*	$OpenBSD: hist.c,v 1.7 2003/11/25 20:12:38 otto Exp $	*/
 /*	$NetBSD: hist.c,v 1.15 2003/11/01 23:36:39 christos Exp $	*/
 
 /*-
@@ -34,13 +34,6 @@
  */
 
 #include "config.h"
-#if !defined(lint) && !defined(SCCSID)
-#if 0
-static char sccsid[] = "@(#)hist.c	8.1 (Berkeley) 6/4/93";
-#else
-static const char rcsid[] = "$OpenBSD: hist.c,v 1.6 2003/10/31 08:42:24 otto Exp $";
-#endif
-#endif /* not lint && not SCCSID */
 
 /*
  * hist.c: History access functions

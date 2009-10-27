@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_screen.c,v 1.17 2006/01/08 21:05:39 miod Exp $	*/
+/*	$OpenBSD: cl_screen.c,v 1.18 2006/04/22 03:09:15 ray Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)cl_screen.c	10.49 (Berkeley) 9/24/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-icmp.c,v 1.18 2007/10/07 16:41:05 deraadt Exp $	*/
+/*	$OpenBSD: print-icmp.c,v 1.19 2009/05/25 10:53:35 sthen Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994, 1995, 1996
@@ -20,11 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id: print-icmp.c,v 1.18 2007/10/07 16:41:05 deraadt Exp $ (LBL)";
-#endif
 
 #include <sys/param.h>
 #include <sys/time.h>

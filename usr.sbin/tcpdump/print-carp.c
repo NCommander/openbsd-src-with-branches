@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-carp.c,v 1.4 2006/06/02 19:57:50 mcbride Exp $	*/
+/*	$OpenBSD: print-carp.c,v 1.5 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 William C. Fenner.
@@ -27,11 +27,6 @@
  * from tcpdump.org:
  * Header: /tcpdump/master/tcpdump/print-vrrp.c,v 1.3 2000/10/10 05:05:08 guy Exp
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: data.c,v 1.4 1999/07/31 21:57:41 pjanzen Exp $	*/
+/*	$OpenBSD: data.c,v 1.5 2003/06/03 03:01:38 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)data.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: data.c,v 1.4 1999/07/31 21:57:41 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/cdefs.h>
 #include "tutor.h"

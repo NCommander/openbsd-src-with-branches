@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_increment.c,v 1.5 2002/02/16 21:27:58 millert Exp $	*/
+/*	$OpenBSD: v_increment.c,v 1.6 2006/01/08 21:05:40 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)v_increment.c	10.12 (Berkeley) 3/19/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

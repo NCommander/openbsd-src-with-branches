@@ -1,4 +1,4 @@
-/*	$OpenBSD: vocab.c,v 1.11 2004/07/09 15:59:26 deraadt Exp $	*/
+/*	$OpenBSD: vocab.c,v 1.12 2006/03/27 00:10:14 tedu Exp $	*/
 /*	$NetBSD: vocab.c,v 1.2 1995/03/21 12:05:13 cgd Exp $	*/
 
 /*-
@@ -34,14 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)vocab.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: vocab.c,v 1.11 2004/07/09 15:59:26 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 /*	Re-coding of advent in C: data structure routines		*/
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcp.c,v 1.8 2002/02/17 19:42:38 millert Exp $	*/
+/*	$OpenBSD: lcp.c,v 1.9 2002/07/01 19:31:37 deraadt Exp $	*/
 
 /*
  * lcp.c - PPP Link Control Protocol.
@@ -41,14 +41,6 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-#if 0
-static char rcsid[] = "Id: lcp.c,v 1.31 1997/11/27 06:08:44 paulus Exp $";
-#else
-static char rcsid[] = "$OpenBSD: lcp.c,v 1.8 2002/02/17 19:42:38 millert Exp $";
-#endif
-#endif
 
 /*
  * TODO:

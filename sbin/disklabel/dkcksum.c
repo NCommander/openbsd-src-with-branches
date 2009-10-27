@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkcksum.c,v 1.6 2003/07/02 21:22:10 deraadt Exp $	*/
+/*	$OpenBSD: dkcksum.c,v 1.7 2004/09/28 17:57:46 otto Exp $	*/
 /*	$NetBSD: dkcksum.c,v 1.6 1995/03/18 14:54:42 cgd Exp $	*/
 
 /*-
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dkcksum.c	8.1 (Berkeley) 6/5/93";
-#else
-static char rcsid[] = "$OpenBSD: dkcksum.c,v 1.6 2003/07/02 21:22:10 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/disklabel.h>

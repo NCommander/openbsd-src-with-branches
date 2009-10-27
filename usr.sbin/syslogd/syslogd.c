@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.101 2008/04/21 22:09:51 mpf Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.102 2008/09/29 18:42:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993, 1994
@@ -28,20 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1983, 1988, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)syslogd.c	8.3 (Berkeley) 4/4/94";
-#else
-static const char rcsid[] = "$OpenBSD: syslogd.c,v 1.101 2008/04/21 22:09:51 mpf Exp $";
-#endif
-#endif /* not lint */
 
 /*
  *  syslogd -- log system messages

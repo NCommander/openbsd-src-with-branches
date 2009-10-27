@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-tcp.c,v 1.25 2006/12/13 05:10:15 itojun Exp $	*/
+/*	$OpenBSD: print-tcp.c,v 1.26 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -20,11 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
-#endif
 
 #include <sys/param.h>
 #include <sys/time.h>

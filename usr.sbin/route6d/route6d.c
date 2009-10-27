@@ -1,4 +1,4 @@
-/*	$OpenBSD: route6d.c,v 1.53 2009/06/05 22:40:24 chris Exp $	*/
+/*	$OpenBSD: route6d.c,v 1.54 2009/06/26 09:50:12 claudio Exp $	*/
 /*	$KAME: route6d.c,v 1.111 2006/10/25 06:38:13 jinmei Exp $	*/
 
 /*
@@ -29,10 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if 0
-static char _rcsid[] = "$OpenBSD: route6d.c,v 1.53 2009/06/05 22:40:24 chris Exp $";
-#endif
 
 #include <stdio.h>
 

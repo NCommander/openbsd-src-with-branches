@@ -1,4 +1,4 @@
-/*	$OpenBSD: shield.c,v 1.5 2003/04/06 18:50:38 deraadt Exp $	*/
+/*	$OpenBSD: shield.c,v 1.6 2003/06/03 03:01:42 millert Exp $	*/
 /*	$NetBSD: shield.c,v 1.4 1995/04/24 12:26:09 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)shield.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: shield.c,v 1.5 2003/04/06 18:50:38 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include "trek.h"

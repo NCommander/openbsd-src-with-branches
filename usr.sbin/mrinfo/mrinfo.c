@@ -74,14 +74,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#) $OpenBSD: mrinfo.c,v 1.21 2005/06/20 14:48:26 robert Exp $";
-/*  original rcsid:
-    "@(#) Header: mrinfo.c,v 1.6 93/04/08 15:14:16 van Exp (LBL)";
-*/
-#endif
-
 #include <string.h>
 #include <netdb.h>
 #include <sys/time.h>

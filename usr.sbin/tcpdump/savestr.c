@@ -1,4 +1,4 @@
-/*	$OpenBSD: savestr.c,v 1.5 2003/04/04 02:56:51 millert Exp $	*/
+/*	$OpenBSD: savestr.c,v 1.6 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997
@@ -20,11 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
-#endif
 
 #include <sys/types.h>
 

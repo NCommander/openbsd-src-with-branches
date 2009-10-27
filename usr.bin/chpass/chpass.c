@@ -1,4 +1,4 @@
-/*	$OpenBSD: chpass.c,v 1.35 2008/06/19 19:16:04 tobias Exp $	*/
+/*	$OpenBSD: chpass.c,v 1.36 2008/07/08 21:30:15 sobrado Exp $	*/
 /*	$NetBSD: chpass.c,v 1.8 1996/05/15 21:50:43 jtc Exp $	*/
 
 /*-
@@ -29,20 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1988, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)chpass.c	8.4 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$OpenBSD: chpass.c,v 1.35 2008/06/19 19:16:04 tobias Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/resource.h>

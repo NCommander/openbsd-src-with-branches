@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.15 2005/04/10 13:49:13 jmc Exp $	*/
+/*	$OpenBSD: main.c,v 1.16 2005/05/01 02:43:12 djm Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -29,20 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: main.c,v 1.15 2005/04/10 13:49:13 jmc Exp $";
-#endif
-#endif /* not lint */
 
 #include	"robots.h"
 

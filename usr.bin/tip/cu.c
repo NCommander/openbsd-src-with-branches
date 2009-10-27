@@ -1,4 +1,4 @@
-/*	$OpenBSD: cu.c,v 1.22 2007/05/15 19:42:05 moritz Exp $	*/
+/*	$OpenBSD: cu.c,v 1.23 2007/11/26 09:28:34 martynas Exp $	*/
 /*	$NetBSD: cu.c,v 1.5 1997/02/11 09:24:05 mrg Exp $	*/
 
 /*
@@ -29,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cu.c	8.1 (Berkeley) 6/6/93";
-#endif
-static const char rcsid[] = "$OpenBSD: cu.c,v 1.22 2007/05/15 19:42:05 moritz Exp $";
-#endif /* not lint */
 
 #include <err.h>
 #include <paths.h>

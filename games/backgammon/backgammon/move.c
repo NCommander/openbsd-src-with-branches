@@ -1,4 +1,4 @@
-/*	$OpenBSD: move.c,v 1.8 2006/10/29 20:02:41 martin Exp $	*/
+/*	$OpenBSD: move.c,v 1.9 2006/12/14 10:14:05 martin Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)move.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: move.c,v 1.8 2006/10/29 20:02:41 martin Exp $";
-#endif
-#endif /* not lint */
 
 #include "back.h"
 #include "backlocal.h"

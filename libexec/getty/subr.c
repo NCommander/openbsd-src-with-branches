@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr.c,v 1.17 2002/07/03 23:39:03 deraadt Exp $	*/
+/*	$OpenBSD: subr.c,v 1.18 2003/06/02 19:38:24 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -28,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)subr.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$OpenBSD: subr.c,v 1.17 2002/07/03 23:39:03 deraadt Exp $";
-#endif /* not lint */
 
 /*
  * Melbourne getty.

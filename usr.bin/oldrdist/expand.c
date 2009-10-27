@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.c,v 1.10 2003/04/06 17:57:45 ho Exp $	*/
+/*	$OpenBSD: expand.c,v 1.11 2003/06/03 02:56:14 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -28,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)expand.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: expand.c,v 1.10 2003/04/06 17:57:45 ho Exp $";
-#endif /* not lint */
 
 #include "defs.h"
 

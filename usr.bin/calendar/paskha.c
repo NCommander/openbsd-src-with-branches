@@ -1,4 +1,4 @@
-/*	$OpenBSD: paskha.c,v 1.4 2004/12/10 15:31:01 mickey Exp $	*/
+/*	$OpenBSD: paskha.c,v 1.5 2005/11/16 16:45:11 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1993-1996 by Andrey A. Chernov, Moscow, Russia.
@@ -25,10 +25,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: paskha.c,v 1.4 2004/12/10 15:31:01 mickey Exp $";
-#endif /* not lint */
 
 #include <stdio.h>
 #include <tzfile.h>

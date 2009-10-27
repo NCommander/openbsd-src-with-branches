@@ -1,4 +1,4 @@
-/*	$OpenBSD: growfs.c,v 1.26 2008/12/24 20:48:33 otto Exp $	*/
+/*	$OpenBSD: growfs.c,v 1.27 2009/04/01 05:31:55 jsg Exp $	*/
 /*
  * Copyright (c) 2000 Christoph Herrmann, Thomas-Henning von Kamptz
  * Copyright (c) 1980, 1989, 1993 The Regents of the University of California.
@@ -40,13 +40,6 @@
  * $FreeBSD: src/sbin/growfs/growfs.c,v 1.25 2006/07/17 20:48:36 stefanf Exp $
  *
  */
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 2000 Christoph Herrmann, Thomas-Henning von Kamptz\n\
-Copyright (c) 1980, 1989, 1993 The Regents of the University of California.\n\
-All rights reserved.\n";
-#endif /* not lint */
 
 /* ********************************************************** INCLUDES ***** */
 #include <sys/param.h>

@@ -3,10 +3,6 @@
  * Public domain.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char *rcsid = "$OpenBSD: htonl.c,v 1.5 2004/11/28 07:23:41 mickey Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <machine/endian.h>
 

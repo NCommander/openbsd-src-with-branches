@@ -17,14 +17,6 @@
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#) socket.c 1.15 97/03/21 19:27:24";
-#else
-static char rcsid[] = "$OpenBSD: socket.c,v 1.7 2003/12/27 22:58:35 henning Exp $";
-#endif
-#endif
-
 /* System libraries. */
 
 #include <sys/types.h>

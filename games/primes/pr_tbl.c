@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr_tbl.c,v 1.3 2001/08/19 17:12:43 pjanzen Exp $	*/
+/*	$OpenBSD: pr_tbl.c,v 1.4 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: pr_tbl.c,v 1.3 1995/03/23 08:35:52 cgd Exp $	*/
 
 /*
@@ -32,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pr_tbl.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: pr_tbl.c,v 1.3 2001/08/19 17:12:43 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * prime - prime table

@@ -1,4 +1,4 @@
-/*	$OpenBSD: quota.c,v 1.27 2005/05/05 19:17:11 jmc Exp $	*/
+/*	$OpenBSD: quota.c,v 1.28 2007/12/30 13:32:19 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1980, 1990, 1993
@@ -31,18 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1980, 1990, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)quota.c	8.1 (Berkeley) 6/6/93";*/
-static const char rcsid[] =
-"$OpenBSD: quota.c,v 1.27 2005/05/05 19:17:11 jmc Exp $";
-#endif /* not lint */
 
 /*
  * Disk quota reporting program.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rent.c,v 1.3 2002/07/28 08:44:14 pjanzen Exp $	*/
+/*	$OpenBSD: rent.c,v 1.4 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: rent.c,v 1.3 1995/03/23 08:35:11 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)rent.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: rent.c,v 1.3 2002/07/28 08:44:14 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include	"monop.ext"
 

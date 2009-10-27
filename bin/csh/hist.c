@@ -1,4 +1,4 @@
-/*	$OpenBSD: hist.c,v 1.6 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: hist.c,v 1.7 2003/06/11 21:09:50 deraadt Exp $	*/
 /*	$NetBSD: hist.c,v 1.7 1995/03/21 18:35:44 mycroft Exp $	*/
 
 /*-
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)hist.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: hist.c,v 1.6 2003/06/02 23:32:07 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <stdlib.h>

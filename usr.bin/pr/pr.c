@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr.c,v 1.26 2008/04/18 20:18:21 tobias Exp $	*/
+/*	$OpenBSD: pr.c,v 1.27 2009/02/07 17:51:22 chl Exp $	*/
 
 /*-
  * Copyright (c) 1991 Keith Muller.
@@ -32,17 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)pr.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$OpenBSD: pr.c,v 1.26 2008/04/18 20:18:21 tobias Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/time.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sprayd.c,v 1.8 2003/07/06 21:57:27 deraadt Exp $*/
+/*	$OpenBSD: sprayd.c,v 1.9 2004/06/02 02:21:15 brad Exp $*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -30,10 +30,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: sprayd.c,v 1.8 2003/07/06 21:57:27 deraadt Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>

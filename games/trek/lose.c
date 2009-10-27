@@ -1,4 +1,4 @@
-/*	$OpenBSD: lose.c,v 1.3 1999/07/31 18:48:59 pjanzen Exp $	*/
+/*	$OpenBSD: lose.c,v 1.4 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: lose.c,v 1.3 1995/04/22 10:59:08 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lose.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: lose.c,v 1.3 1999/07/31 18:48:59 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include <setjmp.h>

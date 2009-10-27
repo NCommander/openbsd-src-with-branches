@@ -1,4 +1,4 @@
-/*	$OpenBSD: patch.c,v 1.46 2008/08/20 18:28:46 otto Exp $	*/
+/*	$OpenBSD: patch.c,v 1.47 2009/04/05 13:36:00 stsp Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -25,10 +25,6 @@
  * -C option added in 1998, original code by Marc Espie, based on FreeBSD
  * behaviour
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: patch.c,v 1.46 2008/08/20 18:28:46 otto Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: v831.c,v 1.10 2005/02/17 12:45:42 aaron Exp $	*/
+/*	$OpenBSD: v831.c,v 1.11 2006/03/17 19:17:13 moritz Exp $	*/
 /*	$NetBSD: v831.c,v 1.5 1996/12/29 10:42:01 cgd Exp $	*/
 
 /*
@@ -29,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)v831.c	8.1 (Berkeley) 6/6/93";
-#endif
-static const char rcsid[] = "$OpenBSD: v831.c,v 1.10 2005/02/17 12:45:42 aaron Exp $";
-#endif /* not lint */
 
 /*
  * Routines for dialing up on Vadic 831

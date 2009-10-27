@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.c,v 1.54 2007/09/05 08:02:21 moritz Exp $	*/
+/*	$OpenBSD: at.c,v 1.55 2009/10/05 20:47:19 deraadt Exp $	*/
 
 /*
  *  at.c : Put file into atrun queue
@@ -40,10 +40,6 @@
 
 #define ALARMC 10		/* Number of seconds to wait for timeout */
 #define TIMESIZE 50		/* Size of buffer passed to strftime() */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: at.c,v 1.54 2007/09/05 08:02:21 moritz Exp $";
-#endif
 
 /* Variables to remove from the job's environment. */
 char *no_export[] =

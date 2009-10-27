@@ -1,4 +1,4 @@
-/*	$OpenBSD: gmt2local.c,v 1.3 2004/01/28 19:44:55 canacar Exp $	*/
+/*	$OpenBSD: gmt2local.c,v 1.4 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997
@@ -20,11 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
-#endif
 
 #include <sys/types.h>
 #include <sys/time.h>

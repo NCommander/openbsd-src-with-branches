@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff3.c,v 1.49 2009/06/06 14:17:27 ray Exp $	*/
+/*	$OpenBSD: diff3.c,v 1.50 2009/06/07 08:39:13 ray Exp $	*/
 
 /*
  * Copyright (C) Caldera International Inc.  2001-2002.
@@ -63,17 +63,6 @@
  *
  *	@(#)diff3.c	8.1 (Berkeley) 6/6/93
  */
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1991, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static const char rcsid[] =
-    "$OpenBSD: diff3.c,v 1.49 2009/06/06 14:17:27 ray Exp $";
-#endif /* not lint */
 
 #include <ctype.h>
 #include <errno.h>

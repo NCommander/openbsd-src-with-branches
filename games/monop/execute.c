@@ -1,4 +1,4 @@
-/*	$OpenBSD: execute.c,v 1.7 2003/04/06 18:50:37 deraadt Exp $	*/
+/*	$OpenBSD: execute.c,v 1.8 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: execute.c,v 1.3 1995/03/23 08:34:38 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)execute.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: execute.c,v 1.7 2003/04/06 18:50:37 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include	"monop.ext"
 #include	<sys/types.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: arithmetic.c,v 1.15 2004/07/09 15:59:26 deraadt Exp $	*/
+/*	$OpenBSD: arithmetic.c,v 1.16 2007/03/20 03:43:50 tedu Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -31,20 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)arithmetic.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: arithmetic.c,v 1.15 2004/07/09 15:59:26 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * By Eamonn McManus, Trinity College Dublin <emcmanus@cs.tcd.ie>.

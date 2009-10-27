@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.20 2006/12/11 20:50:54 deraadt Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.21 2007/09/27 17:08:58 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -28,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)docmd.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: docmd.c,v 1.20 2006/12/11 20:50:54 deraadt Exp $";
-#endif /* not lint */
 
 #include "defs.h"
 #include <setjmp.h>

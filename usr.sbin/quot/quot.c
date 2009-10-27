@@ -1,4 +1,4 @@
-/*	$OpenBSD: quot.c,v 1.18 2007/09/02 15:19:40 deraadt Exp $	*/
+/*	$OpenBSD: quot.c,v 1.19 2008/03/17 20:30:17 sobrado Exp $	*/
 
 /*
  * Copyright (C) 1991, 1994 Wolfgang Solfrank.
@@ -30,10 +30,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$Id: quot.c,v 1.18 2007/09/02 15:19:40 deraadt Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/mount.h>

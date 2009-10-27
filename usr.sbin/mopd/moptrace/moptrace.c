@@ -1,4 +1,4 @@
-/*	$OpenBSD: moptrace.c,v 1.9 2006/04/16 11:48:19 maja Exp $ */
+/*	$OpenBSD: moptrace.c,v 1.10 2009/07/11 13:42:32 sobrado Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -23,10 +23,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: moptrace.c,v 1.9 2006/04/16 11:48:19 maja Exp $";
-#endif
 
 /*
  * moptrace - MOP Trace Utility

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-enc.c,v 1.9 2007/02/23 22:29:26 deraadt Exp $	*/
+/*	$OpenBSD: print-enc.c,v 1.10 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996
@@ -20,11 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
-#endif
 
 #include <sys/param.h>
 #include <sys/time.h>

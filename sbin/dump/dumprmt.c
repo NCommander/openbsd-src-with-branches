@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumprmt.c,v 1.24 2007/03/04 22:36:54 deraadt Exp $	*/
+/*	$OpenBSD: dumprmt.c,v 1.25 2008/01/02 12:59:35 chl Exp $	*/
 /*	$NetBSD: dumprmt.c,v 1.17 1997/06/05 16:10:47 mrg Exp $	*/
 
 /*-
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dumprmt.c	8.1 (Berkeley) 6/5/93";
-#else
-static const char rcsid[] = "$OpenBSD: dumprmt.c,v 1.24 2007/03/04 22:36:54 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/mtio.h>

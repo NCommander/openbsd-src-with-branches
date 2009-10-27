@@ -1,4 +1,4 @@
-/*	$OpenBSD: perlsfio.c,v 1.2 2001/01/29 01:58:48 niklas Exp $	*/
+/*	$OpenBSD: perlsfio.c,v 1.3 2002/02/16 21:27:58 millert Exp $	*/
 
 /*-
  * Copyright (c) 1996
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)perlsfio.c	8.1 (Berkeley) 9/24/96";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/queue.h>

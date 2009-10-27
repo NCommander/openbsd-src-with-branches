@@ -1,4 +1,4 @@
-/*	$OpenBSD: upap.c,v 1.8 2002/02/17 19:42:38 millert Exp $	*/
+/*	$OpenBSD: upap.c,v 1.9 2002/07/01 19:31:37 deraadt Exp $	*/
 
 /*
  * upap.c - User/Password Authentication Protocol.
@@ -41,14 +41,6 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-#if 0
-static char rcsid[] = "Id: upap.c,v 1.11 1997/04/30 05:59:56 paulus Exp";
-#else
-static char rcsid[] = "$OpenBSD: upap.c,v 1.8 2002/02/17 19:42:38 millert Exp $";
-#endif
-#endif
 
 /*
  * TODO:

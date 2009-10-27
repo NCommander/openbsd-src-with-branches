@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_refresh.c,v 1.14 2006/03/11 06:58:00 ray Exp $	*/
+/*	$OpenBSD: vs_refresh.c,v 1.15 2008/03/08 18:11:42 otto Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)vs_refresh.c	10.44 (Berkeley) 10/13/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.6 2006/12/06 05:05:16 ray Exp $	*/
+/*	$OpenBSD: misc.c,v 1.7 2007/09/11 16:30:59 gilles Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -24,10 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef LINT
-static char rcsid[] = "$OpenBSD: misc.c,v 1.6 2006/12/06 05:05:16 ray Exp $";
-#endif
 
 #include <sys/types.h>
 #include <err.h>

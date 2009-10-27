@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.39 2007/02/18 23:59:03 jmc Exp $	*/
+/*	$OpenBSD: cron.c,v 1.40 2009/01/29 22:50:16 sobrado Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -20,10 +20,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#if !defined(lint) && !defined(LINT)
-static const char rcsid[] = "$OpenBSD: cron.c,v 1.39 2007/02/18 23:59:03 jmc Exp $";
-#endif
 
 #define	MAIN_PROGRAM
 

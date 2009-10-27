@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.3 2003/10/18 20:34:26 otto Exp $	*/
+/*	$OpenBSD: mem.c,v 1.4 2004/07/11 06:41:48 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -15,10 +15,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: mem.c,v 1.3 2003/10/18 20:34:26 otto Exp $";
-#endif /* not lint */
 
 #include <ssl/err.h>
 

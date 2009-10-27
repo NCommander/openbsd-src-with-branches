@@ -1,4 +1,4 @@
-/*      $OpenBSD: apropos.c,v 1.13 2007/08/06 19:16:06 sobrado Exp $      */
+/*      $OpenBSD: apropos.c,v 1.14 2008/12/24 09:05:17 jmc Exp $      */
 /*      $NetBSD: apropos.c,v 1.5 1995/09/04 20:46:20 tls Exp $      */
 
 /*
@@ -29,20 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1987, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)apropos.c	8.8 (Berkeley) 5/4/95";
-#else
-static char rcsid[] = "$OpenBSD: apropos.c,v 1.13 2007/08/06 19:16:06 sobrado Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/queue.h>

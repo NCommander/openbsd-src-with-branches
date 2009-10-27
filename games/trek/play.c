@@ -1,4 +1,4 @@
-/*	$OpenBSD: play.c,v 1.3 1999/07/31 18:48:59 pjanzen Exp $	*/
+/*	$OpenBSD: play.c,v 1.4 2003/06/03 03:01:42 millert Exp $	*/
 /*	$NetBSD: play.c,v 1.3 1995/04/22 10:59:18 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)play.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: play.c,v 1.3 1999/07/31 18:48:59 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include <setjmp.h>

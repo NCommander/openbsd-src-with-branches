@@ -1,4 +1,4 @@
-/*	$OpenBSD: getoldopt.c,v 1.7 2002/10/16 19:20:02 millert Exp $	*/
+/*	$OpenBSD: getoldopt.c,v 1.8 2003/07/02 21:19:33 deraadt Exp $	*/
 /*	$NetBSD: getoldopt.c,v 1.3 1995/03/21 09:07:28 cgd Exp $	*/
 
 /*
@@ -9,10 +9,6 @@
  * Written 25 August 1985 by John Gilmore (ihnp4!hoptoad!gnu) and placed
  * in the Public Domain for your edification and enjoyment.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: getoldopt.c,v 1.7 2002/10/16 19:20:02 millert Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>

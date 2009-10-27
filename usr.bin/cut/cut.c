@@ -1,4 +1,4 @@
-/*	$OpenBSD: cut.c,v 1.12 2007/03/15 22:38:24 jmc Exp $	*/
+/*	$OpenBSD: cut.c,v 1.13 2008/06/27 08:02:13 sobrado Exp $	*/
 /*	$NetBSD: cut.c,v 1.9 1995/09/02 05:59:23 jtc Exp $	*/
 
 /*
@@ -32,19 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cut.c	8.3 (Berkeley) 5/4/95";
-#endif
-static char rcsid[] = "$OpenBSD: cut.c,v 1.12 2007/03/15 22:38:24 jmc Exp $";
-#endif /* not lint */
 
 #include <ctype.h>
 #include <err.h>

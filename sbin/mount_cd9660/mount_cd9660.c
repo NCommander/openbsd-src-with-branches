@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_cd9660.c,v 1.17 2005/04/08 20:09:36 jaredy Exp $	*/
+/*	$OpenBSD: mount_cd9660.c,v 1.18 2007/03/21 13:44:04 pedro Exp $	*/
 /*	$NetBSD: mount_cd9660.c,v 1.3 1996/04/13 01:31:08 jtc Exp $	*/
 
 /*
@@ -34,20 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1992, 1993, 1994\n\
-        The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mount_cd9660.c	8.4 (Berkeley) 3/27/94";
-#else
-static char rcsid[] = "$OpenBSD: mount_cd9660.c,v 1.17 2005/04/08 20:09:36 jaredy Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #define CD9660

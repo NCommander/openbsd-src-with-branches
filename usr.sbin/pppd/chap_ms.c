@@ -1,4 +1,4 @@
-/*	$OpenBSD: chap_ms.c,v 1.8 2003/06/11 23:33:29 deraadt Exp $	*/
+/*	$OpenBSD: chap_ms.c,v 1.9 2004/06/29 22:04:44 millert Exp $	*/
 
 /*
  * chap_ms.c - Microsoft MS-CHAP compatible implementation.
@@ -40,14 +40,6 @@
  *
  *   You should also use DOMAIN\\USERNAME as described in README.MSCHAP80
  */
-
-#ifndef lint
-#if 0
-static char rcsid[] = "Id: chap_ms.c,v 1.8 1998/04/01 00:15:43 paulus Exp $";
-#else
-static char rcsid[] = "$OpenBSD: chap_ms.c,v 1.8 2003/06/11 23:33:29 deraadt Exp $";
-#endif
-#endif
 
 #ifdef CHAPMS
 

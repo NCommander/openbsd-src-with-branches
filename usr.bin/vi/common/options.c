@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.12 2006/01/08 21:05:39 miod Exp $	*/
+/*	$OpenBSD: options.c,v 1.13 2006/03/11 07:04:53 ray Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)options.c	10.51 (Berkeley) 10/14/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

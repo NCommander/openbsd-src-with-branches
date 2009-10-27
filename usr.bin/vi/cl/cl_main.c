@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_main.c,v 1.18 2007/10/17 20:10:44 chl Exp $	*/
+/*	$OpenBSD: cl_main.c,v 1.19 2008/03/28 17:58:20 jasper Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)cl_main.c	10.36 (Berkeley) 10/14/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

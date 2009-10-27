@@ -1,4 +1,4 @@
-/*	$OpenBSD: apply.c,v 1.22 2005/11/14 15:30:54 deraadt Exp $	*/
+/*	$OpenBSD: apply.c,v 1.23 2007/05/09 01:54:40 ray Exp $	*/
 /*	$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $	*/
 
 /*-
@@ -32,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)apply.c	8.4 (Berkeley) 4/4/94";
-#else
-static const char rcsid[] = "$OpenBSD: apply.c,v 1.22 2005/11/14 15:30:54 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/wait.h>
 

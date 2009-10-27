@@ -1,4 +1,4 @@
-/*	$OpenBSD: master.c,v 1.8 2002/06/19 15:45:39 ericj Exp $	*/
+/*	$OpenBSD: master.c,v 1.9 2003/06/02 23:36:55 millert Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -28,10 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "@(#)master.c	5.1 (Berkeley) 5/11/93";
-#endif /* not lint */
 
 #include "globals.h"
 #include <sys/file.h>

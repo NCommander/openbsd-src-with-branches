@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.52 2009/06/06 15:37:28 ray Exp $	*/
+/*	$OpenBSD: diff.c,v 1.53 2009/06/07 08:39:13 ray Exp $	*/
 
 /*
  * Copyright (c) 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -19,10 +19,6 @@
  * Agency (DARPA) and Air Force Research Laboratory, Air Force
  * Materiel Command, USAF, under agreement number F39502-99-1-0512.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: diff.c,v 1.52 2009/06/06 15:37:28 ray Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>

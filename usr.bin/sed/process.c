@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.c,v 1.13 2006/10/09 00:23:57 tedu Exp $	*/
+/*	$OpenBSD: process.c,v 1.14 2008/10/07 21:51:37 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -32,11 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)process.c	8.1 (Berkeley) 6/6/93"; */
-static const char rcsid[] = "$OpenBSD: process.c,v 1.13 2006/10/09 00:23:57 tedu Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -1,9 +1,5 @@
-/*	$OpenBSD: ns32k.c,v 1.3 2001/03/22 05:18:30 mickey Exp $	*/
+/*	$OpenBSD: ns32k.c,v 1.4 2006/03/25 19:06:36 espie Exp $	*/
 /*	$NetBSD: ns32k.c,v 1.3 1995/04/19 07:16:13 cgd Exp $	*/
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: ns32k.c,v 1.3 2001/03/22 05:18:30 mickey Exp $";
-#endif /* not lint */
 
 #include "gprof.h"
 

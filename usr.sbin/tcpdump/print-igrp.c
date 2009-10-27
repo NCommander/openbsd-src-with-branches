@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-igrp.c,v 1.3 2000/10/03 14:31:57 ho Exp $	*/
+/*	$OpenBSD: print-igrp.c,v 1.4 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996, 1997
@@ -22,11 +22,6 @@
  *
  * Initial contribution from Francis Dupont (francis.dupont@inria.fr)
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
-#endif
 
 #include <sys/param.h>
 #include <sys/types.h>			/* concession to AIX */

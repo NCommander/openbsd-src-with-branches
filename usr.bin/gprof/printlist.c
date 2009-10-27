@@ -1,4 +1,4 @@
-/*	$OpenBSD: printlist.c,v 1.5 2003/07/10 00:06:51 david Exp $	*/
+/*	$OpenBSD: printlist.c,v 1.6 2006/03/25 19:06:36 espie Exp $	*/
 /*	$NetBSD: printlist.c,v 1.5 1995/04/19 07:16:23 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)printlist.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$OpenBSD: printlist.c,v 1.5 2003/07/10 00:06:51 david Exp $";
-#endif
-#endif /* not lint */
 
 #include <string.h>
 

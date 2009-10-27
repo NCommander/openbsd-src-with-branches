@@ -1,4 +1,4 @@
-/*	$OpenBSD: houses.c,v 1.6 2006/03/26 17:20:51 deraadt Exp $	*/
+/*	$OpenBSD: houses.c,v 1.7 2008/11/10 18:02:17 sthen Exp $	*/
 /*	$NetBSD: houses.c,v 1.3 1995/03/23 08:34:40 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)houses.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: houses.c,v 1.6 2006/03/26 17:20:51 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 # include	"monop.ext"
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: subs.c,v 1.16 2007/10/17 20:10:44 chl Exp $	*/
+/*	$OpenBSD: subs.c,v 1.17 2008/03/17 09:17:56 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)subs.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: subs.c,v 1.16 2007/10/17 20:10:44 chl Exp $";
-#endif
-#endif /* not lint */
 
 #include "back.h"
 

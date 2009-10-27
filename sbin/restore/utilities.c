@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.14 2004/07/17 02:14:33 deraadt Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.15 2005/06/14 19:46:05 millert Exp $	*/
 /*	$NetBSD: utilities.c,v 1.11 1997/03/19 08:42:56 lukem Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)utilities.c	8.4 (Berkeley) 10/18/94";
-#else
-static const char rcsid[] = "$OpenBSD: utilities.c,v 1.14 2004/07/17 02:14:33 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>

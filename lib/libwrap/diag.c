@@ -1,4 +1,4 @@
-/*	$OpenBSD: diag.c,v 1.3 2002/06/07 00:05:09 itojun Exp $	*/
+/*	$OpenBSD: diag.c,v 1.4 2002/06/19 07:12:42 deraadt Exp $	*/
 
  /*
   * Routines to report various classes of problems. Each report is decorated
@@ -10,14 +10,6 @@
   * 
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#) diag.c 1.1 94/12/28 17:42:20";
-#else
-static char rcsid[] = "$OpenBSD: diag.c,v 1.3 2002/06/07 00:05:09 itojun Exp $";
-#endif
-#endif
 
 /* System libraries */
 

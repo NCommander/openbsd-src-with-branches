@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftree.c,v 1.27 2006/12/26 20:58:25 otto Exp $	*/
+/*	$OpenBSD: ftree.c,v 1.28 2008/05/06 06:54:28 henning Exp $	*/
 /*	$NetBSD: ftree.c,v 1.4 1995/03/21 09:07:21 cgd Exp $	*/
 
 /*-
@@ -33,14 +33,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)ftree.c	8.2 (Berkeley) 4/18/94";
-#else
-static const char rcsid[] = "$OpenBSD: ftree.c,v 1.27 2006/12/26 20:58:25 otto Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/time.h>

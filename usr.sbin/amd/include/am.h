@@ -1,4 +1,4 @@
-/*	$OpenBSD: am.h,v 1.10 2003/06/17 18:00:24 millert Exp $	*/
+/*	$OpenBSD: am.h,v 1.11 2003/11/08 19:17:29 jmc Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -118,7 +118,6 @@ extern char *karch;		/* "sun4c" */
 extern char *cluster;		/* "r+d-kluster" */
 extern char *endian;		/* "big" */
 extern char *auto_dir;		/* "/a" */
-extern char copyright[];	/* Copyright info */
 extern char version[];		/* Version info */
 
 typedef struct am_ops am_ops;

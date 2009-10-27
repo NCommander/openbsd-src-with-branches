@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.c,v 1.4 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: extern.c,v 1.5 2008/04/01 21:05:50 miod Exp $	*/
 /*	$NetBSD: extern.c,v 1.3 1995/03/23 08:32:41 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)extern.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: extern.c,v 1.4 2003/06/03 03:01:40 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include	"hangman.h"
 

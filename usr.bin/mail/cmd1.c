@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd1.c,v 1.26 2007/04/03 18:01:49 martynas Exp $	*/
+/*	$OpenBSD: cmd1.c,v 1.27 2008/07/15 19:13:25 martynas Exp $	*/
 /*	$NetBSD: cmd1.c,v 1.9 1997/07/09 05:29:48 mikel Exp $	*/
 
 /*-
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)cmd1.c	8.2 (Berkeley) 4/20/95";
-#else
-static const char rcsid[] = "$OpenBSD: cmd1.c,v 1.26 2007/04/03 18:01:49 martynas Exp $";
-#endif
-#endif /* not lint */
 
 #include "rcv.h"
 #include "extern.h"

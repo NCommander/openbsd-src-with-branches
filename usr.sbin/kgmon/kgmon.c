@@ -1,4 +1,4 @@
-/*	$OpenBSD: kgmon.c,v 1.13 2007/05/04 04:06:06 ray Exp $	*/
+/*	$OpenBSD: kgmon.c,v 1.14 2007/11/26 09:28:34 martynas Exp $	*/
 
 /*
  * Copyright (c) 1983, 1992, 1993
@@ -28,17 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)kgmon.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$OpenBSD: kgmon.c,v 1.13 2007/05/04 04:06:06 ray Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/file.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pl_7.c,v 1.7 2002/12/09 11:21:32 deraadt Exp $	*/
+/*	$OpenBSD: pl_7.c,v 1.8 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: pl_7.c,v 1.6 1995/04/22 10:37:17 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pl_7.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: pl_7.c,v 1.7 2002/12/09 11:21:32 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/ttydefaults.h>
 #include "player.h"

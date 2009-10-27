@@ -1,4 +1,4 @@
-/*	$OpenBSD: lalr.c,v 1.7 2003/06/03 02:56:24 millert Exp $	*/
+/*	$OpenBSD: lalr.c,v 1.8 2003/06/19 16:34:53 pvalchev Exp $	*/
 /*	$NetBSD: lalr.c,v 1.4 1996/03/19 03:21:33 jtc Exp $	*/
 
 /*
@@ -32,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lalr.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$OpenBSD: lalr.c,v 1.7 2003/06/03 02:56:24 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include "defs.h"
 

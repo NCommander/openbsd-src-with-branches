@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.zap.c,v 1.8 2003/05/19 09:00:54 pjanzen Exp $	*/
+/*	$OpenBSD: hack.zap.c,v 1.9 2004/09/17 21:07:26 mickey Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -60,10 +60,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: hack.zap.c,v 1.8 2003/05/19 09:00:54 pjanzen Exp $";
-#endif /* not lint */
 
 #include <stdlib.h>
 #include "hack.h"

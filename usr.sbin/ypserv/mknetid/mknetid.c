@@ -1,4 +1,4 @@
-/*	$OpenBSD: mknetid.c,v 1.15 2008/02/23 22:21:17 deraadt Exp $ */
+/*	$OpenBSD: mknetid.c,v 1.16 2009/10/16 09:46:40 sobrado Exp $ */
 
 /*
  * Copyright (c) 1996 Mats O Jansson <moj@stacken.kth.se>
@@ -25,10 +25,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: mknetid.c,v 1.15 2008/02/23 22:21:17 deraadt Exp $";
-#endif
 
 #include <sys/param.h>
 #include <stdio.h>

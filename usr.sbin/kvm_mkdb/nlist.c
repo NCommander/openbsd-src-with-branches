@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.36 2007/03/18 16:28:10 mickey Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.37 2007/09/02 15:19:38 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "from: @(#)nlist.c	8.1 (Berkeley) 6/6/93";
-#else
-static const char rcsid[] = "$OpenBSD: nlist.c,v 1.36 2007/03/18 16:28:10 mickey Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 

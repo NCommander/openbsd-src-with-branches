@@ -1,4 +1,4 @@
-/*	$OpenBSD: prt3270.c,v 1.5 2003/06/03 02:56:19 millert Exp $	*/
+/*	$OpenBSD: prt3270.c,v 1.6 2003/12/09 11:58:42 mickey Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -28,17 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1988 The Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)prt3270.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$OpenBSD: prt3270.c,v 1.5 2003/06/03 02:56:19 millert Exp $";
-#endif /* not lint */
 
 #if defined(unix)
 #endif

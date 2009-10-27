@@ -1,4 +1,4 @@
-/* $OpenBSD: revnetgroup.c,v 1.7 2006/11/22 07:36:01 ray Exp $ */
+/* $OpenBSD: revnetgroup.c,v 1.8 2009/10/20 11:01:31 sobrado Exp $ */
 /*
  * Copyright (c) 1995
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -46,10 +46,6 @@
 #include <errno.h>
 #include <err.h>
 #include "hash.h"
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: revnetgroup.c,v 1.7 2006/11/22 07:36:01 ray Exp $";
-#endif
 
 /* Default location of netgroup file. */
 char *netgroup = "/etc/netgroup";

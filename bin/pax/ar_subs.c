@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar_subs.c,v 1.31 2006/11/17 08:38:04 otto Exp $	*/
+/*	$OpenBSD: ar_subs.c,v 1.32 2008/05/06 06:54:28 henning Exp $	*/
 /*	$NetBSD: ar_subs.c,v 1.5 1995/03/21 09:07:06 cgd Exp $	*/
 
 /*-
@@ -33,14 +33,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)ar_subs.c	8.2 (Berkeley) 4/18/94";
-#else
-static const char rcsid[] = "$OpenBSD: ar_subs.c,v 1.31 2006/11/17 08:38:04 otto Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/time.h>

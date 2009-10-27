@@ -1,4 +1,4 @@
-/*	$OpenBSD: el.c,v 1.13 2003/11/25 20:12:38 otto Exp $	*/
+/*	$OpenBSD: el.c,v 1.14 2004/08/23 18:31:25 otto Exp $	*/
 /*	$NetBSD: el.c,v 1.36 2003/10/18 23:48:42 christos Exp $	*/
 
 /*-
@@ -34,13 +34,6 @@
  */
 
 #include "config.h"
-#if !defined(lint) && !defined(SCCSID)
-#if 0
-static char sccsid[] = "@(#)el.c	8.2 (Berkeley) 1/3/94";
-#else
-static const char rcsid[] = "$OpenBSD: el.c,v 1.13 2003/11/25 20:12:38 otto Exp $";
-#endif
-#endif /* not lint && not SCCSID */
 
 /*
  * el.c: EditLine interface functions

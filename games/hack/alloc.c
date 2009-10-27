@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.6 2006/03/14 22:06:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -60,10 +60,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: alloc.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $";
-#endif /* not lint */
 
 #include <stdlib.h>
 #include "hack.h"

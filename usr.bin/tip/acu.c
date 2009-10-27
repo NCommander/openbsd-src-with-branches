@@ -1,4 +1,4 @@
-/*	$OpenBSD: acu.c,v 1.15 2007/05/15 19:42:05 moritz Exp $	*/
+/*	$OpenBSD: acu.c,v 1.16 2008/11/09 12:34:47 tobias Exp $	*/
 /*	$NetBSD: acu.c,v 1.4 1996/12/29 10:34:03 cgd Exp $	*/
 
 /*
@@ -29,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)acu.c	8.1 (Berkeley) 6/6/93";
-#endif
-static const char rcsid[] = "$OpenBSD: acu.c,v 1.15 2007/05/15 19:42:05 moritz Exp $";
-#endif /* not lint */
 
 #include "tip.h"
 

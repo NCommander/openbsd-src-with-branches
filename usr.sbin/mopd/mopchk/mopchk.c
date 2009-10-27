@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopchk.c,v 1.12 2006/04/29 16:26:56 maja Exp $	*/
+/*	$OpenBSD: mopchk.c,v 1.13 2009/07/11 13:42:32 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
@@ -23,10 +23,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: mopchk.c,v 1.12 2006/04/29 16:26:56 maja Exp $";
-#endif
 
 /*
  * mopchk - MOP Check Utility

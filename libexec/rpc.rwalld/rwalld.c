@@ -1,4 +1,4 @@
-/*	$OpenBSD: rwalld.c,v 1.11 2003/07/06 21:57:27 deraadt Exp $	*/
+/*	$OpenBSD: rwalld.c,v 1.13 2009/05/20 20:37:43 thib Exp $	*/
 
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
@@ -28,10 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: rwalld.c,v 1.11 2003/07/06 21:57:27 deraadt Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/socket.h>

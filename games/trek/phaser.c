@@ -1,4 +1,4 @@
-/*	$OpenBSD: phaser.c,v 1.6 2002/05/31 04:21:30 pjanzen Exp $	*/
+/*	$OpenBSD: phaser.c,v 1.7 2003/06/03 03:01:42 millert Exp $	*/
 /*	$NetBSD: phaser.c,v 1.4 1995/04/24 12:26:02 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)phaser.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: phaser.c,v 1.6 2002/05/31 04:21:30 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include <math.h>

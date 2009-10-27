@@ -1,4 +1,4 @@
-/*	$OpenBSD: getinp.c,v 1.7 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: getinp.c,v 1.8 2007/03/02 04:32:32 ray Exp $	*/
 /*	$NetBSD: getinp.c,v 1.4 1995/04/24 12:24:20 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)getinp.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: getinp.c,v 1.7 2003/06/03 03:01:40 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include	<stdio.h>
 #include	<string.h>

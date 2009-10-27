@@ -1,4 +1,4 @@
-/*	$OpenBSD: lookup.c,v 1.8 2003/06/03 02:56:14 millert Exp $	*/
+/*	$OpenBSD: lookup.c,v 1.9 2004/01/15 19:12:31 otto Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -28,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)lookup.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: lookup.c,v 1.8 2003/06/03 02:56:14 millert Exp $";
-#endif /* not lint */
 
 #include "defs.h"
 

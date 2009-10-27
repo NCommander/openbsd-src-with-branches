@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsm.c,v 1.6 2002/02/16 21:28:07 millert Exp $	*/
+/*	$OpenBSD: fsm.c,v 1.7 2002/07/01 19:31:37 deraadt Exp $	*/
 
 /*
  * fsm.c - {Link, IP} Control Protocol Finite State Machine.
@@ -41,14 +41,6 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-#if 0
-static char rcsid[] = "Id: fsm.c,v 1.13 1997/04/30 05:52:17 paulus Exp";
-#else
-static char rcsid[] = "$OpenBSD: fsm.c,v 1.6 2002/02/16 21:28:07 millert Exp $";
-#endif
-#endif
 
 /*
  * TODO:

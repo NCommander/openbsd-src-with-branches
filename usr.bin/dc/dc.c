@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.9 2006/03/25 07:49:56 otto Exp $	*/
+/*	$OpenBSD: dc.c,v 1.10 2007/07/29 17:12:18 sobrado Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -15,10 +15,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: dc.c,v 1.9 2006/03/25 07:49:56 otto Exp $";
-#endif /* not lint */
 
 #include <sys/stat.h>
 #include <err.h>

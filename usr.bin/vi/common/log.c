@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.3 2001/01/29 01:58:30 niklas Exp $	*/
+/*	$OpenBSD: log.c,v 1.4 2002/02/16 21:27:57 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)log.c	10.8 (Berkeley) 3/6/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

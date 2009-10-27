@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_i386.c,v 1.16 2006/03/31 03:58:21 deraadt Exp $ */
+/*	$OpenBSD: kvm_i386.c,v 1.20 2007/02/20 21:15:00 tom Exp $ */
 /*	$NetBSD: kvm_i386.c,v 1.9 1996/03/18 22:33:38 thorpej Exp $	*/
 
 /*-
@@ -33,14 +33,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)kvm_hp300.c	8.1 (Berkeley) 6/4/93";
-#else
-static char *rcsid = "$OpenBSD: kvm_i386.c,v 1.16 2006/03/31 03:58:21 deraadt Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * i386 machine dependent routines for kvm.  Hopefully, the forthcoming

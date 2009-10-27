@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmjob.c,v 1.16 2003/06/02 23:36:53 millert Exp $	*/
+/*	$OpenBSD: rmjob.c,v 1.17 2007/04/07 21:12:12 stevesk Exp $	*/
 /*	$NetBSD: rmjob.c,v 1.16 2000/04/16 14:43:58 mrg Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)rmjob.c	8.2 (Berkeley) 4/28/95";
-#else
-static const char rcsid[] = "$OpenBSD: rmjob.c,v 1.16 2003/06/02 23:36:53 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 

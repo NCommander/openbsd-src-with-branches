@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.8 2002/02/19 19:39:36 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.9 2003/06/03 03:01:40 millert Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/24 05:01:54 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: misc.c,v 1.8 2002/02/19 19:39:36 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/file.h>
 #include <termios.h>

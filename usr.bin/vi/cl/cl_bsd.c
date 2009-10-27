@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_bsd.c,v 1.8 2003/04/17 02:22:56 itojun Exp $	*/
+/*	$OpenBSD: cl_bsd.c,v 1.9 2006/03/11 06:58:00 ray Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996
@@ -8,10 +8,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)cl_bsd.c	8.29 (Berkeley) 7/1/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

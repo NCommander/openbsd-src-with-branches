@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-decnet.c,v 1.10 2002/02/19 19:39:40 millert Exp $	*/
+/*	$OpenBSD: print-decnet.c,v 1.11 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994, 1995, 1996, 1997
@@ -20,11 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
-#endif
 
 #include <sys/param.h>
 #include <sys/time.h>

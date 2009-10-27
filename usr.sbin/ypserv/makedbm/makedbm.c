@@ -1,4 +1,4 @@
-/*	$OpenBSD: makedbm.c,v 1.27 2006/11/10 20:44:07 mk Exp $ */
+/*	$OpenBSD: makedbm.c,v 1.28 2007/02/19 21:42:41 jmc Exp $ */
 
 /*
  * Copyright (c) 1994-97 Mats O Jansson <moj@stacken.kth.se>
@@ -25,10 +25,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: makedbm.c,v 1.27 2006/11/10 20:44:07 mk Exp $";
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>

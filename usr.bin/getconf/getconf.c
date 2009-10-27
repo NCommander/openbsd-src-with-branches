@@ -1,4 +1,4 @@
-/*	$OpenBSD: getconf.c,v 1.10 2006/12/04 15:05:19 otto Exp $	*/
+/*	$OpenBSD: getconf.c,v 1.11 2008/11/08 01:29:10 chl Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -39,10 +39,6 @@
  * Written by:
  *	J.T. Conklin (jtc@wimsey.com), Winning Strategies, Inc.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: getconf.c,v 1.10 2006/12/04 15:05:19 otto Exp $";
-#endif /* not lint */
 
 #include <stdio.h>
 #include <stdlib.h>

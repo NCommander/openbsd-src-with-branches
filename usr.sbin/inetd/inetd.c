@@ -1,4 +1,4 @@
-/*	$OpenBSD: inetd.c,v 1.129 2008/07/27 10:06:10 claudio Exp $	*/
+/*	$OpenBSD: inetd.c,v 1.130 2008/07/28 15:42:07 claudio Exp $	*/
 
 /*
  * Copyright (c) 1983,1991 The Regents of the University of California.
@@ -28,17 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1983 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static const char sccsid[] = "from: @(#)inetd.c	5.30 (Berkeley) 6/3/91";*/
-static const char rcsid[] = "$OpenBSD: inetd.c,v 1.129 2008/07/27 10:06:10 claudio Exp $";
-#endif /* not lint */
 
 /*
  * Inetd - Internet super-server

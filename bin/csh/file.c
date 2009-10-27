@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.14 2003/06/02 23:32:07 millert Exp $	*/
+/*	$OpenBSD: file.c,v 1.15 2003/06/11 21:09:50 deraadt Exp $	*/
 /*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)file.c	8.2 (Berkeley) 3/19/94";
-#else
-static char rcsid[] = "$OpenBSD: file.c,v 1.14 2003/06/02 23:32:07 millert Exp $";
-#endif
-#endif /* not lint */
 
 #ifdef FILEC
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rwall.x,v 1.2 1997/08/19 07:54:51 niklas Exp $	*/
 
 /*
  * Copyright (c) 1993 Christopher G. Demetriou
@@ -36,9 +36,6 @@
  */
 
 #ifndef RPC_HDR
-%#ifndef lint
-%static char rcsid[] = "$OpenBSD: rwall.x,v 1.1.1.1 1995/10/18 08:43:10 deraadt Exp $";
-%#endif /* not lint */
 #endif
 
 program WALLPROG {

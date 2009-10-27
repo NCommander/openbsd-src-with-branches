@@ -1,4 +1,4 @@
-/*	$OpenBSD: pw_yp.c,v 1.21 2006/03/31 00:29:13 deraadt Exp $	*/
+/*	$OpenBSD: pw_yp.c,v 1.22 2009/02/15 21:43:40 deraadt Exp $	*/
 /*	$NetBSD: pw_yp.c,v 1.5 1995/03/26 04:55:33 glass Exp $	*/
 
 /*
@@ -29,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pw_yp.c	1.0 2/2/93";
-#else
-static char rcsid[] = "$OpenBSD: pw_yp.c,v 1.21 2006/03/31 00:29:13 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #ifdef	YP
 

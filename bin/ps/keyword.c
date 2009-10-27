@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyword.c,v 1.27 2007/04/13 19:20:23 miod Exp $	*/
+/*	$OpenBSD: keyword.c,v 1.28 2008/03/08 19:20:12 millert Exp $	*/
 /*	$NetBSD: keyword.c,v 1.12.6.1 1996/05/30 21:25:13 cgd Exp $	*/
 
 /*-
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)keyword.c	8.5 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$OpenBSD: keyword.c,v 1.27 2007/04/13 19:20:23 miod Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>

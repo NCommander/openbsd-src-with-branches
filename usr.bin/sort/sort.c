@@ -1,4 +1,4 @@
-/*	$OpenBSD: sort.c,v 1.35 2007/08/21 20:29:25 millert Exp $	*/
+/*	$OpenBSD: sort.c,v 1.36 2007/08/22 06:56:40 jmc Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -31,20 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)sort.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$OpenBSD: sort.c,v 1.35 2007/08/21 20:29:25 millert Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * Sort sorts a file using an optional user-defined key.

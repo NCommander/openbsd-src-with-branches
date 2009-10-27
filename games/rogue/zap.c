@@ -1,4 +1,4 @@
-/*	$OpenBSD: zap.c,v 1.6 2003/06/03 03:01:41 millert Exp $	*/
+/*	$OpenBSD: zap.c,v 1.7 2006/03/08 09:44:36 otto Exp $	*/
 /*	$NetBSD: zap.c,v 1.3 1995/04/22 10:28:41 cgd Exp $	*/
 
 /*
@@ -32,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)zap.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: zap.c,v 1.6 2003/06/03 03:01:41 millert Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * zap.c

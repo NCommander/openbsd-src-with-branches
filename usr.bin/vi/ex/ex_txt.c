@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_txt.c,v 1.8 2005/10/17 19:12:16 otto Exp $	*/
+/*	$OpenBSD: ex_txt.c,v 1.9 2006/01/08 21:06:38 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)ex_txt.c	10.17 (Berkeley) 10/10/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.rumors.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $	*/
+/*	$OpenBSD: hack.rumors.c,v 1.6 2007/09/11 15:21:05 gilles Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -60,10 +60,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: hack.rumors.c,v 1.5 2003/05/19 06:30:56 pjanzen Exp $";
-#endif /* not lint */
 
 #include	<stdio.h>
 #include	"hack.h"		/* for RUMORFILE and BSD (index) */

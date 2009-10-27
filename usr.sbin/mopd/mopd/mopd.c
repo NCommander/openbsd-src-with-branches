@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopd.c,v 1.15 2006/04/17 18:55:36 maja Exp $ */
+/*	$OpenBSD: mopd.c,v 1.16 2009/07/11 13:42:32 sobrado Exp $ */
 
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
@@ -23,11 +23,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "$OpenBSD: mopd.c,v 1.15 2006/04/17 18:55:36 maja Exp $";
-#endif
 
 /*
  * mopd - MOP Dump/Load Daemon

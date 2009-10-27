@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.tty.c,v 1.9 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: hack.tty.c,v 1.10 2005/04/16 14:19:51 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)hack.tty.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: hack.tty.c,v 1.9 2003/06/03 03:01:40 millert Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,

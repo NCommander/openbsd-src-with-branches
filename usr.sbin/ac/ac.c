@@ -13,10 +13,6 @@
  *      other than his own.
  */
 
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: ac.c,v 1.18 2006/04/03 21:32:38 dhill Exp $";
-#endif
-
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/time.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uname.c,v 1.9 2005/12/28 15:41:29 millert Exp $	*/
+/*	$OpenBSD: uname.c,v 1.10 2008/06/19 20:07:04 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Winning Strategies, Inc.
@@ -30,10 +30,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: uname.c,v 1.9 2005/12/28 15:41:29 millert Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <stdio.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uucplock.c,v 1.10 2003/06/03 02:56:18 millert Exp $	*/
+/*	$OpenBSD: uucplock.c,v 1.11 2006/03/16 19:32:46 deraadt Exp $	*/
 /*	$NetBSD: uucplock.c,v 1.7 1997/02/11 09:24:08 mrg Exp $	*/
 
 /*
@@ -29,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)uucplock.c	8.1 (Berkeley) 6/6/93";
-#endif
-static const char rcsid[] = "$OpenBSD: uucplock.c,v 1.10 2003/06/03 02:56:18 millert Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/file.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dayfile.c,v 1.9 2000/09/24 21:56:28 pjanzen Exp $	*/
+/*	$OpenBSD: dayfile.c,v 1.10 2003/06/03 03:01:38 millert Exp $	*/
 /*	$NetBSD: dayfile.c,v 1.3 1995/03/21 15:07:18 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dayfile.c	8.2 (Berkeley) 4/28/95";
-#else
-static char rcsid[] = "$OpenBSD: dayfile.c,v 1.9 2000/09/24 21:56:28 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include "extern.h"
 

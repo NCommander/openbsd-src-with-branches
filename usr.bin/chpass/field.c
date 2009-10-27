@@ -1,4 +1,4 @@
-/*	$OpenBSD: field.c,v 1.10 2009/03/05 20:53:13 millert Exp $	*/
+/*	$OpenBSD: field.c,v 1.11 2009/04/30 20:03:53 jacekm Exp $	*/
 /*	$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)field.c	8.4 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$OpenBSD: field.c,v 1.10 2009/03/05 20:53:13 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 

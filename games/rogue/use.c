@@ -1,4 +1,4 @@
-/*	$OpenBSD: use.c,v 1.7 2004/01/21 19:12:13 espie Exp $	*/
+/*	$OpenBSD: use.c,v 1.8 2006/03/08 09:44:36 otto Exp $	*/
 /*	$NetBSD: use.c,v 1.3 1995/04/22 10:28:38 cgd Exp $	*/
 
 /*
@@ -32,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)use.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: use.c,v 1.7 2004/01/21 19:12:13 espie Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * use.c

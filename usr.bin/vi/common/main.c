@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.17 2009/01/28 21:30:43 sobrado Exp $	*/
+/*	$OpenBSD: main.c,v 1.18 2009/02/01 21:57:21 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -10,18 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1992, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n\
-@(#) Copyright (c) 1992, 1993, 1994, 1995, 1996\n\
-	Keith Bostic.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static const char sccsid[] = "@(#)main.c	10.48 (Berkeley) 10/11/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

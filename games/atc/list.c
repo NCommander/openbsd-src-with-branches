@@ -1,4 +1,4 @@
-/*	$OpenBSD: list.c,v 1.5 2003/11/08 19:17:27 jmc Exp $	*/
+/*	$OpenBSD: list.c,v 1.6 2004/11/29 08:52:28 jsg Exp $	*/
 /*	$NetBSD: list.c,v 1.3 1995/03/21 15:04:18 cgd Exp $	*/
 
 /*-
@@ -41,14 +41,6 @@
  *
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)list.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: list.c,v 1.5 2003/11/08 19:17:27 jmc Exp $";
-#endif
-#endif /* not lint */
 
 #include "include.h"
 

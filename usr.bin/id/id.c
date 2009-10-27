@@ -1,4 +1,4 @@
-/*	$OpenBSD: id.c,v 1.17 2004/11/16 13:51:35 jmc Exp $	*/
+/*	$OpenBSD: id.c,v 1.18 2009/10/12 17:39:26 sobrado Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -28,17 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "@(#)id.c	8.3 (Berkeley) 4/28/95";*/
-static char rcsid[] = "$OpenBSD: id.c,v 1.17 2004/11/16 13:51:35 jmc Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 

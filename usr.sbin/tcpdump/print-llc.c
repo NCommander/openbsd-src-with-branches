@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-llc.c,v 1.16 2006/05/29 17:38:46 moritz Exp $	*/
+/*	$OpenBSD: print-llc.c,v 1.17 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994, 1995, 1996, 1997
@@ -23,11 +23,6 @@
  * Code by Matt Thomas, Digital Equipment Corporation
  *	with an awful lot of hacking by Jeffrey Mogul, DECWRL
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$";
-#endif
 
 #include <sys/param.h>
 #include <sys/time.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: head.c,v 1.9 2003/06/03 02:56:11 millert Exp $	*/
+/*	$OpenBSD: head.c,v 1.10 2008/07/16 14:53:41 martynas Exp $	*/
 /*	$NetBSD: head.c,v 1.6 1996/12/28 07:11:03 tls Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)head.c	8.2 (Berkeley) 4/20/95";
-#else
-static const char rcsid[] = "$OpenBSD: head.c,v 1.9 2003/06/03 02:56:11 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include "rcv.h"
 #include "extern.h"

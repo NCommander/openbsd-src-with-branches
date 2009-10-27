@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccp.c,v 1.11 2002/09/13 00:12:10 deraadt Exp $	*/
+/*	$OpenBSD: ccp.c,v 1.12 2003/04/04 20:25:07 deraadt Exp $	*/
 
 /*
  * ccp.c - PPP Compression Control Protocol.
@@ -34,14 +34,6 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-#if 0
-static char rcsid[] = "Id: ccp.c,v 1.22 1998/03/25 01:25:02 paulus Exp $";
-#else
-static char rcsid[] = "$OpenBSD: ccp.c,v 1.11 2002/09/13 00:12:10 deraadt Exp $";
-#endif
-#endif
 
 #include <string.h>
 #include <syslog.h>

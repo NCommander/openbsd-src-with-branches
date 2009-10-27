@@ -1,4 +1,4 @@
-/*	$OpenBSD: wump.c,v 1.23 2004/07/10 07:26:24 deraadt Exp $	*/
+/*	$OpenBSD: wump.c,v 1.24 2007/04/02 15:27:13 jmc Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -32,20 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)wump.c	8.1 (Berkeley) 5/31/93";
-#else
-static const char rcsid[] = "$OpenBSD: wump.c,v 1.23 2004/07/10 07:26:24 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * A no longer new version of the age-old favorite Hunt-The-Wumpus game that

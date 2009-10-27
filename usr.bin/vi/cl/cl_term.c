@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl_term.c,v 1.14 2006/01/08 21:05:39 miod Exp $	*/
+/*	$OpenBSD: cl_term.c,v 1.15 2006/04/22 03:09:15 ray Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)cl_term.c	10.22 (Berkeley) 9/15/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/ioctl.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: magic.c,v 1.6 2009/04/24 18:54:34 chl Exp $ */
+/* $OpenBSD: magic.c,v 1.7 2009/08/27 16:26:43 deraadt Exp $ */
 /*
  * Copyright (c) Christos Zoulas 2003.
  * All Rights Reserved.
@@ -63,10 +63,6 @@
 #include <netinet/in.h>		/* for byte swapping */
 
 #include "patchlevel.h"
-
-#ifndef	lint
-FILE_RCSID("@(#)$Id: magic.c,v 1.6 2009/04/24 18:54:34 chl Exp $")
-#endif	/* lint */
 
 #ifndef PIPE_BUF 
 /* Get the PIPE_BUF from pathconf */

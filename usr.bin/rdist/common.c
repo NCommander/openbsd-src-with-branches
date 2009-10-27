@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.c,v 1.21 2003/06/03 02:56:14 millert Exp $	*/
+/*	$OpenBSD: common.c,v 1.22 2008/01/02 17:44:11 chl Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -30,22 +30,6 @@
  */
 
 #include "defs.h"
-#ifndef lint
-#if 0
-static char RCSid[] __attribute__((__unused__)) = 
-"$From: common.c,v 1.8 2001/03/12 18:16:36 kim Exp $";
-#else
-static char RCSid[] __attribute__((__unused__)) = 
-"$OpenBSD: common.c,v 1.21 2003/06/03 02:56:14 millert Exp $";
-#endif
-
-static char sccsid[] __attribute__((__unused__)) =
-"@(#)common.c";
-
-static char copyright[] __attribute__((__unused__)) =
-"@(#) Copyright (c) 1983 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* !lint */
 
 /*
  * Things common to both the client and server.

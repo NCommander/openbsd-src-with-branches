@@ -1,4 +1,4 @@
-/*	$OpenBSD: entry.c,v 1.29 2004/06/22 21:02:19 avsm Exp $	*/
+/*	$OpenBSD: entry.c,v 1.30 2005/01/30 20:44:50 millert Exp $	*/
 
 /*
  * Copyright 1988,1990,1993,1994 by Paul Vixie
@@ -21,10 +21,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: entry.c,v 1.29 2004/06/22 21:02:19 avsm Exp $";
-#endif
 
 /* vix 26jan87 [RCS'd; rest of log is in RCS file]
  * vix 01jan87 [added line-level error recovery]

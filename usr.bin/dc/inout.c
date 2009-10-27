@@ -1,4 +1,4 @@
-/*	$OpenBSD: inout.c,v 1.13 2005/12/14 08:10:02 otto Exp $	*/
+/*	$OpenBSD: inout.c,v 1.14 2006/01/15 19:11:59 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -15,10 +15,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: inout.c,v 1.13 2005/12/14 08:10:02 otto Exp $";
-#endif /* not lint */
 
 #include <ssl/ssl.h>
 #include <ctype.h>

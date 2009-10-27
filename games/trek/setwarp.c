@@ -1,4 +1,4 @@
-/*	$OpenBSD: setwarp.c,v 1.2 1998/08/19 07:42:05 pjanzen Exp $	*/
+/*	$OpenBSD: setwarp.c,v 1.3 2003/06/03 03:01:42 millert Exp $	*/
 /*	$NetBSD: setwarp.c,v 1.3 1995/04/22 10:59:27 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)setwarp.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: setwarp.c,v 1.2 1998/08/19 07:42:05 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include "trek.h"

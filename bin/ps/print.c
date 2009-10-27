@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.43 2007/11/06 10:22:29 chl Exp $	*/
+/*	$OpenBSD: print.c,v 1.44 2008/03/08 19:20:12 millert Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)print.c	8.6 (Berkeley) 4/16/94";
-#else
-static char rcsid[] = "$OpenBSD: print.c,v 1.43 2007/11/06 10:22:29 chl Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>

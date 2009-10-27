@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_smap.c,v 1.5 2003/03/10 03:53:32 david Exp $	*/
+/*	$OpenBSD: vs_smap.c,v 1.6 2006/01/08 21:05:40 miod Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)vs_smap.c	10.25 (Berkeley) 7/12/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

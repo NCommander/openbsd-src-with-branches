@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-tftp.c,v 1.8 2007/10/07 16:41:05 deraadt Exp $	*/
+/*	$OpenBSD: print-tftp.c,v 1.9 2009/07/30 15:36:19 sthen Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -22,11 +22,6 @@
  *
  * Format and print trivial file transfer protocol packets.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id: print-tftp.c,v 1.8 2007/10/07 16:41:05 deraadt Exp $ (LBL)";
-#endif
 
 #include <sys/param.h>
 #include <sys/time.h>

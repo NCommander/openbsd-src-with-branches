@@ -1,4 +1,4 @@
-/*	$OpenBSD: split.c,v 1.15 2007/09/25 11:20:34 chl Exp $	*/
+/*	$OpenBSD: split.c,v 1.16 2007/10/20 18:08:57 sobrado Exp $	*/
 /*	$NetBSD: split.c,v 1.5 1995/08/31 22:22:05 jtc Exp $	*/
 
 /*
@@ -29,20 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1987, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)split.c	8.3 (Berkeley) 4/25/94";
-#else
-static char rcsid[] = "$OpenBSD: split.c,v 1.15 2007/09/25 11:20:34 chl Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>

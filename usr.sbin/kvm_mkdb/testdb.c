@@ -1,4 +1,4 @@
-/*	$OpenBSD: testdb.c,v 1.6 2003/06/26 21:36:39 deraadt Exp $	*/
+/*	$OpenBSD: testdb.c,v 1.7 2004/11/24 17:57:16 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "from: @(#)testdb.c	8.1 (Berkeley) 6/6/93";
-#else
-static char *rcsid = "$OpenBSD: testdb.c,v 1.6 2003/06/26 21:36:39 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/sysctl.h>

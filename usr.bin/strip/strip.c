@@ -1,4 +1,4 @@
-/*	$OpenBSD: strip.c,v 1.24 2007/09/02 15:19:34 deraadt Exp $	*/
+/*	$OpenBSD: strip.c,v 1.25 2009/06/19 09:40:43 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -28,17 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1988 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)strip.c	5.8 (Berkeley) 11/6/91";*/
-static char rcsid[] = "$OpenBSD: strip.c,v 1.24 2007/09/02 15:19:34 deraadt Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>

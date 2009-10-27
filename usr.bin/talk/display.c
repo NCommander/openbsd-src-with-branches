@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.13 2003/06/03 02:56:17 millert Exp $	*/
+/*	$OpenBSD: display.c,v 1.14 2004/03/02 21:04:42 tedu Exp $	*/
 /*	$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $	*/
 
 /*
@@ -29,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)display.c	8.1 (Berkeley) 6/6/93";
-#endif
-static const char rcsid[] = "$OpenBSD: display.c,v 1.13 2003/06/03 02:56:17 millert Exp $";
-#endif /* not lint */
 
 /*
  * The window 'manager', initializes curses and handles the actual

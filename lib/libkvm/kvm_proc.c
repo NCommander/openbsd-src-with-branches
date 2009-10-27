@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_proc.c,v 1.37 2009/01/21 22:18:00 miod Exp $	*/
+/*	$OpenBSD: kvm_proc.c,v 1.38 2009/06/20 20:20:43 millert Exp $	*/
 /*	$NetBSD: kvm_proc.c,v 1.30 1999/03/24 05:50:50 mrg Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -61,14 +61,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)kvm_proc.c	8.3 (Berkeley) 9/23/93";
-#else
-static char *rcsid = "$OpenBSD: kvm_proc.c,v 1.37 2009/01/21 22:18:00 miod Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Proc traversal interface for kvm.  ps and w are (probably) the exclusive

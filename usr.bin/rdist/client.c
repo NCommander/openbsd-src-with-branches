@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.20 2004/10/04 05:21:27 jsg Exp $	*/
+/*	$OpenBSD: client.c,v 1.21 2009/02/15 22:20:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -31,23 +31,6 @@
 
 #include "defs.h"
 #include "y.tab.h"
-
-#ifndef lint
-#if 0
-static char RCSid[] __attribute__((__unused__)) = 
-"$From: client.c,v 1.13 1999/11/01 00:22:14 christos Exp $";
-#else
-static char RCSid[] __attribute__((__unused__)) = 
-"$OpenBSD: client.c,v 1.20 2004/10/04 05:21:27 jsg Exp $";
-#endif
-
-static char sccsid[] __attribute__((__unused__)) =
-"@(#)client.c";
-
-static char copyright[] __attribute__((__unused__)) =
-"@(#) Copyright (c) 1983 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
 
 /*
  * Routines used in client mode to communicate with remove server.

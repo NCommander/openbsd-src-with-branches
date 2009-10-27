@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.10 2006/03/27 00:10:14 tedu Exp $	*/
+/*	$OpenBSD: update.c,v 1.11 2006/03/31 10:32:30 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -40,14 +40,6 @@
  *
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)update.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: update.c,v 1.10 2006/03/27 00:10:14 tedu Exp $";
-#endif
-#endif /* not lint */
 
 #include "include.h"
 

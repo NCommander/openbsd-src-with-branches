@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.4 2002/06/07 00:04:21 itojun Exp $	*/
+/*	$OpenBSD: options.c,v 1.5 2003/04/05 00:43:20 tdeval Exp $	*/
 
  /*
   * General skeleton for adding options to the access control language. The
@@ -29,14 +29,6 @@
   * such options should clear the "dry_run" flag to inform the caller of this
   * course of action.
   */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#) options.c 1.17 96/02/11 17:01:31";
-#else
-static char rcsid[] = "$OpenBSD: options.c,v 1.4 2002/06/07 00:04:21 itojun Exp $";
-#endif
-#endif
 
 /* System libraries. */
 

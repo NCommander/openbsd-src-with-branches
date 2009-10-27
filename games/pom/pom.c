@@ -1,4 +1,4 @@
-/*	$OpenBSD: pom.c,v 1.11 2004/07/10 07:26:23 deraadt Exp $	*/
+/*	$OpenBSD: pom.c,v 1.12 2005/11/05 21:25:00 jmc Exp $	*/
 /*    $NetBSD: pom.c,v 1.6 1996/02/06 22:47:29 jtc Exp $      */
 
 /*
@@ -31,20 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pom.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: pom.c,v 1.11 2004/07/10 07:26:23 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * Phase of the Moon.  Calculates the current phase of the moon.

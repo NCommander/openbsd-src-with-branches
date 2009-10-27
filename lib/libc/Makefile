@@ -1,10 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2005/11/24 20:49:14 deraadt Exp $
-#
-# All library objects contain sccsid strings by default; they may be
-# excluded as a space-saving measure.  To produce a library that does
-# not contain these strings, delete -DLIBC_SCCS and -DSYSLIBC_SCCS
-# from CFLAGS below.  To remove these strings from just the system call
-# stubs, remove just -DSYSLIBC_SCCS from CFLAGS.
+#	$OpenBSD: Makefile,v 1.26 2006/03/14 09:19:37 deraadt Exp $
 #
 # The NLS (message catalog) functions are always in libc.  To choose that
 # strerror(), perror(), strsignal(), psignal(), etc. actually call the NLS

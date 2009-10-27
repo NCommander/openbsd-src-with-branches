@@ -1,4 +1,4 @@
-/*	$OpenBSD: renice.c,v 1.13 2008/12/08 21:23:10 millert Exp $	*/
+/*	$OpenBSD: renice.c,v 1.14 2009/04/20 13:58:20 millert Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -15,10 +15,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: renice.c,v 1.13 2008/12/08 21:23:10 millert Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/time.h>

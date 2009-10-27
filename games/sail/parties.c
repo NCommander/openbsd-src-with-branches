@@ -1,4 +1,4 @@
-/*	$OpenBSD: parties.c,v 1.2 1999/01/18 06:20:53 pjanzen Exp $	*/
+/*	$OpenBSD: parties.c,v 1.3 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: parties.c,v 1.3 1995/04/22 10:37:04 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)parties.c	8.2 (Berkeley) 4/28/95";
-#else
-static char rcsid[] = "$OpenBSD: parties.c,v 1.2 1999/01/18 06:20:53 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include "extern.h"
 

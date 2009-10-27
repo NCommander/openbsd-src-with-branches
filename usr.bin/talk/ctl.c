@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctl.c,v 1.9 2004/03/02 21:04:42 tedu Exp $	*/
+/*	$OpenBSD: ctl.c,v 1.10 2009/05/09 11:05:00 chl Exp $	*/
 /*	$NetBSD: ctl.c,v 1.3 1994/12/09 02:14:10 jtc Exp $	*/
 
 /*
@@ -29,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)ctl.c	8.1 (Berkeley) 6/6/93";
-#endif
-static const char rcsid[] = "$OpenBSD: ctl.c,v 1.9 2004/03/02 21:04:42 tedu Exp $";
-#endif /* not lint */
 
 /*
  * This file handles haggling with the various talk daemons to

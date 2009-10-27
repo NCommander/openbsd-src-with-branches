@@ -1,4 +1,4 @@
-/*	$OpenBSD: cap_mkdb.c,v 1.14 2006/03/04 20:32:51 otto Exp $	*/
+/*	$OpenBSD: cap_mkdb.c,v 1.15 2009/08/28 11:43:50 nicm Exp $	*/
 /*	$NetBSD: cap_mkdb.c,v 1.5 1995/09/02 05:47:12 jtc Exp $	*/
 
 /*-
@@ -29,19 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cap_mkdb.c	8.2 (Berkeley) 4/27/95";
-#endif
-static char rcsid[] = "$OpenBSD: cap_mkdb.c,v 1.14 2006/03/04 20:32:51 otto Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>

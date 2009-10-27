@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.30 2007/02/08 03:19:13 ray Exp $	*/
+/*	$OpenBSD: server.c,v 1.31 2007/10/17 20:10:44 chl Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -28,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)server.c	8.1 (Berkeley) 6/9/93"; */
-static char *rcsid = "$OpenBSD: server.c,v 1.30 2007/02/08 03:19:13 ray Exp $";
-#endif /* not lint */
 
 #include <sys/wait.h>
 

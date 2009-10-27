@@ -1,10 +1,4 @@
-/*	$OpenBSD: rpcinfo.c,v 1.11 2006/01/20 00:01:20 millert Exp $	*/
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)rpcinfo.c 1.22 87/08/12 SMI";*/
-/*static char sccsid[] = "from: @(#)rpcinfo.c	2.2 88/08/11 4.0 RPCSRC";*/
-static char rcsid[] = "$OpenBSD: rpcinfo.c,v 1.11 2006/01/20 00:01:20 millert Exp $";
-#endif
+/*	$OpenBSD: rpcinfo.c,v 1.12 2007/03/26 14:20:03 jmc Exp $	*/
 
 /*
  * Copyright (C) 1986, Sun Microsystems, Inc.

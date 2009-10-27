@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcp.c,v 1.10 2003/04/04 20:25:07 deraadt Exp $	*/
+/*	$OpenBSD: ipcp.c,v 1.11 2003/07/18 22:58:56 david Exp $	*/
 
 /*
  * ipcp.c - PPP IP Control Protocol.
@@ -41,14 +41,6 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef lint
-#if 0
-static char rcsid[] = "Id: ipcp.c,v 1.34 1998/04/28 23:38:09 paulus Exp $";
-#else
-static char rcsid[] = "$OpenBSD: ipcp.c,v 1.10 2003/04/04 20:25:07 deraadt Exp $";
-#endif
-#endif
 
 /*
  * TODO:

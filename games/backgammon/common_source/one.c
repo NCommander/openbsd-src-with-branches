@@ -1,4 +1,4 @@
-/*	$OpenBSD: one.c,v 1.3 2001/06/23 23:50:03 pjanzen Exp $	*/
+/*	$OpenBSD: one.c,v 1.4 2003/06/03 03:01:38 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)one.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: one.c,v 1.3 2001/06/23 23:50:03 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include "back.h"
 

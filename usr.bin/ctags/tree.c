@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.8 2005/04/18 13:21:03 pat Exp $	*/
+/*	$OpenBSD: tree.c,v 1.9 2006/02/11 18:52:14 otto Exp $	*/
 /*	$NetBSD: tree.c,v 1.4 1995/03/26 20:14:11 glass Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)tree.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$OpenBSD: tree.c,v 1.8 2005/04/18 13:21:03 pat Exp $";
-#endif
-#endif /* not lint */
 
 #include <err.h>
 #include <limits.h>

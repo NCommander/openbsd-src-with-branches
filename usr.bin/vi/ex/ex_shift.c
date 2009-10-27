@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_shift.c,v 1.4 2001/01/29 01:58:44 niklas Exp $	*/
+/*	$OpenBSD: ex_shift.c,v 1.5 2002/02/16 21:27:57 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -11,11 +11,6 @@
 
 #include "config.h"
 
-#ifndef lint
-static const char sccsid[] = "@(#)ex_shift.c	10.11 (Berkeley) 9/15/96";
-#endif /* not lint */
-
-#include <sys/types.h>
 #include <sys/queue.h>
 
 #include <bitstring.h>

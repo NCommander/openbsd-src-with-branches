@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.39 2008/06/10 13:49:24 otto Exp $	*/
+/*	$OpenBSD: setup.c,v 1.40 2008/06/10 23:10:29 otto Exp $	*/
 /*	$NetBSD: setup.c,v 1.27 1996/09/27 22:45:19 christos Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)setup.c	8.5 (Berkeley) 11/23/94";
-#else
-static const char rcsid[] = "$OpenBSD: setup.c,v 1.39 2008/06/10 13:49:24 otto Exp $";
-#endif
-#endif /* not lint */
 
 #define DKTYPENAMES
 #include <sys/param.h>

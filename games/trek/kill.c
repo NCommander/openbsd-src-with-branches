@@ -1,4 +1,4 @@
-/*	$OpenBSD: kill.c,v 1.4 2002/05/31 04:21:30 pjanzen Exp $	*/
+/*	$OpenBSD: kill.c,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: kill.c,v 1.3 1995/04/22 10:59:06 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)kill.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: kill.c,v 1.4 2002/05/31 04:21:30 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include "trek.h"

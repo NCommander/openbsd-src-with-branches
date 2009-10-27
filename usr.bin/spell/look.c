@@ -1,4 +1,4 @@
-/*	$OpenBSD: look.c,v 1.2 2002/06/03 17:53:32 kjell Exp $	*/
+/*	$OpenBSD: look.c,v 1.3 2003/06/03 02:56:16 millert Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -31,13 +31,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)look.c	8.2 (Berkeley) 5/4/95";
-#endif
-static const char rcsid[] = "$OpenBSD: look.c,v 1.2 2002/06/03 17:53:32 kjell Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <ctype.h>

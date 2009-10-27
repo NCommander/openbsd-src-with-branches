@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbc.c,v 1.14 2006/04/25 15:41:07 deraadt Exp $	*/
+/*	$OpenBSD: cbc.c,v 1.15 2008/06/08 13:58:10 tobias Exp $	*/
 /*	$NetBSD: cbc.c,v 1.9 1995/03/21 09:04:36 cgd Exp $	*/
 
 /* cbc.c: This file contains the encryption routines for the ed line editor */
@@ -35,14 +35,6 @@
  *
  *	from: @(#)bdes.c	5.5 (Berkeley) 6/27/91
  */
-
-#ifndef lint
-#if 0
-static char *rcsid = "@(#)cbc.c,v 1.2 1994/02/01 00:34:36 alm Exp";
-#else
-static char rcsid[] = "$OpenBSD: cbc.c,v 1.14 2006/04/25 15:41:07 deraadt Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <ctype.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr_time.c,v 1.12 2003/11/26 00:31:27 millert Exp $	*/
+/*	$OpenBSD: pr_time.c,v 1.13 2005/04/11 07:04:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pr_time.c	8.2 (Berkeley) 4/4/94";
-#else
-static char *rcsid = "$OpenBSD: pr_time.c,v 1.12 2003/11/26 00:31:27 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/time.h>

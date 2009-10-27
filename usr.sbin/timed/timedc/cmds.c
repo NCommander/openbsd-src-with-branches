@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmds.c,v 1.19 2004/02/04 21:54:05 jmc Exp $	*/
+/*	$OpenBSD: cmds.c,v 1.20 2008/03/17 16:29:25 sobrado Exp $	*/
 
 /*-
  * Copyright (c) 1985, 1993 The Regents of the University of California.
@@ -29,12 +29,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)cmds.c	5.1 (Berkeley) 5/11/93";
-#endif /* not lint */
-
 #ifdef sgi
-#ident "$Revision: 1.19 $"
+#ident "$Revision: 1.20 $"
 #endif
 
 #include "timedc.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount_portal.c,v 1.27 2005/04/08 20:09:37 jaredy Exp $	*/
+/*	$OpenBSD: mount_portal.c,v 1.28 2008/06/01 18:38:29 sobrado Exp $	*/
 /*	$NetBSD: mount_portal.c,v 1.8 1996/04/13 01:31:54 jtc Exp $	*/
 
 /*
@@ -32,20 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1992, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mount_portal.c	8.6 (Berkeley) 4/26/95";
-#else
-static char rcsid[] = "$OpenBSD: mount_portal.c,v 1.27 2005/04/08 20:09:37 jaredy Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/wait.h>

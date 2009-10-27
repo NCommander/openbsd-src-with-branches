@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopprobe.c,v 1.10 2006/04/16 20:18:27 maja Exp $ */
+/*	$OpenBSD: mopprobe.c,v 1.11 2009/07/11 13:42:32 sobrado Exp $ */
 
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
@@ -23,10 +23,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: mopprobe.c,v 1.10 2006/04/16 20:18:27 maja Exp $";
-#endif
 
 /*
  * mopprobe - MOP Probe Utility

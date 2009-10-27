@@ -1,4 +1,4 @@
-/*	$OpenBSD: odds.c,v 1.3 2003/06/03 03:01:38 millert Exp $	*/
+/*	$OpenBSD: odds.c,v 1.4 2006/03/27 00:10:14 tedu Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -28,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)odds.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: odds.c,v 1.3 2003/06/03 03:01:38 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include "back.h"
 

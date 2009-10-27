@@ -1,4 +1,4 @@
-/* $OpenBSD: parse_netgroup.c,v 1.10 2006/04/03 05:01:23 deraadt Exp $ */
+/* $OpenBSD: parse_netgroup.c,v 1.11 2007/02/20 01:44:16 ray Exp $ */
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -45,10 +45,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "hash.h"
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: parse_netgroup.c,v 1.10 2006/04/03 05:01:23 deraadt Exp $";
-#endif
 
 /*
  * Static Variables and functions used by setnetgrent(), getnetgrent() and

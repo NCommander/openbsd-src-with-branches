@@ -1,4 +1,4 @@
-/*	$OpenBSD: checknr.c,v 1.14 2005/03/29 23:46:19 jaredy Exp $	*/
+/*	$OpenBSD: checknr.c,v 1.15 2007/06/27 03:29:31 ray Exp $	*/
 /*	$NetBSD: checknr.c,v 1.4 1995/03/26 04:10:19 glass Exp $	*/
 
 /*
@@ -29,20 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static const char sccsid[] = "@(#)checknr.c	8.1 (Berkeley) 6/6/93";
-#else 
-static const char rcsid[] = "$OpenBSD: checknr.c,v 1.14 2005/03/29 23:46:19 jaredy Exp $";
-#endif
-#endif /* not lint */
 
 /*
  * checknr: check an nroff/troff input file for matching macro calls.

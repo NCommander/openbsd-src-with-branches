@@ -1,8 +1,4 @@
-/*	$OpenBSD: arm.c,v 1.2 2006/03/25 19:06:35 espie Exp $	*/
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: arm.c,v 1.2 2006/03/25 19:06:35 espie Exp $";
-#endif /* not lint */
+/*	$OpenBSD: sh.c,v 1.1 2006/10/11 13:34:18 drahn Exp $	*/
 
 #include "gprof.h"
 

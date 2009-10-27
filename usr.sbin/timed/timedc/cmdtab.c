@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmdtab.c,v 1.3 2002/05/17 00:21:19 deraadt Exp $	*/
+/*	$OpenBSD: cmdtab.c,v 1.4 2003/06/02 23:36:55 millert Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -28,10 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "@(#)cmdtab.c	2.7 (Berkeley) 5/11/93";
-#endif /* not lint */
 
 #include "timedc.h"
 

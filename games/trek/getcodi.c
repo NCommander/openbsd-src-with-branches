@@ -1,4 +1,4 @@
-/*	$OpenBSD: getcodi.c,v 1.2 1998/08/19 07:41:35 pjanzen Exp $	*/
+/*	$OpenBSD: getcodi.c,v 1.3 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: getcodi.c,v 1.3 1995/04/22 10:58:55 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)getcodi.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: getcodi.c,v 1.2 1998/08/19 07:41:35 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include "getpar.h"
 #include "trek.h"

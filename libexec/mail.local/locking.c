@@ -1,4 +1,4 @@
-/*	$OpenBSD: locking.c,v 1.7 2003/07/10 00:04:28 david Exp $	*/
+/*	$OpenBSD: locking.c,v 1.8 2006/04/01 22:48:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996-1998 Theo de Raadt <deraadt@theos.com>
@@ -27,10 +27,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: locking.c,v 1.7 2003/07/10 00:04:28 david Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>

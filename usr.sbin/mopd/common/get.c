@@ -1,4 +1,4 @@
-/*	$OpenBSD: get.c,v 1.6 2004/04/14 20:37:28 henning Exp $ */
+/*	$OpenBSD: get.c,v 1.7 2006/04/17 13:17:07 maja Exp $ */
 
 /*
  * Copyright (c) 1993-2006 Mats O Jansson.  All rights reserved.
@@ -23,11 +23,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "$OpenBSD: get.c,v 1.6 2004/04/14 20:37:28 henning Exp $";
-#endif
 
 #include <sys/types.h>
 #include "common/mopdef.h"

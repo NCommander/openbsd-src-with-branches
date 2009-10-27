@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_search.c,v 1.9 2006/01/08 21:05:40 miod Exp $	*/
+/*	$OpenBSD: v_search.c,v 1.10 2006/04/22 03:09:15 ray Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -10,10 +10,6 @@
  */
 
 #include "config.h"
-
-#ifndef lint
-static const char sccsid[] = "@(#)v_search.c	10.18 (Berkeley) 9/19/96";
-#endif /* not lint */
 
 #include <sys/types.h>
 #include <sys/queue.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_db.c,v 1.24 2007/05/27 20:15:04 pyr Exp $ */
+/*	$OpenBSD: ypserv_db.c,v 1.25 2007/05/29 21:11:10 maja Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -26,10 +26,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: ypserv_db.c,v 1.24 2007/05/27 20:15:04 pyr Exp $";
-#endif
 
 /*
  * major revision/cleanup of Mats' version

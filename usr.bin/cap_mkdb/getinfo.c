@@ -1,4 +1,4 @@
-/*	$OpenBSD: getinfo.c,v 1.13 2007/05/07 03:53:46 ray Exp $	*/
+/*	$OpenBSD: getinfo.c,v 1.14 2007/05/09 03:07:19 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -28,10 +28,6 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: getinfo.c,v 1.13 2007/05/07 03:53:46 ray Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 

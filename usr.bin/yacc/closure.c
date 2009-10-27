@@ -1,4 +1,4 @@
-/*	$OpenBSD: closure.c,v 1.7 2003/06/19 16:34:53 pvalchev Exp $	*/
+/*	$OpenBSD: closure.c,v 1.8 2005/06/10 16:40:45 pvalchev Exp $	*/
 /*	$NetBSD: closure.c,v 1.4 1996/03/19 03:21:29 jtc Exp $	*/
 
 /*
@@ -32,14 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)closure.c	5.3 (Berkeley) 5/24/93";
-#else
-static char rcsid[] = "$OpenBSD: closure.c,v 1.7 2003/06/19 16:34:53 pvalchev Exp $";
-#endif
-#endif /* not lint */
 
 #include "defs.h"
 

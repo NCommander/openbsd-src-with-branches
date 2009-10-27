@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.6 2003/07/10 00:03:01 david Exp $	*/
+/*	$OpenBSD: setup.c,v 1.7 2006/11/06 21:32:15 deraadt Exp $	*/
 /*	$NetBSD: setup.c,v 1.4 1995/04/24 12:26:06 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)setup.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: setup.c,v 1.6 2003/07/10 00:03:01 david Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include <math.h>

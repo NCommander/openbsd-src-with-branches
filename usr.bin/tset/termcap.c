@@ -1,4 +1,4 @@
-/*	$OpenBSD: termcap.c,v 1.5 2003/06/03 02:56:20 millert Exp $	*/
+/*	$OpenBSD: termcap.c,v 1.6 2007/03/20 03:56:13 tedu Exp $	*/
 /*	$NetBSD: termcap.c,v 1.7 1995/06/05 19:45:52 pk Exp $	*/
 
 /*
@@ -29,10 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char rcsid[] = "$OpenBSD: termcap.c,v 1.5 2003/06/03 02:56:20 millert Exp $";
-#endif /* not lint */
 
 #define	PVECSIZ		32	/* max number of names in path */
 #define	_PATH_DEF	".termcap /usr/share/misc/termcap"

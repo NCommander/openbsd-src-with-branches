@@ -1,4 +1,4 @@
-/*	$OpenBSD: words.c,v 1.8 2000/09/26 04:42:56 pjanzen Exp $	*/
+/*	$OpenBSD: words.c,v 1.9 2003/06/03 03:01:39 millert Exp $	*/
 /*	$NetBSD: words.c,v 1.3 1995/03/21 15:08:00 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)words.c	8.2 (Berkeley) 4/28/95";
-#else
-static char rcsid[] = "$OpenBSD: words.c,v 1.8 2000/09/26 04:42:56 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include "extern.h"
 

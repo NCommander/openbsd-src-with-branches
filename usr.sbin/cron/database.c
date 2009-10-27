@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.16 2004/06/22 03:15:33 avsm Exp $	*/
+/*	$OpenBSD: database.c,v 1.17 2007/03/28 16:49:25 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -20,10 +20,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#if !defined(lint) && !defined(LINT)
-static char const rcsid[] = "$OpenBSD: database.c,v 1.16 2004/06/22 03:15:33 avsm Exp $";
-#endif
 
 /* vix 26jan87 [RCS has the log]
  */

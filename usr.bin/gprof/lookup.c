@@ -1,4 +1,4 @@
-/*	$OpenBSD: lookup.c,v 1.6 2003/06/03 02:56:08 millert Exp $	*/
+/*	$OpenBSD: lookup.c,v 1.7 2006/03/25 19:06:36 espie Exp $	*/
 /*	$NetBSD: lookup.c,v 1.5 1995/04/19 07:16:06 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lookup.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$OpenBSD: lookup.c,v 1.6 2003/06/03 02:56:08 millert Exp $";
-#endif
-#endif /* not lint */
 
 #include "gprof.h"
 

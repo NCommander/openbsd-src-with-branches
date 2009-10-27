@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-netbios.c,v 1.6 2006/05/29 18:00:28 moritz Exp $	*/
+/*	$OpenBSD: print-netbios.c,v 1.7 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996
@@ -23,11 +23,6 @@
  * Format and print NETBIOS packets.
  * Contributed by Brad Parker (brad@fcr.com).
  */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$";
-#endif
 
 #include <sys/param.h>
 #include <sys/socket.h>

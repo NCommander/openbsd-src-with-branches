@@ -2,10 +2,6 @@
  * Written by Michael Shalayeff. Public Domain
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$OpenBSD: e_sqrtf.c,v 1.1 2002/05/22 20:55:56 mickey Exp $";
-#endif
-
 #include "math.h"
 
 float

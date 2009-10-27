@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv_proc.c,v 1.25 2006/04/03 05:01:24 deraadt Exp $ */
+/*	$OpenBSD: ypserv_proc.c,v 1.26 2006/09/25 05:59:28 otto Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -25,10 +25,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: ypserv_proc.c,v 1.25 2006/04/03 05:01:24 deraadt Exp $";
-#endif
 
 #include <rpc/rpc.h>
 #include <rpcsvc/yp.h>

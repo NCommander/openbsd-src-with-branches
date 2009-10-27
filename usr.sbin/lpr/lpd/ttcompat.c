@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttcompat.c,v 1.5 2002/05/20 23:13:50 millert Exp $	*/
+/*	$OpenBSD: ttcompat.c,v 1.6 2003/06/02 23:36:53 millert Exp $	*/
 /*	$NetBSD: ttcompat.c,v 1.9 1995/11/15 22:50:00 pk Exp $	*/
 
 /*
@@ -35,10 +35,6 @@
  * ttcompat.c -- convert sgtty flags to termios
  *	originally from /sys/kern/tty_compat.c
  */
-
-#ifndef lint
-static const char rcsid[] = "$OpenBSD: ttcompat.c,v 1.5 2002/05/20 23:13:50 millert Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/types.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-hsrp.c,v 1.2 2002/01/22 18:52:38 mickey Exp $	*/
+/*	$OpenBSD: print-hsrp.c,v 1.3 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (C) 2001 Julian Cowley
@@ -30,11 +30,6 @@
  */
 
 /* Cisco Hot Standby Router Protocol (HSRP). */
-
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

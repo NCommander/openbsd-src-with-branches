@@ -1,18 +1,10 @@
-/*	$OpenBSD: misc.c,v 1.5 2002/06/07 03:32:04 itojun Exp $	*/
+/*	$OpenBSD: misc.c,v 1.6 2003/05/15 04:45:28 pjanzen Exp $	*/
 
  /*
   * Misc routines that are used by tcpd and by tcpdchk.
   * 
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
-
-#ifndef lint
-#if 0
-static char sccsic[] = "@(#) misc.c 1.2 96/02/11 17:01:29";
-#else
-static char rcsid[] = "$OpenBSD: misc.c,v 1.5 2002/06/07 03:32:04 itojun Exp $";
-#endif
-#endif
 
 #include <sys/types.h>
 #include <sys/param.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: snova.c,v 1.4 2002/07/26 20:14:39 pjanzen Exp $	*/
+/*	$OpenBSD: snova.c,v 1.5 2003/06/03 03:01:42 millert Exp $	*/
 /*	$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $	*/
 
 /*
@@ -29,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)snova.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$OpenBSD: snova.c,v 1.4 2002/07/26 20:14:39 pjanzen Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
 #include <unistd.h>

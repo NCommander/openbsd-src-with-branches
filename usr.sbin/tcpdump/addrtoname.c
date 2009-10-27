@@ -1,4 +1,4 @@
-/*	$OpenBSD: addrtoname.c,v 1.29 2007/06/21 03:13:14 ray Exp $	*/
+/*	$OpenBSD: addrtoname.c,v 1.30 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -23,10 +23,6 @@
  *  Internet, ethernet, port, and protocol string to address
  *  and address to string conversion routines
  */
-#ifndef lint
-static const char rcsid[] =
-    "@(#) $Id$ (LBL)";
-#endif
 
 #include <sys/param.h>
 #include <sys/socket.h>
