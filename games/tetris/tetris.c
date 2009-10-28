@@ -1,4 +1,4 @@
-/*	$OpenBSD: tetris.c,v 1.21 2006/04/20 03:24:12 ray Exp $	*/
+/*	$OpenBSD: tetris.c,v 1.22 2008/03/17 09:17:56 sobrado Exp $	*/
 /*	$NetBSD: tetris.c,v 1.2 1995/04/22 07:42:47 cgd Exp $	*/
 
 /*-
@@ -34,12 +34,6 @@
  *
  *	@(#)tetris.c	8.1 (Berkeley) 5/31/93
  */
-
-#ifndef lint
-static const char copyright[] =
-"@(#) Copyright (c) 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
 
 /*
  * Tetris (or however it is spelled).
