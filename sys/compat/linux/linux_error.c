@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_error.c,v 1.3 2003/09/04 02:57:22 tedu Exp $	*/
+/*	$OpenBSD: linux_error.c,v 1.4 2007/10/27 22:42:11 miod Exp $	*/
 /*	$NetBSD: linux_error.c,v 1.2 1995/04/22 19:48:32 christos Exp $	*/
 
 /*
@@ -126,5 +126,6 @@ int linux_error[1 + ELAST] = {
 	-LINUX_EOVERFLOW,
 	-LINUX_ENOSYS,		/* not mapped (ECANCELED) */
 	-LINUX_EIDRM,
-	-LINUX_ENOMSG
+	-LINUX_ENOMSG,
+	-LINUX_ENOSYS		/* not mapped (ENOTSUP) */
 };
