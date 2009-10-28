@@ -1,8 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1 2000/08/06 00:16:01 millert Exp $
+#	$OpenBSD: Makefile,v 1.2 2002/06/09 05:53:55 todd Exp $
 
 PROG=	init
-MAN=
-COPTS+=-Os
 CFLAGS+=-DDEFAULT_STATE=single_user
 DPADD=	${LIBUTIL}
 LDADD=	-lutil

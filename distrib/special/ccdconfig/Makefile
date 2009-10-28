@@ -1,8 +1,7 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2003/12/17 01:46:51 millert Exp $
 
 PROG=	ccdconfig
-MAN=
-COPTS+=-Os -DSMALL
+COPTS+=	-DSMALL
 .PATH:  ${.CURDIR}/../../../sbin/ccdconfig
 
 DPADD=  ${LIBUTIL}

@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 2001/06/22 23:24:26 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2007/11/26 15:36:40 deraadt Exp $
 
 PROG=	newfs
-MAN=
 SRCS=	dkcksum.c getmntopts.c newfs.c mkfs.c
-COPTS+=-Os
+
 CFLAGS+= -I${.CURDIR}/../../../sbin/mount
 .PATH:  ${.CURDIR}/../../../sbin/newfs
 .PATH:  ${.CURDIR}/../../../sbin/mount
