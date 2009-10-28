@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.190 2007/10/29 16:19:23 chl Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.191 2008/05/09 02:56:36 markus Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -1485,6 +1485,7 @@ ip_ctloutput(op, so, level, optname, mp)
 		case IP_ESP_TRANS_LEVEL:
 		case IP_ESP_NETWORK_LEVEL:
 		case IP_IPCOMP_LEVEL:
+			*mp = m = m_get(M_WAIT, MT_SOOPTS);
 #ifndef IPSEC
 			m->m_len = sizeof(int);
 			*mtod(m, int *) = IPSEC_LEVEL_NONE;
