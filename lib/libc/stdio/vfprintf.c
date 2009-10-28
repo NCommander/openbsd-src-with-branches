@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfprintf.c,v 1.55 2009/10/21 16:04:23 guenther Exp $	*/
+/*	$OpenBSD: vfprintf.c,v 1.56 2009/10/22 01:23:16 guenther Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -436,6 +436,9 @@ reswitch:	switch (ch) {
 			goto rflag;
 		case '#':
 			flags |= ALT;
+			goto rflag;
+		case '\'':
+			/* grouping not implemented */
 			goto rflag;
 		case '*':
 			/*
@@ -1084,6 +1087,7 @@ rflag:		ch = *fmt++;
 reswitch:	switch (ch) {
 		case ' ':
 		case '#':
+		case '\'':
 			goto rflag;
 		case '*':
 			ADDASTER();
