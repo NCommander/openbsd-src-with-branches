@@ -1,4 +1,4 @@
-/*	$OpenBSD: memcmp.S,v 1.2 2004/02/01 05:40:52 drahn Exp $	*/
+/*	$OpenBSD: memcmp.S,v 1.3 2009/05/03 05:09:40 drahn Exp $	*/
 /*      $NetBSD: memcmp.S,v 1.2 2003/04/05 23:08:52 bjh21 Exp $ */
 
 /*
@@ -30,8 +30,6 @@
  */
 
 #include <machine/asm.h>
-
-RCSID("$NetBSD: memcmp.S,v 1.2 2003/04/05 23:08:52 bjh21 Exp $")
 
 ENTRY(memcmp)
 /* if (len == 0) return 0 */

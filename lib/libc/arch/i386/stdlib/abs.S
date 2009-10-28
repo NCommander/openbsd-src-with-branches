@@ -32,11 +32,6 @@
 
 #include <machine/asm.h>
 
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: abs.S,v 1.2 1996/08/19 08:12:44 tholo Exp $"
-#endif
-
 ENTRY(abs)
 	movl	4(%esp),%eax
 	testl	%eax,%eax

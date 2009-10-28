@@ -31,11 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) 
-	.text
-	.asciz "$OpenBSD: htons.S,v 1.2 1996/08/19 08:17:50 tholo Exp $"
-#endif /* LIBC_SCCS */
-
 /* netorder = htons(hostorder) */
 
 #include "DEFS.h"

@@ -32,11 +32,6 @@
 
 #include <machine/asm.h>
 
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: htons.S,v 1.2 1996/08/19 08:12:40 tholo Exp $"
-#endif
-
 /* netorder = htons(hostorder) */
 ENTRY(htons)
 	movzwl	4(%esp),%eax

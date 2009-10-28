@@ -1,4 +1,4 @@
-/*	$OpenBSD: insque.S,v 1.1 2003/05/09 19:19:14 millert Exp $	*/
+/*	$OpenBSD: insque.S,v 1.2 2003/06/02 20:18:33 millert Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -30,11 +30,6 @@
  *
  * From: "@(#)insque.s	8.1 (Berkeley) 6/4/93"
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$OpenBSD: insque.S,v 1.1 2003/05/09 19:19:14 millert Exp $"
-#endif /* LIBC_SCCS and not lint */
 
 /* insque(new, pred) */
 

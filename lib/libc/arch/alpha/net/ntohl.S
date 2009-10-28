@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntohl.S,v 1.1 1996/04/17 22:36:57 cgd Exp $	*/
+/*	$OpenBSD: ntohl.S,v 1.3 1996/11/13 22:05:05 niklas Exp $	*/
 /*	$NetBSD: ntohl.S,v 1.1 1996/04/17 22:36:57 cgd Exp $	*/
 
 /*
@@ -27,11 +27,6 @@
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
-
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$OpenBSD: ntohl.S,v 1.2 1996/08/19 08:10:54 tholo Exp $"
-#endif
 
 #define	NAME	ntohl
 

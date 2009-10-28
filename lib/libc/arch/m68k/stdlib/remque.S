@@ -1,4 +1,4 @@
-/*	$OpenBSD: remque.S,v 1.1 2003/05/09 19:31:15 millert Exp $	*/
+/*	$OpenBSD: remque.S,v 1.2 2003/06/02 20:18:31 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -34,11 +34,6 @@
  *
  * From: "@(#)remque.s	8.1 (Berkeley) 6/4/93"
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$OpenBSD: remque.S,v 1.1 2003/05/09 19:31:15 millert Exp $"
-#endif /* LIBC_SCCS and not lint */
 
 /* remque(entry) */
 
