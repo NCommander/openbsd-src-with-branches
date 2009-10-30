@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.54 2008/07/11 14:12:57 blambert Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.55 2009/01/29 22:08:45 guenther Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -750,7 +750,6 @@ pipeclose(struct pipe *cpipe)
 
 			ppipe->pipe_state |= PIPE_EOF;
 			wakeup(ppipe);
-			KNOTE(&ppipe->pipe_sel.si_note, 0);
 			ppipe->pipe_peer = NULL;
 		}
 
