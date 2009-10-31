@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl.c,v 1.5 2003/10/03 16:44:50 miod Exp $	*/
+/*	$OpenBSD: dl.c,v 1.6 2008/06/26 05:42:14 ray Exp $	*/
 /*	$NetBSD: dl.c,v 1.11 2000/01/24 02:40:29 matt Exp $	*/
 
 /*-
@@ -464,6 +464,7 @@ dlstart(tp)
                         wakeup((caddr_t)&tp->t_outq);
                 }
                 selwakeup(&tp->t_wsel);
+		KNOTE(&tp->t_wsel.si_note, 0);
         }
         if (tp->t_outq.c_cc == 0)
                 goto out;

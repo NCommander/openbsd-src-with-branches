@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_core.c,v 1.25 2007/09/15 10:10:37 martin Exp $	*/
+/*	$OpenBSD: bktr_core.c,v 1.26 2007/11/26 09:28:34 martynas Exp $	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_core.c,v 1.114 2000/10/31 13:09:56 roger Exp $ */
 
 /*
@@ -657,6 +657,7 @@ common_bktr_intr( void *arg )
 		if (bktr->vbi_select.si_selpid) {
 #endif
 			selwakeup(&bktr->vbi_select);
+			KNOTE(&bktr->vbi_select.si_note, 0);
 		}
 	}
 

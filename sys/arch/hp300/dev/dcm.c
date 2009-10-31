@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcm.c,v 1.28 2006/01/01 11:59:37 miod Exp $	*/
+/*	$OpenBSD: dcm.c,v 1.29 2008/01/23 16:37:56 jsing Exp $	*/
 /*	$NetBSD: dcm.c,v 1.41 1997/05/05 20:59:16 thorpej Exp $	*/
 
 /*
@@ -1177,6 +1177,7 @@ dcmstart(tp)
 			wakeup((caddr_t)&tp->t_outq);
 		}
 		selwakeup(&tp->t_wsel);
+		KNOTE(&tp->t_wsel.si_note, 0);
 	}
 	if (tp->t_outq.c_cc == 0) {
 #ifdef DCMSTATS

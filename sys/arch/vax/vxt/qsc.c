@@ -1,4 +1,4 @@
-/*	$OpenBSD: qsc.c,v 1.1 2006/08/27 16:55:41 miod Exp $	*/
+/*	$OpenBSD: qsc.c,v 1.2 2008/01/23 16:37:57 jsing Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -351,6 +351,7 @@ qscstart(struct tty *tp)
 			wakeup((caddr_t)&tp->t_outq);
 		}
 		selwakeup(&tp->t_wsel);
+		KNOTE(&tp->t_wsel.si_note, 0);
 		if (tp->t_outq.c_cc == 0)
 			goto bail;
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.c,v 1.58 2008/12/09 03:08:07 yuo Exp $	*/
+/*	$OpenBSD: usb.c,v 1.59 2009/10/13 19:33:19 pirofti Exp $	*/
 /*	$NetBSD: usb.c,v 1.77 2003/01/01 00:10:26 thorpej Exp $	*/
 
 /*
@@ -770,6 +770,7 @@ usb_add_event(int type, struct usb_event *uep)
 	SIMPLEQ_INSERT_TAIL(&usb_events, ueq, next);
 	wakeup(&usb_events);
 	selwakeup(&usb_selevent);
+	KNOTE(&usb_selevent.si_note, 0);
 	if (usb_async_proc != NULL)
 		psignal(usb_async_proc, SIGIO);
 	splx(s);

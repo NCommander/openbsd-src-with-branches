@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.1.1.1 2006/05/09 18:13:32 miod Exp $	*/
+/*	$OpenBSD: dart.c,v 1.4 2008/01/23 16:37:58 jsing Exp $	*/
 
 /*
  * Mach Operating System
@@ -268,6 +268,7 @@ dartstart(struct tty *tp)
 			wakeup((caddr_t)&tp->t_outq);
 		}
 		selwakeup(&tp->t_wsel);
+		KNOTE(&tp->t_wsel.si_note, 0);
 		if (tp->t_outq.c_cc == 0)
 			goto bail;
 	}

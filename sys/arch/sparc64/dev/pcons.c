@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcons.c,v 1.13 2007/11/14 20:43:12 kettenis Exp $	*/
+/*	$OpenBSD: pcons.c,v 1.14 2009/09/05 14:09:35 miod Exp $	*/
 /*	$NetBSD: pcons.c,v 1.7 2001/05/02 10:32:20 scw Exp $	*/
 
 /*-
@@ -359,6 +359,7 @@ pconsstart(tp)
 			wakeup(cl);
 		}
 		selwakeup(&tp->t_wsel);
+		KNOTE(&tp->t_wsel.si_note, 0);
 	}
 	splx(s);
 }

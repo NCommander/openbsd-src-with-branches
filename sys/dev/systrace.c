@@ -1,4 +1,4 @@
-/*	$OpenBSD: systrace.c,v 1.48 2008/09/12 12:27:27 blambert Exp $	*/
+/*	$OpenBSD: systrace.c,v 1.50 2009/07/09 22:29:55 thib Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -609,6 +609,7 @@ systrace_wakeup(struct fsystrace *fst)
 {
 	wakeup((caddr_t)fst);
 	selwakeup(&fst->si);
+	KNOTE(&fst->si.si_note, 0);
 }
 
 struct proc *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhu.c,v 1.11 2004/07/07 23:10:45 deraadt Exp $	*/
+/*	$OpenBSD: dhu.c,v 1.12 2004/09/19 21:34:42 mickey Exp $	*/
 /*	$NetBSD: dhu.c,v 1.19 2000/06/04 06:17:01 matt Exp $	*/
 /*
  * Copyright (c) 2003, Hugh Graham.
@@ -645,6 +645,7 @@ dhustart(tp)
 			wakeup((caddr_t)&tp->t_outq);
 		}
 		selwakeup(&tp->t_wsel);
+		KNOTE(&tp->t_wsel.si_note, 0);
 	}
 	if (tp->t_outq.c_cc == 0)
 		goto out;
