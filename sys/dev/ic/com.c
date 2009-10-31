@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.132 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: com.c,v 1.133 2009/10/31 06:40:16 deraadt Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -431,7 +431,7 @@ comopen(dev_t dev, int flag, int mode, struct proc *p)
 #endif
 		}
 #endif
-	} else if (ISSET(tp->t_state, TS_XCLUDE) && p->p_ucred->cr_uid != 0)
+	} else if (ISSET(tp->t_state, TS_XCLUDE) && suser(p, 0) != 0)
 		return EBUSY;
 	else
 		s = spltty();

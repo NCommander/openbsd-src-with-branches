@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530tty.c,v 1.8 2009/01/11 16:54:59 blambert Exp $ */
+/*	$OpenBSD: z8530tty.c,v 1.9 2009/10/31 06:40:16 deraadt Exp $ */
 /*	$NetBSD: z8530tty.c,v 1.13 1996/10/16 20:42:14 gwr Exp $	*/
 
 /*-
@@ -506,7 +506,7 @@ zsopen(dev_t dev, int flags, int mode, struct proc *p)
 
 	if (ISSET(tp->t_state, TS_ISOPEN) &&
 	    ISSET(tp->t_state, TS_XCLUDE) &&
-	    p->p_ucred->cr_uid != 0)
+	    suser(p, 0) != 0)
 		return (EBUSY);
 
 	s = spltty();

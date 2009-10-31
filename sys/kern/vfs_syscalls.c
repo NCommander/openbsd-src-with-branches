@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.157 2009/09/02 19:05:44 fgsch Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.158 2009/09/08 17:41:20 miod Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -145,7 +145,7 @@ sys_mount(struct proc *p, void *v, register_t *retval)
 		 * enforce MNT_NOSUID and MNT_NODEV for non-root users, and
 		 * inherit MNT_NOEXEC from the mount point.
 		 */
-		if (p->p_ucred->cr_uid != 0) {
+		if (suser(p, 0) != 0) {
 			if (SCARG(uap, flags) & MNT_EXPORTED) {
 				vput(vp);
 				return (EPERM);
@@ -176,7 +176,7 @@ sys_mount(struct proc *p, void *v, register_t *retval)
 	 * enforce MNT_NOSUID and MNT_NODEV for non-root users, and inherit
 	 * MNT_NOEXEC from the mount point.
 	 */
-	if (p->p_ucred->cr_uid != 0) {
+	if (suser(p, 0) != 0) {
 		if (SCARG(uap, flags) & MNT_EXPORTED) {
 			vput(vp);
 			return (EPERM);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdc.c,v 1.31 2008/01/23 16:37:56 jsing Exp $	*/
+/*	$OpenBSD: pdc.c,v 1.32 2009/10/31 06:40:16 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -224,7 +224,7 @@ pdcopen(dev, flag, mode, p)
 		ttsetwater(tp);
 
 		setuptimeout = 1;
-	} else if (tp->t_state&TS_XCLUDE && p->p_ucred->cr_uid != 0) {
+	} else if (tp->t_state&TS_XCLUDE && suser(p, 0) != 0) {
 		splx(s);
 		return (EBUSY);
 	}

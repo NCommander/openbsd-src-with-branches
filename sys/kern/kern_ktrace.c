@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.45 2008/10/31 17:17:02 deraadt Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.47 2009/07/09 22:29:56 thib Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -390,7 +390,7 @@ ktrops(struct proc *curp, struct proc *p, int ops, int facs, struct vnode *vp)
 	if (ops == KTROP_SET) {
 		ktrsettracevnode(p, vp);
 		p->p_traceflag |= facs;
-		if (curp->p_ucred->cr_uid == 0)
+		if (suser(curp, 0) == 0)
 			p->p_traceflag |= KTRFAC_ROOT;
 	} else {	
 		/* KTROP_CLEAR */

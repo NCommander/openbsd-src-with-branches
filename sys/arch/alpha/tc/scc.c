@@ -1,4 +1,4 @@
-/* $OpenBSD: scc.c,v 1.22 2008/08/09 16:42:29 miod Exp $ */
+/* $OpenBSD: scc.c,v 1.23 2009/10/31 06:40:16 deraadt Exp $ */
 /* $NetBSD: scc.c,v 1.58 2002/03/17 19:40:27 atatat Exp $ */
 
 /*
@@ -482,7 +482,7 @@ sccopen(dev, flag, mode, p)
 #endif
 		(void) sccparam(tp, &tp->t_termios);
 		ttsetwater(tp);
-	} else if ((tp->t_state & TS_XCLUDE) && curproc->p_ucred->cr_uid != 0)
+	} else if ((tp->t_state & TS_XCLUDE) && suser(curproc, 0) != 0)
 		return (EBUSY);
 	(void) sccmctl(sc, SCCLINE(dev), DML_DTR, DMSET);
 	s = spltty();

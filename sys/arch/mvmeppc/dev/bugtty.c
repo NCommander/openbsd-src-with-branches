@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.10 2004/05/14 20:38:32 miod Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.11 2008/01/23 16:37:57 jsing Exp $ */
 
 /* Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -207,7 +207,7 @@ bugttyopen(dev, flag, mode, p)
 			tp->t_state &= ~TS_CARR_ON;
 		*/
 		tp->t_state |= TS_CARR_ON;
-	} else if (tp->t_state & TS_XCLUDE && p->p_ucred->cr_uid != 0) {
+	} else if (tp->t_state & TS_XCLUDE && suser(p, 0) != 0) {
 		splx(s);
 		return (EBUSY);
 	}

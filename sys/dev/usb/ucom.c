@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.43 2009/10/13 19:33:17 pirofti Exp $ */
+/*	$OpenBSD: ucom.c,v 1.44 2009/10/31 06:40:17 deraadt Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -462,7 +462,7 @@ ucomopen(dev_t dev, int flag, int mode, struct proc *p)
 			SET(tp->t_state, TS_CARR_ON);
 		else
 			CLR(tp->t_state, TS_CARR_ON);
-	} else if (ISSET(tp->t_state, TS_XCLUDE) && p->p_ucred->cr_uid != 0) {
+	} else if (ISSET(tp->t_state, TS_XCLUDE) && suser(p, 0) != 0) {
 		error = EBUSY;
 		goto bad;
 	} else
