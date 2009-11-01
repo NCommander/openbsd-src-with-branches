@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral_pci.c,v 1.16 2009/05/11 19:49:14 damien Exp $  */
+/*	$OpenBSD: if_ral_pci.c,v 1.17 2009/05/12 17:43:16 damien Exp $  */
 
 /*-
  * Copyright (c) 2005-2007
@@ -201,12 +201,11 @@ ral_pci_detach(struct device *self, int flags)
 	int error;
 
 	if (psc->sc_ih != NULL) {
+		pci_intr_disestablish(psc->sc_pc, psc->sc_ih);
+
 		error = (*psc->sc_opns->detach)(sc);
 		if (error != 0)
 			return error;
-
-		pci_intr_disestablish(psc->sc_pc, psc->sc_ih);
-		psc->sc_ih = NULL;
 	}
 
 	if (psc->sc_mapsize > 0)
