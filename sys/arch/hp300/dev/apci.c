@@ -1,4 +1,4 @@
-/*	$OpenBSD: apci.c,v 1.34 2009/10/31 06:40:16 deraadt Exp $	*/
+/*	$OpenBSD: apci.c,v 1.35 2009/10/31 12:00:05 fgsch Exp $	*/
 /*	$NetBSD: apci.c,v 1.9 2000/11/02 00:35:05 eeh Exp $	*/
 
 /*-
@@ -767,10 +767,10 @@ apcistart(tp)
 			tp->t_state &= ~TS_ASLEEP;
 			wakeup((caddr_t)&tp->t_outq);
 		}
-		if (tp->t_outq.c_cc == 0)
-			goto out;
 		selwakeup(&tp->t_wsel);
 		KNOTE(&tp->t_wsel.si_note, 0);
+		if (tp->t_outq.c_cc == 0)
+			goto out;
 	}
 	if (apci->ap_lsr & LSR_TXRDY) {
 		tp->t_state |= TS_BUSY;

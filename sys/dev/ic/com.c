@@ -1,4 +1,4 @@
-/*	$OpenBSD: com.c,v 1.133 2009/10/31 06:40:16 deraadt Exp $	*/
+/*	$OpenBSD: com.c,v 1.134 2009/10/31 12:00:07 fgsch Exp $	*/
 /*	$NetBSD: com.c,v 1.82.4.1 1996/06/02 09:08:00 mrg Exp $	*/
 
 /*
@@ -899,10 +899,10 @@ comstart(struct tty *tp)
 			CLR(tp->t_state, TS_ASLEEP);
 			wakeup(&tp->t_outq);
 		}
-		if (tp->t_outq.c_cc == 0)
-			goto stopped;
 		selwakeup(&tp->t_wsel);
 		KNOTE(&tp->t_wsel.si_note, 0);
+		if (tp->t_outq.c_cc == 0)
+			goto stopped;
 	}
 	SET(tp->t_state, TS_BUSY);
 
