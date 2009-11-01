@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.22 2009/06/09 02:56:38 krw Exp $	*/
+/*	$OpenBSD: vector.S,v 1.23 2009/07/10 13:51:47 jsg Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -237,9 +237,6 @@ calltrap:
 	jmp	2b
 4:	.asciz	"WARNING: SPL NOT LOWERED ON TRAP EXIT %x %x\n"
 #endif /* DIAGNOSTIC */
-
-
-#define __HAVE_GENERIC_SOFT_INTERRUPTS	/* XXX */
 
 
 /*
