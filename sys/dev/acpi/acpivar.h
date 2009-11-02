@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.50 2009/10/15 19:00:53 jordan Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.51 2009/10/26 19:56:01 jordan Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -198,11 +198,6 @@ struct acpi_softc {
 	bus_space_handle_t	sc_ioh_pm1a_evt;
 
 	void			*sc_interrupt;
-#ifdef __HAVE_GENERIC_SOFT_INTERRUPTS
-	void			*sc_softih;
-#else
-	struct timeout		sc_timeout;
-#endif
 
 	int			sc_powerbtn;
 	int			sc_sleepbtn;
