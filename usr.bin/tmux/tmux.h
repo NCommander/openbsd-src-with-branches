@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.152 2009/10/28 22:53:14 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.153 2009/11/01 23:20:37 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -60,7 +60,7 @@ extern char   **environ;
 #define NAME_INTERVAL 500
 
 /* Escape timer period, in milliseconds. */
-#define ESCAPE_PERIOD 250
+#define ESCAPE_PERIOD 500
 
 /* Maximum poll timeout (when attached). */
 #define POLL_TIMEOUT 50
