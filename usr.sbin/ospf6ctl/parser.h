@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.4 2008/12/30 21:33:52 claudio Exp $ */
+/*	$OpenBSD: parser.h,v 1.5 2009/01/28 22:51:26 stsp Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -29,6 +29,8 @@ enum actions {
 	FIB,
 	FIB_COUPLE,
 	FIB_DECOUPLE,
+	LOG_VERBOSE,
+	LOG_BRIEF,
 	SHOW,
 	SHOW_SUM,
 	SHOW_IFACE,
