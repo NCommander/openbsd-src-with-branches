@@ -770,6 +770,8 @@ sub new
 		return OpenBSD::PackingElement::ManualInstallation->new;
 	} elsif ($args eq 'system-package') {
 		return OpenBSD::PackingElement::SystemPackage->new;
+	} elsif ($args eq 'always-update') {
+		return OpenBSD::PackingElement::AlwaysUpdate->new;
 	} else {
 		die "Unknown option: $args";
 	}
@@ -809,6 +811,14 @@ package OpenBSD::PackingElement::SystemPackage;
 our @ISA=qw(OpenBSD::PackingElement::UniqueOption);
 
 sub category() { 'system-package' }
+
+package OpenBSD::PackingElement::AlwaysUpdate;
+our @ISA=qw(OpenBSD::PackingElement::UniqueOption);
+
+sub category()
+{
+	'always-update';
+}
 
 # The special elements that don't end in the right place
 package OpenBSD::PackingElement::ExtraInfo;
