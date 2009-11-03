@@ -86,7 +86,7 @@ sub deptree_header
 {
 	my ($state, $pkg) = @_;
 	if (defined $state->{deptree}->{$pkg}) {
-		return $state->{deptree}->{$pkg}.':';
+		return $state->{deptree}->{$pkg}->short_print.':';
 	} else {
 		return '';
 	}
