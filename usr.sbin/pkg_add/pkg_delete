@@ -158,6 +158,13 @@ if ($bad) {
 	exit(1);
 }
 
+my $handler = sub { my $sig = shift; die "Caught SIG$sig"; };
+local $SIG{'INT'} = $handler;
+local $SIG{'QUIT'} = $handler;
+local $SIG{'HUP'} = $handler;
+local $SIG{'KILL'} = $handler;
+local $SIG{'TERM'} = $handler;
+
 eval {
 # and finally, handle the removal
 { do {
