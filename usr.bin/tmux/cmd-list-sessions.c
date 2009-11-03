@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-list-sessions.c,v 1.3 2009/07/26 12:58:44 nicm Exp $ */
+/* $OpenBSD: cmd-list-sessions.c,v 1.4 2009/10/10 10:02:48 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -61,7 +61,7 @@ cmd_list_sessions_exec(unused struct cmd *self, struct cmd_ctx *ctx)
 			xsnprintf(tmp, sizeof tmp, " (group %u)", idx);
 		}
 
-		t = s->tv.tv_sec;
+		t = s->creation_time.tv_sec;
 		tim = ctime(&t);
 		*strchr(tim, '\n') = '\0';
 

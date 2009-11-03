@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.27 2009/10/26 21:42:04 deraadt Exp $ */
+/* $OpenBSD: cmd.c,v 1.28 2009/11/02 16:24:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -362,9 +362,9 @@ cmd_newest_session(struct sessions *ss)
 		if ((s = ARRAY_ITEM(ss, i)) == NULL)
 			continue;
 
-		if (tv == NULL || timercmp(&s->tv, tv, >)) {
+		if (tv == NULL || timercmp(&s->creation_time, tv, >)) {
 			snewest = s;
-			tv = &s->tv;
+			tv = &s->creation_time;
 		}
 	}
 
@@ -386,9 +386,9 @@ cmd_newest_client(void)
 		if (c->session == NULL)
 			continue;
 
-		if (tv == NULL || timercmp(&c->tv, tv, >)) {
+		if (tv == NULL || timercmp(&c->creation_time, tv, >)) {
 			cnewest = c;
-			tv = &c->tv;
+			tv = &c->creation_time;
 		}
 	}
 
