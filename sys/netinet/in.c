@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.53 2009/03/15 19:40:41 miod Exp $	*/
+/*	$OpenBSD: in.c,v 1.54 2009/06/05 00:05:22 claudio Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -117,6 +117,7 @@ in_localaddr(struct in_addr in, u_int rdomain)
 {
 	struct in_ifaddr *ia;
 
+	rdomain = rtable_l2(rdomain);
 	if (subnetsarelocal) {
 		TAILQ_FOREACH(ia, &in_ifaddr, ia_list) {
 			if (ia->ia_ifp->if_rdomain != rdomain)
