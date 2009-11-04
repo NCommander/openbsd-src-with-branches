@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbfvar.h,v 1.5 2007/06/13 06:25:03 mbalmer Exp $	*/
+/*	$OpenBSD: usbfvar.h,v 1.6 2007/06/15 11:41:48 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -101,9 +101,7 @@ struct usbf_bus {
 	/* Filled by usbf driver */
 	struct usbf_softc	*usbfctl;
 	int			 intr_context;
-#ifdef __HAVE_GENERIC_SOFT_INTERRUPTS
 	void			*soft;		/* soft interrupt cookie */
-#endif
 	bus_dma_tag_t		 dmatag;	/* DMA tag */
 };
 

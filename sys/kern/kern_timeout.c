@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_timeout.c,v 1.30 2009/03/03 19:09:13 miod Exp $	*/
+/*	$OpenBSD: kern_timeout.c,v 1.31 2009/06/02 22:05:54 guenther Exp $	*/
 /*
  * Copyright (c) 2001 Thomas Nordin <nordin@openbsd.org>
  * Copyright (c) 2000-2001 Artur Grabowski <art@openbsd.org>
@@ -304,11 +304,10 @@ timeout_hardclock_update(void)
 }
 
 void
-softclock(void)
+softclock(void *arg)
 {
 	struct timeout *to;
 	void (*fn)(void *);
-	void *arg;
 
 	mtx_enter(&timeout_mutex);
 	while (!CIRCQ_EMPTY(&timeout_todo)) {

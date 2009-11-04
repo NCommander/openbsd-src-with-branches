@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.75 2008/11/06 19:12:37 deraadt Exp $	*/
+/*	$OpenBSD: systm.h,v 1.76 2009/04/19 17:53:39 deraadt Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -215,7 +215,7 @@ void	realitexpire(void *);
 
 struct clockframe;
 void	hardclock(struct clockframe *);
-void	softclock(void);
+void	softclock(void *);
 void	statclock(struct clockframe *);
 
 void	initclocks(void);
