@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.33 2009/10/19 13:18:13 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.34 2009/10/22 12:30:00 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -455,10 +455,12 @@ window_pane_destroy(struct window_pane *wp)
 	if (wp->pipe_fd != -1) {
 		buffer_destroy(wp->pipe_buf);
 		close(wp->pipe_fd);
+		event_del(&wp->pipe_event);
 	}
 
 	buffer_destroy(wp->in);
 	buffer_destroy(wp->out);
+	event_del(&wp->event);
 
 	if (wp->cwd != NULL)
 		xfree(wp->cwd);
@@ -543,7 +545,7 @@ window_pane_spawn(struct window_pane *wp, const char *cmd, const char *shell,
 				setenv(envent->name, envent->value, 1);
 		}
 
-		sigreset();
+		server_signal_clear();
 		log_close();
 
 		if (*wp->cmd != '\0') {
