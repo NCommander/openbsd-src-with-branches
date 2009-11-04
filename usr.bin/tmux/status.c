@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.38 2009/10/10 15:03:01 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.39 2009/11/01 23:20:37 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -440,7 +440,7 @@ char *
 status_job(struct client *c, char **iptr)
 {
 	struct job	*job;
-	char   		*buf, *cmd;
+	char   		*cmd;
 	int		 lastesc;
 	size_t		 len;
 
@@ -450,8 +450,6 @@ status_job(struct client *c, char **iptr)
 		(*iptr)++;
 		return (NULL);
 	}
-
-	buf = NULL;
 
 	cmd = xmalloc(strlen(*iptr) + 1);
 	len = 0;
