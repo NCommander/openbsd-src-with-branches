@@ -1,4 +1,4 @@
-#	$OpenBSD: BSD.x11.dist,v 1.19 2009/05/22 17:57:23 matthieu Exp $
+#	$OpenBSD: BSD.x11.dist,v 1.6 2009/10/01 19:01:28 matthieu Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 .
@@ -154,8 +154,6 @@
                         75dpi
                         ..
                         OTF
-                        ..
-                        Speedo
                         ..
                         TTF
                         ..
