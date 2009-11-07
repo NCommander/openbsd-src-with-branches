@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip30.h,v 1.1 2008/04/07 22:43:45 miod Exp $	*/
+/*	$OpenBSD: ip27.h,v 1.1 2009/05/28 18:02:43 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -29,3 +29,9 @@
 #define	IP35_NMI_KREGS_BASE		0x9000
 #define	IP35_NMI_KREGS_SIZE		0x400	/* per CPU */
 #define	IP35_NMI_EFRAME_BASE		0xa000
+
+/* IP35 Brick types */
+
+#define	IP35_O350	0x02
+#define	IP35_FUEL	0x04
+#define	IP35_O300	0x08

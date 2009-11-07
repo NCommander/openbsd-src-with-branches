@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.22 2009/10/26 20:14:42 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.23 2009/10/30 08:13:57 syuu Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -42,6 +42,7 @@
 
 struct sys_rec {
 	int	system_type;
+	int	system_subtype;		/* IP35 only */
 
 	struct cpuinfo {
 		u_int16_t type;
