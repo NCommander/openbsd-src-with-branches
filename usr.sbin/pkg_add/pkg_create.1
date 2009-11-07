@@ -605,6 +605,13 @@ Effects vary depending on
 .Ar name .
 Some options are not documented yet.
 .Bl -tag -width indent
+.It Ar always-update
+By default,
+.Xr pkg_add 1
+uses some simplified information to decide whether an installed package
+needs updating.
+With this option, the package is updated whenever anything changes.
+To be used sparingly, as this is more expensive.
 .It Ar no-default-conflict
 By default, a package conflicts with other versions of the same package.
 With this option, the older package version will still be noticed, but the
