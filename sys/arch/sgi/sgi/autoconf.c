@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.26 2009/10/26 20:14:42 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.27 2009/11/07 18:56:55 miod Exp $	*/
 /*
  * Copyright (c) 2009 Miodrag Vallat.
  *
@@ -119,6 +119,7 @@ void	bootpath_next(void);
  */
 int	cold = 1;			/* if 1, still working on cold-start */
 struct device *bootdv = NULL;
+int16_t	currentnasid = 0;
 
 char	osloadpartition[256];
 
