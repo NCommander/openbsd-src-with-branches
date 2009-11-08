@@ -226,6 +226,7 @@ sub complete
 	if (!defined $handle->{location}) {
 		$handle->get_location($state);
 	}
+	return if $handle->has_error;
 	if (!defined $handle->{plist}) {
 		$handle->get_plist($state);
 	}
