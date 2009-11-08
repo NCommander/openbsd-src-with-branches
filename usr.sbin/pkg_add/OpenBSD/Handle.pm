@@ -97,6 +97,23 @@ sub has_error
 	return $self->{error};
 }
 
+sub error_message
+{
+	my $self = shift;
+	my $error = $self->{error};
+	if ($error == BAD_PACKAGE) {
+		return "bad package";
+	} elsif ($error == CANT_INSTALL) {
+		return "can't install";
+	} elsif ($error == NOT_FOUND) {
+		return "not found";
+	} elsif ($error == ALREADY_INSTALLED) {
+		return "already installed";
+	} else {
+		return "no error";
+	}
+}
+
 sub create_old
 {
 

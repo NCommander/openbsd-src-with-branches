@@ -476,12 +476,11 @@ sub install_set
 			return ();
 		}
 		if ($handle->has_error) {
-			if (!$handle->{tweaked}) {
-				$state->set_name_from_handle($handle);
-				$state->fatal("Fatal error");
-			} else {
-				return ();
-			}
+			$state->set_name_from_handle($handle);
+			$state->print("Can't install ", $handle->pkgname, ":",
+				$handle->error_message, "\n"); 
+			$bad++;
+			return ();
 		}
 
 		if ($handle->plist->has('arch')) {
