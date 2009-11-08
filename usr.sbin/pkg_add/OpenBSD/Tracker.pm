@@ -38,6 +38,9 @@ sub add_set
 	for my $n ($set->older) {
 		$self->{to_update}->{$n->pkgname} = $set;
 	}
+	for my $n ($set->hints) {
+		$self->{to_update}->{$n} = $set;
+	}
 	return $self;
 }
 

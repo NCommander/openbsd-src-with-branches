@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: UpdateSet.pm,v 1.10 2009/10/19 14:07:26 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007 Marc Espie <espie@openbsd.org>
 #
@@ -117,13 +117,20 @@ package OpenBSD::UpdateSet;
 sub new
 {
 	my $class = shift;
-	return bless {newer => [], older => {}}, $class;
+	return bless {newer => [], older => {}, hints => []}, $class;
 }
 
 sub add_newer
 {
 	my ($self, @handles) = @_;
 	push(@{$self->{newer}}, @handles);
+	return $self;
+}
+
+sub add_hints
+{
+	my ($self, @hints) = @_;
+	push(@{$self->{hints}}, @hints);
 	return $self;
 }
 
@@ -146,6 +153,12 @@ sub older
 {
 	my $self = shift;
 	return values %{$self->{older}};
+}
+
+sub hints
+{
+	my $self =shift;
+	return @{$self->{hints}};
 }
 
 sub older_names
