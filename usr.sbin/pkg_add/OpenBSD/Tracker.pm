@@ -61,6 +61,24 @@ sub remove_set
 	}
 }
 
+sub mark_uptodate
+{
+	my ($self, $set) = @_;
+	for my $n ($set->older) {
+		delete $self->{to_update}->{$n->pkgname};
+		$self->{uptodate}->{$n->pkgname} = 1;
+	}
+}
+
+sub mark_cant_update
+{
+	my ($self, $set) = @_;
+	for my $n ($set->older) {
+		delete $self->{to_update}->{$n->pkgname};
+		$self->{cant_update}->{$n->pkgname} = 1;
+	}
+}
+
 sub mark_installed
 {
 	my ($self, $set) = @_;
@@ -80,6 +98,12 @@ sub installed
 {
 	my $self = shift;
 	return keys %{$self->{installed}};
+}
+
+sub cant_update
+{
+	my $self = shift;
+	return keys %{$self->{cant_update}};
 }
 
 1;
