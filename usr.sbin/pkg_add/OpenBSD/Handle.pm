@@ -177,7 +177,7 @@ sub get_plist
 		    OpenBSD::Add::tweak_package_status($pkgname, $state);
 		print "Not reinstalling $pkgname\n" if $state->{verbose} and
 		    !$handle->{tweaked};
-		$state->{tracker}->{installed}->{$pkgname} = 1;
+		$state->tracker->{installed}->{$pkgname} = 1;
 		$location->close_now;
 		$location->wipe_info;
 		$handle->set_error(ALREADY_INSTALLED);
