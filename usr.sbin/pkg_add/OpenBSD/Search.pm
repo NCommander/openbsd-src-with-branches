@@ -201,7 +201,7 @@ sub {
 	my $l = shift;
 	my $r = [];
 	for my $e (@$l) {
-		if ($f->{version}->compare($e->pkgname->{version}) < 0) {
+		if ($f->{version}->compare($e->pkgname->{version}) <= 0) {
 			push(@$r, $e);
 		}
 	}
