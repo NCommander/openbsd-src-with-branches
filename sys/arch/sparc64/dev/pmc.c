@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmc.c,v 1.1 2007/04/10 19:03:10 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -93,7 +93,7 @@ pmc_attach(struct device *parent, struct device *self, void *aux)
 	    ea->ea_regs[0].size, 0, 0, &sc->sc_ioh) == 0) {
 		sc->sc_iot = ea->ea_memtag;
 	} else {
-		printf("%s: can't map register space\n", self->dv_xname);
+		printf(": can't map register space\n");
 		return;
 	}
 
