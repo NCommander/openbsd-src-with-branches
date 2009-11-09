@@ -59,6 +59,9 @@ sub process_handle
 	my $found;
 	my $plist;
 
+	if (!$state->{defines}->{downgrade}) {
+		push(@search, OpenBSD::Search::FilterLocation->more_recent_than($pkgname));
+	}
 	push(@search, OpenBSD::Search::FilterLocation->new(
 	    sub {
 		my $l = shift;

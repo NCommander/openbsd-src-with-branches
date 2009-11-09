@@ -189,6 +189,26 @@ sub filter_locations
 	return &{$self->{code}}($l);
 }
 
+sub more_recent_than
+{
+	my ($class, $name) = @_;
+	require OpenBSD::PackageName;
+
+	my $f = OpenBSD::PackageName->from_string($name);
+
+	return $class->new(
+sub {
+	my $l = shift;
+	my $r = [];
+	for my $e (@$l) {
+		if ($f->{version}->compare($e->pkgname->{version}) < 0) {
+			push(@$r, $e);
+		}
+	}
+	return $r;
+	});
+}
+
 sub keep_most_recent
 {
 	my $class = shift;
