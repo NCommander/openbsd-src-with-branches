@@ -1,4 +1,4 @@
-/*	$OpenBSD: vscsi.c,v 1.2 2009/02/16 21:19:06 miod Exp $ */
+/*	$OpenBSD: vscsi.c,v 1.3 2009/08/13 19:51:49 dlg Exp $ */
 
 /*
  * Copyright (c) 2008 David Gwynne <dlg@openbsd.org>
@@ -194,7 +194,6 @@ vscsi_cmd(struct scsi_xfer *xs)
 	mtx_leave(&sc->sc_ccb_mtx);
 
 	selwakeup(&sc->sc_sel);
-	KNOTE(&sc->sc_sel.si_note, 0);
 
 	if (polled) {
 		rw_enter_read(&sc->sc_ccb_polling);

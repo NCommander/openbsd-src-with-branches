@@ -1,4 +1,4 @@
-/*	$OpenBSD: magma.c,v 1.18 2009/10/31 06:40:17 deraadt Exp $	*/
+/*	$OpenBSD: magma.c,v 1.19 2009/10/31 12:00:08 fgsch Exp $	*/
 
 /*-
  * Copyright (c) 1998 Iain Hibbert
@@ -1123,7 +1123,6 @@ mtty_start(struct tty *tp)
 			}
 
 			selwakeup(&tp->t_wsel);
-			KNOTE(&tp->t_wsel.si_note, 0);
 		}
 
 		/* if something to send, start transmitting

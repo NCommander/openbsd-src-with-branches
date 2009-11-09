@@ -1,4 +1,4 @@
-/*	$OpenBSD: apci.c,v 1.35 2009/10/31 12:00:05 fgsch Exp $	*/
+/*	$OpenBSD: apci.c,v 1.36 2009/11/01 20:29:00 nicm Exp $	*/
 /*	$NetBSD: apci.c,v 1.9 2000/11/02 00:35:05 eeh Exp $	*/
 
 /*-
@@ -768,7 +768,6 @@ apcistart(tp)
 			wakeup((caddr_t)&tp->t_outq);
 		}
 		selwakeup(&tp->t_wsel);
-		KNOTE(&tp->t_wsel.si_note, 0);
 		if (tp->t_outq.c_cc == 0)
 			goto out;
 	}

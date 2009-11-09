@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.105 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: audio.c,v 1.106 2009/10/27 12:13:33 jakemsr Exp $	*/
 /*	$NetBSD: audio.c,v 1.119 1999/11/09 16:50:47 augustss Exp $	*/
 
 /*
@@ -1764,7 +1764,6 @@ audio_selwakeup(struct audio_softc *sc, int play)
 	selwakeup(si);
 	if (sc->sc_async_audio)
 		psignal(sc->sc_async_audio, SIGIO);
-	KNOTE(&si->si_note, 0);
 }
 
 #define	AUDIO_FILTREAD(sc) ( \

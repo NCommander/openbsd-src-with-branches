@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.36 2009/10/31 12:00:05 fgsch Exp $	*/
+/*	$OpenBSD: dca.c,v 1.37 2009/11/01 20:29:00 nicm Exp $	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -867,7 +867,6 @@ dcastart(tp)
 			wakeup((caddr_t)&tp->t_outq);
 		}
 		selwakeup(&tp->t_wsel);
-		KNOTE(&tp->t_wsel.si_note, 0);
 		if (tp->t_outq.c_cc == 0)
 			goto out;
 	}
