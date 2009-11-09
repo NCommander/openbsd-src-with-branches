@@ -742,7 +742,7 @@ if ($opt_l || $opt_z) {
 
 	my @cantupdate = $state->tracker->cant_update;
 	if (@cantupdate > 0) {
-		print "Cannot find updates for ", join(', ', map {$_->short_print} (@cantupdate > 50 ? @cantupdate[1..50] : @cantupdate));
+		print "Cannot find updates for ", join(', ', (@cantupdate > 50 ? @cantupdate[1..50] : @cantupdate));
 		print " and more" if @cantupdate > 50;
 		print "\n";
 		if (@todo2 == 0) {
