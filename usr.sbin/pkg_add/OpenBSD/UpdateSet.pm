@@ -280,18 +280,6 @@ sub compute_size
 	}
 }
 
-# temporary shortcut
-sub handle
-{
-	my $self = shift;
-	if (defined $self->{newer}) {
-		return $self->{newer}[0];
-	} else {
-		return undef;
-	}
-}
-
-# temporary creator
 sub create_new
 {
 	my ($class, $pkgname) = @_;
