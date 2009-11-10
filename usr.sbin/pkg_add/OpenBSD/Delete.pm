@@ -17,6 +17,7 @@
 
 use strict;
 use warnings;
+
 package OpenBSD::Delete;
 use OpenBSD::Error;
 use OpenBSD::Vstat;

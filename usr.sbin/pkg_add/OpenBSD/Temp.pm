@@ -17,6 +17,7 @@
 
 use strict;
 use warnings;
+
 package OpenBSD::Temp;
 
 use File::Temp;

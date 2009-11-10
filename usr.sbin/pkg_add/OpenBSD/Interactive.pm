@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Interactive.pm,v 1.8 2007/04/15 17:42:29 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2005-2007 Marc Espie <espie@openbsd.org>
 #
@@ -13,7 +13,6 @@
 # ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-#
 
 use strict;
 use warnings;

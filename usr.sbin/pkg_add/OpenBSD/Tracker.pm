@@ -13,10 +13,6 @@
 # ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-#
-
-use strict;
-use warnings;
 
 # In order to deal with dependencies, we have to know what's actually installed,
 # and what can actually be updated.
@@ -31,6 +27,9 @@ use warnings;
 
 # the Tracker object does maintain that information globally so that 
 # Update/Dependencies can do its job.
+
+use strict;
+use warnings;
 
 package OpenBSD::Tracker;
 sub new

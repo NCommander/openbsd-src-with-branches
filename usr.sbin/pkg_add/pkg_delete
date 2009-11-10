@@ -18,6 +18,7 @@
 
 use strict;
 use warnings;
+
 use OpenBSD::Getopt;
 use OpenBSD::PackingList;
 use OpenBSD::RequiredBy;

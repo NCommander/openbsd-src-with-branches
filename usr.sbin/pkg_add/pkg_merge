@@ -16,6 +16,7 @@
 
 use strict;
 use warnings;
+
 use OpenBSD::PackageLocator;
 use OpenBSD::PackageInfo;
 use OpenBSD::PackingList;

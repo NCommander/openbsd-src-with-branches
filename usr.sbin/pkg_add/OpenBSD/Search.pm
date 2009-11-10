@@ -15,6 +15,9 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+use strict;
+use warnings;
+
 package OpenBSD::Search;
 sub match_locations
 {
@@ -62,7 +65,7 @@ sub match_locations
 sub filter_locations
 {
 	my ($self, $l) = @_;
-	return $self->{$spec}->match_locations($l);
+	return $self->{spec}->match_locations($l);
 }
 
 sub filter
@@ -135,7 +138,7 @@ sub filter
 	my @result = ();
 	require OpenBSD::PackageName;
 	for my $pkg (@l) {
-		if ($self->_keep(OpenBSD::PackageName::splitstem($pkgname))) {
+		if ($self->_keep(OpenBSD::PackageName::splitstem($pkg))) {
 			push(@result, $pkg); 
 		}
 	}

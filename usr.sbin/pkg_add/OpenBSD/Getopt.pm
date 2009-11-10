@@ -17,11 +17,12 @@
 #
 # This is inspired by Getopt::Std, except for the ability to invoke subs
 # on options.
-#
-package OpenBSD::Getopt;
-require Exporter;
+
 use strict;
 use warnings;
+
+package OpenBSD::Getopt;
+require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(getopts);

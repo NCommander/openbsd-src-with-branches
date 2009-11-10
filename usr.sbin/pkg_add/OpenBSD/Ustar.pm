@@ -19,6 +19,7 @@
 
 use strict;
 use warnings;
+
 package OpenBSD::Ustar;
 
 use constant {

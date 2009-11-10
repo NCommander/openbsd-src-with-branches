@@ -17,6 +17,7 @@
 
 use strict;
 use warnings;
+
 package OpenBSD::PackageName;
 
 sub url2pkgname($)

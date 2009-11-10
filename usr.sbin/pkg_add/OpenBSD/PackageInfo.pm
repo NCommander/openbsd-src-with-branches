@@ -17,6 +17,7 @@
 
 use strict;
 use warnings;
+
 package OpenBSD::PackageInfo;
 our @ISA=qw(Exporter);
 our @EXPORT=qw(installed_packages installed_info installed_name info_names is_info_name installed_stems

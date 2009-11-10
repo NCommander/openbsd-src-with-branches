@@ -17,6 +17,7 @@
 
 use strict;
 use warnings;
+
 use OpenBSD::Paths;
 package OpenBSD::PackingElement;
 

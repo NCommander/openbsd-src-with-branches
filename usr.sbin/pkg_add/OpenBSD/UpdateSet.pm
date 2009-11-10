@@ -19,6 +19,9 @@
 # these things don't really live here, they're just stuff that's shared
 # between pkg_add and pkg_delete, so to avoid yes another header...
 
+use strict;
+use warnings;
+
 package OpenBSD::SharedItemsRecorder;
 sub new
 {
