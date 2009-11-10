@@ -1,4 +1,4 @@
-/*	$OpenBSD: ztsscale.c,v 1.13 2007/05/29 21:13:56 robert Exp $	*/
+/*	$OpenBSD: ztsscale.c,v 1.14 2007/06/17 10:07:30 robert Exp $	*/
 
 /*
  * Copyright (c) 2005 Matthieu Herrb
@@ -158,7 +158,8 @@ cleanup(void)
 	restore_screen();
 
 	wmcoords.samplelen = orawmode;
-	if (wmcoords.samplelen != -1 && ioctl(mfd, WSMOUSEIO_SCALIBCOORDS, &wmcoords) < 0)
+	if (wmcoords.samplelen != -1 &&
+	    ioctl(mfd, WSMOUSEIO_SCALIBCOORDS, &wmcoords) < 0)
 		err(1, "WSMOUSEIO_SCALIBCOORDS");
 
 	close(mfd);
@@ -173,12 +174,12 @@ sighandler(int sig)
 	_exit(2);
 }
 
+/*ARGSUSED*/
 int
 main(int argc, char *argv[])
 {
 	int i, x[5], y[5];
 	double a, a1, a2, b, b1, b2, xerr, yerr;
-	size_t oldsize;
 	struct ztsscale {
 		int ts_minx;
 		int ts_maxx;
