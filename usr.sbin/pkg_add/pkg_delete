@@ -132,7 +132,8 @@ if (@todo > @realnames) {
 			delete $deps{$p};
 		}
 		&$show([@realnames], [keys %deps]);
-		if ((keys %deps) > 1 && OpenBSD::Interactive::confirm(
+		if (@realnames > 1 && (keys %deps) > 1 && 
+		    OpenBSD::Interactive::confirm(
 		    "Do you want details", $state->{interactive}, 1)) {
 			$details = 1;
 		}
