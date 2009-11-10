@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.172 2009/10/23 01:57:11 djm Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.173 2009/10/24 11:13:54 andreas Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>
@@ -1521,6 +1522,8 @@ ssh_keysign(Key *key, u_char **sigp, u_int *lenp,
 		return -1;
 	}
 	if (pid == 0) {
+		/* keep the socket on exec */
+		fcntl(packet_get_connection_in(), F_SETFD, 0);
 		permanently_drop_suid(getuid());
 		close(from[0]);
 		if (dup2(from[1], STDOUT_FILENO) < 0)
