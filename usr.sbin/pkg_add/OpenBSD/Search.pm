@@ -28,26 +28,13 @@ sub match_locations
 	return \@l;
 }
 
-# XXX this is not efficient
-sub filter_locations
-{
-	my ($self, $l) = @_;
-	my $r = [];
-	for my $loc (@$l) {
-		if ($self->filter($loc->{name})) {
-			push(@$r, $loc);
-		}
-	}
-	return $r;
-}
-
 package OpenBSD::Search::PkgSpec;
 our @ISA=(qw(OpenBSD::Search));
 
-sub match_ref
+sub filter
 {
-	my ($self, $r) = @_;
-	return $self->{spec}->match_ref($r);
+	my ($self, @list) = @_;
+	return $self->{spec}->match_ref(\@list);
 }
 
 sub match_locations
@@ -60,12 +47,6 @@ sub filter_locations
 {
 	my ($self, $l) = @_;
 	return $self->{spec}->match_locations($l);
-}
-
-sub filter
-{
-	my ($self, @list) = @_;
-	return $self->match_ref(\@list);
 }
 
 sub new

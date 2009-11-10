@@ -26,17 +26,6 @@ use warnings;
 
 package OpenBSD::PackageRepositoryBase;
 
-sub match
-{
-	my ($self, $search, @filters) = @_;
-	my @l = $search->match($self);
-	while (my $filter = (shift @filters)) {
-		last if @l == 0; # don't bother filtering empty list
-		@l = $filter->filter(@l);
-	}
-	return @l;
-}
-
 sub match_locations
 {
 	my ($self, $search, @filters) = @_;
