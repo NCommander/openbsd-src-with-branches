@@ -2176,7 +2176,6 @@ mpi_eventnotify_done(struct mpi_ccb *ccb)
 void
 mpi_evt_sas(struct mpi_softc *sc, struct mpi_rcb *rcb)
 {
-#if 0
 	struct mpi_evt_sas_change		*ch;
 	u_int8_t				*data;
 
@@ -2214,7 +2213,6 @@ mpi_evt_sas(struct mpi_softc *sc, struct mpi_rcb *rcb)
 		    "0x%02x\n", DEVNAME(sc), ch->reason);
 		break;
 	}
-#endif
 }
 
 void
