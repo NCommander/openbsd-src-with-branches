@@ -454,7 +454,9 @@ if ($opt_Q) {
 	print "PKG_PATH=$ENV{PKG_PATH}\n" if $opt_v;
 	my $partial = OpenBSD::Search::PartialStem->new($opt_Q);
 
-	for my $p (sort OpenBSD::PackageLocator->match($partial)) {
+	my $r = OpenBSD::PackageLocator->match_locations($partial);
+
+	for my $p (sort map {$_->name} @$r) {
 		print $p, is_installed($p) ? " (installed)" : "" , "\n";
 	}
 
