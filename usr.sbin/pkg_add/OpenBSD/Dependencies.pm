@@ -445,7 +445,9 @@ sub find_old_lib
 	require OpenBSD::Search;
 	require OpenBSD::PackageRepository::Installed;
 
-	for my $try (OpenBSD::PackageRepository::Installed->new->match(OpenBSD::Search::PkgSpec->new(".libs-".$pattern))) {
+
+	my $r = OpenBSD::PackageRepository::Installed->new->match_locations(OpenBSD::Search::PkgSpec->new(".libs-".$pattern));
+	for my $try (map {$_->name} @$r) {
 		OpenBSD::SharedLibs::add_libs_from_installed_package($try);
 		if ($self->check_lib_spec($base, $lib, {$try => 1})) {
 			return $try;
