@@ -50,12 +50,6 @@ sub match_ref
 	return $self->{spec}->match_ref($r);
 }
 
-sub match
-{
-	my ($self, $o) = @_;
-	return $self->match_ref($o->list);
-}
-
 sub match_locations
 {
 	my ($self, $o) = @_;
@@ -159,22 +153,6 @@ sub _keep
 	my ($self, $stem) = @_;
 	my $partial = $self->{stem};
 	return $stem =~ /\Q$partial\E/;
-}
-
-package OpenBSD::Search::Filter;
-our @ISA=(qw(OpenBSD::Search));
-
-sub new
-{
-	my ($class, $code) = @_;
-
-	return bless {code => $code}, $class;
-}
-
-sub filter
-{
-	my ($self, @l) = @_;
-	return &{$self->{code}}(@l);
 }
 
 package OpenBSD::Search::FilterLocation;

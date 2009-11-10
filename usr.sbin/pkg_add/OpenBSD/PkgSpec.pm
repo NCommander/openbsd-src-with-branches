@@ -26,7 +26,6 @@ sub new
 	$spec =~ s/^-//o;
 
 	bless \$spec, $class;
-
 }
 
 sub check_1flavor
