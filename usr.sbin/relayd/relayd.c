@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.91 2009/08/07 11:21:53 reyk Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.92 2009/08/13 13:51:21 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1132,6 +1132,7 @@ protonode_header(enum direction dir, struct protocol *proto,
 	}
 	pn->key = strdup(pk->key);
 	if (pn->key == NULL) {
+		free(pn);
 		log_warn("out of memory");
 		return (NULL);
 	}
