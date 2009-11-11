@@ -65,7 +65,7 @@ sub collision_report($$)
 	if ($state->{defines}->{removecollisions}) {
 		require OpenBSD::Error;
 		for my $f (@$list) {
-			OpenBSD::Error::Unlink(1, $f->fullname);
+			$state->unlink(1, $f->fullname);
 		}
 		return;
 	}
@@ -132,10 +132,9 @@ sub collision_report($$)
 		}
 	}
 	if ($dorepair == 1) {
-		require OpenBSD::Error;
 		for my $f (@$list) {
 
-			if (OpenBSD::Error::Unlink($state->{verbose}, 
+			if ($state->unlink($state->{verbose}, 
 			    $f->fullname)) {
 				$state->{problems}--;
 			} else {

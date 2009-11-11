@@ -1363,7 +1363,7 @@ sub run_if_exists
 	require OpenBSD::Error;
 
 	if (-x $cmd) {
-		OpenBSD::Error::VSystem($state->{very_verbose}, $cmd, @l);
+		$state->vsystem($cmd, @l);
 	} else {
 		$state->errsay("$cmd not found");
 	}

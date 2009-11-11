@@ -118,6 +118,27 @@ sub progress
 	return $self->{progressmeter};
 }
 
+sub vsystem
+{
+	my $self = shift;
+	$self->progress->clear;
+	OpenBSD::Error::VSystem($self->{very_verbose}, @_);
+}
+
+sub system
+{
+	my $self = shift;
+	$self->progress->clear;
+	OpenBSD::Error::System(@_);
+}
+
+sub unlink
+{
+	my $self = shift;
+	$self->progress->clear;
+	OpenBSD::Error::Unlink(@_);
+}
+
 # we always have a progressmeter we can print to...
 sub setup_progressmeter
 {

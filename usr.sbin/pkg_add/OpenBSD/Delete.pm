@@ -559,8 +559,7 @@ sub delete
 	my ($self, $state) = @_;
 	unless ($state->{not}) {
 	    my $fullname = $state->{destdir}.$self->fullname;
-	    VSystem($state->{very_verbose}, 
-		OpenBSD::Paths->install_info, 
+	    $state->vsystem(OpenBSD::Paths->install_info, 
 		"--delete", "--info-dir=".dirname($fullname), $fullname);
 	}
 	$self->SUPER::delete($state);

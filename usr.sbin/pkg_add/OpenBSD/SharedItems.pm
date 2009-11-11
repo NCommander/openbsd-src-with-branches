@@ -88,7 +88,7 @@ sub cleanup
 			$state->progress->show($done, $total);
 			next if $remaining->{users}->{$user};
 			if ($state->{extra}) {
-				System(OpenBSD::Paths->userdel, $user);
+				$state->system(OpenBSD::Paths->userdel, $user);
 			} else {
 				$state->log->set_context($pkgname);
 				$state->log("You should also run /usr/sbin/userdel $user\n");
@@ -101,7 +101,7 @@ sub cleanup
 			$state->progress->show($done, $total);
 			next if $remaining->{groups}->{$group};
 			if ($state->{extra}) {
-				System(OpenBSD::Paths->groupdel, $group);
+				$state->system(OpenBSD::Paths->groupdel, $group);
 			} else {
 				$state->log->set_context($pkgname);
 				$state->log("You should also run /usr/sbin/groupdel $group\n");

@@ -285,7 +285,7 @@ sub install
 	my $l=[];
 	push(@$l, "-v") if $state->{very_verbose};
 	$self->build_args($l);
-	VSystem($state->{very_verbose}, $self->command,, @$l, $auth);
+	$state->vsystem($self->command,, @$l, $auth);
 }
 
 package OpenBSD::PackingElement::NewUser;
@@ -338,9 +338,7 @@ sub install
 		$state->say("sysctl -w $name != ".  $self->{value});
 		return;
 	}
-	VSystem($state->{very_verbose}, 
-	    OpenBSD::Paths->sysctl, 
-	    $name.'='.$self->{value});
+	$state->vsystem(OpenBSD::Paths->sysctl, $name.'='.$self->{value});
 }
 			
 package OpenBSD::PackingElement::DirBase;
@@ -569,8 +567,7 @@ sub install
 	$self->SUPER::install($state);
 	return if $state->{not};
 	my $fullname = $state->{destdir}.$self->fullname;
-	VSystem($state->{very_verbose}, 
-	    OpenBSD::Paths->install_info,
+	$state->vsystem(OpenBSD::Paths->install_info,
 	    "--info-dir=".dirname($fullname), $fullname);
 }
 

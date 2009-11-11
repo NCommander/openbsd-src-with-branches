@@ -80,8 +80,7 @@ sub mark_ldconfig_directory
 sub ensure_ldconfig
 {
 	my $state = shift;
-	VSystem($state->{very_verbose}, 
-	    @ldconfig, "-R") unless $state->{not};
+	$state->vsystem(@ldconfig, "-R") unless $state->{not};
 	$OpenBSD::PackingElement::Lib::todo = 0;
 }
 
