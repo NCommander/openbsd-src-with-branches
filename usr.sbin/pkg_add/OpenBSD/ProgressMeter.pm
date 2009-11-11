@@ -140,6 +140,12 @@ sub print
 	print @_;
 }
 
+sub errprint
+{
+	shift->clear;
+	print STDERR @_;
+}
+
 sub next
 {
 	my $self = shift;

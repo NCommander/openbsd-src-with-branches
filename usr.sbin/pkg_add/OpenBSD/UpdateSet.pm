@@ -100,6 +100,18 @@ sub say
 	$self->progress->print(@_, "\n");
 }
 
+sub errprint
+{
+	my $self = shift;
+	$self->progress->errprint(@_);
+}
+
+sub errsay
+{
+	my $self = shift;
+	$self->progress->errprint(@_, "\n");
+}
+
 sub system
 {
 	my $self = shift;
@@ -174,6 +186,12 @@ sub print
 {
 	shift;
 	print @_;
+}
+
+sub errprint
+{
+	shift;
+	print STDERR @_;
 }
 
 # an UpdateSet is a list of packages to remove/install.

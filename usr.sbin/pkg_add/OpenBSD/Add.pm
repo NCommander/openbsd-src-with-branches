@@ -40,7 +40,7 @@ sub manpages_index
 			try { 
 				OpenBSD::Makewhatis::merge($destdir.$k, \@l); 
 			} catchall {
-				print STDERR "Error in makewhatis: $_\n";
+				$state->errsay("Error in makewhatis: $_");
 			};
 		}
 	}

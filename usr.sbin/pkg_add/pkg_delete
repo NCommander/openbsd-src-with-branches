@@ -214,6 +214,7 @@ OpenBSD::PackingElement::Fontdir::finish_fontdirs($state);
 if ($state->{beverbose}) {
 	OpenBSD::Vstat::tally();
 }
+$state->progress->clear;
 $state->log->dump;
 rethrow $dielater;
 } catch {

@@ -177,7 +177,7 @@ sub find_in_new_source
 	my $plist = OpenBSD::PackingList->from_installation($dep,
 	    \&OpenBSD::PackingList::DependOnly);
 	if (!defined $plist) {
-		print STDERR "Can't read plist for $dep\n";
+		$state->errsay("Can't read plist for $dep");
 	}
 	$self->find_in_plist($plist, $dep);
 	return $self->find_in_already_done($solver, $state, $obj);
