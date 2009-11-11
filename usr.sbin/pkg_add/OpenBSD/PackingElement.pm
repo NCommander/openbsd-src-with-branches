@@ -1197,7 +1197,7 @@ sub run
 	OpenBSD::PackingElement::Lib::ensure_ldconfig($state);
 	$state->say($self->keyword, " ", $self->{expanded}) 
 	    if $state->{beverbose};
-	$state->system(OpenBSD::Paths->sh, '-c', $self->{expanded}) 
+	$state->log->system(OpenBSD::Paths->sh, '-c', $self->{expanded}) 
 	    unless $state->{not};
 }
 
@@ -1514,7 +1514,7 @@ sub run
 	    join(' ', @args)) if $state->{beverbose};
 	return if $not;
 	chmod 0755, $name;
-	return if $state->system($name, $pkgname, @args) == 0;
+	return if $state->log->system($name, $pkgname, @args) == 0;
 	if ($state->{defines}->{scripts}) {
 		$state->log->warn($self->beautify, " script failed\n");
 	} else {

@@ -112,12 +112,6 @@ sub errsay
 	$self->progress->errprint(@_, "\n");
 }
 
-sub system
-{
-	my $self = shift;
-	$self->log->system(@_);
-}
-
 sub progress
 {
 	my $self = shift;
