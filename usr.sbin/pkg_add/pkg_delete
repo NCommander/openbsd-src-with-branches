@@ -197,7 +197,7 @@ eval {
 			print $opt_n ? "Pretending to delete " : "Deleting ", 
 			    "$pkgname\n";
 		}
-		$state->set_pkgname($pkgname);
+		$state->log->set_context($pkgname);
 		OpenBSD::Delete::delete_package($pkgname, $state);
 		$done{$pkgname} = 1;
 		$removed++;
@@ -213,7 +213,7 @@ OpenBSD::PackingElement::Fontdir::finish_fontdirs($state);
 if ($state->{beverbose}) {
 	OpenBSD::Vstat::tally();
 }
-$state->delayed_output;
+$state->log->dump;
 rethrow $dielater;
 } catch {
 	print STDERR "$0: $_\n";

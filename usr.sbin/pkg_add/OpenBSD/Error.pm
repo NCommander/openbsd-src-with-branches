@@ -192,23 +192,24 @@ sub delayed_output
 			print @$msgs;
 		}
 	}
+	$self->{messages} = {};
 }
 
 sub system
 {
-	my $state = shift;
+	my $self = shift;
 	if (open(my $grab, "-|", @_)) {
 		my $_;
 		while (<$grab>) {
-			$state->print($_);
+			$self->print($_);
 		}
 		if (!close $grab) {
-		    $state->print("system(", join(", ", @_), ") failed: $! ", 
+		    $self->print("system(", join(", ", @_), ") failed: $! ", 
 		    	child_error(), "\n");
 		}
 		return $?;
 	} else {
-		    $state->print("system(", join(", ", @_), 
+		    $self->print("system(", join(", ", @_), 
 		    	") was not run: $!", child_error(), "\n");
 	}
 }

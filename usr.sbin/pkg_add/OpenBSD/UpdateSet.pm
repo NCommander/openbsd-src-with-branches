@@ -45,6 +45,21 @@ sub cleanup
 	OpenBSD::SharedItems::cleanup($self, $state);
 }
 
+package OpenBSD::Log;
+use OpenBSD::Error;
+our @ISA = qw(OpenBSD::Error);
+
+sub set_context
+{
+	&OpenBSD::Error::set_pkgname;
+}
+
+sub dump
+{
+	&OpenBSD::Error::delayed_output;
+}
+
+
 package OpenBSD::pkg_foo::State;
 use OpenBSD::Error;
 
@@ -59,43 +74,17 @@ sub new
 sub init
 {
 	my $self = shift;
-	$self->{l} = OpenBSD::Error->new;
+	$self->{l} = OpenBSD::Log->new;
 }
 
 sub log
 {
 	my $self = shift;
-	return $self->{l};
-}
-
-sub set_pkgname
-{
-	my $self = shift;
-	$self->log->set_pkgname(@_);
-}
-
-sub print
-{
-	my $self = shift;
-	$self->log->print(@_);
-}
-
-sub warn
-{
-	my $self = shift;
-	$self->log->warn(@_);
-}
-
-sub fatal
-{
-	my $self = shift;
-	$self->log->fatal(@_);
-}
-
-sub delayed_output
-{
-	my $self = shift;
-	$self->log->delayed_output(@_);
+	if (@_ == 0) {
+		return $self->{l};
+	} else {
+		$self->{l}->print(@_);
+	}
 }
 
 sub system

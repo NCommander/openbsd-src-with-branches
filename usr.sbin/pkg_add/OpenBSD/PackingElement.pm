@@ -401,11 +401,12 @@ sub check_digest
 	my ($self, $file, $state) = @_;
 	return if $self->{link} or $self->{symlink};
 	if (!defined $self->{d}) {
-		$state->fatal($self->fullname, " does not have a signature");
+		$state->log->fatal($self->fullname, 
+		    " does not have a signature");
 	}
 	my $d = $self->compute_digest($file->{destdir}.$file->name);
 	if (!$d->equals($self->{d})) {
-		$state->fatal("checksum for ", $self->fullname, 
+		$state->log->fatal("checksum for ", $self->fullname, 
 		    " does not match");
 	}
 	if ($state->{very_verbose}) {
@@ -1512,9 +1513,9 @@ sub run
 	chmod 0755, $name;
 	return if $state->system($name, $pkgname, @args) == 0;
 	if ($state->{defines}->{scripts}) {
-		$state->warn($self->beautify, " script failed\n");
+		$state->log->warn($self->beautify, " script failed\n");
 	} else {
-		$state->fatal($self->beautify." script failed");
+		$state->log->fatal($self->beautify." script failed");
 	}
 }
 
@@ -1555,7 +1556,7 @@ sub prepare
 		while (<$src>) {
 			next if m/^\+\-+\s*$/o;
 			s/^[+-] //o;
-			$state->print($_);
+			$state->log($_);
 		} 
 	} else {
 		Warn "Can't open $fname: $!\n";

@@ -547,7 +547,7 @@ sub install
 {
 	my ($self, $state) = @_;
 	$self->SUPER::install($state);
-	$state->print("You may wish to add ", $self->fullname, " to /etc/man.conf\n");
+	$state->log("You may wish to add ", $self->fullname, " to /etc/man.conf\n");
 }
 
 package OpenBSD::PackingElement::Manpage;
