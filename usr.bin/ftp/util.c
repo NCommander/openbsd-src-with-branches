@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.62 2009/05/05 19:35:30 martynas Exp $	*/
+/*	$OpenBSD: util.c,v 1.63 2009/05/10 16:31:17 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.12 1997/08/18 10:20:27 lukem Exp $	*/
 
 /*-
@@ -826,7 +826,7 @@ progressmeter(int flag, const char *filename)
 
 	i = 0;
 	abbrevsize = cursize;
-	while (abbrevsize >= 100000 && i < sizeof(prefixes)) {
+	while (abbrevsize >= 100000 && i < sizeof(prefixes)-1) {
 		i++;
 		abbrevsize >>= 10;
 	}
