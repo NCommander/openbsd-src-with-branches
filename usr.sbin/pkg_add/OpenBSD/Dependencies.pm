@@ -472,9 +472,9 @@ sub solve_wantlibs
 			next if $lib_finder->lookup($solver, 
 			    $solver->{to_register}->{$h}, $state, 
 			    $lib->{name});
-			OpenBSD::Error::Warn "Can't install ", 
+			$state->errsay("Can't install ", 
 			    $h->pkgname, ": lib not found ", 
-			    $lib->{name}, "\n";
+			    $lib->{name});
 			if ($okay) {
 				$solver->dump;
 				$lib_finder->dump;
@@ -497,9 +497,9 @@ sub solve_tags
 		for my $tag (keys %{$h->{plist}->{tags}}) {
 			next if $tag_finder->lookup($solver, 
 			    $solver->{to_register}->{$h}, $state, $tag);
-			OpenBSD::Error::Warn "Can't install ", 
+			$state->errsay("Can't install ", 
 			    $h->pkgname, ": tag definition not found ", 
-			    $tag, "\n";
+			    $tag);
 			if ($okay) {
 				$solver->dump;
 				$tag_finder->dump;

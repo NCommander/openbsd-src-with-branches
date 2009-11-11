@@ -139,7 +139,7 @@ sub check_root
 	my $state = shift;
 	if ($< && !$state->{defines}->{nonroot}) {
 		if ($state->{not}) {
-			Warn "$0 should be run as root\n";
+			$state->errsay("$0 should be run as root");
 		} else {
 			Fatal "$0 must be run as root";
 		}

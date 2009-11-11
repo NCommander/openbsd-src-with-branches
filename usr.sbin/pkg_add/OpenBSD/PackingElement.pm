@@ -1365,7 +1365,7 @@ sub run_if_exists
 	if (-x $cmd) {
 		OpenBSD::Error::VSystem($state->{very_verbose}, $cmd, @l);
 	} else {
-		OpenBSD::Error::Warn("$cmd not found\n");
+		$state->errsay("$cmd not found");
 	}
 }
 
@@ -1562,7 +1562,7 @@ sub prepare
 			$state->log($_);
 		} 
 	} else {
-		Warn "Can't open $fname: $!\n";
+		$state->errsay("Can't open $fname: $!");
     	}
 }
 

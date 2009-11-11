@@ -229,7 +229,7 @@ sub can_install
 
 		for my $toreplace (@conflicts) {
 			if ($state->tracker->is_installed($toreplace)) {
-				Warn "Cannot replace $toreplace with $pkgname: just got installed\n";
+				$state->errsay("Cannot replace $toreplace with $pkgname: just got installed");
 				$handle->set_error(OpenBSD::Handle::CANT_INSTALL);
 				return;
 			}
@@ -370,7 +370,7 @@ sub really_add
 				    $state);
 			} catchall {
 				unless ($state->{interrupted}) {
-					Warn $_;
+					$state->errprint($_);
 					$errors++;
 				}
 			};
@@ -390,7 +390,7 @@ sub really_add
 			try {
 			    OpenBSD::Delete::delete_plist($o->plist, $state);
 			} catchall {
-				Warn $_;
+				$state->errprint($_);
 				Fatal partial_install(
 				    "Deinstallation of $oldname failed", 
 				    $set, $state);
@@ -420,7 +420,7 @@ sub really_add
 			}
 		} catchall {
 			unless ($state->{interrupted}) {
-				Warn $_;
+				$state->errprint($_);
 				$errors++;
 			}
 		};

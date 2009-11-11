@@ -131,7 +131,9 @@ sub clear
 {
 	my $self = shift;
 	return unless $isatty;
+	return unless length($lastdisplay) > 0;
 	print ' 'x length($lastdisplay), "\r";
+	$lastdisplay = '';
 }
 
 sub print
