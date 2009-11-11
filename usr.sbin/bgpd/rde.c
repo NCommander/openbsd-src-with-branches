@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.272 2009/10/28 15:54:13 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.273 2009/11/02 20:38:15 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1968,6 +1968,7 @@ rde_dump_ctx_new(struct ctl_show_rib_request *req, pid_t pid,
 		error = CTL_RES_NOSUCHPEER;
 		imsg_compose(ibuf_se_ctl, IMSG_CTL_RESULT, 0, pid, -1, &error,
 		    sizeof(error));
+		free(ctx);
 		return;
 	}
 
