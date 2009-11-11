@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.h,v 1.98 2009/02/12 03:00:56 djm Exp $ */
+/* $OpenBSD: channels.h,v 1.99 2009/10/28 16:38:18 reyk Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -96,7 +96,11 @@ struct Channel {
 	int     isatty;		/* rfd is a tty */
 	int	client_tty;	/* (client) TTY has been requested */
 	int     force_drain;	/* force close on iEOF */
-	int     delayed;		/* fdset hack */
+	int     delayed;	/* post-select handlers for newly created
+				 * channels are delayed until the first call
+				 * to a matching pre-select handler. 
+				 * this way post-select handlers are not
+				 * accidenly called if a FD gets reused */
 	Buffer  input;		/* data read from socket, to be sent over
 				 * encrypted connection */
 	Buffer  output;		/* data received over encrypted connection for
