@@ -1,4 +1,4 @@
-/*	$OpenBSD: gzopen.c,v 1.24 2007/03/19 13:02:18 pedro Exp $	*/
+/*	$OpenBSD: gzopen.c,v 1.25 2008/08/20 09:22:02 mpf Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -60,7 +60,7 @@
 
 #ifndef SMALL
 const char gz_rcsid[] =
-    "$OpenBSD: gzopen.c,v 1.24 2007/03/19 13:02:18 pedro Exp $";
+    "$OpenBSD: gzopen.c,v 1.25 2008/08/20 09:22:02 mpf Exp $";
 #endif
 
 #include <sys/param.h>
@@ -146,6 +146,7 @@ gz_open(int fd, const char *mode, char *name, int bits,
 		}
 		s->z_stream.next_out = s->z_buf;
 #else
+		free(s);
 		return (NULL);
 #endif
 	} else {
