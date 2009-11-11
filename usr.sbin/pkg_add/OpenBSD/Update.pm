@@ -126,7 +126,7 @@ sub process_handle
 		}
 	}
 
-	$state->progress->print("Candidates for updating $pkgname -> ", join(' ', map {$_->name} @$l), "\n");
+	$state->print("Candidates for updating $pkgname -> ", join(' ', map {$_->name} @$l), "\n");
 		
 	my $r = $state->choose_location($pkgname, $l);
 	if (defined $r) {

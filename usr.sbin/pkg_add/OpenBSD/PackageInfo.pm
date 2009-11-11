@@ -256,7 +256,7 @@ sub solve_installed_names
 
 			if ($state->{defines}->{ambiguous}) {
 			    my @l = map {$_->name} @$r;
-			    $state->progress->print("Ambiguous: $pkgname could be ", join(' ', @l),"\n");
+			    $state->print("Ambiguous: $pkgname could be ", join(' ', @l),"\n");
 			    print "$msg\n";
 			    push(@$new, @l);
 			    for my $p (@$r) {
