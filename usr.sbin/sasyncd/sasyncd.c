@@ -1,4 +1,4 @@
-/*	$OpenBSD: sasyncd.c,v 1.17 2007/02/26 04:36:57 ray Exp $	*/
+/*	$OpenBSD: sasyncd.c,v 1.18 2008/03/17 20:30:17 sobrado Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -72,6 +72,7 @@ sasyncd_run(pid_t ppid)
 	wfds = (fd_set *)malloc(fdsetsize);
 	if (!wfds) {
 		log_err("malloc(%lu) failed", (unsigned long)fdsetsize);
+		free(rfds);
 		return -1;
 	}
 
