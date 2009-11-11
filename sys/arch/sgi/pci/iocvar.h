@@ -1,4 +1,4 @@
-/*	$OpenBSD: iocvar.h,v 1.2 2009/04/12 17:56:58 miod Exp $	*/
+/*	$OpenBSD: iocvar.h,v 1.3 2009/07/26 19:58:51 miod Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -27,6 +27,9 @@ struct ioc_attach_args {
 	int			 iaa_dev;
 
 	uint8_t			 iaa_enaddr[6];
+
+	int			 iaa_flags;
+#define	IOC_FLAGS_OBIO		0x00000001
 };
 
 void   *ioc_intr_establish(void *, u_long, int, int (*)(void *),
