@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.4 2005/05/26 19:19:51 ho Exp $	*/
+/*	$OpenBSD: log.c,v 1.5 2007/01/08 15:31:01 markus Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -82,7 +82,7 @@ log_err(const char *fmt, ...)
 }
 
 void
-log_msg (int minlevel, const char *fmt, ...)
+log_msg(int minlevel, const char *fmt, ...)
 {
 	va_list ap;
 
