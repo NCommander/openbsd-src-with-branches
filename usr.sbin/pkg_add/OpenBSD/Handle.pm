@@ -170,19 +170,18 @@ sub get_plist
 	my $pkg = $handle->pkgname;
 
 	if ($state->{verbose}) {
-		print $state->deptree_header($pkg);
-		print "parsing $pkg\n";
+		$state->say($state->deptree_header($pkg), "parsing $pkg");
 	}
 	my $plist = $location->grabPlist;
 	unless (defined $plist) {
-		print "Can't find CONTENTS from ", $location->url, "\n";
+		$state->say("Can't find CONTENTS from ", $location->url);
 		$location->close_with_client_error;
 		$location->wipe_info;
 		$handle->set_error(BAD_PACKAGE);
 		return;
 	}
 	if ($plist->localbase ne $state->{localbase}) {
-		print "Localbase mismatch: package has: ", $plist->localbase, " , user wants: ", $state->{localbase}, "\n";
+		$state->say("Localbase mismatch: package has: ", $plist->localbase, " , user wants: ", $state->{localbase});
 		$location->close_with_client_error;
 		$location->wipe_info;
 		$handle->set_error(BAD_PACKAGE);
@@ -197,8 +196,8 @@ sub get_plist
 	      !$plist->uses_old_libs)) {
 		$handle->{tweaked} = 
 		    OpenBSD::Add::tweak_package_status($pkgname, $state);
-		print "Not reinstalling $pkgname\n" if $state->{verbose} and
-		    !$handle->{tweaked};
+		$state->say("Not reinstalling $pkgname")
+		    if $state->{verbose} and !$handle->{tweaked};
 		$state->tracker->{installed}->{$pkgname} = 1;
 		$location->close_now;
 		$location->wipe_info;
@@ -207,7 +206,7 @@ sub get_plist
 	}
 	if ($pkg ne '-') {
 		if (!defined $pkgname or $pkg ne $pkgname) {
-			print "Package name is not consistent ???\n";
+			$state->say("Package name is not consistent ???");
 			$location->close_with_client_error;
 			$location->wipe_info;
 			$handle->set_error(BAD_PACKAGE);
@@ -225,13 +224,13 @@ sub get_location
 
 	my $location = OpenBSD::PackageLocator->find($name, $state->{arch});
 	if (!$location) {
-		print $state->deptree_header($name);
+		$state->print($state->deptree_header($name));
 		$handle->set_error(NOT_FOUND);
 		$handle->{tweaked} = 
 		    OpenBSD::Add::tweak_package_status($handle->pkgname, 
 			$state);
 		if (!$handle->{tweaked}) {
-			print "Can't find $name\n";
+			$state->say("Can't find $name");
 		}
 		return;
 	}

@@ -44,14 +44,12 @@ sub process_handle
 	my ($self, $set, $h, $state) = @_;
 	my $pkgname = $h->pkgname;
 	if (defined $h->{update}) {
-		$state->progress->clear;
-		print "Update to $pkgname already found\n";
+		$state->say("Update to $pkgname already found");
 		return 0;
 	}
 
 	if ($pkgname =~ m/^(?:\.libs\d*|partial)\-/o) {
-		$state->progress->clear;
-		print "Not updating $pkgname, remember to clean it\n";
+		$state->say("Not updating $pkgname, remember to clean it");
 		return 0;
 	}
 	my @search = ();
@@ -112,8 +110,7 @@ sub process_handle
 	}
 	if (@$l == 1) {
 		if ($state->{defines}->{pkgpath}) {
-			$state->progress->clear;
-			print "Directly updating $pkgname -> ", $l->[0]->name, "\n";
+			$state->say("Directly updating $pkgname -> ", $l->[0]->name);
 			$self->add_updateset($set, $h, $l->[0]);
 			return 1;
 		}
@@ -121,12 +118,13 @@ sub process_handle
 		    !$plist->uses_old_libs && !$state->{defines}->{installed}) {
 				my $msg = "No need to update $pkgname";
 				$state->progress->message($msg);
-				print "$msg\n" if $state->{beverbose};
+				$state->say($msg) if $state->{beverbose};
 				return 0;
 		}
 	}
 
-	$state->print("Candidates for updating $pkgname -> ", join(' ', map {$_->name} @$l), "\n");
+	$state->say("Candidates for updating $pkgname -> ", 
+	    join(' ', map {$_->name} @$l));
 		
 	my $r = $state->choose_location($pkgname, $l);
 	if (defined $r) {
