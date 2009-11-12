@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ppp.c,v 1.20 2008/10/10 15:24:24 claudio Exp $	*/
+/*	$OpenBSD: print-ppp.c,v 1.21 2009/10/27 23:59:55 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -325,7 +325,7 @@ print_lcp_config_options(p)
 	int len	= *(p+1);
 	int opt = *p;
 
-	if((opt >= LCPOPT_MIN) && (opt <= LCPOPT_MAX))
+	if((opt >= LCPOPT_MIN) && (opt < LCPOPT_MAX))
 		printf(", %s", lcpconfopts[opt]);
 
 	switch(opt) {
