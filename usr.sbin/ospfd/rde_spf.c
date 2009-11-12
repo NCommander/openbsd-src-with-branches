@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_spf.c,v 1.66 2008/02/11 12:37:37 norby Exp $ */
+/*	$OpenBSD: rde_spf.c,v 1.67 2009/01/07 21:16:36 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -1001,7 +1001,7 @@ get_rtr_link(struct vertex *v, int idx)
 		    rtr_link->num_tos * sizeof(u_int32_t);
 	}
 
-	return (NULL);
+	fatalx("get_rtr_link: index not found");
 }
 
 /* network LSA links */
@@ -1027,7 +1027,7 @@ get_net_link(struct vertex *v, int idx)
 		off += sizeof(struct lsa_net_link);
 	}
 
-	return (NULL);
+	fatalx("get_net_link: index not found");
 }
 
 /* misc */
