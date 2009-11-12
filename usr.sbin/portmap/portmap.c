@@ -1,4 +1,4 @@
-/*	$OpenBSD: portmap.c,v 1.37 2009/05/20 20:37:43 thib Exp $	*/
+/*	$OpenBSD: portmap.c,v 1.38 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Theo de Raadt (OpenBSD). All rights reserved.
@@ -369,11 +369,12 @@ reg_service(struct svc_req *rqstp, SVCXPRT *xprt)
 
 		pml->pml_map = reg;
 		pml->pml_next = 0;
-		if (pmaplist == 0) {
+		if (pmaplist == NULL) {
 			pmaplist = pml;
 		} else {
 			for (fnd = pmaplist; fnd->pml_next != 0;
-			    fnd = fnd->pml_next);
+			    fnd = fnd->pml_next)
+				;
 			fnd->pml_next = pml;
 		}
 		ans = 1;
