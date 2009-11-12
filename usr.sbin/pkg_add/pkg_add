@@ -513,9 +513,9 @@ sub install_set
 	my @baddeps = $set->{solver}->check_depends;
 
 	if (@baddeps) {
+		$state->errsay("Can't install ", $set->short_print,
+		    ": can't resolve ", join(',', @baddeps));
 		for my $handle ($set->newer) {
-			$state->say("Can't install ", $handle->pkgname,
-			    ": can't resolve ", join(',', @baddeps));
 			$handle->location->close_now;
 		}
 		$bad++;
