@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.c,v 1.16 2009/01/03 18:41:41 aschrijver Exp $ */
+/*	$OpenBSD: ber.c,v 1.17 2009/06/04 18:03:07 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
@@ -702,7 +702,7 @@ ber_scanf_elements(struct ber_element *ber, char *fmt, ...)
 			if (ber->be_encoding != BER_TYPE_SEQUENCE &&
 			    ber->be_encoding != BER_TYPE_SET)
 				goto fail;
-			if (ber->be_sub == NULL || level >= _MAX_SEQ)
+			if (ber->be_sub == NULL || level >= _MAX_SEQ-1)
 				goto fail;
 			parent[++level] = ber;
 			ber = ber->be_sub;
