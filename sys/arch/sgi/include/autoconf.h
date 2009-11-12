@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.24 2009/11/07 14:49:01 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.25 2009/11/07 22:48:36 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -52,7 +52,6 @@ struct sys_rec {
 		u_int8_t  fpvers_maj;
 		u_int8_t  fpvers_min;
 		u_int32_t clock;
-		u_int32_t clock_bus;
 		u_int32_t tlbsize;
 		u_int32_t tlbwired;
 	} cpu[MAX_CPUS];
