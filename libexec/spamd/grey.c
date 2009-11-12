@@ -1,4 +1,4 @@
-/*	$OpenBSD: grey.c,v 1.46 2009/02/25 19:00:36 beck Exp $	*/
+/*	$OpenBSD: grey.c,v 1.47 2009/04/20 17:42:21 beck Exp $	*/
 
 /*
  * Copyright (c) 2004-2006 Bob Beck.  All rights reserved.
@@ -336,14 +336,14 @@ readsuffixlists(void)
 				continue;
 			if (buf[len-1] == '\n')
 				len--;
-			if ((m = malloc(sizeof(struct mail_addr))) == NULL)
-				goto bad;
 			if ((len + 1) > sizeof(m->addr)) {
 				syslog_r(LOG_ERR, &sdata,
 				    "line too long in %s - file ignored",
 				    alloweddomains_file);
 				goto bad;
 			}
+			if ((m = malloc(sizeof(struct mail_addr))) == NULL)
+				goto bad;
 			memcpy(m->addr, buf, len);
 			m->addr[len]='\0';
 			syslog_r(LOG_ERR, &sdata, "got suffix %s", m->addr);
