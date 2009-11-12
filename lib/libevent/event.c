@@ -89,6 +89,9 @@ const struct eventop *eventops[] = {
 #ifdef HAVE_EVENT_PORTS
 	&evportops,
 #endif
+#ifdef HAVE_WORKING_KQUEUE
+	&kqops,
+#endif
 #ifdef HAVE_EPOLL
 	&epollops,
 #endif
@@ -103,9 +106,6 @@ const struct eventop *eventops[] = {
 #endif
 #ifdef HAVE_SELECT
 	&selectops,
-#endif
-#ifdef HAVE_WORKING_KQUEUE
-	&kqops,
 #endif
 #ifdef WIN32
 	&win32ops,
