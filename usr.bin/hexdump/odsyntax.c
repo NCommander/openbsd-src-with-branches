@@ -1,4 +1,4 @@
-/*	$OpenBSD: odsyntax.c,v 1.16 2007/02/06 20:55:13 jmc Exp $	*/
+/*	$OpenBSD: odsyntax.c,v 1.17 2009/10/27 23:59:39 deraadt Exp $	*/
 /*	$NetBSD: odsyntax.c,v 1.15 2001/12/07 15:14:29 bjh21 Exp $	*/
 
 /*-
@@ -267,6 +267,8 @@ posixtypes(char *type_string)
 				type_string++;
 			} else if (isdigit(*type_string))
 				nbytes = strtol(type_string, &type_string, 10);
+			else
+				nbytes = 4;
 
 			switch (nbytes) {
 			case 1:
