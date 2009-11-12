@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.42 2007/09/02 15:19:23 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.43 2009/10/27 23:59:32 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.14 1997/06/05 11:13:24 lukem Exp $	*/
 
 /*-
@@ -677,11 +677,12 @@ obsolete(int *argcp, char **argvp[])
 		}
 	}
 
-	/* Terminate flags. */
+	/* Terminate flags, or toss the buffer we did not use. */
 	if (flags) {
 		*p = '\0';
 		*nargv++ = flagsp;
-	}
+	} else
+		free(flagsp);
 
 	/* Copy remaining arguments. */
 	while ((*nargv++ = *argv++))
