@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_subr.c,v 1.20 2008/03/31 22:40:34 deraadt Exp $	*/
+/*	$OpenBSD: tty_subr.c,v 1.21 2009/07/19 08:16:06 blambert Exp $	*/
 /*	$NetBSD: tty_subr.c,v 1.13 1996/02/09 19:00:43 christos Exp $	*/
 
 /*
@@ -304,11 +304,13 @@ clrbits(u_char *cp, int off, int len)
 		mask = (1<<sbi) - 1;
 		cp[sby++] &= mask;
 
-		mask = (1<<ebi) - 1;
-		cp[eby] &= ~mask;
-
 		for (i = sby; i < eby; i++)
 			cp[i] = 0x00;
+
+		mask = (1<<ebi) - 1;
+		if (mask)	/* if no mask, eby may be 1 too far */
+			cp[eby] &= ~mask;
+
 	}
 }
 
