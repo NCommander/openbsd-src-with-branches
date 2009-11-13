@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-command-prompt.c,v 1.10 2009/08/25 12:18:51 nicm Exp $ */
+/* $OpenBSD: cmd-command-prompt.c,v 1.11 2009/09/21 15:32:06 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -39,7 +39,7 @@ void	 cmd_command_prompt_cfree(void *);
 const struct cmd_entry cmd_command_prompt_entry = {
 	"command-prompt", NULL,
 	CMD_TARGET_CLIENT_USAGE " [-p prompts] [template]",
-	0, 0,
+	0, "",
 	cmd_command_prompt_init,
 	cmd_command_prompt_parse,
 	cmd_command_prompt_exec,

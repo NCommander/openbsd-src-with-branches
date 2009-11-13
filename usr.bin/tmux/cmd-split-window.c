@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-split-window.c,v 1.12 2009/09/16 12:35:04 nicm Exp $ */
+/* $OpenBSD: cmd-split-window.c,v 1.13 2009/09/21 15:32:06 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -46,7 +46,7 @@ struct cmd_split_window_data {
 const struct cmd_entry cmd_split_window_entry = {
 	"split-window", "splitw",
 	"[-dhv] [-p percentage|-l size] [-t target-window] [command]",
-	0, 0,
+	0, "",
 	cmd_split_window_init,
 	cmd_split_window_parse,
 	cmd_split_window_exec,

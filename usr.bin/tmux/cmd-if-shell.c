@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-if-shell.c,v 1.5 2009/10/11 09:10:57 nicm Exp $ */
+/* $OpenBSD: cmd-if-shell.c,v 1.6 2009/11/01 23:20:37 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -36,7 +36,7 @@ void	cmd_if_shell_free(void *);
 const struct cmd_entry cmd_if_shell_entry = {
 	"if-shell", "if",
 	"shell-command command",
-	CMD_ARG2, 0,
+	CMD_ARG2, "",
 	cmd_target_init,
 	cmd_target_parse,
 	cmd_if_shell_exec,
