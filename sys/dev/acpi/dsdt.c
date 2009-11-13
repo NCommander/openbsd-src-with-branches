@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.154 2009/09/04 22:50:11 jordan Exp $ */
+/* $OpenBSD: dsdt.c,v 1.155 2009/10/16 15:49:25 jordan Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -3345,6 +3345,7 @@ aml_xparse(struct aml_scope *scope, int ret_type, const char *stype)
 		maxdp = odp;
 		dnprintf(10, "max depth: %d\n", maxdp);
 	}
+	end = NULL;
 	iscope = scope;
  start:
 	/* --== Stage 0: Get Opcode ==-- */
