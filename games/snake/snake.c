@@ -1,4 +1,4 @@
-/*	$OpenBSD: snake.c,v 1.12 2007/04/02 15:23:48 jmc Exp $	*/
+/*	$OpenBSD: snake.c,v 1.13 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: snake.c,v 1.8 1995/04/29 00:06:41 mycroft Exp $	*/
 
 /*
@@ -134,7 +134,6 @@ int
 main(int argc, char *argv[])
 {
 	int	ch, i;
-	char	*p, **av;
 	struct sigaction sa;
 	gid_t	gid;
 
@@ -147,16 +146,6 @@ main(int argc, char *argv[])
 	/* revoke privs */
 	gid = getgid();
 	setresgid(gid, gid, gid);
-
-	/* check to see if we were called as snscore */
-	av = argv;
-	p = strrchr(*av, '/');
-	if (p++ == NULL)
-		p = *av;
-	if (strcmp(p,"snscore") == 0) {
-		snscore(rawscores, 0);
-		exit(0);
-	}
 
 	while ((ch = getopt(argc, argv, "hl:stw:")) != -1)
 		switch ((char)ch) {
