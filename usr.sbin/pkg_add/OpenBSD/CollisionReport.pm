@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: CollisionReport.pm,v 1.22 2009/11/11 13:00:40 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2006 Marc Espie <espie@openbsd.org>
 #
@@ -52,7 +52,6 @@ sub find_collisions
 			if (defined $todo->{$name}) {
 				push(@{$bypkg->{$pkg}}, $name);
 				delete $todo->{$name};
-				return $bypkg;
 			}
 		}
 	}
