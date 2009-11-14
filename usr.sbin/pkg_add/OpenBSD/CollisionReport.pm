@@ -62,10 +62,12 @@ sub collision_report($$)
 {
 	my ($list, $state) = @_;
 
+	my $destdir = $state->{destdir};
+
 	if ($state->{defines}->{removecollisions}) {
 		require OpenBSD::Error;
 		for my $f (@$list) {
-			$state->unlink(1, $f->fullname);
+			$state->unlink(1, $destdir.$f->fullname);
 		}
 		return;
 	}
@@ -91,7 +93,6 @@ sub collision_report($$)
 		}
 	}
 	if (%todo) {
-		my $destdir = $state->{destdir};
 
 		for my $item (sort keys %todo) {
 		    if (defined $todo{$item}) {
@@ -135,7 +136,7 @@ sub collision_report($$)
 		for my $f (@$list) {
 
 			if ($state->unlink($state->{verbose}, 
-			    $f->fullname)) {
+			    $destdir.$f->fullname)) {
 				$state->{problems}--;
 			} else {
 				return;
