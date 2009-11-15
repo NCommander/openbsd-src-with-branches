@@ -76,13 +76,13 @@ sub collision_report($$)
 	my $clueless_bat2;
 	my $found = 0;
 	
-	$state->say("Collision: the following files already exist");
+	$state->errsay("Collision: the following files already exist");
 	if (!$state->{defines}->{dontfindcollisions}) {
 		my $bypkg = find_collisions(\%todo, $state);
 		for my $pkg (sort keys %$bypkg) {
 		    for my $item (sort @{$bypkg->{$pkg}}) {
 		    	$found++;
-			$state->say("\t$item ($pkg)");
+			$state->errsay("\t$item ($pkg)");
 		    }
 		    if ($pkg =~ m/^(?:partial\-|borked\.\d+$)/o) {
 			$clueless_bat = $pkg;
@@ -99,23 +99,23 @@ sub collision_report($$)
 			    my $old = $todo{$item};
 			    my $d = $old->new($destdir.$item);
 			    if ($d->equals($old)) {
-				$state->say("\t$item (same checksum)");
+				$state->errsay("\t$item (same checksum)");
 			    } else {
-				$state->say("\t$item (different checksum)");
+				$state->errsay("\t$item (different checksum)");
 			    }
 		    } else {
-			    $state->say("\t$item");
+			    $state->errsay("\t$item");
 		    }
 	    	}
 	}
 	if (defined $clueless_bat) {
-		$state->print("The package name $clueless_bat suggests that a former installation\n",
+		$state->errprint("The package name $clueless_bat suggests that a former installation\n",
 		    "of a similar package got interrupted.  It is likely that\n",
 		    "\tpkg_delete $clueless_bat\n",
 		    "will solve the problem\n");
 	}
 	if (defined $clueless_bat2) {
-		$state->print("The package name $clueless_bat2 suggests remaining libraries\n",
+		$state->errprint("The package name $clueless_bat2 suggests remaining libraries\n",
 		    "from a former package update.  It is likely that\n",
 		    "\tpkg_delete $clueless_bat2\n".
 		    "will solve the problem\n");
