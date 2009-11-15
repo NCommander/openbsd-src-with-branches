@@ -2836,7 +2836,7 @@ athn_stop_tx_dma(struct athn_softc *sc, int qid)
 
 	AR_WRITE(sc, AR_Q_TXD, 1 << qid);
 	for (ntries = 0; ntries < 40; ntries++) {
-		if (athn_tx_pending(sc, qid))
+		if (!athn_tx_pending(sc, qid))
 			break;
 		DELAY(100);
 	}
@@ -2856,7 +2856,7 @@ athn_stop_tx_dma(struct athn_softc *sc, int qid)
 		AR_CLRBITS(sc, AR_TIMER_MODE, AR_QUIET_TIMER_EN);
 
 		for (ntries = 0; ntries < 40; ntries++) {
-			if (athn_tx_pending(sc, qid))
+			if (!athn_tx_pending(sc, qid))
 				break;
 			DELAY(100);
 		}
