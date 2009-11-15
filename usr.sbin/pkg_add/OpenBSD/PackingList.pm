@@ -238,6 +238,7 @@ sub UpdateInfoOnly
 		    while (<$fh>) {
 			    &$cont($_);
 		    }
+		    return;
 		}
 		next unless m/^\@(?:name\b|depend\b|wantlib\b|pkgpath\b|comment\s+subdir\=|arch\b)/o;
 		&$cont($_);
