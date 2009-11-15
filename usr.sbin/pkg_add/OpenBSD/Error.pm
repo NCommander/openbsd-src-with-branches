@@ -18,6 +18,7 @@ use strict;
 use warnings;
 
 package OpenBSD::Error;
+require Exporter;
 our @ISA=qw(Exporter);
 our @EXPORT=qw(System VSystem Copy Unlink Fatal Warn Usage set_usage 
     try throw catch catchall rethrow);
