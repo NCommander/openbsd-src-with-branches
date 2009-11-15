@@ -374,6 +374,7 @@ struct athn_softc {
 #define ATHN_FLAG_BTCOEX	(ATHN_FLAG_BTCOEX2WIRE | ATHN_FLAG_BTCOEX3WIRE)
 
 	uint8_t				ngpiopins;
+	int				led_pin;
 	int				rfsilent_pin;
 
 	uint16_t			mac_ver;
