@@ -29,7 +29,6 @@ use OpenBSD::PackageInfo;
 use OpenBSD::PackageLocator;
 use OpenBSD::PackageName;
 use OpenBSD::PkgCfl;
-use OpenBSD::Vstat;
 use OpenBSD::Interactive;
 use OpenBSD::Add;
 use OpenBSD::SharedLibs;

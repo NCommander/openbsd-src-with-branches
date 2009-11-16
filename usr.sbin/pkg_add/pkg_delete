@@ -32,7 +32,6 @@ use OpenBSD::RequiredBy;
 use OpenBSD::Interactive;
 use OpenBSD::Delete;
 use OpenBSD::PackageInfo;
-use OpenBSD::Vstat;
 use OpenBSD::UpdateSet;
 
 our ($opt_d, $opt_p, $opt_i);
