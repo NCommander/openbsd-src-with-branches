@@ -63,7 +63,7 @@ sub compute_playfield
 {
 	return unless $isatty;
 	# compute playfield
-	$playfield = $width - length($header) - 10;
+	$playfield = $width - length($header) - 7;
 	if ($playfield < 5) {
 		$playfield = 0;
 	}
