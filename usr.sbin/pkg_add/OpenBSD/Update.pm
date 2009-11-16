@@ -188,7 +188,7 @@ sub process_set
 		}
 	}
 	if ($problem) {
-		$state->tracker->mark_cantupdate($set);
+		$state->tracker->mark_cant_update($set);
 		return 0;
 	} elsif (!$need_update) {
 		$state->tracker->mark_uptodate($set);
