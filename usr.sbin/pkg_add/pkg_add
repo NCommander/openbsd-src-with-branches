@@ -665,8 +665,11 @@ sub process_parameters
 		$state->progress->set_header("Looking for packages");
 		for my $_ (@ARGV) {
 			my $set = OpenBSD::UpdateSet->new->add_hints($_);
-			if ($state->updater->process_hint($set, $_, $state)) {
-				push(@todo2, $set);
+			for my $hint ($set->hints) {
+				if ($state->updater->process_hint($set, 
+				    $hint, $state)) {
+					push(@todo2, $set);
+				}
 			}
 		}
 	# 2/ update existing stuff
