@@ -162,4 +162,39 @@ sub process_hint
 	}
 }
 
+sub process_set
+{
+	my ($self, $set, $state) = @_;
+	my $problem;
+	my $need_update;
+	for my $h ($set->older) {
+		next if $h->{done};
+		my $r = $self->process_handle($set, $h, $state);
+		if (!defined $r) {
+			$problem = 1;
+		}
+		if ($r) {
+			$need_update = 1;
+		}
+	}
+	for my $h ($set->hints) {
+		next if $h->{done};
+		my $r = $self->process_hint($set, $h, $state);
+		if (!defined $r) {
+			$problem = 1;
+		}
+		if ($r) {
+			$need_update = 1;
+		}
+	}
+	if ($problem) {
+		$state->tracker->mark_cantupdate($set);
+		return 0;
+	} elsif (!$need_update) {
+		$state->tracker->mark_uptoupdate($set);
+		return 0;
+	} 
+	return 1;
+}
+
 1;
