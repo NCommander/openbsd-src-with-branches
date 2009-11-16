@@ -146,7 +146,7 @@ sub process_hint
 	my $k = OpenBSD::Search::FilterLocation->keep_most_recent;
 	# first try to find us exactly
 
-	$state->progress->message("Looking for $hint");
+	$state->progress->message("Looking for $hint_name");
 	$l = OpenBSD::PackageLocator->match_locations(OpenBSD::Search::Exact->new($hint_name), $k);
 	if (@$l == 0) {
 		my $t = $hint_name;
