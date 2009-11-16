@@ -159,5 +159,13 @@ sub {
 rethrow $dielater;
 } catch {
 	print STDERR "$0: $_\n";
+	if ($_ =~ m/^Caught SIG(\w+)/o) {
+		kill $1, $$;
+	}
 	exit(1);
 };
+
+if ($bad) {
+	exit(1);
+}
+

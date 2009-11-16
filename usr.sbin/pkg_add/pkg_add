@@ -644,7 +644,6 @@ if ($opt_l && @ARGV != 0) {
 	Usage "No pkgnames after -l";
 }
 
-
 setup_state();
 
 # Here we create the list of packages to install
