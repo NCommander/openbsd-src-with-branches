@@ -21,7 +21,6 @@ use warnings;
 package OpenBSD::CollisionReport;
 use OpenBSD::PackingList;
 use OpenBSD::PackageInfo;
-use OpenBSD::Vstat;
 
 sub find_collisions
 {
@@ -29,7 +28,7 @@ sub find_collisions
 	my $verbose = $state->{verbose};
 	my $bypkg = {};
 	for my $name (keys %$todo) {
-		my $p = OpenBSD::Vstat::vexists $name;
+		my $p = $state->vstat->exists($name);
 		if (ref $p) {
 			my $pkg = $$p;
 			push(@{$bypkg->{$pkg}}, $name);

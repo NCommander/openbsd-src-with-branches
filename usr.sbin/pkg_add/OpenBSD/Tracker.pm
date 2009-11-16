@@ -44,11 +44,8 @@ sub add_set
 	for my $n ($set->newer) {
 		$self->{to_install}->{$n->pkgname} = $set;
 	}
-	for my $n ($set->older) {
+	for my $n ($set->older, $set->hints) {
 		$self->{to_update}->{$n->pkgname} = $set;
-	}
-	for my $n ($set->hints) {
-		$self->{to_update}->{$n} = $set;
 	}
 	return $self;
 }

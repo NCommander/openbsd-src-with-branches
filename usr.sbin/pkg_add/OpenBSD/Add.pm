@@ -359,12 +359,12 @@ sub prepare_for_addition
 	my ($self, $state, $pkgname) = @_;
 	my $fname = $state->{destdir}.$self->fullname;
 	# check for collisions with existing stuff
-	if (OpenBSD::Vstat::vexists($fname)) {
+	if ($state->vstat->exists($fname)) {
 		push(@{$state->{colliding}}, $self);
 		$state->{problems}++;
 		return;
 	}
-	my $s = OpenBSD::Vstat::add($fname, $self->{size}, \$pkgname);
+	my $s = $state->vstat->add($fname, $self->{size}, \$pkgname);
 	return unless defined $s;
 	if ($s->{ro}) {
 		$s->report_ro($state, $fname);
@@ -479,11 +479,11 @@ sub prepare_for_addition
 	}
 	my $fname = $state->{destdir}.$self->fullname;
 	# If file already exists, we won't change it
-	if (OpenBSD::Vstat::vexists($fname)) {
+	if ($state->vstat->exists($fname)) {
 		return;
 	}
 	my $size = $self->{copyfrom}->{size};
-	my $s = OpenBSD::Vstat::add($fname, $size, \$pkgname);
+	my $s = $state->vstat->add($fname, $size, \$pkgname);
 	return unless defined $s;
 	if ($s->{ro}) {
 		$s->report_ro($state, $fname);
@@ -662,12 +662,12 @@ sub prepare_for_addition
 		$size = (stat $cname)[7];
 	}
 	if ($self->exec_on_add) {
-		my $s2 = OpenBSD::Vstat::filestat($cname);
+		my $s2 = $state->vstat->stat($cname);
 		if (defined $s2 && $s2->{noexec}) {
 			$s2->report_noexec($state, $cname);
 		}
 	}
-	my $s = OpenBSD::Vstat::add($fname, $self->{size}, \$pkgname);
+	my $s = $state->vstat->add($fname, $self->{size}, \$pkgname);
 	return unless defined $s;
 	if ($s->{ro}) {
 		$s->report_ro($state, $fname);
