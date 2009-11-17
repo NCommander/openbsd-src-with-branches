@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.213 2009/07/05 19:28:33 stevesk Exp $ */
+/* $OpenBSD: clientloop.c,v 1.214 2009/10/24 11:15:29 andreas Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1838,15 +1838,17 @@ client_input_channel_req(int type, u_int32_t seq, void *ctxt)
 		chan_rcvd_eow(c);
 	} else if (strcmp(rtype, "exit-status") == 0) {
 		exitval = packet_get_int();
-		if (id == session_ident) {
-			success = 1;
-			exit_status = exitval;
-		} else if (c->ctl_fd == -1) {
-			error("client_input_channel_req: unexpected channel %d",
-			    session_ident);
-		} else {
+		if (c->ctl_fd != -1) {
+			/* Dispatch to mux client */
 			atomicio(vwrite, c->ctl_fd, &exitval, sizeof(exitval));
 			success = 1;
+		} else if (id == session_ident) {
+			/* Record exit value of local session */
+			success = 1;
+			exit_status = exitval;
+		} else {
+			error("client_input_channel_req: unexpected channel %d",
+			    session_ident);
 		}
 		packet_check_eom();
 	}
