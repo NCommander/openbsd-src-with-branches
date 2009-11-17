@@ -124,9 +124,7 @@ sub collision_report($$)
 		if ($state->{defines}->{repair}) {
 			$dorepair = 1;
 		} elsif ($state->{interactive}) {
-			require OpenBSD::Interactive;
-			if (OpenBSD::Interactive::confirm(
-	    "It seems to be a missing package registration\nRepair", 1, 0)) {
+			if ($state->confirm("It seems to be a missing package registration\nRepair", 0)) {
 				$dorepair = 1;
 			}
 		}

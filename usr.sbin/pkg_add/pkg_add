@@ -29,7 +29,6 @@ use OpenBSD::PackageInfo;
 use OpenBSD::PackageLocator;
 use OpenBSD::PackageName;
 use OpenBSD::PkgCfl;
-use OpenBSD::Interactive;
 use OpenBSD::Add;
 use OpenBSD::SharedLibs;
 use OpenBSD::UpdateSet;
@@ -661,8 +660,7 @@ sub inform_user_of_pending_update
 		    $state->{full_update} && !$state->{interactive}) {
 			print "Proceeding anyways\n";
 		} else {
-			if (!OpenBSD::Interactive::confirm("Proceed", 
-			    $state->{interactive}, 0)) {
+			if (!$state->confirm("Proceed", 0)) {
 				exit(1);
 			}
 		}

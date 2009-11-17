@@ -18,7 +18,6 @@ use strict;
 use warnings;
 
 package OpenBSD::Update;
-use OpenBSD::Interactive;
 use OpenBSD::PackageInfo;
 use OpenBSD::PackageLocator;
 use OpenBSD::PackageName;
