@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.41 2009/11/04 21:04:43 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.42 2009/11/04 23:29:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -976,7 +976,7 @@ status_prompt_key(struct client *c, int key)
 			status_prompt_clear(c);
 		break;
 	case MODEKEY_OTHER:
-		if (key < 32 || key > 126)
+		if (key < 32 || key == 127)
 			break;
 		c->prompt_buffer = xrealloc(c->prompt_buffer, 1, size + 2);
 
