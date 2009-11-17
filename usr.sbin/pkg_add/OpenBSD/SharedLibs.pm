@@ -209,7 +209,6 @@ sub report_problem
 	return unless defined $stem;
 	return unless defined $registered_libs->{$stem};
 
-	print "library $name not found\n";
 	my $r = "";
 	while (my ($d, $v) = each %{$registered_libs->{$stem}}) {
 		my @l = ();
@@ -227,6 +226,7 @@ sub report_problem
 	}
 	if (!defined $printed->{$name} || $printed->{$name} ne $r) {
 		$printed->{$name} = $r;
+		print "library $name not found\n";
 		print $r;
 	}
 }
