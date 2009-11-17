@@ -376,8 +376,7 @@ sub read_fragments
 		while(my $file = pop @$stack) {
 			GETLINE:
 			while ($_ = $file->readline) {
-				if (m/^(\!)?\%\%(.*)\%\%$/o) {
-					my ($not, $frag) = ($1, $2);
+				if (my ($not, $frag) = m/^(\!)?\%\%(.*)\%\%$/) {
 					my $def = $frag;
 					if ($frag eq 'SHARED') {
 						$def = 'SHARED_LIBS';
