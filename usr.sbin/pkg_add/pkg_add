@@ -589,7 +589,6 @@ handle_options('aqchruzl:A:P:Q:', {},
     'pkg_add [-acIinqruvxz] [-A arch] [-B pkg-destdir] [-F keywords]',
     '[-L localbase] [-l file] [-P type] [-Q quick-destdir] pkg-name [...]');
 
-$state->{cache} = {};
 $state->{do_faked} = 0;
 $state->{arch} = $opt_A;
 
