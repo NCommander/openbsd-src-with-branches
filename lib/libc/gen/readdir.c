@@ -1,4 +1,4 @@
-/*	$OpenBSD: readdir.c,v 1.13 2008/04/04 21:26:07 okan Exp $ */
+/*	$OpenBSD: readdir.c,v 1.14 2008/05/01 19:49:18 otto Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,10 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <dirent.h>
-#include <string.h>
-#include <errno.h>
 #include "thread_private.h"
 
 /*
@@ -84,25 +81,4 @@ readdir(DIR *dirp)
 	_MUTEX_UNLOCK(&dirp->dd_lock);
 
 	return (dp);
-}
-
-int
-readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result)
-{
-	struct dirent *dp;
-
-	_MUTEX_LOCK(&dirp->dd_lock);
-	if (_readdir_unlocked(dirp, &dp, 1) != 0) {
-		_MUTEX_UNLOCK(&dirp->dd_lock);
-		return errno;
-	}
-	if (dp != NULL)
-		memcpy(entry, dp,
-		    sizeof (struct dirent) - MAXNAMLEN + dp->d_namlen);
-	_MUTEX_UNLOCK(&dirp->dd_lock);
-	if (dp != NULL)
-		*result = entry;
-	else
-		*result = NULL;
-	return 0;
 }
