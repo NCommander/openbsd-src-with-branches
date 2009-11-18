@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.77 2008/10/16 19:18:03 naddy Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.80 2009/07/16 22:58:45 thib Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -132,7 +132,6 @@ vlan_clone_create(struct if_clone *ifc, int unit)
 
 	ifp->if_start = vlan_start;
 	ifp->if_ioctl = vlan_ioctl;
-	ifp->if_output = ether_output;
 	IFQ_SET_MAXLEN(&ifp->if_snd, ifqmaxlen);
 	IFQ_SET_READY(&ifp->if_snd);
 	if_attach(ifp);
