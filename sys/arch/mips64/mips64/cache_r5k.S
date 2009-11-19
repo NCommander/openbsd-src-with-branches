@@ -1,4 +1,4 @@
-/*	$OpenBSD: cache_r5k.S,v 1.24 2009/08/06 21:06:30 miod Exp $ */
+/*	$OpenBSD: cache_r5k.S,v 1.25 2009/08/06 21:09:18 miod Exp $ */
 
 /*
  * Copyright (c) 1998-2004 Opsycon AB (www.opsycon.se)
@@ -171,7 +171,7 @@
 LEAF(Mips5k_ConfigCache, 0)
 	.set	noreorder
 	LA	v0, 1f
-	LA	v1, KSEG1_BASE
+	LA	v1, CKSEG1_BASE
 	or	v0, v1
 	jr	v0				# Switch to uncached.
 	nop
