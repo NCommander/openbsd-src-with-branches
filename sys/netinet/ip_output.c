@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.197 2009/11/03 10:59:04 claudio Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.198 2009/11/13 14:14:56 claudio Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -1274,7 +1274,7 @@ ip_ctloutput(op, so, level, optname, mp)
 #ifndef IPSEC
 			error = EOPNOTSUPP;
 #else
-			if (m->m_len < 2) {
+			if (m == NULL || m->m_len < 2) {
 				error = EINVAL;
 				break;
 			}
