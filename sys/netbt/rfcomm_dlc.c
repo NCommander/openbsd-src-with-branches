@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfcomm_dlc.c,v 1.3 2008/09/10 14:01:23 blambert Exp $	*/
+/*	$OpenBSD: rfcomm_dlc.c,v 1.4 2008/11/22 04:42:58 uwe Exp $	*/
 /*	$NetBSD: rfcomm_dlc.c,v 1.6 2008/08/06 15:01:24 plunky Exp $	*/
 
 /*-
@@ -232,7 +232,7 @@ rfcomm_dlc_setmode(struct rfcomm_dlc *dlc)
 	if (dlc->rd_mode & RFCOMM_LM_SECURE)
 		mode |= L2CAP_LM_SECURE;
 
-	return l2cap_setopt(dlc->rd_session->rs_l2cap, SO_L2CAP_LM, &mode);
+	return l2cap_setlinkmode(dlc->rd_session->rs_l2cap, mode);
 }
 
 /*
