@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tireg.h,v 1.25 2006/08/16 02:37:00 brad Exp $	*/
+/*	$OpenBSD: tireg.h,v 1.1 2009/08/29 21:12:55 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -39,7 +39,7 @@
  * which can be accessed with the CSR_READ_4()/CSR_WRITE_4() macros.
  * Each register must be accessed using 32 bit operations.
  *
- * All reegisters are accessed through a 16K shared memory block.
+ * All registers are accessed through a 16K shared memory block.
  * The first group of registers are actually copies of the PCI
  * configuration space registers.
  */
