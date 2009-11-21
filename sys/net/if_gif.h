@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.h,v 1.8 2002/03/14 01:27:09 millert Exp $	*/
+/*	$OpenBSD: if_gif.h,v 1.9 2003/12/03 14:51:05 markus Exp $	*/
 /*	$KAME: if_gif.h,v 1.17 2000/09/11 11:36:41 sumikawa Exp $	*/
 
 /*
@@ -52,6 +52,7 @@ struct gif_softc {
 #endif
 	} gifsc_gifscr;
 	int		gif_flags;
+	u_int		gif_rtableid;
 	LIST_ENTRY(gif_softc) gif_list;	/* list of all gifs */
 };
 
