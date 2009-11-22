@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.88 2008/06/09 22:23:18 mbalmer Exp $
+#	$OpenBSD: Makefile,v 1.89 2009/06/03 14:45:49 jj Exp $
 
-SUBDIR=	atactl badsect bioctl brconfig ccdconfig clri dhclient \
+SUBDIR=	atactl badsect bioctl ccdconfig clri dhclient \
 	disklabel dmesg dump dumpfs fdisk fsck fsck_ext2fs fsck_ffs  \
 	fsck_msdos fsdb fsirand growfs ifconfig init iopctl ipsecctl  \
 	isakmpd kbd ldattach lmccontrol mknod modload modunload mount \
