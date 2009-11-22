@@ -69,12 +69,20 @@ sub add_location
 	    OpenBSD::Handle->from_location($location));
 }
 
+my $first = 1;
 sub process_handle
 {
 	my ($self, $set, $h, $state) = @_;
 	my $pkgname = $h->pkgname;
 
-	if ($pkgname =~ m/^(?:\.libs\d*|partial)\-/o) {
+	if ($pkgname =~ m/^\.libs\d*\-/o) {
+		if ($first) {
+			$state->say("Not updating .libs*, remember to clean them");
+			$first = 0;
+		}
+		return 0;
+	}
+	if ($pkgname =~ m/^partial\-/o) {
 		$state->say("Not updating $pkgname, remember to clean it");
 		return 0;
 	}
