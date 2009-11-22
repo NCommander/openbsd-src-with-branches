@@ -154,7 +154,9 @@ sub next
 	my ($self, $todo) = @_;
 	return unless $isatty;
 	$self->clear;
-	print "$header: complete ", defined $todo ? "($todo to go)\n" : "\n";
+
+	$todo //= 0;
+	print "$header: complete ", $todo ? "($todo to go)" : "", "\n";
 
 }
 
