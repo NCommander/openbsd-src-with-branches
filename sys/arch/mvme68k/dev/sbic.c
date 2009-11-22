@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.21 2008/11/25 17:52:02 krw Exp $ */
+/*	$OpenBSD: sbic.c,v 1.22 2009/02/16 21:19:06 miod Exp $ */
 /*	$NetBSD: sbic.c,v 1.2 1996/04/23 16:32:54 chuck Exp $	*/
 
 /*
@@ -351,9 +351,6 @@ sbic_scsicmd(xs)
 
     if ( dev->sc_nexus && (flags & SCSI_POLL) )
         panic("sbic_scsicmd: busy");
-
-    if ( slp->target == slp->adapter_target )
-        return ESCAPE_NOT_SUPPORTED;
 
     s = splbio();
 
