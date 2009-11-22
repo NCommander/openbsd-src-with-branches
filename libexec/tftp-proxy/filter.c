@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.4 2009/09/01 13:45:13 sthen Exp $ */
+/*	$OpenBSD: filter.c,v 1.5 2009/11/01 19:28:09 chl Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -170,7 +170,7 @@ prepare_commit(u_int32_t id)
 	snprintf(an, PF_ANCHOR_NAME_SIZE, "%s/%d.%d", FTP_PROXY_ANCHOR,
 	    getpid(), id);
 	strlcpy(pfte.anchor, an, PF_ANCHOR_NAME_SIZE);
-	pfte.rs_num = PF_RULESET_FILTER;
+	pfte.type = PF_TRANS_RULESET;
 
 	if (ioctl(dev, DIOCXBEGIN, &pft) == -1)
 		return (-1);
