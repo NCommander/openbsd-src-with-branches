@@ -38,6 +38,11 @@ struct bio_common {
 	void		*bc_cookie;
 };
 
+struct bio_device {
+	void		*cookie;
+	char		dev[16];
+};
+
 /* convert name to a cookie */
 #define BIOCLOCATE _IOWR('B', 0, struct bio_locate)
 struct bio_locate {
