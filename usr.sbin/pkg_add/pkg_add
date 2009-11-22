@@ -437,7 +437,7 @@ sub really_add
 			    $set, $state);
 		}
 	}
-	$set->setup_header($state, undef, $replacing ? "installing" : undef);
+	$set->setup_header($state);
 	$state->progress->next($todo);
 	for my $handle ($set->newer) {
 		my $pkgname = $handle->pkgname;
