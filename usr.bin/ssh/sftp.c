@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.111 2009/08/18 18:36:21 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.112 2009/11/20 00:54:01 djm Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1670,7 +1670,8 @@ main(int argc, char **argv)
 		case 'c':
 		case 'i':
 		case 'o':
-			addargs(&args, "-%c%s", ch, optarg);
+			addargs(&args, "-%c", ch);
+			addargs(&args, "%s", optarg);
 			break;
 		case 'q':
 			showprogress = 0;
