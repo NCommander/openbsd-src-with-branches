@@ -48,6 +48,9 @@ sub pkgname
 	return shift->{name};
 }
 
+package OpenBSD::hint2;
+our @ISA = qw(OpenBSD::hint);
+
 package OpenBSD::UpdateSet;
 sub new
 {
@@ -67,6 +70,15 @@ sub add_hints
 	my ($self, @hints) = @_;
 	for my $h (@hints) {
 		push(@{$self->{hints}}, OpenBSD::hint->new($h));
+	}
+	return $self;
+}
+
+sub add_hints2
+{
+	my ($self, @hints) = @_;
+	for my $h (@hints) {
+		push(@{$self->{hints}}, OpenBSD::hint2->new($h));
 	}
 	return $self;
 }
