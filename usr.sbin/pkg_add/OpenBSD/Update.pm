@@ -212,7 +212,7 @@ sub process_hint2
 		}
 		my $l = $state->updater->stem2location($h, $pkgname, $state);
 		if (defined $l) {
-			$self->add_ulocation($set, $hint, $l);
+			$self->add_location($set, $hint, $l);
 		} else {
 			return undef;
 		}
