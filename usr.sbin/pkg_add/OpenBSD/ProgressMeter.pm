@@ -156,7 +156,7 @@ sub next
 	$self->clear;
 
 	$todo //= 0;
-	print "$header: complete ", $todo ? "($todo to go)" : "", "\n";
+	print "$header: done ", $todo ? "($todo to go)" : "", "\n";
 
 }
 
