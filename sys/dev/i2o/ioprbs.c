@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioprbs.c,v 1.16 2009/02/16 21:19:06 miod Exp $	*/
+/*	$OpenBSD: ioprbs.c,v 1.17 2009/08/29 11:02:51 miod Exp $	*/
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist
@@ -521,7 +521,7 @@ ioprbs_scsi_cmd(xs)
 					splx(s);
 					printf("%s: command timed out\n",
 					    sc->sc_dv.dv_xname);
-					return (TRY_AGAIN_LATER);
+					return (NO_CCB);
 				}
 				xs->flags |= ITSDONE;
 				scsi_done(xs);

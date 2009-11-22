@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.39 2009/02/16 21:19:06 miod Exp $	*/
+/*	$OpenBSD: aac.c,v 1.40 2009/09/04 04:57:14 miod Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -2674,7 +2674,7 @@ aac_scsi_cmd(struct scsi_xfer *xs)
 				printf("%s: command timed out\n",
 				       sc->aac_dev.dv_xname);
 				splx(s);
-				return (TRY_AGAIN_LATER);
+				return (NO_CCB);
 			}
 			xs->flags |= ITSDONE;
 			scsi_done(xs);

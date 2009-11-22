@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx_openbsd.c,v 1.41 2009/01/21 21:53:59 grange Exp $	*/
+/*	$OpenBSD: aic7xxx_openbsd.c,v 1.42 2009/02/16 21:19:06 miod Exp $	*/
 /*	$NetBSD: aic7xxx_osm.c,v 1.14 2003/11/02 11:07:44 wiz Exp $	*/
 
 /*
@@ -607,7 +607,7 @@ ahc_setup_data(struct ahc_softc *ahc, struct scsi_xfer *xs,
 			s = splbio();
 			ahc_free_scb(ahc, scb);
 			splx(s);
-			return (TRY_AGAIN_LATER);	/* XXX fvdl */
+			return (NO_CCB);	/* XXX fvdl */
 }
 		error = ahc_execute_scb(scb,
 					scb->dmamap->dm_segs,

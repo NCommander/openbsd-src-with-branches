@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9x.c,v 1.40 2008/11/24 00:31:35 krw Exp $	*/
+/*	$OpenBSD: ncr53c9x.c,v 1.41 2009/11/01 23:06:03 fgsch Exp $	*/
 /*     $NetBSD: ncr53c9x.c,v 1.56 2000/11/30 14:41:46 thorpej Exp $    */
 
 /*
@@ -811,7 +811,7 @@ ncr53c9x_scsi_cmd(xs)
 	if (li == NULL) {
 		/* Initialize LUN info and add to list. */
 		if ((li = malloc(sizeof(*li), M_DEVBUF, M_NOWAIT)) == NULL) {
-			return (TRY_AGAIN_LATER);
+			return (NO_CCB);
 		}
 		bzero(li, sizeof(*li));
 		li->last_used = time_second;
