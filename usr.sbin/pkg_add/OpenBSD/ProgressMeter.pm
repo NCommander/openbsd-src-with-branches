@@ -151,10 +151,11 @@ sub errprint
 
 sub next
 {
-	my $self = shift;
+	my ($self, $todo) = @_;
 	return unless $isatty;
 	$self->clear;
-	print "$header: complete\n";
+	print "$header: complete ", defined $todo ? "($todo to go)\n" : "\n";
+
 }
 
 1;
