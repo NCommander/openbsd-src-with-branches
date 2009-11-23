@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc.c,v 1.103 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: wdc.c,v 1.104 2009/11/22 12:51:09 jsg Exp $	*/
 /*	$NetBSD: wdc.c,v 1.68 1999/06/23 19:00:17 bouyer Exp $	*/
 /*
  * Copyright (c) 1998, 2001 Manuel Bouyer.  All rights reserved.
@@ -990,11 +990,13 @@ wdcintr(arg)
 }
 
 /* Put all disk in RESET state */
-void wdc_reset_channel(drvp)
+void
+wdc_reset_channel(drvp)
 	struct ata_drive_datas *drvp;
 {
 	struct channel_softc *chp = drvp->chnl_softc;
 	int drive;
+
 	WDCDEBUG_PRINT(("ata_reset_channel %s:%d for drive %d\n",
 	    chp->wdc->sc_dev.dv_xname, chp->channel, drvp->drive),
 	    DEBUG_FUNCS);
