@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.83 2008/10/28 00:05:32 deraadt Exp $	*/
+/*	$OpenBSD: bios.c,v 1.85 2009/04/30 13:47:16 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -86,7 +86,8 @@ int bios_print(void *, const char *);
 char *fixstring(char *);
 
 struct cfattach bios_ca = {
-	sizeof(struct bios_softc), biosprobe, biosattach
+	sizeof(struct bios_softc), biosprobe, biosattach, NULL,
+	config_activate_children
 };
 
 struct cfdriver bios_cd = {
