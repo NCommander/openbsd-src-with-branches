@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_optimize.c,v 1.20 2009/10/28 20:11:01 jsg Exp $ */
+/*	$OpenBSD: pfctl_optimize.c,v 1.21 2009/11/22 22:34:50 henning Exp $ */
 
 /*
  * Copyright (c) 2004 Mike Frantzen <frantzen@openbsd.org>
@@ -197,8 +197,7 @@ struct pf_rule_field {
     PF_RULE_FIELD(match_tag,		DC),
     PF_RULE_FIELD(overload_tbl,		DC),
 
-    /* These fields should never be set in a PASS/BLOCK rule */
-    PF_RULE_FIELD(natpass,		NEVER),
+    /* These fields should never be set in a PASS/BLOCK rule XXX fix*/
     PF_RULE_FIELD(max_mss,		NEVER),
     PF_RULE_FIELD(min_ttl,		NEVER),
     PF_RULE_FIELD(set_tos,		NEVER),
