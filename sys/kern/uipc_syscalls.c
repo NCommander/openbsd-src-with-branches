@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.69 2008/12/16 07:57:28 guenther Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.71 2009/08/10 16:49:39 thib Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -209,10 +209,7 @@ sys_accept(struct proc *p, void *v, register_t *retval)
 		 * do another wakeup so some other process might
 		 * have a chance at it.
 		 */
-		so->so_head = head;
-		head->so_qlen++;
-		so->so_onq = &head->so_q;
-		TAILQ_INSERT_HEAD(so->so_onq, so, so_qe);
+		soqinsque(head, so, 1);
 		wakeup_one(&head->so_timeo);
 		goto bad;
 	}
