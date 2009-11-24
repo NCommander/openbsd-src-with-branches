@@ -206,10 +206,6 @@ sub can_install
 		@conflicts = keys %conflicts;
 
 		if (!$state->{allow_replacing}) {
-			if ($state->{defines}->{conflicts}) {
-				$state->say("Forcing install of $pkgname in the presence of conflicts (",join(',', @conflicts), ")");
-				return 1;
-			}
 			$state->say("Can't install $pkgname because of conflicts (",join(',', @conflicts), ")");
 			$handle->set_error(OpenBSD::Handle::CANT_INSTALL);
 			return;
