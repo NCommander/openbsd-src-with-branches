@@ -144,7 +144,7 @@ sub process_handle
 		    !$plist->uses_old_libs && !$state->{defines}->{installed}) {
 			$h->{update_found} = $h;
 			my $msg = "No need to update $pkgname";
-			if ($state->{todo} > 0) {
+			if (defined $state->{todo} && $state->{todo} > 0) {
 				$msg .= " ($state->{todo} to go)";
 			}
 			$state->progress->message($msg);
