@@ -57,7 +57,7 @@ sub new
 sub add_handle
 {
 	my ($self, $set, $old, $n) = @_;
-	$old->{update} = $n;
+	$old->{update_found} = $n;
 	$set->add_newer($n);
 }
 
@@ -143,17 +143,13 @@ sub process_handle
 		return undef;
 	}
 	if (@$l == 1) {
-		if ($state->{defines}->{pkgpath}) {
-			$state->say("Directly updating $pkgname -> ", $l->[0]->name);
-			$self->add_location($set, $h, $l->[0]);
-			return 1;
-		}
 		if (defined $found && $found eq $l->[0] &&
 		    !$plist->uses_old_libs && !$state->{defines}->{installed}) {
-				my $msg = "No need to update $pkgname";
-				$state->progress->message($msg);
-				$state->say($msg) if $state->{beverbose};
-				return 0;
+			$h->{update_found} = $h;
+			my $msg = "No need to update $pkgname";
+			$state->progress->message($msg);
+			$state->say($msg) if $state->{beverbose};
+			return 0;
 		}
 	}
 
@@ -231,7 +227,7 @@ sub process_set
 	my ($self, $set, $state) = @_;
 	my $problem;
 	for my $h ($set->older, $set->hints) {
-		next if $h->{update};
+		next if $h->{update_found};
 		if (!defined $h->update($self, $set, $state)) {
 			$problem = 1;
 		}
