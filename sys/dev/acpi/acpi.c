@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.147 2009/11/23 18:01:56 mlarkin Exp $ */
+/* $OpenBSD: acpi.c,v 1.148 2009/11/23 22:34:23 mlarkin Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -1818,6 +1818,10 @@ acpi_sleep_state(struct acpi_softc *sc, int state)
 {
 	int ret;
 
+#ifdef MULTIPROCESSOR
+	if (ncpus > 1)	/* cannot suspend MP yet */
+		return (0);
+#endif
 	switch (state) {
 	case ACPI_STATE_S0:
 		return (0);
