@@ -91,10 +91,13 @@ sub mark_cant_update
 sub mark_installed
 {
 	my ($self, $set) = @_;
+
+	$self->remove_set($set);
+
 	for my $n ($set->newer) {
+		$self->{uptodate}->{$n->pkgname} = 1;
 		$self->{installed}->{$n->pkgname} = 1;
 	}
-	$self->remove_set($set);
 }
 
 sub is_installed
