@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.148 2009/11/23 22:34:23 mlarkin Exp $ */
+/* $OpenBSD: acpi.c,v 1.149 2009/11/24 16:12:37 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -1916,6 +1916,12 @@ acpi_resume(struct acpi_softc *sc, int state)
 			    DEVNAME(sc));
 		}
 
+	if (sc->sc_wak)
+		if (aml_evalnode(sc, sc->sc_wak, 1, &env, NULL) != 0) {
+			dnprintf(10, "%s evaluating method _WAK failed.\n",
+			    DEVNAME(sc));
+		}
+
 	/* Disable wake GPEs */
 	acpi_susp_resume_gpewalk(sc, state, 0);
 
@@ -1923,12 +1929,6 @@ acpi_resume(struct acpi_softc *sc, int state)
 
 	enable_intr();
 	splx(acpi_saved_spl);
-
-	if (sc->sc_wak)
-		if (aml_evalnode(sc, sc->sc_wak, 1, &env, NULL) != 0) {
-			dnprintf(10, "%s evaluating method _WAK failed.\n",
-			    DEVNAME(sc));
-		}
 
 	sc->sc_state = ACPI_STATE_S0;
 	if (sc->sc_tts) {
