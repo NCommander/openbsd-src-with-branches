@@ -1,4 +1,4 @@
-/*	$OpenBSD: errno.h,v 1.20 2007/09/03 14:37:52 millert Exp $	*/
+/*	$OpenBSD: errno.h,v 1.21 2009/10/26 21:09:33 jasper Exp $	*/
 /*	$NetBSD: errno.h,v 1.10 1996/01/20 01:33:53 jtc Exp $	*/
 
 /*
@@ -166,7 +166,7 @@
 #endif /* __BSD_VISIBLE */
 #define	EIDRM		89		/* Identifier removed */
 #define	ENOMSG		90		/* No message of desired type */
-#define ENOTSUP		91		/* Operation not supported */
+#define	ENOTSUP		91		/* Not supported */
 #if __BSD_VISIBLE
 #define	ELAST		91		/* Must be equal largest errno */
 #endif /* __BSD_VISIBLE */
