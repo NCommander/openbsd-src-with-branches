@@ -168,6 +168,8 @@ sub short_print
 	}
 	if ($self->newer > 0) {
 		push(@l, join('+', $self->newer_names));
+	} elsif ($self->hints > 0) {
+		push(@l, join('+', $self->hint_names));
 	}
 	return join('->', @l);
 }
