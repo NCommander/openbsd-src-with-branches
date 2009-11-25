@@ -124,6 +124,7 @@ typedef struct {
 %token	SET TYPE
 %token	YES NO
 %token	DEMOTE
+%token	INCLUDE
 %token	ERROR
 %token	<v.string>	STRING
 %token	<v.number>	NUMBER
@@ -134,11 +135,27 @@ typedef struct {
 %%
 
 grammar		: /* empty */
+		| grammar include '\n'
 		| grammar '\n'
 		| grammar conf_main '\n'
 		| grammar varset '\n'
 		| grammar area '\n'
 		| grammar error '\n'		{ file->errors++; }
+		;
+
+include		: INCLUDE STRING		{
+			struct file	*nfile;
+
+			if ((nfile = pushfile($2, 1)) == NULL) {
+				yyerror("failed to include file %s", $2);
+				free($2);
+				YYERROR;
+			}
+			free($2);
+
+			file = nfile;
+			lungetc('\n');
+		}
 		;
 
 string		: string STRING	{
@@ -674,6 +691,7 @@ lookup(char *s)
 		{"external-tag",	EXTTAG},
 		{"fib-update",		FIBUPDATE},
 		{"hello-interval",	HELLOINTERVAL},
+		{"include",		INCLUDE},
 		{"interface",		INTERFACE},
 		{"metric",		METRIC},
 		{"no",			NO},
