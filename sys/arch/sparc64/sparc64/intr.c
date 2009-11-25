@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.32 2008/04/28 20:55:10 kettenis Exp $	*/
+/*	$OpenBSD: intr.c,v 1.33 2008/08/09 20:42:28 kettenis Exp $	*/
 /*	$NetBSD: intr.c,v 1.39 2001/07/19 23:38:11 eeh Exp $ */
 
 /*
@@ -263,6 +263,9 @@ intr_establish(int level, struct intrhand *ih)
 		q->ih_arg = ih;
 	}
 
+	if (ih->ih_clr != NULL)			/* Set interrupt to idle */
+		*ih->ih_clr = INTCLR_IDLE;
+
 	if(ih->ih_map) {
 		id = CPU_UPAID;
 		m = *ih->ih_map;
@@ -278,9 +281,6 @@ intr_establish(int level, struct intrhand *ih)
 		m |= INTMAP_V;
 		*ih->ih_map = m;
 	}
-
-	if (ih->ih_clr != NULL)			/* Set interrupt to idle */
-		*ih->ih_clr = INTCLR_IDLE;
 
 #ifdef DEBUG
 	printf("\nintr_establish: vector %x pil %x mapintr %p "
