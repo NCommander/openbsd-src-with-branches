@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibtn.c,v 1.21 2009/02/19 21:02:05 marco Exp $ */
+/* $OpenBSD: acpibtn.c,v 1.22 2009/11/23 16:21:54 pirofti Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -121,9 +121,23 @@ acpibtn_notify(struct aml_node *node, int notify_type, void *arg)
 
 	switch (sc->sc_btn_type) {
 	case ACPIBTN_LID:
+		/*
+		 * Notification of 0x80 for lid opens or closes.  We
+		 * need to check using other means, and if desirable,
+		 * go to sleep.
+		 */
+		break;
 	case ACPIBTN_SLEEP:
 #ifndef SMALL_KERNEL
-		acpi_sleep_state(sc->sc_acpi, ACPI_STATE_S3);
+		switch (notify_type) {
+		case 0x02:
+			/* "something" has been taken care of by the system */
+			break;
+		case 0x80:
+			/* Request to go to sleep */
+			acpi_sleep_state(sc->sc_acpi, ACPI_STATE_S3);
+			break;
+		}
 #endif /* SMALL_KERNEL */
 		break;
 	case ACPIBTN_POWER:
