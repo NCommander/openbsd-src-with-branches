@@ -126,6 +126,7 @@ struct cpu_info {
 	struct proc	*ci_fpproc;
 	int		ci_number;
 	struct schedstate_percpu ci_schedstate;	/* scheduler state */
+	u_int32_t	ci_randseed;
 
 	/* DEBUG/DIAGNOSTIC stuff */
 	u_long		ci_spin_locks;  /* # of spin locks held */
