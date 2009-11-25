@@ -377,7 +377,7 @@ cpu_startup(void)
 	 */
 	printf("%s%s\n", version, cpu_model);
 	printf("real mem = %lu (%luMB)\n", ptoa((psize_t)physmem),
-	    ptoa((psize_t)phsymem) / 1024 / 1024);
+	    ptoa((psize_t)physmem) / 1024 / 1024);
 	printf("rsvd mem = %u (%uKB)\n", ptoa(resvmem), ptoa(resvmem) / 1024);
 
 printf("here3\n");
