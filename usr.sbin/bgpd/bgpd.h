@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.245 2009/09/04 11:50:28 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.246 2009/11/02 20:38:15 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -642,7 +642,8 @@ enum action_types {
 	ACTION_PFTABLE,
 	ACTION_PFTABLE_ID,
 	ACTION_RTLABEL,
-	ACTION_RTLABEL_ID
+	ACTION_RTLABEL_ID,
+	ACTION_SET_ORIGIN
 };
 
 struct filter_set {
@@ -656,6 +657,7 @@ struct filter_set {
 		struct filter_community	community;
 		char			pftable[PFTABLE_LEN];
 		char			rtlabel[RTLABEL_LEN];
+		u_int8_t		origin;
 	} action;
 	enum action_types		type;
 };
