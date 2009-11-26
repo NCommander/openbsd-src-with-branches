@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_aoe.c,v 1.8 2009/07/24 14:13:28 blambert Exp $ */
+/* $OpenBSD: softraid_aoe.c,v 1.9 2009/08/09 14:12:25 marco Exp $ */
 /*
  * Copyright (c) 2008 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2008 Marco Peereboom <marco@openbsd.org>
@@ -95,7 +95,7 @@ sr_aoe_discipline_init(struct sr_discipline *sd)
 }
 
 void
-sr_aoe_server_discipline_init(struct sr_dscipline *sd)
+sr_aoe_server_discipline_init(struct sr_discipline *sd)
 {
 
 	/* Fill out discipline members. */
@@ -116,7 +116,9 @@ sr_aoe_server_discipline_init(struct sr_dscipline *sd)
 	sd->sd_scsi_rw = NULL;
 	sd->sd_set_chunk_state = NULL;
 	sd->sd_set_vol_state = NULL;
+#if 0
 	disk = 0; /* we are not a disk */
+#endif
 }
 
 /* AOE initiator */
