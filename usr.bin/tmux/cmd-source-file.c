@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-source-file.c,v 1.5 2009/09/21 15:32:06 nicm Exp $ */
+/* $OpenBSD: cmd-source-file.c,v 1.6 2009/11/13 19:53:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Tiago Cunha <me@tiagocunha.org>
@@ -45,6 +45,7 @@ const struct cmd_entry cmd_source_file_entry = {
 	cmd_source_file_print
 };
 
+/* ARGSUSED */
 void
 cmd_source_file_init(struct cmd *self, unused int arg)
 {

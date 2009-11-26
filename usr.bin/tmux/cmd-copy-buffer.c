@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-copy-buffer.c,v 1.5 2009/09/21 15:32:06 nicm Exp $ */
+/* $OpenBSD: cmd-copy-buffer.c,v 1.6 2009/11/13 19:53:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -51,6 +51,7 @@ const struct cmd_entry cmd_copy_buffer_entry = {
 	cmd_copy_buffer_print
 };
 
+/* ARGSUSED */
 void
 cmd_copy_buffer_init(struct cmd *self, unused int arg)
 {

@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-window.c,v 1.8 2009/10/10 10:02:48 nicm Exp $ */
+/* $OpenBSD: cmd-new-window.c,v 1.9 2009/11/13 19:53:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -51,6 +51,7 @@ const struct cmd_entry cmd_new_window_entry = {
 	cmd_new_window_print
 };
 
+/* ARGSUSED */
 void
 cmd_new_window_init(struct cmd *self, unused int arg)
 {
