@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.26 2009/11/24 17:39:59 mlarkin Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.27 2009/11/26 00:14:11 mlarkin Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -34,6 +34,7 @@
 #include <dev/acpi/acpivar.h>
 #include <dev/acpi/acpidev.h>
 
+#include "isa.h"
 #include "ioapic.h"
 #include "lapic.h"
 
