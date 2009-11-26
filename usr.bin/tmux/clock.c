@@ -1,4 +1,4 @@
-/* $OpenBSD: clock.c,v 1.3 2009/08/26 16:23:30 nicm Exp $ */
+/* $OpenBSD: clock.c,v 1.4 2009/09/10 17:16:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -97,7 +97,7 @@ const char clock_table[14][5][5] = {
 };
 
 void
-clock_draw(struct screen_write_ctx *ctx, u_int colour, int style)
+clock_draw(struct screen_write_ctx *ctx, int colour, int style)
 {
 	struct screen		*s = ctx->s;
 	struct grid_cell	 gc;
