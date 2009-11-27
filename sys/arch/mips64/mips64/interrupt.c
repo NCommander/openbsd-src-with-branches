@@ -1,4 +1,4 @@
-/*	$OpenBSD: interrupt.c,v 1.53 2009/11/22 00:31:03 syuu Exp $ */
+/*	$OpenBSD: interrupt.c,v 1.54 2009/11/26 23:32:46 syuu Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -114,14 +114,14 @@ interrupt(struct trap_frame *trapframe)
 #ifdef DEBUG_INTERRUPT
 	trapdebug_enter(trapframe, 0);
 #endif
-	uvmexp.intrs++;
+	atomic_add_int(&uvmexp.intrs, 1);
 
 	/* Mask out interrupts from cause that are unmasked */
 	pending = trapframe->cause & CR_IPEND & trapframe->sr;
 
 	if (pending & SOFT_INT_MASK_0) {
 		clearsoftintr0();
-		soft_count.ec_count++;
+		atomic_add_uint64(&soft_count.ec_count, 1);
 	}
 
 #ifdef RM7K_PERFCNTR
