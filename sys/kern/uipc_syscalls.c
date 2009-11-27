@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.71 2009/08/10 16:49:39 thib Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.72 2009/11/23 13:18:16 jacekm Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -53,6 +53,8 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+
+#include <net/route.h>
 
 /*
  * System call interface to the socket abstraction.
@@ -1089,5 +1091,35 @@ getsock(struct filedesc *fdp, int fdes, struct file **fpp)
 	*fpp = fp;
 	FREF(fp);
 
+	return (0);
+}
+
+/* ARGSUSED */
+int
+sys_setrdomain(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_setrdomain_args /* {
+		syscallarg(int) rdomain;
+	} */ *uap = v;
+	int rdomain, error;
+
+	rdomain = SCARG(uap, rdomain);
+
+	if (p->p_rdomain == (u_int)rdomain)
+		return (0);
+	if (p->p_rdomain != 0 && (error = suser(p, 0)) != 0)
+		return (error);
+	if (rdomain < 0 || !rtable_exists((u_int)rdomain))
+		return (EINVAL);
+
+	p->p_rdomain = (u_int)rdomain;
+	return (0);
+}
+
+/* ARGSUSED */
+int
+sys_getrdomain(struct proc *p, void *v, register_t *retval)
+{
+	*retval = (int)p->p_rdomain;
 	return (0);
 }

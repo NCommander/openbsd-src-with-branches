@@ -1,4 +1,4 @@
-/*	$OpenBSD: socket.h,v 1.60 2009/06/05 00:05:22 claudio Exp $	*/
+/*	$OpenBSD: socket.h,v 1.61 2009/06/11 08:11:53 jsg Exp $	*/
 /*	$NetBSD: socket.h,v 1.14 1996/02/09 18:25:36 christos Exp $	*/
 
 /*
@@ -485,6 +485,8 @@ int	setsockopt(int, int, int, const void *, socklen_t);
 int	shutdown(int, int);
 int	socket(int, int, int);
 int	socketpair(int, int, int, int *);
+int	getrdomain(void);
+int	setrdomain(int);
 __END_DECLS
 #else
 # if defined(COMPAT_43) || defined(COMPAT_SUNOS) || defined(COMPAT_LINUX) || \
