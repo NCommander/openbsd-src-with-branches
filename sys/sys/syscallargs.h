@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscallargs.h,v 1.106 2009/06/03 15:47:13 jj Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * System call argument lists.
@@ -1221,7 +1221,7 @@ struct sys_thrwakeup_args {
 };
 
 struct sys_threxit_args {
-	syscallarg(int) rval;
+	syscallarg(pid_t *) notdead;
 };
 
 struct sys_thrsigdivert_args {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.h,v 1.24 2006/06/29 23:09:03 deraadt Exp $	*/
+/*	$OpenBSD: time.h,v 1.25 2007/05/09 17:42:19 deraadt Exp $	*/
 /*	$NetBSD: time.h,v 1.18 1996/04/23 10:29:33 mycroft Exp $	*/
 
 /*
@@ -304,6 +304,10 @@ void	microuptime(struct timeval *);
 void	getnanouptime(struct timespec *);
 void	getmicrouptime(struct timeval *);
 
+struct proc;
+int	clock_gettime(struct proc *, clockid_t, struct timespec *);
+
+int	timespecfix(struct timespec *);
 int	itimerfix(struct timeval *);
 int	itimerdecr(struct itimerval *itp, int usec);
 int	settime(struct timespec *);
