@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: signame.c,v 1.4 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -63,5 +63,6 @@ const char *const sys_signame[NSIG] = {
 	"WINCH",	/* SIGWINCH */
 	"INFO",		/* SIGINFO */
 	"USR1",		/* SIGUSR1 */
-	"USR2"		/* SIGUSR2 */
+	"USR2",		/* SIGUSR2 */
+	"THR",		/* SIGTHR */
 };
