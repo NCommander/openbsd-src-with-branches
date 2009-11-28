@@ -119,6 +119,23 @@ sub error_message
 	}
 }
 
+sub complete_old
+{
+	my $self = shift;
+	my $location = $self->{location};
+
+	if (!defined $location) {
+		$self->set_error(NOT_FOUND);
+    	} else {
+		my $plist = $location->plist;
+		if (!defined $plist) {
+			$self->set_error(BAD_PACKAGE);
+		} else {
+			$self->{plist} = $plist;
+		}
+	}
+}
+
 sub create_old
 {
 
@@ -129,17 +146,10 @@ sub create_old
 	require OpenBSD::PackageRepository::Installed;
 
 	my $location = OpenBSD::PackageRepository::Installed->new->find($pkgname, $state->{arch});
-	if (!defined $location) {
-		$self->set_error(NOT_FOUND);
-    	} else {
+	if (defined $location) {
 		$self->{location} = $location;
-		my $plist = $location->plist;
-		if (!defined $plist) {
-			$self->set_error(BAD_PACKAGE);
-		} else {
-			$self->{plist} = $plist;
-		}
 	}
+	$self->complete_old;
 
 	return $self;
 }
