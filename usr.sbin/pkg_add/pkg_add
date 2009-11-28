@@ -663,7 +663,7 @@ sub process_parameters
 	# actual names
 		my $m = $opt_z ? "add_hints" : "add_hints2";
 		for my $pkgname (@ARGV) {
-			push(@todo2, OpenBSD::UpdateSet->new->$m($_));
+			push(@todo2, OpenBSD::UpdateSet->new->$m($pkgname));
 		}
 	}
 }
