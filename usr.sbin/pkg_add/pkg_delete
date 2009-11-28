@@ -122,8 +122,8 @@ sub {
 	# and finally, handle the removal
 	do {
 		$removed = 0;
-		DELETE: while (my $pkgname = shift @todo) {
-			$state->{todo} = scalar @todo;
+		DELETE: for my $pkgname (@todo) {
+			$state->{todo} = scalar @todo - scalar keys %done;
 			next if $done{$pkgname};
 			unless (is_installed($pkgname)) {
 				$state->say("$pkgname was not installed");
@@ -133,7 +133,6 @@ sub {
 			}
 			my $r = OpenBSD::RequiredBy->new($pkgname);
 			if ($r->list > 0) {
-				push(@todo, $pkgname);
 				if ($defines{baddepend}) {
 					for my $p ($r->list) {
 						if ($done{$p}) {
