@@ -100,10 +100,28 @@ sub mark_installed
 	}
 }
 
+sub is
+{
+	my ($self, $k, $pkg) = @_;
+
+	my $set = $self->{$k}->{$pkg};
+	if (ref $set) {
+		return $set->real_set;
+	} else {
+		return $set;
+	}
+}
+
 sub is_installed
 {
 	my ($self, $pkg) = @_;
-	return $self->{installed}->{$pkg};
+	return $self->is('installed', $pkg);
+}
+
+sub is_to_update
+{
+	my ($self, $pkg) = @_;
+	return $self->is('to_update', $pkg);
 }
 
 sub installed
