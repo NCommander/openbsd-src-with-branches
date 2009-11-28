@@ -122,7 +122,8 @@ sub {
 	# and finally, handle the removal
 	do {
 		$removed = 0;
-		DELETE: for my $pkgname (@todo) {
+		DELETE: while (my $pkgname = pop @todo) {
+			$state->{todo} = scalar @todo;
 			next if $done{$pkgname};
 			unless (is_installed($pkgname)) {
 				$state->say("$pkgname was not installed");

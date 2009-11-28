@@ -115,7 +115,7 @@ sub delete_package
 	$state->vstat->synchronize;
 
 	delete_plist($plist, $state);
-	$state->progress->next;
+	$state->progress->next($state->{todo});
 }
 
 sub unregister_dependencies
