@@ -226,6 +226,7 @@ sub report_problem
 	}
 	if (!defined $printed->{$name} || $printed->{$name} ne $r) {
 		$printed->{$name} = $r;
+		print "library $name not found\n";
 		print $r;
 	}
 }
