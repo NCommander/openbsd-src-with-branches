@@ -222,12 +222,12 @@ sub report_problem
 			}
 		}
 		if (@l > 0) {
-			$r .= " in $d: ". join(", ", sort @l). "\n";
+			$r .= "| in $d: ". join(", ", sort @l). "\n";
 		}
 	}
 	if (!defined $printed->{$name} || $printed->{$name} ne $r) {
 		$printed->{$name} = $r;
-		$state->errsay("library $name not found");
+		$state->errsay("|library $name not found");
 		$state->print($r);
 	}
 }
