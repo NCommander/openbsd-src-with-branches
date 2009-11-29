@@ -398,7 +398,7 @@ sub adjust_old_dependency_on
 		my $oldname = $o->pkgname;
 
 		$state->say("Adjusting dependencies for ",
-		    "$pkgname/$oldname") if $state->{beverbose};
+		    "$oldname->$pkgname") if $state->{beverbose};
 		my $d = OpenBSD::RequiredBy->new($pkgname);
 		for my $dep (@{$o->{wantlist}}) {
 			if (defined $set->{older}->{$dep}) {
@@ -409,7 +409,7 @@ sub adjust_old_dependency_on
 			$state->say("\t$dep") if $state->{beverbose};
 			$d->add($dep);
 			OpenBSD::Replace::adjust_dependency($dep, 
-			    $oldname, $pkgname);
+			    $oldname, $pkgname) if $oldname ne $pkgname;
 		}
 	}
 }
