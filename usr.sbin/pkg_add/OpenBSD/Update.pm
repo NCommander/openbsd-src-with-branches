@@ -86,10 +86,17 @@ sub process_handle
 		$state->say("Not updating $pkgname, remember to clean it");
 		return 0;
 	}
+
+	my $plist = OpenBSD::PackingList->from_installation($pkgname, 
+	    \&OpenBSD::PackingList::UpdateInfoOnly);
+	if (!defined $plist) {
+		Fatal("Can't locate $pkgname");
+	}
+
+
 	my @search = ();
 	push(@search, OpenBSD::Search::Stem->split($pkgname));
 	my $found;
-	my $plist;
 
 	if (!$state->{defines}->{downgrade}) {
 		push(@search, OpenBSD::Search::FilterLocation->more_recent_than($pkgname));
@@ -101,10 +108,6 @@ sub process_handle
 			return $l;
 		}
 		my @l2 = ();
-		$plist = OpenBSD::PackingList->from_installation($pkgname, \&OpenBSD::PackingList::UpdateInfoOnly);
-		if (!defined $plist) {
-			Fatal("Can't locate $pkgname");
-		}
 		for my $handle (@$l) {
 		    $handle->set_arch($state->{arch});
 		    if (!$handle) {
@@ -137,6 +140,15 @@ sub process_handle
 
 	my $l = OpenBSD::PackageLocator->match_locations(@search);
 	if (@$l == 0) {
+		# XXX this is nasty: maybe we added an old set to update 
+		# because of conflicts, in which case the pkgpath + 
+		# conflict should be enough  to "match".
+		for my $n ($set->newer) {
+			if ($n->location->update_info->match_pkgpath($plist)) {
+				$self->add_handle($set, $h, $n);
+				return 1;
+			}
+		}
 		return undef;
 	}
 	if (@$l == 1) {
