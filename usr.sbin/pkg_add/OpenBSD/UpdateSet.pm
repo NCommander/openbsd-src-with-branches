@@ -59,12 +59,18 @@ sub new
 	return bless {newer => {}, older => {}, hints => []}, $class;
 }
 
-sub set_error
+sub cleanup
 {
 	my ($self, $error) = @_;
-	for my $h ($self->older) {
-		$h->set_error($error);
+	for my $h ($self->older, $self->newer) {
+		$h->cleanup($error);
 	}
+	$self->{error} //= $error;
+}
+
+sub has_error
+{
+	&OpenBSD::Handle::has_error;
 }
 
 sub add_newer
