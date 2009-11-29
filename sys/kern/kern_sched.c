@@ -146,11 +146,6 @@ sched_idle(void *v)
 
 		splassert(IPL_NONE);
 
-		if (spc->spc_schedflags & SPCF_SHOULDHALT) {
-			spc->spc_schedflags |= SPCF_HALTED;
-			wakeup(spc);
-		}
-
 		cpuset_add(&sched_idle_cpus, ci);
 		cpu_idle_enter();
 		while (spc->spc_whichqs == 0)
@@ -250,13 +245,6 @@ sched_chooseproc(void)
 	int queue;
 
 	SCHED_ASSERT_LOCKED();
-
-	if (spc->spc_schedflags & SPCF_SHOULDHALT) {
-		p = spc->spc_idleproc;
-		KASSERT(p);
-		p->p_stat = SRUN;
-		return (p);
-	}
 
 again:
 	if (spc->spc_whichqs) {

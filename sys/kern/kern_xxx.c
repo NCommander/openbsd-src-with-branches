@@ -53,7 +53,7 @@ sys_reboot(struct proc *p, void *v, register_t *retval)
 	} */ *uap = v;
 	CPU_INFO_ITERATOR cii;
 	struct cpu_info *ci;
-	int error, s;
+	int error;
 
 	if ((error = suser(p, 0)) != 0)
 		return (error);
@@ -67,23 +67,6 @@ sys_reboot(struct proc *p, void *v, register_t *retval)
 			break;
 		}
 	}
-
-	/*
-	 * Make sure we stop the secondary CPUs.
-	 */
-	s = splstatclock();
-	CPU_INFO_FOREACH(cii, ci) {
-		if (CPU_IS_PRIMARY(ci))
-			continue;
-		ci->ci_schedstate.spc_schedflags |= SPCF_SHOULDHALT;
-	}
-	CPU_INFO_FOREACH(cii, ci) {
-		if (CPU_IS_PRIMARY(ci))
-			continue;
-		while ((ci->ci_schedstate.spc_schedflags & SPCF_HALTED) == 0)
-			tsleep(&ci->ci_schedstate, PZERO, "schedstate", 0);
-	}
-	splx(s);
 
 	if_downall();
 
