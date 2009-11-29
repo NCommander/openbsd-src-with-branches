@@ -259,7 +259,23 @@ sub find_dep_in_stuff_to_install
 {
 	my ($self, $state, $dep) = @_;
 
-	return find_candidate($dep->spec, keys %{$state->tracker->{to_install}});
+	# this is tricky, we don't always know what we're going to actually
+	# install yet.
+	my @candidates = $dep->spec->filter(keys %{$state->tracker->{to_update}});
+	if (@candidates > 0) {
+		for my $k (@candidates) {
+			my $set = $state->tracker->{to_update}{$k};
+			push(@{$self->{deplist}}, $set);
+		}
+		$self->{not_ready} = 1;
+		return $candidates[0];
+	}
+
+	my $v = find_candidate($dep->spec, keys %{$state->tracker->{to_install}});
+	if ($v) {
+		push(@{$self->{deplist}}, $state->tracker->{to_install}->{$v});
+	}
+	return $v;
 }
 
 sub solve_dependency
@@ -276,7 +292,6 @@ sub solve_dependency
 		}
 		$v = $self->find_dep_in_stuff_to_install($state, $dep);
 		if ($v) {
-			push(@{$self->{deplist}}, $state->tracker->{to_install}->{$v});
 			return $v;
 		}
 	}
@@ -292,7 +307,6 @@ sub solve_dependency
 	if (!$state->{allow_replacing}) {
 		$v = $self->find_dep_in_stuff_to_install($state, $dep);
 		if ($v) {
-			push(@{$self->{deplist}}, $state->tracker->{to_install}->{$v});
 			return $v;
 		}
 	}
@@ -351,6 +365,7 @@ sub dump
 	    	join(',', (map {$_->short_print} @{$self->{deplist}})), 
 		")" 
 	    	if @{$self->{deplist}} > 0;
+	    print "!!" if $self->{not_ready};
 	    print "\n";
 	}
 }

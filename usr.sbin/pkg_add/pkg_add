@@ -519,6 +519,11 @@ sub install_set
 		return ();
 	}
 
+	if (!$state->updater->process_set($set, $state)) {
+		$set->{finished} = 1;
+		return ();
+	}
+
 	for my $handle ($set->newer) {
 		if ($state->tracker->is_installed($handle->pkgname)) {
 			$set->cleanup(OpenBSD::Handle::ALREADY_INSTALLED);
