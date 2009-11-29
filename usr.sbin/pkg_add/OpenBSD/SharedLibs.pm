@@ -202,8 +202,9 @@ my $printed = {};
 
 sub report_problem
 {
-	my $base = $_[0];
-	my ($dir, $name) = normalize_dir_and_spec(@_);
+	my ($state, $p) = @_;
+	my $base = $state->{localbase};
+	my ($dir, $name) = normalize_dir_and_spec($base, $p);
 	my ($stem, $major, $minor) = parse_spec($name);
 
 	return unless defined $stem;
@@ -226,8 +227,8 @@ sub report_problem
 	}
 	if (!defined $printed->{$name} || $printed->{$name} ne $r) {
 		$printed->{$name} = $r;
-		print "library $name not found\n";
-		print $r;
+		$state->errsay("library $name not found");
+		$state->print($r);
 	}
 }
 

@@ -477,8 +477,8 @@ sub solve_wantlibs
 				    $h->pkgname, ":");
 			}
 			$okay = 0;
-			OpenBSD::SharedLibs::report_problem(
-			    $state->{localbase}, $lib->{name});
+			OpenBSD::SharedLibs::report_problem($state, 
+			    $lib->{name});
 		}
 	}
 	if (!$okay) {
