@@ -384,34 +384,42 @@ sub record_old_dependencies
 	}
 }
 
+sub adjust_old_dependency_on
+{
+	my ($self, $pkgname, $state) = @_;
+
+	my $set = $self->{set};
+	
+	for my $o ($set->older) {
+		next unless defined $o->{wantlist};
+		require OpenBSD::Replace;
+		require OpenBSD::RequiredBy;
+
+		my $oldname = $o->pkgname;
+
+		$state->say("Adjusting dependencies for ",
+		    "$pkgname/$oldname") if $state->{beverbose};
+		my $d = OpenBSD::RequiredBy->new($pkgname);
+		for my $dep (@{$o->{wantlist}}) {
+			if (defined $set->{older}->{$dep}) {
+				$state->say("\tskipping $dep")
+				    if $state->{beverbose};
+				next;
+			}
+			$state->say("\t$dep") if $state->{beverbose};
+			$d->add($dep);
+			OpenBSD::Replace::adjust_dependency($dep, 
+			    $oldname, $pkgname);
+		}
+	}
+}
+
 sub adjust_old_dependencies
 {
 	my ($self, $state) = @_;
+	
 	for my $pkg ($self->{set}->newer) {
-		my $pkgname = $pkg->pkgname;
-		for my $o ($self->{set}->older) {
-			next unless defined $o->{wantlist};
-			require OpenBSD::Replace;
-			require OpenBSD::RequiredBy;
-
-			my $oldname = $o->pkgname;
-
-			$state->say("Adjusting dependencies for ",
-			    "$pkgname/$oldname") if $state->{beverbose};
-			my $d = OpenBSD::RequiredBy->new($pkgname);
-			for my $dep (@{$o->{wantlist}}) {
-				if (defined $self->{set}->{skipupdatedeps}->{$dep}) {
-					$state->say("\tskipping $dep") 
-					    if $state->{beverbose};
-					next;
-				}
-				$state->say("\t$dep") 
-				    if $state->{beverbose};
-				$d->add($dep);
-				OpenBSD::Replace::adjust_dependency($dep, 
-				    $oldname, $pkgname);
-			}
-		}
+		$self->adjust_old_dependency_on($pkg->pkgname, $state);
 	}
 }
 

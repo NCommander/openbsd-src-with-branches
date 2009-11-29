@@ -308,7 +308,7 @@ sub perform_extraction
 
 sub can_old_package_be_replaced
 {
-	my ($old_plist, $set, $state, $ignore) = @_;
+	my ($old_plist, $set, $state) = @_;
 
 	$state->{okay} = 1;
 	$state->{journal} = [];
@@ -332,7 +332,7 @@ sub can_old_package_be_replaced
 	my @wantlist = OpenBSD::RequiredBy->new($old_plist->pkgname)->list;
 	my @r = ();
 	for my $wanting (@wantlist) {
-		push(@r, $wanting) if !defined $ignore->{$wanting};
+		push(@r, $wanting) if !defined $set->{older}->{$wanting};
 	}
 	if (@r) {
 		$state->say("Verifying dependencies still match for ", 
