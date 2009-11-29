@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.30 2009/11/26 11:49:49 deraadt Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.31 2009/11/26 22:08:30 mlarkin Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -202,11 +202,7 @@ acpi_sleep_machdep(struct acpi_softc *sc, int state)
 		return (ENXIO);
 	}
 
-	if (rcr3() != pmap_kernel()->pm_pdirpa) {
-		pmap_activate(curproc);
-
-		KASSERT(rcr3() == pmap_kernel()->pm_pdirpa);
-	}
+	/* amd64 does not do lazy pmap_activate */
 
 	/*
 	 *
