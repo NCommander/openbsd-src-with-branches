@@ -66,6 +66,7 @@ sub cleanup
 		$h->cleanup($error);
 	}
 	$self->{error} //= $error;
+	$self->{finished} = 1;
 }
 
 sub has_error
