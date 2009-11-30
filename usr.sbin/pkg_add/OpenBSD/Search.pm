@@ -153,7 +153,7 @@ sub filter_locations
 
 sub more_recent_than
 {
-	my ($class, $name) = @_;
+	my ($class, $name, $rfound) = @_;
 	require OpenBSD::PackageName;
 
 	my $f = OpenBSD::PackageName->from_string($name);
@@ -165,6 +165,9 @@ sub {
 	for my $e (@$l) {
 		if ($f->{version}->compare($e->pkgname->{version}) <= 0) {
 			push(@$r, $e);
+		}
+		if (ref $rfound) {
+			$$rfound = 1;
 		}
 	}
 	return $r;

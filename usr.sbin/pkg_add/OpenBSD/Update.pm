@@ -97,9 +97,10 @@ sub process_handle
 	my @search = ();
 	push(@search, OpenBSD::Search::Stem->split($pkgname));
 	my $found;
+	my $oldfound = 0;
 
 	if (!$state->{defines}->{downgrade}) {
-		push(@search, OpenBSD::Search::FilterLocation->more_recent_than($pkgname));
+		push(@search, OpenBSD::Search::FilterLocation->more_recent_than($pkgname, \$oldfound));
 	}
 	push(@search, OpenBSD::Search::FilterLocation->new(
 	    sub {
@@ -148,6 +149,16 @@ sub process_handle
 				$self->add_handle($set, $h, $n);
 				return 1;
 			}
+		}
+		if ($oldfound) {
+			$h->{update_found} = $h;
+			my $msg = "No need to update $pkgname";
+			if (defined $state->{todo} && $state->{todo} > 0) {
+				$msg .= " ($state->{todo} to go)";
+			}
+			$state->progress->message($msg);
+			$state->say($msg) if $state->{beverbose};
+			return 0;
 		}
 		return undef;
 	}
