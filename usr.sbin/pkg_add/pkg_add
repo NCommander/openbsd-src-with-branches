@@ -583,6 +583,8 @@ sub install_set
 			$handle->location->close_now;
 		}
 		$bad++;
+		$set->cleanup(OpenBSD::Handle::CANT_INSTALL);
+		$state->tracker->mark_cant_update($set);
 		return ();
 	}
 
