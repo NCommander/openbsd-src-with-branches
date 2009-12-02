@@ -266,6 +266,7 @@ sub merge
 	}
 	# then regen tracker info for $self
 	$tracker->add_set($self);
+	delete $self->{solver};
 	return $self;
 }
 

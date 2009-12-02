@@ -250,9 +250,7 @@ sub find_dep_in_self
 {
 	my ($self, $state, $dep) = @_;
 
-	return find_candidate($dep->spec, 
-	    map {$_->pkgname} $self->{set}->newer);
-
+	return find_candidate($dep->spec, $self->{set}->newer_names);
 }
 
 sub find_dep_in_stuff_to_install
@@ -350,7 +348,8 @@ sub check_depends
 	my @bad = ();
 
 	for my $dep ($self->dependencies) {
-		push(@bad, $dep) unless is_installed($dep);
+		push(@bad, $dep) 
+		    unless is_installed($dep) or $self->{set}->{newer}->{$dep};
 	}
 	return @bad;
 }

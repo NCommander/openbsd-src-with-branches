@@ -491,13 +491,15 @@ sub really_add
 		OpenBSD::Add::tweak_plist_status($plist, $state);
 		$plist->to_cache;
 		OpenBSD::Add::register_installation($plist);
-		$set->{solver}->register_dependencies($state);
 		add_installed($pkgname);
 		delete $handle->{partial};
 		OpenBSD::PkgCfl::register($plist, $state);
 		if ($plist->has(DISPLAY)) {
 			$plist->get(DISPLAY)->prepare($state);
 		}
+	}
+	for my $handle ($set->newer) {
+		$set->{solver}->register_dependencies($state);
 	}
 	$set->{solver}->adjust_old_dependencies($state);
 	if ($state->{repairdependencies}) {
