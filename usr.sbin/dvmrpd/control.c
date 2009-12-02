@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.8 2009/06/06 07:52:04 pyr Exp $ */
+/*	$OpenBSD: control.c,v 1.9 2009/11/02 20:31:50 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -121,7 +121,7 @@ control_accept(int listenfd, short event, void *bula)
 	if ((connfd = accept(listenfd,
 	    (struct sockaddr *)&sun, &len)) == -1) {
 		if (errno != EWOULDBLOCK && errno != EINTR)
-			log_warn("control_accept");
+			log_warn("control_accept: accept");
 		return;
 	}
 
