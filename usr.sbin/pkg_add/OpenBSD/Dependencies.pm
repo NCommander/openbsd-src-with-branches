@@ -489,6 +489,9 @@ sub solve_wantlibs
 
 	my $lib_finder = OpenBSD::lookup::library->new($solver);
 	for my $h ($solver->{set}->newer) {
+		OpenBSD::SharedLibs::add_libs_from_plist($h->plist);
+	}
+	for my $h ($solver->{set}->newer) {
 		for my $lib (@{$h->{plist}->{wantlib}}) {
 			$solver->{localbase} = $h->{plist}->localbase;
 			next if $lib_finder->lookup($solver, 
@@ -496,7 +499,7 @@ sub solve_wantlibs
 			    $lib->{name});
 			if ($okay) {
 				$state->errsay("Can't install ", 
-				    $h->pkgname, ":");
+				    $h->pkgname, ":", $lib->{name});
 			}
 			$okay = 0;
 			OpenBSD::SharedLibs::report_problem($state, 
