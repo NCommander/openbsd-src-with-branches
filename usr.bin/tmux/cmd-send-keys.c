@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-send-keys.c,v 1.5 2009/09/21 15:25:36 nicm Exp $ */
+/* $OpenBSD: cmd-send-keys.c,v 1.6 2009/11/13 19:53:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -33,7 +33,7 @@ size_t	cmd_send_keys_print(struct cmd *, char *, size_t);
 
 struct cmd_send_keys_data {
 	char	*target;
-  	u_int	 nkeys;
+	u_int	 nkeys;
 	int	*keys;
 };
 

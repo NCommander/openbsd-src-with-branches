@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-paste-buffer.c,v 1.8 2009/11/13 19:53:29 nicm Exp $ */
+/* $OpenBSD: cmd-paste-buffer.c,v 1.9 2009/11/26 22:28:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -78,7 +78,7 @@ cmd_paste_buffer_exec(struct cmd *self, struct cmd_ctx *ctx)
 			paste_free_index(&s->buffers, data->buffer);
 	}
 
- 	return (0);
+	return (0);
 }
 
 /* Add bytes to a buffer but change every '\n' to '\r'. */
