@@ -113,7 +113,12 @@ sub find_in_extra_sources
 sub find_in_new_source
 {
 	my ($self, $solver, $state, $obj, $dep) = @_;
-	OpenBSD::SharedLibs::add_libs_from_installed_package($dep);
+
+	if ($solver->{set}->{newer}->{$dep}) {
+		OpenBSD::SharedLibs::add_libs_from_plist($solver->{set}->{newer}->{$dep}->plist);
+	} else {
+		OpenBSD::SharedLibs::add_libs_from_installed_package($dep);
+	}
 	if ($solver->check_lib_spec($solver->{localbase}, $obj, 
 	    {$dep => 1})) {
 		$state->say("found libspec $obj in package $dep") 
@@ -488,9 +493,6 @@ sub solve_wantlibs
 	my $okay = 1;
 
 	my $lib_finder = OpenBSD::lookup::library->new($solver);
-	for my $h ($solver->{set}->newer) {
-		OpenBSD::SharedLibs::add_libs_from_plist($h->plist);
-	}
 	for my $h ($solver->{set}->newer) {
 		for my $lib (@{$h->{plist}->{wantlib}}) {
 			$solver->{localbase} = $h->{plist}->localbase;
