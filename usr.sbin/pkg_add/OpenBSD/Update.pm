@@ -87,15 +87,28 @@ sub process_handle
 		return 0;
 	}
 
+	if ($state->quirks) {
+		if ($state->quirks->is_base_system($h)) {
+			$h->{update_found} = 1;
+			return 1;
+		}
+	}
 	my $plist = OpenBSD::PackingList->from_installation($pkgname, 
 	    \&OpenBSD::PackingList::UpdateInfoOnly);
 	if (!defined $plist) {
 		Fatal("Can't locate $pkgname");
 	}
 
-
 	my @search = ();
-	push(@search, OpenBSD::Search::Stem->split($pkgname));
+	my $s;
+	if ($state->quirks) {
+		$s = $state->quirks->search_object($h);
+	}
+	if (!$s) {
+		$s = OpenBSD::Search::Stem->split($pkgname);
+	}
+	push(@search, $s);
+
 	my $found;
 	my $oldfound = 0;
 
