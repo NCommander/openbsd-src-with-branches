@@ -112,6 +112,17 @@ sub is
 	}
 }
 
+sub is_known
+{
+	my ($self, $pkg) = @_;
+	my $r;
+	for my $k qw(installed uptodate cant_update to_update) {
+		$r = $self->is($k, $pkg);
+	    	return $r if defined $r;
+	}
+	return $r;
+}
+
 sub is_installed
 {
 	my ($self, $pkg) = @_;
