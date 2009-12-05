@@ -1,4 +1,4 @@
-/*	$OpenBSD: uts.c,v 1.24 2009/02/14 20:05:09 chl Exp $ */
+/*	$OpenBSD: uts.c,v 1.25 2009/10/13 19:33:19 pirofti Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -134,8 +134,14 @@ int
 uts_match(struct device *parent, void *match, void *aux)
 {
 	struct usb_attach_arg *uaa = aux;
+	usb_interface_descriptor_t *id;
 
 	if (uaa->iface == NULL)
+		return (UMATCH_NONE);
+
+	/* Some eGalax touch screens are HID devices. ignore them */
+	id = usbd_get_interface_descriptor(uaa->iface);
+	if (id != NULL && id->bInterfaceClass == UICLASS_HID)
 		return (UMATCH_NONE);
 
 	return (usb_lookup(uts_devs, uaa->vendor, uaa->product) != NULL) ?
