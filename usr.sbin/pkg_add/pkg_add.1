@@ -24,7 +24,7 @@
 .Sh SYNOPSIS
 .Nm pkg_add
 .Bk -words
-.Op Fl acIinqruvxz
+.Op Fl acIinqruUvxz
 .Op Fl A Ar arch
 .Op Fl B Ar pkg-destdir
 .Op Fl F Ar keywords
@@ -354,6 +354,8 @@ will update all installed packages.
 This relies on
 .Ev PKG_PATH
 to figure out the new package names.
+.It Fl U
+Update dependencies if required before installing the new package(s).
 .It Fl v
 Turn on verbose output.
 Several
