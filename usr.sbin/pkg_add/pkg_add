@@ -796,6 +796,7 @@ framework(
 sub {
 	$state->tracker->add_sets(@todo2);
 	if ($state->{allow_replacing}) {
+		$state->progress->set_header("Looking for packages");
 		$state->{todo} = (scalar @todo2) + 1;
 		do_quirks($state);
 	}
