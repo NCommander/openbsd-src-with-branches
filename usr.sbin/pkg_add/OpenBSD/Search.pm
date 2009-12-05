@@ -84,7 +84,7 @@ sub new
 		# XXX
 		return OpenBSD::Search::Exact->new("$1-*-$2");
     	}
-	return bless {stem => $stem}, $class;
+	return bless {"$stem" => 1}, $class;
 }
 
 sub split
@@ -95,16 +95,28 @@ sub split
 	return $class->new(OpenBSD::PackageName::splitstem($pkgname));
 }
 
+sub add_stem
+{
+	my ($self, $extra) = @_;
+	$self->{$extra} = 1;
+
+}
+
 sub match
 {
 	my ($self, $o) = @_;
-	return $o->stemlist->find($self->{stem});
+
+	my @r = ();
+	for my $k (keys %$self) {
+		push(@r, $o->stemlist->find($k));
+	}
+	return @r;
 }
 
 sub _keep
 {
 	my ($self, $stem) = @_;
-	return $self->{stem} eq $stem;
+	return defined $self->{$stem};
 }
 
 sub filter
