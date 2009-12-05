@@ -88,12 +88,12 @@ sub process_handle
 	}
 
 
-	if ($state->quirks) {
+	eval {
 		if ($state->quirks->is_base_system($h, $state)) {
 			$h->{update_found} = 1;
-			return 1;
 		}
-	}
+	};
+	return 1 if $h->{update_found};
 
 	my $plist = OpenBSD::PackingList->from_installation($pkgname, 
 	    \&OpenBSD::PackingList::UpdateInfoOnly);
@@ -104,9 +104,9 @@ sub process_handle
 	my @search = ();
 	push(@search, OpenBSD::Search::Stem->split($pkgname));
 
-	if ($state->quirks) {
+	eval {
 		$state->quirks->tweak_search(\@search, $h, $state);
-	}
+	};
 	my $found;
 	my $oldfound = 0;
 
