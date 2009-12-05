@@ -490,7 +490,7 @@ sub really_add
 		}
 	}
 	$set->setup_header($state);
-	$state->progress->next($state->{todo});
+	$state->progress->next($state->{todo}-1);
 	for my $handle ($set->newer) {
 		my $pkgname = $handle->pkgname;
 		my $plist = $handle->plist;
