@@ -56,7 +56,8 @@ package OpenBSD::UpdateSet;
 sub new
 {
 	my $class = shift;
-	return bless {newer => {}, older => {}, hints => []}, $class;
+	return bless {newer => {}, older => {}, hints => [], updates => 0}, 
+	    $class;
 }
 
 sub cleanup
@@ -263,6 +264,7 @@ sub merge
 		$set->{finished} = 1;
 		# XXX and mark it as merged, for eventual updates
 		$set->{merged} = $self;
+		$self->{updates} += $set->{updates};
 	}
 	# then regen tracker info for $self
 	$tracker->add_set($self);
