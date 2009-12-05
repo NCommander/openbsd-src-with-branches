@@ -510,7 +510,7 @@ sub solve_wantlibs
 			    $lib->{name});
 			if ($okay) {
 				$state->errsay("Can't install ", 
-				    $h->pkgname, ":");
+				    $h->pkgname, " because of libraries");
 			}
 			$okay = 0;
 			OpenBSD::SharedLibs::report_problem($state, 
