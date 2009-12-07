@@ -221,7 +221,7 @@ sub validate_plists
 	}
 	if ($state->{problems}) {
 		require OpenBSD::Error;
-		OpenBSD::Error::Fatal "fatal issues in ", $self->print;
+		OpenBSD::Error::Fatal "fatal issues in ", $self->short_print;
 	}
 	$state->vstat->synchronize;
 }
