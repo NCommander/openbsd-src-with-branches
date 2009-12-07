@@ -258,8 +258,6 @@ sub merge
 	for my $set (@sets) {
 		$self->add_newer($set->newer);
 		$self->add_older($set->older);
-		# BUT XXX tell the tracker we killed the set
-		$tracker->remove_set($set);
 		# ... and mark it as already done
 		$set->{finished} = 1;
 		# XXX and mark it as merged, for eventual updates
@@ -267,7 +265,7 @@ sub merge
 		$self->{updates} += $set->{updates};
 	}
 	# then regen tracker info for $self
-	$tracker->add_set($self);
+	$tracker->todo($self);
 	delete $self->{solver};
 	return $self;
 }

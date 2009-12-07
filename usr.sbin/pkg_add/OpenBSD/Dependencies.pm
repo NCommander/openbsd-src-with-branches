@@ -311,7 +311,7 @@ sub solve_dependency
 			}
 			my $set = OpenBSD::UpdateSet->new->add_older(OpenBSD::Handle->create_old($v, $state));
 			push(@{$self->{deplist}}, $set);
-			$state->tracker->add_set($set);
+			$state->tracker->todo($set);
 			$self->{not_ready} = 1;
 		}
 		return $v;
@@ -327,7 +327,7 @@ sub solve_dependency
 	if ($v) {
 		my $s = OpenBSD::UpdateSet->from_location($v);
 
-		$state->tracker->add_set($s);
+		$state->tracker->todo($s);
 		
 		push(@{$self->{deplist}}, $s);
 		return $v->{name};
@@ -336,7 +336,7 @@ sub solve_dependency
 	# resort to default if nothing else
 	$v = $dep->{def};
 	my $s = OpenBSD::UpdateSet->create_new($v);
-	$state->tracker->add_set($s);
+	$state->tracker->todo($s);
 	push(@{$self->{deplist}}, $s);
 	return $v;
 }

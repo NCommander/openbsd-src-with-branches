@@ -272,10 +272,10 @@ sub process_set
 		}
 	}
 	if ($problem) {
-		$state->tracker->mark_cant_update($set) if !$set->{quirks};
+		$state->tracker->cant($set) if !$set->{quirks};
 		return 0;
 	} elsif ($set->{updates} == 0 && $set->newer == 0) {
-		$state->tracker->mark_uptodate($set);
+		$state->tracker->uptodate($set);
 		return 0;
 	} 
 	$state->tracker->add_set($set);
