@@ -58,6 +58,7 @@ sr_raid0_discipline_init(struct sr_discipline *sd)
 
 	/* Fill out discipline members. */
 	sd->sd_type = SR_MD_RAID0;
+	sd->sd_capabilities = SR_CAP_SYSTEM_DISK | SR_CAP_AUTO_ASSEMBLE;
 	sd->sd_max_ccb_per_wu =
 	    (MAXPHYS / sd->sd_meta->ssdi.ssd_strip_size + 1) *
 	    SR_RAID0_NOWU * sd->sd_meta->ssdi.ssd_chunk_no;

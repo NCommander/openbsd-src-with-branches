@@ -69,9 +69,9 @@ sr_raidp_discipline_init(struct sr_discipline *sd)
 {
 
 	/* fill out discipline members. */
+	sd->sd_capabilities = SR_CAP_SYSTEM_DISK | SR_CAP_AUTO_ASSEMBLE;
 	sd->sd_max_ccb_per_wu = 4; /* only if stripsize <= MAXPHYS */
 	sd->sd_max_wu = SR_RAIDP_NOWU;
-	sd->sd_rebuild = 0;
 
 	/* setup discipline pointers. */
 	sd->sd_alloc_resources = sr_raidp_alloc_resources;

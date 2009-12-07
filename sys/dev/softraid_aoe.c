@@ -75,6 +75,7 @@ sr_aoe_discipline_init(struct sr_discipline *sd)
 
 	/* Fill out discipline members. */
 	sd->sd_type = SR_MD_AOE_INIT;
+	sd->sd_capabilities = SR_CAP_SYSTEM_DISK;
 	sd->sd_max_ccb_per_wu = sd->sd_meta->ssdi.ssd_chunk_no;
 	sd->sd_max_wu = SR_RAIDAOE_NOWU;
 
@@ -100,6 +101,7 @@ sr_aoe_server_discipline_init(struct sr_discipline *sd)
 
 	/* Fill out discipline members. */
 	sd->sd_type = SR_MD_AOE_TARG;
+	sd->sd_capabilities = 0;
 	sd->sd_max_ccb_per_wu = sd->sd_meta->ssdi.ssd_chunk_no;
 	sd->sd_max_wu = SR_RAIDAOE_NOWU;
 
@@ -116,9 +118,6 @@ sr_aoe_server_discipline_init(struct sr_discipline *sd)
 	sd->sd_scsi_rw = NULL;
 	sd->sd_set_chunk_state = NULL;
 	sd->sd_set_vol_state = NULL;
-#if 0
-	disk = 0; /* we are not a disk */
-#endif
 }
 
 /* AOE initiator */

@@ -124,13 +124,14 @@ struct sr_raid6_opaque {
 void
 sr_raid6_discipline_init(struct sr_discipline *sd)
 {
+
 	/* Initialize GF256 tables */
 	gf_init();
 
 	/* fill out discipline members. */
+	sd->sd_capabilities = SR_CAP_SYSTEM_DISK | SR_CAP_AUTO_ASSEMBLE;
 	sd->sd_max_ccb_per_wu = max(6, 2 * sd->sd_meta->ssdi.ssd_chunk_no); /* only if stripsize <= MAXPHYS */
 	sd->sd_max_wu = SR_RAID6_NOWU;
-	sd->sd_rebuild = 0;
 
 	/* setup discipline pointers. */
 	sd->sd_alloc_resources = sr_raid6_alloc_resources;

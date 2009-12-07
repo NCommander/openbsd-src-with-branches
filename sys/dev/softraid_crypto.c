@@ -86,8 +86,10 @@ void		 sr_crypto_dumpkeys(struct sr_discipline *);
 void
 sr_crypto_discipline_init(struct sr_discipline *sd)
 {
+
 	/* Fill out discipline members. */
 	sd->sd_type = SR_MD_CRYPTO;
+	sd->sd_capabilities = SR_CAP_SYSTEM_DISK;
 	sd->sd_max_ccb_per_wu = sd->sd_meta->ssdi.ssd_chunk_no;
 	sd->sd_max_wu = SR_CRYPTO_NOWU;
 
