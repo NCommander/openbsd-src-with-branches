@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.65 2009/12/02 19:10:02 mk Exp $ */
+/*	$OpenBSD: control.c,v 1.66 2009/12/03 19:22:53 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -437,7 +437,7 @@ control_dispatch_msg(struct pollfd *pfd, u_int *ctl_cnt)
 			    sizeof(verbose))
 				break;
 
-			/* forward to other porcesses */
+			/* forward to other processes */
 			imsg_compose_parent(imsg.hdr.type, imsg.hdr.pid,
 			    imsg.data, imsg.hdr.len - IMSG_HEADER_SIZE);
 			imsg_compose_rde(imsg.hdr.type, 0,
