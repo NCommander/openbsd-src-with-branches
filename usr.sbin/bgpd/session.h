@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.101 2009/06/05 20:26:38 claudio Exp $ */
+/*	$OpenBSD: session.h,v 1.102 2009/09/02 08:06:42 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -189,6 +189,7 @@ struct peer {
 	struct {
 		struct capabilities	ann;
 		struct capabilities	peer;
+		struct capabilities	neg;
 	}			 capa;
 	struct {
 		struct bgpd_addr	local_addr;
