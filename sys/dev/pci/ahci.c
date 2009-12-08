@@ -440,6 +440,9 @@ static const struct ahci_device ahci_devices[] = {
 	{ PCI_VENDOR_ATI,	PCI_PRODUCT_ATI_SBX00_SATA_1,
 	    NULL,		ahci_ati_sb600_attach },
 
+	{ PCI_VENDOR_INTEL,	PCI_PRODUCT_INTEL_82801H_RAID,
+	    NULL,		NULL },
+
 	{ PCI_VENDOR_NVIDIA,	PCI_PRODUCT_NVIDIA_MCP65_AHCI_2,
 	    NULL,		ahci_nvidia_mcp_attach },
 	{ PCI_VENDOR_NVIDIA,	PCI_PRODUCT_NVIDIA_MCP67_AHCI_1,
