@@ -29,6 +29,7 @@ struct scsi_link;
 #define ATA_C_READ_FPDMA	0x60
 #define ATA_C_WRITE_FPDMA	0x61
 #define ATA_C_PACKET		0xa0
+#define ATA_C_IDENTIFY_PACKET	0xa1
 #define ATA_C_READDMA		0xc8
 #define ATA_C_WRITEDMA		0xca
 #define ATA_C_FLUSH_CACHE	0xe7
