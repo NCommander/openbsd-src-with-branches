@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.286 2009/10/11 16:53:13 sthen Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.287 2009/11/30 19:08:01 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -2536,7 +2536,6 @@ bge_rxeof(struct bge_softc *sc)
 
 			if (cur_rx->bge_flags & BGE_RXBDFLAG_ERROR) {
 				m_freem(m);
-				ifp->if_ierrors++;
 				continue;
 			}
 		} else {
@@ -2553,7 +2552,6 @@ bge_rxeof(struct bge_softc *sc)
 
 			if (cur_rx->bge_flags & BGE_RXBDFLAG_ERROR) {
 				m_freem(m);
-				ifp->if_ierrors++;
 				continue;
 			}
 		}
