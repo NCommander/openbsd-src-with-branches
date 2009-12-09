@@ -1,4 +1,4 @@
-/*	$OpenBSD: linux_signal.c,v 1.12 2003/02/25 09:10:27 tedu Exp $	*/
+/*	$OpenBSD: linux_signal.c,v 1.13 2008/05/01 11:53:26 miod Exp $	*/
 /*	$NetBSD: linux_signal.c,v 1.10 1996/04/04 23:51:36 christos Exp $	*/
 
 /*
@@ -98,6 +98,7 @@ int bsd_to_linux_sig[NSIG] = {
 	0,			/* SIGINFO */
 	LINUX_SIGUSR1,
 	LINUX_SIGUSR2,
+	0,			/* SIGTHR */
 };
 
 int linux_to_bsd_sig[LINUX__NSIG] = {

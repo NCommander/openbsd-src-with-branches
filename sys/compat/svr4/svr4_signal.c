@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_signal.c,v 1.10 2002/03/14 01:26:51 millert Exp $	 */
+/*	$OpenBSD: svr4_signal.c,v 1.11 2008/05/01 11:53:26 miod Exp $	 */
 /*	$NetBSD: svr4_signal.c,v 1.24 1996/12/06 03:21:53 christos Exp $	 */
 
 /*
@@ -75,7 +75,7 @@ svr4_sigfillset(s)
 		svr4_sigaddset(s, i);
 }
 
-int bsd_to_svr4_sig[] = {
+int bsd_to_svr4_sig[NSIG] = {
 	0,
 	SVR4_SIGHUP,
 	SVR4_SIGINT,
@@ -108,6 +108,7 @@ int bsd_to_svr4_sig[] = {
 	0,
 	SVR4_SIGUSR1,
 	SVR4_SIGUSR2,
+	0
 };
 
 int svr4_to_bsd_sig[] = {
