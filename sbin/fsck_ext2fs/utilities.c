@@ -1,4 +1,4 @@
-/*	$OpenBSD: utilities.c,v 1.16 2006/04/02 00:48:35 deraadt Exp $	*/
+/*	$OpenBSD: utilities.c,v 1.17 2006/04/20 02:24:38 deraadt Exp $	*/
 /*	$NetBSD: utilities.c,v 1.6 2001/02/04 21:19:34 christos Exp $	*/
 
 /*
@@ -129,6 +129,8 @@ bufinit(void)
 		bp = (struct bufarea *)malloc(sizeof(struct bufarea));
 		bufp = malloc((unsigned int)sblock.e2fs_bsize);
 		if (bp == NULL || bufp == NULL) {
+			free(bp);
+			free(bufp);
 			if (i >= MINBUFS)
 				break;
 			errexit("cannot allocate buffer pool\n");
