@@ -1,4 +1,4 @@
-/*	$OpenBSD: driver.c,v 1.17 2007/04/02 14:55:16 jmc Exp $	*/
+/*	$OpenBSD: driver.c,v 1.18 2008/10/02 16:44:43 millert Exp $	*/
 /*	$NetBSD: driver.c,v 1.5 1997/10/20 00:37:16 lukem Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -755,7 +755,7 @@ zap(pp, was_player)
 					break;
 			/* Pick the larger of the bomb or slime: */
 			if (btype >= 0 && stype >= 0) {
-				if (shot_req[btype] > slime_req[btype])
+				if (shot_req[btype] > slime_req[stype])
 					btype = -1;
 			}
 			if (btype >= 0)  {

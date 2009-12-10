@@ -1,4 +1,4 @@
-/*	$OpenBSD: move.c,v 1.10 2003/06/03 03:01:40 millert Exp $	*/
+/*	$OpenBSD: move.c,v 1.11 2009/10/27 23:59:25 deraadt Exp $	*/
 /*	$NetBSD: move.c,v 1.4 1995/03/24 05:01:57 cgd Exp $	*/
 
 /*
@@ -130,11 +130,11 @@ acc:
 	else
 		for (i = 1; i < HAND_SZ; i++)
 			if (pp->hand[i] == C_INIT) {
-				for (j = 0; pp->hand[j] == C_INIT; j++)
-					if (j >= HAND_SZ) {
-						j = 0;
-						break;
-					}
+				for (j = 0; (j < HAND_SZ) &&
+					 (pp->hand[j] == C_INIT); j++)
+					;	
+				if (j == HAND_SZ)
+					j = 0;
 				pp->hand[i] = pp->hand[j];
 				pp->hand[j] = C_INIT;
 			}
