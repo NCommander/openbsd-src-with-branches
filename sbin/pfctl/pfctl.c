@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.289 2009/10/28 20:11:01 jsg Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.290 2009/11/22 22:34:50 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1304,7 +1304,7 @@ pfctl_rules(int dev, char *filename, int opts, int optimize,
 	struct pfctl		 pf;
 	struct pf_ruleset	*rs;
 	struct pfr_table	 trs;
-	char			*path;
+	char			*path = NULL;
 	int			 osize;
 
 	RB_INIT(&pf_anchors);
@@ -1413,6 +1413,8 @@ _error:
 				err(1, "DIOCXROLLBACK");
 		exit(1);
 	} else {		/* sub ruleset */
+		if (path)
+			free(path);
 		return (-1);
 	}
 
