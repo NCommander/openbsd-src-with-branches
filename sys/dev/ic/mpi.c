@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.122 2009/12/01 01:40:02 dlg Exp $ */
+/*	$OpenBSD: mpi.c,v 1.123 2009/12/09 04:59:41 marco Exp $ */
 
 /*
  * Copyright (c) 2005, 2006, 2009 David Gwynne <dlg@openbsd.org>
@@ -2256,7 +2256,6 @@ mpi_portenable(struct mpi_softc *sc)
 {
 	struct mpi_ccb				*ccb;
 	struct mpi_msg_portenable_request	*peq;
-	struct mpi_msg_portenable_repy		*pep;
 	int					s;
 
 	DNPRINTF(MPI_D_MISC, "%s: mpi_portenable\n", DEVNAME(sc));
@@ -2287,7 +2286,6 @@ mpi_portenable(struct mpi_softc *sc)
 		    DEVNAME(sc));
 		return (1);
 	}
-	pep = ccb->ccb_rcb->rcb_reply;
 
 	mpi_push_reply(sc, ccb->ccb_rcb->rcb_reply_dva);
 	mpi_put_ccb(sc, ccb);
