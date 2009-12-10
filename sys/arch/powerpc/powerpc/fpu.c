@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.10 2007/03/20 20:59:53 kettenis Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.11 2008/04/27 16:01:47 drahn Exp $	*/
 /*	$NetBSD: fpu.c,v 1.1 1996/09/30 16:34:44 ws Exp $	*/
 
 /*
@@ -100,7 +100,7 @@ enable_fpu(struct proc *p)
 }
 
 void
-save_fpu()
+save_fpu(void)
 {
 	struct cpu_info *ci = curcpu();
 	struct pcb *pcb;
