@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukc.c,v 1.14 2007/06/28 00:52:37 ray Exp $ */
+/*	$OpenBSD: ukc.c,v 1.15 2009/10/27 23:59:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -138,8 +138,6 @@ WARNING this kernel doesn't support pseudo devices.\n");
 
 	check_int(I_BUFCACHEPCT, "BUFCACHEPERCENT");
 	check_int(I_NKMEMPG, "NKMEMPAGES");
-	check_int(I_SHMSEG, "SHMSEG");
-	check_int(I_SHMMAXPGS, "SHMMAXPGS");
 
 	init();
 
