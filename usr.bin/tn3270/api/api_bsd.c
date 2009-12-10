@@ -1,4 +1,4 @@
-/*	$OpenBSD: api_bsd.c,v 1.5 2003/11/15 00:26:36 tedu Exp $	*/
+/*	$OpenBSD: api_bsd.c,v 1.6 2009/10/27 23:59:45 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
@@ -121,7 +121,7 @@ char	*string;		/* if non-zero, where to connect to */
 	perror("fopen");
 	return -1;
     }
-    if (fscanf(keyfile, "%s\n", inkey) != 1) {
+    if (fscanf(keyfile, "100%s\n", inkey) != 1) {
 	perror("fscanf");
 	return -1;
     }
