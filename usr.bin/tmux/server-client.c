@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.24 2009/11/26 21:37:13 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.25 2009/12/03 22:50:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -640,7 +640,7 @@ server_client_msg_info(struct cmd_ctx *ctx, const char *fmt, ...)
 	struct msg_print_data	data;
 	va_list			ap;
 
-	if (be_quiet)
+	if (options_get_number(&global_options, "quiet"))
 		return;
 
 	va_start(ap, fmt);
