@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $OpenBSD: lcp.c,v 1.41 2005/07/17 19:13:24 brad Exp $
+ * $OpenBSD: lcp.c,v 1.42 2006/12/11 16:31:35 claudio Exp $
  */
 
 #include <sys/param.h>
@@ -146,7 +146,7 @@ protoname(int proto)
     "LDBACP",		/* 23: Link Discriminator for BACP */
   };
 
-  if (proto < 0 || proto > sizeof cftypes / sizeof *cftypes ||
+  if (proto < 0 || proto >= sizeof cftypes / sizeof *cftypes ||
       cftypes[proto] == NULL)
     return HexStr(proto, NULL, 0);
 
