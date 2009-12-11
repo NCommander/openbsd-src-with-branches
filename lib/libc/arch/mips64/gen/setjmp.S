@@ -1,4 +1,4 @@
-/*      $OpenBSD: setjmp.S,v 1.4 2004/09/10 12:45:35 pefo Exp $ */
+/*      $OpenBSD: setjmp.S,v 1.5 2005/08/07 16:40:15 espie Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -64,7 +64,7 @@ NON_LEAF(setjmp, FRAMESZ, ra)
 	jal	_thread_sys_sigaltstack
 
 	REG_L	a0, A0OFF(sp)			# restore jmpbuf
-	lw	v1, REGSZ+4(sp)			# get old ss_onstack
+	ld	v1, REGSZ(sp)			# get old ss_onstack
 	and	v1, v1, 1			# extract onstack flag
 	REG_S	v1, SC_ONSTACK(a0)		# save it in sc_onstack
 	REG_L	ra, RAOFF(sp)
