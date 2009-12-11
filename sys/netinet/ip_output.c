@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.199 2009/11/20 09:02:21 guenther Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.200 2009/11/27 20:05:50 guenther Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -1593,9 +1593,11 @@ ip_ctloutput(op, so, level, optname, mp)
 			case IP_IPSEC_LOCAL_AUTH:
 				if (inp->inp_ipo != NULL)
 					ipr = inp->inp_ipo->ipo_local_auth;
+				opt16val = IPSP_AUTH_NONE;
 				break;
 			case IP_IPSEC_REMOTE_AUTH:
 				ipr = inp->inp_ipsec_remoteauth;
+				opt16val = IPSP_AUTH_NONE;
 				break;
 			}
 			if (ipr == NULL)
