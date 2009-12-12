@@ -90,7 +90,6 @@ sub find($$)
 		push(@bad, $pkgname);
 	}
 	if (!defined $state->{conflict_list}) {
-		$state->{conflict_list} = {};
 		fill_conflict_lists($state);
 	}
 	while (my ($name, $l) = each %{$state->{conflict_list}}) {
