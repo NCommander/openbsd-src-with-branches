@@ -74,7 +74,7 @@ sub remove_set
 	for my $n ($set->newer) {
 		delete $self->{to_install}->{$n->pkgname};
 	}
-	for my $n ($set->older) {
+	for my $n ($set->older, $set->hints) {
 		delete $self->{to_update}->{$n->pkgname};
 	}
 }
