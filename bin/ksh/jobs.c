@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.36 2007/09/06 19:57:47 otto Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.37 2009/01/29 23:27:26 jaredy Exp $	*/
 
 /*
  * Process and job control
@@ -1146,8 +1146,7 @@ found:
 			p->state = PEXITED;
 
 		check_job(j);	/* check to see if entire job is done */
-	}
-	while (1);
+	} while (1);
 
 	errno = errno_;
 }
