@@ -234,7 +234,7 @@ sub UpdateInfoOnly
 		# XXX optimization
 		if (m/^\@arch\b/o) {
 			while (<$fh>) {
-			    if (m/^\@(?:depend|wantlib|pkgpath)\b/o) {
+			    if (m/^\@(?:depend|wantlib|conflict|option|pkgpath)\b/o) {
 				    &$cont($_);
 			    } elsif (m/^\@(?:groups|users|cwd)\b/o) {
 				    last;
@@ -250,7 +250,7 @@ sub UpdateInfoOnly
 		    }
 		    return;
 		}
-		next unless m/^\@(?:name\b|depend\b|wantlib\b|pkgpath\b|comment\s+subdir\=|arch\b)/o;
+		next unless m/^\@(?:name\b|depend\b|wantlib\b|conflict|\b|option\b|pkgpath\b|comment\s+subdir\=|arch\b)/o;
 		&$cont($_);
 	}
 }
