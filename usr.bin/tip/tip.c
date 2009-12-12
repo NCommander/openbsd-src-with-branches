@@ -1,4 +1,4 @@
-/*	$OpenBSD: tip.c,v 1.36 2009/12/12 13:38:09 nicm Exp $	*/
+/*	$OpenBSD: tip.c,v 1.37 2009/12/12 18:14:00 nicm Exp $	*/
 /*	$NetBSD: tip.c,v 1.13 1997/04/20 00:03:05 mellon Exp $	*/
 
 /*
@@ -209,7 +209,6 @@ cucommon:
 	}		
 
 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pair) != 0) {
-		daemon_uid();
 		(void)uu_unlock(uucplock);
 		err(3, "socketpair");
 	}
@@ -225,7 +224,6 @@ cucommon:
 	tipin_pid = getpid();
 	switch (tipout_pid = fork()) {
 	case -1:
-		daemon_uid();
 		(void)uu_unlock(uucplock);
 		err(3, "fork");
 	case 0:
