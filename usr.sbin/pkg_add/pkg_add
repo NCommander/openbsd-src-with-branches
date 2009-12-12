@@ -292,6 +292,22 @@ sub can_install
 	return 1;
 }
 
+sub recheck_conflicts
+{
+	my ($set, $state) = @_;
+	
+	for my $h ($set->newer) {
+		for my $h2 ($set->newer) {
+			next if $h2 == $h;
+			if ($h->plist->conflict_list->conflicts_with($h2->pkgname)) {
+				$state->errsay($set->short_print, ": internal conflict between ", $h->pkgname, " and ", $h2->pkgname);
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
 package OpenBSD::AddDelete;
 
 sub failed_message
@@ -642,6 +658,11 @@ sub install_set
 #			return ();
 #		}
 #	}
+	if (!$set->recheck_conflicts($state)) {
+		$set->cleanup(OpenBSD::Handle::CANT_INSTALL);
+		$state->tracker->cant($set);
+		return ();
+	}
 	really_add($set, $state);
 	$set->cleanup;
 	$state->tracker->done($set);
