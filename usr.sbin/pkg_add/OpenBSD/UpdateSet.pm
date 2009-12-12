@@ -156,7 +156,8 @@ sub older_to_do
 	require OpenBSD::PackageInfo;
 	my @l = ();
 	for my $h ($self->older) {
-		if (OpenBSD::PackageInfo::is_installed($h->pkgname)) {
+		if (!defined $h->{keepit} && 
+		    OpenBSD::PackageInfo::is_installed($h->pkgname)) {
 			push(@l, $h);
 		}
 	}
@@ -262,7 +263,6 @@ sub merge
 		$set->{finished} = 1;
 		# XXX and mark it as merged, for eventual updates
 		$set->{merged} = $self;
-		$self->{updates} += $set->{updates};
 	}
 	# then regen tracker info for $self
 	$tracker->todo($self);
