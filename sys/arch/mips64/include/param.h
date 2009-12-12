@@ -1,4 +1,4 @@
-/*      $OpenBSD: param.h,v 1.22 2009/12/07 19:05:57 miod Exp $ */
+/*      $OpenBSD: param.h,v 1.23 2009/12/08 22:13:20 miod Exp $ */
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -53,9 +53,6 @@
 #define	ALIGN(p)	(((u_long)(p) + ALIGNBYTES) &~ ALIGNBYTES)
 #define ALIGNED_POINTER(p, t)  ((((u_long)(p)) & (sizeof (t) - 1)) == 0)
 
-#ifndef	PAGE_SHIFT
-#error	PAGE_SHIFT is not defined
-#endif
 #define PAGE_SIZE	(1 << PAGE_SHIFT)
 #define PAGE_MASK	(PAGE_SIZE - 1)
 
