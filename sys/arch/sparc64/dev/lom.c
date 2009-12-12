@@ -1,4 +1,4 @@
-/*	$OpenBSD: lom.c,v 1.18 2009/10/31 20:26:43 kettenis Exp $	*/
+/*	$OpenBSD: lom.c,v 1.19 2009/11/10 22:26:48 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -606,7 +606,7 @@ lom2_read(struct lom_softc *sc, uint8_t reg, uint8_t *val)
 
 	error = tsleep(&lc, PZERO, "lom2rd", hz);
 	if (error)
-		printf("oops\n");
+		lom_dequeue_cmd(sc, &lc);
 
 	*val = lc.lc_data;
 
