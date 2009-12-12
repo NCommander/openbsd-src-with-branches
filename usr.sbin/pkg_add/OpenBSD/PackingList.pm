@@ -99,6 +99,16 @@ sub infodir
 	return ${$self->{infodir}};
 }
 
+sub conflict_list
+{
+	require OpenBSD::PkgCfl;
+
+	my $self = shift;
+	
+	$self->{conflict_list} //= OpenBSD::PkgCfl->make_conflict_list($self);
+	return $self->{conflict_list};
+}
+
 sub read
 {
 	my ($a, $u, $code) = @_;
