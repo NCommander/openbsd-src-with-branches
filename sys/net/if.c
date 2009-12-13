@@ -471,6 +471,9 @@ if_attach_common(struct ifnet *ifp)
 void
 if_start(struct ifnet *ifp)
 {
+
+	splassert(IPL_NET);
+
 	if (ifp->if_snd.ifq_len >= min(8, ifp->if_snd.ifq_maxlen) &&
 	    !ISSET(ifp->if_flags, IFF_OACTIVE)) {
 		if (ISSET(ifp->if_xflags, IFXF_TXREADY)) {
