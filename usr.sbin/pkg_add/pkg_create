@@ -720,7 +720,7 @@ if ($opt_n) {
 	local $SIG{'HUP'} = $h;
 	local $SIG{'KILL'} = $h;
 	local $SIG{'TERM'} = $h;
-	open(my $fh, "|-", OpenBSD::Paths->gzip, "-o", $wname);
+	open(my $fh, "|-", OpenBSD::Paths->gzip, "-f", "-o", $wname);
 	my $wrarc = OpenBSD::Ustar->new($fh, $plist->infodir);
 
 	$plist->create_package($wrarc, $base, $opt_v);
