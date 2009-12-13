@@ -80,6 +80,7 @@ sub add_newer
 	my $self = shift;
 	for my $h (@_) {
 		$self->{newer}->{$h->pkgname} = $h;
+		$self->{updates}++;
 	}
 	return $self;
 }
@@ -248,6 +249,8 @@ sub merge
 		$self->add_older($set->older);
 		# ... and mark it as already done
 		$set->{finished} = 1;
+		$self->{updates} += $set->{updates};
+		$set->{updates} = 0;
 		# XXX and mark it as merged, for eventual updates
 		$set->{merged} = $self;
 	}
