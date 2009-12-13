@@ -243,7 +243,7 @@ sub find_dep_in_repositories
 		@pkgs = ((grep {$_ eq $dep->{def}} @pkgs),
 		    (sort (grep {$_ ne $dep->{def}} @pkgs)));
 		my $good =  OpenBSD::Interactive::ask_list(
-		    'Ambiguous: choose dependency for '.$self->{set}->short_print.': ',
+		    'Ambiguous: choose dependency for '.$self->{set}->print.': ',
 		    $state->{interactive}, @pkgs);
 		return $c{$good};
 	} else {
@@ -373,10 +373,10 @@ sub dump
 {
 	my $self = shift;
 	if ($self->dependencies) {
-	    print "Dependencies for ", $self->{set}->short_print, 
+	    print "Dependencies for ", $self->{set}->print, 
 	    	" resolve to: ", join(', ',  $self->dependencies);
 	    print " (todo: ", 
-	    	join(',', (map {$_->short_print} @{$self->{deplist}})), 
+	    	join(',', (map {$_->print} @{$self->{deplist}})), 
 		")" 
 	    	if @{$self->{deplist}} > 0;
 	    print "!!" if $self->{not_ready};

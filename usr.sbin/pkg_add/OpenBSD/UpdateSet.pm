@@ -167,32 +167,19 @@ sub older_to_do
 sub print
 {
 	my $self = shift;
-	my @l = ();
-	if ($self->newer > 0) {
-		push(@l, "installing", $self->newer_names);
-	}
+	my $result = "";
 	if ($self->older > 0) {
-		push(@l, "deinstalling", $self->older_names);
+		$result .= join('+',$self->older_names)."->";
 	}
-	return join(' ', @l);
+	if ($self->newer > 0) {
+		$result .= join('+', $self->newer_names);
+	} elsif ($self->hints > 0) {
+		$result .= join('+', $self->hint_names);
+	}
+	return $result;
 }
 
 sub short_print
-{
-	my $self = shift;
-	my @l = ();
-	if ($self->older > 0) {
-		push(@l, join('+',$self->older_names));
-	}
-	if ($self->newer > 0) {
-		push(@l, join('+', $self->newer_names));
-	} elsif ($self->hints > 0) {
-		push(@l, join('+', $self->hint_names));
-	}
-	return join('->', @l);
-}
-
-sub shorter_print
 {
 	my $self = shift;
 	return join('+', $self->newer_names);
