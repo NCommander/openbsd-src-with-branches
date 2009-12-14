@@ -218,6 +218,17 @@ sub init
 	$self->{progressmeter} = bless {}, "OpenBSD::StubProgress";
 }
 
+sub ntogo
+{
+	my $self = shift;
+
+	if (defined $self->{todo} && $self->{todo} > 0) {
+		return " ($self->{todo} to go)";
+	} else {
+		return "";
+	}
+}
+
 sub vstat
 {
 	return shift->{vstat};

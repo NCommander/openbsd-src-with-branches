@@ -69,6 +69,14 @@ sub add_location
 	    OpenBSD::Handle->from_location($location));
 }
 
+sub progress_message
+{
+	my ($self, $state, $msg) = @_;
+	$msg .= $state->ntogo;
+	$state->progress->message($msg);
+	$state->say($msg) if $state->{beverbose};
+}
+
 my $first = 1;
 sub process_handle
 {
@@ -167,12 +175,10 @@ sub process_handle
 		if ($oldfound) {
 			$h->{update_found} = $h;
 			$h->{keepit} = 1;
-			my $msg = "No need to update $pkgname";
-			if (defined $state->{todo} && $state->{todo} > 0) {
-				$msg .= " ($state->{todo} to go)";
-			}
-			$state->progress->message($msg);
-			$state->say($msg) if $state->{beverbose};
+
+			$self->progress_message($state, 
+			    "No need to update $pkgname");
+			
 			return 0;
 		}
 		return undef;
@@ -182,18 +188,16 @@ sub process_handle
 		    !$plist->uses_old_libs && !$state->{defines}->{installed}) {
 			$h->{update_found} = $h;
 			$h->{keepit} = 1;
-			my $msg = "No need to update $pkgname";
-			if (defined $state->{todo} && $state->{todo} > 0) {
-				$msg .= " ($state->{todo} to go)";
-			}
-			$state->progress->message($msg);
-			$state->say($msg) if $state->{beverbose};
+
+			$self->progress_message($state, 
+			    "No need to update $pkgname");
+
 			return 0;
 		}
 	}
 
-	$state->say("Candidates for updating $pkgname -> ", 
-	    join(' ', map {$_->name} @$l));
+	$state->say("Update candidates: $pkgname -> ", 
+	    join(' ', map {$_->name} @$l), $state->ntogo);
 		
 	my $r = $state->choose_location($pkgname, $l);
 	if (defined $r) {
@@ -274,6 +278,9 @@ sub process_set
 	}
 	if ($problem) {
 		$state->tracker->cant($set) if !$set->{quirks};
+		if ($set->{updates} != 0) {
+			$state->say("Can't update ", $set->print);
+		}
 		return 0;
 	} elsif ($set->{updates} == 0) {
 		$state->tracker->uptodate($set);

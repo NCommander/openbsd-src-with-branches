@@ -155,9 +155,8 @@ sub next
 	return unless $isatty;
 	$self->clear;
 
-	$todo //= 0;
-	print "$header: ok", $todo > 0 ? " ($todo to go)" : "", "\n";
-
+	$todo //= '';
+	print "$header: ok$todo\n";
 }
 
 1;
