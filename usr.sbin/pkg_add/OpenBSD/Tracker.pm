@@ -76,6 +76,7 @@ sub remove_set
 	}
 	for my $n ($set->older, $set->hints) {
 		delete $self->{to_update}->{$n->pkgname};
+		delete $self->{cant_update}->{$n->pkgname};
 	}
 }
 
