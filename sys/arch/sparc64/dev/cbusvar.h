@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbusvar.h,v 1.2 2009/01/01 23:24:59 kettenis Exp $	*/
+/*	$OpenBSD: cbusvar.h,v 1.3 2009/05/10 12:48:24 kettenis Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -36,5 +36,7 @@ struct cbus_attach_args {
 
 int	cbus_print(void *, const char *);
 int	cbus_intr_map(int, int, uint64_t *);
+int	cbus_intr_setstate(uint64_t, uint64_t);
+int	cbus_intr_setenabled(uint64_t, uint64_t);
 
 #endif
