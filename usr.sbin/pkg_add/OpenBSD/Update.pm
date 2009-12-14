@@ -269,17 +269,19 @@ sub process_hint2
 sub process_set
 {
 	my ($self, $set, $state) = @_;
-	my $problem;
+	my @problems = ();
 	for my $h ($set->older, $set->hints) {
 		next if $h->{update_found};
 		if (!defined $h->update($self, $set, $state)) {
-			$problem = 1;
+			push(@problems, $h->pkgname);
 		}
 	}
-	if ($problem) {
+	if (@problems > 0) {
 		$state->tracker->cant($set) if !$set->{quirks};
 		if ($set->{updates} != 0) {
-			$state->say("Can't update ", $set->print);
+			$state->say("Can't update ", $set->print, 
+			    ": no update found for ", 
+			    join(',', @problems));
 		}
 		return 0;
 	} elsif ($set->{updates} == 0) {
