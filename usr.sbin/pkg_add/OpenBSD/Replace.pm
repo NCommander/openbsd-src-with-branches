@@ -470,6 +470,10 @@ sub save_libs_from_handle
 	for my $n ($set->newer) {
 		$n->plist->unmark_lib($libs, $p);
 	}
+	for my $n ($set->older) {
+		next unless $n->{keepit};
+		$n->plist->unmark_lib($libs, $p);
+	}
 
 	if (%$libs) {
 		$state->say("Libraries to keep: ", 
@@ -485,6 +489,7 @@ sub save_old_libraries
 	my ($set, $state) = @_;
 
 	for my $o ($set->older) {
+		next if $o->{keepit};
 		save_libs_from_handle($o, $set, $state);
 	}
 }
