@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.c,v 1.161 2009/11/23 22:33:21 pirofti Exp $	*/
+/*	$OpenBSD: azalia.c,v 1.162 2009/11/24 10:00:39 jakemsr Exp $	*/
 /*	$NetBSD: azalia.c,v 1.20 2006/05/07 08:31:44 kent Exp $	*/
 
 /*-
@@ -2391,7 +2391,8 @@ azalia_codec_init_volgroups(codec_t *this)
 	for (i = 0; i < this->playvols.nslaves; i++) {
 		w = &this->w[this->playvols.slaves[i]];
 		if (w->nid == this->input_mixer ||
-		    w->parent == this->input_mixer)
+		    w->parent == this->input_mixer ||
+		    WIDGET_CHANNELS(w) < 2)
 			continue;
 		j = 0;
 		/* azalia_codec_find_defdac only goes 10 connections deep.
