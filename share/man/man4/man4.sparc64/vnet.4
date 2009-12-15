@@ -1,4 +1,4 @@
-.\"     $OpenBSD: vnet.4,v 1.1 2009/01/04 18:46:09 kettenis Exp $
+.\"     $OpenBSD: vnet.4,v 1.2 2009/01/04 22:07:54 jmc Exp $
 .\"
 .\" Copyright (c) 2009 Mark Kettenis <kettenis@openbsd.org>
 .\"
@@ -22,6 +22,7 @@
 .Nd virtual network interface
 .Sh SYNOPSIS
 .Cd "vnet* at cbus?"
+.Cd "vnet* at vsw?"
 .Sh DESCRIPTION
 The
 .Nm
@@ -53,6 +54,7 @@ For more information on configuring this device, see
 .Xr ifmedia 4 ,
 .Xr intro 4 ,
 .Xr netintro 4 ,
+.Xr vsw 4 ,
 .Xr hostname.if 5 ,
 .Xr ifconfig 8
 .Sh HISTORY
