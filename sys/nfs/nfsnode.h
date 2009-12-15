@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsnode.h,v 1.36 2009/08/26 12:08:10 thib Exp $	*/
+/*	$OpenBSD: nfsnode.h,v 1.38 2009/09/02 18:20:54 thib Exp $	*/
 /*	$NetBSD: nfsnode.h,v 1.16 1996/02/18 11:54:04 fvdl Exp $	*/
 
 /*
@@ -53,7 +53,7 @@ struct sillyrename {
 	struct	ucred *s_cred;
 	struct	vnode *s_dvp;
 	long	s_namlen;
-	char	s_name[20];
+	char	s_name[24];
 };
 
 /*
