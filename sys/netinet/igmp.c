@@ -492,6 +492,7 @@ igmp_leavegroup(inm)
 	case IGMP_DELAYING_MEMBER:
 	case IGMP_IDLE_MEMBER:
 		if (!IN_LOCAL_GROUP(inm->inm_addr.s_addr) &&
+		    inm->inm_ia->ia_ifp &&
 		    (inm->inm_ia->ia_ifp->if_flags & IFF_LOOPBACK) == 0)
 			if (inm->inm_rti->rti_type != IGMP_v1_ROUTER)
 				igmp_sendpkt(inm, IGMP_HOST_LEAVE_MESSAGE,
