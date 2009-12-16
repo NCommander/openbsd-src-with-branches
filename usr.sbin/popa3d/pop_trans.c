@@ -1,4 +1,4 @@
-/* $OpenBSD: pop_trans.c,v 1.3 2002/09/06 19:17:52 deraadt Exp $ */
+/* $OpenBSD: pop_trans.c,v 1.4 2003/05/12 19:28:22 camield Exp $ */
 
 /*
  * TRANSACTION state handling.
@@ -212,7 +212,7 @@ int do_pop_trans(char *spool, char *mailbox)
 
 	if (db_load(spool, mailbox)) {
 		syslog(SYSLOG_PRI_HI,
-			"Failed or refused to load %s/%s",
+			"Failure reading %s/%s or mailbox limits exceeded",
 			spool, mailbox);
 		pop_reply_error();
 		return 0;
