@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpctl.c,v 1.10 2008/09/26 19:26:24 jmc Exp $	*/
+/*	$OpenBSD: snmpctl.c,v 1.11 2009/06/06 05:52:00 pyr Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -54,7 +54,6 @@ struct imsgname {
 
 void		 show_mib(void);
 struct imsgname *monitor_lookup(u_int8_t);
-void		 monitor_host_status(struct imsg *);
 void		 monitor_id(struct imsg *);
 int		 monitor(struct imsg *);
 
