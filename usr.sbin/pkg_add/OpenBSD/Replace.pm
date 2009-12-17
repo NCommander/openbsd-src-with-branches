@@ -436,7 +436,12 @@ sub do_save_libs
 	my $dest = installed_info($stub_name);
 	$state->say("Keeping them in $stub_name") 
 	    if $state->{verbose};
+
+
 	if ($state->{not}) {
+		require OpenBSD::SharedLibs;
+
+		OpenBSD::SharedLibs::add_libs_from_plist($stub_list);
 		$stub_list->to_cache;
 		$o->plist->to_cache;
 	} else {

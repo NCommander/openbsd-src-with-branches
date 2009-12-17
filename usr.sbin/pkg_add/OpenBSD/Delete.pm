@@ -148,6 +148,7 @@ sub delete_plist
 	$ENV{'PKG_PREFIX'} = $plist->localbase;
 	$plist->register_manpage($state);
 	manpages_unindex($state);
+	$state->progress->show(0, $totsize);
 	$plist->delete_and_progress($state, \$donesize, $totsize);
 	if ($plist->has(UNDISPLAY)) {
 		$plist->get(UNDISPLAY)->prepare($state);

@@ -103,6 +103,7 @@ sub perform_installation
 		$handle->{partial} = {};
 	}
 	$state->{partial} = $handle->{partial};
+	$state->progress->show(0, $totsize);
 	$handle->{plist}->install_and_progress($state, \$donesize, $totsize);
 	$handle->{location}->finish_and_close;
 }
