@@ -717,7 +717,7 @@ if (defined $state->{destdir}) {
 
 
 $state->{automatic} = $opt_a;
-$state->{allow_replacing} = $opt_r || $opt_u;
+$state->{allow_replacing} = $opt_r || $opt_u || $opt_U;
 $state->{newupdates} = $opt_u || $opt_U;
 
 if (@ARGV == 0 && !$opt_u && !$opt_l) {
