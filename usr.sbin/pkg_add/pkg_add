@@ -789,7 +789,6 @@ sub process_parameters
 
 		if (@ARGV == 0) {
 			@ARGV = sort(installed_packages());
-			$state->{full_update} = 1;
 		}
 		my $inst = OpenBSD::PackageRepository::Installed->new;
 		for my $pkgname (@ARGV) {
