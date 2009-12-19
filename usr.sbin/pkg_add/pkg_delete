@@ -24,6 +24,12 @@ use OpenBSD::AddDelete;
 package OpenBSD::State;
 our @ISA=(qw(OpenBSD::UI));
 
+sub todo
+{
+	my $state = shift;
+	return $state->{todo};
+}
+
 package OpenBSD::AddDelete;
 our ($state, %defines, $bad, $opt_B);
 

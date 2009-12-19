@@ -282,6 +282,7 @@ sub merge
 		$self->add_older($set->older);
 		# ... and mark it as already done
 		$set->{finished} = 1;
+		$tracker->handle_set($set);
 		$self->{updates} += $set->{updates};
 		$set->{updates} = 0;
 		# XXX and mark it as merged, for eventual updates
