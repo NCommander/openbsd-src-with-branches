@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.yp,v 1.13 2002/11/01 23:54:18 fgsch Exp $
+#	$OpenBSD: Makefile.yp,v 1.14 2009/04/12 21:03:28 schwarze Exp $
 
 # ----------------------------------------------------------------------
 # User-configurable settings; see Makefile.yp(8) for details.
@@ -247,8 +247,9 @@ protocols.time: $(DIR)/protocols
 	fi
 
 
-netid.time: $(DIR)/passwd $(DIR)/group $(DIR)/hosts $(DIR)/netid
-	-@$(MKNETID) -q -d $(DOMAIN) -p $(DIR)/passwd -g $(DIR)/group -h $(DIR)/hosts -m $(DIR)/netid | \
+netid.time: $(DIR)/passwd $(DIR)/master.passwd $(DIR)/group $(DIR)/hosts $(DIR)/netid
+	-@$(MKNETID) -q -d $(DOMAIN) -p $(DIR)/passwd -P $(DIR)/master.passwd \
+		-g $(DIR)/group -h $(DIR)/hosts -m $(DIR)/netid | \
 	  $(MAKEDBM) - netid.byname; \
 	  $(TOUCH) $(@); \
 	  $(ECHO) "updated netid"; \
