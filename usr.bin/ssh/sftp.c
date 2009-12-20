@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.113 2009/11/22 13:18:00 halex Exp $ */
+/* $OpenBSD: sftp.c,v 1.114 2009/12/06 23:53:54 dtucker Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1760,7 +1760,8 @@ main(int argc, char **argv)
 				fprintf(stderr, "Missing username\n");
 				usage();
 			}
-			addargs(&args, "-l%s", userhost);
+			addargs(&args, "-l");
+			addargs(&args, "%s", userhost);
 		}
 
 		if ((cp = colon(host)) != NULL) {
@@ -1780,6 +1781,7 @@ main(int argc, char **argv)
 		if (sftp_server == NULL || strchr(sftp_server, '/') == NULL)
 			addargs(&args, "-s");
 
+		addargs(&args, "--");
 		addargs(&args, "%s", host);
 		addargs(&args, "%s", (sftp_server != NULL ?
 		    sftp_server : "sftp"));
