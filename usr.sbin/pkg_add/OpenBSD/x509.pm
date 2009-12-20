@@ -111,7 +111,7 @@ sub check_signature
 	    	$state->log->warn("Bad signature");
 		return 0;
 	}
-	if ($state->{verbose}) {
+	if ($state->verbose >= 2) {
 		dump_certificate_info($fname2);
 	}
 	unlink $fname;

@@ -179,7 +179,7 @@ sub get_plist
 	my $location = $handle->{location};
 	my $pkg = $handle->pkgname;
 
-	if ($state->{verbose}) {
+	if ($state->verbose >= 2) {
 		$state->say($state->deptree_header($pkg), "parsing $pkg");
 	}
 	my $plist = $location->grabPlist;
@@ -207,7 +207,7 @@ sub get_plist
 		$handle->{tweaked} = 
 		    OpenBSD::Add::tweak_package_status($pkgname, $state);
 		$state->say("Not reinstalling $pkgname")
-		    if $state->{verbose} and !$handle->{tweaked};
+		    if $state->verbose >= 2 and !$handle->{tweaked};
 		$state->tracker->{installed}->{$pkgname} = 1;
 		$location->close_now;
 		$location->wipe_info;

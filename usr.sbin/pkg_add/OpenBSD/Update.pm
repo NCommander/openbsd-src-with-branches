@@ -74,7 +74,7 @@ sub progress_message
 	my ($self, $state, $msg) = @_;
 	$msg .= $state->ntogo;
 	$state->progress->message($msg);
-	$state->say($msg) if $state->{beverbose};
+	$state->say($msg) if $state->verbose >= 2;
 }
 
 my $first = 1;
@@ -197,7 +197,7 @@ sub process_handle
 	}
 
 	$state->say("Update candidates: $pkgname -> ", 
-	    join(' ', map {$_->name} @$l), $state->ntogo);
+	    join(' ', map {$_->name} @$l), $state->ntogo) if $state->verbose;
 		
 	my $r = $state->choose_location($pkgname, $l);
 	if (defined $r) {

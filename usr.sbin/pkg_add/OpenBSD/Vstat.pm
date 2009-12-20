@@ -204,7 +204,7 @@ sub report_ro
 {
 	my ($s, $state, $fname) = @_;
 
-	if ($state->{very_verbose} or ++($s->{problems}) < 4) {
+	if ($state->verbose >= 3 or ++($s->{problems}) < 4) {
 		$state->errsay("Error: ", $s->{dev}, 
 		    " is read-only ($fname)");
 	} elsif ($s->{problems} == 4) {
@@ -217,7 +217,7 @@ sub report_overflow
 {
 	my ($s, $state, $fname) = @_;
 
-	if ($state->{very_verbose} or ++($s->{problems}) < 4) {
+	if ($state->verbose >= 3 or ++($s->{problems}) < 4) {
 		$state->errsay("Error: ", $s->{dev}, 
 		    " is not large enough ($fname)");
 	} elsif ($s->{problems} == 4) {
