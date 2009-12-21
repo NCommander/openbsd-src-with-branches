@@ -161,17 +161,7 @@ sub next
 
 sub ntogo
 {
-	my ($self, $todo, $offset) = @_;
-
-	$todo //= 0;
-	$offset //= 0;
-	$todo += $offset;
-
-	if ($todo > 0) {
-		return " ($todo to go)";
-	} else {
-		return "";
-	}
+	&OpenBSD::UI::ntogo_string;
 }
 
 1;
