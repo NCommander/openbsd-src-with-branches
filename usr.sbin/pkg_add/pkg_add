@@ -692,7 +692,7 @@ sub install_set
 our ($opt_a, $opt_A, $opt_P, $opt_Q, $opt_r, $opt_u, $opt_U, $opt_l, $opt_z);
 
 handle_options('aqchruUzl:A:P:Q:', {},
-    'pkg_add [-acIinqrUuvxz] [-A arch] [-B pkg-destdir] [-F keywords]',
+    'pkg_add [-acIinqrsUuvxz] [-A arch] [-B pkg-destdir] [-F keywords]',
     '[-L localbase] [-l file] [-P type] [-Q quick-destdir] pkg-name [...]');
 
 local $SIG{'INFO'} = sub { $state->status->print($state); };
