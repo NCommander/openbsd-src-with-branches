@@ -30,7 +30,7 @@ use OpenBSD::Paths;
 
 my $devinfo = {};
 my $devinfo2 = {};
-my $virtual = {};
+our $virtual = {};
 my $giveup;
 
 sub create_device($)
@@ -154,10 +154,13 @@ sub account_later($$)
 
 sub synchronize
 {
+	my $not = shift;
 	while (my ($k, $v) = each %$devinfo) {
 		$v->{used} += $v->{delayed};
 		$v->{delayed} = 0;
 	}
+	# Grab back all memory if we can !
+	$virtual = {} unless $not;
 }
 
 sub add($$;$)

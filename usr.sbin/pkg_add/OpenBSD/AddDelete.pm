@@ -47,6 +47,7 @@ sub handle_options
 		$opt_n = 1;
 	}
 	$state->{not} = $opt_n;
+	$state->vstat->{not} = $opt_n;
 	# XXX RequiredBy
 	$main::not = $opt_n;
 	$state->{defines} = \%defines;
@@ -181,8 +182,8 @@ sub tally
 
 sub synchronize
 {
-	shift;
-	&OpenBSD::Vstat::synchronize;
+	my $self = shift;
+	OpenBSD::Vstat::synchronize($self->{not});
 }
 
 package OpenBSD::Log;
