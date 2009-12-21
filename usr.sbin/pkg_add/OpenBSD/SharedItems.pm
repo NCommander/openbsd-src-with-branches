@@ -31,7 +31,7 @@ sub find_items_in_installed_packages
 	my $db = OpenBSD::SharedItemsRecorder->new;
 	my @list = installed_packages();
 	my $total = @list;
-	$state->status->what("Read")->object("Shared items");
+	$state->status->what("Read")->object("shared items");
 	$state->progress->set_header("Read shared items");
 	my $done = 0;
 	for my $e (@list) {
