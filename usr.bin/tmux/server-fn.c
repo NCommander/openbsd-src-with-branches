@@ -1,4 +1,4 @@
-/* $OpenBSD: server-fn.c,v 1.30 2009/11/26 21:37:13 nicm Exp $ */
+/* $OpenBSD: server-fn.c,v 1.31 2009/12/03 22:50:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -250,10 +250,8 @@ server_kill_window(struct window *w)
 
 		if (session_detach(s, wl))
 			server_destroy_session_group(s);
-		else {
-			server_redraw_session(s);
-			server_status_session_group(s);
-		}
+		else
+			server_redraw_session_group(s);
 	}
 }
 
