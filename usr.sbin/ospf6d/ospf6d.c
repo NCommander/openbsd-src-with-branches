@@ -447,13 +447,11 @@ main_dispatch_rde(int fd, short event, void *bula)
 
 		switch (imsg.hdr.type) {
 		case IMSG_KROUTE_CHANGE:
-log_debug("IMSG_KROUTE_CHANGE");
 			if (kr_change(imsg.data))
 				log_warn("main_dispatch_rde: error changing "
 				    "route");
 			break;
 		case IMSG_KROUTE_DELETE:
-log_debug("IMSG_KROUTE_DELETE");
 			if (kr_delete(imsg.data))
 				log_warn("main_dispatch_rde: error deleting "
 				    "route");
