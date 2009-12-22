@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlreg.h,v 1.18 2004/05/19 12:11:34 brad Exp $	*/
+/*	$OpenBSD: xlreg.h,v 1.19 2004/05/30 23:49:39 brad Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -591,7 +591,6 @@ struct xl_softc {
 	u_int16_t		xl_caps;
 	u_int8_t		xl_stats_no_timeout;
 	u_int16_t		xl_tx_thresh;
-	int			xl_if_flags;
 	struct xl_list_data	*xl_ldata;
 	struct xl_chain_data	xl_cdata;
 	int			xl_flags;
