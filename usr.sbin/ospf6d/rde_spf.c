@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_spf.c,v 1.15 2009/07/28 19:20:40 claudio Exp $ */
+/*	$OpenBSD: rde_spf.c,v 1.16 2009/12/22 16:29:55 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -484,7 +484,7 @@ calc_nexthop(struct vertex *dst, struct vertex *parent,
 			if (rtr_link->type != LINK_TYPE_POINTTOPOINT)
 				fatalx("inconsistent SPF tree");
 			nexthop = calc_nexthop_lladdr(dst, rtr_link, 
-			    ntohl(rtr_link->nbr_iface_id));
+			    ntohl(rtr_link->iface_id));
 			break;
 		case LSA_TYPE_NETWORK:
 			if (rtr_link->type != LINK_TYPE_TRANSIT_NET)
