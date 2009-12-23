@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkfs.c,v 1.71 2008/01/05 19:51:55 otto Exp $	*/
+/*	$OpenBSD: mkfs.c,v 1.72 2008/08/08 23:49:53 krw Exp $	*/
 /*	$NetBSD: mkfs.c,v 1.25 1995/06/18 21:35:38 cgd Exp $	*/
 
 /*
@@ -592,7 +592,7 @@ mkfs(struct partition *pp, char *fsys, int fi, int fo, mode_t mfsmode,
 		    ((char *)fscs) + i);
 
 	/*
-	 * Update information about this partion in pack label, to that it may
+	 * Update information about this partition in pack label, to that it may
 	 * be updated on disk.
 	 */
 	pp->p_fstype = FS_BSDFFS;
