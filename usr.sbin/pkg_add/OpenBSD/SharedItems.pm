@@ -113,7 +113,11 @@ sub cleanup
 			$done++;
 		}
 	}
-	$state->progress->next;
+	if ($state->verbose >= 2) {
+		$state->progress->next;
+	} else {
+		$state->progress->clear;
+	}
 }
 
 package OpenBSD::PackingElement;
