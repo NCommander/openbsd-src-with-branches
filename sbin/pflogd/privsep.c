@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.15 2006/03/06 10:45:56 djm Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.16 2006/10/25 20:55:04 moritz Exp $	*/
 
 /*
  * Copyright (c) 2003 Can Erkin Acar
@@ -200,7 +200,7 @@ move_log(const char *name)
 			return (1);
 		}
 
-		/* lock destinanion */
+		/* lock destination */
 		fd = open(ren, O_CREAT|O_EXCL, 0);
 		if (fd >= 0) {
 			close(fd);
