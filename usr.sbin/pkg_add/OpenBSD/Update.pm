@@ -92,6 +92,7 @@ sub process_handle
 	}
 	if ($pkgname =~ m/^partial\-/o) {
 		$state->say("Not updating $pkgname, remember to clean it");
+		$h->{update_found} = $h;
 		$set->move_kept($h);
 		return 0;
 	}
