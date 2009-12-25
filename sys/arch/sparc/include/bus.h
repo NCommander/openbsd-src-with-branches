@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.8 2009/07/26 18:48:55 miod Exp $	*/
+/*	$OpenBSD: bus.h,v 1.9 2009/07/30 21:39:54 miod Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  *
@@ -120,13 +120,7 @@ bus_space_barrier(bus_space_tag_t tag, bus_space_handle_t handle,
 static __inline__ void *
 bus_space_vaddr(bus_space_tag_t tag, bus_space_handle_t handle)
 {
-	u_int32_t iospace = tag->rr_iospace;
-	void *rc;
-
-	tag->rr_iospace &= ~TAG_LITTLE_ENDIAN;
-	rc = (void *)(REG2PHYS(tag, 0) | PMAP_NC);
-	tag->rr_iospace = iospace;
-	return (rc);
+	return ((void *)handle);
 }
 
 static __inline__ int
