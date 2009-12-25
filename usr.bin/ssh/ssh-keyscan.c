@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keyscan.c,v 1.78 2009/01/22 10:02:34 djm Exp $ */
+/* $OpenBSD: ssh-keyscan.c,v 1.79 2009/10/28 16:38:18 reyk Exp $ */
 /*
  * Copyright 1995, 1996 by David Mazieres <dm@lcs.mit.edu>.
  *
@@ -789,9 +789,11 @@ main(int argc, char **argv)
 			IPv4or6 = AF_INET6;
 			break;
 		case 'V':
-			scan_rdomain = a2port(optarg);
-			if (scan_rdomain < 0)
-				scan_rdomain = -1;
+			scan_rdomain = a2rdomain(optarg);
+			if (scan_rdomain == -1) {
+				fprintf(stderr, "Bad rdomain '%s'\n", optarg);
+				exit(1);
+			}
 			break;
 		case '?':
 		default:
