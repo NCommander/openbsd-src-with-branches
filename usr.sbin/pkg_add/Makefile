@@ -18,6 +18,7 @@ PACKAGES= \
     OpenBSD/Delete.pm \
     OpenBSD/Dependencies.pm \
     OpenBSD/Error.pm \
+    OpenBSD/ForwardDependencies.pm \
     OpenBSD/Getopt.pm \
     OpenBSD/Handle.pm \
     OpenBSD/IdCache.pm \
