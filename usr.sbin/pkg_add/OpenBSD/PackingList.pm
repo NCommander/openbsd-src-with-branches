@@ -49,7 +49,9 @@ package OpenBSD::PackingList::hashpath;
 sub match
 {
 	my ($h, $plist) = @_;
-	return $h->{$plist->{extrainfo}->{subdir}};
+	return
+	    defined $plist->{extrainfo} && 
+	    $h->{$plist->{extrainfo}->{subdir}};
 }
 
 package OpenBSD::PackingList;
