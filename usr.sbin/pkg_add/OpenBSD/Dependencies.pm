@@ -373,7 +373,7 @@ sub dump
 {
 	my $self = shift;
 	if ($self->dependencies) {
-	    print "Dependencies for ", $self->{set}->print, 
+	    print "Direct dependencies for ", $self->{set}->print, 
 	    	" resolve to: ", join(', ',  $self->dependencies);
 	    print " (todo: ", 
 	    	join(',', (map {$_->print} @{$self->{deplist}})), 
