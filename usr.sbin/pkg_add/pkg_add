@@ -299,9 +299,7 @@ sub can_install
 
 	require OpenBSD::Replace;
 
-	return 0 unless OpenBSD::Replace::is_set_safe($set, $state);
-
-	return 1;
+	return OpenBSD::Replace::is_set_safe($set, $state);
 }
 
 sub recheck_conflicts
