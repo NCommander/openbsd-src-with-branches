@@ -138,14 +138,22 @@ our @ISA=(qw(OpenBSD::Search::Stem));
 sub match
 {
 	my ($self, $o) = @_;
-	return $o->stemlist->find_partial($self->{stem});
+	my @r = ();
+	for my $k (keys %$self) {
+		push(@r, $o->stemlist->find_partial($k));
+	}
+	return @r;
 }
 
 sub _keep
 {
 	my ($self, $stem) = @_;
-	my $partial = $self->{stem};
-	return $stem =~ /\Q$partial\E/;
+	for my $partial (keys %$self) {
+		if ($stem =~ /\Q$partial\E/) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 package OpenBSD::Search::FilterLocation;
