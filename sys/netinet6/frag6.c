@@ -1,4 +1,4 @@
-/*	$OpenBSD: frag6.c,v 1.26 2008/06/11 19:00:50 mcbride Exp $	*/
+/*	$OpenBSD: frag6.c,v 1.27 2008/11/23 13:30:59 claudio Exp $	*/
 /*	$KAME: frag6.c,v 1.40 2002/05/27 21:40:31 itojun Exp $	*/
 
 /*
@@ -640,7 +640,7 @@ frag6_freef(struct ip6q *q6)
 			/* adjust pointer */
 			ip6 = mtod(m, struct ip6_hdr *);
 
-			/* restoure source and destination addresses */
+			/* restore source and destination addresses */
 			ip6->ip6_src = q6->ip6q_src;
 			ip6->ip6_dst = q6->ip6q_dst;
 
