@@ -255,6 +255,17 @@ sub can_install
 		my $bad = $set->{forward}->check($set, $state);
 
 		if (keys %$bad > 0) {
+#			for my $m (keys %$bad) {
+#				my $s = $state->tracker->is_to_update($m);
+#				if (defined $s) {
+#					$set->merge($state->tracker, $s);
+#				} else {
+#					$set->add_older(OpenBSD::Handle->create_old($m, 
+#					    $state));
+#				}
+#			}
+#			$state->say("Merging ", $set->print, $state->ntogo);
+#			return;
 			if ($state->{defines}->{updatedepends}) {
 			    $state->errsay("Forcing update");
 			} elsif ($state->{interactive}) {
@@ -263,17 +274,6 @@ sub can_install
 			} else {
 				return 0;
 			}
-#		XXX can't do this yet, have to protect updates against loops
-#		$later = 1;
-#		for my $m (keys %$bad) {
-#			my $s = $state->tracker->is_to_update($m);
-#			if (defined $s) {
-#				$set->merge($state->tracker, $s);
-#			} else {
-#				$set->add_older(OpenBSD::Handle->create_old($m, 
-#				    $state));
-#			}
-#		}
 		}
 	}
 
@@ -640,7 +640,9 @@ sub install_set
 		}
 		if (@deps > 0) {
 			$state->build_deptree($set, @deps);
-			# here I can check for loops
+			if ($set->{solver}->check_for_loops($state)) {
+				return $set;
+			}
 			return (@deps, $set);
 		}
 	}
