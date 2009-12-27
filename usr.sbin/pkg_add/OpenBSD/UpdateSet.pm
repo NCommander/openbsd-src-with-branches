@@ -76,6 +76,7 @@ sub cleanup
 		$h->cleanup($error);
 	}
 	$self->{error} //= $error;
+	delete $self->{solver};
 	$self->{finished} = 1;
 }
 
