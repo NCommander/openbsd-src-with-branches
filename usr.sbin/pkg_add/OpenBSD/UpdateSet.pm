@@ -200,15 +200,15 @@ sub print
 	my $self = shift;
 	my $result = "";
 	if ($self->kept > 0) {
-		$result = "[".join('+', $self->kept_names)."]";
+		$result = "[".join('+', sort $self->kept_names)."]";
 	}
 	if ($self->older > 0) {
-		$result .= join('+',$self->older_names)."->";
+		$result .= join('+',sort $self->older_names)."->";
 	}
 	if ($self->newer > 0) {
-		$result .= join('+', $self->newer_names);
+		$result .= join('+', sort $self->newer_names);
 	} elsif ($self->hints > 0) {
-		$result .= join('+', $self->hint_names);
+		$result .= join('+', sort $self->hint_names);
 	}
 	return $result;
 }
@@ -216,7 +216,7 @@ sub print
 sub short_print
 {
 	my $self = shift;
-	return join('+', $self->newer_names);
+	return join('+', sort $self->newer_names);
 }
 
 sub validate_plists
