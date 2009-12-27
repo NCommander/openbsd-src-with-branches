@@ -309,10 +309,14 @@ sub is_set_safe
 	my $ok = 1;
 
 	for my $pkg ($set->older) {
+		next if defined $pkg->{exec_checked};
 		$ok = 0 unless can_old_package_be_replaced($pkg->plist, $state);
+		$pkg->{exec_checked} = 1;
 	}
 	for my $pkg ($set->newer) {
+		next if defined $pkg->{exec_checked};
 		$ok = 0 unless is_new_package_safe($pkg->plist, $state);
+		$pkg->{exec_checked} = 1;
 	}
 	return 1 if $ok;
 
