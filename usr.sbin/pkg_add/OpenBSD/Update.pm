@@ -118,7 +118,8 @@ sub process_handle
 	# because of conflicts, in which case the pkgpath + 
 	# conflict should be enough  to "match".
 	for my $n ($set->newer) {
-		if ($n->location->update_info->match_pkgpath($plist) &&
+		if (($state->{hard_replace} || 
+		    $n->location->update_info->match_pkgpath($plist)) &&
 			$n->plist->conflict_list->conflicts_with($sname)) {
 				$self->add_handle($set, $h, $n);
 				return 1;
