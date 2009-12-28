@@ -114,7 +114,7 @@ sub find_in_new_source
 {
 	my ($self, $solver, $state, $obj, $dep) = @_;
 
-	if ($solver->{set}->{newer}->{$dep}) {
+	if (defined $solver->{set}->{newer}->{$dep}) {
 		OpenBSD::SharedLibs::add_libs_from_plist($solver->{set}->{newer}->{$dep}->plist);
 	} else {
 		OpenBSD::SharedLibs::add_libs_from_installed_package($dep);
@@ -395,7 +395,8 @@ sub check_depends
 
 	for my $dep ($self->dependencies) {
 		push(@bad, $dep) 
-		    unless is_installed($dep) or $self->{set}->{newer}->{$dep};
+		    unless is_installed($dep) or 
+		    	defined $self->{set}->{newer}->{$dep};
 	}
 	return @bad;
 }

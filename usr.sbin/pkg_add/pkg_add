@@ -235,7 +235,7 @@ sub can_install
 			return 0;
 		}
 
-		next if $set->{older}->{$toreplace};
+		next if defined $set->{older}->{$toreplace};
 
 		$later = 1;
 		my $s = $state->tracker->is_to_update($toreplace);

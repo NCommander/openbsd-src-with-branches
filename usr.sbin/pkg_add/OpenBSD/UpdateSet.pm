@@ -134,7 +134,7 @@ sub add_hints2
 
 sub newer
 {
-	my $self =shift;
+	my $self = shift;
 	return values %{$self->{newer}};
 }
 
@@ -152,7 +152,7 @@ sub kept
 
 sub hints
 {
-	my $self =shift;
+	my $self = shift;
 	return @{$self->{hints}};
 }
 
@@ -164,7 +164,7 @@ sub older_names
 
 sub newer_names
 {
-	my $self =shift;
+	my $self = shift;
 	return keys %{$self->{newer}};
 }
 
@@ -176,7 +176,7 @@ sub kept_names
 
 sub hint_names
 {
-	my $self =shift;
+	my $self = shift;
 	return map {$_->pkgname} $self->hints;
 }
 
