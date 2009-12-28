@@ -500,7 +500,6 @@ sub really_add
 			}
 		}
 
-		$set->{solver}->record_old_dependencies($state);
 		build_before($set->older_to_do);
 		iterate($set->older_to_do, sub {
 			return if $state->{size_only};
@@ -580,9 +579,8 @@ sub really_add
 		$set->{solver}->register_dependencies($state);
 	}
 	if ($replacing) {
-#		$set->{forward}->adjust($state);
+		$set->{forward}->adjust($state);
 	}
-	$set->{solver}->adjust_old_dependencies($state);
 	if ($state->{repairdependencies}) {
 		$set->{solver}->repair_dependencies($state);
 	}
