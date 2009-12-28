@@ -49,7 +49,7 @@ sub fill_entries
 sub synch
 {
 	my $self = shift;
-	return if $main::not;
+	return $self if $main::not;
 
 	if (!unlink $self->{filename}) {
 		if ($self->{nonempty}) {
@@ -68,6 +68,7 @@ sub synch
 	} else {
 		$self->{nonempty} = 0;
 	}
+	return $self;
 } 
 
 sub list
@@ -85,6 +86,13 @@ sub list
 		}
 		return $self->{nonempty};
 	}
+}
+
+sub erase
+{
+	my $self = shift;
+	$self->{entries} = {};
+	$self->synch;
 }
 
 sub delete
