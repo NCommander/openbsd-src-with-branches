@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.5 2009/11/25 17:39:51 syuu Exp $ */
+/*	$OpenBSD: cpu.h,v 1.6 2009/12/25 21:02:18 miod Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -55,6 +55,7 @@
 #endif
 
 #if !defined(_LOCORE)
+struct cpu_info;
 void hw_cpu_boot_secondary(struct cpu_info *);
 void hw_cpu_hatch(struct cpu_info *);
 void hw_cpu_spinup_trampoline(struct cpu_info *);
