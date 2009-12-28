@@ -124,8 +124,9 @@ sub unregister_dependencies
 	my ($plist, $state) = @_;
 
 	my $pkgname = $plist->pkgname;
+	my $l = OpenBSD::Requiring->new($pkgname);
 
-	for my $name (OpenBSD::Requiring->new($pkgname)->list) {
+	for my $name ($l->list) {
 		$state->say("remove dependency on $name") 
 		    if $state->verbose >= 3;
 		local $@;
@@ -135,6 +136,7 @@ sub unregister_dependencies
 			$state->errsay($_);
 		};
 	}
+	$l->erase;
 }
 		
 sub delete_plist
@@ -146,15 +148,16 @@ sub delete_plist
 	my $pkgname = $plist->pkgname;
 	$state->{pkgname} = $pkgname;
 	$ENV{'PKG_PREFIX'} = $plist->localbase;
-	$plist->register_manpage($state);
-	manpages_unindex($state);
-	$state->progress->show(0, $totsize);
-	$plist->delete_and_progress($state, \$donesize, $totsize);
-	if ($plist->has(UNDISPLAY)) {
-		$plist->get(UNDISPLAY)->prepare($state);
+	if (!$state->{size_only}) {
+		$plist->register_manpage($state);
+		manpages_unindex($state);
+		$state->progress->show(0, $totsize);
+		$plist->delete_and_progress($state, \$donesize, $totsize);
+		if ($plist->has(UNDISPLAY)) {
+			$plist->get(UNDISPLAY)->prepare($state);
+		}
 	}
  
-
 	unregister_dependencies($plist, $state);
 	return if $state->{not};
 	if ($state->{baddelete}) {
