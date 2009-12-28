@@ -435,55 +435,6 @@ sub register_dependencies
 	delete $self->{deplist};
 }
 
-sub record_old_dependencies
-{
-	my ($self, $state) = @_;
-	for my $o ($self->{set}->older_to_do) {
-		require OpenBSD::RequiredBy;
-		my @wantlist = OpenBSD::RequiredBy->new($o->pkgname)->list;
-		$o->{wantlist} = \@wantlist;
-	}
-}
-
-sub adjust_old_dependency_on
-{
-	my ($self, $pkgname, $state) = @_;
-
-	my $set = $self->{set};
-	
-	for my $o ($set->older) {
-		next unless defined $o->{wantlist};
-		require OpenBSD::Replace;
-		require OpenBSD::RequiredBy;
-
-		my $oldname = $o->pkgname;
-
-		$state->say("Adjusting dependencies for ",
-		    "$oldname->$pkgname") if $state->verbose >= 3;
-		my $d = OpenBSD::RequiredBy->new($pkgname);
-		for my $dep (@{$o->{wantlist}}) {
-			if (defined $set->{older}->{$dep}) {
-				$state->say("\tskipping $dep")
-				    if $state->verbose >= 4;
-				next;
-			}
-			$state->say("\t$dep") if $state->verbose >= 4;
-			$d->add($dep);
-			OpenBSD::Replace::adjust_dependency($dep, 
-			    $oldname, $pkgname) if $oldname ne $pkgname;
-		}
-	}
-}
-
-sub adjust_old_dependencies
-{
-	my ($self, $state) = @_;
-	
-	for my $pkg ($self->{set}->newer) {
-		$self->adjust_old_dependency_on($pkg->pkgname, $state);
-	}
-}
-
 sub repair_dependencies
 {
 	my ($self, $state) = @_;

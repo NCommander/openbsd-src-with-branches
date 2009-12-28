@@ -456,14 +456,4 @@ sub save_old_libraries
 	}
 }
 
-			
-sub adjust_dependency
-{
-	my ($dep, $from, $into) = @_;
-
-	my $l = OpenBSD::Requiring->new($dep);
-	$l->delete($from);
-	$l->add($into);
-}
-
 1;
