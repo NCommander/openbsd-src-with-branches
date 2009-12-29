@@ -379,7 +379,10 @@ sub adjust_depends_closure
 	for my $pkg (OpenBSD::RequiredBy->compute_closure($oldname)) {
 		$state->say("\t", $pkg) if $state->verbose >= 3;
 		$write->add($pkg);
-		OpenBSD::Requiring->new($pkg)->add($plist->pkgname);
+		my $r = OpenBSD::Requiring->new($pkg)->add($plist->pkgname);
+		if ($oldname =~ m/^\.libs\d*\-/o) {
+			$r->delete($oldname);
+		}
 	}
 }
 
