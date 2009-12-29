@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.100 2007/09/15 14:55:30 krw Exp $	*/
+/*	$OpenBSD: trap.c,v 1.102 2009/12/29 13:11:40 jsing Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -93,8 +93,6 @@ const char *trap_type[] = {
 };
 int trap_types = sizeof(trap_type)/sizeof(trap_type[0]);
 
-int want_resched;
-
 #define	frame_regmap(tf,r)	(((u_int *)(tf))[hppa_regmap[(r)]])
 u_char hppa_regmap[32] = {
 	offsetof(struct trapframe, tf_pad[0]) / 4,	/* r0 XXX */
@@ -134,6 +132,7 @@ u_char hppa_regmap[32] = {
 void
 userret(struct proc *p)
 {
+	struct cpu_info *ci = curcpu();
 	int sig;
 
 	if (p->p_md.md_astpending) {
@@ -142,7 +141,7 @@ userret(struct proc *p)
 		if (p->p_flag & P_OWEUPC) {
 			ADDUPROF(p);
 		}
-		if (want_resched)
+		if (ci->ci_want_resched)
 			preempt(NULL);
 	}
 
