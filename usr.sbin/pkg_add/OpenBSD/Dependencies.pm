@@ -192,6 +192,10 @@ package OpenBSD::Dependencies::Solver;
 
 use OpenBSD::PackageInfo;
 
+sub merge
+{
+}
+
 sub find_candidate
 {
 	    my $spec = shift;
