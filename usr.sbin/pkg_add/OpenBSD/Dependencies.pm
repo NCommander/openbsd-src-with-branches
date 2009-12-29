@@ -188,12 +188,28 @@ sub find_in_new_source
 	return $self->find_in_already_done($solver, $state, $obj);
 }
 
+package OpenBSD::Cloner;
+sub clone
+{
+	my ($self, $h, @extra) = @_;
+	for my $extra (@extra) {
+		next unless defined $extra;
+		while (my ($k, $e) = each %{$extra->{$h}}) {
+			$self->{$h}{$k} //= $e;
+		}
+    	}
+}
+
 package OpenBSD::Dependencies::Solver;
+our @ISA = (qw(OpenBSD::Cloner));
 
 use OpenBSD::PackageInfo;
 
 sub merge
 {
+	my ($solver, @extra) = @_;
+
+	$solver->clone('cache', @extra);
 }
 
 sub find_candidate

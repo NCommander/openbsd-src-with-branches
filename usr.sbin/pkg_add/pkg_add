@@ -127,9 +127,58 @@ sub quirks
 	return $state->{quirks};
 }
 
+package OpenBSD::ConflictCache;
+our @ISA = (qw(OpenBSD::Cloner));
+sub new
+{
+	my $class = shift;
+	bless {done => {}, c => {}}, $class;
+}
+
+sub add
+{
+	my ($self, $handle) = @_;
+	return if $self->{done}{$handle};
+	$self->{done}{$handle} = 1;
+	for my $conflict (OpenBSD::PkgCfl::find_all($handle->plist, $state)) {
+		$self->{c}{$conflict} = 1;
+	}
+}
+
+sub list
+{
+	my $self = shift;
+	return keys %{$self->{c}};
+}
+
+sub merge
+{
+	my ($self, @extra) = @_;
+	$self->clone('c', @extra);
+	$self->clone('done', @extra);
+}
+
 package OpenBSD::UpdateSet;
 use OpenBSD::PackageInfo;
 use OpenBSD::Error;
+
+sub solver
+{
+	my $set = shift;
+	if (!defined $set->{solver}) {
+		$set->{solver} = OpenBSD::Dependencies::Solver->new($set);
+	}
+	return $set->{solver};
+}
+
+sub conflict_cache
+{
+	my $set = shift;
+	if (!defined $set->{conflict_cache}) {
+		$set->{conflict_cache} = OpenBSD::ConflictCache->new;
+	}
+	return $set->{conflict_cache};
+}
 
 sub setup_header
 {
