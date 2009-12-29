@@ -63,14 +63,15 @@ cpumatch(parent, cfdata, aux)
 	void *cfdata;
 	void *aux;
 {
-	struct confargs *ca = aux;
 	struct cfdata *cf = cfdata;
+	struct confargs *ca = aux;
 
-	/* there will be only one for now XXX */
 	/* probe any 1.0, 1.1 or 2.0 */
-	if (cf->cf_unit > 0 ||
-	    ca->ca_type.iodc_type != HPPA_TYPE_NPROC ||
+	if (ca->ca_type.iodc_type != HPPA_TYPE_NPROC ||
 	    ca->ca_type.iodc_sv_model != HPPA_NPROC_HPPA)
+		return 0;
+
+	if (cf->cf_unit >= MAXCPUS)
 		return 0;
 
 	return 1;
@@ -92,7 +93,6 @@ cpuattach(parent, self, aux)
 	extern int cpu_hardclock(void *);
 
 	struct cpu_softc *sc = (struct cpu_softc *)self;
-	struct confargs *ca = aux;
 	u_int mhz = 100 * cpu_ticksnum / cpu_ticksdenom;
 	const char *p;
 
@@ -150,12 +150,9 @@ cpuattach(parent, self, aux)
 	else if (pdc_btlb.finfo.num_i || pdc_btlb.finfo.num_d)
 		printf(", %u/%u D/I BTLBs",
 		    pdc_btlb.finfo.num_i, pdc_btlb.finfo.num_d);
-	printf("\n");
 
-	/* sanity against lusers amongst config editors */
-	if (ca->ca_irq == 31)
-		sc->sc_ih = cpu_intr_establish(IPL_CLOCK, ca->ca_irq,
-		    cpu_hardclock, NULL /*frame*/, sc->sc_dev.dv_xname);
-	else
-		printf ("%s: bad irq %d\n", sc->sc_dev.dv_xname, ca->ca_irq);
+	sc->sc_ih = cpu_intr_establish(IPL_CLOCK, 31,
+	    cpu_hardclock, NULL /*frame*/, sc->sc_dev.dv_xname);
+	
+	printf("\n");
 }
