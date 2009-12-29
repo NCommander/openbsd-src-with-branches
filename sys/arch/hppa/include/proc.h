@@ -35,7 +35,8 @@
  * Machine-dependent part of the proc structure for hppa.
  */
 struct mdproc {
-	struct	trapframe *md_regs;	/* registers on current frame */
+	struct trapframe *md_regs;	/* registers on current frame */
+	volatile int md_astpending;	/* AST pending for this process */
 	int	md_flags;		/* machine-dependent flags */
 
 	vaddr_t md_bpva;

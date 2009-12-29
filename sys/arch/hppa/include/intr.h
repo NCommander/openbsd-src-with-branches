@@ -59,7 +59,6 @@
 
 extern volatile int cpl;
 extern volatile u_long ipending, imask[NIPL];
-extern int astpending;
 
 #ifdef DIAGNOSTIC
 void splassert_fail(int, int, const char *);
@@ -126,7 +125,7 @@ splx(int ncpl)
 #define	SOFTINT_MASK ((1 << (IPL_SOFTCLOCK - 1)) | \
     (1 << (IPL_SOFTNET - 1)) | (1 << (IPL_SOFTTTY - 1)))
 
-#define	setsoftast()	(astpending = 1)
+#define	setsoftast(p)	(p->p_md.md_astpending = 1)
 #define	setsoftnet()	softintr(1 << (IPL_SOFTNET - 1))
 
 void	*softintr_establish(int, void (*)(void *), void *);

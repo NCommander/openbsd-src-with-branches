@@ -153,10 +153,15 @@ extern register_t kpsw;
 #define	CLKF_USERMODE(framep)	((framep)->tf_flags & T_USER)
 #define	CLKF_SYSCALL(framep)	((framep)->tf_flags & TFF_SYS)
 
-#define	signotify(p)		(setsoftast())
-#define	need_resched(ci)	(want_resched = 1, setsoftast())
+#define	signotify(p)		setsoftast(p)
+#define	need_resched(ci)						\
+	do {								\
+		want_resched = 1;					\
+		if ((ci)->ci_curproc != NULL)				\
+			setsoftast((ci)->ci_curproc);			\
+	} while (0)
 #define clear_resched(ci) 	want_resched = 0
-#define	need_proftick(p)	setsoftast()
+#define	need_proftick(p)	setsoftast(p)
 #define	PROC_PC(p)		((p)->p_md.md_regs->tf_iioq_head)
 
 #ifndef _LOCORE

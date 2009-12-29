@@ -93,7 +93,7 @@ const char *trap_type[] = {
 };
 int trap_types = sizeof(trap_type)/sizeof(trap_type[0]);
 
-int want_resched, astpending;
+int want_resched;
 
 #define	frame_regmap(tf,r)	(((u_int *)(tf))[hppa_regmap[(r)]])
 u_char hppa_regmap[32] = {
@@ -136,8 +136,8 @@ userret(struct proc *p)
 {
 	int sig;
 
-	if (astpending) {
-		astpending = 0;
+	if (p->p_md.md_astpending) {
+		p->p_md.md_astpending = 0;
 		uvmexp.softs++;
 		if (p->p_flag & P_OWEUPC) {
 			ADDUPROF(p);
