@@ -221,25 +221,37 @@ sub check_for_loops
 	my $initial = $self->{set};
 
 	my @todo = ();
+	my @to_merge = ();
 	push(@todo, $initial);
 	my $done = {};
 
 	while (my $set = shift @todo) {
 		next unless defined $set->{solver};
 		for my $l (@{$set->{solver}->{deplist}}) {
+			if ($l eq $initial) {
+				push(@to_merge, $set);
+			}
 			next if $done->{$l};
 			push(@todo, $l);
-			if ($l eq $initial) {
-				my $k = $set;
-				while ($k ne $initial) {
-					$initial->merge($state->tracker, $k);
-					$k = $done->{$k};
-				}
-				$state->say("Merging ", $initial->print, $state->ntogo);
-				return 1;
-			}
 			$done->{$l} = $set;
 		}
+	}
+	if (@to_merge > 0) {
+		my $merged = {};
+		my @real = ();
+		$state->say("Detected loop, merging sets", $state->ntogo);
+		$state->say("| ", $initial->print);
+		for my $set (@to_merge) {
+			my $k = $set;
+			while ($k ne $initial && !$merged->{$k}) {
+				$state->say("| ", $k->print);
+				push(@real, $k);
+				$merged->{$k} = 1;
+				$k = $done->{$k};
+			}
+		}
+		$initial->merge($state->tracker, @real);
+		return 1;
 	}
 	return 0;
 }
