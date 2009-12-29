@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ForwardDependencies.pm,v 1.2 2009/12/28 19:27:58 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2009 Marc Espie <espie@openbsd.org>
 #
@@ -66,13 +66,14 @@ sub check
 
 	my @r = keys %$forward;
 
-	return if @r == 0;
+	my $result = {};
+
+	return $result if @r == 0;
 	$state->say("Verifying dependencies still match for ", 
 	    join(', ', @r)) if $state->verbose >= 2;
 
 	my @new = ($set->newer_names, $set->kept_names);
 	my @old = $set->older_names;
-	my $result = {};
 
 	for my $f (@r) {
 		my $p2 = OpenBSD::PackingList->from_installation(
@@ -83,7 +84,7 @@ sub check
 			$p2->check_forward_dependency($f, \@old, \@new, $result);
 		}
 	}
-	if (keys %$result > 0) {
+	if (%$result) {
 		$state->say($set->print, " forward dependencies:");
 		while (my ($pkg, $l) = each %$result) {
 			my $deps = join(',', map {$_->{pattern}} @$l);
