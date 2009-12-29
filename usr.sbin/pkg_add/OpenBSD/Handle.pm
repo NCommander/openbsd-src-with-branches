@@ -199,21 +199,6 @@ sub get_plist
 	}
 	my $pkgname = $handle->{pkgname} = $plist->pkgname;
 
-	if (is_installed($pkgname) && 
-	    (!$state->{allow_replacing} ||	
-	      !$state->{defines}->{installed} &&
-	      !$plist->has_new_sig($state) && 
-	      !$plist->uses_old_libs)) {
-		$handle->{tweaked} = 
-		    OpenBSD::Add::tweak_package_status($pkgname, $state);
-		$state->say("Not reinstalling $pkgname")
-		    if $state->verbose >= 2 and !$handle->{tweaked};
-		$state->tracker->{installed}->{$pkgname} = 1;
-		$location->close_now;
-		$location->wipe_info;
-		$handle->set_error(ALREADY_INSTALLED);
-		return;
-	}
 	if ($pkg ne '-') {
 		if (!defined $pkgname or $pkg ne $pkgname) {
 			$state->say("Package name is not consistent ???");
