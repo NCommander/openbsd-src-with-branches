@@ -473,7 +473,7 @@ sub solve_dependency
 			if (defined $global_cache->{$dep->{pattern}}) {
 				$state->print("Global ");
 			}
-			$state->say("Cache hit on $dep->{pattern}:", ref($self->cached($dep)));
+			$state->say("Cache hit on $dep->{pattern}: ", ref($self->cached($dep)));
 		}
 		$v = $self->cached($dep)->do($self, $state, $dep, $package);
 		return $v if $v;
