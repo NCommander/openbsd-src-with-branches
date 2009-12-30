@@ -210,7 +210,7 @@ sub match_ref
 	my @result = ();
 	# Now, have to extract the version number, and the flavor...
 LOOP1:
-	for my $s (grep($o->{fuzzystem}, @$list)) {
+	for my $s (grep(/$o->{fuzzystem}/, @$list)) {
 		my $name = OpenBSD::PackageName->from_string($s);
 		next unless $name->{stem} =~ m/^$o->{exactstem}$/;
 		for my $c (@{$o->{constraints}}) {
@@ -284,7 +284,7 @@ sub add_version_constraints
 	return if $vspec eq '*'; # XXX
 	my $v = OpenBSD::PkgSpec::versionspec->new($vspec);
 	die "not a good exact spec" if $$v->{op} ne '=';
-	$$v->{pnum} = -1;
+	delete $$v->{p};
 	push(@$constraints, $v);
 }
 
