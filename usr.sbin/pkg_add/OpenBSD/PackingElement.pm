@@ -871,6 +871,18 @@ sub keyword() { "localbase" }
 __PACKAGE__->register_with_factory;
 sub category() { "localbase" }
 
+package OpenBSD::PackingElement::Url;
+our @ISA=qw(OpenBSD::PackingElement::Unique);
+
+sub keyword() { "url" }
+__PACKAGE__->register_with_factory;
+sub category() { "url" }
+
+# XXX don't incorporate this in signatures.
+sub write_no_sig()
+{
+}
+
 package OpenBSD::PackingElement::Conflict;
 our @ISA=qw(OpenBSD::PackingElement::Meta);
 

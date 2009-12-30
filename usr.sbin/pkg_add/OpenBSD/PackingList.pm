@@ -236,7 +236,7 @@ sub UpdateInfoOnly
 		# XXX optimization
 		if (m/^\@arch\b/o) {
 			while (<$fh>) {
-			    if (m/^\@(?:depend|wantlib|conflict|option|pkgpath)\b/o) {
+			    if (m/^\@(?:depend|wantlib|conflict|option|pkgpath|url)\b/o) {
 				    &$cont($_);
 			    } elsif (m/^\@(?:groups|users|cwd)\b/o) {
 				    last;
@@ -252,7 +252,7 @@ sub UpdateInfoOnly
 		    }
 		    return;
 		}
-		next unless m/^\@(?:name\b|depend\b|wantlib\b|conflict|\b|option\b|pkgpath\b|comment\s+subdir\=|arch\b)/o;
+		next unless m/^\@(?:name\b|depend\b|wantlib\b|conflict|\b|option\b|pkgpath\b|comment\s+subdir\=|arch\b|url\b)/o;
 		&$cont($_);
 	}
 }
@@ -438,7 +438,7 @@ sub match_pkgpath
 }
 
 our @unique_categories =
-    (qw(name digital-signature no-default-conflict manual-installation always-update extrainfo localbase arch));
+    (qw(name url digital-signature no-default-conflict manual-installation always-update extrainfo localbase arch));
 
 our @list_categories =
     (qw(conflict pkgpath incompatibility updateset depend 
