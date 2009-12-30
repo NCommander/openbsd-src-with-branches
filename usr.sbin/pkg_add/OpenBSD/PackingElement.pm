@@ -1597,11 +1597,12 @@ sub stringize($)
 	return join(',', @{$self->{arches}});
 }
 
+my ($machine_arch, $arch);
+
 sub check
 {
 	my ($self, $forced_arch) = @_;
 
-	my ($machine_arch, $arch);
 	for my $ok (@{$self->{arches}}) {
 		return 1 if $ok eq '*';
 		if (defined $forced_arch) {
