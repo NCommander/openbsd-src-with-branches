@@ -283,7 +283,7 @@ sub add_version_constraints
 	my ($class, $constraints, $vspec) = @_;
 	return if $vspec eq '*'; # XXX
 	my $v = OpenBSD::PkgSpec::versionspec->new($vspec);
-	die "not a good exact spec" if $$v->{op} ne '=';
+	die "not a good exact spec" if !$$v->is_exact;
 	delete $$v->{p};
 	push(@$constraints, $v);
 }
