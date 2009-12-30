@@ -1,4 +1,4 @@
-/*      $OpenBSD: pmap.h,v 1.16 2009/12/07 18:58:32 miod Exp $ */
+/*      $OpenBSD: pmap.h,v 1.17 2009/12/28 06:55:27 syuu Exp $ */
 
 /*
  * Copyright (c) 1987 Carnegie-Mellon University
@@ -100,7 +100,6 @@ typedef struct pmap {
 	struct pmap_statistics	pm_stats;	/* pmap statistics */
 	u_int			pm_tlbpid[MAXCPUS];	/* address space tag */
 	u_int			pm_tlbgen[MAXCPUS];	/* TLB PID generation number */
-	int                     pm_active;
 	struct segtab		*pm_segtab;	/* pointers to pages of PTEs */
 } *pmap_t;
 
