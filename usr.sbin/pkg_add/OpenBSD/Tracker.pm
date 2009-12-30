@@ -134,6 +134,9 @@ sub done
 		$self->{uptodate}->{$n->pkgname} = 1;
 		$self->{installed}->{$n->pkgname} = 1;
 	}
+	for my $n ($set->kept) {
+		$self->{uptodate}->{$n->pkgname} = 1;
+	}
 }
 
 sub is
