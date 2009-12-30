@@ -212,6 +212,14 @@ sub do
 	return $$v;
 }
 
+package _cache::bad;
+our @ISA=(qw(_cache));
+sub do
+{
+	my ($v, $solver, $state, $dep, $package) = @_;
+	return $$v;
+}
+
 package _cache::to_install;
 our @ISA=(qw(_cache));
 sub do
@@ -513,13 +521,17 @@ sub solve_dependency
 
 	$v = $self->find_dep_in_repositories($state, $dep);
 	if ($v) {
+		if (defined $state->{tracker}{cant_install}{$v->name}) {
+			set_global($dep, _cache::bad->new($v->name));
+			return $v->name;
+		}
 		my $s = OpenBSD::UpdateSet->from_location($v);
 
 		$state->tracker->todo($s);
 		
 		$self->add_dep($s);
-		$self->set_cache($dep, _cache::to_install->new($v->{name}));
-		return $v->{name};
+		$self->set_cache($dep, _cache::to_install->new($v->name));
+		return $v->name;
 	}
 
 	# resort to default if nothing else
