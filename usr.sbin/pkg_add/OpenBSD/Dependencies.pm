@@ -536,6 +536,10 @@ sub solve_dependency
 
 	# resort to default if nothing else
 	$v = $dep->{def};
+	if (defined $state->{tracker}{cant_install}{$v}) {
+		set_global($dep, _cache::bad->new($v));
+		return $v;
+	}
 	my $s = OpenBSD::UpdateSet->create_new($v);
 	$state->tracker->todo($s);
 	$self->add_dep($s);
