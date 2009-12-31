@@ -45,8 +45,13 @@ sub adjust
 	for my $f (keys %{$self->{forward}}) {
 		my $deps_f = OpenBSD::Requiring->new($f);
 		for my $check ($deps_f->list) {
-			if (defined $set->{older}->{$check}) {
-				my $r = $set->{older}->{$check}->{update_found}->pkgname;
+			my $h = $set->{older}->{$check};
+			next unless defined $h;
+			if (!defined $h->{update_found}) {
+				$state->errsay("XXX $check");
+				$deps_f->delete($check);
+			} else {
+				my $r = $h->{update_found}->pkgname;
 				$state->say("Adjusting $check to $r in $f")
 				    if $state->verbose >= 3;
 				if ($check ne $r) {
