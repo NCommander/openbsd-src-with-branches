@@ -34,8 +34,9 @@ use constant {
 
 sub cleanup
 {
-	my ($self, $error) = @_;
+	my ($self, $error, $errorinfo) = @_;
 	$self->{error} //= $error;
+	$self->{errorinfo} //= $errorinfo;
 	if (defined $self->location) {
 		if (defined $self->{error} &&
 		    $self->{error} == ALREADY_INSTALLED) {
@@ -109,7 +110,11 @@ sub error_message
 	if ($error == BAD_PACKAGE) {
 		return "bad package";
 	} elsif ($error == CANT_INSTALL) {
-		return "can't install";
+		if ($self->{errorinfo}) {
+			return "can't install: $self->{errorinfo}";
+		} else {
+			return "can't install";
+		}
 	} elsif ($error == NOT_FOUND) {
 		return "not found";
 	} elsif ($error == ALREADY_INSTALLED) {
