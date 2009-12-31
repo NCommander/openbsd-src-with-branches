@@ -563,7 +563,7 @@ sub solve_depends
 	$self->{all_dependencies} = {};
 	$self->{to_register} = {};
 	$self->{deplist} = {};
-	$self->{installed} = [];
+	delete $self->{installed};
 
 	for my $package ($self->{set}->newer) {
 		$package->{before} = [];
