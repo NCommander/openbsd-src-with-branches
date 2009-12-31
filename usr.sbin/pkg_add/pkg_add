@@ -667,7 +667,7 @@ sub newer_has_errors
 		}
 		if ($handle->has_error) {
 			$state->set_name_from_handle($handle);
-			$state->log("Can't install ", $handle->pkgname, ":",
+			$state->log("Can't install ", $handle->pkgname, ": ",
 				$handle->error_message, "\n"); 
 			$bad++;
 			$set->cleanup($handle->has_error);

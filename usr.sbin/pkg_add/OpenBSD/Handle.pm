@@ -111,7 +111,7 @@ sub error_message
 		return "bad package";
 	} elsif ($error == CANT_INSTALL) {
 		if ($self->{errorinfo}) {
-			return "can't install: $self->{errorinfo}";
+			return "$self->{errorinfo}";
 		} else {
 			return "can't install";
 		}
