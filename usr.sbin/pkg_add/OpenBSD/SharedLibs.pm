@@ -212,22 +212,28 @@ sub report_problem
 	my ($dir, $name) = normalize_dir_and_spec($base, $p);
 	my ($stem, $major, $minor) = parse_spec($name);
 
-	return unless defined $stem;
-	return unless defined $registered_libs->{$stem};
-
 	my $r = "";
-	while (my ($d, $v) = each %{$registered_libs->{$stem}}) {
-		my @l = ();
-		while (my ($M, $w) = each %$v) {
-			for my $e (@$w) {
-				push(@l, entry_string($stem, $M, $e->[0]).
-				    " (".why_is_this_bad($base, $name, $dir, 
-				    $d, $major, $M, $minor, $e->[0], $e->[1]).
-				    ")");
+	if (!defined $stem) {
+		$r = "| bad library specification\n";
+	} elsif (!defined $registered_libs->{stem}) {
+		$r = "| not found anywhere\n";
+	} else {
+		while (my ($d, $v) = each %{$registered_libs->{$stem}}) {
+			my @l = ();
+			while (my ($M, $w) = each %$v) {
+				for my $e (@$w) {
+					push(@l, 
+					    entry_string($stem, $M, $e->[0]).
+					    " (".
+					    why_is_this_bad($base, $name, $dir, 
+						$d, $major, $M, $minor, 
+						$e->[0], $e->[1]).
+					    ")");
+				}
 			}
-		}
-		if (@l > 0) {
-			$r .= "| in $d: ". join(", ", sort @l). "\n";
+			if (@l > 0) {
+				$r .= "| in $d: ". join(", ", sort @l). "\n";
+			}
 		}
 	}
 	if (!defined $printed->{$name} || $printed->{$name} ne $r) {
