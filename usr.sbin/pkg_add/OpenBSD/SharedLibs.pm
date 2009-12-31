@@ -215,7 +215,7 @@ sub report_problem
 	my $r = "";
 	if (!defined $stem) {
 		$r = "| bad library specification\n";
-	} elsif (!defined $registered_libs->{stem}) {
+	} elsif (!defined $registered_libs->{$stem}) {
 		$r = "| not found anywhere\n";
 	} else {
 		while (my ($d, $v) = each %{$registered_libs->{$stem}}) {
