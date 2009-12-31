@@ -111,10 +111,12 @@ sub keyword
 package OpenBSD::sha;
 our @ISA=(qw(OpenBSD::digest));
 
+use Digest::SHA;
+use MIME::Base64;
+
 sub algo
 {
 	my $self = shift;
-	require Digest::SHA;
 
 	return Digest::SHA->new(256);
 }
@@ -122,17 +124,15 @@ sub algo
 sub stringize
 {
 	my $self = shift;
-	require MIME::Base64;
 
-	return MIME::Base64::encode_base64($$self, '');
+	return encode_base64($$self, '');
 }
 
 sub unstringize
 {
 	my ($class, $arg) = @_;
-	require MIME::Base64;
 
-	return MIME::Base64::decode_base64($arg);
+	return decode_base64($arg);
 }
 
 sub keyword
