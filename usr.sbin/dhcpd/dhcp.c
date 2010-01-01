@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.c,v 1.27 2008/07/21 16:51:18 millert Exp $ */
+/*	$OpenBSD: dhcp.c,v 1.28 2009/09/01 08:42:31 reyk Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -579,7 +579,7 @@ nak_lease(struct packet *packet, struct iaddr *cip)
 	i = DHO_DHCP_PARAMETER_REQUEST_LIST;
 	if (packet->options[i].data) {
 		packet->options[i].len = 0;
-		dfree(packet->options[i].data, "nak_lease");
+		free(packet->options[i].data);
 		packet->options[i].data = NULL;
 	}
 
