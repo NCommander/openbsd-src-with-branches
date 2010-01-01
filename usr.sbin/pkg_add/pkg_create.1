@@ -49,6 +49,7 @@
 .Ar pkg-name
 .Ek
 .Nm pkg_create
+.Op Fl s Ar signature-parameter
 .Fl f Ar packinglist
 .Sh DESCRIPTION
 The
@@ -111,17 +112,22 @@ have extra meaning, see
 for details:
 .Pp
 .Bl -tag -width FULLPKGPATH -compact
+.It Ar CDROM
+Set to the port's Makefile
+.Ar PERMIT_PACKAGE_CDROM .
 .It Ar COMMENT
 Set package
 .Dq one line description
 (mandatory).
+.It Ar FTP
+Set to the port's Makefile
+.Ar PERMIT_PACKAGE_FTP .
 .It Ar FULLPKGPATH
+Strongly recommended, otherwise updates won't work.
 .It Ar HOMEPAGE
 If defined, appended to the description.
 .It Ar MAINTAINER
 If defined, appended to the description.
-.It Ar PERMIT_PACKAGE_CDROM
-.It Ar PERMIT_PACKAGE_FTP
 .El
 .It Fl d No [-] Ns Ar desc
 Fetch long description for package from file
