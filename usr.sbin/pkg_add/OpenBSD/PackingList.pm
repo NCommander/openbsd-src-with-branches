@@ -1,7 +1,7 @@
 # ex:ts=8 sw=4:
 # $OpenBSD$
 #
-# Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -438,7 +438,7 @@ sub match_pkgpath
 }
 
 our @unique_categories =
-    (qw(name url digital-signature no-default-conflict manual-installation always-update extrainfo localbase arch));
+    (qw(name url digital-signature no-default-conflict manual-installation always-update explicit-update extrainfo localbase arch));
 
 our @list_categories =
     (qw(conflict pkgpath incompatibility updateset depend 
