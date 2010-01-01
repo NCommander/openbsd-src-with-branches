@@ -71,11 +71,12 @@ sub new
 
 sub cleanup
 {
-	my ($self, $error) = @_;
+	my ($self, $error, $errorinfo) = @_;
 	for my $h ($self->older, $self->newer) {
-		$h->cleanup($error);
+		$h->cleanup($error, $errorinfo);
 	}
 	$self->{error} //= $error;
+	$self->{errorinfo} //= $errorinfo;
 	delete $self->{solver};
 	delete $self->{conflict_cache};
 	$self->{finished} = 1;
