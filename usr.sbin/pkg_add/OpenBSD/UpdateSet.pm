@@ -88,6 +88,19 @@ sub add_repositories
 	$set->{path}->add(@repos);
 }
 
+sub merge_paths
+{
+	my ($set, $other) = @_;
+
+	if (defined $other->path) {
+		if (!defined $set->path) {
+			$set->{path} = $other->path;
+		} elsif ($set->{path} ne $other->path) {
+			$set->add_path(@{$other->{path}});
+		}
+	}
+}
+
 sub match_locations
 {
 	my ($set, @spec) = @_;
@@ -348,13 +361,7 @@ sub merge
 		$self->add_newer($set->newer);
 		$self->add_older($set->older);
 		$self->add_kept($set->kept);
-		if (defined $set->path) {
-			if (!defined $self->path) {
-				$self->{path} = $set->path;
-			} elsif ($set->{path} ne $self->path) {
-				$self->add_path(@{$set->{path}});
-			}
-		}
+		$self->merge_paths($set);
 		# ... and mark it as already done
 		$set->{finished} = 1;
 		$tracker->handle_set($set);
