@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# Copyright (c) 2005-2007 Marc Espie <espie@openbsd.org>
+# Copyright (c) 2005-2010 Marc Espie <espie@openbsd.org>
 # $OpenBSD$
 # 
 # Permission to use, copy, modify, and distribute this software for any
@@ -46,9 +46,9 @@ sub info
 	my $plist = shift;
 	my $r;
 	if ($opt_a) {
-		$r = $plist->{extrainfo}->{subdir}.":".$plist->pkgname;
+		$r = $plist->fullpkgpath.":".$plist->pkgname;
 	} elsif ($opt_P) {
-		$r = $plist->{extrainfo}->{subdir};
+		$r = $plist->fullpkgpath;
 	} else {
 		$r = $plist->pkgname;
 	}
@@ -165,6 +165,7 @@ if ($opt_p) {
 
 elsif ($opt_d) {
 	require File::Find;
+	no warnings qw(once);
 	die "Bad argument: $opt_d is not a directory" unless -d $opt_d;
 	File::Find::find(
 		sub {

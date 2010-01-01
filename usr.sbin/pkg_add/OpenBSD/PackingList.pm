@@ -50,8 +50,8 @@ sub match
 {
 	my ($h, $plist) = @_;
 	return
-	    defined $plist->{extrainfo} && 
-	    $h->{$plist->{extrainfo}->{subdir}};
+	    defined $plist->fullpkgpath && 
+	    $h->{$plist->fullpkgpath};
 }
 
 package OpenBSD::PackingList;
@@ -412,14 +412,23 @@ sub is_signed
 	return defined $self->{'digital-signature'};
 }
 
+sub fullpkgpath
+{
+	my $self = shift;
+	if (defined $self->{extrainfo} && $self->{extrainfo}->{subdir} ne '') {
+		return $self->{extrainfo}->{subdir};
+	} else {
+		return undef;
+	}
+}
 sub pkgpath
 {
 	my $self = shift;
 	if (!defined $self->{_hashpath}) {
 		my $h = $self->{_hashpath} = 
 		    bless {}, "OpenBSD::PackingList::hashpath";
-		if (defined $self->{extrainfo}) {
-			$h->{$self->{extrainfo}->{subdir}} = 1;
+		if (defined $self->fullpkgpath) {
+			$h->{$self->fullpkgpath} = 1;
 		}
 		if (defined $self->{pkgpath}) {
 			for my $i (@{$self->{pkgpath}}) {
