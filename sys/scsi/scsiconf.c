@@ -255,6 +255,7 @@ scsi_activate_lun(struct scsibus_softc *sc, int target, int lun, int act)
 	dev = link->device_softc;
 	switch (act) {
 	case DVACT_ACTIVATE:
+		atomic_clearbits_int(&link->state, SDEV_S_DYING);
 #if NMPATH > 0
 		if (dev == NULL)
 			mpath_path_activate(link);
@@ -264,6 +265,7 @@ scsi_activate_lun(struct scsibus_softc *sc, int target, int lun, int act)
 		break;
 
 	case DVACT_DEACTIVATE:
+		atomic_setbits_int(&link->state, SDEV_S_DYING);
 #if NMPATH > 0
 		if (dev == NULL)
 			mpath_path_deactivate(link);
