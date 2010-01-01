@@ -693,6 +693,7 @@ if (defined $cert) {
 	$sig->add_object($plist);
 	require OpenBSD::x509;
 	$sig->{b64sig} = OpenBSD::x509::compute_signature($plist, $cert, $privkey);
+	$plist->save if $regen_package;
 }
 	
 my $wname;
