@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.3 2004/05/04 20:28:40 deraadt Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.4 2004/09/16 18:35:42 deraadt Exp $	*/
 
 /* Memory allocation... */
 
@@ -143,13 +143,6 @@ struct subnet *
 new_subnet(char *name)
 {
 	struct subnet *rval = dmalloc(sizeof(struct subnet), name);
-	return (rval);
-}
-
-struct class *
-new_class(char *name)
-{
-	struct class *rval = dmalloc(sizeof(struct class), name);
 	return (rval);
 }
 
