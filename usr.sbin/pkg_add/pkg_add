@@ -369,7 +369,7 @@ sub check_forward_dependencies
 	my $bad = $set->{forward}->check($state);
 
 	if (%$bad) {
-		if ($state->{defines}->{mergeupdates}) {
+		if (!$state->{defines}->{dontmerge}) {
 			my $okay = 1;
 			for my $m (keys %$bad) {
 				$set->try_merging($m, $state) or $okay = 0;
