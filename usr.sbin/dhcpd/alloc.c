@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.6 2010/01/01 06:25:37 krw Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.7 2010/01/01 08:02:34 krw Exp $	*/
 
 /* Memory allocation... */
 
@@ -62,14 +62,6 @@ dfree(void *ptr, char *name)
 		return;
 	}
 	free(ptr);
-}
-
-struct tree *
-new_tree(char *name)
-{
-	struct tree *rval = dmalloc(sizeof(struct tree), name);
-
-	return (rval);
 }
 
 struct tree_cache *free_tree_caches;
