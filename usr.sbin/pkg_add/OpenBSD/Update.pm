@@ -100,6 +100,18 @@ sub process_handle
 		Fatal("Can't locate $pkgname");
 	}
 
+	if ($plist->has('explicit-update') && $state->{allupdates}) {
+		$h->{update_found} = $h;
+		$set->move_kept($h);
+		return 0;
+	}
+
+#	if (defined $plist->{url}) {
+#		require OpenBSD::PackageLocator;
+#		my $repo;
+#		($repo, undef, undef) = OpenBSD::PackageLocator::path_parse($plist->{url}->name);
+#		$set->add_repositories($repo);
+#	}
 	my @search = ();
 
 	my $sname = $pkgname;
@@ -147,6 +159,10 @@ sub process_handle
 			unless ($p2->{arch}->check($state->{arch})) {
 			    next;
 			}
+		    }
+		    if ($p2->has('explicit-update') && $state->{allupdates}) {
+			$oldfound = 1;
+			next;
 		    }
 		    if ($plist->signature eq $p2->signature) {
 			$found = $handle;
