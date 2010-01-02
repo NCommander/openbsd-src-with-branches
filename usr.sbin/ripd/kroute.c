@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.19 2009/09/24 12:30:36 michele Exp $ */
+/*	$OpenBSD: kroute.c,v 1.20 2009/09/26 18:24:58 michele Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -944,7 +944,7 @@ fetchtable(void)
 				break;
 			}
 
-		if (rtm->rtm_priority & RTP_RIP) {
+		if (rtm->rtm_priority == RTP_RIP) {
 			send_rtmsg(kr_state.fd, RTM_DELETE, &kr->r);
 			free(kr);
 		} else {
