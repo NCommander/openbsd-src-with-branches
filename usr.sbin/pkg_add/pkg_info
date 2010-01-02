@@ -369,7 +369,7 @@ sub print_info
 		if ($opt_S) {
 			just_in_time_header($pkg, $handle ,\$done);
 			print "Signature: " unless $opt_q;
-			print $plist->signature, "\n";
+			print $plist->signature->string, "\n";
 		}
 		if ($opt_P) {
 			require OpenBSD::PackingList;

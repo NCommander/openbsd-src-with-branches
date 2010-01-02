@@ -146,12 +146,12 @@ sub process_handle
 			return $l;
 		}
 		my @l2 = ();
-		for my $handle (@$l) {
-		    $handle->set_arch($state->{arch});
-		    if (!$handle) {
+		for my $loc (@$l) {
+		    $loc->set_arch($state->{arch});
+		    if (!$loc) {
 			    next;
 		    }
-		    my $p2 = $handle->update_info;
+		    my $p2 = $loc->update_info;
 		    if (!$p2) {
 			next;
 		    }
@@ -164,13 +164,14 @@ sub process_handle
 			$oldfound = 1;
 			next;
 		    }
-		    if ($plist->signature eq $p2->signature) {
-			$found = $handle;
-			push(@l2, $handle);
+		    if ($plist->signature->compare($p2->signature) eq 0) {
+			$found = $loc;
+			push(@l2, $loc);
 			next;
 		    }
 		    if ($plist->match_pkgpath($p2)) {
-			push(@l2, $handle);
+			push(@l2, $loc);
+			next
 		    }
 		}
 		return \@l2;
