@@ -373,7 +373,7 @@ sub prepare_for_deletion
 	my $fname = $state->{destdir}.$self->fullname;
 	my $s = $state->vstat->remove($fname, $self->{size});
 	return unless defined $s;
-	if ($s->{ro}) {
+	if ($s->ro) {
 		$s->report_ro($state, $fname);
 	}
 }
@@ -464,10 +464,10 @@ sub prepare_for_deletetion
 	}
 	my $s = $state->vstat->remove($fname, $self->{size});
 	return unless defined $s;
-	if ($s->{ro}) {
+	if ($s->ro) {
 		$s->report_ro($state, $fname);
 	}
-	if ($s->{noexec} && $self->exec_on_delete) {
+	if ($s->noexec && $self->exec_on_delete) {
 		$s->report_noexec($state, $fname);
 	}
 }

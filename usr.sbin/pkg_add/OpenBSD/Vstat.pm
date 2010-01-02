@@ -203,6 +203,30 @@ sub avail
 	return $self->{avail} - $self->{used}/$self->{blocksize};
 }
 
+sub ro
+{
+	my $self = shift;
+	return $self->{ro};
+}
+
+sub noexec
+{
+	my $self = shift;
+	return $self->{noexec};
+}
+
+sub nosuid
+{
+	my $self = shift;
+	return $self->{nosuid};
+}
+
+sub nodev
+{
+	my $self = shift;
+	return $self->{nodev};
+}
+
 sub report_ro
 {
 	my ($s, $state, $fname) = @_;
