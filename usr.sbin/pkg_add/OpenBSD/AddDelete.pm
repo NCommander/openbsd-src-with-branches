@@ -47,7 +47,6 @@ sub handle_options
 		$opt_n = 1;
 	}
 	$state->{not} = $opt_n;
-	$state->vstat->{not} = $opt_n;
 	# XXX RequiredBy
 	$main::not = $opt_n;
 	$state->{defines} = \%defines;
@@ -142,50 +141,6 @@ sub cleanup
 	OpenBSD::SharedItems::cleanup($self, $state);
 }
 
-package OpenBSD::MyStat;
-use OpenBSD::Vstat;
-sub new
-{
-	my $class = shift;
-	bless {}, $class
-}
-
-sub add
-{
-	shift;
-	&OpenBSD::Vstat::add;
-}
-
-sub remove
-{
-	shift;
-	&OpenBSD::Vstat::remove;
-}
-
-sub exists
-{
-	shift;
-	&OpenBSD::Vstat::vexists;
-}
-
-sub stat
-{
-	shift;
-	&OpenBSD::Vstat::filestat;
-}
-
-sub tally
-{
-	shift;
-	&OpenBSD::Vstat::tally;
-}
-
-sub synchronize
-{
-	my $self = shift;
-	OpenBSD::Vstat::synchronize($self->{not});
-}
-
 package OpenBSD::Log;
 use OpenBSD::Error;
 our @ISA = qw(OpenBSD::Error);
@@ -203,6 +158,7 @@ sub dump
 
 package OpenBSD::UI;
 use OpenBSD::Error;
+use OpenBSD::Vstat;
 
 sub new
 {
@@ -216,7 +172,7 @@ sub init
 {
 	my $self = shift;
 	$self->{l} = OpenBSD::Log->new;
-	$self->{vstat} = OpenBSD::MyStat->new;
+	$self->{vstat} = OpenBSD::Vstat->new($self);
 	$self->{progressmeter} = bless {}, "OpenBSD::StubProgress";
 	$self->{status} = OpenBSD::Status->new;
 	$self->{recorder} = OpenBSD::SharedItemsRecorder->new;
