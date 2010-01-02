@@ -305,10 +305,12 @@ sub validate_plists
 		$state->vstat->tally;
 	}
 	if ($state->{problems}) {
-		require OpenBSD::Error;
-		OpenBSD::Error::Fatal "fatal issues in ", $self->short_print;
+		$state->vstat->drop_changes;
+		return 0;
+	} else {
+		$state->vstat->synchronize;
+		return 1;
 	}
-	$state->vstat->synchronize;
 }
 
 sub compute_size
