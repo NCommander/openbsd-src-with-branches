@@ -79,14 +79,38 @@ sub exists
 
 sub synchronize
 {
-	my ($self) = @_;
+	my $self = shift;
+
 	for my $v (values %{$self->{p}}) {
 		$v->{used} += $v->{delayed};
 		$v->{delayed} = 0;
 		$v->{real}->{used} = $v->{used};
 	}
-	return if $self->{state}->{not};
-	$self->{v} = [{}];
+	if ($self->{state}->{not}) {
+		# this is the actual stacking case: in pretend mode,
+		# I have to put a second vfs on top
+		if (@{$self->{v}} == 2) {
+			my $top = shift @{$self->{v}};
+			while (my ($k, $v) = each %$top) {
+				$self->{v}[0]{$k} = $v;
+			}
+		}
+		unshift(@{$self->{v}}, {});
+	} else {
+		$self->{v} = [{}];
+	}
+}
+
+sub drop_changes
+{
+	my $self = shift;
+
+	for my $v (values %{$self->{p}}) {
+		$v->{used} = $v->{real}->{used};
+		$v->{delayed} = 0;
+	}
+	# drop the top layer
+	$self->{v}[0] = {};
 }
 
 sub add
