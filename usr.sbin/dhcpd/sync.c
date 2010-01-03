@@ -1,4 +1,4 @@
-/*	$OpenBSD: sync.c,v 1.6 2008/05/30 05:58:20 deraadt Exp $	*/
+/*	$OpenBSD: sync.c,v 1.7 2008/09/15 20:38:17 claudio Exp $	*/
 
 /*
  * Copyright (c) 2008 Bob Beck <beck@openbsd.org>
@@ -68,7 +68,6 @@ struct sync_host {
 LIST_HEAD(synchosts, sync_host) sync_hosts = LIST_HEAD_INITIALIZER(sync_hosts);
 
 void	 sync_send(struct iovec *, int);
-void	 sync_addr(time_t, time_t, char *, u_int16_t);
 
 int
 sync_addhost(const char *name, u_short port)
