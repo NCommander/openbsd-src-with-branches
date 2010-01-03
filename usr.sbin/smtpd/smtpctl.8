@@ -1,4 +1,4 @@
-.\" $OpenBSD: smtpctl.8,v 1.9 2009/10/22 12:35:53 sobrado Exp $
+.\" $OpenBSD: smtpctl.8,v 1.10 2009/10/22 15:02:12 sobrado Exp $
 .\"
 .\" Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
 .\"
@@ -32,6 +32,10 @@ program controls
 .Pp
 The following commands are available:
 .Bl -tag -width Ds
+.It Cm log brief
+Disable verbose debug logging.
+.It Cm log verbose
+Enable verbose debug logging.
 .It Cm pause incoming
 Temporarily stop accepting incoming sessions.
 .It Cm pause local
