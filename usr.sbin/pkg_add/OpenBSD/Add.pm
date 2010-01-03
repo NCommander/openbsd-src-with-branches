@@ -480,7 +480,9 @@ sub prepare_for_addition
 {
 	my ($self, $state, $pkgname) = @_;
 	if (!defined $self->{copyfrom}) {
-		Fatal "\@sample element does not reference a valid file\n";
+		$state->errsay("\@sample element ",$self->fullname, 
+		    " does not reference a valid file");
+		$state->{problems}++;
 	}
 	my $fname = $state->{destdir}.$self->fullname;
 	# If file already exists, we won't change it
