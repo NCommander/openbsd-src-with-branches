@@ -99,7 +99,8 @@ sub framework
 		$state->progress->clear;
 		$state->log->dump;
 		finish_display();
-		if ($state->verbose >= 2 || $opt_s) {
+		if ($state->verbose >= 2 || $opt_s || 
+		    $state->{defines}->{tally}) {
 			$state->vstat->tally;
 		}
 		# show any error, and show why we died...
