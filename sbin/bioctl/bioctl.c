@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.88 2009/12/31 14:00:45 jsing Exp $       */
+/* $OpenBSD: bioctl.c,v 1.89 2009/12/31 14:57:40 jmc Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -701,8 +701,8 @@ bio_createraid(u_int16_t level, char *dev_list, char *key_disk)
 	struct sr_crypto_kdfinfo kdfinfo;
 	struct sr_crypto_kdf_pbkdf2 kdfhint;
 	struct stat		sb;
-	int			rv, no_dev, i;
-	dev_t			*dt, kd = NODEV;
+	int			rv, no_dev;
+	dev_t			*dt;
 	u_int16_t		min_disks = 0;
 
 	if (!dev_list)
