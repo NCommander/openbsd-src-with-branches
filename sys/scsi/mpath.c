@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath.c,v 1.10 2009/11/12 06:20:27 dlg Exp $ */
+/*	$OpenBSD: mpath.c,v 1.11 2009/12/01 01:40:02 dlg Exp $ */
 
 /*
  * Copyright (c) 2009 David Gwynne <dlg@openbsd.org>
@@ -129,7 +129,6 @@ mpath_xs_stuffup(struct scsi_xfer *xs)
 	int s;
 
 	xs->error = XS_DRIVER_STUFFUP;
-	xs->flags |= ITSDONE;
 	s = splbio();
 	scsi_done(xs);
 	splx(s);
