@@ -166,6 +166,7 @@ sub move_kept
 	my $self = shift;
 	for my $h (@_) {
 		delete $self->{older}->{$h->pkgname};
+		delete $self->{newer}->{$h->pkgname};
 		$self->{kept}->{$h->pkgname} = $h;
 	}
 	return $self;
