@@ -721,7 +721,6 @@ scsi_xs_exec(struct scsi_xfer *xs)
 {
 	int s;
 
-	xs->flags &= ~ITSDONE;
 	xs->error = XS_NOERROR;
 	xs->resid = xs->datalen;
 	xs->status = 0;
@@ -760,8 +759,6 @@ void
 scsi_done(struct scsi_xfer *xs)
 {
 	splassert(IPL_BIO);
-
-	xs->flags |= ITSDONE;
 
 #ifdef SCSIDEBUG
 	if (xs->sc_link->flags & SDEV_DB1) {
