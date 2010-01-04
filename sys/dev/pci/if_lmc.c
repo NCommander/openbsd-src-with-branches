@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc.c,v 1.22 2006/03/25 22:41:45 djm Exp $ */
+/*	$OpenBSD: if_lmc.c,v 1.23 2006/05/13 19:10:02 brad Exp $ */
 /*	$NetBSD: if_lmc.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -326,12 +326,9 @@ static void
 lmc_watchdog(struct ifnet *ifp)
 {
 	lmc_softc_t * const sc = LMC_IFP_TO_SOFTC(ifp);
-	int state;
 	u_int32_t ostatus;
 	u_int32_t link_status;
 	u_int32_t ticks;
-
-	state = 0;
 
 	/*
 	 * Make sure the tx jabber and rx watchdog are off,
