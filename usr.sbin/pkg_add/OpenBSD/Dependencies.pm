@@ -189,10 +189,17 @@ sub find_in_new_source
 }
 
 package _cache;
+
 sub new
 {
 	my ($class, $v) = @_;
 	bless \$v, $class;
+}
+
+sub pretty
+{
+	my $self = shift;
+	return ref($self)."(".$$self.")";
 }
 
 package _cache::self;
@@ -498,7 +505,8 @@ sub solve_dependency
 			if (defined $global_cache->{$dep->{pattern}}) {
 				$state->print("Global ");
 			}
-			$state->say("Cache hit on $dep->{pattern}: ", ref($self->cached($dep)));
+			$state->say("Cache hit on $dep->{pattern}: ", 
+			    $self->cached($dep)->pretty);
 		}
 		$v = $self->cached($dep)->do($self, $state, $dep, $package);
 		return $v if $v;
