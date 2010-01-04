@@ -157,6 +157,7 @@ struct mfi_softc {
 	struct mfi_mem		*sc_sense;
 
 	struct mfi_ccb_list	sc_ccb_freeq;
+	struct mutex		sc_ccb_mtx;
 
 	/* mgmt lock */
 	struct rwlock		sc_lock;
