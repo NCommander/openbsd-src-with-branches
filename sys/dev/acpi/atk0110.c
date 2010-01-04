@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: atk0110.c,v 1.1 2009/07/23 01:38:16 cnst Exp $	*/
 
 /*
  * Copyright (c) 2009 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -41,7 +41,7 @@
  */
 
 #define AIBS_MORE_SENSORS
-#define AIBS_VERBOSE
+/* #define AIBS_VERBOSE */
 
 struct aibs_sensor {
 	struct ksensor	s;
