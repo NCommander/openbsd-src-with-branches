@@ -61,6 +61,7 @@ sub add_pkgpath_hint
 {
 	my ($self, $pkgpath) = @_;
 	$self->{pkgpath} = $pkgpath;
+	return $self;
 }
 
 sub spec_class

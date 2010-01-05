@@ -921,16 +921,14 @@ sub stringize
 	    (qw(pkgpath pattern def)));
 }
 
-sub spec
-{
+OpenBSD::Auto::cache(spec,
+    sub {
+	require OpenBSD::Search;
+
 	my $self = shift;
-	if (!defined $self->{spec}) {
-		require OpenBSD::Search;
-		$self->{spec} = OpenBSD::Search::PkgSpec->new($self->{pattern});
-		$self->{spec}->add_pkgpath_hint($self->{pkgpath});
-	}
-	return $self->{spec};
-}
+	return OpenBSD::Search::PkgSpec->new($self->{pattern})
+	    ->add_pkgpath_hint($self->{pkgpath});
+    });
 
 package OpenBSD::PackingElement::Wantlib;
 our @ISA=qw(OpenBSD::PackingElement::Depend);
