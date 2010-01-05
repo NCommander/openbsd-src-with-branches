@@ -1,4 +1,4 @@
-/*	$OpenBSD: sock.c,v 1.34 2009/10/27 22:41:03 ratchov Exp $	*/
+/*	$OpenBSD: sock.c,v 1.35 2009/11/03 21:31:37 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -515,7 +515,7 @@ sock_wdata(struct sock *f)
 	unsigned char *data;
 	unsigned count, n;
 #define ZERO_MAX 0x1000
-	static char zero[ZERO_MAX];
+	static unsigned char zero[ZERO_MAX];
 
 	if (!(f->pipe.file.state & FILE_WOK))
 		return 0;
