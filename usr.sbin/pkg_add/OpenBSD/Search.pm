@@ -67,6 +67,12 @@ sub add_pkgpath_hint
 sub spec_class
 { "OpenBSD::PkgSpec" }
 
+sub is_valid
+{
+	my $self = shift;
+	return $self->{spec}->is_valid;
+}
+
 package OpenBSD::Search::Exact;
 our @ISA=(qw(OpenBSD::Search::PkgSpec));
 sub spec_class
