@@ -71,7 +71,7 @@ sub dump
 	my $self = shift;
 
 	return unless %{$self->{done}};
-	print "Full dependency tree is ", join(',', keys %{$self->{done}}), 
+	print "Full dependency tree is ", join(' ', keys %{$self->{done}}), 
 	    "\n";
 }
 
@@ -604,9 +604,9 @@ sub dump
 	my $self = shift;
 	if ($self->dependencies) {
 	    print "Direct dependencies for ", $self->{set}->print, 
-	    	" resolve to: ", join(', ',  $self->dependencies);
+	    	" resolve to: ", join(' ',  $self->dependencies);
 	    print " (todo: ", 
-	    	join(',', (map {$_->print} values %{$self->{deplist}})), 
+	    	join(' ', (map {$_->print} values %{$self->{deplist}})), 
 		")" 
 	    	if %{$self->{deplist}};
 	    print "\n";
