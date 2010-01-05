@@ -901,6 +901,7 @@ sub category() { "conflict" }
 
 package OpenBSD::PackingElement::Dependency;
 our @ISA=qw(OpenBSD::PackingElement::Depend);
+use OpenBSD::Error;
 
 sub keyword() { "depend" }
 __PACKAGE__->register_with_factory;
