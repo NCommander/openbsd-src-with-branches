@@ -298,6 +298,7 @@ sub install_issues
 		}
 
 		next if defined $set->{older}->{$toreplace};
+		next if defined $set->{kept}->{$toreplace};
 
 		$later = 1;
 		my $s = $state->tracker->is_to_update($toreplace);
