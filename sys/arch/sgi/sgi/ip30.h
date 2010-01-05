@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip30.h,v 1.4 2009/10/30 08:13:57 syuu Exp $	*/
+/*	$OpenBSD: ip30.h,v 1.5 2009/10/31 00:20:46 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -73,3 +73,4 @@
 #define MPCONF_IDLEFLAG(i)  ((i) * MPCONF_LEN + 0x58)
 
 #define MPCONF_MAGIC_VAL    0xbaddeed2
+
