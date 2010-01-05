@@ -133,6 +133,14 @@ my $devinfo;
 my $devinfo2;
 my $giveup;
 
+sub giveup
+{
+	if (!defined $giveup) {
+		$giveup = OpenBSD::MountPoint::Fail->new;
+	}
+	return $giveup;
+}
+
 sub new
 {
 	my ($class, $dev, $opts) = @_;
@@ -167,7 +175,6 @@ sub ask_mount
 {
 	my ($class, $state) = shift;
 
-	$giveup = OpenBSD::MountPoint::Fail->new;
 	delete $ENV{'BLOCKSIZE'};
 	run($state, OpenBSD::Paths->mount, sub {
 		my $_ = shift;
@@ -185,7 +192,7 @@ sub ask_df
 {
 	my ($class, $fname, $state) = @_;
 
-	my $info = $giveup;
+	my $info = $class->giveup;
 	my $blocksize = 512;
 
 	$class->ask_mount($state) if !defined $devinfo;
@@ -212,7 +219,7 @@ sub find
 {
 	my ($class, $dev, $fname, $state) = @_;
 	if (!defined $dev) {
-		return $giveup;
+		return $class->giveup;
 	}
 	if (!defined $devinfo2->{$dev}) {
 		$devinfo2->{$dev} = $class->ask_df($fname, $state);
@@ -238,7 +245,7 @@ sub tally
 {
 	my ($self, $state) = @_;
 
-	for my $v ((sort {$a->name cmp $b->name } values %$devinfo2), $giveup) {
+	for my $v ((sort {$a->name cmp $b->name } values %$devinfo2), $self->giveup) {
 		$v->tally($state);
 	}
 }
