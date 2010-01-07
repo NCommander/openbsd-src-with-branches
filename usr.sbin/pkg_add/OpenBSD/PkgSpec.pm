@@ -315,7 +315,7 @@ sub match_locations
 
 sub is_valid
 {
-	my $self = @_;
+	my $self = shift;
 	for my $subpattern (@$self) {
 		return 0 unless $subpattern->is_valid;
 	}
