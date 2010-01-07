@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.54 2010/01/01 15:04:00 miod Exp $	*/
+/*	$OpenBSD: trap.c,v 1.55 2010/01/07 07:36:51 syuu Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -215,8 +215,11 @@ trap(trapframe)
 	if (type != T_BREAK) {
 		if (ISSET(trapframe->sr, SR_INT_ENAB))
 			enableintr();
-		else
+		else {
+#ifdef MULTIPROCESSOR
 			ENABLEIPI();
+#endif
+		}
 	}
 
 	switch (type) {
