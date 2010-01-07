@@ -923,7 +923,7 @@ ciss_scsi_raw_cmd(struct scsi_xfer *xs)	/* TODO */
 	}
 
 	CISS_UNLOCK(sc, lock);
-	return xs->flags & SCSI_POLL? COMPLETE : SUCCESSFULLY_QUEUED;
+	return (COMPLETE);
 }
 
 int
@@ -988,7 +988,7 @@ ciss_scsi_cmd(struct scsi_xfer *xs)
 	}
 
 	CISS_UNLOCK(sc, lock);
-	return xs->flags & SCSI_POLL? COMPLETE : SUCCESSFULLY_QUEUED;
+	return (COMPLETE);
 }
 
 int
