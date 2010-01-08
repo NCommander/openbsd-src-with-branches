@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.89 2009/12/31 14:57:40 jmc Exp $       */
+/* $OpenBSD: bioctl.c,v 1.90 2010/01/03 01:41:47 nicm Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -1037,7 +1037,7 @@ derive_key_pkcs(int rounds, u_int8_t *key, size_t keysz, u_int8_t *salt,
 	if (!salt)
 		errx(1, "Invalid salt");
 	if (rounds < 1000)
-		errx(1, "Too less rounds: %d", rounds);
+		errx(1, "Too few rounds: %d", rounds);
 
 	/* get passphrase */
 	if (password && verify)
