@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.61 2009/01/24 23:25:17 thib Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.63 2009/07/09 22:29:56 thib Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -132,7 +132,7 @@ vn_open(struct nameidata *ndp, int fmode, int cmode)
 		goto bad;
 	}
 	if (vp->v_type == VLNK) {
-		error = EMLINK;
+		error = ELOOP;
 		goto bad;
 	}
 	if ((fmode & O_CREAT) == 0) {
