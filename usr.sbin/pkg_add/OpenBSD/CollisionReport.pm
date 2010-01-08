@@ -29,8 +29,8 @@ sub find_collisions
 	my $bypkg = {};
 	for my $name (keys %$todo) {
 		my $p = $state->vstat->exists($name);
-		if (ref $p) {
-			my $pkg = $$p;
+		if (defined $p && $p->value) {
+			my $pkg = $p->value;
 			push(@{$bypkg->{$pkg}}, $name);
 			delete $todo->{$name};
 		}
