@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.32 2006/03/11 19:41:30 otto Exp $	*/
+/*	$OpenBSD: util.c,v 1.33 2009/10/27 23:59:41 deraadt Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -310,8 +310,10 @@ makedirs(const char *filename, bool striplast)
 
 	if (striplast) {
 		char	*s = strrchr(tmpbuf, '/');
-		if (s == NULL)
+		if (s == NULL) {
+			free(tmpbuf);
 			return;	/* nothing to be done */
+		}
 		*s = '\0';
 	}
 	if (mkpath(tmpbuf) != 0)
