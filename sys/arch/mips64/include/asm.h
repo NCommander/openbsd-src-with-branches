@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.8 2009/09/30 06:22:00 syuu Exp $ */
+/*	$OpenBSD: asm.h,v 1.9 2009/12/11 05:10:17 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -292,6 +292,10 @@ x: ;				\
 #define ASMSTR(str) \
 	.asciiz str; \
 	.align	3
+
+#define	LOAD_XKPHYS(reg, cca) \
+	li	reg, cca | 0x10; \
+	dsll	reg, reg, 59
 
 #ifdef MULTIPROCESSOR
 #define GET_CPU_INFO(ci, tmp)		\

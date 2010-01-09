@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.3 2009/09/27 18:20:13 miod Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.4 2009/12/25 21:02:15 miod Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -124,9 +124,9 @@ mips64_cacheflush(struct proc *p, struct mips64_cacheflush_args *cfa)
 		 */
 		if (pmap_extract(pm, va, &pa) != FALSE) {
 			if (cfa->which & ICACHE)
-				Mips_InvalidateICache(va, chunk);
+				Mips_InvalidateICache(p->p_cpu, va, chunk);
 			if (cfa->which & DCACHE)
-				Mips_HitSyncDCache(va, pa, chunk);
+				Mips_HitSyncDCache(p->p_cpu, va, pa, chunk);
 		} else {
 			if (uvm_map_lookup_entry(map, va, &entry) == FALSE) {
 				rc = EFAULT;
