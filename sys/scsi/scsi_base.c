@@ -232,6 +232,7 @@ void
 scsi_xs_put(struct scsi_xfer *xs)
 {
 	struct scsi_link *link = xs->sc_link;
+	int start = 1;
 
 	pool_put(&scsi_xfer_pool, xs);
 
@@ -242,8 +243,12 @@ scsi_xs_put(struct scsi_xfer *xs)
 	if (ISSET(link->state, SDEV_S_WAITING)) {
 		atomic_clearbits_int(&link->state, SDEV_S_WAITING);
 		wakeup(link);
+		start = 0;
 	}
 	mtx_leave(&link->mtx);
+
+	if (start && link->device->start)
+		link->device->start(link->device_softc);
 }
 
 /*
