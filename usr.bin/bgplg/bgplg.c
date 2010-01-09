@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgplg.c,v 1.6 2007/09/13 23:32:39 cloder Exp $	*/
+/*	$OpenBSD: bgplg.c,v 1.7 2007/10/10 13:23:40 claudio Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Reyk Floeter <reyk@vantronix.net>
@@ -235,6 +235,7 @@ lg_incl(const char *file)
 		fwrite(buf, len, 1, stdout);
 	} while(len == BUFSIZ);
 
+	close(fd);
 	return (0);
 }
 
