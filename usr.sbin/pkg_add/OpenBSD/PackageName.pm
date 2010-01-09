@@ -207,7 +207,7 @@ sub make
 sub to_string
 {
 	my $self = shift;
-	my $r = join('.', [$self->{deweys}]);
+	my $r = join('.', @{$self->{deweys}});
 	for my $suffix (qw(pl pre beta rc)) {
 		if (defined $self->{$suffix}) {
 			$r .= $suffix . $self->{$suffix};
@@ -446,7 +446,7 @@ sub to_string
 {
 	my $o = shift;
 	return join('-', $o->{stem}, $o->{version}->to_string, 
-	    $o->flavor_string);
+	    sort keys %{$o->{flavors}});
 }
 
 sub to_pattern
