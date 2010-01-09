@@ -26,6 +26,34 @@ use warnings;
 
 package OpenBSD::PackageRepositoryBase;
 
+sub parse_url
+{
+	my ($class, $path) = @_;
+	$path .= '/' unless $path =~ m/\/$/;
+	bless { path => $path }, $class;
+}
+
+sub parse_fullurl
+{
+	my ($class, $_) = @_;
+
+	$class->strip_urlscheme(\$_) or return undef;
+	return $class->parse_url($_);
+}
+
+sub strip_urlscheme
+{
+	my ($class, $r) = @_;
+	if ($$r =~ m/^(.*?)\:(.*)$/) {
+		my $scheme = lc($1);
+		if ($scheme eq $class->urlscheme) {
+			$$r = $2;
+			return 1;
+	    	}
+	}
+	return 0;
+}
+
 sub match_locations
 {
 	my ($self, $search, @filters) = @_;
