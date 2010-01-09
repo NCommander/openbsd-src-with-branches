@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsk.c,v 1.15 2009/12/09 22:39:52 kettenis Exp $	*/
+/*	$OpenBSD: vdsk.c,v 1.16 2009/12/12 13:24:58 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -1116,7 +1116,6 @@ vdsk_scsi_done(struct scsi_xfer *xs, int error)
 	int s;
 
 	xs->error = error;
-	xs->flags |= ITSDONE;
 
 	s = splbio();
 	scsi_done(xs);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.38 2010/01/07 11:03:37 dlg Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.39 2010/01/09 06:35:11 krw Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -685,7 +685,6 @@ ciss_done(struct ciss_ccb *ccb)
 
 	if (xs) {
 		xs->resid = 0;
-		xs->flags |= ITSDONE;
 		CISS_DPRINTF(CISS_D_CMD, ("scsi_done(%p) ", xs));
 		scsi_done(xs);
 	}

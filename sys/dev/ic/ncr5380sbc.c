@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr5380sbc.c,v 1.21 2008/11/24 00:31:35 krw Exp $	*/
+/*	$OpenBSD: ncr5380sbc.c,v 1.22 2009/11/01 23:06:03 fgsch Exp $	*/
 /*	$NetBSD: ncr5380sbc.c,v 1.13 1996/10/13 01:37:25 christos Exp $	*/
 
 /*
@@ -803,7 +803,6 @@ finish:
 	sc->sc_ncmds--;
 
 	/* Tell common SCSI code it is done. */
-	xs->flags |= ITSDONE;
 	scsi_done(xs);
 
 	sc->sc_state = NCR_IDLE;

@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_aoe.c,v 1.9 2009/08/09 14:12:25 marco Exp $ */
+/* $OpenBSD: softraid_aoe.c,v 1.12 2009/12/15 13:19:37 jsing Exp $ */
 /*
  * Copyright (c) 2008 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2008 Marco Peereboom <marco@openbsd.org>
@@ -539,7 +539,6 @@ sr_aoe_input(struct aoe_handler *ah, struct mbuf *m)
 			xs->error = XS_NOERROR;
 
 		xs->resid = 0;
-		xs->flags |= ITSDONE;
 
 		if (0) /* XXX */ TAILQ_FOREACH(wup, &sd->sd_wu_pendq, swu_link) {
 			if (wu == wup) {

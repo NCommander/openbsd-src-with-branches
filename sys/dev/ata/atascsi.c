@@ -1,4 +1,4 @@
-/*	$OpenBSD: atascsi.c,v 1.69 2009/12/08 08:07:51 dlg Exp $ */
+/*	$OpenBSD: atascsi.c,v 1.70 2009/12/08 10:18:11 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -467,7 +467,6 @@ atascsi_disk_cmd_done(struct ata_xfer *xa)
 	xs->resid = xa->resid;
 	ata_put_xfer(xa);
 
-	xs->flags |= ITSDONE;
 	scsi_done(xs);
 }
 
@@ -706,7 +705,6 @@ atascsi_disk_sync_done(struct ata_xfer *xa)
 
 	ata_put_xfer(xa);
 
-	xs->flags |= ITSDONE;
 	scsi_done(xs);
 }
 
@@ -842,7 +840,6 @@ atascsi_atapi_cmd_done(struct ata_xfer *xa)
 	xs->resid = xa->resid;
 	ata_put_xfer(xa);
 
-	xs->flags |= ITSDONE;
 	scsi_done(xs);
 }
 

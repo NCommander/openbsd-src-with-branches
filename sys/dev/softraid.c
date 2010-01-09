@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.184 2009/12/07 14:33:38 jsing Exp $ */
+/* $OpenBSD: softraid.c,v 1.188 2009/12/31 14:00:45 jsing Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -1934,7 +1934,6 @@ stuffup:
 		bzero(&sd->sd_scsi_sense, sizeof(sd->sd_scsi_sense));
 	} else {
 		xs->error = XS_DRIVER_STUFFUP;
-		xs->flags |= ITSDONE;
 	}
 complete:
 	if (wu)

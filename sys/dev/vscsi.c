@@ -1,4 +1,4 @@
-/*	$OpenBSD: vscsi.c,v 1.3 2009/08/13 19:51:49 dlg Exp $ */
+/*	$OpenBSD: vscsi.c,v 1.4 2009/11/09 17:53:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 David Gwynne <dlg@openbsd.org>
@@ -213,7 +213,6 @@ vscsi_xs_stuffup(struct scsi_xfer *xs)
 	int				s;
 
 	xs->error = XS_DRIVER_STUFFUP;
-	xs->flags |= ITSDONE;
 	s = splbio();
 	scsi_done(xs);
 	splx(s);
@@ -430,7 +429,6 @@ vscsi_t2i(struct vscsi_softc *sc, struct vscsi_ioc_t2i *t2i)
 
 	polled = ISSET(xs->flags, SCSI_POLL);
 
-	xs->flags |= ITSDONE;
 	s = splbio();
 	scsi_done(xs);
 	splx(s);
