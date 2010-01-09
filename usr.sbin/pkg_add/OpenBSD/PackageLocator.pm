@@ -45,11 +45,13 @@ if (defined $ENV{PKG_PATH}) {
 
 sub path_parse
 {
-	use File::Basename;
 	use OpenBSD::Paths;
 	my $pkg_db = $ENV{"PKG_DBDIR"} || OpenBSD::Paths->pkgdb;
 
-	my ($pkgname, $path) = fileparse(shift);
+	my ($pkgname, $path) = (shift, './');
+	if ($pkgname =~ m/^(.*[\/\:])(.*)/) {
+		($pkgname, $path) = ($2, $1);
+	}
 	my $repo;
 
 	if ($path eq $pkg_db.'/') {
@@ -69,7 +71,7 @@ sub find
 		return $packages{$_};
 	}
 	my $package;
-	if (m/\//o) {
+	if (m/[\/\:]/o) {
 		my ($repository, undef, $pkgname) = path_parse($_);
 		$package = $repository->find($pkgname, $arch);
 		if (defined $package) {
@@ -87,7 +89,7 @@ sub grabPlist
 	my ($class, $_, $arch, $code) = @_;
 
 	my $plist;
-	if (m/\//o) {
+	if (m/[\/\:]/o) {
 		my ($repository, undef, $pkgname) = path_parse($_);
 		$plist = $repository->grabPlist($pkgname, $arch, $code);
 		if (defined $plist) {

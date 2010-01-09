@@ -275,7 +275,7 @@ sub process_hint2
 	my ($self, $set, $hint, $state) = @_;
 	my $pkgname = $hint->pkgname;
 	if (OpenBSD::PackageName::is_stem($pkgname)) {
-		if ($pkgname =~ m/\//o) {
+		if ($pkgname =~ m/[\/\:]/o) {
 			require OpenBSD::PackageLocator;
 			my $repo;
 			($repo, undef, $pkgname) = OpenBSD::PackageLocator::path_parse($pkgname);
