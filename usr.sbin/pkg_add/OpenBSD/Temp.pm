@@ -22,6 +22,7 @@ package OpenBSD::Temp;
 
 use File::Temp;
 use OpenBSD::Paths;
+use OpenBSD::Error;
 
 our $tempbase = $ENV{'PKG_TMPDIR'} || OpenBSD::Paths->vartmp;
 
