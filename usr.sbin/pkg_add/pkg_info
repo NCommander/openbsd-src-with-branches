@@ -108,7 +108,7 @@ sub find_pkg
 
 	if ($pkgname =~ m/[\/\:]/o) {
 		($repo, $path, $pkgname) = 
-		    OpenBSD::PackageLocator::path_parse($pkgname);
+		    OpenBSD::PackageLocator->path_parse($pkgname);
 	} else {
 		$repo = 'OpenBSD::PackageLocator';
 	}
