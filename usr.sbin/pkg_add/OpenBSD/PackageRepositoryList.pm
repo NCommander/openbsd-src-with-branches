@@ -36,6 +36,9 @@ sub find
 {
 	my ($self, $pkgname, $arch) = @_;
 
+	if ($pkgname eq '-') {
+		return OpenBSD::PackageRepository::Local::Pipe->new->find($pkgname, $arch);
+	}
 	for my $repo (@$self) {
 		my $pkg = $repo->find($pkgname, $arch);
 		return $pkg if defined $pkg;
@@ -46,6 +49,10 @@ sub find
 sub grabPlist
 {
 	my ($self, $pkgname, $arch, $code) = @_;
+
+	if ($pkgname eq '-') {
+		return OpenBSD::PackageRepository::Local::Pipe->new->grabPlist($pkgname, $arch, $code);
+	}
 
 	for my $repo (@$self) {
 		my $plist = $repo->grabPlist($pkgname, $arch, $code);

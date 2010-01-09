@@ -65,11 +65,6 @@ sub find
 {
 	my ($class, $_, $arch) = @_;
 
-	if ($_ eq '-') {
-		my $repository = OpenBSD::PackageRepository::Local::Pipe->_new('./');
-		my $package = $repository->find(undef, $arch);
-		return $package;
-	}
 	if (exists $packages{$_}) {
 		return $packages{$_};
 	}
@@ -91,11 +86,6 @@ sub grabPlist
 {
 	my ($class, $_, $arch, $code) = @_;
 
-	if ($_ eq '-') {
-		my $repository = OpenBSD::PackageRepository::Local::Pipe->_new('./');
-		my $plist = $repository->grabPlist(undef, $arch, $code);
-		return $plist;
-	}
 	my $plist;
 	if (m/\//o) {
 		my ($repository, undef, $pkgname) = path_parse($_);

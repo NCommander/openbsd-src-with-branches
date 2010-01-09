@@ -367,6 +367,12 @@ sub may_exist
 	return 1;
 }
 
+sub new
+{
+	my $class = shift;
+	bless {}, $class;
+}
+
 sub open_pipe
 {
 	my ($self, $object) = @_;
