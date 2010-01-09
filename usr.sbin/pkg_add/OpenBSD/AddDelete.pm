@@ -67,7 +67,7 @@ sub do_the_main_work
 		exit(1);
 	}
 
-	my $handler = sub { my $sig = shift; die "Caught SIG$sig"; };
+	my $handler = sub { my $sig = shift; Fatal "Caught SIG$sig"; };
 	local $SIG{'INT'} = $handler;
 	local $SIG{'QUIT'} = $handler;
 	local $SIG{'HUP'} = $handler;
@@ -107,6 +107,7 @@ sub framework
 		rethrow $dielater;
 	} catch {
 		print STDERR "$0: $_\n";
+		OpenBSD::Handler->reset;
 		if ($_ =~ m/^Caught SIG(\w+)/o) {
 			kill $1, $$;
 		}

@@ -33,6 +33,36 @@ sub cache(*&)
 	*{$callpkg."::$sym"} = $actual;
 }
 
+package OpenBSD::Handler;
+
+my $list = [];
+
+sub register
+{
+	my ($class, $code) = @_;
+	push(@$list, $code);
+}
+
+my $handler = sub {
+	my $sig = shift;
+	for my $c (@$list) {
+		&$c($sig);
+	}
+	$SIG{$sig} = 'DEFAULT';
+	kill $sig, $$;
+};
+
+sub reset 
+{
+	$SIG{'INT'} = $handler;
+	$SIG{'QUIT'} = $handler;
+	$SIG{'HUP'} = $handler;
+	$SIG{'KILL'} = $handler;
+	$SIG{'TERM'} = $handler;
+}
+
+__PACKAGE__->reset;
+
 package OpenBSD::Error;
 require Exporter;
 our @ISA=qw(Exporter);
@@ -256,7 +286,7 @@ sub dienow
 {
 	my ($error, $handler) = @_;
 	if ($error) {
-		if ($error =~ m/^(Expected:\s+)?(.*?)(?:\s+at\s+(.*)\s+line\s+(\d+)\.?)?$/o) {
+		if ($error =~ m/^(Expected\:\s+)?(.*?)(?:\s+at\s+(.*)\s+line\s+(\d+)\.?)?$/o) {
 			local $_ = $2;
 			$FileName = $3;
 			$Line = $4;

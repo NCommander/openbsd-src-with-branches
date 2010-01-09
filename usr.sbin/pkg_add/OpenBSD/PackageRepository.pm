@@ -60,6 +60,17 @@ sub unique
 	return $o;
 }
 
+my $cleanup = sub {
+	for my $repo (values %$cache) {
+		$repo->cleanup;
+	}
+};
+END {
+	&$cleanup;
+}
+
+OpenBSD::Handler->register($cleanup);
+
 sub parse_fullurl
 {
 	my ($class, $r) = @_;

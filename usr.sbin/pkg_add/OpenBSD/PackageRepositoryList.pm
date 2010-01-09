@@ -73,14 +73,6 @@ sub match_locations
 	return [];
 }
 
-sub cleanup
-{
-	my $self = shift;
-	for my $repo (@$self) {
-		$repo->cleanup;
-	}
-}
-
 sub print_without_src
 {
 	my $self = shift;

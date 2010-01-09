@@ -23,6 +23,10 @@ package OpenBSD::PackageLocator;
 use OpenBSD::PackageRepositoryList;
 use OpenBSD::PackageRepository;
 
+# this returns an archive handle from an uninstalled package name, currently
+# There is a cache available.
+
+my %packages;
 my $pkgpath = OpenBSD::PackageRepositoryList->new;
 
 if (defined $ENV{PKG_PATH}) {
@@ -53,6 +57,9 @@ sub find
 {
 	my ($class, $_, $arch) = @_;
 
+	if (exists $packages{$_}) {
+		return $packages{$_};
+	}
 	my $package;
 	if (m/[\/\:]/o) {
 		my ($repository, undef, $pkgname) = path_parse($_);
@@ -63,6 +70,7 @@ sub find
 	} else {
 		$package = $pkgpath->find($_, $arch);
 	}
+	$packages{$_} = $package if defined($package);
 	return $package;
 }
 
@@ -81,11 +89,6 @@ sub grabPlist
 		$plist = $pkgpath->grabPlist($_, $arch, $code);
 	}
 	return $plist;
-}
-
-sub cleanup
-{
-	$pkgpath->cleanup;
 }
 
 sub match_locations
