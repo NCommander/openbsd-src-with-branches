@@ -148,8 +148,6 @@ typedef struct {
 
 	int	num_permitted_opens;
 
-	int	rdomain;
-
 	char   *chroot_directory;
 }       ServerOptions;
 

@@ -125,8 +125,6 @@ typedef struct {
 
 	int	use_roaming;
 
-	int	rdomain;	/* routing domain a.k.a. VRF */
-
 }       Options;
 
 #define SSHCTL_MASTER_NO	0

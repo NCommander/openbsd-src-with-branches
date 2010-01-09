@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.39 2009/10/28 16:38:18 reyk Exp $ */
+/* $OpenBSD: misc.h,v 1.38 2008/06/12 20:38:28 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -23,7 +23,6 @@ int	 set_nonblock(int);
 int	 unset_nonblock(int);
 void	 set_nodelay(int);
 int	 a2port(const char *);
-int	 a2rdomain(const char *);
 int	 a2tun(const char *, int *);
 char	*put_host_port(const char *, u_short);
 char	*hpdelim(char **);
@@ -53,8 +52,6 @@ void	 replacearg(arglist *, u_int, char *, ...)
 void	 freeargs(arglist *);
 
 int	 tun_open(int, int);
-
-int	 socket_rdomain(int, int, int, int);
 
 /* Common definitions for ssh tunnel device forwarding */
 #define SSH_TUNMODE_NO		0x00
