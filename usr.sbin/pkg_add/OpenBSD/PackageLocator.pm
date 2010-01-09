@@ -45,22 +45,12 @@ if (defined $ENV{PKG_PATH}) {
 
 sub path_parse
 {
-	use OpenBSD::Paths;
-	my $pkg_db = $ENV{"PKG_DBDIR"} || OpenBSD::Paths->pkgdb;
-
 	my ($pkgname, $path) = (shift, './');
 	if ($pkgname =~ m/^(.*[\/\:])(.*)/) {
 		($pkgname, $path) = ($2, $1);
 	}
-	my $repo;
 
-	if ($path eq $pkg_db.'/') {
-		$repo = OpenBSD::PackageRepository::Installed->new;
-	} else {
-		$repo = OpenBSD::PackageRepository->new($path);
-	}
-
-	return ($repo, $path, $pkgname);
+	return (OpenBSD::PackageRepository->new($path), $path, $pkgname);
 }
 
 sub find

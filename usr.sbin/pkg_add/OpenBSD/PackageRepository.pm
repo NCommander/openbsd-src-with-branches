@@ -240,12 +240,28 @@ sub urlscheme
 	return 'file';
 }
 
+my $pkg_db;
+
+sub pkg_db
+{
+	if (!defined $pkg_db) {
+		use OpenBSD::Paths;
+		$pkg_db = $ENV{"PKG_DBDIR"} || OpenBSD::Paths->pkgdb;
+	}
+	return $pkg_db;
+}
+
 sub parse_fullurl
 {
 	my ($class, $_) = @_;
 
-	$class->strip_urlscheme(\$_);
-	return $class->parse_url($_);
+	my $r = $class->strip_urlscheme(\$_);
+	my $o = $class->parse_url($_);
+	if (!$r && $o->{path} eq $class->pkg_db()."/") {
+		return OpenBSD::PackageRepository::Installed->new;
+	} else {
+		return $o;
+	}
 }
 
 # wrapper around copy, that sometimes does not copy
