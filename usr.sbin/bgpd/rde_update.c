@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.73 2009/12/08 14:03:40 claudio Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.74 2009/12/18 15:51:37 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -184,7 +184,7 @@ up_add(struct rde_peer *peer, struct update_prefix *p, struct update_attr *a)
 		wdl = &peer->withdraws6;
 		break;
 	default:
-		fatalx("up_add: unknown AF");
+		fatalx("up_add: unknown AID");
 	}
 
 	/* 1. search for attr */
