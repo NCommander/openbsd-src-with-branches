@@ -62,7 +62,7 @@ sub build_package
 	return $repo;
 }
 
-sub match
+sub match_locations
 {
 	my ($self, $search, @filters) = @_;
 	my $built;
@@ -71,7 +71,7 @@ sub match
 		$built = $self->build_package($search->{pkgpath});
 	}
 	if ($built) {
-		return $built->match($search, @filters);
+		return $built->match_locations($search, @filters);
 	}
 	return ();
 }

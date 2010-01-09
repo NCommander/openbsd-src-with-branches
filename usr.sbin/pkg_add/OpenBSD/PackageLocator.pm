@@ -114,12 +114,6 @@ sub cleanup
 	$pkgpath->cleanup;
 }
 
-sub match
-{
-	my ($class, @search) = @_;
-	return $pkgpath->match(@search);
-}
-
 sub match_locations
 {
 	my ($class, @search) = @_;

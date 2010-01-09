@@ -54,18 +54,6 @@ sub grabPlist
 	return;
 }
 
-sub match
-{
-	my ($self, @search) = @_;
-	for my $repo (@$self) {
-		my @l = $repo->match(@search);
-		if (@l > 0) {
-			return @l;
-		}
-	}
-	return ();
-}
-
 sub match_locations
 {
 	my ($self, @search) = @_;
