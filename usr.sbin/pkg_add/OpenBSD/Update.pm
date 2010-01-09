@@ -109,7 +109,7 @@ sub process_handle
 #	if (defined $plist->{url}) {
 #		require OpenBSD::PackageLocator;
 #		my $repo;
-#		($repo, undef, undef) = OpenBSD::PackageLocator->path_parse($plist->{url}->name);
+#		($repo, undef) = OpenBSD::PackageLocator->path_parse($plist->{url}->name);
 #		$set->add_repositories($repo);
 #	}
 	my @search = ();
@@ -278,7 +278,7 @@ sub process_hint2
 		if ($pkgname =~ m/[\/\:]/o) {
 			require OpenBSD::PackageLocator;
 			my $repo;
-			($repo, undef, $pkgname) = OpenBSD::PackageLocator->path_parse($pkgname);
+			($repo, $pkgname) = OpenBSD::PackageLocator->path_parse($pkgname);
 			$set->add_repositories($repo);
 		};
 		my $l = $state->updater->stem2location($set, $pkgname, $state, 

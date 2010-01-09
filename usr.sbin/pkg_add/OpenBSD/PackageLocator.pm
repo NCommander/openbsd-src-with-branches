@@ -52,7 +52,7 @@ sub path_parse
 		($pkgname, $path) = ($2, $1);
 	}
 
-	return (OpenBSD::PackageRepository->new($path), $path, $pkgname);
+	return (OpenBSD::PackageRepository->new($path), $pkgname);
 }
 
 sub find
@@ -61,7 +61,7 @@ sub find
 
 	my $package;
 	if (m/[\/\:]/o) {
-		my ($repository, undef, $pkgname) = $class->path_parse($_);
+		my ($repository, $pkgname) = $class->path_parse($_);
 		$package = $repository->find($pkgname, $arch);
 		if (defined $package) {
 			$class->default_path->add($repository);
@@ -78,7 +78,7 @@ sub grabPlist
 
 	my $plist;
 	if (m/[\/\:]/o) {
-		my ($repository, undef, $pkgname) = $class->path_parse($_);
+		my ($repository, $pkgname) = $class->path_parse($_);
 		$plist = $repository->grabPlist($pkgname, $arch, $code);
 		if (defined $plist) {
 			$class->default_path->add($repository);
