@@ -152,7 +152,6 @@ sub IsFile() { 0 }
 
 sub NoDuplicateNames() { 0 }
 
-sub signature {}
 
 sub copy_shallow_if
 {
@@ -916,12 +915,6 @@ sub stringize
 	    (qw(pkgpath pattern def)));
 }
 
-sub signature
-{
-	my ($self, $hash) = @_;
-	$hash->{$self->{pkgpath}} = OpenBSD::PackageName->from_string($self->{def});
-}
-
 OpenBSD::Auto::cache(spec,
     sub {
 	require OpenBSD::Search;
@@ -956,16 +949,6 @@ sub write
 sub add_digest
 {
 	&OpenBSD::PackingElement::FileBase::add_digest;
-}
-
-sub signature
-{
-	my ($self, $hash) = @_;
-	require OpenBSD::SharedLibs;
-
-	if (my ($stem, $major, $minor) = OpenBSD::SharedLibs::parse_spec($self->name)) {
-	    $hash->{$stem} = OpenBSD::LibrarySpec->new($stem, $major, $minor);
-	}
 }
 
 package OpenBSD::PackingElement::PkgPath;

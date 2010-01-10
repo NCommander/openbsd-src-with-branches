@@ -43,6 +43,7 @@ PACKAGES= \
     OpenBSD/Replace.pm \
     OpenBSD/RequiredBy.pm \
     OpenBSD/Search.pm \
+    OpenBSD/Signature.pm \
     OpenBSD/SharedItems.pm \
     OpenBSD/SharedLibs.pm \
     OpenBSD/Subst.pm \

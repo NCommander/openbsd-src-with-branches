@@ -455,4 +455,13 @@ sub to_pattern
 	return join('-', $o->{stem}, '*', $o->flavor_string);
 }
 
+sub compare
+{
+	my ($a, $b) = @_;
+	if ($a->{stem} ne $b->{stem} || $a->flavor_string ne $b->flavor_string) {
+		return undef;
+	}
+	return $a->{version}->compare($b->{version});
+}
+
 1;
