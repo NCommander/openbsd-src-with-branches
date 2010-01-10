@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.c,v 1.11 2007/03/19 15:12:49 millert Exp $	*/
+/*	$OpenBSD: signal.c,v 1.12 2008/05/02 06:09:11 brad Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -138,7 +138,12 @@ evsignal_add(struct event *ev)
 int
 evsignal_del(struct event *ev)
 {
-	return (sigaction(EVENT_SIGNAL(ev),(struct sigaction *)SIG_DFL, NULL));
+	struct sigaction sa;
+
+	memset(&sa, 0, sizeof(sa));
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = SIG_DFL;
+	return (sigaction(EVENT_SIGNAL(ev), &sa, NULL));
 }
 
 static void
