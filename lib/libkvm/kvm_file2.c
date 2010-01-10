@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_file2.c,v 1.12 2009/07/21 14:37:00 millert Exp $	*/
+/*	$OpenBSD: kvm_file2.c,v 1.13 2009/10/27 23:59:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -427,8 +427,6 @@ done:
 	*cnt = n;
 	return (kf);
 }
-
-#define PTRTOINT64(_x)	((u_int64_t)(u_long)(_x))
 
 static int
 fill_file2(kvm_t *kd, struct kinfo_file2 *kf, struct file *fp, struct vnode *vp,
