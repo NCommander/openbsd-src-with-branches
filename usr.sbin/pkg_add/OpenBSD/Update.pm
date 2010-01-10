@@ -122,7 +122,6 @@ sub process_handle
 	eval {
 		$state->quirks->tweak_search(\@search, $h, $state);
 	};
-	my $found;
 	my $oldfound = 0;
 
 	# XXX this is nasty: maybe we added an old set to update 
@@ -164,9 +163,9 @@ sub process_handle
 			$oldfound = 1;
 			next;
 		    }
-		    if ($plist->signature->compare($p2->signature) eq 0) {
-			$found = $loc;
-			push(@l2, $loc);
+		    my $r = $plist->signature->compare($p2->signature);
+		    if (defined $r && $r > 0 && !$state->{defines}{downgrades}) {
+		    	$oldfound = 1;
 			next;
 		    }
 		    if ($plist->match_pkgpath($p2)) {
@@ -194,19 +193,6 @@ sub process_handle
 		}
 		return undef;
 	}
-	if (@$l == 1) {
-		if (defined $found && $found eq $l->[0] &&
-		    !$plist->uses_old_libs && !$state->{defines}->{installed}) {
-			$h->{update_found} = $h;
-			$set->move_kept($h);
-
-			$self->progress_message($state, 
-			    "No need to update $pkgname");
-
-			return 0;
-		}
-	}
-
 	$state->say("Update candidates: $pkgname -> ", 
 	    join(' ', map {$_->name} @$l), $state->ntogo) if $state->verbose;
 		
