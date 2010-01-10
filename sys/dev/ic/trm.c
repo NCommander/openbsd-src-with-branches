@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.14 2009/09/24 19:47:09 miod Exp $
+/*	$OpenBSD: trm.c,v 1.15 2010/01/10 00:10:23 krw Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -390,13 +390,6 @@ trm_scsi_cmd(struct scsi_xfer *xs)
 		scsi_done(xs);
 		splx(intflag);
 		return COMPLETE;
-	}
-
-	if (xferflags & ITSDONE) {
-#ifdef TRM_DEBUG0
-		printf("%s: Is it done?\n", sc->sc_device.dv_xname);
-#endif
-		xs->flags &= ~ITSDONE;
 	}
 
 	xs->error  = XS_NOERROR;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aha.c,v 1.64 2009/08/26 22:29:09 jasper Exp $	*/
+/*	$OpenBSD: aha.c,v 1.65 2009/11/22 14:14:11 krw Exp $	*/
 /*	$NetBSD: aha.c,v 1.11 1996/05/12 23:51:23 mycroft Exp $	*/
 
 #undef AHADIAG
@@ -881,7 +881,6 @@ aha_done(sc, ccb)
 		} else
 			xs->resid = 0;
 	}
-	xs->flags |= ITSDONE;
 
 	if (VOLATILE_XS(xs)) {
 		wakeup(ccb);
