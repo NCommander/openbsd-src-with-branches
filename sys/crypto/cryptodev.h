@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.h,v 1.47 2008/06/09 16:07:00 djm Exp $	*/
+/*	$OpenBSD: cryptodev.h,v 1.48 2009/09/03 07:47:27 dlg Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -60,7 +60,13 @@
 #define CRYPTO_SW_SESSIONS	32
 
 /* HMAC values */
-#define HMAC_BLOCK_LEN		64
+#define HMAC_MD5_BLOCK_LEN	64
+#define HMAC_SHA1_BLOCK_LEN	64
+#define HMAC_RIPEMD160_BLOCK_LEN 64
+#define HMAC_SHA2_256_BLOCK_LEN	64
+#define HMAC_SHA2_384_BLOCK_LEN	128
+#define HMAC_SHA2_512_BLOCK_LEN	128
+#define HMAC_MAX_BLOCK_LEN	HMAC_SHA2_512_BLOCK_LEN	/* keep in sync */
 #define HMAC_IPAD_VAL		0x36
 #define HMAC_OPAD_VAL		0x5C
 
