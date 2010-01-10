@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop.c,v 1.54 2009/11/22 14:14:10 krw Exp $ */
+/*	$OpenBSD: siop.c,v 1.55 2009/11/26 21:26:09 krw Exp $ */
 /*	$NetBSD: siop.c,v 1.79 2005/11/18 23:10:32 bouyer Exp $	*/
 
 /*
@@ -1202,7 +1202,6 @@ siop_scsicmd_end(siop_cmd)
 	}
 out:
 	siop_lun->lun_flags &= ~SIOP_LUNF_FULL;
-	xs->flags |= ITSDONE;
 	siop_cmd->cmd_c.status = CMDST_FREE;
 	TAILQ_INSERT_TAIL(&sc->free_list, siop_cmd, next);
 #if 0

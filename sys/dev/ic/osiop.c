@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop.c,v 1.38 2009/03/03 19:08:25 miod Exp $	*/
+/*	$OpenBSD: osiop.c,v 1.39 2009/08/28 10:13:53 jasper Exp $	*/
 /*	$NetBSD: osiop.c,v 1.9 2002/04/05 18:27:54 bouyer Exp $	*/
 
 /*
@@ -710,7 +710,6 @@ FREE:
 		sc->sc_tinfo[periph->target].cmds++;
 
 		xs->resid = 0;
-		xs->flags |= ITSDONE;
 		scsi_done(xs);
 	} else {
 		/* Set up REQUEST_SENSE command */
