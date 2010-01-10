@@ -495,7 +495,7 @@ my ($cert, $privkey);
 
 
 set_usage(
-'pkg_create [-nQqv] [-A arches] [-B pkg-destdir] [-D name=value]',
+'pkg_create [-nQqv] [-A arches] [-B pkg-destdir] [-D name[=value]]',
 '[-L localbase] [-M displayfile] [-P pkg-dependency]',
 '[-s x509 -s cert -s priv] [-U undisplayfile] [-W wantedlib]',
 '-d desc -D COMMENT=value -f packinglist -p prefix pkg-name');

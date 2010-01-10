@@ -30,9 +30,17 @@ sub handle_options
 	set_usage(@usage);
 	$state = OpenBSD::State->new;
 	$hash->{h} = sub { Usage(); };
-	$hash->{f} = $hash->{F} = sub { 
+	$hash->{F} = sub { 
 		for my $o (split /\,/o, shift) { 
 			$defines{$o} = 1;
+		}
+	};
+	$hash->{D} = sub {
+		my $_ = shift;
+		if (m/^(.*?)=(.*)/) {
+			$defines{$1} = $2;
+		} else {
+			$defines{$_} = 1;
 		}
 	};
 	try {
