@@ -1,4 +1,4 @@
-/*	$OpenBSD: hotplugd.c,v 1.10 2009/06/10 18:50:43 guenther Exp $	*/
+/*	$OpenBSD: hotplugd.c,v 1.11 2009/06/26 01:06:04 kurt Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -142,8 +142,9 @@ exec_script(const char *file, int class, char *name)
 
 	snprintf(strclass, sizeof(strclass), "%d", class);
 
-	if (access(file, X_OK | R_OK)) {
-		syslog(LOG_ERR, "could not access %s", file);
+	if (access(file, X_OK | R_OK) == -1) {
+		if (errno != ENOENT)
+			syslog(LOG_ERR, "%s: %m", file);
 		return;
 	}
 
