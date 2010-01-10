@@ -228,14 +228,14 @@ While replacing packages, delete extra configuration file in the old package,
 mentioned as
 .Dl @extra file
 in the packing-list.
-.It Fl D Ar name Ns = Ns Ar value
+.It Xo
+.Fl D
+.Ar name Ns Op = Ns Ar value
+.Xc
 Force installation of the package.
 .Ar name
 is a keyword that states what failsafe
 should be waived.
-The
-.Op = Ns value
-part is actually unnecessary in most cases.
 Recognized keywords include:
 .Pp
 .Bl -tag -width "updatedependsXX" -compact

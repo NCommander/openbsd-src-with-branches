@@ -100,11 +100,15 @@ to mean any architecture (e.g., arch-independent packages).
 Set
 .Ar pkg-destdir
 as the prefix to prepend to any file to select for the package.
-.It Fl D Ar name Ns = Ns Ar value
+.It Xo
+.Fl D
+.Ar name Ns Op = Ns Ar value
+.Xc
 Define
 .Ar name
 to
-.Ar value ,
+.Ar value
+(or just define it)
 for substitution and fragment inclusion purposes.
 Some specific
 .Ar names
