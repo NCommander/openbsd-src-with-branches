@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.h,v 1.39 2009/11/03 10:59:04 claudio Exp $	*/
+/*	$OpenBSD: if_pfsync.h,v 1.40 2009/11/09 23:46:38 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -114,7 +114,7 @@
 struct pfsync_header {
 	u_int8_t			version;
 	u_int8_t			_pad;
-	u_int16_t			len;
+	u_int16_t			len; /* in bytes */
 	u_int8_t			pfcksum[PF_MD5_DIGEST_LENGTH];
 } __packed;
 
@@ -124,7 +124,7 @@ struct pfsync_header {
 
 struct pfsync_subheader {
 	u_int8_t			action;
-	u_int8_t			_pad;
+	u_int8_t			len; /* in dwords */
 	u_int16_t			count;
 } __packed;
 
