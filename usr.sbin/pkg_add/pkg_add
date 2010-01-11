@@ -974,6 +974,7 @@ sub process_parameters
 		for my $pkgname (@ARGV) {
 			my $l;
 
+			next if $pkgname =~ m/^quirks\-\d/;
 			if (OpenBSD::PackageName::is_stem($pkgname)) {
 				$l = $state->updater->stem2location($inst, $pkgname, $state);
 			} else {
