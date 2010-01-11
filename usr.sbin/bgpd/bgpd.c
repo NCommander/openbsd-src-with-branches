@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.151 2009/12/01 14:28:05 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.152 2009/12/31 15:34:02 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -365,11 +365,12 @@ main(int argc, char *argv[])
 		LIST_REMOVE(m, entry);
 		free(m);
 	}
-	while ((la = TAILQ_FIRST(conf.listen_addrs)) != NULL) {
-		TAILQ_REMOVE(conf.listen_addrs, la, entry);
-		close(la->fd);
-		free(la);
-	}
+	if (conf.listen_addrs)
+		while ((la = TAILQ_FIRST(conf.listen_addrs)) != NULL) {
+			TAILQ_REMOVE(conf.listen_addrs, la, entry);
+			close(la->fd);
+			free(la);
+		}
 
 	free(rules_l);
 	control_cleanup(conf.csock);
