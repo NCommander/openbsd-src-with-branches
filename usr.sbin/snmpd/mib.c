@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.31 2009/08/14 19:44:14 cnst Exp $	*/
+/*	$OpenBSD: mib.c,v 1.32 2009/12/16 22:17:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@vantronix.net>
@@ -723,7 +723,7 @@ kinfo_proc(u_int32_t idx, struct kinfo_proc2 **kinfo)
 		nkp = count;
 	}
 
-	klist = malloc(count * sizeof(*klist));
+	klist = calloc(count, sizeof(*klist));
 	if (klist == NULL)
 		return (-1);
 
