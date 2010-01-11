@@ -710,7 +710,7 @@ netname4(in_addr_t in, in_addr_t mask)
 		if ((np = getnetbyaddr(in, AF_INET)) != NULL)
 			cp = np->n_name;
 	}
-	if (in == INADDR_ANY)
+	if (in == INADDR_ANY && mask == INADDR_ANY)
 		cp = "default";
 	mbits = mask ? 33 - ffs(mask) : 0;
 	if (cp)
