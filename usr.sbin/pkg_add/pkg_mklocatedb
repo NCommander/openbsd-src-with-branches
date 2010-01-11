@@ -127,7 +127,7 @@ if ($opt_r) {
 	while (my $e = readdir $dir) {
 		if ($e =~ m/^(\w+\d\d)\.tgz$/o) {
 			my $set = $1;
-			open my $arc, '-|', OpenBSD::Paths->gzip, '-c', '-d', "$opt_r/$e";
+			open my $arc, '-|', OpenBSD::Paths->gzip, '-c', '-d', "--", "$opt_r/$e";
 			my $u = OpenBSD::Ustar->new($arc, '/');
 			while (my $f = $u->next) {
 				my $name = $f->{name};
