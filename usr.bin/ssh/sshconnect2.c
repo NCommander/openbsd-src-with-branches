@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.176 2009/12/06 23:41:15 dtucker Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.177 2010/01/04 01:45:30 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -1244,7 +1244,7 @@ load_identity_file(char *filename)
 {
 	Key *private;
 	char prompt[300], *passphrase;
-	int perm_ok, quit, i;
+	int perm_ok = 0, quit, i;
 	struct stat st;
 
 	if (stat(filename, &st) < 0) {
