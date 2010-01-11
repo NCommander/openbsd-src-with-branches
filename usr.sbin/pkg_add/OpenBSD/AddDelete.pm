@@ -44,7 +44,7 @@ sub handle_options
 		}
 	};
 	try {
-		getopts('hciInqvsxB:f:F:L:'.$opt_string, $hash);
+		getopts('hciInqvsxB:D:F:L:'.$opt_string, $hash);
 	} catchall {
 		Usage($_);
 	};
