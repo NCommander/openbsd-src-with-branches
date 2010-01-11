@@ -24,6 +24,7 @@ PACKAGES= \
     OpenBSD/IdCache.pm \
     OpenBSD/Interactive.pm \
     OpenBSD/Mtree.pm \
+    OpenBSD/OldLibs.pm \
     OpenBSD/PackageInfo.pm \
     OpenBSD/PackageLocation.pm \
     OpenBSD/PackageLocator.pm \

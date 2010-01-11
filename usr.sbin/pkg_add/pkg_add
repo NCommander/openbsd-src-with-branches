@@ -291,12 +291,15 @@ sub install_issues
 	my @conflicts = $set->find_conflicts($state);
 
 	return 0 if @conflicts == 0;
-	if (!$state->{allow_replacing}) {
-		$state->errsay("Can't install ", $set->print, 
-		    " because of conflicts (",join(',', @conflicts), ")");
-		return "conflicts";
-	}
 
+	if (!$state->{allow_replacing}) {
+		if (grep { !/^.libs\d*\-/ && !/^partial\-/ } @conflicts) {
+			$state->errsay("Can't install ", $set->print, 
+			    " because of conflicts (",
+			    join(',', @conflicts), ")");
+			return "conflicts";
+		}
+	}
 
 	my $later = 0;
 	for my $toreplace (@conflicts) {
@@ -559,8 +562,8 @@ sub really_add
 	local $SIG{'TERM'} = $handler;
 
 	if ($replacing) {
-		require OpenBSD::Replace;
-		OpenBSD::Replace::save_old_libraries($set, $state);
+		require OpenBSD::OldLibs;
+		OpenBSD::OldLibs->save($set, $state);
 	}
 
 	$set->compute_size;
