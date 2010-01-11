@@ -1,4 +1,4 @@
-#	$OpenBSD: forwarding.sh,v 1.5 2005/03/10 10:20:39 dtucker Exp $
+#	$OpenBSD: forwarding.sh,v 1.6 2006/07/11 18:51:21 markus Exp $
 #	Placed in the Public Domain.
 
 tid="local and remote forwarding"
@@ -91,4 +91,14 @@ for p in 1 2; do
 			fail "remote forwarding not cleared"
 	fi
 	sleep 10
+done
+
+for p in 2; do
+	trace "stdio forwarding proto $p"
+	cmd="${SSH} -$p -F $OBJ/ssh_config"
+	$cmd -o "ProxyCommand $cmd -q -W localhost:$PORT somehost" \
+		somehost true
+	if [ $? != 0 ]; then
+		fail "stdio forwarding proto $p"
+	fi
 done
