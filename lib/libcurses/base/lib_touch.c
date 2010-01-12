@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_touch.c,v 1.1 1999/01/18 19:10:05 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -45,7 +45,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$From: lib_touch.c,v 1.9 2000/12/10 02:43:27 tom Exp $")
+MODULE_ID("$Id: lib_touch.c,v 1.9 2000/12/10 02:43:27 tom Exp $")
 
 NCURSES_EXPORT(bool)
 is_linetouched(WINDOW *win, int line)

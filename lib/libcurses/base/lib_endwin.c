@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_endwin.c,v 1.2 1999/06/14 02:29:15 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -43,7 +43,7 @@
 #include <curses.priv.h>
 #include <term.h>
 
-MODULE_ID("$From: lib_endwin.c,v 1.19 2000/12/10 02:43:27 tom Exp $")
+MODULE_ID("$Id: lib_endwin.c,v 1.19 2000/12/10 02:43:27 tom Exp $")
 
 NCURSES_EXPORT(int)
 endwin(void)

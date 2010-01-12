@@ -1,4 +1,4 @@
-/*	$OpenBSD: trace_xnames.c,v 1.2 1999/05/08 20:29:02 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1999,2000 Free Software Foundation, Inc.                   *
@@ -38,7 +38,7 @@
 #include <curses.priv.h>
 #include <term_entry.h>
 
-MODULE_ID("$From: trace_xnames.c,v 1.5 2000/12/10 03:02:45 tom Exp $")
+MODULE_ID("$Id: trace_xnames.c,v 1.5 2000/12/10 03:02:45 tom Exp $")
 
 NCURSES_EXPORT(void)
 _nc_trace_xnames(TERMTYPE * tp GCC_UNUSED)

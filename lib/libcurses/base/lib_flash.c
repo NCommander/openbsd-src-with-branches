@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_flash.c,v 1.2 1999/11/28 17:49:53 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -43,7 +43,7 @@
 #include <curses.priv.h>
 #include <term.h>		/* beep, flash */
 
-MODULE_ID("$From: lib_flash.c,v 1.6 2000/12/10 02:43:27 tom Exp $")
+MODULE_ID("$Id: lib_flash.c,v 1.6 2000/12/10 02:43:27 tom Exp $")
 
 /*
  *	flash()

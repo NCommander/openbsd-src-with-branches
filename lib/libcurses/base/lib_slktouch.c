@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_slktouch.c,v 1.1 1999/01/18 19:10:04 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -40,7 +40,7 @@
  */
 #include <curses.priv.h>
 
-MODULE_ID("$From: lib_slktouch.c,v 1.5 2000/12/10 02:43:27 tom Exp $")
+MODULE_ID("$Id: lib_slktouch.c,v 1.5 2000/12/10 02:43:27 tom Exp $")
 
 NCURSES_EXPORT(int)
 slk_touch(void)

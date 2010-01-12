@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib_clear.c,v 1.1 1999/01/18 19:09:38 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -42,7 +42,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$From: lib_clear.c,v 1.7 2000/12/10 02:43:26 tom Exp $")
+MODULE_ID("$Id: lib_clear.c,v 1.7 2000/12/10 02:43:26 tom Exp $")
 
 NCURSES_EXPORT(int)
 wclear(WINDOW *win)

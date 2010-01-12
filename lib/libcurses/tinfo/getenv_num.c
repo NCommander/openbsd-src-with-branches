@@ -1,4 +1,4 @@
-/*	$OpenBSD: getenv_num.c,v 1.1 1999/01/18 19:10:15 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -38,7 +38,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$From: getenv_num.c,v 1.3 2000/12/10 02:55:07 tom Exp $")
+MODULE_ID("$Id: getenv_num.c,v 1.3 2000/12/10 02:55:07 tom Exp $")
 
 NCURSES_EXPORT(int)
 _nc_getenv_num(const char *name)

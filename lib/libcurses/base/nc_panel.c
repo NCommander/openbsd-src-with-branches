@@ -1,4 +1,4 @@
-/*	$OpenBSD: nc_panel.c,v 1.1 1999/01/18 19:10:06 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
  * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
@@ -34,7 +34,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$From: nc_panel.c,v 1.4 2000/12/10 02:43:28 tom Exp $")
+MODULE_ID("$Id: nc_panel.c,v 1.4 2000/12/10 02:43:28 tom Exp $")
 
 NCURSES_EXPORT(struct panelhook *)
 _nc_panelhook(void)

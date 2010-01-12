@@ -1,7 +1,7 @@
-/*	$OpenBSD: sigaction.c,v 1.3 1999/06/27 08:14:21 millert Exp $	*/
+/* $OpenBSD$ */
 
 /****************************************************************************
- * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
+ * Copyright (c) 2006 Free Software Foundation, Inc.                        *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,92 +29,41 @@
  ****************************************************************************/
 
 /****************************************************************************
- *  Author: Zeyd M. Ben-Halim <zmbenhal@netcom.com> 1992,1995               *
- *     and: Eric S. Raymond <esr@snark.thyrsus.com>                         *
+ *  Author: Thomas E. Dickey                        2006                    *
  ****************************************************************************/
 
-#include <curses.priv.h>
+/*
+ * $Id: hashed_db.h,v 1.5 2006/08/19 15:58:34 tom Exp $
+ */
 
-#include <signal.h>
-#include <SigAction.h>
+#ifndef HASHED_DB_H
+#define HASHED_DB_H 1
 
-/* This file provides sigaction() emulation using sigvec() */
-/* Use only if this is non POSIX system */
+#include <curses.h>
 
-#if !HAVE_SIGACTION && HAVE_SIGVEC
+#if USE_HASHED_DB
 
-MODULE_ID("$From: sigaction.c,v 1.11 2000/12/10 02:43:28 tom Exp $")
+#include <db.h>
 
-NCURSES_EXPORT(int)
-sigaction
-(int sig, sigaction_t * sigact, sigaction_t * osigact)
-{
-    return sigvec(sig, sigact, osigact);
-}
-
-NCURSES_EXPORT(int)
-sigemptyset
-(sigset_t * mask)
-{
-    *mask = 0;
-    return 0;
-}
-
-NCURSES_EXPORT(int)
-sigprocmask
-(int mode, sigset_t * mask, sigset_t * omask)
-{
-    sigset_t current = sigsetmask(0);
-
-    if (omask)
-	*omask = current;
-
-    if (mode == SIG_BLOCK)
-	current |= *mask;
-    else if (mode == SIG_UNBLOCK)
-	current &= ~*mask;
-    else if (mode == SIG_SETMASK)
-	current = *mask;
-
-    sigsetmask(current);
-    return 0;
-}
-
-NCURSES_EXPORT(int)
-sigsuspend(sigset_t * mask)
-{
-    return sigpause(*mask);
-}
-
-NCURSES_EXPORT(int)
-sigdelset
-(sigset_t * mask, int sig)
-{
-    *mask &= ~sigmask(sig);
-    return 0;
-}
-
-NCURSES_EXPORT(int)
-sigaddset
-(sigset_t * mask, int sig)
-{
-    *mask |= sigmask(sig);
-    return 0;
-}
-
-NCURSES_EXPORT(int)
-sigismember
-(sigset_t * mask, int sig)
-{
-    return (*mask & sigmask(sig)) != 0;
-}
-
-#else
-extern
-NCURSES_EXPORT(void)
-_nc_sigaction(void);		/* quiet's gcc warning */
-NCURSES_EXPORT(void)
-_nc_sigaction(void)
-{
-}				/* nonempty for strict ANSI compilers */
+#ifndef DBN_SUFFIX
+#define DBM_SUFFIX ".db"
 #endif
+
+#ifdef DB_VERSION_MAJOR
+#define HASHED_DB_API DB_VERSION_MAJOR
+#else
+#define HASHED_DB_API 1		/* e.g., db 1.8.5 */
+#endif
+
+extern NCURSES_EXPORT(DB *) _nc_db_open(const char * /* path */, bool /* modify */);
+extern NCURSES_EXPORT(bool) _nc_db_have_data(DBT * /* key */, DBT * /* data */, char ** /* buffer */, int * /* size */);
+extern NCURSES_EXPORT(bool) _nc_db_have_index(DBT * /* key */, DBT * /* data */, char ** /* buffer */, int * /* size */);
+extern NCURSES_EXPORT(int) _nc_db_close(DB * /* db */);
+extern NCURSES_EXPORT(int) _nc_db_first(DB * /* db */, DBT * /* key */, DBT * /* data */);
+extern NCURSES_EXPORT(int) _nc_db_next(DB * /* db */, DBT * /* key */, DBT * /* data */);
+extern NCURSES_EXPORT(int) _nc_db_get(DB * /* db */, DBT * /* key */, DBT * /* data */);
+extern NCURSES_EXPORT(int) _nc_db_put(DB * /* db */, DBT * /* key */, DBT * /* data */);
+
+#endif
+
+#endif /* HASHED_DB_H */
