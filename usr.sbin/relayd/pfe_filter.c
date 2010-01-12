@@ -456,6 +456,7 @@ sync_ruleset(struct relayd *env, struct rdr *rdr, int enable)
 			memset(&rio.rule.dst.addr.v.a.mask.addr8, 0xff, 16);
 		}
 
+		rio.rule.nat.addr.type = PF_ADDR_NONE;
 		rio.rule.rdr.addr.type = PF_ADDR_TABLE;
 		if (strlen(t->conf.ifname))
 			(void)strlcpy(rio.rule.rdr.ifname, t->conf.ifname,
