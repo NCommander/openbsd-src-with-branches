@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.89 2010/01/09 21:12:06 dlg Exp $	*/
+/*	$OpenBSD: st.c,v 1.90 2010/01/11 08:56:17 krw Exp $	*/
 /*	$NetBSD: st.c,v 1.71 1997/02/21 23:03:49 thorpej Exp $	*/
 
 /*
@@ -993,8 +993,8 @@ ststart(void *v)
 		return;
 	}
 	mtx_leave(&st->sc_start_mtx);
-restart:
 	CLR(st->flags, ST_WAITING);
+restart:
 	while (!ISSET(st->flags, ST_WAITING) &&
 	    (bp = st_buf_dequeue(st)) != NULL) {
 
