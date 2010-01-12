@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.583 2010/01/12 14:44:26 mcbride Exp $	*/
+/*	$OpenBSD: parse.y,v 1.584 2010/01/12 15:52:07 mcbride Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -3731,7 +3731,7 @@ route_host	: STRING			{
 				if ($$ == NULL)
 					err(1, "route_host: calloc");
 				$$->ifname = $1;
-				$$->addr.type = PF_ADDR_DYNIFTL;
+				$$->addr.type = PF_ADDR_NONE;
 				set_ipmask($$, 128);
 				$$->next = NULL;
 				$$->tail = $$;
@@ -4623,7 +4623,7 @@ apply_redirspec(struct pf_pool *rpool, struct pf_rule *r, struct redirspec *rs,
 	rpool->opts = rs->pool_opts.type;
 	if (rpool->addr.type == PF_ADDR_TABLE ||
 	    DYNIF_MULTIADDR(rpool->addr))
-		rpool->opts = PF_POOL_ROUNDROBIN;
+		rpool->opts |= PF_POOL_ROUNDROBIN;
 
 	if (rs->pool_opts.key != NULL)
 		memcpy(&rpool->key, rs->pool_opts.key,
