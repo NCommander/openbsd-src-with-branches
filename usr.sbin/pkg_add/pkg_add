@@ -324,7 +324,13 @@ sub install_issues
 
 	my @conflicts = $set->find_conflicts($state);
 
-	return 0 if @conflicts == 0;
+	if (@conflicts == 0) {
+		if ($state->{defines}{update_only}) {
+			return "only update, no install";
+		} else {
+			return 0;
+		}
+	}
 
 	if (!$state->{allow_replacing}) {
 		if (grep { !/^.libs\d*\-/ && !/^partial\-/ } @conflicts) {
