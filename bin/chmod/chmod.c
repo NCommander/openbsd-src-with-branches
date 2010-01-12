@@ -1,4 +1,4 @@
-/*	$OpenBSD: chmod.c,v 1.24 2009/01/21 16:05:39 sobrado Exp $	*/
+/*	$OpenBSD: chmod.c,v 1.25 2009/10/27 23:59:20 deraadt Exp $	*/
 /*	$NetBSD: chmod.c,v 1.12 1995/03/21 09:02:09 cgd Exp $	*/
 
 /*
@@ -97,7 +97,7 @@ main(int argc, char *argv[])
 		case 'R':
 			Rflag = 1;
 			break;
-		case 'f':		/* XXX: undocumented. */
+		case 'f':		/* no longer documented. */
 			fflag = 1;
 			break;
 		case 'h':
