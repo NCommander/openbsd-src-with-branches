@@ -240,8 +240,7 @@ sub complete
 			$set->move_kept($o);
 			$o->{tweaked} = 
 			    OpenBSD::Add::tweak_package_status($pkgname, $state);
-			$state->say("Not reinstalling $pkgname")
-			    if $state->verbose >= 2 and !$n->{tweaked};
+			$state->updater->progress_message($state, "No need to reinstall $pkgname");
 			delete $set->{newer}->{$pkgname};
 			$n->cleanup;
 		} 
