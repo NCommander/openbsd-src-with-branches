@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.291 2009/12/10 15:57:20 deraadt Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.292 2010/01/12 03:20:51 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1282,6 +1282,8 @@ pfctl_rules(int dev, char *filename, int opts, int optimize,
 		else
 			goto _error;
 	}
+
+	free(path);
 
 	if ((altqsupport && (pf.loadopt & PFCTL_FLAG_ALTQ) != 0))
 		if (check_commit_altq(dev, opts) != 0)
