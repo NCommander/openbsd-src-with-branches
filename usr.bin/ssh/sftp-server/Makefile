@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2006/04/18 10:44:28 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.7 2008/02/04 21:53:00 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -11,5 +11,7 @@ BINDIR=	/usr/libexec
 MAN=	sftp-server.8
 
 SRCS=	sftp-server.c sftp-common.c sftp-server-main.c
+
+LDADD+=	-lutil
 
 .include <bsd.prog.mk>
