@@ -1,4 +1,4 @@
-/*	$OpenBSD: safile.h,v 1.3 2008/12/07 17:10:41 ratchov Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -14,23 +14,16 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef SAFILE_H
-#define SAFILE_H
+#ifndef SIOFILE_H
+#define SIOFILE_H
 
 struct fileops;
-struct safile;
+struct siofile;
 struct aparams;
 
-struct safile *safile_new(struct fileops *, char *,
+struct siofile *siofile_new(struct fileops *, char *,
     struct aparams *, struct aparams *, unsigned *, unsigned *);
 
-extern struct fileops safile_ops;
+extern struct fileops siofile_ops;
 
-/*
- * Sun API specific functions.
- */
-struct audio_prinfo;
-int sun_infotopar(struct audio_prinfo *, struct aparams *);
-void sun_partoinfo(struct audio_prinfo *, struct aparams *);
-
-#endif /* !defined(SAFILE_H) */
+#endif /* !defined(SIOFILE_H) */
