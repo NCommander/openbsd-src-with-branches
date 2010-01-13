@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.6 2009/01/28 22:51:26 stsp Exp $ */
+/*	$OpenBSD: parser.c,v 1.7 2009/11/02 20:25:27 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -174,7 +174,7 @@ parse(int argc, char *argv[])
 }
 
 const struct token *
-match_token(const char *word, const struct token table[])
+match_token(const char *word, const struct token *table)
 {
 	u_int			 i, match;
 	const struct token	*t = NULL;
@@ -254,7 +254,7 @@ match_token(const char *word, const struct token table[])
 }
 
 void
-show_valid_args(const struct token table[])
+show_valid_args(const struct token *table)
 {
 	int	i;
 
