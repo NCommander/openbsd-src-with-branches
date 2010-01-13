@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9x.c,v 1.42 2009/11/22 14:14:10 krw Exp $	*/
+/*	$OpenBSD: ncr53c9x.c,v 1.43 2009/12/06 17:24:28 krw Exp $	*/
 /*     $NetBSD: ncr53c9x.c,v 1.56 2000/11/30 14:41:46 thorpej Exp $    */
 
 /*
@@ -1129,8 +1129,6 @@ ncr53c9x_done(sc, ecb)
 			xs->resid = ecb->dleft;
 		}
 	}
-
-	xs->flags |= ITSDONE;
 
 #ifdef NCR53C9X_DEBUG
 	if (ncr53c9x_debug & NCR_SHOWMISC) {

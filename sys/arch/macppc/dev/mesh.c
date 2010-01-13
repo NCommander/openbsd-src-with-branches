@@ -1,4 +1,4 @@
-/*	$OpenBSD: mesh.c,v 1.22 2009/02/16 21:19:06 miod Exp $	*/
+/*	$OpenBSD: mesh.c,v 1.23 2009/11/01 23:06:03 fgsch Exp $	*/
 /*	$NetBSD: mesh.c,v 1.1 1999/02/19 13:06:03 tsubai Exp $	*/
 
 /*-
@@ -1138,7 +1138,6 @@ mesh_done(struct mesh_softc *sc, struct mesh_scb *scb)
 
 	xs->status = scb->status;
 	xs->resid = scb->resid;
-	xs->flags |= ITSDONE;
 
 	mesh_set_reg(sc, MESH_SYNC_PARAM, 2);
 
