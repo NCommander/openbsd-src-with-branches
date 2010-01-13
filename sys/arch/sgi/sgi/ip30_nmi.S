@@ -85,11 +85,6 @@ ip30_nmi:
 	mtc0	a1, COP_0_STATUS_REG
 	ITLBNOPFIX
 
-	LA	k0, HW_CPU_NUMBER_REG
-	PTR_L	k1, 0(k0)
-	bnez	k1, 9f
-	nop
-
 	jal	ip30_nmi_handler		/* ip30_machdep.c */
 	nop
 
