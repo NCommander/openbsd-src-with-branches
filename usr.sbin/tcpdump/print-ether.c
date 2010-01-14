@@ -135,18 +135,31 @@ ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 				printf("(LLC %s) ",
 			       etherproto_string(htons(extracted_ethertype)));
 			}
-			if (!xflag && !qflag)
-				default_print(p, caplen);
+			if (!xflag && !qflag) {
+				if (eflag)
+					default_print(packetp,
+					    snapend - packetp);
+				else
+					default_print(p, caplen);
+			}
 		}
 	} else if (ether_encap_print(ether_type, p, length, caplen) == 0) {
 		/* ether_type not known, print raw packet */
 		if (!eflag)
 			ether_print((u_char *)ep, length + sizeof(*ep));
-		if (!xflag && !qflag)
+		if (!xflag && !qflag) {
+			if (eflag)
+				default_print(packetp, snapend - packetp);
+			else
+				default_print(p, caplen);
+		}
+	}
+	if (xflag) {
+		if (eflag)
+			default_print(packetp, snapend - packetp);
+		else
 			default_print(p, caplen);
 	}
-	if (xflag)
-		default_print(p, caplen);
  out:
 	putchar('\n');
 }
