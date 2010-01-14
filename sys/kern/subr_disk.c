@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.97 2009/08/13 15:23:11 deraadt Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.98 2010/01/11 05:37:28 krw Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -254,7 +254,7 @@ checkdisklabel(void *rlp, struct disklabel *lp,
 			return (error);
 
 		/*
-		 * Need a byte-swap aware dkcksum varient
+		 * Need a byte-swap aware dkcksum variant
 		 * inlined, because dkcksum uses a sub-field
 		 */
 		start = (u_int16_t *)dlp;

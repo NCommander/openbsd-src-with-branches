@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.32 2009/01/15 07:48:55 grange Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.33 2009/03/25 21:20:26 oga Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -405,7 +405,7 @@ lockmgr(__volatile struct lock *lkp, u_int flags, struct simplelock *interlkp)
 #ifdef DIAGNOSTIC
 /*
  * Print out information about state of a lock. Used by VOP_PRINT
- * routines to display ststus about contained locks.
+ * routines to display status about contained locks.
  */
 void
 lockmgr_printinfo(__volatile struct lock *lkp)

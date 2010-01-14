@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lkm.c,v 1.44 2007/10/29 14:12:19 chl Exp $	*/
+/*	$OpenBSD: kern_lkm.c,v 1.45 2007/11/03 22:23:35 mikeb Exp $	*/
 /*	$NetBSD: kern_lkm.c,v 1.31 1996/03/31 21:40:27 christos Exp $	*/
 
 /*
@@ -149,7 +149,7 @@ lkmopen(dev_t dev, int flag, int devtype, struct proc *p)
 }
 
 /*
- * Alocates new LKM table entry, fills module id, inserts in the list.
+ * Allocates new LKM table entry, fills module id, inserts into the list.
  * Returns NULL on failure.
  *
  */

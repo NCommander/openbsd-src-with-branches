@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.56 2009/10/30 18:03:34 deraadt Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.57 2009/11/09 17:53:39 nicm Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -415,7 +415,7 @@ pipe_write(struct file *fp, off_t *poff, struct uio *uio, struct ucred *cred)
 	}
 
 	/*
-	 * If an early error occured unbusy and return, waking up any pending
+	 * If an early error occurred unbusy and return, waking up any pending
 	 * readers.
 	 */
 	if (error) {
