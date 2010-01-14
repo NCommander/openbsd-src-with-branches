@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.685 2010/01/14 00:00:05 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.686 2010/01/14 01:06:14 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1431,6 +1431,8 @@ pf_print_state_parts(struct pf_state *s,
 			printf("]");
 		}
 		printf(" %u:%u", s->src.state, s->dst.state);
+		if (s->rule.ptr)
+			printf(" @%d", s->rule.ptr->nr);
 	}
 }
 
