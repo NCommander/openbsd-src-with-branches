@@ -369,7 +369,7 @@ sub prepare_for_addition
 		$state->{problems}++;
 		return;
 	}
-	my $s = $state->vstat->add($fname, $self->{size}, \$pkgname);
+	my $s = $state->vstat->add($fname, $self->{size}, $pkgname);
 	return unless defined $s;
 	if ($s->ro) {
 		$s->report_ro($state, $fname);
@@ -490,7 +490,7 @@ sub prepare_for_addition
 		return;
 	}
 	my $size = $self->{copyfrom}->{size};
-	my $s = $state->vstat->add($fname, $size, \$pkgname);
+	my $s = $state->vstat->add($fname, $size, $pkgname);
 	return unless defined $s;
 	if ($s->ro) {
 		$s->report_ro($state, $fname);
@@ -674,7 +674,7 @@ sub prepare_for_addition
 			$s2->report_noexec($state, $cname);
 		}
 	}
-	my $s = $state->vstat->add($fname, $self->{size}, \$pkgname);
+	my $s = $state->vstat->add($fname, $self->{size}, $pkgname);
 	return unless defined $s;
 	if ($s->ro) {
 		$s->report_ro($state, $fname);

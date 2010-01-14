@@ -28,9 +28,8 @@ sub find_collisions
 	my $verbose = $state->verbose >= 3;
 	my $bypkg = {};
 	for my $name (keys %$todo) {
-		my $p = $state->vstat->exists($name);
-		if (defined $p && $p->value) {
-			my $pkg = $p->value;
+		my $pkg = $state->vstat->value($state->{destdir}.$name);
+		if (defined $pkg) {
 			push(@{$bypkg->{$pkg}}, $name);
 			delete $todo->{$name};
 		}
@@ -94,16 +93,18 @@ sub collision_report($$)
 	if (%todo) {
 
 		for my $item (sort keys %todo) {
-		    if (defined $todo{$item}) {
-			    my $old = $todo{$item};
+			my $old = $todo{$item};
+		    $state->errprint("\t$item");
+		    if (defined $old && -f $destdir.$item) {
 			    my $d = $old->new($destdir.$item);
+
 			    if ($d->equals($old)) {
-				$state->errsay("\t$item (same checksum)");
+				    $state->errsay("(same checksum)");
 			    } else {
-				$state->errsay("\t$item (different checksum)");
+				    $state->errsay("(different checksum)");
 			    }
 		    } else {
-			    $state->errsay("\t$item");
+			    $state->errsay("");
 		    }
 	    	}
 	}
