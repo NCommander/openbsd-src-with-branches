@@ -1,4 +1,4 @@
-/*	$OpenBSD: sock.h,v 1.10 2009/08/26 06:10:15 ratchov Exp $	*/
+/*	$OpenBSD: sock.h,v 1.11 2009/09/27 11:51:20 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -51,6 +51,7 @@ struct sock {
 	struct aparams wpar;		/* write (ie rec) parameters */
 	int delta;			/* pos. change to send */
 	int tickpending;		/* delta waiting to be transmitted */
+	unsigned walign;		/* align data packets to this */
 	unsigned bufsz;			/* total buffer size */
 	unsigned round;			/* block size */
 	unsigned xrun;			/* one of AMSG_IGNORE, ... */
