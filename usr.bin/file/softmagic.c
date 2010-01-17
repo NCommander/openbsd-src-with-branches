@@ -1,4 +1,4 @@
-/*	$OpenBSD: softmagic.c,v 1.14 2009/04/24 18:54:34 chl Exp $ */
+/*	$OpenBSD: softmagic.c,v 1.15 2009/10/27 23:59:38 deraadt Exp $ */
 /*
  * Copyright (c) Ian F. Darwin 1986-1995.
  * Software written by Ian F. Darwin and others;
@@ -307,14 +307,13 @@ strndup(const char *str, size_t n)
 	size_t len;
 	char *copy;
 
-	len = strlen(str);
-	if (len > n)
-		len = n;
-	if (!(copy = malloc(len + 1)))
-		return (NULL);
-	(void) memcpy(copy, str, len + 1);
+	for (len = 0; len < n && str[len]; len++)
+		continue;
+	if ((copy = malloc(len + 1)) == NULL)
+		return NULL;
+	(void)memcpy(copy, str, len);
 	copy[len] = '\0';
-	return (copy);
+	return copy;
 }
 #endif /* HAVE_STRNDUP */
 
