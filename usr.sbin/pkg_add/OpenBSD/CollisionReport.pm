@@ -99,9 +99,9 @@ sub collision_report($$)
 			    my $d = $old->new($destdir.$item);
 
 			    if ($d->equals($old)) {
-				    $state->errsay("(same checksum)");
+				    $state->errsay(" (same checksum)");
 			    } else {
-				    $state->errsay("(different checksum)");
+				    $state->errsay(" (different checksum)");
 			    }
 		    } else {
 			    $state->errsay("");

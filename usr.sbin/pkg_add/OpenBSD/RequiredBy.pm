@@ -20,6 +20,7 @@ use warnings;
 
 package OpenBSD::RequirementList;
 use OpenBSD::PackageInfo;
+use Carp;
 
 sub fill_entries
 {
@@ -29,7 +30,7 @@ sub fill_entries
 
 		if (-f $self->{filename}) {
 			open(my $fh, '<', $self->{filename}) or 
-			    die "Problem opening required list: ",
+			    croak "Problem opening required list: ",
 				$self->{filename}, ": $!";
 			my $_;
 			while(<$fh>) {
@@ -53,17 +54,17 @@ sub synch
 
 	if (!unlink $self->{filename}) {
 		if ($self->{nonempty}) {
-		    die "Can't erase $self->{filename}: $!";
+		    croak "Can't erase $self->{filename}: $!";
 		}
 	}
 	if (%{$self->{entries}}) {
 		open(my $fh, '>', $self->{filename}) or
-		    die "Can't write $self->{filename}: $!";
+		    croak "Can't write $self->{filename}: $!";
 		while (my ($k, $v) = each %{$self->{entries}}) {
 			print $fh "$k\n";
 		}
 		close($fh) or
-		    die "Write to $self->{filename} didn't work: $!";
+		    croak "Write to $self->{filename} didn't work: $!";
 		$self->{nonempty} = 1;
 	} else {
 		$self->{nonempty} = 0;
