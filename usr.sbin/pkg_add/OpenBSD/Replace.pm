@@ -213,6 +213,10 @@ sub is_set_safe
 {
 	my ($set, $state) = @_;
 
+	if ($state->{defines}->{update} && !$state->verbose) {
+		return 1;
+	}
+
 	my $ok = 1;
 
 	for my $pkg ($set->older) {
