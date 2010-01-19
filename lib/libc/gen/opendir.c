@@ -1,4 +1,4 @@
-/*	$OpenBSD: opendir.c,v 1.18 2007/02/09 14:58:09 millert Exp $ */
+/*	$OpenBSD: opendir.c,v 1.19 2007/06/05 18:11:48 kurt Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -62,7 +62,11 @@ __opendir2(const char *name, int flags)
 
 	if ((fd = open(name, O_RDONLY | O_NONBLOCK)) == -1)
 		return (NULL);
-	if (fstat(fd, &sb) || !S_ISDIR(sb.st_mode)) {
+	if (fstat(fd, &sb)) {
+		close(fd);
+		return (NULL);
+	}
+	if (!S_ISDIR(sb.st_mode)) {
 		close(fd);
 		errno = ENOTDIR;
 		return (NULL);
@@ -89,7 +93,7 @@ __opendir2(const char *name, int flags)
 	dirp->dd_buf = malloc((size_t)dirp->dd_len);
 	if (dirp->dd_buf == NULL) {
 		free(dirp);
-		close (fd);
+		close(fd);
 		return (NULL);
 	}
 
