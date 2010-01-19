@@ -951,6 +951,13 @@ sub add_digest
 	&OpenBSD::PackingElement::FileBase::add_digest;
 }
 
+OpenBSD::Auto::cache(spec,
+    sub {
+    	my $self = shift;
+
+    	require OpenBSD::LibSpec;
+	return OpenBSD::LibSpec->from_string($self->name);
+    });
 package OpenBSD::PackingElement::PkgPath;
 our @ISA=qw(OpenBSD::PackingElement::Meta);
 

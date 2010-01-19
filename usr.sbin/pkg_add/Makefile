@@ -23,6 +23,7 @@ PACKAGES= \
     OpenBSD/Handle.pm \
     OpenBSD/IdCache.pm \
     OpenBSD/Interactive.pm \
+    OpenBSD/LibSpec.pm \
     OpenBSD/Mtree.pm \
     OpenBSD/OldLibs.pm \
     OpenBSD/PackageInfo.pm \
