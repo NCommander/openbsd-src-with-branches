@@ -24,10 +24,7 @@ sub cache(*&)
 	my $callpkg = caller;
 	my $actual = sub {
 		my $self = shift;
-		if (!defined $self->{$sym}) {
-			$self->{$sym} = &$code($self);
-		}
-		return $self->{$sym};
+		return $self->{$sym} //= &$code($self);
 	};
 	no strict 'refs';
 	*{$callpkg."::$sym"} = $actual;
