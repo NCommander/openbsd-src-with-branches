@@ -299,30 +299,18 @@ sub makesum_plist
 	}
 }
 
-package OpenBSD::PackingElement::Dependency;
+package OpenBSD::PackingElement::Depend;
 sub avert_duplicates_and_other_checks
 {
 	my ($self, $allfiles) = @_;
 	if (!$self->spec->is_valid) {
-		print STDERR "Error in packing-list: invalid dependency: $self->{pattern}\n";
+		print STDERR "Error in packing-list: invalid \@", 
+		    $self->keyword, " ", $self->stringize, "\n";
 		$main::errors++;
 	}
 	$self->SUPER::avert_duplicates_and_other_checks($allfiles);
 }
 
-package OpenBSD::PackingElement::Wantlib;
-sub avert_duplicates_and_other_checks
-{
-	my ($self, $allfiles) = @_;
-	require OpenBSD::SharedLibs;
-
-	if (!defined OpenBSD::SharedLibs::parse_spec($self->name)) {
-		print STDERR "Error in packing-list: invalid wantlib: ", 
-		    $self->name, "\n";
-		$main::errors++;
-	}
-	$self->SUPER::avert_duplicates_and_other_checks($allfiles);
-}
 
 # put together file and filename, in order to handle fragments simply
 package MyFile;
