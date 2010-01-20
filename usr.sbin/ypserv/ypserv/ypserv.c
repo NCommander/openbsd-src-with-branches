@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.35 2007/02/18 23:34:57 jmc Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.36 2009/10/27 23:59:58 deraadt Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -334,6 +334,8 @@ hup(void)
 		yplog("sig_hup: reread %s", YP_SECURENET_FILE);
 		(void)acl_securenet(YP_SECURENET_FILE);
 	}
+
+	ypdb_close_all();
 }
 
 static void
