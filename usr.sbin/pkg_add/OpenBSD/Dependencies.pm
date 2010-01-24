@@ -652,10 +652,10 @@ use OpenBSD::SharedLibs;
 sub check_lib_spec
 {
 	my ($self, $base, $spec, $dependencies) = @_;
-	my @r = OpenBSD::SharedLibs::lookup_libspec($base, $spec);
-	for my $candidate (@r) {
-		if ($dependencies->{$candidate}) {
-			return $candidate;
+	my $r = OpenBSD::SharedLibs::lookup_libspec($base, $spec);
+	for my $candidate (@$r) {
+		if ($dependencies->{$candidate->origin}) {
+			return $candidate->origin;
 		}
 	}
 	return;
