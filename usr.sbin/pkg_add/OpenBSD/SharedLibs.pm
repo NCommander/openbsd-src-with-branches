@@ -165,7 +165,12 @@ sub report_problem
 	} elsif (!defined $approx) {
  		$r = "| not found anywhere\n";
 	} else {
-		$r .= join(',', sort map {$_->to_string} @$approx)."\n";
+		for my $bad (@$approx) {
+			my $ouch = $spec->no_match($bad, $base);
+			$ouch //= "not reachable";
+			$r .= "| ".$bad->to_string." (".$bad->origin."): ".
+			    $ouch."\n";
+		}
 	}
 	if (!defined $printed->{$name} || $printed->{$name} ne $r) {
 		$printed->{$name} = $r;
