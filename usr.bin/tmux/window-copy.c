@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.35 2009/12/03 22:50:10 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.36 2010/01/24 21:05:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -293,6 +293,20 @@ window_copy_key(struct window_pane *wp, struct client *c, int key)
 	case MODEKEYCOPY_BOTTOMLINE:
 		data->cx = 0;
 		data->cy = screen_size_y(s) - 1;
+		window_copy_update_selection(wp);
+		window_copy_redraw_screen(wp);
+		break;
+	case MODEKEYCOPY_HISTORYTOP:
+		data->cx = 0;
+		data->cy = 0;
+		data->oy = screen_hsize(&wp->base);
+		window_copy_update_selection(wp);
+		window_copy_redraw_screen(wp);
+		break;
+	case MODEKEYCOPY_HISTORYBOTTOM:
+		data->cx = 0;
+		data->cy = screen_size_y(s) - 1;
+		data->oy = 0;
 		window_copy_update_selection(wp);
 		window_copy_redraw_screen(wp);
 		break;
