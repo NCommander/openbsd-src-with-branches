@@ -164,7 +164,7 @@ sub process_handle
 			next;
 		    }
 		    my $r = $plist->signature->compare($p2->signature);
-		    if (defined $r && $r > 0 && !$state->{defines}{downgrades}) {
+		    if (defined $r && $r > 0 && !$state->{defines}{downgrade}) {
 		    	$oldfound = 1;
 			next;
 		    }
