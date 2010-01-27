@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.121 2010/01/13 12:48:34 jmc Exp $ */
+/* $OpenBSD: sftp.c,v 1.122 2010/01/15 00:05:22 guenther Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -2046,7 +2046,7 @@ main(int argc, char **argv)
 	infile = stdin;
 
 	while ((ch = getopt(argc, argv,
-	    "1246hqrvCc:D:i:o:s:S:b:B:F:P:R:")) != -1) {
+	    "1246hpqrvCc:D:i:o:s:S:b:B:F:P:R:")) != -1) {
 		switch (ch) {
 		/* Passed through to ssh(1) */
 		case '4':
