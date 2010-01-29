@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.110 2008/11/07 02:22:33 deraadt Exp $	*/
+/*	$OpenBSD: proc.h,v 1.111 2008/12/16 07:57:28 guenther Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -415,7 +415,7 @@ int	chgproccnt(uid_t uid, int diff);
 int	enterpgrp(struct proc *p, pid_t pgid, struct pgrp *newpgrp,
 	    struct session *newsess);
 void	fixjobc(struct proc *p, struct pgrp *pgrp, int entering);
-int	inferior(struct proc *p);
+int	inferior(struct proc *, struct proc *);
 int	leavepgrp(struct proc *p);
 void	yield(void);
 void	preempt(struct proc *);
