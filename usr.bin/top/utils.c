@@ -1,4 +1,4 @@
-/* $OpenBSD: utils.c,v 1.20 2007/07/27 13:57:50 deraadt Exp $	 */
+/* $OpenBSD: utils.c,v 1.21 2007/10/01 09:15:44 otto Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -125,7 +125,7 @@ string_index(char *string, char **array)
 	int i = 0;
 
 	while (*array != NULL) {
-		if (strcmp(string, *array) == 0)
+		if (strncmp(string, *array, strlen(string)) == 0)
 			return (i);
 		array++;
 		i++;
