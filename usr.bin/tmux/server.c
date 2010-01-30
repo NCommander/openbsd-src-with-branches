@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.79 2009/12/02 15:06:14 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.80 2009/12/03 22:50:10 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -356,6 +356,8 @@ server_signal_set(void)
 		fatal("sigaction failed");
 	if (sigaction(SIGTSTP, &sigact, NULL) != 0)
 		fatal("sigaction failed");
+	if (sigaction(SIGHUP, &sigact, NULL) != 0)
+		fatal("sigaction failed");
 
 	signal_set(&server_ev_sigchld, SIGCHLD, server_signal_callback, NULL);
 	signal_add(&server_ev_sigchld, NULL);
@@ -382,6 +384,8 @@ server_signal_clear(void)
 	if (sigaction(SIGUSR2, &sigact, NULL) != 0)
 		fatal("sigaction failed");
 	if (sigaction(SIGTSTP, &sigact, NULL) != 0)
+		fatal("sigaction failed");
+	if (sigaction(SIGHUP, &sigact, NULL) != 0)
 		fatal("sigaction failed");
 
 	signal_del(&server_ev_sigchld);
