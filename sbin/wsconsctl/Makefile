@@ -1,14 +1,15 @@
-#	$OpenBSD: Makefile,v 1.32 2009/05/17 01:55:13 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.33 2009/09/27 11:36:14 maja Exp $
 
 .if ${MACHINE} == "alpha" || ${MACHINE} == "amd64" || \
-   ${MACHINE} == "hp300" || ${MACHINE} == "hppa" || \
-   ${MACHINE} == "i386" || ${MACHINE} == "luna88k" || \
-   ${MACHINE} == "mac68k" || ${MACHINE} == "macppc" || \
-   ${MACHINE} == "sgi" || ${MACHINE} == "sparc" || \
-   ${MACHINE} == "sparc64" || ${MACHINE} == "vax" || \
-   ${MACHINE} == "zaurus" || ${MACHINE} == "landisk" || \
-   ${MACHINE} == "socppc" || ${MACHINE} == "palm" || \
-   ${MACHINE} == "armish"
+    ${MACHINE} == "armish" || ${MACHINE} == "hp300" || \
+    ${MACHINE} == "hppa" || ${MACHINE} == "hppa64" || \
+    ${MACHINE} == "i386" || ${MACHINE} == "landisk" || \
+    ${MACHINE} == "loongson" || ${MACHINE} == "luna88k" || \
+    ${MACHINE} == "mac68k" || ${MACHINE} == "macppc" || \
+    ${MACHINE} == "palm" || ${MACHINE} == "sgi" || \
+    ${MACHINE} == "socppc" || ${MACHINE} == "sparc" || \
+    ${MACHINE} == "sparc64" || ${MACHINE} == "vax" || \
+    ${MACHINE} == "zaurus"
 
 PROG=	wsconsctl
 SRCS=	display.c keyboard.c keysym.c map_parse.y map_scan.l \
