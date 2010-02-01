@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.4 2006/05/03 16:10:52 drahn Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.5 2010/01/03 22:18:04 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -160,7 +160,7 @@ ENTRY(_dl_bind_start,32)
 	ldw	HPPA_FRAME_ARG(3)(r3), arg3
 	ldw	4(r3), t1
 	ldw	8(r3), ret0
-	ldw	12(r3), ret0
+	ldw	12(r3), ret1
 
 	ldw	HPPA_FRAME_CRP(r3), rp
 	ldo	HPPA_FRAME_SIZE(r3), sp
