@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.199 2010/01/25 21:33:39 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.200 2010/01/27 20:18:52 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -442,6 +442,8 @@ enum mode_key_cmd {
 	MODEKEYCHOICE_DOWN,
 	MODEKEYCHOICE_PAGEDOWN,
 	MODEKEYCHOICE_PAGEUP,
+	MODEKEYCHOICE_SCROLLDOWN,
+	MODEKEYCHOICE_SCROLLUP,
 	MODEKEYCHOICE_UP,
 
 	/* Copy keys. */
