@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.2 2009/07/14 13:59:49 drahn Exp $	*/
+/*	$OpenBSD: intr.h,v 1.3 2010/01/14 02:14:25 kevlo Exp $	*/
 /*	$NetBSD: intr.h,v 1.12 2003/06/16 20:00:59 thorpej Exp $	*/
 
 /*
@@ -87,7 +87,6 @@
 #define	splaudio()	_splraise(IPL_AUDIO)
 #define	splclock()	_splraise(IPL_CLOCK)
 #define	splstatclock()	_splraise(IPL_STATCLOCK)
-#define	splserial()	_splraise(IPL_SERIAL)
 
 #define	spl0()		_spllower(IPL_NONE)
 
@@ -101,4 +100,3 @@
 #endif /* _KERNEL */
 
 #endif	/* _EVBARM_INTR_H_ */
-
