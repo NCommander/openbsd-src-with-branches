@@ -1,4 +1,4 @@
-/*	$OpenBSD: tlbhandler.S,v 1.28 2010/01/28 05:27:16 miod Exp $ */
+/*	$OpenBSD: tlbhandler.S,v 1.29 2010/01/28 21:24:08 miod Exp $ */
 
 /*
  * Copyright (c) 1995-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -368,6 +368,15 @@ go_k_general:
 	nop
 
 go_u_general:
+#ifdef CPU_LOONGSON2
+	/*
+	 * To work around a branch prediction issue on earlier LS2F
+	 * chips, it is necessary to clear the BTB upon
+	 * userland->kernel boundaries.
+	 */
+	li	k0, COP_0_DIAG_BTB_CLEAR | COP_0_DIAG_RAS_DISABLE
+	dmtc0	k0, COP_0_DIAG
+#endif
 	j	u_general
 	nop
 
