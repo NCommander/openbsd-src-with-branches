@@ -197,7 +197,7 @@ int
 lii_match(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, lii_devices,   
-	    sizeof(lii_devices)/sizeof(lii_devices[0])));
+	    nitems(lii_devices)));
 }
 
 void
