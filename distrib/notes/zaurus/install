@@ -1,4 +1,4 @@
-dnl	$OpenBSD: install,v 1.24 2009/05/12 21:06:51 miod Exp $
+dnl	$OpenBSD: install,v 1.25 2009/05/13 18:38:29 miod Exp $
 OpenBSDInstallPrelude
 
 OpenBSD is installed on the Zaurus by effectively converting
@@ -119,7 +119,7 @@ OpenBSDCommonInstall
 
 OpenBSDTAPEInstall
 
-OpenBSDWrapup
+OpenBSDInstallWrapup
 
 OpenBSDCongratulations
 
