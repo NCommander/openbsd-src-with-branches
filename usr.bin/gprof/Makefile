@@ -1,13 +1,14 @@
-#	$OpenBSD: Makefile,v 1.16 2007/12/05 09:59:38 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.17 2007/12/09 19:51:30 espie Exp $
 
 .include <bsd.own.mk>
 
 TARGET_MACHINE_ARCH?=	${MACHINE_ARCH}
+TARGET_MACHINE_CPU?=	${MACHINE_CPU}
 
 PROG=	gprof
-SRCS=	gprof.c arcs.c dfn.c lookup.c ${TARGET_MACHINE_ARCH}.c hertz.c \
+SRCS=	gprof.c arcs.c dfn.c lookup.c ${TARGET_MACHINE_CPU}.c hertz.c \
 	printgprof.c printlist.c
-CFLAGS+= -I. -DMD_INCLUDE=\"${TARGET_MACHINE_ARCH}.h\"
+CFLAGS+= -I. -DMD_INCLUDE=\"${TARGET_MACHINE_CPU}.h\"
 
 # XXX - need support for multiple archs.
 .if (${ELF_TOOLCHAIN:L} == "yes")

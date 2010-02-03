@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.10 2006/11/19 03:32:09 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.11 2006/11/19 03:34:03 deraadt Exp $
 
 .include <bsd.own.mk>
 
 MAN=pmdb.1
 
 .if (!exists(arch/${MACHINE}/Makefile.inc) && \
-    !exists(arch/${MACHINE_ARCH}/Makefile.inc))
+    !exists(arch/${MACHINE_CPU}/Makefile.inc))
 NOPROG=no, man
 .else
 
@@ -39,10 +39,10 @@ CPPFLAGS+=-I${.CURDIR}
 CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE}
 .endif
 
-.if (${MACHINE_ARCH} != ${MACHINE}) && exists(arch/${MACHINE_ARCH}/Makefile.inc)
-.PATH: ${.CURDIR}/arch/${MACHINE_ARCH}
-.include "arch/${MACHINE_ARCH}/Makefile.inc"
-CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE_ARCH}
+.if (${MACHINE_CPU} != ${MACHINE}) && exists(arch/${MACHINE_CPU}/Makefile.inc)
+.PATH: ${.CURDIR}/arch/${MACHINE_CPU}
+.include "arch/${MACHINE_CPU}/Makefile.inc"
+CPPFLAGS+=-I${.CURDIR}/arch/${MACHINE_CPU}
 .endif
 
 COPTS+=-Wall -Wno-uninitialized
