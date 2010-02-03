@@ -1,4 +1,4 @@
-/*	$OpenBSD: xlint.c,v 1.32 2006/11/10 00:54:59 deraadt Exp $	*/
+/*	$OpenBSD: xlint.c,v 1.33 2007/03/20 16:16:44 jmc Exp $	*/
 /*	$NetBSD: xlint.c,v 1.3 1995/10/23 14:29:30 jpo Exp $	*/
 
 /*
@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$OpenBSD: xlint.c,v 1.32 2006/11/10 00:54:59 deraadt Exp $";
+static char rcsid[] = "$OpenBSD: xlint.c,v 1.33 2007/03/20 16:16:44 jmc Exp $";
 #endif
 
 #include <sys/param.h>
@@ -334,6 +334,12 @@ main(int argc, char *argv[])
 	appstrg(&lcppflgs, concat2("-D", un.machine));
 
 #ifdef MACHINE_ARCH
+#ifdef MACHINE_CPU
+	if (strcmp(MACHINE_ARCH, MACHINE_CPU) != 0) {
+		appdef(&cppflags, MACHINE_CPU);
+		appstrg(&lcppflgs, concat2("-D", MACHINE_CPU));
+	}
+#endif
 	if (strcmp(un.machine, MACHINE_ARCH) != 0) {
 		appdef(&cppflags, MACHINE_ARCH);
 		appstrg(&lcppflgs, concat2("-D", MACHINE_ARCH));
