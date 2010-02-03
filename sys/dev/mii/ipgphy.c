@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipgphy.c,v 1.11 2009/07/30 10:26:23 sthen Exp $	*/
+/*	$OpenBSD: ipgphy.c,v 1.12 2009/08/08 17:12:40 naddy Exp $	*/
 
 /*-
  * Copyright (c) 2006, Pyun YongHyeon <yongari@FreeBSD.org>
@@ -353,8 +353,10 @@ ipgphy_mii_phy_auto(struct mii_softc *sc)
 {
 	uint32_t reg = 0;
 
-	if (sc->mii_model == MII_MODEL_ICPLUS_IP1001)
+	if (sc->mii_model == MII_MODEL_ICPLUS_IP1001) {
 		reg = PHY_READ(sc, IPGPHY_MII_ANAR);
+		reg |= IPGPHY_ANAR_NP;
+	}
 
 	reg |= IPGPHY_ANAR_10T | IPGPHY_ANAR_10T_FDX |
 	      IPGPHY_ANAR_100TX | IPGPHY_ANAR_100TX_FDX;
