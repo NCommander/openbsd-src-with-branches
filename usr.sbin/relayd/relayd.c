@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.93 2009/11/11 13:09:39 jsg Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.94 2010/01/11 06:40:14 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -984,6 +984,7 @@ event_again(struct event *ev, int fd, short event,
 	if (timercmp(&tv_next, &tv, >))
 		bcopy(&tv_next, &tv, sizeof(tv));
 
+	event_del(ev);
 	event_set(ev, fd, event, fn, arg);
 	event_add(ev, &tv);
 }
