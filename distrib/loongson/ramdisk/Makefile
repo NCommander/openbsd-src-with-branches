@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2009/07/05 16:50:18 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.1 2010/01/31 21:36:01 otto Exp $
 
 REV=	${OSrev}
 
@@ -34,14 +34,11 @@ all ${IMAGE}:
 .else
 
 # mix config is not needed.
-all:	${BSD_RD} ${BSD_BIN}
+all:	${BSD_RD}
 
 ${BSD_RD}: ${CBIN} ${IMAGE} bsd rdsetroot
 	cp bsd ${BSD_RD}
 	${.OBJDIR}/rdsetroot ${BSD_RD} ${IMAGE}
-
-${BSD_BIN}: ${BSD_RD}
-	objcopy -O binary ${BSD_RD} ${BSD_BIN}
 
 ${IMAGE}: rd_setup do_files rd_teardown
 
