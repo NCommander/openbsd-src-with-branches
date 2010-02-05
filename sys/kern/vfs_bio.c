@@ -1239,10 +1239,11 @@ void
 bcstats_print(int (*pr)(const char *, ...))
 {
 	(*pr)("Current Buffer Cache status:\n");
-	(*pr)("numbufs %d freebufs %d\n", bcstats.numbufs, bcstats.freebufs);
-    	(*pr)("bufpages %d freepages %d dirtypages %d\n", bcstats.numbufpages,
-	    bcstats.numfreepages, bcstats.numdirtypages);
-	(*pr)("pendingreads %d, pendingwrites %d\n",
+	(*pr)("numbufs %lld, freebufs %lld\n",
+	    bcstats.numbufs, bcstats.freebufs);
+    	(*pr)("bufpages %lld, freepages %lld, dirtypages %lld\n",
+	    bcstats.numbufpages, bcstats.numfreepages, bcstats.numdirtypages);
+	(*pr)("pendingreads %lld, pendingwrites %lld\n",
 	    bcstats.pendingreads, bcstats.pendingwrites);
 }
 #endif
