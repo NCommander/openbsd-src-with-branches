@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmon.c,v 1.1.1.1 2009/11/23 14:47:13 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -60,7 +60,7 @@ pmon_getenv(const char *var)
 	while (*envptr != 0) {
 		envstr = (const char *)(vaddr_t)*envptr;
 		/*
-		 * There is a PMON2000 bug, at least on Lemote Yeelong,
+		 * There is a PMON2000 bug, at least on Lemote Yeeloong,
 		 * which causes it to override part of the environment
 		 * pointers array with the environment data itself.
 		 *
