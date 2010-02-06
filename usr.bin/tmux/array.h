@@ -1,4 +1,4 @@
-/* $OpenBSD: array.h,v 1.2 2009/10/26 21:42:04 deraadt Exp $ */
+/* $OpenBSD: array.h,v 1.3 2009/10/29 08:59:17 nicm Exp $ */
 
 /*
  * Copyright (c) 2006 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -18,6 +18,8 @@
 
 #ifndef ARRAY_H
 #define ARRAY_H
+
+#define ARRAY_INITIALIZER { NULL, 0, 0 }
 
 #define ARRAY_DECL(n, c)						\
 	struct n {							\
