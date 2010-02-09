@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.285 2010/02/08 17:16:36 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.286 2010/02/08 17:21:37 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2657,7 +2657,7 @@ rde_update6_queue_runner(u_int8_t aid)
 			case -2:
 				continue;
 			case -1:
-				peer_send_eor(peer, AID_INET6);
+				peer_send_eor(peer, aid);
 				continue;
 			default:
 				b = queue_buf + r;
