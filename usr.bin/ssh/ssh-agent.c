@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.162 2009/09/01 14:43:17 djm Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.163 2010/02/08 10:50:20 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -158,7 +158,8 @@ static void
 free_identity(Identity *id)
 {
 	key_free(id->key);
-	xfree(id->provider);
+	if (id->provider != NULL)
+		xfree(id->provider);
 	xfree(id->comment);
 	xfree(id);
 }
