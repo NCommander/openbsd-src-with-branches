@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.176 2010/01/11 10:51:07 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.177 2010/02/08 10:50:20 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -452,7 +452,7 @@ do_print_public(struct passwd *pw)
 }
 
 static void
-do_download(struct passwd *pw, const char *pkcs11provider)
+do_download(struct passwd *pw, char *pkcs11provider)
 {
 #ifdef ENABLE_PKCS11
 	Key **keys = NULL;
