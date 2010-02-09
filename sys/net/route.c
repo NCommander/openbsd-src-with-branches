@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.113 2009/10/26 17:14:24 mk Exp $	*/
+/*	$OpenBSD: route.c,v 1.114 2009/11/03 10:59:04 claudio Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -152,9 +152,6 @@ int	okaytoclone(u_int, int);
 int	rtflushclone1(struct radix_node *, void *);
 void	rtflushclone(struct radix_node_head *, struct rtentry *);
 int	rt_if_remove_rtdelete(struct radix_node *, void *);
-#ifndef SMALL_KERNEL
-int	rt_if_linkstate_change(struct radix_node *, void *);
-#endif
 
 #define	LABELID_MAX	50000
 
