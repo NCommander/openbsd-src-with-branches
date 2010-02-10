@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_mem.c,v 1.12 2009/04/07 16:35:52 blambert Exp $	*/
+/*	$OpenBSD: sdmmc_mem.c,v 1.13 2009/10/03 18:42:36 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -95,6 +95,8 @@ sdmmc_mem_enable(struct sdmmc_softc *sc)
 
 	/* Tell the card(s) to enter the idle state (again). */
 	sdmmc_go_idle_state(sc);
+
+	host_ocr &= card_ocr; /* only allow the common voltages */
 
 	if (sdmmc_send_if_cond(sc, card_ocr) == 0)
 		host_ocr |= SD_OCR_SDHC_CAP;
