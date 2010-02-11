@@ -1,4 +1,4 @@
-/*	$OpenBSD: mktemp.c,v 1.27 2009/03/20 16:05:11 millert Exp $ */
+/*	$OpenBSD: mktemp.c,v 1.28 2010/02/08 17:58:24 guenther Exp $ */
 /*
  * Copyright (c) 1996-1998, 2008 Theo de Raadt
  * Copyright (c) 1997, 2008-2009 Todd C. Miller
@@ -52,12 +52,11 @@ mktemp_internal(char *path, int slen, int mode)
 	ep = path + len - slen;
 
 	tries = 1;
-	for (start = ep; start > path && *--start == 'X';) {
+	for (start = ep; start > path && start[-1] == 'X'; start--) {
 		if (tries < INT_MAX / NUM_CHARS)
 			tries *= NUM_CHARS;
 	}
 	tries *= 2;
-	start++;
 
 	do {
 		for (cp = start; cp != ep; cp++) {
