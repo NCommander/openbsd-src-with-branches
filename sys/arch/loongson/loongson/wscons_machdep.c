@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.2 2010/02/05 20:53:28 miod Exp $ */
+/*	$OpenBSD: wscons_machdep.c,v 1.3 2010/02/11 20:15:29 otto Exp $ */
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -157,7 +157,7 @@ setup_kbd:
 	rc = ENXIO;
 
 #if NPCKBC > 0
-	switch (sys_config.system_type) {
+	switch (sys_platform->system_type) {
 	default:
 		/* no pckbc or no legacy hardware */
 		break;
