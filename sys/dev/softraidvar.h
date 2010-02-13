@@ -360,7 +360,6 @@ struct sr_aoe {
 struct sr_metadata_list {
 	u_int8_t		sml_metadata[SR_META_SIZE * 512];
 	dev_t			sml_mm;
-	struct vnode		*sml_vn;
 	u_int32_t		sml_chunk_id;
 	int			sml_used;
 
