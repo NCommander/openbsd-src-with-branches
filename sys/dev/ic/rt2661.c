@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.50 2009/08/10 17:47:23 damien Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.51 2009/11/01 12:08:36 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -59,8 +59,8 @@
 #include <net80211/ieee80211_amrr.h>
 #include <net80211/ieee80211_radiotap.h>
 
-#include <dev/ic/rt2661reg.h>
 #include <dev/ic/rt2661var.h>
+#include <dev/ic/rt2661reg.h>
 
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcivar.h>
