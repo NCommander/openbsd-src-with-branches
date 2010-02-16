@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: conf.c,v 1.1 2010/02/14 22:39:33 miod Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1990, 1993
@@ -48,8 +48,7 @@ int	debug = 0;
  * Device configuration
  */
 struct devsw devsw[] = {
-	{ "wd",		pmon_iostrategy, pmon_ioopen, pmon_ioclose, noioctl },
-	{ "usbg",	pmon_iostrategy, pmon_ioopen, pmon_ioclose, noioctl }
+	{ "wd",		pmon_iostrategy, pmon_ioopen, pmon_ioclose, noioctl }
 };
 int ndevs = NENTS(devsw);
 

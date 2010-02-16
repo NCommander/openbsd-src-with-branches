@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: libsa.h,v 1.1 2010/02/14 22:39:33 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -46,11 +46,5 @@ extern int pmon_argc;
 extern int32_t *pmon_argv;
 extern int32_t *pmon_envp;
 extern int32_t pmon_callvec;
-
-/*
- * Mask of PMON workarounds required due to castration by the vendor.
- */
-#define	PQ_GDIUM	0x00000001
-extern int pmon_quirks;
 
 extern char pmon_bootdev[];
