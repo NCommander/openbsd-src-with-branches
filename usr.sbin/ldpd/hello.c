@@ -1,4 +1,4 @@
-/*	$OpenBSD: hello.c,v 1.2 2009/06/05 22:34:45 michele Exp $ */
+/*	$OpenBSD: hello.c,v 1.3 2009/12/09 12:19:29 michele Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -57,8 +57,6 @@ send_hello(struct iface *iface)
 	if (iface->passive)
 		return (0);
 
-	log_debug("send_hello: iface %s", iface->name);
-
 	if ((buf = buf_open(LDP_MAX_LEN)) == NULL)
 		fatal("send_hello");
 
@@ -91,8 +89,6 @@ recv_hello(struct iface *iface, struct in_addr src, char *buf, u_int16_t len)
 	struct ldp_hdr		*ldp;
 	struct in_addr		 address;
 	u_int32_t		 conf_number;
-
-	log_debug("recv_hello: neighbor %s", inet_ntoa(src));
 
 	ldp = (struct ldp_hdr *)buf;
 
