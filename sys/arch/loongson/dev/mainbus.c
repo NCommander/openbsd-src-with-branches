@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.1.1.1 2009/12/25 21:11:09 miod Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.2 2010/01/09 20:33:16 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -60,7 +60,7 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct cpu_attach_args caa;
 
-	printf("\n");
+	printf(": %s %s\n", sys_platform->vendor, sys_platform->product);
 
 	bzero(&caa, sizeof caa);
 	caa.caa_maa.maa_name = "cpu";
