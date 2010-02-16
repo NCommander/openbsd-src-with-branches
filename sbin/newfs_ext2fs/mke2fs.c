@@ -1,4 +1,4 @@
-/* $OpenBSD */
+/* $OpenBSD$ */
 /*	$NetBSD: mke2fs.c,v 1.13 2009/10/19 18:41:08 bouyer Exp $	*/
 
 /*-

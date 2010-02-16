@@ -1,4 +1,4 @@
-/* $OpenBSD */
+/* $OpenBSD$ */
 /*	$NetBSD: extern.h,v 1.4 2009/10/21 01:07:46 snj Exp $	*/
 
 /*

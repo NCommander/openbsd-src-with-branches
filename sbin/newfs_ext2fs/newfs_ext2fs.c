@@ -1,4 +1,4 @@
-/* $OpenBSD */
+/* $OpenBSD$ */
 /*	$NetBSD: newfs_ext2fs.c,v 1.8 2009/03/02 10:38:13 tsutsui Exp $	*/
 
 /*
