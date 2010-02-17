@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.12 2009/04/21 09:12:27 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2010/01/23 19:26:45 matthieu Exp $
 
-kernels: bsd
+kernels: bsd bootblocks
 	cp ${.CURDIR}/../sys/arch/loongson/compile/GENERIC/bsd \
 	    ${RELEASEDIR}/bsd
 bsd:
@@ -8,7 +8,9 @@ bsd:
 	cd ${.CURDIR}/../sys/arch/loongson/compile/GENERIC && \
 	    ${MAKE} clean && ${MAKE} depend && exec ${MAKE}
 
+bootblocks:
+	cp ${DESTDIR}/usr/mdec/boot ${RELEASEDIR}
+
 MDEXT=	bsd bsd.rd
 
-.PHONY: bsd
-
+.PHONY: bsd bootblocks

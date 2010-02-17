@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.1 2010/02/03 17:10:44 miod Exp $
+dnl	$OpenBSD: contents,v 1.2 2010/02/12 20:58:34 miod Exp $
 TopPart
 
 OpenBSDdistsets
@@ -8,6 +8,9 @@ OpenBSDbsd
 OpenBSDrd
 dnl not yet...
 dnl OpenBSDcd
+
+	boot		The OpenBSD/MACHINE boot block for Lemote
+			systems.
 
 DistributionDescription(eleven)
 
