@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.10 2009/06/04 00:44:47 krw Exp $
+#	$OpenBSD: install.md,v 1.11 2009/06/11 04:28:51 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -33,6 +33,14 @@
 #
 
 md_installboot() {
+	local _disk=$1
+	if dd if=/usr/mdec/boot.elf of=/dev/${_disk}i; then
+		return
+	fi
+
+	echo "Failed to install bootblocks."
+	echo "You will not be able to boot OpenBSD from $_disk."
+	exit
 }
 
 md_prep_fdisk() {
