@@ -1,4 +1,4 @@
-/*	$OpenBSD: loongson2_machdep.c,v 1.4 2010/02/05 20:45:37 miod Exp $	*/
+/*	$OpenBSD: loongson2_machdep.c,v 1.5 2010/02/05 20:53:28 miod Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -120,7 +120,7 @@ loongson2f_setup(u_long memlo, u_long memhi)
 
 	memlo = atop(memlo << 20);
 	memhi = atop(memhi << 20);
-	physmem = atop(physmem << 20);
+	physmem = atop((vsize_t)physmem << 20);
 
 	/*
 	 * PMON configures the system with only the low 256MB of memory
