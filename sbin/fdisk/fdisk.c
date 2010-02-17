@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.47 2007/04/26 23:39:01 deraadt Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.48 2007/12/30 13:20:13 sobrado Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -72,7 +72,7 @@ main(int argc, char *argv[])
 	disk_t disk;
 	DISK_metrics *usermetrics;
 #if defined(__amd64__) || defined(__i386__) || defined (__powerpc__) || \
-    defined(__sh__)
+    defined(__sh__) || defined(__MIPSEL__)
 	char *mbrfile = _PATH_MBR;
 #else
 	char *mbrfile = NULL;
