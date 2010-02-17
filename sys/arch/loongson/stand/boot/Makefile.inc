@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2010/02/14 22:39:33 miod Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2010/02/17 19:51:30 miod Exp $
 
 .include	"${.CURDIR}/../Makefile.inc"
 
@@ -18,7 +18,7 @@ AFLAGS+=	${SAABI}
 
 .PATH:		${BOOTDIR}
 SRCS=		start.S
-SRCS+=		conf.c cons.c dev.c devopen.c exec.c machdep.c
+SRCS+=		conf.c cons.c dev.c devopen.c exec.c machdep.c rd.c
 .PATH:		${S}/arch/loongson/loongson
 SRCS+=		pmon.c pmon32.S
 
