@@ -1,4 +1,4 @@
-/*	$OpenBSD: isp_library.c,v 1.1 2008/11/16 00:00:13 krw Exp $ */
+/*	$OpenBSD: isp_library.c,v 1.2 2009/06/24 11:00:53 krw Exp $ */
 /*-
  *  Copyright (c) 1997-2007 by Matthew Jacob
  *  All rights reserved.
@@ -26,7 +26,7 @@
  *  SUCH DAMAGE.
  */
 /*
- * Qlogic Host Adapter Internal Library Functions
+ * QLogic Host Adapter Internal Library Functions
  */
 #ifdef	__NetBSD__
 #include <sys/cdefs.h>
