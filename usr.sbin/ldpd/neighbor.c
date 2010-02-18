@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.4 2009/12/06 16:12:47 michele Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.5 2010/02/18 09:25:16 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -406,9 +406,6 @@ nbr_ktimer(int fd, short event, void *arg)
 {
 	struct nbr	*nbr = arg;
 	struct timeval	 tv;
-
-	log_debug("nbr_ktimer: neighbor ID %s peerid %lu", inet_ntoa(nbr->id),
-	    nbr->peerid);
 
 	send_keepalive(nbr);
 
