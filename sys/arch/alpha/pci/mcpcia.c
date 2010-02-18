@@ -1,4 +1,4 @@
-/* $OpenBSD: mcpcia.c,v 1.3 2008/06/26 05:42:09 ray Exp $ */
+/* $OpenBSD: mcpcia.c,v 1.4 2009/03/30 21:43:13 kettenis Exp $ */
 /* $NetBSD: mcpcia.c,v 1.20 2007/03/04 05:59:11 christos Exp $ */
 
 /*-
@@ -184,9 +184,9 @@ mcpciaattach(parent, self, aux)
 	mcpcia_init0(ccp, 1);
 
 	ctl = REGVAL(MCPCIA_PCI_REV(ccp));
-	printf("%s: Horse Revision %d, %s Handed Saddle Revision %d,"
-	    " CAP Revision %d\n", mcp->mcpcia_dev.dv_xname, HORSE_REV(ctl),
-	    (SADDLE_TYPE(ctl) & 1)? "Right": "Left", SADDLE_REV(ctl),
+	printf("%s: Horse rev %d, %s handed Saddle rev %d, CAP rev %d\n",
+	    mcp->mcpcia_dev.dv_xname, HORSE_REV(ctl),
+	    (SADDLE_TYPE(ctl) & 1) ? "right" : "left", SADDLE_REV(ctl),
 	    CAP_REV(ctl));
 
 	mcpcia_dma_init(ccp);
