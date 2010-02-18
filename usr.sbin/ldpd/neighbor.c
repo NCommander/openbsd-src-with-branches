@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.3 2009/08/01 12:47:02 michele Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.4 2009/12/06 16:12:47 michele Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -639,6 +639,7 @@ nbr_establish_connection(struct nbr *nbr)
 		log_debug("nbr_establish_connection: error while "
 		    "connecting to %s", inet_ntoa(nbr->addr));
 		nbr_act_start_idtimer(nbr);
+		close(nbr->fd);
 		return (-1);
 	}
 
