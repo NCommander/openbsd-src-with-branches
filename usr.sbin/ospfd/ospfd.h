@@ -85,6 +85,7 @@ enum imsg_type {
 	IMSG_CTL_SHOW_SUM_AREA,
 	IMSG_CTL_FIB_COUPLE,
 	IMSG_CTL_FIB_DECOUPLE,
+	IMSG_CTL_FIB_RELOAD,
 	IMSG_CTL_AREA,
 	IMSG_CTL_KROUTE,
 	IMSG_CTL_KROUTE_ADDR,
@@ -553,6 +554,7 @@ int		 kr_delete(struct kroute *);
 void		 kr_shutdown(void);
 void		 kr_fib_couple(void);
 void		 kr_fib_decouple(void);
+void		 kr_fib_reload(void);
 void		 kr_dispatch_msg(int, short, void *);
 void		 kr_show_route(struct imsg *);
 void		 kr_ifinfo(char *, pid_t);

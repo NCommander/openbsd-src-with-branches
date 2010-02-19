@@ -29,6 +29,7 @@ enum actions {
 	FIB,
 	FIB_COUPLE,
 	FIB_DECOUPLE,
+	FIB_RELOAD,
 	LOG_VERBOSE,
 	LOG_BRIEF,
 	SHOW,

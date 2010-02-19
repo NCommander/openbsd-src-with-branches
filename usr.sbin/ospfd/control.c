@@ -227,6 +227,7 @@ control_dispatch_imsg(int fd, short event, void *bula)
 		case IMSG_CTL_FIB_DECOUPLE:
 			ospfe_fib_update(imsg.hdr.type);
 			/* FALLTHROUGH */
+		case IMSG_CTL_FIB_RELOAD:
 		case IMSG_CTL_RELOAD:
 			c->iev.ibuf.pid = imsg.hdr.pid;
 			ospfe_imsg_compose_parent(imsg.hdr.type, 0, NULL, 0);

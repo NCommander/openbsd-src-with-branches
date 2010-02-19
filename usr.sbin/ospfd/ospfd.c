@@ -402,6 +402,9 @@ main_dispatch_ospfe(int fd, short event, void *bula)
 		case IMSG_CTL_FIB_DECOUPLE:
 			kr_fib_decouple();
 			break;
+		case IMSG_CTL_FIB_RELOAD:
+			kr_fib_reload();
+			break;
 		case IMSG_CTL_KROUTE:
 		case IMSG_CTL_KROUTE_ADDR:
 			kr_show_route(&imsg);

@@ -71,6 +71,7 @@ static const struct token t_main[] = {
 static const struct token t_fib[] = {
 	{ KEYWORD,	"couple",	FIB_COUPLE,	NULL},
 	{ KEYWORD,	"decouple",	FIB_DECOUPLE,	NULL},
+	{ KEYWORD,	"reload",	FIB_RELOAD,	NULL},
 	{ ENDTOKEN,	"",		NONE,		NULL}
 };
 
