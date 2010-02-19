@@ -1,4 +1,4 @@
-/*      $OpenBSD: auglx.c,v 1.3 2008/10/25 22:30:43 jakemsr Exp $	*/
+/*      $OpenBSD: auglx.c,v 1.4 2009/01/13 19:44:20 grange Exp $	*/
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
