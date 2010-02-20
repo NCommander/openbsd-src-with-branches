@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.c,v 1.24 2009/08/11 18:43:33 blambert Exp $ */
+/* $OpenBSD: cpu.c,v 1.25 2009/10/02 17:55:52 miod Exp $ */
 /* $NetBSD: cpu.c,v 1.44 2000/05/23 05:12:53 thorpej Exp $ */
 
 /*-
@@ -267,7 +267,7 @@ recognized:
 			cpu_amask =
 			    (~alpha_amask(ALPHA_AMASK_ALL)) & ALPHA_AMASK_ALL;
 		if (cpu_amask) {
-			printf("%s: Architecture extensions: %b\n",
+			printf("%s: architecture extensions: %b\n",
 			    dev->dv_xname, cpu_amask, ALPHA_AMASK_BITS);
 		}
 	}
