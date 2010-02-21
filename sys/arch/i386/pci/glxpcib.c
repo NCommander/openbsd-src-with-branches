@@ -1,4 +1,4 @@
-/*      $OpenBSD: glxpcib.c,v 1.6 2007/11/17 17:02:47 mbalmer Exp $	*/
+/*      $OpenBSD: glxpcib.c,v 1.7 2008/06/11 20:07:31 mbalmer Exp $	*/
 
 /*
  * Copyright (c) 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -37,7 +37,7 @@
 #include <dev/pci/pcivar.h>
 #include <dev/pci/pcidevs.h>
 
-#define	AMD5536_REV		0x51400017
+#define	AMD5536_REV		0x51700017
 #define	AMD5536_REV_MASK	0xff
 #define	AMD5536_TMC		0x51400050
 
