@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.284 2009/12/27 19:28:27 ajacoutot Exp $
+#	$OpenBSD: Makefile,v 1.285 2010/01/23 19:27:59 matthieu Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -82,6 +82,7 @@ distribution-etc-root-var: distrib-dirs
 	${INSTALL} -c -o root -g wheel -m 600 ospf6d.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 ripd.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 dvmrpd.conf ${DESTDIR}/etc
+	${INSTALL} -c -o root -g wheel -m 600 ldpd.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 pf.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g operator -m 644 chio.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 hostapd.conf ${DESTDIR}/etc
