@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.26 2009/11/26 22:08:30 mlarkin Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.27 2009/11/29 21:21:06 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -20,6 +20,7 @@
 #include <sys/kernel.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
+#include <sys/memrange.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -273,6 +274,10 @@ acpi_sleep_machdep(struct acpi_softc *sc, int state)
 #endif
 
 	npxinit(&cpu_info_primary);
+
+	/* Re-initialise memory range handling */
+	if (mem_range_softc.mr_op != NULL)
+		mem_range_softc.mr_op->initAP(&mem_range_softc);
 
 #if NIOAPIC > 0
 	ioapic_enable();
