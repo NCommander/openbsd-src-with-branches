@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* pkcs11.h
    Copyright 2006, 2007 g10 Code GmbH
    Copyright 2006 Andreas Jellinghaus
