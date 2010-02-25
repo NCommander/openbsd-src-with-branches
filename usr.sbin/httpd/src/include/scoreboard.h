@@ -1,4 +1,4 @@
-/* $OpenBSD: scoreboard.h,v 1.11 2005/03/28 23:26:51 niallo Exp $ */
+/* $OpenBSD: scoreboard.h,v 1.12 2006/03/22 13:19:19 ray Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -132,10 +132,10 @@ typedef struct {
 	unsigned short timeout_len;	/* length of the timeout */
 	unsigned char status;
 	unsigned long access_count;
-	unsigned long bytes_served;
+	unsigned long long bytes_served;
 	unsigned long my_access_count;
-	unsigned long my_bytes_served;
-	unsigned long conn_bytes;
+	unsigned long long my_bytes_served;
+	unsigned long long conn_bytes;
 	unsigned short conn_count;
 	struct timeval start_time;
 	struct timeval stop_time;

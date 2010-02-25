@@ -1,4 +1,4 @@
-/* $OpenBSD: httpd.h,v 1.28 2008/05/09 08:06:28 mbalmer Exp $ */
+/* $OpenBSD: httpd.h,v 1.29 2009/06/02 23:36:40 pyr Exp $ */
 
 /* ====================================================================
  * The Apache Software License, Version 1.1
@@ -735,7 +735,7 @@ struct request_rec {
 	int allowed;		/* Allowed methods - for 405, OPTIONS, etc */
 
 	int sent_bodyct;		/* byte count in stream is for body */
-	long bytes_sent;		/* body byte count, for easy access */
+	off_t bytes_sent;		/* body byte count, for easy access */
 	time_t mtime;		/* Time the resource was last modified */
 
 	/* HTTP/1.1 connection-level features */
