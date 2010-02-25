@@ -1,4 +1,4 @@
-/*	$OpenBSD: mksuncd.c,v 1.3 2003/06/02 20:09:40 jason Exp $	*/
+/*	$OpenBSD: mksuncd.c,v 1.1 2008/08/22 15:48:32 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -143,7 +143,7 @@ expand_file(int f, off_t len)
 void
 usage(void)
 {
-	fprintf(stderr, "setpart partition baseimage bootimage\n");
+	fprintf(stderr, "usage: mksuncd partition isoimage bootimage\n");
 }
 
 /*
