@@ -527,11 +527,13 @@ Do you wish to change things?
 See
 .Xr crontab 5 .
 .Ss Next day cleanup
-After the first night's security run, change ownerships and permissions
-on files, directories, and devices; root should have received mail
-with subject: "<hostname> daily insecurity output.".
-This mail contains
-a set of security recommendations, presented as a list looking like this:
+After the first night's
+.Xr security 8
+run, change ownerships and permissions
+on files, directories, and devices; root may have received mail
+with subject: "<hostname> daily insecurity output".
+This mail contains a set of security recommendations,
+presented as a list looking something like this:
 .Bd -literal -offset indent
 var/mail:
         permissions (0755, 0775)
