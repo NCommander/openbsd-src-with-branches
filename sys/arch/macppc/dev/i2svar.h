@@ -1,5 +1,4 @@
-/*	$OpenBSD: i2svar.h,v 1.4 2008/08/24 23:44:44 todd Exp $	*/
-/*	$Id: i2svar.h,v 1.4 2008/08/24 23:44:44 todd Exp $	*/
+/*	$OpenBSD: i2svar.h,v 1.5 2008/10/29 00:04:14 jakemsr Exp $	*/
 
 /*-
  * Copyright (c) 2001,2003 Tsubai Masanari.  All rights reserved.

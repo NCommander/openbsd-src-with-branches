@@ -1,5 +1,4 @@
-/*	$OpenBSD: daca.c,v 1.6 2008/10/29 00:04:14 jakemsr Exp $	*/
-/*	$Id: daca.c,v 1.6 2008/10/29 00:04:14 jakemsr Exp $	*/
+/*	$OpenBSD: daca.c,v 1.7 2009/10/26 20:17:27 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2002,2003 Tsubai Masanari.  All rights reserved.
