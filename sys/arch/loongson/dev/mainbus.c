@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.2 2010/01/09 20:33:16 miod Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.3 2010/02/16 21:29:26 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -71,6 +71,9 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 	config_found(self, &caa.caa_maa, mainbus_print);
 
 	caa.caa_maa.maa_name = "bonito";
+	config_found(self, &caa.caa_maa, mainbus_print);
+
+	caa.caa_maa.maa_name = "apm";
 	config_found(self, &caa.caa_maa, mainbus_print);
 }
 
