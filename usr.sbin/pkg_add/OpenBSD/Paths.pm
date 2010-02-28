@@ -47,6 +47,9 @@ sub df() { '/bin/df' }
 sub ssh() { '/usr/bin/ssh' }
 sub make() { '/usr/bin/make' }
 sub mklocatedb() { '/usr/libexec/locate.mklocatedb' }
+sub hostname() { '/bin/hostname' }
+sub sudo() { '/usr/bin/sudo' }
+sub du() { '/usr/bin/du' }
 
 # Various paths
 sub shells() { '/etc/shells' }
