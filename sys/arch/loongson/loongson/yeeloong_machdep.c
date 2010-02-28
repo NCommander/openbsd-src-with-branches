@@ -1,4 +1,4 @@
-/*	$OpenBSD: yeeloong_machdep.c,v 1.6 2010/02/16 21:31:36 miod Exp $	*/
+/*	$OpenBSD: yeeloong_machdep.c,v 1.7 2010/02/23 21:04:16 otto Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -235,8 +235,7 @@ fuloong_setup(void)
 	envvar = pmon_getenv("novga");
 	serial = serial && envvar == 0;
 
-	/* XXX always switch to serial until we have framebuffer */
-	if (serial || 1) {
+	if (serial) {
                 comconsiot = &bonito_pci_io_space_tag;
                 comconsaddr = 0x2f8;
                 comconsrate = 115200; /* default PMON console speed */

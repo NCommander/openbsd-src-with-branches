@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.15 2010/02/26 14:53:11 miod Exp $
+#	$OpenBSD: GENERIC,v 1.16 2010/02/28 08:30:27 otto Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -49,7 +49,10 @@ ykbec0		at isa? port 0x381		# Yeeloong only
 com0		at isa? port 0x2f8 irq 3	# Fuloong 2F only
 pciide*		at pci?
 wd*		at pciide? flags 0x0000
+sisfb*		at pci?				# Fuloong 2F only
+wsdisplay*	at sisfb?
 smfb*		at pci?				# Yeeloong only
+wsdisplay*	at smfb?
 auglx*		at pci?
 audio*		at auglx?
 
