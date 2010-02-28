@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.162 2010/01/15 05:31:38 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.163 2010/01/15 05:50:31 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -942,7 +942,10 @@ cdioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 			th.len = letoh16(th.len);
 		else
 			th.len = betoh16(th.len);
-		bcopy(&th, addr, sizeof(th));
+		if (th.len > 0)
+			bcopy(&th, addr, sizeof(th));
+		else
+			error = EIO;
 		break;
 	}
 	case CDIOREADTOCENTRYS: {
