@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.54 2010/01/09 23:43:41 miod Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.55 2010/01/18 16:59:22 miod Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -378,6 +378,7 @@ struct cpu_info {
 	struct proc	*ci_curproc;
 	struct user	*ci_curprocpaddr;
 	struct proc	*ci_fpuproc;	/* pointer to last proc to use FP */
+	uint32_t	 ci_delayconst;
 	struct cpu_hwinfo
 			ci_hw;
 
