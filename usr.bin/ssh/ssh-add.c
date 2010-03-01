@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-add.c,v 1.92 2010/02/08 10:50:20 markus Exp $ */
+/* $OpenBSD: ssh-add.c,v 1.93 2010/02/26 20:29:54 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -219,8 +219,7 @@ add_file(AuthenticationConnection *ac, const char *filename)
 			error("Certificate %s (%s) add failed", certpath,
 			    private->cert->key_id);
 		}
-	} else
-		fprintf(stderr, "Unable to load certificate %s", certpath);
+	}
 
 	xfree(certpath);
 	xfree(comment);
