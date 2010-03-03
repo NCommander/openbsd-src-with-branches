@@ -196,12 +196,15 @@ ip32_setup()
 		break;
 	}
 
-	comconsaddr = MACE_ISA_SER1_OFFS;
-	comconsfreq = 1843200;
-	comconsiot = &macebus_tag;
-	comconsrate = bios_getenvint("dbaud");
-	if (comconsrate < 50 || comconsrate > 115200)
-		comconsrate = 9600;
+	/* Setup serial console if ARCS is telling us not to use video. */
+	if (strncmp(bios_console, "video", 5) != 0) {
+		comconsaddr = MACE_ISA_SER1_OFFS;
+		comconsfreq = 1843200;
+		comconsiot = &macebus_tag;
+		comconsrate = bios_getenvint("dbaud");
+		if (comconsrate < 50 || comconsrate > 115200)
+			comconsrate = 9600;
+	}
 
 	/* not sure if there is a way to tell O2 and O2+ apart */
 	hw_prod = "O2";
