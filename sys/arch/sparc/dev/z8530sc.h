@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530sc.h,v 1.1 2002/08/12 10:44:04 miod Exp $	*/
+/*	$OpenBSD: z8530sc.h,v 1.2 2003/06/02 23:27:54 millert Exp $	*/
 /*	$NetBSD: z8530sc.h,v 1.15 2001/05/11 01:40:48 thorpej Exp $	*/
 
 /*
@@ -109,7 +109,7 @@ struct zs_chanstate {
 	/* the above is set only while CRTSCTS is enabled. */
 
 	char	cs_softreq;		/* need soft interrupt call */
-	char	cs_spare1;  	/* (for skippy :) */
+	char	cs_cua;  		/* CUA mode flag */
 
 	/* power management hooks */
 	int	(*enable)(struct zs_chanstate *);
