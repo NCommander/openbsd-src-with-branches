@@ -312,6 +312,7 @@ struct wsmouse_calibcoords {
 #define		WSDISPLAY_TYPE_RADEONFB	61	/* Sun XVR-100 */
 #define		WSDISPLAY_TYPE_SMFB	62	/* SiliconMotion SM712 */
 #define		WSDISPLAY_TYPE_SISFB	63	/* SiS 315 Pro */
+#define		WSDISPLAY_TYPE_ODYSSEY	64	/* SGI Odyssey */
 
 /* Basic display information.  Not applicable to all display types. */
 struct wsdisplay_fbinfo {
