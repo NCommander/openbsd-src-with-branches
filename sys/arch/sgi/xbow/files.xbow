@@ -17,3 +17,9 @@ attach	xbridge at xbow
 device	xbpci {[bus = -1]} : pcibus
 attach	xbpci at xbridge
 file	arch/sgi/xbow/xbridge.c			xbridge
+
+# Odyssey graphics
+device	odyssey: wsemuldisplaydev, rasops8, rasops16, rasops32
+attach	odyssey at xbow
+file	arch/sgi/xbow/odyssey.c			odyssey		needs-flag
+

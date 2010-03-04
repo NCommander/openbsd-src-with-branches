@@ -47,6 +47,8 @@ xbow*		at mainbus0
 xbridge*	at xbow?
 xbpci*		at xbridge?
 pci*		at xbpci?
+odyssey*	at xbow?
+wsdisplay*	at odyssey?
 
 # IOC3
 ioc*		at pci?
