@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.247 2010/01/11 03:24:35 deraadt Exp $ */
+/*	$OpenBSD: parse.y,v 1.248 2010/01/13 06:02:37 claudio Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1473,6 +1473,24 @@ filter_elm	: filter_prefix_h	{
 			}
 			free($2);
 		}
+		| EXTCOMMUNITY STRING STRING {
+			if (fmopts.m.ext_community.flags &
+			    EXT_COMMUNITY_FLAG_VALID) {
+				yyerror("\"ext-community\" already specified");
+				free($2);
+				free($3);
+				YYERROR;
+			}
+
+			if (parseextcommunity(&fmopts.m.ext_community,
+			    $2, $3) == -1) {
+				free($2);
+				free($3);
+				YYERROR;
+			}
+			free($2);
+			free($3);
+		}
 		| IPV4			{
 			if (fmopts.aid) {
 				yyerror("address family already specified");
@@ -2741,6 +2759,7 @@ parseextcommunity(struct filter_extcommunity *c, char *t, char *s)
 		if (iana[i].type == type && iana[i].subtype == subtype) {
 			if (iana[i].transitive)
 				c->type |= EXT_COMMUNITY_TRANSITIVE;
+			c->flags |= EXT_COMMUNITY_FLAG_VALID;
 			return (0);
 		}
 	}
