@@ -34,7 +34,7 @@ sub parse_url
 
 	if ($$r =~ m/^(.*?)\:(.*)/) {
 		$path = $1;
-		$$r = 2;
+		$$r = $2;
 	} else {
 		$path = $$r;
 		$$r = '';
