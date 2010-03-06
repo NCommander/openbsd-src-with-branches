@@ -401,6 +401,8 @@ sub find_dep_in_repositories
 {
 	my ($self, $state, $dep) = @_;
 
+	return unless $dep->spec->is_valid;
+
 	my $candidates = $self->{set}->match_locations($dep->spec);
 	if (!$state->{defines}->{allversions}) {
 		require OpenBSD::Search;
