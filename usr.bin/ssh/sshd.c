@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.372 2010/01/29 00:20:41 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.373 2010/02/26 20:29:54 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1823,6 +1823,7 @@ main(int ac, char **av)
 
 	/* prepare buffer to collect messages to display to user after login */
 	buffer_init(&loginmsg);
+	auth_debug_reset();
 
 	if (use_privsep)
 		if (privsep_preauth(authctxt) == 1)

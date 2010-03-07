@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-rhosts.c,v 1.42 2008/06/13 04:40:22 djm Exp $ */
+/* $OpenBSD: auth-rhosts.c,v 1.43 2008/06/13 14:18:51 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -313,11 +313,5 @@ int
 auth_rhosts2(struct passwd *pw, const char *client_user, const char *hostname,
     const char *ipaddr)
 {
-	int ret;
-
-	auth_debug_reset();
-	ret = auth_rhosts2_raw(pw, client_user, hostname, ipaddr);
-	if (!use_privsep)
-		auth_debug_send();
-	return ret;
+       return auth_rhosts2_raw(pw, client_user, hostname, ipaddr);
 }
