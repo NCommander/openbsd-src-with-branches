@@ -95,7 +95,11 @@ sub _show
 	return if $d eq $lastdisplay && !$continued;
 	$lastdisplay=$d;
 	$continued = 0;
-	print $d, "\r";
+	print $d;
+	if ($width > length($d)) {
+		print ' 'x($width - length($d) - 1);
+	}
+	print "\r";
 }
 
 sub message
