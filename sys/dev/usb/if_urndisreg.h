@@ -1,8 +1,8 @@
-/*	$OpenBSD: if_urndisreg.h,v 1.8 2010/03/06 19:04:57 armani Exp $ */
+/*	$OpenBSD: if_urndisreg.h,v 1.11 2010/03/07 16:03:29 mk Exp $ */
 
 /*
- * Copyright (c) 2010 Jonathan Armani <dbd@asystant.net>
- * Copyright (c) 2010 Fabien Romano <fromano@asystant.net>
+ * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
+ * Copyright (c) 2010 Fabien Romano <fabien@openbsd.org>
  * Copyright (c) 2010 Michael Knudsen <mk@openbsd.org>
  * All rights reserved.
  *

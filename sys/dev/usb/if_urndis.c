@@ -1,8 +1,8 @@
-/*	$OpenBSD: if_urndis.c,v 1.12 2010/03/07 16:03:29 mk Exp $ */
+/*	$OpenBSD: if_urndis.c,v 1.13 2010/03/07 16:06:29 fabien Exp $ */
 
 /*
- * Copyright (c) 2010 Jonathan Armani <dbd@asystant.net>
- * Copyright (c) 2010 Fabien Romano <fromano@asystant.net>
+ * Copyright (c) 2010 Jonathan Armani <armani@openbsd.org>
+ * Copyright (c) 2010 Fabien Romano <fabien@openbsd.org>
  * Copyright (c) 2010 Michael Knudsen <mk@openbsd.org>
  * All rights reserved.
  *
