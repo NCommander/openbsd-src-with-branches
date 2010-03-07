@@ -1768,8 +1768,7 @@ splassert_check(int wantipl, const char *func)
 {
 	int cpl = curcpu()->ci_ilevel;
 
-	if (cpl < wantipl ||
-	    (curcpu()->ci_idepth && cpl > wantipl)) {
+	if (cpl < wantipl) {
 		splassert_fail(wantipl, cpl, func);
 	}
 }
