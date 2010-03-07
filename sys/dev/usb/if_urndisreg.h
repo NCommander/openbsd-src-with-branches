@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urndisreg.h,v 1.8 2010/03/06 19:04:57 armani Exp $ */
+/*	$OpenBSD: if_urndisreg.h,v 1.9 2010/03/07 08:58:55 mk Exp $ */
 
 /*
  * Copyright (c) 2010 Jonathan Armani <dbd@asystant.net>
@@ -46,7 +46,6 @@ struct urndis_softc {
 	struct arpcom			sc_arpcom;
 
 	/* RNDIS device info */
-	u_int32_t			sc_lim_pktcnt;
 	u_int32_t			sc_lim_pktsz;
 	u_int32_t			sc_pktalign;
 	u_int32_t			sc_filter;
