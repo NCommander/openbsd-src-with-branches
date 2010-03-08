@@ -57,6 +57,8 @@ int *divertctl_vars[DIVERTCTL_MAXID] = DIVERTCTL_VARS;
 
 int divbhashsize = DIVERTHASHSIZE;
 
+static struct sockaddr_in ipaddr = { sizeof(ipaddr), AF_INET };
+
 void divert_detach(struct inpcb *);
 
 void
@@ -102,7 +104,8 @@ divert_output(struct mbuf *m, ...)
 	m->m_pkthdr.pf.flags |= PF_TAG_DIVERTED_PACKET;
 
 	if (sin->sin_addr.s_addr != INADDR_ANY) {
-		ifa = ifa_ifwithaddr((struct sockaddr *)sin, 0);
+		ipaddr.sin_addr = sin->sin_addr;
+		ifa = ifa_ifwithaddr(sintosa(&ipaddr), 0);
 		if (ifa == NULL) {
 			divstat.divs_errors++;
 			m_freem(m);
