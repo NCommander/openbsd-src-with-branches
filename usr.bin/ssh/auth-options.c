@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-options.c,v 1.47 2010/03/04 23:27:25 djm Exp $ */
+/* $OpenBSD: auth-options.c,v 1.48 2010/03/07 11:57:13 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -432,7 +432,7 @@ auth_cert_constraints(Buffer *c_orig, struct passwd *pw)
 				goto out;
 			}
 			if (strlen(command) != clen) {
-				error("force-command constrain contains \\0");
+				error("force-command constraint contains \\0");
 				goto out;
 			}
 			if (cert_forced_command != NULL) {
@@ -452,7 +452,7 @@ auth_cert_constraints(Buffer *c_orig, struct passwd *pw)
 				goto out;
 			}
 			if (strlen(allowed) != clen) {
-				error("source-address constrain contains \\0");
+				error("source-address constraint contains \\0");
 				goto out;
 			}
 			if (cert_source_address_done++) {
