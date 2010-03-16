@@ -1,4 +1,4 @@
-dnl	$OpenBSD: whatis,v 1.4 2004/09/10 19:11:52 miod Exp $
+dnl	$OpenBSD: whatis,v 1.5 2005/03/18 13:29:46 miod Exp $
 
-OpenBSD/MACHINE runs on the ``New World'' 32 bit PowerPC-based Apple
+OpenBSD/MACHINE runs on the ``New World'' PowerPC-based Apple
 Macintosh systems (i.e. from the iMac onwards).
