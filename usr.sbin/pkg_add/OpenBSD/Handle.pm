@@ -195,7 +195,9 @@ sub get_plist
 		$handle->set_error(BAD_PACKAGE);
 		return;
 	}
-	OpenBSD::PackingElement::Url->add($plist, $location->url);
+	unless ($plist->has('url')) {
+		OpenBSD::PackingElement::Url->add($plist, $location->url);
+	}
 	if ($plist->localbase ne $state->{localbase}) {
 		$state->say("Localbase mismatch: package has: ", $plist->localbase, " , user wants: ", $state->{localbase});
 		$location->close_with_client_error;
