@@ -5,37 +5,32 @@ BEGIN {
 	chdir 't' if -d 't';
 	@INC = '../lib';
     }
-}
 
-use Config;
+    require($ENV{PERL_CORE} ? './test.pl' : './t/test.pl');
 
-BEGIN {
-    if(-d "lib" && -f "TEST") {
-	my $reason;
-	if (! $Config{'d_fork'}) {
-	    $reason = 'no fork';
-	}
-	elsif ($Config{'extensions'} !~ /\bSocket\b/) {
-	    $reason = 'Socket extension unavailable';
-	}
-	elsif ($Config{'extensions'} !~ /\bIO\b/) {
-	    $reason = 'IO extension unavailable';
-	}
-	if ($reason) {
-	    print "1..0 # Skip: $reason\n";
-	    exit 0;
-        }
+    use Config;
+    my $can_fork = $Config{d_fork} ||
+		    (($^O eq 'MSWin32' || $^O eq 'NetWare') and
+		     $Config{useithreads} and 
+		     $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
+		    );
+    my $reason;
+    if ($ENV{PERL_CORE} and $Config{'extensions'} !~ /\bSocket\b/) {
+	$reason = 'Socket extension unavailable';
     }
+    elsif ($ENV{PERL_CORE} and $Config{'extensions'} !~ /\bIO\b/) {
+	$reason = 'IO extension unavailable';
+    }
+    elsif (!$can_fork) {
+        $reason = 'no fork';
+    }
+    skip_all($reason) if $reason;
 }
 
 $| = 1;
 
 print "1..8\n";
-
-eval {
-    $SIG{ALRM} = sub { die; };
-    alarm 60;
-};
+watchdog(15);
 
 package Multi;
 require IO::Socket::INET;

@@ -1,9 +1,8 @@
 #!/usr/bin/perl -w
-# $Id: text.t,v 1.1 2002/06/23 19:16:25 eagle Exp $
 #
 # text.t -- Additional specialized tests for Pod::Text.
 #
-# Copyright 2002 by Russ Allbery <rra@stanford.edu>
+# Copyright 2002, 2004, 2006, 2007, 2008, 2009 Russ Allbery <rra@stanford.edu>
 #
 # This program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -17,7 +16,7 @@ BEGIN {
     }
     unshift (@INC, '../blib/lib');
     $| = 1;
-    print "1..2\n";
+    print "1..6\n";
 }
 
 END {
@@ -25,10 +24,12 @@ END {
 }
 
 use Pod::Text;
+use Pod::Simple;
 
 $loaded = 1;
 print "ok 1\n";
 
+my $parser = Pod::Text->new or die "Cannot create parser\n";
 my $n = 2;
 while (<DATA>) {
     next until $_ eq "###\n";
@@ -38,8 +39,9 @@ while (<DATA>) {
         print TMP $_;
     }
     close TMP;
-    my $parser = Pod::Text->new or die "Cannot create parser\n";
-    $parser->parse_from_file ('tmp.pod', 'out.tmp');
+    open (OUT, '> out.tmp') or die "Cannot create out.tmp: $!\n";
+    $parser->parse_from_file ('tmp.pod', \*OUT);
+    close OUT;
     open (TMP, 'out.tmp') or die "Cannot open out.tmp: $!\n";
     my $output;
     {
@@ -55,6 +57,8 @@ while (<DATA>) {
     }
     if ($output eq $expected) {
         print "ok $n\n";
+    } elsif ($n == 4 && $Pod::Simple::VERSION < 3.06) {
+        print "ok $n # skip Pod::Simple S<> parsing bug\n";
     } else {
         print "not ok $n\n";
         print "Expected\n========\n$expected\nOutput\n======\n$output\n";
@@ -75,5 +79,69 @@ This C<.> should be quoted.
 ###
 PERIODS
     This "." should be quoted.
+
+###
+
+###
+=head1 CE<lt>E<gt> WITH SPACES
+
+What does C<<  this.  >> end up looking like?
+###
+C<> WITH SPACES
+    What does "this." end up looking like?
+
+###
+
+###
+=head1 Test of SE<lt>E<gt>
+
+This is some S<  > whitespace.
+###
+Test of S<>
+    This is some    whitespace.
+
+###
+
+###
+=head1 Test of =for
+
+=for comment
+This won't be seen.
+
+Yes.
+
+=for text
+This should be seen.
+
+=for TEXT As should this.
+
+=for man
+But this shouldn't.
+
+Some more text.
+###
+Test of =for
+    Yes.
+
+This should be seen.
+As should this.
+    Some more text.
+
+###
+
+###
+=pod
+
+text
+
+  line1
+  
+  line3
+###
+    text
+
+      line1
+  
+      line3
 
 ###

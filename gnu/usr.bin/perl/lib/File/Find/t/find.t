@@ -1,22 +1,33 @@
 #!./perl
-
+use strict;
+use Cwd;
 
 my %Expect_File = (); # what we expect for $_ 
 my %Expect_Name = (); # what we expect for $File::Find::name/fullname
 my %Expect_Dir  = (); # what we expect for $File::Find::dir
 my $symlink_exists = eval { symlink("",""); 1 };
-my $warn_msg;
+my ($warn_msg, @files, $file);
 
 
 BEGIN {
+    require File::Spec;
     chdir 't' if -d 't';
-    unshift @INC => '../lib';
+    # May be doing dynamic loading while @INC is all relative
+    unshift @INC => File::Spec->rel2abs('../lib');
 
     $SIG{'__WARN__'} = sub { $warn_msg = $_[0]; warn "# $_[0]"; }
 }
 
-if ( $symlink_exists ) { print "1..188\n"; }
-else                   { print "1..78\n";  }
+my $test_count = 85;
+$test_count += 114 if $symlink_exists;
+$test_count += 18 if $^O eq 'MSWin32';
+$test_count += 2 if $^O eq 'MSWin32' and $symlink_exists;
+
+print "1..$test_count\n";
+#if ( $symlink_exists ) { print "1..199\n"; }
+#else                   { print "1..85\n";  }
+
+my $orig_dir = cwd();
 
 # Uncomment this to see where File::Find is chdir'ing to.  Helpful for
 # debugging its little jaunts around the filesystem.
@@ -51,19 +62,32 @@ BEGIN {
 
 cleanup();
 
-find({wanted => sub { print "ok 1\n" if $_ eq 'commonsense.t'; } },
+$::count_commonsense = 0;
+find({wanted => sub { ++$::count_commonsense if $_ eq 'commonsense.t'; } },
    File::Spec->curdir);
+if ($::count_commonsense == 1) {
+  print "ok 1\n";
+} else {
+  print "not ok 1 # found $::count_commonsense files named 'commonsense.t'\n";
+}
 
-finddepth({wanted => sub { print "ok 2\n" if $_ eq 'commonsense.t'; } },
+$::count_commonsense = 0;
+finddepth({wanted => sub { ++$::count_commonsense if $_ eq 'commonsense.t'; } },
 	File::Spec->curdir);
-
+if ($::count_commonsense == 1) {
+  print "ok 2\n";
+} else {
+  print "not ok 2 # found $::count_commonsense files named 'commonsense.t'\n";
+}
 
 my $case = 2;
 my $FastFileTests_OK = 0;
 
 sub cleanup {
+    chdir($orig_dir);
+    my $need_updir = 0;
     if (-d dir_path('for_find')) {
-        chdir(dir_path('for_find'));
+        $need_updir = 1 if chdir(dir_path('for_find'));
     }
     if (-d dir_path('fa')) {
 	unlink file_path('fa', 'fa_ord'),
@@ -80,7 +104,10 @@ sub cleanup {
 	rmdir dir_path('fb', 'fba');
 	rmdir dir_path('fb');
     }
-    chdir(File::Spec->updir);
+    if ($need_updir) {
+        my $updir = $^O eq 'VMS' ? File::Spec::VMS->updir() : File::Spec->updir;
+        chdir($updir);
+    }
     if (-d dir_path('for_find')) {
 	rmdir dir_path('for_find') or print "# Can't rmdir for_find: $!\n";
     }
@@ -111,9 +138,9 @@ sub MkDir($$) {
 }
 
 sub wanted_File_Dir {
-    print "# \$File::Find::dir => '$File::Find::dir'\n";
-    print "# \$_ => '$_'\n";
+    printf "# \$File::Find::dir => '$File::Find::dir'\t\$_ => '$_'\n";
     s#\.$## if ($^O eq 'VMS' && $_ ne '.');
+    s/(.dir)?$//i if ($^O eq 'VMS' && -d _);
     Check( $Expect_File{$_} );
     if ( $FastFileTests_OK ) {
         delete $Expect_File{ $_} 
@@ -473,6 +500,53 @@ File::Find::find( {wanted => \&noop_wanted,
 
 Check( scalar(keys %Expect_Dir) == 0 );
 
+{
+    print "# checking argument localization\n";
+
+    ### this checks the fix of perlbug [19977] ###
+    my @foo = qw( a b c d e f );
+    my %pre = map { $_ => } @foo;
+
+    File::Find::find( sub {  } , 'fa' ) for @foo;
+    delete $pre{$_} for @foo;
+
+    Check( scalar( keys %pre ) == 0 );
+}
+
+# see thread starting
+# http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/2004-02/msg00351.html
+{
+    print "# checking that &_ and %_ are still accessible and that\n",
+	"# tie magic on \$_ is not triggered\n";
+    
+    my $true_count;
+    my $sub = 0;
+    sub _ {
+	++$sub;
+    }
+    my $tie_called = 0;
+
+    package Foo;
+    sub STORE {
+	++$tie_called;
+    }
+    sub FETCH {return 'N'};
+    sub TIESCALAR {bless []};
+    package main;
+
+    Check( scalar( keys %_ ) == 0 );
+    my @foo = 'n';
+    tie $foo[0], "Foo";
+
+    File::Find::find( sub { $true_count++; $_{$_}++; &_; } , 'fa' ) for @foo;
+    untie $_;
+
+    Check( $tie_called == 0);
+    Check( scalar( keys %_ ) == $true_count );
+    Check( $sub == $true_count );
+    Check( scalar( @foo ) == 1);
+    Check( $foo[0] eq 'N' );
+}
 
 if ( $symlink_exists ) {
     print "# --- symbolic link tests --- \n";
@@ -604,6 +678,7 @@ if ( $symlink_exists ) {
 	use warnings;
 
         %Expect_File = (File::Spec->curdir => 1,
+	                file_path('dangling_file_sl') => 1,
 			file_path('fa_ord') => 1,
                         file_path('fsl') => 1,
                         file_path('fb_ord') => 1,
@@ -627,7 +702,7 @@ if ( $symlink_exists ) {
                            topdir('dangling_dir_sl'), topdir('fa') );
 
         Check( scalar(keys %Expect_File) == 0 );
-        Check( $warn_msg =~ m|dangling_dir_sl is a dangling symbolic link| );  
+        Check( $warn_msg =~ m|dangling_file_sl is a dangling symbolic link| );  
         unlink file_path('fa', 'dangling_file_sl'),
                          file_path('dangling_dir_sl');
 
@@ -643,7 +718,7 @@ if ( $symlink_exists ) {
     undef $@;
     eval {File::Find::find( {wanted => \&simple_wanted, follow => 1,
                              no_chdir => 1}, topdir('fa') ); };
-    Check( $@ =~ m|for_find[:/]fa[:/]faa[:/]faa_sl is a recursive symbolic link| );  
+    Check( $@ =~ m|for_find[:/]fa[:/]faa[:/]faa_sl is a recursive symbolic link|i );  
     unlink file_path('fa', 'faa', 'faa_sl'); 
 
 
@@ -660,14 +735,16 @@ if ( $symlink_exists ) {
                                   follow_skip => 0, no_chdir => 1},
                                   topdir('fa') );};
 
-    Check( $@ =~ m|for_find[:/]fa[:/]fa_ord encountered a second time| );
+    Check( $@ =~ m|for_find[:/]fa[:/]fa_ord encountered a second time|i );
 
 
     # no_chdir is in effect, hence we use file_path_name to specify
     # the expected paths for %Expect_File
 
     %Expect_File = (file_path_name('fa') => 1,
-		    file_path_name('fa', 'fa_ord') => 1,
+		    file_path_name('fa', 'fa_ord') => 2,
+		    # We may encounter the symlink first
+		    file_path_name('fa', 'fa_ord_sl') => 2,
 		    file_path_name('fa', 'fsl') => 1,
                     file_path_name('fa', 'fsl', 'fb_ord') => 1,
                     file_path_name('fa', 'fsl', 'fba') => 1,
@@ -691,7 +768,6 @@ if ( $symlink_exists ) {
     File::Find::finddepth( {wanted => \&wanted_File_Dir, follow => 1,
                            follow_skip => 1, no_chdir => 1},
                            topdir('fa') );
-
     Check( scalar(keys %Expect_File) == 0 );
     unlink file_path('fa', 'fa_ord_sl');
 
@@ -708,7 +784,7 @@ if ( $symlink_exists ) {
                             follow_skip => 0, no_chdir => 1},
                             topdir('fa') );};
 
-    Check( $@ =~ m|for_find[:/]fa[:/]faa[:/]? encountered a second time| );
+    Check( $@ =~ m|for_find[:/]fa[:/]faa[:/]? encountered a second time|i );
 
   
     undef $@;
@@ -717,7 +793,7 @@ if ( $symlink_exists ) {
                             follow_skip => 1, no_chdir => 1},
                             topdir('fa') );};
 
-    Check( $@ =~ m|for_find[:/]fa[:/]faa[:/]? encountered a second time| );  
+    Check( $@ =~ m|for_find[:/]fa[:/]faa[:/]? encountered a second time|i );  
 
     # no_chdir is in effect, hence we use file_path_name to specify
     # the expected paths for %Expect_File
@@ -733,7 +809,10 @@ if ( $symlink_exists ) {
                     file_path_name('fa', 'fab', 'faba') => 1,
                     file_path_name('fa', 'fab', 'faba', 'faba_ord') => 1,
                     file_path_name('fa', 'faa') => 1,
-                    file_path_name('fa', 'faa', 'faa_ord') => 1);
+                    file_path_name('fa', 'faa', 'faa_ord') => 1,
+		    # We may actually encounter the symlink first.
+                    file_path_name('fa', 'faa_sl') => 1,
+                    file_path_name('fa', 'faa_sl', 'faa_ord') => 1);
 
     %Expect_Name = ();
 
@@ -747,8 +826,70 @@ if ( $symlink_exists ) {
     File::Find::find( {wanted => \&wanted_File_Dir, follow => 1,
 		       follow_skip => 2, no_chdir => 1}, topdir('fa') );
 
-    Check( scalar(keys %Expect_File) == 0 );
+    # If we encountered the symlink first, then the entries corresponding to
+    # the real name remain, if the real name first then the symlink
+    my @names = sort keys %Expect_File;
+    Check( @names == 1 );
+    # Normalise both to the original name
+    s/_sl// foreach @names;
+    Check ($names[0] eq file_path_name('fa', 'faa', 'faa_ord'));
     unlink file_path('fa', 'faa_sl');
 
-} 
+}
 
+
+# Win32 checks  - [perl #41555]
+if ($^O eq 'MSWin32') {
+    require File::Spec::Win32;
+    my ($volume) = File::Spec::Win32->splitpath($orig_dir, 1);
+    print STDERR "VOLUME = $volume\n";
+    
+    # with chdir
+    %Expect_File = (File::Spec->curdir => 1,
+                    file_path('fsl') => 1,
+                    file_path('fa_ord') => 1,
+                    file_path('fab') => 1,
+                    file_path('fab_ord') => 1,
+                    file_path('faba') => 1,
+                    file_path('faba_ord') => 1,
+                    file_path('faa') => 1,
+                    file_path('faa_ord') => 1);
+
+    delete $Expect_File{ file_path('fsl') } unless $symlink_exists;
+    %Expect_Name = ();
+
+    %Expect_Dir = (dir_path('fa') => 1,
+                   dir_path('faa') => 1,
+                   dir_path('fab') => 1,
+                   dir_path('faba') => 1,
+                   dir_path('fb') => 1,
+                   dir_path('fba') => 1);
+    
+    
+    
+    File::Find::find( {wanted => \&wanted_File_Dir}, topdir('fa'));
+    Check( scalar(keys %Expect_File) == 0 );    
+    
+    # no_chdir
+    %Expect_File = ($volume . file_path_name('fa') => 1,
+                    $volume . file_path_name('fa', 'fsl') => 1,
+                    $volume . file_path_name('fa', 'fa_ord') => 1,
+                    $volume . file_path_name('fa', 'fab') => 1,
+                    $volume . file_path_name('fa', 'fab', 'fab_ord') => 1,
+                    $volume . file_path_name('fa', 'fab', 'faba') => 1,
+                    $volume . file_path_name('fa', 'fab', 'faba', 'faba_ord') => 1,
+                    $volume . file_path_name('fa', 'faa') => 1,
+                    $volume . file_path_name('fa', 'faa', 'faa_ord') => 1);
+                    
+
+    delete $Expect_File{ $volume . file_path_name('fa', 'fsl') } unless $symlink_exists;
+    %Expect_Name = ();
+
+    %Expect_Dir = ($volume . dir_path('fa') => 1,
+                   $volume . dir_path('fa', 'faa') => 1,
+                   $volume . dir_path('fa', 'fab') => 1,
+                   $volume . dir_path('fa', 'fab', 'faba') => 1);
+                   
+    File::Find::find( {wanted => \&wanted_File_Dir, no_chdir => 1}, $volume . topdir('fa'));
+    Check( scalar(keys %Expect_File) == 0 );
+}

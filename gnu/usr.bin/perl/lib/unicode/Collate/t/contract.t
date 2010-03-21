@@ -4,12 +4,9 @@ BEGIN {
 	    "cannot stringify a Unicode code point\n";
 	exit 0;
     }
-}
-
-BEGIN {
     if ($ENV{PERL_CORE}) {
-        chdir('t') if -d 't';
-        @INC = $^O eq 'MacOS' ? qw(::lib) : qw(../lib);
+	chdir('t') if -d 't';
+	@INC = $^O eq 'MacOS' ? qw(::lib) : qw(../lib);
     }
 }
 
@@ -19,9 +16,6 @@ BEGIN { plan tests => 40 };
 use strict;
 use warnings;
 use Unicode::Collate;
-
-use vars qw($IsEBCDIC);
-$IsEBCDIC = ord("A") != 0x41;
 
 our $kjeEntry = <<'ENTRIES';
 0301  ; [.0000.0032.0002.0301] # COMBINING ACUTE ACCENT
@@ -72,7 +66,7 @@ $sortkeys{'KAta'} = $kjeNoN->viewSortKey("\x{043A}\x{0334}\x{0301}");
 $sortkeys{'KAat'} = $kjeNoN->viewSortKey("\x{043A}\x{0301}\x{0334}");
 
 eval { require Unicode::Normalize };
-if (!$@ && !$IsEBCDIC) {
+if (!$@) {
     my $kjeNFD = Unicode::Collate->new(
 	level => 1,
 	table => undef,

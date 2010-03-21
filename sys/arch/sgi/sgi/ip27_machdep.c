@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip27_machdep.c,v 1.44 2010/03/20 16:22:55 miod Exp $	*/
+/*	$OpenBSD: ip27_machdep.c,v 1.42 2010/01/09 20:33:16 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -114,11 +114,9 @@ ip27_setup()
 {
 	size_t gsz;
 	uint node;
-	struct ip27_config *ip27_config;
 	uint64_t synergy0_0;
 	console_t *cons;
 	nmi_t *nmi;
-	static char unknown_model[20];
 
 	uncached_base = PHYS_TO_XKPHYS_UNCACHED(0, SP_NC);
 	io_base = PHYS_TO_XKPHYS_UNCACHED(0, SP_IO);
@@ -145,31 +143,20 @@ ip27_setup()
 			hw_prod = "Origin 300";
 			break;
 		default:
+		    {
+			static char unknown_model[20];
 			snprintf(unknown_model, sizeof unknown_model,
 			    "Unknown IP35 type %x", sys_config.system_subtype);
 			hw_prod = unknown_model;
+		    }
 			break;
 		}
 	} else {
-		ip27_config = (struct ip27_config *)
-		    IP27_LHSPEC_ADDR(LBOOTBASE_IP27 + IP27_CONFIG_OFFSET);
-		if (ip27_config->magic == IP27_CONFIG_MAGIC)
-			sys_config.system_subtype = ip27_config->ip27_subtype;
-		else
-			sys_config.system_subtype = IP27_UNKNOWN;
-		switch (sys_config.system_subtype) {
-		case IP27_O2K:
-			hw_prod = "Origin 2000";
-			break;
-		case IP27_O200:
-			hw_prod = "Origin 200";
-			break;
-		default:
-			snprintf(unknown_model, sizeof unknown_model,
-			    "Unknown IP27 type %x", sys_config.system_subtype);
-			hw_prod = unknown_model;
-			break;
-		}
+		/*
+		 * XXX need to look for Sn00 type in LBOOT space to tell
+		 * XXX Origin 2000 and Origin 200 apart.
+		 */
+		hw_prod = "Origin 200";
 	}
 
 	xbow_widget_base = ip27_widget_short;
@@ -212,13 +199,13 @@ ip27_setup()
 	 * information, starting with the master node.
 	 */
 
-	kl_scan_config(ip35, masternasid);
+	kl_scan_config(masternasid);
 	for (node = 0; node < maxnodes; node++) {
 		if (gda->nasid[node] < 0)
 			continue;
 		if (gda->nasid[node] == masternasid)
 			continue;
-		kl_scan_config(ip35, gda->nasid[node]);
+		kl_scan_config(gda->nasid[node]);
 	}
 
 	/*

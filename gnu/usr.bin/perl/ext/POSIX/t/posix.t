@@ -10,9 +10,8 @@ BEGIN {
     }
 }
 
-require "./test.pl";
-plan(tests => 39);
-
+BEGIN { require "./test.pl"; }
+plan(tests => 66);
 
 use POSIX qw(fcntl_h signal_h limits_h _exit getcwd open read strftime write
 	     errno);
@@ -28,6 +27,28 @@ $Is_VMS     = $^O eq 'VMS';
 $Is_OS2     = $^O eq 'os2';
 $Is_UWin    = $^O eq 'uwin';
 $Is_OS390   = $^O eq 'os390';
+
+my $vms_unix_rpt = 0;
+my $vms_efs = 0;
+my $unix_mode = 1;
+
+if ($Is_VMS) {
+    $unix_mode = 0;
+    if (eval 'require VMS::Feature') {
+        $vms_unix_rpt = VMS::Feature::current("filename_unix_report");
+        $vms_efs = VMS::Feature::current("efs_charset");
+    } else {
+        my $unix_rpt = $ENV{'DECC$FILENAME_UNIX_REPORT'} || '';
+        my $efs_charset = $ENV{'DECC$EFS_CHARSET'} || '';
+        $vms_unix_rpt = $unix_rpt =~ /^[ET1]/i;
+        $vms_efs = $efs_charset =~ /^[ET1]/i;
+    }
+
+    # Traditional VMS mode only if VMS is not in UNIX compatible mode.
+    $unix_mode = ($vms_efs && $vms_unix_rpt);
+
+}
+
 
 ok( $testfd = open("TEST", O_RDONLY, 0),        'O_RDONLY with open' );
 read($testfd, $buffer, 4) if $testfd > 2;
@@ -76,13 +97,27 @@ SKIP: {
 	my $action = new POSIX::SigAction 'main::SigHUP', $mask, 0;
 	sigaction(&SIGHUP, $action);
 	$SIG{'INT'} = 'SigINT';
-	kill 'HUP', $$;
+
+	# At least OpenBSD/i386 3.3 is okay, as is NetBSD 1.5.
+	# But not NetBSD 1.6 & 1.6.1: the test makes perl crash.
+	# So the kill() must not be done with this config in order to
+	# finish the test.
+	# For others (darwin & freebsd), let the test fail without crashing.
+	my $todo = $^O eq 'netbsd' && $Config{osvers}=~/^1\.6/;
+	my $why_todo = "# TODO $^O $Config{osvers} seems to lose blocked signals";
+	if (!$todo) { 
+	  kill 'HUP', $$; 
+	} else {
+	  print "not ok 9 - sigaction SIGHUP ",$why_todo,"\n";
+	  print "not ok 10 - sig mask delayed SIGINT ",$why_todo,"\n";
+	}
 	sleep 1;
 
-        printf "%s 11 -   masked SIGINT received %s\n",
-          $sigint_called ? "ok" : "not ok",
-          $^O eq 'darwin' ? "# TODO Darwin seems to loose blocked signals" 
-                          : '';
+	$todo = 1 if ($^O eq 'freebsd')
+		  || ($^O eq 'darwin' && $Config{osvers} lt '6.6');
+	printf "%s 11 - masked SIGINT received %s\n",
+	    $sigint_called ? "ok" : "not ok",
+	    $todo ? $why_todo : '';
 
 	print "ok 12 - signal masks successful\n";
 	
@@ -115,11 +150,11 @@ my $pat;
 if ($Is_MacOS) {
     $pat = qr/:t:$/;
 } 
-elsif ( $Is_VMS ) {
-    $pat = qr/\.T]/i;
+elsif ( $unix_mode ) {
+    $pat = qr#[\\/]t$#i;
 }
 else {
-    $pat = qr#[\\/]t$#i;
+    $pat = qr/\.T]/i;
 }
 like( getcwd(), qr/$pat/, 'getcwd' );
 
@@ -160,7 +195,7 @@ ok( &POSIX::acos(1.0) == 0.0,   'dynamic loading' );
 # didn't detect it.  If this fails, try adding
 # -DSTRUCT_TM_HASZONE to your cflags when compiling ext/POSIX/POSIX.c.
 # See ext/POSIX/hints/sunos_4.pl and ext/POSIX/hints/linux.pl 
-print POSIX::strftime("ok 21 # %H:%M, on %D\n", localtime());
+print POSIX::strftime("ok 21 # %H:%M, on %m/%d/%y\n", localtime());
 next_test();
 
 # If that worked, validate the mini_mktime() routine's normalisation of
@@ -173,7 +208,14 @@ sub try_strftime {
 
 $lc = &POSIX::setlocale(&POSIX::LC_TIME, 'C') if $Config{d_setlocale};
 try_strftime("Wed Feb 28 00:00:00 1996 059", 0,0,0, 28,1,96);
-try_strftime("Thu Feb 29 00:00:60 1996 060", 60,0,-24, 30,1,96);
+SKIP: {
+    skip("VC++ 8 and Vista's CRTs regard 60 seconds as an invalid parameter", 1)
+	if ($Is_W32 and (($Config{cc} eq 'cl' and
+	                 $Config{ccversion} =~ /^(\d+)/ and $1 >= 14) or
+	                 (Win32::GetOSVersion())[1] >= 6));
+
+    try_strftime("Thu Feb 29 00:00:60 1996 060", 60,0,-24, 30,1,96);
+}
 try_strftime("Fri Mar 01 00:00:00 1996 061", 0,0,-24, 31,1,96);
 try_strftime("Sun Feb 28 00:00:00 1999 059", 0,0,0, 28,1,99);
 try_strftime("Mon Mar 01 00:00:00 1999 060", 0,0,24, 28,1,99);
@@ -223,6 +265,40 @@ is ($result, undef, "fgets should fail");
 like ($@, qr/^Use method IO::Handle::gets\(\) instead/,
       "check its redef message");
 
+# Simplistic tests for the isXXX() functions (bug #16799)
+ok( POSIX::isalnum('1'),  'isalnum' );
+ok(!POSIX::isalnum('*'),  'isalnum' );
+ok( POSIX::isalpha('f'),  'isalpha' );
+ok(!POSIX::isalpha('7'),  'isalpha' );
+ok( POSIX::iscntrl("\cA"),'iscntrl' );
+ok(!POSIX::iscntrl("A"),  'iscntrl' );
+ok( POSIX::isdigit('1'),  'isdigit' );
+ok(!POSIX::isdigit('z'),  'isdigit' );
+ok( POSIX::isgraph('@'),  'isgraph' );
+ok(!POSIX::isgraph(' '),  'isgraph' );
+ok( POSIX::islower('l'),  'islower' );
+ok(!POSIX::islower('L'),  'islower' );
+ok( POSIX::isupper('U'),  'isupper' );
+ok(!POSIX::isupper('u'),  'isupper' );
+ok( POSIX::isprint('$'),  'isprint' );
+ok(!POSIX::isprint("\n"), 'isprint' );
+ok( POSIX::ispunct('%'),  'ispunct' );
+ok(!POSIX::ispunct('u'),  'ispunct' );
+ok( POSIX::isspace("\t"), 'isspace' );
+ok(!POSIX::isspace('_'),  'isspace' );
+ok( POSIX::isxdigit('f'), 'isxdigit' );
+ok(!POSIX::isxdigit('g'), 'isxdigit' );
+# metaphysical question : what should be returned for an empty string ?
+# anyway this shouldn't segfault (bug #24554)
+ok( POSIX::isalnum(''),   'isalnum empty string' );
+ok( POSIX::isalnum(undef),'isalnum undef' );
+# those functions should stringify their arguments
+ok(!POSIX::isalpha([]),   'isalpha []' );
+ok( POSIX::isprint([]),   'isprint []' );
+
+eval { use strict; POSIX->import("S_ISBLK"); my $x = S_ISBLK };
+unlike( $@, qr/Can't use string .* as a symbol ref/, "Can import autoloaded constants" );
+ 
 # Check that output is not flushed by _exit. This test should be last
 # in the file, and is not counted in the total number of tests.
 if ($^O eq 'vos') {

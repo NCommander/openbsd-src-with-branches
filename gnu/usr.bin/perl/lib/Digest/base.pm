@@ -2,7 +2,7 @@ package Digest::base;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = "1.00";
+$VERSION = "1.16";
 
 # subclass is supposed to implement at least these
 sub new;
@@ -72,7 +72,7 @@ __END__
 
 Digest::base - Digest base class
 
-=head1 SYNPOSIS
+=head1 SYNOPSIS
 
   package Digest::Foo;
   use base 'Digest::base';

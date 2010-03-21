@@ -6,17 +6,45 @@ use Cwd;
 my $origdir = cwd;
 chdir dirname($0);
 my $file = basename($0, '.PL');
-$file =~ s!_(pm)$!.$1!i;
+$file =~ s/_(pm)$/.$1/i;
 
 my $useConfig;
 my $Config_archname;
 my $Config_version;
 my $Config_inc_version_list;
 
-# Expand the variables only if explicitly requested because
-# otherwise relocating Perl becomes much harder.
+# Expand the variables only if explicitly requested
+# or if a previously installed lib.pm does this, too
+# because otherwise relocating Perl becomes much harder.
 
+my $expand_config_vars = 0;
 if ($ENV{PERL_BUILD_EXPAND_CONFIG_VARS}) {
+  $expand_config_vars = 1;
+}
+elsif (exists $ENV{PERL_BUILD_EXPAND_CONFIG_VARS}) {
+  $expand_config_vars = 0;
+}
+else {
+  eval <<'HERE';
+  require lib;
+  my $lib_file = $INC{"lib.pm"};
+  open my $fh, '<', $lib_file
+    or die "Could not open file '$lib_file' for reading: $!";
+  my $ConfigRegex = qr/(?:use|require)\s+Config(?:\s+|;)/;
+  my $found_config = 0;
+  while (defined($_ = <$fh>)) {
+    # crude heuristics to check that we were using Config
+    if (/^\s*$ConfigRegex/ || /^\s*eval.*$ConfigRegex/) {
+      $found_config = 1;
+      last;
+    }
+  }
+  $expand_config_vars = $found_config ? 0 : 1;
+HERE
+  $expand_config_vars = 0 if $@;
+}
+
+if ($expand_config_vars) {
     $useConfig = '';
     $Config_archname = qq('$Config{archname}');
     $Config_version  = qq('$Config{version}');
@@ -24,7 +52,7 @@ if ($ENV{PERL_BUILD_EXPAND_CONFIG_VARS}) {
 	reverse split / /, $Config{inc_version_list};
     $Config_inc_version_list =
 	@Config_inc_version_list ?
-	    qq(@Config_inc_version_list) : q(());
+	    qq(qw(@Config_inc_version_list)) : q(());
 } else {
     $useConfig = 'use Config;';
     $Config_archname = q($Config{archname});
@@ -58,7 +86,7 @@ my \@inc_version_list = $Config_inc_version_list;
 print OUT <<'!NO!SUBS!';
 
 our @ORIG_INC = @INC;	# take a handy copy of 'original' value
-our $VERSION = '0.5564';
+our $VERSION = '0.62';
 my $Is_MacOS = $^O eq 'MacOS';
 my $Mac_FS;
 if ($Is_MacOS) {
@@ -71,30 +99,31 @@ sub import {
 
     my %names;
     foreach (reverse @_) {
-	if ($_ eq '') {
+	my $path = $_;		# we'll be modifying it, so break the alias
+	if ($path eq '') {
 	    require Carp;
 	    Carp::carp("Empty compile time value given to use lib");
 	}
 
-	local $_ = _nativize($_);
+	$path = _nativize($path);
 
-	if (-e && ! -d _) {
+	if ($path !~ /\.par$/i && -e $path && ! -d _) {
 	    require Carp;
 	    Carp::carp("Parameter to use lib must be directory, not file");
 	}
-	unshift(@INC, $_);
+	unshift(@INC, $path);
 	# Add any previous version directories we found at configure time
 	foreach my $incver (@inc_version_list)
 	{
 	    my $dir = $Is_MacOS
-		? File::Spec->catdir( $_, $incver )
-		: "$_/$incver";
+		? File::Spec->catdir( $path, $incver )
+		: "$path/$incver";
 	    unshift(@INC, $dir) if -d $dir;
 	}
-	# Put a corresponding archlib directory in front of $_ if it
-	# looks like $_ has an archlib directory below it.
+	# Put a corresponding archlib directory in front of $path if it
+	# looks like $path has an archlib directory below it.
 	my($arch_auto_dir, $arch_dir, $version_dir, $version_arch_dir)
-	    = _get_dirs($_);
+	    = _get_dirs($path);
 	unshift(@INC, $arch_dir)         if -d $arch_auto_dir;
 	unshift(@INC, $version_dir)      if -d $version_dir;
 	unshift(@INC, $version_arch_dir) if -d $version_arch_dir;
@@ -111,11 +140,11 @@ sub unimport {
 
     my %names;
     foreach (@_) {
-	local $_ = _nativize($_);
+	my $path = _nativize($_);
 
 	my($arch_auto_dir, $arch_dir, $version_dir, $version_arch_dir)
-	    = _get_dirs($_);
-	++$names{$_};
+	    = _get_dirs($path);
+	++$names{$path};
 	++$names{$arch_dir}         if -d $arch_auto_dir;
 	++$names{$version_dir}      if -d $version_dir;
 	++$names{$version_arch_dir} if -d $version_arch_dir;
@@ -133,15 +162,15 @@ sub _get_dirs {
     # we could use this for all platforms in the future, but leave it
     # Mac-only for now, until there is more time for testing it.
     if ($Is_MacOS) {
-	$arch_auto_dir    = File::Spec->catdir( $_, $archname, 'auto' );
-	$arch_dir         = File::Spec->catdir( $_, $archname, );
-	$version_dir      = File::Spec->catdir( $_, $version );
-	$version_arch_dir = File::Spec->catdir( $_, $version, $archname );
+	$arch_auto_dir    = File::Spec->catdir( $dir, $archname, 'auto' );
+	$arch_dir         = File::Spec->catdir( $dir, $archname, );
+	$version_dir      = File::Spec->catdir( $dir, $version );
+	$version_arch_dir = File::Spec->catdir( $dir, $version, $archname );
     } else {
-	$arch_auto_dir    = "$_/$archname/auto";
-	$arch_dir         = "$_/$archname";
-	$version_dir      = "$_/$version";
-	$version_arch_dir = "$_/$version/$archname";
+	$arch_auto_dir    = "$dir/$archname/auto";
+	$arch_dir         = "$dir/$archname";
+	$version_dir      = "$dir/$version";
+	$version_arch_dir = "$dir/$version/$archname";
     }
     return($arch_auto_dir, $arch_dir, $version_dir, $version_arch_dir);
 }
@@ -194,6 +223,16 @@ For each directory in LIST (called $dir here) the lib module also
 checks to see if a directory called $dir/$archname/auto exists.
 If so the $dir/$archname directory is assumed to be a corresponding
 architecture specific directory and is added to @INC in front of $dir.
+lib.pm also checks if directories called $dir/$version and $dir/$version/$archname
+exist and adds these directories to @INC.
+
+The current value of C<$archname> can be found with this command:
+
+    perl -V:archname
+
+The corresponding command to get the current value of C<$version> is:
+
+    perl -V:version
 
 To avoid memory leaks, all trailing duplicate entries in @INC are
 removed.
@@ -239,13 +278,39 @@ paths, as it does now for Mac OS (where Unix-style or Mac-style paths
 work, and Unix-style paths are converted properly to Mac-style paths
 before being added to @INC).
 
+If you try to add a file to @INC as follows:
+
+  use lib 'this_is_a_file.txt';
+
+C<lib> will warn about this. The sole exceptions are files with the
+C<.par> extension which are intended to be used as libraries.
+
 =head1 SEE ALSO
 
 FindBin - optional module which deals with paths relative to the source file.
 
+PAR - optional module which can treat C<.par> files as Perl libraries.
+
 =head1 AUTHOR
 
 Tim Bunce, 2nd June 1995.
+
+C<lib> is maintained by the perl5-porters. Please direct
+any questions to the canonical mailing list. Anything that
+is applicable to the CPAN release can be sent to its maintainer,
+though.
+
+Maintainer: The Perl5-Porters <perl5-porters@perl.org>
+
+Maintainer of the CPAN release: Steffen Mueller <smueller@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This package has been part of the perl core since perl 5.001.
+It has been released separately to CPAN so older installations
+can benefit from bug fixes.
+
+This package has the same copyright and license as the perl core.
 
 =cut
 !NO!SUBS!

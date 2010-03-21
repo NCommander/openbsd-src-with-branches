@@ -1,6 +1,6 @@
 /*    pad.h
  *
- *    Copyright (C) 2002, by Larry Wall and others
+ *    Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008 by Larry Wall and others
  *
  *    You may distribute under the terms of either the GNU General Public
  *    License or the Artistic License, as specified in the README file.
@@ -30,7 +30,73 @@ typedef U64TYPE PADOFFSET;
 #   endif
 #endif
 #define NOT_IN_PAD ((PADOFFSET) -1)
- 
+
+/* B.xs needs these for the benefit of B::Deparse */
+/* Low range end is exclusive (valid from the cop seq after this one) */
+/* High range end is inclusive (valid up to this cop seq) */
+
+#if defined (DEBUGGING) && defined(__GNUC__) && !defined(PERL_GCC_BRACE_GROUPS_FORBIDDEN)
+#  define COP_SEQ_RANGE_LOW(sv)						\
+	(({ const SV *const _sv_cop_seq_range_low = (const SV *) (sv);	\
+	  assert(SvTYPE(_sv_cop_seq_range_low) == SVt_NV		\
+		 || SvTYPE(_sv_cop_seq_range_low) >= SVt_PVNV);		\
+	  assert(SvTYPE(_sv_cop_seq_range_low) != SVt_PVAV);		\
+	  assert(SvTYPE(_sv_cop_seq_range_low) != SVt_PVHV);		\
+	  assert(SvTYPE(_sv_cop_seq_range_low) != SVt_PVCV);		\
+	  assert(SvTYPE(_sv_cop_seq_range_low) != SVt_PVFM);		\
+	  assert(!isGV_with_GP(_sv_cop_seq_range_low));			\
+	  ((XPVNV*) MUTABLE_PTR(SvANY(_sv_cop_seq_range_low)))->xnv_u.xpad_cop_seq.xlow; \
+	 }))
+#  define COP_SEQ_RANGE_HIGH(sv)					\
+	(({ const SV *const _sv_cop_seq_range_high = (const SV *) (sv);	\
+	  assert(SvTYPE(_sv_cop_seq_range_high) == SVt_NV 		\
+                 || SvTYPE(_sv_cop_seq_range_high) >= SVt_PVNV);	\
+	  assert(SvTYPE(_sv_cop_seq_range_high) != SVt_PVAV);		\
+	  assert(SvTYPE(_sv_cop_seq_range_high) != SVt_PVHV);		\
+	  assert(SvTYPE(_sv_cop_seq_range_high) != SVt_PVCV);		\
+	  assert(SvTYPE(_sv_cop_seq_range_high) != SVt_PVFM);		\
+	  assert(!isGV_with_GP(_sv_cop_seq_range_high));		\
+	  ((XPVNV*) MUTABLE_PTR(SvANY(_sv_cop_seq_range_high)))->xnv_u.xpad_cop_seq.xhigh; \
+	 }))
+#  define PARENT_PAD_INDEX(sv)						\
+	(({ const SV *const _sv_parent_pad_index = (const SV *) (sv);	\
+	  assert(SvTYPE(_sv_parent_pad_index) == SVt_NV			\
+		 || SvTYPE(_sv_parent_pad_index) >= SVt_PVNV);		\
+	  assert(SvTYPE(_sv_parent_pad_index) != SVt_PVAV);		\
+	  assert(SvTYPE(_sv_parent_pad_index) != SVt_PVHV);		\
+	  assert(SvTYPE(_sv_parent_pad_index) != SVt_PVCV);		\
+	  assert(SvTYPE(_sv_parent_pad_index) != SVt_PVFM);		\
+	  assert(!isGV_with_GP(_sv_parent_pad_index));			\
+	  ((XPVNV*) MUTABLE_PTR(SvANY(_sv_parent_pad_index)))->xnv_u.xpad_cop_seq.xlow; \
+	 }))
+#  define PARENT_FAKELEX_FLAGS(sv)					\
+	(({ const SV *const _sv_parent_fakelex_flags = (const SV *) (sv); \
+	  assert(SvTYPE(_sv_parent_fakelex_flags) == SVt_NV  		\
+		 || SvTYPE(_sv_parent_fakelex_flags) >= SVt_PVNV);	\
+	  assert(SvTYPE(_sv_parent_fakelex_flags) != SVt_PVAV);		\
+	  assert(SvTYPE(_sv_parent_fakelex_flags) != SVt_PVHV);		\
+	  assert(SvTYPE(_sv_parent_fakelex_flags) != SVt_PVCV);		\
+	  assert(SvTYPE(_sv_parent_fakelex_flags) != SVt_PVFM);		\
+	  assert(!isGV_with_GP(_sv_parent_fakelex_flags));		\
+	  ((XPVNV*) MUTABLE_PTR(SvANY(_sv_parent_fakelex_flags)))->xnv_u.xpad_cop_seq.xhigh; \
+	 }))
+#else
+#  define COP_SEQ_RANGE_LOW(sv)		\
+	(0 + (((XPVNV*) SvANY(sv))->xnv_u.xpad_cop_seq.xlow))
+#  define COP_SEQ_RANGE_HIGH(sv)	\
+	(0 + (((XPVNV*) SvANY(sv))->xnv_u.xpad_cop_seq.xhigh))
+
+
+#  define PARENT_PAD_INDEX(sv)		\
+	(0 + (((XPVNV*) SvANY(sv))->xnv_u.xpad_cop_seq.xlow))
+#  define PARENT_FAKELEX_FLAGS(sv)	\
+	(0 + (((XPVNV*) SvANY(sv))->xnv_u.xpad_cop_seq.xhigh))
+#endif
+
+/* Flags set in the SvIVX field of FAKE namesvs */
+
+#define PAD_FAKELEX_ANON   1 /* the lex is declared in an ANON, or ... */
+#define PAD_FAKELEX_MULTI  2 /* the lex can be instantiated multiple times */
 
 /* flags for the pad_new() function */
 
@@ -50,14 +116,20 @@ typedef enum {
  * whether PL_comppad and PL_curpad are consistent and whether they have
  * active values */
 
+#ifndef PERL_MAD
+#  define pad_peg(label)
+#endif
+
 #ifdef DEBUGGING
 #  define ASSERT_CURPAD_LEGAL(label) \
+    pad_peg(label); \
     if (PL_comppad ? (AvARRAY(PL_comppad) != PL_curpad) : (PL_curpad != 0))  \
 	Perl_croak(aTHX_ "panic: illegal pad in %s: 0x%"UVxf"[0x%"UVxf"]",\
 	    label, PTR2UV(PL_comppad), PTR2UV(PL_curpad));
 
 
 #  define ASSERT_CURPAD_ACTIVE(label) \
+    pad_peg(label); \
     if (!PL_comppad || (AvARRAY(PL_comppad) != PL_curpad))		  \
 	Perl_croak(aTHX_ "panic: invalid pad in %s: 0x%"UVxf"[0x%"UVxf"]",\
 	    label, PTR2UV(PL_comppad), PTR2UV(PL_curpad));
@@ -77,7 +149,7 @@ Save a pad slot (used to restore after an iteration)
 
 XXX DAPM it would make more sense to make the arg a PADOFFSET
 =for apidoc m|void|SAVECLEARSV	|SV **svp
-Clear the pointed to pad value on scope exit. (ie the runtime action of 'my')
+Clear the pointed to pad value on scope exit. (i.e. the runtime action of 'my')
 
 =for apidoc m|void|SAVECOMPPAD
 save PL_comppad and PL_curpad
@@ -103,7 +175,12 @@ Get the value from slot C<po> in the base (DEPTH=1) pad of a padlist
 
 =for apidoc m|void|PAD_SET_CUR	|PADLIST padlist|I32 n
 Set the current pad to be pad C<n> in the padlist, saving
-the previous current pad.
+the previous current pad. NB currently this macro expands to a string too
+long for some compilers, so it's best to replace it with
+
+    SAVECOMPPAD();
+    PAD_SET_CUR_NOSAVE(padlist,n);
+
 
 =for apidoc m|void|PAD_SET_CUR_NOSAVE	|PADLIST padlist|I32 n
 like PAD_SET_CUR, but without the save
@@ -133,37 +210,37 @@ Restore the old pad saved into the local variable opad by PAD_SAVE_LOCAL()
 
 #define PAD_BASE_SV(padlist, po) \
 	(AvARRAY(padlist)[1]) 	\
-	    ? AvARRAY((AV*)(AvARRAY(padlist)[1]))[po] : Nullsv;
-    
+	? AvARRAY(MUTABLE_AV((AvARRAY(padlist)[1])))[po] : NULL;
 
-#define PAD_SET_CUR_NOSAVE(padlist,n) \
-	PL_comppad = (PAD*) (AvARRAY(padlist)[n]);		\
+
+#define PAD_SET_CUR_NOSAVE(padlist,nth) \
+	PL_comppad = (PAD*) (AvARRAY(padlist)[nth]);		\
 	PL_curpad = AvARRAY(PL_comppad);			\
 	DEBUG_Xv(PerlIO_printf(Perl_debug_log,			\
 	      "Pad 0x%"UVxf"[0x%"UVxf"] set_cur    depth=%d\n",	\
-	      PTR2UV(PL_comppad), PTR2UV(PL_curpad), (int)(n)));
+	      PTR2UV(PL_comppad), PTR2UV(PL_curpad), (int)(nth)));
 
 
-#define PAD_SET_CUR(padlist,n) \
+#define PAD_SET_CUR(padlist,nth) \
 	SAVECOMPPAD();						\
-	PAD_SET_CUR_NOSAVE(padlist,n);
+	PAD_SET_CUR_NOSAVE(padlist,nth);
 
 
 #define PAD_SAVE_SETNULLPAD()	SAVECOMPPAD(); \
-	PL_comppad = Null(PAD*); PL_curpad = Null(SV**);	\
+	PL_comppad = NULL; PL_curpad = NULL;	\
 	DEBUG_Xv(PerlIO_printf(Perl_debug_log, "Pad set_null\n"));
 
 #define PAD_SAVE_LOCAL(opad,npad) \
 	opad = PL_comppad;					\
 	PL_comppad = (npad);					\
-	PL_curpad =  PL_comppad ? AvARRAY(PL_comppad) : Null(SV**); \
+	PL_curpad =  PL_comppad ? AvARRAY(PL_comppad) : NULL;	\
 	DEBUG_Xv(PerlIO_printf(Perl_debug_log,			\
 	      "Pad 0x%"UVxf"[0x%"UVxf"] save_local\n",		\
 	      PTR2UV(PL_comppad), PTR2UV(PL_curpad)));
 
 #define PAD_RESTORE_LOCAL(opad) \
-	PL_comppad = opad;					\
-	PL_curpad =  PL_comppad ? AvARRAY(PL_comppad) : Null(SV**); \
+	PL_comppad = opad && SvIS_FREED(opad) ? NULL : opad;	\
+	PL_curpad =  PL_comppad ? AvARRAY(PL_comppad) : NULL;	\
 	DEBUG_Xv(PerlIO_printf(Perl_debug_log,			\
 	      "Pad 0x%"UVxf"[0x%"UVxf"] restore_local\n",	\
 	      PTR2UV(PL_comppad), PTR2UV(PL_curpad)));
@@ -181,7 +258,7 @@ context block structure (can be used as an lvalue).
 */
 
 #define CX_CURPAD_SAVE(block)  (block).oldcomppad = PL_comppad
-#define CX_CURPAD_SV(block,po) (AvARRAY((AV*)((block).oldcomppad))[po])
+#define CX_CURPAD_SV(block,po) (AvARRAY(MUTABLE_AV(((block).oldcomppad)))[po])
 
 
 /*
@@ -203,33 +280,37 @@ Assumes the slot entry is a valid C<our> lexical.
 
 =for apidoc m|STRLEN|PAD_COMPNAME_GEN|PADOFFSET po
 The generation number of the name at offset C<po> in the current
-compiling pad (lvalue). Note that C<SvCUR> is hijacked for this purpose.
+compiling pad (lvalue). Note that C<SvUVX> is hijacked for this purpose.
+
+=for apidoc m|STRLEN|PAD_COMPNAME_GEN_set|PADOFFSET po|int gen
+Sets the generation number of the name at offset C<po> in the current
+ling pad (lvalue) to C<gen>.  Note that C<SvUV_set> is hijacked for this purpose.
 
 =cut
+
 */
 
-#define PAD_COMPNAME_FLAGS(po) SvFLAGS(*av_fetch(PL_comppad_name, (po), FALSE))
-#define PAD_COMPNAME_PV(po) SvPV_nolen(*av_fetch(PL_comppad_name, (po), FALSE))
+#define PAD_COMPNAME_SV(po) (*av_fetch(PL_comppad_name, (po), FALSE))
+#define PAD_COMPNAME_FLAGS(po) SvFLAGS(PAD_COMPNAME_SV(po))
+#define PAD_COMPNAME_FLAGS_isOUR(po) \
+  ((PAD_COMPNAME_FLAGS(po) & (SVpad_NAME|SVpad_OUR)) == (SVpad_NAME|SVpad_OUR))
+#define PAD_COMPNAME_PV(po) SvPV_nolen(PAD_COMPNAME_SV(po))
 
-/* XXX DAPM yuk - using av_fetch twice. Is there a better way? */
-#define PAD_COMPNAME_TYPE(po) \
-    ((SvFLAGS(*av_fetch(PL_comppad_name, (po), FALSE)) & SVpad_TYPED) \
-    ? (SvSTASH(*av_fetch(PL_comppad_name, (po), FALSE))) :  Nullhv)
+#define PAD_COMPNAME_TYPE(po) pad_compname_type(po)
 
 #define PAD_COMPNAME_OURSTASH(po) \
-    (GvSTASH(*av_fetch(PL_comppad_name, (po), FALSE)))
+    (SvOURSTASH(PAD_COMPNAME_SV(po)))
 
-#define PAD_COMPNAME_GEN(po) SvCUR(AvARRAY(PL_comppad_name)[po])
+#define PAD_COMPNAME_GEN(po) ((STRLEN)SvUVX(AvARRAY(PL_comppad_name)[po]))
 
-
+#define PAD_COMPNAME_GEN_set(po, gen) SvUV_set(AvARRAY(PL_comppad_name)[po], (UV)(gen))
 
 
 /*
 =for apidoc m|void|PAD_DUP|PADLIST dstpad|PADLIST srcpad|CLONE_PARAMS* param
 Clone a padlist.
 
-=for apidoc m|void|PAD_CLONE_VARS|PerlInterpreter *proto_perl \
-|CLONE_PARAMS* param
+=for apidoc m|void|PAD_CLONE_VARS|PerlInterpreter *proto_perl|CLONE_PARAMS* param
 Clone the state variables associated with running and compiling pads.
 
 =cut
@@ -256,8 +337,8 @@ Clone the state variables associated with running and compiling pads.
  * sub's CV or padlist. */
 
 #define PAD_CLONE_VARS(proto_perl, param)				\
-    PL_comppad = ptr_table_fetch(PL_ptr_table, proto_perl->Tcomppad);	\
-    PL_curpad = PL_comppad ?  AvARRAY(PL_comppad) : Null(SV**);		\
+    PL_comppad = MUTABLE_AV(ptr_table_fetch(PL_ptr_table, proto_perl->Icomppad)); \
+    PL_curpad = PL_comppad ?  AvARRAY(PL_comppad) : NULL;		\
     PL_comppad_name		= av_dup(proto_perl->Icomppad_name, param); \
     PL_comppad_name_fill	= proto_perl->Icomppad_name_fill;	\
     PL_comppad_name_floor	= proto_perl->Icomppad_name_floor;	\
@@ -267,3 +348,13 @@ Clone the state variables associated with running and compiling pads.
     PL_padix_floor		= proto_perl->Ipadix_floor;		\
     PL_pad_reset_pending	= proto_perl->Ipad_reset_pending;	\
     PL_cop_seqmax		= proto_perl->Icop_seqmax;
+
+/*
+ * Local variables:
+ * c-indentation-style: bsd
+ * c-basic-offset: 4
+ * indent-tabs-mode: t
+ * End:
+ *
+ * ex: set ts=8 sts=4 sw=4 noet:
+ */

@@ -3,17 +3,35 @@
 #
 # Regression tests for the Math::Trig package
 #
-# The tests are quite modest as the Math::Complex tests exercise
-# these quite vigorously.
+# The tests here are quite modest as the Math::Complex tests exercise
+# these interfaces quite vigorously.
 # 
 # -- Jarkko Hietaniemi, April 1997
 
 BEGIN {
-    chdir 't' if -d 't';
-    @INC = '../lib';
+    if ($ENV{PERL_CORE}) {
+	chdir 't' if -d 't';
+	@INC = '../lib';
+    }
 }
 
-use Math::Trig;
+BEGIN {
+    eval { require Test::More };
+    if ($@) {
+	# We are willing to lose testing in e.g. 5.00504.
+	print "1..0 # No Test::More, skipping\n";
+	exit(0);
+    } else {
+	import Test::More;
+    }
+}
+
+plan(tests => 153);
+
+use Math::Trig 1.18;
+use Math::Trig 1.18 qw(:pi Inf);
+
+my $pip2 = pi / 2;
 
 use strict;
 
@@ -27,135 +45,149 @@ if ($^O eq 'unicos') { # See lib/Math/Complex.pm and t/lib/complex.t.
 
 sub near ($$;$) {
     my $e = defined $_[2] ? $_[2] : $eps;
-    $_[1] ? (abs($_[0]/$_[1] - 1) < $e) : abs($_[0]) < $e;
+    my $d = $_[1] ? abs($_[0]/$_[1] - 1) : abs($_[0]);
+    print "# near? $_[0] $_[1] : $d : $e\n";
+    $_[1] ? ($d < $e) : abs($_[0]) < $e;
 }
 
-print "1..26\n";
+print "# Sanity checks\n";
+
+ok(near(sin(1), 0.841470984807897));
+ok(near(cos(1), 0.54030230586814));
+ok(near(tan(1), 1.5574077246549));
+
+ok(near(sec(1), 1.85081571768093));
+ok(near(csc(1), 1.18839510577812));
+ok(near(cot(1), 0.642092615934331));
+
+ok(near(asin(1), 1.5707963267949));
+ok(near(acos(1), 0));
+ok(near(atan(1), 0.785398163397448));
+
+ok(near(asec(1), 0));
+ok(near(acsc(1), 1.5707963267949));
+ok(near(acot(1), 0.785398163397448));
+
+ok(near(sinh(1), 1.1752011936438));
+ok(near(cosh(1), 1.54308063481524));
+ok(near(tanh(1), 0.761594155955765));
+
+ok(near(sech(1), 0.648054273663885));
+ok(near(csch(1), 0.850918128239322));
+ok(near(coth(1), 1.31303528549933));
+
+ok(near(asinh(1), 0.881373587019543));
+ok(near(acosh(1), 0));
+ok(near(atanh(0.9), 1.47221948958322)); # atanh(1.0) would be an error.
+
+ok(near(asech(0.9), 0.467145308103262));
+ok(near(acsch(2), 0.481211825059603));
+ok(near(acoth(2), 0.549306144334055));
+
+print "# Basics\n";
 
 $x = 0.9;
-print 'not ' unless (near(tan($x), sin($x) / cos($x)));
-print "ok 1\n";
+ok(near(tan($x), sin($x) / cos($x)));
 
-print 'not ' unless (near(sinh(2), 3.62686040784702));
-print "ok 2\n";
+ok(near(sinh(2), 3.62686040784702));
 
-print 'not ' unless (near(acsch(0.1), 2.99822295029797));
-print "ok 3\n";
+ok(near(acsch(0.1), 2.99822295029797));
 
 $x = asin(2);
-print 'not ' unless (ref $x eq 'Math::Complex');
-print "ok 4\n";
+is(ref $x, 'Math::Complex');
 
 # avoid using Math::Complex here
 $x =~ /^([^-]+)(-[^i]+)i$/;
 ($y, $z) = ($1, $2);
-print 'not ' unless (near($y,  1.5707963267949) and
-		     near($z, -1.31695789692482));
-print "ok 5\n";
+ok(near($y,  1.5707963267949));
+ok(near($z, -1.31695789692482));
 
-print 'not ' unless (near(deg2rad(90), pi/2));
-print "ok 6\n";
+ok(near(deg2rad(90), pi/2));
 
-print 'not ' unless (near(rad2deg(pi), 180));
-print "ok 7\n";
+ok(near(rad2deg(pi), 180));
 
 use Math::Trig ':radial';
 
 {
     my ($r,$t,$z) = cartesian_to_cylindrical(1,1,1);
 
-    print 'not ' unless (near($r, sqrt(2)))     and
-	                (near($t, deg2rad(45))) and
-			(near($z, 1));
-    print "ok 8\n";
+    ok(near($r, sqrt(2)));
+    ok(near($t, deg2rad(45)));
+    ok(near($z, 1));
 
     ($x,$y,$z) = cylindrical_to_cartesian($r, $t, $z);
 
-    print 'not ' unless (near($x, 1)) and
-	                (near($y, 1)) and
-			(near($z, 1));
-    print "ok 9\n";
+    ok(near($x, 1));
+    ok(near($y, 1));
+    ok(near($z, 1));
 
     ($r,$t,$z) = cartesian_to_cylindrical(1,1,0);
 
-    print 'not ' unless (near($r, sqrt(2)))     and
-	                (near($t, deg2rad(45))) and
-			(near($z, 0));
-    print "ok 10\n";
+    ok(near($r, sqrt(2)));
+    ok(near($t, deg2rad(45)));
+    ok(near($z, 0));
 
     ($x,$y,$z) = cylindrical_to_cartesian($r, $t, $z);
 
-    print 'not ' unless (near($x, 1)) and
-	                (near($y, 1)) and
-			(near($z, 0));
-    print "ok 11\n";
+    ok(near($x, 1));
+    ok(near($y, 1));
+    ok(near($z, 0));
 }
 
 {
     my ($r,$t,$f) = cartesian_to_spherical(1,1,1);
 
-    print 'not ' unless (near($r, sqrt(3)))     and
-	                (near($t, deg2rad(45))) and
-			(near($f, atan2(sqrt(2), 1)));
-    print "ok 12\n";
+    ok(near($r, sqrt(3)));
+    ok(near($t, deg2rad(45)));
+    ok(near($f, atan2(sqrt(2), 1)));
 
     ($x,$y,$z) = spherical_to_cartesian($r, $t, $f);
 
-    print 'not ' unless (near($x, 1)) and
-	                (near($y, 1)) and
-			(near($z, 1));
-    print "ok 13\n";
-
+    ok(near($x, 1));
+    ok(near($y, 1));
+    ok(near($z, 1));
+       
     ($r,$t,$f) = cartesian_to_spherical(1,1,0);
 
-    print 'not ' unless (near($r, sqrt(2)))     and
-	                (near($t, deg2rad(45))) and
-			(near($f, deg2rad(90)));
-    print "ok 14\n";
+    ok(near($r, sqrt(2)));
+    ok(near($t, deg2rad(45)));
+    ok(near($f, deg2rad(90)));
 
     ($x,$y,$z) = spherical_to_cartesian($r, $t, $f);
 
-    print 'not ' unless (near($x, 1)) and
-	                (near($y, 1)) and
-			(near($z, 0));
-    print "ok 15\n";
+    ok(near($x, 1));
+    ok(near($y, 1));
+    ok(near($z, 0));
 }
 
 {
     my ($r,$t,$z) = cylindrical_to_spherical(spherical_to_cylindrical(1,1,1));
 
-    print 'not ' unless (near($r, 1)) and
-	                (near($t, 1)) and
-			(near($z, 1));
-    print "ok 16\n";
+    ok(near($r, 1));
+    ok(near($t, 1));
+    ok(near($z, 1));
 
     ($r,$t,$z) = spherical_to_cylindrical(cylindrical_to_spherical(1,1,1));
 
-    print 'not ' unless (near($r, 1)) and
-	                (near($t, 1)) and
-			(near($z, 1));
-    print "ok 17\n";
+    ok(near($r, 1));
+    ok(near($t, 1));
+    ok(near($z, 1));
 }
 
 {
     use Math::Trig 'great_circle_distance';
 
-    print 'not '
-	unless (near(great_circle_distance(0, 0, 0, pi/2), pi/2));
-    print "ok 18\n";
+    ok(near(great_circle_distance(0, 0, 0, pi/2), pi/2));
 
-    print 'not '
-	unless (near(great_circle_distance(0, 0, pi, pi), pi));
-    print "ok 19\n";
+    ok(near(great_circle_distance(0, 0, pi, pi), pi));
 
     # London to Tokyo.
-    my @L = (deg2rad(-0.5), deg2rad(90 - 51.3));
-    my @T = (deg2rad(139.8),deg2rad(90 - 35.7));
+    my @L = (deg2rad(-0.5),  deg2rad(90 - 51.3));
+    my @T = (deg2rad(139.8), deg2rad(90 - 35.7));
 
     my $km = great_circle_distance(@L, @T, 6378);
 
-    print 'not ' unless (near($km, 9605.26637021388));
-    print "ok 20\n";
+    ok(near($km, 9605.26637021388));
 }
 
 {
@@ -164,38 +196,198 @@ use Math::Trig ':radial';
     sub frac { $_[0] - int($_[0]) }
 
     my $lotta_radians = deg2rad(1E+20, 1);
-    print "not " unless near($lotta_radians,  1E+20/$R2D);
-    print "ok 21\n";
+    ok(near($lotta_radians,  1E+20/$R2D));
 
     my $negat_degrees = rad2deg(-1E20, 1);
-    print "not " unless near($negat_degrees, -1E+20*$R2D);
-    print "ok 22\n";
+    ok(near($negat_degrees, -1E+20*$R2D));
 
     my $posit_degrees = rad2deg(-10000, 1);
-    print "not " unless near($posit_degrees, -10000*$R2D);
-    print "ok 23\n";
+    ok(near($posit_degrees, -10000*$R2D));
 }
 
 {
     use Math::Trig 'great_circle_direction';
 
-    print 'not '
-	unless (near(great_circle_direction(0, 0, 0, pi/2), pi));
-    print "ok 24\n";
+    ok(near(great_circle_direction(0, 0, 0, pi/2), pi));
 
-# Retired test: Relies on atan(0, 0), which is not portable.
-#    print 'not '
-#	unless (near(great_circle_direction(0, 0, pi, pi), -pi()/2));
-    print "ok 25\n";
+# Retired test: Relies on atan2(0, 0), which is not portable.
+#	ok(near(great_circle_direction(0, 0, pi, pi), -pi()/2));
 
-    # London to Tokyo.
-    my @L = (deg2rad(-0.5), deg2rad(90 - 51.3));
-    my @T = (deg2rad(139.8),deg2rad(90 - 35.7));
+    my @London  = (deg2rad(  -0.167), deg2rad(90 - 51.3));
+    my @Tokyo   = (deg2rad( 139.5),   deg2rad(90 - 35.7));
+    my @Berlin  = (deg2rad ( 13.417), deg2rad(90 - 52.533));
+    my @Paris   = (deg2rad (  2.333), deg2rad(90 - 48.867));
 
-    my $rad = great_circle_direction(@L, @T);
+    ok(near(rad2deg(great_circle_direction(@London, @Tokyo)),
+	    31.791945393073));
 
-    print 'not ' unless (near($rad, -0.546644569997376));
-    print "ok 26\n";
+    ok(near(rad2deg(great_circle_direction(@Tokyo, @London)),
+	    336.069766430326));
+
+    ok(near(rad2deg(great_circle_direction(@Berlin, @Paris)),
+	    246.800348034667));
+    
+    ok(near(rad2deg(great_circle_direction(@Paris, @Berlin)),
+	    58.2079877553156));
+
+    use Math::Trig 'great_circle_bearing';
+
+    ok(near(rad2deg(great_circle_bearing(@Paris, @Berlin)),
+	    58.2079877553156));
+
+    use Math::Trig 'great_circle_waypoint';
+    use Math::Trig 'great_circle_midpoint';
+
+    my ($lon, $lat);
+
+    ($lon, $lat) = great_circle_waypoint(@London, @Tokyo, 0.0);
+
+    ok(near($lon, $London[0]));
+
+    ok(near($lat, $London[1]));
+
+    ($lon, $lat) = great_circle_waypoint(@London, @Tokyo, 1.0);
+
+    ok(near($lon, $Tokyo[0]));
+
+    ok(near($lat, $Tokyo[1]));
+
+    ($lon, $lat) = great_circle_waypoint(@London, @Tokyo, 0.5);
+
+    ok(near($lon, 1.55609593577679)); # 89.16 E
+
+    ok(near($lat, 0.36783532946162)); # 68.93 N
+
+    ($lon, $lat) = great_circle_midpoint(@London, @Tokyo);
+
+    ok(near($lon, 1.55609593577679)); # 89.16 E
+
+    ok(near($lat, 0.367835329461615)); # 68.93 N
+
+    ($lon, $lat) = great_circle_waypoint(@London, @Tokyo, 0.25);
+
+    ok(near($lon, 0.516073562850837)); # 29.57 E
+
+    ok(near($lat, 0.400231313403387)); # 67.07 N
+
+    ($lon, $lat) = great_circle_waypoint(@London, @Tokyo, 0.75);
+
+    ok(near($lon, 2.17494903805952)); # 124.62 E
+
+    ok(near($lat, 0.617809294053591)); # 54.60 N
+
+    use Math::Trig 'great_circle_destination';
+
+    my $dir1 = great_circle_direction(@London, @Tokyo);
+    my $dst1 = great_circle_distance(@London,  @Tokyo);
+
+    ($lon, $lat) = great_circle_destination(@London, $dir1, $dst1);
+
+    ok(near($lon, $Tokyo[0]));
+
+    ok(near($lat, $pip2 - $Tokyo[1]));
+
+    my $dir2 = great_circle_direction(@Tokyo, @London);
+    my $dst2 = great_circle_distance(@Tokyo,  @London);
+
+    ($lon, $lat) = great_circle_destination(@Tokyo, $dir2, $dst2);
+
+    ok(near($lon, $London[0]));
+
+    ok(near($lat, $pip2 - $London[1]));
+
+    my $dir3 = (great_circle_destination(@London, $dir1, $dst1))[2];
+
+    ok(near($dir3, 2.69379263839118)); # about 154.343 deg
+
+    my $dir4 = (great_circle_destination(@Tokyo,  $dir2, $dst2))[2];
+
+    ok(near($dir4, 3.6993902625701)); # about 211.959 deg
+
+    ok(near($dst1, $dst2));
 }
+
+print "# Infinity\n";
+
+my $BigDouble = 1e40;
+
+# E.g. netbsd-alpha core dumps on Inf arith without this.
+local $SIG{FPE} = sub { };
+
+ok(Inf() > $BigDouble);  # This passes in netbsd-alpha.
+ok(Inf() + $BigDouble > $BigDouble); # This coredumps in netbsd-alpha.
+ok(Inf() + $BigDouble == Inf());
+ok(Inf() - $BigDouble > $BigDouble);
+ok(Inf() - $BigDouble == Inf());
+ok(Inf() * $BigDouble > $BigDouble);
+ok(Inf() * $BigDouble == Inf());
+ok(Inf() / $BigDouble > $BigDouble);
+ok(Inf() / $BigDouble == Inf());
+
+ok(-Inf() < -$BigDouble);
+ok(-Inf() + $BigDouble < $BigDouble);
+ok(-Inf() + $BigDouble == -Inf());
+ok(-Inf() - $BigDouble < -$BigDouble);
+ok(-Inf() - $BigDouble == -Inf());
+ok(-Inf() * $BigDouble < -$BigDouble);
+ok(-Inf() * $BigDouble == -Inf());
+ok(-Inf() / $BigDouble < -$BigDouble);
+ok(-Inf() / $BigDouble == -Inf());
+
+print "# sinh/sech/cosh/csch/tanh/coth unto infinity\n";
+
+ok(near(sinh(100), 1.3441e+43, 1e-3));
+ok(near(sech(100), 7.4402e-44, 1e-3));
+ok(near(cosh(100), 1.3441e+43, 1e-3));
+ok(near(csch(100), 7.4402e-44, 1e-3));
+ok(near(tanh(100), 1));
+ok(near(coth(100), 1));
+
+ok(near(sinh(-100), -1.3441e+43, 1e-3));
+ok(near(sech(-100),  7.4402e-44, 1e-3));
+ok(near(cosh(-100),  1.3441e+43, 1e-3));
+ok(near(csch(-100), -7.4402e-44, 1e-3));
+ok(near(tanh(-100), -1));
+ok(near(coth(-100), -1));
+
+cmp_ok(sinh(1e5), '==', Inf());
+cmp_ok(sech(1e5), '==', 0);
+cmp_ok(cosh(1e5), '==', Inf());
+cmp_ok(csch(1e5), '==', 0);
+cmp_ok(tanh(1e5), '==', 1);
+cmp_ok(coth(1e5), '==', 1);
+
+cmp_ok(sinh(-1e5), '==', -Inf());
+cmp_ok(sech(-1e5), '==', 0);
+cmp_ok(cosh(-1e5), '==', Inf());
+cmp_ok(csch(-1e5), '==', 0);
+cmp_ok(tanh(-1e5), '==', -1);
+cmp_ok(coth(-1e5), '==', -1);
+
+print "# great_circle_distance with small angles\n";
+
+for my $e (qw(1e-2 1e-3 1e-4 1e-5)) {
+    # Can't assume == 0 because of floating point fuzz,
+    # but let's hope for at least < $e.
+    cmp_ok(great_circle_distance(0, $e, 0, $e), '<', $e);
+}
+
+print "# asin_real, acos_real\n";
+
+is(acos_real(-2.0), pi);
+is(acos_real(-1.0), pi);
+is(acos_real(-0.5), acos(-0.5));
+is(acos_real( 0.0), acos( 0.0));
+is(acos_real( 0.5), acos( 0.5));
+is(acos_real( 1.0), 0);
+is(acos_real( 2.0), 0);
+
+is(asin_real(-2.0), -&pip2);
+is(asin_real(-1.0), -&pip2);
+is(asin_real(-0.5), asin(-0.5));
+is(asin_real( 0.0), asin( 0.0));
+is(asin_real( 0.5), asin( 0.5));
+is(asin_real( 1.0),  pip2);
+is(asin_real( 2.0),  pip2);
 
 # eof
