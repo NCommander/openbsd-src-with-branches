@@ -314,14 +314,6 @@ sub validate_plists
 	}
 }
 
-sub compute_size
-{
-	my ($self, $state) = @_;
-	for my $h ($self->older_to_do, $self->newer) {
-		$h->{totsize} = $h->{plist}->compute_size;
-	}
-}
-
 sub create_new
 {
 	my ($class, $pkgname) = @_;

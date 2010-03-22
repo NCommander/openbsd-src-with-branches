@@ -41,6 +41,7 @@ PACKAGES= \
     OpenBSD/PkgCfl.pm \
     OpenBSD/PkgConfig.pm \
     OpenBSD/PkgSpec.pm \
+    OpenBSD/ProgressMeter/Term.pm \
     OpenBSD/ProgressMeter.pm \
     OpenBSD/Replace.pm \
     OpenBSD/RequiredBy.pm \
@@ -58,7 +59,7 @@ PACKAGES= \
     OpenBSD/md5.pm \
     OpenBSD/x509.pm
 
-PACKAGEDIRS=OpenBSD  OpenBSD/PackageRepository
+PACKAGEDIRS=OpenBSD  OpenBSD/PackageRepository OpenBSD/ProgressMeter
 
 SCRIPTS= \
     pkg_add \

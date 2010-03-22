@@ -615,8 +615,6 @@ sub really_add
 		OpenBSD::OldLibs->save($set, $state);
 	}
 
-	$set->compute_size;
-
 	if ($replacing) {
 		for my $handle ($set->newer) {
 			next if $state->{size_only};

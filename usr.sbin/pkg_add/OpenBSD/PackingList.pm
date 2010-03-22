@@ -358,7 +358,7 @@ sub addunique
 	my ($plist, $object) = @_;
 	my $category = $object->category;
 	if (defined $plist->{$category}) {
-		die "Duplicate $category in plist";
+		die "Duplicate $category in plist ".($plist->pkgname // "?");
 	}
 	$plist->{$category} = $object;
 }
