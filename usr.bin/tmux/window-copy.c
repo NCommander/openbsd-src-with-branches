@@ -1,4 +1,4 @@
-/* $Id: window-copy.c,v 1.112 2010/03/16 17:51:32 nicm Exp $ */
+/* $OpenBSD$ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
