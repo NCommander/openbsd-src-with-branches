@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.211 2010/03/22 19:07:52 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.212 2010/03/22 19:10:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1597,7 +1597,6 @@ void	 server_window_loop(void);
 
 /* server-fn.c */
 void	 server_fill_environ(struct session *, struct environ *);
-void	 server_write_error(struct client *, const char *);
 void	 server_write_client(
 	     struct client *, enum msgtype, const void *, size_t);
 void	 server_write_session(
