@@ -1,4 +1,4 @@
-/*	$OpenBSD: sendbug.c,v 1.62 2009/06/07 15:36:45 ray Exp $	*/
+/*	$OpenBSD: sendbug.c,v 1.63 2009/08/26 20:40:40 deraadt Exp $	*/
 
 /*
  * Written by Ray Lai <ray@cyth.net>.
@@ -600,7 +600,9 @@ hwdump(FILE *ofp)
 		}
 		pclose(ofp);
 	}
+	pclose(ifp);
 	free(cmd);
+	free(acpidir);
 }
 
 void
