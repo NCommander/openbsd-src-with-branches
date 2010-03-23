@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_optimize.c,v 1.23 2009/12/10 15:57:20 deraadt Exp $ */
+/*	$OpenBSD: pfctl_optimize.c,v 1.24 2010/01/12 03:20:51 mcbride Exp $ */
 
 /*
  * Copyright (c) 2004 Mike Frantzen <frantzen@openbsd.org>
@@ -472,11 +472,6 @@ combine_rules(struct pfctl *pf, struct superblock *block)
 {
 	struct pf_opt_rule *p1, *p2, *por_next;
 	int src_eq, dst_eq;
-
-	if ((pf->loadopt & PFCTL_FLAG_TABLE) == 0) {
-		warnx("Must enable table loading for optimizations");
-		return (1);
-	}
 
 	/* First we make a pass to combine the rules.  O(n log n) */
 	TAILQ_FOREACH(p1, &block->sb_rules, por_entry) {
