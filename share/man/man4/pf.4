@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pf.4,v 1.67 2010/01/12 03:20:51 mcbride Exp $
+.\"	$OpenBSD: pf.4,v 1.68 2010/01/12 07:58:17 jmc Exp $
 .\"
 .\" Copyright (C) 2001, Kjell Wooding.  All rights reserved.
 .\"
@@ -304,6 +304,7 @@ struct pfioc_natlook {
 	struct pf_addr	 daddr;
 	struct pf_addr	 rsaddr;
 	struct pf_addr	 rdaddr;
+	u_int16_t	 rdomain;
 	u_int16_t	 sport;
 	u_int16_t	 dport;
 	u_int16_t	 rsport;
