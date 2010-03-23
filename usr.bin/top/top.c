@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.70 2010/03/18 12:47:48 otto Exp $	*/
+/*	$OpenBSD: top.c,v 1.71 2010/03/22 12:20:25 lum Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -532,7 +532,7 @@ restart:
 int
 rundisplay(void)
 {
-	static char tempbuf[50];
+	static char tempbuf[TEMPBUFSIZE];
 	sigset_t mask;
 	char ch, *iptr;
 	int change, i;
