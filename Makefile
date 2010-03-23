@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.113 2005/09/16 12:28:34 jmc Exp $
+#	$OpenBSD: Makefile,v 1.114 2005/12/02 01:17:20 deraadt Exp $
 
 #
 # For more information on building in tricky environments, please see
@@ -59,6 +59,7 @@ includes:
 
 beforeinstall:
 	cd ${.CURDIR}/etc && exec ${MAKE} DESTDIR=${DESTDIR} distrib-dirs
+	cd ${.CURDIR}/etc && exec ${MAKE} DESTDIR=${DESTDIR} install-mtree
 	cd ${.CURDIR}/include && exec ${MAKE} includes
 
 afterinstall:
