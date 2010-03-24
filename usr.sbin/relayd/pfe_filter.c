@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.40 2009/11/23 00:45:41 claudio Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.42 2010/01/12 23:27:23 dlg Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -475,6 +475,12 @@ sync_ruleset(struct relayd *env, struct rdr *rdr, int enable)
 		rio.rule.rdr.opts = PF_POOL_ROUNDROBIN;
 		if (rdr->conf.flags & F_STICKY)
 			rio.rule.rdr.opts |= PF_POOL_STICKYADDR;
+
+		if (rio.rule.rt == PF_ROUTETO) {
+			memcpy(&rio.rule.route, &rio.rule.rdr,
+			   sizeof(rio.rule.route));
+			rio.rule.rdr.addr.type = PF_ADDR_NONE;
+		}
 
 		if (ioctl(env->sc_pf->dev, DIOCADDRULE, &rio) == -1)
 			fatal("cannot add rule");
