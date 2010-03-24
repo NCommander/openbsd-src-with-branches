@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.69 2010/02/16 08:22:42 dlg Exp $ */
+/*	$OpenBSD: parse.y,v 1.70 2010/02/16 08:39:05 dlg Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -721,8 +721,8 @@ lookup(char *s)
 		{"auth-type",		AUTHTYPE},
 		{"demote",		DEMOTE},
 		{"external-tag",	EXTTAG},
-		{"fib-update",		FIBUPDATE},
 		{"fast-hello-interval",	FASTHELLOINTERVAL},
+		{"fib-update",		FIBUPDATE},
 		{"hello-interval",	HELLOINTERVAL},
 		{"include",		INCLUDE},
 		{"interface",		INTERFACE},
