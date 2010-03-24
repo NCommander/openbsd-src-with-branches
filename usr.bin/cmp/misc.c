@@ -1,3 +1,4 @@
+/*      $OpenBSD: misc.c,v 1.4 2003/06/03 02:56:06 millert Exp $      */
 /*      $NetBSD: misc.c,v 1.2 1995/09/08 03:22:58 tls Exp $      */
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)misc.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: misc.c,v 1.2 1995/09/08 03:22:58 tls Exp $";
-#endif
-#endif /* not lint */
 
 #include <sys/types.h>
 
@@ -64,7 +53,7 @@ diffmsg(file1, file2, byte, line)
 	off_t byte, line;
 {
 	if (!sflag)
-		(void)printf("%s %s differ: char %qd, line %qd\n",
-		    file1, file2, byte, line);
+		(void)printf("%s %s differ: char %lld, line %lld\n",
+		    file1, file2, (long long)byte, (long long)line);
 	exit(DIFF_EXIT);
 }

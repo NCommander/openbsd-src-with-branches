@@ -13,6 +13,7 @@ application/activemessage
 application/andrew-inset	ez
 application/applefile
 application/atomicmail
+application/atom+xml           atom
 application/batch-smtp
 application/beep+xml
 application/cals-1840
@@ -52,7 +53,7 @@ application/ocsp-request
 application/ocsp-response
 application/octet-stream	bin dms lha lzh exe class so dll
 application/oda			oda
-application/ogg			ogg
+application/ogg			ogx oggx
 application/parityfec
 application/pdf			pdf
 application/pgp-encrypted
@@ -159,6 +160,8 @@ application/vnd.fujixerox.ddd
 application/vnd.fujixerox.docuworks
 application/vnd.fujixerox.docuworks.binder
 application/vnd.fut-misnet
+application/vnd.google-earth.kml+xml kml
+application/vnd.google-earth.kmz kmz
 application/vnd.grafeq
 application/vnd.groove-account
 application/vnd.groove-help
@@ -264,6 +267,23 @@ application/vnd.noblenet-web
 application/vnd.novadigm.edm
 application/vnd.novadigm.edx
 application/vnd.novadigm.ext
+application/vnd.oasis.opendocument.chart			odc
+application/vnd.oasis.opendocument.chart-template		otc
+application/vnd.oasis.opendocument.database			odb
+application/vnd.oasis.opendocument.formula			odf
+application/vnd.oasis.opendocument.formula-template		otf
+application/vnd.oasis.opendocument.graphics			odg
+application/vnd.oasis.opendocument.graphics-template		otg
+application/vnd.oasis.opendocument.image			odi
+application/vnd.oasis.opendocument.image-template		oti
+application/vnd.oasis.opendocument.presentation			odp
+application/vnd.oasis.opendocument.presentation-template	otp
+application/vnd.oasis.opendocument.spreadsheet			ods
+application/vnd.oasis.opendocument.spreadsheet-template		ots
+application/vnd.oasis.opendocument.text				odt
+application/vnd.oasis.opendocument.text-master			odm
+application/vnd.oasis.opendocument.text-template		ott
+application/vnd.oasis.opendocument.text-web			oth
 application/vnd.obn
 application/vnd.osa.netdeploy
 application/vnd.palm
@@ -342,6 +362,7 @@ application/whoispp-response
 application/wita
 application/wordperfect5.1
 application/x-bcpio		bcpio
+application/x-bittorrent	torrent
 application/x-cdlink		vcd
 application/x-chess-pgn		pgn
 application/x-compress
@@ -363,7 +384,7 @@ application/x-shockwave-flash	swf
 application/x-stuffit		sit
 application/x-sv4cpio		sv4cpio
 application/x-sv4crc		sv4crc
-application/x-tar		tar
+application/x-tar		tar tgz
 application/x-tcl		tcl
 application/x-tex		tex
 application/x-texinfo		texinfo texi
@@ -413,6 +434,7 @@ audio/mpa
 audio/mpa-robust
 audio/mp4a-latm
 audio/mpeg			mpga mp2 mp3
+audio/ogg			oga ogga spx
 audio/parityfec
 audio/pcma
 audio/pcmu
@@ -446,6 +468,7 @@ audio/x-pn-realaudio		ram rm
 audio/x-pn-realaudio-plugin	rpm
 audio/x-realaudio		ra
 audio/x-wav			wav
+audio/x-vorbis			ogg
 chemical/x-pdb			pdb
 chemical/x-xyz			xyz
 image/bmp			bmp
@@ -575,6 +598,7 @@ video/mp4v-es
 video/mpv
 video/mpeg			mpeg mpg mpe
 video/nv
+video/ogg			ogv oggv
 video/parityfec
 video/pointer
 video/quicktime			qt mov

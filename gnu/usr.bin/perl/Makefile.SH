@@ -647,9 +647,9 @@ CCDLFLAGS		= `echo $ccdlflags|sed -e 's@-bE:.*/perl\.exp@-bE:perl.exp@'`
 LIBPERL_NONSHR		= libperl_nonshr$(LIB_EXT)
 MINIPERL_NONSHR		= miniperl_nonshr$(EXE_EXT)
 
-$(LIBPERL_NONSHR): $(obj)
-	$(RMS) $(LIBPERL_NONSHR)
-	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
+#$(LIBPERL_NONSHR): $(obj)
+#	$(RMS) $(LIBPERL_NONSHR)
+#	$(AR) rcu $(LIBPERL_NONSHR) $(obj)
 
 $(MINIPERL_NONSHR): $(LIBPERL_NONSHR) miniperlmain$(OBJ_EXT) opmini$(OBJ_EXT)  perlmini$(OBJ_EXT)
 	$(CC) $(LDFLAGS) -o $(MINIPERL_NONSHR) miniperlmain$(OBJ_EXT) \
@@ -729,33 +729,33 @@ $(DTRACE_O): perldtrace.d
 		;;
     esac
 	$spitshell >>$Makefile <<'!NO!SUBS!'
-$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
-!NO!SUBS!
-	case "$useshrplib" in
-	true)
-		$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f $@
-	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
-!NO!SUBS!
-		case "$osname" in
-		aix)
-			$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f libperl$(OBJ_EXT)
-	mv $@ libperl$(OBJ_EXT)
-	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
-!NO!SUBS!
-			;;
-		esac
-		;;
-	*)
-		$spitshell >>$Makefile <<'!NO!SUBS!'
-	rm -f $(LIBPERL)
-	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
-	@$(ranlib) $(LIBPERL)
-!NO!SUBS!
-		;;
-	esac
-	$spitshell >>$Makefile <<'!NO!SUBS!'
+#$(LIBPERL): $& $(obj) $(DYNALOADER) $(LIBPERLEXPORT)
+#!NO!SUBS!
+#	case "$useshrplib" in
+#	true)
+#		$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f $@
+#	$(LD) -o $@ $(SHRPLDFLAGS) $(obj) $(DYNALOADER) $(libs)
+#!NO!SUBS!
+#		case "$osname" in
+#		aix)
+#			$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f libperl$(OBJ_EXT)
+#	mv $@ libperl$(OBJ_EXT)
+#	$(AR) qv $(LIBPERL) libperl$(OBJ_EXT)
+#!NO!SUBS!
+#			;;
+#		esac
+#		;;
+#	*)
+#		$spitshell >>$Makefile <<'!NO!SUBS!'
+#	rm -f $(LIBPERL)
+#	$(AR) rcu $(LIBPERL) $(obj) $(DYNALOADER)
+#	@$(ranlib) $(LIBPERL)
+#!NO!SUBS!
+#		;;
+#	esac
+#	$spitshell >>$Makefile <<'!NO!SUBS!'
 
 # How to build executables.
 
@@ -1238,14 +1238,14 @@ _mopup:
 	-rm -f cygwin.c libperl*.def libperl*.dll cygperl*.dll *.exe.stackdump
 	-rm -f perl$(EXE_EXT) suidperl$(EXE_EXT) miniperl$(EXE_EXT) $(LIBPERL) libperl.* microperl
 	-rm -f opcode.h-old opnames.h-old pp.sym-old pp_proto.h-old
-	-rm -f config.arch config.over $(DTRACE_H)
+	-rm -f $(DTRACE_H)
 
 # Do not 'make _tidy' directly.
 _tidy:
 	-cd pod; $(LDLIBPTH) $(MAKE) clean
 	-cd utils; $(LDLIBPTH) $(MAKE) clean
 	-cd x2p; $(LDLIBPTH) $(MAKE) clean
-	-rm -f lib/Config_git.pl git_version.h
+	-rm -f lib/Config_git.pl
 	-@for x in $(DYNALOADER) $(dynamic_ext) $(static_ext) $(nonxs_ext) ; do \
 	$(LDLIBPTH) $(RUN) ./miniperl$(EXE_EXT) -Ilib make_ext.pl --target=clean $$x MAKE=$(MAKE) ; \
 	done

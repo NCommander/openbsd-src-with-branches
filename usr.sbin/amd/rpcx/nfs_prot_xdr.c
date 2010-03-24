@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)nfs_prot_xdr.c	8.1 (Berkeley) 6/6/93
- *	$Id: nfs_prot_xdr.c,v 1.3 1994/12/08 21:41:26 christos Exp $
+ *	$Id: nfs_prot_xdr.c,v 1.2 2002/09/10 05:41:04 deraadt Exp $
  *
  */
 
@@ -359,7 +355,8 @@ xdr_readokres(xdrs, objp)
 	if (!xdr_fattr(xdrs, &objp->attributes)) {
 		return (FALSE);
 	}
-	if (!xdr_bytes(xdrs, (char **)&objp->data.data_val, (u_int *)&objp->data.data_len, NFS_MAXDATA)) {
+	if (!xdr_bytes(xdrs, (char **)&objp->data.data_val,
+	    (u_int *)&objp->data.data_len, NFS_MAXDATA)) {
 		return (FALSE);
 	}
 	return (TRUE);
@@ -406,7 +403,8 @@ xdr_writeargs(xdrs, objp)
 	if (!xdr_u_int(xdrs, &objp->totalcount)) {
 		return (FALSE);
 	}
-	if (!xdr_bytes(xdrs, (char **)&objp->data.data_val, (u_int *)&objp->data.data_len, NFS_MAXDATA)) {
+	if (!xdr_bytes(xdrs, (char **)&objp->data.data_val,
+	    (u_int *)&objp->data.data_len, NFS_MAXDATA)) {
 		return (FALSE);
 	}
 	return (TRUE);
@@ -534,7 +532,8 @@ xdr_entry(xdrs, objp)
 	if (!xdr_nfscookie(xdrs, objp->cookie)) {
 		return (FALSE);
 	}
-	if (!xdr_pointer(xdrs, (char **)&objp->nextentry, sizeof(entry), xdr_entry)) {
+	if (!xdr_pointer(xdrs, (char **)&objp->nextentry,
+	    sizeof(entry), xdr_entry)) {
 		return (FALSE);
 	}
 	return (TRUE);
@@ -548,7 +547,8 @@ xdr_dirlist(xdrs, objp)
 	XDR *xdrs;
 	dirlist *objp;
 {
-	if (!xdr_pointer(xdrs, (char **)&objp->entries, sizeof(entry), xdr_entry)) {
+	if (!xdr_pointer(xdrs, (char **)&objp->entries,
+	    sizeof(entry), xdr_entry)) {
 		return (FALSE);
 	}
 	if (!xdr_bool(xdrs, &objp->eof)) {

@@ -47,7 +47,7 @@ static krb5_log_facility *log_facility;
 static struct getarg_strings addresses_str;
 krb5_addresses explicit_addresses;
 
-static sig_atomic_t exit_flag = 0;
+static volatile sig_atomic_t exit_flag = 0;
 
 static void
 add_one_address (const char *str, int first)
@@ -687,6 +687,11 @@ doit (krb5_keytab keytab, int port)
 			 buf, ret);
 	    }
     }
+
+    for (i = 0; i < n; ++i)
+	close(sockets[i]);
+    free(sockets);
+
     krb5_free_addresses (context, &addrs);
     krb5_free_host_realm (context, realms);
     krb5_free_context (context);

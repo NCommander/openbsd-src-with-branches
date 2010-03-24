@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: param.h,v 1.4 2007/05/28 21:02:49 thib Exp $	*/
 /*	$NetBSD: param.h,v 1.15 2006/08/28 13:43:35 yamt Exp $	*/
 
 /*-
@@ -89,7 +89,7 @@
 /*
  * u-space.
  */
-#define	UPAGES		2		/* pages of u-area */
+#define	UPAGES		3		/* pages of u-area */
 #define	USPACE		(UPAGES * NBPG)	/* total size of u-area */
 #define	USPACE_ALIGN	(0)
 #if UPAGES == 1
@@ -104,27 +104,17 @@
 #define	MSGBUFSIZE	NBPG		/* default message buffer size */
 #endif
 
-#define	btoc(x)		(((x) + PAGE_MASK) >> PAGE_SHIFT)
-#define	ctob(x)		((x) << PAGE_SHIFT)
+/* pages to disk blocks */
+#define	ctod(x)		((x) << (PAGE_SHIFT - DEV_BSHIFT))
+#define	dtoc(x)		((x) >> (PAGE_SHIFT - DEV_BSHIFT))
 
-#define	btodb(bytes)	 		/* calculates (bytes / DEV_BSIZE) */ \
-	((bytes) >> DEV_BSHIFT)
-#define	dbtob(db)			/* calculates (db * DEV_BSIZE) */ \
-	((db) << DEV_BSHIFT)
+/* bytes to disk blocks */
+#define	btodb(x)	((x) >> DEV_BSHIFT)
+#define	dbtob(x)	((x) << DEV_BSHIFT)
 
 /*
  * Constants related to network buffer management.
- * MCLBYTES must be no larger than NBPG (the software page size), and,
- * on machines that exchange pages of input or output buffers with mbuf
- * clusters (MAPPED_MBUFS), MCLBYTES must also be an integral multiple
- * of the hardware page size.
  */
-#define	MSIZE		256		/* size of an mbuf */
-
-#define	MCLSHIFT	11		/* convert bytes to m_buf clusters */
-					/* 2K cluster can hold Ether frame */
-#define	MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
-
 #define	NMBCLUSTERS	4096		/* map size, max cluster allocation */
 
 /*

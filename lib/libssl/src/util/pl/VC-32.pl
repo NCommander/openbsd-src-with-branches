@@ -307,7 +307,6 @@ sub do_lib_rule
 		$name =~ tr/a-z/A-Z/;
 		$name = "/def:ms/${name}.def";
 		}
-
 #	$target="\$(LIB_D)$o$target";
 #	$ret.="$target: $objs\n";
 	if (!$shlib)

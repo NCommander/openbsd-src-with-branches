@@ -1,3 +1,4 @@
+/*	$OpenBSD: cninit.c,v 1.7 2007/09/10 17:29:00 miod Exp $	*/
 /*	$NetBSD: cninit.c,v 1.2 1995/04/11 22:08:10 pk Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,9 +40,9 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-#include <sys/systm.h>
 #include <sys/buf.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
@@ -55,32 +52,57 @@
 
 #include <dev/cons.h>
 
-extern struct consdev constab[];
-
-extern struct	consdev *cn_tab;	/* physical console device info */
-
 void
 cninit()
 {
-	register struct consdev *cp;
+	struct consdev *cp;
 
 	/*
 	 * Collect information about all possible consoles
-	 * and find the one with highest priority
+	 * and find the one with highest priority.
 	 */
 	for (cp = constab; cp->cn_probe; cp++) {
 		(*cp->cn_probe)(cp);
-		if (cp->cn_pri > CN_DEAD &&
+		if (cp->cn_pri != CN_DEAD &&
 		    (cn_tab == NULL || cp->cn_pri > cn_tab->cn_pri))
 			cn_tab = cp;
 	}
+
 	/*
-	 * No console, we can handle it
+	 * No console, we can handle it.
 	 */
 	if ((cp = cn_tab) == NULL)
 		return;
+
 	/*
-	 * Turn on console
+	 * Turn on console.
 	 */
 	(*cp->cn_init)(cp);
+}
+
+int
+cnset(dev)
+	dev_t dev;
+{
+	struct consdev *cp;
+
+	/*
+	 * Look for the specified console device and use it.
+	 */
+	for (cp = constab; cp->cn_probe; cp++) {
+		if (major(cp->cn_dev) == major(dev)) {
+			/* Short-circuit noop. */
+			if (cp == cn_tab && cp->cn_dev == dev)
+				return (0);
+			if (cp->cn_pri != CN_DEAD) {
+				cn_tab = cp;
+				cp->cn_dev = dev;
+				/* Turn it on.  */
+				(*cp->cn_init)(cp);
+				return (0);
+			}
+			break;
+		}
+	}
+	return (1);
 }

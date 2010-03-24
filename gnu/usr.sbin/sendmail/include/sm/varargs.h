@@ -6,12 +6,11 @@
  * forth in the LICENSE file which can be found at the top level of
  * the sendmail distribution.
  *
- *	$Sendmail: varargs.h,v 1.6 2001/04/23 17:58:27 ca Exp $
+ *	$Sendmail: varargs.h,v 1.8 2002/07/29 21:31:00 gshapiro Exp $
  */
 
 /*
 **  libsm variable argument lists
-**  See libsm/varargs.html for documentation.
 */
 
 #ifndef SM_VARARGS_H
@@ -32,7 +31,7 @@
 # elif defined(__va_copy)
 #  define SM_VA_COPY(dst, src)	__va_copy((dst), (src))
 # else
-#  define SM_VA_COPY(dst, src)	(dst) = (src)
+#  define SM_VA_COPY(dst, src)	memcpy(&(dst), &(src), sizeof((dst)))
 # endif
 
 /*

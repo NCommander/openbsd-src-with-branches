@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/resource.h>
 
 #include <net/route.h>
 
@@ -47,21 +48,44 @@
 #include <kvm.h>
 #include <nlist.h>
 
-#define DEFAULT_PORT		"12345"
-#define DEFAULT_STATS_INTERVAL	1000		/* ms */
-#define DEFAULT_BUF 		256 * 1024
+#define DEFAULT_PORT "12345"
+#define DEFAULT_STATS_INTERVAL 1000 /* ms */
+#define DEFAULT_BUF 256 * 1024
+#define MAX_FD 1024
 
 sig_atomic_t done = 0;
-sig_atomic_t print_stats = 0;
+sig_atomic_t proc_slice = 0;
 
+static u_int  rdomain;
+static char **kflag;
+static size_t Bflag;
+static int    Sflag;
+static int    rflag;
+static int    sflag;
+static int    vflag;
+
+/* stats for a single connection */
 struct statctx {
-	struct timeval t_start, t_last, t_cur;
+	struct timeval t_start, t_last;
 	unsigned long long bytes;
-	pid_t pid;
 	u_long tcbaddr;
-	kvm_t *kh;
 	char **kvars;
+	kvm_t *kh;
 };
+
+/*
+ * We account the mainstats here, that is the stats
+ * for all connections, all variables starting with slice
+ * are used to account information for the timeslice
+ * between each output. Peak variables record the highest
+ * between all slices so far.
+ */
+static struct {
+	unsigned long long slice_bytes; /* bytes for last slice */
+	struct timeval t_start;	        /* when we started counting */
+	long double peak_mbps;		/* peak mbps so far */
+	int nconns; 		        /* connected clients */
+} mainstats;
 
 /* When adding variables, also add to stats_display() */
 static const char *allowed_kvars[] = {
@@ -103,7 +127,7 @@ exitsighand(int signo)
 static void
 alarmhandler(int signo)
 {
-	print_stats = 1;
+	proc_slice = 1;
 	signal(signo, alarmhandler);
 }
 
@@ -111,24 +135,11 @@ static void __dead
 usage(void)
 {
 	fprintf(stderr,
-"Usage:\n"
-"    bench -l\n"
-"    bench [-v] [-p port] [-r rate] [host]\n"
-"    bench [-v] [-p port] [-r rate] -s\n"
-"Options:\n"
-"    -B buf       Set read/write buffer space (default: %u)\n"
-"    -h           Display this help\n"
-"    -l           List kernel vars and exit\n"
-"    -k var[,var] List of kernel PCB, TCB and socket variables to display\n"
-"                 (requires read access to /dev/kmem)\n"
-"    -p port      Specify port (default: %s)\n"
-"    -s           Server mode - listen for connections\n"
-"                 (default: client mode - initiate connection)\n"
-"    -r rate      Statistics display interval in milliseconds, or 0 to\n"
-"                 disable (default: %d)\n"
-"    -S space     Set socket send/receive space (default: kernel default)\n"
-"    -v           Increase verbosity\n",
-	    DEFAULT_BUF, DEFAULT_PORT, DEFAULT_STATS_INTERVAL);
+	    "usage: tcpbench -l\n"
+	    "       tcpbench [-v] [-B buf] [-k kvars] [-n connections] [-p port]\n"
+	    "                [-r rate] [-S space] [-V rdomain] hostname\n"
+	    "       tcpbench -s [-v] [-B buf] [-k kvars] [-p port]\n"
+	    "                [-r rate] [-S space] [-V rdomain]\n");
 	exit(1);
 }
 
@@ -138,8 +149,8 @@ saddr_ntop(const struct sockaddr *addr, socklen_t alen, char *buf, size_t len)
 	char hbuf[NI_MAXHOST], pbuf[NI_MAXSERV];
 	int herr;
 
-	if (getnameinfo(addr, alen, hbuf, sizeof(hbuf), pbuf, sizeof(pbuf),
-	    NI_NUMERICHOST|NI_NUMERICSERV) != 0) {
+	if ((herr = getnameinfo(addr, alen, hbuf, sizeof(hbuf),
+	    pbuf, sizeof(pbuf), NI_NUMERICHOST|NI_NUMERICSERV)) != 0) {
 		if (herr == EAI_SYSTEM)
 			err(1, "getnameinfo");
 		else
@@ -149,14 +160,47 @@ saddr_ntop(const struct sockaddr *addr, socklen_t alen, char *buf, size_t len)
 }
 
 static void
-kget(kvm_t *kh, u_long addr, void *buf, int size)
+set_timer(int toggle)
 {
-	if (kvm_read(kh, addr, buf, size) != size)
+	struct itimerval itv;
+
+	if (rflag <= 0)
+		return;
+
+	if (toggle) {
+		itv.it_interval.tv_sec = rflag / 1000;
+		itv.it_interval.tv_usec = (rflag % 1000) * 1000;
+		itv.it_value = itv.it_interval;
+	}
+	else
+		bzero(&itv, sizeof(itv));
+		
+	setitimer(ITIMER_REAL, &itv, NULL);
+}
+
+static void
+print_header(void)
+{
+	char **kv;
+	
+	printf("%12s %14s %12s %8s ", "elapsed_ms", "bytes", "mbps",
+	    "bwidth");
+	
+	for (kv = kflag;  kflag != NULL && *kv != NULL; kv++) 
+		printf("%s%s", kv != kflag ? "," : "", *kv);
+	
+	printf("\n");
+}
+
+static void
+kget(kvm_t *kh, u_long addr, void *buf, size_t size)
+{
+	if (kvm_read(kh, addr, buf, size) != (ssize_t)size)
 		errx(1, "kvm_read: %s", kvm_geterr(kh));
 }
 
 static u_long
-kfind_tcb(kvm_t *kh, u_long ktcbtab, int sock, int vflag)
+kfind_tcb(kvm_t *kh, u_long ktcbtab, int sock)
 {
 	struct inpcbtable tcbtab;
 	struct inpcb *head, *next, *prev;
@@ -168,7 +212,9 @@ kfind_tcb(kvm_t *kh, u_long ktcbtab, int sock, int vflag)
 	struct sockaddr_in *in4;
 	struct sockaddr_in6 *in6;
 	char tmp1[64], tmp2[64];
+	int nretry;
 
+	nretry = 10;
 	melen = themlen = sizeof(struct sockaddr_storage);
 	if (getsockname(sock, (struct sockaddr *)&me, &melen) == -1)
 		err(1, "getsockname");
@@ -187,7 +233,7 @@ kfind_tcb(kvm_t *kh, u_long ktcbtab, int sock, int vflag)
 	}
 	if (vflag >= 2)
 		fprintf(stderr, "Using PCB table at %lu\n", ktcbtab);
-
+retry:
 	kget(kh, ktcbtab, &tcbtab, sizeof(tcbtab));
 	prev = head = (struct inpcb *)&CIRCLEQ_FIRST(
 	    &((struct inpcbtable *)ktcbtab)->inpt_queue);
@@ -199,8 +245,15 @@ kfind_tcb(kvm_t *kh, u_long ktcbtab, int sock, int vflag)
 		if (vflag >= 2)
 			fprintf(stderr, "Checking PCB %p\n", next);
 		kget(kh, (u_long)next, &inpcb, sizeof(inpcb));
-		if (CIRCLEQ_PREV(&inpcb, inp_queue) != prev)
-			errx(1, "pcb prev pointer insane");
+		if (CIRCLEQ_PREV(&inpcb, inp_queue) != prev) {
+			if (nretry--) {
+				warnx("pcb prev pointer insane");
+				goto retry;
+			}
+			else
+				errx(1, "pcb prev pointer insane,"
+				     " all attempts exausted");
+		}
 		prev = next;
 		next = CIRCLEQ_NEXT(&inpcb, inp_queue);
 
@@ -280,7 +333,7 @@ kupdate_stats(kvm_t *kh, u_long tcbaddr,
 static void
 check_kvar(const char *var)
 {
-	size_t i;
+	u_int i;
 
 	for (i = 0; allowed_kvars[i] != NULL; i++)
 		if (strcmp(allowed_kvars[i], var) == 0)
@@ -291,7 +344,7 @@ check_kvar(const char *var)
 static void
 list_kvars(void)
 {
-	size_t i;
+	u_int i;
 
 	fprintf(stderr, "Supported kernel variables:\n");
 	for (i = 0; allowed_kvars[i] != NULL; i++)
@@ -302,7 +355,7 @@ static char **
 check_prepare_kvars(char *list)
 {
 	char *item, **ret = NULL;
-	size_t n = 0;
+	u_int n = 0;
 
 	while ((item = strsep(&list, ", \t\n")) != NULL) {
 		check_kvar(item);
@@ -316,194 +369,181 @@ check_prepare_kvars(char *list)
 }
 
 static void
-stats_prepare(struct statctx *sc, int fd, kvm_t *kh, u_long ktcbtab,
-    int rflag, int vflag, char **kflag)
+stats_prepare(struct statctx *sc, int fd, kvm_t *kh, u_long ktcbtab)
 {
-	struct itimerval itv;
-	int i;
-
 	if (rflag <= 0)
 		return;
 	sc->kh = kh;
 	sc->kvars = kflag;
 	if (kflag)
-		sc->tcbaddr = kfind_tcb(kh, ktcbtab, fd, vflag);
-	gettimeofday(&sc->t_start, NULL);
+		sc->tcbaddr = kfind_tcb(kh, ktcbtab, fd);
+	if (gettimeofday(&sc->t_start, NULL) == -1)
+		err(1, "gettimeofday");
 	sc->t_last = sc->t_start;
-	signal(SIGALRM, alarmhandler);
-	itv.it_interval.tv_sec = rflag / 1000;
-	itv.it_interval.tv_usec = (rflag % 1000) * 1000;
-	itv.it_value = itv.it_interval;
-	setitimer(ITIMER_REAL, &itv, NULL);
 	sc->bytes = 0;
-	sc->pid = getpid();
-
-	printf("%8s %12s %14s %12s ", "pid", "elapsed_ms", "bytes", "Mbps");
-	if (sc->kvars != NULL) {
-		for (i = 0; sc->kvars[i] != NULL; i++)
-			printf("%s%s", i > 0 ? "," : "", sc->kvars[i]);
-	}
-	printf("\n");
-	fflush(stdout);
 }
 
 static void
 stats_update(struct statctx *sc, ssize_t n)
 {
 	sc->bytes += n;
+	mainstats.slice_bytes += n;
 }
 
 static void
-stats_display(struct statctx *sc)
+stats_cleanslice(void)
 {
-	struct timeval t_diff;
-	unsigned long long total_elapsed, since_last;
-	size_t i;
-	struct inpcb inpcb;
-	struct tcpcb tcpcb;
-	struct socket sockb;
+	mainstats.slice_bytes = 0;
+}
 
-	gettimeofday(&sc->t_cur, NULL);
-	timersub(&sc->t_cur, &sc->t_start, &t_diff);
-	total_elapsed = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
-	timersub(&sc->t_cur, &sc->t_last, &t_diff);
-	since_last = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
-	printf("%8ld %12llu %14llu %12.3Lf ", (long)sc->pid,
-	    total_elapsed, sc->bytes,
-	    (long double)(sc->bytes * 8) / (since_last * 1000.0));
-	sc->t_last = sc->t_cur;
-	sc->bytes = 0;
-
+static void
+stats_display(unsigned long long total_elapsed, long double mbps,
+    float bwperc, struct statctx *sc, struct inpcb *inpcb,
+    struct tcpcb *tcpcb, struct socket *sockb)
+{
+	int j;
+	
+	printf("%12llu %14llu %12.3Lf %7.2f%% ", total_elapsed, sc->bytes,
+	    mbps, bwperc);
+	
 	if (sc->kvars != NULL) {
-		kupdate_stats(sc->kh, sc->tcbaddr, &inpcb, &tcpcb, &sockb);
-		for (i = 0; sc->kvars[i] != NULL; i++) {
-#define P(v, f) \
-	if (strcmp(sc->kvars[i], #v) == 0) { \
-		printf("%s"f, i > 0 ? "," : "", v); \
-		continue; \
-	}
-			P(inpcb.inp_flags, "0x%08x")
-			P(sockb.so_rcv.sb_cc, "%lu")
-			P(sockb.so_rcv.sb_hiwat, "%lu")
-			P(sockb.so_snd.sb_cc, "%lu")
-			P(sockb.so_snd.sb_hiwat, "%lu")
-			P(tcpcb.snd_una, "%u")
-			P(tcpcb.snd_nxt, "%u")
-			P(tcpcb.snd_wl1, "%u")
-			P(tcpcb.snd_wl2, "%u")
-			P(tcpcb.snd_wnd, "%lu")
-			P(tcpcb.rcv_wnd, "%lu")
-			P(tcpcb.rcv_nxt, "%u")
-			P(tcpcb.rcv_adv, "%u")
-			P(tcpcb.snd_max, "%u")
-			P(tcpcb.snd_cwnd, "%lu")
-			P(tcpcb.snd_ssthresh, "%lu")
-			P(tcpcb.t_rcvtime, "%u")
-			P(tcpcb.t_rtttime, "%u")
-			P(tcpcb.t_rtseq, "%u")
-			P(tcpcb.t_srtt, "%hu")
-			P(tcpcb.t_rttvar, "%hu")
-			P(tcpcb.t_rttmin, "%hu")
-			P(tcpcb.max_sndwnd, "%lu")
-			P(tcpcb.snd_scale, "%u")
-			P(tcpcb.rcv_scale, "%u")
-			P(tcpcb.last_ack_sent, "%u")
+		kupdate_stats(sc->kh, sc->tcbaddr, inpcb, tcpcb,
+		    sockb);
+
+		for (j = 0; sc->kvars[j] != NULL; j++) {
+#define S(a) #a
+#define P(b, v, f)							\
+			if (strcmp(sc->kvars[j], S(b.v)) == 0) {	\
+				printf("%s"f, j > 0 ? "," : "", b->v);	\
+				continue;				\
+			}
+			P(inpcb, inp_flags, "0x%08x")
+			P(sockb, so_rcv.sb_cc, "%lu")
+			P(sockb, so_rcv.sb_hiwat, "%lu")
+			P(sockb, so_snd.sb_cc, "%lu")
+			P(sockb, so_snd.sb_hiwat, "%lu")
+			P(tcpcb, snd_una, "%u")
+			P(tcpcb, snd_nxt, "%u")
+			P(tcpcb, snd_wl1, "%u")
+			P(tcpcb, snd_wl2, "%u")
+			P(tcpcb, snd_wnd, "%lu")
+			P(tcpcb, rcv_wnd, "%lu")
+			P(tcpcb, rcv_nxt, "%u")
+			P(tcpcb, rcv_adv, "%u")
+			P(tcpcb, snd_max, "%u")
+			P(tcpcb, snd_cwnd, "%lu")
+			P(tcpcb, snd_ssthresh, "%lu")
+			P(tcpcb, t_rcvtime, "%u")
+			P(tcpcb, t_rtttime, "%u")
+			P(tcpcb, t_rtseq, "%u")
+			P(tcpcb, t_srtt, "%hu")
+			P(tcpcb, t_rttvar, "%hu")
+			P(tcpcb, t_rttmin, "%hu")
+			P(tcpcb, max_sndwnd, "%lu")
+			P(tcpcb, snd_scale, "%u")
+			P(tcpcb, rcv_scale, "%u")
+			P(tcpcb, last_ack_sent, "%u")
+#undef S			    
 #undef P
 		}
 	}
 	printf("\n");
-	fflush(stdout);
 }
 
 static void
-stats_finish(struct statctx *sc)
+mainstats_display(long double slice_mbps, long double avg_mbps)
 {
-	struct itimerval itv;
-
-	signal(SIGALRM, SIG_DFL);
-	bzero(&itv, sizeof(itv));
-	setitimer(ITIMER_REAL, &itv, NULL);
+	printf("Conn: %3d Mbps: %12.3Lf Peak Mbps: %12.3Lf Avg Mbps: %12.3Lf\n",
+	    mainstats.nconns, slice_mbps, mainstats.peak_mbps, avg_mbps); 
 }
 
-static void __dead
-handle_connection(kvm_t *kvmh, u_long ktcbtab, int sock, int vflag,
-    int rflag, char **kflag, int Bflag)
+static void
+process_slice(struct statctx *sc, size_t nsc)
 {
-	char *buf;
-	struct pollfd pfd;
-	ssize_t n;
-	int r;
-	struct statctx sc;
+	unsigned long long total_elapsed, since_last;
+	long double mbps, slice_mbps = 0;
+	float bwperc;
+	nfds_t i;
+	struct timeval t_cur, t_diff;
+	struct inpcb inpcb;
+	struct tcpcb tcpcb;
+	struct socket sockb;
+	
+	for (i = 0; i < nsc; i++, sc++) {
+		if (gettimeofday(&t_cur, NULL) == -1)
+			err(1, "gettimeofday");
+		if (sc->kvars != NULL) /* process kernel stats */
+			kupdate_stats(sc->kh, sc->tcbaddr, &inpcb, &tcpcb,
+			    &sockb);
+		timersub(&t_cur, &sc->t_start, &t_diff);
+		total_elapsed = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
+		timersub(&t_cur, &sc->t_last, &t_diff);
+		since_last = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
+		bwperc = (sc->bytes * 100.0) / mainstats.slice_bytes;
+		mbps = (sc->bytes * 8) / (since_last * 1000.0);
+		slice_mbps += mbps;
+		
+		stats_display(total_elapsed, mbps, bwperc, sc,
+		    &inpcb, &tcpcb, &sockb);
+		
+		sc->t_last = t_cur;
+		sc->bytes = 0;
 
-	if ((buf = malloc(Bflag)) == NULL)
-		err(1, "malloc");
-	if ((r = fcntl(sock, F_GETFL, 0)) == -1)
-		err(1, "fcntl(F_GETFL)");
-	r |= O_NONBLOCK;
-	if (fcntl(sock, F_SETFL, r) == -1)
-		err(1, "fcntl(F_SETFL, O_NONBLOCK)");
-
-	signal(SIGINT, exitsighand);
-	signal(SIGTERM, exitsighand);
-	signal(SIGHUP, exitsighand);
-	signal(SIGPIPE, SIG_IGN);
-
-	bzero(&pfd, sizeof(pfd));
-	pfd.fd = sock;
-	pfd.events = POLLIN;
-
-	stats_prepare(&sc, sock, kvmh, ktcbtab, rflag, vflag, kflag);
-
-	while (!done) {
-		if (print_stats) {
-			stats_display(&sc);
-			print_stats = 0;
-		}
-		if (poll(&pfd, 1, INFTIM) == -1) {
-			if (errno == EINTR)
-				continue;
-			err(1, "poll");
-		}
-		if ((n = read(pfd.fd, buf, Bflag)) == -1) {
-			if (errno == EINTR || errno == EAGAIN)
-				continue;
-			err(1, "read");
-		}
-		if (n == 0) {
-			fprintf(stderr, "%8ld closed by remote end\n",
-			    (long)getpid());
-			done = -1;
-			break;
-		}
-		if (vflag >= 3)
-			fprintf(stderr, "read: %zd bytes\n", n);
-		stats_update(&sc, n);
 	}
-	stats_finish(&sc);
 
-	free(buf);
-	close(sock);
-	exit(1);
+	/* process stats for this slice */
+	if (slice_mbps > mainstats.peak_mbps)
+		mainstats.peak_mbps = slice_mbps;
+	mainstats_display(slice_mbps, slice_mbps / mainstats.nconns);
 }
 
-static void __dead
-serverloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop,
-    int vflag, int rflag, char **kflag, int Sflag, int Bflag)
+static int
+handle_connection(struct statctx *sc, int fd, char *buf, size_t buflen)
+{
+	ssize_t n;
+
+again:
+	n = read(fd, buf, buflen);
+	if (n == -1) {
+		if (errno == EINTR)
+			goto again;
+		else if (errno == EWOULDBLOCK) 
+			return 0;
+		warn("fd %d read error", fd);
+		
+		return -1;
+	}
+	else if (n == 0) {
+		if (vflag)
+			fprintf(stderr, "%8d closed by remote end\n", fd);
+		close(fd);
+		return -1;
+	}
+	if (vflag >= 3)
+		fprintf(stderr, "read: %zd bytes\n", n);
+	
+	stats_update(sc, n);
+	return 0;
+}
+
+static nfds_t
+serverbind(struct pollfd *pfd, nfds_t max_nfds, struct addrinfo *aitop)
 {
 	char tmp[128];
-	int r, sock, client_id, on = 1;
+	int sock, on = 1;
 	struct addrinfo *ai;
-	struct pollfd *pfd;
-	struct sockaddr_storage ss;
-	socklen_t sslen;
-	size_t nfds, i, j;
+	nfds_t lnfds;
 
-	pfd = NULL;
-	nfds = 0;
+	lnfds = 0;
 	for (ai = aitop; ai != NULL; ai = ai->ai_next) {
+		if (lnfds == max_nfds) {
+			fprintf(stderr,
+			    "maximum number of listening fds reached\n");
+			break;
+		}
 		saddr_ntop(ai->ai_addr, ai->ai_addrlen, tmp, sizeof(tmp));
 		if (vflag)
-			fprintf(stderr, "Try listen on %s\n", tmp);
+			fprintf(stderr, "Try to listen on %s\n", tmp);
 		if ((sock = socket(ai->ai_family, ai->ai_socktype,
 		    ai->ai_protocol)) == -1) {
 			if (ai->ai_next == NULL)
@@ -512,6 +552,12 @@ serverloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop,
 				warn("socket");
 			continue;
 		}
+		if (rdomain && ai->ai_family == AF_INET) {
+			if (setsockopt(sock, IPPROTO_IP, SO_RDOMAIN,
+			    &rdomain, sizeof(rdomain)) == -1)
+				err(1, "setsockopt SO_RDOMAIN");
+		} else if (rdomain)
+			warnx("rdomain only supported on AF_INET");
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
 		    &on, sizeof(on)) == -1)
 			warn("reuse port");
@@ -536,176 +582,280 @@ serverloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop,
 			close(sock);
 			continue;
 		}
-		if (nfds > 128)
-			break;
-		if ((pfd = realloc(pfd, ++nfds * sizeof(*pfd))) == NULL)
-			errx(1, "realloc(pfd * %zu)", nfds);
-		pfd[nfds - 1].fd = sock;
-		pfd[nfds - 1].events = POLLIN;
+		if (vflag >= 3)
+			fprintf(stderr, "listening on fd %d\n", sock);
+		lnfds++;
+		pfd[lnfds - 1].fd = sock;
+		pfd[lnfds - 1].events = POLLIN;
+
 	}
 	freeaddrinfo(aitop);
-	if (nfds == 0)
+	if (lnfds == 0)
 		errx(1, "No working listen addresses found");
 
-	signal(SIGINT, exitsighand);
-	signal(SIGTERM, exitsighand);
-	signal(SIGHUP, exitsighand);
-	signal(SIGPIPE, SIG_IGN);
-	signal(SIGCHLD, SIG_IGN);
+	return lnfds;
+}	
 
+static void
+set_listening(struct pollfd *pfd, nfds_t lfds, int toggle) {
+	int i;
+
+	for (i = 0; i < (int)lfds; i++) {
+		if (toggle)
+			pfd[i].events = POLLIN;
+		else
+			pfd[i].events = 0;
+	}
+			
+}
+static void __dead
+serverloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop)
+{
+	socklen_t sslen;
+	struct pollfd *pfd;
+	char tmp[128], *buf;
+	struct statctx *psc;
+	struct sockaddr_storage ss;
+	nfds_t i, nfds, lfds;
+	size_t nalloc;
+	int r, sock, client_id;
+
+	sslen = sizeof(ss);
+	nalloc = 128;
+	if ((pfd = calloc(sizeof(*pfd), nalloc)) == NULL)
+		err(1, "calloc");
+	if ((psc = calloc(sizeof(*psc), nalloc)) == NULL)
+		err(1, "calloc");
+	if ((buf = malloc(Bflag)) == NULL)
+		err(1, "malloc");
+	lfds = nfds = serverbind(pfd, nalloc - 1, aitop);
+	if (vflag >= 3)
+		fprintf(stderr, "listening on %d fds\n", lfds);
 	if (setpgid(0, 0) == -1)
 		err(1, "setpgid");
-
+	
+	print_header();
+	
 	client_id = 0;
-	while (!done) {		
+	while (!done) {
+		if (proc_slice) { 
+			process_slice(psc + lfds, nfds - lfds);
+			stats_cleanslice();
+			proc_slice = 0;
+		}
+		if (vflag >= 3) 
+			fprintf(stderr, "mainstats.nconns = %u\n",
+			    mainstats.nconns);
 		if ((r = poll(pfd, nfds, INFTIM)) == -1) {
 			if (errno == EINTR)
 				continue;
 			warn("poll");
 			break;
 		}
+
 		if (vflag >= 3)
 			fprintf(stderr, "poll: %d\n", r);
 		for (i = 0 ; r > 0 && i < nfds; i++) {
 			if ((pfd[i].revents & POLLIN) == 0)
 				continue;
-			if (vflag >= 3)
-				fprintf(stderr, "fd %d active\n", pfd[i].fd);
+			if (pfd[i].fd == -1)
+				errx(1, "pfd insane");
 			r--;
-			sslen = sizeof(ss);
-			if ((sock = accept(pfd[i].fd, (struct sockaddr *)&ss,
-			    &sslen)) == -1) {
-				if (errno == EINTR)
+			if (vflag >= 3)
+				fprintf(stderr, "fd %d active i = %d\n",
+				    pfd[i].fd, i);
+			/* new connection */
+			if (i < lfds) {
+				if ((sock = accept(pfd[i].fd,
+				    (struct sockaddr *)&ss,
+				    &sslen)) == -1) {
+					if (errno == EINTR)
+						continue;
+					else if (errno == EMFILE ||
+					    errno == ENFILE)
+						set_listening(pfd, lfds, 0);
+					warn("accept");
 					continue;
-				warn("accept");
-				break;
+				}
+				if ((r = fcntl(sock, F_GETFL, 0)) == -1)
+					err(1, "fcntl(F_GETFL)");
+				r |= O_NONBLOCK;
+				if (fcntl(sock, F_SETFL, r) == -1)
+					err(1, "fcntl(F_SETFL, O_NONBLOCK)");
+				saddr_ntop((struct sockaddr *)&ss, sslen,
+				    tmp, sizeof(tmp));
+				if (vflag)
+					fprintf(stderr,
+					    "Accepted connection %d from "
+					    "%s, fd = %d\n", client_id++, tmp,
+					     sock);
+				/* alloc more space if we're full */
+				if (nfds == nalloc) {
+					nalloc *= 2;
+					if ((pfd = realloc(pfd,
+					    sizeof(*pfd) * nalloc)) == NULL)
+						err(1, "realloc");
+					if ((psc = realloc(psc,
+					    sizeof(*psc) * nalloc)) == NULL)
+						err(1, "realloc");
+				}
+				pfd[nfds].fd = sock;
+				pfd[nfds].events = POLLIN;
+				stats_prepare(&psc[nfds], sock, kvmh, ktcbtab);
+				nfds++;
+				if (!mainstats.nconns++)
+					set_timer(1);
+				continue;
 			}
-			saddr_ntop((struct sockaddr *)&ss, sslen,
-			    tmp, sizeof(tmp));
-			if (vflag)
-				fprintf(stderr, "Accepted connection %d from "
-				    "%s, fd = %d\n", client_id++, tmp, sock);
-			switch (fork()) {
-			case -1:
-				warn("fork");
-				done = -1;
-				break;
-			case 0:
-				for (j = 0; j < nfds; j++)
-					if (j != i)
-						close(pfd[j].fd);
-				handle_connection(kvmh, ktcbtab, sock,
-				    vflag, rflag, kflag, Bflag);
-				/* NOTREACHED */
-				_exit(1);
-			default:
-				close(sock);
-				break;
+			/* event in fd */
+			if (vflag >= 3)
+				fprintf(stderr,
+				    "fd %d active", pfd[i].fd);
+			while (handle_connection(&psc[i], pfd[i].fd,
+			    buf, Bflag) == -1) {
+				pfd[i] = pfd[nfds - 1];
+				pfd[nfds - 1].fd = -1;
+				psc[i] = psc[nfds - 1];
+				mainstats.nconns--;
+				nfds--;
+				/* stop display if no clients */
+				if (!mainstats.nconns) {
+					proc_slice = 1;
+					set_timer(0);
+				}
+				/* if we were full */
+				set_listening(pfd, lfds, 1);
+
+				/* is there an event pending on the last fd? */
+				if (pfd[i].fd == -1 ||
+				    (pfd[i].revents & POLLIN) == 0)
+					break;
 			}
-			if (done == -1)
-				break;
 		}
 	}
-	for (i = 0; i < nfds; i++)
-		close(pfd[i].fd);
-	if (done > 0)
-		warnx("Terminated by signal %d", done);
-	signal(SIGTERM, SIG_IGN);
-	killpg(0, SIGTERM);
 	exit(1);
 }
 
-static void __dead
-clientloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop,
-    int vflag, int rflag, char **kflag, int Sflag, int Bflag)
+void
+clientconnect(struct addrinfo *aitop, struct pollfd *pfd, int nconn)
 {
 	char tmp[128];
-	char *buf;
-	int r, sock;
 	struct addrinfo *ai;
-	struct pollfd pfd;
+	int i, r, sock;
+
+	for (i = 0; i < nconn; i++) {
+		for (sock = -1, ai = aitop; ai != NULL; ai = ai->ai_next) {
+			saddr_ntop(ai->ai_addr, ai->ai_addrlen, tmp,
+			    sizeof(tmp));
+			if (vflag && i == 0)
+				fprintf(stderr, "Trying %s\n", tmp);
+			if ((sock = socket(ai->ai_family, ai->ai_socktype,
+			    ai->ai_protocol)) == -1) {
+				if (ai->ai_next == NULL)
+					err(1, "socket");
+				if (vflag)
+					warn("socket");
+				continue;
+			}
+			if (rdomain && ai->ai_family == AF_INET) {
+				if (setsockopt(sock, IPPROTO_IP, SO_RDOMAIN,
+				    &rdomain, sizeof(rdomain)) == -1)
+					err(1, "setsockopt SO_RDOMAIN");
+			} else if (rdomain)
+				warnx("rdomain only supported on AF_INET");
+			if (Sflag) {
+				if (setsockopt(sock, SOL_SOCKET, SO_SNDBUF,
+				    &Sflag, sizeof(Sflag)) == -1)
+					warn("set TCP send buffer size");
+			}
+			if (connect(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
+				if (ai->ai_next == NULL)
+					err(1, "connect");
+				if (vflag)
+					warn("connect");
+				close(sock);
+				sock = -1;
+				continue;
+			}
+			break;
+		}
+		if (sock == -1)
+			errx(1, "No host found");
+
+		if ((r = fcntl(sock, F_GETFL, 0)) == -1)
+			err(1, "fcntl(F_GETFL)");
+		r |= O_NONBLOCK;
+		if (fcntl(sock, F_SETFL, r) == -1)
+			err(1, "fcntl(F_SETFL, O_NONBLOCK)");
+
+		pfd[i].fd = sock;
+		pfd[i].events = POLLOUT;
+	}
+	freeaddrinfo(aitop);
+
+	if (vflag && nconn > 1)
+		fprintf(stderr, "%u connections established\n", nconn);
+}
+
+static void __dead
+clientloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop, int nconn)
+{
+	struct statctx *psc;
+	struct pollfd *pfd;
+	char *buf;
+	int i, sock = -1;
 	ssize_t n;
-	struct statctx sc;
+
+	if ((pfd = calloc(nconn, sizeof(*pfd))) == NULL)
+		err(1, "clientloop pfd calloc");
+	if ((psc = calloc(nconn, sizeof(*psc))) == NULL)
+		err(1, "clientloop psc calloc");
+	
+	clientconnect(aitop, pfd, nconn);
+
+	for (i = 0; i < nconn; i++) {
+		stats_prepare(psc + i, sock, kvmh, ktcbtab);
+		mainstats.nconns++;
+	}
 
 	if ((buf = malloc(Bflag)) == NULL)
 		err(1, "malloc");
-	for (sock = -1, ai = aitop; ai != NULL; ai = ai->ai_next) {
-		saddr_ntop(ai->ai_addr, ai->ai_addrlen, tmp, sizeof(tmp));
-		if (vflag)
-			fprintf(stderr, "Trying %s\n", tmp);
-		if ((sock = socket(ai->ai_family, ai->ai_socktype,
-		    ai->ai_protocol)) == -1) {
-			if (ai->ai_next == NULL)
-				err(1, "socket");
-			if (vflag)
-				warn("socket");
-			continue;
-		}
-		if (Sflag) {
-			if (setsockopt(sock, SOL_SOCKET, SO_SNDBUF,
-			    &Sflag, sizeof(Sflag)) == -1)
-				warn("set TCP send buffer size");
-		}
-		if (connect(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
-			if (ai->ai_next == NULL)
-				err(1, "connect");
-			if (vflag)
-				warn("connect");
-			close(sock);
-			sock = -1;
-			continue;
-		}
-		break;
-	}
-	freeaddrinfo(aitop);
-	if (sock == -1)
-		errx(1, "No host found");
-
 	arc4random_buf(buf, Bflag);
 
-	if ((r = fcntl(sock, F_GETFL, 0)) == -1)
-		err(1, "fcntl(F_GETFL)");
-	r |= O_NONBLOCK;
-	if (fcntl(sock, F_SETFL, r) == -1)
-		err(1, "fcntl(F_SETFL, O_NONBLOCK)");
-
-	signal(SIGINT, exitsighand);
-	signal(SIGTERM, exitsighand);
-	signal(SIGHUP, exitsighand);
-	signal(SIGPIPE, SIG_IGN);
-
-	bzero(&pfd, sizeof(pfd));
-	pfd.fd = sock;
-	pfd.events = POLLOUT;
-
-	stats_prepare(&sc, sock, kvmh, ktcbtab, rflag, vflag, kflag);
+	print_header();
+	set_timer(1);
 
 	while (!done) {
-		if (print_stats) {
-			stats_display(&sc);
-			print_stats = 0;
+		if (proc_slice) {
+			process_slice(psc, nconn);
+			stats_cleanslice();
+			proc_slice = 0;
 		}
-		if (poll(&pfd, 1, INFTIM) == -1) {
+		if (poll(pfd, nconn, INFTIM) == -1) {
 			if (errno == EINTR)
 				continue;
 			err(1, "poll");
 		}
-		if ((n = write(pfd.fd, buf, Bflag)) == -1) {
-			if (errno == EINTR || errno == EAGAIN)
-				continue;
-			err(1, "write");
+		for (i = 0; i < nconn; i++) {
+			if (pfd[i].revents & POLLOUT) {
+				if ((n = write(pfd[i].fd, buf, Bflag)) == -1) {
+					if (errno == EINTR || errno == EAGAIN)
+						continue;
+					err(1, "write");
+				}
+				if (n == 0) {
+					warnx("Remote end closed connection");
+					done = -1;
+					break;
+				}
+				if (vflag >= 3)
+					fprintf(stderr, "write: %zd bytes\n",
+					    n);
+				stats_update(psc + i, n);
+			}
 		}
-		if (n == 0) {
-			warnx("Remote end closed connection");
-			done = -1;
-			break;
-		}
-		if (vflag >= 3)
-			fprintf(stderr, "write: %zd bytes\n", n);
-		stats_update(&sc, n);
 	}
-	stats_finish(&sc);
-
+	
 	if (done > 0)
 		warnx("Terminated by signal %d", done);
 
@@ -731,19 +881,21 @@ main(int argc, char **argv)
 	extern char *optarg;
 
 	char kerr[_POSIX2_LINE_MAX], *tmp;
-	const char *errstr;
-	int ch, herr;
 	struct addrinfo *aitop, hints;
-	kvm_t *kvmh;
-
-	const char *host = NULL, *port = DEFAULT_PORT;
-	char **kflag = NULL;
-	int sflag = 0, vflag = 0, rflag = DEFAULT_STATS_INTERVAL, Sflag = 0;
-	int Bflag = DEFAULT_BUF;
-
+	const char *errstr;
+	kvm_t *kvmh = NULL;
+	struct rlimit rl;
+	int ch, herr;
 	struct nlist nl[] = { { "_tcbtable" }, { "" } };
+	const char *host = NULL, *port = DEFAULT_PORT;
+	int nconn = 1;
 
-	while ((ch = getopt(argc, argv, "B:hlk:p:r:sS:v")) != -1) {
+	Bflag = DEFAULT_BUF;
+	Sflag = sflag = vflag = rdomain = 0;
+	kflag = NULL;
+	rflag = DEFAULT_STATS_INTERVAL;
+
+	while ((ch = getopt(argc, argv, "B:hlk:n:p:r:sS:vV:")) != -1) {
 		switch (ch) {
 		case 'l':
 			list_kvars();
@@ -782,8 +934,20 @@ main(int argc, char **argv)
 				    errstr, optarg);
 			break;
 		case 'v':
-			if (vflag < 2)
-				vflag++;
+			vflag++;
+			break;
+		case 'V':
+			rdomain = (unsigned int)strtonum(optarg, 0,
+			    RT_TABLEID_MAX, &errstr);
+			if (errstr)
+				errx(1, "rdomain value is %s: %s",
+				    errstr, optarg);
+			break;
+		case 'n':
+			nconn = strtonum(optarg, 0, 65535, &errstr);
+			if (errstr != NULL)
+				errx(1, "number of connections is %s: %s",
+				    errstr, optarg);
 			break;
 		case 'h':
 		default:
@@ -795,12 +959,14 @@ main(int argc, char **argv)
 	argc -= optind;
 	if (argc != (sflag ? 0 : 1))
 		usage();
+
 	if (!sflag)
 		host = argv[0];
 
 	bzero(&hints, sizeof(hints));
 	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = sflag ? AI_PASSIVE : 0;
+	if (sflag)
+		hints.ai_flags = AI_PASSIVE;
 	if ((herr = getaddrinfo(host, port, &hints, &aitop)) != 0) {
 		if (herr == EAI_SYSTEM)
 			err(1, "getaddrinfo");
@@ -818,12 +984,25 @@ main(int argc, char **argv)
 	} else
 		drop_gid();
 
+	signal(SIGINT, exitsighand);
+	signal(SIGTERM, exitsighand);
+	signal(SIGHUP, exitsighand);
+	signal(SIGPIPE, SIG_IGN);
+	signal(SIGALRM, alarmhandler);
+
+	if (getrlimit(RLIMIT_NOFILE, &rl) == -1)
+		err(1, "getrlimit");
+	if (rl.rlim_cur < MAX_FD)
+		rl.rlim_cur = MAX_FD;
+	if (setrlimit(RLIMIT_NOFILE, &rl))
+		err(1, "setrlimit");
+	if (getrlimit(RLIMIT_NOFILE, &rl) == -1)
+		err(1, "getrlimit");
+	
 	if (sflag)
-		serverloop(kvmh, nl[0].n_value, aitop, vflag, rflag, kflag,
-		    Sflag, Bflag);
+		serverloop(kvmh, nl[0].n_value, aitop);
 	else
-		clientloop(kvmh, nl[0].n_value, aitop, vflag, rflag, kflag,
-		    Sflag, Bflag);
+		clientloop(kvmh, nl[0].n_value, aitop, nconn);
 
 	return 0;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 1998-2007 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  * Copyright (c) 1983, 1995-1997 Eric P. Allman.  All rights reserved.
  * Copyright (c) 1988, 1993
@@ -12,8 +12,9 @@
  */
 
 #include <sendmail.h>
+#include "map.h"
 
-SM_RCSID("@(#)$Sendmail: daemon.c,v 8.588 2001/09/05 15:08:00 ca Exp $")
+SM_RCSID("@(#)$Sendmail: daemon.c,v 8.680 2008/02/14 00:20:26 ca Exp $")
 
 #if defined(SOCK_STREAM) || defined(__GNU_LIBRARY__)
 # define USE_SOCK_STREAM	1
@@ -34,7 +35,7 @@ SM_RCSID("@(#)$Sendmail: daemon.c,v 8.588 2001/09/05 15:08:00 ca Exp $")
 #  include <openssl/rand.h>
 #endif /* STARTTLS */
 
-#include <sys/time.h>
+#include <sm/time.h>
 
 #if IP_SRCROUTE && NETINET
 # include <netinet/in_systm.h>
@@ -58,35 +59,18 @@ SM_RCSID("@(#)$Sendmail: daemon.c,v 8.588 2001/09/05 15:08:00 ca Exp $")
 
 #include <sm/fdset.h>
 
-/* structure to describe a daemon or a client */
-struct daemon
-{
-	int		d_socket;	/* fd for socket */
-	SOCKADDR	d_addr;		/* socket for incoming */
-	unsigned short	d_port;		/* port number */
-	int		d_listenqueue;	/* size of listen queue */
-	int		d_tcprcvbufsize;	/* size of TCP receive buffer */
-	int		d_tcpsndbufsize;	/* size of TCP send buffer */
-	time_t		d_refuse_connections_until;
-	bool		d_firsttime;
-	int		d_socksize;
-	BITMAP256	d_flags;	/* flags; see sendmail.h */
-	char		*d_mflags;	/* flags for use in macro */
-	char		*d_name;	/* user-supplied name */
-#if MILTER
-# if _FFR_MILTER_PERDAEMON
-	char		*d_inputfilterlist;
-	struct milter	*d_inputfilters[MAXFILTERS];
-# endif /* _FFR_MILTER_PERDAEMON */
-#endif /* MILTER */
-};
+#define DAEMON_C 1
+#include <daemon.h>
 
-typedef struct daemon DAEMON_T;
-
-static void		connecttimeout __P((void));
+static void		connecttimeout __P((int));
 static int		opendaemonsocket __P((DAEMON_T *, bool));
 static unsigned short	setupdaemon __P((SOCKADDR *));
 static void		getrequests_checkdiskspace __P((ENVELOPE *e));
+static void		setsockaddroptions __P((char *, DAEMON_T *));
+static void		printdaemonflags __P((DAEMON_T *));
+static int		addr_family __P((char *));
+static int		addrcmp __P((struct hostent *, char *, SOCKADDR *));
+static void		authtimeout __P((int));
 
 /*
 **  DAEMON.C -- routines to use when running as a daemon.
@@ -116,12 +100,11 @@ static void		getrequests_checkdiskspace __P((ENVELOPE *e));
 **		Convert the entry in hbuf into a canonical form.
 */
 
-static DAEMON_T	Daemons[MAXDAEMONS];
 static int	NDaemons = 0;			/* actual number of daemons */
 
 static time_t	NextDiskSpaceCheck = 0;
 
-/*
+/*
 **  GETREQUESTS -- open mail IPC port and get requests.
 **
 **	Parameters:
@@ -153,14 +136,18 @@ getrequests(e)
 #endif /* XDEBUG */
 	char status[MAXLINE];
 	SOCKADDR sa;
-	SOCKADDR_LEN_T len = sizeof sa;
+	SOCKADDR_LEN_T len = sizeof(sa);
+#if _FFR_QUEUE_RUN_PARANOIA
+	time_t lastrun;
+#endif /* _FFR_QUEUE_RUN_PARANOIA */
 # if NETUNIX
 	extern int ControlSocket;
 # endif /* NETUNIX */
 	extern ENVELOPE BlankEnvelope;
-	extern bool refuseconnections __P((char *, ENVELOPE *, int, bool));
 
 
+	/* initialize data for function that generates queue ids */
+	init_qid_alg();
 	for (idx = 0; idx < NDaemons; idx++)
 	{
 		Daemons[idx].d_port = setupdaemon(&(Daemons[idx].d_addr));
@@ -191,7 +178,7 @@ getrequests(e)
 			  "daemon could not open control socket %s: %s",
 			  ControlSocketName, sm_errstring(errno));
 
-	/* If there are any queue runners releated reapchild() co-ord's */
+	/* If there are any queue runners released reapchild() co-ord's */
 	(void) sm_signal(SIGCHLD, reapchild);
 
 	/* write the pid to file, command line args to syslog */
@@ -201,13 +188,13 @@ getrequests(e)
 	{
 		char jbuf[MAXHOSTNAMELEN];
 
-		expand("\201j", jbuf, sizeof jbuf, e);
+		expand("\201j", jbuf, sizeof(jbuf), e);
 		j_has_dot = strchr(jbuf, '.') != NULL;
 	}
 #endif /* XDEBUG */
 
 	/* Add parent process as first item */
-	proc_list_add(CurrentPid, "Sendmail daemon", PROC_DAEMON, 0, -1);
+	proc_list_add(CurrentPid, "Sendmail daemon", PROC_DAEMON, 0, -1, NULL);
 
 	if (tTd(15, 1))
 	{
@@ -232,13 +219,7 @@ getrequests(e)
 
 		/* see if we are rejecting connections */
 		(void) sm_blocksignal(SIGALRM);
-
-		if (ShutdownRequest != NULL)
-			shutdown_daemon();
-		else if (RestartRequest != NULL)
-			restart_daemon();
-		else if (RestartWorkGroup)
-			restart_marked_work_groups();
+		CHECK_RESTART;
 
 		for (idx = 0; idx < NDaemons; idx++)
 		{
@@ -252,8 +233,7 @@ getrequests(e)
 				continue;
 			if (bitnset(D_DISABLE, Daemons[idx].d_flags))
 				continue;
-			if (refuseconnections(Daemons[idx].d_name, e, idx,
-					      curdaemon == idx))
+			if (refuseconnections(e, idx, curdaemon == idx))
 			{
 				if (Daemons[idx].d_socket >= 0)
 				{
@@ -280,12 +260,7 @@ getrequests(e)
 		}
 
 		/* May have been sleeping above, check again */
-		if (ShutdownRequest != NULL)
-			shutdown_daemon();
-		else if (RestartRequest != NULL)
-			restart_daemon();
-		else if (RestartWorkGroup)
-			restart_marked_work_groups();
+		CHECK_RESTART;
 
 		getrequests_checkdiskspace(e);
 
@@ -294,7 +269,7 @@ getrequests(e)
 		{
 			char jbuf[MAXHOSTNAMELEN];
 
-			expand("\201j", jbuf, sizeof jbuf, e);
+			expand("\201j", jbuf, sizeof(jbuf), e);
 			if (!wordinclass(jbuf, 'w'))
 			{
 				dumpstate("daemon lost $j");
@@ -332,15 +307,8 @@ getrequests(e)
 			fd_set readfds;
 			struct timeval timeout;
 
-			if (ShutdownRequest != NULL)
-				shutdown_daemon();
-			else if (RestartRequest != NULL)
-				restart_daemon();
-			else if (RestartWorkGroup)
-				restart_marked_work_groups();
-
+			CHECK_RESTART;
 			FD_ZERO(&readfds);
-
 			for (idx = 0; idx < NDaemons; idx++)
 			{
 				/* wait for a connection */
@@ -377,18 +345,32 @@ getrequests(e)
 				   NULL, NULL, &timeout);
 
 			/* Did someone signal while waiting? */
-			if (ShutdownRequest != NULL)
-				shutdown_daemon();
-			else if (RestartRequest != NULL)
-				restart_daemon();
-			else if (RestartWorkGroup)
-				restart_marked_work_groups();
-
-
+			CHECK_RESTART;
 
 			curdaemon = -1;
 			if (doqueuerun())
+			{
 				(void) runqueue(true, false, false, false);
+#if _FFR_QUEUE_RUN_PARANOIA
+				lastrun = now;
+#endif /* _FFR_QUEUE_RUN_PARANOIA */
+			}
+#if _FFR_QUEUE_RUN_PARANOIA
+			else if (CheckQueueRunners > 0 && QueueIntvl > 0 &&
+				 lastrun + QueueIntvl + CheckQueueRunners < now)
+			{
+
+				/*
+				**  set lastrun unconditionally to avoid
+				**  calling checkqueuerunner() all the time.
+				**  That's also why we currently ignore the
+				**  result of the function call.
+				*/
+
+				(void) checkqueuerunner();
+				lastrun = now;
+			}
+#endif /* _FFR_QUEUE_RUN_PARANOIA */
 
 			if (t <= 0)
 			{
@@ -410,7 +392,7 @@ getrequests(e)
 				{
 					lotherend = Daemons[idx].d_socksize;
 					memset(&RealHostAddr, '\0',
-					       sizeof RealHostAddr);
+					       sizeof(RealHostAddr));
 					t = accept(Daemons[idx].d_socket,
 						   (struct sockaddr *)&RealHostAddr,
 						   &lotherend);
@@ -444,8 +426,8 @@ getrequests(e)
 			{
 				struct sockaddr_un sa_un;
 
-				lotherend = sizeof sa_un;
-				memset(&sa_un, '\0', sizeof sa_un);
+				lotherend = sizeof(sa_un);
+				memset(&sa_un, '\0', sizeof(sa_un));
 				t = accept(ControlSocket,
 					   (struct sockaddr *)&sa_un,
 					   &lotherend);
@@ -490,20 +472,39 @@ getrequests(e)
 		if (t < 0)
 		{
 			errno = save_errno;
+
+			/* let's ignore these temporary errors */
+			if (save_errno == EINTR
+#ifdef EAGAIN
+			    || save_errno == EAGAIN
+#endif /* EAGAIN */
+#ifdef ECONNABORTED
+			    || save_errno == ECONNABORTED
+#endif /* ECONNABORTED */
+#ifdef EWOULDBLOCK
+			    || save_errno == EWOULDBLOCK
+#endif /* EWOULDBLOCK */
+			   )
+				continue;
+
 			syserr("getrequests: accept");
 
-			/* arrange to re-open the socket next time around */
-			(void) close(Daemons[curdaemon].d_socket);
-			Daemons[curdaemon].d_socket = -1;
+			if (curdaemon >= 0)
+			{
+				/* arrange to re-open socket next time around */
+				(void) close(Daemons[curdaemon].d_socket);
+				Daemons[curdaemon].d_socket = -1;
 #if SO_REUSEADDR_IS_BROKEN
-			/*
-			**  Give time for bound socket to be released.
-			**  This creates a denial-of-service if you can
-			**  force accept() to fail on affected systems.
-			*/
+				/*
+				**  Give time for bound socket to be released.
+				**  This creates a denial-of-service if you can
+				**  force accept() to fail on affected systems.
+				*/
 
-			Daemons[curdaemon].d_refuse_connections_until = curtime() + 15;
+				Daemons[curdaemon].d_refuse_connections_until =
+					curtime() + 15;
 #endif /* SO_REUSEADDR_IS_BROKEN */
+			}
 			continue;
 		}
 
@@ -568,6 +569,16 @@ getrequests(e)
 		}
 
 		/*
+		**  If connection rate is exceeded here, connection shall be
+		**  refused later by a new call after fork() by the
+		**  validate_connection() function. Closing the connection
+		**  at this point violates RFC 2821.
+		**  Do NOT remove this call, its side effects are needed.
+		*/
+
+		connection_rate_check(&RealHostAddr, NULL);
+
+		/*
 		**  Create a subprocess to process the mail.
 		*/
 
@@ -585,53 +596,58 @@ getrequests(e)
 		/* XXX get some better "random" data? */
 		seed = get_random();
 		RAND_seed((void *) &NextDiskSpaceCheck,
-			  sizeof NextDiskSpaceCheck);
-		RAND_seed((void *) &now, sizeof now);
-		RAND_seed((void *) &seed, sizeof seed);
+			  sizeof(NextDiskSpaceCheck));
+		RAND_seed((void *) &now, sizeof(now));
+		RAND_seed((void *) &seed, sizeof(seed));
 #else /* STARTTLS */
 		(void) get_random();
 #endif /* STARTTLS */
 
 #if NAMED_BIND
 		/*
-		**  Update MX records for FallBackMX.
+		**  Update MX records for FallbackMX.
 		**  Let's hope this is fast otherwise we screw up the
 		**  response time.
 		*/
 
-		if (FallBackMX != NULL)
-			(void) getfallbackmxrr(FallBackMX);
+		if (FallbackMX != NULL)
+			(void) getfallbackmxrr(FallbackMX);
 #endif /* NAMED_BIND */
 
-#if !PROFILING
-		/*
-		**  Create a pipe to keep the child from writing to the
-		**  socket until after the parent has closed it.  Otherwise
-		**  the parent may hang if the child has closed it first.
-		*/
-
-		if (pipe(pipefd) < 0)
-			pipefd[0] = pipefd[1] = -1;
-
-		(void) sm_blocksignal(SIGCHLD);
-		pid = fork();
-		if (pid < 0)
+		if (tTd(93, 100))
 		{
-			syserr("daemon: cannot fork");
-			if (pipefd[0] != -1)
-			{
-				(void) close(pipefd[0]);
-				(void) close(pipefd[1]);
-			}
-			(void) sm_releasesignal(SIGCHLD);
-			(void) sleep(10);
-			(void) close(t);
-			continue;
+			/* don't fork, handle connection in this process */
+			pid = 0;
+			pipefd[0] = pipefd[1] = -1;
 		}
+		else
+		{
+			/*
+			**  Create a pipe to keep the child from writing to
+			**  the socket until after the parent has closed
+			**  it.  Otherwise the parent may hang if the child
+			**  has closed it first.
+			*/
 
-#else /* !PROFILING */
-		pid = 0;
-#endif /* !PROFILING */
+			if (pipe(pipefd) < 0)
+				pipefd[0] = pipefd[1] = -1;
+
+			(void) sm_blocksignal(SIGCHLD);
+			pid = fork();
+			if (pid < 0)
+			{
+				syserr("daemon: cannot fork");
+				if (pipefd[0] != -1)
+				{
+					(void) close(pipefd[0]);
+					(void) close(pipefd[1]);
+				}
+				(void) sm_releasesignal(SIGCHLD);
+				(void) sleep(10);
+				(void) close(t);
+				continue;
+			}
+		}
 
 		if (pid == 0)
 		{
@@ -650,6 +666,7 @@ getrequests(e)
 			ShutdownRequest = NULL;
 			PendingSignal = 0;
 			CurrentPid = getpid();
+			close_sendmail_pid();
 
 			(void) sm_releasesignal(SIGALRM);
 			(void) sm_releasesignal(SIGCHLD);
@@ -672,7 +689,7 @@ getrequests(e)
 				macdefine(&BlankEnvelope.e_macro, A_TEMP,
 					macid("{daemon_addr}"),
 					anynet_ntoa(&Daemons[curdaemon].d_addr));
-				(void) sm_snprintf(status, sizeof status, "%d",
+				(void) sm_snprintf(status, sizeof(status), "%d",
 						ntohs(Daemons[curdaemon].d_port));
 				macdefine(&BlankEnvelope.e_macro, A_TEMP,
 					macid("{daemon_port}"), status);
@@ -692,24 +709,53 @@ getrequests(e)
 				/* Add control socket process */
 				proc_list_add(CurrentPid,
 					      "console socket child",
-					      PROC_CONTROL_CHILD, 0, -1);
+					      PROC_CONTROL_CHILD, 0, -1, NULL);
 			}
 			else
 			{
 				proc_list_clear();
 
+				/* clean up background delivery children */
+				(void) sm_signal(SIGCHLD, reapchild);
+
 				/* Add parent process as first child item */
 				proc_list_add(CurrentPid, "daemon child",
-					      PROC_DAEMON_CHILD, 0, -1);
-
+					      PROC_DAEMON_CHILD, 0, -1, NULL);
 				/* don't schedule queue runs if ETRN */
 				QueueIntvl = 0;
+
+				/*
+				**  Hack: override global variables if
+				**	the corresponding DaemonPortOption
+				**	is set.
+				*/
+#if _FFR_SS_PER_DAEMON
+				if (Daemons[curdaemon].d_supersafe !=
+				    DPO_NOTSET)
+					SuperSafe = Daemons[curdaemon].
+								d_supersafe;
+#endif /* _FFR_SS_PER_DAEMON */
+				if (Daemons[curdaemon].d_dm != DM_NOTSET)
+					set_delivery_mode(
+						Daemons[curdaemon].d_dm, e);
+
+				if (Daemons[curdaemon].d_refuseLA !=
+				    DPO_NOTSET)
+					RefuseLA = Daemons[curdaemon].
+								d_refuseLA;
+				if (Daemons[curdaemon].d_queueLA != DPO_NOTSET)
+					QueueLA = Daemons[curdaemon].d_queueLA;
+				if (Daemons[curdaemon].d_delayLA != DPO_NOTSET)
+					DelayLA = Daemons[curdaemon].d_delayLA;
+				if (Daemons[curdaemon].d_maxchildren !=
+				    DPO_NOTSET)
+					MaxChildren = Daemons[curdaemon].
+								d_maxchildren;
 
 				sm_setproctitle(true, e, "startup with %s",
 						anynet_ntoa(&RealHostAddr));
 			}
 
-#if !PROFILING
 			if (pipefd[0] != -1)
 			{
 				auto char c;
@@ -731,7 +777,6 @@ getrequests(e)
 					continue;
 				(void) close(pipefd[0]);
 			}
-#endif /* !PROFILING */
 
 			/* control socket processing */
 			if (control)
@@ -753,24 +798,28 @@ getrequests(e)
 					h_errno == TRY_AGAIN ? "TEMP" : "FAIL");
 			}
 			else
+			{
 				macdefine(&BlankEnvelope.e_macro, A_PERM,
-					macid("{client_resolve}"), "OK");
+					  macid("{client_resolve}"), "OK");
+			}
 			sm_setproctitle(true, e, "startup with %s", p);
+			markstats(e, NULL, STATS_CONNECT);
 
 			if ((inchannel = sm_io_open(SmFtStdiofd,
 						    SM_TIME_DEFAULT,
-						    (void *) t,
-						    SM_IO_RDONLY, NULL)) == NULL
-			    || (t = dup(t)) < 0 ||
+						    (void *) &t,
+						    SM_IO_RDONLY_B,
+						    NULL)) == NULL ||
+			    (t = dup(t)) < 0 ||
 			    (outchannel = sm_io_open(SmFtStdiofd,
 						     SM_TIME_DEFAULT,
-						     (void *) t,
-						     SM_IO_WRONLY, NULL))
-			    == NULL)
+						     (void *) &t,
+						     SM_IO_WRONLY_B,
+						     NULL)) == NULL)
 			{
 				syserr("cannot open SMTP server channel, fd=%d",
 					t);
-				finis(false, EX_OK);
+				finis(false, true, EX_OK);
 			}
 			sm_io_automode(inchannel, outchannel);
 
@@ -782,7 +831,7 @@ getrequests(e)
 			if (!xla_host_ok(RealHostName))
 			{
 				message("421 4.4.5 Too many SMTP sessions for this host");
-				finis(false, EX_OK);
+				finis(false, true, EX_OK);
 			}
 #endif /* XLA */
 			/* find out name for interface of connection */
@@ -846,16 +895,17 @@ getrequests(e)
 		/* parent -- keep track of children */
 		if (control)
 		{
-			(void) sm_snprintf(status, sizeof status,
+			(void) sm_snprintf(status, sizeof(status),
 					   "control socket server child");
-			proc_list_add(pid, status, PROC_CONTROL, 0, -1);
+			proc_list_add(pid, status, PROC_CONTROL, 0, -1, NULL);
 		}
 		else
 		{
-			(void) sm_snprintf(status, sizeof status,
+			(void) sm_snprintf(status, sizeof(status),
 					   "SMTP server child for %s",
 					   anynet_ntoa(&RealHostAddr));
-			proc_list_add(pid, status, PROC_DAEMON, 0, -1);
+			proc_list_add(pid, status, PROC_DAEMON, 0, -1,
+					&RealHostAddr);
 		}
 		(void) sm_releasesignal(SIGCHLD);
 
@@ -880,13 +930,12 @@ getrequests(e)
 		sm_dprintf("getreq: returning\n");
 
 #if MILTER
-# if _FFR_MILTER_PERDAEMON
 	/* set the filters for this daemon */
 	if (Daemons[curdaemon].d_inputfilterlist != NULL)
 	{
 		for (i = 0;
-		     (Daemons[curdaemon].d_inputfilters[i] != NULL &&
-		      i < MAXFILTERS);
+		     (i < MAXFILTERS &&
+		      Daemons[curdaemon].d_inputfilters[i] != NULL);
 		     i++)
 		{
 			InputFilters[i] = Daemons[curdaemon].d_inputfilters[i];
@@ -894,7 +943,6 @@ getrequests(e)
 		if (i < MAXFILTERS)
 			InputFilters[i] = NULL;
 	}
-# endif /* _FFR_MILTER_PERDAEMON */
 #endif /* MILTER */
 	return &Daemons[curdaemon].d_flags;
 }
@@ -972,7 +1020,7 @@ getrequests_checkdiskspace(e)
 	NextDiskSpaceCheck = now + 60;
 }
 
-/*
+/*
 **  OPENDAEMONSOCKET -- open SMTP socket
 **
 **	Deals with setting all appropriate options.
@@ -1016,7 +1064,8 @@ opendaemonsocket(d, firsttime)
 			if (d->d_addr.sa.sa_family == AF_UNIX)
 			{
 				int rval;
-				long sff = SFF_SAFEDIRPATH|SFF_OPENASROOT|SFF_NOLINK|SFF_ROOTOK|SFF_EXECOK;
+				long sff = SFF_SAFEDIRPATH|SFF_OPENASROOT|SFF_NOLINK|SFF_ROOTOK|SFF_EXECOK|SFF_CREAT;
+
 				/* if not safe, don't use it */
 				rval = safefile(d->d_addr.sunix.sun_path,
 						RunAsUid, RunAsGid,
@@ -1063,16 +1112,24 @@ opendaemonsocket(d, firsttime)
 				continue;
 			}
 
+			if (SM_FD_SETSIZE > 0 && d->d_socket >= SM_FD_SETSIZE)
+			{
+				save_errno = EINVAL;
+				syserr("opendaemonsocket: daemon %s: server SMTP socket (%d) too large",
+				       d->d_name, d->d_socket);
+				goto fail;
+			}
+
 			/* turn on network debugging? */
 			if (tTd(15, 101))
 				(void) setsockopt(d->d_socket, SOL_SOCKET,
 						  SO_DEBUG, (char *)&on,
-						  sizeof on);
+						  sizeof(on));
 
 			(void) setsockopt(d->d_socket, SOL_SOCKET,
-					  SO_REUSEADDR, (char *)&on, sizeof on);
+					  SO_REUSEADDR, (char *)&on, sizeof(on));
 			(void) setsockopt(d->d_socket, SOL_SOCKET,
-					  SO_KEEPALIVE, (char *)&on, sizeof on);
+					  SO_KEEPALIVE, (char *)&on, sizeof(on));
 
 #ifdef SO_RCVBUF
 			if (d->d_tcprcvbufsize > 0)
@@ -1113,30 +1170,30 @@ opendaemonsocket(d, firsttime)
 #if _FFR_DAEMON_NETUNIX
 # ifdef NETUNIX
 			  case AF_UNIX:
-				socksize = sizeof d->d_addr.sunix;
+				socksize = sizeof(d->d_addr.sunix);
 				break;
 # endif /* NETUNIX */
 #endif /* _FFR_DAEMON_NETUNIX */
 #if NETINET
 			  case AF_INET:
-				socksize = sizeof d->d_addr.sin;
+				socksize = sizeof(d->d_addr.sin);
 				break;
 #endif /* NETINET */
 
 #if NETINET6
 			  case AF_INET6:
-				socksize = sizeof d->d_addr.sin6;
+				socksize = sizeof(d->d_addr.sin6);
 				break;
 #endif /* NETINET6 */
 
 #if NETISO
 			  case AF_ISO:
-				socksize = sizeof d->d_addr.siso;
+				socksize = sizeof(d->d_addr.siso);
 				break;
 #endif /* NETISO */
 
 			  default:
-				socksize = sizeof d->d_addr;
+				socksize = sizeof(d->d_addr);
 				break;
 			}
 
@@ -1166,7 +1223,7 @@ opendaemonsocket(d, firsttime)
 	/* NOTREACHED */
 	return -1;  /* avoid compiler warning on IRIX */
 }
-/*
+/*
 **  SETUPDAEMON -- setup socket for daemon
 **
 **	Parameters:
@@ -1189,7 +1246,7 @@ setupdaemon(daemonaddr)
 
 	if (daemonaddr->sa.sa_family == AF_UNSPEC)
 	{
-		memset(daemonaddr, '\0', sizeof *daemonaddr);
+		memset(daemonaddr, '\0', sizeof(*daemonaddr));
 #if NETINET
 		daemonaddr->sa.sa_family = AF_INET;
 #endif /* NETINET */
@@ -1200,7 +1257,8 @@ setupdaemon(daemonaddr)
 #if NETINET
 	  case AF_INET:
 		if (daemonaddr->sin.sin_addr.s_addr == 0)
-			daemonaddr->sin.sin_addr.s_addr = INADDR_ANY;
+			daemonaddr->sin.sin_addr.s_addr =
+			    LocalDaemon ? htonl(INADDR_LOOPBACK) : INADDR_ANY;
 		port = daemonaddr->sin.sin_port;
 		break;
 #endif /* NETINET */
@@ -1208,7 +1266,8 @@ setupdaemon(daemonaddr)
 #if NETINET6
 	  case AF_INET6:
 		if (IN6_IS_ADDR_UNSPECIFIED(&daemonaddr->sin6.sin6_addr))
-			daemonaddr->sin6.sin6_addr = in6addr_any;
+			daemonaddr->sin6.sin6_addr =
+			    LocalDaemon ? in6addr_loopback : in6addr_any;
 		port = daemonaddr->sin6.sin6_port;
 		break;
 #endif /* NETINET6 */
@@ -1258,7 +1317,7 @@ setupdaemon(daemonaddr)
 	}
 	return port;
 }
-/*
+/*
 **  CLRDAEMON -- reset the daemon connection
 **
 **	Parameters:
@@ -1284,7 +1343,7 @@ clrdaemon()
 	}
 }
 
-/*
+/*
 **  GETMODIFIERS -- get modifier flags
 **
 **	Parameters:
@@ -1308,12 +1367,21 @@ getmodifiers(v, modifiers)
 
 	/* maximum length of flags: upper case Option -> "OO " */
 	l = 3 * strlen(v) + 3;
+
+	/* is someone joking? */
+	if (l < 0 || l > 256)
+	{
+		if (LogLevel > 2)
+			sm_syslog(LOG_ERR, NOQID,
+				  "getmodifiers too long, ignored");
+		return NULL;
+	}
 	flags = xalloc(l);
 	f = flags;
 	clrbitmap(modifiers);
 	for (h = v; *h != '\0'; h++)
 	{
-		if (!(isascii(*h) && isspace(*h)))
+		if (isascii(*h) && !isspace(*h) && isprint(*h))
 		{
 			setbitn(*h, modifiers);
 			if (flags != f)
@@ -1327,7 +1395,7 @@ getmodifiers(v, modifiers)
 	return f;
 }
 
-/*
+/*
 **  CHKDAEMONMODIFIERS -- check whether all daemons have set a flag.
 **
 **	Parameters:
@@ -1349,7 +1417,7 @@ chkdaemonmodifiers(flag)
 	return true;
 }
 
-/*
+/*
 **  SETSOCKADDROPTIONS -- set options for SOCKADDR (daemon or client)
 **
 **	Parameters:
@@ -1362,7 +1430,7 @@ chkdaemonmodifiers(flag)
 
 static void
 setsockaddroptions(p, d)
-	register char *p;
+	char *p;
 	DAEMON_T *d;
 {
 #if NETISO
@@ -1375,6 +1443,14 @@ setsockaddroptions(p, d)
 	if (d->d_addr.sa.sa_family == AF_UNSPEC)
 		d->d_addr.sa.sa_family = AF_INET;
 #endif /* NETINET */
+#if _FFR_SS_PER_DAEMON
+	d->d_supersafe = DPO_NOTSET;
+#endif /* _FFR_SS_PER_DAEMON */
+	d->d_dm = DM_NOTSET;
+	d->d_refuseLA = DPO_NOTSET;
+	d->d_queueLA = DPO_NOTSET;
+	d->d_delayLA = DPO_NOTSET;
+	d->d_maxchildren = DPO_NOTSET;
 
 	while (p != NULL)
 	{
@@ -1394,12 +1470,44 @@ setsockaddroptions(p, d)
 			continue;
 		while (isascii(*++v) && isspace(*v))
 			continue;
-		if (isascii(*f) && islower(*f))
-			*f = toupper(*f);
 
 		switch (*f)
 		{
+		  case 'A':		/* address */
+#if !_FFR_DPO_CS
+		  case 'a':
+#endif /* !_FFR_DPO_CS */
+			addr = v;
+			break;
+
+		  case 'c':
+			d->d_maxchildren = atoi(v);
+			break;
+
+		  case 'D':		/* DeliveryMode */
+			switch (*v)
+			{
+			  case SM_QUEUE:
+			  case SM_DEFER:
+			  case SM_DELIVER:
+			  case SM_FORK:
+				d->d_dm = *v;
+				break;
+			  default:
+				syserr("554 5.3.5 Unknown delivery mode %c",
+					*v);
+				break;
+			}
+			break;
+
+		  case 'd':		/* delayLA */
+			d->d_delayLA = atoi(v);
+			break;
+
 		  case 'F':		/* address family */
+#if !_FFR_DPO_CS
+		  case 'f':
+#endif /* !_FFR_DPO_CS */
 			if (isascii(*v) && isdigit(*v))
 				d->d_addr.sa.sa_family = atoi(v);
 #if _FFR_DAEMON_NETUNIX
@@ -1434,41 +1542,78 @@ setsockaddroptions(p, d)
 				       v);
 			break;
 
-		  case 'A':		/* address */
-			addr = v;
-			break;
-
 #if MILTER
-# if _FFR_MILTER_PERDAEMON
 		  case 'I':
+# if !_FFR_DPO_CS
+		  case 'i':
+# endif /* !_FFR_DPO_CS */
 			d->d_inputfilterlist = v;
 			break;
-# endif /* _FFR_MILTER_PERDAEMON */
 #endif /* MILTER */
 
-		  case 'P':		/* port */
-			port = v;
-			break;
-
 		  case 'L':		/* listen queue size */
+#if !_FFR_DPO_CS
+		  case 'l':
+#endif /* !_FFR_DPO_CS */
 			d->d_listenqueue = atoi(v);
 			break;
 
 		  case 'M':		/* modifiers (flags) */
+#if !_FFR_DPO_CS
+		  case 'm':
+#endif /* !_FFR_DPO_CS */
 			d->d_mflags = getmodifiers(v, d->d_flags);
 			break;
 
-		  case 'S':		/* send buffer size */
-			d->d_tcpsndbufsize = atoi(v);
+		  case 'N':		/* name */
+#if !_FFR_DPO_CS
+		  case 'n':
+#endif /* !_FFR_DPO_CS */
+			d->d_name = v;
+			break;
+
+		  case 'P':		/* port */
+#if !_FFR_DPO_CS
+		  case 'p':
+#endif /* !_FFR_DPO_CS */
+			port = v;
+			break;
+
+		  case 'q':
+			d->d_queueLA = atoi(v);
 			break;
 
 		  case 'R':		/* receive buffer size */
 			d->d_tcprcvbufsize = atoi(v);
 			break;
 
-		  case 'N':		/* name */
-			d->d_name = v;
+		  case 'r':
+			d->d_refuseLA = atoi(v);
 			break;
+
+		  case 'S':		/* send buffer size */
+#if !_FFR_DPO_CS
+		  case 's':
+#endif /* !_FFR_DPO_CS */
+			d->d_tcpsndbufsize = atoi(v);
+			break;
+
+#if _FFR_SS_PER_DAEMON
+		  case 'T':		/* SuperSafe */
+			if (tolower(*v) == 'i')
+				d->d_supersafe = SAFE_INTERACTIVE;
+			else if (tolower(*v) == 'p')
+# if MILTER
+				d->d_supersafe = SAFE_REALLY_POSTMILTER;
+# else /* MILTER */
+				(void) sm_io_fprintf(smioout, SM_TIME_DEFAULT,
+					"Warning: SuperSafe=PostMilter requires Milter support (-DMILTER)\n");
+# endif /* MILTER */
+			else
+				d->d_supersafe = atobool(v) ? SAFE_REALLY
+							: SAFE_NO;
+			break;
+#endif /* _FFR_SS_PER_DAEMON */
 
 		  default:
 			syserr("554 5.3.5 PortOptions parameter \"%s\" unknown",
@@ -1492,15 +1637,7 @@ setsockaddroptions(p, d)
 				break;
 			}
 
-			/* if not safe, don't use it */
-			if (safefile(addr, RunAsUid, RunAsGid,
-				     RunAsUserName,
-				     SFF_SAFEDIRPATH|SFF_OPENASROOT|SFF_NOLINK|SFF_ROOTOK|SFF_EXECOK,
-				     S_IRUSR|S_IWUSR, NULL) != 0)
-			{
-				syserr("setsockaddroptions: unsafe domain socket");
-				break;
-			}
+			/* file safety check done in opendaemonsocket() */
 			(void) memset(&d->d_addr.sunix.sun_path, '\0',
 				      sizeof(d->d_addr.sunix.sun_path));
 			(void) sm_strlcpy((char *)&d->d_addr.sunix.sun_path,
@@ -1544,8 +1681,7 @@ setsockaddroptions(p, d)
 
 #if NETINET6
 		  case AF_INET6:
-			if (!isascii(*addr) || !isxdigit(*addr) ||
-			    anynet_pton(AF_INET6, addr,
+			if (anynet_pton(AF_INET6, addr,
 					&d->d_addr.sin6.sin6_addr) != 1)
 			{
 				register struct hostent *hp;
@@ -1665,7 +1801,7 @@ setsockaddroptions(p, d)
 		}
 	}
 }
-/*
+/*
 **  SETDAEMONOPTIONS -- set options for running the MTA daemon
 **
 **	Parameters:
@@ -1680,6 +1816,54 @@ setsockaddroptions(p, d)
 
 #define DEF_LISTENQUEUE	10
 
+struct dflags
+{
+	char	*d_name;
+	int	d_flag;
+};
+
+static struct dflags	DaemonFlags[] =
+{
+	{ "AUTHREQ",		D_AUTHREQ	},
+	{ "BINDIF",		D_BINDIF	},
+	{ "CANONREQ",		D_CANONREQ	},
+	{ "IFNHELO",		D_IFNHELO	},
+	{ "FQMAIL",		D_FQMAIL	},
+	{ "FQRCPT",		D_FQRCPT	},
+	{ "SMTPS",		D_SMTPS		},
+	{ "UNQUALOK",		D_UNQUALOK	},
+	{ "NOAUTH",		D_NOAUTH	},
+	{ "NOCANON",		D_NOCANON	},
+	{ "NOETRN",		D_NOETRN	},
+	{ "NOTLS",		D_NOTLS		},
+	{ "ETRNONLY",		D_ETRNONLY	},
+	{ "OPTIONAL",		D_OPTIONAL	},
+	{ "DISABLE",		D_DISABLE	},
+	{ "ISSET",		D_ISSET		},
+	{ NULL,			0		}
+};
+
+static void
+printdaemonflags(d)
+	DAEMON_T *d;
+{
+	register struct dflags *df;
+	bool first = true;
+
+	for (df = DaemonFlags; df->d_name != NULL; df++)
+	{
+		if (!bitnset(df->d_flag, d->d_flags))
+			continue;
+		if (first)
+			sm_dprintf("<%s", df->d_name);
+		else
+			sm_dprintf(",%s", df->d_name);
+		first = false;
+	}
+	if (!first)
+		sm_dprintf(">");
+}
+
 bool
 setdaemonoptions(p)
 	register char *p;
@@ -1692,10 +1876,8 @@ setdaemonoptions(p)
 	setsockaddroptions(p, &Daemons[NDaemons]);
 
 #if MILTER
-# if _FFR_MILTER_PERDAEMON
 	if (Daemons[NDaemons].d_inputfilterlist != NULL)
 		Daemons[NDaemons].d_inputfilterlist = newstr(Daemons[NDaemons].d_inputfilterlist);
-# endif /* _FFR_MILTER_PERDAEMON */
 #endif /* MILTER */
 
 	if (Daemons[NDaemons].d_name != NULL)
@@ -1704,23 +1886,20 @@ setdaemonoptions(p)
 	{
 		char num[30];
 
-		(void) sm_snprintf(num, sizeof num, "Daemon%d", NDaemons);
+		(void) sm_snprintf(num, sizeof(num), "Daemon%d", NDaemons);
 		Daemons[NDaemons].d_name = newstr(num);
 	}
 
 	if (tTd(37, 1))
 	{
 		sm_dprintf("Daemon %s flags: ", Daemons[NDaemons].d_name);
-		if (bitnset(D_ETRNONLY, Daemons[NDaemons].d_flags))
-			sm_dprintf("ETRNONLY ");
-		if (bitnset(D_NOETRN, Daemons[NDaemons].d_flags))
-			sm_dprintf("NOETRN ");
+		printdaemonflags(&Daemons[NDaemons]);
 		sm_dprintf("\n");
 	}
 	++NDaemons;
 	return true;
 }
-/*
+/*
 **  INITDAEMON -- initialize daemon if not yet done.
 **
 **	Parameters:
@@ -1744,7 +1923,7 @@ initdaemon()
 		NDaemons = 1;
 	}
 }
-/*
+/*
 **  SETCLIENTOPTIONS -- set options for running the client
 **
 **	Parameters:
@@ -1763,7 +1942,7 @@ setclientoptions(p)
 	int family;
 	DAEMON_T d;
 
-	memset(&d, '\0', sizeof d);
+	memset(&d, '\0', sizeof(d));
 	setsockaddroptions(p, &d);
 
 	/* grab what we need */
@@ -1776,11 +1955,11 @@ setclientoptions(p)
 	{
 		char num[30];
 
-		(void) sm_snprintf(num, sizeof num, "Client%d", family);
+		(void) sm_snprintf(num, sizeof(num), "Client%d", family);
 		ClientSettings[family].d_name = newstr(num);
 	}
 }
-/*
+/*
 **  ADDR_FAMILY -- determine address family from address
 **
 **	Parameters:
@@ -1832,7 +2011,7 @@ addr_family(addr)
 	return AF_UNSPEC;
 }
 
-/*
+/*
 **  CHKCLIENTMODIFIERS -- check whether all clients have set a flag.
 **
 **	Parameters:
@@ -1863,8 +2042,7 @@ chkclientmodifiers(flag)
 }
 
 #if MILTER
-# if _FFR_MILTER_PERDAEMON
-/*
+/*
 **  SETUP_DAEMON_FILTERS -- Parse per-socket filters
 **
 **	Parameters:
@@ -1895,9 +2073,8 @@ setup_daemon_milters()
 		}
 	}
 }
-# endif /* _FFR_MILTER_PERDAEMON */
 #endif /* MILTER */
-/*
+/*
 **  MAKECONNECTION -- make a connection to an SMTP socket on a machine.
 **
 **	Parameters:
@@ -1930,13 +2107,13 @@ makeconnection(host, port, mci, e, enough)
 	time_t enough;
 {
 	register volatile int addrno = 0;
-	register volatile int s;
+	volatile int s;
 	register struct hostent *volatile hp = (struct hostent *) NULL;
 	SOCKADDR addr;
 	SOCKADDR clt_addr;
 	int save_errno = 0;
 	volatile SOCKADDR_LEN_T addrlen;
-	volatile bool firstconnect;
+	volatile bool firstconnect = true;
 	SM_EVENT *volatile ev = NULL;
 #if NETINET6
 	volatile bool v6found = false;
@@ -1974,7 +2151,7 @@ makeconnection(host, port, mci, e, enough)
 		char p6[INET6_ADDRSTRLEN];
 #endif /* NETINET6 */
 
-		memset(&clt_addr, '\0', sizeof clt_addr);
+		memset(&clt_addr, '\0', sizeof(clt_addr));
 
 		/* infer the address family from the address itself */
 		clt_addr.sa.sa_family = addr_family(p);
@@ -1987,7 +2164,7 @@ makeconnection(host, port, mci, e, enough)
 			    clt_addr.sin.sin_addr.s_addr != INADDR_LOOPBACK)
 			{
 				clt_bind = true;
-				socksize = sizeof (struct sockaddr_in);
+				socksize = sizeof(struct sockaddr_in);
 			}
 			break;
 #endif /* NETINET */
@@ -1995,16 +2172,16 @@ makeconnection(host, port, mci, e, enough)
 #if NETINET6
 		  case AF_INET6:
 			if (inet_addr(p) != INADDR_NONE)
-				(void) sm_snprintf(p6, sizeof p6,
+				(void) sm_snprintf(p6, sizeof(p6),
 						   "IPv6:::ffff:%s", p);
 			else
-				(void) sm_strlcpy(p6, p, sizeof p6);
+				(void) sm_strlcpy(p6, p, sizeof(p6));
 			if (anynet_pton(AF_INET6, p6,
 					&clt_addr.sin6.sin6_addr) == 1 &&
 			    !IN6_IS_ADDR_LOOPBACK(&clt_addr.sin6.sin6_addr))
 			{
 				clt_bind = true;
-				socksize = sizeof (struct sockaddr_in6);
+				socksize = sizeof(struct sockaddr_in6);
 			}
 			break;
 #endif /* NETINET6 */
@@ -2029,28 +2206,30 @@ makeconnection(host, port, mci, e, enough)
 #if NETINET
 		  case AF_INET:
 			if (clt_addr.sin.sin_addr.s_addr == 0)
-				clt_addr.sin.sin_addr.s_addr = INADDR_ANY;
+				clt_addr.sin.sin_addr.s_addr = LocalDaemon ?
+					htonl(INADDR_LOOPBACK) : INADDR_ANY;
 			else
 				clt_bind = true;
 			if (clt_addr.sin.sin_port != 0)
 				clt_bind = true;
-			socksize = sizeof (struct sockaddr_in);
+			socksize = sizeof(struct sockaddr_in);
 			break;
 #endif /* NETINET */
 #if NETINET6
 		  case AF_INET6:
 			if (IN6_IS_ADDR_UNSPECIFIED(&clt_addr.sin6.sin6_addr))
-				clt_addr.sin6.sin6_addr = in6addr_any;
+				clt_addr.sin6.sin6_addr = LocalDaemon ?
+					in6addr_loopback : in6addr_any;
 			else
 				clt_bind = true;
-			socksize = sizeof (struct sockaddr_in6);
+			socksize = sizeof(struct sockaddr_in6);
 			if (clt_addr.sin6.sin6_port != 0)
 				clt_bind = true;
 			break;
 #endif /* NETINET6 */
 #if NETISO
 		  case AF_ISO:
-			socksize = sizeof clt_addr.siso;
+			socksize = sizeof(clt_addr.siso);
 			clt_bind = true;
 			break;
 #endif /* NETISO */
@@ -2066,8 +2245,8 @@ makeconnection(host, port, mci, e, enough)
 
 	SM_SET_H_ERRNO(0);
 	errno = 0;
-	memset(&CurHostAddr, '\0', sizeof CurHostAddr);
-	memset(&addr, '\0', sizeof addr);
+	memset(&CurHostAddr, '\0', sizeof(CurHostAddr));
+	memset(&addr, '\0', sizeof(addr));
 	SmtpPhase = mci->mci_phase = "initial connection";
 	CurHostName = host;
 
@@ -2085,7 +2264,7 @@ makeconnection(host, port, mci, e, enough)
 
 			*p = '\0';
 #if NETINET6
-			memset(&hid6, '\0', sizeof hid6);
+			memset(&hid6, '\0', sizeof(hid6));
 #endif /* NETINET6 */
 #if NETINET
 			if (family == AF_INET &&
@@ -2167,13 +2346,41 @@ gothostent:
 		{
 #if NAMED_BIND
 			/* check for name server timeouts */
-			if (errno == ETIMEDOUT || h_errno == TRY_AGAIN ||
-			    (errno == ECONNREFUSED && UseNameServer))
+# if NETINET6
+			if (WorkAroundBrokenAAAA && family == AF_INET6 &&
+			    errno == ETIMEDOUT)
 			{
-				save_errno = errno;
-				mci_setstat(mci, EX_TEMPFAIL, "4.4.3", NULL);
-				errno = save_errno;
-				return EX_TEMPFAIL;
+				/*
+				**  An attempt with family AF_INET may
+				**  succeed By skipping the next section
+				**  of code, we will try AF_INET before
+				**  failing.
+				*/
+
+				if (tTd(16, 10))
+					sm_dprintf("makeconnection: WorkAroundBrokenAAAA: Trying AF_INET lookup (AF_INET6 failed)\n");
+			}
+			else
+# endif /* NETINET6 */
+			{
+				if (errno == ETIMEDOUT ||
+# if _FFR_GETHBN_ExFILE
+#  ifdef EMFILE
+				   errno == EMFILE ||
+#  endif /* EMFILE */
+#  ifdef ENFILE
+				   errno == ENFILE ||
+#  endif /* ENFILE */
+# endif /* _FFR_GETHBN_ExFILE */
+				    h_errno == TRY_AGAIN ||
+				    (errno == ECONNREFUSED && UseNameServer))
+				{
+					save_errno = errno;
+					mci_setstat(mci, EX_TEMPFAIL,
+						    "4.4.3", NULL);
+					errno = save_errno;
+					return EX_TEMPFAIL;
+				}
 			}
 #endif /* NAMED_BIND */
 #if NETINET6
@@ -2216,7 +2423,7 @@ gothostent:
 #endif /* NETINET6 */
 
 		  default:
-			if (hp->h_length > sizeof addr.sa.sa_data)
+			if (hp->h_length > sizeof(addr.sa.sa_data))
 			{
 				syserr("makeconnection: long sa_data: family %d len %d",
 					hp->h_addrtype, hp->h_length);
@@ -2273,14 +2480,14 @@ gothostent:
 #if NETINET
 	  case AF_INET:
 		addr.sin.sin_port = port;
-		addrlen = sizeof (struct sockaddr_in);
+		addrlen = sizeof(struct sockaddr_in);
 		break;
 #endif /* NETINET */
 
 #if NETINET6
 	  case AF_INET6:
 		addr.sin6.sin6_port = port;
-		addrlen = sizeof (struct sockaddr_in6);
+		addrlen = sizeof(struct sockaddr_in6);
 		break;
 #endif /* NETINET6 */
 
@@ -2288,7 +2495,7 @@ gothostent:
 	  case AF_ISO:
 		/* assume two byte transport selector */
 		memmove(TSEL((struct sockaddr_iso *) &addr), (char *) &port, 2);
-		addrlen = sizeof (struct sockaddr_iso);
+		addrlen = sizeof(struct sockaddr_iso);
 		break;
 #endif /* NETISO */
 
@@ -2319,17 +2526,17 @@ gothostent:
 	}
 #endif /* XLA */
 
-	firstconnect = true;
 	for (;;)
 	{
 		if (tTd(16, 1))
 			sm_dprintf("makeconnection (%s [%s].%d (%d))\n",
 				   host, anynet_ntoa(&addr), ntohs(port),
-				   addr.sa.sa_family);
+				   (int) addr.sa.sa_family);
 
 		/* save for logging */
 		CurHostAddr = addr;
 
+#if HASRRESVPORT
 		if (bitnset(M_SECURE_PORT, mci->mci_mailer->m_flags))
 		{
 			int rport = IPPORT_RESERVED - 1;
@@ -2337,6 +2544,7 @@ gothostent:
 			s = rresvport(&rport);
 		}
 		else
+#endif /* HASRRESVPORT */
 		{
 			s = socket(addr.sa.sa_family, SOCK_STREAM, 0);
 		}
@@ -2384,7 +2592,7 @@ gothostent:
 			int on = 1;
 
 			(void) setsockopt(s, SOL_SOCKET, SO_DEBUG,
-					  (char *)&on, sizeof on);
+					  (char *)&on, sizeof(on));
 		}
 		if (e->e_xfp != NULL)	/* for debugging */
 			(void) sm_io_flush(e->e_xfp, SM_TIME_DEFAULT);
@@ -2402,7 +2610,7 @@ gothostent:
 					(void) setsockopt(s, SOL_SOCKET,
 							  SO_REUSEADDR,
 							  (char *) &on,
-							  sizeof on);
+							  sizeof(on));
 				break;
 #endif /* NETINET */
 
@@ -2412,7 +2620,7 @@ gothostent:
 					(void) setsockopt(s, SOL_SOCKET,
 							  SO_REUSEADDR,
 							  (char *) &on,
-							  sizeof on);
+							  sizeof(on));
 				break;
 #endif /* NETINET6 */
 			}
@@ -2467,6 +2675,8 @@ gothostent:
 				break;
 #endif /* NETINET6 */
 			}
+			if (tTd(16, 1))
+				sm_dprintf("Connecting to [%s]...\n", anynet_ntoa(&addr));
 			i = connect(s, (struct sockaddr *) &addr, addrlen);
 			save_errno = errno;
 			if (ev != NULL)
@@ -2476,6 +2686,9 @@ gothostent:
 		}
 		else
 			save_errno = errno;
+
+		/* couldn't connect.... figure out why */
+		(void) close(s);
 
 		/* if running demand-dialed connection, try again */
 		if (DialDelay > 0 && firstconnect &&
@@ -2488,9 +2701,6 @@ gothostent:
 			(void) sleep(DialDelay);
 			continue;
 		}
-
-		/* couldn't connect.... figure out why */
-		(void) close(s);
 
 		if (LogLevel > 13)
 			sm_syslog(LOG_INFO, e->e_id,
@@ -2583,11 +2793,13 @@ nextaddr:
 
 	/* connection ok, put it into canonical form */
 	mci->mci_out = NULL;
-	if ((mci->mci_out = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *) s,
-				       SM_IO_WRONLY, NULL)) == NULL ||
+	if ((mci->mci_out = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
+				       (void *) &s,
+				       SM_IO_WRONLY_B, NULL)) == NULL ||
 	    (s = dup(s)) < 0 ||
-	    (mci->mci_in = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT, (void *) s,
-				      SM_IO_RDONLY, NULL)) == NULL)
+	    (mci->mci_in = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
+				      (void *) &s,
+				      SM_IO_RDONLY_B, NULL)) == NULL)
 	{
 		save_errno = errno;
 		syserr("cannot open SMTP client channel, fd=%d", s);
@@ -2619,7 +2831,7 @@ nextaddr:
 	}
 
 	/* find out name for Interface through which we connect */
-	len = sizeof addr;
+	len = sizeof(addr);
 	if (getsockname(s, &addr.sa, &len) == 0)
 	{
 		char *name;
@@ -2656,12 +2868,18 @@ nextaddr:
 		macdefine(&BlankEnvelope.e_macro, A_PERM,
 			macid("{if_family_out}"), NULL);
 	}
+
+	/* Use the configured HeloName as appropriate */
+	if (HeloName != NULL && HeloName[0] != '\0')
+		mci->mci_heloname = newstr(HeloName);
+
 	mci_setstat(mci, EX_OK, NULL, NULL);
 	return EX_OK;
 }
 
 static void
-connecttimeout()
+connecttimeout(ignore)
+	int ignore;
 {
 	/*
 	**  NOTE: THIS CAN BE CALLED FROM A SIGNAL HANDLER.  DO NOT ADD
@@ -2672,7 +2890,7 @@ connecttimeout()
 	errno = ETIMEDOUT;
 	longjmp(CtxConnectTimeout, 1);
 }
-/*
+/*
 **  MAKECONNECTION_DS -- make a connection to a domain socket.
 **
 **	Parameters:
@@ -2705,19 +2923,21 @@ makeconnection_ds(mux_path, mci)
 
 	if (rval != 0)
 	{
-		syserr("makeconnection_ds: unsafe domain socket");
+		syserr("makeconnection_ds: unsafe domain socket %s",
+			mux_path);
 		mci_setstat(mci, EX_TEMPFAIL, "4.3.5", NULL);
 		errno = rval;
 		return EX_TEMPFAIL;
 	}
 
 	/* prepare address structure */
-	memset(&unix_addr, '\0', sizeof unix_addr);
+	memset(&unix_addr, '\0', sizeof(unix_addr));
 	unix_addr.sun_family = AF_UNIX;
 
-	if (strlen(mux_path) >= sizeof unix_addr.sun_path)
+	if (strlen(mux_path) >= sizeof(unix_addr.sun_path))
 	{
-		syserr("makeconnection_ds: domain socket name too long");
+		syserr("makeconnection_ds: domain socket name %s too long",
+			mux_path);
 
 		/* XXX why TEMPFAIL but 5.x.y ? */
 		mci_setstat(mci, EX_TEMPFAIL, "5.3.5", NULL);
@@ -2725,14 +2945,15 @@ makeconnection_ds(mux_path, mci)
 		return EX_UNAVAILABLE;
 	}
 	(void) sm_strlcpy(unix_addr.sun_path, mux_path,
-			  sizeof unix_addr.sun_path);
+			  sizeof(unix_addr.sun_path));
 
 	/* initialize domain socket */
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock == -1)
 	{
 		save_errno = errno;
-		syserr("makeconnection_ds: could not create domain socket");
+		syserr("makeconnection_ds: could not create domain socket %s",
+			mux_path);
 		mci_setstat(mci, EX_TEMPFAIL, "4.4.5", NULL);
 		errno = save_errno;
 		return EX_TEMPFAIL;
@@ -2753,11 +2974,11 @@ makeconnection_ds(mux_path, mci)
 	/* connection ok, put it into canonical form */
 	mci->mci_out = NULL;
 	if ((mci->mci_out = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
-				       (void *) sock, SM_IO_WRONLY, NULL))
+				       (void *) &sock, SM_IO_WRONLY_B, NULL))
 					== NULL
 	    || (sock = dup(sock)) < 0 ||
 	    (mci->mci_in = sm_io_open(SmFtStdiofd, SM_TIME_DEFAULT,
-				      (void *) sock, SM_IO_RDONLY, NULL))
+				      (void *) &sock, SM_IO_RDONLY_B, NULL))
 					== NULL)
 	{
 		save_errno = errno;
@@ -2776,7 +2997,7 @@ makeconnection_ds(mux_path, mci)
 	return EX_OK;
 }
 #endif /* NETUNIX */
-/*
+/*
 **  SHUTDOWN_DAEMON -- Performs a clean shutdown of the daemon
 **
 **	Parameters:
@@ -2792,6 +3013,7 @@ makeconnection_ds(mux_path, mci)
 void
 shutdown_daemon()
 {
+	int i;
 	char *reason;
 
 	sm_allsignals(true);
@@ -2800,8 +3022,8 @@ shutdown_daemon()
 	ShutdownRequest = NULL;
 	PendingSignal = 0;
 
-	if (LogLevel > 79)
-		sm_syslog(LOG_DEBUG, CurEnv->e_id, "interrupt (%s)",
+	if (LogLevel > 9)
+		sm_syslog(LOG_INFO, CurEnv->e_id, "stopping daemon, reason=%s",
 			  reason == NULL ? "implicit call" : reason);
 
 	FileName = NULL;
@@ -2810,9 +3032,44 @@ shutdown_daemon()
 	xla_all_end();
 #endif /* XLA */
 
-	finis(false, EX_OK);
+	for (i = 0; i < NDaemons; i++)
+	{
+		if (Daemons[i].d_socket >= 0)
+		{
+			(void) close(Daemons[i].d_socket);
+			Daemons[i].d_socket = -1;
+
+#if _FFR_DAEMON_NETUNIX
+# if NETUNIX
+			/* Remove named sockets */
+			if (Daemons[i].d_addr.sa.sa_family == AF_UNIX)
+			{
+				int rval;
+				long sff = SFF_SAFEDIRPATH|SFF_OPENASROOT|SFF_NOLINK|SFF_MUSTOWN|SFF_EXECOK|SFF_CREAT;
+
+				/* if not safe, don't use it */
+				rval = safefile(Daemons[i].d_addr.sunix.sun_path,
+						RunAsUid, RunAsGid,
+						RunAsUserName, sff,
+						S_IRUSR|S_IWUSR, NULL);
+				if (rval == 0 &&
+				    unlink(Daemons[i].d_addr.sunix.sun_path) < 0)
+				{
+					sm_syslog(LOG_WARNING, NOQID,
+						  "Could not remove daemon %s socket: %s: %s",
+						  Daemons[i].d_name,
+						  Daemons[i].d_addr.sunix.sun_path,
+						  sm_errstring(errno));
+				}
+			}
+# endif /* NETUNIX */
+#endif	/* _FFR_DAEMON_NETUNIX */
+		}
+	}
+
+	finis(false, true, EX_OK);
 }
-/*
+/*
 **  RESTART_DAEMON -- Performs a clean restart of the daemon
 **
 **	Parameters:
@@ -2838,7 +3095,6 @@ void
 restart_daemon()
 {
 	bool drop;
-	int i;
 	int save_errno;
 	char *reason;
 	sigfunc_t ignore, oalrm, ousr1;
@@ -2857,7 +3113,7 @@ restart_daemon()
 		if (LogLevel > 3)
 			sm_syslog(LOG_INFO, NOQID,
 				  "could not restart: need full path");
-		finis(false, EX_OSFILE);
+		finis(false, true, EX_OSFILE);
 		/* NOTREACHED */
 	}
 	if (LogLevel > 3)
@@ -2866,6 +3122,12 @@ restart_daemon()
 			  reason == NULL ? "implicit call" : reason);
 
 	closecontrolsocket(true);
+#if SM_CONF_SHM
+	cleanup_shm(DaemonPid == getpid());
+#endif /* SM_CONF_SHM */
+
+	/* close locked pid file */
+	close_sendmail_pid();
 
 	/*
 	**  Want to drop to the user who started the process in all cases
@@ -2883,21 +3145,11 @@ restart_daemon()
 			sm_syslog(LOG_ALERT, NOQID,
 				  "could not drop privileges: %s",
 				  sm_errstring(errno));
-		finis(false, EX_OSERR);
+		finis(false, true, EX_OSERR);
 		/* NOTREACHED */
 	}
 
-	/* arrange for all the files to be closed */
-	for (i = 3; i < DtableSize; i++)
-	{
-		register int j;
-
-		if ((j = fcntl(i, F_GETFD, 0)) != -1)
-			(void) fcntl(i, F_SETFD, j | FD_CLOEXEC);
-	}
-#if SM_CONF_SHM
-	cleanup_shm(DaemonPid == getpid());
-#endif /* SM_CONF_SHM */
+	sm_close_on_exec(STDERR_FILENO + 1, DtableSize);
 
 	/*
 	**  Need to allow signals before execve() to make them "harmless".
@@ -2915,6 +3167,8 @@ restart_daemon()
 #ifdef SIGUSR1
 	SM_NOOP_SIGNAL(SIGUSR1, ousr1);
 #endif /* SIGUSR1 */
+
+	/* Turn back on signals */
 	sm_allsignals(false);
 
 	(void) execve(SaveArgv[0], (ARGV_T) SaveArgv, (ARGV_T) ExternalEnviron);
@@ -2935,10 +3189,10 @@ restart_daemon()
 	if (LogLevel > 0)
 		sm_syslog(LOG_ALERT, NOQID, "could not exec %s: %s",
 			  SaveArgv[0], sm_errstring(errno));
-	finis(false, EX_OSFILE);
+	finis(false, true, EX_OSFILE);
 	/* NOTREACHED */
 }
-/*
+/*
 **  MYHOSTNAME -- return the name of this host.
 **
 **	Parameters:
@@ -3024,7 +3278,7 @@ myhostname(hostbuf, size)
 	if (strchr(hostbuf, '.') == NULL &&
 	    !getcanonname(hostbuf, size, true, NULL))
 	{
-		sm_syslog(LOG_CRIT, NOQID,
+		sm_syslog(LocalDaemon ? LOG_WARNING : LOG_CRIT, NOQID,
 			  "My unqualified host name (%s) unknown; sleeping for retry",
 			  hostbuf);
 		message("My unqualified host name (%s) unknown; sleeping for retry",
@@ -3032,7 +3286,7 @@ myhostname(hostbuf, size)
 		(void) sleep(60);
 		if (!getcanonname(hostbuf, size, true, NULL))
 		{
-			sm_syslog(LOG_ALERT, NOQID,
+			sm_syslog(LocalDaemon ? LOG_WARNING : LOG_ALERT, NOQID,
 				  "unable to qualify my own domain name (%s) -- using short name",
 				  hostbuf);
 			message("WARNING: unable to qualify my own domain name (%s) -- using short name",
@@ -3041,7 +3295,7 @@ myhostname(hostbuf, size)
 	}
 	return hp;
 }
-/*
+/*
 **  ADDRCMP -- compare two host addresses
 **
 **	Parameters:
@@ -3090,7 +3344,7 @@ addrcmp(hp, ha, sa)
 	}
 	return -1;
 }
-/*
+/*
 **  GETAUTHINFO -- get the real host name associated with a file descriptor
 **
 **	Uses RFC1413 protocol to try to get info from the other end.
@@ -3108,7 +3362,8 @@ addrcmp(hp, ha, sa)
 static jmp_buf	CtxAuthTimeout;
 
 static void
-authtimeout()
+authtimeout(ignore)
+	int ignore;
 {
 	/*
 	**  NOTE: THIS CAN BE CALLED FROM A SIGNAL HANDLER.  DO NOT ADD
@@ -3148,10 +3403,10 @@ getauthinfo(fd, may_be_forged)
 	char *ostype = NULL;
 	char **ha;
 	char ibuf[MAXNAME + 1];
-	static char hbuf[MAXNAME * 2 + 11];
+	static char hbuf[MAXNAME + MAXAUTHINFO + 11];
 
 	*may_be_forged = false;
-	falen = sizeof RealHostAddr;
+	falen = sizeof(RealHostAddr);
 	if (isatty(fd) || (i = getpeername(fd, &RealHostAddr.sa, &falen)) < 0 ||
 	    falen <= 0 || RealHostAddr.sa.sa_family == 0)
 	{
@@ -3167,7 +3422,7 @@ getauthinfo(fd, may_be_forged)
 				return NULL;
 			errno = 0;
 		}
-		(void) sm_strlcpyn(hbuf, sizeof hbuf, 2, RealUserName,
+		(void) sm_strlcpyn(hbuf, sizeof(hbuf), 2, RealUserName,
 				   "@localhost");
 		if (tTd(9, 1))
 			sm_dprintf("getauthinfo: %s\n", hbuf);
@@ -3211,7 +3466,10 @@ getauthinfo(fd, may_be_forged)
 		/* try to match the reverse against the forward lookup */
 		hp = sm_gethostbyname(RealHostName, family);
 		if (hp == NULL)
+		{
+			/* XXX: Could be a temporary error on forward lookup */
 			*may_be_forged = true;
+		}
 		else
 		{
 			for (ha = hp->h_addr_list; *ha != NULL; ha++)
@@ -3230,7 +3488,7 @@ getauthinfo(fd, may_be_forged)
 	if (TimeOuts.to_ident == 0)
 		goto noident;
 
-	lalen = sizeof la;
+	lalen = sizeof(la);
 	switch (RealHostAddr.sa.sa_family)
 	{
 #if NETINET
@@ -3245,7 +3503,7 @@ getauthinfo(fd, may_be_forged)
 		port = RealHostAddr.sin.sin_port;
 
 		/* create ident query */
-		(void) sm_snprintf(ibuf, sizeof ibuf, "%d,%d\r\n",
+		(void) sm_snprintf(ibuf, sizeof(ibuf), "%d,%d\r\n",
 				ntohs(RealHostAddr.sin.sin_port),
 				ntohs(la.sin.sin_port));
 
@@ -3293,7 +3551,7 @@ getauthinfo(fd, may_be_forged)
 		port = RealHostAddr.sin6.sin6_port;
 
 		/* create ident query */
-		(void) sm_snprintf(ibuf, sizeof ibuf, "%d,%d\r\n",
+		(void) sm_snprintf(ibuf, sizeof(ibuf), "%d,%d\r\n",
 				ntohs(RealHostAddr.sin6.sin6_port),
 				ntohs(la.sin6.sin6_port));
 
@@ -3332,7 +3590,6 @@ getauthinfo(fd, may_be_forged)
 	/* put a timeout around the whole thing */
 	ev = sm_setevent(TimeOuts.to_ident, authtimeout, 0);
 
-
 	/* connect to foreign IDENT server using same address as SMTP socket */
 	s = socket(la.sa.sa_family, SOCK_STREAM, 0);
 	if (s < 0)
@@ -3353,13 +3610,24 @@ getauthinfo(fd, may_be_forged)
 
 	/* get result */
 	p = &ibuf[0];
-	nleft = sizeof ibuf - 1;
+	nleft = sizeof(ibuf) - 1;
 	while ((i = read(s, p, nleft)) > 0)
 	{
+		char *s;
+
 		p += i;
 		nleft -= i;
 		*p = '\0';
-		if (strchr(ibuf, '\n') != NULL || nleft <= 0)
+		if ((s = strchr(ibuf, '\n')) != NULL)
+		{
+			if (p > s + 1)
+			{
+				p = s + 1;
+				*p = '\0';
+			}
+			break;
+		}
+		if (nleft <= 0)
 			break;
 	}
 	(void) close(s);
@@ -3367,7 +3635,7 @@ getauthinfo(fd, may_be_forged)
 	if (i < 0 || p == &ibuf[0])
 		goto noident;
 
-	if (*--p == '\n' && *--p == '\r')
+	if (p >= &ibuf[2] && *--p == '\n' && *--p == '\r')
 		p--;
 	*++p = '\0';
 
@@ -3425,13 +3693,13 @@ getauthinfo(fd, may_be_forged)
 	if (sm_strncasecmp(ostype, "other", 5) == 0 &&
 	    (ostype[5] == ' ' || ostype[5] == '\0'))
 	{
-		(void) sm_strlcpy(hbuf, "IDENT:", sizeof hbuf);
-		cleanstrcpy(&hbuf[6], p, MAXNAME);
+		(void) sm_strlcpy(hbuf, "IDENT:", sizeof(hbuf));
+		cleanstrcpy(&hbuf[6], p, MAXAUTHINFO);
 	}
 	else
-		cleanstrcpy(hbuf, p, MAXNAME);
+		cleanstrcpy(hbuf, p, MAXAUTHINFO);
 	len = strlen(hbuf);
-	(void) sm_strlcpyn(&hbuf[len], sizeof hbuf - len, 2, "@",
+	(void) sm_strlcpyn(&hbuf[len], sizeof(hbuf) - len, 2, "@",
 			   RealHostName == NULL ? "localhost" : RealHostName);
 	goto postident;
 
@@ -3464,7 +3732,7 @@ noident:
 			sm_dprintf("getauthinfo: NULL\n");
 		return NULL;
 	}
-	(void) sm_strlcpy(hbuf, RealHostName, sizeof hbuf);
+	(void) sm_strlcpy(hbuf, RealHostName, sizeof(hbuf));
 
 postident:
 #if IP_SRCROUTE
@@ -3493,7 +3761,7 @@ postident:
 		int l;
 		struct IPOPTION ipopt;
 
-		ipoptlen = sizeof ipopt;
+		ipoptlen = sizeof(ipopt);
 		if (getsockopt(fd, IPPROTO_IP, IP_OPTIONS,
 			       (char *) &ipopt, &ipoptlen) < 0)
 			goto noipsr;
@@ -3526,7 +3794,7 @@ postident:
 				*/
 
 				p = &hbuf[strlen(hbuf)];
-				l = sizeof hbuf - (hbuf - p) - 6;
+				l = sizeof(hbuf) - (hbuf - p) - 6;
 				(void) sm_snprintf(p, SPACELEFT(hbuf, p),
 					" [%s@%.*s",
 					*o == IPOPT_SSRR ? "!" : "",
@@ -3612,7 +3880,7 @@ postipsr:
 		sm_dprintf("getauthinfo: %s\n", hbuf);
 	return hbuf;
 }
-/*
+/*
 **  HOST_MAP_LOOKUP -- turn a hostname into canonical form
 **
 **	Parameters:
@@ -3686,7 +3954,7 @@ host_map_lookup(map, name, av, statp)
 			return NULL;
 		if (s->s_namecanon.nc_cname == NULL)
 		{
-			syserr("host_map_lookup(%s): bogus NULL cache entry, errno = %d, h_errno = %d",
+			syserr("host_map_lookup(%s): bogus NULL cache entry, errno=%d, h_errno=%d",
 			       name,
 			       s->s_namecanon.nc_errno,
 			       s->s_namecanon.nc_herrno);
@@ -3745,8 +4013,8 @@ host_map_lookup(map, name, av, statp)
 	{
 		int ttl;
 
-		(void) sm_strlcpy(hbuf, name, sizeof hbuf);
-		if (getcanonname(hbuf, sizeof hbuf - 1, !HasWildcardMX, &ttl))
+		(void) sm_strlcpy(hbuf, name, sizeof(hbuf));
+		if (getcanonname(hbuf, sizeof(hbuf) - 1, !HasWildcardMX, &ttl))
 		{
 			ans = hbuf;
 			if (ttl > 0)
@@ -3788,7 +4056,7 @@ host_map_lookup(map, name, av, statp)
 				static char n[MAXNAME + 1];
 
 				/* hp->h_name is about to disappear */
-				(void) sm_strlcpy(n, ans, sizeof n);
+				(void) sm_strlcpy(n, ans, sizeof(n));
 				ans = n;
 			}
 			freehostent(hp);
@@ -3861,7 +4129,7 @@ host_map_lookup(map, name, av, statp)
 	s->s_namecanon.nc_stat = *statp;
 	return NULL;
 }
-/*
+/*
 **  HOST_MAP_INIT -- initialize host class structures
 **
 **	Parameters:
@@ -3943,7 +4211,7 @@ host_map_init(map, args)
 		map->map_tapp = newstr(map->map_tapp);
 	return true;
 }
-
+
 #if NETINET6
 /*
 **  ANYNET_NTOP -- convert an IPv6 network address to printable form.
@@ -3992,7 +4260,7 @@ anynet_ntop(s6a, dst, dst_len)
 	return ap;
 }
 
-/*
+/*
 **  ANYNET_PTON -- convert printed form to network address.
 **
 **	Wrapper for inet_pton() which handles IPv6: labels.
@@ -4019,7 +4287,7 @@ anynet_pton(family, src, dst)
 	return inet_pton(family, src, dst);
 }
 #endif /* NETINET6 */
-/*
+/*
 **  ANYNET_NTOA -- convert a network address to printable form.
 **
 **	Parameters:
@@ -4055,10 +4323,10 @@ anynet_ntoa(sap)
 # if NETUNIX
 	  case AF_UNIX:
 		if (sap->sunix.sun_path[0] != '\0')
-			(void) sm_snprintf(buf, sizeof buf, "[UNIX: %.64s]",
+			(void) sm_snprintf(buf, sizeof(buf), "[UNIX: %.64s]",
 					   sap->sunix.sun_path);
 		else
-			(void) sm_strlcpy(buf, "[UNIX: localhost]", sizeof buf);
+			(void) sm_strlcpy(buf, "[UNIX: localhost]", sizeof(buf));
 		return buf;
 # endif /* NETUNIX */
 
@@ -4069,7 +4337,7 @@ anynet_ntoa(sap)
 
 # if NETINET6
 	  case AF_INET6:
-		ap = anynet_ntop(&sap->sin6.sin6_addr, buf, sizeof buf);
+		ap = anynet_ntop(&sap->sin6.sin6_addr, buf, sizeof(buf));
 		if (ap != NULL)
 			return ap;
 		break;
@@ -4077,7 +4345,7 @@ anynet_ntoa(sap)
 
 # if NETLINK
 	  case AF_LINK:
-		(void) sm_snprintf(buf, sizeof buf, "[LINK: %s]",
+		(void) sm_snprintf(buf, sizeof(buf), "[LINK: %s]",
 				   link_ntoa((struct sockaddr_dl *) &sap->sa));
 		return buf;
 # endif /* NETLINK */
@@ -4088,10 +4356,10 @@ anynet_ntoa(sap)
 	}
 
 	/* unknown family -- just dump bytes */
-	(void) sm_snprintf(buf, sizeof buf, "Family %d: ", sap->sa.sa_family);
+	(void) sm_snprintf(buf, sizeof(buf), "Family %d: ", sap->sa.sa_family);
 	bp = &buf[strlen(buf)];
 	ap = sap->sa.sa_data;
-	for (l = sizeof sap->sa.sa_data; --l >= 0; )
+	for (l = sizeof(sap->sa.sa_data); --l >= 0; )
 	{
 		(void) sm_snprintf(bp, SPACELEFT(buf, bp), "%02x:",
 				   *ap++ & 0377);
@@ -4100,7 +4368,7 @@ anynet_ntoa(sap)
 	*--bp = '\0';
 	return buf;
 }
-/*
+/*
 **  HOSTNAMEBYANYADDR -- return name of host based on address
 **
 **	Parameters:
@@ -4151,7 +4419,7 @@ hostnamebyanyaddr(sap)
 # if NETISO
 	  case AF_ISO:
 		hp = sm_gethostbyaddr((char *) &sap->siso.siso_addr,
-				      sizeof sap->siso.siso_addr, AF_ISO);
+				      sizeof(sap->siso.siso_addr), AF_ISO);
 		break;
 # endif /* NETISO */
 
@@ -4162,7 +4430,7 @@ hostnamebyanyaddr(sap)
 # endif /* NETUNIX */
 
 	  default:
-		hp = sm_gethostbyaddr(sap->sa.sa_data, sizeof sap->sa.sa_data,
+		hp = sm_gethostbyaddr(sap->sa.sa_data, sizeof(sap->sa.sa_data),
 				      sap->sa.sa_family);
 		break;
 	}
@@ -4190,7 +4458,7 @@ hostnamebyanyaddr(sap)
 			static char n[MAXNAME + 1];
 
 			/* Copy the string, hp->h_name is about to disappear */
-			(void) sm_strlcpy(n, name, sizeof n);
+			(void) sm_strlcpy(n, name, sizeof(n));
 			name = n;
 		}
 		freehostent(hp);
@@ -4214,7 +4482,7 @@ hostnamebyanyaddr(sap)
 	{
 		static char buf[203];
 
-		(void) sm_snprintf(buf, sizeof buf, "[%.200s]",
+		(void) sm_snprintf(buf, sizeof(buf), "[%.200s]",
 				   anynet_ntoa(sap));
 		return buf;
 	}

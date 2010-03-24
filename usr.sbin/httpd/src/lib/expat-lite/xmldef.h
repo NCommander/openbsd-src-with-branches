@@ -29,24 +29,15 @@ your version of this file under either the MPL or the GPL.
 */
 
 #include <string.h>
-
-#ifdef XML_WINLIB
-
-#define WIN32_LEAN_AND_MEAN
-#define STRICT
-#include <windows.h>
-
-#define malloc(x) HeapAlloc(GetProcessHeap(), 0, (x))
-#define calloc(x, y) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (x)*(y))
-#define free(x) HeapFree(GetProcessHeap(), 0, (x))
-#define realloc(x, y) HeapReAlloc(GetProcessHeap(), 0, x, y)
-#define abort() /* as nothing */
-
-#else /* not XML_WINLIB */
-
 #include <stdlib.h>
-
-#endif /* not XML_WINLIB */
+#include <sys/endian.h>
+#if _BYTE_ORDER == _BIG_ENDIAN
+#define XML_BYTE_ORDER 21
+#elif _BYTE_ORDER == _LITTLE_ENDIAN
+#define XML_BYTE_ORDER 12
+#else
+#error Unsupported byte order
+#endif
 
 /* This file can be used for any definitions needed in
 particular environments. */
@@ -61,10 +52,3 @@ particular environments. */
 #define int int32
 
 #endif /* MOZILLA */
-
-#ifdef APACHE
-
-#include "ap_config.h"
-#define XML_BYTE_ORDER AP_BYTE_ORDER
-
-#endif /* APACHE */

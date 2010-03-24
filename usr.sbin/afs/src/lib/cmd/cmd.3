@@ -3,7 +3,7 @@
 .\"   * use better macros for arguments (like .Pa for files)
 .\"
 .Dd June 1, 2000
-.Dt fs 3
+.Dt FS 3
 .Os "Arla, KTH"
 .Sh NAME
 .Nm cmd
@@ -138,7 +138,7 @@ will split up the
 .Fa line
 into argument that is saved in
 .Fa argv
-maxium of
+maximum of
 .Fa maxn
 will be parsed.
 The number of argument will be stored in
@@ -158,7 +158,7 @@ will take the current syntax and try to parse the arguments
 .Fa argc, argv.
 .Pp
 When a
-.Xr mdoc(7)
+.Xr mdoc 7
 file is generated. The .ctx file for the command is read to add extra
 content to the manual-page. The file is split up in sections separated by
 .Pp
@@ -253,11 +253,11 @@ A file named the same way as the command binary (really argv[0]) with
 the extention .ctx will be used to add extra help-text in the mdoc
 manpage when its generated.
 .Sh SEE ALSO
-.Xr getarg(3),
-.Xr mdoc(7)
+.Xr getarg 3 ,
+.Xr mdoc 7
 .Sh HISTORY
 First written on CMU. Taken up by Transarc/IBM in their AFS
-product. Reimplmented for Arla since a lot of people missed it. When
+product. Reimplemented for Arla since a lot of people missed it. When
 it got added to arla it also got functionally like generating mdoc
 output.
 .Sh AUTHORS
@@ -268,4 +268,4 @@ Plenty of them.
 .Fn cmd_ParseLine
 and
 .Fn cmd_FreeArgv
-isn't implemeted.
+isn't implemented.

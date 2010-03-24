@@ -534,7 +534,7 @@ b32_ntop(uint8_t const *src, size_t srclength, char *target, size_t targsize)
 	{
 		if(targsize < strlen(buf)+1)
 			return -1;
-		strcpy(target, buf);
+		strlcpy(target, buf, targsize);
 		len += strlen(buf);
 	}
 	else if(targsize < 1)
@@ -957,4 +957,10 @@ addr2ip(
 	}
 
 	return (0);
+}
+
+uint16_t
+qid_generate()
+{
+	return (uint16_t) arc4random();
 }

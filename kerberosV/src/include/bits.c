@@ -47,8 +47,8 @@ RCSID("$KTH: bits.c,v 1.23 2005/01/05 15:22:02 lha Exp $");
     while(x){ x <<= 1; b++; if(x < zero) pre=""; }		\
     if(b >= len){						\
         int tabs;						\
-	sprintf(tmp, "%sint%d_t" , pre, len);			\
-	sprintf(tmp2, "typedef %s %s;", #TYPE, tmp);		\
+	snprintf(tmp, sizeof tmp, "%sint%d_t" , pre, len);	\
+	snprintf(tmp2, sizeof tmp2, "typedef %s %s;", #TYPE, tmp);	\
 	tabs = 5 - strlen(tmp2) / 8;				\
         fprintf(f, "%s", tmp2);					\
 	while(tabs-- > 0) fprintf(f, "\t");			\
@@ -121,8 +121,7 @@ int main(int argc, char **argv)
     } else {
 	char *p;
 	fn = argv[1];
-	p = malloc(strlen(fn) + 5);
-	sprintf(p, "__%s__", fn);
+	asprintf(&p, "__%s__", fn);
 	hb = p;
 	for(; *p; p++){
 	    if(!isalnum((unsigned char)*p))

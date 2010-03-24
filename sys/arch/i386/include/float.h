@@ -1,3 +1,4 @@
+/*	$OpenBSD: float.h,v 1.6 2006/10/01 18:14:40 kettenis Exp $	*/
 /*	$NetBSD: float.h,v 1.8 1995/06/20 20:45:37 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,11 +38,12 @@
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-extern int __flt_rounds();
+int __flt_rounds(void);
 __END_DECLS
 
 #define FLT_RADIX	2		/* b */
 #define FLT_ROUNDS	__flt_rounds()
+#define FLT_EVAL_METHOD	2		/* long double */
 
 #define FLT_MANT_DIG	24		/* p */
 #define FLT_EPSILON	1.19209290E-07F	/* b**(1-p) */
@@ -67,14 +65,14 @@ __END_DECLS
 #define DBL_MAX		1.7976931348623157E+308
 #define DBL_MAX_10_EXP	308
 
-#define LDBL_MANT_DIG	DBL_MANT_DIG
-#define LDBL_EPSILON	DBL_EPSILON
-#define LDBL_DIG	DBL_DIG
-#define LDBL_MIN_EXP	DBL_MIN_EXP
-#define LDBL_MIN	DBL_MIN
-#define LDBL_MIN_10_EXP	DBL_MIN_10_EXP
-#define LDBL_MAX_EXP	DBL_MAX_EXP
-#define LDBL_MAX	DBL_MAX
-#define LDBL_MAX_10_EXP	DBL_MAX_10_EXP
+#define LDBL_MANT_DIG	64
+#define LDBL_EPSILON	1.08420217248550443401e-19L
+#define LDBL_DIG	18
+#define LDBL_MIN_EXP	(-16381)
+#define LDBL_MIN	3.36210314311209350626e-4932L
+#define LDBL_MIN_10_EXP	(-4931)
+#define LDBL_MAX_EXP	16384
+#define LDBL_MAX	1.18973149535723176502e+4932L
+#define LDBL_MAX_10_EXP	4932
 
 #endif	/* _I386_FLOAT_H_ */

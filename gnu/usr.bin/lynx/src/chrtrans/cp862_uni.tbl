@@ -1,8 +1,13 @@
+# This file has been modified for lynx (see README.tables)
+
 #The MIME name of this charset.
 Mcp862
 
 #Name as a Display Charset (used on Options screen).
-ODosHebrew (cp862)
+OHebrew (cp862)
+
+#Codepage number
+C862
 
 #    Name:     cp862_DOSHebrew to Unicode table
 #    Unicode version: 2.0

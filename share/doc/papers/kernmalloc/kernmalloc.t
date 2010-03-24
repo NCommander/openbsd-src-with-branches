@@ -1,3 +1,5 @@
+.\"	$OpenBSD: kernmalloc.t,v 1.3 2003/06/02 23:30:09 millert Exp $
+.\"
 .\" Copyright (c) 1988 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -600,7 +598,7 @@ Two of the traditional UNIX
 memory allocators remain in the current system.
 The terminal subsystem uses \fIclist\fP\^s (character lists).
 That part of the system is expected to undergo major revision within
-the the next year or so, and it will probably be changed to use
+the next year or so, and it will probably be changed to use
 \fImbuf\fP\^s as it is merged into the network system.
 The other major allocator that remains is
 .RN getblk ,

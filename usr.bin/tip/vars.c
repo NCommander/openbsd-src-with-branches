@@ -1,3 +1,4 @@
+/*	$OpenBSD: vars.c,v 1.9 2007/05/15 19:42:05 moritz Exp $	*/
 /*	$NetBSD: vars.c,v 1.3 1994/12/08 09:31:19 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,13 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)vars.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: vars.c,v 1.3 1994/12/08 09:31:19 jtc Exp $";
-#endif /* not lint */
 
 #include "tip.h"
 #include "pathnames.h"
@@ -58,7 +48,7 @@ value_t vtable[] = {
 	{ "eofwrite",	STRING|IREMOTE|INIT,	(READ|WRITE)<<PUBLIC,
 	  "eofw",	(char *)&OE },
 	{ "eol",	STRING|IREMOTE|INIT,	(READ|WRITE)<<PUBLIC,
-	  NOSTR,	(char *)&EL },
+	  NULL,		(char *)&EL },
 	{ "escape",	CHAR,			(READ|WRITE)<<PUBLIC,
 	  "es",		(char *)'~' },
 	{ "exceptions",	STRING|INIT|IREMOTE,	(READ|WRITE)<<PUBLIC,
@@ -70,19 +60,19 @@ value_t vtable[] = {
 	{ "host",	STRING|IREMOTE|INIT,	READ<<PUBLIC,
 	  "ho",		(char *)&HO },
 	{ "log",	STRING|INIT,		(READ|WRITE)<<ROOT,
-	  NOSTR,	_PATH_ACULOG },
+	  NULL,		_PATH_ACULOG },
 	{ "phones",	STRING|INIT|IREMOTE,	READ<<PUBLIC,
-	  NOSTR,	(char *)&PH },
+	  NULL,		(char *)&PH },
 	{ "prompt",	CHAR,			(READ|WRITE)<<PUBLIC,
 	  "pr",		(char *)'\n' },
 	{ "raise",	BOOL,			(READ|WRITE)<<PUBLIC,
 	  "ra",		(char *)FALSE },
 	{ "raisechar",	CHAR,			(READ|WRITE)<<PUBLIC,
-	  "rc",		(char *)CTRL('a') },
+	  "rc",		NULL },
 	{ "record",	STRING|INIT|IREMOTE,	(READ|WRITE)<<PUBLIC,
 	  "rec",	(char *)&RE },
 	{ "remote",	STRING|INIT|IREMOTE,	READ<<PUBLIC,
-	  NOSTR,	(char *)&RM },
+	  NULL,		(char *)&RM },
 	{ "script",	BOOL,			(READ|WRITE)<<PUBLIC,
 	  "sc",		(char *)FALSE },
 	{ "tabexpand",	BOOL,			(READ|WRITE)<<PUBLIC,
@@ -92,7 +82,7 @@ value_t vtable[] = {
 	{ "SHELL",	STRING|ENVIRON|INIT,	(READ|WRITE)<<PUBLIC,
 	  NULL,		_PATH_BSHELL },
 	{ "HOME",	STRING|ENVIRON,		(READ|WRITE)<<PUBLIC,
-	  NOSTR,	NOSTR },
+	  NULL,		NULL },
 	{ "echocheck",	BOOL,			(READ|WRITE)<<PUBLIC,
 	  "ec",		(char *)FALSE },
 	{ "disconnect",	STRING|IREMOTE|INIT,	(READ|WRITE)<<PUBLIC,
@@ -113,5 +103,11 @@ value_t vtable[] = {
 	  "le",		(char *)FALSE },
 	{ "parity",	STRING|INIT|IREMOTE,	(READ|WRITE)<<PUBLIC,
 	  "par",	(char *)&PA },
-	{ NOSTR, NULL, NULL, NOSTR, NOSTR }
+	{ "hardwareflow", BOOL,			(READ|WRITE)<<PUBLIC,
+	  "hf",		(char *)FALSE },
+	{ "linedisc",	NUMBER|IREMOTE|INIT,	(READ|WRITE)<<PUBLIC,
+	  "ld",		(char *)&LD },
+	{ "direct",	BOOL,			(READ<<PUBLIC)|(WRITE<<ROOT),
+	  "dc",		(char *)FALSE },
+	{ NULL, NULL, NULL, NULL, NULL }
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.18 2009/06/13 21:48:03 miod Exp $ */
+/*	$OpenBSD: autoconf.h,v 1.5 2010/02/12 19:37:31 miod Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -35,34 +35,45 @@
 
 #include <machine/bus.h>
 
+struct bonito_config;
+
 /*
- * Structure holding all misc config information.
+ * List of legacy I/O ranges.
  */
-#define MAX_CPUS	1
-
-struct sys_rec {
-	int	system_type;
-
-	struct cpuinfo {
-		u_int16_t type;
-		u_int8_t  vers_maj;
-		u_int8_t  vers_min;
-		u_int16_t fptype;
-		u_int8_t  fpvers_maj;
-		u_int8_t  fpvers_min;
-		u_int32_t clock;
-		u_int32_t tlbsize;
-		u_int32_t tlbwired;
-	} cpu[MAX_CPUS];
-
-	/* Serial console configuration. */
-	struct mips_bus_space console_io;
+struct legacy_io_range {
+	bus_addr_t	start;
+	bus_size_t	end;	/* inclusive */
 };
 
-extern struct sys_rec sys_config;
+/*
+ * Per platform information.
+ */
+struct platform {
+	int				 system_type;
+	char				*vendor;
+	char				*product;
+
+	const struct bonito_config	*bonito_config;
+	const struct legacy_io_range	*legacy_io_ranges;
+
+	void				(*setup)(void);
+	void				(*device_register)(struct device *,
+					    void *);
+
+	void				(*powerdown)(void);
+	void				(*reset)(void);
+};
+
+extern const struct platform *sys_platform;
 
 struct mainbus_attach_args {
 	const char	*maa_name;
 };
+
+extern struct device *bootdv;
+extern char bootdev[];
+extern enum devclass bootdev_class;
+
+#include <mips64/autoconf.h>
 
 #endif /* _MACHINE_AUTOCONF_H_ */

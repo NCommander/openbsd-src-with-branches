@@ -1,3 +1,4 @@
+/*	$OpenBSD: ossaudiovar.h,v 1.4 2008/04/12 22:53:20 jakemsr Exp $	*/
 /*	$NetBSD: ossaudiovar.h,v 1.4 1997/10/16 16:49:40 augustss Exp $	*/
 
 /*
@@ -12,13 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -44,7 +38,7 @@ struct oss_sys_ioctl_args {
 #define OSS_IOC_IN          0x40000000      /* copy in parameters */
 #define OSS_IOC_OUT         0x80000000      /* copy out parameters */
 #define OSS_IOC_INOUT       (OSS_IOC_IN | OSS_IOC_OUT)
-#define	_OSS_IOCTL(w,x,y,z) ((int)((w)|(((z)&OSS_IOCPARM_MASK)<<16)|((x)<<8)|(y)))
+#define	_OSS_IOCTL(w,x,y,z) ((u_long)((w)|(((z)&OSS_IOCPARM_MASK)<<16)|((x)<<8)|(y)))
 #define _OSS_IO(x,y)        _OSS_IOCTL(OSS_IOC_VOID, x, y, 0)
 #define _OSS_IOR(x,y,t)     _OSS_IOCTL(OSS_IOC_OUT, x, y, sizeof(t))
 #define _OSS_IOW(x,y,t)     _OSS_IOCTL(OSS_IOC_IN, x, y, sizeof(t))
@@ -88,6 +82,7 @@ struct oss_sys_ioctl_args {
 #define OSS_SNDCTL_DSP_SETSYNCRO	_OSS_IO  ('P', 21)
 #define OSS_SNDCTL_DSP_SETDUPLEX	_OSS_IO  ('P', 22)
 #define OSS_SNDCTL_DSP_PROFILE		_OSS_IOW ('P', 23, int)
+#define OSS_SNDCTL_DSP_GETODELAY	_OSS_IOR ('P', 24, int)
 #define	  OSS_APF_NORMAL		0	/* Normal applications */
 #define	  OSS_APF_NETWORK		1	/* "external" delays */
 #define   OSS_APF_CPUINTENS		2	/* CPU delays */

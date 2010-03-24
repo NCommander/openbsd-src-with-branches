@@ -13,36 +13,13 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: w_gammaf.c,v 1.3 1995/05/10 20:49:04 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
 extern int signgam;
 
-#ifdef __STDC__
-	float gammaf(float x)
-#else
-	float gammaf(x)
-	float x;
-#endif
+float
+gammaf(float x)
 {
-#ifdef _IEEE_LIBM
-	return __ieee754_gammaf_r(x,&signgam);
-#else
-        float y;
-        y = __ieee754_gammaf_r(x,&signgam);
-        if(_LIB_VERSION == _IEEE_) return y;
-        if(!finitef(y)&&finitef(x)) {
-            if(floorf(x)==x&&x<=(float)0.0)
-	        /* gammaf pole */
-                return (float)__kernel_standard((double)x,(double)x,141);
-            else
-	        /* gammaf overflow */
-                return (float)__kernel_standard((double)x,(double)x,140);
-        } else
-            return y;
-#endif
-}             
+	return lgammaf_r(x,&signgam);
+}

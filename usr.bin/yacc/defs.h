@@ -1,10 +1,45 @@
-/*	$Id: defs.h,v 1.4 1994/12/24 16:57:28 cgd Exp $ */
+/*	$OpenBSD: defs.h,v 1.10 2003/06/03 02:56:24 millert Exp $	*/
+/*	$NetBSD: defs.h,v 1.6 1996/03/19 03:21:30 jtc Exp $	*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *	@(#)defs.h	5.6 (Berkeley) 5/24/93
+ */
 
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <stdlib.h>
 
 /*  machine-dependent definitions			*/
 /*  the following definitions are for the Tahoe		*/
@@ -66,6 +101,7 @@
 #define START 7
 #define UNION 8
 #define IDENT 9
+#define EXPECT 10
 
 
 /*  symbol classes  */
@@ -188,7 +224,6 @@ extern char tflag;
 extern char vflag;
 extern char *symbol_prefix;
 
-extern char *myname;
 extern char *cptr;
 extern char *line;
 extern int lineno;
@@ -263,6 +298,7 @@ extern short *to_state;
 
 extern action **parser;
 extern int SRtotal;
+extern int SRexpect;
 extern int RRtotal;
 extern short *SRconflicts;
 extern short *RRconflicts;
@@ -276,17 +312,63 @@ extern short final_state;
 extern char *allocate();
 extern bucket *lookup();
 extern bucket *make_bucket();
+extern void set_first_derives(void);
+extern void closure(short *, int);
+extern void finalize_closure(void);
+
+extern void fatal(char *);
+
+extern void reflexive_transitive_closure(unsigned *, int);
+extern void done(int);
+
+extern void no_space(void);
+extern void open_error(char *);
+extern void open_write_error(char *);
+extern void unexpected_EOF(void);
+extern void print_pos(char *, char *);
+extern void syntax_error(int, char *, char *);
+extern void unterminated_comment(int, char *, char *);
+extern void unterminated_string(int, char *, char *);
+extern void unterminated_text(int, char *, char *);
+extern void unterminated_union(int, char *, char *);
+extern void over_unionized(char *);
+extern void illegal_tag(int, char *, char *);
+extern void illegal_character(char *);
+extern void used_reserved(char *);
+extern void tokenized_start(char *);
+extern void retyped_warning(char *);
+extern void reprec_warning(char *);
+extern void revalued_warning(char *);
+extern void terminal_start(char *);
+extern void restarted_warning(void);
+extern void no_grammar(void);
+extern void terminal_lhs(int);
+extern void prec_redeclared(void);
+extern void unterminated_action(int, char *, char *);
+extern void dollar_warning(int, int);
+extern void dollar_error(int, char *, char *);
+extern void untyped_lhs(void);
+extern void untyped_rhs(int, char *);
+extern void unknown_rhs(int);
+extern void default_action_warning(void);
+extern void undefined_goal(char *);
+extern void undefined_symbol_warning(char *);
+
+extern void lalr(void);
+
+extern void reader(void);
+extern void lr0(void);
+extern void make_parser(void);
+extern void verbose(void);
+extern void output(void);
+extern void free_parser(void);
+extern void write_section(char *[]);
+
+extern void create_symbol_table(void);
+extern void free_symbol_table(void);
+extern void free_symbols(void);
 
 
 /* system variables */
 
-extern int errno;
-
-
-/* system functions */
-
-extern void free();
-extern char *calloc();
-extern char *malloc();
-extern char *realloc();
-extern char *strcpy();
+extern char *__progname;

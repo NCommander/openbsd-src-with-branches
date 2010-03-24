@@ -1,5 +1,4 @@
-/*	$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $	*/
-
+/*	$OpenBSD: ftell.c,v 1.8 2009/10/22 01:23:16 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,42 +31,36 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ftell.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: ftell.c,v 1.6 1995/03/22 18:19:51 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
 
 /*
- * ftell: return current offset.
+ * ftello: return current offset.
  */
-long
-ftell(fp)
-	register FILE *fp;
+off_t
+ftello(FILE *fp)
 {
-	register fpos_t pos;
+	fpos_t pos;
 
 	if (fp->_seek == NULL) {
 		errno = ESPIPE;			/* historic practice */
-		return (-1L);
+		pos = -1;
+		goto out;
 	}
 
 	/*
 	 * Find offset of underlying I/O object, then
 	 * adjust for buffered bytes.
 	 */
+	FLOCKFILE(fp);
 	__sflush(fp);		/* may adjust seek offset on append stream */
 	if (fp->_flags & __SOFF)
 		pos = fp->_offset;
 	else {
 		pos = (*fp->_seek)(fp->_cookie, (fpos_t)0, SEEK_CUR);
-		if (pos == -1L)
-			return (pos);
+		if (pos == -1)
+			goto out;
 	}
 	if (fp->_flags & __SRD) {
 		/*
@@ -90,5 +79,22 @@ ftell(fp)
 		 */
 		pos += fp->_p - fp->_bf._base;
 	}
+out:	FUNLOCKFILE(fp);
 	return (pos);
 }
+
+/*
+ * ftell() returns a long and sizeof(off_t) != sizeof(long) on all arches
+ */
+#if defined(__alpha__) && defined(__indr_reference)
+__indr_reference(ftello, ftell);
+#else
+long
+ftell(FILE *fp)
+{
+	long pos;
+
+	pos = (long)ftello(fp);
+	return(pos);
+}
+#endif

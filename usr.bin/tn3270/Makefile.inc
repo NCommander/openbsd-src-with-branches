@@ -1,6 +1,6 @@
-#	$Id: Makefile.inc,v 1.5 1995/04/24 07:40:22 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 1998/07/27 15:24:32 millert Exp $
 
-CFLAGS += -DTERMCAP -DSRCRT -DKLUDGELINEMODE -DUSE_TERMIO -DTN3270 -Dunix
+CFLAGS += -DSRCRT -DKLUDGELINEMODE -DUSE_TERMIO -DTN3270 -Dunix
 KBD = unix.kbd
 
 .include "${.CURDIR}/../../Makefile.inc"

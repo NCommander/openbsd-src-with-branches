@@ -1,8 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: common.c,v 1.11 2003/06/28 20:37:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Network Security Technologies, Inc. http://www.netsec.net
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -12,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Network Security
- *	Technologies, Inc.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -53,20 +46,14 @@
 #include <unistd.h>
 #include <sysexits.h>
 #include <stdlib.h>
-#include <grp.h>
-#include <syslog.h>
 #include <md5.h>
 
 #include "pppoe.h"
 
 #define PPP_PROG	"/usr/sbin/ppp"
 
-void debugv __P((char *, struct iovec *, int));
-
 int
-runppp(bpffd, sysname)
-	int bpffd;
-	char *sysname;
+runppp(int bpffd, u_int8_t *sysname)
 {
 	int socks[2], fdm, fds, closeit;
 	pid_t pid;
@@ -116,17 +103,15 @@ runppp(bpffd, sysname)
 	if (closeit)
 		close(fds);
 
-	execlp(PPP_PROG, "ppp", "-direct", sysname, NULL);
+	execlp(PPP_PROG, "ppp", "-direct", sysname, (char *)NULL);
 	perror("execlp");
-	syslog(LOG_INFO, "%s exec failed: %m", PPP_PROG);
-	_exit(-1);
+	_exit(1);
+	/*NOTREACHED*/
+	return (-1);
 }
 
 int
-bpf_to_ppp(pppfd, len, pkt)
-	int pppfd;
-	u_long len;
-	u_int8_t *pkt;
+bpf_to_ppp(int pppfd, u_long len, u_int8_t *pkt)
 {
 	int r;
 	u_int8_t hdr[2] = { PPP_ALLSTATIONS, PPP_UI };
@@ -139,7 +124,7 @@ bpf_to_ppp(pppfd, len, pkt)
 
 	r = writev(pppfd, iov, 2);
 	if (r < 0) {
-		if (errno == EINTR || errno == EPIPE)
+		if (errno == EINTR || errno == EPIPE || errno == ENOBUFS)
 			return (0);
 		return (-1);
 	}
@@ -147,10 +132,8 @@ bpf_to_ppp(pppfd, len, pkt)
 }
 
 int
-ppp_to_bpf(bfd, pppfd, myea, rmea, id)
-	int bfd, pppfd;
-	struct ether_addr *myea, *rmea;
-	u_int16_t id;
+ppp_to_bpf(int bfd, int pppfd, struct ether_addr *myea,
+    struct ether_addr *rmea, u_int16_t id)
 {
 	static u_int8_t *pktbuf = NULL;
 	struct pppoe_header ph;
@@ -174,9 +157,6 @@ ppp_to_bpf(bfd, pppfd, myea, rmea, id)
 		return (-1);
 	r -= 2;
 
-	iov[0].iov_len = 2;
-	iov[1].iov_len = r;
-
 	ph.vertype = PPPOE_VERTYPE(1, 1);
 	ph.code = PPPOE_CODE_SESSION;
 	ph.len = htons(r);
@@ -189,65 +169,14 @@ ppp_to_bpf(bfd, pppfd, myea, rmea, id)
 	iov[3].iov_base = &ph;		iov[3].iov_len = sizeof(ph);
 	iov[4].iov_base = pktbuf;	iov[4].iov_len = r;
 
-	return (writev(bfd, iov, 5));
-}
+	r = writev(bfd, iov, 5);
 
-void
-debugv(s, iov, cnt)
-	char *s;
-	struct iovec *iov;
-	int cnt;
-{
-	int i, j;
-	u_int8_t *p;
-
-	printf("%s", s);
-	for (i = 0; i < cnt; i++)
-		for (j = 0; j < iov[i].iov_len; j++) {
-			p = (u_int8_t *)iov[i].iov_base;
-			printf("%02x:", p[j]);
-		}
-	printf("\n\n");
-}
-
-void
-recv_debug(bpffd, ea, eh, ph, pktlen, pktbuf)
-	int bpffd;
-	struct ether_addr *ea;
-	struct ether_header *eh;
-	struct pppoe_header *ph;
-	u_long pktlen;
-	u_int8_t *pktbuf;
-{
-	struct tag_list tl;
-
-	printf("dst %02x:%02x:%02x:%02x:%02x:%02x, "
-	    "src %02x:%02x:%02x:%02x:%02x:%02x, type %04x\n",
-	    eh->ether_dhost[0], eh->ether_dhost[1], eh->ether_dhost[2],
-	    eh->ether_dhost[3], eh->ether_dhost[4], eh->ether_dhost[5],
-	    eh->ether_shost[0], eh->ether_shost[1], eh->ether_shost[2],
-	    eh->ether_shost[3], eh->ether_shost[4], eh->ether_shost[5],
-	    eh->ether_type);
-	printf("\tver %d, type %d, code %02x, id %04x, len %d\n",
-	    PPPOE_VER(ph->vertype), PPPOE_TYPE(ph->vertype),
-	    ph->code, ph->sessionid, ph->len);
-
-	tag_init(&tl);
-	if (tag_pkt(&tl, pktlen, pktbuf) < 0) {
-		printf("bad tag pkt\n");
-		goto out;
-	}
-
-	tag_show(&tl);
-out:
-	tag_destroy(&tl);
+	return (r == -1 && errno == ENOBUFS ? 0 : r);
 }
 
 int
-send_padt(bpffd, src_ea, dst_ea, id)
-	int bpffd;
-	struct ether_addr *src_ea, *dst_ea;
-	u_int16_t id;
+send_padt(int bpffd, struct ether_addr *src_ea,
+    struct ether_addr *dst_ea, u_int16_t id)
 {
 	struct iovec iov[4];
 	struct pppoe_header ph;
@@ -271,16 +200,16 @@ send_padt(bpffd, src_ea, dst_ea, id)
 }
 
 u_int32_t
-cookie_bake()
+cookie_bake(void)
 {
 	MD5_CTX ctx;
-	char buf[40];
+	unsigned char buf[40];
 	u_int32_t x, y;
 
 	x = arc4random();
 	MD5Init(&ctx);
 	MD5Update(&ctx, (unsigned char *)&x, sizeof(x));
-	MD5Final(buf, &ctx);
+	MD5Final((unsigned char *)buf, &ctx);
 	bcopy(buf, &y, sizeof(y));
 	x = x ^ y;
 	bcopy(buf + 4, &y, sizeof(y));

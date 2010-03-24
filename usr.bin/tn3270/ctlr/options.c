@@ -1,3 +1,5 @@
+/*	$OpenBSD: options.c,v 1.4 2003/06/03 02:56:19 millert Exp $	*/
+
 /*-
  * Copyright (c) 1988 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)options.c	4.2 (Berkeley) 4/26/91";*/
-static char rcsid[] = "$Id: options.c,v 1.2 1993/08/01 18:05:48 mycroft Exp $";
-#endif /* not lint */
-
 /*
  * this file contains the definitions, initialization, and processing of
  *	commands to handle the various local options (APL ON, etc.)
@@ -49,7 +42,7 @@ static char rcsid[] = "$Id: options.c,v 1.2 1993/08/01 18:05:48 mycroft Exp $";
 void
 OptInit()
 {
-    register int i;
+    int i;
 
     OptAPLmode = 0;
     OptNullProcessing = 1;		/* improved null processing */

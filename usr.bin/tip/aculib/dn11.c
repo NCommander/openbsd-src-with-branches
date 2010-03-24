@@ -1,4 +1,5 @@
-/*	$NetBSD: dn11.c,v 1.3 1994/12/08 09:31:40 jtc Exp $	*/
+/*	$OpenBSD: dn11.c,v 1.9 2006/03/17 19:17:13 moritz Exp $	*/
+/*	$NetBSD: dn11.c,v 1.4 1995/10/29 00:49:53 pk Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,30 +30,22 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dn11.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: dn11.c,v 1.3 1994/12/08 09:31:40 jtc Exp $";
-#endif /* not lint */
-
 /*
  * Routines for dialing up on DN-11
  */
 #include "tip.h"
 
-int dn_abort();
-void alarmtr();
 static jmp_buf jmpbuf;
-static int child = -1, dn;
+static pid_t child = -1, dn;
 
-dn_dialer(num, acu)
-	char *num, *acu;
+static void alarmtr(int);
+
+int
+dn_dialer(char *num, char *acu)
 {
-	extern errno;
-	char *p, *q, phone[40];
-	int lt, nw, connected = 1;
-	register int timelim;
+	int lt, nw;
+	int timelim;
+	struct termios cntrl;
 
 	if (boolean(value(VERBOSE)))
 		printf("\nstarting call...");
@@ -100,7 +89,9 @@ dn_dialer(num, acu)
 		return (0);
 	}
 	alarm(0);
-	ioctl(dn, TIOCHPCL, 0);
+	tcgetattr(dn, &cntrl);
+	cntrl.c_cflag |= HUPCL;
+	tcsetattr(dn, TCSANOW, &cntrl);
 	signal(SIGALRM, SIG_DFL);
 	while ((nw = wait(&lt)) != child && nw != -1)
 		;
@@ -113,8 +104,9 @@ dn_dialer(num, acu)
 	return (1);
 }
 
-void
-alarmtr()
+/*ARGSUSED*/
+static void
+alarmtr(int signo)
 {
 	alarm(0);
 	longjmp(jmpbuf, 1);
@@ -124,18 +116,18 @@ alarmtr()
  * Insurance, for some reason we don't seem to be
  *  hanging up...
  */
-dn_disconnect()
+void
+dn_disconnect(void)
 {
-
 	sleep(2);
 	if (FD > 0)
 		ioctl(FD, TIOCCDTR, 0);
 	close(FD);
 }
 
-dn_abort()
+void
+dn_abort(void)
 {
-
 	sleep(2);
 	if (child > 0)
 		kill(child, SIGKILL);

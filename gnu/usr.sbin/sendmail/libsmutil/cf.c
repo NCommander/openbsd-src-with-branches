@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000-2001 Sendmail, Inc. and its suppliers.
+ * Copyright (c) 2000-2002 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,7 +9,7 @@
  */
 
 #include <sendmail.h>
-SM_RCSID("@(#)$Sendmail: cf.c,v 8.14 2001/05/02 00:42:46 ca Exp $")
+SM_RCSID("@(#)$Sendmail: cf.c,v 8.19 2002/09/24 20:40:59 ca Exp $")
 #include <sendmail/pathnames.h>
 
 /*
@@ -37,20 +37,12 @@ getcfname(opmode, submitmode, cftype, conffile)
 	int cftype;
 	char *conffile;
 {
+#if NETINFO
+	char *cflocation;
+#endif /* NETINFO */
 
 	if (conffile != NULL)
 		return conffile;
-
-#if NETINFO
-	{
-		char *cflocation;
-
-		cflocation = ni_propval("/locations", NULL, "sendmail",
-					"sendmail.cf", '\0');
-		if (cflocation != NULL)
-			return cflocation;
-	}
-#endif /* NETINFO */
 
 	if (cftype == SM_GET_SUBMIT_CF ||
 	    ((submitmode != SUBMIT_UNKNOWN ||
@@ -60,12 +52,25 @@ getcfname(opmode, submitmode, cftype, conffile)
 	     cftype != SM_GET_SENDMAIL_CF))
 	{
 		struct stat sbuf;
-		static char cf[PATH_MAX];
+		static char cf[MAXPATHLEN];
 
-		(void) sm_strlcpyn(cf, sizeof cf, 2, _DIR_SENDMAILCF,
-				   "submit.cf");
+#if NETINFO
+		cflocation = ni_propval("/locations", NULL, "sendmail",
+					"submit.cf", '\0');
+		if (cflocation != NULL)
+			(void) sm_strlcpy(cf, cflocation, sizeof cf);
+		else
+#endif /* NETINFO */
+			(void) sm_strlcpyn(cf, sizeof cf, 2, _DIR_SENDMAILCF,
+					   "submit.cf");
 		if (cftype == SM_GET_SUBMIT_CF || stat(cf, &sbuf) == 0)
 			return cf;
 	}
+#if NETINFO
+	cflocation = ni_propval("/locations", NULL, "sendmail",
+				"sendmail.cf", '\0');
+	if (cflocation != NULL)
+		return cflocation;
+#endif /* NETINFO */
 	return _PATH_SENDMAILCF;
 }

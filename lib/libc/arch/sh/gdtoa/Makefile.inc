@@ -1,0 +1,3 @@
+#	$OpenBSD$
+
+SRCS+= strtord.c

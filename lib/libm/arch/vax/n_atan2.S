@@ -1,3 +1,4 @@
+/*	$OpenBSD: n_atan2.S,v 1.5 2008/12/09 20:21:07 martynas Exp $	*/
 /*	$NetBSD: n_atan2.S,v 1.1 1995/10/10 23:40:25 ragge Exp $	*/
 /*
  * Copyright (c) 1985, 1993
@@ -11,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,6 +30,8 @@
  *
  *	@(#)atan2.s	8.1 (Berkeley) 6/4/93
  */
+
+#include <machine/asm.h>
 
 /*
  * ATAN2(Y,X)
@@ -74,11 +73,8 @@
  *	atan2(y,x) returns the exact ARG(x+iy) nearly rounded. 
  */
 
-	.text
-	.align 1
-	.globl	_atan2
-_atan2 :
-	.word	0x0ff4
+WEAK_ALIAS(atan2l,atan2)
+ENTRY(atan2, R2|R3|R4|R5|R6|R7|R8|R9|R10|R11)
 	movq	4(ap),r2		# r2 = y
 	movq	12(ap),r4		# r4 = x
 	bicw3	$0x7f,r2,r0

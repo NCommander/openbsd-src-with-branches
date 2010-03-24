@@ -1,6 +1,6 @@
 #ifndef	_AVIION_M8820X_H_
 #define	_AVIION_M8820X_H_
-/*	$OpenBSD: m8820x.h,v 1.15 2004/08/06 13:23:49 miod Exp $ */
+/*	$OpenBSD: m8820x.h,v 1.1.1.1 2006/05/09 18:19:36 miod Exp $ */
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  *
@@ -56,6 +56,7 @@
  */
 
 #define	M88200_HAS_SPLIT_ADDRESS
+#define	M88200_HAS_ASYMMETRICAL_ASSOCIATION
 
 #include <m88k/m8820x.h>
 

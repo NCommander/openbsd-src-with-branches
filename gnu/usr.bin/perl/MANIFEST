@@ -11,6 +11,7 @@ cc_runtime.h		Macros need by runtime of compiler-generated code
 cflags.SH		A script that emits C compilation flags per file
 Changes			Describe how to peruse changes between releases
 config_h.SH		Produces config.h
+config.over		Site-specific overrides for Configure defaults
 configpm		Produces lib/Config.pm
 Configure		Portability tool
 configure.com		Configure-equivalent for VMS
@@ -1026,7 +1027,6 @@ ext/Module-Pluggable/t/acme/Acme/MyTest/Plugin/Foo.pm	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/Acme/Foo-Bar.pm			Module::Pluggable tests
 ext/Module-Pluggable/t/lib/Acme/MyTest/Plugin/Foo.pm	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm		Module::Pluggable tests
-ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm~	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm.swo	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Bar.pm.swp	Module::Pluggable tests
 ext/Module-Pluggable/t/lib/EditorJunk/Plugin/Foo.pm		Module::Pluggable tests
@@ -4069,6 +4069,7 @@ t/lib/Test/Builder/NoOutput.pm	Utility module for testing Test::Builder
 t/lib/Test/Simple/Catch.pm	Utility module for testing Test::Simple
 t/lib/Test/Simple/sample_tests/death_in_eval.plx	for exit.t
 t/lib/Test/Simple/sample_tests/death.plx		for exit.t
+t/lib/Test/Simple/sample_tests/death_with_handler.plx	for exit.t
 t/lib/Test/Simple/sample_tests/death_with_handler.plx	for exit.t
 t/lib/Test/Simple/sample_tests/exit.plx			for exit.t
 t/lib/Test/Simple/sample_tests/extras.plx		for exit.t

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 1999-2001 Sendmail, Inc. and its suppliers.
+ *  Copyright (c) 1999-2003, 2006, 2007 Sendmail, Inc. and its suppliers.
  *	All rights reserved.
  *
  * By using this file, you agree to the terms and conditions set
@@ -9,7 +9,7 @@
  */
 
 #include <sm/gen.h>
-SM_RCSID("@(#)$Sendmail: main.c,v 8.49 2001/04/21 01:18:16 ca Exp $")
+SM_RCSID("@(#)$Sendmail: main.c,v 8.83 2007/04/23 22:22:50 ca Exp $")
 
 #define _DEFINE	1
 #include "libmilter.h"
@@ -52,7 +52,10 @@ smfi_register(smfilter)
 	(void) sm_strlcpy(smfi->xxfi_name, smfilter.xxfi_name, len);
 
 	/* compare milter version with hard coded version */
-	if (smfi->xxfi_version != SMFI_VERSION)
+	if (smfi->xxfi_version != SMFI_VERSION &&
+	    smfi->xxfi_version != 2 &&
+	    smfi->xxfi_version != 3 &&
+	    smfi->xxfi_version != 4)
 	{
 		/* hard failure for now! */
 		smi_log(SMI_LOG_ERR,
@@ -68,7 +71,7 @@ smfi_register(smfilter)
 	return MI_SUCCESS;
 }
 
-/*
+/*
 **  SMFI_STOP -- stop milter
 **
 **	Parameters:
@@ -86,14 +89,37 @@ smfi_stop()
 }
 
 /*
-**  default values for some variables.
+**  Default values for some variables.
 **	Most of these can be changed with the functions below.
 */
 
 static int dbg = 0;
 static char *conn = NULL;
 static int timeout = MI_TIMEOUT;
-static int backlog= MI_SOMAXCONN;
+static int backlog = MI_SOMAXCONN;
+
+/*
+**  SMFI_OPENSOCKET -- try the socket setup to make sure we'll be
+**		       able to start up
+**
+**	Parameters:
+**		rmsocket -- if true, instructs libmilter to attempt
+**			to remove the socket before creating it;
+**			only applies for "local:" or "unix:" sockets
+**
+**	Return:
+**		MI_SUCCESS/MI_FAILURE
+*/
+
+int
+smfi_opensocket(rmsocket)
+	bool rmsocket;
+{
+	if (smfi == NULL || conn == NULL)
+		return MI_FAILURE;
+
+	return mi_opensocket(conn, backlog, dbg, rmsocket, smfi);
+}
 
 /*
 **  SMFI_SETDBG -- set debug level.
@@ -161,7 +187,7 @@ smfi_setconn(oconn)
 **  SMFI_SETBACKLOG -- set backlog
 **
 **	Parameters:
-**		odbg -- new backlog.
+**		obacklog -- new backlog.
 **
 **	Returns:
 **		MI_SUCCESS/MI_FAILURE
@@ -177,6 +203,7 @@ smfi_setbacklog(obacklog)
 	return MI_SUCCESS;
 }
 
+
 /*
 **  SMFI_MAIN -- setup milter connnection and start listener.
 **
@@ -190,6 +217,8 @@ smfi_setbacklog(obacklog)
 int
 smfi_main()
 {
+	int r;
+
 	(void) signal(SIGPIPE, SIG_IGN);
 	if (conn == NULL)
 	{
@@ -206,10 +235,12 @@ smfi_main()
 			smfi->xxfi_name);
 		return MI_FAILURE;
 	}
+	r = MI_MONITOR_INIT();
 
 	/* Startup the listener */
 	if (mi_listener(conn, dbg, smfi, timeout, backlog) != MI_SUCCESS)
-		return MI_FAILURE;
+		r = MI_FAILURE;
 
-	return MI_SUCCESS;
+	return r;
 }
+

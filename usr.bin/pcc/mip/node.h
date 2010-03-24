@@ -1,4 +1,4 @@
-/*	$Id: node.h,v 1.31 2007/07/22 12:50:56 ragge Exp $	*/
+/*	$OpenBSD: node.h,v 1.3 2008/04/11 20:45:52 stefan Exp $	*/
 /*
  * Copyright (c) 2003 Anders Magnusson (ragge@ludd.luth.se).
  * All rights reserved.
@@ -25,6 +25,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef NODE_H
+#define NODE_H
 
 /*
  * The node structure is the basic element in the compiler.
@@ -60,6 +63,7 @@ typedef struct node {
 	union {
 		int	_label;
 		int	_stalign;
+		int	_flags;
 		struct	suedef *_sue;
 	} n_6;
 	union {
@@ -87,6 +91,7 @@ typedef struct node {
 
 #define	n_label	n_6._label
 #define	n_stalign n_6._stalign
+#define	n_flags n_6._flags
 #define	n_sue	n_6._sue
 
 #define	n_left	n_f.n_u.n_l._left
@@ -97,6 +102,9 @@ typedef struct node {
 #define	n_sp	n_f.n_u.n_r._sp
 #define	n_dcon	n_f._dcon
 
+#define	NLOCAL1	010000
+#define	NLOCAL2	020000
+#define	NLOCAL3	040000
 /*
  * Node types.
  *
@@ -113,7 +121,7 @@ typedef struct node {
 #define REG	6
 #define OREG	7
 #define TEMP	8
-#define	MOVE	9	/* Special reg-reg move node */
+#define XARG	9
 
 /*
  * Arithmetic nodes.
@@ -184,7 +192,7 @@ typedef struct node {
 #define STASG	50
 #define STARG	51
 #define FORCE	52
-/* #define INIT	53 */
+#define XASM	53
 #define	GOTO	54
 #define	RETURN	55
 #define STREF	56
@@ -192,3 +200,5 @@ typedef struct node {
 #define	ADDROF	58
 
 #define	MAXOP	58
+
+#endif
