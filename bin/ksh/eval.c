@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.33 2007/08/02 11:05:54 fgsch Exp $	*/
+/*	$OpenBSD: eval.c,v 1.34 2009/01/29 23:27:26 jaredy Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -375,7 +375,10 @@ expand(char *cp,	/* input word */
 					 */
 					x.str = trimsub(str_val(st->var),
 						dp, st->stype);
-					type = XSUB;
+					if (x.str[0] != '\0' || st->quote)
+						type = XSUB;
+					else
+						type = XNULLSUB;
 					if (f&DOBLANK)
 						doblank++;
 					st = st->prev;
