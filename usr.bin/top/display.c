@@ -1,4 +1,4 @@
-/* $OpenBSD: display.c,v 1.37 2010/02/05 10:21:10 otto Exp $	 */
+/* $OpenBSD: display.c,v 1.38 2010/03/18 12:52:06 otto Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -758,6 +758,7 @@ show_help(void)
 	printwp("These single-character commands are available:\n"
 	    "\n"
 	    "^L           - redraw screen\n"
+	    "<space>      - update screen\n"
 	    "+            - reset any g, p, or u filters\n"
 	    "1            - display CPU statistics on a single line\n"
 	    "C            - toggle the display of command line arguments\n"
