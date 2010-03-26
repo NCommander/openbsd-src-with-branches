@@ -136,9 +136,13 @@ device only when talking to a
 device:
 .Bl -tag -width BIOCCREATERAID
 .It Dv BIOCCREATERAID
-Create new array.
+Create a new volume or assemble an existing volume.
+The volume will be attached as a system disk, if this capability is supported
+by the volume discipline.
 .It Dv BIOCDELETERAID
-Remove array, optionally erasing RAID metadata.
+Remove system disk (if present) and disassemble the
+.Xr softraid 4
+volume.
 .It Dv BIOCDISCIPLINE
 Dispatch a discipline specific ioctl.
 .El
