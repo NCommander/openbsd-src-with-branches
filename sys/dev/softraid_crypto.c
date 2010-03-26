@@ -1144,7 +1144,7 @@ sr_crypto_rw2(struct sr_workunit *wu, struct cryptop *crp)
 	if (sr_validate_io(wu, &blk, "sr_crypto_rw2"))
 		goto bad;
 
-	blk += SR_META_SIZE + SR_META_OFFSET;
+	blk += SR_DATA_OFFSET;
 
 	wu->swu_io_count = 1;
 

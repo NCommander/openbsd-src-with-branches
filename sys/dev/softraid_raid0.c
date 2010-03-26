@@ -300,8 +300,7 @@ sr_raid0_rw(struct sr_workunit *wu)
 	chunk = strip_no % no_chunk;
 	stripoffs = lbaoffs & (strip_size - 1);
 	chunkoffs = (strip_no / no_chunk) << strip_bits;
-	physoffs = chunkoffs + stripoffs +
-	    ((SR_META_OFFSET + SR_META_SIZE) << DEV_BSHIFT);
+	physoffs = chunkoffs + stripoffs + (SR_DATA_OFFSET << DEV_BSHIFT);
 	length = MIN(xs->datalen, strip_size - stripoffs);
 	leftover = xs->datalen;
 	data = xs->data;
