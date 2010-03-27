@@ -1,4 +1,4 @@
-/*	$OpenBSD: puc_cardbus.c,v 1.5 2010/03/27 20:04:03 jsg Exp $	*/
+/*	$OpenBSD: puc_cardbus.c,v 1.6 2010/03/27 21:40:13 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -107,7 +107,7 @@ puc_cardbus_attach(struct device *parent, struct device *self, void *aux)
 
 		sc->sc_bar_mappings[i].mapped = 0;
 		bar = PCI_MAPREG_START + 4 * i;
-		if (!cardbus_mapreg_probe(pc, ca->ca_tag, bar, &type))
+		if (!pci_mapreg_probe(pc, ca->ca_tag, bar, &type))
 			continue;
 
 		if (!(sc->sc_bar_mappings[i].mapped = !Cardbus_mapreg_map(ct,
