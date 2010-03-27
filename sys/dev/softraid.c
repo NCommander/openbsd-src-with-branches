@@ -2297,7 +2297,7 @@ sr_hotspare(struct sr_softc *sc, dev_t dev)
 	struct sr_metadata	*sm = NULL;
 	struct sr_meta_chunk    *hm;
 	struct sr_chunk_head	*cl;
-	struct sr_chunk		*hotspare, *chunk, *last;
+	struct sr_chunk		*chunk, *last, *hotspare = NULL;
 	struct sr_uuid		uuid;
 	struct disklabel	label;
 	struct vnode		*vn;
