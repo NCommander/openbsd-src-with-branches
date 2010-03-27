@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_sh.c,v 1.39 2009/01/29 23:27:26 jaredy Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.40 2009/05/05 17:59:55 millert Exp $	*/
 
 /*
  * built-in Bourne commands
@@ -881,7 +881,7 @@ c_mknod(char **wp)
 	return ret;
 usage:
 	builtin_argv0 = NULL;
-	bi_errorf("usage: mknod [-m mode] name [b | c] major minor");
+	bi_errorf("usage: mknod [-m mode] name b|c major minor");
 	bi_errorf("usage: mknod [-m mode] name p");
 	return 1;
 }
