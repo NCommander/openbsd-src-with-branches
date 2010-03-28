@@ -156,3 +156,10 @@ cpuattach(parent, self, aux)
 	
 	printf("\n");
 }
+
+#ifdef MULTIPROCESSOR
+void
+cpu_boot_secondary_processors(void)
+{
+}
+#endif
