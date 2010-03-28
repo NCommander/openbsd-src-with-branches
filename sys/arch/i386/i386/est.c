@@ -1,4 +1,4 @@
-/*	$OpenBSD: est.c,v 1.32 2009/06/08 23:18:05 gwk Exp $ */
+/*	$OpenBSD: est.c,v 1.33 2009/12/01 18:31:36 jsg Exp $ */
 /*
  * Copyright (c) 2003 Michael Eriksson.
  * All rights reserved.
@@ -1005,7 +1005,7 @@ void
 est_acpi_pss_changed(struct acpicpu_pss *pss, int npss)
 {
 	struct fqlist *acpilist;
-	int needtran = 1, nstates, i;
+	int needtran = 1, i;
 	u_int64_t msr;
 	u_int16_t cur;
 
@@ -1019,7 +1019,7 @@ est_acpi_pss_changed(struct acpicpu_pss *pss, int npss)
 		return;
 	}
 
-	if ((acpilist->table = malloc(sizeof( struct est_op) * nstates,
+	if ((acpilist->table = malloc(sizeof( struct est_op) * npss,
 	    M_DEVBUF, M_NOWAIT)) == NULL) {
 		printf("est_acpi_pss_changed: cannot allocate memory for new "
 		    "operating points");
@@ -1027,7 +1027,7 @@ est_acpi_pss_changed(struct acpicpu_pss *pss, int npss)
 		return;
 	}
 
-	for (i = 0; i < nstates; i++) {
+	for (i = 0; i < npss; i++) {
 		acpilist->table[i].mhz = pss[i].pss_core_freq;
 		acpilist->table[i].ctrl = pss[i].pss_ctrl;
 		if (pss[i].pss_ctrl == cur)
