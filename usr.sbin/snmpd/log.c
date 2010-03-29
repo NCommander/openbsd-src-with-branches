@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.1 2007/12/05 09:22:44 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.2 2008/07/18 12:30:06 reyk Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -166,6 +166,31 @@ fatalx(const char *emsg)
 {
 	errno = 0;
 	fatal(emsg);
+}
+
+const char *
+log_in6addr(const struct in6_addr *addr)
+{
+	static char		buf[NI_MAXHOST];
+	struct sockaddr_in6	sa_in6;
+	u_int16_t		tmp16;
+
+	bzero(&sa_in6, sizeof(sa_in6));
+	sa_in6.sin6_len = sizeof(sa_in6);
+	sa_in6.sin6_family = AF_INET6;
+	memcpy(&sa_in6.sin6_addr, addr, sizeof(sa_in6.sin6_addr));
+
+	/* XXX thanks, KAME, for this ugliness... adopted from route/show.c */
+	if (IN6_IS_ADDR_LINKLOCAL(&sa_in6.sin6_addr) ||
+	    IN6_IS_ADDR_MC_LINKLOCAL(&sa_in6.sin6_addr)) {
+		memcpy(&tmp16, &sa_in6.sin6_addr.s6_addr[2], sizeof(tmp16));
+		sa_in6.sin6_scope_id = ntohs(tmp16);
+		sa_in6.sin6_addr.s6_addr[2] = 0;
+		sa_in6.sin6_addr.s6_addr[3] = 0;
+	}
+
+	return (print_host((struct sockaddr_storage *)&sa_in6, buf,
+	    NI_MAXHOST));
 }
 
 const char *
