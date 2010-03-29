@@ -1,4 +1,4 @@
-/*	$OpenBSD: twe.c,v 1.33 2010/01/09 23:15:06 krw Exp $	*/
+/*	$OpenBSD: twe.c,v 1.34 2010/03/23 01:57:20 krw Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff.  All rights reserved.
@@ -864,7 +864,9 @@ twe_scsi_cmd(xs)
 		lock = TWE_LOCK(sc);
 
 		flags = 0;
-		if (xs->cmd->opcode != SYNCHRONIZE_CACHE) {
+		if (xs->cmd->opcode == SYNCHRONIZE_CACHE) {
+			blockno = blockcnt = 0;
+		} else {
 			/* A read or write operation. */
 			if (xs->cmdlen == 6) {
 				rw = (struct scsi_rw *)xs->cmd;

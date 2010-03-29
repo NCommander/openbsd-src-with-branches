@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac.c,v 1.34 2010/01/09 23:15:06 krw Exp $	*/
+/*	$OpenBSD: cac.c,v 1.35 2010/03/23 01:57:19 krw Exp $	*/
 /*	$NetBSD: cac.c,v 1.15 2000/11/08 19:20:35 ad Exp $	*/
 
 /*
@@ -893,7 +893,7 @@ int
 cac_create_sensors(struct cac_softc *sc)
 {
 	struct device *dev;
-	struct scsibus_softc *ssc;
+	struct scsibus_softc *ssc = NULL;
 	int i;
 
 	TAILQ_FOREACH(dev, &alldevs, dv_list) {
@@ -904,6 +904,7 @@ cac_create_sensors(struct cac_softc *sc)
 		ssc = (struct scsibus_softc *)dev;
 		if (ssc->adapter_link == &sc->sc_link)
 			break;
+		ssc = NULL;
 	}
 
 	if (ssc == NULL)

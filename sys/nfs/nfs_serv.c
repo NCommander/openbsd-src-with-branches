@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_serv.c,v 1.88 2009/08/30 15:16:19 thib Exp $	*/
+/*	$OpenBSD: nfs_serv.c,v 1.89 2009/10/19 22:24:18 jsg Exp $	*/
 /*     $NetBSD: nfs_serv.c,v 1.34 1997/05/12 23:37:12 fvdl Exp $       */
 
 /*
@@ -438,6 +438,8 @@ nfsrv_readlink(struct nfsrv_descript *nfsd, struct nfssvc_sock *slp,
 	info.nmi_md = nfsd->nd_md;
 	info.nmi_dpos = nfsd->nd_dpos;
 	info.nmi_v3 = (nfsd->nd_flag & ND_NFSV3);
+
+	memset(&uio, 0, sizeof(uio));
 
 	fhp = &nfh.fh_generic;
 	nfsm_srvmtofh(fhp);

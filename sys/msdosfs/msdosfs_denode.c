@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.36 2009/07/09 22:29:56 thib Exp $	*/
+/*	$OpenBSD: msdosfs_denode.c,v 1.37 2009/08/13 22:34:29 jasper Exp $	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -367,7 +367,7 @@ detrunc(struct denode *dep, uint32_t length, int flags, struct ucred *cred,
 	int allerror;
 	int vflags;
 	uint32_t eofentry;
-	uint32_t chaintofree;
+	uint32_t chaintofree = 0;
 	daddr64_t bn;
 	int boff;
 	int isadir = dep->de_Attributes & ATTR_DIRECTORY;
