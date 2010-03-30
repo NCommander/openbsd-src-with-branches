@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplayvar.h,v 1.22 2006/12/02 11:25:09 miod Exp $ */
+/* $OpenBSD: wsdisplayvar.h,v 1.23 2009/09/05 14:09:35 miod Exp $ */
 /* $NetBSD: wsdisplayvar.h,v 1.30 2005/02/04 02:10:49 perry Exp $ */
 
 /*
@@ -209,6 +209,8 @@ int wsdisplay_cfg_ioctl(struct wsdisplay_softc *sc,
  */
 #define WSDISPLAY_NULLSCREEN	-1
 void wsdisplay_switchtoconsole(void);
+void wsdisplay_suspend(void);
+void wsdisplay_resume(void);
 const struct wsscreen_descr *
     wsdisplay_screentype_pick(const struct wsscreen_list *, const char *);
 
