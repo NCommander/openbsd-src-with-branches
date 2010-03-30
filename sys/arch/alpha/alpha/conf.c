@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.59 2009/06/03 14:45:50 jj Exp $	*/
+/*	$OpenBSD: conf.c,v 1.60 2009/08/13 15:04:20 dlg Exp $	*/
 /*	$NetBSD: conf.c,v 1.16 1996/10/18 21:26:57 cgd Exp $	*/
 
 /*-
@@ -131,6 +131,7 @@ cdev_decl(nnpfs_dev);
 #include "pci.h"
 cdev_decl(pci);
 #endif
+#include "bthub.h"
 
 #include "systrace.h"
 #include "hotplug.h"
@@ -208,6 +209,7 @@ struct cdevsw	cdevsw[] =
 	cdev_radio_init(NRADIO,radio), /* 59: generic radio I/O */
 	cdev_mouse_init(NWSMUX, wsmux),	/* 60: ws multiplexor */
 	cdev_vscsi_init(NVSCSI, vscsi),	/* 61: vscsi */
+	cdev_bthub_init(NBTHUB, bthub), /* 62: bthub */
 };
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
 

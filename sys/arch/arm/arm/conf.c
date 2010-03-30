@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.22 2009/06/03 14:45:50 jj Exp $	*/
+/*	$OpenBSD: conf.c,v 1.23 2009/08/13 15:04:20 dlg Exp $	*/
 /*	$NetBSD: conf.c,v 1.10 2002/04/19 01:04:38 wiz Exp $	*/
 
 /*
@@ -139,6 +139,11 @@ cdev_decl(pci);
 #include "ulpt.h"
 #include "urio.h"
 #include "uscanner.h"
+
+/*
+ * Bluetooth devices
+ */
+#include "bthub.h"
 
 /*
  * WSCONS devices
@@ -404,6 +409,7 @@ struct cdevsw cdevsw[] = {
 	cdev_ptm_init(NPTY,ptm),		/* 98: pseudo-tty ptm device */
 	cdev_spkr_init(NSPKR,spkr),		/* 99: PC speaker */
 	cdev_vscsi_init(NVSCSI,vscsi),		/* 100: vscsi */
+	cdev_bthub_init(NBTHUB,bthub),		/* 101: bthub */
 };
 
 int nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);
