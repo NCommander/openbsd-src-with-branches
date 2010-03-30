@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldconfig.c,v 1.25 2006/06/26 23:26:12 drahn Exp $	*/
+/*	$OpenBSD: ldconfig.c,v 1.26 2009/08/19 19:38:17 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -247,6 +247,7 @@ dodir(char *dir, int silent)
 		ndewey = getdewey(dewey, cp + 4);
 		enter(dir, dp->d_name, name, dewey, ndewey);
 	}
+	closedir(dd);
 	return 0;
 }
 
