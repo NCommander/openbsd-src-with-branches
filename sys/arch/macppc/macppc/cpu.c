@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.63 2009/06/09 01:12:38 deraadt Exp $ */
+/*	$OpenBSD: cpu.c,v 1.64 2009/08/27 20:42:01 miod Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -583,7 +583,7 @@ cpu_spinup(struct device *self, struct cpu_info *ci)
         size += 8192;   /* SPILLSTK(1k) + DDBSTK(7k) */
 
 	TAILQ_INIT(&mlist);
-	error = uvm_pglistalloc(size, 0x0, 0x10000000, 0, 0,
+	error = uvm_pglistalloc(size, 0x0, 0x10000000 - 1, 0, 0,
 	    &mlist, 1, UVM_PLA_WAITOK);
 	if (error) {
 		printf(": unable to allocate idle stack\n");
