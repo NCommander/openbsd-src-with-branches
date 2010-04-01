@@ -1,4 +1,4 @@
-/* $OpenBSD: ldapclient.c,v 1.13 2009/01/27 23:29:42 pyr Exp $ */
+/* $OpenBSD: ldapclient.c,v 1.14 2009/06/06 05:02:58 eric Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -180,7 +180,7 @@ client_dispatch_dns(int fd, short event, void *p)
 
 	for (;;) {
 		if ((n = imsg_get(ibuf, &imsg)) == -1)
-			fatal("client_dispatch_parent: imsg_read_error");
+			fatal("client_dispatch_dns: imsg_get error");
 		if (n == 0)
 			break;
 
@@ -282,7 +282,7 @@ client_dispatch_parent(int fd, short event, void *p)
 
 	for (;;) {
 		if ((n = imsg_get(ibuf, &imsg)) == -1)
-			fatal("client_dispatch_parent: imsg_read_error");
+			fatal("client_dispatch_parent: imsg_get error");
 		if (n == 0)
 			break;
 
