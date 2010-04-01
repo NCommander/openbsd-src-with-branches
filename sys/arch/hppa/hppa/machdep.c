@@ -116,7 +116,7 @@ int dcache_stride, dcache_line_mask;
  */
 volatile u_int8_t *machine_ledaddr;
 int machine_ledword, machine_leds;
-struct cpu_info cpu_info_primary;
+struct cpu_info cpu_info[HPPA_MAXCPUS];
 
 /*
  * CPU params (should be the same for all cpus in the system)

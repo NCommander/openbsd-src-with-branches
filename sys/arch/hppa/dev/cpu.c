@@ -93,8 +93,16 @@ cpuattach(parent, self, aux)
 	extern int cpu_hardclock(void *);
 
 	struct cpu_softc *sc = (struct cpu_softc *)self;
+	struct confargs *ca = (struct confargs *)aux;
+	struct cpu_info *ci;
 	u_int mhz = 100 * cpu_ticksnum / cpu_ticksdenom;
+	int cpuno = self->dv_unit;
 	const char *p;
+
+	ci = &cpu_info[cpuno];
+	ci->ci_dev = self;
+	ci->ci_cpuid = cpuno;
+	ci->ci_hpa = ca->ca_hpa;
 
 	printf (": %s ", cpu_typename);
 	if (pdc_model.hvers) {
