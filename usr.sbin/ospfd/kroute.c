@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.78 2010/02/23 10:59:31 dlg Exp $ */
+/*	$OpenBSD: kroute.c,v 1.79 2010/04/01 14:02:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -1329,9 +1329,6 @@ rtmsg_process(char *buf, int len)
 		mpath = 0;
 		prio = 0;
 
-		if (rtm->rtm_errno)		/* failed attempts... */
-			continue;
-
 		sa = (struct sockaddr *)(next + rtm->rtm_hdrlen);
 		get_rtaddrs(rtm->rtm_addrs, sa, rti_info);
 
@@ -1345,6 +1342,9 @@ rtmsg_process(char *buf, int len)
 			nexthop.s_addr = 0;
 			mpath = 0;
 			prio = 0;
+
+			if (rtm->rtm_errno)		/* failed attempts... */
+				continue;
 
 			if (rtm->rtm_tableid != kr_state.rdomain)
 				continue;
