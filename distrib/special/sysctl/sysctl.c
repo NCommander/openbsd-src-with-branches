@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.4 2009/04/20 16:10:39 jasper Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.5 2009/06/03 23:44:53 krw Exp $	*/
 
 /*
  * Copyright (c) 2009 Theo de Raadt <deraadt@openbsd.org>
@@ -42,6 +42,8 @@ struct var vars[] = {
 	    { CTL_HW, HW_MACHINE }},
 	{ "hw.model", pstring, 2,
 	    { CTL_HW, HW_MODEL }},
+	{ "hw.product", pstring, 2,
+	    { CTL_HW, HW_PRODUCT }},
 	{ "hw.disknames", pstring, 2,
 	    { CTL_HW, HW_DISKNAMES }},
 	{ "hw.ncpufound", pint, 2,
