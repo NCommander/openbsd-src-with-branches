@@ -64,7 +64,7 @@ legacy_play(char *dev, char *aufile)
 	struct sio_par spar, par;
 	struct aparams apar;
 	ssize_t rd;
-	off_t datasz, dummy;
+	off_t datasz;
 	char buf[5120];
 	size_t readsz;
 	int fd, fmt = FMT_RAW;
@@ -96,7 +96,7 @@ legacy_play(char *dev, char *aufile)
 		if (read(fd, &chan, sizeof(chan)) == sizeof(chan))
 			chan = ntohl(chan);
 	} else if (!strncmp(magic, "RIFF", 4) &&
-		    wav_readhdr(fd, &apar, &dummy, &datasz, &map)) {
+		    wav_readhdr(fd, &apar, &datasz, &map)) {
 			fmt = FMT_WAV;
 	}
 

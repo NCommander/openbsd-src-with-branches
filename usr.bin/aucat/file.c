@@ -63,6 +63,8 @@
 
 #define MAXFDS 100
 
+extern struct fileops listen_ops, pipe_ops;
+
 struct timeval file_tv;
 struct filelist file_list;
 struct timo *timo_queue;
@@ -518,6 +520,23 @@ filelist_done(void)
 	timo_done();
 }
 
+/*
+ * Close all listening sockets.
+ *
+ * XXX: remove this
+ */
+void
+filelist_unlisten(void)
+{
+	struct file *f, *fnext;
+
+	for (f = LIST_FIRST(&file_list); f != NULL; f = fnext) {
+		fnext = LIST_NEXT(f, entry);
+		if (f->ops == &listen_ops)
+			file_del(f);
+	}
+}
+
 unsigned
 file_read(struct file *f, unsigned char *data, unsigned count)
 {
@@ -657,8 +676,6 @@ file_close(struct file *f)
 		dbg_puts(": closing\n");
 	}
 #endif
-	if (f->wproc == NULL && f->rproc == NULL)
-		f->state |= FILE_ZOMB;
 	if (!(f->state & (FILE_RINUSE | FILE_WINUSE))) {
 		p = f->rproc;
 		if (p) {

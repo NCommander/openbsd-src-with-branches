@@ -20,12 +20,9 @@
 struct fileops;
 struct siofile;
 struct aparams;
-struct aproc;
 
-struct siofile *siofile_new(struct fileops *, char *, unsigned,
+struct siofile *siofile_new(struct fileops *, char *,
     struct aparams *, struct aparams *, unsigned *, unsigned *);
-struct aproc *rsio_new(struct file *f);
-struct aproc *wsio_new(struct file *f);
 
 extern struct fileops siofile_ops;
 

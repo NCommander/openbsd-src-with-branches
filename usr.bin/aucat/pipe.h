@@ -33,8 +33,5 @@ unsigned pipe_write(struct file *, unsigned char *, unsigned);
 int pipe_nfds(struct file *);
 int pipe_pollfd(struct file *, struct pollfd *, int);
 int pipe_revents(struct file *, struct pollfd *);
-int pipe_seek(struct file *, off_t);
-int pipe_trunc(struct file *, off_t);
-off_t pipe_endpos(struct file *);
 
 #endif /* !defined(PIPE_H) */

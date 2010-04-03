@@ -31,6 +31,19 @@ extern int debug_level;
 #endif
 
 /*
+ * Number of blocks in the device play/record buffers.  Because Sun API
+ * cannot notify apps of the current positions, we have to use all N
+ * buffers devices blocks plus one extra block, to make write() block,
+ * so that poll() can return the exact postition.
+ */
+#define DEV_NBLK 2
+
+/*
+ * Number of blocks in the wav-file i/o buffers.
+ */
+#define WAV_NBLK 6
+
+/*
  * socket and option names
  */
 #define DEFAULT_MIDITHRU	"midithru"

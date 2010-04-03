@@ -27,8 +27,4 @@ int  ctl_slotstart(struct aproc *, int);
 void ctl_slotstop(struct aproc *, int);
 void ctl_ontick(struct aproc *, int);
 
-void ctl_stop(struct aproc *);
-void ctl_start(struct aproc *);
-int ctl_idle(struct aproc *);
-
 #endif /* !defined(MIDI_H) */
