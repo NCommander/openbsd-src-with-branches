@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_boot.c,v 1.24 2008/06/11 04:52:27 blambert Exp $ */
+/*	$OpenBSD: nfs_boot.c,v 1.25 2009/10/19 22:24:18 jsg Exp $ */
 /*	$NetBSD: nfs_boot.c,v 1.26 1996/05/07 02:51:25 thorpej Exp $	*/
 
 /*
@@ -500,7 +500,7 @@ bad:
 
 out:
 	m_freem(m);
-	return(0);
+	return(error);
 }
 
 
