@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.2 2010/02/16 21:28:39 miod Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.3 2010/02/17 21:25:49 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -52,6 +52,7 @@ int	rd_iostrategy(void *, int, daddr_t, size_t, void *, size_t *);
 int	rd_ioopen(struct open_file *, ...);
 int	rd_ioclose(struct open_file *);
 int	rd_isvalid(void);
+void	rd_invalidate(void);
 
 /*
  * INITRD ``filesystem''
@@ -70,3 +71,5 @@ extern int32_t *pmon_envp;
 extern int32_t pmon_callvec;
 
 extern char pmon_bootdev[];
+
+extern char *kernelfile;
