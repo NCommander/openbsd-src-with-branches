@@ -1,15 +1,15 @@
-# $OpenBSD: Makefile,v 1.6 2007/04/05 23:41:20 drahn Exp $
+# $OpenBSD: Makefile,v 1.7 2009/09/09 12:10:35 marex Exp $
 
 NOPROG=
 NOMAN=
 CC=${HOSTCC}
 
 # pcmcia capable systems only
-.if (${MACHINE} == "i386") || (${MACHINE} == "macppc") || \
-    (${MACHINE} == "sparc") || (${MACHINE} == "sparc64") || \
-    (${MACHINE} == "hppa") || (${MACHINE} == "hppa64") || \
-    (${MACHINE} == "sgi") || (${MACHINE} == "zaurus") || \
-    (${MACHINE} == "palm")
+.if (${MACHINE} == "i386") || (${MACHINE} == "amd64") || \
+    (${MACHINE} == "macppc") || (${MACHINE} == "sparc") || \
+    (${MACHINE} == "sparc64") || (${MACHINE} == "hppa") || \
+    (${MACHINE} == "hppa64") || (${MACHINE} == "sgi") || \
+    (${MACHINE} == "zaurus") || (${MACHINE} == "palm")
 
 afterinstall:
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 644 \
