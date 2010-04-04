@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-split-window.c,v 1.17 2010/01/07 19:47:10 nicm Exp $ */
+/* $OpenBSD: cmd-join-pane.c,v 1.1 2010/01/07 20:52:18 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -45,7 +45,7 @@ struct cmd_join_pane_data {
 
 const struct cmd_entry cmd_join_pane_entry = {
 	"join-pane", "joinp",
-	"[-dhv] [-p percentage|-l size] [-t src-pane] [-t dst-pane] [command]",
+	"[-dhv] [-p percentage|-l size] [-s src-pane] [-t dst-pane] [command]",
 	0, "",
 	cmd_join_pane_init,
 	cmd_join_pane_parse,
