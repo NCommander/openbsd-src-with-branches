@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.109 2009/02/16 21:19:07 miod Exp $ */
+/*	$OpenBSD: mpi.c,v 1.136 2010/04/03 08:00:42 dlg Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 David Gwynne <dlg@openbsd.org>
@@ -2605,7 +2605,7 @@ mpi_bio_get_pg0_raid(struct mpi_softc *sc, int id)
 	/* replace current buffer with new one */
 	len = sizeof *rpg0 + sc->sc_vol_page->max_physdisks *
 	    sizeof(struct mpi_cfg_raid_vol_pg0_physdisk);
-	rpg0 = malloc(len, M_TEMP, M_WAITOK | M_CANFAIL);
+	rpg0 = malloc(len, M_DEVBUF, M_WAITOK | M_CANFAIL);
 	if (rpg0 == NULL) {
 		printf("%s: can't get memory for RAID page 0, "
 		    "bio disabled\n", DEVNAME(sc));
