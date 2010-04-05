@@ -287,6 +287,7 @@ sub validate_plists
 {
 	my ($self, $state) = @_;
 	$state->{problems} = 0;
+	delete $state->{overflow};
 
 	for my $o ($self->older_to_do) {
 		require OpenBSD::Delete;
@@ -304,6 +305,15 @@ sub validate_plists
 	}
 	if (defined $state->{overflow}) {
 		$state->vstat->tally;
+		# okay, let's retry the other way around if we haven't yet
+		if (!defined $state->{delete_first}) {
+			if ($state->{defines}->{deletefirst} || 
+			    $state->confirm("Delete older packages first", 0)) {
+				$state->{delete_first} = 1;
+				$state->vstat->drop_changes;
+				return $self->validate_plists($state);
+			}
+		}
 	}
 	if ($state->{problems}) {
 		$state->vstat->drop_changes;

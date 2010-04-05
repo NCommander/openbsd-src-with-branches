@@ -368,7 +368,7 @@ sub install
 	my $fullname = $self->fullname;
 	my $destdir = $state->{destdir};
 
-	if ($state->{replacing}) {
+	if ($state->{extracted_first}) {
 		if ($state->{not}) {
 			$state->say("moving tempfile -> $destdir$fullname") if $state->verbose >= 5;
 			return;

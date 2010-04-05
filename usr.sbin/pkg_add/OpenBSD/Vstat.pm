@@ -180,6 +180,13 @@ sub remove
 	return defined($size) ? $self->account_later($name, -$size) : undef;
 }
 
+sub remove_first
+{
+	my ($self, $name, $size) = @_;
+	$self->{v}[0]->{$name} = OpenBSD::Vstat::Object->none;
+	return defined($size) ? $self->account_for($name, -$size) : undef;
+}
+
 sub tally
 {
 	my $self = shift;

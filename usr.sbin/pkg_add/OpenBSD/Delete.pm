@@ -360,7 +360,12 @@ sub prepare_for_deletion
 	my ($self, $state, $pkgname) = @_;
 
 	my $fname = $state->{destdir}.$self->fullname;
-	my $s = $state->vstat->remove($fname, $self->{size});
+	my $s;
+	if ($state->{delete_first}) {
+		$s = $state->vstat->remove_first($fname, $self->{size});
+	} else {
+		$s = $state->vstat->remove($fname, $self->{size});
+	}
 	return unless defined $s;
 	if ($s->ro) {
 		$s->report_ro($state, $fname);
