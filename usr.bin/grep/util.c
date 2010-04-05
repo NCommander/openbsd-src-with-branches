@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.35 2007/09/02 15:19:32 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.36 2007/10/02 17:59:18 otto Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -59,16 +59,9 @@ grep_tree(char **argv)
 	FTSENT	*p;
 	int	c, fts_flags;
 
-	c = fts_flags = 0;
+	c = 0;
 
-	if (Hflag)
-		fts_flags = FTS_COMFOLLOW;
-	if (Pflag)
-		fts_flags = FTS_PHYSICAL;
-	if (Sflag)
-		fts_flags = FTS_LOGICAL;
-
-	fts_flags |= FTS_NOSTAT | FTS_NOCHDIR;
+	fts_flags = FTS_PHYSICAL | FTS_NOSTAT | FTS_NOCHDIR;
 
 	if (!(fts = fts_open(argv, fts_flags, NULL)))
 		err(2, NULL);

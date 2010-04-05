@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.h,v 1.13 2006/02/09 09:54:47 otto Exp $	*/
+/*	$OpenBSD: grep.h,v 1.14 2007/09/02 15:19:32 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -63,8 +63,8 @@ typedef struct {
 extern int	 cflags, eflags;
 
 /* Command line flags */
-extern int	 Aflag, Bflag, Eflag, Fflag, Gflag, Hflag, Lflag, Pflag,
-		 Sflag, Rflag, Zflag,
+extern int	 Aflag, Bflag, Eflag, Fflag, Gflag, Lflag,
+		 Rflag, Zflag,
 		 bflag, cflag, hflag, iflag, lflag, nflag, qflag, sflag,
 		 vflag, wflag, xflag;
 extern int	 binbehave;
