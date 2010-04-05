@@ -35,7 +35,7 @@ sub pkgca() { '/etc/ssl/pkgca.pem' }
 sub chmod() { '/bin/chmod' }	# external command is used for symbolic modes.
 sub gzip() { '/usr/bin/gzip' }
 sub ftp() { $ENV{'FETCH_CMD'} || '/usr/bin/ftp' }
-sub groff() { '/usr/bin/groff' }
+sub groff() { '/usr/local/bin/groff' }
 sub sh() { '/bin/sh' }
 sub arch() { '/usr/bin/arch' }
 sub uname() { '/usr/bin/uname' }
