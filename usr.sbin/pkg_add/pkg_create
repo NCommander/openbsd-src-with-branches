@@ -346,6 +346,12 @@ sub avert_duplicates_and_other_checks
 	$self->SUPER::avert_duplicates_and_other_checks($state);
 }
 
+package OpenBSD::PackingElement::AskUpdate;
+sub avert_duplicates_and_other_checks
+{
+	&OpenBSD::PackingElement::Depend::avert_duplicates_and_other_checks;
+}
+
 package OpenBSD::PackingElement::Dependency;
 sub avert_duplicates_and_other_checks
 {

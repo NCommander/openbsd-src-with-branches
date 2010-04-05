@@ -296,7 +296,7 @@ sub validate_plists
 	$state->{colliding} = [];
 	for my $n ($self->newer) {
 		require OpenBSD::Add;
-		OpenBSD::Add::validate_plist($n->{plist}, $state);
+		OpenBSD::Add::validate_plist($n->{plist}, $state, $self);
 	}
 	if (@{$state->{colliding}} > 0) {
 		require OpenBSD::CollisionReport;

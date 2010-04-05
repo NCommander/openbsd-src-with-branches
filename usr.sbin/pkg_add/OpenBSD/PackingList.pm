@@ -450,7 +450,7 @@ our @unique_categories =
     (qw(name url digital-signature no-default-conflict manual-installation always-update explicit-update extrainfo localbase arch));
 
 our @list_categories =
-    (qw(conflict pkgpath incompatibility updateset depend 
+    (qw(conflict pkgpath incompatibility ask-update updateset depend 
     	wantlib define-tag groups users items));
 
 our @cache_categories =
