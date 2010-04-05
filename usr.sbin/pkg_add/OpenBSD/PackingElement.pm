@@ -534,6 +534,12 @@ sub format
 	open STDOUT, '>&', $oldout;
 }
 
+package OpenBSD::PackingElement::Mandoc;
+our @ISA=qw(OpenBSD::PackingElement::Manpage);
+
+sub keyword() { "mandoc" }
+__PACKAGE__->register_with_factory;
+
 package OpenBSD::PackingElement::Lib;
 our @ISA=qw(OpenBSD::PackingElement::FileBase);
 
