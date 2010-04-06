@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.35 2010/01/31 11:11:28 nicm Exp $
+# $OpenBSD: Makefile,v 1.36 2010/03/22 19:07:52 nicm Exp $
 
 PROG=	tmux
 SRCS=	attributes.c cfg.c client.c clock.c \
@@ -37,7 +37,7 @@ SRCS=	attributes.c cfg.c client.c clock.c \
 	resize.c screen-redraw.c screen-write.c screen.c session.c status.c \
 	server-fn.c server.c server-client.c server-window.c \
 	tmux.c tty-keys.c tty-term.c tty.c utf8.c \
-	window-choose.c window-clock.c window-copy.c window-more.c window.c \
+	window-choose.c window-clock.c window-copy.c window.c \
 	xterm-keys.c xmalloc.c
 
 CDIAGFLAGS+= -Wno-long-long -Wall -W -Wnested-externs -Wformat=2

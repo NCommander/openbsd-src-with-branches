@@ -1,4 +1,4 @@
-/* $OpenBSD: screen.c,v 1.14 2010/02/06 17:35:01 nicm Exp $ */
+/* $OpenBSD: screen.c,v 1.15 2010/04/04 23:05:15 beck Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <vis.h>
 
 #include "tmux.h"
@@ -55,7 +56,7 @@ screen_reinit(struct screen *s)
 	s->rupper = 0;
 	s->rlower = screen_size_y(s) - 1;
 
-	s->mode = MODE_CURSOR;
+	s->mode = MODE_CURSOR | MODE_WRAP;
 
 	screen_reset_tabs(s);
 
