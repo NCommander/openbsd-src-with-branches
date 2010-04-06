@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip32_machdep.c,v 1.12 2009/11/19 20:16:27 miod Exp $ */
+/*	$OpenBSD: ip32_machdep.c,v 1.14 2010/03/03 12:25:09 jsing Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -208,4 +208,6 @@ ip32_setup()
 
 	/* not sure if there is a way to tell O2 and O2+ apart */
 	hw_prod = "O2";
+
+	_device_register = arcs_device_register;
 }
