@@ -1,4 +1,4 @@
-/*	$OpenBSD: safe.c,v 1.26 2009/09/13 14:42:52 krw Exp $	*/
+/*	$OpenBSD: safe.c,v 1.27 2010/01/10 12:43:07 markus Exp $	*/
 
 /*-
  * Copyright (c) 2003 Sam Leffler, Errno Consulting
@@ -36,7 +36,6 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/errno.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>

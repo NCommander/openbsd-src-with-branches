@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.11 2010/03/09 19:29:14 marco Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.12 2010/03/23 01:57:20 krw Exp $	*/
 /*
  * Copyright (c) 2010 Mike Belopuhov <mkb@crypt.org.ru>
  * Copyright (c) 2009 James Giannoules
@@ -25,7 +25,6 @@
 #include <sys/buf.h>
 #include <sys/device.h>
 #include <sys/ioctl.h>
-#include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
 #include <sys/rwlock.h>

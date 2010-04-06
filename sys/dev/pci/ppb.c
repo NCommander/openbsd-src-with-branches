@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppb.c,v 1.39 2009/11/24 00:52:07 kettenis Exp $	*/
+/*	$OpenBSD: ppb.c,v 1.40 2009/12/27 20:03:52 kettenis Exp $	*/
 /*	$NetBSD: ppb.c,v 1.16 1997/06/06 23:48:05 thorpej Exp $	*/
 
 /*
@@ -35,7 +35,7 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/workq.h>
 
 #include <dev/pci/pcireg.h>

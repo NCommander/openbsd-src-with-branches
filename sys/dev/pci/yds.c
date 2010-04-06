@@ -1,4 +1,4 @@
-/*	$OpenBSD: yds.c,v 1.31 2008/10/25 22:30:43 jakemsr Exp $	*/
+/*	$OpenBSD: yds.c,v 1.32 2009/03/29 21:53:53 sthen Exp $	*/
 /*	$NetBSD: yds.c,v 1.5 2001/05/21 23:55:04 minoura Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 #include <sys/fcntl.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/queue.h>
 #include <sys/fcntl.h>
 
