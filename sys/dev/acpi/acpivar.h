@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.55 2009/11/26 23:44:38 mlarkin Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.56 2010/03/31 19:21:19 kettenis Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -294,6 +294,7 @@ int	 acpi_sleep_state(struct acpi_softc *, int);
 int	 acpi_prepare_sleep_state(struct acpi_softc *, int);
 int	 acpi_enter_sleep_state(struct acpi_softc *, int);
 int	 acpi_sleep_machdep(struct acpi_softc *, int);
+void	 acpi_resume_machdep(void);
 void	 acpi_sleep_walk(struct acpi_softc *, int);
 
 
