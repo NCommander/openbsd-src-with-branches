@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.35 2009/06/03 00:49:12 art Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.36 2010/04/01 19:48:50 kettenis Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -322,6 +322,8 @@ cpu_init(struct cpu_info *ci)
 		lcr4(rcr4() | CR4_PGE);	/* enable global TLB caching */
 
 	ci->ci_flags |= CPUF_RUNNING;
+	tlbflush();
+
 	/*
 	 * If we have FXSAVE/FXRESTOR, use them.
 	 */
