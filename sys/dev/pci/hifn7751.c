@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.157 2008/09/25 17:55:28 chl Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.158 2009/09/13 14:42:52 krw Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -47,7 +47,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/errno.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>

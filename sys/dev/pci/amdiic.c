@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdiic.c,v 1.6 2007/05/03 09:36:26 dlg Exp $	*/
+/*	$OpenBSD: amdiic.c,v 1.7 2009/03/29 21:53:52 sthen Exp $	*/
 
 /*
  * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
@@ -25,7 +25,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/rwlock.h>
-#include <sys/proc.h>
 
 #include <machine/bus.h>
 

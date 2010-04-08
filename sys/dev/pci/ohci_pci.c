@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci_pci.c,v 1.32 2007/03/22 05:53:36 pascoe Exp $	*/
+/*	$OpenBSD: ohci_pci.c,v 1.33 2008/06/26 05:42:17 ray Exp $	*/
 /*	$NetBSD: ohci_pci.c,v 1.23 2002/10/02 16:51:47 thorpej Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/queue.h>
 
 #include <machine/bus.h>

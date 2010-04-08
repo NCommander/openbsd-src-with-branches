@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwdog.c,v 1.5 2006/12/11 08:25:54 mbalmer Exp $ */
+/*	$OpenBSD: pwdog.c,v 1.6 2006/12/17 15:56:23 mbalmer Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -20,7 +20,6 @@
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/systm.h>
 
 #include <machine/bus.h>

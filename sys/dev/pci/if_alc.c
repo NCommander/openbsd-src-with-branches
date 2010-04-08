@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_alc.c,v 1.3 2010/01/07 12:26:06 sthen Exp $	*/
+/*	$OpenBSD: if_alc.c,v 1.4 2010/02/27 08:19:47 kevlo Exp $	*/
 /*-
  * Copyright (c) 2009, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -32,7 +32,6 @@
 #include "vlan.h"
 
 #include <sys/param.h>
-#include <sys/proc.h>
 #include <sys/endian.h>
 #include <sys/systm.h>
 #include <sys/types.h>

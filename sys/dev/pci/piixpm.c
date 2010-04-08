@@ -1,4 +1,4 @@
-/*	$OpenBSD: piixpm.c,v 1.32 2009/06/24 13:49:48 deraadt Exp $	*/
+/*	$OpenBSD: piixpm.c,v 1.33 2009/11/05 09:37:05 sthen Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -25,7 +25,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/rwlock.h>
-#include <sys/proc.h>
 
 #include <machine/bus.h>
 

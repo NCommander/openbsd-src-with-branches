@@ -1,4 +1,4 @@
-/*	$OpenBSD: musycc.c,v 1.18 2007/11/26 09:28:33 martynas Exp $ */
+/*	$OpenBSD: musycc.c,v 1.19 2008/09/18 09:06:27 chl Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
@@ -26,7 +26,6 @@
 #include <sys/limits.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
-#include <sys/proc.h>
 #include <sys/socket.h>
 #include <sys/syslog.h>
 #include <sys/systm.h>

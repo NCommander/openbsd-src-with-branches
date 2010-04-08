@@ -1,4 +1,4 @@
-/*	$OpenBSD: jmb.c,v 1.5 2007/07/02 23:50:15 dlg Exp $ */
+/*	$OpenBSD: jmb.c,v 1.7 2008/03/27 09:21:59 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/queue.h>
 
 #include <machine/bus.h>

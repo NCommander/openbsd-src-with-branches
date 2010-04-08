@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.120 2008/11/23 12:48:43 dlg Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.122 2009/04/07 05:03:25 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -34,7 +34,7 @@
 #include <sys/socket.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
+#include <sys/timeout.h>
 #include <sys/queue.h>
 #include <sys/rwlock.h>
 #include <sys/time.h>

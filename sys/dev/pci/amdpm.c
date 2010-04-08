@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdpm.c,v 1.22 2008/05/06 12:39:03 markus Exp $	*/
+/*	$OpenBSD: amdpm.c,v 1.23 2008/06/26 05:42:17 ray Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -50,7 +50,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/rwlock.h>
-#include <sys/proc.h>
 #include <sys/timeout.h>
 #ifdef __HAVE_TIMECOUNTER
 #include <sys/timetc.h>

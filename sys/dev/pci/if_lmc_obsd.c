@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lmc_obsd.c,v 1.19 2005/11/07 00:29:21 brad Exp $ */
+/*	$OpenBSD: if_lmc_obsd.c,v 1.20 2009/08/13 14:24:47 jasper Exp $ */
 /*	$NetBSD: if_lmc_nbsd.c,v 1.1 1999/03/25 03:32:43 explorer Exp $	*/
 
 /*-
@@ -73,7 +73,6 @@
 #include <sys/errno.h>
 #include <sys/malloc.h>
 #include <sys/kernel.h>
-#include <sys/proc.h>	/* only for declaration of wakeup() used by vm.h */
 #include <sys/device.h>
 
 #include <dev/pci/pcidevs.h>

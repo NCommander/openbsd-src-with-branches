@@ -1,4 +1,4 @@
-/*	$OpenBSD: eso.c,v 1.27 2008/10/25 22:30:43 jakemsr Exp $	*/
+/*	$OpenBSD: eso.c,v 1.28 2009/03/29 21:53:52 sthen Exp $	*/
 /*	$NetBSD: eso.c,v 1.48 2006/12/18 23:13:39 kleink Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 
 #include <dev/pci/pcidevs.h>
 #include <dev/pci/pcivar.h>

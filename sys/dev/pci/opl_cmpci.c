@@ -1,4 +1,4 @@
-/*	$OpenBSD: opl_cmpci.c,v 1.3 2006/07/27 07:45:54 deraadt Exp $	*/
+/*	$OpenBSD: opl_cmpci.c,v 1.4 2008/06/26 05:42:17 ray Exp $	*/
 
 /*
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -35,7 +35,6 @@
 #include <sys/errno.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/selinfo.h>
 #include <sys/audioio.h>

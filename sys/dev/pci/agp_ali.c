@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_ali.c,v 1.9 2009/05/10 15:28:45 oga Exp $	*/
+/*	$OpenBSD: agp_ali.c,v 1.10 2009/05/10 16:57:44 oga Exp $	*/
 /*	$NetBSD: agp_ali.c,v 1.2 2001/09/15 00:25:00 thorpej Exp $	*/
 
 
@@ -34,7 +34,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/device.h>
 #include <sys/lock.h>

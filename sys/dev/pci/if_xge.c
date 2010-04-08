@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.50 2009/08/10 17:29:19 deraadt Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.51 2009/08/13 14:24:47 jasper Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -86,7 +86,6 @@
 #include <dev/pci/pcidevs.h>
 
 #include <sys/lock.h>
-#include <sys/proc.h>
 
 #include <dev/pci/if_xgereg.h>
 

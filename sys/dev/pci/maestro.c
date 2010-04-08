@@ -1,4 +1,4 @@
-/*	$OpenBSD: maestro.c,v 1.26 2008/10/25 22:30:43 jakemsr Exp $	*/
+/*	$OpenBSD: maestro.c,v 1.27 2009/03/29 21:53:52 sthen Exp $	*/
 /* $FreeBSD: /c/ncvs/src/sys/dev/sound/pci/maestro.c,v 1.3 2000/11/21 12:22:11 julian Exp $ */
 /*
  * FreeBSD's ESS Agogo/Maestro driver 
@@ -51,7 +51,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/queue.h>
 #include <sys/fcntl.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.22 2008/10/25 22:30:43 jakemsr Exp $	*/
+/*	$OpenBSD: autri.c,v 1.23 2009/03/29 21:53:52 sthen Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -42,7 +42,6 @@
 #include <sys/fcntl.h>
 #include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 
 #include <dev/pci/pcidevs.h>
 #include <dev/pci/pcireg.h>

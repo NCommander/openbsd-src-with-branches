@@ -1,4 +1,4 @@
-/*	$OpenBSD: opl_yds.c,v 1.6 2006/07/27 05:55:03 miod Exp $	*/
+/*	$OpenBSD: opl_yds.c,v 1.7 2008/06/26 05:42:17 ray Exp $	*/
 /*	$NetBSD$	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/errno.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/selinfo.h>
 #include <sys/audioio.h>

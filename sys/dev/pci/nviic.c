@@ -1,4 +1,4 @@
-/*	$OpenBSD: nviic.c,v 1.13 2008/05/22 05:27:01 brad Exp $ */
+/*	$OpenBSD: nviic.c,v 1.14 2009/06/18 08:19:03 jsg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -21,7 +21,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/rwlock.h>
-#include <sys/proc.h>
 
 #include <machine/bus.h>
 

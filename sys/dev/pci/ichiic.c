@@ -1,4 +1,4 @@
-/*	$OpenBSD: ichiic.c,v 1.22 2009/03/29 21:53:52 sthen Exp $	*/
+/*	$OpenBSD: ichiic.c,v 1.23 2009/10/27 23:18:32 sthen Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -25,7 +25,6 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/rwlock.h>
-#include <sys/proc.h>
 
 #include <machine/bus.h>
 
