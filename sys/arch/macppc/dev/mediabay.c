@@ -1,4 +1,4 @@
-/*	$OpenBSD: mediabay.c,v 1.2 2004/06/14 00:32:31 deraadt Exp $	*/
+/*	$OpenBSD: mediabay.c,v 1.3 2006/06/19 22:42:33 miod Exp $	*/
 /*	$NetBSD: mediabay.c,v 1.9 2003/07/15 02:43:29 lukem Exp $	*/
 
 /*-
@@ -165,7 +165,7 @@ mediabay_attach_content(sc)
 	delay(50000);
 
 	for (child = OF_child(sc->sc_node); child; child = OF_peer(child)) {
-		memset(name, 0, sizeof(name));
+		bzero(name, sizeof(name));
 		if (OF_getprop(child, "name", name, sizeof(name)) == -1)
 			continue;
 		ca.ca_name = name;
