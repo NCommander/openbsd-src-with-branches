@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.68 2009/10/19 22:24:18 jsg Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.69 2010/04/09 22:08:04 oga Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -228,15 +228,10 @@ again:
 			baddr = bp->b_data;
 		error = uiomove(baddr + on, (int)n, uio);
 	    }
-	    switch (vp->v_type) {
-	    case VREG:
-		break;
-	    case VLNK:
+
+	    if (vp->v_type == VLNK)
 		n = 0;
-		break;
-	    default:
-		panic("nfsbioread: type %x unexpected\n", vp->v_type);
-	    }
+
 	    if (got_buf)
 		brelse(bp);
 	} while (error == 0 && uio->uio_resid > 0 && n > 0);
