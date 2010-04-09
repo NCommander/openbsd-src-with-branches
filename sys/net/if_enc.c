@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.46 2007/05/26 17:13:30 jason Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.47 2007/12/20 02:53:02 brad Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and 
@@ -84,8 +84,6 @@ encattach(int nenc)
 {
 	struct ifnet *ifp;
 	int i;
-
-	bzero(encif, sizeof(encif));
 
 	for (i = 0; i < NENC; i++) {
 		ifp = &encif[i].sc_if;
