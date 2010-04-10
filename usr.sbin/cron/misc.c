@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.40 2009/10/27 23:59:51 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.41 2010/03/30 13:13:33 jacekm Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * All rights reserved
@@ -681,7 +681,7 @@ long get_gmtoff(time_t *clock, struct tm *local)
 	if (local->tm_year < gmt.tm_year)
 		offset -= 24 * 3600;
 	else if (local->tm_year > gmt.tm_year)
-		offset -= 24 * 3600;
+		offset += 24 * 3600;
 	else if (local->tm_yday < gmt.tm_yday)
 		offset -= 24 * 3600;
 	else if (local->tm_yday > gmt.tm_yday)
