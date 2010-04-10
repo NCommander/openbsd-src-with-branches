@@ -1,4 +1,4 @@
-/* $OpenBSD: mux.c,v 1.13 2010/01/29 20:16:17 djm Exp $ */
+/* $OpenBSD: mux.c,v 1.14 2010/01/30 02:54:53 djm Exp $ */
 /*
  * Copyright (c) 2002-2008 Damien Miller <djm@openbsd.org>
  *
@@ -189,7 +189,7 @@ mux_master_control_cleanup_cb(int cid, void *unused)
 		fatal("%s: channel_by_id(%i) == NULL", __func__, cid);
 	if (c->remote_id != -1) {
 		if ((sc = channel_by_id(c->remote_id)) == NULL)
-			debug2("%s: channel %d n session channel %d",
+			fatal("%s: channel %d missing session channel %d",
 			    __func__, c->self, c->remote_id);
 		c->remote_id = -1;
 		sc->ctl_chan = -1;
