@@ -357,7 +357,7 @@ sub install_issues
 
 		$later = 1;
 		my $s = $state->tracker->is_to_update($toreplace);
-		if (defined $s) {
+		if (defined $s && $s ne $set) {
 			$set->merge($state->tracker, $s);
 		} else {
 			$set->add_older(OpenBSD::Handle->create_old($toreplace, 
