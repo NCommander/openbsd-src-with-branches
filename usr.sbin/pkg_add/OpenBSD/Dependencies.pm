@@ -356,6 +356,7 @@ sub check_for_loops
 
 	while (my $set = shift @todo) {
 		next unless defined $set->{solver};
+		next if $set->real_set eq $initial->real_set;
 		for my $l (values %{$set->solver->{deplist}}) {
 			if ($l eq $initial) {
 				push(@to_merge, $set);
@@ -528,6 +529,10 @@ sub solve_dependency
 		if ($v) {
 			$self->set_cache($dep, _cache::self->new($v));
 			push(@{$package->{before}}, $v);
+			return $v;
+		}
+		$v = find_candidate($dep->spec, $self->{set}->older_names);
+		if ($v) {
 			return $v;
 		}
 		$v = $self->find_dep_in_stuff_to_install($state, $dep);
