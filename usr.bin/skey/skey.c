@@ -1,4 +1,4 @@
-/*	$OpenBSD: skey.c,v 1.24 2008/11/12 16:13:46 sobrado Exp $	*/
+/*	$OpenBSD: skey.c,v 1.25 2010/02/28 13:07:26 millert Exp $	*/
 /*
  * OpenBSD S/Key (skey.c)
  *
@@ -139,7 +139,7 @@ main(int argc, char *argv[])
 			if (hexmode)
 				(void)printf("%d: %s\n", i, put8(buf, key));
 			else
-				(void)printf("%d: %-29s\b", i, btoe(buf, key));
+				(void)printf("%d: %-29s\n", i, btoe(buf, key));
 			f(key);
 		}
 	}
