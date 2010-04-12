@@ -1,8 +1,11 @@
-# $OpenBSD: Makefile,v 1.5 2007/09/05 07:12:35 grunk Exp $
+# $OpenBSD: Makefile,v 1.6 2008/06/14 01:47:27 grunk Exp $
+
+.PATH: ${.CURDIR}/../bioctl
+CFLAGS+=-I${.CURDIR}/../bioctl
 
 PROG=	mount_vnd
-SRCS=	mount_vnd.c pkcs5_pbkdf2.c
-LDADD=	-lutil -lcrypto
+SRCS=	mount_vnd.c pbkdf2.c
+LDADD=	-lutil
 DPADD=	${LIBUTIL}
 
 CDIAGFLAGS+=	-Wall
