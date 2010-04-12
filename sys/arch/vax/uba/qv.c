@@ -1,4 +1,4 @@
-/*	$OpenBSD: qv.c,v 1.12 2006/01/17 20:26:16 miod Exp $	*/
+/*	$OpenBSD: qv.c,v 1.13 2007/09/15 14:28:17 krw Exp $	*/
 /*	$NetBSD: qv.c,v 1.2 1996/09/02 06:44:28 mycroft Exp $	*/
 
 /*-
@@ -406,7 +406,7 @@ qvopen(dev, flag)
 	 * mouse channel. For the mouse we init the ring ptr's.
 	 */
 	if( QVCHAN(unit) != QVMOUSECHAN )
-		return ((*linesw[tp->t_line].l_open)(dev, tp));
+		return ((*linesw[tp->t_line].l_open)(dev, tp, p));
 	else {
 		mouseon = 1;
 		/* set up event queue for later */
@@ -447,7 +447,7 @@ qvclose(dev, flag, mode, p)
 	 * otherwise clear the state flag, and put the keyboard into down/up.
 	 */
 	if (QVCHAN(unit) != QVMOUSECHAN) {
-		(*linesw[tp->t_line].l_close)(tp, flag);
+		(*linesw[tp->t_line].l_close)(tp, flag, p);
 		error = ttyclose(tp);
 	} else {
 		mouseon = 0;

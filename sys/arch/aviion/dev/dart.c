@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.6 2009/10/31 12:00:05 fgsch Exp $	*/
+/*	$OpenBSD: dart.c,v 1.7 2009/11/09 17:53:38 nicm Exp $	*/
 
 /*
  * Mach Operating System
@@ -650,7 +650,7 @@ dartopen(dev_t dev, int flag, int mode, struct proc *p)
 	 */
 	tp->t_dev = dev;
 	splx(s);
-	return ((*linesw[tp->t_line].l_open)(dev, tp));
+	return ((*linesw[tp->t_line].l_open)(dev, tp, p));
 }
 
 int
@@ -667,7 +667,7 @@ dartclose(dev_t dev, int flag, int mode, struct proc *p)
 	dart = &sc->sc_dart[port];
 
 	tp = dart->tty;
-	(*linesw[tp->t_line].l_close)(tp, flag);
+	(*linesw[tp->t_line].l_close)(tp, flag, p);
 	ttyclose(tp);
 
 	return (0);

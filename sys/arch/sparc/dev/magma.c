@@ -1,4 +1,4 @@
-/*	$OpenBSD: magma.c,v 1.23 2009/10/31 12:00:07 fgsch Exp $	*/
+/*	$OpenBSD: magma.c,v 1.24 2009/11/09 17:53:39 nicm Exp $	*/
 
 /*-
  * Copyright (c) 1998 Iain Hibbert
@@ -978,7 +978,7 @@ mttyopen(dev, flags, mode, p)
 
 	splx(s);
 
-	return ((*linesw[tp->t_line].l_open)(dev, tp));
+	return ((*linesw[tp->t_line].l_open)(dev, tp, p));
 }
 
 /*
@@ -996,7 +996,7 @@ mttyclose(dev, flag, mode, p)
 	struct tty *tp = mp->mp_tty;
 	int s;
 
-	(*linesw[tp->t_line].l_close)(tp, flag);
+	(*linesw[tp->t_line].l_close)(tp, flag, p);
 	s = spltty();
 
 	/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cl.c,v 1.56 2009/10/31 12:00:07 fgsch Exp $ */
+/*	$OpenBSD: cl.c,v 1.57 2009/11/09 17:53:39 nicm Exp $ */
 
 /*
  * Copyright (c) 1995 Dale Rahn. All rights reserved.
@@ -614,7 +614,7 @@ clopen(dev, flag, mode, p)
 #ifdef DEBUG
 	cl_dumpport(sc, channel);
 #endif
-	return (*linesw[tp->t_line].l_open)(dev, tp);
+	return (*linesw[tp->t_line].l_open)(dev, tp, p);
 }
 
 int
@@ -710,7 +710,7 @@ clclose(dev, flag, mode, p)
 	iot = sc->sc_iot;
 	ioh = sc->sc_ioh;
 	tp = cl->tty;
-	(*linesw[tp->t_line].l_close)(tp, flag);
+	(*linesw[tp->t_line].l_close)(tp, flag, p);
 
 	s = splcl();
 	bus_space_write_1(iot, ioh, CL_CAR, channel);

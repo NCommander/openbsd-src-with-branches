@@ -1,4 +1,4 @@
-/*	$OpenBSD: sscom.c,v 1.15 2009/11/09 17:53:38 nicm Exp $ */
+/*	$OpenBSD: sscom.c,v 1.16 2010/02/01 23:53:58 drahn Exp $ */
 /*	$NetBSD: sscom.c,v 1.29 2008/06/11 22:37:21 cegger Exp $ */
 
 /*
@@ -762,7 +762,7 @@ sscomopen(dev_t dev, int flag, int mode, struct proc *p)
 	}
 	splx(s);
 
-        error = (*linesw[tp->t_line].l_open)(dev, tp);
+        error = (*linesw[tp->t_line].l_open)(dev, tp, p);
 	if (error)
 		goto bad;
 
@@ -796,7 +796,7 @@ sscomclose(dev_t dev, int flag, int mode, struct proc *p)
 	if (!ISSET(tp->t_state, TS_ISOPEN))
 		return 0;
 
-        (*linesw[tp->t_line].l_close)(tp, flag);
+        (*linesw[tp->t_line].l_close)(tp, flag, p);
 	ttyclose(tp);
 
 #if 0

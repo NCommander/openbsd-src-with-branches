@@ -1,4 +1,4 @@
-/*	$OpenBSD: vx.c,v 1.39 2008/09/23 04:44:31 miod Exp $ */
+/*	$OpenBSD: vx.c,v 1.40 2009/10/31 12:00:07 fgsch Exp $ */
 /*
  * Copyright (c) 1999 Steve Murphree, Jr.
  * All rights reserved.
@@ -475,7 +475,7 @@ vxopen(dev_t dev, int flag, int mode, struct proc *p)
 	tp->t_dev = dev;
 	vxt->open = 1;
 	splx(s);
-	return (*linesw[tp->t_line].l_open)(dev, tp);
+	return (*linesw[tp->t_line].l_open)(dev, tp, p);
 }
 
 int
@@ -522,7 +522,7 @@ vxclose(dev_t dev, int flag, int mode, struct proc *p)
 #endif
 
 	tp = vxt->tty;
-	(*linesw[tp->t_line].l_close)(tp, flag);
+	(*linesw[tp->t_line].l_close)(tp, flag, p);
 
 	s = splvx();
 
