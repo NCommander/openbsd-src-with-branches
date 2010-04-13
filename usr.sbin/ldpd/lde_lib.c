@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde_lib.c,v 1.13 2010/02/25 21:47:08 michele Exp $ */
+/*	$OpenBSD: lde_lib.c,v 1.14 2010/03/03 10:17:05 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -118,7 +118,7 @@ rt_dump(pid_t pid)
 		rtctl.local_label = r->local_label;
 		rtctl.remote_label = r->remote_label;
 
-		if (!r->present || r->remote_label == NO_LABEL)
+		if (!r->present)
 			rtctl.in_use = 0;
 		else
 			rtctl.in_use = 1;
