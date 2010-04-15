@@ -1,4 +1,4 @@
-/*	$OpenBSD: ite.c,v 1.7 2006/08/17 06:31:10 miod Exp $	*/
+/*	$OpenBSD: ite.c,v 1.8 2008/01/23 16:37:56 jsing Exp $	*/
 /*	$NetBSD: ite.c,v 1.12 1997/01/30 10:32:55 thorpej Exp $	*/
 
 /*
@@ -164,11 +164,19 @@ iteconfig()
 	}
 
 	/*
-	 * Now probe for SGC frame buffers
+	 * Now probe for SGC frame buffers.
+	 * Note that we do not tell 360 from 362 in the bootblocks.
 	 */
-	if (machineid != HP_400 && machineid != HP_425 &&
-	    machineid != HP_433)
+	switch (machineid) {
+	case HP_360:
+	case HP_382:
+	case HP_400:
+	case HP_425:
+	case HP_433:
+		break;
+	default:
 		return;
+	}
 
 	for (dtype = 0; dtype < nitesw; dtype++)
 		if (itesw[dtype].ite_hwid == GID_STI)
