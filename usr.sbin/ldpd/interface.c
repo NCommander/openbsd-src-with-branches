@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.1 2009/06/01 20:59:45 michele Exp $ */
+/*	$OpenBSD: interface.c,v 1.2 2010/02/18 10:50:14 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -439,18 +439,6 @@ if_set_reuse(int fd, int enable)
 
 	return (0);
 }
-
-int
-if_set_nonblock(int fd)
-{
-	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
-		log_warn("if_set_nonblock: error setting O_NONBLOCK");
-		return (-1);
-	}
-
-	return (0);
-}
-
 
 /*
  * only one JOIN or DROP per interface and address is allowed so we need
