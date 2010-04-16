@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-add.c,v 1.93 2010/02/26 20:29:54 djm Exp $ */
+/* $OpenBSD: ssh-add.c,v 1.94 2010/03/01 11:07:06 otto Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -200,7 +200,7 @@ add_file(AuthenticationConnection *ac, const char *filename)
 	xasprintf(&certpath, "%s-cert.pub", filename);
 	if ((cert = key_load_public(certpath, NULL)) != NULL) {
 		/* Graft with private bits */
-		if (key_to_certified(private) != 0)
+		if (key_to_certified(private, key_cert_is_legacy(cert)) != 0)
 			fatal("%s: key_to_certified failed", __func__);
 		key_cert_copy(cert, private);
 		key_free(cert);

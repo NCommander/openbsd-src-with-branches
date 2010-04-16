@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-options.h,v 1.17 2008/03/26 21:28:14 djm Exp $ */
+/* $OpenBSD: auth-options.h,v 1.18 2010/02/26 20:29:54 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -34,6 +34,6 @@ extern int key_is_cert_authority;
 
 int	auth_parse_options(struct passwd *, char *, char *, u_long);
 void	auth_clear_options(void);
-int	auth_cert_constraints(Buffer *, struct passwd *);
+int	auth_cert_options(Key *, struct passwd *);
 
 #endif

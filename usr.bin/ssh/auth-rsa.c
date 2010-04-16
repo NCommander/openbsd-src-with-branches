@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-rsa.c,v 1.73 2008/07/02 12:03:51 dtucker Exp $ */
+/* $OpenBSD: auth-rsa.c,v 1.74 2010/03/04 10:36:03 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -31,11 +31,11 @@
 #include "uidswap.h"
 #include "match.h"
 #include "buffer.h"
-#include "auth-options.h"
 #include "pathnames.h"
 #include "log.h"
 #include "servconf.h"
 #include "key.h"
+#include "auth-options.h"
 #include "hostfile.h"
 #include "auth.h"
 #ifdef GSSAPI
