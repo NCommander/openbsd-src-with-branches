@@ -75,6 +75,7 @@ struct cpu_info {
 
 	struct proc	*ci_curproc;
 
+	register_t	ci_psw;			/* Processor Status Word. */
 	volatile int	ci_cpl;
 	volatile int	ci_in_intr;
 	int		ci_want_resched;
@@ -120,7 +121,6 @@ enum hppa_cpu_type {
 extern enum hppa_cpu_type cpu_type;
 extern const char *cpu_typename;
 extern int cpu_hvers;
-extern register_t kpsw;
 #endif
 #endif
 

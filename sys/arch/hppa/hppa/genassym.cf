@@ -158,6 +158,7 @@ member	fpswtch
 
 struct	cpu_info
 member	ci_curproc
+member	ci_psw
 member	ci_cpl
 
 # system calls
