@@ -57,7 +57,7 @@
 
 #include <machine/atomic.h>
 
-extern volatile u_long ipending, imask[NIPL];
+extern volatile u_long imask[NIPL];
 
 #ifdef DIAGNOSTIC
 void splassert_fail(int, int, const char *);
@@ -137,7 +137,7 @@ hppa_intr_enable(register_t eiem)
 #define	splhigh()	splraise(IPL_HIGH)
 #define	spl0()		spllower(IPL_NONE)
 
-#define	softintr(mask)	atomic_setbits_long(&ipending, mask)
+#define	softintr(mask)	atomic_setbits_long(&curcpu()->ci_ipending, mask)
 
 #define	SOFTINT_MASK ((1 << (IPL_SOFTCLOCK - 1)) | \
     (1 << (IPL_SOFTNET - 1)) | (1 << (IPL_SOFTTTY - 1)))
