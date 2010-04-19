@@ -54,10 +54,37 @@ sub match
 	    $h->{$plist->fullpkgpath};
 }
 
+package OpenBSD::Composite;
+
+sub AUTOLOAD
+{
+	our $AUTOLOAD;
+	my $fullsub = $AUTOLOAD;
+	(my $sub = $fullsub) =~ s/.*:://o;
+	return if $sub eq 'DESTROY'; # special case
+	my $self = $_[0];
+	# verify it makes sense
+	if ($self->element_class->can($sub)) {
+		no strict "refs";
+		# create the sub to avoid regenerating further calls
+		*$fullsub = sub {
+			my $self = shift;
+			$self->visit($sub, @_);
+		};
+		# and jump to it
+		goto &$fullsub;
+	} else {
+		die "Can't call $sub on ".ref($self);
+	}
+}
+
 package OpenBSD::PackingList;
+our @ISA = qw(OpenBSD::Composite);
 
 use OpenBSD::PackingElement;
 use OpenBSD::PackageInfo;
+
+sub element_class { "OpenBSD::PackingElement" }
 
 sub new
 {
@@ -543,27 +570,6 @@ sub forget
 }
 
 # convert call to $self->sub(@args) into $self->visit(sub, @args)
-
-sub AUTOLOAD 
-{
-	our $AUTOLOAD;
-	my $fullsub = $AUTOLOAD;
-	(my $sub = $fullsub) =~ s/.*:://o;
-	return if $sub eq 'DESTROY'; # special case
-	# verify it makes sense
-	if (OpenBSD::PackingElement->can($sub)) {
-		no strict "refs";
-		# create the sub to avoid regenerating further calls
-		*$fullsub = sub {
-			my $self = shift;
-			$self->visit($sub, @_);
-		};
-		# and jump to it
-		goto &$fullsub;
-	} else {
-		die "Can't call $sub on ", __PACKAGE__;
-	}
-}
 
 sub signature
 {
