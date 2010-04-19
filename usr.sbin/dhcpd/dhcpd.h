@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.43 2010/01/01 20:30:25 krw Exp $ */
+/*	$OpenBSD: dhcpd.h,v 1.44 2010/01/02 04:21:16 krw Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -625,7 +625,7 @@ extern struct protocol *protocols;
 extern void (*bootp_packet_handler)(struct interface_info *,
     struct dhcp_packet *, int, unsigned int, struct iaddr, struct hardware *);
 extern struct dhcpd_timeout *timeouts;
-void discover_interfaces(void);
+void discover_interfaces(int *);
 void dispatch(void);
 int locate_network(struct packet *);
 void got_one(struct protocol *);
