@@ -1,4 +1,4 @@
-/*	$OpenBSD: miivar.h,v 1.29 2008/11/08 03:11:16 brad Exp $	*/
+/*	$OpenBSD: miivar.h,v 1.30 2009/10/13 19:33:16 pirofti Exp $	*/
 /*	$NetBSD: miivar.h,v 1.17 2000/03/06 20:56:57 thorpej Exp $	*/
 
 /*-
@@ -234,7 +234,6 @@ struct mii_media {
 
 void	mii_attach(struct device *, struct mii_data *, int, int,
 	    int, int);
-void	mii_activate(struct mii_data *, int, int, int);
 void	mii_detach(struct mii_data *, int, int);
 
 int	mii_mediachg(struct mii_data *);
