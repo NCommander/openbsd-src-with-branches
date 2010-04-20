@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.53 2009/10/26 20:17:25 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.54 2010/02/12 01:35:14 tedu Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -54,6 +54,7 @@
 
 #include <sys/param.h>
 #include <sys/device.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/systm.h>
 

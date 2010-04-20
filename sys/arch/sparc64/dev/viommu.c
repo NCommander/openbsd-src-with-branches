@@ -1,4 +1,4 @@
-/*	$OpenBSD: viommu.c,v 1.7 2009/05/04 16:48:37 oga Exp $	*/
+/*	$OpenBSD: viommu.c,v 1.8 2009/08/09 13:35:43 oga Exp $	*/
 /*	$NetBSD: iommu.c,v 1.47 2002/02/08 20:03:45 eeh Exp $	*/
 
 /*
@@ -40,6 +40,7 @@
 #include <sys/extent.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/mbuf.h>
 

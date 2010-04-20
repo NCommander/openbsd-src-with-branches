@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.74 2009/04/20 00:42:06 oga Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.75 2009/06/11 20:10:51 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -33,6 +33,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/reboot.h>
 #include <sys/extent.h>
