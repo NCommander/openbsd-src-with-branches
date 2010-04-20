@@ -1,4 +1,4 @@
-/*	$OpenBSD: est.c,v 1.33 2009/12/01 18:31:36 jsg Exp $ */
+/*	$OpenBSD: est.c,v 1.34 2010/03/28 03:09:50 marco Exp $ */
 /*
  * Copyright (c) 2003 Michael Eriksson.
  * All rights reserved.
@@ -55,6 +55,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/malloc.h>
 

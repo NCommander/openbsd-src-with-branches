@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.47 2009/08/10 20:02:19 deraadt Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.48 2009/10/13 19:33:17 pirofti Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -20,7 +20,6 @@
 
 #include <sys/param.h>
 #include <sys/sockio.h>
-#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pflow.c,v 1.11 2009/06/17 06:35:30 gollo Exp $	*/
+/*	$OpenBSD: if_pflow.c,v 1.12 2010/01/12 02:47:07 claudio Exp $	*/
 
 /*
  * Copyright (c) 2008 Henning Brauer <henning@openbsd.org>
@@ -20,10 +20,12 @@
 #include <sys/types.h>
 #include <sys/malloc.h>
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <dev/rndvar.h>
 

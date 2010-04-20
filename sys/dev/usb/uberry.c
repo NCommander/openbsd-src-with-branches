@@ -1,4 +1,4 @@
-/*	$OpenBSD: uberry.c,v 1.15 2007/10/11 18:33:14 deraadt Exp $	*/
+/*	$OpenBSD: uberry.c,v 1.16 2009/10/13 19:33:17 pirofti Exp $	*/
 
 /*-
  * Copyright (c) 2006 Theo de Raadt <deraadt@openbsd.org>
@@ -18,7 +18,6 @@
 
 #include <sys/param.h>
 #include <sys/sockio.h>
-#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>

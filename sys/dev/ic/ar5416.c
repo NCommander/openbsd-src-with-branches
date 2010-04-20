@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5416.c,v 1.5 2010/03/28 13:02:57 krw Exp $	*/
+/*	$OpenBSD: ar5416.c,v 1.6 2010/04/19 16:41:19 damien Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -26,7 +26,6 @@
 
 #include <sys/param.h>
 #include <sys/sockio.h>
-#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>

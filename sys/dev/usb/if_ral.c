@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.110 2009/07/10 07:47:38 blambert Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.111 2009/10/13 19:33:17 pirofti Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -26,7 +26,6 @@
 
 #include <sys/param.h>
 #include <sys/sockio.h>
-#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>

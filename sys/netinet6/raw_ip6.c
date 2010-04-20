@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.38 2008/11/23 13:30:59 claudio Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.39 2009/06/05 00:05:22 claudio Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -69,6 +69,7 @@
 #include <sys/socketvar.h>
 #include <sys/errno.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <net/if.h>

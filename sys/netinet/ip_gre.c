@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.c,v 1.34 2009/11/21 14:08:14 claudio Exp $ */
+/*      $OpenBSD: ip_gre.c,v 1.35 2010/01/12 23:33:24 yasuoka Exp $ */
 /*	$NetBSD: ip_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -46,6 +46,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <net/if.h>
 #include <net/netisr.h>

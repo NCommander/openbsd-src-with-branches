@@ -1,4 +1,4 @@
-/* $OpenBSD: longrun.c,v 1.13 2007/05/25 20:32:29 krw Exp $ */
+/* $OpenBSD: longrun.c,v 1.14 2008/09/10 14:01:22 blambert Exp $ */
 /*
  * Copyright (c) 2003 Ted Unangst
  * Copyright (c) 2001 Tamotsu Hattori
@@ -31,6 +31,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/timeout.h>
 

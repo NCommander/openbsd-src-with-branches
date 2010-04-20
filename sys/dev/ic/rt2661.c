@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.51 2009/11/01 12:08:36 damien Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.52 2010/02/14 09:20:34 damien Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -26,7 +26,6 @@
 
 #include <sys/param.h>
 #include <sys/sockio.h>
-#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: powernow-k8.c,v 1.24 2008/06/15 00:10:47 gwk Exp $ */
+/*	$OpenBSD: powernow-k8.c,v 1.25 2008/06/29 03:50:49 gwk Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -31,6 +31,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <dev/isa/isareg.h>

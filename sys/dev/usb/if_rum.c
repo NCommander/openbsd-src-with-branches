@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rum.c,v 1.86 2009/08/02 10:38:34 miod Exp $	*/
+/*	$OpenBSD: if_rum.c,v 1.87 2009/10/13 19:33:17 pirofti Exp $	*/
 
 /*-
  * Copyright (c) 2005-2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -26,7 +26,6 @@
 
 #include <sys/param.h>
 #include <sys/sockio.h>
-#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
 #include <sys/socket.h>

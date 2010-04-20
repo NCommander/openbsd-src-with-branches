@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.28 2010/02/23 21:54:53 kettenis Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.29 2010/04/07 06:33:06 kettenis Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -21,6 +21,7 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/memrange.h>
+#include <sys/proc.h>
 #include <sys/user.h>
 
 #include <uvm/uvm_extern.h>

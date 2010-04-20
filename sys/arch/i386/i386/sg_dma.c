@@ -1,4 +1,4 @@
-/*	$OpenBSD: sg_dma.c,v 1.7 2009/08/09 13:35:43 oga Exp $	*/
+/*	$OpenBSD: sg_dma.c,v 1.5 2010/04/08 00:55:25 oga Exp $	*/
 /*
  * Copyright (c) 2009 Owain G. Ainsworth <oga@openbsd.org>
  *
@@ -54,6 +54,7 @@
 #include <sys/device.h>
 #include <sys/mbuf.h>
 #include <sys/mutex.h>
+#include <sys/proc.h>
 
 #include <uvm/uvm_extern.h>
 

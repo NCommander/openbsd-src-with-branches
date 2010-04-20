@@ -1,4 +1,4 @@
-/* $OpenBSD: powernow-k7.c,v 1.32 2007/07/27 03:03:37 gwk Exp $ */
+/* $OpenBSD: powernow-k7.c,v 1.33 2007/09/07 03:50:42 gwk Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -32,6 +32,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <machine/cpu.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.15 2009/07/09 22:29:56 thib Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.16 2009/08/13 16:00:53 jasper Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -47,9 +47,6 @@
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/dirent.h>
-
-#include <sys/sysctl.h>
-
 
 /*#define NTFS_DEBUG 1*/
 #include <ntfs/ntfs.h>

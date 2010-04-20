@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx111.c,v 1.16 2007/08/05 21:37:29 claudio Exp $ */
+/*	$OpenBSD: acx111.c,v 1.17 2008/06/01 10:17:45 brad Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -53,7 +53,7 @@
 #include <sys/param.h>
 #include <sys/endian.h>
 #include <sys/socket.h>
-#include <sys/sysctl.h>
+#include <sys/systm.h>
 #include <sys/device.h>
 
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: mp_setperf.c,v 1.2 2007/05/01 04:18:32 gwk Exp $ */
+/* $OpenBSD: mp_setperf.c,v 1.3 2009/06/06 20:37:45 gwk Exp $ */
 /*
  * Copyright (c) 2007 Gordon Willem Klok <gwk@openbsd.org>
  *
@@ -17,6 +17,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 #include <sys/mutex.h>
 

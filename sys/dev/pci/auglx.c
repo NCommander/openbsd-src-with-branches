@@ -1,4 +1,4 @@
-/*      $OpenBSD: auglx.c,v 1.4 2009/01/13 19:44:20 grange Exp $	*/
+/*      $OpenBSD: auglx.c,v 1.2 2010/02/19 15:02:37 miod Exp $	*/
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -43,7 +43,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
-#include <sys/sysctl.h>
 #include <sys/audioio.h>
 
 #include <machine/bus.h>

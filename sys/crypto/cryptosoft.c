@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.c,v 1.51 2008/06/09 16:07:00 djm Exp $	*/
+/*	$OpenBSD: cryptosoft.c,v 1.52 2010/01/10 12:43:07 markus Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -25,7 +25,6 @@
 #include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
-#include <sys/sysctl.h>
 #include <sys/errno.h>
 #include <dev/rndvar.h>
 #include <crypto/md5.h>
