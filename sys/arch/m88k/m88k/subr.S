@@ -1,4 +1,4 @@
-/* $OpenBSD: subr.S,v 1.16 2007/12/22 17:14:39 miod Exp $	*/
+/* $OpenBSD: subr.S,v 1.17 2008/02/20 18:35:41 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1992 Carnegie Mellon University
@@ -744,7 +744,7 @@ ENTRY(kcopy)
  *	determine copy strategy based on alignment of source and destination
  */
 	mask	r6,r2,3		/* get 2 low order bits of source address */
-	mask	r7,r3,3		/* get 2 low order bits of destintation addr */
+	mask	r7,r3,3		/* get 2 low order bits of destination addr */
 	mak	r6,r6,0<4>	/* convert source bits to table offset */
 	mak	r7,r7,0<2>	/* convert destination bits to table offset */
 	or.u	r12,r0,hi16(_ASM_LABEL(kf_strat))
@@ -867,7 +867,7 @@ ASLOCAL(kcopy_reverse)
  *	determine copy strategy based on alignment of source and destination
  */
 	mask	r6,r2,3		/* get 2 low order bits of source address */
-	mask	r7,r3,3		/* get 2 low order bits of destintation addr */
+	mask	r7,r3,3		/* get 2 low order bits of destination addr */
 	mak	r6,r6,0<4>	/* convert source bits to table offset */
 	mak	r7,r7,0<2>	/* convert destination bits to table offset */
 	or.u	r12,r0,hi16(_ASM_LABEL(kr_strat))
