@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: clock_machdep.c,v 1.2 2006/09/07 01:55:03 uwe Exp $	*/
 
 /*-
