@@ -1,4 +1,4 @@
-/*	$OpenBSD: xbridge.c,v 1.69 2010/04/02 12:11:55 jsg Exp $	*/
+/*	$OpenBSD: xbridge.c,v 1.70 2010/04/06 19:12:34 miod Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009  Miodrag Vallat.
@@ -32,6 +32,7 @@
 #include <sys/device.h>
 #include <sys/evcount.h>
 #include <sys/malloc.h>
+#include <sys/proc.h>
 #include <sys/extent.h>
 #include <sys/mbuf.h>
 #include <sys/mutex.h>

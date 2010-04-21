@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.39 2008/11/28 02:44:17 brad Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.40 2009/10/31 14:31:11 deraadt Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.33 1997/07/29 17:55:38 fair Exp $	*/
 
 /*-
@@ -110,6 +110,7 @@ Mode of operation:
 #include <sys/errno.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
+#include <sys/timeout.h>
 
 #include <net/if.h>
 #include <net/if_types.h>

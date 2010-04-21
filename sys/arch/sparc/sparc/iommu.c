@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.21 2009/04/14 16:01:04 oga Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.22 2009/07/13 19:50:00 kettenis Exp $	*/
 /*	$NetBSD: iommu.c,v 1.13 1997/07/29 09:42:04 fair Exp $ */
 
 /*
@@ -39,6 +39,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/extent.h>
 #include <sys/mbuf.h>

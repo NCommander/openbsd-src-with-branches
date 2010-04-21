@@ -1,4 +1,4 @@
-/*	$OpenBSD: sendsig.c,v 1.10 2008/05/04 09:57:47 martin Exp $ */
+/*	$OpenBSD: sendsig.c,v 1.11 2010/01/08 01:35:52 syuu Exp $ */
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -65,6 +65,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/signalvar.h>
+#include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/exec.h>
 #include <sys/mount.h>
