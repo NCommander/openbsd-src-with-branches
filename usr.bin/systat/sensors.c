@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensors.c,v 1.20 2010/04/20 19:44:07 oga Exp $	*/
+/*	$OpenBSD: sensors.c,v 1.21 2010/04/20 20:49:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 Deanna Phillips <deanna@openbsd.org>
@@ -269,6 +269,9 @@ showsensor(struct sensinfo *s)
 		break;
 	case SENSOR_FREQ:
 		tbprintf("%11lld Hz", s->sn_value);
+		break;
+	case SENSOR_ANGLE:
+		tbprintf("%10lld deg", s->sn_value);
 		break;
 	default:
 		tbprintf("%10lld", s->sn_value);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.169 2010/04/20 19:44:07 oga Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.170 2010/04/20 20:49:35 deraadt Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -2478,6 +2478,9 @@ print_sensor(struct sensor *s)
 			break;
 		case SENSOR_FREQ:
 			printf("%lld Hz", s->value);
+			break;
+		case SENSOR_ANGLE:
+			printf("%lld deg", s->value);
 			break;
 		default:
 			printf("unknown");
