@@ -1,4 +1,4 @@
-/*	$OpenBSD: zaurus_apm.c,v 1.13 2006/12/12 23:14:28 dim Exp $	*/
+/*	$OpenBSD: zaurus_apm.c,v 1.14 2010/03/30 17:40:55 oga Exp $	*/
 
 /*
  * Copyright (c) 2005 Uwe Stuehler <uwe@bsdx.de>
@@ -21,6 +21,7 @@
 #include <sys/kernel.h>
 #include <sys/timeout.h>
 #include <sys/conf.h>
+#include <sys/proc.h>
 #include <sys/sysctl.h>
 
 #include <arm/xscale/pxa2x0reg.h>
