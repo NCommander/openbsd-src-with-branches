@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf_filter.c,v 1.19 2007/08/06 08:28:09 tom Exp $	*/
+/*	$OpenBSD: bpf_filter.c,v 1.20 2008/01/02 00:31:50 canacar Exp $	*/
 /*	$NetBSD: bpf_filter.c,v 1.12 1996/02/13 22:00:00 christos Exp $	*/
 
 /*
@@ -541,7 +541,7 @@ bpf_validate(f, len)
 				/*
 				 * Check for constant division by 0.
 				 */
-				if (BPF_RVAL(p->code) == BPF_K && p->k == 0)
+				if (BPF_SRC(p->code) == BPF_K && p->k == 0)
 					return 0;
 				break;
 			default:
