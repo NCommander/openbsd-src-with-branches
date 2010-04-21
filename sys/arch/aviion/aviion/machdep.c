@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.33 2009/08/11 19:17:16 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.34 2010/04/18 18:37:37 miod Exp $	*/
 /*
  * Copyright (c) 2007 Miodrag Vallat.
  *
@@ -161,6 +161,8 @@ extern vaddr_t esym;
 const char *prom_bootargs;			/* set in locore.S */
 char bootargs[256];				/* local copy */
 u_int bootdev, bootunit, bootpart;		/* set in locore.S */
+
+int32_t cpuid, sysid;
 
 int cputyp;					/* set in locore.S */
 int avtyp;
