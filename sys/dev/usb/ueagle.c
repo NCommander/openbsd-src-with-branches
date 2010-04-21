@@ -1,4 +1,4 @@
-/*	$OpenBSD: ueagle.c,v 1.23 2007/10/11 18:33:15 deraadt Exp $	*/
+/*	$OpenBSD: ueagle.c,v 1.24 2009/10/13 19:33:17 pirofti Exp $	*/
 
 /*-
  * Copyright (c) 2003-2006
@@ -25,7 +25,6 @@
 #include "bpfilter.h"
 
 #include <sys/param.h>
-#include <sys/sysctl.h>
 #include <sys/sockio.h>
 #include <sys/mbuf.h>
 #include <sys/kernel.h>
