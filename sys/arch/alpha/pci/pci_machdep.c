@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.17 2007/11/03 10:09:03 martin Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.18 2010/04/20 23:35:16 deraadt Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.7 1996/11/19 04:57:32 cgd Exp $	*/
 
 /*
@@ -36,6 +36,8 @@
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
+#include <sys/sysctl.h>
 #include <sys/errno.h>
 #include <sys/device.h>
 #include <uvm/uvm_extern.h>
