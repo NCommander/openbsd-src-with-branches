@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.h,v 1.24 2009/10/26 09:27:58 claudio Exp $ */
+/*	$OpenBSD: mrt.h,v 1.25 2010/04/22 08:18:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -17,8 +17,6 @@
  */
 #ifndef __MRT_H__
 #define __MRT_H__
-
-#include "bgpd.h"
 
 /*
  * MRT binary packet format
