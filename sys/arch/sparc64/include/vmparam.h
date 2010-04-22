@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.17 2008/06/04 18:11:34 miod Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.18 2008/07/18 16:40:17 kurt Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.18 2001/05/01 02:19:19 thorpej Exp $ */
 
 /*
@@ -144,6 +144,9 @@
 
 #define	VM_NFREELIST		1
 #define	VM_FREELIST_DEFAULT	0
+
+/* No UVM_IO_RANGES required: IOMMU takes care of this. */
+#define UVM_IO_RANGES {}
 
 #define __HAVE_VM_PAGE_MD
 /*
