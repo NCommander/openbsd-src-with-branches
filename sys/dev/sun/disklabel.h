@@ -86,11 +86,13 @@ struct sun_disklabel {			/* total size = 512 bytes */
 	u_char		sl_types[MAXPARTITIONS];
 	u_int8_t	sl_fragblock[MAXPARTITIONS];
 	u_int16_t	sl_cpg[MAXPARTITIONS];
+	u_int64_t	sl_label_uid;
 	char		sl_xxx1[292 - sizeof(u_int) - sizeof(u_int) -
 			    (sizeof(struct sun_dkpart) * SUNXPART) -
 			    sizeof(u_char) * MAXPARTITIONS -
 			    sizeof(u_int8_t) * MAXPARTITIONS -
-			    sizeof(u_int16_t) * MAXPARTITIONS];
+			    sizeof(u_int16_t) * MAXPARTITIONS -
+			    sizeof(u_int64_t)];
 	u_short sl_rpm;			/* rotational speed */
 	u_short	sl_pcylinders;		/* number of physical cyls */
 #define	sl_pcyl	sl_pcylinders		/* XXX: old sun3 */

@@ -753,8 +753,6 @@ mcdgetdisklabel(dev, sc, lp, spoofonly)
 	lp->d_type = DTYPE_SCSI;	/* XXX */
 	strncpy(lp->d_packname, "fictitious", sizeof lp->d_packname);
 	DL_SETDSIZE(lp, sc->disksize);
-	lp->d_rpm = 300;
-	lp->d_interleave = 1;
 	lp->d_version = 1;
 
 	lp->d_magic = DISKMAGIC;

@@ -212,10 +212,6 @@ editor(struct disklabel *lp, int f)
 	if (label.d_sbsize == 0)
 		label.d_sbsize = SBSIZE;
 
-	/* Interleave must be >= 1 */
-	if (label.d_interleave == 0)
-		label.d_interleave = 1;
-
 	/* Save the (U|u)ndo labels and mountpoints. */
 	mpcopy(origmountpoints, mountpoints);
 	origlabel = label;
@@ -1457,38 +1453,6 @@ edit_parms(struct disklabel *lp)
 	if (ending_sector > ui)
 		ending_sector = ui;
 	DL_SETDSIZE(lp, ui);
-
-	/* rpm */
-	for (;;) {
-		ui = getuint(lp, "rpm",
-		  "The rotational speed of the disk in revolutions per minute.",
-		  lp->d_rpm, lp->d_rpm, 0, 0);
-		if (ui == ULLONG_MAX - 1) {
-			fputs("Command aborted\n", stderr);
-			*lp = oldlabel;		/* undo damage */
-			return;
-		} else if (ui == ULLONG_MAX)
-			fputs("Invalid entry\n", stderr);
-		else
-			break;
-	}
-	lp->d_rpm = ui;
-
-	/* interleave */
-	for (;;) {
-		ui = getuint(lp, "interleave",
-		  "The physical sector interleave, set when formatting.  Almost always 1.",
-		  lp->d_interleave, lp->d_interleave, 0, 0);
-		if (ui == ULLONG_MAX - 1) {
-			fputs("Command aborted\n", stderr);
-			*lp = oldlabel;		/* undo damage */
-			return;
-		} else if (ui == ULLONG_MAX || ui == 0)
-			fputs("Invalid entry\n", stderr);
-		else
-			break;
-	}
-	lp->d_interleave = ui;
 }
 
 struct partition **

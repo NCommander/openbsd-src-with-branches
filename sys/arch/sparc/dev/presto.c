@@ -372,8 +372,6 @@ presto_getdisklabel(dev_t dev, struct presto_softc *sc)
 	strncpy(lp->d_typename, "Prestoserve", 16);
 	lp->d_type = DTYPE_SCSI;	/* what better to put here? */
 	strncpy(lp->d_packname, sc->sc_model, 16);
-	lp->d_rpm = 3600;
-	lp->d_interleave = 1;
 	lp->d_version = 1;
 
 	lp->d_magic = DISKMAGIC;

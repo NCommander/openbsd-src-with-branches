@@ -852,7 +852,6 @@ hdmakelabel(struct disklabel *dl, struct hdgeom *g)
 	dl->d_typename[p++] = n + '0';
 	dl->d_typename[p] = 0;
 	dl->d_type = DTYPE_MSCP; /* XXX - what to use here??? */
-	dl->d_rpm = 3600;
 	dl->d_secsize = DEV_BSIZE;
 
 	DL_SETDSIZE(dl, g->lbn_count);
@@ -867,7 +866,6 @@ hdmakelabel(struct disklabel *dl, struct hdgeom *g)
 	    
 	DL_SETPOFFSET(&dl->d_partitions[0], 0);
 	DL_SETPOFFSET(&dl->d_partitions[2], 0);
-	dl->d_interleave = 1;
 	dl->d_version = 1;
 	dl->d_magic = dl->d_magic2 = DISKMAGIC;
 	dl->d_checksum = dkcksum(dl);

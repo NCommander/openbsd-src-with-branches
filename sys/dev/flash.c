@@ -990,9 +990,6 @@ flashgetdefaultlabel(dev_t dev, struct flash_softc *sc,
 	lp->d_secpercyl = lp->d_ntracks * lp->d_nsectors;
 	DL_SETDSIZE(lp, (daddr64_t)lp->d_ncylinders * lp->d_secpercyl);
 
-	/* Fake hardware characteristics. */
-	lp->d_rpm = 3600;
-	lp->d_interleave = 1;
 	lp->d_version = 1;
 
 	/* XXX these values assume ffs. */

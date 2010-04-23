@@ -260,10 +260,9 @@ disklabel_sun_to_bsd(struct sun_disklabel *sl, struct disklabel *lp)
 		DL_SETDSIZE(lp, (daddr64_t)secpercyl * sl->sl_ncylinders);
 	lp->d_version = 1;
 
-	lp->d_sparespercyl = sl->sl_sparespercyl;
+	lp->d_label_uid = sl->sl_label_uid;
+
 	lp->d_acylinders = sl->sl_acylinders;
-	lp->d_rpm = sl->sl_rpm;
-	lp->d_interleave = sl->sl_interleave;
 
 	lp->d_npartitions = MAXPARTITIONS;
 	/* These are as defined in <ufs/ffs/fs.h> */
@@ -401,14 +400,13 @@ disklabel_bsd_to_sun(struct disklabel *lp, struct sun_disklabel *sl)
 	/* Format conversion. */
 	bzero(sl, sizeof(*sl));
 	memcpy(sl->sl_text, lp->d_packname, sizeof(lp->d_packname));
-	sl->sl_rpm = lp->d_rpm;
 	sl->sl_pcylinders = lp->d_ncylinders + lp->d_acylinders; /* XXX */
-	sl->sl_sparespercyl = lp->d_sparespercyl;
-	sl->sl_interleave = lp->d_interleave;
 	sl->sl_ncylinders = lp->d_ncylinders;
 	sl->sl_acylinders = lp->d_acylinders;
 	sl->sl_ntracks = lp->d_ntracks;
 	sl->sl_nsectors = lp->d_nsectors;
+
+	sl->sl_label_uid = lp->d_label_uid;
 
 	secpercyl = sl->sl_nsectors * sl->sl_ntracks;
 	for (i = 0; i < 8; i++) {

@@ -504,8 +504,6 @@ rdgetdisklabel(dev_t dev, struct rd_softc *sc, struct disklabel *lp,
 	lp->d_type = DTYPE_SCSI;
 	strncpy(lp->d_packname, "fictitious", sizeof(lp->d_packname));
 	DL_SETDSIZE(lp, lp->d_nsectors);
-	lp->d_rpm = 3600;
-	lp->d_interleave = 1;
 	lp->d_version = 1;
 
 	lp->d_magic = DISKMAGIC;

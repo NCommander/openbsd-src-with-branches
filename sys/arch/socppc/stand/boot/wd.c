@@ -147,8 +147,6 @@ wdgetdefaultlabel(wd, lp)
 		lp->d_secperunit = UINT32_MAX;
 	else
 		lp->d_secperunit = wd->sc_capacity;
-	lp->d_rpm = 3600;
-	lp->d_interleave = 1;
 	lp->d_flags = 0;
 
 	lp->d_partitions[RAW_PART].p_offset = 0;

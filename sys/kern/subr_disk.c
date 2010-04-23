@@ -278,13 +278,10 @@ checkdisklabel(void *rlp, struct disklabel *lp,
 		dlp->d_secpercyl = swap32(dlp->d_secpercyl);
 		dlp->d_secperunit = swap32(dlp->d_secperunit);
 
-		dlp->d_sparespertrack = swap16(dlp->d_sparespertrack);
-		dlp->d_sparespercyl = swap16(dlp->d_sparespercyl);
+		dlp->d_label_uid = swap64(dlp->d_label_uid);
 
 		dlp->d_acylinders = swap32(dlp->d_acylinders);
 
-		dlp->d_rpm = swap16(dlp->d_rpm);
-		dlp->d_interleave = swap16(dlp->d_interleave);
 		dlp->d_flags = swap32(dlp->d_flags);
 
 		for (i = 0; i < NDDATA; i++)

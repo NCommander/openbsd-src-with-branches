@@ -2082,9 +2082,7 @@ raidgetdefaultlabel(RF_Raid_t *raidPtr, struct raid_softc *rs,
 	strncpy(lp->d_typename, "raid", sizeof(lp->d_typename));
 	lp->d_type = DTYPE_RAID;
 	strncpy(lp->d_packname, "fictitious", sizeof(lp->d_packname));
-	lp->d_rpm = 3600;
 	lp->d_flags = 0;
-	lp->d_interleave = 1;
 	lp->d_version = 1;
 
 	DL_SETPOFFSET(&lp->d_partitions[RAW_PART], 0);

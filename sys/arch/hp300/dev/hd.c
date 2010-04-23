@@ -505,8 +505,6 @@ hdgetdisklabel(dev, rs, lp, spoofonly)
 	strncpy(lp->d_packname, "fictitious", sizeof lp->d_packname);
 
 	DL_SETDSIZE(lp, hdidentinfo[rs->sc_type].ri_nblocks);
-	lp->d_rpm = 3600;
-	lp->d_interleave = 1;
 	lp->d_flags = 0;
 	lp->d_version = 1;
 

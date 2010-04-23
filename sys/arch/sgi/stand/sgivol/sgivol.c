@@ -311,7 +311,7 @@ init_volhdr(void)
 	volhdr->dp.dp_trks0 = htobe16(lbl.d_ntracks);
 	volhdr->dp.dp_secs = htobe16(lbl.d_nsectors);
 	volhdr->dp.dp_secbytes = htobe16(lbl.d_secsize);
-	volhdr->dp.dp_interleave = htobe16(lbl.d_interleave);
+	volhdr->dp.dp_interleave = 1;
 	volhdr->dp.dp_nretries = htobe32(22);
 	volhdr->partitions[10].blocks =
 	    htobe32(DL_SECTOBLK(&lbl, lbl.d_secperunit));

@@ -1044,8 +1044,6 @@ sdgetdisklabel(dev_t dev, struct sd_softc *sc, struct disklabel *lp,
 	bcopy(packname, lp->d_packname, len);
 
 	DL_SETDSIZE(lp, sc->params.disksize);
-	lp->d_rpm = sc->params.rot_rate;
-	lp->d_interleave = 1;
 	lp->d_version = 1;
 	lp->d_flags = 0;
 
