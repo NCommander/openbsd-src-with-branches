@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.42 2009/08/22 02:54:50 mk Exp $ */
+/*	$OpenBSD: intr.h,v 1.43 2009/10/01 20:19:19 kettenis Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom, Opsycon AB and RTMX Inc, USA.
@@ -42,6 +42,7 @@
 #define	IPL_TTY		3
 #define	IPL_VM		4
 #define	IPL_CLOCK	5
+#define	IPL_SCHED	6
 #define	IPL_HIGH	6
 #define	IPL_NUM		7
 
