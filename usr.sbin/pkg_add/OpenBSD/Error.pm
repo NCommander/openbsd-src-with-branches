@@ -197,10 +197,7 @@ sub set_pkgname
 {
 	my ($self, $pkgname) = @_;
 	$self->{pkgname} = $pkgname;
-	if (!defined $self->{messages}->{$pkgname}) {
-		$self->{messages}->{$pkgname} = [];
-	}
-	$self->{output} = $self->{messages}->{$pkgname};
+	$self->{output} = $self->{messages}->{$pkgname} //= [];
 }
 
 sub warn
