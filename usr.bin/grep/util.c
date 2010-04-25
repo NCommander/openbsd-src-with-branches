@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.36 2007/10/02 17:59:18 otto Exp $	*/
+/*	$OpenBSD: util.c,v 1.37 2010/04/05 03:03:55 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -279,7 +279,7 @@ fastcomp(fastgrep_t *fg, const char *pattern)
 	fg->reversedSearch = 0;
 
 	/* Remove end-of-line character ('$'). */
-	if (pattern[fg->patternLen - 1] == '$') {
+	if (fg->patternLen > 0 && pattern[fg->patternLen - 1] == '$') {
 		eol++;
 		fg->eol = 1;
 		fg->patternLen--;
