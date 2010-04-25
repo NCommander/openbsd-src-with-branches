@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.5 2007/09/19 23:47:50 tsi Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.7 2010/04/23 15:25:21 jsing Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.2 1998/08/22 14:55:28 mrg Exp $ */
 
 /*
@@ -86,7 +86,7 @@ struct sun_disklabel {			/* total size = 512 bytes */
 	u_char		sl_types[MAXPARTITIONS];
 	u_int8_t	sl_fragblock[MAXPARTITIONS];
 	u_int16_t	sl_cpg[MAXPARTITIONS];
-	u_int64_t	sl_label_uid;
+	u_char		sl_uid[8];	/* extension: unique disk label */
 	char		sl_xxx1[292 - sizeof(u_int) - sizeof(u_int) -
 			    (sizeof(struct sun_dkpart) * SUNXPART) -
 			    sizeof(u_char) * MAXPARTITIONS -

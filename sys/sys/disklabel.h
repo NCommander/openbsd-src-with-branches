@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.45 2009/06/04 21:13:02 deraadt Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.47 2010/04/23 15:25:21 jsing Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -108,7 +108,7 @@ struct disklabel {
 	u_int32_t d_secpercyl;		/* # of data sectors per cylinder */
 	u_int32_t d_secperunit;		/* # of data sectors per unit */
 
-	u_int64_t d_label_uid;		/* Unique label identifier. */
+	u_char	d_uid[8];		/* Unique label identifier. */
 
 	/*
 	 * Alternate cylinders include maintenance, replacement, configuration
