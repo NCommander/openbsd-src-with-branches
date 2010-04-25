@@ -50,7 +50,7 @@ check: regress.o str.o memory.o buf.o
 	${CC} -o ${.TARGET} ${CFLAGS} ${.ALLSRC} ${LDADD}
 
 regress: check
-	${.OBJDIR}/check 
+	${.OBJDIR}/check
 
 # kludge for people who forget to make depend
 var.o: varhashconsts.h

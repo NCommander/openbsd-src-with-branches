@@ -426,7 +426,7 @@ TargPrintNode(GNode *gn, int pass)
 static void
 TargPrintOnlySrc(GNode *gn)
 {
-	if (OP_NOP(gn->type) && gn->special == SPECIAL_NONE && 
+	if (OP_NOP(gn->type) && gn->special == SPECIAL_NONE &&
 	    !(gn->type & OP_DUMMY))
 		printf("#\t%s [%s]\n", gn->name,
 		    gn->path != NULL ? gn->path : gn->name);

@@ -855,7 +855,7 @@ pop_used(Var *v)
 }
 
 static char *
-get_expanded_value(const char *name, const char *ename, int idx, uint32_t k, 
+get_expanded_value(const char *name, const char *ename, int idx, uint32_t k,
     SymTable *ctxt, bool err, bool *freePtr)
 {
 	char *val;
