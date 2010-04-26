@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock.h,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
+/*	$OpenBSD: lock.h,v 1.2 2008/06/26 05:42:12 ray Exp $	*/
 /*	$NetBSD: lock.h,v 1.10 2006/01/03 01:29:46 uwe Exp $	*/
 
 /*-
@@ -36,6 +36,8 @@
 
 #ifndef _SH_LOCK_H_
 #define	_SH_LOCK_H_
+
+#include <sh/atomic.h>
 
 typedef volatile u_int8_t __cpu_simple_lock_t;
 
