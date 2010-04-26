@@ -1,5 +1,5 @@
 :
-#	$OpenBSD: ksh.kshrc,v 1.13 2008/08/24 15:22:08 jmc Exp $
+#	$OpenBSD: ksh.kshrc,v 1.14 2009/08/07 09:05:24 martynas Exp $
 #
 # NAME:
 #	ksh.kshrc - global initialization for ksh
@@ -102,27 +102,39 @@ case "$-" in
 		wcd () { \cd "$@" && eval stripe; }
 		wssh ()
 		{
+			local rc
 			"ssh" "$@"
+			rc=$?
 			eval istripe
 			eval stripe
+			return $rc
 		}
 		wtelnet ()
 		{
+			local rc
 			"telnet" "$@"
+			rc=$?
 			eval istripe
 			eval stripe
+			return $rc
 		}
 		wrlogin ()
 		{
+			local rc
 			"rlogin" "$@"
+			rc=$?
 			eval istripe
 			eval stripe
+			return $rc
 		}
 		wsu ()
 		{
+			local rc
 			"su" "$@"
+			rc=$?
 			eval istripe
 			eval stripe
+			return $rc
 		}
 		alias su=wsu
 		alias cd=wcd
