@@ -1,4 +1,4 @@
-/*	$OpenBSD: siopvar_common.h,v 1.25 2007/08/05 19:05:09 kettenis Exp $ */
+/*	$OpenBSD: siopvar_common.h,v 1.26 2009/02/16 21:19:07 miod Exp $ */
 /*	$NetBSD: siopvar_common.h,v 1.33 2005/11/18 23:10:32 bouyer Exp $ */
 
 /*
@@ -41,7 +41,7 @@
 typedef struct scr_table {
 	u_int32_t count;
 	u_int32_t addr;
-} scr_table_t __packed;
+} __packed scr_table_t;
 
 /* Number of scatter/gather entries */
 /* XXX Ensure alignment of siop_xfer's. */
