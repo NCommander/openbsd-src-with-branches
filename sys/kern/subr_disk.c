@@ -608,8 +608,10 @@ notfat:
 int
 setdisklabel(struct disklabel *olp, struct disklabel *nlp, u_int openmask)
 {
-	int i;
 	struct partition *opp, *npp;
+	struct disk *dk = NULL;
+	u_int64_t uid;
+	int i;
 
 	/* sanity clause */
 	if (nlp->d_secpercyl == 0 || nlp->d_secsize == 0 ||
@@ -648,6 +650,19 @@ setdisklabel(struct disklabel *olp, struct disklabel *nlp, u_int openmask)
 			npp->p_cpg = opp->p_cpg;
 		}
 	}
+
+	/* Generate a UID if the disklabel does not already have one. */
+	uid = 0;
+	if (bcmp(nlp->d_uid, &uid, sizeof(nlp->d_uid)) == 0) {
+		do {
+			arc4random_buf(nlp->d_uid, sizeof(nlp->d_uid));
+			TAILQ_FOREACH(dk, &disklist, dk_link)
+				if (dk->dk_label && bcmp(dk->dk_label->d_uid,
+				    nlp->d_uid, sizeof(nlp->d_uid)) == 0)
+					break;
+		} while (dk != NULL);
+	}
+
 	nlp->d_checksum = 0;
 	nlp->d_checksum = dkcksum(nlp);
 	*olp = *nlp;
