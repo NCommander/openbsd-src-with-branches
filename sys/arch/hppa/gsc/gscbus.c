@@ -122,7 +122,7 @@ gscattach(parent, self, aux)
 	sc->sc_dmatag._dmamem_unmap = gsc_dmamem_unmap;
 	sc->sc_dmatag._dmamem_mmap = gsc_dmamem_mmap;
 
-	pdc_scanbus(self, &ga->ga_ca, MAXMODBUS, 0);
+	pdc_scanbus(self, &ga->ga_ca, MAXMODBUS, 0, 0);
 }
 
 int

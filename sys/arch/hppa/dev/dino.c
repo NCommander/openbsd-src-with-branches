@@ -1781,7 +1781,7 @@ dinoattach(parent, self, aux)
 
 	/* scan for ps2 kbd/ms, serial, and flying toasters */
 	ca->ca_hpamask = -1;
-	pdc_scanbus(self, ca, MAXMODBUS, 0);
+	pdc_scanbus(self, ca, MAXMODBUS, 0, 0);
 
 	bzero(&pba, sizeof(pba));
 	pba.pba_busname = "pci";

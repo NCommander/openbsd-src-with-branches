@@ -322,7 +322,7 @@ astro_attach(struct device *parent, struct device *self, void *aux)
 	nca = *ca;	/* clone from us */
 	nca.ca_hpamask = HPPA_IOBEGIN;
 	nca.ca_dmatag = &sc->sc_dmatag;
-	pdc_scanbus(self, &nca, MAXMODBUS, 0);
+	pdc_scanbus(self, &nca, MAXMODBUS, 0, 0);
 }
 
 int

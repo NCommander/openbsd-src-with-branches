@@ -73,5 +73,5 @@ phantomasattach(struct device *parent, struct device *self, void *aux)
 
 	nca = *ca;
 	nca.ca_hpamask = HPPA_IOBEGIN;
-	pdc_scanbus(self, &nca, MAXMODBUS, 0);
+	pdc_scanbus(self, &nca, MAXMODBUS, 0, 0);
 }

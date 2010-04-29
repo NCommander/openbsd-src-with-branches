@@ -1140,11 +1140,14 @@ mbattach(parent, self, aux)
 	case HPPA_BOARD_HP780_C230:
 	case HPPA_BOARD_HP780_C240:
 	case HPPA_BOARD_HP785_C360:
-		pdc_scanbus(self, &nca, MAXMODBUS, HPPA_FPA);
+		/* Attach CPUs first, then everything else... */
+		pdc_scanbus(self, &nca, MAXMODBUS, HPPA_FPA, 1);
+		pdc_scanbus(self, &nca, MAXMODBUS, HPPA_FPA, 0);
 	break;
 	default:
-		pdc_scanbus(self, &nca, MAXMODBUS, 0);
-	break;
+		/* Attach CPUs first, then everything else... */
+		pdc_scanbus(self, &nca, MAXMODBUS, 0, 1);
+		pdc_scanbus(self, &nca, MAXMODBUS, 0, 0);
 	}
 }
 

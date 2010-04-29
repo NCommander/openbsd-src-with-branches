@@ -69,7 +69,8 @@ extern void (*cold_hook)(int);
 struct device;
 
 const char *hppa_mod_info(int, int);
-void	pdc_scanbus(struct device *, struct confargs *, int, hppa_hpa_t hpa);
+void	pdc_scanbus(struct device *, struct confargs *, int, hppa_hpa_t hpa,
+	    int);
 int	mbprint(void *, const char *);
 int	mbsubmatch(struct device *, void *, void *);
 int	cpu_intr_findirq(void);
