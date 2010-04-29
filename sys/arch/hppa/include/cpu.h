@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.66 2010/04/19 14:05:04 jsing Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.67 2010/04/19 16:32:53 jsing Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -80,6 +80,7 @@ struct cpu_info {
 	volatile u_long	ci_ipending;
 	volatile int	ci_in_intr;
 	int		ci_want_resched;
+	u_long		ci_itmr;
 
 	struct schedstate_percpu ci_schedstate;
 	u_int32_t	ci_randseed;
