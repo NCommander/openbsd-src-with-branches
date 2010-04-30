@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_object.c,v 1.3 2009/11/25 19:19:14 oga Exp $	*/
+/*	$OpenBSD: uvm_object.c,v 1.4 2010/04/21 03:04:49 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 The NetBSD Foundation, Inc.
@@ -41,6 +41,18 @@
 
 /* We will fetch this page count per step */
 #define	FETCH_PAGECOUNT	16
+
+/*
+ * uvm_objinit: initialise a uvm object.
+ */
+void
+uvm_objinit(struct uvm_object *uobj, struct uvm_pagerops *pgops, int refs)
+{
+	uobj->pgops = pgops;
+	RB_INIT(&uobj->memt);
+	uobj->uo_npages = 0;
+	uobj->uo_refs = refs;
+}
 
 /*
  * uvm_objwire: wire the pages of entire uobj
