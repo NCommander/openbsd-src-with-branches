@@ -1,4 +1,4 @@
-/*	$OpenBSD: trek.h,v 1.9 2005/11/15 07:02:35 miod Exp $	*/
+/*	$OpenBSD: trek.h,v 1.10 2006/11/06 21:32:15 deraadt Exp $	*/
 /*	$NetBSD: trek.h,v 1.3 1995/04/22 10:59:36 cgd Exp $	*/
 
 /*
@@ -210,9 +210,6 @@ struct xy
 	unsigned char	x, y;		/* coordinates */
 };
 
-
-extern const struct cvntab	Skitab[];
-extern const struct cvntab	Lentab[];
 
 /*
  *	note that much of the stuff in the following structs CAN NOT
