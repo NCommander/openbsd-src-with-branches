@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.8 2010/04/15 15:37:51 claudio Exp $ */
+/*	$OpenBSD: packet.c,v 1.9 2010/04/29 12:09:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -324,7 +324,8 @@ session_read(int fd, short event, void *arg)
 	nbr->rbuf->wpos += n;
 
 	while ((len = session_get_pdu(nbr->rbuf, &buf)) > 0) {
-		ldp_hdr = (struct ldp_hdr *)pdu = buf;
+		pdu = buf;
+		ldp_hdr = (struct ldp_hdr *)pdu;
 		if (ntohs(ldp_hdr->version) != LDP_VERSION) {
 			session_shutdown(nbr, S_BAD_PROTO_VER, 0, 0);
 			free(buf);
