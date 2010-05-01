@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.36 2008/05/20 00:30:30 fgsch Exp $	*/
+/*	$OpenBSD: history.c,v 1.37 2009/07/02 16:29:15 martynas Exp $	*/
 
 /*
  * command history
@@ -397,7 +397,7 @@ hist_get_newest(int allow_cur)
 	return histptr - 1;
 }
 
-/* Return a pointer to the newest command in the history */
+/* Return a pointer to the oldest command in the history */
 static char **
 hist_get_oldest(void)
 {
