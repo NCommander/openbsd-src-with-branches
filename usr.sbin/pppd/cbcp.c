@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbcp.c,v 1.6 2004/11/03 03:33:11 danh Exp $	*/
+/*	$OpenBSD: cbcp.c,v 1.7 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*
  * cbcp - Call Back Configuration Protocol.
@@ -115,7 +115,7 @@ cbcp_open(unit)
     syslog(LOG_DEBUG, "cbcp_open");
 }
 
-/* process an incomming packet */
+/* process an incoming packet */
 static void
 cbcp_input(unit, inpacket, pktlen)
     int unit;

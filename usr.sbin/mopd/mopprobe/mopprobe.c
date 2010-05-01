@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopprobe.c,v 1.11 2009/07/11 13:42:32 sobrado Exp $ */
+/*	$OpenBSD: mopprobe.c,v 1.12 2009/10/27 23:59:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-96 Mats O Jansson.  All rights reserved.
@@ -119,7 +119,7 @@ Usage()
 }
 
 /*
- * Process incomming packages.
+ * Process incoming packages.
  */
 void
 mopProcess(struct if_info *ii, u_char *pkt)

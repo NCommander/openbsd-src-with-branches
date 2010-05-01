@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.199 2010/01/09 23:15:06 krw Exp $	*/
+/*	$OpenBSD: ami.c,v 1.200 2010/03/23 01:57:19 krw Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -1017,7 +1017,7 @@ ami_runqueue(struct ami_softc *sc)
 
 	while ((ccb = TAILQ_FIRST(&sc->sc_ccb_preq)) != NULL) {
 		if (sc->sc_exec(sc, &ccb->ccb_cmd) != 0) {
-			/* this is now raceable too with other incomming io */
+			/* this is now raceable too with other incoming io */
 			timeout_add(&sc->sc_run_tmo, 1);
 			break;
 		}

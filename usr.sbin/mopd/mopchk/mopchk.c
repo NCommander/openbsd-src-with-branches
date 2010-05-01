@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopchk.c,v 1.13 2009/07/11 13:42:32 sobrado Exp $	*/
+/*	$OpenBSD: mopchk.c,v 1.14 2009/10/27 23:59:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
@@ -150,7 +150,7 @@ Usage()
 }
 
 /*
- * Process incomming packages, NOT. 
+ * Process incoming packages, NOT. 
  */
 /* ARGSUSED */
 void
