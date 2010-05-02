@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.181 2010/03/24 23:18:17 tedu Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.182 2010/04/20 20:49:33 deraadt Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1646,7 +1646,7 @@ sysctl_proc_args(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 	iov.iov_len = sizeof(pss);
 	uio.uio_iov = &iov;
 	uio.uio_iovcnt = 1;	
-	uio.uio_offset = (off_t)PS_STRINGS;
+	uio.uio_offset = (off_t)(vaddr_t)PS_STRINGS;
 	uio.uio_resid = sizeof(pss);
 	uio.uio_segflg = UIO_SYSSPACE;
 	uio.uio_rw = UIO_READ;
