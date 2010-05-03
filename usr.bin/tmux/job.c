@@ -1,4 +1,4 @@
-/* $OpenBSD: job.c,v 1.15 2010/02/24 19:13:38 nicm Exp $ */
+/* $OpenBSD: job.c,v 1.16 2010/04/04 19:02:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -149,7 +149,7 @@ job_run(struct job *job)
 	case -1:
 		return (-1);
 	case 0:		/* child */
-		server_signal_clear();
+		clear_signals();
 
 		environ_push(&global_environ);
 
