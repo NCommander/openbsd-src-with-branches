@@ -1,4 +1,4 @@
-/*	$OpenBSD: athnvar.h,v 1.7 2010/01/27 18:26:45 damien Exp $	*/
+/*	$OpenBSD: athnvar.h,v 1.8 2010/02/15 17:16:36 damien Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -17,7 +17,7 @@
  */
 
 #define ATHN_DEBUG		1
-#define ATHN_BT_COEXISTENCE	1
+/*#define ATHN_BT_COEXISTENCE	1*/
 
 #ifdef ATHN_DEBUG
 #define DPRINTF(x)	do { if (athn_debug > 0) printf x; } while (0)
