@@ -311,6 +311,10 @@ pdc_scanbus(struct device *self, struct confargs *ca, int maxmod,
 			    nca.ca_type.iodc_type, nca.ca_type.iodc_sv_model);
 		}
 
+		if (cpu_scan && nca.ca_type.iodc_type == HPPA_TYPE_NPROC &&
+		    nca.ca_type.iodc_sv_model == HPPA_NPROC_HPPA)
+			ncpusfound++;
+
 		if (cpu_scan &&
 		    ((nca.ca_type.iodc_type != HPPA_TYPE_NPROC ||
 	            nca.ca_type.iodc_sv_model != HPPA_NPROC_HPPA) &&
