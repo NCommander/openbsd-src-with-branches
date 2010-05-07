@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxe.h,v 1.2 2004/09/20 17:51:07 miod Exp $ */
+/*	$OpenBSD: pxe.h,v 1.3 2007/11/25 20:00:03 martynas Exp $ */
 /*	$NetBSD: pxe.h,v 1.1 2002/02/16 03:37:40 thorpej Exp $	*/
 
 /*
@@ -50,13 +50,13 @@
 typedef struct {
 	uint16_t		offset;
 	uint16_t		segment;
-} SEGOFF16_t __attribute__((__packed__));
+} __packed SEGOFF16_t;
 
 typedef struct {
 	uint16_t		Seg_Addr;
 	uint32_t		Phy_Addr;
 	uint16_t		Seg_Size;
-} SEGDESC_t __attribute__((__packed__));
+} __packed SEGDESC_t;
 
 typedef	uint16_t		SEGSEL_t;
 typedef	uint16_t		PXENV_STATUS_t;
