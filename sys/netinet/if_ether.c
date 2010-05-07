@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.84 2010/02/08 13:32:50 claudio Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.85 2010/04/06 18:16:31 deraadt Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -399,7 +399,7 @@ arpresolve(ac, rt, m, dst, desten)
 			log(LOG_DEBUG, "arpresolve: %s: route without link "
 			    "local address\n", inet_ntoa(SIN(dst)->sin_addr));
 	} else {
-		if ((la = arplookup(SIN(dst)->sin_addr.s_addr, 1, 0,
+		if ((la = arplookup(SIN(dst)->sin_addr.s_addr, RT_REPORT, 0,
 		    ac->ac_if.if_rdomain)) != NULL)
 			rt = la->la_rt;
 		else

@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_atm.h,v 1.12 2006/06/17 10:22:06 henning Exp $       */
+/*      $OpenBSD: if_atm.h,v 1.13 2008/11/07 19:09:03 deraadt Exp $       */
 
 /*
  *
@@ -37,8 +37,6 @@
  */
 #ifndef _NET_IF_ATM_H_
 #define _NET_IF_ATM_H_
-
-#define RTALLOC1(A,B)		rtalloc1((A),(B), 0)
 
 /*
  * pseudo header for packet transmission

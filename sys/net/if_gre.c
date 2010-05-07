@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_gre.c,v 1.45 2009/06/02 17:10:23 henning Exp $ */
+/*      $OpenBSD: if_gre.c,v 1.46 2009/11/21 14:08:14 claudio Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -653,7 +653,8 @@ gre_compute_route(struct gre_softc *sc)
 		((struct sockaddr_in *) &ro->ro_dst)->sin_addr.s_addr = htonl(a);
 	}
 
-	ro->ro_rt = rtalloc1(&ro->ro_dst, 1, sc->g_rtableid);
+	ro->ro_rt = rtalloc1(&ro->ro_dst, RT_REPORT | RT_NOCLONING,
+	    sc->g_rtableid);
 	if (ro->ro_rt == NULL)
 		return;
 

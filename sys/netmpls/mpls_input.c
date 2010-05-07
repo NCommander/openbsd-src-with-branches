@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.20 2009/04/28 12:07:43 michele Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.21 2009/04/29 19:26:52 michele Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -173,8 +173,7 @@ mpls_input(struct mbuf *m)
 			/* Other cases are not handled for now */
 		}
 
-		rt = rtalloc1(smplstosa(smpls), 1, 0);
-
+		rt = rtalloc1(smplstosa(smpls), RT_REPORT, 0);
 		if (rt == NULL) {
 			/* no entry for this label */
 #ifdef MPLS_DEBUG
