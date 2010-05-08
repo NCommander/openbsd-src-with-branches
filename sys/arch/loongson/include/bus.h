@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.1.1.1 2009/12/25 21:25:46 miod Exp $	*/
+/*	$OpenBSD: bus.h,v 1.2 2010/04/04 11:24:27 miod Exp $	*/
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB Sweden.  All rights reserved.
@@ -43,7 +43,6 @@ typedef u_long bus_addr_t;
 typedef u_long bus_size_t;
 typedef u_long bus_space_handle_t;
 typedef struct mips_bus_space *bus_space_tag_t;
-typedef struct mips_bus_space bus_space_t;
 
 struct mips_bus_space {
 	bus_addr_t	bus_base;
