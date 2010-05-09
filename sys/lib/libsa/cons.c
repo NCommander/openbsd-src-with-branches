@@ -1,4 +1,4 @@
-/*	$OpenBSD: cons.c,v 1.12 2007/09/10 17:29:02 miod Exp $	*/
+/*	$OpenBSD: cons.c,v 1.13 2008/01/23 16:37:55 jsing Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -43,6 +43,8 @@
 #include <sys/param.h>
 #include "stand.h"
 #include <dev/cons.h>
+
+extern struct consdev constab[];
 
 void
 cninit(void)

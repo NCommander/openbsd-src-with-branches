@@ -1,4 +1,4 @@
-/*	$OpenBSD: stand.h,v 1.45 2006/09/18 21:12:57 mpf Exp $	*/
+/*	$OpenBSD: stand.h,v 1.46 2007/05/04 21:44:07 reyk Exp $	*/
 /*	$NetBSD: stand.h,v 1.18 1996/11/30 04:35:51 gwr Exp $	*/
 
 /*-
@@ -93,7 +93,6 @@ struct devsw {
 extern struct devsw devsw[];	/* device array */
 extern int ndevs;		/* number of elements in devsw[] */
 
-extern struct consdev constab[];
 extern struct consdev *cn_tab;
 
 struct open_file {
