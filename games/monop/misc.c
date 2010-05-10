@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.9 2006/03/27 00:10:15 tedu Exp $	*/
+/*	$OpenBSD: misc.c,v 1.10 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/23 08:34:47 cgd Exp $	*/
 
 /*
@@ -45,7 +45,7 @@ getyn(prompt)
 	int	com;
 
 	for (;;)
-		if ((com=getinp(prompt, yn)) < 2)
+		if ((com=getinp(prompt, ynlist)) < 2)
 			return com;
 		else
 			(*func[com-2])();

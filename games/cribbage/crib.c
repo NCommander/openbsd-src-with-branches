@@ -1,4 +1,4 @@
-/*	$OpenBSD: crib.c,v 1.13 2004/07/10 07:26:23 deraadt Exp $	*/
+/*	$OpenBSD: crib.c,v 1.14 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: crib.c,v 1.7 1997/07/10 06:47:29 mikel Exp $	*/
 
 /*-
@@ -79,7 +79,7 @@ main(int argc, char *argv[])
 		}
 
 	initscr();
-	(void)signal(SIGINT, rint);
+	(void)signal(SIGINT, rintsig);
 	cbreak();
 	noecho();
 
