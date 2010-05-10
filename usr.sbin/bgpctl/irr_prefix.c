@@ -1,4 +1,4 @@
-/*	$OpenBSD: irr_prefix.c,v 1.16 2009/09/08 15:40:25 claudio Exp $ */
+/*	$OpenBSD: irr_prefix.c,v 1.17 2009/09/08 16:11:36 sthen Exp $ */
 
 /*
  * Copyright (c) 2007 Henning Brauer <henning@openbsd.org>
@@ -213,7 +213,7 @@ prefix_aggregate(struct irr_prefix *a, const struct irr_prefix *b)
 			return (1);
 	}
 
-	/* see wether we can fold them in one */
+	/* see whether we can fold them in one */
 	if (a->len == b->len && a->len > 1) {
 		if (a->af == AF_INET) {
 			mask = htonl(prefixlen2mask(a->len - 1));

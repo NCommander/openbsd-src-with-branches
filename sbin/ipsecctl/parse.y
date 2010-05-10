@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.144 2009/01/30 14:24:52 bluhm Exp $	*/
+/*	$OpenBSD: parse.y,v 1.146 2009/08/04 15:05:50 jsing Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1801,7 +1801,7 @@ ifa_exists(const char *ifa_name)
 	if (iftab == NULL)
 		ifa_load();
 
-	/* check wether this is a group */
+	/* check whether this is a group */
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 		err(1, "ifa_exists: socket");
 	bzero(&ifgr, sizeof(ifgr));

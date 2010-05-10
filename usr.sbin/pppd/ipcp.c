@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipcp.c,v 1.11 2003/07/18 22:58:56 david Exp $	*/
+/*	$OpenBSD: ipcp.c,v 1.12 2009/10/27 23:59:53 deraadt Exp $	*/
 
 /*
  * ipcp.c - PPP IP Control Protocol.
@@ -861,7 +861,7 @@ ipcp_reqci(f, inp, len, reject_if_disagree)
 	     * If he doesn't know our address, or if we both have our address
 	     * but disagree about it, then NAK it with our idea.
 	     */
-	    GETLONG(tl, p);		/* Parse desination address (ours) */
+	    GETLONG(tl, p);		/* Parse destination address (ours) */
 	    ciaddr2 = htonl(tl);
 	    IPCPDEBUG((LOG_INFO, "%s)", ip_ntoa(ciaddr2)));
 	    if (ciaddr2 != wo->ouraddr) {

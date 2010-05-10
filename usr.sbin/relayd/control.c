@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.33 2009/12/02 19:10:02 mk Exp $	*/
+/*	$OpenBSD: control.c,v 1.34 2010/01/11 06:40:14 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -342,7 +342,7 @@ control_dispatch_imsg(int fd, short event, void *arg)
 			 *
 			 * so in this case, the reply relayctl gets means
 			 * that the reload command has been set,
-			 * it doesn't say wether the command succeeded or not.
+			 * it doesn't say whether the command succeeded or not.
 			 */
 			imsg_compose_event(&c->iev, IMSG_CTL_OK,
 			    0, 0, -1, NULL, 0);

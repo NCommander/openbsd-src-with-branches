@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.70 2007/08/07 20:09:39 markus Exp $	 */
+/* $OpenBSD: monitor.c,v 1.71 2007/08/11 00:20:30 hshoexer Exp $	 */
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -697,7 +697,7 @@ m_priv_local_sanitize_path(char *path, size_t pmax, int flags)
 	if (realpath(path, new_path) == NULL ||
 	    realpath("/var/run", var_run) == NULL) {
 		/*
-                 * We could not decide wether the path is ok or not.
+                 * We could not decide whether the path is ok or not.
                  * Indicate this be returning 2.
 		 */
 		if (errno == ENOENT)
