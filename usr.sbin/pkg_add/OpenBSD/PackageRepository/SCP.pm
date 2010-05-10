@@ -40,7 +40,7 @@ sub initiate
 
 	my ($rdfh, $wrfh);
 
-	$self->{controller} = open2($rdfh, $wrfh, OpenBSD::Paths->ssh, 
+	$self->{controller} = open2($rdfh, $wrfh, OpenBSD::Paths->ssh,
 	    $self->{host}, 'perl', '-x');
 	$self->{cmdfh} = $wrfh;
 	$self->{getfh} = $rdfh;
@@ -56,8 +56,8 @@ sub initiate
 	}
 	seek(DATA, 0, 0);
 }
-	
-	
+
+
 sub may_exist
 {
 	my ($self, $name) = @_;
@@ -92,7 +92,7 @@ sub grab_object
 		my $n;
 
 		do {
-			$n = read($getfh, $buffer, 
+			$n = read($getfh, $buffer,
 				$remaining < $buffsize ? $remaining :$buffsize);
 			if (!defined $n) {
 				die "Error reading\n";

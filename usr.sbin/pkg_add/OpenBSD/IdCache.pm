@@ -73,7 +73,7 @@ sub convert
 	my @entry = getgrnam($_[1]);
 	return @entry == 0 ? undef : $entry[2];
 }
-	
+
 package OpenBSD::UnameCache;
 our @ISA=qw(OpenBSD::SimpleIdCache);
 
@@ -89,5 +89,5 @@ sub convert
 {
 	return getgrgid($_[1]);
 }
-	
+
 1;

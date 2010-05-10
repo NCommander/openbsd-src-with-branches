@@ -48,7 +48,7 @@ sub handle_option
 	}
 }
 
-sub getopts($;$) 
+sub getopts($;$)
 {
     my ($args, $hash) = @_;
 

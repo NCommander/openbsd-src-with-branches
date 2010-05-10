@@ -50,7 +50,7 @@ sub dir
 	my $caught;
 	my $h = sub { $caught = shift; };
 	my $dir;
-		
+
 	{
 	    local $SIG{'INT'} = $h;
 	    local $SIG{'QUIT'} = $h;
@@ -71,7 +71,7 @@ sub file
 	my $caught;
 	my $h = sub { $caught = shift; };
 	my ($fh, $file);
-		
+
 	{
 	    local $SIG{'INT'} = $h;
 	    local $SIG{'QUIT'} = $h;

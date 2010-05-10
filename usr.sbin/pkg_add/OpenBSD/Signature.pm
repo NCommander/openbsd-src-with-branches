@@ -175,7 +175,7 @@ package OpenBSD::LibSpec;
 sub compare
 {
 	my ($a, $b) = @_;
-	
+
 	if ($a->key ne $b->key) {
 		return undef;
 	}

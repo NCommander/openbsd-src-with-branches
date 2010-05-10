@@ -27,7 +27,7 @@ my %found;
 
 print "Scanning packages\n";
 for my $pkg (installed_packages()) {
-	my $plist = OpenBSD::PackingList->from_installation($pkg, 
+	my $plist = OpenBSD::PackingList->from_installation($pkg,
 	    \&OpenBSD::PackingList::FilesOnly);
 	print "$pkg...\n";
 	for my $item (@{$plist->{items}}) {
@@ -42,7 +42,7 @@ find(sub {
 	if ($found{$File::Find::name}) {
 		delete $found{$File::Find::name};
 	} else {
-		print $File::Find::name, "\n" 
+		print $File::Find::name, "\n"
 	}
 }, '/usr/local');
 

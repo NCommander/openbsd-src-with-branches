@@ -29,8 +29,8 @@ sub fill_entries
 		my $l = $self->{entries} = {};
 
 		if (-f $self->{filename}) {
-			open(my $fh, '<', $self->{filename}) or 
-			    croak ref($self), 
+			open(my $fh, '<', $self->{filename}) or
+			    croak ref($self),
 			    	": reading $self->{filename}: $!";
 			my $_;
 			while(<$fh>) {
@@ -70,7 +70,7 @@ sub synch
 		$self->{nonempty} = 0;
 	}
 	return $self;
-} 
+}
 
 sub list
 {

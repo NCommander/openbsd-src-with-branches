@@ -41,7 +41,7 @@ sub to_string
 }
 
 sub version { ".a" }
-	
+
 sub is_static { 1 }
 
 sub is_better { 0 }

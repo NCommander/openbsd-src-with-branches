@@ -25,7 +25,7 @@
 #   - otherwise, in update mode, put a request to update the package (e.g.,
 #   create a new UpdateSet.
 
-# the Tracker object does maintain that information globally so that 
+# the Tracker object does maintain that information globally so that
 # Update/Dependencies can do its job.
 
 use strict;

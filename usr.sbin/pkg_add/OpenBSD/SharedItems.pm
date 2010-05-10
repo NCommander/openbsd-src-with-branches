@@ -36,7 +36,7 @@ sub find_items_in_installed_packages
 	my $done = 0;
 	for my $e (@list) {
 		$state->progress->show($done, $total);
-		my $plist = OpenBSD::PackingList->from_installation($e, 
+		my $plist = OpenBSD::PackingList->from_installation($e,
 		    \&OpenBSD::PackingList::SharedItemsOnly) or next;
 		next if !defined $plist;
 		$plist->record_shared($db, $e);
@@ -90,7 +90,7 @@ sub cleanup
 			$state->progress->show($done, $total);
 			next if $remaining->{users}->{$user};
 			if ($state->{extra}) {
-				$state->system(OpenBSD::Paths->userdel, '--', 
+				$state->system(OpenBSD::Paths->userdel, '--',
 				    $user);
 			} else {
 				$state->log->set_context($pkgname);

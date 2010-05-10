@@ -71,7 +71,7 @@ sub fill_conflict_lists($)
 {
 	my $state = shift;
 	for my $pkg (installed_packages()) {
-		my $plist = OpenBSD::PackingList->from_installation($pkg, 
+		my $plist = OpenBSD::PackingList->from_installation($pkg,
 		    \&OpenBSD::PackingList::ConflictOnly);
 		next unless defined $plist;
 		if (!defined $plist->pkgname) {

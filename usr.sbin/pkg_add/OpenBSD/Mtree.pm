@@ -47,7 +47,7 @@ sub parse_fh
 	}
 }
 
-sub parse 
+sub parse
 {
 	my ($mtree, $basedir, $filename) = @_;
 	open my $file, '<', $filename or die "can't open $filename: $!";

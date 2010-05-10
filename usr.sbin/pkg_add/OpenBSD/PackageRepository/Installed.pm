@@ -39,7 +39,7 @@ sub parse_url
 		$path = $$r;
 		$$r = '';
 	}
-		
+
 	$path .= '/' unless $path =~ m/\/$/;
 	bless { path => $path }, $class;
 }
@@ -150,7 +150,7 @@ sub urlscheme
 	return 'inst';
 }
 
-use OpenBSD::PackageInfo (qw(is_installed installed_info 
+use OpenBSD::PackageInfo (qw(is_installed installed_info
     installed_packages installed_stems installed_name));
 
 my $singleton = bless {}, __PACKAGE__;

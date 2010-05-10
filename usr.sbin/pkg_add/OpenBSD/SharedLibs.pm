@@ -128,7 +128,7 @@ sub add_libs_from_installed_package
 	my $pkgname = shift;
 	return if $done_plist->{$pkgname};
 	$done_plist->{$pkgname} = 1;
-	my $plist = OpenBSD::PackingList->from_installation($pkgname, 
+	my $plist = OpenBSD::PackingList->from_installation($pkgname,
 	    \&OpenBSD::PackingList::LibraryOnly);
 	return if !defined $plist;
 

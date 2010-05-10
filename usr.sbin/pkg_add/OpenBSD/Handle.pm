@@ -67,7 +67,7 @@ sub pkgname
 		} elsif (defined $self->{name}) {
 			require OpenBSD::PackageName;
 
-			$self->{pkgname} = 
+			$self->{pkgname} =
 			    OpenBSD::PackageName::url2pkgname($self->{name});
 		}
 	}
@@ -229,8 +229,8 @@ sub get_location
 	if (!$location) {
 		$state->print($state->deptree_header($name));
 		$handle->set_error(NOT_FOUND);
-		$handle->{tweaked} = 
-		    OpenBSD::Add::tweak_package_status($handle->pkgname, 
+		$handle->{tweaked} =
+		    OpenBSD::Add::tweak_package_status($handle->pkgname,
 			$state);
 		if (!$handle->{tweaked}) {
 			$state->say("Can't find $name");

@@ -23,7 +23,7 @@ sub match_locations
 {
 	my ($self, $o) = @_;
 	require OpenBSD::PackageLocation;
-	
+
 	my @l = map {$o->new_location($_)} $self->match($o);
 	return \@l;
 }
@@ -133,7 +133,7 @@ sub filter
 	require OpenBSD::PackageName;
 	for my $pkg (@l) {
 		if ($self->_keep(OpenBSD::PackageName::splitstem($pkg))) {
-			push(@result, $pkg); 
+			push(@result, $pkg);
 		}
 	}
 	return @result;
@@ -230,7 +230,7 @@ sub {
 
 			if ($f->pkgname->{version}->compare($e->pkgname->{version}) < 0) {
 			    $f = $e;
-			} 
+			}
 			$keep = 0;
 			last;
 

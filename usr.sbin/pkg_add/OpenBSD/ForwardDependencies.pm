@@ -74,7 +74,7 @@ sub check
 	my $result = {};
 
 	return $result if @r == 0;
-	$state->say("Verifying dependencies still match for ", 
+	$state->say("Verifying dependencies still match for ",
 	    join(', ', @r)) if $state->verbose >= 2;
 
 	my @new = ($set->newer_names, $set->kept_names);

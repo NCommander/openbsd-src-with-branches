@@ -257,7 +257,7 @@ sub solve_installed_names
 
 			if ($state->{defines}->{ambiguous}) {
 			    my @l = map {$_->name} @$r;
-			    $state->say("Ambiguous: $pkgname could be ", 
+			    $state->say("Ambiguous: $pkgname could be ",
 				join(' ', @l));
 			    $state->say($msg);
 			    push(@$new, @l);
