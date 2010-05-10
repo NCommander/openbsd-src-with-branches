@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pkg_add.1,v 1.96 2010/01/26 15:03:39 espie Exp $
+.\"	$OpenBSD$
 .\"
 .\" Documentation and design originally from FreeBSD. All the code has
 .\" been rewritten since. We keep the documentation's notice:
@@ -15,7 +15,7 @@
 .\" Jordan K. Hubbard
 .\"
 .\"
-.Dd $Mdocdate: January 26 2010 $
+.Dd $Mdocdate$
 .Dt PKG_ADD 1
 .Os
 .Sh NAME
@@ -494,7 +494,9 @@ and enough space to store files.
 .It
 If the package contains an
 .Ar install
-script, it is executed with the following arguments:
+script (deprecated, 
+.Cm @exec
+is more versatile), it is executed with the following arguments:
 .Bl -tag -width indentindent
 .It Ar pkg-name
 The name of the package being installed.
@@ -512,7 +514,8 @@ files from the package into their final locations.
 .It
 If an
 .Ar install
-script exists for the package, it is executed with the following arguments:
+script exists for the package (deprecated),
+it is executed with the following arguments:
 .Bl -tag -width indentindent
 .It Ar pkg_name
 The name of the package being installed.
