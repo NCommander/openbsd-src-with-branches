@@ -1,14 +1,14 @@
-# $OpenBSD: Makefile,v 1.5 2004/12/29 06:02:14 david Exp $
+# $OpenBSD: Makefile,v 1.6 2006/02/11 23:54:34 david Exp $
 
 .include <bsd.own.mk>
 
 NOMAN=
 NOPROG=
 
-.if ${USE_GCC3:L:Myes}
+.if ${COMPILER_VERSION:L} == "gcc3" 
 TESTDIR=${BSDSRCDIR}/gnu/lib/libf2c
 TEST2DIR=${BSDSRCDIR}/gnu/usr.bin/gcc
-.else
+.elif ${COMPILER_VERSION:L} == "gcc2" 
 TESTDIR=${BSDSRCDIR}/gnu/egcs/libf2c
 TEST2DIR=${BSDSRCDIR}/gnu/egcs/gcc
 .endif
@@ -19,7 +19,7 @@ TEST4DIR=${TEST2DIR}/
 
 REGRESS_TARGETS=do-libf2c
 
-.if !defined(DO_DEJATESTS)
+.if !defined(DO_DEJATESTS) && defined(TESTDIR)
 REGRESS_SKIP_TARGETS=do-libf2c
 .endif
 

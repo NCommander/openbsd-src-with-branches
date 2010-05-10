@@ -1,12 +1,14 @@
-# $OpenBSD: Makefile,v 1.5 2004/12/29 06:02:14 david Exp $
+# $OpenBSD: Makefile,v 1.6 2006/02/11 23:54:34 david Exp $
 
 .include <bsd.own.mk>
 
 NOMAN=
 NOPROG=
 
-.if ${USE_GCC3:L:Myes}
+.if ${COMPILER_VERSION:L} == "gcc3" 
 TESTDIR=${BSDSRCDIR}/gnu/usr.bin/gcc
+.elif ${COMPILER_VERSION:L} == "gcc4" 
+TESTDIR=${BSDSRCDIR}/gnu/usr.bin/cc
 .else
 TESTDIR=${BSDSRCDIR}/gnu/egcs/gcc
 .endif
