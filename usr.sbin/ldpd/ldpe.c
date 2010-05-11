@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.c,v 1.6 2010/04/15 15:04:23 claudio Exp $ */
+/*	$OpenBSD: ldpe.c,v 1.7 2010/04/29 12:09:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -333,8 +333,6 @@ ldpe_dispatch_main(int fd, short event, void *bula)
 			}
 			break;
 		case IMSG_RECONF_CONF:
-			break;
-		case IMSG_RECONF_AREA:
 			break;
 		case IMSG_RECONF_IFACE:
 			break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.h,v 1.14 2010/04/15 15:44:37 claudio Exp $ */
+/*	$OpenBSD: ldpd.h,v 1.15 2010/04/29 12:09:28 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -106,7 +106,6 @@ enum imsg_type {
 	IMSG_NETWORK_ADD,
 	IMSG_NETWORK_DEL,
 	IMSG_RECONF_CONF,
-	IMSG_RECONF_AREA,
 	IMSG_RECONF_IFACE,
 	IMSG_RECONF_END
 };
