@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.h,v 1.81 2009/09/08 17:52:17 michele Exp $	*/
+/*	$OpenBSD: in.h,v 1.82 2009/10/04 16:08:37 michele Exp $	*/
 /*	$NetBSD: in.h,v 1.20 1996/02/13 23:41:47 christos Exp $	*/
 
 /*
@@ -73,6 +73,7 @@
 #define IPPROTO_PIM		103		/* Protocol indep. multicast */
 #define IPPROTO_IPCOMP		108		/* IP Payload Comp. Protocol */
 #define	IPPROTO_CARP		112		/* CARP */
+#define	IPPROTO_MPLS		137		/* unicast MPLS packet */
 #define	IPPROTO_PFSYNC		240		/* PFSYNC */
 #define	IPPROTO_RAW		255		/* raw IP packet */
 
