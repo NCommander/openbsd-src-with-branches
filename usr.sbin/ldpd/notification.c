@@ -1,4 +1,4 @@
-/*	$OpenBSD: notification.c,v 1.3 2010/02/20 21:28:39 michele Exp $ */
+/*	$OpenBSD: notification.c,v 1.4 2010/04/15 15:44:37 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -108,8 +108,8 @@ recv_notification(struct nbr *nbr, char *buf, u_int16_t len)
 		    inet_ntoa(nbr->id),
 		    notification_name(ntohl(st->status_code)));
 	else
-		log_debug("recieved notification from neighbor %s: %s",
-		    inet_ntoa(nbr->id),
+		log_debug("recieved non-fatal notification from neighbor "
+		    "%s: %s", inet_ntoa(nbr->id),
 		    notification_name(ntohl(st->status_code)));
 
 	if (st->status_code & htonl(STATUS_FATAL)) {
