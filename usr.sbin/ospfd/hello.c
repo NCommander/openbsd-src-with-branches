@@ -1,4 +1,4 @@
-/*	$OpenBSD: hello.c,v 1.16 2010/02/01 10:22:06 jacekm Exp $ */
+/*	$OpenBSD: hello.c,v 1.17 2010/02/16 18:10:08 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -172,7 +172,7 @@ recv_hello(struct iface *iface, struct in_addr src, u_int32_t rtr_id, char *buf,
 	LIST_FOREACH(nbr, &iface->nbr_list, entry) {
 		if (nbr == iface->self) {
 			if (nbr->id.s_addr == rtr_id) {
-				log_warnx("recv_hello: Router-ID colision on "
+				log_warnx("recv_hello: Router-ID collision on "
 				    "interface %s neighbor IP %s", iface->name,
 				    inet_ntoa(src));
 				return;
