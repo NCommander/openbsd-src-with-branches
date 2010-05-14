@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.31 2010/02/19 10:35:52 dlg Exp $ */
+/*	$OpenBSD: control.c,v 1.32 2010/02/21 20:53:20 michele Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -125,7 +125,7 @@ control_accept(int listenfd, short event, void *bula)
 
 	session_socket_blockmode(connfd, BM_NONBLOCK);
 
-	if ((c = malloc(sizeof(struct ctl_conn))) == NULL) {
+	if ((c = calloc(1, sizeof(struct ctl_conn))) == NULL) {
 		log_warn("control_accept");
 		close(connfd);
 		return;
