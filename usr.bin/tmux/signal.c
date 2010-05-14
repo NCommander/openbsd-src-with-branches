@@ -1,4 +1,4 @@
-/* $Id: signal.c,v 1.3 2010/05/04 17:28:16 nicm Exp $ */
+/* $OpenBSD$ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
