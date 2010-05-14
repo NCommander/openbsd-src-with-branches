@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.7 2005/12/30 02:03:49 millert Exp $
+#	$OpenBSD: Makefile.inc,v 1.8 2007/11/26 10:26:02 deraadt Exp $
 #	$NetBSD: Makefile.inc,v 1.1 1996/09/30 16:34:59 ws Exp $
 
 .if !defined(__stand_makefile_inc)
@@ -23,7 +23,7 @@ INCLUDES+=	-I$(S)/lib/libsa
 DEFS+=		-DSTANDALONE
 CFLAGS+=	$(INCLUDES) $(DEFS) $(EXTRACFLAGS)
 CFLAGS+=	-fno-stack-protector
-CFLAGS+=	-fno-builtin-vprintf -fno-builtin-printf -fno-builtin-putchar
+CFLAGS+=	-fno-builtin
 LDFLAGS?=	-X -N -Ttext $(RELOC) -e $(ENTRY)
 
 cleandir:
