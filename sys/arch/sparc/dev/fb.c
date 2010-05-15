@@ -1,4 +1,4 @@
-/*	$OpenBSD: fb.c,v 1.48 2009/03/29 17:32:06 miod Exp $	*/
+/*	$OpenBSD: fb.c,v 1.49 2009/06/03 20:17:48 kettenis Exp $	*/
 /*	$NetBSD: fb.c,v 1.23 1997/07/07 23:30:22 pk Exp $ */
 
 /*
@@ -625,7 +625,7 @@ fb_show_screen(void *v, void *cookie, int waitok, void (*cb)(void *, int, int),
  *	otherwise returns P4 ID
  */
 int
-fb_pfour_id(void *va)
+fb_pfour_id(volatile void *va)
 {
 	volatile u_int32_t val, save, *pfour = va;
 
