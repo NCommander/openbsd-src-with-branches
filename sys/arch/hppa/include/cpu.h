@@ -68,7 +68,14 @@
 #include <sys/queue.h>
 #include <sys/sched.h>
 
+/*
+ * Note that the alignment of ci_trap_save is important since we want to keep
+ * it within a single cache line. As a result, it must be kept as the first
+ * entry within the cpu_info struct.
+ */
 struct cpu_info {
+	register_t	ci_trap_save[16];
+
 	struct device	*ci_dev;
 	int		ci_cpuid;
 	hppa_hpa_t	ci_hpa;
@@ -85,7 +92,7 @@ struct cpu_info {
 
 	struct schedstate_percpu ci_schedstate;
 	u_int32_t	ci_randseed;
-};
+} __attribute__((__aligned__(64)));
 
 #ifdef MULTIPROCESSOR
 #define        HPPA_MAXCPUS            1

@@ -161,6 +161,7 @@ member	ci_curproc
 member	ci_psw
 member	ci_cpl
 member	ci_ipending
+member	ci_trap_save
 
 # system calls
 export	SYSCALLGATE
