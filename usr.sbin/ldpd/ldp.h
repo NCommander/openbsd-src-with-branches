@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldp.h,v 1.3 2010/02/25 17:40:46 claudio Exp $ */
+/*	$OpenBSD: ldp.h,v 1.4 2010/04/15 14:55:12 claudio Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -203,7 +203,6 @@ struct fec_elm {
 
 #define	FEC_WILDCARD		0x01
 #define	FEC_PREFIX		0x02
-#define	FEC_ADDRESS		0x03
 
 #define	FEC_IPV4		0x0001
 
