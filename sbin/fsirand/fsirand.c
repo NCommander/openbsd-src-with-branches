@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsirand.c,v 1.24 2007/03/19 13:30:55 pedro Exp $	*/
+/*	$OpenBSD: fsirand.c,v 1.25 2007/06/01 06:41:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <sys/disklabel.h>
 #include <sys/ioctl.h>
+#include <sys/dkio.h>
 #include <sys/param.h>
 #include <sys/resource.h>
 #include <sys/time.h>

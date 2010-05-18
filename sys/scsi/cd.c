@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.164 2010/02/28 21:17:00 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.166 2010/04/23 15:25:21 jsing Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -66,6 +66,7 @@
 #include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/scsiio.h>
+#include <sys/dkio.h>
 #include <sys/vnode.h>
 
 #include <scsi/scsi_all.h>

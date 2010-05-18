@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.53 2009/07/09 22:29:56 thib Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.54 2009/10/31 12:00:08 fgsch Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -52,6 +52,7 @@
 #include <sys/malloc.h>
 #include <sys/pool.h>
 #include <sys/lock.h>
+#include <sys/dkio.h>
 
 #include <miscfs/specfs/specdev.h>
 

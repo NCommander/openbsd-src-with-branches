@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.120 2009/07/09 22:29:56 thib Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.121 2009/12/19 00:27:17 krw Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -49,6 +49,7 @@
 #include <sys/malloc.h>
 #include <sys/sysctl.h>
 #include <sys/pool.h>
+#include <sys/dkio.h>
 
 #include <dev/rndvar.h>
 

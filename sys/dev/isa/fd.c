@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.82 2009/09/06 20:32:01 krw Exp $	*/
+/*	$OpenBSD: fd.c,v 1.84 2010/04/23 15:25:21 jsing Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -60,6 +60,7 @@
 #include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/timeout.h>
+#include <sys/dkio.h>
 
 #include <machine/cpu.h>
 #include <machine/bus.h>

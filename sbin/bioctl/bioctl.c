@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.91 2010/01/08 16:38:22 halex Exp $       */
+/* $OpenBSD: bioctl.c,v 1.92 2010/04/03 15:22:44 nicm Exp $       */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -28,6 +28,7 @@
  */
 
 #include <sys/ioctl.h>
+#include <sys/dkio.h>
 #include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/types.h>

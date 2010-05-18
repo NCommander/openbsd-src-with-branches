@@ -1,4 +1,4 @@
-/*	$OpenBSD: newfs_msdos.c,v 1.18 2009/07/27 18:11:07 halex Exp $	*/
+/*	$OpenBSD: newfs_msdos.c,v 1.19 2009/10/27 23:59:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Robert Nordier
@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <sys/disklabel.h>
 #include <sys/ioctl.h>
+#include <sys/dkio.h>
 #include <sys/mount.h>
 
 #include <ctype.h>
