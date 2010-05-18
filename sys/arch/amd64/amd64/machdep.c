@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.107 2010/05/13 19:27:24 oga Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.108 2010/05/18 07:05:18 halex Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -859,7 +859,7 @@ dumpconf(void)
  * getting on the dump stack, either when called above, or by
  * the auto-restart code.
  */
-#define BYTES_PER_DUMP  PAGE_SIZE /* must be a multiple of pagesize XXX small */
+#define BYTES_PER_DUMP  MAXPHYS /* must be a multiple of pagesize */
 
 void
 dumpsys(void)
