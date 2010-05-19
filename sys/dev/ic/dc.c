@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.112 2009/08/10 20:29:54 deraadt Exp $	*/
+/*	$OpenBSD: dc.c,v 1.113 2009/10/15 17:54:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1672,7 +1672,7 @@ hasmac:
 
 	if (bus_dmamem_alloc(sc->sc_dmat, sizeof(struct dc_list_data),
 	    PAGE_SIZE, 0, sc->sc_listseg, 1, &sc->sc_listnseg,
-	    BUS_DMA_NOWAIT) != 0) {
+	    BUS_DMA_NOWAIT | BUS_DMA_ZERO) != 0) {
 		printf(": can't alloc list mem\n");
 		goto fail;
 	}
@@ -1694,7 +1694,6 @@ hasmac:
 		goto fail;
 	}
 	sc->dc_ldata = (struct dc_list_data *)sc->sc_listkva;
-	bzero(sc->dc_ldata, sizeof(struct dc_list_data));
 
 	for (i = 0; i < DC_RX_LIST_CNT; i++) {
 		if (bus_dmamap_create(sc->sc_dmat, MCLBYTES, 1, MCLBYTES,
