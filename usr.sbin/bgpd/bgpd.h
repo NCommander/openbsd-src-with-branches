@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.259 2010/05/17 15:49:29 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.260 2010/05/17 16:08:20 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/queue.h>
+#include <sys/tree.h>
 #include <net/route.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
