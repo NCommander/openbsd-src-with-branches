@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.h,v 1.31 2009/01/17 22:06:44 millert Exp $	*/
+/*	$OpenBSD: proto.h,v 1.32 2009/01/29 23:27:26 jaredy Exp $	*/
 
 /*
  * prototypes for PD-KSH
@@ -159,7 +159,7 @@ void	mbset(char *);
 void	mpset(char *);
 /* main.c */
 int	include(const char *, int, char **, int);
-int	command(const char *);
+int	command(const char *, int);
 int	shell(Source *volatile, int volatile);
 void	unwind(int) __attribute__((__noreturn__));
 void	newenv(int);

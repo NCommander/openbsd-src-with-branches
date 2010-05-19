@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.37 2009/07/02 16:29:15 martynas Exp $	*/
+/*	$OpenBSD: history.c,v 1.38 2010/05/01 21:09:23 guenther Exp $	*/
 
 /*
  * command history
@@ -226,7 +226,7 @@ c_fc(char **wp)
 		Source *sold = source;
 		int ret;
 
-		ret = command(editor ? editor : "${FCEDIT:-/bin/ed} $_");
+		ret = command(editor ? editor : "${FCEDIT:-/bin/ed} $_", 0);
 		source = sold;
 		if (ret)
 			return ret;
@@ -295,7 +295,7 @@ hist_execute(char *cmd)
 	 */
 	/* XXX: source should not get trashed by this.. */
 	sold = source;
-	ret = command(cmd);
+	ret = command(cmd, 0);
 	source = sold;
 	return ret;
 }
