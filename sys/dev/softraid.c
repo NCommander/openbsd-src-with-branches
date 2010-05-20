@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.201 2010/03/28 16:38:57 jsing Exp $ */
+/* $OpenBSD: softraid.c,v 1.202 2010/05/18 04:41:14 dlg Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -1817,13 +1817,9 @@ sr_wu_get(struct sr_discipline *sd, int canwait)
 void
 sr_scsi_done(struct sr_discipline *sd, struct scsi_xfer *xs)
 {
-	int			s;
-
 	DNPRINTF(SR_D_DIS, "%s: sr_scsi_done: xs %p\n", DEVNAME(sd->sd_sc), xs);
 
-	s = splbio();
 	scsi_done(xs);
-	splx(s);
 }
 
 void

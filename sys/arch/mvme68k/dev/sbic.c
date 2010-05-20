@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbic.c,v 1.25 2010/03/23 01:57:19 krw Exp $ */
+/*	$OpenBSD: sbic.c,v 1.26 2010/03/27 16:04:24 miod Exp $ */
 /*	$NetBSD: sbic.c,v 1.2 1996/04/23 16:32:54 chuck Exp $	*/
 
 /*
@@ -368,9 +368,7 @@ sbic_scsicmd(xs)
 #endif
 #endif
 	xs->error = XS_NO_CCB;
-	s = splbio();
 	scsi_done(xs);
-	splx(s);
         return;
     }
 

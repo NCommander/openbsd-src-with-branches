@@ -1,4 +1,4 @@
-/* $OpenBSD: qli_pci.c,v 1.16 2010/03/23 01:57:20 krw Exp $ */
+/* $OpenBSD: qli_pci.c,v 1.17 2010/05/18 20:54:34 oga Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2007 David Collins <dave@davec.name>
@@ -1013,9 +1013,7 @@ qli_scsi_cmd(struct scsi_xfer *xs)
 
 stuffup:
 	xs->error = XS_DRIVER_STUFFUP;
-	s = splbio();
 	scsi_done(xs);
-	splx(s);
 }
 
 int

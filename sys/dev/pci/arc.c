@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc.c,v 1.82 2010/04/08 00:23:53 tedu Exp $ */
+/*	$OpenBSD: arc.c,v 1.83 2010/05/19 15:27:35 oga Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -724,9 +724,7 @@ arc_scsi_cmd(struct scsi_xfer *xs)
 		xs->sense.flags = SKEY_ILLEGAL_REQUEST;
 		xs->sense.add_sense_code = 0x20;
 		xs->error = XS_SENSE;
-		s = splbio();
 		scsi_done(xs);
-		splx(s);
 		return;
 	}
 
@@ -735,9 +733,7 @@ arc_scsi_cmd(struct scsi_xfer *xs)
 	splx(s);
 	if (ccb == NULL) {
 		xs->error = XS_DRIVER_STUFFUP;
-		s = splbio();
 		scsi_done(xs);
-		splx(s);
 		return;
 	}
 

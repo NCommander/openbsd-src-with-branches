@@ -1,4 +1,4 @@
-/*	$OpenBSD: adv.c,v 1.28 2010/03/23 01:57:19 krw Exp $	*/
+/*	$OpenBSD: adv.c,v 1.29 2010/05/19 15:27:34 oga Exp $	*/
 /*	$NetBSD: adv.c,v 1.6 1998/10/28 20:39:45 dante Exp $	*/
 
 /*
@@ -656,9 +656,7 @@ adv_scsi_cmd(xs)
 
 			xs->error = XS_DRIVER_STUFFUP;
 			adv_free_ccb(sc, ccb);
-			s = splbio();
 			scsi_done(xs);
-			splx(s);
 			return;
 		}
 		bus_dmamap_sync(dmat, ccb->dmamap_xfer,

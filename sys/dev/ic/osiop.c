@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop.c,v 1.41 2010/03/23 01:57:19 krw Exp $	*/
+/*	$OpenBSD: osiop.c,v 1.42 2010/05/19 15:27:35 oga Exp $	*/
 /*	$NetBSD: osiop.c,v 1.9 2002/04/05 18:27:54 bouyer Exp $	*/
 
 /*
@@ -395,9 +395,7 @@ osiop_scsicmd(xs)
 #endif
 		splx(s);
 		xs->error = XS_NO_CCB;
-		s = splbio();
 		scsi_done(xs);
-		splx(s);
 		return;
 	}
 
