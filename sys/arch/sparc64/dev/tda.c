@@ -1,4 +1,4 @@
-/*	$OpenBSD: tda.c,v 1.4 2008/02/27 17:25:00 robert Exp $ */
+/*	$OpenBSD: tda.c,v 1.5 2010/04/20 20:49:34 deraadt Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -45,8 +45,8 @@
 
 #define CPU_TEMP_MAX		(67 * 1000000 + 273150000)
 #define CPU_TEMP_MIN		(57 * 1000000 + 273150000)
-#define SYS_TEMP_MAX		(30 * 1000000 + 273150000)
-#define SYS_TEMP_MIN		(20 * 1000000 + 273150000)
+#define SYS_TEMP_MAX		(35 * 1000000 + 273150000)
+#define SYS_TEMP_MIN		(25 * 1000000 + 273150000)
 
 struct tda_softc {
 	struct device		sc_dev;
