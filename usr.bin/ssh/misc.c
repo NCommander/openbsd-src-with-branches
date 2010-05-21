@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.c,v 1.71 2009/02/21 19:32:04 tobias Exp $ */
+/* $OpenBSD: misc.c,v 1.75 2010/01/09 23:04:13 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2005,2006 Damien Miller.  All rights reserved.
@@ -412,7 +412,7 @@ colon(char *cp)
 	int flag = 0;
 
 	if (*cp == ':')		/* Leading colon is part of file name. */
-		return (0);
+		return NULL;
 	if (*cp == '[')
 		flag = 1;
 
@@ -424,9 +424,9 @@ colon(char *cp)
 		if (*cp == ':' && !flag)
 			return (cp);
 		if (*cp == '/')
-			return (0);
+			return NULL;
 	}
-	return (0);
+	return NULL;
 }
 
 /* function to assist building execv() arguments */
