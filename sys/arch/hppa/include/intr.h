@@ -32,7 +32,7 @@
 #include <machine/psl.h>
 
 #define	CPU_NINTS	32
-#define	NIPL		16
+#define	NIPL		17
 
 #define	IPL_NONE	0
 #define	IPL_SOFTCLOCK	1
@@ -47,12 +47,19 @@
 #define	IPL_STATCLOCK	10
 #define	IPL_SCHED	10
 #define	IPL_HIGH	10
-#define	IPL_NESTED	11	/* pseudo-level for sub-tables */
+#define	IPL_IPI		11
+#define	IPL_NESTED	12	/* pseudo-level for sub-tables */
 
 #define	IST_NONE	0
 #define	IST_PULSE	1
 #define	IST_EDGE	2
 #define	IST_LEVEL	3
+
+#ifdef MULTIPROCESSOR
+#define	HPPA_IPI_NOP		0
+
+#define	HPPA_NIPI		1
+#endif
 
 #if !defined(_LOCORE) && defined(_KERNEL)
 
@@ -136,6 +143,7 @@ hppa_intr_enable(register_t eiem)
 #define	splsched()	splraise(IPL_SCHED)
 #define	splstatclock()	splraise(IPL_STATCLOCK)
 #define	splhigh()	splraise(IPL_HIGH)
+#define	splipi()	splraise(IPL_IPI)
 #define	spl0()		spllower(IPL_NONE)
 
 #define	softintr(mask)	atomic_setbits_long(&curcpu()->ci_ipending, mask)
@@ -149,6 +157,11 @@ hppa_intr_enable(register_t eiem)
 void	*softintr_establish(int, void (*)(void *), void *);
 void	 softintr_disestablish(void *);
 void	 softintr_schedule(void *);
+
+#ifdef MULTIPROCESSOR
+void	 hppa_ipi_init(struct cpu_info *);
+int	 hppa_ipi_send(struct cpu_info *, u_long);
+#endif
 
 #endif /* !_LOCORE && _KERNEL */
 #endif /* _MACHINE_INTR_H_ */
