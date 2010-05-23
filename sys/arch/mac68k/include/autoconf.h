@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.12 2006/01/13 21:01:28 miod Exp $	*/
+/*	$OpenBSD: autoconf.h,v 1.13 2006/07/11 18:58:15 miod Exp $	*/
 /*	$NetBSD: autoconf.h,v 1.5 1996/12/17 06:47:40 scottr Exp $	*/
 
 /*
@@ -42,9 +42,6 @@
  */
 
 #ifdef _KERNEL
-/* autoconf.c */
-void	setconf(void);
-
 /* machdep.c */
 void	mac68k_set_io_offsets(vaddr_t);
 void	dumpconf(void);

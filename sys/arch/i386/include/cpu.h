@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.108 2009/06/03 00:49:12 art Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.109 2009/12/09 14:27:34 oga Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -432,11 +432,6 @@ void	mp_setperf_init(void);
 /* vm86.c */
 void	vm86_gpfault(struct proc *, int);
 #endif /* VM86 */
-
-#ifdef GENERIC
-/* swapgeneric.c */
-void	setconf(void);
-#endif /* GENERIC */
 
 #endif /* _KERNEL */
 
