@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_disks.c,v 1.12 2007/06/05 00:38:22 deraadt Exp $	*/
+/*	$OpenBSD: rf_disks.c,v 1.13 2008/06/26 05:42:17 ray Exp $	*/
 /*	$NetBSD: rf_disks.c,v 1.31 2000/06/02 01:17:14 oster Exp $	*/
 
 /*
@@ -80,6 +80,7 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/ioctl.h>
+#include <sys/dkio.h>
 #include <sys/fcntl.h>
 #ifdef	__NETBSD__
 #include <sys/vnode.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: rf_openbsdkintf.c,v 1.54 2010/04/23 15:25:21 jsing Exp $	*/
+/* $OpenBSD: rf_openbsdkintf.c,v 1.55 2010/04/23 23:59:11 krw Exp $	*/
 /* $NetBSD: rf_netbsdkintf.c,v 1.109 2001/07/27 03:30:07 oster Exp $	*/
 
 /*-
@@ -111,6 +111,7 @@
 #include <sys/device.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/dkio.h>
 #include <sys/fcntl.h>
 #include <sys/systm.h>
 #include <sys/namei.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rf_reconstruct.c,v 1.15 2003/10/26 15:07:26 jmc Exp $	*/
+/*	$OpenBSD: rf_reconstruct.c,v 1.16 2007/06/05 00:38:22 deraadt Exp $	*/
 /*	$NetBSD: rf_reconstruct.c,v 1.26 2000/06/04 02:05:13 oster Exp $	*/
 
 /*
@@ -44,6 +44,7 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/ioctl.h>
+#include <sys/dkio.h>
 #include <sys/fcntl.h>
 #if	__NETBSD__
 #include <sys/vnode.h>
