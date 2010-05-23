@@ -1,4 +1,4 @@
-/*	$OpenBSD: xy.c,v 1.43 2009/09/05 00:48:39 krw Exp $	*/
+/*	$OpenBSD: xy.c,v 1.44 2009/09/05 15:37:04 deraadt Exp $	*/
 /*	$NetBSD: xy.c,v 1.26 1997/07/19 21:43:56 pk Exp $	*/
 
 /*
@@ -75,6 +75,7 @@
 #include <sys/dkbad.h>
 #include <sys/conf.h>
 #include <sys/timeout.h>
+#include <sys/dkio.h>
 
 #include <uvm/uvm_extern.h>
 
