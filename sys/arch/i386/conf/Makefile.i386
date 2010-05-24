@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.i386,v 1.67 2010/05/23 15:32:50 deraadt Exp $
+#	$OpenBSD: Makefile.i386,v 1.68 2010/05/24 14:59:15 deraadt Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -36,7 +36,7 @@ CMACHFLAGS+=	-fno-builtin-printf -fno-builtin-snprintf \
 		-fno-builtin-log2 -fno-builtin-malloc 
 .if ${IDENT:M-DNO_PROPOLICE}
 CMACHFLAGS+=	-fno-stack-protector
-.endifw
+.endif
 
 COPTS?=		-O2
 CFLAGS=		${DEBUG} ${CWARNFLAGS} ${CMACHFLAGS} ${COPTS} ${PIPE}
