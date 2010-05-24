@@ -302,9 +302,13 @@ disklabel_sun_to_bsd(struct sun_disklabel *sl, struct disklabel *lp)
 	 * SL_XPMAG partitions had checksums up to just before the
 	 * (new) sl_types variable, while SL_XPMAGTYP partitions have
 	 * checksums up to the just before the (new) sl_xxx1 variable.
+	 * Also, disklabels created prior to the addition of sl_uid will
+	 * have a checksum to just before the sl_uid variable.
 	 */
 	if ((sl->sl_xpmag == SL_XPMAG &&
 	    sun_extended_sum(sl, &sl->sl_types) == sl->sl_xpsum) ||
+	    (sl->sl_xpmag == SL_XPMAGTYP &&
+	    sun_extended_sum(sl, &sl->sl_uid) == sl->sl_xpsum) ||
 	    (sl->sl_xpmag == SL_XPMAGTYP &&
 	    sun_extended_sum(sl, &sl->sl_xxx1) == sl->sl_xpsum)) {
 		/*
