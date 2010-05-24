@@ -1,4 +1,4 @@
-/*	$OpenBSD: apic.c,v 1.2 2005/05/22 01:42:49 mickey Exp $	*/
+/*	$OpenBSD: apic.c,v 1.3 2009/08/22 02:54:50 mk Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -44,6 +44,10 @@ apic_read(volatile struct elroy_regs *r, u_int32_t reg)
 	elroy_write32(&r->apic_addr, htole32(reg));
 	return letoh32(elroy_read32(&r->apic_data));
 }
+
+void		apic_write(volatile struct elroy_regs *r, u_int32_t reg,
+		    u_int32_t val);
+u_int32_t	apic_read(volatile struct elroy_regs *r, u_int32_t reg);
 
 void
 apic_attach(struct elroy_softc *sc)

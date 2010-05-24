@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.1 2005/04/01 10:40:47 mickey Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.2 2006/02/06 17:19:31 jmc Exp $	*/
 
 /* TODO parse 64bit insns or rewrite */
 
@@ -1221,6 +1221,8 @@ static struct majoropcode majopcs[NMAJOPCS] = {
 };
 #undef NENTS
 #undef ILLEG
+
+int iExInit(void);
 
 /*--------------------------------------------------------------------------
  * instruction$ExecutionInitialize - Initialize the instruction execution

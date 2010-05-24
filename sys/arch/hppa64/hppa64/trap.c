@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.7 2007/03/15 10:22:29 art Exp $	*/
+/*	$OpenBSD: trap.c,v 1.8 2007/09/15 14:55:30 krw Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -114,6 +114,8 @@ u_char hppa64_regmap[32] = {
 	offsetof(struct trapframe, tf_sp) / 8,
 	offsetof(struct trapframe, tf_r31) / 8,
 };
+
+void	userret(struct proc *p);
 
 void
 userret(struct proc *p, register_t pc, u_quad_t oticks)
@@ -562,6 +564,7 @@ child_return(arg)
 #endif
 }
 
+void	syscall(struct trapframe *frame);
 
 /*
  * call actual syscall routine
