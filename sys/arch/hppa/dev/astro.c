@@ -1,4 +1,4 @@
-/*	$OpenBSD: astro.c,v 1.8 2007/10/06 23:50:54 krw Exp $	*/
+/*	$OpenBSD: astro.c,v 1.10 2010/04/29 13:48:29 jsing Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -165,6 +165,7 @@ int	iommu_dvmamap_create(void *, bus_size_t, int, bus_size_t, bus_size_t,
 void	iommu_dvmamap_destroy(void *, bus_dmamap_t);
 int	iommu_dvmamap_load(void *, bus_dmamap_t, void *, bus_size_t,
 	    struct proc *, int);
+int	iommu_iomap_load_map(struct astro_softc *, bus_dmamap_t, int);
 int	iommu_dvmamap_load_mbuf(void *, bus_dmamap_t, struct mbuf *, int);
 int	iommu_dvmamap_load_uio(void *, bus_dmamap_t, struct uio *, int);
 int	iommu_dvmamap_load_raw(void *, bus_dmamap_t, bus_dma_segment_t *,

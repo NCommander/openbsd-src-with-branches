@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.52 2008/04/20 18:01:33 kettenis Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.55 2010/05/06 14:39:52 jsing Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -171,6 +171,8 @@ dumpconf(void)
 	/* dumpsize is in page units, and doesn't include headers. */
 	dumpsize = physmem;
 }
+
+void	print_devpath(const char *label, struct pz_device *pz);
 
 void
 print_devpath(const char *label, struct pz_device *pz)
