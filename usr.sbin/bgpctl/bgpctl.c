@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.158 2010/04/13 09:10:50 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.159 2010/05/03 13:11:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -168,7 +168,7 @@ main(int argc, char *argv[])
 		break;
 	case SHOW_FIB:
 		if (!res->addr.aid) {
-			struct buf	*msg;
+			struct ibuf	*msg;
 			sa_family_t	 af;
 
 			af = aid2af(res->aid);

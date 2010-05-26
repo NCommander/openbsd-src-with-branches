@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.83 2009/11/02 20:20:54 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.84 2009/11/11 07:59:10 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -738,7 +738,7 @@ rde_send_change_kroute(struct rt_node *r)
 	int			 krcount = 0;
 	struct kroute		 kr;
 	struct rt_nexthop	*rn;
-	struct buf		*wbuf;
+	struct ibuf		*wbuf;
 
 	if ((wbuf = imsg_create(&iev_main->ibuf, IMSG_KROUTE_CHANGE, 0, 0,
 	    sizeof(kr))) == NULL) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_udp.c,v 1.20 2009/06/05 23:39:51 pyr Exp $	*/
+/*	$OpenBSD: relay_udp.c,v 1.21 2009/08/07 11:21:53 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -178,7 +178,7 @@ relay_udp_response(int fd, short sig, void *arg)
 	struct protocol		*proto = rlay->rl_proto;
 	void			*priv = NULL;
 	struct sockaddr_storage	 ss;
-	u_int8_t		 buf[READ_BUF_SIZE];
+	u_int8_t		 buf[IBUF_READ_SIZE];
 	ssize_t			 len;
 	socklen_t		 slen;
 
@@ -216,7 +216,7 @@ relay_udp_server(int fd, short sig, void *arg)
 	socklen_t slen;
 	struct timeval tv;
 	struct sockaddr_storage ss;
-	u_int8_t buf[READ_BUF_SIZE];
+	u_int8_t buf[IBUF_READ_SIZE];
 	void *priv = NULL;
 	ssize_t len;
 
