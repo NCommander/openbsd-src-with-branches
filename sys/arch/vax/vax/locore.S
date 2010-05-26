@@ -1,4 +1,4 @@
-/*	$OpenBSD: intvec.s,v 1.22 2008/08/18 23:05:38 miod Exp $   */
+/*	$OpenBSD: intvec.s,v 1.23 2009/03/20 18:39:30 miod Exp $   */
 /*	$NetBSD: intvec.s,v 1.39 1999/06/28 08:20:48 itojun Exp $   */
 
 /*
