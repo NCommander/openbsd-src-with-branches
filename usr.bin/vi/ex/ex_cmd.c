@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_cmd.c,v 1.5 2001/01/29 01:58:42 niklas Exp $	*/
+/*	$OpenBSD: ex_cmd.c,v 1.6 2009/10/27 23:59:47 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -66,7 +66,7 @@ EXCMDLIST const cmds[] = {
 	{"&",		ex_subagain,	E_ADDR2,
 	    "s",
 	    "[line [,line]] & [cgr] [count] [#lp]",
-	    "repeat the last subsitution"},
+	    "repeat the last substitution"},
 /* C_STAR */
 	{"*",		ex_at,		0,
 	    "b",
