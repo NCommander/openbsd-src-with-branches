@@ -1,4 +1,4 @@
-/*	$OpenBSD: cissvar.h,v 1.6 2006/12/23 17:46:39 deraadt Exp $	*/
+/*	$OpenBSD: cissvar.h,v 1.7 2007/03/22 16:55:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -55,6 +55,7 @@ struct ciss_softc {
 	int cfgoff;
 	u_int32_t iem;
 	u_int32_t heartbeat;
+	int       fibrillation;
 	struct ciss_ld **sc_lds;
 };
 
