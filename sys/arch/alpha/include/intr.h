@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.h,v 1.34 2009/09/30 20:16:29 miod Exp $ */
+/* $OpenBSD: intr.h,v 1.35 2010/04/23 03:50:20 miod Exp $ */
 /* $NetBSD: intr.h,v 1.26 2000/06/03 20:47:41 thorpej Exp $ */
 
 /*-
@@ -181,7 +181,6 @@ int _splraise(int);
 #define splstatclock()          _splraise(IPL_CLOCK)
 #define splhigh()               _splraise(IPL_HIGH)
 
-#define spllpt()		spltty()
 #define spllock()		splhigh()
 #define splsched()		splhigh()
 
