@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkmakefile.c,v 1.33 2010/05/24 20:02:08 deraadt Exp $	*/
+/*	$OpenBSD: mkmakefile.c,v 1.34 2010/05/31 21:56:43 deraadt Exp $	*/
 /*	$NetBSD: mkmakefile.c,v 1.34 1997/02/02 21:12:36 thorpej Exp $	*/
 
 /*
@@ -365,10 +365,8 @@ static int
 emitfiles(FILE *fp, int suffix)
 {
 	struct files *fi;
-	struct config *cf;
 	int lpos, len, sp;
 	const char *fpath;
-	char swapname[100];
 	int uppersuffix = toupper(suffix);
 
 	if (fprintf(fp, "%cFILES=", uppersuffix) < 0)
