@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.24 2010/05/31 11:46:02 claudio Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.25 2010/05/31 15:31:01 claudio Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -95,7 +95,7 @@ mpls_input(struct mbuf *m)
 	u_int8_t ttl;
 	int i, hasbos;
 
-	if (!mpls_enable || !ISSET(ifp->if_xflags, IFXF_MPLS)) {
+	if (!ISSET(ifp->if_xflags, IFXF_MPLS)) {
 		m_freem(m);
 		return;
 	}
