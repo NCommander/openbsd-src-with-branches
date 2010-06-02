@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.1 2010/05/31 17:36:31 martinh Exp $ */
+/*	$OpenBSD: parse.y,v 1.2 2010/05/31 18:29:04 martinh Exp $ */
 
 /*
  * Copyright (c) 2009 Martin Hedenfalk <martin@bzero.se>
@@ -588,7 +588,6 @@ include		: INCLUDE STRING		{
 			free($2);
 
 			file = nfile;
-			// lungetc('\n');
 		}
 		;
 
