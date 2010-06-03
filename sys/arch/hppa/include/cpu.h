@@ -234,6 +234,8 @@ int	cpu_dump(void);
 
 #ifdef MULTIPROCESSOR
 void	cpu_boot_secondary_processors(void);
+void	cpu_hw_init(void);
+void	cpu_hatch(void);
 #endif
 #endif
 
