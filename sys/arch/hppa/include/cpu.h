@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.71 2010/05/19 13:10:24 jsing Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.72 2010/05/21 15:24:29 jsing Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -84,7 +84,7 @@ struct cpu_info {
 	volatile int	ci_flags;
 
 	struct proc	*ci_curproc;
-	paddr_t		ci_spinup_stack;
+	paddr_t		ci_stack;
 
 	register_t	ci_psw;			/* Processor Status Word. */
 	volatile int	ci_cpl;
