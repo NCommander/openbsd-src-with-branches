@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.50 2010/06/02 05:38:00 dlg Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.51 2010/06/02 13:34:21 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -114,7 +114,7 @@ ciss_get_ccb(void *xsc)
 	struct ciss_ccb *ccb;
 
 	mtx_enter(&sc->sc_free_ccb_mtx);
-	if ((ccb = TAILQ_LAST(&sc->sc_free_ccb, ciss_queue_head))) {
+	if ((ccb = TAILQ_LAST(&sc->sc_free_ccb, ciss_ccb_list))) {
 		TAILQ_REMOVE(&sc->sc_free_ccb, ccb, ccb_link);
 		ccb->ccb_state = CISS_CCB_READY;
 		ccb->ccb_xs = NULL;
