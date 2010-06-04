@@ -440,7 +440,7 @@ pfkey_sa(int sd, u_int8_t satype, u_int8_t action, struct iked_childsa *sa)
 		return (-1);
 	}
 
-	if (sa->csa_ikesa->sa_udpencap) {
+	if (sa->csa_ikesa->sa_udpencap && sa->csa_ikesa->sa_natt) {
 		sadb.sadb_sa_flags |= SADB_X_SAFLAGS_UDPENCAP;
 		udpencap.sadb_x_udpencap_exttype = SADB_X_EXT_UDPENCAP;
 		udpencap.sadb_x_udpencap_len = sizeof(udpencap) / 8;

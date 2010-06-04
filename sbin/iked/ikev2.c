@@ -3132,10 +3132,9 @@ ikev2_parse_notify(struct iked *env, struct ikev2_payload *pld,
 
 			/*
 			 * Enable UDP encapsulation of ESP packages if
-			 * the check detected NAT and and if we received
-			 * the IKE message on the NAT-T port.
+			 * the check detected NAT.
 			 */
-			if (msg->msg_sa != NULL && msg->msg_sa->sa_natt)
+			if (msg->msg_sa != NULL)
 				msg->msg_sa->sa_udpencap = 1;
 		}
 		print_hex(md, 0, sizeof(md));
