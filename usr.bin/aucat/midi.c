@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.24 2010/05/08 15:35:45 ratchov Exp $	*/
+/*	$OpenBSD: midi.c,v 1.25 2010/06/04 06:15:28 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -1161,13 +1161,6 @@ ctl_done(struct aproc *p)
 	for (i = 0, s = p->u.ctl.slot; i < CTL_NSLOT; i++, s++) {
 		if (s->ops != NULL)
 			s->ops->quit(s->arg);
-#ifdef DEBUG
-		if (s->ops != NULL) {
-			ctl_slotdbg(p, i);
-			dbg_puts(": still in use\n");
-			dbg_panic();
-		}
-#endif
 	}
 }
 
