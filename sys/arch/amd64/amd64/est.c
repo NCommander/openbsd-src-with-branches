@@ -1,4 +1,4 @@
-/*	$OpenBSD: est.c,v 1.18 2010/03/28 03:09:50 marco Exp $ */
+/*	$OpenBSD: est.c,v 1.19 2010/04/20 22:05:41 tedu Exp $ */
 /*
  * Copyright (c) 2003 Michael Eriksson.
  * All rights reserved.
@@ -215,6 +215,10 @@ p3_get_bus_clock(struct cpu_info *ci)
 			    ci->ci_dev->dv_xname, bus);
 			break;
 		}
+		break;
+	case 0x1a: /* Core i7 */
+	case 0x1e: /* Core i5 */
+	case 0x25: /* Core i3 */
 		break;
 	default:
 		printf("%s: unknown i686 model 0x%x, can't get bus clock\n",
