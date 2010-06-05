@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.92 2010/06/04 06:15:28 ratchov Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.93 2010/06/05 12:45:48 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -723,7 +723,7 @@ aucat_main(int argc, char **argv)
 		} else {
 			d = dev_new_sio(cd->path, cd->mode,
 			    &cd->ipar, &cd->opar, cd->bufsz, cd->round,
-			    cd->hold, l_flag);
+			    cd->hold);
 		}
 		if (d == NULL)
 			errx(1, "%s: can't open device", cd->path);
