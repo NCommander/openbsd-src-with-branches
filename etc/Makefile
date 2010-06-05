@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.286 2010/02/22 15:15:54 claudio Exp $
+#	$OpenBSD: Makefile,v 1.287 2010/03/23 21:31:02 espie Exp $
 
 TZDIR=		/usr/share/zoneinfo
 LOCALTIME=	Canada/Mountain
@@ -101,6 +101,7 @@ distribution-etc-root-var: distrib-dirs
 	${INSTALL} -c -o root -g wheel -m 600 ipsec.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 sasyncd.conf ${DESTDIR}/etc
 	${INSTALL} -c -o root -g wheel -m 600 snmpd.conf ${DESTDIR}/etc
+	${INSTALL} -c -o root -g wheel -m 600 ldapd.conf ${DESTDIR}/etc
 	${INSTALL} -c -o ${BINOWN} -g ${BINGRP} -m 555 \
 	    etc.${MACHINE}/MAKEDEV ${DESTDIR}/dev
 	cd root; \
@@ -248,6 +249,7 @@ distribution-etc-root-var: distrib-dirs
 	cd ../gnu/usr.bin/lynx && exec ${MAKE} -f Makefile.bsd-wrapper distribution
 	cd ../usr.bin/bgplg && exec ${MAKE} distribution
 	cd ../usr.bin/mail && exec ${MAKE} distribution
+	cd ../usr.sbin/ldapd && exec ${MAKE} distribution
 	cd mail && exec ${MAKE} distribution
 	${INSTALL} -c -o root -g wheel -m 600 root/root.mail \
 	    ${DESTDIR}/var/mail/root
