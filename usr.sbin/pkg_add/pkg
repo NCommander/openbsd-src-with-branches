@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: pkg,v 1.13 2010/06/04 13:19:39 espie Exp $
+# $OpenBSD: pkg,v 1.14 2010/06/05 12:30:36 espie Exp $
 #
 # Copyright (c) 2010 Marc Espie <espie@openbsd.org>
 #
@@ -44,3 +44,5 @@ for my $i (@l) {
 		run($i);
 	}
 }
+print STDERR "Usage: pkg [",join("|", @l),"] [args]\n";
+exit(1);
