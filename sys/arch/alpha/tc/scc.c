@@ -1,4 +1,4 @@
-/* $OpenBSD: scc.c,v 1.25 2009/11/09 17:53:38 nicm Exp $ */
+/* $OpenBSD: scc.c,v 1.26 2010/04/12 12:57:51 tedu Exp $ */
 /* $NetBSD: scc.c,v 1.58 2002/03/17 19:40:27 atatat Exp $ */
 
 /*
@@ -106,6 +106,8 @@
 #ifdef DEBUG
 int	debugChar;
 #endif
+
+int	alpha_donot_kludge_scc;
 
 struct scc_softc {
 	struct device sc_dv;
