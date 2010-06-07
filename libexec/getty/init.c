@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.6 2003/06/02 19:38:24 millert Exp $	*/
+/*	$OpenBSD: init.c,v 1.7 2009/10/27 23:59:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -113,7 +113,7 @@ struct	gettyflags gettyflags[] = {
 	{ "pe",	0 },			/* printer erase */
 	{ "rw",	1 },			/* don't use raw */
 	{ "xc",	1 },			/* don't ^X ctl chars */
-	{ "lc",	0 },			/* terminal las lower case */
+	{ "lc",	0 },			/* terminal has lower case */
 	{ "uc",	0 },			/* terminal has no lower case */
 	{ "ig",	0 },			/* ignore garbage */
 	{ "ps",	0 },			/* do port selector speed select */
