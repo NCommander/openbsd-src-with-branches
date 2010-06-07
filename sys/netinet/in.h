@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.h,v 1.82 2009/10/04 16:08:37 michele Exp $	*/
+/*	$OpenBSD: in.h,v 1.83 2010/05/11 09:25:10 claudio Exp $	*/
 /*	$NetBSD: in.h,v 1.20 1996/02/13 23:41:47 christos Exp $	*/
 
 /*
@@ -194,6 +194,13 @@ struct in_addr {
 
 #define	IN_LOCAL_GROUP(i)	(((u_int32_t)(i) & __IPADDR(0xffffff00)) == \
 				 __IPADDR(0xe0000000))
+
+#ifdef _KERNEL
+#define IN_CLASSFULBROADCAST(i, b) \
+				((IN_CLASSC(b) && (b | IN_CLASSC_HOST) == i) ||	\
+				 (IN_CLASSB(b) && (b | IN_CLASSB_HOST) == i) ||	\
+				 (IN_CLASSA(b) && (b | IN_CLASSA_HOST) == i))
+#endif	/* _KERNEL */
 
 #define	INADDR_ANY		__IPADDR(0x00000000)
 #define	INADDR_LOOPBACK		__IPADDR(0x7f000001)
