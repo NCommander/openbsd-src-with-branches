@@ -45,6 +45,7 @@
 /etc/hosts.equiv
 /etc/hosts.lpd
 /etc/ifstated.conf
++/etc/iked.conf
 /etc/inetd.conf
 +/etc/ipsec.conf
 +/etc/isakmpd/private/local.key
