@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.1 2010/06/03 16:49:00 reyk Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.2 2010/06/04 13:34:38 jsg Exp $	*/
 /*	$vantronix: ikeca.c,v 1.13 2010/06/03 15:52:52 reyk Exp $	*/
 
 /*
@@ -40,7 +40,7 @@
 #define SSL_CNF		"/etc/ssl/openssl.cnf"
 #define X509_CNF	"/etc/ssl/x509v3.cnf"
 #define IKECA_CNF	"/etc/ssl/ikeca.cnf"
-#define KEYBASE		"/etc/isakmpd"
+#define KEYBASE		"/etc/iked"
 
 #define PATH_OPENSSL	"/usr/sbin/openssl"
 #define PATH_ZIP	"/usr/local/bin/zip"
