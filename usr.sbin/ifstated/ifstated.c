@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifstated.c,v 1.35 2009/06/25 17:14:57 sthen Exp $	*/
+/*	$OpenBSD: ifstated.c,v 1.36 2010/02/04 13:50:14 stevesk Exp $	*/
 
 /*
  * Copyright (c) 2004 Marco Pfatschbacher <mpf@openbsd.org>
@@ -134,10 +134,8 @@ main(int argc, char *argv[])
 		exit(0);
 	}
 
-	if (!debug) {
+	if (!debug)
 		daemon(1, 0);
-		setproctitle(NULL);
-	}
 
 	event_init();
 	log_init(debug);
