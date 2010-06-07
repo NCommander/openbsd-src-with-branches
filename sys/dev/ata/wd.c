@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.82 2010/05/24 11:18:50 kettenis Exp $ */
+/*	$OpenBSD: wd.c,v 1.83 2010/05/26 16:16:23 thib Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -1243,5 +1243,4 @@ wd_shutdown(void *arg)
 	struct wd_softc *wd = arg;
 
 	wd_flushcache(wd, AT_POLL);
-	wd_standby(wd, AT_POLL);
 }
