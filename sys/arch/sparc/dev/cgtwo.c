@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgtwo.c,v 1.36 2006/12/03 16:40:06 miod Exp $	*/
+/*	$OpenBSD: cgtwo.c,v 1.37 2008/12/26 22:30:21 miod Exp $	*/
 /*	$NetBSD: cgtwo.c,v 1.22 1997/05/24 20:16:12 pk Exp $ */
 
 /*
@@ -180,7 +180,7 @@ cgtwoattach(struct device *parent, struct device *self, void *args)
 		 * Assume this is the console if there's no eeprom info
 		 * to be found.
 		 */
-		if (eep == NULL || eep->eeConsole == EE_CONS_COLOR)
+		if (eep == NULL || eep->ee_diag.eed_console == EED_CONS_COLOR)
 			isconsole = 1;
 	}
 
