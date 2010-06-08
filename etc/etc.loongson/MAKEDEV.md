@@ -1,6 +1,6 @@
 define(MACHINE,loongson)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.2 2010/02/28 08:31:18 otto Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.3 2010/03/30 19:16:09 matthieu Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -81,8 +81,8 @@ _DEV(tun, 13)
 _DEV(uk, 32)
 _DEV(vi, 45)
 _DEV(nnpfs, 51)
-_DEV(vscsi, 68)
-_DEV(bthub, 69)
+_DEV(bthub, 68)
+_DEV(vscsi, 69)
 dnl
 divert(__mddivert)dnl
 dnl
