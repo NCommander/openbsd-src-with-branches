@@ -160,6 +160,7 @@ void	 softintr_schedule(void *);
 
 #ifdef MULTIPROCESSOR
 void	 hppa_ipi_init(struct cpu_info *);
+int	 hppa_ipi_intr(void *arg);
 int	 hppa_ipi_send(struct cpu_info *, u_long);
 #endif
 
