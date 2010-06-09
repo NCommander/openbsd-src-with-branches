@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.47 2009/10/26 20:04:06 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.48 2010/04/15 20:38:11 miod Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.45 1999/04/10 17:31:02 kleink Exp $	*/
 
 /*
@@ -753,6 +753,7 @@ console_scan(func, arg)
 }
 
 int consolepass = -1;
+struct consdev *cn_tab;
 
 /*
  * Special version of cninit().  Actually, crippled somewhat.

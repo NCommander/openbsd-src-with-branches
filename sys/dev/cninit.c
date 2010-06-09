@@ -1,4 +1,4 @@
-/*	$OpenBSD: cninit.c,v 1.7 2007/09/10 17:29:00 miod Exp $	*/
+/*	$OpenBSD: cninit.c,v 1.8 2008/01/23 16:37:55 jsing Exp $	*/
 /*	$NetBSD: cninit.c,v 1.2 1995/04/11 22:08:10 pk Exp $	*/
 
 /*
@@ -51,6 +51,8 @@
 #include <sys/vnode.h>
 
 #include <dev/cons.h>
+
+struct consdev *cn_tab = NULL;
 
 void
 cninit()

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.20 2009/11/25 23:20:59 jsing Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.21 2010/05/24 15:06:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -135,6 +135,7 @@ paddr_t	avail_end;
 struct user *proc0paddr;
 long mem_ex_storage[EXTENT_FIXED_STORAGE_SIZE(32) / sizeof(long)];
 struct extent *hppa_ex;
+struct consdev *cn_tab;
 
 struct vm_map *exec_map = NULL;
 struct vm_map *phys_map = NULL;
