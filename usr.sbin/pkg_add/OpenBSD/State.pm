@@ -102,4 +102,14 @@ sub errsay
 	print STDERR $self->f(@_), "\n";
 }
 
+sub do_options
+{
+	my ($state, $sub) = @_;
+	require OpenBSD::Error;
+	# this could be nicer...
+	eval { &$sub; };
+	OpenBSD::Error::dienow($@, 
+	    bless sub { $state->usage("#1", $_)}, "OpenBSD::Error::catchall");
+}
+
 1;
