@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_extern.h,v 1.84 2010/03/24 00:36:04 oga Exp $	*/
+/*	$OpenBSD: uvm_extern.h,v 1.85 2010/04/22 19:02:55 oga Exp $	*/
 /*	$NetBSD: uvm_extern.h,v 1.57 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -587,6 +587,7 @@ void			uvm_aio_aiodone(struct buf *);
 /* uvm_pdaemon.c */
 void			uvm_pageout(void *);
 void			uvm_aiodone_daemon(void *);
+void			uvm_wait(const char *);
 
 /* uvm_pglist.c */
 int			uvm_pglistalloc(psize_t, paddr_t,
