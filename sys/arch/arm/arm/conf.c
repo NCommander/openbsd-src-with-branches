@@ -410,6 +410,7 @@ struct cdevsw cdevsw[] = {
 	cdev_spkr_init(NSPKR,spkr),		/* 99: PC speaker */
 	cdev_vscsi_init(NVSCSI,vscsi),		/* 100: vscsi */
 	cdev_bthub_init(NBTHUB,bthub),		/* 101: bthub */
+	cdev_disk_init(1,diskmap),		/* 102: disk mapper */
 };
 
 int nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);

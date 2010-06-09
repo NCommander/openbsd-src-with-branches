@@ -193,6 +193,7 @@ struct cdevsw   cdevsw[] =
 	cdev_lkm_dummy(),		/* 53: */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 54: vscsi */
 	cdev_bthub_init(NBTHUB,bthub),	/* 55: bthub */
+	cdev_disk_init(1,diskmap),	/* 56: disk mapper */
 };
 int nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

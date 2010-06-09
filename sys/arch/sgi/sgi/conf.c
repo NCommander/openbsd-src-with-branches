@@ -211,6 +211,7 @@ struct cdevsw	cdevsw[] =
 	cdev_tty_init(NUCOM,ucom),	/* 66: USB tty */
 	cdev_hotplug_init(NHOTPLUG,hotplug), /* 67: devices hotplugging */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 68: vscsi */
+	cdev_disk_init(1,diskmap),	/* 69: disk mapper */
 };
 
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);

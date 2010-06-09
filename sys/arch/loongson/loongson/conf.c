@@ -221,6 +221,7 @@ struct cdevsw	cdevsw[] =
 	cdev_hotplug_init(NHOTPLUG,hotplug), /* 67: devices hotplugging */
 	cdev_bthub_init(NBTHUB,bthub),	/* 68: bluetooth hub */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 69: vscsi */
+	cdev_disk_init(1,diskmap),	/* 70: disk mapper */
 };
 
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);

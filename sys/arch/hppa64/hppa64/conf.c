@@ -175,7 +175,7 @@ struct cdevsw   cdevsw[] =
 	cdev_lkm_dummy(),		/* 44 */
 	cdev_lkm_dummy(),		/* 45 */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 46: vscsi */
-	
+	cdev_disk_init(1,diskmap),	/* 47: disk mapper */
 };
 int nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

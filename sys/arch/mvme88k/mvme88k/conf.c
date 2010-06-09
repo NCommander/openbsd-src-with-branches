@@ -204,6 +204,7 @@ struct cdevsw	cdevsw[] =
 #endif
 	cdev_ptm_init(NPTY,ptm),	/* 52: pseudo-tty ptm device */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 53: vscsi */
+	cdev_disk_init(1,diskmap),	/* 54: disk mapper */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

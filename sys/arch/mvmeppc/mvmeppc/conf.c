@@ -181,6 +181,7 @@ struct cdevsw cdevsw[] = {
 	cdev_disk_init(NRAID,raid),	/* 54: RAIDframe disk driver */
 	cdev_ptm_init(NPTY,ptm),	/* 55: pseudo-tty ptm device */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 56: vscsi */
+	cdev_disk_init(1,diskmap),	/* 57: disk mapper */
 };
 int nchrdev = sizeof cdevsw / sizeof cdevsw[0];
 

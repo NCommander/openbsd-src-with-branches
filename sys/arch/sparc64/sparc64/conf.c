@@ -294,6 +294,7 @@ struct cdevsw	cdevsw[] =
 	cdev_tty_init(NVCCTTY,vcctty),	/* 127: virtual console concentrator */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 128: vscsi */
 	cdev_bthub_init(NBTHUB,bthub),	/* 129: bluetooth hub */
+	cdev_disk_init(1,diskmap),	/* 130: disk mapper */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

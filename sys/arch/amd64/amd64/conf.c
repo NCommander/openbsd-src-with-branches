@@ -304,6 +304,7 @@ struct cdevsw	cdevsw[] =
 	cdev_drm_init(NDRM,drm),	/* 87: drm */
 	cdev_gpio_init(NGPIO,gpio),	/* 88: gpio */
 	cdev_vscsi_init(NVSCSI,vscsi),	/* 89: vscsi */
+	cdev_disk_init(1,diskmap),	/* 90: disk mapper */
 };
 int	nchrdev = sizeof(cdevsw) / sizeof(cdevsw[0]);
 

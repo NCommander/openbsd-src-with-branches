@@ -388,6 +388,7 @@ struct cdevsw cdevsw[] = {
 	cdev_ptm_init(NPTY,ptm),		/* 98: pseudo-tty ptm device */
 	cdev_vscsi_init(NVSCSI,vscsi),		/* 99: vscsi */
 	cdev_bthub_init(NBTHUB,bthub),		/* 100: bthub */
+	cdev_disk_init(1,diskmap),		/* 101: disk mapper */
 };
 
 int nblkdev = sizeof(bdevsw) / sizeof(bdevsw[0]);

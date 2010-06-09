@@ -203,6 +203,7 @@ struct cdevsw cdevsw[] = {
 	cdev_notdef(),			/* 79 */
 	cdev_notdef(),			/* 80 */
 	cdev_bthub_init(NBTHUB,bthub),	/* 81: bluetooth hub */
+	cdev_disk_init(1,diskmap),	/* 82: disk mapper */
 };
 int nchrdev = sizeof cdevsw / sizeof cdevsw[0];
 

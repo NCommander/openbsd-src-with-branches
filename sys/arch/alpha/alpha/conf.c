@@ -210,6 +210,7 @@ struct cdevsw	cdevsw[] =
 	cdev_mouse_init(NWSMUX, wsmux),	/* 60: ws multiplexor */
 	cdev_vscsi_init(NVSCSI, vscsi),	/* 61: vscsi */
 	cdev_bthub_init(NBTHUB, bthub), /* 62: bthub */
+	cdev_disk_init(1,diskmap),	/* 63: disk mapper */
 };
 int	nchrdev = sizeof (cdevsw) / sizeof (cdevsw[0]);
 
