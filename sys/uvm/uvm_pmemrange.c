@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pmemrange.c,v 1.10 2010/04/22 19:02:55 oga Exp $	*/
+/*	$OpenBSD: uvm_pmemrange.c,v 1.11 2010/04/23 20:42:22 ariane Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Ariane van der Steldt <ariane@stack.nl>
@@ -1034,7 +1034,7 @@ Fail:
 		uvm_wait("uvm_pmr_getpages");
 		goto ReTry;
 	} else
-		wakeup(&uvm.pagedaemon_proc);
+		wakeup(&uvm.pagedaemon);
 
 	return ENOMEM;
 
