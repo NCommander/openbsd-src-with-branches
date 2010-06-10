@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.185 2010/05/24 15:04:55 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.186 2010/06/09 15:44:17 miod Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -176,6 +176,12 @@ void dumpsys(void);
 void hpmc_dump(void);
 void cpuid(void);
 void blink_led_timeout(void *);
+
+/*
+ * safepri is a safe priority for sleep to set for a spin-wait
+ * during autoconfiguration or after a panic.
+ */
+int   safepri = 0;
 
 /*
  * wide used hardware params

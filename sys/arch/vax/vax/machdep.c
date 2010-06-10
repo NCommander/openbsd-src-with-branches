@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.106 2009/08/11 19:17:17 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.107 2010/05/26 16:35:29 deraadt Exp $ */
 /* $NetBSD: machdep.c,v 1.108 2000/09/13 15:00:23 thorpej Exp $	 */
 
 /*
@@ -131,6 +131,12 @@ char		machine[] = MACHINE;		/* from <machine/param.h> */
 int		physmem;
 int		cold = 1; /* coldstart */
 struct cpmbx	*cpmbx;
+
+/*
+ * safepri is a safe priority for sleep to set for a spin-wait
+ * during autoconfiguration or after a panic.
+ */
+int   safepri = 0;
 
 /*
  * XXX some storage space must be allocated statically because of

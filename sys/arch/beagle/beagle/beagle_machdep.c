@@ -1,4 +1,4 @@
-/*	$OpenBSD: beagle_machdep.c,v 1.2 2009/05/24 21:05:30 drahn Exp $ */
+/*	$OpenBSD: beagle_machdep.c,v 1.3 2009/07/26 18:48:55 miod Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -226,6 +226,12 @@ extern int pmap_debug_level;
 pv_addr_t kernel_pt_table[NUM_KERNEL_PTS];
 
 extern struct user *proc0paddr;
+
+/*
+ * safepri is a safe priority for sleep to set for a spin-wait
+ * during autoconfiguration or after a panic.
+ */
+int   safepri = 0;
 
 /* Prototypes */
 
