@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2010/06/03 17:05:01 reyk Exp $
+# $OpenBSD: Makefile,v 1.3 2010/06/10 08:29:47 reyk Exp $
 # $vantronix: Makefile,v 1.22 2010/06/02 12:22:58 reyk Exp $
 
 PROG=		iked
@@ -10,7 +10,7 @@ SRCS+=		parse.y
 MAN=		iked.conf.5 iked.8
 #NOMAN=		yes
 
-LDADD=		-lutil -levent -lssl -lcrypto
+LDADD=		-lutil -levent -lcrypto
 DPADD=		${LIBUTIL} ${LIBEVENT} ${LIBSSL} ${LIBCRYPTO}
 CFLAGS+=	-Wall -I${.CURDIR}
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes

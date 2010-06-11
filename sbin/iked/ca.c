@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.2 2010/06/10 08:29:47 reyk Exp $	*/
+/*	$OpenBSD: ca.c,v 1.3 2010/06/10 14:09:19 jsg Exp $	*/
 /*	$vantronix: ca.c,v 1.29 2010/06/02 12:22:58 reyk Exp $	*/
 
 /*
@@ -818,7 +818,7 @@ void
 ca_sslinit(void)
 {
 	OpenSSL_add_all_algorithms();
-	SSL_load_error_strings();
+	ERR_load_crypto_strings();
 
 	/* Init hardware crypto engines. */
 	ENGINE_load_builtin_engines();
