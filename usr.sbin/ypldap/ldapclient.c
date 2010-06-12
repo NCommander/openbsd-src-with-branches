@@ -1,4 +1,4 @@
-/* $OpenBSD: ldapclient.c,v 1.14 2009/06/06 05:02:58 eric Exp $ */
+/* $OpenBSD: ldapclient.c,v 1.15 2010/04/01 18:24:04 zinovik Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -660,6 +660,7 @@ next_grpentry:
 
 	return (0);
 bad:
+	aldap_close(al);
 	log_debug("directory %s errored out in %s", idm->idm_name, where);
 	return (-1);
 }
