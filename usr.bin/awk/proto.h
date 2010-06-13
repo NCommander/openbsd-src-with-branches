@@ -1,4 +1,4 @@
-/*	$OpenBSD: proto.h,v 1.6 1999/12/08 23:09:46 millert Exp $	*/
+/*	$OpenBSD: proto.h,v 1.7 2002/12/19 21:24:28 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -150,7 +150,7 @@ extern	Cell	*call(Node **, int);
 extern	Cell	*copycell(Cell *);
 extern	Cell	*arg(Node **, int);
 extern	Cell	*jump(Node **, int);
-extern	Cell	*getline(Node **, int);
+extern	Cell	*awkgetline(Node **, int);
 extern	Cell	*getnf(Node **, int);
 extern	Cell	*array(Node **, int);
 extern	Cell	*awkdelete(Node **, int);

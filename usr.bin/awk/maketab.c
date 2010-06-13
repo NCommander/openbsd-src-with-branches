@@ -1,4 +1,4 @@
-/*	$OpenBSD: maketab.c,v 1.9 2007/04/02 08:00:07 moritz Exp $	*/
+/*	$OpenBSD: maketab.c,v 1.10 2008/10/06 20:38:33 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -103,7 +103,7 @@ struct xx
 	{ CALL, "call", "call" },
 	{ ARG, "arg", "arg" },
 	{ VARNF, "getnf", "NF" },
-	{ GETLINE, "getline", "getline" },
+	{ GETLINE, "awkgetline", "getline" },
 	{ 0, "", "" },
 };
 
