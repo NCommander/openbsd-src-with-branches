@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.2 2010/06/10 09:14:38 reyk Exp $	*/
+/*	$OpenBSD: util.c,v 1.3 2010/06/14 08:55:59 reyk Exp $	*/
 /*	$vantronix: util.c,v 1.39 2010/06/02 12:22:58 reyk Exp $	*/
 
 /*
@@ -891,6 +891,8 @@ ibuf_copy(struct ibuf *buf, size_t len)
 struct ibuf *
 ibuf_dup(struct ibuf *buf)
 {
+	if (buf == NULL)
+		return (NULL);
 	return (ibuf_new(ibuf_data(buf), ibuf_size(buf)));
 }
 
