@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.192 2010/06/02 13:32:13 dlg Exp $	*/
+/*	$OpenBSD: sd.c,v 1.193 2010/06/11 12:02:44 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -957,7 +957,7 @@ sdioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 		goto exit;
 
 	case DIOCINQ:
-		error = scsi_do_ioctl(sc->sc_link, dev, cmd, addr, flag, p);
+		error = scsi_do_ioctl(sc->sc_link, cmd, addr, flag);
 		if (error == ENOTTY)
 			error = sd_ioctl_inquiry(sc,
 			    (struct dk_inquiry *)addr);
@@ -965,7 +965,7 @@ sdioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 
 	case DIOCGCACHE:
 	case DIOCSCACHE:
-		error = scsi_do_ioctl(sc->sc_link, dev, cmd, addr, flag, p);
+		error = scsi_do_ioctl(sc->sc_link, cmd, addr, flag);
 		if (error == ENOTTY)
 			error = sd_ioctl_cache(sc, cmd,
 			    (struct dk_cache *)addr);
@@ -976,7 +976,7 @@ sdioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 			error = ENOTTY;
 			goto exit;
 		}
-		error = scsi_do_ioctl(sc->sc_link, dev, cmd, addr, flag, p);
+		error = scsi_do_ioctl(sc->sc_link, cmd, addr, flag);
 	}
 
  exit:

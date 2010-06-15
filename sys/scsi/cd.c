@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.169 2010/06/03 11:58:20 dlg Exp $	*/
+/*	$OpenBSD: cd.c,v 1.170 2010/06/11 12:02:44 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -1135,7 +1135,7 @@ cdioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 			error = ENOTTY;
 			break;
 		}
-		error = scsi_do_ioctl(sc->sc_link, dev, cmd, addr, flag, p);
+		error = scsi_do_ioctl(sc->sc_link, cmd, addr, flag);
 		break;
 	}
 
