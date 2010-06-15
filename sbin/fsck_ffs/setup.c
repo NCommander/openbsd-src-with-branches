@@ -103,6 +103,8 @@ setup(char *dev)
 			return (0);
 		}
 	}
+	if (strncmp(dev, realdev, PATH_MAX) != 0)
+		blockcheck(unrawname(realdev));
 	if (preen == 0)
 		printf("** %s", realdev);
 	if (nflag || (fswritefd = opendev(dev, O_WRONLY, 0, NULL)) < 0) {
