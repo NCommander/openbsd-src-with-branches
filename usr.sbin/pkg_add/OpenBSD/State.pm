@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.2 2010/06/09 11:57:21 espie Exp $
+# $OpenBSD: State.pm,v 1.3 2010/06/15 08:26:39 espie Exp $
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -105,7 +105,7 @@ sub print
 sub say
 {
 	my $self = shift;
-	$self-_print($self->f(@_), "\n");
+	$self->_print($self->f(@_), "\n");
 }
 
 sub errprint
