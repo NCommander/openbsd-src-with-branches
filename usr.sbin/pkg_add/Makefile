@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.64 2010/06/05 17:15:32 espie Exp $
+# $OpenBSD: Makefile,v 1.65 2010/06/09 07:26:01 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -27,6 +27,7 @@ PACKAGES= \
     OpenBSD/Interactive.pm \
     OpenBSD/LibSpec.pm \
     OpenBSD/LibSpec/Build.pm \
+    OpenBSD/Log.pm \
     OpenBSD/Mtree.pm \
     OpenBSD/OldLibs.pm \
     OpenBSD/PackageInfo.pm \
