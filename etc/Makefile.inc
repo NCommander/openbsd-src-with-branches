@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.4 2008/06/16 08:18:39 todd Exp $
+#	$OpenBSD: Makefile.inc,v 1.6 2009/06/03 17:02:17 todd Exp $
 
 M=${.CURDIR:C/^.*\/etc\.([^\/]*)$/\1/}
 
@@ -54,6 +54,7 @@ ${DOCDIR}/MAKEDEV.8: ${MAKEDEVDOC}
 	    sed -e 's/^--.*$$//' \
 		-e 's/^[\<\>] \.\\".*OpenBSD.*Exp $$//' \
 		-e 's/^[\<\>] \.\\".*\$$OpenBSD.*\$$$$//' \
+		-e 's/^[\<\>] \.Dd \$$Mdocdate.*\$$$$//' \
 		-e 's/^[\<\>] \.Dd .*[0-9][0-9][0-9][0-9]$$//' \
 		-e 's/^[0-9,]*c[0-9,]*$$//' \
 		-e '/^$$/d' \
