@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommu.c,v 1.22 2009/07/13 19:50:00 kettenis Exp $	*/
+/*	$OpenBSD: iommu.c,v 1.23 2010/04/21 03:03:26 deraadt Exp $	*/
 /*	$NetBSD: iommu.c,v 1.13 1997/07/29 09:42:04 fair Exp $ */
 
 /*
@@ -704,7 +704,7 @@ iommu_dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs,
 	/*
 	 * In case the segment has already been loaded by
 	 * iommu_dmamap_load_raw(), find a region of kernel virtual
-	 * addresses that can accommodate our aligment requirements.
+	 * addresses that can accommodate our alignment requirements.
 	 */
 	va = _bus_dma_valloc_skewed(size, 0, align,
 				    segs[0].ds_addr & (align - 1));
