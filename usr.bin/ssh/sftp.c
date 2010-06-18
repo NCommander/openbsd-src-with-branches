@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.123 2010/01/27 19:21:39 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.124 2010/05/05 04:22:09 dtucker Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1345,7 +1345,7 @@ parse_dispatch_command(struct sftp_conn *conn, const char *cmd, char **pwd,
 		break;
 	case I_LS:
 		if (!path1) {
-			do_globbed_ls(conn, *pwd, *pwd, lflag);
+			do_ls_dir(conn, *pwd, *pwd, lflag);
 			break;
 		}
 
