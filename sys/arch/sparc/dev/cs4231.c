@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4231.c,v 1.26 2006/06/02 20:00:54 miod Exp $	*/
+/*	$OpenBSD: cs4231.c,v 1.27 2008/04/21 00:32:42 jakemsr Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -1478,7 +1478,7 @@ cs4231_free(addr, ptr, pool)
 	for (pp = &sc->sc_dmas; (p = *pp) != NULL; pp = &(*pp)->next) {
 		if (p->addr != ptr)
 			continue;
-		dvma_free(p->addr_dva, 16*1024, &p->addr);
+		dvma_free(p->addr_dva, p->size, &p->addr);
 		*pp = p->next;
 		free(p, pool);
 		return;
