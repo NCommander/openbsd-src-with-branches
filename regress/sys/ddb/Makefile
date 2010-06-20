@@ -1,14 +1,10 @@
-#	$OpenBSD: Makefile,v 1.1 2002/06/11 09:12:38 niklas Exp $
+#	$OpenBSD: Makefile,v 1.2 2002/09/02 20:01:44 avsm Exp $
 
-REGRESS_TARGETS=		comment
 .if (${MACHINE} == "i386")
 REGRESS_TARGETS+=	size
 .endif
 
 SRC=		${.CURDIR}/../../..
-
-comment:
-	fgrep -q '* if [ `size db_hangman.o | awk '"'"'BEGIN {getline} {print $$1+$$2}'"'"'` -gt 1024 ];' ${SRC}/sys/ddb/db_hangman.c
 
 size:	clean
 	mkdir build
