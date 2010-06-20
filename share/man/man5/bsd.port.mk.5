@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.247 2010/06/17 03:19:39 william Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.248 2010/06/17 13:28:17 jmc Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -1272,6 +1272,8 @@ to ${LIBTOOL} ${LIBTOOL_FLAGS}.
 where other ports have already been installed (default: /usr/local)
 .It Ev LOCKDIR
 User settings.
+Defaults to
+.Pa /tmp/portslocks .
 If set, points to a directory common for all instances of concurrent ports
 builds.
 .It Ev LOCK_CMD
