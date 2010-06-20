@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmap_4g.c,v 1.1 2005/05/03 18:26:54 otto Exp $	*/
+/*	$OpenBSD: mmap_4g.c,v 1.2 2006/02/01 19:08:40 otto Exp $	*/
 
 /*
  * Public domain. 2005, Otto Moerbeek <otto@drijf.net>
@@ -9,6 +9,7 @@
 #include <err.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 /*

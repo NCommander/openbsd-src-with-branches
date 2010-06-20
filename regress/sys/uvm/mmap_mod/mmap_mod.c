@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mmap_mod.c,v 1.1 2007/05/21 07:27:37 art Exp $	*/
 
 /*
  * Public domain. 2007, Artur Grabowski <art@openbsd.org>
@@ -9,6 +9,7 @@
 #include <err.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 /*
