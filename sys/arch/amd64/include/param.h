@@ -94,7 +94,7 @@
 #define	USPACE_ALIGN	(0)		/* u-area alignment 0-none */
 
 #ifndef MSGBUFSIZE
-#define MSGBUFSIZE	4*NBPG		/* default message buffer size */
+#define MSGBUFSIZE	8*NBPG		/* default message buffer size */
 #endif
 
 /*
