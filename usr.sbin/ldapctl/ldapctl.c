@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapctl.c,v 1.1 2010/05/31 17:36:31 martinh Exp $	*/
+/*	$OpenBSD: ldapctl.c,v 1.2 2010/06/23 13:31:30 martinh Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -66,7 +66,8 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-s socket] command [arg ...]\n",
+	fprintf(stderr,
+	    "usage: %s [-v] [-f file] [-s socket] command [argument ...]\n",
 	    __progname);
 	exit(1);
 }
