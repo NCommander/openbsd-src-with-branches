@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldape.c,v 1.4 2010/06/11 08:27:58 martinh Exp $ */
+/*	$OpenBSD: ldape.c,v 1.5 2010/06/15 15:12:54 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -58,7 +58,6 @@ ldape_sig_handler(int sig, short why, void *data)
 			pid = waitpid(WAIT_ANY, &status, WNOHANG);
 			if (pid <= 0)
 				break;
-			check_compaction(pid, status);
 		}
 		return;
 	}
