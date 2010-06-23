@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.80 2010/04/02 23:55:37 sthen Exp $ */
+/*	$OpenBSD: kroute.c,v 1.81 2010/05/18 15:19:07 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -363,7 +363,7 @@ kr_fib_reload(void)
 
 	kr_state.fib_serial++;
 
-	if (fetchifs(0) != 0 || fetchtable() != 0)
+	if (fetchifs(0) == -1 || fetchtable() == -1)
 		return;
 
 	for (kr = RB_MIN(kroute_tree, &krt); kr != NULL; kr = krn) {
