@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.1 2010/05/31 17:36:31 martinh Exp $ */
+/*	$OpenBSD: auth.c,v 1.2 2010/06/15 15:47:56 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -287,9 +287,8 @@ ldap_auth_simple(struct request *req, char *binddn, struct ber_element *auth)
 		    LDAP_SCOPE_BASE))
 			return LDAP_INSUFFICIENT_ACCESS;
 
-		if (ns->data_db == NULL ||
-		    ((elm = namespace_get(ns, binddn)) == NULL &&
-		     errno == EAGAIN)) {
+		elm = namespace_get(ns, binddn);
+		if (elm == NULL && errno == ESTALE) {
 			if (namespace_queue_request(ns, req) != 0)
 				return LDAP_BUSY;
 			return -1;	/* Database is being reopened. */
