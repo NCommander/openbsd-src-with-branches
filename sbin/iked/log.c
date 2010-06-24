@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.15 2010/01/11 06:40:14 jsg Exp $	*/
+/*	$OpenBSD: log.c,v 1.1 2010/06/03 16:41:12 reyk Exp $	*/
 /*	$vantronix: log.c,v 1.4 2010/04/21 19:29:09 reyk Exp $	*/
 
 /*
@@ -55,8 +55,7 @@ log_init(int n_debug)
 void
 log_verbose(int v)
 {
-	if (v > debug)
-		verbose = v;
+	verbose = v;
 }
 
 void
