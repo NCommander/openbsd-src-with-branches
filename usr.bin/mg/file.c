@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.70 2009/06/04 02:23:37 kjell Exp $	*/
+/*	$OpenBSD: file.c,v 1.71 2009/06/04 23:39:37 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -220,10 +220,12 @@ readin(char *fname)
 
 	for (wp = wheadp; wp != NULL; wp = wp->w_wndp) {
 		if (wp->w_bufp == curbp) {
-			wp->w_dotp = wp->w_linep = bfirstlp(curbp);
-			wp->w_doto = 0;
-			wp->w_markp = NULL;
-			wp->w_marko = 0;
+			if ((fisdir(fname)) != TRUE) {
+				wp->w_dotp = wp->w_linep = bfirstlp(curbp);
+				wp->w_doto = 0;
+				wp->w_markp = NULL;
+				wp->w_marko = 0;
+				}
 		}
 	}
 
