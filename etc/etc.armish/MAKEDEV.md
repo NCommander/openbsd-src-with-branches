@@ -98,7 +98,7 @@ divert(__mddivert)dnl
 dnl
 ramdisk)
 	_recurse std bpf0 wd0 wd1 sd0 tty00 rd0 wsmouse
-	_recurse st0 ttyC0 wskbd0 apm bio
+	_recurse st0 ttyC0 wskbd0 apm bio diskmap
 	;;
 
 _std(1, 2, 8, 6)

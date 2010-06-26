@@ -97,6 +97,7 @@ twrget(ramd, dart, tty, a)dnl
 twrget(ramd, cl, tty0, 0)dnl
 target(ramd, pty, 0)dnl
 target(ramd, bio)dnl
+target(ramd, diskmap)dnl
 _DEV(ramd)
 dnl
 _DEV(std)

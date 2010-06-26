@@ -75,7 +75,7 @@ divert(__mddivert)dnl
 dnl
 ramdisk)
 	_recurse std fd st0 st1 sd0 sd1 sd2 sd3 rd0
-	_recurse pty0 bpf0 bpf1 tun0 tun1 lkm bio
+	_recurse pty0 bpf0 bpf1 tun0 tun1 lkm bio diskmap
 	;;
 
 _std(1, 2, 25, 6)

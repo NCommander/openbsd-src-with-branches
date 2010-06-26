@@ -99,7 +99,7 @@ dnl
 ramdisk)
 	_recurse std ct0 ct1 st0 st1 hd0 hd1 hd2 hd3 hd4
 	_recurse sd0 sd1 sd2 sd3 sd4 cd0 cd1 rd0 pty0
-	_recurse apci0 dca0 dcm0 dcm1 bio
+	_recurse apci0 dca0 dcm0 dcm1 bio diskmap
 	_recurse bpf0 bpf1 tun0 tun1 lkm
 	;;
 

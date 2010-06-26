@@ -146,7 +146,7 @@ dnl
 divert(__mddivert)dnl
 dnl
 ramdisk)
-	_recurse std bpf0 bio
+	_recurse std bpf0 bio diskmap
 	_recurse fd0 sd0 sd1 rd0
 	;;
 

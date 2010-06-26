@@ -533,3 +533,4 @@ target(all, vnd, 0, 1, 2, 3)dnl
 target(all, ccd, 0, 1, 2, 3)dnl
 twrget(ramd, wsdisp, ttyC, 0)dnl
 target(ramd, bio)dnl
+target(ramd, diskmap)dnl

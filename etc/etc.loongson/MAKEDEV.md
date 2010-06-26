@@ -112,3 +112,4 @@ target(all, ccd, 0, 1, 2, 3)dnl
 target(all, bthub, 0, 1, 2)dnl
 target(ramd, pty, 0)dnl
 target(ramd, bio)dnl
+target(ramd, diskmap)dnl

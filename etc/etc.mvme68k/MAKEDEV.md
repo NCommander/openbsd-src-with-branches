@@ -132,6 +132,7 @@ dnl
 twrget(ramd, mvme_tzs, tty, a)dnl
 target(ramd, pty, 0)dnl
 target(ramd, bio)dnl
+target(ramd, diskmap)dnl
 _DEV(ramd)
 dnl
 _DEV(std)
