@@ -761,21 +761,6 @@ ikev2_init_done(struct iked *env, struct iked_sa *sa,
     struct iked_message *msg)
 {
 	int		 ret;
-	struct ibuf	*authmsg;
-
-	if (msg->msg_id.id_type) {
-		memcpy(&sa->sa_rid, &msg->msg_id, sizeof(sa->sa_rid));
-		bzero(&msg->msg_id, sizeof(msg->msg_id));
-
-		if ((authmsg = ikev2_msg_auth(env, sa, 0)) == NULL) {
-			log_debug("%s: failed to get response auth data",
-			    __func__);
-			return (-1);
-		}
-
-		ca_setauth(env, sa, authmsg, PROC_CERT);
-		return (0);
-	}
 
 	if (msg != NULL && !TAILQ_EMPTY(&msg->msg_proposals)) {
 		if (ikev2_sa_negotiate(sa,

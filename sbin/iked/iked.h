@@ -389,8 +389,6 @@ struct iked_message {
 	struct iked_spi		 msg_rekey;
 	struct ibuf		*msg_nonce;	/* dh NONCE */
 	struct ibuf		*msg_ke;	/* dh key exchange */
-	struct iked_id		 msg_id;
-	struct iked_id		 msg_cert;
 
 	/* Parse stack */
 	struct iked_proposal	*msg_prop;
