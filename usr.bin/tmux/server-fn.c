@@ -1,4 +1,4 @@
-/* $OpenBSD: server-fn.c,v 1.36 2010/04/17 23:25:16 nicm Exp $ */
+/* $OpenBSD: server-fn.c,v 1.37 2010/06/21 01:27:46 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -371,6 +371,7 @@ server_destroy_session(struct session *s)
 		c->session = NULL;
 		server_write_client(c, MSG_EXIT, NULL, 0);
 	}
+	recalculate_sizes();
 }
 
 void
