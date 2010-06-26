@@ -1,4 +1,4 @@
-/*	$OpenBSD: comvar.h,v 1.46 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: comvar.h,v 1.47 2009/11/04 19:14:10 kettenis Exp $	*/
 /*	$NetBSD: comvar.h,v 1.5 1996/05/05 19:50:47 christos Exp $	*/
 
 /*
@@ -66,7 +66,7 @@ struct commulti_attach_args {
 	int		ca_noien;
 };
 
-#define	COM_IBUFSIZE	(2 * 512)
+#define	COM_IBUFSIZE	(16 * 512)
 #define	COM_IHIGHWATER	((3 * COM_IBUFSIZE) / 4)
 
 struct com_softc {
