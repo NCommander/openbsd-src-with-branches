@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.30 2009/11/09 17:53:39 nicm Exp $ */
+/*	$OpenBSD: zs.c,v 1.31 2010/04/12 12:57:52 tedu Exp $ */
 
 /*
  * Copyright (c) 2000 Steve Murphree, Jr.
@@ -32,7 +32,6 @@
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/systm.h>

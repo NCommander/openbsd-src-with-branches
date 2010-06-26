@@ -1,4 +1,4 @@
-/*	$OpenBSD: uha_isa.c,v 1.9 2009/01/21 21:54:00 grange Exp $	*/
+/*	$OpenBSD: uha_isa.c,v 1.10 2009/08/26 22:29:09 jasper Exp $	*/
 /*	$NetBSD: uha_isa.c,v 1.5 1996/10/21 22:41:21 thorpej Exp $	*/
 
 /*
@@ -36,7 +36,7 @@
 #include <sys/device.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
-#include <sys/user.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <machine/intr.h>

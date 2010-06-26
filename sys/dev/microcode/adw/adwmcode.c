@@ -1,4 +1,4 @@
-/*	$OpenBSD: adwmcode.c,v 1.2 2001/11/06 19:53:19 miod Exp $ */
+/*	$OpenBSD: adwmcode.c,v 1.3 2008/06/26 05:42:16 ray Exp $ */
 /*      $NetBSD: adwmcode.c,v 1.5 2000/05/27 18:24:50 dante Exp $        */
 
 /*
@@ -58,7 +58,6 @@
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 
 #include <machine/bus.h>
 #include <machine/intr.h>

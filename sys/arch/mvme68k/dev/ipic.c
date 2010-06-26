@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipic.c,v 1.16 2005/11/24 22:43:16 miod Exp $ */
+/*	$OpenBSD: ipic.c,v 1.17 2005/11/27 14:19:08 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -29,7 +29,6 @@
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/systm.h>

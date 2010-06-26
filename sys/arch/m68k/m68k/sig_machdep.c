@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.19 2007/11/02 19:18:54 martin Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.20 2009/03/25 22:42:58 weingart Exp $	*/
 /*	$NetBSD: sig_machdep.c,v 1.3 1997/04/30 23:28:03 gwr Exp $	*/
 
 /*
@@ -65,7 +65,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/exec.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>

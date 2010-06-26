@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_file.c,v 1.18 2007/03/15 10:22:30 art Exp $	*/
+/*	$OpenBSD: hpux_file.c,v 1.19 2008/09/19 12:24:55 art Exp $	*/
 /*	$NetBSD: hpux_file.c,v 1.5 1997/04/27 21:40:48 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,6 @@
 #include <sys/malloc.h>
 #include <sys/mount.h>
 #include <sys/ipc.h>
-#include <sys/user.h>
 #include <sys/mman.h>
 
 #include <machine/cpu.h>

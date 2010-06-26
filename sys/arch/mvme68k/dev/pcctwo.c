@@ -1,5 +1,5 @@
 
-/*	$OpenBSD: pcctwo.c,v 1.16 2009/02/17 22:28:40 miod Exp $ */
+/*	$OpenBSD: pcctwo.c,v 1.17 2009/03/01 21:37:41 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -33,7 +33,6 @@
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/systm.h>

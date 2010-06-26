@@ -1,4 +1,4 @@
-/*	$OpenBSD: qv.c,v 1.13 2007/09/15 14:28:17 krw Exp $	*/
+/*	$OpenBSD: qv.c,v 1.14 2010/04/12 12:57:52 tedu Exp $	*/
 /*	$NetBSD: qv.c,v 1.2 1996/09/02 06:44:28 mycroft Exp $	*/
 
 /*-
@@ -131,7 +131,6 @@
 
 #include <sys/param.h>
 #include <sys/conf.h>
-#include <sys/user.h>
 #include <vax/uba/qvioctl.h>
 #include <sys/tty.h>
 #include <sys/map.h>

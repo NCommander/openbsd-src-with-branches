@@ -1,4 +1,4 @@
-/*	$OpenBSD: hpux_compat.c,v 1.31 2010/01/28 19:23:06 guenther Exp $	*/
+/*	$OpenBSD: hpux_compat.c,v 1.32 2010/01/28 19:59:07 miod Exp $	*/
 /*	$NetBSD: hpux_compat.c,v 1.35 1997/05/08 16:19:48 mycroft Exp $	*/
 
 /*
@@ -66,7 +66,7 @@
 #include <sys/pool.h>
 #include <sys/mount.h>
 #include <sys/ipc.h>
-#include <sys/user.h>
+#include <sys/sysctl.h>
 #include <sys/mman.h>
 
 #include <machine/cpu.h>

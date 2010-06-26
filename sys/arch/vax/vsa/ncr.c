@@ -1,4 +1,4 @@
-/* $OpenBSD: ncr.c,v 1.24 2008/07/30 18:08:04 miod Exp $ */
+/* $OpenBSD: ncr.c,v 1.25 2009/02/16 21:19:06 miod Exp $ */
 /*	$NetBSD: ncr.c,v 1.32 2000/06/25 16:00:43 ragge Exp $	*/
 
 /*-
@@ -51,7 +51,6 @@
 #include <sys/buf.h>
 #include <sys/disk.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 
 #include <uvm/uvm_extern.h>
 

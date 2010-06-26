@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss_scanjet.c,v 1.39 2010/06/01 15:27:16 thib Exp $	*/
+/*	$OpenBSD: ss_scanjet.c,v 1.40 2010/06/11 12:02:44 krw Exp $	*/
 /*	$NetBSD: ss_scanjet.c,v 1.6 1996/05/18 22:58:01 christos Exp $	*/
 
 /*
@@ -42,7 +42,6 @@
 #include <sys/ioctl.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/device.h>
 #include <sys/conf.h>		/* for cdevsw */
 #include <sys/scanio.h>

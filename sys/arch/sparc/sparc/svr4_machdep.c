@@ -1,4 +1,4 @@
-/*	$OpenBSD: svr4_machdep.c,v 1.12 2003/01/09 22:27:10 miod Exp $	*/
+/*	$OpenBSD: svr4_machdep.c,v 1.13 2005/03/21 22:34:33 miod Exp $	*/
 /*	$NetBSD: svr4_machdep.c,v 1.24 1997/07/29 10:04:45 fair Exp $	 */
 
 /*
@@ -32,7 +32,6 @@
 #include <sys/systm.h>
 #include <sys/namei.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/filedesc.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>

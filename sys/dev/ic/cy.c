@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.28 2009/11/09 17:53:39 nicm Exp $	*/
+/*	$OpenBSD: cy.c,v 1.29 2010/04/12 12:57:52 tedu Exp $	*/
 /*
  * Copyright (c) 1996 Timo Rossi.
  * All rights reserved.
@@ -62,7 +62,6 @@
 #include <sys/tty.h>
 #include <sys/proc.h>
 #include <sys/conf.h>
-#include <sys/user.h>
 #include <sys/selinfo.h>
 #include <sys/device.h>
 #include <sys/malloc.h>

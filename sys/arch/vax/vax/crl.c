@@ -1,4 +1,4 @@
-/*	$OpenBSD: crl.c,v 1.7 2003/06/02 23:27:58 millert Exp $	*/
+/*	$OpenBSD: crl.c,v 1.8 2006/01/20 23:27:26 miod Exp $	*/
 /*	$NetBSD: crl.c,v 1.6 2000/01/24 02:40:33 matt Exp $	*/
 /*-
  * Copyright (c) 1982, 1986 The Regents of the University of California.
@@ -40,7 +40,6 @@
 #include <sys/systm.h>
 #include <sys/conf.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/buf.h>
 
 #include <machine/cpu.h>

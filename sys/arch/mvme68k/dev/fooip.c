@@ -1,4 +1,4 @@
-/*	$OpenBSD: fooip.c,v 1.8 2004/07/02 17:57:29 miod Exp $ */
+/*	$OpenBSD: fooip.c,v 1.9 2004/07/30 22:29:44 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -32,7 +32,6 @@
 #include <sys/conf.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/systm.h>

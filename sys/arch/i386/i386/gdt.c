@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt.c,v 1.28 2008/06/26 05:42:10 ray Exp $	*/
+/*	$OpenBSD: gdt.c,v 1.29 2009/02/03 11:24:19 mikeb Exp $	*/
 /*	$NetBSD: gdt.c,v 1.28 2002/12/14 09:38:50 junyoung Exp $	*/
 
 /*-
@@ -53,12 +53,12 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/lock.h>
-#include <sys/user.h>
 #include <sys/mutex.h>
 
 #include <uvm/uvm.h>
 
 #include <machine/gdt.h>
+#include <machine/pcb.h>
 
 union descriptor bootstrap_gdt[NGDT];
 union descriptor *gdt = bootstrap_gdt;

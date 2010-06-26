@@ -1,4 +1,4 @@
-/* $OpenBSD: esp.c,v 1.4 2008/06/26 05:42:12 ray Exp $ */
+/* $OpenBSD: esp.c,v 1.5 2009/02/16 21:19:06 miod Exp $ */
 
 /*-
  * Copyright (c) 1997, 1998 The NetBSD Foundation, Inc.
@@ -80,7 +80,6 @@
 #include <sys/device.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/queue.h>
 #include <sys/malloc.h>
 

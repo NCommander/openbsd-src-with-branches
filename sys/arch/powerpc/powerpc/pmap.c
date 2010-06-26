@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.113 2010/04/15 21:30:29 deraadt Exp $ */
+/*	$OpenBSD: pmap.c,v 1.114 2010/04/24 17:56:06 kettenis Exp $ */
 
 /*
  * Copyright (c) 2001, 2002, 2007 Dale Rahn.
@@ -78,7 +78,6 @@
 #include <sys/malloc.h>
 #include <sys/proc.h>
 #include <sys/queue.h>
-#include <sys/user.h>
 #include <sys/systm.h>
 #include <sys/pool.h>
 

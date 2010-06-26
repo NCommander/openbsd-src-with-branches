@@ -1,4 +1,4 @@
-/*	$OpenBSD: flash.c,v 1.18 2007/12/20 05:19:38 miod Exp $ */
+/*	$OpenBSD: flash.c,v 1.19 2009/03/01 21:37:41 miod Exp $ */
 
 /*
  * Copyright (c) 1995 Theo de Raadt
@@ -28,7 +28,6 @@
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/tty.h>
 #include <sys/uio.h>
 #include <sys/systm.h>

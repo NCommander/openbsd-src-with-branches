@@ -1,4 +1,4 @@
-/*	$OpenBSD: uha.c,v 1.16 2010/03/23 01:57:20 krw Exp $	*/
+/*	$OpenBSD: uha.c,v 1.17 2010/05/20 00:55:17 krw Exp $	*/
 /*	$NetBSD: uha.c,v 1.3 1996/10/13 01:37:29 christos Exp $	*/
 
 #undef UHADEBUG
@@ -69,7 +69,7 @@
 #include <sys/malloc.h>
 #include <sys/buf.h>
 #include <sys/proc.h>
-#include <sys/user.h>
+#include <uvm/uvm_extern.h>
 
 #include <machine/bus.h>
 #include <machine/intr.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_usrreq.c,v 1.11 2007/12/14 18:33:40 deraadt Exp $	*/
+/*	$OpenBSD: ddp_usrreq.c,v 1.12 2008/05/23 16:03:03 thib Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -56,7 +56,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/mbuf.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
