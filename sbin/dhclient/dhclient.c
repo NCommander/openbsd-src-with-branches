@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.133 2010/03/25 18:37:36 stevesk Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.134 2010/06/02 09:57:16 phessler Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -368,7 +368,7 @@ main(int argc, char *argv[])
 		error("cannot open %s: %m", _PATH_DEVNULL);
 
 	if ((pw = getpwnam("_dhcp")) == NULL)
-			error("no such user: _dhcp");
+		error("no such user: _dhcp");
 
 	if (pipe(pipe_fd) == -1)
 		error("pipe");
