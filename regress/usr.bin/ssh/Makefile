@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.52 2010/02/26 20:33:21 djm Exp $
+#	$OpenBSD: Makefile,v 1.53 2010/05/07 11:31:26 djm Exp $
 
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7
 
@@ -106,7 +106,7 @@ t7: t7.out
 
 .for t in ${LTESTS} ${INTEROP_TESTS}
 t-${t}:
-	env SUDO=${SUDO} ${TEST_ENV} \
+	env SUDO="${SUDO}" ${TEST_ENV} \
 	    sh ${.CURDIR}/test-exec.sh ${.OBJDIR} ${.CURDIR}/${t}.sh
 .endfor
 
