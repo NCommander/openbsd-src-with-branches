@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.69 2009/08/30 12:11:33 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.71 2010/06/27 03:03:48 thib Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -91,8 +91,7 @@
 
 #include <dev/cons.h>
 
-#include <uvm/uvm_extern.h>
-#include <uvm/uvm_swap.h>
+#include <uvm/uvm.h>
 
 #include "ksyms.h"
 #if DDB
