@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.2 2010/04/23 00:31:00 schwarze Exp $
+# $OpenBSD: Makefile.inc,v 1.3 2010/04/25 17:15:48 schwarze Exp $
 
 DIFF=diff -au
 MANDOC?=mandoc
@@ -21,7 +21,7 @@ groff: ${GROFF_TARGETS:C/$/.out_ascii/}
 
 .in.out_ascii:
 	@echo "  -> ${*}"
-	@${NROFF} ${.CURDIR}/${<} | ${SED} '$$d' > ${@}
+	@${NROFF} ${<} | ${SED} '$$d' > ${@}
 
 .sh:
 	@echo "  -> ${*}"
