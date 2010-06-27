@@ -392,7 +392,8 @@ void
 kr_dispatch_msg(int fd, short event, void *bula)
 {
 	/* XXX this is stupid */
-	dispatch_rtmsg();
+	if (dispatch_rtmsg() == -1)
+		event_loopexit(NULL);
 }
 
 void
@@ -1454,8 +1455,7 @@ add:
 				if ((kr = calloc(1,
 				    sizeof(struct kroute_node))) == NULL) {
 					log_warn("dispatch calloc");
-					rv = -1;
-					break;
+					return (-1);
 				}
 
 				kr->r.prefix.s_addr = prefix.s_addr;
@@ -1472,7 +1472,7 @@ add:
 					    RTM_DELETE, &kr->r);
 					free(kr);
 					if (rv == -1)
-						break;
+						return (-1);
 				} else {
 					if ((label = (struct sockaddr_rtlabel *)
 					    rti_info[RTAX_LABEL]) != NULL) {
