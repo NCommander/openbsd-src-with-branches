@@ -94,6 +94,14 @@ char	pmon_bootp[80];
 int	bufpages = BUFPAGES;
 int	bufcachepercent = BUFCACHEPERCENT;
 
+/*
+ * Even though the system is 64bit, the hardware is constrained to up
+ * to 2G of contigous physical memory (direct 2GB DMA area), so there
+ * is no particular constraint. paddr_t is long so: 
+ */
+struct uvm_constraint_range  dma_constraint = { 0x0, 0xffffffffUL };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
+
 vm_map_t exec_map;
 vm_map_t phys_map;
 

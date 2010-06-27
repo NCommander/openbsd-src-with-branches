@@ -143,6 +143,13 @@ int	bufpages = 0;
 #endif
 int	bufcachepercent = BUFCACHEPERCENT;
 
+struct uvm_constraint_range  isa_constraint = { 0x0, 0x00ffffffUL };
+struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
+struct uvm_constraint_range *uvm_md_constraints[] = {
+	&isa_constraint,
+	NULL
+};
+
 struct vm_map *exec_map = NULL;
 struct vm_map *phys_map = NULL;
 

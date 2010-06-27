@@ -197,6 +197,9 @@ int bufpages = 0;
 #endif
 int bufcachepercent = BUFCACHEPERCENT;
 
+struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
+
 /*
  * Info for CTL_HW
  */

@@ -162,6 +162,13 @@ int bufpages = 0;
 int bufcachepercent = BUFCACHEPERCENT;
 
 /*
+ * 32 or 34 bit physical address bus depending upon the CPU flavor.
+ * 32 bit DMA. "I am not aware of any system where the upper 2 bits
+ * have ever been used" - miod@
+struct uvm_constraint_range  dma_constraint = { 0x0, 0xffffffffUL};
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
+
+/*
  * Info for CTL_HW
  */
 char  machine[] = MACHINE;	 /* cpu "architecture" */

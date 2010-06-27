@@ -122,6 +122,7 @@
 #include <sys/reboot.h>
 #include <sys/termios.h>
 
+#include <uvm/uvm.h>
 #include <uvm/uvm_extern.h>
 
 #include <sys/conf.h>
@@ -206,6 +207,9 @@ extern pv_addr_t kernelstack;
 pv_addr_t minidataclean;
 
 vaddr_t msgbufphys;
+
+struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
 
 extern u_int data_abort_handler_address;
 extern u_int prefetch_abort_handler_address;

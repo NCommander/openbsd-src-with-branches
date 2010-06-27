@@ -48,6 +48,7 @@
 #include <sys/tty.h>
 #include <sys/user.h>
 
+#include <uvm/uvm.h>
 #include <uvm/uvm_extern.h>
 
 #include <machine/bat.h>
@@ -84,6 +85,9 @@ int bufpages = BUFPAGES;
 int bufpages = 0;
 #endif
 int bufcachepercent = BUFCACHEPERCENT;
+
+struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
 
 struct bat battable[16];
 

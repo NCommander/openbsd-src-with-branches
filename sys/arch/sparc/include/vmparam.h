@@ -130,9 +130,6 @@ struct vm_page_md {
 #define VM_NFREELIST		1
 #define VM_FREELIST_DEFAULT	0
 
-/* No UVM_IO_RANGES required: IOMMU takes care of this. */
-#define UVM_IO_RANGES {}
-
 #if defined (_KERNEL) && !defined(_LOCORE)
 struct vm_map;
 #define		dvma_mapin(map,va,len,canwait)	dvma_mapin_space(map,va,len,canwait,0)

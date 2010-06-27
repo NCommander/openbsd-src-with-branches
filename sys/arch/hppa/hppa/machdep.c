@@ -202,6 +202,9 @@ pid_t sigpid = 0;
 #define SDB_FOLLOW	0x01
 #endif
 
+struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
+
 /*
  * Whatever CPU types we support
  */

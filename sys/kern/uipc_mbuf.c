@@ -90,6 +90,7 @@
 
 #include <machine/cpu.h>
 
+#include <uvm/uvm.h>
 #include <uvm/uvm_extern.h>
 
 struct	mbstat mbstat;		/* mbuf stats */
@@ -137,13 +138,15 @@ mbinit(void)
 
 	pool_init(&mbpool, MSIZE, 0, 0, 0, "mbpl", NULL);
 	pool_setlowat(&mbpool, mblowat);
+	pool_set_constraints(&mbpool, &dma_constraint, 1);
 
 	for (i = 0; i < nitems(mclsizes); i++) {
 		snprintf(mclnames[i], sizeof(mclnames[0]), "mcl%dk",
 		    mclsizes[i] >> 10);
-		pool_init(&mclpools[i], mclsizes[i], 0, 0, 0, mclnames[i],
-		    NULL);
+		pool_init(&mclpools[i], mclsizes[i], 0, 0, 0,
+		    mclnames[i], NULL);
 		pool_setlowat(&mclpools[i], mcllowat);
+		pool_set_constraints(&mclpools[i], &dma_constraint, 1); 
 	}
 
 	nmbclust_update();

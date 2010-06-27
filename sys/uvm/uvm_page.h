@@ -249,6 +249,8 @@ void		uvm_pagewait(struct vm_page *, int);
 void		uvm_pagewake(struct vm_page *);
 void		uvm_pagewire(struct vm_page *);
 void		uvm_pagezero(struct vm_page *);
+void		uvm_pagealloc_pg(struct vm_page *, struct uvm_object *,
+		    voff_t, struct vm_anon *);
 
 int		uvm_page_lookup_freelist(struct vm_page *);
 

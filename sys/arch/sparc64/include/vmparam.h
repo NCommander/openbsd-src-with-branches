@@ -145,9 +145,6 @@
 #define	VM_NFREELIST		1
 #define	VM_FREELIST_DEFAULT	0
 
-/* No UVM_IO_RANGES required: IOMMU takes care of this. */
-#define UVM_IO_RANGES {}
-
 #define __HAVE_VM_PAGE_MD
 /*
  * For each struct vm_page, there is a list of all currently valid virtual
