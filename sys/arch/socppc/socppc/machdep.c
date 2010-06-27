@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.23 2009/10/01 20:19:19 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.25 2010/06/27 03:03:48 thib Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 #include <sys/user.h>
 
 #include <uvm/uvm.h>
-#include <uvm/uvm_extern.h>
 
 #include <machine/bat.h>
 #include <machine/bus.h>

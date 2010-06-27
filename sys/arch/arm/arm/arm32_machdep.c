@@ -1,4 +1,4 @@
-/*	$OpenBSD: arm32_machdep.c,v 1.32 2009/08/11 19:17:16 miod Exp $	*/
+/*	$OpenBSD: arm32_machdep.c,v 1.34 2010/06/27 03:03:48 thib Exp $	*/
 /*	$NetBSD: arm32_machdep.c,v 1.42 2003/12/30 12:33:15 pk Exp $	*/
 
 /*
@@ -55,7 +55,6 @@
 #include <sys/msgbuf.h>
 #include <sys/device.h>
 #include <uvm/uvm.h>
-#include <uvm/uvm_extern.h>
 #include <sys/sysctl.h>
 
 #include <dev/cons.h>

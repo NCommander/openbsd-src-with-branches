@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.102 2010/04/28 21:26:47 miod Exp $ */
+/*	$OpenBSD: machdep.c,v 1.104 2010/06/27 03:03:48 thib Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -48,7 +48,6 @@
 #endif
 
 #include <uvm/uvm.h>
-#include <uvm/uvm_extern.h>
 
 #include <machine/db_machdep.h>
 #include <ddb/db_interface.h>
