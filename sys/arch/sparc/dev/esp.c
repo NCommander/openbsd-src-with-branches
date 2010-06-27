@@ -1,4 +1,4 @@
-/*	$OpenBSD: esp.c,v 1.29 2010/06/07 19:54:33 miod Exp $	*/
+/*	$OpenBSD: esp.c,v 1.30 2010/06/26 23:24:44 guenther Exp $	*/
 /*	$NetBSD: esp.c,v 1.69 1997/08/27 11:24:18 bouyer Exp $	*/
 
 /*
@@ -111,6 +111,8 @@
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
 #include <scsi/scsi_message.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <machine/cpu.h>
 #include <machine/autoconf.h>

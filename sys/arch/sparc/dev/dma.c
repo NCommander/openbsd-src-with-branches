@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma.c,v 1.25 2008/12/26 15:13:07 miod Exp $	*/
+/*	$OpenBSD: dma.c,v 1.26 2010/06/26 23:24:44 guenther Exp $	*/
 /*	$NetBSD: dma.c,v 1.46 1997/08/27 11:24:16 bouyer Exp $ */
 
 /*
@@ -44,6 +44,8 @@
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
+
+#include <uvm/uvm_extern.h>
 
 #include <dev/ic/ncr53c9xreg.h>
 #include <dev/ic/ncr53c9xvar.h>
