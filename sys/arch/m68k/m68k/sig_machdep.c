@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.20 2009/03/25 22:42:58 weingart Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.21 2010/06/26 23:24:43 guenther Exp $	*/
 /*	$NetBSD: sig_machdep.c,v 1.3 1997/04/30 23:28:03 gwr Exp $	*/
 
 /*
@@ -78,6 +78,7 @@
 #include <sys/syscallargs.h>
 
 #include <machine/cpu.h>
+#include <machine/frame.h>
 #include <machine/reg.h>
 
 extern short exframesize[];
