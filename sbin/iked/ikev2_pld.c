@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.9 2010/06/26 19:48:04 reyk Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.11 2010/06/27 01:03:22 reyk Exp $	*/
 /*	$vantronix: ikev2.c,v 1.101 2010/06/03 07:57:33 reyk Exp $	*/
 
 /*
@@ -553,7 +553,8 @@ ikev2_pld_certreq(struct iked *env, struct ikev2_payload *pld,
 	else
 		sa->sa_statevalid |= IKED_REQ_CERT;
 
-	ca_setreq(env, &sa->sa_hdr, cert.cert_type, buf, len, PROC_CERT);
+	ca_setreq(env, &sa->sa_hdr, &sa->sa_policy->pol_localid,
+	    cert.cert_type, buf, len, PROC_CERT);
 
 	return (0);
 }
