@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.691 2010/05/07 13:33:16 claudio Exp $ */
+/*	$OpenBSD: pf.c,v 1.692 2010/06/27 01:39:43 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -5985,9 +5985,8 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0,
 		}
 	} while (!terminal);
 
-	/* if there's no routing header, use unmodified mbuf for checksumming */
-	if (!n)
-		n = m;
+	/* ptr to original, normalization can get us a new one */
+	n = m;
 
 	switch (pd.proto) {
 
@@ -6133,6 +6132,7 @@ pf_test6(int dir, struct ifnet *ifp, struct mbuf **m0,
 	}
 
 done:
+	/* if normalization got us a new mbuf, free original */
 	if (n != m) {
 		m_freem(n);
 		n = NULL;
