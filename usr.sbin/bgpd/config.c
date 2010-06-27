@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.52 2009/12/01 14:28:05 claudio Exp $ */
+/*	$OpenBSD: config.c,v 1.53 2010/05/17 15:49:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -50,8 +50,6 @@ merge_config(struct bgpd_config *xconf, struct bgpd_config *conf,
 
 	/* preserve cmd line opts */
 	conf->opts = xconf->opts;
-	conf->csock = xconf->csock;
-	conf->rcsock = xconf->rcsock;
 
 	if (!conf->as) {
 		log_warnx("configuration error: AS not given");
@@ -66,6 +64,9 @@ merge_config(struct bgpd_config *xconf, struct bgpd_config *conf,
 
 	if ((conf->flags & BGPD_FLAG_REFLECTOR) && conf->clusterid == 0)
 		conf->clusterid = conf->bgpid;
+
+	free(xconf->csock);
+	free(xconf->rcsock);
 
 	conf->listen_addrs = xconf->listen_addrs;
 	memcpy(xconf, conf, sizeof(struct bgpd_config));

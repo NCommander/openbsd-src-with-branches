@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.260 2010/05/17 16:08:20 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.261 2010/05/19 12:44:14 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -357,6 +357,7 @@ enum imsg_type {
 	IMSG_RECONF_PEER,
 	IMSG_RECONF_FILTER,
 	IMSG_RECONF_LISTENER,
+	IMSG_RECONF_CTRL,
 	IMSG_RECONF_RDOMAIN,
 	IMSG_RECONF_RDOMAIN_EXPORT,
 	IMSG_RECONF_RDOMAIN_IMPORT,
