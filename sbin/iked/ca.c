@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.6 2010/06/26 18:32:34 reyk Exp $	*/
+/*	$OpenBSD: ca.c,v 1.7 2010/06/27 01:11:09 reyk Exp $	*/
 /*	$vantronix: ca.c,v 1.29 2010/06/02 12:22:58 reyk Exp $	*/
 
 /*
@@ -804,8 +804,10 @@ ca_validate_cert(struct iked *env, struct iked_static_id *id,
 		switch (id->id_type) {
 		case IKEV2_ID_ASN1_DN:
 			idoff = id->id_offset;
-			if (id->id_length > idoff)
+			if (id->id_length <= idoff) {
+				errstr = "invalid ASN1_DN id length";
 				goto done;
+			}
 			idlen = id->id_length - idoff;
 			idptr = id->id_data + idoff;
 
