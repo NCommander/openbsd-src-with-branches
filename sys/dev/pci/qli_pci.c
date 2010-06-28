@@ -1,4 +1,4 @@
-/* $OpenBSD: qli_pci.c,v 1.17 2010/05/18 20:54:34 oga Exp $ */
+/* $OpenBSD: qli_pci.c,v 1.18 2010/05/20 00:55:18 krw Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2007 David Collins <dave@davec.name>
@@ -165,10 +165,6 @@ int		qli_create_sensors(struct qli_softc *);
 
 struct scsi_adapter qli_switch = {
 	qli_scsi_cmd, qliminphys, 0, 0, qli_scsi_ioctl
-};
-
-struct scsi_device qli_dev = {
-	NULL, NULL, NULL, NULL
 };
 
 struct cfdriver qli_cd = {
