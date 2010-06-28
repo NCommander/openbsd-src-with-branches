@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsconsctl.h,v 1.8 2008/06/26 05:42:06 ray Exp $	*/
+/*	$OpenBSD: wsconsctl.h,v 1.9 2009/07/15 20:32:28 martynas Exp $	*/
 /*	$NetBSD: wsconsctl.h 1.1 1998/12/28 14:01:17 hannken Exp $ */
 
 /*-
@@ -67,6 +67,7 @@ void pr_field(const char *, struct field *, const char *);
 void rd_field(struct field *, char *, int);
 int name2ksym(char *);
 char *ksym2name(int);
+void ksymenc(int);
 keysym_t ksym_upcase(keysym_t);
 void keyboard_get_values(const char *,int);
 int keyboard_put_values(const char *,int);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyboard.c,v 1.6 2008/06/26 05:42:06 ray Exp $	*/
+/*	$OpenBSD: keyboard.c,v 1.7 2009/07/15 20:32:28 martynas Exp $	*/
 /*	$NetBSD: keyboard.c 1.1 1998/12/28 14:01:17 hannken Exp $ */
 
 /*-
@@ -98,6 +98,9 @@ keyboard_get_values(const char *pre, int fd)
 		kbmap.maplen = KS_NUMKEYCODES;
 		if (ioctl(fd, WSKBDIO_GETMAP, &kbmap) < 0)
 			warn("WSKBDIO_GETMAP");
+		if (ioctl(fd, WSKBDIO_GETENCODING, &kbdencoding) < 0)
+			warn("WSKBDIO_GETENCODING");
+		ksymenc(kbdencoding);
 	}
 
 	repeat.which = 0;
