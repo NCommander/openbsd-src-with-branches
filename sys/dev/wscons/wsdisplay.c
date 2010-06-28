@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.98 2010/03/30 17:40:55 oga Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.99 2010/04/12 12:57:52 tedu Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -310,7 +310,7 @@ wsscreen_attach(struct wsdisplay_softc *sc, int console, const char *emul,
 	}
 
 	scr->scr_dconf = dconf;
-	scr->scr_tty = ttymalloc();
+	scr->scr_tty = ttymalloc(0);
 	scr->sc = sc;
 	return (scr);
 

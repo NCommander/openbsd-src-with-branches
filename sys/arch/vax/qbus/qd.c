@@ -1,4 +1,4 @@
-/*	$OpenBSD: qd.c,v 1.16 2009/11/09 17:53:39 nicm Exp $	*/
+/*	$OpenBSD: qd.c,v 1.17 2010/04/12 12:57:52 tedu Exp $	*/
 /*	$NetBSD: qd.c,v 1.17 2000/01/24 02:40:29 matt Exp $	*/
 
 /*-
@@ -826,7 +826,7 @@ qdopen(dev, flag, mode, p)
 	   
 	       /* If not done already, allocate tty structure */
 	       if (qd_tty[minor_dev] == NULL)
-		       qd_tty[minor_dev] = ttymalloc();
+		       qd_tty[minor_dev] = ttymalloc(0);
 	      
 	       /*
 		* this is the console 

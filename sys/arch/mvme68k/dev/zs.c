@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.31 2010/04/12 12:57:52 tedu Exp $ */
+/*	$OpenBSD: zs.c,v 1.32 2010/06/26 23:24:43 guenther Exp $ */
 
 /*
  * Copyright (c) 2000 Steve Murphree, Jr.
@@ -351,7 +351,7 @@ zsopen(dev, flag, mode, p)
 
 	zp = &sc->sc_zs[zsside(dev)];
 	if (zp->tty == NULL) {
-		zp->tty = ttymalloc();
+		zp->tty = ttymalloc(0);
 		zs_ttydef(zp);
 		if (minor(dev) < NZSLINE)
 			zs_tty[minor(dev)] = zp->tty;

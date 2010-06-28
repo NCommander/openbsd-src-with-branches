@@ -1,4 +1,4 @@
-/*	$OpenBSD: bugtty.c,v 1.12 2009/10/31 12:00:07 fgsch Exp $ */
+/*	$OpenBSD: bugtty.c,v 1.13 2010/04/12 12:57:52 tedu Exp $ */
 
 /* Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1995 Dale Rahn.
@@ -165,7 +165,7 @@ bugttyopen(dev, flag, mode, p)
 	if (bugtty_tty[unit]) {
 		tp = bugtty_tty[unit];
 	} else {
-		tp = bugtty_tty[unit] = ttymalloc();
+		tp = bugtty_tty[unit] = ttymalloc(0);
 	}
 	tp->t_oproc = bugttyoutput;
 	tp->t_param = NULL;

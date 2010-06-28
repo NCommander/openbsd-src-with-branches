@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.29 2010/04/12 12:57:52 tedu Exp $	*/
+/*	$OpenBSD: cy.c,v 1.30 2010/06/26 23:24:44 guenther Exp $	*/
 /*
  * Copyright (c) 1996 Timo Rossi.
  * All rights reserved.
@@ -299,7 +299,7 @@ cyopen(dev, flag, mode, p)
 
 	s = spltty();
 	if (cy->cy_tty == NULL) {
-		cy->cy_tty = ttymalloc();
+		cy->cy_tty = ttymalloc(0);
 	}
 	splx(s);
 

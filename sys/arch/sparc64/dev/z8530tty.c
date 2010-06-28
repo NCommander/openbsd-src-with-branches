@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530tty.c,v 1.19 2010/03/03 20:13:34 miod Exp $	*/
+/*	$OpenBSD: z8530tty.c,v 1.20 2010/04/12 12:57:52 tedu Exp $	*/
 /*	$NetBSD: z8530tty.c,v 1.77 2001/05/30 15:24:24 lukem Exp $	*/
 
 /*-
@@ -334,7 +334,7 @@ zstty_attach(parent, self, aux)
 
 	printf("\n");
 
-	tp = ttymalloc();
+	tp = ttymalloc(0);
 	tp->t_dev = dev;
 	tp->t_oproc = zsstart;
 	tp->t_param = zsparam;

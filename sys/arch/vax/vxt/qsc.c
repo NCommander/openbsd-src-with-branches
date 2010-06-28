@@ -1,4 +1,4 @@
-/*	$OpenBSD: qsc.c,v 1.5 2009/11/09 17:53:39 nicm Exp $	*/
+/*	$OpenBSD: qsc.c,v 1.6 2010/04/12 12:57:52 tedu Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -569,7 +569,7 @@ qscopen(dev_t dev, int flag, int mode, struct proc *p)
 	if (sc->sc_tty[line] != NULL)
 		tp = sc->sc_tty[line];
 	else
-		tp = sc->sc_tty[line] = ttymalloc();
+		tp = sc->sc_tty[line] = ttymalloc(0);
 
 	tp->t_oproc = qscstart;
 	tp->t_param = qscparam;
