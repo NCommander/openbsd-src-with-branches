@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiopvar.h,v 1.9 2003/11/16 20:30:06 avsm Exp $	*/
+/*	$OpenBSD: osiopvar.h,v 1.10 2007/04/13 18:34:48 krw Exp $	*/
 /*	$NetBSD: osiopvar.h,v 1.3 2002/05/14 02:58:35 matt Exp $	*/
 
 /*
@@ -214,8 +214,10 @@ struct osiop_softc {
 	TAILQ_HEAD(acb_list, osiop_acb) free_list,
 				        ready_list,
 				        nexus_list;
+	struct mutex free_list_mtx;
 
 	struct scsi_link    sc_link;
+	struct scsi_iopool  sc_iopool;
 
 	struct osiop_tinfo sc_tinfo[OSIOP_NTGT];
 
