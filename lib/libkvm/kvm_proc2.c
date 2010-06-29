@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_proc.c,v 1.39 2009/10/27 23:59:28 deraadt Exp $	*/
+/*	$OpenBSD: kvm_proc2.c,v 1.1 2010/01/10 03:37:50 guenther Exp $	*/
 /*	$NetBSD: kvm_proc.c,v 1.30 1999/03/24 05:50:50 mrg Exp $	*/
 /*-
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
@@ -329,6 +329,12 @@ kvm_getproc2(kvm_t *kd, int op, int arg, size_t esize, int *cnt)
 		int i, maxprocs;
 		struct proc *p;
 		char *bp;
+
+		if (esize > sizeof(struct kinfo_proc2)) {
+			_kvm_syserr(kd, kd->program,
+			    "kvm_getproc2: unknown fields requested: libkvm out of date?");
+			return (NULL);
+		}
 
 		memset(nl, 0, sizeof(nl));
 		nl[0].n_name = "_nprocs";

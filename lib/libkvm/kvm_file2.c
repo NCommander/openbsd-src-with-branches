@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_file2.c,v 1.13 2009/10/27 23:59:28 deraadt Exp $	*/
+/*	$OpenBSD: kvm_file2.c,v 1.14 2010/01/10 03:37:50 guenther Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -172,6 +172,11 @@ kvm_getfile2(kvm_t *kd, int op, int arg, size_t esize, int *cnt)
 		*cnt = size / esize;
 		return ((struct kinfo_file2 *)kd->filebase);
 	} else {
+		if (esize > sizeof(struct kinfo_file2)) {
+			_kvm_syserr(kd, kd->program,
+			    "kvm_getfile2: unknown fields requested: libkvm out of date?");
+			return (NULL);
+		}
 	    deadway:
 		switch (op) {
 		case KERN_FILE_BYFILE:
