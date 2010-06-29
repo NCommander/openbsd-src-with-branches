@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.59 2010/06/05 16:14:44 ratchov Exp $	*/
+/*	$OpenBSD: dev.c,v 1.60 2010/06/25 07:32:05 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -216,7 +216,10 @@ dev_open(struct dev *d)
 	d->rec = NULL;
 	d->play = NULL;
 	d->mon = NULL;
+	d->mix = NULL;
+	d->sub = NULL;
 	d->submon = NULL;
+	d->midi = NULL;
 	d->rate = 0;
 
 	/*
