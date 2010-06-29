@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.9 2010/03/07 13:38:58 miod Exp $ */
+/*	$OpenBSD: pci_machdep.h,v 1.10 2010/04/06 19:12:34 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -100,3 +100,5 @@ struct mips_pci_chipset {
 
 void	pccbb_initialize(pci_chipset_tag_t, pcitag_t, uint, uint, uint);
 void	ppb_initialize(pci_chipset_tag_t, pcitag_t, uint, uint, uint);
+
+#define	pci_dev_postattach(a, b)

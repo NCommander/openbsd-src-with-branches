@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.16 2009/07/20 23:40:43 miod Exp $	*/
+/*	$OpenBSD: pci_machdep.h,v 1.17 2009/08/22 02:54:51 mk Exp $	*/
 
 /*
  * Copyright (c) 1996 Carnegie-Mellon University.
@@ -93,3 +93,4 @@ struct ppc_pci_chipset {
 #define	pci_ether_hw_addr(c, s)						\
     (*(c)->pc_ether_hw_addr)((c), (s))
 
+#define	pci_dev_postattach(a, b)
