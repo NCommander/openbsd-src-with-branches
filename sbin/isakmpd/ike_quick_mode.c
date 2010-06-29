@@ -48,7 +48,6 @@
 #include "ike_quick_mode.h"
 #include "ipsec.h"
 #include "log.h"
-#include "math_group.h"
 #include "message.h"
 #include "policy.h"
 #include "prf.h"

@@ -65,7 +65,6 @@
 #include "isakmp_fld.h"
 #include "isakmp_num.h"
 #include "log.h"
-#include "math_group.h"
 #include "message.h"
 #include "nat_traversal.h"
 #include "pf_key_v2.h"
