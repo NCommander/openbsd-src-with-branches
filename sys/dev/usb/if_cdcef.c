@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdcef.c,v 1.23 2008/11/29 10:24:33 matthieu Exp $	*/
+/*	$OpenBSD: if_cdcef.c,v 1.24 2008/12/07 18:47:08 matthieu Exp $	*/
 
 /*
  * Copyright (c) 2007 Dale Rahn <drahn@openbsd.org>
@@ -110,7 +110,7 @@ struct cfattach cdcef_ca = {
 };
 
 struct cfdriver cdcef_cd = {
-	NULL, "cdcef", DV_DULL
+	NULL, "cdcef", DV_IFNET
 };
 
 struct usbf_function_methods cdcef_methods = {

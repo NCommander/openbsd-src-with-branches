@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_art.c,v 1.16 2008/09/10 14:01:22 blambert Exp $ */
+/*	$OpenBSD: if_art.c,v 1.17 2009/03/29 21:53:52 sthen Exp $ */
 
 /*
  * Copyright (c) 2004,2005  Internet Business Solutions AG, Zurich, Switzerland
@@ -55,7 +55,7 @@ struct cfattach art_ca = {
 };
 
 struct cfdriver art_cd = {
-	NULL, "art", DV_DULL
+	NULL, "art", DV_IFNET
 };
 
 int
