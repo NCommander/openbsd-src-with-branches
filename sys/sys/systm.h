@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.78 2010/04/06 22:26:59 tedu Exp $	*/
+/*	$OpenBSD: systm.h,v 1.79 2010/04/20 22:05:44 tedu Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -106,6 +106,8 @@ extern struct vnode *swapdev_vp;/* vnode equivalent to above */
 
 struct proc;
 #define curproc curcpu()->ci_curproc
+
+extern int rthreads_enabled;
 
 typedef int	sy_call_t(struct proc *, void *, register_t *);
 
