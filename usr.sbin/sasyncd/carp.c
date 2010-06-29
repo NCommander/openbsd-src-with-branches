@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.10 2009/06/26 13:25:23 deraadt Exp $	*/
+/*	$OpenBSD: carp.c,v 1.11 2010/06/16 17:39:05 reyk Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -46,6 +46,7 @@
 
 int carp_demoted = 0;
 
+/* Map CARP interface link state into RUNSTATE enum */
 static enum RUNSTATE
 carp_map_state(u_char link_state)
 {
@@ -68,7 +69,6 @@ carp_map_state(u_char link_state)
 	return state;
 }
 
-/* Returns 1 for the CARP MASTER, 0 for BACKUP/INIT, -1 on error.  */
 static enum RUNSTATE
 carp_get_state(char *ifname)
 {
