@@ -1,4 +1,4 @@
-/*	$OpenBSD: cu.c,v 1.28 2010/06/29 21:34:50 nicm Exp $	*/
+/*	$OpenBSD: cu.c,v 1.29 2010/06/29 23:10:56 nicm Exp $	*/
 /*	$NetBSD: cu.c,v 1.5 1997/02/11 09:24:05 mrg Exp $	*/
 
 /*
@@ -130,8 +130,7 @@ getopt:
 
 	switch (argc) {
 	case 1:
-		PN = argv[0];
-		break;
+		/* Was phone number but now ignored. */
 	case 0:
 		break;
 	default:
@@ -186,7 +185,6 @@ getopt:
 static void
 cuusage(void)
 {
-	fprintf(stderr, "usage: cu [-eho] [-l line] "
-	    "[-s speed | -speed] [phone-number]\n");
+	fprintf(stderr, "usage: cu [-eho] [-l line] [-s speed | -speed]\n");
 	exit(8);
 }
