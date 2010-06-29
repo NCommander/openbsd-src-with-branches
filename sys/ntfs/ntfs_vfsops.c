@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vfsops.c,v 1.14 2009/07/09 22:29:56 thib Exp $	*/
+/*	$OpenBSD: ntfs_vfsops.c,v 1.15 2009/08/13 16:00:53 jasper Exp $	*/
 /*	$NetBSD: ntfs_vfsops.c,v 1.7 2003/04/24 07:50:19 christos Exp $	*/
 
 /*-
@@ -472,7 +472,7 @@ ntfs_mountfs(devvp, mp, argsp, p)
 	}
 
 	mp->mnt_stat.f_fsid.val[0] = dev;
-	mp->mnt_stat.f_fsid.val[1] = makefstype(MOUNT_NTFS);
+	mp->mnt_stat.f_fsid.val[1] = mp->mnt_vfc->vfc_typenum;
 	mp->mnt_maxsymlinklen = 0;
 	mp->mnt_flag |= MNT_LOCAL;
 	devvp->v_specmountpoint = mp;

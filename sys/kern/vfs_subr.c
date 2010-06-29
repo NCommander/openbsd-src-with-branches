@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.185 2010/05/06 06:53:09 mpf Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.186 2010/06/28 18:50:36 claudio Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -275,23 +275,6 @@ vfs_getnewfsid(struct mount *mp)
 		}
 	}
 	mp->mnt_stat.f_fsid.val[0] = tfsid.val[0];
-}
-
-/*
- * Make a 'unique' number from a mount type name.
- * Note that this is no longer used for ffs which
- * now has an on-disk filesystem id.
- */
-long
-makefstype(char *type)
-{
-	long rv;
-
-	for (rv = 0; *type; type++) {
-		rv <<= 2;
-		rv ^= *type;
-	}
-	return rv;
 }
 
 /*
