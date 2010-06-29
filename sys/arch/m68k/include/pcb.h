@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.4 2003/06/02 23:27:45 millert Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.1 2003/10/09 21:48:47 miod Exp $	*/
 /*	$NetBSD: pcb.h,v 1.8 1995/05/12 12:55:17 mycroft Exp $	*/
 
 /*
@@ -58,12 +58,9 @@ struct pcb {
 };
 
 /*
- * The pcb is augmented with machine-dependent additional data for
- * core dumps. For ports providing COMPAT_HPUX, this includes an HP-UX
- * exec header which is dumped for HP-UX processes.
+ * No additional data needed for core dumps.
  */
 struct md_coredump {
-	int	md_exec[16];	/* exec structure for HP-UX core dumps */
 };
 
 #endif /* _M68K_PCB_H_ */
