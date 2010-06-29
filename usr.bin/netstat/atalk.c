@@ -1,4 +1,4 @@
-/*	$OpenBSD: atalk.c,v 1.17 2009/02/07 15:06:04 chl Exp $	*/
+/*	$OpenBSD: atalk.c,v 1.18 2010/05/23 10:12:42 chl Exp $	*/
 /*	$NetBSD: atalk.c,v 1.2 1997/05/22 17:21:26 christos Exp $	*/
 
 /*
@@ -196,7 +196,7 @@ atalk_print(const struct sockaddr *sa, int what)
 }
 
 void
-atalkprotopr(u_long off, char *name)
+atalkprotopr(u_long off, char *name, int af)
 {
 	struct ddpcb    cb;
 	struct ddpcb *prev, *next;
