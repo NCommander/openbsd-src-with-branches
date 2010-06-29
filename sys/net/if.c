@@ -1486,6 +1486,12 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 		if (ifr->ifr_rdomainid < 0 ||
 		    ifr->ifr_rdomainid > RT_TABLEID_MAX)
 			return (EINVAL);
+
+		/* Let devices like enc(4) enforce the rdomain */
+		if ((error = (*ifp->if_ioctl)(ifp, cmd, data)) != ENOTTY)
+			return (error);
+		error = 0;
+
 		/* remove all routing entries when switching domains */
 		/* XXX hell this is ugly */
 		if (ifr->ifr_rdomainid != ifp->if_rdomain) {
@@ -1520,17 +1526,8 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 #endif
 		}
 
-		/* make sure that the routing table exists */
-		if (!rtable_exists(ifr->ifr_rdomainid)) {
-			if (rtable_add(ifr->ifr_rdomainid) == -1)
-				panic("rtinit: rtable_add");
-		}
-		if (ifr->ifr_rdomainid != rtable_l2(ifr->ifr_rdomainid)) {
-			/* XXX we should probably flush the table */
-			rtable_l2set(ifr->ifr_rdomainid, ifr->ifr_rdomainid);
-		}
-
-		ifp->if_rdomain = ifr->ifr_rdomainid;
+		/* Add interface to the specified rdomain */
+		rtable_addif(ifp, ifr->ifr_rdomainid);
 		break;
 
 	case SIOCAIFGROUP:
