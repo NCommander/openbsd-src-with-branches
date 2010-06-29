@@ -1,4 +1,4 @@
-/*	$OpenBSD: conn.c,v 1.2 2010/05/31 18:29:04 martinh Exp $ */
+/*	$OpenBSD: conn.c,v 1.3 2010/06/27 18:31:13 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -266,6 +266,7 @@ conn_accept(int fd, short why, void *data)
 	conn->s_l = l;
 	ber_set_application(&conn->ber, ldap_application);
 	conn->fd = afd;
+	conn->listener = l;
 
 	if (l->flags & F_LDAPS) {
 		ssl_session_init(conn);

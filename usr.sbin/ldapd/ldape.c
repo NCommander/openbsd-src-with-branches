@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldape.c,v 1.5 2010/06/15 15:12:54 martinh Exp $ */
+/*	$OpenBSD: ldape.c,v 1.6 2010/06/23 12:40:19 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -153,6 +153,11 @@ ldap_unbind(struct request *req)
 int
 ldap_starttls(struct request *req)
 {
+	if ((req->conn->listener->flags & F_STARTTLS) == 0) {
+		log_debug("StartTLS not configured for this connection");
+		return LDAP_OPERATIONS_ERROR;
+	}
+
 	req->conn->s_flags |= F_STARTTLS;
 	return LDAP_SUCCESS;
 }
