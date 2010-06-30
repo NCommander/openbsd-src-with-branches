@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkuboot.c,v 1.2 2010/06/30 01:59:44 drahn Exp $	*/
+/*	$OpenBSD: mkuboot.c,v 1.2 2010/06/30 02:02:01 drahn Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -274,7 +274,7 @@ usage(void)
 
 	(void)fprintf(stderr,
 	    "usage: %s [-a arch] [-e entry] [-l loadaddr] [-n name] [-o os] "
-	    "[-t type ] infile outfile\n", __progname);
+	    "[-t type] infile outfile\n", __progname);
 	(void)fprintf(stderr,
 	    "arch is one of:");
 	for (mapptr = archmap; mapptr->arch; mapptr++)
