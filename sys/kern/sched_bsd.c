@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.21 2009/04/14 09:13:25 art Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.22 2010/01/03 19:17:33 kettenis Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -201,7 +201,7 @@ fixpt_t	ccpu = 0.95122942450071400909 * FSCALE;		/* exp(-1/20) */
 #define	CCPU_SHIFT	11
 
 /*
- * Recompute process priorities, every hz ticks.
+ * Recompute process priorities, every second.
  */
 void
 schedcpu(void *arg)
