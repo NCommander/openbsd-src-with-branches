@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapd.h,v 1.13 2010/06/29 21:00:34 martinh Exp $ */
+/*	$OpenBSD: ldapd.h,v 1.14 2010/06/29 21:54:38 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -241,6 +241,8 @@ struct ldapd_config
 	struct referrals		 referrals;
 	struct acl			 acl;
 	struct schema			*schema;
+	char				*rootdn;
+	char				*rootpw;
 };
 
 struct ldapd_stats
