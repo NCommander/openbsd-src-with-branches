@@ -1,4 +1,4 @@
-/*	$OpenBSD: ddp_usrreq.c,v 1.12 2008/05/23 16:03:03 thib Exp $	*/
+/*	$OpenBSD: ddp_usrreq.c,v 1.13 2010/06/26 23:24:45 guenther Exp $	*/
 
 /*
  * Copyright (c) 1990,1994 Regents of The University of Michigan.
@@ -60,6 +60,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/sysctl.h>
 #include <sys/protosw.h>
 #include <net/if.h>
 #include <net/route.h>
