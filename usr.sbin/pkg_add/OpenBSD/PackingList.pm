@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingList.pm,v 1.105 2010/05/10 09:17:55 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #

@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddCreateDelete.pm,v 1.7 2010/06/25 10:19:00 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #

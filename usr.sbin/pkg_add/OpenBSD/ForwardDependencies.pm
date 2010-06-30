@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ForwardDependencies.pm,v 1.6 2010/05/10 09:17:55 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2009 Marc Espie <espie@openbsd.org>
 #
@@ -52,7 +52,7 @@ sub adjust
 				$deps_f->delete($check);
 			} else {
 				my $r = $h->{update_found}->pkgname;
-				$state->say("Adjusting #1 to #2 in #3", 
+				$state->say("Adjusting #1 to #2 in #3",
 				    $check, $r, $f)
 					if $state->verbose >= 3;
 				if ($check ne $r) {

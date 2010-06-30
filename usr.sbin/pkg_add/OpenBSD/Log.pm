@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddDelete.pm,v 1.25 2010/06/09 08:13:19 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2007-2010 Marc Espie <espie@openbsd.org>
 #
@@ -105,13 +105,13 @@ sub system
 			$self->{p}->_print($_);
 		}
 		if (!close $grab) {
-			$self->{p}->say("system(#1) failed: #2 #3", 
+			$self->{p}->say("system(#1) failed: #2 #3",
 			    join(", ", @_), $!,
 			    $self->{p}->child_error);
 		}
 		return $?;
 	} else {
-		$self->{p}->say("system(#1) was not run: #2 #3", 
+		$self->{p}->say("system(#1) was not run: #2 #3",
 		    join(", ", @_), $!, $self->{p}->child_error);
 	}
 }

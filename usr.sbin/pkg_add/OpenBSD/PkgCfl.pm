@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCfl.pm,v 1.31 2010/06/04 17:29:53 espie Exp $
+# $OpenBSD$
 #
 # Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
 #
