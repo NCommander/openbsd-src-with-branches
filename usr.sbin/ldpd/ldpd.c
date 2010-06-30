@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.8 2010/05/26 13:56:07 nicm Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.9 2010/06/02 16:01:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -428,12 +428,6 @@ main_dispatch_lde(int fd, short event, void *bula)
 			break;
 
 		switch (imsg.hdr.type) {
-		case IMSG_KLABEL_INSERT:
-			if (imsg.hdr.len - IMSG_HEADER_SIZE !=
-			    sizeof(struct kroute))
-				fatalx("invalid size of IMSG_KLABEL_INSERT");
-			kroute_insert_label(imsg.data);
-			break;
 		case IMSG_KLABEL_CHANGE:
 			if (imsg.hdr.len - IMSG_HEADER_SIZE !=
 			    sizeof(struct kroute))
