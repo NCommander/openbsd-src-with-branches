@@ -202,13 +202,7 @@ sub vsystem
 	if ($self->verbose < 2) {
 		$self->system(@_);
 	} else {
-		$self->print("Running #1", join(' ', @_));
-		my $r = CORE::system(@_);
-		if ($r != 0) {
-			$self->say("... failed: #1", $self->child_error);
-		} else {
-			$self->say("");
-		}
+		$self->verbose_system(@_);
 	}
 }
 

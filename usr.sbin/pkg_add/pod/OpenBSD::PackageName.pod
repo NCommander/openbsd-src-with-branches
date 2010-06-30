@@ -1,4 +1,4 @@
-$OpenBSD: OpenBSD::PackageName.pod,v 1.2 2006/02/22 18:34:49 bernd Exp $
+$OpenBSD$
 
 =head1 NAME
 

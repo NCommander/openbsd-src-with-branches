@@ -104,7 +104,7 @@ sub collision_report($$)
 				    $state->errsay(" (different checksum)");
 			    }
 		    } else {
-			    $state->errsay("");
+			    $state->errsay;
 		    }
 	    	}
 	}

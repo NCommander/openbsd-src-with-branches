@@ -1,4 +1,4 @@
-$OpenBSD: OpenBSD::PackingList.pod,v 1.7 2007/05/02 15:17:36 espie Exp $
+$OpenBSD$
 
 =head1 NAME
 

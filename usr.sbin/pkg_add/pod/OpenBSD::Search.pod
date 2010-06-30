@@ -1,4 +1,4 @@
-$OpenBSD: OpenBSD::Search.pod,v 1.2 2009/11/10 11:01:15 espie Exp $
+$OpenBSD$
 
 =head1 NAME
 

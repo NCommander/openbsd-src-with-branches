@@ -178,7 +178,11 @@ sub print
 sub say
 {
 	my $self = shift;
-	$self->_print($self->f(@_), "\n");
+	if (@_ == 0) {
+		$self->_print("\n");
+	} else {
+		$self->_print($self->f(@_), "\n");
+	}
 }
 
 sub errprint
@@ -190,7 +194,11 @@ sub errprint
 sub errsay
 {
 	my $self = shift;
-	$self->_errprint($self->f(@_), "\n");
+	if (@_ == 0) {
+		$self->_errprint("\n");
+	} else {
+		$self->_errprint($self->f(@_), "\n");
+	}
 }
 
 sub do_options
@@ -300,6 +308,19 @@ sub system
 		    join(", ", @_), $self->child_error);
 	}
 	return $r;
+}
+
+sub verbose_system
+{
+	my $self = shift;
+
+	$self->print("Running #1", join(' ', @_));
+	my $r = CORE::system(@_);
+	if ($r != 0) {
+		$self->say("... failed: #1", $self->child_error);
+	} else {
+		$self->say;
+	}
 }
 
 sub copy_file

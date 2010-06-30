@@ -22,6 +22,6 @@ C<@sublist> will only hold the package names that match the specification.
 
 For performance reason, the result may contain duplicates.
 
-Note that any pattern will create a C<PkgSpec> object. If the syntax is 
+Note that any pattern will create a C<PkgSpec> object. If the syntax is
 incorrect, the resulting object won't match anything. Use
 C<$spec-E<gt>is_valid> to check for correctness.

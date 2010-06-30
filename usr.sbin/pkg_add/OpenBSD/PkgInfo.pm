@@ -99,7 +99,7 @@ sub footer
 	if ($state->opt('l')) {
 		$state->say("#1", $state->opt('l'));
 	} else {
-		$state->say("");
+		$state->say;
 	}
 }
 
@@ -114,7 +114,7 @@ sub printfile
 		$state->say("#1", $_);
 	}
 	close $fh;
-	$state->say('');
+	$state->say;
 }
 
 sub print_description
@@ -129,7 +129,7 @@ sub print_description
 		$state->say("#1", $_);
 	}
 	close $fh;
-	$state->say('');
+	$state->say;
 }
 
 sub hasanyopt
@@ -397,7 +397,7 @@ sub print_info
 			$state->header($handle);
 			$state->banner("Files:");
 			$plist->dump_file($state->opt('K'));
-			$state->say('');
+			$state->say;
 		}
 		if ($state->opt('C')) {
 			$state->header($handle);
@@ -436,7 +436,7 @@ sub print_info
 				$state->say("#1", $plist->fullpkgpath);
 			} else {
 				$state->errsay("#1 has no FULLPKGPATH", $plist->pkgname);
-				$state->say("");
+				$state->say;
 			}
 		}
 
@@ -444,7 +444,7 @@ sub print_info
 			$state->header($handle);
 			$state->banner("Packing-list:");
 			$plist->write(\*STDOUT);
-			$state->say('');
+			$state->say;
 		}
 		$state->footer($handle);
 	}

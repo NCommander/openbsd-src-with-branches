@@ -1,4 +1,4 @@
-$OpenBSD: OpenBSD::Mtree.pod,v 1.2 2005/03/07 21:39:53 espie Exp $
+$OpenBSD$
 
 =head1 NAME
 
