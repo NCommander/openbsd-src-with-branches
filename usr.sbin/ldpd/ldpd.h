@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.h,v 1.20 2010/05/25 13:29:45 claudio Exp $ */
+/*	$OpenBSD: ldpd.h,v 1.21 2010/05/26 13:56:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -184,7 +184,7 @@ enum nbr_action {
 TAILQ_HEAD(mapping_head, mapping_entry);
 
 struct map {
-	u_int32_t	prefix;
+	struct in_addr	prefix;
 	u_int32_t	label;
 	u_int32_t	messageid;
 	u_int32_t	requestid;
