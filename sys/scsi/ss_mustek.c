@@ -1,4 +1,4 @@
-/*	$OpenBSD: ss_mustek.c,v 1.23 2010/06/11 12:02:44 krw Exp $	*/
+/*	$OpenBSD: ss_mustek.c,v 1.24 2010/06/26 23:24:45 guenther Exp $	*/
 /*	$NetBSD: ss_mustek.c,v 1.4 1996/05/05 19:52:57 christos Exp $	*/
 
 /*
@@ -487,7 +487,7 @@ mustek_read_done(struct scsi_xfer *xs)
 		/* The adapter is busy, requeue the buf and try it later. */
 		BUFQ_REQUEUE(ss->sc_bufq, bp);
                 scsi_xs_put(xs);
-		SET(ss->flags, SSF_WAITING); /* break out of cdstart loop */
+		SET(ss->flags, SSF_WAITING);
 		timeout_add(&ss->timeout, 1);
 		return;
 
