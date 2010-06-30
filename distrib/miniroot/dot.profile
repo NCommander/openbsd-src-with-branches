@@ -61,7 +61,8 @@ if [ "X${DONEPROFILE}" = "X" ]; then
 
 Welcome to the $OBSD installation program.
 __EOT
-	while read REPLY?'(I)nstall, (U)pgrade or (S)hell? '; do
+	while :; do
+		read REPLY?'(I)nstall, (U)pgrade or (S)hell? '
 		case $REPLY in
 		i*|I*)	/install && break
 			;;
