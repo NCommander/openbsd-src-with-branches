@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.8 2004/07/04 01:13:07 deraadt Exp $	*/
+/*	$OpenBSD: exec.h,v 1.9 2007/02/13 20:07:10 miod Exp $	*/
 /*	$NetBSD: exec.h,v 1.1 1995/02/13 23:07:37 cgd Exp $	*/
 
 /*
@@ -47,9 +47,6 @@
 #define _NLIST_DO_ECOFF
 #define _NLIST_DO_ELF
 
-#ifdef COMPAT_OSF1
-#define _KERN_DO_ECOFF
-#endif
 #define _KERN_DO_ELF64
 
 #endif /* !_ALPHA_EXEC_H_ */
