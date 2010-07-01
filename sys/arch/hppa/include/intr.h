@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.29 2010/04/19 16:32:53 jsing Exp $	*/
+/*	$OpenBSD: intr.h,v 1.32 2010/06/08 12:33:30 jsing Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -62,8 +62,6 @@
 #endif
 
 #if !defined(_LOCORE) && defined(_KERNEL)
-
-#include <machine/atomic.h>
 
 extern volatile u_long imask[NIPL];
 

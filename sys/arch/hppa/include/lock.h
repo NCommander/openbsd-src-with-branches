@@ -1,9 +1,11 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lock.h,v 1.1 2007/05/01 18:56:30 miod Exp $	*/
 
 /* public domain */
 
 #ifndef	_HPPA_LOCK_H_
 #define	_HPPA_LOCK_H_
+
+#include <machine/atomic.h>
 
 typedef volatile u_int __cpu_simple_lock_t __attribute__((__aligned__(16)));
 
