@@ -19,7 +19,15 @@
 #ifndef _MACHINE_FPU_H_
 #define _MACHINE_FPU_H_
 
-void	fpu_proc_save(struct proc *);
+#include <machine/cpu.h>
+#include <machine/reg.h>
+
+struct hppa_fpstate {
+	struct fpreg hfp_regs;
+	volatile struct cpu_info *hfp_cpu;	/* CPU which FPU state is on. */
+};
+
 void	fpu_proc_flush(struct proc *);
+void	fpu_proc_save(struct proc *);
 
 #endif /* _MACHINE_FPU_H_ */
