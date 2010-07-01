@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.2 2010/05/31 18:29:04 martinh Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.3 2010/06/27 18:19:36 martinh Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -94,7 +94,6 @@ ssl_read(int fd, short event, void *p)
 	int			 howmuch = IBUF_READ_SIZE;
 
 	what = EVBUFFER_READ;
-	ret = ssl_err = 0;
 
 	if (event == EV_TIMEOUT) {
 		what |= EVBUFFER_TIMEOUT;
@@ -163,7 +162,6 @@ ssl_write(int fd, short event, void *p)
 	int			 ssl_err;
 	short			 what;
 
-	ret = 0;
 	what = EVBUFFER_WRITE;
 
 	if (event == EV_TIMEOUT) {
@@ -450,8 +448,6 @@ ssl_session_accept(int fd, short event, void *p)
 		conn_close(s);
 		return;
 	}
-
-	ssl_err = 0;
 
 	log_debug("ssl_session_accept: accepting client");
 	ret = SSL_accept(s->s_ssl);
