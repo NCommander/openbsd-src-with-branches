@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.11 2008/07/21 04:35:54 todd Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.12 2010/05/24 15:06:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2005 Michael Shalayeff
@@ -343,6 +343,8 @@ pdc_scan(struct device *self, struct confargs *ca)
 		}
 	}
 }
+
+struct pdc_pat_pci_rt *pdc_getirt(int *);
 
 struct pdc_pat_pci_rt *
 pdc_getirt(int *pn)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: apic.c,v 1.3 2009/08/22 02:54:50 mk Exp $	*/
+/*	$OpenBSD: apic.c,v 1.4 2010/05/24 15:06:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -30,6 +30,8 @@
 #include <hppa64/dev/elroyreg.h>
 #include <hppa64/dev/elroyvar.h>
 
+void		apic_write(volatile struct elroy_regs *, u_int32_t, u_int32_t);
+u_int32_t	apic_read(volatile struct elroy_regs *, u_int32_t);
 
 void
 apic_write(volatile struct elroy_regs *r, u_int32_t reg, u_int32_t val)
