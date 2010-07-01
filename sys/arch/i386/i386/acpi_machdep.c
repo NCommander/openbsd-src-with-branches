@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.31 2010/07/01 00:48:48 mlarkin Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.32 2010/07/01 03:22:12 jsg Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -251,7 +251,7 @@ acpi_sleep_machdep(struct acpi_softc *sc, int state)
 		/* Suspend path */
 		npxsave_cpu(curcpu(), 1);
 #ifdef MULTIPROCESSOR
-		i386_broadcast_ipi(I386_IPI_FLUSH_FPU);
+		i386_broadcast_ipi(I386_IPI_SYNCH_FPU);
 		i386_broadcast_ipi(I386_IPI_HALT);
 #endif
 		wbinvd();
