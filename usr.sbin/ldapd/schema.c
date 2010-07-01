@@ -1,4 +1,4 @@
-/*	$OpenBSD: schema.c,v 1.3 2010/06/30 19:42:40 martinh Exp $ */
+/*	$OpenBSD: schema.c,v 1.4 2010/07/01 03:47:59 martinh Exp $ */
 
 /*
  * Copyright (c) 2010 Martin Hedenfalk <martinh@openbsd.org>
@@ -586,8 +586,10 @@ schema_parse_attrlist(struct schema *schema)
 		}
 		if (token != STRING)
 			goto fail;
-		if ((attr = lookup_attribute(schema, kw)) == NULL)
+		if ((attr = lookup_attribute(schema, kw)) == NULL) {
+			schema_err(schema, "%s: no such attribute", kw);
 			goto fail;
+		}
 		alist = push_attr(alist, attr);
 		want_dollar = 1;
 	}
