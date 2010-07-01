@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.22 2010/06/09 15:44:17 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.23 2010/06/29 20:30:32 guenther Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -140,6 +140,12 @@ static __inline void fall(int, int, int, int, int);
 void dumpsys(void);
 void hpmc_dump(void);
 void cpuid(void);
+
+/*
+ * safepri is a safe priority for sleep to set for a spin-wait
+ * during autoconfiguration or after a panic.
+ */
+int	safepri = 0;
 
 /*
  * wide used hardware params
