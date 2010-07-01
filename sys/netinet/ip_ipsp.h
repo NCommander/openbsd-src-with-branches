@@ -372,6 +372,7 @@ struct tdb {				/* tunnel descriptor block */
 	u_int16_t	tdb_udpencap_port;	/* Peer UDP port */
 
 	u_int16_t	tdb_tag;		/* Packet filter tag */
+	u_int32_t	tdb_tap;		/* Alternate enc(4) interface */
 
 	struct sockaddr_encap   tdb_filter; /* What traffic is acceptable */
 	struct sockaddr_encap   tdb_filtermask; /* And the mask */

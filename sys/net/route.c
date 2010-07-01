@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.120 2010/06/28 18:50:37 claudio Exp $	*/
+/*	$OpenBSD: route.c,v 1.121 2010/06/29 21:28:37 reyk Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -170,7 +170,7 @@ encap_findgwifa(struct sockaddr *gw)
 {
 	struct ifnet	*encif;
 
-	if ((encif = enc_getif(0)) == NULL)
+	if ((encif = enc_getif(0, 0)) == NULL)
 		return (NULL);
 
 	return (TAILQ_FIRST(&encif->if_addrlist));
