@@ -213,7 +213,7 @@ union acpi_resource {
 			    3+(x)->hdr.length : 1+((x)->hdr.typecode & 0x7))
 
 int			aml_print_resource(union acpi_resource *, void *);
-int			aml_parse_resource(struct aml_value *,
+int			aml_parse_resource(int, uint8_t *,
 			    int (*)(union acpi_resource *, void *), void *);
 
 #define ACPI_E_NOERROR   0x00
