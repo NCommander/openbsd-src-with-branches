@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid1.c,v 1.21 2009/12/15 13:19:37 jsing Exp $ */
+/* $OpenBSD: softraid_raid1.c,v 1.23 2010/03/26 11:20:34 jsing Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  *
@@ -416,6 +416,7 @@ sr_raid1_rw(struct sr_workunit *wu)
 		b->b_data = xs->data;
 		b->b_error = 0;
 		b->b_proc = curproc;
+		b->b_bq = NULL;
 		ccb->ccb_wu = wu;
 
 		if (xs->flags & SCSI_DATA_IN) {

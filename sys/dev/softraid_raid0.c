@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid0.c,v 1.18 2009/12/15 13:19:37 jsing Exp $ */
+/* $OpenBSD: softraid_raid0.c,v 1.20 2010/03/26 11:20:34 jsing Exp $ */
 /*
  * Copyright (c) 2008 Marco Peereboom <marco@peereboom.us>
  *
@@ -337,6 +337,7 @@ sr_raid0_rw(struct sr_workunit *wu)
 		ccb->ccb_buf.b_data = data;
 		ccb->ccb_buf.b_error = 0;
 		ccb->ccb_buf.b_proc = curproc;
+		ccb->ccb_buf.b_bq = NULL;
 		ccb->ccb_wu = wu;
 		ccb->ccb_buf.b_flags |= xs->flags & SCSI_DATA_IN ?
 		    B_READ : B_WRITE;
