@@ -1,4 +1,4 @@
-/*	$OpenBSD: mesh.c,v 1.26 2010/04/09 17:01:30 jasper Exp $	*/
+/*	$OpenBSD: mesh.c,v 1.27 2010/06/28 18:31:01 krw Exp $	*/
 /*	$NetBSD: mesh.c,v 1.1 1999/02/19 13:06:03 tsubai Exp $	*/
 
 /*-
@@ -175,8 +175,6 @@ struct mesh_scb {
 struct mesh_softc {
 	struct device sc_dev;		/* us as a device */
 	struct scsi_link sc_link;
-
-	struct scsibus_softc *sc_scsibus;
 
 	u_char *sc_reg;			/* MESH base address */
 	bus_dmamap_t sc_dmamap;
