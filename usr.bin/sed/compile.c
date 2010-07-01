@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile.c,v 1.30 2009/10/23 15:24:41 reyk Exp $	*/
+/*	$OpenBSD: compile.c,v 1.31 2009/10/27 23:59:43 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -357,7 +357,7 @@ compile_delimited(char *p, char *d)
 	else if (c == '\n')
 		err(COMPILE, "newline can not be used as a string delimiter");
 	while (*p) {
-		if (*p == '[') {
+		if (*p == '[' && *p != c) {
 			if ((d = compile_ccl(&p, d)) == NULL)
 				err(COMPILE, "unbalanced brackets ([])");
 			continue;
