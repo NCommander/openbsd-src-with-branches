@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.198 2010/06/28 08:35:46 jsing Exp $	*/
+/*	$OpenBSD: sd.c,v 1.199 2010/06/30 19:06:29 kettenis Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -727,6 +727,7 @@ sdstart(struct scsi_xfer *xs)
 
 	xs->done = sd_buf_done;
 	xs->cookie = bp;
+	xs->bp = bp;
 
 	/* Instrumentation. */
 	disk_busy(&sc->sc_dk);

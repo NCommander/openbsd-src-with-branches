@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath.c,v 1.15 2010/06/27 03:34:29 matthew Exp $ */
+/*	$OpenBSD: mpath.c,v 1.16 2010/06/28 18:31:02 krw Exp $ */
 
 /*
  * Copyright (c) 2009 David Gwynne <dlg@openbsd.org>
@@ -163,6 +163,7 @@ mpath_cmd(struct scsi_xfer *xs)
 	mxs->datalen = xs->datalen;
 	mxs->retries = xs->retries;
 	mxs->timeout = xs->timeout;
+	mxs->bp = xs->bp;
 
 	mxs->cookie = xs;
 	mxs->done = mpath_done;
