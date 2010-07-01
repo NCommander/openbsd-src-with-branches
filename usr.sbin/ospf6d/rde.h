@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.20 2010/03/01 08:55:45 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.21 2010/07/01 18:57:21 bluhm Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -73,7 +73,7 @@ struct rde_nbr {
 	struct iface			*iface;
 	u_int32_t			 peerid;	/* unique ID in DB */
 	unsigned int			 ifindex;
-	u_int32_t		 	 iface_id;	/* id of neighbor's
+	u_int32_t			 iface_id;	/* id of neighbor's
 							   iface */
 	int				 state;
 	int				 self;
