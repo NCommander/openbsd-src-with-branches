@@ -1,4 +1,5 @@
-# $Id: Makefile.inc 39107 2010-01-10 21:05:58Z yasuoka $
+# $OpenBSD$
+# $Id: Makefile.inc,v 1.1 2010/01/11 04:20:56 yasuoka Exp $
 
 .include <bsd.own.mk>
 
