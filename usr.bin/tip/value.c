@@ -1,4 +1,4 @@
-/*	$OpenBSD: value.c,v 1.22 2010/06/29 23:10:56 nicm Exp $	*/
+/*	$OpenBSD: value.c,v 1.23 2010/06/30 00:26:49 nicm Exp $	*/
 /*	$NetBSD: value.c,v 1.6 1997/02/11 09:24:09 mrg Exp $	*/
 
 /*
@@ -50,7 +50,6 @@ vinit(void)
 {
 	char file[FILENAME_MAX], *cp;
 	int written;
-	value_t *p;
 	FILE *fp;
 
 	/* Read environment variables. */
