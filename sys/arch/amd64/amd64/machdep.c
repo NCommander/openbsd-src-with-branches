@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.113 2010/06/27 13:28:46 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.114 2010/06/30 19:23:15 oga Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -1240,7 +1240,7 @@ init_x86_64(paddr_t first_avail)
 /*
  * Memory on the AMD64 port is described by three different things.
  *
- * 1. biosbasemem, biosextmem - These are outdated, and should realy
+ * 1. biosbasemem, biosextmem - These are outdated, and should really
  *    only be used to santize the other values.  They are the things
  *    we get back from the BIOS using the legacy routines, usually
  *    only describing the lower 4GB of memory.
