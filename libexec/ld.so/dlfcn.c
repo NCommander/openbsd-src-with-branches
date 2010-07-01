@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.80 2008/06/13 23:14:47 kurt Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.81 2010/05/02 04:57:01 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -85,7 +85,7 @@ dlopen(const char *libname, int flags)
 		/* if opened but grpsym_list has not been created */
 		if (OBJECT_DLREF_CNT(object) == 1) {
 			/* add first object manually */
-			_dl_link_grpsym(object);
+			_dl_link_grpsym(object, 1);
 			_dl_cache_grpsym_list(object);
 		}
 		goto loaded;
