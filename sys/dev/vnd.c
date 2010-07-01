@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.97 2010/05/18 04:41:14 dlg Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.98 2010/07/01 16:22:17 thib Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -57,7 +57,6 @@
  * file, the protection of the mapped file is ignored (effectively,
  * by using root credentials in all transactions).
  *
- * NOTE 3: Doesn't interact with leases, should it?
  */
 
 #include <sys/param.h>
