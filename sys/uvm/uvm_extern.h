@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_extern.h,v 1.85 2010/04/22 19:02:55 oga Exp $	*/
+/*	$OpenBSD: uvm_extern.h,v 1.87 2010/06/27 03:03:49 thib Exp $	*/
 /*	$NetBSD: uvm_extern.h,v 1.57 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -502,6 +502,11 @@ boolean_t		uvm_kernacc(caddr_t, size_t, int);
 int			uvm_vslock(struct proc *, caddr_t, size_t,
 			    vm_prot_t);
 void			uvm_vsunlock(struct proc *, caddr_t, size_t);
+
+int			uvm_vslock_device(struct proc *, void *, size_t,
+			    vm_prot_t, void **);
+void			uvm_vsunlock_device(struct proc *, void *, size_t,
+			    void *);
 
 
 /* uvm_init.c */
