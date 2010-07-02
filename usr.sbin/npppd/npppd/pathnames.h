@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
  * All rights reserved.
@@ -30,7 +32,7 @@
 #define	DEFAULT_NPPPD_CONF		"/etc/npppd/npppd.conf"
 #endif
 
-#ifndef	DEFAULT_NPPPD_USERSFILE	
+#ifndef	DEFAULT_NPPPD_USERSFILE
 #define	DEFAULT_NPPPD_USERSFILE		"/etc/npppd/npppd-users.csv"
 #endif
 

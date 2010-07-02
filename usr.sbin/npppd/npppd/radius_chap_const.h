@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
  * All rights reserved.
@@ -52,7 +54,7 @@ struct RADIUS_MS_CHAP2_SUCCESS {
 
 struct RADIUS_MPPE_KEY {
 	char salt[2];
-	char key[253];	
+	char key[253];
 	/*
 	 * XXX: Having maximum size for RADIUS attribute is required to prevent
 	 * XXX: oveflow by radius_get_vs_raw_attr().

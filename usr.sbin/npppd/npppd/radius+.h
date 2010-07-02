@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
  * All rights reserved.
@@ -24,7 +26,7 @@
  * SUCH DAMAGE.
  */
 /*
- * radius+.h : 
+ * radius+.h :
  *   yet another RADIUS library
  */
 #ifndef RADIUS_PLUS_H

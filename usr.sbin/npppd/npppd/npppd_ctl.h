@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
  * All rights reserved.
@@ -35,7 +37,7 @@
 /** connected user statistics */
 #define	NPPPD_CTL_CMD_WHO 			1
 
-#ifndef DEFAULT_NPPPD_CTL_MAX_MSGSZ	
+#ifndef DEFAULT_NPPPD_CTL_MAX_MSGSZ
 #define	DEFAULT_NPPPD_CTL_MAX_MSGSZ	51200
 #endif
 

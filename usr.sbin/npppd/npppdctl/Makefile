@@ -1,6 +1,5 @@
-#
-# $Id: Makefile,v 1.1 2010/01/13 07:49:44 yasuoka Exp $
-#
+#	$OpenBSD: Makefile,v 1.5 2010/07/01 03:38:17 yasuoka Exp $
+
 .include <bsd.own.mk>
 
 PROG=		npppdctl
