@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.19 2006/01/08 14:20:16 millert Exp $	*/
+/*	$OpenBSD: signal.h,v 1.20 2009/11/27 19:47:45 guenther Exp $	*/
 /*	$NetBSD: signal.h,v 1.21 1996/02/09 18:25:32 christos Exp $	*/
 
 /*
@@ -126,9 +126,6 @@ struct	sigaction {
 #define SA_RESETHAND	0x0004	/* reset to SIG_DFL when taking signal */
 #define SA_NODEFER	0x0010	/* don't mask the signal we're delivering */
 #define SA_NOCLDWAIT	0x0020	/* don't create zombies (assign to pid 1) */
-#ifdef COMPAT_SUNOS
-#define	SA_USERTRAMP	0x0100	/* do not bounce off kernel's sigtramp */
-#endif
 #endif /* __XPG_VISIBLE >= 500 */
 #define SA_NOCLDSTOP	0x0008	/* do not generate SIGCHLD on child stop */
 #if __POSIX_VISIBLE >= 199309 || __XPG_VISIBLE >= 500
