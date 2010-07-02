@@ -1,4 +1,4 @@
-/*	$OpenBSD: pdc.c,v 1.8 2010/06/26 23:24:43 guenther Exp $	*/
+/*	$OpenBSD: pdc.c,v 1.9 2010/06/28 14:13:28 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Michael Shalayeff
@@ -328,13 +328,7 @@ pdcstart(tp)
 		splx(s);
 		return;
 	}
-	if (tp->t_outq.c_cc <= tp->t_lowat) {
-		if (tp->t_state & TS_ASLEEP) {
-			tp->t_state &= ~TS_ASLEEP;
-			wakeup((caddr_t)&tp->t_outq);
-		}
-		selwakeup(&tp->t_wsel);
-	}
+	ttwakeupwr(tp);
 	tp->t_state |= TS_BUSY;
 	while (tp->t_outq.c_cc != 0)
 		pdccnputc(tp->t_dev, getc(&tp->t_outq));

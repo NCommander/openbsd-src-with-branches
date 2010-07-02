@@ -1,4 +1,4 @@
-/*	$OpenBSD: dart.c,v 1.6 2010/04/12 12:57:52 tedu Exp $	*/
+/*	$OpenBSD: dart.c,v 1.7 2010/06/28 14:13:29 deraadt Exp $	*/
 
 /*
  * Mach Operating System
@@ -277,15 +277,9 @@ dartstart(struct tty *tp)
 	if (tp->t_state & (TS_TIMEOUT | TS_BUSY | TS_TTSTOP))
 		goto bail;
 
-	if (tp->t_outq.c_cc <= tp->t_lowat) {
-		if (tp->t_state & TS_ASLEEP) {
-			tp->t_state &= ~TS_ASLEEP;
-			wakeup((caddr_t)&tp->t_outq);
-		}
-		selwakeup(&tp->t_wsel);
-		if (tp->t_outq.c_cc == 0)
-			goto bail;
-	}
+	ttwakeupwr(tp);
+	if (tp->t_outq.c_cc == 0)
+		goto bail;
 
 	tp->t_state |= TS_BUSY;
 	while (tp->t_outq.c_cc != 0) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530tty.c,v 1.12 2010/04/12 12:57:52 tedu Exp $ */
+/*	$OpenBSD: z8530tty.c,v 1.13 2010/06/28 14:13:29 deraadt Exp $ */
 /*	$NetBSD: z8530tty.c,v 1.13 1996/10/16 20:42:14 gwr Exp $	*/
 
 /*-
@@ -781,15 +781,9 @@ zsstart(struct tty *tp)
 	if (zst->zst_tx_stopped)
 		goto out;
 
-	if (tp->t_outq.c_cc <= tp->t_lowat) {
-		if (ISSET(tp->t_state, TS_ASLEEP)) {
-			CLR(tp->t_state, TS_ASLEEP);
-			wakeup((caddr_t)&tp->t_outq);
-		}
-		selwakeup(&tp->t_wsel);
-		if (tp->t_outq.c_cc == 0)
-			goto out;
-	}
+	ttwakeupwr(tp);
+	if (tp->t_outq.c_cc == 0)
+		goto out;
 
 	/* Grab the first contiguous region of buffer space. */
 	{

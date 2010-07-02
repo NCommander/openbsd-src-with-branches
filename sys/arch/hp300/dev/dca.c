@@ -1,4 +1,4 @@
-/*	$OpenBSD: dca.c,v 1.40 2010/06/28 14:13:27 deraadt Exp $	*/
+/*	$OpenBSD: dca.c,v 1.41 2010/06/30 18:10:47 miod Exp $	*/
 /*	$NetBSD: dca.c,v 1.35 1997/05/05 20:58:18 thorpej Exp $	*/
 
 /*
@@ -861,15 +861,9 @@ dcastart(tp)
 
 	if (tp->t_state & (TS_TIMEOUT|TS_TTSTOP))
 		goto out;
-	if (tp->t_outq.c_cc <= tp->t_lowat) {
-		if (tp->t_state & TS_ASLEEP) {
-			tp->t_state &= ~TS_ASLEEP;
-			wakeup((caddr_t)&tp->t_outq);
-		}
-		selwakeup(&tp->t_wsel);
-		if (tp->t_outq.c_cc == 0)
-			goto out;
-	}
+	ttwakeupwr(tp);
+	if (tp->t_outq.c_cc == 0)
+		goto out;
 	if (dca->dca_lsr & LSR_TXRDY) {
 		tp->t_state |= TS_BUSY;
 		if (sc->sc_flags & DCA_HASFIFO) {
