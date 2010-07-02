@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.24 2010/06/29 21:28:37 reyk Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.25 2010/07/01 02:09:45 reyk Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -346,7 +346,7 @@ ipcomp_input_cb(op)
 	crypto_freereq(crp);
 
 	/* Restore the Next Protocol field */
-	m_copyback(m, protoff, sizeof(u_int8_t), &nproto);
+	m_copyback(m, protoff, sizeof(u_int8_t), &nproto, M_NOWAIT);
 
 	/* Back to generic IPsec input processing */
 	error = ipsec_common_input_cb(m, tdb, skip, protoff, NULL);

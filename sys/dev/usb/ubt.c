@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubt.c,v 1.15 2009/10/13 19:33:17 pirofti Exp $	*/
+/*	$OpenBSD: ubt.c,v 1.16 2010/04/22 21:20:22 sthen Exp $	*/
 /*	$NetBSD: ubt.c,v 1.35 2008/07/28 14:19:26 drochner Exp $	*/
 
 /*-
@@ -1287,7 +1287,7 @@ ubt_mbufload(uint8_t *buf, int count, uint8_t type)
 
 	*mtod(m, uint8_t *) = type;
 	m->m_pkthdr.len = m->m_len = MHLEN;
-	m_copyback(m, 1, count, buf);	// (extends if necessary)
+	m_copyback(m, 1, count, buf, M_NOWAIT); /* extends if this doesn't fail */
 	if (m->m_pkthdr.len != MAX(MHLEN, count + 1)) {
 		m_free(m);
 		return NULL;

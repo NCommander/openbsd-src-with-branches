@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.179 2010/06/29 21:28:37 reyk Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.180 2010/07/01 02:09:45 reyk Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -2845,7 +2845,7 @@ bridge_ifenqueue(struct bridge_softc *sc, struct ifnet *ifp, struct mbuf *m)
 			sc->sc_if.if_oerrors++;
 			return (ENOBUFS);
 		}
-		m_copyback(m, 0, sizeof(evh), &evh);
+		m_copyback(m, 0, sizeof(evh), &evh, M_NOWAIT);
 		m->m_flags &= ~M_VLANTAG;
 	}
 #endif
