@@ -1,4 +1,4 @@
-/*	$OpenBSD: newfs.c,v 1.84 2010/05/03 14:28:08 jsing Exp $	*/
+/*	$OpenBSD: newfs.c,v 1.85 2010/05/18 04:41:14 dlg Exp $	*/
 /*	$NetBSD: newfs.c,v 1.20 1996/05/16 07:13:03 thorpej Exp $	*/
 
 /*
@@ -126,7 +126,6 @@ int	avgfilesize = AVFILESIZ;/* expected average file size */
 int	avgfilesperdir = AFPDIR;/* expected number of files per directory */
 int	mntflags = MNT_ASYNC;	/* flags to be passed to mount */
 int	quiet = 0;		/* quiet flag */
-u_long	memleft;		/* virtual memory available */
 caddr_t	membase;		/* start address of memory based filesystem */
 char	*disktype;
 int	unlabeled;
