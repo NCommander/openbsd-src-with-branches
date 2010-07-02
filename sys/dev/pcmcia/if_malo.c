@@ -1,4 +1,4 @@
-/*      $OpenBSD: if_malo.c,v 1.67 2009/10/13 19:33:16 pirofti Exp $ */
+/*      $OpenBSD: if_malo.c,v 1.68 2010/05/20 14:03:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -559,6 +559,7 @@ cmalo_fw_load_main(struct malo_softc *sc)
 	DPRINTF(1, "%s: helper FW loaded successfully\n", sc->sc_dev.dv_xname);
 
 	/* download the main firmware */
+	bsize = 0; /* XXX really??? */
 	for (offset = 0; offset < sc->sc_fw_m_size; offset += bsize) {
 		val16 = MALO_READ_2(sc, MALO_REG_RBAL);
 		/*
