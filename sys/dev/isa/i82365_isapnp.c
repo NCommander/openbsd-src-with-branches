@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365_isapnp.c,v 1.5 2004/01/09 21:32:23 brad Exp $ */
+/*	$OpenBSD: i82365_isapnp.c,v 1.6 2005/01/27 17:03:23 millert Exp $ */
 /*	$NetBSD: i82365_isapnp.c,v 1.8 2000/02/23 17:22:11 soren Exp $	*/
 
 /*
@@ -208,7 +208,7 @@ pcic_isapnp_attach(parent, self, aux)
 	printf("polling enabled\n");
 	if (sc->poll_established == 0) {
 		timeout_set(&sc->poll_timeout, pcic_poll_intr, sc);
-		timeout_add(&sc->poll_timeout, hz / 2);
+		timeout_add_msec(&sc->poll_timeout, 500);
 		sc->poll_established = 1;
 	}
 }
