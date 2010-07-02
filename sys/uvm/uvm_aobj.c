@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.49 2010/04/30 20:50:53 oga Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.50 2010/04/30 21:56:39 oga Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.39 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -821,7 +821,7 @@ uao_flush(struct uvm_object *uobj, voff_t start, voff_t stop, int flags)
 	}
 
 	UVMHIST_LOG(maphist,
-	    "<- done, rv=%ld",retval,0,0,0);
+	    "<- done, rv=TRUE",0,0,0,0);
 	return (TRUE);
 }
 
