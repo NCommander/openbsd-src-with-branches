@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.143 2010/05/28 12:09:09 claudio Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.144 2010/06/03 16:15:00 naddy Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -677,7 +677,7 @@ ether_input(ifp0, eh, m)
 	 * is for us.  Drop otherwise.
 	 */
 	if ((m->m_flags & (M_BCAST|M_MCAST)) == 0 &&
-	    (ifp->if_flags & IFF_PROMISC)) {
+	    ((ifp->if_flags & IFF_PROMISC) || (ifp0->if_flags & IFF_PROMISC))) {
 		if (bcmp(ac->ac_enaddr, (caddr_t)eh->ether_dhost,
 		    ETHER_ADDR_LEN)) {
 			m_freem(m);
