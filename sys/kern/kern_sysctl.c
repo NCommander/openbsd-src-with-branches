@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.186 2010/06/29 16:39:22 guenther Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.187 2010/06/30 19:57:05 deraadt Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1482,8 +1482,6 @@ err:
 	return (error);
 }
 
-#endif	/* SMALL_KERNEL */
-
 /*
  * Fill in an eproc structure for the specified process.
  */
@@ -1540,8 +1538,6 @@ fill_eproc(struct proc *p, struct eproc *ep)
 	ep->e_maxrss = p->p_rlimit ? p->p_rlimit[RLIMIT_RSS].rlim_cur : 0;
 	ep->e_limit = p->p_p->ps_limit;
 }
-
-#ifndef	SMALL_KERNEL
 
 /*
  * Fill in a kproc2 structure for the specified process.
