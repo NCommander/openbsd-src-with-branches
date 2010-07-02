@@ -87,14 +87,6 @@
 #include <machine/cpu.h>
 
 /*
- * XXXCDC: do these really belong here?
- */
-
-int readbuffers = 0;		/* allow KGDB to read kern buffer pool */
-				/* XXX: see uvm_kernacc */
-
-
-/*
  * uvm_kernacc: can the kernel access a region of memory
  *
  * - called from malloc [DIAGNOSTIC], and /dev/kmem driver (mem.c)
