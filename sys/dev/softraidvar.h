@@ -26,6 +26,10 @@
 #define SR_META_SIZE		64	/* save space at chunk beginning */
 #define SR_META_OFFSET		16	/* skip 8192 bytes at chunk beginning */
 
+#define SR_META_V3_SIZE		64
+#define SR_META_V3_OFFSET	16
+#define SR_META_V3_DATA_OFFSET	(SR_META_V3_OFFSET + SR_META_V3_SIZE)
+
 #define SR_META_F_NATIVE	0	/* Native metadata format. */
 #define SR_META_F_INVALID	-1
 
@@ -82,7 +86,7 @@ struct sr_metadata {
 	char			ssd_devname[32];/* /dev/XXXXX */
 	u_int32_t		ssd_meta_flags;
 #define	SR_META_DIRTY		0x1
-	u_int32_t		ssd_pad;
+	u_int32_t		ssd_data_offset;
 	u_int64_t		ssd_ondisk;	/* on disk version counter */
 	int64_t			ssd_rebuild;	/* last block of rebuild */
 } __packed;

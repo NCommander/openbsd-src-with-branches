@@ -381,7 +381,7 @@ sr_raid1_rw(struct sr_workunit *wu)
 		goto bad;
 
 	/* calculate physical block */
-	blk += SR_DATA_OFFSET;
+	blk += sd->sd_meta->ssd_data_offset;
 
 	if (xs->flags & SCSI_DATA_IN)
 		ios = 1;

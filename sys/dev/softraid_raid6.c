@@ -491,7 +491,7 @@ sr_raid6_rw(struct sr_workunit *wu)
 		strip_offs = lbaoffs & (strip_size - 1);
 		chunk_offs = (strip_no / no_chunk) << strip_bits;
 		phys_offs = chunk_offs + strip_offs +
-		    (SR_DATA_OFFSET << DEV_BSHIFT);
+		    (sd->sd_meta->ssd_data_offset << DEV_BSHIFT);
 
 		/* get size remaining in this stripe */
 		length = MIN(strip_size - strip_offs, datalen);
