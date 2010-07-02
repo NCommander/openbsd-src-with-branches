@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmesg.c,v 1.20 2006/12/24 00:47:27 djm Exp $	*/
+/*	$OpenBSD: dmesg.c,v 1.21 2008/10/17 18:49:50 deraadt Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -46,11 +46,13 @@
 #include <unistd.h>
 #include <vis.h>
 
+#ifndef NOKVM
 struct nlist nl[] = {
 #define	X_MSGBUF	0
 	{ "_msgbufp" },
 	{ NULL },
 };
+#endif
 
 void usage(void);
 
