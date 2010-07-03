@@ -1,4 +1,4 @@
-/*	$OpenBSD: hunt.c,v 1.17 2010/07/01 21:28:01 nicm Exp $	*/
+/*	$OpenBSD: hunt.c,v 1.18 2010/07/02 05:52:48 nicm Exp $	*/
 /*	$NetBSD: hunt.c,v 1.6 1997/04/20 00:02:10 mellon Exp $	*/
 
 /*
@@ -89,7 +89,7 @@ hunt(char *hosts)
 			fd = open(device,
 			    O_RDWR | (vgetnum(DC) ? O_NONBLOCK : 0));
 			if (fd < 0)
-				perror(host);
+				perror(device);
 		}
 		alarm(0);
 
