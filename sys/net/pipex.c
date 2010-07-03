@@ -1,4 +1,5 @@
-/*	$Id: pipex.c,v 1.3 2010/01/13 07:23:38 yasuoka Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.4 2010/07/02 02:40:16 blambert Exp $	*/
+
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
  * All rights reserved.
