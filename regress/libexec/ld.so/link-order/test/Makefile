@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2003/07/01 07:08:31 niklas Exp $
+# $OpenBSD: Makefile,v 1.4 2010/06/20 14:19:13 phessler Exp $
 
 .include <bsd.own.mk>
 
@@ -61,7 +61,7 @@ make-lib: prog
 	@mkdir lib >/dev/null 2>&1 || true
 
 clean:
-	@rm lib/* >/dev/null 2>&1 || true
+	@rm -r lib >/dev/null 2>&1 || true
 
 test-none:	make-lib clean
 	sh ${.CURDIR}/test.sh ${PROGPATH} '%ERROR%'
