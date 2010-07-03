@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.94 2010/06/29 20:39:27 thib Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.95 2010/07/02 01:25:05 art Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -439,7 +439,8 @@ pool_alloc_item_header(struct pool *pp, caddr_t storage, int flags)
 	if ((pp->pr_roflags & PR_PHINPAGE) != 0)
 		ph = (struct pool_item_header *)(storage + pp->pr_phoffset);
 	else
-		ph = pool_get(&phpool, flags & ~(PR_WAITOK | PR_ZERO));
+		ph = pool_get(&phpool, (flags & ~(PR_WAITOK | PR_ZERO)) |
+		    PR_NOWAIT);
 
 	return (ph);
 }

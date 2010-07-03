@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_shm.c,v 1.49 2007/09/15 10:10:37 martin Exp $	*/
+/*	$OpenBSD: sysv_shm.c,v 1.50 2009/06/02 12:11:16 guenther Exp $	*/
 /*	$NetBSD: sysv_shm.c,v 1.50 1998/10/21 22:24:29 tron Exp $	*/
 
 /*
@@ -411,7 +411,8 @@ shmget_allocate_segment(struct proc *p,
 	 * the key we want in the meantime.  Yes, this is ugly.
 	 */
 	key = SCARG(uap, key);
-	shmseg = pool_get(&shm_pool, key == IPC_PRIVATE ? PR_WAITOK : 0);
+	shmseg = pool_get(&shm_pool, key == IPC_PRIVATE ? PR_WAITOK :
+	    PR_NOWAIT);
 	if (shmseg == NULL) {
 		shmseg = pool_get(&shm_pool, PR_WAITOK);
 		if (shm_find_segment_by_key(key) != -1) {
