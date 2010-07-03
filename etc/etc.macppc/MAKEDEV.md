@@ -1,6 +1,6 @@
 define(MACHINE,macppc)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.40 2009/08/13 15:12:36 deraadt Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.42 2010/06/26 23:49:50 jsing Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -92,7 +92,6 @@ _DEV(pci, 71)
 _DEV(pf, 39)
 _DEV(radio, 76)
 _DEV(rnd, 40)
-_DEV(ss, 42)
 _DEV(systrace, 50)
 _DEV(tun, 23)
 _DEV(tuner, 75)
@@ -115,7 +114,6 @@ dnl
 twrget(all, s64_tzs, tty, a, b)dnl
 twrget(all, s64_czs, cua, a, b)dnl
 target(all, ch, 0)dnl
-target(all, ss, 0, 1)dnl
 target(all, nnpfs, 0)dnl
 target(all, vscsi, 0)dnl
 target(all, diskmap)dnl

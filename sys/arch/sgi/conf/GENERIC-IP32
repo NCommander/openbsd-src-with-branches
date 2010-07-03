@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC-IP32,v 1.18 2010/03/22 21:28:11 miod Exp $
+#	$OpenBSD: GENERIC-IP32,v 1.19 2010/03/28 17:15:24 miod Exp $
 #
 # THIS KERNEL IS FOR O2 (IP32) SYSTEMS ONLY.
 #
@@ -229,7 +229,6 @@ sd*		at scsibus?
 st*		at scsibus?
 cd*		at scsibus?
 ch*		at scsibus?
-ss*		at scsibus?
 safte*		at scsibus?
 ses*		at scsibus?
 uk*		at scsibus?

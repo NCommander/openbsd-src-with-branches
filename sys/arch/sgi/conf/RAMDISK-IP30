@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK-IP30,v 1.17 2010/03/31 19:44:35 miod Exp $
+#	$OpenBSD: RAMDISK-IP30,v 1.18 2010/07/03 01:48:18 matthew Exp $
 #
 # THIS KERNEL IS FOR Octane and Octane 2 (IP30) SYSTEMS ONLY.
 
@@ -209,7 +209,6 @@ sd*		at scsibus?
 st*		at scsibus?
 cd*		at scsibus?
 #ch*		at scsibus?
-#ss*		at scsibus?
 #uk*		at scsibus?
 
 #### PSEUDO Devices

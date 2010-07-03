@@ -1,4 +1,4 @@
-#	$OpenBSD: MVME147,v 1.23 2010/06/29 20:30:33 guenther Exp $
+#	$OpenBSD: MVME147,v 1.24 2010/07/02 19:57:14 tedu Exp $
 
 machine		mvme68k m68k
 
@@ -53,5 +53,4 @@ sd*	at scsibus?
 st*	at scsibus?
 cd*	at scsibus?
 ch*	at scsibus?
-ss*	at scsibus?
 uk*	at scsibus?

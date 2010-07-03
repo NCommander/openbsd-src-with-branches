@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.31 2008/08/20 19:00:01 miod Exp $
+#	$OpenBSD: RAMDISK,v 1.32 2010/06/29 18:46:34 tedu Exp $
 
 machine		vax			# machine type
 
@@ -155,7 +155,6 @@ sd*		at scsibus?
 st*		at scsibus?
 cd*		at scsibus?
 #ch*		at scsibus?
-#ss*		at scsibus?
 #safte*		at scsibus?
 #ses*		at scsibus?
 #uk*		at scsibus?
