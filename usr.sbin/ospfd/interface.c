@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.68 2010/02/16 18:20:37 claudio Exp $ */
+/*	$OpenBSD: interface.c,v 1.69 2010/05/14 08:30:18 sthen Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -253,11 +253,11 @@ if_init(struct ospfd_conf *xconf, struct iface *iface)
 	iface->fd = xconf->ospf_socket;
 
 	strlcpy(ifr.ifr_name, iface->name, sizeof(ifr.ifr_name));
-	if (ioctl(iface->fd, SIOCGIFRTABLEID, (caddr_t)&ifr) == -1)
+	if (ioctl(iface->fd, SIOCGIFRDOMAIN, (caddr_t)&ifr) == -1)
 		rdomain = 0;
 	else {
 		rdomain = ifr.ifr_rdomainid;
-		if (setsockopt(iface->fd, IPPROTO_IP, SO_RDOMAIN,
+		if (setsockopt(iface->fd, IPPROTO_IP, SO_RTABLE,
 		    &rdomain, sizeof(rdomain)) == -1)
 			fatal("failed to set rdomain");
 	}

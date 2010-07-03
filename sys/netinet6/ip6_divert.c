@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.3 2010/03/09 12:36:12 jsing Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.4 2010/04/20 22:05:44 tedu Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -99,7 +99,7 @@ divert6_output(struct mbuf *m, ...)
 
 	m->m_pkthdr.rcvif = NULL;
 	m->m_nextpkt = NULL;
-	m->m_pkthdr.rdomain = inp->inp_rdomain;
+	m->m_pkthdr.rdomain = inp->inp_rtableid;
 
 	if (control)
 		m_freem(control);

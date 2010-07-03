@@ -811,9 +811,9 @@ struct sysent sysent[] = {
 	    sys_fstatfs },			/* 308 = fstatfs */
 	{ 2, s(struct sys_fhstatfs_args), 0,
 	    sys_fhstatfs },			/* 309 = fhstatfs */
-	{ 1, s(struct sys_setrdomain_args), 0,
-	    sys_setrdomain },			/* 310 = setrdomain */
+	{ 1, s(struct sys_setrtable_args), 0,
+	    sys_setrtable },			/* 310 = setrtable */
 	{ 0, 0, 0,
-	    sys_getrdomain },			/* 311 = getrdomain */
+	    sys_getrtable },			/* 311 = getrtable */
 };
 

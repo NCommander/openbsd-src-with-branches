@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.50 2010/07/01 01:55:03 reyk Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.51 2010/07/01 02:09:45 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
@@ -184,7 +184,7 @@ enc_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		else
 			ifp->if_flags &= ~IFF_RUNNING;
 		break;
-	case SIOCSIFRTABLEID:
+	case SIOCSIFRDOMAIN:
 		if ((error = enc_setif(ifp, ifr->ifr_rdomainid)) != 0)
 			return (error);
 		/* FALLTHROUGH */

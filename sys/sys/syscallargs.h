@@ -1217,8 +1217,8 @@ struct sys_fhstatfs_args {
 	syscallarg(struct statfs *) buf;
 };
 
-struct sys_setrdomain_args {
-	syscallarg(int) rdomain;
+struct sys_setrtable_args {
+	syscallarg(int) rtableid;
 };
 
 /*
@@ -1531,5 +1531,5 @@ int	sys_getfsstat(struct proc *, void *, register_t *);
 int	sys_statfs(struct proc *, void *, register_t *);
 int	sys_fstatfs(struct proc *, void *, register_t *);
 int	sys_fhstatfs(struct proc *, void *, register_t *);
-int	sys_setrdomain(struct proc *, void *, register_t *);
-int	sys_getrdomain(struct proc *, void *, register_t *);
+int	sys_setrtable(struct proc *, void *, register_t *);
+int	sys_getrtable(struct proc *, void *, register_t *);

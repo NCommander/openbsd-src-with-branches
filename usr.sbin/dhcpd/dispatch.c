@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.25 2010/01/02 04:21:16 krw Exp $ */
+/*	$OpenBSD: dispatch.c,v 1.26 2010/04/19 12:22:09 claudio Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997, 1998, 1999
@@ -633,7 +633,7 @@ get_rdomain(char *name)
 
 	bzero(&ifr, sizeof(ifr));
 	strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
-	if (ioctl(s, SIOCGIFRTABLEID, (caddr_t)&ifr) != -1)
+	if (ioctl(s, SIOCGIFRDOMAIN, (caddr_t)&ifr) != -1)
 		rv = ifr.ifr_rdomainid;
 
 	close(s);

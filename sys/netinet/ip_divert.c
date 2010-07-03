@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_divert.c,v 1.5 2010/03/09 12:36:12 jsing Exp $ */
+/*      $OpenBSD: ip_divert.c,v 1.6 2010/04/20 22:05:43 tedu Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -94,7 +94,7 @@ divert_output(struct mbuf *m, ...)
 
 	m->m_pkthdr.rcvif = NULL;
 	m->m_nextpkt = NULL;
-	m->m_pkthdr.rdomain = inp->inp_rdomain;
+	m->m_pkthdr.rdomain = inp->inp_rtableid;
 
 	if (control)
 		m_freem(control);
