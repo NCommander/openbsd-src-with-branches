@@ -1,4 +1,4 @@
-#	$OpenBSD: genassym.cf,v 1.29 2009/06/03 00:49:12 art Exp $
+#	$OpenBSD: genassym.cf,v 1.30 2010/04/01 19:48:50 kettenis Exp $
 #
 # Copyright (c) 1982, 1990 The Regents of the University of California.
 # All rights reserved.
@@ -136,7 +136,6 @@ member if_ppl
 struct	sigframe	SIGF_
 member	HANDLER		sf_handler
 member	SC		sf_sc
-member	FPSTATE		sf_fpstate
 struct	sigcontext
 
 # mbuf fields
