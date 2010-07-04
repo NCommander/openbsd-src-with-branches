@@ -1,4 +1,4 @@
-/*	$OpenBSD: mman.h,v 1.19 2010/05/18 22:24:54 tedu Exp $	*/
+/*	$OpenBSD: mman.h,v 1.20 2010/05/21 21:17:43 miod Exp $	*/
 /*	$NetBSD: mman.h,v 1.11 1995/03/26 20:24:23 jtc Exp $	*/
 
 /*-
@@ -135,7 +135,6 @@ typedef __off_t		off_t;
 #endif
 
 __BEGIN_DECLS
-/* Some of these int's should probably be size_t's */
 void *	mmap(void *, size_t, int, int, int, off_t);
 int	mprotect(void *, size_t, int);
 int	munmap(void *, size_t);
