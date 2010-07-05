@@ -1,4 +1,4 @@
-/*	$OpenBSD: os-bsd44.h,v 1.7 2002/08/05 07:24:26 pvalchev Exp $	*/
+/*	$OpenBSD: os-bsd44.h,v 1.8 2003/06/02 23:36:52 millert Exp $	*/
 
 /*
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -190,7 +190,7 @@ struct mntent {
  * 4.4 has RE support built in
  */
 #undef RE_HDR
-#define RE_HDR <regexp.h>
+#define RE_HDR <regex.h>
 
 /*
  * Need precise length links
