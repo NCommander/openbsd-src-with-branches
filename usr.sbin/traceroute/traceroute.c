@@ -1,4 +1,4 @@
-/*	$OpenBSD: traceroute.c,v 1.68 2009/10/27 23:59:57 deraadt Exp $	*/
+/*	$OpenBSD: traceroute.c,v 1.69 2010/07/03 04:44:52 guenther Exp $	*/
 /*	$NetBSD: traceroute.c,v 1.10 1995/05/21 15:50:45 mycroft Exp $	*/
 
 /*-
@@ -432,10 +432,10 @@ main(int argc, char *argv[])
 				    errstr, optarg);
 			if (setsockopt(sndsock, IPPROTO_IP, SO_RTABLE,
 			    &rtableid, sizeof(rtableid)) == -1)
-				err(1, "setsockopt SO_RDOMAIN");
+				err(1, "setsockopt SO_RTABLE");
 			if (setsockopt(s, IPPROTO_IP, SO_RTABLE,
 			    &rtableid, sizeof(rtableid)) == -1)
-				err(1, "setsockopt SO_RDOMAIN");
+				err(1, "setsockopt SO_RTABLE");
 			break;
 		case 'w':
 			errno = 0;
