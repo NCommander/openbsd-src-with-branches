@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.h,v 1.25 2010/06/05 16:00:52 ratchov Exp $	*/
+/*	$OpenBSD: dev.h,v 1.26 2010/06/25 07:32:05 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -17,8 +17,9 @@
 #ifndef DEV_H
 #define DEV_H
 
+#include "aparams.h"
+
 struct aproc;
-struct aparams;
 struct abuf;
 
 struct dev {
