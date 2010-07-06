@@ -1,4 +1,4 @@
-/*	$OpenBSD: modify.c,v 1.10 2010/07/05 14:27:06 martinh Exp $ */
+/*	$OpenBSD: modify.c,v 1.11 2010/07/06 09:27:05 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -81,6 +81,7 @@ ldap_delete(struct request *req)
 		goto done;
 	}
 
+	btval_reset(&key);
 	if (btree_cursor_get(cursor, &key, NULL, BT_NEXT) != 0) {
 		if (errno != ENOENT)
 			goto done;
@@ -94,6 +95,7 @@ ldap_delete(struct request *req)
 
 done:
 	btree_cursor_close(cursor);
+	btval_reset(&key);
 	namespace_abort(ns);
 	return ldap_respond(req, rc);
 }
