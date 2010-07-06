@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.181 2010/01/15 05:31:38 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.182 2010/01/15 05:50:31 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -755,6 +755,7 @@ sd_buf_done(struct scsi_xfer *xs)
 {
 	struct sd_softc *sc = xs->sc_link->device_softc;
 	struct buf *bp = xs->cookie;
+	int error;
 
 	splassert(IPL_BIO);
 
@@ -776,7 +777,13 @@ sd_buf_done(struct scsi_xfer *xs)
 
 	case XS_SENSE:
 	case XS_SHORTSENSE:
-		if (scsi_interpret_sense(xs) != ERESTART)
+		error = scsi_interpret_sense(xs);
+		if (error == 0) {
+			bp->b_error = 0;
+			bp->b_resid = xs->resid;
+			break;
+		}
+		if (error != ERESTART)
 			xs->retries = 0;
 		goto retry;
 
