@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.18 2009/12/22 19:47:05 claudio Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.19 2010/07/01 18:57:21 bluhm Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -483,6 +483,8 @@ main_imsg_compose_ospfe(int type, pid_t pid, void *data, u_int16_t datalen)
 void
 main_imsg_compose_rde(int type, pid_t pid, void *data, u_int16_t datalen)
 {
+	if (iev_rde == NULL)
+		return;
 	imsg_compose_event(iev_rde, type, 0, pid, -1, data, datalen);
 }
 
