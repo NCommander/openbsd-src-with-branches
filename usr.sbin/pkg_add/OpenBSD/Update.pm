@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: Update.pm,v 1.141 2010/06/30 10:51:04 espie Exp $
 #
 # Copyright (c) 2004-2010 Marc Espie <espie@openbsd.org>
 #
@@ -71,7 +71,9 @@ sub add_location
 sub progress_message
 {
 	my ($self, $state, $msg) = @_;
-	$msg .= " (".$state->ntogo.")";
+	if ($state->{wantntogo}) {
+		$msg .= " (".$state->ntogo.")";
+	}
 	$state->progress->message($msg);
 	$state->say($msg) if $state->verbose >= 2;
 }
