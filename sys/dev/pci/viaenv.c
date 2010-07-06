@@ -1,4 +1,4 @@
-/*	$OpenBSD: viaenv.c,v 1.12 2009/03/29 21:53:52 sthen Exp $	*/
+/*	$OpenBSD: viaenv.c,v 1.13 2009/06/06 19:21:33 jasper Exp $	*/
 /*	$NetBSD: viaenv.c,v 1.9 2002/10/02 16:51:59 thorpej Exp $	*/
 
 /*
@@ -318,7 +318,7 @@ viaenv_attach(struct device * parent, struct device * self, void *aux)
 
 	/* Refresh sensors data every 1.5 seconds */
 	timeout_set(&viaenv_timeout, viaenv_refresh, sc);
-	timeout_add(&viaenv_timeout, (15 * hz) / 10);
+	timeout_add_msec(&viaenv_timeout, 1500);
 
 nohwm:
 #ifdef __HAVE_TIMECOUNTER
@@ -360,7 +360,7 @@ viaenv_refresh(void *arg)
 	struct viaenv_softc *sc = (struct viaenv_softc *)arg;
 
 	viaenv_refresh_sensor_data(sc);
-	timeout_add(&viaenv_timeout, (15 * hz) / 10);
+	timeout_add_msec(&viaenv_timeout, 1500);
 }
 
 #ifdef __HAVE_TIMECOUNTER
