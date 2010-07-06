@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.8 2009/07/25 10:52:19 ratchov Exp $	*/
+/*	$OpenBSD: file.h,v 1.9 2009/09/27 11:51:20 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -56,6 +56,10 @@ struct file {
 #define FILE_RINUSE	0x20		/* inside rproc->ops->in() */
 #define FILE_WINUSE	0x40		/* inside wproc->ops->out() */
 	unsigned state;			/* one of above */
+#ifdef DEBUG
+#define FILE_MAXCYCLES	20
+	unsigned cycles;		/* number of POLLIN/POLLOUT events */
+#endif
 	char *name;			/* for debug purposes */
 	struct aproc *rproc, *wproc;	/* reader and/or writer */
 	LIST_ENTRY(file) entry;
