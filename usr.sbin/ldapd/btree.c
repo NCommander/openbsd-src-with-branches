@@ -1,4 +1,4 @@
-/*	$OpenBSD: btree.c,v 1.24 2010/07/05 21:06:45 martinh Exp $ */
+/*	$OpenBSD: btree.c,v 1.25 2010/07/06 13:05:35 martinh Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -2215,6 +2215,8 @@ btree_move_node(struct btree *bt, struct mpage *src, indx_t srcindx,
 	    (int)srcnode->ksize, (char *)NODEKEY(srcnode),
 	    src->pgno,
 	    dstindx, dst->pgno);
+
+	find_common_prefix(bt, src);
 
 	if (IS_BRANCH(src)) {
 		/* Need to check if the page the moved node points to
