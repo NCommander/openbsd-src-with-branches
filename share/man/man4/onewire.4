@@ -1,4 +1,4 @@
-.\"	$OpenBSD: onewire.4,v 1.7 2008/03/04 21:43:58 martin Exp $
+.\"	$OpenBSD: onewire.4,v 1.8 2009/11/16 20:13:12 miod Exp $
 .\"
 .\" Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: March 4 2008 $
+.Dd $Mdocdate: November 16 2009 $
 .Dt ONEWIRE 4
 .Os
 .Sh NAME
@@ -57,6 +57,8 @@ Octane core system widget
 .El
 .Sh SUPPORTED SLAVES
 .Bl -tag -width 11n -offset ind -compact
+.It Xr owctr 4
+1-Wire counter device
 .It Xr owid 4
 1-Wire ID device
 .It Xr owmac 4
