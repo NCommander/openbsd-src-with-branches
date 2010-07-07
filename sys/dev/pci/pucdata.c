@@ -46,7 +46,7 @@
 #include <dev/pci/pcidevs.h>
 #include <dev/ic/comreg.h>
 
-const struct puc_device_description puc_devs[] = {
+const struct puc_device_description puc_devices[] = {
 	/*
 	 * XXX no entry because I have no data:
 	 * XXX Dolphin Peripherals 4006 (single parallel)
