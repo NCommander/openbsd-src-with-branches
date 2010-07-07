@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2010 John L. Scarfone <john@scarfone.net>
  *
