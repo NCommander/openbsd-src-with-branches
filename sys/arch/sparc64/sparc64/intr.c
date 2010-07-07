@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.34 2009/11/25 15:22:44 kettenis Exp $	*/
+/*	$OpenBSD: intr.c,v 1.35 2010/04/16 22:35:24 kettenis Exp $	*/
 /*	$NetBSD: intr.c,v 1.39 2001/07/19 23:38:11 eeh Exp $ */
 
 /*
@@ -369,14 +369,14 @@ void sparc64_intunlock(struct trapframe64 *);
 void
 sparc64_intlock(struct trapframe64 *tf)
 {
-	if(tf->tf_pil < PIL_SCHED)
+	if (tf->tf_pil < PIL_SCHED && tf->tf_pil != PIL_CLOCK)
 		__mp_lock(&kernel_lock);
 }
 
 void
 sparc64_intunlock(struct trapframe64 *tf)
 {
-	if(tf->tf_pil < PIL_SCHED)
+	if (tf->tf_pil < PIL_SCHED && tf->tf_pil != PIL_CLOCK)
 		__mp_unlock(&kernel_lock);
 }
 
