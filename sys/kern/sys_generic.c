@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.67 2009/11/09 17:53:39 nicm Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.68 2010/04/11 17:46:13 kettenis Exp $	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -63,7 +63,6 @@
 #include <uvm/uvm_extern.h>
 
 int selscan(struct proc *, fd_set *, fd_set *, int, int, register_t *);
-int seltrue(dev_t, int, struct proc *);
 void pollscan(struct proc *, struct pollfd *, u_int, register_t *);
 int pollout(struct pollfd *, struct pollfd *, u_int);
 
@@ -678,6 +677,13 @@ seltrue(dev_t dev, int events, struct proc *p)
 {
 
 	return (events & (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM));
+}
+
+int
+selfalse(dev_t dev, int events, struct proc *p)
+{
+
+	return (0);
 }
 
 /*
