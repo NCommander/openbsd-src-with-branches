@@ -1,4 +1,4 @@
-/*	$OpenBSD: ichpcib.c,v 1.23 2008/01/04 00:23:25 kettenis Exp $	*/
+/*	$OpenBSD: ichpcib.c,v 1.24 2010/04/20 22:05:41 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -74,7 +74,9 @@ struct timecounter ichpcib_timecounter = {
 struct cfattach ichpcib_ca = {
 	sizeof(struct ichpcib_softc),
 	ichpcib_match,
-	ichpcib_attach
+	ichpcib_attach,
+	NULL,
+	config_activate_children
 };
 
 struct cfdriver ichpcib_cd = {
