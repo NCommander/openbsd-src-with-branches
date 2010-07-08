@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.c,v 1.29 2009/01/27 13:49:21 claudio Exp $	*/
+/*	$OpenBSD: mbuf.c,v 1.30 2009/06/25 22:31:18 deraadt Exp $	*/
 /*	$NetBSD: mbuf.c,v 1.9 1996/05/07 02:55:03 thorpej Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 #include <net/if.h>
 
 #include <errno.h>
-#include <kvm.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -56,8 +55,6 @@ char	*mclnames[] = {
 	"mcl2k", "mcl4k", "mcl8k", "mcl9k", "mcl12k", "mcl16k", "mcl64k"
 };
 char	**mclnamep = mclnames;
-
-extern kvm_t *kvmd;
 
 static struct mbtypes {
 	int	mt_type;
