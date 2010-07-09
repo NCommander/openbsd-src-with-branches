@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.180 2010/06/04 11:35:43 blambert Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.181 2010/06/07 13:26:35 henning Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -490,7 +490,8 @@ ipv4_input(m)
                 s = splnet();
 		if (mtag != NULL) {
 			tdbi = (struct tdb_ident *)(mtag + 1);
-			tdb = gettdb(tdbi->spi, &tdbi->dst, tdbi->proto);
+			tdb = gettdb(tdbi->rdomain, tdbi->spi,
+			    &tdbi->dst, tdbi->proto);
 		} else
 			tdb = NULL;
 	        ipsp_spd_lookup(m, AF_INET, hlen, &error,
@@ -649,7 +650,8 @@ found:
         s = splnet();
 	if (mtag) {
 		tdbi = (struct tdb_ident *)(mtag + 1);
-	        tdb = gettdb(tdbi->spi, &tdbi->dst, tdbi->proto);
+	        tdb = gettdb(tdbi->rdomain, tdbi->spi, &tdbi->dst,
+		    tdbi->proto);
 	} else
 		tdb = NULL;
 	ipsp_spd_lookup(m, AF_INET, hlen, &error, IPSP_DIRECTION_IN,
