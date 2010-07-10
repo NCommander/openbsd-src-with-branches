@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkuboot.c,v 1.2 2010/06/30 02:02:01 drahn Exp $	*/
+/*	$OpenBSD: mkuboot.c,v 1.3 2010/06/30 07:38:13 jmc Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -227,7 +227,6 @@ main(int argc, char *argv[])
 	if (ih.ih_type == IH_TYPE_SCRIPT) {
 		/* scripts have two extra words of size/pad */
 		fsize = htobe32(sb.st_size);
-		printf("size %d\n", fsize);
 		crc = crc32(crc, (void *)&fsize, sizeof(fsize));
 		if (write(ofd, &fsize, sizeof fsize) != sizeof fsize)
 			err(1, "%s", oname);
