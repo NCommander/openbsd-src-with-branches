@@ -11,8 +11,8 @@ SIZE?=	size
 LDFLAGS+=-nostdlib -Bstatic
 INSTALL_STRIP=
 
-LDFLAGS+=-Ttext $(LINKADDR) -Z -x -noinhibit-exec
-CLEANFILES+=	crt0.o
+LDFLAGS+=-Ttext $(LINKADDR) -N -x -noinhibit-exec
+CLEANFILES+=	crt0.o ${PROG}.whole
 SRCS=	srt0.S
 
 SRCS+=	boot.c cmd.c vars.c bootarg.c conf.c devopen.c net.c open.c
@@ -30,6 +30,7 @@ SRCS+=	strlcpy.c moddi3.c divdi3.c qdivrem.c
 ${PROG}: $(OBJS) $(DPADD)
 	$(LD) $(LDFLAGS) -o ${PROG} $(OBJS) $(LDADD)
 	@$(SIZE) ${PROG}
+	cp ${PROG} ${PROG}.whole
 	@if [ -x ${.OBJDIR}/${PROG} ]; then \
 		objcopy -O binary ${PROG} ${.OBJDIR}/.tmp;\
 		mv -f ${.OBJDIR}/.tmp ${.OBJDIR}/${PROG}; \
