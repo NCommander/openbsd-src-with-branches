@@ -1,4 +1,4 @@
-/*	$OpenBSD: aucat.c,v 1.99 2010/07/06 10:45:01 jmc Exp $	*/
+/*	$OpenBSD: aucat.c,v 1.100 2010/07/10 11:56:28 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -992,7 +992,7 @@ midicat_main(int argc, char **argv)
 			errx(1, "%s: can't open device", cd->path);
 		if (!dev_ref(d))
 			errx(1, "couldn't open midi thru box");
-		if (!SLIST_EMPTY(&cd->opts) && APROC_OK(d->midi))
+		if (SLIST_EMPTY(&cd->opts) && APROC_OK(d->midi))
 			d->midi->flags |= APROC_QUIT;
 
 		/*
