@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.70 2010/05/23 10:49:19 dlg Exp $	*/
+/*	$OpenBSD: fd.c,v 1.71 2010/07/02 19:57:15 tedu Exp $	*/
 /*	$NetBSD: fd.c,v 1.51 1997/05/24 20:16:19 pk Exp $	*/
 
 /*-
@@ -281,9 +281,9 @@ fdcmatch(parent, match, aux)
 	register struct romaux *ra = &ca->ca_ra;
 
 	/*
-	 * Floppy doesn't exist on sun4.
+	 * Floppy doesn't exist on sun4 and sun4e.
 	 */
-	if (CPU_ISSUN4)
+	if (CPU_ISSUN4OR4E)
 		return (0);
 
 	/*

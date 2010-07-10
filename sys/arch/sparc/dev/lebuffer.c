@@ -1,4 +1,4 @@
-/*	$OpenBSD: lebuffer.c,v 1.7 2008/12/26 15:13:07 miod Exp $	*/
+/*	$OpenBSD: lebuffer.c,v 1.8 2010/06/26 23:24:44 guenther Exp $	*/
 /*	$NetBSD: lebuffer.c,v 1.3 1997/05/24 20:16:28 pk Exp $ */
 
 /*
@@ -102,7 +102,7 @@ lebufattach(parent, self, aux)
 	struct device *parent, *self;
 	void *aux;
 {
-#if defined(SUN4C) || defined(SUN4M)
+#if defined(SUN4C) || defined(SUN4D) || defined(SUN4E) || defined(SUN4M)
 	register struct confargs *ca = aux;
 	struct lebuf_softc *sc = (void *)self;
 	int node;
@@ -157,5 +157,5 @@ lebufattach(parent, self, aux)
 		oca.ca_bustype = BUS_SBUS;
 		(void) config_found(&sc->sc_dev, (void *)&oca, lebufprint);
 	}
-#endif /* SUN4C || SUN4M */
+#endif /* SUN4C || SUN4D || SUN4E || SUN4M */
 }
