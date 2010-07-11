@@ -1,4 +1,4 @@
-/*	$OpenBSD: remote.c,v 1.30 2010/07/02 05:56:29 nicm Exp $	*/
+/*	$OpenBSD: remote.c,v 1.31 2010/07/02 07:32:16 nicm Exp $	*/
 /*	$NetBSD: remote.c,v 1.5 1997/04/20 00:02:45 mellon Exp $	*/
 
 /*
@@ -39,8 +39,6 @@
 static char	*db_array[3] = { _PATH_REMOTE, 0, 0 };
 
 #define cgetflag(f)	(cgetcap(bp, f, ':') != NULL)
-
-static void	getremcap(char *);
 
 char *
 getremote(char *host)
