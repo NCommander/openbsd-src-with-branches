@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-run-shell.c,v 1.6 2009/11/13 19:53:29 nicm Exp $ */
+/* $OpenBSD: cmd-run-shell.c,v 1.7 2010/05/25 20:05:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -131,10 +131,13 @@ cmd_run_shell_free(void *data)
 {
 	struct cmd_run_shell_data	*cdata = data;
 	struct cmd_ctx			*ctx = &cdata->ctx;
+	struct msg_exit_data		 exitdata;
 
 	if (ctx->cmdclient != NULL) {
 		ctx->cmdclient->references--;
-		server_write_client(ctx->cmdclient, MSG_EXIT, NULL, 0);
+		exitdata.retcode = ctx->cmdclient->retcode;
+		server_write_client(
+		    ctx->cmdclient, MSG_EXIT, &exitdata, sizeof exitdata);
 	}
 	if (ctx->curclient != NULL)
 		ctx->curclient->references--;
