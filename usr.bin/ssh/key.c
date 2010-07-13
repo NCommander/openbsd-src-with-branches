@@ -1,4 +1,4 @@
-/* $OpenBSD: key.c,v 1.87 2010/04/16 01:47:26 djm Exp $ */
+/* $OpenBSD: key.c,v 1.88 2010/05/07 11:30:29 djm Exp $ */
 /*
  * read_bignum():
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -48,6 +48,7 @@
 #include "uuencode.h"
 #include "buffer.h"
 #include "log.h"
+#include "misc.h"
 #include "ssh2.h"
 
 static struct KeyCert *
@@ -223,7 +224,7 @@ cert_compare(struct KeyCert *a, struct KeyCert *b)
 		return 0;
 	if (buffer_len(&a->certblob) != buffer_len(&b->certblob))
 		return 0;
-	if (memcmp(buffer_ptr(&a->certblob), buffer_ptr(&b->certblob),
+	if (timing_safe_cmp(buffer_ptr(&a->certblob), buffer_ptr(&b->certblob),
 	    buffer_len(&a->certblob)) != 0)
 		return 0;
 	return 1;
