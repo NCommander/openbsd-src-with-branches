@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.163 2010/07/01 01:39:39 jordan Exp $ */
+/* $OpenBSD: dsdt.c,v 1.165 2010/07/08 20:56:31 jordan Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -522,7 +522,7 @@ void
 acpi_poll(void *arg)
 {
 	dsdt_softc->sc_poll = 1;
-	dsdt_softc->sc_wakeup = 0;
+	dsdt_softc->sc_threadwaiting = 0;
 	wakeup(dsdt_softc);
 
 	timeout_add_sec(&dsdt_softc->sc_dev_timeout, 10);
