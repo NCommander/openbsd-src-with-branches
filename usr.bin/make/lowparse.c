@@ -238,7 +238,7 @@ Parse_ReadNextConditionalLine(Buffer linebuf)
 					current->lineno++;
 			}
 			if (c == EOF) {
-				Parse_Error(PARSE_FATAL, 
+				Parse_Error(PARSE_FATAL,
 				    "Unclosed conditional");
 				return NULL;
 			}
@@ -454,7 +454,7 @@ Parse_ReportErrors(void)
 		while (Parse_NextFile())
 			;
 #endif
-		fprintf(stderr, 
+		fprintf(stderr,
 		    "Fatal errors encountered -- cannot continue\n");
 		exit(1);
 	} else

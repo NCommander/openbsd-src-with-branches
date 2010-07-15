@@ -176,7 +176,7 @@ For_Eval(const char *line)
 		LstNode ln;
 		(void)fprintf(stderr, "For: Iterator ");
 		for (ln = Lst_First(&arg->vars); ln != NULL; ln = Lst_Adv(ln))
-			(void)fprintf(stderr, "%s ", 
+			(void)fprintf(stderr, "%s ",
 			    Var_LoopVarName(Lst_Datum(ln)));
 		(void)fprintf(stderr, "List %s\n", sub);
 	}

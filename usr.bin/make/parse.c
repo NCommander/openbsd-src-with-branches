@@ -300,7 +300,7 @@ ParseDoOp(GNode **gnp, unsigned int op)
 	 */
 	if (((op & OP_OPMASK) != (gn->type & OP_OPMASK)) &&
 	    !OP_NOP(gn->type) && !OP_NOP(op)) {
-		Parse_Error(PARSE_FATAL, "Inconsistent operator for %s", 
+		Parse_Error(PARSE_FATAL, "Inconsistent operator for %s",
 		    gn->name);
 		return 0;
 	}
@@ -644,7 +644,7 @@ parse_do_targets(Lst paths, unsigned int *op, const char *line)
 			if (gtargets.n > 0 &&
 			    (strcmp(gtargets.a[0]->name, "<<<<<<<") == 0 ||
 			    strcmp(gtargets.a[0]->name, ">>>>>>>") == 0)) {
-			    	Parse_Error(PARSE_FATAL, 
+			    	Parse_Error(PARSE_FATAL,
     "Need an operator (likely from a cvs update conflict)");
 			} else {
 				Parse_Error(PARSE_FATAL, "Need an operator");
@@ -711,7 +711,7 @@ handle_special_targets(Lst paths)
 		specType = SPECIAL_NONE;
 		return 0;
 	} else if (seen_special != 1) {
-		Parse_Error(PARSE_FATAL, 
+		Parse_Error(PARSE_FATAL,
 		    "Mixing special targets is not allowed");
 		dump_targets();
 		return 0;
