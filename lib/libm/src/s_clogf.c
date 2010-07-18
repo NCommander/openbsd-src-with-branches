@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: s_clogf.c,v 1.1 2008/09/07 20:36:09 martynas Exp $	*/
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
  *
@@ -62,8 +62,8 @@ clogf(float complex z)
 	float complex w;
 	float p, rr, x, y;
 
-	x = creal(z);
-	y = cimag(z);
+	x = crealf(z);
+	y = cimagf(z);
 	rr = atan2f(y, x);
 	p = cabsf(z);
 	p = logf(p);
