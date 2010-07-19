@@ -666,6 +666,8 @@ acpi_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_iot = ba->ba_iot;
 	sc->sc_memt = ba->ba_memt;
 
+	acpi_softc = sc;
+
 	if (acpi_map(ba->ba_acpipbase, sizeof(struct acpi_rsdp), &handle)) {
 		printf(": can't map memory\n");
 		return;
@@ -856,8 +858,6 @@ acpi_attach(struct device *parent, struct device *self, void *aux)
 		aaa.aaa_table = entry->q_table;
 		config_found_sm(self, &aaa, acpi_print, acpi_submatch);
 	}
-
-	acpi_softc = sc;
 
 	/* initialize runtime environment */
 	aml_find_node(&aml_root, "_INI", acpi_inidev, sc);

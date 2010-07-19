@@ -245,6 +245,8 @@ struct acpi_softc {
 	int			sc_flags;
 };
 
+extern struct acpi_softc *acpi_softc;
+
 #define	SCFLAG_OREAD	0x0000001
 #define	SCFLAG_OWRITE	0x0000002
 #define	SCFLAG_OPEN	(SCFLAG_OREAD|SCFLAG_OWRITE)
