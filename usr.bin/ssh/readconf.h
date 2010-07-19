@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.84 2010/06/25 07:14:46 djm Exp $ */
+/* $OpenBSD: readconf.h,v 1.85 2010/06/25 23:15:36 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -114,6 +114,8 @@ typedef struct {
 
 	char	*control_path;
 	int	control_master;
+	int     control_persist; /* ControlPersist flag */
+	int     control_persist_timeout; /* ControlPersist timeout (seconds) */
 
 	int	hash_known_hosts;
 
