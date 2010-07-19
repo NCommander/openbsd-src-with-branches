@@ -2,7 +2,7 @@
 #define _BUF_H
 
 /*	$OpenPackages$ */
-/*	$OpenBSD: buf.h,v 1.16 2003/06/03 02:56:11 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: buf.h,v 1.7 1996/12/31 17:53:22 christos Exp $ */
 
 /*

@@ -1,7 +1,7 @@
 #ifndef ARCH_H
 #define ARCH_H
 /*	$OpenPackages$ */
-/*	$OpenBSD: arch.h,v 1.3 2007/09/17 09:44:20 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.

@@ -2,7 +2,7 @@
 #define TIMESTAMP_H
 
 /*	$OpenPackages$ */
-/*	$OpenBSD: timestamp.h,v 1.3 2007/09/17 09:28:36 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.

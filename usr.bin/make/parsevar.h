@@ -1,7 +1,7 @@
 #ifndef PARSEVAR_H
 #define PARSEVAR_H
 /*	$OpenPackages$ */
-/*	$OpenBSD: parsevar.h,v 1.2 2007/07/08 17:44:20 espie Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *

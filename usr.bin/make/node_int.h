@@ -1,4 +1,4 @@
-/* $OpenBSD: cond_int.h,v 1.4 2007/07/08 17:44:20 espie Exp $ */
+/* $OpenBSD$ */
 
 /*
  * Copyright (c) 2007 Marc Espie.

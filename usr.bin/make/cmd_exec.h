@@ -1,7 +1,7 @@
 #ifndef CMD_EXEC_H
 #define CMD_EXEC_H
 /*	$OpenPackages$ */
-/*	$OpenBSD: cmd_exec.h,v 1.1 2001/05/23 12:34:40 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.

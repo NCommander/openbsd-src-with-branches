@@ -2,7 +2,7 @@
 #define EXTERN_H
 
 /*	$OpenPackages$ */
-/*	$OpenBSD: extern.h,v 1.39 2003/06/03 02:56:11 millert Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: nonints.h,v 1.12 1996/11/06 17:59:19 christos Exp $	*/
 
 /*-

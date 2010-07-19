@@ -1,7 +1,7 @@
 #ifndef FOR_H
 #define FOR_H
 /*	$OpenPackages$ */
-/* $OpenBSD: for.h,v 1.2 2002/06/13 23:26:39 espie Exp $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *

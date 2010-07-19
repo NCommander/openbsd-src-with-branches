@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 /*	$OpenPackages$ */
-/*	$OpenBSD: main.h,v 1.2 2007/09/17 09:28:36 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.

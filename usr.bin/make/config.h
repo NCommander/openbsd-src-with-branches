@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 /*	$OpenPackages$ */
-/*	$OpenBSD: config.h,v 1.15 2007/09/16 09:46:14 espie Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: config.h,v 1.7 1996/11/06 17:59:03 christos Exp $	*/
 
 /*

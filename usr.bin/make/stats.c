@@ -1,5 +1,5 @@
 /* $OpenPackages$ */
-/* $OpenBSD: stats.c,v 1.7 2004/04/07 13:11:36 espie Exp $ */
+/* $OpenBSD$ */
 
 /*
  * Copyright (c) 1999 Marc Espie.

@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: buf.c,v 1.20 2004/04/07 13:11:35 espie Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: buf.c,v 1.9 1996/12/31 17:53:21 christos Exp $ */
 
 /*

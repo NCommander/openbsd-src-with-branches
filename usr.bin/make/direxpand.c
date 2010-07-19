@@ -1,4 +1,4 @@
-/*	$OpenBSD: direxpand.c,v 1.3 2007/09/17 09:28:36 espie Exp $ */
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 1999,2007 Marc Espie.
  *

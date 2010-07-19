@@ -1,5 +1,5 @@
 /*	$OpenPackages$ */
-/*	$OpenBSD: generate.c,v 1.9 2007/09/16 10:20:17 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.

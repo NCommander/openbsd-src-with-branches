@@ -1,7 +1,7 @@
 #ifndef COND_H
 #define COND_H
 /*	$OpenPackages$ */
-/*	$OpenBSD: cond.h,v 1.2 2002/06/11 21:12:11 espie Exp $ */
+/*	$OpenBSD$ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
