@@ -1,5 +1,4 @@
-/*	$OpenPackages$ */
-/*	$OpenBSD: lstForEachFrom.c,v 1.15 2007/01/04 17:55:35 espie Exp $	*/
+/*	$OpenBSD: lstForEachFrom.c,v 1.18 2007/09/16 09:46:14 espie Exp $	*/
 /*	$NetBSD: lstForEachFrom.c,v 1.5 1996/11/06 17:59:42 christos Exp $	*/
 
 /*

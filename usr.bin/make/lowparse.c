@@ -1,5 +1,4 @@
-/*	$OpenPackages$ */
-/*	$OpenBSD$ */
+/*	$OpenBSD: lowparse.c,v 1.23 2010/07/15 10:41:11 espie Exp $ */
 
 /* low-level parsing functions. */
 

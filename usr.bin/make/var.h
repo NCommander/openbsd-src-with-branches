@@ -1,5 +1,6 @@
 #ifndef VAR_H
 #define VAR_H
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *

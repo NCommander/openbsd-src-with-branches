@@ -1,5 +1,4 @@
-/*	$OpenPackages$ */
-/*	$OpenBSD: lstMember.c,v 1.13 2004/04/07 13:11:36 espie Exp $	*/
+/*	$OpenBSD: lstMember.c,v 1.16 2007/09/16 09:46:14 espie Exp $	*/
 /*	$NetBSD: lstMember.c,v 1.5 1996/11/06 17:59:48 christos Exp $	*/
 
 /*

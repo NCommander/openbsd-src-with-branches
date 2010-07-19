@@ -1,5 +1,4 @@
-#	$OpenPackages: Makefile.boot,v 1.5 2001/04/06 00:09:55 will Exp $
-#	$OpenBSD: Makefile.boot,v 1.8 2001/05/29 12:41:18 espie Exp $
+#	$OpenBSD: Makefile.boot,v 1.9 2010/02/03 20:45:44 miod Exp $
 #
 # a very simple makefile...
 #

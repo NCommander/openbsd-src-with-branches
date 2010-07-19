@@ -1,5 +1,4 @@
-/*	$OpenPackages$ */
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cond.c,v 1.42 2010/04/25 13:59:53 espie Exp $	*/
 /*	$NetBSD: cond.c,v 1.7 1996/11/06 17:59:02 christos Exp $	*/
 
 /*

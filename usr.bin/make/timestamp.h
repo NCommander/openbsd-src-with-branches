@@ -1,8 +1,7 @@
 #ifndef TIMESTAMP_H
 #define TIMESTAMP_H
 
-/*	$OpenPackages$ */
-/*	$OpenBSD$ */
+/*	$OpenBSD: timestamp.h,v 1.5 2010/07/19 19:30:38 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.

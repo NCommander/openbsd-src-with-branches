@@ -1,5 +1,4 @@
-/*	$OpenPackages$ */
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pathnames.h,v 1.11 2010/07/19 19:30:37 espie Exp $	*/
 /*	$NetBSD: pathnames.h,v 1.6 1996/11/06 17:59:21 christos Exp $	*/
 
 /*

@@ -1,5 +1,4 @@
-/*	$OpenPackages$ */
-/*	$OpenBSD$	*/
+/*	$OpenBSD: job.c,v 1.119 2010/07/15 10:37:32 espie Exp $	*/
 /*	$NetBSD: job.c,v 1.16 1996/11/06 17:59:08 christos Exp $	*/
 
 /*

@@ -1,5 +1,4 @@
-/*	$OpenPackages$ */
-/*	$OpenBSD$	*/
+/*	$OpenBSD: var.c,v 1.86 2010/04/25 13:59:53 espie Exp $	*/
 /*	$NetBSD: var.c,v 1.18 1997/03/18 19:24:46 christos Exp $	*/
 
 /*

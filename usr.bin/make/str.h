@@ -1,5 +1,6 @@
 #ifndef STR_H
 #define STR_H
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *
