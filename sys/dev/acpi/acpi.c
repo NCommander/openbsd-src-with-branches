@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.179 2010/07/19 16:57:27 deraadt Exp $ */
+/* $OpenBSD: acpi.c,v 1.180 2010/07/19 16:58:12 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -2272,12 +2272,14 @@ acpi_prepare_sleep_state(struct acpi_softc *sc, int state)
 	acpi_susp_resume_gpewalk(sc, state, 1);
 
 fail:
-	bufq_restart();
+	if (error) {
+		bufq_restart();
 
 #if NWSDISPLAY > 0
-	if (error)
 		wsdisplay_resume();
 #endif /* NWSDISPLAY > 0 */
+	}
+
 	return (error);
 }
 
