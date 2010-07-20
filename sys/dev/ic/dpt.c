@@ -1,4 +1,4 @@
-/*	$OpenBSD: dpt.c,v 1.25 2010/05/20 00:55:17 krw Exp $	*/
+/*	$OpenBSD: dpt.c,v 1.26 2010/06/28 18:31:02 krw Exp $	*/
 /*	$NetBSD: dpt.c,v 1.12 1999/10/23 16:26:33 ad Exp $	*/
 
 /*-
@@ -858,13 +858,13 @@ dpt_done_ccb(sc, ccb)
 /*
  * Start a SCSI command.
  */
-int
-dpt_scsi_cmd(xs)
 #ifdef __NetBSD__
-	struct scsipi_xfer *xs;
+int
+dpt_scsi_cmd(struct scsipi_xfer *xs)
 #endif /* __NetBSD__ */
 #ifdef __OpenBSD__
-	struct scsi_xfer *xs;
+void
+dpt_scsi_cmd(struct scsi_xfer *xs)
 #endif /* __OpenBSD__ */
 {
 	int error, i, flags, s;
