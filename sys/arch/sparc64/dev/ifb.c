@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifb.c,v 1.17 2009/06/27 22:43:41 miod Exp $	*/
+/*	$OpenBSD: ifb.c,v 1.18 2009/09/05 14:09:35 miod Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2009 Miodrag Vallat.
@@ -88,7 +88,7 @@ extern int allowaperture;
  *
  * Moreover, high pixel values in the overlay planes (such as 0xff or 0xfe)
  * seem to enable other planes with random contents, so we'll limit ourselves
- * to 7bpp opration.
+ * to 7bpp operation.
  */
 
 /*
