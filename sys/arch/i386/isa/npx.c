@@ -1,4 +1,4 @@
-/*	$OpenBSD: npx.c,v 1.47 2009/10/28 21:12:18 deraadt Exp $	*/
+/*	$OpenBSD: npx.c,v 1.48 2010/06/29 21:13:43 thib Exp $	*/
 /*	$NetBSD: npx.c,v 1.57 1996/05/12 23:12:24 mycroft Exp $	*/
 
 #if 0
@@ -848,9 +848,9 @@ npxsave_proc(struct proc *p, int save)
 		IPRINTF(("%s: fp ipi to %s %s %lx\n", ci->ci_dev.dv_xname,
 		    oci->ci_dev.dv_xname, save ? "save" : "flush", (u_long)p));
 
+		oci->ci_fpsaveproc = p;
 		i386_send_ipi(oci,
 		    save ? I386_IPI_SYNCH_FPU : I386_IPI_FLUSH_FPU);
-
 		while (p->p_addr->u_pcb.pcb_fpcpu != NULL)
 			SPINLOCK_SPIN_HOOK;
 	}
