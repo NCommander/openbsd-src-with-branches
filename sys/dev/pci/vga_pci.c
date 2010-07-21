@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_pci.c,v 1.54 2010/07/14 11:21:53 matthieu Exp $ */
+/* $OpenBSD: vga_pci.c,v 1.55 2010/07/20 05:18:22 mlarkin Exp $ */
 /* $NetBSD: vga_pci.c,v 1.3 1998/06/08 06:55:58 thorpej Exp $ */
 
 /*
@@ -182,6 +182,11 @@ static const struct vga_device_description vga_devs[] = {
 	{	/* Gateway LT3103u (ATI Radeon X1250/RS690) */
 	    {	PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_X1250IGP,
 		0x1025, 0x028c },
+	    {	0xffff, 0xffff, 0xffff, 0xffff}, 1, 0
+	},
+	{	/* Thinkpad T43p with ATI FireGL (M24) */
+	    {	PCI_VENDOR_ATI, PCI_PRODUCT_ATI_FIREGL_M24GL,
+		0x1014, 0x0570 },
 	    {	0xffff, 0xffff, 0xffff, 0xffff}, 1, 0
 	}
 };
