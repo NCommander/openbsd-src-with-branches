@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: bnxfw.h,v 1.3 2009/07/03 04:34:51 dlg Exp $ */
 
 /*-
  * Copyright (c) 2006-2009 Broadcom Corporation
