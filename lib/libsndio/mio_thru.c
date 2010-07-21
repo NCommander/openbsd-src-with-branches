@@ -1,4 +1,4 @@
-/*	$OpenBSD: mio_thru.c,v 1.8 2010/04/24 06:15:54 ratchov Exp $	*/
+/*	$OpenBSD: mio_thru.c,v 1.9 2010/07/06 01:12:45 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -226,7 +226,6 @@ thru_write(struct mio_hdl *sh, const void *buf, size_t len)
 		if (errno != EAGAIN) {
 			DPERROR("thru_write: write");
 			hdl->mio.eof = 1;
-			return 0;
 		}
  		return 0;
 	}

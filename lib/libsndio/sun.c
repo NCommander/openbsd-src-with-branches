@@ -1,4 +1,4 @@
-/*	$OpenBSD: sun.c,v 1.37 2010/05/25 06:49:13 ratchov Exp $	*/
+/*	$OpenBSD: sun.c,v 1.38 2010/07/15 03:43:11 jakemsr Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -866,7 +866,6 @@ sun_write(struct sio_hdl *sh, const void *buf, size_t len)
 		if (errno != EAGAIN) {
 			DPERROR("sun_write: write");
 			hdl->sio.eof = 1;
-			return 0;
 		}
  		return 0;
 	}
