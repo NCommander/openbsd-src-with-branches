@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.55 2009/06/23 13:21:48 gwk Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.56 2009/08/29 11:01:15 miod Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -579,7 +579,7 @@ acpicpu_getpss(struct acpicpu_softc *sc)
 	for (i = 0; i < res.length; i++) {
 		cf = aml_val2int(res.v_package[i]->v_package[0]);
 
-		/* This heuristic comes from FreeBSDs 
+		/* This heuristic comes from FreeBSDs
 		 * dev/acpica/acpi_perf.c to weed out invalid PSS entries.
 		 */
 		if (cf == sc->sc_pss[c].pss_core_freq) {

@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidock.c,v 1.38 2009/06/07 13:18:04 mk Exp $ */
+/* $OpenBSD: acpidock.c,v 1.39 2010/06/27 09:13:36 jordan Exp $ */
 /*
  * Copyright (c) 2006,2007 Michael Knudsen <mk@openbsd.org>
  *
@@ -246,7 +246,7 @@ acpidock_notify(struct aml_node *node, int notify_type, void *arg)
 		    sizeof(sc->sc_sens.desc));
 
 	printf("%s: %s\n",
-	    DEVNAME(sc), sc->sc_docked == ACPIDOCK_STATUS_DOCKED ? 
+	    DEVNAME(sc), sc->sc_docked == ACPIDOCK_STATUS_DOCKED ?
 	    "docked" : "undocked");
 
 	return (0);
