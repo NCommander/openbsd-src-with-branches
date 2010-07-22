@@ -1,4 +1,4 @@
-/*	$OpenBSD: ci.c,v 1.204 2008/03/22 21:15:54 millert Exp $	*/
+/*	$OpenBSD: ci.c,v 1.205 2009/02/25 23:16:20 ray Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Niall O'Higgins <niallo@openbsd.org>
  * All rights reserved.
@@ -344,11 +344,9 @@ checkin_diff_file(struct checkin_params *pb)
 {
 	char *path1, *path2;
 	BUF *b1, *b2, *b3;
-	char rbuf[RCS_REV_BUFSZ];
 
 	b1 = b2 = b3 = NULL;
 	path1 = path2 = NULL;
-	rcsnum_tostr(pb->frev, rbuf, sizeof(rbuf));
 
 	if ((b1 = rcs_buf_load(pb->filename, BUF_AUTOEXT)) == NULL) {
 		warnx("failed to load file: `%s'", pb->filename);
@@ -359,6 +357,7 @@ checkin_diff_file(struct checkin_params *pb)
 		warnx("failed to load revision");
 		goto out;
 	}
+	b2 = rcs_kwexp_buf(b2, pb->file, pb->frev);
 
 	if ((b3 = rcs_buf_alloc(128, BUF_AUTOEXT)) == NULL) {
 		warnx("failed to allocated buffer for diff");
