@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsmerge.c,v 1.50 2007/02/27 07:59:13 xsa Exp $	*/
+/*	$OpenBSD: rcsmerge.c,v 1.51 2007/06/30 08:23:49 xsa Exp $	*/
 /*
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -166,15 +166,15 @@ rcsmerge_main(int argc, char **argv)
 		status = 0;
 
 	if (flags & PIPEOUT)
-		rcs_buf_write_fd(bp, STDOUT_FILENO);
+		buf_write_fd(bp, STDOUT_FILENO);
 	else {
 		/* XXX mode */
-		if (rcs_buf_write(bp, argv[0], 0644) < 0)
-			warnx("rcs_buf_write failed");
+		if (buf_write(bp, argv[0], 0644) < 0)
+			warnx("buf_write failed");
 
 	}
 
-	rcs_buf_free(bp);
+	buf_free(bp);
 
 out:
 	rcs_close(file);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.164 2009/04/06 06:45:56 joris Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.165 2009/06/21 20:23:01 sthen Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -95,7 +95,7 @@ cvs_checkout(int argc, char **argv)
 			exit(0);
 		case 'D':
 			dateflag = optarg;
-			cvs_specified_date = cvs_date_parse(dateflag);
+			cvs_specified_date = date_parse(dateflag);
 			reset_tag = 0;
 			break;
 		case 'd':

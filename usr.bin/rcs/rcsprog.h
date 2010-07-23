@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.h,v 1.61 2008/05/10 19:54:58 tobias Exp $	*/
+/*	$OpenBSD: rcsprog.h,v 1.62 2010/07/23 08:31:19 ray Exp $	*/
 /*
  * Copyright (c) 2005 Joris Vink <joris@openbsd.org>
  * All rights reserved.
@@ -83,7 +83,7 @@ extern char	*rcs_tmpdir;
 extern struct wklhead temp_files;
 
 /* date.y */
-time_t  rcs_date_parse(const char *);
+time_t  date_parse(const char *);
 
 /* ci.c */
 int	checkin_main(int, char **);
