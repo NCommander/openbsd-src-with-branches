@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidock.c,v 1.39 2010/06/27 09:13:36 jordan Exp $ */
+/* $OpenBSD: acpidock.c,v 1.40 2010/07/21 19:35:15 deraadt Exp $ */
 /*
  * Copyright (c) 2006,2007 Michael Knudsen <mk@openbsd.org>
  *
@@ -282,11 +282,7 @@ acpidock_foundejd(struct aml_node *node, void *arg)
 	if (aml_evalnode(sc->sc_acpi, node, 0, NULL, &res) == -1)
 		printf(": error\n");
 	else {
-		if (!memcmp(res.v_string, "_SB.", 4)) {
-			dock = aml_searchname(&aml_root, "_SB_");
-			dock = aml_searchname(dock, res.v_string+4);
-		} else
-			dock = aml_searchname(&aml_root, res.v_string);
+		dock = aml_searchname(&aml_root, res.v_string);
 
 		if (dock == sc->sc_devnode)
 			/* Add all children devices of Device containing _EJD */
