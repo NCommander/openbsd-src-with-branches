@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsutil.h,v 1.12 2007/02/22 19:11:13 otto Exp $	*/
+/*	$OpenBSD: rcsutil.h,v 1.13 2008/01/04 13:45:24 chl Exp $	*/
 /*
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
  * All rights reserved.
@@ -36,11 +36,11 @@ struct rcs_line {
 	TAILQ_ENTRY(rcs_line)	 l_list;
 };
 
-TAILQ_HEAD(rcs_tqh, rcs_line);
+TAILQ_HEAD(tqh, rcs_line);
 
 struct rcs_lines {
 	int		 l_nblines;
-	struct rcs_tqh	 l_lines;
+	struct tqh	 l_lines;
 };
 
 struct rcs_argvector {

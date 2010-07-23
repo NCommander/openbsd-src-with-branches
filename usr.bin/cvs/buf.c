@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.73 2009/03/23 18:21:23 joris Exp $	*/
+/*	$OpenBSD: buf.c,v 1.74 2009/03/25 21:19:20 joris Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -218,7 +218,7 @@ cvs_buf_write_stmp(BUF *b, char *template, struct timeval *tv)
 			fatal("cvs_buf_write_stmp: futimes failed");
 	}
 
-	cvs_worklist_add(template, &temp_files);
+	worklist_add(template, &temp_files);
 
 	if (lseek(fd, 0, SEEK_SET) < 0)
 		fatal("cvs_buf_write_stmp: lseek: %s", strerror(errno));

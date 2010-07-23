@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.175 2009/03/19 09:53:16 joris Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.176 2009/03/25 21:19:20 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -279,7 +279,7 @@ extern struct module_checkout *current_module;
 extern char *module_repo_root;
 
 extern struct ignore_head checkout_ign_pats;
-extern struct cvs_wklhead temp_files;
+extern struct wklhead temp_files;
 extern volatile sig_atomic_t sig_received;
 extern volatile sig_atomic_t cvs_quit;
 extern struct cvsroot *current_cvsroot;

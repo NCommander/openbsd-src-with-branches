@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.154 2009/06/06 14:17:27 ray Exp $	*/
+/*	$OpenBSD: diff.c,v 1.155 2009/06/07 08:39:13 ray Exp $	*/
 /*
  * Copyright (c) 2008 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
@@ -574,7 +574,7 @@ cvs_diff_local(struct cvs_file *cf)
 	close(fd1);
 	close(fd2);
 
-	cvs_worklist_run(&temp_files, cvs_worklist_unlink);
+	worklist_run(&temp_files, worklist_unlink);
 
 	if (p1 != NULL)
 		xfree(p1);
