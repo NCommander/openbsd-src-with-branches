@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.73 2010/05/02 11:15:29 kettenis Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.74 2010/06/29 00:28:14 tedu Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -159,7 +159,7 @@ struct emul ELFNAMEEND(emul) = {
 #else
 	NULL,
 #endif
-	sizeof (AuxInfo) * ELF_AUX_ENTRIES,
+	(sizeof(AuxInfo) * ELF_AUX_ENTRIES / sizeof(char *)),
 	ELFNAME(copyargs),
 	setregs,
 	ELFNAME2(exec,fixup),
