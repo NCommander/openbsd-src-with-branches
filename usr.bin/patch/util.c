@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.33 2009/10/27 23:59:41 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.34 2010/01/08 13:27:59 oga Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -200,9 +200,9 @@ say(const char *fmt, ...)
 	va_list	ap;
 
 	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
+	vfprintf(stdout, fmt, ap);
 	va_end(ap);
-	fflush(stderr);
+	fflush(stdout);
 }
 
 /*
