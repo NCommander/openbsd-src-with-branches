@@ -1,4 +1,4 @@
-/*	$OpenBSD: newsyslog.c,v 1.86 2009/10/27 23:59:40 deraadt Exp $	*/
+/*	$OpenBSD: newsyslog.c,v 1.87 2010/03/20 15:15:45 schwarze Exp $	*/
 
 /*
  * Copyright (c) 1999, 2002, 2003 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -407,8 +407,8 @@ send_signal(char *pidfile, int signal)
 	else if (noaction)
 		(void)printf("kill -%s %ld\n", sys_signame[signal], (long)pid);
 	else if (kill(pid, signal))
-		warnx("warning - could not send SIG%s to daemon",
-		    sys_signame[signal]);
+		warnx("warning - could not send SIG%s to PID from pid file %s",
+		    sys_signame[signal], pidfile);
 }
 
 void
