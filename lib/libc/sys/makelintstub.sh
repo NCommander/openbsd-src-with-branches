@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	$OpenBSD: makelintstub.sh,v 1.7 2006/09/22 16:20:35 pedro Exp $
+#	$OpenBSD: makelintstub.sh,v 1.8 2009/06/03 14:45:47 jj Exp $
 #	$NetBSD: makelintstub,v 1.2 1997/11/05 05:46:18 thorpej Exp $
 #
 # Copyright (c) 1996, 1997 Christopher G. Demetriou.  All rights reserved.
@@ -88,9 +88,9 @@ syscall_stub()
 	syscallname="$2"
 	funcname="$3"
 
-	arglist="`printf '#include "'"$syscallhdr"'"' | cpp -C | \
+	arglist=$(printf '#include "%s"\n' "$syscallhdr" | cpp -C | \
     	grep '^/\* syscall: "'"$syscallname"'" ' | \
-    	sed -e 's,^/\* syscall: ,,;s, \*/$,,'`"
+    	sed -e 's,^/\* syscall: ,,;s, \*/$,,')
 
 	eval set -f -- "$arglist"
 
