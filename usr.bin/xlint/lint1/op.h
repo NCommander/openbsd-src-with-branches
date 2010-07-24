@@ -1,4 +1,4 @@
-/*	$OpenBSD: op.h,v 1.2 1996/06/26 05:44:17 deraadt Exp $	*/
+/*	$OpenBSD: op.h,v 1.3 2005/11/29 20:09:57 cloder Exp $	*/
 /*	$NetBSD: op.h,v 1.2 1995/07/03 21:24:27 cgd Exp $	*/
 
 /*
@@ -114,6 +114,8 @@ typedef	enum {
 	LOAD,
 	PUSH,
 	RETURN,
+	REAL,		/* gcc extension: __real__ */
+	IMAG,		/* gcc extension: __imag__ */
 	INIT,		/* pseudo op, not used in trees */
 	CASE,		/* pseudo op, not used in trees */
 	FARG		/* pseudo op, not used in trees */
