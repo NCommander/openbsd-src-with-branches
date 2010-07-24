@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.3 2007/05/16 17:27:30 art Exp $	*/
+/*	$OpenBSD: _types.h,v 1.4 2008/07/21 20:50:54 martynas Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -119,5 +119,8 @@ typedef int			__wint_t;
 typedef	int			__rune_t;
 typedef	void *			__wctrans_t;
 typedef	void *			__wctype_t;
+
+/* Feature test macros */
+#define __HAVE_TIMECOUNTER
 
 #endif	/* _HPPA64__TYPES_H_ */
