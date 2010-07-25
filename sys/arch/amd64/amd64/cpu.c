@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.33 2010/05/08 16:54:07 oga Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.34 2010/06/26 23:24:43 guenther Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -497,7 +497,7 @@ cpu_hatch(void *v)
 	ci->ci_flags |= CPUF_PRESENT;
 
 	lapic_enable();
-	lapic_initclocks();
+	lapic_startclock();
 
 	while ((ci->ci_flags & CPUF_GO) == 0)
 		delay(10);
