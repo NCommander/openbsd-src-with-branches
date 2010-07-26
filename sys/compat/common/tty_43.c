@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_43.c,v 1.8 2003/06/02 23:27:59 millert Exp $	*/
+/*	$OpenBSD: tty_43.c,v 1.9 2004/09/19 21:34:42 mickey Exp $	*/
 /*	$NetBSD: tty_43.c,v 1.5 1996/05/20 14:29:17 mark Exp $	*/
 
 /*-
@@ -243,7 +243,7 @@ ttcompat(tp, com, data, flag, p)
 		if (tp->t_session->s_leader == NULL)
 			return ENOTTY;
 
-		*(int *) data =  tp->t_session->s_leader->p_pid;
+		*(int *) data =  tp->t_session->s_leader->ps_pid;
 		break;
 
 	default:
