@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_i810.c,v 1.64 2010/06/30 09:17:04 oga Exp $	*/
+/*	$OpenBSD: agp_i810.c,v 1.65 2010/07/02 02:33:57 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2000 Doug Rabson
@@ -511,7 +511,7 @@ agp_i810_activate(struct device *arg, int act)
 {
 	struct agp_i810_softc *isc = (struct agp_i810_softc *)arg;
 
-	switch(act) {
+	switch (act) {
 	case DVACT_RESUME:
 		agp_i810_configure(isc);
 		break;
