@@ -1,8 +1,6 @@
-/*	$OpenBSD: mbrtowc_sb.c,v 1.3 2005/08/11 20:51:56 espie Exp $	*/
-/*	$NetBSD: multibyte_sb.c,v 1.4 2003/08/07 16:43:04 agc Exp $	*/
-
-/*
- * Copyright (c) 1991 The Regents of the University of California.
+/*	$OpenBSD$ */
+/*-
+ * Copyright (c) 2002-2004 Tim J. Robbins.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,14 +11,11 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -30,35 +25,21 @@
  * SUCH DAMAGE.
  */
 
-#include <errno.h>
-#include <stdlib.h>
+#include <sys/cdefs.h>
+
+#include <limits.h>
+#include <stdio.h>
+#include <string.h>
 #include <wchar.h>
 
-/*ARGSUSED*/
-size_t
-mbrtowc(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
-{
-
-	/* pwc may be NULL */
-	/* s may be NULL */
-	/* ps appears to be unused */
-
-	if (s == NULL)
-		return 0;
-	if (n == 0)
-		return (size_t)-1;
-	if (pwc)
-		*pwc = (wchar_t)(unsigned char)*s;
-	return (*s != '\0');
-}
-
 int
-mbtowc(wchar_t *pwc, const char *s, size_t n)
+wctob(wint_t c)
 {
+	mbstate_t mbs;
+	char buf[MB_LEN_MAX];
 
-	/* pwc may be NULL */
-	/* s may be NULL */
-
-	return mbrtowc(pwc, s, n, NULL);
+	memset(&mbs, 0, sizeof(mbs));
+	if (c == WEOF || wcrtomb(buf, c, &mbs) != 1)
+		return (EOF);
+	return ((unsigned char)*buf);
 }
-
