@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidev.h,v 1.28 2009/06/02 23:03:34 jordan Exp $ */
+/* $OpenBSD: acpidev.h,v 1.29 2010/07/26 19:54:06 jordan Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
@@ -305,6 +305,7 @@ struct acpidock_softc {
 };
 
 #define ACPIDOCK_EVENT_INSERT	0
+#define ACPIDOCK_EVENT_DEVCHECK 1
 #define	ACPIDOCK_EVENT_EJECT	3
 
 #define ACPIEC_MAX_EVENTS	256
