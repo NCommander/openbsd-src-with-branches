@@ -1,4 +1,4 @@
-/* $OpenBSD: vga_pci.c,v 1.55 2010/07/20 05:18:22 mlarkin Exp $ */
+/* $OpenBSD: vga_pci.c,v 1.56 2010/07/21 07:50:20 mlarkin Exp $ */
 /* $NetBSD: vga_pci.c,v 1.3 1998/06/08 06:55:58 thorpej Exp $ */
 
 /*
@@ -187,6 +187,11 @@ static const struct vga_device_description vga_devs[] = {
 	{	/* Thinkpad T43p with ATI FireGL (M24) */
 	    {	PCI_VENDOR_ATI, PCI_PRODUCT_ATI_FIREGL_M24GL,
 		0x1014, 0x0570 },
+	    {	0xffff, 0xffff, 0xffff, 0xffff}, 1, 0
+	},
+	{	/* HP Pavilion dv7-3160us with ATI Radeon HD4500 */
+	    {	PCI_VENDOR_ATI, PCI_PRODUCT_ATI_RADEON_HD4500_M,
+		0x103c, 0x3639 },
 	    {	0xffff, 0xffff, 0xffff, 0xffff}, 1, 0
 	}
 };
