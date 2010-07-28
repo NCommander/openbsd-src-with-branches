@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwivar.h,v 1.19 2008/08/28 15:52:20 damien Exp $	*/
+/*	$OpenBSD: if_iwivar.h,v 1.20 2009/06/05 22:40:31 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2004-2006
@@ -114,6 +114,7 @@ struct iwi_softc {
 	int			sc_tx_timer;
 
 	void			*powerhook;
+	struct workq_task	sc_resume_wqt;
 
 #if NBPFILTER > 0
 	caddr_t			sc_drvbpf;
