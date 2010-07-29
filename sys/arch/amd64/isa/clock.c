@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.13 2007/08/02 16:40:27 deraadt Exp $	*/
+/*	$OpenBSD: clock.c,v 1.14 2010/07/25 21:43:38 deraadt Exp $	*/
 /*	$NetBSD: clock.c,v 1.1 2003/04/26 18:39:50 fvdl Exp $	*/
 
 /*-
@@ -319,6 +319,8 @@ i8254_initclocks(void)
 	    0, "rtc");
 
 	rtcstart();			/* start the mc146818 clock */
+
+	i8254_inittimecounter();	/* hook the interrupt-based i8254 tc */
 }
 
 void
