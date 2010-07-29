@@ -1,5 +1,4 @@
-
-/*	$OpenBSD$ */
+/*	$OpenBSD: citrus_utf8.c,v 1.1 2010/07/27 16:59:03 stsp Exp $ */
 
 /*-
  * Copyright (c) 2002-2004 Tim J. Robbins
