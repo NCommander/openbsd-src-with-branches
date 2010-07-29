@@ -1,4 +1,4 @@
-/*	$OpenBSD: hci_link.c,v 1.8 2008/09/10 14:01:23 blambert Exp $	*/
+/*	$OpenBSD: hci_link.c,v 1.9 2008/11/22 04:42:58 uwe Exp $	*/
 /*	$NetBSD: hci_link.c,v 1.20 2008/04/24 11:38:37 ad Exp $	*/
 
 /*-
@@ -38,6 +38,7 @@
 #include <sys/proc.h>
 #include <sys/queue.h>
 #include <sys/systm.h>
+#include <sys/pool.h>
 
 #include <netbt/bluetooth.h>
 #include <netbt/hci.h>
