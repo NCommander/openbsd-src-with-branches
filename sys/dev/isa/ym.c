@@ -1,4 +1,4 @@
-/* $OpenBSD: ym.c,v 1.14 2008/04/21 00:32:42 jakemsr Exp $ */
+/* $OpenBSD: ym.c,v 1.15 2010/06/30 11:21:35 jakemsr Exp $ */
 
 
 /*
@@ -51,7 +51,6 @@
 
 #include <dev/ic/ad1848reg.h>
 #include <dev/isa/ad1848var.h>
-#include <dev/ic/opl3sa3reg.h>
 #include <dev/ic/mpuvar.h>
 #include <dev/isa/ymvar.h>
 
