@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.88 2009/10/19 22:24:18 jsg Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.89 2010/04/12 16:37:38 beck Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <sys/stat.h>
 #include <sys/vnode.h>
 #include <sys/mount.h>
+#include <sys/pool.h>
 #include <sys/proc.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
