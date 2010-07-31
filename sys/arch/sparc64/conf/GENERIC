@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.251 2010/03/03 20:57:28 mk Exp $
+#	$OpenBSD: GENERIC,v 1.252 2010/07/03 03:59:17 krw Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -157,13 +157,8 @@ audio*	at eap?
 audio*	at emu?
 audio*	at eso?
 
-# OPL[23] FM synthesizers
-opl*	at cmpci?
-opl*	at eso?
-
 # MIDI support
 midi*	at autri?
-midi*	at opl?
 midi*	at eap?
 
 # USB Controllers
