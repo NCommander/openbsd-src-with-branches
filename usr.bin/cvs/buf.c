@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.76 2010/07/23 21:46:05 ray Exp $	*/
+/*	$OpenBSD: buf.c,v 1.77 2010/07/31 16:28:31 zinovik Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -112,10 +112,10 @@ buf_free(BUF *b)
 	xfree(b);
 }
 
-u_char *
+void *
 buf_release(BUF *b)
 {
-	u_char *tmp;
+	void *tmp;
 
 	tmp = b->cb_buf;
 	xfree(b);
