@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.9 2010/06/30 10:51:04 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.10 2010/07/30 10:06:44 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -656,6 +656,7 @@ sub delete_old_packages
 		}
 		OpenBSD::PkgCfl::unregister($o->plist, $state);
 	});
+	$set->cleanup_old_shared($state);
 	# Here there should be code to handle old libs
 }
 
