@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpd.c,v 1.189 2010/06/18 06:02:57 tobias Exp $	*/
+/*	$OpenBSD: ftpd.c,v 1.190 2010/07/30 11:02:56 ray Exp $	*/
 /*	$NetBSD: ftpd.c,v 1.15 1995/06/03 22:46:47 mycroft Exp $	*/
 
 /*
@@ -733,6 +733,7 @@ user(char *name)
 		*style++ = 0;
 
 	guest = 0;
+	askpasswd = 0;
 	host = multihome ? dhostname : hostname;
 	if (anon_ok &&
 	    (strcmp(name, "ftp") == 0 || strcmp(name, "anonymous") == 0)) {
