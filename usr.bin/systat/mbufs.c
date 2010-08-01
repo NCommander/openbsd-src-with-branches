@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbufs.c,v 1.26 2009/11/23 21:44:33 henning Exp $ */
+/*	$OpenBSD: mbufs.c,v 1.27 2010/08/01 03:09:48 chl Exp $ */
 /*
  * Copyright (c) 2008 Can Erkin Acar <canacar@openbsd.org>
  *
@@ -19,6 +19,7 @@
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 #include <sys/mbuf.h>
+#include <sys/pool.h>
 #include <net/if.h>
 
 #include <err.h>
