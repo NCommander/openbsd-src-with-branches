@@ -1,4 +1,4 @@
-/*	$OpenBSD: ses.c,v 1.47 2007/09/16 01:30:24 krw Exp $ */
+/*	$OpenBSD: ses.c,v 1.48 2010/07/22 00:31:06 krw Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -301,7 +301,7 @@ ses_read_config(struct ses_softc *sc)
 	}
 
 	cfg = (struct ses_config_hdr *)buf;
-	if (cfg->pgcode != cmd->pgcode || betoh16(cfg->length) >
+	if (cfg->pgcode != SES_PAGE_CONFIG || betoh16(cfg->length) >
 	    SES_BUFLEN) {
 		free(buf, M_DEVBUF);
 		return (1);
