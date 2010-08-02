@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbhid.c,v 1.8 2008/06/26 05:42:21 ray Exp $	*/
+/*	$OpenBSD: usbhid.c,v 1.9 2008/10/16 18:37:19 jakemsr Exp $	*/
 /*      $NetBSD: usbhid.c,v 1.22 2002/02/20 20:30:42 christos Exp $ */
 
 /*
@@ -937,7 +937,7 @@ main(int argc, char **argv)
 		dev = devnamebuf;
 	}
 
-	hidfd = open(dev, O_RDWR);
+	hidfd = open(dev, wflag ? O_RDWR : O_RDONLY);
 	if (hidfd < 0)
 		err(1, "%s", dev);
 
