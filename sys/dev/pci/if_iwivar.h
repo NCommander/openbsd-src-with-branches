@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwivar.h,v 1.20 2009/06/05 22:40:31 deraadt Exp $	*/
+/*	$OpenBSD: if_iwivar.h,v 1.21 2010/07/28 21:21:38 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2004-2006
@@ -91,8 +91,9 @@ struct iwi_softc {
 	int			(*sc_newstate)(struct ieee80211com *,
 				    enum ieee80211_state, int);
 
-	uint32_t		flags;
+	uint32_t		sc_flags;
 #define IWI_FLAG_FW_INITED	(1 << 0)
+#define IWI_FLAG_BUSY		(1 << 1)
 
 	bus_dma_tag_t		sc_dmat;
 
