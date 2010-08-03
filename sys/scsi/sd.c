@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.202 2010/07/03 01:40:12 kettenis Exp $	*/
+/*	$OpenBSD: sd.c,v 1.204 2010/07/07 03:53:07 marco Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -1039,6 +1039,9 @@ sd_ioctl_cache(struct sd_softc *sc, long cmd, struct dk_cache *dkc)
 	u_int wrcache, rdcache;
 	int big;
 	int rv;
+
+	if (ISSET(sc->sc_link->flags, SDEV_UMASS))
+		return (EOPNOTSUPP);
 
 	/* see if the adapter has special handling */
 	rv = scsi_do_ioctl(sc->sc_link, cmd, (caddr_t)dkc, 0);
