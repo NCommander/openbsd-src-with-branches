@@ -884,7 +884,7 @@ incore(struct vnode *vp, daddr64_t blkno)
 		bp = NULL;
 
 	splx(s);
-	return(NULL);
+	return (bp);
 }
 
 /*
