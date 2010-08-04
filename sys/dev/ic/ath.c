@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.85 2010/04/20 22:05:43 tedu Exp $  */
+/*      $OpenBSD: ath.c,v 1.86 2010/07/02 06:06:30 reyk Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -529,8 +529,6 @@ ath_resume(struct ath_softc *sc, int why)
 
 	if (ifp->if_flags & IFF_UP) {
 		ath_init(ifp);
-		if (sc->sc_power != NULL)
-			(*sc->sc_power)(sc, why);
 		if (ifp->if_flags & IFF_RUNNING)
 			ath_start(ifp);
 	}
