@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keysign.c,v 1.29 2006/08/03 03:34:42 deraadt Exp $ */
+/* $OpenBSD: ssh-keysign.c,v 1.30 2010/01/13 01:20:20 dtucker Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *
@@ -223,7 +223,7 @@ main(int argc, char **argv)
 	found = 0;
 	for (i = 0; i < 2; i++) {
 		if (keys[i] != NULL &&
-		    key_equal(key, keys[i])) {
+		    key_equal_public(key, keys[i])) {
 			found = 1;
 			break;
 		}
