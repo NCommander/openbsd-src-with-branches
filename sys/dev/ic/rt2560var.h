@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2560var.h,v 1.5 2006/10/22 12:14:44 damien Exp $  */
+/*	$OpenBSD: rt2560var.h,v 1.6 2009/08/10 17:47:23 damien Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -167,4 +167,6 @@ struct rt2560_softc {
 
 int	rt2560_attach(void *, int);
 int	rt2560_detach(void *);
+void	rt2560_suspend(void *);
+void	rt2560_resume(void *);
 int	rt2560_intr(void *);
