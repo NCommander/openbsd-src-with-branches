@@ -120,14 +120,12 @@ acpibtn_getsta(struct acpibtn_softc *sc)
 	return (0);
 }
 
-/* XXX tie this to a sysctl later */
-int	acpi_lid_suspend = 0;
-
 int
 acpibtn_notify(struct aml_node *node, int notify_type, void *arg)
 {
 	struct acpibtn_softc	*sc = arg;
 #ifndef SMALL_KERNEL
+	extern int lid_suspend;
 	int64_t lid;
 #endif
 
@@ -143,7 +141,7 @@ acpibtn_notify(struct aml_node *node, int notify_type, void *arg)
 		 * _LID method.  0 means the lid is closed and we
 		 * should go to sleep.
 		 */
-		if (acpi_lid_suspend == 0)
+		if (lid_suspend == 0)
 			break;
 		if (aml_evalinteger(sc->sc_acpi, sc->sc_devnode,
 		    "_LID", 0, NULL, &lid))
