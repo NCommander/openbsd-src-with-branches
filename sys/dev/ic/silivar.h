@@ -1,4 +1,4 @@
-/*	$OpenBSD: silivar.h,v 1.5 2007/04/07 05:59:49 dlg Exp $ */
+/*	$OpenBSD: silivar.h,v 1.6 2008/11/23 12:46:51 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -40,5 +40,7 @@ struct sili_softc {
 
 int	sili_attach(struct sili_softc *);
 int	sili_detach(struct sili_softc *, int);
+
+void	sili_resume(struct sili_softc *);
 
 int	sili_intr(void *);
