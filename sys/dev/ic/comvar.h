@@ -1,4 +1,4 @@
-/*	$OpenBSD: comvar.h,v 1.48 2010/06/26 22:33:30 yasuoka Exp $	*/
+/*	$OpenBSD: comvar.h,v 1.49 2010/08/01 23:55:38 yasuoka Exp $	*/
 /*	$NetBSD: comvar.h,v 1.5 1996/05/05 19:50:47 christos Exp $	*/
 
 /*
@@ -138,6 +138,7 @@ int	comstop(struct tty *, int);
 int	comintr(void *);
 int	com_detach(struct device *, int);
 int	com_activate(struct device *, int);
+void	com_resume(struct com_softc *);
 
 void	comdiag(void *);
 int	comspeed(long, long);
