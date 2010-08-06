@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.82 2010/05/17 16:08:20 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.83 2010/06/27 19:53:34 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -311,7 +311,7 @@ print_af(u_int8_t aid)
 	 */
 	if (aid == AID_INET)
 		return ("inet");
-	if (aid == AID_INET6);
+	if (aid == AID_INET6)
 		return ("inet6");
 	return (aid2str(aid));
 }
