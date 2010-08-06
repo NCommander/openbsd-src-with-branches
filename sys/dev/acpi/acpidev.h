@@ -1,4 +1,4 @@
-/* $OpenBSD: acpidev.h,v 1.30 2010/07/27 01:21:19 jordan Exp $ */
+/* $OpenBSD: acpidev.h,v 1.31 2010/08/03 16:55:06 marco Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
@@ -334,4 +334,6 @@ struct acpiec_softc {
 	int			sc_gotsci;
 };
 
+void		acpibtn_disable_psw(void);
+void		acpibtn_enable_psw(void);
 #endif /* __DEV_ACPI_ACPIDEV_H__ */
