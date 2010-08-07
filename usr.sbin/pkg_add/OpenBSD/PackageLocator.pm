@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageLocator.pm,v 1.94 2010/07/02 11:41:30 espie Exp $
+# $OpenBSD: PackageLocator.pm,v 1.95 2010/07/02 12:42:49 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -55,7 +55,7 @@ sub default_path
 
 sub path_parse
 {
-	my ($self, $pkgname, $path, $state) = (@_, './');
+	my ($self, $pkgname, $state, $path) = (@_, './');
 	if ($pkgname =~ m/^(.*[\/\:])(.*)/) {
 		($pkgname, $path) = ($2, $1);
 	}
