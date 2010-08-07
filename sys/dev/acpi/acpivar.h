@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.63 2010/07/20 12:14:10 deraadt Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.64 2010/08/05 17:26:57 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -129,10 +129,11 @@ struct acpi_parsestate {
 };
 
 struct acpi_reg_map {
-	bus_space_handle_t  ioh;
-	int		    addr;
-	int		    size;
-	const char	   *name;
+	bus_space_handle_t	ioh;
+	int			addr;
+	int			size;
+	int			access;
+	const char		*name;
 };
 
 struct acpi_thread {
