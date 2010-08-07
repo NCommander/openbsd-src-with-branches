@@ -1,4 +1,4 @@
-/*	$OpenBSD: pciide_machdep.c,v 1.4 2005/12/12 18:25:47 kettenis Exp $	*/
+/*	$OpenBSD: pciide_machdep.c,v 1.1 2006/05/29 17:13:19 drahn Exp $	*/
 /*	$NetBSD: pciide_machdep.c,v 1.2 1999/02/19 18:01:27 mycroft Exp $	*/
 
 /*
@@ -54,12 +54,12 @@ void *
 pciide_machdep_compat_intr_establish(struct device *dev,
     struct pci_attach_args *pa, int chan, int (*func)(void *), void *arg)
 {
-	panic("pciide_machdep_compat_intr_establish called\n");
+	panic("pciide_machdep_compat_intr_establish called");
 	return (NULL);
 }
 
 void
 pciide_machdep_compat_intr_disestablish(pci_chipset_tag_t pc, void *cookie)
 {
-	panic("pciide_machdep_compat_intr_disestablish called\n");
+	panic("pciide_machdep_compat_intr_disestablish called");
 }

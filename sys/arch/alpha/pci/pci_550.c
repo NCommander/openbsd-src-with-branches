@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_550.c,v 1.20 2009/08/22 02:54:50 mk Exp $ */
+/* $OpenBSD: pci_550.c,v 1.21 2009/09/30 20:16:30 miod Exp $ */
 /* $NetBSD: pci_550.c,v 1.18 2000/06/29 08:58:48 mrg Exp $ */
 
 /*-
@@ -398,7 +398,7 @@ dec_550_iointr(arg, vec)
 	irq = SCB_VECTOIDX(vec - 0x900);
 
 	if (irq >= DEC_550_MAX_IRQ)
-		panic("550_iointr: vec 0x%lx out of range\n", vec);
+		panic("550_iointr: vec 0x%lx out of range", vec);
 
 	if (!alpha_shared_intr_dispatch(dec_550_pci_intr, irq)) {
 		alpha_shared_intr_stray(dec_550_pci_intr, irq,

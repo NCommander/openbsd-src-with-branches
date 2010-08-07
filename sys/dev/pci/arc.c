@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc.c,v 1.89 2010/07/02 20:54:36 mk Exp $ */
+/*	$OpenBSD: arc.c,v 1.90 2010/07/18 12:49:10 mk Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -613,7 +613,7 @@ arc_attach(struct device *parent, struct device *self, void *aux)
 
 #if NBIO > 0
 	if (bio_register(self, arc_bioctl) != 0)
-		panic("%s: bioctl registration failed\n", DEVNAME(sc));
+		panic("%s: bioctl registration failed", DEVNAME(sc));
 
 #ifndef SMALL_KERNEL
 	/*

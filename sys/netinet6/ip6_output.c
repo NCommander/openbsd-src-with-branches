@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.115 2010/07/08 19:42:46 jsg Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.116 2010/07/09 16:58:06 reyk Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -2193,7 +2193,7 @@ ip6_getpcbopt(struct ip6_pktopts *pktopt, int optname, struct mbuf **mp)
 		break;
 	default:		/* should not happen */
 #ifdef DIAGNOSTIC
-		panic("ip6_getpcbopt: unexpected option\n");
+		panic("ip6_getpcbopt: unexpected option");
 #endif
 		return (ENOPROTOOPT);
 	}

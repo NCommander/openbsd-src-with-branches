@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.29 2010/04/28 16:20:28 syuu Exp $ */
+/*	$OpenBSD: cpu.c,v 1.30 2010/06/26 23:24:43 guenther Exp $ */
 
 /*
  * Copyright (c) 1997-2004 Opsycon AB (www.opsycon.se)
@@ -89,7 +89,7 @@ cpuattach(struct device *parent, struct device *dev, void *aux)
 		cpu_info_secondaries = (struct cpu_info *)alloc_contiguous_pages(
 			sizeof(struct cpu_info) * ncpusfound - 1);
 		if (cpu_info_secondaries == NULL)
-			panic("unable to allocate cpu_info\n");
+			panic("unable to allocate cpu_info");
 #endif
 	}
 #ifdef MULTIPROCESSOR

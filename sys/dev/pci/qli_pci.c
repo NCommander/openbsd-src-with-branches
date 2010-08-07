@@ -1,4 +1,4 @@
-/* $OpenBSD: qli_pci.c,v 1.18 2010/05/20 00:55:18 krw Exp $ */
+/* $OpenBSD: qli_pci.c,v 1.19 2010/06/28 18:31:02 krw Exp $ */
 /*
  * Copyright (c) 2007 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2007 David Collins <dave@davec.name>
@@ -1045,7 +1045,7 @@ qli_intr(void *arg)
 	if (intr & QLI_REG_CTRLSTAT_SCSI_COMPL_INTR) {
 		/* io completion */
 		/* XXX */
-		panic("%s: qli_intr io completion not implemented\n",
+		panic("%s: qli_intr io completion not implemented",
 		    DEVNAME(sc));
 	}
 

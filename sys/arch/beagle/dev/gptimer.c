@@ -1,4 +1,4 @@
-/* $OpenBSD: gptimer.c,v 1.2 2009/05/24 00:36:09 drahn Exp $ */
+/* $OpenBSD: gptimer.c,v 1.3 2010/02/22 23:16:47 drahn Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -177,7 +177,7 @@ gptimer_attach(struct device *parent, struct device *self, void *args)
 		tc_init(&gptimer_timecounter);
 	}
 	else 
-		panic("attaching too many gptimers at %x\n", aa->aa_addr);
+		panic("attaching too many gptimers at %x", aa->aa_addr);
 }
 
 /* 
