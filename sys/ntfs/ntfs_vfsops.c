@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vfsops.c,v 1.16 2010/06/29 04:09:32 tedu Exp $	*/
+/*	$OpenBSD: ntfs_vfsops.c,v 1.17 2010/07/03 00:12:31 krw Exp $	*/
 /*	$NetBSD: ntfs_vfsops.c,v 1.7 2003/04/24 07:50:19 christos Exp $	*/
 
 /*-
@@ -569,7 +569,6 @@ ntfs_unmount(
 
 	error = VOP_CLOSE(ntmp->ntm_devvp, ronly ? FREAD : FREAD|FWRITE,
 		NOCRED, p);
-	VOP__UNLOCK(ntmp->ntm_devvp, 0, p);
 
 	vput(ntmp->ntm_devvp);
 
