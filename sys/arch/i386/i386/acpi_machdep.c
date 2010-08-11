@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.37 2010/07/29 00:29:49 mlarkin Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.38 2010/08/08 21:23:41 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -223,6 +223,8 @@ acpi_sleep_machdep(struct acpi_softc *sc, int state)
 		printf("%s: acpi_sleep_machdep: no FACS\n", DEVNAME(sc));
 		return (ENXIO);
 	}
+
+	rtcstop();
 
 	/* i386 does lazy pmap_activate */
 	pmap_activate(curproc);

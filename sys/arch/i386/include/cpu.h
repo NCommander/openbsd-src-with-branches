@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.112 2010/07/25 21:43:37 deraadt Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.113 2010/08/05 21:10:09 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -375,6 +375,7 @@ extern void (*initclock_func)(void);
 void	startclocks(void);
 void	rtcdrain(void *);
 void	rtcstart(void);
+void	rtcstop(void);
 void	i8254_delay(int);
 void	i8254_initclocks(void);
 void	i8254_startclock(void);
