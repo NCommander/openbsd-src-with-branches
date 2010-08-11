@@ -1,4 +1,4 @@
-/*	$OpenBSD: athn.c,v 1.57 2010/07/22 10:19:37 kettenis Exp $	*/
+/*	$OpenBSD: athn.c,v 1.58 2010/08/02 19:28:31 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -322,7 +322,7 @@ athn_attach(struct athn_softc *sc)
 		    ieee80211_std_rateset_11a;
 	}
 
-	/* Get the list of auhtorized/supported channels. */
+	/* Get the list of authorized/supported channels. */
 	athn_get_chanlist(sc);
 
 	/* IBSS channel undefined for now. */
