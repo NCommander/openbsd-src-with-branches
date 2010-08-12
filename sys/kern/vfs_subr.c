@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.187 2010/06/29 04:09:32 tedu Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.188 2010/08/11 14:35:34 beck Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -108,9 +108,7 @@ void vfs_free_addrlist(struct netexport *);
 void vputonfreelist(struct vnode *);
 
 int vflush_vnode(struct vnode *, void *);
-extern struct bcachestats bcasts;
 int maxvnodes;
-
 
 #ifdef DEBUG
 void printlockedvnodes(void);
