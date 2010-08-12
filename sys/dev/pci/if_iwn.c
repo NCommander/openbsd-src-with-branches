@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwn.c,v 1.100 2010/07/28 21:21:38 deraadt Exp $	*/
+/*	$OpenBSD: if_iwn.c,v 1.101 2010/08/12 15:04:00 oga Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -758,7 +758,7 @@ iwn_activate(struct device *self, int act)
 		break;
 	}
 
-	return (0);
+	return 0;
 }
 
 void
@@ -3114,9 +3114,9 @@ iwn_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	 * Prevent processes from entering this function while another
 	 * process is tsleep'ing in it.
 	 */
-	while (sc->sc_flags & IWN_FLAG_BUSY && error == 0)
+	while ((sc->sc_flags & IWN_FLAG_BUSY) && error == 0)
 		error = tsleep(&sc->sc_flags, PCATCH, "iwnioc", 0);
-	if (error) {
+	if (error != 0) {
 		splx(s);
 		return error;
 	}
