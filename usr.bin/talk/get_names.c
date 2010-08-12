@@ -1,4 +1,4 @@
-/*	$OpenBSD: get_names.c,v 1.17 2008/05/31 21:10:36 sobrado Exp $	*/
+/*	$OpenBSD: get_names.c,v 1.18 2009/10/27 23:59:44 deraadt Exp $	*/
 /*	$NetBSD: get_names.c,v 1.4 1994/12/09 02:14:16 jtc Exp $	*/
 
 /*
@@ -42,9 +42,7 @@ extern	CTL_MSG msg;
  * Determine the local and remote user, tty, and machines
  */
 void
-get_names(argc, argv)
-	int argc;
-	char *argv[];
+get_names(int argc, char *argv[])
 {
 	char hostname[MAXHOSTNAMELEN];
 	char *his_name, *my_name;
