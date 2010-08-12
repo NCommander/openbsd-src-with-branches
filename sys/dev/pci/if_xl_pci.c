@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xl_pci.c,v 1.29 2010/04/08 00:23:53 tedu Exp $	*/
+/*	$OpenBSD: if_xl_pci.c,v 1.30 2010/08/06 02:45:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -346,11 +346,14 @@ xl_pci_activate(struct device *self, int act)
 
 	switch (act) {
 	case DVACT_SUSPEND:
-		if (ifp->if_flags & IFF_RUNNING)
+		if (ifp->if_flags & IFF_RUNNING) {
+			xl_reset(sc);
 			xl_stop(sc);
+		}
 		config_activate_children(self, act);
 		break;
 	case DVACT_RESUME:
+		xl_reset(sc);
 		config_activate_children(self, act);
 		if (ifp->if_flags & IFF_UP)
 			xl_init(sc);
