@@ -43,7 +43,7 @@ char *rawname(char *);
 char *unrawname(char *);
 char *blockcheck(char *);
 const char *cdevname(void);
-void setcdevname(const char *, int);
+void setcdevname(const char *, const char *, int);
 int  hotroot(void);
 void *emalloc(size_t);
 void *erealloc(void *, size_t);

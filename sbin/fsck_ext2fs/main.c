@@ -153,7 +153,7 @@ checkfilesys(char *filesys, char *mntpt, long auxdata, int child)
 
 	if (preen && child)
 		(void)signal(SIGQUIT, voidquit);
-	setcdevname(filesys, preen);
+	setcdevname(filesys, NULL, preen);
 	if (debug && preen)
 		pwarn("starting\n");
 	switch (setup(filesys)) {
