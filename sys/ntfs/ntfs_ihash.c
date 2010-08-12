@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_ihash.c,v 1.6 2009/08/13 16:00:53 jasper Exp $	*/
+/*	$OpenBSD: ntfs_ihash.c,v 1.7 2010/04/23 19:32:57 oga Exp $	*/
 /*	$NetBSD: ntfs_ihash.c,v 1.1 2002/12/23 17:38:32 jdolecek Exp $	*/
 
 /*
@@ -64,7 +64,7 @@ struct rwlock ntfs_hashlock = RWLOCK_INITIALIZER("ntfs_nthashlock");
 void
 ntfs_nthashinit()
 {
-	ntfs_nthashtbl = HASHINIT(desiredvnodes, M_NTFSNTHASH, M_WAITOK,
+	ntfs_nthashtbl = hashinit(desiredvnodes, M_NTFSNTHASH, M_WAITOK,
 	    &ntfs_nthash);
 }
 
