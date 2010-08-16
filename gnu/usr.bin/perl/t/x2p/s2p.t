@@ -791,6 +791,14 @@ my $s2p  = File::Spec->catfile( File::Spec->updir(), 'x2p', 's2p' );
 my $psed = File::Spec->catfile( File::Spec->curdir(), 'psed' );
 if ($^O eq 'VMS') {
   # default in the .com extenson if it's not already there
+  $s2p = VMS::Filespec::vmsify($s2p);
+  $psed = VMS::Filespec::vmsify($psed);
+  # Converting file specs from Unix format to VMS with the extended
+  # character set active can result in a trailing '.' added for null
+  # extensions.  This must be removed if the intent is to default the
+  # extension.
+  $s2p =~ s/\.$//;
+  $psed =~ s/\.$//;
   $s2p = VMS::Filespec::rmsexpand($s2p, '.com');
   $psed = VMS::Filespec::rmsexpand($psed, '.com');
 }

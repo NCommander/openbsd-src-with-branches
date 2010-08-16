@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.300 2010/07/03 02:28:57 mcbride Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.298 2010/06/28 23:21:41 mcbride Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -785,7 +785,7 @@ pfctl_show_rules(int dev, char *path, int opts, enum pfctl_show format,
 	 * If this anchor was called with a wildcard path, go through
 	 * the rulesets in the anchor rather than the rules.
 	 */
-	if (wildcard && (opts & PF_OPT_RECURSE)) {
+	if (wildcard && PF_OPT_RECURSE) {
 		struct pfioc_ruleset	 prs;
 		u_int32_t		 mnr, nr;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9280.c,v 1.11 2010/08/12 16:04:51 damien Exp $	*/
+/*	$OpenBSD: ar9280.c,v 1.9 2010/07/15 19:29:00 damien Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -110,7 +110,6 @@ ar9280_attach(struct athn_softc *sc)
 	sc->ops.spur_mitigate = ar9280_spur_mitigate;
 	sc->ops.get_spur_chans = ar5416_get_spur_chans;
 	sc->ops.olpc_init = ar9280_olpc_init;
-	sc->ops.olpc_temp_compensation = ar9280_olpc_temp_compensation;
 	sc->ini = &ar9280_2_0_ini;
 	sc->serdes = ar9280_2_0_serdes;
 
@@ -428,14 +427,11 @@ ar9280_olpc_get_pdadcs(struct athn_softc *sc, struct ieee80211_channel *c,
 	pwr = (pierdata[lo].pwrPdg[0][0] + pierdata[hi].pwrPdg[0][0]) / 2;
 	pwr /= 2;	/* Convert to dB. */
 
-	pcdac = pierdata[hi].pcdac[0][0];
+	pcdac = pierdata[hi].pcdac[0][0];	/* XXX lo??? */
 	for (idx = 0; idx < AR9280_TX_GAIN_TABLE_SIZE - 1; idx++)
-		if (pcdac <= sc->tx_gain_tbl[idx])
+		if (pcdac > sc->tx_gain_tbl[idx])
 			break;
 	*txgain = idx;
-
-	DPRINTFN(3, ("fbin=%d lo=%d hi=%d pwr=%d pcdac=%d txgain=%d\n",
-	    fbin, lo, hi, pwr, pcdac, idx));
 
 	for (i = 0; i < AR_NUM_PDADC_VALUES; i++)
 		pdadcs[i] = (i < pwr) ? 0x00 : 0xff;

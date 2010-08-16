@@ -13,7 +13,9 @@ require Exporter;
 use vars qw/@ISA $VERSION/;
 @ISA = qw(Exporter);
 
-$VERSION = '0.11';
+$VERSION = '0.13';
+
+sub api_version() { 1; }
 
 ##############################################################################
 # global constants, flags and accessory
@@ -26,27 +28,52 @@ my $nan = 'NaN';
 
 sub _new
   {
-  # (string) return ref to num
+  # create scalar ref from string
   my $d = $_[1];
-  my $x = $$d;	# make copy
-  return \$x;
+  my $x = $d;	# make copy
+  \$x;
   }                                                                             
+
+sub _from_hex
+  {
+  # not used
+  }
+
+sub _from_oct
+  {
+  # not used
+  }
+
+sub _from_bin
+  {
+  # not used
+  }
 
 sub _zero
   {
-  my $x = 0; return \$x;
+  my $x = 0; \$x;
   }
 
 sub _one
   {
-  my $x = 1; return \$x;
+  my $x = 1; \$x;
+  }
+
+sub _two
+  {
+  my $x = 2; \$x;
+  } 
+
+sub _ten
+  {
+  my $x = 10; \$x;
   }
 
 sub _copy
   {
   my $x = $_[1];
   my $z = $$x;
-  return \$z;
+  \$z;
   }
 
 # catch and throw away
@@ -58,15 +85,87 @@ sub import { }
 sub _str
   {
   # make string
-  return \"${$_[1]}";
+  "${$_[1]}";
   }                                                                             
 
 sub _num
   {
   # make a number
-  return ${$_[1]};
+  0+${$_[1]};
   }
 
+sub _zeros
+  {
+  my $x = $_[1];
+
+  $x =~ /\d(0*)$/;
+  length($1 || '');  
+  }
+
+sub _rsft
+  {
+  # not used
+  }
+
+sub _lsft
+  {
+  # not used
+  }
+
+sub _mod
+  {
+  # not used
+  }
+
+sub _gcd
+  {
+  # not used
+  }
+
+sub _sqrt
+  {
+  # not used
+  }
+
+sub _root
+  {
+  # not used
+  }
+
+sub _fac
+  {
+  # not used
+  }
+
+sub _modinv
+  {
+  # not used
+  }
+
+sub _modpow
+  {
+  # not used
+  }
+
+sub _log_int
+  {
+  # not used
+  }
+
+sub _as_hex
+  {
+  sprintf("0x%x",${$_[1]});
+  }
+
+sub _as_bin
+  {
+  sprintf("0b%b",${$_[1]});
+  }
+
+sub _as_oct
+  {
+  sprintf("0%o",${$_[1]});
+  }
 
 ##############################################################################
 # actual math code
@@ -174,28 +273,42 @@ sub _is_zero
   {
   # return true if arg is zero
   my ($c,$x) = @_;
-  return ($$x == 0) <=> 0;
+  ($$x == 0) <=> 0;
   }
 
 sub _is_even
   {
   # return true if arg is even
   my ($c,$x) = @_;
-  return (!($$x & 1)) <=> 0; 
+  (!($$x & 1)) <=> 0; 
   }
 
 sub _is_odd
   {
   # return true if arg is odd
   my ($c,$x) = @_;
-  return ($$x & 1) <=> 0;
+  ($$x & 1) <=> 0;
   }
 
 sub _is_one
   {
   # return true if arg is one
   my ($c,$x) = @_;
-  return ($$x == 1) <=> 0;
+  ($$x == 1) <=> 0;
+  }
+
+sub _is_two
+  {
+  # return true if arg is one
+  my ($c,$x) = @_;
+  ($$x == 2) <=> 0;
+  }
+
+sub _is_ten
+  {
+  # return true if arg is one
+  my ($c,$x) = @_;
+  ($$x == 10) <=> 0;
   }
 
 ###############################################################################
@@ -233,7 +346,7 @@ the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Tels http://bloodgate.com in 2001.
+Tels http://bloodgate.com in 2001 - 2007.
 
 =head1 SEE ALSO
 

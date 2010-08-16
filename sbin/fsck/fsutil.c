@@ -45,7 +45,6 @@
 #include "fsutil.h"
 
 static const char *dev = NULL;
-static const char *origdev = NULL;
 static int hot = 0;
 static int preen = 0;
 
@@ -54,10 +53,9 @@ extern char *__progname;
 static void vmsg(int, const char *, va_list);
 
 void
-setcdevname(const char *cd, const char *ocd, int pr)
+setcdevname(const char *cd, int pr)
 {
 	dev = cd;
-	origdev = ocd;
 	preen = pr;
 }
 
@@ -88,23 +86,16 @@ errexit(const char *fmt, ...)
 static void
 vmsg(int fatal, const char *fmt, va_list ap)
 {
-	if (!fatal && preen) {
-		if (origdev)
-			printf("%s (%s): ", dev, origdev);
-		else
-			printf("%s: ", dev);
-	}
+	if (!fatal && preen)
+		(void) printf("%s: ", dev);
 
 	(void) vprintf(fmt, ap);
 	
 	if (fatal && preen) {
-		printf("\n");
-		if (origdev)
-			printf("%s (%s): ", dev, origdev);
-		else
-			printf("%s: ", dev);
-		printf("UNEXPECTED INCONSISTENCY; RUN %s MANUALLY.\n",
-		    __progname);
+		(void) printf("\n");
+		(void) printf(
+		    "%s: UNEXPECTED INCONSISTENCY; RUN %s MANUALLY.\n",
+		    dev, __progname);
 		exit(8);
 	}
 }

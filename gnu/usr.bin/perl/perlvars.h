@@ -1,3 +1,13 @@
+/*    perlvars.h
+ *
+ *    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *    by Larry Wall and others
+ *
+ *    You may distribute under the terms of either the GNU General Public
+ *    License or the Artistic License, as specified in the README file.
+ *
+ */
+
 /****************/
 /* Truly global */
 /****************/
@@ -10,174 +20,169 @@
  * and how they're initialized.
  *
  * The 'G' prefix is only needed for vars that need appropriate #defines
- * generated when built with or without EMBED.  It is also used to generate
- * the appropriate export list for win32.
- *
- * Avoid build-specific #ifdefs here, like DEBUGGING.  That way,
- * we can keep binary compatibility of the curinterp structure */
-
+ * generated in embed*.h.  Such symbols are also used to generate
+ * the appropriate export list for win32. */
 
 /* global state */
 PERLVAR(Gcurinterp,	PerlInterpreter *)
-					/* currently running interpreter */
-#ifdef USE_THREADS
-PERLVAR(Gthr_key,	perl_key)	/* For per-thread struct perl_thread* */
-PERLVAR(Gsv_mutex,	perl_mutex)	/* Mutex for allocating SVs in sv.c */
+					/* currently running interpreter
+					 * (initial parent interpreter under
+					 * useithreads) */
+#if defined(USE_ITHREADS)
+PERLVAR(Gthr_key,	perl_key)	/* key to retrieve per-thread struct */
+#endif
+
+/* constants (these are not literals to facilitate pointer comparisons)
+ * (PERLVARISC really does create variables, despite its looks) */
+PERLVARISC(GYes,	"1")
+PERLVARISC(GNo,		"")
+PERLVARISC(Ghexdigit,	"0123456789abcdef0123456789ABCDEF")
+PERLVARISC(Gpatleave,	"\\.^$@dDwWsSbB+*?|()-nrtfeaxc0123456789[{]}")
+
+/* XXX does anyone even use this? */
+PERLVARI(Gdo_undump,	bool,	FALSE)	/* -u or dump seen? */
+
+#if defined(MYMALLOC) && defined(USE_ITHREADS)
 PERLVAR(Gmalloc_mutex,	perl_mutex)	/* Mutex for malloc */
-PERLVAR(Geval_mutex,	perl_mutex)	/* Mutex for doeval */
-PERLVAR(Geval_cond,	perl_cond)	/* Condition variable for doeval */
-PERLVAR(Geval_owner,	struct perl_thread *)
-					/* Owner thread for doeval */
-PERLVAR(Gnthreads,	int)		/* Number of threads currently */
-PERLVAR(Gthreads_mutex,	perl_mutex)	/* Mutex for nthreads and thread list */
-PERLVAR(Gnthreads_cond,	perl_cond)	/* Condition variable for nthreads */
-PERLVAR(Gsvref_mutex,	perl_mutex)	/* Mutex for SvREFCNT_{inc,dec} */
-PERLVARI(Gthreadsv_names,char *,	THREADSV_NAMES)
-#ifdef FAKE_THREADS
-PERLVAR(Gcurthr,	struct perl_thread *)
-					/* Currently executing (fake) thread */
 #endif
-#endif /* USE_THREADS */
 
-PERLVAR(Gninterps,	int)		/* number of active interpreters */
+#if defined(USE_ITHREADS)
+PERLVAR(Gop_mutex,	perl_mutex)	/* Mutex for op refcounting */
+#endif
 
-PERLVAR(Guid,		int)		/* current real user id */
-PERLVAR(Geuid,		int)		/* current effective user id */
-PERLVAR(Ggid,		int)		/* current real group id */
-PERLVAR(Gegid,		int)		/* current effective group id */
-PERLVAR(Gnomemok,	bool)		/* let malloc context handle nomem */
-PERLVAR(Gan,		U32)		/* malloc sequence number */
-PERLVAR(Gcop_seqmax,	U32)		/* statement sequence number */
-PERLVAR(Gop_seqmax,	U16)		/* op sequence number */
-PERLVAR(Gevalseq,	U32)		/* eval sequence number */
-PERLVAR(Gorigenviron,	char **)
-PERLVAR(Gorigalen,	U32)
-PERLVAR(Gpidstatus,	HV *)		/* pid-to-status mappings for waitpid */
-PERLVARI(Gmaxo,	int,	MAXO)		/* maximum number of ops */
-PERLVAR(Gosname,	char *)		/* operating system */
-PERLVARI(Gsh_path,	char *,	SH_PATH)/* full path of shell */
-PERLVAR(Gsighandlerp,	Sighandler_t)
+#ifdef USE_ITHREADS
+PERLVAR(Gdollarzero_mutex, perl_mutex)	/* Modifying $0 */
+#endif
 
-PERLVAR(Gxiv_arenaroot,	XPV*)		/* list of allocated xiv areas */
-PERLVAR(Gxiv_root,	IV *)		/* free xiv list--shared by interpreters */
-PERLVAR(Gxnv_root,	double *)	/* free xnv list--shared by interpreters */
-PERLVAR(Gxrv_root,	XRV *)		/* free xrv list--shared by interpreters */
-PERLVAR(Gxpv_root,	XPV *)		/* free xpv list--shared by interpreters */
-PERLVAR(Ghe_root,	HE *)		/* free he list--shared by interpreters */
-PERLVAR(Gnice_chunk,	char *)		/* a nice chunk of memory to reuse */
-PERLVAR(Gnice_chunk_size,	U32)	/* how nice the chunk of memory is */
 
-#ifdef PERL_OBJECT
-PERLVARI(Grunops,	runops_proc_t,	FUNC_NAME_TO_PTR(RUNOPS_DEFAULT))
+/* This is constant on most architectures, a global on OS/2 */
+#ifdef OS2
+#  define PERL___C
 #else
-PERLVARI(Grunops,	runops_proc_t *,	RUNOPS_DEFAULT)
+#  define PERL___C const
+#endif
+PERLVARI(Gsh_path,	PERL___C char *, SH_PATH) /* full path of shell */
+#undef PERL___C
+
+#ifndef PERL_MICRO
+/* If Perl has to ignore SIGPFE, this is its saved state.
+ * See perl.h macros PERL_FPU_INIT and PERL_FPU_{PRE,POST}_EXEC. */
+PERLVAR(Gsigfpe_saved,	Sighandler_t)
 #endif
 
-PERLVAR(Gtokenbuf[256],	char)
-PERLVAR(Gna,		STRLEN)		/* for use in SvPV when length is
-					   Not Applicable */
+/* Restricted hashes placeholder value.
+ * The contents are never used, only the address. */
+PERLVAR(Gsv_placeholder, SV)
 
-PERLVAR(Gsv_undef,	SV)
-PERLVAR(Gsv_no,		SV)
-PERLVAR(Gsv_yes,	SV)
-#ifdef CSH
-PERLVARI(Gcshname,	char *,	CSH)
-PERLVAR(Gcshlen,	I32)
+#ifndef PERL_MICRO
+PERLVARI(Gcsighandlerp,	Sighandler_t, Perl_csighandler)	/* Pointer to C-level sighandler */
 #endif
 
-PERLVAR(Glex_state,	U32)		/* next token is determined */
-PERLVAR(Glex_defer,	U32)		/* state after determined token */
-PERLVAR(Glex_expect,	expectation)	/* expect after determined token */
-PERLVAR(Glex_brackets,	I32)		/* bracket count */
-PERLVAR(Glex_formbrack,	I32)		/* bracket count at outer format level */
-PERLVAR(Glex_fakebrack,	I32)		/* outer bracket is mere delimiter */
-PERLVAR(Glex_casemods,	I32)		/* casemod count */
-PERLVAR(Glex_dojoin,	I32)		/* doing an array interpolation */
-PERLVAR(Glex_starts,	I32)		/* how many interps done on level */
-PERLVAR(Glex_stuff,	SV *)		/* runtime pattern from m// or s/// */
-PERLVAR(Glex_repl,	SV *)		/* runtime replacement from s/// */
-PERLVAR(Glex_op,	OP *)		/* extra info to pass back on op */
-PERLVAR(Glex_inpat,	OP *)		/* in pattern $) and $| are special */
-PERLVAR(Glex_inwhat,	I32)		/* what kind of quoting are we in */
-PERLVAR(Glex_brackstack,char *)		/* what kind of brackets to pop */
-PERLVAR(Glex_casestack,	char *)		/* what kind of case mods in effect */
-
-/* What we know when we're in LEX_KNOWNEXT state. */
-PERLVAR(Gnextval[5],	YYSTYPE)	/* value of next token, if any */
-PERLVAR(Gnexttype[5],	I32)		/* type of next token */
-PERLVAR(Gnexttoke,	I32)
-
-PERLVAR(Glinestr,	SV *)
-PERLVAR(Gbufptr,	char *)
-PERLVAR(Goldbufptr,	char *)
-PERLVAR(Goldoldbufptr,	char *)
-PERLVAR(Gbufend,	char *)
-PERLVARI(Gexpect,expectation,	XSTATE)	/* how to interpret ambiguous tokens */
-
-PERLVAR(Gmulti_start,	I32)		/* 1st line of multi-line string */
-PERLVAR(Gmulti_end,	I32)		/* last line of multi-line string */
-PERLVAR(Gmulti_open,	I32)		/* delimiter of said string */
-PERLVAR(Gmulti_close,	I32)		/* delimiter of said string */
-
-PERLVAR(Gerror_count,	I32)		/* how many errors so far, max 10 */
-PERLVAR(Gsubline,	I32)		/* line this subroutine began on */
-PERLVAR(Gsubname,	SV *)		/* name of current subroutine */
-
-PERLVAR(Gmin_intro_pending,	I32)	/* start of vars to introduce */
-PERLVAR(Gmax_intro_pending,	I32)	/* end of vars to introduce */
-PERLVAR(Gpadix,		I32)		/* max used index in current "register" pad */
-PERLVAR(Gpadix_floor,	I32)		/* how low may inner block reset padix */
-PERLVAR(Gpad_reset_pending,	I32)	/* reset pad on next attempted alloc */
-
-PERLVAR(Gthisexpr,	I32)		/* name id for nothing_in_common() */
-PERLVAR(Glast_uni,	char *)		/* position of last named-unary op */
-PERLVAR(Glast_lop,	char *)		/* position of last list operator */
-PERLVAR(Glast_lop_op,	OPCODE)		/* last list operator */
-PERLVAR(Gin_my,	bool)			/* we're compiling a "my" declaration */
-PERLVAR(Gin_my_stash,	HV *)		/* declared class of this "my" declaration */
-#ifdef FCRYPT
-PERLVAR(Gcryptseen,	I32)		/* has fast crypt() been initialized? */
+#ifndef PERL_USE_SAFE_PUTENV
+PERLVARI(Guse_safe_putenv, int, 1)
 #endif
 
-PERLVAR(Ghints,	U32)			/* pragma-tic compile-time flags */
-
-PERLVAR(Gdo_undump,	bool)		/* -u or dump seen? */
-PERLVAR(Gdebug,		VOL U32)	/* flags given to -D switch */
-
-
-#ifdef OVERLOAD
-
-PERLVAR(Gamagic_generation,	long)
-
+#ifdef USE_PERLIO
+PERLVARI(Gperlio_fd_refcnt, int*, 0) /* Pointer to array of fd refcounts.  */
+PERLVARI(Gperlio_fd_refcnt_size, int, 0) /* Size of the array */
+PERLVARI(Gperlio_debug_fd, int, 0) /* the fd to write perlio debug into, 0 means not set yet */
 #endif
 
-#ifdef USE_LOCALE_COLLATE
-PERLVAR(Gcollation_ix,	U32)		/* Collation generation index */
-PERLVAR(Gcollation_name,char *)		/* Name of current collation */
-PERLVARI(Gcollation_standard, bool,	TRUE)
-					/* Assume simple collation */
-PERLVAR(Gcollxfrm_base,	Size_t)		/* Basic overhead in *xfrm() */
-PERLVARI(Gcollxfrm_mult,Size_t,	2)	/* Expansion factor in *xfrm() */
-#endif /* USE_LOCALE_COLLATE */
+#ifdef HAS_MMAP
+PERLVARI(Gmmap_page_size, IV, 0)
+#endif
 
-#ifdef USE_LOCALE_NUMERIC
+#if defined(FAKE_PERSISTENT_SIGNAL_HANDLERS)||defined(FAKE_DEFAULT_SIGNAL_HANDLERS)
+PERLVARI(Gsig_handlers_initted, int, 0)
+#endif
+#ifdef FAKE_PERSISTENT_SIGNAL_HANDLERS
+PERLVARA(Gsig_ignoring, SIG_SIZE, int)	/* which signals we are ignoring */
+#endif
+#ifdef FAKE_DEFAULT_SIGNAL_HANDLERS
+PERLVARA(Gsig_defaulting, SIG_SIZE, int)
+#endif
 
-PERLVAR(Gnumeric_name,	char *)		/* Name of current numeric locale */
-PERLVARI(Gnumeric_standard,	bool,	TRUE)
-					/* Assume simple numerics */
-PERLVARI(Gnumeric_local,	bool,	TRUE)
-					/* Assume local numerics */
+#ifndef PERL_IMPLICIT_CONTEXT
+PERLVAR(Gsig_sv, SV*)
+#endif
 
-#endif /* !USE_LOCALE_NUMERIC */
+/* XXX signals are process-wide anyway, so we
+ * ignore the implications of this for threading */
+#ifndef HAS_SIGACTION
+PERLVARI(Gsig_trapped, int, 0)
+#endif
 
-/* constants (these are not literals to facilitate pointer comparisons) */
-PERLVARIC(GYes,		char *, "1")
-PERLVARIC(GNo,		char *, "")
-PERLVARIC(Ghexdigit,	char *, "0123456789abcdef0123456789ABCDEF")
-PERLVARIC(Gpatleave,	char *, "\\.^$@dDwWsSbB+*?|()-nrtfeaxc0123456789[{]}")
+#ifdef DEBUGGING
+PERLVAR(Gwatch_pvx, char*)
+#endif
 
-PERLVAR(Gspecialsv_list[4],SV *)	/* from byterun.h */
+#ifdef PERL_GLOBAL_STRUCT 
+PERLVAR(Gppaddr, Perl_ppaddr_t*) /* or opcode.h */
+PERLVAR(Gcheck,  Perl_check_t *) /* or opcode.h */
+PERLVARA(Gfold_locale, 256, unsigned char) /* or perl.h */
+#endif
 
-#ifdef USE_THREADS
-PERLVAR(Gcred_mutex,      perl_mutex)     /* altered credentials in effect */
+#ifdef PERL_NEED_APPCTX
+PERLVAR(Gappctx, void*) /* the application context */
+#endif
+
+PERLVAR(Gop_sequence, HV*) /* dump.c */
+PERLVARI(Gop_seq, UV, 0) /* dump.c */
+
+#if defined(HAS_TIMES) && defined(PERL_NEED_TIMESBASE)
+PERLVAR(Gtimesbase, struct tms)
+#endif
+
+/* allocate a unique index to every module that calls MY_CXT_INIT */
+
+#ifdef PERL_IMPLICIT_CONTEXT
+# ifdef USE_ITHREADS
+PERLVAR(Gmy_ctx_mutex, perl_mutex)
+# endif
+PERLVARI(Gmy_cxt_index, int, 0)
+#endif
+
+#if defined(USE_ITHREADS)
+PERLVAR(Ghints_mutex, perl_mutex)    /* Mutex for refcounted he refcounting */
+#endif
+
+#if defined(USE_ITHREADS)
+PERLVAR(Gperlio_mutex, perl_mutex)    /* Mutex for perlio fd refcounts */
+#endif
+
+/* this is currently set without MUTEX protection, so keep it a type which
+ * can be set atomically (ie not a bit field) */
+PERLVARI(Gveto_cleanup,	int, FALSE)	/* exit without cleanup */
+
+/* dummy variables that hold pointers to both runops functions, thus forcing
+ * them *both* to get linked in (useful for Peek.xs, debugging etc) */
+
+PERLVARI(Grunops_std,	runops_proc_t,	MEMBER_TO_FPTR(Perl_runops_standard))
+PERLVARI(Grunops_dbg,	runops_proc_t,	MEMBER_TO_FPTR(Perl_runops_debug))
+
+
+/* These are baked at compile time into any shared perl library.
+   In future 5.10.x releases this will allow us in main() to sanity test the
+   library we're linking against.  */
+
+PERLVARI(Grevision,	U8,	PERL_REVISION)
+PERLVARI(Gversion,	U8,	PERL_VERSION)
+PERLVARI(Gsubversion,	U8,	PERL_SUBVERSION)
+
+#if defined(MULTIPLICITY)
+#  define PERL_INTERPRETER_SIZE_UPTO_MEMBER(member)			\
+    STRUCT_OFFSET(struct interpreter, member) +				\
+    sizeof(((struct interpreter*)0)->member)
+
+/* These might be useful.  */
+PERLVARI(Ginterp_size,	U16,	sizeof(struct interpreter))
+#if defined(PERL_GLOBAL_STRUCT)
+PERLVARI(Gglobal_struct_size,	U16,	sizeof(struct perl_vars))
+#endif
+
+/* This will be useful for subsequent releases, because this has to be the
+   same in your libperl as in main(), else you have a mismatch and must abort.
+*/
+PERLVARI(Ginterp_size_5_10_0, U16,
+	 PERL_INTERPRETER_SIZE_UPTO_MEMBER(PERL_LAST_5_10_0_INTERP_MEMBER))
 #endif

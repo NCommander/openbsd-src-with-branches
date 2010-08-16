@@ -15,16 +15,16 @@ typedef struct encpage_s encpage_t;
 
 struct encpage_s
 {
-	/* fields ordered to pack nicely on 32-bit machines */
-	const U8   *seq;       /* Packed output sequences we generate 
-				  if we match */
-	encpage_t  *next;      /* Page to go to if we match */
-	U8         min;        /* Min value of octet to match this entry */
-	U8         max;        /* Max value of octet to match this entry */
-	U8         dlen;       /* destination length - 
-				  size of entries in seq */
-	U8         slen;       /* source length - 
-				  number of source octets needed */
+    /* fields ordered to pack nicely on 32-bit machines */
+    const U8 *const seq;   /* Packed output sequences we generate 
+                  if we match */
+    const encpage_t *const next;      /* Page to go to if we match */
+    const U8   min;        /* Min value of octet to match this entry */
+    const U8   max;        /* Max value of octet to match this entry */
+    const U8   dlen;       /* destination length - 
+                  size of entries in seq */
+    const U8   slen;       /* source length - 
+                  number of source octets needed */
 };
 
 /*
@@ -60,23 +60,26 @@ struct encpage_s
 typedef struct encode_s encode_t;
 struct encode_s
 {
-	encpage_t  *t_utf8;    /* Starting table for translation from 
-				  the encoding to UTF-8 form */
-	encpage_t  *f_utf8;    /* Starting table for translation 
-				  from UTF-8 to the encoding */
-	const U8   *rep;       /* Replacement character in this encoding 
-				  e.g. "?" */
-	int        replen;     /* Number of octets in rep */
-	U8         min_el;     /* Minimum octets to represent a character */
-	U8         max_el;     /* Maximum octets to represent a character */
-	const char *name[2];   /* name(s) of this encoding */
+    const encpage_t *const t_utf8;  /* Starting table for translation from 
+                       the encoding to UTF-8 form */
+    const encpage_t *const f_utf8;  /* Starting table for translation 
+                       from UTF-8 to the encoding */
+    const U8 *const rep;            /* Replacement character in this
+                       encoding e.g. "?" */
+    int        replen;              /* Number of octets in rep */
+    U8         min_el;              /* Minimum octets to represent a
+                       character */
+    U8         max_el;              /* Maximum octets to represent a
+                       character */
+    const char *const name[2];      /* name(s) of this encoding */
 };
 
 #ifdef U8
 /* See comment at top of file for deviousness */
 
-extern int do_encode(encpage_t *enc, const U8 *src, STRLEN *slen,
-                     U8 *dst, STRLEN dlen, STRLEN *dout, int approx);
+extern int do_encode(const encpage_t *enc, const U8 *src, STRLEN *slen,
+                     U8 *dst, STRLEN dlen, STRLEN *dout, int approx,
+             const U8 *term, STRLEN tlen);
 
 extern void Encode_DefineEncoding(encode_t *enc);
 
@@ -86,6 +89,7 @@ extern void Encode_DefineEncoding(encode_t *enc);
 #define ENCODE_PARTIAL  2
 #define ENCODE_NOREP    3
 #define ENCODE_FALLBACK 4
+#define ENCODE_FOUND_TERM 5
 
 #define FBCHAR_UTF8		"\xEF\xBF\xBD"
 
@@ -96,13 +100,14 @@ extern void Encode_DefineEncoding(encode_t *enc);
 #define  ENCODE_PERLQQ         0x0100 /* perlqq fallback string */
 #define  ENCODE_HTMLCREF       0x0200 /* HTML character ref. fb mode */
 #define  ENCODE_XMLCREF        0x0400 /* XML  character ref. fb mode */
+#define  ENCODE_STOP_AT_PARTIAL 0x0800 /* stop at partial explicitly */
 
 #define  ENCODE_FB_DEFAULT     0x0000
 #define  ENCODE_FB_CROAK       0x0001
 #define  ENCODE_FB_QUIET       ENCODE_RETURN_ON_ERR
 #define  ENCODE_FB_WARN        (ENCODE_RETURN_ON_ERR|ENCODE_WARN_ON_ERR)
-#define  ENCODE_FB_PERLQQ      ENCODE_PERLQQ
-#define  ENCODE_FB_HTMLCREF    ENCODE_HTMLCREF
-#define  ENCODE_FB_XMLCREF     ENCODE_XMLCREF
+#define  ENCODE_FB_PERLQQ      (ENCODE_PERLQQ|ENCODE_LEAVE_SRC)
+#define  ENCODE_FB_HTMLCREF    (ENCODE_HTMLCREF|ENCODE_LEAVE_SRC)
+#define  ENCODE_FB_XMLCREF     (ENCODE_XMLCREF|ENCODE_LEAVE_SRC)
 
 #endif /* ENCODE_H */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.106 2010/08/12 15:03:59 oga Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.104 2010/07/28 21:21:38 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -353,7 +353,7 @@ iwi_activate(struct device *self, int act)
 		break;
 	}
 
-	return 0;
+	return (0);
 }
 
 void
@@ -381,15 +381,12 @@ iwi_power(int why, void *arg)
 	pci_conf_write(sc->sc_pct, sc->sc_pcitag, 0x40, data);
 
 	s = splnet();
-	while (sc->sc_flags & IWI_FLAG_BUSY)
-		tsleep(&sc->sc_flags, 0, "iwipwr", 0);
 	sc->sc_flags |= IWI_FLAG_BUSY;
 
 	if (ifp->if_flags & IFF_UP)
 		iwi_init(ifp);
 
 	sc->sc_flags &= ~IWI_FLAG_BUSY;
-	wakeup(&sc->sc_flags);
 	splx(s);
 }
 
@@ -1489,11 +1486,9 @@ iwi_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	 * Prevent processes from entering this function while another
 	 * process is tsleep'ing in it.
 	 */
-	while ((sc->sc_flags & IWI_FLAG_BUSY) && error == 0)
-		error = tsleep(&sc->sc_flags, PCATCH, "iwiioc", 0);
-	if (error != 0) {
+	if (sc->sc_flags & IWI_FLAG_BUSY) {
 		splx(s);
-		return error;
+		return EBUSY;
 	}
 	sc->sc_flags |= IWI_FLAG_BUSY;
 
@@ -1550,7 +1545,6 @@ iwi_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	}
 
 	sc->sc_flags &= ~IWI_FLAG_BUSY;
-	wakeup(&sc->sc_flags);
 	splx(s);
 	return error;
 }

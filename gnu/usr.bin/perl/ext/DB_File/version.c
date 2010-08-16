@@ -3,12 +3,12 @@
  version.c -- Perl 5 interface to Berkeley DB 
 
  written by Paul Marquess <Paul.Marquess@btinternet.com>
- last modified 16th January 2000
- version 1.72
+ last modified 2nd Jan 2002
+ version 1.802
 
  All comments/suggestions/problems are welcome
 
-     Copyright (c) 1995-2000 Paul Marquess. All rights reserved.
+     Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
      This program is free software; you can redistribute it and/or
      modify it under the same terms as Perl itself.
 
@@ -16,9 +16,13 @@
         1.71 -  Support for Berkeley DB version 3.
 		Support for Berkeley DB 2/3's backward compatability mode.
         1.72 -  No change.
+        1.73 -  Added support for threading
+        1.74 -  Added Perl core patch 7801.
+
 
 */
 
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"  
 #include "perl.h"
 #include "XSUB.h"
@@ -26,8 +30,15 @@
 #include <db.h>
 
 void
+#ifdef CAN_PROTOTYPE
+__getBerkeleyDBInfo(void)
+#else
 __getBerkeleyDBInfo()
+#endif
 {
+#ifdef dTHX	
+    dTHX;
+#endif    
     SV * version_sv = perl_get_sv("DB_File::db_version", GV_ADD|GV_ADDMULTI) ;
     SV * ver_sv = perl_get_sv("DB_File::db_ver", GV_ADD|GV_ADDMULTI) ;
     SV * compat_sv = perl_get_sv("DB_File::db_185_compat", GV_ADD|GV_ADDMULTI) ;
@@ -38,9 +49,10 @@ __getBerkeleyDBInfo()
     (void)db_version(&Major, &Minor, &Patch) ;
 
     /* Check that the versions of db.h and libdb.a are the same */
-    if (Major != DB_VERSION_MAJOR || Minor != DB_VERSION_MINOR 
-		|| Patch != DB_VERSION_PATCH)
-	croak("\nDB_File needs compatible versions of libdb & db.h\n\tyou have db.h version %d.%d.%d and libdb version %d.%d.%d\n",  
+    if (Major != DB_VERSION_MAJOR || Minor != DB_VERSION_MINOR )
+		/* || Patch != DB_VERSION_PATCH) */
+
+	croak("\nDB_File was build with libdb version %d.%d.%d,\nbut you are attempting to run it with libdb version %d.%d.%d\n",
 		DB_VERSION_MAJOR, DB_VERSION_MINOR, DB_VERSION_PATCH, 
 		Major, Minor, Patch) ;
     

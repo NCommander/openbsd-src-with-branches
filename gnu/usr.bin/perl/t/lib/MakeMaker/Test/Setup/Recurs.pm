@@ -7,6 +7,7 @@ require Exporter;
 use strict;
 use File::Path;
 use File::Basename;
+use MakeMaker::Test::Utils;
 
 my %Files = (
              'Recurs/Makefile.PL'          => <<'END',
@@ -26,9 +27,20 @@ WriteMakefile(
     VERSION => 1.00,
 );
 END
+
+             # Check if a test failure in a subdir causes make test to fail
+             'Recurs/prj2/t/fail.t'         => <<'END',
+#!/usr/bin/perl -w
+
+print "1..1\n";
+print "not ok 1\n";
+END
             );
 
 sub setup_recurs {
+    setup_mm_test_root();
+    chdir 'MM_TEST_ROOT:[t]' if $^O eq 'VMS';
+
     while(my($file, $text) = each %Files) {
         # Convert to a relative, native file path.
         $file = File::Spec->catfile(File::Spec->curdir, split m{\/}, $file);
@@ -38,6 +50,11 @@ sub setup_recurs {
         open(FILE, ">$file") || die "Can't create $file: $!";
         print FILE $text;
         close FILE;
+
+        # ensure file at least 1 second old for makes that assume
+        # files with the same time are out of date.
+        my $time = calibrate_mtime();
+        utime $time, $time - 1, $file;
     }
 
     return 1;
@@ -52,3 +69,6 @@ sub teardown_recurs {
     }
     return 1;
 }
+
+
+1;

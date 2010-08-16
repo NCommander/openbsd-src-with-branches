@@ -1,32 +1,55 @@
 package Encode::Encoding;
+
 # Base class for classes which implement encodings
 use strict;
-our $VERSION = do { my @r = (q$Revision: 1.30 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+use warnings;
+our $VERSION = do { my @r = ( q$Revision: 2.5 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 
 require Encode;
 
-sub Define
-{
-    my $obj = shift;
+sub DEBUG { 0 }
+
+sub Define {
+    my $obj       = shift;
     my $canonical = shift;
-    $obj = bless { Name => $canonical },$obj unless ref $obj;
+    $obj = bless { Name => $canonical }, $obj unless ref $obj;
+
     # warn "$canonical => $obj\n";
-    Encode::define_encoding($obj, $canonical, @_);
+    Encode::define_encoding( $obj, $canonical, @_ );
 }
 
-sub name         { return shift->{'Name'} }
-sub new_sequence { return $_[0] }
+sub name { return shift->{'Name'} }
 
-sub needs_lines { 0 };
+sub mime_name{
+    require Encode::MIME::Name;
+    return Encode::MIME::Name::get_mime_name(shift->name);
+}
 
-sub perlio_ok { 
-    eval{ require PerlIO::encoding };
+# sub renew { return $_[0] }
+
+sub renew {
+    my $self = shift;
+    my $clone = bless {%$self} => ref($self);
+    $clone->{renewed}++;    # so the caller can see it
+    DEBUG and warn $clone->{renewed};
+    return $clone;
+}
+
+sub renewed { return $_[0]->{renewed} || 0 }
+
+*new_sequence = \&renew;
+
+sub needs_lines { 0 }
+
+sub perlio_ok {
+    eval { require PerlIO::encoding };
     return $@ ? 0 : 1;
 }
 
-# Temporary legacy methods
-sub toUnicode    { shift->decode(@_) }
-sub fromUnicode  { shift->encode(@_) }
+# (Temporary|legacy) methods
+
+sub toUnicode   { shift->decode(@_) }
+sub fromUnicode { shift->encode(@_) }
 
 #
 # Needs to be overloaded or just croak
@@ -36,17 +59,17 @@ sub encode {
     require Carp;
     my $obj = shift;
     my $class = ref($obj) ? ref($obj) : $obj;
-    Carp::croak $class, "->encode() not defined!";
+    Carp::croak( $class . "->encode() not defined!" );
 }
 
-sub decode{
+sub decode {
     require Carp;
     my $obj = shift;
     my $class = ref($obj) ? ref($obj) : $obj;
-    Carp::croak $class, "->encode() not defined!";
+    Carp::croak( $class . "->encode() not defined!" );
 }
 
-sub DESTROY {}
+sub DESTROY { }
 
 1;
 __END__
@@ -130,6 +153,22 @@ replacement character.
 
 =back
 
+=back
+
+If you want your encoding to work with L<encoding> pragma, you should
+also implement the method below.
+
+=over 4
+
+=item -E<gt>cat_decode($destination, $octets, $offset, $terminator [,$check])
+
+MUST decode I<$octets> with I<$offset> and concatenate it to I<$destination>.
+Decoding will terminate when $terminator (a string) appears in output.
+I<$offset> will be modified to the last $octets position at end of decode.
+Returns true if $terminator appears output, else returns false.
+
+=back
+
 =head2 Other methods defined in Encode::Encodings
 
 You do not have to override methods shown below unless you have to.
@@ -144,15 +183,43 @@ Predefined As:
 
 MUST return the string representing the canonical name of the encoding.
 
-=item -E<gt>new_sequence
+=item -E<gt>mime_name
 
 Predefined As:
 
-  sub new_sequence { return $_[0] }
+  sub mime_name{
+    require Encode::MIME::Name;
+    return Encode::MIME::Name::get_mime_name(shift->name);
+  }
 
-This is a placeholder for encodings with state. It should return an
-object which implements this interface.  All current implementations
-return the original object.
+MUST return the string representing the IANA charset name of the encoding.
+
+=item -E<gt>renew
+
+Predefined As:
+
+  sub renew {
+    my $self = shift;
+    my $clone = bless { %$self } => ref($self);
+    $clone->{renewed}++;
+    return $clone;
+  }
+
+This method reconstructs the encoding object if necessary.  If you need
+to store the state during encoding, this is where you clone your object.
+
+PerlIO ALWAYS calls this method to make sure it has its own private
+encoding object.
+
+=item -E<gt>renewed
+
+Predefined As:
+
+  sub renewed { $_[0]->{renewed} || 0 }
+
+Tells whether the object is renewed (and how many times).  Some
+modules emit C<Use of uninitialized value in null operation> warning
+unless the value is numeric so return 0 for false.
 
 =item -E<gt>perlio_ok()
 

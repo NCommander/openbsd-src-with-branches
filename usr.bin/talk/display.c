@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.15 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: display.c,v 1.14 2004/03/02 21:04:42 tedu Exp $	*/
 /*	$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $	*/
 
 /*
@@ -41,16 +41,17 @@ xwin_t	my_win;
 xwin_t	his_win;
 WINDOW	*line_win;
 
-int	curses_initialized;
-int	high_print;
-bool	smooth_scroll;
+int	curses_initialized = 0;
+int	high_print = 0;
+bool	smooth_scroll = FALSE;
 
 /*
  * max HAS to be a function, it is called with
- * an argument of the form --foo at least once.
+ * a argument of the form --foo at least once.
  */
 int
-max(int a, int b)
+max(a,b)
+	int a, b;
 {
 
 	return (a > b ? a : b);
@@ -61,7 +62,10 @@ max(int a, int b)
  * characters while we are at it.
  */
 void
-display(xwin_t *win, char *text, int size)
+display(win, text, size)
+	xwin_t *win;
+	char *text;
+	int size;
 {
 	int i;
 	char cch;
@@ -156,7 +160,9 @@ display(xwin_t *win, char *text, int size)
  * Read the character at the indicated position in win
  */
 int
-readwin(WINDOW *win, int line, int col)
+readwin(win, line, col)
+	WINDOW *win;
+	int line, col;
 {
 	int oldline, oldcol;
 	int c;
@@ -173,7 +179,9 @@ readwin(WINDOW *win, int line, int col)
  * so that the current position is obvious
  */
 void
-xscroll(xwin_t *win, int flag)
+xscroll(win, flag)
+	xwin_t *win;
+	int flag;
 {
 
 	if (flag == -1) {

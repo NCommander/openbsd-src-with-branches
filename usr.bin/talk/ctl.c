@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctl.c,v 1.11 2009/10/27 23:59:44 deraadt Exp $	*/
+/*	$OpenBSD: ctl.c,v 1.10 2009/05/09 11:05:00 chl Exp $	*/
 /*	$NetBSD: ctl.c,v 1.3 1994/12/09 02:14:10 jtc Exp $	*/
 
 /*
@@ -52,7 +52,7 @@ u_short daemon_port;	/* port number of the talk daemon */
 
 int	ctl_sockt;
 int	sockt;
-int	invitation_waiting;
+int	invitation_waiting = 0;
 
 CTL_MSG msg;
 

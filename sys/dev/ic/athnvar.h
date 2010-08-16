@@ -1,4 +1,4 @@
-/*	$OpenBSD: athnvar.h,v 1.21 2010/08/12 16:32:31 damien Exp $	*/
+/*	$OpenBSD: athnvar.h,v 1.19 2010/07/15 20:37:38 damien Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -360,7 +360,6 @@ struct athn_ops {
 		    struct ieee80211_channel *);
 	void	(*swap_rom)(struct athn_softc *);
 	void	(*olpc_init)(struct athn_softc *);
-	void	(*olpc_temp_compensation)(struct athn_softc *);
 	/* GPIO callbacks. */
 	int	(*gpio_read)(struct athn_softc *, int);
 	void	(*gpio_write)(struct athn_softc *, int, int);
@@ -468,7 +467,6 @@ struct athn_softc {
 	int8_t				tx_gain_tbl[AR9280_TX_GAIN_TABLE_SIZE];
 	int8_t				pdadc;
 	int8_t				tcomp;
-	int				olpc_ticks;
 
 	/* PA predistortion. */
 	uint16_t			gain1[AR_MAX_CHAINS];
@@ -532,7 +530,6 @@ struct athn_softc {
 	int				nf_hist_cur;
 	int16_t				nf_priv[AR_MAX_CHAINS];
 	int16_t				nf_ext_priv[AR_MAX_CHAINS];
-	int				pa_calib_ticks;
 
 	struct athn_calib		calib;
 	struct athn_ani			ani;

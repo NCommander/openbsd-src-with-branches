@@ -13,7 +13,7 @@ BEGIN {
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..35\n"; }
+BEGIN { $| = 1; print "1..37\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Text::Balanced qw ( gen_extract_tagged );
 $loaded = 1;
@@ -45,7 +45,7 @@ while (defined($str = <DATA>))
 
 	my @res;
 	$var = eval { @res = f($str) };
-	debug "\t list got: [" . join("|",@res) . "]\n";
+	debug "\t list got: [" . join("|",map {defined $_ ? $_ : '<undef>'} @res) . "]\n";
 	debug "\t list left: [$str]\n";
 	print "not " if (substr($str,pos($str)||0,1) eq ';')==$neg;
 	print "ok ", $count++;
@@ -64,6 +64,9 @@ while (defined($str = <DATA>))
 }
 
 __DATA__
+
+# USING: gen_extract_tagged('{','}');
+	{ a test };
 
 # USING: gen_extract_tagged(qr/<[A-Z]+>/,undef, undef, {ignore=>["<BR>"]});
 	<A>aaa<B>bbb<BR>ccc</B>ddd</A>;

@@ -1,3 +1,25 @@
+2009-06-09   Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.16.
+
+   Gisle Aas (3):
+      For SHA-1 try Digest::SHA before tryign Digest::SHA1 as suggested by Adam Trickett
+      Support Digest->new("RIPEMD-160") as suggested by Zefram
+      Use 3-arg open for fewer surprises
+
+   Jarkko Hietaniemi (1):
+      Sync up with EBCDIC changes from core perl.
+
+
+
+2006-03-20   Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.15.
+
+   Improved documentation.
+
+
+
 2005-11-26   Gisle Aas <gisle@ActiveState.com>
 
    Release 1.14

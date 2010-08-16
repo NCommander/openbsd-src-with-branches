@@ -1,13 +1,12 @@
 package ExtUtils::MM_DOS;
 
 use strict;
-use vars qw($VERSION @ISA);
 
-$VERSION = 0.01;
+our $VERSION = 6.55_02;
 
 require ExtUtils::MM_Any;
 require ExtUtils::MM_Unix;
-@ISA = qw( ExtUtils::MM_Any ExtUtils::MM_Unix );
+our @ISA = qw( ExtUtils::MM_Any ExtUtils::MM_Unix );
 
 
 =head1 NAME
@@ -30,7 +29,17 @@ Unless otherwise stated, it works just like ExtUtils::MM_Unix
 
 =over 4
 
+=item os_flavor
+
+=cut
+
+sub os_flavor {
+    return('DOS');
+}
+
 =item B<replace_manpage_separator>
+
+Generates Foo__Bar.3 style man page names
 
 =cut
 
@@ -52,4 +61,5 @@ Michael G Schwern <schwern@pobox.com> with code from ExtUtils::MM_Unix
 L<ExtUtils::MM_Unix>, L<ExtUtils::MakeMaker>
 
 =cut
+
 1;

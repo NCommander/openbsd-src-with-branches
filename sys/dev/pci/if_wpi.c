@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.105 2010/08/12 15:04:00 oga Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.103 2010/07/28 21:21:38 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -408,7 +408,7 @@ wpi_activate(struct device *self, int act)
 		break;
 	}
 
-	return 0;
+	return (0);
 }
 
 void
@@ -436,15 +436,12 @@ wpi_power(int why, void *arg)
 	pci_conf_write(sc->sc_pct, sc->sc_pcitag, 0x40, reg);
 
 	s = splnet();
-	while (sc->sc_flags & WPI_FLAG_BUSY)
-		tsleep(&sc->sc_flags, 0, "wpipwr", 0);
 	sc->sc_flags |= WPI_FLAG_BUSY;
 
 	if (ifp->if_flags & IFF_UP)
 		wpi_init(ifp);
 
 	sc->sc_flags &= ~WPI_FLAG_BUSY;
-	wakeup(&sc->sc_flags);
 	splx(s);
 }
 
@@ -2002,11 +1999,9 @@ wpi_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	 * Prevent processes from entering this function while another
 	 * process is tsleep'ing in it.
 	 */
-	while ((sc->sc_flags & WPI_FLAG_BUSY) && error == 0)
-		error = tsleep(&sc->sc_flags, PCATCH, "wpiioc", 0);
-	if (error != 0) {
+	if (sc->sc_flags & WPI_FLAG_BUSY) {
 		splx(s);
-		return error;
+		return EBUSY;
 	}
 	sc->sc_flags |= WPI_FLAG_BUSY;
 
@@ -2069,7 +2064,6 @@ wpi_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	}
 
 	sc->sc_flags &= ~WPI_FLAG_BUSY;
-	wakeup(&sc->sc_flags);
 	splx(s);
 	return error;
 }
