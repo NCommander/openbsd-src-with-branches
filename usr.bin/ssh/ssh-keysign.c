@@ -185,7 +185,7 @@ main(int argc, char **argv)
 	if (key_fd[0] == -1 && key_fd[1] == -1)
 		fatal("could not open any host key");
 
-	OpenSSL_add_all_algorithms();
+	SSLeay_add_all_algorithms();
 	for (i = 0; i < 256; i++)
 		rnd[i] = arc4random();
 	RAND_seed(rnd, sizeof(rnd));

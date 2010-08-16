@@ -1068,7 +1068,7 @@ main(int ac, char **av)
 	setegid(getgid());
 	setgid(getgid());
 
-	OpenSSL_add_all_algorithms();
+	SSLeay_add_all_algorithms();
 
 	while ((ch = getopt(ac, av, "cdksa:t:")) != -1) {
 		switch (ch) {
