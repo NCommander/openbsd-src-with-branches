@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdvar.h,v 1.7 2004/09/29 07:35:11 miod Exp $	*/
+/*	$OpenBSD: fdvar.h,v 1.8 2006/08/17 01:37:41 krw Exp $	*/
 /*
  *	$NetBSD: fdvar.h,v 1.5 1996/12/08 23:40:34 pk Exp $
  *
@@ -62,6 +62,7 @@ struct fdcio {
 	int	fdcio_nstat;		/* # of valid status bytes */
 
 	struct	intrhand fdcio_ih;
+	void		*fdcio_sih;	/* softintr cookie */
 };
 #endif /* _LOCORE */
 
