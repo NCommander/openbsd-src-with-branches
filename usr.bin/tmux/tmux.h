@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.236 2010/07/24 20:11:59 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.237 2010/08/11 07:34:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -1952,8 +1952,8 @@ void		 queue_window_name(struct window *);
 char		*default_window_name(struct window *);
 
 /* signal.c */
-void set_signals(void(*handler)(int, short, unused void *));
-void clear_signals(void);
+void set_signals(void(*)(int, short, void *));
+void clear_signals(int);
 
 /* session.c */
 extern struct sessions sessions;

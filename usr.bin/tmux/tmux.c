@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.85 2010/07/24 19:25:31 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.86 2010/08/04 19:46:13 deraadt Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicm@users.sourceforge.net>
@@ -549,7 +549,7 @@ main(int argc, char **argv)
 
 	event_dispatch();
 
-	clear_signals();
+	clear_signals(0);
 
 	client_main();	/* doesn't return */
 }
@@ -636,7 +636,7 @@ main_dispatch(const char *shellcmd)
 			memcpy(&shelldata, imsg.data, sizeof shelldata);
 			shelldata.shell[(sizeof shelldata.shell) - 1] = '\0';
 
-			clear_signals();
+			clear_signals(0);
 
 			shell_exec(shelldata.shell, shellcmd);
 		default:
