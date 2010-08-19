@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_scsi.c,v 1.22 2010/05/20 00:55:18 krw Exp $	*/
+/*	$OpenBSD: sdmmc_scsi.c,v 1.23 2010/06/20 23:05:29 mk Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -83,8 +83,6 @@ void	sdmmc_complete_xs(void *);
 void	sdmmc_done_xs(struct sdmmc_ccb *);
 void	sdmmc_stimeout(void *);
 void	sdmmc_scsi_minphys(struct buf *, struct scsi_link *);
-
-#define DEVNAME(sc)	SDMMCDEVNAME(sc)
 
 #ifdef SDMMC_DEBUG
 #define DPRINTF(s)	printf s
