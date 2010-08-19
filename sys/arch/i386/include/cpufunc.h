@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.15 2009/08/13 13:24:48 kettenis Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.16 2009/12/09 14:28:46 oga Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.8 1994/10/27 04:15:59 cgd Exp $	*/
 
 /*
@@ -78,7 +78,7 @@ invlpg(u_int addr)
 static __inline void
 lidt(void *p)
 {
-	__asm __volatile("lidt (%0)" : : "r" (p));
+	__asm __volatile("lidt (%0)" : : "r" (p) : "memory");
 }
 
 static __inline void
